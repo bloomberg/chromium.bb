@@ -114,7 +114,7 @@ class ImporterTest : public testing::Test {
     profile_info.browser_type = FIREFOX3;
     profile_info.app_path = app_path_;
     profile_info.source_path = profile_path_;
-    scoped_refptr<ImporterHost> host(new ImporterHost());
+    scoped_refptr<ImporterHost> host(new ImporterHost);
     host->SetObserver(observer);
     int items = HISTORY | PASSWORDS | FAVORITES;
     if (import_search_plugins)
@@ -416,7 +416,7 @@ TEST_F(ImporterTest, IEImporter) {
 
   // Starts to import the above settings.
   MessageLoop* loop = MessageLoop::current();
-  scoped_refptr<ImporterHost> host = new ImporterHost();
+  scoped_refptr<ImporterHost> host(new ImporterHost);
 
   TestObserver* observer = new TestObserver();
   host->SetObserver(observer);
@@ -696,7 +696,7 @@ TEST_F(ImporterTest, MAYBE(Firefox2Importer)) {
   ASSERT_TRUE(file_util::CopyDirectory(data_path, search_engine_path, false));
 
   MessageLoop* loop = MessageLoop::current();
-  scoped_refptr<ImporterHost> host(new ImporterHost());
+  scoped_refptr<ImporterHost> host(new ImporterHost);
   FirefoxObserver* observer = new FirefoxObserver();
   host->SetObserver(observer);
   ProfileInfo profile_info;

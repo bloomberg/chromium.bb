@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -106,9 +106,9 @@ void ImportDataHandler::ImportData(const ListValue* args) {
     // conditional logic once oop import is qualified for Linux/Windows.
     // http://crbug.com/22142
 #if defined(OS_MACOSX)
-    importer_host_ = new ExternalProcessImporterHost(this);
+    importer_host_ = new ExternalProcessImporterHost;
 #else
-    importer_host_ = new ImporterHost(this);
+    importer_host_ = new ImporterHost;
 #endif
     importer_host_->SetObserver(this);
     Profile* profile = dom_ui_->GetProfile();

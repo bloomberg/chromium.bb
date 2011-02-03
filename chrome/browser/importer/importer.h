@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,14 +76,7 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
     virtual ~Observer() {}
   };
 
-  // DEPRECATED: Calls the synchronous version of
-  // ImporterList::DetectSourceProfiles.
-  // TODO(jhawkins): Remove this constructor once all callers are fixed.
-  // See http://crbug.com/65633 and http://crbug.com/65638.
   ImporterHost();
-
-  // |observer| must not be NULL.
-  explicit ImporterHost(ImporterList::Observer* observer);
 
   // BookmarkModelObserver implementation.
   virtual void Loaded(BookmarkModel* model);
@@ -162,33 +155,6 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
   virtual void ImportItemEnded(importer::ImportItem item);
   virtual void ImportEnded();
 
-  int GetAvailableProfileCount() const {
-    return importer_list_->GetAvailableProfileCount();
-  }
-
-  // Returns the name of the profile at the 'index' slot. The profiles are
-  // ordered such that the profile at index 0 is the likely default browser.
-  std::wstring GetSourceProfileNameAt(int index) const {
-    return importer_list_->GetSourceProfileNameAt(index);
-  }
-
-  // Returns the ProfileInfo at the specified index.  The ProfileInfo should be
-  // passed to StartImportSettings().
-  const importer::ProfileInfo& GetSourceProfileInfoAt(int index) const {
-    return importer_list_->GetSourceProfileInfoAt(index);
-  }
-
-  // Returns the ProfileInfo with the given browser type.
-  const importer::ProfileInfo& GetSourceProfileInfoForBrowserType(
-      int browser_type) const {
-    return importer_list_->GetSourceProfileInfoForBrowserType(browser_type);
-  }
-
-  // Returns true if the source profiles have been loaded.
-  bool source_profiles_loaded() const {
-    return importer_list_->source_profiles_loaded();
-  }
-
  protected:
   friend class base::RefCountedThreadSafe<ImporterHost>;
 
@@ -255,23 +221,14 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
   // complete.
   virtual void InvokeTaskIfDone();
 
-  // Used to create an importer of the appropriate type.
-  scoped_refptr<ImporterList> importer_list_;
-
   DISALLOW_COPY_AND_ASSIGN(ImporterHost);
 };
 
-// This class manages the import process.  It creates the in-process half of
-// the importer bridge and the external process importer client.
+// This class manages the import process.  It creates the in-process half of the
+// importer bridge and the external process importer client.
 class ExternalProcessImporterHost : public ImporterHost {
  public:
-  // DEPRECATED: Calls the deprecated ImporterHost constructor.
-  // TODO(jhawkins): Remove this constructor once all callers are fixed.
-  // See http://crbug.com/65633 and http://crbug.com/65638.
   ExternalProcessImporterHost();
-
-  // |observer| must not be NULL.
-  explicit ExternalProcessImporterHost(ImporterList::Observer* observer);
 
   // Called when the BookmarkModel has finished loading. Calls InvokeTaskIfDone
   // to start importing.

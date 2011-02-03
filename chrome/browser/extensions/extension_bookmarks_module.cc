@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -802,21 +802,15 @@ bool ImportBookmarksFunction::RunImpl() {
 void ImportBookmarksFunction::FileSelected(const FilePath& path,
                                            int index,
                                            void* params) {
-  source_path_ = path;
-  importer_host_ = new ImporterHost(this);
-  // SourceProfilesLoaded() will be called once the Importer has loaded the list
-  // of source profiles.
-}
-
-void ImportBookmarksFunction::SourceProfilesLoaded() {
+  scoped_refptr<ImporterHost> importer_host(new ImporterHost);
   importer::ProfileInfo profile_info;
   profile_info.browser_type = importer::BOOKMARKS_HTML;
-  profile_info.source_path = source_path_;
-  importer_host_->StartImportSettings(profile_info,
-                                      profile(),
-                                      importer::FAVORITES,
-                                      new ProfileWriter(profile()),
-                                      true);
+  profile_info.source_path = path;
+  importer_host->StartImportSettings(profile_info,
+                                     profile(),
+                                     importer::FAVORITES,
+                                     new ProfileWriter(profile()),
+                                     true);
   Release();  // Balanced in BookmarksIOFunction::SelectFile()
 }
 

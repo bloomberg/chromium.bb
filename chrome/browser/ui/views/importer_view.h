@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,7 @@ class Label;
 class Window;
 }
 
+class ImporterList;
 class Profile;
 
 // ImporterView draws the dialog that allows the user to select what to
@@ -97,6 +98,7 @@ class ImporterView : public views::View,
   views::Checkbox* search_engines_checkbox_;
 
   scoped_refptr<ImporterHost> importer_host_;
+  scoped_refptr<ImporterList> importer_list_;
 
   // Stores the state of the checked items associated with the position of the
   // selected item in the combo-box.

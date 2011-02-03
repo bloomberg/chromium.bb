@@ -166,16 +166,16 @@ TestingAutomationProvider::~TestingAutomationProvider() {
 }
 
 void TestingAutomationProvider::SourceProfilesLoaded() {
-  DCHECK_NE(static_cast<ImporterHost*>(NULL), importer_host_.get());
+  DCHECK_NE(static_cast<ImporterList*>(NULL), importer_list_.get());
 
   // Get the correct ProfileInfo based on the browser the user provided.
   importer::ProfileInfo profile_info;
-  int num_browsers = importer_host_->GetAvailableProfileCount();
+  int num_browsers = importer_list_->GetAvailableProfileCount();
   int i = 0;
   for ( ; i < num_browsers; i++) {
-    string16 name = WideToUTF16Hack(importer_host_->GetSourceProfileNameAt(i));
+    string16 name = WideToUTF16Hack(importer_list_->GetSourceProfileNameAt(i));
     if (name == import_settings_data_.browser_name) {
-      profile_info = importer_host_->GetSourceProfileInfoAt(i);
+      profile_info = importer_list_->GetSourceProfileInfoAt(i);
       break;
     }
   }
@@ -186,16 +186,17 @@ void TestingAutomationProvider::SourceProfilesLoaded() {
     return;
   }
 
-  importer_host_->SetObserver(
+  scoped_refptr<ImporterHost> importer_host(new ImporterHost);
+  importer_host->SetObserver(
       new AutomationProviderImportSettingsObserver(
           this, import_settings_data_.reply_message));
 
   Profile* profile = import_settings_data_.browser->profile();
-  importer_host_->StartImportSettings(profile_info,
-                                      profile,
-                                      import_settings_data_.import_items,
-                                      new ProfileWriter(profile),
-                                      import_settings_data_.first_run);
+  importer_host->StartImportSettings(profile_info,
+                                     profile,
+                                     import_settings_data_.import_items,
+                                     new ProfileWriter(profile),
+                                     import_settings_data_.first_run);
 }
 
 void TestingAutomationProvider::Observe(NotificationType type,
@@ -3166,9 +3167,10 @@ void TestingAutomationProvider::ImportSettings(Browser* browser,
   import_settings_data_.reply_message = reply_message;
 
   // The remaining functionality of importing settings is in
-  // SourceProfilesLoaded(), which is called by |importer_host_| once the source
+  // SourceProfilesLoaded(), which is called by |importer_list_| once the source
   // profiles are loaded.
-  importer_host_ = new ImporterHost(this);
+  importer_list_ = new ImporterList;
+  importer_list_->DetectSourceProfiles(this);
 }
 
 namespace {

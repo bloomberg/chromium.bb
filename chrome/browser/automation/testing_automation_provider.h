@@ -17,7 +17,6 @@
 #include "chrome/common/page_type.h"
 
 class DictionaryValue;
-class ImporterHost;
 class TemplateURLModel;
 
 // This is an automation provider containing testing calls.
@@ -830,8 +829,8 @@ class TestingAutomationProvider : public AutomationProvider,
 
   NotificationRegistrar registrar_;
 
-  // Used to import settings from browser profiles.
-  scoped_refptr<ImporterHost> importer_host_;
+  // Used to enumerate browser profiles.
+  scoped_refptr<ImporterList> importer_list_;
 
   // The stored data for the ImportSettings operation.
   ImportSettingsData import_settings_data_;

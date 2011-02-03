@@ -88,28 +88,10 @@ ImporterHost::ImporterHost()
       installed_bookmark_observer_(false),
       is_source_readable_(true),
       headless_(false),
-      parent_window_(NULL),
-      importer_list_(new ImporterList) {
-  importer_list_->DetectSourceProfilesHack();
-}
-
-ImporterHost::ImporterHost(ImporterList::Observer* observer)
-    : profile_(NULL),
-      observer_(NULL),
-      task_(NULL),
-      importer_(NULL),
-      waiting_for_bookmarkbar_model_(false),
-      installed_bookmark_observer_(false),
-      is_source_readable_(true),
-      headless_(false),
-      parent_window_(NULL),
-      importer_list_(new ImporterList) {
-  importer_list_->DetectSourceProfiles(observer);
+      parent_window_(NULL) {
 }
 
 ImporterHost::~ImporterHost() {
-  importer_list_->SetObserver(NULL);
-
   if (NULL != importer_)
     importer_->Release();
 
@@ -324,15 +306,6 @@ void ImporterHost::CheckForLoadedModels(uint16 items) {
 
 ExternalProcessImporterHost::ExternalProcessImporterHost()
     : items_(0),
-      import_to_bookmark_bar_(false),
-      cancelled_(false),
-      import_process_launched_(false) {
-}
-
-ExternalProcessImporterHost::ExternalProcessImporterHost(
-    ImporterList::Observer* observer)
-    : ImporterHost(observer),
-      items_(0),
       import_to_bookmark_bar_(false),
       cancelled_(false),
       import_process_launched_(false) {

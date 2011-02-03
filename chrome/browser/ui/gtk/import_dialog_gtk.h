@@ -78,6 +78,9 @@ class ImportDialogGtk : public ImportObserver,
   // Utility class that does the actual import.
   scoped_refptr<ImporterHost> importer_host_;
 
+  // Enumerates the source profiles.
+  scoped_refptr<ImporterList> importer_list_;
+
   int initial_state_;
 
   // Helper object to manage accessibility metadata.

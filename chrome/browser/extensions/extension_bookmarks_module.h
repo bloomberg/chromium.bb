@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -191,23 +191,13 @@ class BookmarksIOFunction : public BookmarksFunction,
   scoped_refptr<SelectFileDialog> select_file_dialog_;
 };
 
-class ImportBookmarksFunction : public BookmarksIOFunction,
-                                public ImporterList::Observer {
+class ImportBookmarksFunction : public BookmarksIOFunction {
  public:
   // BookmarkManagerIOFunction implementation.
   virtual bool RunImpl();
   virtual void FileSelected(const FilePath& path, int index, void* params);
 
-  // ImporterList::Observer implementation.
-  virtual void SourceProfilesLoaded();
-
  private:
-  // The selected file path used to import bookmarks from.
-  FilePath source_path_;
-
-  // The ImporterHost used to import the bookmarks.
-  scoped_refptr<ImporterHost> importer_host_;
-
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.import");
 };
 

@@ -524,10 +524,11 @@ bool FirstRun::ImportSettings(Profile* profile, int browser_type,
 // static
 bool FirstRun::ImportSettings(Profile* profile,
                               scoped_refptr<ImporterHost> importer_host,
+                              scoped_refptr<ImporterList> importer_list,
                               int items_to_import) {
   return ImportSettings(
       profile,
-      importer_host->GetSourceProfileInfoAt(0).browser_type,
+      importer_list->GetSourceProfileInfoAt(0).browser_type,
       items_to_import,
       FilePath(), false, NULL);
 }
@@ -548,8 +549,11 @@ int FirstRun::ImportFromBrowser(Profile* profile,
     NOTREACHED();
     return false;
   }
-  scoped_refptr<ImporterHost> importer_host = new ImporterHost();
+  scoped_refptr<ImporterHost> importer_host(new ImporterHost);
   FirstRunImportObserver observer;
+
+  scoped_refptr<ImporterList> importer_list(new ImporterList);
+  importer_list->DetectSourceProfilesHack();
 
   // If |skip_first_run_ui|, we run in headless mode.  This means that if
   // there is user action required the import is automatically canceled.
@@ -560,7 +564,7 @@ int FirstRun::ImportFromBrowser(Profile* profile,
       parent_window,
       static_cast<uint16>(items_to_import),
       importer_host,
-      importer_host->GetSourceProfileInfoForBrowserType(browser_type),
+      importer_list->GetSourceProfileInfoForBrowserType(browser_type),
       profile,
       &observer,
       true);

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -122,6 +122,7 @@ class FirstRun {
   // success.
   static bool ImportSettings(Profile* profile,
                              scoped_refptr<ImporterHost> importer_host,
+                             scoped_refptr<ImporterList> importer_list,
                              int items_to_import);
 
   // Sets the kShouldShowFirstRunBubble local state pref so that the browser

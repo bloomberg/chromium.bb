@@ -9,6 +9,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/importer/importer_data_types.h"
+#include "chrome/browser/importer/importer_list.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -42,9 +43,11 @@ ImporterView::ImporterView(Profile* profile, int initial_state)
       passwords_checkbox_(NULL),
       search_engines_checkbox_(NULL),
       profile_(profile),
-      ALLOW_THIS_IN_INITIALIZER_LIST(importer_host_(new ImporterHost(this))),
+      importer_host_(new ImporterHost),
+      importer_list_(new ImporterList),
       initial_state_(initial_state) {
   DCHECK(profile);
+  importer_list_->DetectSourceProfiles(this);
   SetupControl();
 }
 
@@ -158,7 +161,7 @@ bool ImporterView::Accept() {
   int selected_index = profile_combobox_->selected_item();
   StartImportingWithUI(GetWidget()->GetNativeView(), items,
                        importer_host_.get(),
-                       importer_host_->GetSourceProfileInfoAt(selected_index),
+                       importer_list_->GetSourceProfileInfoAt(selected_index),
                        profile_, this, false);
   // We return false here to prevent the window from being closed. We will be
   // notified back by our implementation of ImportObserver when the import is
@@ -185,22 +188,22 @@ int ImporterView::GetItemCount() {
 string16 ImporterView::GetItemAt(int index) {
   DCHECK(importer_host_.get());
 
-  if (!importer_host_->source_profiles_loaded())
+  if (!importer_list_->source_profiles_loaded())
     return l10n_util::GetStringUTF16(IDS_IMPORT_LOADING_PROFILES);
   else
-    return WideToUTF16Hack(importer_host_->GetSourceProfileNameAt(index));
+    return WideToUTF16Hack(importer_list_->GetSourceProfileNameAt(index));
 }
 
 void ImporterView::ItemChanged(views::Combobox* combobox,
                                int prev_index, int new_index) {
   DCHECK(combobox);
   DCHECK(checkbox_items_.size() >=
-      static_cast<size_t>(importer_host_->GetAvailableProfileCount()));
+      static_cast<size_t>(importer_list_->GetAvailableProfileCount()));
 
   if (prev_index == new_index)
     return;
 
-  if (!importer_host_->source_profiles_loaded()) {
+  if (!importer_list_->source_profiles_loaded()) {
     SetCheckedItemsState(0);
     return;
   }
@@ -210,7 +213,7 @@ void ImporterView::ItemChanged(views::Combobox* combobox,
   checkbox_items_[prev_index] = prev_items;
 
   // Enable/Disable the checkboxes for this Item
-  uint16 new_enabled_items = importer_host_->GetSourceProfileInfoAt(
+  uint16 new_enabled_items = importer_list_->GetSourceProfileInfoAt(
       new_index).services_supported;
   SetCheckedItemsState(new_enabled_items);
 
@@ -220,9 +223,9 @@ void ImporterView::ItemChanged(views::Combobox* combobox,
 }
 
 void ImporterView::SourceProfilesLoaded() {
-  DCHECK(importer_host_->source_profiles_loaded());
+  DCHECK(importer_list_->source_profiles_loaded());
   checkbox_items_.resize(
-      importer_host_->GetAvailableProfileCount(), initial_state_);
+      importer_list_->GetAvailableProfileCount(), initial_state_);
 
   // Reload the profile combobox.
   profile_combobox_->ModelChanged();

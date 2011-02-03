@@ -44,8 +44,12 @@ ImportDialogGtk::ImportDialogGtk(GtkWindow* parent, Profile* profile,
                                  int initial_state)
     : parent_(parent),
       profile_(profile),
-      importer_host_(new ImporterHost(this)),
+      importer_host_(new ImporterHost),
+      ALLOW_THIS_IN_INITIALIZER_LIST(importer_list_(new ImporterList)),
       initial_state_(initial_state) {
+  // Load the available source profiles.
+  importer_list_->DetectSourceProfiles(this);
+
   // Build the dialog.
   std::string dialog_name = l10n_util::GetStringUTF8(
       IDS_IMPORT_SETTINGS_TITLE);
@@ -150,12 +154,12 @@ ImportDialogGtk::~ImportDialogGtk() {
 void ImportDialogGtk::SourceProfilesLoaded() {
   // Detect any supported browsers that we can import from and fill
   // up the combo box. If none found, disable all controls except cancel.
-  int profiles_count = importer_host_->GetAvailableProfileCount();
+  int profiles_count = importer_list_->GetAvailableProfileCount();
   SetDialogControlsSensitive(profiles_count != 0);
   gtk_combo_box_remove_text(GTK_COMBO_BOX(combo_), 0);
   if (profiles_count > 0) {
     for (int i = 0; i < profiles_count; i++) {
-      std::wstring profile = importer_host_->GetSourceProfileNameAt(i);
+      std::wstring profile = importer_list_->GetSourceProfileNameAt(i);
       gtk_combo_box_append_text(GTK_COMBO_BOX(combo_),
                                 WideToUTF8(profile).c_str());
     }
@@ -175,9 +179,9 @@ void ImportDialogGtk::OnDialogResponse(GtkWidget* widget, int response) {
       ImportComplete();
     } else {
       const ProfileInfo& source_profile =
-          importer_host_->GetSourceProfileInfoAt(
+          importer_list_->GetSourceProfileInfoAt(
           gtk_combo_box_get_active(GTK_COMBO_BOX(combo_)));
-      StartImportingWithUI(parent_, items, importer_host_.get(),
+      StartImportingWithUI(parent_, items, importer_host_,
                            source_profile, profile_, this, false);
     }
   } else {
