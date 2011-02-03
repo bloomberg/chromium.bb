@@ -7,11 +7,11 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/gtest_prod_util.h"
 #include "base/string16.h"
 
 class Browser;
 class FilePath;
+
 namespace IPC {
 class Message;
 }
@@ -31,6 +31,10 @@ class PrintDialogCloud {
                             bool modal);
   ~PrintDialogCloud();
 
+  void Init(const FilePath& path_to_pdf,
+            const string16& print_job_title,
+            bool modal);
+
   // Called as a task from the UI thread, creates an object instance
   // to run the HTML/JS based print dialog for printing through the cloud.
   static void CreateDialogImpl(const FilePath& path_to_pdf,
@@ -38,8 +42,6 @@ class PrintDialogCloud {
                                bool modal);
 
   Browser* browser_;
-  string16 print_job_title_;
-  bool modal_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintDialogCloud);
 };

@@ -6,7 +6,6 @@
 #include "chrome/browser/printing/print_dialog_cloud_internal.h"
 
 #include "base/base64.h"
-#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/values.h"
@@ -23,8 +22,6 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
@@ -405,6 +402,7 @@ CloudPrintHtmlDialogDelegate::CloudPrintHtmlDialogDelegate(
   Init(width, height, json_arguments);
 }
 
+// For unit testing.
 CloudPrintHtmlDialogDelegate::CloudPrintHtmlDialogDelegate(
     CloudPrintFlowHandler* flow_handler,
     int width, int height,
@@ -416,12 +414,11 @@ CloudPrintHtmlDialogDelegate::CloudPrintHtmlDialogDelegate(
   Init(width, height, json_arguments);
 }
 
-void CloudPrintHtmlDialogDelegate::Init(
-    int width, int height, const std::string& json_arguments) {
+void CloudPrintHtmlDialogDelegate::Init(int width, int height,
+                                        const std::string& json_arguments) {
   // This information is needed to show the dialog HTML content.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  std::string cloud_print_url(chrome::kCloudPrintResourcesURL);
-  params_.url = GURL(cloud_print_url);
+  params_.url = GURL(chrome::kCloudPrintResourcesURL);
   params_.height = height;
   params_.width = width;
   params_.json_input = json_arguments;
@@ -494,7 +491,7 @@ bool CloudPrintHtmlDialogDelegate::ShouldShowDialogTitle() const {
   return false;
 }
 
-}  // end of namespace internal_cloud_print_helpers
+}  // namespace internal_cloud_print_helpers
 
 // static, called on the IO thread.  This is the main entry point into
 // creating the dialog.
@@ -528,26 +525,32 @@ void PrintDialogCloud::CreateDialogImpl(const FilePath& path_to_pdf,
 PrintDialogCloud::PrintDialogCloud(const FilePath& path_to_pdf,
                                    const string16& print_job_title,
                                    bool modal)
-    : browser_(BrowserList::GetLastActive()),
-      print_job_title_(print_job_title),
-      modal_(modal) {
+    : browser_(BrowserList::GetLastActive()) {
+  Init(path_to_pdf, print_job_title, modal);
+}
 
+PrintDialogCloud::~PrintDialogCloud() {
+}
+
+void PrintDialogCloud::Init(const FilePath& path_to_pdf,
+                            const string16& print_job_title,
+                            bool modal) {
   // TODO(scottbyer): Verify GAIA login valid, execute GAIA login if not (should
   // be distilled out of bookmark sync.)
   const int kDefaultWidth = 497;
   const int kDefaultHeight = 332;
+  string16 job_title = print_job_title;
   Profile* profile = NULL;
-  PrefService* pref_service = NULL;
-  if (modal_) {
+  if (modal) {
     DCHECK(browser_);
-    if (print_job_title_.empty() && browser_->GetSelectedTabContents())
-      print_job_title_ = browser_->GetSelectedTabContents()->GetTitle();
+    if (job_title.empty() && browser_->GetSelectedTabContents())
+      job_title = browser_->GetSelectedTabContents()->GetTitle();
     profile = browser_->GetProfile();
   } else {
     profile = ProfileManager::GetDefaultProfile();
   }
   DCHECK(profile);
-  pref_service = profile->GetPrefs();
+  PrefService* pref_service = profile->GetPrefs();
   DCHECK(pref_service);
   if (!pref_service->FindPreference(prefs::kCloudPrintDialogWidth)) {
     pref_service->RegisterIntegerPref(prefs::kCloudPrintDialogWidth,
@@ -563,14 +566,11 @@ PrintDialogCloud::PrintDialogCloud(const FilePath& path_to_pdf,
 
   HtmlDialogUIDelegate* dialog_delegate =
       new internal_cloud_print_helpers::CloudPrintHtmlDialogDelegate(
-          path_to_pdf, width, height, std::string(), print_job_title_, modal_);
-  if (modal_) {
+          path_to_pdf, width, height, std::string(), job_title, modal);
+  if (modal) {
     DCHECK(browser_);
     browser_->BrowserShowHtmlDialog(dialog_delegate, NULL);
   } else {
     browser::ShowHtmlDialog(NULL, profile, dialog_delegate);
   }
-}
-
-PrintDialogCloud::~PrintDialogCloud() {
 }

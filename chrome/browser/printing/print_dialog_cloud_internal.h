@@ -107,18 +107,18 @@ class CloudPrintFlowHandler : public DOMMessageHandler,
   void HandleSendPrintData(const ListValue* args);
   void HandleSetPageParameters(const ListValue* args);
 
+  virtual void SetDialogDelegate(CloudPrintHtmlDialogDelegate *delegate);
+  void StoreDialogClientSize() const;
+
+ private:
+  virtual scoped_refptr<CloudPrintDataSender> CreateCloudPrintDataSender();
+
   // Call to get the debugger loaded on our hosted dialog page
   // specifically.  Since we're not in an official browser tab, only
   // way to get the debugger going.
   void ShowDebugger();
 
-  virtual void SetDialogDelegate(CloudPrintHtmlDialogDelegate *delegate);
   void CancelAnyRunningTask();
-  void StoreDialogClientSize() const;
-
- private:
-  // For unit testing.
-  virtual scoped_refptr<CloudPrintDataSender> CreateCloudPrintDataSender();
 
   CloudPrintHtmlDialogDelegate* dialog_delegate_;
   NotificationRegistrar registrar_;
@@ -157,6 +157,7 @@ class CloudPrintHtmlDialogDelegate : public HtmlDialogUIDelegate {
  private:
   friend class ::CloudPrintHtmlDialogDelegateTest;
 
+  // For unit testing.
   CloudPrintHtmlDialogDelegate(CloudPrintFlowHandler* flow_handler,
                                int width, int height,
                                const std::string& json_arguments,
