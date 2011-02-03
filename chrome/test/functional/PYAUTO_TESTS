@@ -62,6 +62,7 @@
       '-notifications.NotificationsTest.testKillNotificationProcess',
       'ntp',
       'omnibox',
+      '-omnibox.OmniboxTest.testHistoryResult',  # crbug.com/71715
       'passwords',
       'pdf',
       'plugins',
