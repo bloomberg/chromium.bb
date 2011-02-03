@@ -336,7 +336,7 @@ class ExtensionUpdaterFileHandler
     }
     if (file_util::WriteFile(path, data.c_str(), data.length()) !=
         static_cast<int>(data.length())) {
-      // TODO(asargent) - It would be nice to back off updating alltogether if
+      // TODO(asargent) - It would be nice to back off updating altogether if
       // the disk is full. (http://crbug.com/12763).
       LOG(ERROR) << "Failed to write temporary file";
       file_util::Delete(path, false);
@@ -577,8 +577,8 @@ void ExtensionUpdater::OnManifestFetchComplete(
     const std::string& data) {
   // We want to try parsing the manifest, and if it indicates updates are
   // available, we want to fire off requests to fetch those updates.
-  if ((status.status() == net::URLRequestStatus::SUCCESS) &&
-      (response_code == 200)) {
+  if (status.status() == net::URLRequestStatus::SUCCESS &&
+      (response_code == 200 || (url.SchemeIsFile() && data.length() > 0))) {
     scoped_refptr<SafeManifestParser> safe_parser(
         new SafeManifestParser(data, current_manifest_fetch_.release(), this));
     safe_parser->Start();
@@ -666,7 +666,7 @@ void ExtensionUpdater::OnCRXFetchComplete(const GURL& url,
                                           int response_code,
                                           const std::string& data) {
   if (status.status() == net::URLRequestStatus::SUCCESS &&
-      response_code == 200) {
+      (response_code == 200 || (url.SchemeIsFile() && data.length() > 0))) {
     if (current_extension_fetch_.id == kBlacklistAppID) {
       ProcessBlacklist(data);
     } else {
