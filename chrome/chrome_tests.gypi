@@ -52,6 +52,7 @@
         # The only thing used from browser is Browser::Type.
         'browser/extensions/test_extension_prefs.cc',
         'browser/extensions/test_extension_prefs.h',
+        'browser/geolocation/arbitrator_dependency_factories_for_tests.h',
         'browser/geolocation/mock_location_provider.cc',
         'browser/geolocation/mock_location_provider.h',
         'browser/mock_browsing_data_appcache_helper.cc',

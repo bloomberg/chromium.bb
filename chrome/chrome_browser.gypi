@@ -1263,6 +1263,8 @@
         'browser/gears_integration.h',
         'browser/geolocation/access_token_store.cc',
         'browser/geolocation/access_token_store.h',
+        'browser/geolocation/arbitrator_dependency_factory.cc',
+        'browser/geolocation/arbitrator_dependency_factory.h',
         'browser/geolocation/core_location_data_provider_mac.h',
         'browser/geolocation/core_location_data_provider_mac.mm',
         'browser/geolocation/core_location_provider_mac.h',

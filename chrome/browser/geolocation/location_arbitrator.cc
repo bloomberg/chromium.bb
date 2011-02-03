@@ -6,36 +6,15 @@
 
 #include <map>
 
+#include "chrome/browser/geolocation/arbitrator_dependency_factory.h"
 #include "chrome/browser/profiles/profile.h"
 
 namespace {
+
 const char* kDefaultNetworkProviderUrl = "https://www.google.com/loc/json";
-// TODO(joth): Remove this global function pointer and update all tests to use
-// an injected ProviderFactory class instead.
-GeolocationArbitrator::LocationProviderFactoryFunction
-    g_provider_factory_function_for_test = NULL;
+GeolocationArbitratorDependencyFactory* g_dependency_factory_for_test = NULL;
+
 }  // namespace
-
-
-class DefaultLocationProviderFactory
-    : public GeolocationArbitrator::ProviderFactory {
- public:
-  virtual LocationProviderBase* NewNetworkLocationProvider(
-      AccessTokenStore* access_token_store,
-      URLRequestContextGetter* context,
-      const GURL& url,
-      const string16& access_token) {
-    if (g_provider_factory_function_for_test)
-      return g_provider_factory_function_for_test();
-    return ::NewNetworkLocationProvider(access_token_store, context,
-                                        url, access_token);
-  }
-  virtual LocationProviderBase* NewSystemLocationProvider() {
-    if (g_provider_factory_function_for_test)
-      return NULL;
-    return ::NewSystemLocationProvider();
-  }
-};
 
 // To avoid oscillations, set this to twice the expected update interval of a
 // a GPS-type location provider (in case it misses a beat) plus a little.
@@ -43,16 +22,13 @@ const int64 GeolocationArbitrator::kFixStaleTimeoutMilliseconds =
     11 * base::Time::kMillisecondsPerSecond;
 
 GeolocationArbitrator::GeolocationArbitrator(
-    AccessTokenStore* access_token_store,
-    URLRequestContextGetter* context_getter,
-    GetTimeNow get_time_now,
-    GeolocationObserver* observer,
-    ProviderFactory* provider_factory)
-    : access_token_store_(access_token_store),
-      context_getter_(context_getter),
-      get_time_now_(get_time_now),
+    GeolocationArbitratorDependencyFactory* dependency_factory,
+    GeolocationObserver* observer)
+    : dependency_factory_(dependency_factory),
+      access_token_store_(dependency_factory->NewAccessTokenStore()),
+      context_getter_(dependency_factory->GetContextGetter()),
+      get_time_now_(dependency_factory->GetTimeFunction()),
       observer_(observer),
-      provider_factory_(provider_factory),
       position_provider_(NULL) {
   DCHECK(GURL(kDefaultNetworkProviderUrl).is_valid());
   access_token_store_->LoadAccessTokens(
@@ -66,15 +42,14 @@ GeolocationArbitrator::~GeolocationArbitrator() {
 
 GeolocationArbitrator* GeolocationArbitrator::Create(
     GeolocationObserver* observer) {
-  // Construct the arbitrator using default token store and url context. We
-  // get the url context getter from the default profile as it's not
-  // particularly important which profile it is attached to: the network
-  // request implementation disables cookies anyhow.
-  return new GeolocationArbitrator(NewChromePrefsAccessTokenStore(),
-                                   Profile::GetDefaultRequestContext(),
-                                   base::Time::Now,
-                                   observer,
-                                   new DefaultLocationProviderFactory);
+  GeolocationArbitratorDependencyFactory* dependency_factory =
+      g_dependency_factory_for_test ?
+      g_dependency_factory_for_test :
+      new DefaultGeolocationArbitratorDependencyFactory;
+  GeolocationArbitrator* arbitrator =
+      new GeolocationArbitrator(dependency_factory, observer);
+  g_dependency_factory_for_test = NULL;
+  return arbitrator;
 }
 
 void GeolocationArbitrator::OnPermissionGranted(
@@ -86,7 +61,7 @@ void GeolocationArbitrator::OnPermissionGranted(
   }
 }
 
-void GeolocationArbitrator::SetObserverOptions(
+void GeolocationArbitrator::StartProviders(
     const GeolocationObserverOptions& options) {
   // Stash options incase OnAccessTokenStoresLoaded has not yet been called
   // (in which case |providers_| will be empty).
@@ -98,6 +73,13 @@ void GeolocationArbitrator::StartProviders() {
   for (ScopedVector<LocationProviderBase>::iterator i = providers_.begin();
        i != providers_.end(); ++i) {
     (*i)->StartProvider(current_provider_options_.use_high_accuracy);
+  }
+}
+
+void GeolocationArbitrator::StopProviders() {
+  for (ScopedVector<LocationProviderBase>::iterator i = providers_.begin();
+       i != providers_.end(); ++i) {
+    (*i)->StopProvider();
   }
 }
 
@@ -113,11 +95,11 @@ void GeolocationArbitrator::OnAccessTokenStoresLoaded(
            access_token_set.begin();
       i != access_token_set.end(); ++i) {
     RegisterProvider(
-        provider_factory_->NewNetworkLocationProvider(
+        dependency_factory_->NewNetworkLocationProvider(
             access_token_store_.get(), context_getter_.get(),
             i->first, i->second));
   }
-  RegisterProvider(provider_factory_->NewSystemLocationProvider());
+  RegisterProvider(dependency_factory_->NewSystemLocationProvider());
   StartProviders();
 }
 
@@ -175,10 +157,7 @@ bool GeolocationArbitrator::HasPermissionBeenGranted() const {
   return most_recent_authorized_frame_.is_valid();
 }
 
-GeolocationArbitrator::ProviderFactory::~ProviderFactory() {
-}
-
-void GeolocationArbitrator::SetProviderFactoryForTest(
-      LocationProviderFactoryFunction factory_function) {
-  g_provider_factory_function_for_test = factory_function;
+void GeolocationArbitrator::SetDependencyFactoryForTest(
+    GeolocationArbitratorDependencyFactory* dependency_factory) {
+  g_dependency_factory_for_test = dependency_factory;
 }

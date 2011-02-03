@@ -6,6 +6,7 @@
 
 #include "base/scoped_vector.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/geolocation/arbitrator_dependency_factories_for_test.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/geolocation/geolocation_permission_context.h"
 #include "chrome/browser/geolocation/location_arbitrator.h"
@@ -59,16 +60,21 @@ class GeolocationPermissionContextTests : public RenderViewHostTestHarness {
   GeolocationPermissionContextTests()
     : RenderViewHostTestHarness(),
       ui_thread_(BrowserThread::UI, MessageLoop::current()),
-      tab_contents_with_pending_infobar_(NULL) {
+      tab_contents_with_pending_infobar_(NULL),
+      dependency_factory_(
+          new GeolocationArbitratorDependencyFactoryWithLocationProvider(
+              &NewAutoSuccessMockNetworkLocationProvider)) {
   }
 
   virtual ~GeolocationPermissionContextTests() {
   }
 
+  // testing::Test
   virtual void SetUp() {
     RenderViewHostTestHarness::SetUp();
-    GeolocationArbitrator::SetProviderFactoryForTest(
-        &NewAutoSuccessMockNetworkLocationProvider);
+    GeolocationArbitrator::SetDependencyFactoryForTest(
+        dependency_factory_.get());
+
     SiteInstance* site_instance = contents_->GetSiteInstance();
     tab_contents_with_pending_infobar_ =
         new TestTabContentsWithPendingInfoBar(profile_.get(), site_instance);
@@ -77,9 +83,10 @@ class GeolocationPermissionContextTests : public RenderViewHostTestHarness {
         new GeolocationPermissionContext(profile());
   }
 
+  // testing::Test
   virtual void TearDown() {
+    GeolocationArbitrator::SetDependencyFactoryForTest(NULL);
     RenderViewHostTestHarness::TearDown();
-    GeolocationArbitrator::SetProviderFactoryForTest(NULL);
   }
 
   int process_id() {
@@ -156,6 +163,7 @@ class GeolocationPermissionContextTests : public RenderViewHostTestHarness {
   TestTabContentsWithPendingInfoBar* tab_contents_with_pending_infobar_;
   scoped_refptr<GeolocationPermissionContext> geolocation_permission_context_;
   ScopedVector<TestTabContentsWithPendingInfoBar> extra_tabs_;
+  scoped_refptr<GeolocationArbitratorDependencyFactory> dependency_factory_;
 };
 
 TEST_F(GeolocationPermissionContextTests, SinglePermission) {

@@ -8,6 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/dom_operation_notification_details.h"
+#include "chrome/browser/geolocation/arbitrator_dependency_factories_for_test.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/geolocation/geolocation_settings_state.h"
 #include "chrome/browser/geolocation/location_arbitrator.h"
@@ -201,8 +202,23 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
     : infobar_(NULL),
       current_browser_(NULL),
       html_for_tests_("files/geolocation/simple.html"),
-      started_test_server_(false) {
+      started_test_server_(false),
+      dependency_factory_(
+          new GeolocationArbitratorDependencyFactoryWithLocationProvider(
+              &NewAutoSuccessMockNetworkLocationProvider)) {
     EnableDOMAutomation();
+  }
+
+  // InProcessBrowserTest
+  virtual void SetUpInProcessBrowserTestFixture() {
+    GeolocationArbitrator::SetDependencyFactoryForTest(
+        dependency_factory_.get());
+  }
+
+  // InProcessBrowserTest
+  virtual void TearDownInProcessBrowserTestFixture() {
+    LOG(WARNING) << "TearDownInProcessBrowserTestFixture. Test Finished.";
+    GeolocationArbitrator::SetDependencyFactoryForTest(NULL);
   }
 
   enum InitializationOptions {
@@ -213,9 +229,6 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
   };
 
   bool Initialize(InitializationOptions options) WARN_UNUSED_RESULT {
-    GeolocationArbitrator::SetProviderFactoryForTest(
-        &NewAutoSuccessMockNetworkLocationProvider);
-
     if (!started_test_server_)
       started_test_server_ = test_server()->Start();
     EXPECT_TRUE(started_test_server_);
@@ -344,11 +357,6 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
         expected, function, current_browser_->GetSelectedTabContents());
   }
 
-  // InProcessBrowserTest
-  virtual void TearDownInProcessBrowserTestFixture() {
-    LOG(WARNING) << "TearDownInProcessBrowserTestFixture. Test Finished.";
-  }
-
   InfoBarDelegate* infobar_;
   Browser* current_browser_;
   // path element of a URL referencing the html content for this test.
@@ -363,6 +371,8 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
 
   // TODO(phajdan.jr): Remove after we can ask TestServer whether it is started.
   bool started_test_server_;
+
+  scoped_refptr<GeolocationArbitratorDependencyFactory> dependency_factory_;
 };
 
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, DisplaysPermissionBar) {

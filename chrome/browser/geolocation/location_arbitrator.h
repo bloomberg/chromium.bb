@@ -17,6 +17,7 @@
 #include "googleurl/src/gurl.h"
 
 class AccessTokenStore;
+class GeolocationArbitratorDependencyFactory;
 class GURL;
 class LocationProviderBase;
 class URLRequestContextGetter;
@@ -35,32 +36,13 @@ class GeolocationArbitrator : public LocationProviderBase::ListenerInterface {
   // Defines a function that returns the current time.
   typedef base::Time (*GetTimeNow)();
 
-  // Allows injection of factory methods for creating the location providers.
-  // RefCounted for simplicity of writing tests.
-  class ProviderFactory  : public base::RefCounted<ProviderFactory> {
-   public:
-    virtual LocationProviderBase* NewNetworkLocationProvider(
-        AccessTokenStore* access_token_store,
-        URLRequestContextGetter* context,
-        const GURL& url,
-        const string16& access_token) = 0;
-    virtual LocationProviderBase* NewSystemLocationProvider() = 0;
-
-   protected:
-    friend class base::RefCounted<ProviderFactory>;
-    virtual ~ProviderFactory();
-  };
-
-  GeolocationArbitrator(AccessTokenStore* access_token_store,
-                        URLRequestContextGetter* context_getter,
-                        GetTimeNow get_time_now,
-                        GeolocationObserver* observer,
-                        ProviderFactory* provider_factory);
   ~GeolocationArbitrator();
 
   static GeolocationArbitrator* Create(GeolocationObserver* observer);
 
-  void SetObserverOptions(const GeolocationObserverOptions& options);
+  // See more details in geolocation_provider.
+  void StartProviders(const GeolocationObserverOptions& options);
+  void StopProviders();
 
   // Called everytime permission is granted to a page for using geolocation.
   // This may either be through explicit user action (e.g. responding to the
@@ -73,18 +55,18 @@ class GeolocationArbitrator : public LocationProviderBase::ListenerInterface {
   // OnPermissionGranted().
   bool HasPermissionBeenGranted() const;
 
-  // For testing, a factory function can be set which will be used to create
-  // a specified test provider. Pass NULL to reset to the default behavior.
-  // For finer grained control, use class ProviderFactory instead.
-  // TODO(joth): Move all tests to use ProviderFactory and remove this.
-  typedef LocationProviderBase* (*LocationProviderFactoryFunction)(void);
-  static void SetProviderFactoryForTest(
-      LocationProviderFactoryFunction factory_function);
+  // Call this function every time you need to create an specially parameterised
+  // arbitrator.
+  static void SetDependencyFactoryForTest(
+      GeolocationArbitratorDependencyFactory* factory);
 
   // ListenerInterface
   virtual void LocationUpdateAvailable(LocationProviderBase* provider);
 
  private:
+  GeolocationArbitrator(
+      GeolocationArbitratorDependencyFactory* dependency_factory,
+      GeolocationObserver* observer);
   // Takes ownership of |provider| on entry; it will either be added to
   // |providers_| or deleted on error (e.g. it fails to start).
   void RegisterProvider(LocationProviderBase* provider);
@@ -98,11 +80,11 @@ class GeolocationArbitrator : public LocationProviderBase::ListenerInterface {
                            const Geoposition& new_position,
                            bool from_same_provider) const;
 
+  scoped_refptr<GeolocationArbitratorDependencyFactory> dependency_factory_;
   scoped_refptr<AccessTokenStore> access_token_store_;
   scoped_refptr<URLRequestContextGetter> context_getter_;
   GetTimeNow get_time_now_;
   GeolocationObserver* observer_;
-  scoped_refptr<ProviderFactory> provider_factory_;
   ScopedVector<LocationProviderBase> providers_;
   GeolocationObserverOptions current_provider_options_;
   // The provider which supplied the current |position_|

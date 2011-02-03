@@ -24,7 +24,6 @@ GeolocationProvider::GeolocationProvider()
 
 GeolocationProvider::~GeolocationProvider() {
   DCHECK(observers_.empty());  // observers must unregister.
-  DCHECK(!IsRunning());
   Stop();
   DCHECK(!arbitrator_);
 }
@@ -47,12 +46,10 @@ bool GeolocationProvider::RemoveObserver(GeolocationObserver* observer) {
 
 void GeolocationProvider::OnObserversChanged() {
   DCHECK(OnClientThread());
+  Task* task = NULL;
   if (observers_.empty()) {
-    // http://crbug.com/66077: This is a bug.  The geolocation thread may
-    // transitively (via other threads it joins) block on long-running tasks /
-    // IO.
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
-    Stop();
+    DCHECK(IsRunning());
+    task = NewRunnableMethod(this, &GeolocationProvider::StopProviders);
   } else {
     if (!IsRunning()) {
       Start();
@@ -60,11 +57,12 @@ void GeolocationProvider::OnObserversChanged() {
         InformProvidersPermissionGranted(most_recent_authorized_frame_);
     }
     // The high accuracy requirement may have changed.
-    Task* task = NewRunnableMethod(this,
-        &GeolocationProvider::SetObserverOptions,
-            GeolocationObserverOptions::Collapse(observers_));
-    message_loop()->PostTask(FROM_HERE, task);
+    task = NewRunnableMethod(
+        this,
+        &GeolocationProvider::StartProviders,
+        GeolocationObserverOptions::Collapse(observers_));
   }
+  message_loop()->PostTask(FROM_HERE, task);
 }
 
 void GeolocationProvider::NotifyObservers(const Geoposition& position) {
@@ -80,11 +78,17 @@ void GeolocationProvider::NotifyObservers(const Geoposition& position) {
   }
 }
 
-void GeolocationProvider::SetObserverOptions(
+void GeolocationProvider::StartProviders(
     const GeolocationObserverOptions& options) {
   DCHECK(OnGeolocationThread());
   DCHECK(arbitrator_);
-  arbitrator_->SetObserverOptions(options);
+  arbitrator_->StartProviders(options);
+}
+
+void GeolocationProvider::StopProviders() {
+  DCHECK(OnGeolocationThread());
+  DCHECK(arbitrator_);
+  arbitrator_->StopProviders();
 }
 
 void GeolocationProvider::OnPermissionGranted(const GURL& requesting_frame) {

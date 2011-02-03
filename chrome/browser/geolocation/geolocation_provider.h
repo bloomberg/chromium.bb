@@ -36,9 +36,11 @@ class GeolocationProvider : public base::Thread, public GeolocationObserver {
   // but only a single call to RemoveObserver() is required to remove it.
   void AddObserver(GeolocationObserver* delegate,
                    const GeolocationObserverOptions& update_options);
+
   // Remove a previously registered observer. No-op if not previously registered
   // via AddObserver(). Returns true if the observer was removed.
   bool RemoveObserver(GeolocationObserver* delegate);
+
   void OnPermissionGranted(const GURL& requesting_frame);
   bool HasPermissionBeenGranted() const;
 
@@ -59,11 +61,22 @@ class GeolocationProvider : public base::Thread, public GeolocationObserver {
 
   bool OnClientThread() const;
   bool OnGeolocationThread() const;
+
+  // When the observer list changes, we may start the thread and the required
+  // providers, or stop them.
   void OnObserversChanged();
-  // Passes the observers' geolocation options through to the arbitrator.
-  void SetObserverOptions(const GeolocationObserverOptions& options);
+
+  // Stop the providers when there are no more observers. Note that once our
+  // thread is started, we'll keep it alive (but with no pending messages).
+  void StopProviders();
+
+  // Starts or updates the observers' geolocation options
+  // (delegates to arbitrator).
+  void StartProviders(const GeolocationObserverOptions& options);
+
   // Update the providers on the geolocation thread, which must be running.
   void InformProvidersPermissionGranted(const GURL& requesting_frame);
+
   // Notifies observers when a new position fix is available.
   void NotifyObservers(const Geoposition& position);
 

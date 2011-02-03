@@ -5,15 +5,30 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/geolocation/location_arbitrator.h"
 #include "chrome/browser/geolocation/mock_location_provider.h"
+#include "chrome/browser/geolocation/arbitrator_dependency_factories_for_test.h"
 
 class GeolocationApiTest : public ExtensionApiTest {
  public:
-  // InProcessBrowserTest
-  void SetUpInProcessBrowserTestFixture() {
-    ExtensionApiTest::SetUpInProcessBrowserTestFixture();
-    GeolocationArbitrator::SetProviderFactoryForTest(
-        &NewAutoSuccessMockLocationProvider);
+  GeolocationApiTest()
+      : dependency_factory_(
+          new GeolocationArbitratorDependencyFactoryWithLocationProvider(
+              &NewAutoSuccessMockLocationProvider)) {
   }
+
+  // InProcessBrowserTest
+  virtual void SetUpInProcessBrowserTestFixture() {
+    ExtensionApiTest::SetUpInProcessBrowserTestFixture();
+    GeolocationArbitrator::SetDependencyFactoryForTest(
+        dependency_factory_.get());
+  }
+
+  // InProcessBrowserTest
+  virtual void TearDownInProcessBrowserTestFixture() {
+    GeolocationArbitrator::SetDependencyFactoryForTest(NULL);
+  }
+
+ private:
+  scoped_refptr<GeolocationArbitratorDependencyFactory> dependency_factory_;
 };
 
 IN_PROC_BROWSER_TEST_F(GeolocationApiTest,
