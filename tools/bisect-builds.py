@@ -158,7 +158,7 @@ def TryRevision(rev, profile, args):
     sys.exit(-1)
 
   # Unzip the file.
-  print 'Unziping ...'
+  print 'Unzipping ...'
   UnzipFilenameToDir(BUILD_ZIP_NAME, os.curdir)
 
   # Tell the system to open the app.
