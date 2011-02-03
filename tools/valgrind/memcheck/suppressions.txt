@@ -3726,3 +3726,10 @@
    ...
    fun:_ZN7testing8TestInfo3RunEv
 }
+{
+   bug_71728
+   Memcheck:Leak
+   fun:_Znw*
+   fun:*DownloadFileTest5SetUpEv
+   fun:_ZN7testing35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
+}
