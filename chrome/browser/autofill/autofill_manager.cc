@@ -82,93 +82,13 @@ void RemoveDuplicateSuggestions(std::vector<string16>* values,
   unique_ids->swap(unique_ids_copy);
 }
 
-// Precondition: |form| should be the cached version of the form that is to be
-// autofilled, and |field| should be the field in the |form| that corresponds to
-// the initiating field. |is_filling_credit_card| should be true if filling
-// credit card data, false otherwise.
-// Fills |section_start| and |section_end| so that [section_start, section_end)
-// gives the bounds of logical section within |form| that includes |field|.
-// Logical sections are identified by two heuristics:
-//  1. The fields in the section must all be profile or credit card fields,
-//     depending on whether |is_filling_credit_card| is true.
-//  2. A logical section should not include multiple fields of the same autofill
-//     type (except for phone/fax numbers, as described below).
-void FindSectionBounds(const FormStructure& form,
-                       const AutoFillField& field,
-                       bool is_filling_credit_card,
-                       size_t* section_start,
-                       size_t* section_end) {
-  DCHECK(section_start);
-  DCHECK(section_end);
-
-  // By default, the relevant section is the entire form.
-  *section_start = 0;
-  *section_end = form.field_count();
-
-  std::set<AutoFillFieldType> seen_types;
-  bool initiating_field_is_in_current_section = false;
-  for (size_t i = 0; i < form.field_count(); ++i) {
-    const AutoFillField* current_field = form.field(i);
-    const AutoFillFieldType current_type =
-        AutoFillType::GetEquivalentFieldType(current_field->type());
-
-    // Fields of unknown type don't help us to distinguish sections.
-    if (current_type == UNKNOWN_TYPE)
-      continue;
-
-    bool already_saw_current_type = seen_types.count(current_type) > 0;
-    // Forms often ask for multiple phone numbers -- e.g. both a daytime and
-    // evening phone number.  Our phone and fax number detection is also
-    // generally a little off.  Hence, ignore both field types as a signal here.
-    AutoFillType::FieldTypeGroup current_type_group =
-        AutoFillType(current_type).group();
-    if (current_type_group == AutoFillType::PHONE_HOME ||
-        current_type_group == AutoFillType::PHONE_FAX)
-      already_saw_current_type = false;
-
-    // If we are filling credit card data, the relevant section should include
-    // only credit card fields; and similarly for profile data.
-    bool is_credit_card_field = current_type_group == AutoFillType::CREDIT_CARD;
-    bool is_appropriate_type = is_credit_card_field == is_filling_credit_card;
-
-    if (already_saw_current_type || !is_appropriate_type) {
-      if (initiating_field_is_in_current_section) {
-        // We reached the end of the section containing the initiating field.
-        *section_end = i;
-        break;
-      }
-
-      // We reached the end of a section, so start a new section.
-      seen_types.clear();
-
-      // Only include the current field in the new section if it matches the
-      // type of data we are filling.
-      if (is_appropriate_type) {
-        *section_start = i;
-      } else {
-        *section_start = i + 1;
-        continue;
-      }
-    }
-
-    seen_types.insert(current_type);
-
-    if (current_field == &field)
-      initiating_field_is_in_current_section = true;
-  }
-
-  // We should have found the initiating field.
-  DCHECK(initiating_field_is_in_current_section);
-}
-
 // Precondition: |form_structure| and |form| should correspond to the same
 // logical form. Returns true if the relevant portion of |form| is auto-filled.
-// The "relevant" fields in |form| are ones corresponding to fields in
-// |form_structure| with indices in the range [section_start, section_end).
-bool SectionIsAutoFilled(const FormStructure* form_structure,
-                         const webkit_glue::FormData& form,
-                         size_t section_start,
-                         size_t section_end) {
+// If |is_filling_credit_card|, the relevant portion is the credit card portion;
+// otherwise it is the address and contact info portion.
+bool FormIsAutoFilled(const FormStructure* form_structure,
+                      const webkit_glue::FormData& form,
+                      bool is_filling_credit_card) {
   // TODO(isherman): It would be nice to share most of this code with the loop
   // in |FillAutoFillFormData()|, but I don't see a particularly clean way to do
   // that.
@@ -177,8 +97,8 @@ bool SectionIsAutoFilled(const FormStructure* form_structure,
   // directly and we can fill these corresponding fields; however, when the
   // |form_structure| and |form.fields| do not match directly we search
   // ahead in the |form_structure| for the matching field.
-  for (size_t i = section_start, j = 0;
-       i < section_end && j < form.fields.size();
+  for (size_t i = 0, j = 0;
+       i < form_structure->field_count() && j < form.fields.size();
        j++) {
     size_t k = i;
 
@@ -193,7 +113,10 @@ bool SectionIsAutoFilled(const FormStructure* form_structure,
       continue;
 
     AutoFillType autofill_type(form_structure->field(k)->type());
-    if (form.fields[j].is_autofilled())
+    bool is_credit_card_field =
+        autofill_type.group() == AutoFillType::CREDIT_CARD;
+    if (is_filling_credit_card == is_credit_card_field &&
+        form.fields[j].is_autofilled())
       return true;
 
     // We found a matching field in the |form_structure| so we
@@ -360,15 +283,11 @@ void AutoFillManager::OnQueryFormFieldAutoFill(
         icons.assign(1, string16());
         unique_ids.assign(1, -1);
       } else {
-        size_t section_start, section_end;
-        FindSectionBounds(*form_structure, *autofill_field,
-                          is_filling_credit_card, &section_start, &section_end);
-        if (SectionIsAutoFilled(form_structure, form, section_start,
-                                section_end)) {
-          // If the relevant section is auto-filled and the renderer is querying
-          // for suggestions, then the user is editing the value of a field.
-          // In this case, mimic autocomplete: don't display labels or icons,
-          // as that information is redundant.
+        // If the form is auto-filled and the renderer is querying for
+        // suggestions, then the user is editing the value of a field. In this
+        // case, mimic autocomplete: don't display labels or icons, as that
+        // information is redundant.
+        if (FormIsAutoFilled(form_structure, form, is_filling_credit_card)) {
           labels.assign(labels.size(), string16());
           icons.assign(icons.size(), string16());
         }
@@ -437,33 +356,28 @@ void AutoFillManager::OnFillAutoFillFormData(int query_id,
   if (!profile && !credit_card)
     return;
 
-  // Find the section of the form that we are autofilling.
-  size_t section_start, section_end;
-  FindSectionBounds(*form_structure, *autofill_field, (credit_card != NULL),
-                    &section_start, &section_end);
-
   FormData result = form;
 
-  // If the relevant section is auto-filled, we should fill |field| but not the
-  // rest of the form.
-  if (SectionIsAutoFilled(form_structure, form, section_start, section_end)) {
+  // If the form is auto-filled, we should fill |field| but not the rest of the
+  // form.
+  if (FormIsAutoFilled(form_structure, form, (credit_card != NULL))) {
     for (std::vector<FormField>::iterator iter = result.fields.begin();
          iter != result.fields.end(); ++iter) {
       if ((*iter) == field) {
         AutoFillType autofill_type(autofill_field->type());
-        if (profile) {
-          DCHECK(autofill_type.group() != AutoFillType::CREDIT_CARD);
-          FillFormField(profile, autofill_type, &(*iter));
-        } else {
-          DCHECK(autofill_type.group() == AutoFillType::CREDIT_CARD);
+        if (credit_card &&
+            autofill_type.group() == AutoFillType::CREDIT_CARD) {
           FillCreditCardFormField(credit_card, autofill_type, &(*iter));
+        } else if (profile &&
+                   autofill_type.group() != AutoFillType::CREDIT_CARD) {
+          FillFormField(profile, autofill_type, &(*iter));
         }
         break;
       }
     }
 
-    host->Send(new AutoFillMsg_FormDataFilled(host->routing_id(), query_id,
-                                              result));
+    host->Send(new AutoFillMsg_FormDataFilled(
+        host->routing_id(), query_id, result));
     return;
   }
 
@@ -473,30 +387,30 @@ void AutoFillManager::OnFillAutoFillFormData(int query_id,
   // ahead in the |form_structure| for the matching field.
   // See unit tests: AutoFillManagerTest.FormChangesRemoveField and
   // AutoFillManagerTest.FormChangesAddField for usage.
-  for (size_t i = section_start, j = 0;
-       i < section_end && j < result.fields.size();
+  for (size_t i = 0, j = 0;
+       i < form_structure->field_count() && j < result.fields.size();
        j++) {
     size_t k = i;
 
     // Search forward in the |form_structure| for a corresponding field.
-    while (k < section_end && *form_structure->field(k) != result.fields[j]) {
+    while (k < form_structure->field_count() &&
+           *form_structure->field(k) != result.fields[j]) {
       k++;
     }
 
     // If we've found a match then fill the |result| field with the found
     // field in the |form_structure|.
-    if (k >= section_end)
+    if (k >= form_structure->field_count())
       continue;
 
-    AutoFillType autofill_type(form_structure->field(k)->type());
-    if (autofill_type.group() != AutoFillType::NO_GROUP) {
-      if (profile) {
-        DCHECK(autofill_type.group() != AutoFillType::CREDIT_CARD);
-        FillFormField(profile, autofill_type, &result.fields[j]);
-      } else {
-        DCHECK(autofill_type.group() == AutoFillType::CREDIT_CARD);
-        FillCreditCardFormField(credit_card, autofill_type, &result.fields[j]);
-      }
+    const AutoFillField* field = form_structure->field(k);
+    AutoFillType autofill_type(field->type());
+    if (credit_card &&
+        autofill_type.group() == AutoFillType::CREDIT_CARD) {
+      FillCreditCardFormField(credit_card, autofill_type, &result.fields[j]);
+    } else if (profile &&
+               autofill_type.group() != AutoFillType::CREDIT_CARD) {
+      FillFormField(profile, autofill_type, &result.fields[j]);
     }
 
     // We found a matching field in the |form_structure| so we

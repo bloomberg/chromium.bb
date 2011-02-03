@@ -323,25 +323,25 @@ void ExpectFilledForm(int page_id,
         "Middle Name", "middlename", middle, "text", &field);
     EXPECT_TRUE(field.StrictlyEqualsHack(filled_form.fields[1]));
     autofill_test::CreateTestFormField(
-        "Last Name", "lastname", last, "text", &field);
+         "Last Name", "lastname", last, "text", &field);
     EXPECT_TRUE(field.StrictlyEqualsHack(filled_form.fields[2]));
     autofill_test::CreateTestFormField(
-        "Address Line 1", "addr1", address1, "text", &field);
+         "Address Line 1", "addr1", address1, "text", &field);
     EXPECT_TRUE(field.StrictlyEqualsHack(filled_form.fields[3]));
     autofill_test::CreateTestFormField(
-        "Address Line 2", "addr2", address2, "text", &field);
+         "Address Line 2", "addr2", address2, "text", &field);
     EXPECT_TRUE(field.StrictlyEqualsHack(filled_form.fields[4]));
     autofill_test::CreateTestFormField(
-        "City", "city", city, "text", &field);
+         "City", "city", city, "text", &field);
     EXPECT_TRUE(field.StrictlyEqualsHack(filled_form.fields[5]));
     autofill_test::CreateTestFormField(
-        "State", "state", state, "text", &field);
+         "State", "state", state, "text", &field);
     EXPECT_TRUE(field.StrictlyEqualsHack(filled_form.fields[6]));
     autofill_test::CreateTestFormField(
-        "Postal Code", "zipcode", postal_code, "text", &field);
+         "Postal Code", "zipcode", postal_code, "text", &field);
     EXPECT_TRUE(field.StrictlyEqualsHack(filled_form.fields[7]));
     autofill_test::CreateTestFormField(
-        "Country", "country", country, "text", &field);
+         "Country", "country", country, "text", &field);
     EXPECT_TRUE(field.StrictlyEqualsHack(filled_form.fields[8]));
     autofill_test::CreateTestFormField(
         "Phone Number", "phonenumber", phone, "text", &field);
@@ -350,7 +350,7 @@ void ExpectFilledForm(int page_id,
         "Fax", "fax", fax, "text", &field);
     EXPECT_TRUE(field.StrictlyEqualsHack(filled_form.fields[10]));
     autofill_test::CreateTestFormField(
-        "Email", "email", email, "text", &field);
+         "Email", "email", email, "text", &field);
     EXPECT_TRUE(field.StrictlyEqualsHack(filled_form.fields[11]));
     autofill_test::CreateTestFormField(
          "Email", "email2", email, "email", &field);
@@ -1467,8 +1467,9 @@ TEST_F(AutoFillManagerTest, FillAddressAndCreditCardForm) {
 
   // First fill the address data.
   std::string guid = autofill_manager_->GetLabeledProfile("Home")->guid();
-  FillAutoFillFormData(kDefaultPageID, form, form.fields[0],
-                       autofill_manager_->PackGUIDs(std::string(), guid));
+  FillAutoFillFormData(
+      kDefaultPageID, form, form.fields[0],
+      autofill_manager_->PackGUIDs(std::string(), guid));
 
   int page_id = 0;
   FormData results;
@@ -1490,77 +1491,6 @@ TEST_F(AutoFillManagerTest, FillAddressAndCreditCardForm) {
   {
     SCOPED_TRACE("Credit card");
     ExpectFilledCreditCardFormElvis(page_id, results, kPageID2, true);
-  }
-}
-
-// Test that we correctly fill a form that has multiple logical sections, e.g.
-// both a billing and a shipping address.
-TEST_F(AutoFillManagerTest, FillFormWithMultipleSections) {
-  // Set up our form data.
-  FormData form;
-  CreateTestAddressFormData(&form);
-  const size_t kAddressFormSize = form.fields.size();
-  CreateTestAddressFormData(&form);
-  for (size_t i = kAddressFormSize; i < form.fields.size(); ++i) {
-    // Make sure the fields have distinct names.
-    form.fields[i].set_name(form.fields[i].name() + ASCIIToUTF16("_"));
-  }
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
-
-  // Fill the first section.
-  std::string guid = autofill_manager_->GetLabeledProfile("Home")->guid();
-  FillAutoFillFormData(kDefaultPageID, form, form.fields[0],
-                       autofill_manager_->PackGUIDs(std::string(), guid));
-
-  int page_id = 0;
-  FormData results;
-  EXPECT_TRUE(GetAutoFillFormDataFilledMessage(&page_id, &results));
-  {
-    SCOPED_TRACE("Address 1");
-
-    // The second address section should be empty.
-    ASSERT_EQ(results.fields.size(), 2*kAddressFormSize);
-    for (size_t i = kAddressFormSize; i < form.fields.size(); ++i) {
-      EXPECT_EQ(string16(), results.fields[i].value());
-    }
-
-    // The first address section should be filled with Elvis's data.
-    results.fields.resize(kAddressFormSize);
-    ExpectFilledAddressFormElvis(page_id, results, kDefaultPageID, false);
-  }
-
-  // Fill the second section, with the initiating field somewhere in the middle
-  // of the section.
-  const int kPageID2 = 2;
-  guid = autofill_manager_->GetLabeledProfile("Home")->guid();
-  ASSERT_LT(9U, kAddressFormSize);
-  FillAutoFillFormData(kPageID2, form, form.fields[kAddressFormSize + 9],
-                       autofill_manager_->PackGUIDs(std::string(), guid));
-
-  page_id = 0;
-  EXPECT_TRUE(GetAutoFillFormDataFilledMessage(&page_id, &results));
-  {
-    SCOPED_TRACE("Address 2");
-    ASSERT_EQ(results.fields.size(), form.fields.size());
-
-    // The first address section should be empty.
-    ASSERT_EQ(results.fields.size(), 2*kAddressFormSize);
-    for (size_t i = 0; i < kAddressFormSize; ++i) {
-      EXPECT_EQ(string16(), results.fields[i].value());
-    }
-
-    // The second address section should be filled with Elvis's data.
-    FormData secondSection = results;
-    secondSection.fields.erase(secondSection.fields.begin(),
-                               secondSection.fields.begin() + kAddressFormSize);
-    for (size_t i = 0; i < kAddressFormSize; ++i) {
-      // Restore the expected field names.
-      string16 name = secondSection.fields[i].name();
-      string16 original_name = name.substr(0, name.size() - 1);
-      secondSection.fields[i].set_name(original_name);
-    }
-    ExpectFilledAddressFormElvis(page_id, secondSection, kPageID2, false);
   }
 }
 
