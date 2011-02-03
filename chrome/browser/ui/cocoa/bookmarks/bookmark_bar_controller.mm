@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/metrics/user_metrics.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
@@ -38,6 +39,7 @@
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #import "chrome/browser/ui/cocoa/view_resizer.h"
+#include "chrome/common/pref_names.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -934,7 +936,9 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   // If this is an incognito window, don't allow "open in incognito".
   if ((action == @selector(openBookmarkInIncognitoWindow:)) ||
       (action == @selector(openAllBookmarksIncognitoWindow:))) {
-    if (browser_->profile()->IsOffTheRecord()) {
+    Profile* profile = browser_->profile();
+    if (profile->IsOffTheRecord() ||
+        !profile->GetPrefs()->GetBoolean(prefs::kIncognitoEnabled)) {
       return NO;
     }
   }
