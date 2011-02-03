@@ -16,13 +16,13 @@
 #include "base/timer.h"
 #include "chrome/browser/sync/engine/nudge_source.h"
 #include "chrome/browser/sync/engine/polling_constants.h"
+#include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/sessions/sync_session_context.h"
 
 namespace browser_sync {
 
 struct ServerConnectionEvent;
-class Syncer;
 
 namespace s3 {
 
@@ -65,6 +65,7 @@ class SyncerThread : public sessions::SyncSession::Delegate {
       const sessions::TypePayloadMap& types_with_payloads);
   void ScheduleConfig(const base::TimeDelta& delay,
                       const syncable::ModelTypeBitSet& types);
+  void ScheduleClearUserData();
 
   // Change status of notifications in the SyncSessionContext.
   void set_notifications_enabled(bool notifications_enabled);
@@ -97,6 +98,9 @@ class SyncerThread : public sessions::SyncSession::Delegate {
     // A nudge task can come from a variety of components needing to force
     // a sync.  The source is inferable from |session.source()|.
     NUDGE,
+    // The user invoked a function in the UI to clear their entire account
+    // and stop syncing (globally).
+    CLEAR_USER_DATA,
     // Typically used for fetching updates for a subset of the enabled types
     // during initial sync or reconfiguration.  We don't run all steps of
     // the sync cycle for these (e.g. CleanupDisabledTypes is skipped).
@@ -153,6 +157,7 @@ class SyncerThread : public sessions::SyncSession::Delegate {
   void ScheduleConfigImpl(const base::TimeDelta& delay,
                           const ModelSafeRoutingInfo& routing_info,
                           const std::vector<ModelSafeWorker*>& workers);
+  void ScheduleClearUserDataImpl();
 
   // Returns true if the client is currently in exponential backoff.
   bool IsBackingOff() const;
@@ -170,6 +175,12 @@ class SyncerThread : public sessions::SyncSession::Delegate {
 
   // Creates a session for a poll and performs the sync.
   void PollTimerCallback();
+
+  // Assign |start| and |end| to appropriate SyncerStep values for the
+  // specified |purpose|.
+  void SetSyncerStepsForPurpose(SyncSessionJobPurpose purpose,
+                                SyncerStep* start,
+                                SyncerStep* end);
 
   base::Thread thread_;
 

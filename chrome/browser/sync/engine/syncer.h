@@ -56,7 +56,7 @@ enum SyncerStep {
   BUILD_AND_PROCESS_CONFLICT_SETS,
   RESOLVE_CONFLICTS,
   APPLY_UPDATES_TO_RESOLVE_CONFLICTS,
-  CLEAR_PRIVATE_DATA,
+  CLEAR_PRIVATE_DATA,  // TODO(tim): Rename 'private' to 'user'.
   SYNCER_END
 };
 
@@ -84,22 +84,21 @@ class Syncer {
   bool ExitRequested();
   void RequestEarlyExit();
 
+  // TODO(tim): Deprecated.
   // Cause one sync cycle to occur.  Like a good parent, it is the caller's
   // responsibility to clean up after the syncer when it finishes a sync share
   // operation and honor server mandated throttles.
   virtual void SyncShare(sessions::SyncSession* session);
 
+  // Like SyncShare() above, but |first_step| and |last_step| are provided to
+  // perform a partial sync cycle, stopping after |last_step| is performed.
+  virtual void SyncShare(sessions::SyncSession* session,
+                         SyncerStep first_step,
+                         SyncerStep last_step);
+
  private:
   // Implements the PROCESS_CLIENT_COMMAND syncer step.
   void ProcessClientCommand(sessions::SyncSession *session);
-
-  // This is the bottom-most SyncShare variant, and does not cause transient
-  // state to be reset in session.
-  // Like SyncShare(), but |first_step| and |last_step| are provided to perform
-  // a partial sync cycle, stopping after |last_step| is performed.
-  void SyncShare(sessions::SyncSession* session,
-                 SyncerStep first_step,
-                 SyncerStep last_step);
 
   bool early_exit_requested_;
   base::Lock early_exit_requested_lock_;

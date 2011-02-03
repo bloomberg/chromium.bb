@@ -8,19 +8,22 @@ namespace browser_sync {
 namespace sessions {
 namespace test_util {
 
-void SimulateHasMoreToSync(sessions::SyncSession* session) {
+void SimulateHasMoreToSync(sessions::SyncSession* session,
+                           SyncerStep begin, SyncerStep end) {
   session->status_controller()->update_conflicts_resolved(true);
   ASSERT_TRUE(session->HasMoreToSync());
 }
 
-void SimulateDownloadUpdatesFailed(sessions::SyncSession* session) {
+void SimulateDownloadUpdatesFailed(sessions::SyncSession* session,
+                                   SyncerStep begin, SyncerStep end) {
   // Note that a non-zero value of changes_remaining once a session has
   // completed implies that the Syncer was unable to exhaust this count during
   // the GetUpdates cycle.  This is an indication that an error occurred.
   session->status_controller()->set_num_server_changes_remaining(1);
 }
 
-void SimulateCommitFailed(sessions::SyncSession* session) {
+void SimulateCommitFailed(sessions::SyncSession* session,
+                          SyncerStep begin, SyncerStep end) {
   // Note that a non-zero number of unsynced handles once a session has
   // completed implies that the Syncer was unable to make forward progress
   // during a commit, indicating an error occurred.
@@ -30,7 +33,8 @@ void SimulateCommitFailed(sessions::SyncSession* session) {
   session->status_controller()->set_unsynced_handles(handles);
 }
 
-void SimulateSuccess(sessions::SyncSession* session) {
+void SimulateSuccess(sessions::SyncSession* session,
+                     SyncerStep begin, SyncerStep end) {
   if (session->HasMoreToSync()) {
     ADD_FAILURE() << "Shouldn't have more to sync";
   }

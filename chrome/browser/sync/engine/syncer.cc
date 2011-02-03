@@ -70,6 +70,7 @@ void Syncer::RequestEarlyExit() {
   early_exit_requested_ = true;
 }
 
+// TODO(tim): Deprecated.
 void Syncer::SyncShare(sessions::SyncSession* session) {
   ScopedDirLookup dir(session->context()->directory_manager(),
                       session->context()->account_name());
@@ -82,17 +83,6 @@ void Syncer::SyncShare(sessions::SyncSession* session) {
     SyncShare(session, CLEAR_PRIVATE_DATA, SYNCER_END);
     return;
   } else {
-    // This isn't perfect, as we can end up bundling extensions activity
-    // intended for the next session into the current one.  We could do a
-    // test-and-reset as with the source, but note that also falls short if
-    // the commit request fails (e.g. due to lost connection), as we will
-    // fall all the way back to the syncer thread main loop in that case, and
-    // wind up creating a new session when a connection is established, losing
-    // the records set here on the original attempt.  This should provide us
-    // with the right data "most of the time", and we're only using this for
-    // analysis purposes, so Law of Large Numbers FTW.
-    session->context()->extensions_monitor()->GetAndClearRecords(
-        session->mutable_extensions_activity());
     SyncShare(session, SYNCER_BEGIN, SYNCER_END);
   }
 }
@@ -100,6 +90,11 @@ void Syncer::SyncShare(sessions::SyncSession* session) {
 void Syncer::SyncShare(sessions::SyncSession* session,
                        const SyncerStep first_step,
                        const SyncerStep last_step) {
+  ScopedDirLookup dir(session->context()->directory_manager(),
+                      session->context()->account_name());
+  // The directory must be good here.
+  CHECK(dir.good());
+
   ScopedSessionContextConflictResolver scoped(session->context(),
                                               &resolver_);
   SyncerStep current_step = first_step;
@@ -109,6 +104,17 @@ void Syncer::SyncShare(sessions::SyncSession* session,
     switch (current_step) {
       case SYNCER_BEGIN:
         VLOG(1) << "Syncer Begin";
+        // This isn't perfect, as we can end up bundling extensions activity
+        // intended for the next session into the current one.  We could do a
+        // test-and-reset as with the source, but note that also falls short if
+        // the commit request fails (e.g. due to lost connection), as we will
+        // fall all the way back to the syncer thread main loop in that case,
+        // creating a new session when a connection is established, losing the
+        // records set here on the original attempt.  This should provide us
+        // with the right data "most of the time", and we're only using this
+        // for analysis purposes, so Law of Large Numbers FTW.
+        session->context()->extensions_monitor()->GetAndClearRecords(
+            session->mutable_extensions_activity());
         next_step = CLEANUP_DISABLED_TYPES;
         break;
       case CLEANUP_DISABLED_TYPES: {

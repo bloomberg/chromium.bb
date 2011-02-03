@@ -18,9 +18,6 @@ enum NudgeSource {
   NUDGE_SOURCE_LOCAL,
   // A previous sync cycle did not fully complete (e.g. HTTP error).
   NUDGE_SOURCE_CONTINUATION,
-  // A nudge corresponding to the user invoking a function in the UI to clear
-  // their entire account and stop syncing (globally).
-  NUDGE_SOURCE_CLEAR_PRIVATE_DATA,
 };
 
 }  // namespace s3

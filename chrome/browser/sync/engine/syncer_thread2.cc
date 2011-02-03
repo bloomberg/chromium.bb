@@ -102,6 +102,8 @@ bool SyncerThread::ShouldRunJob(SyncSessionJobPurpose purpose,
 
   // Check wait interval.
   if (wait_interval_.get()) {
+    // TODO(tim): Consider different handling for CLEAR_USER_DATA (i.e. permit
+    // when throttled).
     if (wait_interval_->mode == WaitInterval::THROTTLED)
       return false;
 
@@ -121,7 +123,7 @@ bool SyncerThread::ShouldRunJob(SyncSessionJobPurpose purpose,
         return false;
       break;
     case NORMAL_MODE:
-      if (purpose != POLL && purpose != NUDGE)
+      if (purpose == CONFIGURATION)
         return false;
       break;
     default:
@@ -158,10 +160,10 @@ GetUpdatesCallerInfo::GetUpdatesSource GetUpdatesFromNudgeSource(
       return GetUpdatesCallerInfo::LOCAL;
     case NUDGE_SOURCE_CONTINUATION:
       return GetUpdatesCallerInfo::SYNC_CYCLE_CONTINUATION;
-    case NUDGE_SOURCE_CLEAR_PRIVATE_DATA:
-      return GetUpdatesCallerInfo::CLEAR_PRIVATE_DATA;
     case NUDGE_SOURCE_UNKNOWN:
+      return GetUpdatesCallerInfo::UNKNOWN;
     default:
+      NOTREACHED();
       return GetUpdatesCallerInfo::UNKNOWN;
   }
 }
@@ -175,6 +177,15 @@ struct WorkerGroupIs {
   ModelSafeGroup group;
 };
 }  // namespace
+
+void SyncerThread::ScheduleClearUserData() {
+  if (!thread_.IsRunning()) {
+    NOTREACHED();
+    return;
+  }
+  thread_.message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
+      this, &SyncerThread::ScheduleClearUserDataImpl));
+}
 
 void SyncerThread::ScheduleNudge(const TimeDelta& delay,
     NudgeSource source, const ModelTypeBitSet& types) {
@@ -202,12 +213,18 @@ void SyncerThread::ScheduleNudgeWithPayloads(const TimeDelta& delay,
       types_with_payloads));
 }
 
+void SyncerThread::ScheduleClearUserDataImpl() {
+  DCHECK_EQ(MessageLoop::current(), thread_.message_loop());
+  SyncSession* session = new SyncSession(session_context_.get(), this,
+      SyncSourceInfo(), ModelSafeRoutingInfo(),
+      std::vector<ModelSafeWorker*>());
+  ScheduleSyncSessionJob(TimeDelta::FromSeconds(0), CLEAR_USER_DATA, session);
+}
+
 void SyncerThread::ScheduleNudgeImpl(const TimeDelta& delay,
     NudgeSource source, const TypePayloadMap& types_with_payloads) {
   DCHECK_EQ(MessageLoop::current(), thread_.message_loop());
   TimeTicks rough_start = TimeTicks::Now() + delay;
-  if (!ShouldRunJob(NUDGE, rough_start))
-    return;
 
   // Note we currently nudge for all types regardless of the ones incurring
   // the nudge.  Doing different would throw off some syncer commands like
@@ -308,6 +325,26 @@ void SyncerThread::ScheduleSyncSessionJob(const base::TimeDelta& delay,
       &SyncerThread::DoSyncSessionJob, job), delay.InMilliseconds());
 }
 
+void SyncerThread::SetSyncerStepsForPurpose(SyncSessionJobPurpose purpose,
+    SyncerStep* start, SyncerStep* end) {
+  *end = SYNCER_END;
+  switch (purpose) {
+    case CONFIGURATION:
+      *start = DOWNLOAD_UPDATES;
+      *end = APPLY_UPDATES;
+      return;
+    case CLEAR_USER_DATA:
+      *start = CLEAR_PRIVATE_DATA;
+       return;
+    case NUDGE:
+    case POLL:
+      *start = SYNCER_BEGIN;
+      return;
+    default:
+      NOTREACHED();
+  }
+}
+
 void SyncerThread::DoSyncSessionJob(const SyncSessionJob& job) {
   DCHECK_EQ(MessageLoop::current(), thread_.message_loop());
 
@@ -316,9 +353,11 @@ void SyncerThread::DoSyncSessionJob(const SyncSessionJob& job) {
     if (pending_nudge_->session != job.session)
       return;  // Another nudge must have been scheduled in in the meantime.
     pending_nudge_.reset();
-  } else if (job.purpose == CONFIGURATION) {
-    NOTIMPLEMENTED() << "TODO(tim): SyncShare [DOWNLOAD_UPDATES,APPLY_UPDATES]";
   }
+
+  SyncerStep begin(SYNCER_BEGIN);
+  SyncerStep end(SYNCER_END);
+  SetSyncerStepsForPurpose(job.purpose, &begin, &end);
 
   bool has_more_to_sync = true;
   bool did_job = false;
@@ -326,7 +365,7 @@ void SyncerThread::DoSyncSessionJob(const SyncSessionJob& job) {
     VLOG(1) << "SyncerThread: Calling SyncShare.";
     did_job = true;
     // Synchronously perform the sync session from this thread.
-    syncer_->SyncShare(job.session.get());
+    syncer_->SyncShare(job.session.get(), begin, end);
     has_more_to_sync = job.session->HasMoreToSync();
     if (has_more_to_sync)
       job.session->ResetTransientState();
@@ -375,7 +414,11 @@ void SyncerThread::ScheduleNextSync(const SyncSessionJob& old_job) {
 
   // TODO(tim): Old impl had special code if notifications disabled. Needed?
   if (!work_to_do) {
-    wait_interval_.reset();  // Success implies backoff relief.
+    // Success implies backoff relief.  Note that if this was a "one-off" job
+    // (i.e. purpose == CLEAR_USER_DATA), if there was work_to_do before it
+    // ran this wont have changed, as jobs like this don't run a full sync
+    // cycle.  So we don't need special code here.
+    wait_interval_.reset();
     return;
   }
 

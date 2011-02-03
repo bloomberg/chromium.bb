@@ -7,6 +7,7 @@
 #define CHROME_BROWSER_SYNC_SESSIONS_TEST_UTIL_H_
 #pragma once
 
+#include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -15,10 +16,14 @@ namespace browser_sync {
 namespace sessions {
 namespace test_util {
 
-void SimulateHasMoreToSync(sessions::SyncSession* session);
-void SimulateDownloadUpdatesFailed(sessions::SyncSession* session);
-void SimulateCommitFailed(sessions::SyncSession* session);
-void SimulateSuccess(sessions::SyncSession* session);
+void SimulateHasMoreToSync(sessions::SyncSession* session,
+                           SyncerStep begin, SyncerStep end);
+void SimulateDownloadUpdatesFailed(sessions::SyncSession* session,
+                                   SyncerStep begin, SyncerStep end);
+void SimulateCommitFailed(sessions::SyncSession* session,
+                          SyncerStep begin, SyncerStep end);
+void SimulateSuccess(sessions::SyncSession* session,
+                     SyncerStep begin, SyncerStep end);
 void SimulateThrottledImpl(sessions::SyncSession* session,
     const base::TimeDelta& delta);
 void SimulatePollIntervalUpdateImpl(sessions::SyncSession* session,
