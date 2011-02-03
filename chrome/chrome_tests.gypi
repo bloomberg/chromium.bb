@@ -1176,6 +1176,7 @@
         'browser/dom_ui/dom_ui_unittest.cc',
         'browser/dom_ui/html_dialog_tab_contents_delegate_unittest.cc',
         'browser/dom_ui/options/language_options_handler_unittest.cc',
+        'browser/dom_ui/print_preview_ui_html_source_unittest.cc',
         'browser/dom_ui/shown_sections_handler_unittest.cc',
         'browser/dom_ui/sync_internals_ui_unittest.cc',
         'browser/dom_ui/web_ui_theme_source_unittest.cc',
@@ -1776,6 +1777,9 @@
              }],
            ],
           'sources/': [
+            # TODO(thestig) Enable PrintPreviewUIHTMLSource tests on CrOS when
+            # print preview is enabled on CrOS.
+            ['exclude', 'browser/dom_ui/print_preview_ui_html_source_unittest.cc'],
             ['exclude', 'browser/notifications/desktop_notifications_unittest.cc'],
           ],
         }, { # else: chromeos == 0

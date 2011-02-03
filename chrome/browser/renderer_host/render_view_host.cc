@@ -15,8 +15,6 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/cross_site_request_manager.h"
 #include "chrome/browser/debugger/devtools_manager.h"
@@ -25,9 +23,6 @@
 #include "chrome/browser/in_process_webkit/session_storage_namespace.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/predictor_api.h"
-#include "chrome/browser/printing/printer_query.h"
-#include "chrome/browser/printing/print_job_manager.h"
-#include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
@@ -820,8 +815,6 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowPopup, OnMsgShowPopup)
 #endif
-    IPC_MESSAGE_HANDLER(ViewHostMsg_PagesReadyForPreview,
-                        OnPagesReadyForPreview)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CommandStateChanged,
                         OnCommandStateChanged)
     // Have the super handle all other messages.
@@ -1707,55 +1700,6 @@ void RenderViewHost::OnMsgShowPopup(
   }
 }
 #endif
-
-TabContents* RenderViewHost::GetOrCreatePrintPreviewTab() {
-  TabContents* initiator_tab = delegate_ ? delegate_->GetAsTabContents() : NULL;
-  if (initiator_tab) {
-    // Get/Create preview tab for initiator tab.
-    printing::PrintPreviewTabController* tab_controller =
-        printing::PrintPreviewTabController::GetInstance();
-    if (tab_controller)
-      return tab_controller->GetOrCreatePreviewTab(
-        initiator_tab, delegate_->GetBrowserWindowID());
-  }
-  return NULL;
-}
-
-void RenderViewHost::OnPagesReadyForPreview(
-    const ViewHostMsg_DidPreviewDocument_Params& params) {
-#if defined(OS_MACOSX)
-  base::SharedMemory shared_buf(params.metafile_data_handle, true);
-  if (!shared_buf.Map(params.data_size)) {
-    NOTREACHED();
-    return;
-  }
-  scoped_ptr<printing::NativeMetafile> metafile(new printing::NativeMetafile());
-  if (!metafile->Init(shared_buf.memory(), params.data_size)) {
-    NOTREACHED();
-    return;
-  }
-
-  // TODO(kmadhusu): Add more functionality for the preview tab to access this
-  // |metafile| data.
-#endif
-
-  // Get/Create print preview tab.
-  TabContents* print_preview_tab = GetOrCreatePrintPreviewTab();
-  DCHECK(print_preview_tab);
-
-  scoped_refptr<printing::PrinterQuery> printer_query;
-  g_browser_process->print_job_manager()->PopPrinterQuery(
-      params.document_cookie, &printer_query);
-  if (printer_query.get()) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(printer_query.get(),
-                          &printing::PrinterQuery::StopWorker));
-  }
-
-  // Send the printingDone msg for now.
-  Send(new ViewMsg_PrintingDone(routing_id(), params.document_cookie, true));
-}
 
 void RenderViewHost::OnCommandStateChanged(int command,
                                            bool is_enabled,

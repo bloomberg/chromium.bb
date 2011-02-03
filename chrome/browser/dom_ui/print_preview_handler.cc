@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,8 +22,7 @@ void PrintPreviewHandler::RegisterMessages() {
 }
 
 void PrintPreviewHandler::HandleGetPreview(const ListValue*) {
-  // TODO(thestig) Hook this up properly when PDF generation works.
-  StringValue dummy_url("chrome://print/dummy.pdf");
+  StringValue dummy_url("chrome://print/print.pdf");
   dom_ui_->CallJavascriptFunction(L"createPDFPlugin", dummy_url);
 }
 

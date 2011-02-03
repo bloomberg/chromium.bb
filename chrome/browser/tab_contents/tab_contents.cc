@@ -54,6 +54,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_plt_recorder.h"
+#include "chrome/browser/printing/print_preview_message_handler.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -268,6 +269,8 @@ TabContents::TabContents(Profile* profile,
       registrar_(),
       ALLOW_THIS_IN_INITIALIZER_LIST(printing_(
           new printing::PrintViewManager(*this))),
+      ALLOW_THIS_IN_INITIALIZER_LIST(print_preview_(
+          new printing::PrintPreviewMessageHandler(this))),
       save_package_(),
       autocomplete_history_manager_(),
       autofill_manager_(),
@@ -381,6 +384,7 @@ TabContents::TabContents(Profile* profile,
   AddObserver(desktop_notification_handler_.get());
   plugin_observer_.reset(new PluginObserver(this));
   AddObserver(plugin_observer_.get());
+  AddObserver(print_preview_.get());
 }
 
 TabContents::~TabContents() {

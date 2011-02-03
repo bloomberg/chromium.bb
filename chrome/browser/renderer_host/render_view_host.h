@@ -35,7 +35,6 @@ class RenderViewHostDelegate;
 class SessionStorageNamespace;
 class SiteInstance;
 class SkBitmap;
-class TabContents;
 class ViewMsg_Navigate;
 struct ContentSettings;
 struct ContextMenuParams;
@@ -43,11 +42,8 @@ struct MediaPlayerAction;
 struct ThumbnailScore;
 struct ViewHostMsg_AccessibilityNotification_Params;
 struct ViewHostMsg_CreateWindow_Params;
-struct ViewHostMsg_DidPreviewDocument_Params;
-struct ViewHostMsg_DidPrintPage_Params;
 struct ViewHostMsg_DomMessage_Params;
 struct ViewHostMsg_PageHasOSDD_Type;
-struct ViewHostMsg_RunFileChooser_Params;
 struct ViewHostMsg_ShowPopup_Params;
 struct ViewMsg_Navigate_Params;
 struct WebApplicationInfo;
@@ -646,8 +642,6 @@ class RenderViewHost : public RenderWidgetHost {
                           bool remember);
   void OnDetectedPhishingSite(const GURL& phishing_url, double phishing_score);
   void OnScriptEvalResponse(int id, const ListValue& result);
-  void OnPagesReadyForPreview(
-      const ViewHostMsg_DidPreviewDocument_Params& params);
   void OnCommandStateChanged(int command,
                              bool is_enabled,
                              int checked_state);
@@ -658,9 +652,6 @@ class RenderViewHost : public RenderWidgetHost {
 
  private:
   friend class TestRenderViewHost;
-
-  // Get/Create print preview tab.
-  TabContents* GetOrCreatePrintPreviewTab();
 
   // The SiteInstance associated with this RenderViewHost.  All pages drawn
   // in this RenderViewHost are part of this SiteInstance.  Should not change

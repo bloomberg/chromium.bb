@@ -50,6 +50,7 @@ class HistoryAddPageArgs;
 }
 
 namespace printing {
+class PrintPreviewMessageHandler;
 class PrintViewManager;
 }
 
@@ -1054,8 +1055,11 @@ class TabContents : public PageNavigator,
   // Registers and unregisters for pref notifications.
   PrefChangeRegistrar pref_change_registrar_;
 
-  // Handles print preview and print job for this contents.
+  // Handles print job for this contents.
   scoped_ptr<printing::PrintViewManager> printing_;
+
+  // Handles print preview for this contents.
+  scoped_ptr<printing::PrintPreviewMessageHandler> print_preview_;
 
   // SavePackage, lazily created.
   scoped_refptr<SavePackage> save_package_;
