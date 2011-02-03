@@ -3455,13 +3455,36 @@
    fun:_ZN7WebCore11RenderBlock37computeBlockDirectionPositionsForLineEPNS_13RootInlineBoxEPNS_7BidiRunERN3WTF7HashMapIPKNS_13InlineTextBoxESt4pairINS5_6VectorIPKNS_14SimpleFontDataELj0EEENS_13GlyphOverflowEENS5_7PtrHashIS9_EENS5_10HashTraitsIS9_EENSK_ISH_EEEERNS_21VerticalPositionCacheE
 }
 {
-   bug_66853
+   bug_66853_a
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN11ProfileImpl14GetHostZoomMapEv
    fun:_ZN30ChromeURLRequestContextFactoryC2EP7Profile
-   fun:_ZN77_GLOBAL__N_chrome_browser_net_chrome_url_request_context.cc_00000000_0FB246EB18FactoryForOriginalC1EP7ProfileRK8FilePathS5_i
-   fun:_ZN29ChromeURLRequestContextGetter14CreateOriginalEP7ProfileRK8FilePathS4_i
+   fun:_ZN77_GLOBAL__N_chrome_browser_net_chrome_url_request_context.cc_00000000_26E4392D18FactoryForOriginalC1EP7ProfilePK13ProfileIOData
+   fun:_ZN29ChromeURLRequestContextGetter14CreateOriginalEP7ProfilePK13ProfileIOData
+   fun:_ZNK13ProfileIOData6Handle27GetMainRequestContextGetterEv
+   fun:_ZN11ProfileImpl17GetRequestContextEv
+   fun:_ZN19SafeBrowsingService5StartEv
+   fun:_ZN19SafeBrowsingService10InitializeEv
+   fun:_ZN22ResourceDispatcherHost10InitializeEv
+   fun:_ZN18BrowserProcessImpl28CreateResourceDispatcherHostEv
+   fun:_ZN18BrowserProcessImpl24resource_dispatcher_hostEv
+   fun:_ZN16ExtensionService4InitEv
+   fun:_ZN11ProfileImpl14InitExtensionsEv
+   fun:_ZN14ProfileManager10AddProfileEP7Profileb
+   fun:_ZN14ProfileManager10GetProfileERK8FilePathb
+   fun:_ZN14ProfileManager17GetDefaultProfileERK8FilePath
+}
+{
+   bug_66853_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN11ProfileImpl25GetHostContentSettingsMapEv
+   fun:_ZN30ChromeURLRequestContextFactoryC2EP7Profile
+   fun:_ZN12_GLOBAL__N_118FactoryForOriginalC2EP7ProfilePK13ProfileIOData
+   fun:_ZN12_GLOBAL__N_118FactoryForOriginalC1EP7ProfilePK13ProfileIOData
+   fun:_ZN29ChromeURLRequestContextGetter14CreateOriginalEP7ProfilePK13ProfileIOData
+   fun:_ZNK13ProfileIOData6Handle27GetMainRequestContextGetterEv
    fun:_ZN11ProfileImpl17GetRequestContextEv
    fun:_ZN19SafeBrowsingService5StartEv
    fun:_ZN19SafeBrowsingService10InitializeEv
