@@ -105,6 +105,16 @@ class DOMUI {
     return bindings_;
   }
 
+  // Indicates whether RegisterMessageCallback() will overwrite an existing
+  // message callback mapping.  Serves as the hook for test mocks.
+  bool register_callback_overwrites() const {
+    return register_callback_overwrites_;
+  }
+
+  void register_callback_overwrites(bool value) {
+    register_callback_overwrites_ = value;
+  }
+
   // Call a Javascript function by sending its name and arguments down to
   // the renderer.  This is asynchronous; there's no way to get the result
   // of the call, and should be thought of more like sending a message to
@@ -155,6 +165,7 @@ class DOMUI {
   PageTransition::Type link_transition_type_;  // Defaults to LINK.
   int bindings_;  // The bindings from BindingsPolicy that should be enabled for
                   // this page.
+  bool register_callback_overwrites_;  // Defaults to false;
 
   // The DOMMessageHandlers we own.
   std::vector<DOMMessageHandler*> handlers_;
