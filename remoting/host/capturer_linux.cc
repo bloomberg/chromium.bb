@@ -82,6 +82,13 @@ class CapturerLinuxPimpl {
   uint8* buffers_[CapturerLinux::kNumBuffers];
   int stride_;
   bool capture_fullscreen_;
+
+  // Invalid rects in the last capture. This is used to synchronize current with
+  // the previous buffer used.
+  InvalidRects last_invalid_rects_;
+
+  // Last capture buffer used.
+  uint8* last_buffer_;
 };
 
 CapturerLinux::CapturerLinux(MessageLoop* message_loop)
@@ -118,7 +125,8 @@ CapturerLinuxPimpl::CapturerLinuxPimpl(CapturerLinux* capturer)
       damage_event_base_(-1),
       damage_error_base_(-1),
       stride_(0),
-      capture_fullscreen_(true) {
+      capture_fullscreen_(true),
+      last_buffer_(NULL) {
   for (int i = 0; i < CapturerLinux::kNumBuffers; i++) {
     buffers_[i] = NULL;
   }
@@ -239,6 +247,23 @@ void CapturerLinuxPimpl::CaptureRects(
       new CaptureData(planes, capturer_->width(), capturer_->height(),
                       media::VideoFrame::RGB32));
 
+  // Synchronize the current buffer with the last one since we do not capture
+  // the entire desktop. Note that encoder may be reading from the previous
+  // buffer at this time so thread access complaints are false positives.
+
+  // TODO(hclam): We can reduce the amount of copying here by subtracting
+  // |rects| from |last_invalid_rects_|.
+  for (InvalidRects::const_iterator it = last_invalid_rects_.begin();
+       last_buffer_ && it != last_invalid_rects_.end();
+       ++it) {
+    int offset = it->y() * stride_ + it->x() + kBytesPerPixel;
+    for (int i = 0; i < it->height(); ++i) {
+      memcpy(buffer + offset, last_buffer_ + offset,
+             it->width() * kBytesPerPixel);
+      offset += capturer_->width() * kBytesPerPixel;
+    }
+  }
+
   for (InvalidRects::const_iterator it = rects.begin();
        it != rects.end();
        ++it) {
@@ -262,7 +287,19 @@ void CapturerLinuxPimpl::CaptureRects(
   // TODO(ajwong): We should only repair the rects that were copied!
   XDamageSubtract(display_, damage_handle_, None, None);
 
-  capture_data->mutable_dirty_rects() = rects;
+  // Flip the rectangles based on y axis.
+  InvalidRects inverted_rects;
+  for (InvalidRects::const_iterator it = rects.begin();
+       it != rects.end();
+       ++it) {
+    inverted_rects.insert(gfx::Rect(it->x(), capturer_->height() - it->bottom(),
+                                    it->width(), it->height()));
+  }
+
+  capture_data->mutable_dirty_rects() = inverted_rects;
+  last_invalid_rects_ = inverted_rects;
+  last_buffer_ = buffer;
+
   // TODO(ajwong): These completion signals back to the upper class are very
   // strange.  Fix it.
   capturer_->FinishCapture(capture_data, callback);
@@ -290,21 +327,18 @@ void CapturerLinuxPimpl::FastBlit(XImage* image, int dest_x, int dest_y,
   const int dst_stride = planes.strides[0];
   const int src_stride = image->bytes_per_line;
 
-  // TODO(ajwong): I think this can never happen anyways due to the way we size
-  // the buffer. Check to be certain and possibly remove check.
-  CHECK((dst_stride - dest_x) >= src_stride);
-
-  // Flip the coordinate system to match the client.
-  for (int y = image->height - 1; y >= 0; y--) {
-    uint32_t* dst_pos = GetRowStart(dst_buffer, dst_stride, y + dest_y);
-    dst_pos += dest_x;
-
-    memcpy(dst_pos, src_pos, src_stride);
+  // Produce an upside down image.
+  uint8* dst_pos = dst_buffer + dst_stride * (capturer_->height() - dest_y - 1);
+  dst_pos += dest_x * kBytesPerPixel;
+  for (int y = 0; y < image->height; ++y) {
+    memcpy(dst_pos, src_pos, image->width * kBytesPerPixel);
 
     src_pos += src_stride;
+    dst_pos -= dst_stride;
   }
 }
 
+// TODO(hclam): SlowBlit() is incorrect.
 void CapturerLinuxPimpl::SlowBlit(XImage* image, int dest_x, int dest_y,
                                   CaptureData* capture_data) {
   DataPlanes planes = capture_data->data_planes();
