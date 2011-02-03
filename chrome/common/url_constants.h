@@ -90,6 +90,7 @@ extern const char kChromeUITextfieldsURL[];
 
 #if defined(OS_CHROMEOS)
 extern const char kChromeUIAboutOSCreditsURL[];
+extern const char kChromeUIActivationMessage[];
 extern const char kChromeUIFileBrowseURL[];
 extern const char kChromeUIImageBurnerURL[];
 extern const char kChromeUIKeyboardOverlayURL[];
@@ -132,6 +133,7 @@ extern const char kChromeUIThemePath[];
 extern const char kChromeUIThumbnailPath[];
 
 #if defined(OS_CHROMEOS)
+extern const char kChromeUIActivationMessageHost[];
 extern const char kChromeUIFileBrowseHost[];
 extern const char kChromeUIImageBurnerHost[];
 extern const char kChromeUIKeyboardOverlayHost[];

@@ -99,6 +99,7 @@ const char kChromeUITextfieldsURL[] = "chrome://textfields/";
 
 #if defined(OS_CHROMEOS)
 const char kChromeUIAboutOSCreditsURL[] = "chrome://about/os-credits";
+const char kChromeUIActivationMessage[] = "chrome://activationmessage/";
 const char kChromeUIFileBrowseURL[] = "chrome://filebrowse/";
 const char kChromeUIImageBurnerURL[] = "chrome://imageburner/";
 const char kChromeUIKeyboardOverlayURL[] = "chrome://keyboardoverlay/";
@@ -141,6 +142,7 @@ const char kChromeUIThemePath[] = "theme";
 const char kChromeUIThumbnailPath[] = "thumb";
 
 #if defined(OS_CHROMEOS)
+const char kChromeUIActivationMessageHost[] = "activationmessage";
 const char kChromeUIFileBrowseHost[] = "filebrowse";
 const char kChromeUIImageBurnerHost[] = "imageburner";
 const char kChromeUIKeyboardOverlayHost[] = "keyboardoverlay";
