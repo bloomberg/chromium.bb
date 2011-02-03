@@ -20,8 +20,7 @@ class CoreChromeOSOptionsHandler : public ::CoreOptionsHandler {
   virtual Value* FetchPref(const std::string& pref_name);
   virtual void ObservePref(const std::string& pref_name);
   virtual void SetPref(const std::string& pref_name,
-                       Value::ValueType pref_type,
-                       const std::string& value_string,
+                       const Value* value,
                        const std::string& metric);
   virtual void StopObservingPref(const std::string& path);
 

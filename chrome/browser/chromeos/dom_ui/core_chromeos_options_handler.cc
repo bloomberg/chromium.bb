@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/json/json_reader.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -37,39 +36,17 @@ void CoreChromeOSOptionsHandler::ObservePref(const std::string& pref_name) {
 }
 
 void CoreChromeOSOptionsHandler::SetPref(const std::string& pref_name,
-                                         Value::ValueType pref_type,
-                                         const std::string& value_string,
+                                         const Value* value,
                                          const std::string& metric) {
   if (!CrosSettings::IsCrosSettings(pref_name))
-    return ::CoreOptionsHandler::SetPref(pref_name, pref_type, value_string,
-                                         metric);
+    return ::CoreOptionsHandler::SetPref(pref_name, value, metric);
   handling_change_ = true;
-  CrosSettings* cros_settings = CrosSettings::Get();
-  switch (pref_type) {
-    case Value::TYPE_BOOLEAN:
-      cros_settings->SetBoolean(pref_name, value_string == "true");
-      break;
-    case Value::TYPE_INTEGER:
-      int int_value;
-      if (base::StringToInt(value_string, &int_value))
-        cros_settings->SetInteger(pref_name, int_value);
-      break;
-    case Value::TYPE_STRING:
-      cros_settings->SetString(pref_name, value_string);
-      break;
-    default: {
-      Value* pref_value = base::JSONReader().JsonToValue(
-          value_string,  // JSON
-          false,         // no check_root
-          false);        // no trailing comma
-      if (pref_value)
-        cros_settings->Set(pref_name, pref_value);
-      break;
-    }
-  }
+  // CrosSettings takes ownership of its value so we need to copy it.
+  Value* pref_value = value->DeepCopy();
+  CrosSettings::Get()->Set(pref_name, pref_value);
   handling_change_ = false;
 
-  ProcessUserMetric(pref_type, value_string, metric);
+  ProcessUserMetric(value, metric);
 }
 
 void CoreChromeOSOptionsHandler::StopObservingPref(const std::string& path) {
