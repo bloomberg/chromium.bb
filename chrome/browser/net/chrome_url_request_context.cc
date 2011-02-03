@@ -422,13 +422,13 @@ scoped_refptr<ChromeURLRequestContext> FactoryForOffTheRecord::Create() {
       net::HttpCache::DefaultBackend::InMemory(0);
 
   net::HttpCache* cache =
-      new net::HttpCache(context->host_resolver(),
-                         context->cert_verifier(),
+      new net::HttpCache(io_thread_globals->host_resolver.get(),
+                         io_thread_globals->cert_verifier.get(),
                          context->dnsrr_resolver(),
                          NULL /* dns_cert_checker */,
                          context->proxy_service(),
                          context->ssl_config_service(),
-                         context->http_auth_handler_factory(),
+                         io_thread_globals->http_auth_handler_factory.get(),
                          &io_thread_globals->network_delegate,
                          io_thread()->net_log(),
                          backend);

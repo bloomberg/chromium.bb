@@ -23,8 +23,6 @@
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
-#include "net/socket/client_socket_factory.h"
-#include "net/spdy/spdy_session_pool.h"
 #include "net/proxy/proxy_service.h"
 
 namespace {
@@ -126,20 +124,14 @@ ServiceURLRequestContext::ServiceURLRequestContext(
   ssl_config_service_ = new net::SSLConfigServiceDefaults;
   http_auth_handler_factory_ = net::HttpAuthHandlerFactory::CreateDefault(
       host_resolver_);
+  net::HttpNetworkSession::Params session_params;
+  session_params.host_resolver = host_resolver_;
+  session_params.cert_verifier = cert_verifier_;
+  session_params.dnsrr_resolver = dnsrr_resolver_;
+  session_params.proxy_service = proxy_service_;
+  session_params.ssl_config_service = ssl_config_service_;
   scoped_refptr<net::HttpNetworkSession> network_session(
-      new net::HttpNetworkSession(
-          host_resolver_,
-          cert_verifier_,
-          dnsrr_resolver_,
-          NULL /* dns_cert_checker */,
-          NULL /* ssl_host_info_factory */,
-          proxy_service_,
-          net::ClientSocketFactory::GetDefaultFactory(),
-          ssl_config_service_,
-          new net::SpdySessionPool(NULL),
-          http_auth_handler_factory_,
-          NULL /* network_delegate */,
-          NULL /* net_log */));
+      new net::HttpNetworkSession(session_params));
   http_transaction_factory_ = new net::HttpCache(
       network_session,
       net::HttpCache::DefaultBackend::InMemory(0));

@@ -28,6 +28,7 @@ class DiskCacheBasedSSLHostInfo : public SSLHostInfo,
  public:
   DiskCacheBasedSSLHostInfo(const std::string& hostname,
                             const SSLConfig& ssl_config,
+                            CertVerifier* cert_verifier,
                             HttpCache* http_cache);
 
   // Implementation of SSLHostInfo

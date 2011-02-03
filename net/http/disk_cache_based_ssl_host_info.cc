@@ -34,9 +34,9 @@ void DiskCacheBasedSSLHostInfo::CallbackImpl::RunWithParams(
 DiskCacheBasedSSLHostInfo::DiskCacheBasedSSLHostInfo(
     const std::string& hostname,
     const SSLConfig& ssl_config,
+    CertVerifier* cert_verifier,
     HttpCache* http_cache)
-    : SSLHostInfo(hostname, ssl_config,
-                  http_cache->network_layer()->GetSession()->cert_verifier()),
+    : SSLHostInfo(hostname, ssl_config, cert_verifier),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       callback_(new CallbackImpl(weak_ptr_factory_.GetWeakPtr(),
                                  &DiskCacheBasedSSLHostInfo::DoLoop)),

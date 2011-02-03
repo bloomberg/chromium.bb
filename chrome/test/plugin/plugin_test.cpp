@@ -38,18 +38,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_test.h"
-#include "net/base/capturing_net_log.h"
-#include "net/base/cert_verifier.h"
-#include "net/base/host_resolver.h"
-#include "net/base/net_util.h"
-#include "net/base/ssl_config_service_defaults.h"
-#include "net/http/http_auth_handler_factory.h"
-#include "net/http/http_cache.h"
-#include "net/http/http_network_session.h"
-#include "net/socket/client_socket_factory.h"
-#include "net/spdy/spdy_session_pool.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_status.h"
+#include "net/url_request/url_request_test_util.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "webkit/plugins/npapi/plugin_constants_win.h"
 #include "webkit/plugins/npapi/plugin_list.h"
@@ -252,64 +241,6 @@ class PluginInstallerDownloadTest
     : public PluginDownloadUrlHelper::DownloadDelegate,
       public testing::Test {
  public:
-  // This class provides HTTP request context information for the downloads.
-  class UploadRequestContext : public net::URLRequestContext {
-   public:
-    UploadRequestContext() {
-      Initialize();
-    }
-
-    ~UploadRequestContext() {
-      DVLOG(1) << __FUNCTION__;
-      delete http_transaction_factory_;
-      delete http_auth_handler_factory_;
-      delete cert_verifier_;
-      delete host_resolver_;
-    }
-
-    void Initialize() {
-      host_resolver_ =
-          net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
-                                        NULL, NULL);
-      cert_verifier_ = new net::CertVerifier;
-      net::ProxyConfigService* proxy_config_service =
-          net::ProxyService::CreateSystemProxyConfigService(NULL, NULL);
-      DCHECK(proxy_config_service);
-
-      const size_t kNetLogBound = 50u;
-      net_log_.reset(new net::CapturingNetLog(kNetLogBound));
-
-      proxy_service_ = net::ProxyService::CreateUsingSystemProxyResolver(
-          proxy_config_service, 0, net_log_.get());
-      DCHECK(proxy_service_);
-
-      ssl_config_service_ = new net::SSLConfigServiceDefaults;
-      http_auth_handler_factory_ = net::HttpAuthHandlerFactory::CreateDefault(
-          host_resolver_);
-      scoped_refptr<net::HttpNetworkSession> network_session(
-          new net::HttpNetworkSession(
-              host_resolver_,
-              cert_verifier_,
-              NULL /* dnsrr_resolver */,
-              NULL /* dns_cert_checker */,
-              NULL /* ssl_host_info_factory */,
-              proxy_service_,
-              net::ClientSocketFactory::GetDefaultFactory(),
-              ssl_config_service_,
-              new net::SpdySessionPool(NULL),
-              http_auth_handler_factory_,
-              network_delegate_,
-              NULL /* net_log */));
-      http_transaction_factory_ = new net::HttpCache(
-          network_session,
-          net::HttpCache::DefaultBackend::InMemory(0));
-    }
-
-   private:
-    scoped_ptr<net::NetLog> net_log_;
-    scoped_ptr<net::URLSecurityManager> url_security_manager_;
-  };
-
   PluginInstallerDownloadTest()
       : success_(false),
         download_helper_(NULL) {}
@@ -320,7 +251,7 @@ class PluginInstallerDownloadTest
     download_helper_ = new PluginDownloadUrlHelper(
         initial_download_path_.spec(), base::GetCurrentProcId(), NULL,
         static_cast<PluginDownloadUrlHelper::DownloadDelegate*>(this));
-    download_helper_->InitiateDownload(new UploadRequestContext);
+    download_helper_->InitiateDownload(new TestURLRequestContext);
 
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE, new MessageLoop::QuitTask,

@@ -16,8 +16,6 @@
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
 #include "net/proxy/proxy_service.h"
-#include "net/socket/client_socket_factory.h"
-#include "net/spdy/spdy_session_pool.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -61,49 +59,11 @@ class ScopedInternet {
   HINTERNET h_;
 };
 
-class URLRequestTestContext : public net::URLRequestContext {
- public:
-  URLRequestTestContext() {
-    host_resolver_ =
-        net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
-                                      NULL, NULL);
-    cert_verifier_ = new net::CertVerifier;
-    proxy_service_ = net::ProxyService::CreateDirect();
-    ssl_config_service_ = new net::SSLConfigServiceDefaults;
-    http_auth_handler_factory_ = net::HttpAuthHandlerFactory::CreateDefault(
-        host_resolver_);
-    http_transaction_factory_ = new net::HttpCache(
-        new net::HttpNetworkSession(
-            host_resolver_,
-            cert_verifier_,
-            NULL /* dnsrr_resolver */,
-            NULL /* dns_cert_checker */,
-            NULL /* ssl_host_info_factory */,
-            proxy_service_,
-            net::ClientSocketFactory::GetDefaultFactory(),
-            ssl_config_service_,
-            new net::SpdySessionPool(ssl_config_service_),
-            http_auth_handler_factory_,
-            NULL /* network_delegate */,
-            NULL /* net_log */),
-        net::HttpCache::DefaultBackend::InMemory(0));
-    // In-memory cookie store.
-    cookie_store_ = new net::CookieMonster(NULL, NULL);
-  }
-
-  virtual ~URLRequestTestContext() {
-    delete http_transaction_factory_;
-    delete http_auth_handler_factory_;
-    delete cert_verifier_;
-    delete host_resolver_;
-  }
-};
-
 class TestURLRequest : public net::URLRequest {
  public:
   TestURLRequest(const GURL& url, Delegate* delegate)
       : net::URLRequest(url, delegate) {
-    set_context(new URLRequestTestContext());
+    set_context(new TestURLRequestContext());
   }
 };
 

@@ -16,8 +16,6 @@
 #include "net/http/http_network_layer.h"
 #include "net/http/http_network_session.h"
 #include "net/proxy/proxy_config_service_fixed.h"
-#include "net/socket/client_socket_factory.h"
-#include "net/spdy/spdy_session_pool.h"
 #include "net/test/test_server.h"
 #include "net/url_request/url_request_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -88,7 +86,6 @@ class ConnectionTesterTest : public PlatformTest {
   ConnectionTesterTest()
       : test_server_(net::TestServer::TYPE_HTTP,
             FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest"))),
-        client_socket_factory_(net::ClientSocketFactory::GetDefaultFactory()),
         proxy_script_fetcher_context_(new net::URLRequestContext),
         message_loop_(MessageLoop::TYPE_IO),
         io_thread_(BrowserThread::IO, &message_loop_) {
@@ -98,7 +95,6 @@ class ConnectionTesterTest : public PlatformTest {
  protected:
   net::TestServer test_server_;
   ConnectionTesterDelegate test_delegate_;
-  net::ClientSocketFactory* const client_socket_factory_;
   net::MockHostResolver host_resolver_;
   net::CertVerifier cert_verifier_;
   net::DnsRRResolver dnsrr_resolver_;
@@ -118,20 +114,15 @@ class ConnectionTesterTest : public PlatformTest {
     proxy_service_ = net::ProxyService::CreateDirect();
     proxy_script_fetcher_context_->set_proxy_service(proxy_service_);
     ssl_config_service_ = net::SSLConfigService::CreateSystemSSLConfigService();
+    net::HttpNetworkSession::Params session_params;
+    session_params.host_resolver = &host_resolver_;
+    session_params.cert_verifier = &cert_verifier_;
+    session_params.dnsrr_resolver = &dnsrr_resolver_;
+    session_params.http_auth_handler_factory = &http_auth_handler_factory_;
+    session_params.ssl_config_service = ssl_config_service_;
+    session_params.proxy_service = proxy_service_;
     scoped_refptr<net::HttpNetworkSession> network_session(
-        new net::HttpNetworkSession(
-            &host_resolver_,
-            &cert_verifier_,
-            &dnsrr_resolver_,
-            NULL /* dns_cert_checker */,
-            NULL /* ssl_host_info_factory */,
-            proxy_service_.get(),
-            client_socket_factory_,
-            ssl_config_service_,
-            new net::SpdySessionPool(ssl_config_service_),
-            &http_auth_handler_factory_,
-            NULL /* network_delegate */,
-            NULL /* net_log */));
+        new net::HttpNetworkSession(session_params));
     http_transaction_factory_.reset(
         new net::HttpNetworkLayer(network_session));
     proxy_script_fetcher_context_->set_http_transaction_factory(

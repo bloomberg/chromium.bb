@@ -43,8 +43,6 @@
 #include "net/ocsp/nss_ocsp.h"
 #endif  // defined(USE_NSS)
 #include "net/proxy/proxy_script_fetcher_impl.h"
-#include "net/socket/client_socket_factory.h"
-#include "net/spdy/spdy_session_pool.h"
 
 namespace {
 
@@ -321,8 +319,6 @@ void IOThread::Init() {
   network_change_observer_.reset(
       new LoggingNetworkChangeObserver(net_log_));
 
-  globals_->client_socket_factory =
-      net::ClientSocketFactory::GetDefaultFactory();
   globals_->host_resolver.reset(
       CreateGlobalHostResolver(net_log_));
   globals_->cert_verifier.reset(new net::CertVerifier);
@@ -335,20 +331,18 @@ void IOThread::Init() {
   // For the ProxyScriptFetcher, we use a direct ProxyService.
   globals_->proxy_script_fetcher_proxy_service =
       net::ProxyService::CreateDirectWithNetLog(net_log_);
+  net::HttpNetworkSession::Params session_params;
+  session_params.host_resolver = globals_->host_resolver.get();
+  session_params.cert_verifier = globals_->cert_verifier.get();
+  session_params.proxy_service =
+      globals_->proxy_script_fetcher_proxy_service.get();
+  session_params.http_auth_handler_factory =
+      globals_->http_auth_handler_factory.get();
+  session_params.network_delegate = &globals_->network_delegate;
+  session_params.net_log = net_log_;
+  session_params.ssl_config_service = globals_->ssl_config_service;
   scoped_refptr<net::HttpNetworkSession> network_session(
-      new net::HttpNetworkSession(
-          globals_->host_resolver.get(),
-          globals_->cert_verifier.get(),
-          globals_->dnsrr_resolver.get(),
-          NULL /* dns_cert_checker */,
-          NULL /* ssl_host_info_factory */,
-          globals_->proxy_script_fetcher_proxy_service.get(),
-          globals_->client_socket_factory,
-          globals_->ssl_config_service.get(),
-          new net::SpdySessionPool(globals_->ssl_config_service.get()),
-          globals_->http_auth_handler_factory.get(),
-          &globals_->network_delegate,
-          net_log_));
+      new net::HttpNetworkSession(session_params));
   globals_->proxy_script_fetcher_http_transaction_factory.reset(
       new net::HttpNetworkLayer(network_session));
 

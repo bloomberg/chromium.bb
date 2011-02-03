@@ -19,7 +19,6 @@
 #include "net/proxy/proxy_service.h"
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/spdy_framer.h"
-#include "net/spdy/spdy_session_pool.h"
 #include "net/url_request/url_request_context.h"
 
 namespace net {

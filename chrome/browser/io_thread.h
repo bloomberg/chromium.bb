@@ -28,7 +28,6 @@ class Predictor;
 
 namespace net {
 class CertVerifier;
-class ClientSocketFactory;
 class DnsRRResolver;
 class HostResolver;
 class HttpAuthHandlerFactory;
@@ -46,7 +45,6 @@ class IOThread : public BrowserProcessSubThread {
     Globals();
     ~Globals();
 
-    net::ClientSocketFactory* client_socket_factory;
     scoped_ptr<net::HostResolver> host_resolver;
     scoped_ptr<net::CertVerifier> cert_verifier;
     scoped_ptr<net::DnsRRResolver> dnsrr_resolver;
