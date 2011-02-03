@@ -4,6 +4,9 @@
 //
 // Common sync protocol for encrypted data.
 
+// Update proto_value_conversions{.h,.cc,_unittest.cc} if you change
+// any fields in this file.
+
 syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;

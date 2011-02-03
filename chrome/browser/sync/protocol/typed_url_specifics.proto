@@ -4,6 +4,9 @@
 //
 // Sync protocol datatype extension for typed urls.
 
+// Update proto_value_conversions{.h,.cc,_unittest.cc} if you change
+// any fields in this file.
+
 syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
