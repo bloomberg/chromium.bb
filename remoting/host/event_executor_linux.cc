@@ -219,7 +219,6 @@ class EventExecutorLinuxPimpl {
 
   // X11 graphics context.
   Display* display_;
-  GC gc_;
   Window root_window_;
   int width_;
   int height_;
@@ -231,7 +230,6 @@ class EventExecutorLinuxPimpl {
 EventExecutorLinuxPimpl::EventExecutorLinuxPimpl(EventExecutorLinux* executor)
     : executor_(executor),
       display_(NULL),
-      gc_(NULL),
       root_window_(BadValue),
       width_(0),
       height_(0) {
@@ -253,13 +251,6 @@ bool EventExecutorLinuxPimpl::Init() {
   root_window_ = RootWindow(display_, DefaultScreen(display_));
   if (root_window_ == BadValue) {
     LOG(ERROR) << "Unable to get the root window";
-    DeinitXlib();
-    return false;
-  }
-
-  gc_ = XCreateGC(display_, root_window_, 0, NULL);
-  if (gc_ == NULL) {
-    LOG(ERROR) << "Unable to get graphics context";
     DeinitXlib();
     return false;
   }
@@ -352,13 +343,6 @@ void EventExecutorLinuxPimpl::HandleMouse(const MouseEvent* event) {
 
 void EventExecutorLinuxPimpl::DeinitXlib() {
   // TODO(ajwong): We should expose a "close" or "shutdown" method.
-  if (gc_) {
-    if (!XFreeGC(display_, gc_)) {
-      LOG(ERROR) << "Unable to free Xlib GC";
-    }
-    gc_ = NULL;
-  }
-
   if (display_) {
     if (!XCloseDisplay(display_)) {
       LOG(ERROR) << "Unable to close the Xlib Display.";
