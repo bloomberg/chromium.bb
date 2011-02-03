@@ -1434,6 +1434,17 @@
    fun:_ZN11MessageLoop10RunHandlerEv
 }
 {
+   bug_27936
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7history20ExpireHistoryBackend28BroadcastDeleteNotificationsEPNS0_18DeleteDependenciesE
+   fun:_ZN7history20ExpireHistoryBackend21ArchiveSomeOldHistoryEN4base4TimeEPKNS_20ExpiringVisitsReaderEi
+   fun:_ZN7history20ExpireHistoryBackend18DoArchiveIterationEv
+   fun:_Z16DispatchToMethodIN7history20ExpireHistoryBackendEMS1_FvvEEvPT_T0_RK6Tuple0
+   fun:_ZN27ScopedRunnableMethodFactoryIN7history20ExpireHistoryBackendEE14RunnableMethodIMS1_FvvE6Tuple0E3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+}
+{
    bug_28200
    Memcheck:Leak
    fun:malloc
