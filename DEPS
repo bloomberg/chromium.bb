@@ -5,7 +5,7 @@ vars = {
   "x86_toolchain_version": "4235",
   "arm_toolchain_version": "4235",
   "chrome_rev": "73147",
-  "gyp_rev": "880",
+  "gyp_rev": "856",
   "gtest_rev": "364",
   "tools_rev": "4058",
   "python_26_rev": "53573",
