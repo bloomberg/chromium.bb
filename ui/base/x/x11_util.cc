@@ -104,11 +104,6 @@ Display* GetXDisplay() {
 }
 
 static SharedMemorySupport DoQuerySharedMemorySupport(Display* dpy) {
-  // A temporary flag for tracking down shared memory problems.
-  // TODO(evanm): remove this.
-  if (CommandLine::ForCurrentProcess()->HasSwitch("disable-xshm"))
-    return SHARED_MEMORY_NONE;
-
   int dummy;
   Bool pixmaps_supported;
   // Query the server's support for XSHM.
