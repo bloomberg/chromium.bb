@@ -390,6 +390,20 @@ static void PPB_Core_GetTimeDispatcher(
   );
 }
 
+static void PPB_Core_GetTimeTicksDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(inputs);
+  PpbCoreRpcServer::PPB_Core_GetTimeTicks(
+      rpc,
+      done,
+      &(outputs[0]->u.dval)
+  );
+}
+
 static void PPB_Core_CallOnMainThreadDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -963,6 +977,7 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_Core_ReleaseResource:i:", PPB_Core_ReleaseResourceDispatcher },
   { "ReleaseResourceMultipleTimes:ii:", ReleaseResourceMultipleTimesDispatcher },
   { "PPB_Core_GetTime::d", PPB_Core_GetTimeDispatcher },
+  { "PPB_Core_GetTimeTicks::d", PPB_Core_GetTimeTicksDispatcher },
   { "PPB_Core_CallOnMainThread:iii:", PPB_Core_CallOnMainThreadDispatcher },
   { "PPB_Graphics2D_Create:iCi:i", PPB_Graphics2D_CreateDispatcher },
   { "PPB_Graphics2D_IsGraphics2D:i:i", PPB_Graphics2D_IsGraphics2DDispatcher },

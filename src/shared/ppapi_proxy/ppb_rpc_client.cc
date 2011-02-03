@@ -409,6 +409,18 @@ NaClSrpcError PpbCoreRpcClient::PPB_Core_GetTime(
   return retval;
 }
 
+NaClSrpcError PpbCoreRpcClient::PPB_Core_GetTimeTicks(
+    NaClSrpcChannel* channel,
+    double* time_ticks)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Core_GetTimeTicks::d",
+      time_ticks
+  );
+  return retval;
+}
+
 NaClSrpcError PpbCoreRpcClient::PPB_Core_CallOnMainThread(
     NaClSrpcChannel* channel,
     int32_t delay_in_milliseconds,

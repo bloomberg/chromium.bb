@@ -177,6 +177,9 @@ class PpbCoreRpcClient {
   static NaClSrpcError PPB_Core_GetTime(
       NaClSrpcChannel* channel,
       double* time);
+  static NaClSrpcError PPB_Core_GetTimeTicks(
+      NaClSrpcChannel* channel,
+      double* time_ticks);
   static NaClSrpcError PPB_Core_CallOnMainThread(
       NaClSrpcChannel* channel,
       int32_t delay_in_milliseconds,

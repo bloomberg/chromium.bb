@@ -50,6 +50,15 @@ void PpbCoreRpcServer::PPB_Core_GetTime(NaClSrpcRpc* rpc,
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
+void PpbCoreRpcServer::PPB_Core_GetTimeTicks(NaClSrpcRpc* rpc,
+                                             NaClSrpcClosure* done,
+                                             double* time_ticks) {
+  NaClSrpcClosureRunner runner(done);
+  *time_ticks = PPBCoreInterface()->GetTimeTicks();
+  DebugPrintf("PPB_Core::GetTimeTicks: time_ticks=%f\n", *time_ticks);
+  rpc->result = NACL_SRPC_RESULT_OK;
+}
+
 // Release multiple references at once.
 void PpbCoreRpcServer::ReleaseResourceMultipleTimes(NaClSrpcRpc* rpc,
                                                     NaClSrpcClosure* done,

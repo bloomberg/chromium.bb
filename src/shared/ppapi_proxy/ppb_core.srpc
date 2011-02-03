@@ -37,7 +37,12 @@
            'outputs': [['time', 'double'],
                       ]
           },
-
+          # Implements calls to get the browser time ticks.
+          {'name': 'PPB_Core_GetTimeTicks',
+           'inputs': [],
+           'outputs': [['time_ticks', 'double'],
+                      ]
+          },
           # To be called from the main thread only!
           {'name': 'PPB_Core_CallOnMainThread',
            'inputs': [['delay_in_milliseconds', 'int32_t'],  # int32_t

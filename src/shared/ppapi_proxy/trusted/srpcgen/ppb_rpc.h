@@ -201,6 +201,10 @@ class PpbCoreRpcServer {
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
       double* time);
+  static void PPB_Core_GetTimeTicks(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      double* time_ticks);
   static void PPB_Core_CallOnMainThread(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,

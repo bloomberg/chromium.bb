@@ -19,6 +19,7 @@
 #include "srpcgen/ppb_rpc.h"
 
 using ppapi_proxy::DebugPrintf;
+using ppapi_proxy::GetMainSrpcChannel;
 
 // All of the methods here are invoked from the plugin's main (UI) thread,
 // so no locking is done.
@@ -34,17 +35,28 @@ bool main_thread_marked = false;
 // Resource's reference count goes to zero, the destructor should make sure
 // the browser reference is returned.
 void AddRefResource(PP_Resource resource) {
-  DebugPrintf("PPB_Core::AddRefResource: resource=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_Core::AddRefResource: resource=%"NACL_PRIx32"\n",
               resource);
-  if (ppapi_proxy::PluginResourceTracker::Get()->AddRefResource(resource))
-    DebugPrintf("PPB_Core::AddRefResource: nonexistent resource");
+  if (!ppapi_proxy::PluginResourceTracker::Get()->AddRefResource(resource)) {
+    DebugPrintf("PPB_Core::AddRefResource: not tracked locally\n");
+    NaClSrpcError srpc_result = PpbCoreRpcClient::PPB_Core_AddRefResource(
+        GetMainSrpcChannel(), resource);
+    DebugPrintf("PPB_Core::AddRefResource: %s\n",
+                NaClSrpcErrorString(srpc_result));
+
+  }
 }
 
 void ReleaseResource(PP_Resource resource) {
-  DebugPrintf("PPB_Core::ReleaseResource: resource=%"NACL_PRIu32"\n",
+  DebugPrintf("PPB_Core::ReleaseResource: resource=%"NACL_PRIx32"\n",
               resource);
-  if (ppapi_proxy::PluginResourceTracker::Get()->UnrefResource(resource))
-    DebugPrintf("PPB_Core::ReleaseRefResource: nonexistent resource");
+  if (!ppapi_proxy::PluginResourceTracker::Get()->UnrefResource(resource)) {
+    DebugPrintf("PPB_Core::ReleaseResource: not tracked locally\n");
+    NaClSrpcError srpc_result = PpbCoreRpcClient::PPB_Core_ReleaseResource(
+        GetMainSrpcChannel(), resource);
+    DebugPrintf("PPB_Core::ReleaseResource: %s\n",
+                NaClSrpcErrorString(srpc_result));
+  }
 }
 
 void* MemAlloc(size_t num_bytes) {
@@ -60,10 +72,11 @@ void MemFree(void* ptr) {
 
 PP_TimeTicks GetTime() {
   DebugPrintf("PPB_Core::GetTime\n");
-  NaClSrpcChannel* channel = ppapi_proxy::GetMainSrpcChannel();
   double time;
-  NaClSrpcError retval = PpbCoreRpcClient::PPB_Core_GetTime(channel, &time);
-  if (retval != NACL_SRPC_RESULT_OK) {
+  NaClSrpcError srpc_result = PpbCoreRpcClient::PPB_Core_GetTime(
+      GetMainSrpcChannel(), &time);
+  DebugPrintf("PPB_Core::GetTime: %s\n", NaClSrpcErrorString(srpc_result));
+  if (srpc_result != NACL_SRPC_RESULT_OK) {
     return static_cast<PP_Time>(-1.0);
   } else {
     return static_cast<PP_Time>(time);
@@ -71,15 +84,15 @@ PP_TimeTicks GetTime() {
 }
 
 PP_TimeTicks GetTimeTicks() {
-  DebugPrintf("PPB_Core::GetTime\n");
-  NaClSrpcChannel* channel = ppapi_proxy::GetMainSrpcChannel();
-  double time;
-  // TODO(sehr): implement time ticks.
-  NaClSrpcError retval = PpbCoreRpcClient::PPB_Core_GetTime(channel, &time);
-  if (retval != NACL_SRPC_RESULT_OK) {
+  DebugPrintf("PPB_Core::GetTimeTicks\n");
+  double time_ticks;
+  NaClSrpcError srpc_result = PpbCoreRpcClient::PPB_Core_GetTimeTicks(
+      GetMainSrpcChannel(), &time_ticks);
+  DebugPrintf("PPB_Core::GetTimeTicks: %s\n", NaClSrpcErrorString(srpc_result));
+  if (srpc_result != NACL_SRPC_RESULT_OK) {
     return static_cast<PP_TimeTicks>(-1.0);
   } else {
-    return static_cast<PP_TimeTicks>(time);
+    return static_cast<PP_TimeTicks>(time_ticks);
   }
 }
 

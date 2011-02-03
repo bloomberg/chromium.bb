@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/dev/ppp_class_deprecated.h"
@@ -173,12 +174,18 @@ static struct PP_Var Call(void* object,
     return TestAddRefAndReleaseInvalidResource(core);
   } else if (0 == strncmp(method, "testGetTime", len)) {
     /* Test PPB_Core::GetTime */
-    core->GetTime();
-    return PP_MakeBool(PP_TRUE);
+    PP_Time time1 = core->GetTime();
+    usleep(100000);  /* 0.1 second */
+    PP_Time time2 = core->GetTime();
+    PP_Bool time_passed = (time2 > time1) ? PP_TRUE : PP_FALSE;
+    return PP_MakeBool(time_passed);
   } else if (0 == strncmp(method, "testGetTimeTicks", len)) {
     /* Test PPB_Core::GetTimeTicks */
-    core->GetTimeTicks();
-    return PP_MakeBool(PP_TRUE);
+    PP_TimeTicks time_ticks1 = core->GetTimeTicks();
+    usleep(100000);  /* 0.1 second */
+    PP_TimeTicks time_ticks2 = core->GetTimeTicks();
+    PP_Bool time_passed = (time_ticks2 > time_ticks1) ? PP_TRUE : PP_FALSE;
+    return PP_MakeBool(time_passed);
   } else if (0 == strncmp(method, "testCallOnMainThread", len)) {
     /* Test PPB_Core::CallOnMainThread */
     core->CallOnMainThread(0,  /* delay */
@@ -236,15 +243,12 @@ static struct PP_Var TestAddRefAndReleaseResource(struct PPB_Core* core) {
    */
   if (0 != url_request_info) {
     /* Add reference count and release multiple times. */
-    for (size_t j = 0; j < 10; ++j) {
-      core->AddRefResource(url_request_info);
-      core->ReleaseResource(url_request_info);
-      /* Make sure this is still a valid url request info (reference count is
-       * not 0) */
-      if (PP_FALSE == ppb_url_request_info->IsURLRequestInfo(url_request_info))
-        return PP_MakeBool(PP_FALSE);
-    }
-    core->ReleaseResource(url_request_info);  /* Match Create */
+    for (size_t j = 0; j < 10; ++j) core->AddRefResource(url_request_info);
+    for (size_t j = 0; j < 10; ++j) core->ReleaseResource(url_request_info);
+    /* Make sure this is still a valid url request info (refcount is not 0) */
+    if (PP_FALSE == ppb_url_request_info->IsURLRequestInfo(url_request_info))
+      return PP_MakeBool(PP_FALSE);
+    core->ReleaseResource(url_request_info);  /* Release count from Create() */
     /* Make sure the url request info is properly deallocated. */
     if (PP_FALSE == ppb_url_request_info->IsURLRequestInfo(url_request_info))
       return PP_MakeBool(PP_TRUE);
