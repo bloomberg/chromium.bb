@@ -223,7 +223,7 @@
     'options_dialog_content': ['finnur+watch@chromium.org'],
     'chromeos': ['davemoore+watch@chromium.org'],
     'npapi_headers': ['stuartmorgan@chromium.org'],
-    'remoting': ['ajwong+watch@chromium.org' 'dmaclach+watch@chromium.org',
+    'remoting': ['ajwong+watch@chromium.org', 'dmaclach+watch@chromium.org',
                  'garykac+watch@chromium.org', 'hclam+watch@chromium.org',
                  'jamiewalch+watch@chromium.org',
                  'lambroslambrou+watch@chromium.org',
