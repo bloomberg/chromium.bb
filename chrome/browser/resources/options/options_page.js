@@ -46,14 +46,7 @@ cr.define('options', function() {
    * Shows the default page.
    */
   OptionsPage.showDefaultPage = function() {
-    var page = BrowserOptions.getInstance();
-    this.showPageByName_(page.name);
-
-    // We show the default page on load. Use replaceState instead of pushState
-    // so that we don't get a superfluous chrome://settings entry in addition
-    // to the desired chrome://settings/browser entry.
-    window.history.replaceState({pageName: page.name}, page.title,
-                                '/' + page.name);
+    this.navigateToPage(BrowserOptions.getInstance().name);
   };
 
   /**
@@ -65,8 +58,19 @@ cr.define('options', function() {
     var visiblePage = this.getTopmostVisiblePage();
     this.showPageByName_(pageName);
 
-    if (visiblePage.name != pageName)
-      this.pushHistoryState_();
+    if (!visiblePage) {
+      // Now that the desired page has been shown, get that page in order to add
+      // it to the history.
+      var page = this.getTopmostVisiblePage();
+
+      // Use replaceState instead of pushState so that we don't get a
+      // superfluous chrome://settings entry in addition to the desired
+      // chrome://settings/pageName entry.
+      window.history.replaceState(
+          {pageName: page.name}, page.title, '/' + page.name);
+    } else if (visiblePage.name != pageName) {
+      this.pushHistoryState_(visiblePage);
+    }
   };
 
   /**
@@ -123,14 +127,13 @@ cr.define('options', function() {
   };
 
   /**
-   * Pushes the currently showing page onto the history stack.
+   * Pushes |page| onto the history stack.
+   * @param {Object} page The page to push onto the history stack.
    * @private
    */
-  OptionsPage.pushHistoryState_ = function() {
-    var page = this.getTopmostVisiblePage();
+  OptionsPage.pushHistoryState_ = function(page) {
     window.history.pushState({pageName: page.name}, page.title,
                              '/' + page.name);
-
   };
 
   /**
@@ -209,7 +212,7 @@ cr.define('options', function() {
     if (topPage && topPage.parentPage)
       topPage.visible = false;
 
-    this.pushHistoryState_();
+    this.pushHistoryState_(topPage);
   };
 
   /**
@@ -223,7 +226,7 @@ cr.define('options', function() {
       topPage = topPage.parentPage;
     }
 
-    this.pushHistoryState_();
+    this.pushHistoryState_(topPage);
   };
 
   /**
