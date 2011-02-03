@@ -32,6 +32,10 @@ void PyUITestSuiteBase::Initialize(const FilePath& browser_dir) {
   UITestSuite::Initialize();
 }
 
+void PyUITestSuiteBase::SetCrSourceRoot(const FilePath& path) {
+  PathService::Override(base::DIR_SOURCE_ROOT, path);
+}
+
 // PyUITestBase
 PyUITestBase::PyUITestBase(bool clear_profile, std::wstring homepage)
     : UITestBase() {

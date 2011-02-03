@@ -89,6 +89,9 @@ from pyauto_errors import JSONInterfaceError
 from pyauto_errors import NTPThumbnailNotShownError
 import simplejson as json  # found in third_party
 
+_HTTP_SERVER = None
+_OPTIONS = None
+
 
 class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
   """Base class for UI Test Cases in Python.
@@ -197,6 +200,16 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     """
     return PyUITest.GetFileURLForPath(
         os.path.join(PyUITest.DataDir(), relative_path))
+
+  @staticmethod
+  def GetHttpURLForDataPath(data_path):
+    """Get http:// url for the given path in the data dir.
+
+    The URL will be usable only after starting the http server.
+    """
+    global _HTTP_SERVER
+    assert _HTTP_SERVER, 'HTTP Server not yet started'
+    return _HTTP_SERVER.GetURL(os.path.join('files', data_path)).spec()
 
   @staticmethod
   def IsMac():
@@ -2027,6 +2040,14 @@ class PyUITestSuite(pyautolib.PyUITestSuiteBase, unittest.TestSuite):
     os.environ['PATH'] = browser_dir + os.pathsep + os.environ['PATH']
 
     unittest.TestSuite.__init__(self)
+    cr_source_root = os.path.normpath(os.path.join(
+        os.path.dirname(__file__), os.pardir, os.pardir, os.pardir))
+    self.SetCrSourceRoot(pyautolib.FilePath(cr_source_root))
+
+    # Start http server, if needed.
+    global _OPTIONS
+    if not _OPTIONS.no_http_server:
+      self._StartHTTPServer()
 
   def __del__(self):
     # python unittest module is setup such that the suite gets deleted before
@@ -2035,6 +2056,28 @@ class PyUITestSuite(pyautolib.PyUITestSuiteBase, unittest.TestSuite):
     # suite. Forcibly delete the test cases before the suite.
     del self._tests
     pyautolib.PyUITestSuiteBase.__del__(self)
+
+    global _HTTP_SERVER
+    if _HTTP_SERVER:
+      self._StopHTTPServer()
+
+  def _StartHTTPServer(self):
+    """Start a local file server hosting data files over http://"""
+    global _HTTP_SERVER
+    assert not _HTTP_SERVER, 'HTTP Server already started'
+    http_server = pyautolib.TestServer(pyautolib.TestServer.TYPE_HTTP,
+        pyautolib.FilePath(os.path.join('chrome', 'test', 'data')))
+    assert http_server.Start(), 'Could not start http server'
+    _HTTP_SERVER = http_server
+    logging.debug('Started http server..')
+
+  def _StopHTTPServer(self):
+    """Stop the local http server."""
+    global _HTTP_SERVER
+    assert _HTTP_SERVER, 'HTTP Server not yet started'
+    assert _HTTP_SERVER.Stop(), 'Could not stop http server'
+    _HTTP_SERVER = None
+    logging.debug('Stopped http server..')
 
 
 class _GTestTextTestResult(unittest._TextTestResult):
@@ -2139,8 +2182,13 @@ class Main(object):
     parser.add_option(
         '-L', '--list-tests', action='store_true', default=False,
         help='List all tests, and exit.')
+    parser.add_option(
+        '', '--no-http-server', action='store_true', default=False,
+        help='Do not start an http server to serve files in data dir.')
 
     self._options, self._args = parser.parse_args()
+    global _OPTIONS
+    _OPTIONS = self._options  # export options so other classes can access
 
     # Setup logging - start with defaults
     level = logging.INFO

@@ -2,9 +2,12 @@
 
 deps = {
   'src/chrome/test/data': '/trunk/src/chrome/test/data',
-  'src/chrome/test/pyautolib': '/trunk/src/chrome/test/pyautolib',
   'src/chrome/test/functional': '/trunk/src/chrome/test/functional',
+  'src/chrome/test/pyautolib': '/trunk/src/chrome/test/pyautolib',
+  'src/net/tools/testserver': '/trunk/src/net/tools/testserver',
+  'src/third_party/pyftpdlib': '/trunk/src/third_party/pyftpdlib',
   'src/third_party/simplejson': '/trunk/src/third_party/simplejson',
+  'src/third_party/tlslite': '/trunk/src/third_party/tlslite',
 }
 
 deps_os = {

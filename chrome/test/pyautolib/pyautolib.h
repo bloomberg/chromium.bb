@@ -30,6 +30,8 @@ class PyUITestSuiteBase : public UITestSuite {
 
   void Initialize(const FilePath& browser_dir);
 
+  void SetCrSourceRoot(const FilePath& path);
+
  private:
   base::mac::ScopedNSAutoreleasePool pool_;
 };

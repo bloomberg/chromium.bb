@@ -6,13 +6,20 @@
 import unittest
 
 import pyauto_functional
-from pyauto import PyUITest
+import pyauto
 
 
-class SimpleTest(PyUITest):
+class SimpleTest(pyauto.PyUITest):
 
   def testCanOpenGoogle(self):
+    """Navigate to Google."""
     self.NavigateToURL("http://www.google.com")
+
+  def testHTTP(self):
+    """Basic test over local http server."""
+    url = self.GetHttpURLForDataPath('english_page.html')
+    self.NavigateToURL(url)
+    self.assertEqual('This page is in English', self.GetActiveTabTitle())
 
 
 if __name__ == '__main__':

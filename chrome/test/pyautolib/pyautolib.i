@@ -37,6 +37,7 @@
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/pyautolib/pyautolib.h"
+#include "net/test/test_server.h"
 %}
 
 // Handle type uint32 conversions as int
@@ -166,6 +167,9 @@ class PyUITestSuiteBase {
 
   %feature("docstring", "Initialize from the path to browser dir.") Initialize;
   void Initialize(const FilePath& browser_dir);
+  %feature("docstring", "Set chrome source root path, used in some tests")
+      SetCrSourceRoot;
+  void SetCrSourceRoot(const FilePath& path);
 };
 
 class PyUITestBase {
@@ -388,4 +392,36 @@ class PyUITestBase {
   bool ResetToDefaultTheme();
 
 };
+
+namespace net {
+// TestServer
+%feature("docstring",
+         "TestServer. Serves files in data dir over a local http server")
+    TestServer;
+class TestServer {
+ public:
+  enum Type {
+    TYPE_FTP,
+    TYPE_HTTP,
+    TYPE_HTTPS,
+    TYPE_SYNC,
+  };
+
+  TestServer(Type type, const FilePath& document_root);
+
+  %feature("docstring", "Start TestServer over an ephemeral port") Start;
+  bool Start();
+
+  %feature("docstring", "Stop TestServer") Stop;
+  bool Stop();
+
+  %feature("docstring", "Get FilePath to the document root") document_root;
+  const FilePath& document_root() const;
+
+  std::string GetScheme() const;
+
+  %feature("docstring", "Get URL for a file path") GetURL;
+  GURL GetURL(const std::string& path) const;
+};
+}
 
