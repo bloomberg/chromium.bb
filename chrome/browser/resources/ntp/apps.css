@@ -61,6 +61,7 @@ enough extra space in the small grid layout.
 .app .app-settings {
   background-color: transparent;
   background-position: center center;
+  background-repeat: no-repeat;
   border: 0;
   height: 14px;
   padding: 0;
