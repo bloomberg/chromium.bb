@@ -1,9 +1,0 @@
-These are terrible, terrible hacks.
-
-They are meant to be temporary. clang currently doesn't allow running a plugin
-AND doing the normal codegen process. We want our syntax complaining plugins to
-run during normal compile, but for now, you can user run_plugin.sh to hack the
-build system to do a syntax check.
-
-Also see http://code.google.com/p/chromium/wiki/WritingClangPlugins
-
