@@ -69,6 +69,17 @@ T* address_of(T& v) {
   return &v;
 }
 
+// Returns true if minimum requirements for import of a given |profile| have
+// been met.  An address submitted via a form must have at least these fields
+// filled.  No verification of validity of the contents is preformed.  This is
+// and existence check only.
+bool IsMinimumAddress(const AutoFillProfile& profile) {
+  return !profile.GetFieldText(AutoFillType(ADDRESS_HOME_LINE1)).empty() &&
+         !profile.GetFieldText(AutoFillType(ADDRESS_HOME_CITY)).empty() &&
+         !profile.GetFieldText(AutoFillType(ADDRESS_HOME_STATE)).empty() &&
+         !profile.GetFieldText(AutoFillType(ADDRESS_HOME_ZIP)).empty();
+}
+
 }  // namespace
 
 PersonalDataManager::~PersonalDataManager() {
@@ -233,6 +244,9 @@ bool PersonalDataManager::ImportFormData(
     imported_profile_.reset();
   if (importable_credit_card_fields < kMinCreditCardImportSize)
     imported_credit_card_.reset();
+
+  if (imported_profile_.get() && !IsMinimumAddress(*imported_profile_.get()))
+    imported_profile_.reset();
 
   if (imported_credit_card_.get()) {
     if (!CreditCard::IsCreditCardNumber(imported_credit_card_->GetFieldText(
