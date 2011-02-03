@@ -3460,7 +3460,7 @@
    fun:_Znw*
    fun:_ZN11ProfileImpl14GetHostZoomMapEv
    fun:_ZN30ChromeURLRequestContextFactoryC2EP7Profile
-   fun:_ZN77_GLOBAL__N_chrome_browser_net_chrome_url_request_context.cc_00000000_26E4392D18FactoryForOriginalC1EP7ProfilePK13ProfileIOData
+   ...
    fun:_ZN29ChromeURLRequestContextGetter14CreateOriginalEP7ProfilePK13ProfileIOData
    fun:_ZNK13ProfileIOData6Handle27GetMainRequestContextGetterEv
    fun:_ZN11ProfileImpl17GetRequestContextEv
