@@ -26,7 +26,6 @@
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
-#include "chrome/browser/chromeos/cros/update_library.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #endif
 
@@ -161,6 +160,10 @@ Browser* FindBrowserMatching(const T& begin,
 BrowserList::BrowserVector BrowserList::browsers_;
 ObserverList<BrowserList::Observer> BrowserList::observers_;
 
+#if defined(OS_CHROMEOS)
+bool BrowserList::notified_window_manager_about_signout_ = false;
+#endif
+
 // static
 void BrowserList::AddBrowser(Browser* browser) {
   DCHECK(browser);
@@ -191,41 +194,20 @@ void BrowserList::MarkAsCleanShutdown() {
   }
 }
 
-#if defined(OS_CHROMEOS)
 // static
-void BrowserList::NotifyWindowManagerAboutSignout() {
-  static bool notified = false;
-  if (!notified) {
-    // Let the window manager know that we're going away before we start closing
-    // windows so it can display a graceful transition to a black screen.
-    chromeos::WmIpc::instance()->NotifyAboutSignout();
-    notified = true;
-  }
-}
-#endif
-
-// static
-void BrowserList::NotifyAndTerminate(bool fast_path) {
+void BrowserList::NotifyAndTerminate() {
 #if defined(OS_CHROMEOS)
-  NotifyWindowManagerAboutSignout();
+  // Let the window manager know that we're going away before we start closing
+  // windows so it can display a graceful transition to a black screen.
+  chromeos::WmIpc::instance()->NotifyAboutSignout();
+  notified_window_manager_about_signout_ = true;
 #endif
-
-  if (fast_path) {
-    NotificationService::current()->Notify(NotificationType::APP_TERMINATING,
-                                           NotificationService::AllSources(),
-                                           NotificationService::NoDetails());
-  }
-
+  NotificationService::current()->Notify(NotificationType::APP_TERMINATING,
+                                         NotificationService::AllSources(),
+                                         NotificationService::NoDetails());
 #if defined(OS_CHROMEOS)
-  chromeos::CrosLibrary* cros_library = chromeos::CrosLibrary::Get();
-  if (cros_library->EnsureLoaded()) {
-    // If update has been installed, reboot, otherwise, sign out.
-    if (cros_library->GetUpdateLibrary()->status().status ==
-          chromeos::UPDATE_STATUS_UPDATED_NEED_REBOOT) {
-      cros_library->GetUpdateLibrary()->RebootAfterUpdate();
-    } else {
-      cros_library->GetLoginLibrary()->StopSession("");
-    }
+  if (chromeos::CrosLibrary::Get()->EnsureLoaded()) {
+    chromeos::CrosLibrary::Get()->GetLoginLibrary()->StopSession("");
     return;
   }
   // If running the Chrome OS build, but we're not on the device, fall through
@@ -269,6 +251,16 @@ void BrowserList::RemoveBrowser(Browser* browser) {
   if (browsers_.empty() &&
       (browser_shutdown::IsTryingToQuit() ||
        g_browser_process->IsShuttingDown())) {
+#if defined(OS_CHROMEOS)
+    // We might've already notified the window manager before closing any
+    // windows in NotifyAndTerminate() if we were able to take the
+    // no-beforeunload-handlers-or-downloads fast path; no need to do it again
+    // here.
+    if (!notified_window_manager_about_signout_) {
+      chromeos::WmIpc::instance()->NotifyAboutSignout();
+      notified_window_manager_about_signout_ = true;
+    }
+#endif
     // Last browser has just closed, and this is a user-initiated quit or there
     // is no module keeping the app alive, so send out our notification. No need
     // to call ProfileManager::ShutdownSessionServices() as part of the
@@ -336,7 +328,7 @@ void BrowserList::CloseAllBrowsers() {
   // If there are no browsers, send the APP_TERMINATING action here. Otherwise,
   // it will be sent by RemoveBrowser() when the last browser has closed.
   if (force_exit || browsers_.empty()) {
-    NotifyAndTerminate(true);
+    NotifyAndTerminate();
     return;
   }
 #if defined(OS_CHROMEOS)
@@ -376,7 +368,7 @@ void BrowserList::Exit() {
   if (chromeos::CrosLibrary::Get()->EnsureLoaded()
       && !NeedBeforeUnloadFired()
       && !PendingDownloads()) {
-    NotifyAndTerminate(true);
+    NotifyAndTerminate();
     return;
   }
 #endif
