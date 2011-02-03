@@ -7,7 +7,8 @@
 
 /**
  * @file
- * Defines the API ...
+ * This file defines the PP_Instance type which uniquely identifies one module
+ * instance.
  */
 
 #include "ppapi/c/pp_macros.h"
@@ -18,12 +19,13 @@
  * @{
  */
 
-/** A PP_Instance uniquely identifies one plugin instance, which is one time
- * that a page says \<embed>. There can be multiple instances of the same plugin
- * type on a page that will all be in the same module.
+/**
+ * The PP_Instance value uniquely identifies one instance of a module
+ * (.nexe/PP_Module). There will be one module instance for every
+ * \<embed> tag on a page.
  *
- * The identifier is an opaque handle assigned by the browser to the plugin. It
- * is guaranteed never to be 0, so a plugin can initialize it to 0 to
+ * This identifier is an opaque handle assigned by the browser to the module. It
+ * is guaranteed never to be 0, so a module can initialize it to 0 to
  * indicate a "NULL handle."
  */
 typedef int32_t PP_Instance;

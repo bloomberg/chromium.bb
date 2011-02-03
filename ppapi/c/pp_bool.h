@@ -9,7 +9,7 @@
 
 /**
  * @file
- * Defines the API ...
+ * This file defines the PP_Bool enumeration for use in PPAPI C headers.
  */
 
 /**
@@ -19,10 +19,10 @@
  */
 
 /**
- * A boolean value for use in PPAPI C headers.  The standard bool type is not
- * available to pre-C99 compilers, and is not guaranteed to be compatible
- * between C and C++, whereas the PPAPI C headers can be included from C or C++
- * code.
+ * The PP_Bool enum is a boolean value for use in PPAPI C headers.  The
+ * standard bool type is not available to pre-C99 compilers, and is not
+ * guaranteed to be compatible between C and C++, whereas the PPAPI C
+ * headers can be included from C or C++ code.
  */
 typedef enum {
   PP_FALSE = 0,
@@ -32,10 +32,6 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_Bool, 4);
 /**
  * @}
  */
-
-
-
-
 
 #endif  /* PPAPI_C_PP_BOOL_H_ */
 

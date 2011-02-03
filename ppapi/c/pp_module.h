@@ -7,7 +7,8 @@
 
 /**
  * @file
- * Defines the API ...
+ * This file defines the PP_Module type which uniquely identifies the module
+ * or .nexe.
  */
 
 #include "ppapi/c/pp_macros.h"
@@ -20,9 +21,11 @@
  */
 
 /**
- * A module uniquely identifies one plugin library. The identifier is an opaque
- * handle assigned by the browser to the plugin. It is guaranteed never to be
- * 0, so a plugin can initialize it to 0 to indicate a "NULL handle."
+ * The PP_Module value uniquely identifies the module or .nexe.
+ *
+ * This identifier is an opaque handle assigned by the browser to the module. It
+ * is guaranteed never to be 0, so a module can initialize it to 0 to
+ * indicate a "NULL handle."
  */
 typedef int32_t PP_Module;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_Module, 4);
