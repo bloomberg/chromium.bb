@@ -192,6 +192,9 @@ void DisablePasswordInput() {
   // view's size, since it's required on the displaylink thread.
   NSSize cachedSize_;
 
+  // Rects that should show web content rather than plugin content.
+  scoped_nsobject<NSArray> cutoutRects_;
+
   // -globalFrameDidChange: can be called recursively, this counts how often it
   // holds the CGL lock.
   int globalFrameDidChangeCGLLockCount_;
@@ -200,6 +203,12 @@ void DisablePasswordInput() {
 - (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)r
                          pluginHandle:(gfx::PluginWindowHandle)pluginHandle;
 - (void)drawView;
+
+// Sets the list of rectangles that should show the web page, rather than the
+// accelerated plugin. This is used to simulate the iframe-based trick that web
+// pages have long used to show web content above windowed plugins on Windows
+// and Linux.
+- (void)setCutoutRects:(NSArray*)cutout_rects;
 
 // Updates the number of swap buffers calls that have been requested.
 // This is currently called with non-zero values only in response to
@@ -329,6 +338,10 @@ static CVReturn DrawOneAcceleratedPluginCallback(
   CGLUnlockContext(cglContext_);
 }
 
+- (void)setCutoutRects:(NSArray*)cutout_rects {
+  cutoutRects_.reset([cutout_rects copy]);
+}
+
 - (void)updateSwapBuffersCount:(uint64)count
                   fromRenderer:(int)rendererId
                        routeId:(int32)routeId {
@@ -362,9 +375,36 @@ static CVReturn DrawOneAcceleratedPluginCallback(
     int dirtyRectCount;
     [self getRectsBeingDrawn:&dirtyRects count:&dirtyRectCount];
 
+    [NSGraphicsContext saveGraphicsState];
+
+    // Mask out any cutout rects--somewhat counterintuitively cutout rects are
+    // places where clearColor is *not* drawn. The trick is that drawing nothing
+    // lets the parent view (i.e., the web page) show through, whereas drawing
+    // clearColor punches a hole in the window (letting OpenGL show through).
+    if ([cutoutRects_.get() count] > 0) {
+      NSBezierPath* path = [NSBezierPath bezierPath];
+      // Trace the bounds clockwise to give a base clip rect of the whole view.
+      NSRect bounds = [self bounds];
+      [path moveToPoint:bounds.origin];
+      [path lineToPoint:NSMakePoint(NSMinX(bounds), NSMaxY(bounds))];
+      [path lineToPoint:NSMakePoint(NSMaxX(bounds), NSMaxY(bounds))];
+      [path lineToPoint:NSMakePoint(NSMaxX(bounds), NSMinY(bounds))];
+      [path closePath];
+
+      // Then trace each cutout rect counterclockwise to remove that region from
+      // the clip region.
+      for (NSValue* rectWrapper in cutoutRects_.get()) {
+        [path appendBezierPathWithRect:[rectWrapper rectValue]];
+      }
+
+      [path addClip];
+    }
+
     // Punch a hole so that the OpenGL view shows through.
     [[NSColor clearColor] set];
     NSRectFillList(dirtyRects, dirtyRectCount);
+
+    [NSGraphicsContext restoreGraphicsState];
   }
 
   [self drawView];
@@ -649,6 +689,15 @@ void RenderWidgetHostViewMac::MovePluginWindows(
       }
       NSRect new_rect([cocoa_view_ flipRectToNSRect:rect]);
       [view setFrame:new_rect];
+      NSMutableArray* cutout_rects =
+          [NSMutableArray arrayWithCapacity:geom.cutout_rects.size()];
+      for (unsigned int i = 0; i < geom.cutout_rects.size(); ++i) {
+        // Convert to NSRect, and flip vertically.
+        NSRect cutout_rect = NSRectFromCGRect(geom.cutout_rects[i].ToCGRect());
+        cutout_rect.origin.y = new_rect.size.height - NSMaxY(cutout_rect);
+        [cutout_rects addObject:[NSValue valueWithRect:cutout_rect]];
+      }
+      [view setCutoutRects:cutout_rects];
       [view setNeedsDisplay:YES];
     }
 
