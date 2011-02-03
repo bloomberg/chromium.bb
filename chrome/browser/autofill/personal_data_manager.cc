@@ -19,6 +19,8 @@
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebRegularExpression.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 
 namespace {
 
@@ -67,6 +69,16 @@ class DereferenceFunctor {
 template<typename T>
 T* address_of(T& v) {
   return &v;
+}
+
+bool IsValidEmail(const string16& value) {
+  // This regex is more permissive than the official rfc2822 spec on the
+  // subject, but it does reject obvious non-email addresses.
+  const string16 kEmailPattern =
+      ASCIIToUTF16("^[^@]+@[^@]+\\.[a-z]{2,6}$");
+  WebKit::WebRegularExpression re(WebKit::WebString(kEmailPattern),
+                                  WebKit::WebTextCaseInsensitive);
+  return re.match(WebKit::WebString(StringToLowerASCII(value))) != -1;
 }
 
 // Returns true if minimum requirements for import of a given |profile| have
@@ -230,6 +242,9 @@ bool PersonalDataManager::ImportFormData(
             value = stored_number + value;
           }
         }
+
+        if (field_type.field_type() == EMAIL_ADDRESS && !IsValidEmail(value))
+          continue;
 
         imported_profile_->SetInfo(AutoFillType(field_type.field_type()),
                                    value);

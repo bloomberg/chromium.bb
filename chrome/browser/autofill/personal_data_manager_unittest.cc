@@ -555,6 +555,50 @@ TEST_F(PersonalDataManagerTest, ImportFormData) {
   EXPECT_EQ(0, expected.Compare(*results[0]));
 }
 
+TEST_F(PersonalDataManagerTest, ImportFormDataBadEmail) {
+  FormData form;
+  webkit_glue::FormField field;
+  autofill_test::CreateTestFormField(
+      "First name:", "first_name", "George", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Last name:", "last_name", "Washington", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Email:", "email", "bogus", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Address:", "address1", "21 Laussat St", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "City:", "city", "San Francisco", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "State:", "state", "California", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Zip:", "zip", "94102", "text", &field);
+  form.fields.push_back(field);
+  FormStructure form_structure(form);
+  std::vector<const FormStructure*> forms;
+  forms.push_back(&form_structure);
+  EXPECT_TRUE(personal_data_->ImportFormData(forms));
+
+  // Wait for the refresh.
+  EXPECT_CALL(personal_data_observer_,
+      OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
+
+  MessageLoop::current()->Run();
+
+  AutoFillProfile expected;
+  autofill_test::SetProfileInfo(&expected, NULL, "George", NULL,
+      "Washington", NULL, NULL, "21 Laussat St", NULL,
+      "San Francisco", "California", "94102", NULL, NULL, NULL);
+  const std::vector<AutoFillProfile*>& results = personal_data_->profiles();
+  ASSERT_EQ(1U, results.size());
+  EXPECT_EQ(0, expected.Compare(*results[0]));
+}
+
 TEST_F(PersonalDataManagerTest, ImportFormDataNotEnoughFilledFields) {
   FormData form;
   webkit_glue::FormField field;
