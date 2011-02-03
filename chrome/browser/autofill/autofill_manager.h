@@ -231,6 +231,7 @@ class AutoFillManager : public TabContentsObserver,
   FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillCreditCardFormYearMonth);
   FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillAddressForm);
   FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillAddressAndCreditCardForm);
+  FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillFormWithMultipleSections);
   FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillAutoFilledForm);
   FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillPhoneNumber);
   FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FormChangesRemoveField);
