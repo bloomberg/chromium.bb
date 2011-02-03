@@ -96,10 +96,19 @@ void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
                                    WorkItemList* install_list,
                                    const Product& product);
 
+// [Un]Registers Chrome and ChromeLauncher in IE's low rights elevation policy.
+void AddElevationPolicyWorkItems(const InstallationState& original_state,
+                                 const InstallerState& installer_state,
+                                 const Version& new_version,
+                                 WorkItemList* install_list);
+
 // Utility method currently shared between install.cc and install_worker.cc
 void AppendUninstallCommandLineFlags(const InstallerState& installer_state,
                                      const Product& product,
                                      CommandLine* uninstall_cmd);
+
+// Refreshes the elevation policy on platforms where it is supported.
+void RefreshElevationPolicy();
 
 }  // namespace installer
 

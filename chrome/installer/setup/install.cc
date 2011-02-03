@@ -299,6 +299,9 @@ installer::InstallStatus InstallNewVersion(
                       current_version,
                       install_list.get());
 
+  AddElevationPolicyWorkItems(original_state, installer_state, new_version,
+                              install_list.get());
+
   FilePath new_chrome_exe(
       installer_state.target_path().Append(installer::kChromeNewExe));
 
@@ -313,6 +316,8 @@ installer::InstallStatus InstallNewVersion(
     LOG(ERROR) << "Rollback complete. ";
     return result;
   }
+
+  installer::RefreshElevationPolicy();
 
   if (!current_version->get()) {
     VLOG(1) << "First install of version " << new_version.GetString();

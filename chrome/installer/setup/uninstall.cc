@@ -696,7 +696,6 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
       scoped_ptr<WorkItemList> unreg_work_item_list(
           WorkItem::CreateWorkItemList());
 
-
       AddRegisterComDllWorkItems(dll_folder,
                                  com_dll_list,
                                  installer_state.system_install(),
@@ -743,6 +742,14 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
     LOG(INFO) << (can_delete_files ? "Shared binaries will be deleted." :
                                      "Shared binaries still in use.");
     if (can_delete_files) {
+      // Remove the elevation policy when the last product is uninstalled.
+      scoped_ptr<WorkItemList> work_items(
+          WorkItem::CreateNoRollbackWorkItemList());
+      AddElevationPolicyWorkItems(original_state, installer_state,
+          product_state->version(), work_items.get());
+      work_items->Do();
+      RefreshElevationPolicy();
+
       BrowserDistribution* multi_dist =
           installer_state.multi_package_binaries_distribution();
       InstallUtil::DeleteRegistryKey(key, multi_dist->GetVersionKey());

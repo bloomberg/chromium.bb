@@ -121,6 +121,7 @@ extern const wchar_t kChromeFrameDll[];
 extern const wchar_t kChromeFrameHelperExe[];
 extern const wchar_t kChromeFrameHelperWndClass[];
 extern const wchar_t kChromeFrameReadyModeField[];
+extern const wchar_t kChromeLauncherExe[];
 extern const wchar_t kChromeNaCl64Dll[];
 extern const wchar_t kChromeOldExe[];
 extern const wchar_t kChromeNewExe[];

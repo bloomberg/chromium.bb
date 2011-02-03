@@ -185,6 +185,7 @@
             '<(DEPTH)/build/util/build_util.gyp:lastchange',
             '<(DEPTH)/build/util/support/support.gyp:*',
             '<(DEPTH)/build/win/system.gyp:cygwin',
+            '<(DEPTH)/chrome_frame/chrome_frame.gyp:chrome_tab_idl',
             '<(DEPTH)/chrome_frame/chrome_frame.gyp:npchrome_frame',
             '<(DEPTH)/breakpad/breakpad.gyp:breakpad_handler',
           ],
@@ -310,11 +311,13 @@
             '<(DEPTH)/base/base.gyp:base_i18n',
             '<(DEPTH)/base/base.gyp:test_support_base',
             '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
+            '<(DEPTH)/chrome_frame/chrome_frame.gyp:chrome_tab_idl',
             '<(DEPTH)/testing/gmock.gyp:gmock',
             '<(DEPTH)/testing/gtest.gyp:gtest',
           ],
           'include_dirs': [
             '<(DEPTH)',
+            '<(INTERMEDIATE_DIR)',
           ],
           # TODO(robertshield): Move the items marked with "Move to lib"
           # below into a separate lib and then link both setup.exe and
