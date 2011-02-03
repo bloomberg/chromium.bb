@@ -192,9 +192,9 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
   const ExtensionList* extensions = extensions_service_->extensions();
   for (ExtensionList::const_iterator it = extensions->begin();
        it != extensions->end(); ++it) {
-    // Don't include the WebStore component app. The WebStore launcher
-    // gets special treatment in ntp/apps.js.
-    if ((*it)->is_app() && (*it)->id() != extension_misc::kWebStoreAppId) {
+    // Don't include the WebStore and other component apps.
+    // The WebStore launcher gets special treatment in ntp/apps.js.
+    if ((*it)->is_app() && (*it)->location() != Extension::COMPONENT) {
       DictionaryValue* app_info = new DictionaryValue();
       CreateAppInfo(*it, extensions_service_->extension_prefs(), app_info);
       list->Append(app_info);

@@ -1,0 +1,18 @@
+{
+  "name": "Get Started",
+  "description": "Get Started",
+  "version": "1.0.26",
+  "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDAuFUzjec2nXa5iFEycabbHL9h4ga7hsRGT0LVUlhhfm0tH8OTGzQtzcZG+Skk/stWOHNcd03lSPrPwCEtjJ9pDjtM2I0bYwXrcnVSBx+h9JXnDIJ0zsdVQsjOIknSFunxcedfG0v+yfGAfgamLSpAhAg8Le2pniqDJ24u3nIPjQIDAQAB",
+  "app": {
+    "launch": {
+      "local_path": "index.html"
+    }
+  },
+  "icons": {
+    "16": "images/16x16.png",
+    "128": "images/128x128.png"
+  },
+  "permissions": [
+    "tabs"
+  ]
+}

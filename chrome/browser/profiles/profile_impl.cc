@@ -397,12 +397,17 @@ void ProfileImpl::RegisterComponentExtensions() {
       IDR_KEYBOARD_MANIFEST));
 #endif
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && defined(OFFICIAL_BUILD)
   if (browser_defaults::enable_help_app) {
     component_extensions.push_back(std::make_pair(
         FILE_PATH_LITERAL("/usr/share/chromeos-assets/helpapp"),
         IDR_HELP_MANIFEST));
   }
+
+  component_extensions.push_back(std::make_pair(
+      FILE_PATH_LITERAL("/usr/share/chromeos-assets/getstarted"),
+      IDR_GETSTARTED_MANIFEST));
+
   component_extensions.push_back(std::make_pair(
       FILE_PATH_LITERAL("/usr/share/chromeos-assets/mobile"),
       IDR_MOBILE_MANIFEST));

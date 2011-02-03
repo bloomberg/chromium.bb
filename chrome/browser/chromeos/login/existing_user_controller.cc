@@ -41,14 +41,11 @@ const char kSettingsSyncLoginURL[] = "chrome://settings/personal";
 
 // URL that will be opened on when user logs in first time on the device.
 const char kGetStartedURL[] =
-    "chrome-extension://nbaambmfhicobichobkkokacjbaoinda/index.html";
+    "chrome-extension://cbmhffdpiobpchciemffincgahkkljig/index.html";
 
 // URL for account creation.
 const char kCreateAccountURL[] =
     "https://www.google.com/accounts/NewAccount?service=mail";
-
-// Path to extracted version of Get Started app.
-const char kGetStartedPath[] = "/usr/share/chromeos-assets/getstarted";
 
 // Used to handle the asynchronous response of deleting a cryptohome directory.
 class RemoveAttempt : public CryptohomeLibrary::Delegate {
@@ -363,9 +360,6 @@ void ExistingUserController::OnLoginSuccess(
   // TODO(nkostylev): May add login UI implementation callback call.
   if (!known_user && !login_only) {
 #if defined(OFFICIAL_BUILD)
-    CommandLine::ForCurrentProcess()->AppendSwitchPath(
-        switches::kLoadExtension,
-        FilePath(kGetStartedPath));
     CommandLine::ForCurrentProcess()->AppendArg(kGetStartedURL);
 #endif  // OFFICIAL_BUILD
 
