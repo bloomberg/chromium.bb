@@ -8,6 +8,3 @@
 // Registering the fonts for this test causes other processes (Adium, Firefox)
 // to spin and become unresponsive or crash.
 BUGWK50709 MAC : fast/css/font-weight-1.html = IMAGE+TEXT
-
-// temporary disable until r77487.
-BUG_LOISLO : inspector/styles-source-lines-inline.html = TEXT
