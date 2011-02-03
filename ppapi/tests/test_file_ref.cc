@@ -68,13 +68,13 @@ std::string TestFileRef::TestGetFileSystemType() {
   if (file_ref_temp.GetFileSystemType() != PP_FILESYSTEMTYPE_LOCALTEMPORARY)
     return "file_ref_temp expected to be temporary.";
 
-  pp::URLRequestInfo request;
+  pp::URLRequestInfo request(instance_);
   request.SetURL("test_url_loader_data/hello.txt");
   request.SetStreamToFile(true);
 
   TestCompletionCallback callback;
 
-  pp::URLLoader loader(*instance_);
+  pp::URLLoader loader(instance_);
   int32_t rv = loader.Open(request, callback);
   if (rv == PP_ERROR_WOULDBLOCK)
     rv = callback.WaitForResult();
@@ -117,13 +117,13 @@ std::string TestFileRef::TestGetName() {
   if (name != "/")
     return ReportMismatch("FileRef::GetName", name, "/");
 
-  pp::URLRequestInfo request;
+  pp::URLRequestInfo request(instance_);
   request.SetURL("test_url_loader_data/hello.txt");
   request.SetStreamToFile(true);
 
   TestCompletionCallback callback;
 
-  pp::URLLoader loader(*instance_);
+  pp::URLLoader loader(instance_);
   int32_t rv = loader.Open(request, callback);
   if (rv == PP_ERROR_WOULDBLOCK)
     rv = callback.WaitForResult();
@@ -161,13 +161,13 @@ std::string TestFileRef::TestGetPath() {
   if (path != kTempFilePath)
     return ReportMismatch("FileRef::GetPath", path, kTempFilePath);
 
-  pp::URLRequestInfo request;
+  pp::URLRequestInfo request(instance_);
   request.SetURL("test_url_loader_data/hello.txt");
   request.SetStreamToFile(true);
 
   TestCompletionCallback callback;
 
-  pp::URLLoader loader(*instance_);
+  pp::URLLoader loader(instance_);
   int32_t rv = loader.Open(request, callback);
   if (rv == PP_ERROR_WOULDBLOCK)
     rv = callback.WaitForResult();
@@ -216,13 +216,13 @@ std::string TestFileRef::TestGetParent() {
   if (parent_path != "/")
     return ReportMismatch("FileRef::GetParent", parent_path, "/");
 
-  pp::URLRequestInfo request;
+  pp::URLRequestInfo request(instance_);
   request.SetURL("test_url_loader_data/hello.txt");
   request.SetStreamToFile(true);
 
   TestCompletionCallback callback;
 
-  pp::URLLoader loader(*instance_);
+  pp::URLLoader loader(instance_);
   int32_t rv = loader.Open(request, callback);
   if (rv == PP_ERROR_WOULDBLOCK)
     rv = callback.WaitForResult();
@@ -337,7 +337,7 @@ std::string TestFileRef::TestQueryAndTouchFile() {
     return ReportError("FileSystem::Open", rv);
 
   pp::FileRef_Dev file_ref(file_system, "/file_touch");
-  pp::FileIO_Dev file_io;
+  pp::FileIO_Dev file_io(instance_);
   rv = file_io.Open(file_ref,
                     PP_FILEOPENFLAG_CREATE | PP_FILEOPENFLAG_WRITE,
                     callback);
@@ -421,7 +421,7 @@ std::string TestFileRef::TestDeleteFileAndDirectory() {
     return ReportError("FileSystem::Open", rv);
 
   pp::FileRef_Dev file_ref(file_system, "/file_delete");
-  pp::FileIO_Dev file_io;
+  pp::FileIO_Dev file_io(instance_);
   rv = file_io.Open(file_ref, PP_FILEOPENFLAG_CREATE, callback);
   if (rv == PP_ERROR_WOULDBLOCK)
     rv = callback.WaitForResult();
@@ -472,7 +472,7 @@ std::string TestFileRef::TestDeleteFileAndDirectory() {
   // Delete aborted.
   {
     pp::FileRef_Dev file_ref_abort(file_system, "/file_delete_abort");
-    pp::FileIO_Dev file_io_abort;
+    pp::FileIO_Dev file_io_abort(instance_);
     rv = file_io_abort.Open(file_ref_abort, PP_FILEOPENFLAG_CREATE, callback);
     if (rv == PP_ERROR_WOULDBLOCK)
       rv = callback.WaitForResult();
@@ -505,7 +505,7 @@ std::string TestFileRef::TestRenameFileAndDirectory() {
     return ReportError("FileSystem::Open", rv);
 
   pp::FileRef_Dev file_ref(file_system, "/file_rename");
-  pp::FileIO_Dev file_io;
+  pp::FileIO_Dev file_io(instance_);
   rv = file_io.Open(file_ref, PP_FILEOPENFLAG_CREATE, callback);
   if (rv == PP_ERROR_WOULDBLOCK)
     rv = callback.WaitForResult();
@@ -554,7 +554,7 @@ std::string TestFileRef::TestRenameFileAndDirectory() {
                                         "/target_file_rename_abort");
   {
     pp::FileRef_Dev file_ref_abort(file_system, "/file_rename_abort");
-    pp::FileIO_Dev file_io_abort;
+    pp::FileIO_Dev file_io_abort(instance_);
     rv = file_io_abort.Open(file_ref_abort, PP_FILEOPENFLAG_CREATE, callback);
     if (rv == PP_ERROR_WOULDBLOCK)
       rv = callback.WaitForResult();

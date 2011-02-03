@@ -101,7 +101,7 @@ std::string TestFileIO::TestOpen() {
   if (rv != PP_OK)
     return ReportError("FileSystem::Open", rv);
 
-  pp::FileIO_Dev file_io;
+  pp::FileIO_Dev file_io(instance_);
   rv = file_io.Open(file_ref, PP_FILEOPENFLAG_CREATE, callback);
   if (rv == PP_ERROR_WOULDBLOCK)
     rv = callback.WaitForResult();
@@ -110,7 +110,7 @@ std::string TestFileIO::TestOpen() {
 
   // Try opening a file that doesn't exist.
   pp::FileRef_Dev nonexistent_file_ref(file_system, "/nonexistent_file");
-  pp::FileIO_Dev nonexistent_file_io;
+  pp::FileIO_Dev nonexistent_file_io(instance_);
   rv = nonexistent_file_io.Open(
       nonexistent_file_ref, PP_FILEOPENFLAG_READ, callback);
   if (rv == PP_ERROR_WOULDBLOCK)
@@ -132,7 +132,7 @@ std::string TestFileIO::TestReadWriteSetLength() {
   if (rv != PP_OK)
     return ReportError("FileSystem::Open", rv);
 
-  pp::FileIO_Dev file_io;
+  pp::FileIO_Dev file_io(instance_);
   rv = file_io.Open(file_ref,
                     PP_FILEOPENFLAG_CREATE |
                     PP_FILEOPENFLAG_READ |
@@ -246,7 +246,7 @@ std::string TestFileIO::TestTouchQuery() {
     return ReportError("FileSystem::Open", rv);
 
   pp::FileRef_Dev file_ref(file_system, "/file_touch");
-  pp::FileIO_Dev file_io;
+  pp::FileIO_Dev file_io(instance_);
   rv = file_io.Open(file_ref,
                     PP_FILEOPENFLAG_CREATE | PP_FILEOPENFLAG_WRITE,
                     callback);
@@ -309,7 +309,7 @@ std::string TestFileIO::TestAbortCalls() {
 
   // First, create a file which to do ops on.
   {
-    pp::FileIO_Dev file_io;
+    pp::FileIO_Dev file_io(instance_);
     rv = file_io.Open(file_ref,
                       PP_FILEOPENFLAG_CREATE | PP_FILEOPENFLAG_WRITE,
                       callback);
@@ -327,7 +327,8 @@ std::string TestFileIO::TestAbortCalls() {
   // Abort |Open()|.
   {
     callback.reset_run_count();
-    rv = pp::FileIO_Dev().Open(file_ref, PP_FILEOPENFLAG_READ, callback);
+    rv = pp::FileIO_Dev(instance_)
+        .Open(file_ref, PP_FILEOPENFLAG_READ,callback);
     if (callback.run_count() > 0)
       return "FileIO::Open ran callback synchronously.";
     if (rv == PP_ERROR_WOULDBLOCK) {
@@ -343,7 +344,7 @@ std::string TestFileIO::TestAbortCalls() {
   {
     PP_FileInfo_Dev info = { 0 };
     {
-      pp::FileIO_Dev file_io;
+      pp::FileIO_Dev file_io(instance_);
       rv = file_io.Open(file_ref, PP_FILEOPENFLAG_READ, callback);
       if (rv == PP_ERROR_WOULDBLOCK)
         rv = callback.WaitForResult();
@@ -370,7 +371,7 @@ std::string TestFileIO::TestAbortCalls() {
   // Abort |Touch()|.
   {
     {
-      pp::FileIO_Dev file_io;
+      pp::FileIO_Dev file_io(instance_);
       rv = file_io.Open(file_ref, PP_FILEOPENFLAG_WRITE, callback);
       if (rv == PP_ERROR_WOULDBLOCK)
         rv = callback.WaitForResult();
@@ -393,7 +394,7 @@ std::string TestFileIO::TestAbortCalls() {
   {
     char buf[3] = { 0 };
     {
-      pp::FileIO_Dev file_io;
+      pp::FileIO_Dev file_io(instance_);
       rv = file_io.Open(file_ref, PP_FILEOPENFLAG_READ, callback);
       if (rv == PP_ERROR_WOULDBLOCK)
         rv = callback.WaitForResult();
@@ -421,7 +422,7 @@ std::string TestFileIO::TestAbortCalls() {
   {
     char buf[3] = { 0 };
     {
-      pp::FileIO_Dev file_io;
+      pp::FileIO_Dev file_io(instance_);
       rv = file_io.Open(file_ref, PP_FILEOPENFLAG_READ, callback);
       if (rv == PP_ERROR_WOULDBLOCK)
         rv = callback.WaitForResult();
@@ -443,7 +444,7 @@ std::string TestFileIO::TestAbortCalls() {
   // Abort |SetLength()|.
   {
     {
-      pp::FileIO_Dev file_io;
+      pp::FileIO_Dev file_io(instance_);
       rv = file_io.Open(file_ref, PP_FILEOPENFLAG_READ, callback);
       if (rv == PP_ERROR_WOULDBLOCK)
         rv = callback.WaitForResult();
@@ -465,7 +466,7 @@ std::string TestFileIO::TestAbortCalls() {
   // Abort |Flush()|.
   {
     {
-      pp::FileIO_Dev file_io;
+      pp::FileIO_Dev file_io(instance_);
       rv = file_io.Open(file_ref, PP_FILEOPENFLAG_READ, callback);
       if (rv == PP_ERROR_WOULDBLOCK)
         rv = callback.WaitForResult();

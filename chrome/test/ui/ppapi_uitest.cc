@@ -154,13 +154,11 @@ TEST_F(PPAPITest, Var) {
   RunTest("Var");
 }
 
-// TODO(dumi): figure out why this test is flaky / crashing.
-TEST_F(PPAPITest, DISABLED_FileIO) {
+TEST_F(PPAPITest, FileIO) {
   RunTestViaHTTP("FileIO");
 }
 
-// TODO(dumi): figure out why this test is flaky / crashing.
-TEST_F(PPAPITest, DISABLED_FileRef) {
+TEST_F(PPAPITest, FileRef) {
   RunTestViaHTTP("FileRef");
 }
 
