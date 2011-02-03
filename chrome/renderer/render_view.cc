@@ -41,7 +41,6 @@
 #include "chrome/common/pepper_messages.h"
 #include "chrome/common/pepper_plugin_registry.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/render_view_commands.h"
 #include "chrome/common/renderer_preferences.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/url_constants.h"
@@ -1633,12 +1632,18 @@ void RenderView::OnSetInitialFocus(bool reverse) {
 }
 
 void RenderView::OnScrollFocusedEditableNodeIntoView() {
-  WebKit::WebNode node = GetFocusedNode();
-  if (!node.isNull()) {
-    if (IsEditableNode(node))
-      // TODO(varunjain): Change webkit API to scroll a particular node into
-      // view and use that API here instead.
-      webview()->scrollFocusedNodeIntoView();
+  if (!webview())
+    return;
+  WebFrame* focused_frame = webview()->focusedFrame();
+  if (focused_frame) {
+    WebDocument doc = focused_frame->document();
+    if (!doc.isNull()) {
+      WebNode node = doc.focusedNode();
+      if (IsEditableNode(node))
+        // TODO(varunjain): Change webkit API to scroll a particular node into
+        // view and use that API here instead.
+        webview()->scrollFocusedNodeIntoView();
+    }
   }
 }
 
@@ -2369,10 +2374,6 @@ void RenderView::updateSpellingUIWithMisspelledWord(const WebString& word) {
                                                              word));
 }
 
-void RenderView::continuousSpellCheckingEnabledStateChanged() {
-  UpdateToggleSpellCheckCommandState();
-}
-
 bool RenderView::runFileChooser(
     const WebKit::WebFileChooserParams& params,
     WebFileChooserCompletion* chooser_completion) {
@@ -2499,27 +2500,6 @@ void RenderView::UpdateTargetURL(const GURL& url, const GURL& fallback_url) {
   }
 }
 
-void RenderView::UpdateToggleSpellCheckCommandState() {
-  bool is_enabled = false;
-  WebKit::WebNode node = GetFocusedNode();
-  if (!node.isNull())
-    is_enabled = IsEditableNode(node);
-
-  RenderViewCommandCheckedState checked_state =
-      RENDER_VIEW_COMMAND_CHECKED_STATE_UNCHECKED;
-  if (is_enabled && webview()) {
-    WebFrame* frame = webview()->focusedFrame();
-    if (frame->isContinuousSpellCheckingEnabled())
-      checked_state = RENDER_VIEW_COMMAND_CHECKED_STATE_CHECKED;
-  }
-
-  Send(new ViewHostMsg_CommandStateChanged(
-      routing_id_,
-      RENDER_VIEW_COMMAND_TOGGLE_SPELL_CHECK,
-      is_enabled,
-      checked_state));
-}
-
 void RenderView::StartNavStateSyncTimerIfNecessary() {
   int delay;
   if (send_content_state_immediately_)
@@ -2596,8 +2576,6 @@ void RenderView::focusedNodeChanged(const WebNode& node) {
         webview()->accessibilityObject(),
         WebKit::WebAccessibilityNotificationFocusedUIElementChanged);
   }
-
-  UpdateToggleSpellCheckCommandState();
 }
 
 void RenderView::navigateBackForwardSoon(int offset) {
@@ -4536,19 +4514,6 @@ WebFrame* RenderView::GetChildFrame(const std::wstring& xpath) const {
   }
 
   return frame;
-}
-
-WebNode RenderView::GetFocusedNode() const {
-  if (!webview())
-    return WebNode();
-  WebFrame* focused_frame = webview()->focusedFrame();
-  if (focused_frame) {
-    WebDocument doc = focused_frame->document();
-    if (!doc.isNull())
-      return doc.focusedNode();
-  }
-
-  return WebNode();
 }
 
 void RenderView::SetSuggestions(const std::vector<std::string>& suggestions) {
