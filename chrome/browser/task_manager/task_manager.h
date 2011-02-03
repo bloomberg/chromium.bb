@@ -57,7 +57,7 @@ class TaskManager {
       GPU              // A graphics process.
     };
 
-    virtual std::wstring GetTitle() const = 0;
+    virtual string16 GetTitle() const = 0;
     virtual SkBitmap GetIcon() const = 0;
     virtual base::ProcessHandle GetProcess() const = 0;
     virtual Type GetType() const = 0;

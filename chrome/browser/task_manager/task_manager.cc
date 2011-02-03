@@ -122,7 +122,7 @@ void TaskManagerModel::RemoveObserver(TaskManagerModelObserver* observer) {
 
 string16 TaskManagerModel::GetResourceTitle(int index) const {
   CHECK_LT(index, ResourceCount());
-  return WideToUTF16Hack(resources_[index]->GetTitle());
+  return resources_[index]->GetTitle();
 }
 
 int64 TaskManagerModel::GetNetworkUsage(int index) const {
@@ -149,13 +149,13 @@ double TaskManagerModel::GetCPUUsage(int index) const {
 
 string16 TaskManagerModel::GetResourceCPUUsage(int index) const {
   CHECK_LT(index, ResourceCount());
-  return WideToUTF16Hack(StringPrintf(
+  return UTF8ToUTF16(StringPrintf(
 #if defined(OS_MACOSX)
       // Activity Monitor shows %cpu with one decimal digit -- be
       // consistent with that.
-      L"%.1f",
+      "%.1f",
 #else
-      L"%.0f",
+      "%.0f",
 #endif
       GetCPUUsage(resources_[index])));
 }

@@ -1,9 +1,10 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/compiler_specific.h"
 #include "base/scoped_nsobject.h"
 #include "base/utf_string_conversions.h"
 #import "chrome/browser/ui/cocoa/task_manager_mac.h"
@@ -19,13 +20,13 @@ namespace {
 class TestResource : public TaskManager::Resource {
  public:
   TestResource(const string16& title, pid_t pid) : title_(title), pid_(pid) {}
-  virtual std::wstring GetTitle() const { return UTF16ToWide(title_); }
-  virtual SkBitmap GetIcon() const { return SkBitmap(); }
-  virtual base::ProcessHandle GetProcess() const { return pid_; }
-  virtual Type GetType() const { return RENDERER; }
-  virtual bool SupportNetworkUsage() const { return false; }
-  virtual void SetSupportNetworkUsage() { NOTREACHED(); }
-  virtual void Refresh() {}
+  virtual string16 GetTitle() const OVERRIDE { return title_; }
+  virtual SkBitmap GetIcon() const OVERRIDE { return SkBitmap(); }
+  virtual base::ProcessHandle GetProcess() const OVERRIDE { return pid_; }
+  virtual Type GetType() const OVERRIDE { return RENDERER; }
+  virtual bool SupportNetworkUsage() const OVERRIDE { return false; }
+  virtual void SetSupportNetworkUsage() OVERRIDE { NOTREACHED(); }
+  virtual void Refresh() OVERRIDE {}
   string16 title_;
   pid_t pid_;
 };

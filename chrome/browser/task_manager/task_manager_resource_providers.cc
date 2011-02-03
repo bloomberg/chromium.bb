@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -169,7 +169,7 @@ TaskManager::Resource::Type TaskManagerTabContentsResource::GetType() const {
   return tab_contents_->HostsExtension() ? EXTENSION : RENDERER;
 }
 
-std::wstring TaskManagerTabContentsResource::GetTitle() const {
+string16 TaskManagerTabContentsResource::GetTitle() const {
   // Fall back on the URL if there's no title.
   string16 tab_title = tab_contents_->GetTitle();
   if (tab_title.empty()) {
@@ -195,7 +195,7 @@ std::wstring TaskManagerTabContentsResource::GetTitle() const {
       extensions_service->IsInstalledApp(tab_contents_->GetURL()),
       tab_contents_->HostsExtension(),
       tab_contents_->profile()->IsOffTheRecord());
-  return UTF16ToWideHack(l10n_util::GetStringFUTF16(message_id, tab_title));
+  return l10n_util::GetStringFUTF16(message_id, tab_title);
 }
 
 SkBitmap TaskManagerTabContentsResource::GetIcon() const {
@@ -392,7 +392,7 @@ SkBitmap* TaskManagerBackgroundContentsResource::default_icon_ = NULL;
 
 TaskManagerBackgroundContentsResource::TaskManagerBackgroundContentsResource(
     BackgroundContents* background_contents,
-    const std::wstring& application_name)
+    const string16& application_name)
     : TaskManagerRendererResource(
           background_contents->render_view_host()->process()->GetHandle(),
           background_contents->render_view_host()),
@@ -413,8 +413,8 @@ TaskManagerBackgroundContentsResource::~TaskManagerBackgroundContentsResource(
     ) {
 }
 
-std::wstring TaskManagerBackgroundContentsResource::GetTitle() const {
-  string16 title = WideToUTF16Hack(application_name_);
+string16 TaskManagerBackgroundContentsResource::GetTitle() const {
+  string16 title = application_name_;
 
   if (title.empty()) {
     // No title (can't locate the parent app for some reason) so just display
@@ -422,8 +422,7 @@ std::wstring TaskManagerBackgroundContentsResource::GetTitle() const {
     title = base::i18n::GetDisplayStringInLTRDirectionality(
         UTF8ToUTF16(background_contents_->GetURL().spec()));
   }
-  return UTF16ToWideHack(
-      l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_BACKGROUND_PREFIX, title));
+  return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_BACKGROUND_PREFIX, title);
 }
 
 
@@ -495,7 +494,7 @@ void TaskManagerBackgroundContentsResourceProvider::StartUpdating() {
         background_contents_service->GetBackgroundContents();
     for (std::vector<BackgroundContents*>::iterator iterator = contents.begin();
          iterator != contents.end(); ++iterator) {
-      std::wstring application_name;
+      string16 application_name;
       // Lookup the name from the parent extension.
       if (extensions_service) {
         const string16& application_id =
@@ -503,7 +502,7 @@ void TaskManagerBackgroundContentsResourceProvider::StartUpdating() {
         const Extension* extension = extensions_service->GetExtensionById(
             UTF16ToUTF8(application_id), false);
         if (extension)
-          application_name = UTF8ToWide(extension->name());
+          application_name = UTF8ToUTF16(extension->name());
       }
       Add(*iterator, application_name);
     }
@@ -538,7 +537,7 @@ void TaskManagerBackgroundContentsResourceProvider::StopUpdating() {
 
 void TaskManagerBackgroundContentsResourceProvider::AddToTaskManager(
     BackgroundContents* background_contents,
-    const std::wstring& application_name) {
+    const string16& application_name) {
   TaskManagerBackgroundContentsResource* resource =
       new TaskManagerBackgroundContentsResource(background_contents,
                                                 application_name);
@@ -547,7 +546,7 @@ void TaskManagerBackgroundContentsResourceProvider::AddToTaskManager(
 }
 
 void TaskManagerBackgroundContentsResourceProvider::Add(
-    BackgroundContents* contents, const std::wstring& application_name) {
+    BackgroundContents* contents, const string16& application_name) {
   if (!updating_)
     return;
 
@@ -589,7 +588,7 @@ void TaskManagerBackgroundContentsResourceProvider::Observe(
       // will display the URL instead in this case. This should never happen
       // except in rare cases when an extension is being unloaded or chrome is
       // exiting while the task manager is displayed.
-      std::wstring application_name;
+      string16 application_name;
       ExtensionService* service =
           Source<Profile>(source)->GetExtensionService();
       if (service) {
@@ -599,7 +598,7 @@ void TaskManagerBackgroundContentsResourceProvider::Observe(
             service->GetExtensionById(application_id, false);
         // Extension can be NULL when running unit tests.
         if (extension)
-          application_name = UTF8ToWide(extension->name());
+          application_name = UTF8ToUTF16(extension->name());
       }
       Add(Details<BackgroundContentsOpenedDetails>(details)->contents,
           application_name);
@@ -613,7 +612,7 @@ void TaskManagerBackgroundContentsResourceProvider::Observe(
       // Should never get a NAVIGATED before OPENED.
       DCHECK(resources_.find(contents) != resources_.end());
       // Preserve the application name.
-      std::wstring application_name(
+      string16 application_name(
           resources_.find(contents)->second->application_name());
       Remove(contents);
       Add(contents, application_name);
@@ -655,9 +654,9 @@ TaskManagerChildProcessResource::~TaskManagerChildProcessResource() {
 }
 
 // TaskManagerResource methods:
-std::wstring TaskManagerChildProcessResource::GetTitle() const {
+string16 TaskManagerChildProcessResource::GetTitle() const {
   if (title_.empty())
-    title_ = UTF16ToWideHack(child_process_.GetLocalizedTitle());
+    title_ = child_process_.GetLocalizedTitle();
 
   return title_;
 }
@@ -886,14 +885,13 @@ TaskManagerExtensionProcessResource::TaskManagerExtensionProcessResource(
 
   int message_id = GetMessagePrefixID(GetExtension()->is_app(), true,
       extension_host_->profile()->IsOffTheRecord());
-  title_ = UTF16ToWideHack(l10n_util::GetStringFUTF16(message_id,
-                                                      extension_name));
+  title_ = l10n_util::GetStringFUTF16(message_id, extension_name);
 }
 
 TaskManagerExtensionProcessResource::~TaskManagerExtensionProcessResource() {
 }
 
-std::wstring TaskManagerExtensionProcessResource::GetTitle() const {
+string16 TaskManagerExtensionProcessResource::GetTitle() const {
   return title_;
 }
 
@@ -1084,15 +1082,14 @@ TaskManagerNotificationResource::TaskManagerNotificationResource(
   }
   process_handle_ = balloon_host_->render_view_host()->process()->GetHandle();
   pid_ = base::GetProcId(process_handle_);
-  title_ = UTF16ToWide(l10n_util::GetStringFUTF16(
-      IDS_TASK_MANAGER_NOTIFICATION_PREFIX,
-      balloon_host_->GetSource()));
+  title_ = l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_NOTIFICATION_PREFIX,
+                                      balloon_host_->GetSource());
 }
 
 TaskManagerNotificationResource::~TaskManagerNotificationResource() {
 }
 
-std::wstring TaskManagerNotificationResource::GetTitle() const {
+string16 TaskManagerNotificationResource::GetTitle() const {
   return title_;
 }
 
@@ -1262,10 +1259,9 @@ TaskManagerBrowserProcessResource::~TaskManagerBrowserProcessResource() {
 }
 
 // TaskManagerResource methods:
-std::wstring TaskManagerBrowserProcessResource::GetTitle() const {
+string16 TaskManagerBrowserProcessResource::GetTitle() const {
   if (title_.empty()) {
-    title_ = UTF16ToWideHack(
-        l10n_util::GetStringUTF16(IDS_TASK_MANAGER_WEB_BROWSER_CELL_TEXT));
+    title_ = l10n_util::GetStringUTF16(IDS_TASK_MANAGER_WEB_BROWSER_CELL_TEXT);
   }
   return title_;
 }
