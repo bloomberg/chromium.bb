@@ -79,6 +79,23 @@ class CrashHandlerHostLinux : public MessageLoopForIO::Watcher,
   DISALLOW_COPY_AND_ASSIGN(CrashHandlerHostLinux);
 };
 
+class GpuCrashHandlerHostLinux : public CrashHandlerHostLinux {
+ public:
+  // Returns the singleton instance.
+  static GpuCrashHandlerHostLinux* GetInstance();
+
+ private:
+  friend struct DefaultSingletonTraits<GpuCrashHandlerHostLinux>;
+  GpuCrashHandlerHostLinux();
+  virtual ~GpuCrashHandlerHostLinux();
+
+#if defined(USE_LINUX_BREAKPAD)
+  virtual void SetProcessType();
+#endif
+
+  DISALLOW_COPY_AND_ASSIGN(GpuCrashHandlerHostLinux);
+};
+
 class PluginCrashHandlerHostLinux : public CrashHandlerHostLinux {
  public:
   // Returns the singleton instance.

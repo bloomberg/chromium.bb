@@ -26,6 +26,17 @@ void CrashHandlerHostLinux::OnFileCanWriteWithoutBlocking(int fd) {
 void CrashHandlerHostLinux::WillDestroyCurrentMessageLoop() {
 }
 
+GpuCrashHandlerHostLinux::GpuCrashHandlerHostLinux() {
+}
+
+GpuCrashHandlerHostLinux::~GpuCrashHandlerHostLinux() {
+}
+
+// static
+GpuCrashHandlerHostLinux* GpuCrashHandlerHostLinux::GetInstance() {
+  return Singleton<GpuCrashHandlerHostLinux>::get();
+}
+
 PluginCrashHandlerHostLinux::PluginCrashHandlerHostLinux() {
 }
 

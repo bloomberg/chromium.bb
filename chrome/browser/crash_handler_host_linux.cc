@@ -354,6 +354,22 @@ bool CrashHandlerHostLinux::IsShuttingDown() const {
   return shutting_down_;
 }
 
+GpuCrashHandlerHostLinux::GpuCrashHandlerHostLinux() {
+  InitCrashUploaderThread();
+}
+
+GpuCrashHandlerHostLinux::~GpuCrashHandlerHostLinux() {
+}
+
+void GpuCrashHandlerHostLinux::SetProcessType() {
+  process_type_ = "gpu-process";
+}
+
+// static
+GpuCrashHandlerHostLinux* GpuCrashHandlerHostLinux::GetInstance() {
+  return Singleton<GpuCrashHandlerHostLinux>::get();
+}
+
 PluginCrashHandlerHostLinux::PluginCrashHandlerHostLinux() {
   InitCrashUploaderThread();
 }

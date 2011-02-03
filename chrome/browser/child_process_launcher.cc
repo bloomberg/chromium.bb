@@ -140,14 +140,20 @@ class ChildProcessLauncher::Context
       bool is_plugin =
           cmd_line->GetSwitchValueASCII(switches::kProcessType) ==
           switches::kPluginProcess;
+      bool is_gpu =
+          cmd_line->GetSwitchValueASCII(switches::kProcessType) ==
+          switches::kGpuProcess;
 
-      if (is_renderer || is_plugin) {
+      if (is_renderer || is_plugin || is_gpu) {
         int crash_signal_fd;
         if (is_renderer) {
           crash_signal_fd = RendererCrashHandlerHostLinux::GetInstance()->
               GetDeathSignalSocket();
-        } else {
+        } else if (is_plugin) {
           crash_signal_fd = PluginCrashHandlerHostLinux::GetInstance()->
+              GetDeathSignalSocket();
+        } else {
+          crash_signal_fd = GpuCrashHandlerHostLinux::GetInstance()->
               GetDeathSignalSocket();
         }
         if (crash_signal_fd >= 0) {
