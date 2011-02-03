@@ -236,9 +236,10 @@ void ScreenRecorder::DoFinishOneRecording() {
   --recordings_;
   DCHECK_GE(recordings_, 0);
 
-  // Try to do a capture again. Note that the following method may do nothing
-  // if it is too early to perform a capture.
-  DoCapture();
+  // Try to do a capture again only if |frame_skipped_| is set to true by
+  // capture timer.
+  if (frame_skipped_)
+    DoCapture();
 }
 
 // Network thread --------------------------------------------------------------
