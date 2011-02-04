@@ -959,7 +959,8 @@ TEST_F(ContextMenuTest, CFBackForward) {
   EXPECT_CALL(ie_mock_, OnLoad(IN_CF, StrEq(page3)))
       .WillOnce(CloseBrowserMock(&ie_mock_));
 
-  LaunchIEAndNavigate(page1);
+  LaunchIENavigateAndLoop(page1,
+                          kChromeFrameVeryLongNavigationTimeoutInSeconds);
 }
 
 }  // namespace chrome_frame_test

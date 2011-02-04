@@ -1087,7 +1087,7 @@ TEST_F(FullTabDownloadTest, TopLevelPostReissueFromChromeFramePage) {
   EXPECT_CALL(ie_mock_, OnLoad(false, StrEq(src_url)));
 
   EXPECT_CALL(ie_mock_, OnLoad(true, StrEq(tgt_url)))
-      .Times(2)
+      .Times(testing::Between(1,2))
       .WillOnce(DelayRefresh(&ie_mock_, &loop_, 50))
       .WillOnce(testing::Return());
 
