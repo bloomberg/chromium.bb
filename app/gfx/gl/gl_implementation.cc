@@ -67,9 +67,10 @@ const char* GetGLImplementationName(GLImplementation implementation) {
   return "unknown";
 }
 
-bool InitializeBestGLBindings(
+bool InitializeRequestedGLBindings(
     const GLImplementation* allowed_implementations_begin,
-    const GLImplementation* allowed_implementations_end) {
+    const GLImplementation* allowed_implementations_end,
+    GLImplementation default_implementation) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseGL)) {
     std::string requested_implementation_name =
         CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switches::kUseGL);
@@ -84,12 +85,7 @@ bool InitializeBestGLBindings(
 
     InitializeGLBindings(requested_implementation);
   } else {
-    for (const GLImplementation* p = allowed_implementations_begin;
-         p < allowed_implementations_end;
-         ++p) {
-      if (InitializeGLBindings(*p))
-        break;
-    }
+    InitializeGLBindings(default_implementation);
   }
 
   if (GetGLImplementation() == kGLImplementationNone) {

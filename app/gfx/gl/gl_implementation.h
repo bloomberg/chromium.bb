@@ -54,10 +54,11 @@ const char* GetGLImplementationName(GLImplementation implementation);
 
 // Initialize the preferred GL binding from the given list. The preferred GL
 // bindings depend on command line switches passed by the user and which GL
-// implementations are available and working on the system
-bool InitializeBestGLBindings(
+// implementation is the default on a given platform.
+bool InitializeRequestedGLBindings(
     const GLImplementation* allowed_implementations_begin,
-    const GLImplementation* allowed_implementations_end);
+    const GLImplementation* allowed_implementations_end,
+    GLImplementation default_implementation);
 
 // Add a native library to those searched for GL entry points.
 void AddGLNativeLibrary(base::NativeLibrary library);

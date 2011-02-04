@@ -177,10 +177,11 @@ bool GLContext::InitializeOneOff() {
     kGLImplementationOSMesaGL
   };
 
-  if (!InitializeBestGLBindings(
+  if (!InitializeRequestedGLBindings(
            kAllowedGLImplementations,
-           kAllowedGLImplementations + arraysize(kAllowedGLImplementations))) {
-    LOG(ERROR) << "InitializeBestGLBinding failed.";
+           kAllowedGLImplementations + arraysize(kAllowedGLImplementations),
+           kGLImplementationEGLGLES2)) {
+    LOG(ERROR) << "InitializeRequestedGLBindings failed.";
     return false;
   }
 
