@@ -203,6 +203,7 @@ bool NoRollbackWorkItemList::Do() {
     WorkItem* work_item = list_.front();
     list_.pop_front();
     executed_list_.push_front(work_item);
+    work_item->set_ignore_failure(true);
     if (!work_item->Do()) {
       LOG(ERROR) << "NoRollbackWorkItemList: item execution failed.";
       result = false;
