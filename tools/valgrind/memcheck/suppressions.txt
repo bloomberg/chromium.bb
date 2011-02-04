@@ -3577,7 +3577,7 @@
    bug_68553
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN3net25DiskCacheBasedSSLHostInfoC1ERKSsRKNS_9SSLConfigEPNS_9HttpCacheE
+   fun:_ZN3net25DiskCacheBasedSSLHostInfoC1ERKSsRKNS_9SSLConfigEPNS_12CertVerifierEPNS_9HttpCacheE
    fun:_ZN3net9HttpCache25SSLHostInfoFactoryAdaptor10GetForHostERKSsRKNS_9SSLConfigE
    fun:_ZN3net13SSLConnectJob12DoTCPConnectEv
    fun:_ZN3net13SSLConnectJob6DoLoopEi
