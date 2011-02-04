@@ -12,6 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/cert_store.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ssl/ssl_error_info.h"
 #include "chrome/browser/ssl/ssl_manager.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -138,6 +139,15 @@ PageInfoModel::PageInfoModel(Profile* profile,
         IDS_PAGE_INFO_SECURITY_TAB_INSECURE_IDENTITY));
     icon_id = ssl.security_style() == SECURITY_STYLE_UNAUTHENTICATED ?
         ICON_STATE_WARNING_MAJOR : ICON_STATE_ERROR;
+
+    const string16 bullet = UTF8ToUTF16("\n • ");
+    std::vector<SSLErrorInfo> errors;
+    SSLErrorInfo::GetErrorsForCertStatus(ssl.cert_id(), ssl.cert_status(),
+                                         url, &errors);
+    for (size_t i = 0; i < errors.size(); ++i) {
+      description += bullet;
+      description += errors[i].short_description();
+    }
 
     if (ssl.cert_status() & net::CERT_STATUS_NON_UNIQUE_NAME) {
       description += ASCIIToUTF16("\n\n");

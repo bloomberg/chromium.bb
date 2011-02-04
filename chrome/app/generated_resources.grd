@@ -2449,7 +2449,7 @@ each locale. -->
         You attempted to reach <ph name="DOMAIN">&lt;strong&gt;$1<ex>paypal.com</ex>&lt;/strong&gt;</ph>, but instead you actually reached a server identifying itself as <ph name="DOMAIN2">&lt;strong&gt;$2<ex>fakepaypal.com</ex>&lt;/strong&gt;</ph>. This may be caused by a misconfiguration on the server or by something more serious. An attacker on your network could be trying to get you to visit a fake (and potentially harmful) version of <ph name="DOMAIN3">&lt;strong&gt;$3<ex>paypal.com</ex>&lt;/strong&gt;</ph>. You should not proceed.
       </message>
       <message name="IDS_CERT_ERROR_COMMON_NAME_INVALID_DESCRIPTION" desc="Description for an unsafe common name in an X509 certificate">
-        Server's certificate does not match the URL
+        Server's certificate does not match the URL.
       </message>
 
       <message name="IDS_CERT_ERROR_EXPIRED_TITLE" desc="Title for an expired X509 certificate">
@@ -2459,7 +2459,7 @@ each locale. -->
         For a certificate which has not expired, the issuer of that certificate is responsible for maintaining something called a "revocation list". If a certificate is ever compromised, the issuer can revoke it by adding it to the revocation list, and then this certificate will no longer be trusted by your browser. Revocation status is not required to be maintained for expired certificates, so while this certificate used to be valid for the website you're visiting, at this point it is not possible to determine whether the certificate was compromised and subsequently revoked, or whether it remains secure. As such it is impossible to tell whether you're communicating with the legitimate web site, or whether the certificate was compromised and is now in the possession of an attacker with whom you are communicating. You should not proceed past this point.
       </message>
       <message name="IDS_CERT_ERROR_EXPIRED_DESCRIPTION" desc="Description for an expired X509 certificate">
-        Server's certificate has expired
+        Server's certificate has expired.
       </message>
 
       <message name="IDS_CERT_ERROR_NOT_YET_VALID_TITLE" desc="Title for an X509 certificate that is not yet valid">
@@ -2469,7 +2469,7 @@ each locale. -->
         Certificates have a validity period, much like any identity document (such as a passport) that you may have. The certificate presented to your browser is not yet valid. When a certificate is outside of its validity period, certain information about the status of the certificate (whether it has been revoked and should no longer be trusted) is not required to be maintained. As such, it is not possible to verify that this certificate is trustworthy. You should not proceed.
       </message>
       <message name="IDS_CERT_ERROR_NOT_YET_VALID_DESCRIPTION" desc="Description for an X509 certificate that is not yet valid">
-        Server's certificate is not yet valid
+        Server's certificate is not yet valid.
       </message>
 
       <message name="IDS_CERT_ERROR_AUTHORITY_INVALID_TITLE" desc="Title for an X509 certificate with an invalid authority">
@@ -2482,7 +2482,7 @@ each locale. -->
         If, however, you work in an organization that generates its own certificates, and you are trying to connect to an internal website of that organization using such a certificate, you may be able to solve this problem securely. You can import your organization's root certificate as a "root certificate", and then certificates issued or verified by your organization will be trusted and you will not see this error next time you try to connect to an internal website. Contact your organization's help staff for assistance in adding a new root certificate to your computer.
       </message>
       <message name="IDS_CERT_ERROR_AUTHORITY_INVALID_DESCRIPTION" desc="Description for an X509 certificate with an invalid authority">
-        Server's certificate is not trusted
+        Server's certificate is not trusted.
       </message>
 
       <message name="IDS_CERT_ERROR_CONTAINS_ERRORS_TITLE" desc="Title of the error page for an X509 certificate that contains errors">
@@ -2492,7 +2492,7 @@ each locale. -->
         In this case, the certificate presented to your browser has errors and cannot be understood. This may mean that we cannot understand the identity information within the certificate, or certain other information in the certificate used to secure the connection. You should not proceed.
       </message>
       <message name="IDS_CERT_ERROR_CONTAINS_ERRORS_DESCRIPTION" desc="Description of the error page for an X509 certificate that contains errors">
-        Server's certificate contains errors
+        Server's certificate contains errors.
       </message>
 
       <message name="IDS_CERT_ERROR_UNABLE_TO_CHECK_REVOCATION_TITLE" desc="Title for being unable to check revocation status of an X509 certificate">
@@ -2502,7 +2502,7 @@ each locale. -->
         Unable to check whether the server's certificate was revoked.
       </message>
       <message name="IDS_CERT_ERROR_UNABLE_TO_CHECK_REVOCATION_DESCRIPTION" desc="Description for being unable to check revocation status of an X509 certificate">
-        Server's certificate cannot be checked
+        Server's certificate cannot be checked.
       </message>
 
       <message name="IDS_CERT_ERROR_NO_REVOCATION_MECHANISM_TITLE" desc="Title for not finding a revocation mechanism in an X509 certificate">
@@ -2512,7 +2512,7 @@ each locale. -->
         No revocation mechanism found in the server's certificate.
       </message>
       <message name="IDS_CERT_ERROR_NO_REVOCATION_MECHANISM_DESCRIPTION" desc="Description for not finding a revocation mechanism in an X509 certificate">
-        No revocation mechanism found
+        No revocation mechanism found.
       </message>
 
       <message name="IDS_CERT_ERROR_REVOKED_CERT_TITLE" desc="Title of the error page for a revoked certificate">
@@ -2525,7 +2525,7 @@ each locale. -->
         In this case, the certificate presented to your browser has been revoked by its issuer. This usually means that the integrity of this certificate has been compromised, and that the certificate should not be trusted. You absolutely should not proceed past this point.
       </message>
       <message name="IDS_CERT_ERROR_REVOKED_CERT_DESCRIPTION" desc="Description of the error page for a revoked certificate">
-        Server's certificate has been revoked
+        Server's certificate has been revoked.
       </message>
 
       <message name="IDS_CERT_ERROR_INVALID_CERT_TITLE" desc="Title of the error page for an X509 certificate that is invalid">
@@ -2535,7 +2535,7 @@ each locale. -->
         A request failed because the server's certificate was invalid.
       </message>
       <message name="IDS_CERT_ERROR_INVALID_CERT_DESCRIPTION" desc="Description of the error page for an X509 certificate that is invalid">
-        Server's certificate is invalid
+        Server's certificate is invalid.
       </message>
 
       <message name="IDS_CERT_ERROR_WEAK_SIGNATURE_ALGORITHM_TITLE" desc="Title of the error page for a certificate signed using a weak signature algorithm">
@@ -2548,14 +2548,14 @@ each locale. -->
         In this case, the server certificate or an intermediate CA certificate presented to your browser is signed using a weak signature algorithm such as RSA-MD2. Recent research by computer scientists showed the signature algorithm is weaker than previously believed, and the signature algorithm is rarely used by trustworthy websites today. This certificate could have been forged. You should not proceed past this point.
       </message>
       <message name="IDS_CERT_ERROR_WEAK_SIGNATURE_ALGORITHM_DESCRIPTION" desc="Description of the error page for a certificate signed using a weak signature algorithm">
-        Server's certificate is signed using a weak signature algorithm
+        Server's certificate is signed using a weak signature algorithm.
       </message>
 
       <message name="IDS_CERT_ERROR_NOT_IN_DNS_TITLE" desc="Title of the error page for a certificate which was excluded by DNS data">
         Unlisted Server Certificate
       </message>
       <message name="IDS_CERT_ERROR_NOT_IN_DNS_DESCRIPTION" desc="Description of the error for a certificate which was excluded by DNS data">
-        Server's certificate is not included in DNS
+        Server's certificate is not included in DNS.
       </message>
       <message name="IDS_CERT_ERROR_NOT_IN_DNS_DETAILS" desc="Details of the error for a certificate which was excluded by DNS data">
         This site lists all its valid certificates in DNS. However the server used one which isn't listed.
@@ -2571,7 +2571,7 @@ each locale. -->
         An unknown error has occurred.
       </message>
       <message name="IDS_CERT_ERROR_UNKNOWN_ERROR_DESCRIPTION" desc="Description of the error page for an unknown ssl error">
-        Unknown server certificate error
+        Unknown server certificate error.
       </message>
 
 
