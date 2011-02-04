@@ -53,21 +53,6 @@
       'string_encoding.cc',
       'utility.cc',
     ],
-    'npapi_sources': [
-      # NPAPI specific code
-      '<(DEPTH)/native_client/src/third_party_mod/npapi_plugin/np_entry.cc',
-      '<(DEPTH)/native_client/src/third_party_mod/npapi_plugin/npn_gate.cc',
-      'npapi/async_receive.cc',
-      'npapi/browser_impl_npapi.cc',
-      'npapi/closure.cc',
-      'npapi/multimedia_socket.cc',
-      'npapi/npapi_native.cc',
-      'npapi/npp_gate.cc',
-      'npapi/npp_launcher.cc',
-      'npapi/plugin_npapi.cc',
-      'npapi/ret_array.cc',
-      'npapi/scriptable_impl_npapi.cc',
-    ],
     'ppapi_sources': [
       # PPAPI specific code
       'ppapi/array_ppapi.cc',
