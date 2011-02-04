@@ -667,17 +667,15 @@ void AutoFillManager::LogMetricsAboutSubmittedForm(
 void AutoFillManager::ImportFormData(const FormStructure& submitted_form) {
   std::vector<const FormStructure*> import;
   import.push_back(&submitted_form);
-  if (!personal_data_->ImportFormData(import))
-    return;
 
-  // Did we get credit card info?
-  AutoFillProfile* profile;
-  CreditCard* credit_card;
-  personal_data_->GetImportedFormData(&profile, &credit_card);
+  const CreditCard* imported_credit_card;
+  if (!personal_data_->ImportFormData(import, &imported_credit_card))
+    return;
 
   // If credit card information was submitted, show an infobar to offer to save
   // it.
-  if (credit_card && tab_contents_) {
+  if (imported_credit_card && tab_contents_) {
+    imported_credit_card_.reset(imported_credit_card);
     tab_contents_->AddInfoBar(new AutoFillCCInfoBarDelegate(tab_contents_,
                                                             this));
   }
@@ -711,7 +709,7 @@ void AutoFillManager::Reset() {
 
 void AutoFillManager::OnInfoBarClosed(bool should_save) {
   if (should_save)
-    personal_data_->SaveImportedCreditCard();
+    personal_data_->SaveImportedCreditCard(*imported_credit_card_);
 }
 
 AutoFillManager::AutoFillManager()

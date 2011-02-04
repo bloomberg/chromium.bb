@@ -217,6 +217,10 @@ class AutoFillManager : public TabContentsObserver,
   // Deletes itself when closed.
   AutoFillCCInfoBarDelegate* cc_infobar_;
 
+  // The imported credit card that should be saved if the user accepts the
+  // infobar.
+  scoped_ptr<const CreditCard> imported_credit_card_;
+
   // GUID to ID mapping.  We keep two maps to convert back and forth.
   std::map<std::string, int> guid_id_map_;
   std::map<int, std::string> id_guid_map_;

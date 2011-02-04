@@ -538,7 +538,9 @@ TEST_F(PersonalDataManagerTest, ImportFormData) {
   FormStructure form_structure(form);
   std::vector<const FormStructure*> forms;
   forms.push_back(&form_structure);
-  EXPECT_TRUE(personal_data_->ImportFormData(forms));
+  const CreditCard* imported_credit_card;
+  EXPECT_TRUE(personal_data_->ImportFormData(forms, &imported_credit_card));
+  ASSERT_FALSE(imported_credit_card);
 
   // Wait for the refresh.
   EXPECT_CALL(personal_data_observer_,
@@ -582,7 +584,9 @@ TEST_F(PersonalDataManagerTest, ImportFormDataBadEmail) {
   FormStructure form_structure(form);
   std::vector<const FormStructure*> forms;
   forms.push_back(&form_structure);
-  EXPECT_TRUE(personal_data_->ImportFormData(forms));
+  const CreditCard* imported_credit_card;
+  EXPECT_TRUE(personal_data_->ImportFormData(forms, &imported_credit_card));
+  ASSERT_FALSE(imported_credit_card);
 
   // Wait for the refresh.
   EXPECT_CALL(personal_data_observer_,
@@ -614,7 +618,9 @@ TEST_F(PersonalDataManagerTest, ImportFormDataNotEnoughFilledFields) {
   FormStructure form_structure(form);
   std::vector<const FormStructure*> forms;
   forms.push_back(&form_structure);
-  EXPECT_FALSE(personal_data_->ImportFormData(forms));
+  const CreditCard* imported_credit_card;
+  EXPECT_FALSE(personal_data_->ImportFormData(forms, &imported_credit_card));
+  ASSERT_FALSE(imported_credit_card);
 
   // Wait for the refresh.
   EXPECT_CALL(personal_data_observer_,
@@ -664,7 +670,9 @@ TEST_F(PersonalDataManagerTest, ImportPhoneNumberSplitAcrossMultipleFields) {
   FormStructure form_structure(form);
   std::vector<const FormStructure*> forms;
   forms.push_back(&form_structure);
-  EXPECT_TRUE(personal_data_->ImportFormData(forms));
+  const CreditCard* imported_credit_card;
+  EXPECT_TRUE(personal_data_->ImportFormData(forms, &imported_credit_card));
+  ASSERT_FALSE(imported_credit_card);
 
   // Wait for the refresh.
   EXPECT_CALL(personal_data_observer_,
@@ -770,7 +778,9 @@ TEST_F(PersonalDataManagerTest, AggregateTwoDifferentProfiles) {
   FormStructure form_structure1(form1);
   std::vector<const FormStructure*> forms;
   forms.push_back(&form_structure1);
-  EXPECT_TRUE(personal_data_->ImportFormData(forms));
+  const CreditCard* imported_credit_card;
+  EXPECT_TRUE(personal_data_->ImportFormData(forms, &imported_credit_card));
+  ASSERT_FALSE(imported_credit_card);
 
   // Wait for the refresh.
   EXPECT_CALL(personal_data_observer_,
@@ -813,7 +823,8 @@ TEST_F(PersonalDataManagerTest, AggregateTwoDifferentProfiles) {
   FormStructure form_structure2(form2);
   forms.clear();
   forms.push_back(&form_structure2);
-  EXPECT_TRUE(personal_data_->ImportFormData(forms));
+  EXPECT_TRUE(personal_data_->ImportFormData(forms, &imported_credit_card));
+  ASSERT_FALSE(imported_credit_card);
 
   // Wait for the refresh.
   EXPECT_CALL(personal_data_observer_,
@@ -867,7 +878,9 @@ TEST_F(PersonalDataManagerTest, AggregateSameProfileWithConflict) {
   FormStructure form_structure1(form1);
   std::vector<const FormStructure*> forms;
   forms.push_back(&form_structure1);
-  EXPECT_TRUE(personal_data_->ImportFormData(forms));
+  const CreditCard* imported_credit_card;
+  EXPECT_TRUE(personal_data_->ImportFormData(forms, &imported_credit_card));
+  ASSERT_FALSE(imported_credit_card);
 
   // Wait for the refresh.
   EXPECT_CALL(personal_data_observer_,
@@ -922,7 +935,8 @@ TEST_F(PersonalDataManagerTest, AggregateSameProfileWithConflict) {
   FormStructure form_structure2(form2);
   forms.clear();
   forms.push_back(&form_structure2);
-  EXPECT_TRUE(personal_data_->ImportFormData(forms));
+  EXPECT_TRUE(personal_data_->ImportFormData(forms, &imported_credit_card));
+  ASSERT_FALSE(imported_credit_card);
 
   // Wait for the refresh.
   EXPECT_CALL(personal_data_observer_,
@@ -966,7 +980,9 @@ TEST_F(PersonalDataManagerTest, AggregateProfileWithMissingInfoInOld) {
   FormStructure form_structure1(form1);
   std::vector<const FormStructure*> forms;
   forms.push_back(&form_structure1);
-  EXPECT_TRUE(personal_data_->ImportFormData(forms));
+  const CreditCard* imported_credit_card;
+  EXPECT_TRUE(personal_data_->ImportFormData(forms, &imported_credit_card));
+  ASSERT_FALSE(imported_credit_card);
 
   // Wait for the refresh.
   EXPECT_CALL(personal_data_observer_,
@@ -1009,7 +1025,8 @@ TEST_F(PersonalDataManagerTest, AggregateProfileWithMissingInfoInOld) {
   FormStructure form_structure2(form2);
   forms.clear();
   forms.push_back(&form_structure2);
-  EXPECT_TRUE(personal_data_->ImportFormData(forms));
+  EXPECT_TRUE(personal_data_->ImportFormData(forms, &imported_credit_card));
+  ASSERT_FALSE(imported_credit_card);
 
   // Wait for the refresh.
   EXPECT_CALL(personal_data_observer_,
@@ -1058,7 +1075,9 @@ TEST_F(PersonalDataManagerTest, AggregateProfileWithMissingInfoInNew) {
   FormStructure form_structure1(form1);
   std::vector<const FormStructure*> forms;
   forms.push_back(&form_structure1);
-  EXPECT_TRUE(personal_data_->ImportFormData(forms));
+  const CreditCard* imported_credit_card;
+  EXPECT_TRUE(personal_data_->ImportFormData(forms, &imported_credit_card));
+  ASSERT_FALSE(imported_credit_card);
 
   // Wait for the refresh.
   EXPECT_CALL(personal_data_observer_,
@@ -1102,7 +1121,8 @@ TEST_F(PersonalDataManagerTest, AggregateProfileWithMissingInfoInNew) {
   FormStructure form_structure2(form2);
   forms.clear();
   forms.push_back(&form_structure2);
-  EXPECT_TRUE(personal_data_->ImportFormData(forms));
+  EXPECT_TRUE(personal_data_->ImportFormData(forms, &imported_credit_card));
+  ASSERT_FALSE(imported_credit_card);
 
   // Wait for the refresh.
   EXPECT_CALL(personal_data_observer_,
@@ -1142,7 +1162,9 @@ TEST_F(PersonalDataManagerTest, AggregateProfileWithInsufficientAddress) {
   FormStructure form_structure1(form1);
   std::vector<const FormStructure*> forms;
   forms.push_back(&form_structure1);
-  EXPECT_FALSE(personal_data_->ImportFormData(forms));
+  const CreditCard* imported_credit_card;
+  EXPECT_FALSE(personal_data_->ImportFormData(forms, &imported_credit_card));
+  ASSERT_FALSE(imported_credit_card);
 }
 
 
@@ -1167,8 +1189,11 @@ TEST_F(PersonalDataManagerTest, AggregateTwoDifferentCreditCards) {
   FormStructure form_structure1(form1);
   std::vector<const FormStructure*> forms;
   forms.push_back(&form_structure1);
-  EXPECT_TRUE(personal_data_->ImportFormData(forms));
-  personal_data_->SaveImportedCreditCard();
+  const CreditCard* imported_credit_card;
+  EXPECT_TRUE(personal_data_->ImportFormData(forms, &imported_credit_card));
+  ASSERT_TRUE(imported_credit_card);
+  personal_data_->SaveImportedCreditCard(*imported_credit_card);
+  delete imported_credit_card;
 
   // Wait for the refresh.
   EXPECT_CALL(personal_data_observer_,
@@ -1201,8 +1226,10 @@ TEST_F(PersonalDataManagerTest, AggregateTwoDifferentCreditCards) {
   FormStructure form_structure2(form2);
   forms.clear();
   forms.push_back(&form_structure2);
-  EXPECT_TRUE(personal_data_->ImportFormData(forms));
-  personal_data_->SaveImportedCreditCard();
+  EXPECT_TRUE(personal_data_->ImportFormData(forms, &imported_credit_card));
+  ASSERT_TRUE(imported_credit_card);
+  personal_data_->SaveImportedCreditCard(*imported_credit_card);
+  delete imported_credit_card;
 
   // Wait for the refresh.
   EXPECT_CALL(personal_data_observer_,
@@ -1240,8 +1267,11 @@ TEST_F(PersonalDataManagerTest, AggregateInvalidCreditCard) {
   FormStructure form_structure1(form1);
   std::vector<const FormStructure*> forms;
   forms.push_back(&form_structure1);
-  EXPECT_TRUE(personal_data_->ImportFormData(forms));
-  personal_data_->SaveImportedCreditCard();
+  const CreditCard* imported_credit_card;
+  EXPECT_TRUE(personal_data_->ImportFormData(forms, &imported_credit_card));
+  ASSERT_TRUE(imported_credit_card);
+  personal_data_->SaveImportedCreditCard(*imported_credit_card);
+  delete imported_credit_card;
 
   // Wait for the refresh.
   EXPECT_CALL(personal_data_observer_,
@@ -1274,8 +1304,8 @@ TEST_F(PersonalDataManagerTest, AggregateInvalidCreditCard) {
   FormStructure form_structure2(form2);
   forms.clear();
   forms.push_back(&form_structure2);
-  EXPECT_FALSE(personal_data_->ImportFormData(forms));
-  personal_data_->SaveImportedCreditCard();
+  EXPECT_FALSE(personal_data_->ImportFormData(forms, &imported_credit_card));
+  ASSERT_FALSE(imported_credit_card);
 
   // Note: no refresh here.
 
@@ -1305,8 +1335,11 @@ TEST_F(PersonalDataManagerTest, AggregateSameCreditCardWithConflict) {
   FormStructure form_structure1(form1);
   std::vector<const FormStructure*> forms;
   forms.push_back(&form_structure1);
-  EXPECT_TRUE(personal_data_->ImportFormData(forms));
-  personal_data_->SaveImportedCreditCard();
+  const CreditCard* imported_credit_card;
+  EXPECT_TRUE(personal_data_->ImportFormData(forms, &imported_credit_card));
+  ASSERT_TRUE(imported_credit_card);
+  personal_data_->SaveImportedCreditCard(*imported_credit_card);
+  delete imported_credit_card;
 
   // Wait for the refresh.
   EXPECT_CALL(personal_data_observer_,
@@ -1340,8 +1373,10 @@ TEST_F(PersonalDataManagerTest, AggregateSameCreditCardWithConflict) {
   FormStructure form_structure2(form2);
   forms.clear();
   forms.push_back(&form_structure2);
-  EXPECT_TRUE(personal_data_->ImportFormData(forms));
-  personal_data_->SaveImportedCreditCard();
+  EXPECT_TRUE(personal_data_->ImportFormData(forms, &imported_credit_card));
+  ASSERT_TRUE(imported_credit_card);
+  personal_data_->SaveImportedCreditCard(*imported_credit_card);
+  delete imported_credit_card;
 
   // Wait for the refresh.
   EXPECT_CALL(personal_data_observer_,
@@ -1380,8 +1415,11 @@ TEST_F(PersonalDataManagerTest, AggregateEmptyCreditCardWithConflict) {
   FormStructure form_structure1(form1);
   std::vector<const FormStructure*> forms;
   forms.push_back(&form_structure1);
-  EXPECT_TRUE(personal_data_->ImportFormData(forms));
-  personal_data_->SaveImportedCreditCard();
+  const CreditCard* imported_credit_card;
+  EXPECT_TRUE(personal_data_->ImportFormData(forms, &imported_credit_card));
+  ASSERT_TRUE(imported_credit_card);
+  personal_data_->SaveImportedCreditCard(*imported_credit_card);
+  delete imported_credit_card;
 
   // Wait for the refresh.
   EXPECT_CALL(personal_data_observer_,
@@ -1411,8 +1449,8 @@ TEST_F(PersonalDataManagerTest, AggregateEmptyCreditCardWithConflict) {
   FormStructure form_structure2(form2);
   forms.clear();
   forms.push_back(&form_structure2);
-  personal_data_->ImportFormData(forms);
-  personal_data_->SaveImportedCreditCard();
+  EXPECT_FALSE(personal_data_->ImportFormData(forms, &imported_credit_card));
+  ASSERT_FALSE(imported_credit_card);
 
   // Note: no refresh here.
 
@@ -1446,8 +1484,11 @@ TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInNew) {
   FormStructure form_structure1(form1);
   std::vector<const FormStructure*> forms;
   forms.push_back(&form_structure1);
-  EXPECT_TRUE(personal_data_->ImportFormData(forms));
-  personal_data_->SaveImportedCreditCard();
+  const CreditCard* imported_credit_card;
+  EXPECT_TRUE(personal_data_->ImportFormData(forms, &imported_credit_card));
+  ASSERT_TRUE(imported_credit_card);
+  personal_data_->SaveImportedCreditCard(*imported_credit_card);
+  delete imported_credit_card;
 
   // Wait for the refresh.
   EXPECT_CALL(personal_data_observer_,
@@ -1479,8 +1520,8 @@ TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInNew) {
   FormStructure form_structure2(form2);
   forms.clear();
   forms.push_back(&form_structure2);
-  personal_data_->ImportFormData(forms);
-  personal_data_->SaveImportedCreditCard();
+  EXPECT_FALSE(personal_data_->ImportFormData(forms, &imported_credit_card));
+  ASSERT_FALSE(imported_credit_card);
 
   // Note: no refresh here.
 
@@ -1512,8 +1553,11 @@ TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInOld) {
   FormStructure form_structure1(form1);
   std::vector<const FormStructure*> forms;
   forms.push_back(&form_structure1);
-  EXPECT_TRUE(personal_data_->ImportFormData(forms));
-  personal_data_->SaveImportedCreditCard();
+  const CreditCard* imported_credit_card;
+  EXPECT_TRUE(personal_data_->ImportFormData(forms, &imported_credit_card));
+  ASSERT_TRUE(imported_credit_card);
+  personal_data_->SaveImportedCreditCard(*imported_credit_card);
+  delete imported_credit_card;
 
   // Wait for the refresh.
   EXPECT_CALL(personal_data_observer_,
@@ -1547,8 +1591,10 @@ TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInOld) {
   FormStructure form_structure2(form2);
   forms.clear();
   forms.push_back(&form_structure2);
-  EXPECT_TRUE(personal_data_->ImportFormData(forms));
-  personal_data_->SaveImportedCreditCard();
+  EXPECT_TRUE(personal_data_->ImportFormData(forms, &imported_credit_card));
+  ASSERT_TRUE(imported_credit_card);
+  personal_data_->SaveImportedCreditCard(*imported_credit_card);
+  delete imported_credit_card;
 
   // Wait for the refresh.
   EXPECT_CALL(personal_data_observer_,

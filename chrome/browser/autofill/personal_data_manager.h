@@ -63,22 +63,16 @@ class PersonalDataManager
   // Removes |observer| as the observer of this PersonalDataManager.
   virtual void RemoveObserver(PersonalDataManager::Observer* observer);
 
+        // TODO(isherman): Update this comment
   // If AutoFill is able to determine the field types of a significant number of
   // field types that contain information in the FormStructures a profile will
   // be created with all of the information from recognized fields. Returns
   // whether a profile was created.
-  bool ImportFormData(const std::vector<const FormStructure*>& form_structures);
-
-  // Gets |imported_profile_| and |imported_credit_card_| and returns their
-  // values in |profile| and |credit_card| parameters respectively.  One or
-  // both may return NULL.  The objects returned are owned by the
-  // PersonalDataManager, so should be considered weak references by caller.
-  // TODO(dhollowa) Now that we aren't immediately saving the imported form
-  // data, we should store the profile and CC in the AFM instead of the PDM.
-  void GetImportedFormData(AutoFillProfile** profile, CreditCard** credit_card);
+  bool ImportFormData(const std::vector<const FormStructure*>& form_structures,
+                      const CreditCard** credit_card);
 
   // Saves a credit card value detected in |ImportedFormData|.
-  void SaveImportedCreditCard();
+  void SaveImportedCreditCard(const CreditCard& imported_credit_card);
 
   // Sets |web_profiles_| to the contents of |profiles| and updates the web
   // database by adding, updating and removing profiles.
@@ -166,12 +160,13 @@ class PersonalDataManager
   // Make sure that only Profile and certain tests can create an instance of
   // PersonalDataManager.
   friend class base::RefCountedThreadSafe<PersonalDataManager>;
+  friend class AutoFillMergeTest;
   friend class PersonalDataManagerTest;
   friend class ProfileImpl;
   friend class ProfileSyncServiceAutofillTest;
 
   PersonalDataManager();
-  ~PersonalDataManager();
+  virtual ~PersonalDataManager();
 
   // Returns the profile of the tab contents.
   Profile* profile();
@@ -205,8 +200,8 @@ class PersonalDataManager
   // two methods into one.
   void SetUniqueCreditCardLabels(std::vector<CreditCard>* credit_cards);
 
-  // Saves |imported_profile_| to the WebDB if it exists.
-  void SaveImportedProfile();
+  // Saves |imported_profile| to the WebDB if it exists.
+  virtual void SaveImportedProfile(const AutoFillProfile& imported_profile);
 
   // The profile hosting this PersonalDataManager.
   Profile* profile_;
@@ -226,12 +221,6 @@ class PersonalDataManager
 
   // The loaded credit cards.
   ScopedVector<CreditCard> credit_cards_;
-
-  // The profile that is imported from a web form by ImportFormData.
-  scoped_ptr<AutoFillProfile> imported_profile_;
-
-  // The credit card that is imported from a web form by ImportFormData.
-  scoped_ptr<CreditCard> imported_credit_card_;
 
   // The hash of the password used to store the credit card.  This is empty if
   // no password exists.
