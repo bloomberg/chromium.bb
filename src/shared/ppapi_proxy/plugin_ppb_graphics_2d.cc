@@ -34,12 +34,12 @@ const nacl_abi_size_t kPpRectBytes =
 PP_Resource Create(PP_Instance instance,
                    const struct PP_Size* size,
                    PP_Bool is_always_opaque) {
-  DebugPrintf("PPB_Graphics2D::Create: instance=%"NACL_PRIx32"\n", instance);
+  DebugPrintf("PPB_Graphics2D::Create: instance=%"NACL_PRIu32"\n", instance);
   char* size_as_char_ptr =
       reinterpret_cast<char*>(const_cast<struct PP_Size*>(size));
   int32_t is_always_opaque_as_int = static_cast<int32_t>(is_always_opaque);
   PP_Resource resource;
-  NaClSrpcError retval =
+  NaClSrpcError srpc_result =
       PpbGraphics2DRpcClient::PPB_Graphics2D_Create(
           GetMainSrpcChannel(),
           instance,
@@ -47,7 +47,8 @@ PP_Resource Create(PP_Instance instance,
           size_as_char_ptr,
           is_always_opaque_as_int,
           &resource);
-  if (retval == NACL_SRPC_RESULT_OK) {
+  DebugPrintf("PPB_Graphics2D::Create: %s\n", NaClSrpcErrorString(srpc_result));
+  if (srpc_result == NACL_SRPC_RESULT_OK) {
     return resource;
   } else {
     return kInvalidResourceId;
@@ -55,7 +56,7 @@ PP_Resource Create(PP_Instance instance,
 }
 
 PP_Bool IsGraphics2D(PP_Resource resource) {
-  DebugPrintf("PPB_Graphics2D::IsGraphics2D: resource=%"NACL_PRIx32"\n",
+  DebugPrintf("PPB_Graphics2D::IsGraphics2D: resource=%"NACL_PRIu32"\n",
               resource);
   return PluginResource::GetAs<PluginGraphics2D>(resource).get()
       ? PP_TRUE : PP_FALSE;
@@ -64,12 +65,12 @@ PP_Bool IsGraphics2D(PP_Resource resource) {
 PP_Bool Describe(PP_Resource graphics_2d,
                  struct PP_Size* size,
                  PP_Bool* is_always_opaque) {
-  DebugPrintf("PPB_Graphics2D::Describe: graphics_2d=%"NACL_PRIx32"\n",
+  DebugPrintf("PPB_Graphics2D::Describe: graphics_2d=%"NACL_PRIu32"\n",
               graphics_2d);
   int32_t is_always_opaque_as_int;
   nacl_abi_size_t size_ret = kPpSizeBytes;
   int32_t result;
-  NaClSrpcError retval =
+  NaClSrpcError srpc_result =
       PpbGraphics2DRpcClient::PPB_Graphics2D_Describe(
           GetMainSrpcChannel(),
           graphics_2d,
@@ -77,7 +78,9 @@ PP_Bool Describe(PP_Resource graphics_2d,
           reinterpret_cast<char*>(size),
           &is_always_opaque_as_int,
           &result);
-  if (retval == NACL_SRPC_RESULT_OK || size_ret != kPpSizeBytes) {
+  DebugPrintf("PPB_Graphics2D::Describe: %s\n",
+              NaClSrpcErrorString(srpc_result));
+  if (srpc_result == NACL_SRPC_RESULT_OK || size_ret != kPpSizeBytes) {
     *is_always_opaque = is_always_opaque_as_int ? PP_TRUE : PP_FALSE;
     return result ? PP_TRUE : PP_FALSE;
   } else {
@@ -89,28 +92,31 @@ void PaintImageData(PP_Resource graphics_2d,
                     PP_Resource image,
                     const struct PP_Point* top_left,
                     const struct PP_Rect* src_rect) {
-    DebugPrintf("PPB_Graphics2D::PaintImageData: graphics_2d=%"NACL_PRIx32"\n",
-                graphics_2d);
+  DebugPrintf("PPB_Graphics2D::PaintImageData: graphics_2d=%"NACL_PRIu32"\n",
+              graphics_2d);
   // TODO(sehr,polina): there is no way to report a failure through this
   // interface design other than crash.  Let's find one.
   nacl_abi_size_t rect_size = kPpRectBytes;
   if (src_rect == NULL) {
     rect_size = 0;
   }
-  (void) PpbGraphics2DRpcClient::PPB_Graphics2D_PaintImageData(
-      GetMainSrpcChannel(),
-      graphics_2d,
-      image,
-      kPpPointBytes,
-      reinterpret_cast<char*>(const_cast<struct PP_Point*>(top_left)),
-      rect_size,
-      reinterpret_cast<char*>(const_cast<struct PP_Rect*>(src_rect)));
+  NaClSrpcError srpc_result =
+      PpbGraphics2DRpcClient::PPB_Graphics2D_PaintImageData(
+          GetMainSrpcChannel(),
+          graphics_2d,
+          image,
+          kPpPointBytes,
+          reinterpret_cast<char*>(const_cast<struct PP_Point*>(top_left)),
+          rect_size,
+          reinterpret_cast<char*>(const_cast<struct PP_Rect*>(src_rect)));
+  DebugPrintf("PPB_Graphics2D::PaintImageData: %s\n",
+              NaClSrpcErrorString(srpc_result));
 }
 
 void Scroll(PP_Resource graphics_2d,
             const struct PP_Rect* clip_rect,
             const struct PP_Point* amount) {
-  DebugPrintf("PPB_Graphics2D::Scroll: graphics_2d=%"NACL_PRIx32"\n",
+  DebugPrintf("PPB_Graphics2D::Scroll: graphics_2d=%"NACL_PRIu32"\n",
               graphics_2d);
   // TODO(sehr,polina): there is no way to report a failure through this
   // interface design other than crash.  Let's find one.
@@ -118,25 +124,29 @@ void Scroll(PP_Resource graphics_2d,
   if (clip_rect == NULL) {
     rect_size = 0;
   }
-  (void) PpbGraphics2DRpcClient::PPB_Graphics2D_Scroll(
+  NaClSrpcError srpc_result = PpbGraphics2DRpcClient::PPB_Graphics2D_Scroll(
       GetMainSrpcChannel(),
       graphics_2d,
       rect_size,
       reinterpret_cast<char*>(const_cast<struct PP_Rect*>(clip_rect)),
       kPpPointBytes,
       reinterpret_cast<char*>(const_cast<struct PP_Point*>(amount)));
+  DebugPrintf("PPB_Graphics2D::Scroll: %s\n", NaClSrpcErrorString(srpc_result));
 }
 
 void ReplaceContents(PP_Resource graphics_2d, PP_Resource image) {
-  DebugPrintf("PPB_Graphics2D::ReplaceContents: graphics_2d=%"NACL_PRIx32"\n",
+  DebugPrintf("PPB_Graphics2D::ReplaceContents: graphics_2d=%"NACL_PRIu32"\n",
               graphics_2d);
-  (void) PpbGraphics2DRpcClient::PPB_Graphics2D_ReplaceContents(
-      GetMainSrpcChannel(), graphics_2d, image);
+  NaClSrpcError srpc_result =
+      PpbGraphics2DRpcClient::PPB_Graphics2D_ReplaceContents(
+          GetMainSrpcChannel(), graphics_2d, image);
+  DebugPrintf("PPB_Graphics2D::ReplaceContents: %s\n",
+              NaClSrpcErrorString(srpc_result));
 }
 
 int32_t Flush(PP_Resource graphics_2d,
               struct PP_CompletionCallback callback) {
-  DebugPrintf("PPB_Graphics2D::Flush: graphics_2d=%"NACL_PRIx32"\n",
+  DebugPrintf("PPB_Graphics2D::Flush: graphics_2d=%"NACL_PRIu32"\n",
               graphics_2d);
   int32_t callback_id =
       CompletionCallbackTable::Get()->AddCallback(callback);
@@ -144,10 +154,11 @@ int32_t Flush(PP_Resource graphics_2d,
     return PP_ERROR_BADARGUMENT;
 
   int32_t pp_error;
-  NaClSrpcError retval =
+  NaClSrpcError srpc_result =
       PpbGraphics2DRpcClient::PPB_Graphics2D_Flush(
           GetMainSrpcChannel(), graphics_2d, callback_id, &pp_error);
-  if (retval != NACL_SRPC_RESULT_OK) {
+  DebugPrintf("PPB_Graphics2D::Flush: %s\n", NaClSrpcErrorString(srpc_result));
+  if (srpc_result != NACL_SRPC_RESULT_OK) {
     return PP_ERROR_FAILED;
   }
   return pp_error;

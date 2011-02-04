@@ -14,63 +14,74 @@
 #include "ppapi/c/ppb_audio_config.h"
 
 namespace ppapi_proxy {
+
 namespace {
 
 PP_AudioSampleRate GetSampleRate(PP_Resource config) {
-  NaClSrpcChannel* channel = ppapi_proxy::GetMainSrpcChannel();
+  DebugPrintf("PPB_AudioConfig::GetSampleRate: config=%"NACL_PRIu32"\n",
+              config);
   int32_t sample_rate;
-  NaClSrpcError retval =
+  NaClSrpcError srpc_result =
       PpbAudioConfigRpcClient::PPB_AudioConfig_GetSampleRate(
-          channel,
+          GetMainSrpcChannel(),
           config,
           &sample_rate);
-  if (NACL_SRPC_RESULT_OK == retval) {
+  DebugPrintf("PPB_AudioConfig::GetSampleRate: %s\n",
+              NaClSrpcErrorString(srpc_result));
+  if (NACL_SRPC_RESULT_OK == srpc_result) {
     return static_cast<PP_AudioSampleRate>(sample_rate);
   }
   return PP_AUDIOSAMPLERATE_NONE;
 }
 
 uint32_t GetSampleFrameCount(PP_Resource config) {
-  NaClSrpcChannel* channel = ppapi_proxy::GetMainSrpcChannel();
+  DebugPrintf("PPB_AudioConfig::GetSampleFrameCount: config=%"NACL_PRIu32"\n",
+              config);
   int32_t sample_frame_count;
-  NaClSrpcError retval =
+  NaClSrpcError srpc_result =
       PpbAudioConfigRpcClient::PPB_AudioConfig_GetSampleFrameCount(
-          channel,
+          GetMainSrpcChannel(),
           config,
           &sample_frame_count);
-  if (NACL_SRPC_RESULT_OK == retval) {
-    return static_cast<int32_t>(sample_frame_count);
+  DebugPrintf("PPB_AudioConfig::GetSampleFrameCount: %s\n",
+              NaClSrpcErrorString(srpc_result));
+  if (NACL_SRPC_RESULT_OK == srpc_result) {
+    return static_cast<uint32_t>(sample_frame_count);
   }
   return 0;
 }
 
-uint32_t RecommendSampleFrameCount(
-    PP_AudioSampleRate sample_rate,
-    uint32_t request_sample_frame_count) {
-  NaClSrpcChannel* channel = ppapi_proxy::GetMainSrpcChannel();
+uint32_t RecommendSampleFrameCount(PP_AudioSampleRate sample_rate,
+                                   uint32_t request_sample_frame_count) {
+  DebugPrintf("PPB_AudioConfig::RecommendSampleFrameCount");
   int32_t out_sample_frame_count;
-  NaClSrpcError retval =
+  NaClSrpcError srpc_result =
       PpbAudioConfigRpcClient::PPB_AudioConfig_RecommendSampleFrameCount(
-          channel,
+          GetMainSrpcChannel(),
           static_cast<int32_t>(sample_rate),
           static_cast<int32_t>(request_sample_frame_count),
           &out_sample_frame_count);
-  if (NACL_SRPC_RESULT_OK == retval) {
+  DebugPrintf("PPB_AudioConfig::RecommendSampleFrameCount: %s\n",
+              NaClSrpcErrorString(srpc_result));
+  if (NACL_SRPC_RESULT_OK == srpc_result) {
     return static_cast<uint32_t>(out_sample_frame_count);
   }
   return 0;
 }
 
 PP_Bool IsAudioConfig(PP_Resource resource) {
-  NaClSrpcChannel* channel = ppapi_proxy::GetMainSrpcChannel();
-  int32_t out_bool;
-  NaClSrpcError retval =
+  DebugPrintf("PPB_AudioConfig::IsAudioConfig: resource=%"NACL_PRIu32"\n",
+              resource);
+  int32_t success;
+  NaClSrpcError srpc_result =
       PpbAudioConfigRpcClient::PPB_AudioConfig_IsAudioConfig(
-          channel,
+          GetMainSrpcChannel(),
           resource,
-          &out_bool);
-  if (NACL_SRPC_RESULT_OK == retval) {
-      return out_bool ? PP_TRUE : PP_FALSE;
+          &success);
+  DebugPrintf("PPB_AudioConfig::IsAudioConfig: %s\n",
+              NaClSrpcErrorString(srpc_result));
+  if (NACL_SRPC_RESULT_OK == srpc_result && success) {
+    return PP_TRUE;
   }
   return PP_FALSE;
 }
@@ -78,16 +89,19 @@ PP_Bool IsAudioConfig(PP_Resource resource) {
 PP_Resource CreateStereo16Bit(PP_Instance instance,
                               PP_AudioSampleRate sample_rate,
                               uint32_t sample_frame_count) {
-  NaClSrpcChannel* channel = ppapi_proxy::GetMainSrpcChannel();
+  DebugPrintf("PPB_AudioConfig::CreateStereo16Bit: instance=%"NACL_PRIu32"\n",
+              instance);
   PP_Resource resource;
-  NaClSrpcError retval =
+  NaClSrpcError srpc_result =
       PpbAudioConfigRpcClient::PPB_AudioConfig_CreateStereo16Bit(
-          channel,
+          GetMainSrpcChannel(),
           instance,
           static_cast<int32_t>(sample_rate),
           static_cast<int32_t>(sample_frame_count),
           &resource);
-  if (NACL_SRPC_RESULT_OK == retval) {
+  DebugPrintf("PPB_AudioConfig::CreateStereo16Bit: %s\n",
+              NaClSrpcErrorString(srpc_result));
+  if (NACL_SRPC_RESULT_OK == srpc_result) {
     return resource;
   }
   return kInvalidResourceId;

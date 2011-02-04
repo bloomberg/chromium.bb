@@ -53,10 +53,11 @@ struct StreamCreatedCallbackData {
 // This completion callback will be invoked when the sync socket and shared
 // memory handles become available.
 void StreamCreatedCallback(void* user_data, int32_t result) {
-  DebugPrintf("StreamCreatedCallback user_data=%p"
-              " result=%"NACL_PRId32"\n", user_data, result);
-  if (NULL == user_data)
+  DebugPrintf("StreamCreatedCallback: user_data=%p result=%"NACL_PRId32"\n",
+              user_data, result);
+  if (NULL == user_data) {
     return;
+  }
   nacl::scoped_ptr<StreamCreatedCallbackData> data(
       static_cast<StreamCreatedCallbackData*>(user_data));
   if (result < 0) {
@@ -104,32 +105,33 @@ void PpbAudioRpcServer::PPB_Audio_Create(
     PP_Instance instance,
     PP_Resource config,
     PP_Resource* resource) {
-  DebugPrintf("PpbAudioRpcServer::PPB_Audio_Create rpc=%p"
-              " done=%p instance=%"NACL_PRIx32""
-              " config=%"NACL_PRIx32", resource=%p\n",
-              rpc, done, instance, config, resource);
+  DebugPrintf("PPB_Audio::Create: instance=%"NACL_PRIu32" config=%"NACL_PRIu32
+              "\n", instance, config);
   NaClSrpcClosureRunner runner(done);
   const PPB_AudioTrusted* audio = GetAudioTrustedInterface();
-  PP_Resource audio_id;
   PP_CompletionCallback callback;
   StreamCreatedCallbackData* data;
-  int32_t r;
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-  if (ppapi_proxy::kInvalidResourceId == config)
+  if (ppapi_proxy::kInvalidResourceId == config) {
     return;
-  if (NULL == audio)
+  }
+  if (NULL == audio) {
     return;
+  }
   *resource = audio->CreateTrusted(instance);
-  audio_id = *resource;
-  if (ppapi_proxy::kInvalidResourceId == audio_id)
+  DebugPrintf("PPB_Audio::Create: resource=%"NACL_PRIu32"\n", *resource);
+  PP_Resource audio_id = *resource;
+  if (ppapi_proxy::kInvalidResourceId == audio_id) {
     return;
+  }
   data = new StreamCreatedCallbackData(instance, audio_id);
   callback = PP_MakeCompletionCallback(StreamCreatedCallback, data);
-  r = audio->Open(audio_id, config, callback);
-  // if the Open() call failed, pass failure code and explicitly
+  int32_t pp_error = audio->Open(audio_id, config, callback);
+  DebugPrintf("PPB_Audio::Create: pp_error=%"NACL_PRIu32"\n", pp_error);
+  // If the Open() call failed, pass failure code and explicitly
   // invoke the completion callback, giving it a chance to release data.
-  if ((r != PP_ERROR_WOULDBLOCK)) {
-    PP_RunCompletionCallback(&callback, r);
+  if (pp_error != PP_ERROR_WOULDBLOCK) {
+    PP_RunCompletionCallback(&callback, pp_error);
     return;
   }
   rpc->result = NACL_SRPC_RESULT_OK;
@@ -139,66 +141,57 @@ void PpbAudioRpcServer::PPB_Audio_StartPlayback(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
     PP_Resource resource,
-    int32_t* out_bool) {
-  DebugPrintf("PpbAudioRpcServer::PPB_Audio_StartPlayback rpc=%p"
-              " done=%p resource=%"NACL_PRIx32"\n",
-              rpc, done, resource);
+    int32_t* success) {
+  DebugPrintf("PPB_Audio::StartPlayback: resource=%"NACL_PRIu32"\n", resource);
   NaClSrpcClosureRunner runner(done);
   const PPB_Audio* audio = GetAudioInterface();
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   if (NULL == audio) {
-    *out_bool = false;
+    *success = false;
     return;
   }
-  *out_bool = static_cast<int32_t>(audio->StartPlayback(resource));
+  PP_Bool pp_success = audio->StartPlayback(resource);
+  DebugPrintf("PPB_Audio::StartPlayback: pp_success=%d\n", pp_success);
+  *success = (pp_success == PP_TRUE);
   rpc->result = NACL_SRPC_RESULT_OK;
-  DebugPrintf("PpbAudioRpcServer::PPB_Audio_StartPlayback"
-              " out_bool=%"NACL_PRId32" rpc->result=%"NACL_PRId32"\n",
-              *out_bool, rpc->result);
 }
 
 void PpbAudioRpcServer::PPB_Audio_StopPlayback(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
     PP_Resource resource,
-    int32_t* out_bool) {
-  DebugPrintf("PpbAudioRpcServer::PPB_Audio_StopPlayback"
-              "rpc=%p done=%p resource=%"NACL_PRIx32"\n",
-              rpc, done, resource);
+    int32_t* success) {
+  DebugPrintf("PPB_Audio::StopPlayback: resource=%"NACL_PRIu32"\n", resource);
   NaClSrpcClosureRunner runner(done);
   const PPB_Audio* audio = GetAudioInterface();
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   if (NULL == audio) {
-    *out_bool = false;
+    *success = false;
     return;
   }
-  *out_bool = static_cast<int32_t>(audio->StopPlayback(resource));
+  PP_Bool pp_success = audio->StopPlayback(resource);
+  DebugPrintf("PPB_Audio::StopPlayback: pp_success=%d\n", pp_success);
+  *success = (pp_success == PP_TRUE);
   rpc->result = NACL_SRPC_RESULT_OK;
-  DebugPrintf("PpbAudioRpcServer::PPB_Audio_StopPlayback"
-              " out_bool=%"NACL_PRId32" rpc->result=%"NACL_PRId32"\n",
-              *out_bool, rpc->result);
 }
 
 void PpbAudioRpcServer::PPB_Audio_IsAudio(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
     PP_Resource resource,
-    int32_t* out_bool) {
-  DebugPrintf("PpbAudioRpcServer::PPB_Audio_IsAudio rpc=%p"
-              " done=%p resource=%"NACL_PRIx32"\n",
-              rpc, done, resource);
+    int32_t* success) {
+  DebugPrintf("PPB_Audio::IsAudio: resource=%"NACL_PRIu32"\n", resource);
   NaClSrpcClosureRunner runner(done);
   const PPB_Audio* audio = GetAudioInterface();
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   if (NULL == audio) {
-    *out_bool = false;
+    *success = false;
     return;
   }
-  *out_bool = static_cast<int32_t>(audio->IsAudio(resource));
+  PP_Bool pp_success = audio->IsAudio(resource);
+  DebugPrintf("PPB_Audio::IsAudio: pp_success=%d\n", pp_success);
+  *success = (pp_success == PP_TRUE);
   rpc->result = NACL_SRPC_RESULT_OK;
-  DebugPrintf("PpbAudioRpcServer::PPB_Audio_IsAudio"
-              " out_bool=%"NACL_PRId32" rpc->result=%"NACL_PRId32"\n",
-              *out_bool, rpc->result);
 }
 
 void PpbAudioRpcServer::PPB_Audio_GetCurrentConfig(
@@ -206,10 +199,8 @@ void PpbAudioRpcServer::PPB_Audio_GetCurrentConfig(
     NaClSrpcClosure* done,
     PP_Resource resource,
     PP_Resource* config) {
-  DebugPrintf("PpbAudioRpcServer::PPB_Audio_GetCurrentConfig"
-              " rpc=%p done=%p"
-              " resource=%"NACL_PRIx32" config=%p\n",
-              rpc, done, resource, config);
+  DebugPrintf("PPB_Audio::GetCurrentConfig: resource=%"NACL_PRIu32"\n",
+              resource);
   NaClSrpcClosureRunner runner(done);
   const PPB_Audio* audio = GetAudioInterface();
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
@@ -220,5 +211,6 @@ void PpbAudioRpcServer::PPB_Audio_GetCurrentConfig(
     return;
   }
   *config = audio->GetCurrentConfig(resource);
+  DebugPrintf("PPB_Audio::GetCurrentConfig: config=%"NACL_PRIu32"\n", *config);
   rpc->result = NACL_SRPC_RESULT_OK;
 }

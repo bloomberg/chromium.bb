@@ -74,7 +74,7 @@ void PpbImageDataRpcServer::PPB_ImageData_Create(
   DebugPrintf("PPB_ImageData::Create: format=%"NACL_PRId32", "
               "size=(%"NACL_PRId32", %"NACL_PRId32"), "
               "init_to_zero=%"NACL_PRId32", "
-              "resource=%"NACL_PRIx32"\n",
+              "resource=%"NACL_PRIu32"\n",
               format, pp_size.width, pp_size.height,
               init_to_zero, *resource);
   rpc->result = NACL_SRPC_RESULT_OK;
@@ -90,7 +90,7 @@ void PpbImageDataRpcServer::PPB_ImageData_IsImageData(
   PP_Bool pp_success =
       ppapi_proxy::PPBImageDataInterface()->IsImageData(resource);
   *success = (pp_success == PP_TRUE);
-  DebugPrintf("PPB_ImageData::IsImageData: resource=%"NACL_PRIx32", "
+  DebugPrintf("PPB_ImageData::IsImageData: resource=%"NACL_PRIu32", "
               "success=%"NACL_PRId32"\n", resource, *success);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
@@ -161,7 +161,7 @@ void PpbImageDataRpcServer::PPB_ImageData_Describe(
 #endif
     }
   }
-  DebugPrintf("PPB_ImageData::Describe: resource=%"NACL_PRIx32", "
+  DebugPrintf("PPB_ImageData::Describe: resource=%"NACL_PRIu32", "
               "success=%"NACL_PRId32"\n", resource, *success);
   rpc->result = NACL_SRPC_RESULT_OK;
 }

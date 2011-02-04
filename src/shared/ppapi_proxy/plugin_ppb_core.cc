@@ -35,7 +35,7 @@ bool main_thread_marked = false;
 // Resource's reference count goes to zero, the destructor should make sure
 // the browser reference is returned.
 void AddRefResource(PP_Resource resource) {
-  DebugPrintf("PPB_Core::AddRefResource: resource=%"NACL_PRIx32"\n",
+  DebugPrintf("PPB_Core::AddRefResource: resource=%"NACL_PRIu32"\n",
               resource);
   if (!ppapi_proxy::PluginResourceTracker::Get()->AddRefResource(resource)) {
     DebugPrintf("PPB_Core::AddRefResource: not tracked locally\n");
@@ -48,7 +48,7 @@ void AddRefResource(PP_Resource resource) {
 }
 
 void ReleaseResource(PP_Resource resource) {
-  DebugPrintf("PPB_Core::ReleaseResource: resource=%"NACL_PRIx32"\n",
+  DebugPrintf("PPB_Core::ReleaseResource: resource=%"NACL_PRIu32"\n",
               resource);
   if (!ppapi_proxy::PluginResourceTracker::Get()->UnrefResource(resource)) {
     DebugPrintf("PPB_Core::ReleaseResource: not tracked locally\n");

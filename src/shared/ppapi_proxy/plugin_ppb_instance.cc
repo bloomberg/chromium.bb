@@ -42,8 +42,8 @@ PP_Var GetWindowObject(PP_Instance instance) {
 }
 
 PP_Var GetOwnerElementObject(PP_Instance instance) {
-  DebugPrintf("PPB_Instance::GetOwnerElementObject: instance=%"
-              NACL_PRIx32 "\n", instance);
+  DebugPrintf("PPB_Instance::GetOwnerElementObject: instance=%"NACL_PRIu32"\n",
+              instance);
   NACL_UNTESTED();
   NaClSrpcChannel* channel = GetMainSrpcChannel();
 
@@ -65,8 +65,8 @@ PP_Var GetOwnerElementObject(PP_Instance instance) {
 }
 
 PP_Bool BindGraphics(PP_Instance instance, PP_Resource device) {
-  DebugPrintf("PPB_Instance::BindGraphics: instance=%"NACL_PRIx32 ", "
-              "device=%" NACL_PRIu32 "\n", instance, device);
+  DebugPrintf("PPB_Instance::BindGraphics: instance=%"NACL_PRIu32
+              " device=%"NACL_PRIu32"\n", instance, device);
   int32_t success = 0;
 
   NaClSrpcError srpc_result =
@@ -84,7 +84,7 @@ PP_Bool BindGraphics(PP_Instance instance, PP_Resource device) {
 }
 
 PP_Bool IsFullFrame(PP_Instance instance) {
-  DebugPrintf("PPB_Instance::IsFullFrame: instance=%" NACL_PRIx32 "\n",
+  DebugPrintf("PPB_Instance::IsFullFrame: instance=%"NACL_PRIu32"\n",
               instance);
   NACL_UNTESTED();
   int32_t is_full_frame = 0;
@@ -103,8 +103,8 @@ PP_Bool IsFullFrame(PP_Instance instance) {
 }
 
 PP_Var ExecuteScript(PP_Instance instance, PP_Var script, PP_Var* exception) {
-  DebugPrintf("PPB_Instance::ExecuteScript: instance=%"
-              NACL_PRIx32"\n", instance);
+  DebugPrintf("PPB_Instance::ExecuteScript: instance=%"NACL_PRIu32"\n",
+              instance);
   NACL_UNTESTED();
   NaClSrpcChannel* channel = GetMainSrpcChannel();
 

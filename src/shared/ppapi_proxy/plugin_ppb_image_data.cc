@@ -26,13 +26,13 @@ size_t ceil64k(size_t n) {
 PP_ImageDataFormat GetNativeImageDataFormat() {
   DebugPrintf("PPB_ImageData::GetNativeImageDataFormat\n");
   int32_t format;
-  NaClSrpcError retval =
+  NaClSrpcError srpc_result =
       PpbImageDataRpcClient::PPB_ImageData_GetNativeImageDataFormat(
           GetMainSrpcChannel(),
           &format);
   DebugPrintf("PPB_ImageData::GetNativeImageDataFormat: %s\n",
-              NaClSrpcErrorString(retval));
-  if (retval == NACL_SRPC_RESULT_OK) {
+              NaClSrpcErrorString(srpc_result));
+  if (srpc_result == NACL_SRPC_RESULT_OK) {
     return static_cast<PP_ImageDataFormat>(format);
   } else {
     return PP_IMAGEDATAFORMAT_BGRA_PREMUL;
@@ -43,14 +43,14 @@ PP_Bool IsImageDataFormatSupported(PP_ImageDataFormat format) {
   DebugPrintf("PPB_ImageData::IsImageDataFormatSupported: format=%"
               NACL_PRId32"\n", static_cast<int32_t>(format));
   int32_t result;
-  NaClSrpcError retval =
+  NaClSrpcError srpc_result =
       PpbImageDataRpcClient::PPB_ImageData_IsImageDataFormatSupported(
           GetMainSrpcChannel(),
           static_cast<int32_t>(format),
           &result);
   DebugPrintf("PPB_ImageData::IsImageDataFormatSupported: %s\n",
-              NaClSrpcErrorString(retval));
-  if (retval == NACL_SRPC_RESULT_OK) {
+              NaClSrpcErrorString(srpc_result));
+  if (srpc_result == NACL_SRPC_RESULT_OK) {
     return (result ? PP_TRUE : PP_FALSE);
   } else {
     return PP_FALSE;
@@ -61,9 +61,9 @@ PP_Resource Create(PP_Instance instance,
                    PP_ImageDataFormat format,
                    const struct PP_Size* size,
                    PP_Bool init_to_zero) {
-  DebugPrintf("PPB_ImageData::Create: instance=%"NACL_PRIx32"\n", instance);
+  DebugPrintf("PPB_ImageData::Create: instance=%"NACL_PRIu32"\n", instance);
   PP_Resource resource;
-  NaClSrpcError retval =
+  NaClSrpcError srpc_result =
       PpbImageDataRpcClient::PPB_ImageData_Create(
           GetMainSrpcChannel(),
           instance,
@@ -72,8 +72,8 @@ PP_Resource Create(PP_Instance instance,
           reinterpret_cast<char*>(const_cast<struct PP_Size*>(size)),
           (init_to_zero == PP_TRUE),
           &resource);
-  DebugPrintf("PPB_ImageData::Create: %s\n", NaClSrpcErrorString(retval));
-  if (retval == NACL_SRPC_RESULT_OK) {
+  DebugPrintf("PPB_ImageData::Create: %s\n", NaClSrpcErrorString(srpc_result));
+  if (srpc_result == NACL_SRPC_RESULT_OK) {
     scoped_refptr<PluginImageData> image_data =
         PluginResource::AdoptAs<PluginImageData>(resource);
     if (image_data.get()) {
@@ -84,7 +84,7 @@ PP_Resource Create(PP_Instance instance,
 }
 
 PP_Bool IsImageData(PP_Resource resource) {
-  DebugPrintf("PPB_ImageData::IsImageData: resource=%"NACL_PRIx32"\n",
+  DebugPrintf("PPB_ImageData::IsImageData: resource=%"NACL_PRIu32"\n",
               resource);
   return PluginResource::GetAs<PluginImageData>(resource).get()
       ? PP_TRUE : PP_FALSE;
@@ -92,7 +92,7 @@ PP_Bool IsImageData(PP_Resource resource) {
 
 PP_Bool Describe(PP_Resource resource,
                  struct PP_ImageDataDesc* desc) {
-  DebugPrintf("PPB_ImageData::Describe: resource=%"NACL_PRIx32"\n",
+  DebugPrintf("PPB_ImageData::Describe: resource=%"NACL_PRIu32"\n",
               resource);
   scoped_refptr<PluginImageData> imagedata =
       PluginResource::GetAs<PluginImageData>(resource);
@@ -105,7 +105,7 @@ PP_Bool Describe(PP_Resource resource,
 }
 
 void* DoMap(PP_Resource resource) {
-  DebugPrintf("PPB_ImageData::DoMap: resource=%"NACL_PRIx32"\n", resource);
+  DebugPrintf("PPB_ImageData::DoMap: resource=%"NACL_PRIu32"\n", resource);
   scoped_refptr<PluginImageData> imagedata =
       PluginResource::GetAs<PluginImageData>(resource);
 
@@ -113,7 +113,7 @@ void* DoMap(PP_Resource resource) {
 }
 
 void DoUnmap(PP_Resource resource) {
-  DebugPrintf("PPB_ImageData::DoUnmap: resource=%"NACL_PRIx32"\n", resource);
+  DebugPrintf("PPB_ImageData::DoUnmap: resource=%"NACL_PRIu32"\n", resource);
   scoped_refptr<PluginImageData> imagedata =
       PluginResource::GetAs<PluginImageData>(resource);
   if (imagedata.get())

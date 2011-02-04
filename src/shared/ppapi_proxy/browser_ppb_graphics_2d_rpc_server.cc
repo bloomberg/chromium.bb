@@ -46,7 +46,7 @@ void PpbGraphics2DRpcServer::PPB_Graphics2D_Create(NaClSrpcRpc* rpc,
       const_cast<const struct PP_Size*>(
           reinterpret_cast<struct PP_Size*>(size)),
       (is_always_opaque ? PP_TRUE : PP_FALSE));
-  DebugPrintf("PPB_Graphics2D::Create: resource=%"NACL_PRIx32"\n", *resource);
+  DebugPrintf("PPB_Graphics2D::Create: resource=%"NACL_PRIu32"\n", *resource);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 

@@ -24,7 +24,7 @@ void PpbCoreRpcServer::PPB_Core_AddRefResource(NaClSrpcRpc* rpc,
                                                PP_Resource resource) {
   NaClSrpcClosureRunner runner(done);
   PPBCoreInterface()->AddRefResource(resource);
-  DebugPrintf("PPB_Core::AddRefResource: resource=%"NACL_PRIx32"\n", resource);
+  DebugPrintf("PPB_Core::AddRefResource: resource=%"NACL_PRIu32"\n", resource);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -33,7 +33,7 @@ void PpbCoreRpcServer::PPB_Core_ReleaseResource(NaClSrpcRpc* rpc,
                                                 PP_Resource resource) {
   NaClSrpcClosureRunner runner(done);
   PPBCoreInterface()->ReleaseResource(resource);
-  DebugPrintf("PPB_Core::ReleaseResource: resource=%"NACL_PRIx32"\n",
+  DebugPrintf("PPB_Core::ReleaseResource: resource=%"NACL_PRIu32"\n",
               resource);
   rpc->result = NACL_SRPC_RESULT_OK;
 }

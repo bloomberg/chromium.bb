@@ -68,7 +68,7 @@ PP_Bool DidCreate(PP_Instance instance,
                   uint32_t argc,
                   const char* argn[],
                   const char* argv[]) {
-  DebugPrintf("PPP_Instance::DidCreate: instance=%"NACL_PRIx32"\n", instance);
+  DebugPrintf("PPP_Instance::DidCreate: instance=%"NACL_PRIu32"\n", instance);
   uint32_t argn_size;
   scoped_array<char> argn_serial(ArgArraySerialize(argc, argn, &argn_size));
   if (argn_serial.get() == NULL) {
@@ -81,7 +81,7 @@ PP_Bool DidCreate(PP_Instance instance,
   }
   int32_t int_argc = static_cast<int32_t>(argc);
   int32_t success;
-  NaClSrpcError retval =
+  NaClSrpcError srpc_result =
       PppInstanceRpcClient::PPP_Instance_DidCreate(GetMainSrpcChannel(instance),
                                                    instance,
                                                    int_argc,
@@ -90,24 +90,26 @@ PP_Bool DidCreate(PP_Instance instance,
                                                    argv_size,
                                                    argv_serial.get(),
                                                    &success);
-  DebugPrintf("PPP_Instance::DidCreate: %s\n", NaClSrpcErrorString(retval));
-  if (retval != NACL_SRPC_RESULT_OK) {
+  DebugPrintf("PPP_Instance::DidCreate: %s\n",
+              NaClSrpcErrorString(srpc_result));
+  if (srpc_result != NACL_SRPC_RESULT_OK) {
     return PP_FALSE;
   }
   return static_cast<PP_Bool>(success != 0);
 }
 
 void DidDestroy(PP_Instance instance) {
-  DebugPrintf("PPP_Instance::DidDestroy: instance=%"NACL_PRIx32"\n", instance);
-  NaClSrpcError retval = PppInstanceRpcClient::PPP_Instance_DidDestroy(
+  DebugPrintf("PPP_Instance::DidDestroy: instance=%"NACL_PRIu32"\n", instance);
+  NaClSrpcError srpc_result = PppInstanceRpcClient::PPP_Instance_DidDestroy(
       GetMainSrpcChannel(instance), instance);
-  DebugPrintf("PPP_Instance::DidDestroy: %s\n", NaClSrpcErrorString(retval));
+  DebugPrintf("PPP_Instance::DidDestroy: %s\n",
+              NaClSrpcErrorString(srpc_result));
 }
 
 void DidChangeView(PP_Instance instance,
                    const PP_Rect* position,
                    const PP_Rect* clip) {
-  DebugPrintf("PPP_Instance::DidChangeView: instance=%"NACL_PRIx32"\n",
+  DebugPrintf("PPP_Instance::DidChangeView: instance=%"NACL_PRIu32"\n",
               instance);
   int32_t position_array[4];
   const uint32_t kPositionArraySize = NACL_ARRAY_SIZE(position_array);
@@ -121,33 +123,34 @@ void DidChangeView(PP_Instance instance,
   clip_array[1] = clip->point.y;
   clip_array[2] = clip->size.width;
   clip_array[3] = clip->size.height;
-  NaClSrpcError retval = PppInstanceRpcClient::PPP_Instance_DidChangeView(
+  NaClSrpcError srpc_result = PppInstanceRpcClient::PPP_Instance_DidChangeView(
       GetMainSrpcChannel(instance),
       instance,
       kPositionArraySize,
       position_array,
       kClipArraySize,
       clip_array);
-  DebugPrintf("PPP_Instance::DidChangeView: %s\n", NaClSrpcErrorString(retval));
+  DebugPrintf("PPP_Instance::DidChangeView: %s\n",
+              NaClSrpcErrorString(srpc_result));
 }
 
 void DidChangeFocus(PP_Instance instance, PP_Bool has_focus) {
-  DebugPrintf("PPP_Instance::DidChangeFocus: instance=%"NACL_PRIx32", "
+  DebugPrintf("PPP_Instance::DidChangeFocus: instance=%"NACL_PRIu32", "
               "has_focus = %d\n", instance, has_focus);
-  NaClSrpcError retval = PppInstanceRpcClient::PPP_Instance_DidChangeFocus(
+  NaClSrpcError srpc_result = PppInstanceRpcClient::PPP_Instance_DidChangeFocus(
       GetMainSrpcChannel(instance),
       instance,
       static_cast<bool>(PP_TRUE == has_focus));
   DebugPrintf("PPP_Instance::DidChangeFocus: %s\n",
-              NaClSrpcErrorString(retval));
+              NaClSrpcErrorString(srpc_result));
 }
 
 PP_Bool HandleInputEvent(PP_Instance instance, const PP_InputEvent* event) {
-  DebugPrintf("PPP_Instance::HandleInputEvent: instance=%"NACL_PRIx32"\n",
+  DebugPrintf("PPP_Instance::HandleInputEvent: instance=%"NACL_PRIu32"\n",
               instance);
   int32_t success;
   char* event_data = const_cast<char*>(reinterpret_cast<const char*>(event));
-  NaClSrpcError retval =
+  NaClSrpcError srpc_result =
       PppInstanceRpcClient::PPP_Instance_HandleInputEvent(
           GetMainSrpcChannel(instance),
           instance,
@@ -155,16 +158,16 @@ PP_Bool HandleInputEvent(PP_Instance instance, const PP_InputEvent* event) {
           event_data,
           &success);
   DebugPrintf("PPP_Instance::HandleInputEvent: %s\n",
-              NaClSrpcErrorString(retval));
-  if (retval != NACL_SRPC_RESULT_OK) {
+              NaClSrpcErrorString(srpc_result));
+  if (srpc_result != NACL_SRPC_RESULT_OK) {
     return PP_FALSE;
   }
   return static_cast<PP_Bool>(success != 0);
 }
 
 PP_Bool HandleDocumentLoad(PP_Instance instance, PP_Resource url_loader) {
-  DebugPrintf("PPP_Instance::HandleDocumentLoad: instance=%"NACL_PRIx32", "
-              "url_loader=%"NACL_PRIx32"\n", instance, url_loader);
+  DebugPrintf("PPP_Instance::HandleDocumentLoad: instance=%"NACL_PRIu32", "
+              "url_loader=%"NACL_PRIu32"\n", instance, url_loader);
   // TODO(sehr): implement HandleDocumentLoad.
   NACL_UNIMPLEMENTED();
   UNREFERENCED_PARAMETER(instance);
@@ -173,20 +176,20 @@ PP_Bool HandleDocumentLoad(PP_Instance instance, PP_Resource url_loader) {
 }
 
 PP_Var GetInstanceObject(PP_Instance instance) {
-  DebugPrintf("PPP_Instance::GetInstanceObject: instance=%"NACL_PRIx32"\n",
+  DebugPrintf("PPP_Instance::GetInstanceObject: instance=%"NACL_PRIu32"\n",
               instance);
   ObjectCapability capability;
   uint32_t capability_bytes = static_cast<uint32_t>(sizeof(capability));
   NaClSrpcChannel* main_channel = GetMainSrpcChannel(instance);
-  NaClSrpcError retval =
+  NaClSrpcError srpc_result =
       PppInstanceRpcClient::PPP_Instance_GetInstanceObject(
           main_channel,
           instance,
           &capability_bytes,
           reinterpret_cast<char*>(&capability));
   DebugPrintf("PPP_Instance::GetInstanceObject: %s\n",
-              NaClSrpcErrorString(retval));
-  if (retval != NACL_SRPC_RESULT_OK) {
+              NaClSrpcErrorString(srpc_result));
+  if (srpc_result != NACL_SRPC_RESULT_OK) {
     return PP_MakeUndefined();
   }
   return ObjectProxy::New(capability, main_channel);

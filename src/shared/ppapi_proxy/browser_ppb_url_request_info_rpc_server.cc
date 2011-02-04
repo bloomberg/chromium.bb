@@ -27,7 +27,7 @@ void PpbURLRequestInfoRpcServer::PPB_URLRequestInfo_Create(
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
   *resource = PPBURLRequestInfoInterface()->Create(instance);
-  DebugPrintf("PPB_URLRequestInfo::Create: resource=%"NACL_PRIx32"\n",
+  DebugPrintf("PPB_URLRequestInfo::Create: resource=%"NACL_PRIu32"\n",
               *resource);
 
   rpc->result = NACL_SRPC_RESULT_OK;
