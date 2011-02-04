@@ -270,6 +270,10 @@ class ExtensionPrefs {
                                   bool incognito,
                                   Value* value);
 
+  void RemoveExtensionControlledPref(const std::string& extension_id,
+                                     const std::string& pref_key,
+                                     bool incognito);
+
   static void RegisterUserPrefs(PrefService* prefs);
 
   // The underlying PrefService.

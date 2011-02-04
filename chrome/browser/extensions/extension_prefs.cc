@@ -1241,6 +1241,26 @@ void ExtensionPrefs::SetExtensionControlledPref(const std::string& extension_id,
       extension_id, pref_key, incognito, value);
 }
 
+void ExtensionPrefs::RemoveExtensionControlledPref(
+    const std::string& extension_id,
+    const std::string& pref_key,
+    bool incognito) {
+  DCHECK(pref_service()->FindPreference(pref_key.c_str()))
+      << "Extension controlled preference key " << pref_key
+      << " not registered.";
+
+  if (!incognito) {
+    // Also store in persisted Preferences file to recover after a
+    // browser restart.
+    DictionaryValue* dict = GetExtensionControlledPrefs(extension_id);
+    dict->RemoveWithoutPathExpansion(pref_key, NULL);
+    pref_service()->ScheduleSavePersistentPrefs();
+  }
+
+  extension_pref_value_map_->RemoveExtensionPref(
+      extension_id, pref_key, incognito);
+}
+
 // static
 void ExtensionPrefs::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterDictionaryPref(kExtensionsPref);

@@ -3781,7 +3781,29 @@
         "type": "function",
         "description": "Apply the given proxy configuration.",
         "parameters": [
-          {"name": "config", "$ref": "ProxyConfig"}
+          {
+            "name": "config",
+            "$ref": "ProxyConfig"
+          },
+          {
+            "name": "incognito",
+            "type": "boolean",
+            "description": "If true, the proxy settings apply only to incognito windows. Otherwise they apply to regular windows (and incognito windows if no specific settings are provided for incognito windows)",
+            "optional": true
+          }
+        ]
+      },
+      {
+        "name": "removeCustomProxySettings",
+        "type": "function",
+        "description": "Remove a custom proxy set by the current extension. This is the inverse of useCustomProxySettings.",
+        "parameters": [
+          {
+            "name": "incognito",
+            "type": "boolean",
+            "description": "See incognito parameter of useCustomProxySettings.",
+            "optional": true
+          }
         ]
       }
     ]

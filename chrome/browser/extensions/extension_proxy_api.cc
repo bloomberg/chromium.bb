@@ -50,9 +50,28 @@ COMPILE_ASSERT(arraysize(field_name) == SCHEME_MAX + 1,
 COMPILE_ASSERT(arraysize(scheme_name) == SCHEME_MAX + 1,
                scheme_name_array_is_wrong_size);
 
+void ProxySettingsFunction::ApplyPreference(const char* pref_path,
+                                            Value* pref_value,
+                                            bool incognito) {
+  profile()->GetExtensionService()->extension_prefs()->
+      SetExtensionControlledPref(extension_id(), pref_path, incognito,
+                                 pref_value);
+}
+
+void ProxySettingsFunction::RemovePreference(const char* pref_path,
+                                             bool incognito) {
+  profile()->GetExtensionService()->extension_prefs()->
+      RemoveExtensionControlledPref(extension_id(), pref_path, incognito);
+}
+
 bool UseCustomProxySettingsFunction::RunImpl() {
   DictionaryValue* proxy_config;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &proxy_config));
+
+  bool incognito = false;  // Optional argument, defaults to false.
+  if (HasOptionalArgument(1)) {
+    EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(1, &incognito));
+  }
 
   std::string proxy_mode;
   proxy_config->GetString("mode", &proxy_mode);
@@ -65,9 +84,9 @@ bool UseCustomProxySettingsFunction::RunImpl() {
 
   // TODO(battre,gfeher): Make sure all the preferences get always
   // overwritten.
-  return ApplyMode(proxy_mode) &&
-      ApplyPacScript(pac_dict) &&
-      ApplyProxyRules(proxy_rules);
+  return ApplyMode(proxy_mode, incognito) &&
+      ApplyPacScript(pac_dict, incognito) &&
+      ApplyProxyRules(proxy_rules, incognito);
 }
 
 bool UseCustomProxySettingsFunction::GetProxyServer(
@@ -78,7 +97,8 @@ bool UseCustomProxySettingsFunction::GetProxyServer(
   return true;
 }
 
-bool UseCustomProxySettingsFunction::ApplyMode(const std::string& mode) {
+bool UseCustomProxySettingsFunction::ApplyMode(const std::string& mode,
+                                               bool incognito) {
   // We take control of the mode preference even if none was specified, so that
   // all proxy preferences are controlled by the same extension (if not by a
   // higher-priority source).
@@ -89,11 +109,13 @@ bool UseCustomProxySettingsFunction::ApplyMode(const std::string& mode) {
     LOG(WARNING) << "Invalid mode for proxy settings: " << mode;
     result = false;
   }
-  ApplyPreference(prefs::kProxyMode, Value::CreateIntegerValue(mode_enum));
+  ApplyPreference(
+      prefs::kProxyMode, Value::CreateIntegerValue(mode_enum), incognito);
   return result;
 }
 
-bool UseCustomProxySettingsFunction::ApplyPacScript(DictionaryValue* pac_dict) {
+bool UseCustomProxySettingsFunction::ApplyPacScript(DictionaryValue* pac_dict,
+                                                    bool incognito) {
   std::string pac_url;
   if (pac_dict)
     pac_dict->GetString("url", &pac_url);
@@ -101,14 +123,17 @@ bool UseCustomProxySettingsFunction::ApplyPacScript(DictionaryValue* pac_dict) {
   // We take control of the PAC preference even if none was specified, so that
   // all proxy preferences are controlled by the same extension (if not by a
   // higher-priority source).
-  ApplyPreference(prefs::kProxyPacUrl, Value::CreateStringValue(pac_url));
+  ApplyPreference(
+      prefs::kProxyPacUrl, Value::CreateStringValue(pac_url), incognito);
   return true;
 }
 
 bool UseCustomProxySettingsFunction::ApplyProxyRules(
-    DictionaryValue* proxy_rules) {
+    DictionaryValue* proxy_rules,
+    bool incognito) {
   if (!proxy_rules) {
-    ApplyPreference(prefs::kProxyServer, Value::CreateStringValue(""));
+    ApplyPreference(
+        prefs::kProxyServer, Value::CreateStringValue(""), incognito);
     return true;
   }
 
@@ -164,13 +189,17 @@ bool UseCustomProxySettingsFunction::ApplyProxyRules(
     }
   }
 
-  ApplyPreference(prefs::kProxyServer, Value::CreateStringValue(proxy_pref));
+  ApplyPreference(
+      prefs::kProxyServer, Value::CreateStringValue(proxy_pref), incognito);
   return true;
 }
 
-void UseCustomProxySettingsFunction::ApplyPreference(const char* pref_path,
-                                                     Value* pref_value) {
-  profile()->GetExtensionService()->extension_prefs()
-      ->SetExtensionControlledPref(extension_id(), pref_path, false,
-                                   pref_value);
+bool RemoveCustomProxySettingsFunction::RunImpl() {
+  bool incognito = false;
+  args_->GetBoolean(0, &incognito);
+
+  RemovePreference(prefs::kProxyMode, incognito);
+  RemovePreference(prefs::kProxyPacUrl, incognito);
+  RemovePreference(prefs::kProxyServer, incognito);
+  return true;
 }

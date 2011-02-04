@@ -41,6 +41,7 @@
     "chrome.experimental.infobars.show": "experimental.infobars.html#method-show", 
     "chrome.experimental.processes.getProcessIdForTab": "experimental.processes.html#method-getProcessIdForTab", 
     "chrome.experimental.processes.onUpdated": "experimental.processes.html#event-onUpdated", 
+    "chrome.experimental.proxy.removeCustomProxySettings": "experimental.proxy.html#method-removeCustomProxySettings", 
     "chrome.experimental.proxy.useCustomProxySettings": "experimental.proxy.html#method-useCustomProxySettings", 
     "chrome.experimental.sidebar.collapse": "experimental.sidebar.html#method-collapse", 
     "chrome.experimental.sidebar.expand": "experimental.sidebar.html#method-expand", 

@@ -11,9 +11,20 @@
 
 class DictionaryValue;
 
-class UseCustomProxySettingsFunction : public SyncExtensionFunction {
+class ProxySettingsFunction : public SyncExtensionFunction {
  public:
-  ~UseCustomProxySettingsFunction() {}
+  virtual ~ProxySettingsFunction() {}
+  virtual bool RunImpl() = 0;
+ protected:
+  // Takes ownership of |pref_value|.
+  void ApplyPreference(
+      const char* pref_path, Value* pref_value, bool incognito);
+  void RemovePreference(const char* pref_path, bool incognito);
+};
+
+class UseCustomProxySettingsFunction : public ProxySettingsFunction {
+ public:
+  virtual ~UseCustomProxySettingsFunction() {}
   virtual bool RunImpl();
 
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.proxy.useCustomProxySettings")
@@ -33,12 +44,18 @@ class UseCustomProxySettingsFunction : public SyncExtensionFunction {
 
   bool GetProxyServer(const DictionaryValue* dict, ProxyServer* proxy_server);
 
-  bool ApplyMode(const std::string& mode);
-  bool ApplyPacScript(DictionaryValue* pac_dict);
-  bool ApplyProxyRules(DictionaryValue* proxy_rules);
+  bool ApplyMode(const std::string& mode, bool incognito);
+  bool ApplyPacScript(DictionaryValue* pac_dict, bool incognito);
+  bool ApplyProxyRules(DictionaryValue* proxy_rules, bool incognito);
+};
 
-  // Takes ownership of |pref_value|.
-  void ApplyPreference(const char* pref_path, Value* pref_value);
+class RemoveCustomProxySettingsFunction : public ProxySettingsFunction {
+ public:
+  virtual ~RemoveCustomProxySettingsFunction() {}
+  virtual bool RunImpl();
+
+  DECLARE_EXTENSION_FUNCTION_NAME(
+      "experimental.proxy.removeCustomProxySettings")
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_PROXY_API_H_
