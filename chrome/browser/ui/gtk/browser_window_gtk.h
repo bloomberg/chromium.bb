@@ -154,9 +154,7 @@ class BrowserWindowGtk : public BrowserWindow,
 
   void UpdateDevToolsForContents(TabContents* contents);
 
-  void OnBoundsChanged(const gfx::Rect& bounds);
   void OnDebouncedBoundsChanged();
-  void OnStateChanged(GdkWindowState state, GdkWindowState changed_mask);
 
   // Request the underlying window to unmaximize.  Also tries to work around
   // a window manager "feature" that can prevent this in some edge cases.
@@ -285,6 +283,13 @@ class BrowserWindowGtk : public BrowserWindow,
   // position to the WM.
   void SetBoundsImpl(const gfx::Rect& bounds, bool exterior, bool move);
 
+  CHROMEGTK_CALLBACK_1(BrowserWindowGtk, gboolean, OnConfigure,
+                       GdkEventConfigure*);
+  CHROMEGTK_CALLBACK_1(BrowserWindowGtk, gboolean, OnWindowState,
+                       GdkEventWindowState*);
+  CHROMEGTK_CALLBACK_1(BrowserWindowGtk, gboolean, OnMainWindowDeleteEvent,
+                       GdkEvent*);
+  CHROMEGTK_CALLBACK_0(BrowserWindowGtk, void, OnMainWindowDestroy);
   // Callback for when the custom frame alignment needs to be redrawn.
   // The content area includes the toolbar and web page but not the tab strip.
   CHROMEGTK_CALLBACK_1(BrowserWindowGtk, gboolean, OnCustomFrameExpose,

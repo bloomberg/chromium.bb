@@ -129,47 +129,6 @@ const int kCustomFrameBackgroundVerticalOffset = 15;
 // gtk_window_get_position() after the last GTK configure-event signal.
 const int kDebounceTimeoutMilliseconds = 100;
 
-gboolean MainWindowConfigured(GtkWindow* window, GdkEventConfigure* event,
-                              BrowserWindowGtk* browser_win) {
-  gfx::Rect bounds = gfx::Rect(event->x, event->y, event->width, event->height);
-  browser_win->OnBoundsChanged(bounds);
-  return FALSE;
-}
-
-gboolean MainWindowStateChanged(GtkWindow* window, GdkEventWindowState* event,
-                                BrowserWindowGtk* browser_win) {
-  browser_win->OnStateChanged(event->new_window_state, event->changed_mask);
-  return FALSE;
-}
-
-// Callback for the delete event.  This event is fired when the user tries to
-// close the window (e.g., clicking on the X in the window manager title bar).
-gboolean MainWindowDeleteEvent(GtkWidget* widget, GdkEvent* event,
-                               BrowserWindowGtk* window) {
-  window->Close();
-
-  // Return true to prevent the gtk window from being destroyed.  Close will
-  // destroy it for us.
-  return TRUE;
-}
-
-void MainWindowDestroy(GtkWidget* widget, BrowserWindowGtk* window) {
-  // BUG 8712. When we gtk_widget_destroy() in Close(), this will emit the
-  // signal right away, and we will be here (while Close() is still in the
-  // call stack).  In order to not reenter Close(), and to also follow the
-  // expectations of BrowserList, we should run the BrowserWindowGtk destructor
-  // not now, but after the run loop goes back to process messages.  Otherwise
-  // we will remove ourself from BrowserList while it's being iterated.
-  // Additionally, now that we know the window is gone, we need to make sure to
-  // set window_ to NULL, otherwise we will try to close the window again when
-  // we call Close() in the destructor.
-  //
-  // We don't want to use DeleteSoon() here since it won't work on a nested pump
-  // (like in UI tests).
-  MessageLoop::current()->PostTask(FROM_HERE,
-                                   new DeleteTask<BrowserWindowGtk>(window));
-}
-
 // Using gtk_window_get_position/size creates a race condition, so only use
 // this to get the initial bounds.  After window creation, we pick up the
 // normal bounds by connecting to the configure-event signal.
@@ -1278,7 +1237,16 @@ void BrowserWindowGtk::DestroyBrowser() {
   browser_.reset();
 }
 
-void BrowserWindowGtk::OnBoundsChanged(const gfx::Rect& bounds) {
+gboolean BrowserWindowGtk::OnConfigure(GtkWidget* widget,
+                                       GdkEventConfigure* event) {
+  gfx::Rect bounds(event->x, event->y, event->width, event->height);
+
+  // When the window moves, we'll get multiple configure-event signals. We can
+  // also get events when the bounds haven't changed, but the window's stacking
+  // has, which we aren't interested in. http://crbug.com/70125
+  if (bounds == bounds_)
+    return FALSE;
+
   GetLocationBar()->location_entry()->ClosePopup();
 
   TabContents* tab_contents = GetDisplayedTabContents();
@@ -1295,8 +1263,7 @@ void BrowserWindowGtk::OnBoundsChanged(const gfx::Rect& bounds) {
   // handler below, after the window state has been updated.
   bounds_ = bounds;
 
-  // When a window is moved or resized, GTK will call MainWindowConfigured()
-  // above.  The GdkEventConfigure* that it gets doesn't have quite the right
+  // The GdkEventConfigure* we get here doesn't have quite the right
   // coordinates though (they're relative to the drawable window area, rather
   // than any window manager decorations, if enabled), so we need to call
   // gtk_window_get_position() to get the right values.  (Otherwise session
@@ -1310,6 +1277,8 @@ void BrowserWindowGtk::OnBoundsChanged(const gfx::Rect& bounds) {
   window_configure_debounce_timer_.Start(base::TimeDelta::FromMilliseconds(
       kDebounceTimeoutMilliseconds), this,
       &BrowserWindowGtk::OnDebouncedBoundsChanged);
+
+  return FALSE;
 }
 
 void BrowserWindowGtk::OnDebouncedBoundsChanged() {
@@ -1322,12 +1291,12 @@ void BrowserWindowGtk::OnDebouncedBoundsChanged() {
   SaveWindowPosition();
 }
 
-void BrowserWindowGtk::OnStateChanged(GdkWindowState state,
-                                      GdkWindowState changed_mask) {
-  state_ = state;
+gboolean BrowserWindowGtk::OnWindowState(GtkWidget* sender,
+                                         GdkEventWindowState* event) {
+  state_ = event->new_window_state;
 
-  if (changed_mask & GDK_WINDOW_STATE_FULLSCREEN) {
-    bool is_fullscreen = state & GDK_WINDOW_STATE_FULLSCREEN;
+  if (event->changed_mask & GDK_WINDOW_STATE_FULLSCREEN) {
+    bool is_fullscreen = state_ & GDK_WINDOW_STATE_FULLSCREEN;
     browser_->UpdateCommandsForFullscreenMode(is_fullscreen);
     if (is_fullscreen) {
       UpdateCustomFrame();
@@ -1351,6 +1320,35 @@ void BrowserWindowGtk::OnStateChanged(GdkWindowState state,
 
   UpdateWindowShape(bounds_.width(), bounds_.height());
   SaveWindowPosition();
+  return FALSE;
+}
+
+// Callback for the delete event.  This event is fired when the user tries to
+// close the window (e.g., clicking on the X in the window manager title bar).
+gboolean BrowserWindowGtk::OnMainWindowDeleteEvent(GtkWidget* widget,
+                                                   GdkEvent* event) {
+  Close();
+
+  // Return true to prevent the gtk window from being destroyed.  Close will
+  // destroy it for us.
+  return TRUE;
+}
+
+void BrowserWindowGtk::OnMainWindowDestroy(GtkWidget* widget) {
+  // BUG 8712. When we gtk_widget_destroy() in Close(), this will emit the
+  // signal right away, and we will be here (while Close() is still in the
+  // call stack).  In order to not reenter Close(), and to also follow the
+  // expectations of BrowserList, we should run the BrowserWindowGtk destructor
+  // not now, but after the run loop goes back to process messages.  Otherwise
+  // we will remove ourself from BrowserList while it's being iterated.
+  // Additionally, now that we know the window is gone, we need to make sure to
+  // set window_ to NULL, otherwise we will try to close the window again when
+  // we call Close() in the destructor.
+  //
+  // We don't want to use DeleteSoon() here since it won't work on a nested pump
+  // (like in UI tests).
+  MessageLoop::current()->PostTask(FROM_HERE,
+                                   new DeleteTask<BrowserWindowGtk>(this));
 }
 
 void BrowserWindowGtk::UnMaximize() {
@@ -1488,13 +1486,13 @@ void BrowserWindowGtk::SetGeometryHints() {
 
 void BrowserWindowGtk::ConnectHandlersToSignals() {
   g_signal_connect(window_, "delete-event",
-                   G_CALLBACK(MainWindowDeleteEvent), this);
+                   G_CALLBACK(OnMainWindowDeleteEventThunk), this);
   g_signal_connect(window_, "destroy",
-                   G_CALLBACK(MainWindowDestroy), this);
+                   G_CALLBACK(OnMainWindowDestroyThunk), this);
   g_signal_connect(window_, "configure-event",
-                   G_CALLBACK(MainWindowConfigured), this);
+                   G_CALLBACK(OnConfigureThunk), this);
   g_signal_connect(window_, "window-state-event",
-                   G_CALLBACK(MainWindowStateChanged), this);
+                   G_CALLBACK(OnWindowStateThunk), this);
   g_signal_connect(window_, "map",
                    G_CALLBACK(MainWindowMapped), NULL);
   g_signal_connect(window_, "unmap",
