@@ -14,8 +14,13 @@
  *
  */
 
+var USE_DEVTOOLS_SCHEMA = /\.webInspector\.[^/]*\.html/.test(location.href);
 var API_TEMPLATE = "template/api_template.html";
-var SCHEMA = "../api/extension_api.json";
+var WEBKIT_PATH = "../../../../third_party/WebKit";
+var SCHEMA = USE_DEVTOOLS_SCHEMA ?
+    WEBKIT_PATH + "/Source/WebCore/inspector/front-end/ExtensionAPISchema.json"
+    : "../api/extension_api.json";
+var API_MODULE_PREFIX = USE_DEVTOOLS_SCHEMA ? "" : "chrome.";
 var SAMPLES = "samples.json";
 var REQUEST_TIMEOUT = 2000;
 
@@ -184,7 +189,7 @@ function renderTemplate() {
       }
       // This page is an api page. Setup types and apiDefinition.
       module = mod;
-      apiModuleName = "chrome." + module.namespace;
+      apiModuleName = API_MODULE_PREFIX + module.namespace;
       pageData.apiDefinition = module;
     }
 
@@ -433,11 +438,15 @@ function getPageTitle() {
 }
 
 function getModuleName() {
-  return "chrome." + module.namespace;
+  return API_MODULE_PREFIX + module.namespace;
 }
 
-function getFullyQualifiedFunctionName(func) {
-  return getModuleName() + "." + func.name;
+function getFullyQualifiedFunctionName(scope, func) {
+  return (getObjectName(scope) || getModuleName()) + "." + func.name;
+}
+
+function getObjectName(typeName) {
+  return typeName.charAt(0).toLowerCase() + typeName.substring(1);
 }
 
 function isExperimentalAPIPage() {
@@ -452,6 +461,10 @@ function hasCallback(parameters) {
 
 function getCallbackParameters(parameters) {
   return parameters[parameters.length - 1];
+}
+
+function getAnchorName(type, name, scope) {
+  return type + "-" + (scope ? scope + "-" : "") + name;
 }
 
 function shouldExpandObject(object) {
@@ -491,6 +504,8 @@ function getTypeName(schema) {
 }
 
 function getSignatureString(parameters) {
+  if (!parameters)
+    return "";
   var retval = [];
   parameters.forEach(function(param, i) {
     retval.push(getTypeName(param) + " " + param.name);
