@@ -354,8 +354,16 @@ std::string AddChromeFrameToUserAgentValue(const std::string& value) {
   }
 
   std::string ret(value);
-  ret += " ";
-  ret += GetChromeFrameUserAgent();
+  std::string::size_type insert_position = ret.find(')');
+  if (insert_position != std::string::npos) {
+    if (insert_position > 1 && isalnum(ret[insert_position - 1]))
+      ret.insert(insert_position++, ";");
+    ret.insert(insert_position++, " ");
+    ret.insert(insert_position, GetChromeFrameUserAgent());
+  } else {
+    ret += " ";
+    ret += GetChromeFrameUserAgent();
+  }
 
   return ret;
 }

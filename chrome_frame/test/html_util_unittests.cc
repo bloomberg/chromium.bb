@@ -328,33 +328,37 @@ TEST_F(HtmlUtilUnittest, AddChromeFrameToUserAgentValue) {
       "", ""
     }, {
       "Mozilla/4.7 [en] (WinNT; U)",
-      "Mozilla/4.7 [en] (WinNT; U) chromeframe/0.0.0.0"
+      "Mozilla/4.7 [en] (WinNT; U; chromeframe/0.0.0.0)"
     }, {
       "Mozilla/4.0 (compatible; MSIE 5.01; Windows NT)",
-      "Mozilla/4.0 (compatible; MSIE 5.01; Windows NT) chromeframe/0.0.0.0"
+      "Mozilla/4.0 (compatible; MSIE 5.01; Windows NT; chromeframe/0.0.0.0)"
     }, {
       "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.0; T312461; "
-        ".NET CLR 1.1.4322)",
+          ".NET CLR 1.1.4322)",
       "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.0; T312461; "
-        ".NET CLR 1.1.4322) chromeframe/0.0.0.0"
+          ".NET CLR 1.1.4322; chromeframe/0.0.0.0)"
     }, {
       "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT 4.0) Opera 5.11 [en]",
-      "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT 4.0) "
-          "Opera 5.11 [en] chromeframe/0.0.0.0"
+      "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT 4.0; chromeframe/0.0.0.0) "
+          "Opera 5.11 [en]"
+    }, {
+      "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)",
+      "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0; "
+          "chromeframe/0.0.0.0)"
     }, {
       "Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.0.2) "
           "Gecko/20030208 Netscape/7.02",
-      "Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.0.2) "
-          "Gecko/20030208 Netscape/7.02 chromeframe/0.0.0.0"
+      "Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.0.2; "
+          "chromeframe/0.0.0.0) Gecko/20030208 Netscape/7.02"
     }, {
       "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040612 "
           "Firefox/0.8",
-      "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040612 "
-          "Firefox/0.8 chromeframe/0.0.0.0"
+      "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6; chromeframe/0.0.0.0) "
+          "Gecko/20040612 Firefox/0.8"
     }, {
       "Mozilla/5.0 (compatible; Konqueror/3.2; Linux) (KHTML, like Gecko)",
-      "Mozilla/5.0 (compatible; Konqueror/3.2; Linux) "
-          "(KHTML, like Gecko) chromeframe/0.0.0.0"
+      "Mozilla/5.0 (compatible; Konqueror/3.2; Linux; chromeframe/0.0.0.0) "
+          "(KHTML, like Gecko)"
     }, {
       "Lynx/2.8.4rel.1 libwww-FM/2.14 SSL-MM/1.4.1 OpenSSL/0.9.6h",
       "Lynx/2.8.4rel.1 libwww-FM/2.14 SSL-MM/1.4.1 "
@@ -362,17 +366,17 @@ TEST_F(HtmlUtilUnittest, AddChromeFrameToUserAgentValue) {
     }, {
       "Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.7.10) "
           "Gecko/20050716 Firefox/1.0.6",
-      "Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.7.10) "
-          "Gecko/20050716 Firefox/1.0.6 chromeframe/0.0.0.0"
+      "Mozilla/5.0 (X11; U; Linux i686 (x86_64; chromeframe/0.0.0.0); en-US; "
+          "rv:1.7.10) Gecko/20050716 Firefox/1.0.6"
     }, {
       "Invalid/1.1 ((((((",
       "Invalid/1.1 (((((( chromeframe/0.0.0.0",
     }, {
       "Invalid/1.1 ()))))",
-      "Invalid/1.1 ())))) chromeframe/0.0.0.0",
+      "Invalid/1.1 ( chromeframe/0.0.0.0)))))",
     }, {
       "Strange/1.1 ()",
-      "Strange/1.1 () chromeframe/0.0.0.0",
+      "Strange/1.1 ( chromeframe/0.0.0.0)",
     }
   };
 
