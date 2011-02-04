@@ -188,3 +188,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDelayLoadPlugin) {
   PrerenderTestURL("plugin_delay_load.html", true);
   NavigateToDestURL();
 }
+
+// Renders a page that contains a prerender link to a page that contains an
+// iframe with a source that requires http authentication. This should not
+// prerender successfully.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHttpAuthentication) {
+  PrerenderTestURL("prerender_http_auth_container.html", false);
+}

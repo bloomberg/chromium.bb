@@ -12,6 +12,8 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
+#include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "chrome/browser/tab_contents/constrained_window.h"
@@ -111,6 +113,15 @@ TabContents* LoginHandler::GetTabContentsForLogin() const {
 
   return tab_util::GetTabContentsByID(render_process_host_id_,
                                       tab_contents_id_);
+}
+
+RenderViewHostDelegate* LoginHandler::GetRenderViewHostDelegate() const {
+  RenderViewHost* rvh = RenderViewHost::FromID(render_process_host_id_,
+                                               tab_contents_id_);
+  if (!rvh)
+    return NULL;
+
+  return rvh->delegate();
 }
 
 void LoginHandler::SetAuth(const std::wstring& username,
@@ -250,12 +261,13 @@ void LoginHandler::NotifyAuthNeeded() {
   if (WasAuthHandled())
     return;
 
-  TabContents* requesting_contents = GetTabContentsForLogin();
-  if (!requesting_contents)
-    return;
-
   NotificationService* service = NotificationService::current();
-  NavigationController* controller = &requesting_contents->controller();
+  NavigationController* controller = NULL;
+
+  TabContents* requesting_contents = GetTabContentsForLogin();
+  if (requesting_contents)
+    controller = &requesting_contents->controller();
+
   LoginNotificationDetails details(this);
 
   service->Notify(NotificationType::AUTH_NEEDED,
@@ -267,12 +279,13 @@ void LoginHandler::NotifyAuthCancelled() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(WasAuthHandled());
 
-  TabContents* requesting_contents = GetTabContentsForLogin();
-  if (!requesting_contents)
-    return;
-
   NotificationService* service = NotificationService::current();
-  NavigationController* controller = &requesting_contents->controller();
+  NavigationController* controller = NULL;
+
+  TabContents* requesting_contents = GetTabContentsForLogin();
+  if (requesting_contents)
+    controller = &requesting_contents->controller();
+
   LoginNotificationDetails details(this);
 
   service->Notify(NotificationType::AUTH_CANCELLED,

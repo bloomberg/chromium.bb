@@ -22,6 +22,7 @@ class URLRequest;
 
 class ConstrainedWindow;
 class GURL;
+class RenderViewHostDelegate;
 
 // This is the base implementation for the OS-specific classes that route
 // authentication info to the net::URLRequest that needs it. These functions
@@ -49,6 +50,9 @@ class LoginHandler : public base::RefCountedThreadSafe<LoginHandler>,
 
   // Returns the TabContents that needs authentication.
   TabContents* GetTabContentsForLogin() const;
+
+  // Returns the RenderViewHostDelegate for the page that needs authentication.
+  RenderViewHostDelegate* GetRenderViewHostDelegate() const;
 
   // Resend the request with authentication credentials.
   // This function can be called from either thread.

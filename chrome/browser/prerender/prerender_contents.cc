@@ -13,6 +13,7 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/renderer_preferences_util.h"
+#include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
@@ -73,6 +74,13 @@ void PrerenderContents::StartPrerendering() {
   registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
                  Source<Profile>(profile_));
   render_view_host_->CreateRenderView(string16());
+
+  // Register to cancel if Authentication is required.
+  registrar_.Add(this, NotificationType::AUTH_NEEDED,
+                 NotificationService::AllSources());
+
+  registrar_.Add(this, NotificationType::AUTH_CANCELLED,
+                 NotificationService::AllSources());
 
   DCHECK(load_start_time_.is_null());
   load_start_time_ = base::TimeTicks::Now();
@@ -181,6 +189,23 @@ void PrerenderContents::Observe(NotificationType type,
     case NotificationType::APP_TERMINATING:
       Destroy(FINAL_STATUS_APP_TERMINATING);
       return;
+
+    case NotificationType::AUTH_NEEDED:
+    case NotificationType::AUTH_CANCELLED: {
+      // Prerendered pages have a NULL controller and the login handler should
+      // be referencing us as the render view host delegate.
+      NavigationController* controller =
+          Source<NavigationController>(source).ptr();
+      LoginNotificationDetails* details_ptr =
+          Details<LoginNotificationDetails>(details).ptr();
+      LoginHandler* handler = details_ptr->handler();
+      DCHECK(handler != NULL);
+      RenderViewHostDelegate* delegate = handler->GetRenderViewHostDelegate();
+      if (controller == NULL && delegate == this)
+        Destroy(FINAL_STATUS_AUTH_NEEDED);
+      break;
+    }
+
     default:
       NOTREACHED() << "Unexpected notification sent.";
       break;
