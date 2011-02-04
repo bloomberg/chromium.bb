@@ -4,7 +4,7 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 */
 
-.subpages-nav-tabs .inactive-tab {
+.subpages-nav-tabs .tab {
   position: relative;
   padding: 4px 8px;
 }
@@ -21,29 +21,30 @@ found in the LICENSE file.
 /* To avoid tabs changing size when they are clicked and their labels become
  * bold, we actually put two labels inside each tab: an inactive label and an
  * active label. Only one is visible at a time, but the bold label is used to
- * size the tab even when it's not visible. This keeps the tab size constant. */
+ * size the tab even when it's not visible. This keeps the tab size constant.
+ */
 .subpages-nav-tabs .active-tab-label {
   font-weight: bold;
 }
 
-.subpages-nav-tabs .inactive-tab-label {
+.subpages-nav-tabs .tab-label {
   position: absolute;
   top: 5px;
   left: 9px;
 }
 
-html[dir=rtl] .subpages-nav-tabs .inactive-tab-label {
+html[dir=rtl] .subpages-nav-tabs .tab-label {
   right: 9px;
 }
 
 .subpages-nav-tabs .active-tab-label,
-.subpages-nav-tabs .active-tab .inactive-tab-label {
+.subpages-nav-tabs .active-tab .tab-label {
   visibility: hidden;
 }
 
-/* .inactive-tab is not removed when .active-tab is added, so we must
- * override the hidden visibility above in the active tab case. */
-/* BUG(62409): rename .inactive-tab to help avoid this confusion */
+/* .tab is not removed when .active-tab is added, so we must
+ * override the hidden visibility above in the active tab case.
+ */
 .subpages-nav-tabs .active-tab .active-tab-label {
   visibility: visible;
 }

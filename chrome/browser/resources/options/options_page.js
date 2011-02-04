@@ -248,10 +248,10 @@ cr.define('options', function() {
     // Search parents until we find a tab, or the nav bar itself. This allows
     // tabs to have child nodes, e.g. labels in separately-styled spans.
     while (tab && !tab.classList.contains('subpages-nav-tabs') &&
-           !tab.classList.contains('inactive-tab')) {
+           !tab.classList.contains('tab')) {
       tab = tab.parentNode;
     }
-    if (!tab || !tab.classList.contains('inactive-tab'))
+    if (!tab || !tab.classList.contains('tab'))
       return;
 
     if (this.activeNavTab != null) {
