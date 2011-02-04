@@ -3758,3 +3758,12 @@
    fun:_Znw*
    fun:*DownloadFileTest5SetUpEv
 }
+{
+   bug_71909
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN14TestingProfile20CreateRequestContextEv
+   fun:_ZN11MockService*
+   ...
+   fun:*ExtensionUpdaterTest*
+}

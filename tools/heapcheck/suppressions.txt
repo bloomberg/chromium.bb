@@ -1269,3 +1269,11 @@
    fun:MockDownloadManager
    fun:::DownloadFileTest::SetUp
 }
+{
+   bug_71909
+   Heapcheck:Leak
+   fun:TestingProfile::CreateRequestContext
+   fun:MockService
+   ...
+   fun:ExtensionUpdaterTest*
+}
