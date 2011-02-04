@@ -13,6 +13,33 @@
 #include "base/task.h"
 #include "remoting/proto/internal.pb.h"
 
+// TODO(jamiewalch): Class to ensure that XFlush is called regardless of what
+// fields are set in the MouseEvent. It's not worth refactoring HandleMouse to
+// avoid the early returns because calling XFlush is not really the correct
+// way of flushing the XTest requests; instead we should dispatch the requests
+// to a suitable UI thread.
+namespace {
+class ScopedXFlusher {
+ public:
+  explicit ScopedXFlusher(Display* display)
+      : display_(display), needs_flush_(false) {
+  }
+
+  ~ScopedXFlusher() {
+    if (needs_flush_)
+      XFlush(display_);
+  }
+
+  void SignalFlush() {
+    needs_flush_ = true;
+  }
+
+ private:
+  Display* display_;
+  bool needs_flush_;
+};
+}
+
 namespace remoting {
 
 using protocol::MouseEvent;
@@ -25,10 +52,10 @@ static int MouseButtonToX11ButtonNumber(
       return 1;
 
     case MouseEvent::BUTTON_RIGHT:
-      return 2;
+      return 3;
 
     case MouseEvent::BUTTON_MIDDLE:
-      return 3;
+      return 2;
 
     case MouseEvent::BUTTON_UNDEFINED:
     default:
@@ -302,9 +329,13 @@ void EventExecutorLinuxPimpl::HandleKey(const KeyEvent* key_event) {
           << " sending keysym: " << keysym
           << " to keycode: " << keycode;
   XTestFakeKeyEvent(display_, keycode, key_event->pressed(), CurrentTime);
+
+  // TODO(jamiewalch): Get rid of this once we're dispatching to the UI thread.
+  XFlush(display_);
 }
 
 void EventExecutorLinuxPimpl::HandleMouse(const MouseEvent* event) {
+  ScopedXFlusher flusher(display_);
   if (event->has_x() && event->has_y()) {
     if (event->x() < 0 || event->y() < 0 ||
         event->x() > width_ || event->y() > height_) {
@@ -316,6 +347,7 @@ void EventExecutorLinuxPimpl::HandleMouse(const MouseEvent* event) {
 
     VLOG(3) << "Moving mouse to " << event->x()
             << "," << event->y();
+    flusher.SignalFlush();
     XTestFakeMotionEvent(display_, DefaultScreen(display_),
                          event->x(), event->y(),
                          CurrentTime);
@@ -332,6 +364,7 @@ void EventExecutorLinuxPimpl::HandleMouse(const MouseEvent* event) {
 
     VLOG(3) << "Button " << event->button()
             << " received, sending down " << button_number;
+    flusher.SignalFlush();
     XTestFakeButtonEvent(display_, button_number, event->button_down(),
                          CurrentTime);
   }
