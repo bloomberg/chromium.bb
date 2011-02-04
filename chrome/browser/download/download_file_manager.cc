@@ -24,12 +24,6 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/io_buffer.h"
 
-#if defined(OS_WIN)
-#include "chrome/common/win_safe_util.h"
-#elif defined(OS_MACOSX)
-#include "chrome/browser/ui/cocoa/file_metadata.h"
-#endif
-
 namespace {
 
 // Throttle updates to the UI thread so that a fast moving download doesn't
