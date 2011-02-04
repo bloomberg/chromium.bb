@@ -12,7 +12,6 @@
 #include "base/scoped_callback_factory.h"
 #include "base/scoped_ptr.h"
 #include "ppapi/c/dev/pp_file_info_dev.h"
-#include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_time.h"
 #include "webkit/plugins/ppapi/callbacks.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
@@ -88,7 +87,7 @@ class PPB_FileIO_Impl : public Resource {
   // it is certain that |PP_ERROR_WOULDBLOCK| will be returned.
   void RegisterCallback(PP_CompletionCallback callback);
 
-  void RunPendingCallback(int result);
+  void RunPendingCallback(int32_t result);
 
   void StatusCallback(base::PlatformFileError error_code);
   void AsyncOpenFileCallback(base::PlatformFileError error_code,

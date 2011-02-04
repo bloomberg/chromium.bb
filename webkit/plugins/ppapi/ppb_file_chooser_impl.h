@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,17 +8,18 @@
 #include <string>
 #include <vector>
 
-#include "base/scoped_ptr.h"
+#include "base/ref_counted.h"
 #include "ppapi/c/dev/ppb_file_chooser_dev.h"
-#include "ppapi/c/pp_completion_callback.h"
 #include "webkit/plugins/ppapi/resource.h"
+
+struct PP_CompletionCallback;
 
 namespace webkit {
 namespace ppapi {
 
-class PluginDelegate;
 class PluginInstance;
 class PPB_FileRef_Impl;
+class TrackedCompletionCallback;
 
 class PPB_FileChooser_Impl : public Resource {
  public:
@@ -36,14 +37,25 @@ class PPB_FileChooser_Impl : public Resource {
   // Stores the list of selected files.
   void StoreChosenFiles(const std::vector<std::string>& files);
 
+  // Check that |callback| is valid (only non-blocking operation is supported)
+  // and that no callback is already pending. Returns |PP_OK| if okay, else
+  // |PP_ERROR_...| to be returned to the plugin.
+  int32_t ValidateCallback(const PP_CompletionCallback& callback);
+
+  // Sets up |callback| as the pending callback. This should only be called once
+  // it is certain that |PP_ERROR_WOULDBLOCK| will be returned.
+  void RegisterCallback(const PP_CompletionCallback& callback);
+
+  void RunCallback(int32_t result);
+
   // PPB_FileChooser implementation.
-  int32_t Show(PP_CompletionCallback callback);
+  int32_t Show(const PP_CompletionCallback& callback);
   scoped_refptr<PPB_FileRef_Impl> GetNextChosenFile();
 
  private:
   PP_FileChooserMode_Dev mode_;
   std::string accept_mime_types_;
-  PP_CompletionCallback completion_callback_;
+  scoped_refptr<TrackedCompletionCallback> callback_;
   std::vector< scoped_refptr<PPB_FileRef_Impl> > chosen_files_;
   size_t next_chosen_file_index_;
 };

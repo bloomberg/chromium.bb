@@ -437,7 +437,7 @@ void PPB_FileIO_Impl::RegisterCallback(PP_CompletionCallback callback) {
       instance()->module()->GetCallbackTracker(), resource_id, callback);
 }
 
-void PPB_FileIO_Impl::RunPendingCallback(int result) {
+void PPB_FileIO_Impl::RunPendingCallback(int32_t result) {
   scoped_refptr<TrackedCompletionCallback> callback;
   callback.swap(callback_);
   callback->Run(result);  // Will complete abortively if necessary.

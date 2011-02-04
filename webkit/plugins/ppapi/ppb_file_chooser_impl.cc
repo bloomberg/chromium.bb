@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/sys_string_conversions.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCString.h"
@@ -15,9 +16,11 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileChooserParams.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
+#include "webkit/plugins/ppapi/callbacks.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
+#include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
 #include "webkit/glue/webkit_glue.h"
@@ -92,13 +95,13 @@ class FileChooserCompletionImpl : public WebFileChooserCompletion {
   virtual void didChooseFile(const WebVector<WebString>& file_names) {
     std::vector<std::string> files;
     for (size_t i = 0; i < file_names.size(); i++)
-      files.push_back(file_names[i].utf8().data());
+      files.push_back(file_names[i].utf8());
 
     file_chooser_->StoreChosenFiles(files);
   }
 
  private:
-  PPB_FileChooser_Impl* file_chooser_;
+  scoped_refptr<PPB_FileChooser_Impl> file_chooser_;
 };
 
 }  // namespace
@@ -108,8 +111,9 @@ PPB_FileChooser_Impl::PPB_FileChooser_Impl(
     const PP_FileChooserOptions_Dev* options)
     : Resource(instance),
       mode_(options->mode),
-      accept_mime_types_(options->accept_mime_types),
-      completion_callback_() {
+      accept_mime_types_(options->accept_mime_types ?
+                         options->accept_mime_types : ""),
+      next_chosen_file_index_(0) {
 }
 
 PPB_FileChooser_Impl::~PPB_FileChooser_Impl() {
@@ -126,35 +130,71 @@ PPB_FileChooser_Impl* PPB_FileChooser_Impl::AsPPB_FileChooser_Impl() {
 
 void PPB_FileChooser_Impl::StoreChosenFiles(
     const std::vector<std::string>& files) {
+  chosen_files_.clear();
   next_chosen_file_index_ = 0;
-  std::vector<std::string>::const_iterator end_it = files.end();
   for (std::vector<std::string>::const_iterator it = files.begin();
-       it != end_it; it++) {
+       it != files.end(); ++it) {
+#if defined(OS_WIN)
+    FilePath file_path(base::SysUTF8ToWide(*it));
+#else
+    FilePath file_path(*it);
+#endif
+
     chosen_files_.push_back(make_scoped_refptr(
-        new PPB_FileRef_Impl(instance(), FilePath().AppendASCII(*it))));
+        new PPB_FileRef_Impl(instance(), file_path)));
   }
 
-  if (!completion_callback_.func)
-    return;
-
-  PP_CompletionCallback callback = {0};
-  std::swap(callback, completion_callback_);
-  PP_RunCompletionCallback(&callback, 0);
+  RunCallback(PP_OK);
 }
 
-int32_t PPB_FileChooser_Impl::Show(PP_CompletionCallback callback) {
+int32_t PPB_FileChooser_Impl::ValidateCallback(
+    const PP_CompletionCallback& callback) {
+  // We only support non-blocking calls.
+  if (!callback.func)
+    return PP_ERROR_BADARGUMENT;
+
+  if (callback_.get() && !callback_->completed())
+    return PP_ERROR_INPROGRESS;
+
+  return PP_OK;
+}
+
+void PPB_FileChooser_Impl::RegisterCallback(
+    const PP_CompletionCallback& callback) {
+  DCHECK(callback.func);
+  DCHECK(!callback_.get() || callback_->completed());
+
+  PP_Resource resource_id = GetReferenceNoAddRef();
+  CHECK(resource_id);
+  callback_ = new TrackedCompletionCallback(
+      instance()->module()->GetCallbackTracker(), resource_id, callback);
+}
+
+void PPB_FileChooser_Impl::RunCallback(int32_t result) {
+  scoped_refptr<TrackedCompletionCallback> callback;
+  callback.swap(callback_);
+  callback->Run(result);  // Will complete abortively if necessary.
+}
+
+int32_t PPB_FileChooser_Impl::Show(const PP_CompletionCallback& callback) {
+  int32_t rv = ValidateCallback(callback);
+  if (rv != PP_OK)
+    return rv;
+
   DCHECK((mode_ == PP_FILECHOOSERMODE_OPEN) ||
          (mode_ == PP_FILECHOOSERMODE_OPENMULTIPLE));
-  DCHECK(!completion_callback_.func);
-  completion_callback_ = callback;
 
   WebFileChooserParams params;
   params.multiSelect = (mode_ == PP_FILECHOOSERMODE_OPENMULTIPLE);
   params.acceptTypes = WebString::fromUTF8(accept_mime_types_);
   params.directory = false;
 
-  return instance()->delegate()->RunFileChooser(
-      params, new FileChooserCompletionImpl(this));
+  if (!instance()->delegate()->RunFileChooser(params,
+          new FileChooserCompletionImpl(this)))
+    return PP_ERROR_FAILED;
+
+  RegisterCallback(callback);
+  return PP_ERROR_WOULDBLOCK;
 }
 
 scoped_refptr<PPB_FileRef_Impl> PPB_FileChooser_Impl::GetNextChosenFile() {
@@ -166,4 +206,3 @@ scoped_refptr<PPB_FileRef_Impl> PPB_FileChooser_Impl::GetNextChosenFile() {
 
 }  // namespace ppapi
 }  // namespace webkit
-
