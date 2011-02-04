@@ -256,7 +256,7 @@ void CapturerLinuxPimpl::CaptureRects(
   for (InvalidRects::const_iterator it = last_invalid_rects_.begin();
        last_buffer_ && it != last_invalid_rects_.end();
        ++it) {
-    int offset = it->y() * stride_ + it->x() + kBytesPerPixel;
+    int offset = it->y() * stride_ + it->x() * kBytesPerPixel;
     for (int i = 0; i < it->height(); ++i) {
       memcpy(buffer + offset, last_buffer_ + offset,
              it->width() * kBytesPerPixel);
