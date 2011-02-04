@@ -16,7 +16,6 @@
 #include "chrome/browser/autocomplete_history_manager.h"
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/blocked_content_container.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/character_encoding.h"
@@ -288,7 +287,6 @@ TabContents::TabContents(Profile* profile,
       upload_size_(0),
       upload_position_(0),
       received_page_title_(false),
-      is_starred_(false),
       contents_mime_type_(),
       encoding_(),
       blocked_contents_(NULL),
@@ -338,11 +336,6 @@ TabContents::TabContents(Profile* profile,
       pref_change_registrar_.Add(kPrefsToObserve[i], this);
   }
 
-  // Register for notifications about URL starredness changing on any profile.
-  registrar_.Add(this, NotificationType::URLS_STARRED,
-                 NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::BOOKMARK_MODEL_LOADED,
-                 NotificationService::AllSources());
   registrar_.Add(this, NotificationType::RENDER_WIDGET_HOST_DESTROYED,
                  NotificationService::AllSources());
 #if defined(OS_LINUX)
@@ -1846,9 +1839,6 @@ void TabContents::DidNavigateMainFramePostCommit(
       details.previous_url, details.entry->url()))
     CloseConstrainedWindows();
 
-  // Update the starred state.
-  UpdateStarredStateForCurrentURL();
-
   // Notify observers about navigation.
   FOR_EACH_OBSERVER(TabContentsObserver, observers_,
                     DidNavigateMainFramePostCommit(details, params));
@@ -1882,15 +1872,6 @@ void TabContents::CloseConstrainedWindows() {
       BlockTabContent(false);
     }
   }
-}
-
-void TabContents::UpdateStarredStateForCurrentURL() {
-  BookmarkModel* model = profile()->GetBookmarkModel();
-  const bool old_state = is_starred_;
-  is_starred_ = (model && model->IsBookmarked(GetURL()));
-
-  if (is_starred_ != old_state && delegate())
-    delegate()->URLStarredChanged(this, is_starred_);
 }
 
 void TabContents::UpdateAlternateErrorPageURL() {
@@ -2977,18 +2958,6 @@ void TabContents::Observe(NotificationType type,
                           const NotificationSource& source,
                           const NotificationDetails& details) {
   switch (type.value) {
-    case NotificationType::BOOKMARK_MODEL_LOADED:
-      // BookmarkModel finished loading, fall through to update starred state.
-    case NotificationType::URLS_STARRED: {
-      // Somewhere, a URL has been starred.
-      // Ignore notifications for profiles other than our current one.
-      Profile* source_profile = Source<Profile>(source).ptr();
-      if (!source_profile || !source_profile->IsSameProfile(profile()))
-        return;
-
-      UpdateStarredStateForCurrentURL();
-      break;
-    }
     case NotificationType::PREF_CHANGED: {
       std::string* pref_name_in = Details<std::string>(details).ptr();
       DCHECK(Source<PrefService>(source).ptr() == profile()->GetPrefs());

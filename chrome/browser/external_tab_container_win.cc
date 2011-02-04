@@ -488,10 +488,6 @@ void ExternalTabContainer::MoveContents(TabContents* source,
                                         const gfx::Rect& pos) {
 }
 
-void ExternalTabContainer::URLStarredChanged(TabContents* source,
-                                             bool starred) {
-}
-
 void ExternalTabContainer::UpdateTargetURL(TabContents* source,
                                            const GURL& url) {
   if (automation_) {

@@ -2627,6 +2627,7 @@ bool Browser::LargeIconsPermitted() const {
 void Browser::TabInsertedAt(TabContentsWrapper* contents,
                             int index,
                             bool foreground) {
+  contents->set_delegate(this);
   contents->tab_contents()->set_delegate(this);
   contents->controller().SetWindowID(session_id());
 
@@ -2651,6 +2652,7 @@ void Browser::TabClosingAt(TabStripModel* tab_strip_model,
       NotificationService::NoDetails());
 
   // Sever the TabContents' connection back to us.
+  contents->set_delegate(NULL);
   contents->tab_contents()->set_delegate(NULL);
 }
 
@@ -2937,11 +2939,6 @@ void Browser::ToolbarSizeChanged(TabContents* source, bool is_animating) {
     // This will refresh the shelf if needed.
     window_->SelectedTabToolbarSizeChanged(is_animating);
   }
-}
-
-void Browser::URLStarredChanged(TabContents* source, bool starred) {
-  if (source == GetSelectedTabContents())
-    window_->SetStarredState(starred);
 }
 
 void Browser::ContentsMouseEvent(
@@ -3239,6 +3236,14 @@ void Browser::OnInstallApplication(TabContents* source,
 
 void Browser::ContentRestrictionsChanged(TabContents* source) {
   UpdateCommandsForContentRestrictionState();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Browser, TabContentsWrapperDelegate implementation:
+
+void Browser::URLStarredChanged(TabContentsWrapper* source, bool starred) {
+  if (source == GetSelectedTabContentsWrapper())
+    window_->SetStarredState(starred);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3626,7 +3631,8 @@ void Browser::InitCommandState() {
 
 void Browser::UpdateCommandsForTabState() {
   TabContents* current_tab = GetSelectedTabContents();
-  if (!current_tab)  // May be NULL during tab restore.
+  TabContentsWrapper* current_tab_wrapper = GetSelectedTabContentsWrapper();
+  if (!current_tab || !current_tab_wrapper)  // May be NULL during tab restore.
     return;
 
   // Navigation commands
@@ -3648,7 +3654,7 @@ void Browser::UpdateCommandsForTabState() {
       non_app_window && tab_count() > 1);
 
   // Page-related commands
-  window_->SetStarredState(current_tab->is_starred());
+  window_->SetStarredState(current_tab_wrapper->is_starred());
   command_updater_.UpdateCommandEnabled(IDC_BOOKMARK_ALL_TABS,
       browser_defaults::bookmarks_enabled && CanBookmarkAllTabs());
   command_updater_.UpdateCommandEnabled(IDC_VIEW_SOURCE,
@@ -4150,6 +4156,7 @@ void Browser::TabDetachedAtImpl(TabContentsWrapper* contents, int index,
       SyncHistoryWithTabs(0);
   }
 
+  contents->set_delegate(NULL);
   contents->tab_contents()->set_delegate(NULL);
   RemoveScheduledUpdatesFor(contents->tab_contents());
 

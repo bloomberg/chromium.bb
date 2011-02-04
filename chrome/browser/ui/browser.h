@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
@@ -29,6 +30,7 @@
 #include "chrome/browser/tabs/tab_strip_model_observer.h"   // TODO(beng): remove
 #include "chrome/browser/tab_contents/page_navigator.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/notification_registrar.h"
@@ -55,6 +57,7 @@ class Point;
 
 class Browser : public TabHandlerDelegate,
                 public TabContentsDelegate,
+                public TabContentsWrapperDelegate,
                 public PageNavigator,
                 public CommandUpdater::CommandUpdaterDelegate,
                 public NotificationObserver,
@@ -761,7 +764,6 @@ class Browser : public TabHandlerDelegate,
   virtual bool IsPopup(const TabContents* source) const;
   virtual bool CanReloadContents(TabContents* source) const;
   virtual void ToolbarSizeChanged(TabContents* source, bool is_animating);
-  virtual void URLStarredChanged(TabContents* source, bool starred);
   virtual void UpdateTargetURL(TabContents* source, const GURL& url);
   virtual void ContentsMouseEvent(
       TabContents* source, const gfx::Point& location, bool motion);
@@ -807,6 +809,10 @@ class Browser : public TabHandlerDelegate,
   virtual void OnInstallApplication(TabContents* tab_contents,
                                     const WebApplicationInfo& app_info);
   virtual void ContentRestrictionsChanged(TabContents* source);
+
+  // Overridden from TabContentsWrapperDelegate:
+  virtual void URLStarredChanged(TabContentsWrapper* source,
+                                 bool starred) OVERRIDE;
 
   // Overridden from SelectFileDialog::Listener:
   virtual void FileSelected(const FilePath& path, int index, void* params);

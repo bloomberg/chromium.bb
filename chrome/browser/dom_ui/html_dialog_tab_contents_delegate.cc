@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -94,12 +94,6 @@ bool HtmlDialogTabContentsDelegate::IsPopup(const TabContents* source) const {
   // This needs to return true so that we are allowed to be resized by our
   // contents.
   return true;
-}
-
-void HtmlDialogTabContentsDelegate::URLStarredChanged(TabContents* source,
-                                                      bool starred) {
-  // We don't have a visible star to click in the window.
-  NOTREACHED();
 }
 
 void HtmlDialogTabContentsDelegate::UpdateTargetURL(TabContents* source,

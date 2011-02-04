@@ -202,7 +202,7 @@ class TabContents : public PageNavigator,
   // If an app extension has been explicitly set for this TabContents its icon
   // is returned.
   //
-  // NOTE: the returned icon is larger than 16x16 (it's size is
+  // NOTE: the returned icon is larger than 16x16 (its size is
   // Extension::EXTENSION_ICON_SMALLISH).
   SkBitmap* GetExtensionAppIcon();
 
@@ -266,8 +266,6 @@ class TabContents : public PageNavigator,
   // main resource of the page. This controls whether the throbber state is
   // "waiting" or "loading."
   bool waiting_for_response() const { return waiting_for_response_; }
-
-  bool is_starred() const { return is_starred_; }
 
   const std::string& encoding() const { return encoding_; }
   void set_encoding(const std::string& encoding);
@@ -832,10 +830,6 @@ class TabContents : public PageNavigator,
   // Closes all constrained windows.
   void CloseConstrainedWindows();
 
-  // Updates the starred state from the bookmark bar model. If the state has
-  // changed, the delegate is notified.
-  void UpdateStarredStateForCurrentURL();
-
   // Send the alternate error page URL to the renderer. This method is virtual
   // so special html pages can override this (e.g., the new tab page).
   virtual void UpdateAlternateErrorPageURL();
@@ -1137,9 +1131,6 @@ class TabContents : public PageNavigator,
   // prevents some weirdness because some AJAXy apps use titles for status
   // messages.
   bool received_page_title_;
-
-  // Whether the current URL is starred
-  bool is_starred_;
 
   // When a navigation occurs, we record its contents MIME type. It can be
   // used to check whether we can do something for some special contents.

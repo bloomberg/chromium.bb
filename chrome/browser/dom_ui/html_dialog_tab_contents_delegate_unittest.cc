@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,10 +67,6 @@ TEST_F(HtmlDialogTabContentsDelegateTest, DoNothingMethodsTest) {
   test_tab_contents_delegate_->ActivateContents(NULL);
   test_tab_contents_delegate_->LoadingStateChanged(NULL);
   test_tab_contents_delegate_->CloseContents(NULL);
-  // URLStarredChanged() calls NOTREACHED() which immediately crashes.
-  // Death tests take too long for unit_test tests on OS X and
-  // there's http://code.google.com/p/chromium/issues/detail?id=24885 on
-  // death tests on Windows so we simply don't call it.
   test_tab_contents_delegate_->UpdateTargetURL(NULL, GURL());
   test_tab_contents_delegate_->MoveContents(NULL, gfx::Rect());
   test_tab_contents_delegate_->ToolbarSizeChanged(NULL, false);

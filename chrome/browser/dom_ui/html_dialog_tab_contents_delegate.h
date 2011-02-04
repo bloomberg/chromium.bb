@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,7 +52,6 @@ class HtmlDialogTabContentsDelegate : public TabContentsDelegate {
   virtual void LoadingStateChanged(TabContents* source);
   virtual void CloseContents(TabContents* source);
   virtual bool IsPopup(const TabContents* source) const;
-  virtual void URLStarredChanged(TabContents* source, bool starred);
   virtual void UpdateTargetURL(TabContents* source, const GURL& url);
   virtual bool ShouldAddNavigationToHistory(
       const history::HistoryAddPageArgs& add_page_args,

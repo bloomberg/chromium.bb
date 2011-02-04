@@ -460,11 +460,6 @@ void DraggedTabController::ToolbarSizeChanged(TabContents* source,
   // Dragged tabs don't care about this.
 }
 
-void DraggedTabController::URLStarredChanged(TabContents* source,
-                                             bool starred) {
-  // Ignored.
-}
-
 void DraggedTabController::UpdateTargetURL(TabContents* source,
                                            const GURL& url) {
   // Ignored.
@@ -601,7 +596,7 @@ void DraggedTabController::SetDraggedContents(
                       NotificationType::TAB_CONTENTS_DESTROYED,
                       Source<TabContents>(dragged_contents_->tab_contents()));
     if (original_delegate_)
-      dragged_contents_->set_delegate(original_delegate_);
+      dragged_contents_->tab_contents()->set_delegate(original_delegate_);
   }
   original_delegate_ = NULL;
   dragged_contents_ = new_contents;
@@ -614,8 +609,8 @@ void DraggedTabController::SetDraggedContents(
     // otherwise our dragged_contents() may be replaced and subsequently
     // collected/destroyed while the drag is in process, leading to
     // nasty crashes.
-    original_delegate_ = dragged_contents_->delegate();
-    dragged_contents_->set_delegate(this);
+    original_delegate_ = dragged_contents_->tab_contents()->delegate();
+    dragged_contents_->tab_contents()->set_delegate(this);
   }
 }
 
@@ -847,7 +842,7 @@ void DraggedTabController::Attach(BaseTabStrip* attached_tabstrip,
 
     // Remove ourselves as the delegate now that the dragged TabContents is
     // being inserted back into a Browser.
-    dragged_contents_->set_delegate(NULL);
+    dragged_contents_->tab_contents()->set_delegate(NULL);
     original_delegate_ = NULL;
 
     // Return the TabContents' to normalcy.
@@ -920,7 +915,7 @@ void DraggedTabController::Detach() {
   view_->SetTabWidthAndUpdate(attached_tab_width, photobooth_.get());
 
   // Detaching resets the delegate, but we still want to be the delegate.
-  dragged_contents_->set_delegate(this);
+  dragged_contents_->tab_contents()->set_delegate(this);
 
   attached_tabstrip_ = NULL;
 }
@@ -1087,21 +1082,24 @@ void DraggedTabController::EndDragImpl(EndDragType type) {
       else
         CompleteDrag();
     }
-    if (dragged_contents_ && dragged_contents_->delegate() == this)
-      dragged_contents_->set_delegate(original_delegate_);
+    if (dragged_contents_ &&
+        dragged_contents_->tab_contents()->delegate() == this)
+      dragged_contents_->tab_contents()->set_delegate(original_delegate_);
   } else {
     // If we get here it means the NavigationController is going down. Don't
     // attempt to do any cleanup other than resetting the delegate (if we're
     // still the delegate).
-    if (dragged_contents_ && dragged_contents_->delegate() == this)
-      dragged_contents_->set_delegate(NULL);
+    if (dragged_contents_ &&
+        dragged_contents_->tab_contents()->delegate() == this)
+      dragged_contents_->tab_contents()->set_delegate(NULL);
     dragged_contents_ = NULL;
   }
 
   // The delegate of the dragged contents should have been reset. Unset the
   // original delegate so that we don't attempt to reset the delegate when
   // deleted.
-  DCHECK(!dragged_contents_ || dragged_contents_->delegate() != this);
+  DCHECK(!dragged_contents_ ||
+         dragged_contents_->tab_contents()->delegate() != this);
   original_delegate_ = NULL;
 
   source_tabstrip_->DestroyDragController();

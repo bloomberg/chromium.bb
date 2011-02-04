@@ -287,7 +287,6 @@ class MenuHandler : public chromeos::MenuHandlerBase,
   virtual void MoveContents(TabContents* source, const gfx::Rect& pos) {}
   virtual bool IsPopup(const TabContents* source) { return false; }
   virtual void ToolbarSizeChanged(TabContents* source, bool is_animating) {}
-  virtual void URLStarredChanged(TabContents* source, bool starred) {}
   virtual void UpdateTargetURL(TabContents* source, const GURL& url) {}
   virtual bool CanDownload(int request_id) { return false; }
   virtual bool infobars_enabled() { return false; }

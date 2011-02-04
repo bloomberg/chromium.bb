@@ -311,7 +311,6 @@ class InstantLoader::TabContentsDelegateImpl
     }
   }
   virtual void ToolbarSizeChanged(TabContents* source, bool is_animating) {}
-  virtual void URLStarredChanged(TabContents* source, bool starred) {}
   virtual void UpdateTargetURL(TabContents* source, const GURL& url) {}
   virtual bool ShouldSuppressDialogs() {
     // Any message shown during instant cancels instant, so we suppress them.

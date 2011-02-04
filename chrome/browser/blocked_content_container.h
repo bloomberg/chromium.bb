@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -83,9 +83,6 @@ class BlockedContentContainer : public TabContentsDelegate {
 
   // Ignored; BlockedContentContainer doesn't display a toolbar.
   virtual void ToolbarSizeChanged(TabContents* source, bool is_animating) {}
-
-  // Ignored; BlockedContentContainer doesn't display a bookmarking star.
-  virtual void URLStarredChanged(TabContents* source, bool starred) {}
 
   // Ignored; BlockedContentContainer doesn't display a URL bar.
   virtual void UpdateTargetURL(TabContents* source, const GURL& url) {}

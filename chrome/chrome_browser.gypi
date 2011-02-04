@@ -3135,6 +3135,8 @@
         'browser/ui/status_bubble.h',
         'browser/ui/tab_contents/tab_contents_wrapper.cc',
         'browser/ui/tab_contents/tab_contents_wrapper.h',
+        'browser/ui/tab_contents/tab_contents_wrapper_delegate.cc',
+        'browser/ui/tab_contents/tab_contents_wrapper_delegate.h',
         'browser/ui/tabs/dock_info.cc',
         'browser/ui/tabs/dock_info.h',
         'browser/ui/tabs/dock_info_gtk.cc',
