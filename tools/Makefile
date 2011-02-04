@@ -674,7 +674,7 @@ NCVAL_STUBOUT=$(abspath BUILD/build-extra_sdk-$(CROSSARCH)/opt-linux-x86-$(BITSP
 BUILD/stamp-$(CROSSARCH)-stubout:
 	cd .. && ./$(SCONS) --mode=opt-linux platform=x86-$(BITSPLATFORM) \
 	    $(SCONS_DESTINATIONS) ncval_stubout
-	find $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib -name '*.so' | \
+	set -e; find $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib -name '*.so' | \
 	  while read library ; do \
 	    if [ "$$(head -c 4 "$$library" | tail -c 3)" = 'ELF' ] ; then \
 	      $(NCVAL_STUBOUT) "$$library" -o "$$library"; \
