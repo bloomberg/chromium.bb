@@ -23,39 +23,25 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stddef.h>
-#include <stdint.h>
 #include <stdbool.h>
 #include <math.h>
 #include <assert.h>
 
-#include <fcntl.h>
-
 #include <wayland-client.h>
-#include <xf86drm.h>
+#include <wayland-egl.h>
 
-#define GL_GLEXT_PROTOTYPES
-#define EGL_EGLEXT_PROTOTYPES
 #include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
 #include <EGL/egl.h>
-#include <EGL/eglext.h>
 
 struct display {
 	struct wl_display *display;
-	struct {
-		struct wl_compositor *compositor;
-		struct wl_drm *drm;
-	} interface;
+	struct wl_egl_display *native;
+	struct wl_compositor *compositor;
 	struct {
 		EGLDisplay dpy;
 		EGLContext ctx;
+		EGLConfig conf;
 	} egl;
-	struct {
-		int fd;
-		const char *device_name;
-		bool authenticated;
-	} drm;
 	uint32_t mask;
 };
 
@@ -74,11 +60,10 @@ struct window {
 		GLuint pos;
 		GLuint col;
 	} gl;
-	struct {
-		struct wl_buffer *buffer;
-		struct wl_surface *surface;
-		EGLImageKHR image;
-	} drm_surface;
+
+	struct wl_egl_window *native;
+	struct wl_surface *surface;
+	EGLSurface egl_surface;
 };
 
 static const char *vert_shader_text =
@@ -106,10 +91,21 @@ init_egl(struct display *display)
 		EGL_NONE
 	};
 
-	EGLint major, minor;
+	static const EGLint config_attribs[] = {
+		EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+		EGL_RED_SIZE, 1,
+		EGL_GREEN_SIZE, 1,
+		EGL_BLUE_SIZE, 1,
+		EGL_DEPTH_SIZE, 1,
+		EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+		EGL_NONE
+	};
+
+	EGLint major, minor, n;
 	EGLBoolean ret;
 
-	display->egl.dpy = eglGetDRMDisplayMESA(display->drm.fd);
+	display->egl.dpy =
+		eglGetDisplay((EGLNativeDisplayType) display->native);
 	assert(display->egl.dpy);
 
 	ret = eglInitialize(display->egl.dpy, &major, &minor);
@@ -117,11 +113,14 @@ init_egl(struct display *display)
 	ret = eglBindAPI(EGL_OPENGL_ES_API);
 	assert(ret == EGL_TRUE);
 
-	display->egl.ctx = eglCreateContext(display->egl.dpy, NULL,
+	assert(eglChooseConfig(display->egl.dpy, config_attribs,
+			       &display->egl.conf, 1, &n) && n == 1);
+
+	display->egl.ctx = eglCreateContext(display->egl.dpy,
+					    display->egl.conf,
 					    EGL_NO_CONTEXT, context_attribs);
 	assert(display->egl.ctx);
-	ret = eglMakeCurrent(display->egl.dpy, NULL, NULL, display->egl.ctx);
-	assert(ret == EGL_TRUE);
+
 }
 
 static GLuint
@@ -155,11 +154,6 @@ init_gl(struct window *window)
 {
 	GLuint frag, vert;
 	GLint status;
-
-	glGenFramebuffers(1, &window->gl.fbo);
-	glBindFramebuffer(GL_FRAMEBUFFER, window->gl.fbo);
-
-	glGenRenderbuffers(1, &window->gl.color_rbo);
 
 	glViewport(0, 0, window->geometry.width, window->geometry.height);
 
@@ -198,48 +192,26 @@ create_surface(struct window *window)
 {
 	struct display *display = window->display;
 	struct wl_visual *visual;
-	EGLint name, stride;
-	EGLint image_attribs[] = {
-		EGL_WIDTH,			0,
-		EGL_HEIGHT,			0,
-		EGL_DRM_BUFFER_FORMAT_MESA,	EGL_DRM_BUFFER_FORMAT_ARGB32_MESA,
-		EGL_DRM_BUFFER_USE_MESA,	EGL_DRM_BUFFER_USE_SCANOUT_MESA,
-		EGL_NONE
-	};
+	EGLBoolean ret;
 
-	window->drm_surface.surface =
-		wl_compositor_create_surface(display->interface.compositor);
-
-	image_attribs[1] = window->geometry.width;
-	image_attribs[3] = window->geometry.height;
-
-	window->drm_surface.image = eglCreateDRMImageMESA(display->egl.dpy,
-							  image_attribs);
-	eglExportDRMImageMESA(display->egl.dpy, window->drm_surface.image,
-			      &name, NULL, &stride);
+	window->surface = wl_compositor_create_surface(display->compositor);
 	visual = wl_display_get_premultiplied_argb_visual(display->display);
+	window->native =
+		wl_egl_native_window_create(window->surface,
+					    window->geometry.width,
+					    window->geometry.height,
+					    visual);
+	window->egl_surface =
+		eglCreateWindowSurface(display->egl.dpy,
+				       display->egl.conf,
+				       (EGLNativeWindowType) window->native,
+				       NULL);
 
-	window->drm_surface.buffer =
-		wl_drm_create_buffer(display->interface.drm, name,
-				     window->geometry.width,
-				     window->geometry.height,
-				     stride, visual);
+	wl_surface_map_toplevel(window->surface);
 
-	wl_surface_attach(window->drm_surface.surface,
-			  window->drm_surface.buffer, 0, 0);
-	wl_surface_map_toplevel(window->drm_surface.surface);
-
-	glBindRenderbuffer(GL_RENDERBUFFER, window->gl.color_rbo);
-	glEGLImageTargetRenderbufferStorageOES(GL_RENDERBUFFER,
-					       window->drm_surface.image);
-
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER,
-				  GL_COLOR_ATTACHMENT0,
-				  GL_RENDERBUFFER,
-				  window->gl.color_rbo);
-
-	assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) ==
-			GL_FRAMEBUFFER_COMPLETE);
+	ret = eglMakeCurrent(window->display->egl.dpy, window->egl_surface,
+			     window->egl_surface, window->display->egl.ctx);
+	assert(ret == EGL_TRUE);
 }
 
 static void
@@ -293,32 +265,9 @@ redraw(void *data, uint32_t time)
 
 	glFlush();
 
-	wl_surface_damage(window->drm_surface.surface, 0, 0,
-			  window->geometry.width, window->geometry.height);
-
+	eglSwapBuffers(window->display->egl.dpy, window->egl_surface);
 	wl_display_frame_callback(window->display->display, redraw, window);
 }
-
-static void
-drm_handle_device(void *data, struct wl_drm *drm, const char *device)
-{
-	struct display *d = data;
-
-	d->drm.device_name = strdup(device);
-}
-
-static void
-drm_handle_authenticated(void *data, struct wl_drm *drm)
-{
-	struct display *d = data;
-
-	d->drm.authenticated = true;
-}
-
-static const struct wl_drm_listener drm_listener = {
-	drm_handle_device,
-	drm_handle_authenticated
-};
 
 static void
 display_handle_global(struct wl_display *display, uint32_t id,
@@ -326,12 +275,8 @@ display_handle_global(struct wl_display *display, uint32_t id,
 {
 	struct display *d = data;
 
-	if (strcmp(interface, "compositor") == 0) {
-		d->interface.compositor = wl_compositor_create(display, id);
-	} else if (strcmp(interface, "drm") == 0) {
-		d->interface.drm = wl_drm_create(display, id);
-		wl_drm_add_listener(d->interface.drm, &drm_listener, d);
-	}
+	if (strcmp(interface, "compositor") == 0)
+		d->compositor = wl_compositor_create(display, id);
 }
 
 static int
@@ -349,8 +294,6 @@ main(int argc, char **argv)
 {
 	struct display display = { 0 };
 	struct window  window  = { 0 };
-	drm_magic_t magic;
-	int ret;
 
 	memset(&display, 0, sizeof display);
 	memset(&window,  0, sizeof window);
@@ -363,29 +306,19 @@ main(int argc, char **argv)
 	assert(display.display);
 
 	wl_display_add_global_listener(display.display,
-				    display_handle_global, &display);
-	/* process connection events */
-	wl_display_iterate(display.display, WL_DISPLAY_READABLE);
+				       display_handle_global, &display);
 
-	display.drm.fd = open(display.drm.device_name, O_RDWR);
-	assert(display.drm.fd >= 0);
-
-	ret = drmGetMagic(display.drm.fd, &magic);
-	assert(ret == 0);
-	wl_drm_authenticate(display.interface.drm, magic);
-	wl_display_iterate(display.display, WL_DISPLAY_WRITABLE);
-	while (!display.drm.authenticated)
-		wl_display_iterate(display.display, WL_DISPLAY_READABLE);
+	display.native = wl_egl_native_display_create(display.display);
 
 	init_egl(&display);
-	init_gl(&window);
 	create_surface(&window);
+	init_gl(&window);
 
 	wl_display_frame_callback(display.display, redraw, &window);
 
 	wl_display_get_fd(display.display, event_mask_update, &display);
 	while (true)
 		wl_display_iterate(display.display, display.mask);
-	
+
 	return 0;
 }

@@ -58,8 +58,10 @@ resizor_SOURCES = resizor.c
 resizor_LDADD = $(toolkit_libs)
 
 simple_client_SOURCES = simple-client.c
-simple_client_LDADD = \
-	$(top_builddir)/wayland/libwayland-client.la -lm $(GLES2_LIBS)
+simple_client_LDADD =						\
+	$(top_builddir)/wayland/libwayland-client.la -lm	\
+	$(GLES2_LIBS)						\
+	-lwayland-egl
 
 eventdemo_SOURCES = eventdemo.c
 eventdemo_LDADD = $(toolkit_libs)
