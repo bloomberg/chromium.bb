@@ -32,6 +32,14 @@ message VideoPacketFormat {
   optional Encoding encoding = 5 [default = ENCODING_INVALID];
 }
 
+// TODO(hclam): Remove this message once we can obtain dirty rects from libvpx.
+message Rect {
+  optional int32 x = 1;
+  optional int32 y = 2;
+  optional int32 width = 3;
+  optional int32 height = 4;
+}
+
 message VideoPacket {
   // Bitmasks for use in the flags field below.
   //
@@ -67,4 +75,10 @@ message VideoPacket {
   optional VideoPacketFormat format = 4;
 
   optional bytes data = 5;
+
+  // This field is only for VP8 to provide out-of-band information of dirty
+  // rects.
+  // TODO(hclam): Remove this field when we can obtain this information from
+  // libvpx.
+  repeated Rect dirty_rects = 6;
 }

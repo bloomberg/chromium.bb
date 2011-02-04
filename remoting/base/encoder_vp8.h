@@ -1,10 +1,13 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef REMOTING_BASE_ENCODER_VP8_H_
 #define REMOTING_BASE_ENCODER_VP8_H_
 
+#include <vector>
+
+#include "gfx/rect.h"
 #include "remoting/base/encoder.h"
 
 typedef struct vpx_codec_ctx vpx_codec_ctx_t;
@@ -26,8 +29,10 @@ class EncoderVp8 : public Encoder {
   // Initialize the encoder. Returns true if successful.
   bool Init(int width, int height);
 
-  // Prepare |image_| for encoding. Returns true if successful.
-  bool PrepareImage(scoped_refptr<CaptureData> capture_data);
+  // Prepare |image_| for encoding. Write updated rectangles into
+  // |updated_rects|. Returns true if successful.
+  bool PrepareImage(scoped_refptr<CaptureData> capture_data,
+                    std::vector<gfx::Rect>* updated_rects);
 
   // True if the encoder is initialized.
   bool initialized_;

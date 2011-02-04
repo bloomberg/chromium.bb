@@ -10,6 +10,7 @@
 #include "ppapi/cpp/point.h"
 #include "ppapi/cpp/size.h"
 #include "remoting/base/tracer.h"
+#include "remoting/base/util.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/plugin/chromoting_instance.h"
 #include "remoting/client/plugin/pepper_util.h"
@@ -81,34 +82,41 @@ void PepperView::PaintFrame(media::VideoFrame* frame, UpdatedRects* rects) {
   DCHECK(instance_->CurrentlyOnPluginThread());
 
   TraceContext::tracer()->PrintString("Start Paint Frame.");
-  // TODO(ajwong): We're assuming the native format is BGRA_PREMUL below. This
-  // is wrong.
-  pp::ImageData image(instance_, pp::ImageData::GetNativeImageDataFormat(),
-                      pp::Size(viewport_width_, viewport_height_),
-                      false);
-  if (image.is_null()) {
-    LOG(ERROR) << "Unable to allocate image of size: "
-               << frame->width() << "x" << frame->height();
-    return;
-  }
 
-  uint32_t* frame_data =
-      reinterpret_cast<uint32_t*>(frame->data(media::VideoFrame::kRGBPlane));
-  int frame_width = static_cast<int>(frame->width());
-  int frame_height = static_cast<int>(frame->height());
-  int max_height = std::min(frame_height, image.size().height());
-  int max_width = std::min(frame_width, image.size().width());
-  for (int y = 0; y < max_height; y++) {
-    for (int x = 0; x < max_width; x++) {
-      // Force alpha to be set to 255.
-      *image.GetAddr32(pp::Point(x, y)) =
-          frame_data[y*frame_width + x] | 0xFF000000;
+  uint8* frame_data = frame->data(media::VideoFrame::kRGBPlane);
+  const int kFrameStride = frame->stride(media::VideoFrame::kRGBPlane);
+  const int kBytesPerPixel = GetBytesPerPixel(media::VideoFrame::RGB32);
+
+  for (size_t i = 0; i < rects->size(); ++i) {
+    // TODO(ajwong): We're assuming the native format is BGRA_PREMUL below. This
+    // is wrong.
+    const gfx::Rect& r = (*rects)[i];
+
+    // TODO(hclam): Make sure rectangles are valid.
+    if (r.width() <= 0 || r.height() <= 0)
+      continue;
+
+    pp::ImageData image(instance_, pp::ImageData::GetNativeImageDataFormat(),
+                        pp::Size(r.width(), r.height()),
+                        false);
+    if (image.is_null()) {
+      LOG(ERROR) << "Unable to allocate image of size: "
+                 << r.width() << "x" << r.height();
+      return;
     }
+
+    // Copy pixel data into |image|.
+    uint8* in = frame_data + kFrameStride * r.y() + kBytesPerPixel * r.x();
+    uint8* out = reinterpret_cast<uint8*>(image.data());
+    for (int j = 0; j < r.height(); ++j) {
+      memcpy(out, in, r.width() * kBytesPerPixel);
+      in += kFrameStride;
+      out += image.stride();
+    }
+
+    graphics2d_.PaintImageData(image, pp::Point(r.x(), r.y()));
   }
 
-  // For ReplaceContents, make sure the image size matches the device context
-  // size!  Otherwise, this will just silently do nothing.
-  graphics2d_.ReplaceContents(&image);
   graphics2d_.Flush(TaskToCompletionCallback(
       task_factory_.NewRunnableMethod(&PepperView::OnPaintDone)));
 

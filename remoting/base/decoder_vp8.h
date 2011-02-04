@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,6 +41,9 @@ class DecoderVp8 : public Decoder {
   scoped_refptr<media::VideoFrame> frame_;
 
   vpx_codec_ctx_t* codec_;
+
+  // Record the updated rects in the last decode.
+  UpdatedRects updated_rects_;
 
   DISALLOW_COPY_AND_ASSIGN(DecoderVp8);
 };

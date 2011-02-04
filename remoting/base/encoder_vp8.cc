@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "media/base/callback.h"
 #include "media/base/yuv_convert.h"
 #include "remoting/base/capture_data.h"
+#include "remoting/base/util.h"
 #include "remoting/proto/video.pb.h"
 
 extern "C" {
@@ -94,7 +95,8 @@ static gfx::Rect AlignRect(const gfx::Rect& rect, int width, int height) {
   return r;
 }
 
-bool EncoderVp8::PrepareImage(scoped_refptr<CaptureData> capture_data) {
+bool EncoderVp8::PrepareImage(scoped_refptr<CaptureData> capture_data,
+                              std::vector<gfx::Rect>* updated_rects) {
   const int plane_size = capture_data->width() * capture_data->height();
 
   if (!yuv_image_.get()) {
@@ -138,21 +140,23 @@ bool EncoderVp8::PrepareImage(scoped_refptr<CaptureData> capture_data) {
   const int y_stride = image_->stride[0];
   const int uv_stride = image_->stride[1];
 
+  DCHECK(updated_rects->empty());
   for (InvalidRects::const_iterator r = rects.begin(); r != rects.end(); ++r) {
+    // Align the rectangle report it as updated.
     gfx::Rect rect = AlignRect(*r, image_->w, image_->h);
-    int in_offset = in_stride * rect.y() + 4 * rect.x();
-    int y_offset = y_stride * rect.y() + rect.x();
-    int uv_offset = (uv_stride * rect.y() + rect.x()) / 2;
+    updated_rects->push_back(rect);
 
-    media::ConvertRGB32ToYUV(in + in_offset,
-                             y_out + y_offset,
-                             u_out + uv_offset,
-                             v_out + uv_offset,
-                             rect.width(),
-                             rect.height(),
-                             in_stride,
-                             y_stride,
-                             uv_stride);
+    ConvertRGB32ToYUVWithRect(in,
+                              y_out,
+                              u_out,
+                              v_out,
+                              rect.x(),
+                              rect.y(),
+                              rect.width(),
+                              rect.height(),
+                              in_stride,
+                              y_stride,
+                              uv_stride);
   }
   return true;
 }
@@ -167,7 +171,8 @@ void EncoderVp8::Encode(scoped_refptr<CaptureData> capture_data,
     initialized_ = ret;
   }
 
-  if (!PrepareImage(capture_data)) {
+  std::vector<gfx::Rect> updated_rects;
+  if (!PrepareImage(capture_data, &updated_rects)) {
     NOTREACHED() << "Can't image data for encoding";
   }
 
@@ -211,6 +216,13 @@ void EncoderVp8::Encode(scoped_refptr<CaptureData> capture_data,
   message->mutable_format()->set_encoding(VideoPacketFormat::ENCODING_VP8);
   message->set_flags(VideoPacket::FIRST_PACKET | VideoPacket::LAST_PACKET |
                      VideoPacket::LAST_PARTITION);
+  for (size_t i = 0; i < updated_rects.size(); ++i) {
+    Rect* rect = message->add_dirty_rects();
+    rect->set_x(updated_rects[i].x());
+    rect->set_y(updated_rects[i].y());
+    rect->set_width(updated_rects[i].width());
+    rect->set_height(updated_rects[i].height());
+  }
 
   data_available_callback->Run(message);
   delete data_available_callback;
