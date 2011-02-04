@@ -27,9 +27,14 @@ class BitstreamConverter {
   BitstreamConverter() {}
   virtual ~BitstreamConverter() {}
 
-  // Attemps to convert the AVPacket from one format to another, based on the
-  // specific type of BitstreamConverter that was instantiated.
+  // Initialize does any preparations needed before doing the actual
+  // conversion.
   virtual bool Initialize() = 0;
+
+  // Attemps to convert the AVPacket from one format to another, based on the
+  // specific type of BitstreamConverter that was instantiated. Output will be
+  // stored into the |packet|, but user should be aware that conversion can free
+  // and reallocate the input buffer, if it needs to do so to fit it in.
   virtual bool ConvertPacket(AVPacket* packet) = 0;
 
  private:

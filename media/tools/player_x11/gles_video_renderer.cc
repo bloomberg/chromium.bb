@@ -18,6 +18,12 @@
 
 GlesVideoRenderer* GlesVideoRenderer::instance_ = NULL;
 
+// TODO(vmr): Refactor this parameter to work either through environment
+// variable or dynamically sniff whether EGL support is available.
+static inline int uses_egl_image() {
+  return 1;
+}
+
 GlesVideoRenderer::GlesVideoRenderer(Display* display, Window window,
                                      MessageLoop* message_loop)
     : egl_create_image_khr_(NULL),
@@ -129,6 +135,8 @@ static const char kFragmentShader[] =
 
 // Color shader for EGLImage.
 static const char kFragmentShaderEgl[] =
+    "precision mediump float;\n"
+    "precision mediump int;\n"
     "varying vec2 interp_tc;\n"
     "\n"
     "uniform sampler2D tex;\n"

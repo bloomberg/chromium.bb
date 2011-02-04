@@ -13,6 +13,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "media/base/filters.h"
 #include "media/base/video_frame.h"
