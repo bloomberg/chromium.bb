@@ -3375,6 +3375,8 @@
         },
       ]},  # 'targets'
     ],  # OS=="win"
+    # If you change this condition, make sure you also change it in all.gyp
+    # for the chromium_builder_qa target.
     ['OS=="mac" or OS=="win" or (OS=="linux" and target_arch==python_arch)', {
       'targets': [
         {
