@@ -59,7 +59,7 @@ class ScreenLockView : public ThrobberHostView,
 
   // views::Textfield::Controller implementation:
   virtual void ContentsChanged(views::Textfield* sender,
-                               const string16& new_contents) {}
+                               const string16& new_contents);
   virtual bool HandleKeyEvent(views::Textfield* sender,
                               const views::KeyEvent& keystroke);
 

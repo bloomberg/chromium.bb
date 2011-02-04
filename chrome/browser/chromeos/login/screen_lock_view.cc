@@ -188,6 +188,12 @@ void ScreenLockView::OnSignout() {
   screen_locker_->Signout();
 }
 
+void ScreenLockView::ContentsChanged(views::Textfield* sender,
+                                     const string16& new_contents) {
+  if (!new_contents.empty())
+    screen_locker_->ClearErrors();
+}
+
 bool ScreenLockView::HandleKeyEvent(
     views::Textfield* sender,
     const views::KeyEvent& key_event) {

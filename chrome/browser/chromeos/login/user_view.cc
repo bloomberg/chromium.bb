@@ -34,6 +34,7 @@ const int kSignoutBackgroundCornerRadius = 4;
 // Horiz/Vert insets for Signout view.
 const int kSignoutViewHorizontalInsets = 10;
 const int kSignoutViewVerticalInsets = 5;
+const int kMinControlHeight = 16;
 
 // Padding between remove button and top right image corner.
 const int kRemoveButtonPadding = 3;
@@ -44,15 +45,8 @@ class SignoutBackgroundPainter : public views::Painter {
   virtual void Paint(int w, int h, gfx::Canvas* canvas) {
     SkRect rect = {0, 0, w, h};
     SkPath path;
-    SkScalar corners[] = {
-      0, 0,
-      0, 0,
-      kSignoutBackgroundCornerRadius,
-      kSignoutBackgroundCornerRadius,
-      kSignoutBackgroundCornerRadius,
-      kSignoutBackgroundCornerRadius,
-    };
-    path.addRoundRect(rect, corners);
+    path.addRoundRect(rect,
+        kSignoutBackgroundCornerRadius, kSignoutBackgroundCornerRadius);
     SkPaint paint;
     paint.setStyle(SkPaint::kFill_Style);
     paint.setFlags(SkPaint::kAntiAlias_Flag);
@@ -115,16 +109,17 @@ class SignoutView : public views::View {
   virtual gfx::Size GetPreferredSize() {
     gfx::Size label = active_user_label_->GetPreferredSize();
     gfx::Size button = signout_link_->GetPreferredSize();
-    return gfx::Size(label.width() + button.width(),
-                     std::max(label.height(), button.height()) +
-                     kSignoutViewVerticalInsets * 2);
+    int width =
+      label.width() + button.width() + 2 * kSignoutViewHorizontalInsets;
+    int height =
+      std::max(kMinControlHeight, std::max(label.height(), button.height())) +
+      kSignoutViewVerticalInsets * 2;
+    return gfx::Size(width, height);
   }
 
   views::Link* signout_link() { return signout_link_; }
 
  private:
-  friend class UserView;
-
   views::Label* active_user_label_;
   views::Link* signout_link_;
 
@@ -320,13 +315,16 @@ gfx::Size UserView::GetPreferredSize() {
 
 void UserView::SetSignoutEnabled(bool enabled) {
   DCHECK(signout_view_);
-  signout_view_->signout_link_->SetEnabled(enabled);
+  signout_view_->signout_link()->SetEnabled(enabled);
+
+  // Relayout because active and inactive link has different preferred size.
+  Layout();
 }
 
 void UserView::LinkActivated(views::Link* source, int event_flags) {
   DCHECK(delegate_);
   DCHECK(signout_view_);
-  if (signout_view_->signout_link_ == source)
+  if (signout_view_->signout_link() == source)
     delegate_->OnSignout();
 }
 
