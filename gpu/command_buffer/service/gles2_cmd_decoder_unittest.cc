@@ -58,6 +58,10 @@ class GLES2DecoderWithShaderTest : public GLES2DecoderWithShaderTestBase {
                                  _, GL_DYNAMIC_DRAW))
         .Times(1)
         .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, BufferSubData(
+        GL_ARRAY_BUFFER, 0, num_vertices * sizeof(GLfloat) * 4, _))
+        .Times(1)
+        .RetiresOnSaturation();
     EXPECT_CALL(*gl_, VertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, NULL))
         .Times(1)
         .RetiresOnSaturation();

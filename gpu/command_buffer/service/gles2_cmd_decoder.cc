@@ -1357,6 +1357,9 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // The value currently in attrib_0.
   VertexAttribManager::VertexAttribInfo::Vec4 attrib_0_value_;
 
+  // Whether or not the attrib_0 buffer holds the attrib_0_value.
+  bool attrib_0_buffer_matches_value_;
+
   // The size of attrib 0.
   GLsizei attrib_0_size_;
 
@@ -1736,6 +1739,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       pack_alignment_(4),
       unpack_alignment_(4),
       attrib_0_buffer_id_(0),
+      attrib_0_buffer_matches_value_(true),
       attrib_0_size_(0),
       fixed_attrib_buffer_id_(0),
       fixed_attrib_buffer_size_(0),
@@ -3982,7 +3986,8 @@ bool GLES2DecoderImpl::SimulateAttrib0(GLuint max_vertex_accessed) {
   const VertexAttribManager::VertexAttribInfo* info =
       vertex_attrib_manager_.GetVertexAttribInfo(0);
   // If it's enabled or it's not used then we don't need to do anything.
-  if (info->enabled() || !current_program_->GetAttribInfoByLocation(0)) {
+  bool attrib_0_used = current_program_->GetAttribInfoByLocation(0) != NULL;
+  if (info->enabled() && attrib_0_used) {
     return false;
   }
 
@@ -3995,20 +4000,20 @@ bool GLES2DecoderImpl::SimulateAttrib0(GLuint max_vertex_accessed) {
   // This is required to emulate GLES2 on GL.
   GLsizei num_vertices = max_vertex_accessed + 1;
   GLsizei size_needed = num_vertices * sizeof(Vec4);  // NOLINT
-  if (size_needed > attrib_0_size_ ||
-      info->value().v[0] != attrib_0_value_.v[0] ||
-      info->value().v[1] != attrib_0_value_.v[1] ||
-      info->value().v[2] != attrib_0_value_.v[2] ||
-      info->value().v[3] != attrib_0_value_.v[3]) {
-    scoped_array<Vec4> temp(new Vec4[num_vertices]);
-    for (GLsizei ii = 0; ii < num_vertices; ++ii) {
-      temp[ii] = info->value();
-    }
-    glBufferData(
-        GL_ARRAY_BUFFER,
-        size_needed,
-        &temp[0].v[0],
-        GL_DYNAMIC_DRAW);
+  if (size_needed > attrib_0_size_) {
+    glBufferData(GL_ARRAY_BUFFER, size_needed, NULL, GL_DYNAMIC_DRAW);
+    // TODO(gman): check for error here?
+    attrib_0_buffer_matches_value_ = false;
+  }
+  if (attrib_0_used &&
+      (!attrib_0_buffer_matches_value_ ||
+       (info->value().v[0] != attrib_0_value_.v[0] ||
+        info->value().v[1] != attrib_0_value_.v[1] ||
+        info->value().v[2] != attrib_0_value_.v[2] ||
+        info->value().v[3] != attrib_0_value_.v[3]))) {
+    std::vector<Vec4> temp(num_vertices, info->value());
+    glBufferSubData(GL_ARRAY_BUFFER, 0, size_needed, &temp[0].v[0]);
+    attrib_0_buffer_matches_value_ = true;
     attrib_0_value_ = info->value();
     attrib_0_size_ = size_needed;
   }
