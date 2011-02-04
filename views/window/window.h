@@ -75,6 +75,12 @@ class Window {
   // Push/PopForceHidden.
   virtual void HideWindow() = 0;
 
+  // Sets/Gets a native window property on the underlying native window object.
+  // Returns NULL if the property does not exist. Setting the property value to
+  // NULL removes the property.
+  virtual void SetNativeWindowProperty(const char* name, void* value) = 0;
+  virtual void* GetNativeWindowProperty(const char* name) = 0;
+
 #if defined(OS_WIN)
   // Hides the window if it hasn't already been force-hidden. The force hidden
   // count is tracked, so calling multiple times is allowed, you just have to

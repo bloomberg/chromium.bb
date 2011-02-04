@@ -15,6 +15,7 @@
 #include "chrome/common/pref_names.h"
 #include "gfx/rect.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "views/window/window.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/app_icon_win.h"
@@ -22,21 +23,21 @@
 
 namespace {
 
-// Some window data should be stored in local state, instead of by profile; use
-// the window_name to differentiate between storage types. This function may
-// return NULL if the necessary PrefService has not yet been initialized.
-// TODO(mirandac): This function will also serve to separate windows by profile
-// in a multiprofile environment.
-PrefService* GetPrefsForWindow(const std::wstring& window_name) {
-  if (LowerCaseEqualsASCII(window_name, prefs::kTaskManagerWindowPlacement)) {
+// If the given window has a profile associated with it, use that profile's
+// preference service. Otherwise, store and retrieve the data from Local State.
+// This function may return NULL if the necessary pref service has not yet
+// been initialized.
+// TODO(mirandac): This function will also separate windows by profile in a
+// multi-profile environment.
+PrefService* GetPrefsForWindow(views::Window* window) {
+  Profile* profile =
+      reinterpret_cast<Profile*>(window->GetNativeWindowProperty(
+          Profile::kProfileKey));
+  if (!profile) {
+    // Use local state for windows that have no explicit profile.
     return g_browser_process->local_state();
-  } else {
-    if (!g_browser_process->profile_manager()) {
-      return NULL;
-    }
-    return g_browser_process->profile_manager()->GetDefaultProfile()->
-        GetPrefs();
   }
+  return profile->GetPrefs();
 }
 
 }  // namespace
@@ -48,13 +49,15 @@ ui::Clipboard* ChromeViewsDelegate::GetClipboard() const {
   return g_browser_process->clipboard();
 }
 
-void ChromeViewsDelegate::SaveWindowPlacement(const std::wstring& window_name,
+void ChromeViewsDelegate::SaveWindowPlacement(views::Window* window,
+                                              const std::wstring& window_name,
                                               const gfx::Rect& bounds,
                                               bool maximized) {
-  PrefService* prefs = GetPrefsForWindow(window_name);
+  PrefService* prefs = GetPrefsForWindow(window);
   if (!prefs)
     return;
 
+  DCHECK(prefs->FindPreference(WideToUTF8(window_name).c_str()));
   DictionaryValue* window_preferences =
       prefs->GetMutableDictionary(WideToUTF8(window_name).c_str());
   window_preferences->SetInteger("left", bounds.x());
@@ -73,12 +76,14 @@ void ChromeViewsDelegate::SaveWindowPlacement(const std::wstring& window_name,
   window_preferences->SetInteger("work_area_bottom", work_area.bottom());
 }
 
-bool ChromeViewsDelegate::GetSavedWindowBounds(const std::wstring& window_name,
+bool ChromeViewsDelegate::GetSavedWindowBounds(views::Window* window,
+                                               const std::wstring& window_name,
                                                gfx::Rect* bounds) const {
-  PrefService* prefs = GetPrefsForWindow(window_name);
+  PrefService* prefs = GetPrefsForWindow(window);
   if (!prefs)
     return false;
 
+  DCHECK(prefs->FindPreference(WideToUTF8(window_name).c_str()));
   const DictionaryValue* dictionary =
       prefs->GetDictionary(WideToUTF8(window_name).c_str());
   int left, top, right, bottom;
@@ -93,12 +98,14 @@ bool ChromeViewsDelegate::GetSavedWindowBounds(const std::wstring& window_name,
 }
 
 bool ChromeViewsDelegate::GetSavedMaximizedState(
+    views::Window* window,
     const std::wstring& window_name,
     bool* maximized) const {
-  PrefService* prefs = GetPrefsForWindow(window_name);
+  PrefService* prefs = GetPrefsForWindow(window);
   if (!prefs)
     return false;
 
+  DCHECK(prefs->FindPreference(WideToUTF8(window_name).c_str()));
   const DictionaryValue* dictionary =
       prefs->GetDictionary(WideToUTF8(window_name).c_str());
 

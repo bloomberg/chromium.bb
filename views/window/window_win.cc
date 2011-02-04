@@ -273,6 +273,14 @@ void WindowWin::HideWindow() {
   Hide();
 }
 
+void WindowWin::SetNativeWindowProperty(const char* name, void* value) {
+  WidgetWin::SetNativeWindowProperty(name, value);
+}
+
+void* WindowWin::GetNativeWindowProperty(const char* name) {
+  return WidgetWin::GetNativeWindowProperty(name);
+}
+
 void WindowWin::PushForceHidden() {
   if (force_hidden_count_++ == 0)
     Hide();

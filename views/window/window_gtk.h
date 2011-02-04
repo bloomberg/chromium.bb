@@ -32,6 +32,8 @@ class WindowGtk : public WidgetGtk, public Window {
                          gfx::NativeWindow other_window);
   virtual void Show();
   virtual void HideWindow();
+  virtual void SetNativeWindowProperty(const char* name, void* value);
+  virtual void* GetNativeWindowProperty(const char* name);
   virtual void Activate();
   virtual void Deactivate();
   virtual void Close();

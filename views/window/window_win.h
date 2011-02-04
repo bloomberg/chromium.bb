@@ -70,6 +70,8 @@ class WindowWin : public WidgetWin,
                          gfx::NativeWindow other_window);
   virtual void Show();
   virtual void HideWindow();
+  virtual void SetNativeWindowProperty(const char* name, void* value);
+  virtual void* GetNativeWindowProperty(const char* name);
   virtual void PushForceHidden();
   virtual void PopForceHidden();
   virtual void Activate();

@@ -127,6 +127,14 @@ void WindowGtk::HideWindow() {
   Hide();
 }
 
+void WindowGtk::SetNativeWindowProperty(const char* name, void* value) {
+  WidgetGtk::SetNativeWindowProperty(name, value);
+}
+
+void* WindowGtk::GetNativeWindowProperty(const char* name) {
+  return WidgetGtk::GetNativeWindowProperty(name);
+}
+
 void WindowGtk::Activate() {
   gtk_window_present(GTK_WINDOW(GetNativeView()));
 }

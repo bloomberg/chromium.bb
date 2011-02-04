@@ -10,6 +10,10 @@
 #include "build/build_config.h"
 #include "views/views_delegate.h"
 
+namespace views {
+class Window;
+}
+
 class ChromeViewsDelegate : public views::ViewsDelegate {
  public:
   ChromeViewsDelegate() {}
@@ -17,12 +21,15 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
 
   // Overridden from views::ViewsDelegate:
   virtual ui::Clipboard* GetClipboard() const;
-  virtual void SaveWindowPlacement(const std::wstring& window_name,
+  virtual void SaveWindowPlacement(views::Window* window,
+                                   const std::wstring& window_name,
                                    const gfx::Rect& bounds,
                                    bool maximized);
-  virtual bool GetSavedWindowBounds(const std::wstring& window_name,
+  virtual bool GetSavedWindowBounds(views::Window* window,
+                                    const std::wstring& window_name,
                                     gfx::Rect* bounds) const;
-  virtual bool GetSavedMaximizedState(const std::wstring& window_name,
+  virtual bool GetSavedMaximizedState(views::Window* window,
+                                      const std::wstring& window_name,
                                       bool* maximized) const;
   virtual void NotifyAccessibilityEvent(
       views::View* view, AccessibilityTypes::Event event_type);

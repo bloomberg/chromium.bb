@@ -80,6 +80,9 @@ Profile::Profile()
 }
 
 // static
+const char* Profile::kProfileKey = "__PROFILE__";
+
+// static
 const ProfileId Profile::InvalidProfileId = static_cast<ProfileId>(0);
 
 // static

@@ -68,14 +68,17 @@ class ViewsDelegateImpl : public views::ViewsDelegate {
  public:
   ViewsDelegateImpl() {}
   virtual ui::Clipboard* GetClipboard() const { return NULL; }
-  virtual void SaveWindowPlacement(const std::wstring& window_name,
+  virtual void SaveWindowPlacement(views::Window* window,
+                                   const std::wstring& window_name,
                                    const gfx::Rect& bounds,
                                    bool maximized) {}
-  virtual bool GetSavedWindowBounds(const std::wstring& window_name,
+  virtual bool GetSavedWindowBounds(views::Window* window,
+                                    const std::wstring& window_name,
                                     gfx::Rect* bounds) const {
     return false;
   }
-  virtual bool GetSavedMaximizedState(const std::wstring& window_name,
+  virtual bool GetSavedMaximizedState(views::Window* window,
+                                      const std::wstring& window_name,
                                       bool* maximized) const {
     return false;
   }

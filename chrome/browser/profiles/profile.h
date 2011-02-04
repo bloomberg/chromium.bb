@@ -133,6 +133,9 @@ class Profile {
     IMPLICIT_ACCESS
   };
 
+  // Key used to bind profile to the widget with which it is associated.
+  static const char* kProfileKey;
+
   // Value that represents no profile Id.
   static const ProfileId InvalidProfileId;
 

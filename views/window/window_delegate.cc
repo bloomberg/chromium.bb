@@ -33,7 +33,7 @@ void WindowDelegate::SaveWindowPlacement(const gfx::Rect& bounds,
     return;
 
   ViewsDelegate::views_delegate->SaveWindowPlacement(
-      window_name, bounds, maximized);
+      window_, window_name, bounds, maximized);
 }
 
 bool WindowDelegate::GetSavedWindowBounds(gfx::Rect* bounds) const {
@@ -42,7 +42,7 @@ bool WindowDelegate::GetSavedWindowBounds(gfx::Rect* bounds) const {
     return false;
 
   return ViewsDelegate::views_delegate->GetSavedWindowBounds(
-      window_name, bounds);
+      window_, window_name, bounds);
 }
 
 bool WindowDelegate::GetSavedMaximizedState(bool* maximized) const {
@@ -51,7 +51,7 @@ bool WindowDelegate::GetSavedMaximizedState(bool* maximized) const {
     return false;
 
   return ViewsDelegate::views_delegate->GetSavedMaximizedState(
-      window_name, maximized);
+      window_, window_name, maximized);
 }
 
 bool WindowDelegate::ShouldRestoreWindowSize() const {

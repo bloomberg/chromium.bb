@@ -6,6 +6,10 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "views/views_delegate.h"
 
+namespace views {
+class Window;
+}
+
 class TestViewsDelegate : public views::ViewsDelegate {
  public:
   TestViewsDelegate() {}
@@ -19,15 +23,18 @@ class TestViewsDelegate : public views::ViewsDelegate {
     }
     return clipboard_.get();
   }
-  virtual void SaveWindowPlacement(const std::wstring& window_name,
+  virtual void SaveWindowPlacement(views::Window* window,
+                                   const std::wstring& window_name,
                                    const gfx::Rect& bounds,
                                    bool maximized) {
   }
-  virtual bool GetSavedWindowBounds(const std::wstring& window_name,
+  virtual bool GetSavedWindowBounds(views::Window* window,
+                                    const std::wstring& window_name,
                                     gfx::Rect* bounds) const {
     return false;
   }
-  virtual bool GetSavedMaximizedState(const std::wstring& window_name,
+  virtual bool GetSavedMaximizedState(views::Window* window,
+                                      const std::wstring& window_name,
                                       bool* maximized) const {
     return false;
   }
