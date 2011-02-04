@@ -78,7 +78,7 @@ class UserManager : public UserImageLoader::Delegate,
   virtual bool IsKnownUser(const std::string& email);
 
   // Returns the logged-in user.
-  virtual User logged_in_user() const {
+  virtual const User& logged_in_user() const {
     return logged_in_user_;
   }
 
