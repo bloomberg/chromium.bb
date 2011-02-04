@@ -6,7 +6,8 @@ include_HEADERS =				\
 	wayland-server-protocol.h		\
 	wayland-server.h			\
 	wayland-client-protocol.h		\
-	wayland-client.h
+	wayland-client.h			\
+	wayland-egl.h
 
 libwayland_util_la_SOURCES =			\
 	connection.c				\
