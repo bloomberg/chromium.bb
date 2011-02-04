@@ -1,6 +1,8 @@
 include_rules = [
   "+gfx",
   "+ui",
+  "+base/crypto",
+  "+net/base",
 
   "+remoting/protocol",
   "+remoting/jingle_glue",

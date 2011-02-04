@@ -1,9 +1,10 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "remoting/host/host_key_pair.h"
 
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -11,7 +12,10 @@
 #include "base/crypto/rsa_private_key.h"
 #include "base/crypto/signature_creator.h"
 #include "base/logging.h"
+#include "base/rand_util.h"
 #include "base/task.h"
+#include "base/time.h"
+#include "net/base/x509_certificate.h"
 #include "remoting/host/host_config.h"
 
 namespace remoting {
@@ -82,6 +86,19 @@ std::string HostKeyPair::GetSignature(const std::string& message) const {
   std::string signature_base64;
   base::Base64Encode(signature_str, &signature_base64);
   return signature_base64;
+}
+
+base::RSAPrivateKey* HostKeyPair::CopyPrivateKey() const {
+  std::vector<uint8> key_bytes;
+  CHECK(key_->ExportPrivateKey(&key_bytes));
+  return base::RSAPrivateKey::CreateFromPrivateKeyInfo(key_bytes);
+}
+
+net::X509Certificate* HostKeyPair::GenerateCertificate() const {
+  return net::X509Certificate::CreateSelfSigned(
+      key_.get(), "CN=chromoting",
+      base::RandInt(1, std::numeric_limits<int>::max()),
+      base::TimeDelta::FromDays(1));
 }
 
 }  // namespace remoting

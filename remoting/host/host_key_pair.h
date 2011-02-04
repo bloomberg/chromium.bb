@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,10 @@
 namespace base {
 class RSAPrivateKey;
 }  // namespace base
+
+namespace net {
+class X509Certificate;
+}  // namespace net
 
 namespace remoting {
 
@@ -32,6 +36,10 @@ class HostKeyPair {
 
   std::string GetPublicKey() const;
   std::string GetSignature(const std::string& message) const;
+
+  // Make a new copy of private key. Caller will own the generated private key.
+  base::RSAPrivateKey* CopyPrivateKey() const;
+  net::X509Certificate* GenerateCertificate() const;
 
  private:
   scoped_ptr<base::RSAPrivateKey> key_;

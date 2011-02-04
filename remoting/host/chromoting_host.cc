@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/event_executor.h"
 #include "remoting/host/host_config.h"
+#include "remoting/host/host_key_pair.h"
 #include "remoting/host/host_stub_fake.h"
 #include "remoting/host/screen_recorder.h"
 #include "remoting/proto/auth.pb.h"
@@ -249,8 +250,15 @@ void ChromotingHost::OnStateChange(JingleClient* jingle_client,
     server->Init(jingle_client->GetFullJid(),
                  jingle_client->session_manager(),
                  NewCallback(this, &ChromotingHost::OnNewClientSession));
-    session_manager_ = server;
 
+    // Assign key and certificate to server.
+    HostKeyPair key_pair;
+    CHECK(key_pair.Load(config_))
+        << "Failed to load server authentication data";
+    server->SetCertificate(key_pair.GenerateCertificate());
+    server->SetPrivateKey(key_pair.CopyPrivateKey());
+
+    session_manager_ = server;
     // Start heartbeating.
     heartbeat_sender_->Start();
   } else if (state == JingleClient::CLOSED) {
