@@ -62,8 +62,8 @@ bool EncoderVp8::Init(int width, int height) {
   config.g_pass = VPX_RC_ONE_PASS;
   config.g_profile = 1;
   config.g_threads = 2;
-  config.rc_min_quantizer = 0;
-  config.rc_max_quantizer = 15;
+  config.rc_min_quantizer = 20;
+  config.rc_max_quantizer = 30;
   config.g_timebase.num = 1;
   config.g_timebase.den = 30;
 
