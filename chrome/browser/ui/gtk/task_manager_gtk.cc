@@ -232,15 +232,13 @@ class TaskManagerGtk::ContextMenuController
 
   virtual ~ContextMenuController() {}
 
+  void RunMenu(const gfx::Point& point, guint32 event_time) {
 #if defined(TOOLKIT_VIEWS)
-  void RunMenu(const gfx::Point& point) {
     menu_->RunContextMenuAt(point);
-  }
 #else
-  void RunMenu() {
-    menu_->PopupAsContext(gtk_get_current_event_time());
-  }
+    menu_->PopupAsContext(point, event_time);
 #endif
+  }
 
   void Cancel() {
     task_manager_ = NULL;
@@ -460,8 +458,15 @@ void TaskManagerGtk::Init() {
   destroy_handler_id_ = g_signal_connect(dialog_, "destroy",
                                          G_CALLBACK(OnDestroyThunk), this);
   g_signal_connect(dialog_, "response", G_CALLBACK(OnResponseThunk), this);
+  // GTK does menu on mouse-up while views does menu on mouse-down,
+  // so connect to different handlers.
+#if defined(TOOLKIT_VIEWS)
   g_signal_connect(dialog_, "button-release-event",
-                   G_CALLBACK(OnButtonReleaseEventThunk), this);
+                   G_CALLBACK(OnButtonEventThunk), this);
+#else
+  g_signal_connect(dialog_, "button-press-event",
+                   G_CALLBACK(OnButtonEventThunk), this);
+#endif
   gtk_widget_add_events(dialog_,
                         GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
 
@@ -762,21 +767,13 @@ void TaskManagerGtk::KillSelectedProcesses() {
   g_list_free(paths);
 }
 
-#if defined(TOOLKIT_VIEWS)
-void TaskManagerGtk::ShowContextMenu(const gfx::Point& point) {
+void TaskManagerGtk::ShowContextMenu(const gfx::Point& point,
+                                     guint32 event_time) {
   if (!menu_controller_.get())
     menu_controller_.reset(new ContextMenuController(this));
 
-  menu_controller_->RunMenu(point);
+  menu_controller_->RunMenu(point, event_time);
 }
-#else
-void TaskManagerGtk::ShowContextMenu() {
-  if (!menu_controller_.get())
-    menu_controller_.reset(new ContextMenuController(this));
-
-  menu_controller_->RunMenu();
-}
-#endif
 
 void TaskManagerGtk::OnLinkActivated() {
   task_manager_->OpenAboutMemory();
@@ -931,15 +928,13 @@ void TaskManagerGtk::OnRowActivated(GtkWidget* widget,
   task_manager_->ActivateProcess(row);
 }
 
-gboolean TaskManagerGtk::OnButtonReleaseEvent(GtkWidget* widget,
-                                              GdkEventButton* event) {
+gboolean TaskManagerGtk::OnButtonEvent(GtkWidget* widget,
+                                       GdkEventButton* event) {
+  // GTK does menu on mouse-up while views does menu on mouse-down,
+  // so this function does different handlers.
   if (event->button == 3) {
-#if defined(TOOLKIT_VIEWS)
-    gfx::Point pt(event->x_root, event->y_root);
-    ShowContextMenu(pt);
-#else
-    ShowContextMenu();
-#endif
+    ShowContextMenu(gfx::Point(event->x_root, event->y_root),
+                    event->time);
   }
 
   return FALSE;

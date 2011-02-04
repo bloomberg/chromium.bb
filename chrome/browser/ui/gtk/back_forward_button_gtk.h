@@ -45,7 +45,7 @@ class BackForwardButtonGtk : MenuGtk::Delegate {
                        GdkEventMotion*);
 
   // Shows the dropdown menu.
-  void ShowBackForwardMenu();
+  void ShowBackForwardMenu(int button, guint32 event_time);
 
   // The menu gets reset every time it is shown.
   scoped_ptr<MenuGtk> menu_;

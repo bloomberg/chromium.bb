@@ -117,8 +117,6 @@ class BookmarkEditorGtk : public BookmarkEditor,
   CHROMEGTK_CALLBACK_1(BookmarkEditorGtk, gboolean, OnTreeViewButtonPressEvent,
                        GdkEventButton*);
 
-  void ShowContextMenu(const gfx::Point& point);
-
   void NewFolder();
 
   // Profile the entry is from.

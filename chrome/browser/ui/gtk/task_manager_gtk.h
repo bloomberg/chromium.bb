@@ -15,11 +15,9 @@
 #include "grit/generated_resources.h"
 #include "ui/base/gtk/gtk_signal.h"
 
-#if defined(TOOLKIT_VIEWS)
 namespace gfx {
 class Point;
 }
-#endif
 
 class TaskManagerGtk : public TaskManagerModelObserver {
  public:
@@ -66,11 +64,7 @@ class TaskManagerGtk : public TaskManagerModelObserver {
   void KillSelectedProcesses();
 
   // Opens the context menu used to select the task manager columns.
-#if defined(TOOLKIT_VIEWS)
-  void ShowContextMenu(const gfx::Point& point);
-#else
-  void ShowContextMenu();
-#endif
+  void ShowContextMenu(const gfx::Point& point, guint32 event_time);
 
   // Opens about:memory in a new foreground tab.
   void OnLinkActivated();
@@ -97,8 +91,10 @@ class TaskManagerGtk : public TaskManagerModelObserver {
   CHROMEGTK_CALLBACK_2(TaskManagerGtk, void, OnRowActivated,
                        GtkTreePath*, GtkTreeViewColumn*);
 
-  // button-release-event handler that opens the right-click context menu.
-  CHROMEGTK_CALLBACK_1(TaskManagerGtk, gboolean, OnButtonReleaseEvent,
+  // button-event handler that opens the right-click context menu.
+  // Note: GTK does menu on mouse-up while views does menu on mouse-down;
+  // this handler is used for both.
+  CHROMEGTK_CALLBACK_1(TaskManagerGtk, gboolean, OnButtonEvent,
                        GdkEventButton*);
 
   // Handles an accelerator being pressed.

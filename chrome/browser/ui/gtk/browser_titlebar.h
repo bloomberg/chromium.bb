@@ -63,7 +63,7 @@ class BrowserTitlebar : public NotificationObserver,
   // On Windows, right clicking in the titlebar background brings up the system
   // menu.  There's no such thing on linux, so we just show the menu items we
   // add to the menu.
-  void ShowContextMenu();
+  void ShowContextMenu(GdkEventButton* event);
 
  private:
   // A helper class to keep track of which frame of the throbber animation

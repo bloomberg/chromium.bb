@@ -266,9 +266,9 @@ class BrowserActionButton : public NotificationObserver,
   }
 
   static gboolean OnButtonPress(GtkWidget* widget,
-                                GdkEvent* event,
+                                GdkEventButton* event,
                                 BrowserActionButton* action) {
-    if (event->button.button != 3)
+    if (event->button != 3)
       return FALSE;
 
     MenuGtk* menu = action->GetContextMenu();
@@ -276,7 +276,7 @@ class BrowserActionButton : public NotificationObserver,
       return FALSE;
 
     action->button_->SetPaintOverride(GTK_STATE_ACTIVE);
-    menu->Popup(widget, event);
+    menu->PopupForWidget(widget, event->button, event->time);
 
     return TRUE;
   }
@@ -950,7 +950,8 @@ gboolean BrowserActionsToolbarGtk::OnOverflowMenuButtonPress(
   if (!menu)
     return FALSE;
 
-  menu->PopupAsContext(event->time);
+  menu->PopupAsContext(gfx::Point(event->x_root, event->y_root),
+                       event->time);
   return TRUE;
 }
 

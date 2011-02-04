@@ -709,7 +709,7 @@ void BrowserTitlebar::ShowFaviconMenu(GdkEventButton* event) {
     favicon_menu_.reset(new MenuGtk(NULL, favicon_menu_model_.get()));
   }
 
-  favicon_menu_->Popup(app_mode_favicon_, reinterpret_cast<GdkEvent*>(event));
+  favicon_menu_->PopupForWidget(app_mode_favicon_, event->button, event->time);
 }
 
 void BrowserTitlebar::MaximizeButtonClicked() {
@@ -796,13 +796,14 @@ gboolean BrowserTitlebar::OnButtonPressed(GtkWidget* widget,
   return TRUE;
 }
 
-void BrowserTitlebar::ShowContextMenu() {
+void BrowserTitlebar::ShowContextMenu(GdkEventButton* event) {
   if (!context_menu_.get()) {
     context_menu_model_.reset(new ContextMenuModel(this));
     context_menu_.reset(new MenuGtk(NULL, context_menu_model_.get()));
   }
 
-  context_menu_->PopupAsContext(gtk_get_current_event_time());
+  context_menu_->PopupAsContext(gfx::Point(event->x_root, event->y_root),
+                                event->time);
 }
 
 bool BrowserTitlebar::IsCommandIdEnabled(int command_id) const {

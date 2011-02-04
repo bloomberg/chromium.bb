@@ -64,14 +64,14 @@ class BookmarkEditorGtk::ContextMenuController
   }
   virtual ~ContextMenuController() {}
 
-  void RunMenu(const gfx::Point& point) {
+  void RunMenu(const gfx::Point& point, guint32 event_time) {
     const BookmarkNode* selected_node = GetSelectedNode();
     if (selected_node)
       running_menu_for_root_ = selected_node->GetParent()->IsRoot();
 #if defined(TOOLKIT_VIEWS)
     menu_->RunContextMenuAt(point);
 #else
-    menu_->PopupAsContextAt(gtk_get_current_event_time(), point);
+    menu_->PopupAsContext(point, event_time);
 #endif
   }
 
@@ -549,18 +549,13 @@ void BookmarkEditorGtk::OnNewFolderClicked(GtkWidget* button) {
 gboolean BookmarkEditorGtk::OnTreeViewButtonPressEvent(GtkWidget* widget,
                                                        GdkEventButton* event) {
   if (event->button == 3) {
-    gfx::Point pt(event->x_root, event->y_root);
-    ShowContextMenu(pt);
+    if (!menu_controller_.get())
+      menu_controller_.reset(new ContextMenuController(this));
+    menu_controller_->RunMenu(gfx::Point(event->x_root, event->y_root),
+                              event->time);
   }
 
   return FALSE;
-}
-
-void BookmarkEditorGtk::ShowContextMenu(const gfx::Point& point) {
-  if (!menu_controller_.get())
-    menu_controller_.reset(new ContextMenuController(this));
-
-  menu_controller_->RunMenu(point);
 }
 
 void BookmarkEditorGtk::NewFolder() {

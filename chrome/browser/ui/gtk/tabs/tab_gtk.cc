@@ -42,8 +42,8 @@ class TabGtk::ContextMenuController : public ui::SimpleMenuModel::Delegate,
 
   virtual ~ContextMenuController() {}
 
-  void RunMenu() {
-    menu_->PopupAsContext(gtk_get_current_event_time());
+  void RunMenu(const gfx::Point& point, guint32 event_time) {
+    menu_->PopupAsContext(point, event_time);
   }
 
   void Cancel() {
@@ -189,8 +189,11 @@ gboolean TabGtk::OnButtonPressEvent(GtkWidget* widget, GdkEventButton* event) {
   } else if (event->button == 3) {
     // Only show the context menu if the left mouse button isn't down (i.e.,
     // the user might want to drag instead).
-    if (!last_mouse_down_)
-      ShowContextMenu();
+    if (!last_mouse_down_) {
+      menu_controller_.reset(new ContextMenuController(this));
+      menu_controller_->RunMenu(gfx::Point(event->x_root, event->y_root),
+                                event->time);
+    }
   }
 
   return TRUE;
@@ -325,11 +328,6 @@ void TabGtk::SetBounds(const gfx::Rect& bounds) {
 
 ///////////////////////////////////////////////////////////////////////////////
 // TabGtk, private:
-
-void TabGtk::ShowContextMenu() {
-  menu_controller_.reset(new ContextMenuController(this));
-  menu_controller_->RunMenu();
-}
 
 void TabGtk::ContextMenuClosed() {
   delegate()->StopAllHighlighting();

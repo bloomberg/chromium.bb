@@ -454,7 +454,7 @@ gboolean BalloonViewImpl::OnExpose(GtkWidget* sender, GdkEventExpose* event) {
 void BalloonViewImpl::OnOptionsMenuButton(GtkWidget* widget,
                                           GdkEventButton* event) {
   menu_showing_ = true;
-  options_menu_->PopupAsContext(event->time);
+  options_menu_->PopupForWidget(widget, event->button, event->time);
 }
 
 // Called when the menu stops showing.

@@ -590,7 +590,7 @@ gboolean BrowserToolbarGtk::OnMenuButtonPressEvent(GtkWidget* button,
     return FALSE;
 
   wrench_menu_button_->SetPaintOverride(GTK_STATE_ACTIVE);
-  wrench_menu_->Popup(button, reinterpret_cast<GdkEvent*>(event));
+  wrench_menu_->PopupForWidget(button, event->button, event->time);
 
   return TRUE;
 }

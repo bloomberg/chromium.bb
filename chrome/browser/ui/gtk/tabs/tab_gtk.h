@@ -139,9 +139,6 @@ class TabGtk : public TabRendererGtk,
   // user presses space or return.
   CHROMEGTK_CALLBACK_1(TabGtk, gboolean, OnDragButtonReleased, GdkEventButton*);
 
-  // Shows the context menu.
-  void ShowContextMenu();
-
   // Invoked when the context menu closes.
   void ContextMenuClosed();
 

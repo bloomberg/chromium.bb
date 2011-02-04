@@ -213,7 +213,7 @@ void TranslateInfoBarBase::OnOptionsClicked(GtkWidget* sender) {
     options_menu_model_.reset(new OptionsMenuModel(GetDelegate()));
     options_menu_menu_.reset(new MenuGtk(NULL, options_menu_model_.get()));
   }
-  options_menu_menu_->Popup(sender, 1, gtk_get_current_event_time());
+  options_menu_menu_->PopupForWidget(sender, 1, gtk_get_current_event_time());
 }
 
 // TranslateInfoBarDelegate specific method:

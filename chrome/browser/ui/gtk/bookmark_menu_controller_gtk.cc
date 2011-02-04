@@ -275,7 +275,8 @@ gboolean BookmarkMenuController::OnMenuButtonPressedOrReleased(
     signals_.Connect(context_menu_->widget(), "hide",
                      G_CALLBACK(OnContextMenuHide), grabbing_menu);
 
-    context_menu_->PopupAsContext(event->time);
+    context_menu_->PopupAsContext(gfx::Point(event->x_root, event->y_root),
+                                  event->time);
     return TRUE;
   }
 

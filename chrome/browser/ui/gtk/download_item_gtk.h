@@ -113,7 +113,7 @@ class DownloadItemGtk : public DownloadItem::Observer,
                        GdkEventExpose*);
 
   CHROMEGTK_CALLBACK_1(DownloadItemGtk, gboolean, OnMenuButtonPressEvent,
-                       GdkEvent*);
+                       GdkEventButton*);
 
   // Dangerous download related. -----------------------------------------------
   CHROMEGTK_CALLBACK_1(DownloadItemGtk, gboolean, OnDangerousPromptExpose,

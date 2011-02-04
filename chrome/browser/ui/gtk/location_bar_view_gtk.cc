@@ -1482,8 +1482,8 @@ void LocationBarViewGtk::PageActionViewGtk::OnImageLoaded(
 }
 
 void LocationBarViewGtk::PageActionViewGtk::TestActivatePageAction() {
-  GdkEvent event;
-  event.button.button = 1;
+  GdkEventButton event = {};
+  event.button = 1;
   OnButtonPressed(widget(), &event);
 }
 
@@ -1506,8 +1506,8 @@ bool LocationBarViewGtk::PageActionViewGtk::ShowPopup(bool devtools) {
 
 gboolean LocationBarViewGtk::PageActionViewGtk::OnButtonPressed(
     GtkWidget* sender,
-    GdkEvent* event) {
-  if (event->button.button != 3) {
+    GdkEventButton* event) {
+  if (event->button != 3) {
     if (!ShowPopup(false)) {
       ExtensionService* service = profile_->GetExtensionService();
       service->browser_event_router()->PageActionExecuted(
@@ -1516,7 +1516,7 @@ gboolean LocationBarViewGtk::PageActionViewGtk::OnButtonPressed(
           page_action_->id(),
           current_tab_id_,
           current_url_.spec(),
-          event->button.button);
+          event->button);
     }
   } else {
     const Extension* extension = profile_->GetExtensionService()->
@@ -1527,7 +1527,7 @@ gboolean LocationBarViewGtk::PageActionViewGtk::OnButtonPressed(
           new ExtensionContextMenuModel(extension, owner_->browser_, this);
       context_menu_.reset(
           new MenuGtk(NULL, context_menu_model_.get()));
-      context_menu_->Popup(sender, event);
+      context_menu_->PopupForWidget(sender, event->button, event->time);
     }
   }
 

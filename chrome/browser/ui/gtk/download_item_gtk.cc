@@ -96,14 +96,14 @@ class DownloadShelfContextMenuGtk : public DownloadShelfContextMenu,
   ~DownloadShelfContextMenuGtk() {
   }
 
-  void Popup(GtkWidget* widget, GdkEvent* event) {
+  void Popup(GtkWidget* widget, GdkEventButton* event) {
     // Create the menu if we have not created it yet or we created it for
     // an in-progress download that has since completed.
     if (download_->state() == DownloadItem::COMPLETE)
       menu_.reset(new MenuGtk(this, GetFinishedMenuModel()));
     else
       menu_.reset(new MenuGtk(this, GetInProgressMenuModel()));
-    menu_->Popup(widget, event);
+    menu_->PopupForWidget(widget, event->button, event->time);
   }
 
   // MenuGtk::Delegate implementation:
@@ -835,7 +835,7 @@ gboolean DownloadItemGtk::OnProgressAreaExpose(GtkWidget* widget,
 }
 
 gboolean DownloadItemGtk::OnMenuButtonPressEvent(GtkWidget* button,
-                                                 GdkEvent* event) {
+                                                 GdkEventButton* event) {
   // Stop any completion animation.
   if (complete_animation_.get() && complete_animation_->is_animating())
     complete_animation_->End();

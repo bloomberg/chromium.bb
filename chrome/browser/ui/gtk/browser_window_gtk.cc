@@ -2048,7 +2048,7 @@ gboolean BrowserWindowGtk::OnButtonPressEvent(GtkWidget* widget,
     return TRUE;
   } else if (event->button == 3) {
     if (has_hit_titlebar) {
-      titlebar_->ShowContextMenu();
+      titlebar_->ShowContextMenu(event);
       return TRUE;
     }
   }

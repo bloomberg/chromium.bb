@@ -223,7 +223,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
     bool ShowPopup(bool devtools);
 
     CHROMEGTK_CALLBACK_1(PageActionViewGtk, gboolean, OnButtonPressed,
-                         GdkEvent*);
+                         GdkEventButton*);
     CHROMEGTK_CALLBACK_1(PageActionViewGtk, gboolean, OnExposeEvent,
                          GdkEventExpose*);
 
