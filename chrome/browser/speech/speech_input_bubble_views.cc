@@ -129,7 +129,7 @@ gfx::Size ContentView::GetPreferredSize() {
   int width = heading_->GetPreferredSize().width();
   int control_width = cancel_->GetPreferredSize().width() +
                       try_again_->GetPreferredSize().width() +
-                      kRelatedButtonHSpacing;
+                      views::kRelatedButtonHSpacing;
   if (control_width > width)
     width = control_width;
   control_width = icon_->GetPreferredSize().width();
@@ -164,9 +164,9 @@ void ContentView::Layout() {
     int cancel_width = cancel_->GetPreferredSize().width();
     y += available_height - height;
     x += (available_width - cancel_width - try_again_width -
-          kRelatedButtonHSpacing) / 2;
+          views::kRelatedButtonHSpacing) / 2;
     try_again_->SetBounds(x, y, try_again_width, height);
-    cancel_->SetBounds(x + try_again_width + kRelatedButtonHSpacing, y,
+    cancel_->SetBounds(x + try_again_width + views::kRelatedButtonHSpacing, y,
                        cancel_width, height);
 
     height = message_->GetHeightForWidth(available_width);

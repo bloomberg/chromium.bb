@@ -245,7 +245,7 @@ void BookmarkBubbleView::Init() {
   // We subtract 2 to account for the natural button padding, and
   // to bring the separation visually in line with the row separation
   // height.
-  cs->AddPaddingColumn(0, kRelatedButtonHSpacing - 2);
+  cs->AddPaddingColumn(0, views::kRelatedButtonHSpacing - 2);
   cs->AddColumn(GridLayout::LEADING, GridLayout::TRAILING, 0,
                 GridLayout::USE_PREF, 0, 0);
 

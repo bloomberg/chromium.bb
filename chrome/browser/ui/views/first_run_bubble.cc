@@ -198,7 +198,7 @@ void FirstRunBubbleView::Layout() {
 
   pref_size = keep_button_->GetPreferredSize();
   keep_button_->SetBounds(change_button_->x() - pref_size.width() -
-                          kRelatedButtonHSpacing, change_button_->y(),
+                          views::kRelatedButtonHSpacing, change_button_->y(),
                           pref_size.width(), pref_size.height());
 }
 

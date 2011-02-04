@@ -682,7 +682,7 @@ class TryChromeDialog : public views::ButtonListener,
     columns->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
     columns->AddColumn(GridLayout::LEADING, GridLayout::FILL, 0,
                        GridLayout::USE_PREF, 0, 0);
-    columns->AddPaddingColumn(0, kRelatedButtonHSpacing);
+    columns->AddPaddingColumn(0, views::kRelatedButtonHSpacing);
     columns->AddColumn(GridLayout::LEADING, GridLayout::FILL, 0,
                        GridLayout::USE_PREF, 0, 0);
     // Fifth row: [pad][pad][link].
