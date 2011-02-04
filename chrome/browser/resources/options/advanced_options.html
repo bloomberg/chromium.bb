@@ -176,8 +176,8 @@
         <span i18n-content="sslUseTLS1"></span>
       </label>
 </if>
-<if expr="not pp_ifdef('chromeos') and (os == 'linux2' or os.find('bsd') != -1)">
-      <!-- Configure these options for Linux/BSD as preference keys -->
+<if expr="os == 'linux2' or os.find('bsd') != -1">
+      <!-- Configure these options for CrOS/Linux/BSD as preference keys -->
       <label class="checkbox">
         <input id="sslCheckRevocation" pref="ssl.rev_checking.enabled"
             metric="Options_CheckCertRevocation" type="checkbox">
