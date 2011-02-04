@@ -152,7 +152,13 @@ INITIAL_ENV = {
   'LLC_FLAGS_X8664' : '-march=x86-64 -mcpu=core2 -asm-verbose=false',
 
   'OPT'      : '${BASE_ARM}/bin/opt',
-  'OPT_FLAGS': '-std-compile-opts -O3',
+  'OPT_FLAGS': '-std-compile-opts -O3 ' +
+               # Preserve memcpy and memset in case llc or opt
+               # generates references to llvm intrinsics
+               # (such as @llvm.memcpy and @llvm.memset, respectively)
+               # which may generate calls to these library functions
+               # after linking and optimization has occurred.
+               '-internalize-public-api-list=memcpy,memset',
   'OPT_LEVEL': '',
 
   'OBJDUMP_ARM'   : '${BASE_ARM}/bin/arm-none-linux-gnueabi-objdump',
@@ -222,6 +228,7 @@ INITIAL_ENV = {
   'RUN_BCLD': '${BCLD} ${BCLD_FLAGS} ' +
               '${STDLIB_NATIVE_PREFIX} ${STDLIB_BC_PREFIX} ${inputs} ' +
               '${STDLIB_BC_SUFFIX} ${STDLIB_NATIVE_SUFFIX} ' +
+              '${BASE}/llvm-intrinsics.bc ' +
               '-o "${output}"'
 }
 
@@ -233,6 +240,7 @@ DriverPatterns = [
   ( '--driver=(.+)',                   "env.set('LLVM_GCC', $0)"),
   ( '--pnacl-driver-set-([^=]+)=(.*)', "env.set($0, $1)"),
   ( ('-arch','(.+)'),                  "env.set('ARCH', FixArch($0))"),
+  ( '--pnacl-opt',                     "env.set('INCARNATION', 'opt')"),
   ( '--pnacl-dis',                     "env.set('INCARNATION', 'dis')"),
   ( '--pnacl-as',                      "env.set('INCARNATION', 'as')"),
   ( '--pnacl-gcc',                     "env.set('INCARNATION', 'gcc')"),
@@ -409,7 +417,8 @@ def PrepareChainMap():
   # so that the 'src -> bc' rule is used first instead.
   if not env.getbool('EMIT_LL'):
     assert(ChainMapInit[0][0] == 'src -> ll')
-    ChainMapInit = ChainMapInit[1:] + ChainMapInit[0:1]
+    assert(ChainMapInit[1][0] == 'src -> bc')
+    ChainMapInit = [ChainMapInit[1],ChainMapInit[0]] + ChainMapInit[2:]
 
   # If MC direct object emission is disabled, then
   # delete the 'bc|pexe -> o' rule which causes it.
@@ -480,6 +489,23 @@ def GetArch():
     Log.Fatal('Missing -arch!')
   arch = env.get('ARCH')
   return arch
+
+def Incarnation_opt():
+  inputs = shell.split(env.get('INPUTS'))
+  output = env.get('OUTPUT')
+
+  if len(inputs) != 1:
+    Log.Fatal('Expected one input file for opt')
+  if output == '':
+    Log.Fatal('Output file must be specified')
+  infile = inputs[0]
+
+  intype = FileType(infile)
+  if intype == 'll':
+    env.append('OPT_FLAGS', '-S')
+
+  OptimizeBC(infile, output)
+  return 0
 
 def Incarnation_gcc():
   inputs = shell.split(env.get('INPUTS'))

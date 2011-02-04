@@ -128,8 +128,8 @@ readonly PNACL_AS_X8664="${INSTALL_BIN}/pnacl-as_x86_64"
 
 # Current milestones in each repo
 # hg-update-stable  uses these
-readonly LLVM_REV=502c5f27f804
-readonly LLVM_GCC_REV=7bb94b24cbbe
+readonly LLVM_REV=2063d587d444
+readonly LLVM_GCC_REV=a24f3ae473c8
 readonly NEWLIB_REV=d0ac50acf303
 readonly BINUTILS_REV=18098c353f3c
 
@@ -2219,6 +2219,14 @@ driver() {
   # otherwise linker-install will stomp it.
   linker-install
   driver-install
+  driver-intrinsics
+}
+
+driver-intrinsics() {
+  StepBanner "DRIVER" "Install LLVM intrinsics"
+  "${INSTALL_DIR}"/bin/llvm-as \
+    tools/llvm/llvm-intrinsics.ll \
+    -o "${INSTALL_ROOT}/llvm-intrinsics.bc"
 }
 
 # Just in case we're calling this manually
