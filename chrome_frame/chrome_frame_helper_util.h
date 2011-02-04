@@ -40,4 +40,32 @@ bool IsWindowOfClass(HWND hwnd_to_match, const wchar_t* window_class);
 // Returns true if the current process name is process_name, false otherwise.
 bool IsNamedProcess(const wchar_t* process_name);
 
+// Returns true if window has the name |window_name|, false otherwise.
+bool IsNamedWindow(HWND window, const wchar_t* window_name);
+
+//
+// This function recursively enumerates all windows from a given starting point
+// and searches for the first occurrence of a window matching
+// the class name and window name passed in. We use the EnumChildWindows API
+// to search for the window.
+// @note The FindWindowEx function does something similar, however, it goes
+// only one level deep and does not recurse descendants.
+// @param parent [in] The HWND of the window from which to start looking. If
+//                    this is NULL then enumerate all windows on the desktop.
+// @param class_name [in, optional] The class name of the matching window
+// @param window_name [in, optional] The window text of the matching window.
+//                                   At least one of class_name and
+//                                   window_name must be non-NULL.
+// @param thread_id_to_match [in] This parameter will be used to match
+//                                particular thread id for window.
+// @param process_id_to_match [in] This parameter will be used to match
+//                                 particular process id for window.
+// @return The window handle of the matching window, if found, or NULL.
+//
+HWND RecurseFindWindow(HWND parent,
+                       const wchar_t* class_name,
+                       const wchar_t* window_name,
+                       DWORD thread_id_to_match,
+                       DWORD process_id_to_match);
+
 #endif  // CHROME_FRAME_CHROME_FRAME_HELPER_UTIL_H_

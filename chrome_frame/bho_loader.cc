@@ -16,6 +16,10 @@
 // Describes the window class we look for.
 const wchar_t kStatusBarWindowClass[] = L"msctls_statusbar32";
 
+// On IE9, the status bar is disabled by default, so we look for an
+// AsyncBoundaryLayer window instead.
+const wchar_t kAsyncBoundaryDnWindow[] = L"asynclayerboundarydn\0";
+
 BHOLoader::BHOLoader() : hooker_(new EventHooker()) {
 }
 
@@ -29,22 +33,42 @@ BHOLoader::~BHOLoader() {
 void BHOLoader::OnHookEvent(DWORD event, HWND window) {
   // Step 1: Make sure that we are in a process named iexplore.exe.
   if (IsNamedProcess(L"iexplore.exe")) {
-    // Step 2: Check to see if the window is of the right class.
-    // IE loads BHOs in the WM_CREATE handler of the tab window approximately
-    // after it creates the status bar window. To be as close to IE as possible
-    // in our simulation on BHO loading, we watch for the status bar to be
-    // created and do our simulated BHO loading at that time.
-    if (IsWindowOfClass(window, kStatusBarWindowClass)) {
-      // Check that the window was created on the current thread.
+    if (!IsWindowOfClass(window, kStatusBarWindowClass) &&
+        !IsWindowOfClass(window, kAsyncBoundaryDnWindow)) {
+      return;
+    } else {
+      // We have the right sort of window, check to make sure it was created
+      // on the current thread.
       DWORD thread_id = GetWindowThreadProcessId(window, NULL);
       _ASSERTE(thread_id == GetCurrentThreadId());
+    }
 
-      HWND parent_window = GetParent(window);
+    // Step 2: Check to see if the window is of the right class.
+    HWND browser_hwnd = NULL;
+    if (IsWindowOfClass(window, kStatusBarWindowClass)) {
+      // For IE8 and under, IE loads BHOs in the WM_CREATE handler of the tab
+      // window approximately after it creates the status bar window. To be as
+      // close to IE as possible in our simulation on BHO loading, we watch for
+      // the status bar to be created and do our simulated BHO loading at that
+      // time.
+      browser_hwnd = GetParent(window);
+    } else if (IsWindowOfClass(window, kAsyncBoundaryDnWindow)) {
+      // For IE9, the status bar is disabled by default, so we look for an
+      // AsyncBoundaryWindow to be created. When we find that, look for a
+      // child window owned by the current thread named "tabwindowclass".
+      // That will be our browser window.
+      browser_hwnd = RecurseFindWindow(NULL, L"tabwindowclass", NULL,
+                                       GetCurrentThreadId(),
+                                       GetCurrentProcessId());
+      _ASSERTE(NULL != browser_hwnd);
+    }
+
+    if (browser_hwnd != NULL) {
       // Step 3:
       // Parent window of status bar window is the web browser window. Try to
       // get its IWebBrowser2 interface
       CComPtr<IWebBrowser2> browser;
-      UtilGetWebBrowserObjectFromWindow(parent_window, __uuidof(browser),
+      UtilGetWebBrowserObjectFromWindow(browser_hwnd, __uuidof(browser),
                                         reinterpret_cast<void**>(&browser));
       if (browser) {
         // Figure out if we're already in the property map.
