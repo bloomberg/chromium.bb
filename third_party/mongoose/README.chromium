@@ -26,3 +26,6 @@ Note:  There is no make file for this project, it's compiled directly in
 the chrome versoin of webdriver found under the directory:
   src/chrome/test/webdriver
 
+Local modifications:
+-Do not check for OS_POSIX, instead just check that it is not windows.
+

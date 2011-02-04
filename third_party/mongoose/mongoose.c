@@ -4479,10 +4479,10 @@ get_socket(struct mg_context *ctx, struct socket *sp)
   ctx->num_idle++;
   while (ctx->sq_head == ctx->sq_tail) {
     ts.tv_nsec = 0;
-#ifdef OS_POSIX
-    ts.tv_sec = time(NULL) + atoi(ctx->options[OPT_IDLE_TIME]) + 1;
-#elif _WIN32
+#ifdef _WIN32
     ts.tv_sec = (long) (time(NULL) + atoi(ctx->options[OPT_IDLE_TIME]) + 1);
+#else
+    ts.tv_sec = time(NULL) + atoi(ctx->options[OPT_IDLE_TIME]) + 1;
 #endif
     if (pthread_cond_timedwait(&ctx->empty_cond,
         &ctx->thr_mutex, &ts) != 0) {
@@ -4747,4 +4747,3 @@ mg_start(void)
 
   return (ctx);
 }
-
