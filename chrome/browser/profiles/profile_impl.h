@@ -71,6 +71,7 @@ class ProfileImpl : public Profile,
   virtual WebDataService* GetWebDataServiceWithoutCreating();
   virtual PasswordStore* GetPasswordStore(ServiceAccessType sat);
   virtual PrefService* GetPrefs();
+  virtual PrefService* GetOffTheRecordPrefs();
   virtual TemplateURLModel* GetTemplateURLModel();
   virtual TemplateURLFetcher* GetTemplateURLFetcher();
   virtual DownloadManager* GetDownloadManager();
@@ -148,9 +149,6 @@ class ProfileImpl : public Profile,
   // SpellCheckHostObserver implementation.
   virtual void SpellCheckHostInitialized();
 
- protected:
-  virtual ExtensionPrefValueMap* GetExtensionPrefValueMap();
-
  private:
   friend class Profile;
 
@@ -174,6 +172,8 @@ class ProfileImpl : public Profile,
   void RegisterComponentExtensions();
   void InstallDefaultApps();
 
+  ExtensionPrefValueMap* GetExtensionPrefValueMap();
+
   NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;
 
@@ -184,6 +184,7 @@ class ProfileImpl : public Profile,
   // net_pref_observer_, web_resource_service_ and background_contents_service_
   // store pointers to prefs_ and shall be destructed first.
   scoped_ptr<PrefService> prefs_;
+  scoped_ptr<PrefService> otr_prefs_;
   scoped_ptr<VisitedLinkEventListener> visited_link_event_listener_;
   scoped_ptr<VisitedLinkMaster> visited_link_master_;
   // Keep extension_prefs_ on top of extensions_service_ because the latter

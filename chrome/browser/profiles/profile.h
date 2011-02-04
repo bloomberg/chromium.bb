@@ -290,6 +290,11 @@ class Profile {
   // time that this method is called.
   virtual PrefService* GetPrefs() = 0;
 
+  // Retrieves a pointer to the PrefService that manages the preferences
+  // for OffTheRecord Profiles.  This PrefService is lazily created the first
+  // time that this method is called.
+  virtual PrefService* GetOffTheRecordPrefs() = 0;
+
   // Returns the TemplateURLModel for this profile. This is owned by the
   // the Profile.
   virtual TemplateURLModel* GetTemplateURLModel() = 0;
@@ -567,8 +572,6 @@ class Profile {
   friend class OffTheRecordProfileImpl;
 
   static URLRequestContextGetter* default_request_context_;
-
-  virtual ExtensionPrefValueMap* GetExtensionPrefValueMap() = 0;
 
  private:
   bool restored_last_session_;

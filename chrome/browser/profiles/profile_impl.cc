@@ -757,6 +757,16 @@ PrefService* ProfileImpl::GetPrefs() {
   return prefs_.get();
 }
 
+PrefService* ProfileImpl::GetOffTheRecordPrefs() {
+  if (!otr_prefs_.get()) {
+    // The new ExtensionPrefStore is ref_counted and the new PrefService
+    // stores a reference so that we do not leak memory here.
+    otr_prefs_.reset(GetPrefs()->CreateIncognitoPrefService(
+        new ExtensionPrefStore(GetExtensionPrefValueMap(), true)));
+  }
+  return otr_prefs_.get();
+}
+
 FilePath ProfileImpl::GetPrefFilePath() {
   FilePath pref_file_path = path_;
   pref_file_path = pref_file_path.Append(chrome::kPreferencesFilename);

@@ -321,12 +321,9 @@ class TestingProfile : public Profile {
   virtual PromoCounter* GetInstantPromoCounter() { return NULL; }
   virtual policy::ProfilePolicyContext* GetPolicyContext() { return NULL; }
   virtual PrerenderManager* GetPrerenderManager() { return NULL; }
+  virtual PrefService* GetOffTheRecordPrefs() { return NULL; }
 
  protected:
-  virtual ExtensionPrefValueMap* GetExtensionPrefValueMap() {
-    return extension_pref_value_map_.get();
-  }
-
   base::Time start_time_;
   scoped_ptr<PrefService> prefs_;
   // ref only for right type, lifecycle is managed by prefs_

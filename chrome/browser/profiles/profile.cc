@@ -142,10 +142,8 @@ class OffTheRecordProfileImpl : public Profile,
  public:
   explicit OffTheRecordProfileImpl(Profile* real_profile)
       : profile_(real_profile),
+        prefs_(real_profile->GetOffTheRecordPrefs()),
         start_time_(Time::Now()) {
-    prefs_.reset(profile_->GetPrefs()->CreateIncognitoPrefService(
-        new ExtensionPrefStore(profile_->GetExtensionPrefValueMap(), true)));
-
     request_context_ = ChromeURLRequestContextGetter::CreateOffTheRecord(this);
     extension_process_manager_.reset(ExtensionProcessManager::Create(this));
 
@@ -330,7 +328,11 @@ class OffTheRecordProfileImpl : public Profile,
   }
 
   virtual PrefService* GetPrefs() {
-    return prefs_.get();
+    return prefs_;
+  }
+
+  virtual PrefService* GetOffTheRecordPrefs() {
+    return prefs_;
   }
 
   virtual TemplateURLModel* GetTemplateURLModel() {
@@ -640,18 +642,14 @@ class OffTheRecordProfileImpl : public Profile,
     return NULL;
   }
 
- protected:
-  virtual ExtensionPrefValueMap* GetExtensionPrefValueMap() {
-    return profile_->GetExtensionPrefValueMap();
-  }
-
  private:
   NotificationRegistrar registrar_;
 
   // The real underlying profile.
   Profile* profile_;
 
-  scoped_ptr<PrefService> prefs_;
+  // Weak pointer owned by |profile_|.
+  PrefService* prefs_;
 
   scoped_ptr<ExtensionProcessManager> extension_process_manager_;
 
