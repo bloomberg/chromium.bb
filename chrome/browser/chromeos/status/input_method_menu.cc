@@ -174,7 +174,7 @@ InputMethodMenu::~InputMethodMenu() {
 // ui::MenuModel implementation:
 
 int InputMethodMenu::GetCommandIdAt(int index) const {
-  return 0;  // dummy
+  return index;
 }
 
 bool InputMethodMenu::IsItemDynamicAt(int index) const {
