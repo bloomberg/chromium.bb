@@ -267,12 +267,8 @@ void TabLoader::Observe(NotificationType type,
     case NotificationType::TAB_CONTENTS_DESTROYED: {
       TabContents* tab_contents = Source<TabContents>(source).ptr();
       if (!got_first_paint_) {
-        RenderWidgetHost* render_widget_host =
-            GetRenderWidgetHost(&tab_contents->controller());
-        // The render_widget_host should never be NULL, and yet it appears
-        // to happen, according to the crash reports.
-        if (render_widget_host)
-          render_widget_hosts_loading_.erase(render_widget_host);
+        render_widget_hosts_loading_.erase(
+            tab_contents->GetRenderWidgetHostView()->GetRenderWidgetHost());
       }
       HandleTabClosedOrLoaded(&tab_contents->controller());
       break;
