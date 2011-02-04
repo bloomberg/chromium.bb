@@ -273,6 +273,8 @@ cr.define('cr.ui', function() {
       this.addEventListener('mousedown', this.handleMouseDownUp_);
       this.addEventListener('mouseup', this.handleMouseDownUp_);
       this.addEventListener('keydown', this.handleKeyDown);
+      this.addEventListener('focus', this.handleElementFocus_, true);
+      this.addEventListener('blur', this.handleElementBlur_, true);
       this.addEventListener('scroll', this.redraw.bind(this));
 
       // Make list focusable
@@ -324,6 +326,56 @@ cr.define('cr.ui', function() {
 
       var index = target ? this.getIndexOfListItem(target) : -1;
       this.selectionController_.handleMouseDownUp(e, index);
+    },
+
+    /**
+     * Called when an element in the list is focused. Marks the list as having
+     * a focused element, and dispatches an event if it didn't have focus.
+     * @param {Event} e The focus event.
+     * @private
+     */
+    handleElementFocus_: function(e) {
+      if (!this.hasElementFocus) {
+        this.hasElementFocus = true;
+        // Force styles based on hasElementFocus to take effect.
+        this.forceRepaint_();
+      }
+    },
+
+    /**
+     * Called when an element in the list is blurred. If focus moves outside
+     * the list, marks the list as no longer having focus and dispatches an
+     * event.
+     * @param {Event} e The blur event.
+     * @private
+     */
+    handleElementBlur_: function(e) {
+      // When the blur event happens we do not know who is getting focus so we
+      // delay this a bit until we know if the new focus node is outside the
+      // list.
+      var list = this;
+      var doc = e.target.ownerDocument;
+      window.setTimeout(function() {
+        var activeElement = doc.activeElement;
+        if (!list.contains(activeElement)) {
+          list.hasElementFocus = false;
+          // Force styles based on hasElementFocus to take effect.
+          list.forceRepaint_();
+        }
+      });
+    },
+
+    /**
+     * Forces a repaint of the list. Changing custom attributes, even if there
+     * are style rules depending on them, doesn't cause a repaint
+     * (<https://bugs.webkit.org/show_bug.cgi?id=12519>), so this can be called
+     * to force the list to repaint.
+     * @private
+     */
+    forceRepaint_: function(e) {
+      var dummyElement = document.createElement('div');
+      this.appendChild(dummyElement);
+      this.removeChild(dummyElement);
     },
 
     /**
@@ -619,6 +671,14 @@ cr.define('cr.ui', function() {
   };
 
   cr.defineProperty(List, 'disabled', cr.PropertyKind.BOOL_ATTR);
+
+  /**
+   * Whether the list or one of its descendents has focus. This is necessary
+   * because list items can contain controls that can be focused, and for some
+   * purposes (e.g., styling), the list can still be conceptually focused at
+   * that point even though it doesn't actually have the page focus.
+   */
+  cr.defineProperty(List, 'hasElementFocus', cr.PropertyKind.BOOL_ATTR);
 
   return {
     List: List

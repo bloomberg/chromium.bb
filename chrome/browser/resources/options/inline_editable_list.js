@@ -253,26 +253,21 @@ cr.define('options', function() {
     decorate: function() {
       DeletableItemList.prototype.decorate.call(this);
       this.setAttribute('inlineeditable', '');
-      this.addEventListener('blur', this.handleBlur_.bind(this), true);
+      this.addEventListener('hasElementFocusChange',
+                            this.handleListFocusChange_);
     },
 
     /**
-     * Called when an element in the list is blurred. Removes selection (thus
-     * ending edit) if focus moves outside the list.
-     * @param {Event} e The blur event.
+     * Called when the list hierarchy as a whole loses or gains focus; starts
+     * or ends editing for any selected items.
+     * @param {Event} e The change event.
      * @private
      */
-    handleBlur_: function(e) {
-      // When the blur event happens we do not know who is getting focus so we
-      // delay this a bit until we know if the new focus node is outside the
-      // list.
-      var list = this;
-      var doc = e.target.ownerDocument;
-      window.setTimeout(function() {
-        var activeElement = doc.activeElement;
-        if (!list.contains(activeElement))
-          list.selectionModel.unselectAll();
-      }, 50);
+    handleListFocusChange_: function(e) {
+      var indexes = this.selectionModel.selectedIndexes;
+      for (var i = 0; i < indexes.length; i++) {
+        this.getListItemByIndex(indexes[i]).editing = e.newValue;
+      }
     },
   };
 

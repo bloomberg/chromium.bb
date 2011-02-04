@@ -426,30 +426,37 @@ list:not([disabled]) > :hover {
   background-color: #e4ecf7;
 }
 
-list > [selected],
-list:focus > [selected],
-list:focus > [lead][selected],
-list > [selected]:hover {
+/* TODO(stuartmorgan): Once this becomes the list style for other DOMUI pages
+ * these rules can be simplified (since they wont need to override other rules).
+ */
+
+list:not([hasElementFocus]) > [selected],
+list:not([hasElementFocus]) > [lead][selected] {
+  background-color: #d0d0d0;
+  background-image: none;
+}
+
+list[hasElementFocus] > [selected],
+list[hasElementFocus] > [lead][selected],
+list:not([hasElementFocus]) > [selected]:hover,
+list:not([hasElementFocus]) > [selected][lead]:hover {
   background-color: #bbcee9;
   background-image: none;
 }
 
-list:focus > [lead],
-list:focus > [lead][selected],
-list [lead][selected][editing] {
+list[hasElementFocus] > [lead],
+list[hasElementFocus] > [lead][selected] {
   border-top: 1px solid #7892b4;
   border-bottom: 1px solid #7892b4;
 }
 
-list:focus > [lead]:nth-child(2),
-list:focus > [lead][selected]:nth-child(2),
-list [lead][selected][editing]:nth-child(2) {
+list[hasElementFocus] > [lead]:nth-child(2),
+list[hasElementFocus] > [lead][selected]:nth-child(2) {
   border-top: 1px solid transparent;
 }
 
-list:focus > [lead]:nth-last-child(2),
-list:focus > [lead][selected]:nth-last-child(2),
-list [lead][selected][editing]:nth-last-child(2) {
+list[hasElementFocus] > [lead]:nth-last-child(2),
+list[hasElementFocus] > [lead][selected]:nth-last-child(2) {
   border-bottom: 1px solid transparent;
 }
 
@@ -496,6 +503,7 @@ list .close-button {
 
 list > *:not(:hover):not([lead]) .close-button,
 list > *:not(:hover):not([selected]) .close-button,
+list:not([hasElementFocus]) > *:not(:hover) .close-button,
 list[disabled] .close-button,
 list .close-button[disabled] {
   opacity: 0;
