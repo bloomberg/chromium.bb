@@ -93,7 +93,7 @@ void PrintPreviewUIHTMLSource::StartDataRequest(const std::string& path,
 
     SendResponse(request_id, html_bytes);
     return;
-  } else if (path == "print.pdf") {
+  } else if (path == "print.pdf" && data_.first) {
     // Print Preview data.
     char* preview_data = reinterpret_cast<char*>(data_.first->memory());
     uint32 preview_data_size = data_.second;
