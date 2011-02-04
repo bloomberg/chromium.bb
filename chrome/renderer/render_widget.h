@@ -161,6 +161,7 @@ class RenderWidget : public IPC::Channel::Listener,
 
   void CallDoDeferredUpdate();
   void UpdateAnimationsIfNeeded();
+  void UpdateAnimationsAndFloorTime();
   void DoDeferredUpdate();
   void DoDeferredClose();
   void DoDeferredSetWindowRect(const WebKit::WebRect& pos);
@@ -372,6 +373,7 @@ class RenderWidget : public IPC::Channel::Listener,
 
   base::Time animation_floor_time_;
   bool animation_update_pending_;
+  bool animation_waiting_for_paint_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidget);
 };

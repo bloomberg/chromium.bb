@@ -77,7 +77,8 @@ RenderWidget::RenderWidget(RenderThreadBase* render_thread,
       pending_window_rect_count_(0),
       suppress_next_char_events_(false),
       is_accelerated_compositing_active_(false),
-      animation_update_pending_(false) {
+      animation_update_pending_(false),
+      animation_waiting_for_paint_(false) {
   RenderProcess::current()->AddRefProcess();
   DCHECK(render_thread_);
 }
@@ -488,11 +489,17 @@ void RenderWidget::CallDoDeferredUpdate() {
 }
 
 void RenderWidget::UpdateAnimationsIfNeeded() {
-  if (webwidget_ && !is_hidden() && animation_update_pending_) {
+  if (webwidget_ && !is_hidden() && animation_update_pending_ &&
+      !animation_waiting_for_paint_) {
     base::Time now = base::Time::Now();
     if (now >= animation_floor_time_) {
-       animation_update_pending_ = false;
-       webwidget_->animate();
+      UpdateAnimationsAndFloorTime();
+      // If updating the animation caused invalidations, make sure that we paint
+      // at least once before we call animate() again.
+      // Update layout first as that might cause further invalidations.
+      webwidget_->layout();
+      if (paint_aggregator_.HasPendingUpdate())
+        animation_waiting_for_paint_ = true;
     } else {
       // This code uses base::Time::Now() to calculate the floor and next fire
       // time because javascript's Date object uses base::Time::Now().  The
@@ -501,12 +508,19 @@ void RenderWidget::UpdateAnimationsIfNeeded() {
       // The upshot of all this is that this function might be called before
       // base::Time::Now() has advanced past the animation_floor_time_.  To
       // avoid exposing this delay to javascript, we keep posting delayed
-      // tasks until we observe base::Time::Now() advancing far enough.
+      // tasks until base::Time::Now() has advanced far enough.
       int64 delay = (animation_floor_time_ - now).InMillisecondsRoundedUp();
       MessageLoop::current()->PostDelayedTask(FROM_HERE, NewRunnableMethod(
           this, &RenderWidget::UpdateAnimationsIfNeeded), delay);
     }
   }
+}
+
+void RenderWidget::UpdateAnimationsAndFloorTime() {
+  animation_update_pending_ = false;
+  animation_floor_time_ =
+     base::Time::Now() + base::TimeDelta::FromMilliseconds(16);
+  webwidget_->animate();
 }
 
 void RenderWidget::DoDeferredUpdate() {
@@ -520,8 +534,21 @@ void RenderWidget::DoDeferredUpdate() {
     return;
   }
 
-  if (base::Time::Now() > animation_floor_time_)
-    UpdateAnimationsIfNeeded();
+  if (animation_update_pending_) {
+    if (animation_waiting_for_paint_) {
+      // If we have pending animation updates but need to paint before updating
+      // them, post a task to UpdateAnimationsIfNeeded that will either update
+      // animations directly (if the animation floor time has passed by the time
+      // the function runs) or post a delayed task if the floor time is not yet
+      // reached.
+      MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
+          this, &RenderWidget::UpdateAnimationsIfNeeded));
+    } else if (base::Time::Now() > animation_floor_time_) {
+      // Otherwise, if it's time to update the animations go ahead.
+      UpdateAnimationsAndFloorTime();
+    }
+  }
+  animation_waiting_for_paint_ = false;
 
   // Layout may generate more invalidation.  It may also enable the
   // GPU acceleration, so make sure to run layout before we send the
@@ -715,13 +742,11 @@ void RenderWidget::scheduleComposite() {
 }
 
 void RenderWidget::scheduleAnimation() {
-    if (!animation_update_pending_) {
-      animation_update_pending_ = true;
-      animation_floor_time_ =
-          base::Time::Now() + base::TimeDelta::FromMilliseconds(10);
-      MessageLoop::current()->PostDelayedTask(FROM_HERE, NewRunnableMethod(
-          this, &RenderWidget::UpdateAnimationsIfNeeded), 10);
-    }
+  if (!animation_update_pending_) {
+    animation_update_pending_ = true;
+    MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
+        this, &RenderWidget::UpdateAnimationsIfNeeded));
+  }
 }
 
 void RenderWidget::didChangeCursor(const WebCursorInfo& cursor_info) {
