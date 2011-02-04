@@ -63,6 +63,8 @@ MultiProcessLock* TakeServiceInitializingLock(bool waiting) {
   return TakeNamedLock(lock_name, waiting);
 }
 
+}  // namespace
+
 // Watches for |kShutDownMessage| to be written to the file descriptor it is
 // watching. When it reads |kShutDownMessage|, it performs |shutdown_task_|.
 // Used here to monitor the socket listening to g_signal_socket.
@@ -114,7 +116,7 @@ void ServiceProcessShutdownMonitor::OnFileCanWriteWithoutBlocking(int fd) {
 // "Forced" Shutdowns on POSIX are done via signals. The magic signal for
 // a shutdown is SIGTERM. "write" is a signal safe function. PLOG(ERROR) is
 // not, but we don't ever expect it to be called.
-void SigTermHandler(int sig, siginfo_t* info, void* uap) {
+static void SigTermHandler(int sig, siginfo_t* info, void* uap) {
   // TODO(dmaclach): add security here to make sure that we are being shut
   //                 down by an appropriate process.
   int message = ServiceProcessShutdownMonitor::kShutDownMessage;
@@ -122,8 +124,6 @@ void SigTermHandler(int sig, siginfo_t* info, void* uap) {
     PLOG(ERROR) << "write";
   }
 }
-
-}  // namespace
 
 // See comment for SigTermHandler.
 bool ForceServiceProcessShutdown(const std::string& version,
