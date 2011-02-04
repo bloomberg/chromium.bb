@@ -670,6 +670,22 @@ BUILD/stamp-$(CROSSARCH)-libs-glibc: BUILD/stamp-$(CROSSARCH)-glibc-adhoc-files
 	fi
 	touch $@
 
+NCVAL_STUBOUT=$(abspath BUILD/build-extra_sdk-$(CROSSARCH)/opt-linux-x86-$(BITSPLATFORM)/staging/ncval_stubout)
+BUILD/stamp-$(CROSSARCH)-stubout:
+	cd .. && ./$(SCONS) --mode=opt-linux platform=x86-$(BITSPLATFORM) \
+	    $(SCONS_DESTINATIONS) ncval_stubout
+	find $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib -name '*.so' | \
+	  while read library ; do \
+	    if [ "$$(head -c 4 "$$library" | tail -c 3)" = 'ELF' ] ; then \
+	      $(NCVAL_STUBOUT) "$$library" -o "$$library"; \
+	    fi \
+	  done
+	touch $@
+
+.PHONY: stubout
+stubout: BUILD/stamp-$(CROSSARCH)-stubout
+
+
 ##################################################################
 # gcc:
 #   Builds GCC with glibc as a C library.
@@ -907,6 +923,7 @@ build-with-glibc: ALWAYS
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-glibc
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-full-gcc
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-libs-glibc
+	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-stubout
 
 build: ALWAYS
 	$(MAKE) -f $(THISMAKEFILE) sdkdirs
