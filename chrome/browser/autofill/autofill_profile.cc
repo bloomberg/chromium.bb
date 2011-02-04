@@ -11,6 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/address.h"
 #include "chrome/browser/autofill/autofill_manager.h"
+#include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/contact_info.h"
 #include "chrome/browser/autofill/fax_number.h"
 #include "chrome/browser/autofill/home_address.h"
@@ -28,48 +29,15 @@ void InitPersonalInfo(FormGroupMap* personal_info) {
   (*personal_info)[AutoFillType::ADDRESS_HOME] = new HomeAddress();
 }
 
-// Maps |field_type| to a field type that can be directly stored in a profile
-// (in the sense that it makes sense to call |AutoFillProfile::SetInfo()| with
-// the returned field type as the first parameter.
-AutoFillFieldType GetEquivalentFieldType(AutoFillFieldType field_type) {
-  // When billing information is requested from the profile we map to the
-  // home address equivalents.
-  switch (field_type) {
-    case ADDRESS_BILLING_LINE1:
-      return ADDRESS_HOME_LINE1;
-
-    case ADDRESS_BILLING_LINE2:
-      return ADDRESS_HOME_LINE2;
-
-    case ADDRESS_BILLING_APT_NUM:
-      return ADDRESS_HOME_APT_NUM;
-
-    case ADDRESS_BILLING_CITY:
-      return ADDRESS_HOME_CITY;
-
-    case ADDRESS_BILLING_STATE:
-      return ADDRESS_HOME_STATE;
-
-    case ADDRESS_BILLING_ZIP:
-      return ADDRESS_HOME_ZIP;
-
-    case ADDRESS_BILLING_COUNTRY:
-      return ADDRESS_HOME_COUNTRY;
-
-    default:
-      return field_type;
-  }
-}
-
-// Like |GetEquivalentFieldType()| above, but also returns |NAME_FULL| for
-// first, middle, and last name field types.
+// Like |AutoFillType::GetEquivalentFieldType()|, but also returns |NAME_FULL|
+// for first, middle, and last name field types.
 AutoFillFieldType GetEquivalentFieldTypeCollapsingNames(
     AutoFillFieldType field_type) {
   if (field_type == NAME_FIRST || field_type == NAME_MIDDLE ||
       field_type == NAME_LAST)
     return NAME_FULL;
 
-  return GetEquivalentFieldType(field_type);
+  return AutoFillType::GetEquivalentFieldType(field_type);
 }
 
 // Fills |distinguishing_fields| with a list of fields to use when creating
@@ -182,7 +150,9 @@ void AutoFillProfile::GetAvailableFieldTypes(
 }
 
 string16 AutoFillProfile::GetFieldText(const AutoFillType& type) const {
-  AutoFillType return_type(GetEquivalentFieldType(type.field_type()));
+  AutoFillType return_type(
+      AutoFillType::GetEquivalentFieldType(type.field_type()));
+
   FormGroupMap::const_iterator iter = personal_info_.find(return_type.group());
   if (iter == personal_info_.end() || iter->second == NULL)
     return string16();

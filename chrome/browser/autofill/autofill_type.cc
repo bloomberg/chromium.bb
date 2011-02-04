@@ -167,3 +167,36 @@ FieldTypeGroup AutoFillType::group() const {
 FieldTypeSubGroup AutoFillType::subgroup() const {
   return kAutoFillTypeDefinitions[field_type_].subgroup;
 }
+
+// static
+AutoFillFieldType AutoFillType::GetEquivalentFieldType(
+    AutoFillFieldType field_type) {
+  // When billing information is requested from the profile we map to the
+  // home address equivalents.
+  switch (field_type) {
+    case ADDRESS_BILLING_LINE1:
+      return ADDRESS_HOME_LINE1;
+
+    case ADDRESS_BILLING_LINE2:
+      return ADDRESS_HOME_LINE2;
+
+    case ADDRESS_BILLING_APT_NUM:
+      return ADDRESS_HOME_APT_NUM;
+
+    case ADDRESS_BILLING_CITY:
+      return ADDRESS_HOME_CITY;
+
+    case ADDRESS_BILLING_STATE:
+      return ADDRESS_HOME_STATE;
+
+    case ADDRESS_BILLING_ZIP:
+      return ADDRESS_HOME_ZIP;
+
+    case ADDRESS_BILLING_COUNTRY:
+      return ADDRESS_HOME_COUNTRY;
+
+    default:
+      return field_type;
+  }
+}
+
