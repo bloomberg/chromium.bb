@@ -152,7 +152,6 @@ bool ExtensionApiTest::RunExtensionTestImpl(const char* extension_name,
       url = extension->GetResourceURL(page_url);
     }
 
-    LOG(ERROR) << "Loading page url: " << url.spec();
     ui_test_utils::NavigateToURL(browser(), url);
   }
 
