@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,30 @@
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/importer_list.h"
 #include "chrome/browser/profiles/profile.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util_mac.h"
+
+// Bridge to receive observer messages from an ImporterList and relay
+// them to the ImportSettingsDialogController.
+class ImporterListObserverBridge : public ImporterList::Observer {
+ public:
+  explicit ImporterListObserverBridge(
+      ImportSettingsDialogController *controller);
+
+  virtual void SourceProfilesLoaded();
+
+ private:
+  ImportSettingsDialogController* window_controller_;  // weak, owns us.
+};
+
+ImporterListObserverBridge::ImporterListObserverBridge(
+    ImportSettingsDialogController *controller)
+  : window_controller_(controller) {
+}
+
+void ImporterListObserverBridge::SourceProfilesLoaded() {
+  [window_controller_ sourceProfilesLoaded];
+}
 
 namespace {
 
@@ -40,9 +64,9 @@ bool importSettingsDialogVisible = false;
 
 - (id)initWithBrowserName:(NSString*)browserName
                  services:(uint16)services {
-  DCHECK(browserName && services);
+  DCHECK(browserName);
   if ((self = [super init])) {
-    if (browserName && services != 0) {
+    if (browserName) {
       browserName_ = [browserName retain];
       services_ = services;
     } else {
@@ -114,48 +138,33 @@ bool importSettingsDialogVisible = false;
   // checkbox enabling.
   importerList_ = new ImporterList;
   ImporterList& importerList(*(importerList_.get()));
-  importerList.DetectSourceProfilesHack();
-  int profilesCount = importerList.GetAvailableProfileCount();
-  // There shoule be at least the default profile so this should never be zero.
-  DCHECK(profilesCount > 0);
-  NSMutableArray* browserProfiles =
-      [NSMutableArray arrayWithCapacity:profilesCount];
-  for (int i = 0; i < profilesCount; ++i) {
-    const importer::ProfileInfo& sourceProfile =
-        importerList.GetSourceProfileInfoAt(i);
-    NSString* browserName =
-        base::SysWideToNSString(sourceProfile.description);
-    uint16 browserServices = sourceProfile.services_supported;
-    ImportSettingsProfile* settingsProfile =
-        [ImportSettingsProfile
-         importSettingsProfileWithBrowserName:browserName
-                                     services:browserServices];
-    [browserProfiles addObject:settingsProfile];
-  }
-  if ((self = [self initWithProfiles:browserProfiles])) {
+  importerListObserver_.reset(new ImporterListObserverBridge(self));
+  importerList.DetectSourceProfiles(importerListObserver_.get());
+
+  if ((self = [self initWithSourceProfiles:nil])) {
     profile_ = profile;
   }
   return self;
 }
 
-- (id)initWithProfiles:(NSArray*)profiles {
+- (id)initWithSourceProfiles:(NSArray*)profiles {
   NSString* nibpath =
       [base::mac::MainAppBundle() pathForResource:@"ImportSettingsDialog"
                                           ofType:@"nib"];
-  if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
+  if ((self = [super initWithWindowNibPath:nibpath owner:self]) && profiles)
     sourceBrowsersList_.reset([profiles retain]);
-    // Create and initialize an importerList_ when running unit tests.
-    if (!importerList_.get()) {
-      importerList_ = new ImporterList;
-      ImporterList& importerList(*(importerList_.get()));
-      importerList.DetectSourceProfilesHack();
-    }
-  }
+
   return self;
 }
 
 - (id)init {
-  return [self initWithProfile:NULL];
+  return [self initWithProfile:nil];
+}
+
+- (void)dealloc {
+  if (importerList_)
+    importerList_->SetObserver(NULL);
+  [super dealloc];
 }
 
 - (void)awakeFromNib {
@@ -200,6 +209,47 @@ bool importSettingsDialogVisible = false;
   [self autorelease];
 }
 
+- (void)sourceProfilesLoaded {
+  NSMutableArray* browserProfiles;
+  ImporterList& importerList(*(importerList_.get()));
+  int profilesCount = importerList.GetAvailableProfileCount();
+  if (profilesCount) {
+    browserProfiles =
+        [[NSMutableArray alloc] initWithCapacity:profilesCount];
+    for (int i = 0; i < profilesCount; ++i) {
+      const importer::ProfileInfo& sourceProfile =
+          importerList.GetSourceProfileInfoAt(i);
+      NSString* browserName =
+          base::SysWideToNSString(sourceProfile.description);
+      uint16 browserServices = sourceProfile.services_supported;
+      ImportSettingsProfile* settingsProfile =
+          [ImportSettingsProfile
+              importSettingsProfileWithBrowserName:browserName
+                                          services:browserServices];
+      [browserProfiles addObject:settingsProfile];
+    }
+  } else {
+    browserProfiles =
+        [[NSMutableArray alloc] initWithCapacity:1];
+    NSString* dummyName = l10n_util::GetNSString(IDS_IMPORT_NO_PROFILE_FOUND);
+    ImportSettingsProfile* dummySourceProfile =
+        [ImportSettingsProfile importSettingsProfileWithBrowserName:dummyName
+                                                           services:0];
+    [browserProfiles addObject:dummySourceProfile];
+  }
+
+  [self willChangeValueForKey:@"sourceBrowsersList"];
+  sourceBrowsersList_.reset(browserProfiles);
+  [self didChangeValueForKey:@"sourceBrowsersList"];
+
+  // Force an update of the checkbox enabled states.
+  [self setSourceBrowserIndex:0];
+
+  // Resize and show the popup button.
+  [sourceProfilePopUpButton_ sizeToFit];
+  [sourceProfilePopUpButton_ setHidden:NO];
+}
+
 #pragma mark Accessors
 
 - (NSArray*)sourceBrowsersList {
@@ -209,10 +259,16 @@ bool importSettingsDialogVisible = false;
 // Accessor which cascades selected-browser changes into a re-evaluation of the
 // available services and the associated checkbox enable and checked states.
 - (void)setSourceBrowserIndex:(NSUInteger)browserIndex {
-  sourceBrowserIndex_ = browserIndex;
-  ImportSettingsProfile* profile =
-      [sourceBrowsersList_.get() objectAtIndex:browserIndex];
-  uint16 items = [profile services];
+  uint16 items = 0;
+  if ([sourceBrowsersList_.get() count]) {
+    [self willChangeValueForKey:@"sourceBrowserIndex"];
+    sourceBrowserIndex_ = browserIndex;
+    [self didChangeValueForKey:@"sourceBrowserIndex"];
+
+    ImportSettingsProfile* profile =
+        [sourceBrowsersList_.get() objectAtIndex:browserIndex];
+    items = [profile services];
+  }
   [self setHistoryAvailable:(items & importer::HISTORY) ? YES : NO];
   [self setImportHistory:[self historyAvailable]];
   [self setFavoritesAvailable:(items & importer::FAVORITES) ? YES : NO];

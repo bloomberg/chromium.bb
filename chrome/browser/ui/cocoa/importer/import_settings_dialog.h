@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "chrome/browser/importer/importer.h"
 
 class Profile;
+class ImporterListObserverBridge;
 
 // Controller for the Import Bookmarks and Settings dialog.  This controller
 // automatically autoreleases itself when its associated dialog is dismissed.
@@ -20,6 +21,7 @@ class Profile;
   NSWindow* parentWindow_;  // weak
   Profile* profile_;  // weak
   scoped_refptr<ImporterList> importerList_;
+  scoped_ptr<ImporterListObserverBridge> importerListObserver_;
   scoped_nsobject<NSArray> sourceBrowsersList_;
   NSUInteger sourceBrowserIndex_;
   // The following are all bound via the properties below.
@@ -31,6 +33,7 @@ class Profile;
   BOOL favoritesAvailable_;
   BOOL passwordsAvailable_;
   BOOL searchEnginesAvailable_;
+  IBOutlet NSPopUpButton* sourceProfilePopUpButton_;
 }
 
 // Show the import settings window.  Window is displayed as an app modal dialog.
@@ -47,6 +50,9 @@ class Profile;
 // An array of ImportSettingsProfiles, provide the list of browser profiles
 // available for importing. Bound to the Browser List array controller.
 - (NSArray*)sourceBrowsersList;
+
+// Called when source profiles have been loaded.
+- (void)sourceProfilesLoaded;
 
 // Properties for bindings.
 @property(assign, nonatomic) NSUInteger sourceBrowserIndex;
@@ -66,9 +72,9 @@ class Profile;
 
 @interface ImportSettingsDialogController (TestingAPI)
 
-// Initialize by providing an array of profile dictionaries. Exposed for
+// Initialize by providing an array of source profile dictionaries. Exposed for
 // unit testing but also called by -[initWithProfile:].
-- (id)initWithProfiles:(NSArray*)profiles;
+- (id)initWithSourceProfiles:(NSArray*)profiles;
 
 // Return selected services to import as mapped by the ImportItem enum.
 - (uint16)servicesToImport;
