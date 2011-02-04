@@ -159,7 +159,9 @@ PasswordManagerHandler::ListPopulater::ListPopulater(
 }
 
 PasswordManagerHandler::ListPopulater::~ListPopulater() {
-  page_->GetPasswordStore()->CancelLoginsQuery(pending_login_query_);
+  PasswordStore* store = page_->GetPasswordStore();
+  if (store)
+    store->CancelLoginsQuery(pending_login_query_);
 }
 
 PasswordManagerHandler::PasswordListPopulater::PasswordListPopulater(
