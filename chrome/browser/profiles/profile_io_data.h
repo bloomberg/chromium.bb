@@ -55,14 +55,15 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
 
    private:
     // Ordering is important here. Do not reorder unless you know what you're
-    // doing.
-    const scoped_refptr<ProfileIOData> io_data_;
+    // doing. |io_data_| must be released before the getters to ensure
+    // that ProfileIOData is deleted on the IO thread.
     mutable scoped_refptr<ChromeURLRequestContextGetter>
         main_request_context_getter_;
     mutable scoped_refptr<ChromeURLRequestContextGetter>
         media_request_context_getter_;
     mutable scoped_refptr<ChromeURLRequestContextGetter>
         extensions_request_context_getter_;
+    const scoped_refptr<ProfileIOData> io_data_;
 
     DISALLOW_COPY_AND_ASSIGN(Handle);
   };
