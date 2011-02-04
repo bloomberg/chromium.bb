@@ -31,7 +31,7 @@ libtoytoolkit_la_SOURCES =			\
 toolkit_libs =						\
 	libtoytoolkit.la				\
 	$(top_builddir)/wayland/libwayland-client.la	\
-	$(CLIENT_LIBS) -lrt -lm
+	$(CLIENT_LIBS) -lrt -lm -lwayland-egl
 
 gears_SOURCES = gears.c
 gears_LDADD = $(toolkit_libs)

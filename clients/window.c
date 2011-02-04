@@ -34,7 +34,6 @@
 #include <glib.h>
 #include <glib-object.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
-#include <xf86drm.h>
 #include <sys/mman.h>
 
 #define EGL_EGLEXT_PROTOTYPES 1
@@ -49,6 +48,8 @@
 
 #include <X11/extensions/XKBcommon.h>
 
+#include <wayland-egl.h>
+
 #include <linux/input.h>
 #include "wayland-util.h"
 #include "wayland-client.h"
@@ -59,9 +60,9 @@
 
 struct display {
 	struct wl_display *display;
+	struct wl_egl_display *native_dpy;
 	struct wl_compositor *compositor;
 	struct wl_shell *shell;
-	struct wl_drm *drm;
 	struct wl_shm *shm;
 	struct wl_output *output;
 	struct rectangle screen_allocation;
@@ -185,17 +186,18 @@ struct surface_data {
 
 #ifdef HAVE_CAIRO_EGL
 
-struct drm_surface_data {
+struct egl_image_surface_data {
 	struct surface_data data;
 	EGLImageKHR image;
 	GLuint texture;
 	struct display *display;
+	struct wl_egl_pixmap *pixmap;
 };
 
 static void
-drm_surface_data_destroy(void *p)
+egl_image_surface_data_destroy(void *p)
 {
-	struct drm_surface_data *data = p;
+	struct egl_image_surface_data *data = p;
 	struct display *d = data->display;
 
 	cairo_device_acquire(d->device);
@@ -204,13 +206,15 @@ drm_surface_data_destroy(void *p)
 
 	eglDestroyImageKHR(d->dpy, data->image);
 	wl_buffer_destroy(data->data.buffer);
+	wl_egl_native_pixmap_destroy(data->pixmap);
+	free(p);
 }
 
 EGLImageKHR
-display_get_image_for_drm_surface(struct display *display,
-				  cairo_surface_t *surface)
+display_get_image_for_egl_image_surface(struct display *display,
+					cairo_surface_t *surface)
 {
-	struct drm_surface_data *data;
+	struct egl_image_surface_data *data;
 
 	data = cairo_surface_get_user_data (surface, &surface_data_key);
 
@@ -218,22 +222,13 @@ display_get_image_for_drm_surface(struct display *display,
 }
 
 static cairo_surface_t *
-display_create_drm_surface(struct display *display,
-			   struct rectangle *rectangle)
+display_create_egl_image_surface(struct display *display,
+				 struct rectangle *rectangle)
 {
-	struct drm_surface_data *data;
+	struct egl_image_surface_data *data;
 	EGLDisplay dpy = display->dpy;
 	cairo_surface_t *surface;
 	struct wl_visual *visual;
-	EGLint name, stride;
-
-	EGLint image_attribs[] = {
-		EGL_WIDTH,		0,
-		EGL_HEIGHT,		0,
-		EGL_DRM_BUFFER_FORMAT_MESA,	EGL_DRM_BUFFER_FORMAT_ARGB32_MESA,
-		EGL_DRM_BUFFER_USE_MESA,	EGL_DRM_BUFFER_USE_SCANOUT_MESA,
-		EGL_NONE
-	};
 
 	data = malloc(sizeof *data);
 	if (data == NULL)
@@ -241,27 +236,34 @@ display_create_drm_surface(struct display *display,
 
 	data->display = display;
 
-	image_attribs[1] = rectangle->width;
-	image_attribs[3] = rectangle->height;
-	data->image = eglCreateDRMImageMESA(dpy, image_attribs);
-
-	if (data->image == EGL_NO_IMAGE_KHR) {
+	visual = wl_display_get_premultiplied_argb_visual(display->display);
+	data->pixmap =wl_egl_native_pixmap_create(display->native_dpy,
+						   rectangle->width,
+						   rectangle->height,
+						   visual, 0);
+	if (data->pixmap == NULL) {
 		free(data);
 		return NULL;
 	}
+
+	data->image = eglCreateImageKHR(dpy, NULL,
+					EGL_NATIVE_PIXMAP_KHR,
+					(EGLClientBuffer) data->pixmap, NULL);
+	if (data->image == EGL_NO_IMAGE_KHR) {
+		wl_egl_native_pixmap_destroy(data->pixmap);
+		free(data);
+		return NULL;
+	}
+
+	data->data.buffer =
+		wl_egl_native_pixmap_create_buffer(display->native_dpy,
+						   data->pixmap);
 
 	cairo_device_acquire(display->device);
 	glGenTextures(1, &data->texture);
 	glBindTexture(GL_TEXTURE_2D, data->texture);
 	glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, data->image);
 	cairo_device_release(display->device);
-
-	eglExportDRMImageMESA(display->dpy, data->image, &name, NULL, &stride);
-
-	visual = wl_display_get_premultiplied_argb_visual(display->display);
-	data->data.buffer =
-		wl_drm_create_buffer(display->drm, name, rectangle->width,
-				     rectangle->height, stride, visual);
 
 	surface = cairo_gl_surface_create_for_texture(display->device,
 						      CAIRO_CONTENT_COLOR_ALPHA,
@@ -270,22 +272,22 @@ display_create_drm_surface(struct display *display,
 						      rectangle->height);
 
 	cairo_surface_set_user_data (surface, &surface_data_key,
-				     data, drm_surface_data_destroy);
+				     data, egl_image_surface_data_destroy);
 
 	return surface;
 }
 
 static cairo_surface_t *
-display_create_drm_surface_from_file(struct display *display,
-				     const char *filename,
-				     struct rectangle *rect)
+display_create_egl_image_surface_from_file(struct display *display,
+					   const char *filename,
+					   struct rectangle *rect)
 {
 	cairo_surface_t *surface;
 	GdkPixbuf *pixbuf;
 	GError *error = NULL;
 	int stride, i;
 	unsigned char *pixels, *p, *end;
-	struct drm_surface_data *data;
+	struct egl_image_surface_data *data;
 
 	pixbuf = gdk_pixbuf_new_from_file_at_scale(filename,
 						   rect->width, rect->height,
@@ -317,7 +319,7 @@ display_create_drm_surface_from_file(struct display *display,
 		}
 	}
 
-	surface = display_create_drm_surface(display, rect);
+	surface = display_create_egl_image_surface(display, rect);
 	if (surface == NULL) {
 		g_object_unref(pixbuf);
 		return NULL;
@@ -500,8 +502,8 @@ display_create_surface(struct display *display,
 	if (check_size(rectangle) < 0)
 		return NULL;
 #ifdef HAVE_CAIRO_EGL
-	if (display->drm) {
-		return display_create_drm_surface(display, rectangle);
+	if (display->dpy) {
+		return display_create_egl_image_surface(display, rectangle);
 	}
 #endif
 	return display_create_shm_surface(display, rectangle);
@@ -515,8 +517,10 @@ display_create_surface_from_file(struct display *display,
 	if (check_size(rectangle) < 0)
 		return NULL;
 #ifdef HAVE_CAIRO_EGL
-	if (display->drm) {
-		return display_create_drm_surface_from_file(display, filename, rectangle);
+	if (display->dpy) {
+		return display_create_egl_image_surface_from_file(display,
+								  filename,
+								  rectangle);
 	}
 #endif
 	return display_create_shm_surface_from_file(display, filename, rectangle);
@@ -667,7 +671,7 @@ window_create_surface(struct window *window)
 
 	switch (window->buffer_type) {
 #ifdef HAVE_CAIRO_EGL
-	case WINDOW_BUFFER_TYPE_DRM:
+	case WINDOW_BUFFER_TYPE_EGL_IMAGE:
 		surface = display_create_surface(window->display,
 						 &window->allocation);
 		break;
@@ -1318,8 +1322,8 @@ window_create_internal(struct display *display, struct window *parent,
 	window->margin = 16;
 	window->decoration = 1;
 
-	if (display->drm)
-		window->buffer_type = WINDOW_BUFFER_TYPE_DRM;
+	if (display->dpy)
+		window->buffer_type = WINDOW_BUFFER_TYPE_EGL_IMAGE;
 	else
 		window->buffer_type = WINDOW_BUFFER_TYPE_SHM;
 
@@ -1363,26 +1367,6 @@ window_set_buffer_type(struct window *window, enum window_buffer_type type)
 {
 	window->buffer_type = type;
 }
-
-static void
-drm_handle_device(void *data, struct wl_drm *drm, const char *device)
-{
-	struct display *d = data;
-
-	d->device_name = strdup(device);
-}
-
-static void drm_handle_authenticated(void *data, struct wl_drm *drm)
-{
-	struct display *d = data;
-
-	d->authenticated = 1;
-}
-
-static const struct wl_drm_listener drm_listener = {
-	drm_handle_device,
-	drm_handle_authenticated
-};
 
 static void
 display_handle_geometry(void *data,
@@ -1544,9 +1528,6 @@ display_handle_global(struct wl_display *display, uint32_t id,
 	} else if (strcmp(interface, "shell") == 0) {
 		d->shell = wl_shell_create(display, id);
 		wl_shell_add_listener(d->shell, &shell_listener, d);
-	} else if (strcmp(interface, "drm") == 0) {
-		d->drm = wl_drm_create(display, id);
-		wl_drm_add_listener(d->drm, &drm_listener, d);
 	} else if (strcmp(interface, "shm") == 0) {
 		d->shm = wl_shm_create(display, id);
 	} else if (strcmp(interface, "selection_offer") == 0) {
@@ -1609,30 +1590,11 @@ init_xkb(struct display *d)
 }
 
 static int
-init_drm(struct display *d)
+init_egl(struct display *d)
 {
 	EGLint major, minor;
-	int fd;
-	drm_magic_t magic;
 
-	fd = open(d->device_name, O_RDWR);
-	if (fd < 0) {
-		fprintf(stderr, "drm open failed: %m\n");
-		return -1;
-	}
-
-	if (drmGetMagic(fd, &magic)) {
-		fprintf(stderr, "DRI2: failed to get drm magic\n");
-		return -1;
-	}
-
-	/* Wait for authenticated event */
-	wl_drm_authenticate(d->drm, magic);
-	wl_display_iterate(d->display, WL_DISPLAY_WRITABLE);
-	while (!d->authenticated)
-		wl_display_iterate(d->display, WL_DISPLAY_READABLE);
-
-	d->dpy = eglGetDRMDisplayMESA(fd);
+	d->dpy = eglGetDisplay((EGLNativeDisplayType) d->native_dpy);
 	if (!eglInitialize(d->dpy, &major, &minor)) {
 		fprintf(stderr, "failed to initialize display\n");
 		return -1;
@@ -1657,7 +1619,7 @@ init_drm(struct display *d)
 #ifdef HAVE_CAIRO_EGL
 	d->device = cairo_egl_device_create(d->dpy, d->ctx);
 	if (d->device == NULL) {
-		fprintf(stderr, "failed to get cairo drm device\n");
+		fprintf(stderr, "failed to get cairo egl device\n");
 		return -1;
 	}
 #endif
@@ -1711,10 +1673,12 @@ display_create(int *argc, char **argv[], const GOptionEntry *option_entries)
 	wl_display_add_global_listener(d->display,
 				       display_handle_global, d);
 
+	d->native_dpy = wl_egl_native_display_create(d->display);
+
 	/* Process connection events. */
 	wl_display_iterate(d->display, WL_DISPLAY_READABLE);
 
-	if (d->device_name && init_drm(d) < 0)
+	if (init_egl(d) < 0)
 		return NULL;
 
 	create_pointer_surfaces(d);

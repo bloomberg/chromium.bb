@@ -213,8 +213,8 @@ allocate_buffer(struct gears *gears)
 
 	gears->surface[gears->current] = window_get_surface(gears->window);
 #ifdef HAVE_CAIRO_EGL
-	image = display_get_image_for_drm_surface(gears->display,
-						  gears->surface[gears->current]);
+	image = display_get_image_for_egl_image_surface(gears->display,
+							gears->surface[gears->current]);
 #else /* XXX: hack to make Wayland compile, even if this example doesn't run */
 	die("gears cannot allocate buffer: it was compiled without cairo-gl\n");
 	return;

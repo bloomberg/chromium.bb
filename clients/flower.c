@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
 	window_draw(flower.window);
 	s = window_get_surface(flower.window);
 	if (s == NULL || cairo_surface_status (s) != CAIRO_STATUS_SUCCESS) {
-		fprintf(stderr, "failed to create cairo drm surface\n");
+		fprintf(stderr, "failed to create cairo egl surface\n");
 		return -1;
 	}
 

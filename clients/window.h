@@ -57,8 +57,8 @@ display_get_egl_display(struct display *d);
 
 #ifdef HAVE_CAIRO_EGL
 EGLImageKHR
-display_get_image_for_drm_surface(struct display *display,
-				  cairo_surface_t *surface);
+display_get_image_for_egl_image_surface(struct display *display,
+					cairo_surface_t *surface);
 #endif
 #endif
 
@@ -167,7 +167,7 @@ void
 window_create_surface(struct window *window);
 
 enum window_buffer_type {
-	WINDOW_BUFFER_TYPE_DRM,
+	WINDOW_BUFFER_TYPE_EGL_IMAGE,
 	WINDOW_BUFFER_TYPE_SHM,
 };
 
