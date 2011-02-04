@@ -33,7 +33,7 @@ int installer::ApplyDiffPatch(const FilePath& src,
                           dest.value().c_str());
 }
 
-Version* installer::GetVersionFromArchiveDir(const FilePath& chrome_path) {
+Version* installer::GetMaxVersionFromArchiveDir(const FilePath& chrome_path) {
   VLOG(1) << "Looking for Chrome version folder under " << chrome_path.value();
   Version* version = NULL;
   file_util::FileEnumerator version_enum(chrome_path, false,
@@ -41,14 +41,22 @@ Version* installer::GetVersionFromArchiveDir(const FilePath& chrome_path) {
   // TODO(tommi): The version directory really should match the version of
   // setup.exe.  To begin with, we should at least DCHECK that that's true.
 
+  scoped_ptr<Version> max_version(Version::GetVersionFromString("0.0.0.0"));
+  bool version_found = false;
+
   while (!version_enum.Next().empty()) {
     file_util::FileEnumerator::FindInfo find_data = {0};
     version_enum.GetFindInfo(&find_data);
     VLOG(1) << "directory found: " << find_data.cFileName;
-    version = Version::GetVersionFromString(WideToASCII(find_data.cFileName));
-    if (version)
-      break;
+
+    scoped_ptr<Version> found_version(
+        Version::GetVersionFromString(WideToASCII(find_data.cFileName)));
+    if (found_version.get() != NULL &&
+        found_version->CompareTo(*max_version.get()) > 0) {
+      max_version.reset(found_version.release());
+      version_found = true;
+    }
   }
 
-  return version;
+  return (version_found ? max_version.release() : NULL);
 }

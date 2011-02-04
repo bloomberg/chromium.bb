@@ -21,9 +21,9 @@ namespace installer {
                      const FilePath& dest);
 
   // Find the version of Chrome from an install source directory.
-  // Chrome_path should contain a version folder.
-  // Returns the first version found or NULL if no version is found.
-  Version* GetVersionFromArchiveDir(const FilePath& chrome_path);
+  // Chrome_path should contain at least one version folder.
+  // Returns the maximum version found or NULL if no version is found.
+  Version* GetMaxVersionFromArchiveDir(const FilePath& chrome_path);
 }  // namespace installer
 
 #endif  // CHROME_INSTALLER_SETUP_SETUP_UTIL_H_

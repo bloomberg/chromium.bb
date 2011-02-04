@@ -57,27 +57,38 @@ TEST_F(SetupUtilTest, ApplyDiffPatchTest) {
 }
 
 // Test that we are parsing Chrome version correctly.
-TEST_F(SetupUtilTest, GetVersionFromArchiveDirTest) {
+TEST_F(SetupUtilTest, GetMaxVersionFromArchiveDirTest) {
   // Create a version dir
   FilePath chrome_dir = test_dir_.path().AppendASCII("1.0.0.0");
   file_util::CreateDirectory(chrome_dir);
   ASSERT_TRUE(file_util::PathExists(chrome_dir));
   scoped_ptr<Version> version(
-      installer::GetVersionFromArchiveDir(test_dir_.path()));
+      installer::GetMaxVersionFromArchiveDir(test_dir_.path()));
   ASSERT_EQ(version->GetString(), "1.0.0.0");
 
   file_util::Delete(chrome_dir, true);
   ASSERT_FALSE(file_util::PathExists(chrome_dir));
-  ASSERT_TRUE(installer::GetVersionFromArchiveDir(test_dir_.path()) == NULL);
+  ASSERT_TRUE(installer::GetMaxVersionFromArchiveDir(test_dir_.path()) == NULL);
 
   chrome_dir = test_dir_.path().AppendASCII("ABC");
   file_util::CreateDirectory(chrome_dir);
   ASSERT_TRUE(file_util::PathExists(chrome_dir));
-  ASSERT_TRUE(installer::GetVersionFromArchiveDir(test_dir_.path()) == NULL);
+  ASSERT_TRUE(installer::GetMaxVersionFromArchiveDir(test_dir_.path()) == NULL);
 
   chrome_dir = test_dir_.path().AppendASCII("2.3.4.5");
   file_util::CreateDirectory(chrome_dir);
   ASSERT_TRUE(file_util::PathExists(chrome_dir));
-  version.reset(installer::GetVersionFromArchiveDir(test_dir_.path()));
+  version.reset(installer::GetMaxVersionFromArchiveDir(test_dir_.path()));
   ASSERT_EQ(version->GetString(), "2.3.4.5");
+
+  // Create multiple version dirs, ensure that we select the greatest.
+  chrome_dir = test_dir_.path().AppendASCII("9.9.9.9");
+  file_util::CreateDirectory(chrome_dir);
+  ASSERT_TRUE(file_util::PathExists(chrome_dir));
+  chrome_dir = test_dir_.path().AppendASCII("1.1.1.1");
+  file_util::CreateDirectory(chrome_dir);
+  ASSERT_TRUE(file_util::PathExists(chrome_dir));
+
+  version.reset(installer::GetMaxVersionFromArchiveDir(test_dir_.path()));
+  ASSERT_EQ(version->GetString(), "9.9.9.9");
 }

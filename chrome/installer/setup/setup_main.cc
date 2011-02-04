@@ -97,7 +97,7 @@ DWORD UnPackArchive(const FilePath& archive,
 
   FilePath uncompressed_archive(temp_path.Append(installer::kChromeArchive));
   scoped_ptr<Version> archive_version(
-      installer::GetVersionFromArchiveDir(installer_state.target_path()));
+      installer::GetMaxVersionFromArchiveDir(installer_state.target_path()));
 
   // Check if this is differential update and if it is, patch it to the
   // installer archive that should already be on the machine. We assume
@@ -116,8 +116,8 @@ DWORD UnPackArchive(const FilePath& archive,
     existing_archive = existing_archive.Append(installer::kInstallerDir);
     existing_archive = existing_archive.Append(installer::kChromeArchive);
     if (int i = installer::ApplyDiffPatch(FilePath(existing_archive),
-                                           FilePath(unpacked_file),
-                                           FilePath(uncompressed_archive))) {
+                                          FilePath(unpacked_file),
+                                          FilePath(uncompressed_archive))) {
       LOG(ERROR) << "Binary patching failed with error " << i;
       return i;
     }
@@ -498,7 +498,7 @@ installer::InstallStatus InstallProductsHelper(
     VLOG(1) << "unpacked to " << unpack_path.value();
     FilePath src_path(unpack_path.Append(installer::kInstallSourceChromeDir));
     scoped_ptr<Version>
-        installer_version(installer::GetVersionFromArchiveDir(src_path));
+        installer_version(installer::GetMaxVersionFromArchiveDir(src_path));
     if (!installer_version.get()) {
       LOG(ERROR) << "Did not find any valid version in installer.";
       install_status = installer::INVALID_ARCHIVE;
