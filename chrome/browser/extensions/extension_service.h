@@ -7,6 +7,7 @@
 #pragma once
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -93,6 +94,7 @@ class ExtensionUpdateService {
   virtual bool HasInstalledExtensions() = 0;
 
   virtual ExtensionPrefs* extension_prefs() = 0;
+  virtual Profile* profile() = 0;
 };
 
 // Manages installed and running Chromium extensions.

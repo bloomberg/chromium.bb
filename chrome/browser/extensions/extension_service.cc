@@ -484,9 +484,7 @@ bool ExtensionService::HasInstalledExtensions() {
 ExtensionService::~ExtensionService() {
   DCHECK(!profile_);  // Profile should have told us it's going away.
   UnloadAllExtensions();
-  if (updater_.get()) {
-    updater_->Stop();
-  }
+
   ProviderCollection::const_iterator i;
   for (i = external_extension_providers_.begin();
        i != external_extension_providers_.end(); ++i) {
@@ -1247,6 +1245,9 @@ void ExtensionService::UpdateExtensionBlacklist(
 }
 
 void ExtensionService::DestroyingProfile() {
+  if (updater_.get()) {
+    updater_->Stop();
+  }
   browser_event_router_.reset();
   pref_change_registrar_.RemoveAll();
   profile_ = NULL;

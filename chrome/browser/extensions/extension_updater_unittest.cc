@@ -23,6 +23,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/net/test_url_fetcher_factory.h"
+#include "chrome/test/testing_profile.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_status.h"
@@ -46,7 +47,9 @@ int expected_load_flags =
 // Base class for further specialized test classes.
 class MockService : public ExtensionUpdateService {
  public:
-  MockService() {}
+  MockService() {
+    profile_.CreateRequestContext();
+  }
   virtual ~MockService() {}
 
   virtual const ExtensionList* extensions() const {
@@ -86,6 +89,8 @@ class MockService : public ExtensionUpdateService {
 
   virtual ExtensionPrefs* extension_prefs() { return prefs_.prefs(); }
 
+  virtual Profile* profile() { return &profile_; }
+
   PrefService* pref_service() { return prefs_.pref_service(); }
 
   // Creates test extensions and inserts them into list. The name and
@@ -114,6 +119,7 @@ class MockService : public ExtensionUpdateService {
  protected:
   PendingExtensionMap pending_extensions_;
   TestExtensionPrefs prefs_;
+  TestingProfile profile_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockService);
@@ -1066,8 +1072,6 @@ TEST(ExtensionUpdaterTest, TestAfterStopBehavior) {
 // TODO(asargent) - (http://crbug.com/12780) add tests for:
 // -prodversionmin (shouldn't update if browser version too old)
 // -manifests & updates arriving out of order / interleaved
-// -Profile::GetDefaultRequestContext() returning null
-//  (should not crash, but just do check later)
 // -malformed update url (empty, file://, has query, has a # fragment, etc.)
 // -An extension gets uninstalled while updates are in progress (so it doesn't
 //  "come back from the dead")
