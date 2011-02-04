@@ -3,14 +3,16 @@
 LIBRARY      "npchrome_frame.dll"
 
 EXPORTS
-	DllCanUnloadNow         PRIVATE
-	DllGetClassObject       PRIVATE
-	DllRegisterServer       PRIVATE
-	DllUnregisterServer     PRIVATE
-	DllRegisterUserServer   PRIVATE
-	DllUnregisterUserServer PRIVATE
-	NP_Initialize           PRIVATE
-	NP_GetEntryPoints       PRIVATE
-	NP_Shutdown             PRIVATE
-	RegisterNPAPIPlugin     PRIVATE
-	UnregisterNPAPIPlugin   PRIVATE
+	DllCanUnloadNow            PRIVATE
+	DllGetClassObject          PRIVATE
+	DllRegisterServer          PRIVATE
+	DllUnregisterServer        PRIVATE
+	DllRegisterUserServer      PRIVATE
+	DllUnregisterUserServer    PRIVATE
+	NP_Initialize              PRIVATE
+	NP_GetEntryPoints          PRIVATE
+	NP_Shutdown                PRIVATE
+	RegisterNPAPIPlugin        PRIVATE
+	UnregisterNPAPIPlugin      PRIVATE
+	RegisterNPAPIUserPlugin    PRIVATE
+	UnregisterNPAPIUserPlugin  PRIVATE

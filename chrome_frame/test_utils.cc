@@ -71,9 +71,16 @@ void ScopedChromeFrameRegistrar::RegisterAtPath(
   ASSERT_TRUE(register_server != NULL);
   EXPECT_HRESULT_SUCCEEDED((*register_server)());
 
-  DllRegisterServerFn register_npapi_server =
-      reinterpret_cast<DllRegisterServerFn>(GetProcAddress(
-          dll_handle, "RegisterNPAPIPlugin"));
+  DllRegisterServerFn register_npapi_server = NULL;
+  if (registration_type == PER_USER) {
+    register_npapi_server =
+        reinterpret_cast<DllRegisterServerFn>(GetProcAddress(
+            dll_handle, "RegisterNPAPIUserPlugin"));
+  } else {
+    register_npapi_server =
+        reinterpret_cast<DllRegisterServerFn>(GetProcAddress(
+            dll_handle, "RegisterNPAPIPlugin"));
+  }
 
   if (register_npapi_server != NULL)
     EXPECT_HRESULT_SUCCEEDED((*register_npapi_server)());
@@ -100,9 +107,16 @@ void ScopedChromeFrameRegistrar::UnregisterAtPath(
   ASSERT_TRUE(unregister_server != NULL);
   EXPECT_HRESULT_SUCCEEDED((*unregister_server)());
 
-  DllUnregisterServerFn unregister_npapi_server =
-      reinterpret_cast<DllUnregisterServerFn>(GetProcAddress(
-          dll_handle, "UnregisterNPAPIPlugin"));
+  DllUnregisterServerFn unregister_npapi_server = NULL;
+  if (registration_type == PER_USER) {
+    unregister_npapi_server =
+        reinterpret_cast<DllUnregisterServerFn>(GetProcAddress(
+            dll_handle, "UnregisterNPAPIUserPlugin"));
+  } else {
+    unregister_npapi_server =
+        reinterpret_cast<DllUnregisterServerFn>(GetProcAddress(
+            dll_handle, "UnregisterNPAPIPlugin"));
+  }
 
   if (unregister_npapi_server != NULL)
     EXPECT_HRESULT_SUCCEEDED((*unregister_npapi_server)());

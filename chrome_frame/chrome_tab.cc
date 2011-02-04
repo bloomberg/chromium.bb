@@ -637,7 +637,7 @@ STDAPI DllUnregisterUserServer() {
 STDAPI RegisterNPAPIPlugin() {
   HRESULT hr = _AtlModule.UpdateRegistryFromResourceS(IDR_CHROMEFRAME_NPAPI,
                                                       TRUE);
-  if (SUCCEEDED(hr)) {
+  if (SUCCEEDED(hr) && _AtlModule.do_system_registration_) {
     if (!UtilChangePersistentNPAPIMarker(true)) {
       hr = E_FAIL;
     }
@@ -650,12 +650,22 @@ STDAPI RegisterNPAPIPlugin() {
 STDAPI UnregisterNPAPIPlugin() {
   HRESULT hr = _AtlModule.UpdateRegistryFromResourceS(IDR_CHROMEFRAME_NPAPI,
                                                       FALSE);
-  if (SUCCEEDED(hr)) {
+  if (SUCCEEDED(hr) && _AtlModule.do_system_registration_) {
     if (!UtilChangePersistentNPAPIMarker(false)) {
       hr = E_FAIL;
     }
   }
   return hr;
+}
+
+STDAPI RegisterNPAPIUserPlugin() {
+  _AtlModule.do_system_registration_ = false;
+  return RegisterNPAPIPlugin();
+}
+
+STDAPI UnregisterNPAPIUserPlugin() {
+  _AtlModule.do_system_registration_ = false;
+  return UnregisterNPAPIPlugin();
 }
 
 class SecurityDescBackup {
