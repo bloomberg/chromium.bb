@@ -23,7 +23,7 @@
     </div>
     <div class="language-options-right">
       <h3 id="language-options-language-name"></h3>
-<if expr="os != 'darwin'">
+<if expr="os == 'win32' or pp_ifdef('chromeos')">
       <div class="language-options-contents">
         <button id="language-options-ui-language-button"></button>
       </div>
