@@ -50,7 +50,9 @@ class MockService : public ExtensionUpdateService {
   MockService() {
     profile_.CreateRequestContext();
   }
-  virtual ~MockService() {}
+  virtual ~MockService() {
+    profile_.ResetRequestContext();
+  }
 
   virtual const ExtensionList* extensions() const {
     ADD_FAILURE();
