@@ -63,9 +63,25 @@ size_t StreamerSM::ProcessWriteInput(const char* data, size_t len) {
   return len;
 }
 
+bool StreamerSM::MessageFullyRead() const {
+  return false;
+}
+
+bool StreamerSM::Error() const {
+  return false;
+}
+
+const char* StreamerSM::ErrorAsString() const {
+  return "(none)";
+}
+
 void StreamerSM::Reset() {
   VLOG(1) << ACCEPTOR_CLIENT_IDENT << "StreamerSM: Reset";
   connection_->Cleanup("Server Reset");
+}
+
+void StreamerSM::ResetForNewConnection() {
+  sm_other_interface_->Reset();
 }
 
 int StreamerSM::PostAcceptHook() {
@@ -93,6 +109,15 @@ int StreamerSM::PostAcceptHook() {
                                         false);
 
   return 1;
+}
+
+size_t StreamerSM::SendSynStream(uint32 stream_id,
+                                 const BalsaHeaders& headers) {
+  return 0;
+}
+
+size_t StreamerSM::SendSynReply(uint32 stream_id, const BalsaHeaders& headers) {
+  return 0;
 }
 
 }  // namespace net

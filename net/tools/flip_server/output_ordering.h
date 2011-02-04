@@ -42,6 +42,7 @@ class OutputOrdering {
   EpollServer* epoll_server_;
 
   explicit OutputOrdering(SMConnectionInterface* connection);
+  ~OutputOrdering();
   void Reset();
   bool ExistsInPriorityMaps(uint32 stream_id);
 
@@ -49,32 +50,16 @@ class OutputOrdering {
    public:
     BeginOutputtingAlarm(OutputOrdering* oo,
                          OutputOrdering::PriorityMapPointer* pmp,
-                         const MemCacheIter& mci) :
-        output_ordering_(oo), pmp_(pmp), mci_(mci), epoll_server_(NULL) {}
+                         const MemCacheIter& mci);
+    virtual ~BeginOutputtingAlarm();
 
-    int64 OnAlarm() {
-      OnUnregistration();
-      output_ordering_->MoveToActive(pmp_, mci_);
-      VLOG(2) << "ON ALARM! Should now start to output...";
-      delete this;
-      return 0;
-    }
-    void OnRegistration(const EpollServer::AlarmRegToken& tok,
-                        EpollServer* eps) {
-      epoll_server_ = eps;
-      pmp_->alarm_token = tok;
-      pmp_->alarm_enabled = true;
-    }
-    void OnUnregistration() {
-      pmp_->alarm_enabled = false;
-    }
-    void OnShutdown(EpollServer* eps) {
-      OnUnregistration();
-    }
-    ~BeginOutputtingAlarm() {
-      if (epoll_server_ && pmp_->alarm_enabled)
-        epoll_server_->UnregisterAlarm(pmp_->alarm_token);
-    }
+    // EpollAlarmCallbackInterface:
+    virtual int64 OnAlarm();
+    virtual void OnRegistration(const EpollServer::AlarmRegToken& tok,
+                                EpollServer* eps);
+    virtual void OnUnregistration();
+    virtual void OnShutdown(EpollServer* eps);
+
    private:
     OutputOrdering* output_ordering_;
     OutputOrdering::PriorityMapPointer* pmp_;

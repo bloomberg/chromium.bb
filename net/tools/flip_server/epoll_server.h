@@ -440,12 +440,7 @@ class EpollServer {
   // Returns:
   //   the "approximate" current time as number of microseconds since the Unix
   //   epoch.
-  virtual int64 ApproximateNowInUsec() const {
-    if (recorded_now_in_us_ != 0) {
-      return recorded_now_in_us_;
-    }
-    return this->NowInUsec();
-  }
+  virtual int64 ApproximateNowInUsec() const;
 
   static std::string EventMaskToString(int event_mask);
 
@@ -497,22 +492,19 @@ class EpollServer {
   static const int kMinimumEffectiveAlarmQuantum;
  protected:
 
-  // These have to be in the .h file so that we can override them in tests.
-  virtual inline int GetFlags(int fd) { return fcntl(fd, F_GETFL, 0); }
+  virtual int GetFlags(int fd);
   inline int SetFlags(int fd, int flags) {
     return fcntl(fd, F_SETFL, flags | O_NONBLOCK);
   }
 
-  virtual void SetNonblocking (int fd);
+  virtual void SetNonblocking(int fd);
 
   // This exists here so that we can override this function in unittests
   // in order to make effective mock EpollServer objects.
   virtual int epoll_wait_impl(int epfd,
                               struct epoll_event* events,
                               int max_events,
-                              int timeout_in_ms) {
-    return epoll_wait(epfd, events, max_events, timeout_in_ms);
-  }
+                              int timeout_in_ms);
 
   // this struct is used internally, and is never used by anything external
   // to this class. Some of its members are declared mutable to get around the

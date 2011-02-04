@@ -24,42 +24,39 @@ class StreamerSM : public SMInterface {
              FlipAcceptor* acceptor);
   virtual ~StreamerSM();
 
-  void InitSMInterface(SMInterface* sm_other_interface,
-                       int32 server_idx);
-  void InitSMConnection(SMConnectionPoolInterface* connection_pool,
-                        SMInterface* sm_interface,
-                        EpollServer* epoll_server,
-                        int fd,
-                        std::string server_ip,
-                        std::string server_port,
-                        std::string remote_ip,
-                        bool use_ssl);
-
-  size_t ProcessReadInput(const char* data, size_t len);
-  size_t ProcessWriteInput(const char* data, size_t len);
-  bool MessageFullyRead() const { return false; }
-  void SetStreamID(uint32 stream_id) {}
-  bool Error() const { return false; }
-  const char* ErrorAsString() const { return "(none)"; }
-  void Reset();
-  void ResetForNewInterface(int32 server_idx) {}
-  void ResetForNewConnection() { sm_other_interface_->Reset(); }
-  void Cleanup() {}
-  int PostAcceptHook();
-  void NewStream(uint32 stream_id, uint32 priority,
-                 const std::string& filename) {}
   void AddToOutputOrder(const MemCacheIter& mci) {}
-  void SendEOF(uint32 stream_id) {}
-  void SendErrorNotFound(uint32 stream_id) {}
-  void SendOKResponse(uint32 stream_id, std::string output) {}
-  size_t SendSynStream(uint32 stream_id, const BalsaHeaders& headers) {
-    return 0;
-  }
-  size_t SendSynReply(uint32 stream_id, const BalsaHeaders& headers) {
-    return 0;
-  }
-  void SendDataFrame(uint32 stream_id, const char* data, int64 len,
-                     uint32 flags, bool compress) {}
+
+  virtual void InitSMInterface(SMInterface* sm_other_interface,
+                               int32 server_idx);
+  virtual void InitSMConnection(SMConnectionPoolInterface* connection_pool,
+                                SMInterface* sm_interface,
+                                EpollServer* epoll_server,
+                                int fd,
+                                std::string server_ip,
+                                std::string server_port,
+                                std::string remote_ip,
+                                bool use_ssl);
+
+  virtual size_t ProcessReadInput(const char* data, size_t len);
+  virtual size_t ProcessWriteInput(const char* data, size_t len);
+  virtual bool MessageFullyRead() const;
+  virtual void SetStreamID(uint32 stream_id) {}
+  virtual bool Error() const;
+  virtual const char* ErrorAsString() const;
+  virtual void Reset();
+  virtual void ResetForNewInterface(int32 server_idx) {}
+  virtual void ResetForNewConnection();
+  virtual void Cleanup() {}
+  virtual int PostAcceptHook();
+  virtual void NewStream(uint32 stream_id, uint32 priority,
+                         const std::string& filename) {}
+  virtual void SendEOF(uint32 stream_id) {}
+  virtual void SendErrorNotFound(uint32 stream_id) {}
+  virtual void SendOKResponse(uint32 stream_id, std::string output) {}
+  virtual size_t SendSynStream(uint32 stream_id, const BalsaHeaders& headers);
+  virtual size_t SendSynReply(uint32 stream_id, const BalsaHeaders& headers);
+  virtual void SendDataFrame(uint32 stream_id, const char* data, int64 len,
+                             uint32 flags, bool compress) {}
 
  private:
   void SendEOFImpl(uint32 stream_id) {}
@@ -73,7 +70,7 @@ class StreamerSM : public SMInterface {
   }
   void SendDataFrameImpl(uint32 stream_id, const char* data, int64 len,
                          uint32 flags, bool compress) {}
-  void GetOutput() {}
+  virtual void GetOutput() {}
 
   SMConnection* connection_;
   SMInterface* sm_other_interface_;

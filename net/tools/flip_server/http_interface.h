@@ -32,6 +32,7 @@ class HttpSM : public BalsaVisitorInterface,
   virtual ~HttpSM();
 
  private:
+  // BalsaVisitorInterface:
   virtual void ProcessBodyInput(const char *input, size_t size) {}
   virtual void ProcessBodyData(const char *input, size_t size);
   virtual void ProcessHeaderInput(const char *input, size_t size) {}
@@ -57,49 +58,49 @@ class HttpSM : public BalsaVisitorInterface,
   virtual void ProcessChunkExtensions(const char *input, size_t size) {}
   virtual void HeaderDone() {}
   virtual void MessageDone();
-  virtual void HandleHeaderError(BalsaFrame* framer) { HandleError(); }
+  virtual void HandleHeaderError(BalsaFrame* framer);
   virtual void HandleHeaderWarning(BalsaFrame* framer) {}
-  virtual void HandleChunkingError(BalsaFrame* framer) { HandleError(); }
-  virtual void HandleBodyError(BalsaFrame* framer) { HandleError(); }
+  virtual void HandleChunkingError(BalsaFrame* framer);
+  virtual void HandleBodyError(BalsaFrame* framer);
 
   void HandleError();
 
  public:
-  void InitSMInterface(SMInterface* sm_spdy_interface,
-                       int32 server_idx);
-
-  void InitSMConnection(SMConnectionPoolInterface* connection_pool,
-                        SMInterface* sm_interface,
-                        EpollServer* epoll_server,
-                        int fd,
-                        std::string server_ip,
-                        std::string server_port,
-                        std::string remote_ip,
-                        bool use_ssl);
-
-  size_t ProcessReadInput(const char* data, size_t len);
-  size_t ProcessWriteInput(const char* data, size_t len);
-  bool MessageFullyRead() const;
-  void SetStreamID(uint32 stream_id) { stream_id_ = stream_id; }
-  bool Error() const;
-  const char* ErrorAsString() const;
-  void Reset();
-  void ResetForNewInterface(int32 server_idx) {}
-  void ResetForNewConnection();
-  void Cleanup();
-  int PostAcceptHook() { return 1; }
-
-  void NewStream(uint32 stream_id, uint32 priority,
-                 const std::string& filename);
   void AddToOutputOrder(const MemCacheIter& mci);
-  void SendEOF(uint32 stream_id);
-  void SendErrorNotFound(uint32 stream_id);
   void SendOKResponse(uint32 stream_id, std::string* output);
-  size_t SendSynStream(uint32 stream_id, const BalsaHeaders& headers);
-  size_t SendSynReply(uint32 stream_id, const BalsaHeaders& headers);
-  void SendDataFrame(uint32 stream_id, const char* data, int64 len,
-                     uint32 flags, bool compress);
   BalsaFrame* spdy_framer() { return http_framer_; }
+
+  // SMInterface:
+  virtual void InitSMInterface(SMInterface* sm_spdy_interface,
+                               int32 server_idx);
+  virtual void InitSMConnection(SMConnectionPoolInterface* connection_pool,
+                                SMInterface* sm_interface,
+                                EpollServer* epoll_server,
+                                int fd,
+                                std::string server_ip,
+                                std::string server_port,
+                                std::string remote_ip,
+                                bool use_ssl);
+  virtual size_t ProcessReadInput(const char* data, size_t len);
+  virtual size_t ProcessWriteInput(const char* data, size_t len);
+  virtual bool MessageFullyRead() const;
+  virtual void SetStreamID(uint32 stream_id);
+  virtual bool Error() const;
+  virtual const char* ErrorAsString() const;
+  virtual void Reset();
+  virtual void ResetForNewInterface(int32 server_idx) {}
+  virtual void ResetForNewConnection();
+  virtual void Cleanup();
+  virtual int PostAcceptHook();
+
+  virtual void NewStream(uint32 stream_id, uint32 priority,
+                         const std::string& filename);
+  virtual void SendEOF(uint32 stream_id);
+  virtual void SendErrorNotFound(uint32 stream_id);
+  virtual size_t SendSynStream(uint32 stream_id, const BalsaHeaders& headers);
+  virtual size_t SendSynReply(uint32 stream_id, const BalsaHeaders& headers);
+  virtual void SendDataFrame(uint32 stream_id, const char* data, int64 len,
+                             uint32 flags, bool compress);
 
  private:
   void SendEOFImpl(uint32 stream_id);
@@ -110,7 +111,8 @@ class HttpSM : public BalsaVisitorInterface,
   void SendDataFrameImpl(uint32 stream_id, const char* data, int64 len,
                          uint32 flags, bool compress);
   void EnqueueDataFrame(DataFrame* df);
-  void GetOutput();
+  virtual void GetOutput();
+
  private:
   uint64 seq_num_;
   BalsaFrame* http_framer_;

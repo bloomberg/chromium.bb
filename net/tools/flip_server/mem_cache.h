@@ -17,14 +17,11 @@ namespace net {
 
 class StoreBodyAndHeadersVisitor: public BalsaVisitorInterface {
  public:
-  BalsaHeaders headers;
-  std::string body;
-  bool error_;
+  void HandleError() { error_ = true; }
 
+  // BalsaVisitorInterface:
   virtual void ProcessBodyInput(const char *input, size_t size) {}
-  virtual void ProcessBodyData(const char *input, size_t size) {
-    body.append(input, size);
-  }
+  virtual void ProcessBodyData(const char *input, size_t size);
   virtual void ProcessHeaderInput(const char *input, size_t size) {}
   virtual void ProcessTrailerInput(const char *input, size_t size) {}
   virtual void ProcessHeaders(const BalsaHeaders& headers) {
@@ -51,26 +48,23 @@ class StoreBodyAndHeadersVisitor: public BalsaVisitorInterface {
   virtual void ProcessChunkExtensions(const char *input, size_t size) {}
   virtual void HeaderDone() {}
   virtual void MessageDone() {}
-  virtual void HandleHeaderError(BalsaFrame* framer) { HandleError(); }
-  virtual void HandleHeaderWarning(BalsaFrame* framer) { HandleError(); }
-  virtual void HandleChunkingError(BalsaFrame* framer) { HandleError(); }
-  virtual void HandleBodyError(BalsaFrame* framer) { HandleError(); }
+  virtual void HandleHeaderError(BalsaFrame* framer);
+  virtual void HandleHeaderWarning(BalsaFrame* framer);
+  virtual void HandleChunkingError(BalsaFrame* framer);
+  virtual void HandleBodyError(BalsaFrame* framer);
 
-  void HandleError() { error_ = true; }
+  BalsaHeaders headers;
+  std::string body;
+  bool error_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 
 struct FileData {
-  void CopyFrom(const FileData& file_data) {
-    headers = new BalsaHeaders;
-    headers->CopyFrom(*(file_data.headers));
-    filename = file_data.filename;
-    related_files = file_data.related_files;
-    body = file_data.body;
-  }
-  FileData(BalsaHeaders* h, const std::string& b) : headers(h), body(b) {}
-  FileData() {}
+  FileData();
+  FileData(BalsaHeaders* h, const std::string& b);
+  ~FileData();
+  void CopyFrom(const FileData& file_data);
 
   BalsaHeaders* headers;
   std::string filename;
@@ -115,19 +109,10 @@ class MemoryCache {
   typedef std::map<std::string, FileData> Files;
 
  public:
-  Files files_;
-  std::string cwd_;
+  MemoryCache();
+  ~MemoryCache();
 
-  void CloneFrom(const MemoryCache& mc) {
-    for (Files::const_iterator i = mc.files_.begin();
-         i != mc.files_.end();
-         ++i) {
-      Files::iterator out_i =
-        files_.insert(make_pair(i->first, FileData())).first;
-      out_i->second.CopyFrom(i->second);
-      cwd_ = mc.cwd_;
-    }
-  }
+  void CloneFrom(const MemoryCache& mc);
 
   void AddFiles();
 
@@ -138,6 +123,9 @@ class MemoryCache {
   FileData* GetFileData(const std::string& filename);
 
   bool AssignFileData(const std::string& filename, MemCacheIter* mci);
+
+  Files files_;
+  std::string cwd_;
 };
 
 class NotifierInterface {

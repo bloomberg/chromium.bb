@@ -26,7 +26,7 @@ namespace net {
 class RingBuffer : public BufferInterface {
  public:
   explicit RingBuffer(int buffer_size);
-  virtual ~RingBuffer() { }
+  virtual ~RingBuffer();
 
   // Resize the buffer to the size specified here.  If the buffer_size passed
   // in here is smaller than the amount of data in the buffer, then the oldest
@@ -42,8 +42,8 @@ class RingBuffer : public BufferInterface {
   virtual int BufferSize() const;
   virtual int BytesFree() const;
 
-  virtual bool Empty() const { return ReadableBytes() == 0; }
-  virtual bool Full() const { return ReadableBytes() == BufferSize(); }
+  virtual bool Empty() const;
+  virtual bool Full() const;
 
   // returns the number of characters written.
   // appends up-to-'size' bytes to the ringbuffer.

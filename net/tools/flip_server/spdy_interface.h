@@ -33,17 +33,17 @@ class SpdySM : public spdy::SpdyFramerVisitorInterface,
          FlipAcceptor* acceptor);
   virtual ~SpdySM();
 
-  void InitSMInterface(SMInterface* sm_http_interface,
-                       int32 server_idx) { }
+  virtual void InitSMInterface(SMInterface* sm_http_interface,
+                               int32 server_idx) {}
 
-  void InitSMConnection(SMConnectionPoolInterface* connection_pool,
-                        SMInterface* sm_interface,
-                        EpollServer* epoll_server,
-                        int fd,
-                        std::string server_ip,
-                        std::string server_port,
-                        std::string remote_ip,
-                        bool use_ssl);
+  virtual void InitSMConnection(SMConnectionPoolInterface* connection_pool,
+                                SMInterface* sm_interface,
+                                EpollServer* epoll_server,
+                                int fd,
+                                std::string server_ip,
+                                std::string server_port,
+                                std::string remote_ip,
+                                bool use_ssl);
 
   static bool disable_data_compression() { return disable_data_compression_; }
   static void set_disable_data_compression(bool value) {
@@ -65,34 +65,34 @@ class SpdySM : public spdy::SpdyFramerVisitorInterface,
                                  const char* data, size_t len);
 
  public:
-  size_t ProcessReadInput(const char* data, size_t len);
-  size_t ProcessWriteInput(const char* data, size_t len);
-  bool MessageFullyRead() const;
-  void SetStreamID(uint32 stream_id) {}
-  bool Error() const;
-  const char* ErrorAsString() const;
-  void Reset() { }
-  void ResetForNewInterface(int32 server_idx);
-  void ResetForNewConnection();
+  virtual size_t ProcessReadInput(const char* data, size_t len);
+  virtual size_t ProcessWriteInput(const char* data, size_t len);
+  virtual bool MessageFullyRead() const;
+  virtual void SetStreamID(uint32 stream_id) {}
+  virtual bool Error() const;
+  virtual const char* ErrorAsString() const;
+  virtual void Reset() {}
+  virtual void ResetForNewInterface(int32 server_idx);
+  virtual void ResetForNewConnection();
   // SMInterface's Cleanup is currently only called by SMConnection after a
   // protocol message as been fully read. Spdy's SMInterface does not need
   // to do any cleanup at this time.
   // TODO (klindsay) This method is probably not being used properly and
   // some logic review and method renaming is probably in order.
-  void Cleanup() {}
+  virtual void Cleanup() {}
   // Send a settings frame
-  int PostAcceptHook();
-  void NewStream(uint32 stream_id,
-                 uint32 priority,
-                 const std::string& filename);
+  virtual int PostAcceptHook();
+  virtual void NewStream(uint32 stream_id,
+                         uint32 priority,
+                         const std::string& filename);
   void AddToOutputOrder(const MemCacheIter& mci);
-  void SendEOF(uint32 stream_id);
-  void SendErrorNotFound(uint32 stream_id);
+  virtual void SendEOF(uint32 stream_id);
+  virtual void SendErrorNotFound(uint32 stream_id);
   void SendOKResponse(uint32 stream_id, std::string* output);
-  size_t SendSynStream(uint32 stream_id, const BalsaHeaders& headers);
-  size_t SendSynReply(uint32 stream_id, const BalsaHeaders& headers);
-  void SendDataFrame(uint32 stream_id, const char* data, int64 len,
-                     uint32 flags, bool compress);
+  virtual size_t SendSynStream(uint32 stream_id, const BalsaHeaders& headers);
+  virtual size_t SendSynReply(uint32 stream_id, const BalsaHeaders& headers);
+  virtual void SendDataFrame(uint32 stream_id, const char* data, int64 len,
+                             uint32 flags, bool compress);
   spdy::SpdyFramer* spdy_framer() { return spdy_framer_; }
 
   static std::string forward_ip_header() { return forward_ip_header_; }
@@ -111,7 +111,7 @@ class SpdySM : public spdy::SpdyFramerVisitorInterface,
   void SendDataFrameImpl(uint32 stream_id, const char* data, int64 len,
                          spdy::SpdyDataFlags flags, bool compress);
   void EnqueueDataFrame(DataFrame* df);
-  void GetOutput();
+  virtual void GetOutput();
  private:
   uint64 seq_num_;
   spdy::SpdyFramer* spdy_framer_;

@@ -47,27 +47,8 @@ class BalsaFrame {
                                          '\n';
   static const uint32 kValidTerm2Mask = 0xFF << 8 |
                                         0xFF;
-  BalsaFrame() :
-      last_char_was_slash_r_(false),
-      saw_non_newline_char_(false),
-      start_was_space_(true),
-      chunk_length_character_extracted_(false),
-      is_request_(true),
-      request_was_head_(false),
-      max_header_length_(16 * 1024),
-      max_request_uri_length_(2048),
-      visitor_(&do_nothing_visitor_),
-      chunk_length_remaining_(0),
-      content_length_remaining_(0),
-      last_slash_n_loc_(NULL),
-      last_recorded_slash_n_loc_(NULL),
-      last_slash_n_idx_(0),
-      term_chars_(0),
-      parse_state_(BalsaFrameEnums::READING_HEADER_AND_FIRSTLINE),
-      last_error_(BalsaFrameEnums::NO_ERROR),
-      headers_(NULL) {}
-
-  ~BalsaFrame() {}
+  BalsaFrame();
+  ~BalsaFrame();
 
   // Reset reinitializes all the member variables of the framer and clears the
   // attached header object (but doesn't change the pointer value headers_).

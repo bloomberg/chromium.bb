@@ -74,8 +74,28 @@ void HttpSM::MessageDone() {
   }
 }
 
+void HttpSM::HandleHeaderError(BalsaFrame* framer) {
+  HandleError();
+}
+
+void HttpSM::HandleChunkingError(BalsaFrame* framer) {
+  HandleError();
+}
+
+void HttpSM::HandleBodyError(BalsaFrame* framer) {
+  HandleError();
+}
+
 void HttpSM::HandleError() {
   VLOG(1) << ACCEPTOR_CLIENT_IDENT << "Error detected";
+}
+
+void HttpSM::AddToOutputOrder(const MemCacheIter& mci) {
+  output_ordering_.AddToOutputOrder(mci);
+}
+
+void HttpSM::SendOKResponse(uint32 stream_id, std::string* output) {
+  SendOKResponseImpl(stream_id, output);
 }
 
 void HttpSM::InitSMInterface(SMInterface* sm_spdy_interface,
@@ -127,6 +147,10 @@ bool HttpSM::MessageFullyRead() const {
   return http_framer_->MessageFullyRead();
 }
 
+void HttpSM::SetStreamID(uint32 stream_id) {
+  stream_id_ = stream_id;
+}
+
 bool HttpSM::Error() const {
   return http_framer_->Error();
 }
@@ -162,6 +186,10 @@ void HttpSM::Cleanup() {
   }
 }
 
+int HttpSM::PostAcceptHook() {
+  return 1;
+}
+
 void HttpSM::NewStream(uint32 stream_id, uint32 priority,
                        const std::string& filename) {
   MemCacheIter mci;
@@ -176,10 +204,6 @@ void HttpSM::NewStream(uint32 stream_id, uint32 priority,
   }
 }
 
-void HttpSM::AddToOutputOrder(const MemCacheIter& mci) {
-  output_ordering_.AddToOutputOrder(mci);
-}
-
 void HttpSM::SendEOF(uint32 stream_id) {
   SendEOFImpl(stream_id);
   if (acceptor_->flip_handler_type_ == FLIP_HANDLER_PROXY) {
@@ -189,10 +213,6 @@ void HttpSM::SendEOF(uint32 stream_id) {
 
 void HttpSM::SendErrorNotFound(uint32 stream_id) {
   SendErrorNotFoundImpl(stream_id);
-}
-
-void HttpSM::SendOKResponse(uint32 stream_id, std::string* output) {
-  SendOKResponseImpl(stream_id, output);
 }
 
 size_t HttpSM::SendSynStream(uint32 stream_id, const BalsaHeaders& headers) {

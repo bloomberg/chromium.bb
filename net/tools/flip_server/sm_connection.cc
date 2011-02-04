@@ -55,6 +55,10 @@ SMConnection::~SMConnection() {
     Reset();
 }
 
+EpollServer* SMConnection::epoll_server() {
+  return epoll_server_;
+}
+
 void SMConnection::ReadyToSend() {
   VLOG(2) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
           << "Setting ready to send: EPOLLIN | EPOLLOUT";
@@ -215,6 +219,10 @@ int SMConnection::Send(const char* data, int len, int flags) {
   return rv;
 }
 
+void SMConnection::OnRegistration(EpollServer* eps, int fd, int event_mask) {
+  registered_in_epoll_server_ = true;
+}
+
 void SMConnection::OnEvent(int fd, EpollEvent* event) {
   events_ |= event->in_events;
   HandleEvents();
@@ -223,6 +231,11 @@ void SMConnection::OnEvent(int fd, EpollEvent* event) {
     events_ = 0;
   }
 }
+
+void SMConnection::OnUnregistration(int fd, bool replaced) {
+  registered_in_epoll_server_ = false;
+}
+
 void SMConnection::OnShutdown(EpollServer* eps, int fd) {
   Cleanup("OnShutdown");
   return;

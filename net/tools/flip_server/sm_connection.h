@@ -57,10 +57,10 @@ class SMConnection : public SMConnectionInterface,
   std::string server_ip_;
   std::string server_port_;
 
-  EpollServer* epoll_server() { return epoll_server_; }
+  virtual EpollServer* epoll_server();
   OutputList* output_list() { return &output_list_; }
   MemoryCache* memory_cache() { return memory_cache_; }
-  void ReadyToSend();
+  virtual void ReadyToSend();
   void EnqueueDataFrame(DataFrame* df);
 
   int fd() const { return fd_; }
@@ -82,14 +82,10 @@ class SMConnection : public SMConnectionInterface,
   int Send(const char* data, int len, int flags);
 
   // EpollCallbackInterface interface.
-  virtual void OnRegistration(EpollServer* eps, int fd, int event_mask) {
-    registered_in_epoll_server_ = true;
-  }
+  virtual void OnRegistration(EpollServer* eps, int fd, int event_mask);
   virtual void OnModification(int fd, int event_mask) {}
   virtual void OnEvent(int fd, EpollEvent* event);
-  virtual void OnUnregistration(int fd, bool replaced) {
-    registered_in_epoll_server_ = false;
-  }
+  virtual void OnUnregistration(int fd, bool replaced);
   virtual void OnShutdown(EpollServer* eps, int fd);
 
   // NotifierInterface interface.

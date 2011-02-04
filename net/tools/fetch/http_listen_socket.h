@@ -28,7 +28,7 @@ class HttpListenSocket : public ListenSocket,
   static HttpListenSocket* Listen(const std::string& ip, int port,
                                   HttpListenSocket::Delegate* delegate);
 
-  void Listen() { ListenSocket::Listen(); }
+  virtual void Listen();
   virtual void Accept();
 
   // Send a server response.

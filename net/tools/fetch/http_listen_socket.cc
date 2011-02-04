@@ -24,6 +24,10 @@ HttpListenSocket::HttpListenSocket(SOCKET s,
 HttpListenSocket::~HttpListenSocket() {
 }
 
+void HttpListenSocket::Listen() {
+  ListenSocket::Listen();
+}
+
 void HttpListenSocket::Accept() {
   SOCKET conn = ListenSocket::Accept(socket_);
   DCHECK_NE(conn, ListenSocket::kInvalidSocket);

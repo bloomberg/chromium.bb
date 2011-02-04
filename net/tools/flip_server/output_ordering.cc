@@ -20,6 +20,8 @@ OutputOrdering::OutputOrdering(SMConnectionInterface* connection)
     epoll_server_ = connection->epoll_server();
 }
 
+OutputOrdering::~OutputOrdering() {}
+
 void OutputOrdering::Reset() {
   while (!stream_ids_.empty()) {
     StreamIdToPriorityMap::iterator sitpmi = stream_ids_.begin();
@@ -36,6 +38,45 @@ void OutputOrdering::Reset() {
 bool OutputOrdering::ExistsInPriorityMaps(uint32 stream_id) {
   StreamIdToPriorityMap::iterator sitpmi = stream_ids_.find(stream_id);
   return sitpmi != stream_ids_.end();
+}
+
+OutputOrdering::BeginOutputtingAlarm::BeginOutputtingAlarm(
+    OutputOrdering* oo,
+    OutputOrdering::PriorityMapPointer* pmp,
+    const MemCacheIter& mci)
+    : output_ordering_(oo),
+      pmp_(pmp),
+      mci_(mci),
+      epoll_server_(NULL) {
+}
+
+OutputOrdering::BeginOutputtingAlarm::~BeginOutputtingAlarm() {
+  if (epoll_server_ && pmp_->alarm_enabled)
+    epoll_server_->UnregisterAlarm(pmp_->alarm_token);
+}
+
+int64 OutputOrdering::BeginOutputtingAlarm::OnAlarm() {
+  OnUnregistration();
+  output_ordering_->MoveToActive(pmp_, mci_);
+  VLOG(2) << "ON ALARM! Should now start to output...";
+  delete this;
+  return 0;
+}
+
+void OutputOrdering::BeginOutputtingAlarm::OnRegistration(
+    const EpollServer::AlarmRegToken& tok,
+    EpollServer* eps) {
+  epoll_server_ = eps;
+  pmp_->alarm_token = tok;
+  pmp_->alarm_enabled = true;
+}
+
+void OutputOrdering::BeginOutputtingAlarm::OnUnregistration() {
+  pmp_->alarm_enabled = false;
+}
+
+void OutputOrdering::BeginOutputtingAlarm::OnShutdown(EpollServer* eps) {
+  OnUnregistration();
 }
 
 void OutputOrdering::MoveToActive(PriorityMapPointer* pmp, MemCacheIter mci) {

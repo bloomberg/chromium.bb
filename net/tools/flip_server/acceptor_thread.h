@@ -72,7 +72,7 @@ class SMAcceptorThread : public base::SimpleThread,
   // idle longer than the configured timeout.
   void HandleConnectionIdleTimeout();
 
-  void Run();
+  virtual void Run();
 
  private:
   EpollServer epoll_server_;

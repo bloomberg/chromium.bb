@@ -24,6 +24,58 @@ std::string FLAGS_cache_base_dir = ".";
 
 namespace net {
 
+void StoreBodyAndHeadersVisitor::ProcessBodyData(const char *input,
+                                                 size_t size) {
+  body.append(input, size);
+}
+
+void StoreBodyAndHeadersVisitor::HandleHeaderError(BalsaFrame* framer) {
+  HandleError();
+}
+
+void StoreBodyAndHeadersVisitor::HandleHeaderWarning(BalsaFrame* framer) {
+  HandleError();
+}
+
+void StoreBodyAndHeadersVisitor::HandleChunkingError(BalsaFrame* framer) {
+  HandleError();
+}
+
+void StoreBodyAndHeadersVisitor::HandleBodyError(BalsaFrame* framer) {
+  HandleError();
+}
+
+FileData::FileData(BalsaHeaders* h, const std::string& b)
+    : headers(h), body(b) {
+}
+
+FileData::FileData() {}
+
+FileData::~FileData() {}
+
+void FileData::CopyFrom(const FileData& file_data) {
+    headers = new BalsaHeaders;
+    headers->CopyFrom(*(file_data.headers));
+    filename = file_data.filename;
+    related_files = file_data.related_files;
+    body = file_data.body;
+  }
+
+MemoryCache::MemoryCache() {}
+
+MemoryCache::~MemoryCache() {}
+
+void MemoryCache::CloneFrom(const MemoryCache& mc) {
+  for (Files::const_iterator i = mc.files_.begin();
+       i != mc.files_.end();
+       ++i) {
+    Files::iterator out_i =
+        files_.insert(make_pair(i->first, FileData())).first;
+    out_i->second.CopyFrom(i->second);
+    cwd_ = mc.cwd_;
+  }
+}
+
 void MemoryCache::AddFiles() {
   std::deque<std::string> paths;
   cwd_ = FLAGS_cache_base_dir;
