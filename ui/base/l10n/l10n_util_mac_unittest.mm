@@ -32,6 +32,9 @@ TEST_F(L10nUtilMacTest, FixUpWindowsStyleLabel) {
     { @"foo..bar", @"foo..bar" },
     { @"foo...bar", @"foo\u2026bar" },
     { @"foo...bar...", @"foo\u2026bar\u2026" },
+    { @"foo(&b)", @"foo" },
+    { @"foo(&b)...", @"foo\u2026" },
+    { @"(&b)foo", @"foo" },
   };
   for (size_t idx = 0; idx < ARRAYSIZE_UNSAFE(data); ++idx) {
     string16 input16(base::SysNSStringToUTF16(data[idx].input));

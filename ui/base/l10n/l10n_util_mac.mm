@@ -70,7 +70,12 @@ NSString* FixUpWindowsStyleLabel(const string16& label) {
   ret.reserve(label_len);
   for (size_t i = 0; i < label_len; ++i) {
     char16 c = label[i];
-    if (c == '&') {
+    if (c == '(' && i + 3 < label_len && label[i + 1] == '&'
+        && label[i + 3] == ')') {
+      // Strip '(&?)' patterns which means Windows-style accelerator in some
+      // non-English locales such as Japanese.
+      i += 3;
+    } else if (c == '&') {
       if (i + 1 < label_len && label[i + 1] == '&') {
         ret.push_back(c);
         ++i;
