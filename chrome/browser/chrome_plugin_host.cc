@@ -464,8 +464,14 @@ int STDCALL CPB_GetBrowsingContextInfo(
     if (!service)
       return CPERR_FAILURE;
     FilePath path = service->GetChromePluginDataDir();
+    // This is wrong -- we can't in general stuff a path through a std::string.
+    // But this code is Gears-specific, so Windows-only anyway for now.
+#if defined(OS_WIN)
     std::string retval = WideToUTF8(
-        path.Append(chrome::kChromePluginDataDirname).ToWStringHack());
+        path.Append(chrome::kChromePluginDataDirname).value());
+#else
+    NOTREACHED();
+#endif
     *static_cast<char**>(buf) = CPB_StringDup(CPB_Alloc, retval);
     return CPERR_SUCCESS;
     }
