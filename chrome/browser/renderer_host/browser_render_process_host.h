@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_RENDERER_HOST_BROWSER_RENDER_PROCESS_HOST_H_
 #pragma once
 
-#include "build/build_config.h"
-
 #include <map>
 #include <queue>
 #include <string>
@@ -25,19 +23,12 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 
 class CommandLine;
-class GURL;
 class RendererMainThread;
 class RenderWidgetHelper;
-class TabContents;
 class VisitedLinkUpdater;
-class URLRequestContextGetter;
 
 namespace base {
 class SharedMemory;
-}
-
-namespace gfx {
-class Size;
 }
 
 // Implements a concrete RenderProcessHost for the browser process for talking
