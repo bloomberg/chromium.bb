@@ -548,6 +548,19 @@ STDAPI CustomRegistration(UINT reg_flags, BOOL reg, bool is_system) {
   }
 
   if ((hr == S_OK) && (flags & TYPELIB)) {
+    if (reg && !is_system) {
+      // Enables the RegisterTypeLib Function function to override default
+      // registry mappings under Windows Vista Service Pack 1 (SP1),
+      // Windows Server 2008, and later operating system versions
+      typedef void (WINAPI* OaEnablePerUserTypeLibReg)(void);
+      OaEnablePerUserTypeLibReg per_user_typelib_func =
+          reinterpret_cast<OaEnablePerUserTypeLibReg>(
+              GetProcAddress(GetModuleHandle(L"oleaut32.dll"),
+                             "OaEnablePerUserTLibRegistration"));
+      if (per_user_typelib_func) {
+        (*per_user_typelib_func)();
+      }
+    }
     hr = (reg)?
         UtilRegisterTypeLib(_AtlComModule.m_hInstTypeLib, NULL, !is_system) :
         UtilUnRegisterTypeLib(_AtlComModule.m_hInstTypeLib, NULL, !is_system);
