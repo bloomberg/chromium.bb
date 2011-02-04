@@ -1,0 +1,65 @@
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="de">
+<translation id="1015536732094484178"><ph name="EVENT"/> - Details</translation>
+<translation id="1062798188241579840">Farben in Hex</translation>
+<translation id="1109244393487346293"><ph name="SHARE"/>%%</translation>
+<translation id="1160115729576918586">Antwort-Header</translation>
+<translation id="1215014271600658849">Treffer und Größen in Prozent anzeigen</translation>
+<translation id="124758223932734674">Skriptausführung anhalten.</translation>
+<translation id="1292985518572542272">Ein Fehler ist aufgetreten, beim Versuch die Tabelle “<ph name="TABLE_NAME"/>” zu lesen.</translation>
+<translation id="1311367388993416646"><ph name="DURATION"/>ms</translation>
+<translation id="1324319449713370867"><ph name="LATENCY"/> Latenz</translation>
+<translation id="137671950541962857">Gesammelt</translation>
+<translation id="1434836903656932448">Ressourcen des nächsten Skripts anzeigen.</translation>
+<translation id="1436722359433789623">Knoten entfernt</translation>
+<translation id="1634828734222219955">Insgesamt</translation>
+<translation id="1653705052218729891">(whitespace)</translation>
+<translation id="1745154242849680575">Große Ressourcenzeilen benutzen</translation>
+<translation id="1752354630032595359">''' (<ph name="COUNT"/>)</translation>
+<translation id="1803799720926799756">Dateigröße</translation>
+<translation id="1859436107025556606">Nächsten Funktionsaufruf überspringen</translation>
+<translation id="1874452619567281280">Inhalt</translation>
+<translation id="1892670850488572691">(Programm)</translation>
+<translation id="2034493627456664629">Keine Haltepunkte</translation>
+<translation id="2098305189700762159">Nicht gefunden</translation>
+<translation id="2215182539621589286"><ph name="ERRORS_COUNT"/> Fehler, <ph name="WARNINGS_COUNT"/> Warnungen</translation>
+<translation id="2288623059494346417">Eigenschaften</translation>
+<translation id="2315805297948832311">Ausgewählte Funktion ausschließen</translation>
+<translation id="2488465568347178276"><ph name="ERRORS_COUNT"/> Fehler, <ph name="WARNING_COUNT"/> Warnung</translation>
+<translation id="2567995391681385086"><ph name="RESOURCE_NAME"/> (aus dem Zwischenspeicher)</translation>
+<translation id="2729392955572924879"><ph name="DURATION"/> Download</translation>
+<translation id="2780759174263229709">Ans Hauptfenster andocken.</translation>
+<translation id="2841013758207633010">Dauer</translation>
+<translation id="2846666084687668646">Stil Attribut</translation>
+<translation id="2900068182947574679">Skripte</translation>
+<translation id="2939595221367222327">Ein unerwarteter Fehler: &quot;<ph name="ERROR"/>&quot; ist aufgetreten.</translation>
+<translation id="2961528883763048394"><ph name="SIZE"/>B</translation>
+<translation id="3023854106275684118"><ph name="COUNT"/> Treffer</translation>
+<translation id="3050804907885004462">Elemente</translation>
+<translation id="3240349416483245756"><ph name="COUNT"/> Warnungen</translation>
+<translation id="3273684076686342968">Selbst</translation>
+<translation id="328338094624349422">Debugging aktiviert. Zum Deaktivieren klicken.</translation>
+<translation id="3918112406363308010">User Agent Stilvorlage</translation>
+<translation id="3963618988176388718"><ph name="ERROR_COUNT"/> Fehler, <ph name="WARNINGS_COUNT"/> Warnungen</translation>
+<translation id="4572454232487432965">Zeile <ph name="LINE_NUMBER"/></translation>
+<translation id="5762198733092870020">Profil <ph name="ID"/></translation>
+<translation id="5832813618714645810">Profile</translation>
+<translation id="6396927299617527067"><ph name="DURATION"/>min</translation>
+<translation id="6433504320956018887"><ph name="COUNT"/> Fehler</translation>
+<translation id="6447842834002726250">Cookies</translation>
+<translation id="7145562333585011566">Änderungsprotokoll leeren.</translation>
+<translation id="7206534800115400428">XHR</translation>
+<translation id="7265280299889418926"><ph name="LATENCY"/> Latenz, <ph name="DURATION"/> Download (<ph name="TOTAL"/> Gesamt)</translation>
+<translation id="7346033118437719424">Nur für diese Sitzung verwenden</translation>
+<translation id="7453034581123145052"><ph name="DURATION"/> Tage</translation>
+<translation id="7535087603100972091">Wert</translation>
+<translation id="7641538395862942689"><ph name="SIZE"/>KB</translation>
+<translation id="7919210519031517829"><ph name="DURATION"/>s</translation>
+<translation id="7987557150405983049"><ph name="WIDTH"/> × <ph name="HEIGHT"/></translation>
+<translation id="853687717053682837"><ph name="ERROR_COUNT"/> Fehler, <ph name="WARNING_COUNT"/> Warnungen</translation>
+<translation id="8544987658639170981"><ph name="COUNT"/> Warnung</translation>
+<translation id="8918885108183816626">Suche <ph name="STRING"/></translation>
+<translation id="9001035236599590379">MIME-Typ</translation>
+<translation id="964811242908289581"><ph name="COUNT"/> Fehler</translation>
+</translationbundle>

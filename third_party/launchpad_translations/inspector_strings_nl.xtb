@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="nl">
+<translation id="1109244393487346293"><ph name="SHARE"/>%%</translation>
+<translation id="1160115729576918586">Response headers</translation>
+<translation id="124758223932734674">Pauzeer het uitvoeren van het script.</translation>
+<translation id="1292985518572542272">Er is een fout opgetreden bij\nhet lezen van de ‘<ph name="TABLE_NAME"/>’-tabel.</translation>
+<translation id="1311367388993416646"><ph name="DURATION"/>ms</translation>
+<translation id="1324319449713370867"><ph name="LATENCY"/> vertraging</translation>
+<translation id="1434836903656932448">Laat de bron van het volgende script zien.</translation>
+<translation id="1634828734222219955">Totaal</translation>
+</translationbundle>

@@ -570,4 +570,41 @@
       ],
     },
   ],
+  'conditions': [
+    ['use_third_party_translations==1', {
+      'targets': [
+        {
+          'target_name': 'inspector_strings',
+          'type': 'none',
+          'variables': {
+            'grit_out_dir': '<(PRODUCT_DIR)/resources/inspector/l10n',
+          },
+          'actions': [
+            {
+              'action_name': 'inspector_strings',
+              'variables': {
+                'input_path': './inspector_strings.grd',
+              },
+              'inputs': [
+                '<!@(<(grit_info_cmd) --inputs <(input_path))',
+              ],
+              'outputs': [
+                '<!@(<(grit_info_cmd) --outputs \'<(grit_out_dir)\' <(input_path))',
+              ],
+              'action': ['<@(grit_cmd)',
+                         '-i', '<(input_path)', 'build',
+                         '-o', '<(grit_out_dir)',
+                         '<@(grit_defines)'],
+              'message': 'Generating resources from <(input_path)',
+            },
+          ],
+          'conditions': [
+            ['OS=="win"', {
+              'dependencies': ['<(DEPTH)/build/win/system.gyp:cygwin'],
+            }],
+          ],
+        },
+      ],
+    }],
+  ],
 }
