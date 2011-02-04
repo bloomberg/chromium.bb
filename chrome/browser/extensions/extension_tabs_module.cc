@@ -33,6 +33,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "gfx/codec/jpeg_codec.h"
 #include "gfx/codec/png_codec.h"
@@ -434,6 +435,11 @@ bool CreateWindowFunction::RunImpl() {
     if (args->HasKey(keys::kIncognitoKey)) {
       EXTENSION_FUNCTION_VALIDATE(args->GetBoolean(keys::kIncognitoKey,
                                                    &incognito));
+      if (!profile_->GetPrefs()->GetBoolean(prefs::kIncognitoEnabled)) {
+        error_ = keys::kIncognitoModeIsDisabled;
+        return false;
+      }
+
       if (incognito)
         window_profile = window_profile->GetOffTheRecordProfile();
     }
