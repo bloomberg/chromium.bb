@@ -16,7 +16,8 @@ class EbuildCmd(subcmd.WrappedChrootCmd):
     # Just call the WrappedChrootCmd superclass, which does most of the work.
     super(EbuildCmd, self).__init__(
         ['ebuild-%s'], ['ebuild'],
-        need_args=True
+        need_args=True,
+        env_whitelist=['CHROME_ORIGIN', 'FEATURES', 'USE']
     )
 
 
@@ -28,7 +29,8 @@ class EmergeCmd(subcmd.WrappedChrootCmd):
     # Just call the WrappedChrootCmd superclass, which does most of the work.
     super(EmergeCmd, self).__init__(
         ['emerge-%s'], ['sudo', 'emerge'],
-        need_args=True
+        need_args=True,
+        env_whitelist=['CHROME_ORIGIN', 'FEATURES', 'USE']
     )
 
 

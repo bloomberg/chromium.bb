@@ -47,7 +47,7 @@ class WrappedChrootCmd(ChromiteCmd):
     The usage string will be a little messed up, but hopefully that's OK.
   """
 
-  def __init__(self, target_cmd, host_cmd, need_args=False):
+  def __init__(self, target_cmd, host_cmd, need_args=False, env_whitelist=[]):
     """WrappedChrootCmd constructor.
 
     Args:
@@ -60,6 +60,12 @@ class WrappedChrootCmd(ChromiteCmd):
           This makes the most sense when someone runs chromite with no arguments
           and then walks through the menus.  It's not ideal, but less sucky than
           just quitting.
+      env_whitelist: This is a whitelist of environment variables that will be
+          read from the current environment and passed through to the command.
+          Note that this doesn't matter much when we start inside the chroot,
+          but matters a lot when we transition into the chroot (since the
+          environment is reset when that happens).
+          Useful for portage commands.  Like: ['USE', 'FEATURES']
     """
     # Call superclass constructor.
     super(WrappedChrootCmd, self).__init__()
@@ -68,6 +74,11 @@ class WrappedChrootCmd(ChromiteCmd):
     self._target_cmd = target_cmd
     self._host_cmd = host_cmd
     self._need_args = need_args
+
+    # Handle the env_whitelist.  We need to do this in __init__ rather than in
+    # Run(), since we want the environment vars from outside the chroot.
+    self._env_to_add = dict((key, os.environ[key]) for key in env_whitelist
+                            if key in os.environ)
 
   def Run(self, raw_argv, chroot_config=None, argv=None, build_config=None):
     """Run the command.
@@ -122,6 +133,11 @@ class WrappedChrootCmd(ChromiteCmd):
       # Add the prefix...
       argv = argv_prefix + argv
 
+      # Update the environment with anything from the whitelist.
+      env = os.environ.copy()
+      env.update(self._env_to_add)
+
       # Run, ignoring errors since some commands (ahem, cros_workon) seem to
       # return errors from things like --help.
-      cros_lib.RunCommand(argv, cwd=cwd, ignore_sigint=True, error_ok=True)
+      cros_lib.RunCommand(argv, cwd=cwd, ignore_sigint=True, error_ok=True,
+                          env=env)
