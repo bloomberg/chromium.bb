@@ -67,8 +67,6 @@ class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
 };
 
 // Returns true if an chrome-extension:// resource should be allowed to load.
-// TODO(aa): This should be moved into ExtensionResourceRequestPolicy, but we
-// first need to find a way to get CanLoadInIncognito state into the renderers.
 bool AllowExtensionResourceLoad(net::URLRequest* request,
                                 ChromeURLRequestContext* context,
                                 const std::string& scheme) {
@@ -83,6 +81,27 @@ bool AllowExtensionResourceLoad(net::URLRequest* request,
     return true;
   }
 
+  GURL origin_url(info->frame_origin());
+
+  // chrome:// URLs are always allowed to load chrome-extension:// resources.
+  // The app launcher in the NTP uses this feature, as does dev tools.
+  if (origin_url.SchemeIs(chrome::kChromeDevToolsScheme) ||
+      origin_url.SchemeIs(chrome::kChromeUIScheme))
+    return true;
+
+  // Disallow loading of packaged resources for hosted apps. We don't allow
+  // hybrid hosted/packaged apps. The one exception is access to icons, since
+  // some extensions want to be able to do things like create their own
+  // launchers.
+  if (context->extension_info_map()->
+          ExtensionHasWebExtent(request->url().host())) {
+    if (!context->extension_info_map()->URLIsForExtensionIcon(request->url())) {
+      LOG(ERROR) << "Denying load of " << request->url().spec() << " from "
+                 << "hosted app.";
+      return false;
+    }
+  }
+
   // Don't allow toplevel navigations to extension resources in incognito mode.
   // This is because an extension must run in a single process, and an
   // incognito tab prevents that.
@@ -95,7 +114,30 @@ bool AllowExtensionResourceLoad(net::URLRequest* request,
     return false;
   }
 
-  return true;
+  // Otherwise, pages are allowed to load resources from extensions if the
+  // extension has host permissions to (and therefore could be running script
+  // in, which might need access to the extension resources).
+  //
+  // Exceptions are:
+  // - empty origin (needed for some edge cases when we have empty origins)
+  // - chrome-extension:// (for legacy reasons -- some extensions interop)
+  // - data: (basic HTML notifications use data URLs internally)
+  if (origin_url.is_empty() ||
+      origin_url.SchemeIs(chrome::kExtensionScheme) |
+      origin_url.SchemeIs(chrome::kDataScheme)) {
+    return true;
+  } else {
+    ExtensionExtent host_permissions = context->extension_info_map()->
+        GetEffectiveHostPermissionsForExtension(request->url().host());
+    if (host_permissions.ContainsURL(origin_url)) {
+      return true;
+    } else {
+      LOG(ERROR) << "Denying load of " << request->url().spec() << " from "
+                 << origin_url.spec() << " because the extension does not have "
+                 << "access to the requesting page.";
+      return false;
+    }
+  }
 }
 
 }  // namespace
@@ -109,10 +151,8 @@ static net::URLRequestJob* CreateExtensionURLRequestJob(
       static_cast<ChromeURLRequestContext*>(request->context());
 
   // TODO(mpcomplete): better error code.
-  if (!AllowExtensionResourceLoad(request, context, scheme)) {
-    LOG(ERROR) << "disallowed in extension protocols";
+  if (!AllowExtensionResourceLoad(request, context, scheme))
     return new net::URLRequestErrorJob(request, net::ERR_ADDRESS_UNREACHABLE);
-  }
 
   // chrome-extension://extension-id/resource/path.js
   const std::string& extension_id = request->url().host();

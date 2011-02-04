@@ -61,7 +61,6 @@
 #include "chrome/renderer/extensions/bindings_utils.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
-#include "chrome/renderer/extensions/extension_resource_request_policy.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/renderer/external_host_bindings.h"
 #include "chrome/renderer/external_popup_menu.h"
@@ -3617,19 +3616,6 @@ void RenderView::willSendRequest(
   WebDataSource* top_data_source = top_frame->dataSource();
   WebDataSource* data_source =
       provisional_data_source ? provisional_data_source : top_data_source;
-
-  // If the request is for an extension resource, check whether it should be
-  // allowed. If not allowed, we reset the URL to something invalid to prevent
-  // the request and cause an error.
-  GURL request_url(request.url());
-  if (request_url.SchemeIs(chrome::kExtensionScheme) &&
-      !ExtensionResourceRequestPolicy::CanRequestResource(
-          request_url,
-          GURL(frame->url()),
-          render_thread_->GetExtensions())) {
-    request.setURL(WebURL(GURL("chrome-extension://invalid/")));
-  }
-
   if (data_source) {
     NavigationState* state = NavigationState::FromDataSource(data_source);
     if (state && state->is_cache_policy_override_set())

@@ -60,8 +60,6 @@
         'renderer/extensions/event_bindings.h',
         'renderer/extensions/extension_process_bindings.cc',
         'renderer/extensions/extension_process_bindings.h',
-        'renderer/extensions/extension_resource_request_policy.cc',
-        'renderer/extensions/extension_resource_request_policy.h',
         'renderer/extensions/js_only_v8_extensions.cc',
         'renderer/extensions/js_only_v8_extensions.h',
         'renderer/extensions/renderer_extension_bindings.cc',
