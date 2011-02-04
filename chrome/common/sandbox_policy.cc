@@ -611,14 +611,14 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
   if (!exposed_dir.empty()) {
     result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
                              sandbox::TargetPolicy::FILES_ALLOW_ANY,
-                             exposed_dir.ToWStringHack().c_str());
+                             exposed_dir.value().c_str());
     if (result != sandbox::SBOX_ALL_OK)
       return 0;
 
     FilePath exposed_files = exposed_dir.AppendASCII("*");
     result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
                              sandbox::TargetPolicy::FILES_ALLOW_ANY,
-                             exposed_files.ToWStringHack().c_str());
+                             exposed_files.value().c_str());
     if (result != sandbox::SBOX_ALL_OK)
       return 0;
   }

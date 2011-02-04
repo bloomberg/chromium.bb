@@ -206,7 +206,7 @@ static bool AddFileToZip(zipFile zip_file, const FilePath& src_dir) {
   int flags = base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ;
   if (stream.Open(src_dir, flags) != 0) {
     LOG(ERROR) << "Could not open stream for path "
-               << WideToASCII(src_dir.ToWStringHack());
+               << src_dir.value();
     return false;
   }
 
@@ -217,7 +217,7 @@ static bool AddFileToZip(zipFile zip_file, const FilePath& src_dir) {
     if (num_bytes > 0) {
       if (ZIP_OK != zipWriteInFileInZip(zip_file, buf, num_bytes)) {
         LOG(ERROR) << "Could not write data to zip for path "
-                   << WideToASCII(src_dir.ToWStringHack());
+                   << src_dir.value();
         return false;
       }
     }
@@ -296,7 +296,7 @@ bool Zip(const FilePath& src_dir, const FilePath& dest_file,
           file_util::FileEnumerator::DIRECTORIES));
   for (FilePath path = file_enumerator.Next(); !path.value().empty();
        path = file_enumerator.Next()) {
-    if (!include_hidden_files && path.BaseName().ToWStringHack()[0] == L'.')
+    if (!include_hidden_files && path.BaseName().value()[0] == '.')
       continue;
 
     if (!AddEntryToZip(zip_file, path, src_dir)) {

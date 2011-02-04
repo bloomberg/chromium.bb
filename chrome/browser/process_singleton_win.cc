@@ -42,10 +42,9 @@ BOOL CALLBACK BrowserWindowEnumeration(HWND window, LPARAM param) {
 // Look for a Chrome instance that uses the same profile directory.
 ProcessSingleton::ProcessSingleton(const FilePath& user_data_dir)
     : window_(NULL), locked_(false), foreground_window_(NULL) {
-  std::wstring user_data_dir_str(user_data_dir.ToWStringHack());
   remote_window_ = FindWindowEx(HWND_MESSAGE, NULL,
                                 chrome::kMessageWindowClass,
-                                user_data_dir_str.c_str());
+                                user_data_dir.value().c_str());
   if (!remote_window_) {
     // Make sure we will be the one and only process creating the window.
     // We use a named Mutex since we are protecting against multi-process
@@ -68,7 +67,7 @@ ProcessSingleton::ProcessSingleton(const FilePath& user_data_dir)
     // was given to us.
     remote_window_ = FindWindowEx(HWND_MESSAGE, NULL,
                                   chrome::kMessageWindowClass,
-                                  user_data_dir_str.c_str());
+                                  user_data_dir.value().c_str());
     if (!remote_window_)
       Create();
     BOOL success = ReleaseMutex(only_me);

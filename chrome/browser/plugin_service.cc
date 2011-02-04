@@ -496,7 +496,7 @@ void PluginService::RegisterPepperPlugins() {
     webkit::npapi::WebPluginInfo info;
     info.path = plugins[i].path;
     info.name = plugins[i].name.empty() ?
-        WideToUTF16(plugins[i].path.BaseName().ToWStringHack()) :
+        plugins[i].path.BaseName().LossyDisplayName() :
         ASCIIToUTF16(plugins[i].name);
     info.desc = ASCIIToUTF16(plugins[i].description);
     info.enabled = webkit::npapi::WebPluginInfo::USER_ENABLED_POLICY_UNMANAGED;
@@ -509,7 +509,7 @@ void PluginService::RegisterPepperPlugins() {
             ASCIIToUTF16(plugins[i].type_descriptions),
             &info.mime_types)) {
       LOG(ERROR) << "Error parsing mime types for "
-                 << plugins[i].path.ToWStringHack();
+                 << plugins[i].path.LossyDisplayName();
       return;
     }
 

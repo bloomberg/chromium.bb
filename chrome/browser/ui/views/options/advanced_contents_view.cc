@@ -136,7 +136,7 @@ void FileDisplayArea::SetFile(const FilePath& file_path) {
     base::i18n::WrapPathWithLTRFormatting(file_path, &localized_file_path);
     text_field_->SetText(UTF16ToWide(localized_file_path));
   } else {
-    text_field_->SetText(file_path.ToWStringHack());
+    text_field_->SetText(file_path.LossyDisplayName());
   }
 }
 

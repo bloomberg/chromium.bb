@@ -258,26 +258,26 @@ void PluginObserver::OnMissingPluginStatus(int status) {
 void PluginObserver::OnCrashedPlugin(const FilePath& plugin_path) {
   DCHECK(!plugin_path.value().empty());
 
-  std::wstring plugin_name = plugin_path.ToWStringHack();
+  string16 plugin_name = plugin_path.LossyDisplayName();
   webkit::npapi::WebPluginInfo plugin_info;
   if (webkit::npapi::PluginList::Singleton()->GetPluginInfoByPath(
           plugin_path, &plugin_info) &&
       !plugin_info.name.empty()) {
-    plugin_name = UTF16ToWide(plugin_info.name);
+    plugin_name = plugin_info.name;
 #if defined(OS_MACOSX)
     // Many plugins on the Mac have .plugin in the actual name, which looks
     // terrible, so look for that and strip it off if present.
-    const std::wstring plugin_extension(L".plugin");
-    if (EndsWith(plugin_name, plugin_extension, true))
-      plugin_name.erase(plugin_name.length() - plugin_extension.length());
+    const string kPluginExtension = ".plugin";
+    if (EndsWith(plugin_name, ASCIIToUTF16(kPluginExtension), true))
+      plugin_name.erase(plugin_name.length() - kPluginExtension.length());
 #endif  // OS_MACOSX
   }
   SkBitmap* crash_icon = ResourceBundle::GetSharedInstance().GetBitmapNamed(
       IDR_INFOBAR_PLUGIN_CRASHED);
   tab_contents_->AddInfoBar(new SimpleAlertInfoBarDelegate(
       tab_contents_, crash_icon,
-      l10n_util::GetStringFUTF16(IDS_PLUGIN_CRASHED_PROMPT,
-                                 WideToUTF16Hack(plugin_name)), true));
+      l10n_util::GetStringFUTF16(IDS_PLUGIN_CRASHED_PROMPT, plugin_name),
+      true));
 }
 
 void PluginObserver::OnBlockedOutdatedPlugin(const string16& name,

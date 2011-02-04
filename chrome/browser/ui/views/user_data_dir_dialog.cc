@@ -28,7 +28,7 @@ UserDataDirDialog::UserDataDirDialog(const FilePath& user_data_dir)
       is_blocking_(true) {
   std::wstring message_text = UTF16ToWide(l10n_util::GetStringFUTF16(
       IDS_CANT_WRITE_USER_DIRECTORY_SUMMARY,
-      WideToUTF16Hack(user_data_dir.ToWStringHack())));
+      user_data_dir.LossyDisplayName()));
   const int kDialogWidth = 400;
   message_box_view_ = new MessageBoxView(
       ui::MessageBoxFlags::kIsConfirmMessageBox,

@@ -74,7 +74,7 @@ void CreateDragImageForFile(const FilePath& file_name,
   // Paint the icon.
   canvas.DrawBitmapInt(*icon, (width - icon->width()) / 2, 0);
 
-  std::wstring name = file_name.BaseName().ToWStringHack();
+  std::wstring name = UTF16ToWide(file_name.BaseName().LossyDisplayName());
 #if defined(OS_WIN)
   // Paint the file name. We inset it one pixel to allow room for the halo.
   canvas.DrawStringWithHalo(name, font, kFileDragImageTextColor, SK_ColorWHITE,

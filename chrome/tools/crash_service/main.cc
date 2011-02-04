@@ -55,7 +55,7 @@ int __stdcall wWinMain(HINSTANCE instance, HINSTANCE, wchar_t* cmd_line,
 
   VLOG(1) << "session start. cmdline is [" << cmd_line << "]";
 
-  CrashService crash_service(operating_dir.ToWStringHack());
+  CrashService crash_service(operating_dir.value());
   if (!crash_service.Initialize(::GetCommandLineW()))
     return 1;
 

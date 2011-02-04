@@ -251,9 +251,9 @@ void PrintedDocument::DebugDump(const PrintedPage& page) {
   filename += ASCIIToUTF16("_.emf");
 #if defined(OS_WIN)
   page.native_metafile()->SaveTo(
-      g_debug_dump_info.Get().debug_dump_path.Append(filename).ToWStringHack());
+      g_debug_dump_info.Get().debug_dump_path.Append(filename).value());
 #else  // OS_WIN
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED();  // TODO: convert SaveTo to accept a FilePath
 #endif  // OS_WIN
 }
 

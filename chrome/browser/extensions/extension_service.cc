@@ -1893,8 +1893,7 @@ void ExtensionService::ReportExtensionLoadError(
                   Source<Profile>(profile_),
                   Details<const std::string>(&error));
 
-  // TODO(port): note that this isn't guaranteed to work properly on Linux.
-  std::string path_str = WideToUTF8(extension_path.ToWStringHack());
+  std::string path_str = UTF16ToUTF8(extension_path.LossyDisplayName());
   std::string message = base::StringPrintf(
       "Could not load extension from '%s'. %s",
       path_str.c_str(), error.c_str());

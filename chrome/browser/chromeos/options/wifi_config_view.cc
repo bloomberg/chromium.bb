@@ -194,8 +194,10 @@ void WifiConfigView::ItemChanged(views::Combobox* combo_box,
 void WifiConfigView::FileSelected(const FilePath& path,
                                    int index, void* params) {
   certificate_path_ = path.value();
-  if (certificate_browse_button_)
-    certificate_browse_button_->SetLabel(path.BaseName().ToWStringHack());
+  if (certificate_browse_button_) {
+    certificate_browse_button_->SetLabel(
+        UTF16ToWide(path.BaseName().LossyDisplayName()));
+  }
   UpdateCanLogin();  // TODO(njw) Check if the passphrase decrypts the key.
 }
 

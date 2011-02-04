@@ -343,9 +343,9 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
         (*plugin_groups)[i]->web_plugins_info();
     for (size_t j = 0; j < plugins.size(); ++j) {
       std::wstring plugin1 =
-          StringToLowerASCII(plugins[j].path.BaseName().ToWStringHack());
+          StringToLowerASCII(plugins[j].path.BaseName().value());
       std::wstring plugin2 =
-          StringToLowerASCII(info.path.BaseName().ToWStringHack());
+          StringToLowerASCII(info.path.BaseName().value());
       if ((plugin1 == plugin2 && HaveSharedMimeType(plugins[j], info)) ||
           (plugin1 == kJavaDeploy1 && plugin2 == kJavaDeploy2) ||
           (plugin1 == kJavaDeploy2 && plugin2 == kJavaDeploy1)) {

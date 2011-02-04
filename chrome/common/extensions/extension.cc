@@ -1244,8 +1244,7 @@ void Extension::DecodeIconFromPath(const FilePath& icon_path,
 
   std::string file_contents;
   if (!file_util::ReadFileToString(icon_path, &file_contents)) {
-    LOG(ERROR) << "Could not read icon file: "
-               << WideToUTF8(icon_path.ToWStringHack());
+    LOG(ERROR) << "Could not read icon file: " << icon_path.LossyDisplayName();
     return;
   }
 
@@ -1257,7 +1256,7 @@ void Extension::DecodeIconFromPath(const FilePath& icon_path,
   *decoded = decoder.Decode(data, file_contents.length());
   if (decoded->empty()) {
     LOG(ERROR) << "Could not decode icon file: "
-               << WideToUTF8(icon_path.ToWStringHack());
+               << icon_path.LossyDisplayName();
     return;
   }
 

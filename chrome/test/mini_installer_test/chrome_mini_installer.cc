@@ -484,7 +484,7 @@ std::wstring ChromeMiniInstaller::GetChromeInstallDirectoryLocation() {
     PathService::Get(base::DIR_PROGRAM_FILES, &path);
   else
     PathService::Get(base::DIR_LOCAL_APP_DATA, &path);
-  return path.ToWStringHack();
+  return path.value();
 }
 
 FilePath ChromeMiniInstaller::GetStartMenuShortcutPath() {

@@ -161,7 +161,7 @@ bool ValidateExtension(Extension* extension, std::string* error) {
           if (!file_util::PathExists(image_path)) {
             *error =
                 l10n_util::GetStringFUTF8(IDS_EXTENSION_INVALID_IMAGE_PATH,
-                    WideToUTF16(image_path.ToWStringHack()));
+                                          image_path.LossyDisplayName());
             return false;
           }
         }
@@ -203,7 +203,7 @@ bool ValidateExtension(Extension* extension, std::string* error) {
       *error =
           l10n_util::GetStringFUTF8(
               IDS_EXTENSION_LOAD_PLUGIN_PATH_FAILED,
-              WideToUTF16(plugin.path.ToWStringHack()));
+              plugin.path.LossyDisplayName());
       return false;
     }
   }
@@ -250,7 +250,7 @@ bool ValidateExtension(Extension* extension, std::string* error) {
       *error =
           l10n_util::GetStringFUTF8(
               IDS_EXTENSION_LOAD_BACKGROUND_PAGE_FAILED,
-              WideToUTF16(page_path.ToWStringHack()));
+              page_path.LossyDisplayName());
       return false;
     }
   }
@@ -265,7 +265,7 @@ bool ValidateExtension(Extension* extension, std::string* error) {
       *error =
           l10n_util::GetStringFUTF8(
               IDS_EXTENSION_LOAD_OPTIONS_PAGE_FAILED,
-              WideToUTF16(options_path.ToWStringHack()));
+              options_path.LossyDisplayName());
       return false;
     }
   }
@@ -280,7 +280,7 @@ bool ValidateExtension(Extension* extension, std::string* error) {
       *error =
           l10n_util::GetStringFUTF8(
               IDS_EXTENSION_LOAD_SIDEBAR_PAGE_FAILED,
-              WideToUTF16(page_path.ToWStringHack()));
+              page_path.LossyDisplayName());
       return false;
     }
   }
@@ -312,15 +312,21 @@ void GarbageCollectExtensions(
   FilePath extension_path;
   for (extension_path = enumerator.Next(); !extension_path.value().empty();
        extension_path = enumerator.Next()) {
-    std::string extension_id = WideToASCII(
-        extension_path.BaseName().ToWStringHack());
+    std::string extension_id;
+
+    FilePath basename = extension_path.BaseName();
+    if (IsStringASCII(basename.value())) {
+      extension_id = UTF16ToASCII(basename.LossyDisplayName());
+      if (!Extension::IdIsValid(extension_id))
+        extension_id.clear();
+    }
 
     // Delete directories that aren't valid IDs.
-    if (!Extension::IdIsValid(extension_id)) {
+    if (extension_id.empty()) {
       LOG(WARNING) << "Invalid extension ID encountered in extensions "
-                      "directory: " << extension_id;
+                      "directory: " << basename.value();
       VLOG(1) << "Deleting invalid extension directory "
-              << WideToASCII(extension_path.ToWStringHack()) << ".";
+              << extension_path.value() << ".";
       file_util::Delete(extension_path, true);  // Recursive.
       continue;
     }
@@ -333,7 +339,7 @@ void GarbageCollectExtensions(
     // complete, for example, when a plugin is in use at uninstall time.
     if (iter == extension_paths.end()) {
       VLOG(1) << "Deleting unreferenced install for directory "
-              << WideToASCII(extension_path.ToWStringHack()) << ".";
+              << extension_path.LossyDisplayName() << ".";
       file_util::Delete(extension_path, true);  // Recursive.
       continue;
     }
@@ -348,7 +354,7 @@ void GarbageCollectExtensions(
          version_dir = versions_enumerator.Next()) {
       if (version_dir.BaseName() != iter->second.BaseName()) {
         VLOG(1) << "Deleting old version for directory "
-                << WideToASCII(version_dir.ToWStringHack()) << ".";
+                << version_dir.LossyDisplayName() << ".";
         file_util::Delete(version_dir, true);  // Recursive.
       }
     }
@@ -428,7 +434,7 @@ static bool ValidateLocaleInfo(const Extension& extension, std::string* error) {
     if (!file_util::PathExists(messages_path)) {
       *error = base::StringPrintf(
           "%s %s", errors::kLocalesMessagesFileMissing,
-          WideToUTF8(messages_path.ToWStringHack()).c_str());
+          UTF16ToUTF8(messages_path.LossyDisplayName()).c_str());
       return false;
     }
 
@@ -454,14 +460,14 @@ static bool IsScriptValid(const FilePath& path,
       !file_util::ReadFileToString(path, &content)) {
     *error = l10n_util::GetStringFUTF8(
         message_id,
-        WideToUTF16(relative_path.ToWStringHack()));
+        relative_path.LossyDisplayName());
     return false;
   }
 
   if (!IsStringUTF8(content)) {
     *error = l10n_util::GetStringFUTF8(
         IDS_EXTENSION_BAD_FILE_ENCODING,
-        WideToUTF16(relative_path.ToWStringHack()));
+        relative_path.LossyDisplayName());
     return false;
   }
 

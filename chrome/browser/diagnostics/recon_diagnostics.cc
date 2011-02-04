@@ -145,8 +145,7 @@ class InstallTypeTest : public DiagnosticTest {
       RecordFailure(ASCIIToUTF16("Path provider failure"));
       return false;
     }
-    user_level_ = InstallUtil::IsPerUserInstall(
-        chrome_exe.ToWStringHack().c_str());
+    user_level_ = InstallUtil::IsPerUserInstall(chrome_exe.value().c_str());
     const char* type = user_level_ ? "User Level" : "System Level";
     string16 install_type(ASCIIToUTF16(type));
 #else

@@ -126,7 +126,7 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
     if (WriteEULAtoTempFile(&inner_html)) {
       int retcode = 0;
       if (!LaunchSetupWithParam(installer::switches::kShowEula,
-                                inner_html.ToWStringHack(), &retcode) ||
+                                inner_html.value(), &retcode) ||
           (retcode == installer::EULA_REJECTED)) {
         LOG(WARNING) << "EULA rejected. Fast exit.";
         ::ExitProcess(1);

@@ -486,8 +486,12 @@ bool DownloadItem::MatchesQuery(const string16& query) const {
   if (url_formatted.find(query) != string16::npos)
     return true;
 
-  string16 path(l10n_util::ToLower(WideToUTF16(full_path().ToWStringHack())));
-  if (path.find(query) != std::wstring::npos)
+  string16 path(l10n_util::ToLower(full_path().LossyDisplayName()));
+  // This shouldn't just do a substring match; it is wrong for Unicode
+  // due to normalization and we have a fancier search-query system
+  // used elsewhere.
+  // http://code.google.com/p/chromium/issues/detail?id=71982
+  if (path.find(query) != string16::npos)
     return true;
 
   return false;

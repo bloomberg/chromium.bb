@@ -79,8 +79,8 @@ class DownloadTest : public UITest {
 
  protected:
   void RunSizeTest(const GURL& url,
-                   const std::wstring& expected_title_in_progress,
-                   const std::wstring& expected_title_finished) {
+                   const string16& expected_title_in_progress,
+                   const string16& expected_title_finished) {
     FilePath filename;
     net::FileURLToFilePath(url, &filename);
     filename = filename.BaseName();
@@ -242,8 +242,9 @@ TEST_F(DownloadTest, FLAKY_UnknownSize) {
   FilePath filename;
   net::FileURLToFilePath(url, &filename);
   filename = filename.BaseName();
-  RunSizeTest(url, L"32.0 KB - " + filename.ToWStringHack(),
-              L"100% - " + filename.ToWStringHack());
+  RunSizeTest(url,
+              ASCIIToUTF16("32.0 KB - ") + filename.LossyDisplayName(),
+              ASCIIToUTF16("100% - ") + filename.LossyDisplayName());
 }
 
 // All download tests are flaky on all platforms, http://crbug.com/35275,
@@ -254,8 +255,9 @@ TEST_F(DownloadTest, FLAKY_KnownSize) {
   FilePath filename;
   net::FileURLToFilePath(url, &filename);
   filename = filename.BaseName();
-  RunSizeTest(url, L"71% - " + filename.ToWStringHack(),
-              L"100% - " + filename.ToWStringHack());
+  RunSizeTest(url,
+              ASCIIToUTF16("71% - ") + filename.LossyDisplayName(),
+              ASCIIToUTF16("100% - ") + filename.LossyDisplayName());
 }
 
 // Test that when downloading an item in Incognito mode, we don't crash when

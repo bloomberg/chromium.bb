@@ -698,13 +698,12 @@ void SelectFileDialogImpl::ExecuteSelectFile(
                                     params.run_state.owner,
                                     &path);
   } else if (params.type == SELECT_SAVEAS_FILE) {
-    std::wstring path_as_wstring = path.ToWStringHack();
+    std::wstring path_as_wstring = path.value();
     success = SaveFileAsWithFilter(params.run_state.owner,
-        params.default_path.ToWStringHack(), filter,
+        params.default_path.value(), filter,
         params.default_extension, false, &filter_index, &path_as_wstring);
-    if (success) {
-      path = FilePath::FromWStringHack(path_as_wstring);
-    }
+    if (success)
+      path = FilePath(path_as_wstring);
     DisableOwner(params.run_state.owner);
   } else if (params.type == SELECT_OPEN_FILE) {
     success = RunOpenFileDialog(params.title, filter,

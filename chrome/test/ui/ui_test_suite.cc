@@ -119,7 +119,7 @@ void UITestSuite::LoadCrashService() {
   }
 
   FilePath crash_service = exe_dir.Append(L"crash_service.exe");
-  if (!base::LaunchApp(crash_service.ToWStringHack(), false, false,
+  if (!base::LaunchApp(crash_service.value(), false, false,
                        &crash_service_)) {
     printf("Couldn't start crash_service.exe, so this ui_test run won't tell " \
            "you if any test crashes!\n");
