@@ -8,6 +8,7 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
@@ -22,12 +23,14 @@
 #include "chrome/browser/chromeos/status/status_area_view.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
+#include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "views/window/window.h"
@@ -100,6 +103,23 @@ ExistingUserController::ExistingUserController(
 }
 
 void ExistingUserController::Init(const UserVector& users) {
+  if (g_browser_process) {
+    PrefService* state = g_browser_process->local_state();
+    if (state) {
+      std::string owner_locale =
+          state->GetString(prefs::kOwnerLocale);
+      // Ensure that we start with owner's locale.  Under common usage
+      // kApplicationLocale value equals to kOwnerLocale value.
+      // However in current implementation it may breach during guest session:
+      // we store current locale into kApplicationLocale to setup guest session.
+      if (!owner_locale.empty() &&
+          state->GetString(prefs::kApplicationLocale) != owner_locale) {
+        state->SetString(prefs::kApplicationLocale, owner_locale);
+        state->ScheduleSavePersistentPrefs();
+        LanguageSwitchMenu::SwitchLanguage(owner_locale);
+      }
+    }
+  }
   if (!background_window_) {
     background_window_ = BackgroundView::CreateWindowContainingView(
         background_bounds_,

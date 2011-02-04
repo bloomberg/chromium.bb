@@ -46,6 +46,9 @@ const char kURLsToRestoreOnStartup[] = "session.urls_to_restore_on_startup";
 // while user's profile determines his personal locale preference.
 const char kApplicationLocale[] = "intl.app_locale";
 #if defined(OS_CHROMEOS)
+// Locale preference of device' owner.  ChromeOS device appears in this locale
+// after startup/wakeup/signout.
+const char kOwnerLocale[] = "intl.owner_locale";
 // Locale accepted by user.  Non-syncable.
 // Used to determine whether we need to show Locale Change notification.
 const char kApplicationLocaleAccepted[] = "intl.app_locale_accepted";

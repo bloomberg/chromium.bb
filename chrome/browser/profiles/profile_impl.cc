@@ -120,6 +120,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/preferences.h"
 #endif
 
@@ -1402,10 +1403,6 @@ void ProfileImpl::ChangeAppLocale(
       // We maintain kApplicationLocale property in both a global storage
       // and user's profile.  Global property determines locale of login screen,
       // while user's profile determines his personal locale preference.
-      // In case of APP_LOCALE_CHANGED_VIA_LOGIN we won't touch local state
-      // because login screen code is active and takes care of it.
-      g_browser_process->local_state()->SetString(
-          prefs::kApplicationLocale, new_locale);
       break;
     }
     case APP_LOCALE_CHANGED_VIA_LOGIN: {
@@ -1448,6 +1445,13 @@ void ProfileImpl::ChangeAppLocale(
   }
   if (do_update_pref)
     GetPrefs()->SetString(prefs::kApplicationLocale, new_locale);
+  if (!chromeos::OwnershipService::GetSharedInstance()->IsAlreadyOwned() ||
+      chromeos::OwnershipService::GetSharedInstance()->CurrentUserIsOwner()) {
+    g_browser_process->local_state()->SetString(
+        prefs::kOwnerLocale, new_locale);
+    g_browser_process->local_state()->SetString(
+        prefs::kApplicationLocale, new_locale);
+  }
 
   GetPrefs()->ScheduleSavePersistentPrefs();
   g_browser_process->local_state()->ScheduleSavePersistentPrefs();

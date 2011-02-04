@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/cros/keyboard_library.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/language_preferences.h"
+#include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
@@ -83,15 +84,12 @@ void LanguageSwitchMenu::SwitchLanguage(const std::string& locale) {
   if (g_browser_process->GetApplicationLocale() == locale) {
     return;
   }
-  // Save new locale.
-  PrefService* prefs = g_browser_process->local_state();
   // TODO(markusheintz): If the preference is managed and can not be changed by
   // the user, changing the language should be disabled in the UI.
   // TODO(markusheintz): Change the if condition to prefs->IsUserModifiable()
   // once Mattias landed his pending patch.
-  if (!prefs->IsManagedPreference(prefs::kApplicationLocale)) {
-    prefs->SetString(prefs::kApplicationLocale, locale);
-    prefs->SavePersistentPrefs();
+  if (!g_browser_process->local_state()->
+      IsManagedPreference(prefs::kApplicationLocale)) {
     std::string loaded_locale;
     {
       // Reloading resource bundle causes us to do blocking IO on UI thread.
@@ -154,6 +152,11 @@ bool LanguageSwitchMenu::GetAcceleratorForCommandId(
 void LanguageSwitchMenu::ExecuteCommand(int command_id) {
   const std::string locale = language_list_->GetLocaleFromIndex(command_id);
   SwitchLanguage(locale);
+  if (!chromeos::OwnershipService::GetSharedInstance()->IsAlreadyOwned()) {
+    g_browser_process->local_state()->SetString(
+        prefs::kApplicationLocale, locale);
+    g_browser_process->local_state()->ScheduleSavePersistentPrefs();
+  }
   InitLanguageMenu();
 
   // Update all view hierarchies that the locale has changed.

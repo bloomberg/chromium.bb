@@ -28,6 +28,7 @@ extern const char kApplicationLocale[];
 #if defined(OS_CHROMEOS)
 extern const char kApplicationLocaleBackup[];
 extern const char kApplicationLocaleAccepted[];
+extern const char kOwnerLocale[];
 #endif
 
 extern const char kDefaultCharset[];

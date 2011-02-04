@@ -646,11 +646,16 @@ PrefService* InitializeLocalState(const CommandLine& parsed_command_line,
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
 
+  // TODO(brettw,*): this comment about ResourceBundle was here since
+  // initial commit.  This comment seems unrelated, bit-rotten and
+  // a candidate for removal.
   // Initialize ResourceBundle which handles files loaded from external
   // sources. This has to be done before uninstall code path and before prefs
   // are registered.
-  local_state->RegisterStringPref(prefs::kApplicationLocale,
-                                  std::string());
+  local_state->RegisterStringPref(prefs::kApplicationLocale, std::string());
+#if defined(OS_CHROMEOS)
+  local_state->RegisterStringPref(prefs::kOwnerLocale, std::string());
+#endif  // defined(OS_CHROMEOS)
 #if !defined(OS_CHROMEOS)
   local_state->RegisterBooleanPref(prefs::kMetricsReportingEnabled,
       GoogleUpdateSettings::GetCollectStatsConsent());
@@ -1189,10 +1194,10 @@ int BrowserMain(const MainFunctionParams& parameters) {
 #if defined(OS_MACOSX)
     g_browser_process->SetApplicationLocale(l10n_util::GetLocaleOverride());
 #else
-    // On a POSIX OS other than ChromeOS, the parameter that is passed to the
-    // method InitSharedInstance is ignored.
     const std::string locale =
         local_state->GetString(prefs::kApplicationLocale);
+    // On a POSIX OS other than ChromeOS, the parameter that is passed to the
+    // method InitSharedInstance is ignored.
     const std::string loaded_locale =
         ResourceBundle::InitSharedInstance(locale);
     CHECK(!loaded_locale.empty()) << "Locale could not be found for " << locale;
@@ -1201,7 +1206,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
     FilePath resources_pack_path;
     PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
     ResourceBundle::AddDataPackToSharedInstance(resources_pack_path);
-#endif  // !defined(OS_MACOSX)
+#endif  // defined(OS_MACOSX)
   }
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
