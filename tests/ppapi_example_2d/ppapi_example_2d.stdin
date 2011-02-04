@@ -81,14 +81,17 @@ replay 0 PPB_URLResponseInfo_GetBodyAsFileRef:i:l *
 
 set_variable MODULE i(4444)
 set_variable INSTANCE i(5555)
-set_variable IMG_FMT  C(8,\x90\x01\x00\x00\x90\x01\x00\x00)
+# PP_Size
+set_variable IMG_FMT  R(8,4:400,4:400)
 set_variable IMG_HANDLE i(7)
 set_variable GRAPHICS_HANLDE i(8)
-set_variable IMG_FMT2 C(16,\x00\x00\x00\x00\x90\x01\x00\x00\x90\x01\x00\x00\x40\x06\x00\x00)
+# PP_ImageDataDesc
+set_variable IMG_FMT2 R(16,4:0,4:400,4:400,4:1600)
 set_variable IMG_SIZE 64000
-set_variable GRAPHICS_FMT  C(8,\x90\x01\x00\x00\x90\x01\x00\x00)
+# PP_Size
+set_variable GRAPHICS_FMT  R(8,4:400,4:400)
 
-# This registers all signature found in all previous replay commands for export
+# Register signatures found in all previous replay commands for export
 # via install_upcalls
 echo
 echo "*** REGISTER REPLAY METHODS"

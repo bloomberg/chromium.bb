@@ -179,7 +179,6 @@ static size_t ScanEscapeString(const string s, size_t from) {
 //   rpc double_array D(5,3.1,1.4,4.1,1.5,5.9) * D(5)
 //   rpc invalid_handle h(-1) *
 //   rpc char_array C(9,A\b\f\n\t\"\"\\\x7F) * C(9)
-
 void Tokenize(string line, vector<string>* tokens) {
   size_t pos_start = 0;
 
@@ -223,24 +222,31 @@ void Tokenize(string line, vector<string>* tokens) {
 }
 
 
+static size_t FindComma(string s, size_t start) {
+  size_t i;
+  for (i = start; i < s.size(); ++i) {
+    if (s[i] == ',') {
+      break;
+    }
+  }
+  return i;
+}
+
 //  input looks like:
 //     I(5,1,2,3,4,5)
 //     L(5,1,2,3,4,5)
-static uint32_t SplitArray(string s, vector<string>* tokens, bool input) {
+static uint32_t SplitArray(string s,
+                           vector<string>* tokens,
+                           bool input,
+                           bool check_size = true) {
   tokens->clear();
   uint32_t dim = StringToUint32(s, 2);
 
   if (!input) return dim;
 
-  size_t i;
-  for (i = 2; i < s.size(); ++i) {
-    if (s[i] == ',') {
-      ++i;
-      break;
-    }
-  }
-
+  size_t i = 1 + FindComma(s, 2);
   size_t start = i;
+
   for (; i < s.size(); ++i) {
     if (s[i] == ',' || s[i] == ')') {
       tokens->push_back(s.substr(start, i - start));
@@ -248,7 +254,7 @@ static uint32_t SplitArray(string s, vector<string>* tokens, bool input) {
     }
   }
 
-  if (dim != tokens->size()) {
+  if (check_size && dim != tokens->size()) {
     NaClLog(LOG_ERROR, "array token number mismatch %d vs %d\n",
             static_cast<int>(dim), static_cast<int>(tokens->size()));
     return 0;
@@ -266,15 +272,9 @@ static uint32_t SplitArrayChar(string s, vector<string>* tokens, bool input) {
 
   if (!input) return dim;
 
-  size_t i;
-  for (i = 2; i < s.size(); ++i) {
-    if (s[i] == ',') {
-      ++i;
-      break;
-    }
-  }
-
+  size_t i = 1 + FindComma(s, 2);
   size_t start = i;
+
   while (i < s.size() && s[i] != ')') {
      ReadOneChar(s, &i);
      tokens->push_back(s.substr(start, i - start));
@@ -378,6 +378,48 @@ static bool ParseArg(NaClSrpcArg* arg,
         for (int i = 0; i < dim; ++i) {
           size_t dummy = 0;
           arg->arrays.carr[i] = ReadOneChar(array_tokens[i], &dummy);
+        }
+      }
+      break;
+    // This is alternative representation for CHAR_ARRAY:
+    // R stands for "record".
+    // example: R(7,1:0x44,2:1999,4:0)
+    case 'R':
+      arg->tag = NACL_SRPC_ARG_TYPE_CHAR_ARRAY;
+      dim = SplitArray(token, &array_tokens, input, false);
+      arg->arrays.carr = static_cast<char*>(calloc(dim, sizeof(char)));
+      if (NULL == arg->arrays.carr) {
+        NaClLog(LOG_ERROR, "alloc problem\n");
+        return false;
+      }
+      arg->u.count = dim;
+      if (input) {
+        int curr = 0;
+        for (size_t i = 0; i < array_tokens.size(); ++i) {
+          // the format of a token is: <num_bytes_single_digit>:<value>
+          int num_bytes = array_tokens[i][0] - '0';
+          if (array_tokens[i].size() < 3 ||
+              num_bytes < 1 ||
+              8 < num_bytes ||
+              array_tokens[i][1] != ':') {
+            NaClLog(LOG_ERROR, "poorly formatted 'R' parameter\n");
+            return false;
+          }
+          int64_t val = StringToInt64(array_tokens[i], 2);
+          while (num_bytes) {
+            --num_bytes;
+            if (curr >= dim) {
+              NaClLog(LOG_ERROR, "size overflow in 'R' parameter\n");
+              return false;
+            }
+            arg->arrays.carr[curr] = val & 0xff;
+            ++curr;
+            val >>= 8;
+          }
+        }
+        if (curr != dim) {
+           NaClLog(LOG_ERROR, "size mismatch in 'R' parameter\n");
+           return false;
         }
       }
       break;
