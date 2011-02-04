@@ -91,6 +91,10 @@ class PrefService : public base::NonThreadSafe {
    private:
     friend class PrefService;
 
+    PrefValueStore* pref_value_store() const {
+      return pref_service_->pref_value_store_.get();
+    }
+
     std::string name_;
 
     Value::ValueType type_;
@@ -231,11 +235,12 @@ class PrefService : public base::NonThreadSafe {
   // PrefStore pointers. This constructor is what CreatePrefService() ends up
   // calling. It's also used for unit tests.
   PrefService(PrefStore* managed_platform_prefs,
-              PrefStore* device_management_prefs,
+              PrefStore* managed_cloud_prefs,
               PrefStore* extension_prefs,
               PrefStore* command_line_prefs,
               PersistentPrefStore* user_prefs,
-              PrefStore* recommended_prefs,
+              PrefStore* recommended_platform_prefs,
+              PrefStore* recommended_cloud_prefs,
               DefaultPrefStore* default_store);
 
   // The PrefNotifier handles registering and notifying preference observers.

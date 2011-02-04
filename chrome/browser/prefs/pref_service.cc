@@ -104,22 +104,25 @@ PrefService* PrefService::CreatePrefService(const FilePath& pref_filename,
   }
 #endif
 
-  ConfigurationPolicyPrefStore* managed =
+  ConfigurationPolicyPrefStore* managed_platform =
       ConfigurationPolicyPrefStore::CreateManagedPlatformPolicyPrefStore();
-  ConfigurationPolicyPrefStore* device_management =
-      ConfigurationPolicyPrefStore::CreateDeviceManagementPolicyPrefStore(
-          profile);
+  ConfigurationPolicyPrefStore* managed_cloud =
+      ConfigurationPolicyPrefStore::CreateManagedCloudPolicyPrefStore(profile);
   CommandLinePrefStore* command_line =
       new CommandLinePrefStore(CommandLine::ForCurrentProcess());
   JsonPrefStore* user = new JsonPrefStore(
       pref_filename,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
-  ConfigurationPolicyPrefStore* recommended =
-      ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore();
+  ConfigurationPolicyPrefStore* recommended_platform =
+      ConfigurationPolicyPrefStore::CreateRecommendedPlatformPolicyPrefStore();
+  ConfigurationPolicyPrefStore* recommended_cloud =
+      ConfigurationPolicyPrefStore::CreateRecommendedCloudPolicyPrefStore(
+          profile);
   DefaultPrefStore* default_pref_store = new DefaultPrefStore();
 
-  return new PrefService(managed, device_management, extension_prefs,
-                         command_line, user, recommended, default_pref_store);
+  return new PrefService(managed_platform, managed_cloud, extension_prefs,
+                         command_line, user, recommended_platform,
+                         recommended_cloud, default_pref_store);
 }
 
 PrefService* PrefService::CreateIncognitoPrefService(
@@ -128,22 +131,24 @@ PrefService* PrefService::CreateIncognitoPrefService(
 }
 
 PrefService::PrefService(PrefStore* managed_platform_prefs,
-                         PrefStore* device_management_prefs,
+                         PrefStore* managed_cloud_prefs,
                          PrefStore* extension_prefs,
                          PrefStore* command_line_prefs,
                          PersistentPrefStore* user_prefs,
-                         PrefStore* recommended_prefs,
+                         PrefStore* recommended_platform_prefs,
+                         PrefStore* recommended_cloud_prefs,
                          DefaultPrefStore* default_store)
     : user_pref_store_(user_prefs),
       default_store_(default_store) {
   pref_notifier_.reset(new PrefNotifierImpl(this));
   pref_value_store_.reset(
       new PrefValueStore(managed_platform_prefs,
-                         device_management_prefs,
+                         managed_cloud_prefs,
                          extension_prefs,
                          command_line_prefs,
                          user_pref_store_,
-                         recommended_prefs,
+                         recommended_platform_prefs,
+                         recommended_cloud_prefs,
                          default_store,
                          pref_notifier_.get()));
   InitFromStorage();
@@ -157,11 +162,12 @@ PrefService::PrefService(const PrefService& original,
   pref_notifier_.reset(new PrefNotifierImpl(this));
   pref_value_store_.reset(original.pref_value_store_->CloneAndSpecialize(
       NULL, // managed_platform_prefs
-      NULL, // device_management_prefs
+      NULL, // managed_cloud_prefs
       incognito_extension_prefs,
       NULL, // command_line_prefs
       user_pref_store_.get(),
-      NULL, // recommended_prefs
+      NULL, // recommended_platform_prefs
+      NULL, // recommended_cloud_prefs
       default_store_.get(),
       pref_notifier_.get()));
   InitFromStorage();
@@ -641,7 +647,7 @@ const Value* PrefService::Preference::GetValue() const {
       "Must register pref before getting its value";
 
   Value* found_value = NULL;
-  if (pref_service_->pref_value_store_->GetValue(name_, type_, &found_value)) {
+  if (pref_value_store()->GetValue(name_, type_, &found_value)) {
     DCHECK(found_value->IsType(type_));
     return found_value;
   }
@@ -652,37 +658,29 @@ const Value* PrefService::Preference::GetValue() const {
 }
 
 bool PrefService::Preference::IsManaged() const {
-  PrefValueStore* pref_value_store = pref_service_->pref_value_store_.get();
-  return pref_value_store->PrefValueInManagedPlatformStore(name_.c_str()) ||
-      pref_value_store->PrefValueInDeviceManagementStore(name_.c_str());
+  return pref_value_store()->PrefValueInManagedStore(name_.c_str());
 }
 
 bool PrefService::Preference::HasExtensionSetting() const {
-  return pref_service_->pref_value_store_->
-      PrefValueInExtensionStore(name_.c_str());
+  return pref_value_store()->PrefValueInExtensionStore(name_.c_str());
 }
 
 bool PrefService::Preference::HasUserSetting() const {
-  return pref_service_->pref_value_store_->
-      PrefValueInUserStore(name_.c_str());
+  return pref_value_store()->PrefValueInUserStore(name_.c_str());
 }
 
 bool PrefService::Preference::IsExtensionControlled() const {
-  return pref_service_->pref_value_store_->
-      PrefValueFromExtensionStore(name_.c_str());
+  return pref_value_store()->PrefValueFromExtensionStore(name_.c_str());
 }
 
 bool PrefService::Preference::IsUserControlled() const {
-  return pref_service_->pref_value_store_->
-      PrefValueFromUserStore(name_.c_str());
+  return pref_value_store()->PrefValueFromUserStore(name_.c_str());
 }
 
 bool PrefService::Preference::IsDefaultValue() const {
-  return pref_service_->pref_value_store_->
-      PrefValueFromDefaultStore(name_.c_str());
+  return pref_value_store()->PrefValueFromDefaultStore(name_.c_str());
 }
 
 bool PrefService::Preference::IsUserModifiable() const {
-  return pref_service_->pref_value_store_->
-      PrefValueUserModifiable(name_.c_str());
+  return pref_value_store()->PrefValueUserModifiable(name_.c_str());
 }

@@ -33,58 +33,80 @@ class MockPrefNotifier : public PrefNotifier {
 
 }  // namespace
 
-// Names of the preferences used in this test program.
+// Names of the preferences used in this test.
 namespace prefs {
+const char kManagedPlatformPref[] = "this.pref.managed_platform";
+const char kManagedCloudPref[] = "this.pref.managed_cloud";
+const char kCommandLinePref[] = "this.pref.command_line";
+const char kExtensionPref[] = "this.pref.extension";
+const char kUserPref[] = "this.pref.user";
+const char kRecommendedPlatformPref[] = "this.pref.recommended_platform";
+const char kRecommendedCloudPref[] = "this.pref.recommended_cloud";
+const char kDefaultPref[] = "this.pref.default";
 const char kMissingPref[] = "this.pref.does_not_exist";
-const char kRecommendedPref[] = "this.pref.recommended_value_only";
-const char kSampleDict[] = "sample.dict";
-const char kSampleList[] = "sample.list";
-const char kDefaultPref[] = "default.pref";
 }
 
 // Potentially expected values of all preferences used in this test program.
 namespace managed_platform_pref {
-const std::string kHomepageValue = "http://www.topeka.com";
+const char kManagedPlatformValue[] = "managed_platform:managed_platform";
 }
 
-namespace device_management_pref {
-const std::string kSearchProviderNameValue = "Chromium";
-const char kHomepageValue[] = "http://www.wandering-around.org";
+namespace managed_cloud_pref {
+const char kManagedPlatformValue[] = "managed_cloud:managed_platform";
+const char kManagedCloudValue[] = "managed_cloud:managed_cloud";
 }
 
 namespace extension_pref {
-const char kCurrentThemeIDValue[] = "set by extension";
-const char kHomepageValue[] = "http://www.chromium.org";
-const std::string kSearchProviderNameValue = "AreYouFeelingALittleLucky";
+const char kManagedPlatformValue[] = "extension:managed_platform";
+const char kManagedCloudValue[] = "extension:managed_cloud";
+const char kExtensionValue[] = "extension:extension";
 }
 
 namespace command_line_pref {
-const char kApplicationLocaleValue[] = "hi-MOM";
-const char kCurrentThemeIDValue[] = "zyxwvut";
-const char kHomepageValue[] = "http://www.ferretcentral.org";
-const std::string kSearchProviderNameValue = "AreYouFeelingPrettyLucky";
+const char kManagedPlatformValue[] = "command_line:managed_platform";
+const char kManagedCloudValue[] = "command_line:managed_cloud";
+const char kExtensionValue[] = "command_line:extension";
+const char kCommandLineValue[] = "command_line:command_line";
 }
 
-// The "user" namespace is defined globally in an ARM system header, so we need
-// something different here.
 namespace user_pref {
-const int kStabilityLaunchCountValue = 31;
-const bool kDeleteCacheValue = true;
-const char kCurrentThemeIDValue[] = "abcdefg";
-const char kHomepageValue[] = "http://www.google.com";
-const char kApplicationLocaleValue[] = "is-WRONG";
-const std::string kSearchProviderNameValue = "AreYouFeelingVeryLucky";
+const char kManagedPlatformValue[] = "user:managed_platform";
+const char kManagedCloudValue[] = "user:managed_cloud";
+const char kExtensionValue[] = "user:extension";
+const char kCommandLineValue[] = "user:command_line";
+const char kUserValue[] = "user:user";
 }
 
-namespace recommended_pref {
-const int kStabilityLaunchCountValue = 10;
-const bool kRecommendedPrefValue = true;
+namespace recommended_platform_pref {
+const char kManagedPlatformValue[] = "recommended_platform:managed_platform";
+const char kManagedCloudValue[] = "recommended_platform:managed_cloud";
+const char kExtensionValue[] = "recommended_platform:extension";
+const char kCommandLineValue[] = "recommended_platform:command_line";
+const char kUserValue[] = "recommended_platform:user";
+const char kRecommendedPlatformValue[] =
+    "recommended_platform:recommended_platform";
+}
+
+namespace recommended_cloud_pref {
+const char kManagedPlatformValue[] = "recommended_cloud:managed_platform";
+const char kManagedCloudValue[] = "recommended_cloud:managed_cloud";
+const char kExtensionValue[] = "recommended_cloud:extension";
+const char kCommandLineValue[] = "recommended_cloud:command_line";
+const char kUserValue[] = "recommended_cloud:user";
+const char kRecommendedPlatformValue[] =
+    "recommended_cloud:recommended_platform";
+const char kRecommendedCloudValue[] = "recommended_cloud:recommended_cloud";
 }
 
 namespace default_pref {
-const int kDefaultValue = 7;
-const char kHomepageValue[] = "default homepage";
-const std::string kSearchProviderNameValue = "AreYouFeelingExtraLucky";
+const char kManagedPlatformValue[] = "default:managed_platform";
+const char kManagedCloudValue[] = "default:managed_cloud";
+const char kExtensionValue[] = "default:extension";
+const char kCommandLineValue[] = "default:command_line";
+const char kUserValue[] = "default:user";
+const char kRecommendedPlatformValue[] = "default:recommended_platform";
+const char kRecommendedCloudValue[] = "default:recommended_cloud";
+const char kDefaultValue[] = "default:default";
 }
 
 class PrefValueStoreTest : public testing::Test {
@@ -92,250 +114,350 @@ class PrefValueStoreTest : public testing::Test {
   virtual void SetUp() {
     // Create TestingPrefStores.
     CreateManagedPlatformPrefs();
-    CreateDeviceManagementPrefs();
+    CreateManagedCloudPrefs();
     CreateExtensionPrefs();
     CreateCommandLinePrefs();
     CreateUserPrefs();
-    CreateRecommendedPrefs();
+    CreateRecommendedPlatformPrefs();
+    CreateRecommendedCloudPrefs();
     CreateDefaultPrefs();
 
     // Create a fresh PrefValueStore.
     pref_value_store_.reset(new PrefValueStore(
         managed_platform_pref_store_,
-        device_management_pref_store_,
+        managed_cloud_pref_store_,
         extension_pref_store_,
         command_line_pref_store_,
         user_pref_store_,
-        recommended_pref_store_,
+        recommended_platform_pref_store_,
+        recommended_cloud_pref_store_,
         default_pref_store_,
         &pref_notifier_));
   }
 
-  // Creates a new dictionary and stores some sample user preferences
-  // in it.
-  void CreateUserPrefs() {
-    user_pref_store_ = new TestingPrefStore;
-    user_pref_store_->SetBoolean(prefs::kDeleteCache,
-        user_pref::kDeleteCacheValue);
-    user_pref_store_->SetInteger(prefs::kStabilityLaunchCount,
-        user_pref::kStabilityLaunchCountValue);
-    user_pref_store_->SetString(prefs::kCurrentThemeID,
-        user_pref::kCurrentThemeIDValue);
-    user_pref_store_->SetString(prefs::kApplicationLocale,
-        user_pref::kApplicationLocaleValue);
-    user_pref_store_->SetString(prefs::kDefaultSearchProviderName,
-        user_pref::kSearchProviderNameValue);
-    user_pref_store_->SetString(prefs::kHomePage,
-        user_pref::kHomepageValue);
-  }
-
   void CreateManagedPlatformPrefs() {
     managed_platform_pref_store_ = new TestingPrefStore;
-    managed_platform_pref_store_->SetString(prefs::kHomePage,
-        managed_platform_pref::kHomepageValue);
+    managed_platform_pref_store_->SetString(
+        prefs::kManagedPlatformPref,
+        managed_platform_pref::kManagedPlatformValue);
   }
 
-  void CreateDeviceManagementPrefs() {
-    device_management_pref_store_ = new TestingPrefStore;
-    device_management_pref_store_->SetString(prefs::kDefaultSearchProviderName,
-        device_management_pref::kSearchProviderNameValue);
-    device_management_pref_store_->SetString(prefs::kHomePage,
-        device_management_pref::kHomepageValue);
+  void CreateManagedCloudPrefs() {
+    managed_cloud_pref_store_ = new TestingPrefStore;
+    managed_cloud_pref_store_->SetString(
+        prefs::kManagedPlatformPref,
+        managed_cloud_pref::kManagedPlatformValue);
+    managed_cloud_pref_store_->SetString(
+        prefs::kManagedCloudPref,
+        managed_cloud_pref::kManagedCloudValue);
   }
 
   void CreateExtensionPrefs() {
     extension_pref_store_ = new TestingPrefStore;
-    extension_pref_store_->SetString(prefs::kCurrentThemeID,
-        extension_pref::kCurrentThemeIDValue);
-    extension_pref_store_->SetString(prefs::kHomePage,
-        extension_pref::kHomepageValue);
-    extension_pref_store_->SetString(prefs::kDefaultSearchProviderName,
-        extension_pref::kSearchProviderNameValue);
+    extension_pref_store_->SetString(
+        prefs::kManagedPlatformPref,
+        extension_pref::kManagedPlatformValue);
+    extension_pref_store_->SetString(
+        prefs::kManagedCloudPref,
+        extension_pref::kManagedCloudValue);
+    extension_pref_store_->SetString(
+        prefs::kExtensionPref,
+        extension_pref::kExtensionValue);
   }
 
   void CreateCommandLinePrefs() {
     command_line_pref_store_ = new TestingPrefStore;
-    command_line_pref_store_->SetString(prefs::kCurrentThemeID,
-        command_line_pref::kCurrentThemeIDValue);
-    command_line_pref_store_->SetString(prefs::kApplicationLocale,
-        command_line_pref::kApplicationLocaleValue);
-    command_line_pref_store_->SetString(prefs::kHomePage,
-        command_line_pref::kHomepageValue);
-    command_line_pref_store_->SetString(prefs::kDefaultSearchProviderName,
-        command_line_pref::kSearchProviderNameValue);
+    command_line_pref_store_->SetString(
+        prefs::kManagedPlatformPref,
+        command_line_pref::kManagedPlatformValue);
+    command_line_pref_store_->SetString(
+        prefs::kManagedCloudPref,
+        command_line_pref::kManagedCloudValue);
+    command_line_pref_store_->SetString(
+        prefs::kExtensionPref,
+        command_line_pref::kExtensionValue);
+    command_line_pref_store_->SetString(
+        prefs::kCommandLinePref,
+        command_line_pref::kCommandLineValue);
   }
 
-  void CreateRecommendedPrefs() {
-    recommended_pref_store_ = new TestingPrefStore;
-    recommended_pref_store_->SetInteger(prefs::kStabilityLaunchCount,
-        recommended_pref::kStabilityLaunchCountValue);
-    recommended_pref_store_->SetBoolean(prefs::kRecommendedPref,
-        recommended_pref::kRecommendedPrefValue);
+  void CreateUserPrefs() {
+    user_pref_store_ = new TestingPrefStore;
+    user_pref_store_->SetString(
+        prefs::kManagedPlatformPref,
+        user_pref::kManagedPlatformValue);
+    user_pref_store_->SetString(
+        prefs::kManagedCloudPref,
+        user_pref::kManagedCloudValue);
+    user_pref_store_->SetString(
+        prefs::kCommandLinePref,
+        user_pref::kCommandLineValue);
+    user_pref_store_->SetString(
+        prefs::kExtensionPref,
+        user_pref::kExtensionValue);
+    user_pref_store_->SetString(
+        prefs::kUserPref,
+        user_pref::kUserValue);
+  }
+
+  void CreateRecommendedPlatformPrefs() {
+    recommended_platform_pref_store_ = new TestingPrefStore;
+    recommended_platform_pref_store_->SetString(
+        prefs::kManagedPlatformPref,
+        recommended_platform_pref::kManagedPlatformValue);
+    recommended_platform_pref_store_->SetString(
+        prefs::kManagedCloudPref,
+        recommended_platform_pref::kManagedCloudValue);
+    recommended_platform_pref_store_->SetString(
+        prefs::kCommandLinePref,
+        recommended_platform_pref::kCommandLineValue);
+    recommended_platform_pref_store_->SetString(
+        prefs::kExtensionPref,
+        recommended_platform_pref::kExtensionValue);
+    recommended_platform_pref_store_->SetString(
+        prefs::kUserPref,
+        recommended_platform_pref::kUserValue);
+    recommended_platform_pref_store_->SetString(
+        prefs::kRecommendedPlatformPref,
+        recommended_platform_pref::kRecommendedPlatformValue);
+  }
+
+  void CreateRecommendedCloudPrefs() {
+    recommended_cloud_pref_store_ = new TestingPrefStore;
+    recommended_cloud_pref_store_->SetString(
+        prefs::kManagedPlatformPref,
+        recommended_cloud_pref::kManagedPlatformValue);
+    recommended_cloud_pref_store_->SetString(
+        prefs::kManagedCloudPref,
+        recommended_cloud_pref::kManagedCloudValue);
+    recommended_cloud_pref_store_->SetString(
+        prefs::kCommandLinePref,
+        recommended_cloud_pref::kCommandLineValue);
+    recommended_cloud_pref_store_->SetString(
+        prefs::kExtensionPref,
+        recommended_cloud_pref::kExtensionValue);
+    recommended_cloud_pref_store_->SetString(
+        prefs::kUserPref,
+        recommended_cloud_pref::kUserValue);
+    recommended_cloud_pref_store_->SetString(
+        prefs::kRecommendedPlatformPref,
+        recommended_cloud_pref::kRecommendedPlatformValue);
+    recommended_cloud_pref_store_->SetString(
+        prefs::kRecommendedCloudPref,
+        recommended_cloud_pref::kRecommendedCloudValue);
   }
 
   void CreateDefaultPrefs() {
     default_pref_store_ = new TestingPrefStore;
-    default_pref_store_->SetInteger(prefs::kDefaultPref,
-                                    default_pref::kDefaultValue);
-  }
-
-  DictionaryValue* CreateSampleDictValue() {
-    DictionaryValue* sample_dict = new DictionaryValue();
-    sample_dict->SetBoolean("issample", true);
-    sample_dict->SetInteger("value", 4);
-    sample_dict->SetString("descr", "Sample Test Dictionary");
-    return sample_dict;
-  }
-
-  ListValue* CreateSampleListValue() {
-    ListValue* sample_list = new ListValue();
-    sample_list->Set(0, Value::CreateIntegerValue(0));
-    sample_list->Set(1, Value::CreateIntegerValue(1));
-    sample_list->Set(2, Value::CreateIntegerValue(2));
-    sample_list->Set(3, Value::CreateIntegerValue(3));
-    return sample_list;
+    default_pref_store_->SetString(
+        prefs::kManagedPlatformPref,
+        default_pref::kManagedPlatformValue);
+    default_pref_store_->SetString(
+        prefs::kManagedCloudPref,
+        default_pref::kManagedCloudValue);
+    default_pref_store_->SetString(
+        prefs::kCommandLinePref,
+        default_pref::kCommandLineValue);
+    default_pref_store_->SetString(
+        prefs::kExtensionPref,
+        default_pref::kExtensionValue);
+    default_pref_store_->SetString(
+        prefs::kUserPref,
+        default_pref::kUserValue);
+    default_pref_store_->SetString(
+        prefs::kRecommendedPlatformPref,
+        default_pref::kRecommendedPlatformValue);
+    default_pref_store_->SetString(
+        prefs::kRecommendedCloudPref,
+        default_pref::kRecommendedCloudValue);
+    default_pref_store_->SetString(
+        prefs::kDefaultPref,
+        default_pref::kDefaultValue);
   }
 
   MockPrefNotifier pref_notifier_;
   scoped_ptr<PrefValueStore> pref_value_store_;
 
   scoped_refptr<TestingPrefStore> managed_platform_pref_store_;
-  scoped_refptr<TestingPrefStore> device_management_pref_store_;
+  scoped_refptr<TestingPrefStore> managed_cloud_pref_store_;
   scoped_refptr<TestingPrefStore> extension_pref_store_;
   scoped_refptr<TestingPrefStore> command_line_pref_store_;
   scoped_refptr<TestingPrefStore> user_pref_store_;
-  scoped_refptr<TestingPrefStore> recommended_pref_store_;
+  scoped_refptr<TestingPrefStore> recommended_platform_pref_store_;
+  scoped_refptr<TestingPrefStore> recommended_cloud_pref_store_;
   scoped_refptr<TestingPrefStore> default_pref_store_;
 };
 
 TEST_F(PrefValueStoreTest, GetValue) {
   Value* value;
 
-  // Test getting a managed platform value overwriting a user-defined and
-  // extension-defined value.
+  // The following tests read a value from the PrefService. The preferences are
+  // set in a way such that all lower-priority stores have a value and we can
+  // test whether overrides work correctly.
+
+  // Test getting a managed platform value.
   value = NULL;
-  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kHomePage, Value::TYPE_STRING,
-                                          &value));
+  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kManagedPlatformPref,
+                                          Value::TYPE_STRING, &value));
   std::string actual_str_value;
   EXPECT_TRUE(value->GetAsString(&actual_str_value));
-  EXPECT_EQ(managed_platform_pref::kHomepageValue, actual_str_value);
+  EXPECT_EQ(managed_platform_pref::kManagedPlatformValue, actual_str_value);
 
-  // Test getting a managed platform value overwriting a user-defined value.
+  // Test getting a managed cloud value.
   value = NULL;
-  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kDefaultSearchProviderName,
+  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kManagedCloudPref,
                                           Value::TYPE_STRING, &value));
   EXPECT_TRUE(value->GetAsString(&actual_str_value));
-  EXPECT_EQ(device_management_pref::kSearchProviderNameValue,
-            actual_str_value);
+  EXPECT_EQ(managed_cloud_pref::kManagedCloudValue, actual_str_value);
 
-  // Test getting an extension value overwriting a user-defined and
-  // command-line-defined value.
+  // Test getting an extension value.
   value = NULL;
-  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kCurrentThemeID,
+  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kExtensionPref,
                                           Value::TYPE_STRING, &value));
   EXPECT_TRUE(value->GetAsString(&actual_str_value));
-  EXPECT_EQ(extension_pref::kCurrentThemeIDValue, actual_str_value);
+  EXPECT_EQ(extension_pref::kExtensionValue, actual_str_value);
 
-  // Test getting a command-line value overwriting a user-defined value.
+  // Test getting a command-line value.
   value = NULL;
-  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kApplicationLocale,
+  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kCommandLinePref,
                                           Value::TYPE_STRING, &value));
   EXPECT_TRUE(value->GetAsString(&actual_str_value));
-  EXPECT_EQ(command_line_pref::kApplicationLocaleValue, actual_str_value);
+  EXPECT_EQ(command_line_pref::kCommandLineValue, actual_str_value);
 
   // Test getting a user-set value.
   value = NULL;
-  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kDeleteCache,
-                                          Value::TYPE_BOOLEAN, &value));
-  bool actual_bool_value = false;
-  EXPECT_TRUE(value->GetAsBoolean(&actual_bool_value));
-  EXPECT_EQ(user_pref::kDeleteCacheValue, actual_bool_value);
+  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kUserPref,
+                                          Value::TYPE_STRING, &value));
+  EXPECT_TRUE(value->GetAsString(&actual_str_value));
+  EXPECT_EQ(user_pref::kUserValue, actual_str_value);
 
   // Test getting a user set value overwriting a recommended value.
   value = NULL;
-  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kStabilityLaunchCount,
-                                          Value::TYPE_INTEGER, &value));
-  int actual_int_value = -1;
-  EXPECT_TRUE(value->GetAsInteger(&actual_int_value));
-  EXPECT_EQ(user_pref::kStabilityLaunchCountValue, actual_int_value);
+  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kRecommendedPlatformPref,
+                                          Value::TYPE_STRING, &value));
+  EXPECT_TRUE(value->GetAsString(&actual_str_value));
+  EXPECT_EQ(recommended_platform_pref::kRecommendedPlatformValue,
+            actual_str_value);
 
   // Test getting a recommended value.
   value = NULL;
-  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kRecommendedPref,
-                                          Value::TYPE_BOOLEAN, &value));
-  actual_bool_value = false;
-  EXPECT_TRUE(value->GetAsBoolean(&actual_bool_value));
-  EXPECT_EQ(recommended_pref::kRecommendedPrefValue, actual_bool_value);
+  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kRecommendedCloudPref,
+                                          Value::TYPE_STRING, &value));
+  EXPECT_TRUE(value->GetAsString(&actual_str_value));
+  EXPECT_EQ(recommended_cloud_pref::kRecommendedCloudValue, actual_str_value);
 
   // Test getting a default value.
   value = NULL;
   ASSERT_TRUE(pref_value_store_->GetValue(prefs::kDefaultPref,
-                                          Value::TYPE_INTEGER, &value));
-  actual_int_value = -1;
-  EXPECT_TRUE(value->GetAsInteger(&actual_int_value));
-  EXPECT_EQ(default_pref::kDefaultValue, actual_int_value);
+                                          Value::TYPE_STRING, &value));
+  EXPECT_TRUE(value->GetAsString(&actual_str_value));
+  EXPECT_EQ(default_pref::kDefaultValue, actual_str_value);
 
   // Test getting a preference value that the |PrefValueStore|
   // does not contain.
   FundamentalValue tmp_dummy_value(true);
-  Value* v_null = &tmp_dummy_value;
+  value = &tmp_dummy_value;
   ASSERT_FALSE(pref_value_store_->GetValue(prefs::kMissingPref,
-                                           Value::TYPE_STRING, &v_null));
-  ASSERT_TRUE(v_null == NULL);
+                                           Value::TYPE_STRING, &value));
+  ASSERT_TRUE(value == NULL);
 }
 
 TEST_F(PrefValueStoreTest, PrefChanges) {
-  // Setup.
-  EXPECT_CALL(pref_notifier_, OnPreferenceChanged(_)).Times(AnyNumber());
-  const char managed_platform_pref_path[] = "managed_platform_pref";
-  managed_platform_pref_store_->SetString(managed_platform_pref_path,
-                                                   "managed value");
-  const char user_pref_path[] = "user_pref";
-  user_pref_store_->SetString(user_pref_path, "user value");
-  const char default_pref_path[] = "default_pref";
-  default_pref_store_->SetString(default_pref_path, "default value");
-  Mock::VerifyAndClearExpectations(&pref_notifier_);
-
   // Check pref controlled by highest-priority store.
-  EXPECT_CALL(pref_notifier_, OnPreferenceChanged(managed_platform_pref_path));
+  EXPECT_CALL(pref_notifier_, OnPreferenceChanged(prefs::kManagedPlatformPref));
   managed_platform_pref_store_->NotifyPrefValueChanged(
-      managed_platform_pref_path);
+      prefs::kManagedPlatformPref);
   Mock::VerifyAndClearExpectations(&pref_notifier_);
 
   EXPECT_CALL(pref_notifier_, OnPreferenceChanged(_)).Times(0);
-  user_pref_store_->NotifyPrefValueChanged(managed_platform_pref_path);
+  managed_cloud_pref_store_->NotifyPrefValueChanged(
+      prefs::kManagedPlatformPref);
+  extension_pref_store_->NotifyPrefValueChanged(
+      prefs::kManagedPlatformPref);
+  command_line_pref_store_->NotifyPrefValueChanged(
+      prefs::kManagedPlatformPref);
+  user_pref_store_->NotifyPrefValueChanged(
+      prefs::kManagedPlatformPref);
+  recommended_platform_pref_store_->NotifyPrefValueChanged(
+      prefs::kManagedPlatformPref);
+  recommended_cloud_pref_store_->NotifyPrefValueChanged(
+      prefs::kManagedPlatformPref);
+  default_pref_store_->NotifyPrefValueChanged(
+      prefs::kManagedPlatformPref);
   Mock::VerifyAndClearExpectations(&pref_notifier_);
 
   // Check pref controlled by user store.
-  EXPECT_CALL(pref_notifier_, OnPreferenceChanged(user_pref_path));
-  managed_platform_pref_store_->NotifyPrefValueChanged(user_pref_path);
+  EXPECT_CALL(pref_notifier_, OnPreferenceChanged(prefs::kUserPref));
+  managed_platform_pref_store_->NotifyPrefValueChanged(prefs::kUserPref);
   Mock::VerifyAndClearExpectations(&pref_notifier_);
 
-  EXPECT_CALL(pref_notifier_, OnPreferenceChanged(user_pref_path));
-  user_pref_store_->NotifyPrefValueChanged(user_pref_path);
+  EXPECT_CALL(pref_notifier_, OnPreferenceChanged(prefs::kUserPref));
+  managed_cloud_pref_store_->NotifyPrefValueChanged(prefs::kUserPref);
+  Mock::VerifyAndClearExpectations(&pref_notifier_);
+
+  EXPECT_CALL(pref_notifier_, OnPreferenceChanged(prefs::kUserPref));
+  extension_pref_store_->NotifyPrefValueChanged(prefs::kUserPref);
+  Mock::VerifyAndClearExpectations(&pref_notifier_);
+
+  EXPECT_CALL(pref_notifier_, OnPreferenceChanged(prefs::kUserPref));
+  command_line_pref_store_->NotifyPrefValueChanged(prefs::kUserPref);
+  Mock::VerifyAndClearExpectations(&pref_notifier_);
+
+  EXPECT_CALL(pref_notifier_, OnPreferenceChanged(prefs::kUserPref));
+  user_pref_store_->NotifyPrefValueChanged(prefs::kUserPref);
   Mock::VerifyAndClearExpectations(&pref_notifier_);
 
   EXPECT_CALL(pref_notifier_, OnPreferenceChanged(_)).Times(0);
-  default_pref_store_->NotifyPrefValueChanged(user_pref_path);
+  recommended_platform_pref_store_->NotifyPrefValueChanged(
+      prefs::kUserPref);
+  recommended_cloud_pref_store_->NotifyPrefValueChanged(
+      prefs::kUserPref);
+  default_pref_store_->NotifyPrefValueChanged(
+      prefs::kUserPref);
   Mock::VerifyAndClearExpectations(&pref_notifier_);
 
   // Check pref controlled by default-pref store.
-  EXPECT_CALL(pref_notifier_, OnPreferenceChanged(default_pref_path));
-  user_pref_store_->NotifyPrefValueChanged(default_pref_path);
+  EXPECT_CALL(pref_notifier_, OnPreferenceChanged(prefs::kDefaultPref));
+  managed_platform_pref_store_->NotifyPrefValueChanged(prefs::kDefaultPref);
   Mock::VerifyAndClearExpectations(&pref_notifier_);
 
-  EXPECT_CALL(pref_notifier_, OnPreferenceChanged(default_pref_path));
-  default_pref_store_->NotifyPrefValueChanged(default_pref_path);
+  EXPECT_CALL(pref_notifier_, OnPreferenceChanged(prefs::kDefaultPref));
+  managed_cloud_pref_store_->NotifyPrefValueChanged(prefs::kDefaultPref);
+  Mock::VerifyAndClearExpectations(&pref_notifier_);
+
+  EXPECT_CALL(pref_notifier_, OnPreferenceChanged(prefs::kDefaultPref));
+  extension_pref_store_->NotifyPrefValueChanged(prefs::kDefaultPref);
+  Mock::VerifyAndClearExpectations(&pref_notifier_);
+
+  EXPECT_CALL(pref_notifier_, OnPreferenceChanged(prefs::kDefaultPref));
+  command_line_pref_store_->NotifyPrefValueChanged(prefs::kDefaultPref);
+  Mock::VerifyAndClearExpectations(&pref_notifier_);
+
+  EXPECT_CALL(pref_notifier_, OnPreferenceChanged(prefs::kDefaultPref));
+  user_pref_store_->NotifyPrefValueChanged(prefs::kDefaultPref);
+  Mock::VerifyAndClearExpectations(&pref_notifier_);
+
+  EXPECT_CALL(pref_notifier_, OnPreferenceChanged(prefs::kDefaultPref));
+  recommended_platform_pref_store_->NotifyPrefValueChanged(prefs::kDefaultPref);
+  Mock::VerifyAndClearExpectations(&pref_notifier_);
+
+  EXPECT_CALL(pref_notifier_, OnPreferenceChanged(prefs::kDefaultPref));
+  recommended_cloud_pref_store_->NotifyPrefValueChanged(prefs::kDefaultPref);
+  Mock::VerifyAndClearExpectations(&pref_notifier_);
+
+  EXPECT_CALL(pref_notifier_, OnPreferenceChanged(prefs::kDefaultPref));
+  default_pref_store_->NotifyPrefValueChanged(prefs::kDefaultPref);
   Mock::VerifyAndClearExpectations(&pref_notifier_);
 }
 
 TEST_F(PrefValueStoreTest, OnInitializationCompleted) {
   EXPECT_CALL(pref_notifier_, OnInitializationCompleted()).Times(0);
   managed_platform_pref_store_->SetInitializationCompleted();
-  device_management_pref_store_->SetInitializationCompleted();
+  managed_cloud_pref_store_->SetInitializationCompleted();
   extension_pref_store_->SetInitializationCompleted();
   command_line_pref_store_->SetInitializationCompleted();
-  recommended_pref_store_->SetInitializationCompleted();
+  recommended_platform_pref_store_->SetInitializationCompleted();
+  recommended_cloud_pref_store_->SetInitializationCompleted();
   default_pref_store_->SetInitializationCompleted();
   Mock::VerifyAndClearExpectations(&pref_notifier_);
 
@@ -345,162 +467,149 @@ TEST_F(PrefValueStoreTest, OnInitializationCompleted) {
   Mock::VerifyAndClearExpectations(&pref_notifier_);
 }
 
-TEST_F(PrefValueStoreTest, PrefValueInManagedPlatformStore) {
-  // Test a managed platform preference.
-  EXPECT_TRUE(pref_value_store_->PrefValueInManagedPlatformStore(
-      prefs::kHomePage));
-
-  // Test a device management preference.
-  EXPECT_TRUE(pref_value_store_->PrefValueInDeviceManagementStore(
-      prefs::kDefaultSearchProviderName));
-
-  // Test an extension preference.
-  EXPECT_FALSE(pref_value_store_->PrefValueInManagedPlatformStore(
-      prefs::kCurrentThemeID));
-
-  // Test a command-line preference.
-  EXPECT_FALSE(pref_value_store_->PrefValueInManagedPlatformStore(
-      prefs::kApplicationLocale));
-
-  // Test a user preference.
-  EXPECT_FALSE(pref_value_store_->PrefValueInManagedPlatformStore(
-      prefs::kStabilityLaunchCount));
-
-  // Test a preference from the recommended pref store.
-  EXPECT_FALSE(pref_value_store_->PrefValueInManagedPlatformStore(
-      prefs::kRecommendedPref));
-
-  // Test a preference from the default pref store.
-  EXPECT_FALSE(pref_value_store_->PrefValueInManagedPlatformStore(
+TEST_F(PrefValueStoreTest, PrefValueInManagedStore) {
+  EXPECT_TRUE(pref_value_store_->PrefValueInManagedStore(
+      prefs::kManagedPlatformPref));
+  EXPECT_TRUE(pref_value_store_->PrefValueInManagedStore(
+      prefs::kManagedCloudPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueInManagedStore(
+      prefs::kExtensionPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueInManagedStore(
+      prefs::kCommandLinePref));
+  EXPECT_FALSE(pref_value_store_->PrefValueInManagedStore(
+      prefs::kUserPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueInManagedStore(
+      prefs::kRecommendedPlatformPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueInManagedStore(
+      prefs::kRecommendedCloudPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueInManagedStore(
       prefs::kDefaultPref));
-
-  // Test a preference for which the PrefValueStore does not contain a value.
-  EXPECT_FALSE(pref_value_store_->PrefValueInManagedPlatformStore(
+  EXPECT_FALSE(pref_value_store_->PrefValueInManagedStore(
       prefs::kMissingPref));
 }
 
 TEST_F(PrefValueStoreTest, PrefValueInExtensionStore) {
-  // Test a managed platform preference.
-  EXPECT_TRUE(pref_value_store_->PrefValueInExtensionStore(prefs::kHomePage));
-  EXPECT_FALSE(pref_value_store_->PrefValueFromExtensionStore(
-      prefs::kHomePage));
-
-  // Test a device management preference.
   EXPECT_TRUE(pref_value_store_->PrefValueInExtensionStore(
-      prefs::kDefaultSearchProviderName));
-  EXPECT_FALSE(pref_value_store_->PrefValueFromExtensionStore(
-      prefs::kDefaultSearchProviderName));
-
-  // Test an extension preference.
+      prefs::kManagedPlatformPref));
   EXPECT_TRUE(pref_value_store_->PrefValueInExtensionStore(
-      prefs::kCurrentThemeID));
-  EXPECT_TRUE(pref_value_store_->PrefValueFromExtensionStore(
-      prefs::kCurrentThemeID));
-
-  // Test a command-line preference.
+      prefs::kManagedCloudPref));
+  EXPECT_TRUE(pref_value_store_->PrefValueInExtensionStore(
+      prefs::kExtensionPref));
   EXPECT_FALSE(pref_value_store_->PrefValueInExtensionStore(
-      prefs::kApplicationLocale));
-  EXPECT_FALSE(pref_value_store_->PrefValueFromExtensionStore(
-      prefs::kApplicationLocale));
-
-  // Test a user preference.
+      prefs::kCommandLinePref));
   EXPECT_FALSE(pref_value_store_->PrefValueInExtensionStore(
-      prefs::kStabilityLaunchCount));
-  EXPECT_FALSE(pref_value_store_->PrefValueFromExtensionStore(
-      prefs::kStabilityLaunchCount));
-
-  // Test a preference from the recommended pref store.
+      prefs::kUserPref));
   EXPECT_FALSE(pref_value_store_->PrefValueInExtensionStore(
-      prefs::kRecommendedPref));
-  EXPECT_FALSE(pref_value_store_->PrefValueFromExtensionStore(
-      prefs::kRecommendedPref));
-
-  // Test a preference from the default pref store.
+      prefs::kRecommendedPlatformPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueInExtensionStore(
+      prefs::kRecommendedCloudPref));
   EXPECT_FALSE(pref_value_store_->PrefValueInExtensionStore(
       prefs::kDefaultPref));
-  EXPECT_FALSE(pref_value_store_->PrefValueFromExtensionStore(
-      prefs::kDefaultPref));
-
-  // Test a preference for which the PrefValueStore does not contain a value.
   EXPECT_FALSE(pref_value_store_->PrefValueInExtensionStore(
-      prefs::kMissingPref));
-  EXPECT_FALSE(pref_value_store_->PrefValueFromExtensionStore(
       prefs::kMissingPref));
 }
 
 TEST_F(PrefValueStoreTest, PrefValueInUserStore) {
-  // Test a managed platform preference.
-  EXPECT_TRUE(pref_value_store_->PrefValueInUserStore(prefs::kHomePage));
-  EXPECT_FALSE(pref_value_store_->PrefValueFromUserStore(prefs::kHomePage));
-
-  // Test a device management preference.
   EXPECT_TRUE(pref_value_store_->PrefValueInUserStore(
-      prefs::kDefaultSearchProviderName));
-  EXPECT_FALSE(pref_value_store_->PrefValueFromUserStore(
-      prefs::kDefaultSearchProviderName));
-
-  // Test an extension preference.
+      prefs::kManagedPlatformPref));
   EXPECT_TRUE(pref_value_store_->PrefValueInUserStore(
-      prefs::kCurrentThemeID));
-  EXPECT_FALSE(pref_value_store_->PrefValueFromUserStore(
-      prefs::kCurrentThemeID));
-
-  // Test a command-line preference.
+      prefs::kManagedCloudPref));
   EXPECT_TRUE(pref_value_store_->PrefValueInUserStore(
-      prefs::kApplicationLocale));
-  EXPECT_FALSE(pref_value_store_->PrefValueFromUserStore(
-      prefs::kApplicationLocale));
-
-  // Test a user preference.
+      prefs::kExtensionPref));
   EXPECT_TRUE(pref_value_store_->PrefValueInUserStore(
-      prefs::kStabilityLaunchCount));
-  EXPECT_TRUE(pref_value_store_->PrefValueFromUserStore(
-      prefs::kStabilityLaunchCount));
-
-  // Test a preference from the recommended pref store.
+      prefs::kCommandLinePref));
+  EXPECT_TRUE(pref_value_store_->PrefValueInUserStore(
+      prefs::kUserPref));
   EXPECT_FALSE(pref_value_store_->PrefValueInUserStore(
-      prefs::kRecommendedPref));
+      prefs::kRecommendedPlatformPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueInUserStore(
+      prefs::kRecommendedCloudPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueInUserStore(
+      prefs::kDefaultPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueInUserStore(
+      prefs::kMissingPref));
+}
+
+TEST_F(PrefValueStoreTest, PrefValueFromExtensionStore) {
+  EXPECT_FALSE(pref_value_store_->PrefValueFromExtensionStore(
+      prefs::kManagedPlatformPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueFromExtensionStore(
+      prefs::kManagedCloudPref));
+  EXPECT_TRUE(pref_value_store_->PrefValueFromExtensionStore(
+      prefs::kExtensionPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueFromExtensionStore(
+      prefs::kCommandLinePref));
+  EXPECT_FALSE(pref_value_store_->PrefValueFromExtensionStore(
+      prefs::kUserPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueFromExtensionStore(
+      prefs::kRecommendedPlatformPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueFromExtensionStore(
+      prefs::kRecommendedCloudPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueFromExtensionStore(
+      prefs::kDefaultPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueFromExtensionStore(
+      prefs::kMissingPref));
+}
+
+TEST_F(PrefValueStoreTest, PrefValueFromUserStore) {
   EXPECT_FALSE(pref_value_store_->PrefValueFromUserStore(
-      prefs::kRecommendedPref));
-
-  // Test a preference from the default pref store.
-  EXPECT_FALSE(pref_value_store_->PrefValueInUserStore(prefs::kDefaultPref));
-  EXPECT_FALSE(pref_value_store_->PrefValueFromUserStore(prefs::kDefaultPref));
-
-  // Test a preference for which the PrefValueStore does not contain a value.
-  EXPECT_FALSE(pref_value_store_->PrefValueInUserStore(prefs::kMissingPref));
-  EXPECT_FALSE(pref_value_store_->PrefValueFromUserStore(prefs::kMissingPref));
+      prefs::kManagedPlatformPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueFromUserStore(
+      prefs::kManagedCloudPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueFromUserStore(
+      prefs::kExtensionPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueFromUserStore(
+      prefs::kCommandLinePref));
+  EXPECT_TRUE(pref_value_store_->PrefValueFromUserStore(
+      prefs::kUserPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueFromUserStore(
+      prefs::kRecommendedPlatformPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueFromUserStore(
+      prefs::kRecommendedCloudPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueFromUserStore(
+      prefs::kDefaultPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueFromUserStore(
+      prefs::kMissingPref));
 }
 
 TEST_F(PrefValueStoreTest, PrefValueFromDefaultStore) {
-  // Test a managed platform preference.
-  EXPECT_FALSE(pref_value_store_->PrefValueFromDefaultStore(prefs::kHomePage));
-
-  // Test a device management preference.
   EXPECT_FALSE(pref_value_store_->PrefValueFromDefaultStore(
-      prefs::kDefaultSearchProviderName));
-
-  // Test an extension preference.
+      prefs::kManagedPlatformPref));
   EXPECT_FALSE(pref_value_store_->PrefValueFromDefaultStore(
-      prefs::kCurrentThemeID));
-
-  // Test a command-line preference.
+      prefs::kManagedCloudPref));
   EXPECT_FALSE(pref_value_store_->PrefValueFromDefaultStore(
-      prefs::kApplicationLocale));
-
-  // Test a user preference.
+      prefs::kExtensionPref));
   EXPECT_FALSE(pref_value_store_->PrefValueFromDefaultStore(
-      prefs::kStabilityLaunchCount));
-
-  // Test a preference from the recommended pref store.
+      prefs::kCommandLinePref));
   EXPECT_FALSE(pref_value_store_->PrefValueFromDefaultStore(
-      prefs::kRecommendedPref));
+      prefs::kUserPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueFromDefaultStore(
+      prefs::kRecommendedPlatformPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueFromDefaultStore(
+      prefs::kRecommendedCloudPref));
+  EXPECT_TRUE(pref_value_store_->PrefValueFromDefaultStore(
+      prefs::kDefaultPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueFromDefaultStore(
+      prefs::kMissingPref));
+}
 
-  // Test a preference from the default pref store.
-  EXPECT_TRUE(
-      pref_value_store_->PrefValueFromDefaultStore(prefs::kDefaultPref));
-
-  // Test a preference for which the PrefValueStore does not contain a value.
-  EXPECT_FALSE(
-      pref_value_store_->PrefValueFromDefaultStore(prefs::kMissingPref));
+TEST_F(PrefValueStoreTest, PrefValueUserModifiable) {
+  EXPECT_FALSE(pref_value_store_->PrefValueUserModifiable(
+      prefs::kManagedPlatformPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueUserModifiable(
+      prefs::kManagedCloudPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueUserModifiable(
+      prefs::kExtensionPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueUserModifiable(
+      prefs::kCommandLinePref));
+  EXPECT_TRUE(pref_value_store_->PrefValueUserModifiable(
+      prefs::kUserPref));
+  EXPECT_TRUE(pref_value_store_->PrefValueUserModifiable(
+      prefs::kRecommendedPlatformPref));
+  EXPECT_TRUE(pref_value_store_->PrefValueUserModifiable(
+      prefs::kRecommendedCloudPref));
+  EXPECT_TRUE(pref_value_store_->PrefValueUserModifiable(
+      prefs::kDefaultPref));
+  EXPECT_TRUE(pref_value_store_->PrefValueUserModifiable(
+      prefs::kMissingPref));
 }

@@ -42,20 +42,22 @@ void PrefValueStore::PrefStoreKeeper::OnInitializationCompleted() {
 }
 
 PrefValueStore::PrefValueStore(PrefStore* managed_platform_prefs,
-                               PrefStore* device_management_prefs,
+                               PrefStore* managed_cloud_prefs,
                                PrefStore* extension_prefs,
                                PrefStore* command_line_prefs,
                                PrefStore* user_prefs,
-                               PrefStore* recommended_prefs,
+                               PrefStore* recommended_platform_prefs,
+                               PrefStore* recommended_cloud_prefs,
                                PrefStore* default_prefs,
                                PrefNotifier* pref_notifier)
     : pref_notifier_(pref_notifier) {
   InitPrefStore(MANAGED_PLATFORM_STORE, managed_platform_prefs);
-  InitPrefStore(DEVICE_MANAGEMENT_STORE, device_management_prefs);
+  InitPrefStore(MANAGED_CLOUD_STORE, managed_cloud_prefs);
   InitPrefStore(EXTENSION_STORE, extension_prefs);
   InitPrefStore(COMMAND_LINE_STORE, command_line_prefs);
   InitPrefStore(USER_STORE, user_prefs);
-  InitPrefStore(RECOMMENDED_STORE, recommended_prefs);
+  InitPrefStore(RECOMMENDED_PLATFORM_STORE, recommended_platform_prefs);
+  InitPrefStore(RECOMMENDED_CLOUD_STORE, recommended_cloud_prefs);
   InitPrefStore(DEFAULT_STORE, default_prefs);
 
   CheckInitializationCompleted();
@@ -65,32 +67,36 @@ PrefValueStore::~PrefValueStore() {}
 
 PrefValueStore* PrefValueStore::CloneAndSpecialize(
     PrefStore* managed_platform_prefs,
-    PrefStore* device_management_prefs,
+    PrefStore* managed_cloud_prefs,
     PrefStore* extension_prefs,
     PrefStore* command_line_prefs,
     PrefStore* user_prefs,
-    PrefStore* recommended_prefs,
+    PrefStore* recommended_platform_prefs,
+    PrefStore* recommended_cloud_prefs,
     PrefStore* default_prefs,
     PrefNotifier* pref_notifier) {
   DCHECK(pref_notifier);
   if (!managed_platform_prefs)
     managed_platform_prefs = GetPrefStore(MANAGED_PLATFORM_STORE);
-  if (!device_management_prefs)
-    device_management_prefs = GetPrefStore(DEVICE_MANAGEMENT_STORE);
+  if (!managed_cloud_prefs)
+    managed_cloud_prefs = GetPrefStore(MANAGED_CLOUD_STORE);
   if (!extension_prefs)
     extension_prefs = GetPrefStore(EXTENSION_STORE);
   if (!command_line_prefs)
     command_line_prefs = GetPrefStore(COMMAND_LINE_STORE);
   if (!user_prefs)
     user_prefs = GetPrefStore(USER_STORE);
-  if (!recommended_prefs)
-    recommended_prefs = GetPrefStore(RECOMMENDED_STORE);
+  if (!recommended_platform_prefs)
+    recommended_platform_prefs = GetPrefStore(RECOMMENDED_PLATFORM_STORE);
+  if (!recommended_cloud_prefs)
+    recommended_cloud_prefs = GetPrefStore(RECOMMENDED_CLOUD_STORE);
   if (!default_prefs)
     default_prefs = GetPrefStore(DEFAULT_STORE);
 
   return new PrefValueStore(
-      managed_platform_prefs, device_management_prefs, extension_prefs,
-      command_line_prefs, user_prefs, recommended_prefs, default_prefs,
+      managed_platform_prefs, managed_cloud_prefs, extension_prefs,
+      command_line_prefs, user_prefs, recommended_platform_prefs,
+      recommended_cloud_prefs, default_prefs,
       pref_notifier);
 }
 
@@ -127,12 +133,9 @@ void PrefValueStore::NotifyPrefChanged(
     pref_notifier_->OnPreferenceChanged(path);
 }
 
-bool PrefValueStore::PrefValueInManagedPlatformStore(const char* name) const {
-  return PrefValueInStore(name, MANAGED_PLATFORM_STORE);
-}
-
-bool PrefValueStore::PrefValueInDeviceManagementStore(const char* name) const {
-  return PrefValueInStore(name, DEVICE_MANAGEMENT_STORE);
+bool PrefValueStore::PrefValueInManagedStore(const char* name) const {
+  return PrefValueInStore(name, MANAGED_PLATFORM_STORE) ||
+         PrefValueInStore(name, MANAGED_CLOUD_STORE);
 }
 
 bool PrefValueStore::PrefValueInExtensionStore(const char* name) const {

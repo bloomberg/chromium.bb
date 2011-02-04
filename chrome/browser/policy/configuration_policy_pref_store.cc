@@ -683,11 +683,15 @@ bool ConfigurationPolicyPrefKeeper::HasProxyPolicy(
 ConfigurationPolicyPrefStore::ConfigurationPolicyPrefStore(
     ConfigurationPolicyProvider* provider)
     : provider_(provider),
-      initialization_complete_(provider->IsInitializationComplete()) {
-  // Read initial policy.
-  policy_keeper_.reset(new ConfigurationPolicyPrefKeeper(provider));
-
-  registrar_.Init(provider_, this);
+      initialization_complete_(false) {
+  if (provider_) {
+    // Read initial policy.
+    policy_keeper_.reset(new ConfigurationPolicyPrefKeeper(provider));
+    registrar_.Init(provider_, this);
+    initialization_complete_ = provider->IsInitializationComplete();
+  } else {
+    initialization_complete_ = true;
+  }
 }
 
 ConfigurationPolicyPrefStore::~ConfigurationPolicyPrefStore() {
@@ -709,7 +713,10 @@ bool ConfigurationPolicyPrefStore::IsInitializationComplete() const {
 PrefStore::ReadResult
 ConfigurationPolicyPrefStore::GetValue(const std::string& key,
                                        Value** value) const {
-  return policy_keeper_->GetValue(key, value);
+  if (policy_keeper_.get())
+    return policy_keeper_->GetValue(key, value);
+
+  return PrefStore::READ_NO_VALUE;
 }
 
 void ConfigurationPolicyPrefStore::OnUpdatePolicy() {
@@ -730,24 +737,28 @@ ConfigurationPolicyPrefStore::CreateManagedPlatformPolicyPrefStore() {
 
 // static
 ConfigurationPolicyPrefStore*
-ConfigurationPolicyPrefStore::CreateDeviceManagementPolicyPrefStore(
+ConfigurationPolicyPrefStore::CreateManagedCloudPolicyPrefStore(
     Profile* profile) {
-  ConfigurationPolicyProviderKeeper* keeper =
-      g_browser_process->configuration_policy_provider_keeper();
-  ConfigurationPolicyProvider* provider = NULL;
-  if (profile)
-    provider = profile->GetPolicyContext()->GetDeviceManagementPolicyProvider();
-  if (!provider)
-    provider = keeper->device_management_provider();
-  return new ConfigurationPolicyPrefStore(provider);
+  if (profile) {
+    return new ConfigurationPolicyPrefStore(
+        profile->GetPolicyContext()->GetDeviceManagementPolicyProvider());
+  }
+  return new ConfigurationPolicyPrefStore(NULL);
 }
 
 // static
 ConfigurationPolicyPrefStore*
-ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore() {
+ConfigurationPolicyPrefStore::CreateRecommendedPlatformPolicyPrefStore() {
   ConfigurationPolicyProviderKeeper* keeper =
       g_browser_process->configuration_policy_provider_keeper();
   return new ConfigurationPolicyPrefStore(keeper->recommended_provider());
+}
+
+// static
+ConfigurationPolicyPrefStore*
+ConfigurationPolicyPrefStore::CreateRecommendedCloudPolicyPrefStore(
+    Profile* profile) {
+  return new ConfigurationPolicyPrefStore(NULL);
 }
 
 /* static */

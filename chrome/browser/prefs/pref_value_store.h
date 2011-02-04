@@ -33,24 +33,28 @@ class PrefValueStore {
   // In decreasing order of precedence:
   //   |managed_platform_prefs| contains all managed platform (non-cloud policy)
   //        preference values.
-  //   |device_management_prefs| contains all device management (cloud policy)
-  //        preference values.
+  //   |managed_cloud_prefs| contains all managed cloud policy preference
+  //        values.
   //   |extension_prefs| contains preference values set by extensions.
   //   |command_line_prefs| contains preference values set by command-line
   //        switches.
   //   |user_prefs| contains all user-set preference values.
-  //   |recommended_prefs| contains all recommended (policy) preference values.
+  //   |recommended_platform_prefs| contains all recommended platform policy
+  //        preference values.
+  //   |recommended_cloud_prefs| contains all recommended cloud policy
+  //        preference values.
   //   |default_prefs| contains application-default preference values. It must
   //        be non-null if any preferences are to be registered.
   //
   // |pref_notifier| facilitates broadcasting preference change notifications
   // to the world.
   PrefValueStore(PrefStore* managed_platform_prefs,
-                 PrefStore* device_management_prefs,
+                 PrefStore* managed_cloud_prefs,
                  PrefStore* extension_prefs,
                  PrefStore* command_line_prefs,
                  PrefStore* user_prefs,
-                 PrefStore* recommended_prefs,
+                 PrefStore* recommended_platform_prefs,
+                 PrefStore* recommended_cloud_prefs,
                  PrefStore* default_prefs,
                  PrefNotifier* pref_notifier);
   virtual ~PrefValueStore();
@@ -58,11 +62,12 @@ class PrefValueStore {
   // Creates a clone of this PrefValueStore with PrefStores overwritten
   // by the parameters passed, if unequal NULL.
   PrefValueStore* CloneAndSpecialize(PrefStore* managed_platform_prefs,
-                                     PrefStore* device_management_prefs,
+                                     PrefStore* managed_cloud_prefs,
                                      PrefStore* extension_prefs,
                                      PrefStore* command_line_prefs,
                                      PrefStore* user_prefs,
-                                     PrefStore* recommended_prefs,
+                                     PrefStore* recommended_platform_prefs,
+                                     PrefStore* recommended_cloud_prefs,
                                      PrefStore* default_prefs,
                                      PrefNotifier* pref_notifier);
 
@@ -78,8 +83,7 @@ class PrefValueStore {
   // These methods return true if a preference with the given name is in the
   // indicated pref store, even if that value is currently being overridden by
   // a higher-priority source.
-  bool PrefValueInManagedPlatformStore(const char* name) const;
-  bool PrefValueInDeviceManagementStore(const char* name) const;
+  bool PrefValueInManagedStore(const char* name) const;
   bool PrefValueInExtensionStore(const char* name) const;
   bool PrefValueInUserStore(const char* name) const;
 
@@ -111,11 +115,12 @@ class PrefValueStore {
     // an invalid marker, e.g. as a return value.
     INVALID_STORE = -1,
     MANAGED_PLATFORM_STORE = 0,
-    DEVICE_MANAGEMENT_STORE,
+    MANAGED_CLOUD_STORE,
     EXTENSION_STORE,
     COMMAND_LINE_STORE,
     USER_STORE,
-    RECOMMENDED_STORE,
+    RECOMMENDED_PLATFORM_STORE,
+    RECOMMENDED_CLOUD_STORE,
     DEFAULT_STORE,
     PREF_STORE_TYPE_MAX = DEFAULT_STORE
   };

@@ -13,17 +13,16 @@
 
 TestingPrefServiceBase::TestingPrefServiceBase(
     TestingPrefStore* managed_platform_prefs,
-    TestingPrefStore* device_management_prefs,
     TestingPrefStore* user_prefs)
     : PrefService(managed_platform_prefs,
-                  device_management_prefs,
+                  NULL,
                   NULL,
                   NULL,
                   user_prefs,
                   NULL,
+                  NULL,
                   new DefaultPrefStore()),
       managed_platform_prefs_(managed_platform_prefs),
-      device_management_prefs_(device_management_prefs),
       user_prefs_(user_prefs) {
 }
 
@@ -73,7 +72,6 @@ void TestingPrefServiceBase::RemovePref(TestingPrefStore* pref_store,
 
 TestingPrefService::TestingPrefService()
     : TestingPrefServiceBase(new TestingPrefStore(),
-                             new TestingPrefStore(),
                              new TestingPrefStore()) {
 }
 

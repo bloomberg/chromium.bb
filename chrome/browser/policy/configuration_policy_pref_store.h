@@ -47,13 +47,18 @@ class ConfigurationPolicyPrefStore
   // Creates a ConfigurationPolicyPrefStore that reads managed platform policy.
   static ConfigurationPolicyPrefStore* CreateManagedPlatformPolicyPrefStore();
 
-  // Creates a ConfigurationPolicyPrefStore that supplies policy from
-  // the device management server.
-  static ConfigurationPolicyPrefStore* CreateDeviceManagementPolicyPrefStore(
+  // Creates a ConfigurationPolicyPrefStore that reads managed cloud policy.
+  static ConfigurationPolicyPrefStore* CreateManagedCloudPolicyPrefStore(
       Profile* profile);
 
-  // Creates a ConfigurationPolicyPrefStore that reads recommended policy.
-  static ConfigurationPolicyPrefStore* CreateRecommendedPolicyPrefStore();
+  // Creates a ConfigurationPolicyPrefStore that reads recommended platform
+  // policy.
+  static ConfigurationPolicyPrefStore*
+      CreateRecommendedPlatformPolicyPrefStore();
+
+  // Creates a ConfigurationPolicyPrefStore that reads recommended cloud policy.
+  static ConfigurationPolicyPrefStore* CreateRecommendedCloudPolicyPrefStore(
+      Profile* profile);
 
   // Returns the default policy definition list for Chrome.
   static const ConfigurationPolicyProvider::PolicyDefinitionList*
