@@ -2183,7 +2183,7 @@ class Main(object):
         '-L', '--list-tests', action='store_true', default=False,
         help='List all tests, and exit.')
     parser.add_option(
-        '', '--no-http-server', action='store_true', default=False,
+        '', '--no-http-server', action='store_true', default=True,
         help='Do not start an http server to serve files in data dir.')
 
     self._options, self._args = parser.parse_args()
