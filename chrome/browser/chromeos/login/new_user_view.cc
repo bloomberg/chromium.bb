@@ -118,7 +118,6 @@ NewUserView::NewUserView(Delegate* delegate,
       accel_toggle_accessibility_(WizardAccessibilityHelper::GetAccelerator()),
       delegate_(delegate),
       ALLOW_THIS_IN_INITIALIZER_LIST(focus_grabber_factory_(this)),
-      focus_delayed_(false),
       login_in_process_(false),
       need_border_(need_border),
       need_guest_link_(false),
@@ -315,46 +314,19 @@ void NewUserView::OnLocaleChanged() {
 }
 
 void NewUserView::RequestFocus() {
-  MessageLoop::current()->PostTask(FROM_HERE,
-      focus_grabber_factory_.NewRunnableMethod(
-          &NewUserView::FocusFirstField));
+  if (username_field_->text().empty())
+    username_field_->RequestFocus();
+  else
+    password_field_->RequestFocus();
 }
 
 void NewUserView::ViewHierarchyChanged(bool is_add,
                                        View *parent,
                                        View *child) {
-  if (is_add && child == this) {
-    MessageLoop::current()->PostTask(FROM_HERE,
-        focus_grabber_factory_.NewRunnableMethod(
-            &NewUserView::FocusFirstField));
-    WizardAccessibilityHelper::GetInstance()->MaybeEnableAccessibility(this);
-  } else if (is_add && (child == username_field_ || child == password_field_)) {
+  if (is_add && (child == username_field_ || child == password_field_)) {
     MessageLoop::current()->PostTask(FROM_HERE,
         focus_grabber_factory_.NewRunnableMethod(
             &NewUserView::Layout));
-  }
-}
-
-void NewUserView::NativeViewHierarchyChanged(bool attached,
-                                             gfx::NativeView native_view,
-                                             views::RootView* root_view) {
-  if (focus_delayed_ && attached) {
-    focus_delayed_ = false;
-    MessageLoop::current()->PostTask(FROM_HERE,
-        focus_grabber_factory_.NewRunnableMethod(
-            &NewUserView::FocusFirstField));
-  }
-}
-
-void NewUserView::FocusFirstField() {
-  if (GetFocusManager()) {
-    if (username_field_->text().empty())
-      username_field_->RequestFocus();
-    else
-      password_field_->RequestFocus();
-  } else {
-    // We are invisible - delay until it is no longer the case.
-    focus_delayed_ = true;
   }
 }
 
@@ -584,4 +556,3 @@ void NewUserView::InitLink(views::Link** link) {
 }
 
 }  // namespace chromeos
-

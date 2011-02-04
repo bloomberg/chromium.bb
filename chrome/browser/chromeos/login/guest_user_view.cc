@@ -71,10 +71,6 @@ void GuestUserView::RecreateFields() {
   SchedulePaint();
 }
 
-void GuestUserView::FocusSignInButton() {
-  submit_button_->RequestFocus();
-}
-
 bool GuestUserView::AcceleratorPressed(
     const views::Accelerator& accelerator) {
   if (accelerator == accel_login_off_the_record_)
@@ -88,6 +84,10 @@ bool GuestUserView::AcceleratorPressed(
   else
     return false;
   return true;
+}
+
+void GuestUserView::RequestFocus() {
+  submit_button_->RequestFocus();
 }
 
 void GuestUserView::ButtonPressed(

@@ -119,15 +119,10 @@ class NewUserView : public ThrobberHostView,
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View *parent,
                                     views::View *child);
-  virtual void NativeViewHierarchyChanged(bool attached,
-                                          gfx::NativeView native_view,
-                                          views::RootView* root_view);
   virtual void OnLocaleChanged();
   void AddChildView(View* view);
 
  private:
-  void FocusFirstField();
-
   // Creates Link control and adds it as a child.
   void InitLink(views::Link** link);
 
@@ -171,10 +166,6 @@ class NewUserView : public ThrobberHostView,
   ScopedRunnableMethodFactory<NewUserView> focus_grabber_factory_;
 
   LanguageSwitchMenu language_switch_menu_;
-
-  // Indicates that this view was created when focus manager was unavailable
-  // (on the hidden tab, for example).
-  bool focus_delayed_;
 
   // True when login is in process.
   bool login_in_process_;

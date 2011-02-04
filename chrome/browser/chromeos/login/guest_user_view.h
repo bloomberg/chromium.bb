@@ -28,10 +28,9 @@ class GuestUserView : public ThrobberHostView,
 
   void RecreateFields();
 
-  void FocusSignInButton();
-
   // Overridden from views::View:
   virtual bool AcceleratorPressed(const views::Accelerator& accelerator);
+  virtual void RequestFocus();
 
   // Overridden from views::ButtonListener.
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);

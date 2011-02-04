@@ -54,6 +54,26 @@ const int kControlsHeight = 28;
 // Vertical interval between the image and the textfield.
 const int kVerticalIntervalSize = 10;
 
+// A window for controls that sets focus to the view when
+// it first got focus.
+class ControlsWindow : public WidgetGtk {
+ public:
+  ControlsWindow(views::View* initial_focus_view)
+      : WidgetGtk(WidgetGtk::TYPE_WINDOW),
+        initial_focus_view_(initial_focus_view) {
+  }
+ private:
+  // WidgetGtk overrrides:
+  virtual void SetInitialFocus() {
+    if (initial_focus_view_)
+      initial_focus_view_->RequestFocus();
+  }
+
+  views::View* initial_focus_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(ControlsWindow);
+};
+
 // Widget that notifies window manager about clicking on itself.
 // Doesn't send anything if user is selected.
 class ClickNotifyingWidget : public views::WidgetGtk {
@@ -352,7 +372,7 @@ WidgetGtk* UserController::CreateControlsWindow(
     *height = size.height();
   }
 
-  WidgetGtk* window = new WidgetGtk(WidgetGtk::TYPE_WINDOW);
+  WidgetGtk* window = new ControlsWindow(control_view);
   ConfigureLoginWindow(window,
                        index,
                        gfx::Rect(*width, *height),

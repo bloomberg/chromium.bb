@@ -114,6 +114,10 @@ bool ExistingUserView::HandleKeyEvent(views::Textfield* sender,
   return true;
 }
 
+void ExistingUserView::RequestFocus() {
+  password_field_->RequestFocus();
+}
+
 void ExistingUserView::ContentsChanged(views::Textfield* sender,
                                        const string16& new_contents) {
   if (!new_contents.empty())

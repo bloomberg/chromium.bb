@@ -29,12 +29,12 @@ class ExistingUserView : public ThrobberHostView,
 
   // Overridden from views::View:
   virtual bool AcceleratorPressed(const views::Accelerator& accelerator);
-
   // Overriden from Textfield::Controller:
   virtual void ContentsChanged(views::Textfield* sender,
                                const string16& new_contents);
   virtual bool HandleKeyEvent(views::Textfield* sender,
                               const views::KeyEvent& keystroke);
+  virtual void RequestFocus();
 
   // Overriden from UserInput:
   virtual void EnableInputControls(bool enabled);
