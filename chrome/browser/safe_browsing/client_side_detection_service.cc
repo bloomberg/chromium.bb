@@ -161,7 +161,7 @@ void ClientSideDetectionService::CreateModelFileDone(
     base::PassPlatformFile file,
     bool created) {
   model_file_ = file.ReleaseValue();
-  base::FileUtilProxy::ReadWriteCallback* cb = callback_factory_.NewCallback(
+  base::FileUtilProxy::WriteCallback* cb = callback_factory_.NewCallback(
       &ClientSideDetectionService::WriteModelFileDone);
   if (!created ||
       base::PLATFORM_FILE_OK != error_code ||

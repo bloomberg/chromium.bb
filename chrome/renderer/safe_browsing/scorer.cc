@@ -55,7 +55,6 @@ class ScorerLoader {
         file_thread_proxy_,
         model_file_,
         0,  // offset
-        buffer_,
         Scorer::kMaxPhishingModelSizeBytes,
         NewCallback(this, &ScorerLoader::ModelReadDone));
     DCHECK(success) << "Unable to post a task to read the phishing model file";
@@ -63,7 +62,8 @@ class ScorerLoader {
 
  private:
   // Callback that is run once the file data has been read.
-  void ModelReadDone(base::PlatformFileError error_code, int bytes_read) {
+  void ModelReadDone(base::PlatformFileError error_code,
+                     const char* data, int bytes_read) {
     Scorer* scorer = NULL;
     if (error_code != base::PLATFORM_FILE_OK) {
       DLOG(ERROR) << "Error reading phishing model file: " << error_code;
@@ -72,6 +72,7 @@ class ScorerLoader {
     } else if (bytes_read == Scorer::kMaxPhishingModelSizeBytes) {
       DLOG(ERROR) << "Phishing model is too large, ignoring";
     } else {
+      memcpy(buffer_, data, bytes_read);
       scorer = Scorer::Create(base::StringPiece(buffer_, bytes_read));
     }
     RunCallback(scorer);

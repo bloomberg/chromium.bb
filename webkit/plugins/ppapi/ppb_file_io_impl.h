@@ -95,8 +95,9 @@ class PPB_FileIO_Impl : public Resource {
                              base::PlatformFile file);
   void QueryInfoCallback(base::PlatformFileError error_code,
                          const base::PlatformFileInfo& file_info);
-  void ReadWriteCallback(base::PlatformFileError error_code,
-                         int bytes_read_or_written);
+  void ReadCallback(base::PlatformFileError error_code,
+                    const char* data, int bytes_read);
+  void WriteCallback(base::PlatformFileError error_code, int bytes_written);
 
   base::ScopedCallbackFactory<PPB_FileIO_Impl> callback_factory_;
 
@@ -109,6 +110,9 @@ class PPB_FileIO_Impl : public Resource {
   // Output buffer pointer for |Query()|; only non-null when a callback is
   // pending for it.
   PP_FileInfo_Dev* info_;
+
+  // Pointer back to the caller's read buffer; used by |Read()|. Not owned.
+  char* read_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_FileIO_Impl);
 };

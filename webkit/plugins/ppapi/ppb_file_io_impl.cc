@@ -205,7 +205,8 @@ PPB_FileIO_Impl::PPB_FileIO_Impl(PluginInstance* instance)
       ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)),
       file_(base::kInvalidPlatformFileValue),
       callback_(),
-      info_(NULL) {
+      info_(NULL),
+      read_buffer_(NULL) {
 }
 
 PPB_FileIO_Impl::~PPB_FileIO_Impl() {
@@ -311,10 +312,14 @@ int32_t PPB_FileIO_Impl::Read(int64_t offset,
   if (rv != PP_OK)
     return rv;
 
+  // If |read_buffer__|, a callback should be pending (caught above).
+  DCHECK(!read_buffer_);
+  read_buffer_ = buffer;
+
   if (!base::FileUtilProxy::Read(
           instance()->delegate()->GetFileThreadMessageLoopProxy(),
-          file_, offset, buffer, bytes_to_read,
-          callback_factory_.NewCallback(&PPB_FileIO_Impl::ReadWriteCallback)))
+          file_, offset, bytes_to_read,
+          callback_factory_.NewCallback(&PPB_FileIO_Impl::ReadCallback)))
     return PP_ERROR_FAILED;
 
   RegisterCallback(callback);
@@ -332,7 +337,7 @@ int32_t PPB_FileIO_Impl::Write(int64_t offset,
   if (!base::FileUtilProxy::Write(
           instance()->delegate()->GetFileThreadMessageLoopProxy(),
           file_, offset, buffer, bytes_to_write,
-          callback_factory_.NewCallback(&PPB_FileIO_Impl::ReadWriteCallback)))
+          callback_factory_.NewCallback(&PPB_FileIO_Impl::WriteCallback)))
     return PP_ERROR_FAILED;
 
   RegisterCallback(callback);
@@ -469,12 +474,29 @@ void PPB_FileIO_Impl::QueryInfoCallback(
   RunPendingCallback(PlatformFileErrorToPepperError(error_code));
 }
 
-void PPB_FileIO_Impl::ReadWriteCallback(base::PlatformFileError error_code,
-                                        int bytes_read_or_written) {
+void PPB_FileIO_Impl::ReadCallback(base::PlatformFileError error_code,
+                                   const char* data, int bytes_read) {
+  DCHECK(data);
+  DCHECK(read_buffer_);
+
+  int rv;
+  if (error_code == base::PLATFORM_FILE_OK) {
+    rv = bytes_read;
+    if (file_ != base::kInvalidPlatformFileValue)
+      memcpy(read_buffer_, data, bytes_read);
+  } else
+    rv = PlatformFileErrorToPepperError(error_code);
+
+  read_buffer_ = NULL;
+  RunPendingCallback(rv);
+}
+
+void PPB_FileIO_Impl::WriteCallback(base::PlatformFileError error_code,
+                                    int bytes_written) {
   if (error_code != base::PLATFORM_FILE_OK)
     RunPendingCallback(PlatformFileErrorToPepperError(error_code));
   else
-    RunPendingCallback(bytes_read_or_written);
+    RunPendingCallback(bytes_written);
 }
 
 }  // namespace ppapi
