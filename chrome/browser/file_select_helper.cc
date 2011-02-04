@@ -96,12 +96,14 @@ void FileSelectHelper::DirectorySelected(const FilePath& path) {
 
 void FileSelectHelper::OnListFile(
     const net::DirectoryLister::DirectoryListerData& data) {
-  // Directory upload only cares about files.  This util call just checks
+  // Directory upload returns directories via a "." file, so that
+  // empty directories are included.  This util call just checks
   // the flags in the structure; there's no file I/O going on.
   if (file_util::FileEnumerator::IsDirectory(data.info))
-    return;
-
-  directory_lister_results_.push_back(data.path);
+    directory_lister_results_.push_back(
+        data.path.Append(FILE_PATH_LITERAL(".")));
+  else
+    directory_lister_results_.push_back(data.path);
 }
 
 void FileSelectHelper::OnListDone(int error) {
