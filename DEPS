@@ -189,7 +189,7 @@ deps = {
     "/trunk/deps/third_party/libsrtp@60080",
 
   "src/third_party/yasm/source/patched-yasm":
-    "/trunk/deps/third_party/yasm/patched-yasm@71296",
+    "/trunk/deps/third_party/yasm/patched-yasm@73761",
 
   "src/third_party/libjpeg_turbo":
     "/trunk/deps/third_party/libjpeg_turbo@66929",
