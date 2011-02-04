@@ -11,6 +11,10 @@
 #include "chrome/test/webdriver/automation.h"
 #include "chrome/test/webdriver/error_codes.h"
 
+namespace base {
+class WaitableEvent;
+}
+
 namespace webdriver {
 
 // Every connection made by WebDriver maps to a session object.
@@ -45,11 +49,6 @@ class Session {
   bool Reload();
   bool GetURL(std::string* url);
   bool GetTabTitle(std::string* tab_title);
-  void RunSessionTask(Task* task);
-  void RunSessionTaskOnSessionThread(
-      Task* task,
-      base::WaitableEvent* done_event);
-
 
   inline const std::string& id() const { return id_; }
 
@@ -73,6 +72,13 @@ class Session {
   }
 
  private:
+  void RunSessionTask(Task* task);
+  void RunSessionTaskOnSessionThread(
+      Task* task,
+      base::WaitableEvent* done_event);
+  void InitOnSessionThread(bool* success);
+  void TerminateOnSessionThread();
+
   scoped_ptr<Automation> automation_;
   base::Thread thread_;
 

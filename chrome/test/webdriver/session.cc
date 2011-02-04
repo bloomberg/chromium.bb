@@ -39,20 +39,19 @@ bool Session::Init() {
     LOG(ERROR) << "Cannot start session thread";
     return false;
   }
-  automation_.reset(new Automation());
 
   bool success = false;
   RunSessionTask(NewRunnableMethod(
-      automation_.get(),
-      &Automation::Init,
+      this,
+      &Session::InitOnSessionThread,
       &success));
   return success;
 }
 
 void Session::Terminate() {
   RunSessionTask(NewRunnableMethod(
-      automation_.get(),
-      &Automation::Terminate));
+      this,
+      &Session::TerminateOnSessionThread));
 }
 
 ErrorCode Session::ExecuteScript(const std::wstring& script,
@@ -201,6 +200,16 @@ void Session::RunSessionTaskOnSessionThread(Task* task,
   task->Run();
   delete task;
   done_event->Signal();
+}
+
+void Session::InitOnSessionThread(bool* success) {
+  automation_.reset(new Automation());
+  automation_->Init(success);
+}
+
+void Session::TerminateOnSessionThread() {
+  automation_->Terminate();
+  automation_.reset();
 }
 
 }  // namespace webdriver

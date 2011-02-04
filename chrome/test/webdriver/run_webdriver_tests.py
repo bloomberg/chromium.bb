@@ -271,6 +271,7 @@ class Main(object):
     if self._options.verbose:
       verbosity = 2
     result = GTestTextTestRunner(verbosity=verbosity).run(test_suite)
+    launcher.Kill()
     sys.exit(not result.wasSuccessful())
 
 

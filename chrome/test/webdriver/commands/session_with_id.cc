@@ -40,6 +40,7 @@ void SessionWithID::ExecuteGet(Response* const response) {
 }
 
 void SessionWithID::ExecuteDelete(Response* const response) {
+  session_->Terminate();
   SessionManager::GetInstance()->Delete(session_->id());
   response->set_status(kSuccess);
 }
