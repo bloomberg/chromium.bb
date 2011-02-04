@@ -297,7 +297,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
                                                   0));
   gtk_widget_set_tooltip_text(options_menu_button_->widget(),
                               options_text.c_str());
-  g_signal_connect(options_menu_button_->widget(), "clicked",
+  g_signal_connect(options_menu_button_->widget(), "button-press-event",
                    G_CALLBACK(OnOptionsMenuButtonThunk), this);
   GTK_WIDGET_UNSET_FLAGS(options_menu_button_->widget(), GTK_CAN_FOCUS);
   GtkWidget* options_alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
@@ -451,9 +451,10 @@ gboolean BalloonViewImpl::OnExpose(GtkWidget* sender, GdkEventExpose* event) {
   return FALSE;
 }
 
-void BalloonViewImpl::OnOptionsMenuButton(GtkWidget* widget) {
+void BalloonViewImpl::OnOptionsMenuButton(GtkWidget* widget,
+                                          GdkEventButton* event) {
   menu_showing_ = true;
-  options_menu_->PopupAsContext(gtk_get_current_event_time());
+  options_menu_->PopupAsContext(event->time);
 }
 
 // Called when the menu stops showing.

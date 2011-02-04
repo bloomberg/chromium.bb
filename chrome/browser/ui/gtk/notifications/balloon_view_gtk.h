@@ -87,7 +87,8 @@ class BalloonViewImpl : public BalloonView,
                        GdkEventExpose*);
   CHROMEGTK_CALLBACK_0(BalloonViewImpl, void, OnCloseButton);
   CHROMEGTK_CALLBACK_1(BalloonViewImpl, gboolean, OnExpose, GdkEventExpose*);
-  CHROMEGTK_CALLBACK_0(BalloonViewImpl, void, OnOptionsMenuButton);
+  CHROMEGTK_CALLBACK_1(BalloonViewImpl, void, OnOptionsMenuButton,
+                       GdkEventButton*);
   CHROMEGTK_CALLBACK_0(BalloonViewImpl, gboolean, OnDestroy);
 
   // Non-owned pointer to the balloon which owns this object.
