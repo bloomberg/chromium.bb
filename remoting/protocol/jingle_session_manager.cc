@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -177,12 +177,15 @@ JingleSessionManager::JingleSessionManager(
 void JingleSessionManager::Init(
     const std::string& local_jid,
     cricket::SessionManager* cricket_session_manager,
-    IncomingSessionCallback* incoming_session_callback) {
+    IncomingSessionCallback* incoming_session_callback,
+    base::RSAPrivateKey* private_key,
+    scoped_refptr<net::X509Certificate> certificate) {
   if (MessageLoop::current() != message_loop()) {
     message_loop()->PostTask(
         FROM_HERE, NewRunnableMethod(
             this, &JingleSessionManager::Init,
-            local_jid, cricket_session_manager, incoming_session_callback));
+            local_jid, cricket_session_manager, incoming_session_callback,
+            private_key, certificate));
     return;
   }
 
@@ -190,6 +193,8 @@ void JingleSessionManager::Init(
   DCHECK(incoming_session_callback);
 
   local_jid_ = local_jid;
+  certificate_ = certificate;
+  private_key_.reset(private_key);
   incoming_session_callback_.reset(incoming_session_callback);
   cricket_session_manager_ = cricket_session_manager;
   cricket_session_manager_->AddClient(kChromotingXmlNamespace, this);
@@ -280,20 +285,11 @@ void JingleSessionManager::OnSessionCreate(
 
   // If this is an outcoming session the session object is already created.
   if (incoming) {
-    // Generate private key and certificate.
-    // TODO(hclam): Instead of generating we should restore them from the disk.
-    if (!certificate_) {
-      private_key_.reset(base::RSAPrivateKey::Create(1024));
-      certificate_ = net::X509Certificate::CreateSelfSigned(
-          private_key_.get(), "CN=chromoting",
-          base::RandInt(1, std::numeric_limits<int>::max()),
-          base::TimeDelta::FromDays(1));
-      CHECK(certificate_);
-    }
+    DCHECK(certificate_);
+    DCHECK(private_key_.get());
     JingleSession* jingle_session =
         JingleSession::CreateServerSession(this, certificate_,
                                            private_key_.get());
-    certificate_ = NULL;
     sessions_.push_back(make_scoped_refptr(jingle_session));
     jingle_session->Init(cricket_session);
   }
@@ -533,14 +529,6 @@ bool JingleSessionManager::WriteContent(
 
   *elem = root;
   return true;
-}
-
-void JingleSessionManager::SetCertificate(net::X509Certificate* certificate) {
-  certificate_ = certificate;
-}
-
-void JingleSessionManager::SetPrivateKey(base::RSAPrivateKey* private_key) {
-  private_key_.reset(private_key);
 }
 
 cricket::SessionDescription* JingleSessionManager::CreateSessionDescription(

@@ -245,18 +245,19 @@ void ChromotingHost::OnStateChange(JingleClient* jingle_client,
     // Create and start session manager.
     protocol::JingleSessionManager* server =
         new protocol::JingleSessionManager(context_->jingle_thread());
-    // TODO(ajwong): Make this a command switch when we're more stable.
-    server->set_allow_local_ips(true);
-    server->Init(jingle_client->GetFullJid(),
-                 jingle_client->session_manager(),
-                 NewCallback(this, &ChromotingHost::OnNewClientSession));
 
     // Assign key and certificate to server.
     HostKeyPair key_pair;
     CHECK(key_pair.Load(config_))
         << "Failed to load server authentication data";
-    server->SetCertificate(key_pair.GenerateCertificate());
-    server->SetPrivateKey(key_pair.CopyPrivateKey());
+
+    // TODO(ajwong): Make this a command switch when we're more stable.
+    server->set_allow_local_ips(true);
+    server->Init(jingle_client->GetFullJid(),
+                 jingle_client->session_manager(),
+                 NewCallback(this, &ChromotingHost::OnNewClientSession),
+                 key_pair.CopyPrivateKey(),
+                 key_pair.GenerateCertificate());
 
     session_manager_ = server;
     // Start heartbeating.

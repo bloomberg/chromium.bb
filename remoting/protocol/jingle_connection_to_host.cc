@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -77,7 +77,8 @@ void JingleConnectionToHost::InitSession() {
   session_manager->Init(
       jingle_client_->GetFullJid(),
       jingle_client_->session_manager(),
-      NewCallback(this, &JingleConnectionToHost::OnNewSession));
+      NewCallback(this, &JingleConnectionToHost::OnNewSession),
+      NULL, NULL);
   session_manager_ = session_manager;
 
   CandidateSessionConfig* candidate_config =

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,9 +76,16 @@ class JingleSessionManager
   // Initializes the session client. Doesn't accept ownership of the
   // |session_manager|. Close() must be called _before_ the |session_manager|
   // is destroyed.
+  // If this object is used in server mode, then |private_key| and
+  // |certificate| are used to establish a secured communication with the
+  // client. It will also take ownership of these objects.
+  // In case this is used in client mode, pass in NULL for both private key and
+  // certificate.
   virtual void Init(const std::string& local_jid,
                     cricket::SessionManager* cricket_session_manager,
-                    IncomingSessionCallback* incoming_session_callback);
+                    IncomingSessionCallback* incoming_session_callback,
+                    base::RSAPrivateKey* private_key,
+                    scoped_refptr<net::X509Certificate> certificate);
 
   // SessionManager interface.
   virtual scoped_refptr<protocol::Session> Connect(
@@ -103,11 +110,6 @@ class JingleSessionManager
                             const cricket::ContentDescription* content,
                             buzz::XmlElement** elem,
                             cricket::WriteError* error);
-
-  // Set the certificate and private key if they are provided externally.
-  // TODO(hclam): Combine these two methods.
-  virtual void SetCertificate(net::X509Certificate* certificate);
-  virtual void SetPrivateKey(base::RSAPrivateKey* private_key);
 
  protected:
   virtual ~JingleSessionManager();

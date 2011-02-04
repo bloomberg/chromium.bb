@@ -279,7 +279,7 @@ void ProtocolTestClient::OnStateChange(
 
     session_manager_->Init(
         client_->GetFullJid(), client_->session_manager(),
-        NewCallback(this, &ProtocolTestClient::OnNewSession));
+        NewCallback(this, &ProtocolTestClient::OnNewSession), NULL, NULL);
     session_manager_->set_allow_local_ips(true);
 
     if (host_jid_ != "") {
