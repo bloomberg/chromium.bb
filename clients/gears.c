@@ -52,7 +52,6 @@ struct gears {
 
 	EGLDisplay display;
 	EGLContext context;
-	int drm_fd;
 	GLfloat angle;
 	cairo_surface_t *cairo_surface;
 
