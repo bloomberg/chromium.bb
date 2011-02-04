@@ -8,3 +8,5 @@
 // Registering the fonts for this test causes other processes (Adium, Firefox)
 // to spin and become unresponsive or crash.
 BUGWK50709 MAC : fast/css/font-weight-1.html = IMAGE+TEXT
+
+BUG_LOISLO MAC DEBUG : svg/text/font-size-below-point-five.svg = TEXT
