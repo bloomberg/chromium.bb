@@ -3481,8 +3481,7 @@
    fun:_Znw*
    fun:_ZN11ProfileImpl25GetHostContentSettingsMapEv
    fun:_ZN30ChromeURLRequestContextFactoryC2EP7Profile
-   fun:_ZN12_GLOBAL__N_118FactoryForOriginalC2EP7ProfilePK13ProfileIOData
-   fun:_ZN12_GLOBAL__N_118FactoryForOriginalC1EP7ProfilePK13ProfileIOData
+   ...
    fun:_ZN29ChromeURLRequestContextGetter14CreateOriginalEP7ProfilePK13ProfileIOData
    fun:_ZNK13ProfileIOData6Handle27GetMainRequestContextGetterEv
    fun:_ZN11ProfileImpl17GetRequestContextEv
