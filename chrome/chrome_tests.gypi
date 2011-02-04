@@ -2076,6 +2076,7 @@
         'browser/dom_ui/dom_ui_handler_browsertest.h',
         'browser/dom_ui/file_browse_browsertest.cc',
         'browser/dom_ui/mediaplayer_browsertest.cc',
+        'browser/dom_ui/settings_browsertest.cc',
         'browser/download/download_browsertest.cc',
         'browser/download/save_page_browsertest.cc',
         'browser/extensions/alert_apitest.cc',

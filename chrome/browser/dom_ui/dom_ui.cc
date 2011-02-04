@@ -45,6 +45,7 @@ DOMUI::DOMUI(TabContents* contents)
       should_hide_url_(false),
       link_transition_type_(PageTransition::LINK),
       bindings_(BindingsPolicy::DOM_UI),
+      register_callback_overwrites_(false),
       tab_contents_(contents) {
   GenericHandler* handler = new GenericHandler();
   AddMessageHandler(handler->Attach(this));
@@ -126,7 +127,12 @@ ui::ThemeProvider* DOMUI::GetThemeProvider() const {
 
 void DOMUI::RegisterMessageCallback(const std::string &message,
                                     MessageCallback *callback) {
-  message_callbacks_.insert(std::make_pair(message, callback));
+  std::pair<MessageCallbackMap::iterator, bool> result =
+      message_callbacks_.insert(std::make_pair(message, callback));
+
+  // Overwrite preexisting message callback mappings.
+  if (register_callback_overwrites() && !result.second)
+    result.first->second = callback;
 }
 
 Profile* DOMUI::GetProfile() const {
