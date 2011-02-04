@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,26 +21,27 @@
 
 namespace {
 
-static const char kKeyId[]          = "id";
-static const char kKeyTitle[]       = "title";
-static const char kKeyIcon[]        = "icon";
-static const char kKeyType[]        = "type";
+static const char kKeyId[] = "id";
+static const char kKeyTitle[] = "title";
+static const char kKeyIcon[] = "icon";
+static const char kKeyType[] = "type";
 static const char kKeyHasChildren[] = "hasChildren";
 
-static const char kKeyName[]        = "name";
-static const char kKeyContent[]     = "content";
-static const char kKeyDomain[]      = "domain";
-static const char kKeyPath[]        = "path";
-static const char kKeySendFor[]     = "sendfor";
-static const char kKeyDesc[]        = "desc";
-static const char kKeySize[]        = "size";
-static const char kKeyOrigin[]      = "origin";
-static const char kKeyManifest[]    = "manifest";
+static const char kKeyName[] = "name";
+static const char kKeyContent[] = "content";
+static const char kKeyDomain[] = "domain";
+static const char kKeyPath[] = "path";
+static const char kKeySendFor[] = "sendfor";
+static const char kKeyAccessibleToScript[] = "accessibleToScript";
+static const char kKeyDesc[] = "desc";
+static const char kKeySize[] = "size";
+static const char kKeyOrigin[] = "origin";
+static const char kKeyManifest[] = "manifest";
 
-static const char kKeyAccessed[]    = "accessed";
-static const char kKeyCreated[]     = "created";
-static const char kKeyExpires[]     = "expires";
-static const char kKeyModified[]    = "modified";
+static const char kKeyAccessed[] = "accessed";
+static const char kKeyCreated[] = "created";
+static const char kKeyExpires[] = "expires";
+static const char kKeyModified[] = "modified";
 
 // Encodes a pointer value into a hex string.
 std::string PointerToHexString(const void* pointer) {
@@ -88,6 +89,10 @@ void GetCookieTreeNodeDictionary(const CookieTreeNode& node,
       dict->SetString(kKeySendFor, cookie.IsSecure() ?
           l10n_util::GetStringUTF8(IDS_COOKIES_COOKIE_SENDFOR_SECURE) :
           l10n_util::GetStringUTF8(IDS_COOKIES_COOKIE_SENDFOR_ANY));
+      std::string accessible = cookie.IsHttpOnly() ?
+          l10n_util::GetStringUTF8(IDS_COOKIES_COOKIE_ACCESSIBLE_TO_SCRIPT_NO) :
+          l10n_util::GetStringUTF8(IDS_COOKIES_COOKIE_ACCESSIBLE_TO_SCRIPT_YES);
+      dict->SetString(kKeyAccessibleToScript, accessible);
       dict->SetString(kKeyCreated, UTF16ToUTF8(
           base::TimeFormatFriendlyDateAndTime(cookie.CreationDate())));
       dict->SetString(kKeyExpires, cookie.DoesExpire() ? UTF16ToUTF8(
@@ -225,6 +230,8 @@ void CookiesViewHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_PATH_LABEL));
   localized_strings->SetString("label_cookie_send_for",
       l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_SENDFOR_LABEL));
+  localized_strings->SetString("label_cookie_accessible_to_script",
+      l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_ACCESSIBLE_TO_SCRIPT_LABEL));
   localized_strings->SetString("label_cookie_created",
       l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_CREATED_LABEL));
   localized_strings->SetString("label_cookie_expires",

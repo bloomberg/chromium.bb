@@ -7335,6 +7335,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_COOKIES_COOKIE_SENDFOR_LABEL" desc="The Cookie Send For label">
         Send For:
       </message>
+      <message name="IDS_COOKIES_COOKIE_ACCESSIBLE_TO_SCRIPT_LABEL" desc="The Cookie Accessible to Script label">
+        Accessible to Script:
+      </message>
       <message name="IDS_COOKIES_COOKIE_CREATED_LABEL" desc="The Cookie Created label">
         Created:
       </message>
@@ -7359,6 +7362,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_COOKIES_COOKIE_SENDFOR_SECURE" desc="Send Cookie for any kind of connection">
         Secure connections only
+      </message>
+      <message name="IDS_COOKIES_COOKIE_ACCESSIBLE_TO_SCRIPT_YES" desc="Accessible to Script">
+        Yes
+      </message>
+      <message name="IDS_COOKIES_COOKIE_ACCESSIBLE_TO_SCRIPT_NO" desc="Accessible to Script">
+        No (HttpOnly)
       </message>
       <message name="IDS_COOKIES_COOKIE_NONESELECTED" desc="Field value when no cookie is selected">
         &lt;no cookie selected&gt;

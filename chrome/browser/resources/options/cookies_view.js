@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -93,13 +93,15 @@ cr.define('options', function() {
      * Clears cookie info.
      */
     clearCookieInfo: function() {
-      $('cookieName').textContent = localStrings.getString('no_cookie');
-      $('cookieContent').textContent = localStrings.getString('no_cookie');
-      $('cookieDomain').textContent = localStrings.getString('no_cookie');
-      $('cookiePath').textContent = localStrings.getString('no_cookie');
-      $('cookieSendFor').textContent = localStrings.getString('no_cookie');
-      $('cookieCreated').textContent = localStrings.getString('no_cookie');
-      $('cookieExpires').textContent = localStrings.getString('no_cookie');
+      var noCookie = localStrings.getString('no_cookie');
+      $('cookieName').textContent = noCookie;
+      $('cookieContent').textContent = noCookie;
+      $('cookieDomain').textContent = noCookie;
+      $('cookiePath').textContent = noCookie;
+      $('cookieSendFor').textContent = noCookie;
+      $('cookieAccessibleToScript').textContent = noCookie;
+      $('cookieCreated').textContent = noCookie;
+      $('cookieExpires').textContent = noCookie;
     },
 
     /**
@@ -111,6 +113,7 @@ cr.define('options', function() {
       $('cookieDomain').textContent = cookie.domain;
       $('cookiePath').textContent = cookie.path;
       $('cookieSendFor').textContent = cookie.sendfor;
+      $('cookieAccessibleToScript').textContent = cookie.accessibleToScript;
       $('cookieCreated').textContent = cookie.created;
       $('cookieExpires').textContent = cookie.expires;
     },
