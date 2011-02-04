@@ -64,19 +64,6 @@ const char kEcmlCardExpireDay[] = "ecom_payment_card_expdate_day";
 const char kEcmlCardExpireMonth[] = "ecom_payment_card_expdate_month";
 const char kEcmlCardExpireYear[] = "ecom_payment_card_expdate_year";
 
-namespace {
-
-// The name of the hidden form control element.
-const char* const kControlTypeHidden = "hidden";
-
-// The name of the radio form control element.
-const char* const kControlTypeRadio = "radio";
-
-// The name of the checkbox form control element.
-const char* const kControlTypeCheckBox = "checkbox";
-
-}  // namespace
-
 class EmailField : public FormField {
  public:
   virtual bool GetFieldInfo(FieldTypeMap* field_type_map) const {
@@ -213,12 +200,6 @@ bool FormField::ParseText(std::vector<AutoFillField*>::const_iterator* iter,
                           const string16& pattern,
                           AutoFillField** dest,
                           bool match_label_only) {
-  // Some forms have one or more hidden fields before each visible input; skip
-  // past these.
-  while (**iter && LowerCaseEqualsASCII((**iter)->form_control_type(),
-                                        kControlTypeHidden))
-    (*iter)++;
-
   AutoFillField* field = **iter;
   if (!field)
     return false;
@@ -289,17 +270,6 @@ FormFieldSet::FormFieldSet(FormStructure* fields) {
   // Parse fields.
   std::vector<AutoFillField*>::const_iterator field = fields->begin();
   while (field != fields->end() && *field != NULL) {
-    // Don't parse hidden fields or radio or checkbox controls.
-    if (LowerCaseEqualsASCII((*field)->form_control_type(),
-                             kControlTypeHidden) ||
-        LowerCaseEqualsASCII((*field)->form_control_type(),
-                             kControlTypeRadio) ||
-        LowerCaseEqualsASCII((*field)->form_control_type(),
-                             kControlTypeCheckBox)) {
-      field++;
-      continue;
-    }
-
     FormField* form_field = FormField::ParseFormField(&field, is_ecml);
     if (!form_field) {
       field++;

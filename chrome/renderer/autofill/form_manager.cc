@@ -69,6 +69,11 @@ bool IsOptionElement(const WebElement& element) {
   return element.hasTagName("option");
 }
 
+bool IsAutoFillableElement(const WebFormControlElement& element) {
+  const WebInputElement* input_element = toWebInputElement(&element);
+  return IsTextInput(input_element) || IsSelectElement(element);
+}
+
 // This is a helper function for the FindChildText() function (see below).
 // Search depth is limited with the |depth| parameter.
 string16 FindChildTextInner(const WebNode& node, int depth) {
@@ -268,10 +273,6 @@ string16 InferLabelFromDefinitionList(const WebFormControlElement& element) {
 // Infers corresponding label for |element| from surrounding context in the DOM.
 // Contents of preceding <p> tag or preceding text element found in the form.
 string16 InferLabelForElement(const WebFormControlElement& element) {
-  // Don't scrape labels for hidden elements.
-  if (element.formControlType() == WebString::fromUTF8("hidden"))
-    return string16();
-
   string16 inferred_label = InferLabelFromPrevious(element);
 
   // If we didn't find a label, check for table cell case.
@@ -289,21 +290,18 @@ string16 InferLabelForElement(const WebFormControlElement& element) {
   return inferred_label;
 }
 
-void GetOptionStringsFromElement(const WebFormControlElement& element,
+void GetOptionStringsFromElement(const WebSelectElement& select_element,
                                  std::vector<string16>* option_strings) {
-  DCHECK(!element.isNull());
+  DCHECK(!select_element.isNull());
   DCHECK(option_strings);
+
   option_strings->clear();
-  if (IsSelectElement(element)) {
-    // For <select> elements, copy the option strings.
-    const WebSelectElement select_element = element.toConst<WebSelectElement>();
-    WebVector<WebElement> list_items = select_element.listItems();
-    option_strings->reserve(list_items.size());
-    for (size_t i = 0; i < list_items.size(); ++i) {
-      if (IsOptionElement(list_items[i])) {
-        option_strings->push_back(
-            list_items[i].toConst<WebOptionElement>().value());
-      }
+  WebVector<WebElement> list_items = select_element.listItems();
+  option_strings->reserve(list_items.size());
+  for (size_t i = 0; i < list_items.size(); ++i) {
+    if (IsOptionElement(list_items[i])) {
+      option_strings->push_back(
+          list_items[i].toConst<WebOptionElement>().value());
     }
   }
 }
@@ -331,6 +329,7 @@ void FormManager::WebFormControlElementToFormField(
     ExtractMask extract_mask,
     FormField* field) {
   DCHECK(field);
+  DCHECK(!element.isNull());
 
   // The label is not officially part of a WebFormControlElement; however, the
   // labels for all form control elements are scraped from the DOM and set in
@@ -338,15 +337,19 @@ void FormManager::WebFormControlElementToFormField(
   field->set_name(element.nameForAutofill());
   field->set_form_control_type(element.formControlType());
 
+  if (!IsAutoFillableElement(element))
+    return;
+
   const WebInputElement* input_element = toWebInputElement(&element);
   if (IsTextInput(input_element)) {
-    const WebInputElement& input_element = element.toConst<WebInputElement>();
-    field->set_max_length(input_element.maxLength());
-    field->set_autofilled(input_element.isAutofilled());
+    field->set_max_length(input_element->maxLength());
+    field->set_autofilled(input_element->isAutofilled());
   } else if (extract_mask & EXTRACT_OPTIONS) {
     // Set option strings on the field if available.
+    DCHECK(IsSelectElement(element));
+    const WebSelectElement select_element = element.toConst<WebSelectElement>();
     std::vector<string16> option_strings;
-    GetOptionStringsFromElement(element, &option_strings);
+    GetOptionStringsFromElement(select_element, &option_strings);
     field->set_option_strings(option_strings);
   }
 
@@ -354,10 +357,10 @@ void FormManager::WebFormControlElementToFormField(
     return;
 
   string16 value;
-  if (IsTextInput(input_element) ||
-      element.formControlType() == WebString::fromUTF8("hidden")) {
+  if (IsTextInput(input_element)) {
     value = input_element->value();
-  } else if (IsSelectElement(element)) {
+  } else {
+    DCHECK(IsSelectElement(element));
     const WebSelectElement select_element = element.toConst<WebSelectElement>();
     value = select_element.value();
 
@@ -389,8 +392,8 @@ void FormManager::WebFormControlElementToFormField(
 
 // static
 string16 FormManager::LabelForElement(const WebFormControlElement& element) {
-  // Don't scrape labels for hidden elements.
-  if (element.formControlType() == WebString::fromUTF8("hidden"))
+  // Don't scrape labels for elements we can't possibly autofill anyway.
+  if (!IsAutoFillableElement(element))
     return string16();
 
   WebNodeList labels = element.document().getElementsByTagName("label");
@@ -446,6 +449,9 @@ bool FormManager::WebFormElementToFormData(const WebFormElement& element,
 
   for (size_t i = 0; i < control_elements.size(); ++i) {
     const WebFormControlElement& control_element = control_elements[i];
+
+    if (!IsAutoFillableElement(control_element))
+      continue;
 
     const WebInputElement* input_element = toWebInputElement(&control_element);
     if (requirements & REQUIRE_AUTOCOMPLETE && IsTextInput(input_element) &&
@@ -536,6 +542,9 @@ void FormManager::ExtractForms(const WebFrame* frame) {
     form_element->form_element.getFormControlElements(control_elements);
     for (size_t j = 0; j < control_elements.size(); ++j) {
       WebFormControlElement element = control_elements[j];
+      if (!IsAutoFillableElement(element))
+        continue;
+
       form_element->control_elements.push_back(element);
 
       // Save original values of <select> elements so we can restore them
@@ -671,7 +680,8 @@ bool FormManager::ClearFormWithNode(const WebNode& node) {
         int length = input_element->value().length();
         input_element->setSelectionRange(length, length);
       }
-    } else if (IsSelectElement(element)) {
+    } else {
+      DCHECK(IsSelectElement(element));
       WebSelectElement select_element = element.to<WebSelectElement>();
       select_element.setValue(form_element->control_values[i]);
     }
@@ -875,7 +885,6 @@ void FormManager::FillFormField(WebFormControlElement* field,
 
   WebInputElement* input_element = toWebInputElement(field);
   if (IsTextInput(input_element)) {
-
     // If the maxlength attribute contains a negative value, maxLength()
     // returns the default maxlength value.
     input_element->setValue(
@@ -885,7 +894,8 @@ void FormManager::FillFormField(WebFormControlElement* field,
       int length = input_element->value().length();
       input_element->setSelectionRange(length, length);
     }
-  } else if (IsSelectElement(*field)) {
+  } else {
+    DCHECK(IsSelectElement(*field));
     WebSelectElement select_element = field->to<WebSelectElement>();
     select_element.setValue(data->value());
   }

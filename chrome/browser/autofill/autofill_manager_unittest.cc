@@ -505,10 +505,6 @@ class AutoFillManagerTest : public RenderViewHostTestHarness {
     autofill_manager_->OnFormsSeen(forms);
   }
 
-  void FormSubmitted(const webkit_glue::FormData& form) {
-    autofill_manager_->OnFormSubmitted(form);
-  }
-
   void FillAutoFillFormData(int query_id,
                             const webkit_glue::FormData& form,
                             const webkit_glue::FormField& field,
@@ -1740,37 +1736,6 @@ TEST_F(AutoFillManagerTest, FormChangesAddField) {
   FormData results;
   EXPECT_TRUE(GetAutoFillFormDataFilledMessage(&page_id, &results));
   ExpectFilledAddressFormElvis(page_id, results, kDefaultPageID, false);
-}
-
-TEST_F(AutoFillManagerTest, HiddenFields) {
-  FormData form;
-  form.name = ASCIIToUTF16("MyForm");
-  form.method = ASCIIToUTF16("POST");
-  form.origin = GURL("http://myform.com/form.html");
-  form.action = GURL("http://myform.com/submit.html");
-  form.user_submitted = true;
-
-  FormField field;
-  autofill_test::CreateTestFormField(
-      "E-mail", "one", "one", "hidden", &field);
-  form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "E-mail", "two", "two", "hidden", &field);
-  form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "E-mail", "three", "three", "hidden", &field);
-  form.fields.push_back(field);
-
-  // Set up our form data.
-  std::vector<FormData> forms;
-  forms.push_back(form);
-  FormsSeen(forms);
-
-  // Submit the form.
-  FormSubmitted(form);
-
-  // TODO(jhawkins): We can't use the InfoBar anymore to determine if we saved
-  // fields.  Need to query the PDM.
 }
 
 // Checks that resetting the auxiliary profile enabled preference does the right

@@ -1023,6 +1023,11 @@ TEST_F(RenderViewTest, SendForms) {
            "  <input type=\"text\" id=\"firstname\"/>"
            "  <input type=\"text\" id=\"middlename\" autoComplete=\"off\"/>"
            "  <input type=\"hidden\" id=\"lastname\"/>"
+           "  <select id=\"state\"/>"
+           "    <option>?</option>"
+           "    <option>California</option>"
+           "    <option>Texas</option>"
+           "  </select>"
            "</form>");
 
   // Verify that "FormsSeen" sends the expected number of fields.
@@ -1051,9 +1056,9 @@ TEST_F(RenderViewTest, SendForms) {
                 false))) << forms[0].fields[1];
   EXPECT_TRUE(forms[0].fields[2].StrictlyEqualsHack(
       FormField(string16(),
-                ASCIIToUTF16("lastname"),
-                string16(),
-                ASCIIToUTF16("hidden"),
+                ASCIIToUTF16("state"),
+                ASCIIToUTF16("?"),
+                ASCIIToUTF16("select-one"),
                 0,
                 false))) << forms[0].fields[2];
 
@@ -1098,9 +1103,9 @@ TEST_F(RenderViewTest, SendForms) {
                 false))) << form2.fields[1];
   EXPECT_TRUE(form2.fields[2].StrictlyEqualsHack(
       FormField(string16(),
-                ASCIIToUTF16("lastname"),
-                string16(),
-                ASCIIToUTF16("hidden"),
+                ASCIIToUTF16("state"),
+                ASCIIToUTF16("?"),
+                ASCIIToUTF16("select-one"),
                 0,
                 false))) << form2.fields[2];
 }

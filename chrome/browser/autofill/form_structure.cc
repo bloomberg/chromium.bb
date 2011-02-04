@@ -38,10 +38,6 @@ const char kXMLElementAutoFillUpload[] = "autofillupload";
 const char kXMLElementForm[] = "form";
 const char kXMLElementField[] = "field";
 
-// The list of form control types we handle.
-const char kControlTypeSelect[] = "select-one";
-const char kControlTypeText[] = "text";
-
 // The number of fillable fields necessary for a form to be fillable.
 const size_t kRequiredFillableFields = 3;
 
@@ -59,17 +55,10 @@ FormStructure::FormStructure(const FormData& form)
   std::vector<webkit_glue::FormField>::const_iterator field;
   for (field = form.fields.begin();
        field != form.fields.end(); field++) {
-    // We currently only handle text and select fields; however, we need to
-    // store all fields in order to match the fields stored in the FormManager.
-    // We don't append other field types to the form signature though in order
-    // to match the form signature of the AutoFill servers.
-    if (LowerCaseEqualsASCII(field->form_control_type(), kControlTypeText) ||
-        LowerCaseEqualsASCII(field->form_control_type(), kControlTypeSelect)) {
-      // Add all supported form fields (including with empty names) to
-      // signature.  This is a requirement for AutoFill servers.
-      form_signature_field_names_.append("&");
-      form_signature_field_names_.append(UTF16ToUTF8(field->name()));
-    }
+    // Add all supported form fields (including with empty names) to the
+    // signature.  This is a requirement for AutoFill servers.
+    form_signature_field_names_.append("&");
+    form_signature_field_names_.append(UTF16ToUTF8(field->name()));
 
     // Generate a unique name for this field by appending a counter to the name.
     string16 unique_name = field->name() +
