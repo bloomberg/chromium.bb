@@ -680,10 +680,9 @@ void WebPluginDelegateImpl::WindowlessPaint(gfx::NativeDrawingContext context,
                                             const gfx::Rect& damage_rect) {
   // If we get a paint event before we are completely set up (e.g., a nested
   // call while the plugin is still in NPP_SetWindow), bail.
-  //if (!have_called_set_window_ || !buffer_context_)
-  if (!have_called_set_window_)
+  if (!have_called_set_window_ || !buffer_context_)
     return;
-  //DCHECK(buffer_context_ == context);
+  DCHECK(buffer_context_ == context);
 
   static base::StatsRate plugin_paint("Plugin.Paint");
   base::StatsScope<base::StatsRate> scope(plugin_paint);
@@ -730,8 +729,8 @@ void WebPluginDelegateImpl::WindowlessPaint(gfx::NativeDrawingContext context,
 
   // The backing buffer can change during the call to NPP_HandleEvent, in which
   // case the old context is (or is about to be) invalid.
-  //if (context == buffer_context_)
-  CGContextRestoreGState(context);
+  if (context == buffer_context_)
+    CGContextRestoreGState(context);
 }
 
 void WebPluginDelegateImpl::WindowlessSetWindow() {
