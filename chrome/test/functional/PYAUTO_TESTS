@@ -81,7 +81,7 @@
       # crbug.com/67851
       '-special_tabs.SpecialTabsTest.testAboutDNSTab',
       # 'sync',  crbug.com/60970
-      'test_basic.SimpleTest.testCanOpenGoogle',
+      'test_basic',
       'themes',
     ],
 
