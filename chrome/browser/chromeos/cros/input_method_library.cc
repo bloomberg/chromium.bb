@@ -345,6 +345,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
           // Check if it's a change in active input methods.
           if (config_name == language_prefs::kPreloadEnginesConfigName) {
             active_input_methods_are_changed = true;
+            VLOG(1) << "Updated preload_engines: " << value.ToString();
           }
           // Successfully sent. Remove the command and proceed to the next one.
           pending_config_requests_.erase(iter++);
@@ -586,6 +587,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
                       this);
 
     *process_id = pid;
+    VLOG(1) << command_line << " (PID=" << pid << ") is started";
     return  true;
   }
 
