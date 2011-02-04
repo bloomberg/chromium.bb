@@ -1,6 +1,7 @@
 var pass = chrome.test.callbackPass;
 var fail = chrome.test.callbackFail;
 var assertEq = chrome.test.assertEq;
+var assertTrue = chrome.test.assertTrue;
 
 var GOOGLE_URL = 'http://www.google.com/';
 var PICASA_URL = 'http://www.picasa.com/';
@@ -126,5 +127,48 @@ function runHistoryTestFns(testFns) {
     B_RELATIVE_URL = fixPort(B_RELATIVE_URL);
 
     chrome.test.runTests(testFns);
+  });
+}
+
+/**
+ * Add two URLs to the history.  Compute three times, in ms since the epoch:
+ *    'before': A time before both URLs were added.
+ *    'between': A time between the times teh URLs were added.
+ *    'after': A time after both were added.
+ * All times are passed to |callback| as properties of its object parameter.
+ * @param {Array.<string>} urls An array of two URLs to add to the history.
+ * @param {function(object)} callback Called with the times described above.
+ */
+function addUrlsWithTimeline(urls, callback) {
+  // If a test needs more than two urls, this could be generalized.
+  assertEq(2, urls.length);
+
+  // Add the first URL now.
+  chrome.history.addUrl({url: urls[0]});
+
+  // Add the second URL after a delay, so that the times at which the
+  // URLs were added are not the same.
+  waitAFewSeconds(1, function() {
+    chrome.history.addUrl({url: urls[1]});
+
+    // Use search to get the times of the two URLs, and compute times
+    // to pass to the callback.
+    chrome.history.search({text: ''}, function(historyItems) {
+      // Check that both URLs were added.
+      assertEq(urls.length, historyItems.length);
+
+      // Don't assume anything about the order of history records in
+      // |historyItems|.
+      var firstUrlTime = Math.min(historyItems[0].lastVisitTime,
+                                  historyItems[1].lastVisitTime);
+      var secondUrlTime = Math.max(historyItems[0].lastVisitTime,
+                                   historyItems[1].lastVisitTime);
+
+      callback({
+        before: firstUrlTime - 100.0,
+        between: (firstUrlTime + secondUrlTime) / 2.0,
+        after: secondUrlTime + 100.0
+      });
+    });
   });
 }

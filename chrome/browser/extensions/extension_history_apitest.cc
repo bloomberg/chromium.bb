@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "net/base/mock_host_resolver.h"
@@ -15,6 +16,17 @@ class ExtensionHistoryApiTest : public ExtensionApiTest {
     host_resolver()->AddRule("www.b.com", "127.0.0.1");
 
     ASSERT_TRUE(StartTestServer());
+  }
+
+  virtual void SetUpCommandLine(CommandLine* command_line) {
+    ExtensionApiTest::SetUpCommandLine(command_line);
+
+    // Tests are flaky, but only on the waterfall (crbug.com/26296).
+    // Failures involve a call to chrome.history.search() not finding
+    // a result whose addition caused event chrome.history.onVisited
+    // to fire.  Turn on verbose logging.
+    // TODO(skerner): Remove this once the flakiness is fixed.
+    command_line->AppendSwitchASCII(switches::kVModule, "*/history/*=1");
   }
 };
 

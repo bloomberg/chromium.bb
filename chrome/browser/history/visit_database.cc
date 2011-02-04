@@ -111,8 +111,11 @@ VisitID VisitDatabase::AddVisit(VisitRow* visit, VisitSource source) {
       "INSERT INTO visits "
       "(url, visit_time, from_visit, transition, segment_id, is_indexed) "
       "VALUES (?,?,?,?,?,?)"));
-  if (!statement)
+  if (!statement) {
+    VLOG(0) << "Failed to build visit insert statement:  "
+            << "url_id = " << visit->url_id;
     return 0;
+  }
 
   statement.BindInt64(0, visit->url_id);
   statement.BindInt64(1, visit->visit_time.ToInternalValue());
@@ -120,8 +123,12 @@ VisitID VisitDatabase::AddVisit(VisitRow* visit, VisitSource source) {
   statement.BindInt64(3, visit->transition);
   statement.BindInt64(4, visit->segment_id);
   statement.BindInt64(5, visit->is_indexed);
-  if (!statement.Run())
+
+  if (!statement.Run()) {
+    VLOG(0) << "Failed to execute visit insert statement:  "
+            << "url_id = " << visit->url_id;
     return 0;
+  }
 
   visit->visit_id = GetDB().GetLastInsertRowId();
 
@@ -129,13 +136,19 @@ VisitID VisitDatabase::AddVisit(VisitRow* visit, VisitSource source) {
     // Record the source of this visit when it is not browsed.
     sql::Statement statement1(GetDB().GetCachedStatement(SQL_FROM_HERE,
         "INSERT INTO visit_source (id, source) VALUES (?,?)"));
-    if (!statement1.is_valid())
+    if (!statement1.is_valid()) {
+      VLOG(0) << "Failed to build visit_source insert statement:  "
+              << "url_id = " << visit->visit_id;
       return 0;
+    }
 
     statement1.BindInt64(0, visit->visit_id);
     statement1.BindInt64(1, source);
-    if (!statement1.Run())
+    if (!statement1.Run()) {
+      VLOG(0) << "Failed to execute visit_source insert statement:  "
+              << "url_id = " << visit->visit_id;
       return 0;
+    }
   }
 
   return visit->visit_id;

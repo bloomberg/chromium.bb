@@ -163,8 +163,11 @@ URLID URLDatabase::AddURLInternal(const history::URLRow& info,
   statement.BindInt(5, info.hidden() ? 1 : 0);
   statement.BindInt64(6, info.favicon_id());
 
-  if (!statement.Run())
+  if (!statement.Run()) {
+    VLOG(0) << "Failed to add url " << info.url().possibly_invalid_spec()
+            << " to table history.urls.";
     return 0;
+  }
   return GetDB().GetLastInsertRowId();
 }
 

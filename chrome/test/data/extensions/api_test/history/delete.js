@@ -46,11 +46,11 @@ runHistoryTestFns([
     });
   },
 
+  // Suppose we have time epochs x,y,z and history events A,B which occur
+  // in the sequence x A y B z.  Delete range [x,y], check that only A is
+  // removed.
   function deleteStartRange() {
     var urls = [GOOGLE_URL, PICASA_URL];
-    var startDate = {};
-    var endDate = {};
-    var itemsAdded = 0;
 
     function deleteRangeTestVerification() {
       removeItemRemovedListener();
@@ -65,47 +65,25 @@ runHistoryTestFns([
       });
     }
 
-    function onAddedItem() {
-      itemsAdded += 1;
-
-      if (itemsAdded < urls.length) {
-        // Chrome has seconds resolution, so we must wait to search a range.
-        waitAFewSeconds(2, function() {
-          endDate = new Date();
-          endDate.setTime(endDate.getTime() - 1000);
-          populateHistory([urls[itemsAdded]], function() { });
-        });
-        return;
-      }
-
-      removeItemVisitedListener();
-      chrome.history.deleteRange({ 'startTime': startDate.getTime(),
-                                   'endTime': endDate.getTime() },
-                                 function() { });
-    }
-
-    // deletRange entry point.
     chrome.history.deleteAll(function() {
-      setItemVisitedListener(onAddedItem);
       setItemRemovedListener(deleteRangeTestVerification);
-
-      startDate = new Date();
-      startDate.setTime(startDate.getTime() - 1000);
-
-      populateHistory([urls[itemsAdded]], function() { });
+      addUrlsWithTimeline(urls, function(eventTimes) {
+        // Remove the range covering the first URL:
+        chrome.history.deleteRange(
+          {'startTime': eventTimes.before,
+           'endTime': eventTimes.between},
+          function() {});
+      });
     });
   },
 
   // Suppose we have time epochs x,y,z and history events A,B which occur
-  // in the sequence x A y B z.  The previous deleteRange test deleted the
-  // range [x,y], this test deletes the range [y,z].
+  // in the sequence x A y B z.  Delete range [y,z], check that only B is
+  // removed.
   function deleteEndRange() {
     var urls = [GOOGLE_URL, PICASA_URL];
-    var startDate = {};
-    var endDate = {};
-    var itemsAdded = 0;
 
-    function deleteRange2TestVerification() {
+    function deleteRangeTestVerification() {
       removeItemRemovedListener();
 
       var query = { 'text': '' };
@@ -118,33 +96,76 @@ runHistoryTestFns([
       });
     }
 
-    function onAddedItem() {
-      itemsAdded += 1;
-
-      if (itemsAdded < urls.length) {
-        // Chrome has seconds resolution, so we must wait to search a range.
-        waitAFewSeconds(2, function() {
-          startDate = new Date();
-          startDate.setTime(startDate.getTime() - 1000);
-          populateHistory([urls[itemsAdded]], function() { });
-        });
-        return;
-      }
-
-      removeItemVisitedListener();
-
-      endDate = new Date();
-      endDate.setTime(endDate.getTime() + 1000);
-      chrome.history.deleteRange({'startTime': startDate.getTime(),
-                                  'endTime': endDate.getTime() },
-                                  function() { });
-    }
-
-    // deletRange entry point.
     chrome.history.deleteAll(function() {
-      setItemVisitedListener(onAddedItem);
-      setItemRemovedListener(deleteRange2TestVerification);
-      populateHistory([urls[itemsAdded]], function() { });
+      setItemRemovedListener(deleteRangeTestVerification);
+      addUrlsWithTimeline(urls, function(eventTimes) {
+        // Remove the range covering the second URL:
+        chrome.history.deleteRange(
+          {'startTime': eventTimes.between,
+           'endTime': eventTimes.after},
+          function() {});
+      });
     });
   },
+
+  // Suppose we have time epochs x,y,z and history events A,B which occur
+  // in the sequence x A y B z.  Delete range [x,z], check that both A
+  // and B are removed.
+  function deleteWholeRange() {
+    var urls = [GOOGLE_URL, PICASA_URL];
+
+    function deleteRangeTestVerification() {
+      removeItemRemovedListener();
+
+      var query = { 'text': '' };
+      chrome.history.search(query, function(results) {
+        assertEq(0, results.length);
+
+        // The test has succeeded.
+        chrome.test.succeed();
+      });
+    }
+
+    chrome.history.deleteAll(function() {
+      setItemRemovedListener(deleteRangeTestVerification);
+      addUrlsWithTimeline(urls, function(eventTimes) {
+        // Remove the range covering both URLs:
+        chrome.history.deleteRange(
+          {'startTime': eventTimes.before,
+           'endTime': eventTimes.after},
+          function() {});
+      });
+    });
+  },
+
+  // Delete a range with start time equal to end time.  See that nothing
+  // is removed.
+  function deleteEmptyRange() {
+    var urls = [GOOGLE_URL, PICASA_URL];
+
+    function deleteRangeTestVerification() {
+      removeItemRemovedListener();
+
+      // Nothing should have been deleted.
+      chrome.test.fail();
+    }
+
+    chrome.history.deleteAll(function() {
+      setItemRemovedListener(deleteRangeTestVerification);
+      addUrlsWithTimeline(urls, function(eventTimes) {
+        // Remove an empty range.
+        chrome.history.deleteRange(
+          {'startTime': eventTimes.between,
+           'endTime': eventTimes.between},
+          function() {
+            var query = { 'text': '' };
+            chrome.history.search(query, function(results) {
+              // Nothing should have been deleted.
+              assertEq(2, results.length);
+              chrome.test.succeed();
+            });
+          });
+      });
+    });
+  }
 ]);

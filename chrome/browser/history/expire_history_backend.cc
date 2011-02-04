@@ -557,7 +557,8 @@ void ExpireHistoryBackend::ArchiveURLsAndVisits(
     cur_visit.url_id = main_id_to_archived_id[cur_visit.url_id];
     cur_visit.referring_visit = 0;
     VisitSourceMap::iterator iter = visit_sources.find(visits[i].visit_id);
-    archived_db_->AddVisit(&cur_visit,
+    archived_db_->AddVisit(
+        &cur_visit,
         iter == visit_sources.end() ? SOURCE_BROWSED : iter->second);
     // Ignore failures, we will delete it from the main DB no matter what.
   }
