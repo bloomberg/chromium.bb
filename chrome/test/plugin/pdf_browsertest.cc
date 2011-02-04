@@ -74,19 +74,21 @@ class PDFBrowserTest : public InProcessBrowserTest,
   }
 
   void Load() {
-    GURL url(ui_test_utils::GetTestUrl(
-        GetPDFTestDir(),
-        FilePath(FILE_PATH_LITERAL("pdf_browsertest.pdf"))));
-    ui_test_utils::NavigateToURL(browser(), url);
+    // Make sure to set the window size before rendering, as otherwise rendering
+    // to a smaller window and then expanding leads to slight anti-aliasing
+    // differences of the text and the pixel comparison fails.
     gfx::Rect bounds(gfx::Rect(0, 0, kBrowserWidth, kBrowserHeight));
-
     scoped_ptr<WindowSizer::MonitorInfoProvider> monitor_info(
         WindowSizer::CreateDefaultMonitorInfoProvider());
     gfx::Rect screen_bounds = monitor_info->GetPrimaryMonitorBounds();
     ASSERT_GT(screen_bounds.width(), kBrowserWidth);
     ASSERT_GT(screen_bounds.height(), kBrowserHeight);
-
     browser()->window()->SetBounds(bounds);
+
+    GURL url(ui_test_utils::GetTestUrl(
+        GetPDFTestDir(),
+        FilePath(FILE_PATH_LITERAL("pdf_browsertest.pdf"))));
+    ui_test_utils::NavigateToURL(browser(), url);
   }
 
   void VerifySnapshot(const std::string& expected_filename) {
@@ -211,31 +213,17 @@ class PDFBrowserTest : public InProcessBrowserTest,
   scoped_ptr<net::TestServer> pdf_test_server_;
 };
 
-#if defined(OS_MACOSX)
-// See http://crbug.com/63223
-#define MAYBE_Basic FLAKY_Basic
-#else
-#define MAYBE_Basic Basic
-#endif
-
 // Tests basic PDF rendering.  This can be broken depending on bad merges with
 // the vendor, so it's important that we have basic sanity checking.
-IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_Basic) {
+IN_PROC_BROWSER_TEST_F(PDFBrowserTest, Basic) {
 
   ASSERT_NO_FATAL_FAILURE(Load());
   ASSERT_NO_FATAL_FAILURE(WaitForResponse());
   ASSERT_NO_FATAL_FAILURE(VerifySnapshot("pdf_browsertest.png"));
 }
 
-#if defined(OS_MACOSX)
-// See http://crbug.com/63223
-#define MAYBE_Scroll FLAKY_Scroll
-#else
-#define MAYBE_Scroll Scroll
-#endif
-
 // Tests that scrolling works.
-IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_Scroll) {
+IN_PROC_BROWSER_TEST_F(PDFBrowserTest, Scroll) {
   ASSERT_NO_FATAL_FAILURE(Load());
 
   // We use wheel mouse event since that's the only one we can easily push to
@@ -251,14 +239,7 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_Scroll) {
   ASSERT_NO_FATAL_FAILURE(VerifySnapshot("pdf_browsertest_scroll.png"));
 }
 
-#if defined(OS_MACOSX)
-// See http://crbug.com/63223
-#define MAYBE_FindAndCopy FLAKY_FindAndCopy
-#else
-#define MAYBE_FindAndCopy FindAndCopy
-#endif
-
-IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_FindAndCopy) {
+IN_PROC_BROWSER_TEST_F(PDFBrowserTest, FindAndCopy) {
   ASSERT_NO_FATAL_FAILURE(Load());
   // Verifies that find in page works.
   ASSERT_EQ(3, ui_test_utils::FindInPage(
