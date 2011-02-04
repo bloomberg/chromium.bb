@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -94,6 +94,23 @@ const uint32 kMaxFileOrdinalNumberPartLength = 6;
 // If false, we don't prompt the user as to where to save the file.  This
 // exists only for testing.
 bool g_should_prompt_for_filename = true;
+
+// Indexes used for specifying which element in the extensions dropdown
+// the user chooses when picking a save type.
+const int kSelectFileHtmlOnlyIndex = 1;
+const int kSelectFileCompleteIndex = 2;
+
+// Used for mapping between SavePackageType constants and the indexes above.
+const SavePackage::SavePackageType IndexToSaveType[] = {
+  SavePackage::SAVE_TYPE_UNKNOWN,
+  SavePackage::SAVE_AS_ONLY_HTML,
+  SavePackage::SAVE_AS_COMPLETE_HTML,
+};
+
+// Used for mapping between the IDS_ string identifiers and the indexes above.
+const int IndexToIDS[] = {
+  0, IDS_SAVE_PAGE_DESC_HTML_ONLY, IDS_SAVE_PAGE_DESC_COMPLETE,
+};
 
 // Strip current ordinal number, if any. Should only be used on pure
 // file names, i.e. those stripped of their extensions.
@@ -1275,7 +1292,7 @@ void SavePackage::CreateDirectoryOnFileThread(
 void SavePackage::ContinueGetSaveInfo(const FilePath& suggested_path,
                                       bool can_save_as_complete) {
   // Use "Web Page, Complete" option as default choice of saving page.
-  int file_type_index = 2;
+  int file_type_index = kSelectFileCompleteIndex;
   SelectFileDialog::FileTypeInfo file_type_info;
   FilePath::StringType default_extension;
 
@@ -1290,26 +1307,44 @@ void SavePackage::ContinueGetSaveInfo(const FilePath& suggested_path,
       add_extra_extension = true;
       extra_extension = suggested_path.Extension().substr(1);
     }
+
     file_type_info.extensions.resize(2);
-    file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("htm"));
-    file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("html"));
-    if (add_extra_extension)
-      file_type_info.extensions[0].push_back(extra_extension);
+    file_type_info.extensions[kSelectFileHtmlOnlyIndex - 1].push_back(
+        FILE_PATH_LITERAL("htm"));
+    file_type_info.extensions[kSelectFileHtmlOnlyIndex - 1].push_back(
+        FILE_PATH_LITERAL("html"));
+
+    if (add_extra_extension) {
+      file_type_info.extensions[kSelectFileHtmlOnlyIndex - 1].push_back(
+          extra_extension);
+    }
+
     file_type_info.extension_description_overrides.push_back(
-        l10n_util::GetStringUTF16(IDS_SAVE_PAGE_DESC_HTML_ONLY));
-    file_type_info.extensions[1].push_back(FILE_PATH_LITERAL("htm"));
-    file_type_info.extensions[1].push_back(FILE_PATH_LITERAL("html"));
-    if (add_extra_extension)
-      file_type_info.extensions[1].push_back(extra_extension);
+        l10n_util::GetStringUTF16(IndexToIDS[kSelectFileCompleteIndex - 1]));
+    file_type_info.extensions[kSelectFileCompleteIndex - 1].push_back(
+        FILE_PATH_LITERAL("htm"));
+    file_type_info.extensions[kSelectFileCompleteIndex - 1].push_back(
+        FILE_PATH_LITERAL("html"));
+
+    if (add_extra_extension) {
+      file_type_info.extensions[kSelectFileCompleteIndex - 1].push_back(
+          extra_extension);
+    }
+
     file_type_info.extension_description_overrides.push_back(
-        l10n_util::GetStringUTF16(IDS_SAVE_PAGE_DESC_COMPLETE));
+        l10n_util::GetStringUTF16(IndexToIDS[kSelectFileCompleteIndex]));
     file_type_info.include_all_files = false;
     default_extension = kDefaultHtmlExtension;
   } else {
     file_type_info.extensions.resize(1);
-    file_type_info.extensions[0].push_back(suggested_path.Extension());
-    if (!file_type_info.extensions[0][0].empty())
-      file_type_info.extensions[0][0].erase(0, 1);  // drop the .
+    file_type_info.extensions[kSelectFileHtmlOnlyIndex - 1].push_back(
+        suggested_path.Extension());
+
+    if (!file_type_info.extensions[kSelectFileHtmlOnlyIndex - 1][0].empty()) {
+      // Drop the .
+      file_type_info.extensions[kSelectFileHtmlOnlyIndex - 1][0].erase(0, 1);
+    }
+
     file_type_info.include_all_files = true;
     file_type_index = 1;
   }
@@ -1341,7 +1376,9 @@ void SavePackage::ContinueSave(const FilePath& final_name,
                                       &saved_main_file_path_);
 
   // The option index is not zero-based.
-  DCHECK(index > 0 && index < 3);
+  DCHECK(index >= kSelectFileHtmlOnlyIndex &&
+         index <= kSelectFileCompleteIndex);
+
   saved_main_directory_path_ = saved_main_file_path_.DirName();
 
   PrefService* prefs = tab_contents_->profile()->GetPrefs();
@@ -1359,8 +1396,7 @@ void SavePackage::ContinueSave(const FilePath& final_name,
     save_file_path.SetValue(path_string);
   }
 
-  save_type_ = (index == 1) ? SavePackage::SAVE_AS_ONLY_HTML :
-                             SavePackage::SAVE_AS_COMPLETE_HTML;
+  save_type_ = IndexToSaveType[index];
 
   if (save_type_ == SavePackage::SAVE_AS_COMPLETE_HTML) {
     // Make new directory for saving complete file.
