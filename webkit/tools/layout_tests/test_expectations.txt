@@ -10,3 +10,6 @@
 BUGWK50709 MAC : fast/css/font-weight-1.html = IMAGE+TEXT
 
 BUG_LOISLO MAC DEBUG : svg/text/font-size-below-point-five.svg = TEXT
+
+// related to r77601
+BUG_LOISLO : fast/box-shadow/shadow-tiling-artifact.html = IMAGE
