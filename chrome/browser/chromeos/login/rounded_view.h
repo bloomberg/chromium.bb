@@ -39,7 +39,7 @@ class RoundedView: public C {
   template<typename D>
   explicit RoundedView(const D &value) : C(value) {}
   template<typename D1, typename D2>
-  explicit RoundedView(const D1 &val1, const D2 &val2) : C(val1, val2) {}
+  RoundedView(const D1& val1, const D2& val2) : C(val1, val2) {}
 
   // Overrides views::View.
   virtual void ProcessPaint(gfx::Canvas* canvas);

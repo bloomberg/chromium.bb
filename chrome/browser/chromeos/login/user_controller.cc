@@ -16,10 +16,10 @@
 #include "chrome/browser/chromeos/login/user_view.h"
 #include "chrome/browser/chromeos/login/username_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "third_party/cros/chromeos_wm_ipc_enums.h"
 #include "gfx/canvas.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "third_party/cros/chromeos_wm_ipc_enums.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "views/background.h"
@@ -86,9 +86,7 @@ void CloseWindow(views::WidgetGtk* window) {
 
 }  // namespace
 
-using login::kBackgroundColor;
 using login::kBorderSize;
-using login::kTextColor;
 using login::kUserImageSize;
 
 // static
@@ -421,15 +419,9 @@ void UserController::CreateBorderWindow(int index,
 
 WidgetGtk* UserController::CreateLabelWindow(int index,
                                              WmIpcWindowType type) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  const gfx::Font& font = (type == WM_IPC_WINDOW_LOGIN_LABEL) ?
-      rb.GetFont(ResourceBundle::MediumBoldFont).DeriveFont(
-          kSelectedUsernameFontDelta) :
-      rb.GetFont(ResourceBundle::BaseFont).DeriveFont(
-          kUnselectedUsernameFontDelta, gfx::Font::BOLD);
   std::wstring text;
   if (is_guest_) {
-    text = UTF16ToWide(l10n_util::GetStringUTF16(IDS_GUEST));
+    text = std::wstring();
   } else if (is_new_user_) {
     // Add user should have label only in activated state.
     // When new user is the only, label is not needed.
@@ -439,7 +431,7 @@ WidgetGtk* UserController::CreateLabelWindow(int index,
     text = UTF8ToWide(user_.GetDisplayName());
   }
 
-  views::Label *label = NULL;
+  views::Label* label = NULL;
 
   if (is_new_user_) {
     label = new views::Label(text);
@@ -451,8 +443,14 @@ WidgetGtk* UserController::CreateLabelWindow(int index,
     label = UsernameView::CreateShapedUsernameView(text, true);
   }
 
-  label->SetColor(kTextColor);
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  const gfx::Font& font = (type == WM_IPC_WINDOW_LOGIN_LABEL) ?
+      rb.GetFont(ResourceBundle::MediumBoldFont).DeriveFont(
+          kSelectedUsernameFontDelta) :
+      rb.GetFont(ResourceBundle::BaseFont).DeriveFont(
+          kUnselectedUsernameFontDelta, gfx::Font::BOLD);
   label->SetFont(font);
+  label->SetColor(login::kTextColor);
 
   if (type == WM_IPC_WINDOW_LOGIN_LABEL)
     label_view_ = label;
