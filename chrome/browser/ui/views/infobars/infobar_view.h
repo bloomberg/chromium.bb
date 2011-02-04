@@ -70,6 +70,13 @@ class InfoBarView : public InfoBar,
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();
 
+  // Paint the arrow on |canvas|. |arrow_center_x| indicates the
+  // desired location of the center of the arrow in the |outer_view|
+  // coordinate system.
+  void PaintArrow(gfx::Canvas* canvas,
+                  views::View* outer_view,
+                  int arrow_center_x);
+
  protected:
   // Overridden from views::View:
   virtual void ViewHierarchyChanged(bool is_add,

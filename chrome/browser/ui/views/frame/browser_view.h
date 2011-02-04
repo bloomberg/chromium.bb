@@ -415,6 +415,7 @@ class BrowserView : public BrowserBubbleHost,
   // Overridden from views::View:
   virtual std::string GetClassName() const;
   virtual void Layout();
+  virtual void PaintChildren(gfx::Canvas* canvas);
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,
                                     views::View* child);
@@ -441,6 +442,11 @@ class BrowserView : public BrowserBubbleHost,
   // Creates the system menu.
   void InitSystemMenu();
 #endif
+
+  // Get the X value, in this BrowserView's coordinate system, where
+  // the points of the infobar arrows should be anchored.  This is the
+  // center of the omnibox location icon.
+  int GetInfoBarArrowCenterX() const;
 
   // Returns the BrowserViewLayout.
   BrowserViewLayout* GetBrowserViewLayout() const;

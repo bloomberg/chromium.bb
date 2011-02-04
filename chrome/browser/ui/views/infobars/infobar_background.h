@@ -17,6 +17,9 @@ class InfoBarBackground : public views::Background {
   // Overridden from views::Background:
   virtual void Paint(gfx::Canvas* canvas, views::View* view) const;
 
+  static SkColor GetTopColor(InfoBarDelegate::Type infobar_type);
+  static SkColor GetBottomColor(InfoBarDelegate::Type infobar_type);
+
  private:
   scoped_ptr<views::Background> gradient_background_;
 

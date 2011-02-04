@@ -9,8 +9,10 @@
 #include "chrome/browser/ui/views/infobars/infobar_background.h"
 #include "chrome/browser/ui/views/infobars/infobar_container.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
+#include "gfx/canvas_skia_paint.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -77,6 +79,58 @@ InfoBarView::InfoBarView(InfoBarDelegate* delegate)
 }
 
 InfoBarView::~InfoBarView() {
+}
+
+void InfoBarView::PaintArrow(gfx::Canvas* canvas,
+                             views::View* outer_view,
+                             int arrow_center_x) {
+  gfx::Point infobar_top(0, y());
+  ConvertPointToView(GetParent(), outer_view, &infobar_top);
+  int infobar_top_y = infobar_top.y();
+
+  // The size of the arrow (its height; also half its width).  The
+  // arrow area is |arrow_size| ^ 2.  By taking the square root of the
+  // animation value, we cause a linear animation of the area, which
+  // matches the perception of the animation of the InfoBar.
+  const int kArrowSize = 10;
+  int arrow_size = static_cast<int>(kArrowSize *
+                                    sqrt(animation_->GetCurrentValue()));
+
+  SkPath fill_path;
+  fill_path.moveTo(SkPoint::Make(SkIntToScalar(arrow_center_x - arrow_size),
+                                 SkIntToScalar(infobar_top_y)));
+  fill_path.rLineTo(SkIntToScalar(arrow_size), SkIntToScalar(-arrow_size));
+  fill_path.rLineTo(SkIntToScalar(arrow_size), SkIntToScalar(arrow_size));
+  SkPath border_path(fill_path);
+  fill_path.close();
+
+  SkPaint paint;
+  paint.setStrokeWidth(1);
+  paint.setStyle(SkPaint::kFill_Style);
+
+  SkPoint grad_points[2];
+  grad_points[0].set(SkIntToScalar(0), SkIntToScalar(infobar_top_y));
+  grad_points[1].set(SkIntToScalar(0),
+                     SkIntToScalar(infobar_top_y + target_height_));
+
+  SkColor grad_colors[2];
+  grad_colors[0] = InfoBarBackground::GetTopColor(delegate_->GetInfoBarType());
+  grad_colors[1] =
+      InfoBarBackground::GetBottomColor(delegate_->GetInfoBarType());
+
+  SkShader* gradient_shader = SkGradientShader::CreateLinear(
+      grad_points, grad_colors, NULL, 2, SkShader::kMirror_TileMode);
+  paint.setShader(gradient_shader);
+  gradient_shader->unref();
+
+  gfx::CanvasSkia* canvas_skia = canvas->AsCanvasSkia();
+  canvas_skia->drawPath(fill_path, paint);
+
+  paint.setShader(NULL);
+  paint.setColor(SkColorSetA(ResourceBundle::toolbar_separator_color,
+                             SkColorGetA(grad_colors[0])));
+  paint.setStyle(SkPaint::kStroke_Style);
+  canvas_skia->drawPath(border_path, paint);
 }
 
 // InfoBarView, views::View overrides: ----------------------------------------

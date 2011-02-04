@@ -59,6 +59,15 @@ void InfoBarContainer::RemoveDelegate(InfoBarDelegate* delegate) {
   tab_contents_->RemoveInfoBar(delegate);
 }
 
+void InfoBarContainer::PaintInfoBarArrows(gfx::Canvas* canvas,
+                                          views::View* outer_view,
+                                          int arrow_center_x) {
+  for(int i = 0; i < GetChildViewCount(); ++i) {
+    InfoBarView* infobar = static_cast<InfoBarView*>(GetChildViewAt(i));
+    infobar->PaintArrow(canvas, outer_view, arrow_center_x);
+  }
+}
+
 // InfoBarContainer, views::View overrides: ------------------------------------
 
 gfx::Size InfoBarContainer::GetPreferredSize() {

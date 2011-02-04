@@ -51,6 +51,7 @@
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
 #include "chrome/browser/ui/views/frame/contents_container.h"
 #include "chrome/browser/ui/views/fullscreen_exit_bubble.h"
+#include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/status_bubble_views.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
@@ -1804,6 +1805,14 @@ void BrowserView::Layout() {
 #endif
 }
 
+void BrowserView::PaintChildren(gfx::Canvas* canvas) {
+  views::ClientView::PaintChildren(canvas);
+
+  infobar_container_->PaintInfoBarArrows(canvas->AsCanvasSkia(),
+                                         this,
+                                         GetInfoBarArrowCenterX());
+}
+
 void BrowserView::ViewHierarchyChanged(bool is_add,
                                        views::View* parent,
                                        views::View* child) {
@@ -1975,6 +1984,16 @@ void BrowserView::InitSystemMenu() {
   system_menu_->Rebuild();
 }
 #endif
+
+int BrowserView::GetInfoBarArrowCenterX() const {
+  LocationBarView* location_bar_view = toolbar_->location_bar();
+  const LocationIconView* location_icon_view =
+      location_bar_view->location_icon_view();
+  gfx::Rect icon_bounds = location_icon_view->bounds();
+  gfx::Point icon_center = icon_bounds.CenterPoint();
+  ConvertPointToView(location_bar_view, this, &icon_center);
+  return icon_center.x();
+}
 
 BrowserViewLayout* BrowserView::GetBrowserViewLayout() const {
   return static_cast<BrowserViewLayout*>(GetLayoutManager());

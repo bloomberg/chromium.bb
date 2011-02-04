@@ -44,6 +44,13 @@ class InfoBarContainer : public AccessiblePaneView,
   // the InfoBar's close button handler.
   void RemoveDelegate(InfoBarDelegate* delegate);
 
+  // Paint the InfoBar arrows on |canvas|. |arrow_center_x| indicates
+  // the desired location of the center of the arrow in the
+  // |outer_view| coordinate system.
+  void PaintInfoBarArrows(gfx::Canvas* canvas,
+                          views::View* outer_view,
+                          int arrow_center_x);
+
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();

@@ -185,6 +185,10 @@ class LocationBarView : public LocationBar,
   virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled);
 #endif
 
+  const LocationIconView* location_icon_view() const {
+    return location_icon_view_;
+  }
+
   // AutocompleteEditController
   virtual void OnAutocompleteWillClosePopup();
   virtual void OnAutocompleteLosingFocus(gfx::NativeView view_gaining_focus);

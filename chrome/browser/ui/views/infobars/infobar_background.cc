@@ -22,24 +22,20 @@ static const int kSeparatorLineHeight = 1;
 // InfoBarBackground, public: --------------------------------------------------
 
 InfoBarBackground::InfoBarBackground(InfoBarDelegate::Type infobar_type) {
-  SkColor top_color;
-  SkColor bottom_color;
-  switch (infobar_type) {
-    case InfoBarDelegate::WARNING_TYPE:
-      top_color = kWarningBackgroundColorTop;
-      bottom_color = kWarningBackgroundColorBottom;
-      break;
-    case InfoBarDelegate::PAGE_ACTION_TYPE:
-      top_color = kPageActionBackgroundColorTop;
-      bottom_color = kPageActionBackgroundColorBottom;
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
   gradient_background_.reset(
-      views::Background::CreateVerticalGradientBackground(top_color,
-                                                          bottom_color));
+      views::Background::CreateVerticalGradientBackground(
+          GetTopColor(infobar_type),
+          GetBottomColor(infobar_type)));
+}
+
+SkColor InfoBarBackground::GetTopColor(InfoBarDelegate::Type infobar_type) {
+  return (infobar_type == InfoBarDelegate::WARNING_TYPE) ?
+      kWarningBackgroundColorTop : kPageActionBackgroundColorTop;
+}
+
+SkColor InfoBarBackground::GetBottomColor(InfoBarDelegate::Type infobar_type) {
+  return (infobar_type == InfoBarDelegate::WARNING_TYPE) ?
+      kWarningBackgroundColorBottom : kPageActionBackgroundColorBottom;
 }
 
 // InfoBarBackground, views::Background overrides: -----------------------------
