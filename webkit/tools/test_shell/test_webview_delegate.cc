@@ -892,6 +892,10 @@ void TestWebViewDelegate::didFailProvisionalLoad(
       static_cast<TestShellExtraData*>(failed_ds->extraData());
   bool replace = extra_data && extra_data->pending_page_id != -1;
 
+  // Ensure the error page ends up with the same page ID if we are replacing.
+  if (replace)
+    set_pending_extra_data(new TestShellExtraData(extra_data->pending_page_id));
+
   const std::string& error_text =
       base::StringPrintf("Error %d when loading url %s", error.reason,
       failed_ds->request().url().spec().data());
@@ -901,6 +905,10 @@ void TestWebViewDelegate::didFailProvisionalLoad(
 
   frame->loadHTMLString(
       error_text, GURL("testshell-error:"), error.unreachableURL, replace);
+
+  // In case the load failed before DidCreateDataSource was called.
+  if (replace)
+    set_pending_extra_data(NULL);
 }
 
 void TestWebViewDelegate::didCommitProvisionalLoad(
