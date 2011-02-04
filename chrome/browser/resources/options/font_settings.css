@@ -13,9 +13,13 @@
 #font-settings > section > .font-sample-div {
   height: 90px;
   overflow: hidden;
-  position: absolute;
+  width: 300px;
 }
 
 .font-settings-huge {
   float: right;
+}
+
+#minimum-font-sample {
+  height: 60px;
 }
