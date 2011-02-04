@@ -142,3 +142,36 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, WindowWithOneTab) {
   // Make sure the restore was successful.
   EXPECT_EQ(0U, service->entries().size());
 }
+
+// There's some complicated logic to handle the browser being closed during
+// restore. This will exercise that path.
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
+                       CloseDuringRestore) {
+  if (browser_defaults::kRestorePopups)
+    return;
+
+  const FilePath::CharType* kTitle1File = FILE_PATH_LITERAL("title1.html");
+  GURL url(ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
+                                     FilePath(kTitle1File)));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Turn on session restore.
+  SessionStartupPref::SetStartupPref(
+      browser()->profile(),
+      SessionStartupPref(SessionStartupPref::LAST));
+
+  // Create a new popup.
+  Profile* profile = browser()->profile();
+  Browser* popup = Browser::CreateForType(Browser::TYPE_POPUP, profile);
+  popup->window()->Show();
+
+  // Close the browser.
+  browser()->window()->Close();
+
+  // Create a new window, which should trigger session restore.
+  popup->NewWindow();
+  Browser* new_browser = ui_test_utils::WaitForNewBrowser();
+
+  new_browser->window()->Close();
+}
+
