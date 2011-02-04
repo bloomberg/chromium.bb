@@ -1063,7 +1063,7 @@ void CandidateWindowView::MaybeInitializeCandidateViews(
   // moves right from the correct position in MoveParentFrame().
   // TODO(nhiroki): Figure out why it returns invalid value.
   // It seems that the x-position of the candidate labels is not set.
-  layout->Layout(this);
+  layout->Layout(candidate_area_);
 }
 
 views::View* CandidateWindowView::CreateHeaderArea() {
