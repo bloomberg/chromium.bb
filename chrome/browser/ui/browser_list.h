@@ -185,6 +185,7 @@ class BrowserList {
   // Counter of calls to StartKeepAlive(). If non-zero, the application will
   // continue running after the last browser has exited.
   static int keep_alive_count_;
+  static bool signout_;
 };
 
 class TabContents;
