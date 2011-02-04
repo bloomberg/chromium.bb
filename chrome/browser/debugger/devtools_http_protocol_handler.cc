@@ -87,11 +87,12 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
 
 // static
 scoped_refptr<DevToolsHttpProtocolHandler> DevToolsHttpProtocolHandler::Start(
+    const std::string& ip,
     int port,
     const std::string& frontend_url,
     TabContentsProvider* provider) {
   scoped_refptr<DevToolsHttpProtocolHandler> http_handler =
-      new DevToolsHttpProtocolHandler(port, frontend_url, provider);
+      new DevToolsHttpProtocolHandler(ip, port, frontend_url, provider);
   http_handler->Start();
   return http_handler;
 }
@@ -370,10 +371,12 @@ void DevToolsHttpProtocolHandler::OnReadCompleted(net::URLRequest* request,
 }
 
 DevToolsHttpProtocolHandler::DevToolsHttpProtocolHandler(
+    const std::string& ip,
     int port,
     const std::string& frontend_host,
     TabContentsProvider* provider)
-    : port_(port),
+    : ip_(ip),
+      port_(port),
       overriden_frontend_url_(frontend_host),
       tab_contents_provider_(provider) {
   if (overriden_frontend_url_.empty())
@@ -381,7 +384,7 @@ DevToolsHttpProtocolHandler::DevToolsHttpProtocolHandler(
 }
 
 void DevToolsHttpProtocolHandler::Init() {
-  server_ = new HttpServer("127.0.0.1", port_, this);
+  server_ = new HttpServer(ip_, port_, this);
 }
 
 // Run on I/O thread

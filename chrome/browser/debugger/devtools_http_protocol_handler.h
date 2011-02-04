@@ -37,6 +37,7 @@ class DevToolsHttpProtocolHandler
 
   // Takes ownership over |provider|.
   static scoped_refptr<DevToolsHttpProtocolHandler> Start(
+      const std::string& ip,
       int port,
       const std::string& frontend_url,
       TabContentsProvider* provider);
@@ -48,7 +49,8 @@ class DevToolsHttpProtocolHandler
  private:
   friend class base::RefCountedThreadSafe<DevToolsHttpProtocolHandler>;
 
-  DevToolsHttpProtocolHandler(int port,
+  DevToolsHttpProtocolHandler(const std::string& ip,
+                              int port,
                               const std::string& frontend_url,
                               TabContentsProvider* provider);
   virtual ~DevToolsHttpProtocolHandler();
@@ -91,6 +93,7 @@ class DevToolsHttpProtocolHandler
 
   TabContents* GetTabContents(int session_id);
 
+  std::string ip_;
   int port_;
   std::string overriden_frontend_url_;
   scoped_refptr<HttpServer> server_;

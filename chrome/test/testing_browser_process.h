@@ -150,6 +150,7 @@ class TestingBrowserProcess : public BrowserProcess {
   }
 
   virtual void InitDevToolsHttpProtocolHandler(
+      const std::string& ip,
       int port,
       const std::string& frontend_url) {
   }

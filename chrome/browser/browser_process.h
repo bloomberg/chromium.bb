@@ -124,6 +124,7 @@ class BrowserProcess {
   virtual AutomationProviderList* InitAutomationProviderList() = 0;
 
   virtual void InitDevToolsHttpProtocolHandler(
+      const std::string& ip,
       int port,
       const std::string& frontend_url) = 0;
 

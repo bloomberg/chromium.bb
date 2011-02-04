@@ -462,11 +462,13 @@ AutomationProviderList* BrowserProcessImpl::InitAutomationProviderList() {
 }
 
 void BrowserProcessImpl::InitDevToolsHttpProtocolHandler(
+    const std::string& ip,
     int port,
     const std::string& frontend_url) {
   DCHECK(CalledOnValidThread());
   devtools_http_handler_ =
-      DevToolsHttpProtocolHandler::Start(port,
+      DevToolsHttpProtocolHandler::Start(ip,
+                                         port,
                                          frontend_url,
                                          new BrowserListTabContentsProvider());
 }

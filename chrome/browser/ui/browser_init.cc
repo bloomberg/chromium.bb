@@ -616,6 +616,7 @@ bool BrowserInit::LaunchWithProfile::Launch(Profile* profile,
     int64 port;
     if (base::StringToInt64(port_str, &port) && port > 0 && port < 65535) {
       g_browser_process->InitDevToolsHttpProtocolHandler(
+          "127.0.0.1",
           static_cast<int>(port),
           "");
     } else {

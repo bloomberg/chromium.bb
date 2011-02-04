@@ -68,6 +68,7 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual ThumbnailGenerator* GetThumbnailGenerator();
   virtual AutomationProviderList* InitAutomationProviderList();
   virtual void InitDevToolsHttpProtocolHandler(
+      const std::string& ip,
       int port,
       const std::string& frontend_url);
   virtual void InitDevToolsLegacyProtocolHandler(int port);
