@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,6 +58,25 @@ const int kMaxOutstandingRepaints = 50;
 // the norms, we think 1/16x to 16x is a safe and useful range for now.
 const float kMinRate = 0.0625f;
 const float kMaxRate = 16.0f;
+
+// Platform independent method for converting and rounding floating point
+// seconds to an int64 timestamp.
+//
+// Refer to https://bugs.webkit.org/show_bug.cgi?id=52697 for details.
+base::TimeDelta ConvertSecondsToTimestamp(float seconds) {
+  float microseconds = seconds * base::Time::kMicrosecondsPerSecond;
+  float integer = ceilf(microseconds);
+  float difference = integer - microseconds;
+
+  // Round down if difference is large enough.
+  if ((microseconds > 0 && difference > 0.5f) ||
+      (microseconds <= 0 && difference >= 0.5f)) {
+    integer -= 1.0f;
+  }
+
+  // Now we can safely cast to int64 microseconds.
+  return base::TimeDelta::FromMicroseconds(static_cast<int64>(integer));
+}
 
 }  // namespace
 
@@ -374,10 +393,7 @@ void WebMediaPlayerImpl::seek(float seconds) {
     return;
   }
 
-  // Try to preserve as much accuracy as possible.
-  float microseconds = seconds * base::Time::kMicrosecondsPerSecond;
-  base::TimeDelta seek_time =
-      base::TimeDelta::FromMicroseconds(static_cast<int64>(microseconds));
+  base::TimeDelta seek_time = ConvertSecondsToTimestamp(seconds);
 
   // Update our paused time.
   if (paused_) {
