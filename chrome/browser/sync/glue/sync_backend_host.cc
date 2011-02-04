@@ -111,6 +111,14 @@ void SyncBackendHost::Initialize(
             profile_->GetHistoryService(Profile::IMPLICIT_ACCESS));
   }
 
+  // Any datatypes that we want the syncer to pull down must
+  // be in the routing_info map.  We set them to group passive, meaning that
+  // updates will be applied, but not dispatched to the UI thread yet.
+  for (syncable::ModelTypeSet::const_iterator it = types.begin();
+      it != types.end(); ++it) {
+    registrar_.routing_info[(*it)] = GROUP_PASSIVE;
+  }
+
   PasswordStore* password_store =
       profile_->GetPasswordStore(Profile::IMPLICIT_ACCESS);
   if (password_store) {
@@ -118,14 +126,7 @@ void SyncBackendHost::Initialize(
         new PasswordModelWorker(password_store);
   } else {
     LOG(WARNING) << "Password store not initialized, cannot sync passwords";
-  }
-
-  // Any datatypes that we want the syncer to pull down must
-  // be in the routing_info map.  We set them to group passive, meaning that
-  // updates will be applied, but not dispatched to the UI thread yet.
-  for (syncable::ModelTypeSet::const_iterator it = types.begin();
-      it != types.end(); ++it) {
-    registrar_.routing_info[(*it)] = GROUP_PASSIVE;
+    registrar_.routing_info.erase(syncable::PASSWORDS);
   }
 
   // TODO(tim): Remove this special case once NIGORI is populated by

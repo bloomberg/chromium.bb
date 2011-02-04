@@ -190,7 +190,7 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
           WillRepeatedly(Return(&token_service_));
 
       EXPECT_CALL(profile_, GetPasswordStore(_)).
-          Times(2).
+          Times(3).
           WillRepeatedly(Return(password_store_.get()));
 
       EXPECT_CALL(observer_,
