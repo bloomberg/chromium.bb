@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_VIEWS_NATIVE_MENU_DOMUI_H_
-#define CHROME_BROWSER_CHROMEOS_VIEWS_NATIVE_MENU_DOMUI_H_
+#ifndef CHROME_BROWSER_CHROMEOS_VIEWS_NATIVE_MENU_WEBUI_H_
+#define CHROME_BROWSER_CHROMEOS_VIEWS_NATIVE_MENU_WEBUI_H_
 #pragma once
 
 #include <vector>
@@ -37,18 +37,18 @@ class MenuLocator;
 class WebUIMenuWidget;
 
 // A DOMUI implementation of MenuWrapper.
-class NativeMenuDOMUI : public views::MenuWrapper,
+class NativeMenuWebUI : public views::MenuWrapper,
                         public WebUIMenuControl,
                         public MessageLoop::Dispatcher {
  public:
-  NativeMenuDOMUI(ui::MenuModel* menu_model, bool root);
-  virtual ~NativeMenuDOMUI();
+  NativeMenuWebUI(ui::MenuModel* menu_model, bool root);
+  virtual ~NativeMenuWebUI();
 
   // Returns true if menu is currently shown.
   bool is_menu_shown() { return menu_shown_; }
 
   // Set parent menu.
-  void set_parent(NativeMenuDOMUI* parent) { parent_ = parent; }
+  void set_parent(NativeMenuWebUI* parent) { parent_ = parent; }
 
   // Overridden from views::MenuWrapper:
   virtual void RunMenuAt(const gfx::Point& point, int alignment);
@@ -86,7 +86,7 @@ class NativeMenuDOMUI : public views::MenuWrapper,
 
   // Returns the root of the menu tree. Returns NULL if it cannot find
   // a root. (i.e. detached from root)
-  NativeMenuDOMUI* GetRoot();
+  NativeMenuWebUI* GetRoot();
 
   // Returns the profile to create DOMView.
   Profile* GetProfile();
@@ -112,13 +112,13 @@ class NativeMenuDOMUI : public views::MenuWrapper,
   void ShowAt(MenuLocator* locator);
 
   // Find a menu object at point.
-  NativeMenuDOMUI* FindMenuAt(const gfx::Point& point);
+  NativeMenuWebUI* FindMenuAt(const gfx::Point& point);
 
   // If we're a submenu, this is the parent.
-  NativeMenuDOMUI* parent_;
+  NativeMenuWebUI* parent_;
 
   // Holds the current submenu.
-  scoped_ptr<NativeMenuDOMUI> submenu_;
+  scoped_ptr<NativeMenuWebUI> submenu_;
 
   ui::MenuModel* model_;
 
@@ -158,9 +158,9 @@ class NativeMenuDOMUI : public views::MenuWrapper,
   // message loop is handled. see http://crosbug.com/7929 .
   views::NestedDispatcherGtk* nested_dispatcher_;
 
-  DISALLOW_COPY_AND_ASSIGN(NativeMenuDOMUI);
+  DISALLOW_COPY_AND_ASSIGN(NativeMenuWebUI);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_VIEWS_NATIVE_MENU_DOMUI_H_
+#endif  // CHROME_BROWSER_CHROMEOS_VIEWS_NATIVE_MENU_WEBUI_H_

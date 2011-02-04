@@ -11,7 +11,7 @@
 #include "base/weak_ptr.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/chromeos/views/native_menu_domui.h"
+#include "chrome/browser/chromeos/views/native_menu_webui.h"
 #include "chrome/browser/chromeos/views/webui_menu_widget.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
@@ -106,7 +106,7 @@ void WrenchMenuUI::UpdateZoomControls() {
 
 views::Menu2* WrenchMenuUI::CreateMenu2(ui::MenuModel* model) {
   views::Menu2* menu = new views::Menu2(model);
-  NativeMenuDOMUI::SetMenuURL(
+  NativeMenuWebUI::SetMenuURL(
       menu, GURL(StringPrintf("chrome://%s", chrome::kChromeUIWrenchMenu)));
   return menu;
 }

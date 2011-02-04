@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/views/native_menu_domui.h"
+#include "chrome/browser/chromeos/views/native_menu_webui.h"
 
 #include <string>
 
@@ -30,7 +30,7 @@
 
 namespace {
 
-using chromeos::NativeMenuDOMUI;
+using chromeos::NativeMenuWebUI;
 using chromeos::WebUIMenuWidget;
 
 // Returns true if the menu item type specified can be executed as a command.
@@ -42,10 +42,10 @@ bool MenuTypeCanExecute(ui::MenuModel::ItemType type) {
 
 gboolean Destroy(GtkWidget* widget, gpointer data) {
   WebUIMenuWidget* menu_widget = static_cast<WebUIMenuWidget*>(data);
-  NativeMenuDOMUI* domui_menu = menu_widget->domui_menu();
-  // domui_menu can be NULL if widget is destroyed by signal.
-  if (domui_menu)
-    domui_menu->Hide();
+  NativeMenuWebUI* webui_menu = menu_widget->webui_menu();
+  // webui_menu can be NULL if widget is destroyed by signal.
+  if (webui_menu)
+    webui_menu->Hide();
   return true;
 }
 
@@ -63,14 +63,14 @@ gfx::NativeWindow FindActiveToplevelWindow() {
 }
 
 // Currently opened menu. See RunMenuAt for reason why we need this.
-NativeMenuDOMUI* current_ = NULL;
+NativeMenuWebUI* current_ = NULL;
 
 }  // namespace
 
 namespace chromeos {
 
 // static
-void NativeMenuDOMUI::SetMenuURL(views::Menu2* menu2, const GURL& url) {
+void NativeMenuWebUI::SetMenuURL(views::Menu2* menu2, const GURL& url) {
   // No-op if DOMUI menu is disabled.
   if (!MenuUI::IsEnabled())
     return;
@@ -79,13 +79,13 @@ void NativeMenuDOMUI::SetMenuURL(views::Menu2* menu2, const GURL& url) {
   DCHECK(native);
   WebUIMenuWidget* widget = WebUIMenuWidget::FindWebUIMenuWidget(native);
   DCHECK(widget);
-  widget->domui_menu()->set_menu_url(url);
+  widget->webui_menu()->set_menu_url(url);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NativeMenuDOMUI, public:
+// NativeMenuWebUI, public:
 
-NativeMenuDOMUI::NativeMenuDOMUI(ui::MenuModel* menu_model, bool root)
+NativeMenuWebUI::NativeMenuWebUI(ui::MenuModel* menu_model, bool root)
     : parent_(NULL),
       submenu_(NULL),
       model_(menu_model),
@@ -103,7 +103,7 @@ NativeMenuDOMUI::NativeMenuDOMUI(ui::MenuModel* menu_model, bool root)
   menu_widget_->Init(NULL, gfx::Rect(-10000, -10000, 1, 1));
 }
 
-NativeMenuDOMUI::~NativeMenuDOMUI() {
+NativeMenuWebUI::~NativeMenuWebUI() {
   if (nested_dispatcher_) {
     // Menu is destroyed while its in message loop.
     // Let nested dispatcher know the creator is deleted.
@@ -118,9 +118,9 @@ NativeMenuDOMUI::~NativeMenuDOMUI() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NativeMenuDOMUI, MenuWrapper implementation:
+// NativeMenuWebUI, MenuWrapper implementation:
 
-void NativeMenuDOMUI::RunMenuAt(const gfx::Point& point, int alignment) {
+void NativeMenuWebUI::RunMenuAt(const gfx::Point& point, int alignment) {
   if (current_ != NULL) {
     // This happens when there is a nested task to show menu, which is
     // executed after menu is open. Since we need to enable nested task,
@@ -188,54 +188,54 @@ void NativeMenuDOMUI::RunMenuAt(const gfx::Point& point, int alignment) {
   ProcessActivate();
 }
 
-void NativeMenuDOMUI::CancelMenu() {
+void NativeMenuWebUI::CancelMenu() {
   Hide();
 }
 
-void NativeMenuDOMUI::Rebuild() {
+void NativeMenuWebUI::Rebuild() {
   activated_menu_ = NULL;
   menu_widget_->ExecuteJavascript(L"modelUpdated()");
 }
 
-void NativeMenuDOMUI::UpdateStates() {
+void NativeMenuWebUI::UpdateStates() {
   // Update menu contnets and submenus.
   Rebuild();
 }
 
-gfx::NativeMenu NativeMenuDOMUI::GetNativeMenu() const {
+gfx::NativeMenu NativeMenuWebUI::GetNativeMenu() const {
   return menu_widget_->GetNativeView();
 }
 
-NativeMenuDOMUI::MenuAction NativeMenuDOMUI::GetMenuAction() const {
+NativeMenuWebUI::MenuAction NativeMenuWebUI::GetMenuAction() const {
   return menu_action_;
 }
 
-void NativeMenuDOMUI::AddMenuListener(views::MenuListener* listener) {
+void NativeMenuWebUI::AddMenuListener(views::MenuListener* listener) {
   listeners_.AddObserver(listener);
 }
 
-void NativeMenuDOMUI::RemoveMenuListener(views::MenuListener* listener) {
+void NativeMenuWebUI::RemoveMenuListener(views::MenuListener* listener) {
   listeners_.RemoveObserver(listener);
 }
 
-void NativeMenuDOMUI::SetMinimumWidth(int width) {
+void NativeMenuWebUI::SetMinimumWidth(int width) {
   gtk_widget_set_size_request(menu_widget_->GetNativeView(), width, 1);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NativeMenuDOMUI, MessageLoopForUI::Dispatcher implementation:
+// NativeMenuWebUI, MessageLoopForUI::Dispatcher implementation:
 
-bool NativeMenuDOMUI::Dispatch(GdkEvent* event) {
+bool NativeMenuWebUI::Dispatch(GdkEvent* event) {
   switch (event->type) {
     case GDK_MOTION_NOTIFY: {
-      NativeMenuDOMUI* target = FindMenuAt(
+      NativeMenuWebUI* target = FindMenuAt(
           gfx::Point(event->motion.x_root, event->motion.y_root));
       if (target)
         target->menu_widget_->EnableInput(false);
       break;
     }
     case GDK_BUTTON_PRESS: {
-      NativeMenuDOMUI* target = FindMenuAt(
+      NativeMenuWebUI* target = FindMenuAt(
           gfx::Point(event->motion.x_root, event->motion.y_root));
       if (!target) {
         Hide();
@@ -251,7 +251,7 @@ bool NativeMenuDOMUI::Dispatch(GdkEvent* event) {
 }
 
 #if defined(TOUCH_UI)
-base::MessagePumpGlibXDispatcher::DispatchStatus NativeMenuDOMUI::Dispatch(
+base::MessagePumpGlibXDispatcher::DispatchStatus NativeMenuWebUI::Dispatch(
     XEvent* xevent) {
   return views::DispatchXEvent(xevent) ?
       base::MessagePumpGlibXDispatcher::EVENT_PROCESSED :
@@ -261,12 +261,12 @@ base::MessagePumpGlibXDispatcher::DispatchStatus NativeMenuDOMUI::Dispatch(
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
-// NativeMenuDOMUI, MenuControl implementation:
+// NativeMenuWebUI, MenuControl implementation:
 
-void NativeMenuDOMUI::Activate(ui::MenuModel* model,
+void NativeMenuWebUI::Activate(ui::MenuModel* model,
                                int index,
                                ActivationMode activation) {
-  NativeMenuDOMUI* root = GetRoot();
+  NativeMenuWebUI* root = GetRoot();
   if (root) {
     if (activation == CLOSE_AND_ACTIVATE) {
       root->activated_menu_ = model;
@@ -282,11 +282,11 @@ void NativeMenuDOMUI::Activate(ui::MenuModel* model,
   }
 }
 
-void NativeMenuDOMUI::OpenSubmenu(int index, int y) {
+void NativeMenuWebUI::OpenSubmenu(int index, int y) {
   submenu_.reset();
   // Returns the model for the submenu at the specified index.
   ui::MenuModel* submenu = model_->GetSubmenuModelAt(index);
-  submenu_.reset(new chromeos::NativeMenuDOMUI(submenu, false));
+  submenu_.reset(new chromeos::NativeMenuWebUI(submenu, false));
   submenu_->set_menu_url(menu_url_);
   // y in menu_widget_ coordinate.
   submenu_->set_parent(this);
@@ -297,43 +297,43 @@ void NativeMenuDOMUI::OpenSubmenu(int index, int y) {
           y));
 }
 
-void NativeMenuDOMUI::CloseAll() {
-  NativeMenuDOMUI* root = GetRoot();
+void NativeMenuWebUI::CloseAll() {
+  NativeMenuWebUI* root = GetRoot();
   // root can be null if the submenu is detached from parent.
   if (root)
     root->Hide();
 }
 
-void NativeMenuDOMUI::CloseSubmenu() {
+void NativeMenuWebUI::CloseSubmenu() {
   submenu_.reset();  // This closes subsequent children.
 }
 
-void NativeMenuDOMUI::MoveInputToSubmenu() {
+void NativeMenuWebUI::MoveInputToSubmenu() {
   if (submenu_.get()) {
     submenu_->menu_widget_->EnableInput(true);
   }
 }
 
-void NativeMenuDOMUI::MoveInputToParent() {
+void NativeMenuWebUI::MoveInputToParent() {
   if (parent_) {
     parent_->menu_widget_->EnableInput(true);
   }
 }
 
-void NativeMenuDOMUI::OnLoad() {
+void NativeMenuWebUI::OnLoad() {
   // TODO(oshima): OnLoad is no longer used, but kept in case
   // we may need it. Delete this if this is not necessary to
   // implement wrench/network/bookmark menus.
 }
 
-void NativeMenuDOMUI::SetSize(const gfx::Size& size) {
+void NativeMenuWebUI::SetSize(const gfx::Size& size) {
   menu_widget_->SetSize(size);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NativeMenuDOMUI, public:
+// NativeMenuWebUI, public:
 
-void NativeMenuDOMUI::Hide() {
+void NativeMenuWebUI::Hide() {
   // Only root can hide and exit the message loop.
   DCHECK(menu_widget_->is_root());
   DCHECK(!parent_);
@@ -347,8 +347,8 @@ void NativeMenuDOMUI::Hide() {
   MessageLoop::current()->Quit();
 }
 
-NativeMenuDOMUI* NativeMenuDOMUI::GetRoot() {
-  NativeMenuDOMUI* ancestor = this;
+NativeMenuWebUI* NativeMenuWebUI::GetRoot() {
+  NativeMenuWebUI* ancestor = this;
   while (ancestor->parent_)
     ancestor = ancestor->parent_;
   if (ancestor->menu_widget_->is_root())
@@ -357,7 +357,7 @@ NativeMenuDOMUI* NativeMenuDOMUI::GetRoot() {
     return NULL;
 }
 
-Profile* NativeMenuDOMUI::GetProfile() {
+Profile* NativeMenuWebUI::GetProfile() {
   Browser* browser = BrowserList::GetLastActive();
     // browser can be null in login screen.
   if (!browser)
@@ -365,7 +365,7 @@ Profile* NativeMenuDOMUI::GetProfile() {
   return browser->GetProfile();
 }
 
-void NativeMenuDOMUI::InputIsReady() {
+void NativeMenuWebUI::InputIsReady() {
   if (!on_menu_opened_called_) {
     on_menu_opened_called_ = true;
     FOR_EACH_OBSERVER(views::MenuListener, listeners_, OnMenuOpened());
@@ -373,9 +373,9 @@ void NativeMenuDOMUI::InputIsReady() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NativeMenuDOMUI, private:
+// NativeMenuWebUI, private:
 
-void NativeMenuDOMUI::ProcessActivate() {
+void NativeMenuWebUI::ProcessActivate() {
   if (activated_menu_ &&
       activated_menu_->IsEnabledAt(activated_index_) &&
       MenuTypeCanExecute(activated_menu_->GetTypeAt(activated_index_))) {
@@ -383,14 +383,14 @@ void NativeMenuDOMUI::ProcessActivate() {
   }
 }
 
-void NativeMenuDOMUI::ShowAt(MenuLocator* locator) {
+void NativeMenuWebUI::ShowAt(MenuLocator* locator) {
   model_->MenuWillShow();
   menu_widget_->ShowAt(locator);
 }
 
-NativeMenuDOMUI* NativeMenuDOMUI::FindMenuAt(const gfx::Point& point) {
+NativeMenuWebUI* NativeMenuWebUI::FindMenuAt(const gfx::Point& point) {
   if (submenu_.get()) {
-    NativeMenuDOMUI* found = submenu_->FindMenuAt(point);
+    NativeMenuWebUI* found = submenu_->FindMenuAt(point);
     if (found)
       return found;
   }

@@ -10,7 +10,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/status/network_menu.h"
-#include "chrome/browser/chromeos/views/native_menu_domui.h"
+#include "chrome/browser/chromeos/views/native_menu_webui.h"
 #include "chrome/browser/chromeos/views/webui_menu_widget.h"
 #include "chrome/browser/dom_ui/web_ui_theme_source.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -80,9 +80,9 @@ void NetworkMenuHandler::HandleAction(const ListValue* values) {
           = chromeos::WebUIMenuWidget::FindWebUIMenuWidget(
               dom_ui_->tab_contents()->GetNativeView());
       if (widget) {
-        chromeos::NativeMenuDOMUI* domui_menu = widget->domui_menu();
-        if (domui_menu)
-          domui_menu->Hide();
+        chromeos::NativeMenuWebUI* webui_menu = widget->webui_menu();
+        if (webui_menu)
+          webui_menu->Hide();
       }
     }
   }
@@ -194,7 +194,7 @@ DictionaryValue* NetworkMenuUI::CreateMenuItem(const ui::MenuModel* model,
 
 views::Menu2* NetworkMenuUI::CreateMenu2(ui::MenuModel* model) {
   views::Menu2* menu = new views::Menu2(model);
-  NativeMenuDOMUI::SetMenuURL(
+  NativeMenuWebUI::SetMenuURL(
       menu, GURL(StringPrintf("chrome://%s", chrome::kChromeUINetworkMenu)));
   return menu;
 }

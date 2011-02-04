@@ -10,7 +10,7 @@
 #include "base/singleton.h"
 #include "base/task.h"
 #include "chrome/browser/chromeos/views/menu_locator.h"
-#include "chrome/browser/chromeos/views/native_menu_domui.h"
+#include "chrome/browser/chromeos/views/native_menu_webui.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
@@ -124,14 +124,14 @@ WebUIMenuWidget* WebUIMenuWidget::FindWebUIMenuWidget(gfx::NativeView native) {
 ///////////////////////////////////////////////////////////////////////////////
 // WebUIMenuWidget public:
 
-WebUIMenuWidget::WebUIMenuWidget(chromeos::NativeMenuDOMUI* domui_menu,
+WebUIMenuWidget::WebUIMenuWidget(chromeos::NativeMenuWebUI* webui_menu,
                                  bool root)
     : views::WidgetGtk(views::WidgetGtk::TYPE_POPUP),
-      domui_menu_(domui_menu),
+      webui_menu_(webui_menu),
       dom_view_(NULL),
       did_input_grab_(false),
       is_root_(root) {
-  DCHECK(domui_menu_);
+  DCHECK(webui_menu_);
   // TODO(oshima): Disabling transparent until we migrate bookmark
   // menus to DOMUI.  See crosbug.com/7718.
   // MakeTransparent();
@@ -162,8 +162,8 @@ void WebUIMenuWidget::Close() {
     dom_view_ = NULL;
   }
 
-  // Detach the domui_menu_ which is being deleted.
-  domui_menu_ = NULL;
+  // Detach the webui_menu_ which is being deleted.
+  webui_menu_ = NULL;
   views::WidgetGtk::Close();
 }
 
@@ -194,7 +194,7 @@ void WebUIMenuWidget::OnSizeAllocate(GtkWidget* widget,
   // Don't move until the menu gets contents.
   if (bounds.height() > 1) {
     menu_locator_->Move(this);
-    domui_menu_->InputIsReady();
+    webui_menu_->InputIsReady();
   }
 }
 
@@ -257,23 +257,23 @@ void WebUIMenuWidget::ExecuteJavascript(const std::wstring& script) {
 }
 
 void WebUIMenuWidget::ShowAt(chromeos::MenuLocator* locator) {
-  DCHECK(domui_menu_);
+  DCHECK(webui_menu_);
   menu_locator_.reset(locator);
   if (!dom_view_) {
     // TODO(oshima): Replace DOMView with direct use of RVH for beta.
     // DOMView should be refactored to use RVH directly, but
     // it'll require a lot of change and will take time.
     dom_view_ = new DOMView();
-    dom_view_->Init(domui_menu_->GetProfile(), NULL);
+    dom_view_->Init(webui_menu_->GetProfile(), NULL);
     // TODO(oshima): remove extra view to draw rounded corner.
     views::View* container = new views::View();
     container->AddChildView(dom_view_);
     container->set_border(new RoundedBorder(locator));
     container->SetLayoutManager(new InsetsLayout());
     SetContentsView(container);
-    dom_view_->LoadURL(domui_menu_->menu_url());
+    dom_view_->LoadURL(webui_menu_->menu_url());
   } else {
-    domui_menu_->UpdateStates();
+    webui_menu_->UpdateStates();
     dom_view_->GetParent()->set_border(new RoundedBorder(locator));
     menu_locator_->Move(this);
   }
@@ -287,7 +287,7 @@ void WebUIMenuWidget::ShowAt(chromeos::MenuLocator* locator) {
 }
 
 void WebUIMenuWidget::SetSize(const gfx::Size& new_size) {
-  DCHECK(domui_menu_);
+  DCHECK(webui_menu_);
   // Ignore the empty new_size request which is called when
   // menu.html is loaded.
   if (new_size.IsEmpty())

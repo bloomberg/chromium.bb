@@ -16,14 +16,14 @@ class ExtensionApiTest;
 namespace chromeos {
 
 class MenuLocator;
-class NativeMenuDOMUI;
+class NativeMenuWebUI;
 
 // WebUIMenuWidget is a window widget for a Web UI based menu.
 class WebUIMenuWidget : public views::WidgetGtk {
  public:
   // Create a Window for the NativeMenuDMOUI. |root| specifies if
   // the menu is root menu.
-  WebUIMenuWidget(NativeMenuDOMUI* domui_menu, bool root);
+  WebUIMenuWidget(NativeMenuWebUI* webui_menu, bool root);
   virtual ~WebUIMenuWidget();
 
   // WidgetGtk overrides:
@@ -34,9 +34,9 @@ class WebUIMenuWidget : public views::WidgetGtk {
   virtual gboolean OnGrabBrokeEvent(GtkWidget* widget, GdkEvent* event);
   virtual void OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation);
 
-  // Returns NativeMenuDOMUI that owns this widget.
-  NativeMenuDOMUI* domui_menu() const {
-    return domui_menu_;
+  // Returns NativeMenuWebUI that owns this widget.
+  NativeMenuWebUI* webui_menu() const {
+    return webui_menu_;
   }
 
   // Returns true if the menu widget is a root.
@@ -85,7 +85,7 @@ class WebUIMenuWidget : public views::WidgetGtk {
   void ClearGrabWidget();
 
   // NativeMenu object that owns this widget.
-  NativeMenuDOMUI* domui_menu_;
+  NativeMenuWebUI* webui_menu_;
 
   // DOMView to render the menu contents.
   DOMView* dom_view_;
