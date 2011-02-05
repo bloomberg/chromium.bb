@@ -5,9 +5,9 @@
 #include "base/sys_info.h"
 #include "base/string_util.h"
 #include "chrome/renderer/render_process_impl.h"
-#include "gfx/rect.h"
 #include "ipc/ipc_channel.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/rect.h"
 
 namespace {
 

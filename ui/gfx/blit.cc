@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gfx/blit.h"
+#include "ui/gfx/blit.h"
 
 #include "base/logging.h"
 #include "build/build_config.h"
-#include "gfx/point.h"
-#include "gfx/rect.h"
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/platform_device.h"
+#include "ui/gfx/point.h"
+#include "ui/gfx/rect.h"
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include <cairo/cairo.h>

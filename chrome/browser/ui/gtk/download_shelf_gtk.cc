@@ -18,14 +18,14 @@
 #include "chrome/browser/ui/gtk/gtk_theme_provider.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/notification_service.h"
-#include "gfx/gtk_util.h"
-#include "gfx/insets.h"
-#include "gfx/point.h"
-#include "gfx/rect.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/gtk_util.h"
+#include "ui/gfx/insets.h"
+#include "ui/gfx/point.h"
+#include "ui/gfx/rect.h"
 
 namespace {
 

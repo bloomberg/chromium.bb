@@ -12,7 +12,7 @@
 #include "base/task.h"
 #include "chrome/browser/ui/status_bubble.h"
 #include "googleurl/src/gurl.h"
-#include "gfx/rect.h"
+#include "ui/gfx/rect.h"
 
 class GURL;
 namespace gfx {

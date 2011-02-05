@@ -6,7 +6,7 @@
 #define VIEWS_WINDOW_DIALOG_CLIENT_VIEW_H_
 #pragma once
 
-#include "gfx/font.h"
+#include "ui/gfx/font.h"
 #include "views/focus/focus_manager.h"
 #include "views/controls/button/button.h"
 #include "views/window/client_view.h"

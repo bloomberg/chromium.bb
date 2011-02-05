@@ -6,10 +6,10 @@
 
 #include "chrome/browser/chromeos/status/status_area_host.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "gfx/canvas.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/canvas.h"
 
 namespace chromeos {
 

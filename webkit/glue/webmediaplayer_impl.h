@@ -59,14 +59,14 @@
 #include "base/threading/thread.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
-#include "gfx/rect.h"
-#include "gfx/size.h"
 #include "media/base/filters.h"
 #include "media/base/message_loop_factory.h"
 #include "media/base/pipeline.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerClient.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
 
 class GURL;
 

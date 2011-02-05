@@ -5,7 +5,6 @@
 #include "webkit/tools/test_shell/webwidget_host.h"
 
 #include "base/logging.h"
-#include "gfx/rect.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupMenu.h"
@@ -14,6 +13,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/win/WebInputEventFactory.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/win/WebScreenInfoFactory.h"
 #include "ui/base/win/hwnd_util.h"
+#include "ui/gfx/rect.h"
 #include "webkit/tools/test_shell/test_shell.h"
 
 using WebKit::WebInputEvent;

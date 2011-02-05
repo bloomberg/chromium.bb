@@ -43,12 +43,12 @@
 #include "chrome/renderer/renderer_sandbox_support_linux.h"
 #endif
 #include "chrome/renderer/webplugin_delegate_proxy.h"
-#include "gfx/blit.h"
+#include "ui/gfx/blit.h"
 #if defined(OS_WIN)
-#include "gfx/codec/jpeg_codec.h"
-#include "gfx/gdi_util.h"
 #include "printing/units.h"
 #include "skia/ext/vector_platform_device.h"
+#include "ui/gfx/codec/jpeg_codec.h"
+#include "ui/gfx/gdi_util.h"
 #endif
 #include "printing/native_metafile.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"

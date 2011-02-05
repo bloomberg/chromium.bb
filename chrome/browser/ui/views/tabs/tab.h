@@ -10,7 +10,7 @@
 
 #include "base/scoped_ptr.h"
 #include "chrome/browser/ui/views/tabs/base_tab.h"
-#include "gfx/point.h"
+#include "ui/gfx/point.h"
 
 namespace ui {
 class MultiAnimation;

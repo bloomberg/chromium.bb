@@ -23,9 +23,9 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/pref_names.h"
-#include "gfx/font.h"
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_font_util.h"
+#include "ui/gfx/font.h"
 
 // XPath expression for finding specific iframes.
 static const wchar_t* kLoginIFrameXPath = L"//iframe[@id='login']";

@@ -11,8 +11,8 @@
 
 #include "base/callback.h"
 #include "build/build_config.h"
-#include "gfx/size.h"
 #include "gpu/command_buffer/service/common_decoder.h"
+#include "ui/gfx/size.h"
 
 namespace gfx {
 class GLContext;

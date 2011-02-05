@@ -8,8 +8,8 @@
 
 #include "base/basictypes.h"
 #include "base/string16.h"
-#include "gfx/canvas.h"
 #include "skia/ext/platform_canvas.h"
+#include "ui/gfx/canvas.h"
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 typedef struct _GdkPixbuf GdkPixbuf;

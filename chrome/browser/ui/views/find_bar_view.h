@@ -9,7 +9,7 @@
 #include "base/string16.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/views/dropdown_bar_view.h"
-#include "gfx/size.h"
+#include "ui/gfx/size.h"
 #include "views/controls/button/button.h"
 #include "views/controls/textfield/textfield.h"
 

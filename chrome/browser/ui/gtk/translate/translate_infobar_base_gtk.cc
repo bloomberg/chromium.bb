@@ -12,10 +12,10 @@
 #include "chrome/browser/ui/gtk/translate/after_translate_infobar_gtk.h"
 #include "chrome/browser/ui/gtk/translate/before_translate_infobar_gtk.h"
 #include "chrome/browser/ui/gtk/translate/translate_message_infobar_gtk.h"
-#include "gfx/canvas.h"
 #include "grit/generated_resources.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/canvas.h"
 
 namespace {
 

@@ -13,9 +13,9 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/info_bubble_accelerators_gtk.h"
 #include "chrome/common/notification_service.h"
-#include "gfx/gtk_util.h"
-#include "gfx/path.h"
-#include "gfx/rect.h"
+#include "ui/gfx/gtk_util.h"
+#include "ui/gfx/path.h"
+#include "ui/gfx/rect.h"
 
 namespace {
 

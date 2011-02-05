@@ -4,7 +4,7 @@
 
 #include "remoting/host/capturer_fake_ascii.h"
 
-#include "gfx/rect.h"
+#include "ui/gfx/rect.h"
 
 namespace remoting {
 

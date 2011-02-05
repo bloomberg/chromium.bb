@@ -17,7 +17,7 @@
 #include "base/ref_counted.h"
 #include "chrome/browser/browser_child_process_host.h"
 #include "chrome/browser/net/resolve_proxy_msg_helper.h"
-#include "gfx/native_widget_types.h"
+#include "ui/gfx/native_widget_types.h"
 #include "webkit/plugins/npapi/webplugininfo.h"
 
 namespace gfx {

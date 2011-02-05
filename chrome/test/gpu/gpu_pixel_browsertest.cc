@@ -26,13 +26,13 @@
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/test_launcher_utils.h"
 #include "chrome/test/ui_test_utils.h"
-#include "gfx/codec/png_codec.h"
-#include "gfx/size.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/size.h"
 
 namespace {
 

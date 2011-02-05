@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "gfx/font.h"
+#include "ui/gfx/font.h"
 
 namespace ui {
 

@@ -15,12 +15,12 @@
 
 #include "app/surface/transport_dib.h"
 #include "base/process_util.h"
-#include "gfx/native_widget_types.h"
-#include "gfx/rect.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextInputType.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/rect.h"
 
 namespace gfx {
 class Rect;

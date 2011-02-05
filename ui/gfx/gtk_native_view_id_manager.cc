@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gfx/gtk_native_view_id_manager.h"
+#include "ui/gfx/gtk_native_view_id_manager.h"
 
 #include <gtk/gtk.h>
 #include <gdk/gdkx.h>
 
 #include "base/logging.h"
 #include "base/rand_util.h"
-#include "gfx/gtk_preserve_window.h"
+#include "ui/gfx/gtk_preserve_window.h"
 
 // -----------------------------------------------------------------------------
 // Bounce functions for GTK to callback into a C++ object...

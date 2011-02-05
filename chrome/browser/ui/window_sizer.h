@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "gfx/rect.h"
+#include "ui/gfx/rect.h"
 
 class Browser;
 

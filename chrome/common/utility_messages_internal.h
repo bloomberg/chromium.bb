@@ -6,11 +6,11 @@
 #include <vector>
 
 #include "base/platform_file.h"
-#include "gfx/rect.h"
 #include "ipc/ipc_message_macros.h"
 #include "printing/backend/print_backend.h"
 #include "printing/page_range.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/rect.h"
 
 #define IPC_MESSAGE_START UtilityMsgStart
 

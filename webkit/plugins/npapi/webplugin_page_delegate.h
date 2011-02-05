@@ -5,7 +5,7 @@
 #ifndef WEBKIT_PLUGINS_NPAPI_WEBPLUGIN_PAGE_DELEGATE_
 #define WEBKIT_PLUGINS_NPAPI_WEBPLUGIN_PAGE_DELEGATE_
 
-#include "gfx/native_widget_types.h"
+#include "ui/gfx/native_widget_types.h"
 
 class FilePath;
 class GURL;

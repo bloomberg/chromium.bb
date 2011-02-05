@@ -7,8 +7,8 @@
 #pragma once
 
 #include "build/build_config.h"
-#include "gfx/point.h"
-#include "gfx/size.h"
+#include "ui/gfx/point.h"
+#include "ui/gfx/size.h"
 #include "views/view.h"
 
 namespace views {

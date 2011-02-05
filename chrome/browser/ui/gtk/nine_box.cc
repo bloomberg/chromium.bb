@@ -7,9 +7,9 @@
 #include "base/basictypes.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
-#include "gfx/gtk_util.h"
-#include "gfx/point.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/gtk_util.h"
+#include "ui/gfx/point.h"
 
 namespace {
 

@@ -18,9 +18,9 @@
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/render_messages.h"
-#include "gfx/codec/png_codec.h"
-#include "gfx/favicon_size.h"
 #include "skia/ext/image_operations.h"
+#include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/favicon_size.h"
 
 FavIconHelper::FavIconHelper(TabContents* tab_contents)
     : tab_contents_(tab_contents),

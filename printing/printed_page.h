@@ -7,9 +7,9 @@
 
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "gfx/rect.h"
-#include "gfx/size.h"
 #include "printing/native_metafile.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
 
 namespace printing {
 

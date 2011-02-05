@@ -12,11 +12,11 @@
 #include "base/scoped_temp_dir.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/utility_messages.h"
-#include "gfx/rect.h"
 #include "ipc/ipc_switches.h"
 #include "printing/native_metafile.h"
 #include "printing/page_range.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/gfx/rect.h"
 
 #if defined(OS_WIN)
 #include "base/win/scoped_handle.h"

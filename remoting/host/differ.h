@@ -9,8 +9,8 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
-#include "gfx/rect.h"
 #include "remoting/base/types.h"
+#include "ui/gfx/rect.h"
 
 namespace remoting {
 

@@ -9,9 +9,9 @@
 #include "base/ref_counted.h"
 #include "base/timer.h"
 #include "chrome/browser/ui/views/tabs/base_tab_strip.h"
-#include "gfx/point.h"
-#include "gfx/rect.h"
 #include "ui/base/animation/animation_container.h"
+#include "ui/gfx/point.h"
+#include "ui/gfx/rect.h"
 #include "views/controls/button/image_button.h"
 #include "views/mouse_watcher.h"
 

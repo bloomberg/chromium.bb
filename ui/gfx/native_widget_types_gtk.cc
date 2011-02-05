@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gfx/native_widget_types.h"
+#include "ui/gfx/native_widget_types.h"
 
-#include "gfx/gtk_native_view_id_manager.h"
+#include "ui/gfx/gtk_native_view_id_manager.h"
 
 namespace gfx {
 

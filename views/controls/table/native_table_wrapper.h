@@ -6,7 +6,7 @@
 #define VIEWS_CONTROLS_TABLE_NATIVE_TABLE_WRAPPER_H_
 #pragma once
 
-#include "gfx/native_widget_types.h"
+#include "ui/gfx/native_widget_types.h"
 
 using ui::TableColumn;
 

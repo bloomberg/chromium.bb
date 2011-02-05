@@ -13,8 +13,8 @@
 #include "base/callback.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/scoped_ptr.h"
-#include "gfx/rect.h"
-#include "gfx/size.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
 
 // Should not include GL headers in a header file. Forward declare these types
 // instead.

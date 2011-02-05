@@ -10,12 +10,12 @@
 #include "chrome/common/geoposition.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/web_apps.h"
-#include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/upload_data.h"
 #include "printing/backend/print_backend.h"
 #include "printing/native_metafile.h"
 #include "printing/page_range.h"
+#include "ui/gfx/rect.h"
 
 #ifndef EXCLUDE_SKIA_DEPENDENCIES
 #include "third_party/skia/include/core/SkBitmap.h"

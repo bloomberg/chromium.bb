@@ -17,8 +17,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
-#include "gfx/favicon_size.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/favicon_size.h"
 #include "webkit/glue/context_menu.h"
 
 ExtensionMenuItem::ExtensionMenuItem(const Id& id,

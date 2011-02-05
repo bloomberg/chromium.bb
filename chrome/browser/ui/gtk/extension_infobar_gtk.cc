@@ -10,9 +10,9 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
-#include "gfx/gtk_util.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/gtk_util.h"
 
 ExtensionInfoBarGtk::ExtensionInfoBarGtk(ExtensionInfoBarDelegate* delegate)
     : InfoBar(delegate),

@@ -11,11 +11,11 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "build/build_config.h"
-#include "gfx/point.h"
-#include "gfx/rect.h"
 #include "chrome/renderer/pepper_widget.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScrollbarClient.h"
+#include "ui/gfx/point.h"
+#include "ui/gfx/rect.h"
 
 // An implementation of a horizontal/vertical scrollbar.
 class PepperScrollbarWidget : public PepperWidget,

@@ -10,11 +10,11 @@
 #include "chrome/browser/ui/gtk/gtk_theme_provider.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/notification_service.h"
-#include "gfx/gtk_util.h"
-#include "gfx/skbitmap_operations.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/gtk_util.h"
+#include "ui/gfx/skbitmap_operations.h"
 
 CustomDrawButtonBase::CustomDrawButtonBase(GtkThemeProvider* theme_provider,
                                            int normal_id,

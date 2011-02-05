@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "gfx/native_widget_types.h"
+#include "ui/gfx/native_widget_types.h"
 
 // Cross platform access to a modal input window.
 class InputWindowDialog {

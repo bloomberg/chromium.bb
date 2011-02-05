@@ -12,8 +12,8 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/tab_contents_container_gtk.h"
 #include "chrome/common/notification_source.h"
-#include "gfx/rect.h"
 #include "ipc/ipc_message.h"
+#include "ui/gfx/rect.h"
 
 class ConstrainedHtmlDelegateGtk : public ConstrainedWindowGtkDelegate,
                                    public HtmlDialogTabContentsDelegate,

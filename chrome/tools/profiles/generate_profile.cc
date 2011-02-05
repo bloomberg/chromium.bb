@@ -26,10 +26,10 @@
 #include "chrome/test/testing_profile.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/notification_service.h"
-#include "gfx/codec/jpeg_codec.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
+#include "ui/gfx/codec/jpeg_codec.h"
 
 using base::Time;
 

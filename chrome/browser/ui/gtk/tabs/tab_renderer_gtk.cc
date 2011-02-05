@@ -17,10 +17,6 @@
 #include "chrome/browser/ui/gtk/gtk_theme_provider.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/notification_service.h"
-#include "gfx/canvas_skia_paint.h"
-#include "gfx/favicon_size.h"
-#include "gfx/platform_font_gtk.h"
-#include "gfx/skbitmap_operations.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -28,6 +24,10 @@
 #include "ui/base/animation/throb_animation.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/canvas_skia_paint.h"
+#include "ui/gfx/favicon_size.h"
+#include "ui/gfx/platform_font_gtk.h"
+#include "ui/gfx/skbitmap_operations.h"
 
 namespace {
 

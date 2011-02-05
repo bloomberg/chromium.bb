@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/options/content_exceptions_table_view.h"
 
-#include "gfx/font.h"
+#include "ui/gfx/font.h"
 
 ContentExceptionsTableView::ContentExceptionsTableView(
     ContentExceptionsTableModel* model,

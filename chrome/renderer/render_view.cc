@@ -99,12 +99,6 @@
 #include "chrome/renderer/webplugin_delegate_proxy.h"
 #include "chrome/renderer/websharedworker_proxy.h"
 #include "chrome/renderer/webworker_proxy.h"
-#include "gfx/color_utils.h"
-#include "gfx/favicon_size.h"
-#include "gfx/native_widget_types.h"
-#include "gfx/point.h"
-#include "gfx/rect.h"
-#include "gfx/skbitmap_operations.h"
 #include "grit/generated_resources.h"
 #include "grit/renderer_resources.h"
 #include "media/base/filter_collection.h"
@@ -165,6 +159,12 @@
 #include "ui/base/message_box_flags.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_utils.h"
+#include "ui/gfx/favicon_size.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/point.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/skbitmap_operations.h"
 #include "v8/include/v8.h"
 #include "v8/include/v8-testing.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
@@ -195,10 +195,10 @@
 #if defined(OS_WIN)
 // TODO(port): these files are currently Windows only because they concern:
 //   * theming
-#include "gfx/native_theme_win.h"
+#include "ui/gfx/native_theme_win.h"
 #elif defined(USE_X11)
-#include "gfx/native_theme_linux.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/linux/WebRenderTheme.h"
+#include "ui/gfx/native_theme_linux.h"
 #elif defined(OS_MACOSX)
 #include "skia/ext/skia_utils_mac.h"
 #endif

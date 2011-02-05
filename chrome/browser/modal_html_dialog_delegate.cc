@@ -10,7 +10,7 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_source.h"
-#include "gfx/size.h"
+#include "ui/gfx/size.h"
 
 ModalHtmlDialogDelegate::ModalHtmlDialogDelegate(
     const GURL& url, int width, int height, const std::string& json_arguments,

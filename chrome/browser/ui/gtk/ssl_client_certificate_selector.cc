@@ -21,11 +21,11 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "chrome/common/net/x509_certificate_model.h"
-#include "gfx/native_widget_types.h"
 #include "grit/generated_resources.h"
 #include "net/base/x509_certificate.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace {
 

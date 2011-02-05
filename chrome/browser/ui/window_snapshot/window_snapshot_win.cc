@@ -6,9 +6,9 @@
 
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"
-#include "gfx/codec/png_codec.h"
-#include "gfx/gdi_util.h"
-#include "gfx/rect.h"
+#include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/gdi_util.h"
+#include "ui/gfx/rect.h"
 
 namespace browser {
 

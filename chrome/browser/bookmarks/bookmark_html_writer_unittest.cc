@@ -17,10 +17,10 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/importer/firefox2_importer.h"
 #include "chrome/test/testing_profile.h"
-#include "gfx/codec/png_codec.h"
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/codec/png_codec.h"
 
 namespace {
 

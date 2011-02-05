@@ -10,8 +10,8 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui/ui_test.h"
-#include "gfx/point.h"
-#include "gfx/rect.h"
+#include "ui/gfx/point.h"
+#include "ui/gfx/rect.h"
 #include "views/event.h"
 
 AutomatedUITestBase::AutomatedUITestBase() {}

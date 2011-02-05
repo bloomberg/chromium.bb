@@ -8,8 +8,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/browser_with_test_window_test.h"
 #include "chrome/test/testing_profile.h"
-#include "gfx/rect.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/rect.h"
 
 class SkBitmap;
 

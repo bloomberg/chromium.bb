@@ -6,8 +6,8 @@
 #define VIEWS_BORDER_H_
 #pragma once
 
-#include "gfx/insets.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/insets.h"
 #include "views/view.h"
 
 namespace gfx{

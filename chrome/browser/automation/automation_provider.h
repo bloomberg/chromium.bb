@@ -32,7 +32,7 @@
 #include "ipc/ipc_channel.h"
 
 #if defined(OS_WIN)
-#include "gfx/native_widget_types.h"
+#include "ui/gfx/native_widget_types.h"
 #include "views/event.h"
 #endif  // defined(OS_WIN)
 

@@ -21,10 +21,10 @@
 #include "chrome/browser/ui/gtk/view_id_util.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
-#include "gfx/point.h"
-#include "gfx/size.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/gfx/point.h"
+#include "ui/gfx/size.h"
 
 class BookmarkMenuController;
 class Browser;

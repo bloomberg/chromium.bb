@@ -12,16 +12,16 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "gfx/canvas.h"
-#include "gfx/favicon_size.h"
 #include "grit/app_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/favicon_size.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/app_icon_win.h"
-#include "gfx/icon_util.h"
+#include "ui/gfx/icon_util.h"
 #endif
 
 static bool g_initialized = false;

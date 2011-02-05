@@ -13,9 +13,9 @@
 
 #include "base/pickle.h"
 #include "base/string16.h"
-#include "gfx/point.h"
 #include "googleurl/src/gurl.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/gfx/point.h"
 
 namespace ui {
 

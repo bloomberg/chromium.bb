@@ -88,7 +88,6 @@
 #include "chrome/common/profiling.h"
 #include "chrome/common/result_codes.h"
 #include "chrome/installer/util/google_update_settings.h"
-#include "gfx/gfx_module.h"
 #include "grit/app_locale_settings.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -107,6 +106,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/system_monitor/system_monitor.h"
+#include "ui/gfx/gfx_module.h"
 
 #if defined(USE_LINUX_BREAKPAD)
 #include "base/linux_util.h"
@@ -144,12 +144,12 @@
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/shell_util.h"
-#include "gfx/platform_font_win.h"
 #include "net/base/net_util.h"
 #include "net/base/sdch_manager.h"
 #include "printing/printed_document.h"
 #include "sandbox/src/sandbox.h"
 #include "ui/base/l10n/l10n_util_win.h"
+#include "ui/gfx/platform_font_win.h"
 #endif  // defined(OS_WIN)
 
 #if defined(OS_MACOSX)
@@ -176,7 +176,7 @@
 #endif
 
 #if defined(TOOLKIT_USES_GTK)
-#include "gfx/gtk_util.h"
+#include "ui/gfx/gtk_util.h"
 #endif
 
 // BrowserMainParts ------------------------------------------------------------

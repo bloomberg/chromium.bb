@@ -6,9 +6,9 @@
 #define VIEWS_SCREEN_H_
 #pragma once
 
-#include "gfx/native_widget_types.h"
-#include "gfx/point.h"
-#include "gfx/rect.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/point.h"
+#include "ui/gfx/rect.h"
 
 namespace views {
 

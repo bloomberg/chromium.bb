@@ -14,9 +14,9 @@
 #include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/json_value_serializer.h"
-#include "gfx/color_utils.h"
 #include "grit/theme_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/color_utils.h"
 
 class BrowserThemePackTest : public ::testing::Test {
  public:

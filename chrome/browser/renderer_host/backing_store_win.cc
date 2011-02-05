@@ -9,8 +9,8 @@
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/common/chrome_switches.h"
-#include "gfx/gdi_util.h"
 #include "skia/ext/platform_canvas.h"
+#include "ui/gfx/gdi_util.h"
 
 namespace {
 

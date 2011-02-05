@@ -7,9 +7,9 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/gtk/gtk_theme_provider.h"
-#include "gfx/gtk_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/models/table_model.h"
+#include "ui/gfx/gtk_util.h"
 
 namespace gtk_tree {
 

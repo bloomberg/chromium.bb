@@ -17,10 +17,10 @@
 #include "chrome/plugin/npobject_util.h"
 #include "chrome/plugin/plugin_channel.h"
 #include "chrome/plugin/plugin_thread.h"
-#include "gfx/blit.h"
-#include "gfx/canvas.h"
 #include "skia/ext/platform_device.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
+#include "ui/gfx/blit.h"
+#include "ui/gfx/canvas.h"
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 
 #if defined(OS_MACOSX)
@@ -31,7 +31,7 @@
 
 #if defined(OS_WIN)
 #include "chrome/common/section_util_win.h"
-#include "gfx/gdi_util.h"
+#include "ui/gfx/gdi_util.h"
 #endif
 
 #if defined(USE_X11)

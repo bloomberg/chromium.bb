@@ -26,9 +26,9 @@
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/common/guid.h"
 #include "chrome/common/notification_service.h"
-#include "gfx/codec/png_codec.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/codec/png_codec.h"
 #include "webkit/glue/form_field.h"
 #include "webkit/glue/password_form.h"
 

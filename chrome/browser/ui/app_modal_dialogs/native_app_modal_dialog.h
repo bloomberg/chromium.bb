@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_APP_MODAL_DIALOGS_NATIVE_APP_MODAL_DIALOG_H_
 #pragma once
 
-#include "gfx/native_widget_types.h"
+#include "ui/gfx/native_widget_types.h"
 
 class JavaScriptAppModalDialog;
 

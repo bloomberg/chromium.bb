@@ -30,10 +30,10 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/url_constants.h"
-#include "gfx/rect.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "ui/base/animation/animation.h"
+#include "ui/gfx/rect.h"
 
 namespace {
 

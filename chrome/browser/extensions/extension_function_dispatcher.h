@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "base/ref_counted.h"
-#include "gfx/native_widget_types.h"
 #include "googleurl/src/gurl.h"
+#include "ui/gfx/native_widget_types.h"
 
 class Browser;
 class Extension;

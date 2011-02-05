@@ -12,9 +12,9 @@
 
 #include "base/basictypes.h"
 #include "base/string16.h"
-#include "gfx/native_widget_types.h"
-#include "gfx/point.h"
 #include "base/task.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/point.h"
 #include "views/widget/tooltip_manager.h"
 
 namespace gfx {

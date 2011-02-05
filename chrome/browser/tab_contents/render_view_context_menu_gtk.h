@@ -9,7 +9,7 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
-#include "gfx/point.h"
+#include "ui/gfx/point.h"
 
 struct ContextMenuParams;
 

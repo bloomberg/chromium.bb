@@ -8,7 +8,6 @@
 #include "base/metrics/histogram.h"
 #include "base/time.h"
 #include "chrome/renderer/render_view.h"
-#include "gfx/size.h"
 #include "skia/ext/bitmap_platform_device.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -16,6 +15,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "ui/gfx/size.h"
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebRect;

@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/views/infobars/infobar_background.h"
 
-#include "gfx/canvas.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/canvas.h"
 #include "views/view.h"
 
 static const SkColor kWarningBackgroundColorTop = SkColorSetRGB(255, 242, 183);

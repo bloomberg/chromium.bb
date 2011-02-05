@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_NATIVE_DIALOG_WINDOW_H_
 #pragma once
 
-#include "gfx/native_widget_types.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
 class Rect;

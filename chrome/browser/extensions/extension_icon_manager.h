@@ -12,8 +12,8 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
-#include "gfx/insets.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/insets.h"
 
 class Extension;
 

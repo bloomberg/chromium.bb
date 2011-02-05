@@ -6,7 +6,7 @@
 #define VIEWS_WINDOW_WINDOW_H_
 #pragma once
 
-#include "gfx/native_widget_types.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
 class Font;

@@ -5,10 +5,10 @@
 #include "views/controls/throbber.h"
 
 #include "base/time.h"
-#include "gfx/canvas.h"
 #include "grit/app_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/canvas.h"
 
 using base::Time;
 using base::TimeDelta;

@@ -1,6 +1,6 @@
 include_rules = [
-  "+gfx",
   "+google/protobuf",
   "+net",
   "+third_party/zlib",
+  "+ui/gfx",
 ]

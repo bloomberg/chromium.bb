@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_PAGE_ACTION_WITH_BADGE_VIEW_H_
 #pragma once
 
-#include "gfx/size.h"
+#include "ui/gfx/size.h"
 #include "views/view.h"
 
 class GURL;

@@ -7,8 +7,8 @@
 #include "base/file_util.h"
 #include "base/md5.h"
 #include "base/string_number_conversions.h"
-#include "gfx/codec/png_codec.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/codec/png_codec.h"
 
 namespace printing {
 

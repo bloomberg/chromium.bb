@@ -30,10 +30,10 @@
 #include "chrome/renderer/renderer_main_platform_delegate.h"
 #include "chrome/renderer/render_process_impl.h"
 #include "chrome/renderer/render_thread.h"
-#include "gfx/gfx_module.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_module.h"
 #include "ui/base/system_monitor/system_monitor.h"
+#include "ui/gfx/gfx_module.h"
 
 #if defined(OS_MACOSX)
 #include "base/eintr_wrapper.h"

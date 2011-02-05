@@ -8,12 +8,12 @@
 #include <gdk/gdk.h>
 #endif
 
-#include "gfx/canvas.h"
 #include "skia/ext/skia_utils_win.h"
+#include "ui/gfx/canvas.h"
 #include "views/background.h"
 
 #if defined(OS_LINUX)
-#include "gfx/gtk_util.h"
+#include "ui/gfx/gtk_util.h"
 #endif
 
 namespace views {

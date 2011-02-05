@@ -19,9 +19,9 @@
 #include "chrome/browser/instant/instant_loader_delegate.h"
 #include "chrome/browser/search_engines/template_url_id.h"
 #include "chrome/common/page_transition_types.h"
-#include "gfx/native_widget_types.h"
-#include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/rect.h"
 
 struct AutocompleteMatch;
 class InstantDelegate;

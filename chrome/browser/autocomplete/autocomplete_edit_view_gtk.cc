@@ -26,10 +26,6 @@
 #include "chrome/browser/ui/gtk/view_id_util.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/common/notification_service.h"
-#include "gfx/color_utils.h"
-#include "gfx/font.h"
-#include "gfx/gtk_util.h"
-#include "gfx/skia_utils_gtk.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
@@ -37,6 +33,10 @@
 #include "ui/base/animation/multi_animation.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_utils.h"
+#include "ui/gfx/font.h"
+#include "ui/gfx/gtk_util.h"
+#include "ui/gfx/skia_utils_gtk.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/autocomplete/autocomplete_edit_view_views.h"

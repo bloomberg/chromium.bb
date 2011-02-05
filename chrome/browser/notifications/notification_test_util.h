@@ -10,7 +10,7 @@
 
 #include "chrome/browser/notifications/notification_object_proxy.h"
 #include "chrome/browser/notifications/balloon.h"
-#include "gfx/size.h"
+#include "ui/gfx/size.h"
 
 // NotificationDelegate which does nothing, useful for testing when
 // the notification events are not important.

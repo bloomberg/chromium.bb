@@ -6,7 +6,7 @@
 #define VIEWS_CONTROLS_SLIDER_NATIVE_SLIDER_WRAPPER_H_
 #pragma once
 
-#include "gfx/native_widget_types.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace views {
 

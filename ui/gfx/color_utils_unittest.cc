@@ -4,10 +4,10 @@
 
 #include <stdlib.h>
 
-#include "gfx/color_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
+#include "ui/gfx/color_utils.h"
 
 TEST(ColorUtils, SkColorToHSLRed) {
   color_utils::HSL hsl = { 0, 0, 0 };

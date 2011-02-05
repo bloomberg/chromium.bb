@@ -22,9 +22,9 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/install_util.h"
-#include "gfx/native_widget_types.h"
 #include "googleurl/src/gurl.h"
 #include "ui/base/message_box_win.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace platform_util {
 

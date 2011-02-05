@@ -10,9 +10,9 @@
 #include "app/surface/transport_dib.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
-#include "gfx/size.h"
 #include "skia/ext/platform_canvas.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/gfx/size.h"
 
 // The shmat system call uses this as it's invalid return address
 static void *const kInvalidAddress = (void*) -1;

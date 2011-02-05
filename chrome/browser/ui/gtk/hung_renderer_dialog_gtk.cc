@@ -15,13 +15,13 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/result_codes.h"
-#include "gfx/gtk_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/gtk_util.h"
 
 namespace {
 

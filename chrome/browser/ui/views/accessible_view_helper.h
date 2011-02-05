@@ -13,7 +13,7 @@
 #include "base/scoped_ptr.h"
 #include "base/singleton.h"
 #include "chrome/browser/accessibility_events.h"
-#include "gfx/native_widget_types.h"
+#include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_LINUX)
 #include "chrome/browser/ui/gtk/accessible_widget_helper_gtk.h"

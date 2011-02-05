@@ -15,9 +15,9 @@
 #include "base/scoped_ptr.h"
 #include "chrome/common/message_router.h"
 #include "chrome/plugin/npobject_base.h"
-#include "gfx/native_widget_types.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_channel.h"
+#include "ui/gfx/native_widget_types.h"
 
 // Encapsulates an IPC channel between a renderer and a plugin process.
 class PluginChannelBase : public IPC::Channel::Listener,

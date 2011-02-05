@@ -12,9 +12,9 @@
 #include "base/time.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/ui/ui_test.h"
-#include "gfx/native_widget_types.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/gfx/native_widget_types.h"
 
 class TabProxy;
 class ExternalTabUITestMockClient;

@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "gfx/font.h"
+#include "ui/gfx/font.h"
 #include "views/focus/focus_manager.h"
 #include "views/screen.h"
 #include "views/widget/root_view.h"

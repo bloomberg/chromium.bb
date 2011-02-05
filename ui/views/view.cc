@@ -7,10 +7,10 @@
 #include <algorithm>
 #include <functional>
 
-#include "gfx/canvas.h"
-#include "gfx/point.h"
-#include "gfx/size.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/point.h"
+#include "ui/gfx/size.h"
 #include "ui/views/events/context_menu_controller.h"
 #include "ui/views/events/drag_controller.h"
 #include "ui/views/layout/layout_manager.h"

@@ -19,13 +19,13 @@
 #include "chrome/common/edit_command.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/property_bag.h"
-#include "gfx/native_widget_types.h"
-#include "gfx/rect.h"
-#include "gfx/size.h"
 #include "ipc/ipc_channel.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextInputType.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
 
 namespace gfx {
 class Rect;

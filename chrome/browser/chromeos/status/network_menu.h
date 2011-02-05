@@ -10,9 +10,9 @@
 #include <vector>
 
 #include "chrome/browser/chromeos/options/network_config_view.h"
-#include "gfx/native_widget_types.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/gfx/native_widget_types.h"
 #include "views/controls/menu/view_menu_delegate.h"
 
 namespace gfx {

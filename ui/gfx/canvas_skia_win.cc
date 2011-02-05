@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gfx/canvas_skia.h"
+#include "ui/gfx/canvas_skia.h"
 
 #include <limits>
 
 #include "base/i18n/rtl.h"
-#include "gfx/font.h"
-#include "gfx/rect.h"
 #include "third_party/skia/include/core/SkShader.h"
+#include "ui/gfx/font.h"
+#include "ui/gfx/rect.h"
 
 namespace {
 

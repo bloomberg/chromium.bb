@@ -9,9 +9,9 @@
 #include <atltheme.h>
 
 #include "base/logging.h"
-#include "gfx/canvas_skia.h"
 #include "skia/ext/bitmap_platform_device_win.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
+#include "ui/gfx/canvas_skia.h"
 
 void GetRebarGradientColors(int width, int x1, int x2,
                             SkColor* c1, SkColor* c2) {

@@ -11,7 +11,7 @@
 #pragma once
 
 #include "base/string16.h"
-#include "gfx/rect.h"
+#include "ui/gfx/rect.h"
 
 class FindBarController;
 class FindBarTesting;

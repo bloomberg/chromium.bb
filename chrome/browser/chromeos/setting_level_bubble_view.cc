@@ -7,8 +7,8 @@
 #include <string>
 
 #include "base/logging.h"
-#include "gfx/canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/canvas.h"
 #include "views/controls/progress_bar.h"
 
 using views::Background;

@@ -10,9 +10,9 @@
 #include "base/path_service.h"
 #include "base/string16.h"
 #include "base/string_piece.h"
-#include "gfx/gfx_module.h"
 #include "grit/webkit_resources.h"
 #include "ui/base/resource/data_pack.h"
+#include "ui/gfx/gfx_module.h"
 
 namespace {
 

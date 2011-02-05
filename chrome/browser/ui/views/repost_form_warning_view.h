@@ -7,7 +7,7 @@
 #pragma once
 
 #include "chrome/browser/tab_contents/constrained_window.h"
-#include "gfx/native_widget_types.h"
+#include "ui/gfx/native_widget_types.h"
 #include "views/window/dialog_delegate.h"
 
 class ConstrainedWindow;

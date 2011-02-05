@@ -4,11 +4,11 @@
 
 #include "views/window/window_gtk.h"
 
-#include "gfx/rect.h"
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
-#include "gfx/gtk_util.h"
-#include "gfx/path.h"
+#include "ui/gfx/gtk_util.h"
+#include "ui/gfx/path.h"
+#include "ui/gfx/rect.h"
 #include "views/event.h"
 #include "views/screen.h"
 #include "views/widget/root_view.h"

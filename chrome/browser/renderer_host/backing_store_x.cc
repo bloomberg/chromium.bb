@@ -24,11 +24,11 @@
 #include "base/metrics/histogram.h"
 #include "base/time.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
-#include "gfx/rect.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/base/x/x11_util_internal.h"
+#include "ui/gfx/rect.h"
 
 // Assume that somewhere along the line, someone will do width * height * 4
 // with signed numbers. If the maximum value is 2**31, then 2**31 / 4 =

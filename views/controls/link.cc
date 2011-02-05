@@ -9,13 +9,13 @@
 #endif
 
 #include "base/logging.h"
-#include "gfx/color_utils.h"
-#include "gfx/font.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/gfx/color_utils.h"
+#include "ui/gfx/font.h"
 #include "views/event.h"
 
 #if defined(OS_LINUX)
-#include "gfx/gtk_util.h"
+#include "ui/gfx/gtk_util.h"
 #endif
 
 namespace {

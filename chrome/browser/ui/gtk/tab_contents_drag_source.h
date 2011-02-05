@@ -12,12 +12,12 @@
 #include "base/file_path.h"
 #include "base/message_loop.h"
 #include "base/string16.h"
-#include "gfx/point.h"
-#include "gfx/native_widget_types.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/gtk_signal_registrar.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/point.h"
 
 class SkBitmap;
 class TabContents;

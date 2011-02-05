@@ -16,7 +16,7 @@
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
-#include "gfx/point.h"
+#include "ui/gfx/point.h"
 
 using base::TimeDelta;
 using base::TimeTicks;

@@ -9,8 +9,8 @@
 
 #include "base/message_loop.h"
 #include "base/threading/thread.h"
-#include "gfx/icon_util.h"
-#include "gfx/size.h"
+#include "ui/gfx/icon_util.h"
+#include "ui/gfx/size.h"
 
 void IconLoader::ReadIcon() {
   int size = 0;

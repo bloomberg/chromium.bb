@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "gfx/codec/png_codec.h"
 #include "googleurl/src/gurl.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
@@ -22,6 +21,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/table_model_observer.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/codec/png_codec.h"
 
 struct CustomHomePagesTableModel::Entry {
   Entry() : title_handle(0), fav_icon_handle(0) {}

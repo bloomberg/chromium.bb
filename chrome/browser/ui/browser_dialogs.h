@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_UI_BROWSER_DIALOGS_H_
 #pragma once
 
-#include "gfx/native_widget_types.h"
 #include "ipc/ipc_message.h"
+#include "ui/gfx/native_widget_types.h"
 
 class HtmlDialogUIDelegate;
 class Profile;

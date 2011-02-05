@@ -13,8 +13,8 @@
 #include "chrome/browser/certificate_manager_model.h"
 #include "chrome/browser/dom_ui/options/options_ui.h"
 #include "chrome/browser/shell_dialogs.h"
-#include "gfx/native_widget_types.h"
 #include "net/base/cert_database.h"
+#include "ui/gfx/native_widget_types.h"
 
 class FileAccessProvider;
 

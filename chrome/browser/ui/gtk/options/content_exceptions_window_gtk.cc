@@ -10,10 +10,10 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/options/content_exception_editor.h"
-#include "gfx/gtk_util.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/gtk_util.h"
 
 namespace {
 

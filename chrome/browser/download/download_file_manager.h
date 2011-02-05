@@ -46,7 +46,7 @@
 #include "base/hash_tables.h"
 #include "base/ref_counted.h"
 #include "base/timer.h"
-#include "gfx/native_widget_types.h"
+#include "ui/gfx/native_widget_types.h"
 
 struct DownloadBuffer;
 struct DownloadCreateInfo;

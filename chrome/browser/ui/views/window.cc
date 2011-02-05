@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/window.h"
 
-#include "gfx/rect.h"
+#include "ui/gfx/rect.h"
 #include "views/window/window.h"
 
 #if defined(OS_CHROMEOS)

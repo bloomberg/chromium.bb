@@ -8,7 +8,7 @@
 
 #include <vector>
 
-#include "gfx/native_widget_types.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
   class Rect;

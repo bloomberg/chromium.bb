@@ -6,13 +6,13 @@
 
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
-#include "gfx/canvas_skia.h"
-#include "gfx/font.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/win/hwnd_util.h"
+#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/font.h"
 #include "views/accelerator.h"
 #include "views/controls/menu/menu_2.h"
 

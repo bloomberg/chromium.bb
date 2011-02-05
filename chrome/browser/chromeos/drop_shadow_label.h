@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_DROP_SHADOW_LABEL_H_
 #pragma once
 
-#include "gfx/font.h"
+#include "ui/gfx/font.h"
 #include "views/controls/label.h"
 
 namespace chromeos {

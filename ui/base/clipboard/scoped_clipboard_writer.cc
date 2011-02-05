@@ -10,7 +10,7 @@
 
 #include "base/pickle.h"
 #include "base/utf_string_conversions.h"
-#include "gfx/size.h"
+#include "ui/gfx/size.h"
 
 namespace ui {
 

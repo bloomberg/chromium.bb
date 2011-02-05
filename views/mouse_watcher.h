@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
-#include "gfx/insets.h"
+#include "ui/gfx/insets.h"
 
 namespace views {
 

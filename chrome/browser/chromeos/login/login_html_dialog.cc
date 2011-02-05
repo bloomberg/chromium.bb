@@ -10,9 +10,9 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/html_dialog_view.h"
 #include "chrome/common/notification_service.h"
-#include "gfx/native_widget_types.h"
-#include "gfx/rect.h"
-#include "gfx/size.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
 #include "views/window/window.h"
 
 namespace chromeos {

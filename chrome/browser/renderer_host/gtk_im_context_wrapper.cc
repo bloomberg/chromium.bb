@@ -23,11 +23,11 @@
 #include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/render_messages.h"
-#include "gfx/gtk_util.h"
-#include "gfx/rect.h"
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/gtk_util.h"
+#include "ui/gfx/rect.h"
 
 namespace {
 // Copied from third_party/WebKit/Source/WebCore/page/EventHandler.cpp

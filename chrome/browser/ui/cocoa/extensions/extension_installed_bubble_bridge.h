@@ -9,8 +9,8 @@
 #define CHROME_BROWSER_UI_COCOA_EXTENSIONS_EXTENSION_INSTALLED_BUBBLE_BRIDGE_H_
 #pragma once
 
-#include "gfx/native_widget_types.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/native_widget_types.h"
 
 class Browser;
 class Extension;

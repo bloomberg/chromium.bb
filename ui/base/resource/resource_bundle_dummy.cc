@@ -8,8 +8,8 @@
 
 #include "base/logging.h"
 #include "base/synchronization/lock.h"
-#include "gfx/font.h"
-#include "gfx/platform_font_win.h"
+#include "ui/gfx/font.h"
+#include "ui/gfx/platform_font_win.h"
 
 // NOTE(gregoryd): This is a hack to avoid creating more nacl_win64-specific
 // files. The font members of ResourceBundle are never initialized in our code

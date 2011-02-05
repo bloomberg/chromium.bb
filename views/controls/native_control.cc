@@ -12,12 +12,12 @@
 
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
-#include "gfx/native_theme_win.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/view_prop.h"
 #include "ui/base/win/hwnd_util.h"
+#include "ui/gfx/native_theme_win.h"
 #include "views/background.h"
 #include "views/border.h"
 #include "views/controls/native/native_view_host.h"

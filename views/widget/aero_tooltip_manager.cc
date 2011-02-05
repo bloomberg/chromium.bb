@@ -9,8 +9,8 @@
 #include <shlobj.h>
 
 #include "base/message_loop.h"
-#include "gfx/point.h"
 #include "ui/base/l10n/l10n_util_win.h"
+#include "ui/gfx/point.h"
 
 namespace views {
 

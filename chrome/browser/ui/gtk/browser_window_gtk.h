@@ -18,10 +18,10 @@
 #include "chrome/browser/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/gtk/infobars/infobar_arrow_model.h"
 #include "chrome/common/notification_registrar.h"
-#include "gfx/rect.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/x/active_window_watcher_x.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/gfx/rect.h"
 
 class BookmarkBarGtk;
 class Browser;

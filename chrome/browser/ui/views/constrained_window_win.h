@@ -8,7 +8,7 @@
 
 #include "chrome/browser/tab_contents/constrained_window.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
-#include "gfx/rect.h"
+#include "ui/gfx/rect.h"
 #include "views/window/window_win.h"
 
 class ConstrainedTabContentsWindowDelegate;

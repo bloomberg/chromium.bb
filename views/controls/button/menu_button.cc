@@ -5,12 +5,12 @@
 #include "views/controls/button/menu_button.h"
 
 #include "base/utf_string_conversions.h"
-#include "gfx/canvas.h"
 #include "grit/app_strings.h"
 #include "grit/app_resources.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/canvas.h"
 #include "views/controls/button/button.h"
 #include "views/controls/menu/view_menu_delegate.h"
 #include "views/event.h"

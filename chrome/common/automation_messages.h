@@ -14,8 +14,8 @@
 #include "chrome/common/page_type.h"
 #include "chrome/common/security_style.h"
 #include "chrome/common/common_param_traits.h"
-#include "gfx/rect.h"
 #include "net/base/upload_data.h"
+#include "ui/gfx/rect.h"
 
 struct AutomationMsg_Find_Params {
   // Unused value, which exists only for backwards compat.

@@ -9,8 +9,8 @@
 #include <string>
 #include <vector>
 
-#include "gfx/rect.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/rect.h"
 
 TEST(PdfMetafileTest, Pdf) {
   // Test in-renderer constructor.

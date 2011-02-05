@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gfx/test_suite.h"
+#include "ui/gfx/test_suite.h"
 
-#include "gfx/gfx_paths.h"
 #include "base/file_path.h"
 #include "base/path_service.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
+#include "ui/gfx/gfx_paths.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"

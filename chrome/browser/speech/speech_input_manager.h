@@ -7,8 +7,8 @@
 
 #include "base/basictypes.h"
 #include "chrome/common/speech_input_result.h"
-#include "gfx/rect.h"
 #include "ipc/ipc_message.h"
+#include "ui/gfx/rect.h"
 
 namespace speech_input {
 

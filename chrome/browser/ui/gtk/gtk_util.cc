@@ -30,7 +30,6 @@
 #include "chrome/browser/ui/gtk/cairo_cached_surface.h"
 #include "chrome/browser/ui/gtk/gtk_theme_provider.h"
 #include "chrome/common/renderer_preferences.h"
-#include "gfx/gtk_util.h"
 #include "googleurl/src/gurl.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -38,6 +37,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/gfx/gtk_util.h"
 
 using WebKit::WebDragOperationsMask;
 using WebKit::WebDragOperation;

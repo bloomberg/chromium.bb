@@ -9,10 +9,10 @@
 #include "base/string_piece.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
-#include "gfx/codec/png_codec.h"
-#include "gfx/font.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/data_pack.h"
+#include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/font.h"
 
 namespace ui {
 

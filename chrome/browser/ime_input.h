@@ -12,8 +12,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "gfx/rect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
+#include "ui/gfx/rect.h"
 
 // This header file defines a struct and a class used for encapsulating IMM32
 // APIs, controls IMEs attached to a window, and enables the 'on-the-spot'

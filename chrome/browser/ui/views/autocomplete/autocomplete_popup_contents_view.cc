@@ -16,10 +16,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/bubble_border.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "gfx/canvas_skia.h"
-#include "gfx/color_utils.h"
-#include "gfx/insets.h"
-#include "gfx/path.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -28,6 +24,10 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/base/theme_provider.h"
+#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/color_utils.h"
+#include "ui/gfx/insets.h"
+#include "ui/gfx/path.h"
 #include "unicode/ubidi.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/label.h"
@@ -48,7 +48,7 @@
 
 #if defined(OS_LINUX)
 #include "chrome/browser/ui/gtk/gtk_util.h"
-#include "gfx/skia_utils_gtk.h"
+#include "ui/gfx/skia_utils_gtk.h"
 #endif
 
 namespace {

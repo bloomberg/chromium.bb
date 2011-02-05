@@ -20,8 +20,8 @@
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/common/thumbnail_score.h"
-#include "gfx/codec/jpeg_codec.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/codec/jpeg_codec.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"

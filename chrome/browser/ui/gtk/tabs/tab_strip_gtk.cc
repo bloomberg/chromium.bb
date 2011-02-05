@@ -26,14 +26,14 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
-#include "gfx/gtk_util.h"
-#include "gfx/point.h"
 #include "grit/app_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/gtk_util.h"
+#include "ui/gfx/point.h"
 
 namespace {
 

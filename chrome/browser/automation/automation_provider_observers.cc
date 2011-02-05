@@ -56,9 +56,9 @@
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
-#include "gfx/codec/png_codec.h"
-#include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
+#include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/rect.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/authentication_notification_details.h"

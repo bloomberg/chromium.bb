@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "gfx/size.h"
+#include "ui/gfx/size.h"
 #include "views/view.h"
 
 namespace gfx {

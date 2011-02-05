@@ -11,7 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/panels/panel_scroller_container.h"
 #include "chrome/browser/chromeos/panels/panel_scroller_header.h"
-#include "gfx/canvas.h"
+#include "ui/gfx/canvas.h"
 #include "views/widget/widget_gtk.h"
 
 struct PanelScroller::Panel {

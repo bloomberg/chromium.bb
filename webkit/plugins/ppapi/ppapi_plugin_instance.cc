@@ -8,8 +8,6 @@
 #include "base/metrics/histogram.h"
 #include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
-#include "gfx/rect.h"
-#include "gfx/skia_util.h"
 #include "ppapi/c/dev/ppb_find_dev.h"
 #include "ppapi/c/dev/ppb_fullscreen_dev.h"
 #include "ppapi/c/dev/ppb_zoom_dev.h"
@@ -39,6 +37,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/skia_util.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/event_conversion.h"
 #include "webkit/plugins/ppapi/fullscreen_container.h"
@@ -60,8 +60,8 @@
 #endif
 
 #if defined(OS_WIN)
-#include "gfx/codec/jpeg_codec.h"
-#include "gfx/gdi_util.h"
+#include "ui/gfx/codec/jpeg_codec.h"
+#include "ui/gfx/gdi_util.h"
 #endif
 
 using WebKit::WebBindings;

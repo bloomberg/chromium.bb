@@ -11,8 +11,8 @@
 
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "gfx/native_widget_types.h"
-#include "gfx/rect.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/rect.h"
 
 namespace chromeos {
 

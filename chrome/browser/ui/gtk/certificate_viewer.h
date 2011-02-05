@@ -7,8 +7,8 @@
 #pragma once
 
 #include "chrome/browser/certificate_viewer.h"
-#include "gfx/native_widget_types.h"
 #include "net/base/x509_certificate.h"
+#include "ui/gfx/native_widget_types.h"
 
 void ShowCertificateViewer(gfx::NativeWindow parent,
                            net::X509Certificate::OSCertHandle);

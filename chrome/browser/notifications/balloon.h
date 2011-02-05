@@ -10,9 +10,9 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
-#include "gfx/point.h"
-#include "gfx/rect.h"
-#include "gfx/size.h"
+#include "ui/gfx/point.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
 
 class Balloon;
 class BalloonCollection;

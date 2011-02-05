@@ -7,7 +7,7 @@
 #pragma once
 
 #include "chrome/common/notification_source.h"
-#include "gfx/native_widget_types.h"
+#include "ui/gfx/native_widget_types.h"
 
 // Specialization of the Source class for native windows.  On Windows, these are
 // HWNDs rather than pointers, and since the Source class expects a pointer

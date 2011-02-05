@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gfx/native_theme_linux.h"
+#include "ui/gfx/native_theme_linux.h"
 
 #include <limits>
 
 #include "base/logging.h"
-#include "gfx/codec/png_codec.h"
-#include "gfx/color_utils.h"
-#include "gfx/gfx_module.h"
-#include "gfx/size.h"
-#include "gfx/rect.h"
 #include "grit/gfx_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
+#include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/color_utils.h"
+#include "ui/gfx/gfx_module.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
 
 namespace gfx {
 

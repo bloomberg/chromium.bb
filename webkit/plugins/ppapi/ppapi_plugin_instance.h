@@ -14,7 +14,6 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
-#include "gfx/rect.h"
 #include "ppapi/c/dev/pp_cursor_type_dev.h"
 #include "ppapi/c/dev/ppp_graphics_3d_dev.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
@@ -22,6 +21,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCanvas.h"
+#include "ui/gfx/rect.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 
 typedef struct NPObject NPObject;

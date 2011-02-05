@@ -8,7 +8,7 @@
 
 #include "base/scoped_ptr.h"
 #include "chrome/browser/printing/print_job_worker_owner.h"
-#include "gfx/native_widget_types.h"
+#include "ui/gfx/native_widget_types.h"
 
 class CancelableTask;
 class MessageLoop;

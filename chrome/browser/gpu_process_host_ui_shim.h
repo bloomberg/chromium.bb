@@ -19,7 +19,7 @@
 #include "chrome/common/gpu_info.h"
 #include "chrome/common/message_router.h"
 #include "ipc/ipc_channel.h"
-#include "gfx/native_widget_types.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
 class Size;

@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/views/infobars/infobar_button_border.h"
 
-#include "gfx/canvas.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/canvas.h"
 #include "views/controls/button/text_button.h"
 
 // Preferred padding between text and edge

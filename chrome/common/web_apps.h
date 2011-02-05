@@ -11,8 +11,8 @@
 
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
-#include "gfx/size.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/size.h"
 
 namespace WebKit {
 class WebDocument;

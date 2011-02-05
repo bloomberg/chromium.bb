@@ -15,7 +15,6 @@
 #include "base/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/time.h"
-#include "gfx/native_widget_types.h"
 #include "media/base/callback.h"
 #include "media/base/video_frame.h"
 #include "media/tools/shader_bench/cpu_color_painter.h"
@@ -23,6 +22,7 @@
 #include "media/tools/shader_bench/gpu_color_painter_exp.h"
 #include "media/tools/shader_bench/painter.h"
 #include "media/tools/shader_bench/window.h"
+#include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_LINUX)
 #include <gtk/gtk.h>

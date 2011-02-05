@@ -21,9 +21,9 @@
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/web_apps.h"
-#include "gfx/codec/png_codec.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/codec/png_codec.h"
 #include "webkit/glue/image_decoder.h"
 
 namespace {

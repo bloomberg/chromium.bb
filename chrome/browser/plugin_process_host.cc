@@ -37,22 +37,22 @@
 #include "chrome/common/plugin_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
-#include "gfx/native_widget_types.h"
 #include "ipc/ipc_switches.h"
 #include "net/base/cookie_store.h"
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/gfx/native_widget_types.h"
 
 #if defined(USE_X11)
-#include "gfx/gtk_native_view_id_manager.h"
+#include "ui/gfx/gtk_native_view_id_manager.h"
 #endif
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #include "chrome/common/plugin_carbon_interpose_constants_mac.h"
-#include "gfx/rect.h"
+#include "ui/gfx/rect.h"
 #endif
 
 static const char kDefaultPluginFinderURL[] =

@@ -32,10 +32,10 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
-#include "gfx/canvas_skia_paint.h"
-#include "gfx/gtk_util.h"
 #include "grit/app_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/gfx/canvas_skia_paint.h"
+#include "ui/gfx/gtk_util.h"
 
 namespace {
 

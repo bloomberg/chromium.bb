@@ -7,7 +7,7 @@
 #include <Carbon/Carbon.h>
 
 #include "chrome/plugin/plugin_interpose_util_mac.h"
-#include "gfx/rect.h"
+#include "ui/gfx/rect.h"
 #include "webkit/plugins/npapi/carbon_plugin_window_tracker_mac.h"
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"

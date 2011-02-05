@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/gtest_prod_util.h"
-#include "gfx/color_utils.h"
+#include "ui/gfx/color_utils.h"
 
 class SkBitmap;
 

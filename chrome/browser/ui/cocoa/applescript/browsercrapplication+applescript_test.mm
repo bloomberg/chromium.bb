@@ -10,9 +10,9 @@
 #import "chrome/browser/ui/cocoa/applescript/constants_applescript.h"
 #import "chrome/browser/ui/cocoa/applescript/window_applescript.h"
 #include "chrome/test/in_process_browser_test.h"
-#include "gfx/size.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+#include "ui/gfx/size.h"
 
 typedef InProcessBrowserTest BrowserCrApplicationAppleScriptTest;
 

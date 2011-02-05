@@ -12,9 +12,9 @@
 
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "gfx/canvas_skia.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/gfx/canvas_skia.h"
 #include "views/focus/view_storage.h"
 #include "views/layout/fill_layout.h"
 #include "views/widget/widget.h"
@@ -23,7 +23,7 @@
 #if defined(TOUCH_UI)
 #include "views/touchui/gesture_manager.h"
 #if defined(HAVE_XINPUT2)
-#include "gfx/gtk_util.h"
+#include "ui/gfx/gtk_util.h"
 #include "views/touchui/touch_factory.h"
 #endif
 #endif

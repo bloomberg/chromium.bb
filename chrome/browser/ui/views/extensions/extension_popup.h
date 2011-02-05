@@ -12,8 +12,8 @@
 #include "chrome/browser/ui/views/extensions/extension_view.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
-#include "gfx/native_widget_types.h"
 #include "googleurl/src/gurl.h"
+#include "ui/gfx/native_widget_types.h"
 
 
 class Browser;

@@ -20,8 +20,8 @@
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/extensions/url_pattern.h"
-#include "gfx/size.h"
 #include "googleurl/src/gurl.h"
+#include "ui/gfx/size.h"
 
 class DictionaryValue;
 class ExtensionAction;

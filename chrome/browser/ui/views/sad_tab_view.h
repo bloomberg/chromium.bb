@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "gfx/font.h"
+#include "ui/gfx/font.h"
 #include "views/controls/link.h"
 #include "views/view.h"
 

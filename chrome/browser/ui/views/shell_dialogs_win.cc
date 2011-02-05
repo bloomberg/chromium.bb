@@ -21,10 +21,10 @@
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_thread.h"
-#include "gfx/font.h"
 #include "grit/app_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/font.h"
 
 // This function takes the output of a SaveAs dialog: a filename, a filter and
 // the extension originally suggested to the user (shown in the dialog box) and

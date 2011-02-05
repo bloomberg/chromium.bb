@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gfx/icon_util.h"
+#include "ui/gfx/icon_util.h"
 
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/win/scoped_handle.h"
-#include "gfx/size.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/size.h"
 
 // Defining the dimensions for the icon images. We store only one value because
 // we always resize to a square image; that is, the value 48 means that we are

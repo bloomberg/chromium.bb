@@ -12,7 +12,7 @@
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/message_bubble.h"
 #include "chrome/browser/chromeos/login/user_controller.h"
-#include "gfx/rect.h"
+#include "ui/gfx/rect.h"
 
 namespace chromeos {
 

@@ -22,11 +22,11 @@
 #include "chrome/common/content_settings.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
-#include "gfx/gtk_util.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/text_elider.h"
+#include "ui/gfx/gtk_util.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 
 namespace {

@@ -4,8 +4,8 @@
 
 #include <algorithm>
 
-#include "gfx/canvas.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/canvas.h"
 #include "ui/views/rendering/border.h"
 #include "ui/views/view.h"
 

@@ -6,7 +6,7 @@
 #define UI_GFX_PLATFORM_FONT_MAC_
 #pragma once
 
-#include "gfx/platform_font.h"
+#include "ui/gfx/platform_font.h"
 
 namespace gfx {
 

@@ -13,7 +13,7 @@
 #include "chrome/browser/chromeos/frame/panel_controller.h"
 #include "chrome/browser/chromeos/notifications/balloon_collection_impl.h"
 #include "chrome/common/notification_registrar.h"
-#include "gfx/rect.h"
+#include "ui/gfx/rect.h"
 
 class Balloon;
 class Notification;

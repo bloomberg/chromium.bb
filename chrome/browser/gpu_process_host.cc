@@ -30,7 +30,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_LINUX)
-#include "gfx/gtk_native_view_id_manager.h"
+#include "ui/gfx/gtk_native_view_id_manager.h"
 #endif  // defined(OS_LINUX)
 
 namespace {

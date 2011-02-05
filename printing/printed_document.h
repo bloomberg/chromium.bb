@@ -11,10 +11,10 @@
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/synchronization/lock.h"
-#include "gfx/native_widget_types.h"
 #include "googleurl/src/gurl.h"
 #include "printing/print_settings.h"
 #include "printing/native_metafile.h"
+#include "ui/gfx/native_widget_types.h"
 
 class FilePath;
 class MessageLoop;

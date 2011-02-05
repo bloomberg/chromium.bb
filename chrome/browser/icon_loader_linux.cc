@@ -14,9 +14,9 @@
 #include "base/mime_util.h"
 #include "base/threading/thread.h"
 #include "base/string_util.h"
-#include "gfx/codec/png_codec.h"
-#include "gfx/gtk_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/gtk_util.h"
 
 static int SizeToInt(IconLoader::IconSize size) {
   int pixels = 48;

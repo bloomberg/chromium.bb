@@ -5,11 +5,11 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
-#include "gfx/gfx_paths.h"
-#include "gfx/icon_util.h"
-#include "gfx/size.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/gfx_paths.h"
+#include "ui/gfx/icon_util.h"
+#include "ui/gfx/size.h"
 
 namespace {
 

@@ -9,7 +9,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/scoped_nsobject.h"
-#include "gfx/rect.h"
+#include "ui/gfx/rect.h"
 
 // A view that provides common functionality that many views will need:
 // - Automatic registration for mouse-moved events.

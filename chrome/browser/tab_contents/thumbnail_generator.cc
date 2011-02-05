@@ -21,14 +21,14 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/property_bag.h"
 #include "chrome/common/thumbnail_score.h"
-#include "gfx/color_utils.h"
-#include "gfx/rect.h"
-#include "gfx/skbitmap_operations.h"
 #include "googleurl/src/gurl.h"
 #include "skia/ext/bitmap_platform_device.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/color_utils.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/skbitmap_operations.h"
 
 #if defined(OS_WIN)
 #include "chrome/common/section_util_win.h"

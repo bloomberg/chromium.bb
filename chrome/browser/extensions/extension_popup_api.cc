@@ -26,7 +26,7 @@
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/url_constants.h"
-#include "gfx/point.h"
+#include "ui/gfx/point.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/bubble_border.h"

@@ -22,9 +22,9 @@
 #include "base/scoped_comptr_win.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
-#include "gfx/gdi_util.h"
 #include "media/base/yuv_convert.h"
 #include "media/tools/mfdecoder/mfdecoder.h"
+#include "ui/gfx/gdi_util.h"
 
 namespace {
 

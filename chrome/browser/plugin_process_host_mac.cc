@@ -13,7 +13,7 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/plugin_process_host.h"
 #include "chrome/common/plugin_messages.h"
-#include "gfx/rect.h"
+#include "ui/gfx/rect.h"
 
 void PluginProcessHost::OnPluginSelectWindow(uint32 window_id,
                                              gfx::Rect window_rect,

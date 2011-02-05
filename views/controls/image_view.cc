@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "gfx/canvas.h"
-#include "gfx/insets.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/insets.h"
 
 namespace views {
 

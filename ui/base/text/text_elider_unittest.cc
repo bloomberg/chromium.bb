@@ -7,10 +7,10 @@
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "gfx/font.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/text/text_elider.h"
+#include "ui/gfx/font.h"
 
 namespace ui {
 

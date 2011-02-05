@@ -9,8 +9,8 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
-#include "gfx/native_widget_types.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/gfx/native_widget_types.h"
 
 typedef struct _GtkWidget GtkWidget;
 

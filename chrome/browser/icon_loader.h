@@ -13,7 +13,7 @@
 #include "base/basictypes.h"
 #include "base/message_loop_proxy.h"
 #include "base/ref_counted.h"
-#include "gfx/scoped_image.h"
+#include "ui/gfx/scoped_image.h"
 
 #if defined(TOOLKIT_USES_GTK)
 #include "base/file_path.h"

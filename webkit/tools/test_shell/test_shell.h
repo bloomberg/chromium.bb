@@ -40,8 +40,8 @@
 #endif
 #include "base/ref_counted.h"
 #include "base/weak_ptr.h"
-#include "gfx/native_widget_types.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNavigationPolicy.h"
+#include "ui/gfx/native_widget_types.h"
 #include "webkit/tools/test_shell/layout_test_controller.h"
 #include "webkit/tools/test_shell/webview_host.h"
 #include "webkit/tools/test_shell/webwidget_host.h"

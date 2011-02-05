@@ -18,11 +18,11 @@
 #include "chrome/common/gpu_video_common.h"
 #include "chrome/common/message_router.h"
 #include "chrome/gpu/gpu_command_buffer_stub.h"
-#include "gfx/native_widget_types.h"
-#include "gfx/size.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sync_channel.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/size.h"
 
 class GpuThread;
 

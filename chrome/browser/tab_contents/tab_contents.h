@@ -34,8 +34,8 @@
 #include "chrome/common/renderer_preferences.h"
 #include "chrome/common/translate_errors.h"
 #include "chrome/common/web_apps.h"
-#include "gfx/native_widget_types.h"
 #include "net/base/load_states.h"
+#include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_WIN)
 #include "base/win/scoped_handle.h"

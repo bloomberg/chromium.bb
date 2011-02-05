@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_ROUNDED_VIEW_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_ROUNDED_VIEW_H_
 
-#include "gfx/canvas.h"
-#include "gfx/canvas_skia.h"
-#include "gfx/rect.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/rect.h"
 
 namespace chromeos {
 

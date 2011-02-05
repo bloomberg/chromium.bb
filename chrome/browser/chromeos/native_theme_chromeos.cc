@@ -5,16 +5,16 @@
 #include "chrome/browser/chromeos/native_theme_chromeos.h"
 
 #include "base/logging.h"
-#include "gfx/insets.h"
-#include "gfx/rect.h"
-#include "gfx/size.h"
-#include "gfx/skbitmap_operations.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/insets.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
+#include "ui/gfx/skbitmap_operations.h"
 
 namespace {
 

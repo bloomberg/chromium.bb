@@ -9,8 +9,8 @@
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
 #include "base/test/mock_chrome_application_mac.h"
-#include "gfx/rect.h"
 #include "testing/platform_test.h"
+#include "ui/gfx/rect.h"
 
 namespace browser {
 namespace {

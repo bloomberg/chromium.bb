@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gfx/path.h"
+#include "ui/gfx/path.h"
 
 #include "base/scoped_ptr.h"
 

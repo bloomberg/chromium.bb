@@ -14,8 +14,8 @@
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/balloon_collection_base.h"
 #include "chrome/common/notification_registrar.h"
-#include "gfx/point.h"
-#include "gfx/rect.h"
+#include "ui/gfx/point.h"
+#include "ui/gfx/rect.h"
 
 namespace gfx {
 class Size;

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_WIZARD_SCREEN_H_
 #pragma once
 
-#include "gfx/canvas.h"
+#include "ui/gfx/canvas.h"
 
 class WizardScreen;
 namespace chromeos {

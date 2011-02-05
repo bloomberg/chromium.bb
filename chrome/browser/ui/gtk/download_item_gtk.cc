@@ -24,10 +24,6 @@
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "chrome/browser/ui/gtk/nine_box.h"
 #include "chrome/common/notification_service.h"
-#include "gfx/canvas_skia_paint.h"
-#include "gfx/color_utils.h"
-#include "gfx/font.h"
-#include "gfx/skia_utils_gtk.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -35,6 +31,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
+#include "ui/gfx/canvas_skia_paint.h"
+#include "ui/gfx/color_utils.h"
+#include "ui/gfx/font.h"
+#include "ui/gfx/skia_utils_gtk.h"
 
 namespace {
 

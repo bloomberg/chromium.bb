@@ -15,12 +15,12 @@
 #include "chrome/browser/ui/gtk/gtk_chrome_button.h"
 #include "chrome/browser/ui/gtk/gtk_theme_provider.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
-#include "gfx/canvas_skia_paint.h"
-#include "gfx/font.h"
-#include "gfx/gtk_util.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/canvas_skia_paint.h"
+#include "ui/gfx/font.h"
+#include "ui/gfx/gtk_util.h"
 
 namespace {
 

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gfx/font.h"
+#include "ui/gfx/font.h"
 
 #include "base/utf_string_conversions.h"
-#include "gfx/platform_font.h"
+#include "ui/gfx/platform_font.h"
 
 namespace gfx {
 

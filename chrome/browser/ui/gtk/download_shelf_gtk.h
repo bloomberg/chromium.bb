@@ -17,8 +17,8 @@
 #include "chrome/browser/ui/gtk/slide_animator_gtk.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
-#include "gfx/native_widget_types.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/gfx/native_widget_types.h"
 
 class BaseDownloadItemModel;
 class Browser;

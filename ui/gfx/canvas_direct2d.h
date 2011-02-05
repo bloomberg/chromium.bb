@@ -11,7 +11,7 @@
 #include <stack>
 
 #include "base/scoped_comptr_win.h"
-#include "gfx/canvas.h"
+#include "ui/gfx/canvas.h"
 
 namespace gfx {
 

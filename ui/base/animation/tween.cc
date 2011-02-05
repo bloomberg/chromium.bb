@@ -11,7 +11,7 @@
 #endif
 
 #include "base/logging.h"
-#include "gfx/rect.h"
+#include "ui/gfx/rect.h"
 
 namespace ui {
 

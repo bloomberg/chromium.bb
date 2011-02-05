@@ -17,9 +17,9 @@
 #include "chrome/browser/ui/views/tabs/side_tab_strip.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
-#include "gfx/scrollbar_size.h"
-#include "gfx/point.h"
-#include "gfx/size.h"
+#include "ui/gfx/point.h"
+#include "ui/gfx/scrollbar_size.h"
+#include "ui/gfx/size.h"
 #include "views/controls/single_split_view.h"
 #include "views/window/window.h"
 

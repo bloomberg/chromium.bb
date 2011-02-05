@@ -8,8 +8,8 @@
 #include <gtk/gtk.h>
 
 #include "base/logging.h"
-#include "gfx/rect.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/gfx/rect.h"
 
 namespace browser {
 

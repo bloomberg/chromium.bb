@@ -7,11 +7,11 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/ui/gtk/bookmark_utils_gtk.h"
-#include "gfx/gtk_util.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
+#include "ui/gfx/gtk_util.h"
 
 namespace {
 

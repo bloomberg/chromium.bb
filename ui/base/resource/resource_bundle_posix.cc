@@ -9,9 +9,9 @@
 #include "base/string16.h"
 #include "base/string_piece.h"
 #include "base/synchronization/lock.h"
-#include "gfx/font.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/data_pack.h"
+#include "ui/gfx/font.h"
 
 namespace ui {
 

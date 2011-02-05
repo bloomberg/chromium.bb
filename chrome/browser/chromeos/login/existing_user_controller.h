@@ -20,9 +20,9 @@
 #include "chrome/browser/chromeos/wm_message_listener.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
-#include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
+#include "ui/gfx/rect.h"
 
 namespace chromeos {
 

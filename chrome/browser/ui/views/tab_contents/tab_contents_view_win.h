@@ -9,7 +9,7 @@
 #include "base/scoped_ptr.h"
 #include "base/timer.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
-#include "gfx/size.h"
+#include "ui/gfx/size.h"
 #include "views/widget/widget_win.h"
 
 class RenderViewContextMenuViews;

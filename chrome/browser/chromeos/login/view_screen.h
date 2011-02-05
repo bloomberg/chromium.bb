@@ -9,7 +9,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
-#include "gfx/size.h"
+#include "ui/gfx/size.h"
 
 template <class V>
 class ViewScreen : public WizardScreen {

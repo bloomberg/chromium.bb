@@ -14,13 +14,13 @@
 #include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "gfx/font.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "grit/chromium_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/message_box_flags.h"
 #include "ui/base/text/text_elider.h"
+#include "ui/gfx/font.h"
 
 static std::wstring GetTitle(Profile* profile,
                              bool is_alert,

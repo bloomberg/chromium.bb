@@ -31,7 +31,7 @@
 #endif
 
 #if defined(USE_X11)
-#include "gfx/gtk_util.h"
+#include "ui/gfx/gtk_util.h"
 #endif
 
 // Main function for starting the Gpu process.

@@ -11,12 +11,12 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "chrome/renderer/render_widget_browsertest.h"
-#include "gfx/codec/jpeg_codec.h"
-#include "gfx/size.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "ui/gfx/codec/jpeg_codec.h"
+#include "ui/gfx/size.h"
 
 const int RenderWidgetTest::kNumBytesPerPixel = 4;
 const int RenderWidgetTest::kLargeWidth = 1024;

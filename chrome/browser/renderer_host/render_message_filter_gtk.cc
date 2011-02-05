@@ -18,12 +18,12 @@
 #endif
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/render_messages.h"
-#include "gfx/gtk_native_view_id_manager.h"
 #include "grit/generated_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/x11/WebScreenInfoFactory.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/gfx/gtk_native_view_id_manager.h"
 
 using WebKit::WebScreenInfo;
 using WebKit::WebScreenInfoFactory;

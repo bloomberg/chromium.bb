@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/gtk/slide_animator_gtk.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
-#include "gfx/point.h"
+#include "ui/gfx/point.h"
 
 class Browser;
 class BrowserWindowGtk;

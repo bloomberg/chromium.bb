@@ -6,8 +6,8 @@
 #define UI_VIEWS_BORDER_H_
 
 #include "base/logging.h"
-#include "gfx/insets.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/insets.h"
 
 namespace gfx {
 class Canvas;

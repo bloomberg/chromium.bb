@@ -11,9 +11,9 @@
 
 #if defined(OS_WIN)
 #include "base/file_path.h"
-#include "gfx/native_widget_types.h"
 #include "net/base/file_stream.h"
 #include "net/url_request/url_request.h"
+#include "ui/gfx/native_widget_types.h"
 
 // The PluginDownloadUrlHelper is used to handle one download URL request
 // from the plugin. Each download request is handled by a new instance

@@ -5,13 +5,13 @@
 #include "chrome/browser/ui/views/tabs/side_tab.h"
 
 #include "base/utf_string_conversions.h"
-#include "gfx/canvas_skia.h"
-#include "gfx/favicon_size.h"
-#include "gfx/path.h"
-#include "gfx/skia_util.h"
 #include "grit/app_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/favicon_size.h"
+#include "ui/gfx/path.h"
+#include "ui/gfx/skia_util.h"
 #include "views/controls/button/image_button.h"
 
 namespace {

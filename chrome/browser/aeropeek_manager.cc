@@ -30,12 +30,12 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/browser_distribution.h"
-#include "gfx/gdi_util.h"
-#include "gfx/icon_util.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/win/window_impl.h"
+#include "ui/gfx/gdi_util.h"
+#include "ui/gfx/icon_util.h"
 #include "views/widget/widget_win.h"
 
 namespace {

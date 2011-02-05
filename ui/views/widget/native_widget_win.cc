@@ -5,12 +5,12 @@
 #include "ui/views/widget/native_widget_win.h"
 
 #include "base/scoped_ptr.h"
-#include "gfx/canvas_skia.h"
-#include "gfx/path.h"
-#include "gfx/native_theme_win.h"
 #include "ui/base/system_monitor/system_monitor.h"
 #include "ui/base/view_prop.h"
 #include "ui/base/win/hwnd_util.h"
+#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/native_theme_win.h"
+#include "ui/gfx/path.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 

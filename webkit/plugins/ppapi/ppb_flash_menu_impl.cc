@@ -5,8 +5,8 @@
 #include "webkit/plugins/ppapi/ppb_flash_menu_impl.h"
 
 #include "base/utf_string_conversions.h"
-#include "gfx/point.h"
 #include "ppapi/c/pp_completion_callback.h"
+#include "ui/gfx/point.h"
 #include "webkit/glue/webmenuitem.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"

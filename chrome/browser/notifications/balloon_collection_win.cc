@@ -6,7 +6,7 @@
 
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/ui/views/notifications/balloon_view.h"
-#include "gfx/rect.h"
+#include "ui/gfx/rect.h"
 
 Balloon* BalloonCollectionImpl::MakeBalloon(const Notification& notification,
                                             Profile* profile) {

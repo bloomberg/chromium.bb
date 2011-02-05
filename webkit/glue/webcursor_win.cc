@@ -4,10 +4,10 @@
 
 #include "base/logging.h"
 #include "base/pickle.h"
-#include "gfx/gdi_util.h"
 #include "grit/webkit_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
+#include "ui/gfx/gdi_util.h"
 #include "webkit/glue/webcursor.h"
 
 using WebKit::WebCursorInfo;

@@ -12,8 +12,8 @@
 #include <vector>
 
 #include "base/task.h"
-#include "gfx/point.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/gfx/point.h"
 
 class SkBitmap;
 

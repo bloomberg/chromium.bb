@@ -10,8 +10,8 @@
 
 #include "base/logging.h"
 #include "base/win/win_util.h"
-#include "gfx/native_theme_win.h"
 #include "ui/base/l10n/l10n_util_win.h"
+#include "ui/gfx/native_theme_win.h"
 
 using gfx::NativeTheme;
 

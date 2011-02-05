@@ -5,7 +5,6 @@
 #include <deque>
 #include <stdlib.h>
 
-#include "gfx/rect.h"
 #include "media/base/video_frame.h"
 #include "remoting/base/codec_test.h"
 #include "remoting/base/decoder.h"
@@ -13,6 +12,7 @@
 #include "remoting/base/mock_objects.h"
 #include "remoting/base/util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/rect.h"
 
 static const int kWidth = 320;
 static const int kHeight = 240;

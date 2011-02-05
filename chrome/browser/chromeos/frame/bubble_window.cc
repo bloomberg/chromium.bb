@@ -8,8 +8,8 @@
 
 #include "chrome/browser/chromeos/frame/bubble_frame_view.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
-#include "gfx/skia_utils_gtk.h"
 #include "third_party/cros/chromeos_wm_ipc_enums.h"
+#include "ui/gfx/skia_utils_gtk.h"
 #include "views/window/non_client_view.h"
 
 namespace chromeos {

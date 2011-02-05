@@ -16,7 +16,7 @@
 #include "chrome/browser/autocomplete/autocomplete_popup_view.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
-#include "gfx/font.h"
+#include "ui/gfx/font.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class AutocompleteEditModel;

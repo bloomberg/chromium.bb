@@ -10,12 +10,12 @@
 
 #include "app/surface/transport_dib.h"
 #include "base/ref_counted.h"
-#include "gfx/native_widget_types.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/gpu_processor.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
+#include "ui/gfx/native_widget_types.h"
 
 class PluginChannel;
 

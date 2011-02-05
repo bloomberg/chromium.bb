@@ -6,8 +6,8 @@
 #define WEBKIT_TOOLS_TEST_SHELL_WEBVIEW_HOST_H_
 
 #include "base/basictypes.h"
-#include "gfx/native_widget_types.h"
-#include "gfx/rect.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/rect.h"
 #include "webkit/tools/test_shell/webwidget_host.h"
 
 #if defined(TOOLKIT_USES_GTK)

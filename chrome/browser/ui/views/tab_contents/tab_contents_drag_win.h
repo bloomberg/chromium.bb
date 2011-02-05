@@ -9,10 +9,10 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/threading/platform_thread.h"
-#include "gfx/point.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
+#include "ui/gfx/point.h"
 
 class DragDropThread;
 class TabContentsViewWin;

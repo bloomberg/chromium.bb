@@ -15,10 +15,10 @@
 #include "chrome/browser/ui/cocoa/browser_test_helper.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/ui/cocoa/history_menu_bridge.h"
-#include "gfx/codec/png_codec.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
+#include "ui/gfx/codec/png_codec.h"
 
 namespace {
 

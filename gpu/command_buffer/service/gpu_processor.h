@@ -13,12 +13,12 @@
 #include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
 #include "base/task.h"
-#include "gfx/native_widget_types.h"
-#include "gfx/size.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/cmd_parser.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/size.h"
 
 #if defined(OS_MACOSX)
 #include "app/surface/accelerated_surface_mac.h"

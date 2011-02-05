@@ -5,10 +5,10 @@
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 
 #include "base/logging.h"
-#include "gfx/canvas_skia.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "third_party/skia/include/effects/SkBlurMaskFilter.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
+#include "ui/gfx/canvas_skia.h"
 #include "views/border.h"
 #include "views/painter.h"
 

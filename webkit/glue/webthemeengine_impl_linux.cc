@@ -4,10 +4,10 @@
 
 #include "webkit/glue/webthemeengine_impl_linux.h"
 
-#include "gfx/native_theme_linux.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
+#include "ui/gfx/native_theme_linux.h"
 
 using WebKit::WebCanvas;
 using WebKit::WebColor;

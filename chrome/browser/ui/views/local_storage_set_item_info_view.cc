@@ -7,9 +7,9 @@
 #include <algorithm>
 
 #include "base/utf_string_conversions.h"
-#include "gfx/color_utils.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/color_utils.h"
 #include "views/controls/label.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/layout/grid_layout.h"

@@ -5,8 +5,8 @@
 #include "ui/base/win/hwnd_util.h"
 
 #include "base/string_util.h"
-#include "gfx/rect.h"
-#include "gfx/size.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
 
 namespace ui {
 

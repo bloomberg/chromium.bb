@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
-#include "gfx/size.h"
+#include "ui/gfx/size.h"
 
 namespace ui {
 

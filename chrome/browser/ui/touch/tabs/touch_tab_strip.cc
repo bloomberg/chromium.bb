@@ -6,7 +6,7 @@
 
 #include "chrome/browser/ui/touch/tabs/touch_tab.h"
 #include "chrome/browser/ui/view_ids.h"
-#include "gfx/canvas_skia.h"
+#include "ui/gfx/canvas_skia.h"
 #include "views/window/non_client_view.h"
 #include "views/window/window.h"
 

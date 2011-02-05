@@ -7,15 +7,15 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/rounded_view.h"
-#include "gfx/canvas.h"
-#include "gfx/canvas_skia.h"
-#include "gfx/gtk_util.h"
-#include "gfx/rect.h"
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkColorShader.h"
 #include "third_party/skia/include/core/SkComposeShader.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/gtk_util.h"
+#include "ui/gfx/rect.h"
 
 namespace chromeos {
 

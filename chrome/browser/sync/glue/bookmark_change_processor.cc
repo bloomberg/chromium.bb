@@ -15,8 +15,8 @@
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "gfx/codec/png_codec.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/codec/png_codec.h"
 
 namespace browser_sync {
 

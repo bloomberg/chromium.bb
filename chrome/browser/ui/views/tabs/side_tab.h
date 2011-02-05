@@ -7,7 +7,7 @@
 #pragma once
 
 #include "chrome/browser/ui/views/tabs/base_tab.h"
-#include "gfx/font.h"
+#include "ui/gfx/font.h"
 
 class SideTab;
 class TabStripController;

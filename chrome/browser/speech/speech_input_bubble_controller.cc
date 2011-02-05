@@ -10,7 +10,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
-#include "gfx/rect.h"
+#include "ui/gfx/rect.h"
 
 namespace speech_input {
 

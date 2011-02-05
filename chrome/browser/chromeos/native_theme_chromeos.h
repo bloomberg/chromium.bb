@@ -7,7 +7,7 @@
 
 #include <map>
 #include "base/compiler_specific.h"
-#include "gfx/native_theme_linux.h"
+#include "ui/gfx/native_theme_linux.h"
 
 class SkBitmap;
 

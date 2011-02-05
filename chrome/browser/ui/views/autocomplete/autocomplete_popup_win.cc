@@ -7,7 +7,7 @@
 #include "chrome/browser/autocomplete/autocomplete_edit_view_win.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/ui/views/autocomplete/autocomplete_popup_contents_view.h"
-#include "gfx/insets.h"
+#include "ui/gfx/insets.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // AutocompletePopupWin, public:

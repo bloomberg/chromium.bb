@@ -11,8 +11,8 @@
 #include "base/basictypes.h"
 #include "chrome/browser/dom_ui/web_ui_factory.h"
 #include "chrome/common/window_container_type.h"
-#include "gfx/rect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
+#include "ui/gfx/rect.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/window_open_disposition.h"
 

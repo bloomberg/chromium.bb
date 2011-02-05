@@ -11,7 +11,7 @@
 #include <list>
 
 #include "chrome/browser/tabs/tab_strip_model_observer.h"
-#include "gfx/insets.h"
+#include "ui/gfx/insets.h"
 
 namespace gfx {
 class Size;

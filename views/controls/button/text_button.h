@@ -10,9 +10,9 @@
 
 // TODO(avi): remove when not needed
 #include "base/utf_string_conversions.h"
-#include "gfx/font.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/font.h"
 #include "views/border.h"
 #include "views/controls/button/custom_button.h"
 

@@ -5,8 +5,8 @@
 #ifndef TOOLS_MEMORY_WATCHER_HOTKEY_H_
 #define TOOLS_MEMORY_WATCHER_HOTKEY_H_
 
-#include "gfx/rect.h"
 #include "ui/base/win/window_impl.h"
+#include "ui/gfx/rect.h"
 
 // HotKey handler.
 // Programs wishing to register a hotkey can use this.

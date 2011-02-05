@@ -8,8 +8,8 @@
 
 #include "base/basictypes.h"
 #include "build/build_config.h"
-#include "gfx/native_widget_types.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_LINUX)
 #include <glib-object.h>

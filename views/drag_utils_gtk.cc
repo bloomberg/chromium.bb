@@ -7,13 +7,13 @@
 #include <gtk/gtk.h>
 
 #include "base/logging.h"
-#include "gfx/canvas.h"
-#include "gfx/gtk_util.h"
-#include "gfx/point.h"
-#include "gfx/size.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_gtk.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/gtk_util.h"
+#include "ui/gfx/point.h"
+#include "ui/gfx/size.h"
 
 using ui::OSExchangeData;
 using ui::OSExchangeDataProviderGtk;

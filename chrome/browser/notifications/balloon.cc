@@ -8,8 +8,8 @@
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/renderer_host/site_instance.h"
-#include "gfx/rect.h"
-#include "gfx/size.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
 
 Balloon::Balloon(const Notification& notification, Profile* profile,
                  BalloonCollection* collection)

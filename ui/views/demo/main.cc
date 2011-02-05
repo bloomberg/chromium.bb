@@ -10,7 +10,7 @@
 
 #include "base/at_exit.h"
 #include "base/message_loop.h"
-#include "gfx/canvas.h"
+#include "ui/gfx/canvas.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/native_widget_win.h"

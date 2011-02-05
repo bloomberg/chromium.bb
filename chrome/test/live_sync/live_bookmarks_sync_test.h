@@ -15,10 +15,10 @@
 #include "chrome/test/live_sync/bookmark_model_verifier.h"
 #include "chrome/test/live_sync/live_sync_test.h"
 #include "chrome/test/ui_test_utils.h"
-#include "gfx/codec/png_codec.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/codec/png_codec.h"
 
 class LiveBookmarksSyncTest : public LiveSyncTest {
  public:

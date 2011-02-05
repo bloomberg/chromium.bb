@@ -6,10 +6,10 @@
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "gfx/canvas_skia.h"
-#include "gfx/path.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/path.h"
 #include "views/background.h"
 #include "views/controls/button/checkbox.h"
 #include "views/controls/native/native_view_host.h"

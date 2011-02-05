@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "gfx/font.h"
+#include "ui/gfx/font.h"
 #include "views/view.h"
 
 class SkBitmap;

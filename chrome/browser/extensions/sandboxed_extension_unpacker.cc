@@ -27,10 +27,10 @@
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_unpacker.h"
 #include "chrome/common/json_value_serializer.h"
-#include "gfx/codec/png_codec.h"
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/codec/png_codec.h"
 
 const char SandboxedExtensionUnpacker::kExtensionHeaderMagic[] = "Cr24";
 

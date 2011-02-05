@@ -5,10 +5,10 @@
 #include "views/background.h"
 
 #include "base/logging.h"
-#include "gfx/canvas_skia.h"
-#include "gfx/color_utils.h"
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/skia/include/core/SkPaint.h"
+#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/color_utils.h"
 #include "views/painter.h"
 #include "views/view.h"
 

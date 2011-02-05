@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/string16.h"
-#include "gfx/rect.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/rect.h"
 
 namespace gfx {
 class Font;

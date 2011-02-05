@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "gfx/codec/png_codec.h"
+#include "ui/gfx/codec/png_codec.h"
 
 namespace webkit_support {
 

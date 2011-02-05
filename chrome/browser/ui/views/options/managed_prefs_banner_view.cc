@@ -4,10 +4,10 @@
 
 #include "chrome/browser/ui/views/options/managed_prefs_banner_view.h"
 
-#include "gfx/color_utils.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_utils.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/layout/box_layout.h"

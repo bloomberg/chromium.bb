@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gfx/rect.h"
+#include "ui/gfx/rect.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -14,7 +14,7 @@
 
 #include <ostream>
 
-#include "gfx/insets.h"
+#include "ui/gfx/insets.h"
 
 namespace {
 

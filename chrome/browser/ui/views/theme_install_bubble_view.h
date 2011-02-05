@@ -9,7 +9,7 @@
 #include "base/string16.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
-#include "gfx/canvas.h"
+#include "ui/gfx/canvas.h"
 #include "views/controls/label.h"
 
 class TabContents;

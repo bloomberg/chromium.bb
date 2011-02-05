@@ -18,8 +18,8 @@
 #include "chrome/browser/ui/gtk/tabstrip_origin_provider.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
 #include "chrome/common/notification_observer.h"
-#include "gfx/rect.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/gfx/rect.h"
 
 class BrowserWindowGtk;
 class CustomDrawButton;

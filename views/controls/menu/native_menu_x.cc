@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "gfx/canvas_skia.h"
-#include "gfx/skia_util.h"
+#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/skia_util.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/menu/submenu_view.h"
 

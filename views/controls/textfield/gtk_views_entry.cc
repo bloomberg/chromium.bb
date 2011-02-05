@@ -5,9 +5,9 @@
 #include "views/controls/textfield/gtk_views_entry.h"
 
 #include "base/utf_string_conversions.h"
-#include "gfx/canvas_skia_paint.h"
-#include "gfx/insets.h"
-#include "gfx/skia_utils_gtk.h"
+#include "ui/gfx/canvas_skia_paint.h"
+#include "ui/gfx/insets.h"
+#include "ui/gfx/skia_utils_gtk.h"
 #include "views/controls/textfield/native_textfield_gtk.h"
 #include "views/controls/textfield/textfield.h"
 

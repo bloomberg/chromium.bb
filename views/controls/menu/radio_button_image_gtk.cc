@@ -4,8 +4,8 @@
 
 #include "views/controls/menu/radio_button_image_gtk.h"
 
-#include "gfx/canvas_skia.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
+#include "ui/gfx/canvas_skia.h"
 
 namespace {
 

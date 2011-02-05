@@ -11,15 +11,15 @@
 #include "base/ref_counted_memory.h"
 #include "base/resource_util.h"
 #include "base/scoped_ptr.h"
-#include "gfx/brush.h"
-#include "gfx/canvas_direct2d.h"
-#include "gfx/canvas_skia.h"
-#include "gfx/codec/png_codec.h"
-#include "gfx/native_theme_win.h"
-#include "gfx/rect.h"
-#include "gfx/win_util.h"
 #include "grit/gfx_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/brush.h"
+#include "ui/gfx/canvas_direct2d.h"
+#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/native_theme_win.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/win_util.h"
 
 
 namespace {

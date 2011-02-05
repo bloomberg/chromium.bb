@@ -7,9 +7,9 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "chrome/browser/chromeos/views/webui_menu_widget.h"
-#include "gfx/point.h"
-#include "gfx/rect.h"
-#include "gfx/insets.h"
+#include "ui/gfx/insets.h"
+#include "ui/gfx/point.h"
+#include "ui/gfx/rect.h"
 #include "views/screen.h"
 #include "views/widget/widget.h"
 

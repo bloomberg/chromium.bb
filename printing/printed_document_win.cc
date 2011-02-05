@@ -7,13 +7,13 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "gfx/font.h"
 #include "printing/page_number.h"
 #include "printing/page_overlays.h"
 #include "printing/printed_pages_source.h"
 #include "printing/printed_page.h"
 #include "printing/units.h"
 #include "skia/ext/platform_device.h"
+#include "ui/gfx/font.h"
 
 namespace {
 

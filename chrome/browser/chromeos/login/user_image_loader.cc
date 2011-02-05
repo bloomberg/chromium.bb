@@ -8,8 +8,8 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "chrome/browser/browser_thread.h"
-#include "gfx/codec/png_codec.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/codec/png_codec.h"
 
 namespace chromeos {
 

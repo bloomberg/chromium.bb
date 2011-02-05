@@ -42,7 +42,7 @@
 #include "base/win/win_util.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_source.h"
-#include "gfx/icon_util.h"
+#include "ui/gfx/icon_util.h"
 #endif  // defined(OS_WIN)
 
 namespace {

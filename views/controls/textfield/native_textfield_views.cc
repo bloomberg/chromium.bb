@@ -10,11 +10,11 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
-#include "gfx/canvas.h"
-#include "gfx/canvas_skia.h"
-#include "gfx/insets.h"
 #include "grit/app_strings.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/insets.h"
 #include "views/background.h"
 #include "views/border.h"
 #include "views/controls/menu/menu_2.h"
@@ -24,7 +24,7 @@
 #include "views/views_delegate.h"
 
 #if defined(OS_LINUX)
-#include "gfx/gtk_util.h"
+#include "ui/gfx/gtk_util.h"
 #endif
 
 namespace {

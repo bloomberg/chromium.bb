@@ -9,7 +9,7 @@
 #include "views/controls/native/native_view_host.h"
 
 #if defined(OS_WIN)
-#include "gfx/platform_font_win.h"
+#include "ui/gfx/platform_font_win.h"
 #elif defined(OS_LINUX)
 #include <gdk/gdkkeysyms.h>
 #include "views/screen.h"

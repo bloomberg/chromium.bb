@@ -31,7 +31,7 @@
 #include "webkit/glue/plugins/plugin_list.h"
 
 #if defined(OS_LINUX)
-#include "gfx/gtk_util.h"
+#include "ui/gfx/gtk_util.h"
 #endif
 
 // If we don't clamp the maximum width, then very long URLs and titles can make

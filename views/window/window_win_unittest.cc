@@ -4,8 +4,8 @@
 
 #include "views/window/window_win.h"
 
-#include "gfx/rect.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/rect.h"
 
 namespace views {
 

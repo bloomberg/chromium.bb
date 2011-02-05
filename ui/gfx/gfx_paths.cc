@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gfx/gfx_paths.h"
+#include "ui/gfx/gfx_paths.h"
 
 #include "base/command_line.h"
 #include "base/file_path.h"

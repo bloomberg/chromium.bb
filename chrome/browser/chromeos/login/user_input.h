@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_USER_INPUT_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_USER_INPUT_H_
 
-#include "gfx/rect.h"
+#include "ui/gfx/rect.h"
 
 namespace chromeos {
 

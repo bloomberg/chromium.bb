@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/scoped_nsobject.h"
-#include "gfx/rect.h"
+#include "ui/gfx/rect.h"
 
 namespace browser {
 

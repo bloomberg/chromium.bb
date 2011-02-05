@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
-#include "gfx/point.h"
+#include "ui/gfx/point.h"
 #include "ui/views/native_types.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/native_widget_listener.h"

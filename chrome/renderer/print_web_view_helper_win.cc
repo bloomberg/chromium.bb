@@ -9,14 +9,14 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "chrome/renderer/render_view.h"
-#include "gfx/gdi_util.h"
-#include "gfx/size.h"
 #include "grit/generated_resources.h"
 #include "printing/native_metafile.h"
 #include "printing/units.h"
 #include "skia/ext/vector_canvas.h"
 #include "skia/ext/vector_platform_device.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "ui/gfx/gdi_util.h"
+#include "ui/gfx/size.h"
 
 using printing::ConvertUnitDouble;
 using printing::kPointsPerInch;

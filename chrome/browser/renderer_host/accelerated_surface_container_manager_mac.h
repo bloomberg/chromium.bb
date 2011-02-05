@@ -12,7 +12,7 @@
 #include "app/surface/transport_dib.h"
 #include "base/basictypes.h"
 #include "base/synchronization/lock.h"
-#include "gfx/native_widget_types.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace webkit {
 namespace npapi {

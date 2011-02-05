@@ -27,9 +27,9 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
-#include "gfx/codec/png_codec.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/codec/png_codec.h"
 
 namespace chromeos {
 

@@ -12,7 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/singleton.h"
-#include "gfx/native_widget_types.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/views/events/accelerator.h"
 #include "ui/views/events/focus_event.h"
 

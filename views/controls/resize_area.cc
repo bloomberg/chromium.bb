@@ -8,7 +8,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_LINUX)
-#include "gfx/gtk_util.h"
+#include "ui/gfx/gtk_util.h"
 #endif
 
 namespace views {

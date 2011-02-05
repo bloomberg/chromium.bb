@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/time.h"
-#include "gfx/font.h"
+#include "ui/gfx/font.h"
 #include "views/background.h"
 #include "views/controls/button/text_button.h"
 

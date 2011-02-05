@@ -32,9 +32,9 @@
 #include "chrome/browser/ui/gtk/tab_contents_drag_source.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
-#include "gfx/point.h"
-#include "gfx/rect.h"
-#include "gfx/size.h"
+#include "ui/gfx/point.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
 #include "webkit/glue/webdropdata.h"
 
 using WebKit::WebDragOperation;

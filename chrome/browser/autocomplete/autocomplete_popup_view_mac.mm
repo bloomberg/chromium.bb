@@ -21,13 +21,13 @@
 #import "chrome/browser/ui/cocoa/location_bar/instant_opt_in_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/instant_opt_in_view.h"
 #import "chrome/browser/ui/cocoa/location_bar/omnibox_popup_view.h"
-#include "gfx/rect.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 #import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
+#include "ui/gfx/rect.h"
 
 namespace {
 

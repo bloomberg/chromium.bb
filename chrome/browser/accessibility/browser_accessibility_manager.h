@@ -12,7 +12,7 @@
 #include "base/scoped_ptr.h"
 #include "build/build_config.h"
 #include "chrome/common/render_messages_params.h"
-#include "gfx/native_widget_types.h"
+#include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/webaccessibility.h"
 
 class BrowserAccessibility;

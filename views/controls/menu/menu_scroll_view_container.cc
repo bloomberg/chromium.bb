@@ -10,8 +10,8 @@
 #include <Vssym32.h>
 #endif
 
-#include "gfx/canvas_skia.h"
-#include "gfx/color_utils.h"
+#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/color_utils.h"
 #include "views/border.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "views/controls/menu/menu_config.h"
@@ -20,7 +20,7 @@
 #include "views/controls/menu/submenu_view.h"
 
 #if defined(OS_WIN)
-#include "gfx/native_theme_win.h"
+#include "ui/gfx/native_theme_win.h"
 #endif
 
 #if defined(OS_WIN)

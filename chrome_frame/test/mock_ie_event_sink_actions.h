@@ -17,9 +17,9 @@
 #include "chrome_frame/test/ie_event_sink.h"
 #include "chrome_frame/test/mock_ie_event_sink_test.h"
 #include "chrome_frame/test/simulate_input.h"
-#include "gfx/point.h"
-#include "gfx/rect.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/gfx/point.h"
+#include "ui/gfx/rect.h"
 
 namespace chrome_frame_test {
 

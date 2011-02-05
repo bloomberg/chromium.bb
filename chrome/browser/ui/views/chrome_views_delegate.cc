@@ -13,8 +13,8 @@
 #include "chrome/browser/ui/views/accessibility_event_router_views.h"
 #include "chrome/browser/ui/window_sizer.h"
 #include "chrome/common/pref_names.h"
-#include "gfx/rect.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/gfx/rect.h"
 #include "views/window/window.h"
 
 #if defined(OS_WIN)

@@ -13,11 +13,11 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/weak_ptr.h"
-#include "gfx/native_widget_types.h"
-#include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/rect.h"
 #include "webkit/plugins/npapi/webplugininfo.h"
 #include "webkit/plugins/npapi/webplugin_delegate.h"
 

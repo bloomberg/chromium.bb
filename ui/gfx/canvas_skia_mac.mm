@@ -4,13 +4,13 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "gfx/canvas_skia.h"
+#include "ui/gfx/canvas_skia.h"
 
 #include "base/mac/scoped_cftyperef.h"
 #include "base/sys_string_conversions.h"
-#include "gfx/font.h"
-#include "gfx/rect.h"
 #include "third_party/skia/include/core/SkShader.h"
+#include "ui/gfx/font.h"
+#include "ui/gfx/rect.h"
 
 namespace gfx {
 

@@ -12,8 +12,8 @@
 #include "base/string16.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/common/extensions/url_pattern.h"
-#include "gfx/native_widget_types.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/native_widget_types.h"
 
 class Extension;
 class MessageLoop;

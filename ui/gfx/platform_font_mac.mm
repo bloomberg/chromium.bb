@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gfx/platform_font_mac.h"
+#include "ui/gfx/platform_font_mac.h"
 
 #include <Cocoa/Cocoa.h>
 
@@ -10,8 +10,8 @@
 #include "base/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "gfx/canvas_skia.h"
-#include "gfx/font.h"
+#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/font.h"
 
 namespace gfx {
 

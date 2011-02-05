@@ -11,8 +11,8 @@
 #include "app/surface/transport_dib.h"
 #include "base/basictypes.h"
 #include "base/process.h"
-#include "gfx/rect.h"
-#include "gfx/size.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
 
 class BackingStore;
 class RenderWidgetHost;

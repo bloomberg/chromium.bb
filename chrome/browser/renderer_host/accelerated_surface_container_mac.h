@@ -33,8 +33,8 @@
 #include "base/basictypes.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/scoped_ptr.h"
-#include "gfx/native_widget_types.h"
-#include "gfx/rect.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/rect.h"
 
 namespace webkit {
 namespace npapi {

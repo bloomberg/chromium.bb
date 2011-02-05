@@ -16,7 +16,7 @@
 #include "base/logging.h"
 #include "base/ref_counted.h"
 #include "base/threading/non_thread_safe.h"
-#include "gfx/native_widget_types.h"
+#include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_POSIX)
 #include "base/file_path.h"

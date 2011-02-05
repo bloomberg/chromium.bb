@@ -7,7 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/task.h"
-#include "gfx/canvas.h"
+#include "ui/gfx/canvas.h"
 
 namespace views {
 

@@ -11,8 +11,8 @@
 #include "base/weak_ptr.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
-#include "gfx/rect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPlugin.h"
+#include "ui/gfx/rect.h"
 
 namespace WebKit {
 struct WebPluginParams;

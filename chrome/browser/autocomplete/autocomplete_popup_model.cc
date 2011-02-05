@@ -20,7 +20,7 @@
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_source.h"
-#include "gfx/rect.h"
+#include "ui/gfx/rect.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // AutocompletePopupModel

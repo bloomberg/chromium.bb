@@ -13,7 +13,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "chrome/test/testing_profile.h"
-#include "gfx/rect.h"
+#include "ui/gfx/rect.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/password_form.h"
 

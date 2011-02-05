@@ -4,8 +4,8 @@
 
 #include <math.h>
 
-#include "gfx/codec/jpeg_codec.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/codec/jpeg_codec.h"
 
 namespace gfx {
 

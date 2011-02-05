@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gfx/platform_font_win.h"
+#include "ui/gfx/platform_font_win.h"
 
 #include <windows.h>
 #include <math.h>
@@ -13,8 +13,8 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/win_util.h"
-#include "gfx/canvas_skia.h"
-#include "gfx/font.h"
+#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/font.h"
 
 namespace {
 

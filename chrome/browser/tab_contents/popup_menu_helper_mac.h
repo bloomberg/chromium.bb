@@ -9,7 +9,7 @@
 
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
-#include "gfx/rect.h"
+#include "ui/gfx/rect.h"
 
 class RenderViewHost;
 struct WebMenuItem;

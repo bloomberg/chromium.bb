@@ -28,12 +28,12 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_model_observer_bridge.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/pref_names.h"
-#include "gfx/scoped_cg_context_state_mac.h"
 #include "grit/app_resources.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/skia/include/utils/mac/SkCGUtils.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/scoped_cg_context_state_mac.h"
 
 const int kTopGradientHeight  = 15;
 

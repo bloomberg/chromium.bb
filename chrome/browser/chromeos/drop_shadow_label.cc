@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/drop_shadow_label.h"
 
 #include "base/utf_string_conversions.h"
-#include "gfx/canvas.h"
-#include "gfx/color_utils.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/color_utils.h"
 
 using views::Label;
 

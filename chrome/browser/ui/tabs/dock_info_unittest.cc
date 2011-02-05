@@ -4,8 +4,8 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/ui/tabs/dock_info.h"
-#include "gfx/point.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/point.h"
 
 namespace {
 // Distance in pixels between the hotspot and when the hint should be shown.

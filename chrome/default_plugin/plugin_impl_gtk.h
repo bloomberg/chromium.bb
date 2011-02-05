@@ -10,8 +10,8 @@
 
 #include <gtk/gtk.h>
 
-#include "gfx/native_widget_types.h"
 #include "third_party/npapi/bindings/npapi.h"
+#include "ui/gfx/native_widget_types.h"
 
 // Possible plugin installer states.
 enum PluginInstallerState {

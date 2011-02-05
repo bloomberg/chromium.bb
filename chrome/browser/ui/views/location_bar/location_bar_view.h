@@ -18,8 +18,8 @@
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/common/notification_observer.h"
-#include "gfx/font.h"
-#include "gfx/rect.h"
+#include "ui/gfx/font.h"
+#include "ui/gfx/rect.h"
 #include "views/controls/native/native_view_host.h"
 
 #if defined(OS_WIN)

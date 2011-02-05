@@ -7,9 +7,9 @@
 #pragma once
 
 #include "chrome/common/speech_input_result.h"
-#include "gfx/rect.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
+#include "ui/gfx/rect.h"
 
 #define IPC_MESSAGE_START SpeechInputMsgStart
 

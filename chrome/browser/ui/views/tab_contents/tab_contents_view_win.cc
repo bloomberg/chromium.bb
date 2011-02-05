@@ -21,7 +21,7 @@
 #include "chrome/browser/ui/views/sad_tab_view.h"
 #include "chrome/browser/ui/views/tab_contents/render_view_context_menu_views.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_drag_win.h"
-#include "gfx/canvas_skia_paint.h"
+#include "ui/gfx/canvas_skia_paint.h"
 #include "views/focus/view_storage.h"
 #include "views/screen.h"
 #include "views/widget/root_view.h"

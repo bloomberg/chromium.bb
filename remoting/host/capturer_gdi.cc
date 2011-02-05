@@ -5,7 +5,7 @@
 #include "remoting/host/capturer_gdi.h"
 #include "remoting/host/differ.h"
 
-#include "gfx/rect.h"
+#include "ui/gfx/rect.h"
 
 namespace remoting {
 

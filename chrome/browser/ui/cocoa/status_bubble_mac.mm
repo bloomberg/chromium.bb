@@ -12,12 +12,12 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #import "chrome/browser/ui/cocoa/bubble_view.h"
-#include "gfx/point.h"
 #include "net/base/net_util.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 #import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
 #import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
 #include "ui/base/text/text_elider.h"
+#include "ui/gfx/point.h"
 
 namespace {
 

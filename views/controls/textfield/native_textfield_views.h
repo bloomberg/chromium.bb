@@ -8,8 +8,8 @@
 
 #include "base/string16.h"
 #include "base/task.h"
-#include "gfx/font.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/gfx/font.h"
 #include "views/border.h"
 #include "views/controls/textfield/native_textfield_wrapper.h"
 #include "views/view.h"

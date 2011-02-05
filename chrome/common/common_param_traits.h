@@ -18,7 +18,6 @@
 #include "base/ref_counted.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/page_zoom.h"
-#include "gfx/native_widget_types.h"
 #include "ipc/ipc_message_utils.h"
 #include "net/url_request/url_request_status.h"
 #include "printing/native_metafile.h"
@@ -30,6 +29,7 @@
 //
 // TODO(erg): The following two headers are historical and only work because
 // their definitions are inlined, which also needs to be fixed.
+#include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/glue/window_open_disposition.h"
 

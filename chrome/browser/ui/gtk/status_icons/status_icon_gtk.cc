@@ -8,8 +8,8 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
-#include "gfx/gtk_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/gtk_util.h"
 
 StatusIconGtk::StatusIconGtk() {
   icon_ = gtk_status_icon_new();

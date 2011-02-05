@@ -6,7 +6,7 @@
 
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/url_constants.h"
-#include "gfx/rect.h"
+#include "ui/gfx/rect.h"
 
 std::string TabContentsDelegate::GetNavigationHeaders(const GURL& url) {
   return std::string();

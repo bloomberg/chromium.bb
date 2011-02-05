@@ -25,7 +25,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/testing_profile.h"
 #include "chrome/tools/profiles/thumbnail-inl.h"
-#include "gfx/codec/jpeg_codec.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -33,6 +32,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/codec/jpeg_codec.h"
 
 namespace history {
 

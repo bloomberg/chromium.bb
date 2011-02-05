@@ -15,8 +15,8 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/renderer_preferences.h"
-#include "gfx/size.h"
 #include "googleurl/src/gurl.h"
+#include "ui/gfx/size.h"
 
 class NavigationEntry;
 class TabContents;

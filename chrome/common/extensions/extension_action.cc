@@ -8,13 +8,13 @@
 
 #include "base/logging.h"
 #include "chrome/common/badge_util.h"
-#include "gfx/canvas_skia.h"
-#include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
 #include "grit/app_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/rect.h"
 
 namespace {
 

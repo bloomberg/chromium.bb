@@ -13,8 +13,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/process_watcher.h"
-#include "gfx/native_widget_types.h"
 #include "googleurl/src/gurl.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace {
 

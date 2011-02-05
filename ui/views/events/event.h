@@ -7,8 +7,8 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "gfx/point.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/gfx/point.h"
 #include "ui/views/native_types.h"
 
 class OSExchangeData;

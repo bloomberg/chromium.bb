@@ -13,10 +13,10 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/test/testing_profile.h"
-#include "gfx/canvas_skia.h"
 #include "skia/ext/platform_canvas.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
+#include "ui/gfx/canvas_skia.h"
 
 static const int kBitmapWidth = 100;
 static const int kBitmapHeight = 100;

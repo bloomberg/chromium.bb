@@ -12,7 +12,7 @@
 #include <string>
 
 #include "base/callback.h"
-#include "gfx/native_widget_types.h"
+#include "ui/gfx/native_widget_types.h"
 
 class ListValue;
 class GURL;

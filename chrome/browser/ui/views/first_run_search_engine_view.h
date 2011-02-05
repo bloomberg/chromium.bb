@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "chrome/browser/search_engines/template_url_model_observer.h"
-#include "gfx/size.h"
+#include "ui/gfx/size.h"
 #include "views/controls/button/native_button.h"
 #include "views/view.h"
 #include "views/window/window_delegate.h"

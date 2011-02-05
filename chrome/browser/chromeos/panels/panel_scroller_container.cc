@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/panels/panel_scroller_container.h"
 
-#include "gfx/canvas.h"
+#include "ui/gfx/canvas.h"
 
 PanelScrollerContainer::PanelScrollerContainer(PanelScroller* scroller,
                                                views::View* contents)

@@ -5,11 +5,11 @@
 #include "chrome/browser/chromeos/login/helper.h"
 
 #include "chrome/browser/google/google_util.h"
-#include "gfx/canvas_skia.h"
 #include "googleurl/src/gurl.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/canvas_skia.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/label.h"

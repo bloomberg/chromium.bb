@@ -4,8 +4,8 @@
 
 #include "base/shared_memory.h"
 #include "build/build_config.h"
-#include "gfx/native_widget_types.h"
 #include "ipc/ipc_message_macros.h"
+#include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/webcursor.h"
 
 #if defined(OS_POSIX)

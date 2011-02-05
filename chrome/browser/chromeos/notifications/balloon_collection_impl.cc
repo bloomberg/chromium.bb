@@ -14,8 +14,8 @@
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/ui/window_sizer.h"
 #include "chrome/common/notification_service.h"
-#include "gfx/rect.h"
-#include "gfx/size.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
 
 namespace {
 

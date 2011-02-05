@@ -17,7 +17,6 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/i18n/time_formatting.h"
-#include "gfx/font.h"
 #include "printing/page_number.h"
 #include "printing/page_overlays.h"
 #include "printing/printed_pages_source.h"
@@ -25,6 +24,7 @@
 #include "printing/units.h"
 #include "skia/ext/platform_device.h"
 #include "ui/base/text/text_elider.h"
+#include "ui/gfx/font.h"
 
 namespace {
 

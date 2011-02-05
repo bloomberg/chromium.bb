@@ -17,7 +17,7 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_view.h"
 #import "chrome/browser/ui/cocoa/location_bar/instant_opt_in_controller.h"
-#include "gfx/font.h"
+#include "ui/gfx/font.h"
 #include "webkit/glue/window_open_disposition.h"
 
 

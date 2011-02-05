@@ -8,7 +8,7 @@
 #include "remoting/base/encoder.h"
 #include "remoting/proto/video.pb.h"
 
-#include "gfx/rect.h"
+#include "ui/gfx/rect.h"
 
 namespace remoting {
 

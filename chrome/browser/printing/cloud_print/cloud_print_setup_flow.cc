@@ -32,10 +32,10 @@
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/service_messages.h"
-#include "gfx/font.h"
 #include "grit/chromium_strings.h"
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_font_util.h"
+#include "ui/gfx/font.h"
 
 static const wchar_t kGaiaLoginIFrameXPath[] = L"//iframe[@id='gaialogin']";
 static const wchar_t kDoneIframeXPath[] = L"//iframe[@id='setupdone']";

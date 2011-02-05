@@ -25,9 +25,9 @@
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/common/web_apps.h"
-#include "gfx/codec/png_codec.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/codec/png_codec.h"
 
 namespace keys = extension_manifest_keys;
 

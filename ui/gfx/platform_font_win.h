@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/ref_counted.h"
-#include "gfx/platform_font.h"
+#include "ui/gfx/platform_font.h"
 
 namespace gfx {
 

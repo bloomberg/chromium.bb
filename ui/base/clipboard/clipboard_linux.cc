@@ -14,8 +14,8 @@
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
-#include "gfx/gtk_util.h"
-#include "gfx/size.h"
+#include "ui/gfx/gtk_util.h"
+#include "ui/gfx/size.h"
 
 namespace ui {
 

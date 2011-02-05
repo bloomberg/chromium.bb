@@ -34,8 +34,6 @@
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui_test_utils.h"
 #include "chrome/test/ui/ui_test.h"
-#include "gfx/codec/png_codec.h"
-#include "gfx/rect.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
 #define GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
@@ -43,6 +41,8 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/message_box_flags.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/rect.h"
 #include "views/event.h"
 
 using ui_test_utils::TimedMessageLoopRunner;

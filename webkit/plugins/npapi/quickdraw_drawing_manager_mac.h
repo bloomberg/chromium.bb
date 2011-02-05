@@ -9,7 +9,7 @@
 
 #import <Carbon/Carbon.h>
 
-#include "gfx/rect.h"
+#include "ui/gfx/rect.h"
 
 namespace webkit {
 namespace npapi {

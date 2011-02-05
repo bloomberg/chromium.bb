@@ -11,12 +11,12 @@
 #include "base/callback.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
-#include "gfx/canvas.h"
-#include "gfx/point.h"
-#include "gfx/rect.h"
-#include "gfx/size.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/point.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
 
 class TabContents;
 class TabRendererGtk;

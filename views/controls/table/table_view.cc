@@ -11,10 +11,6 @@
 
 #include "base/i18n/rtl.h"
 #include "base/string_util.h"
-#include "gfx/canvas_skia.h"
-#include "gfx/favicon_size.h"
-#include "gfx/font.h"
-#include "gfx/icon_util.h"
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
@@ -23,6 +19,10 @@
 #include "ui/base/models/table_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/win/hwnd_util.h"
+#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/favicon_size.h"
+#include "ui/gfx/font.h"
+#include "ui/gfx/icon_util.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/controls/table/table_view_observer.h"
 

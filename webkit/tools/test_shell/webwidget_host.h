@@ -8,9 +8,9 @@
 #include "base/basictypes.h"
 #include "base/task.h"
 #include "base/scoped_ptr.h"
-#include "gfx/native_widget_types.h"
-#include "gfx/rect.h"
 #include "skia/ext/platform_canvas.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/rect.h"
 
 namespace gfx {
 class Size;

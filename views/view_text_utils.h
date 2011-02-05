@@ -10,8 +10,8 @@
 
 #include <string>
 
-#include "gfx/rect.h"
-#include "gfx/font.h"
+#include "ui/gfx/font.h"
+#include "ui/gfx/rect.h"
 
 namespace gfx {
 class Canvas;

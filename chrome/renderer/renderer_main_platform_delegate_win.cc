@@ -10,8 +10,8 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/injection_test_dll.h"
-#include "gfx/native_theme_win.h"
 #include "sandbox/src/sandbox.h"
+#include "ui/gfx/native_theme_win.h"
 #include "unicode/timezone.h"
 
 namespace {

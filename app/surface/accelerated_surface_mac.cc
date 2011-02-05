@@ -9,7 +9,7 @@
 #include "app/surface/io_surface_support_mac.h"
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "gfx/rect.h"
+#include "ui/gfx/rect.h"
 
 AcceleratedSurface::AcceleratedSurface()
     : io_surface_id_(0),

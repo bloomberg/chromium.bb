@@ -33,8 +33,8 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_plugin_util.h"
-#include "gfx/codec/png_codec.h"
 #include "googleurl/src/gurl.h"
+#include "ui/gfx/codec/png_codec.h"
 
 namespace {
 

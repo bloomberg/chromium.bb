@@ -79,15 +79,15 @@
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
-#include "gfx/gtk_util.h"
-#include "gfx/rect.h"
-#include "gfx/skia_utils_gtk.h"
 #include "grit/app_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/gtk_util.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/skia_utils_gtk.h"
 
 namespace {
 

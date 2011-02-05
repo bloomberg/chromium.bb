@@ -13,12 +13,12 @@
 #include "base/scoped_ptr.h"
 #include "chrome/common/gpu_info.h"
 #include "chrome/common/message_router.h"
-#include "gfx/native_widget_types.h"
-#include "gfx/size.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sync_channel.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/size.h"
 
 class CommandBufferProxy;
 class GpuVideoServiceHost;

@@ -17,10 +17,10 @@
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/notification_service.h"
-#include "gfx/codec/png_codec.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_collator.h"
+#include "ui/gfx/codec/png_codec.h"
 
 using base::Time;
 

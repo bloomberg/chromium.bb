@@ -5,7 +5,7 @@
 #include "views/controls/native/native_view_host_win.h"
 
 #include "base/logging.h"
-#include "gfx/canvas.h"
+#include "ui/gfx/canvas.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/focus/focus_manager.h"
 #include "views/widget/root_view.h"

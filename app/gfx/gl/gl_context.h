@@ -9,8 +9,8 @@
 #include <string>
 
 #include "build/build_config.h"
-#include "gfx/native_widget_types.h"
-#include "gfx/size.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/size.h"
 
 namespace gfx {
 

@@ -13,10 +13,10 @@
 #include "base/shared_memory.h"
 #include "base/task.h"
 #include "chrome/plugin/command_buffer_stub.h"
-#include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel.h"
 #include "third_party/npapi/bindings/npapi.h"
+#include "ui/gfx/rect.h"
 
 class PluginChannel;
 class WebPluginProxy;

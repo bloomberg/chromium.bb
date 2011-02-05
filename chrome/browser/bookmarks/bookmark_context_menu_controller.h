@@ -10,8 +10,8 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
-#include "gfx/native_widget_types.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/gfx/native_widget_types.h"
 
 class PageNavigator;
 class Profile;

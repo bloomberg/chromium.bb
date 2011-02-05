@@ -12,8 +12,8 @@
 #pragma once
 
 #include "base/callback.h"
-#include "gfx/native_widget_types.h"
-#include "gfx/size.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/size.h"
 
 class GpuChannelHost;
 class MessageLoop;

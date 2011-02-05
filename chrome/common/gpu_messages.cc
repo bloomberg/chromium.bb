@@ -7,9 +7,9 @@
 #include "chrome/common/gpu_create_command_buffer_config.h"
 #include "chrome/common/gpu_info.h"
 #include "chrome/common/dx_diag_node.h"
-#include "gfx/rect.h"
-#include "gfx/size.h"
 #include "ipc/ipc_channel_handle.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
 
 #define IPC_MESSAGE_IMPL
 #include "chrome/common/gpu_messages.h"

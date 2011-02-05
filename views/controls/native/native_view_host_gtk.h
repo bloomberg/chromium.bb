@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "gfx/rect.h"
+#include "ui/gfx/rect.h"
 #include "views/controls/native/native_view_host_wrapper.h"
 
 namespace views {

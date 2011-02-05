@@ -11,7 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/string16.h"
-#include "gfx/font.h"
+#include "ui/gfx/font.h"
 
 class FilePath;
 class GURL;

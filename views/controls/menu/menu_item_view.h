@@ -18,7 +18,7 @@
 #include "views/view.h"
 
 #if defined(OS_WIN)
-#include "gfx/native_theme_win.h"
+#include "ui/gfx/native_theme_win.h"
 #endif
 
 namespace ui {

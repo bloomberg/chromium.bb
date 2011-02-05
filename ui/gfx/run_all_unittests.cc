@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gfx/test_suite.h"
+#include "ui/gfx/test_suite.h"
 
 int main(int argc, char** argv) {
   return GfxTestSuite(argc, argv).Run();

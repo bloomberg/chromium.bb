@@ -31,7 +31,6 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "gfx/color_utils.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -41,6 +40,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
+#include "ui/gfx/color_utils.h"
 
 #if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/bookmark_bar_view.h"

@@ -8,9 +8,9 @@
 #include "base/i18n/break_iterator.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "gfx/canvas_skia.h"
-#include "gfx/color_utils.h"
-#include "gfx/size.h"
+#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/color_utils.h"
+#include "ui/gfx/size.h"
 #include "views/controls/label.h"
 #include "views/controls/link.h"
 

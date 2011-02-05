@@ -8,7 +8,7 @@
 
 #include "build/build_config.h"
 #include "chrome/browser/automation/automation_resource_tracker.h"
-#include "gfx/native_widget_types.h"
+#include "ui/gfx/native_widget_types.h"
 
 class AutomationWindowTracker
     : public AutomationResourceTracker<gfx::NativeWindow> {

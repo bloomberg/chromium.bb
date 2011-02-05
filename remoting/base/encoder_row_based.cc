@@ -5,12 +5,12 @@
 #include "remoting/base/encoder_row_based.h"
 
 #include "base/logging.h"
-#include "gfx/rect.h"
 #include "remoting/base/capture_data.h"
 #include "remoting/base/compressor_verbatim.h"
 #include "remoting/base/compressor_zlib.h"
 #include "remoting/base/util.h"
 #include "remoting/proto/video.pb.h"
+#include "ui/gfx/rect.h"
 
 namespace remoting {
 

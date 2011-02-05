@@ -7,7 +7,7 @@
 #include <gtk/gtk.h>
 
 #include "base/logging.h"
-#include "gfx/gtk_util.h"
+#include "ui/gfx/gtk_util.h"
 #include "webkit/plugins/npapi/gtk_plugin_container.h"
 #include "webkit/plugins/npapi/webplugin.h"
 

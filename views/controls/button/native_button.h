@@ -8,7 +8,7 @@
 
 // TODO(avi): remove when not needed
 #include "base/utf_string_conversions.h"
-#include "gfx/font.h"
+#include "ui/gfx/font.h"
 #include "views/controls/button/button.h"
 #include "views/controls/button/native_button_wrapper.h"
 

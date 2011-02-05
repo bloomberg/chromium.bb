@@ -10,8 +10,8 @@
 #include "chrome/common/plugin_messages.h"
 #include "chrome/renderer/command_buffer_proxy.h"
 #include "chrome/renderer/plugin_channel_host.h"
-#include "gfx/size.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
+#include "ui/gfx/size.h"
 
 using gpu::Buffer;
 

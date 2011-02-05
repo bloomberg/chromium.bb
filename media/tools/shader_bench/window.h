@@ -5,7 +5,7 @@
 #ifndef MEDIA_TOOLS_SHADER_BENCH_WINDOW_H_
 #define MEDIA_TOOLS_SHADER_BENCH_WINDOW_H_
 
-#include "gfx/native_widget_types.h"
+#include "ui/gfx/native_widget_types.h"
 
 class Painter;
 class Task;

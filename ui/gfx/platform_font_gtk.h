@@ -7,8 +7,8 @@
 #pragma once
 
 #include "base/scoped_ptr.h"
-#include "gfx/platform_font.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include "ui/gfx/platform_font.h"
 
 class SkTypeface;
 class SkPaint;

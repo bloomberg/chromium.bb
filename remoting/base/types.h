@@ -7,7 +7,7 @@
 
 #include <set>
 
-#include "gfx/rect.h"
+#include "ui/gfx/rect.h"
 
 namespace remoting {
 

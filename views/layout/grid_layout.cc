@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
-#include "gfx/insets.h"
+#include "ui/gfx/insets.h"
 #include "views/layout/layout_constants.h"
 #include "views/view.h"
 

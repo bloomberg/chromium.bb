@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gfx/native_theme_win.h"
+#include "ui/gfx/native_theme_win.h"
 
 #include <windows.h>
 #include <uxtheme.h>
@@ -14,11 +14,11 @@
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"
 #include "base/win/windows_version.h"
-#include "gfx/gdi_util.h"
-#include "gfx/rect.h"
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/skia/include/core/SkShader.h"
+#include "ui/gfx/gdi_util.h"
+#include "ui/gfx/rect.h"
 
 namespace {
 

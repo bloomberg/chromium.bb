@@ -9,9 +9,9 @@
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_view.h"
-#include "gfx/font.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
+#include "ui/gfx/font.h"
 #include "views/view.h"
 #include "webkit/glue/window_open_disposition.h"
 

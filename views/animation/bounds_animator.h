@@ -9,9 +9,9 @@
 #include <map>
 
 #include "base/ref_counted.h"
-#include "gfx/rect.h"
 #include "ui/base/animation/animation_container_observer.h"
 #include "ui/base/animation/animation_delegate.h"
+#include "ui/gfx/rect.h"
 
 namespace ui {
 class SlideAnimation;

@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/views/frame/popup_non_client_frame_view.h"
 
 #include "chrome/browser/ui/views/tabs/base_tab_strip.h"
-#include "gfx/point.h"
-#include "gfx/rect.h"
-#include "gfx/size.h"
+#include "ui/gfx/point.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
 
 #if defined(OS_LINUX)
 #include "views/window/hit_test.h"

@@ -4,7 +4,7 @@
 
 #include "ui/views/rendering/border.h"
 
-#include "gfx/canvas.h"
+#include "ui/gfx/canvas.h"
 #include "ui/views/view.h"
 
 namespace ui {

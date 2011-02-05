@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "gfx/native_widget_types.h"
+#include "ui/gfx/native_widget_types.h"
 #include "views/window/dialog_delegate.h"
 
 class MessageBoxView;

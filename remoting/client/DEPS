@@ -1,7 +1,7 @@
 include_rules = [
-  "+gfx",
   "+ppapi",
   "+third_party/npapi",
+  "+ui/gfx",
 
   "+remoting/protocol",
   "+remoting/jingle_glue",

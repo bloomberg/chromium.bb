@@ -10,9 +10,9 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/time_format.h"
-#include "gfx/codec/png_codec.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
+#include "ui/gfx/codec/png_codec.h"
 
 // The path used in internal URLs to file icon data.
 static const char kFileIconPath[] = "fileicon";

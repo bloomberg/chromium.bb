@@ -11,8 +11,8 @@
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
-#include "gfx/rect.h"
 #include "ipc/ipc_message.h"
+#include "ui/gfx/rect.h"
 #include "views/widget/widget_gtk.h"
 
 // ConstrainedHtmlDelegateGtk works with ConstrainedWindowGtk to present

@@ -13,9 +13,9 @@
 #include "base/threading/simple_thread.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/audio_message_filter.h"
-#include "gfx/rect.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
+#include "ui/gfx/rect.h"
 
 class WebPluginDelegatePepper;
 class SkBitmap;

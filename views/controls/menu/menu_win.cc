@@ -9,13 +9,13 @@
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
-#include "gfx/canvas_skia.h"
-#include "gfx/font.h"
-#include "gfx/rect.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/win/window_impl.h"
+#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/font.h"
+#include "ui/gfx/rect.h"
 #include "views/accelerator.h"
 
 namespace views {

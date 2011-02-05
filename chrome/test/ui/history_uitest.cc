@@ -12,7 +12,7 @@
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui/ui_test.h"
 #include "chrome/test/ui_test_utils.h"
-#include "gfx/rect.h"
+#include "ui/gfx/rect.h"
 #include "views/event.h"
 
 namespace {

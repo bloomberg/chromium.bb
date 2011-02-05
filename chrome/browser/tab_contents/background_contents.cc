@@ -16,7 +16,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/common/view_types.h"
 #include "chrome/common/render_messages_params.h"
-#include "gfx/rect.h"
+#include "ui/gfx/rect.h"
 
 ////////////////
 // BackgroundContents

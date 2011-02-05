@@ -18,12 +18,12 @@
 #include "chrome/common/serialized_script_value.h"
 #include "chrome/common/utility_messages.h"
 #include "chrome/common/web_resource/web_resource_unpacker.h"
-#include "gfx/rect.h"
 #include "printing/native_metafile.h"
 #include "printing/page_range.h"
 #include "printing/units.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSerializedScriptValue.h"
+#include "ui/gfx/rect.h"
 #include "webkit/glue/idb_bindings.h"
 #include "webkit/glue/image_decoder.h"
 

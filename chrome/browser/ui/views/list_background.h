@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_UI_VIEWS_LIST_BACKGROUND_H_
 #pragma once
 
-#include "gfx/canvas_skia.h"
-#include "gfx/native_theme_win.h"
+#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/native_theme_win.h"
 #include "views/background.h"
 
 // A background object that paints the scrollable list background,

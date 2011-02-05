@@ -12,5 +12,5 @@ include_rules = [
   "+app",
 
   # For gfx::PluginWindowHandle
-  "+gfx",
+  "+ui/gfx",
 ]

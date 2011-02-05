@@ -10,8 +10,8 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "gfx/size.h"
 #include "printing/native_metafile.h"
+#include "ui/gfx/size.h"
 
 class FilePath;
 

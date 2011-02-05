@@ -12,8 +12,8 @@
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "gfx/insets.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/gfx/insets.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/controls/textfield/native_textfield_wrapper.h"
 #include "views/widget/widget.h"

@@ -15,8 +15,8 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
 #include "chrome/common/automation_messages.h"
-#include "gfx/point.h"
-#include "gfx/rect.h"
+#include "ui/gfx/point.h"
+#include "ui/gfx/rect.h"
 
 void AutomationProvider::PrintAsync(int tab_handle) {
   NOTIMPLEMENTED();

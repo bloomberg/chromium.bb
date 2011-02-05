@@ -15,21 +15,21 @@
 #include <algorithm>
 
 #include "base/utf_string_conversions.h"
-#include "gfx/canvas_skia.h"
-#include "gfx/font.h"
 #include "grit/app_strings.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/font.h"
 #include "views/controls/button/native_button.h"
 #include "views/layout/layout_constants.h"
 #include "views/window/dialog_delegate.h"
 #include "views/window/window.h"
 
 #if defined(OS_WIN)
-#include "gfx/native_theme_win.h"
+#include "ui/gfx/native_theme_win.h"
 #else
-#include "gfx/skia_utils_gtk.h"
+#include "ui/gfx/skia_utils_gtk.h"
 #include "views/window/hit_test.h"
 #include "views/widget/widget.h"
 #endif

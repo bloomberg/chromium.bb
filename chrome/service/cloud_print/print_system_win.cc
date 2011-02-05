@@ -17,7 +17,6 @@
 #include "chrome/service/cloud_print/cloud_print_consts.h"
 #include "chrome/service/service_process.h"
 #include "chrome/service/service_utility_process_host.h"
-#include "gfx/rect.h"
 #include "grit/generated_resources.h"
 #include "printing/backend/print_backend.h"
 #include "printing/backend/print_backend_consts.h"
@@ -25,6 +24,7 @@
 #include "printing/native_metafile.h"
 #include "printing/page_range.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/rect.h"
 
 using base::win::ScopedBstr;
 using base::win::ScopedComPtr;

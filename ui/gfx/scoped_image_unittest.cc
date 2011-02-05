@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 #include "base/scoped_ptr.h"
-#include "gfx/scoped_image.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/scoped_image.h"
 
 #if defined(OS_LINUX)
-#include "gfx/gtk_util.h"
+#include "ui/gfx/gtk_util.h"
 #elif defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #include "skia/ext/skia_utils_mac.h"

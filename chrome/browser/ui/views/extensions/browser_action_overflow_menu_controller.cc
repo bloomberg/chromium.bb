@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
-#include "gfx/canvas_skia.h"
+#include "ui/gfx/canvas_skia.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/menu_2.h"
 

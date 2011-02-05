@@ -6,9 +6,9 @@
 
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "gfx/canvas.h"
-#include "gfx/color_utils.h"
 #include "ui/base/animation/multi_animation.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/color_utils.h"
 
 SuggestedTextView::SuggestedTextView(LocationBarView* location_bar)
     : location_bar_(location_bar),

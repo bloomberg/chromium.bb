@@ -12,7 +12,7 @@
 #include "chrome/browser/chromeos/status/power_menu_button.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
 #include "chrome/browser/chromeos/status/window_switcher_button.h"
-#include "gfx/canvas.h"
+#include "ui/gfx/canvas.h"
 
 namespace chromeos {
 

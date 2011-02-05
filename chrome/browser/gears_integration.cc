@@ -16,9 +16,9 @@
 #include "chrome/common/chrome_plugin_util.h"
 #include "chrome/common/gears_api.h"
 #include "chrome/common/web_apps.h"
-#include "gfx/codec/png_codec.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/codec/png_codec.h"
 
 // The following 2 helpers are borrowed from the Gears codebase.
 

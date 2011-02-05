@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/common/automation_messages.h"
-#include "gfx/point.h"
+#include "ui/gfx/point.h"
 #include "views/controls/menu/menu_wrapper.h"
 #include "views/view.h"
 #include "views/widget/root_view.h"

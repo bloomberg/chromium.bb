@@ -18,8 +18,8 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "base/win/scoped_comptr.h"
-#include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
+#include "ui/gfx/rect.h"
 
 class FilePath;
 interface IBrowserService;

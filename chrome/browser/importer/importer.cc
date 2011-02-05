@@ -21,11 +21,11 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/notification_source.h"
-#include "gfx/codec/png_codec.h"
-#include "gfx/favicon_size.h"
 #include "grit/generated_resources.h"
 #include "skia/ext/image_operations.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/favicon_size.h"
 #include "webkit/glue/image_decoder.h"
 
 // TODO(port): Port these files.

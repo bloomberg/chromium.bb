@@ -19,9 +19,9 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
-#include "gfx/codec/png_codec.h"
 #include "net/test/test_server.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/gfx/codec/png_codec.h"
 
 extern base::hash_map<std::string, int> g_test_timeout_overrides;
 

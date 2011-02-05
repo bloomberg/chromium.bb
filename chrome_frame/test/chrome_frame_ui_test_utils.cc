@@ -19,10 +19,10 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome_frame/test/win_event_receiver.h"
 #include "chrome_frame/utils.h"
-#include "gfx/point.h"
-#include "gfx/rect.h"
 #include "ia2_api_all.h"  // Generated NOLINT
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/point.h"
+#include "ui/gfx/rect.h"
 
 namespace chrome_frame_test {
 

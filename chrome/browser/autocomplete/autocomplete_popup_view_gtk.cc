@@ -26,12 +26,12 @@
 #include "chrome/browser/ui/gtk/gtk_theme_provider.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/notification_service.h"
-#include "gfx/color_utils.h"
-#include "gfx/font.h"
-#include "gfx/gtk_util.h"
-#include "gfx/rect.h"
-#include "gfx/skia_utils_gtk.h"
 #include "grit/theme_resources.h"
+#include "ui/gfx/color_utils.h"
+#include "ui/gfx/font.h"
+#include "ui/gfx/gtk_util.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/skia_utils_gtk.h"
 
 namespace {
 

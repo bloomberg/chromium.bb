@@ -13,9 +13,9 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/options/options_layout_gtk.h"
 #include "chrome/common/pref_names.h"
-#include "gfx/font.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/font.h"
 
 namespace {
 

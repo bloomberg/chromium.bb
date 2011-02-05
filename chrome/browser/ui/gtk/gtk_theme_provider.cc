@@ -24,12 +24,6 @@
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
-#include "gfx/canvas_skia.h"
-#include "gfx/color_utils.h"
-#include "gfx/gtk_util.h"
-#include "gfx/skbitmap_operations.h"
-#include "gfx/skia_util.h"
-#include "gfx/skia_utils_gtk.h"
 #include "grit/app_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -38,6 +32,12 @@
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/base/gtk/gtk_signal_registrar.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/color_utils.h"
+#include "ui/gfx/gtk_util.h"
+#include "ui/gfx/skbitmap_operations.h"
+#include "ui/gfx/skia_util.h"
+#include "ui/gfx/skia_utils_gtk.h"
 
 namespace {
 

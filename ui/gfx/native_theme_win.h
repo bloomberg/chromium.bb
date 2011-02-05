@@ -12,10 +12,10 @@
 #define UI_GFX_NATIVE_THEME_WIN_H_
 #pragma once
 
+#include "ui/gfx/size.h"
 #include <windows.h>
 #include <uxtheme.h>
 #include "base/basictypes.h"
-#include "gfx/size.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace skia {

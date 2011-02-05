@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
-#include "gfx/blit.h"
-#include "gfx/point.h"
-#include "gfx/rect.h"
 #include "skia/ext/platform_canvas.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/blit.h"
+#include "ui/gfx/point.h"
+#include "ui/gfx/rect.h"
 
 namespace {
 

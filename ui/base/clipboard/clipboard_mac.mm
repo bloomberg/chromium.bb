@@ -13,8 +13,8 @@
 #include "base/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "gfx/size.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
+#include "ui/gfx/size.h"
 
 namespace ui {
 

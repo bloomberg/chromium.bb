@@ -9,11 +9,11 @@
 #include "base/basictypes.h"
 #include "base/file_util.h"
 #include "base/string_util.h"
-#include "gfx/codec/png_codec.h"
 #include "skia/ext/image_operations.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkRect.h"
+#include "ui/gfx/codec/png_codec.h"
 
 namespace {
 

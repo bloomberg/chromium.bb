@@ -9,7 +9,7 @@
 #include <vector>
 #include <windows.h>
 
-#include "gfx/rect.h"
+#include "ui/gfx/rect.h"
 
 namespace gfx {
 

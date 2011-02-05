@@ -36,7 +36,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/common/page_zoom.h"
-#include "gfx/rect.h"
+#include "ui/gfx/rect.h"
 
 class BrowserWindow;
 class Extension;

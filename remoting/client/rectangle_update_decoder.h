@@ -7,8 +7,8 @@
 
 #include "base/scoped_ptr.h"
 #include "base/task.h"
-#include "gfx/size.h"
 #include "media/base/video_frame.h"
+#include "ui/gfx/size.h"
 
 class MessageLoop;
 

@@ -14,7 +14,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/browser_child_process_host.h"
 #include "chrome/common/gpu_feature_flags.h"
-#include "gfx/native_widget_types.h"
+#include "ui/gfx/native_widget_types.h"
 
 class GpuBlacklist;
 struct GPUCreateCommandBufferConfig;

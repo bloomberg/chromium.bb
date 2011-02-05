@@ -21,9 +21,9 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/test/automation/dom_element_proxy.h"
-#include "gfx/native_widget_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class AppModalDialog;

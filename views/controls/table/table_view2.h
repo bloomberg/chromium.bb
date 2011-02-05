@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/scoped_ptr.h"
-#include "gfx/rect.h"
+#include "ui/gfx/rect.h"
 #include "views/controls/table/table_view.h"
 #include "views/controls/table/native_table_wrapper.h"
 #include "views/view.h"

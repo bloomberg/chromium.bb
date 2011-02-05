@@ -9,9 +9,9 @@
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "gfx/gtk_util.h"
-#include "gfx/insets.h"
-#include "gfx/skia_utils_gtk.h"
+#include "ui/gfx/gtk_util.h"
+#include "ui/gfx/insets.h"
+#include "ui/gfx/skia_utils_gtk.h"
 #include "views/controls/textfield/gtk_views_entry.h"
 #include "views/controls/textfield/gtk_views_textview.h"
 #include "views/controls/textfield/native_textfield_views.h"

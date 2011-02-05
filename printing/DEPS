@@ -1,6 +1,6 @@
 include_rules = [
   "+base",
-  "+gfx",
   "+skia/ext",
   "+ui/base/text",
+  "+ui/gfx",
 ]

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_INSTANT_INSTANT_CONFIRM_DIALOG_H_
 #pragma once
 
-#include "gfx/native_widget_types.h"
+#include "ui/gfx/native_widget_types.h"
 
 class GURL;
 class Profile;

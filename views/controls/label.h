@@ -7,9 +7,9 @@
 #pragma once
 
 #include "base/gtest_prod_util.h"
-#include "gfx/font.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/font.h"
 #include "views/view.h"
 
 namespace views {

@@ -4,9 +4,9 @@
 
 #include "chrome/browser/chromeos/status/status_area_button.h"
 
-#include "gfx/canvas.h"
-#include "gfx/skbitmap_operations.h"
 #include "grit/theme_resources.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/skbitmap_operations.h"
 #include "views/border.h"
 #include "views/view.h"
 

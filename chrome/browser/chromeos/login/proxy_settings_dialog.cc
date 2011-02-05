@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/login/proxy_settings_dialog.h"
 
 #include "chrome/browser/chromeos/login/helper.h"
-#include "gfx/rect.h"
-#include "gfx/size.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
 
 namespace {
 

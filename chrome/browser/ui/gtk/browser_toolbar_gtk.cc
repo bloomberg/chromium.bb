@@ -44,15 +44,15 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "gfx/canvas_skia_paint.h"
-#include "gfx/gtk_util.h"
-#include "gfx/skbitmap_operations.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/accelerator_gtk.h"
+#include "ui/gfx/canvas_skia_paint.h"
+#include "ui/gfx/gtk_util.h"
+#include "ui/gfx/skbitmap_operations.h"
 
 namespace {
 

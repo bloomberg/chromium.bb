@@ -6,11 +6,11 @@
 
 #include "base/logging.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
-#include "gfx/canvas.h"
-#include "gfx/rect.h"
-#include "gfx/skia_util.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/skia_util.h"
 
 namespace {
 

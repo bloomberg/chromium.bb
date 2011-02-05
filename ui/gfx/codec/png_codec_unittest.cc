@@ -4,10 +4,10 @@
 
 #include <math.h>
 
-#include "gfx/codec/png_codec.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkUnPreMultiply.h"
+#include "ui/gfx/codec/png_codec.h"
 
 namespace gfx {
 

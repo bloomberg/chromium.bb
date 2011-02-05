@@ -10,8 +10,8 @@
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_manager.h"
 #import "chrome/browser/ui/cocoa/dock_icon.h"
-#include "gfx/native_widget_types.h"
 #include "skia/ext/skia_utils_mac.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace download_util {
 

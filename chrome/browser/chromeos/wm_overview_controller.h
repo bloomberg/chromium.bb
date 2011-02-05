@@ -14,7 +14,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/chromeos/wm_message_listener.h"
 #include "chrome/common/notification_registrar.h"
-#include "gfx/rect.h"
+#include "ui/gfx/rect.h"
 
 namespace views {
 class Widget;

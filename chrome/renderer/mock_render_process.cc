@@ -5,7 +5,7 @@
 #include "chrome/renderer/mock_render_process.h"
 
 #include "app/surface/transport_dib.h"
-#include "gfx/rect.h"
+#include "ui/gfx/rect.h"
 
 MockRenderProcess::MockRenderProcess()
     : transport_dib_next_sequence_number_(0) {

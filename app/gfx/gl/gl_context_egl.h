@@ -8,7 +8,7 @@
 
 #include "app/gfx/gl/gl_context.h"
 #include "base/ref_counted.h"
-#include "gfx/size.h"
+#include "ui/gfx/size.h"
 
 typedef void* EGLDisplay;
 typedef void* EGLContext;

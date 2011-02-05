@@ -16,16 +16,16 @@
 
 #include "base/basictypes.h"
 #include "base/string16.h"
-#include "gfx/font.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/gfx/font.h"
 #include "views/view.h"
 
 #if !defined(OS_LINUX)
 #include "base/logging.h"
 #endif
 #ifdef UNIT_TEST
-#include "gfx/native_widget_types.h"
+#include "ui/gfx/native_widget_types.h"
 #include "views/controls/textfield/native_textfield_wrapper.h"
 #endif
 

@@ -12,9 +12,9 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
 #include "chrome/browser/dom_ui/html_dialog_tab_contents_delegate.h"
-#include "gfx/native_widget_types.h"
-#include "gfx/size.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/size.h"
 
 typedef struct _GtkWidget GtkWidget;
 

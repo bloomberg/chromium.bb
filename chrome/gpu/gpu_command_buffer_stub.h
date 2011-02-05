@@ -13,12 +13,12 @@
 
 #include "base/process.h"
 #include "base/weak_ptr.h"
-#include "gfx/native_widget_types.h"
-#include "gfx/size.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/gpu_processor.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/size.h"
 
 class GpuChannel;
 

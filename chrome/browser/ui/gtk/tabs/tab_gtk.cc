@@ -12,11 +12,11 @@
 #include "chrome/browser/ui/gtk/accelerators_gtk.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
-#include "gfx/path.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
 #include "ui/base/models/accelerator_gtk.h"
+#include "ui/gfx/path.h"
 
 namespace {
 

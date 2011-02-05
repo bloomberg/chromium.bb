@@ -9,7 +9,7 @@
 #include "base/callback.h"
 #include "base/string16.h"
 #include "chrome/common/gears_api.h"
-#include "gfx/native_widget_types.h"
+#include "ui/gfx/native_widget_types.h"
 
 // TODO(michaeln): Rework this interface to match how other first class
 // citizens of chrome are structured, as a GearsService with an accessor

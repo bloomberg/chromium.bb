@@ -6,8 +6,8 @@
 #define WEBKIT_PLUGINS_NPAPI_WEBPLUGIN_ACCELERATED_SURFACE_MAC_H_
 #pragma once
 
-#include "gfx/native_widget_types.h"
-#include "gfx/size.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/size.h"
 
 // Avoid having to include OpenGL headers here.
 typedef struct _CGLContextObject* CGLContextObj;

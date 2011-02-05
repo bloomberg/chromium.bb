@@ -17,10 +17,10 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
-#include "gfx/gtk_util.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_util.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
+#include "ui/gfx/gtk_util.h"
 #include "webkit/glue/webdropdata.h"
 
 using WebKit::WebDragOperation;

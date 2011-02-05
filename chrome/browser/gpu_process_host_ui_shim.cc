@@ -17,8 +17,8 @@
 #include <gdk/gdkwindow.h>  // NOLINT
 #include <gdk/gdkx.h>  // NOLINT
 #include "ui/base/x/x11_util.h"
-#include "gfx/gtk_native_view_id_manager.h"
-#include "gfx/size.h"
+#include "ui/gfx/gtk_native_view_id_manager.h"
+#include "ui/gfx/size.h"
 #endif  // defined(OS_LINUX)
 
 // Tasks used by this file

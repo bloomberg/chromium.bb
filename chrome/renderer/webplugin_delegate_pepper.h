@@ -17,11 +17,11 @@
 #include "base/task.h"
 #include "chrome/renderer/pepper_devices.h"
 #include "chrome/renderer/command_buffer_proxy.h"
-#include "gfx/native_widget_types.h"
-#include "gfx/rect.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileChooserCompletion.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/rect.h"
 #include "webkit/plugins/npapi/webplugin_delegate.h"
 
 class FilePath;

@@ -14,8 +14,8 @@
 #include <string>
 
 #include "base/logging.h"
-#include "gfx/native_widget_types.h"
-#include "gfx/rect.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/rect.h"
 
 namespace ui {
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gfx/gtk_util.h"
+#include "ui/gfx/gtk_util.h"
 
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
@@ -11,9 +11,9 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/linux_util.h"
-#include "gfx/rect.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkUnPreMultiply.h"
+#include "ui/gfx/rect.h"
 
 namespace {
 

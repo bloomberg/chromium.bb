@@ -7,9 +7,9 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "gfx/native_widget_types.h"
-#include "gfx/size.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/size.h"
 
 class Browser;
 class ExtensionHost;

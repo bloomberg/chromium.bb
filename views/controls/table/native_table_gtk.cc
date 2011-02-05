@@ -8,8 +8,8 @@
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "gfx/gtk_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/gtk_util.h"
 #include "views/controls/table/table_view2.h"
 #include "views/controls/table/table_view_observer.h"
 #include "views/widget/widget.h"

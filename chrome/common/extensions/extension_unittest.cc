@@ -23,7 +23,6 @@
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/common/url_constants.h"
-#include "gfx/codec/png_codec.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/mime_sniffer.h"
 #include "skia/ext/image_operations.h"
@@ -32,6 +31,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/codec/png_codec.h"
 
 namespace keys = extension_manifest_keys;
 namespace values = extension_manifest_values;

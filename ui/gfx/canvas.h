@@ -9,9 +9,9 @@
 #include <string>
 
 #include "base/string16.h"
-#include "gfx/native_widget_types.h"
 // TODO(beng): remove this include when we no longer depend on SkTypes.
 #include "skia/ext/platform_canvas.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
 

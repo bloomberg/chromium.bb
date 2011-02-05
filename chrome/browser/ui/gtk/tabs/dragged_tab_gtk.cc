@@ -17,9 +17,9 @@
 #include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/tabs/tab_renderer_gtk.h"
-#include "gfx/gtk_util.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/gfx/gtk_util.h"
 
 namespace {
 

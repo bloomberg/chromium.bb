@@ -11,8 +11,6 @@
 #include "base/values.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
-#include "gfx/codec/png_codec.h"
-#include "gfx/skbitmap_operations.h"
 #include "grit/app_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/file_stream.h"
@@ -20,6 +18,8 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/base/resource/data_pack.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/skbitmap_operations.h"
 
 namespace {
 

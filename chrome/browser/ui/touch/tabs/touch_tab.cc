@@ -5,13 +5,13 @@
 #include "chrome/browser/ui/touch/tabs/touch_tab.h"
 
 #include "chrome/browser/themes/browser_theme_provider.h"
-#include "gfx/canvas_skia.h"
-#include "gfx/favicon_size.h"
-#include "gfx/path.h"
-#include "gfx/skbitmap_operations.h"
 #include "grit/app_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/favicon_size.h"
+#include "ui/gfx/path.h"
+#include "ui/gfx/skbitmap_operations.h"
 
 static const int kLeftPadding = 16;
 static const int kRightPadding = 15;

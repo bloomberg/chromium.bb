@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gfx/canvas_skia.h"
+#include "ui/gfx/canvas_skia.h"
 
 #include <limits>
 
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
-#include "gfx/brush.h"
-#include "gfx/font.h"
-#include "gfx/rect.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
+#include "ui/gfx/brush.h"
+#include "ui/gfx/font.h"
+#include "ui/gfx/rect.h"
 
 #if defined(OS_WIN)
-#include "gfx/canvas_skia_paint.h"
+#include "ui/gfx/canvas_skia_paint.h"
 #endif
 
 namespace {

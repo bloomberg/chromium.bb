@@ -6,8 +6,8 @@
 #define VIEWS_CONTROLS_MENU_MENU_CONFIG_H_
 #pragma once
 
-#include "gfx/font.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/font.h"
 
 namespace views {
 

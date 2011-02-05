@@ -4,8 +4,8 @@
 
 #include "views/layout/box_layout.h"
 
-#include "gfx/insets.h"
-#include "gfx/rect.h"
+#include "ui/gfx/insets.h"
+#include "ui/gfx/rect.h"
 #include "views/view.h"
 
 namespace views {

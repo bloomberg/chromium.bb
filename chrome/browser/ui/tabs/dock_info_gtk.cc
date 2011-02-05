@@ -12,8 +12,8 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
-#include "gfx/native_widget_types.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/gfx/native_widget_types.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // BaseWindowFinder

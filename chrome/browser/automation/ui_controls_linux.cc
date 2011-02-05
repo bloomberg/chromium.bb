@@ -12,8 +12,8 @@
 #include "chrome/browser/automation/ui_controls_internal.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/automation_constants.h"
-#include "gfx/rect.h"
 #include "ui/base/gtk/event_synthesis_gtk.h"
+#include "ui/gfx/rect.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "views/view.h"

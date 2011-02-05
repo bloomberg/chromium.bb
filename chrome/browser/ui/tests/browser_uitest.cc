@@ -21,11 +21,11 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui/ui_test.h"
-#include "gfx/native_widget_types.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace {
 

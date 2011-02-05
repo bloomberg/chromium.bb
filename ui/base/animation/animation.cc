@@ -4,10 +4,10 @@
 
 #include "ui/base/animation/animation.h"
 
-#include "gfx/rect.h"
 #include "ui/base/animation/animation_container.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/tween.h"
+#include "ui/gfx/rect.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"

@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/views/copy_background.h"
 
 #include "base/logging.h"
-#include "gfx/canvas.h"
+#include "ui/gfx/canvas.h"
 #include "views/background.h"
 #include "views/view.h"
 

@@ -14,9 +14,9 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "build/build_config.h"
-#include "gfx/native_widget_types.h"
-#include "gfx/rect.h"
 #include "third_party/npapi/bindings/npapi.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/rect.h"
 #include "webkit/plugins/npapi/webplugin_delegate.h"
 #include "webkit/glue/webcursor.h"
 

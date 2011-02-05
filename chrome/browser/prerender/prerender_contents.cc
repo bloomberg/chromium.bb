@@ -20,7 +20,7 @@
 #include "chrome/common/view_types.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
-#include "gfx/rect.h"
+#include "ui/gfx/rect.h"
 
 class PrerenderContentsFactoryImpl : public PrerenderContents::Factory {
  public:

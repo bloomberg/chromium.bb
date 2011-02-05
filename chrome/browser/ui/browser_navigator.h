@@ -9,8 +9,8 @@
 #include <string>
 
 #include "chrome/common/page_transition_types.h"
-#include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
+#include "ui/gfx/rect.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class Browser;

@@ -23,9 +23,9 @@
 #include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "base/threading/thread.h"
-#include "gfx/rect.h"
-#include "gfx/size.h"
 #include "ui/base/x/x11_util_internal.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
 
 namespace ui {
 

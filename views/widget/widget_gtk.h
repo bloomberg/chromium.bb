@@ -9,9 +9,9 @@
 #include <gtk/gtk.h>
 
 #include "base/message_loop.h"
-#include "gfx/size.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/x/active_window_watcher_x.h"
+#include "ui/gfx/size.h"
 #include "views/focus/focus_manager.h"
 #include "views/widget/widget.h"
 

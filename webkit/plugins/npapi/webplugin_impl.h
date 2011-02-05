@@ -13,7 +13,6 @@
 #include "base/file_path.h"
 #include "base/task.h"
 #include "base/weak_ptr.h"
-#include "gfx/native_widget_types.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPlugin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
@@ -21,6 +20,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoaderClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
+#include "ui/gfx/native_widget_types.h"
 #include "webkit/plugins/npapi/webplugin.h"
 
 class WebViewDelegate;

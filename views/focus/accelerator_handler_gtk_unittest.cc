@@ -4,8 +4,8 @@
 
 #include <gdk/gdkkeysyms.h>
 
-#include "gfx/rect.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/rect.h"
 #include "views/focus/accelerator_handler.h"
 #include "views/view.h"
 #include "views/window/window_gtk.h"

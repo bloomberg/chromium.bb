@@ -6,8 +6,8 @@
 #define UI_GFX_CANVAS_SKIA_PAINT_H_
 #pragma once
 
-#include "gfx/canvas_skia.h"
 #include "skia/ext/canvas_paint.h"
+#include "ui/gfx/canvas_skia.h"
 
 // Define a gfx::CanvasSkiaPaint type that wraps our gfx::Canvas like the
 // skia::PlatformCanvasPaint wraps PlatformCanvas.

@@ -10,10 +10,10 @@
 #include "chrome/browser/ui/views/infobars/before_translate_infobar.h"
 #include "chrome/browser/ui/views/infobars/infobar_button_border.h"
 #include "chrome/browser/ui/views/infobars/translate_message_infobar.h"
-#include "gfx/canvas_skia.h"
 #include "grit/theme_resources.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/canvas_skia.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/image_view.h"
 

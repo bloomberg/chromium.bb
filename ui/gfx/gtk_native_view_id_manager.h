@@ -10,7 +10,7 @@
 
 #include "base/singleton.h"
 #include "base/synchronization/lock.h"
-#include "gfx/native_widget_types.h"
+#include "ui/gfx/native_widget_types.h"
 
 typedef unsigned long XID;
 struct _GtkPreserveWindow;

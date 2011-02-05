@@ -21,7 +21,7 @@
 #include "base/ref_counted_memory.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
-#include "gfx/native_widget_types.h"
+#include "ui/gfx/native_widget_types.h"
 
 class SkBitmap;
 typedef uint32 SkColor;

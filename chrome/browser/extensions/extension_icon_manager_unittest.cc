@@ -11,8 +11,8 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/json_value_serializer.h"
-#include "gfx/skia_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/skia_util.h"
 
 // Our test class that takes care of managing the necessary threads for loading
 // extension icons, and waiting for those loads to happen.

@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "gfx/native_widget_types.h"
+#include "ui/gfx/native_widget_types.h"
 #include "views/view.h"
 
 namespace views {

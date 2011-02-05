@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gfx/canvas_direct2d.h"
+#include "ui/gfx/canvas_direct2d.h"
 
 #include "base/scoped_ptr.h"
-#include "gfx/brush.h"
-#include "gfx/rect.h"
+#include "ui/gfx/brush.h"
+#include "ui/gfx/rect.h"
 
 namespace {
 

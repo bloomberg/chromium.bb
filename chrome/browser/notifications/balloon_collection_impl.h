@@ -14,8 +14,8 @@
 #include "base/message_loop.h"
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/balloon_collection_base.h"
-#include "gfx/point.h"
-#include "gfx/rect.h"
+#include "ui/gfx/point.h"
+#include "ui/gfx/rect.h"
 
 // Mac balloons grow from the top down and have close buttons on top, so
 // offsetting is not necessary for easy multiple-closing.  Other platforms grow

@@ -12,9 +12,9 @@
 #include <wtypes.h>
 #endif
 
-#include "gfx/native_widget_types.h"
-#include "gfx/point.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/point.h"
 
 #if defined(TOOLKIT_VIEWS)
 namespace views {

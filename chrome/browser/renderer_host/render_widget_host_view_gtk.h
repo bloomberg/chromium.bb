@@ -15,10 +15,10 @@
 #include "base/time.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/ui/gtk/owned_widget_gtk.h"
-#include "gfx/native_widget_types.h"
-#include "gfx/rect.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/rect.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/plugins/npapi/gtk_plugin_container_manager.h"
 

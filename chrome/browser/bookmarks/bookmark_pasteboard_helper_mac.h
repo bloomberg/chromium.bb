@@ -8,7 +8,7 @@
 
 #include "base/file_path.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
-#include "gfx/native_widget_types.h"
+#include "ui/gfx/native_widget_types.h"
 
 // This set of functions lets C++ code interact with the cocoa pasteboard
 // and dragging methods.

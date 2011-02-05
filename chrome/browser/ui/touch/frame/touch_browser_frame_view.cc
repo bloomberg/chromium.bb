@@ -15,7 +15,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
-#include "gfx/rect.h"
+#include "ui/gfx/rect.h"
 
 namespace {
 

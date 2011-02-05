@@ -18,13 +18,13 @@
 #include "base/string_number_conversions.h"
 #include "chrome/common/common_param_traits.h"
 #include "chrome/common/webkit_param_traits.h"
-#include "gfx/native_widget_types.h"
-#include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_utils.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/rect.h"
 #include "webkit/glue/npruntime_util.h"
 
 // Name prefix of the event handle when a message box is displayed.

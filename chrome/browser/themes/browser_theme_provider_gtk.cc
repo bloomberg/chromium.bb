@@ -8,8 +8,8 @@
 
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
-#include "gfx/gtk_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/gtk_util.h"
 
 GdkPixbuf* BrowserThemeProvider::GetPixbufNamed(int id) const {
   return GetPixbufImpl(id, false);

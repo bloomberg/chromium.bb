@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gfx/canvas_skia.h"
+#include "ui/gfx/canvas_skia.h"
 
 #include <cairo/cairo.h>
 #include <gtk/gtk.h>
@@ -11,10 +11,10 @@
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "gfx/font.h"
-#include "gfx/gtk_util.h"
-#include "gfx/platform_font_gtk.h"
-#include "gfx/rect.h"
+#include "ui/gfx/font.h"
+#include "ui/gfx/gtk_util.h"
+#include "ui/gfx/platform_font_gtk.h"
+#include "ui/gfx/rect.h"
 
 namespace {
 

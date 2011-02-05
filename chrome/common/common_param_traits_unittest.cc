@@ -9,7 +9,6 @@
 #include "base/values.h"
 #include "chrome/common/common_param_traits.h"
 #include "chrome/common/geoposition.h"
-#include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_utils.h"
@@ -18,6 +17,7 @@
 #include "printing/page_range.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/rect.h"
 
 // Tests that serialize/deserialize correctly understand each other
 TEST(IPCMessageTest, Serialize) {

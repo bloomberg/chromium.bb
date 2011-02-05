@@ -12,12 +12,12 @@
 #include "base/ref_counted.h"
 #include "base/shared_memory.h"
 #include "base/sync_socket.h"
-#include "gfx/size.h"
 #include "googleurl/src/gurl.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_stdint.h"
+#include "ui/gfx/size.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/plugins/ppapi/dir_contents.h"
 

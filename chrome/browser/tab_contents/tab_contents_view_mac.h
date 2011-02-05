@@ -15,7 +15,7 @@
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/ui/cocoa/base_view.h"
 #include "chrome/common/notification_registrar.h"
-#include "gfx/size.h"
+#include "ui/gfx/size.h"
 
 @class FocusTracker;
 @class SadTabController;

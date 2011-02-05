@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/views/status_icons/status_icon_win.h"
 
 #include "base/sys_string_conversions.h"
-#include "gfx/icon_util.h"
-#include "gfx/point.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/icon_util.h"
+#include "ui/gfx/point.h"
 #include "views/controls/menu/menu_2.h"
 
 StatusIconWin::StatusIconWin(UINT id, HWND window, UINT message)

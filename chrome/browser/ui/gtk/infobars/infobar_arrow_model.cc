@@ -5,11 +5,11 @@
 #include "chrome/browser/ui/gtk/infobars/infobar_arrow_model.h"
 
 #include "chrome/browser/ui/gtk/infobars/infobar_gtk.h"
-#include "gfx/canvas_skia_paint.h"
-#include "gfx/color_utils.h"
-#include "gfx/point.h"
-#include "gfx/skia_utils_gtk.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
+#include "ui/gfx/canvas_skia_paint.h"
+#include "ui/gfx/color_utils.h"
+#include "ui/gfx/point.h"
+#include "ui/gfx/skia_utils_gtk.h"
 
 InfoBarArrowModel::InfoBarArrowModel(Observer* observer)
     : observer_(observer),

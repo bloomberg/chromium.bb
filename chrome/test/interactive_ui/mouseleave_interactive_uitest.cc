@@ -9,9 +9,9 @@
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui/ui_test.h"
 #include "chrome/test/ui_test_utils.h"
-#include "gfx/point.h"
-#include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
+#include "ui/gfx/point.h"
+#include "ui/gfx/rect.h"
 
 namespace {
 

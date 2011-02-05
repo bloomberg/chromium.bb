@@ -12,7 +12,7 @@
 #include "chrome/browser/userfeedback/proto/common.pb.h"
 #include "chrome/browser/userfeedback/proto/extension.pb.h"
 #include "chrome/browser/userfeedback/proto/math.pb.h"
-#include "gfx/rect.h"
+#include "ui/gfx/rect.h"
 
 #if defined(OS_MACOSX)
 #include "base/sys_info.h"

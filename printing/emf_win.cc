@@ -9,11 +9,11 @@
 #include "base/metrics/histogram.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
-#include "gfx/codec/jpeg_codec.h"
-#include "gfx/codec/png_codec.h"
-#include "gfx/gdi_util.h"
-#include "gfx/rect.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/codec/jpeg_codec.h"
+#include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/gdi_util.h"
+#include "ui/gfx/rect.h"
 
 namespace {
 const int kCustomGdiCommentSignature = 0xdeadbabe;

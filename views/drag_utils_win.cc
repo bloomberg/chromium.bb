@@ -9,11 +9,11 @@
 #include <shobjidl.h>
 
 #include "ui/base/dragdrop/os_exchange_data.h"
-#include "gfx/canvas_skia.h"
-#include "gfx/gdi_util.h"
-#include "gfx/skbitmap_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
+#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/gdi_util.h"
+#include "ui/gfx/skbitmap_operations.h"
 
 using ui::OSExchangeData;
 using ui::OSExchangeDataProviderWin;

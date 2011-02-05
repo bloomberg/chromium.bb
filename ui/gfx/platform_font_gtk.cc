@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gfx/platform_font_gtk.h"
+#include "ui/gfx/platform_font_gtk.h"
 
 #include <algorithm>
 #include <fontconfig/fontconfig.h>
@@ -14,11 +14,11 @@
 #include "base/logging.h"
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
-#include "gfx/canvas_skia.h"
-#include "gfx/font.h"
-#include "gfx/gtk_util.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/core/SkPaint.h"
+#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/font.h"
+#include "ui/gfx/gtk_util.h"
 
 namespace {
 

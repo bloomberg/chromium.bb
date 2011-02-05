@@ -25,10 +25,10 @@
 #include "base/threading/thread.h"
 #include "base/time.h"
 #include "chrome/browser/browser_thread.h"
-#include "gfx/size.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
+#include "ui/gfx/size.h"
 
 namespace chromeos {
 

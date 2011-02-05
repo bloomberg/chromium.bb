@@ -4,9 +4,9 @@
 
 #include "printing/image.h"
 
-#include "gfx/gdi_util.h"  // EMF support
-#include "gfx/rect.h"
 #include "skia/ext/platform_device.h"
+#include "ui/gfx/gdi_util.h"  // EMF support
+#include "ui/gfx/rect.h"
 
 namespace {
 

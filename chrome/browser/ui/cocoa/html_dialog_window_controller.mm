@@ -15,9 +15,9 @@
 #import "chrome/browser/ui/cocoa/browser_command_executor.h"
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
 #include "chrome/common/native_web_keyboard_event.h"
-#include "gfx/size.h"
 #include "ipc/ipc_message.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/gfx/size.h"
 
 // Thin bridge that routes notifications to
 // HtmlDialogWindowController's member variables.

@@ -8,8 +8,8 @@
 
 #include "base/basictypes.h"
 #include "base/time.h"
-#include "gfx/point.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/gfx/point.h"
 
 #if defined(OS_LINUX)
 typedef struct _GdkEventKey GdkEventKey;

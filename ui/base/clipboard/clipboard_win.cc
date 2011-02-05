@@ -17,8 +17,8 @@
 #include "base/string_util.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "gfx/size.h"
 #include "ui/base/clipboard/clipboard_util_win.h"
+#include "ui/gfx/size.h"
 
 namespace ui {
 

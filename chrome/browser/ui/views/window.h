@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_WINDOW_H_
 #pragma once
 
-#include "gfx/native_widget_types.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
 class Rect;

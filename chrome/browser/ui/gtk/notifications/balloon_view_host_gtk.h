@@ -7,7 +7,7 @@
 #pragma once
 
 #include "chrome/browser/notifications/balloon_host.h"
-#include "gfx/native_widget_types.h"
+#include "ui/gfx/native_widget_types.h"
 
 class RenderWidgetHostViewGtk;
 

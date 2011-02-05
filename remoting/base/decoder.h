@@ -9,9 +9,9 @@
 
 #include "base/task.h"
 #include "base/scoped_ptr.h"
-#include "gfx/rect.h"
 #include "media/base/video_frame.h"
 #include "remoting/proto/video.pb.h"
+#include "ui/gfx/rect.h"
 
 namespace remoting {
 

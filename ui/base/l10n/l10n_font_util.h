@@ -6,7 +6,7 @@
 #define UI_BASE_L10N_FONT_UTIL_H_
 #pragma once
 
-#include "gfx/size.h"
+#include "ui/gfx/size.h"
 
 namespace gfx {
 class Font;

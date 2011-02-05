@@ -13,8 +13,8 @@
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
-#include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
+#include "ui/gfx/rect.h"
 
 bool WindowProxy::SimulateOSClick(const gfx::Point& click, int flags) {
   if (!is_valid()) return false;

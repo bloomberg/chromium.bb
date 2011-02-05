@@ -8,8 +8,8 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "gfx/native_widget_types.h"
 #include "chrome/browser/ui/view_ids.h"
+#include "ui/gfx/native_widget_types.h"
 
 // ViewIDs are a system that indexes important views in the browser window by a
 // ViewID identifier (integer). This is a useful compatibility for finding a

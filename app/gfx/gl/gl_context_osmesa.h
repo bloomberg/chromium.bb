@@ -7,8 +7,8 @@
 #pragma once
 
 #include "base/scoped_ptr.h"
-#include "gfx/size.h"
 #include "app/gfx/gl/gl_context.h"
+#include "ui/gfx/size.h"
 
 typedef struct osmesa_context *OSMesaContext;
 

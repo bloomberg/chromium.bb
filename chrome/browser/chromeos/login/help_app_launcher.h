@@ -8,7 +8,7 @@
 
 #include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/login_html_dialog.h"
-#include "gfx/native_widget_types.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace chromeos {
 
