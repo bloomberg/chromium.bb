@@ -45,7 +45,8 @@ TEST_F(OptionsUITest, LoadOptionsByURL) {
   AssertIsOptionsPage(tab);
 }
 
-TEST_F(OptionsUITest, CommandOpensOptionsTab) {
+// Flaky, and takes very long to fail. http://crbug.com/64619.
+TEST_F(OptionsUITest, DISABLED_CommandOpensOptionsTab) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
 
@@ -63,17 +64,8 @@ TEST_F(OptionsUITest, CommandOpensOptionsTab) {
   AssertIsOptionsPage(tab);
 }
 
-// TODO(csilv): Investigate why this fails and fix. http://crbug.com/48521
-// Also, crashing on linux/views.
-#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
-#define MAYBE_CommandAgainGoesBackToOptionsTab \
-    DISABLED_CommandAgainGoesBackToOptionsTab
-#else
-#define MAYBE_CommandAgainGoesBackToOptionsTab \
-    FLAKY_CommandAgainGoesBackToOptionsTab
-#endif
-
-TEST_F(OptionsUITest, MAYBE_CommandAgainGoesBackToOptionsTab) {
+// Flaky, and takes very long to fail. http://crbug.com/48521
+TEST_F(OptionsUITest, DISABLED_CommandAgainGoesBackToOptionsTab) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
 
@@ -103,15 +95,8 @@ TEST_F(OptionsUITest, MAYBE_CommandAgainGoesBackToOptionsTab) {
   ASSERT_EQ(2, tab_count);
 }
 
-// TODO(csilv): Investigate why this fails (sometimes) on 10.5 and fix.
-// http://crbug.com/48521. Also, crashing on linux/views.
-#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
-#define MAYBE_TwoCommandsOneTab DISABLED_TwoCommandsOneTab
-#else
-#define MAYBE_TwoCommandsOneTab FLAKY_TwoCommandsOneTab
-#endif
-
-TEST_F(OptionsUITest, MAYBE_TwoCommandsOneTab) {
+// Flaky, and takes very long to fail. http://crbug.com/48521
+TEST_F(OptionsUITest, DISABLED_TwoCommandsOneTab) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
 
