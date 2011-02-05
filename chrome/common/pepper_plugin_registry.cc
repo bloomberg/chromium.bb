@@ -185,7 +185,7 @@ void PepperPluginRegistry::GetInternalPluginInfo(
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableRemoting)) {
     PepperPluginInfo info;
-    info.is_internal;
+    info.is_internal = true;
     info.path = FilePath(FILE_PATH_LITERAL("internal-chromoting"));
     info.mime_types.push_back("pepper-application/x-chromoting");
     info.internal_entry_points.get_interface = remoting::PPP_GetInterface;
