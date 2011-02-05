@@ -64,6 +64,9 @@
 #   'frame_switching_tests',
 #   'implicit_waits_tests',
     'page_loading_tests',
+    # testShouldReturnWhenGettingAUrlThatDoesNotResolve causes the test after
+    # to fail when run in xvfb: crbug.com/72027.
+    '-page_loading_tests.PageLoadingTests.testShouldReturnWhenGettingAUrlThatDoesNotResolve',
     '-page_loading_tests.PageLoadingTests.testShouldBeAbleToNavigateBackInTheBrowserHistory',
     '-page_loading_tests.PageLoadingTests.testShouldBeAbleToNavigateBackInTheBrowserHistoryInPresenceOfIframes',
     '-page_loading_tests.PageLoadingTests.testShouldBeAbleToNavigateForwardsInTheBrowserHistory',
