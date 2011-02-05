@@ -10,3 +10,6 @@
 BUGWK50709 MAC : fast/css/font-weight-1.html = IMAGE+TEXT
 
 BUG_LOISLO MAC DEBUG : svg/text/font-size-below-point-five.svg = TEXT
+BUG_DGLAZKOV MAC : fast/blockflow/Kusa-Makura-background-canvas.html = IMAGE
+BUG_DGLAZKOV MAC : fast/blockflow/japanese-ruby-vertical-lr.html = IMAGE
+BUG_DGLAZKOV MAC : fast/blockflow/japanese-ruby-vertical-rl.html = IMAGE
