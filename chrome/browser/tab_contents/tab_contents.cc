@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/tab_contents/tab_contents.h"
-// DO NOT SUBMIT
+
 #include <cmath>
 
 #include "base/auto_reset.h"
