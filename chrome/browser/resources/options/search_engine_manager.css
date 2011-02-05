@@ -8,9 +8,15 @@
 }
 
 .search-engine-list .name-column {
+  -webkit-box-align: center;
   -webkit-padding-end: 1ex;
   box-sizing: border-box;
+  display: -webkit-box;
   width: 37%;
+}
+
+.search-engine-list .name-column :last-child {
+  -webkit-box-flex: 1;
 }
 
 .search-engine-list .keyword-column {
@@ -30,14 +36,6 @@
 .search-engine-list .default .name-column,
 .search-engine-list .default .keyword-column {
   font-weight: bold;
-}
-
-.search-engine-list .name-column {
-  display: -webkit-box;
-}
-
-.search-engine-list .name-column :last-child {
-  -webkit-box-flex: 1;
 }
 
 /* For temporary Make Default button */
