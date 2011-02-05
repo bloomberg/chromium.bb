@@ -113,6 +113,7 @@ class BasicTest(unittest.TestCase):
     self.assertEquals(9520, launcher.GetPort())
     driver = WebDriver(launcher.GetURL(), 'chrome', 'any')
     driver.quit()
+    launcher.Kill()
 
 
 class SessionTest(unittest.TestCase):

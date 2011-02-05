@@ -193,3 +193,6 @@ class ChromeDriverLauncher:
 
   def GetPort(self):
     return self._port
+
+  def __del__(self):
+    self.Kill()
