@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,11 +23,11 @@ TEST_F(IFrameTest, Crash) {
   NavigateAndVerifyTitle("iframe.html", L"iframe test");
 }
 
-// Flakily crashes on non linux oses: http://crbug.com/70192
 #if defined(OS_LINUX)
-#define MAYBE_InEmptyFrame InEmptyFrame
-#else
+// Flakily crashes on linux: http://crbug.com/70192
 #define MAYBE_InEmptyFrame DISABLED_InEmptyFrame
+#else
+#define MAYBE_InEmptyFrame InEmptyFrame
 #endif
 TEST_F(IFrameTest, MAYBE_InEmptyFrame) {
   NavigateAndVerifyTitle("iframe_in_empty_frame.html", L"iframe test");
