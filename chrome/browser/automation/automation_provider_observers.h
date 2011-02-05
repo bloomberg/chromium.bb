@@ -620,7 +620,7 @@ class InfoBarCountObserver : public NotificationObserver {
 };
 
 #if defined(OS_CHROMEOS)
-// Collects LOGIN_AUTHENTICATION notifications and returns
+// Collects LOGIN_USER_CHANGED notifications and returns
 // whether authentication succeeded to the automation provider.
 class LoginManagerObserver : public NotificationObserver {
  public:
@@ -637,6 +637,29 @@ class LoginManagerObserver : public NotificationObserver {
   IPC::Message* reply_message_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginManagerObserver);
+};
+
+// Collects SCREEN_LOCK_STATE_CHANGED notifications and returns
+// whether authentication succeeded to the automation provider.
+class ScreenLockUnlockObserver : public NotificationObserver {
+ public:
+  // Set lock_screen to true to observe lock screen events,
+  // false for unlock screen events.
+  ScreenLockUnlockObserver(AutomationProvider* automation,
+                           IPC::Message* reply_message,
+                           bool lock_screen);
+
+  // NotificationObserver interface.
+  virtual void Observe(NotificationType type, const NotificationSource& source,
+                       const NotificationDetails& details);
+
+ private:
+  NotificationRegistrar registrar_;
+  AutomationProvider* automation_;
+  IPC::Message* reply_message_;
+  bool lock_screen_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScreenLockUnlockObserver);
 };
 #endif
 

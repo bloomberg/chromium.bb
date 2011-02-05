@@ -51,15 +51,14 @@ void TestingAutomationProvider::Logout(DictionaryValue* args,
 
 void TestingAutomationProvider::ScreenLock(DictionaryValue* args,
                                            IPC::Message* reply_message) {
+  new ScreenLockUnlockObserver(this, reply_message, true);
   chromeos::CrosLibrary::Get()->GetScreenLockLibrary()->
       NotifyScreenLockRequested();
-  AutomationJSONReply(this, reply_message).SendSuccess(NULL);
 }
 
 void TestingAutomationProvider::ScreenUnlock(DictionaryValue* args,
                                              IPC::Message* reply_message) {
+  new ScreenLockUnlockObserver(this, reply_message, false);
   chromeos::CrosLibrary::Get()->GetScreenLockLibrary()->
       NotifyScreenUnlockRequested();
-  AutomationJSONReply(this, reply_message).SendSuccess(NULL);
 }
-

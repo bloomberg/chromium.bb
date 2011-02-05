@@ -1161,6 +1161,31 @@ void LoginManagerObserver::Observe(NotificationType type,
     reply.SendError("Login failure.");
   delete this;
 }
+
+ScreenLockUnlockObserver::ScreenLockUnlockObserver(
+    AutomationProvider* automation,
+    IPC::Message* reply_message,
+    bool lock_screen)
+    : automation_(automation),
+      reply_message_(reply_message),
+      lock_screen_(lock_screen) {
+
+  registrar_.Add(this, NotificationType::SCREEN_LOCK_STATE_CHANGED,
+                 NotificationService::AllSources());
+}
+
+void ScreenLockUnlockObserver::Observe(NotificationType type,
+                                       const NotificationSource& source,
+                                       const NotificationDetails& details) {
+  DCHECK(type == NotificationType::SCREEN_LOCK_STATE_CHANGED);
+  AutomationJSONReply reply(automation_, reply_message_);
+  bool is_screen_locked = *Details<bool>(details).ptr();
+  if (lock_screen_ == is_screen_locked)
+    reply.SendSuccess(NULL);
+  else
+    reply.SendError("Screen lock failure.");
+  delete this;
+}
 #endif
 
 AutomationProviderBookmarkModelObserver::
