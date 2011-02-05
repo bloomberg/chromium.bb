@@ -69,7 +69,7 @@ cr.define('options', function() {
       window.history.replaceState(
           {pageName: page.name}, page.title, '/' + page.name);
     } else if (visiblePage.name != pageName) {
-      this.pushHistoryState_(visiblePage);
+      this.pushHistoryState_();
     }
   };
 
@@ -131,7 +131,8 @@ cr.define('options', function() {
    * @param {Object} page The page to push onto the history stack.
    * @private
    */
-  OptionsPage.pushHistoryState_ = function(page) {
+  OptionsPage.pushHistoryState_ = function() {
+    var page = this.getTopmostVisiblePage();
     window.history.pushState({pageName: page.name}, page.title,
                              '/' + page.name);
   };
@@ -212,7 +213,7 @@ cr.define('options', function() {
     if (topPage && topPage.parentPage)
       topPage.visible = false;
 
-    this.pushHistoryState_(topPage);
+    this.pushHistoryState_();
   };
 
   /**
@@ -226,7 +227,7 @@ cr.define('options', function() {
       topPage = topPage.parentPage;
     }
 
-    this.pushHistoryState_(topPage);
+    this.pushHistoryState_();
   };
 
   /**
