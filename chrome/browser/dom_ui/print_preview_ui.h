@@ -18,6 +18,9 @@ class PrintPreviewUI : public DOMUI {
 
   PrintPreviewUIHTMLSource* html_source();
 
+  // Notify the Web UI renderer that preview data is available.
+  void PreviewDataIsAvailable();
+
  private:
   scoped_refptr<PrintPreviewUIHTMLSource> html_source_;
 

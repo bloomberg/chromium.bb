@@ -28,14 +28,13 @@ PrintPreviewMessageHandler::PrintPreviewMessageHandler(TabContents* owner)
 PrintPreviewMessageHandler::~PrintPreviewMessageHandler() {
 }
 
-TabContents* PrintPreviewMessageHandler::GetOrCreatePrintPreviewTab() {
+TabContents* PrintPreviewMessageHandler::GetPrintPreviewTab() {
   // Get/Create preview tab for initiator tab.
   printing::PrintPreviewTabController* tab_controller =
       printing::PrintPreviewTabController::GetInstance();
   if (!tab_controller)
     return NULL;
-  return tab_controller->GetOrCreatePreviewTab(owner_,
-      owner_->controller().window_id().id());
+  return tab_controller->GetPrintPreviewForTab(owner_);
 }
 
 void PrintPreviewMessageHandler::OnPagesReadyForPreview(
@@ -49,8 +48,8 @@ void PrintPreviewMessageHandler::OnPagesReadyForPreview(
   }
 #endif
 
-  // Get/Create print preview tab.
-  TabContents* print_preview_tab = GetOrCreatePrintPreviewTab();
+  // Get the print preview tab.
+  TabContents* print_preview_tab = GetPrintPreviewTab();
   DCHECK(print_preview_tab);
 
 #if defined(OS_MACOSX)
@@ -58,6 +57,7 @@ void PrintPreviewMessageHandler::OnPagesReadyForPreview(
       static_cast<PrintPreviewUI*>(print_preview_tab->dom_ui());
   print_preview_ui->html_source()->SetPrintPreviewData(
       std::make_pair(shared_buf, params.data_size));
+  print_preview_ui->PreviewDataIsAvailable();
 #endif
 
   scoped_refptr<printing::PrinterQuery> printer_query;

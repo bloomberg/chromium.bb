@@ -27,9 +27,8 @@ class PrintPreviewMessageHandler : public TabContentsObserver {
   virtual bool OnMessageReceived(const IPC::Message& message);
 
  private:
-  // Get the print preview tab associated with |owner_| or create a new print
-  // preview tab if necessary.
-  TabContents* GetOrCreatePrintPreviewTab();
+  // Gets the print preview tab associated with |owner_|.
+  TabContents* GetPrintPreviewTab();
 
   // The TabContents that owns this PrintPreviewMessageHandler.
   TabContents* owner_;

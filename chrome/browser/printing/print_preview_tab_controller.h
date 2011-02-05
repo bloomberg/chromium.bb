@@ -39,6 +39,11 @@ class PrintPreviewTabController
   TabContents* GetOrCreatePreviewTab(
       TabContents* initiator_tab, int browser_window_id);
 
+  // Returns preview tab for |tab|.
+  // Returns |tab| if |tab| is a preview tab.
+  // Returns NULL if no preview tab exists for |tab|.
+  TabContents* GetPrintPreviewForTab(TabContents* tab) const;
+
   // Notification observer implementation.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
@@ -58,11 +63,6 @@ class PrintPreviewTabController
   // Returns initiator tab for |preview_tab|.
   // Returns NULL if no initiator tab exists for |preview_tab|.
   TabContents* GetInitiatorTab(TabContents* preview_tab);
-
-  // Returns preview tab for |tab|.
-  // Returns |tab| if |tab| is a preview tab.
-  // Returns NULL if no preview tab exists for |tab|.
-  TabContents* GetPrintPreviewForTab(TabContents* tab);
 
   // Creates a new print preview tab.
   TabContents* CreatePrintPreviewTab(

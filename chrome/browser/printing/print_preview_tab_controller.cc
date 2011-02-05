@@ -44,6 +44,22 @@ TabContents* PrintPreviewTabController::GetOrCreatePreviewTab(
   return CreatePrintPreviewTab(initiator_tab, browser_window_id);
 }
 
+TabContents* PrintPreviewTabController::GetPrintPreviewForTab(
+    TabContents* tab) const {
+  PrintPreviewTabMap::const_iterator it = preview_tab_map_.find(tab);
+  if (it != preview_tab_map_.end())
+    return tab;
+
+  for (it = preview_tab_map_.begin(); it != preview_tab_map_.end(); ++it) {
+    // If |tab| is an initiator tab.
+    if (tab == it->second) {
+      // Return the associated preview tab.
+      return it->first;
+    }
+  }
+  return NULL;
+}
+
 void PrintPreviewTabController::Observe(NotificationType type,
                                         const NotificationSource& source,
                                         const NotificationDetails& details) {
@@ -135,19 +151,6 @@ TabContents* PrintPreviewTabController::GetInitiatorTab(
   PrintPreviewTabMap::iterator it = preview_tab_map_.find(preview_tab);
   if (it != preview_tab_map_.end())
     return preview_tab_map_[preview_tab];
-  return NULL;
-}
-
-TabContents* PrintPreviewTabController::GetPrintPreviewForTab(
-    TabContents* tab) {
-  PrintPreviewTabMap::iterator it = preview_tab_map_.find(tab);
-  if (it != preview_tab_map_.end())
-    return tab;
-
-  for (it = preview_tab_map_.begin(); it != preview_tab_map_.end(); ++it) {
-    if (it->second == tab)
-      return it->first;
-  }
   return NULL;
 }
 

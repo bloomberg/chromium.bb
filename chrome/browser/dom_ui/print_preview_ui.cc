@@ -4,6 +4,7 @@
 
 #include "chrome/browser/dom_ui/print_preview_ui.h"
 
+#include "base/values.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/dom_ui/print_preview_handler.h"
 #include "chrome/browser/dom_ui/print_preview_ui_html_source.h"
@@ -29,4 +30,9 @@ PrintPreviewUI::~PrintPreviewUI() {
 
 PrintPreviewUIHTMLSource* PrintPreviewUI::html_source() {
   return html_source_.get();
+}
+
+void PrintPreviewUI::PreviewDataIsAvailable() {
+  StringValue dummy_url("chrome://print/print.pdf");
+  CallJavascriptFunction(L"createPDFPlugin", dummy_url);
 }
