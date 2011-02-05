@@ -180,6 +180,7 @@ const char kAutoFillSubPage[] = "autoFillOptions";
 const char kBrowserOptionsSubPage[] =  "browser";
 const char kClearBrowserDataSubPage[] = "clearBrowserDataOverlay";
 const char kContentSettingsSubPage[] = "content";
+const char kContentSettingsExceptionsSubPage[] = "contentExceptions";
 const char kDefaultOptionsSubPage[] =  "";
 const char kImportDataSubPage[] = "importDataOverlay";
 const char kPersonalOptionsSubPage[] =  "personal";

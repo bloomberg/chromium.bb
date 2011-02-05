@@ -177,6 +177,7 @@ extern const char kAutoFillSubPage[];
 extern const char kBrowserOptionsSubPage[];
 extern const char kClearBrowserDataSubPage[];
 extern const char kContentSettingsSubPage[];
+extern const char kContentSettingsExceptionsSubPage[];
 extern const char kDefaultOptionsSubPage[];
 extern const char kImportDataSubPage[];
 extern const char kPersonalOptionsSubPage[];
