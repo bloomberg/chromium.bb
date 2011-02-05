@@ -50,14 +50,6 @@ class PepperPluginRegistry
   ~PepperPluginRegistry();
 
   static const char* kPDFPluginName;
-  static const char* kPDFPluginMimeType;
-  static const char* kPDFPluginExtension;
-  static const char* kPDFPluginDescription;
-
-  static const char* kNaClPluginName;
-  static const char* kNaClPluginMimeType;
-  static const char* kNaClPluginExtension;
-  static const char* kNaClPluginDescription;
 
   static PepperPluginRegistry* GetInstance();
 
@@ -71,9 +63,13 @@ class PepperPluginRegistry
   // access to the plugins before entering the sandbox.
   static void PreloadModules();
 
-  // Returns true if the given plugin is a pepper plugin that should be run
-  // out of process.
-  bool RunOutOfProcessForPlugin(const FilePath& path) const;
+  // Retrieves the information associated with the given plugin path. The
+  // return value will be NULL if there is no such plugin.
+  //
+  // The caller owns the returned pointer.
+  // TODO(brettw) put the ownership semantics back to where they were in
+  // r73916, the current state is a hack to re-land that patch in pieces.
+  PepperPluginInfo* GetInfoForPlugin(const FilePath& path) const;
 
   // Returns an existing loaded module for the given path. It will search for
   // both preloaded in-process or currently active out-of-process plugins

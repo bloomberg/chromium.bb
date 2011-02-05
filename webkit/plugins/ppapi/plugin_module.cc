@@ -360,10 +360,12 @@ PluginModule::EntryPoints::EntryPoints()
 
 // PluginModule ----------------------------------------------------------------
 
-PluginModule::PluginModule(PluginDelegate::ModuleLifetime* lifetime_delegate)
+PluginModule::PluginModule(const std::string& name,
+                           PluginDelegate::ModuleLifetime* lifetime_delegate)
     : lifetime_delegate_(lifetime_delegate),
       callback_tracker_(new CallbackTracker),
-      library_(NULL) {
+      library_(NULL),
+      name_(name) {
   pp_module_ = ResourceTracker::Get()->AddModule(this);
   GetMainThreadMessageLoop();  // Initialize the main thread message loop.
   GetLivePluginSet()->insert(this);

@@ -15,19 +15,20 @@
 #include "chrome/common/chrome_switches.h"
 #include "remoting/client/plugin/pepper_entrypoints.h"
 
+namespace {
+
+const char* kPDFPluginMimeType = "application/pdf";
+const char* kPDFPluginExtension = "pdf";
+const char* kPDFPluginDescription = "Portable Document Format";
+
+const char* kNaClPluginName = "Chrome NaCl";
+const char* kNaClPluginMimeType = "application/x-nacl";
+const char* kNaClPluginExtension = "nexe";
+const char* kNaClPluginDescription = "Native Client Executable";
+
+}  // namespace
+
 const char* PepperPluginRegistry::kPDFPluginName = "Chrome PDF Viewer";
-const char* PepperPluginRegistry::kPDFPluginMimeType = "application/pdf";
-const char* PepperPluginRegistry::kPDFPluginExtension = "pdf";
-const char* PepperPluginRegistry::kPDFPluginDescription =
-    "Portable Document Format";
-
-const char* PepperPluginRegistry::kNaClPluginName = "Chrome NaCl";
-const char* PepperPluginRegistry::kNaClPluginMimeType =
-    "application/x-nacl";
-const char* PepperPluginRegistry::kNaClPluginExtension = "nexe";
-const char* PepperPluginRegistry::kNaClPluginDescription =
-    "Native Client Executable";
-
 
 PepperPluginInfo::PepperPluginInfo()
     : is_internal(false),
@@ -198,7 +199,8 @@ void PepperPluginRegistry::GetInternalPluginInfo(
 #endif
 }
 
-bool PepperPluginRegistry::RunOutOfProcessForPlugin(
+
+PepperPluginInfo* PepperPluginRegistry::GetInfoForPlugin(
     const FilePath& path) const {
   // TODO(brettw) don't recompute this every time. But since this Pepper
   // switch is only for development, it's OK for now.
@@ -206,9 +208,9 @@ bool PepperPluginRegistry::RunOutOfProcessForPlugin(
   GetList(&plugins);
   for (size_t i = 0; i < plugins.size(); ++i) {
     if (path == plugins[i].path)
-      return plugins[i].is_out_of_process;
+      return new PepperPluginInfo(plugins[i]);
   }
-  return false;
+  return NULL;
 }
 
 webkit::ppapi::PluginModule* PepperPluginRegistry::GetModule(
@@ -259,12 +261,11 @@ PepperPluginRegistry::PepperPluginRegistry() {
        ++it) {
     const FilePath& path = it->path;
     scoped_refptr<webkit::ppapi::PluginModule> module(
-        new webkit::ppapi::PluginModule(this));
+        new webkit::ppapi::PluginModule(it->name, this));
     if (!module->InitAsInternalPlugin(it->internal_entry_points)) {
       DLOG(ERROR) << "Failed to load pepper module: " << path.value();
       continue;
     }
-    module->set_name(it->name);
     preloaded_modules_[path] = module;
     AddLiveModule(path, module);
   }
@@ -280,7 +281,7 @@ PepperPluginRegistry::PepperPluginRegistry() {
 
     const FilePath& path = plugins[i].path;
     scoped_refptr<webkit::ppapi::PluginModule> module(
-        new webkit::ppapi::PluginModule(this));
+        new webkit::ppapi::PluginModule(plugins[i].name, this));
     // Must call this before bailing out later since the PluginModule's
     // destructor will call the corresponding Remove in the "continue" case.
     AddLiveModule(path, module);
@@ -288,7 +289,6 @@ PepperPluginRegistry::PepperPluginRegistry() {
       DLOG(ERROR) << "Failed to load pepper module: " << path.value();
       continue;
     }
-    module->set_name(plugins[i].name);
     preloaded_modules_[path] = module;
   }
 }

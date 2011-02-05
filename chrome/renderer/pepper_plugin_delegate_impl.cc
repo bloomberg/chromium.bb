@@ -395,8 +395,11 @@ PepperPluginDelegateImpl::CreatePepperPlugin(const FilePath& path) {
     return module;
 
   // In-process plugins will have always been created up-front to avoid the
-  // sandbox restrictions.
-  if (!PepperPluginRegistry::GetInstance()->RunOutOfProcessForPlugin(path))
+  // sandbox restrictions. So getting here implies that it either doesn't exist
+  // or should be run out of process.
+  scoped_ptr<PepperPluginInfo> info(
+      PepperPluginRegistry::GetInstance()->GetInfoForPlugin(path));
+  if (!info.get() || !info->is_out_of_process)
     return module;  // Return the NULL module.
 
   // Out of process: have the browser start the plugin process for us.
@@ -412,7 +415,8 @@ PepperPluginDelegateImpl::CreatePepperPlugin(const FilePath& path) {
   // Create a new HostDispatcher for the proxying, and hook it to a new
   // PluginModule. Note that AddLiveModule must be called before any early
   // returns since the module's destructor will remove itself.
-  module = new webkit::ppapi::PluginModule(PepperPluginRegistry::GetInstance());
+  module = new webkit::ppapi::PluginModule(info->name,
+                                           PepperPluginRegistry::GetInstance());
   PepperPluginRegistry::GetInstance()->AddLiveModule(path, module);
   scoped_ptr<DispatcherWrapper> dispatcher(new DispatcherWrapper);
   if (!dispatcher->Init(
