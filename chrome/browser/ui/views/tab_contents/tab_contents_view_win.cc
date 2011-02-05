@@ -134,9 +134,7 @@ void TabContentsViewWin::EndDragging() {
                            &TabContentsViewWin::CloseTab);
   }
 
-  if (tab_contents()->render_view_host())
-    tab_contents()->render_view_host()->DragSourceSystemDragEnded();
-
+  tab_contents()->SystemDragEnded();
   drag_handler_ = NULL;
 }
 

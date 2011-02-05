@@ -636,6 +636,10 @@ class TabContents : public PageNavigator,
   // Returns true if underlying TabContentsView should accept drag-n-drop.
   bool ShouldAcceptDragAndDrop() const;
 
+  // A render view-originated drag has ended. Informs the render view host and
+  // tab contents delegate.
+  void SystemDragEnded();
+
   // Indicates if this tab was explicitly closed by the user (control-w, close
   // tab menu item...). This is false for actions that indirectly close the tab,
   // such as closing the window.  The setter is maintained by TabStripModel, and

@@ -74,8 +74,7 @@ void TabContentsDragSource::StartDragging(const WebDropData& drop_data,
   // Guard against re-starting before previous drag completed.
   if (drag_context_) {
     NOTREACHED();
-    if (tab_contents()->render_view_host())
-      tab_contents()->render_view_host()->DragSourceSystemDragEnded();
+    tab_contents()->SystemDragEnded();
     return;
   }
 
@@ -140,8 +139,7 @@ void TabContentsDragSource::StartDragging(const WebDropData& drop_data,
   if (!drag_context_) {
     drag_failed_ = true;
     drop_data_.reset();
-    if (tab_contents()->render_view_host())
-      tab_contents()->render_view_host()->DragSourceSystemDragEnded();
+    tab_contents()->SystemDragEnded();
     return;
   }
 
@@ -358,8 +356,7 @@ void TabContentsDragSource::OnDragEnd(GtkWidget* sender,
     }
   }
 
-  if (tab_contents()->render_view_host())
-    tab_contents()->render_view_host()->DragSourceSystemDragEnded();
+  tab_contents()->SystemDragEnded();
 
   drop_data_.reset();
   drag_context_ = NULL;

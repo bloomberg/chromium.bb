@@ -165,6 +165,9 @@ void TabContentsDelegate::HandleMouseUp() {
 void TabContentsDelegate::HandleMouseActivate() {
 }
 
+void TabContentsDelegate::DragEnded() {
+}
+
 void TabContentsDelegate::ShowRepostFormWarningDialog(
     TabContents* tab_contents) {
 }

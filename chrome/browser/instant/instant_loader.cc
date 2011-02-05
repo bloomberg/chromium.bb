@@ -324,6 +324,12 @@ class InstantLoader::TabContentsDelegateImpl
   virtual void LostCapture() {
     CommitFromMouseReleaseIfNecessary();
   }
+  // If the user drags, we won't get a mouse up (at least on Linux). Commit the
+  // instant result when the drag ends, so that during the drag the page won't
+  // move around.
+  virtual void DragEnded() {
+    CommitFromMouseReleaseIfNecessary();
+  }
   virtual bool CanDownload(int request_id) { return false; }
   virtual void HandleMouseUp() {
     CommitFromMouseReleaseIfNecessary();

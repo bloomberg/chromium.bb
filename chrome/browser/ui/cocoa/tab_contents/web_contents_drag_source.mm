@@ -101,10 +101,10 @@ void FlipPointCoordinates(NSPoint& screenPoint,
 
 - (void)endDragAt:(NSPoint)screenPoint
         operation:(NSDragOperation)operation {
+  [contentsView_ tabContents]->SystemDragEnded();
+
   RenderViewHost* rvh = [contentsView_ tabContents]->render_view_host();
   if (rvh) {
-    rvh->DragSourceSystemDragEnded();
-
     NSPoint localPoint = [contentsView_ convertPoint:screenPoint fromView: nil];
     FlipPointCoordinates(screenPoint, localPoint, contentsView_);
     rvh->DragSourceEndedAt(localPoint.x, localPoint.y,

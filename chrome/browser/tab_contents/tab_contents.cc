@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/tab_contents/tab_contents.h"
-
+// DO NOT SUBMIT
 #include <cmath>
 
 #include "base/auto_reset.h"
@@ -1412,6 +1412,13 @@ bool TabContents::ShouldAcceptDragAndDrop() const {
 #else
   return true;
 #endif
+}
+
+void TabContents::SystemDragEnded() {
+  if (render_view_host())
+    render_view_host()->DragSourceSystemDragEnded();
+  if (delegate())
+    delegate()->DragEnded();
 }
 
 void TabContents::UpdateHistoryForNavigation(

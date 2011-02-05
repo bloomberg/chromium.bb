@@ -271,6 +271,9 @@ class TabContentsDelegate : public AutomationResourceRoutingDelegate {
   virtual void HandleMouseUp();
   virtual void HandleMouseActivate();
 
+  // Render view drag n drop ended.
+  virtual void DragEnded();
+
   // Shows the repost form confirmation dialog box.
   virtual void ShowRepostFormWarningDialog(TabContents* tab_contents);
 

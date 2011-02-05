@@ -255,10 +255,10 @@ void PromiseWriterTask::Run() {
 
 - (void)endDragAt:(NSPoint)screenPoint
         operation:(NSDragOperation)operation {
+  [contentsView_ tabContents]->SystemDragEnded();
+
   RenderViewHost* rvh = [contentsView_ tabContents]->render_view_host();
   if (rvh) {
-    rvh->DragSourceSystemDragEnded();
-
     // Convert |screenPoint| to view coordinates and flip it.
     NSPoint localPoint = NSMakePoint(0, 0);
     if ([contentsView_ window])
