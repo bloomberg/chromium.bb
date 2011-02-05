@@ -17,19 +17,11 @@
 #include "chrome/common/pref_names.h"
 #include "net/http/http_response_headers.h"
 
-#define DISABLED_REQUEST_URL "http://disabled"
-
-#if defined(GOOGLE_CHROME_BUILD)
 #define AUTO_FILL_QUERY_SERVER_REQUEST_URL \
     "http://toolbarqueries.clients.google.com:80/tbproxy/af/query"
 #define AUTO_FILL_UPLOAD_SERVER_REQUEST_URL \
     "http://toolbarqueries.clients.google.com:80/tbproxy/af/upload"
 #define AUTO_FILL_QUERY_SERVER_NAME_START_IN_HEADER "GFE/"
-#else
-#define AUTO_FILL_QUERY_SERVER_REQUEST_URL DISABLED_REQUEST_URL
-#define AUTO_FILL_UPLOAD_SERVER_REQUEST_URL DISABLED_REQUEST_URL
-#define AUTO_FILL_QUERY_SERVER_NAME_START_IN_HEADER "SOMESERVER/"
-#endif
 
 namespace {
 const size_t kMaxFormCacheSize = 16;
@@ -48,8 +40,7 @@ AutoFillDownloadManager::AutoFillDownloadManager(Profile* profile)
       next_upload_request_(base::Time::Now()),
       positive_upload_rate_(0),
       negative_upload_rate_(0),
-      fetcher_id_for_unittest_(0),
-      is_testing_(false) {
+      fetcher_id_for_unittest_(0) {
   // |profile_| could be NULL in some unit-tests.
   if (profile_) {
     PrefService* preferences = profile_->GetPrefs();
@@ -187,11 +178,6 @@ bool AutoFillDownloadManager::StartRequest(
     request_url = AUTO_FILL_QUERY_SERVER_REQUEST_URL;
   else
     request_url = AUTO_FILL_UPLOAD_SERVER_REQUEST_URL;
-
-  if (!request_url.compare(DISABLED_REQUEST_URL) && !is_testing_) {
-    // We have it disabled - return true as if it succeeded, but do nothing.
-    return true;
-  }
 
   // Id is ignored for regular chrome, in unit test id's for fake fetcher
   // factory will be 0, 1, 2, ...

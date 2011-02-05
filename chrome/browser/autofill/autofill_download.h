@@ -162,7 +162,6 @@ class AutoFillDownloadManager : public URLFetcher::Delegate {
 
   // Needed for unit-test.
   int fetcher_id_for_unittest_;
-  bool is_testing_;
 };
 
 #endif  // CHROME_BROWSER_AUTOFILL_AUTOFILL_DOWNLOAD_H_

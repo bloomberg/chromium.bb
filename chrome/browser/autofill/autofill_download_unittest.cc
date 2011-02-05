@@ -46,8 +46,6 @@ class AutoFillDownloadTestHelper : public AutoFillDownloadManager::Observer {
   AutoFillDownloadTestHelper()
       : download_manager(&profile) {
     download_manager.SetObserver(this);
-    // For chromium builds forces Start*Request to actually execute.
-    download_manager.is_testing_ = true;
   }
   ~AutoFillDownloadTestHelper() {
     download_manager.SetObserver(NULL);
