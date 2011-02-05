@@ -78,18 +78,18 @@ void InitCallbacks(struct mg_context* ctx,
                    base::WaitableEvent* shutdown_event) {
   mg_set_uri_callback(ctx, "/shutdown", &Shutdown, shutdown_event);
 
-  SetCallback<CreateSession>(ctx,   "/session");
-  SetCallback<BackCommand>(ctx,     "/session/*/back");
-  SetCallback<ExecuteCommand>(ctx,  "/session/*/execute");
-  SetCallback<ForwardCommand>(ctx,  "/session/*/forward");
-  SetCallback<RefreshCommand>(ctx,  "/session/*/refresh");
-  SetCallback<SourceCommand>(ctx,   "/session/*/source");
-  SetCallback<TitleCommand>(ctx,    "/session/*/title");
-  SetCallback<URLCommand>(ctx,      "/session/*/url");
-  SetCallback<SpeedCommand>(ctx,    "/session/*/speed");
+  SetCallback<CreateSession>(ctx,       "/session");
+  SetCallback<BackCommand>(ctx,         "/session/*/back");
+  SetCallback<ExecuteCommand>(ctx,      "/session/*/execute");
+  SetCallback<ForwardCommand>(ctx,      "/session/*/forward");
+  SetCallback<RefreshCommand>(ctx,      "/session/*/refresh");
+  SetCallback<SourceCommand>(ctx,       "/session/*/source");
+  SetCallback<TitleCommand>(ctx,        "/session/*/title");
+  SetCallback<URLCommand>(ctx,          "/session/*/url");
+  SetCallback<SpeedCommand>(ctx,        "/session/*/speed");
+  SetCallback<ImplicitWaitCommand>(ctx, "/session/*/timeouts/implicit_wait");
 
   // WebElement commands
-  SetCallback<ImplicitWaitCommand>(ctx,     "/session/*/timeouts/implicit_wait");
   SetCallback<FindOneElementCommand>(ctx,   "/session/*/element");
   SetCallback<FindManyElementsCommand>(ctx, "/session/*/elements");
   SetCallback<FindOneElementCommand>(ctx,   "/session/*/element/*/element");
@@ -127,19 +127,8 @@ int main(int argc, char *argv[]) {
   struct mg_context *ctx;
   base::AtExitManager exit;
   base::WaitableEvent shutdown_event(false, false);
-#ifdef OS_POSIX
-  CommandLine cmd_line = CommandLine(argc, argv);
-#elif OS_WIN
-  std::string c;
-
-  for (int i = 0; i < argc; ++i) {
-    c += std::string(argv[i]);
-  }
-  CommandLine& cmd_line = CommandLine::FromString(ASCIIToWide(c));
-#endif
-
-  // Init the commandline singleton from the env.
-  CommandLine::Init(0, NULL);
+  CommandLine::Init(argc, argv);
+  CommandLine* cmd_line = CommandLine::ForCurrentProcess();
 
 #if OS_POSIX
   signal(SIGPIPE, SIG_IGN);
@@ -155,12 +144,12 @@ int main(int argc, char *argv[]) {
   // Parse command line flags.
   std::string port = "9515";
   std::string root;
-  if (cmd_line.HasSwitch("port"))
-    port = cmd_line.GetSwitchValueASCII("port");
+  if (cmd_line->HasSwitch("port"))
+    port = cmd_line->GetSwitchValueASCII("port");
   // By default, mongoose serves files from the current working directory. The
   // 'root' flag allows the user to specify a different location to serve from.
-  if (cmd_line.HasSwitch("root"))
-    root = cmd_line.GetSwitchValueASCII("root");
+  if (cmd_line->HasSwitch("root"))
+    root = cmd_line->GetSwitchValueASCII("root");
 
   VLOG(1) << "Using port: " << port;
   webdriver::SessionManager* session = webdriver::SessionManager::GetInstance();

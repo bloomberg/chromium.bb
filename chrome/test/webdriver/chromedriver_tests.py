@@ -12,7 +12,6 @@ it to the appropriate place in the WebDriver tree instead.
 
 import platform
 import os
-import simplejson as json
 import sys
 import unittest
 import urllib2
@@ -22,7 +21,10 @@ from chromedriver_launcher import ChromeDriverLauncher
 import chromedriver_paths
 from gtest_text_test_runner import GTestTextTestRunner
 
+sys.path += [chromedriver_paths.SRC_THIRD_PARTY]
 sys.path += [chromedriver_paths.PYTHON_BINDINGS]
+
+import simplejson as json
 
 from selenium.webdriver.remote.webdriver import WebDriver
 

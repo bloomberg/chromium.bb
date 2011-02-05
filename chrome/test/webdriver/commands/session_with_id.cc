@@ -21,14 +21,14 @@ void SessionWithID::ExecuteGet(Response* const response) {
   temp_value->SetString(std::string("version"),
                         std::string(chrome::kChromeVersion));
 
-#ifdef OS_MACOSX
-  temp_value->SetString(std::string("platform"), std::string("mac"));
-#elif OS_WIN32
+#if defined(OS_WIN)
   temp_value->SetString(std::string("platform"), std::string("windows"));
-#elif OS_LINUX && !OS_CHROMEOS
-  temp_value->SetString(std::string("platform"), std::string("linux"));
-#elif OS_CHROMEOS
+#elif defined(OS_MACOSX)
+  temp_value->SetString(std::string("platform"), std::string("mac"));
+#elif defined(OS_CHROMEOS)
   temp_value->SetString(std::string("platform"), std::string("chromeos"));
+#elif defined(OS_LINUX)
+  temp_value->SetString(std::string("platform"), std::string("linux"));
 #else
   temp_value->SetString(std::string("platform"), std::string("unknown"));
 #endif

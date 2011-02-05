@@ -8,11 +8,11 @@ import os
 
 
 def _SetupPaths():
-  global PYTHON_BINDINGS, WEBDRIVER_TEST_DATA
+  global SRC_THIRD_PARTY, PYTHON_BINDINGS, WEBDRIVER_TEST_DATA
   start_dir = os.path.abspath(os.path.dirname(__file__))
   J = os.path.join
-  webdriver = J(start_dir, os.pardir, os.pardir, os.pardir,
-                'third_party', 'webdriver')
+  SRC_THIRD_PARTY = J(start_dir, os.pardir, os.pardir, os.pardir, 'third_party')
+  webdriver = J(SRC_THIRD_PARTY, 'webdriver')
   PYTHON_BINDINGS = J(webdriver, 'python')
   WEBDRIVER_TEST_DATA = J(webdriver, 'test_data')
 
