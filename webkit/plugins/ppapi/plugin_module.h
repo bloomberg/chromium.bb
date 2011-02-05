@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,6 @@
 
 #include <map>
 #include <set>
-#include <string>
 
 #include "base/basictypes.h"
 #include "base/native_library.h"
@@ -72,8 +71,7 @@ class PluginModule : public base::RefCounted<PluginModule>,
   // The module lifetime delegate is a non-owning pointer that must outlive
   // all plugin modules. In practice it will be a global singleton that
   // tracks which modules are alive.
-  PluginModule(const std::string& name,
-               PluginDelegate::ModuleLifetime* lifetime_delegate);
+  PluginModule(PluginDelegate::ModuleLifetime* lifetime_delegate);
 
   ~PluginModule();
 
@@ -100,6 +98,7 @@ class PluginModule : public base::RefCounted<PluginModule>,
   // proxy needs this information to set itself up properly).
   PP_Module pp_module() const { return pp_module_; }
 
+  void set_name(const std::string& name) { name_ = name; }
   const std::string& name() const { return name_; }
 
   PluginInstance* CreateInstance(PluginDelegate* delegate);
@@ -153,7 +152,7 @@ class PluginModule : public base::RefCounted<PluginModule>,
   EntryPoints entry_points_;
 
   // The name of the module.
-  const std::string name_;
+  std::string name_;
 
   // Non-owning pointers to all instances associated with this module. When
   // there are no more instances, this object should be deleted.

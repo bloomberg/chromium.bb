@@ -87,7 +87,7 @@ void PpapiUnittest::SetUp() {
   delegate_.reset(new MockPluginDelegate);
 
   // Initialize the mock module.
-  module_ = new PluginModule("Mock plugin", this);
+  module_ = new PluginModule(this);
   PluginModule::EntryPoints entry_points;
   entry_points.get_interface = &MockGetInterface;
   entry_points.initialize_module = &MockInitializeModule;

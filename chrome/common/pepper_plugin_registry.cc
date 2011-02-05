@@ -15,90 +15,68 @@
 #include "chrome/common/chrome_switches.h"
 #include "remoting/client/plugin/pepper_entrypoints.h"
 
-namespace {
+const char* PepperPluginRegistry::kPDFPluginName = "Chrome PDF Viewer";
+const char* PepperPluginRegistry::kPDFPluginMimeType = "application/pdf";
+const char* PepperPluginRegistry::kPDFPluginExtension = "pdf";
+const char* PepperPluginRegistry::kPDFPluginDescription =
+    "Portable Document Format";
 
-const char* kPDFPluginName = "Chrome PDF Viewer";
-const char* kPDFPluginMimeType = "application/pdf";
-const char* kPDFPluginExtension = "pdf";
-const char* kPDFPluginDescription = "Portable Document Format";
+const char* PepperPluginRegistry::kNaClPluginName = "Chrome NaCl";
+const char* PepperPluginRegistry::kNaClPluginMimeType =
+    "application/x-nacl";
+const char* PepperPluginRegistry::kNaClPluginExtension = "nexe";
+const char* PepperPluginRegistry::kNaClPluginDescription =
+    "Native Client Executable";
 
-const char* kNaClPluginName = "Chrome NaCl";
-const char* kNaClPluginMimeType = "application/x-nacl";
-const char* kNaClPluginExtension = "nexe";
-const char* kNaClPluginDescription = "Native Client Executable";
 
-#if defined(ENABLE_REMOTING)
-const char* kRemotingPluginMimeType = "pepper-application/x-chromoting";
-#endif
-
-// Appends the known built-in plugins to the given vector. Some built-in
-// plugins are "internal" which means they are compiled into the Chrome binary,
-// and some are extra shared libraries distributed with the browser (these are
-// not marked internal, aside from being automatically registered, they're just
-// regular plugins).
-void ComputeBuiltInPlugins(std::vector<PepperPluginInfo>* plugins) {
-  // PDF.
-  //
-  // Once we're sandboxed, we can't know if the PDF plugin is available or not;
-  // but (on Linux) this function is always called once before we're sandboxed.
-  // So the first time through test if the file is available and then skip the
-  // check on subsequent calls if yes.
-  static bool skip_pdf_file_check = false;
-  FilePath path;
-  if (PathService::Get(chrome::FILE_PDF_PLUGIN, &path)) {
-    if (skip_pdf_file_check || file_util::PathExists(path)) {
-      PepperPluginInfo pdf;
-      pdf.path = path;
-      pdf.name = kPDFPluginName;
-      pdf.mime_types.push_back(kPDFPluginMimeType);
-      pdf.file_extensions = kPDFPluginExtension;
-      pdf.type_descriptions = kPDFPluginDescription;
-      plugins->push_back(pdf);
-
-      skip_pdf_file_check = true;
-    }
-  }
-
-  // Native client.
-  //
-  // Verify that we enable nacl on the command line. The name of the switch
-  // varies between the browser and renderer process.
-  if (PathService::Get(chrome::FILE_NACL_PLUGIN, &path) &&
-      file_util::PathExists(path)) {
-    PepperPluginInfo nacl;
-    nacl.path = path;
-    nacl.name = kNaClPluginName;
-    nacl.mime_types.push_back(kNaClPluginMimeType);
-
-    // TODO(bbudge) Remove this mime type after NaCl tree has been updated.
-    const char* kNaClPluginOldMimeType = "application/x-ppapi-nacl-srpc";
-    nacl.mime_types.push_back(kNaClPluginOldMimeType);
-
-    nacl.file_extensions = kNaClPluginExtension;
-    nacl.type_descriptions = kNaClPluginDescription;
-    plugins->push_back(nacl);
-  }
-
-  // Remoting.
-#if defined(ENABLE_REMOTING)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableRemoting)) {
-    PepperPluginInfo info;
-    info.is_internal = true;
-    info.path = FilePath(FILE_PATH_LITERAL("internal-chromoting"));
-    info.mime_types.push_back(kRemotingPluginMimeType);
-    info.internal_entry_points.get_interface = remoting::PPP_GetInterface;
-    info.internal_entry_points.initialize_module =
-        remoting::PPP_InitializeModule;
-    info.internal_entry_points.shutdown_module = remoting::PPP_ShutdownModule;
-
-    plugins->push_back(info);
-  }
-#endif
+PepperPluginInfo::PepperPluginInfo()
+    : is_internal(false),
+      is_out_of_process(false) {
 }
 
-// Appends any plugins from the command line to the given vector.
-void ComputePluginsFromCommandLine(std::vector<PepperPluginInfo>* plugins) {
+PepperPluginInfo::~PepperPluginInfo() {}
+
+// static
+PepperPluginRegistry* PepperPluginRegistry::GetInstance() {
+  static PepperPluginRegistry* registry = NULL;
+  // This object leaks.  It is a temporary hack to work around a crash.
+  // http://code.google.com/p/chromium/issues/detail?id=63234
+  if (!registry)
+    registry = new PepperPluginRegistry;
+  return registry;
+}
+
+// static
+void PepperPluginRegistry::GetList(std::vector<PepperPluginInfo>* plugins) {
+  InternalPluginInfoList internal_plugin_info;
+  GetInternalPluginInfo(&internal_plugin_info);
+  for (InternalPluginInfoList::const_iterator it =
+         internal_plugin_info.begin();
+       it != internal_plugin_info.end();
+       ++it) {
+    plugins->push_back(*it);
+  }
+
+  GetPluginInfoFromSwitch(plugins);
+  GetExtraPlugins(plugins);
+}
+
+// static
+void PepperPluginRegistry::PreloadModules() {
+  std::vector<PepperPluginInfo> plugins;
+  GetList(&plugins);
+  for (size_t i = 0; i < plugins.size(); ++i) {
+    if (!plugins[i].is_internal && !plugins[i].is_out_of_process) {
+      base::NativeLibrary library = base::LoadNativeLibrary(plugins[i].path);
+      LOG_IF(WARNING, !library) << "Unable to load plugin "
+                                << plugins[i].path.value();
+    }
+  }
+}
+
+// static
+void PepperPluginRegistry::GetPluginInfoFromSwitch(
+    std::vector<PepperPluginInfo>* plugins) {
   const std::string value =
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kRegisterPepperPlugins);
@@ -149,56 +127,103 @@ void ComputePluginsFromCommandLine(std::vector<PepperPluginInfo>* plugins) {
   }
 }
 
-}  // namespace
-
-const char* PepperPluginRegistry::kPDFPluginName = ::kPDFPluginName;
-
-PepperPluginInfo::PepperPluginInfo()
-    : is_internal(false),
-      is_out_of_process(false) {
-}
-
-PepperPluginInfo::~PepperPluginInfo() {}
-
 // static
-PepperPluginRegistry* PepperPluginRegistry::GetInstance() {
-  static PepperPluginRegistry* registry = NULL;
-  // This object leaks.  It is a temporary hack to work around a crash.
-  // http://code.google.com/p/chromium/issues/detail?id=63234
-  if (!registry)
-    registry = new PepperPluginRegistry;
-  return registry;
-}
+void PepperPluginRegistry::GetExtraPlugins(
+    std::vector<PepperPluginInfo>* plugins) {
+  // Once we're sandboxed, we can't know if the PDF plugin is
+  // available or not; but (on Linux) this function is always called
+  // once before we're sandboxed.  So the first time through test if
+  // the file is available and then skip the check on subsequent calls
+  // if yes.
+  static bool skip_pdf_file_check = false;
+  FilePath path;
+  if (PathService::Get(chrome::FILE_PDF_PLUGIN, &path)) {
+    if (skip_pdf_file_check || file_util::PathExists(path)) {
+      PepperPluginInfo pdf;
+      pdf.path = path;
+      pdf.name = kPDFPluginName;
+      pdf.mime_types.push_back(kPDFPluginMimeType);
+      pdf.file_extensions = kPDFPluginExtension;
+      pdf.type_descriptions = kPDFPluginDescription;
+      plugins->push_back(pdf);
 
-// static
-void PepperPluginRegistry::ComputeList(std::vector<PepperPluginInfo>* plugins) {
-  ComputeBuiltInPlugins(plugins);
-  ComputePluginsFromCommandLine(plugins);
-}
+      skip_pdf_file_check = true;
+    }
+  }
 
-// static
-void PepperPluginRegistry::PreloadModules() {
-  std::vector<PepperPluginInfo> plugins;
-  ComputeList(&plugins);
-  for (size_t i = 0; i < plugins.size(); ++i) {
-    if (!plugins[i].is_internal && !plugins[i].is_out_of_process) {
-      base::NativeLibrary library = base::LoadNativeLibrary(plugins[i].path);
-      LOG_IF(WARNING, !library) << "Unable to load plugin "
-                                << plugins[i].path.value();
+  static bool skip_nacl_file_check = false;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableNaCl)
+      && PathService::Get(chrome::FILE_NACL_PLUGIN, &path)) {
+    if (skip_nacl_file_check || file_util::PathExists(path)) {
+      PepperPluginInfo nacl;
+      nacl.path = path;
+      nacl.name = kNaClPluginName;
+      nacl.mime_types.push_back(kNaClPluginMimeType);
+
+      // TODO(bbudge) Remove this mime type after NaCl tree has been updated.
+      const char* kNaClPluginOldMimeType =
+          "application/x-ppapi-nacl-srpc";
+      nacl.mime_types.push_back(kNaClPluginOldMimeType);
+
+      nacl.file_extensions = kNaClPluginExtension;
+      nacl.type_descriptions = kNaClPluginDescription;
+      plugins->push_back(nacl);
+
+      skip_nacl_file_check = true;
     }
   }
 }
 
-const PepperPluginInfo* PepperPluginRegistry::GetInfoForPlugin(
-    const FilePath& path) const {
-  for (size_t i = 0; i < plugin_list_.size(); ++i) {
-    if (path == plugin_list_[i].path)
-      return &plugin_list_[i];
-  }
-  return NULL;
+PepperPluginRegistry::InternalPluginInfo::InternalPluginInfo() {
+  is_internal = true;
 }
 
-webkit::ppapi::PluginModule* PepperPluginRegistry::GetLiveModule(
+// static
+void PepperPluginRegistry::GetInternalPluginInfo(
+    InternalPluginInfoList* plugin_info) {
+  // Currently, to centralize the internal plugin registration logic, we
+  // hardcode the list of plugins, mimetypes, and registration information
+  // in this function.  This is gross, but because the GetList() function is
+  // called from both the renderer and browser the other option is to force a
+  // special register function for each plugin to be called by both
+  // RendererMain() and BrowserMain().  This seemed like the better tradeoff.
+  //
+  // TODO(ajwong): Think up a better way to maintain the plugin registration
+  // information. Perhaps by construction of a singly linked list of
+  // plugin initializers that is built with static initializers?
+
+#if defined(ENABLE_REMOTING)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableRemoting)) {
+    InternalPluginInfo info;
+    // Add the chromoting plugin.
+    DCHECK(info.is_internal);
+    info.path =
+        FilePath(FILE_PATH_LITERAL("internal-chromoting"));
+    info.mime_types.push_back("pepper-application/x-chromoting");
+    info.entry_points.get_interface = remoting::PPP_GetInterface;
+    info.entry_points.initialize_module = remoting::PPP_InitializeModule;
+    info.entry_points.shutdown_module = remoting::PPP_ShutdownModule;
+
+    plugin_info->push_back(info);
+  }
+#endif
+}
+
+bool PepperPluginRegistry::RunOutOfProcessForPlugin(
+    const FilePath& path) const {
+  // TODO(brettw) don't recompute this every time. But since this Pepper
+  // switch is only for development, it's OK for now.
+  std::vector<PepperPluginInfo> plugins;
+  GetList(&plugins);
+  for (size_t i = 0; i < plugins.size(); ++i) {
+    if (path == plugins[i].path)
+      return plugins[i].is_out_of_process;
+  }
+  return false;
+}
+
+webkit::ppapi::PluginModule* PepperPluginRegistry::GetModule(
     const FilePath& path) {
   NonOwningModuleMap::iterator it = live_modules_.find(path);
   if (it == live_modules_.end())
@@ -236,32 +261,46 @@ PepperPluginRegistry::~PepperPluginRegistry() {
 }
 
 PepperPluginRegistry::PepperPluginRegistry() {
-  ComputeList(&plugin_list_);
+  InternalPluginInfoList internal_plugin_info;
+  GetInternalPluginInfo(&internal_plugin_info);
 
-  // Note that in each case, AddLiveModule must be called before completing
-  // initialization. If we bail out (in the continue clauses) before saving
-  // the initialized module, it will still try to unregister itself in its
-  // destructor.
-  for (size_t i = 0; i < plugin_list_.size(); i++) {
-    const PepperPluginInfo& current = plugin_list_[i];
-    if (current.is_out_of_process)
-      continue;  // Out of process plugins need no special pre-initialization.
-
-    scoped_refptr<webkit::ppapi::PluginModule> module =
-        new webkit::ppapi::PluginModule(current.name, this);
-    AddLiveModule(current.path, module);
-    if (current.is_internal) {
-      if (!module->InitAsInternalPlugin(current.internal_entry_points)) {
-        DLOG(ERROR) << "Failed to load pepper module: " << current.path.value();
-        continue;
-      }
-    } else {
-      // Preload all external plugins we're not running out of process.
-      if (!module->InitAsLibrary(current.path)) {
-        DLOG(ERROR) << "Failed to load pepper module: " << current.path.value();
-        continue;
-      }
+  // Register modules for these suckers.
+  for (InternalPluginInfoList::const_iterator it =
+         internal_plugin_info.begin();
+       it != internal_plugin_info.end();
+       ++it) {
+    const FilePath& path = it->path;
+    scoped_refptr<webkit::ppapi::PluginModule> module(
+        new webkit::ppapi::PluginModule(this));
+    if (!module->InitAsInternalPlugin(it->entry_points)) {
+      DLOG(ERROR) << "Failed to load pepper module: " << path.value();
+      continue;
     }
-    preloaded_modules_[current.path] = module;
+    module->set_name(it->name);
+    preloaded_modules_[path] = module;
+    AddLiveModule(path, module);
+  }
+
+  // Add the modules specified on the command line last so that they can
+  // override the internal plugins.
+  std::vector<PepperPluginInfo> plugins;
+  GetPluginInfoFromSwitch(&plugins);
+  GetExtraPlugins(&plugins);
+  for (size_t i = 0; i < plugins.size(); ++i) {
+    if (plugins[i].is_out_of_process)
+      continue;  // Only preload in-process plugins.
+
+    const FilePath& path = plugins[i].path;
+    scoped_refptr<webkit::ppapi::PluginModule> module(
+        new webkit::ppapi::PluginModule(this));
+    // Must call this before bailing out later since the PluginModule's
+    // destructor will call the corresponding Remove in the "continue" case.
+    AddLiveModule(path, module);
+    if (!module->InitAsLibrary(path)) {
+      DLOG(ERROR) << "Failed to load pepper module: " << path.value();
+      continue;
+    }
+    module->set_name(plugins[i].name);
+    preloaded_modules_[path] = module;
   }
 }
