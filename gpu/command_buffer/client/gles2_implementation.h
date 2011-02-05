@@ -18,8 +18,6 @@
 #include "../client/gles2_cmd_helper.h"
 #include "../client/ring_buffer.h"
 
-#define GLES2_SUPPORT_CLIENT_SIDE_BUFFERS 1
-
 // TODO(gman): replace with logging code expansion.
 #define GPU_CLIENT_LOG(args)
 
@@ -94,67 +92,13 @@ class GLES2Implementation {
   // this file instead of having to edit some template or the code generator.
   #include "../client/gles2_implementation_autogen.h"
 
-  #if defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)
-    void BindBuffer(GLenum target, GLuint buffer);
-    void DeleteBuffers(GLsizei n, const GLuint* buffers);
-    void DisableVertexAttribArray(GLuint index);
-    void DrawArrays(GLenum mode, GLint first, GLsizei count);
-    void EnableVertexAttribArray(GLuint index);
-    void GetVertexAttribfv(GLuint index, GLenum pname, GLfloat* params);
-    void GetVertexAttribiv(GLuint index, GLenum pname, GLint* params);
-  #else
-    void BindBuffer(GLenum target, GLuint buffer) {
-      if (IsReservedId(buffer)) {
-        SetGLError(GL_INVALID_OPERATION, "glBindBuffer: reserved buffer id");
-        return;
-      }
-      if (buffer != 0) {
-        id_allocator_.MarkAsUsed(buffer);
-      }
-      helper_->BindBuffer(target, buffer);
-    }
-
-    void DeleteBuffers(GLsizei n, const GLuint* buffers) {
-      FreeIds(n, buffers);
-      helper_->DeleteBuffersImmediate(n, buffers);
-    }
-
-    void DisableVertexAttribArray(GLuint index) {
-      helper_->DisableVertexAttribArray(index);
-    }
-
-    void DrawArrays(GLenum mode, GLint first, GLsizei count) {
-      if (count < 0) {
-        SetGLError(GL_INVALID_VALUE, "glDrawArrays: count < 0");
-        return;
-      }
-      helper_->DrawArrays(mode, first, count);
-    }
-
-    void EnableVertexAttribArray(GLuint index) {
-      helper_->EnableVertexAttribArray(index);
-    }
-
-    void GetVertexAttribfv(GLuint index, GLenum pname, GLfloat* params) {
-      typedef GetVertexAttribfv::Result Result;
-      Result* result = GetResultAs<Result*>();
-      result->SetNumResults(0);
-      helper_->GetVertexAttribfv(
-          index, pname, result_shm_id(), result_shm_offset());
-      WaitForCmd();
-      result->CopyResult(params);
-    }
-
-    void GetVertexAttribiv(GLuint index, GLenum pname, GLint* params) {
-      typedef GetVertexAttribiv::Result Result;
-      Result* result = GetResultAs<Result*>();
-      result->SetNumResults(0);
-      helper_->GetVertexAttribiv(
-          index, pname, result_shm_id(), result_shm_offset());
-      WaitForCmd();
-      result->CopyResult(params);
-    }
-  #endif
+  void BindBuffer(GLenum target, GLuint buffer);
+  void DeleteBuffers(GLsizei n, const GLuint* buffers);
+  void DisableVertexAttribArray(GLuint index);
+  void DrawArrays(GLenum mode, GLint first, GLsizei count);
+  void EnableVertexAttribArray(GLuint index);
+  void GetVertexAttribfv(GLuint index, GLenum pname, GLfloat* params);
+  void GetVertexAttribiv(GLuint index, GLenum pname, GLint* params);
 
   GLuint MakeTextureId() {
     GLuint id;
@@ -329,14 +273,12 @@ class GLES2Implementation {
   bool IsRenderbufferReservedId(GLuint id) { return false; }
   bool IsTextureReservedId(GLuint id) { return false; }
 
-#if defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)
   // Helper for GetVertexAttrib
   bool GetVertexAttribHelper(GLuint index, GLenum pname, uint32* param);
 
   // Asks the service for the max index in an element array buffer.
   GLsizei GetMaxIndexInElementArrayBuffer(
       GLuint buffer_id, GLsizei count, GLenum type, GLuint offset);
-#endif
 
   GLES2Util util_;
   GLES2CmdHelper* helper_;
@@ -359,7 +301,6 @@ class GLES2Implementation {
   // unpack alignment as last set by glPixelStorei
   GLint unpack_alignment_;
 
-#if defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)
   // The currently bound array buffer.
   GLuint bound_array_buffer_id_;
 
@@ -375,7 +316,6 @@ class GLES2Implementation {
   scoped_ptr<ClientSideBufferHelper> client_side_buffer_helper_;
 
   GLuint reserved_ids_[2];
-#endif
 
   // Current GL error bits.
   uint32 error_bits_;

@@ -10,18 +10,16 @@
 #include "../common/gles2_cmd_utils.h"
 #include "../common/id_allocator.h"
 
+#if defined(__native_client__) && !defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
+#define GLES2_SUPPORT_CLIENT_SIDE_ARRAYS
+#endif
+
 namespace gpu {
 namespace gles2 {
 
 // A 32-bit and 64-bit compatible way of converting a pointer to a GLuint.
 static GLuint ToGLuint(const void* ptr) {
   return static_cast<GLuint>(reinterpret_cast<size_t>(ptr));
-}
-
-#if defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)
-
-static GLsizei RoundUpToMultipleOf4(GLsizei size) {
-  return (size + 3) & ~3;
 }
 
 // An id handler for non-shared ids.
@@ -116,6 +114,10 @@ class SharedIdHandler : public IdHandlerInterface {
   GLES2Implementation* gles2_;
   id_namespaces::IdNamespaces id_namespace_;
 };
+
+static GLsizei RoundUpToMultipleOf4(GLsizei size) {
+  return (size + 3) & ~3;
+}
 
 // This class tracks VertexAttribPointers and helps emulate client side buffers.
 //
@@ -413,9 +415,6 @@ class ClientSideBufferHelper {
   DISALLOW_COPY_AND_ASSIGN(ClientSideBufferHelper);
 };
 
-#endif  // defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)
-
-
 #if !defined(_MSC_VER)
 const size_t GLES2Implementation::kMaxSizeOfSimpleResult;
 #endif
@@ -439,12 +438,10 @@ GLES2Implementation::GLES2Implementation(
       transfer_buffer_id_(transfer_buffer_id),
       pack_alignment_(4),
       unpack_alignment_(4),
-#if defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)
       bound_array_buffer_id_(0),
       bound_element_array_buffer_id_(0),
       client_side_array_id_(0),
       client_side_element_array_id_(0),
-#endif
       error_bits_(0) {
   // Allocate space for simple GL results.
   result_buffer_ = transfer_buffer;
@@ -471,7 +468,7 @@ GLES2Implementation::GLES2Implementation(
     texture_id_handler_.reset(new NonSharedIdHandler());
   }
 
-#if defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)
+#if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
   GLint max_vertex_attribs;
   GetIntegerv(GL_MAX_VERTEX_ATTRIBS, &max_vertex_attribs);
 
@@ -486,7 +483,9 @@ GLES2Implementation::GLES2Implementation(
 }
 
 GLES2Implementation::~GLES2Implementation() {
+#if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
   DeleteBuffers(arraysize(reserved_ids_), &reserved_ids_[0]);
+#endif
 }
 
 void GLES2Implementation::WaitForCmd() {
@@ -622,7 +621,7 @@ void GLES2Implementation::DrawElements(
   if (count == 0) {
     return;
   }
-#if defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)
+#if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
   bool have_client_side =
       client_side_buffer_helper_->HaveEnabledClientSideBuffers();
   GLsizei num_elements = 0;
@@ -744,12 +743,12 @@ void GLES2Implementation::BindAttribLocation(
 
 void GLES2Implementation::GetVertexAttribPointerv(
     GLuint index, GLenum pname, void** ptr) {
-#if defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)
+#if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
   // If it's a client side buffer the client has the data.
   if (client_side_buffer_helper_->GetAttribPointer(index, pname, ptr)) {
     return;
   }
-#endif  // defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)
+#endif  // defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
 
   typedef gles2::GetVertexAttribPointerv::Result Result;
   Result* result = GetResultAs<Result*>();
@@ -831,7 +830,7 @@ void GLES2Implementation::PixelStorei(GLenum pname, GLint param) {
 void GLES2Implementation::VertexAttribPointer(
     GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride,
     const void* ptr) {
-#if defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)
+#if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
   // Record the info on the client side.
   client_side_buffer_helper_->SetAttribPointer(
       bound_array_buffer_id_, index, size, type, normalized, stride, ptr);
@@ -840,10 +839,10 @@ void GLES2Implementation::VertexAttribPointer(
     helper_->VertexAttribPointer(index, size, type, normalized, stride,
                                  ToGLuint(ptr));
   }
-#else  // !defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)
+#else  // !defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
   helper_->VertexAttribPointer(index, size, type, normalized, stride,
                                ToGLuint(ptr));
-#endif  // !defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)
+#endif  // !defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
 }
 
 void GLES2Implementation::ShaderSource(
@@ -1359,7 +1358,7 @@ void GLES2Implementation::ReadPixels(
   }
 }
 
-#if defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)
+#if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
 bool GLES2Implementation::IsBufferReservedId(GLuint id) {
   for (size_t ii = 0; ii < arraysize(reserved_ids_); ++ii) {
     if (id == reserved_ids_[ii]) {
@@ -1374,14 +1373,13 @@ bool GLES2Implementation::IsBufferReservedId(GLuint) {  // NOLINT
 }
 #endif
 
-#if defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)
-
 void GLES2Implementation::BindBuffer(GLenum target, GLuint buffer) {
   if (IsBufferReservedId(buffer)) {
     SetGLError(GL_INVALID_OPERATION, "glBindBuffer: reserved buffer id");
     return;
   }
   buffer_id_handler_->MarkAsUsedForBind(buffer);
+#if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
   switch (target) {
     case GL_ARRAY_BUFFER:
       bound_array_buffer_id_ = buffer;
@@ -1392,6 +1390,7 @@ void GLES2Implementation::BindBuffer(GLenum target, GLuint buffer) {
     default:
       break;
   }
+#endif
   helper_->BindBuffer(target, buffer);
 }
 
@@ -1401,6 +1400,7 @@ void GLES2Implementation::DeleteBuffers(GLsizei n, const GLuint* buffers) {
     return;
   }
   buffer_id_handler_->FreeIds(n, buffers);
+#if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
   for (GLsizei ii = 0; ii < n; ++ii) {
     if (buffers[ii] == bound_array_buffer_id_) {
       bound_array_buffer_id_ = 0;
@@ -1409,6 +1409,7 @@ void GLES2Implementation::DeleteBuffers(GLsizei n, const GLuint* buffers) {
       bound_element_array_buffer_id_ = 0;
     }
   }
+#endif
   // TODO(gman): compute the number of buffers we can delete in 1 call
   //    based on the size of command buffer and the limit of argument size
   //    for comments then loop to delete all the buffers.  The same needs to
@@ -1417,12 +1418,16 @@ void GLES2Implementation::DeleteBuffers(GLsizei n, const GLuint* buffers) {
 }
 
 void GLES2Implementation::DisableVertexAttribArray(GLuint index) {
+#if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
   client_side_buffer_helper_->SetAttribEnable(index, false);
+#endif
   helper_->DisableVertexAttribArray(index);
 }
 
 void GLES2Implementation::EnableVertexAttribArray(GLuint index) {
+#if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
   client_side_buffer_helper_->SetAttribEnable(index, true);
+#endif
   helper_->EnableVertexAttribArray(index);
 }
 
@@ -1431,19 +1436,24 @@ void GLES2Implementation::DrawArrays(GLenum mode, GLint first, GLsizei count) {
     SetGLError(GL_INVALID_VALUE, "glDrawArrays: count < 0");
     return;
   }
+#if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
   bool have_client_side =
       client_side_buffer_helper_->HaveEnabledClientSideBuffers();
   if (have_client_side) {
     client_side_buffer_helper_->SetupSimualtedClientSideBuffers(
         this, helper_, first + count);
   }
+#endif
   helper_->DrawArrays(mode, first, count);
+#if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
   if (have_client_side) {
     // Restore the user's current binding.
     helper_->BindBuffer(GL_ARRAY_BUFFER, bound_array_buffer_id_);
   }
+#endif
 }
 
+#if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
 bool GLES2Implementation::GetVertexAttribHelper(
     GLuint index, GLenum pname, uint32* param) {
   const ClientSideBufferHelper::VertexAttribInfo* info =
@@ -1479,14 +1489,17 @@ bool GLES2Implementation::GetVertexAttribHelper(
   }
   return true;
 }
+#endif  // GLES2_SUPPORT_CLIENT_SIDE_ARRAYS
 
 void GLES2Implementation::GetVertexAttribfv(
     GLuint index, GLenum pname, GLfloat* params) {
+#if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
   uint32 value = 0;
   if (GetVertexAttribHelper(index, pname, &value)) {
     *params = static_cast<float>(value);
     return;
   }
+#endif
   typedef GetVertexAttribfv::Result Result;
   Result* result = GetResultAs<Result*>();
   result->SetNumResults(0);
@@ -1498,11 +1511,13 @@ void GLES2Implementation::GetVertexAttribfv(
 
 void GLES2Implementation::GetVertexAttribiv(
     GLuint index, GLenum pname, GLint* params) {
+#if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
   uint32 value = 0;
   if (GetVertexAttribHelper(index, pname, &value)) {
     *params = value;
     return;
   }
+#endif
   typedef GetVertexAttribiv::Result Result;
   Result* result = GetResultAs<Result*>();
   result->SetNumResults(0);
@@ -1524,8 +1539,6 @@ GLboolean GLES2Implementation::CommandBufferEnableCHROMIUM(
   helper_->SetBucketSize(kResultBucketId, 0);
   return *result;
 }
-
-#endif  // defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)
 
 void* GLES2Implementation::MapBufferSubDataCHROMIUM(
     GLuint target, GLintptr offset, GLsizeiptr size, GLenum access) {

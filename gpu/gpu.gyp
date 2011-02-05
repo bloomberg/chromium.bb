@@ -9,10 +9,19 @@
     # with extra parameter checking. Once with no parameter checking to be 100%
     # OpenGL ES 2.0 compliant for the conformance tests.
     'gles2_c_lib_source_files': [
-      'command_buffer/client/gles2_lib.h',
       'command_buffer/client/gles2_c_lib.cc',
       'command_buffer/client/gles2_c_lib_autogen.h',
+      'command_buffer/client/gles2_lib.h',
+      'command_buffer/client/gles2_lib.cc',
     ],
+    # These are defined here because we need to build this library twice. Once
+    # with without support for client side arrays and once with for pepper and
+    # the OpenGL ES 2.0 compliant for the conformance tests.
+    'gles2_implementation_source_files': [
+      'command_buffer/client/gles2_implementation_autogen.h',
+      'command_buffer/client/gles2_implementation.cc',
+      'command_buffer/client/gles2_implementation.h',
+    ]
   },
   'targets': [
     {
@@ -74,22 +83,27 @@
         ],
       },
       'sources': [
-        'command_buffer/client/gles2_implementation_autogen.h',
-        'command_buffer/client/gles2_implementation.cc',
-        'command_buffer/client/gles2_implementation.h',
+        '<@(gles2_implementation_source_files)',
       ],
     },
     {
-      # Stub to expose gles2_implementation as a namespace rather than a class
-      # so GLES2 C++ programs can work with no changes.
-      'target_name': 'gles2_lib',
+      # Library emulates GLES2 using command_buffers.
+      'target_name': 'gles2_implementation_client_side_arrays',
       'type': 'static_library',
-      'dependencies': [
-        'gles2_implementation',
+      'defines': [
+        'GLES2_SUPPORT_CLIENT_SIDE_ARRAYS=1'
       ],
+      'dependencies': [
+        'gles2_cmd_helper',
+      ],
+      'all_dependent_settings': {
+        'include_dirs': [
+          # For GLES2/gl2.h
+          '.',
+        ],
+      },
       'sources': [
-        'command_buffer/client/gles2_lib.cc',
-        'command_buffer/client/gles2_lib.h',
+        '<@(gles2_implementation_source_files)',
       ],
     },
     {
@@ -98,7 +112,7 @@
       'target_name': 'gles2_c_lib',
       'type': 'static_library',
       'dependencies': [
-        'gles2_lib',
+        'gles2_implementation',
       ],
       'sources': [
         '<@(gles2_c_lib_source_files)',
@@ -113,7 +127,7 @@
         'GLES2_CONFORMANCE_TESTS=1',
       ],
       'dependencies': [
-        'gles2_lib',
+        'gles2_implementation_client_side_arrays',
       ],
       'sources': [
         '<@(gles2_c_lib_source_files)',
@@ -238,11 +252,11 @@
         'command_buffer_common',
         'command_buffer_service',
         'gpu_unittest_utils',
-        'gles2_lib',
-        'gles2_implementation',
+        'gles2_implementation_client_side_arrays',
         'gles2_cmd_helper',
       ],
       'sources': [
+        '<@(gles2_c_lib_source_files)',
         'command_buffer/client/cmd_buffer_helper_test.cc',
         'command_buffer/client/fenced_allocator_test.cc',
         'command_buffer/client/gles2_implementation_unittest.cc',
@@ -313,7 +327,6 @@
       'type': 'static_library',
       'dependencies': [
         'command_buffer_client',
-        'gles2_lib',
         'gles2_c_lib',
       ],
       'sources': [

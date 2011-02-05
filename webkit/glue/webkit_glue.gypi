@@ -188,7 +188,7 @@
       'dependencies': [
         '<(DEPTH)/app/app.gyp:app_base',
         '<(DEPTH)/base/base.gyp:base_i18n',
-        '<(DEPTH)/gpu/gpu.gyp:gles2_implementation',
+        '<(DEPTH)/gpu/gpu.gyp:gles2_implementation_client_side_arrays',
         '<(DEPTH)/net/net.gyp:net',
         '<(DEPTH)/ppapi/ppapi.gyp:ppapi_shared_impl',
         '<(DEPTH)/printing/printing.gyp:printing',
@@ -512,7 +512,7 @@
           'sources/': [['exclude', '_mac\\.(cc|mm)$']],
           'sources!': [
             'webthemeengine_impl_mac.cc',
-          ],          
+          ],
         }, {  # else: OS=="mac"
           'sources/': [['exclude', 'plugin_(lib|list)_posix\\.cc$']],
           'link_settings': {
