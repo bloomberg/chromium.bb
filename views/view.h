@@ -150,20 +150,113 @@ class View : public AcceleratorTarget {
   };
 #endif
 
-  // The view class name.
-  static char kViewClassName[];
+  // TO BE MOVED ---------------------------------------------------------------
+  // TODO(beng): These methods are to be moved to other files/classes.
 
-  View();
-  virtual ~View();
-
+  // TODO(beng): move to metrics.h
   // Returns the amount of time between double clicks, in milliseconds.
   static int GetDoubleClickTimeMS();
 
+  // TODO(beng): move to metrics.h
   // Returns the amount of time to wait from hovering over a menu button until
   // showing the menu.
   static int GetMenuShowDelay();
 
-  // Sizing functions
+  // TODO(beng): delete
+  // Set whether this view is hottracked. A disabled view cannot be hottracked.
+  // If flag differs from the current value, SchedulePaint is invoked.
+  virtual void SetHotTracked(bool flag);
+
+  // TODO(beng): delete
+  // Returns whether the view is hot-tracked.
+  virtual bool IsHotTracked() const { return false; }
+
+  // TODO(beng): delete
+  // Returns whether the view is pushed.
+  virtual bool IsPushed() const { return false; }
+
+  // FATE TBD ------------------------------------------------------------------
+  // TODO(beng): Figure out what these methods are for and delete them.
+
+  // TODO(beng): this one isn't even google3-style. wth.
+  virtual Widget* child_widget() { return NULL; }
+
+  // Creation and lifetime -----------------------------------------------------
+
+  View();
+  virtual ~View();
+
+  // Set whether this view is owned by its parent. A view that is owned by its
+  // parent is automatically deleted when the parent is deleted. The default is
+  // true. Set to false if the view is owned by another object and should not
+  // be deleted by its parent.
+  void set_parent_owned(bool is_parent_owned) {
+    is_parent_owned_ = is_parent_owned;
+  }
+
+  // Return whether a view is owned by its parent.
+  bool IsParentOwned() const { return is_parent_owned_; }
+
+  // Tree operations -----------------------------------------------------------
+
+  // Add a child View.
+  void AddChildView(View* v);
+
+  // Adds a child View at the specified position.
+  void AddChildView(int index, View* v);
+
+  // Get the child View at the specified index.
+  View* GetChildViewAt(int index) const;
+
+  // Remove a child view from this view. v's parent will change to NULL
+  void RemoveChildView(View *v);
+
+  // Remove all child view from this view.  If |delete_views| is true, the views
+  // are deleted, unless marked as not parent owned.
+  void RemoveAllChildViews(bool delete_views);
+
+  // Get the number of child Views.
+  int GetChildViewCount() const;
+
+  // Tests if this view has a given view as direct child.
+  bool HasChildView(View* a_view);
+
+  // Get the Widget that hosts this View, if any.
+  virtual Widget* GetWidget() const;
+
+  // Gets the Widget that most closely contains this View, if any.
+  // NOTE: almost all views displayed on screen have a Widget, but not
+  // necessarily a Window. This is due to widgets being able to create top
+  // level windows (as is done for popups, bubbles and menus).
+  virtual Window* GetWindow() const;
+
+  // Returns true if the native view |native_view| is contained in the view
+  // hierarchy beneath this view.
+  virtual bool ContainsNativeView(gfx::NativeView native_view) const;
+
+  // Get the containing RootView
+  virtual RootView* GetRootView();
+
+  // Get the parent View
+  View* GetParent() const { return parent_; }
+
+  // Returns the index of the specified |view| in this view's children, or -1
+  // if the specified view is not a child of this view.
+  int GetChildIndex(const View* v) const;
+
+  // Returns true if the specified view is a direct or indirect child of this
+  // view.
+  bool IsParentOf(View* v) const;
+
+#ifndef NDEBUG
+  // Debug method that logs the view hierarchy to the output.
+  void PrintViewHierarchy();
+
+  // Debug method that logs the focus traversal hierarchy to the output.
+  void PrintFocusHierarchy();
+#endif
+
+  // Size and disposition ------------------------------------------------------
 
   // Get the bounds of the View, relative to the parent. Essentially, this
   // function returns the bounds_ rectangle.
@@ -227,6 +320,22 @@ class View : public AcceleratorTarget {
   // include the area where the border (if any) is painted.
   gfx::Rect GetLocalBounds(bool include_border) const;
 
+  // Returns the insets of the current border. If there is no border an empty
+  // insets is returned.
+  virtual gfx::Insets GetInsets() const;
+
+  // Returns the visible bounds of the receiver in the receivers coordinate
+  // system.
+  //
+  // When traversing the View hierarchy in order to compute the bounds, the
+  // function takes into account the mirroring setting for each View and
+  // therefore it will return the mirrored version of the visible bounds if
+  // need be.
+  gfx::Rect GetVisibleBounds();
+
+  // Return the bounds of the View in screen coordinate system.
+  gfx::Rect GetScreenBounds() const;
+
   // Get the position of the View, relative to the parent.
   //
   // Note that if the parent uses right-to-left UI layout, then the mirrored
@@ -277,69 +386,7 @@ class View : public AcceleratorTarget {
   // Returns whether the view is enabled.
   virtual bool IsEnabled() const;
 
-  // Set whether this view is hottracked. A disabled view cannot be hottracked.
-  // If flag differs from the current value, SchedulePaint is invoked.
-  virtual void SetHotTracked(bool flag);
-
-  // Returns whether the view is hot-tracked.
-  virtual bool IsHotTracked() const { return false; }
-
-  virtual Widget* child_widget() { return NULL; }
-
-  // Returns whether the view is pushed.
-  virtual bool IsPushed() const { return false; }
-
-  // Scrolls the specified region, in this View's coordinate system, to be
-  // visible. View's implementation passes the call onto the parent View (after
-  // adjusting the coordinates). It is up to views that only show a portion of
-  // the child view, such as Viewport, to override appropriately.
-  virtual void ScrollRectToVisible(const gfx::Rect& rect);
-
-  // Layout functions
-
-  // Lay out the child Views (set their bounds based on sizing heuristics
-  // specific to the current Layout Manager)
-  virtual void Layout();
-
-  // Mark this view and all parents to require a relayout. This ensures the
-  // next call to Layout() will propagate to this view, even if the bounds of
-  // parent views do not change.
-  void InvalidateLayout();
-
-  // Gets/Sets the Layout Manager used by this view to size and place its
-  // children.
-  // The LayoutManager is owned by the View and is deleted when the view is
-  // deleted, or when a new LayoutManager is installed.
-  LayoutManager* GetLayoutManager() const;
-  void SetLayoutManager(LayoutManager* layout);
-
-  // Right-to-left UI layout functions
-
-  // This method determines whether the gfx::Canvas object passed to
-  // View::Paint() needs to be transformed such that anything drawn on the
-  // canvas object during View::Paint() is flipped horizontally.
-  //
-  // By default, this function returns false (which is the initial value of
-  // |flip_canvas_on_paint_for_rtl_ui_|). View subclasses that need to paint on
-  // a flipped gfx::Canvas when the UI layout is right-to-left need to call
-  // EnableCanvasFlippingForRTLUI().
-  bool FlipCanvasOnPaintForRTLUI() const {
-    return flip_canvas_on_paint_for_rtl_ui_ ? base::i18n::IsRTL() : false;
-  }
-
-  // Enables or disables flipping of the gfx::Canvas during View::Paint().
-  // Note that if canvas flipping is enabled, the canvas will be flipped only
-  // if the UI layout is right-to-left; that is, the canvas will be flipped
-  // only if base::i18n::IsRTL() returns true.
-  //
-  // Enabling canvas flipping is useful for leaf views that draw a bitmap that
-  // needs to be flipped horizontally when the UI layout is right-to-left
-  // (views::Button, for example). This method is helpful for such classes
-  // because their drawing logic stays the same and they can become agnostic to
-  // the UI directionality.
-  void EnableCanvasFlippingForRTLUI(bool enable) {
-    flip_canvas_on_paint_for_rtl_ui_ = enable;
-  }
+  // RTL positioning -----------------------------------------------------------
 
   // Returns the mirrored X position for the view, relative to the parent. If
   // the parent view is not mirrored, this function returns bound_.left.
@@ -386,7 +433,103 @@ class View : public AcceleratorTarget {
     return base::i18n::IsRTL() ? width() - x - w : x;
   }
 
-  // Painting functions
+  // Layout --------------------------------------------------------------------
+
+  // Lay out the child Views (set their bounds based on sizing heuristics
+  // specific to the current Layout Manager)
+  virtual void Layout();
+
+  // TODO(beng): I think we should remove this.
+  // Mark this view and all parents to require a relayout. This ensures the
+  // next call to Layout() will propagate to this view, even if the bounds of
+  // parent views do not change.
+  void InvalidateLayout();
+
+  // Gets/Sets the Layout Manager used by this view to size and place its
+  // children.
+  // The LayoutManager is owned by the View and is deleted when the view is
+  // deleted, or when a new LayoutManager is installed.
+  LayoutManager* GetLayoutManager() const;
+  void SetLayoutManager(LayoutManager* layout);
+
+  // Attributes ----------------------------------------------------------------
+
+  // The view class name.
+  static char kViewClassName[];
+
+  // Return the receiving view's class name. A view class is a string which
+  // uniquely identifies the view class. It is intended to be used as a way to
+  // find out during run time if a view can be safely casted to a specific view
+  // subclass. The default implementation returns kViewClassName.
+  virtual std::string GetClassName() const;
+
+  // Returns the first ancestor, starting at this, whose class name is |name|.
+  // Returns null if no ancestor has the class name |name|.
+  View* GetAncestorWithClassName(const std::string& name);
+
+  // Recursively descends the view tree starting at this view, and returns
+  // the first child that it encounters that has the given ID.
+  // Returns NULL if no matching child view is found.
+  virtual View* GetViewByID(int id) const;
+
+  // Sets and gets the ID for this view.  ID should be unique within the subtree
+  // that you intend to search for it.  0 is the default ID for views.
+  void SetID(int id);
+  int GetID() const;
+
+  // A group id is used to tag views which are part of the same logical group.
+  // Focus can be moved between views with the same group using the arrow keys.
+  // Groups are currently used to implement radio button mutual exclusion.
+  // The group id is immutable once it's set.
+  void SetGroup(int gid);
+  // Returns the group id of the view, or -1 if the id is not set yet.
+  int GetGroup() const;
+
+  // If this returns true, the views from the same group can each be focused
+  // when moving focus with the Tab/Shift-Tab key.  If this returns false,
+  // only the selected view from the group (obtained with
+  // GetSelectedViewForGroup()) is focused.
+  virtual bool IsGroupFocusTraversable() const { return true; }
+
+  // Fills the provided vector with all the available views which belong to the
+  // provided group.
+  void GetViewsWithGroup(int group_id, std::vector<View*>* out);
+
+  // Return the View that is currently selected in the specified group.
+  // The default implementation simply returns the first View found for that
+  // group.
+  virtual View* GetSelectedViewForGroup(int group_id);
+
+  // Coordinate conversion -----------------------------------------------------
+
+  // Note that the utility coordinate conversions functions always operate on
+  // the mirrored position of the child Views if the parent View uses a
+  // right-to-left UI layout.
+
+  // Convert a point from source coordinate system to dst coordinate system.
+  //
+  // source is a parent or a child of dst, directly or transitively.
+  // If source and dst are not in the same View hierarchy, the result is
+  // undefined.
+  // Source can be NULL in which case it means the screen coordinate system
+  static void ConvertPointToView(const View* src,
+                                 const View* dst,
+                                 gfx::Point* point);
+
+  // Convert a point from the coordinate system of a View to that of the
+  // Widget. This is useful for example when sizing HWND children of the
+  // Widget that don't know about the View hierarchy and need to be placed
+  // relative to the Widget that is their parent.
+  static void ConvertPointToWidget(const View* src, gfx::Point* point);
+
+  // Convert a point from a view Widget to a View dest
+  static void ConvertPointFromWidget(const View* dest, gfx::Point* p);
+
+  // Convert a point from the coordinate system of a View to that of the
+  // screen. This is useful for example when placing popup windows.
+  static void ConvertPointToScreen(const View* src, gfx::Point* point);
+
+  // Painting ------------------------------------------------------------------
 
   // Mark the specified rectangle as dirty (needing repaint). If |urgent| is
   // true, the view will be repainted when the current event processing is
@@ -423,239 +566,72 @@ class View : public AcceleratorTarget {
   // Paint this View immediately.
   virtual void PaintNow();
 
-  // Tree functions
+  // This method is the main entry point to process paint for this
+  // view and its children. This method is called by the painting
+  // system. You should call this only if you want to draw a sub tree
+  // inside a custom graphics.
+  // To customize painting override either the Paint or PaintChildren method,
+  // not this one.
+  virtual void ProcessPaint(gfx::Canvas* canvas);
 
-  // Add a child View.
-  void AddChildView(View* v);
+  // Paint the View's child Views, in reverse order.
+  virtual void PaintChildren(gfx::Canvas* canvas);
 
-  // Adds a child View at the specified position.
-  void AddChildView(int index, View* v);
+  // The background object is owned by this object and may be NULL.
+  void set_background(Background* b) { background_.reset(b); }
+  const Background* background() const { return background_.get(); }
 
-  // Get the child View at the specified index.
-  View* GetChildViewAt(int index) const;
+  // The border object is owned by this object and may be NULL.
+  void set_border(Border* b) { border_.reset(b); }
+  const Border* border() const { return border_.get(); }
 
-  // Remove a child view from this view. v's parent will change to NULL
-  void RemoveChildView(View *v);
+  // Get the theme provider from the parent widget.
+  ThemeProvider* GetThemeProvider() const;
 
-  // Remove all child view from this view.  If |delete_views| is true, the views
-  // are deleted, unless marked as not parent owned.
-  void RemoveAllChildViews(bool delete_views);
+  // RTL painting --------------------------------------------------------------
 
-  // Get the number of child Views.
-  int GetChildViewCount() const;
+  // This method determines whether the gfx::Canvas object passed to
+  // View::Paint() needs to be transformed such that anything drawn on the
+  // canvas object during View::Paint() is flipped horizontally.
+  //
+  // By default, this function returns false (which is the initial value of
+  // |flip_canvas_on_paint_for_rtl_ui_|). View subclasses that need to paint on
+  // a flipped gfx::Canvas when the UI layout is right-to-left need to call
+  // EnableCanvasFlippingForRTLUI().
+  bool FlipCanvasOnPaintForRTLUI() const {
+    return flip_canvas_on_paint_for_rtl_ui_ ? base::i18n::IsRTL() : false;
+  }
 
-  // Tests if this view has a given view as direct child.
-  bool HasChildView(View* a_view);
+  // Enables or disables flipping of the gfx::Canvas during View::Paint().
+  // Note that if canvas flipping is enabled, the canvas will be flipped only
+  // if the UI layout is right-to-left; that is, the canvas will be flipped
+  // only if base::i18n::IsRTL() returns true.
+  //
+  // Enabling canvas flipping is useful for leaf views that draw a bitmap that
+  // needs to be flipped horizontally when the UI layout is right-to-left
+  // (views::Button, for example). This method is helpful for such classes
+  // because their drawing logic stays the same and they can become agnostic to
+  // the UI directionality.
+  void EnableCanvasFlippingForRTLUI(bool enable) {
+    flip_canvas_on_paint_for_rtl_ui_ = enable;
+  }
+
+  // Input ---------------------------------------------------------------------
 
   // Returns the deepest descendant that contains the specified point.
   virtual View* GetViewForPoint(const gfx::Point& point);
 
-  // Get the Widget that hosts this View, if any.
-  virtual Widget* GetWidget() const;
+  // Return the cursor that should be used for this view or NULL if
+  // the default cursor should be used. The provided point is in the
+  // receiver's coordinate system. The caller is responsible for managing the
+  // lifetime of the returned object, though that lifetime may vary from
+  // platform to platform. On Windows, the cursor is a shared resource but in
+  // Gtk, the framework destroys the returned cursor after setting it.
+  virtual gfx::NativeCursor GetCursorForPoint(Event::EventType event_type,
+                                              const gfx::Point& p);
 
-  // Gets the Widget that most closely contains this View, if any.
-  // NOTE: almost all views displayed on screen have a Widget, but not
-  // necessarily a Window. This is due to widgets being able to create top
-  // level windows (as is done for popups, bubbles and menus).
-  virtual Window* GetWindow() const;
-
-  // Returns true if the native view |native_view| is contained in the view
-  // hierarchy beneath this view.
-  virtual bool ContainsNativeView(gfx::NativeView native_view) const;
-
-  // Get the containing RootView
-  virtual RootView* GetRootView();
-
-  // Get the parent View
-  View* GetParent() const { return parent_; }
-
-  // Returns the index of the specified |view| in this view's children, or -1
-  // if the specified view is not a child of this view.
-  int GetChildIndex(const View* v) const;
-
-  // Returns true if the specified view is a direct or indirect child of this
-  // view.
-  bool IsParentOf(View* v) const;
-
-  // Recursively descends the view tree starting at this view, and returns
-  // the first child that it encounters that has the given ID.
-  // Returns NULL if no matching child view is found.
-  virtual View* GetViewByID(int id) const;
-
-  // Sets and gets the ID for this view.  ID should be unique within the subtree
-  // that you intend to search for it.  0 is the default ID for views.
-  void SetID(int id);
-  int GetID() const;
-
-  // A group id is used to tag views which are part of the same logical group.
-  // Focus can be moved between views with the same group using the arrow keys.
-  // Groups are currently used to implement radio button mutual exclusion.
-  // The group id is immutable once it's set.
-  void SetGroup(int gid);
-  // Returns the group id of the view, or -1 if the id is not set yet.
-  int GetGroup() const;
-
-  // If this returns true, the views from the same group can each be focused
-  // when moving focus with the Tab/Shift-Tab key.  If this returns false,
-  // only the selected view from the group (obtained with
-  // GetSelectedViewForGroup()) is focused.
-  virtual bool IsGroupFocusTraversable() const { return true; }
-
-  // Fills the provided vector with all the available views which belong to the
-  // provided group.
-  void GetViewsWithGroup(int group_id, std::vector<View*>* out);
-
-  // Return the View that is currently selected in the specified group.
-  // The default implementation simply returns the first View found for that
-  // group.
-  virtual View* GetSelectedViewForGroup(int group_id);
-
-  // Focus support
-  //
-  // Returns the view that should be selected next when pressing Tab.
-  View* GetNextFocusableView();
-
-  // Returns the view that should be selected next when pressing Shift-Tab.
-  View* GetPreviousFocusableView();
-
-  // Sets the component that should be selected next when pressing Tab, and
-  // makes the current view the precedent view of the specified one.
-  // Note that by default views are linked in the order they have been added to
-  // their container. Use this method if you want to modify the order.
-  // IMPORTANT NOTE: loops in the focus hierarchy are not supported.
-  void SetNextFocusableView(View* view);
-
-  // Sets whether this view can accept the focus.
-  // Note that this is false by default so that a view used as a container does
-  // not get the focus.
-  virtual void SetFocusable(bool focusable);
-
-  // Returns true if the view is focusable (IsFocusable) and visible in the root
-  // view. See also IsFocusable.
-  bool IsFocusableInRootView() const;
-
-  // Return whether this view is focusable when the user requires full keyboard
-  // access, even though it may not be normally focusable.
-  bool IsAccessibilityFocusableInRootView() const;
-
-  // Set whether this view can be made focusable if the user requires
-  // full keyboard access, even though it's not normally focusable.
-  // Note that this is false by default.
-  virtual void set_accessibility_focusable(bool accessibility_focusable) {
-    accessibility_focusable_ = accessibility_focusable;
-  }
-
-  // Convenience method to retrieve the FocusManager associated with the
-  // Widget that contains this view.  This can return NULL if this view is not
-  // part of a view hierarchy with a Widget.
-  virtual FocusManager* GetFocusManager();
-
-  // Sets a keyboard accelerator for that view. When the user presses the
-  // accelerator key combination, the AcceleratorPressed method is invoked.
-  // Note that you can set multiple accelerators for a view by invoking this
-  // method several times.
-  virtual void AddAccelerator(const Accelerator& accelerator);
-
-  // Removes the specified accelerator for this view.
-  virtual void RemoveAccelerator(const Accelerator& accelerator);
-
-  // Removes all the keyboard accelerators for this view.
-  virtual void ResetAccelerators();
-
-  // Called when a keyboard accelerator is pressed.
-  // Derived classes should implement desired behavior and return true if they
-  // handled the accelerator.
-  virtual bool AcceleratorPressed(const Accelerator& accelerator) {
-    return false;
-  }
-
-  // Returns whether this view currently has the focus.
-  virtual bool HasFocus();
-
-  // Accessibility support
-  // TODO(ctguil): Move all this out to a AccessibleInfo wrapper class.
-
-  // Notify the platform specific accessibility client of changes in the user
-  // interface.  This will always raise native notifications.
-  virtual void NotifyAccessibilityEvent(AccessibilityTypes::Event event_type);
-
-  // Raise an accessibility notification with an option to also raise a native
-  // notification.
-  virtual void NotifyAccessibilityEvent(AccessibilityTypes::Event event_type,
-      bool send_native_event);
-
-  // Returns the MSAA default action of the current view. The string returned
-  // describes the default action that will occur when executing
-  // IAccessible::DoDefaultAction. For instance, default action of a button is
-  // 'Press'.
-  virtual string16 GetAccessibleDefaultAction() { return string16(); }
-
-  // Returns a string containing the mnemonic, or the keyboard shortcut, for a
-  // given control.
-  virtual string16 GetAccessibleKeyboardShortcut() {
-    return string16();
-  }
-
-  // Returns a brief, identifying string, containing a unique, readable name of
-  // a given control. Sets the input string appropriately, and returns true if
-  // successful.
-  bool GetAccessibleName(string16* name);
-
-  // Returns the accessibility role of the current view. The role is what
-  // assistive technologies (ATs) use to determine what behavior to expect from
-  // a given control.
-  virtual AccessibilityTypes::Role GetAccessibleRole();
-
-  // Returns the accessibility state of the current view.
-  virtual AccessibilityTypes::State GetAccessibleState() {
-    return 0;
-  }
-
-  // Returns the current value associated with a view.
-  virtual string16 GetAccessibleValue() { return string16(); }
-
-  // Assigns a string name to the given control. Needed as a View does not know
-  // which name will be associated with it until it is created to be a
-  // certain type.
-  void SetAccessibleName(const string16& name);
-
-  // Returns an instance of the (platform-specific) accessibility interface for
-  // the View.
-  ViewAccessibility* GetViewAccessibility();
-
-  // Utility functions
-
-  // Note that the utility coordinate conversions functions always operate on
-  // the mirrored position of the child Views if the parent View uses a
-  // right-to-left UI layout.
-
-  // Convert a point from source coordinate system to dst coordinate system.
-  //
-  // source is a parent or a child of dst, directly or transitively.
-  // If source and dst are not in the same View hierarchy, the result is
-  // undefined.
-  // Source can be NULL in which case it means the screen coordinate system
-  static void ConvertPointToView(const View* src,
-                                 const View* dst,
-                                 gfx::Point* point);
-
-  // Convert a point from the coordinate system of a View to that of the
-  // Widget. This is useful for example when sizing HWND children of the
-  // Widget that don't know about the View hierarchy and need to be placed
-  // relative to the Widget that is their parent.
-  static void ConvertPointToWidget(const View* src, gfx::Point* point);
-
-  // Convert a point from a view Widget to a View dest
-  static void ConvertPointFromWidget(const View* dest, gfx::Point* p);
-
-  // Convert a point from the coordinate system of a View to that of the
-  // screen. This is useful for example when placing popup windows.
-  static void ConvertPointToScreen(const View* src, gfx::Point* point);
-
-  // Return the bounds of the View in screen coordinate system.
-  gfx::Rect GetScreenBounds() const;
-
-  // Event Handlers
+  // Convenience to test whether a point is within this view's bounds
+  virtual bool HitTest(const gfx::Point& l) const;
 
   // This method is invoked when the user clicks on this view.
   // The provided event is in the receiver's coordinate system.
@@ -739,6 +715,84 @@ class View : public AcceleratorTarget {
   //
   virtual void SetMouseHandler(View* new_mouse_handler);
 
+  // Invoked when a key is pressed or released.
+  // Subclasser should return true if the event has been processed and false
+  // otherwise. If the event has not been processed, the parent will be given a
+  // chance.
+  virtual bool OnKeyPressed(const KeyEvent& e);
+  virtual bool OnKeyReleased(const KeyEvent& e);
+
+  // Invoked when the user uses the mousewheel. Implementors should return true
+  // if the event has been processed and false otherwise. This message is sent
+  // if the view is focused. If the event has not been processed, the parent
+  // will be given a chance.
+  virtual bool OnMouseWheel(const MouseWheelEvent& e);
+
+  // Accelerators --------------------------------------------------------------
+
+  // Sets a keyboard accelerator for that view. When the user presses the
+  // accelerator key combination, the AcceleratorPressed method is invoked.
+  // Note that you can set multiple accelerators for a view by invoking this
+  // method several times.
+  virtual void AddAccelerator(const Accelerator& accelerator);
+
+  // Removes the specified accelerator for this view.
+  virtual void RemoveAccelerator(const Accelerator& accelerator);
+
+  // Removes all the keyboard accelerators for this view.
+  virtual void ResetAccelerators();
+
+  // TODO(beng): Move to an AcceleratorTarget override section.
+  // Called when a keyboard accelerator is pressed.
+  // Derived classes should implement desired behavior and return true if they
+  // handled the accelerator.
+  virtual bool AcceleratorPressed(const Accelerator& accelerator) {
+    return false;
+  }
+
+  // Focus ---------------------------------------------------------------------
+
+  // Returns whether this view currently has the focus.
+  virtual bool HasFocus();
+
+  // Returns the view that should be selected next when pressing Tab.
+  View* GetNextFocusableView();
+
+  // Returns the view that should be selected next when pressing Shift-Tab.
+  View* GetPreviousFocusableView();
+
+  // Sets the component that should be selected next when pressing Tab, and
+  // makes the current view the precedent view of the specified one.
+  // Note that by default views are linked in the order they have been added to
+  // their container. Use this method if you want to modify the order.
+  // IMPORTANT NOTE: loops in the focus hierarchy are not supported.
+  void SetNextFocusableView(View* view);
+
+  // Sets whether this view can accept the focus.
+  // Note that this is false by default so that a view used as a container does
+  // not get the focus.
+  virtual void SetFocusable(bool focusable);
+
+  // Returns true if the view is focusable (IsFocusable) and visible in the root
+  // view. See also IsFocusable.
+  bool IsFocusableInRootView() const;
+
+  // Return whether this view is focusable when the user requires full keyboard
+  // access, even though it may not be normally focusable.
+  bool IsAccessibilityFocusableInRootView() const;
+
+  // Set whether this view can be made focusable if the user requires
+  // full keyboard access, even though it's not normally focusable.
+  // Note that this is false by default.
+  virtual void set_accessibility_focusable(bool accessibility_focusable) {
+    accessibility_focusable_ = accessibility_focusable;
+  }
+
+  // Convenience method to retrieve the FocusManager associated with the
+  // Widget that contains this view.  This can return NULL if this view is not
+  // part of a view hierarchy with a Widget.
+  virtual FocusManager* GetFocusManager();
+
   // Request the keyboard focus. The receiving view will become the
   // focused view.
   virtual void RequestFocus();
@@ -770,20 +824,52 @@ class View : public AcceleratorTarget {
     return false;
   }
 
-  // Invoked when a key is pressed or released.
-  // Subclasser should return true if the event has been processed and false
-  // otherwise. If the event has not been processed, the parent will be given a
-  // chance.
-  virtual bool OnKeyPressed(const KeyEvent& e);
-  virtual bool OnKeyReleased(const KeyEvent& e);
+  // Subclasses that contain traversable children that are not directly
+  // accessible through the children hierarchy should return the associated
+  // FocusTraversable for the focus traversal to work properly.
+  virtual FocusTraversable* GetFocusTraversable() { return NULL; }
 
-  // Invoked when the user uses the mousewheel. Implementors should return true
-  // if the event has been processed and false otherwise. This message is sent
-  // if the view is focused. If the event has not been processed, the parent
-  // will be given a chance.
-  virtual bool OnMouseWheel(const MouseWheelEvent& e);
+  // Subclasses that can act as a "pane" must implement their own
+  // FocusTraversable to keep the focus trapped within the pane.
+  // If this method returns an object, any view that's a direct or
+  // indirect child of this view will always use this FocusTraversable
+  // rather than the one from the widget.
+  virtual FocusTraversable* GetPaneFocusTraversable() { return NULL; }
 
-  // Drag and drop functions.
+  // Tooltips ------------------------------------------------------------------
+
+  // Gets the tooltip for this View. If the View does not have a tooltip,
+  // return false. If the View does have a tooltip, copy the tooltip into
+  // the supplied string and return true.
+  // Any time the tooltip text that a View is displaying changes, it must
+  // invoke TooltipTextChanged.
+  // |p| provides the coordinates of the mouse (relative to this view).
+  virtual bool GetTooltipText(const gfx::Point& p, std::wstring* tooltip);
+
+  // Returns the location (relative to this View) for the text on the tooltip
+  // to display. If false is returned (the default), the tooltip is placed at
+  // a default position.
+  virtual bool GetTooltipTextOrigin(const gfx::Point& p, gfx::Point* loc);
+
+  // Context menus -------------------------------------------------------------
+
+  // Sets the ContextMenuController. Setting this to non-null makes the View
+  // process mouse events.
+  void SetContextMenuController(ContextMenuController* menu_controller);
+  ContextMenuController* GetContextMenuController() {
+    return context_menu_controller_;
+  }
+
+  // Provides default implementation for context menu handling. The default
+  // implementation calls the ShowContextMenu of the current
+  // ContextMenuController (if it is not NULL). Overridden in subclassed views
+  // to provide right-click menu display triggerd by the keyboard (i.e. for the
+  // Chrome toolbar Back and Forward buttons). No source needs to be specified,
+  // as it is always equal to the current View.
+  virtual void ShowContextMenu(const gfx::Point& p,
+                               bool is_mouse_gesture);
+
+  // Drag and drop -------------------------------------------------------------
 
   // Set/get the DragController. See description of DragController for more
   // information.
@@ -848,119 +934,66 @@ class View : public AcceleratorTarget {
   // delta_x and y are the distance the mouse was dragged.
   static bool ExceededDragThreshold(int delta_x, int delta_y);
 
-  // This method is the main entry point to process paint for this
-  // view and its children. This method is called by the painting
-  // system. You should call this only if you want to draw a sub tree
-  // inside a custom graphics.
-  // To customize painting override either the Paint or PaintChildren method,
-  // not this one.
-  virtual void ProcessPaint(gfx::Canvas* canvas);
+  // Accessibility -------------------------------------------------------------
+  // TODO(ctguil): Move all this out to a AccessibleInfo wrapper class.
 
-  // Paint the View's child Views, in reverse order.
-  virtual void PaintChildren(gfx::Canvas* canvas);
+  // Notify the platform specific accessibility client of changes in the user
+  // interface.  This will always raise native notifications.
+  virtual void NotifyAccessibilityEvent(AccessibilityTypes::Event event_type);
 
-  // Sets the ContextMenuController. Setting this to non-null makes the View
-  // process mouse events.
-  void SetContextMenuController(ContextMenuController* menu_controller);
-  ContextMenuController* GetContextMenuController() {
-    return context_menu_controller_;
+  // Raise an accessibility notification with an option to also raise a native
+  // notification.
+  virtual void NotifyAccessibilityEvent(AccessibilityTypes::Event event_type,
+      bool send_native_event);
+
+  // Returns the MSAA default action of the current view. The string returned
+  // describes the default action that will occur when executing
+  // IAccessible::DoDefaultAction. For instance, default action of a button is
+  // 'Press'.
+  virtual string16 GetAccessibleDefaultAction() { return string16(); }
+
+  // Returns a string containing the mnemonic, or the keyboard shortcut, for a
+  // given control.
+  virtual string16 GetAccessibleKeyboardShortcut() {
+    return string16();
   }
 
-  // Provides default implementation for context menu handling. The default
-  // implementation calls the ShowContextMenu of the current
-  // ContextMenuController (if it is not NULL). Overridden in subclassed views
-  // to provide right-click menu display triggerd by the keyboard (i.e. for the
-  // Chrome toolbar Back and Forward buttons). No source needs to be specified,
-  // as it is always equal to the current View.
-  virtual void ShowContextMenu(const gfx::Point& p,
-                               bool is_mouse_gesture);
+  // Returns a brief, identifying string, containing a unique, readable name of
+  // a given control. Sets the input string appropriately, and returns true if
+  // successful.
+  bool GetAccessibleName(string16* name);
 
-  // The background object is owned by this object and may be NULL.
-  void set_background(Background* b) { background_.reset(b); }
-  const Background* background() const { return background_.get(); }
+  // Returns the accessibility role of the current view. The role is what
+  // assistive technologies (ATs) use to determine what behavior to expect from
+  // a given control.
+  virtual AccessibilityTypes::Role GetAccessibleRole();
 
-  // The border object is owned by this object and may be NULL.
-  void set_border(Border* b) { border_.reset(b); }
-  const Border* border() const { return border_.get(); }
-
-  // Returns the insets of the current border. If there is no border an empty
-  // insets is returned.
-  virtual gfx::Insets GetInsets() const;
-
-  // Return the cursor that should be used for this view or NULL if
-  // the default cursor should be used. The provided point is in the
-  // receiver's coordinate system. The caller is responsible for managing the
-  // lifetime of the returned object, though that lifetime may vary from
-  // platform to platform. On Windows, the cursor is a shared resource but in
-  // Gtk, the framework destroys the returned cursor after setting it.
-  virtual gfx::NativeCursor GetCursorForPoint(Event::EventType event_type,
-                                              const gfx::Point& p);
-
-  // Convenience to test whether a point is within this view's bounds
-  virtual bool HitTest(const gfx::Point& l) const;
-
-  // Gets the tooltip for this View. If the View does not have a tooltip,
-  // return false. If the View does have a tooltip, copy the tooltip into
-  // the supplied string and return true.
-  // Any time the tooltip text that a View is displaying changes, it must
-  // invoke TooltipTextChanged.
-  // |p| provides the coordinates of the mouse (relative to this view).
-  virtual bool GetTooltipText(const gfx::Point& p, std::wstring* tooltip);
-
-  // Returns the location (relative to this View) for the text on the tooltip
-  // to display. If false is returned (the default), the tooltip is placed at
-  // a default position.
-  virtual bool GetTooltipTextOrigin(const gfx::Point& p, gfx::Point* loc);
-
-  // Set whether this view is owned by its parent. A view that is owned by its
-  // parent is automatically deleted when the parent is deleted. The default is
-  // true. Set to false if the view is owned by another object and should not
-  // be deleted by its parent.
-  void set_parent_owned(bool is_parent_owned) {
-    is_parent_owned_ = is_parent_owned;
+  // Returns the accessibility state of the current view.
+  virtual AccessibilityTypes::State GetAccessibleState() {
+    return 0;
   }
 
-  // Return whether a view is owned by its parent.
-  bool IsParentOwned() const { return is_parent_owned_; }
+  // Returns the current value associated with a view.
+  virtual string16 GetAccessibleValue() { return string16(); }
 
-  // Return the receiving view's class name. A view class is a string which
-  // uniquely identifies the view class. It is intended to be used as a way to
-  // find out during run time if a view can be safely casted to a specific view
-  // subclass. The default implementation returns kViewClassName.
-  virtual std::string GetClassName() const;
+  // Assigns a string name to the given control. Needed as a View does not know
+  // which name will be associated with it until it is created to be a
+  // certain type.
+  void SetAccessibleName(const string16& name);
 
-  // Returns the first ancestor, starting at this, whose class name is |name|.
-  // Returns null if no ancestor has the class name |name|.
-  View* GetAncestorWithClassName(const std::string& name);
+  // Returns an instance of the (platform-specific) accessibility interface for
+  // the View.
+  ViewAccessibility* GetViewAccessibility();
 
-  // Returns the visible bounds of the receiver in the receivers coordinate
-  // system.
-  //
-  // When traversing the View hierarchy in order to compute the bounds, the
-  // function takes into account the mirroring setting for each View and
-  // therefore it will return the mirrored version of the visible bounds if
-  // need be.
-  gfx::Rect GetVisibleBounds();
+  // Scrolling -----------------------------------------------------------------
+  // TODO(beng): Figure out if this can live somewhere other than View, i.e.
+  //             closer to ScrollView.
 
-  // Subclasses that contain traversable children that are not directly
-  // accessible through the children hierarchy should return the associated
-  // FocusTraversable for the focus traversal to work properly.
-  virtual FocusTraversable* GetFocusTraversable() { return NULL; }
-
-  // Subclasses that can act as a "pane" must implement their own
-  // FocusTraversable to keep the focus trapped within the pane.
-  // If this method returns an object, any view that's a direct or
-  // indirect child of this view will always use this FocusTraversable
-  // rather than the one from the widget.
-  virtual FocusTraversable* GetPaneFocusTraversable() { return NULL; }
-
-#ifndef NDEBUG
-  // Debug method that logs the view hierarchy to the output.
-  void PrintViewHierarchy();
-
-  // Debug method that logs the focus traversal hierarchy to the output.
-  void PrintFocusHierarchy();
-#endif
+  // Scrolls the specified region, in this View's coordinate system, to be
+  // visible. View's implementation passes the call onto the parent View (after
+  // adjusting the coordinates). It is up to views that only show a portion of
+  // the child view, such as Viewport, to override appropriately.
+  virtual void ScrollRectToVisible(const gfx::Rect& rect);
 
   // The following methods are used by ScrollView to determine the amount
   // to scroll relative to the visible bounds of the view. For example, a
@@ -986,50 +1019,47 @@ class View : public AcceleratorTarget {
   virtual int GetLineScrollIncrement(ScrollView* scroll_view,
                                      bool is_horizontal, bool is_positive);
 
-  // Get the theme provider from the parent widget.
-  ThemeProvider* GetThemeProvider() const;
-
  protected:
-  // Returns whether this view can accept focus.
-  // A view can accept focus if it's enabled, focusable and visible.
-  // This method is intended for views to use when calculating preferred size.
-  // The FocusManager and other places use IsFocusableInRootView.
-  virtual bool IsFocusable() const;
+  // Size and disposition ------------------------------------------------------
 
-  // Called when the UI theme has changed, overriding allows individual Views to
-  // do special cleanup and processing (such as dropping resource caches).
-  // To dispatch a theme changed notification, call
-  // RootView::NotifyThemeChanged().
-  virtual void OnThemeChanged() { }
+  // Called when the preferred size of a child view changed.  This gives the
+  // parent an opportunity to do a fresh layout if that makes sense.
+  virtual void ChildPreferredSizeChanged(View* child) {}
 
-  // Called when the locale has changed, overriding allows individual Views to
-  // update locale-dependent strings.
-  // To dispatch a locale changed notification, call
-  // RootView::NotifyLocaleChanged().
-  virtual void OnLocaleChanged() { }
+  // Invalidates the layout and calls ChildPreferredSizeChanged on the parent
+  // if there is one. Be sure to call View::PreferredSizeChanged when
+  // overriding such that the layout is properly invalidated.
+  virtual void PreferredSizeChanged();
 
-#ifndef NDEBUG
-  // Returns true if the View is currently processing a paint.
-  virtual bool IsProcessingPaint() const;
-#endif
+  // Sets whether this view wants notification when its visible bounds relative
+  // to the root view changes. If true, this view is notified any time the
+  // origin of one its ancestors changes, or the portion of the bounds not
+  // obscured by ancestors changes. The default is false.
+  void SetNotifyWhenVisibleBoundsInRootChanges(bool value);
+  bool GetNotifyWhenVisibleBoundsInRootChanges();
 
-  // Returns the location, in screen coordinates, to show the context menu at
-  // when the context menu is shown from the keyboard. This implementation
-  // returns the middle of the visible region of this view.
-  //
-  // This method is invoked when the context menu is shown by way of the
-  // keyboard.
-  virtual gfx::Point GetKeyboardContextMenuLocation();
+  // Notification that this views visible bounds, relative to the RootView
+  // has changed. The visible bounds corresponds to the region of the
+  // view not obscured by other ancestors.
+  virtual void VisibleBoundsInRootChanged() {}
 
-  // Called by HitTest to see if this View has a custom hit test mask. If the
-  // return value is true, GetHitTestMask will be called to obtain the mask.
-  // Default value is false, in which case the View will hit-test against its
-  // bounds.
-  virtual bool HasHitTestMask() const;
+  // TODO(beng): eliminate in protected.
+  // Whether this view is enabled.
+  bool enabled_;
 
-  // Called by HitTest to retrieve a mask for hit-testing against. Subclasses
-  // override to provide custom shaped hit test regions.
-  virtual void GetHitTestMask(gfx::Path* mask) const;
+  // Attributes ----------------------------------------------------------------
+
+  // TODO(beng): Eliminate in protected
+  // The id of this View. Used to find this View.
+  int id_;
+
+  // TODO(beng): Eliminate in protected
+  // The group of this view. Some view subclasses use this id to find other
+  // views of the same group. For example radio button uses this information
+  // to find other radio buttons.
+  int group_;
+
+  // Tree operations -----------------------------------------------------------
 
   // This method is invoked when the tree changes.
   //
@@ -1064,29 +1094,31 @@ class View : public AcceleratorTarget {
                                           gfx::NativeView native_view,
                                           RootView* root_view);
 
-  // Called when the preferred size of a child view changed.  This gives the
-  // parent an opportunity to do a fresh layout if that makes sense.
-  virtual void ChildPreferredSizeChanged(View* child) {}
+  // Painting ------------------------------------------------------------------
+#ifndef NDEBUG
+  // Returns true if the View is currently processing a paint.
+  virtual bool IsProcessingPaint() const;
+#endif
 
-  // Invalidates the layout and calls ChildPreferredSizeChanged on the parent
-  // if there is one. Be sure to call View::PreferredSizeChanged when
-  // overriding such that the layout is properly invalidated.
-  virtual void PreferredSizeChanged();
+  // Input ---------------------------------------------------------------------
 
-  // Views must invoke this when the tooltip text they are to display changes.
-  void TooltipTextChanged();
+  // Called by HitTest to see if this View has a custom hit test mask. If the
+  // return value is true, GetHitTestMask will be called to obtain the mask.
+  // Default value is false, in which case the View will hit-test against its
+  // bounds.
+  virtual bool HasHitTestMask() const;
 
-  // Sets whether this view wants notification when its visible bounds relative
-  // to the root view changes. If true, this view is notified any time the
-  // origin of one its ancestors changes, or the portion of the bounds not
-  // obscured by ancestors changes. The default is false.
-  void SetNotifyWhenVisibleBoundsInRootChanges(bool value);
-  bool GetNotifyWhenVisibleBoundsInRootChanges();
+  // Called by HitTest to retrieve a mask for hit-testing against. Subclasses
+  // override to provide custom shaped hit test regions.
+  virtual void GetHitTestMask(gfx::Path* mask) const;
 
-  // Notification that this views visible bounds, relative to the RootView
-  // has changed. The visible bounds corresponds to the region of the
-  // view not obscured by other ancestors.
-  virtual void VisibleBoundsInRootChanged() {}
+  // Focus ---------------------------------------------------------------------
+
+  // Returns whether this view can accept focus.
+  // A view can accept focus if it's enabled, focusable and visible.
+  // This method is intended for views to use when calculating preferred size.
+  // The FocusManager and other places use IsFocusableInRootView.
+  virtual bool IsFocusable() const;
 
   // Sets the keyboard focus to this View. The correct way to set the focus is
   // to call RequestFocus() on the view. This method is called when the focus is
@@ -1096,6 +1128,44 @@ class View : public AcceleratorTarget {
   // Widget, which is what is appropriate for views that have no native window
   // associated with them (so the root view gets the keyboard messages).
   virtual void Focus();
+
+  // Whether the view can be focused.
+  bool focusable_;
+
+  // Whether this view is focusable if the user requires full keyboard access,
+  // even though it may not be normally focusable.
+  bool accessibility_focusable_;
+
+  // System events -------------------------------------------------------------
+
+  // Called when the UI theme has changed, overriding allows individual Views to
+  // do special cleanup and processing (such as dropping resource caches).
+  // To dispatch a theme changed notification, call
+  // RootView::NotifyThemeChanged().
+  virtual void OnThemeChanged() { }
+
+  // Called when the locale has changed, overriding allows individual Views to
+  // update locale-dependent strings.
+  // To dispatch a locale changed notification, call
+  // RootView::NotifyLocaleChanged().
+  virtual void OnLocaleChanged() { }
+
+  // Tooltips ------------------------------------------------------------------
+
+  // Views must invoke this when the tooltip text they are to display changes.
+  void TooltipTextChanged();
+
+  // Context menus -------------------------------------------------------------
+
+  // Returns the location, in screen coordinates, to show the context menu at
+  // when the context menu is shown from the keyboard. This implementation
+  // returns the middle of the visible region of this view.
+  //
+  // This method is invoked when the context menu is shown by way of the
+  // keyboard.
+  virtual gfx::Point GetKeyboardContextMenuLocation();
+
+  // Drag and drop -------------------------------------------------------------
 
   // These are cover methods that invoke the method of the same name on
   // the DragController. Subclasses may wish to override rather than install
@@ -1117,24 +1187,6 @@ class View : public AcceleratorTarget {
   // used by the public static method ExceededDragThreshold().
   static int GetHorizontalDragThreshold();
   static int GetVerticalDragThreshold();
-
-  // The id of this View. Used to find this View.
-  int id_;
-
-  // The group of this view. Some view subclasses use this id to find other
-  // views of the same group. For example radio button uses this information
-  // to find other radio buttons.
-  int group_;
-
-  // Whether this view is enabled.
-  bool enabled_;
-
-  // Whether the view can be focused.
-  bool focusable_;
-
-  // Whether this view is focusable if the user requires full keyboard access,
-  // even though it may not be normally focusable.
-  bool accessibility_focusable_;
 
  private:
   friend class RootView;
@@ -1160,30 +1212,7 @@ class View : public AcceleratorTarget {
     gfx::Point start_pt;
   };
 
-  // Used to propagate theme changed notifications from the root view to all
-  // views in the hierarchy.
-  virtual void PropagateThemeChanged();
-
-  // Used to propagate locale changed notifications from the root view to all
-  // views in the hierarchy.
-  virtual void PropagateLocaleChanged();
-
-  // RootView invokes these. These in turn invoke the appropriate OnMouseXXX
-  // method. If a drag is detected, DoDrag is invoked.
-  bool ProcessMousePressed(const MouseEvent& e, DragInfo* drop_info);
-  bool ProcessMouseDragged(const MouseEvent& e, DragInfo* drop_info);
-  void ProcessMouseReleased(const MouseEvent& e, bool canceled);
-
-#if defined(TOUCH_UI)
-  // RootView will invoke this with incoming TouchEvents. Returns the
-  // the result of OnTouchEvent.
-  TouchStatus ProcessTouchEvent(const TouchEvent& e);
-#endif
-
-  // Starts a drag and drop operation originating from this view. This invokes
-  // WriteDragData to write the data and GetDragOperations to determine the
-  // supported drag operations. When done, OnDragDone is invoked.
-  void DoDrag(const MouseEvent& e, const gfx::Point& press_pt);
+  // Tree operations -----------------------------------------------------------
 
   // Removes |view| from the hierarchy tree.  If |update_focus_cycle| is true,
   // the next and previous focusable views of views pointing to this view are
@@ -1205,9 +1234,6 @@ class View : public AcceleratorTarget {
   // Call ViewHierarchyChanged for all children
   void PropagateAddNotifications(View* parent, View* child);
 
-  // Call VisibilityChanged() recursively for all children.
-  void PropagateVisibilityNotifications(View* from, bool is_visible);
-
   // Propagates NativeViewHierarchyChanged() notification through all the
   // children.
   void PropagateNativeViewHierarchyChanged(bool attached,
@@ -1221,24 +1247,18 @@ class View : public AcceleratorTarget {
                                 View* parent,
                                 View* child);
 
+  // Actual implementation of PrintFocusHierarchy.
+  void PrintViewHierarchyImp(int indent);
+  void PrintFocusHierarchyImp(int indent);
+
+  // Size and disposition ------------------------------------------------------
+
+  // Call VisibilityChanged() recursively for all children.
+  void PropagateVisibilityNotifications(View* from, bool is_visible);
+
   // Registers/unregisters accelerators as necessary and calls
   // VisibilityChanged().
   void VisibilityChangedImpl(View* starting_from, bool is_visible);
-
-  // This is the actual implementation for ConvertPointToView()
-  // Attempts a parent -> child conversion and then a
-  // child -> parent conversion if try_other_direction is true
-  static void ConvertPointToView(const View* src,
-                                 const View* dst,
-                                 gfx::Point* point,
-                                 bool try_other_direction);
-
-  // Propagates UpdateTooltip() to the TooltipManager for the Widget.
-  // This must be invoked any time the View hierarchy changes in such a way
-  // the view under the mouse differs. For example, if the bounds of a View is
-  // changed, this is invoked. Similarly, as Views are added/removed, this
-  // is invoked.
-  void UpdateTooltip();
 
   // Recursively descends through all descendant views,
   // registering/unregistering all views that want visible bounds in root
@@ -1253,13 +1273,31 @@ class View : public AcceleratorTarget {
   void AddDescendantToNotify(View* view);
   void RemoveDescendantToNotify(View* view);
 
-  // Initialize the previous/next focusable views of the specified view relative
-  // to the view at the specified index.
-  void InitFocusSiblings(View* view, int index);
+  // Coordinate conersion ------------------------------------------------------
 
-  // Actual implementation of PrintFocusHierarchy.
-  void PrintViewHierarchyImp(int indent);
-  void PrintFocusHierarchyImp(int indent);
+  // This is the actual implementation for ConvertPointToView()
+  // Attempts a parent -> child conversion and then a
+  // child -> parent conversion if try_other_direction is true
+  static void ConvertPointToView(const View* src,
+                                 const View* dst,
+                                 gfx::Point* point,
+                                 bool try_other_direction);
+
+  // Input ---------------------------------------------------------------------
+
+  // RootView invokes these. These in turn invoke the appropriate OnMouseXXX
+  // method. If a drag is detected, DoDrag is invoked.
+  bool ProcessMousePressed(const MouseEvent& e, DragInfo* drop_info);
+  bool ProcessMouseDragged(const MouseEvent& e, DragInfo* drop_info);
+  void ProcessMouseReleased(const MouseEvent& e, bool canceled);
+
+#if defined(TOUCH_UI)
+  // RootView will invoke this with incoming TouchEvents. Returns the
+  // the result of OnTouchEvent.
+  TouchStatus ProcessTouchEvent(const TouchEvent& e);
+#endif
+
+  // Accelerators --------------------------------------------------------------
 
   // Registers this view's keyboard accelerators that are not registered to
   // FocusManager yet, if possible.
@@ -1270,11 +1308,51 @@ class View : public AcceleratorTarget {
   // so it could be re-registered with other focus manager
   void UnregisterAccelerators(bool leave_data_intact);
 
-  // This View's bounds in the parent coordinate system.
-  gfx::Rect bounds_;
+  // Focus ---------------------------------------------------------------------
 
-  // Whether the view needs to be laid out.
-  bool needs_layout_;
+  // Initialize the previous/next focusable views of the specified view relative
+  // to the view at the specified index.
+  void InitFocusSiblings(View* view, int index);
+
+  // System events -------------------------------------------------------------
+
+  // Used to propagate theme changed notifications from the root view to all
+  // views in the hierarchy.
+  virtual void PropagateThemeChanged();
+
+  // Used to propagate locale changed notifications from the root view to all
+  // views in the hierarchy.
+  virtual void PropagateLocaleChanged();
+
+  // Tooltips ------------------------------------------------------------------
+
+  // Propagates UpdateTooltip() to the TooltipManager for the Widget.
+  // This must be invoked any time the View hierarchy changes in such a way
+  // the view under the mouse differs. For example, if the bounds of a View is
+  // changed, this is invoked. Similarly, as Views are added/removed, this
+  // is invoked.
+  void UpdateTooltip();
+
+  // Drag and drop -------------------------------------------------------------
+
+  // Starts a drag and drop operation originating from this view. This invokes
+  // WriteDragData to write the data and GetDragOperations to determine the
+  // supported drag operations. When done, OnDragDone is invoked.
+  void DoDrag(const MouseEvent& e, const gfx::Point& press_pt);
+
+  //////////////////////////////////////////////////////////////////////////////
+
+  // TODO(beng): move to metrics.h
+  // The default value for how long to wait (in ms) before showing a menu
+  // button on hover. This value is used if the OS doesn't supply one.
+  static const int kShowFolderDropMenuDelay;
+
+  // Creation and lifetime -----------------------------------------------------
+
+  // Whether this view is owned by its parent.
+  bool is_parent_owned_;
+
+  // Tree operations -----------------------------------------------------------
 
   // This view's parent
   View* parent_;
@@ -1283,21 +1361,13 @@ class View : public AcceleratorTarget {
   typedef std::vector<View*> ViewList;
   ViewList child_views_;
 
-  // The View's LayoutManager defines the sizing heuristics applied to child
-  // Views. The default is absolute positioning according to bounds_.
-  scoped_ptr<LayoutManager> layout_manager_;
+  // Size and disposition ------------------------------------------------------
+
+  // This View's bounds in the parent coordinate system.
+  gfx::Rect bounds_;
 
   // Visible state
   bool is_visible_;
-
-  // Background
-  scoped_ptr<Background> background_;
-
-  // Border.
-  scoped_ptr<Border> border_;
-
-  // Whether this view is owned by its parent.
-  bool is_parent_owned_;
 
   // See SetNotifyWhenVisibleBoundsInRootChanges.
   bool notify_when_visible_bounds_in_root_changes_;
@@ -1306,21 +1376,38 @@ class View : public AcceleratorTarget {
   // has been invoked.
   bool registered_for_visible_bounds_notification_;
 
-  // true if when we were added to hierarchy we were without focus manager
-  // attempt addition when ancestor chain changed.
-  bool accelerator_registration_delayed_;
-
   // List of descendants wanting notification when their visible bounds change.
   scoped_ptr<ViewList> descendants_to_notify_;
 
-  // Name for this view, which can be retrieved by accessibility APIs.
-  string16 accessible_name_;
+  // Layout --------------------------------------------------------------------
 
-  // Next view to be focused when the Tab key is pressed.
-  View* next_focusable_view_;
+  // Whether the view needs to be laid out.
+  bool needs_layout_;
 
-  // Next view to be focused when the Shift-Tab key combination is pressed.
-  View* previous_focusable_view_;
+  // The View's LayoutManager defines the sizing heuristics applied to child
+  // Views. The default is absolute positioning according to bounds_.
+  scoped_ptr<LayoutManager> layout_manager_;
+
+  // Painting ------------------------------------------------------------------
+
+  // Background
+  scoped_ptr<Background> background_;
+
+  // Border.
+  scoped_ptr<Border> border_;
+
+  // RTL painting --------------------------------------------------------------
+
+  // Indicates whether or not the gfx::Canvas object passed to View::Paint()
+  // is going to be flipped horizontally (using the appropriate transform) on
+  // right-to-left locales for this View.
+  bool flip_canvas_on_paint_for_rtl_ui_;
+
+  // Accelerators --------------------------------------------------------------
+
+  // true if when we were added to hierarchy we were without focus manager
+  // attempt addition when ancestor chain changed.
+  bool accelerator_registration_delayed_;
 
   // Focus manager accelerators registered on.
   FocusManager* accelerator_focus_manager_;
@@ -1331,24 +1418,32 @@ class View : public AcceleratorTarget {
   scoped_ptr<std::vector<Accelerator> > accelerators_;
   size_t registered_accelerator_count_;
 
+  // Focus ---------------------------------------------------------------------
+
+  // Next view to be focused when the Tab key is pressed.
+  View* next_focusable_view_;
+
+  // Next view to be focused when the Shift-Tab key combination is pressed.
+  View* previous_focusable_view_;
+
+  // Context menus -------------------------------------------------------------
+
   // The menu controller.
   ContextMenuController* context_menu_controller_;
+
+  // Drag and drop -------------------------------------------------------------
+
+  DragController* drag_controller_;
+
+  // Accessibility -------------------------------------------------------------
+
+  // Name for this view, which can be retrieved by accessibility APIs.
+  string16 accessible_name_;
 
 #if defined(OS_WIN)
   // The accessibility implementation for this View.
   scoped_refptr<ViewAccessibility> view_accessibility_;
 #endif
-
-  DragController* drag_controller_;
-
-  // Indicates whether or not the gfx::Canvas object passed to View::Paint()
-  // is going to be flipped horizontally (using the appropriate transform) on
-  // right-to-left locales for this View.
-  bool flip_canvas_on_paint_for_rtl_ui_;
-
-  // The default value for how long to wait (in ms) before showing a menu
-  // button on hover. This value is used if the OS doesn't supply one.
-  static const int kShowFolderDropMenuDelay;
 
   DISALLOW_COPY_AND_ASSIGN(View);
 };
