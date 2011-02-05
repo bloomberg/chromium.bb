@@ -1,6 +1,6 @@
 {
   "name": "Chromoting Client",
-  "version": "1.0",
+  "version": "1.1",
   "description": "Lists the Chromoting hosts that the current user can access.",
   "browser_action": {
     "default_icon": "chromoticon.png",
