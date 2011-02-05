@@ -257,8 +257,6 @@ PepperPluginRegistry::PepperPluginRegistry() {
       }
     } else {
       // Preload all external plugins we're not running out of process.
-      module = new webkit::ppapi::PluginModule(current.name, this);
-      AddLiveModule(current.path, module);
       if (!module->InitAsLibrary(current.path)) {
         DLOG(ERROR) << "Failed to load pepper module: " << current.path.value();
         continue;
