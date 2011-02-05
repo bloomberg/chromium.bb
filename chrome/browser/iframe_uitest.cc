@@ -23,7 +23,12 @@ TEST_F(IFrameTest, Crash) {
   NavigateAndVerifyTitle("iframe.html", L"iframe test");
 }
 
-// Flakily crashes on all oses: http://crbug.com/70192
-TEST_F(IFrameTest, DISABLED_InEmptyFrame) {
+// Flakily crashes on non linux oses: http://crbug.com/70192
+#if defined(OS_LINUX)
+#define MAYBE_InEmptyFrame InEmptyFrame
+#else
+#define MAYBE_InEmptyFrame DISABLED_InEmptyFrame
+#endif
+TEST_F(IFrameTest, MAYBE_InEmptyFrame) {
   NavigateAndVerifyTitle("iframe_in_empty_frame.html", L"iframe test");
 }

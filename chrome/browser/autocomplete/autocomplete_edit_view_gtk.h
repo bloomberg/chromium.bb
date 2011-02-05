@@ -180,7 +180,7 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   void UpdateInstantViewColors();
 
   GtkWidget* text_view() {
-    return text_view_;
+    return text_view_.get();
   }
 
  private:
@@ -371,7 +371,9 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   OwnedWidgetGtk alignment_;
 
   // The actual text entry which will be owned by the alignment_.
-  GtkWidget* text_view_;
+  // This widget has to be owned too beause GTK destroys children
+  // when parent is destroyed even if the parent's refcount is > 0.
+  OwnedWidgetGtk text_view_;
 
   GtkTextTagTable* tag_table_;
   GtkTextBuffer* text_buffer_;
