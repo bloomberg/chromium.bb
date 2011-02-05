@@ -24,15 +24,11 @@
 #include "chrome/browser/extensions/extension_clipboard_api.h"
 #include "chrome/browser/extensions/extension_context_menu_api.h"
 #include "chrome/browser/extensions/extension_cookies_api.h"
-#include "chrome/browser/extensions/extension_dom_ui.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_history_api.h"
 #include "chrome/browser/extensions/extension_idle_api.h"
 #include "chrome/browser/extensions/extension_i18n_api.h"
 #include "chrome/browser/extensions/extension_infobar_module.h"
-#if defined(TOOLKIT_VIEWS)
-#include "chrome/browser/extensions/extension_input_api.h"
-#endif
 #include "chrome/browser/extensions/extension_management_api.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_metrics_module.h"
@@ -48,6 +44,7 @@
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_test_api.h"
 #include "chrome/browser/extensions/extension_tts_api.h"
+#include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/extensions/extension_webstore_private_api.h"
 #include "chrome/browser/extensions/extensions_quota_service.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -62,6 +59,9 @@
 #include "chrome/common/url_constants.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
+#if defined(TOOLKIT_VIEWS)
+#include "chrome/browser/extensions/extension_input_api.h"
+#endif
 
 // FactoryRegistry -------------------------------------------------------------
 

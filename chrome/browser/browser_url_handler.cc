@@ -7,7 +7,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/dom_ui/web_ui_factory.h"
-#include "chrome/browser/extensions/extension_dom_ui.h"
+#include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
@@ -94,7 +94,7 @@ void BrowserURLHandler::InitURLHandlers() {
 
   // Add the default URL handlers.
   url_handlers_.push_back(
-      HandlerPair(&ExtensionDOMUI::HandleChromeURLOverride, null_handler));
+      HandlerPair(&ExtensionWebUI::HandleChromeURLOverride, null_handler));
   // about:
   url_handlers_.push_back(HandlerPair(&WillHandleBrowserAboutURL,
                                       null_handler));

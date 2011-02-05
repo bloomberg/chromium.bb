@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,8 +15,8 @@
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/extensions/extension_bookmark_helpers.h"
 #include "chrome/browser/extensions/extension_bookmarks_module_constants.h"
-#include "chrome/browser/extensions/extension_dom_ui.h"
 #include "chrome/browser/extensions/extension_event_router.h"
+#include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -344,10 +344,10 @@ bool StartDragBookmarkManagerFunction::RunImpl() {
 
   if (dispatcher()->render_view_host()->delegate()->GetRenderViewType() ==
       ViewType::TAB_CONTENTS) {
-    ExtensionDOMUI* dom_ui =
-        static_cast<ExtensionDOMUI*>(dispatcher()->delegate());
+    ExtensionWebUI* web_ui =
+        static_cast<ExtensionWebUI*>(dispatcher()->delegate());
     bookmark_utils::DragBookmarks(
-        profile(), nodes, dom_ui->tab_contents()->GetNativeView());
+        profile(), nodes, web_ui->tab_contents()->GetNativeView());
 
     return true;
   } else {
@@ -382,10 +382,10 @@ bool DropBookmarkManagerFunction::RunImpl() {
 
   if (dispatcher()->render_view_host()->delegate()->GetRenderViewType() ==
       ViewType::TAB_CONTENTS) {
-    ExtensionDOMUI* dom_ui =
-        static_cast<ExtensionDOMUI*>(dispatcher()->delegate());
+    ExtensionWebUI* web_ui =
+        static_cast<ExtensionWebUI*>(dispatcher()->delegate());
     ExtensionBookmarkManagerEventRouter* router =
-        dom_ui->extension_bookmark_manager_event_router();
+        web_ui->extension_bookmark_manager_event_router();
 
     DCHECK(router);
     const BookmarkNodeData* drag_data = router->GetBookmarkNodeData();

@@ -232,7 +232,7 @@ void WebDragDestGtk::OnDragDataReceived(
             gtk_util::ScreenPoint(widget_),
             gtk_util::GdkDragActionToWebDragOp(context->actions));
 
-    // This is non-null if tab_contents_ is showing an ExtensionDOMUI with
+    // This is non-null if tab_contents_ is showing an ExtensionWebUI with
     // support for (at the moment experimental) drag and drop extensions.
     if (tab_contents_->GetBookmarkDragDelegate()) {
       tab_contents_->GetBookmarkDragDelegate()->OnDragEnter(
@@ -268,7 +268,7 @@ gboolean WebDragDestGtk::OnDragDrop(GtkWidget* sender, GdkDragContext* context,
       DragTargetDrop(gtk_util::ClientPoint(widget_),
                      gtk_util::ScreenPoint(widget_));
 
-  // This is non-null if tab_contents_ is showing an ExtensionDOMUI with
+  // This is non-null if tab_contents_ is showing an ExtensionWebUI with
   // support for (at the moment experimental) drag and drop extensions.
   if (tab_contents_->GetBookmarkDragDelegate())
     tab_contents_->GetBookmarkDragDelegate()->OnDrop(bookmark_drag_data_);

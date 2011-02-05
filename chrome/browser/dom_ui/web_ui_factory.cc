@@ -25,8 +25,8 @@
 #include "chrome/browser/dom_ui/slideshow_ui.h"
 #include "chrome/browser/dom_ui/sync_internals_ui.h"
 #include "chrome/browser/dom_ui/textfields_ui.h"
-#include "chrome/browser/extensions/extension_dom_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/extensions/extensions_ui.h"
 #include "chrome/browser/printing/print_dialog_cloud.h"
 #include "chrome/browser/profiles/profile.h"
@@ -73,13 +73,13 @@ DOMUI* NewDOMUI(TabContents* contents, const GURL& url) {
 
 // Special case for extensions.
 template<>
-DOMUI* NewDOMUI<ExtensionDOMUI>(TabContents* contents, const GURL& url) {
+DOMUI* NewDOMUI<ExtensionWebUI>(TabContents* contents, const GURL& url) {
   // Don't use a DOMUI for incognito tabs because we require extensions to run
   // within a single process.
   ExtensionService* service = contents->profile()->GetExtensionService();
   if (service &&
       service->ExtensionBindingsAllowed(url)) {
-    return new ExtensionDOMUI(contents, url);
+    return new ExtensionWebUI(contents, url);
   }
   return NULL;
 }
@@ -87,7 +87,7 @@ DOMUI* NewDOMUI<ExtensionDOMUI>(TabContents* contents, const GURL& url) {
 // Returns a function that can be used to create the right type of DOMUI for a
 // tab, based on its URL. Returns NULL if the URL doesn't have DOMUI associated
 // with it. Even if the factory function is valid, it may yield a NULL DOMUI
-// when invoked for a particular tab - see NewDOMUI<ExtensionDOMUI>.
+// when invoked for a particular tab - see NewDOMUI<ExtensionWebUI>.
 static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
     const GURL& url) {
   // Currently, any gears: URL means an HTML dialog.
@@ -99,7 +99,7 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
 
   ExtensionService* service = profile ? profile->GetExtensionService() : NULL;
   if (service && service->ExtensionBindingsAllowed(url))
-    return &NewDOMUI<ExtensionDOMUI>;
+    return &NewDOMUI<ExtensionWebUI>;
 
   // All platform builds of Chrome will need to have a cloud printing
   // dialog as backup.  It's just that on Chrome OS, it's the only
@@ -276,7 +276,7 @@ void WebUIFactory::GetFaviconForURL(Profile* profile,
   // part of the manifest.
   if (page_url.SchemeIs(chrome::kExtensionScheme) &&
       page_url.host() != extension_misc::kBookmarkManagerId) {
-    ExtensionDOMUI::GetFaviconForURL(profile, request, page_url);
+    ExtensionWebUI::GetFaviconForURL(profile, request, page_url);
   } else {
     scoped_refptr<RefCountedMemory> icon_data(
         WebUIFactory::GetFaviconResourceBytes(profile, page_url));

@@ -33,7 +33,6 @@
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_cookies_api.h"
 #include "chrome/browser/extensions/extension_data_deleter.h"
-#include "chrome/browser/extensions/extension_dom_ui.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_history_api.h"
 #include "chrome/browser/extensions/extension_host.h"
@@ -41,6 +40,7 @@
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_processes_api.h"
 #include "chrome/browser/extensions/extension_updater.h"
+#include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/extensions/extension_webnavigation_api.h"
 #include "chrome/browser/extensions/external_extension_provider_interface.h"
 #include "chrome/browser/extensions/external_extension_provider_impl.h"
@@ -819,7 +819,7 @@ void ExtensionService::EnableExtension(const std::string& extension_id) {
   // Make sure any browser action contained within it is not hidden.
   extension_prefs_->SetBrowserActionVisibility(extension, true);
 
-  ExtensionDOMUI::RegisterChromeURLOverrides(profile_,
+  ExtensionWebUI::RegisterChromeURLOverrides(profile_,
       extension->GetChromeURLOverrides());
 
   NotifyExtensionLoaded(extension);
@@ -844,7 +844,7 @@ void ExtensionService::DisableExtension(const std::string& extension_id) {
                                            extension);
   extensions_.erase(iter);
 
-  ExtensionDOMUI::UnregisterChromeURLOverrides(profile_,
+  ExtensionWebUI::UnregisterChromeURLOverrides(profile_,
       extension->GetChromeURLOverrides());
 
   NotifyExtensionUnloaded(extension, UnloadedExtensionInfo::DISABLE);
@@ -1420,7 +1420,7 @@ void ExtensionService::UnloadExtension(
   // Clean up runtime data.
   extension_runtime_data_.erase(extension_id);
 
-  ExtensionDOMUI::UnregisterChromeURLOverrides(profile_,
+  ExtensionWebUI::UnregisterChromeURLOverrides(profile_,
       extension->GetChromeURLOverrides());
 
   ExtensionList::iterator iter = std::find(disabled_extensions_.begin(),
@@ -1533,7 +1533,7 @@ void ExtensionService::OnExtensionLoaded(const Extension* extension) {
 
       NotifyExtensionLoaded(extension);
 
-      ExtensionDOMUI::RegisterChromeURLOverrides(
+      ExtensionWebUI::RegisterChromeURLOverrides(
           profile_, extension->GetChromeURLOverrides());
       break;
     case Extension::DISABLED:

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_DOM_UI_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_DOM_UI_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_WEB_UI_H_
+#define CHROME_BROWSER_EXTENSIONS_EXTENSION_WEB_UI_H_
 #pragma once
 
 #include <string>
@@ -27,15 +27,15 @@ struct ViewHostMsg_DomMessage_Params;
 // the main tab contents area. For example, each extension can specify an
 // "options_page", and that page is displayed in the tab contents area and is
 // hosted by this class.
-class ExtensionDOMUI
+class ExtensionWebUI
     : public DOMUI,
       public ExtensionFunctionDispatcher::Delegate {
  public:
   static const char kExtensionURLOverrides[];
 
-  explicit ExtensionDOMUI(TabContents* tab_contents, const GURL& url);
+  explicit ExtensionWebUI(TabContents* tab_contents, const GURL& url);
 
-  virtual ~ExtensionDOMUI();
+  virtual ~ExtensionWebUI();
 
   ExtensionFunctionDispatcher* extension_function_dispatcher() const {
     return extension_function_dispatcher_.get();
@@ -103,4 +103,4 @@ class ExtensionDOMUI
   GURL url_;
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_DOM_UI_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_WEB_UI_H_

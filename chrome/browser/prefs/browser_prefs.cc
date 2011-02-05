@@ -17,8 +17,8 @@
 #include "chrome/browser/dom_ui/new_tab_ui.h"
 #include "chrome/browser/dom_ui/plugins_ui.h"
 #include "chrome/browser/download/download_prefs.h"
-#include "chrome/browser/extensions/extension_dom_ui.h"
 #include "chrome/browser/extensions/extension_prefs.h"
+#include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/extensions/extensions_ui.h"
 #include "chrome/browser/external_protocol_handler.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
@@ -126,7 +126,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   bookmark_utils::RegisterUserPrefs(user_prefs);
   TabContents::RegisterUserPrefs(user_prefs);
   TemplateURLPrepopulateData::RegisterUserPrefs(user_prefs);
-  ExtensionDOMUI::RegisterUserPrefs(user_prefs);
+  ExtensionWebUI::RegisterUserPrefs(user_prefs);
   ExtensionsUI::RegisterUserPrefs(user_prefs);
   NewTabUI::RegisterUserPrefs(user_prefs);
   PluginsUI::RegisterUserPrefs(user_prefs);

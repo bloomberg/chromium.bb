@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_dom_ui.h"
+#include "chrome/browser/extensions/extension_web_ui.h"
 
 #include <set>
 #include <vector>
@@ -54,9 +54,9 @@ void CleanUpDuplicates(ListValue* list) {
 
 // Helper class that is used to track the loading of the favicon of an
 // extension.
-class ExtensionDOMUIImageLoadingTracker : public ImageLoadingTracker::Observer {
+class ExtensionWebUIImageLoadingTracker : public ImageLoadingTracker::Observer {
  public:
-  ExtensionDOMUIImageLoadingTracker(Profile* profile,
+  ExtensionWebUIImageLoadingTracker(Profile* profile,
                                     FaviconService::GetFaviconRequest* request,
                                     const GURL& page_url)
       : ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this)),
@@ -97,7 +97,7 @@ class ExtensionDOMUIImageLoadingTracker : public ImageLoadingTracker::Observer {
   }
 
  private:
-  ~ExtensionDOMUIImageLoadingTracker() {}
+  ~ExtensionWebUIImageLoadingTracker() {}
 
   // Forwards the result on the request. If no favicon was available then
   // |icon_data| may be backed by NULL. Once the result has been forwarded the
@@ -114,15 +114,15 @@ class ExtensionDOMUIImageLoadingTracker : public ImageLoadingTracker::Observer {
   scoped_refptr<FaviconService::GetFaviconRequest> request_;
   const Extension* extension_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionDOMUIImageLoadingTracker);
+  DISALLOW_COPY_AND_ASSIGN(ExtensionWebUIImageLoadingTracker);
 };
 
 }  // namespace
 
-const char ExtensionDOMUI::kExtensionURLOverrides[] =
+const char ExtensionWebUI::kExtensionURLOverrides[] =
     "extensions.chrome_url_overrides";
 
-ExtensionDOMUI::ExtensionDOMUI(TabContents* tab_contents, const GURL& url)
+ExtensionWebUI::ExtensionWebUI(TabContents* tab_contents, const GURL& url)
     : DOMUI(tab_contents),
       url_(url) {
   ExtensionService* service = tab_contents->profile()->GetExtensionService();
@@ -147,9 +147,9 @@ ExtensionDOMUI::ExtensionDOMUI(TabContents* tab_contents, const GURL& url)
   }
 }
 
-ExtensionDOMUI::~ExtensionDOMUI() {}
+ExtensionWebUI::~ExtensionWebUI() {}
 
-void ExtensionDOMUI::ResetExtensionFunctionDispatcher(
+void ExtensionWebUI::ResetExtensionFunctionDispatcher(
     RenderViewHost* render_view_host) {
   // TODO(jcivelli): http://crbug.com/60608 we should get the URL out of the
   //                 active entry of the navigation controller.
@@ -158,7 +158,7 @@ void ExtensionDOMUI::ResetExtensionFunctionDispatcher(
   DCHECK(extension_function_dispatcher_.get());
 }
 
-void ExtensionDOMUI::ResetExtensionBookmarkManagerEventRouter() {
+void ExtensionWebUI::ResetExtensionBookmarkManagerEventRouter() {
   // Hack: A few things we specialize just for the bookmark manager.
   if (extension_function_dispatcher_->extension_id() ==
       extension_misc::kBookmarkManagerId) {
@@ -169,22 +169,22 @@ void ExtensionDOMUI::ResetExtensionBookmarkManagerEventRouter() {
   }
 }
 
-void ExtensionDOMUI::RenderViewCreated(RenderViewHost* render_view_host) {
+void ExtensionWebUI::RenderViewCreated(RenderViewHost* render_view_host) {
   ResetExtensionFunctionDispatcher(render_view_host);
   ResetExtensionBookmarkManagerEventRouter();
 }
 
-void ExtensionDOMUI::RenderViewReused(RenderViewHost* render_view_host) {
+void ExtensionWebUI::RenderViewReused(RenderViewHost* render_view_host) {
   ResetExtensionFunctionDispatcher(render_view_host);
   ResetExtensionBookmarkManagerEventRouter();
 }
 
-void ExtensionDOMUI::ProcessDOMUIMessage(
+void ExtensionWebUI::ProcessDOMUIMessage(
     const ViewHostMsg_DomMessage_Params& params) {
   extension_function_dispatcher_->HandleRequest(params);
 }
 
-Browser* ExtensionDOMUI::GetBrowser() {
+Browser* ExtensionWebUI::GetBrowser() {
   TabContents* contents = tab_contents();
   TabContentsIterator tab_iterator;
   for (; !tab_iterator.done(); ++tab_iterator) {
@@ -195,16 +195,16 @@ Browser* ExtensionDOMUI::GetBrowser() {
   return NULL;
 }
 
-TabContents* ExtensionDOMUI::associated_tab_contents() const {
+TabContents* ExtensionWebUI::associated_tab_contents() const {
   return tab_contents();
 }
 
 ExtensionBookmarkManagerEventRouter*
-ExtensionDOMUI::extension_bookmark_manager_event_router() {
+ExtensionWebUI::extension_bookmark_manager_event_router() {
   return extension_bookmark_manager_event_router_.get();
 }
 
-gfx::NativeWindow ExtensionDOMUI::GetCustomFrameNativeWindow() {
+gfx::NativeWindow ExtensionWebUI::GetCustomFrameNativeWindow() {
   if (GetBrowser())
     return NULL;
 
@@ -218,7 +218,7 @@ gfx::NativeWindow ExtensionDOMUI::GetCustomFrameNativeWindow() {
     return NULL;
 }
 
-gfx::NativeView ExtensionDOMUI::GetNativeViewOfHost() {
+gfx::NativeView ExtensionWebUI::GetNativeViewOfHost() {
   return tab_contents()->GetRenderWidgetHostView()->GetNativeView();
 }
 
@@ -226,12 +226,12 @@ gfx::NativeView ExtensionDOMUI::GetNativeViewOfHost() {
 // chrome:// URL overrides
 
 // static
-void ExtensionDOMUI::RegisterUserPrefs(PrefService* prefs) {
+void ExtensionWebUI::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterDictionaryPref(kExtensionURLOverrides);
 }
 
 // static
-bool ExtensionDOMUI::HandleChromeURLOverride(GURL* url, Profile* profile) {
+bool ExtensionWebUI::HandleChromeURLOverride(GURL* url, Profile* profile) {
   if (!url->SchemeIs(chrome::kChromeUIScheme))
     return false;
 
@@ -292,7 +292,7 @@ bool ExtensionDOMUI::HandleChromeURLOverride(GURL* url, Profile* profile) {
 }
 
 // static
-void ExtensionDOMUI::RegisterChromeURLOverrides(
+void ExtensionWebUI::RegisterChromeURLOverrides(
     Profile* profile, const Extension::URLOverrideMap& overrides) {
   if (overrides.empty())
     return;
@@ -335,7 +335,7 @@ void ExtensionDOMUI::RegisterChromeURLOverrides(
 }
 
 // static
-void ExtensionDOMUI::UnregisterAndReplaceOverride(const std::string& page,
+void ExtensionWebUI::UnregisterAndReplaceOverride(const std::string& page,
     Profile* profile, ListValue* list, Value* override) {
   int index = list->Remove(*override);
   if (index == 0) {
@@ -358,7 +358,7 @@ void ExtensionDOMUI::UnregisterAndReplaceOverride(const std::string& page,
 }
 
 // static
-void ExtensionDOMUI::UnregisterChromeURLOverride(const std::string& page,
+void ExtensionWebUI::UnregisterChromeURLOverride(const std::string& page,
     Profile* profile, Value* override) {
   if (!override)
     return;
@@ -376,7 +376,7 @@ void ExtensionDOMUI::UnregisterChromeURLOverride(const std::string& page,
 }
 
 // static
-void ExtensionDOMUI::UnregisterChromeURLOverrides(
+void ExtensionWebUI::UnregisterChromeURLOverrides(
     Profile* profile, const Extension::URLOverrideMap& overrides) {
   if (overrides.empty())
     return;
@@ -400,10 +400,10 @@ void ExtensionDOMUI::UnregisterChromeURLOverrides(
 }
 
 // static
-void ExtensionDOMUI::GetFaviconForURL(Profile* profile,
+void ExtensionWebUI::GetFaviconForURL(Profile* profile,
     FaviconService::GetFaviconRequest* request, const GURL& page_url) {
   // tracker deletes itself when done.
-  ExtensionDOMUIImageLoadingTracker* tracker =
-      new ExtensionDOMUIImageLoadingTracker(profile, request, page_url);
+  ExtensionWebUIImageLoadingTracker* tracker =
+      new ExtensionWebUIImageLoadingTracker(profile, request, page_url);
   tracker->Init();
 }
