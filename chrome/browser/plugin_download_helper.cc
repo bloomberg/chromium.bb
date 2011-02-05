@@ -36,7 +36,7 @@ PluginDownloadUrlHelper::~PluginDownloadUrlHelper() {
 void PluginDownloadUrlHelper::InitiateDownload(
     net::URLRequestContext* request_context) {
   download_file_request_ = new net::URLRequest(GURL(download_url_), this);
-  chrome_browser_net::SetOriginProcessUniqueIDForRequest(
+  chrome_browser_net::SetOriginPIDForRequest(
       download_source_child_unique_id_, download_file_request_);
   download_file_request_->set_context(request_context);
   download_file_request_->Start();
@@ -184,7 +184,3 @@ void PluginDownloadUrlHelper::DownloadCompletedHelper(bool success) {
 }
 
 #endif  // OS_WIN
-
-
-
-

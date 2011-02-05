@@ -448,12 +448,8 @@ class TaskManagerBrowserProcessResource : public TaskManager::Resource {
   virtual bool ReportsSqliteMemoryUsed() const OVERRIDE;
   virtual size_t SqliteMemoryUsedBytes() const OVERRIDE;
 
-  // Returns the pid of the browser process.
-  int process_id() const { return pid_; }
-
  private:
   base::ProcessHandle process_;
-  int pid_;
   mutable string16 title_;
 
   static SkBitmap* default_icon_;
