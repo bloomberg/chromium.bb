@@ -48,15 +48,7 @@ PepperPluginRegistry* PepperPluginRegistry::GetInstance() {
 
 // static
 void PepperPluginRegistry::GetList(std::vector<PepperPluginInfo>* plugins) {
-  InternalPluginInfoList internal_plugin_info;
-  GetInternalPluginInfo(&internal_plugin_info);
-  for (InternalPluginInfoList::const_iterator it =
-         internal_plugin_info.begin();
-       it != internal_plugin_info.end();
-       ++it) {
-    plugins->push_back(*it);
-  }
-
+  GetInternalPluginInfo(plugins);
   GetPluginInfoFromSwitch(plugins);
   GetExtraPlugins(plugins);
 }
@@ -174,13 +166,9 @@ void PepperPluginRegistry::GetExtraPlugins(
   }
 }
 
-PepperPluginRegistry::InternalPluginInfo::InternalPluginInfo() {
-  is_internal = true;
-}
-
 // static
 void PepperPluginRegistry::GetInternalPluginInfo(
-    InternalPluginInfoList* plugin_info) {
+    std::vector<PepperPluginInfo>* plugin_info) {
   // Currently, to centralize the internal plugin registration logic, we
   // hardcode the list of plugins, mimetypes, and registration information
   // in this function.  This is gross, but because the GetList() function is
@@ -193,17 +181,17 @@ void PepperPluginRegistry::GetInternalPluginInfo(
   // plugin initializers that is built with static initializers?
 
 #if defined(ENABLE_REMOTING)
+  // Add the chromoting plugin.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableRemoting)) {
-    InternalPluginInfo info;
-    // Add the chromoting plugin.
-    DCHECK(info.is_internal);
-    info.path =
-        FilePath(FILE_PATH_LITERAL("internal-chromoting"));
+    PepperPluginInfo info;
+    info.is_internal;
+    info.path = FilePath(FILE_PATH_LITERAL("internal-chromoting"));
     info.mime_types.push_back("pepper-application/x-chromoting");
-    info.entry_points.get_interface = remoting::PPP_GetInterface;
-    info.entry_points.initialize_module = remoting::PPP_InitializeModule;
-    info.entry_points.shutdown_module = remoting::PPP_ShutdownModule;
+    info.internal_entry_points.get_interface = remoting::PPP_GetInterface;
+    info.internal_entry_points.initialize_module =
+        remoting::PPP_InitializeModule;
+    info.internal_entry_points.shutdown_module = remoting::PPP_ShutdownModule;
 
     plugin_info->push_back(info);
   }
@@ -261,18 +249,18 @@ PepperPluginRegistry::~PepperPluginRegistry() {
 }
 
 PepperPluginRegistry::PepperPluginRegistry() {
-  InternalPluginInfoList internal_plugin_info;
+  std::vector<PepperPluginInfo> internal_plugin_info;
   GetInternalPluginInfo(&internal_plugin_info);
 
   // Register modules for these suckers.
-  for (InternalPluginInfoList::const_iterator it =
+  for (std::vector<PepperPluginInfo>::const_iterator it =
          internal_plugin_info.begin();
        it != internal_plugin_info.end();
        ++it) {
     const FilePath& path = it->path;
     scoped_refptr<webkit::ppapi::PluginModule> module(
         new webkit::ppapi::PluginModule(this));
-    if (!module->InitAsInternalPlugin(it->entry_points)) {
+    if (!module->InitAsInternalPlugin(it->internal_entry_points)) {
       DLOG(ERROR) << "Failed to load pepper module: " << path.value();
       continue;
     }

@@ -19,6 +19,8 @@ struct PepperPluginInfo {
   ~PepperPluginInfo();
 
   // Indicates internal plugins for which there's not actually a library.
+  // These plugins are implemented in the Chrome binary using a separate set
+  // of entry points (see internal_entry_points below).
   // Defaults to false.
   bool is_internal;
 
@@ -31,6 +33,10 @@ struct PepperPluginInfo {
   std::string description;
   std::string file_extensions;
   std::string type_descriptions;
+
+  // When is_internal is set, this contains the function pointers to the
+  // entry points for the internal plugins.
+  webkit::ppapi::PluginModule::EntryPoints internal_entry_points;
 };
 
 // This class holds references to all of the known pepper plugin modules.
@@ -88,12 +94,7 @@ class PepperPluginRegistry
   static void GetPluginInfoFromSwitch(std::vector<PepperPluginInfo>* plugins);
   static void GetExtraPlugins(std::vector<PepperPluginInfo>* plugins);
 
-  struct InternalPluginInfo : public PepperPluginInfo {
-    InternalPluginInfo();  // Sets |is_internal|.
-    webkit::ppapi::PluginModule::EntryPoints entry_points;
-  };
-  typedef std::vector<InternalPluginInfo> InternalPluginInfoList;
-  static void GetInternalPluginInfo(InternalPluginInfoList* plugin_info);
+  static void GetInternalPluginInfo(std::vector<PepperPluginInfo>* plugin_info);
 
   PepperPluginRegistry();
 
