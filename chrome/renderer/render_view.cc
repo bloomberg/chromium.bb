@@ -393,20 +393,23 @@ static bool IsWhitelistedForContentSettings(WebFrame* frame) {
 // Returns true if the frame is navigating to an URL either into or out of an
 // extension app's extent.
 // TODO(creis): Temporary workaround for crbug.com/65953: Only return true if
-// we would enter an extension app's extent from a non-app.  We avoid swapping
-// processes to exit an app for now, since we do not yet restore context (such
+// we would enter an extension app's extent from a non-app, or if we leave an
+// extension with no web extent.  We avoid swapping processes to exit a hosted
+// app with a web extent for now, since we do not yet restore context (such
 // as window.opener) if the window navigates back.
-static bool CrossesIntoExtensionExtent(const ExtensionSet* extensions,
-                                       WebFrame* frame,
-                                       const GURL& new_url) {
+static bool CrossesExtensionExtents(const ExtensionSet* extensions,
+                                    WebFrame* frame,
+                                    const GURL& new_url) {
   // If the URL is still empty, this is a window.open navigation. Check the
   // opener's URL.
   GURL old_url(frame->url());
   if (old_url.is_empty() && frame->opener())
     old_url = frame->opener()->url();
 
+  bool old_url_is_hosted_app = extensions->GetByURL(old_url) &&
+      !extensions->GetByURL(old_url)->web_extent().is_empty();
   return !extensions->InSameExtent(old_url, new_url) &&
-         !extensions->GetByURL(old_url);
+         !old_url_is_hosted_app;
 }
 
 // Returns the ISO 639_1 language code of the specified |text|, or 'unknown'
@@ -3005,11 +3008,11 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
     // TODO(erikkay) This is happening inside of a check to is_content_initiated
     // which means that things like the back button won't trigger it.  Is that
     // OK?
-    // TODO(creis): For now, we only swap processes to enter an app and not
-    // exit it, since we currently lose context (e.g., window.opener) if the
-    // window navigates back.  See crbug.com/65953.
+    // TODO(creis): For hosted apps, we currently only swap processes to enter
+    // the app and not exit it, since we currently lose context (e.g.,
+    // window.opener) if the window navigates back.  See crbug.com/65953.
     if (!should_fork &&
-        CrossesIntoExtensionExtent(
+        CrossesExtensionExtents(
             render_thread_->GetExtensions(),
             frame,
             url)) {
