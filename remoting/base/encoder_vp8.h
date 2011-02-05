@@ -7,8 +7,8 @@
 
 #include <vector>
 
-#include "gfx/rect.h"
 #include "remoting/base/encoder.h"
+#include "ui/gfx/rect.h"
 
 typedef struct vpx_codec_ctx vpx_codec_ctx_t;
 typedef struct vpx_image vpx_image_t;
