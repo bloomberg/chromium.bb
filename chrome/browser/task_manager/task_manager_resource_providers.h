@@ -220,8 +220,12 @@ class TaskManagerChildProcessResource : public TaskManager::Resource {
   virtual bool SupportNetworkUsage() const OVERRIDE;
   virtual void SetSupportNetworkUsage() OVERRIDE;
 
+  // Returns the pid of the child process.
+  int process_id() const { return pid_; }
+
  private:
   ChildProcessInfo child_process_;
+  int pid_;
   mutable string16 title_;
   bool network_usage_support_;
 

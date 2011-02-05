@@ -73,7 +73,7 @@ static ViewHostMsg_Resource_Request CreateResourceRequest(
   request.frame_origin = "null";
   request.main_frame_origin = "null";
   request.load_flags = 0;
-  request.origin_pid = 0;
+  request.origin_child_id = 0;
   request.resource_type = type;
   request.request_context = 0;
   request.appcache_host_id = appcache::kNoHostId;

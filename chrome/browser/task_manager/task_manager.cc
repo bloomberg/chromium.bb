@@ -839,7 +839,7 @@ void TaskManagerModel::BytesRead(BytesReadParam param) {
   TaskManager::Resource* resource = NULL;
   for (ResourceProviderList::iterator iter = providers_.begin();
        iter != providers_.end(); ++iter) {
-    resource = (*iter)->GetResource(param.origin_pid,
+    resource = (*iter)->GetResource(param.origin_child_id,
                                     param.render_process_host_child_id,
                                     param.routing_id);
     if (resource)
@@ -851,8 +851,9 @@ void TaskManagerModel::BytesRead(BytesReadParam param) {
     // tab that started a download was closed, or the request may have had
     // no originating resource associated with it in the first place.
     // We attribute orphaned/unaccounted activity to the Browser process.
-    CHECK(param.origin_pid || (param.render_process_host_child_id != -1));
-    param.origin_pid = 0;
+    int browser_pid = base::GetCurrentProcId();
+    CHECK(param.origin_child_id != browser_pid);
+    param.origin_child_id = browser_pid;
     param.render_process_host_child_id = param.routing_id = -1;
     BytesRead(param);
     return;
@@ -903,18 +904,15 @@ void TaskManagerModel::OnBytesRead(net::URLRequestJob* job, const char* buf,
                                                &render_process_host_child_id,
                                                &routing_id);
 
-  // Get the origin PID of the request's originator.  This will only be set for
-  // plugins - for renderer or browser initiated requests it will be zero.
-  int origin_pid =
-      chrome_browser_net::GetOriginPIDForRequest(job->request());
-
   // This happens in the IO thread, post it to the UI thread.
+  int origin_child_id =
+      chrome_browser_net::GetOriginProcessUniqueIDForRequest(job->request());
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
           this,
           &TaskManagerModel::BytesRead,
-          BytesReadParam(origin_pid,
+          BytesReadParam(origin_child_id,
           render_process_host_child_id,
           routing_id, byte_count)));
 }

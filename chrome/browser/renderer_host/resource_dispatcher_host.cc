@@ -199,13 +199,13 @@ std::vector<int> GetAllNetErrorCodes() {
 }
 
 #if defined(OS_WIN)
-#pragma warning(disable: 4748)
-#pragma optimize("", off)
+#pragma warning (disable: 4748)
+#pragma optimize( "", off )
 #endif
 
 #if defined(OS_WIN)
-#pragma optimize("", on)
-#pragma warning(default: 4748)
+#pragma optimize( "", on )
+#pragma warning (default: 4748)
 #endif
 
 }  // namespace
@@ -521,8 +521,8 @@ void ResourceDispatcherHost::BeginRequest(
   ApplyExtensionLocalizationFilter(request_data.url, request_data.resource_type,
                                    extra_info);
   SetRequestInfo(request, extra_info);  // Request takes ownership.
-  chrome_browser_net::SetOriginPIDForRequest(
-      request_data.origin_pid, request);
+  chrome_browser_net::SetOriginProcessUniqueIDForRequest(
+      request_data.origin_child_id, request);
 
   if (request->url().SchemeIs(chrome::kBlobScheme) && context) {
     // Hang on to a reference to ensure the blob is not released prior
@@ -736,6 +736,7 @@ void ResourceDispatcherHost::BeginDownload(
   ResourceDispatcherHostRequestInfo* extra_info =
       CreateRequestInfoForBrowserRequest(handler, child_id, route_id, true);
   SetRequestInfo(request, extra_info);  // Request takes ownership.
+  chrome_browser_net::SetOriginProcessUniqueIDForRequest(child_id, request);
 
   BeginRequestInternal(request);
 }
@@ -783,6 +784,7 @@ void ResourceDispatcherHost::BeginSaveFile(
   ResourceDispatcherHostRequestInfo* extra_info =
       CreateRequestInfoForBrowserRequest(handler, child_id, route_id, false);
   SetRequestInfo(request, extra_info);  // Request takes ownership.
+  chrome_browser_net::SetOriginProcessUniqueIDForRequest(child_id, request);
 
   BeginRequestInternal(request);
 }

@@ -61,7 +61,7 @@ ViewMsg_ClosePage_Params::~ViewMsg_ClosePage_Params() {
 
 ViewHostMsg_Resource_Request::ViewHostMsg_Resource_Request()
     : load_flags(0),
-      origin_pid(0),
+      origin_child_id(0),
       resource_type(ResourceType::MAIN_FRAME),
       request_context(0),
       appcache_host_id(0),
@@ -924,7 +924,7 @@ void ParamTraits<ViewHostMsg_Resource_Request>::Write(Message* m,
   WriteParam(m, p.main_frame_origin);
   WriteParam(m, p.headers);
   WriteParam(m, p.load_flags);
-  WriteParam(m, p.origin_pid);
+  WriteParam(m, p.origin_child_id);
   WriteParam(m, p.resource_type);
   WriteParam(m, p.request_context);
   WriteParam(m, p.appcache_host_id);
@@ -947,7 +947,7 @@ bool ParamTraits<ViewHostMsg_Resource_Request>::Read(const Message* m,
       ReadParam(m, iter, &r->main_frame_origin) &&
       ReadParam(m, iter, &r->headers) &&
       ReadParam(m, iter, &r->load_flags) &&
-      ReadParam(m, iter, &r->origin_pid) &&
+      ReadParam(m, iter, &r->origin_child_id) &&
       ReadParam(m, iter, &r->resource_type) &&
       ReadParam(m, iter, &r->request_context) &&
       ReadParam(m, iter, &r->appcache_host_id) &&
@@ -973,7 +973,7 @@ void ParamTraits<ViewHostMsg_Resource_Request>::Log(const param_type& p,
   l->append(", ");
   LogParam(p.load_flags, l);
   l->append(", ");
-  LogParam(p.origin_pid, l);
+  LogParam(p.origin_child_id, l);
   l->append(", ");
   LogParam(p.resource_type, l);
   l->append(", ");

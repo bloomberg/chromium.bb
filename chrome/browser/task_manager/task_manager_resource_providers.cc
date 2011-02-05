@@ -234,14 +234,23 @@ TaskManager::Resource* TaskManagerTabContentsResourceProvider::GetResource(
     int origin_pid,
     int render_process_host_id,
     int routing_id) {
+
   TabContents* tab_contents =
       tab_util::GetTabContentsByID(render_process_host_id, routing_id);
   if (!tab_contents)  // Not one of our resource.
     return NULL;
 
-  // If an origin PID was specified then the request originated in a plugin
-  // working on the TabContent's behalf, so ignore it.
-  if (origin_pid)
+  base::ProcessHandle process_handle =
+      tab_contents->GetRenderProcessHost()->GetHandle();
+  if (!process_handle) {
+    // We should not be holding on to a dead tab (it should have been removed
+    // through the NOTIFY_TAB_CONTENTS_DISCONNECTED notification.
+    NOTREACHED();
+    return NULL;
+  }
+
+  int pid = base::GetProcId(process_handle);
+  if (pid != origin_pid)
     return NULL;
 
   std::map<TabContents*, TaskManagerTabContentsResource*>::iterator
@@ -444,14 +453,19 @@ TaskManagerBackgroundContentsResourceProvider::GetResource(
     int origin_pid,
     int render_process_host_id,
     int routing_id) {
+
   BackgroundContents* contents = BackgroundContents::GetBackgroundContentsByID(
       render_process_host_id, routing_id);
   if (!contents)  // This resource no longer exists.
     return NULL;
 
-  // If an origin PID was specified, the request is from a plugin, not the
-  // render view host process
-  if (origin_pid)
+  base::ProcessHandle process_handle =
+      contents->render_view_host()->process()->GetHandle();
+  if (!process_handle) // Process crashed.
+    return NULL;
+
+  int pid = base::GetProcId(process_handle);
+  if (pid != origin_pid)
     return NULL;
 
   std::map<BackgroundContents*,
@@ -628,7 +642,7 @@ TaskManagerChildProcessResource::TaskManagerChildProcessResource(
       network_usage_support_(false) {
   // We cache the process id because it's not cheap to calculate, and it won't
   // be available when we get the plugin disconnected notification.
-  pid_ = child_proc.pid();
+  pid_ = child_proc.id();
   if (!default_icon_) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     default_icon_ = rb.GetBitmapNamed(IDR_PLUGIN);
@@ -1206,8 +1220,8 @@ SkBitmap* TaskManagerBrowserProcessResource::default_icon_ = NULL;
 
 TaskManagerBrowserProcessResource::TaskManagerBrowserProcessResource()
     : title_() {
-  int pid = base::GetCurrentProcId();
-  bool success = base::OpenPrivilegedProcessHandle(pid, &process_);
+  pid_ = base::GetCurrentProcId();
+  bool success = base::OpenPrivilegedProcessHandle(pid_, &process_);
   DCHECK(success);
 #if defined(OS_WIN)
   if (!default_icon_) {
@@ -1298,7 +1312,7 @@ TaskManager::Resource* TaskManagerBrowserProcessResourceProvider::GetResource(
     int origin_pid,
     int render_process_host_id,
     int routing_id) {
-  if (origin_pid || render_process_host_id != -1) {
+  if (origin_pid != resource_.process_id()) {
     return NULL;
   }
 

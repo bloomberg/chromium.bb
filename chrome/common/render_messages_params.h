@@ -456,9 +456,10 @@ struct ViewHostMsg_Resource_Request {
   // net::URLRequest load flags (0 by default).
   int load_flags;
 
-  // Process ID from which this request originated, or zero if it originated
-  // in the renderer itself.
-  int origin_pid;
+  // Unique ID of process that originated this request. For normal renderer
+  // requests, this will be the ID of the renderer. For plugin requests routed
+  // through the renderer, this will be the plugin's ID.
+  int origin_child_id;
 
   // What this resource load is for (main frame, sub-frame, sub-resource,
   // object).
