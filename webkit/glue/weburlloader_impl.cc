@@ -403,12 +403,6 @@ void WebURLLoaderImpl::Context::Start(
   if (!request.allowStoredCredentials())
     load_flags |= net::LOAD_DO_NOT_SEND_AUTH_DATA;
 
-  // TODO(jcampan): in the non out-of-process plugin case the request does not
-  // have a requestor_pid. Find a better place to set this.
-  int requestor_pid = request.requestorProcessID();
-  if (requestor_pid == 0)
-    requestor_pid = base::GetCurrentProcId();
-
   HeaderFlattener flattener(load_flags);
   request.visitHTTPHeaderFields(&flattener);
 
@@ -429,7 +423,10 @@ void WebURLLoaderImpl::Context::Start(
   request_info.main_frame_origin = main_frame_origin;
   request_info.headers = flattener.GetBuffer();
   request_info.load_flags = load_flags;
-  request_info.requestor_pid = requestor_pid;
+  // requestor_pid only needs to be non-zero if the request originates outside
+  // the render process, so we can use requestorProcessID even for requests
+  // from in-process plugins.
+  request_info.requestor_pid = request.requestorProcessID();
   request_info.request_type = FromTargetType(request.targetType());
   request_info.appcache_host_id = request.appCacheHostID();
   request_info.routing_id = request.requestorID();

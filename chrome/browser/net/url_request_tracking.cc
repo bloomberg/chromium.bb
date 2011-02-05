@@ -11,37 +11,37 @@ namespace {
 
 // The value is not important, this address is used as the unique key for the
 // PID.
-const void* kOriginProcessUniqueIDKey = 0;
+const void* kOriginPidKey = 0;
 
-class UniqueIDData : public net::URLRequest::UserData {
+class OriginPidData : public net::URLRequest::UserData {
  public:
-  explicit UniqueIDData(int id) : id_(id) {}
-  virtual ~UniqueIDData() {}
+  explicit OriginPidData(int pid) : pid_(pid) {}
+  virtual ~OriginPidData() {}
 
-  int id() const { return id_; }
-  void set_id(int id) { id_ = id; }
+  int pid() const { return pid_; }
+  void set_pid(int pid) { pid_ = pid; }
 
  private:
-  int id_;
+  int pid_;
 
-  DISALLOW_COPY_AND_ASSIGN(UniqueIDData);
+  DISALLOW_COPY_AND_ASSIGN(OriginPidData);
 };
 
 }  // namespace
 
 namespace chrome_browser_net {
 
-void SetOriginProcessUniqueIDForRequest(int id, net::URLRequest* request) {
+void SetOriginPIDForRequest(int pid, net::URLRequest* request) {
   // The request will take ownership.
-  request->SetUserData(&kOriginProcessUniqueIDKey, new UniqueIDData(id));
+  request->SetUserData(&kOriginPidKey, new OriginPidData(pid));
 }
 
-int GetOriginProcessUniqueIDForRequest(const net::URLRequest* request) {
-  const UniqueIDData* data = static_cast<const UniqueIDData*>(
-      request->GetUserData(&kOriginProcessUniqueIDKey));
+int GetOriginPIDForRequest(const net::URLRequest* request) {
+  const OriginPidData* data = static_cast<const OriginPidData*>(
+      request->GetUserData(&kOriginPidKey));
   if (!data)
-    return -1;
-  return data->id();
+    return 0;
+  return data->pid();
 }
 
 }  // namespace chrome_browser_net

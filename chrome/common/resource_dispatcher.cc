@@ -106,7 +106,7 @@ IPCResourceLoaderBridge::IPCResourceLoaderBridge(
   request_.main_frame_origin = request_info.main_frame_origin;
   request_.headers = request_info.headers;
   request_.load_flags = request_info.load_flags;
-  request_.origin_child_id = request_info.requestor_pid;
+  request_.origin_pid = request_info.requestor_pid;
   request_.resource_type = request_info.request_type;
   request_.request_context = request_info.request_context;
   request_.appcache_host_id = request_info.appcache_host_id;

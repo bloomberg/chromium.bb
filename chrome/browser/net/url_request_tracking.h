@@ -18,20 +18,19 @@ namespace chrome_browser_net {
 // place allows us to do more general things, such as assigning traffic for the
 // network view in the task manager.
 //
-// If you make a request on behalf of a child process, please call this
-// function. The default value will be -1 which will be interprepreted as
-// originating from the browser itself.
+// If you make a request on behalf of a child process other than a renderer,
+// please call this function to store its PID (NOT its browser-assigned unique
+// child ID).  For requests originating in a renderer or the browser itself,
+// set a PID of zero (the default).
 //
-// The ID is the child process' unique ID (not a PID) of the process originating
-// the request. This is normally the renderer corresponding to the load. If a
-// plugin process does a request through a renderer process this will be the
-// plugin (the originator of the request).
-void SetOriginProcessUniqueIDForRequest(int id, net::URLRequest* request);
+// TODO(wez): Get rid of the zero-PID hack & enforce that one is always set.
+void SetOriginPIDForRequest(int pid, net::URLRequest* request);
 
-// Returns the child process' unique ID that has been previously set by
-// SetOriginProcessUniqueIDForRequest. If no ID has been set, the return
-// value is -1. We use this to identify requests made by the browser process.
-int GetOriginProcessUniqueIDForRequest(const net::URLRequest* request);
+// Returns the process ID of the request's originator, previously stored with
+// SetOriginProcessIDForRequest, or zero if no PID has been set.  A PID of zero
+// should be interpreted as meaning the request originated from a renderer
+// process, or within the browser itself.
+int GetOriginPIDForRequest(const net::URLRequest* request);
 
 }  // namespace chrome_browser_net
 

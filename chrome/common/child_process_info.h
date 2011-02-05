@@ -68,6 +68,9 @@ class ChildProcessInfo {
   // Getter to the process handle.
   base::ProcessHandle handle() const { return process_.handle(); }
 
+  // Getter to the process ID.
+  int pid() const { return process_.pid(); }
+
   // The unique identifier for this child process. This identifier is NOT a
   // process ID, and will be unique for all types of child process for
   // one run of the browser.
