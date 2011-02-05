@@ -16,10 +16,17 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "ui/gfx/rect.h"
+#include "views/controls/textfield/textfield.h"
 
 namespace {
 
 const int kKeyboardHeight = 300;
+
+TouchBrowserFrameView::VirtualKeyboardType GetKeyboardType(views::View* view) {
+  if (view->GetClassName().compare(views::Textfield::kViewClassName) == 0)
+    return TouchBrowserFrameView::GENERIC;
+  return TouchBrowserFrameView::NONE;
+}
 
 PropertyAccessor<bool>* GetFocusedStateAccessor() {
   static PropertyAccessor<bool> state;
@@ -35,6 +42,7 @@ TouchBrowserFrameView::TouchBrowserFrameView(BrowserFrame* frame,
                                              BrowserView* browser_view)
     : OpaqueBrowserFrameView(frame, browser_view),
       keyboard_showing_(false),
+      focus_listener_added_(false),
       keyboard_(NULL) {
   registrar_.Add(this,
                  NotificationType::NAV_ENTRY_COMMITTED,
@@ -63,6 +71,16 @@ void TouchBrowserFrameView::Layout() {
   keyboard_->SetBounds(GetBoundsForReservedArea());
 }
 
+void TouchBrowserFrameView::FocusWillChange(views::View* focused_before,
+                                            views::View* focused_now) {
+  if (!focused_before ||
+      (focused_now && GetKeyboardType(focused_now)
+          != GetKeyboardType(focused_before))) {
+    // TODO(varunjain): support other types of keyboard.
+    UpdateKeyboardAndLayout(GetKeyboardType(focused_now) == GENERIC);
+  }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // TouchBrowserFrameView, protected:
 int TouchBrowserFrameView::GetReservedHeight() const {
@@ -70,6 +88,24 @@ int TouchBrowserFrameView::GetReservedHeight() const {
     return kKeyboardHeight;
 
   return 0;
+}
+
+void TouchBrowserFrameView::ViewHierarchyChanged(bool is_add,
+                                                 View* parent,
+                                                 View* child) {
+  OpaqueBrowserFrameView::ViewHierarchyChanged(is_add, parent, child);
+  if (!GetFocusManager())
+    return;
+
+  if (is_add && !focus_listener_added_) {
+    // Add focus listener when this view is added to the hierarchy.
+    GetFocusManager()->AddFocusChangeListener(this);
+    focus_listener_added_ = true;
+  } else if (!is_add && focus_listener_added_) {
+    // Remove focus listener when this view is removed from the hierarchy.
+    GetFocusManager()->RemoveFocusChangeListener(this);
+    focus_listener_added_ = false;
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

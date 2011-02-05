@@ -10,6 +10,7 @@
 #include "chrome/browser/tabs/tab_strip_model_observer.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
+#include "views/focus/focus_manager.h"
 
 class BrowserFrame;
 class BrowserView;
@@ -18,9 +19,16 @@ class NotificationDetails;
 class NotificationSource;
 
 class TouchBrowserFrameView : public OpaqueBrowserFrameView,
+                              public views::FocusChangeListener,
                               public TabStripModelObserver,
                               public NotificationObserver {
  public:
+  enum VirtualKeyboardType {
+    NONE,
+    GENERIC,
+    URL,
+  };
+
   // Constructs a non-client view for an BrowserFrame.
   TouchBrowserFrameView(BrowserFrame* frame, BrowserView* browser_view);
   virtual ~TouchBrowserFrameView();
@@ -28,9 +36,14 @@ class TouchBrowserFrameView : public OpaqueBrowserFrameView,
   // Overridden from OpaqueBrowserFrameView
   virtual void Layout();
 
+  // views::FocusChangeListener implementation
+  virtual void FocusWillChange(views::View* focused_before,
+                               views::View* focused_now);
+
  protected:
   // Overridden from OpaqueBrowserFrameView
   virtual int GetReservedHeight() const;
+  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
 
  private:
   virtual void InitVirtualKeyboard();
@@ -48,6 +61,7 @@ class TouchBrowserFrameView : public OpaqueBrowserFrameView,
                        const NotificationDetails& details);
 
   bool keyboard_showing_;
+  bool focus_listener_added_;
   KeyboardContainerView* keyboard_;
   NotificationRegistrar registrar_;
 
