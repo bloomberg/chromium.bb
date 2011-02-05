@@ -11,59 +11,65 @@ env.Prepend(CPPDEFINES=['XP_UNIX'])
 env.FilterOut(CFLAGS=['-pedantic'])
 env.FilterOut(CCFLAGS=['-pedantic'])
 
-ppapi_basic_object_inputs = [
-  env.ComponentObject('basic_object.cc'),
-]
+basic_obj = env.ComponentObject('basic_object.cc'),
 
-basic_object_nexe = env.ComponentProgram('ppapi_basic_object.nexe',
-                                         ppapi_basic_object_inputs,
-                                         EXTRA_LIBS=['ppruntime',
-                                                     'google_nacl_imc',
-                                                     'google_nacl_platform',
-                                                     'gio',
-                                                     'pthread',
-                                                     'srpc'])
+env.ComponentProgram('ppapi_basic_object.nexe',
+                     [basic_obj,],
+                     EXTRA_LIBS=['ppruntime',
+                                 'google_nacl_imc',
+                                 'google_nacl_platform',
+                                 'gio',
+                                 'pthread',
+                                 'srpc'])
 
 # Note that the html is required to run this program.
 env.Publish('ppapi_basic_object.nexe', 'run',
             [env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
              'basic_object.html'])
 
-ppapi_user_main_inputs = ppapi_basic_object_inputs + [
-  'user_main.cc',
-]
-
-basic_object_nexe = env.ComponentProgram('ppapi_user_main.nexe',
-                                         ppapi_user_main_inputs,
-                                         EXTRA_LIBS=['ppruntime',
-                                                     'google_nacl_imc',
-                                                     'google_nacl_platform',
-                                                     'gio',
-                                                     'pthread',
-                                                     'srpc'])
+env.ComponentProgram('ppapi_user_main.nexe',
+                     [basic_obj,
+                      'user_main.cc',],
+                     EXTRA_LIBS=['ppruntime',
+                                 'google_nacl_imc',
+                                 'google_nacl_platform',
+                                 'gio',
+                                 'pthread',
+                                 'srpc'])
 
 # Note that the html is required to run this program.
 env.Publish('ppapi_user_main.nexe', 'run',
             [env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
              'basic_object.html'])
 
-
-ppapi_event_example_inputs = [
-  'event_example.cc',
-]
-
-event_example_nexe = env.ComponentProgram('ppapi_event_example.nexe',
-                                          ppapi_event_example_inputs,
-                                          EXTRA_LIBS=['ppruntime',
-                                                      'google_nacl_imc',
-                                                      'google_nacl_platform',
-                                                      'gio',
-                                                      'ppapi_cpp',
-                                                      'pthread',
-                                                      'srpc'])
+env.ComponentProgram('ppapi_event_example.nexe',
+                     ['event_example.cc',],
+                     EXTRA_LIBS=['ppruntime',
+                                 'google_nacl_imc',
+                                 'google_nacl_platform',
+                                 'gio',
+                                 'ppapi_cpp',
+                                 'pthread',
+                                 'srpc'])
 
 # Note that the html is required to run this program.
 env.Publish('ppapi_event_example.nexe', 'run',
             [env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
              'event_example.html'])
 
+node = env.SelUniversalTest(
+    'ppapi_event_example.out',
+    command=[env.File('ppapi_event_example.nexe')],
+    stdin=env.File('event_example.stdin'),
+    stdout_golden=env.File('event_example.stdout'),
+    # filter out a line that contains unpredictable values
+    filter_regex="'PPP_InitializeModule|PPP_Instance_GetInstanceObject'",
+    filter_inverse='true',
+    )
+
+# Note: we use the sysv shm feature in sel_universal which is only available on linux.
+is_broken = not env.Bit('host_linux')
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'sel_ldr_tests'],
+                       'run_ppapi_event_test',
+                       is_broken=is_broken)

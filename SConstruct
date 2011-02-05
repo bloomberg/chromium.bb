@@ -423,6 +423,7 @@ nacl_glibc_skiplist = set([
     # sanity check failure in free().
     # TODO(robertm): This needs further investigation.
     'run_ppapi_example_2d_test',
+    'run_ppapi_event_test',
     ])
 
 

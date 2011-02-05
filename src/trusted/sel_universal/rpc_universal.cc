@@ -383,7 +383,7 @@ static bool HandleRpc(NaClCommandLoop* ncl, const vector<string>& args) {
     printf("  %s", value.c_str());
 
     stringstream tag;
-    tag << "result" + i;
+    tag << "result" << i;
     ncl->SetVariable(tag.str(), value);
   }
   printf("\n");

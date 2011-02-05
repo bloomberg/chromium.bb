@@ -1,0 +1,69 @@
+Creating EventModule.
+
+"*** REGISTER REPLAY METHODS" 
+
+"*** INITIALIZE PEPPER" 
+
+"*** CREATE UPCALL SERVICE" 
+
+"*** INIT MODULE" 
+replaying PPB_GetInterface:s:i:
+output 0:  i(1)
+Creating EventInstance.
+EventInstance created.
+EventInstance::GetInstanceObject
+EventHandler created.
+
+"*** INIT INSTANCE" 
+PPP_Instance_DidCreate RESULTS:   i(1)
+
+"*** GET INSTANCE OBJECT" 
+replaying PPB_GetInterface:s:i:
+output 0:  i(1)
+HandleInputEvent called
+5555: Mouse event:Down modifier:left-button-down  button:Left x:264 y:100 click_count:1 time:1
+HandleInputEvent called
+5555: Mouse event:Up modifier:left-button-down  button:Left x:264 y:100 click_count:0 time:1.0625
+HandleInputEvent called
+5555: Mouse event:Move modifier: button:Left x:264 y:100 click_count:0 time:1.125
+HandleInputEvent called
+5555: Mouse event:Enter modifier: button:Left x:264 y:100 click_count:0 time:1.1875
+HandleInputEvent called
+5555: Mouse event:Leave modifier: button:Left x:264 y:100 click_count:0 time:1.25
+HandleInputEvent called
+5555: Key event:Up modifier: key_code:84 time:1.375
+HandleInputEvent called
+5555: Key event:Down modifier: key_code:84 time:1.3125
+
+"*** GET PROPERTY (AT THE BEGINNING)" 
+HasProperty RESULTS:   i(1)  C(8,\x00\x00\x00\x00\x00\x00\x00\x00)
+GetProperty RESULTS:   C(8,\x05\x00\x00\x00\x00\x00\x00\x00)  C(8,\x00\x00\x00\x00\x00\x00\x00\x00)
+
+"*** TRIGGER REPAINT" 
+PPP_Instance_DidChangeView RESULTS: 
+
+"*** SENT EVENTS EV_MOUSE_DOWN" 
+PPP_Instance_HandleInputEvent RESULTS:   i(1)
+
+"*** SENT EVENTS EV_MOUSE_UP" 
+PPP_Instance_HandleInputEvent RESULTS:   i(1)
+
+"*** SENT EVENTS EV_MOUSE_MOVE" 
+PPP_Instance_HandleInputEvent RESULTS:   i(1)
+
+"*** SENT EVENTS EV_MOUSE_ENTER" 
+PPP_Instance_HandleInputEvent RESULTS:   i(1)
+
+"*** SENT EVENTS EV_MOUSE_LEAVE" 
+PPP_Instance_HandleInputEvent RESULTS:   i(1)
+
+"*** SENT EVENTS EV_KEY_UP" 
+PPP_Instance_HandleInputEvent RESULTS:   i(1)
+
+"*** SENT EVENTS EV_KEY_DOWN" 
+PPP_Instance_HandleInputEvent RESULTS:   i(1)
+
+"*** GET PROPERTY (AT THE END)" 
+HasProperty RESULTS:   i(1)  C(8,\x00\x00\x00\x00\x00\x00\x00\x00)
+GetProperty RESULTS:   C(560,\x05\x00\x00\x00$\x02\x00\x005555: Mouse event:Down modifier:left-button-down  button:Left x:264 y:100 click_count:1 time:1\n5555: Mouse event:Up modifier:left-button-down  button:Left x:264 y:100 click_count:0 time:1.0625\n5555: Mouse event:Move modifier: button:Left x:264 y:100 click_count:0 time:1.125\n5555: Mouse event:Enter modifier: button:Left x:264 y:100 click_count:0 time:1.1875\n5555: Mouse event:Leave modifier: button:Left x:264 y:100 click_count:0 time:1.25\n5555: Key event:Up modifier: key_code:84 time:1.375\n5555: Key event:Down modifier: key_code:84 time:1.3125\n\x00\x00\x00\x00)  C(8,\x00\x00\x00\x00\x00\x00\x00\x00)
+PPP_ShutdownModule RESULTS: 
