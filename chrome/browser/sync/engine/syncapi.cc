@@ -15,6 +15,7 @@
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "base/sha1.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/synchronization/lock.h"
 #include "base/task.h"
@@ -40,8 +41,9 @@
 #include "chrome/browser/sync/protocol/extension_specifics.pb.h"
 #include "chrome/browser/sync/protocol/nigori_specifics.pb.h"
 #include "chrome/browser/sync/protocol/preference_specifics.pb.h"
-#include "chrome/browser/sync/protocol/session_specifics.pb.h"
+#include "chrome/browser/sync/protocol/proto_value_conversions.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
+#include "chrome/browser/sync/protocol/session_specifics.pb.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/protocol/theme_specifics.pb.h"
 #include "chrome/browser/sync/protocol/typed_url_specifics.pb.h"
@@ -261,6 +263,42 @@ int64 BaseNode::GetFirstChildId() const {
   if (id_string.IsRoot())
     return kInvalidId;
   return IdToMetahandle(GetTransaction()->GetWrappedTrans(), id_string);
+}
+
+DictionaryValue* BaseNode::ToValue() const {
+  DictionaryValue* node_info = new DictionaryValue();
+  node_info->SetString("id", base::Int64ToString(GetId()));
+  // TODO(akalin): Return time in a better format.
+  node_info->SetString("modificationTime",
+                       base::Int64ToString(GetModificationTime()));
+  node_info->SetString("parentId", base::Int64ToString(GetParentId()));
+  node_info->SetBoolean("isFolder", GetIsFolder());
+  // TODO(akalin): Add a std::string accessor for the title.
+  node_info->SetString("title", WideToUTF8(GetTitle()));
+  {
+    syncable::ModelType model_type = GetModelType();
+    if (model_type >= syncable::FIRST_REAL_MODEL_TYPE) {
+      node_info->SetString("type", ModelTypeToString(model_type));
+    } else if (model_type == syncable::TOP_LEVEL_FOLDER) {
+      node_info->SetString("type", "Top-level folder");
+    } else if (model_type == syncable::UNSPECIFIED) {
+      node_info->SetString("type", "Unspecified");
+    } else {
+      node_info->SetString("type", base::IntToString(model_type));
+    }
+  }
+  node_info->Set(
+      "specifics",
+      browser_sync::EntitySpecificsToValue(GetEntry()->Get(SPECIFICS)));
+  node_info->SetString("externalId",
+                       base::Int64ToString(GetExternalId()));
+  node_info->SetString("predecessorId",
+                       base::Int64ToString(GetPredecessorId()));
+  node_info->SetString("successorId",
+                       base::Int64ToString(GetSuccessorId()));
+  node_info->SetString("firstChildId",
+                       base::Int64ToString(GetFirstChildId()));
+  return node_info;
 }
 
 void BaseNode::GetFaviconBytes(std::vector<unsigned char>* output) const {
@@ -1263,6 +1301,10 @@ class SyncManager::SyncInternal
   // Checks for server reachabilty and requests a nudge.
   void OnIPAddressChangedImpl();
 
+  // Functions called by ProcessMessage().
+  browser_sync::JsArgList ProcessGetNodeByIdMessage(
+      const browser_sync::JsArgList& args);
+
   // We couple the DirectoryManager and username together in a UserShare member
   // so we can return a handle to share_ to clients of the API for use when
   // constructing any transaction type.
@@ -1480,7 +1522,7 @@ bool SyncManager::SyncInternal::Init(
       method_factory_.NewRunnableMethod(&SyncInternal::CheckServerReachable));
 
   // Test mode does not use a syncer context or syncer thread.
-  if (!setup_for_test_mode) {
+  if (!setup_for_test_mode_) {
     // Build a SyncSessionContext and store the worker in it.
     VLOG(1) << "Sync is bringing up SyncSessionContext.";
     std::vector<SyncEngineEventListener*> listeners;
@@ -1634,7 +1676,9 @@ bool SyncManager::SyncInternal::SignIn(const SyncCredentials& credentials) {
   if (!OpenDirectory())
     return false;
 
-  UpdateCredentials(credentials);
+  if (!setup_for_test_mode_) {
+    UpdateCredentials(credentials);
+  }
   return true;
 }
 
@@ -2190,25 +2234,81 @@ const browser_sync::JsEventRouter*
   return parent_router_;
 }
 
+namespace {
+
+void LogNoRouter(const std::string& name,
+                 const browser_sync::JsArgList& args) {
+  VLOG(1) << "No parent router; not replying to message " << name
+          << " with args " << args.ToString();
+}
+
+}  // namespace
+
 void SyncManager::SyncInternal::ProcessMessage(
     const std::string& name, const browser_sync::JsArgList& args,
     const browser_sync::JsEventHandler* sender) {
+  DCHECK(initialized_);
   if (name == "getNotificationState") {
-    if (parent_router_) {
-      bool notifications_enabled = allstatus_.status().notifications_enabled;
-      ListValue return_args;
-      return_args.Append(Value::CreateBooleanValue(notifications_enabled));
-      parent_router_->RouteJsEvent(
-          "onGetNotificationStateFinished",
-          browser_sync::JsArgList(return_args), sender);
-    } else {
-      VLOG(1) << "No parent router; not replying to message " << name
-              << " with args " << args.ToString();
+    if (!parent_router_) {
+      LogNoRouter(name, args);
+      return;
     }
+    bool notifications_enabled = allstatus_.status().notifications_enabled;
+    ListValue return_args;
+    return_args.Append(Value::CreateBooleanValue(notifications_enabled));
+    parent_router_->RouteJsEvent(
+        "onGetNotificationStateFinished",
+        browser_sync::JsArgList(return_args), sender);
+  } else if (name == "getRootNode") {
+    if (!parent_router_) {
+      LogNoRouter(name, args);
+      return;
+    }
+    ReadTransaction trans(GetUserShare());
+    ReadNode root(&trans);
+    root.InitByRootLookup();
+    ListValue return_args;
+    return_args.Append(root.ToValue());
+    parent_router_->RouteJsEvent(
+        "onGetRootNodeFinished",
+        browser_sync::JsArgList(return_args), sender);
+  } else if (name == "getNodeById") {
+    if (!parent_router_) {
+      LogNoRouter(name, args);
+      return;
+    }
+    parent_router_->RouteJsEvent(
+        "onGetNodeByIdFinished", ProcessGetNodeByIdMessage(args), sender);
   } else {
     VLOG(1) << "Dropping unknown message " << name
               << " with args " << args.ToString();
   }
+}
+
+browser_sync::JsArgList SyncManager::SyncInternal::ProcessGetNodeByIdMessage(
+    const browser_sync::JsArgList& args) {
+  ListValue null_return_args_list;
+  null_return_args_list.Append(Value::CreateNullValue());
+  browser_sync::JsArgList null_return_args(null_return_args_list);
+  std::string id_str;
+  if (!args.Get().GetString(0, &id_str)) {
+    return null_return_args;
+  }
+  int64 id;
+  if (!base::StringToInt64(id_str, &id)) {
+    return null_return_args;
+  }
+  if (id == kInvalidId) {
+    return null_return_args;
+  }
+  ReadTransaction trans(GetUserShare());
+  ReadNode node(&trans);
+  if (!node.InitByIdLookup(id)) {
+    return null_return_args;
+  }
+  ListValue return_args;
+  return_args.Append(node.ToValue());
+  return browser_sync::JsArgList(return_args);
 }
 
 void SyncManager::SyncInternal::OnNotificationStateChange(

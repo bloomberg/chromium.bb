@@ -6,9 +6,12 @@
 // functionality is provided by the Syncable layer, which has its own
 // unit tests. We'll test SyncApi specific things in this harness.
 
+#include "base/basictypes.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
+#include "base/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/sync/engine/syncapi.h"
@@ -18,9 +21,11 @@
 #include "chrome/browser/sync/js_event_router.h"
 #include "chrome/browser/sync/js_test_util.h"
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"
+#include "chrome/browser/sync/protocol/proto_value_conversions.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/test/sync/engine/test_directory_setter_upper.h"
+#include "jingle/notifier/base/notifier_options.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -30,6 +35,7 @@ using browser_sync::JsArgList;
 using browser_sync::MockJsEventHandler;
 using browser_sync::MockJsEventRouter;
 using testing::_;
+using testing::SaveArg;
 using testing::StrictMock;
 
 namespace sync_api {
@@ -280,15 +286,111 @@ TEST_F(SyncApiTest, WriteAndReadPassword) {
 
 namespace {
 
+int64 GetInt64Value(const DictionaryValue& value, const std::string& key) {
+  std::string str;
+  EXPECT_TRUE(value.GetString(key, &str));
+  int64 val = 0;
+  EXPECT_TRUE(base::StringToInt64(str, &val));
+  return val;
+}
+
+void CheckNodeValue(const BaseNode& node, const DictionaryValue& value) {
+  EXPECT_EQ(node.GetId(), GetInt64Value(value, "id"));
+  EXPECT_EQ(node.GetModificationTime(),
+            GetInt64Value(value, "modificationTime"));
+  EXPECT_EQ(node.GetParentId(), GetInt64Value(value, "parentId"));
+  {
+    bool is_folder = false;
+    EXPECT_TRUE(value.GetBoolean("isFolder", &is_folder));
+    EXPECT_EQ(node.GetIsFolder(), is_folder);
+  }
+  {
+    std::string title;
+    EXPECT_TRUE(value.GetString("title", &title));
+    EXPECT_EQ(node.GetTitle(), UTF8ToWide(title));
+  }
+  {
+    syncable::ModelType expected_model_type = node.GetModelType();
+    std::string type_str;
+    EXPECT_TRUE(value.GetString("type", &type_str));
+    if (expected_model_type >= syncable::FIRST_REAL_MODEL_TYPE) {
+      syncable::ModelType model_type =
+          syncable::ModelTypeFromString(type_str);
+      EXPECT_EQ(expected_model_type, model_type);
+    } else if (expected_model_type == syncable::TOP_LEVEL_FOLDER) {
+      EXPECT_EQ("Top-level folder", type_str);
+    } else if (expected_model_type == syncable::UNSPECIFIED) {
+      EXPECT_EQ("Unspecified", type_str);
+    } else {
+      ADD_FAILURE();
+    }
+  }
+  {
+    scoped_ptr<DictionaryValue> expected_specifics(
+        browser_sync::EntitySpecificsToValue(
+            node.GetEntry()->Get(syncable::SPECIFICS)));
+    Value* specifics = NULL;
+    EXPECT_TRUE(value.Get("specifics", &specifics));
+    EXPECT_TRUE(Value::Equals(specifics, expected_specifics.get()));
+  }
+  EXPECT_EQ(node.GetExternalId(), GetInt64Value(value, "externalId"));
+  EXPECT_EQ(node.GetPredecessorId(), GetInt64Value(value, "predecessorId"));
+  EXPECT_EQ(node.GetSuccessorId(), GetInt64Value(value, "successorId"));
+  EXPECT_EQ(node.GetFirstChildId(), GetInt64Value(value, "firstChildId"));
+  EXPECT_EQ(11u, value.size());
+}
+
+}  // namespace
+
+TEST_F(SyncApiTest, BaseNodeToValue) {
+  ReadTransaction trans(&share_);
+  ReadNode node(&trans);
+  node.InitByRootLookup();
+  scoped_ptr<DictionaryValue> value(node.ToValue());
+  if (value.get()) {
+    CheckNodeValue(node, *value);
+  } else {
+    ADD_FAILURE();
+  }
+}
+
+namespace {
+
+class TestHttpPostProviderFactory : public HttpPostProviderFactory {
+ public:
+  virtual ~TestHttpPostProviderFactory() {}
+  virtual HttpPostProviderInterface* Create() {
+    NOTREACHED();
+    return NULL;
+  }
+  virtual void Destroy(HttpPostProviderInterface* http) {
+    NOTREACHED();
+  }
+};
+
 class SyncManagerTest : public testing::Test {
  protected:
   SyncManagerTest() : ui_thread_(BrowserThread::UI, &ui_loop_) {}
+
+  void SetUp() {
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    sync_manager_.Init(temp_dir_.path(), "bogus", 0, false,
+                       new TestHttpPostProviderFactory(), NULL, "bogus",
+                       SyncCredentials(), notifier::NotifierOptions(),
+                       "", true /* setup_for_test_mode */);
+  }
+
+  void TearDown() {
+    sync_manager_.Shutdown();
+  }
 
  private:
   // Needed by |ui_thread_|.
   MessageLoopForUI ui_loop_;
   // Needed by |sync_manager_|.
   BrowserThread ui_thread_;
+  // Needed by |sync_manager_|.
+  ScopedTempDir temp_dir_;
 
  protected:
   SyncManager sync_manager_;
@@ -327,8 +429,7 @@ TEST_F(SyncManagerTest, ProcessMessage) {
 
     EXPECT_CALL(event_router,
                 RouteJsEvent("onGetNotificationStateFinished",
-                             HasArgsAsList(false_args),
-                             &event_handler)).Times(1);
+                             HasArgsAsList(false_args), &event_handler));
 
     js_backend->SetParentJsEventRouter(&event_router);
 
@@ -354,6 +455,155 @@ TEST_F(SyncManagerTest, ProcessMessage) {
   }
 }
 
+TEST_F(SyncManagerTest, ProcessMessageGetRootNode) {
+  const JsArgList kNoArgs;
+
+  browser_sync::JsBackend* js_backend = sync_manager_.GetJsBackend();
+
+  StrictMock<MockJsEventHandler> event_handler;
+  StrictMock<MockJsEventRouter> event_router;
+
+  JsArgList return_args;
+
+  EXPECT_CALL(event_router,
+              RouteJsEvent("onGetRootNodeFinished", _, &event_handler)).
+      WillOnce(SaveArg<1>(&return_args));
+
+  js_backend->SetParentJsEventRouter(&event_router);
+
+  // Should trigger the reply.
+  js_backend->ProcessMessage("getRootNode", kNoArgs, &event_handler);
+
+  EXPECT_EQ(1u, return_args.Get().GetSize());
+  DictionaryValue* node_info = NULL;
+  EXPECT_TRUE(return_args.Get().GetDictionary(0, &node_info));
+  if (node_info) {
+    ReadTransaction trans(sync_manager_.GetUserShare());
+    ReadNode node(&trans);
+    node.InitByRootLookup();
+    CheckNodeValue(node, *node_info);
+  } else {
+    ADD_FAILURE();
+  }
+
+  js_backend->RemoveParentJsEventRouter();
+}
+
+void CheckGetNodeByIdReturnArgs(const SyncManager& sync_manager,
+                                const JsArgList& return_args,
+                                int64 id) {
+  EXPECT_EQ(1u, return_args.Get().GetSize());
+  DictionaryValue* node_info = NULL;
+  EXPECT_TRUE(return_args.Get().GetDictionary(0, &node_info));
+  if (node_info) {
+    ReadTransaction trans(sync_manager.GetUserShare());
+    ReadNode node(&trans);
+    node.InitByIdLookup(id);
+    CheckNodeValue(node, *node_info);
+  } else {
+    ADD_FAILURE();
+  }
+}
+
+TEST_F(SyncManagerTest, ProcessMessageGetNodeById) {
+  int64 child_id = kInvalidId;
+  {
+    WriteTransaction trans(sync_manager_.GetUserShare());
+
+    ReadNode root_node(&trans);
+    root_node.InitByRootLookup();
+
+    WriteNode node(&trans);
+    EXPECT_TRUE(node.InitUniqueByCreation(syncable::BOOKMARKS,
+                                          root_node, "testtag"));
+    node.SetIsFolder(false);
+    child_id = node.GetId();
+  }
+
+  browser_sync::JsBackend* js_backend = sync_manager_.GetJsBackend();
+
+  StrictMock<MockJsEventHandler> event_handler;
+  StrictMock<MockJsEventRouter> event_router;
+
+  JsArgList return_args;
+
+  EXPECT_CALL(event_router,
+              RouteJsEvent("onGetNodeByIdFinished", _, &event_handler))
+      .Times(2).WillRepeatedly(SaveArg<1>(&return_args));
+
+  js_backend->SetParentJsEventRouter(&event_router);
+
+  // Should trigger the reply.
+  {
+    ListValue args;
+    args.Append(Value::CreateStringValue("1"));
+    js_backend->ProcessMessage("getNodeById", JsArgList(args), &event_handler);
+  }
+
+  CheckGetNodeByIdReturnArgs(sync_manager_, return_args, 1);
+
+  // Should trigger another reply.
+  {
+    ListValue args;
+    args.Append(Value::CreateStringValue(base::Int64ToString(child_id)));
+    js_backend->ProcessMessage("getNodeById", JsArgList(args), &event_handler);
+  }
+
+  CheckGetNodeByIdReturnArgs(sync_manager_, return_args, child_id);
+
+  js_backend->RemoveParentJsEventRouter();
+}
+
+TEST_F(SyncManagerTest, ProcessMessageGetNodeByIdFailure) {
+  browser_sync::JsBackend* js_backend = sync_manager_.GetJsBackend();
+
+  StrictMock<MockJsEventHandler> event_handler;
+  StrictMock<MockJsEventRouter> event_router;
+
+  ListValue null_args;
+  null_args.Append(Value::CreateNullValue());
+
+  EXPECT_CALL(event_router,
+              RouteJsEvent("onGetNodeByIdFinished",
+                           HasArgsAsList(null_args), &event_handler))
+      .Times(5);
+
+  js_backend->SetParentJsEventRouter(&event_router);
+
+  {
+    ListValue args;
+    js_backend->ProcessMessage("getNodeById", JsArgList(args), &event_handler);
+  }
+
+  {
+    ListValue args;
+    args.Append(Value::CreateStringValue(""));
+    js_backend->ProcessMessage("getNodeById", JsArgList(args), &event_handler);
+  }
+
+  {
+    ListValue args;
+    args.Append(Value::CreateStringValue("nonsense"));
+    js_backend->ProcessMessage("getNodeById", JsArgList(args), &event_handler);
+  }
+
+  {
+    ListValue args;
+    args.Append(Value::CreateStringValue("nonsense"));
+    js_backend->ProcessMessage("getNodeById", JsArgList(args), &event_handler);
+  }
+
+  {
+    ListValue args;
+    args.Append(Value::CreateStringValue("0"));
+    js_backend->ProcessMessage("getNodeById", JsArgList(args), &event_handler);
+  }
+
+  // TODO(akalin): Figure out how to test InitByIdLookup() failure.
+
+  js_backend->RemoveParentJsEventRouter();
+}
+
 TEST_F(SyncManagerTest, OnNotificationStateChange) {
   StrictMock<MockJsEventRouter> event_router;
 
@@ -364,10 +614,10 @@ TEST_F(SyncManagerTest, OnNotificationStateChange) {
 
   EXPECT_CALL(event_router,
               RouteJsEvent("onSyncNotificationStateChange",
-                           HasArgsAsList(true_args), NULL)).Times(1);
+                           HasArgsAsList(true_args), NULL));
   EXPECT_CALL(event_router,
               RouteJsEvent("onSyncNotificationStateChange",
-                           HasArgsAsList(false_args), NULL)).Times(1);
+                           HasArgsAsList(false_args), NULL));
 
   browser_sync::JsBackend* js_backend = sync_manager_.GetJsBackend();
 
@@ -410,7 +660,7 @@ TEST_F(SyncManagerTest, OnIncomingNotification) {
 
   EXPECT_CALL(event_router,
               RouteJsEvent("onSyncIncomingNotification",
-                           HasArgsAsList(expected_args), NULL)).Times(1);
+                           HasArgsAsList(expected_args), NULL));
 
   browser_sync::JsBackend* js_backend = sync_manager_.GetJsBackend();
 

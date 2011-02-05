@@ -53,6 +53,7 @@
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "googleurl/src/gurl.h"
 
+class DictionaryValue;
 class FilePath;
 
 namespace browser_sync {
@@ -250,6 +251,10 @@ class BaseNode {
   // These virtual accessors provide access to data members of derived classes.
   virtual const syncable::Entry* GetEntry() const = 0;
   virtual const BaseTransaction* GetTransaction() const = 0;
+
+  // Dumps all node info into a DictionaryValue and returns it.
+  // Transfers ownership of the DictionaryValue to the caller.
+  DictionaryValue* ToValue() const;
 
  protected:
   BaseNode();
@@ -915,9 +920,21 @@ class SyncManager {
   //
   // getNotificationState():
   //   If there is a parent router, sends the
-  //   onGetNotificationStateFinished(boolean notifications_enabled)
+  //   onGetNotificationStateFinished(boolean notificationsEnabled)
   //   event to |sender| via the parent router with whether or not
   //   notifications are enabled.
+  //
+  // getRootNode():
+  //   If there is a parent router, sends the
+  //   onGetRootNodeFinished(dictionary nodeInfo) event to |sender|
+  //   via the parent router with information on the root node.
+  //
+  // getNodeById(string id):
+  //   If there is a parent router, sends the
+  //   onGetNodeByIdFinished(dictionary nodeInfo) event to |sender|
+  //   via the parent router with information on the node with the
+  //   given id (metahandle), if the id is valid and a node with that
+  //   id exists.  Otherwise, calls onGetNodeByIdFinished(null).
   //
   // All other messages are dropped.
   browser_sync::JsBackend* GetJsBackend();

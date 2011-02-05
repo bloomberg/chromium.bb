@@ -42,6 +42,9 @@ class TypedUrlSpecifics;
 
 namespace browser_sync {
 
+// Ownership of all returned DictionaryValues are transferred to the
+// caller.
+
 // TODO(akalin): Perhaps extend this to decrypt?
 DictionaryValue* EncryptedDataToValue(
     const sync_pb::EncryptedData& encrypted_data);

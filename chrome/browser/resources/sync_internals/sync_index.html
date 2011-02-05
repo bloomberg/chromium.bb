@@ -8,6 +8,7 @@ chrome/test/functional/special_tabs.py. -->
 function onLoad() {
   chrome.send('getAboutInfo');
   chrome.send('getNotificationState');
+  chrome.send('getRootNode');
 }
 
 function onGetAboutInfoFinished(aboutInfo) {
@@ -17,6 +18,41 @@ function onGetAboutInfoFinished(aboutInfo) {
 
 function onGetNotificationStateFinished(notificationsEnabled) {
   onSyncNotificationStateChange(notificationsEnabled);
+}
+
+function onGetRootNodeFinished(rootNodeInfo) {
+  onGetNodeByIdFinished(rootNodeInfo);
+}
+
+// TODO(akalin): Use an existing JSON-to-string library.
+function jsonToString(json) {
+  var str = '{ ';
+  for (var i in json) {
+    str += i + ': ';
+    var v = json[i];
+    var t = typeof v;
+    if (t === 'object') {
+      str += jsonToString(v);
+    } else if (t === 'string') {
+      str += '"' + v + '"';
+    } else {
+      str += json[i];
+    }
+    str += ', ';
+  }
+  str += ' }';
+  return str;
+}
+
+function onGetNodeByIdFinished(nodeInfo) {
+  var nodeBrowser = document.getElementById('nodeBrowser');
+  nodeInfo.specifics = jsonToString(nodeInfo.specifics);
+  jstProcess(new JsEvalContext(nodeInfo), nodeBrowser);
+}
+
+function processNodeLink(link) {
+  var id = link.text;
+  chrome.send('getNodeById', [id]);
 }
 
 function onSyncServiceStateChanged() {
@@ -273,6 +309,21 @@ table.list#details .name {
   </tr>
 </table>
 </td>
+
+<div class="desc"><h2> Node Browser </h2></div>
+<ul id='nodeBrowser'>
+<li>ID: <span jscontent='id'></span></li>
+<li>Modification Time: <span jscontent='modificationTime'></span></li>
+<li>Parent: <a jscontent='parentId' href="#" onclick="processNodeLink(this); return false"></a></li>
+<li>Is Folder: <span jscontent='isFolder'></span></li>
+<li>Title: <span jscontent='title'></span></li>
+<li>Type: <span jscontent='type'></span></li>
+<li>Specifics: <span jscontent='specifics'></span></li>
+<li>External ID: <span jscontent='externalId'></span></li>
+<li>Predecessor: <a jscontent='predecessorId' href="#" onclick="processNodeLink(this); return false"></a></li>
+<li>Successor: <a jscontent='successorId' href="#" onclick="processNodeLink(this); return false"></a></li>
+<li>First Child: <a jscontent='firstChildId' href="#" onclick="processNodeLink(this); return false"></a></li>
+</ul>
 
 </body>
 </html>
