@@ -390,16 +390,16 @@ scoped_refptr<webkit::ppapi::PluginModule>
 PepperPluginDelegateImpl::CreatePepperPlugin(const FilePath& path) {
   // See if a module has already been loaded for this plugin.
   scoped_refptr<webkit::ppapi::PluginModule> module =
-      PepperPluginRegistry::GetInstance()->GetModule(path);
+      PepperPluginRegistry::GetInstance()->GetLiveModule(path);
   if (module)
     return module;
 
   // In-process plugins will have always been created up-front to avoid the
-  // sandbox restrictions. So getting here implies that it either doesn't exist
-  // or should be run out of process.
-  scoped_ptr<PepperPluginInfo> info(
-      PepperPluginRegistry::GetInstance()->GetInfoForPlugin(path));
-  if (!info.get() || !info->is_out_of_process)
+  // sandbox restrictions. So gettin here implies it doesn't exist or should
+  // be out of process.
+  const PepperPluginInfo* info =
+      PepperPluginRegistry::GetInstance()->GetInfoForPlugin(path);
+  if (!info || !info->is_out_of_process)
     return module;  // Return the NULL module.
 
   // Out of process: have the browser start the plugin process for us.

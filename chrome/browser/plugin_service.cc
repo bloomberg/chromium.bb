@@ -491,7 +491,7 @@ void PluginService::OverridePluginForTab(OverriddenPlugin plugin) {
 
 void PluginService::RegisterPepperPlugins() {
   std::vector<PepperPluginInfo> plugins;
-  PepperPluginRegistry::GetList(&plugins);
+  PepperPluginRegistry::ComputeList(&plugins);
   for (size_t i = 0; i < plugins.size(); ++i) {
     webkit::npapi::WebPluginInfo info;
     info.path = plugins[i].path;
