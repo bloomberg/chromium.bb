@@ -58,7 +58,7 @@ iframe {
 }
 
 .logo {
-  background: url('file:///usr/share/chromeos-assets/mobile/carrier_logo.png') no-repeat;
+  background: url('chrome-extension://iadeocfgjdjdmpenejdbfeaocpbikmab/carrier_logo.png') no-repeat;
   background-position: 85% 50%;
   height: 58px;
   margin-bottom: 20px;
@@ -67,8 +67,6 @@ iframe {
 
 .splitter {
   margin-top: 10px;
-  left: 50%;
-  width: 600px;
   border-bottom: 1px solid #EEE;
   height: 1px;
 }
@@ -178,14 +176,13 @@ iframe {
           </tr>
         </tbody></table>
       </div>
-      <div id="errorMessage" class="hidden"></div>
       <iframe id="carrierPage" frameborder="0"></iframe>
     </div>
   </div>
-  <div id="finalMessage" class="overlay hidden">
+  <div id="finalStatus" class="overlay hidden">
     <div class="startup">
-      <div class="header"><h3 i18n-content="completed_header"></h3></div>
-      <div i18n-content="completed_text"></div>
+      <div class="header"><h3 id="finalHeader"></h3></div>
+      <div id="finalMessage"></div>
       <div class="splitter"></div>
       <div class="logo"></div>
       <div class="action-area button-strip">

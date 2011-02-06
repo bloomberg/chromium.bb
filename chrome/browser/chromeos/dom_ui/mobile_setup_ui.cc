@@ -89,11 +89,11 @@ const int kConnectionTimeoutSeconds = 45;
 // Reconnect delay.
 const int kReconnectDelayMS = 3000;
 // Reconnect timer delay.
-const int kReconnectTimerDelayMS = 1000;
+const int kReconnectTimerDelayMS = 5000;
 // Reconnect delay after previous failure.
 const int kFailedReconnectDelayMS = 10000;
 // Retry delay after failed OTASP attempt.
-const int kOTASPRetryDelay = 10000;
+const int kOTASPRetryDelay = 20000;
 
 chromeos::CellularNetwork* GetCellularNetwork() {
   chromeos::NetworkLibrary* lib = chromeos::CrosLibrary::Get()->
@@ -614,9 +614,8 @@ void MobileSetupHandler::ReconnectTimerFired() {
     return;
   chromeos::CellularNetwork* network = GetCellularNetwork(service_path_);
   if (!network) {
-    ChangeState(NULL, PLAN_ACTIVATION_ERROR,
-                GetErrorMessage(kFailedConnectivity));
-    return;
+    // No service, try again since this is probably just transient condition.
+    LOG(WARNING) << "Service not present at reconnect attempt.";
   }
   EvaluateCellularNetwork(network);
 }
@@ -759,7 +758,9 @@ void MobileSetupHandler::EvaluateCellularNetwork(
           break;
         }
         default: {
-          if (network->failed_or_disconnected()) {
+          if (network->failed_or_disconnected() ||
+              network->connection_state() ==
+                  chromeos::STATE_ACTIVATION_FAILURE) {
             new_state = (network->activation_state() ==
                          chromeos::ACTIVATION_STATE_PARTIALLY_ACTIVATED) ?
                             PLAN_ACTIVATION_TRYING_OTASP :
@@ -849,6 +850,8 @@ void MobileSetupHandler::EvaluateCellularNetwork(
               // restart the whole process again.
               if (activation_attempt_ < kMaxActivationAttempt) {
                 activation_attempt_++;
+                LOG(WARNING) << "Reconnect attempt #"
+                             << activation_attempt_;
                 ForceReconnect(network, kFailedReconnectDelayMS);
                 evaluating_ = false;
                 return;
@@ -894,6 +897,8 @@ void MobileSetupHandler::EvaluateCellularNetwork(
               // page again. We should try to reconnect after some time instead.
               if (reconnect_wait_count_ < kMaxReconnectAttemptOTASP) {
                 reconnect_wait_count_++;
+                LOG(WARNING) << "OTASP reconnect attempt #"
+                             << reconnect_wait_count_;
                 ForceReconnect(network, kPostPaymentReconnectDelayMS);
                 evaluating_ = false;
                 return;
@@ -950,6 +955,11 @@ void MobileSetupHandler::EvaluateCellularNetwork(
         case PLAN_ACTIVATION_INITIATING_ACTIVATION:
           new_state = PLAN_ACTIVATION_RECONNECTING;
           break;
+        case PLAN_ACTIVATION_START:
+          // We are just starting, so this must be previous activation attempt
+          // failure.
+          new_state = PLAN_ACTIVATION_TRYING_OTASP;
+          break;
         case PLAN_ACTIVATION_DELAY_OTASP:
         case PLAN_ACTIVATION_RECONNECTING_OTASP_TRY:
         case PLAN_ACTIVATION_RECONNECTING:
@@ -960,6 +970,8 @@ void MobileSetupHandler::EvaluateCellularNetwork(
           break;
       }
     } else {
+      LOG(WARNING) << "Unexpected activation failure for "
+                   << network->service_path().c_str();
       new_state = PLAN_ACTIVATION_ERROR;
     }
   }
@@ -1028,7 +1040,8 @@ void MobileSetupHandler::CompleteActivation(
       GetNetworkLibrary();
   lib->RemoveNetworkManagerObserver(this);
   lib->RemoveObserverForAllNetworks(this);
-  lib->Unlock();
+  if (lib->IsLocked())
+    lib->Unlock();
   // If we have successfully activated the connection, set autoconnect flag.
   if (network) {
     network->set_auto_connect(true);
@@ -1100,8 +1113,12 @@ void MobileSetupHandler::ChangeState(chromeos::CellularNetwork* network,
       UMA_HISTOGRAM_COUNTS("Cellular.ActivationTry", 1);
       if (!network->StartActivation()) {
         UMA_HISTOGRAM_COUNTS("Cellular.ActivationFailure", 1);
-        ChangeState(network, PLAN_ACTIVATION_ERROR,
-                    GetErrorMessage(kFailedConnectivity));
+        if (new_state == PLAN_ACTIVATION_OTASP) {
+          ChangeState(network, PLAN_ACTIVATION_DELAY_OTASP, std::string());
+        } else {
+          ChangeState(network, PLAN_ACTIVATION_ERROR,
+                      GetErrorMessage(kFailedConnectivity));
+        }
       }
       break;
     case PLAN_ACTIVATION_RECONNECTING_OTASP_TRY:

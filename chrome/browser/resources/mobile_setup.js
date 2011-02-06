@@ -35,6 +35,7 @@ cr.define('mobile', function() {
     frameName_ : '',
     initialized_ : false,
     faked_transaction_ : false,
+    payment_shown_ : false,
     // UI states.
     state_ : -1,
     STATE_UNKNOWN_: "unknown",
@@ -56,7 +57,7 @@ cr.define('mobile', function() {
           self.onMessageReceived_(e);
       });
       $('closeButton').addEventListener('click', function(e) {
-          $('finalMessage').classList.add('hidden');
+          $('finalStatus').classList.add('hidden');
       });
       $('carrierPage').contentWindow.location.href =
           carrierPage;
@@ -66,8 +67,7 @@ cr.define('mobile', function() {
         if (self.state_ == MobileSetup.PLAN_ACTIVATION_SHOWING_PAYMENT) {
           $('statusHeader').textContent = '';
           $('auxHeader').textContent = '';
-          $('finalMessage').classList.add('hidden');
-          $('errorMessage').classList.add('hidden');
+          $('finalStatus').classList.add('hidden');
           $('systemStatus').classList.add('hidden');
           $('canvas').classList.add('hidden');
           $('carrierPage').classList.add('hidden');
@@ -122,10 +122,8 @@ cr.define('mobile', function() {
               MobileSetup.localStrings_.getString('connecting_header');
           $('auxHeader').textContent =
               MobileSetup.localStrings_.getString('please_wait');
-          $('errorMessage').textContent = '';
           $('paymentForm').classList.add('hidden');
-          $('finalMessage').classList.add('hidden');
-          $('errorMessage').classList.add('hidden');
+          $('finalStatus').classList.add('hidden');
           $('systemStatus').classList.remove('hidden');
           $('canvas').classList.remove('hidden');
           $('carrierPage').classList.remove('hidden');
@@ -137,10 +135,8 @@ cr.define('mobile', function() {
               MobileSetup.localStrings_.getString('activating_header');
           $('auxHeader').textContent =
               MobileSetup.localStrings_.getString('please_wait');
-          $('errorMessage').textContent = '';
           $('paymentForm').classList.add('hidden');
-          $('finalMessage').classList.add('hidden');
-          $('errorMessage').classList.add('hidden');
+          $('finalStatus').classList.add('hidden');
           $('systemStatus').classList.remove('hidden');
           $('canvas').classList.remove('hidden');
           $('carrierPage').classList.remove('hidden');
@@ -150,33 +146,41 @@ cr.define('mobile', function() {
               MobileSetup.localStrings_.getString('connecting_header');
           $('auxHeader').textContent = '';
           $('paymentForm').classList.add('hidden');
-          $('finalMessage').classList.add('hidden');
-          $('errorMessage').classList.add('hidden');
+          $('finalStatus').classList.add('hidden');
           $('systemStatus').classList.remove('hidden');
           $('canvas').classList.remove('hidden');
           this.loadPaymentFrame_(deviceInfo);
+          this.payment_shown_ = true;
           break;
         case MobileSetup.PLAN_ACTIVATION_DONE:
           $('statusHeader').textContent = '';
           $('auxHeader').textContent = '';
-          $('errorMessage').classList.add('hidden');
+          $('finalHeader').textContent =
+              MobileSetup.localStrings_.getString('completed_header');
+          $('finalMessage').textContent =
+              MobileSetup.localStrings_.getString('completed_text');
           $('systemStatus').classList.add('hidden');
           $('canvas').classList.add('hidden');
           $('carrierPage').classList.add('hidden');
           $('paymentForm').classList.remove('hidden');
-          $('finalMessage').classList.remove('hidden');
+          $('closeButton').classList.remove('hidden');
+          $('finalStatus').classList.remove('hidden');
           break;
         case MobileSetup.PLAN_ACTIVATION_ERROR:
-          $('statusHeader').textContent =
-              MobileSetup.localStrings_.getString('error_header');
+          $('statusHeader').textContent = '';
           $('auxHeader').textContent = '';
-          $('errorMessage').textContent = deviceInfo.error;
-          $('paymentForm').classList.add('hidden');
-          $('finalMessage').classList.add('hidden');
-          $('carrierPage').classList.add('hidden');
+          $('finalHeader').textContent =
+              MobileSetup.localStrings_.getString('error_header');
+          $('finalMessage').textContent = deviceInfo.error;
+          $('systemStatus').classList.add('hidden');
           $('canvas').classList.add('hidden');
-          $('errorMessage').classList.remove('hidden');
-          $('systemStatus').classList.remove('hidden');
+          $('carrierPage').classList.add('hidden');
+          $('paymentForm').classList.remove('hidden');
+          if (this.payment_shown_)
+            $('closeButton').classList.remove('hidden');
+          else
+            $('closeButton').classList.add('hidden');
+          $('finalStatus').classList.remove('hidden');
           break;
       }
       this.state_ = new_state;

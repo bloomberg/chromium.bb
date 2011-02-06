@@ -4253,7 +4253,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Connecting to <ph name="PROVIDER_NAME">$1<ex>Acme Mobile</ex></ph>
         </message>
         <message name="IDS_MOBILE_ERROR_HEADER" desc="Mobile connection page header when connection error occur">
-          Connection error:
+          Connection error
         </message>
         <message name="IDS_MOBILE_ACTIVATING_HEADER" desc="Message header when data service is being activated">
           Activating your data service
