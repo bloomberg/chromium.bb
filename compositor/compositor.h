@@ -110,6 +110,7 @@ struct wlsc_compositor {
 	int repaint_on_timeout;
 	struct timespec previous_swap;
 
+	struct wlsc_switcher *switcher;
 	uint32_t focus;
 
 	void (*destroy)(struct wlsc_compositor *ec);

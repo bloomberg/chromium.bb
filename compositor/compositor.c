@@ -35,6 +35,12 @@
 #include "wayland-server.h"
 #include "compositor.h"
 
+struct wlsc_switcher {
+	struct wlsc_compositor *compositor;
+	struct wlsc_surface *current;
+	struct wl_listener listener;
+};
+
 /* The plan here is to generate a random anonymous socket name and
  * advertise that through a service on the session dbus.
  */
@@ -416,9 +422,17 @@ wlsc_output_repaint(struct wlsc_output *output)
 		else
 			glClear(GL_COLOR_BUFFER_BIT);
 
-		wl_list_for_each_reverse(es, &ec->surface_list, link)
+		wl_list_for_each_reverse(es, &ec->surface_list, link) {
+			if (ec->switcher &&
+			    ec->switcher->current == es)
+				continue;
+
 			wlsc_surface_draw(es, output);
+		}
 	}
+
+	if (ec->switcher)
+		wlsc_surface_draw(ec->switcher->current, output);
 
 	if (ec->focus)
 		wl_list_for_each(eid, &ec->input_device_list, link)
@@ -763,6 +777,20 @@ notify_motion(struct wl_input_device *device, uint32_t time, int x, int y)
 	wlsc_compositor_schedule_repaint(ec);
 }
 
+static void
+wlsc_surface_activate(struct wlsc_surface *surface,
+		      struct wlsc_input_device *device, uint32_t time)
+{
+	wlsc_surface_raise(surface);
+	if (device->selection)
+		wlsc_selection_set_focus(device->selection,
+					 &surface->surface, time);
+
+	wl_input_device_set_keyboard_focus(&device->input_device,
+					   &surface->surface,
+					   time);
+}
+
 void
 notify_button(struct wl_input_device *device,
 	      uint32_t time, int32_t button, int32_t state)
@@ -777,18 +805,10 @@ notify_button(struct wl_input_device *device,
 	int32_t x, y;
 
 	if (state && surface && device->grab == NULL) {
-		wlsc_surface_raise(surface);
-
-		if (wd->selection)
-			wlsc_selection_set_focus(wd->selection,
-						 &surface->surface, time);
-
+		wlsc_surface_activate(surface, wd, time);
 		wl_input_device_start_grab(device,
 					   &device->motion_grab,
 					   button, time);
-		wl_input_device_set_keyboard_focus(device,
-						   &surface->surface,
-						   time);
 	}
 
 	if (state && surface && button == BTN_LEFT &&
@@ -829,6 +849,53 @@ notify_button(struct wl_input_device *device,
 		wl_input_device_end_grab(device, time);
 }
 
+static void
+wlsc_switcher_next(struct wlsc_switcher *switcher)
+{
+	struct wl_list *l;
+
+	l = switcher->current->link.next;
+	if (l == &switcher->compositor->surface_list)
+		l = switcher->compositor->surface_list.next;
+	switcher->current = container_of(l, struct wlsc_surface, link);
+	wl_list_remove(&switcher->listener.link);
+	wl_list_insert(switcher->current->surface.destroy_listener_list.prev,
+		       &switcher->listener.link);
+	wlsc_compositor_schedule_repaint(switcher->compositor);
+}
+
+static void
+switcher_handle_surface_destroy(struct wl_listener *listener,
+				struct wl_surface *surface, uint32_t time)
+{
+	struct wlsc_switcher *switcher =
+		container_of(listener, struct wlsc_switcher, listener);
+
+	wlsc_switcher_next(switcher);
+}
+
+static struct wlsc_switcher *
+wlsc_switcher_create(struct wlsc_compositor *compositor)
+{
+	struct wlsc_switcher *switcher;
+
+	switcher = malloc(sizeof *switcher);
+	switcher->compositor = compositor;
+	switcher->current = container_of(compositor->surface_list.next,
+					 struct wlsc_surface, link);
+	switcher->listener.func = switcher_handle_surface_destroy;
+	wl_list_init(&switcher->listener.link);
+
+	return switcher;
+}
+
+static void
+wlsc_switcher_destroy(struct wlsc_switcher *switcher)
+{
+	wl_list_remove(&switcher->listener.link);
+	free(switcher);
+}
+
 void
 notify_key(struct wl_input_device *device,
 	   uint32_t time, uint32_t key, uint32_t state)
@@ -843,6 +910,27 @@ notify_key(struct wl_input_device *device,
 	case KEY_BACKSPACE | MODIFIER_CTRL | MODIFIER_ALT:
 		wl_display_terminate(compositor->wl_display);
 		return;
+
+	case KEY_TAB | MODIFIER_SUPER:
+		if (!state)
+			return;
+		if (wl_list_empty(&compositor->surface_list))
+			return;
+		if (compositor->switcher == NULL)
+			compositor->switcher = wlsc_switcher_create(compositor);
+
+		wlsc_switcher_next(compositor->switcher);
+		return;
+
+	case KEY_LEFTMETA | MODIFIER_SUPER:
+	case KEY_RIGHTMETA | MODIFIER_SUPER:
+		if (compositor->switcher && !state) {
+			wlsc_surface_activate(compositor->switcher->current,
+					      wd, time);
+			wlsc_switcher_destroy(compositor->switcher);
+			compositor->switcher = NULL;
+		}
+		break;
 	}
 
 	switch (key) {
