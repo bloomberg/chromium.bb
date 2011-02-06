@@ -10317,7 +10317,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_CAPSLOCK"
                desc="The dropdown list item for 'Customize modifier keys' overlay">
-        CapsLock
+        Caps Lock
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_REPEAT_SPEED_FAST"
                desc="The label for the Chrome OS configuration dialog">
