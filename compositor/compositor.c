@@ -392,6 +392,7 @@ wlsc_compositor_finish_frame(struct wlsc_compositor *compositor, int msecs)
 {
 	wl_display_post_frame(compositor->wl_display, msecs);
 	wl_event_source_timer_update(compositor->timer_source, 5);
+	compositor->repaint_on_timeout = 1;
 }
 
 static void
