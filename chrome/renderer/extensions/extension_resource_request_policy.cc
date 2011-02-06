@@ -28,8 +28,10 @@ bool ExtensionResourceRequestPolicy::CanRequestResource(
   // some extensions want to be able to do things like create their own
   // launchers.
   const Extension* extension = loaded_extensions->GetByURL(resource_url);
+  std::string resource_root_relative_path =
+      resource_url.path().empty() ? "" : resource_url.path().substr(1);
   if (extension && extension->is_hosted_app() &&
-      !extension->icons().ContainsPath(resource_url.path())) {
+      !extension->icons().ContainsPath(resource_root_relative_path)) {
     LOG(ERROR) << "Denying load of " << resource_url.spec() << " from "
                << "hosted app.";
     return false;

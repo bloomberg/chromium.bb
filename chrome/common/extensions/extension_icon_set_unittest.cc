@@ -44,6 +44,7 @@ TEST(ExtensionIconSet, Values) {
   EXPECT_TRUE(icons.ContainsPath("foo"));
   EXPECT_TRUE(icons.ContainsPath("bar"));
   EXPECT_FALSE(icons.ContainsPath("baz"));
+  EXPECT_FALSE(icons.ContainsPath(""));
 
   icons.Clear();
   EXPECT_FALSE(icons.ContainsPath("foo"));

@@ -84,12 +84,25 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, OriginPrivileges) {
   EXPECT_EQ(result, "Loaded");
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
+                       ExtensionCanLoadHostedAppIcons) {
+  ASSERT_TRUE(LoadExtension(test_data_dir_
+      .AppendASCII("extension_resource_request_policy")
+      .AppendASCII("extension")));
+
+  ASSERT_TRUE(RunExtensionSubtest(
+      "extension_resource_request_policy/extension2/",
+      "can_load_icons_from_hosted_apps.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, Audio) {
-  EXPECT_TRUE(RunExtensionSubtest("extension_resource_request_policy/media",
-                                  "audio.html"));
+  EXPECT_TRUE(RunExtensionSubtest(
+      "extension_resource_request_policy/extension2",
+      "audio.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, Video) {
-  EXPECT_TRUE(RunExtensionSubtest("extension_resource_request_policy/media",
-                                  "video.html"));
+  EXPECT_TRUE(RunExtensionSubtest(
+      "extension_resource_request_policy/extension2",
+      "video.html"));
 }
