@@ -82,8 +82,6 @@
       '-special_tabs.SpecialTabsTest.testAboutDNSTab',
       # 'sync',  crbug.com/60970
       'test_basic',
-      # TestServer cannot fire because of missing pyproto dir.  crbug.com/71976
-      '-test_basic.SimpleTest.testHTTP',
       'themes',
     ],
 
