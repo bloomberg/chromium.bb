@@ -288,7 +288,7 @@ ProfileImpl::ProfileImpl(const FilePath& path)
   FilePath media_cache_path = base_cache_path_;
   int media_cache_max_size;
   GetCacheParameters(kMediaContext, &media_cache_path, &media_cache_max_size);
-  cache_path = GetMediaCachePath(cache_path);
+  media_cache_path = GetMediaCachePath(media_cache_path);
 
   FilePath extensions_cookie_path = GetPath();
   extensions_cookie_path =
