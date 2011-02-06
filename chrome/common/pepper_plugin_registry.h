@@ -88,9 +88,6 @@ class PepperPluginRegistry
 
  private:
   static void GetPluginInfoFromSwitch(std::vector<PepperPluginInfo>* plugins);
-  static void GetExtraPlugins(std::vector<PepperPluginInfo>* plugins);
-
-  static void GetInternalPluginInfo(std::vector<PepperPluginInfo>* plugin_info);
 
   PepperPluginRegistry();
 
