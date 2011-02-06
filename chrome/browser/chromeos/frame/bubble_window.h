@@ -26,7 +26,8 @@ class BubbleWindow : public views::WindowGtk {
   enum Style {
     STYLE_GENERIC = 0, // Default style.
     STYLE_XBAR = 1 << 0, // Show close button at the top right (left for RTL).
-    STYLE_THROBBER = 1 << 1 // Show throbber for slow rendering.
+    STYLE_THROBBER = 1 << 1, // Show throbber for slow rendering.
+    STYLE_XSHAPE = 1 << 2 // Trim the window margins and round corners.
   };
 
   static views::Window* Create(gfx::NativeWindow parent,
@@ -41,6 +42,10 @@ class BubbleWindow : public views::WindowGtk {
 
   // Overidden from views::WindowGtk:
   virtual void Init(GtkWindow* parent, const gfx::Rect& bounds);
+
+  // Trims the window margins and rounds off the corners.
+  void TrimMargins(int margin_left, int margin_right, int margin_top,
+                   int margin_bottom, int border_radius);
 };
 
 }  // namespace chromeos
