@@ -1027,14 +1027,18 @@ function hideNotification() {
   var actionLink = notificationElement.querySelector('#actionlink');
   var closeButton = notificationElement.querySelector('#notification-close');
   // Prevent tabbing to the hidden link.
-  actionLink.tabIndex = -1;
-  closeButton.tabIndex = -1;
   // Setting tabIndex to -1 only prevents future tabbing to it. If, however, the
   // user switches window or a tab and then moves back to this tab the element
   // may gain focus. We therefore make sure that we blur the element so that the
   // element focus is not restored when coming back to this window.
-  actionLink.blur();
-  closeButton.blur();
+  if (actionLink) {
+    actionLink.tabIndex = -1;
+    actionLink.blur();
+  }
+  if (closeButton) {
+    closeButton.tabIndex = -1;
+    closeButton.blur();
+  }
 }
 
 function showFirstRunNotification() {
