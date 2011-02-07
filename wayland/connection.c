@@ -701,8 +701,12 @@ wl_closure_print(struct wl_closure *closure, struct wl_object *target)
 			fprintf(stderr, "\"%s\"", value->string);
 			break;
 		case 'o':
-			fprintf(stderr, "object %u",
-				value->object ? value->object->id : 0);
+			if (value->object)
+				fprintf(stderr, "%s@%u",
+					value->object->interface->name,
+					value->object->id);
+			else
+				fprintf(stderr, "nil");
 			break;
 		case 'n':
 			fprintf(stderr, "new id %u", value->uint32);
