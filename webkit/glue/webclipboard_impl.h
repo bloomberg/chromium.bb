@@ -38,7 +38,10 @@ class WebClipboardImpl : public WebKit::WebClipboard {
       const WebKit::WebImage&,
       const WebKit::WebURL& source_url,
       const WebKit::WebString& title);
-  virtual void writeData(const WebKit::WebDragData&);
+  virtual void writeData(
+      const WebKit::WebString& type,
+      const WebKit::WebString& data,
+      const WebKit::WebString& metadata);
 
   virtual WebKit::WebVector<WebKit::WebString> readAvailableTypes(
       Buffer, bool* contains_filenames);

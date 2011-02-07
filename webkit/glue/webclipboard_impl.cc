@@ -172,7 +172,9 @@ void WebClipboardImpl::writeImage(
   }
 }
 
-void WebClipboardImpl::writeData(const WebKit::WebDragData& data) {
+void WebClipboardImpl::writeData(const WebString& type,
+                                 const WebString& data,
+                                 const WebString& metadata) {
   // TODO(dcheng): Implement this stub.
 }
 
