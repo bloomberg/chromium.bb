@@ -6544,7 +6544,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Aw, Snap!
       </message>
       <message name="IDS_SAD_TAB_MESSAGE" desc="The message displayed on the sad tab page.">
-        Something went wrong while displaying this webpage. To continue, press Reload or go to another page.
+        Something went wrong while displaying this webpage. To continue, reload or go to another page.
       </message>
 
       <!-- Killed Tab Strings -->
@@ -6554,7 +6554,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         He's Dead, Jim!
       </message>
       <message name="IDS_KILLED_TAB_MESSAGE" desc="The message displayed on the killed tab page.">
-        Something caused this webpage to be killed, either because the operating system ran out of memory, or for some other reason. To continue, press Reload or go to another page.
+This web page was killed, either because Chrome ran out of memory, or you chose to end the process. To continue, reload or go to another page.
       </message>
 
       <!-- Default Browser related messages -->
