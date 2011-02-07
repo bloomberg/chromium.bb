@@ -51,7 +51,7 @@ cr.define('options', function() {
         $('aboutPageMoreInfo').classList.remove('hidden');
       };
 
-      if (cr.commandLine.options['--bwsi']) {
+      if (!AccountsOptions.currentUserIsOwner()) {
         $('channelSelect').disabled = true;
       } else {
         $('channelSelect').onchange = function(event) {
