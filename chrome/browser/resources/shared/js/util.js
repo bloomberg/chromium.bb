@@ -114,6 +114,10 @@ function swapDomNodes(a, b) {
  * @return {Object} e The click or mouseup event.
  */
 function handleLinkClickOrMouseUp(e) {
+  // Allow preventDefault to work.
+  if (!e.returnValue)
+    return;
+
   var el = e.target;
   if (el.nodeType == Node.ELEMENT_NODE &&
       el.webkitMatchesSelector('A, A *')) {
@@ -132,5 +136,5 @@ function handleLinkClickOrMouseUp(e) {
   }
 }
 
-document.addEventListener('click', handleLinkClickOrMouseUp, true);
-document.addEventListener('mouseup', handleLinkClickOrMouseUp, true);
+document.addEventListener('click', handleLinkClickOrMouseUp);
+document.addEventListener('mouseup', handleLinkClickOrMouseUp);
