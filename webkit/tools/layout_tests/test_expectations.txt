@@ -28,7 +28,7 @@ BUG_LOISLO : canvas/philip/tests/2d.strokeRect.zero.4.html = TEXT
 BUG_LOISLO : plugins/plugin-document-back-forward.html = TEXT
 
 // temporary for rebaseline after r77781
-BUG_LOISLO : fast/html/keygen.html = TEXT
+BUG_LOISLO : fast/html/keygen.html = IMAGE+TEXT
 BUG_LOISLO : fast/invalid/residual-style.html = TEXT
 BUG_LOIDLO : html5lib/runner.html = TEXT
                                            
