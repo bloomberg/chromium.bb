@@ -13,3 +13,16 @@ BUG_LOISLO MAC DEBUG : svg/text/font-size-below-point-five.svg = TEXT
 BUG_DGLAZKOV MAC : fast/blockflow/Kusa-Makura-background-canvas.html = IMAGE
 BUG_DGLAZKOV MAC : fast/blockflow/japanese-ruby-vertical-lr.html = IMAGE
 BUG_DGLAZKOV MAC : fast/blockflow/japanese-ruby-vertical-rl.html = IMAGE
+
+BUG_LOISLO : canvas/philip/tests/2d.gradient.radial.cone.front.html = TEXT
+BUG_LOISLO : canvas/philip/tests/2d.gradient.radial.inside2.html = TEXT
+BUG_LOISLO : canvas/philip/tests/2d.gradient.radial.inside3.html = TEXT
+BUG_LOISLO : canvas/philip/tests/2d.gradient.radial.outside1.html = TEXT
+BUG_LOISLO : canvas/philip/tests/2d.line.cap.closed.html = TEXT
+BUG_LOISLO : canvas/philip/tests/2d.line.join.parallel.html = TEXT
+BUG_LOISLO : canvas/philip/tests/2d.line.miter.lineedge.html = TEXT
+BUG_LOISLO : canvas/philip/tests/2d.path.rect.winding.html = TEXT
+BUG_LOISLO : canvas/philip/tests/2d.shadow.enable.x.html = TEXT
+BUG_LOISLO : canvas/philip/tests/2d.shadow.enable.y.html = TEXT
+BUG_LOISLO : canvas/philip/tests/2d.strokeRect.zero.4.html = TEXT
+BUG_LOISLO : plugins/plugin-document-back-forward.html = TEXT
