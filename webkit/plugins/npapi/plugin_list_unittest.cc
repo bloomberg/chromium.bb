@@ -16,15 +16,34 @@ namespace plugin_test_internal {
 // to use |lock_| (but it doesn't hurt either).
 class PluginListWithoutFileIO : public PluginList {
  public:
-  std::vector<WebPluginInfo> plugins_to_load_;
+  void AddPluginToLoad(const WebPluginInfo& plugin) {
+    plugins_to_load_.push_back(plugin);
+  }
+
+  void ClearPluginsToLoad() {
+    plugins_to_load_.clear();
+  }
+
+  void AddPluginGroupDefinition(const PluginGroupDefinition& definition) {
+    hardcoded_definitions_.push_back(definition);
+  }
 
  private:
-  // NPAPI::PluginList methods:
-  virtual void LoadPluginsInternal(ScopedVector<PluginGroup>* plugin_groups) {
+  std::vector<WebPluginInfo> plugins_to_load_;
+  std::vector<PluginGroupDefinition> hardcoded_definitions_;
+
+  // PluginList methods:
+  virtual void LoadPluginsInternal(
+      ScopedVector<PluginGroup>* plugin_groups) OVERRIDE {
     for (size_t i = 0; i < plugins_to_load_.size(); ++i)
       AddToPluginGroups(plugins_to_load_[i], plugin_groups);
+  }
 
-    return;
+  virtual const PluginGroupDefinition* GetPluginGroupDefinitions() OVERRIDE {
+    return &hardcoded_definitions_.front();
+  }
+  virtual size_t GetPluginGroupDefinitionsSize() OVERRIDE {
+    return hardcoded_definitions_.size();
   }
 };
 
@@ -52,17 +71,23 @@ bool Contains(const std::vector<WebPluginInfo>& list,
   return false;
 }
 
+FilePath::CharType kFooPath[] = FILE_PATH_LITERAL("/plugins/foo.plugin");
+FilePath::CharType kBarPath[] = FILE_PATH_LITERAL("/plugins/bar.plugin");
+const char* kFooIdentifier = "foo";
+const char* kFooName = "Foo";
+
+
 }  // namespace
 
 class PluginListTest : public testing::Test {
  public:
   PluginListTest()
       : foo_plugin_(ASCIIToUTF16("Foo Plugin"),
-                    FilePath(FILE_PATH_LITERAL("/plugins/foo.plugin")),
+                    FilePath(kFooPath),
                     ASCIIToUTF16("1.2.3"),
                     ASCIIToUTF16("foo")),
         bar_plugin_(ASCIIToUTF16("Bar Plugin"),
-                    FilePath(FILE_PATH_LITERAL("/plugins/bar.plugin")),
+                    FilePath(kBarPath),
                     ASCIIToUTF16("2.3.4"),
                     ASCIIToUTF16("bar")) {
   }
@@ -70,8 +95,12 @@ class PluginListTest : public testing::Test {
   virtual void SetUp() {
     bar_plugin_.enabled = WebPluginInfo::USER_DISABLED_POLICY_UNMANAGED;
     plugin_list_.DisablePlugin(bar_plugin_.path);
-    plugin_list_.plugins_to_load_.push_back(foo_plugin_);
-    plugin_list_.plugins_to_load_.push_back(bar_plugin_);
+    plugin_list_.AddPluginToLoad(foo_plugin_);
+    plugin_list_.AddPluginToLoad(bar_plugin_);
+    PluginGroupDefinition foo_definition = { kFooIdentifier, kFooName,
+                                             "Foo Plugin", NULL, 0,
+                                             "http://example.com/foo" };
+    plugin_list_.AddPluginGroupDefinition(foo_definition);
     plugin_list_.LoadPlugins(true);
   }
 
@@ -98,7 +127,7 @@ TEST_F(PluginListTest, GetEnabledPlugins) {
 
 TEST_F(PluginListTest, GetPluginGroup) {
   const PluginGroup* foo_group = plugin_list_.GetPluginGroup(foo_plugin_);
-  EXPECT_EQ(foo_group->GetGroupName(), foo_plugin_.name);
+  EXPECT_EQ(ASCIIToUTF16(kFooName), foo_group->GetGroupName());
   EXPECT_TRUE(foo_group->Enabled());
   // The second request should return a pointer to the same instance.
   const PluginGroup* foo_group2 = plugin_list_.GetPluginGroup(foo_plugin_);
@@ -145,9 +174,8 @@ TEST_F(PluginListTest, EnableGroup) {
 TEST_F(PluginListTest, EmptyGroup) {
   std::vector<PluginGroup> groups;
   plugin_list_.GetPluginGroups(false, &groups);
-  for (size_t i = 0; i < groups.size(); ++i) {
+  for (size_t i = 0; i < groups.size(); ++i)
     EXPECT_GE(1U, groups[i].web_plugins_info().size());
-  }
 }
 
 TEST_F(PluginListTest, DisableOutdated) {
@@ -163,9 +191,9 @@ TEST_F(PluginListTest, DisableOutdated) {
                             FilePath(FILE_PATH_LITERAL("/myplugin.3.0.45")),
                             ASCIIToUTF16("3.0.45"),
                             ASCIIToUTF16("MyPlugin version 3.0.45"));
-  plugin_list_.plugins_to_load_.clear();
-  plugin_list_.plugins_to_load_.push_back(plugin_3043);
-  plugin_list_.plugins_to_load_.push_back(plugin_3045);
+  plugin_list_.ClearPluginsToLoad();
+  plugin_list_.AddPluginToLoad(plugin_3043);
+  plugin_list_.AddPluginToLoad(plugin_3045);
   // Enfore the load to run.
   std::vector<WebPluginInfo> plugins;
   plugin_list_.GetPlugins(true, &plugins);
@@ -188,8 +216,8 @@ TEST_F(PluginListTest, BadPluginDescription) {
                             ASCIIToUTF16(""),
                             ASCIIToUTF16(""));
   // Simulate loading of the plugins.
-  plugin_list_.plugins_to_load_.clear();
-  plugin_list_.plugins_to_load_.push_back(plugin_3043);
+  plugin_list_.ClearPluginsToLoad();
+  plugin_list_.AddPluginToLoad(plugin_3043);
   // Now we should have them in the state we specified above.
   std::vector<WebPluginInfo> plugins;
   plugin_list_.GetPlugins(true, &plugins);
@@ -210,15 +238,27 @@ TEST_F(PluginListTest, DisableAndEnableBeforeLoad) {
   EXPECT_TRUE(plugin_list_.DisablePlugin(plugin_3045.path));
   EXPECT_TRUE(plugin_list_.EnablePlugin(plugin_3045.path));
   // Simulate loading of the plugins.
-  plugin_list_.plugins_to_load_.clear();
-  plugin_list_.plugins_to_load_.push_back(plugin_3043);
-  plugin_list_.plugins_to_load_.push_back(plugin_3045);
+  plugin_list_.ClearPluginsToLoad();
+  plugin_list_.AddPluginToLoad(plugin_3043);
+  plugin_list_.AddPluginToLoad(plugin_3045);
   // Now we should have them in the state we specified above.
   std::vector<WebPluginInfo> plugins;
   plugin_list_.GetPlugins(true, &plugins);
   plugin_3043.enabled = WebPluginInfo::USER_DISABLED_POLICY_UNMANAGED;
   ASSERT_TRUE(Contains(plugins, plugin_3043, true));
   ASSERT_TRUE(Contains(plugins, plugin_3045, true));
+}
+
+TEST_F(PluginListTest, HardcodedGroups) {
+  std::vector<PluginGroup> groups;
+  plugin_list_.GetPluginGroups(true, &groups);
+  ASSERT_EQ(2u, groups.size());
+  EXPECT_EQ(1u, groups[0].web_plugins_info().size());
+  EXPECT_TRUE(groups[0].ContainsPlugin(FilePath(kFooPath)));
+  EXPECT_EQ(kFooIdentifier, groups[0].identifier());
+  EXPECT_EQ(1u, groups[1].web_plugins_info().size());
+  EXPECT_TRUE(groups[1].ContainsPlugin(FilePath(kBarPath)));
+  EXPECT_EQ("bar.plugin", groups[1].identifier());
 }
 
 }  // namespace npapi

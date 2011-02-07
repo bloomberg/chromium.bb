@@ -29,6 +29,7 @@ class PluginList;
 namespace plugin_test_internal {
 class PluginListWithoutFileIO;
 }
+
 // Hard-coded version ranges for plugin groups.
 struct VersionRangeDefinition {
   // Matcher for lowest version matched by this range (inclusive). May be empty
@@ -47,7 +48,7 @@ struct PluginGroupDefinition {
   const char* name;  // Name of this group.
   const char* name_matcher;  // Substring matcher for the plugin name.
   const VersionRangeDefinition* versions;  // List of version ranges.
-  const size_t num_versions;  // Size of the array |versions| points to.
+  size_t num_versions;  // Size of the array |versions| points to.
   const char* update_url;  // Location of latest secure version.
 };
 

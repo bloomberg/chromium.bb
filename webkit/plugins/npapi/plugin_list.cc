@@ -327,7 +327,7 @@ PluginList::PluginList()
       plugins_need_refresh_(false),
       disable_outdated_plugins_(false) {
   PlatformInit();
-  AddHardcodedPluginGroups();
+  AddHardcodedPluginGroups(&plugin_groups_);
 }
 
 void PluginList::LoadPluginsInternal(ScopedVector<PluginGroup>* plugin_groups) {
@@ -395,6 +395,7 @@ void PluginList::LoadPlugins(bool refresh) {
   }
 
   ScopedVector<PluginGroup> new_plugin_groups;
+  AddHardcodedPluginGroups(&new_plugin_groups);
   // Do the actual loading of the plugins.
   LoadPluginsInternal(&new_plugin_groups);
 
@@ -691,14 +692,12 @@ std::string PluginList::GetPluginGroupIdentifier(
   return group->identifier();
 }
 
-void PluginList::AddHardcodedPluginGroups() {
+void PluginList::AddHardcodedPluginGroups(ScopedVector<PluginGroup>* groups) {
   base::AutoLock lock(lock_);
   const PluginGroupDefinition* definitions = GetPluginGroupDefinitions();
-  for (size_t i = 0; i < GetPluginGroupDefinitionsSize(); ++i) {
-    PluginGroup* definition_group = PluginGroup::FromPluginGroupDefinition(
-        definitions[i]);
-    plugin_groups_.push_back(definition_group);
-  }
+  size_t num_definitions = GetPluginGroupDefinitionsSize();
+  for (size_t i = 0; i < num_definitions; ++i)
+    groups->push_back(PluginGroup::FromPluginGroupDefinition(definitions[i]));
 }
 
 PluginGroup* PluginList::AddToPluginGroups(
@@ -731,11 +730,8 @@ PluginGroup* PluginList::AddToPluginGroups(
   group->AddPlugin(web_plugin_info);
   // If group is scheduled for disabling do that now and remove it from the
   // list.
-  if (groups_to_disable_.find(group->GetGroupName()) !=
-      groups_to_disable_.end()) {
-      group->EnableGroup(false);
-      groups_to_disable_.erase(group->GetGroupName());
-  }
+  if (groups_to_disable_.erase(group->GetGroupName()))
+    group->EnableGroup(false);
   return group;
 }
 
@@ -758,7 +754,6 @@ bool PluginList::DisablePlugin(const FilePath& filename) {
   }
   // Non existing plugin is being disabled. Queue the plugin so that on the next
   // load plugins call they will be disabled.
-  // Check if we already have this one to avoid double inclusion.
   plugins_to_disable_.insert(filename);
   return true;
 }

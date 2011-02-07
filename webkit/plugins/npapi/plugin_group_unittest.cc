@@ -157,9 +157,10 @@ TEST(PluginGroupTest, PluginGroupDescription) {
 }
 
 TEST(PluginGroupTest, PluginGroupDefinition) {
+  PluginList* plugin_list = PluginList::Singleton();
   const PluginGroupDefinition* definitions =
-      PluginList::GetPluginGroupDefinitions();
-  for (size_t i = 0; i < PluginList::GetPluginGroupDefinitionsSize(); ++i) {
+      plugin_list->GetPluginGroupDefinitions();
+  for (size_t i = 0; i < plugin_list->GetPluginGroupDefinitionsSize(); ++i) {
     scoped_ptr<PluginGroup> def_group(
         PluginGroupTest::CreatePluginGroup(definitions[i]));
     ASSERT_TRUE(def_group.get() != NULL);
@@ -264,5 +265,6 @@ TEST(PluginGroupTest, IsVulnerable) {
   EXPECT_FALSE(PluginGroup(*group).IsVulnerable());
   EXPECT_TRUE(PluginGroup(*group).RequiresAuthorization());
 }
+
 }  // namespace npapi
 }  // namespace webkit

@@ -62,8 +62,8 @@ class PluginList {
   // by a command line switch.
   static bool DebugPluginLoading();
 
-  static const PluginGroupDefinition* GetPluginGroupDefinitions();
-  static size_t GetPluginGroupDefinitionsSize();
+  virtual const PluginGroupDefinition* GetPluginGroupDefinitions();
+  virtual size_t GetPluginGroupDefinitionsSize();
 
   // Returns true iff the plugin list has been loaded already.
   bool PluginsLoaded();
@@ -222,7 +222,7 @@ class PluginList {
   PluginGroup* AddToPluginGroups(const WebPluginInfo& web_plugin_info,
                                  ScopedVector<PluginGroup>* plugin_groups);
 
-// Holds the currently available plugin groups.
+  // Holds the currently available plugin groups.
   ScopedVector<PluginGroup> plugin_groups_;
 
  private:
@@ -230,8 +230,8 @@ class PluginList {
   FRIEND_TEST_ALL_PREFIXES(PluginGroupTest, PluginGroupDefinition);
 
   // Creates PluginGroups for the static group definitions, and adds them to
-  // the PluginGroup cache of this PluginList.
-  void AddHardcodedPluginGroups();
+  // the list of PluginGroups.
+  void AddHardcodedPluginGroups(ScopedVector<PluginGroup>* groups);
 
   // Implements all IO dependant operations of the LoadPlugins method so that
   // test classes can mock these out. Return value false means LoadPlugins
