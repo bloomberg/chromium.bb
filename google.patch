@@ -160,3 +160,1174 @@ Index: jpeglibmangler.h
 +#define jpeg_mem_term chromium_jpeg_mem_term
 +
 +#endif  // THIRD_PARTY_LIBJPEG_TURBO_JPEGLIBMANGLER_H_
+Index: simd/jimmxfst.asm
+===================================================================
+--- simd/jimmxfst.asm	(revision 73737)
++++ simd/jimmxfst.asm	(working copy)
+@@ -59,7 +59,7 @@
+ %define CONST_SHIFT     (16 - PRE_MULTIPLY_SCALE_BITS - CONST_BITS)
+ 
+ 	alignz	16
+-	global	EXTN(jconst_idct_ifast_mmx)
++	global	EXTN(jconst_idct_ifast_mmx) PRIVATE
+ 
+ EXTN(jconst_idct_ifast_mmx):
+ 
+@@ -94,7 +94,7 @@
+ 					; JCOEF workspace[DCTSIZE2]
+ 
+ 	align	16
+-	global	EXTN(jsimd_idct_ifast_mmx)
++	global	EXTN(jsimd_idct_ifast_mmx) PRIVATE
+ 
+ EXTN(jsimd_idct_ifast_mmx):
+ 	push	ebp
+Index: simd/jcqntmmx.asm
+===================================================================
+--- simd/jcqntmmx.asm	(revision 73737)
++++ simd/jcqntmmx.asm	(working copy)
+@@ -35,7 +35,7 @@
+ %define workspace	ebp+16		; DCTELEM * workspace
+ 
+ 	align	16
+-	global	EXTN(jsimd_convsamp_mmx)
++	global	EXTN(jsimd_convsamp_mmx) PRIVATE
+ 
+ EXTN(jsimd_convsamp_mmx):
+ 	push	ebp
+@@ -140,7 +140,7 @@
+ %define workspace	ebp+16		; DCTELEM * workspace
+ 
+ 	align	16
+-	global	EXTN(jsimd_quantize_mmx)
++	global	EXTN(jsimd_quantize_mmx) PRIVATE
+ 
+ EXTN(jsimd_quantize_mmx):
+ 	push	ebp
+Index: simd/jfss2fst.asm
+===================================================================
+--- simd/jfss2fst.asm	(revision 73737)
++++ simd/jfss2fst.asm	(working copy)
+@@ -52,7 +52,7 @@
+ %define CONST_SHIFT     (16 - PRE_MULTIPLY_SCALE_BITS - CONST_BITS)
+ 
+ 	alignz	16
+-	global	EXTN(jconst_fdct_ifast_sse2)
++	global	EXTN(jconst_fdct_ifast_sse2) PRIVATE
+ 
+ EXTN(jconst_fdct_ifast_sse2):
+ 
+@@ -80,7 +80,7 @@
+ %define WK_NUM		2
+ 
+ 	align	16
+-	global	EXTN(jsimd_fdct_ifast_sse2)
++	global	EXTN(jsimd_fdct_ifast_sse2) PRIVATE
+ 
+ EXTN(jsimd_fdct_ifast_sse2):
+ 	push	ebp
+Index: simd/jiss2fst.asm
+===================================================================
+--- simd/jiss2fst.asm	(revision 73737)
++++ simd/jiss2fst.asm	(working copy)
+@@ -59,7 +59,7 @@
+ %define CONST_SHIFT     (16 - PRE_MULTIPLY_SCALE_BITS - CONST_BITS)
+ 
+ 	alignz	16
+-	global	EXTN(jconst_idct_ifast_sse2)
++	global	EXTN(jconst_idct_ifast_sse2) PRIVATE
+ 
+ EXTN(jconst_idct_ifast_sse2):
+ 
+@@ -92,7 +92,7 @@
+ %define WK_NUM		2
+ 
+ 	align	16
+-	global	EXTN(jsimd_idct_ifast_sse2)
++	global	EXTN(jsimd_idct_ifast_sse2) PRIVATE
+ 
+ EXTN(jsimd_idct_ifast_sse2):
+ 	push	ebp
+Index: simd/jf3dnflt.asm
+===================================================================
+--- simd/jf3dnflt.asm	(revision 73737)
++++ simd/jf3dnflt.asm	(working copy)
+@@ -27,7 +27,7 @@
+ 	SECTION	SEG_CONST
+ 
+ 	alignz	16
+-	global	EXTN(jconst_fdct_float_3dnow)
++	global	EXTN(jconst_fdct_float_3dnow) PRIVATE
+ 
+ EXTN(jconst_fdct_float_3dnow):
+ 
+@@ -55,7 +55,7 @@
+ %define WK_NUM		2
+ 
+ 	align	16
+-	global	EXTN(jsimd_fdct_float_3dnow)
++	global	EXTN(jsimd_fdct_float_3dnow) PRIVATE
+ 
+ EXTN(jsimd_fdct_float_3dnow):
+ 	push	ebp
+Index: simd/jdcolss2-64.asm
+===================================================================
+--- simd/jdcolss2-64.asm	(revision 73737)
++++ simd/jdcolss2-64.asm	(working copy)
+@@ -35,7 +35,7 @@
+ 	SECTION	SEG_CONST
+ 
+ 	alignz	16
+-	global	EXTN(jconst_ycc_rgb_convert_sse2)
++	global	EXTN(jconst_ycc_rgb_convert_sse2) PRIVATE
+ 
+ EXTN(jconst_ycc_rgb_convert_sse2):
+ 
+Index: simd/jcclrss2-64.asm
+===================================================================
+--- simd/jcclrss2-64.asm	(revision 73737)
++++ simd/jcclrss2-64.asm	(working copy)
+@@ -39,7 +39,7 @@
+ 
+ 	align	16
+ 
+-	global	EXTN(jsimd_rgb_ycc_convert_sse2)
++	global	EXTN(jsimd_rgb_ycc_convert_sse2) PRIVATE
+ 
+ EXTN(jsimd_rgb_ycc_convert_sse2):
+ 	push	rbp
+Index: simd/jiss2red-64.asm
+===================================================================
+--- simd/jiss2red-64.asm	(revision 73737)
++++ simd/jiss2red-64.asm	(working copy)
+@@ -73,7 +73,7 @@
+ 	SECTION	SEG_CONST
+ 
+ 	alignz	16
+-	global	EXTN(jconst_idct_red_sse2)
++	global	EXTN(jconst_idct_red_sse2) PRIVATE
+ 
+ EXTN(jconst_idct_red_sse2):
+ 
+@@ -114,7 +114,7 @@
+ %define WK_NUM		2
+ 
+ 	align	16
+-	global	EXTN(jsimd_idct_4x4_sse2)
++	global	EXTN(jsimd_idct_4x4_sse2) PRIVATE
+ 
+ EXTN(jsimd_idct_4x4_sse2):
+ 	push	rbp
+@@ -413,7 +413,7 @@
+ ; r13 = JDIMENSION output_col
+ 
+ 	align	16
+-	global	EXTN(jsimd_idct_2x2_sse2)
++	global	EXTN(jsimd_idct_2x2_sse2) PRIVATE
+ 
+ EXTN(jsimd_idct_2x2_sse2):
+ 	push	rbp
+Index: simd/ji3dnflt.asm
+===================================================================
+--- simd/ji3dnflt.asm	(revision 73737)
++++ simd/ji3dnflt.asm	(working copy)
+@@ -27,7 +27,7 @@
+ 	SECTION	SEG_CONST
+ 
+ 	alignz	16
+-	global	EXTN(jconst_idct_float_3dnow)
++	global	EXTN(jconst_idct_float_3dnow) PRIVATE
+ 
+ EXTN(jconst_idct_float_3dnow):
+ 
+@@ -63,7 +63,7 @@
+ 					; FAST_FLOAT workspace[DCTSIZE2]
+ 
+ 	align	16
+-	global	EXTN(jsimd_idct_float_3dnow)
++	global	EXTN(jsimd_idct_float_3dnow) PRIVATE
+ 
+ EXTN(jsimd_idct_float_3dnow):
+ 	push	ebp
+Index: simd/jdsamss2-64.asm
+===================================================================
+--- simd/jdsamss2-64.asm	(revision 73737)
++++ simd/jdsamss2-64.asm	(working copy)
+@@ -23,7 +23,7 @@
+ 	SECTION	SEG_CONST
+ 
+ 	alignz	16
+-	global	EXTN(jconst_fancy_upsample_sse2)
++	global	EXTN(jconst_fancy_upsample_sse2) PRIVATE
+ 
+ EXTN(jconst_fancy_upsample_sse2):
+ 
+@@ -59,7 +59,7 @@
+ ; r13 = JSAMPARRAY * output_data_ptr
+ 
+ 	align	16
+-	global	EXTN(jsimd_h2v1_fancy_upsample_sse2)
++	global	EXTN(jsimd_h2v1_fancy_upsample_sse2) PRIVATE
+ 
+ EXTN(jsimd_h2v1_fancy_upsample_sse2):
+ 	push	rbp
+@@ -201,7 +201,7 @@
+ %define WK_NUM		4
+ 
+ 	align	16
+-	global	EXTN(jsimd_h2v2_fancy_upsample_sse2)
++	global	EXTN(jsimd_h2v2_fancy_upsample_sse2) PRIVATE
+ 
+ EXTN(jsimd_h2v2_fancy_upsample_sse2):
+ 	push	rbp
+@@ -498,7 +498,7 @@
+ ; r13 = JSAMPARRAY * output_data_ptr
+ 
+ 	align	16
+-	global	EXTN(jsimd_h2v1_upsample_sse2)
++	global	EXTN(jsimd_h2v1_upsample_sse2) PRIVATE
+ 
+ EXTN(jsimd_h2v1_upsample_sse2):
+ 	push	rbp
+@@ -587,7 +587,7 @@
+ ; r13 = JSAMPARRAY * output_data_ptr
+ 
+ 	align	16
+-	global	EXTN(jsimd_h2v2_upsample_sse2)
++	global	EXTN(jsimd_h2v2_upsample_sse2) PRIVATE
+ 
+ EXTN(jsimd_h2v2_upsample_sse2):
+ 	push	rbp
+Index: simd/jsimdcpu.asm
+===================================================================
+--- simd/jsimdcpu.asm	(revision 73737)
++++ simd/jsimdcpu.asm	(working copy)
+@@ -29,7 +29,7 @@
+ ;
+ 
+ 	align	16
+-	global	EXTN(jpeg_simd_cpu_support)
++	global	EXTN(jpeg_simd_cpu_support) PRIVATE
+ 
+ EXTN(jpeg_simd_cpu_support):
+ 	push	ebx
+Index: simd/jcsammmx.asm
+===================================================================
+--- simd/jcsammmx.asm	(revision 73737)
++++ simd/jcsammmx.asm	(working copy)
+@@ -40,7 +40,7 @@
+ %define output_data(b)	(b)+28	; JSAMPARRAY output_data
+ 
+ 	align	16
+-	global	EXTN(jsimd_h2v1_downsample_mmx)
++	global	EXTN(jsimd_h2v1_downsample_mmx) PRIVATE
+ 
+ EXTN(jsimd_h2v1_downsample_mmx):
+ 	push	ebp
+@@ -182,7 +182,7 @@
+ %define output_data(b)	(b)+28	; JSAMPARRAY output_data
+ 
+ 	align	16
+-	global	EXTN(jsimd_h2v2_downsample_mmx)
++	global	EXTN(jsimd_h2v2_downsample_mmx) PRIVATE
+ 
+ EXTN(jsimd_h2v2_downsample_mmx):
+ 	push	ebp
+Index: simd/jdsammmx.asm
+===================================================================
+--- simd/jdsammmx.asm	(revision 73737)
++++ simd/jdsammmx.asm	(working copy)
+@@ -22,7 +22,7 @@
+ 	SECTION	SEG_CONST
+ 
+ 	alignz	16
+-	global	EXTN(jconst_fancy_upsample_mmx)
++	global	EXTN(jconst_fancy_upsample_mmx) PRIVATE
+ 
+ EXTN(jconst_fancy_upsample_mmx):
+ 
+@@ -58,7 +58,7 @@
+ %define output_data_ptr(b)	(b)+20		; JSAMPARRAY * output_data_ptr
+ 
+ 	align	16
+-	global	EXTN(jsimd_h2v1_fancy_upsample_mmx)
++	global	EXTN(jsimd_h2v1_fancy_upsample_mmx) PRIVATE
+ 
+ EXTN(jsimd_h2v1_fancy_upsample_mmx):
+ 	push	ebp
+@@ -216,7 +216,7 @@
+ %define gotptr		wk(0)-SIZEOF_POINTER	; void * gotptr
+ 
+ 	align	16
+-	global	EXTN(jsimd_h2v2_fancy_upsample_mmx)
++	global	EXTN(jsimd_h2v2_fancy_upsample_mmx) PRIVATE
+ 
+ EXTN(jsimd_h2v2_fancy_upsample_mmx):
+ 	push	ebp
+@@ -542,7 +542,7 @@
+ %define output_data_ptr(b)	(b)+20		; JSAMPARRAY * output_data_ptr
+ 
+ 	align	16
+-	global	EXTN(jsimd_h2v1_upsample_mmx)
++	global	EXTN(jsimd_h2v1_upsample_mmx) PRIVATE
+ 
+ EXTN(jsimd_h2v1_upsample_mmx):
+ 	push	ebp
+@@ -643,7 +643,7 @@
+ %define output_data_ptr(b)	(b)+20		; JSAMPARRAY * output_data_ptr
+ 
+ 	align	16
+-	global	EXTN(jsimd_h2v2_upsample_mmx)
++	global	EXTN(jsimd_h2v2_upsample_mmx) PRIVATE
+ 
+ EXTN(jsimd_h2v2_upsample_mmx):
+ 	push	ebp
+Index: simd/jdmerss2-64.asm
+===================================================================
+--- simd/jdmerss2-64.asm	(revision 73737)
++++ simd/jdmerss2-64.asm	(working copy)
+@@ -35,7 +35,7 @@
+ 	SECTION	SEG_CONST
+ 
+ 	alignz	16
+-	global	EXTN(jconst_merged_upsample_sse2)
++	global	EXTN(jconst_merged_upsample_sse2) PRIVATE
+ 
+ EXTN(jconst_merged_upsample_sse2):
+ 
+Index: simd/jcqnts2f-64.asm
+===================================================================
+--- simd/jcqnts2f-64.asm	(revision 73737)
++++ simd/jcqnts2f-64.asm	(working copy)
+@@ -36,7 +36,7 @@
+ ; r12 = FAST_FLOAT * workspace
+ 
+ 	align	16
+-	global	EXTN(jsimd_convsamp_float_sse2)
++	global	EXTN(jsimd_convsamp_float_sse2) PRIVATE
+ 
+ EXTN(jsimd_convsamp_float_sse2):
+ 	push	rbp
+@@ -110,7 +110,7 @@
+ ; r12 = FAST_FLOAT * workspace
+ 
+ 	align	16
+-	global	EXTN(jsimd_quantize_float_sse2)
++	global	EXTN(jsimd_quantize_float_sse2) PRIVATE
+ 
+ EXTN(jsimd_quantize_float_sse2):
+ 	push	rbp
+Index: simd/jcqnt3dn.asm
+===================================================================
+--- simd/jcqnt3dn.asm	(revision 73737)
++++ simd/jcqnt3dn.asm	(working copy)
+@@ -35,7 +35,7 @@
+ %define workspace	ebp+16		; FAST_FLOAT * workspace
+ 
+ 	align	16
+-	global	EXTN(jsimd_convsamp_float_3dnow)
++	global	EXTN(jsimd_convsamp_float_3dnow) PRIVATE
+ 
+ EXTN(jsimd_convsamp_float_3dnow):
+ 	push	ebp
+@@ -138,7 +138,7 @@
+ %define workspace	ebp+16		; FAST_FLOAT * workspace
+ 
+ 	align	16
+-	global	EXTN(jsimd_quantize_float_3dnow)
++	global	EXTN(jsimd_quantize_float_3dnow) PRIVATE
+ 
+ EXTN(jsimd_quantize_float_3dnow):
+ 	push	ebp
+Index: simd/jcsamss2.asm
+===================================================================
+--- simd/jcsamss2.asm	(revision 73737)
++++ simd/jcsamss2.asm	(working copy)
+@@ -40,7 +40,7 @@
+ %define output_data(b)	(b)+28		; JSAMPARRAY output_data
+ 
+ 	align	16
+-	global	EXTN(jsimd_h2v1_downsample_sse2)
++	global	EXTN(jsimd_h2v1_downsample_sse2) PRIVATE
+ 
+ EXTN(jsimd_h2v1_downsample_sse2):
+ 	push	ebp
+@@ -195,7 +195,7 @@
+ %define output_data(b)	(b)+28	; JSAMPARRAY output_data
+ 
+ 	align	16
+-	global	EXTN(jsimd_h2v2_downsample_sse2)
++	global	EXTN(jsimd_h2v2_downsample_sse2) PRIVATE
+ 
+ EXTN(jsimd_h2v2_downsample_sse2):
+ 	push	ebp
+Index: simd/jdmrgmmx.asm
+===================================================================
+--- simd/jdmrgmmx.asm	(revision 73737)
++++ simd/jdmrgmmx.asm	(working copy)
+@@ -42,7 +42,7 @@
+ %define gotptr		wk(0)-SIZEOF_POINTER	; void * gotptr
+ 
+ 	align	16
+-	global	EXTN(jsimd_h2v1_merged_upsample_mmx)
++	global	EXTN(jsimd_h2v1_merged_upsample_mmx) PRIVATE
+ 
+ EXTN(jsimd_h2v1_merged_upsample_mmx):
+ 	push	ebp
+@@ -411,7 +411,7 @@
+ %define output_buf(b)		(b)+20		; JSAMPARRAY output_buf
+ 
+ 	align	16
+-	global	EXTN(jsimd_h2v2_merged_upsample_mmx)
++	global	EXTN(jsimd_h2v2_merged_upsample_mmx) PRIVATE
+ 
+ EXTN(jsimd_h2v2_merged_upsample_mmx):
+ 	push	ebp
+Index: simd/jdsamss2.asm
+===================================================================
+--- simd/jdsamss2.asm	(revision 73737)
++++ simd/jdsamss2.asm	(working copy)
+@@ -22,7 +22,7 @@
+ 	SECTION	SEG_CONST
+ 
+ 	alignz	16
+-	global	EXTN(jconst_fancy_upsample_sse2)
++	global	EXTN(jconst_fancy_upsample_sse2) PRIVATE
+ 
+ EXTN(jconst_fancy_upsample_sse2):
+ 
+@@ -58,7 +58,7 @@
+ %define output_data_ptr(b)	(b)+20		; JSAMPARRAY * output_data_ptr
+ 
+ 	align	16
+-	global	EXTN(jsimd_h2v1_fancy_upsample_sse2)
++	global	EXTN(jsimd_h2v1_fancy_upsample_sse2) PRIVATE
+ 
+ EXTN(jsimd_h2v1_fancy_upsample_sse2):
+ 	push	ebp
+@@ -214,7 +214,7 @@
+ %define gotptr		wk(0)-SIZEOF_POINTER	; void * gotptr
+ 
+ 	align	16
+-	global	EXTN(jsimd_h2v2_fancy_upsample_sse2)
++	global	EXTN(jsimd_h2v2_fancy_upsample_sse2) PRIVATE
+ 
+ EXTN(jsimd_h2v2_fancy_upsample_sse2):
+ 	push	ebp
+@@ -538,7 +538,7 @@
+ %define output_data_ptr(b)	(b)+20		; JSAMPARRAY * output_data_ptr
+ 
+ 	align	16
+-	global	EXTN(jsimd_h2v1_upsample_sse2)
++	global	EXTN(jsimd_h2v1_upsample_sse2) PRIVATE
+ 
+ EXTN(jsimd_h2v1_upsample_sse2):
+ 	push	ebp
+@@ -637,7 +637,7 @@
+ %define output_data_ptr(b)	(b)+20		; JSAMPARRAY * output_data_ptr
+ 
+ 	align	16
+-	global	EXTN(jsimd_h2v2_upsample_sse2)
++	global	EXTN(jsimd_h2v2_upsample_sse2) PRIVATE
+ 
+ EXTN(jsimd_h2v2_upsample_sse2):
+ 	push	ebp
+Index: simd/jiss2flt-64.asm
+===================================================================
+--- simd/jiss2flt-64.asm	(revision 73737)
++++ simd/jiss2flt-64.asm	(working copy)
+@@ -38,7 +38,7 @@
+ 	SECTION	SEG_CONST
+ 
+ 	alignz	16
+-	global	EXTN(jconst_idct_float_sse2)
++	global	EXTN(jconst_idct_float_sse2) PRIVATE
+ 
+ EXTN(jconst_idct_float_sse2):
+ 
+@@ -74,7 +74,7 @@
+ 					; FAST_FLOAT workspace[DCTSIZE2]
+ 
+ 	align	16
+-	global	EXTN(jsimd_idct_float_sse2)
++	global	EXTN(jsimd_idct_float_sse2) PRIVATE
+ 
+ EXTN(jsimd_idct_float_sse2):
+ 	push	rbp
+Index: simd/jfss2int-64.asm
+===================================================================
+--- simd/jfss2int-64.asm	(revision 73737)
++++ simd/jfss2int-64.asm	(working copy)
+@@ -67,7 +67,7 @@
+ 	SECTION	SEG_CONST
+ 
+ 	alignz	16
+-	global	EXTN(jconst_fdct_islow_sse2)
++	global	EXTN(jconst_fdct_islow_sse2) PRIVATE
+ 
+ EXTN(jconst_fdct_islow_sse2):
+ 
+@@ -101,7 +101,7 @@
+ %define WK_NUM		6
+ 
+ 	align	16
+-	global	EXTN(jsimd_fdct_islow_sse2)
++	global	EXTN(jsimd_fdct_islow_sse2) PRIVATE
+ 
+ EXTN(jsimd_fdct_islow_sse2):
+ 	push	rbp
+Index: simd/jcqnts2f.asm
+===================================================================
+--- simd/jcqnts2f.asm	(revision 73737)
++++ simd/jcqnts2f.asm	(working copy)
+@@ -35,7 +35,7 @@
+ %define workspace	ebp+16		; FAST_FLOAT * workspace
+ 
+ 	align	16
+-	global	EXTN(jsimd_convsamp_float_sse2)
++	global	EXTN(jsimd_convsamp_float_sse2) PRIVATE
+ 
+ EXTN(jsimd_convsamp_float_sse2):
+ 	push	ebp
+@@ -115,7 +115,7 @@
+ %define workspace	ebp+16		; FAST_FLOAT * workspace
+ 
+ 	align	16
+-	global	EXTN(jsimd_quantize_float_sse2)
++	global	EXTN(jsimd_quantize_float_sse2) PRIVATE
+ 
+ EXTN(jsimd_quantize_float_sse2):
+ 	push	ebp
+Index: simd/jdmrgss2.asm
+===================================================================
+--- simd/jdmrgss2.asm	(revision 73737)
++++ simd/jdmrgss2.asm	(working copy)
+@@ -42,7 +42,7 @@
+ %define gotptr		wk(0)-SIZEOF_POINTER	; void * gotptr
+ 
+ 	align	16
+-	global	EXTN(jsimd_h2v1_merged_upsample_sse2)
++	global	EXTN(jsimd_h2v1_merged_upsample_sse2) PRIVATE
+ 
+ EXTN(jsimd_h2v1_merged_upsample_sse2):
+ 	push	ebp
+@@ -509,7 +509,7 @@
+ %define output_buf(b)		(b)+20		; JSAMPARRAY output_buf
+ 
+ 	align	16
+-	global	EXTN(jsimd_h2v2_merged_upsample_sse2)
++	global	EXTN(jsimd_h2v2_merged_upsample_sse2) PRIVATE
+ 
+ EXTN(jsimd_h2v2_merged_upsample_sse2):
+ 	push	ebp
+Index: simd/jfmmxint.asm
+===================================================================
+--- simd/jfmmxint.asm	(revision 73737)
++++ simd/jfmmxint.asm	(working copy)
+@@ -66,7 +66,7 @@
+ 	SECTION	SEG_CONST
+ 
+ 	alignz	16
+-	global	EXTN(jconst_fdct_islow_mmx)
++	global	EXTN(jconst_fdct_islow_mmx) PRIVATE
+ 
+ EXTN(jconst_fdct_islow_mmx):
+ 
+@@ -101,7 +101,7 @@
+ %define WK_NUM		2
+ 
+ 	align	16
+-	global	EXTN(jsimd_fdct_islow_mmx)
++	global	EXTN(jsimd_fdct_islow_mmx) PRIVATE
+ 
+ EXTN(jsimd_fdct_islow_mmx):
+ 	push	ebp
+Index: simd/jcqnts2i.asm
+===================================================================
+--- simd/jcqnts2i.asm	(revision 73737)
++++ simd/jcqnts2i.asm	(working copy)
+@@ -35,7 +35,7 @@
+ %define workspace	ebp+16		; DCTELEM * workspace
+ 
+ 	align	16
+-	global	EXTN(jsimd_convsamp_sse2)
++	global	EXTN(jsimd_convsamp_sse2) PRIVATE
+ 
+ EXTN(jsimd_convsamp_sse2):
+ 	push	ebp
+@@ -117,7 +117,7 @@
+ %define workspace	ebp+16		; DCTELEM * workspace
+ 
+ 	align	16
+-	global	EXTN(jsimd_quantize_sse2)
++	global	EXTN(jsimd_quantize_sse2) PRIVATE
+ 
+ EXTN(jsimd_quantize_sse2):
+ 	push	ebp
+Index: simd/jiss2fst-64.asm
+===================================================================
+--- simd/jiss2fst-64.asm	(revision 73737)
++++ simd/jiss2fst-64.asm	(working copy)
+@@ -60,7 +60,7 @@
+ %define CONST_SHIFT     (16 - PRE_MULTIPLY_SCALE_BITS - CONST_BITS)
+ 
+ 	alignz	16
+-	global	EXTN(jconst_idct_ifast_sse2)
++	global	EXTN(jconst_idct_ifast_sse2) PRIVATE
+ 
+ EXTN(jconst_idct_ifast_sse2):
+ 
+@@ -93,7 +93,7 @@
+ %define WK_NUM		2
+ 
+ 	align	16
+-	global	EXTN(jsimd_idct_ifast_sse2)
++	global	EXTN(jsimd_idct_ifast_sse2) PRIVATE
+ 
+ EXTN(jsimd_idct_ifast_sse2):
+ 	push	rbp
+Index: simd/jimmxint.asm
+===================================================================
+--- simd/jimmxint.asm	(revision 73737)
++++ simd/jimmxint.asm	(working copy)
+@@ -66,7 +66,7 @@
+ 	SECTION	SEG_CONST
+ 
+ 	alignz	16
+-	global	EXTN(jconst_idct_islow_mmx)
++	global	EXTN(jconst_idct_islow_mmx) PRIVATE
+ 
+ EXTN(jconst_idct_islow_mmx):
+ 
+@@ -107,7 +107,7 @@
+ 					; JCOEF workspace[DCTSIZE2]
+ 
+ 	align	16
+-	global	EXTN(jsimd_idct_islow_mmx)
++	global	EXTN(jsimd_idct_islow_mmx) PRIVATE
+ 
+ EXTN(jsimd_idct_islow_mmx):
+ 	push	ebp
+Index: simd/jiss2flt.asm
+===================================================================
+--- simd/jiss2flt.asm	(revision 73737)
++++ simd/jiss2flt.asm	(working copy)
+@@ -37,7 +37,7 @@
+ 	SECTION	SEG_CONST
+ 
+ 	alignz	16
+-	global	EXTN(jconst_idct_float_sse2)
++	global	EXTN(jconst_idct_float_sse2) PRIVATE
+ 
+ EXTN(jconst_idct_float_sse2):
+ 
+@@ -73,7 +73,7 @@
+ 					; FAST_FLOAT workspace[DCTSIZE2]
+ 
+ 	align	16
+-	global	EXTN(jsimd_idct_float_sse2)
++	global	EXTN(jsimd_idct_float_sse2) PRIVATE
+ 
+ EXTN(jsimd_idct_float_sse2):
+ 	push	ebp
+Index: simd/jfss2int.asm
+===================================================================
+--- simd/jfss2int.asm	(revision 73737)
++++ simd/jfss2int.asm	(working copy)
+@@ -66,7 +66,7 @@
+ 	SECTION	SEG_CONST
+ 
+ 	alignz	16
+-	global	EXTN(jconst_fdct_islow_sse2)
++	global	EXTN(jconst_fdct_islow_sse2) PRIVATE
+ 
+ EXTN(jconst_fdct_islow_sse2):
+ 
+@@ -101,7 +101,7 @@
+ %define WK_NUM		6
+ 
+ 	align	16
+-	global	EXTN(jsimd_fdct_islow_sse2)
++	global	EXTN(jsimd_fdct_islow_sse2) PRIVATE
+ 
+ EXTN(jsimd_fdct_islow_sse2):
+ 	push	ebp
+Index: simd/jiss2int.asm
+===================================================================
+--- simd/jiss2int.asm	(revision 73737)
++++ simd/jiss2int.asm	(working copy)
+@@ -66,7 +66,7 @@
+ 	SECTION	SEG_CONST
+ 
+ 	alignz	16
+-	global	EXTN(jconst_idct_islow_sse2)
++	global	EXTN(jconst_idct_islow_sse2) PRIVATE
+ 
+ EXTN(jconst_idct_islow_sse2):
+ 
+@@ -105,7 +105,7 @@
+ %define WK_NUM		12
+ 
+ 	align	16
+-	global	EXTN(jsimd_idct_islow_sse2)
++	global	EXTN(jsimd_idct_islow_sse2) PRIVATE
+ 
+ EXTN(jsimd_idct_islow_sse2):
+ 	push	ebp
+Index: simd/jfsseflt-64.asm
+===================================================================
+--- simd/jfsseflt-64.asm	(revision 73737)
++++ simd/jfsseflt-64.asm	(working copy)
+@@ -38,7 +38,7 @@
+ 	SECTION	SEG_CONST
+ 
+ 	alignz	16
+-	global	EXTN(jconst_fdct_float_sse)
++	global	EXTN(jconst_fdct_float_sse) PRIVATE
+ 
+ EXTN(jconst_fdct_float_sse):
+ 
+@@ -65,7 +65,7 @@
+ %define WK_NUM		2
+ 
+ 	align	16
+-	global	EXTN(jsimd_fdct_float_sse)
++	global	EXTN(jsimd_fdct_float_sse) PRIVATE
+ 
+ EXTN(jsimd_fdct_float_sse):
+ 	push	rbp
+Index: simd/jccolss2-64.asm
+===================================================================
+--- simd/jccolss2-64.asm	(revision 73737)
++++ simd/jccolss2-64.asm	(working copy)
+@@ -34,7 +34,7 @@
+ 	SECTION	SEG_CONST
+ 
+ 	alignz	16
+-	global	EXTN(jconst_rgb_ycc_convert_sse2)
++	global	EXTN(jconst_rgb_ycc_convert_sse2) PRIVATE
+ 
+ EXTN(jconst_rgb_ycc_convert_sse2):
+ 
+Index: simd/jccolmmx.asm
+===================================================================
+--- simd/jccolmmx.asm	(revision 73737)
++++ simd/jccolmmx.asm	(working copy)
+@@ -37,7 +37,7 @@
+ 	SECTION	SEG_CONST
+ 
+ 	alignz	16
+-	global	EXTN(jconst_rgb_ycc_convert_mmx)
++	global	EXTN(jconst_rgb_ycc_convert_mmx) PRIVATE
+ 
+ EXTN(jconst_rgb_ycc_convert_mmx):
+ 
+Index: simd/jcsamss2-64.asm
+===================================================================
+--- simd/jcsamss2-64.asm	(revision 73737)
++++ simd/jcsamss2-64.asm	(working copy)
+@@ -41,7 +41,7 @@
+ ; r15 = JSAMPARRAY output_data
+ 
+ 	align	16
+-	global	EXTN(jsimd_h2v1_downsample_sse2)
++	global	EXTN(jsimd_h2v1_downsample_sse2) PRIVATE
+ 
+ EXTN(jsimd_h2v1_downsample_sse2):
+ 	push	rbp
+@@ -185,7 +185,7 @@
+ ; r15 = JSAMPARRAY output_data
+ 
+ 	align	16
+-	global	EXTN(jsimd_h2v2_downsample_sse2)
++	global	EXTN(jsimd_h2v2_downsample_sse2) PRIVATE
+ 
+ EXTN(jsimd_h2v2_downsample_sse2):
+ 	push	rbp
+Index: simd/jdcolmmx.asm
+===================================================================
+--- simd/jdcolmmx.asm	(revision 73737)
++++ simd/jdcolmmx.asm	(working copy)
+@@ -35,7 +35,7 @@
+ 	SECTION	SEG_CONST
+ 
+ 	alignz	16
+-	global	EXTN(jconst_ycc_rgb_convert_mmx)
++	global	EXTN(jconst_ycc_rgb_convert_mmx) PRIVATE
+ 
+ EXTN(jconst_ycc_rgb_convert_mmx):
+ 
+Index: simd/jdclrss2-64.asm
+===================================================================
+--- simd/jdclrss2-64.asm	(revision 73737)
++++ simd/jdclrss2-64.asm	(working copy)
+@@ -41,7 +41,7 @@
+ %define WK_NUM		2
+ 
+ 	align	16
+-	global	EXTN(jsimd_ycc_rgb_convert_sse2)
++	global	EXTN(jsimd_ycc_rgb_convert_sse2) PRIVATE
+ 
+ EXTN(jsimd_ycc_rgb_convert_sse2):
+ 	push	rbp
+Index: simd/jimmxred.asm
+===================================================================
+--- simd/jimmxred.asm	(revision 73737)
++++ simd/jimmxred.asm	(working copy)
+@@ -72,7 +72,7 @@
+ 	SECTION	SEG_CONST
+ 
+ 	alignz	16
+-	global	EXTN(jconst_idct_red_mmx)
++	global	EXTN(jconst_idct_red_mmx) PRIVATE
+ 
+ EXTN(jconst_idct_red_mmx):
+ 
+@@ -115,7 +115,7 @@
+ 					; JCOEF workspace[DCTSIZE2]
+ 
+ 	align	16
+-	global	EXTN(jsimd_idct_4x4_mmx)
++	global	EXTN(jsimd_idct_4x4_mmx) PRIVATE
+ 
+ EXTN(jsimd_idct_4x4_mmx):
+ 	push	ebp
+@@ -503,7 +503,7 @@
+ %define output_col(b)	(b)+20		; JDIMENSION output_col
+ 
+ 	align	16
+-	global	EXTN(jsimd_idct_2x2_mmx)
++	global	EXTN(jsimd_idct_2x2_mmx) PRIVATE
+ 
+ EXTN(jsimd_idct_2x2_mmx):
+ 	push	ebp
+Index: simd/jcclrmmx.asm
+===================================================================
+--- simd/jcclrmmx.asm	(revision 73737)
++++ simd/jcclrmmx.asm	(working copy)
+@@ -42,7 +42,7 @@
+ %define gotptr		wk(0)-SIZEOF_POINTER	; void * gotptr
+ 
+ 	align	16
+-	global	EXTN(jsimd_rgb_ycc_convert_mmx)
++	global	EXTN(jsimd_rgb_ycc_convert_mmx) PRIVATE
+ 
+ EXTN(jsimd_rgb_ycc_convert_mmx):
+ 	push	ebp
+Index: simd/jdclrmmx.asm
+===================================================================
+--- simd/jdclrmmx.asm	(revision 73737)
++++ simd/jdclrmmx.asm	(working copy)
+@@ -42,7 +42,7 @@
+ %define gotptr		wk(0)-SIZEOF_POINTER	; void * gotptr
+ 
+ 	align	16
+-	global	EXTN(jsimd_ycc_rgb_convert_mmx)
++	global	EXTN(jsimd_ycc_rgb_convert_mmx) PRIVATE
+ 
+ EXTN(jsimd_ycc_rgb_convert_mmx):
+ 	push	ebp
+Index: simd/jfsseflt.asm
+===================================================================
+--- simd/jfsseflt.asm	(revision 73737)
++++ simd/jfsseflt.asm	(working copy)
+@@ -37,7 +37,7 @@
+ 	SECTION	SEG_CONST
+ 
+ 	alignz	16
+-	global	EXTN(jconst_fdct_float_sse)
++	global	EXTN(jconst_fdct_float_sse) PRIVATE
+ 
+ EXTN(jconst_fdct_float_sse):
+ 
+@@ -65,7 +65,7 @@
+ %define WK_NUM		2
+ 
+ 	align	16
+-	global	EXTN(jsimd_fdct_float_sse)
++	global	EXTN(jsimd_fdct_float_sse) PRIVATE
+ 
+ EXTN(jsimd_fdct_float_sse):
+ 	push	ebp
+Index: simd/jsimdext.inc
+===================================================================
+--- simd/jsimdext.inc	(revision 73737)
++++ simd/jsimdext.inc	(working copy)
+@@ -369,4 +369,14 @@
+ ;
+ %include "jsimdcfg.inc"
+ 
++; Begin chromium edits
++%ifdef MACHO ; ----(nasm -fmacho -DMACHO ...)--------
++%define PRIVATE :private_extern
++%elifdef ELF ; ----(nasm -felf[64] -DELF ...)------------
++%define PRIVATE :hidden
++%else
++%define PRIVATE
++%endif
++; End chromium edits
++
+ ; --------------------------------------------------------------------------
+Index: simd/jdmrgss2-64.asm
+===================================================================
+--- simd/jdmrgss2-64.asm	(revision 73737)
++++ simd/jdmrgss2-64.asm	(working copy)
+@@ -41,7 +41,7 @@
+ %define WK_NUM		3
+ 
+ 	align	16
+-	global	EXTN(jsimd_h2v1_merged_upsample_sse2)
++	global	EXTN(jsimd_h2v1_merged_upsample_sse2) PRIVATE
+ 
+ EXTN(jsimd_h2v1_merged_upsample_sse2):
+ 	push	rbp
+@@ -492,7 +492,7 @@
+ ; r13 = JSAMPARRAY output_buf
+ 
+ 	align	16
+-	global	EXTN(jsimd_h2v2_merged_upsample_sse2)
++	global	EXTN(jsimd_h2v2_merged_upsample_sse2) PRIVATE
+ 
+ EXTN(jsimd_h2v2_merged_upsample_sse2):
+ 	push	rbp
+Index: simd/jccolss2.asm
+===================================================================
+--- simd/jccolss2.asm	(revision 73737)
++++ simd/jccolss2.asm	(working copy)
+@@ -34,7 +34,7 @@
+ 	SECTION	SEG_CONST
+ 
+ 	alignz	16
+-	global	EXTN(jconst_rgb_ycc_convert_sse2)
++	global	EXTN(jconst_rgb_ycc_convert_sse2) PRIVATE
+ 
+ EXTN(jconst_rgb_ycc_convert_sse2):
+ 
+Index: simd/jdmermmx.asm
+===================================================================
+--- simd/jdmermmx.asm	(revision 73737)
++++ simd/jdmermmx.asm	(working copy)
+@@ -35,7 +35,7 @@
+ 	SECTION	SEG_CONST
+ 
+ 	alignz	16
+-	global	EXTN(jconst_merged_upsample_mmx)
++	global	EXTN(jconst_merged_upsample_mmx) PRIVATE
+ 
+ EXTN(jconst_merged_upsample_mmx):
+ 
+Index: simd/jdcolss2.asm
+===================================================================
+--- simd/jdcolss2.asm	(revision 73737)
++++ simd/jdcolss2.asm	(working copy)
+@@ -35,7 +35,7 @@
+ 	SECTION	SEG_CONST
+ 
+ 	alignz	16
+-	global	EXTN(jconst_ycc_rgb_convert_sse2)
++	global	EXTN(jconst_ycc_rgb_convert_sse2) PRIVATE
+ 
+ EXTN(jconst_ycc_rgb_convert_sse2):
+ 
+Index: simd/jisseflt.asm
+===================================================================
+--- simd/jisseflt.asm	(revision 73737)
++++ simd/jisseflt.asm	(working copy)
+@@ -37,7 +37,7 @@
+ 	SECTION	SEG_CONST
+ 
+ 	alignz	16
+-	global	EXTN(jconst_idct_float_sse)
++	global	EXTN(jconst_idct_float_sse) PRIVATE
+ 
+ EXTN(jconst_idct_float_sse):
+ 
+@@ -73,7 +73,7 @@
+ 					; FAST_FLOAT workspace[DCTSIZE2]
+ 
+ 	align	16
+-	global	EXTN(jsimd_idct_float_sse)
++	global	EXTN(jsimd_idct_float_sse) PRIVATE
+ 
+ EXTN(jsimd_idct_float_sse):
+ 	push	ebp
+Index: simd/jcqnts2i-64.asm
+===================================================================
+--- simd/jcqnts2i-64.asm	(revision 73737)
++++ simd/jcqnts2i-64.asm	(working copy)
+@@ -36,7 +36,7 @@
+ ; r12 = DCTELEM * workspace
+ 
+ 	align	16
+-	global	EXTN(jsimd_convsamp_sse2)
++	global	EXTN(jsimd_convsamp_sse2) PRIVATE
+ 
+ EXTN(jsimd_convsamp_sse2):
+ 	push	rbp
+@@ -112,7 +112,7 @@
+ ; r12 = DCTELEM * workspace
+ 
+ 	align	16
+-	global	EXTN(jsimd_quantize_sse2)
++	global	EXTN(jsimd_quantize_sse2) PRIVATE
+ 
+ EXTN(jsimd_quantize_sse2):
+ 	push	rbp
+Index: simd/jiss2red.asm
+===================================================================
+--- simd/jiss2red.asm	(revision 73737)
++++ simd/jiss2red.asm	(working copy)
+@@ -72,7 +72,7 @@
+ 	SECTION	SEG_CONST
+ 
+ 	alignz	16
+-	global	EXTN(jconst_idct_red_sse2)
++	global	EXTN(jconst_idct_red_sse2) PRIVATE
+ 
+ EXTN(jconst_idct_red_sse2):
+ 
+@@ -113,7 +113,7 @@
+ %define WK_NUM		2
+ 
+ 	align	16
+-	global	EXTN(jsimd_idct_4x4_sse2)
++	global	EXTN(jsimd_idct_4x4_sse2) PRIVATE
+ 
+ EXTN(jsimd_idct_4x4_sse2):
+ 	push	ebp
+@@ -424,7 +424,7 @@
+ %define output_col(b)	(b)+20		; JDIMENSION output_col
+ 
+ 	align	16
+-	global	EXTN(jsimd_idct_2x2_sse2)
++	global	EXTN(jsimd_idct_2x2_sse2) PRIVATE
+ 
+ EXTN(jsimd_idct_2x2_sse2):
+ 	push	ebp
+Index: simd/jcclrss2.asm
+===================================================================
+--- simd/jcclrss2.asm	(revision 73737)
++++ simd/jcclrss2.asm	(working copy)
+@@ -40,7 +40,7 @@
+ 
+ 	align	16
+ 
+-	global	EXTN(jsimd_rgb_ycc_convert_sse2)
++	global	EXTN(jsimd_rgb_ycc_convert_sse2) PRIVATE
+ 
+ EXTN(jsimd_rgb_ycc_convert_sse2):
+ 	push	ebp
+Index: simd/jdclrss2.asm
+===================================================================
+--- simd/jdclrss2.asm	(revision 73737)
++++ simd/jdclrss2.asm	(working copy)
+@@ -42,7 +42,7 @@
+ %define gotptr		wk(0)-SIZEOF_POINTER	; void * gotptr
+ 
+ 	align	16
+-	global	EXTN(jsimd_ycc_rgb_convert_sse2)
++	global	EXTN(jsimd_ycc_rgb_convert_sse2) PRIVATE
+ 
+ EXTN(jsimd_ycc_rgb_convert_sse2):
+ 	push	ebp
+Index: simd/jdmerss2.asm
+===================================================================
+--- simd/jdmerss2.asm	(revision 73737)
++++ simd/jdmerss2.asm	(working copy)
+@@ -35,7 +35,7 @@
+ 	SECTION	SEG_CONST
+ 
+ 	alignz	16
+-	global	EXTN(jconst_merged_upsample_sse2)
++	global	EXTN(jconst_merged_upsample_sse2) PRIVATE
+ 
+ EXTN(jconst_merged_upsample_sse2):
+ 
+Index: simd/jcqntsse.asm
+===================================================================
+--- simd/jcqntsse.asm	(revision 73737)
++++ simd/jcqntsse.asm	(working copy)
+@@ -35,7 +35,7 @@
+ %define workspace	ebp+16		; FAST_FLOAT * workspace
+ 
+ 	align	16
+-	global	EXTN(jsimd_convsamp_float_sse)
++	global	EXTN(jsimd_convsamp_float_sse) PRIVATE
+ 
+ EXTN(jsimd_convsamp_float_sse):
+ 	push	ebp
+@@ -138,7 +138,7 @@
+ %define workspace	ebp+16		; FAST_FLOAT * workspace
+ 
+ 	align	16
+-	global	EXTN(jsimd_quantize_float_sse)
++	global	EXTN(jsimd_quantize_float_sse) PRIVATE
+ 
+ EXTN(jsimd_quantize_float_sse):
+ 	push	ebp
+Index: simd/jfss2fst-64.asm
+===================================================================
+--- simd/jfss2fst-64.asm	(revision 73737)
++++ simd/jfss2fst-64.asm	(working copy)
+@@ -53,7 +53,7 @@
+ %define CONST_SHIFT     (16 - PRE_MULTIPLY_SCALE_BITS - CONST_BITS)
+ 
+ 	alignz	16
+-	global	EXTN(jconst_fdct_ifast_sse2)
++	global	EXTN(jconst_fdct_ifast_sse2) PRIVATE
+ 
+ EXTN(jconst_fdct_ifast_sse2):
+ 
+@@ -80,7 +80,7 @@
+ %define WK_NUM		2
+ 
+ 	align	16
+-	global	EXTN(jsimd_fdct_ifast_sse2)
++	global	EXTN(jsimd_fdct_ifast_sse2) PRIVATE
+ 
+ EXTN(jsimd_fdct_ifast_sse2):
+ 	push	rbp
+Index: simd/jiss2int-64.asm
+===================================================================
+--- simd/jiss2int-64.asm	(revision 73737)
++++ simd/jiss2int-64.asm	(working copy)
+@@ -67,7 +67,7 @@
+ 	SECTION	SEG_CONST
+ 
+ 	alignz	16
+-	global	EXTN(jconst_idct_islow_sse2)
++	global	EXTN(jconst_idct_islow_sse2) PRIVATE
+ 
+ EXTN(jconst_idct_islow_sse2):
+ 
+@@ -106,7 +106,7 @@
+ %define WK_NUM		12
+ 
+ 	align	16
+-	global	EXTN(jsimd_idct_islow_sse2)
++	global	EXTN(jsimd_idct_islow_sse2) PRIVATE
+ 
+ EXTN(jsimd_idct_islow_sse2):
+ 	push	rbp
+Index: simd/jfmmxfst.asm
+===================================================================
+--- simd/jfmmxfst.asm	(revision 73737)
++++ simd/jfmmxfst.asm	(working copy)
+@@ -52,7 +52,7 @@
+ %define CONST_SHIFT     (16 - PRE_MULTIPLY_SCALE_BITS - CONST_BITS)
+ 
+ 	alignz	16
+-	global	EXTN(jconst_fdct_ifast_mmx)
++	global	EXTN(jconst_fdct_ifast_mmx) PRIVATE
+ 
+ EXTN(jconst_fdct_ifast_mmx):
+ 
+@@ -80,7 +80,7 @@
+ %define WK_NUM		2
+ 
+ 	align	16
+-	global	EXTN(jsimd_fdct_ifast_mmx)
++	global	EXTN(jsimd_fdct_ifast_mmx) PRIVATE
+ 
+ EXTN(jsimd_fdct_ifast_mmx):
+ 	push	ebp

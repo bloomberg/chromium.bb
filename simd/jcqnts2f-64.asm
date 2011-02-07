@@ -36,7 +36,7 @@
 ; r12 = FAST_FLOAT * workspace
 
 	align	16
-	global	EXTN(jsimd_convsamp_float_sse2)
+	global	EXTN(jsimd_convsamp_float_sse2) PRIVATE
 
 EXTN(jsimd_convsamp_float_sse2):
 	push	rbp
@@ -110,7 +110,7 @@ EXTN(jsimd_convsamp_float_sse2):
 ; r12 = FAST_FLOAT * workspace
 
 	align	16
-	global	EXTN(jsimd_quantize_float_sse2)
+	global	EXTN(jsimd_quantize_float_sse2) PRIVATE
 
 EXTN(jsimd_quantize_float_sse2):
 	push	rbp

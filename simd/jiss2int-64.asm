@@ -67,7 +67,7 @@ F_3_072	equ	DESCALE(3299298341,30-CONST_BITS)	; FIX(3.072711026)
 	SECTION	SEG_CONST
 
 	alignz	16
-	global	EXTN(jconst_idct_islow_sse2)
+	global	EXTN(jconst_idct_islow_sse2) PRIVATE
 
 EXTN(jconst_idct_islow_sse2):
 
@@ -106,7 +106,7 @@ PB_CENTERJSAMP	times 16 db CENTERJSAMPLE
 %define WK_NUM		12
 
 	align	16
-	global	EXTN(jsimd_idct_islow_sse2)
+	global	EXTN(jsimd_idct_islow_sse2) PRIVATE
 
 EXTN(jsimd_idct_islow_sse2):
 	push	rbp

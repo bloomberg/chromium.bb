@@ -41,7 +41,7 @@
 %define WK_NUM		3
 
 	align	16
-	global	EXTN(jsimd_h2v1_merged_upsample_sse2)
+	global	EXTN(jsimd_h2v1_merged_upsample_sse2) PRIVATE
 
 EXTN(jsimd_h2v1_merged_upsample_sse2):
 	push	rbp
@@ -492,7 +492,7 @@ EXTN(jsimd_h2v1_merged_upsample_sse2):
 ; r13 = JSAMPARRAY output_buf
 
 	align	16
-	global	EXTN(jsimd_h2v2_merged_upsample_sse2)
+	global	EXTN(jsimd_h2v2_merged_upsample_sse2) PRIVATE
 
 EXTN(jsimd_h2v2_merged_upsample_sse2):
 	push	rbp

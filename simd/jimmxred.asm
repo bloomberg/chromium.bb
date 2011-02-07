@@ -72,7 +72,7 @@ F_3_624	equ	DESCALE(3891787747,30-CONST_BITS)	; FIX(3.624509785)
 	SECTION	SEG_CONST
 
 	alignz	16
-	global	EXTN(jconst_idct_red_mmx)
+	global	EXTN(jconst_idct_red_mmx) PRIVATE
 
 EXTN(jconst_idct_red_mmx):
 
@@ -115,7 +115,7 @@ PB_CENTERJSAMP	times 8 db  CENTERJSAMPLE
 					; JCOEF workspace[DCTSIZE2]
 
 	align	16
-	global	EXTN(jsimd_idct_4x4_mmx)
+	global	EXTN(jsimd_idct_4x4_mmx) PRIVATE
 
 EXTN(jsimd_idct_4x4_mmx):
 	push	ebp
@@ -503,7 +503,7 @@ EXTN(jsimd_idct_4x4_mmx):
 %define output_col(b)	(b)+20		; JDIMENSION output_col
 
 	align	16
-	global	EXTN(jsimd_idct_2x2_mmx)
+	global	EXTN(jsimd_idct_2x2_mmx) PRIVATE
 
 EXTN(jsimd_idct_2x2_mmx):
 	push	ebp

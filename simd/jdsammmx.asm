@@ -22,7 +22,7 @@
 	SECTION	SEG_CONST
 
 	alignz	16
-	global	EXTN(jconst_fancy_upsample_mmx)
+	global	EXTN(jconst_fancy_upsample_mmx) PRIVATE
 
 EXTN(jconst_fancy_upsample_mmx):
 
@@ -58,7 +58,7 @@ PW_EIGHT	times 4 dw  8
 %define output_data_ptr(b)	(b)+20		; JSAMPARRAY * output_data_ptr
 
 	align	16
-	global	EXTN(jsimd_h2v1_fancy_upsample_mmx)
+	global	EXTN(jsimd_h2v1_fancy_upsample_mmx) PRIVATE
 
 EXTN(jsimd_h2v1_fancy_upsample_mmx):
 	push	ebp
@@ -216,7 +216,7 @@ EXTN(jsimd_h2v1_fancy_upsample_mmx):
 %define gotptr		wk(0)-SIZEOF_POINTER	; void * gotptr
 
 	align	16
-	global	EXTN(jsimd_h2v2_fancy_upsample_mmx)
+	global	EXTN(jsimd_h2v2_fancy_upsample_mmx) PRIVATE
 
 EXTN(jsimd_h2v2_fancy_upsample_mmx):
 	push	ebp
@@ -542,7 +542,7 @@ EXTN(jsimd_h2v2_fancy_upsample_mmx):
 %define output_data_ptr(b)	(b)+20		; JSAMPARRAY * output_data_ptr
 
 	align	16
-	global	EXTN(jsimd_h2v1_upsample_mmx)
+	global	EXTN(jsimd_h2v1_upsample_mmx) PRIVATE
 
 EXTN(jsimd_h2v1_upsample_mmx):
 	push	ebp
@@ -643,7 +643,7 @@ EXTN(jsimd_h2v1_upsample_mmx):
 %define output_data_ptr(b)	(b)+20		; JSAMPARRAY * output_data_ptr
 
 	align	16
-	global	EXTN(jsimd_h2v2_upsample_mmx)
+	global	EXTN(jsimd_h2v2_upsample_mmx) PRIVATE
 
 EXTN(jsimd_h2v2_upsample_mmx):
 	push	ebp

@@ -37,7 +37,7 @@
 	SECTION	SEG_CONST
 
 	alignz	16
-	global	EXTN(jconst_idct_float_sse)
+	global	EXTN(jconst_idct_float_sse) PRIVATE
 
 EXTN(jconst_idct_float_sse):
 
@@ -73,7 +73,7 @@ PB_CENTERJSAMP	times 8 db  CENTERJSAMPLE
 					; FAST_FLOAT workspace[DCTSIZE2]
 
 	align	16
-	global	EXTN(jsimd_idct_float_sse)
+	global	EXTN(jsimd_idct_float_sse) PRIVATE
 
 EXTN(jsimd_idct_float_sse):
 	push	ebp

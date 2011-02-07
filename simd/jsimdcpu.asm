@@ -29,7 +29,7 @@
 ;
 
 	align	16
-	global	EXTN(jpeg_simd_cpu_support)
+	global	EXTN(jpeg_simd_cpu_support) PRIVATE
 
 EXTN(jpeg_simd_cpu_support):
 	push	ebx

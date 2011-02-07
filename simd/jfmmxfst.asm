@@ -52,7 +52,7 @@ F_1_306	equ	DESCALE(1402911301,30-CONST_BITS)	; FIX(1.306562965)
 %define CONST_SHIFT     (16 - PRE_MULTIPLY_SCALE_BITS - CONST_BITS)
 
 	alignz	16
-	global	EXTN(jconst_fdct_ifast_mmx)
+	global	EXTN(jconst_fdct_ifast_mmx) PRIVATE
 
 EXTN(jconst_fdct_ifast_mmx):
 
@@ -80,7 +80,7 @@ PW_F1306	times 4 dw  F_1_306 << CONST_SHIFT
 %define WK_NUM		2
 
 	align	16
-	global	EXTN(jsimd_fdct_ifast_mmx)
+	global	EXTN(jsimd_fdct_ifast_mmx) PRIVATE
 
 EXTN(jsimd_fdct_ifast_mmx):
 	push	ebp

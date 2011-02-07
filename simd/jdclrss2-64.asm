@@ -41,7 +41,7 @@
 %define WK_NUM		2
 
 	align	16
-	global	EXTN(jsimd_ycc_rgb_convert_sse2)
+	global	EXTN(jsimd_ycc_rgb_convert_sse2) PRIVATE
 
 EXTN(jsimd_ycc_rgb_convert_sse2):
 	push	rbp
