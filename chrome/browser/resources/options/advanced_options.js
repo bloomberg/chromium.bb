@@ -204,8 +204,14 @@ var OptionsPage = options.OptionsPage;
 
   // Set the enabled state for the autoOpenFileTypesResetToDefault button.
   AdvancedOptions.SetAutoOpenFileTypesDisabledAttribute = function(disabled) {
-    if (!cr.isChromeOS)
+    if (!cr.isChromeOS) {
       $('autoOpenFileTypesResetToDefault').disabled = disabled;
+
+      if (disabled)
+        $('auto-open-file-types-label').classList.add('disabled');
+      else
+        $('auto-open-file-types-label').classList.remove('disabled');
+    }
   };
 
   // Set the enabled state for the proxy settings button.

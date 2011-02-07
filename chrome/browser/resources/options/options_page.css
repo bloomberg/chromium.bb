@@ -380,6 +380,10 @@ label.radio {
   display: none !important;
 }
 
+div.disabled {
+  color: #888;
+}
+
 .touch-slider {
   -webkit-appearance: slider-horizontal;
 }
