@@ -47,12 +47,8 @@ int expected_load_flags =
 // Base class for further specialized test classes.
 class MockService : public ExtensionUpdateService {
  public:
-  MockService() {
-    profile_.CreateRequestContext();
-  }
-  virtual ~MockService() {
-    profile_.ResetRequestContext();
-  }
+  MockService() {}
+  virtual ~MockService() {}
 
   virtual const ExtensionList* extensions() const {
     ADD_FAILURE();

@@ -3759,15 +3759,6 @@
    fun:*DownloadFileTest5SetUpEv
 }
 {
-   bug_71909
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN14TestingProfile20CreateRequestContextEv
-   fun:_ZN11MockService*
-   ...
-   fun:*ExtensionUpdaterTest*
-}
-{
    bug_72170a
    Memcheck:Addr4
    fun:pthread_mutex_lock
