@@ -17,6 +17,10 @@ const double kBackgroundColorBottom[3] =
     {250.0 / 255.0, 230.0 / 255.0, 145.0 / 255.0};
 }
 
+@interface InfoBarGradientView (Private)
+- (void)strokePath:(NSBezierPath*)path;
+@end
+
 @implementation InfoBarGradientView
 
 - (id)initWithFrame:(NSRect)frameRect {
@@ -59,6 +63,7 @@ const double kBackgroundColorBottom[3] =
   const CGFloat curveDistance = 13.0;
   const CGFloat iconWidth = 29.0;
   const CGFloat tipPadding = 4.0;
+  const CGFloat pathJoinShift = 3.0;
 
   // Draw the tab bulge that acts as the anti-spoofing countermeasure.
   NSBezierPath* bulgePath = [NSBezierPath bezierPath];
@@ -93,30 +98,29 @@ const double kBackgroundColorBottom[3] =
   [infoBarPath lineToPoint:startPoint];
   [infoBarPath closePath];
 
+  // Stroke the bulge.
+  [bulgePath setLineCapStyle:NSSquareLineCapStyle];
+  [self strokePath:bulgePath];
+
   // Draw the gradient.
   [[self gradient] drawInBezierPath:infoBarPath angle:270];
 
   // Stroke the bottom.
   NSColor* strokeColor = [self strokeColor];
   if (strokeColor) {
-    [[self strokeColor] set];
+    [strokeColor set];
     NSRect borderRect, contentRect;
     NSDivideRect(bounds, &borderRect, &contentRect, 1, NSMinYEdge);
     NSRectFillUsingOperation(borderRect, NSCompositeSourceOver);
   }
 
-  // Stroke the bulge.
-  [[self strokeColor] setStroke];
-  [bulgePath setLineCapStyle:NSSquareLineCapStyle];
-  [bulgePath stroke];
-
   // Stroke the horizontal line to ensure it has enough definition.
-  --topStrokeStart.x;
-  ++topStrokeEnd.x;
+  topStrokeStart.x -= pathJoinShift;
+  topStrokeEnd.x += pathJoinShift;
   NSBezierPath* topStroke = [NSBezierPath bezierPath];
   [topStroke moveToPoint:topStrokeStart];
   [topStroke lineToPoint:topStrokeEnd];
-  [topStroke stroke];
+  [self strokePath:topStroke];
 }
 
 - (BOOL)mouseDownCanMoveWindow {
@@ -134,6 +138,22 @@ const double kBackgroundColorBottom[3] =
     return NSAccessibilityGroupRole;
 
   return [super accessibilityAttributeValue:attribute];
+}
+
+// Private /////////////////////////////////////////////////////////////////////
+
+// Stroking paths with just |-strokeColor| will blend with the color underneath
+// it and will make it appear lighter than it should. Stroke with black first to
+// have the stroke color come out right.
+- (void)strokePath:(NSBezierPath*)path {
+  [[NSGraphicsContext currentContext] saveGraphicsState];
+
+  [[NSColor blackColor] set];
+  [path stroke];
+  [[self strokeColor] set];
+  [path stroke];
+
+  [[NSGraphicsContext currentContext] restoreGraphicsState];
 }
 
 @end
