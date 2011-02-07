@@ -137,7 +137,11 @@ class WrappedChrootCmd(ChromiteCmd):
       env = os.environ.copy()
       env.update(self._env_to_add)
 
-      # Run, ignoring errors since some commands (ahem, cros_workon) seem to
-      # return errors from things like --help.
+      # Run ignoring errors (since some commands might return errors from
+      # things like --help).
+      #
+      # TODO(dianders): "cros_workon --help" used to return errors, but that
+      # has been fixed.  Are there any other places where errors should
+      # be ignored?  If not, we should remove the error_ok parameter.
       cros_lib.RunCommand(argv, cwd=cwd, ignore_sigint=True, error_ok=True,
                           env=env)
