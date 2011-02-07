@@ -343,7 +343,7 @@ void CookiesViewHandler::UpdateSearchResults(const ListValue* args) {
         NULL,
         new BrowsingDataAppCacheHelper(profile),
         BrowsingDataIndexedDBHelper::Create(profile)));
-    cookies_tree_model_->AddObserver(this);
+    cookies_tree_model_->AddCookiesTreeObserver(this);
   }
 
   cookies_tree_model_->UpdateSearchResults(UTF8ToWide(query));

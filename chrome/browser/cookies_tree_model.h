@@ -487,15 +487,12 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
   // Filter the origins to only display matched results.
   void UpdateSearchResults(const std::wstring& filter);
 
-  // Overload the Add/Remove observer methods so we can notify about
-  // CookiesTreeModel-specific things. Note that this is NOT overriding the
-  // method by the same name in TreeNodeModel because the argument type is
-  // different. Therefore, if this AddObserver(TreeModelObserver*) is called,
-  // the observer will NOT be notified about batching. This is also why we
-  // maintain a separate list of observers that are specifically Observer*
-  // objects.
-  virtual void AddObserver(Observer* observer);
-  virtual void RemoveObserver(Observer* observer);
+  // Manages CookiesTreeModel::Observers. This will also call
+  // TreeNodeModel::AddObserver so that it gets all the proper notifications.
+  // Note that the converse is not true: simply adding a TreeModelObserver will
+  // not get CookiesTreeModel::Observer notifications.
+  virtual void AddCookiesTreeObserver(Observer* observer);
+  virtual void RemoveCookiesTreeObserver(Observer* observer);
 
  private:
   enum CookieIconIndex {

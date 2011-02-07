@@ -660,13 +660,13 @@ void CookiesTreeModel::UpdateSearchResults(const std::wstring& filter) {
   NotifyObserverEndBatch();
 }
 
-void CookiesTreeModel::AddObserver(Observer* observer) {
+void CookiesTreeModel::AddCookiesTreeObserver(Observer* observer) {
   cookies_observer_list_.AddObserver(observer);
   // Call super so that TreeNodeModel can notify, too.
   ui::TreeNodeModel<CookieTreeNode>::AddObserver(observer);
 }
 
-void CookiesTreeModel::RemoveObserver(Observer* observer) {
+void CookiesTreeModel::RemoveCookiesTreeObserver(Observer* observer) {
   cookies_observer_list_.RemoveObserver(observer);
   // Call super so that TreeNodeModel doesn't have dead pointers.
   ui::TreeNodeModel<CookieTreeNode>::RemoveObserver(observer);

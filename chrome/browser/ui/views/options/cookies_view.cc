@@ -295,7 +295,7 @@ void CookiesView::Init() {
       NULL,
       new BrowsingDataAppCacheHelper(profile_),
       BrowsingDataIndexedDBHelper::Create(profile_)));
-  cookies_tree_model_->AddObserver(this);
+  cookies_tree_model_->AddCookiesTreeObserver(this);
 
   info_panel_ = new InfoPanelView;
   cookie_info_view_ = new CookieInfoView(false);
