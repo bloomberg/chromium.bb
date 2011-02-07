@@ -67,6 +67,7 @@
       'pdf',
       'plugins',
       '-plugins.PluginsTest.testBlockPluginException',  # crbug.com/71617
+      'plugins_check',
       'popups',
       '-popups',  # Flaky. crbug.com/70659
       'prefs',
