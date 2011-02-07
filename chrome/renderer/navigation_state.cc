@@ -20,17 +20,6 @@ void NavigationState::swap_user_script_idle_scheduler(
   user_script_idle_scheduler_.swap(state->user_script_idle_scheduler_);
 }
 
-const base::Time& NavigationState::prerendered_page_display_time() const {
-  return prerendered_page_display_time_;
-}
-
-void NavigationState::set_prerendered_page_display_time(
-    const base::Time& value) {
-  DCHECK_EQ(load_type_, PRERENDER_LOAD);
-  DCHECK(prerendered_page_display_time_.is_null());
-  prerendered_page_display_time_ = value;
-}
-
 void NavigationState::set_password_form_data(webkit_glue::PasswordForm* data) {
   password_form_data_.reset(data);
 }
@@ -38,14 +27,6 @@ void NavigationState::set_password_form_data(webkit_glue::PasswordForm* data) {
 void NavigationState::set_alt_error_page_fetcher(
     webkit_glue::AltErrorPageResourceFetcher* f) {
   alt_error_page_fetcher_.reset(f);
-}
-
-bool NavigationState::is_prerendering() const {
-  return is_prerendering_;
-}
-
-void NavigationState::set_is_prerendering(bool is_prerendering) {
-  is_prerendering_ = is_prerendering;
 }
 
 NavigationState::NavigationState(PageTransition::Type transition_type,

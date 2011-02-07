@@ -28,51 +28,6 @@ static const size_t kPLTCount(100);
 #define PLT_HISTOGRAM(name, sample) \
     UMA_HISTOGRAM_CUSTOM_TIMES(name, sample, kPLTMin, kPLTMax, kPLTCount);
 
-namespace {
-
-void UpdatePrerenderHistograms(NavigationState* navigation_state,
-                               const Time& begin, const Time& finish_all_loads,
-                               const TimeDelta& begin_to_finish_all_loads) {
-  // Histograms to determine prerendering's impact on perceived PLT.
-  static bool use_prerender_histogram =
-      base::FieldTrialList::Find("Prerender") &&
-      !base::FieldTrialList::Find("Prerender")->group_name().empty();
-  if (NavigationState::PRERENDER_LOAD != navigation_state->load_type()) {
-    if (use_prerender_histogram) {
-      PLT_HISTOGRAM(base::FieldTrial::MakeName(
-          "PLT.PerceivedLoadTime", "Prerender"),
-          begin_to_finish_all_loads);
-    }
-    return;
-  }
-
-  Time prerendered_page_display =
-      navigation_state->prerendered_page_display_time();
-  UMA_HISTOGRAM_ENUMERATION("PLT.PageUsed_PrerenderLoad",
-                            prerendered_page_display.is_null() ? 0 : 1, 2);
-  if (prerendered_page_display.is_null())
-    return;
-
-  PLT_HISTOGRAM("PLT.TimeUntilDisplay_PrerenderLoad",
-                prerendered_page_display - begin);
-  TimeDelta perceived_load_time = finish_all_loads - prerendered_page_display;
-  if (perceived_load_time < TimeDelta::FromSeconds(0)) {
-    PLT_HISTOGRAM("PLT.PrerenderIdleTime_PrerenderLoad", -perceived_load_time);
-    perceived_load_time = TimeDelta::FromSeconds(0);
-  }
-  PLT_HISTOGRAM("PLT.PerceivedLoadTime_PrerenderLoad", perceived_load_time);
-  if (use_prerender_histogram) {
-    PLT_HISTOGRAM(base::FieldTrial::MakeName(
-                  "PLT.PerceivedLoadTime_PrerenderLoad", "Prerender"),
-                  perceived_load_time);
-    PLT_HISTOGRAM(base::FieldTrial::MakeName(
-                  "PLT.PerceivedLoadTime", "Prerender"),
-                  perceived_load_time);
-  }
-}
-
-}  // namespace
-
 // Returns the scheme type of the given URL if its type is one for which we
 // dump page load histograms. Otherwise returns NULL.
 static URLPattern::SchemeMasks GetSupportedSchemeType(const GURL& url) {
@@ -300,18 +255,9 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
       PLT_HISTOGRAM("PLT.BeginToFinish_LinkLoadCacheOnly",
                     begin_to_finish_all_loads);
       break;
-    case NavigationState::PRERENDER_LOAD:
-      PLT_HISTOGRAM("PLT.BeginToFinishDoc_PrerenderLoad",
-                    begin_to_finish_doc);
-      PLT_HISTOGRAM("PLT.BeginToFinish_PrerenderLoad",
-                    begin_to_finish_all_loads);
-      break;
     default:
       break;
   }
-
-  UpdatePrerenderHistograms(navigation_state, begin, finish_all_loads,
-                            begin_to_finish_all_loads);
 
   // Histograms to determine if DNS prefetching has an impact on PLT.
   static bool use_dns_histogram(base::FieldTrialList::Find("DnsImpact") &&
