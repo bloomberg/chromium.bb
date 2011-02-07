@@ -252,7 +252,6 @@ void PersonalOptionsHandler::OnStateChanged() {
   dom_ui_->CallJavascriptFunction(L"PersonalOptions.setStartStopButtonLabel",
                                   *label);
 
-#if !defined(OS_CHROMEOS)
   label.reset(Value::CreateStringValue(link_label));
   dom_ui_->CallJavascriptFunction(L"PersonalOptions.setSyncActionLinkLabel",
                                   *label);
@@ -260,11 +259,6 @@ void PersonalOptionsHandler::OnStateChanged() {
   enabled.reset(Value::CreateBooleanValue(!managed));
   dom_ui_->CallJavascriptFunction(L"PersonalOptions.setSyncActionLinkEnabled",
                                   *enabled);
-#else
-  label.reset(Value::CreateStringValue(string16()));
-  dom_ui_->CallJavascriptFunction(L"PersonalOptions.setSyncActionLinkLabel",
-                                  *label);
-#endif  // !defined(OS_CHROMEOS)
 
   visible.reset(Value::CreateBooleanValue(status_has_error));
   dom_ui_->CallJavascriptFunction(
