@@ -49,6 +49,7 @@ bool FindAndUpdateProperty(const chromeos::ImeProperty& new_prop,
 
 namespace chromeos {
 
+// The production implementation of InputMethodLibrary.
 class InputMethodLibraryImpl : public InputMethodLibrary,
                                public NotificationObserver {
  public:
@@ -77,19 +78,18 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
                                 NotificationService::AllSources());
   }
 
-  ~InputMethodLibraryImpl() {
+  virtual ~InputMethodLibraryImpl() {
   }
 
-  void AddObserver(Observer* observer) {
+  virtual void AddObserver(Observer* observer) {
     observers_.AddObserver(observer);
   }
 
-  void RemoveObserver(Observer* observer) {
+  virtual void RemoveObserver(Observer* observer) {
     observers_.RemoveObserver(observer);
   }
 
-  // Returns the active input methods as descriptors.
-  InputMethodDescriptors* GetActiveInputMethods() {
+  virtual InputMethodDescriptors* GetActiveInputMethods() {
     chromeos::InputMethodDescriptors* result =
         new chromeos::InputMethodDescriptors;
     // Build the active input method descriptors from the active input
@@ -111,12 +111,12 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     return result;
   }
 
-  size_t GetNumActiveInputMethods() {
+  virtual size_t GetNumActiveInputMethods() {
     scoped_ptr<InputMethodDescriptors> input_methods(GetActiveInputMethods());
     return input_methods->size();
   }
 
-  InputMethodDescriptors* GetSupportedInputMethods() {
+  virtual InputMethodDescriptors* GetSupportedInputMethods() {
     InputMethodDescriptors* result = NULL;
     // The connection does not need to be alive, but it does need to be created.
     if (EnsureLoadedAndStarted()) {
@@ -131,7 +131,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     return result;
   }
 
-  void ChangeInputMethod(const std::string& input_method_id) {
+  virtual void ChangeInputMethod(const std::string& input_method_id) {
     if (EnsureLoadedAndStarted()) {
       // If the input method daemon is not running and the specified input
       // method is a keyboard layout, switch the keyboard directly.
@@ -144,17 +144,18 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
         // Otherwise, start the input method daemon, and change the input
         // method via the damon.
         StartInputMethodDaemon();
-        // ChangeInputMethodInternal() fails if the IBus daemon is not
+        // ChangeInputMethodViaIBus() fails if the IBus daemon is not
         // ready yet. In this case, we'll defer the input method change
         // until the daemon is ready.
-        if (!ChangeInputMethodInternal(input_method_id)) {
+        if (!ChangeInputMethodViaIBus(input_method_id)) {
           pending_input_method_id_ = input_method_id;
         }
       }
     }
   }
 
-  void SetImePropertyActivated(const std::string& key, bool activated) {
+  virtual void SetImePropertyActivated(const std::string& key,
+                                       bool activated) {
     DCHECK(!key.empty());
     if (EnsureLoadedAndStarted()) {
       chromeos::SetImePropertyActivated(
@@ -162,7 +163,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     }
   }
 
-  bool InputMethodIsActivated(const std::string& input_method_id) {
+  virtual bool InputMethodIsActivated(const std::string& input_method_id) {
     scoped_ptr<InputMethodDescriptors> active_input_method_descriptors(
         GetActiveInputMethods());
     for (size_t i = 0; i < active_input_method_descriptors->size(); ++i) {
@@ -173,8 +174,9 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     return false;
   }
 
-  bool GetImeConfig(const std::string& section, const std::string& config_name,
-                    ImeConfigValue* out_value) {
+  virtual bool GetImeConfig(const std::string& section,
+                            const std::string& config_name,
+                            ImeConfigValue* out_value) {
     bool success = false;
     if (EnsureLoadedAndStarted()) {
       success = chromeos::GetImeConfig(input_method_status_connection_,
@@ -185,8 +187,9 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     return success;
   }
 
-  bool SetImeConfig(const std::string& section, const std::string& config_name,
-                    const ImeConfigValue& value) {
+  virtual bool SetImeConfig(const std::string& section,
+                            const std::string& config_name,
+                            const ImeConfigValue& value) {
     // If the config change is for preload engines, update the active
     // input methods cache |active_input_method_ids_| here. We need to
     // update the cache before actually flushing the config. since we need
@@ -218,6 +221,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   virtual const InputMethodDescriptor& previous_input_method() const {
     return previous_input_method_;
   }
+
   virtual const InputMethodDescriptor& current_input_method() const {
     return current_input_method_;
   }
@@ -227,7 +231,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   }
 
   virtual std::string GetKeyboardOverlayId(const std::string& input_method_id) {
-    if (EnsureLoadedAndStarted()) {
+    if (CrosLibrary::Get()->EnsureLoaded()) {
       return chromeos::GetKeyboardOverlayId(input_method_id);
     }
     return "";
@@ -291,11 +295,12 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     }
   }
 
-  // Changes the current input method to |input_method_id|. If the id is not in
-  // the preload_engine list, this function changes the current method to the
-  // first preloaded engine. Returns true if the current engine is switched to
-  // |input_method_id| or the first one.
-  bool ChangeInputMethodInternal(const std::string& input_method_id) {
+  // Changes the current input method to |input_method_id| via IBus
+  // daemon. If the id is not in the preload_engine list, this function
+  // changes the current method to the first preloaded engine. Returns
+  // true if the current engine is switched to |input_method_id| or the
+  // first one.
+  bool ChangeInputMethodViaIBus(const std::string& input_method_id) {
     DCHECK(EnsureLoadedAndStarted());
     std::string input_method_id_to_switch = input_method_id;
 
@@ -359,7 +364,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
         // yet been added to preload_engines.  As such, the call is deferred
         // until after all config values have been sent to the IME process.
         if (should_change_input_method_ && !pending_input_method_id_.empty()) {
-          ChangeInputMethodInternal(pending_input_method_id_);
+          ChangeInputMethodViaIBus(pending_input_method_id_);
           pending_input_method_id_ = "";
           should_change_input_method_ = false;
           active_input_methods_are_changed = true;
@@ -411,6 +416,8 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     }
   }
 
+  // Called when the input method is changed in the IBus daemon
+  // (ex. "global-engine-changed" is delivered from the IBus daemon).
   static void InputMethodChangedHandler(
       void* object,
       const chromeos::InputMethodDescriptor& current_input_method) {
@@ -428,6 +435,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     input_method_library->ChangeCurrentInputMethod(current_input_method);
   }
 
+  // Called when properties are registered in the IBus daemon.
   static void RegisterPropertiesHandler(
       void* object, const ImePropertyList& prop_list) {
     // See comments in InputMethodChangedHandler.
@@ -441,6 +449,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     input_method_library->RegisterProperties(prop_list);
   }
 
+  // Called when properties are updated in the IBus daemon.
   static void UpdatePropertyHandler(
       void* object, const ImePropertyList& prop_list) {
     // See comments in InputMethodChangedHandler.
@@ -454,6 +463,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     input_method_library->UpdateProperty(prop_list);
   }
 
+  // Called when connection to IBus is established or terminated.
   static void ConnectionChangeHandler(void* object, bool connected) {
     // See comments in InputMethodChangedHandler.
     if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
@@ -477,6 +487,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     }
   }
 
+  // Ensures that the input method status monitoring is started.
   bool EnsureStarted() {
     if (!input_method_status_connection_) {
       input_method_status_connection_ = chromeos::MonitorInputMethodStatus(
@@ -489,6 +500,9 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     return true;
   }
 
+  // Ensures that the libcros is loaded and the input method status
+  // monitoring is started. This function needs to be called where we use
+  // libcros functions with |input_method_status_connection_|.
   bool EnsureLoadedAndStarted() {
     return CrosLibrary::Get()->EnsureLoaded() &&
            EnsureStarted();
@@ -541,16 +555,20 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     }
   }
 
+  // Registers the properties used by the current input method.
   void RegisterProperties(const ImePropertyList& prop_list) {
     // |prop_list| might be empty. This means "clear all properties."
     current_ime_properties_ = prop_list;
   }
 
+  // Starts the input method daemon. Unlike MaybeStopInputMethodDaemon(),
+  // this function always starts the daemon.
   void StartInputMethodDaemon() {
     should_launch_ime_ = true;
     MaybeLaunchInputMethodDaemon();
   }
 
+  // Updates the properties used by the current input method.
   void UpdateProperty(const ImePropertyList& prop_list) {
     for (size_t i = 0; i < prop_list.size(); ++i) {
       FindAndUpdateProperty(prop_list[i], &current_ime_properties_);
@@ -619,6 +637,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     }
   }
 
+  // Called when the input method process is shut down.
   static void OnImeShutdown(int pid,
                             int status,
                             InputMethodLibraryImpl* library) {
@@ -735,51 +754,52 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
 
 InputMethodLibraryImpl::Observer::~Observer() {}
 
+// The stub implementation of InputMethodLibrary. Used for testing.
 class InputMethodLibraryStubImpl : public InputMethodLibrary {
  public:
   InputMethodLibraryStubImpl()
       : previous_input_method_("", "", "", ""),
         current_input_method_("", "", "", ""),
         keyboard_overlay_map_(
-            CreateRealisticKeyboardOverlayMap()) {
+            GetKeyboardOverlayMapForTesting()) {
     current_input_method_ = input_method::GetFallbackInputMethodDescriptor();
   }
 
-  ~InputMethodLibraryStubImpl() {}
-  void AddObserver(Observer* observer) {}
-  void RemoveObserver(Observer* observer) {}
+  virtual ~InputMethodLibraryStubImpl() {}
+  virtual void AddObserver(Observer* observer) {}
+  virtual void RemoveObserver(Observer* observer) {}
 
-  InputMethodDescriptors* GetActiveInputMethods() {
-    return CreateRealisticInputMethodDescriptors();
+  virtual InputMethodDescriptors* GetActiveInputMethods() {
+    return GetInputMethodDescriptorsForTesting();
   }
 
 
-  size_t GetNumActiveInputMethods() {
-    scoped_ptr<InputMethodDescriptors> descriptors(
-        CreateRealisticInputMethodDescriptors());
+  virtual size_t GetNumActiveInputMethods() {
+    scoped_ptr<InputMethodDescriptors> descriptors(GetActiveInputMethods());
     return descriptors->size();
   }
 
-  InputMethodDescriptors* GetSupportedInputMethods() {
-    return CreateRealisticInputMethodDescriptors();
+  virtual InputMethodDescriptors* GetSupportedInputMethods() {
+    return GetInputMethodDescriptorsForTesting();
   }
 
-  void ChangeInputMethod(const std::string& input_method_id) {}
-  void SetImePropertyActivated(const std::string& key, bool activated) {}
+  virtual void ChangeInputMethod(const std::string& input_method_id) {}
+  virtual void SetImePropertyActivated(const std::string& key,
+                                       bool activated) {}
 
-  bool InputMethodIsActivated(const std::string& input_method_id) {
+  virtual bool InputMethodIsActivated(const std::string& input_method_id) {
     return true;
   }
 
-  bool GetImeConfig(const std::string& section,
-                    const std::string& config_name,
-                    ImeConfigValue* out_value) {
+  virtual bool GetImeConfig(const std::string& section,
+                            const std::string& config_name,
+                            ImeConfigValue* out_value) {
     return false;
   }
 
-  bool SetImeConfig(const std::string& section,
-                    const std::string& config_name,
-                    const ImeConfigValue& value) {
+  virtual bool SetImeConfig(const std::string& section,
+                            const std::string& config_name,
+                            const ImeConfigValue& value) {
     return false;
   }
 
@@ -810,9 +830,9 @@ class InputMethodLibraryStubImpl : public InputMethodLibrary {
  private:
   typedef std::map<std::string, std::string> KeyboardOverlayMap;
 
-  // Creates realistic input method descriptors that can be used for
-  // testing Chrome OS version of chrome on regular Linux desktops.
-  InputMethodDescriptors* CreateRealisticInputMethodDescriptors() {
+  // Gets input method descriptors for testing. Shouldn't be used for
+  // production.
+  InputMethodDescriptors* GetInputMethodDescriptorsForTesting() {
     InputMethodDescriptors* descriptions = new InputMethodDescriptors;
     // The list is created from output of gen_engines.py in libcros.
     descriptions->push_back(InputMethodDescriptor(
@@ -940,7 +960,9 @@ class InputMethodLibraryStubImpl : public InputMethodLibrary {
     return descriptions;
   }
 
-  std::map<std::string, std::string>* CreateRealisticKeyboardOverlayMap() {
+  // Gets keyboard overlay map for testing. Shouldn't be used for
+  // production.
+  std::map<std::string, std::string>* GetKeyboardOverlayMapForTesting() {
     KeyboardOverlayMap* keyboard_overlay_map =
         new KeyboardOverlayMap;
     (*keyboard_overlay_map)["xkb:nl::nld"] = "nl";
