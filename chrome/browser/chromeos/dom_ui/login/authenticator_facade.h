@@ -24,13 +24,11 @@ class LoginStatusConsumer;
 // seperation between the DOMui login handling code and the code that deals with
 // authentication.
 // What code will be compiled with what DEPS flags:
-// touchui == 0
+// touchui == 0 || chromeos == 0
 // AuthenticatorFacade is not compiled
-// touchui == 1 && chromeos == 0
-// AuthenticatorFacade is compiled in using the stubbed authentication code
 // touchui == 1 && chromes == 1
 // AuthenticatorFacade is compiled in using the functional authentication code
-// TODO(rharrison): Implement the real authentication code.
+// TODO(rharrison): Remove AuthenticatorFacade
 class AuthenticatorFacade {
  public:
   explicit AuthenticatorFacade(LoginStatusConsumer* consumer) :

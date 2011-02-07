@@ -51,6 +51,9 @@
 
 #if defined(TOUCH_UI)
 #include "chrome/browser/dom_ui/keyboard_ui.h"
+#endif
+
+#if defined(TOUCH_UI) && defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/dom_ui/login/login_ui.h"
 #endif
 
@@ -158,8 +161,6 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
 #if defined(TOUCH_UI)
   if (url.host() == chrome::kChromeUIKeyboardHost)
     return &NewDOMUI<KeyboardUI>;
-  if (url.host() == chrome::kChromeUILoginHost)
-    return &NewDOMUI<chromeos::LoginUI>;
 #endif
   if (url.host() == chrome::kChromeUIGpuInternalsHost)
     return &NewDOMUI<GpuInternalsUI>;
@@ -217,6 +218,11 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
     }
   }
 #endif  // defined(OS_CHROMEOS)
+
+#if defined(TOUCH_UI) && defined(OS_CHROMEOS)
+  if (url.host() == chrome::kChromeUILoginHost)
+    return &NewDOMUI<chromeos::LoginUI>;
+#endif
 
   if (url.spec() == chrome::kChromeUIConstrainedHTMLTestURL)
     return &NewDOMUI<ConstrainedHtmlUI>;

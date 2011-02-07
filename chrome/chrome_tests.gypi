@@ -1118,11 +1118,9 @@
         'browser/chrome_plugin_unittest.cc',
         'browser/chromeos/customization_document_unittest.cc',
         'browser/chromeos/dom_ui/login/authenticator_facade_cros_unittest.cc',
-        'browser/chromeos/dom_ui/login/authenticator_facade_stub_unittest.cc',
         'browser/chromeos/dom_ui/login/login_ui_unittest.cc',
         'browser/chromeos/dom_ui/login/mock_authenticator_facade_cros.h',
         'browser/chromeos/dom_ui/login/mock_authenticator_facade_cros_helpers.h',
-        'browser/chromeos/dom_ui/login/mock_authenticator_facade_stub.h',
         'browser/chromeos/dom_ui/login/mock_login_ui_helpers.h',
         'browser/chromeos/external_metrics_unittest.cc',
         'browser/chromeos/gview_request_interceptor_unittest.cc',
@@ -1764,17 +1762,6 @@
           ],
         }],
         ['chromeos==1', {
-          'conditions': [
-            ['touchui==1', {
-              'sources/': [
-                ['include', 'browser/chromeos/dom_ui/login/authenticator_facade_cros_unittest.cc'],
-                ['include', 'browser/chromeos/dom_ui/login/login_ui_unittest.cc'],
-                ['include', 'browser/chromeos/dom_ui/login/mock_authenticator_facade_cros.h'],
-                ['include', 'browser/chromeos/dom_ui/login/mock_authenticator_facade_cros_helpers.h'],
-                ['include', 'browser/chromeos/dom_ui/login/mock_login_ui_helpers.h'],
-              ],
-             }],
-           ],
           'sources/': [
             # TODO(thestig) Enable PrintPreviewUIHTMLSource tests on CrOS when
             # print preview is enabled on CrOS.

@@ -480,8 +480,6 @@
         'browser/chromeos/dom_ui/login/authenticator_facade_cros.h',
         'browser/chromeos/dom_ui/login/authenticator_facade_cros_helpers.cc',
         'browser/chromeos/dom_ui/login/authenticator_facade_cros_helpers.h',
-        'browser/chromeos/dom_ui/login/authenticator_facade_stub.cc',
-        'browser/chromeos/dom_ui/login/authenticator_facade_stub.h',
         'browser/chromeos/dom_ui/login/login_ui.cc',
         'browser/chromeos/dom_ui/login/login_ui.h',
         'browser/chromeos/dom_ui/login/login_ui_helpers.cc',
@@ -3609,8 +3607,6 @@
         ['chromeos==1', {
           'sources!': [
             'browser/background_mode_manager_linux.cc',
-            'browser/chromeos/dom_ui/login/authenticator_facade_stub.cc',
-            'browser/chromeos/dom_ui/login/authenticator_facade_stub.h',
             'browser/password_manager/native_backend_gnome_x.cc',
             'browser/password_manager/native_backend_gnome_x.h',
             'browser/password_manager/native_backend_kwallet_x.cc',
@@ -3649,7 +3645,6 @@
         ['touchui==1', {
           'sources/': [
             ['include', '^browser/ui/touch/*'],
-            ['include', '^browser/chromeos/dom_ui/login/'],
             ['exclude', '^browser/chromeos/frame/browser_non_client_frame_view_factory_chromeos.cc'],
             ['exclude', '^browser/renderer_host/gtk_im_context_wrapper.cc'],
             ['exclude', '^browser/renderer_host/gtk_im_context_wrapper.h'],

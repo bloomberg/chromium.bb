@@ -8,11 +8,7 @@
 
 #include <string>
 
-#if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/dom_ui/login/mock_authenticator_facade_cros.h"
-#else
-#include "chrome/browser/chromeos/dom_ui/login/mock_authenticator_facade_stub.h"
-#endif
 #include "chrome/browser/chromeos/dom_ui/login/mock_login_ui_helpers.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -35,31 +31,18 @@ class LoginUIHandlerHarness : public LoginUIHandler {
   explicit LoginUIHandlerHarness(const std::string& expected_username,
                                  const std::string& expected_password)
       : LoginUIHandler() {
-#if defined(OS_CHROMEOS)
     facade_.reset(new MockAuthenticatorFacadeCros(this,
                                                   expected_username,
                                                   expected_password));
-#else
-    facade_.reset(new MockAuthenticatorFacadeStub(this,
-                                                  expected_username,
-                                                  expected_password));
-#endif
     profile_operations_.reset(new MockProfileOperationsInterface());
     browser_operations_.reset(new MockBrowserOperationsInterface());
   }
 
   DOMUI* GetDOMUI() const { return dom_ui_;}
-#if defined(OS_CHROMEOS)
   MockAuthenticatorFacadeCros* GetMockFacade() const {
     return static_cast<MockAuthenticatorFacadeCros*>
         (facade_.get());
   }
-#else
-  MockAuthenticatorFacadeStub* GetMockFacade() const {
-    return static_cast<MockAuthenticatorFacadeStub*>
-        (facade_.get());
-  }
-#endif
   MockProfileOperationsInterface* GetMockProfileOperations() const {
     return static_cast<MockProfileOperationsInterface*>
         (profile_operations_.get());
