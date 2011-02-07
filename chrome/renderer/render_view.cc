@@ -3262,6 +3262,18 @@ void RenderView::didCreateDataSource(WebFrame* frame, WebDataSource* ds) {
     state->set_user_script_idle_scheduler(
         new UserScriptIdleScheduler(this, frame));
   }
+
+  // If the RenderView was prerendering before, it is still prerendering.
+  if (!frame->parent() && content_initiated) {
+    WebDataSource* ds_old = webview()->mainFrame()->dataSource();
+    if (ds_old) {
+      NavigationState* navigation_state =
+          NavigationState::FromDataSource(ds_old);
+      if (navigation_state)
+        state->set_is_prerendering(navigation_state->is_prerendering());
+    }
+  }
+
   ds->setExtraData(state);
 }
 

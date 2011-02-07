@@ -55,6 +55,9 @@ class TestPrerenderContents : public PrerenderContents {
   }
 
   bool did_finish_loading() const { return did_finish_loading_; }
+  void set_did_finish_loading(bool did_finish_loading) {
+    did_finish_loading_ = did_finish_loading;
+  }
 
  private:
   bool did_finish_loading_;
@@ -102,7 +105,8 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
   }
 
   void PrerenderTestURL(const std::string& html_file,
-                        PrerenderContents::FinalStatus expected_final_status) {
+                        PrerenderContents::FinalStatus expected_final_status,
+                        int total_navigations) {
     ASSERT_TRUE(test_server()->Start());
 
     std::string src_path = "files/prerender/prerender_loader.html?";
@@ -128,11 +132,23 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     // handle browser navigation directly.
     browser()->OpenURL(src_url, GURL(), CURRENT_TAB, PageTransition::TYPED);
 
-    ui_test_utils::RunMessageLoop();
+    TestPrerenderContents* prerender_contents = NULL;
+    int navigations = 0;
+    while (true) {
+      ui_test_utils::RunMessageLoop();
+      ++navigations;
 
-    TestPrerenderContents* prerender_contents =
-        static_cast<TestPrerenderContents*>(
-            prerender_manager->FindEntry(dest_url_));
+      prerender_contents =
+          static_cast<TestPrerenderContents*>(
+              prerender_manager->FindEntry(dest_url_));
+      if (prerender_contents == NULL ||
+          !prerender_contents->did_finish_loading() ||
+          navigations >= total_navigations) {
+        EXPECT_EQ(navigations, total_navigations);
+        break;
+      }
+      prerender_contents->set_did_finish_loading(false);
+    }
 
     switch (expected_final_status) {
       case PrerenderContents::FINAL_STATUS_USED: {
@@ -184,7 +200,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
 // navigation.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPage) {
   PrerenderTestURL("prerender_page.html",
-                   PrerenderContents::FINAL_STATUS_USED);
+                   PrerenderContents::FINAL_STATUS_USED, 1);
   NavigateToDestURL();
 }
 
@@ -193,7 +209,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPage) {
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderAlertBeforeOnload) {
   PrerenderTestURL(
       "prerender_alert_before_onload.html",
-      PrerenderContents::FINAL_STATUS_JAVASCRIPT_ALERT);
+      PrerenderContents::FINAL_STATUS_JAVASCRIPT_ALERT, 1);
 }
 
 // Checks that the prerendering of a page is canceled correctly when a
@@ -201,14 +217,14 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderAlertBeforeOnload) {
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderAlertAfterOnload) {
   PrerenderTestURL(
       "prerender_alert_after_onload.html",
-      PrerenderContents::FINAL_STATUS_JAVASCRIPT_ALERT);
+      PrerenderContents::FINAL_STATUS_JAVASCRIPT_ALERT, 1);
 }
 
 // Checks that plugins are not loaded while a page is being preloaded, but
 // are loaded when the page is displayed.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDelayLoadPlugin) {
   PrerenderTestURL("plugin_delay_load.html",
-                   PrerenderContents::FINAL_STATUS_USED);
+                   PrerenderContents::FINAL_STATUS_USED, 1);
   NavigateToDestURL();
 }
 
@@ -217,5 +233,12 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDelayLoadPlugin) {
 // prerender successfully.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHttpAuthentication) {
   PrerenderTestURL("prerender_http_auth_container.html",
-                   PrerenderContents::FINAL_STATUS_AUTH_NEEDED);
+                   PrerenderContents::FINAL_STATUS_AUTH_NEEDED, 1);
+}
+
+// Checks that redirects work with prerendering.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderRedirect) {
+  PrerenderTestURL("prerender_redirect.html",
+                   PrerenderContents::FINAL_STATUS_USED, 2);
+  NavigateToDestURL();
 }
