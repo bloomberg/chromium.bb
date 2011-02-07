@@ -18,6 +18,24 @@ from chromite.shell import utils
 import mox
 
 
+# Allow protected access, since we are closely partnered with the
+# code that we're testing...
+#
+# pylint: disable=W0212
+
+# Needed to make pylint not yell so much about mocked out stuff
+# (it yells about AndReturn, MultipleTimes, ...).
+#
+# TODO(dianders): Any better solution than this heavy hammer?
+#
+# pylint: disable=E1101, E1103
+
+# Just being a unittest.TestCase gives us 14 public methods.  Unless we
+# disable this, we can only have 6 tests in a TestCase.  That's not enough.
+#
+# pylint: disable=R0904
+
+
 class _DeathException(Exception):
   """A bogus exception used by the mock out of cros_lib.Die."""
   pass

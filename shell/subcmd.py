@@ -20,7 +20,6 @@ class ChromiteCmd(object):
     """ChromiteCmd constructor."""
     super(ChromiteCmd, self).__init__()
 
-
   def Run(self, raw_argv, chroot_config=None):
     """Run the command.
 
@@ -47,7 +46,7 @@ class WrappedChrootCmd(ChromiteCmd):
     The usage string will be a little messed up, but hopefully that's OK.
   """
 
-  def __init__(self, target_cmd, host_cmd, need_args=False, env_whitelist=[]):
+  def __init__(self, target_cmd, host_cmd, need_args=False, env_whitelist=None):
     """WrappedChrootCmd constructor.
 
     Args:
@@ -77,8 +76,11 @@ class WrappedChrootCmd(ChromiteCmd):
 
     # Handle the env_whitelist.  We need to do this in __init__ rather than in
     # Run(), since we want the environment vars from outside the chroot.
-    self._env_to_add = dict((key, os.environ[key]) for key in env_whitelist
-                            if key in os.environ)
+    if env_whitelist is None:
+      self._env_to_add = {}
+    else:
+      self._env_to_add = dict((key, os.environ[key]) for key in env_whitelist
+                              if key in os.environ)
 
   def Run(self, raw_argv, chroot_config=None, argv=None, build_config=None):
     """Run the command.

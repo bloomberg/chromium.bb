@@ -9,7 +9,6 @@
 import ConfigParser
 import cPickle
 import os
-import sys
 import tempfile
 
 
@@ -270,7 +269,7 @@ def GetBuildConfigFromArgs(argv):
   return argv, build_config
 
 
-def EnterChroot(chroot_config, fn, *args, **kwargs):
+def EnterChroot(chroot_config, func, *args, **kwargs):
   """Re-run the given function inside the chroot.
 
   When the function is run, it will be run in a SEPARATE INSTANCE of chromite,
@@ -293,7 +292,7 @@ def EnterChroot(chroot_config, fn, *args, **kwargs):
 
   Args:
     chroot_config: A SafeConfigParser representing the config for the chroot.
-    fn: Either: a) the function to call or b) A tuple of an object and the
+    func: Either: a) the function to call or b) A tuple of an object and the
         name of the method to call.
     args: All other arguments will be passed to the function as is.
     kwargs: All other arguments will be passed to the function as is.
@@ -311,7 +310,7 @@ def EnterChroot(chroot_config, fn, *args, **kwargs):
   tmp_dir = os.path.join(chroot_dir, 'tmp')
   state_file = tempfile.NamedTemporaryFile(prefix='chromite', dir=tmp_dir)
   try:
-    cPickle.dump((fn, args, kwargs), state_file, cPickle.HIGHEST_PROTOCOL)
+    cPickle.dump((func, args, kwargs), state_file, cPickle.HIGHEST_PROTOCOL)
     state_file.flush()
 
     # Translate temp file name into a chroot path...
@@ -369,14 +368,14 @@ def ResumeEnterChrootIfNeeded(argv):
     # Internal mechanism (not documented to users) to resume in the chroot.
     # ...actual resume state file is passed in argv[2] for simplicity...
     assert len(argv) == 3, 'Resume State not passed properly.'
-    fn, args, kwargs = cPickle.load(open(argv[2], 'rb'))
+    func, args, kwargs = cPickle.load(open(argv[2], 'rb'))
 
     # Handle calling a method in a class; that can't be directly pickled.
-    if isinstance(fn, tuple):
-      obj, method = fn
-      fn = getattr(obj, method)
+    if isinstance(func, tuple):
+      obj, method = func
+      func = getattr(obj, method)
 
-    fn(*args, **kwargs)
+    func(*args, **kwargs)  # pylint: disable=W0142
 
     # Return True to tell main() that it should exit.
     return True
