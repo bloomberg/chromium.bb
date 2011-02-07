@@ -125,6 +125,14 @@ class WebViewPlugin: public WebKit::WebPlugin, public WebKit::WebViewClient,
   virtual WebKit::WebURLError cancelledError(
       WebKit::WebFrame* frame, const WebKit::WebURLRequest& request);
 
+  // This method is defined in WebPlugin as well as in WebFrameClient, but with
+  // different parameters. We only care about implementing the WebPlugin
+  // version, so we implement this method and call the default in WebFrameClient
+  // (which does nothing) to correctly overload it.
+  virtual void didReceiveResponse(WebKit::WebFrame* frame,
+                                  unsigned identifier,
+                                  const WebKit::WebURLResponse& response);
+
  private:
   friend class DeleteTask<WebViewPlugin>;
   virtual ~WebViewPlugin();

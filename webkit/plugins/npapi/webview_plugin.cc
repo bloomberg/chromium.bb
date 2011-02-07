@@ -237,5 +237,11 @@ WebURLError WebViewPlugin::cancelledError(WebFrame* frame,
   return error;
 }
 
+void WebViewPlugin::didReceiveResponse(WebFrame* frame,
+                                       unsigned identifier,
+                                       const WebURLResponse& response) {
+  WebFrameClient::didReceiveResponse(frame, identifier, response);
+}
+
 }  // namespace npapi
 }  // namespace webkit
