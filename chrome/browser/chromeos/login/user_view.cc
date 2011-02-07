@@ -341,6 +341,7 @@ void UserView::ButtonPressed(views::Button* sender, const views::Event& event) {
 void UserView::OnLocaleChanged() {
   remove_button_->SetText(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_LOGIN_REMOVE)));
+  delegate_->OnLocaleChanged();
 }
 
 }  // namespace chromeos

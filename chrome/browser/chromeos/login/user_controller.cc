@@ -58,10 +58,11 @@ const int kVerticalIntervalSize = 10;
 // it first got focus.
 class ControlsWindow : public WidgetGtk {
  public:
-  ControlsWindow(views::View* initial_focus_view)
+  explicit ControlsWindow(views::View* initial_focus_view)
       : WidgetGtk(WidgetGtk::TYPE_WINDOW),
         initial_focus_view_(initial_focus_view) {
   }
+
  private:
   // WidgetGtk overrrides:
   virtual void SetInitialFocus() {
@@ -203,6 +204,7 @@ void UserController::ClearAndEnablePassword() {
 }
 
 void UserController::EnableNameTooltip(bool enable) {
+  name_tooltip_enabled_ = enable;
   std::wstring tooltip_text;
   if (enable)
     tooltip_text = GetNameTooltip();
@@ -308,6 +310,14 @@ void UserController::NavigateAway() {
 ////////////////////////////////////////////////////////////////////////////////
 // UserController, UserView::Delegate implementation:
 //
+void UserController::OnLocaleChanged() {
+  // Update text tooltips on guest and new user pods.
+  if (is_guest_ || is_new_user_) {
+    if (name_tooltip_enabled_)
+      EnableNameTooltip(name_tooltip_enabled_);
+  }
+}
+
 void UserController::OnRemoveUser() {
   delegate_->RemoveUser(this);
 }

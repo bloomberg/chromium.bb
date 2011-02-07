@@ -117,6 +117,9 @@ class UserController : public views::WidgetDelegate,
   virtual void OnRemoveUser();
   virtual bool IsUserSelected() const { return is_user_selected_; }
 
+  // UsernameView::Delegate implementation:
+  virtual void OnLocaleChanged();
+
   // Padding between the user windows.
   static const int kPadding;
 
@@ -188,6 +191,9 @@ class UserController : public views::WidgetDelegate,
 
   // Throbber host that can show a throbber.
   ThrobberHostView* throbber_host_;
+
+  // Whether name tooltip is enabled.
+  bool name_tooltip_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(UserController);
 };

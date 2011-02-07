@@ -99,7 +99,6 @@ UsernameView* UsernameView::CreateShapedUsernameView(
 gfx::NativeCursor UsernameView::GetCursorForPoint(
     views::Event::EventType event_type,
     const gfx::Point& p) {
-
   return use_small_shape_ ? gfx::GetCursor(GDK_HAND2) : NULL;
 }
 
