@@ -197,10 +197,10 @@ create_surface(struct window *window)
 	window->surface = wl_compositor_create_surface(display->compositor);
 	visual = wl_display_get_premultiplied_argb_visual(display->display);
 	window->native =
-		wl_egl_native_window_create(window->surface,
-					    window->geometry.width,
-					    window->geometry.height,
-					    visual);
+		wl_egl_window_create(window->surface,
+				     window->geometry.width,
+				     window->geometry.height,
+				     visual);
 	window->egl_surface =
 		eglCreateWindowSurface(display->egl.dpy,
 				       display->egl.conf,
@@ -308,7 +308,7 @@ main(int argc, char **argv)
 	wl_display_add_global_listener(display.display,
 				       display_handle_global, &display);
 
-	display.native = wl_egl_native_display_create(display.display);
+	display.native = wl_egl_display_create(display.display);
 
 	init_egl(&display);
 	create_surface(&window);

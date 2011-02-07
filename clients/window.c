@@ -206,7 +206,7 @@ egl_image_surface_data_destroy(void *p)
 
 	eglDestroyImageKHR(d->dpy, data->image);
 	wl_buffer_destroy(data->data.buffer);
-	wl_egl_native_pixmap_destroy(data->pixmap);
+	wl_egl_pixmap_destroy(data->pixmap);
 	free(p);
 }
 
@@ -237,10 +237,10 @@ display_create_egl_image_surface(struct display *display,
 	data->display = display;
 
 	visual = wl_display_get_premultiplied_argb_visual(display->display);
-	data->pixmap =wl_egl_native_pixmap_create(display->native_dpy,
-						   rectangle->width,
-						   rectangle->height,
-						   visual, 0);
+	data->pixmap =wl_egl_pixmap_create(display->native_dpy,
+					   rectangle->width,
+					   rectangle->height,
+					   visual, 0);
 	if (data->pixmap == NULL) {
 		free(data);
 		return NULL;
@@ -250,14 +250,13 @@ display_create_egl_image_surface(struct display *display,
 					EGL_NATIVE_PIXMAP_KHR,
 					(EGLClientBuffer) data->pixmap, NULL);
 	if (data->image == EGL_NO_IMAGE_KHR) {
-		wl_egl_native_pixmap_destroy(data->pixmap);
+		wl_egl_pixmap_destroy(data->pixmap);
 		free(data);
 		return NULL;
 	}
 
 	data->data.buffer =
-		wl_egl_native_pixmap_create_buffer(display->native_dpy,
-						   data->pixmap);
+		wl_egl_pixmap_create_buffer(display->native_dpy, data->pixmap);
 
 	cairo_device_acquire(display->device);
 	glGenTextures(1, &data->texture);
@@ -1673,7 +1672,7 @@ display_create(int *argc, char **argv[], const GOptionEntry *option_entries)
 	wl_display_add_global_listener(d->display,
 				       display_handle_global, d);
 
-	d->native_dpy = wl_egl_native_display_create(d->display);
+	d->native_dpy = wl_egl_display_create(d->display);
 
 	/* Process connection events. */
 	wl_display_iterate(d->display, WL_DISPLAY_READABLE);
