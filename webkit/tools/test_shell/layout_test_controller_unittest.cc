@@ -29,10 +29,8 @@ class LayoutTestControllerTest : public testing::Test {
 
 TEST(LayoutTestControllerTest, MethodMapIsInitialized) {
   const char* test_methods[] = {
-    "dumpAsText",
     "waitUntilDone",
     "notifyDone",
-    "dumpEditingCallbacks",
     "queueLoad",
     "windowCount",
     NULL
@@ -44,46 +42,4 @@ TEST(LayoutTestControllerTest, MethodMapIsInitialized) {
 
   // One more case, to test our test.
   EXPECT_FALSE(controller.IsMethodRegistered("nonexistent_method"));
-}
-
-TEST(LayoutTestControllerTest, DumpAsTextSetAndCleared) {
-  TestLayoutTestController controller;
-  CppArgumentList empty_args;
-  CppVariant ignored_result;
-  EXPECT_FALSE(controller.ShouldDumpAsText());
-  controller.dumpAsText(empty_args, &ignored_result);
-  EXPECT_TRUE(ignored_result.isNull());
-  EXPECT_TRUE(controller.ShouldDumpAsText());
-
-  // Don't worry about closing remaining windows when we call reset.
-  CppArgumentList args;
-  CppVariant bool_false;
-  bool_false.Set(false);
-  args.push_back(bool_false);
-  CppVariant result;
-  controller.setCloseRemainingWindowsWhenComplete(args, &result);
-
-  controller.Reset();
-  EXPECT_FALSE(controller.ShouldDumpAsText());
-}
-
-TEST(LayoutTestControllerTest, DumpChildFramesAsTextSetAndCleared) {
-  TestLayoutTestController controller;
-  CppArgumentList empty_args;
-  CppVariant ignored_result;
-  EXPECT_FALSE(controller.ShouldDumpChildFramesAsText());
-  controller.dumpChildFramesAsText(empty_args, &ignored_result);
-  EXPECT_TRUE(ignored_result.isNull());
-  EXPECT_TRUE(controller.ShouldDumpChildFramesAsText());
-
-  // Don't worry about closing remaining windows when we call reset.
-  CppArgumentList args;
-  CppVariant bool_false;
-  bool_false.Set(false);
-  args.push_back(bool_false);
-  CppVariant result;
-  controller.setCloseRemainingWindowsWhenComplete(args, &result);
-
-  controller.Reset();
-  EXPECT_FALSE(controller.ShouldDumpChildFramesAsText());
 }

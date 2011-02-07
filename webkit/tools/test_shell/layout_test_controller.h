@@ -29,46 +29,6 @@ class LayoutTestController : public CppBoundClass {
   LayoutTestController(TestShell* shell);
   ~LayoutTestController();
 
-  // This function sets a flag that tells the test_shell to dump pages as
-  // plain text, rather than as a text representation of the renderer's state.
-  // It takes no arguments, and ignores any that may be present.
-  void dumpAsText(const CppArgumentList& args, CppVariant* result);
-
-  // This function should set a flag that tells the test_shell to print a line
-  // of descriptive text for each database command.  It should take no
-  // arguments, and ignore any that may be present. However, at the moment, we
-  // don't have any DB function that prints messages, so for now this function
-  // doesn't do anything.
-  void dumpDatabaseCallbacks(const CppArgumentList& args, CppVariant* result);
-
-  // This function sets a flag that tells the test_shell to print a line of
-  // descriptive text for each editing command.  It takes no arguments, and
-  // ignores any that may be present.
-  void dumpEditingCallbacks(const CppArgumentList& args, CppVariant* result);
-
-  // This function sets a flag that tells the test_shell to print a line of
-  // descriptive text for each frame load callback.  It takes no arguments, and
-  // ignores any that may be present.
-  void dumpFrameLoadCallbacks(const CppArgumentList& args, CppVariant* result);
-
-  // This function sets a flag that tells the test_shell to print out a text
-  // representation of the back/forward list.  It ignores all args.
-  void dumpBackForwardList(const CppArgumentList& args, CppVariant* result);
-
-  // This function sets a flag that tells the test_shell to print out the
-  // scroll offsets of the child frames.  It ignores all args.
-  void dumpChildFrameScrollPositions(const CppArgumentList& args, CppVariant* result);
-
-  // This function sets a flag that tells the test_shell to recursively
-  // dump all frames as plain text if the dumpAsText flag is set.
-  // It takes no arguments, and ignores any that may be present.
-  void dumpChildFramesAsText(const CppArgumentList& args, CppVariant* result);
-
-  // This function sets a flag that tells the test_shell to dump all calls
-  // to window.status().
-  // It takes no arguments, and ignores any that may be present.
-  void dumpWindowStatusChanges(const CppArgumentList& args, CppVariant* result);
-
   // When called with a boolean argument, this sets a flag that controls
   // whether content-editable elements accept editing focus when an editing
   // attempt is made. It ignores any additional arguments.
@@ -195,8 +155,6 @@ class LayoutTestController : public CppBoundClass {
   void setIconDatabaseEnabled(const CppArgumentList& args,
                               CppVariant* result);
 
-  void dumpSelectionRect(const CppArgumentList& args, CppVariant* result);
-
   // Grants permission for desktop notifications to an origin
   void grantDesktopNotificationPermission(const CppArgumentList& args,
                                           CppVariant* result);
@@ -209,10 +167,6 @@ class LayoutTestController : public CppBoundClass {
 
   // The following are only stubs.  TODO(pamg): Implement any of these that
   // are needed to pass the layout tests.
-  void dumpAsWebArchive(const CppArgumentList& args, CppVariant* result);
-  void dumpTitleChanges(const CppArgumentList& args, CppVariant* result);
-  void dumpResourceLoadCallbacks(const CppArgumentList& args, CppVariant* result);
-  void dumpResourceResponseMIMETypes(const CppArgumentList& args, CppVariant* result);
   void setMainFrameIsFirstResponder(const CppArgumentList& args, CppVariant* result);
   void display(const CppArgumentList& args, CppVariant* result);
   void testRepaint(const CppArgumentList& args, CppVariant* result);
@@ -308,33 +262,6 @@ class LayoutTestController : public CppBoundClass {
   // The following methods are not exposed to JavaScript.
   void SetWorkQueueFrozen(bool frozen) { work_queue_.set_frozen(frozen); }
 
-  bool ShouldDumpAsText() { return dump_as_text_; }
-  bool ShouldGeneratePixelResults() { return generate_pixel_results_; }
-  bool ShouldDumpEditingCallbacks() { return dump_editing_callbacks_; }
-  bool ShouldDumpFrameLoadCallbacks() { return dump_frame_load_callbacks_; }
-  void SetShouldDumpFrameLoadCallbacks(bool value) {
-    dump_frame_load_callbacks_ = value;
-  }
-  bool ShouldDumpResourceLoadCallbacks() {
-    return dump_resource_load_callbacks_;
-  }
-  bool ShouldDumpResourceResponseMIMETypes() {
-    return dump_resource_response_mime_types_;
-  }
-  bool ShouldDumpStatusCallbacks() {
-    return dump_window_status_changes_;
-  }
-  bool ShouldDumpSelectionRect() {
-    return dump_selection_rect_;
-  }
-  bool ShouldDumpBackForwardList() { return dump_back_forward_list_; }
-  bool ShouldDumpTitleChanges() { return dump_title_changes_; }
-  bool ShouldDumpChildFrameScrollPositions() {
-    return dump_child_frame_scroll_positions_;
-  }
-  bool ShouldDumpChildFramesAsText() {
-    return dump_child_frames_as_text_;
-  }
   bool AcceptsEditing() { return accepts_editing_; }
   bool CanOpenWindows() { return can_open_windows_; }
   bool ShouldAddFileToPasteboard() { return should_add_file_to_pasteboard_; }
@@ -409,52 +336,6 @@ class LayoutTestController : public CppBoundClass {
 
   // Non-owning pointer.  The LayoutTestController is owned by the host.
   static TestShell* shell_;
-
-  // If true, the test_shell will produce a plain text dump rather than a
-  // text representation of the renderer.
-  static bool dump_as_text_;
-
-  // If true, dump pixel results. This can be true even if
-  // dump_as_text_ is true.
-  static bool generate_pixel_results_;
-
-  // If true, the test_shell will write a descriptive line for each editing
-  // command.
-  static bool dump_editing_callbacks_;
-
-  // If true, the test_shell will draw the bounds of the current selection rect
-  // taking possible transforms of the selection rect into account.
-  static bool dump_selection_rect_;
-
-  // If true, the test_shell will output a descriptive line for each frame
-  // load callback.
-  static bool dump_frame_load_callbacks_;
-
-  // If true, the test_shell will output a descriptive line for each resource
-  // load callback.
-  static bool dump_resource_load_callbacks_;
-
-  // If true, the test_shell will output a line with the MIME type for each
-  // resource that is loaded.
-  static bool dump_resource_response_mime_types_;
-
-  // If true, the test_shell will produce a dump of the back forward list as
-  // well.
-  static bool dump_back_forward_list_;
-
-  // If true, the test_shell will print out the child frame scroll offsets as
-  // well.
-  static bool dump_child_frame_scroll_positions_;
-
-  // If true and if dump_as_text_ is true, the test_shell will recursively
-  // dump all frames as plain text.
-  static bool dump_child_frames_as_text_;
-
-  // If true, the test_shell will dump all changes to window.status.
-  static bool dump_window_status_changes_;
-
-  // If true, output a message when the page title is changed.
-  static bool dump_title_changes_;
 
   // If true, the element will be treated as editable.  This value is returned
   // from various editing callbacks that are called just before edit operations

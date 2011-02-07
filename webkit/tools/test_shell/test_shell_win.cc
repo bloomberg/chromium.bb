@@ -233,77 +233,6 @@ void TestShell::DumpAllBackForwardLists(string16* result) {
   }
 }
 
-bool TestShell::RunFileTest(const TestParams& params) {
-  SetCurrentTestName(params.test_url.c_str());
-
-  // Load the test file into the first available window.
-  if (TestShell::windowList()->empty()) {
-    LOG(ERROR) << "No windows open.";
-    return false;
-  }
-
-  HWND hwnd = *(TestShell::windowList()->begin());
-  TestShell* shell =
-      static_cast<TestShell*>(ui::GetWindowUserData(hwnd));
-
-  // Clear focus between tests.
-  shell->m_focusedWidgetHost = NULL;
-
-  // Make sure the previous load is stopped.
-  shell->webView()->mainFrame()->stopLoading();
-  shell->navigation_controller()->Reset();
-
-  // StopLoading may update state maintained in the test controller (for
-  // example, whether the WorkQueue is frozen) as such, we need to reset it
-  // after we invoke StopLoading.
-  shell->ResetTestController();
-
-  // ResetTestController may have closed the window we were holding on to.
-  // Grab the first window again.
-  hwnd = *(TestShell::windowList()->begin());
-  shell = static_cast<TestShell*>(ui::GetWindowUserData(hwnd));
-  DCHECK(shell);
-
-  // Whether DevTools should be open before loading the page.
-  bool inspector_test_mode = strstr(params.test_url.c_str(), "/inspector/") ||
-                             strstr(params.test_url.c_str(), "\\inspector\\");
-
-  developer_extras_enabled_ = inspector_test_mode ||
-      strstr(params.test_url.c_str(), "/inspector-enabled/") ||
-      strstr(params.test_url.c_str(), "\\inspector-enabled\\");
-
-  // Clean up state between test runs.
-  webkit_glue::ResetBeforeTestRun(shell->webView());
-  ResetWebPreferences();
-  web_prefs_->Apply(shell->webView());
-
-  SetWindowPos(shell->m_mainWnd, NULL,
-               kTestWindowXLocation, kTestWindowYLocation, 0, 0,
-               SWP_NOSIZE | SWP_NOZORDER);
-  shell->ResizeSubViews();
-
-  if (strstr(params.test_url.c_str(), "loading/") ||
-      strstr(params.test_url.c_str(), "loading\\"))
-    shell->layout_test_controller()->SetShouldDumpFrameLoadCallbacks(true);
-
-  if (inspector_test_mode)
-    shell->ShowDevTools();
-
-  GURL url(params.test_url);
-  if (url.is_valid()) {  // Don't hang if we have an invalid path.
-    shell->test_is_preparing_ = true;
-    shell->set_test_params(&params);
-    shell->LoadURL(url);
-    shell->test_is_preparing_ = false;
-    shell->WaitTestFinished();
-    shell->set_test_params(NULL);
-  } else {
-    NOTREACHED() << "Invalid url: " << url.spec();
-  }
-
-  return true;
-}
-
 std::string TestShell::RewriteLocalUrl(const std::string& url) {
   // Convert file:///tmp/LayoutTests urls to the actual location on disk.
   const char kPrefix[] = "file:///tmp/LayoutTests/";
@@ -432,12 +361,6 @@ void TestShell::TestFinished() {
     return;  // reached when running under test_shell_tests
 
   test_is_pending_ = false;
-  if (dump_when_finished_) {
-    HWND hwnd = *(TestShell::windowList()->begin());
-    TestShell* shell =
-        static_cast<TestShell*>(ui::GetWindowUserData(hwnd));
-    TestShell::Dump(shell);
-  }
 
   UINT_PTR timer_id = reinterpret_cast<UINT_PTR>(this);
   KillTimer(mainWnd(), timer_id);

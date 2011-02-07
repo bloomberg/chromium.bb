@@ -376,12 +376,6 @@ void TestShell::TestFinished() {
     return;
 
   test_is_pending_ = false;
-  if (dump_when_finished_) {
-    GtkWindow* window = *(TestShell::windowList()->begin());
-    TestShell* shell = static_cast<TestShell*>(
-        g_object_get_data(G_OBJECT(window), "test-shell"));
-    TestShell::Dump(shell);
-  }
   MessageLoop::current()->Quit();
 }
 
@@ -497,64 +491,6 @@ void TestShell::ResizeSubViews() {
                                                   "test-shell"));
     shell->DumpBackForwardList(result);
   }
-}
-
-/* static */ bool TestShell::RunFileTest(const TestParams& params) {
-  // Load the test file into the first available window.
-  if (TestShell::windowList()->empty()) {
-    LOG(ERROR) << "No windows open.";
-    return false;
-  }
-
-  GtkWindow* window = *(TestShell::windowList()->begin());
-  TestShell* shell =
-      static_cast<TestShell*>(g_object_get_data(G_OBJECT(window),
-                                                "test-shell"));
-
-  // Clear focus between tests.
-  shell->m_focusedWidgetHost = NULL;
-
-  // Make sure the previous load is stopped.
-  shell->webView()->mainFrame()->stopLoading();
-  shell->navigation_controller()->Reset();
-
-  // StopLoading may update state maintained in the test controller (for
-  // example, whether the WorkQueue is frozen) as such, we need to reset it
-  // after we invoke StopLoading.
-  shell->ResetTestController();
-
-  // ResetTestController may have closed the window we were holding on to.
-  // Grab the first window again.
-  window = *(TestShell::windowList()->begin());
-  shell = static_cast<TestShell*>(g_object_get_data(G_OBJECT(window),
-                                                    "test-shell"));
-  DCHECK(shell);
-
-  // Clean up state between test runs.
-  webkit_glue::ResetBeforeTestRun(shell->webView());
-  ResetWebPreferences();
-  web_prefs_->Apply(shell->webView());
-
-  // TODO(agl): Maybe make the window hidden in the future. Window does this
-  // by positioning it off the screen but the GTK function to do this is
-  // deprecated and appears to have been removed.
-
-  shell->ResizeSubViews();
-
-  if (strstr(params.test_url.c_str(), "loading/") ||
-      strstr(params.test_url.c_str(), "loading\\"))
-    shell->layout_test_controller()->SetShouldDumpFrameLoadCallbacks(true);
-
-  shell->test_is_preparing_ = true;
-
-  shell->set_test_params(&params);
-  shell->LoadURL(GURL(params.test_url));
-
-  shell->test_is_preparing_ = false;
-  shell->WaitTestFinished();
-  shell->set_test_params(NULL);
-
-  return true;
 }
 
 void TestShell::LoadURLForFrame(const GURL& url,

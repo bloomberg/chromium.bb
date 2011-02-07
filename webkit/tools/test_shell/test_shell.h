@@ -174,26 +174,6 @@ public:
 
     // Passes options from LayoutTestController through to the delegate (or
     // any other caller).
-    bool ShouldDumpEditingCallbacks() {
-      return layout_test_mode_ &&
-             layout_test_controller_->ShouldDumpEditingCallbacks();
-    }
-    bool ShouldDumpFrameLoadCallbacks() {
-      return layout_test_mode_ && (test_is_preparing_ || test_is_pending_) &&
-             layout_test_controller_->ShouldDumpFrameLoadCallbacks();
-    }
-    bool ShouldDumpResourceLoadCallbacks() {
-      return layout_test_mode_ && (test_is_preparing_ || test_is_pending_) &&
-             layout_test_controller_->ShouldDumpResourceLoadCallbacks();
-    }
-    bool ShouldDumpResourceResponseMIMETypes() {
-      return layout_test_mode_ && (test_is_preparing_ || test_is_pending_) &&
-             layout_test_controller_->ShouldDumpResourceResponseMIMETypes();
-    }
-    bool ShouldDumpTitleChanges() {
-      return layout_test_mode_ &&
-             layout_test_controller_->ShouldDumpTitleChanges();
-    }
     bool AcceptsEditing() {
       return layout_test_controller_->AcceptsEditing();
     }
@@ -242,12 +222,6 @@ public:
     // window JavaScript objects so they can be accessed by layout tests.
     virtual void BindJSObjectsToWindow(WebKit::WebFrame* frame);
 
-    // Runs a layout test.  Loads a single file (specified in params.test_url)
-    // into the first available window, then dumps the requested text
-    // representation to stdout. Returns false if the test cannot be run
-    // because no windows are open.
-    static bool RunFileTest(const TestParams& params);
-
     // Writes the back-forward list data for every open window into result.
     // Should call DumpBackForwardListOfWindow on each TestShell window.
     static void DumpAllBackForwardLists(string16* result);
@@ -257,16 +231,6 @@ public:
 
     // Writes the back-forward list data for this test shell into result.
     void DumpBackForwardList(string16* result);
-
-    // Dumps the output from given test as text and/or image depending on
-    // the flags set.
-    static void Dump(TestShell* shell);
-
-    // Writes the image captured from the given web frame to the given file.
-    // The returned string is the ASCII-ized MD5 sum of the image.
-    static std::string DumpImage(skia::PlatformCanvas* canvas,
-                                 const FilePath& path,
-                                 const std::string& pixel_hash);
 
     static void ResetWebPreferences();
 
@@ -314,13 +278,6 @@ public:
     static std::string GetJSFlagsForLoad(size_t load) {
       if (load >= js_flags_.size()) return "";
       return js_flags_[load];
-    }
-
-    // Set whether to dump when the loaded page has finished processing. This is
-    // used with multiple load testing where normally we only want to have the
-    // output from the last load.
-    static void SetDumpWhenFinished(bool dump_when_finished) {
-      dump_when_finished_ = dump_when_finished;
     }
 
 #if defined(OS_WIN)
@@ -461,9 +418,6 @@ private:
     // a string (e.g. "--xxx --yyy"). Each flag set is used for separate loads
     // of each URL.
     static std::vector<std::string> js_flags_;
-
-    // True if a test shell dump should be made when the test is finished.
-    static bool dump_when_finished_;
 
     // True if we're testing the accelerated canvas 2d path.
     static bool accelerated_2d_canvas_enabled_;

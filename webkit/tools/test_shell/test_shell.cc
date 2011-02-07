@@ -116,7 +116,6 @@ bool TestShell::test_is_preparing_ = false;
 bool TestShell::test_is_pending_ = false;
 int TestShell::load_count_ = 1;
 std::vector<std::string> TestShell::js_flags_;
-bool TestShell::dump_when_finished_ = true;
 bool TestShell::accelerated_2d_canvas_enabled_ = false;
 bool TestShell::accelerated_compositing_enabled_ = false;
 
@@ -219,165 +218,6 @@ void TestShell::ShutdownTestShell() {
 // All fatal log messages (e.g. DCHECK failures) imply unit test failures
 static void UnitTestAssertHandler(const std::string& str) {
   FAIL() << str;
-}
-
-// static
-void TestShell::Dump(TestShell* shell) {
-  const TestParams* params = NULL;
-  if ((shell == NULL) || ((params = shell->test_params()) == NULL))
-    return;
-
-  WebScriptController::flushConsoleMessages();
-
-  // Dump the requested representation.
-  WebFrame* frame = shell->webView()->mainFrame();
-  if (frame) {
-    bool should_dump_as_text =
-        shell->layout_test_controller_->ShouldDumpAsText();
-    bool should_generate_pixel_results =
-        shell->layout_test_controller()->ShouldGeneratePixelResults();
-    bool dumped_anything = false;
-    if (params->dump_tree) {
-      dumped_anything = true;
-      // Text output: the test page can request different types of output
-      // which we handle here.
-      if (!should_dump_as_text) {
-        // Plain text pages should be dumped as text
-        const string16& mime_type =
-            frame->dataSource()->response().mimeType();
-        if (EqualsASCII(mime_type, "text/plain")) {
-          should_dump_as_text = true;
-          should_generate_pixel_results = false;
-        }
-      }
-      if (should_dump_as_text) {
-        bool recursive = shell->layout_test_controller_->
-            ShouldDumpChildFramesAsText();
-        std::string data_utf8 = UTF16ToUTF8(
-            webkit_glue::DumpFramesAsText(frame, recursive));
-        if (fwrite(data_utf8.c_str(), 1, data_utf8.size(), stdout) !=
-            data_utf8.size()) {
-          LOG(FATAL) << "Short write to stdout, disk full?";
-        }
-      } else {
-        printf("%s", UTF16ToUTF8(
-            webkit_glue::DumpRenderer(frame)).c_str());
-
-        bool recursive = shell->layout_test_controller_->
-            ShouldDumpChildFrameScrollPositions();
-        printf("%s", UTF16ToUTF8(
-            webkit_glue::DumpFrameScrollPosition(frame, recursive)).c_str());
-      }
-
-      if (shell->layout_test_controller_->ShouldDumpBackForwardList()) {
-        string16 bfDump;
-        DumpAllBackForwardLists(&bfDump);
-        printf("%s", UTF16ToUTF8(bfDump).c_str());
-      }
-    }
-
-    if (params->dump_pixels && should_generate_pixel_results) {
-      // Image output: we write the image data to the file given on the
-      // command line (for the dump pixels argument), and the MD5 sum to
-      // stdout.
-      dumped_anything = true;
-      WebViewHost* view_host = shell->webViewHost();
-      view_host->webview()->layout();
-      if (shell->layout_test_controller()->test_repaint()) {
-        WebSize view_size = view_host->webview()->size();
-        int width = view_size.width;
-        int height = view_size.height;
-        if (shell->layout_test_controller()->sweep_horizontally()) {
-          for (gfx::Rect column(0, 0, 1, height); column.x() < width;
-              column.Offset(1, 0)) {
-            view_host->PaintRect(column);
-          }
-        } else {
-          for (gfx::Rect line(0, 0, width, 1); line.y() < height;
-              line.Offset(0, 1)) {
-            view_host->PaintRect(line);
-          }
-        }
-      } else {
-        view_host->Paint();
-      }
-
-      // See if we need to draw the selection bounds rect. Selection bounds
-      // rect is the rect enclosing the (possibly transformed) selection.
-      // The rect should be drawn after everything is laid out and painted.
-      if (shell->layout_test_controller_->ShouldDumpSelectionRect()) {
-        // If there is a selection rect - draw a red 1px border enclosing rect
-        WebRect wr = frame->selectionBoundsRect();
-        if (!wr.isEmpty()) {
-          // Render a red rectangle bounding selection rect
-          SkPaint paint;
-          paint.setColor(0xFFFF0000);  // Fully opaque red
-          paint.setStyle(SkPaint::kStroke_Style);
-          paint.setFlags(SkPaint::kAntiAlias_Flag);
-          paint.setStrokeWidth(1.0f);
-          SkIRect rect;  // Bounding rect
-          rect.set(wr.x, wr.y, wr.x + wr.width, wr.y + wr.height);
-          view_host->canvas()->drawIRect(rect, paint);
-        }
-      }
-
-      std::string md5sum = DumpImage(view_host->canvas(),
-          params->pixel_file_name, params->pixel_hash);
-      printf("#MD5:%s\n", md5sum.c_str());
-    }
-    if (dumped_anything)
-      printf("#EOF\n");
-    fflush(stdout);
-  }
-}
-
-// static
-std::string TestShell::DumpImage(skia::PlatformCanvas* canvas,
-    const FilePath& path, const std::string& pixel_hash) {
-  skia::BitmapPlatformDevice& device =
-      static_cast<skia::BitmapPlatformDevice&>(canvas->getTopPlatformDevice());
-  const SkBitmap& src_bmp = device.accessBitmap(false);
-
-  // Encode image.
-  std::vector<unsigned char> png;
-  SkAutoLockPixels src_bmp_lock(src_bmp);
-  gfx::PNGCodec::ColorFormat color_format = gfx::PNGCodec::FORMAT_BGRA;
-
-  // Fix the alpha. The expected PNGs on Mac have an alpha channel, so we want
-  // to keep it. On Windows, the alpha channel is wrong since text/form control
-  // drawing may have erased it in a few places. So on Windows we force it to
-  // opaque and also don't write the alpha channel for the reference. Linux
-  // doesn't have the wrong alpha like Windows, but we try to match Windows.
-#if defined(OS_MACOSX)
-  bool discard_transparency = false;
-#else
-  bool discard_transparency = true;
-  device.makeOpaque(0, 0, src_bmp.width(), src_bmp.height());
-#endif
-
-  // Compute MD5 sum.
-  MD5Context ctx;
-  MD5Init(&ctx);
-  MD5Update(&ctx, src_bmp.getPixels(), src_bmp.getSize());
-
-  MD5Digest digest;
-  MD5Final(&digest, &ctx);
-  std::string md5hash = MD5DigestToBase16(digest);
-
-  // Only encode and dump the png if the hashes don't match. Encoding the image
-  // is really expensive.
-  if (md5hash.compare(pixel_hash) != 0) {
-    gfx::PNGCodec::Encode(
-        reinterpret_cast<const unsigned char*>(src_bmp.getPixels()),
-        color_format, src_bmp.width(), src_bmp.height(),
-        static_cast<int>(src_bmp.rowBytes()), discard_transparency, &png);
-
-    // Write to disk.
-    file_util::WriteFile(path, reinterpret_cast<const char *>(&png[0]),
-                         png.size());
-  }
-
-  return md5hash;
 }
 
 // static
@@ -646,11 +486,6 @@ void TestShell::LoadFile(const FilePath& file) {
 }
 
 void TestShell::LoadURL(const GURL& url) {
-  // Used as a sentinal for run_webkit_tests.py to know when to start reading
-  // test output for this test and so we know we're not getting out of sync.
-  if (layout_test_mode_ && dump_when_finished_ && test_params())
-    printf("#URL:%s\n", test_params()->test_url.c_str());
-
   LoadURLForFrame(url, std::wstring());
 }
 

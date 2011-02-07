@@ -240,21 +240,6 @@ string16 DumpHistoryState(const std::string& history_state, int indent,
                       is_current));
 }
 
-void ResetBeforeTestRun(WebView* view) {
-  WebFrame* web_frame = view->mainFrame();
-
-  // Reset the main frame name since tests always expect it to be empty.  It
-  // is normally not reset between page loads (even in IE and FF).
-  if (web_frame)
-    web_frame->setName(WebString());
-
-#if defined(OS_WIN)
-  // Reset the last click information so the clicks generated from previous
-  // test aren't inherited (otherwise can mistake single/double/triple clicks)
-  WebKit::WebInputEventFactory::resetLastClickState();
-#endif
-}
-
 #ifndef NDEBUG
 // The log macro was having problems due to collisions with WTF, so we just
 // code here what that would have inlined.

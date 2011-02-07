@@ -61,18 +61,6 @@ using WebKit::WebURL;
 TestShell* LayoutTestController::shell_ = NULL;
 // Most of these flags need to be cleared in Reset() so that they get turned
 // off between each test run.
-bool LayoutTestController::generate_pixel_results_ = true;
-bool LayoutTestController::dump_as_text_ = false;
-bool LayoutTestController::dump_editing_callbacks_ = false;
-bool LayoutTestController::dump_frame_load_callbacks_ = false;
-bool LayoutTestController::dump_resource_load_callbacks_ = false;
-bool LayoutTestController::dump_resource_response_mime_types_ = false;
-bool LayoutTestController::dump_back_forward_list_ = false;
-bool LayoutTestController::dump_child_frame_scroll_positions_ = false;
-bool LayoutTestController::dump_child_frames_as_text_ = false;
-bool LayoutTestController::dump_window_status_changes_ = false;
-bool LayoutTestController::dump_title_changes_ = false;
-bool LayoutTestController::dump_selection_rect_ = false;
 bool LayoutTestController::accepts_editing_ = true;
 bool LayoutTestController::wait_until_done_ = false;
 bool LayoutTestController::can_open_windows_ = false;
@@ -97,17 +85,6 @@ LayoutTestController::LayoutTestController(TestShell* shell) :
   // they will use when called by JavaScript.  The actual binding of those
   // names to their methods will be done by calling BindToJavaScript() (defined
   // by CppBoundClass, the parent to LayoutTestController).
-  BindMethod("dumpAsText", &LayoutTestController::dumpAsText);
-  BindMethod("dumpChildFrameScrollPositions", &LayoutTestController::dumpChildFrameScrollPositions);
-  BindMethod("dumpChildFramesAsText", &LayoutTestController::dumpChildFramesAsText);
-  BindMethod("dumpDatabaseCallbacks", &LayoutTestController::dumpDatabaseCallbacks);
-  BindMethod("dumpEditingCallbacks", &LayoutTestController::dumpEditingCallbacks);
-  BindMethod("dumpBackForwardList", &LayoutTestController::dumpBackForwardList);
-  BindMethod("dumpFrameLoadCallbacks", &LayoutTestController::dumpFrameLoadCallbacks);
-  BindMethod("dumpResourceLoadCallbacks", &LayoutTestController::dumpResourceLoadCallbacks);
-  BindMethod("dumpResourceResponseMIMETypes", &LayoutTestController::dumpResourceResponseMIMETypes);
-  BindMethod("dumpStatusCallbacks", &LayoutTestController::dumpWindowStatusChanges);
-  BindMethod("dumpTitleChanges", &LayoutTestController::dumpTitleChanges);
   BindMethod("setAcceptsEditing", &LayoutTestController::setAcceptsEditing);
   BindMethod("waitUntilDone", &LayoutTestController::waitUntilDone);
   BindMethod("notifyDone", &LayoutTestController::notifyDone);
@@ -163,14 +140,12 @@ LayoutTestController::LayoutTestController(TestShell* shell) :
   BindMethod("addUserStyleSheet", &LayoutTestController::addUserStyleSheet);
   BindMethod("pageNumberForElementById", &LayoutTestController::pageNumberForElementById);
   BindMethod("numberOfPages", &LayoutTestController::numberOfPages);
-  BindMethod("dumpSelectionRect", &LayoutTestController::dumpSelectionRect);
   BindMethod("grantDesktopNotificationPermission", &LayoutTestController::grantDesktopNotificationPermission);
   BindMethod("setDomainRelaxationForbiddenForURLScheme", &LayoutTestController::setDomainRelaxationForbiddenForURLScheme);
   BindMethod("sampleSVGAnimationForElementAtTime", &LayoutTestController::sampleSVGAnimationForElementAtTime);
   BindMethod("hasSpellingMarker", &LayoutTestController::hasSpellingMarker);
 
   // The following are stubs.
-  BindMethod("dumpAsWebArchive", &LayoutTestController::dumpAsWebArchive);
   BindMethod("setMainFrameIsFirstResponder", &LayoutTestController::setMainFrameIsFirstResponder);
   BindMethod("display", &LayoutTestController::display);
   BindMethod("testRepaint", &LayoutTestController::testRepaint);
@@ -270,75 +245,6 @@ void LayoutTestController::WorkQueue::AddWork(WorkItem* work) {
     return;
   }
   queue_.push(work);
-}
-
-void LayoutTestController::dumpAsText(const CppArgumentList& args,
-                                      CppVariant* result) {
-  dump_as_text_ = true;
-  generate_pixel_results_ = false;
-  if (args.size() > 0 && args[0].isBool())
-      generate_pixel_results_ = args[0].value.boolValue;
-  result->SetNull();
-}
-
-void LayoutTestController::dumpDatabaseCallbacks(
-    const CppArgumentList& args, CppVariant* result) {
-  // Do nothing; we don't use this flag anywhere for now
-  result->SetNull();
-}
-
-void LayoutTestController::dumpEditingCallbacks(
-    const CppArgumentList& args, CppVariant* result) {
-  dump_editing_callbacks_ = true;
-  result->SetNull();
-}
-
-void LayoutTestController::dumpBackForwardList(
-    const CppArgumentList& args, CppVariant* result) {
-  dump_back_forward_list_ = true;
-  result->SetNull();
-}
-
-void LayoutTestController::dumpFrameLoadCallbacks(
-    const CppArgumentList& args, CppVariant* result) {
-  dump_frame_load_callbacks_ = true;
-  result->SetNull();
-}
-
-void LayoutTestController::dumpResourceLoadCallbacks(
-    const CppArgumentList& args, CppVariant* result) {
-  dump_resource_load_callbacks_ = true;
-  result->SetNull();
-}
-
-void LayoutTestController::dumpResourceResponseMIMETypes(
-    const CppArgumentList& args, CppVariant* result) {
-  dump_resource_response_mime_types_ = true;
-  result->SetNull();
-}
-
-void LayoutTestController::dumpChildFrameScrollPositions(
-    const CppArgumentList& args, CppVariant* result) {
-  dump_child_frame_scroll_positions_ = true;
-  result->SetNull();
-}
-
-void LayoutTestController::dumpChildFramesAsText(
-    const CppArgumentList& args, CppVariant* result) {
-  dump_child_frames_as_text_ = true;
-  result->SetNull();
-}
-
-void LayoutTestController::dumpWindowStatusChanges(
-    const CppArgumentList& args, CppVariant* result) {
-  dump_window_status_changes_ = true;
-  result->SetNull();
-}
-
-void LayoutTestController::dumpTitleChanges(
-    const CppArgumentList& args, CppVariant* result) {
-  dump_title_changes_ = true;
-  result->SetNull();
 }
 
 void LayoutTestController::setAcceptsEditing(
@@ -522,10 +428,6 @@ void LayoutTestController::Reset() {
 
     // Reset editingBehavior to a reasonable default between tests
     // see http://trac.webkit.org/changeset/60158
-    // DumpRenderTree resets this in TestShell::resetWebSettings()
-    // called in TestShell::resetTestController().
-    // test_shell doesn't have ResetWebSettings(), so do this here,
-    // which is also called in TestShell::ResetTestController().
 #if defined(OS_MACOSX)
     shell_->webView()->settings()->setEditingBehavior(
         WebKit::WebSettings::EditingBehaviorMac);
@@ -534,18 +436,6 @@ void LayoutTestController::Reset() {
         WebKit::WebSettings::EditingBehaviorWin);
 #endif
   }
-  generate_pixel_results_ = true;
-  dump_as_text_ = false;
-  dump_editing_callbacks_ = false;
-  dump_frame_load_callbacks_ = false;
-  dump_resource_load_callbacks_ = false;
-  dump_resource_response_mime_types_ = false;
-  dump_back_forward_list_ = false;
-  dump_child_frame_scroll_positions_ = false;
-  dump_child_frames_as_text_ = false;
-  dump_window_status_changes_ = false;
-  dump_selection_rect_ = false;
-  dump_title_changes_ = false;
   accepts_editing_ = true;
   wait_until_done_ = false;
   can_open_windows_ = false;
@@ -998,19 +888,8 @@ void LayoutTestController::sampleSVGAnimationForElementAtTime(
 // Unimplemented stubs
 //
 
-void LayoutTestController::dumpAsWebArchive(
-    const CppArgumentList& args, CppVariant* result) {
-  result->SetNull();
-}
-
 void LayoutTestController::setMainFrameIsFirstResponder(
     const CppArgumentList& args, CppVariant* result) {
-  result->SetNull();
-}
-
-void LayoutTestController::dumpSelectionRect(
-    const CppArgumentList& args, CppVariant* result) {
-  dump_selection_rect_ = true;
   result->SetNull();
 }
 
