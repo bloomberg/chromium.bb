@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -165,10 +165,12 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   // Informs the plugin that IME composition has completed.
   // If |text| is empty, IME was cancelled.
   void ImeCompositionCompleted(const string16& text);
+#ifndef NP_NO_CARBON
   // Informs the delegate that the plugin set a Carbon ThemeCursor.
   void SetThemeCursor(ThemeCursor cursor);
   // Informs the delegate that the plugin set a Carbon Cursor.
-  void SetCursor(const Cursor* cursor);
+  void SetCarbonCursor(const Cursor* cursor);
+#endif
   // Informs the delegate that the plugin set a Cocoa NSCursor.
   void SetNSCursor(NSCursor* cursor);
 
