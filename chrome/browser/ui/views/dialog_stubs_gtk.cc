@@ -48,6 +48,13 @@ void ShowTaskManager() {
   TaskManagerGtk::Show();
 }
 
+void ShowBackgroundPages() {
+  // TODO(atwilson): Add code to highlight background pages if we decide to
+  // expose this UI on a real platform (like chromeos).
+  // http://crbug.com/71490.
+  TaskManagerGtk::Show();
+}
+
 void EditSearchEngine(gfx::NativeWindow parent,
                       const TemplateURL* template_url,
                       EditSearchEngineControllerDelegate* delegate,

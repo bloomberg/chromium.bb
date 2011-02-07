@@ -85,6 +85,9 @@ void ShowKeywordEditorView(Profile* profile);
 // Shows the Task Manager.
 void ShowTaskManager();
 
+// Shows the Task Manager, highlighting the background pages.
+void ShowBackgroundPages();
+
 #if defined(OS_CHROMEOS)
 // Shows the Login Wizard.
 void ShowLoginWizard(const std::string& start_screen, const gfx::Size& size);

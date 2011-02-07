@@ -38,6 +38,10 @@
 static const int kDefaultWidth = 460;
 static const int kDefaultHeight = 270;
 
+// Yellow highlight used when highlighting background resources.
+static const SkColor kBackgroundResourceHighlight =
+    SkColorSetRGB(0xff,0xf1,0xcd);
+
 namespace {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -70,6 +74,9 @@ class TaskManagerTableModel : public views::GroupTableModel,
   virtual void OnItemsChanged(int start, int length);
   virtual void OnItemsAdded(int start, int length);
   virtual void OnItemsRemoved(int start, int length);
+
+  // Returns true if resource corresponding to |row| is a background resource.
+  bool IsBackgroundResource(int row);
 
  private:
   TaskManagerModel* model_;
@@ -206,6 +213,44 @@ void TaskManagerTableModel::OnItemsRemoved(int start, int length) {
   OnModelChanged();
 }
 
+bool TaskManagerTableModel::IsBackgroundResource(int row) {
+  return model_->IsBackgroundResource(row);
+}
+
+// Thin wrapper around GroupTableView to enable setting the background
+// resource highlight color.
+class BackgroundColorGroupTableView : public views::GroupTableView {
+ public:
+  BackgroundColorGroupTableView(TaskManagerTableModel* model,
+                                std::vector<ui::TableColumn> columns,
+                                bool highlight_background_resources)
+      : views::GroupTableView(model, columns, views::ICON_AND_TEXT,
+                              false, true, true, true),
+        model_(model) {
+    SetCustomColorsEnabled(highlight_background_resources);
+  }
+
+  virtual ~BackgroundColorGroupTableView() {}
+
+ private:
+  virtual bool GetCellColors(int model_row,
+                             int column,
+                             ItemColor* foreground,
+                             ItemColor* background,
+                             LOGFONT* logfont) {
+    if (!model_->IsBackgroundResource(model_row))
+      return false;
+
+    // Render background resources with a yellow highlight.
+    background->color_is_set = true;
+    background->color = kBackgroundResourceHighlight;
+    foreground->color_is_set = false;
+    return true;
+  }
+
+  TaskManagerTableModel* model_;
+};
+
 // The Task manager UI container.
 class TaskManagerView : public views::View,
                         public views::ButtonListener,
@@ -215,11 +260,13 @@ class TaskManagerView : public views::View,
                         public views::ContextMenuController,
                         public views::Menu::Delegate {
  public:
-  TaskManagerView();
+  explicit TaskManagerView(bool highlight_background_resources);
   virtual ~TaskManagerView();
 
-  // Shows the Task manager window, or re-activates an existing one.
-  static void Show();
+  // Shows the Task manager window, or re-activates an existing one. If
+  // |highlight_background_resources| is true, highlights the background
+  // resources in the resource display.
+  static void Show(bool highlight_background_resources);
 
   // views::View
   virtual void Layout();
@@ -292,6 +339,9 @@ class TaskManagerView : public views::View,
   // True when the Task Manager window should be shown on top of other windows.
   bool is_always_on_top_;
 
+  // True when the Task Manager should highlight background resources.
+  bool highlight_background_resources_;
+
   // We need to own the text of the menu, the Windows API does not copy it.
   std::wstring always_on_top_menu_text_;
 
@@ -306,11 +356,12 @@ class TaskManagerView : public views::View,
 TaskManagerView* TaskManagerView::instance_ = NULL;
 
 
-TaskManagerView::TaskManagerView()
+TaskManagerView::TaskManagerView(bool highlight_background_resources)
     : purge_memory_button_(NULL),
       task_manager_(TaskManager::GetInstance()),
       model_(TaskManager::GetInstance()->model()),
-      is_always_on_top_(false) {
+      is_always_on_top_(false),
+      highlight_background_resources_(highlight_background_resources) {
   Init();
 }
 
@@ -363,9 +414,8 @@ void TaskManagerView::Init() {
                       ui::TableColumn::RIGHT, -1, 0));
   columns_.back().sortable = true;
 
-  tab_table_ = new views::GroupTableView(table_model_.get(), columns_,
-                                         views::ICON_AND_TEXT, false, true,
-                                         true, true);
+  tab_table_ = new BackgroundColorGroupTableView(
+      table_model_.get(), columns_, highlight_background_resources_);
 
   // Hide some columns by default
   tab_table_->SetColumnVisibility(IDS_TASK_MANAGER_PROCESS_ID_COLUMN, false);
@@ -501,22 +551,27 @@ gfx::Size TaskManagerView::GetPreferredSize() {
 }
 
 // static
-void TaskManagerView::Show() {
+void TaskManagerView::Show(bool highlight_background_resources) {
   if (instance_) {
-    // If there's a Task manager window open already, just activate it.
-    instance_->window()->Activate();
-  } else {
-    instance_ = new TaskManagerView;
-    views::Window::CreateChromeWindow(NULL, gfx::Rect(), instance_);
-    instance_->InitAlwaysOnTopState();
-    instance_->model_->StartUpdating();
-    instance_->window()->Show();
-
-    // Set the initial focus to the list of tasks.
-    views::FocusManager* focus_manager = instance_->GetFocusManager();
-    if (focus_manager)
-      focus_manager->SetFocusedView(instance_->tab_table_);
+    if (instance_->highlight_background_resources_ !=
+        highlight_background_resources) {
+      instance_->window()->Close();
+    } else {
+      // If there's a Task manager window open already, just activate it.
+      instance_->window()->Activate();
+      return;
+    }
   }
+  instance_ = new TaskManagerView(highlight_background_resources);
+  views::Window::CreateChromeWindow(NULL, gfx::Rect(), instance_);
+  instance_->InitAlwaysOnTopState();
+  instance_->model_->StartUpdating();
+  instance_->window()->Show();
+
+  // Set the initial focus to the list of tasks.
+  views::FocusManager* focus_manager = instance_->GetFocusManager();
+  if (focus_manager)
+    focus_manager->SetFocusedView(instance_->tab_table_);
 }
 
 // ButtonListener implementation.
@@ -712,7 +767,11 @@ namespace browser {
 
 // Declared in browser_dialogs.h so others don't need to depend on our header.
 void ShowTaskManager() {
-  TaskManagerView::Show();
+  TaskManagerView::Show(false);
+}
+
+void ShowBackgroundPages() {
+  TaskManagerView::Show(true);
 }
 
 }  // namespace browser
