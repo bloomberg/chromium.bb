@@ -159,6 +159,12 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
     first_paint_after_load_time_ = value;
   }
 
+  // The time that a prerendered page was displayed.  Invalid for
+  // non-prerendered pages.  Can be either before or after
+  // |finish_document_load_time_|.
+  const base::Time& prerendered_page_display_time() const;
+  void set_prerendered_page_display_time(const base::Time& value);
+
   // True iff the histograms for the associated frame have been dumped.
   bool load_histograms_recorded() const { return load_histograms_recorded_; }
   void set_load_histograms_recorded(bool value) {
@@ -215,10 +221,8 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
     postponed_data_.append(data, data_len);
   }
 
-  bool is_prerendering() const { return is_prerendering_; }
-  void set_is_prerendering(bool is_prerendering) {
-    is_prerendering_ = is_prerendering;
-  }
+  bool is_prerendering() const;
+  void set_is_prerendering(bool is_prerendering);
 
   int http_status_code() const { return http_status_code_; }
   void set_http_status_code(int http_status_code) {
@@ -297,6 +301,7 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
   base::Time finish_load_time_;
   base::Time first_paint_time_;
   base::Time first_paint_after_load_time_;
+  base::Time prerendered_page_display_time_;
   bool load_histograms_recorded_;
   bool web_timing_histograms_recorded_;
   bool request_committed_;

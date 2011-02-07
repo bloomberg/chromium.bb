@@ -4754,6 +4754,7 @@ void RenderView::OnDisplayPrerenderedPage() {
 
   DCHECK(navigation_state->is_prerendering());
   navigation_state->set_is_prerendering(false);
+  navigation_state->set_prerendered_page_display_time(Time::Now());
 }
 
 void RenderView::OnFileChooserResponse(const std::vector<FilePath>& paths) {
