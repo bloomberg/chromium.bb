@@ -23,7 +23,8 @@ struct PP_FileChooserOptions_Dev {
   PP_FileChooserMode_Dev mode;
 
   // A comma-separated list of MIME types such as audio/*,text/plain.  The
-  // dialog may restrict selectable files to the specified MIME types.
+  // dialog may restrict selectable files to the specified MIME types. Null may
+  // be given to indicate that all types should be accepted.
   // TODO(darin): What if the mime type is unknown to the system?  The plugin
   // may wish to describe the mime type and provide a matching file extension.
   // It is more webby to use mime types here instead of file extensions.
@@ -51,7 +52,9 @@ struct PPB_FileChooser_Dev {
   // if the resource is invalid or some type other than a FileChooser.
   PP_Bool (*IsFileChooser)(PP_Resource resource);
 
-  // Prompts the user to choose a file or files.
+  // Prompts the user to choose a file or files. The callback is called with
+  // PP_OK on successful completion with a file (or files) selected or
+  // PP_ERROR_USERCANCEL if the user selected no file.
   int32_t (*Show)(PP_Resource chooser, struct PP_CompletionCallback callback);
 
   // After a successful call to Show, this method may be used to query the
@@ -65,4 +68,3 @@ struct PPB_FileChooser_Dev {
 };
 
 #endif  /* PPAPI_C_DEV_PPB_FILE_CHOOSER_DEV_H_ */
-

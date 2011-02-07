@@ -144,7 +144,7 @@ void PPB_FileChooser_Impl::StoreChosenFiles(
         new PPB_FileRef_Impl(instance(), file_path)));
   }
 
-  RunCallback(PP_OK);
+  RunCallback((chosen_files_.size() > 0) ? PP_OK : PP_ERROR_USERCANCEL);
 }
 
 int32_t PPB_FileChooser_Impl::ValidateCallback(
