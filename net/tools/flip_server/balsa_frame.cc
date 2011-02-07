@@ -1282,7 +1282,7 @@ size_t BalsaFrame::ProcessInput(const char* input, size_t size) {
     // header_length_after equals max_header_length_ and we are still in the
     // parse_state_  BalsaFrameEnums::READING_HEADER_AND_FIRSTLINE we know for
     // sure that the headers limit will be crossed later on
-    if ((parse_state_ == BalsaFrameEnums::READING_HEADER_AND_FIRSTLINE)) {
+    if (parse_state_ == BalsaFrameEnums::READING_HEADER_AND_FIRSTLINE) {
       // Note that headers_ is valid only if we are still reading headers.
       const size_t header_length_after =
           headers_->GetReadableBytesFromHeaderStream();
