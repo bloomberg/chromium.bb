@@ -587,15 +587,6 @@ RenderView::RenderView(RenderThreadBase* render_thread,
 #endif
 
   ClearBlockedContentSettings();
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableClientSidePhishingDetection)) {
-    phishing_delegate_.reset(
-        new safe_browsing::PhishingClassifierDelegate(this, NULL));
-    RenderThread* thread = RenderThread::current();
-    if (thread && thread->phishing_scorer()) {
-      phishing_delegate_->SetPhishingScorer(thread->phishing_scorer());
-    }
-  }
 
   routing_id_ = routing_id;
   if (opener_id != MSG_ROUTING_NONE)
@@ -657,6 +648,11 @@ RenderView::RenderView(RenderThreadBase* render_thread,
   page_click_tracker->AddListener(password_autofill_manager);
   page_click_tracker->AddListener(autofill_agent);
   new TranslateHelper(this);
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableClientSidePhishingDetection)) {
+    new safe_browsing::PhishingClassifierDelegate(this, NULL);
+  }
 }
 
 RenderView::~RenderView() {
@@ -687,10 +683,6 @@ RenderView::~RenderView() {
 #endif
 
   render_thread_->RemoveFilter(audio_message_filter_);
-
-  // Tell the PhishingClassifierDelegate that the view is going away.
-  if (phishing_delegate_.get())
-    phishing_delegate_->CancelPendingClassification();
 
 #ifndef NDEBUG
   // Make sure we are no longer referenced by the ViewMap.
@@ -1249,8 +1241,7 @@ void RenderView::CapturePageInfo(int load_id, bool preliminary_capture) {
     OnCaptureThumbnail();
   }
 
-  if (phishing_delegate_.get())
-    phishing_delegate_->FinishedLoad(&contents);
+  FOR_EACH_OBSERVER(RenderViewObserver, observers_, PageCaptured(contents));
 }
 
 void RenderView::CaptureText(WebFrame* frame, string16* contents) {
@@ -2683,15 +2674,6 @@ void RenderView::show(WebNavigationPolicy policy) {
   SetPendingWindowRect(initial_pos_);
 }
 
-void RenderView::closeWidgetSoon() {
-  // Same for the phishing classifier.
-  if (phishing_delegate_.get())
-    phishing_delegate_->CancelPendingClassification();
-
-  if (script_can_close_)
-    RenderWidget::closeWidgetSoon();
-}
-
 void RenderView::runModal() {
   DCHECK(did_show_) << "should already have shown the view";
 
@@ -3304,6 +3286,9 @@ void RenderView::didStartProvisionalLoad(WebFrame* frame) {
     navigation_state->set_transition_type(PageTransition::AUTO_SUBFRAME);
   }
 
+  FOR_EACH_OBSERVER(
+      RenderViewObserver, observers_, DidStartProvisionalLoad(frame));
+
   Send(new ViewHostMsg_DidStartProvisionalLoadForFrame(
        routing_id_, frame->identifier(), is_top_most, ds->request().url()));
 }
@@ -3338,6 +3323,9 @@ void RenderView::didFailProvisionalLoad(WebFrame* frame,
   DCHECK(ds);
 
   const WebURLRequest& failed_request = ds->request();
+
+  FOR_EACH_OBSERVER(
+      RenderViewObserver, observers_, DidFailProvisionalLoad(frame, error));
 
   bool show_repost_interstitial =
       (error.reason == net::ERR_CACHE_MISS &&
@@ -3424,10 +3412,6 @@ void RenderView::didCommitProvisionalLoad(WebFrame* frame,
     // We bump our Page ID to correspond with the new session history entry.
     page_id_ = next_page_id_++;
 
-    // Let the phishing classifier decide whether to cancel classification.
-    if (phishing_delegate_.get())
-      phishing_delegate_->CommittedLoadInFrame(frame);
-
     // Advance our offset in session history, applying the length limit.  There
     // is now no forward history.
     history_list_offset_++;
@@ -3461,6 +3445,9 @@ void RenderView::didCommitProvisionalLoad(WebFrame* frame,
       history_list_offset_ = navigation_state->pending_history_list_offset();
     }
   }
+
+  FOR_EACH_OBSERVER(RenderViewObserver, observers_,
+                    DidCommitProvisionalLoad(frame, is_new_navigation));
 
   // Remember that we've already processed this request, so we don't update
   // the session history again.  We do this regardless of whether this is
@@ -3536,8 +3523,8 @@ void RenderView::didFinishDocumentLoad(WebFrame* frame) {
 
   Send(new ViewHostMsg_DocumentLoadedInFrame(routing_id_, frame->identifier()));
 
-  FOR_EACH_OBSERVER(
-      RenderViewObserver, observers_, DidFinishDocumentLoad(frame));
+  FOR_EACH_OBSERVER(RenderViewObserver, observers_,
+                    DidFinishDocumentLoad(frame));
 
   // Check whether we have new encoding name.
   UpdateEncoding(frame, frame->view()->pageEncoding().utf8());
@@ -3578,7 +3565,7 @@ void RenderView::didHandleOnloadEvents(WebFrame* frame) {
 }
 
 void RenderView::didFailLoad(WebFrame* frame, const WebURLError& error) {
-  // Ignore
+  FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidFailLoad(frame, error));
 }
 
 void RenderView::didFinishLoad(WebFrame* frame) {

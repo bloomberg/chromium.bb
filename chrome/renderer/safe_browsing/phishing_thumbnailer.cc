@@ -28,8 +28,7 @@ SkBitmap GrabPhishingThumbnail(RenderView* render_view,
                                const gfx::Size& view_size,
                                const gfx::Size& thumbnail_size) {
   if (!render_view || !render_view->webview()) {
-    NOTREACHED();
-    return SkBitmap();
+    return SkBitmap();  // The WebView is going away.
   }
   WebView* view = render_view->webview();
   base::TimeTicks beginning_time = base::TimeTicks::Now();

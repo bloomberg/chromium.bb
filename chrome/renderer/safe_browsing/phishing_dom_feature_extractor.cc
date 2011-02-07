@@ -146,11 +146,7 @@ void PhishingDOMFeatureExtractor::ExtractFeaturesWithTimeout() {
   if (!cur_frame_) {
     WebKit::WebView* web_view = render_view_->webview();
     if (!web_view) {
-      // When the WebView is going away, the render view should have called
-      // CancelPendingExtraction() which should have stopped any pending work,
-      // so this case should not happen.
-      NOTREACHED();
-      RunCallback(false);
+      RunCallback(false);  // The WebView is going away.
       return;
     }
     cur_frame_ = web_view->mainFrame();

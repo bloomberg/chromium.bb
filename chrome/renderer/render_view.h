@@ -108,10 +108,6 @@ class FullscreenContainer;
 
 }  // namespace webkit
 
-namespace safe_browsing {
-class PhishingClassifierDelegate;
-}
-
 namespace webkit_glue {
 struct CustomContextMenuContext;
 class ImageResourceFetcher;
@@ -233,12 +229,6 @@ class RenderView : public RenderWidget,
 
   void set_send_content_state_immediately(bool value) {
     send_content_state_immediately_ = value;
-  }
-
-  // May be NULL if client-side phishing detection is disabled.
-  safe_browsing::PhishingClassifierDelegate*
-      phishing_classifier_delegate() const {
-    return phishing_delegate_.get();
   }
 
   // Returns true if we should display scrollbars for the given view size and
@@ -390,7 +380,6 @@ class RenderView : public RenderWidget,
   virtual void didFocus();
   virtual void didBlur();
   virtual void show(WebKit::WebNavigationPolicy policy);
-  virtual void closeWidgetSoon();
   virtual void runModal();
 
   // WebKit::WebViewClient implementation --------------------------------------
@@ -1387,10 +1376,6 @@ class RenderView : public RenderWidget,
 
   // Responsible for sending page load related histograms.
   PageLoadHistograms page_load_histograms_;
-
-  // Handles the interaction between the RenderView and the phishing
-  // classifier.
-  scoped_ptr<safe_browsing::PhishingClassifierDelegate> phishing_delegate_;
 
   // Misc ----------------------------------------------------------------------
 

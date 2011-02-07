@@ -10,20 +10,18 @@
 
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
+#include "chrome/renderer/render_view_observer.h"
 #include "googleurl/src/gurl.h"
-
-class RenderView;
-
-namespace WebKit {
-class WebFrame;
-}
+#include "ipc/ipc_platform_file.h"
 
 namespace safe_browsing {
 class PhishingClassifier;
 class Scorer;
 
-class PhishingClassifierDelegate {
+class PhishingClassifierDelegate : public RenderViewObserver {
  public:
+  static void SetPhishingModel(IPC::PlatformFileForTransit model_file);
+
   // The RenderView owns us.  This object takes ownership of the classifier.
   // Note that if classifier is null, a default instance of PhishingClassifier
   // will be used.
@@ -35,17 +33,10 @@ class PhishingClassifierDelegate {
   // The scorer is passed on to the classifier.
   void SetPhishingScorer(const safe_browsing::Scorer* scorer);
 
-  // Called by the RenderView when a page has started loading in the given
-  // WebFrame.  Typically, this will cause any pending classification to be
-  // cancelled.  However, if the load is for the main frame, and the toplevel
-  // URL has not changed, we continue running the current classification.
-  void CommittedLoadInFrame(WebKit::WebFrame* frame);
-
-  // Called by the RenderView once a page has finished loading.  Determines
-  // whether a new toplevel load has taken place, and if so, begins
-  // classification.  May modify page_text.  Note that it is an error to
-  // call OnNavigate if there is a pending classification.
-  void FinishedLoad(string16* page_text);
+  // RenderViewObserver implementation, public for testing.
+  virtual void PageCaptured(const string16& page_text);
+  virtual void DidCommitProvisionalLoad(WebKit::WebFrame* frame,
+                                        bool is_new_navigation);
 
   // Cancels any pending classification and frees the page text.  Called by
   // the RenderView when the RenderView is going away.
@@ -54,14 +45,14 @@ class PhishingClassifierDelegate {
  private:
   friend class PhishingClassifierDelegateTest;
 
+  // RenderViewObserver implementation.
+  virtual bool OnMessageReceived(const IPC::Message& message);
+
   // Called when classification for the current page finishes.
   void ClassificationDone(bool is_phishy, double phishy_score);
 
   // Returns the RenderView's toplevel URL, with the ref stripped.
   GURL StripToplevelUrl();
-
-  // The RenderView that owns this object.
-  RenderView* render_view_;
 
   // The PhishingClassifier to use for the RenderView.  This is created once
   // a scorer is made available via SetPhishingScorer().

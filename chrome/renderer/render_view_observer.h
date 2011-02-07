@@ -14,6 +14,7 @@ class RenderView;
 namespace WebKit {
 class WebFrame;
 class WebMouseEvent;
+struct WebURLError;
 }
 
 // Base class for objects that want to filter incoming IPCs, and also get
@@ -27,13 +28,21 @@ class RenderViewObserver : public IPC::Channel::Listener,
 
   // These match the WebKit API notifications.
   virtual void DidFinishDocumentLoad(WebKit::WebFrame* frame) {}
+  virtual void DidFailLoad(WebKit::WebFrame* frame,
+                           const WebKit::WebURLError& error) {}
   virtual void DidFinishLoad(WebKit::WebFrame* frame) {}
+  virtual void DidStartProvisionalLoad(WebKit::WebFrame* frame) {}
+  virtual void DidFailProvisionalLoad(WebKit::WebFrame* frame,
+                                      const WebKit::WebURLError& error) {}
+  virtual void DidCommitProvisionalLoad(WebKit::WebFrame* frame,
+                                        bool is_new_navigation) {}
   virtual void FrameDetached(WebKit::WebFrame* frame) {}
   virtual void FrameWillClose(WebKit::WebFrame* frame) {}
 
   // These match the RenderView methods below.
   virtual void FrameTranslated(WebKit::WebFrame* frame) {}
   virtual void DidHandleMouseEvent(const WebKit::WebMouseEvent& event) {}
+  virtual void PageCaptured(const string16& page_text) {}
 
  protected:
   RenderViewObserver(RenderView* render_view);
