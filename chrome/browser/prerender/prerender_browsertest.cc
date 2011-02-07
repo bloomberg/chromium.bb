@@ -33,12 +33,15 @@ class TestPrerenderContents : public PrerenderContents {
  public:
   TestPrerenderContents(
       PrerenderManager* prerender_manager, Profile* profile, const GURL& url,
-      const std::vector<GURL>& alias_urls)
+      const std::vector<GURL>& alias_urls,
+      PrerenderContents::FinalStatus expected_final_status)
       : PrerenderContents(prerender_manager, profile, url, alias_urls),
-        did_finish_loading_(false) {
+        did_finish_loading_(false),
+        expected_final_status_(expected_final_status) {
   }
 
   virtual ~TestPrerenderContents() {
+    EXPECT_EQ(expected_final_status_, final_status());
     // In the event we are destroyed, say if the prerender was canceled, quit
     // the UI message loop.
     if (!did_finish_loading_)
@@ -55,17 +58,26 @@ class TestPrerenderContents : public PrerenderContents {
 
  private:
   bool did_finish_loading_;
+  PrerenderContents::FinalStatus expected_final_status_;
 };
 
 // PrerenderManager that uses TestPrerenderContents.
 class WaitForLoadPrerenderContentsFactory : public PrerenderContents::Factory {
  public:
+  explicit WaitForLoadPrerenderContentsFactory(
+      PrerenderContents::FinalStatus expected_final_status)
+      : expected_final_status_(expected_final_status) {
+  }
+
   virtual PrerenderContents* CreatePrerenderContents(
       PrerenderManager* prerender_manager, Profile* profile, const GURL& url,
       const std::vector<GURL>& alias_urls) {
     return new TestPrerenderContents(prerender_manager, profile, url,
-                                     alias_urls);
+                                     alias_urls, expected_final_status_);
   }
+
+ private:
+  PrerenderContents::FinalStatus expected_final_status_;
 };
 
 }  // namespace
@@ -89,7 +101,8 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
 #endif
   }
 
-  void PrerenderTestURL(const std::string& html_file, bool expect_success) {
+  void PrerenderTestURL(const std::string& html_file,
+                        PrerenderContents::FinalStatus expected_final_status) {
     ASSERT_TRUE(test_server()->Start());
 
     std::string src_path = "files/prerender/prerender_loader.html?";
@@ -107,7 +120,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     // This is needed to exit the event loop once the prerendered page has
     // stopped loading or was cancelled.
     prerender_manager->SetPrerenderContentsFactory(
-        new WaitForLoadPrerenderContentsFactory());
+        new WaitForLoadPrerenderContentsFactory(expected_final_status));
 
     // ui_test_utils::NavigateToURL uses its own observer and message loop.
     // Since the test needs to wait until the prerendered page has stopped
@@ -121,21 +134,25 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
         static_cast<TestPrerenderContents*>(
             prerender_manager->FindEntry(dest_url_));
 
-    if (expect_success) {
-      ASSERT_TRUE(prerender_contents != NULL);
-      ASSERT_TRUE(prerender_contents->did_finish_loading());
+    switch (expected_final_status) {
+      case PrerenderContents::FINAL_STATUS_USED: {
+        ASSERT_TRUE(prerender_contents != NULL);
+        ASSERT_TRUE(prerender_contents->did_finish_loading());
 
-      // Check if page behaves as expected while in prerendered state.
-      bool prerender_test_result = false;
-      ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-          prerender_contents->render_view_host(), L"",
-          L"window.domAutomationController.send(DidPrerenderPass())",
-          &prerender_test_result));
-      EXPECT_TRUE(prerender_test_result);
-    } else {
-      // In the failure case, we should have removed dest_url_ from the
-      // prerender_manager.
-      EXPECT_TRUE(prerender_contents == NULL);
+        // Check if page behaves as expected while in prerendered state.
+        bool prerender_test_result = false;
+        ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+            prerender_contents->render_view_host(), L"",
+            L"window.domAutomationController.send(DidPrerenderPass())",
+            &prerender_test_result));
+        EXPECT_TRUE(prerender_test_result);
+        break;
+      }
+      default:
+        // In the failure case, we should have removed dest_url_ from the
+        // prerender_manager.
+        EXPECT_TRUE(prerender_contents == NULL);
+        break;
     }
   }
 
@@ -166,26 +183,32 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
 // <link rel=prefetch> tag and then loaded into a tab in response to a
 // navigation.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPage) {
-  PrerenderTestURL("prerender_page.html", true);
+  PrerenderTestURL("prerender_page.html",
+                   PrerenderContents::FINAL_STATUS_USED);
   NavigateToDestURL();
 }
 
 // Checks that the prerendering of a page is canceled correctly when a
 // Javascript alert is called.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderAlertBeforeOnload) {
-  PrerenderTestURL("prerender_alert_before_onload.html", false);
+  PrerenderTestURL(
+      "prerender_alert_before_onload.html",
+      PrerenderContents::FINAL_STATUS_JAVASCRIPT_ALERT);
 }
 
 // Checks that the prerendering of a page is canceled correctly when a
 // Javascript alert is called.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderAlertAfterOnload) {
-  PrerenderTestURL("prerender_alert_after_onload.html", false);
+  PrerenderTestURL(
+      "prerender_alert_after_onload.html",
+      PrerenderContents::FINAL_STATUS_JAVASCRIPT_ALERT);
 }
 
 // Checks that plugins are not loaded while a page is being preloaded, but
 // are loaded when the page is displayed.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDelayLoadPlugin) {
-  PrerenderTestURL("plugin_delay_load.html", true);
+  PrerenderTestURL("plugin_delay_load.html",
+                   PrerenderContents::FINAL_STATUS_USED);
   NavigateToDestURL();
 }
 
@@ -193,5 +216,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDelayLoadPlugin) {
 // iframe with a source that requires http authentication. This should not
 // prerender successfully.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHttpAuthentication) {
-  PrerenderTestURL("prerender_http_auth_container.html", false);
+  PrerenderTestURL("prerender_http_auth_container.html",
+                   PrerenderContents::FINAL_STATUS_AUTH_NEEDED);
 }
