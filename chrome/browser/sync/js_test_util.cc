@@ -56,5 +56,21 @@ class HasArgsMatcher
   return HasArgs(JsArgList(expected_args));
 }
 
+MockJsBackend::MockJsBackend() {}
+
+MockJsBackend::~MockJsBackend() {}
+
+MockJsFrontend::MockJsFrontend() {}
+
+MockJsFrontend::~MockJsFrontend() {}
+
+MockJsEventHandler::MockJsEventHandler() {}
+
+MockJsEventHandler::~MockJsEventHandler() {}
+
+MockJsEventRouter::MockJsEventRouter() {}
+
+MockJsEventRouter::~MockJsEventRouter() {}
+
 }  // namespace browser_sync
 

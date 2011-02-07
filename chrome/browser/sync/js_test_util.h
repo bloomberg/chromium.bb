@@ -37,6 +37,9 @@ void PrintTo(const JsArgList& args, ::std::ostream* os);
 
 class MockJsBackend : public JsBackend {
  public:
+  MockJsBackend();
+  ~MockJsBackend();
+
   MOCK_METHOD1(SetParentJsEventRouter, void(JsEventRouter*));
   MOCK_METHOD0(RemoveParentJsEventRouter, void());
   MOCK_CONST_METHOD0(GetParentJsEventRouter, const JsEventRouter*());
@@ -46,6 +49,9 @@ class MockJsBackend : public JsBackend {
 
 class MockJsFrontend : public JsFrontend {
  public:
+  MockJsFrontend();
+  ~MockJsFrontend();
+
   MOCK_METHOD1(AddHandler, void(JsEventHandler*));
   MOCK_METHOD1(RemoveHandler, void(JsEventHandler*));
   MOCK_METHOD3(ProcessMessage,
@@ -55,11 +61,17 @@ class MockJsFrontend : public JsFrontend {
 
 class MockJsEventHandler : public JsEventHandler {
  public:
+  MockJsEventHandler();
+  ~MockJsEventHandler();
+
   MOCK_METHOD2(HandleJsEvent, void(const ::std::string&, const JsArgList&));
 };
 
 class MockJsEventRouter : public JsEventRouter {
  public:
+  MockJsEventRouter();
+  ~MockJsEventRouter();
+
   MOCK_METHOD3(RouteJsEvent,
                void(const ::std::string&, const JsArgList&,
                     const JsEventHandler*));

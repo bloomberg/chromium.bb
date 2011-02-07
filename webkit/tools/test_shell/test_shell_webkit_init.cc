@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -90,6 +90,10 @@ TestShellWebKitInit::~TestShellWebKitInit() {
   WebKit::shutdown();
 }
 
+WebKit::WebMimeRegistry* TestShellWebKitInit::mimeRegistry() {
+  return mime_registry_.get();
+}
+
 WebKit::WebClipboard* TestShellWebKitInit::clipboard() {
   // Mock out clipboard calls in layout test mode so that tests don't mess
   // with each other's copies/pastes when running in parallel.
@@ -98,6 +102,71 @@ WebKit::WebClipboard* TestShellWebKitInit::clipboard() {
   } else {
     return &real_clipboard_;
   }
+}
+
+WebKit::WebFileUtilities* TestShellWebKitInit::fileUtilities() {
+  return &file_utilities_;
+}
+
+WebKit::WebSandboxSupport* TestShellWebKitInit::sandboxSupport() {
+  return NULL;
+}
+
+WebKit::WebCookieJar* TestShellWebKitInit::cookieJar() {
+  return &cookie_jar_;
+}
+
+WebKit::WebBlobRegistry* TestShellWebKitInit::blobRegistry() {
+  return blob_registry_.get();
+}
+
+WebKit::WebFileSystem* TestShellWebKitInit::fileSystem() {
+  return &file_system_;
+}
+
+bool TestShellWebKitInit::sandboxEnabled() {
+  return true;
+}
+
+WebKit::WebKitClient::FileHandle TestShellWebKitInit::databaseOpenFile(
+    const WebKit::WebString& vfs_file_name, int desired_flags) {
+  return SimpleDatabaseSystem::GetInstance()->OpenFile(
+      vfs_file_name, desired_flags);
+}
+
+int TestShellWebKitInit::databaseDeleteFile(
+    const WebKit::WebString& vfs_file_name,
+    bool sync_dir) {
+  return SimpleDatabaseSystem::GetInstance()->DeleteFile(
+      vfs_file_name, sync_dir);
+}
+
+long TestShellWebKitInit::databaseGetFileAttributes(
+    const WebKit::WebString& vfs_file_name) {
+  return SimpleDatabaseSystem::GetInstance()->GetFileAttributes(
+      vfs_file_name);
+}
+
+long long TestShellWebKitInit::databaseGetFileSize(
+    const WebKit::WebString& vfs_file_name) {
+  return SimpleDatabaseSystem::GetInstance()->GetFileSize(vfs_file_name);
+}
+
+unsigned long long TestShellWebKitInit::visitedLinkHash(
+    const char* canonicalURL,
+    size_t length) {
+  return 0;
+}
+
+bool TestShellWebKitInit::isLinkVisited(unsigned long long linkHash) {
+  return false;
+}
+
+WebKit::WebMessagePortChannel* TestShellWebKitInit::createMessagePortChannel() {
+  return NULL;
+}
+
+void TestShellWebKitInit::prefetchHostName(const WebKit::WebString&) {
 }
 
 WebKit::WebData TestShellWebKitInit::loadResource(const char* name) {
@@ -170,3 +239,47 @@ WebKit::WebString TestShellWebKitInit::queryLocalizedString(
   return WebKitClientImpl::queryLocalizedString(name, value1, value2);
 }
 
+WebKit::WebString TestShellWebKitInit::defaultLocale() {
+  return ASCIIToUTF16("en-US");
+}
+
+WebKit::WebStorageNamespace* TestShellWebKitInit::createLocalStorageNamespace(
+    const WebKit::WebString& path, unsigned quota) {
+  // Enforce quota here, ignoring the value from the renderer as in Chrome.
+  return WebKit::WebStorageNamespace::createLocalStorageNamespace(
+      path,
+      WebKit::WebStorageNamespace::m_localStorageQuota);
+}
+
+void TestShellWebKitInit::dispatchStorageEvent(
+    const WebKit::WebString& key,
+    const WebKit::WebString& old_value, const WebKit::WebString& new_value,
+    const WebKit::WebString& origin, const WebKit::WebURL& url,
+    bool is_local_storage) {
+  // The event is dispatched by the proxy.
+}
+
+WebKit::WebIDBFactory* TestShellWebKitInit::idbFactory() {
+  return WebKit::WebIDBFactory::create();
+}
+
+void TestShellWebKitInit::createIDBKeysFromSerializedValuesAndKeyPath(
+    const WebKit::WebVector<WebKit::WebSerializedScriptValue>& values,
+    const WebKit::WebString& keyPath,
+    WebKit::WebVector<WebKit::WebIDBKey>& keys_out) {
+  WebKit::WebVector<WebKit::WebIDBKey> keys(values.size());
+  for (size_t i = 0; i < values.size(); ++i) {
+    keys[i] = WebKit::WebIDBKey::createFromValueAndKeyPath(
+        values[i], WebKit::WebIDBKeyPath::create(keyPath));
+  }
+  keys_out.swap(keys);
+}
+
+WebKit::WebSharedWorkerRepository*
+TestShellWebKitInit::sharedWorkerRepository() {
+  return NULL;
+}
+
+WebKit::WebGraphicsContext3D* TestShellWebKitInit::createGraphicsContext3D() {
+  return new webkit::gpu::WebGraphicsContext3DInProcessImpl();
+}

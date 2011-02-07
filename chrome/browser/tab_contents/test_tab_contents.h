@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,8 +50,9 @@ class TestTabContents : public TabContents {
   }
 
   // Prevent interaction with views.
-  bool CreateRenderViewForRenderManager(RenderViewHost* render_view_host);
-  void UpdateRenderViewSizeForRenderManager() {}
+  virtual bool CreateRenderViewForRenderManager(
+      RenderViewHost* render_view_host);
+  virtual void UpdateRenderViewSizeForRenderManager() {}
 
   // Returns a clone of this TestTabContents. The returned object is also a
   // TestTabContents. The caller owns the returned object.

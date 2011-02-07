@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,8 +7,6 @@
 
 #include <string>
 
-#include "base/string_number_conversions.h"
-#include "base/string_util.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/nphostapi.h"
 
@@ -22,10 +20,10 @@ class PluginTest {
   PluginTest(NPP id, NPNetscapeFuncs *host_functions);
 
   // Destructor
-  virtual ~PluginTest() {}
+  virtual ~PluginTest();
 
   // Returns true if the test runs in windowless plugin mode.
-  virtual bool IsWindowless() const { return false; }
+  virtual bool IsWindowless() const;
 
   //
   // NPAPI Functions
@@ -45,6 +43,7 @@ class PluginTest {
   virtual int16   HandleEvent(void* event);
   virtual void    URLRedirectNotify(const char* url, int32_t status,
                                     void* notify_data);
+
   // Returns true if the test has not had any errors.
   bool Succeeded() { return test_status_.length() == 0; }
 
@@ -54,45 +53,16 @@ class PluginTest {
 
   // Expect two string values are equal, and if not, logs an
   // appropriate error about it.
-  void ExpectStringLowerCaseEqual(const std::string &val1, const std::string &val2) {
-    if (!LowerCaseEqualsASCII(val1, val2.c_str())) {
-      std::string err;
-      err = "Expected Equal for '";
-      err.append(val1);
-      err.append("' and '");
-      err.append(val2);
-      err.append("'");
-      SetError(err);
-    }
-  };
+  void ExpectStringLowerCaseEqual(const std::string &val1,
+                                  const std::string &val2);
 
   // Expect two values to not be equal, and if they are
   // logs an appropriate error about it.
-  void ExpectAsciiStringNotEqual(const char *val1, const char *val2) {
-    if (val1 == val2) {
-      std::string err;
-      err = "Expected Not Equal for '";
-      err.append(val1);
-      err.append("' and '");
-      err.append(val2);
-      err.append("'");
-      SetError(err);
-    }
-  }
+  void ExpectAsciiStringNotEqual(const char *val1, const char *val2);
+
   // Expect two integer values are equal, and if not, logs an
   // appropriate error about it.
-  void ExpectIntegerEqual(int val1, int val2) {
-    if (val1 != val2) {
-      std::string err;
-      err = "Expected Equal for '";
-      err.append(base::IntToString(val1));
-      err.append("' and '");
-      err.append(base::IntToString(val2));
-      err.append("'");
-      SetError(err);
-    }
-  }
-
+  void ExpectIntegerEqual(int val1, int val2);
 
  protected:
   // Signals to the Test that invoked us that the test is

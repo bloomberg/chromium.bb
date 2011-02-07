@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/file_util.h"
 #include "base/string_number_conversions.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 
 // url for "self".  The %22%22 is to make a statement for javascript to
@@ -49,6 +50,8 @@ PluginGetURLTest::PluginGetURLTest(NPP id, NPNetscapeFuncs *host_functions)
     handle_url_redirects_(false),
     received_url_redirect_notification_(false) {
 }
+
+PluginGetURLTest::~PluginGetURLTest() {}
 
 NPError PluginGetURLTest::New(uint16 mode, int16 argc, const char* argn[],
                               const char* argv[], NPSavedData* saved) {

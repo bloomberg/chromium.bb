@@ -121,9 +121,7 @@ class TestingProfile : public Profile {
 
   TestingPrefService* GetTestingPrefService();
 
-  virtual ProfileId GetRuntimeId() {
-    return reinterpret_cast<ProfileId>(this);
-  }
+  virtual ProfileId GetRuntimeId();
 
   virtual FilePath GetPath();
 
@@ -131,39 +129,29 @@ class TestingProfile : public Profile {
   void set_off_the_record(bool off_the_record) {
     off_the_record_ = off_the_record;
   }
-  virtual bool IsOffTheRecord() { return off_the_record_; }
-  virtual Profile* GetOffTheRecordProfile() { return NULL; }
+  virtual bool IsOffTheRecord();
+  virtual Profile* GetOffTheRecordProfile();
 
   virtual void DestroyOffTheRecordProfile() {}
 
-  virtual bool HasOffTheRecordProfile() { return false; }
+  virtual bool HasOffTheRecordProfile();
 
-  virtual Profile* GetOriginalProfile() { return this; }
-  virtual ChromeAppCacheService* GetAppCacheService() { return NULL; }
+  virtual Profile* GetOriginalProfile();
+  virtual ChromeAppCacheService* GetAppCacheService();
   virtual webkit_database::DatabaseTracker* GetDatabaseTracker();
-  virtual VisitedLinkMaster* GetVisitedLinkMaster() { return NULL; }
+  virtual VisitedLinkMaster* GetVisitedLinkMaster();
   virtual ExtensionService* GetExtensionService();
-  virtual UserScriptMaster* GetUserScriptMaster() { return NULL; }
-  virtual ExtensionDevToolsManager* GetExtensionDevToolsManager() {
-    return NULL;
-  }
-  virtual ExtensionProcessManager* GetExtensionProcessManager() { return NULL; }
-  virtual ExtensionMessageService* GetExtensionMessageService() { return NULL; }
-  virtual ExtensionEventRouter* GetExtensionEventRouter() { return NULL; }
-  virtual ExtensionIOEventRouter* GetExtensionIOEventRouter() { return NULL; }
-  virtual SSLHostState* GetSSLHostState() { return NULL; }
-  virtual net::TransportSecurityState* GetTransportSecurityState() {
-    return NULL;
-  }
-  virtual FaviconService* GetFaviconService(ServiceAccessType access) {
-    return favicon_service_.get();
-  }
-  virtual HistoryService* GetHistoryService(ServiceAccessType access) {
-    return history_service_.get();
-  }
-  virtual HistoryService* GetHistoryServiceWithoutCreating() {
-    return history_service_.get();
-  }
+  virtual UserScriptMaster* GetUserScriptMaster();
+  virtual ExtensionDevToolsManager* GetExtensionDevToolsManager();
+  virtual ExtensionProcessManager* GetExtensionProcessManager();
+  virtual ExtensionMessageService* GetExtensionMessageService();
+  virtual ExtensionEventRouter* GetExtensionEventRouter();
+  virtual ExtensionIOEventRouter* GetExtensionIOEventRouter();
+  virtual SSLHostState* GetSSLHostState();
+  virtual net::TransportSecurityState* GetTransportSecurityState();
+  virtual FaviconService* GetFaviconService(ServiceAccessType access);
+  virtual HistoryService* GetHistoryService(ServiceAccessType access);
+  virtual HistoryService* GetHistoryServiceWithoutCreating();
   void set_has_history_service(bool has_history_service) {
     has_history_service_ = has_history_service;
   }
@@ -171,50 +159,31 @@ class TestingProfile : public Profile {
   // this by calling CreateRequestContext(). See the note at GetRequestContext
   // for more information.
   net::CookieMonster* GetCookieMonster();
-  virtual AutocompleteClassifier* GetAutocompleteClassifier() {
-    return autocomplete_classifier_.get();
-  }
-  virtual WebDataService* GetWebDataService(ServiceAccessType access) {
-    return web_data_service_.get();
-  }
-  virtual WebDataService* GetWebDataServiceWithoutCreating() {
-    return web_data_service_.get();
-  }
-  virtual PasswordStore* GetPasswordStore(ServiceAccessType access) {
-    return NULL;
-  }
+  virtual AutocompleteClassifier* GetAutocompleteClassifier();
+  virtual WebDataService* GetWebDataService(ServiceAccessType access);
+  virtual WebDataService* GetWebDataServiceWithoutCreating();
+  virtual PasswordStore* GetPasswordStore(ServiceAccessType access);
   // Sets the profile's PrefService. If a pref service hasn't been explicitly
   // set GetPrefs creates one, so normally you need not invoke this. If you need
   // to set a pref service you must invoke this before GetPrefs.
   // TestingPrefService takes ownership of |prefs|.
   void SetPrefService(PrefService* prefs);
   virtual PrefService* GetPrefs();
-  virtual TemplateURLModel* GetTemplateURLModel() {
-    return template_url_model_.get();
-  }
-  virtual TemplateURLFetcher* GetTemplateURLFetcher() {
-    return template_url_fetcher_.get();
-  }
+  virtual TemplateURLModel* GetTemplateURLModel();
+  virtual TemplateURLFetcher* GetTemplateURLFetcher();
   virtual history::TopSites* GetTopSites();
-  virtual history::TopSites* GetTopSitesWithoutCreating() {
-    return top_sites_.get();
-  }
-  virtual DownloadManager* GetDownloadManager() { return NULL; }
-  virtual PersonalDataManager* GetPersonalDataManager() { return NULL; }
-  virtual fileapi::SandboxedFileSystemContext* GetFileSystemContext() {
-    return NULL;
-  }
-  virtual BrowserSignin* GetBrowserSignin() { return NULL; }
-  virtual bool HasCreatedDownloadManager() const { return false; }
+  virtual history::TopSites* GetTopSitesWithoutCreating();
+  virtual DownloadManager* GetDownloadManager();
+  virtual PersonalDataManager* GetPersonalDataManager();
+  virtual fileapi::SandboxedFileSystemContext* GetFileSystemContext();
+  virtual BrowserSignin* GetBrowserSignin();
+  virtual bool HasCreatedDownloadManager() const;
   virtual void InitThemes();
   virtual void SetTheme(const Extension* extension) {}
   virtual void SetNativeTheme() {}
   virtual void ClearTheme() {}
-  virtual const Extension* GetTheme() { return NULL; }
-  virtual BrowserThemeProvider* GetThemeProvider() {
-    InitThemes();
-    return theme_provider_.get();
-  }
+  virtual const Extension* GetTheme();
+  virtual BrowserThemeProvider* GetThemeProvider();
 
   // Returns a testing ContextGetter (if one has been created via
   // CreateRequestContext) or NULL. This is not done on-demand for two reasons:
@@ -230,68 +199,52 @@ class TestingProfile : public Profile {
   // down the IO thread to avoid leaks).
   void ResetRequestContext();
 
-  virtual URLRequestContextGetter* GetRequestContextForMedia() { return NULL; }
+  virtual URLRequestContextGetter* GetRequestContextForMedia();
   virtual URLRequestContextGetter* GetRequestContextForExtensions();
 
-  virtual net::SSLConfigService* GetSSLConfigService() { return NULL; }
-  virtual UserStyleSheetWatcher* GetUserStyleSheetWatcher() { return NULL; }
+  virtual net::SSLConfigService* GetSSLConfigService();
+  virtual UserStyleSheetWatcher* GetUserStyleSheetWatcher();
   virtual FindBarState* GetFindBarState();
   virtual HostContentSettingsMap* GetHostContentSettingsMap();
   virtual GeolocationContentSettingsMap* GetGeolocationContentSettingsMap();
   virtual GeolocationPermissionContext* GetGeolocationPermissionContext();
-  virtual HostZoomMap* GetHostZoomMap() { return NULL; }
+  virtual HostZoomMap* GetHostZoomMap();
   void set_session_service(SessionService* session_service);
-  virtual SessionService* GetSessionService() { return session_service_.get(); }
+  virtual SessionService* GetSessionService();
   virtual void ShutdownSessionService() {}
-  virtual bool HasSessionService() const {
-    return (session_service_.get() != NULL);
-  }
-  virtual bool HasProfileSyncService() const {
-    return (profile_sync_service_.get() != NULL);
-  }
-  virtual std::wstring GetName() { return std::wstring(); }
+  virtual bool HasSessionService() const;
+  virtual bool HasProfileSyncService() const;
+  virtual std::wstring GetName();
   virtual void SetName(const std::wstring& name) {}
-  virtual std::wstring GetID() { return id_; }
-  virtual void SetID(const std::wstring& id) { id_ = id; }
+  virtual std::wstring GetID();
+  virtual void SetID(const std::wstring& id);
   void set_last_session_exited_cleanly(bool value) {
     last_session_exited_cleanly_ = value;
   }
-  virtual bool DidLastSessionExitCleanly() {
-    return last_session_exited_cleanly_;
-  }
+  virtual bool DidLastSessionExitCleanly();
   virtual void MergeResourceString(int message_id,
                                    std::wstring* output_string) {}
   virtual void MergeResourceInteger(int message_id, int* output_value) {}
   virtual void MergeResourceBoolean(int message_id, bool* output_value) {}
-  virtual BookmarkModel* GetBookmarkModel() {
-    return bookmark_bar_model_.get();
-  }
-  virtual bool IsSameProfile(Profile *p) { return this == p; }
-  virtual base::Time GetStartTime() const { return start_time_; }
-  virtual TabRestoreService* GetTabRestoreService() { return NULL; }
+  virtual BookmarkModel* GetBookmarkModel();
+  virtual bool IsSameProfile(Profile *p);
+  virtual base::Time GetStartTime() const;
+  virtual TabRestoreService* GetTabRestoreService();
   virtual void ResetTabRestoreService() {}
-  virtual SpellCheckHost* GetSpellCheckHost() { return NULL; }
+  virtual SpellCheckHost* GetSpellCheckHost();
   virtual void ReinitializeSpellCheckHost(bool force) { }
   virtual WebKitContext* GetWebKitContext();
-  virtual WebKitContext* GetOffTheRecordWebKitContext() { return NULL; }
+  virtual WebKitContext* GetOffTheRecordWebKitContext();
   virtual void MarkAsCleanShutdown() {}
   virtual void InitExtensions() {}
   virtual void InitWebResources() {}
   virtual NTPResourceCache* GetNTPResourceCache();
 
   virtual DesktopNotificationService* GetDesktopNotificationService();
-  virtual BackgroundContentsService* GetBackgroundContentsService() const {
-    return NULL;
-  }
-  virtual StatusTray* GetStatusTray() {
-    return NULL;
-  }
-  virtual FilePath last_selected_directory() {
-    return last_selected_directory_;
-  }
-  virtual void set_last_selected_directory(const FilePath& path) {
-    last_selected_directory_ = path;
-  }
+  virtual BackgroundContentsService* GetBackgroundContentsService() const;
+  virtual StatusTray* GetStatusTray();
+  virtual FilePath last_selected_directory();
+  virtual void set_last_selected_directory(const FilePath& path);
 #if defined(OS_CHROMEOS)
   virtual chromeos::ProxyConfigServiceImpl*
       GetChromeOSProxyConfigServiceImpl() {
@@ -315,13 +268,13 @@ class TestingProfile : public Profile {
   virtual ProfileSyncService* GetProfileSyncService();
   virtual ProfileSyncService* GetProfileSyncService(
       const std::string& cros_notes);
-  virtual CloudPrintProxyService* GetCloudPrintProxyService() { return NULL; }
-  virtual ChromeBlobStorageContext* GetBlobStorageContext() { return NULL; }
-  virtual ExtensionInfoMap* GetExtensionInfoMap() { return NULL; }
-  virtual PromoCounter* GetInstantPromoCounter() { return NULL; }
-  virtual policy::ProfilePolicyContext* GetPolicyContext() { return NULL; }
-  virtual PrerenderManager* GetPrerenderManager() { return NULL; }
-  virtual PrefService* GetOffTheRecordPrefs() { return NULL; }
+  virtual CloudPrintProxyService* GetCloudPrintProxyService();
+  virtual ChromeBlobStorageContext* GetBlobStorageContext();
+  virtual ExtensionInfoMap* GetExtensionInfoMap();
+  virtual PromoCounter* GetInstantPromoCounter();
+  virtual policy::ProfilePolicyContext* GetPolicyContext();
+  virtual PrerenderManager* GetPrerenderManager();
+  virtual PrefService* GetOffTheRecordPrefs();
 
  protected:
   base::Time start_time_;

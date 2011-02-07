@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -873,6 +873,20 @@ TestWebSocketServer::~TestWebSocketServer() {
   base::LaunchApp(*cmd_line.get(), true, false, NULL);
 }
 
+TestNotificationObserver::TestNotificationObserver()
+    : source_(NotificationService::AllSources()) {
+}
+
+TestNotificationObserver::~TestNotificationObserver() {}
+
+void TestNotificationObserver::Observe(NotificationType type,
+                                       const NotificationSource& source,
+                                       const NotificationDetails& details) {
+  source_ = source;
+  details_ = details;
+  MessageLoopForUI::current()->Quit();
+}
+
 WindowedNotificationObserver::WindowedNotificationObserver(
     NotificationType notification_type,
     const NotificationSource& source)
@@ -881,6 +895,8 @@ WindowedNotificationObserver::WindowedNotificationObserver(
       waiting_for_(source) {
   registrar_.Add(this, notification_type, waiting_for_);
 }
+
+WindowedNotificationObserver::~WindowedNotificationObserver() {}
 
 void WindowedNotificationObserver::Wait() {
   if (waiting_for_ == NotificationService::AllSources()) {
@@ -925,6 +941,8 @@ DOMMessageQueue::DOMMessageQueue() {
   registrar_.Add(this, NotificationType::DOM_OPERATION_RESPONSE,
                  NotificationService::AllSources());
 }
+
+DOMMessageQueue::~DOMMessageQueue() {}
 
 void DOMMessageQueue::Observe(NotificationType type,
                               const NotificationSource& source,

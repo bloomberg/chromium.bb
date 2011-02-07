@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,75 +34,27 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
   explicit TestShellWebKitInit(bool layout_test_mode);
   ~TestShellWebKitInit();
 
-  virtual WebKit::WebMimeRegistry* mimeRegistry() {
-    return mime_registry_.get();
-  }
-
-  WebKit::WebClipboard* clipboard();
-
-  virtual WebKit::WebFileUtilities* fileUtilities() {
-    return &file_utilities_;
-  }
-
-  virtual WebKit::WebSandboxSupport* sandboxSupport() {
-    return NULL;
-  }
-
-  virtual WebKit::WebCookieJar* cookieJar() {
-    return &cookie_jar_;
-  }
-
-  virtual WebKit::WebBlobRegistry* blobRegistry() {
-    return blob_registry_.get();
-  }
-
-  virtual WebKit::WebFileSystem* fileSystem() {
-    return &file_system_;
-  }
-
-  virtual bool sandboxEnabled() {
-    return true;
-  }
-
+  virtual WebKit::WebMimeRegistry* mimeRegistry();
+  virtual WebKit::WebClipboard* clipboard();
+  virtual WebKit::WebFileUtilities* fileUtilities();
+  virtual WebKit::WebSandboxSupport* sandboxSupport();
+  virtual WebKit::WebCookieJar* cookieJar();
+  virtual WebKit::WebBlobRegistry* blobRegistry();
+  virtual WebKit::WebFileSystem* fileSystem();
+  virtual bool sandboxEnabled();
   virtual WebKit::WebKitClient::FileHandle databaseOpenFile(
-      const WebKit::WebString& vfs_file_name, int desired_flags) {
-    return SimpleDatabaseSystem::GetInstance()->OpenFile(
-        vfs_file_name, desired_flags);
-  }
-
+      const WebKit::WebString& vfs_file_name, int desired_flags);
   virtual int databaseDeleteFile(const WebKit::WebString& vfs_file_name,
-                                 bool sync_dir) {
-    return SimpleDatabaseSystem::GetInstance()->DeleteFile(
-        vfs_file_name, sync_dir);
-  }
-
+                                 bool sync_dir);
   virtual long databaseGetFileAttributes(
-      const WebKit::WebString& vfs_file_name) {
-    return SimpleDatabaseSystem::GetInstance()->GetFileAttributes(
-        vfs_file_name);
-  }
-
+      const WebKit::WebString& vfs_file_name);
   virtual long long databaseGetFileSize(
-      const WebKit::WebString& vfs_file_name) {
-    return SimpleDatabaseSystem::GetInstance()->GetFileSize(vfs_file_name);
-  }
-
+      const WebKit::WebString& vfs_file_name);
   virtual unsigned long long visitedLinkHash(const char* canonicalURL,
-                                             size_t length) {
-    return 0;
-  }
-
-  virtual bool isLinkVisited(unsigned long long linkHash) {
-    return false;
-  }
-
-  virtual WebKit::WebMessagePortChannel* createMessagePortChannel() {
-    return NULL;
-  }
-
-  virtual void prefetchHostName(const WebKit::WebString&) {
-  }
-
+                                             size_t length);
+  virtual bool isLinkVisited(unsigned long long linkHash);
+  virtual WebKit::WebMessagePortChannel* createMessagePortChannel();
+  virtual void prefetchHostName(const WebKit::WebString&);
   virtual WebKit::WebData loadResource(const char* name);
   virtual WebKit::WebString queryLocalizedString(
       WebKit::WebLocalizedString::Name name);
@@ -112,39 +64,23 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
       WebKit::WebLocalizedString::Name name,
       const WebKit::WebString& value1, const WebKit::WebString& value2);
 
-  virtual WebKit::WebString defaultLocale() {
-    return ASCIIToUTF16("en-US");
-  }
+  virtual WebKit::WebString defaultLocale();
 
   virtual WebKit::WebStorageNamespace* createLocalStorageNamespace(
-      const WebKit::WebString& path, unsigned quota) {
-    // Enforce quota here, ignoring the value from the renderer as in Chrome.
-    return WebKit::WebStorageNamespace::createLocalStorageNamespace(path,
-        WebKit::WebStorageNamespace::m_localStorageQuota);
-  }
+      const WebKit::WebString& path, unsigned quota);
 
-  void dispatchStorageEvent(const WebKit::WebString& key,
-      const WebKit::WebString& old_value, const WebKit::WebString& new_value,
-      const WebKit::WebString& origin, const WebKit::WebURL& url,
-      bool is_local_storage) {
-    // The event is dispatched by the proxy.
-  }
-
-  virtual WebKit::WebIDBFactory* idbFactory() {
-    return WebKit::WebIDBFactory::create();
-  }
+  virtual void dispatchStorageEvent(const WebKit::WebString& key,
+                                    const WebKit::WebString& old_value,
+                                    const WebKit::WebString& new_value,
+                                    const WebKit::WebString& origin,
+                                    const WebKit::WebURL& url,
+                                    bool is_local_storage);
+  virtual WebKit::WebIDBFactory* idbFactory();
 
   virtual void createIDBKeysFromSerializedValuesAndKeyPath(
       const WebKit::WebVector<WebKit::WebSerializedScriptValue>& values,
       const WebKit::WebString& keyPath,
-      WebKit::WebVector<WebKit::WebIDBKey>& keys_out) {
-    WebKit::WebVector<WebKit::WebIDBKey> keys(values.size());
-    for (size_t i = 0; i < values.size(); ++i) {
-      keys[i] = WebKit::WebIDBKey::createFromValueAndKeyPath(
-          values[i], WebKit::WebIDBKeyPath::create(keyPath));
-    }
-    keys_out.swap(keys);
-  }
+      WebKit::WebVector<WebKit::WebIDBKey>& keys_out);
 
 #if defined(OS_WIN)
   void SetThemeEngine(WebKit::WebThemeEngine* engine) {
@@ -156,13 +92,8 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
   }
 #endif
 
-  virtual WebKit::WebSharedWorkerRepository* sharedWorkerRepository() {
-      return NULL;
-  }
-
-  virtual WebKit::WebGraphicsContext3D* createGraphicsContext3D() {
-    return new webkit::gpu::WebGraphicsContext3DInProcessImpl();
-  }
+  virtual WebKit::WebSharedWorkerRepository* sharedWorkerRepository();
+  virtual WebKit::WebGraphicsContext3D* createGraphicsContext3D();
 
  private:
   scoped_ptr<webkit_glue::SimpleWebMimeRegistryImpl> mime_registry_;

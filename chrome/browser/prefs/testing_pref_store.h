@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,19 +20,19 @@ class DictionaryValue;
 class TestingPrefStore : public PersistentPrefStore {
  public:
   TestingPrefStore();
-  virtual ~TestingPrefStore() {}
+  virtual ~TestingPrefStore();
 
   // Overriden from PrefStore.
   virtual ReadResult GetValue(const std::string& key, Value** result) const;
   virtual void AddObserver(PrefStore::Observer* observer);
   virtual void RemoveObserver(PrefStore::Observer* observer);
-  virtual bool IsInitializationComplete() const { return init_complete_; }
+  virtual bool IsInitializationComplete() const;
 
   // PersistentPrefStore overrides:
   virtual void SetValue(const std::string& key, Value* value);
   virtual void SetValueSilently(const std::string& key, Value* value);
   virtual void RemoveValue(const std::string& key);
-  virtual bool ReadOnly() const { return read_only_; }
+  virtual bool ReadOnly() const;
   virtual PersistentPrefStore::PrefReadError ReadPrefs();
   virtual bool WritePrefs();
   virtual void ScheduleWritePrefs() {}
@@ -55,9 +55,9 @@ class TestingPrefStore : public PersistentPrefStore {
 
   // Getter and Setter methods for setting and getting the state of the
   // |TestingPrefStore|.
-  virtual void set_read_only(bool read_only) { read_only_ = read_only; }
-  virtual void set_prefs_written(bool status) { prefs_written_ = status; }
-  virtual bool get_prefs_written() { return prefs_written_; }
+  virtual void set_read_only(bool read_only);
+  virtual void set_prefs_written(bool status);
+  virtual bool get_prefs_written();
 
  private:
   // Stores the preference values.

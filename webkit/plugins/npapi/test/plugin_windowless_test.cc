@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,6 +56,10 @@ static bool IsWindowActivationEvent(NPEvent* np_event) {
 #elif defined(OS_MACOSX)
   return np_event->what == activateEvt;
 #endif
+}
+
+bool WindowlessPluginTest::IsWindowless() const {
+  return true;
 }
 
 int16 WindowlessPluginTest::HandleEvent(void* event) {

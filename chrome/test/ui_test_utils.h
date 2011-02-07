@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -358,16 +358,8 @@ class TestWebSocketServer {
 // is received. It also records the source and details of the notification.
 class TestNotificationObserver : public NotificationObserver {
  public:
-  TestNotificationObserver() : source_(NotificationService::AllSources()) {
-  }
-
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
-    source_ = source;
-    details_ = details;
-    MessageLoopForUI::current()->Quit();
-  }
+  TestNotificationObserver();
+  virtual ~TestNotificationObserver();
 
   const NotificationSource& source() const {
     return source_;
@@ -376,6 +368,11 @@ class TestNotificationObserver : public NotificationObserver {
   const NotificationDetails& details() const {
     return details_;
   }
+
+  // NotificationObserver:
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
  private:
   NotificationSource source_;
@@ -401,6 +398,7 @@ class WindowedNotificationObserver : public NotificationObserver {
    * NotificationService::AllSources(). */
   WindowedNotificationObserver(NotificationType notification_type,
                                const NotificationSource& source);
+  virtual ~WindowedNotificationObserver();
 
   /* Wait until the specified notification occurs. You must have specified a
    * source in the arguments to the constructor in order to use this function.
@@ -425,6 +423,7 @@ class WindowedNotificationObserver : public NotificationObserver {
    */
   void WaitFor(const NotificationSource& source);
 
+  // NotificationObserver:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
@@ -529,6 +528,7 @@ class DOMMessageQueue : public NotificationObserver {
   // DOMAutomationController. Do not construct this until the browser has
   // started.
   DOMMessageQueue();
+  virtual ~DOMMessageQueue();
 
   // Wait for the next message to arrive. |message| will be set to the next
   // message, if not null. Returns true on success.

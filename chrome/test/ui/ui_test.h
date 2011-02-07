@@ -284,9 +284,7 @@ class UITestBase {
     return state;
   }
 
-  virtual bool ShouldFilterInet() {
-    return true;
-  }
+  virtual bool ShouldFilterInet();
 
   // Extra command-line switches that need to be passed to the browser are
   // added in this function. Add new command-line switches here.

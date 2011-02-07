@@ -4,6 +4,7 @@
 
 #include "webkit/plugins/npapi/test/plugin_create_instance_in_paint.h"
 
+#include "base/logging.h"
 #include "webkit/plugins/npapi/test/plugin_client.h"
 
 namespace NPAPIClient {

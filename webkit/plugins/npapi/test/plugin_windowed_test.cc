@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "webkit/plugins/npapi/test/plugin_windowed_test.h"
+
+#include "base/logging.h"
 #include "webkit/plugins/npapi/test/plugin_client.h"
 
 namespace NPAPIClient {

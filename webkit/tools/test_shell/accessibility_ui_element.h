@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,9 +20,10 @@ class AccessibilityUIElement : public CppBoundClass {
   AccessibilityUIElement(
       const WebKit::WebAccessibilityObject& accessibility_object,
       Factory* factory);
+  virtual ~AccessibilityUIElement();
 
   virtual AccessibilityUIElement* GetChildAtIndex(unsigned index);
-  virtual bool IsRoot() const { return false; }
+  virtual bool IsRoot() const;
 
  protected:
   const WebKit::WebAccessibilityObject& accessibility_object() const {
@@ -111,9 +112,10 @@ class RootAccessibilityUIElement : public AccessibilityUIElement {
   RootAccessibilityUIElement(
       const WebKit::WebAccessibilityObject& accessibility_object,
       Factory* factory);
+  virtual ~RootAccessibilityUIElement();
 
   virtual AccessibilityUIElement* GetChildAtIndex(unsigned index);
-  virtual bool IsRoot() const { return true; }
+  virtual bool IsRoot() const;
 };
 
 
@@ -122,7 +124,7 @@ class RootAccessibilityUIElement : public AccessibilityUIElement {
 // a list and cleared explicitly.
 class AccessibilityUIElementList : public AccessibilityUIElement::Factory {
  public:
-  AccessibilityUIElementList() { }
+  AccessibilityUIElementList();
   virtual ~AccessibilityUIElementList();
 
   void Clear();

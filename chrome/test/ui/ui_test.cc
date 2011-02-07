@@ -169,6 +169,10 @@ ProxyLauncher* UITestBase::CreateProxyLauncher() {
   return new AnonymousProxyLauncher(false);
 }
 
+bool UITestBase::ShouldFilterInet() {
+  return true;
+}
+
 void UITestBase::SetLaunchSwitches() {
   // We need cookies on file:// for things like the page cycler.
   if (enable_file_cookies_)

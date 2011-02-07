@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,9 @@
 TestingPrefStore::TestingPrefStore()
     : read_only_(true),
       prefs_written_(false),
-      init_complete_(false) { }
+      init_complete_(false) {}
+
+TestingPrefStore::~TestingPrefStore() {}
 
 PrefStore::ReadResult TestingPrefStore::GetValue(const std::string& key,
                                                  Value** value) const {
@@ -24,6 +26,10 @@ void TestingPrefStore::RemoveObserver(PrefStore::Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+bool TestingPrefStore::IsInitializationComplete() const {
+  return init_complete_;
+}
+
 void TestingPrefStore::SetValue(const std::string& key, Value* value) {
   if (prefs_.SetValue(key, value))
     NotifyPrefValueChanged(key);
@@ -36,6 +42,10 @@ void TestingPrefStore::SetValueSilently(const std::string& key, Value* value) {
 void TestingPrefStore::RemoveValue(const std::string& key) {
   if (prefs_.RemoveValue(key))
     NotifyPrefValueChanged(key);
+}
+
+bool TestingPrefStore::ReadOnly() const {
+  return read_only_;
 }
 
 PersistentPrefStore::PrefReadError TestingPrefStore::ReadPrefs() {
@@ -97,4 +107,16 @@ bool TestingPrefStore::GetBoolean(const std::string& key, bool* value) const {
     return false;
 
   return stored_value->GetAsBoolean(value);
+}
+
+void TestingPrefStore::set_read_only(bool read_only) {
+  read_only_ = read_only;
+}
+
+void TestingPrefStore::set_prefs_written(bool status) {
+  prefs_written_ = status;
+}
+
+bool TestingPrefStore::get_prefs_written() {
+  return prefs_written_;
 }

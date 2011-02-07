@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,6 @@ class TestShellDevToolsCallArgs;
 class TestShellDevToolsClient;
 
 class TestShellDevToolsAgent : public WebKit::WebDevToolsAgentClient {
-
  public:
   TestShellDevToolsAgent();
   virtual ~TestShellDevToolsAgent();
@@ -31,7 +30,7 @@ class TestShellDevToolsAgent : public WebKit::WebDevToolsAgentClient {
   // WebDevToolsAgentClient implementation.
   virtual void sendMessageToInspectorFrontend(
       const WebKit::WebString& data);
-  virtual int hostIdentifier() { return routing_id_; }
+  virtual int hostIdentifier();
   virtual void runtimePropertyChanged(const WebKit::WebString& name,
                                       const WebKit::WebString& value);
   virtual WebKit::WebCString debuggerScriptSource();

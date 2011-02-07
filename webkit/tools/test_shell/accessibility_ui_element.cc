@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -304,9 +304,15 @@ AccessibilityUIElement::AccessibilityUIElement(
   BindFallbackMethod(&AccessibilityUIElement::FallbackCallback);
 }
 
+AccessibilityUIElement::~AccessibilityUIElement() {}
+
 AccessibilityUIElement* AccessibilityUIElement::GetChildAtIndex(
     unsigned index) {
   return factory_->Create(accessibility_object().childAt(index));
+}
+
+bool AccessibilityUIElement::IsRoot() const {
+  return false;
 }
 
 void AccessibilityUIElement::AllAttributesCallback(
@@ -510,10 +516,12 @@ void AccessibilityUIElement::TitleGetterCallback(CppVariant* result) {
   result->Set(GetTitle(accessibility_object()));
 }
 
-
 RootAccessibilityUIElement::RootAccessibilityUIElement(
     const WebKit::WebAccessibilityObject &object,
-    Factory *factory) : AccessibilityUIElement(object, factory) { }
+    Factory *factory)
+    : AccessibilityUIElement(object, factory) {}
+
+RootAccessibilityUIElement::~RootAccessibilityUIElement() {}
 
 AccessibilityUIElement* RootAccessibilityUIElement::GetChildAtIndex(
     unsigned index) {
@@ -523,8 +531,13 @@ AccessibilityUIElement* RootAccessibilityUIElement::GetChildAtIndex(
   return factory()->Create(accessibility_object());
 }
 
+bool RootAccessibilityUIElement::IsRoot() const {
+  return true;
+}
 
-AccessibilityUIElementList ::~AccessibilityUIElementList() {
+AccessibilityUIElementList::AccessibilityUIElementList() {}
+
+AccessibilityUIElementList::~AccessibilityUIElementList() {
   Clear();
 }
 

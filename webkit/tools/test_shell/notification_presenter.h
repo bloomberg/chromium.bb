@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,9 +15,10 @@
 // A class that implements NotificationPresenter for the test shell.
 class TestNotificationPresenter : public WebKit::WebNotificationPresenter {
  public:
-  explicit TestNotificationPresenter(TestShell* shell)
-      : shell_(shell) {
-  }
+  explicit TestNotificationPresenter(TestShell* shell);
+  virtual ~TestNotificationPresenter();
+
+  void Reset();
 
   // Called by the LayoutTestController to simulate a user granting
   // permission.
@@ -30,10 +31,6 @@ class TestNotificationPresenter : public WebKit::WebNotificationPresenter {
   virtual Permission checkPermission(const WebKit::WebURL& url);
   virtual void requestPermission(const WebKit::WebSecurityOrigin& origin,
       WebKit::WebNotificationPermissionCallback* callback);
-
-  void Reset() {
-    allowed_origins_.clear();
-  }
 
  private:
   // Non-owned pointer.  The NotificationPresenter is owned by the test shell.

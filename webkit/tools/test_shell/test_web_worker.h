@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,10 +26,7 @@ class TestWebWorker : public WebKit::WebWorker,
                       public WebKit::WebWorkerClient,
                       public base::RefCounted<TestWebWorker> {
  public:
-  TestWebWorker() {
-    AddRef();  // Adds the reference held for worker object.
-    AddRef();  // Adds the reference held for worker context object.
-  }
+  TestWebWorker();
 
   // WebWorker methods:
   virtual void startWorkerContext(const WebKit::WebURL& script_url,
@@ -42,9 +39,7 @@ class TestWebWorker : public WebKit::WebWorker,
       const WebKit::WebString& message,
       const WebKit::WebMessagePortChannelArray& channel) {
   }
-  virtual void workerObjectDestroyed() {
-    Release();  // Releases the reference held for worker object.
-  }
+  virtual void workerObjectDestroyed();
   virtual void clientDestroyed() {
   }
 
@@ -70,30 +65,20 @@ class TestWebWorker : public WebKit::WebWorker,
   virtual void confirmMessageFromWorkerObject(bool has_pending_activity) { }
   virtual void reportPendingActivity(bool has_pending_activity) { }
   virtual void workerContextClosed() { }
-  virtual void workerContextDestroyed() {
-    Release();    // Releases the reference held for worker context object.
-  }
-  virtual WebKit::WebWorker* createWorker(WebKit::WebWorkerClient* client) {
-    return NULL;
-  }
-  virtual WebKit::WebNotificationPresenter* notificationPresenter() {
-    return NULL;
-  }
+  virtual void workerContextDestroyed();
+  virtual WebKit::WebWorker* createWorker(WebKit::WebWorkerClient* client);
+  virtual WebKit::WebNotificationPresenter* notificationPresenter();
   virtual WebKit::WebApplicationCacheHost* createApplicationCacheHost(
-      WebKit::WebApplicationCacheHostClient*) {
-    return NULL;
-  }
+      WebKit::WebApplicationCacheHostClient*);
   virtual bool allowDatabase(WebKit::WebFrame* frame,
                              const WebKit::WebString& name,
                              const WebKit::WebString& display_name,
-                             unsigned long estimated_size) {
-    return true;
-  }
+                             unsigned long estimated_size);
 
  private:
   friend class base::RefCounted<TestWebWorker>;
 
-  ~TestWebWorker() {}
+  virtual ~TestWebWorker();
 
   DISALLOW_COPY_AND_ASSIGN(TestWebWorker);
 };

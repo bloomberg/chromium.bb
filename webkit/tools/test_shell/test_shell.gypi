@@ -95,6 +95,7 @@
         'test_shell_webthemecontrol.cc',
         'test_shell_webthemeengine.h',
         'test_shell_webthemeengine.cc',
+        'test_web_worker.cc',
         'test_web_worker.h',
         'test_webview_delegate.cc',
         'test_webview_delegate.h',

@@ -127,6 +127,8 @@
         'test/chrome_process_util.cc',
         'test/chrome_process_util.h',
         'test/chrome_process_util_mac.cc',
+        'test/in_process_browser_test.cc',
+        'test/in_process_browser_test.h',
         'test/model_test_utils.cc',
         'test/model_test_utils.h',
         'test/profile_mock.cc',
@@ -364,8 +366,6 @@
         'browser/ui/views/bookmark_bar_view_test.cc',
         'browser/ui/views/find_bar_host_interactive_uitest.cc',
         'browser/ui/views/tabs/tab_dragging_test.cc',
-        'test/in_process_browser_test.cc',
-        'test/in_process_browser_test.h',
         'test/interactive_ui/fast_shutdown_interactive_uitest.cc',
         'test/interactive_ui/infobars_uitest.cc',
         'test/interactive_ui/keyboard_access_uitest.cc',
@@ -2218,8 +2218,6 @@
         'renderer/translate_helper_browsertest.cc',
         'test/automation/dom_automation_browsertest.cc',
         'test/gpu/gpu_browsertest.cc',
-        'test/in_process_browser_test.cc',
-        'test/in_process_browser_test.h',
         'test/out_of_proc_test_runner.cc',
         'test/render_view_test.cc',
         'test/render_view_test.h',
@@ -2398,8 +2396,6 @@
       'sources': [
         'app/chrome_dll.rc',
         'browser/safe_browsing/safe_browsing_test.cc',
-        'test/in_process_browser_test.cc',
-        'test/in_process_browser_test.h',
         'test/out_of_proc_test_runner.cc',
       ],
       'conditions': [
@@ -2918,8 +2914,6 @@
         'browser/sessions/session_service_test_helper.cc',
         'browser/sync/glue/session_model_associator.cc',
         'test/bookmark_load_observer.h',
-        'test/in_process_browser_test.cc',
-        'test/in_process_browser_test.h',
         'test/out_of_proc_test_runner.cc',
         'test/live_sync/bookmark_model_verifier.cc',
         'test/live_sync/bookmark_model_verifier.h',
@@ -3067,8 +3061,6 @@
       'defines': [ 'ALLOW_IN_PROC_BROWSER_TEST' ],
       'sources': [
         'test/gpu/gpu_pixel_browsertest.cc',
-        'test/in_process_browser_test.cc',
-        'test/in_process_browser_test.h',
         'test/out_of_proc_test_runner.cc',
       ],
       'conditions': [
