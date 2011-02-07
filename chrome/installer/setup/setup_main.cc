@@ -26,6 +26,7 @@
 #include "base/win/windows_version.h"
 #include "breakpad/src/client/windows/handler/exception_handler.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/installer/setup/chrome_frame_quick_enable.h"
 #include "chrome/installer/setup/chrome_frame_ready_mode.h"
 #include "chrome/installer/setup/install.h"
 #include "chrome/installer/setup/setup_constants.h"
@@ -129,7 +130,6 @@ DWORD UnPackArchive(const FilePath& archive,
   return LzmaUtil::UnPackArchive(uncompressed_archive.value(),
       output_directory.value(), &unpacked_file);
 }
-
 
 // This function is called when --rename-chrome-exe option is specified on
 // setup.exe command line. This function assumes an in-use update has happened
@@ -745,7 +745,7 @@ installer::InstallStatus ShowEULADialog(const std::wstring& inner_frame) {
 // has been found and processed (so setup.exe should exit at that point).
 bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
                                     const CommandLine& cmd_line,
-                                    const InstallerState& installer_state,
+                                    InstallerState* installer_state,
                                     int* exit_code) {
   bool handled = true;
   // TODO(tommi): Split these checks up into functions and use a data driven
@@ -779,8 +779,8 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
     *exit_code = InstallUtil::GetInstallReturnCode(status);
     if (*exit_code) {
       LOG(WARNING) << "setup.exe patching failed.";
-      InstallUtil::WriteInstallerResult(installer_state.system_install(),
-          installer_state.state_key(), status, IDS_SETUP_PATCH_FAILED_BASE,
+      InstallUtil::WriteInstallerResult(installer_state->system_install(),
+          installer_state->state_key(), status, IDS_SETUP_PATCH_FAILED_BASE,
           NULL);
     }
     file_util::Delete(temp_path, true);
@@ -791,11 +791,11 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
         cmd_line.GetSwitchValueNative(installer::switches::kShowEula);
     *exit_code = ShowEULADialog(inner_frame);
     if (installer::EULA_REJECTED != *exit_code)
-      GoogleUpdateSettings::SetEULAConsent(installer_state, true);
+      GoogleUpdateSettings::SetEULAConsent(*installer_state, true);
   } else if (cmd_line.HasSwitch(
       installer::switches::kRegisterChromeBrowser)) {
     const Product* chrome_install =
-        installer_state.FindProduct(BrowserDistribution::CHROME_BROWSER);
+        installer_state->FindProduct(BrowserDistribution::CHROME_BROWSER);
     if (chrome_install) {
       // If --register-chrome-browser option is specified, register all
       // Chrome protocol/file associations as well as register it as a valid
@@ -819,7 +819,7 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
   } else if (cmd_line.HasSwitch(installer::switches::kRenameChromeExe)) {
     // If --rename-chrome-exe is specified, we want to rename the executables
     // and exit.
-    *exit_code = RenameChromeExecutables(installer_state);
+    *exit_code = RenameChromeExecutables(*installer_state);
   } else if (cmd_line.HasSwitch(
       installer::switches::kRemoveChromeRegistration)) {
     // This is almost reverse of --register-chrome-browser option above.
@@ -834,7 +834,7 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
     }
     installer::InstallStatus tmp = installer::UNKNOWN_STATUS;
     const Product* chrome_install =
-        installer_state.FindProduct(BrowserDistribution::CHROME_BROWSER);
+        installer_state->FindProduct(BrowserDistribution::CHROME_BROWSER);
     DCHECK(chrome_install);
     if (chrome_install) {
       installer::DeleteChromeRegistrationKeys(chrome_install->distribution(),
@@ -850,16 +850,16 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
     if (flavor == -1) {
       *exit_code = installer::UNKNOWN_STATUS;
     } else {
-      const Products& products = installer_state.products();
+      const Products& products = installer_state->products();
       for (size_t i = 0; i < products.size(); ++i) {
         const Product* product = products[i];
         BrowserDistribution* browser_dist = product->distribution();
         browser_dist->InactiveUserToastExperiment(flavor, *product,
-            installer_state.target_path());
+            installer_state->target_path());
       }
     }
   } else if (cmd_line.HasSwitch(installer::switches::kSystemLevelToast)) {
-    const Products& products = installer_state.products();
+    const Products& products = installer_state->products();
     for (size_t i = 0; i < products.size(); ++i) {
       const Product* product = products[i];
       BrowserDistribution* browser_dist = product->distribution();
@@ -867,24 +867,27 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
       // to continue with the toast experiment.
       scoped_ptr<Version> installed_version(
           InstallUtil::GetChromeVersion(browser_dist,
-                                        installer_state.system_install()));
+                                        installer_state->system_install()));
       browser_dist->LaunchUserExperiment(installer::REENTRY_SYS_UPDATE,
                                          *installed_version, *product, true);
     }
   } else if (cmd_line.HasSwitch(
                  installer::switches::kChromeFrameReadyModeOptIn)) {
     *exit_code = InstallUtil::GetInstallReturnCode(
-        installer::ChromeFrameReadyModeOptIn(original_state, installer_state));
+        installer::ChromeFrameReadyModeOptIn(original_state, *installer_state));
   } else if (cmd_line.HasSwitch(
                  installer::switches::kChromeFrameReadyModeTempOptOut)) {
     *exit_code = InstallUtil::GetInstallReturnCode(
         installer::ChromeFrameReadyModeTempOptOut(original_state,
-                                                  installer_state));
+                                                  *installer_state));
   } else if (cmd_line.HasSwitch(
                  installer::switches::kChromeFrameReadyModeEndTempOptOut)) {
     *exit_code = InstallUtil::GetInstallReturnCode(
         installer::ChromeFrameReadyModeEndTempOptOut(original_state,
-                                                     installer_state));
+                                                     *installer_state));
+  } else if (cmd_line.HasSwitch(installer::switches::kChromeFrameQuickEnable)) {
+    *exit_code = installer::ChromeFrameQuickEnable(original_state,
+                                                   installer_state);
   } else {
     handled = false;
   }
@@ -1078,7 +1081,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   }
 
   int exit_code = 0;
-  if (HandleNonInstallCmdLineOptions(original_state, cmd_line, installer_state,
+  if (HandleNonInstallCmdLineOptions(original_state, cmd_line, &installer_state,
                                      &exit_code))
     return exit_code;
 

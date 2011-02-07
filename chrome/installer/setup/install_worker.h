@@ -9,6 +9,8 @@
 #define CHROME_INSTALLER_SETUP_INSTALL_WORKER_H_
 #pragma once
 
+#include <windows.h>
+
 #include <vector>
 
 #include "base/scoped_ptr.h"
@@ -34,6 +36,22 @@ class Product;
 // products and their options).
 void AddGoogleUpdateWorkItems(const InstallerState& installer_state,
                               WorkItemList* install_list);
+
+// After a successful copying of all the files, this function is called to
+// do a few post install tasks:
+// - Handle the case of in-use-update by updating "opv" (old version) key or
+//   deleting it if not required.
+// - Register any new dlls and unregister old dlls.
+// - If this is an MSI install, ensures that the MSI marker is set, and sets
+//   it if not.
+// If these operations are successful, the function returns true, otherwise
+// false.
+bool AppendPostInstallTasks(const InstallerState& installer_state,
+                            const FilePath& setup_path,
+                            const FilePath& new_chrome_exe,
+                            const Version* current_version,
+                            const Version& new_version,
+                            WorkItemList* post_install_task_list);
 
 // Builds the complete WorkItemList used to build the set of installation steps
 // needed to lay down one or more installed products.
@@ -95,6 +113,13 @@ void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
                                    const Version& new_version,
                                    WorkItemList* install_list,
                                    const Product& product);
+
+// Create Version key for a product (if not already present) and sets the new
+// product version as the last step.
+void AddVersionKeyWorkItems(HKEY root,
+                            BrowserDistribution* dist,
+                            const Version& new_version,
+                            WorkItemList* list);
 
 // [Un]Registers Chrome and ChromeLauncher in IE's low rights elevation policy.
 void AddElevationPolicyWorkItems(const InstallationState& original_state,

@@ -280,8 +280,11 @@ void AddProductSpecificWorkItems(const InstallationState& original_state,
 void AddGoogleUpdateWorkItems(const InstallerState& installer_state,
                               WorkItemList* install_list) {
   // Is a multi-install product being installed or over-installed?
-  if (installer_state.operation() != InstallerState::MULTI_INSTALL)
+  if (installer_state.operation() != InstallerState::MULTI_INSTALL &&
+      installer_state.operation() != InstallerState::MULTI_UPDATE) {
+    VLOG(1) << "AddGoogleUpdateWorkItems noop: " << installer_state.operation();
     return;
+  }
 
   const HKEY reg_root = installer_state.root_key();
   const std::wstring key_path = installer_state.state_key();
@@ -300,11 +303,15 @@ void AddGoogleUpdateWorkItems(const InstallerState& installer_state,
   // Add the appropriate modifiers for all products and their options.
   modified |= installer_state.SetChannelFlags(true, &channel_info);
 
+  VLOG(1) << "ap: " << channel_info.value();
+
   // Write the results if needed.
   if (modified) {
     install_list->AddSetRegValueWorkItem(reg_root, key_path,
                                          google_update::kRegApField,
                                          channel_info.value(), true);
+  } else {
+    VLOG(1) << "Channel flags not modified";
   }
 
   // Synchronize the other products and the package with this one.

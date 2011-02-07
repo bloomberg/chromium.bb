@@ -18,6 +18,9 @@ const char kChrome[] = "chrome";
 // Install Chrome Frame.
 const char kChromeFrame[] = "chrome-frame";
 
+// Installs Chrome Frame from an already installed multi-install of Chrome.
+const char kChromeFrameQuickEnable[] = "quick-enable-cf";
+
 // When installing Chrome Frame, install it in ready mode.
 // If --chrome-frame is not on the command line, this switch has no effect.
 const char kChromeFrameReadyMode[] = "ready-mode";

@@ -201,6 +201,8 @@
           },
           'sources': [
             'installer/mini_installer/chrome.release',
+            'installer/setup/chrome_frame_quick_enable.cc',
+            'installer/setup/chrome_frame_quick_enable.h',
             'installer/setup/chrome_frame_ready_mode.cc',
             'installer/setup/chrome_frame_ready_mode.h',
             'installer/setup/install.cc',

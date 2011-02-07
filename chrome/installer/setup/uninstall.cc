@@ -86,7 +86,7 @@ void ProcessGoogleUpdateItems(
         update_list->AddSetRegValueWorkItem(reg_root, other_dist->GetStateKey(),
             google_update::kRegApField, channel_info.value(), true);
       } else {
-        LOG_IF(DFATAL,
+        LOG_IF(ERROR,
                product_state != NULL && product_state->is_multi_install())
             << "Channel value for "
             << BrowserDistribution::GetSpecificDistribution(

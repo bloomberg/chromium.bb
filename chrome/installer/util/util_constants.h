@@ -69,6 +69,8 @@ enum InstallStatus {
   CONFLICTING_CHANNEL_EXISTS,  // 39. A multi-install product on a different
                                // update channel exists.
   READY_MODE_REQUIRES_CHROME,  // 40. Chrome Frame in ready-mode requires Chrome
+  REQUIRES_MULTI_INSTALL,      // 41. --multi-install was missing from the
+                               // command line.
 };
 
 // The type of an update archive.
@@ -82,6 +84,7 @@ namespace switches {
 extern const char kCeee[];
 extern const char kChrome[];
 extern const char kChromeFrame[];
+extern const char kChromeFrameQuickEnable[];
 extern const char kChromeFrameReadyMode[];
 extern const char kChromeFrameReadyModeOptIn[];
 extern const char kChromeFrameReadyModeTempOptOut[];
