@@ -5,7 +5,6 @@
 #include "chrome/browser/search_engines/search_terms_data.h"
 
 #include "base/logging.h"
-#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/google/google_url_tracker.h"
