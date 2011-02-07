@@ -30,6 +30,10 @@ setup_board_flags:
 #build_packages_flags: --oldchromebinary
 build_packages_flags:
 
+# Environment for build_packages, like USE="chrome_internal"
+#build_packages_environ: USE="chrome_internal" FEATURES="keepwork"
+build_packages_environ:
+
 
 [IMAGE]
 
@@ -37,3 +41,6 @@ build_packages_flags:
 #
 # DEFAULT: nothing
 build_image_flags:
+
+# Environment for build_image.  Same syntax as for build_packages_environ.
+build_image_environ:

@@ -107,7 +107,8 @@ def _DoBuildPackages(build_config):
   # Put together command.  We're going to force the shell to do all of the
   # splitting of arguments, since we're throwing all of the flags from the
   # config file in there.
-  cmd = './build_packages --board="%s" %s' % (
+  cmd = '%s ./build_packages --board="%s" %s' % (
+      build_config.get('BUILD', 'build_packages_environ'),
       build_config.get('BUILD', 'target'),
       build_config.get('BUILD', 'build_packages_flags')
   )
@@ -133,7 +134,8 @@ def _DoBuildImage(build_config):
   # Put together command.  We're going to force the shell to do all of the
   # splitting of arguments, since we're throwing all of the flags from the
   # config file in there.
-  cmd = './build_image --board="%s" %s' % (
+  cmd = '%s ./build_image --board="%s" %s' % (
+      build_config.get('IMAGE', 'build_image_environ'),
       build_config.get('BUILD', 'target'),
       build_config.get('IMAGE', 'build_image_flags')
   )
