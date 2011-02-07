@@ -5,7 +5,6 @@
 cr.define('options', function() {
   const OptionsPage = options.OptionsPage;
   const ArrayDataModel = cr.ui.ArrayDataModel;
-  const ListSingleSelectionModel = cr.ui.ListSingleSelectionModel;
 
   /**
    * Encapsulated handling of search engine management page.
@@ -55,7 +54,6 @@ cr.define('options', function() {
      */
     setUpList_: function(list) {
       options.search_engines.SearchEngineList.decorate(list);
-      list.selectionModel = new ListSingleSelectionModel;
       list.autoExpands = true;
     },
 

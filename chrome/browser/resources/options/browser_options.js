@@ -5,7 +5,6 @@
 cr.define('options', function() {
   const OptionsPage = options.OptionsPage;
   const ArrayDataModel = cr.ui.ArrayDataModel;
-  const ListSingleSelectionModel = cr.ui.ListSingleSelectionModel;
 
   //
   // BrowserOptions class
@@ -92,7 +91,6 @@ cr.define('options', function() {
       var list = $('startupPagesList');
       options.browser_options.StartupPageList.decorate(list);
       list.autoExpands = true;
-      list.selectionModel = new ListSingleSelectionModel;
 
       // Check if we are in the guest mode.
       if (cr.commandLine.options['--bwsi']) {

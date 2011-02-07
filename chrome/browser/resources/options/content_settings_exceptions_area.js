@@ -336,7 +336,6 @@ cr.define('options.contentSettings', function() {
     decorate: function() {
       InlineEditableItemList.prototype.decorate.call(this);
 
-      this.selectionModel = new cr.ui.ListSingleSelectionModel;
       this.classList.add('settings-list');
 
       for (var parentNode = this.parentNode; parentNode;

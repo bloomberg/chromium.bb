@@ -50,12 +50,29 @@ cr.define('options', function() {
       DeletableItem.prototype.decorate.call(this);
 
       this.addEventListener('keydown', this.handleKeyDown_.bind(this));
+      this.addEventListener('leadChange', this.handleLeadChange_);
     },
 
     /** @inheritDoc */
     selectionChanged: function() {
+      this.updateEditState();
+    },
+
+    /**
+     * Called when this element gains or loses 'lead' status. Updates editing
+     * mode accordingly.
+     * @private
+     */
+    handleLeadChange_: function() {
+      this.updateEditState();
+    },
+
+    /**
+     * Updates the edit state based on the current selected and lead states.
+     */
+    updateEditState: function() {
       if (this.editable)
-        this.editing = this.selected;
+        this.editing = this.selected && this.lead;
     },
 
     /**
@@ -259,14 +276,17 @@ cr.define('options', function() {
 
     /**
      * Called when the list hierarchy as a whole loses or gains focus; starts
-     * or ends editing for any selected items.
+     * or ends editing for the lead item if necessary.
      * @param {Event} e The change event.
      * @private
      */
     handleListFocusChange_: function(e) {
-      var indexes = this.selectionModel.selectedIndexes;
-      for (var i = 0; i < indexes.length; i++) {
-        this.getListItemByIndex(indexes[i]).editing = e.newValue;
+      var leadItem = this.getListItemByIndex(this.selectionModel.leadIndex);
+      if (leadItem) {
+        if (e.newValue)
+          leadItem.updateEditState();
+        else
+          leadItem.editing = false;
       }
     },
   };
