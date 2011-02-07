@@ -391,20 +391,23 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     //    that ibus-daemon could send a DBus signal since the daemon is killed
     //    right after this FlushImeConfig() call.
     if (active_input_methods_are_changed) {
-      scoped_ptr<InputMethodDescriptor> current_input_method(
-          chromeos::GetCurrentInputMethod(input_method_status_connection_));
-      // The |current_input_method_| member variable should not be used since
-      // the variable might be stale. SetImeConfig("preload_engine") call above
-      // might change the current input method in ibus-daemon, but the variable
-      // is not updated until InputMethodChangedHandler(), which is the handler
-      // for the global-engine-changed DBus signal, is called.
+      // The |current_input_method_| member might be stale here as
+      // SetImeConfig("preload_engine") call above might change the
+      // current input method in ibus-daemon (ex. this occurs when the
+      // input method currently in use is removed from the options
+      // page). However, it should be safe to use the member here,
+      // for the following reasons:
+      // 1. If ibus-daemon is to be killed, we'll switch to the only one
+      //    keyboard layout, and observers are notified. See
+      //    MaybeStopInputMethodDaemon() for details.
+      // 2. Otherwise, "global-engine-changed" signal is delivered from
+      //    ibus-daemon, and observers are notified. See
+      //    InputMethodChangedHandler() for details.
       const size_t num_active_input_methods = GetNumActiveInputMethods();
-      if (current_input_method.get()) {
-        FOR_EACH_OBSERVER(Observer, observers_,
-                          ActiveInputMethodsChanged(this,
-                                                    *current_input_method.get(),
-                                                    num_active_input_methods));
-      }
+      FOR_EACH_OBSERVER(Observer, observers_,
+                        ActiveInputMethodsChanged(this,
+                                                  current_input_method_,
+                                                  num_active_input_methods));
     }
   }
 
