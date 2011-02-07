@@ -1,0 +1,99 @@
+
+
+
+<html>
+ <head>
+ <title>psutil</title>
+ </head>
+ <body>
+
+
+
+
+ <div id="wikicontent">
+ <table width="100%" border="0" cellspacing="0" cellpadding="0">
+ <tr>
+
+ <td class="vt" id="wikimaincol" width="100%">
+
+ <div id="wikiheader" style="margin-bottom:1em">
+
+
+ </div>
+ <h1><a name="Summary"></a>Summary<a href="#Summary" class="section_anchor"></a></h1><p>psutil is a module providing an interface for retrieving information on running processes and system utilization (CPU, memory) in a portable way by using Python, implementing many functionalities offered by command line tools like <strong>ps</strong>, <strong>top</strong>, <strong>kill</strong> and Windows <strong>task manager</strong>. </p><p>It currently supports <strong>Linux</strong>, <strong>OS X</strong>, <strong>FreeBSD</strong> and <strong>Windows</strong> with Python versions from <strong>2.4</strong> to <strong>3.1</strong> by using a unique code base. </p><h1><a name="Example_usage"></a>Example usage<a href="#Example_usage" class="section_anchor"></a></h1><h3><a name="process_management"></a>process management<a href="#process_management" class="section_anchor"></a></h3><pre class="prettyprint">&gt;&gt;&gt; import psutil
+&gt;&gt;&gt; psutil.get_pid_list()
+[1, 2, 3, 4, 5, 6, 7, 46, 48, 50, 51, 178, 182, 222, 223, 224,
+268, 1215, 1216, 1220, 1221, 1243, 1244, 1301, 1601, 2237, 2355,
+2637, 2774, 3932, 4176, 4177, 4185, 4187, 4189, 4225, 4243, 4245,
+4263, 4282, 4306, 4311, 4312, 4313, 4314, 4337, 4339, 4357, 4358,
+4363, 4383, 4395, 4408, 4433, 4443, 4445, 4446, 5167, 5234, 5235,
+5252, 5318, 5424, 5644, 6987, 7054, 7055, 7071]
+&gt;&gt;&gt; p = psutil.Process(7055)
+&gt;&gt;&gt; p.name
+&#x27;python&#x27;
+&gt;&gt;&gt; p.path
+&#x27;/usr/bin&#x27;
+&gt;&gt;&gt; p.cmdline
+[&#x27;/usr/bin/python&#x27;, &#x27;-O&#x27;, &#x27;run.py&#x27;]
+&gt;&gt;&gt; p.uid
+1000
+&gt;&gt;&gt; p.gid
+1000
+&gt;&gt;&gt; p.username
+&#x27;jake&#x27;
+&gt;&gt;&gt; p.create_time
+1267551141.5019531
+&gt;&gt;&gt; p.get_cpu_percent()
+12.31243
+&gt;&gt;&gt; p.get_memory_percent()
+0.63423
+&gt;&gt;&gt; rss, vms =  p.get_memory_info()
+&gt;&gt;&gt; &quot;Resident memory: %s KB&quot; %(rss / 1024)
+&#x27;Resident memory: 3768 KB&#x27;
+&gt;&gt;&gt; &quot;Virtual memory: %s KB&quot; %(vms / 1024)
+&#x27;Virtual memory: 6176 KB&#x27;
+&gt;&gt;&gt;
+&gt;&gt;&gt; p.suspend()
+&gt;&gt;&gt; p.resume()
+&gt;&gt;&gt; psutil.test()
+UID       PID %CPU %MEM     VSZ     RSS START     TIME COMMAND
+0           0  0.0  0.0       0       0 00:12    00:00 [sched]
+0           1  0.0  0.3    1740     600 00:12    00:04 /sbin/init
+0           2  0.0  0.0       0       0 00:12    00:00 [kthreadd]
+0           3  0.0  0.0       0       0 00:12    00:00 [migration/0]
+...
+0       13239  0.0  2.6    13604   1044 00:38    00:00 /usr/sbin/smbd -D
+1000    23648  0.0  2.4    12512   2008 14:43    00:06 sshd: user@pts/2
+1000    23649  0.0  1.2    5944    3340 14:43    00:00 -bash
+0       25926  0.0  1.1    5432    3072 17:55    00:00 -su
+0       28655  0.0  1.0    4932    3204 21:58    00:00 python _psutil.py
+&gt;&gt;&gt;</pre><h3><a name="System_monitoring_(CPU_and_memory)"></a>System monitoring (CPU and memory)<a href="#System_monitoring_(CPU_and_memory)" class="section_anchor"></a></h3><pre class="prettyprint">&gt;&gt;&gt; import psutil, time
+&gt;&gt;&gt; print psutil.cpu_times()
+softirq=50.87; iowait=39.63; system=1130.67; idle=164171.41; user=965.15; irq=7.08; nice=0.0
+&gt;&gt;&gt;
+&gt;&gt;&gt; while 1:
+...     print round(psutil.cpu_percent(), 1)
+...     time.sleep(1)
+...
+5.4
+3.2
+7.3
+7.1
+2.5
+Traceback (most recent call last):
+  File &quot;&lt;stdin&gt;&quot;, line 3, in &lt;module&gt;
+KeyboardInterrupt
+&gt;&gt;&gt;
+&gt;&gt;&gt; psutil.TOTAL_PHYMEM
+526458880
+&gt;&gt;&gt; psutil.avail_phymem()
+153530368
+&gt;&gt;&gt; psutil.total_virtmem()
+197365760
+&gt;&gt;&gt; psutil.avail_virtmem()
+194277376</pre><h1><a name="Mailing_lists"></a>Mailing lists<a href="#Mailing_lists" class="section_anchor"></a></h1><p><strong>Users</strong><br><a href="http://groups.google.com/group/psutil/topics" rel="nofollow">http://groups.google.com/group/psutil/topics</a> </p><p><strong>Developers</strong><br><a href="http://groups.google.com/group/psutil-dev/topics" rel="nofollow">http://groups.google.com/group/psutil-dev/topics</a> </p><p><strong>SVN commits and issue tracker changes</strong><br><a href="http://groups.google.com/group/psutil-commits/topics" rel="nofollow">http://groups.google.com/group/psutil-commits/topics</a> </p><h1><a name="Contribute"></a>Contribute<a href="#Contribute" class="section_anchor"></a></h1><p>If you want to help or just give us suggestions about the project and other related things,  subscribe to the <a href="http://groups.google.com/group/psutil" rel="nofollow">discussion mailing list</a>. If you want to talk with project team members about psutil and other related things feel free to contact us at the following addresses: </p><p><table><tr><td style="border: 1px solid #aaa; padding: 5px;"> <strong>Name</strong> </td><td style="border: 1px solid #aaa; padding: 5px;"> <strong>Country</strong> </td><td style="border: 1px solid #aaa; padding: 5px;"> <strong>E-mail</strong> </td></tr> <tr><td style="border: 1px solid #aaa; padding: 5px;"> Jay Loden </td><td style="border: 1px solid #aaa; padding: 5px;"> New Jersey (USA) </td><td style="border: 1px solid #aaa; padding: 5px;"> jloden at gmail dot com  </td></tr> <tr><td style="border: 1px solid #aaa; padding: 5px;"> Giampaolo Rodola&#x27; </td><td style="border: 1px solid #aaa; padding: 5px;"> Turin (Italy) </td><td style="border: 1px solid #aaa; padding: 5px;"> g.rodola at gmail dot com </td></tr> </table></p><p>Feedbacks and suggestions are greatly appreciated as well as new testers and coders willing to join the development.<br> For any bug report, patch proposal or feature request, add an entry into the <a href="http://code.google.com/p/psutil/issues/list" rel="nofollow">Issue Tracker</a>.<br> </p><p>Thank you. </p>
+
+
+ </body>
+</html>
+
