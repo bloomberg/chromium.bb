@@ -126,7 +126,7 @@ void DropTargetGtk::OnDragDataReceived(GdkDragContext* context,
       if (urls[0].SchemeIsFile()) {
         FilePath file_path;
         if (net::FileURLToFilePath(urls[0], &file_path))
-          data_provider().SetFilename(file_path.ToWStringHack());
+          data_provider().SetFilename(file_path);
       }
     } else {
       // Consumers of OSExchangeData will see this as an invalid URL. That is,
