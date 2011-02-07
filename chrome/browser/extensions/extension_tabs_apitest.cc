@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -86,4 +86,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CaptureVisibleTabPng) {
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabsOnUpdated) {
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("tabs/on_updated")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoDisabledByPref) {
+  ASSERT_TRUE(StartTestServer());
+
+  browser()->profile()->GetPrefs()->SetBoolean(prefs::kIncognitoEnabled, false);
+
+  // This makes sure that creating an incognito window fails due to pref
+  // (policy) being set.
+  ASSERT_TRUE(RunExtensionTest("tabs/incognito_disabled")) << message_;
 }
