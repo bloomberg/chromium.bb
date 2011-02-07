@@ -24,27 +24,22 @@ class PluginsCheck(pyauto.PyUITest):
     ...
     ]
     """
-    if self.IsMac():
-      file_path = os.path.join(self.DataDir(), 'mac_plugins_list.txt')
-      return self.EvalDataFrom(file_path)
+    file_path = os.path.join(self.DataDir(), 'plugins_list.txt')
+    return self.EvalDataFrom(file_path)
 
   def testPluginsStates(self):
     """Verify plugins' versions and states."""
-    if not self.IsMac():
-      # TODO(rohitbm)
-      # Need to find plugins list on Windows/Linux machines.
-      return
-    default_plugins_list = self._ReadPluginsList();
-    for plugin in self.GetPluginsInfo().Plugins():
-      test_plugin = [x['name'] for x in default_plugins_list \
+    browser_plugins_list = self.GetPluginsInfo().Plugins()
+    for plugin in self._ReadPluginsList(): 
+      test_plugin = [x['name'] for x in browser_plugins_list \
           if x['version'] == plugin['version'] and \
-             x['enabled'] == str(plugin['enabled']) and \
+             str(x['enabled']) == plugin['enabled'] and \
              x['name'] == plugin['name']]
       plugin_info = '[ NAME : %s, VERSION: %s, ENABLED: %s]' % \
-          (plugin['name'], plugin['version'], str(plugin['enabled']))
+          (plugin['name'], plugin['version'], plugin['enabled'])
       logging.debug(plugin_info)
       self.assertTrue(test_plugin, '%s - Failed to match with plugins'
-          ' available in the default list' % plugin_info)
+          ' available in the browser plugins list' % plugin_info)
 
 
 if __name__ == '__main__':
