@@ -625,7 +625,8 @@ TEST_F(JingleSessionTest, TestVideoChannel) {
 }
 
 // Verify that data can be transmitted over the event channel.
-TEST_F(JingleSessionTest, TestEventChannel) {
+// Disabled, http://crbug.com/70225.
+TEST_F(JingleSessionTest, DISABLED_TestEventChannel) {
   CreateServerPair();
   ASSERT_TRUE(InitiateConnection());
   scoped_refptr<TCPChannelTester> tester(
