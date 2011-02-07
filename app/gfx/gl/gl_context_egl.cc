@@ -2,7 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <EGL/egl.h>
+#include "app/gfx/gl/gl_context_egl.h"
+
+#include "build/build_config.h"
+#include "base/logging.h"
+#include "base/scoped_ptr.h"
+#include "third_party/angle/include/EGL/egl.h"
+
+// This header must come after the above third-party include, as
+// it brings in #defines that cause conflicts.
+#include "app/gfx/gl/gl_bindings.h"
 
 #if defined(OS_LINUX)
 extern "C" {
@@ -10,12 +19,6 @@ extern "C" {
 }
 #define EGL_HAS_PBUFFERS 1
 #endif
-
-#include "build/build_config.h"
-#include "base/logging.h"
-#include "base/scoped_ptr.h"
-#include "app/gfx/gl/gl_bindings.h"
-#include "app/gfx/gl/gl_context_egl.h"
 
 namespace gfx {
 
