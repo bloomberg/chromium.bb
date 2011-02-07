@@ -4247,7 +4247,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
         <!-- chrome://mobilesetup strings -->
         <message name="IDS_MOBILE_SETUP_TITLE" desc="ChromeOS mobile device activation page title">
-          Cellular data service management
+          Mobile data service management
         </message>
         <message name="IDS_MOBILE_CONNECTING_HEADER" desc="Mobile connection page header while connecting to the provider">
           Connecting to <ph name="PROVIDER_NAME">$1<ex>Acme Mobile</ex></ph>
@@ -4256,7 +4256,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Connection error
         </message>
         <message name="IDS_MOBILE_ACTIVATING_HEADER" desc="Message header when data service is being activated">
-          Activating your data service
+          Activating your mobile data service
         </message>
         <message name="IDS_MOBILE_COMPLETED_HEADER" desc="Message header when data service is completed">
           Activation complete
@@ -4265,7 +4265,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           (this might take a few minutes)
         </message>
         <message name="IDS_MOBILE_COMPLETED_TEXT" desc="Message when cellular data service activation or payment is completed">
-          Your data service is activated and ready to use
+          Your mobile data service is activated and ready to use
         </message>
       </if>
 
@@ -9522,7 +9522,7 @@ This web page was killed, either because Chrome ran out of memory, or you chose 
         Plan name:
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_LOADING_PLAN" desc="In settings Internet options, the message displayed while cellular data plan information is being loaded.">
-        Loading cellular data plan information, please wait...
+        Loading mobile data plan information, please wait...
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NO_PLANS_FOUND" desc="In settings Internet options, the message displayed while cellular data plans are missing or could not be found.">
         Plan information not available.
@@ -10345,7 +10345,7 @@ This web page was killed, either because Chrome ran out of memory, or you chose 
         Wi-Fi
       </message>
       <message name="IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR" desc="The cellular network device.">
-        Cellular
+        Mobile Data
       </message>
       <message name="IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING" desc="The network device status connecting.">
         Connecting...
