@@ -776,14 +776,16 @@ def main():
         _RunSmokeSuite(buildroot, test_results_dir)
         _RunAUTest(buildroot, buildconfig['board'])
       finally:
-        if not options.debug:
-          archive_full_path = os.path.join(options.gsutil_archive,
-                                           str(options.buildnumber))
-          _ArchiveTestResults(buildroot, buildconfig['board'],
-                              test_results_dir=test_results_dir,
-                              gsutil=options.gsutil,
-                              archive_dir=archive_full_path,
-                              acl=options.acl)
+        pass
+        # TODO(sosa): Re-enable with crosbug.com/8364.
+        #if not options.debug:
+          #archive_full_path = os.path.join(options.gsutil_archive,
+          #                                 str(options.buildnumber))
+          #_ArchiveTestResults(buildroot, buildconfig['board'],
+          #                    test_results_dir=test_results_dir,
+          #                    gsutil=options.gsutil,
+          #                    archive_dir=archive_full_path,
+          #                    acl=options.acl)
 
     # Don't push changes for developers.
     if buildconfig['master']:
