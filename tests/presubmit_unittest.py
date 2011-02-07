@@ -1131,6 +1131,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
       'CheckChangeHasNoStrayWhitespace',
       'CheckChangeHasOnlyOneEol', 'CheckChangeHasNoCR',
       'CheckChangeHasNoCrAndHasOnlyOneEol', 'CheckChangeHasNoTabs',
+      'CheckChangeTodoHasOwner',
       'CheckChangeHasQaField', 'CheckChangeHasTestedField',
       'CheckChangeHasTestField',
       'CheckChangeLintsClean',
@@ -1309,7 +1310,6 @@ class CannedChecksUnittest(PresubmitTestsBase):
         'Foo', 'Foo ',
         presubmit.OutputApi.PresubmitPromptWarning)
 
-
   def testCheckChangeHasOnlyOneEol(self):
     self.ReadFileTest(presubmit_canned_checks.CheckChangeHasOnlyOneEol,
                       "Hey!\nHo!\n", "Hey!\nHo!\n\n",
@@ -1330,6 +1330,11 @@ class CannedChecksUnittest(PresubmitTestsBase):
         presubmit_canned_checks.CheckChangeHasNoCrAndHasOnlyOneEol,
         "Hey!\nHo!\n", "Hey!\r\nHo!\r\n",
         presubmit.OutputApi.PresubmitPromptWarning)
+
+  def testCheckChangeTodoHasOwner(self):
+    self.ContentTest(presubmit_canned_checks.CheckChangeTodoHasOwner,
+                     "TODO(foo): bar", "TODO: bar",
+                     presubmit.OutputApi.PresubmitPromptWarning)
 
   def testCannedCheckChangeHasNoTabs(self):
     self.ContentTest(presubmit_canned_checks.CheckChangeHasNoTabs,

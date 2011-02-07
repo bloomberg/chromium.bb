@@ -234,6 +234,18 @@ def CheckChangeHasNoTabs(input_api, output_api, source_file_filter=None):
   return []
 
 
+def CheckChangeTodoHasOwner(input_api, output_api, source_file_filter=None):
+  """Checks that the user didn't add TODO(name) without an owner."""
+
+  unowned_todo = input_api.re.compile('TO' + 'DO[^(]');
+  for f, line_num, line in input_api.RightHandSideLines(source_file_filter):
+    if unowned_todo.search(line):
+      text = ('Found TO' + 'DO with no owner in %s, line %s' %
+              (f.LocalPath(), line_num))
+      return [output_api.PresubmitPromptWarning(text)]
+  return []
+
+
 def CheckChangeHasNoStrayWhitespace(input_api, output_api,
                                     source_file_filter=None):
   """Checks that there is no stray whitespace at source lines end."""
