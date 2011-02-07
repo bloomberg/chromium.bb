@@ -180,6 +180,8 @@ bool ParamTraits<gfx::Size>::Read(const Message* m, void** iter, gfx::Size* r) {
   if (!m->ReadInt(iter, &w) ||
       !m->ReadInt(iter, &h))
     return false;
+  if (w < 0 || h < 0 || h >= ((INT_MAX / 16) / (w ? w : 1)))
+    return false;
   r->set_width(w);
   r->set_height(h);
   return true;
