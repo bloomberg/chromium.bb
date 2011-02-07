@@ -24,7 +24,7 @@ static const SkColor kSelectedBackgroundColor = SkColorSetRGB(0xDC, 0xE4, 0xFA);
 static const SkColor kSelectedBackgroundColor = SkColorSetRGB(246, 249, 253);
 #endif
 
-gfx::Size MenuItemView::GetPreferredSize() {
+gfx::Size MenuItemView::CalculatePreferredSize() {
   const gfx::Font& font = MenuConfig::instance().font;
   // TODO(sky): this is a workaround until I figure out why font.height()
   // isn't returning the right thing. We really only want to include

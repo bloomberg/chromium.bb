@@ -321,6 +321,7 @@ SubmenuView* MenuItemView::CreateSubmenu() {
 void MenuItemView::SetTitle(const std::wstring& title) {
   title_ = WideToUTF16Hack(title);
   SetAccessibleName(GetAccessibleNameForMenuItem(title_, GetAcceleratorText()));
+  pref_size_.SetSize(0, 0);  // Triggers preferred size recalculation.
 }
 
 void MenuItemView::SetSelected(bool selected) {
@@ -347,6 +348,12 @@ void MenuItemView::SetIcon(const SkBitmap& icon) {
 
 void MenuItemView::Paint(gfx::Canvas* canvas) {
   Paint(canvas, false);
+}
+
+gfx::Size MenuItemView::GetPreferredSize() {
+  if (pref_size_.IsEmpty())
+    pref_size_ = CalculatePreferredSize();
+  return pref_size_;
 }
 
 MenuController* MenuItemView::GetMenuController() {

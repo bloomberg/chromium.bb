@@ -201,7 +201,7 @@ bool SubmenuView::OnMouseWheel(const MouseWheelEvent& e) {
 #elif defined(OS_LINUX)
   int delta = abs(e.GetOffset());
 #endif
-  for (bool scroll_up = (e.GetOffset() > 0); delta != 0; --delta) {
+  for (bool scroll_up = (e.GetOffset() < 0); delta != 0; --delta) {
     int scroll_target;
     if (scroll_up) {
       if (GetMenuItemAt(first_vis_index)->y() == vis_bounds.y()) {

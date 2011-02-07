@@ -357,6 +357,9 @@ class MenuItemView : public View {
   // Returns the preferred width (and padding) of any children.
   int GetChildPreferredWidth();
 
+  // Calculates the preferred size.
+  gfx::Size CalculatePreferredSize();
+
   // The delegate. This is only valid for the root menu item. You shouldn't
   // use this directly, instead use GetDelegate() which walks the tree as
   // as necessary.
@@ -411,6 +414,10 @@ class MenuItemView : public View {
 
   // Preferred height of menu items. Reset every time a menu is run.
   static int pref_menu_height_;
+
+  // Previously calculated preferred size to reduce GetStringWidth calls in
+  // GetPreferredSize.
+  gfx::Size pref_size_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuItemView);
 };

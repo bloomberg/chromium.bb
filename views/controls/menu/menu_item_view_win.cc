@@ -17,7 +17,7 @@ using gfx::NativeTheme;
 
 namespace views {
 
-gfx::Size MenuItemView::GetPreferredSize() {
+gfx::Size MenuItemView::CalculatePreferredSize() {
   const gfx::Font& font = MenuConfig::instance().font;
   return gfx::Size(
       font.GetStringWidth(title_) + label_start_ + item_right_margin_ +
