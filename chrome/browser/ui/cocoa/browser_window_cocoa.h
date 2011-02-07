@@ -73,6 +73,7 @@ class BrowserWindowCocoa : public BrowserWindow,
   virtual views::Window* ShowAboutChromeDialog();
   virtual void ShowUpdateChromeDialog();
   virtual void ShowTaskManager();
+  virtual void ShowBackgroundPages();
   virtual void ShowBookmarkBubble(const GURL& url, bool already_bookmarked);
   virtual bool IsDownloadShelfVisible() const;
   virtual DownloadShelf* GetDownloadShelf();

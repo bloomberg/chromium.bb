@@ -530,7 +530,7 @@ class Browser : public TabHandlerDelegate,
   void OpenFile();
   void OpenCreateShortcutsDialog();
   void ToggleDevToolsWindow(DevToolsToggleAction action);
-  void OpenTaskManager();
+  void OpenTaskManager(bool highlight_background_resources);
   void OpenBugReportDialog();
 
   void ToggleBookmarkBar();

@@ -1074,6 +1074,12 @@ void BrowserView::ShowTaskManager() {
   browser::ShowTaskManager();
 }
 
+void BrowserView::ShowBackgroundPages() {
+  // TODO(atwilson): Support highlighting background resources.
+  // (http://crbug.com/71490)
+  browser::ShowTaskManager();
+}
+
 void BrowserView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {
   toolbar_->location_bar()->ShowStarBubble(url, !already_bookmarked);
 }

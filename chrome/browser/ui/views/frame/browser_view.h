@@ -289,6 +289,7 @@ class BrowserView : public BrowserBubbleHost,
   virtual views::Window* ShowAboutChromeDialog();
   virtual void ShowUpdateChromeDialog();
   virtual void ShowTaskManager();
+  virtual void ShowBackgroundPages();
   virtual void ShowBookmarkBubble(const GURL& url, bool already_bookmarked);
   virtual void SetDownloadShelfVisible(bool visible);
   virtual bool IsDownloadShelfVisible() const;

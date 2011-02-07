@@ -340,7 +340,7 @@ void BackgroundModeManager::ExecuteCommand(int item) {
       GetBrowserWindow()->OpenOptionsDialog();
       break;
     case IDC_TASK_MANAGER:
-      GetBrowserWindow()->OpenTaskManager();
+      GetBrowserWindow()->OpenTaskManager(true);
       break;
     default:
       ExecuteApplication(item);

@@ -102,7 +102,8 @@ class SortHelper {
 
 @implementation TaskManagerWindowController
 
-- (id)initWithTaskManagerObserver:(TaskManagerMac*)taskManagerObserver {
+- (id)initWithTaskManagerObserver:(TaskManagerMac*)taskManagerObserver
+     highlightBackgroundResources:(bool)highlightBackgroundResources {
   NSString* nibpath = [base::mac::MainAppBundle()
                         pathForResource:@"TaskManager"
                                  ofType:@"nib"];
@@ -110,6 +111,15 @@ class SortHelper {
     taskManagerObserver_ = taskManagerObserver;
     taskManager_ = taskManagerObserver_->task_manager();
     model_ = taskManager_->model();
+    highlightBackgroundResources_ = highlightBackgroundResources;
+    if (highlightBackgroundResources_) {
+      // Highlight background resources with a yellow background.
+      backgroundResourceColor_.reset(
+          [[NSColor colorWithDeviceRed:0xff/255.0
+                                 green:0xfa/255.0
+                                  blue:0xcd/255.0
+                                 alpha:1.0] retain]);
+    }
 
     if (g_browser_process && g_browser_process->local_state()) {
       size_saver_.reset([[WindowSizeAutosaver alloc]
@@ -192,6 +202,7 @@ class SortHelper {
   [self adjustSelectionAndEndProcessButton];
 
   [tableView_ setDoubleAction:@selector(selectDoubleClickedTab:)];
+  [tableView_ setIntercellSpacing:NSMakeSize(0.0, 0.0)];
   [tableView_ sizeToFit];
 }
 
@@ -370,6 +381,29 @@ class SortHelper {
   [self autorelease];
 }
 
+// Delegate method invoked before each cell in the table is displayed. We
+// override this to provide highlighting of background resources.
+- (void)  tableView:(NSTableView*)tableView
+    willDisplayCell:(id)cell
+     forTableColumn:(NSTableColumn*)tableColumn
+                row:(NSInteger)row {
+  if (!highlightBackgroundResources_)
+    return;
+
+  bool isBackground =
+      taskManagerObserver_->IsBackgroundRow(viewToModelMap_[row]);
+  DCHECK([cell respondsToSelector:@selector(setBackgroundColor:)]);
+  if ([cell respondsToSelector:@selector(setBackgroundColor:)]) {
+    if (isBackground && ![tableView isRowSelected:row]) {
+      [cell setDrawsBackground:YES];
+      [cell setBackgroundColor:backgroundResourceColor_];
+    } else {
+      [cell setBackgroundColor:nil];
+      [cell setDrawsBackground:NO];
+    }
+  }
+}
+
 @end
 
 @implementation TaskManagerWindowController (NSTableDataSource)
@@ -502,12 +536,16 @@ class SortHelper {
 ////////////////////////////////////////////////////////////////////////////////
 // TaskManagerMac implementation:
 
-TaskManagerMac::TaskManagerMac(TaskManager* task_manager)
+TaskManagerMac::TaskManagerMac(TaskManager* task_manager,
+                               bool highlight_background_resources)
   : task_manager_(task_manager),
     model_(task_manager->model()),
-    icon_cache_(this) {
+    icon_cache_(this),
+    highlight_background_resources_(highlight_background_resources) {
   window_controller_ =
-      [[TaskManagerWindowController alloc] initWithTaskManagerObserver:this];
+      [[TaskManagerWindowController alloc]
+           initWithTaskManagerObserver:this
+          highlightBackgroundResources:highlight_background_resources];
   model_->AddObserver(this);
 }
 
@@ -569,14 +607,28 @@ SkBitmap TaskManagerMac::GetIcon(int r) const {
   return model_->GetResourceIcon(r);
 }
 
+bool TaskManagerMac::IsBackgroundRow(int row) const {
+  return model_->IsBackgroundResource(row);
+}
+
 // static
-void TaskManagerMac::Show() {
+void TaskManagerMac::Show(bool highlight_background_resources) {
   if (instance_) {
-    // If there's a Task manager window open already, just activate it.
-    [[instance_->window_controller_ window]
+    if (instance_->highlight_background_resources_ ==
+        highlight_background_resources) {
+      // There's a Task manager window open already, so just activate it.
+      [[instance_->window_controller_ window]
         makeKeyAndOrderFront:instance_->window_controller_];
-  } else {
-    instance_ = new TaskManagerMac(TaskManager::GetInstance());
-    instance_->model_->StartUpdating();
+      return;
+    } else {
+      // The user is switching between "View Background Pages" and
+      // "Task Manager" so close the existing window and fall through to
+      // open a new one.
+      [[instance_->window_controller_ window] close];
+    }
   }
+  // Create a new instance.
+  instance_ = new TaskManagerMac(TaskManager::GetInstance(),
+                                 highlight_background_resources);
+  instance_->model_->StartUpdating();
 }

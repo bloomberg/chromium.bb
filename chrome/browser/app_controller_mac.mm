@@ -942,7 +942,7 @@ void RecordLastRunAppBundlePath() {
     case IDC_TASK_MANAGER:
       UserMetrics::RecordAction(UserMetricsAction("TaskManager"),
                                 defaultProfile);
-      TaskManagerMac::Show();
+      TaskManagerMac::Show(false);
       break;
     case IDC_OPTIONS:
       [self showPreferences:sender];

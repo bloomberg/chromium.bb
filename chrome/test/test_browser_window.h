@@ -74,6 +74,7 @@ class TestBrowserWindow : public BrowserWindow {
   virtual views::Window* ShowAboutChromeDialog() { return NULL; }
   virtual void ShowUpdateChromeDialog() {}
   virtual void ShowTaskManager() {}
+  virtual void ShowBackgroundPages() {}
   virtual void ShowBookmarkManager() {}
   virtual void ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {}
   virtual bool IsDownloadShelfVisible() const { return false; }

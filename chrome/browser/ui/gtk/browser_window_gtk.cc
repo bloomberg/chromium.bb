@@ -845,6 +845,12 @@ void BrowserWindowGtk::ShowTaskManager() {
   TaskManagerGtk::Show();
 }
 
+void BrowserWindowGtk::ShowBackgroundPages() {
+  // TODO(atwilson): Support highlighting background resources.
+  // (http://crbug.com/71490)
+  TaskManagerGtk::Show();
+}
+
 void BrowserWindowGtk::ShowBookmarkBubble(const GURL& url,
                                           bool already_bookmarked) {
   toolbar_->GetLocationBarView()->ShowStarBubble(url, !already_bookmarked);

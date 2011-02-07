@@ -309,7 +309,11 @@ void BrowserWindowCocoa::ShowUpdateChromeDialog() {
 }
 
 void BrowserWindowCocoa::ShowTaskManager() {
-  TaskManagerMac::Show();
+  TaskManagerMac::Show(false);
+}
+
+void BrowserWindowCocoa::ShowBackgroundPages() {
+  TaskManagerMac::Show(true);
 }
 
 void BrowserWindowCocoa::ShowBookmarkBubble(const GURL& url,

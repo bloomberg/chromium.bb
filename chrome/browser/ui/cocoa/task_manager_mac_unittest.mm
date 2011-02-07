@@ -39,7 +39,7 @@ class TaskManagerWindowControllerTest : public CocoaTest {
 // Test creation, to ensure nothing leaks or crashes.
 TEST_F(TaskManagerWindowControllerTest, Init) {
   TaskManager task_manager;
-  TaskManagerMac* bridge(new TaskManagerMac(&task_manager));
+  TaskManagerMac* bridge(new TaskManagerMac(&task_manager, false));
   TaskManagerWindowController* controller = bridge->cocoa_controller();
 
   // Releases the controller, which in turn deletes |bridge|.
@@ -57,7 +57,7 @@ TEST_F(TaskManagerWindowControllerTest, Sort) {
   task_manager.AddResource(&resource2);
   task_manager.AddResource(&resource3);  // Will be in the same group as 2.
 
-  TaskManagerMac* bridge(new TaskManagerMac(&task_manager));
+  TaskManagerMac* bridge(new TaskManagerMac(&task_manager, false));
   TaskManagerWindowController* controller = bridge->cocoa_controller();
   NSTableView* table = [controller tableView];
   ASSERT_EQ(3, [controller numberOfRowsInTableView:table]);
@@ -90,7 +90,7 @@ TEST_F(TaskManagerWindowControllerTest, SelectionAdaptsToSorting) {
   task_manager.AddResource(&resource1);
   task_manager.AddResource(&resource2);
 
-  TaskManagerMac* bridge(new TaskManagerMac(&task_manager));
+  TaskManagerMac* bridge(new TaskManagerMac(&task_manager, false));
   TaskManagerWindowController* controller = bridge->cocoa_controller();
   NSTableView* table = [controller tableView];
   ASSERT_EQ(2, [controller numberOfRowsInTableView:table]);
