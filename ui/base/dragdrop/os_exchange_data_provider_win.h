@@ -144,7 +144,7 @@ class OSExchangeDataProviderWin : public OSExchangeData::Provider {
   // OSExchangeData::Provider methods.
   virtual void SetString(const std::wstring& data);
   virtual void SetURL(const GURL& url, const std::wstring& title);
-  virtual void SetFilename(const std::wstring& full_path);
+  virtual void SetFilename(const FilePath& path);
   virtual void SetPickledData(OSExchangeData::CustomFormat format,
                               const Pickle& data);
   virtual void SetFileContents(const std::wstring& filename,
@@ -153,7 +153,7 @@ class OSExchangeDataProviderWin : public OSExchangeData::Provider {
 
   virtual bool GetString(std::wstring* data) const;
   virtual bool GetURLAndTitle(GURL* url, std::wstring* title) const;
-  virtual bool GetFilename(std::wstring* full_path) const;
+  virtual bool GetFilename(FilePath* path) const;
   virtual bool GetPickledData(OSExchangeData::CustomFormat format,
                               Pickle* data) const;
   virtual bool GetFileContents(std::wstring* filename,

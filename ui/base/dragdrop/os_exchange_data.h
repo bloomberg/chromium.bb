@@ -82,12 +82,12 @@ class OSExchangeData {
 
     virtual void SetString(const std::wstring& data) = 0;
     virtual void SetURL(const GURL& url, const std::wstring& title) = 0;
-    virtual void SetFilename(const std::wstring& full_path) = 0;
+    virtual void SetFilename(const FilePath& path) = 0;
     virtual void SetPickledData(CustomFormat format, const Pickle& data) = 0;
 
     virtual bool GetString(std::wstring* data) const = 0;
     virtual bool GetURLAndTitle(GURL* url, std::wstring* title) const = 0;
-    virtual bool GetFilename(std::wstring* full_path) const = 0;
+    virtual bool GetFilename(FilePath* path) const = 0;
     virtual bool GetPickledData(CustomFormat format, Pickle* data) const = 0;
 
     virtual bool HasString() const = 0;
@@ -137,8 +137,7 @@ class OSExchangeData {
   // A URL can have an optional title in some exchange formats.
   void SetURL(const GURL& url, const std::wstring& title);
   // A full path to a file.
-  // TODO: convert to Filepath.
-  void SetFilename(const std::wstring& full_path);
+  void SetFilename(const FilePath& path);
   // Adds pickled data of the specified format.
   void SetPickledData(CustomFormat format, const Pickle& data);
 
@@ -149,7 +148,7 @@ class OSExchangeData {
   bool GetString(std::wstring* data) const;
   bool GetURLAndTitle(GURL* url, std::wstring* title) const;
   // Return the path of a file, if available.
-  bool GetFilename(std::wstring* full_path) const;
+  bool GetFilename(FilePath* path) const;
   bool GetPickledData(CustomFormat format, Pickle* data) const;
 
   // Test whether or not data of certain types is present, without actually

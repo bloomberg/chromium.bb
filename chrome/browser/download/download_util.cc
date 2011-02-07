@@ -517,7 +517,7 @@ void DragDownload(const DownloadItem* download,
   }
 
   const FilePath full_path = download->full_path();
-  data.SetFilename(full_path.ToWStringHack());
+  data.SetFilename(full_path);
 
   std::string mime_type = download->mime_type();
   if (mime_type.empty())

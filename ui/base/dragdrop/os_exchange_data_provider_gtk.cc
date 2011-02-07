@@ -137,8 +137,8 @@ void OSExchangeDataProviderGtk::SetURL(const GURL& url,
   formats_ |= OSExchangeData::URL;
 }
 
-void OSExchangeDataProviderGtk::SetFilename(const std::wstring& full_path) {
-  filename_ = WideToUTF8(full_path);
+void OSExchangeDataProviderGtk::SetFilename(const FilePath& path) {
+  filename_ = path;
   formats_ |= OSExchangeData::FILE_NAME;
 }
 
@@ -170,10 +170,10 @@ bool OSExchangeDataProviderGtk::GetURLAndTitle(GURL* url,
   return true;
 }
 
-bool OSExchangeDataProviderGtk::GetFilename(std::wstring* full_path) const {
+bool OSExchangeDataProviderGtk::GetFilename(FilePath* path) const {
   if ((formats_ & OSExchangeData::FILE_NAME) == 0)
     return false;
-  *full_path = UTF8ToWide(filename_);
+  *path = filename_;
   return true;
 }
 

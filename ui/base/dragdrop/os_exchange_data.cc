@@ -35,8 +35,8 @@ void OSExchangeData::SetURL(const GURL& url, const std::wstring& title) {
   provider_->SetURL(url, title);
 }
 
-void OSExchangeData::SetFilename(const std::wstring& full_path) {
-  provider_->SetFilename(full_path);
+void OSExchangeData::SetFilename(const FilePath& path) {
+  provider_->SetFilename(path);
 }
 
 void OSExchangeData::SetPickledData(CustomFormat format, const Pickle& data) {
@@ -51,8 +51,8 @@ bool OSExchangeData::GetURLAndTitle(GURL* url, std::wstring* title) const {
   return provider_->GetURLAndTitle(url, title);
 }
 
-bool OSExchangeData::GetFilename(std::wstring* full_path) const {
-  return provider_->GetFilename(full_path);
+bool OSExchangeData::GetFilename(FilePath* path) const {
+  return provider_->GetFilename(path);
 }
 
 bool OSExchangeData::GetPickledData(CustomFormat format, Pickle* data) const {

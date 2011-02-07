@@ -33,7 +33,7 @@ static void CreateValidFileNameFromTitle(const GURL& url,
                                          const std::wstring& title,
                                          std::wstring* validated);
 // Creates a new STGMEDIUM object to hold a file.
-static STGMEDIUM* GetStorageForFileName(const std::wstring& full_path);
+static STGMEDIUM* GetStorageForFileName(const FilePath& path);
 // Creates a File Descriptor for the creation of a file to the given URL and
 // returns a handle to it.
 static STGMEDIUM* GetStorageForFileDescriptor(
@@ -318,8 +318,8 @@ void OSExchangeDataProviderWin::SetURL(const GURL& url,
       new DataObjectImpl::StoredDataInfo(CF_TEXT, storage));
 }
 
-void OSExchangeDataProviderWin::SetFilename(const std::wstring& full_path) {
-  STGMEDIUM* storage = GetStorageForFileName(full_path);
+void OSExchangeDataProviderWin::SetFilename(const FilePath& path) {
+  STGMEDIUM* storage = GetStorageForFileName(path);
   DataObjectImpl::StoredDataInfo* info =
       new DataObjectImpl::StoredDataInfo(CF_HDROP, storage);
   data_->contents_.push_back(info);
@@ -386,11 +386,11 @@ bool OSExchangeDataProviderWin::GetURLAndTitle(GURL* url,
   return false;
 }
 
-bool OSExchangeDataProviderWin::GetFilename(std::wstring* full_path) const {
+bool OSExchangeDataProviderWin::GetFilename(FilePath* path) const {
   std::vector<std::wstring> filenames;
   bool success = ClipboardUtil::GetFilenames(source_object_, &filenames);
   if (success)
-    full_path->assign(filenames[0]);
+    *path = FilePath(filenames[0]);
   return success;
 }
 
@@ -463,7 +463,7 @@ void OSExchangeDataProviderWin::SetDownloadFileInfo(
   // the delay rendering will be used.
   STGMEDIUM* storage = NULL;
   if (!download.filename.empty())
-    storage = GetStorageForFileName(download.filename.value());
+    storage = GetStorageForFileName(download.filename);
 
   // Add CF_HDROP.
   DataObjectImpl::StoredDataInfo* info = new DataObjectImpl::StoredDataInfo(
@@ -583,7 +583,7 @@ void DataObjectImpl::OnDownloadCompleted(const FilePath& file_path) {
 
       // Update the storage.
       (*iter)->owns_medium = true;
-      (*iter)->medium = GetStorageForFileName(file_path.value());
+      (*iter)->medium = GetStorageForFileName(file_path);
 
       break;
     }
@@ -862,10 +862,10 @@ static void CreateValidFileNameFromTitle(const GURL& url,
   *validated += extension;
 }
 
-static STGMEDIUM* GetStorageForFileName(const std::wstring& full_path) {
+static STGMEDIUM* GetStorageForFileName(const FilePath& path) {
   const size_t kDropSize = sizeof(DROPFILES);
   const size_t kTotalBytes =
-      kDropSize + (full_path.length() + 2) * sizeof(wchar_t);
+      kDropSize + (path.value().length() + 2) * sizeof(wchar_t);
   HANDLE hdata = GlobalAlloc(GMEM_MOVEABLE, kTotalBytes);
 
   base::win::ScopedHGlobal<DROPFILES> locked_mem(hdata);
@@ -874,9 +874,9 @@ static STGMEDIUM* GetStorageForFileName(const std::wstring& full_path) {
   drop_files->fWide = TRUE;
   wchar_t* data = reinterpret_cast<wchar_t*>(
       reinterpret_cast<BYTE*>(drop_files) + kDropSize);
-  const size_t copy_size = (full_path.length() + 1) * sizeof(wchar_t);
-  memcpy(data, full_path.c_str(), copy_size);
-  data[full_path.length() + 1] = L'\0';  // Double NULL
+  const size_t copy_size = (path.value().length() + 1) * sizeof(wchar_t);
+  memcpy(data, path.value().c_str(), copy_size);
+  data[path.value().length() + 1] = L'\0';  // Double NULL
 
   STGMEDIUM* storage = new STGMEDIUM;
   storage->tymed = TYMED_HGLOBAL;
