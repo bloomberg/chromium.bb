@@ -549,6 +549,7 @@
         'examples/textfield_example.h',
         'examples/throbber_example.cc',
         'examples/throbber_example.h',
+        'examples/widget_example.cc',
         'examples/widget_example.h',
 
         '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.rc',
