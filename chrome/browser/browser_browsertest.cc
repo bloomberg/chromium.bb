@@ -47,13 +47,13 @@
 
 namespace {
 
-const char* kBeforeUnloadHTML =
+const std::string BEFORE_UNLOAD_HTML =
     "<html><head><title>beforeunload</title></head><body>"
     "<script>window.onbeforeunload=function(e){return 'foo'}</script>"
     "</body></html>";
 
-const char* kOpenNewBeforeUnloadPage =
-    "w=window.open(); w.onbeforeunload=function(e){return 'foo'};";
+const std::wstring OPEN_NEW_BEFOREUNLOAD_PAGE =
+    L"w=window.open(); w.onbeforeunload=function(e){return 'foo'};";
 
 const FilePath::CharType* kTitle1File = FILE_PATH_LITERAL("title1.html");
 const FilePath::CharType* kTitle2File = FILE_PATH_LITERAL("title2.html");
@@ -211,9 +211,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, JavascriptAlertActivatesTab) {
   EXPECT_EQ(0, browser()->selected_index());
   TabContents* second_tab = browser()->GetTabContentsAt(1);
   ASSERT_TRUE(second_tab);
-  second_tab->render_view_host()->ExecuteJavascriptInWebFrame(
-      string16(),
-      ASCIIToUTF16("alert('Activate!');"));
+  second_tab->render_view_host()->ExecuteJavascriptInWebFrame(L"",
+      L"alert('Activate!');");
   AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
   alert->CloseModalDialog();
   EXPECT_EQ(2, browser()->tab_count());
@@ -247,7 +246,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ThirtyFourTabs) {
 // Test for crbug.com/22004.  Reloading a page with a before unload handler and
 // then canceling the dialog should not leave the throbber spinning.
 IN_PROC_BROWSER_TEST_F(BrowserTest, ReloadThenCancelBeforeUnload) {
-  GURL url(std::string("data:text/html,") + kBeforeUnloadHTML);
+  GURL url("data:text/html," + BEFORE_UNLOAD_HTML);
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Navigate to another page, but click cancel in the dialog.  Make sure that
@@ -259,8 +258,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ReloadThenCancelBeforeUnload) {
 
   // Clear the beforeunload handler so the test can easily exit.
   browser()->GetSelectedTabContents()->render_view_host()->
-      ExecuteJavascriptInWebFrame(string16(),
-                                  ASCIIToUTF16("onbeforeunload=null;"));
+      ExecuteJavascriptInWebFrame(L"", L"onbeforeunload=null;");
 }
 
 // Crashy on mac.  http://crbug.com/38522
@@ -276,15 +274,13 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ReloadThenCancelBeforeUnload) {
 // two beforeunload dialogs shown.
 IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_SingleBeforeUnloadAfterWindowClose) {
   browser()->GetSelectedTabContents()->render_view_host()->
-      ExecuteJavascriptInWebFrame(string16(),
-                                  ASCIIToUTF16(kOpenNewBeforeUnloadPage));
+      ExecuteJavascriptInWebFrame(L"", OPEN_NEW_BEFOREUNLOAD_PAGE);
 
   // Close the new window with JavaScript, which should show a single
   // beforeunload dialog.  Then show another alert, to make it easy to verify
   // that a second beforeunload dialog isn't shown.
   browser()->GetTabContentsAt(0)->render_view_host()->
-      ExecuteJavascriptInWebFrame(string16(),
-                                  ASCIIToUTF16("w.close(); alert('bar');"));
+      ExecuteJavascriptInWebFrame(L"", L"w.close(); alert('bar');");
   AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
   alert->native_dialog()->AcceptAppModalDialog();
 

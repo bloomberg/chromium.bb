@@ -152,8 +152,7 @@ void DOMUI::AddMessageHandler(DOMMessageHandler* handler) {
 }
 
 void DOMUI::ExecuteJavascript(const std::wstring& javascript) {
-  GetRenderViewHost()->ExecuteJavascriptInWebFrame(string16(),
-                                                   WideToUTF16Hack(javascript));
+  GetRenderViewHost()->ExecuteJavascriptInWebFrame(std::wstring(), javascript);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

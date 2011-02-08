@@ -7,7 +7,6 @@
 #include "base/file_path.h"
 #include "base/path_service.h"
 #include "base/test/test_timeouts.h"
-#include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/ui_test_utils.h"
@@ -34,15 +33,15 @@ TEST_F(LayoutPluginTester, UnloadNoCrash) {
   path = path.AppendASCII("npapi").AppendASCII("layout_test_plugin.html");
   NavigateToURL(net::FilePathToFileURL(path));
 
-  string16 title;
+  std::wstring title;
   scoped_refptr<TabProxy> tab = GetActiveTab();
   ASSERT_TRUE(tab);
   EXPECT_TRUE(tab->GetTabTitle(&title));
-  EXPECT_EQ(ASCIIToUTF16("Layout Test Plugin Test"), title);
+  EXPECT_EQ(L"Layout Test Plugin Test", title);
 
   ASSERT_TRUE(tab->GoBack());
   EXPECT_TRUE(tab->GetTabTitle(&title));
-  EXPECT_EQ(string16(), title);
+  EXPECT_EQ(L"", title);
 }
 
 // Tests if a plugin executing a self deleting script using NPN_GetURL

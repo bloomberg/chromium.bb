@@ -7,7 +7,6 @@
 #include "app/sql/connection.h"
 #include "app/sql/statement.h"
 #include "base/file_util.h"
-#include "base/utf_string_conversions.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "net/test/test_server.h"
@@ -33,9 +32,9 @@ TEST_F(MultipartResponseUITest, SingleVisit) {
   scoped_refptr<TabProxy> tab_proxy(browser_proxy->GetActiveTab());
   ASSERT_TRUE(tab_proxy.get());
   NavigateToURL(test_server.GetURL("multipart"));
-  string16 title;
+  std::wstring title;
   EXPECT_TRUE(tab_proxy->GetTabTitle(&title));
-  EXPECT_EQ(ASCIIToUTF16("page 9"), title);
+  EXPECT_EQ(L"page 9", title);
   CloseBrowserAndServer();
 
   // The browser has shutdown now.  Check the contents of the history

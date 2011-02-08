@@ -1,9 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
@@ -62,9 +61,9 @@ class SessionHistoryTest : public UITest {
   }
 
   std::wstring GetTabTitle() {
-    string16 title;
+    std::wstring title;
     EXPECT_TRUE(tab_->GetTabTitle(&title));
-    return UTF16ToWideHack(title);
+    return title;
   }
 
   GURL GetTabURL() {
@@ -536,31 +535,23 @@ TEST_F(SessionHistoryTest, DISABLED_HistoryLength) {
 
   int length;
   ASSERT_TRUE(tab_->ExecuteAndExtractInt(
-      string16(),
-      ASCIIToUTF16("domAutomationController.send(history.length)"),
-      &length));
+      L"", L"domAutomationController.send(history.length)", &length));
   EXPECT_EQ(1, length);
 
   ASSERT_TRUE(tab_->NavigateToURL(test_server_.GetURL("files/title1.html")));
 
   ASSERT_TRUE(tab_->ExecuteAndExtractInt(
-      string16(),
-      ASCIIToUTF16("domAutomationController.send(history.length)"),
-      &length));
+      L"", L"domAutomationController.send(history.length)", &length));
   EXPECT_EQ(2, length);
 
   // Now test that history.length is updated when the navigation is committed.
   ASSERT_TRUE(tab_->NavigateToURL(test_server_.GetURL(
       "files/session_history/record_length.html")));
   ASSERT_TRUE(tab_->ExecuteAndExtractInt(
-      string16(),
-      ASCIIToUTF16("domAutomationController.send(history.length)"),
-      &length));
+      L"", L"domAutomationController.send(history.length)", &length));
   EXPECT_EQ(3, length);
   ASSERT_TRUE(tab_->ExecuteAndExtractInt(
-      string16(),
-      ASCIIToUTF16("domAutomationController.send(history_length)"),
-      &length));
+      L"", L"domAutomationController.send(history_length)", &length));
   EXPECT_EQ(3, length);
 
   ASSERT_TRUE(tab_->GoBack());
@@ -569,9 +560,7 @@ TEST_F(SessionHistoryTest, DISABLED_HistoryLength) {
   // Ensure history.length is properly truncated.
   ASSERT_TRUE(tab_->NavigateToURL(test_server_.GetURL("files/title2.html")));
   ASSERT_TRUE(tab_->ExecuteAndExtractInt(
-      string16(),
-      ASCIIToUTF16("domAutomationController.send(history.length)"),
-      &length));
+      L"", L"domAutomationController.send(history.length)", &length));
   EXPECT_EQ(2, length);
 }
 

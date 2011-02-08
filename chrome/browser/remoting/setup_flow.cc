@@ -55,8 +55,7 @@ void SetupFlowStepBase::ExecuteJavascriptInIFrame(
   DCHECK(dom_ui);
 
   RenderViewHost* rvh = dom_ui->tab_contents()->render_view_host();
-  rvh->ExecuteJavascriptInWebFrame(WideToUTF16Hack(iframe_xpath),
-                                   WideToUTF16Hack(js));
+  rvh->ExecuteJavascriptInWebFrame(iframe_xpath, js);
 }
 
 void SetupFlowStepBase::FinishStep(SetupFlowStep* next_step) {

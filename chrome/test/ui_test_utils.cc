@@ -288,8 +288,7 @@ class InProcessJavaScriptExecutionController
   // Executes |script| and sets the JSON response |json|.
   virtual bool ExecuteJavaScriptAndGetJSON(const std::string& script,
                                            std::string* json) {
-    render_view_host_->ExecuteJavascriptInWebFrame(string16(),
-                                                   UTF8ToUTF16(script));
+    render_view_host_->ExecuteJavascriptInWebFrame(L"", UTF8ToWide(script));
     DOMOperationObserver dom_op_observer(render_view_host_);
     return dom_op_observer.GetResponse(json);
   }
@@ -324,8 +323,7 @@ bool ExecuteJavaScriptHelper(RenderViewHost* render_view_host,
   //                automation id.
   std::wstring script = L"window.domAutomationController.setAutomationId(0);" +
       original_script;
-  render_view_host->ExecuteJavascriptInWebFrame(WideToUTF16Hack(frame_xpath),
-                                                WideToUTF16Hack(script));
+  render_view_host->ExecuteJavascriptInWebFrame(frame_xpath, script);
   DOMOperationObserver dom_op_observer(render_view_host);
   std::string json;
   if (!dom_op_observer.GetResponse(&json))

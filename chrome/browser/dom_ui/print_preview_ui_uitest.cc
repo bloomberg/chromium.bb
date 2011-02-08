@@ -24,11 +24,11 @@ class PrintPreviewUITest : public UITest {
   }
 
   void AssertIsPrintPage(TabProxy* tab) {
-    string16 title;
+    std::wstring title;
     ASSERT_TRUE(tab->GetTabTitle(&title));
     string16 expected_title =
         l10n_util::GetStringUTF16(IDS_PRINT_PREVIEW_TITLE);
-    ASSERT_EQ(expected_title, title);
+    ASSERT_EQ(expected_title, WideToUTF16Hack(title));
   }
 };
 

@@ -29,9 +29,9 @@ TEST_F(AutomatedUITestBase, Home) {
   ASSERT_TRUE(active_browser()->GetActiveTab()->GetCurrentURL(&url));
   EXPECT_EQ(GURL(chrome::kAboutBlankURL), url);
 
-  string16 title;
+  std::wstring title;
   ASSERT_TRUE(active_browser()->GetActiveTab()->GetTabTitle(&title));
-  EXPECT_EQ(string16(), title);
+  EXPECT_EQ(L"", title);
 }
 
 TEST_F(AutomatedUITestBase, OpenNewTab) {

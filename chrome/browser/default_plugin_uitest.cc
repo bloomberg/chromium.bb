@@ -4,7 +4,6 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
-#include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_test.h"
@@ -31,9 +30,9 @@ TEST_F(DefaultPluginUITest, MAYBE_DefaultPluginLoadTest) {
   // Check that the default plugin was loaded. It executes a bit of javascript
   // in the HTML file which replaces the innerHTML of div |result| with "DONE".
   scoped_refptr<TabProxy> tab(GetActiveTab());
-  string16 out;
-  ASSERT_TRUE(tab->ExecuteAndExtractString(string16(),
-      ASCIIToUTF16("domAutomationController.send("
-                   "document.getElementById('result').innerHTML)"), &out));
-  ASSERT_EQ(ASCIIToUTF16("DONE"), out);
+  std::wstring out;
+  ASSERT_TRUE(tab->ExecuteAndExtractString(L"",
+      L"domAutomationController.send("
+      L"document.getElementById('result').innerHTML)", &out));
+  ASSERT_EQ(L"DONE", out);
 }

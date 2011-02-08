@@ -285,9 +285,9 @@
     return nil;
   }
 
-  string16 script = base::SysNSStringToUTF16(
+  std::wstring script = base::SysNSStringToWide(
       [[command evaluatedArguments] objectForKey:@"javascript"]);
-  view->ExecuteJavascriptInWebFrame(string16(), script);
+  view->ExecuteJavascriptInWebFrame(L"", script);
 
   // TODO(Shreyas): Figure out a way to get the response back.
   return nil;

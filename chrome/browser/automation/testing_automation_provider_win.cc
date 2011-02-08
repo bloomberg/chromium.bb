@@ -82,7 +82,7 @@ void TestingAutomationProvider::SetWindowVisible(int handle,
 
 void TestingAutomationProvider::GetWindowTitle(int handle, string16* text) {
   gfx::NativeWindow window = window_tracker_->GetResource(handle);
-  string16 result;
+  std::wstring result;
   int length = ::GetWindowTextLength(window) + 1;
   ::GetWindowText(window, WriteInto(&result, length), length);
   text->assign(WideToUTF16(result));

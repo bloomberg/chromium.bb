@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,18 +62,18 @@ bool VerifyWords(const convert_dict::DicReader::WordList& org_words,
 // * Creates bdict data.
 // * Verify the bdict data.
 void RunDictionaryTest(const char* codepage,
-                       const std::map<string16, bool>& word_list) {
+                       const std::map<std::wstring, bool>& word_list) {
   // Create an affix data and a dictionary data.
   std::string aff_data(StringPrintf("SET %s\n", codepage));
 
   std::string dic_data(StringPrintf("%" PRIuS "\n", word_list.size()));
-  for (std::map<string16, bool>::const_iterator it = word_list.begin();
+  for (std::map<std::wstring, bool>::const_iterator it = word_list.begin();
        it != word_list.end(); ++it) {
     std::string encoded_word;
-    EXPECT_TRUE(UTF16ToCodepage(it->first,
-                                codepage,
-                                base::OnStringConversionError::FAIL,
-                                &encoded_word));
+    EXPECT_TRUE(WideToCodepage(it->first,
+                               codepage,
+                               base::OnStringConversionError::FAIL,
+                               &encoded_word));
     dic_data += encoded_word;
     dic_data += "\n";
   }
@@ -101,7 +101,7 @@ void RunDictionaryTest(const char* codepage,
     for (size_t i = 0; i < dic_reader.words().size(); ++i) {
       SCOPED_TRACE(StringPrintf("dic_reader.words()[%" PRIuS "]: %s",
                                 i, dic_reader.words()[i].first.c_str()));
-      string16 word(UTF8ToUTF16(dic_reader.words()[i].first));
+      std::wstring word(UTF8ToWide(dic_reader.words()[i].first));
       EXPECT_TRUE(word_list.find(word) != word_list.end());
     }
 
@@ -149,10 +149,9 @@ TEST(ConvertDictTest, English) {
     L"they",
   };
 
-  std::map<string16, bool> word_list;
+  std::map<std::wstring, bool> word_list;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kWords); ++i)
-    word_list.insert(std::make_pair<string16, bool>(WideToUTF16(kWords[i]),
-                                                    true));
+    word_list.insert(std::make_pair<std::wstring, bool>(kWords[i], true));
 
   RunDictionaryTest(kCodepage, word_list);
 }
@@ -171,10 +170,9 @@ TEST(ConvertDictTest, Russian) {
     L"\x043e\x043d\x0438",
   };
 
-  std::map<string16, bool> word_list;
+  std::map<std::wstring, bool> word_list;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kWords); ++i)
-    word_list.insert(std::make_pair<string16, bool>(WideToUTF16(kWords[i]),
-                                                    true));
+    word_list.insert(std::make_pair<std::wstring, bool>(kWords[i], true));
 
   RunDictionaryTest(kCodepage, word_list);
 }
@@ -195,10 +193,9 @@ TEST(ConvertDictTest, Hungarian) {
     L"\x006d\x0061\x0067\x0075\x006b",
   };
 
-  std::map<string16, bool> word_list;
+  std::map<std::wstring, bool> word_list;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kWords); ++i)
-    word_list.insert(std::make_pair<string16, bool>(WideToUTF16(kWords[i]),
-                                                    true));
+    word_list.insert(std::make_pair<std::wstring, bool>(kWords[i], true));
 
   RunDictionaryTest(kCodepage, word_list);
 }

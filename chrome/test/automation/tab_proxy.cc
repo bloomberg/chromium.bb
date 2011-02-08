@@ -22,7 +22,7 @@ TabProxy::TabProxy(AutomationMessageSender* sender,
 }
 
 
-bool TabProxy::GetTabTitle(string16* title) const {
+bool TabProxy::GetTabTitle(std::wstring* title) const {
   if (!is_valid())
     return false;
 
@@ -98,8 +98,8 @@ AutomationMsg_NavigationResponseValues
   return navigate_response;
 }
 
-bool TabProxy::SetAuth(const string16& username,
-                       const string16& password) {
+bool TabProxy::SetAuth(const std::wstring& username,
+                       const std::wstring& password) {
   if (!is_valid())
     return false;
 
@@ -233,9 +233,9 @@ bool TabProxy::GetProcessID(int* process_id) const {
   return sender_->Send(new AutomationMsg_TabProcessID(handle_, process_id));
 }
 
-bool TabProxy::ExecuteAndExtractString(const string16& frame_xpath,
-                                       const string16& jscript,
-                                       string16* string_value) {
+bool TabProxy::ExecuteAndExtractString(const std::wstring& frame_xpath,
+                                       const std::wstring& jscript,
+                                       std::wstring* string_value) {
   Value* root = NULL;
   bool succeeded = ExecuteAndExtractValue(frame_xpath, jscript, &root);
   if (!succeeded)
@@ -247,16 +247,18 @@ bool TabProxy::ExecuteAndExtractString(const string16& frame_xpath,
   if (succeeded) {
     string16 read_value;
     succeeded = value->GetAsString(&read_value);
-    if (succeeded)
-      *string_value = read_value;
+    if (succeeded) {
+      // TODO(viettrungluu): remove conversion. (But should |jscript| be UTF-8?)
+      *string_value = UTF16ToWideHack(read_value);
+    }
   }
 
   delete root;
   return succeeded;
 }
 
-bool TabProxy::ExecuteAndExtractBool(const string16& frame_xpath,
-                                     const string16& jscript,
+bool TabProxy::ExecuteAndExtractBool(const std::wstring& frame_xpath,
+                                     const std::wstring& jscript,
                                      bool* bool_value) {
   Value* root = NULL;
   bool succeeded = ExecuteAndExtractValue(frame_xpath, jscript, &root);
@@ -278,8 +280,8 @@ bool TabProxy::ExecuteAndExtractBool(const string16& frame_xpath,
   return succeeded;
 }
 
-bool TabProxy::ExecuteAndExtractInt(const string16& frame_xpath,
-                                    const string16& jscript,
+bool TabProxy::ExecuteAndExtractInt(const std::wstring& frame_xpath,
+                                    const std::wstring& jscript,
                                     int* int_value) {
   Value* root = NULL;
   bool succeeded = ExecuteAndExtractValue(frame_xpath, jscript, &root);
@@ -301,8 +303,8 @@ bool TabProxy::ExecuteAndExtractInt(const string16& frame_xpath,
   return succeeded;
 }
 
-bool TabProxy::ExecuteAndExtractValue(const string16& frame_xpath,
-                                      const string16& jscript,
+bool TabProxy::ExecuteAndExtractValue(const std::wstring& frame_xpath,
+                                      const std::wstring& jscript,
                                       Value** value) {
   if (!is_valid())
     return false;
@@ -822,8 +824,8 @@ bool TabProxy::ExecuteJavaScriptAndGetJSON(const std::string& script,
     NOTREACHED();
     return false;
   }
-  return sender_->Send(new AutomationMsg_DomOperation(handle_, string16(),
-                                                      UTF8ToUTF16(script),
+  return sender_->Send(new AutomationMsg_DomOperation(handle_, L"",
+                                                      UTF8ToWide(script),
                                                       json));
 }
 

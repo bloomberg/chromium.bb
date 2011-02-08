@@ -931,7 +931,7 @@ class PageSnapshotTaker : public DomOperationObserver {
   void OnSnapshotTaken(const SkBitmap& bitmap);
 
   // Helper method to send arbitrary javascript to the renderer for evaluation.
-  void ExecuteScript(const string16& javascript);
+  void ExecuteScript(const std::wstring& javascript);
 
   // Helper method to send a response back to the client. Deletes this.
   void SendMessage(bool success);

@@ -11,9 +11,9 @@
 #include "chrome/test/pyautolib/pyautolib.h"
 #include "googleurl/src/gurl.h"
 
-static int64 StringToId(const string16& str) {
+static int64 StringToId(const std::wstring& str) {
   int64 id;
-  base::StringToInt64(str, &id);
+  base::StringToInt64(WideToUTF8(str), &id);
   return id;
 }
 
@@ -241,22 +241,19 @@ std::string PyUITestBase::_GetBookmarksAsJSON() {
   return s;
 }
 
-bool PyUITestBase::AddBookmarkGroup(const string16& parent_id, int index,
-                                    const string16& title) {
+bool PyUITestBase::AddBookmarkGroup(std::wstring& parent_id, int index,
+                                    std::wstring& title) {
   scoped_refptr<BrowserProxy> browser_proxy =
       automation()->GetBrowserWindow(0);  // Window doesn't matter.
   EXPECT_TRUE(browser_proxy.get());
   if (!browser_proxy.get())
     return false;
 
-  return browser_proxy->AddBookmarkGroup(StringToId(parent_id),
-                                         index,
-                                         title);
+  return browser_proxy->AddBookmarkGroup(StringToId(parent_id), index, title);
 }
 
-bool PyUITestBase::AddBookmarkURL(const string16& parent_id, int index,
-                                  const string16& title,
-                                  const string16& url) {
+bool PyUITestBase::AddBookmarkURL(std::wstring& parent_id, int index,
+                                  std::wstring& title, std::wstring& url) {
   scoped_refptr<BrowserProxy> browser_proxy =
       automation()->GetBrowserWindow(0);  // Window doesn't matter.
   EXPECT_TRUE(browser_proxy.get());
@@ -264,13 +261,12 @@ bool PyUITestBase::AddBookmarkURL(const string16& parent_id, int index,
     return false;
 
   return browser_proxy->AddBookmarkURL(StringToId(parent_id),
-                                       index,
-                                       title,
-                                       GURL(UTF16ToUTF8(url)));
+                                       index, title,
+                                       GURL(WideToUTF8(url)));
 }
 
 bool PyUITestBase::ReparentBookmark(
-    const string16& id, const string16& new_parent_id, int index) {
+    std::wstring& id, std::wstring& new_parent_id, int index) {
   scoped_refptr<BrowserProxy> browser_proxy =
       automation()->GetBrowserWindow(0);  // Window doesn't matter.
   EXPECT_TRUE(browser_proxy.get());
@@ -282,7 +278,7 @@ bool PyUITestBase::ReparentBookmark(
                                          index);
 }
 
-bool PyUITestBase::SetBookmarkTitle(const string16& id, const string16& title) {
+bool PyUITestBase::SetBookmarkTitle(std::wstring& id, std::wstring& title) {
   scoped_refptr<BrowserProxy> browser_proxy =
       automation()->GetBrowserWindow(0);  // Window doesn't matter.
   EXPECT_TRUE(browser_proxy.get());
@@ -292,17 +288,17 @@ bool PyUITestBase::SetBookmarkTitle(const string16& id, const string16& title) {
   return browser_proxy->SetBookmarkTitle(StringToId(id), title);
 }
 
-bool PyUITestBase::SetBookmarkURL(const string16& id, const string16& url) {
+bool PyUITestBase::SetBookmarkURL(std::wstring& id, std::wstring& url) {
   scoped_refptr<BrowserProxy> browser_proxy =
       automation()->GetBrowserWindow(0);  // Window doesn't matter.
   EXPECT_TRUE(browser_proxy.get());
   if (!browser_proxy.get())
     return false;
 
-  return browser_proxy->SetBookmarkURL(StringToId(id), GURL(UTF16ToUTF8(url)));
+  return browser_proxy->SetBookmarkURL(StringToId(id), GURL(WideToUTF8(url)));
 }
 
-bool PyUITestBase::RemoveBookmark(const string16& id) {
+bool PyUITestBase::RemoveBookmark(std::wstring& id) {
   scoped_refptr<BrowserProxy> browser_proxy =
       automation()->GetBrowserWindow(0);  // Window doesn't matter.
   EXPECT_TRUE(browser_proxy.get());
@@ -335,19 +331,18 @@ std::wstring PyUITestBase::ExecuteJavascript(const std::wstring& script,
   scoped_refptr<BrowserProxy> browser_proxy =
       automation()->GetBrowserWindow(window_index);
   EXPECT_TRUE(browser_proxy.get());
+  std::wstring response;
   if (!browser_proxy.get())
-    return std::wstring();
+    return response;
   scoped_refptr<TabProxy> tab_proxy =
       browser_proxy->GetTab(tab_index);
   EXPECT_TRUE(tab_proxy.get());
   if (!tab_proxy.get())
-    return std::wstring();
+    return response;
 
-  string16 response;
-  EXPECT_TRUE(tab_proxy->ExecuteAndExtractString(WideToUTF16Hack(frame_xpath),
-                                                 WideToUTF16Hack(script),
+  EXPECT_TRUE(tab_proxy->ExecuteAndExtractString(frame_xpath, script,
                                                  &response));
-  return UTF16ToWideHack(response);
+  return response;
 }
 
 std::wstring PyUITestBase::GetDOMValue(const std::wstring& expr,

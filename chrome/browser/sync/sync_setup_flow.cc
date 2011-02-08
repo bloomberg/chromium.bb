@@ -357,8 +357,7 @@ void FlowHandler::ExecuteJavascriptInIFrame(const std::wstring& iframe_xpath,
                                             const std::wstring& js) {
   if (dom_ui_) {
     RenderViewHost* rvh = dom_ui_->tab_contents()->render_view_host();
-    rvh->ExecuteJavascriptInWebFrame(WideToUTF16Hack(iframe_xpath),
-                                     WideToUTF16Hack(js));
+    rvh->ExecuteJavascriptInWebFrame(iframe_xpath, js);
   }
 }
 

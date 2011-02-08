@@ -5,7 +5,6 @@
 #include "chrome/test/ui/ui_test.h"
 
 #include "base/test/test_timeouts.h"
-#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/automation/browser_proxy.h"
@@ -49,13 +48,13 @@ class BookmarksUITest : public UITest {
   void AssertIsBookmarksPage(TabProxy* tab) {
     // tab->GetCurrentURL is not up to date.
     GURL url;
-    string16 out;
-    ASSERT_TRUE(tab->ExecuteAndExtractString(string16(),
-        ASCIIToUTF16("domAutomationController.send(location.protocol)"), &out));
-    ASSERT_EQ(ASCIIToUTF16("chrome-extension:"), out);
-    ASSERT_TRUE(tab->ExecuteAndExtractString(string16(),
-        ASCIIToUTF16("domAutomationController.send(location.pathname)"), &out));
-    ASSERT_EQ(ASCIIToUTF16("/main.html"), out);
+    std::wstring out;
+    ASSERT_TRUE(tab->ExecuteAndExtractString(L"",
+        L"domAutomationController.send(location.protocol)", &out));
+    ASSERT_EQ(L"chrome-extension:", out);
+    ASSERT_TRUE(tab->ExecuteAndExtractString(L"",
+        L"domAutomationController.send(location.pathname)", &out));
+    ASSERT_EQ(L"/main.html", out);
   }
 };
 

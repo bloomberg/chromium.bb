@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
@@ -19,8 +18,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, AlertBasic) {
   ExtensionHost* host = browser()->profile()->GetExtensionProcessManager()->
       GetBackgroundHostForExtension(extension);
   ASSERT_TRUE(host);
-  host->render_view_host()->ExecuteJavascriptInWebFrame(string16(),
-      ASCIIToUTF16("alert('This should not crash.');"));
+  host->render_view_host()->ExecuteJavascriptInWebFrame(L"",
+      L"alert('This should not crash.');");
 
   AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
   ASSERT_TRUE(alert);

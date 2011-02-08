@@ -149,18 +149,17 @@ class DomCheckerTest : public UITest {
   }
 
   bool GetTestCount(TabProxy* tab, int* test_count) {
-    return tab->ExecuteAndExtractInt(string16(),
-        ASCIIToUTF16("window.domAutomationController.send("
-                     "automation.GetTestCount());"),
+    return tab->ExecuteAndExtractInt(L"",
+        L"window.domAutomationController.send(automation.GetTestCount());",
         test_count);
   }
 
   bool GetTestsFailed(TabProxy* tab, ResultsSet* tests_failed) {
-    string16 json16;
-    bool succeeded = tab->ExecuteAndExtractString(string16(),
-        ASCIIToUTF16("window.domAutomationController.send("
-                     "JSON.stringify(automation.GetFailures()));"),
-        &json16);
+    std::wstring json_wide;
+    bool succeeded = tab->ExecuteAndExtractString(L"",
+        L"window.domAutomationController.send("
+        L"    JSON.stringify(automation.GetFailures()));",
+        &json_wide);
 
     // Note that we don't use ASSERT_TRUE here (and in some other places) as it
     // doesn't work inside a function with a return type other than void.
@@ -168,7 +167,7 @@ class DomCheckerTest : public UITest {
     if (!succeeded)
       return false;
 
-    std::string json = UTF16ToUTF8(json16);
+    std::string json = WideToUTF8(json_wide);
     JSONStringValueSerializer deserializer(json);
     scoped_ptr<Value> value(deserializer.Deserialize(NULL, NULL));
 

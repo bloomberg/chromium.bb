@@ -50,12 +50,13 @@ void Automation::ExecuteScript(const std::string& frame_xpath,
                                const std::string& script,
                                std::string* result,
                                bool* success) {
-  string16 xpath16 = UTF8ToUTF16(frame_xpath);
-  string16 script16 = UTF8ToUTF16(script);
-  string16 result16;
-  *success = tab_->ExecuteAndExtractString(xpath16, script16, &result16);
+  std::wstring wide_xpath = UTF8ToWide(frame_xpath);
+  std::wstring wide_script = UTF8ToWide(script);
+  std::wstring wide_result;
+  *success = tab_->ExecuteAndExtractString(
+      wide_xpath, wide_script, &wide_result);
   if (*success)
-    *result = UTF16ToUTF8(result16);
+    *result = WideToUTF8(wide_result);
 }
 
 void Automation::NavigateToURL(const std::string& url,
@@ -85,10 +86,10 @@ void Automation::GetURL(std::string* url,
 
 void Automation::GetTabTitle(std::string* tab_title,
                              bool* success) {
-  string16 title16;
-  *success = tab_->GetTabTitle(&title16);
+  std::wstring wide_title;
+  *success = tab_->GetTabTitle(&wide_title);
   if (*success)
-    *tab_title = UTF16ToUTF8(title16);
+    *tab_title = WideToUTF8(wide_title);
 }
 
 }  // namespace webdriver

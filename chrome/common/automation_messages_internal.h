@@ -133,7 +133,7 @@ IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_Tab,
 IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_TabTitle,
                             int,
                             int,
-                            string16)
+                            std::wstring)
 
 // This message requests the url of the tab with the given handle.
 // The return value contains a success flag and the URL string. The URL will
@@ -161,8 +161,8 @@ IPC_MESSAGE_CONTROL1(AutomationMsg_HandleUnused,
 // authentication challenge.
 IPC_SYNC_MESSAGE_CONTROL3_1(AutomationMsg_SetAuth,
                             int /* tab handle */,
-                            string16 /* username */,
-                            string16 /* password */,
+                            std::wstring /* username */,
+                            std::wstring /* password */,
                             AutomationMsg_NavigationResponseValues /* status */)
 
 // This message tells the AutomationProvider to cancel the login in the
@@ -195,8 +195,8 @@ IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_NeedsAuth,
 // a serialized JSON string response.
 IPC_SYNC_MESSAGE_CONTROL3_1(AutomationMsg_DomOperation,
                             int /* tab handle */,
-                            string16 /* context_frame */,
-                            string16 /* the javascript to be executed */,
+                            std::wstring /* context_frame */,
+                            std::wstring /* the javascript to be executed */,
                             std::string /* the serialized json string containg
                                            the result of a javascript
                                            execution */)
@@ -1236,13 +1236,13 @@ IPC_SYNC_MESSAGE_CONTROL4_1(AutomationMsg_AddBookmarkGroup,
                             int /* browser_handle */,
                             int64 /* parent_id */,
                             int /* index */,
-                            string16 /* title */,
+                            std::wstring /* title */,
                             bool /* success */)
 IPC_SYNC_MESSAGE_CONTROL5_1(AutomationMsg_AddBookmarkURL,
                             int /* browser_handle */,
                             int64 /* parent_id */,
                             int /* index */,
-                            string16 /* title */,
+                            std::wstring /* title */,
                             GURL /* url */,
                             bool /* success */)
 IPC_SYNC_MESSAGE_CONTROL4_1(AutomationMsg_ReparentBookmark,
@@ -1254,7 +1254,7 @@ IPC_SYNC_MESSAGE_CONTROL4_1(AutomationMsg_ReparentBookmark,
 IPC_SYNC_MESSAGE_CONTROL3_1(AutomationMsg_SetBookmarkTitle,
                             int /* browser_handle */,
                             int64 /* id */,
-                            string16 /* title */,
+                            std::wstring /* title */,
                             bool /* success */)
 IPC_SYNC_MESSAGE_CONTROL3_1(AutomationMsg_SetBookmarkURL,
                             int /* browser_handle */,
