@@ -40,6 +40,7 @@ class SyncBackendHostForProfileSyncTest
       int num_expected_pauses,
       bool set_initial_sync_ended_on_init,
       bool synchronous_init);
+  virtual ~SyncBackendHostForProfileSyncTest();
 
   MOCK_METHOD0(RequestPause, bool());
   MOCK_METHOD0(RequestResume, bool());

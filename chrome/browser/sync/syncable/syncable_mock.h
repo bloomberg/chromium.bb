@@ -17,9 +17,9 @@ using syncable::EntryKernel;
 
 class MockDirectory : public Directory {
  public:
-  MockDirectory() {
-    init_kernel("myk");
-  }
+  MockDirectory();
+  virtual ~MockDirectory();
+
   MOCK_METHOD1(GetEntryByHandle, syncable::EntryKernel*(int64));
 
   MOCK_METHOD2(set_last_downloadstamp, void(syncable::ModelType, int64));
@@ -30,9 +30,7 @@ class MockDirectory : public Directory {
 
 class MockSyncableWriteTransaction : public syncable::WriteTransaction {
  public:
-  explicit MockSyncableWriteTransaction(Directory *directory) :
-       WriteTransaction(directory, syncable::UNITTEST, "dontcare.cpp", 25) {
-  }
+  explicit MockSyncableWriteTransaction(Directory *directory);
 };
 
 

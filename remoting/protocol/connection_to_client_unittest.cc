@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
-#include "remoting/base/mock_objects.h"
+#include "remoting/base/base_mock_objects.h"
 #include "remoting/protocol/fake_session.h"
 #include "remoting/protocol/connection_to_client.h"
 #include "remoting/protocol/protocol_mock_objects.h"

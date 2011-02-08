@@ -61,6 +61,8 @@ SyncBackendHostForProfileSyncTest::SyncBackendHostForProfileSyncTest(
               RequestNudge()).Times(set_initial_sync_ended_on_init ? 0 : 1);
 }
 
+SyncBackendHostForProfileSyncTest::~SyncBackendHostForProfileSyncTest() {}
+
 void SyncBackendHostForProfileSyncTest::ConfigureDataTypes(
     const DataTypeController::TypeMap& data_type_controllers,
     const syncable::ModelTypeSet& types,

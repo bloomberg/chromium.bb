@@ -6,6 +6,7 @@
 #include "chrome/browser/policy/asynchronous_policy_provider.h"
 #include "chrome/browser/policy/asynchronous_policy_test_base.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
+#include "chrome/browser/policy/mock_configuration_policy_store.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using ::testing::_;

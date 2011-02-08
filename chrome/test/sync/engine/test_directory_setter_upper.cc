@@ -113,6 +113,8 @@ MockDirectorySetterUpper::MockDirectory::MockDirectory(
   init_kernel(name);
 }
 
+MockDirectorySetterUpper::MockDirectory::~MockDirectory() {}
+
 MockDirectorySetterUpper::Manager::Manager(
     const FilePath& root_path, syncable::Directory* dir) :
     syncable::DirectoryManager(root_path) {

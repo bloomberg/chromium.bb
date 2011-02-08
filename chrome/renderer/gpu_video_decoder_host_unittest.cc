@@ -6,7 +6,7 @@
 #include "chrome/common/gpu_messages.h"
 #include "chrome/common/message_router.h"
 #include "chrome/renderer/gpu_video_decoder_host.h"
-#include "media/video/mock_objects.h"
+#include "media/video/video_mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

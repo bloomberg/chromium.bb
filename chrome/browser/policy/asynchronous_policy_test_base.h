@@ -9,17 +9,18 @@
 #include "base/message_loop.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/policy/asynchronous_policy_provider.h"
-#include "chrome/browser/policy/mock_configuration_policy_store.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
 
+class MockConfigurationPolicyStore;
+
 // A delegate for testing that can feed arbitrary information to the loader.
 class ProviderDelegateMock : public AsynchronousPolicyProvider::Delegate {
  public:
-  ProviderDelegateMock() : AsynchronousPolicyProvider::Delegate() {}
-  virtual ~ProviderDelegateMock() {}
+  ProviderDelegateMock();
+  virtual ~ProviderDelegateMock();
 
   MOCK_METHOD0(Load, DictionaryValue*());
 
@@ -29,20 +30,12 @@ class ProviderDelegateMock : public AsynchronousPolicyProvider::Delegate {
 
 class AsynchronousPolicyTestBase : public testing::Test {
  public:
-  AsynchronousPolicyTestBase()
-      : ui_thread_(BrowserThread::UI, &loop_),
-        file_thread_(BrowserThread::FILE, &loop_) {}
+  AsynchronousPolicyTestBase();
+  virtual ~AsynchronousPolicyTestBase();
 
-  virtual ~AsynchronousPolicyTestBase() {}
-
-  virtual void SetUp() {
-    delegate_.reset(new ProviderDelegateMock());
-    store_.reset(new MockConfigurationPolicyStore);
-  }
-
-  virtual void TearDown() {
-    loop_.RunAllPending();
-  }
+  // testing::Test:
+  virtual void SetUp();
+  virtual void TearDown();
 
  protected:
   MessageLoop loop_;

@@ -13,7 +13,8 @@
 
 class IDirect3D9Mock : public IDirect3D9 {
  public:
-  IDirect3D9Mock() {}
+  IDirect3D9Mock();
+  virtual ~IDirect3D9Mock();
 
   MOCK_METHOD5_WITH_CALLTYPE(
       STDMETHODCALLTYPE, CheckDepthStencilMatch,

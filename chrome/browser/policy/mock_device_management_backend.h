@@ -22,11 +22,10 @@ namespace em = enterprise_management;
 // Useful for unit testing when a server-based backend isn't
 // available. Simulates both successful and failed requests to the device
 // management server.
-class MockDeviceManagementBackend
-    : public DeviceManagementBackend {
+class MockDeviceManagementBackend : public DeviceManagementBackend {
  public:
-  MockDeviceManagementBackend() {}
-  virtual ~MockDeviceManagementBackend() {}
+  MockDeviceManagementBackend();
+  virtual ~MockDeviceManagementBackend();
 
   // DeviceManagementBackend method overrides:
   MOCK_METHOD4(ProcessRegisterRequest, void(

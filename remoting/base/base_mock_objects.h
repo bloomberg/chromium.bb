@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_BASE_MOCK_OBJECTS_H_
-#define REMOTING_BASE_MOCK_OBJECTS_H_
+#ifndef REMOTING_BASE_BASE_MOCK_OBJECTS_H_
+#define REMOTING_BASE_BASE_MOCK_OBJECTS_H_
 
 #include "remoting/base/capture_data.h"
 #include "remoting/base/decoder.h"
@@ -14,7 +14,8 @@ namespace remoting {
 
 class MockEncoder : public Encoder {
  public:
-  MockEncoder() {}
+  MockEncoder();
+  virtual ~MockEncoder();
 
   MOCK_METHOD3(Encode, void(
       scoped_refptr<CaptureData> capture_data,
@@ -27,4 +28,4 @@ class MockEncoder : public Encoder {
 
 }  // namespace remoting
 
-#endif  // REMOTING_BASE_MOCK_OBJECTS_H_
+#endif  // REMOTING_BASE_BASE_MOCK_OBJECTS_H_

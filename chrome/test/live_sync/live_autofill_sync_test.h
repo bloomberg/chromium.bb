@@ -19,6 +19,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/webdata/autofill_entry.h"
+#include "chrome/browser/webdata/web_database.h"
 #include "chrome/test/live_sync/live_sync_test.h"
 #include "chrome/test/thread_observer_helper.h"
 
