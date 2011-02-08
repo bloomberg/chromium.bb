@@ -240,7 +240,8 @@ class PathTest : public DiagnosticTest {
       return false;
     }
     if (!file_util::PathExists(dir_or_file)) {
-      RecordFailure(ASCIIToUTF16("Path not found"));
+      RecordFailure(ASCIIToUTF16("Path not found: ") +
+                    dir_or_file.LossyDisplayName());
       return true;
     }
 
@@ -251,7 +252,8 @@ class PathTest : public DiagnosticTest {
       file_util::GetFileSize(dir_or_file, &dir_or_file_size);
     }
     if (!dir_or_file_size && !path_info_.is_optional) {
-      RecordFailure(ASCIIToUTF16("Cannot obtain size"));
+      RecordFailure(ASCIIToUTF16("Cannot obtain size for: ") +
+                    dir_or_file.LossyDisplayName());
       return true;
     }
     DataUnits units = GetByteDisplayUnits(dir_or_file_size);
@@ -259,7 +261,10 @@ class PathTest : public DiagnosticTest {
 
     if (path_info_.max_size > 0) {
       if (dir_or_file_size > path_info_.max_size) {
-        RecordFailure(ASCIIToUTF16("Path is too big: ") + printable_size);
+        RecordFailure(ASCIIToUTF16("Path contents too large (") +
+                      printable_size +
+                      ASCIIToUTF16(") for: ") +
+                      dir_or_file.LossyDisplayName());
         return true;
       }
     }
@@ -268,7 +273,8 @@ class PathTest : public DiagnosticTest {
       return true;
     }
     if (!file_util::PathIsWritable(dir_or_file)) {
-      RecordFailure(ASCIIToUTF16("Path is not writable"));
+      RecordFailure(ASCIIToUTF16("Path is not writable: ") +
+                    dir_or_file.LossyDisplayName());
       return true;
     }
     RecordSuccess(ASCIIToUTF16("Path exists and is writable: ")
