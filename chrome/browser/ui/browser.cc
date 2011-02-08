@@ -614,9 +614,10 @@ TabContents* Browser::OpenAppShortcutWindow(Profile* profile,
 TabContents* Browser::OpenApplicationTab(Profile* profile,
                                          const Extension* extension,
                                          TabContents* existing_tab) {
-  Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
+  Browser* browser =
+      BrowserList::FindBrowserWithType(profile, Browser::TYPE_NORMAL, false);
   TabContents* contents = NULL;
-  if (!browser || browser->type() != Browser::TYPE_NORMAL)
+  if (!browser)
     return contents;
 
   // Check the prefs for overridden mode.

@@ -33,3 +33,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiBrowserTest, LaunchApp) {
   ASSERT_TRUE(listener1.WaitUntilSatisfied());
   ASSERT_TRUE(listener2.WaitUntilSatisfied());
 }
+
+IN_PROC_BROWSER_TEST_F(ExtensionManagementApiBrowserTest,
+                       LaunchAppFromBackground) {
+  ExtensionTestMessageListener listener1("success", false);
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("management/packaged_app")));
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("management/launch_app_from_background")));
+  ASSERT_TRUE(listener1.WaitUntilSatisfied());
+}
