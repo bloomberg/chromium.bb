@@ -162,10 +162,12 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
                                         &ret_types)) {
     /* Check input parameters for type conformance */
     if (!TypeCheckArgs(arg_types, args)) {
+      dprintf((SIDE "SRPC: InvokeV: in arg mismatch\n"));
       return NACL_SRPC_RESULT_IN_ARG_TYPE_MISMATCH;
     }
     /* Check return values for type conformance */
     if (!TypeCheckArgs(ret_types, rets)) {
+      dprintf((SIDE "SRPC: InvokeV: out arg mismatch\n"));
       return NACL_SRPC_RESULT_OUT_ARG_TYPE_MISMATCH;
     }
   } else {
@@ -465,6 +467,8 @@ NaClSrpcError NaClSrpcInvokeBySignature(NaClSrpcChannel  *channel,
      * kNaClSrpcInvalidMethodIndex is returned when rpc_name does not match
      * any method in the client service.  Explicitly check and return an error.
      */
+    dprintf((SIDE "SRPC: InvokeBySignature: missing signature [%s]\n",
+             rpc_signature));
     return NACL_SRPC_RESULT_APP_ERROR;
   }
 
