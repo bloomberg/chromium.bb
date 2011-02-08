@@ -37,6 +37,9 @@ using WebKit::WebInputEventFactory;
 using WebKit::WebMouseWheelEvent;
 using WebKit::WebTouchEvent;
 
+const char RenderWidgetHostViewViews::kViewClassName[] =
+    "browser/renderer_host/RenderWidgetHostViewViews";
+
 namespace {
 
 int WebInputEventFlagsFromViewsEvent(const views::Event& event) {
@@ -765,6 +768,10 @@ views::View::TouchStatus RenderWidgetHostViewViews::OnTouchEvent(
   }
 
   return status;
+}
+
+std::string RenderWidgetHostViewViews::GetClassName() const {
+  return kViewClassName;
 }
 
 // static

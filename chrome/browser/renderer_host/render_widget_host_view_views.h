@@ -29,6 +29,9 @@ struct NativeWebKeyboardEvent;
 class RenderWidgetHostViewViews : public RenderWidgetHostView,
                                   public views::View {
  public:
+  // Internal class name.
+  static const char kViewClassName[];
+
   explicit RenderWidgetHostViewViews(RenderWidgetHost* widget);
   virtual ~RenderWidgetHostViewViews();
 
@@ -84,6 +87,7 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   virtual void Paint(gfx::Canvas* canvas);
 
   // Overridden from views::View.
+  virtual std::string GetClassName() const;
   gfx::NativeCursor GetCursorForPoint(views::Event::EventType type,
                                       const gfx::Point& point);
 

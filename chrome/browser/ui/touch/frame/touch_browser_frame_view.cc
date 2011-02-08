@@ -6,6 +6,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
+#include "chrome/browser/renderer_host/render_widget_host_view_views.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -21,12 +22,6 @@
 namespace {
 
 const int kKeyboardHeight = 300;
-
-TouchBrowserFrameView::VirtualKeyboardType GetKeyboardType(views::View* view) {
-  if (view->GetClassName().compare(views::Textfield::kViewClassName) == 0)
-    return TouchBrowserFrameView::GENERIC;
-  return TouchBrowserFrameView::NONE;
-}
 
 PropertyAccessor<bool>* GetFocusedStateAccessor() {
   static PropertyAccessor<bool> state;
@@ -73,11 +68,11 @@ void TouchBrowserFrameView::Layout() {
 
 void TouchBrowserFrameView::FocusWillChange(views::View* focused_before,
                                             views::View* focused_now) {
-  if (!focused_before ||
-      (focused_now && GetKeyboardType(focused_now)
-          != GetKeyboardType(focused_before))) {
+  VirtualKeyboardType before = DecideKeyboardStateForView(focused_before);
+  VirtualKeyboardType now = DecideKeyboardStateForView(focused_now);
+  if (before != now) {
     // TODO(varunjain): support other types of keyboard.
-    UpdateKeyboardAndLayout(GetKeyboardType(focused_now) == GENERIC);
+    UpdateKeyboardAndLayout(now == GENERIC);
   }
 }
 
@@ -145,6 +140,24 @@ void TouchBrowserFrameView::UpdateKeyboardAndLayout(bool should_show_keyboard) {
         browser_view()->browser()->GetSelectedTabContents()->render_view_host();
     host->ScrollFocusedEditableNodeIntoView();
   }
+}
+
+TouchBrowserFrameView::VirtualKeyboardType
+    TouchBrowserFrameView::DecideKeyboardStateForView(views::View* view) {
+  if (!view)
+    return NONE;
+
+  std::string cname = view->GetClassName();
+  if (cname == views::Textfield::kViewClassName) {
+    return GENERIC;
+  } else if (cname == RenderWidgetHostViewViews::kViewClassName) {
+    TabContents* contents = browser_view()->browser()->GetSelectedTabContents();
+    bool* editable = contents ? GetFocusedStateAccessor()->GetProperty(
+        contents->property_bag()) : NULL;
+    if (editable && *editable)
+      return GENERIC;
+  }
+  return NONE;
 }
 
 void TouchBrowserFrameView::TabSelectedAt(TabContentsWrapper* old_contents,
