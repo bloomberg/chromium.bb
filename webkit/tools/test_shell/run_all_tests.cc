@@ -65,7 +65,7 @@ class TestShellTestSuite : public base::TestSuite {
     // triggering function.
     std::string js_flags =
         parsed_command_line.GetSwitchValueASCII(test_shell::kJavaScriptFlags);
-    js_flags += " --logfile=* --log_gc --expose_gc";
+    js_flags += " --expose_gc";
     webkit_glue::SetJavaScriptFlags(js_flags);
 
     // Suppress error dialogs and do not show GP fault error box on Windows.

@@ -9,51 +9,43 @@
 #include "base/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
+#include "v8/include/v8-profiler.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/tools/test_shell/test_shell.h"
 #include "webkit/tools/test_shell/test_shell_test.h"
 
-static const char kHeapSampleBegin[] = "heap-sample-begin,";
-static const char kHeapObjectLogEntryPrefix[] = "\nheap-js-cons-item,";
-static const char kHeapObjectLogEntrySuffix[] = ",";
-
 class ListenerLeakTest : public TestShellTest {
 };
 
-static std::string GetV8Log(int skip) {
-  std::string v8_log;
-  char buf[2048];
-  int read_size;
-  do {
-    read_size = v8::V8::GetLogLines(skip + static_cast<int>(v8_log.size()),
-                                    buf, sizeof(buf));
-    v8_log.append(buf, read_size);
-  } while (read_size > 0);
-  return v8_log;
+static const v8::HeapGraphNode* GetChild(
+    const v8::HeapGraphNode* node,
+    v8::HeapGraphNode::Type type,
+    const char* name) {
+  for (int i = 0, count = node->GetChildrenCount(); i < count; ++i) {
+    const v8::HeapGraphEdge* prop = node->GetChild(i);
+    const v8::HeapGraphNode* child = prop->GetToNode();
+    v8::String::AsciiValue child_name(child->GetName());
+    if (child->GetType() == type && strcmp(name, *child_name) == 0)
+      return child;
+  }
+  return NULL;
 }
 
-static int GetNumObjects(int log_skip, const std::string& constructor) {
-  std::string v8_log = GetV8Log(log_skip);
-  size_t sample_begin = v8_log.rfind(kHeapSampleBegin);
-  CHECK(sample_begin != std::string::npos);
-  std::string log_entry =
-      kHeapObjectLogEntryPrefix + constructor + kHeapObjectLogEntrySuffix;
-  size_t i = v8_log.find(log_entry, sample_begin);
-  if (i == std::string::npos) return 0;
-  i += log_entry.size();
-  size_t j = v8_log.find(",", i);
-  CHECK(j != std::string::npos);
-  int num_objects;
-  CHECK(base::StringToInt(v8_log.begin() + i,
-                          v8_log.begin() + j,
-                          &num_objects));
-  return num_objects;
+static int GetNumObjects(const char* constructor) {
+  v8::HandleScope scope;
+  const v8::HeapSnapshot* snapshot =
+      v8::HeapProfiler::TakeSnapshot(v8::String::New(""),
+                                     v8::HeapSnapshot::kAggregated);
+  CHECK(snapshot);
+  const v8::HeapGraphNode* node = GetChild(snapshot->GetRoot(),
+                                           v8::HeapGraphNode::kObject,
+                                           constructor);
+  return node != NULL ? node->GetInstancesCount() : 0;
 }
 
 // This test tries to create a reference cycle between node and its listener.
 // See http://crbug/17400.
 TEST_F(ListenerLeakTest, ReferenceCycle) {
-  const int log_skip = static_cast<int>(GetV8Log(0).size());
   FilePath listener_file;
   ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &listener_file));
   listener_file = listener_file.Append(FILE_PATH_LITERAL("webkit"))
@@ -62,13 +54,12 @@ TEST_F(ListenerLeakTest, ReferenceCycle) {
       .Append(FILE_PATH_LITERAL("listener_leak1.html"));
   test_shell_->LoadFile(listener_file);
   test_shell_->WaitTestFinished();
-  ASSERT_EQ(0, GetNumObjects(log_skip, "EventListenerLeakTestObject1"));
+  ASSERT_EQ(0, GetNumObjects("EventListenerLeakTestObject1"));
 }
 
 // This test sets node onclick many times to expose a possible memory
 // leak where all listeners get referenced by the node.
 TEST_F(ListenerLeakTest, HiddenReferences) {
-  const int log_skip = static_cast<int>(GetV8Log(0).size());
   FilePath listener_file;
   ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &listener_file));
   listener_file = listener_file.Append(FILE_PATH_LITERAL("webkit"))
@@ -77,6 +68,6 @@ TEST_F(ListenerLeakTest, HiddenReferences) {
       .Append(FILE_PATH_LITERAL("listener_leak2.html"));
   test_shell_->LoadFile(listener_file);
   test_shell_->WaitTestFinished();
-  ASSERT_EQ(1, GetNumObjects(log_skip, "EventListenerLeakTestObject2"));
+  ASSERT_EQ(1, GetNumObjects("EventListenerLeakTestObject2"));
 }
 
