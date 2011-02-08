@@ -12,11 +12,11 @@
 namespace webdriver {
 // Concatenates each element, from the atoms.h file, in the given |atom|
 // into a single string.
-std::wstring build_atom(const wchar_t* const atom[],
-                        const size_t& size);
+std::string build_atom(const wchar_t* const atom[],
+                       const size_t& size);
 
 // Converts a value type to a string for logging.
-std::wstring print_valuetype(Value::ValueType e);
+std::string print_valuetype(Value::ValueType e);
 
 // Checks that a value has the expected type.
 void CheckValueType(const Value::ValueType expected, const Value* const actual);

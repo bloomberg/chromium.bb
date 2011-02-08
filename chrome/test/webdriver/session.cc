@@ -31,7 +31,7 @@ Session::Session(const std::string& id)
       id_(id),
       window_num_(0),
       implicit_wait_(0),
-      current_frame_xpath_(L"") {
+      current_frame_xpath_("") {
 }
 
 bool Session::Init() {
@@ -54,7 +54,7 @@ void Session::Terminate() {
       &Session::TerminateOnSessionThread));
 }
 
-ErrorCode Session::ExecuteScript(const std::wstring& script,
+ErrorCode Session::ExecuteScript(const std::string& script,
                                  const ListValue* const args,
                                  Value** value) {
   std::string args_as_json;
@@ -62,39 +62,36 @@ ErrorCode Session::ExecuteScript(const std::wstring& script,
                           /*pretty_print=*/false,
                           &args_as_json);
 
-  std::wstring jscript = L"window.domAutomationController.send((function(){" +
+  std::string jscript = "window.domAutomationController.send((function(){" +
       // Every injected script is fed through the executeScript atom. This atom
       // will catch any errors that are thrown and convert them to the
       // appropriate JSON structure.
       build_atom(EXECUTE_SCRIPT, sizeof EXECUTE_SCRIPT) +
-      L"var result = executeScript(function(){" + script + L"}," +
-      ASCIIToWide(args_as_json) + L");return JSON.stringify(result);})());";
+      "var result = executeScript(function(){" + script + "}," +
+      args_as_json + ");return JSON.stringify(result);})());";
 
   // Should we also log the script that's being executed? It could be several KB
   // in size and will add lots of noise to the logs.
   VLOG(1) << "Executing script in frame: " << current_frame_xpath_;
 
-  std::wstring result;
+  std::string result;
   bool success;
-  std::string result_utf8;
   RunSessionTask(NewRunnableMethod(
       automation_.get(),
       &Automation::ExecuteScript,
-      WideToUTF8(current_frame_xpath_),
-      WideToUTF8(jscript),
-      &result_utf8,
+      current_frame_xpath_,
+      jscript,
+      &result,
       &success));
   if (!success) {
     *value = Value::CreateStringValue(
         "Unknown internal script execution failure");
     return kUnknownError;
   }
-  result = UTF8ToWide(result_utf8);
 
   VLOG(1) << "...script result: " << result;
-  std::string temp = WideToASCII(result);
   scoped_ptr<Value> r(base::JSONReader::ReadAndReturnError(
-      temp, true, NULL, NULL));
+      result, true, NULL, NULL));
   if (!r.get()) {
     *value = Value::CreateStringValue(
         "Internal script execution error: failed to parse script result");

@@ -4,7 +4,6 @@
 
 #include <string>
 
-#include "base/utf_string_conversions.h"
 #include "base/json/json_reader.h"
 
 #include "chrome/test/webdriver/commands/execute_command.h"
@@ -61,7 +60,7 @@ void ExecuteCommand::ExecutePost(Response* const response) {
   }
 
   ListValue* script_args = static_cast<ListValue*>(params);
-  ErrorCode error = session_->ExecuteScript(UTF16ToWide(script_),
+  ErrorCode error = session_->ExecuteScript(script_,
                                             script_args, &result);
 
   if (error != kSuccess) {

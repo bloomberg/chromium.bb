@@ -35,11 +35,11 @@ bool WebElementCommand::GetElementLocation(bool in_view, int* x, int* y) {
   scoped_ptr<ListValue> args(new ListValue());
   Value* result = NULL;
 
-  std::wstring jscript = build_atom(GET_LOCATION, sizeof GET_LOCATION);
+  std::string jscript = build_atom(GET_LOCATION, sizeof GET_LOCATION);
   if (in_view) {
-    jscript.append(L"arguments[0].scrollIntoView();");
+    jscript.append("arguments[0].scrollIntoView();");
   }
-  jscript.append(L"return getLocation(arguments[0]);");
+  jscript.append("return getLocation(arguments[0]);");
 
   args->Append(GetElementIdAsDictionaryValue(element_id));
 
@@ -62,7 +62,7 @@ bool WebElementCommand::GetElementSize(int* width, int* height) {
   scoped_ptr<ListValue> args(new ListValue());
   Value* result = NULL;
 
-  std::wstring jscript = build_atom(GET_SIZE, sizeof GET_LOCATION);
+  std::string jscript = build_atom(GET_SIZE, sizeof GET_LOCATION);
   args->Append(GetElementIdAsDictionaryValue(element_id));
 
   ErrorCode error = session_->ExecuteScript(jscript, args.get(), &result);

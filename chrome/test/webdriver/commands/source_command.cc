@@ -4,7 +4,6 @@
 
 #include <string>
 
-#include "base/utf_string_conversions.h"
 #include "chrome/test/webdriver/utility_functions.h"
 #include "chrome/test/webdriver/commands/source_command.h"
 
@@ -17,7 +16,7 @@ const wchar_t* const kSource[] = {
 };
 
 void SourceCommand::ExecuteGet(Response* const response) {
-  const std::wstring jscript = build_atom(kSource, sizeof kSource);
+  std::string jscript = build_atom(kSource, sizeof kSource);
   Value* result = NULL;
 
   scoped_ptr<ListValue> list(new ListValue());

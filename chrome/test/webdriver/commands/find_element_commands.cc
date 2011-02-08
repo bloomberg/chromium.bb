@@ -53,7 +53,7 @@ void FindElementCommand::ExecutePost(Response* const response) {
   scoped_ptr<ListValue> args(new ListValue());
   DictionaryValue* locator = new DictionaryValue();
   ErrorCode error;
-  std::wstring jscript;
+  std::string jscript;
   Value* result = NULL;
   bool done = false;
 
@@ -64,16 +64,16 @@ void FindElementCommand::ExecutePost(Response* const response) {
       WebDriverCommand::GetElementIdAsDictionaryValue(root_element_id_));
   if (find_one_element_) {
     jscript = build_atom(FIND_ELEMENT, sizeof FIND_ELEMENT);
-    jscript.append(L"var result = findElement(arguments[0], arguments[1]);")
-           .append(L"if (!result) {")
-           .append(L"var e = Error('Unable to locate element');")
-           .append(L"e.code = ")
-           .append(UTF8ToWide(base::IntToString(kNoSuchElement)))
-           .append(L";throw e;")
-           .append(L"} else { return result; }");
+    jscript.append("var result = findElement(arguments[0], arguments[1]);")
+           .append("if (!result) {")
+           .append("var e = Error('Unable to locate element');")
+           .append("e.code = ")
+           .append(base::IntToString(kNoSuchElement))
+           .append(";throw e;")
+           .append("} else { return result; }");
   } else {
     jscript = build_atom(FIND_ELEMENTS, sizeof FIND_ELEMENT);
-    jscript.append(L"return findElements(arguments[0], arguments[1]);");
+    jscript.append("return findElements(arguments[0], arguments[1]);");
   }
 
   // The element search needs to loop until at least one element is found or the

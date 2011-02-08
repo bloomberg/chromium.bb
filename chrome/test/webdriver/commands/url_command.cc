@@ -33,7 +33,7 @@ void URLCommand::ExecutePost(Response* const response) {
     return;
   }
 
-  session_->set_current_frame_xpath(L"");
+  session_->set_current_frame_xpath("");
   response->set_value(new StringValue(url));
   response->set_status(kSuccess);
 }

@@ -22,6 +22,11 @@ bool Command::GetStringParameter(const std::string& key,
   return parameters_.get() != NULL && parameters_->GetString(key, out);
 }
 
+bool Command::GetStringParameter(const std::string& key,
+                                 std::string* out) const {
+  return parameters_.get() != NULL && parameters_->GetString(key, out);
+}
+
 bool Command::GetStringASCIIParameter(const std::string& key,
                                       std::string* out) const {
   return parameters_.get() != NULL && parameters_->GetStringASCII(key, out);

@@ -38,7 +38,7 @@ class Session {
   // function body (e.g. "return arguments[0]"), where \args| is the list of
   // arguments to pass to the function. The caller is responsible for the
   // script result |value|.
-  ErrorCode ExecuteScript(const std::wstring& script,
+  ErrorCode ExecuteScript(const std::string& script,
                           const ListValue* const args,
                           Value** value);
 
@@ -63,11 +63,11 @@ class Session {
     speed_ = speed;
   }
 
-  inline const std::wstring& current_frame_xpath() const {
+  inline const std::string& current_frame_xpath() const {
     return current_frame_xpath_;
   }
 
-  inline void set_current_frame_xpath(const std::wstring& xpath) {
+  inline void set_current_frame_xpath(const std::string& xpath) {
     current_frame_xpath_ = xpath;
   }
 
@@ -95,7 +95,7 @@ class Session {
   // Example, /html/body/table/tbody/tr/td/iframe\n/frameset/frame[1]
   // should break into 2 xpaths
   // /html/body/table/tbody/tr/td/iframe & /frameset/frame[1].
-  std::wstring current_frame_xpath_;
+  std::string current_frame_xpath_;
 
   DISALLOW_COPY_AND_ASSIGN(Session);
 };

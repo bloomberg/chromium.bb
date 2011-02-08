@@ -60,6 +60,10 @@ class Command {
   // Returns true on success.
   bool GetStringParameter(const std::string& key, string16* out) const;
 
+  // Returns the command parameter with the given |key| as a UTF-8 string.
+  // Returns true on success.
+  bool GetStringParameter(const std::string& key, std::string* out) const;
+
   // Returns the command parameter with the given |key| as a ASCII string.
   // Returns true on success.
   bool GetStringASCIIParameter(const std::string& key, std::string* out) const;

@@ -31,7 +31,7 @@ class ExecuteCommand : public WebDriverCommand {
   virtual void ExecutePost(Response* const response);
 
  private:
-  string16 script_;
+  std::string script_;
   bool has_args_;
   std::string args_;
   virtual bool RequiresValidTab() { return true; }
