@@ -304,6 +304,7 @@ bool PrerenderContents::OnMessageReceived(const IPC::Message& message) {
                         OnDidStartProvisionalLoadForFrame)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidRedirectProvisionalLoad,
                         OnDidRedirectProvisionalLoad)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateFavIconURL, OnUpdateFavIconURL)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
@@ -321,6 +322,11 @@ void PrerenderContents::OnDidRedirectProvisionalLoad(int32 page_id,
                                                      const GURL& source_url,
                                                      const GURL& target_url) {
   AddAliasURL(target_url);
+}
+
+void PrerenderContents::OnUpdateFavIconURL(int32 page_id,
+                                           const GURL& icon_url) {
+  icon_url_ = icon_url;
 }
 
 void PrerenderContents::AddAliasURL(const GURL& url) {

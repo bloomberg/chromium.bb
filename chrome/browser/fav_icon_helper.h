@@ -84,6 +84,10 @@ class FavIconHelper : public TabContentsObserver {
   int DownloadImage(const GURL& image_url, int image_size,
                     ImageDownloadCallback* callback);
 
+  // Message Handler.  Must be public, becaue also called from
+  // PrerenderContents.
+  void OnUpdateFavIconURL(int32 page_id, const GURL& icon_url);
+
  private:
   struct DownloadRequest {
     DownloadRequest() {}
@@ -106,7 +110,6 @@ class FavIconHelper : public TabContentsObserver {
                             const GURL& image_url,
                             bool errored,
                             const SkBitmap& image);
-  void OnUpdateFavIconURL(int32 page_id, const GURL& icon_url);
 
   // Return the NavigationEntry for the active entry, or NULL if the active
   // entries URL does not match that of the URL last passed to FetchFavIcon.

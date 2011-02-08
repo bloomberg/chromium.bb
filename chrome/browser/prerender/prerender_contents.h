@@ -84,6 +84,7 @@ class PrerenderContents : public RenderViewHostDelegate,
   }
   string16 title() const { return title_; }
   int32 page_id() const { return page_id_; }
+  GURL icon_url() const { return icon_url_; }
   bool has_stopped_loading() const { return has_stopped_loading_; }
 
   // Set the final status for how the PrerenderContents was used. This
@@ -198,6 +199,8 @@ class PrerenderContents : public RenderViewHostDelegate,
                                     const GURL& source_url,
                                     const GURL& target_url);
 
+  void OnUpdateFavIconURL(int32 page_id, const GURL& icon_url);
+
   void AddAliasURL(const GURL& url);
 
   // Remove |this| from the PrerenderManager, set a final status, and
@@ -230,6 +233,7 @@ class PrerenderContents : public RenderViewHostDelegate,
   string16 title_;
   int32 page_id_;
   GURL url_;
+  GURL icon_url_;
   NotificationRegistrar registrar_;
 
   // A vector of URLs that this prerendered page matches against.

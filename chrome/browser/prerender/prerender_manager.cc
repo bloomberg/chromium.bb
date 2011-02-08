@@ -9,6 +9,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/fav_icon_helper.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -140,6 +141,10 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tc, const GURL& url) {
   string16 title = pc->title();
   if (!title.empty())
     tc->UpdateTitle(rvh, pc->page_id(), UTF16ToWideHack(title));
+
+  GURL icon_url = pc->icon_url();
+  if (!icon_url.is_empty())
+    tc->fav_icon_helper().OnUpdateFavIconURL(pc->page_id(), icon_url);
 
   if (pc->has_stopped_loading())
     tc->DidStopLoading();
