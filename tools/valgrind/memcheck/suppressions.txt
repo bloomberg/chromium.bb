@@ -2872,14 +2872,6 @@
    fun:_ZN14RunnableMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEE6Tuple1IS3_EE3RunEv
 }
 {
-  bug_57683
-  Memcheck:Leak
-  fun:_Znw*
-  fun:_ZN7logging17MakeCheckOpString*
-  fun:_ZN7logging11Check*Impl*
-  fun:_ZN7logging*LoggingTest_*_Test8TestBodyEv
-}
-{
    bug_57799
    Memcheck:Leak
    fun:_Znw*

@@ -949,14 +949,6 @@
    fun:::MessageLoopRelay::ProcessOnTargetThread
 }
 {
-   bug_57683
-   Heapcheck:Leak
-   ...
-   fun:logging::MakeCheckOpString
-   fun:logging::Check*Impl
-   fun:logging::::LoggingTest_*_Test::TestBody
-}
-{
    bug_57799
    Heapcheck:Leak
    fun:cricket::Transport::OnRemoteCandidate
