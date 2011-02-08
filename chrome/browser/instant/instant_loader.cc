@@ -547,6 +547,10 @@ void InstantLoader::SetOmniboxBounds(const gfx::Rect& bounds) {
   if (omnibox_bounds_ == bounds)
     return;
 
+  // Don't update the page while the mouse is down. http://crbug.com/71952
+  if (IsMouseDownFromActivate())
+    return;
+
   omnibox_bounds_ = bounds;
   if (preview_contents_.get() && is_showing_instant() &&
       !is_waiting_for_load()) {
