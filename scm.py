@@ -6,6 +6,7 @@
 
 import cStringIO
 import glob
+import logging
 import os
 import re
 import shutil
@@ -828,3 +829,48 @@ class SVN(object):
       elif ver > min_ver:
         return (True, SVN.current_version)
     return (True, SVN.current_version)
+
+  @staticmethod
+  def Revert(repo_root, callback=None, ignore_externals=False):
+    """Reverts all svn modifications in repo_root, including properties.
+
+    Deletes any modified files or directory.
+
+    A "svn update --revision BASE" call is required after to revive deleted
+    files.
+    """
+    for file_status in SVN.CaptureStatus(repo_root):
+      file_path = os.path.join(repo_root, file_status[1])
+      if ignore_externals and file_status[0][0] == 'X':
+        # Ignore externals.
+        logging.info('Ignoring external %s' % file_status[1])
+        continue
+
+      if callback:
+        callback(file_status)
+
+      if file_status[0].isspace():
+        # Try reverting the file since it's probably a property change.
+        gclient_utils.CheckCall(
+            ['svn', 'revert', file_status[1]], cwd=repo_root)
+
+      # svn revert is really stupid. It fails on inconsistent line-endings,
+      # on switched directories, etc. So take no chance and delete everything!
+      if file_status[0][0] == 'D':
+        # Deleted file requires manual intervention and require calling
+        # revert, like for properties.
+        gclient_utils.CheckCall(
+            ['svn', 'revert', file_status[1]], cwd=repo_root)
+      else:
+        if not os.path.exists(file_path):
+          pass
+        elif os.path.isfile(file_path) or os.path.islink(file_path):
+          logging.info('os.remove(%s)' % file_path)
+          os.remove(file_path)
+        elif os.path.isdir(file_path):
+          logging.info('gclient_utils.RemoveDirectory(%s)' % file_path)
+          gclient_utils.RemoveDirectory(file_path)
+        else:
+          logging.critical(
+            ('No idea what is %s.\nYou just found a bug in gclient'
+             ', please ping maruel@chromium.org ASAP!') % file_path)

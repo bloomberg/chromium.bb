@@ -838,49 +838,22 @@ class SVNWrapper(SCMWrapper):
       # Don't reuse the args.
       return self.update(options, [], file_list)
 
-    for file_status in scm.SVN.CaptureStatus(self.checkout_path):
-      file_path = os.path.join(self.checkout_path, file_status[1])
-      # Temporarily forcibly delete externals to make sure chromium can build
-      # without svn:external's.
-      #if file_status[0][0] == 'X':
-      #  # Ignore externals.
-      #  logging.info('Ignoring external %s' % file_path)
-      #  continue
-
+    def printcb(file_status):
+      file_list.append(file_status[1])
       if logging.getLogger().isEnabledFor(logging.INFO):
-        logging.info('%s%s' % (file[0], file[1]))
+        logging.info('%s%s' % (file_status[0], file_status[1]))
       else:
-        print(file_path)
-
-      if file_status[0].isspace():
-        logging.error('No idea what is the status of %s.\n'
-                      'You just found a bug in gclient, please ping '
-                      'maruel@chromium.org ASAP!' % file_path)
-      # svn revert is really stupid. It fails on inconsistent line-endings,
-      # on switched directories, etc. So take no chance and delete everything!
-      try:
-        if not os.path.exists(file_path):
-          pass
-        elif os.path.isfile(file_path) or os.path.islink(file_path):
-          logging.info('os.remove(%s)' % file_path)
-          os.remove(file_path)
-        elif os.path.isdir(file_path):
-          logging.info('gclient_utils.RemoveDirectory(%s)' % file_path)
-          gclient_utils.RemoveDirectory(file_path)
-        else:
-          logging.error('no idea what is %s.\nYou just found a bug in gclient'
-                        ', please ping maruel@chromium.org ASAP!' % file_path)
-      except EnvironmentError:
-        logging.error('Failed to remove %s.' % file_path)
+        print(os.path.join(self.checkout_path, file_status[1]))
+    scm.SVN.Revert(self.checkout_path, callback=printcb)
 
     try:
       # svn revert is so broken we don't even use it. Using
       # "svn up --revision BASE" achieve the same effect.
+      # file_list will contain duplicates.
       self._RunAndGetFileList(['update', '--revision', 'BASE'], options,
           file_list)
     except OSError, e:
-      # Maybe the directory disapeared meanwhile. We don't want it to throw an
-      # exception.
+      # Maybe the directory disapeared meanwhile. Do not throw an exception.
       logging.error('Failed to update:\n%s' % str(e))
 
   def revinfo(self, options, args, file_list):
