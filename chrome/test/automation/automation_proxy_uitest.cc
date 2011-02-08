@@ -262,9 +262,9 @@ TEST_F(AutomationProxyVisibleTest, AppendTab) {
 
   scoped_refptr<TabProxy> tab(window->GetTab(appended_tab_index));
   ASSERT_TRUE(tab.get());
-  std::wstring title;
+  string16 title;
   ASSERT_TRUE(tab->GetTabTitle(&title));
-  ASSERT_STREQ(L"Title Of Awesomeness", title.c_str());
+  ASSERT_EQ(ASCIIToUTF16("Title Of Awesomeness"), title);
 }
 
 TEST_F(AutomationProxyTest, ActivateTab) {
@@ -289,10 +289,10 @@ TEST_F(AutomationProxyTest, GetTab) {
   {
     scoped_refptr<TabProxy> tab(window->GetTab(0));
     ASSERT_TRUE(tab.get());
-    std::wstring title;
+    string16 title;
     ASSERT_TRUE(tab->GetTabTitle(&title));
     // BUG [634097] : expected title should be "about:blank"
-    ASSERT_STREQ(L"", title.c_str());
+    ASSERT_EQ(string16(), title);
   }
 
   {
@@ -311,10 +311,10 @@ TEST_F(AutomationProxyTest, NavigateToURL) {
   scoped_refptr<TabProxy> tab(window->GetTab(0));
   ASSERT_TRUE(tab.get());
 
-  std::wstring title;
+  string16 title;
   ASSERT_TRUE(tab->GetTabTitle(&title));
   // BUG [634097] : expected title should be "about:blank"
-  ASSERT_STREQ(L"", title.c_str());
+  ASSERT_EQ(string16(), title);
 
   FilePath filename(test_data_directory_);
   filename = filename.AppendASCII("title2.html");
@@ -322,7 +322,7 @@ TEST_F(AutomationProxyTest, NavigateToURL) {
   ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
             tab->NavigateToURL(net::FilePathToFileURL(filename)));
   ASSERT_TRUE(tab->GetTabTitle(&title));
-  ASSERT_STREQ(L"Title Of Awesomeness", title.c_str());
+  ASSERT_EQ(ASCIIToUTF16("Title Of Awesomeness"), title);
 
   // TODO(vibhor) : Add a test using testserver.
 }
@@ -333,33 +333,33 @@ TEST_F(AutomationProxyTest, GoBackForward) {
   scoped_refptr<TabProxy> tab(window->GetTab(0));
   ASSERT_TRUE(tab.get());
 
-  std::wstring title;
+  string16 title;
   ASSERT_TRUE(tab->GetTabTitle(&title));
   // BUG [634097] : expected title should be "about:blank"
-  ASSERT_STREQ(L"", title.c_str());
+  ASSERT_EQ(string16(), title);
 
   ASSERT_FALSE(tab->GoBack());
   ASSERT_TRUE(tab->GetTabTitle(&title));
-  ASSERT_STREQ(L"", title.c_str());
+  ASSERT_EQ(string16(), title);
 
   FilePath filename(test_data_directory_);
   filename = filename.AppendASCII("title2.html");
   ASSERT_TRUE(tab->NavigateToURL(net::FilePathToFileURL(filename)));
   ASSERT_TRUE(tab->GetTabTitle(&title));
-  ASSERT_STREQ(L"Title Of Awesomeness", title.c_str());
+  ASSERT_EQ(ASCIIToUTF16("Title Of Awesomeness"), title);
 
   ASSERT_TRUE(tab->GoBack());
   ASSERT_TRUE(tab->GetTabTitle(&title));
   // BUG [634097] : expected title should be "about:blank"
-  ASSERT_STREQ(L"", title.c_str());
+  ASSERT_EQ(string16(), title.c_str());
 
   ASSERT_TRUE(tab->GoForward());
   ASSERT_TRUE(tab->GetTabTitle(&title));
-  ASSERT_STREQ(L"Title Of Awesomeness", title.c_str());
+  ASSERT_EQ(ASCIIToUTF16("Title Of Awesomeness"), title);
 
   ASSERT_FALSE(tab->GoForward());
   ASSERT_TRUE(tab->GetTabTitle(&title));
-  ASSERT_STREQ(L"Title Of Awesomeness", title.c_str());
+  ASSERT_EQ(ASCIIToUTF16("Title Of Awesomeness"), title);
 }
 
 TEST_F(AutomationProxyTest, GetCurrentURL) {
@@ -413,14 +413,14 @@ TEST_F(AutomationProxyTest2, GetTabTitle) {
   ASSERT_TRUE(window.get());
   scoped_refptr<TabProxy> tab(window->GetTab(0));
   ASSERT_TRUE(tab.get());
-  std::wstring title;
+  string16 title;
   ASSERT_TRUE(tab->GetTabTitle(&title));
-  ASSERT_STREQ(L"title1.html", title.c_str());
+  ASSERT_EQ(ASCIIToUTF16("title1.html"), title);
 
   tab = window->GetTab(1);
   ASSERT_TRUE(tab.get());
   ASSERT_TRUE(tab->GetTabTitle(&title));
-  ASSERT_STREQ(L"Title Of Awesomeness", title.c_str());
+  ASSERT_EQ(ASCIIToUTF16("Title Of Awesomeness"), title);
 }
 
 TEST_F(AutomationProxyTest, Cookies) {
@@ -547,11 +547,12 @@ TEST_F(AutomationProxyTest4, StringValueIsEchoedByDomAutomationController) {
   scoped_refptr<TabProxy> tab(window->GetTab(0));
   ASSERT_TRUE(tab.get());
 
-  std::wstring expected(L"string");
-  std::wstring jscript = CreateJSString(L"\"" + expected + L"\"");
-  std::wstring actual;
-  ASSERT_TRUE(tab->ExecuteAndExtractString(L"", jscript, &actual));
-  ASSERT_STREQ(expected.c_str(), actual.c_str());
+  string16 expected = ASCIIToUTF16("string");
+  string16 jscript = WideToUTF16Hack(
+      CreateJSString(L"\"" + UTF16ToWideHack(expected) + L"\""));
+  string16 actual;
+  ASSERT_TRUE(tab->ExecuteAndExtractString(string16(), jscript, &actual));
+  ASSERT_EQ(expected, actual);
 }
 
 std::wstring BooleanToString(bool bool_value) {
@@ -572,7 +573,9 @@ TEST_F(AutomationProxyTest4, BooleanValueIsEchoedByDomAutomationController) {
   bool expected = true;
   std::wstring jscript = CreateJSString(BooleanToString(expected));
   bool actual = false;
-  ASSERT_TRUE(tab->ExecuteAndExtractBool(L"", jscript, &actual));
+  ASSERT_TRUE(tab->ExecuteAndExtractBool(string16(),
+                                         WideToUTF16Hack(jscript),
+                                         &actual));
   ASSERT_EQ(expected, actual);
 }
 
@@ -588,7 +591,9 @@ TEST_F(AutomationProxyTest4, NumberValueIsEchoedByDomAutomationController) {
   std::wstring expected_string;
   base::SStringPrintf(&expected_string, L"%d", expected);
   std::wstring jscript = CreateJSString(expected_string);
-  ASSERT_TRUE(tab->ExecuteAndExtractInt(L"", jscript, &actual));
+  ASSERT_TRUE(tab->ExecuteAndExtractInt(string16(),
+                                        WideToUTF16Hack(jscript),
+                                        &actual));
   ASSERT_EQ(expected, actual);
 }
 
@@ -625,21 +630,27 @@ TEST_F(AutomationProxyTest3, FrameDocumentCanBeAccessed) {
   scoped_refptr<TabProxy> tab(window->GetTab(0));
   ASSERT_TRUE(tab.get());
 
-  std::wstring actual;
-  std::wstring xpath1 = L"";  // top level frame
+  string16 actual;
+  string16 xpath1 = ASCIIToUTF16("");  // top level frame
   std::wstring jscript1 = CreateJSStringForDOMQuery(L"myinput");
-  ASSERT_TRUE(tab->ExecuteAndExtractString(xpath1, jscript1, &actual));
-  ASSERT_EQ(L"INPUT", actual);
+  ASSERT_TRUE(tab->ExecuteAndExtractString(xpath1,
+                                           WideToUTF16Hack(jscript1),
+                                           &actual));
+  ASSERT_EQ(ASCIIToUTF16("INPUT"), actual);
 
-  std::wstring xpath2 = L"/html/body/iframe";
+  string16 xpath2 = ASCIIToUTF16("/html/body/iframe");
   std::wstring jscript2 = CreateJSStringForDOMQuery(L"myspan");
-  ASSERT_TRUE(tab->ExecuteAndExtractString(xpath2, jscript2, &actual));
-  ASSERT_EQ(L"SPAN", actual);
+  ASSERT_TRUE(tab->ExecuteAndExtractString(xpath2,
+                                           WideToUTF16Hack(jscript2),
+                                           &actual));
+  ASSERT_EQ(ASCIIToUTF16("SPAN"), actual);
 
-  std::wstring xpath3 = L"/html/body/iframe\n/html/body/iframe";
+  string16 xpath3 = ASCIIToUTF16("/html/body/iframe\n/html/body/iframe");
   std::wstring jscript3 = CreateJSStringForDOMQuery(L"mydiv");
-  ASSERT_TRUE(tab->ExecuteAndExtractString(xpath3, jscript3, &actual));
-  ASSERT_EQ(L"DIV", actual);
+  ASSERT_TRUE(tab->ExecuteAndExtractString(xpath3,
+                                           WideToUTF16Hack(jscript3),
+                                           &actual));
+  ASSERT_EQ(ASCIIToUTF16("DIV"), actual);
 }
 
 // Flaky, http://crbug.com/70937
@@ -1518,8 +1529,9 @@ TEST_F(AutomationProxyTest, FLAKY_AppModalDialogTest) {
   EXPECT_FALSE(modal_dialog_showing);
   int result = -1;
   EXPECT_TRUE(tab->ExecuteAndExtractInt(
-      std::wstring(),
-      L"window.domAutomationController.send(result);", &result));
+      string16(),
+      ASCIIToUTF16("window.domAutomationController.send(result);"),
+      &result));
   EXPECT_EQ(0, result);
 
   // Try again.
@@ -1539,8 +1551,9 @@ TEST_F(AutomationProxyTest, FLAKY_AppModalDialogTest) {
                                                      &button));
   EXPECT_FALSE(modal_dialog_showing);
   EXPECT_TRUE(tab->ExecuteAndExtractInt(
-      std::wstring(),
-      L"window.domAutomationController.send(result);", &result));
+      string16(),
+      ASCIIToUTF16("window.domAutomationController.send(result);"),
+      &result));
   EXPECT_EQ(1, result);
 }
 
@@ -1571,10 +1584,13 @@ TEST_F(AutomationProxyTest5, TestLifetimeOfDomAutomationController) {
   // Allow some time for the popup to show up and close.
   base::PlatformThread::Sleep(TestTimeouts::action_timeout_ms());
 
-  std::wstring expected(L"string");
-  std::wstring jscript = CreateJSString(L"\"" + expected + L"\"");
-  std::wstring actual;
-  ASSERT_TRUE(tab->ExecuteAndExtractString(L"", jscript, &actual));
+  string16 expected(ASCIIToUTF16("string"));
+  std::wstring jscript =
+      CreateJSString(L"\"" + UTF16ToWideHack(expected) + L"\"");
+  string16 actual;
+  ASSERT_TRUE(tab->ExecuteAndExtractString(string16(),
+                                           WideToUTF16Hack(jscript),
+                                           &actual));
   ASSERT_EQ(expected, actual);
 }
 

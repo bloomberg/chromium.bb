@@ -154,13 +154,13 @@ class BrowserProxy : public AutomationResourceProxy {
   // Editing of the bookmark model.  Bookmarks are referenced by id.
   // Bookmark or group (folder) creation:
   bool AddBookmarkGroup(int64 parent_id, int index,
-                        std::wstring& title) WARN_UNUSED_RESULT;
-  bool AddBookmarkURL(int64 parent_id, int index,
-                      std::wstring& title, const GURL& url) WARN_UNUSED_RESULT;
+                        const string16& title) WARN_UNUSED_RESULT;
+  bool AddBookmarkURL(int64 parent_id, int index, const string16& title,
+                      const GURL& url) WARN_UNUSED_RESULT;
   // Bookmark editing:
   bool ReparentBookmark(int64 id, int64 new_parent_id,
                         int index) WARN_UNUSED_RESULT;
-  bool SetBookmarkTitle(int64 id, const std::wstring& title) WARN_UNUSED_RESULT;
+  bool SetBookmarkTitle(int64 id, const string16& title) WARN_UNUSED_RESULT;
   bool SetBookmarkURL(int64 id, const GURL& url) WARN_UNUSED_RESULT;
   // Finally, bookmark deletion:
   bool RemoveBookmark(int64 id) WARN_UNUSED_RESULT;

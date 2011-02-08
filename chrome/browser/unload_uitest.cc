@@ -442,17 +442,17 @@ TEST_F(UnloadTest, MAYBE_BrowserCloseTabWhenOtherTabHasListener) {
 
   scoped_refptr<TabProxy> popup_tab(browser->GetActiveTab());
   ASSERT_TRUE(popup_tab.get());
-  std::wstring popup_title;
+  string16 popup_title;
   EXPECT_TRUE(popup_tab->GetTabTitle(&popup_title));
-  EXPECT_EQ(std::wstring(L"popup"), popup_title);
+  EXPECT_EQ(ASCIIToUTF16("popup"), popup_title);
   EXPECT_TRUE(popup_tab->Close(true));
 
   ASSERT_TRUE(browser->WaitForTabCountToBecome(1));
   scoped_refptr<TabProxy> main_tab(browser->GetActiveTab());
   ASSERT_TRUE(main_tab.get());
-  std::wstring main_title;
+  string16 main_title;
   EXPECT_TRUE(main_tab->GetTabTitle(&main_title));
-  EXPECT_EQ(std::wstring(L"only_one_unload"), main_title);
+  EXPECT_EQ(ASCIIToUTF16("only_one_unload"), main_title);
 }
 
 // TODO(ojan): Add tests for unload/beforeunload that have multiple tabs

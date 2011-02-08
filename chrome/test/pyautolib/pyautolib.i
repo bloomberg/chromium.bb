@@ -14,7 +14,7 @@
 // and attach it to your node (class or method). This doc string will be
 // copied over in the generated python classes/methods.
 
-%module(docstring="Python interface to Automtion Proxy.") pyautolib
+%module(docstring="Python interface to Automation Proxy.") pyautolib
 %feature("autodoc", "1");
 
 %include <std_wstring.i>
@@ -152,7 +152,7 @@ class TabProxy {
   %feature("docstring", "Supply authentication to a login prompt. "
            "Blocks until navigation completes or another login prompt appears "
            "in the case of failed auth.") SetAuth;
-  bool SetAuth(const std::wstring& username, const std::wstring& password);
+  bool SetAuth(const string16& username, const string16& password);
   %feature("docstring", "Cancel authentication to a login prompt. ")
       CancelAuth;
   bool CancelAuth();
@@ -277,23 +277,23 @@ class PyUITestBase {
 
   %feature("docstring", "Add a bookmark folder with the given index in the parent."
                         "  |title| is the title/name of the folder.") AddBookmarkGroup;
-  bool AddBookmarkGroup(std::wstring parent_id, int index, std::wstring title);
+  bool AddBookmarkGroup(string16 parent_id, int index, string16 title);
 
   %feature("docstring", "Add a bookmark with the given title and URL.") AddBookmarkURL;
-  bool AddBookmarkURL(std::wstring parent_id, int index,
-                      std::wstring title, const std::wstring url);
+  bool AddBookmarkURL(string16 parent_id, int index,
+                      string16 title, const string16 url);
 
   %feature("docstring", "Move a bookmark to a new parent.") ReparentBookmark;
-  bool ReparentBookmark(std::wstring id, std::wstring new_parent_id, int index);
+  bool ReparentBookmark(string16 id, string16 new_parent_id, int index);
 
   %feature("docstring", "Set the title of a bookmark.") SetBookmarkTitle;
-  bool SetBookmarkTitle(std::wstring id, std::wstring title);
+  bool SetBookmarkTitle(string16 id, string16 title);
 
   %feature("docstring", "Set the URL of a bookmark.") SetBookmarkURL;
-  bool SetBookmarkURL(std::wstring id, const std::wstring url);
+  bool SetBookmarkURL(string16 id, string16 url);
 
   %feature("docstring", "Remove (delete) a bookmark.") RemoveBookmark;
-  bool RemoveBookmark(std::wstring id);
+  bool RemoveBookmark(string16 id);
 
   %feature("docstring", "Open the Find box in the given or first browser "
            "window.") OpenFindInPage;

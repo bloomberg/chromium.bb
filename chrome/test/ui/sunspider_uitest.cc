@@ -66,10 +66,11 @@ class SunSpiderTest : public UIPerfTest {
   }
 
   bool GetTotal(TabProxy* tab, std::string* total) {
-    std::wstring total_wide;
-    bool succeeded = tab->ExecuteAndExtractString(L"",
-        L"window.domAutomationController.send(automation.GetTotal());",
-        &total_wide);
+    string16 total16;
+    bool succeeded = tab->ExecuteAndExtractString(string16(),
+        ASCIIToUTF16("window.domAutomationController.send("
+                     "automation.GetTotal());"),
+        &total16);
 
     // Note that we don't use ASSERT_TRUE here (and in some other places) as it
     // doesn't work inside a function with a return type other than void.
@@ -77,22 +78,22 @@ class SunSpiderTest : public UIPerfTest {
     if (!succeeded)
       return false;
 
-    total->assign(WideToUTF8(total_wide));
+    total->assign(UTF16ToUTF8(total16));
     return true;
   }
 
   bool GetResults(TabProxy* tab, ResultsMap* results) {
-    std::wstring json_wide;
-    bool succeeded = tab->ExecuteAndExtractString(L"",
-        L"window.domAutomationController.send("
-        L"    JSON.stringify(automation.GetResults()));",
-        &json_wide);
+    string16 json16;
+    bool succeeded = tab->ExecuteAndExtractString(string16(),
+        ASCIIToUTF16("window.domAutomationController.send("
+                     "JSON.stringify(automation.GetResults()));"),
+        &json16);
 
     EXPECT_TRUE(succeeded);
     if (!succeeded)
       return false;
 
-    std::string json = WideToUTF8(json_wide);
+    std::string json = UTF16ToUTF8(json16);
     return JsonDictionaryToMap(json, results);
   }
 

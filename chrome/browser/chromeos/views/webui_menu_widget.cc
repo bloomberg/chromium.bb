@@ -9,6 +9,7 @@
 #include "base/stringprintf.h"
 #include "base/singleton.h"
 #include "base/task.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/views/menu_locator.h"
 #include "chrome/browser/chromeos/views/native_menu_webui.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
@@ -27,7 +28,7 @@
 
 namespace {
 
-// Colors for menu's graident background.
+// Colors for the menu's gradient background.
 const SkColor kMenuStartColor = SK_ColorWHITE;
 const SkColor kMenuEndColor = 0xFFEEEEEE;
 
@@ -41,7 +42,7 @@ class RoundedBorder : public views::Border {
   }
 
  private:
-  // views::Border implementatios.
+  // views::Border implementations.
   virtual void Paint(const views::View& view, gfx::Canvas* canvas) const {
     const SkScalar* corners = menu_locator_->GetCorners();
     // The menu is in off screen so no need to draw corners.
@@ -80,7 +81,7 @@ class InsetsLayout : public views::LayoutManager {
   InsetsLayout() : views::LayoutManager() {}
 
  private:
-  // views::LayoutManager implementatios.
+  // views::LayoutManager implementations.
   virtual void Layout(views::View* host) {
     if (host->GetChildViewCount() == 0)
       return;
@@ -253,7 +254,7 @@ void WebUIMenuWidget::ExecuteJavascript(const std::wstring& script) {
 
   DCHECK(dom_view_->tab_contents()->render_view_host());
   dom_view_->tab_contents()->render_view_host()->
-      ExecuteJavascriptInWebFrame(std::wstring(), script);
+      ExecuteJavascriptInWebFrame(string16(), WideToUTF16Hack(script));
 }
 
 void WebUIMenuWidget::ShowAt(chromeos::MenuLocator* locator) {

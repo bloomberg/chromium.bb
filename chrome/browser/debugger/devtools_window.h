@@ -68,7 +68,7 @@ class DevToolsWindow
   GURL GetDevToolsUrl();
   void UpdateTheme();
   void AddDevToolsExtensionsToClient();
-  void CallClientFunction(const std::wstring& function_name,
+  void CallClientFunction(const string16& function_name,
                           const Value& arg);
   // Overridden from TabContentsDelegate.
   virtual void OpenURLFromTab(TabContents* source,

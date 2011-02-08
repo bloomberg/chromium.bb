@@ -10,6 +10,7 @@
 #include "base/sys_info.h"
 #include "base/test/test_file_util.h"
 #include "base/test/test_timeouts.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/platform_util.h"
@@ -228,9 +229,9 @@ TEST_F(ShowModalDialogTest, FLAKY_BasicTest) {
   ASSERT_TRUE(browser.get());
   scoped_refptr<TabProxy> tab = browser->GetActiveTab();
   ASSERT_TRUE(tab.get());
-  std::wstring title;
+  string16 title;
   ASSERT_TRUE(tab->GetTabTitle(&title));
-  ASSERT_EQ(L"SUCCESS", title);
+  ASSERT_EQ(ASCIIToUTF16("SUCCESS"), title);
 }
 
 class SecurityTest : public UITest {
@@ -285,7 +286,7 @@ public:
   void SetUp() {
     PathService::Get(base::DIR_TEMP, &tmp_profile_);
     tmp_profile_ = tmp_profile_.AppendASCII("tmp_profile");
-    tmp_profile_ = tmp_profile_.Append(L"Test Chrome G�raldine");
+    tmp_profile_ = tmp_profile_.Append(L"Test Chrome G\u00E9raldine");
 
     // Create a fresh, empty copy of this directory.
     file_util::Delete(tmp_profile_, true);

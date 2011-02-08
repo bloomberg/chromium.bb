@@ -16,6 +16,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/automation/automation_provider.h"
@@ -1401,7 +1402,8 @@ PageSnapshotTaker::PageSnapshotTaker(AutomationProvider* automation,
       received_width_(false) {}
 
 void PageSnapshotTaker::Start() {
-  ExecuteScript(L"window.domAutomationController.send(document.width);");
+  ExecuteScript(
+      ASCIIToUTF16("window.domAutomationController.send(document.width);"));
 }
 
 void PageSnapshotTaker::OnDomOperationCompleted(const std::string& json) {
@@ -1413,7 +1415,8 @@ void PageSnapshotTaker::OnDomOperationCompleted(const std::string& json) {
     received_width_ = true;
     entire_page_size_.set_width(dimension);
 
-    ExecuteScript(L"window.domAutomationController.send(document.height);");
+    ExecuteScript(
+        ASCIIToUTF16("window.domAutomationController.send(document.height);"));
   } else {
     entire_page_size_.set_height(dimension);
 
@@ -1440,15 +1443,17 @@ void PageSnapshotTaker::OnSnapshotTaken(const SkBitmap& bitmap) {
   SendMessage(bytes_written == static_cast<int>(png_data.size()));
 }
 
-void PageSnapshotTaker::ExecuteScript(const std::wstring& javascript) {
-  std::wstring set_automation_id;
+void PageSnapshotTaker::ExecuteScript(const string16& javascript) {
+  std::string set_automation_id;
   base::SStringPrintf(
       &set_automation_id,
-      L"window.domAutomationController.setAutomationId(%d);",
+      "window.domAutomationController.setAutomationId(%d);",
       reply_message_->routing_id());
 
-  render_view_->ExecuteJavascriptInWebFrame(L"", set_automation_id);
-  render_view_->ExecuteJavascriptInWebFrame(L"", javascript);
+  render_view_->ExecuteJavascriptInWebFrame(string16(),
+                                            UTF8ToUTF16(set_automation_id));
+  render_view_->ExecuteJavascriptInWebFrame(string16(),
+                                            javascript);
 }
 
 void PageSnapshotTaker::SendMessage(bool success) {

@@ -647,8 +647,8 @@ void TestingAutomationProvider::Reload(int handle,
 }
 
 void TestingAutomationProvider::SetAuth(int tab_handle,
-                                        const std::wstring& username,
-                                        const std::wstring& password,
+                                        const string16& username,
+                                        const string16& password,
                                         IPC::Message* reply_message) {
   if (tab_tracker_->ContainsHandle(tab_handle)) {
     NavigationController* tab = tab_tracker_->GetResource(tab_handle);
@@ -935,15 +935,15 @@ void TestingAutomationProvider::GetTabProcessID(int handle, int* process_id) {
 
 void TestingAutomationProvider::GetTabTitle(int handle,
                                             int* title_string_size,
-                                            std::wstring* title) {
+                                            string16* title) {
   *title_string_size = -1;  // -1 is the error code
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
     NavigationEntry* entry = tab->GetActiveEntry();
     if (entry != NULL) {
-      *title = UTF16ToWideHack(entry->title());
+      *title = entry->title();
     } else {
-      *title = std::wstring();
+      *title = string16();
     }
     *title_string_size = static_cast<int>(title->size());
   }
@@ -1116,8 +1116,8 @@ void TestingAutomationProvider::AutocompleteEditIsQueryInProgress(
 
 void TestingAutomationProvider::ExecuteJavascript(
     int handle,
-    const std::wstring& frame_xpath,
-    const std::wstring& script,
+    const string16& frame_xpath,
+    const string16& script,
     IPC::Message* reply_message) {
   TabContents* tab_contents = GetTabContentsForHandle(handle, NULL);
   if (!tab_contents) {
@@ -1139,7 +1139,7 @@ void TestingAutomationProvider::ExecuteJavascript(
   reply_message_ = reply_message;
 
   tab_contents->render_view_host()->ExecuteJavascriptInWebFrame(
-      frame_xpath, UTF8ToWide(set_automation_id));
+      frame_xpath, UTF8ToUTF16(set_automation_id));
   tab_contents->render_view_host()->ExecuteJavascriptInWebFrame(
       frame_xpath, script);
 }
@@ -1523,7 +1523,7 @@ void TestingAutomationProvider::WaitForBookmarkModelToLoad(
 void TestingAutomationProvider::AddBookmarkGroup(int handle,
                                                  int64 parent_id,
                                                  int index,
-                                                 std::wstring title,
+                                                 const string16& title,
                                                  bool* success) {
   if (browser_tracker_->ContainsHandle(handle)) {
     Browser* browser = browser_tracker_->GetResource(handle);
@@ -1536,8 +1536,7 @@ void TestingAutomationProvider::AddBookmarkGroup(int handle,
       const BookmarkNode* parent = model->GetNodeByID(parent_id);
       DCHECK(parent);
       if (parent) {
-        const BookmarkNode* child = model->AddGroup(parent, index,
-                                                    WideToUTF16Hack(title));
+        const BookmarkNode* child = model->AddGroup(parent, index, title);
         DCHECK(child);
         if (child)
           *success = true;
@@ -1550,7 +1549,7 @@ void TestingAutomationProvider::AddBookmarkGroup(int handle,
 void TestingAutomationProvider::AddBookmarkURL(int handle,
                                                int64 parent_id,
                                                int index,
-                                               std::wstring title,
+                                               const string16& title,
                                                const GURL& url,
                                                bool* success) {
   if (browser_tracker_->ContainsHandle(handle)) {
@@ -1564,8 +1563,7 @@ void TestingAutomationProvider::AddBookmarkURL(int handle,
       const BookmarkNode* parent = model->GetNodeByID(parent_id);
       DCHECK(parent);
       if (parent) {
-        const BookmarkNode* child = model->AddURL(parent, index,
-                                                  WideToUTF16Hack(title), url);
+        const BookmarkNode* child = model->AddURL(parent, index, title, url);
         DCHECK(child);
         if (child)
           *success = true;
@@ -1603,7 +1601,7 @@ void TestingAutomationProvider::ReparentBookmark(int handle,
 
 void TestingAutomationProvider::SetBookmarkTitle(int handle,
                                                  int64 id,
-                                                 std::wstring title,
+                                                 const string16& title,
                                                  bool* success) {
   if (browser_tracker_->ContainsHandle(handle)) {
     Browser* browser = browser_tracker_->GetResource(handle);
@@ -1616,7 +1614,7 @@ void TestingAutomationProvider::SetBookmarkTitle(int handle,
       const BookmarkNode* node = model->GetNodeByID(id);
       DCHECK(node);
       if (node) {
-        model->SetTitle(node, WideToUTF16Hack(title));
+        model->SetTitle(node, title);
         *success = true;
       }
     }

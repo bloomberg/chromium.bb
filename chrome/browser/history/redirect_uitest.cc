@@ -260,9 +260,9 @@ TEST_F(RedirectTest, FLAKY_NoHttpToFile) {
   // title from the file, because the nav should not have taken place.
   scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
   ASSERT_TRUE(tab_proxy.get());
-  std::wstring actual_title;
+  string16 actual_title;
   ASSERT_TRUE(tab_proxy->GetTabTitle(&actual_title));
-  EXPECT_NE("File!", WideToUTF8(actual_title));
+  EXPECT_NE("File!", UTF16ToUTF8(actual_title));
 }
 
 // Ensures that non-user initiated location changes (within page) are
@@ -315,8 +315,8 @@ TEST_F(RedirectTest,
   // hasn't completed. Our time is now!
   NavigateToURL(final_url);
 
-  std::wstring tab_title;
-  std::wstring final_url_title = UTF8ToWide("Title Of Awesomeness");
+  string16 tab_title;
+  string16 final_url_title = ASCIIToUTF16("Title Of Awesomeness");
   // Wait till the final page has been loaded.
   for (int i = 0; i < 10; ++i) {
     base::PlatformThread::Sleep(TestTimeouts::action_timeout_ms());

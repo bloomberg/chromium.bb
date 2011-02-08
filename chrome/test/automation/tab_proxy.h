@@ -66,7 +66,7 @@ class TabProxy : public AutomationResourceProxy,
   bool GetCurrentURL(GURL* url) const WARN_UNUSED_RESULT;
 
   // Gets the title of the tab.
-  bool GetTabTitle(std::wstring* title) const WARN_UNUSED_RESULT;
+  bool GetTabTitle(string16* title) const WARN_UNUSED_RESULT;
 
   // Gets the tabstrip index of the tab.
   bool GetTabIndex(int* index) const WARN_UNUSED_RESULT;
@@ -83,17 +83,17 @@ class TabProxy : public AutomationResourceProxy,
   // will result in value = 24
   // NOTE: If this is called from a ui test, |dom_automation_enabled_| must be
   // set to true for these functions to work.
-  bool ExecuteAndExtractString(const std::wstring& frame_xpath,
-                               const std::wstring& jscript,
-                               std::wstring* value) WARN_UNUSED_RESULT;
-  bool ExecuteAndExtractBool(const std::wstring& frame_xpath,
-                             const std::wstring& jscript,
+  bool ExecuteAndExtractString(const string16& frame_xpath,
+                               const string16& jscript,
+                               string16* value) WARN_UNUSED_RESULT;
+  bool ExecuteAndExtractBool(const string16& frame_xpath,
+                             const string16& jscript,
                              bool* value) WARN_UNUSED_RESULT;
-  bool ExecuteAndExtractInt(const std::wstring& frame_xpath,
-                            const std::wstring& jscript,
+  bool ExecuteAndExtractInt(const string16& frame_xpath,
+                            const string16& jscript,
                             int* value) WARN_UNUSED_RESULT;
-  bool ExecuteAndExtractValue(const std::wstring& frame_xpath,
-                              const std::wstring& jscript,
+  bool ExecuteAndExtractValue(const string16& frame_xpath,
+                              const string16& jscript,
                               Value** value) WARN_UNUSED_RESULT;
 
   // Returns a DOMElementProxyRef to the tab's current DOM document.
@@ -209,8 +209,8 @@ class TabProxy : public AutomationResourceProxy,
   // Supply or cancel authentication to a login prompt.  These are synchronous
   // calls and hence block until the load finishes (or another login prompt
   // appears, in the case of invalid login info).
-  bool SetAuth(const std::wstring& username,
-               const std::wstring& password) WARN_UNUSED_RESULT;
+  bool SetAuth(const string16& username,
+               const string16& password) WARN_UNUSED_RESULT;
   bool CancelAuth() WARN_UNUSED_RESULT;
 
   // Checks if this tab has a login prompt waiting for auth.  This will be

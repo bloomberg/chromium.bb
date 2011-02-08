@@ -339,14 +339,14 @@ GURL UITestBase::GetActiveTabURL(int window_index) {
 }
 
 std::wstring UITestBase::GetActiveTabTitle(int window_index) {
-  std::wstring title;
+  string16 title;
   scoped_refptr<TabProxy> tab_proxy(GetActiveTab(window_index));
   EXPECT_TRUE(tab_proxy.get());
   if (!tab_proxy.get())
-    return title;
+    return std::wstring();
 
   EXPECT_TRUE(tab_proxy->GetTabTitle(&title));
-  return title;
+  return UTF16ToWideHack(title);
 }
 
 int UITestBase::GetActiveTabIndex(int window_index) {
@@ -724,7 +724,8 @@ bool UITest::WaitUntilJavaScriptCondition(TabProxy* tab,
       return false;
 
     bool done_value = false;
-    bool success = tab->ExecuteAndExtractBool(frame_xpath, jscript,
+    bool success = tab->ExecuteAndExtractBool(WideToUTF16Hack(frame_xpath),
+                                              WideToUTF16Hack(jscript),
                                               &done_value);
     EXPECT_TRUE(success);
     if (!success)

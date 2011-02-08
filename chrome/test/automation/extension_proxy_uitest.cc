@@ -4,6 +4,7 @@
 
 #include "base/path_service.h"
 #include "base/ref_counted.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
@@ -121,9 +122,9 @@ TEST_F(ExtensionProxyUITest, DISABLED_ExecuteBrowserActionInActiveTabAsync) {
 
   scoped_refptr<TabProxy> display_tab = browser->GetTab(0);
   ASSERT_TRUE(display_tab);
-  std::wstring title_wstring;
-  ASSERT_TRUE(display_tab->GetTabTitle(&title_wstring));
-  ASSERT_STREQ(L"0", title_wstring.c_str());
+  string16 title_string;
+  ASSERT_TRUE(display_tab->GetTabTitle(&title_string));
+  ASSERT_EQ(ASCIIToUTF16("0"), title_string);
 
   // Click the action again right after navigating to a new page.
   ASSERT_TRUE(browser->AppendTab(localhost));
@@ -132,8 +133,8 @@ TEST_F(ExtensionProxyUITest, DISABLED_ExecuteBrowserActionInActiveTabAsync) {
   ASSERT_TRUE(rename_tab_extension->
               ExecuteActionInActiveTabAsync(browser.get()));
   ASSERT_NO_FATAL_FAILURE(automation()->EnsureExtensionTestResult());
-  ASSERT_TRUE(display_tab->GetTabTitle(&title_wstring));
-  ASSERT_STREQ(L"1", title_wstring.c_str());
+  ASSERT_TRUE(display_tab->GetTabTitle(&title_string));
+  ASSERT_EQ(ASCIIToUTF16("1"), title_string);
 
   // Do not forget to stop the server.
   StopHttpServer();

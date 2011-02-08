@@ -85,11 +85,12 @@ class UrlFetchTest : public UITest {
       std::string script = StringPrintf(
           "window.domAutomationController.send(%s);", var_to_fetch);
 
-      std::wstring value;
-      bool success = tab->ExecuteAndExtractString(L"", ASCIIToWide(script),
+      string16 value;
+      bool success = tab->ExecuteAndExtractString(string16(),
+                                                  ASCIIToUTF16(script),
                                                   &value);
       ASSERT_TRUE(success);
-      result->javascript_variable = WideToUTF8(value);
+      result->javascript_variable = UTF16ToUTF8(value);
     }
   }
 };

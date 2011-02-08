@@ -5,6 +5,7 @@
 #include "chrome/test/ui/ui_test.h"
 
 #include "base/test/test_timeouts.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"
 #include "chrome/browser/prefs/pref_value_store.h"
@@ -73,7 +74,6 @@ TEST_F(NewTabUITest, DISABLED_NTPHasLoginName) {
   scoped_refptr<TabProxy> tab = window->GetActiveTab();
   ASSERT_TRUE(tab.get());
 
-  std::wstring displayed_username;
   // The login span should be eventually populated and have the
   // correct value.
   ASSERT_TRUE(WaitUntilJavaScriptCondition(tab, L"",
@@ -81,13 +81,14 @@ TEST_F(NewTabUITest, DISABLED_NTPHasLoginName) {
       L"document.getElementById('login-username').innerText.length > 0)",
       TestTimeouts::action_max_timeout_ms()));
 
+  string16 displayed_username;
   ASSERT_TRUE(tab->ExecuteAndExtractString(
-      L"",
-      L"window.domAutomationController.send("
-      L"document.getElementById('login-username').innerText)",
+      string16(),
+      ASCIIToUTF16("window.domAutomationController.send("
+                   "document.getElementById('login-username').innerText)"),
       &displayed_username));
 
-  EXPECT_EQ(L"user@gmail.com", displayed_username);
+  EXPECT_EQ(ASCIIToUTF16("user@gmail.com"), displayed_username);
 }
 
 // Loads about:hang into two NTP tabs, ensuring we don't crash.
@@ -160,9 +161,10 @@ TEST_F(NewTabUITest, FLAKY_ChromeInternalLoadsNTP) {
 
   // Ensure there are some thumbnails loaded in the page.
   int thumbnails_count = -1;
-  ASSERT_TRUE(tab->ExecuteAndExtractInt(L"",
-      L"window.domAutomationController.send("
-      L"document.getElementsByClassName('thumbnail-container').length)",
+  ASSERT_TRUE(tab->ExecuteAndExtractInt(
+      string16(),
+      ASCIIToUTF16("window.domAutomationController.send("
+          "document.getElementsByClassName('thumbnail-container').length)"),
       &thumbnails_count));
   EXPECT_GT(thumbnails_count, 0);
 }

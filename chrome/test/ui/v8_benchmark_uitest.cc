@@ -67,10 +67,11 @@ class V8BenchmarkTest : public UIPerfTest {
   }
 
   bool GetScore(TabProxy* tab, std::string* score) {
-    std::wstring score_wide;
-    bool succeeded = tab->ExecuteAndExtractString(L"",
-        L"window.domAutomationController.send(automation.GetScore());",
-        &score_wide);
+    string16 score16;
+    bool succeeded = tab->ExecuteAndExtractString(string16(),
+        ASCIIToUTF16("window.domAutomationController.send("
+                     "automation.GetScore());"),
+        &score16);
 
     // Note that we don't use ASSERT_TRUE here (and in some other places) as it
     // doesn't work inside a function with a return type other than void.
@@ -78,22 +79,22 @@ class V8BenchmarkTest : public UIPerfTest {
     if (!succeeded)
       return false;
 
-    score->assign(WideToUTF8(score_wide));
+    score->assign(UTF16ToUTF8(score16));
     return true;
   }
 
   bool GetResults(TabProxy* tab, ResultsMap* results) {
-    std::wstring json_wide;
-    bool succeeded = tab->ExecuteAndExtractString(L"",
-        L"window.domAutomationController.send("
-        L"    JSON.stringify(automation.GetResults()));",
-        &json_wide);
+    string16 json16;
+    bool succeeded = tab->ExecuteAndExtractString(string16(),
+        ASCIIToUTF16("window.domAutomationController.send("
+                     "JSON.stringify(automation.GetResults()));"),
+        &json16);
 
     EXPECT_TRUE(succeeded);
     if (!succeeded)
       return false;
 
-    std::string json = WideToUTF8(json_wide);
+    std::string json = UTF16ToUTF8(json16);
     return JsonDictionaryToMap(json, results);
   }
 

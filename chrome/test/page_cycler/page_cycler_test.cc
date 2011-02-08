@@ -250,12 +250,13 @@ class PageCyclerTest : public UIPerfTest {
     ASSERT_FALSE(pages->empty());
 
     // Get the timing cookie value from the DOM automation.
-    std::wstring wcookie;
-    ASSERT_TRUE(tab->ExecuteAndExtractString(L"",
-          L"window.domAutomationController.send("
-          L"JSON.stringify(__get_timings()));",
-          &wcookie));
-    cookie = base::SysWideToNativeMB(wcookie);
+    string16 cookie16;
+    ASSERT_TRUE(tab->ExecuteAndExtractString(
+          string16(),
+          ASCIIToUTF16("window.domAutomationController.send("
+                       "JSON.stringify(__get_timings()));"),
+          &cookie16));
+    cookie = base::SysWideToNativeMB(UTF16ToWide(cookie16));
 
     // JSON.stringify() encapsulates the returned string in quotes, strip them.
     std::string::size_type start_idx = cookie.find("\"");

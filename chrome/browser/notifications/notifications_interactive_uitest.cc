@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/utf_string_conversions.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_test.h"
@@ -35,8 +36,8 @@ TEST_F(NotificationsPermissionTest, FLAKY_TestUserGestureInfobar) {
   // That's considered a user gesture to webkit, and should produce an infobar.
   bool result;
   ASSERT_TRUE(tab->ExecuteAndExtractBool(
-      L"",
-      L"window.domAutomationController.send(request());",
+      string16(),
+      ASCIIToUTF16("window.domAutomationController.send(request());"),
       &result));
   EXPECT_TRUE(result);
 

@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/test/test_timeouts.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/net/url_request_failed_dns_job.h"
 #include "chrome/browser/net/url_request_mock_http_job.h"
 #include "chrome/common/url_constants.h"
@@ -93,8 +94,10 @@ TEST_F(ResourceDispatcherTest, FLAKY_SyncXMLHttpRequest) {
 
   // Let's check the XMLHttpRequest ran successfully.
   bool success = false;
-  EXPECT_TRUE(tab->ExecuteAndExtractBool(L"",
-      L"window.domAutomationController.send(DidSyncRequestSucceed());",
+  EXPECT_TRUE(tab->ExecuteAndExtractBool(
+      string16(),
+      ASCIIToUTF16("window.domAutomationController.send("
+                   "DidSyncRequestSucceed());"),
       &success));
   EXPECT_TRUE(success);
 }
@@ -115,8 +118,9 @@ TEST_F(ResourceDispatcherTest, FLAKY_SyncXMLHttpRequest_Disallowed) {
 
   // Let's check the XMLHttpRequest ran successfully.
   bool success = false;
-  EXPECT_TRUE(tab->ExecuteAndExtractBool(L"",
-      L"window.domAutomationController.send(DidSucceed());",
+  EXPECT_TRUE(tab->ExecuteAndExtractBool(
+      string16(),
+      ASCIIToUTF16("window.domAutomationController.send(DidSucceed());"),
       &success));
   EXPECT_TRUE(success);
 }
@@ -140,9 +144,9 @@ TEST_F(ResourceDispatcherTest, DISABLED_SyncXMLHttpRequest_DuringUnload) {
                 "files/sync_xmlhttprequest_during_unload.html")));
 
   // Confirm that the page has loaded (since it changes its title during load).
-  std::wstring tab_title;
+  string16 tab_title;
   EXPECT_TRUE(tab->GetTabTitle(&tab_title));
-  EXPECT_EQ(L"sync xhr on unload", tab_title);
+  EXPECT_EQ(ASCIIToUTF16("sync xhr on unload"), tab_title);
 
   // Navigate to a new page, to dispatch unload event and trigger xhr.
   // (the bug would make this step hang the renderer).
@@ -151,7 +155,7 @@ TEST_F(ResourceDispatcherTest, DISABLED_SyncXMLHttpRequest_DuringUnload) {
 
   // Check that the new page got loaded, and that no download was triggered.
   EXPECT_TRUE(tab->GetTabTitle(&tab_title));
-  EXPECT_EQ(L"Title Of Awesomeness", tab_title);
+  EXPECT_EQ(ASCIIToUTF16("Title Of Awesomeness"), tab_title);
 
   bool shelf_is_visible = false;
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
@@ -175,9 +179,9 @@ TEST_F(ResourceDispatcherTest, CrossSiteOnunloadCookie) {
   ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab->NavigateToURL(url));
 
   // Confirm that the page has loaded (since it changes its title during load).
-  std::wstring tab_title;
+  string16 tab_title;
   EXPECT_TRUE(tab->GetTabTitle(&tab_title));
-  EXPECT_EQ(L"set cookie on unload", tab_title);
+  EXPECT_EQ(ASCIIToUTF16("set cookie on unload"), tab_title);
 
   // Navigate to a new cross-site page, to dispatch unload event and set the
   // cookie.
@@ -263,9 +267,9 @@ TEST_F(ResourceDispatcherTest, CrossSiteNavigationErrorPage) {
   ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab->NavigateToURL(url));
 
   // Confirm that the page has loaded (since it changes its title during load).
-  std::wstring tab_title;
+  string16 tab_title;
   EXPECT_TRUE(tab->GetTabTitle(&tab_title));
-  EXPECT_EQ(L"set cookie on unload", tab_title);
+  EXPECT_EQ(ASCIIToUTF16("set cookie on unload"), tab_title);
 
   // Navigate to a new cross-site URL that results in an error page.
   // TODO(creis): If this causes crashes or hangs, it might be for the same
@@ -294,7 +298,7 @@ TEST_F(ResourceDispatcherTest, CrossSiteNavigationErrorPage) {
   ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
             tab->NavigateToURL(GURL(redirect_url)));
   EXPECT_TRUE(tab->GetTabTitle(&tab_title));
-  EXPECT_EQ(L"Title Of Awesomeness", tab_title);
+  EXPECT_EQ(ASCIIToUTF16("Title Of Awesomeness"), tab_title);
 }
 
 TEST_F(ResourceDispatcherTest, CrossOriginRedirectBlocked) {
@@ -327,9 +331,9 @@ TEST_F(ResourceDispatcherTest, CrossSiteFailedRequest) {
   ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab->NavigateToURL(broken_url));
 
   // Make sure the navigation finishes.
-  std::wstring tab_title;
+  string16 tab_title;
   EXPECT_TRUE(tab->GetTabTitle(&tab_title));
-  EXPECT_EQ(L"chrome://theme/ is not available", tab_title);
+  EXPECT_EQ(ASCIIToUTF16("chrome://theme/ is not available"), tab_title);
 }
 
 }  // namespace

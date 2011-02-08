@@ -4,14 +4,13 @@
 
 #include <string>
 
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/ui/ui_test.h"
 #include "net/test/test_server.h"
-
-using std::wstring;
 
 namespace {
 
@@ -22,10 +21,10 @@ const FilePath::CharType kDocRoot[] = FILE_PATH_LITERAL("chrome/test/data");
 class LoginPromptTest : public UITest {
  protected:
   LoginPromptTest()
-      : username_basic_(L"basicuser"),
-        username_digest_(L"digestuser"),
-        password_(L"secret"),
-        password_bad_(L"denyme"),
+      : username_basic_(ASCIIToUTF16("basicuser")),
+        username_digest_(ASCIIToUTF16("digestuser")),
+        password_(ASCIIToUTF16("secret")),
+        password_bad_(ASCIIToUTF16("denyme")),
         test_server_(net::TestServer::TYPE_HTTP, FilePath(kDocRoot)) {
   }
 
@@ -36,18 +35,18 @@ class LoginPromptTest : public UITest {
   }
 
  protected:
-  wstring username_basic_;
-  wstring username_digest_;
-  wstring password_;
-  wstring password_bad_;
+  string16 username_basic_;
+  string16 username_digest_;
+  string16 password_;
+  string16 password_bad_;
 
   net::TestServer test_server_;
 };
 
-wstring ExpectedTitleFromAuth(const wstring& username,
-                              const wstring& password) {
+string16 ExpectedTitleFromAuth(const string16& username,
+                               const string16& password) {
   // The TestServer sets the title to username/password on successful login.
-  return username + L"/" + password;
+  return username + char16('/') + password;
 }
 
 #if defined(OS_WIN)
@@ -78,7 +77,7 @@ TEST_F(LoginPromptTest, MAYBE_TestBasicAuth) {
   EXPECT_TRUE(tab->NeedsAuth());
   EXPECT_TRUE(tab->SetAuth(username_basic_, password_));
   EXPECT_EQ(ExpectedTitleFromAuth(username_basic_, password_),
-            GetActiveTabTitle());
+            WideToUTF16Hack(GetActiveTabTitle()));
 }
 
 #if defined(OS_WIN)
@@ -108,7 +107,7 @@ TEST_F(LoginPromptTest, MAYBE_TestDigestAuth) {
   EXPECT_TRUE(tab->NeedsAuth());
   EXPECT_TRUE(tab->SetAuth(username_digest_, password_));
   EXPECT_EQ(ExpectedTitleFromAuth(username_digest_, password_),
-            GetActiveTabTitle());
+            WideToUTF16Hack(GetActiveTabTitle()));
 }
 
 #if defined(OS_WIN)
@@ -138,7 +137,7 @@ TEST_F(LoginPromptTest, MAYBE_TestTwoAuths) {
   EXPECT_TRUE(digest_tab->NeedsAuth());
   EXPECT_TRUE(digest_tab->SetAuth(username_digest_, password_));
 
-  wstring title;
+  string16 title;
   EXPECT_TRUE(basic_tab->GetTabTitle(&title));
   EXPECT_EQ(ExpectedTitleFromAuth(username_basic_, password_), title);
 
@@ -230,10 +229,10 @@ TEST_F(LoginPromptTest, MAYBE_SupplyRedundantAuths) {
   EXPECT_TRUE(basic_tab2->WaitForNavigation(last_navigation_time));
 
   // Now both tabs have loaded.
-  wstring title1;
+  string16 title1;
   EXPECT_TRUE(basic_tab1->GetTabTitle(&title1));
   EXPECT_EQ(ExpectedTitleFromAuth(username_basic_, password_), title1);
-  wstring title2;
+  string16 title2;
   EXPECT_TRUE(basic_tab2->GetTabTitle(&title2));
   EXPECT_EQ(ExpectedTitleFromAuth(username_basic_, password_), title2);
 }
@@ -270,10 +269,10 @@ TEST_F(LoginPromptTest, MAYBE_CancelRedundantAuths) {
   EXPECT_TRUE(basic_tab2->WaitForNavigation(last_navigation_time));
 
   // Now both tabs have been denied.
-  wstring title1;
+  string16 title1;
   EXPECT_TRUE(basic_tab1->GetTabTitle(&title1));
-  EXPECT_EQ(L"Denied: no auth", title1);
-  wstring title2;
+  EXPECT_EQ(ASCIIToUTF16("Denied: no auth"), title1);
+  string16 title2;
   EXPECT_TRUE(basic_tab2->GetTabTitle(&title2));
-  EXPECT_EQ(L"Denied: no auth", title2);
+  EXPECT_EQ(ASCIIToUTF16("Denied: no auth"), title2);
 }

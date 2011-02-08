@@ -83,8 +83,8 @@ class TestingAutomationProvider : public AutomationProvider,
                                       WindowOpenDisposition disposition,
                                       bool* status);
   void Reload(int handle, IPC::Message* reply_message);
-  void SetAuth(int tab_handle, const std::wstring& username,
-               const std::wstring& password, IPC::Message* reply_message);
+  void SetAuth(int tab_handle, const string16& username,
+               const string16& password, IPC::Message* reply_message);
   void CancelAuth(int tab_handle, IPC::Message* reply_message);
   void NeedsAuth(int tab_handle, bool* needs_auth);
   void GetRedirectsFrom(int tab_handle,
@@ -126,7 +126,7 @@ class TestingAutomationProvider : public AutomationProvider,
   void GetType(int handle, int* type_as_int);
   void GetTab(int win_handle, int tab_index, int* tab_handle);
   void GetTabProcessID(int handle, int* process_id);
-  void GetTabTitle(int handle, int* title_string_size, std::wstring* title);
+  void GetTabTitle(int handle, int* title_string_size, string16* title);
   void GetTabIndex(int handle, int* tabstrip_index);
   void GetTabURL(int handle, bool* success, GURL* url);
   void GetShelfVisibility(int handle, bool* visible);
@@ -159,8 +159,8 @@ class TestingAutomationProvider : public AutomationProvider,
                                     IPC::Message* reply_message);
 
   void ExecuteJavascript(int handle,
-                         const std::wstring& frame_xpath,
-                         const std::wstring& script,
+                         const string16& frame_xpath,
+                         const string16& script,
                          IPC::Message* reply_message);
 
   void GetConstrainedWindowCount(int handle, int* count);
@@ -270,17 +270,17 @@ class TestingAutomationProvider : public AutomationProvider,
   // Editing, modification, and removal of bookmarks.
   // Bookmarks are referenced by id.
   void AddBookmarkGroup(int handle,
-                        int64 parent_id, int index, std::wstring title,
+                        int64 parent_id, int index, const string16& title,
                         bool* success);
   void AddBookmarkURL(int handle,
                       int64 parent_id, int index,
-                      std::wstring title, const GURL& url,
+                      const string16& title, const GURL& url,
                       bool* success);
   void ReparentBookmark(int handle,
                         int64 id, int64 new_parent_id, int index,
                         bool* success);
   void SetBookmarkTitle(int handle,
-                        int64 id, std::wstring title,
+                        int64 id, const string16& title,
                         bool* success);
   void SetBookmarkURL(int handle,
                       int64 id, const GURL& url,

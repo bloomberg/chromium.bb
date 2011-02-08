@@ -261,8 +261,8 @@ class RenderViewHost : public RenderWidgetHost {
   void ReservePageIDRange(int size);
 
   // Runs some javascript within the context of a frame in the page.
-  void ExecuteJavascriptInWebFrame(const std::wstring& frame_xpath,
-                                   const std::wstring& jscript);
+  void ExecuteJavascriptInWebFrame(const string16& frame_xpath,
+                                   const string16& jscript);
 
   // Runs some javascript within the context of a frame in the page. The result
   // is sent back via the notification EXECUTE_JAVASCRIPT_RESULT.

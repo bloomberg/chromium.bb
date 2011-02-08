@@ -26,10 +26,10 @@ class OptionsUITest : public UITest {
   }
 
   void AssertIsOptionsPage(TabProxy* tab) {
-    std::wstring title;
+    string16 title;
     ASSERT_TRUE(tab->GetTabTitle(&title));
     string16 expected_title = l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE);
-    ASSERT_EQ(expected_title, WideToUTF16Hack(title));
+    ASSERT_EQ(expected_title, title);
   }
 };
 

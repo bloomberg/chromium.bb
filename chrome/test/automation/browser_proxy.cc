@@ -307,7 +307,7 @@ bool BrowserProxy::WaitForBookmarkModelToLoad() {
 }
 
 bool BrowserProxy::AddBookmarkGroup(int64 parent_id, int index,
-                                    std::wstring& title) {
+                                    const string16& title) {
   if (!is_valid())
     return false;
   bool result = false;
@@ -319,7 +319,7 @@ bool BrowserProxy::AddBookmarkGroup(int64 parent_id, int index,
 }
 
 bool BrowserProxy::AddBookmarkURL(int64 parent_id, int index,
-                                  std::wstring& title, const GURL& url) {
+                                  const string16& title, const GURL& url) {
   if (!is_valid())
     return false;
   bool result = false;
@@ -341,7 +341,7 @@ bool BrowserProxy::ReparentBookmark(int64 id, int64 new_parent_id, int index) {
   return result;
 }
 
-bool BrowserProxy::SetBookmarkTitle(int64 id, const std::wstring& title) {
+bool BrowserProxy::SetBookmarkTitle(int64 id, const string16& title) {
   if (!is_valid())
     return false;
   bool result = false;
