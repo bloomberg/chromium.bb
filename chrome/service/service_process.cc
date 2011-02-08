@@ -119,7 +119,8 @@ bool ServiceProcess::Initialize(MessageLoop* message_loop,
 #if defined(ENABLE_REMOTING)
   // Initialize chromoting host manager.
   remoting_host_manager_ = new remoting::ChromotingHostManager(this);
-  remoting_host_manager_->Initialize(file_thread_->message_loop_proxy());
+  remoting_host_manager_->Initialize(message_loop,
+                                     file_thread_->message_loop_proxy());
 #endif
 
   // Enable Cloud Print if needed. First check the command-line.
@@ -156,10 +157,6 @@ bool ServiceProcess::Teardown() {
   service_prefs_.reset();
   cloud_print_proxy_.reset();
 
-#if defined(ENABLE_REMOTING)
-  remoting_host_manager_->Teardown();
-#endif
-
   ipc_server_.reset();
   // Signal this event before shutting down the service process. That way all
   // background threads can cleanup.
@@ -174,9 +171,22 @@ bool ServiceProcess::Teardown() {
   return true;
 }
 
+static void QuitMessageLoop(MessageLoop* message_loop) {
+  message_loop->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+}
+
+// This method is called when a shutdown command is received from IPC channel
+// or there was an error in the IPC channel.
 void ServiceProcess::Shutdown() {
+#if defined(ENABLE_REMOTING)
+  // During shutdown of remoting host it has some left over operations on
+  // the UI thread. So we let the teardown to proceed asynchronously
+  remoting_host_manager_->Teardown(
+      NewRunnableFunction(&QuitMessageLoop, main_message_loop_));
+#else
   // Quit the main message loop.
   main_message_loop_->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+#endif
 }
 
 bool ServiceProcess::HandleClientDisconnect() {
@@ -216,11 +226,11 @@ void ServiceProcess::OnCloudPrintProxyDisabled(bool persist_state) {
   OnServiceDisabled();
 }
 
-void ServiceProcess::OnRemotingHostEnabled() {
+void ServiceProcess::OnChromotingHostEnabled() {
   OnServiceEnabled();
 }
 
-void ServiceProcess::OnRemotingHostDisabled() {
+void ServiceProcess::OnChromotingHostDisabled() {
   OnServiceDisabled();
 }
 

@@ -23,6 +23,8 @@
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/remoting/setup_flow.h"
+#include "chrome/browser/service/service_process_control.h"
+#include "chrome/browser/service/service_process_control_manager.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/ui/options/options_util.h"
@@ -299,6 +301,9 @@ void AdvancedOptionsHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback("showRemotingSetupDialog",
       NewCallback(this,
                   &AdvancedOptionsHandler::ShowRemotingSetupDialog));
+  dom_ui_->RegisterMessageCallback("disableRemoting",
+      NewCallback(this,
+                  &AdvancedOptionsHandler::DisableRemoting));
 #endif
 #if defined(OS_WIN)
   // Setup Windows specific callbacks.
@@ -530,6 +535,15 @@ void AdvancedOptionsHandler::RemoveRemotingSection() {
 
 void AdvancedOptionsHandler::ShowRemotingSetupDialog(const ListValue* args) {
   remoting::SetupFlow::OpenSetupDialog(dom_ui_->GetProfile());
+}
+
+void AdvancedOptionsHandler::DisableRemoting(const ListValue* args) {
+  ServiceProcessControl* process_control =
+      ServiceProcessControlManager::GetInstance()->GetProcessControl(
+          dom_ui_->GetProfile());
+  if (!process_control || !process_control->is_connected())
+    return;
+  process_control->DisableRemotingHost();
 }
 #endif
 

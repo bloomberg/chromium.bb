@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/message_loop.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "remoting/host/chromoting_host.h"
@@ -32,16 +33,20 @@ class ChromotingHostManager
   class Observer {
    public:
     virtual ~Observer() {}
-    virtual void OnChromotingHostEnabled() {}
-    virtual void OnChromotingHostDisabled() {}
+    virtual void OnChromotingHostEnabled() = 0;
+    virtual void OnChromotingHostDisabled() = 0;
   };
 
   // Caller keeps ownership of |observer|. |observer| must not be
   // destroyed while this object exists.
   explicit ChromotingHostManager(Observer* observer);
 
-  void Initialize(base::MessageLoopProxy* file_message_loop);
-  void Teardown();
+  void Initialize(MessageLoop* main_message_loop,
+                  base::MessageLoopProxy* file_message_loop);
+
+  // Shutdown ChromotingHostManager. |done_task| will be executed when done.
+  // This method must be called before ChromotingHostManager is destroyed.
+  void Teardown(Task* done_task);
 
   // Return the reference to the chromoting host only if it has started.
   remoting::ChromotingHost* GetChromotingHost() { return chromoting_host_; }
@@ -68,7 +73,7 @@ class ChromotingHostManager
 
   void SetEnabled(bool enabled);
   void Start();
-  void Stop();
+  void Stop(Task* done_task);
 
   void OnShutdown();
 
@@ -77,6 +82,9 @@ class ChromotingHostManager
   scoped_refptr<remoting::MutableHostConfig> chromoting_config_;
   scoped_ptr<remoting::ChromotingHostContext> chromoting_context_;
   scoped_refptr<remoting::ChromotingHost> chromoting_host_;
+
+  MessageLoop* main_message_loop_;
+  scoped_ptr<Task> shutdown_task_;
 };
 
 }  // namespace remoting

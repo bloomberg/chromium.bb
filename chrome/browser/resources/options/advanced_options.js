@@ -143,11 +143,14 @@ var OptionsPage = options.OptionsPage;
       }
 
       if ($('remotingSetupButton')) {
-        $('remotingSetupButton').onclick = function(event) {
-          chrome.send('showRemotingSetupDialog');
-        }
+          $('remotingSetupButton').onclick = function(event) {
+              chrome.send('showRemotingSetupDialog');
+          }
+          $('remotingStopButton').onclick = function(event) {
+              chrome.send('disableRemoting');
+          }
       }
-    }
+  }
   };
 
   //

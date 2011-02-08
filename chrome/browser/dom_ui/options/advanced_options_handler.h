@@ -122,6 +122,9 @@ class AdvancedOptionsHandler
 
   // Callback for Setup Remoting button.
   void ShowRemotingSetupDialog(const ListValue* args);
+
+  // Disable Remoting.
+  void DisableRemoting(const ListValue* args);
 #endif
 
   // Setup the checked state for the metrics reporting checkbox.

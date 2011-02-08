@@ -86,8 +86,8 @@ class ServiceProcess : public CloudPrintProxy::Client,
   virtual void OnCloudPrintProxyDisabled(bool persist_state);
 
   // ChromotingHostManager::Observer interface.
-  virtual void OnRemotingHostEnabled();
-  virtual void OnRemotingHostDisabled();
+  virtual void OnChromotingHostEnabled();
+  virtual void OnChromotingHostDisabled();
 
 #if defined(ENABLE_REMOTING)
   // Return the reference to the chromoting host only if it has started.
