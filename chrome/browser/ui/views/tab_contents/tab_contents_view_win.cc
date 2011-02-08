@@ -410,7 +410,7 @@ void TabContentsViewWin::OnPaint(HDC junk_dc) {
     SetContentsView(sad_tab_);
     CRect cr;
     GetClientRect(&cr);
-    sad_tab_->SetBounds(gfx::Rect(cr));
+    sad_tab_->SetBoundsRect(gfx::Rect(cr));
     gfx::CanvasSkiaPaint canvas(GetNativeView(), true);
     sad_tab_->ProcessPaint(&canvas);
     return;

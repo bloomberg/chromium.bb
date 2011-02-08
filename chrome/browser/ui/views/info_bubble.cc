@@ -113,7 +113,7 @@ void BorderContents::Paint(gfx::Canvas* canvas) {
   paint.setStyle(SkPaint::kFill_Style);
   paint.setColor(InfoBubble::kBackgroundColor);
   gfx::Path path;
-  gfx::Rect bounds(GetLocalBounds(false));
+  gfx::Rect bounds(GetLocalBounds());
   SkRect rect;
   rect.set(SkIntToScalar(bounds.x()), SkIntToScalar(bounds.y()),
            SkIntToScalar(bounds.right()), SkIntToScalar(bounds.bottom()));
@@ -442,8 +442,9 @@ void InfoBubble::Init(views::Widget* parent,
 
   // |contents_view| has no layout manager, so we have to explicitly position
   // its children.
-  border_contents_->SetBounds(gfx::Rect(gfx::Point(), window_bounds.size()));
-  contents->SetBounds(contents_bounds);
+  border_contents_->SetBoundsRect(
+      gfx::Rect(gfx::Point(), window_bounds.size()));
+  contents->SetBoundsRect(contents_bounds);
 #endif
   SetBounds(window_bounds);
 
@@ -486,8 +487,9 @@ void InfoBubble::SizeToContents() {
       &contents_bounds, &window_bounds);
   // |contents_view| has no layout manager, so we have to explicitly position
   // its children.
-  border_contents_->SetBounds(gfx::Rect(gfx::Point(), window_bounds.size()));
-  contents_->SetBounds(contents_bounds);
+  border_contents_->SetBoundsRect(
+      gfx::Rect(gfx::Point(), window_bounds.size()));
+  contents_->SetBoundsRect(contents_bounds);
 #endif
   SetBounds(window_bounds);
 }

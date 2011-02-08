@@ -122,8 +122,7 @@ gfx::Size SubmenuView::GetPreferredSize() {
                    height + insets.height());
 }
 
-void SubmenuView::DidChangeBounds(const gfx::Rect& previous,
-                                  const gfx::Rect& current) {
+void SubmenuView::OnBoundsChanged() {
   SchedulePaint();
 }
 

@@ -447,7 +447,7 @@ void BaseTabStrip::StartedDraggingTab(BaseTab* tab) {
   GenerateIdealBounds();
   int tab_data_index = TabIndexOfTab(tab);
   DCHECK(tab_data_index != -1);
-  tab->SetBounds(ideal_bounds(tab_data_index));
+  tab->SetBoundsRect(ideal_bounds(tab_data_index));
   SchedulePaint();
 }
 
@@ -491,7 +491,7 @@ void BaseTabStrip::DoLayout() {
   GenerateIdealBounds();
 
   for (int i = 0; i < tab_count(); ++i)
-    tab_data_[i].tab->SetBounds(tab_data_[i].ideal_bounds);
+    tab_data_[i].tab->SetBoundsRect(tab_data_[i].ideal_bounds);
 
   SchedulePaint();
 }

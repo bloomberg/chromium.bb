@@ -629,7 +629,7 @@ void LocationBarView::Layout() {
   }
 #endif
 
-  location_entry_view_->SetBounds(location_bounds);
+  location_entry_view_->SetBoundsRect(location_bounds);
 }
 
 void LocationBarView::Paint(gfx::Canvas* canvas) {
@@ -651,7 +651,7 @@ void LocationBarView::Paint(gfx::Canvas* canvas) {
   // can draw the border images over the background color instead of the
   // reverse; this antialiases better (see comments in
   // AutocompletePopupContentsView::Paint()).
-  gfx::Rect bounds(GetLocalBounds(false));
+  gfx::Rect bounds(GetLocalBounds());
   bounds.Inset(0, kVerticalEdgeThickness);
   SkColor color(GetColor(ToolbarModel::NONE, BACKGROUND));
   if (mode_ == NORMAL) {

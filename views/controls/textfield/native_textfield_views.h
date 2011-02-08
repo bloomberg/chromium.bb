@@ -53,8 +53,7 @@ class NativeTextfieldViews : public views::View,
   virtual bool OnKeyPressed(const views::KeyEvent& e);
   virtual bool OnKeyReleased(const views::KeyEvent& e);
   virtual void Paint(gfx::Canvas* canvas);
-  virtual void DidChangeBounds(const gfx::Rect& previous,
-                               const gfx::Rect& current);
+  virtual void OnBoundsChanged();
   virtual void WillGainFocus();
   virtual void DidGainFocus();
   virtual void WillLoseFocus();

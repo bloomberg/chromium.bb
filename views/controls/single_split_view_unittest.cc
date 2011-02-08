@@ -116,15 +116,13 @@ TEST(SingleSplitViewTest, Resize) {
     split.GetChildViewAt(0)->SetVisible(false);
     split.Layout();
 
-    EXPECT_EQ(split.bounds().size(),
-              split.GetChildViewAt(1)->bounds().size());
+    EXPECT_EQ(split.size(), split.GetChildViewAt(1)->size());
 
     split.GetChildViewAt(0)->SetVisible(true);
     split.GetChildViewAt(1)->SetVisible(false);
     split.Layout();
 
-    EXPECT_EQ(split.bounds().size(),
-              split.GetChildViewAt(0)->bounds().size());
+    EXPECT_EQ(split.size(), split.GetChildViewAt(0)->size());
   }
 }
 

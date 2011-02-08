@@ -39,9 +39,7 @@ class SingleSplitView : public views::View {
                   Orientation orientation,
                   Observer* observer);
 
-  virtual void DidChangeBounds(const gfx::Rect& previous,
-                               const gfx::Rect& current);
-
+  virtual void OnBoundsChanged();
   virtual void Layout();
 
   virtual AccessibilityTypes::Role GetAccessibleRole();
@@ -124,6 +122,10 @@ class SingleSplitView : public views::View {
 
   // Position of the divider.
   int divider_offset_;
+
+  // The bounds of the SingleSplitView as a result of the last resize. Used to
+  // determine the divider position when a subsequent resize occurs.
+  gfx::Rect previous_bounds_;
 
   bool resize_leading_on_bounds_change_;
 

@@ -38,10 +38,10 @@ SingleSplitView::SingleSplitView(View* leading,
 #endif
 }
 
-void SingleSplitView::DidChangeBounds(const gfx::Rect& previous,
-                                      const gfx::Rect& current) {
-  divider_offset_ = CalculateDividerOffset(divider_offset_, previous, current);
-  View::DidChangeBounds(previous, current);
+void SingleSplitView::OnBoundsChanged() {
+  divider_offset_ = CalculateDividerOffset(divider_offset_, previous_bounds_, bounds());
+  View::OnBoundsChanged();
+  previous_bounds_ = bounds();
 }
 
 void SingleSplitView::Layout() {
@@ -51,10 +51,10 @@ void SingleSplitView::Layout() {
 
   if (GetChildViewCount() > 0) {
     if (GetChildViewAt(0)->IsVisible())
-      GetChildViewAt(0)->SetBounds(leading_bounds);
+      GetChildViewAt(0)->SetBoundsRect(leading_bounds);
     if (GetChildViewCount() > 1) {
       if (GetChildViewAt(1)->IsVisible())
-        GetChildViewAt(1)->SetBounds(trailing_bounds);
+        GetChildViewAt(1)->SetBoundsRect(trailing_bounds);
     }
   }
 

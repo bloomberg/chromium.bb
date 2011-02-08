@@ -155,7 +155,7 @@ BaseTab* SideTabStrip::CreateTab() {
 }
 
 void SideTabStrip::GenerateIdealBounds() {
-  gfx::Rect layout_rect = GetLocalBounds(false);
+  gfx::Rect layout_rect = GetLocalBounds();
   layout_rect.Inset(kTabStripInset, kTabStripInset);
 
   int y = layout_rect.y();
@@ -229,7 +229,7 @@ void SideTabStrip::AnimateToIdealBounds() {
 void SideTabStrip::DoLayout() {
   BaseTabStrip::DoLayout();
 
-  newtab_button_->SetBounds(newtab_button_bounds_);
+  newtab_button_->SetBoundsRect(newtab_button_bounds_);
 
-  separator_->SetBounds(separator_bounds_);
+  separator_->SetBoundsRect(separator_bounds_);
 }

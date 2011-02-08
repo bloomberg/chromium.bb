@@ -162,8 +162,7 @@ class TableView : public NativeControl,
   // Current sort.
   const SortDescriptors& sort_descriptors() const { return sort_descriptors_; }
 
-  void DidChangeBounds(const gfx::Rect& previous,
-                       const gfx::Rect& current);
+  virtual void OnBoundsChanged();
 
   // Returns the number of rows in the TableView.
   int RowCount() const;

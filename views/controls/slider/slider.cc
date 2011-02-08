@@ -57,7 +57,7 @@ void Slider::SetValue(double value) {
 
 void Slider::Layout() {
   if (native_wrapper_) {
-    native_wrapper_->GetView()->SetBounds(GetLocalBounds(true));
+    native_wrapper_->GetView()->SetBoundsRect(GetContentsBounds());
     native_wrapper_->GetView()->Layout();
   }
 }

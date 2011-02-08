@@ -458,22 +458,22 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
                                 decrement_button_->GetPreferredSize().width());
     gfx::Rect bounds(0, 0, button_width, height());
 
-    decrement_button_->SetBounds(bounds);
+    decrement_button_->SetBoundsRect(bounds);
 
     x += bounds.width();
     bounds.set_x(x);
     bounds.set_width(zoom_label_width_);
-    zoom_label_->SetBounds(bounds);
+    zoom_label_->SetBoundsRect(bounds);
 
     x += bounds.width();
     bounds.set_x(x);
     bounds.set_width(button_width);
-    increment_button_->SetBounds(bounds);
+    increment_button_->SetBoundsRect(bounds);
 
     x += bounds.width() + kZoomPadding;
     bounds.set_x(x);
     bounds.set_width(fullscreen_button_->GetPreferredSize().width());
-    fullscreen_button_->SetBounds(bounds);
+    fullscreen_button_->SetBoundsRect(bounds);
   }
 
   // ButtonListener:

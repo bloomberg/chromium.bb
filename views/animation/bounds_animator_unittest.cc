@@ -115,7 +115,7 @@ class BoundsAnimatorTest : public testing::Test {
 TEST_F(BoundsAnimatorTest, AnimateViewTo) {
   TestAnimationDelegate delegate;
   gfx::Rect initial_bounds(0, 0, 10, 10);
-  child()->SetBounds(initial_bounds);
+  child()->SetBoundsRect(initial_bounds);
   gfx::Rect target_bounds(10, 10, 20, 20);
   animator()->AnimateViewTo(child(), target_bounds);
   animator()->SetAnimationDelegate(child(), &delegate, false);

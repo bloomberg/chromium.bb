@@ -24,7 +24,7 @@ class ListBackground : public views::Background {
 
   virtual void Paint(gfx::Canvas* canvas, views::View* view) const {
     HDC dc = canvas->BeginPlatformPaint();
-    RECT native_lb = view->GetLocalBounds(true).ToRECT();
+    RECT native_lb = view->GetContentsBounds().ToRECT();
     gfx::NativeTheme::instance()->PaintListBackground(dc, true, &native_lb);
     canvas->EndPlatformPaint();
   }

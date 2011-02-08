@@ -165,8 +165,7 @@ void BalloonViewImpl::DelayedClose(bool by_user) {
   balloon_->OnClose(by_user);
 }
 
-void BalloonViewImpl::DidChangeBounds(const gfx::Rect& previous,
-                                      const gfx::Rect& current) {
+void BalloonViewImpl::OnBoundsChanged() {
   SizeContentsWindow();
 }
 
@@ -186,9 +185,9 @@ void BalloonViewImpl::SizeContentsWindow() {
   GetContentsMask(contents_rect, &path);
   html_container_->SetShape(path.CreateNativeRegion());
 
-  close_button_->SetBounds(GetCloseButtonBounds());
-  options_menu_button_->SetBounds(GetOptionsButtonBounds());
-  source_label_->SetBounds(GetLabelBounds());
+  close_button_->SetBoundsRect(GetCloseButtonBounds());
+  options_menu_button_->SetBoundsRect(GetOptionsButtonBounds());
+  source_label_->SetBoundsRect(GetLabelBounds());
 }
 
 void BalloonViewImpl::RepositionToBalloon() {
@@ -346,7 +345,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
                           rb.GetBitmapNamed(IDR_TAB_CLOSE_H));
   close_button_->SetImage(views::CustomButton::BS_PUSHED,
                           rb.GetBitmapNamed(IDR_TAB_CLOSE_P));
-  close_button_->SetBounds(GetCloseButtonBounds());
+  close_button_->SetBoundsRect(GetCloseButtonBounds());
   close_button_->SetBackground(SK_ColorBLACK,
                                rb.GetBitmapNamed(IDR_TAB_CLOSE),
                                rb.GetBitmapNamed(IDR_TAB_CLOSE_MASK));
@@ -356,12 +355,12 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   options_menu_button_->SetPushedIcon(*rb.GetBitmapNamed(IDR_BALLOON_WRENCH_P));
   options_menu_button_->set_alignment(views::TextButton::ALIGN_CENTER);
   options_menu_button_->set_border(NULL);
-  options_menu_button_->SetBounds(GetOptionsButtonBounds());
+  options_menu_button_->SetBoundsRect(GetOptionsButtonBounds());
 
   source_label_->SetFont(rb.GetFont(ResourceBundle::SmallFont));
   source_label_->SetColor(kControlBarTextColor);
   source_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  source_label_->SetBounds(GetLabelBounds());
+  source_label_->SetBoundsRect(GetLabelBounds());
 
   SizeContentsWindow();
   html_container_->Show();
@@ -477,7 +476,7 @@ void BalloonViewImpl::Paint(gfx::Canvas* canvas) {
   DCHECK(canvas);
   // Paint the menu bar area white, with proper rounded corners.
   gfx::Path path;
-  gfx::Rect rect = GetLocalBounds(false);
+  gfx::Rect rect = GetLocalBounds();
   rect.set_height(GetShelfHeight());
   GetFrameMask(rect, &path);
 

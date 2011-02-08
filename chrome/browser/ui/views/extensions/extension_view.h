@@ -58,8 +58,7 @@ class ExtensionView : public views::NativeViewHost {
 
   // Overridden from views::NativeViewHost:
   virtual void SetVisible(bool is_visible);
-  virtual void DidChangeBounds(const gfx::Rect& previous,
-                               const gfx::Rect& current);
+  virtual void OnBoundsChanged();
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View *parent, views::View *child);
 

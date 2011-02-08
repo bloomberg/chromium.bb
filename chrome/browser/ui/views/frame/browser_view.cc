@@ -2180,7 +2180,7 @@ bool BrowserView::UpdateChildViewAndLayout(views::View* new_view,
   } else if (new_view && *old_view) {
     // The view changed, but the new view wants the same size, give it the
     // bounds of the last view and have it repaint.
-    new_view->SetBounds((*old_view)->bounds());
+    new_view->SetBoundsRect((*old_view)->bounds());
     new_view->SchedulePaint();
   } else if (new_view) {
     DCHECK_EQ(0, new_height);

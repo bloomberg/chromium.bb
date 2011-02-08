@@ -481,7 +481,7 @@ void AppPanelBrowserFrameView::LayoutWindowControls() {
 void AppPanelBrowserFrameView::LayoutTitleBar() {
   // Size the icon first; the window title is based on the icon position.
   gfx::Rect icon_bounds(IconBounds());
-  window_icon_->SetBounds(icon_bounds);
+  window_icon_->SetBoundsRect(icon_bounds);
 
   // Size the title.
   int title_x = icon_bounds.right() + kIconTitleSpacing;

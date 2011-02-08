@@ -121,7 +121,7 @@ void NativeViewHost::Layout() {
     gfx::Insets insets = GetInsets();
     gfx::Point top_left(insets.left(), insets.top());
     ConvertPointToWidget(this, &top_left);
-    gfx::Rect local_bounds = GetLocalBounds(false);
+    gfx::Rect local_bounds = GetLocalBounds();
     native_wrapper_->ShowWidget(top_left.x(), top_left.y(),
                                 local_bounds.width(),
                                 local_bounds.height());

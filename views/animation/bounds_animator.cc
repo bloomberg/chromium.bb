@@ -215,7 +215,7 @@ void BoundsAnimator::AnimationProgressed(const Animation* animation) {
     else
       repaint_bounds_ = repaint_bounds_.Union(total_bounds);
 
-    view->SetBounds(new_bounds);
+    view->SetBoundsRect(new_bounds);
   }
 
   if (data.delegate)

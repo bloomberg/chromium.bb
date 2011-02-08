@@ -124,8 +124,8 @@ void PanelScroller::Layout() {
     if (cur_content_pos < scroll_pos_ + top_header_pixel_count) {
       // This panel is at least partially off the top. Put the header below the
       // others already there.
-      panels_[i]->header->SetBounds(gfx::Rect(0, top_header_pixel_count,
-                                              width(), divider_height_));
+      panels_[i]->header->SetBoundsRect(gfx::Rect(0, top_header_pixel_count,
+                                                  width(), divider_height_));
       top_header_pixel_count += divider_height_;
 
     } else if (cur_content_pos > height() + scroll_pos_ -
@@ -134,12 +134,13 @@ void PanelScroller::Layout() {
       // headers will stack up at the bottom. Counting this header, there are
       // (size() - i) left, which is used in the expression above.
       int top = height() - (panel_count - i) * divider_height_;
-      panels_[i]->header->SetBounds(gfx::Rect(0, top,
-                                              width(), divider_height_));
+      panels_[i]->header->SetBoundsRect(gfx::Rect(0, top,
+                                                  width(), divider_height_));
     } else {
       // Normal header positioning in-flow.
-      panels_[i]->header->SetBounds(gfx::Rect(0, cur_content_pos - scroll_pos_,
-                                              width(), divider_height_));
+      panels_[i]->header->SetBoundsRect(
+          gfx::Rect(0, cur_content_pos - scroll_pos_, width(),
+                    divider_height_));
     }
 
     cur_content_pos += divider_height_;
@@ -147,7 +148,7 @@ void PanelScroller::Layout() {
     // Now position the content. It always goes in-flow ignoring any stacked
     // up headers at the top or bottom.
     int container_height = panels_[i]->container->GetPreferredSize().height();
-    panels_[i]->container->SetBounds(
+    panels_[i]->container->SetBoundsRect(
         gfx::Rect(0, cur_content_pos - scroll_pos_,
                   width(), container_height));
     cur_content_pos += container_height;

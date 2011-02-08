@@ -252,8 +252,7 @@ void MenuScrollViewContainer::Layout() {
   scroll_view_->Layout();
 }
 
-void MenuScrollViewContainer::DidChangeBounds(const gfx::Rect& previous,
-                                              const gfx::Rect& current) {
+void MenuScrollViewContainer::OnBoundsChanged() {
   gfx::Size content_pref = scroll_view_->GetContents()->GetPreferredSize();
   scroll_up_button_->SetVisible(content_pref.height() > height());
   scroll_down_button_->SetVisible(content_pref.height() > height());

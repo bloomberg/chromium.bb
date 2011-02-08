@@ -121,8 +121,6 @@ class BookmarkBarView : public DetachableToolbarView,
   virtual gfx::Size GetPreferredSize();
   virtual gfx::Size GetMinimumSize();
   virtual void Layout();
-  virtual void DidChangeBounds(const gfx::Rect& previous,
-                               const gfx::Rect& current);
   virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
   virtual void PaintChildren(gfx::Canvas* canvas);
   virtual bool GetDropFormats(

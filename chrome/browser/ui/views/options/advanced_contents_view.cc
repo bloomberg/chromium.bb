@@ -214,9 +214,6 @@ class AdvancedSection : public OptionsPageView {
   AdvancedSection(Profile* profile, const std::wstring& title);
   virtual ~AdvancedSection() {}
 
-  virtual void DidChangeBounds(const gfx::Rect& previous,
-                               const gfx::Rect& current);
-
  protected:
   // Convenience helpers to add different kinds of ColumnSets for specific
   // types of layout.
@@ -288,11 +285,6 @@ AdvancedSection::AdvancedSection(Profile* profile,
       gfx::NativeTheme::BUTTON, BP_GROUPBOX, GBS_NORMAL, TMT_TEXTCOLOR,
       COLOR_WINDOWTEXT);
   title_label_->SetColor(title_color);
-}
-
-void AdvancedSection::DidChangeBounds(const gfx::Rect& previous,
-                                      const gfx::Rect& current) {
-  Layout();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1487,7 +1479,7 @@ void CloudPrintProxySection::NotifyPrefChanged(const std::string* pref_name) {
       view = view->GetParent();
     if (view) {
       gfx::Rect visible_bounds = GetVisibleBounds();
-      bool was_all_visible = (visible_bounds.size() == bounds().size());
+      bool was_all_visible = (visible_bounds.size() == size());
       // Our bounds can change across this call, so we have to use the
       // new bounds if we want to stay completely visible.
       view->Layout();
@@ -1515,8 +1507,7 @@ class AdvancedContentsView : public OptionsPageView {
   virtual int GetLineScrollIncrement(views::ScrollView* scroll_view,
                                      bool is_horizontal, bool is_positive);
   virtual void Layout();
-  virtual void DidChangeBounds(const gfx::Rect& previous,
-                               const gfx::Rect& current);
+  virtual void OnBoundsChanged();
 
  protected:
   // OptionsPageView implementation:
@@ -1570,8 +1561,7 @@ void AdvancedContentsView::Layout() {
   View::Layout();
 }
 
-void AdvancedContentsView::DidChangeBounds(const gfx::Rect& previous,
-                                           const gfx::Rect& current) {
+void AdvancedContentsView::OnBoundsChanged() {
   // Override to do nothing. Calling Layout() interferes with our scrolling.
 }
 
@@ -1647,10 +1637,10 @@ AdvancedScrollViewContainer::~AdvancedScrollViewContainer() {
 // AdvancedScrollViewContainer, views::View overrides:
 
 void AdvancedScrollViewContainer::Layout() {
-  gfx::Rect lb = GetLocalBounds(false);
+  gfx::Rect lb = GetLocalBounds();
 
   gfx::Size border = gfx::NativeTheme::instance()->GetThemeBorderSize(
       gfx::NativeTheme::LIST);
   lb.Inset(border.width(), border.height());
-  scroll_view_->SetBounds(lb);
+  scroll_view_->SetBoundsRect(lb);
 }

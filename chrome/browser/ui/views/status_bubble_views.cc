@@ -707,7 +707,7 @@ void StatusBubbleViews::AvoidMouse(const gfx::Point& location) {
   gfx::Point top_left;
   views::View::ConvertPointToScreen(base_view_, &top_left);
   // Border included.
-  int window_width = base_view_->GetLocalBounds(true).width();
+  int window_width = base_view_->GetContentsBounds().width();
 
   // Get the cursor position relative to the popup.
   gfx::Point relative_location = location;

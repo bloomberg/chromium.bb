@@ -128,8 +128,7 @@ void TableView::SetSortDescriptors(const SortDescriptors& sort_descriptors) {
   SendMessage(list_view_, WM_SETREDRAW, static_cast<WPARAM>(TRUE), 0);
 }
 
-void TableView::DidChangeBounds(const gfx::Rect& previous,
-                                const gfx::Rect& current) {
+void TableView::OnBoundsChanged() {
   if (!list_view_)
     return;
   SendMessage(list_view_, WM_SETREDRAW, static_cast<WPARAM>(FALSE), 0);

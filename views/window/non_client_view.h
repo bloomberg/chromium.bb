@@ -73,8 +73,7 @@ class NonClientFrameView : public View {
   virtual AccessibilityTypes::Role GetAccessibleRole();
 
  protected:
-  virtual void DidChangeBounds(const gfx::Rect& previous,
-                               const gfx::Rect& current);
+  virtual void OnBoundsChanged();
 
   NonClientFrameView() : paint_as_active_(false) {}
 

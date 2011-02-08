@@ -26,8 +26,7 @@ class MenuScrollViewContainer : public View {
   // View overrides.
   virtual void PaintBackground(gfx::Canvas* canvas);
   virtual void Layout();
-  virtual void DidChangeBounds(const gfx::Rect& previous,
-                               const gfx::Rect& current);
+  virtual void OnBoundsChanged();
   virtual gfx::Size GetPreferredSize();
   virtual AccessibilityTypes::Role GetAccessibleRole();
   virtual AccessibilityTypes::State GetAccessibleState();

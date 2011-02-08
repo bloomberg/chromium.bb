@@ -225,10 +225,9 @@ void TabContentsViewViews::GetViewBounds(gfx::Rect* out) const {
   out->SetRect(x(), y(), width(), height());
 }
 
-void TabContentsViewViews::DidChangeBounds(const gfx::Rect& previous,
-                                           const gfx::Rect& current) {
+void TabContentsViewViews::OnBoundsChanged() {
   if (IsVisibleInRootView())
-    WasSized(gfx::Size(current.width(), current.height()));
+    WasSized(size());
 }
 
 void TabContentsViewViews::Paint(gfx::Canvas* canvas) {

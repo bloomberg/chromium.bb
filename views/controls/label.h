@@ -66,8 +66,7 @@ class Label : public View {
   virtual int GetHeightForWidth(int w);
 
   // Overriden to dirty our text bounds if we're multi-line.
-  virtual void DidChangeBounds(const gfx::Rect& previous,
-                               const gfx::Rect& current);
+  virtual void OnBoundsChanged();
 
   // Returns views/Label.
   virtual std::string GetClassName() const { return kViewClassName; }

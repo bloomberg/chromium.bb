@@ -433,7 +433,7 @@ void BubbleBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
   paint.setStyle(SkPaint::kFill_Style);
   paint.setColor(border_->background_color());
   gfx::Path path;
-  gfx::Rect bounds(view->GetLocalBounds(false));
+  gfx::Rect bounds(view->GetLocalBounds());
   SkRect rect;
   rect.set(SkIntToScalar(bounds.x()), SkIntToScalar(bounds.y()),
            SkIntToScalar(bounds.right()), SkIntToScalar(bounds.bottom()));

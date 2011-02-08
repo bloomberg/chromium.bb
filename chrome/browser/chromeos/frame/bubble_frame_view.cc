@@ -210,7 +210,7 @@ void BubbleFrameView::Paint(gfx::Canvas* canvas) {
   paint.setStyle(SkPaint::kFill_Style);
   paint.setColor(BubbleWindow::kBackgroundColor);
   gfx::Path path;
-  gfx::Rect bounds(GetLocalBounds(false));
+  gfx::Rect bounds(GetLocalBounds());
   SkRect rect;
   rect.set(SkIntToScalar(bounds.x()), SkIntToScalar(bounds.y()),
            SkIntToScalar(bounds.right()), SkIntToScalar(bounds.bottom()));

@@ -61,8 +61,7 @@ class ClientView : public View {
  protected:
   // Overridden from View:
   virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
-  virtual void DidChangeBounds(const gfx::Rect& previous,
-                               const gfx::Rect& current);
+  virtual void OnBoundsChanged();
   virtual AccessibilityTypes::Role GetAccessibleRole();
 
   // Accessors for private data members.

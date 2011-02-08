@@ -392,7 +392,7 @@ void AboutChromeView::Layout() {
 
   // Get the y-coordinate of our parent so we can position the text left of the
   // buttons at the bottom.
-  gfx::Rect parent_bounds = GetParent()->GetLocalBounds(false);
+  gfx::Rect parent_bounds = GetParent()->GetLocalBounds();
 
   sz = throbber_->GetPreferredSize();
   int throbber_topleft_x = kPanelHorizMargin;

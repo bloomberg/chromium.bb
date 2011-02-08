@@ -223,7 +223,7 @@ void NativeControl::Layout() {
     ValidateNativeControl();
 
   if (hwnd_view_) {
-    gfx::Rect lb = GetLocalBounds(false);
+    gfx::Rect lb = GetLocalBounds();
 
     int x = lb.x();
     int y = lb.y();

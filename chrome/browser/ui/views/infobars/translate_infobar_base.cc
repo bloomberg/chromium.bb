@@ -120,7 +120,7 @@ views::MenuButton* TranslateInfoBarBase::CreateMenuButton(
 
 gfx::Point TranslateInfoBarBase::DetermineMenuPosition(
     views::MenuButton* menu_button) {
-  gfx::Rect lb = menu_button->GetLocalBounds(true);
+  gfx::Rect lb = menu_button->GetContentsBounds();
   gfx::Point menu_position(lb.origin());
   menu_position.Offset(2, lb.height() - 3);
   if (base::i18n::IsRTL())

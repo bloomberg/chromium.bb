@@ -80,7 +80,7 @@ class MouseWatcher::Observer : public MessageLoopForUI::Observer {
   // Returns whether or not the cursor is currently in the view's "zone" which
   // is defined as a slightly larger region than the view.
   bool IsCursorInViewZone() {
-    gfx::Rect bounds = view()->GetLocalBounds(true);
+    gfx::Rect bounds = view()->GetContentsBounds();
     gfx::Point view_topleft(bounds.origin());
     View::ConvertPointToScreen(view(), &view_topleft);
     bounds.set_origin(view_topleft);

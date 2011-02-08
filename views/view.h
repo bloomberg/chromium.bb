@@ -257,68 +257,35 @@ class View : public AcceleratorTarget {
 #endif
 
   // Size and disposition ------------------------------------------------------
+  // Methods for obtaining and modifying the position and size of the view.
+  // Position is in the coordinate system of the view's parent.
+  // Position is NOT flipped for RTL. See "RTL positioning" for RTL-sensitive
+  // position accessors.
 
-  // Get the bounds of the View, relative to the parent. Essentially, this
-  // function returns the bounds_ rectangle.
-  //
-  // This is the function subclasses should use whenever they need to obtain
-  // the bounds of one of their child views (for example, when implementing
-  // View::Layout()).
+  void SetBounds(int x, int y, int width, int height);
+  void SetBoundsRect(const gfx::Rect& bounds);
+  void SetSize(const gfx::Size& size);
+  void SetPosition(const gfx::Point& position);
+  void SetX(int x);
+  void SetY(int y);
+
+  // Override to be notified when the bounds of the view have changed.
+  virtual void OnBoundsChanged();
+
   const gfx::Rect& bounds() const { return bounds_; }
-
-  // Get the size of the View.
-  const gfx::Size& size() const { return bounds_.size(); }
-
-  // Return the bounds of the View, relative to the parent. If
-  // |settings| is IGNORE_MIRRORING_TRANSFORMATION, the function returns the
-  // bounds_ rectangle. If |settings| is APPLY_MIRRORING_TRANSFORMATION AND the
-  // parent View is using a right-to-left UI layout, then the function returns
-  // a shifted version of the bounds_ rectangle that represents the mirrored
-  // View bounds.
-  //
-  // NOTE: in the vast majority of the cases, the mirroring implementation is
-  //       transparent to the View subclasses and therefore you should use the
-  //       version of GetBounds() which does not take a transformation settings
-  //       parameter.
-  gfx::Rect GetBounds(PositionMirroringSettings settings) const;
-
-  // Set the bounds in the parent's coordinate system.
-  void SetBounds(const gfx::Rect& bounds);
-  void SetBounds(int x, int y, int width, int height) {
-    SetBounds(gfx::Rect(x, y, std::max(0, width), std::max(0, height)));
-  }
-  void SetX(int x) { SetBounds(x, y(), width(), height()); }
-  void SetY(int y) { SetBounds(x(), y, width(), height()); }
-
-  // Returns the left coordinate of the View, relative to the parent View,
-  // which is the value of bounds_.x().
-  //
-  // This is the function subclasses should use whenever they need to obtain
-  // the left position of one of their child views (for example, when
-  // implementing View::Layout()).
-  // This is equivalent to GetX(IGNORE_MIRRORING_TRANSFORMATION), but
-  // inlinable.
   int x() const { return bounds_.x(); }
   int y() const { return bounds_.y(); }
   int width() const { return bounds_.width(); }
   int height() const { return bounds_.height(); }
+  const gfx::Size& size() const { return bounds_.size(); }
 
-  // Return the left coordinate of the View, relative to the parent. If
-  // |settings| is IGNORE_MIRRORING_SETTINGS, the function returns the value of
-  // bounds_.x(). If |settings| is APPLY_MIRRORING_SETTINGS AND the parent
-  // View is using a right-to-left UI layout, then the function returns the
-  // mirrored value of bounds_.x().
-  //
-  // NOTE: in the vast majority of the cases, the mirroring implementation is
-  //       transparent to the View subclasses and therefore you should use the
-  //       paremeterless version of x() when you need to get the X
-  //       coordinate of a child View.
-  int GetX(PositionMirroringSettings settings) const;
+  // Returns the bounds of the content area of the view, i.e. the rectangle
+  // enclosed by the view's border.
+  gfx::Rect GetContentsBounds() const;
 
-  // Return this control local bounds. If include_border is true, local bounds
-  // is the rectangle {0, 0, width(), height()}, otherwise, it does not
-  // include the area where the border (if any) is painted.
-  gfx::Rect GetLocalBounds(bool include_border) const;
+  // Returns the bounds of the view in its own coordinates (i.e. position is
+  // 0, 0).
+  gfx::Rect GetLocalBounds() const;
 
   // Returns the insets of the current border. If there is no border an empty
   // insets is returned.
@@ -331,24 +298,18 @@ class View : public AcceleratorTarget {
   // function takes into account the mirroring setting for each View and
   // therefore it will return the mirrored version of the visible bounds if
   // need be.
+  // TODO(beng): const.
   gfx::Rect GetVisibleBounds();
 
   // Return the bounds of the View in screen coordinate system.
   gfx::Rect GetScreenBounds() const;
 
-  // Get the position of the View, relative to the parent.
-  //
-  // Note that if the parent uses right-to-left UI layout, then the mirrored
-  // position of this View is returned. Use x()/y() if you want to ignore
-  // mirroring.
-  gfx::Point GetPosition() const;
-
-  // Get the size the View would like to be, if enough space were available.
-  virtual gfx::Size GetPreferredSize();
-
   // Returns the baseline of this view, or -1 if this view has no baseline. The
   // return value is relative to the preferred height.
   virtual int GetBaseline();
+
+  // Get the size the View would like to be, if enough space were available.
+  virtual gfx::Size GetPreferredSize();
 
   // Convenience method that sizes this view to its preferred size.
   void SizeToPreferredSize();
@@ -362,11 +323,6 @@ class View : public AcceleratorTarget {
   // Override if your View's preferred height depends upon the width (such
   // as with Labels).
   virtual int GetHeightForWidth(int w);
-
-  // This method is invoked when this object size or position changes.
-  // The default implementation does nothing.
-  virtual void DidChangeBounds(const gfx::Rect& previous,
-                               const gfx::Rect& current);
 
   // Set whether the receiving view is visible. Painting is scheduled as needed
   virtual void SetVisible(bool flag);
@@ -387,6 +343,38 @@ class View : public AcceleratorTarget {
   virtual bool IsEnabled() const;
 
   // RTL positioning -----------------------------------------------------------
+
+  // Return the bounds of the View, relative to the parent. If
+  // |settings| is IGNORE_MIRRORING_TRANSFORMATION, the function returns the
+  // bounds_ rectangle. If |settings| is APPLY_MIRRORING_TRANSFORMATION AND the
+  // parent View is using a right-to-left UI layout, then the function returns
+  // a shifted version of the bounds_ rectangle that represents the mirrored
+  // View bounds.
+  //
+  // NOTE: in the vast majority of the cases, the mirroring implementation is
+  //       transparent to the View subclasses and therefore you should use the
+  //       version of GetBounds() which does not take a transformation settings
+  //       parameter.
+  gfx::Rect GetBounds(PositionMirroringSettings settings) const;
+
+  // Return the left coordinate of the View, relative to the parent. If
+  // |settings| is IGNORE_MIRRORING_SETTINGS, the function returns the value of
+  // bounds_.x(). If |settings| is APPLY_MIRRORING_SETTINGS AND the parent
+  // View is using a right-to-left UI layout, then the function returns the
+  // mirrored value of bounds_.x().
+  //
+  // NOTE: in the vast majority of the cases, the mirroring implementation is
+  //       transparent to the View subclasses and therefore you should use the
+  //       paremeterless version of x() when you need to get the X
+  //       coordinate of a child View.
+  int GetX(PositionMirroringSettings settings) const;
+
+  // Get the position of the View, relative to the parent.
+  //
+  // Note that if the parent uses right-to-left UI layout, then the mirrored
+  // position of this View is returned. Use x()/y() if you want to ignore
+  // mirroring.
+  gfx::Point GetPosition() const;
 
   // Returns the mirrored X position for the view, relative to the parent. If
   // the parent view is not mirrored, this function returns bound_.left.

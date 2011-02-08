@@ -70,7 +70,7 @@ bool TitleMatchesMnemonic(MenuItemView* menu, wchar_t key) {
 
 // Convenience for scrolling the view such that the origin is visible.
 static void ScrollToVisible(View* view) {
-  view->ScrollRectToVisible(gfx::Rect(gfx::Point(), view->size()));
+  view->ScrollRectToVisible(view->GetLocalBounds());
 }
 
 // Returns the first descendant of |view| that is hot tracked.

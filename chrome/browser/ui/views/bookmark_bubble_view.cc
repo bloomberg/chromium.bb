@@ -131,11 +131,6 @@ BookmarkBubbleView::~BookmarkBubbleView() {
   }
 }
 
-void BookmarkBubbleView::DidChangeBounds(const gfx::Rect& previous,
-                                         const gfx::Rect& current) {
-  Layout();
-}
-
 void BookmarkBubbleView::BubbleShown() {
   DCHECK(GetWidget());
   GetFocusManager()->RegisterAccelerator(

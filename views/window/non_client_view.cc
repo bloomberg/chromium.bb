@@ -115,7 +115,7 @@ void NonClientView::LayoutFrameView() {
   // change independently of the bounds changing - e.g. after the initial
   // display of the window the metrics of the native window controls can change,
   // which does not change the bounds of the window but requires a re-layout to
-  // trigger a repaint. We override DidChangeBounds for the NonClientFrameView
+  // trigger a repaint. We override OnBoundsChanged() for the NonClientFrameView
   // to do nothing so that SetBounds above doesn't cause Layout to be called
   // twice.
   frame_view_->Layout();
@@ -140,7 +140,7 @@ void NonClientView::Layout() {
   LayoutFrameView();
 
   // Then layout the ClientView, using those bounds.
-  client_view_->SetBounds(frame_view_->GetBoundsForClientView());
+  client_view_->SetBoundsRect(frame_view_->GetBoundsForClientView());
 
   // We need to manually call Layout on the ClientView as well for the same
   // reason as above.
@@ -187,8 +187,7 @@ bool NonClientFrameView::HitTest(const gfx::Point& l) const {
   return !GetWindow()->GetClientView()->bounds().Contains(l);
 }
 
-void NonClientFrameView::DidChangeBounds(const gfx::Rect& previous,
-                                         const gfx::Rect& current) {
+void NonClientFrameView::OnBoundsChanged() {
   // Overridden to do nothing. The NonClientView manually calls Layout on the
   // FrameView when it is itself laid out, see comment in NonClientView::Layout.
 }

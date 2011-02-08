@@ -67,8 +67,7 @@ class BalloonViewImpl : public BalloonView,
  private:
   // views::View interface.
   virtual void Paint(gfx::Canvas* canvas);
-  virtual void DidChangeBounds(const gfx::Rect& previous,
-                               const gfx::Rect& current);
+  virtual void OnBoundsChanged();
   virtual gfx::Size GetPreferredSize();
 
   // views::ViewMenuDelegate interface.

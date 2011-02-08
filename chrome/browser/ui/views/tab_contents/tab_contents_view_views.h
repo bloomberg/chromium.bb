@@ -62,8 +62,7 @@ class TabContentsViewViews : public TabContentsView, public views::View {
   virtual void GetViewBounds(gfx::Rect* out) const;
 
   // views::View implementation
-  virtual void DidChangeBounds(const gfx::Rect& previous,
-                               const gfx::Rect& current);
+  virtual void OnBoundsChanged();
 
   virtual void Paint(gfx::Canvas* canvas);
 

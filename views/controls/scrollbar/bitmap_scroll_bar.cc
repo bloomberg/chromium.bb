@@ -118,7 +118,7 @@ class BitmapScrollBarThumb : public View {
     } else {
       thumb_bounds.set_height(size);
     }
-    SetBounds(thumb_bounds);
+    SetBoundsRect(thumb_bounds);
   }
 
   // Retrieves the size (width or height) of the thumb.
@@ -137,7 +137,7 @@ class BitmapScrollBarThumb : public View {
     } else {
       thumb_bounds.set_y(track_bounds.y() + position);
     }
-    SetBounds(thumb_bounds);
+    SetBoundsRect(thumb_bounds);
   }
 
   // Gets the position of the thumb on the x or y axis.

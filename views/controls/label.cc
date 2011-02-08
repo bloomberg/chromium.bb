@@ -73,8 +73,7 @@ int Label::GetHeightForWidth(int w) {
   return h + GetInsets().height();
 }
 
-void Label::DidChangeBounds(const gfx::Rect& previous,
-                            const gfx::Rect& current) {
+void Label::OnBoundsChanged() {
   text_size_valid_ &= !is_multi_line_;
 }
 

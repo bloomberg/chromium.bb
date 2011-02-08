@@ -56,8 +56,7 @@ void ClientView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
   }
 }
 
-void ClientView::DidChangeBounds(const gfx::Rect& previous,
-                                 const gfx::Rect& current) {
+void ClientView::OnBoundsChanged() {
   // Overridden to do nothing. The NonClientView manually calls Layout on the
   // ClientView when it is itself laid out, see comment in
   // NonClientView::Layout.

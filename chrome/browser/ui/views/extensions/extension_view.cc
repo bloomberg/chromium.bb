@@ -75,13 +75,12 @@ void ExtensionView::SetVisible(bool is_visible) {
   }
 }
 
-void ExtensionView::DidChangeBounds(const gfx::Rect& previous,
-                                    const gfx::Rect& current) {
-  View::DidChangeBounds(previous, current);
+void ExtensionView::OnBoundsChanged() {
+  View::OnBoundsChanged();
   // Propagate the new size to RenderWidgetHostView.
   // We can't send size zero because RenderWidget DCHECKs that.
-  if (render_view_host()->view() && !current.IsEmpty())
-    render_view_host()->view()->SetSize(gfx::Size(width(), height()));
+  if (render_view_host()->view() && !bounds().IsEmpty())
+    render_view_host()->view()->SetSize(size());
 }
 
 void ExtensionView::CreateWidgetHostView() {

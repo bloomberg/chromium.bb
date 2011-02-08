@@ -81,7 +81,7 @@ UsernameView::UsernameView(const std::wstring& username, bool use_small_shape)
 }
 
 void UsernameView::Paint(gfx::Canvas* canvas) {
-  gfx::Rect bounds = GetLocalBounds(false);
+  gfx::Rect bounds = GetLocalBounds();
   if (text_image_ == NULL)
     PaintUsername(bounds);
   DCHECK(text_image_ != NULL);

@@ -248,7 +248,7 @@ void BrowserViewLayout::ViewRemoved(views::View* host, views::View* view) {
 }
 
 void BrowserViewLayout::Layout(views::View* host) {
-  vertical_layout_rect_ = browser_view_->GetLocalBounds(true);
+  vertical_layout_rect_ = browser_view_->GetContentsBounds();
   int top = LayoutTabStrip();
   if (browser_view_->IsTabStripVisible() && !browser_view_->UseVerticalTabs()) {
     tabstrip_->SetBackgroundOffset(gfx::Point(
@@ -307,7 +307,7 @@ int BrowserViewLayout::LayoutTabStrip() {
     vertical_layout_rect_.Inset(tabstrip_bounds.width(), 0, 0, 0);
 
   tabstrip_->SetVisible(true);
-  tabstrip_->SetBounds(tabstrip_bounds);
+  tabstrip_->SetBoundsRect(tabstrip_bounds);
   return browser_view_->UseVerticalTabs() ?
       tabstrip_bounds.y() : tabstrip_bounds.bottom();
 }
@@ -448,7 +448,7 @@ void BrowserViewLayout::LayoutTabContents(int top, int bottom) {
       !browser_view_->frame_->GetWindow()->IsFullscreen()) {
     gfx::Size resize_corner_size = browser_view_->GetResizeCornerSize();
     if (!resize_corner_size.IsEmpty()) {
-      gfx::Rect bounds = browser_view_->GetLocalBounds(false);
+      gfx::Rect bounds = browser_view_->GetLocalBounds();
       gfx::Point resize_corner_origin(
           bounds.right() - resize_corner_size.width(),
           bounds.bottom() - resize_corner_size.height());
@@ -473,9 +473,9 @@ void BrowserViewLayout::LayoutTabContents(int top, int bottom) {
                              contents_split_offset);
 
   // Now it's safe to actually resize all contents views in the hierarchy.
-  contents_split_->SetBounds(contents_split_bounds);
+  contents_split_->SetBoundsRect(contents_split_bounds);
   if (sidebar_split)
-    sidebar_split->SetBounds(sidebar_split_bounds);
+    sidebar_split->SetBoundsRect(sidebar_split_bounds);
 }
 
 int BrowserViewLayout::GetTopMarginForActiveContent() {

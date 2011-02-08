@@ -147,8 +147,7 @@ class TestView : public View {
     accelerator_count_map_.clear();
   }
 
-  virtual void DidChangeBounds(const gfx::Rect& previous,
-                               const gfx::Rect& current);
+  virtual void OnBoundsChanged();
   virtual void ViewHierarchyChanged(bool is_add, View *parent, View *child);
   virtual bool OnMousePressed(const MouseEvent& event);
   virtual bool OnMouseDragged(const MouseEvent& event);
@@ -159,9 +158,8 @@ class TestView : public View {
   virtual void Paint(gfx::Canvas* canvas);
   virtual bool AcceleratorPressed(const Accelerator& accelerator);
 
-  // DidChangeBounds test
+  // OnBoundsChanged test
   bool did_change_bounds_;
-  gfx::Rect previous_bounds_;
   gfx::Rect new_bounds_;
 
   // AddRemoveNotifications test
@@ -216,28 +214,25 @@ class MockGestureManager : public GestureManager {
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
-// DidChangeBounds
+// OnBoundsChanged
 ////////////////////////////////////////////////////////////////////////////////
 
-void TestView::DidChangeBounds(const gfx::Rect& previous,
-                               const gfx::Rect& current) {
+void TestView::OnBoundsChanged() {
   did_change_bounds_ = true;
-  previous_bounds_ = previous;
-  new_bounds_ = current;
+  new_bounds_ = bounds();
 }
 
-TEST_F(ViewTest, DidChangeBounds) {
+TEST_F(ViewTest, OnBoundsChanged) {
   TestView* v = new TestView();
 
   gfx::Rect prev_rect(0, 0, 200, 200);
   gfx::Rect new_rect(100, 100, 250, 250);
 
-  v->SetBounds(prev_rect);
+  v->SetBoundsRect(prev_rect);
   v->Reset();
 
-  v->SetBounds(new_rect);
+  v->SetBoundsRect(new_rect);
   EXPECT_EQ(v->did_change_bounds_, true);
-  EXPECT_EQ(v->previous_bounds_, prev_rect);
   EXPECT_EQ(v->new_bounds_, new_rect);
 
   EXPECT_EQ(v->bounds(), gfx::Rect(new_rect));
@@ -776,12 +771,12 @@ TEST_F(ViewTest, HitTestMasks) {
 
   gfx::Rect v1_bounds = gfx::Rect(0, 0, 100, 100);
   HitTestView* v1 = new HitTestView(false);
-  v1->SetBounds(v1_bounds);
+  v1->SetBoundsRect(v1_bounds);
   root_view->AddChildView(v1);
 
   gfx::Rect v2_bounds = gfx::Rect(105, 0, 100, 100);
   HitTestView* v2 = new HitTestView(true);
-  v2->SetBounds(v2_bounds);
+  v2->SetBoundsRect(v2_bounds);
   root_view->AddChildView(v2);
 
   gfx::Point v1_centerpoint = v1_bounds.CenterPoint();

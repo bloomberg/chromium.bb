@@ -446,7 +446,7 @@ bool TabStrip::ShouldHighlightCloseButtonAfterRemove() {
 void TabStrip::DoLayout() {
   BaseTabStrip::DoLayout();
 
-  newtab_button_->SetBounds(newtab_button_bounds_);
+  newtab_button_->SetBoundsRect(newtab_button_bounds_);
 }
 
 void TabStrip::ViewHierarchyChanged(bool is_add,

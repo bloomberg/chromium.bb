@@ -297,7 +297,7 @@ void BackgroundView::Layout() {
     shutdown_button_->LayoutIn(this);
   }
   if (background_area_)
-    background_area_->SetBounds(this->bounds());
+    background_area_->SetBoundsRect(this->bounds());
 }
 
 void BackgroundView::ChildPreferredSizeChanged(View* child) {

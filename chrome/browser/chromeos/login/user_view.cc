@@ -199,7 +199,7 @@ class RemoveButton : public views::TextButton {
     gfx::Size size = GetPreferredSize();
     gfx::Point origin = top_right_;
     origin.Offset(-size.width(), 0);
-    SetBounds(gfx::Rect(origin, size));
+    SetBoundsRect(gfx::Rect(origin, size));
 
     if (GetParent())
       GetParent()->SchedulePaint();

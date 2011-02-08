@@ -756,7 +756,7 @@ void NotificationPanel::UpdateContainerBounds() {
   // Update from WebKit may arrive after the panel is closed/hidden
   // and viewport widget is detached.
   if (native) {
-    native->SetBounds(balloon_container_->bounds());
+    native->SetBoundsRect(balloon_container_->bounds());
     scroll_view_->Layout();
   }
 }
@@ -866,7 +866,7 @@ bool NotificationPanelTester::IsVisible(const BalloonViewImpl* view) const {
   gfx::Point origin(0, 0);
   views::View::ConvertPointToView(view, panel_->balloon_container_.get(),
                                   &origin);
-  return rect.Contains(gfx::Rect(origin, view->bounds().size()));
+  return rect.Contains(gfx::Rect(origin, view->size()));
 }
 
 

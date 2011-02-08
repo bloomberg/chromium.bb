@@ -457,11 +457,6 @@ void BookmarkBarView::Layout() {
   LayoutItems(false);
 }
 
-void BookmarkBarView::DidChangeBounds(const gfx::Rect& previous,
-                                      const gfx::Rect& current) {
-  Layout();
-}
-
 void BookmarkBarView::ViewHierarchyChanged(bool is_add,
                                            View* parent,
                                            View* child) {
@@ -473,8 +468,8 @@ void BookmarkBarView::ViewHierarchyChanged(bool is_add,
 
     if (height() > 0) {
       // We only layout while parented. When we become parented, if our bounds
-      // haven't changed, DidChangeBounds won't get invoked and we won't layout.
-      // Therefore we always force a layout when added.
+      // haven't changed, OnBoundsChanged() won't get invoked and we won't
+      // layout. Therefore we always force a layout when added.
       Layout();
     }
   }
@@ -1085,8 +1080,8 @@ void BookmarkBarView::WriteDragData(View* sender,
       views::TextButton* button = GetBookmarkButton(i);
       gfx::CanvasSkia canvas(button->width(), button->height(), false);
       button->Paint(&canvas, true);
-      drag_utils::SetDragImageOnDataObject(canvas, button->size(),
-                                           press_pt, data);
+      drag_utils::SetDragImageOnDataObject(canvas, button->size(), press_pt,
+                                           data);
       WriteDragData(model_->GetBookmarkBarNode()->GetChild(i), data);
       return;
     }

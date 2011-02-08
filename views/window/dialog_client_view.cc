@@ -321,7 +321,7 @@ void DialogClientView::Layout() {
   if (has_dialog_buttons())
     LayoutDialogButtons();
   if (bottom_view_) {
-    gfx::Rect bounds = GetLocalBounds(false);
+    gfx::Rect bounds = GetContentsBounds();
     gfx::Size pref = bottom_view_->GetPreferredSize();
     bottom_view_->SetBounds(bounds.x(),
         bounds.bottom() - pref.height() - kButtonVEdgeMargin,
@@ -431,7 +431,7 @@ void DialogClientView::PaintSizeBox(gfx::Canvas* canvas) {
     //             a theme-supplied gripper. We should probably improvise
     //             something, which would also require changing |gripper_size|
     //             to have different default values, too...
-    size_box_bounds_ = GetLocalBounds(false);
+    size_box_bounds_ = GetLocalBounds();
     size_box_bounds_.set_x(size_box_bounds_.right() - gripper_size.cx);
     size_box_bounds_.set_y(size_box_bounds_.bottom() - gripper_size.cy);
     RECT native_bounds = size_box_bounds_.ToRECT();
@@ -465,7 +465,7 @@ int DialogClientView::GetButtonsHeight() const {
 }
 
 void DialogClientView::LayoutDialogButtons() {
-  gfx::Rect lb = GetLocalBounds(false);
+  gfx::Rect lb = GetContentsBounds();
   gfx::Rect extra_bounds;
   int bottom_y = lb.bottom() - kButtonVEdgeMargin;
   int button_height = 0;
@@ -507,14 +507,14 @@ void DialogClientView::LayoutDialogButtons() {
     int height = size_extra_view_height_to_buttons_ ?
         std::max(ps.height(), button_height) : ps.height();
     extra_bounds.set_height(height);
-    extra_view_->SetBounds(extra_bounds);
+    extra_view_->SetBoundsRect(extra_bounds);
   }
 }
 
 void DialogClientView::LayoutContentsView() {
-  gfx::Rect lb = GetLocalBounds(false);
+  gfx::Rect lb = GetContentsBounds();
   lb.set_height(std::max(0, lb.height() - GetButtonsHeight()));
-  contents_view()->SetBounds(lb);
+  contents_view()->SetBoundsRect(lb);
   contents_view()->Layout();
 }
 

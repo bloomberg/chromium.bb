@@ -195,8 +195,6 @@ class TableView2 : public View, public TableModelObserver {
     return vertical_lines_;
   }
 
-  virtual void DidChangeBounds(const gfx::Rect& previous,
-                               const gfx::Rect& current);
   virtual void Layout();
 
   virtual void PaintFocusBorder(gfx::Canvas* canvas);

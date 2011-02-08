@@ -175,7 +175,7 @@ void WebPageView::ShowWaitingControls() {
 // WebPageView, views::View implementation:
 
 void WebPageView::Layout() {
-  dom_view()->SetBounds(GetLocalBounds(false));
+  dom_view()->SetBoundsRect(GetLocalBounds());
   int y = height() / 2  - throbber_->GetPreferredSize().height() / 2;
   throbber_->SetBounds(
       width() / 2 - throbber_->GetPreferredSize().width() / 2,

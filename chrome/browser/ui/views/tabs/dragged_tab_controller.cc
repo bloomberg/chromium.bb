@@ -1028,7 +1028,7 @@ gfx::Point DraggedTabController::GetAttachedTabDragPoint(
   x = tab_loc.x();
   y = tab_loc.y();
 
-  const gfx::Size& tab_size = attached_tab_->bounds().size();
+  const gfx::Size& tab_size = attached_tab_->size();
 
   if (attached_tabstrip_->type() == BaseTabStrip::HORIZONTAL_TAB_STRIP) {
     int max_x = attached_tabstrip_->width() - tab_size.width();
@@ -1268,7 +1268,7 @@ gfx::Point DraggedTabController::GetCursorScreenPoint() const {
 gfx::Rect DraggedTabController::GetViewScreenBounds(views::View* view) const {
   gfx::Point view_topleft;
   views::View::ConvertPointToScreen(view, &view_topleft);
-  gfx::Rect view_screen_bounds = view->GetLocalBounds(true);
+  gfx::Rect view_screen_bounds = view->GetContentsBounds();
   view_screen_bounds.Offset(view_topleft.x(), view_topleft.y());
   return view_screen_bounds;
 }

@@ -51,10 +51,6 @@ class BookmarkBubbleView : public views::View,
 
   void set_info_bubble(InfoBubble* info_bubble) { info_bubble_ = info_bubble; }
 
-  // Overridden to force a layout.
-  virtual void DidChangeBounds(const gfx::Rect& previous,
-                               const gfx::Rect& current);
-
   // Invoked after the bubble has been shown.
   virtual void BubbleShown();
 

@@ -540,7 +540,7 @@ void CustomFrameView::LayoutTitleBar() {
   gfx::Rect icon_bounds(IconBounds());
   views::WindowDelegate* d = frame_->GetDelegate();
   if (d->ShouldShowWindowIcon())
-    window_icon_->SetBounds(icon_bounds);
+    window_icon_->SetBoundsRect(icon_bounds);
 
   // Size the title.
   int title_x = d->ShouldShowWindowIcon() ?

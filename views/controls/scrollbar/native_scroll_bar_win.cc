@@ -216,7 +216,7 @@ NativeScrollBarWin::~NativeScrollBarWin() {
 // NativeScrollBarWin, View overrides:
 
 void NativeScrollBarWin::Layout() {
-  SetBounds(native_scroll_bar_->GetLocalBounds(true));
+  SetBoundsRect(native_scroll_bar_->GetContentsBounds());
   NativeControlWin::Layout();
 }
 

@@ -1023,7 +1023,7 @@ void OpaqueBrowserFrameView::LayoutTitleBar() {
   gfx::Rect icon_bounds(IconBounds());
   views::WindowDelegate* delegate = frame_->GetWindow()->GetDelegate();
   if (delegate && delegate->ShouldShowWindowIcon())
-    window_icon_->SetBounds(icon_bounds);
+    window_icon_->SetBoundsRect(icon_bounds);
 
   // Size the title, if visible.
   if (delegate && delegate->ShouldShowWindowTitle()) {

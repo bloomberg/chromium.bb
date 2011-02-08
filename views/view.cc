@@ -208,19 +208,11 @@ void View::PrintFocusHierarchy() {
 
 // Size and disposition --------------------------------------------------------
 
-gfx::Rect View::GetBounds(PositionMirroringSettings settings) const {
-  gfx::Rect bounds(bounds_);
-
-  // If the parent uses an RTL UI layout and if we are asked to transform the
-  // bounds to their mirrored position if necessary, then we should shift the
-  // rectangle appropriately.
-  if (settings == APPLY_MIRRORING_TRANSFORMATION)
-    bounds.set_x(MirroredX());
-
-  return bounds;
+void View::SetBounds(int x, int y, int width, int height) {
+  SetBoundsRect(gfx::Rect(x, y, std::max(0, width), std::max(0, height)));
 }
 
-void View::SetBounds(const gfx::Rect& bounds) {
+void View::SetBoundsRect(const gfx::Rect& bounds) {
   if (bounds == bounds_) {
     if (needs_layout_) {
       needs_layout_ = false;
@@ -235,7 +227,7 @@ void View::SetBounds(const gfx::Rect& bounds) {
   bool position_changed = prev.origin() != bounds_.origin();
 
   if (size_changed || position_changed) {
-    DidChangeBounds(prev, bounds_);
+    OnBoundsChanged();
 
     RootView* root = GetRootView();
     if (root)
@@ -243,21 +235,39 @@ void View::SetBounds(const gfx::Rect& bounds) {
   }
 }
 
-// y(), width() and height() are agnostic to the RTL UI layout of the
-// parent view. x(), on the other hand, is not.
-int View::GetX(PositionMirroringSettings settings) const {
-  return settings == IGNORE_MIRRORING_TRANSFORMATION ? x() : MirroredX();
+void View::SetSize(const gfx::Size& size) {
+  SetBounds(x(), y(), size.width(), size.height());
 }
 
-gfx::Rect View::GetLocalBounds(bool include_border) const {
-  if (include_border || !border_.get())
-    return gfx::Rect(0, 0, width(), height());
+void View::SetPosition(const gfx::Point& position) {
+  SetBounds(position.x(), position.y(), width(), height());
+}
 
-  gfx::Insets insets;
-  border_->GetInsets(&insets);
-  return gfx::Rect(insets.left(), insets.top(),
-                   std::max(0, width() - insets.width()),
-                   std::max(0, height() - insets.height()));
+void View::SetX(int x) {
+  SetBounds(x, y(), width(), height());
+}
+
+void View::SetY(int y) {
+  SetBounds(x(), y, width(), height());
+}
+
+void View::OnBoundsChanged() {
+  needs_layout_ = false;
+  Layout();
+}
+
+gfx::Rect View::GetContentsBounds() const {
+  gfx::Rect contents_bounds(GetLocalBounds());
+  if (border_.get()) {
+    gfx::Insets insets;
+    border_->GetInsets(&insets);
+    contents_bounds.Inset(insets);
+  }
+  return contents_bounds;
+}
+
+gfx::Rect View::GetLocalBounds() const {
+  return gfx::Rect(0, 0, width(), height());
 }
 
 gfx::Insets View::GetInsets() const {
@@ -303,10 +313,6 @@ gfx::Rect View::GetScreenBounds() const {
   return gfx::Rect(origin, size());
 }
 
-gfx::Point View::GetPosition() const {
-  return gfx::Point(GetX(APPLY_MIRRORING_TRANSFORMATION), y());
-}
-
 gfx::Size View::GetPreferredSize() {
   if (layout_manager_.get())
     return layout_manager_->GetPreferredSize(this);
@@ -331,12 +337,6 @@ int View::GetHeightForWidth(int w) {
   if (layout_manager_.get())
     return layout_manager_->GetPreferredHeightForWidth(this, w);
   return GetPreferredSize().height();
-}
-
-void View::DidChangeBounds(const gfx::Rect& previous,
-                           const gfx::Rect& current) {
-  needs_layout_ = false;
-  Layout();
 }
 
 void View::SetVisible(bool flag) {
@@ -377,6 +377,28 @@ bool View::IsEnabled() const {
 }
 
 // RTL positioning -------------------------------------------------------------
+
+gfx::Rect View::GetBounds(PositionMirroringSettings settings) const {
+  gfx::Rect bounds(bounds_);
+
+  // If the parent uses an RTL UI layout and if we are asked to transform the
+  // bounds to their mirrored position if necessary, then we should shift the
+  // rectangle appropriately.
+  if (settings == APPLY_MIRRORING_TRANSFORMATION)
+    bounds.set_x(MirroredX());
+
+  return bounds;
+}
+
+// y(), width() and height() are agnostic to the RTL UI layout of the
+// parent view. x(), on the other hand, is not.
+int View::GetX(PositionMirroringSettings settings) const {
+  return settings == IGNORE_MIRRORING_TRANSFORMATION ? x() : MirroredX();
+}
+
+gfx::Point View::GetPosition() const {
+  return gfx::Point(GetX(APPLY_MIRRORING_TRANSFORMATION), y());
+}
 
 int View::MirroredX() const {
   View* parent = GetParent();
@@ -557,7 +579,7 @@ void View::SchedulePaint(const gfx::Rect& r, bool urgent) {
 }
 
 void View::SchedulePaint() {
-  SchedulePaint(GetLocalBounds(true), false);
+  SchedulePaint(GetContentsBounds(), false);
 }
 
 void View::Paint(gfx::Canvas* canvas) {

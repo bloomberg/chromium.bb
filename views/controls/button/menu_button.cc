@@ -126,7 +126,7 @@ bool MenuButton::Activate() {
   // after the menu closes.
   PaintNow();
   if (menu_delegate_) {
-    gfx::Rect lb = GetLocalBounds(true);
+    gfx::Rect lb = GetContentsBounds();
 
     // The position of the menu depends on whether or not the locale is
     // right-to-left.

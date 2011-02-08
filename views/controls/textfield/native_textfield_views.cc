@@ -122,8 +122,7 @@ void NativeTextfieldViews::Paint(gfx::Canvas* canvas) {
     PaintBorder(canvas);
 }
 
-void NativeTextfieldViews::DidChangeBounds(const gfx::Rect& previous,
-                                           const gfx::Rect& current) {
+void NativeTextfieldViews::OnBoundsChanged() {
   UpdateCursorBoundsAndTextOffset();
 }
 
