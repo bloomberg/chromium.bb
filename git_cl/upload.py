@@ -90,9 +90,9 @@ VCS_UNKNOWN = "Unknown"
 
 # whitelist for non-binary filetypes which do not start with "text/"
 # .mm (Objective-C) shows up as application/x-freemind on my Linux box.
-TEXT_MIMETYPES = ['application/javascript', 'application/x-javascript',
-                  'application/xml', 'application/x-freemind', 
-                  'application/x-sh']
+TEXT_MIMETYPES = ['application/javascript', 'application/json',
+                  'application/x-javascript', 'application/xml',
+                  'application/x-freemind', 'application/x-sh']
 
 VCS_ABBREVIATIONS = {
   VCS_MERCURIAL.lower(): VCS_MERCURIAL,
@@ -416,6 +416,14 @@ class AbstractRpcServer(object):
             url = e.info()["location"]
           else:
             raise
+        except urllib2.URLError, e:
+          reason = getattr(e, 'reason', None)
+          if isinstance(reason, str) and reason.find("110") != -1:
+            # Connection timeout error.
+            if tries <= 3:
+              # Try again.
+              continue
+          raise
     finally:
       socket.setdefaulttimeout(old_timeout)
 
