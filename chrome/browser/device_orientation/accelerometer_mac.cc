@@ -126,6 +126,9 @@ const AccelerometerMac::SensorDescriptor
   // Tested by leandrogracia on a 13'' MacBook Pro.
   { "MacBookPro5,5", { { 0, true  }, { 2, true  }, { 4, false } } },
 
+  // Tested by khom on a 17'' MacBook Pro.
+  { "MacBookPro6,1", { { 0, false }, { 2, false }, { 4, false } } },
+
   // Tested by leandrogracia on a 15'' MacBook Pro.
   { "MacBookPro6,2", { { 0, true  }, { 2, false }, { 4, true  } } },
 
