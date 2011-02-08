@@ -86,6 +86,7 @@ JingleSession::JingleSession(
       server_cert_(server_cert),
       state_(INITIALIZING),
       closed_(false),
+      closing_(false),
       cricket_session_(NULL),
       event_channel_(NULL),
       video_channel_(NULL),
@@ -113,17 +114,16 @@ void JingleSession::Init(cricket::Session* cricket_session) {
   cert_verifier_.reset(new net::CertVerifier());
   cricket_session_->SignalState.connect(
       this, &JingleSession::OnSessionState);
+  cricket_session_->SignalError.connect(
+      this, &JingleSession::OnSessionError);
 }
 
-void JingleSession::CloseInternal(Task* closed_task, int result) {
-  if (MessageLoop::current() != jingle_session_manager_->message_loop()) {
-    jingle_session_manager_->message_loop()->PostTask(
-        FROM_HERE, NewRunnableMethod(this, &JingleSession::CloseInternal,
-                                     closed_task, result));
-    return;
-  }
+void JingleSession::CloseInternal(int result, bool failed) {
+  DCHECK_EQ(jingle_session_manager_->message_loop(), MessageLoop::current());
 
-  if (!closed_) {
+  if (!closed_ && !closing_) {
+    closing_ = true;
+
     if (control_ssl_socket_.get())
       control_ssl_socket_.reset();
 
@@ -165,16 +165,14 @@ void JingleSession::CloseInternal(Task* closed_task, int result) {
     if (cricket_session_)
       cricket_session_->Terminate();
 
-    SetState(CLOSED);
+    if (failed)
+      SetState(FAILED);
+    else
+      SetState(CLOSED);
 
     closed_ = true;
   }
   cert_verifier_.reset();
-
-  if (closed_task) {
-    closed_task->Run();
-    delete closed_task;
-  }
 }
 
 bool JingleSession::HasSession(cricket::Session* cricket_session) {
@@ -279,12 +277,28 @@ void JingleSession::set_receiver_token(const std::string& receiver_token) {
 }
 
 void JingleSession::Close(Task* closed_task) {
-  CloseInternal(closed_task, net::ERR_CONNECTION_CLOSED);
+  if (MessageLoop::current() != jingle_session_manager_->message_loop()) {
+    jingle_session_manager_->message_loop()->PostTask(
+        FROM_HERE, NewRunnableMethod(this, &JingleSession::Close, closed_task));
+    return;
+  }
+
+  CloseInternal(net::ERR_CONNECTION_CLOSED, false);
+
+  if (closed_task) {
+    closed_task->Run();
+    delete closed_task;
+  }
 }
 
 void JingleSession::OnSessionState(
     BaseSession* session, BaseSession::State state) {
   DCHECK_EQ(cricket_session_, session);
+
+  if (closed_) {
+    // Don't do anything if we already closed.
+    return;
+  }
 
   switch (state) {
     case cricket::Session::STATE_SENTINITIATE:
@@ -312,6 +326,15 @@ void JingleSession::OnSessionState(
     default:
       // We don't care about other steates.
       break;
+  }
+}
+
+void JingleSession::OnSessionError(
+    BaseSession* session, BaseSession::Error error) {
+  DCHECK_EQ(cricket_session_, session);
+
+  if (error != cricket::Session::ERROR_NONE) {
+    CloseInternal(net::ERR_CONNECTION_ABORTED, true);
   }
 }
 
@@ -362,7 +385,10 @@ void JingleSession::OnInitiate() {
   if (!cricket_session_->initiator())
     jingle_session_manager_->AcceptConnection(this, cricket_session_);
 
-  SetState(CONNECTING);
+  if (!closed_) {
+    // Set state to CONNECTING if the session is being accepted.
+    SetState(CONNECTING);
+  }
 }
 
 bool JingleSession::EstablishSSLConnection(
@@ -450,44 +476,14 @@ void JingleSession::OnAccept() {
 }
 
 void JingleSession::OnTerminate() {
-  if (control_channel_adapter_.get())
-    control_channel_adapter_->Close(net::ERR_CONNECTION_ABORTED);
-  if (control_channel_) {
-    control_channel_->OnSessionTerminate(cricket_session_);
-    control_channel_ = NULL;
-  }
-
-  if (event_channel_adapter_.get())
-    event_channel_adapter_->Close(net::ERR_CONNECTION_ABORTED);
-  if (event_channel_) {
-    event_channel_->OnSessionTerminate(cricket_session_);
-    event_channel_ = NULL;
-  }
-
-  if (video_channel_adapter_.get())
-    video_channel_adapter_->Close(net::ERR_CONNECTION_ABORTED);
-  if (video_channel_) {
-    video_channel_->OnSessionTerminate(cricket_session_);
-    video_channel_ = NULL;
-  }
-
-  if (video_rtp_channel_.get())
-    video_rtp_channel_->Close(net::ERR_CONNECTION_ABORTED);
-  if (video_rtcp_channel_.get())
-    video_rtcp_channel_->Close(net::ERR_CONNECTION_ABORTED);
-
-  SetState(CLOSED);
-
-  closed_ = true;
+  CloseInternal(net::ERR_CONNECTION_ABORTED, false);
 }
 
 void JingleSession::OnSSLConnect(int result) {
   DCHECK(!closed_);
   if (result != net::OK) {
     LOG(ERROR) << "Error during SSL connection: " << result;
-    // TODO(hclam): Just setting the state is not enough. Need to invoke a
-    // callback to report failure.
-    CloseInternal(NULL, result);
+    CloseInternal(result, true);
     return;
   }
 
@@ -503,6 +499,9 @@ void JingleSession::OnSSLConnect(int result) {
 
 void JingleSession::SetState(State new_state) {
   if (new_state != state_) {
+    DCHECK_NE(state_, CLOSED);
+    DCHECK_NE(state_, FAILED);
+
     state_ = new_state;
     if (!closed_ && state_change_callback_.get())
       state_change_callback_->Run(new_state);

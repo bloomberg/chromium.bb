@@ -1,2 +1,7 @@
-# Fails under TSan/Win, see http://crbug.com/70225
+# Following tests create real libjingle connections, and libjingle has
+# hardcoded timeouts, so these tests fail under TSan.
 JingleSessionTest.Connect
+JingleSessionTest.TestControlChannel
+JingleSessionTest.TestEventChannel
+JingleSessionTest.TestVideoChannel
+JingleSessionTest.TestVideoRtpChannel

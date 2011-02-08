@@ -82,8 +82,9 @@ class Session : public base::RefCountedThreadSafe<Session> {
   virtual const std::string& receiver_token() = 0;
   virtual void set_receiver_token(const std::string& receiver_token) = 0;
 
-  // Closes connection. Callbacks are guaranteed not to be called after
-  // |closed_task| is executed.
+  // Closes connection. Callbacks are guaranteed not to be called
+  // after |closed_task| is executed. Must be called before the object
+  // is destroyed, unless the state is set to FAILED or CLOSED.
   virtual void Close(Task* closed_task) = 0;
 
  protected:

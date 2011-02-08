@@ -587,15 +587,13 @@ TEST_F(JingleSessionTest, RejectConnection) {
 }
 
 // Verify that we can connect two endpoints.
-// Disabled, http://crbug.com/70225.
-TEST_F(JingleSessionTest, DISABLED_Connect) {
+TEST_F(JingleSessionTest, Connect) {
   CreateServerPair();
   ASSERT_TRUE(InitiateConnection());
 }
 
 // Verify that data can be transmitted over the event channel.
-// Disabled, http://crbug.com/70225.
-TEST_F(JingleSessionTest, DISABLED_TestControlChannel) {
+TEST_F(JingleSessionTest, TestControlChannel) {
   CreateServerPair();
   ASSERT_TRUE(InitiateConnection());
   scoped_refptr<TCPChannelTester> tester(
@@ -625,8 +623,7 @@ TEST_F(JingleSessionTest, TestVideoChannel) {
 }
 
 // Verify that data can be transmitted over the event channel.
-// Disabled, http://crbug.com/70225.
-TEST_F(JingleSessionTest, DISABLED_TestEventChannel) {
+TEST_F(JingleSessionTest, TestEventChannel) {
   CreateServerPair();
   ASSERT_TRUE(InitiateConnection());
   scoped_refptr<TCPChannelTester> tester(

@@ -92,7 +92,7 @@ class JingleSession : public protocol::Session,
   void Init(cricket::Session* cricket_session);
 
   // Close all the channels and terminate the session.
-  void CloseInternal(Task* closed_task, int result);
+  void CloseInternal(int result, bool failed);
 
   bool HasSession(cricket::Session* cricket_session);
   cricket::Session* ReleaseSession();
@@ -106,6 +106,9 @@ class JingleSession : public protocol::Session,
   // Used for Session.SignalState sigslot.
   void OnSessionState(cricket::BaseSession* session,
                       cricket::BaseSession::State state);
+  // Used for Session.SignalError sigslot.
+  void OnSessionError(cricket::BaseSession* session,
+                      cricket::BaseSession::Error error);
 
   void OnInitiate();
   void OnAccept();
@@ -129,6 +132,7 @@ class JingleSession : public protocol::Session,
   scoped_ptr<StateChangeCallback> state_change_callback_;
 
   bool closed_;
+  bool closing_;
 
   // JID of the other side. Set when the connection is initialized,
   // and never changed after that.
