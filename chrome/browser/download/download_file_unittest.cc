@@ -16,8 +16,6 @@
 #include "net/base/file_stream.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
-
 class DownloadFileTest : public testing::Test {
  public:
 
@@ -29,7 +27,16 @@ class DownloadFileTest : public testing::Test {
   static const int kDummyChildId;
   static const int kDummyRequestId;
 
-  DownloadFileTest() : file_thread_(BrowserThread::FILE, &message_loop_) {
+  // We need a UI |BrowserThread| in order to destruct |download_manager_|,
+  // which has trait |BrowserThread::DeleteOnUIThread|.  Without this,
+  // calling Release() on |download_manager_| won't ever result in its
+  // destructor being called and we get a leak.
+  DownloadFileTest() :
+      ui_thread_(BrowserThread::UI, &loop_),
+      file_thread_(BrowserThread::FILE, &loop_) {
+  }
+
+  ~DownloadFileTest() {
   }
 
   virtual void SetUp() {
@@ -38,6 +45,13 @@ class DownloadFileTest : public testing::Test {
   }
 
   virtual void TearDown() {
+    // When a DownloadManager's reference count drops to 0, it is not
+    // deleted immediately. Instead, a task is posted to the UI thread's
+    // message loop to delete it.
+    // So, drop the reference count to 0 and run the message loop once
+    // to ensure that all resources are cleaned up before the test exits.
+    download_manager_ = NULL;
+    ui_thread_.message_loop()->RunAllPending();
   }
 
   virtual void CreateDownloadFile(scoped_ptr<DownloadFile>* file, int offset) {
@@ -89,12 +103,14 @@ class DownloadFileTest : public testing::Test {
   scoped_ptr<DownloadFile> download_file_;
 
  private:
+  MessageLoop loop_;
+  // UI thread.
+  BrowserThread ui_thread_;
+  // File thread to satisfy debug checks in DownloadFile.
+  BrowserThread file_thread_;
+
   // Keep track of what data should be saved to the disk file.
   std::string expected_data_;
-
-  // Mock file thread to satisfy debug checks in DownloadFile.
-  MessageLoop message_loop_;
-  BrowserThread file_thread_;
 };
 
 const char* DownloadFileTest::kTestData1 =
@@ -277,5 +293,3 @@ TEST_F(DownloadFileTest, DeleteCrDownload) {
 
   DestroyDownloadFile(&checked_file, 3);
 }
-
-}  // namespace

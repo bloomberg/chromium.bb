@@ -3745,12 +3745,6 @@
    fun:_ZN7testing8TestInfo3RunEv
 }
 {
-   bug_71728
-   Memcheck:Leak
-   fun:_Znw*
-   fun:*DownloadFileTest5SetUpEv
-}
-{
    bug_72170a
    Memcheck:Addr4
    fun:pthread_mutex_lock
