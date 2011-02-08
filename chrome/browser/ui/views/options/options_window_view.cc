@@ -221,6 +221,10 @@ void OptionsWindowView::Init() {
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_OPTIONS_ADVANCED_TAB_LABEL)),
       advanced_page, false);
 
+  // Bind the profile to the window so that the ChromeViewsDelegate can find
+  // the user preferences to store and retrieve window placement settings.
+  window()->SetNativeWindowProperty(Profile::kProfileKey, profile_);
+
   DCHECK(tabs_->GetTabCount() == OPTIONS_PAGE_COUNT);
 }
 

@@ -2019,7 +2019,6 @@ void Browser::SetNewHomePagePrefs(PrefService* prefs) {
 // static
 void Browser::RegisterPrefs(PrefService* prefs) {
   prefs->RegisterIntegerPref(prefs::kOptionsWindowLastTabIndex, 0);
-  prefs->RegisterDictionaryPref(prefs::kPreferencesWindowPlacement);
   prefs->RegisterIntegerPref(prefs::kExtensionSidebarWidth, -1);
   prefs->RegisterIntegerPref(prefs::kMultipleProfilePrefMigration, 0);
   // Educated guess: Chrome has a bundled Flash version supporting
@@ -2073,6 +2072,7 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterDoublePref(prefs::kDefaultZoomLevel, 0.0);
   prefs->RegisterIntegerPref(prefs::kDevToolsSplitLocation, -1);
   prefs->RegisterDictionaryPref(prefs::kBrowserWindowPlacement);
+  prefs->RegisterDictionaryPref(prefs::kPreferencesWindowPlacement);
   // We need to register the type of this preference in order to query
   // it even though it's only typically controlled via policy.
   prefs->RegisterBooleanPref(prefs::kDisable3DAPIs, false);
