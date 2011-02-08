@@ -755,7 +755,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
   EXPECT_TRUE(result);
 }
 
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_CHROMEOS)
+// ChromeOS doesn't support NPAPI.
+#define MAYBE_PluginPrivate DISABLED_PluginPrivate
+#elif defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_PluginPrivate PluginPrivate
 #else
 // TODO(mpcomplete): http://crbug.com/29900 need cross platform plugin support.
