@@ -109,8 +109,7 @@ chromeHidden.JSONSchemaValidator.getType = function(value) {
   if (s == "object") {
     if (value === null) {
       return "null";
-    } else if (value instanceof Array ||
-               Object.prototype.toString.call(value) == "[Object Array]") {
+    } else if (Object.prototype.toString.call(value) == "[object Array]") {
       return "array";
     }
   } else if (s == "number") {
