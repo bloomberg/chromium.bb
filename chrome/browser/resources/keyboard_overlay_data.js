@@ -1803,8 +1803,8 @@ var keyboardOverlayData = {
           "position": "11"
         },
         "3D": {
-          "key": " glyph_overview",
-          "label": "glyph_overview",
+          "key": " glyph_reload",
+          "label": "glyph_reload",
           "position": "12"
         },
         "3E": {
@@ -1813,8 +1813,8 @@ var keyboardOverlayData = {
           "position": "13"
         },
         "3F": {
-          "key": " glyph_tools",
-          "label": "glyph_tools",
+          "key": " glyph_overview",
+          "label": "glyph_overview",
           "position": "14"
         },
         "40": {
@@ -3155,8 +3155,8 @@ var keyboardOverlayData = {
           "position": "11"
         },
         "3D": {
-          "key": " glyph_overview",
-          "label": "glyph_overview",
+          "key": " glyph_reload",
+          "label": "glyph_reload",
           "position": "12"
         },
         "3E": {
@@ -3165,8 +3165,8 @@ var keyboardOverlayData = {
           "position": "13"
         },
         "3F": {
-          "key": " glyph_tools",
-          "label": "glyph_tools",
+          "key": " glyph_overview",
+          "label": "glyph_overview",
           "position": "14"
         },
         "40": {
@@ -3239,6 +3239,464 @@ var keyboardOverlayData = {
           "format": "left",
           "key": " glyph_search",
           "label": "glyph_search",
+          "notes": "search",
+          "position": "300"
+        }
+      },
+      "layoutName": "E"
+    },
+    "de_neo": {
+      "keys": {
+        "00": {
+          "key": " glyph_power",
+          "label": "glyph_power",
+          "notes": "power",
+          "position": "999"
+        },
+        "01": {
+          "format": "smaller",
+          "key": " esc",
+          "label": "esc",
+          "notes": "escape",
+          "position": "0"
+        },
+        "02": {
+          "key": " \u00b0\n 1 \u00b9",
+          "p2": "00B0",
+          "p8": "31",
+          "p9": "00B9",
+          "position": "110"
+        },
+        "03": {
+          "key": " \u00a7\n 2 \u00b2",
+          "p2": "00A7",
+          "p8": "32",
+          "p9": "00B2",
+          "position": "111"
+        },
+        "04": {
+          "key": " \u2113\n 3 \u00b3",
+          "p2": "2113",
+          "p8": "33",
+          "p9": "00B3",
+          "position": "112"
+        },
+        "05": {
+          "key": " \u00bb\n 4 \u203a",
+          "p2": "00BB",
+          "p8": "34",
+          "p9": "203A",
+          "position": "113"
+        },
+        "06": {
+          "key": " \u00ab\n 5 \u2039",
+          "p2": "00AB",
+          "p8": "35",
+          "p9": "2039",
+          "position": "114"
+        },
+        "07": {
+          "key": " $\n 6 \u00a2",
+          "p2": "24",
+          "p8": "36",
+          "p9": "00A2",
+          "position": "115"
+        },
+        "08": {
+          "key": " \u20ac\n 7 \u00a5",
+          "p2": "20AC",
+          "p8": "37",
+          "p9": "00A5",
+          "position": "116"
+        },
+        "09": {
+          "key": " \u201e\n 8 \u201a",
+          "p2": "201E",
+          "p8": "38",
+          "p9": "201A",
+          "position": "117"
+        },
+        "0A": {
+          "key": " \u201c\n 9 \u2018",
+          "p2": "201C",
+          "p8": "39",
+          "p9": "2018",
+          "position": "118"
+        },
+        "0B": {
+          "key": " \u201d\n 0 \u2019",
+          "p2": "201D",
+          "p8": "30",
+          "p9": "2019",
+          "position": "119"
+        },
+        "0C": {
+          "key": " \u2014\n -",
+          "p2": "2014",
+          "p8": "2D",
+          "position": "120"
+        },
+        "0D": {
+          "key": " \u00b8\n \u02cb \u02da",
+          "p2": "00B8",
+          "p8": "02CB",
+          "p9": "02DA",
+          "position": "121"
+        },
+        "0E": {
+          "format": "right",
+          "key": " glyph_backspace",
+          "label": "glyph_backspace",
+          "notes": "backspace",
+          "position": "190"
+        },
+        "0F": {
+          "format": "left",
+          "key": " glyph_tab",
+          "label": "glyph_tab",
+          "notes": "tab",
+          "position": "200"
+        },
+        "10": {
+          "key": " x \u2026",
+          "p5": "78",
+          "p9": "2026",
+          "position": "210"
+        },
+        "11": {
+          "key": " v _",
+          "p5": "76",
+          "p9": "005F",
+          "position": "211"
+        },
+        "12": {
+          "key": " l [",
+          "p5": "6C",
+          "p9": "005B",
+          "position": "212"
+        },
+        "13": {
+          "key": " c ]",
+          "p5": "63",
+          "p9": "005D",
+          "position": "213"
+        },
+        "14": {
+          "key": " w ^",
+          "p5": "77",
+          "p9": "005E",
+          "position": "214"
+        },
+        "15": {
+          "key": " k !",
+          "p5": "6B",
+          "p9": "21",
+          "position": "215"
+        },
+        "16": {
+          "key": " h <",
+          "p5": "68",
+          "p9": "003C",
+          "position": "216"
+        },
+        "17": {
+          "key": " g >",
+          "p5": "67",
+          "p9": "003E",
+          "position": "217"
+        },
+        "18": {
+          "key": " f =",
+          "p5": "66",
+          "p9": "003D",
+          "position": "218"
+        },
+        "19": {
+          "key": " q &",
+          "p5": "71",
+          "p9": "26",
+          "position": "219"
+        },
+        "1A": {
+          "key": " \u00df \u017f",
+          "p5": "DF",
+          "p9": "017F",
+          "position": "220"
+        },
+        "1B": {
+          "key": " \u02dc\n \u02ca /",
+          "p2": "02DC",
+          "p8": "02CA",
+          "p9": "002F",
+          "position": "221"
+        },
+        "1C": {
+          "format": "right",
+          "key": " glyph_enter",
+          "label": "glyph_enter",
+          "notes": "enter",
+          "position": "390"
+        },
+        "1D": {
+          "format": "left",
+          "key": " strg",
+          "label": "strg",
+          "notes": "left ctrl",
+          "position": "500"
+        },
+        "1E": {
+          "key": " u \\",
+          "p5": "75",
+          "p9": "005C",
+          "position": "310"
+        },
+        "1F": {
+          "key": " i /",
+          "p5": "69",
+          "p9": "002F",
+          "position": "311"
+        },
+        "20": {
+          "key": " a {",
+          "p5": "61",
+          "p9": "007B",
+          "position": "312"
+        },
+        "21": {
+          "key": " e }",
+          "p5": "65",
+          "p9": "007D",
+          "position": "313"
+        },
+        "22": {
+          "key": " o *",
+          "p5": "6F",
+          "p9": "002A",
+          "position": "314"
+        },
+        "23": {
+          "key": " s ?",
+          "p5": "73",
+          "p9": "003F",
+          "position": "315"
+        },
+        "24": {
+          "key": " n (",
+          "p5": "6E",
+          "p9": "28",
+          "position": "316"
+        },
+        "25": {
+          "key": " r )",
+          "p5": "72",
+          "p9": "29",
+          "position": "317"
+        },
+        "26": {
+          "key": " t -",
+          "p5": "74",
+          "p9": "002D",
+          "position": "318"
+        },
+        "27": {
+          "key": " d :",
+          "p5": "64",
+          "p9": "003A",
+          "position": "319"
+        },
+        "28": {
+          "key": " y @",
+          "p5": "79",
+          "p9": "40",
+          "position": "320"
+        },
+        "29": {
+          "key": " \u02c7\n \u02c6",
+          "p2": "02C7",
+          "p8": "02C6",
+          "position": "100"
+        },
+        "2A": {
+          "format": "left",
+          "key": " glyph_shift",
+          "label": "glyph_shift",
+          "notes": "left shift",
+          "position": "400"
+        },
+        "2B": {
+          "key": " mod3",
+          "label": "mod3",
+          "position": "290"
+        },
+        "2C": {
+          "key": " \u00fc #",
+          "p5": "00FC",
+          "p9": "23",
+          "position": "410"
+        },
+        "2D": {
+          "key": " \u00f6 $",
+          "p5": "00F6",
+          "p9": "24",
+          "position": "411"
+        },
+        "2E": {
+          "key": " \u00e4 |",
+          "p5": "E4",
+          "p9": "007C",
+          "position": "412"
+        },
+        "2F": {
+          "key": " p ~",
+          "p5": "70",
+          "p9": "007E",
+          "position": "413"
+        },
+        "30": {
+          "key": " z `",
+          "p5": "7a",
+          "p9": "60",
+          "position": "414"
+        },
+        "31": {
+          "key": " b +",
+          "p5": "62",
+          "p9": "002B",
+          "position": "415"
+        },
+        "32": {
+          "key": " m %",
+          "p5": "6D",
+          "p9": "25",
+          "position": "416"
+        },
+        "33": {
+          "key": " \u2013\n , \"",
+          "p2": "2013",
+          "p8": "2C",
+          "p9": "22",
+          "position": "417"
+        },
+        "34": {
+          "key": " \u2022\n . '",
+          "p2": "2022",
+          "p8": "2E",
+          "p9": "27",
+          "position": "418"
+        },
+        "35": {
+          "key": " j ;",
+          "p5": "6A",
+          "p9": "003B",
+          "position": "419"
+        },
+        "36": {
+          "format": "right",
+          "key": " glyph_shift",
+          "label": "glyph_shift",
+          "notes": "right shift",
+          "position": "490"
+        },
+        "38": {
+          "format": "left",
+          "key": " alt",
+          "label": "alt",
+          "notes": "left alt",
+          "position": "501"
+        },
+        "3B": {
+          "key": " glyph_back",
+          "label": "glyph_back",
+          "position": "10"
+        },
+        "3C": {
+          "key": " glyph_forward",
+          "label": "glyph_forward",
+          "position": "11"
+        },
+        "3D": {
+          "key": " glyph_reload",
+          "label": "glyph_reload",
+          "position": "12"
+        },
+        "3E": {
+          "key": " glyph_fullscreen",
+          "label": "glyph_fullscreen",
+          "position": "13"
+        },
+        "3F": {
+          "key": " glyph_overview",
+          "label": "glyph_overview",
+          "position": "14"
+        },
+        "40": {
+          "key": " glyph_brightness_down",
+          "label": "glyph_brightness_down",
+          "position": "15"
+        },
+        "41": {
+          "key": " glyph_brightness_up",
+          "label": "glyph_brightness_up",
+          "position": "16"
+        },
+        "42": {
+          "key": " glyph_volume_mute",
+          "label": "glyph_volume_mute",
+          "position": "17"
+        },
+        "43": {
+          "key": " glyph_volume_down",
+          "label": "glyph_volume_down",
+          "position": "18"
+        },
+        "44": {
+          "key": " glyph_volume_up",
+          "label": "glyph_volume_up",
+          "position": "19"
+        },
+        "56": {
+          "key": " mod4",
+          "label": "mod4",
+          "position": "409"
+        },
+        "E0 1D": {
+          "format": "smaller",
+          "key": " strg",
+          "label": "strg",
+          "notes": "right ctrl",
+          "position": "581"
+        },
+        "E0 38": {
+          "format": "smaller",
+          "key": " mod4",
+          "label": "mod4",
+          "notes": "right alt",
+          "position": "580"
+        },
+        "E0 48": {
+          "key": " glyph_arrow_up",
+          "label": "glyph_arrow_up",
+          "position": "590"
+        },
+        "E0 4B": {
+          "key": " glyph_arrow_left",
+          "label": "glyph_arrow_left",
+          "position": "591"
+        },
+        "E0 4D": {
+          "key": " glyph_arrow_right",
+          "label": "glyph_arrow_right",
+          "position": "593"
+        },
+        "E0 50": {
+          "key": " glyph_arrow_down",
+          "label": "glyph_arrow_down",
+          "position": "592"
+        },
+        "E0 5B": {
+          "format": "left",
+          "key": " mod3",
+          "label": "mod3",
           "notes": "search",
           "position": "300"
         }
@@ -4026,8 +4484,8 @@ var keyboardOverlayData = {
           "position": "11"
         },
         "3D": {
-          "key": "glyph_overview",
-          "label": "glyph_overview",
+          "key": "glyph_reload",
+          "label": "glyph_reload",
           "position": "12"
         },
         "3E": {
@@ -4036,8 +4494,8 @@ var keyboardOverlayData = {
           "position": "13"
         },
         "3F": {
-          "key": "glyph_tools",
-          "label": "glyph_tools",
+          "key": "glyph_overview",
+          "label": "glyph_overview",
           "position": "14"
         },
         "40": {
@@ -4218,6 +4676,7 @@ var keyboardOverlayData = {
         },
         "10": {
           "key": "q",
+          "notes": "71",
           "p5": "71",
           "position": "210"
         },
@@ -4525,6 +4984,194 @@ var keyboardOverlayData = {
           "label": "glyph_search",
           "notes": "search",
           "position": "300"
+        }
+      },
+      "layoutName": "U"
+    },
+    "en_US_colemak": {
+      "keys": {
+        "00": {
+          "key": "glyph_power",
+          "label": "glyph_power",
+          "notes": "power"
+        },
+        "01": {
+          "format": "smaller",
+          "key": "esc",
+          "label": "esc",
+          "notes": "escape"
+        },
+        "02": {},
+        "03": {},
+        "04": {},
+        "05": {},
+        "06": {},
+        "07": {},
+        "08": {},
+        "09": {},
+        "0A": {},
+        "0B": {},
+        "0C": {},
+        "0D": {},
+        "0E": {
+          "format": "right",
+          "key": "backspace",
+          "label": "backspace",
+          "notes": "backspace"
+        },
+        "0F": {
+          "format": "left",
+          "key": "tab",
+          "label": "tab",
+          "notes": "tab"
+        },
+        "10": {},
+        "11": {},
+        "12": {},
+        "13": {},
+        "14": {},
+        "15": {},
+        "16": {},
+        "17": {},
+        "18": {},
+        "19": {},
+        "1A": {},
+        "1B": {},
+        "1C": {
+          "format": "right",
+          "key": "enter",
+          "label": "enter",
+          "notes": "enter"
+        },
+        "1D": {
+          "format": "left",
+          "key": "ctrl",
+          "label": "ctrl",
+          "notes": "left ctrl"
+        },
+        "1E": {},
+        "1F": {},
+        "20": {},
+        "21": {},
+        "22": {},
+        "23": {},
+        "24": {},
+        "25": {},
+        "26": {},
+        "27": {},
+        "28": {},
+        "29": {},
+        "2A": {
+          "format": "left",
+          "key": "shift",
+          "label": "shift",
+          "notes": "left shift"
+        },
+        "2B": {},
+        "2C": {},
+        "2D": {},
+        "2E": {},
+        "2F": {},
+        "30": {},
+        "31": {},
+        "32": {},
+        "33": {},
+        "34": {},
+        "35": {},
+        "36": {
+          "format": "right",
+          "key": "shift",
+          "label": "shift",
+          "notes": "right shift"
+        },
+        "37": {},
+        "38": {
+          "format": "left",
+          "key": "alt",
+          "label": "alt",
+          "notes": "left alt"
+        },
+        "3B": {
+          "key": "glyph_back",
+          "label": "glyph_back"
+        },
+        "3C": {
+          "key": "glyph_forward",
+          "label": "glyph_forward"
+        },
+        "3D": {
+          "key": "glyph_reload",
+          "label": "glyph_reload"
+        },
+        "3E": {
+          "key": "glyph_overview",
+          "label": "glyph_overview"
+        },
+        "3F": {
+          "key": "glyph_fullscreen",
+          "label": "glyph_fullscreen"
+        },
+        "40": {
+          "key": "glyph_brightness_down",
+          "label": "glyph_brightness_down"
+        },
+        "41": {
+          "key": "glyph_brightness_up",
+          "label": "glyph_brightness_up"
+        },
+        "42": {
+          "key": "glyph_volume_mute",
+          "label": "glyph_volume_mute"
+        },
+        "43": {
+          "key": "glyph_volume_down",
+          "label": "glyph_volume_down"
+        },
+        "44": {
+          "key": "glyph_volume_up",
+          "label": "glyph_volume_up"
+        },
+        "73": {},
+        "79": {
+          "format": "smaller"
+        },
+        "7B": {
+          "format": "smaller"
+        },
+        "7D": {},
+        "E0 1D": {
+          "format": "smaller",
+          "key": "ctrl",
+          "label": "ctrl",
+          "notes": "right ctrl"
+        },
+        "E0 38": {
+          "format": "smaller",
+          "key": "alt",
+          "label": "alt",
+          "notes": "right alt"
+        },
+        "E0 48": {
+          "key": "glyph_arrow_up",
+          "label": "glyph_arrow_up"
+        },
+        "E0 4B": {
+          "key": "glyph_arrow_left",
+          "label": "glyph_arrow_left"
+        },
+        "E0 4D": {
+          "key": "glyph_arrow_right",
+          "label": "glyph_arrow_right"
+        },
+        "E0 50": {
+          "key": "glyph_arrow_down",
+          "label": "glyph_arrow_down"
+        },
+        "E0 5B": {
+          "format": "left",
+          "key": "glyph_search",
+          "label": "glyph_search",
+          "notes": "search"
         }
       },
       "layoutName": "U"
@@ -5684,8 +6331,8 @@ var keyboardOverlayData = {
           "position": "11"
         },
         "3D": {
-          "key": " glyph_overview",
-          "label": "glyph_overview",
+          "key": " glyph_reload",
+          "label": "glyph_reload",
           "position": "12"
         },
         "3E": {
@@ -5694,8 +6341,8 @@ var keyboardOverlayData = {
           "position": "13"
         },
         "3F": {
-          "key": " glyph_tools",
-          "label": "glyph_tools",
+          "key": " glyph_overview",
+          "label": "glyph_overview",
           "position": "14"
         },
         "40": {
@@ -7866,7 +8513,7 @@ var keyboardOverlayData = {
         },
         "3D": {
           "key": " glyph_overview",
-          "label": "glyph_overview",
+          "label": "glyph_reload",
           "position": "12"
         },
         "3E": {
@@ -7875,8 +8522,8 @@ var keyboardOverlayData = {
           "position": "13"
         },
         "3F": {
-          "key": " glyph_tools",
-          "label": "glyph_tools",
+          "key": " glyph_overview",
+          "label": "glyph_overview",
           "position": "14"
         },
         "40": {
@@ -8415,8 +9062,9 @@ var keyboardOverlayData = {
           "position": "0"
         },
         "02": {
-          "key": "! \n1 \u0967",
+          "key": "! \u090d\n1 \u0967",
           "p1": "21",
+          "p3": "090D",
           "p7": "31",
           "p9": "967",
           "position": "110"
@@ -8430,49 +9078,55 @@ var keyboardOverlayData = {
           "position": "111"
         },
         "04": {
-          "key": "# \n3 \u0969",
+          "key": "#VALUE!",
           "notes": "\u094d\u0930",
           "p1": "23",
+          "p3": "094D0930",
           "p7": "33",
           "p9": "969",
           "position": "112"
         },
         "05": {
-          "key": "$ \n4 \u096a",
+          "key": "#VALUE!",
           "notes": "\u0930\u094d",
           "p1": "24",
+          "p3": "0930094D",
           "p7": "34",
           "p9": "96A",
           "position": "113"
         },
         "06": {
-          "key": "% \n5 \u096b",
+          "key": "#NUM!",
           "notes": "\u091c\u094d\u091e",
           "p1": "25",
+          "p3": "091C094D091E",
           "p7": "35",
           "p9": "96B",
           "position": "114"
         },
         "07": {
-          "key": "^ \n6 \u096c",
+          "key": "#NUM!",
           "notes": "\u0924\u094d\u0930",
           "p1": "5E",
+          "p3": "0924094D0930",
           "p7": "36",
           "p9": "96C",
           "position": "115"
         },
         "08": {
-          "key": "& \n7 \u096d",
+          "key": "#NUM!",
           "notes": "\u0915\u094d\u0937",
           "p1": "26",
+          "p3": "0915094D0937",
           "p7": "37",
           "p9": "96D",
           "position": "116"
         },
         "09": {
-          "key": "* \n8 \u096e",
+          "key": "#NUM!",
           "notes": "\u0936\u094d\u0930",
           "p1": "2A",
+          "p3": "0936094D0930",
           "p7": "38",
           "p9": "96E",
           "position": "117"
@@ -8665,7 +9319,8 @@ var keyboardOverlayData = {
           "position": "315"
         },
         "24": {
-          "key": "j \u0930",
+          "key": " \u0931\nj \u0930",
+          "p3": "931",
           "p7": "6A",
           "p9": "930",
           "position": "316"
@@ -8745,13 +9400,15 @@ var keyboardOverlayData = {
           "position": "412"
         },
         "2F": {
-          "key": "v \u0928",
+          "key": " \u0929\nv \u0928",
+          "p3": "929",
           "p7": "76",
           "p9": "928",
           "position": "413"
         },
         "30": {
-          "key": "b \u0935",
+          "key": " \u0934\nb \u0935",
+          "p3": "934",
           "p7": "62",
           "p9": "935",
           "position": "414"
@@ -8787,8 +9444,9 @@ var keyboardOverlayData = {
           "position": "418"
         },
         "35": {
-          "key": "? \n/ \u092f",
+          "key": "? \u095f\n/ \u092f",
           "p1": "3F",
+          "p3": "095F",
           "p7": "2F",
           "p9": "092F",
           "position": "419"
@@ -9340,8 +9998,8 @@ var keyboardOverlayData = {
         },
         "E0 38": {
           "format": "smaller",
-          "key": "alt",
-          "label": "alt",
+          "key": "alt gr",
+          "label": "alt gr",
           "notes": "right alt",
           "position": "580"
         },
@@ -10589,8 +11247,8 @@ var keyboardOverlayData = {
           "position": "11"
         },
         "3D": {
-          "key": " glyph_overview",
-          "label": "glyph_overview",
+          "key": " glyph_reload",
+          "label": "glyph_reload",
           "position": "12"
         },
         "3E": {
@@ -10599,8 +11257,8 @@ var keyboardOverlayData = {
           "position": "13"
         },
         "3F": {
-          "key": " glyph_tools",
-          "label": "glyph_tools",
+          "key": " glyph_overview",
+          "label": "glyph_overview",
           "position": "14"
         },
         "40": {
@@ -13562,9 +14220,10 @@ var keyboardOverlayData = {
           "position": "220"
         },
         "1B": {
-          "key": " \u00a8 ~",
-          "p5": "00A8",
-          "p9": "007E",
+          "key": " ^ \n \u00a8 ~",
+          "p1": "5e",
+          "p7": "00A8",
+          "p9": "7e",
           "position": "221"
         },
         "1C": {
@@ -13650,8 +14309,9 @@ var keyboardOverlayData = {
           "position": "400"
         },
         "2B": {
-          "key": " '",
-          "p5": "27",
+          "key": " *\n '",
+          "p2": "2a",
+          "p8": "27",
           "position": "290"
         },
         "2C": {
@@ -13685,8 +14345,9 @@ var keyboardOverlayData = {
           "position": "415"
         },
         "32": {
-          "key": "m",
+          "key": "m \u03bc",
           "p5": "006D",
+          "p9": "3bc",
           "position": "416"
         },
         "33": {
@@ -13828,7 +14489,7 @@ var keyboardOverlayData = {
         },
         "E0 5B": {
           "format": "left",
-          "key": "glyph_search",
+          "key": " glyph_search",
           "label": "glyph_search",
           "notes": "search",
           "position": "300"
@@ -14447,11 +15108,11 @@ var keyboardOverlayData = {
           "position": "220"
         },
         "1B": {
-          "key": "{ \n[ \uda68\udf32",
+          "key": "#VALUE!",
           "notes": "The a needs to be underlined",
           "p1": "7B",
           "p7": "5B",
-          "p9": "AA332",
+          "p9": "AA0332",
           "position": "221"
         },
         "1C": {
@@ -14538,11 +15199,11 @@ var keyboardOverlayData = {
           "position": "400"
         },
         "2B": {
-          "key": "} \n] \u00ba",
+          "key": "#VALUE!",
           "notes": "The o needs to be underlined",
           "p1": "7D",
           "p7": "5D",
-          "p9": "BA",
+          "p9": "BA0332",
           "position": "290"
         },
         "2C": {
@@ -14624,8 +15285,8 @@ var keyboardOverlayData = {
           "position": "11"
         },
         "3D": {
-          "key": "glyph_overview",
-          "label": "glyph_overview",
+          "key": "glyph_reload",
+          "label": "glyph_reload",
           "position": "12"
         },
         "3E": {
@@ -14634,8 +15295,8 @@ var keyboardOverlayData = {
           "position": "13"
         },
         "3F": {
-          "key": "glyph_tools",
-          "label": "glyph_tools",
+          "key": "glyph_overview",
+          "label": "glyph_overview",
           "position": "14"
         },
         "40": {
@@ -14967,9 +15628,9 @@ var keyboardOverlayData = {
           "position": "319"
         },
         "28": {
-          "key": "\u00aa\n\u00ba",
-          "p2": "aa",
-          "p8": "ba",
+          "key": "#VALUE!",
+          "p2": "aa0332",
+          "p8": "ba0332",
           "position": "320"
         },
         "29": {
@@ -15069,8 +15730,8 @@ var keyboardOverlayData = {
           "position": "11"
         },
         "3D": {
-          "key": " glyph_overview",
-          "label": "glyph_overview",
+          "key": " glyph_reload",
+          "label": "glyph_reload",
           "position": "12"
         },
         "3E": {
@@ -15079,8 +15740,8 @@ var keyboardOverlayData = {
           "position": "13"
         },
         "3F": {
-          "key": " glyph_tools",
-          "label": "glyph_tools",
+          "key": " glyph_overview",
+          "label": "glyph_overview",
           "position": "14"
         },
         "40": {
@@ -15319,8 +15980,8 @@ var keyboardOverlayData = {
           "position": "214"
         },
         "15": {
-          "key": "z",
-          "p5": "7A",
+          "key": "y",
+          "p5": "79",
           "position": "215"
         },
         "16": {
@@ -15421,14 +16082,14 @@ var keyboardOverlayData = {
           "position": "318"
         },
         "27": {
-          "key": "\u015f @",
-          "p5": "015F",
+          "key": "\u0219 @",
+          "p5": "219",
           "p9": "40",
           "position": "319"
         },
         "28": {
-          "key": "\u0163 \u00df",
-          "p5": "163",
+          "key": "\u021b \u00df",
+          "p5": "021b",
           "p9": "DF",
           "position": "320"
         },
@@ -15451,8 +16112,8 @@ var keyboardOverlayData = {
           "position": "290"
         },
         "2C": {
-          "key": "y",
-          "p5": "79",
+          "key": "z",
+          "p5": "7a",
           "position": "410"
         },
         "2D": {
@@ -16215,69 +16876,68 @@ var keyboardOverlayData = {
         },
         "0E": {
           "format": "right",
-          "key": "#NUM!",
+          "key": "glyph_backspace",
+          "label": "glyph_backspace",
           "notes": "backspace",
-          "p2": "backspace",
-          "p8": "glyph_backspace",
           "position": "190"
         },
         "0F": {
           "format": "left",
-          "key": "#NUM!",
+          "key": "glyph_tab",
+          "label": "glyph_tab",
           "notes": "tab",
-          "p2": "tab",
-          "p8": "glyph_tab",
           "position": "200"
         },
         "10": {
-          "key": "q ",
-          "p1": "71",
+          "key": "q",
+          "p5": "71",
           "position": "210"
         },
         "11": {
-          "key": "w ",
-          "p1": "77",
+          "key": "w",
+          "p5": "77",
           "position": "211"
         },
         "12": {
-          "key": "e ",
-          "p1": "65",
+          "key": "e \u20ac",
+          "p5": "65",
+          "p9": "20ac",
           "position": "212"
         },
         "13": {
-          "key": "r ",
-          "p1": "72",
+          "key": "r",
+          "p5": "72",
           "position": "213"
         },
         "14": {
-          "key": "t ",
-          "p1": "74",
+          "key": "t",
+          "p5": "74",
           "position": "214"
         },
         "15": {
-          "key": "y \n z",
-          "p1": "79",
-          "p9": "7a",
+          "key": "yz",
+          "p5": "79",
+          "p6": "7a",
           "position": "215"
         },
         "16": {
-          "key": "u ",
-          "p1": "75",
+          "key": "u",
+          "p5": "75",
           "position": "216"
         },
         "17": {
-          "key": "i ",
-          "p1": "69",
+          "key": "i",
+          "p5": "69",
           "position": "217"
         },
         "18": {
-          "key": "o ",
-          "p1": "6f",
+          "key": "o",
+          "p5": "6f",
           "position": "218"
         },
         "19": {
-          "key": "p ",
-          "p1": "70",
+          "key": "p",
+          "p5": "70",
           "position": "219"
         },
         "1A": {
@@ -16298,10 +16958,9 @@ var keyboardOverlayData = {
         },
         "1C": {
           "format": "right",
-          "key": "#NUM!",
+          "key": "glyph_enter",
+          "label": "glyph_enter",
           "notes": "enter",
-          "p2": "enter",
-          "p8": "glyph_enter",
           "position": "390"
         },
         "1D": {
@@ -16312,48 +16971,48 @@ var keyboardOverlayData = {
           "position": "500"
         },
         "1E": {
-          "key": "a ",
-          "p1": "61",
+          "key": "a",
+          "p5": "61",
           "position": "310"
         },
         "1F": {
-          "key": "s ",
-          "p1": "73",
+          "key": "s",
+          "p5": "73",
           "position": "311"
         },
         "20": {
-          "key": "d ",
-          "p1": "64",
+          "key": "d",
+          "p5": "64",
           "position": "312"
         },
         "21": {
-          "key": "f ",
-          "p1": "66",
+          "key": "f",
+          "p5": "66",
           "position": "313"
         },
         "22": {
-          "key": "g ",
-          "p1": "67",
+          "key": "g",
+          "p5": "67",
           "position": "314"
         },
         "23": {
-          "key": "h ",
-          "p1": "68",
+          "key": "h",
+          "p5": "68",
           "position": "315"
         },
         "24": {
-          "key": "j ",
-          "p1": "6a",
+          "key": "j",
+          "p5": "6a",
           "position": "316"
         },
         "25": {
-          "key": "k ",
-          "p1": "6b",
+          "key": "k",
+          "p5": "6b",
           "position": "317"
         },
         "26": {
-          "key": "l ",
-          "p1": "6c",
+          "key": "l",
+          "p5": "6c",
           "position": "318"
         },
         "27": {
@@ -16382,10 +17041,9 @@ var keyboardOverlayData = {
         },
         "2A": {
           "format": "left",
-          "key": "#NUM!",
+          "key": "glyph_shift",
+          "label": "glyph_shift",
           "notes": "left shift",
-          "p2": "shift",
-          "p8": "glyph_shift",
           "position": "400"
         },
         "2B": {
@@ -16397,39 +17055,39 @@ var keyboardOverlayData = {
           "position": "290"
         },
         "2C": {
-          "key": "z \n y",
-          "p1": "7a",
-          "p9": "79",
+          "key": "zy",
+          "p5": "7a",
+          "p6": "79",
           "position": "410"
         },
         "2D": {
-          "key": "x ",
-          "p1": "78",
+          "key": "x",
+          "p5": "78",
           "position": "411"
         },
         "2E": {
-          "key": "c ",
-          "p1": "63",
+          "key": "c",
+          "p5": "63",
           "position": "412"
         },
         "2F": {
-          "key": "v ",
-          "p1": "76",
+          "key": "v",
+          "p5": "76",
           "position": "413"
         },
         "30": {
-          "key": "b ",
-          "p1": "62",
+          "key": "b",
+          "p5": "62",
           "position": "414"
         },
         "31": {
-          "key": "n ",
-          "p1": "6e",
+          "key": "n",
+          "p5": "6e",
           "position": "415"
         },
         "32": {
-          "key": "m ",
-          "p1": "6d",
+          "key": "m",
+          "p5": "6d",
           "position": "416"
         },
         "33": {
@@ -16458,19 +17116,10 @@ var keyboardOverlayData = {
         },
         "36": {
           "format": "right",
-          "key": "#NUM!",
+          "key": "glyph_shift",
+          "label": "glyph_shift",
           "notes": "right shift",
-          "p2": "shift",
-          "p8": "glyph_shift",
           "position": "490"
-        },
-        "37": {
-          "key": "* |\n& \\",
-          "p1": "2a",
-          "p3": "7c",
-          "p7": "26",
-          "p9": "5c",
-          "position": "409"
         },
         "38": {
           "format": "left",
@@ -16528,6 +17177,14 @@ var keyboardOverlayData = {
           "key": "glyph_volume_up",
           "label": "glyph_volume_up",
           "position": "19"
+        },
+        "56": {
+          "key": "* |\n& \\",
+          "p1": "2a",
+          "p3": "7c",
+          "p7": "26",
+          "p9": "5c",
+          "position": "409"
         },
         "73": {
           "position": "420"
@@ -16603,85 +17260,85 @@ var keyboardOverlayData = {
           "position": "0"
         },
         "02": {
-          "key": " ! \n 1 ~",
-          "p1": "21",
+          "key": " !\n 1 ~",
+          "p2": "21",
           "p8": "31",
           "p9": "007E",
           "position": "110"
         },
         "03": {
-          "key": " \" \n 2 \u02c7",
-          "p1": "22",
+          "key": " \"\n 2 \u02c7",
+          "p2": "22",
           "p8": "32",
           "p9": "02C7",
           "position": "111"
         },
         "04": {
-          "key": " # \n 3 ^",
-          "p1": "23",
+          "key": " #\n 3 ^",
+          "p2": "23",
           "p8": "33",
           "p9": "005E",
           "position": "112"
         },
         "05": {
-          "key": " $ \n 4 \u02d8",
-          "p1": "24",
+          "key": " $\n 4 \u02d8",
+          "p2": "24",
           "p8": "34",
           "p9": "02D8",
           "position": "113"
         },
         "06": {
-          "key": " % \n 5 \u02da",
-          "p1": "25",
+          "key": " %\n 5 \u02da",
+          "p2": "25",
           "p8": "35",
           "p9": "02DA",
           "position": "114"
         },
         "07": {
-          "key": " & \n 6 \u02db",
-          "p1": "26",
+          "key": " &\n 6 \u02db",
+          "p2": "26",
           "p8": "36",
           "p9": "02DB",
           "position": "115"
         },
         "08": {
-          "key": " / \n 7 `",
-          "p1": "002F",
+          "key": " /\n 7 `",
+          "p2": "002F",
           "p8": "37",
           "p9": "60",
           "position": "116"
         },
         "09": {
-          "key": " ( \n 8 \u02d9",
-          "p1": "28",
+          "key": " (\n 8 \u02d9",
+          "p2": "28",
           "p8": "38",
           "p9": "02D9",
           "position": "117"
         },
         "0A": {
-          "key": " ) \n 9 \u00b4",
-          "p1": "29",
+          "key": " )\n 9 \u00b4",
+          "p2": "29",
           "p8": "39",
           "p9": "00B4",
           "position": "118"
         },
         "0B": {
-          "key": " = \n 0 \u02dd",
-          "p1": "003D",
+          "key": " =\n 0 \u02dd",
+          "p2": "003D",
           "p8": "30",
           "p9": "02DD",
           "position": "119"
         },
         "0C": {
-          "key": " ? \n ' \u00a8",
-          "p1": "003F",
+          "key": " ?\n ' \u00a8",
+          "p2": "003F",
           "p8": "27",
           "p9": "00A8",
           "position": "120"
         },
         "0D": {
-          "key": " * \n + \u00b8",
-          "p1": "002A",
+          "key": " *\n + \u00b8",
+          "p2": "002A",
           "p8": "002B",
           "p9": "00B8",
           "position": "121"
@@ -16701,67 +17358,67 @@ var keyboardOverlayData = {
           "position": "200"
         },
         "10": {
-          "key": " Q \n  \\",
-          "p1": "51",
+          "key": " q \\",
+          "p5": "71",
           "p9": "005C",
           "position": "210"
         },
         "11": {
-          "key": " W \n  |",
-          "p1": "57",
+          "key": " w |",
+          "p5": "77",
           "p9": "007C",
           "position": "211"
         },
         "12": {
-          "key": "E \n \u20ac",
-          "p1": "45",
+          "key": "e \u20ac",
+          "p5": "65",
           "p9": "20AC",
           "position": "212"
         },
         "13": {
-          "key": "R ",
-          "p1": "52",
+          "key": "r",
+          "p5": "72",
           "position": "213"
         },
         "14": {
-          "key": "T ",
-          "p1": "54",
+          "key": "t",
+          "p5": "74",
           "position": "214"
         },
         "15": {
-          "key": "Z ",
-          "p1": "005A",
+          "key": "z",
+          "p5": "7A",
           "position": "215"
         },
         "16": {
-          "key": "U ",
-          "p1": "55",
+          "key": "u",
+          "p5": "75",
           "position": "216"
         },
         "17": {
-          "key": "I ",
-          "p1": "49",
+          "key": "i",
+          "p5": "69",
           "position": "217"
         },
         "18": {
-          "key": "O ",
-          "p1": "004F",
+          "key": "o",
+          "p5": "6F",
           "position": "218"
         },
         "19": {
-          "key": "P ",
-          "p1": "50",
+          "key": "p",
+          "p5": "70",
           "position": "219"
         },
         "1A": {
-          "key": "\u0160 \n \u00f7",
-          "p1": "160",
+          "key": "\u0161 \u00f7",
+          "p5": "161",
           "p9": "00F7",
           "position": "220"
         },
         "1B": {
-          "key": "\u00d0 \n \u00d7",
-          "p1": "00D0",
+          "key": "\u0111 \u00d7",
+          "p5": "111",
           "p9": "00D7",
           "position": "221"
         },
@@ -16780,68 +17437,68 @@ var keyboardOverlayData = {
           "position": "500"
         },
         "1E": {
-          "key": "A ",
-          "p1": "41",
+          "key": "a",
+          "p5": "61",
           "position": "310"
         },
         "1F": {
-          "key": "S ",
-          "p1": "53",
+          "key": "s",
+          "p5": "73",
           "position": "311"
         },
         "20": {
-          "key": "D ",
-          "p1": "44",
+          "key": "d",
+          "p5": "64",
           "position": "312"
         },
         "21": {
-          "key": "F \n [",
-          "p1": "46",
+          "key": "f [",
+          "p5": "66",
           "p9": "005B",
           "position": "313"
         },
         "22": {
-          "key": "G \n ]",
-          "p1": "47",
+          "key": "g ]",
+          "p5": "67",
           "p9": "005D",
           "position": "314"
         },
         "23": {
-          "key": "H ",
-          "p1": "48",
+          "key": "h",
+          "p5": "68",
           "position": "315"
         },
         "24": {
-          "key": "J ",
-          "p1": "004A",
+          "key": "j",
+          "p5": "6A",
           "position": "316"
         },
         "25": {
-          "key": "K \n \u0142",
-          "p1": "004B",
+          "key": "k \u0142",
+          "p5": "6B",
           "p9": "142",
           "position": "317"
         },
         "26": {
-          "key": "L \n \u0141",
-          "p1": "004C",
+          "key": "l \u0141",
+          "p5": "6C",
           "p9": "141",
           "position": "318"
         },
         "27": {
-          "key": "\u010c ",
-          "p1": "010C",
+          "key": "\u010d",
+          "p5": "10D",
           "position": "319"
         },
         "28": {
-          "key": "\u0106 \n \u00df",
-          "p1": "106",
+          "key": "\u0107 \u00df",
+          "p5": "107",
           "p9": "00DF",
           "position": "320"
         },
         "29": {
-          "key": " \u00a8 \n \u00b8",
-          "p1": "00A8",
+          "key": " \u00a8\n \u00b8",
+          "p2": "00A8",
           "p8": "00B8",
           "position": "100"
         },
@@ -16853,66 +17510,66 @@ var keyboardOverlayData = {
           "position": "400"
         },
         "2B": {
-          "key": "\u017d \n \u00a4",
-          "p1": "017D",
+          "key": "\u017e \u00a4",
+          "p5": "17E",
           "p9": "00A4",
           "position": "290"
         },
         "2C": {
-          "key": "Y ",
-          "p1": "59",
+          "key": "y",
+          "p5": "79",
           "position": "410"
         },
         "2D": {
-          "key": "X ",
-          "p1": "58",
+          "key": "x",
+          "p5": "78",
           "position": "411"
         },
         "2E": {
-          "key": "C ",
-          "p1": "43",
+          "key": "c",
+          "p5": "63",
           "position": "412"
         },
         "2F": {
-          "key": "V \n @",
-          "p1": "56",
+          "key": "v @",
+          "p5": "76",
           "p9": "40",
           "position": "413"
         },
         "30": {
-          "key": "B \n {",
-          "p1": "42",
+          "key": "b {",
+          "p5": "62",
           "p9": "007B",
           "position": "414"
         },
         "31": {
-          "key": "N \n }",
-          "p1": "004E",
+          "key": "n }",
+          "p5": "6E",
           "p9": "007D",
           "position": "415"
         },
         "32": {
-          "key": "M \n \u00a7",
-          "p1": "004D",
+          "key": "m \u00a7",
+          "p5": "6D",
           "p9": "00A7",
           "position": "416"
         },
         "33": {
-          "key": "; \n,",
-          "p1": "003B",
+          "key": ";\n,",
+          "p2": "003B",
           "p8": "002C",
           "position": "417"
         },
         "34": {
-          "key": ": \n.",
-          "p1": "003A",
+          "key": ":\n.",
+          "p2": "003A",
           "p8": "002E",
           "position": "418"
         },
         "35": {
-          "key": "_ \n -",
-          "p1": "005F",
-          "p9": "002D",
+          "key": "_\n-",
+          "p2": "005F",
+          "p8": "002D",
           "position": "419"
         },
         "36": {
@@ -16921,12 +17578,6 @@ var keyboardOverlayData = {
           "label": "glyph_shift",
           "notes": "right shift",
           "position": "490"
-        },
-        "37": {
-          "key": "> \n<",
-          "p1": "003E",
-          "p8": "003C",
-          "position": "409"
         },
         "38": {
           "format": "left",
@@ -16985,6 +17636,12 @@ var keyboardOverlayData = {
           "label": "glyph_volume_up",
           "position": "19"
         },
+        "56": {
+          "key": ">\n<",
+          "p2": "003E",
+          "p8": "003C",
+          "position": "409"
+        },
         "73": {
           "position": "420"
         },
@@ -17009,8 +17666,8 @@ var keyboardOverlayData = {
         },
         "E0 38": {
           "format": "smaller",
-          "key": "alt",
-          "label": "alt",
+          "key": "alt gr",
+          "label": "alt gr",
           "notes": "right alt",
           "position": "580"
         },
@@ -17060,318 +17717,319 @@ var keyboardOverlayData = {
           "position": "0"
         },
         "02": {
-          "key": " ! \n 1 ~",
-          "p1": "21",
+          "key": " !\n 1 ~",
+          "p2": "21",
           "p8": "31",
           "p9": "007E",
           "position": "110"
         },
         "03": {
-          "key": " \" \n 2",
-          "p1": "22",
+          "key": " \"\n 2",
+          "p2": "22",
           "p8": "32",
           "position": "111"
         },
         "04": {
-          "key": " # \n 3 ^",
-          "p1": "23",
+          "key": " #\n 3 ^",
+          "p2": "23",
           "p8": "33",
           "p9": "005E",
           "position": "112"
         },
         "05": {
-          "key": " $ \n 4",
-          "p1": "24",
+          "key": " $\n 4",
+          "p2": "24",
           "p8": "34",
           "position": "113"
         },
         "06": {
-          "key": " % \n 5",
-          "p1": "25",
+          "key": " %\n 5",
+          "p2": "25",
           "p8": "35",
           "position": "114"
         },
         "07": {
-          "key": " & \n 6",
-          "p1": "26",
+          "key": " &\n 6",
+          "p2": "26",
           "p8": "36",
           "position": "115"
         },
         "08": {
-          "key": " ' \n 7 `",
-          "p1": "27",
+          "key": " '\n 7 `",
+          "p2": "27",
           "p8": "37",
           "p9": "60",
           "position": "116"
         },
         "09": {
-          "key": " ( \n 8",
-          "p1": "28",
+          "key": " (\n 8",
+          "p2": "28",
           "p8": "38",
           "position": "117"
         },
         "0A": {
-          "key": " ) \n 9",
-          "p1": "29",
+          "key": " )\n 9",
+          "p2": "29",
           "p8": "39",
           "position": "118"
         },
         "0B": {
-          "key": " = \n 0",
-          "p1": "003D",
+          "key": " =\n 0",
+          "p2": "003D",
           "p8": "30",
           "position": "119"
         },
         "0C": {
-          "key": " ? \n '",
-          "p1": "003F",
+          "key": " ?\n '",
+          "p2": "003F",
           "p8": "27",
           "position": "120"
         },
         "0D": {
-          "key": " * \n +",
-          "p1": "002A",
+          "key": " *\n +",
+          "p2": "002A",
           "p8": "002B",
           "position": "121"
         },
         "0E": {
           "format": "right",
-          "key": "glyph_backspace",
+          "key": " glyph_backspace",
           "label": "glyph_backspace",
           "notes": "backspace",
           "position": "190"
         },
         "0F": {
           "format": "left",
-          "key": "glyph_tab",
+          "key": " glyph_tab",
           "label": "glyph_tab",
           "notes": "tab",
           "position": "200"
         },
         "10": {
-          "key": "\u0459 \n \\",
-          "p1": "459",
-          "p9": "005C",
+          "key": " q\u0459",
+          "p4": "71",
+          "p6": "459",
           "position": "210"
         },
         "11": {
-          "key": "\u045a \n |",
-          "p1": "045A",
-          "p9": "007C",
+          "key": " w\u045a",
+          "p4": "77",
+          "p6": "045A",
           "position": "211"
         },
         "12": {
-          "key": "\u0435 ",
-          "p1": "435",
+          "key": " e",
+          "p5": "65",
           "position": "212"
         },
         "13": {
-          "key": "\u0440 ",
-          "p1": "440",
+          "key": " r",
+          "p5": "72",
           "position": "213"
         },
         "14": {
-          "key": "\u0442 ",
-          "p1": "442",
+          "key": " t",
+          "p5": "74",
           "position": "214"
         },
         "15": {
-          "key": "\u0437 ",
-          "p1": "437",
+          "key": " z",
+          "p5": "7A",
           "position": "215"
         },
         "16": {
-          "key": "\u0443 ",
-          "p1": "443",
+          "key": " u",
+          "p5": "75",
           "position": "216"
         },
         "17": {
-          "key": "\u0438 ",
-          "p1": "438",
+          "key": " i",
+          "p5": "69",
           "position": "217"
         },
         "18": {
-          "key": "\u043e ",
-          "p1": "043E",
+          "key": " o",
+          "p5": "6F",
           "position": "218"
         },
         "19": {
-          "key": "\u043f ",
-          "p1": "043F",
+          "key": " p",
+          "p5": "70",
           "position": "219"
         },
         "1A": {
-          "key": "\u0448 ",
-          "p1": "448",
+          "key": " \u0161\u0448",
+          "p4": "161",
+          "p6": "448",
           "position": "220"
         },
         "1B": {
-          "key": "\u0442 ",
-          "p1": "442",
+          "key": " \u0111\u0442",
+          "p4": "111",
+          "p6": "442",
           "position": "221"
         },
         "1C": {
           "format": "right",
-          "key": "glyph_enter",
+          "key": " glyph_enter",
           "label": "glyph_enter",
           "notes": "enter",
           "position": "390"
         },
         "1D": {
           "format": "left",
-          "key": "\u043a\u043d\u0442\u0440",
+          "key": " \u043a\u043d\u0442\u0440",
           "label": "\u043a\u043d\u0442\u0440",
           "notes": "left ctrl",
           "position": "500"
         },
         "1E": {
-          "key": "\u0430 ",
-          "p1": "430",
+          "key": " a",
+          "p5": "61",
           "position": "310"
         },
         "1F": {
-          "key": "\u0441 ",
-          "p1": "441",
+          "key": " s",
+          "p5": "73",
           "position": "311"
         },
         "20": {
-          "key": "\u0434 ",
-          "p1": "434",
+          "key": " d",
+          "p5": "64",
           "position": "312"
         },
         "21": {
-          "key": "\u0444 \n [",
-          "p1": "444",
+          "key": " f [",
+          "p5": "66",
           "p9": "005B",
           "position": "313"
         },
         "22": {
-          "key": "\u0433 \n ]",
-          "p1": "433",
+          "key": " g ]",
+          "p5": "67",
           "p9": "005D",
           "position": "314"
         },
         "23": {
-          "key": "\u0445 ",
-          "p1": "445",
+          "key": " h",
+          "p5": "68",
           "position": "315"
         },
         "24": {
-          "key": "\u0458 ",
-          "p1": "458",
+          "key": " j",
+          "p5": "6A",
           "position": "316"
         },
         "25": {
-          "key": "\u043a ",
-          "p1": "043A",
+          "key": " k",
+          "p5": "6B",
           "position": "317"
         },
         "26": {
-          "key": "\u043b ",
-          "p1": "043B",
+          "key": " l",
+          "p5": "6C",
           "position": "318"
         },
         "27": {
-          "key": "\u0447 ",
-          "p1": "447",
+          "key": " \u010d\u0447",
+          "p4": "10D",
+          "p6": "447",
           "position": "319"
         },
         "28": {
-          "key": "\u045b ",
-          "p1": "045B",
+          "key": " \u0107\u045b",
+          "p4": "107",
+          "p6": "045B",
           "position": "320"
         },
         "29": {
-          "key": " | \n \\",
-          "p1": "007C",
+          "key": " |\n \\",
+          "p2": "007C",
           "p8": "005C",
           "position": "100"
         },
         "2A": {
           "format": "left",
-          "key": "glyph_shift",
+          "key": " glyph_shift",
           "label": "glyph_shift",
           "notes": "left shift",
           "position": "400"
         },
         "2B": {
-          "key": "\u0436 ",
-          "p1": "436",
+          "key": " \u017e\u0436",
+          "p4": "17E",
+          "p6": "436",
           "position": "290"
         },
         "2C": {
-          "key": "\u0455 ",
-          "p1": "455",
+          "key": " y",
+          "p5": "79",
           "position": "410"
         },
         "2D": {
-          "key": "\u045f ",
-          "p1": "045F",
+          "key": " x\u045f",
+          "p4": "78",
+          "p6": "045F",
           "position": "411"
         },
         "2E": {
-          "key": "\u0446 ",
-          "p1": "446",
+          "key": " c\u0446",
+          "p4": "63",
+          "p6": "446",
           "position": "412"
         },
         "2F": {
-          "key": "\u0432 \n @",
-          "p1": "432",
+          "key": " v @",
+          "p5": "76",
           "p9": "40",
           "position": "413"
         },
         "30": {
-          "key": "\u0431 \n {",
-          "p1": "431",
+          "key": " b {",
+          "p5": "62",
           "p9": "007B",
           "position": "414"
         },
         "31": {
-          "key": "\u043d \n }",
-          "p1": "043D",
+          "key": " n }",
+          "p5": "6E",
           "p9": "007D",
           "position": "415"
         },
         "32": {
-          "key": "\u043c \n \u00a7",
-          "p1": "043C",
+          "key": " m \u00a7",
+          "p5": "6D",
           "p9": "00A7",
           "position": "416"
         },
         "33": {
-          "key": "; \n,",
-          "p1": "003B",
+          "key": " ;\n ,",
+          "p2": "003B",
           "p8": "002C",
           "position": "417"
         },
         "34": {
-          "key": ": \n.",
-          "p1": "003A",
+          "key": " :\n .",
+          "p2": "003A",
           "p8": "002E",
           "position": "418"
         },
         "35": {
-          "key": "_ \n-",
-          "p1": "005F",
+          "key": " _\n -",
+          "p2": "005F",
           "p8": "002D",
           "position": "419"
         },
         "36": {
           "format": "right",
-          "key": "glyph_shift",
+          "key": " glyph_shift",
           "label": "glyph_shift",
           "notes": "right shift",
           "position": "490"
         },
-        "37": {
-          "key": "> \n<",
-          "p1": "003E",
-          "p8": "003C",
-          "position": "409"
-        },
         "38": {
           "format": "left",
-          "key": "\u0430\u043b\u0442",
+          "key": " \u0430\u043b\u0442",
           "label": "\u0430\u043b\u0442",
           "notes": "left alt",
           "position": "501"
@@ -17426,15 +18084,24 @@ var keyboardOverlayData = {
           "label": "glyph_volume_up",
           "position": "19"
         },
+        "56": {
+          "key": " >\n <",
+          "p2": "003E",
+          "p8": "003C",
+          "position": "409"
+        },
         "73": {
+          "key": " ",
           "position": "420"
         },
         "79": {
           "format": "smaller",
+          "key": " ",
           "position": "551"
         },
         "7B": {
           "format": "smaller",
+          "key": " ",
           "position": "550"
         },
         "7D": {
@@ -17443,14 +18110,14 @@ var keyboardOverlayData = {
         },
         "E0 1D": {
           "format": "smaller",
-          "key": "\u043a\u043d\u0442\u0440",
+          "key": " \u043a\u043d\u0442\u0440",
           "label": "\u043a\u043d\u0442\u0440",
           "notes": "right ctrl",
           "position": "581"
         },
         "E0 38": {
           "format": "smaller",
-          "key": "\u0430\u043b\u0442",
+          "key": " \u0430\u043b\u0442",
           "label": "\u0430\u043b\u0442",
           "notes": "right alt",
           "position": "580"
@@ -17477,7 +18144,7 @@ var keyboardOverlayData = {
         },
         "E0 5B": {
           "format": "left",
-          "key": "glyph_search",
+          "key": " glyph_search",
           "label": "glyph_search",
           "notes": "search",
           "position": "300"
@@ -18904,176 +19571,176 @@ var keyboardOverlayData = {
           "position": "0"
         },
         "02": {
-          "key": "! \n1 \u2013",
-          "p1": "21",
-          "p7": "31",
+          "key": "!\n1 \u2013",
+          "p2": "21",
+          "p8": "31",
           "p9": "2013",
           "position": "110"
         },
         "03": {
-          "key": "@ \n2 \"",
-          "p1": "40",
-          "p7": "32",
+          "key": "@\n2 \"",
+          "p2": "40",
+          "p8": "32",
           "p9": "22",
           "position": "111"
         },
         "04": {
-          "key": "\u2116 \n3 \u20ac",
-          "p1": "2116",
-          "p7": "33",
+          "key": "\u2116\n3 \u20ac",
+          "p2": "2116",
+          "p8": "33",
           "p9": "20AC",
           "position": "112"
         },
         "05": {
-          "key": "; \n4 $",
-          "p1": "003B",
-          "p7": "34",
+          "key": ";\n4 $",
+          "p2": "003B",
+          "p8": "34",
           "p9": "24",
           "position": "113"
         },
         "06": {
-          "key": "% \n5 \u00ba",
-          "p1": "25",
-          "p7": "35",
+          "key": "%\n5 \u00ba",
+          "p2": "25",
+          "p8": "35",
           "p9": "00BA",
           "position": "114"
         },
         "07": {
-          "key": ": \n6 ",
-          "p1": "003A",
-          "p7": "36",
+          "key": ":\n6",
+          "p2": "003A",
+          "p8": "36",
           "position": "115"
         },
         "08": {
-          "key": "? \n7 ",
-          "p1": "003F",
-          "p7": "37",
+          "key": "?\n7",
+          "p2": "003F",
+          "p8": "37",
           "position": "116"
         },
         "09": {
-          "key": "* \n8 \u00a7",
-          "p1": "002A",
-          "p7": "38",
+          "key": "*\n8 \u00a7",
+          "p2": "002A",
+          "p8": "38",
           "p9": "00A7",
           "position": "117"
         },
         "0A": {
-          "key": "( \n9 ",
-          "p1": "28",
-          "p7": "39",
+          "key": "(\n9",
+          "p2": "28",
+          "p8": "39",
           "position": "118"
         },
         "0B": {
-          "key": ") \n0 ",
-          "p1": "29",
-          "p7": "30",
+          "key": ")\n0",
+          "p2": "29",
+          "p8": "30",
           "position": "119"
         },
         "0C": {
-          "key": "_ \n- [",
-          "p1": "005F",
-          "p7": "002D",
+          "key": "_\n- [",
+          "p2": "005F",
+          "p8": "002D",
           "p9": "005B",
           "position": "120"
         },
         "0D": {
-          "key": "+ \n= ]",
-          "p1": "002B",
-          "p7": "003D",
+          "key": "+\n= ]",
+          "p2": "002B",
+          "p8": "003D",
           "p9": "005D",
           "position": "121"
         },
         "0E": {
           "format": "right",
-          "key": "backspace",
-          "label": "backspace",
+          "key": "glyph_backspace",
+          "label": "glyph_backspace",
           "notes": "backspace",
           "position": "190"
         },
         "0F": {
           "format": "left",
-          "key": "tab",
-          "label": "tab",
+          "key": "glyph_tab",
+          "label": "glyph_tab",
           "notes": "tab",
           "position": "200"
         },
         "10": {
-          "key": "q \n \u0439",
-          "p1": "71",
+          "key": "q \u0439",
+          "p5": "71",
           "p9": "439",
           "position": "210"
         },
         "11": {
-          "key": "w \n \u0446",
-          "p1": "77",
+          "key": "w \u0446",
+          "p5": "77",
           "p9": "446",
           "position": "211"
         },
         "12": {
-          "key": "e \n \u0443",
-          "p1": "65",
+          "key": "e \u0443",
+          "p5": "65",
           "p9": "443",
           "position": "212"
         },
         "13": {
-          "key": "r \n \u043a",
-          "p1": "72",
+          "key": "r \u043a",
+          "p5": "72",
           "p9": "043A",
           "position": "213"
         },
         "14": {
-          "key": "t \n \u0435",
-          "p1": "74",
+          "key": "t \u0435",
+          "p5": "74",
           "p9": "435",
           "position": "214"
         },
         "15": {
-          "key": "y \n \u043d",
-          "p1": "79",
+          "key": "y \u043d",
+          "p5": "79",
           "p9": "043D",
           "position": "215"
         },
         "16": {
-          "key": "u \n \u0433",
-          "p1": "75",
+          "key": "u \u0433",
+          "p5": "75",
           "p9": "433",
           "position": "216"
         },
         "17": {
-          "key": "i \n \u0448",
-          "p1": "69",
+          "key": "i \u0448",
+          "p5": "69",
           "p9": "448",
           "position": "217"
         },
         "18": {
-          "key": "o \n \u0449",
-          "p1": "006F",
+          "key": "o \u0449",
+          "p5": "006F",
           "p9": "449",
           "position": "218"
         },
         "19": {
-          "key": "p \n \u0437",
-          "p1": "70",
+          "key": "p \u0437",
+          "p5": "70",
           "p9": "437",
           "position": "219"
         },
         "1A": {
-          "key": "{ \n\u0445 ",
-          "p1": "007B",
-          "p7": "445",
+          "key": "{\n\u0445",
+          "p2": "007B",
+          "p8": "445",
           "position": "220"
         },
         "1B": {
-          "key": "} \n\u044a \u0457",
-          "p1": "007D",
-          "p7": "044A",
+          "key": "}\n\u044a \u0457",
+          "p2": "007D",
+          "p8": "044A",
           "p9": "457",
           "position": "221"
         },
         "1C": {
           "format": "right",
-          "key": "enter",
-          "label": "enter",
+          "key": "glyph_enter",
+          "label": "glyph_enter",
           "notes": "enter",
           "position": "390"
         },
@@ -19085,64 +19752,64 @@ var keyboardOverlayData = {
           "position": "500"
         },
         "1E": {
-          "key": "a \n \u0444",
-          "p1": "61",
+          "key": "a \u0444",
+          "p5": "61",
           "p9": "444",
           "position": "310"
         },
         "1F": {
-          "key": "s \n\u044b \u0456",
-          "p1": "73",
-          "p7": "044B",
+          "key": "s\n\u044b \u0456",
+          "p2": "73",
+          "p8": "044B",
           "p9": "456",
           "position": "311"
         },
         "20": {
-          "key": "d \n \u0432",
-          "p1": "64",
+          "key": "d \u0432",
+          "p5": "64",
           "p9": "432",
           "position": "312"
         },
         "21": {
-          "key": "f \n \u0430",
-          "p1": "66",
+          "key": "f \u0430",
+          "p5": "66",
           "p9": "430",
           "position": "313"
         },
         "22": {
-          "key": "g \n \u043f",
-          "p1": "67",
+          "key": "g \u043f",
+          "p5": "67",
           "p9": "043F",
           "position": "314"
         },
         "23": {
-          "key": "h \n \u0440",
-          "p1": "68",
+          "key": "h \u0440",
+          "p5": "68",
           "p9": "440",
           "position": "315"
         },
         "24": {
-          "key": "j \n \u043e",
-          "p1": "006A",
+          "key": "j \u043e",
+          "p5": "006A",
           "p9": "043E",
           "position": "316"
         },
         "25": {
-          "key": "k \n \u043b",
-          "p1": "006B",
+          "key": "k \u043b",
+          "p5": "006B",
           "p9": "043B",
           "position": "317"
         },
         "26": {
-          "key": "l \n \u0434",
-          "p1": "006C",
+          "key": "l \u0434",
+          "p5": "006C",
           "p9": "434",
           "position": "318"
         },
         "27": {
-          "key": ": \n; \u0436",
-          "p1": "003A",
-          "p7": "003B",
+          "key": ":\n; \u0436",
+          "p2": "003A",
+          "p8": "003B",
           "p9": "436",
           "position": "319"
         },
@@ -19155,16 +19822,16 @@ var keyboardOverlayData = {
           "position": "320"
         },
         "29": {
-          "key": "\u0491 \n' \u20b4",
-          "p1": "491",
-          "p7": "27",
+          "key": "\u0491\n' \u20b4",
+          "p2": "491",
+          "p8": "27",
           "p9": "20B4",
           "position": "100"
         },
         "2A": {
           "format": "left",
-          "key": "shift",
-          "label": "shift",
+          "key": "glyph_shift",
+          "label": "glyph_shift",
           "notes": "left shift",
           "position": "400"
         },
@@ -19177,57 +19844,57 @@ var keyboardOverlayData = {
           "position": "290"
         },
         "2C": {
-          "key": "z \n \u044f",
-          "p1": "007A",
+          "key": "z \u044f",
+          "p5": "007A",
           "p9": "044F",
           "position": "410"
         },
         "2D": {
-          "key": "x \n \u0447",
-          "p1": "78",
+          "key": "x \u0447",
+          "p5": "78",
           "p9": "447",
           "position": "411"
         },
         "2E": {
-          "key": "c \n \u0441",
-          "p1": "63",
+          "key": "c \u0441",
+          "p5": "63",
           "p9": "441",
           "position": "412"
         },
         "2F": {
-          "key": "v \n \u043c",
-          "p1": "76",
+          "key": "v \u043c",
+          "p5": "76",
           "p9": "043C",
           "position": "413"
         },
         "30": {
-          "key": "b \n \u0438",
-          "p1": "62",
+          "key": "b \u0438",
+          "p5": "62",
           "p9": "438",
           "position": "414"
         },
         "31": {
-          "key": "n \n \u0442",
-          "p1": "006E",
+          "key": "n \u0442",
+          "p5": "006E",
           "p9": "442",
           "position": "415"
         },
         "32": {
-          "key": "m \n \u044c",
-          "p1": "006D",
+          "key": "m \u044c",
+          "p5": "006D",
           "p9": "044C",
           "position": "416"
         },
         "33": {
-          "key": "< \n, \u0431",
-          "p1": "003C",
+          "key": "<\n, \u0431",
+          "p2": "003C",
           "p8": "002C",
           "p9": "431",
           "position": "417"
         },
         "34": {
-          "key": "> \n. \u044e",
-          "p1": "003E",
+          "key": ">\n. \u044e",
+          "p2": "003E",
           "p8": "002E",
           "p9": "044E",
           "position": "418"
@@ -19242,8 +19909,8 @@ var keyboardOverlayData = {
         },
         "36": {
           "format": "right",
-          "key": "shift",
-          "label": "shift",
+          "key": "glyph_shift",
+          "label": "glyph_shift",
           "notes": "right shift",
           "position": "490"
         },
@@ -19330,8 +19997,8 @@ var keyboardOverlayData = {
         },
         "E0 38": {
           "format": "smaller",
-          "key": "alt",
-          "label": "alt",
+          "key": "alt gr",
+          "label": "alt gr",
           "notes": "right alt",
           "position": "580"
         },
