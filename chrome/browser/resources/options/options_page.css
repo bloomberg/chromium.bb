@@ -155,6 +155,7 @@ html[toolkit=views] .button-strip {
   left: 0;
   top: 0;
   width: 266px;
+  position: absolute;
   z-index: 2;
 }
 
