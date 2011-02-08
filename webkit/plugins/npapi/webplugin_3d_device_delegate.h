@@ -49,7 +49,7 @@ class WebPlugin3DDeviceDelegate {
                                         NPDeviceContext3D** context);
   virtual NPError Device3DRegisterCallback(
       NPP id,
-      NPDeviceContext* context,
+      NPDeviceContext3D* context,
       int32 callback_type,
       NPDeviceGenericCallbackPtr callback,
       void* callback_data);

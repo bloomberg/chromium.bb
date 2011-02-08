@@ -51,9 +51,10 @@ NPError WebPlugin3DDeviceDelegate::Device3DDestroyContext(
   return NPERR_GENERIC_ERROR;
 }
 
-NPError WebPlugin3DDeviceDelegate::Device3DCreateBuffer(NPDeviceContext3D* context,
-                                                        size_t size,
-                                                        int32* id) {
+NPError WebPlugin3DDeviceDelegate::Device3DCreateBuffer(
+    NPDeviceContext3D* context,
+    size_t size,
+    int32* id) {
   return NPERR_GENERIC_ERROR;
 }
 
@@ -88,7 +89,7 @@ NPError WebPlugin3DDeviceDelegate::Device3DCreateContext(
 
 NPError WebPlugin3DDeviceDelegate::Device3DRegisterCallback(
     NPP id,
-    NPDeviceContext* context,
+    NPDeviceContext3D* context,
     int32 callback_type,
     NPDeviceGenericCallbackPtr callback,
     void* callback_data) {
