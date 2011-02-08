@@ -380,7 +380,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutInvalid) {
 }
 
 // Change a tab into an application window.
-IN_PROC_BROWSER_TEST_F(BrowserTest, ConvertTabToAppShortcut) {
+// DISABLED: http://crbug.com/72310
+IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_ConvertTabToAppShortcut) {
   ASSERT_TRUE(test_server()->Start());
   GURL http_url(test_server()->GetURL(""));
   ASSERT_TRUE(http_url.SchemeIs(chrome::kHttpScheme));
