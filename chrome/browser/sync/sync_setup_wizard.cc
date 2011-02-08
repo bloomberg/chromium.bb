@@ -260,13 +260,20 @@ SyncSetupWizard::SyncSetupWizard(ProfileSyncService* service)
     : service_(service),
       flow_container_(new SyncSetupFlowContainer()),
       parent_window_(NULL) {
-  // Add our network layer data source for 'cloudy' URLs.
-  SyncResourcesSource* sync_source = new SyncResourcesSource();
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(ChromeURLDataManager::GetInstance(),
-                        &ChromeURLDataManager::AddDataSource,
-                        make_scoped_refptr(sync_source)));
+  // If we're in a unit test, we may not have an IO thread.  Avoid
+  // creating a SyncResourcesSource since we may leak it (since it's
+  // DeleteOnUIThread).
+  if (BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {
+    // Add our network layer data source for 'cloudy' URLs.
+    SyncResourcesSource* sync_source = new SyncResourcesSource();
+    bool posted =
+        BrowserThread::PostTask(
+            BrowserThread::IO, FROM_HERE,
+            NewRunnableMethod(ChromeURLDataManager::GetInstance(),
+                              &ChromeURLDataManager::AddDataSource,
+                              make_scoped_refptr(sync_source)));
+    DCHECK(posted);
+  }
 }
 
 SyncSetupWizard::~SyncSetupWizard() {
