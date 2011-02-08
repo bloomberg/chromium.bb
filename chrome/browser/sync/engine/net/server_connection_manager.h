@@ -207,8 +207,6 @@ class ServerConnectionManager {
     RequestTimingInfo* timing_info_;
   };
 
-  // The lifetime of the GaiaAuthenticator must be longer than the instance
-  // of the ServerConnectionManager that you're creating.
   ServerConnectionManager(const std::string& server,
                           int port,
                           bool use_ssl,

@@ -933,53 +933,6 @@ syncable::BaseTransaction* WriteTransaction::GetWrappedTrans() const {
   return transaction_;
 }
 
-// A GaiaAuthenticator that uses HttpPostProviders instead of CURL.
-class BridgedGaiaAuthenticator : public gaia::GaiaAuthenticator {
- public:
-  BridgedGaiaAuthenticator(const string& user_agent, const string& service_id,
-                           const string& gaia_url,
-                           HttpPostProviderFactory* factory)
-      : GaiaAuthenticator(user_agent, service_id, gaia_url),
-        gaia_source_(user_agent), post_factory_(factory) {
-  }
-
-  virtual ~BridgedGaiaAuthenticator() {
-  }
-
-  virtual bool Post(const GURL& url, const string& post_body,
-                    unsigned long* response_code, string* response_body) {
-    string connection_url = "https://";
-    connection_url += url.host();
-    connection_url += url.path();
-    HttpPostProviderInterface* http = post_factory_->Create();
-    http->SetUserAgent(gaia_source_.c_str());
-    // SSL is on 443 for Gaia Posts always.
-    http->SetURL(connection_url.c_str(), kSSLPort);
-    http->SetPostPayload("application/x-www-form-urlencoded",
-                         post_body.length(), post_body.c_str());
-
-    int os_error_code = 0;
-    int int_response_code = 0;
-    if (!http->MakeSynchronousPost(&os_error_code, &int_response_code)) {
-      VLOG(1) << "Http POST failed, error returns: " << os_error_code;
-      return false;
-    }
-    *response_code = static_cast<int>(int_response_code);
-    response_body->assign(http->GetResponseContent(),
-                          http->GetResponseContentLength());
-    post_factory_->Destroy(http);
-    return true;
-  }
-
-  virtual int GetBackoffDelaySeconds(int current_backoff_delay) {
-    return SyncerThread::GetRecommendedDelaySeconds(current_backoff_delay);
-  }
- private:
-  const std::string gaia_source_;
-  scoped_ptr<HttpPostProviderFactory> post_factory_;
-  DISALLOW_COPY_AND_ASSIGN(BridgedGaiaAuthenticator);
-};
-
 SyncManager::ChangeRecord::ChangeRecord()
     : id(kInvalidId), action(ACTION_ADD) {}
 
