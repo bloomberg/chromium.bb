@@ -346,8 +346,10 @@ class ExtensionService
   // Called when the initial extensions load has completed.
   virtual void OnLoadedInstalledExtensions();
 
-  // Called when an extension has been loaded.
-  void OnExtensionLoaded(const Extension* extension);
+  // Adds |extension| to this ExtensionService and notifies observers than an
+  // extension has been loaded.  Called by the backend after an extension has
+  // been loaded from a file and installed.
+  void AddExtension(const Extension* extension);
 
   // Called by the backend when an extension has been installed.
   void OnExtensionInstalled(const Extension* extension);

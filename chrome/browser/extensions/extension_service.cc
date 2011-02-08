@@ -187,7 +187,7 @@ class ExtensionServiceBackend
   // Loads a single extension from |path| where |path| is the top directory of
   // a specific extension where its manifest file lives.
   // Errors are reported through ExtensionErrorReporter. On success,
-  // OnExtensionLoaded() is called.
+  // AddExtension() is called.
   // TODO(erikkay): It might be useful to be able to load a packed extension
   // (presumably into memory) without installing it.
   void LoadSingleExtension(const FilePath &path,
@@ -903,8 +903,7 @@ void ExtensionService::LoadComponentExtensions() {
       NOTREACHED() << error;
       return;
     }
-
-    OnExtensionLoaded(extension);
+    AddExtension(extension);
   }
 }
 
@@ -1075,7 +1074,7 @@ void ExtensionService::LoadInstalledExtension(const ExtensionInfo& info,
   if (write_to_prefs)
     extension_prefs_->UpdateManifest(extension);
 
-  OnExtensionLoaded(extension);
+  AddExtension(extension);
 }
 
 void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
@@ -1504,7 +1503,7 @@ void ExtensionService::OnLoadedInstalledExtensions() {
       NotificationService::NoDetails());
 }
 
-void ExtensionService::OnExtensionLoaded(const Extension* extension) {
+void ExtensionService::AddExtension(const Extension* extension) {
   // Ensure extension is deleted unless we transfer ownership.
   scoped_refptr<const Extension> scoped_extension(extension);
 
@@ -1744,8 +1743,8 @@ void ExtensionService::OnExtensionInstalled(const Extension* extension) {
     default_apps_.DidInstallApp(installed_ids);
   }
 
-  // Transfer ownership of |extension| to OnExtensionLoaded.
-  OnExtensionLoaded(scoped_extension);
+  // Transfer ownership of |extension| to AddExtension.
+  AddExtension(scoped_extension);
 }
 
 const Extension* ExtensionService::GetExtensionByIdInternal(
