@@ -18,6 +18,7 @@ class ServiceProcessPrefs {
   // file I/O can be done.
   ServiceProcessPrefs(const FilePath& pref_filename,
                       base::MessageLoopProxy* file_message_loop_proxy);
+  ~ServiceProcessPrefs();
 
   // Read preferences from the backing file.
   void ReadPrefs();

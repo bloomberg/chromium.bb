@@ -1244,6 +1244,10 @@ void ExtensionService::UpdateExtensionBlacklist(
   }
 }
 
+Profile* ExtensionService::profile() {
+  return profile_;
+}
+
 void ExtensionService::DestroyingProfile() {
   if (updater_.get()) {
     updater_->Stop();

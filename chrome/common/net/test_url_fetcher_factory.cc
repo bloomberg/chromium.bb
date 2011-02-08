@@ -19,6 +19,10 @@ TestURLFetcher::TestURLFetcher(int id,
       original_url_(url) {
 }
 
+TestURLFetcherFactory::TestURLFetcherFactory() {}
+
+TestURLFetcherFactory::~TestURLFetcherFactory() {}
+
 URLFetcher* TestURLFetcherFactory::CreateURLFetcher(
     int id,
     const GURL& url,
@@ -86,6 +90,10 @@ class FakeURLFetcher : public URLFetcher {
 
   DISALLOW_COPY_AND_ASSIGN(FakeURLFetcher);
 };
+
+FakeURLFetcherFactory::FakeURLFetcherFactory() {}
+
+FakeURLFetcherFactory::~FakeURLFetcherFactory() {}
 
 URLFetcher* FakeURLFetcherFactory::CreateURLFetcher(
     int id,

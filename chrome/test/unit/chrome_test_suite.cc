@@ -9,6 +9,7 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/metrics/stats_table.h"
 #include "base/process_util.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_constants.h"

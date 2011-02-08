@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_MOCK_OBJECTS_H_
-#define REMOTING_HOST_MOCK_OBJECTS_H_
+#ifndef REMOTING_HOST_HOST_MOCK_OBJECTS_H_
+#define REMOTING_HOST_HOST_MOCK_OBJECTS_H_
 
 #include "remoting/host/capturer.h"
 #include "remoting/host/chromoting_host_context.h"
@@ -13,7 +13,8 @@ namespace remoting {
 
 class MockCapturer : public Capturer {
  public:
-  MockCapturer() : Capturer(NULL) {}
+  MockCapturer();
+  virtual ~MockCapturer();
 
   MOCK_METHOD0(ScreenConfigurationChanged, void());
   MOCK_METHOD1(InvalidateRects, void(const InvalidRects& inval_rects));
@@ -31,7 +32,8 @@ class MockCapturer : public Capturer {
 
 class MockChromotingHostContext : public ChromotingHostContext {
  public:
-  MockChromotingHostContext() {}
+  MockChromotingHostContext();
+  virtual ~MockChromotingHostContext();
 
   MOCK_METHOD0(Start, void());
   MOCK_METHOD0(Stop, void());
@@ -46,4 +48,4 @@ class MockChromotingHostContext : public ChromotingHostContext {
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_MOCK_OBJECTS_H_
+#endif  // REMOTING_HOST_HOST_MOCK_OBJECTS_H_

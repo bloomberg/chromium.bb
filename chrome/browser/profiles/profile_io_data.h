@@ -71,6 +71,9 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
   // TODO(willchan): Move this to the private section when
   // ChromeURLRequestContextFactory subclasses don't need it anymore.
   struct LazyParams {
+    LazyParams();
+    ~LazyParams();
+
     // All of these parameters are intended to be read on the IO thread.
     FilePath cookie_path;
     FilePath cache_path;

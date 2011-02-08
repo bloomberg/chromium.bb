@@ -12,6 +12,8 @@ ServiceProcessPrefs::ServiceProcessPrefs(
     : prefs_(new JsonPrefStore(pref_filename, file_message_loop_proxy)) {
 }
 
+ServiceProcessPrefs::~ServiceProcessPrefs() {}
+
 void ServiceProcessPrefs::ReadPrefs() {
   prefs_->ReadPrefs();
 }

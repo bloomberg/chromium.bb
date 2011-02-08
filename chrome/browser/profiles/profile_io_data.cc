@@ -81,6 +81,16 @@ ProfileIOData::Handle::GetExtensionsRequestContextGetter() const {
   return extensions_request_context_getter_;
 }
 
+
+ProfileIOData::LazyParams::LazyParams()
+    : cache_max_size(0),
+      media_cache_max_size(0),
+      io_thread(NULL),
+      profile(NULL) {
+}
+
+ProfileIOData::LazyParams::~LazyParams() {}
+
 class ProfileIOData::RequestContext : public ChromeURLRequestContext {
  public:
   RequestContext();

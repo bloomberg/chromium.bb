@@ -9,7 +9,7 @@
 #include "net/base/net_errors.h"
 #include "net/socket/socket.h"
 #include "remoting/jingle_glue/stream_socket_adapter.h"
-#include "remoting/jingle_glue/mock_objects.h"
+#include "remoting/jingle_glue/jingle_glue_mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle/source/talk/p2p/base/transportchannel.h"

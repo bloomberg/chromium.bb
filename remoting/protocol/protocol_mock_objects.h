@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_PROTOCOL_MOCK_OBJECTS_H_
-#define REMOTING_PROTOCOL_MOCK_OBJECTS_H_
+#ifndef REMOTING_PROTOCOL_PROTOCOL_MOCK_OBJECTS_H_
+#define REMOTING_PROTOCOL_PROTOCOL_MOCK_OBJECTS_H_
 
 #include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/client_stub.h"
@@ -21,7 +21,8 @@ class ChromotocolConnection;
 
 class MockConnectionToClient : public ConnectionToClient {
  public:
-  MockConnectionToClient() {}
+  MockConnectionToClient();
+  virtual ~MockConnectionToClient();
 
   MOCK_METHOD1(Init, void(Session* session));
   MOCK_METHOD0(video_stub, VideoStub*());
@@ -34,9 +35,10 @@ class MockConnectionToClient : public ConnectionToClient {
 };
 
 class MockConnectionToClientEventHandler :
-  public ConnectionToClient::EventHandler {
+      public ConnectionToClient::EventHandler {
  public:
-  MockConnectionToClientEventHandler() {}
+  MockConnectionToClientEventHandler();
+  virtual ~MockConnectionToClientEventHandler();
 
   MOCK_METHOD1(OnConnectionOpened, void(ConnectionToClient* connection));
   MOCK_METHOD1(OnConnectionClosed, void(ConnectionToClient* connection));
@@ -48,7 +50,8 @@ class MockConnectionToClientEventHandler :
 
 class MockInputStub : public InputStub {
  public:
-  MockInputStub() {}
+  MockInputStub();
+  virtual ~MockInputStub();
 
   MOCK_METHOD2(InjectKeyEvent, void(const KeyEvent* event, Task* done));
   MOCK_METHOD2(InjectMouseEvent, void(const MouseEvent* event, Task* done));
@@ -59,7 +62,8 @@ class MockInputStub : public InputStub {
 
 class MockHostStub : public HostStub {
  public:
-  MockHostStub() {}
+  MockHostStub();
+  ~MockHostStub();
 
   MOCK_METHOD2(SuggestResolution, void(const SuggestResolutionRequest* msg,
                                        Task* done));
@@ -72,7 +76,8 @@ class MockHostStub : public HostStub {
 
 class MockClientStub : public ClientStub {
  public:
-  MockClientStub() {}
+  MockClientStub();
+  virtual ~MockClientStub();
 
   MOCK_METHOD2(NotifyResolution, void(const NotifyResolutionRequest* msg,
                                       Task* done));
@@ -85,7 +90,8 @@ class MockClientStub : public ClientStub {
 
 class MockVideoStub : public VideoStub {
  public:
-  MockVideoStub() {}
+  MockVideoStub();
+  virtual ~MockVideoStub();
 
   MOCK_METHOD2(ProcessVideoPacket, void(const VideoPacket* video_packet,
                                         Task* done));
@@ -97,7 +103,8 @@ class MockVideoStub : public VideoStub {
 
 class MockSession : public Session {
  public:
-  MockSession() {}
+  MockSession();
+  virtual ~MockSession();
 
   MOCK_METHOD1(SetStateChangeCallback, void(StateChangeCallback* callback));
   MOCK_METHOD0(control_channel, net::Socket*());
@@ -123,4 +130,4 @@ class MockSession : public Session {
 }  // namespace protocol
 }  // namespace remoting
 
-#endif  // REMOTING_PROTOCOL_MOCK_OBJECTS_H_
+#endif  // REMOTING_PROTOCOL_PROTOCOL_MOCK_OBJECTS_H_

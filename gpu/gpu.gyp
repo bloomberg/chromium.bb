@@ -320,6 +320,8 @@
       'sources': [
         'command_buffer/common/gl_mock.h',
         'command_buffer/common/gl_mock.cc',
+        'command_buffer/service/gles2_cmd_decoder_mock.cc',
+        'command_buffer/service/gles2_cmd_decoder_mock.cc',
       ],
     },
     {

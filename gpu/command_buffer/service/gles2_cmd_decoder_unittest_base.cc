@@ -32,6 +32,19 @@ using ::testing::StrictMock;
 namespace gpu {
 namespace gles2 {
 
+GLES2DecoderTestBase::GLES2DecoderTestBase()
+    : client_buffer_id_(100),
+      client_framebuffer_id_(101),
+      client_program_id_(102),
+      client_renderbuffer_id_(103),
+      client_shader_id_(104),
+      client_texture_id_(106),
+      client_element_buffer_id_(107) {
+  memset(immediate_buffer_, 0xEE, sizeof(immediate_buffer_));
+}
+
+GLES2DecoderTestBase::~GLES2DecoderTestBase() {}
+
 void GLES2DecoderTestBase::SetUp() {
   InitDecoder("");
 }

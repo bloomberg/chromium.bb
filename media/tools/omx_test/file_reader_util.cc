@@ -46,6 +46,8 @@ YuvFileReader::YuvFileReader(const FilePath& path,
       output_nv21_(enable_csc) {
 }
 
+YuvFileReader::~YuvFileReader() {}
+
 void YuvFileReader::Read(uint8** output, int* size) {
   if (!file()) {
     *size = 0;
@@ -229,6 +231,8 @@ H264FileReader::H264FileReader(const FilePath& path)
       current_(0),
       used_(0) {
 }
+
+H264FileReader::~H264FileReader() {}
 
 void H264FileReader::Read(uint8** output, int *size) {
   // Fill the buffer when it's less than half full.

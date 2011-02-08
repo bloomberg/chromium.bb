@@ -377,7 +377,7 @@ class ExtensionService
     return show_extensions_prompts_;
   }
 
-  Profile* profile() { return profile_; }
+  virtual Profile* profile();
 
   // Profile calls this when it is being destroyed so that we know not to call
   // it.

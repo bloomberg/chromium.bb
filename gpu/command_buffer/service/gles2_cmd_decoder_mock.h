@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,13 +22,8 @@ namespace gles2 {
 class ContextGroup;
 class MockGLES2Decoder : public GLES2Decoder {
  public:
-  MockGLES2Decoder()
-      : GLES2Decoder() {
-    ON_CALL(*this, GetCommandName(testing::_))
-      .WillByDefault(testing::Return(""));
-    ON_CALL(*this, MakeCurrent())
-      .WillByDefault(testing::Return(true));
-  }
+  MockGLES2Decoder();
+  virtual ~MockGLES2Decoder();
 
   MOCK_METHOD6(Initialize, bool(gfx::GLContext* context,
                                 const gfx::Size& size,

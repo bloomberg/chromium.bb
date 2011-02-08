@@ -15,184 +15,102 @@
 
 #include <string>
 
-#include "base/string_util.h"
-#include "base/synchronization/waitable_event.h"
+#include "base/scoped_ptr.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/google/google_url_tracker.h"
-#include "chrome/browser/policy/configuration_policy_pref_store.h"
-#include "chrome/browser/policy/configuration_policy_provider.h"
-#include "chrome/browser/policy/configuration_policy_provider_keeper.h"
-#include "chrome/browser/policy/dummy_configuration_policy_provider.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/notification_service.h"
-#include "ui/base/clipboard/clipboard.h"
 
 class IOThread;
+class GoogleURLTracker;
+class PrefService;
+
+namespace base {
+class WaitableEvent;
+}
+
+namespace policy {
+class ConfigurationPolicyProviderKeeper;
+}
+
+namespace ui {
+class Clipboard;
+}
 
 class TestingBrowserProcess : public BrowserProcess {
  public:
-  TestingBrowserProcess()
-      : shutdown_event_(new base::WaitableEvent(true, false)),
-        module_ref_count_(0),
-        app_locale_("en"),
-        pref_service_(NULL),
-        created_configuration_policy_provider_keeper_(false) {
-  }
+  TestingBrowserProcess();
+  virtual ~TestingBrowserProcess();
 
-  virtual ~TestingBrowserProcess() {
-  }
+  virtual void EndSession();
 
-  virtual void EndSession() {
-  }
+  virtual ResourceDispatcherHost* resource_dispatcher_host();
 
-  virtual ResourceDispatcherHost* resource_dispatcher_host() {
-    return NULL;
-  }
+  virtual MetricsService* metrics_service();
 
-  virtual MetricsService* metrics_service() {
-    return NULL;
-  }
-
-  virtual IOThread* io_thread() {
-    return NULL;
-  }
+  virtual IOThread* io_thread();
 
 #if defined(OS_LINUX)
-  virtual base::Thread* background_x11_thread() {
-    return NULL;
-  }
+  virtual base::Thread* background_x11_thread();
 #endif
 
-  virtual base::Thread* file_thread() {
-    return NULL;
-  }
+  virtual base::Thread* file_thread();
 
-  virtual base::Thread* db_thread() {
-    return NULL;
-  }
+  virtual base::Thread* db_thread();
 
-  virtual base::Thread* cache_thread() {
-    return NULL;
-  }
+  virtual base::Thread* cache_thread();
 
-  virtual ProfileManager* profile_manager() {
-    return NULL;
-  }
+  virtual ProfileManager* profile_manager();
 
-  virtual PrefService* local_state() {
-    return pref_service_;
-  }
+  virtual PrefService* local_state();
 
   virtual policy::ConfigurationPolicyProviderKeeper*
-      configuration_policy_provider_keeper() {
-    if (!created_configuration_policy_provider_keeper_) {
-      DCHECK(configuration_policy_provider_keeper_.get() == NULL);
-      created_configuration_policy_provider_keeper_ = true;
-      const policy::ConfigurationPolicyProvider::PolicyDefinitionList*
-          policy_list = policy::ConfigurationPolicyPrefStore::
-              GetChromePolicyDefinitionList();
-      configuration_policy_provider_keeper_.reset(
-          new policy::ConfigurationPolicyProviderKeeper(
-              new policy::DummyConfigurationPolicyProvider(policy_list),
-              new policy::DummyConfigurationPolicyProvider(policy_list),
-              new policy::DummyConfigurationPolicyProvider(policy_list)));
-    }
-    return configuration_policy_provider_keeper_.get();
-  }
+      configuration_policy_provider_keeper();
 
-  virtual IconManager* icon_manager() {
-    return NULL;
-  }
+  virtual IconManager* icon_manager();
 
-  virtual ThumbnailGenerator* GetThumbnailGenerator() {
-    return NULL;
-  }
+  virtual ThumbnailGenerator* GetThumbnailGenerator();
 
-  virtual DevToolsManager* devtools_manager() {
-    return NULL;
-  }
+  virtual DevToolsManager* devtools_manager();
 
-  virtual SidebarManager* sidebar_manager() {
-    return NULL;
-  }
+  virtual SidebarManager* sidebar_manager();
 
-  virtual TabCloseableStateWatcher* tab_closeable_state_watcher() {
-    return NULL;
-  }
+  virtual TabCloseableStateWatcher* tab_closeable_state_watcher();
 
   virtual safe_browsing::ClientSideDetectionService*
-      safe_browsing_detection_service() {
-    return NULL;
-  }
+      safe_browsing_detection_service();
 
-  virtual ui::Clipboard* clipboard() {
-    if (!clipboard_.get()) {
-      // Note that we need a MessageLoop for the next call to work.
-      clipboard_.reset(new ui::Clipboard);
-    }
-    return clipboard_.get();
-  }
+  virtual ui::Clipboard* clipboard();
 
-  virtual NotificationUIManager* notification_ui_manager() {
-    return NULL;
-  }
+  virtual NotificationUIManager* notification_ui_manager();
 
-  virtual GoogleURLTracker* google_url_tracker() {
-    return google_url_tracker_.get();
-  }
+  virtual GoogleURLTracker* google_url_tracker();
 
-  virtual IntranetRedirectDetector* intranet_redirect_detector() {
-    return NULL;
-  }
+  virtual IntranetRedirectDetector* intranet_redirect_detector();
 
-  virtual AutomationProviderList* InitAutomationProviderList() {
-    return NULL;
-  }
+  virtual AutomationProviderList* InitAutomationProviderList();
 
   virtual void InitDevToolsHttpProtocolHandler(
       const std::string& ip,
       int port,
-      const std::string& frontend_url) {
-  }
+      const std::string& frontend_url);
 
-  virtual void InitDevToolsLegacyProtocolHandler(int port) {
-  }
+  virtual void InitDevToolsLegacyProtocolHandler(int port);
 
-  virtual unsigned int AddRefModule() {
-    return ++module_ref_count_;
-  }
-  virtual unsigned int ReleaseModule() {
-    DCHECK(module_ref_count_ > 0);
-    return --module_ref_count_;
-  }
+  virtual unsigned int AddRefModule();
+  virtual unsigned int ReleaseModule();
 
-  virtual bool IsShuttingDown() {
-    return false;
-  }
+  virtual bool IsShuttingDown();
 
-  virtual printing::PrintJobManager* print_job_manager() {
-    return NULL;
-  }
+  virtual printing::PrintJobManager* print_job_manager();
 
-  virtual printing::PrintPreviewTabController* print_preview_tab_controller() {
-    return NULL;
-  }
+  virtual printing::PrintPreviewTabController* print_preview_tab_controller();
 
-  virtual const std::string& GetApplicationLocale() {
-    return app_locale_;
-  }
+  virtual const std::string& GetApplicationLocale();
 
-  virtual void SetApplicationLocale(const std::string& app_locale) {
-    app_locale_ = app_locale;
-  }
+  virtual void SetApplicationLocale(const std::string& app_locale);
 
-  virtual DownloadStatusUpdater* download_status_updater() {
-    return NULL;
-  }
+  virtual DownloadStatusUpdater* download_status_updater();
 
-  virtual base::WaitableEvent* shutdown_event() {
-    return shutdown_event_.get();
-  }
+  virtual base::WaitableEvent* shutdown_event();
 
   virtual void CheckForInspectorFiles() {}
 
@@ -200,17 +118,13 @@ class TestingBrowserProcess : public BrowserProcess {
   virtual void StartAutoupdateTimer() {}
 #endif
 
-  virtual bool have_inspector_files() const { return true; }
+  virtual bool have_inspector_files() const;
 #if defined(IPC_MESSAGE_LOG_ENABLED)
   virtual void SetIPCLoggingEnabled(bool enable) {}
 #endif
 
-  void SetPrefService(PrefService* pref_service) {
-    pref_service_ = pref_service;
-  }
-  void SetGoogleURLTracker(GoogleURLTracker* google_url_tracker) {
-    google_url_tracker_.reset(google_url_tracker);
-  }
+  void SetPrefService(PrefService* pref_service);
+  void SetGoogleURLTracker(GoogleURLTracker* google_url_tracker);
 
  private:
   NotificationService notification_service_;

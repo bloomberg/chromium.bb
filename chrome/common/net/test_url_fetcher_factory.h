@@ -76,7 +76,8 @@ class TestURLFetcher : public URLFetcher {
 // are registered in a map by the id passed to the create method.
 class TestURLFetcherFactory : public URLFetcher::Factory {
  public:
-  TestURLFetcherFactory() {}
+  TestURLFetcherFactory();
+  virtual ~TestURLFetcherFactory();
 
   virtual URLFetcher* CreateURLFetcher(int id,
                                        const GURL& url,
@@ -128,7 +129,8 @@ class TestURLFetcherFactory : public URLFetcher::Factory {
 
 class FakeURLFetcherFactory : public URLFetcher::Factory {
  public:
-  FakeURLFetcherFactory() {}
+  FakeURLFetcherFactory();
+  virtual ~FakeURLFetcherFactory();
 
   // If no fake response is set for the given URL this method will return NULL.
   // Otherwise, it will return a URLFetcher object which will respond with the

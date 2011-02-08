@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_JINGLE_GLUE_MOCK_OBJECTS_H_
-#define REMOTING_JINGLE_GLUE_MOCK_OBJECTS_H_
+#ifndef REMOTING_JINGLE_GLUE_JINGLE_GLUE_MOCK_OBJECTS_H_
+#define REMOTING_JINGLE_GLUE_JINGLE_GLUE_MOCK_OBJECTS_H_
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/libjingle/source/talk/base/stream.h"
@@ -12,7 +12,8 @@ namespace remoting {
 
 class MockStream : public talk_base::StreamInterface {
  public:
-  virtual ~MockStream() { }
+  MockStream();
+  virtual ~MockStream();
 
   MOCK_CONST_METHOD0(GetState, talk_base::StreamState());
 
@@ -28,4 +29,4 @@ class MockStream : public talk_base::StreamInterface {
 
 }  // namespace remoting
 
-#endif  // REMOTING_JINGLE_GLUE_MOCK_OBJECTS_H_
+#endif  // REMOTING_JINGLE_GLUE_JINGLE_GLUE_MOCK_OBJECTS_H_

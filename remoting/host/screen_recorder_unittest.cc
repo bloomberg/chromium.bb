@@ -5,10 +5,10 @@
 #include "base/message_loop.h"
 #include "base/task.h"
 #include "remoting/base/mock_objects.h"
-#include "remoting/host/mock_objects.h"
+#include "remoting/host/host_mock_objects.h"
 #include "remoting/host/screen_recorder.h"
 #include "remoting/proto/video.pb.h"
-#include "remoting/protocol/mock_objects.h"
+#include "remoting/protocol/protocol_mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
