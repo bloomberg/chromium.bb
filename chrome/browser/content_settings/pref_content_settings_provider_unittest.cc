@@ -4,8 +4,11 @@
 
 #include "chrome/browser/content_settings/pref_content_settings_provider.h"
 
+#include "base/auto_reset.h"
+#include "base/command_line.h"
 #include "chrome/browser/content_settings/host_content_settings_map_unittest.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/testing_pref_service.h"
@@ -117,6 +120,123 @@ TEST_F(PrefDefaultProviderTest, OffTheRecord) {
             provider.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             otr_provider.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES));
+}
+
+// ////////////////////////////////////////////////////////////////////////////
+// PrefProviderTest
+//
+
+bool SettingsEqual(const ContentSettings& settings1,
+                   const ContentSettings& settings2) {
+  for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
+    if (settings1.settings[i] != settings2.settings[i])
+      return false;
+  }
+  return true;
+}
+
+class PrefProviderTest : public testing::Test {
+ public:
+  PrefProviderTest() : ui_thread_(
+      BrowserThread::UI, &message_loop_) {
+  }
+
+ protected:
+  MessageLoop message_loop_;
+  BrowserThread ui_thread_;
+};
+
+TEST_F(PrefProviderTest, Observer) {
+  TestingProfile profile;
+  Profile* p = &profile;
+  PrefProvider pref_content_settings_provider(p);
+  StubSettingsObserver observer;
+  ContentSettingsPattern pattern("[*.]example.com");
+
+  pref_content_settings_provider.SetContentSetting(
+      pattern,
+      pattern,
+      CONTENT_SETTINGS_TYPE_IMAGES,
+      "",
+      CONTENT_SETTING_ALLOW);
+  EXPECT_EQ(profile.GetHostContentSettingsMap(), observer.last_notifier);
+  EXPECT_EQ(pattern, observer.last_pattern);
+  EXPECT_FALSE(observer.last_update_all);
+  EXPECT_FALSE(observer.last_update_all_types);
+  EXPECT_EQ(1, observer.counter);
+}
+
+TEST_F(PrefProviderTest, Patterns) {
+  TestingProfile testing_profile;
+  PrefProvider pref_content_settings_provider(
+      testing_profile.GetOriginalProfile());
+
+  GURL host1("http://example.com/");
+  GURL host2("http://www.example.com/");
+  GURL host3("http://example.org/");
+  ContentSettingsPattern pattern1("[*.]example.com");
+  ContentSettingsPattern pattern2("example.org");
+
+  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
+            pref_content_settings_provider.GetContentSetting(
+                host1, host1, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+  pref_content_settings_provider.SetContentSetting(
+      pattern1,
+      pattern1,
+      CONTENT_SETTINGS_TYPE_IMAGES,
+      "",
+      CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            pref_content_settings_provider.GetContentSetting(
+                host1, host1, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            pref_content_settings_provider.GetContentSetting(
+                host2, host2, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+
+  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
+            pref_content_settings_provider.GetContentSetting(
+                host3, host3, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+  pref_content_settings_provider.SetContentSetting(
+      pattern2,
+      pattern2,
+      CONTENT_SETTINGS_TYPE_IMAGES,
+      "",
+      CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            pref_content_settings_provider.GetContentSetting(
+                host3, host3, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+}
+
+TEST_F(PrefProviderTest, ResourceIdentifier) {
+  // This feature is currently behind a flag.
+  CommandLine* cmd = CommandLine::ForCurrentProcess();
+  AutoReset<CommandLine> auto_reset(cmd, *cmd);
+  cmd->AppendSwitch(switches::kEnableResourceContentSettings);
+
+  TestingProfile testing_profile;
+  PrefProvider pref_content_settings_provider(
+      testing_profile.GetOriginalProfile());
+
+  GURL host("http://example.com/");
+  ContentSettingsPattern pattern("[*.]example.com");
+  std::string resource1("someplugin");
+  std::string resource2("otherplugin");
+
+  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
+            pref_content_settings_provider.GetContentSetting(
+                host, host, CONTENT_SETTINGS_TYPE_PLUGINS, resource1));
+  pref_content_settings_provider.SetContentSetting(
+      pattern,
+      pattern,
+      CONTENT_SETTINGS_TYPE_PLUGINS,
+      resource1,
+      CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            pref_content_settings_provider.GetContentSetting(
+                host, host, CONTENT_SETTINGS_TYPE_PLUGINS, resource1));
+  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
+            pref_content_settings_provider.GetContentSetting(
+                host, host, CONTENT_SETTINGS_TYPE_PLUGINS, resource2));
 }
 
 }  // namespace content_settings

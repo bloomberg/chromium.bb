@@ -615,6 +615,14 @@ TEST_F(HostContentSettingsMapTest, ResourceIdentifier) {
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
                 host, CONTENT_SETTINGS_TYPE_PLUGINS, resource2));
+
+  // If resource content settings are enabled GetContentSettings should return
+  // CONTENT_SETTING_DEFAULT for content types that require resource
+  // identifiers.
+  ContentSettings settings =
+      host_content_settings_map->GetContentSettings(host);
+  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
+            settings.settings[CONTENT_SETTINGS_TYPE_PLUGINS]);
 }
 
 TEST_F(HostContentSettingsMapTest, ResourceIdentifierPrefs) {

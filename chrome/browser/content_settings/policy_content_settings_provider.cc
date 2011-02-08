@@ -168,9 +168,9 @@ void PolicyDefaultProvider::UpdateManagedDefaultSetting(
   // If a pref to manage a default-content-setting was not set (NOTICE:
   // "HasPrefPath" returns false if no value was set for a registered pref) then
   // the default value of the preference is used. The default value of a
-  // preference to manage a default-content-settings is
-  // CONTENT_SETTING_DEFAULT. This indicates that no managed value is set. If a
-  // pref was set, than it MUST be managed.
+  // preference to manage a default-content-settings is CONTENT_SETTING_DEFAULT.
+  // This indicates that no managed value is set. If a pref was set, than it
+  // MUST be managed.
   PrefService* prefs = profile_->GetPrefs();
   DCHECK(!prefs->HasPrefPath(kPrefToManageType[type]) ||
           prefs->IsManagedPreference(kPrefToManageType[type]));

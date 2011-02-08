@@ -56,8 +56,8 @@ class ProviderInterface {
         embedding_url_pattern(embedding_pattern),
         content_setting(setting) {}
 
-    const ContentSettingsPattern requesting_url_pattern;
-    const ContentSettingsPattern embedding_url_pattern;
+    ContentSettingsPattern requesting_url_pattern;
+    ContentSettingsPattern embedding_url_pattern;
     ContentSetting content_setting;
   };
 
@@ -104,10 +104,19 @@ class ProviderInterface {
       const ResourceIdentifier& resource_identifier,
       Rules* content_setting_rules) const = 0;
 
-  // Resets all content settings to CONTENT_SETTING_DEFAULT.
+  // Resets all content settings for the given |content_type| to
+  // CONTENT_SETTING_DEFAULT. For content types that require a resource
+  // identifier all content settings for any resource identifieres of the given
+  // |content_type| will be reset to CONTENT_SETTING_DEFAULT.
   //
   // This should only be called on the UI thread.
-  virtual void ClearAllContentSettingsRules() = 0;
+  virtual void ClearAllContentSettingsRules(
+      ContentSettingsType content_type) = 0;
+
+  // Resets all content settings to CONTENT_SETTINGS_DEFAULT.
+  //
+  // This should only be called on the UI thread.
+  virtual void ResetToDefaults() = 0;
 };
 
 }  // namespace content_settings
