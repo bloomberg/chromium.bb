@@ -157,7 +157,7 @@ static int ReadOneChar(const string s, size_t* pos) {
   return ival;
 }
 
-// expects from to ;point' to leading \" and returns offset to trailing \"
+// expects "from" to point to leading \" and returns offset to trailing \"
 // a zero return value indicates an error
 static size_t ScanEscapeString(const string s, size_t from) {
   // skip initial quotes
@@ -383,7 +383,8 @@ static bool ParseArg(NaClSrpcArg* arg,
       break;
     // This is alternative representation for CHAR_ARRAY:
     // R stands for "record".
-    // example: R(7,1:0x44,2:1999,4:0)
+    // example: R(8,1:0x44,2:1999,4:0,"a")
+    // NOTE: commas inside of strings must currently be escaped
     case 'R':
       arg->tag = NACL_SRPC_ARG_TYPE_CHAR_ARRAY;
       dim = SplitArray(token, &array_tokens, input, false);
@@ -396,27 +397,40 @@ static bool ParseArg(NaClSrpcArg* arg,
       if (input) {
         int curr = 0;
         for (size_t i = 0; i < array_tokens.size(); ++i) {
-          // the format of a token is: <num_bytes_single_digit>:<value>
-          int num_bytes = array_tokens[i][0] - '0';
-          if (array_tokens[i].size() < 3 ||
-              num_bytes < 1 ||
-              8 < num_bytes ||
-              array_tokens[i][1] != ':') {
-            NaClLog(LOG_ERROR, "poorly formatted 'R' parameter\n");
-            return false;
-          }
-          int64_t val = StringToInt64(array_tokens[i], 2);
-          while (num_bytes) {
-            --num_bytes;
-            if (curr >= dim) {
-              NaClLog(LOG_ERROR, "size overflow in 'R' parameter\n");
+          string s = array_tokens[i];
+          if (s[0] == '"') {
+            // the format of the token is: "string"
+            size_t p = 1;
+            while (p < s.size() && s[p] != '"') {
+              if (curr >= dim) {
+                NaClLog(LOG_ERROR, "size overflow in 'R' string parameter\n");
+                return false;
+              }
+              int val = ReadOneChar(s, &p);
+              arg->arrays.carr[curr] = (char) val;
+              ++curr;
+            }
+          } else {
+            // the format of the  token is: <num_bytes_single_digit>:<value>
+            int num_bytes = s[0] - '0';
+            if (s.size() < 3 || num_bytes < 1 || 8 < num_bytes || s[1] != ':') {
+              NaClLog(LOG_ERROR, "poorly formatted 'R' parameter\n");
               return false;
             }
-            arg->arrays.carr[curr] = val & 0xff;
-            ++curr;
-            val >>= 8;
+            int64_t val = StringToInt64(s, 2);
+            while (num_bytes) {
+              --num_bytes;
+              if (curr >= dim) {
+                NaClLog(LOG_ERROR, "size overflow in 'R' int parameter\n");
+                return false;
+              }
+              arg->arrays.carr[curr] = val & 0xff;
+              ++curr;
+              val >>= 8;
+            }
           }
         }
+
         if (curr != dim) {
            NaClLog(LOG_ERROR, "size mismatch in 'R' parameter\n");
            return false;
