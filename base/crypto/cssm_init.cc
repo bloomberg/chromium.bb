@@ -7,6 +7,7 @@
 #include <Security/SecBase.h>
 
 #include "base/logging.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/singleton.h"
 #include "base/synchronization/lock.h"
 #include "base/sys_string_conversions.h"
@@ -20,6 +21,22 @@
 
 namespace {
 
+void* CSSMMalloc(CSSM_SIZE size, void* alloc_ref) {
+  return malloc(size);
+}
+
+void CSSMFree(void* mem_ptr, void* alloc_ref) {
+  free(mem_ptr);
+}
+
+void* CSSMRealloc(void* ptr, CSSM_SIZE size, void* alloc_ref) {
+  return realloc(ptr, size);
+}
+
+void* CSSMCalloc(uint32 num, CSSM_SIZE size, void* alloc_ref) {
+  return calloc(num, size);
+}
+
 class CSSMInitSingleton {
  public:
   static CSSMInitSingleton* GetInstance() {
@@ -27,10 +44,15 @@ class CSSMInitSingleton {
                      LeakySingletonTraits<CSSMInitSingleton> >::get();
   }
 
-  CSSM_CSP_HANDLE csp_handle() const  { return csp_handle_; }
+  CSSM_CSP_HANDLE csp_handle() const { return csp_handle_; }
+  CSSM_CL_HANDLE cl_handle() const { return cl_handle_; }
+  CSSM_TP_HANDLE tp_handle() const { return tp_handle_; }
 
  private:
-  CSSMInitSingleton() : inited_(false), loaded_(false), csp_handle_(NULL) {
+  CSSMInitSingleton()
+      : inited_(false), csp_loaded_(false), cl_loaded_(false),
+        tp_loaded_(false), csp_handle_(NULL), cl_handle_(NULL),
+        tp_handle_(NULL) {
     static CSSM_VERSION version = {2, 0};
     // TODO(wtc): what should our caller GUID be?
     static const CSSM_GUID test_guid = {
@@ -51,12 +73,41 @@ class CSSMInitSingleton {
       NOTREACHED();
       return;
     }
-    loaded_ = true;
+    csp_loaded_ = true;
+    crtn = CSSM_ModuleLoad(
+        &gGuidAppleX509CL, CSSM_KEY_HIERARCHY_NONE, NULL, NULL);
+    if (crtn) {
+      NOTREACHED();
+      return;
+    }
+    cl_loaded_ = true;
+    crtn = CSSM_ModuleLoad(
+        &gGuidAppleX509TP, CSSM_KEY_HIERARCHY_NONE, NULL, NULL);
+    if (crtn) {
+      NOTREACHED();
+      return;
+    }
+    tp_loaded_ = true;
 
-    crtn = CSSM_ModuleAttach(&gGuidAppleCSP, &version,
-                             &base::kCssmMemoryFunctions, 0,
+    const CSSM_API_MEMORY_FUNCS cssmMemoryFunctions = {
+      CSSMMalloc,
+      CSSMFree,
+      CSSMRealloc,
+      CSSMCalloc,
+      NULL
+    };
+
+    crtn = CSSM_ModuleAttach(&gGuidAppleCSP, &version, &cssmMemoryFunctions, 0,
                              CSSM_SERVICE_CSP, 0, CSSM_KEY_HIERARCHY_NONE,
                              NULL, 0, NULL, &csp_handle_);
+    DCHECK(crtn == CSSM_OK);
+    crtn = CSSM_ModuleAttach(&gGuidAppleX509CL, &version, &cssmMemoryFunctions,
+                             0, CSSM_SERVICE_CL, 0, CSSM_KEY_HIERARCHY_NONE,
+                             NULL, 0, NULL, &cl_handle_);
+    DCHECK(crtn == CSSM_OK);
+    crtn = CSSM_ModuleAttach(&gGuidAppleX509TP, &version, &cssmMemoryFunctions,
+                             0, CSSM_SERVICE_TP, 0, CSSM_KEY_HIERARCHY_NONE,
+                             NULL, 0, NULL, &tp_handle_);
     DCHECK(crtn == CSSM_OK);
   }
 
@@ -66,8 +117,24 @@ class CSSMInitSingleton {
       CSSM_RETURN crtn = CSSM_ModuleDetach(csp_handle_);
       DCHECK(crtn == CSSM_OK);
     }
-    if (loaded_) {
+    if (cl_handle_) {
+      CSSM_RETURN crtn = CSSM_ModuleDetach(cl_handle_);
+      DCHECK(crtn == CSSM_OK);
+    }
+    if (tp_handle_) {
+      CSSM_RETURN crtn = CSSM_ModuleDetach(tp_handle_);
+      DCHECK(crtn == CSSM_OK);
+    }
+    if (csp_loaded_) {
       crtn = CSSM_ModuleUnload(&gGuidAppleCSP, NULL, NULL);
+      DCHECK(crtn == CSSM_OK);
+    }
+    if (cl_loaded_) {
+      crtn = CSSM_ModuleUnload(&gGuidAppleX509CL, NULL, NULL);
+      DCHECK(crtn == CSSM_OK);
+    }
+    if (tp_loaded_) {
+      crtn = CSSM_ModuleUnload(&gGuidAppleX509TP, NULL, NULL);
       DCHECK(crtn == CSSM_OK);
     }
     if (inited_) {
@@ -77,8 +144,12 @@ class CSSMInitSingleton {
   }
 
   bool inited_;  // True if CSSM_Init has been called successfully.
-  bool loaded_;  // True if CSSM_ModuleLoad has been called successfully.
+  bool csp_loaded_;  // True if gGuidAppleCSP has been loaded
+  bool cl_loaded_;  // True if gGuidAppleX509CL has been loaded.
+  bool tp_loaded_;  // True if gGuidAppleX509TP has been loaded.
   CSSM_CSP_HANDLE csp_handle_;
+  CSSM_CL_HANDLE cl_handle_;
+  CSSM_TP_HANDLE tp_handle_;
 
   friend struct DefaultSingletonTraits<CSSMInitSingleton>;
 };
@@ -117,45 +188,44 @@ CSSM_CSP_HANDLE GetSharedCSPHandle() {
   return CSSMInitSingleton::GetInstance()->csp_handle();
 }
 
-void* CSSMMalloc(CSSM_SIZE size, void *alloc_ref) {
-  return malloc(size);
+CSSM_CL_HANDLE GetSharedCLHandle() {
+  return CSSMInitSingleton::GetInstance()->cl_handle();
 }
 
-void CSSMFree(void* mem_ptr, void* alloc_ref) {
-  free(mem_ptr);
+CSSM_TP_HANDLE GetSharedTPHandle() {
+  return CSSMInitSingleton::GetInstance()->tp_handle();
 }
 
-void* CSSMRealloc(void* ptr, CSSM_SIZE size, void* alloc_ref) {
-  return realloc(ptr, size);
+void* CSSMMalloc(CSSM_SIZE size) {
+  return ::CSSMMalloc(size, NULL);
 }
 
-void* CSSMCalloc(uint32 num, CSSM_SIZE size, void* alloc_ref) {
-  return calloc(num, size);
+void CSSMFree(void* ptr) {
+  ::CSSMFree(ptr, NULL);
 }
 
-const CSSM_API_MEMORY_FUNCS kCssmMemoryFunctions = {
-  CSSMMalloc,
-  CSSMFree,
-  CSSMRealloc,
-  CSSMCalloc,
-  NULL
-};
-
-void LogCSSMError(const char *fn_name, CSSM_RETURN err) {
+void LogCSSMError(const char* fn_name, CSSM_RETURN err) {
   if (!err)
     return;
-  CFStringRef cfstr = SecCopyErrorMessageString(err, NULL);
-  if (cfstr) {
-    std::string err_name = SysCFStringRefToUTF8(cfstr);
-    CFRelease(cfstr);
-    LOG(ERROR) << fn_name << " returned " << err << " (" << err_name << ")";
-  } else {
-    LOG(ERROR) << fn_name << " returned " << err;
-  }
+  base::mac::ScopedCFTypeRef<CFStringRef> cfstr(
+      SecCopyErrorMessageString(err, NULL));
+  LOG(ERROR) << fn_name << " returned " << err
+             << " (" << SysCFStringRefToUTF8(cfstr) << ")";
 }
 
 base::Lock& GetMacSecurityServicesLock() {
   return SecurityServicesSingleton::GetInstance()->lock();
+}
+
+ScopedCSSMData::ScopedCSSMData() {
+  memset(&data_, 0, sizeof(data_));
+}
+
+ScopedCSSMData::~ScopedCSSMData() {
+  if (data_.Data) {
+    CSSMFree(data_.Data);
+    data_.Data = NULL;
+  }
 }
 
 }  // namespace base

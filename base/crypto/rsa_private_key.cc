@@ -89,19 +89,12 @@ bool PrivateKeyInfoCodec::Export(std::vector<uint8>* output) {
 
 bool PrivateKeyInfoCodec::ExportPublicKeyInfo(std::vector<uint8>* output) {
   // Create a sequence with the modulus (n) and public exponent (e).
-  std::list<uint8> content;
-  PrependInteger(&public_exponent_[0],
-                 static_cast<int>(public_exponent_.size()),
-                 &content);
-  PrependInteger(&modulus_[0],  static_cast<int>(modulus_.size()), &content);
-  PrependTypeHeaderAndLength(kSequenceTag, content.size(), &content);
-
-  // Copy the sequence with n and e into a buffer.
   std::vector<uint8> bit_string;
-  for (std::list<uint8>::iterator i = content.begin(); i != content.end(); ++i)
-    bit_string.push_back(*i);
-  content.clear();
+  if (!ExportPublicKey(&bit_string))
+    return false;
+
   // Add the sequence as the contents of a bit string.
+  std::list<uint8> content;
   PrependBitString(&bit_string[0], static_cast<int>(bit_string.size()),
                    &content);
 
@@ -110,6 +103,23 @@ bool PrivateKeyInfoCodec::ExportPublicKeyInfo(std::vector<uint8>* output) {
     content.push_front(kRsaAlgorithmIdentifier[i - 1]);
 
   // Finally, wrap everything in a sequence.
+  PrependTypeHeaderAndLength(kSequenceTag, content.size(), &content);
+
+  // Copy everything into the output.
+  output->reserve(content.size());
+  for (std::list<uint8>::iterator i = content.begin(); i != content.end(); ++i)
+    output->push_back(*i);
+
+  return true;
+}
+
+bool PrivateKeyInfoCodec::ExportPublicKey(std::vector<uint8>* output) {
+  // Create a sequence with the modulus (n) and public exponent (e).
+  std::list<uint8> content;
+  PrependInteger(&public_exponent_[0],
+                 static_cast<int>(public_exponent_.size()),
+                 &content);
+  PrependInteger(&modulus_[0],  static_cast<int>(modulus_.size()), &content);
   PrependTypeHeaderAndLength(kSequenceTag, content.size(), &content);
 
   // Copy everything into the output.

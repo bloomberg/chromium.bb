@@ -59,19 +59,15 @@ bool SignatureCreator::Update(const uint8* data_part, int data_part_len) {
 }
 
 bool SignatureCreator::Final(std::vector<uint8>* signature) {
-  CSSM_DATA sig;
-  memset(&sig, 0, sizeof(CSSM_DATA)); // Allow CSSM allocate memory;
-  CSSM_RETURN crtn = CSSM_SignDataFinal(sig_handle_, &sig);
+  ScopedCSSMData sig;
+  CSSM_RETURN crtn = CSSM_SignDataFinal(sig_handle_, sig);
 
   if (crtn) {
     NOTREACHED();
     return false;
   }
 
-  signature->assign(sig.Data, sig.Data + sig.Length);
-  kCssmMemoryFunctions.free_func(sig.Data, NULL); // Release data alloc'd
-                                                  // by CSSM
-
+  signature->assign(sig->Data, sig->Data + sig->Length);
   return true;
 }
 

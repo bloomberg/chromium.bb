@@ -26,14 +26,12 @@ RSAPrivateKey* RSAPrivateKey::Create(uint16 num_bits) {
     return NULL;
   }
 
-  CSSM_KEY public_key;
-  memset(&public_key, 0, sizeof(CSSM_KEY));
   CSSM_DATA label = { 9,
       const_cast<uint8*>(reinterpret_cast<const uint8*>("temp_key")) };
   crtn = CSSM_GenerateKeyPair(cc_handle,
       CSSM_KEYUSE_VERIFY,
       CSSM_KEYATTR_RETURN_DATA | CSSM_KEYATTR_EXTRACTABLE, &label,
-      &public_key, CSSM_KEYUSE_SIGN,
+      result->public_key(), CSSM_KEYUSE_SIGN,
       CSSM_KEYATTR_RETURN_DATA | CSSM_KEYATTR_EXTRACTABLE, &label, NULL,
       result->key());
   CSSM_DeleteContext(cc_handle);
@@ -41,9 +39,6 @@ RSAPrivateKey* RSAPrivateKey::Create(uint16 num_bits) {
     NOTREACHED() << "CSSM_CSP_CreateKeyGenContext failed: " << crtn;
     return NULL;
   }
-
-  // Public key is not needed.
-  CSSM_FreeKey(GetSharedCSPHandle(), NULL, &public_key, CSSM_FALSE);
 
   return result.release();
 }
@@ -106,6 +101,46 @@ RSAPrivateKey* RSAPrivateKey::CreateFromPrivateKeyInfo(
     return NULL;
   }
 
+  // Extract a public key from the private key.
+  // Apple doesn't accept CSSM_KEYBLOB_RAW_FORMAT_X509 as a valid key
+  // format when attempting to generate certs, so use PKCS1 instead.
+  PrivateKeyInfoCodec codec(true);
+  std::vector<uint8> private_key_data;
+  private_key_data.assign(key.KeyData.Data,
+                          key.KeyData.Data + key.KeyData.Length);
+  if (!codec.Import(private_key_data)) {
+    return NULL;
+  }
+  std::vector<uint8> public_key_data;
+  if (!codec.ExportPublicKey(&public_key_data)) {
+    return NULL;
+  }
+
+  CSSM_KEY* public_key = result->public_key();
+  size_t size = public_key_data.size();
+  public_key->KeyData.Data = reinterpret_cast<uint8*>(CSSMMalloc(size));
+  if (!public_key->KeyData.Data) {
+    NOTREACHED() << "CSSMMalloc failed";
+    return NULL;
+  }
+  memcpy(public_key->KeyData.Data, &public_key_data.front(), size);
+  public_key->KeyData.Length = size;
+  public_key->KeyHeader.Format = CSSM_KEYBLOB_RAW_FORMAT_PKCS1;
+  public_key->KeyHeader.HeaderVersion = CSSM_KEYHEADER_VERSION;
+  public_key->KeyHeader.BlobType = CSSM_KEYBLOB_RAW;
+  public_key->KeyHeader.AlgorithmId = CSSM_ALGID_RSA;
+  public_key->KeyHeader.KeyClass = CSSM_KEYCLASS_PUBLIC_KEY;
+  public_key->KeyHeader.KeyAttr = CSSM_KEYATTR_EXTRACTABLE;
+  public_key->KeyHeader.KeyUsage = CSSM_KEYUSE_ANY;
+
+  crtn = CSSM_QueryKeySizeInBits(
+      base::GetSharedCSPHandle(), NULL, public_key, &key_size);
+  if (crtn) {
+    DLOG(ERROR) << "CSSM_QueryKeySizeInBits failed " << crtn;
+    return NULL;
+  }
+  public_key->KeyHeader.LogicalKeySizeInBits = key_size.LogicalKeySizeInBits;
+
   return result.release();
 }
 
@@ -125,6 +160,7 @@ RSAPrivateKey* RSAPrivateKey::FindFromPublicKeyInfo(
 
 RSAPrivateKey::RSAPrivateKey() {
   memset(&key_, 0, sizeof(key_));
+  memset(&public_key_, 0, sizeof(public_key_));
 
   EnsureCSSMInit();
 }
@@ -132,6 +168,9 @@ RSAPrivateKey::RSAPrivateKey() {
 RSAPrivateKey::~RSAPrivateKey() {
   if (key_.KeyData.Data) {
     CSSM_FreeKey(GetSharedCSPHandle(), NULL, &key_, CSSM_FALSE);
+  }
+  if (public_key_.KeyData.Data) {
+    CSSM_FreeKey(GetSharedCSPHandle(), NULL, &public_key_, CSSM_FALSE);
   }
 }
 

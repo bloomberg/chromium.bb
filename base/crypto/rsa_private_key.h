@@ -64,6 +64,10 @@ class PrivateKeyInfoCodec {
   // of the PublicKeyInfo structure to |output|.
   bool ExportPublicKeyInfo(std::vector<uint8>* output);
 
+  // Exports the contents of the integer components to the ASN.1 DER encoding
+  // of the RSAPublicKey structure to |output|.
+  bool ExportPublicKey(std::vector<uint8>* output);
+
   // Parses the ASN.1 DER encoding of the PrivateKeyInfo structure in |input|
   // and populates the integer components with |big_endian_| byte-significance.
   // IMPORTANT NOTE: This is currently *not* security-approved for importing
@@ -215,6 +219,7 @@ class RSAPrivateKey {
   HCRYPTKEY key() { return key_; }
 #elif defined(OS_MACOSX)
   CSSM_KEY_PTR key() { return &key_; }
+  CSSM_KEY_PTR public_key() { return &public_key_; }
 #endif
 
   // Exports the private key to a PKCS #1 PrivateKey block.
@@ -257,6 +262,7 @@ class RSAPrivateKey {
   ScopedHCRYPTKEY key_;
 #elif defined(OS_MACOSX)
   CSSM_KEY key_;
+  CSSM_KEY public_key_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(RSAPrivateKey);
