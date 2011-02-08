@@ -13,6 +13,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/input_method_library.h"
+#include "chrome/browser/chromeos/dom_ui/cros_language_options_handler.h"
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_CHROMEOS)
@@ -42,7 +43,7 @@ TEST(LanguageOptionsHandlerTest, GetInputMethodList) {
 
   chromeos::InputMethodDescriptors descriptors = CreateInputMethodDescriptors();
   scoped_ptr<ListValue> list(
-      LanguageOptionsHandler::GetInputMethodList(descriptors));
+      chromeos::CrosLanguageOptionsHandler::GetInputMethodList(descriptors));
   ASSERT_EQ(4U, list->GetSize());
 
   DictionaryValue* entry = NULL;
@@ -96,7 +97,7 @@ TEST(LanguageOptionsHandlerTest, GetInputMethodList) {
 TEST(LanguageOptionsHandlerTest, GetLanguageList) {
   chromeos::InputMethodDescriptors descriptors = CreateInputMethodDescriptors();
   scoped_ptr<ListValue> list(
-      LanguageOptionsHandler::GetLanguageList(descriptors));
+      chromeos::CrosLanguageOptionsHandler::GetLanguageList(descriptors));
   ASSERT_EQ(6U, list->GetSize());
 
   DictionaryValue* entry = NULL;
