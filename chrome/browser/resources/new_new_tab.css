@@ -81,20 +81,21 @@ html[anim=false] *,
 }
 
 #notification {
+  -webkit-transition: opacity .15s;
   position: relative;
   background-color: hsl(52, 100%, 80%);
   border: 1px solid rgb(211, 211, 211);
   border-radius: 6px;
-  padding: 7px 15px;
-  white-space: nowrap;
-  display: table;
-  margin: 2px auto;
-  font-weight: bold;
-  opacity: 0;
-  pointer-events: none;
-  -webkit-transition: opacity .15s;
-  z-index: 2;
   color: black;
+  display: -webkit-box;
+  font-weight: bold;
+  margin: 2px auto;
+  opacity: 0;
+  padding: 7px 15px;
+  pointer-events: none;
+  white-space: nowrap;
+  width: intrinsic;
+  z-index: 2;
 }
 
 #notification.first-run {
@@ -141,7 +142,6 @@ html[anim=false] *,
 }
 
 #notification > * {
-  display: table-cell;
   max-width: 500px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -162,7 +162,7 @@ html[anim=false] *,
   color: rgb(0, 102, 204);
 }
 
-#notification > span > .blacklist-title {
+#notification > * > .blacklist-title {
   display: inline-block;
   max-width: 30ex;
   overflow: hidden;
