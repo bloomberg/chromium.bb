@@ -5793,7 +5793,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
           and deselect any proxies that have been selected.
         </message>
       </if>
-      <if expr="os == 'linux2'">
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE_PLATFORM" desc="ChromeOS instructions for disabling use of a proxy server.">
+          Go to
+          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
+          Wrench menu &gt; Settings &gt; Under the Hood &gt; Change proxy settings
+          <ph name="END_BOLD">&lt;/strong&gt;</ph>
+          and make sure your configuration is set to &quot;no proxy&quot; or &quot;direct.&quot;
+        </message>
+      </if>
+      <if expr="not pp_ifdef('chromeos') and (os == 'linux2' or os.find('bsd') != -1)">
         <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE_PLATFORM" desc="Linux instructions for disabling use of a proxy server.">
           Go to
           <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
@@ -7238,9 +7247,22 @@ This web page was killed, either because Chrome ran out of memory, or you chose 
           Browsing Data
         </message>
       </if>
-      <message name="IDS_OPTIONS_MANAGED_PREFS" desc="Banner displayed in case there are managed options the user won't be able to change">
-        Some options have been disabled by your IT administrator.
-      </message>
+
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_OPTIONS_MANAGED_PREFS" desc="ChromeOS banner displayed in case there are managed options the user won't be able to change.">
+          Some settings have been disabled by your IT administrator.
+        </message>
+      </if>
+      <if expr="not pp_ifdef('chromeos') and (os == 'darwin' or os == 'linux2' or os.find('bsd') != -1)">
+        <message name="IDS_OPTIONS_MANAGED_PREFS" desc="Mac/Linux banner displayed in case there are managed options the user won't be able to change.">
+          Some preferences have been disabled by your IT administrator.
+        </message>
+      </if>
+      <if expr="os == 'win32'">
+        <message name="IDS_OPTIONS_MANAGED_PREFS" desc="Windows banner displayed in case there are managed options the user won't be able to change.">
+          Some options have been disabled by your IT administrator.
+        </message>
+      </if>
 
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_OPTIONS_IMPORT_DATA_BUTTON" desc="In sentence case: Label for the import data button.">
