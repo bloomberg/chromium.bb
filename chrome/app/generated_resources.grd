@@ -6567,7 +6567,7 @@ This web page was killed, either because Chrome ran out of memory, or you chose 
           Settings
         </message>
       </if>
-      <if expr="os == 'darwin' or os == 'linux2' or os.find('bsd') != -1">
+      <if expr="not pp_ifdef('chromeos') and (os == 'darwin' or os == 'linux2' or os.find('bsd') != -1)">
         <message name="IDS_SETTINGS_TITLE" desc="Title for the settings tab.">
           Preferences
         </message>
