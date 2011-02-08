@@ -68,7 +68,7 @@ void TouchBrowserFrameView::Layout() {
     return;
 
   keyboard_->SetVisible(keyboard_showing_);
-  keyboard_->SetBounds(GetBoundsForReservedArea());
+  keyboard_->SetBoundsRect(GetBoundsForReservedArea());
 }
 
 void TouchBrowserFrameView::FocusWillChange(views::View* focused_before,

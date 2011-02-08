@@ -67,7 +67,7 @@ void TabContentsViewViews::RemoveConstrainedWindow(
 }
 
 void TabContentsViewViews::CreateView(const gfx::Size& initial_size) {
-  SetBounds(gfx::Rect(bounds().origin(), initial_size));
+  SetBoundsRect(gfx::Rect(bounds().origin(), initial_size));
 }
 
 RenderWidgetHostView* TabContentsViewViews::CreateViewForWidget(

@@ -183,7 +183,7 @@ void RenderWidgetHostViewViews::SetSize(const gfx::Size& size) {
   if (requested_size_.width() != width ||
       requested_size_.height() != height) {
     requested_size_ = gfx::Size(width, height);
-    SetBounds(gfx::Rect(x(), y(), width, height));
+    SetBounds(x(), y(), width, height);
     host_->WasResized();
   }
 }

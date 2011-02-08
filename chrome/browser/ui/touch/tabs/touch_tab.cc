@@ -64,7 +64,7 @@ void TouchTab::Paint(gfx::Canvas* canvas) {
 }
 
 void TouchTab::Layout() {
-  gfx::Rect local_bounds = GetLocalBounds(false);
+  gfx::Rect local_bounds = GetContentsBounds();
   TouchTabImage* tab_image = &tab_active;
   TouchTabImage* alpha = &tab_alpha;
   int image_height = alpha->image_l->height();
