@@ -614,6 +614,8 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 
 		case XCB_ENTER_NOTIFY:
 			enter_notify = (xcb_enter_notify_event_t *) event;
+			if (enter_notify->state >= Button1Mask)
+				break;
 			output = x11_compositor_find_output(c, enter_notify->event);
 			notify_pointer_focus(c->base.input_device,
 					     enter_notify->time,
@@ -624,6 +626,8 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 
 		case XCB_LEAVE_NOTIFY:
 			enter_notify = (xcb_enter_notify_event_t *) event;
+			if (enter_notify->state >= Button1Mask)
+				break;
 			notify_pointer_focus(c->base.input_device,
 					     enter_notify->time,
 					     NULL,
