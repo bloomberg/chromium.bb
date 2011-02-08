@@ -569,14 +569,6 @@ class RenderView : public RenderWidget,
       const WebKit::WebURLRequest& request,
       const WebKit::WebURLResponse&);
   virtual void didDisplayInsecureContent(WebKit::WebFrame* frame);
-
-  // We have two didRunInsecureContent's with the same name. That's because
-  // we're in the process of adding an argument and one of them will be correct.
-  // Once the WebKit change is in, the first should be removed the the second
-  // should be tagged with OVERRIDE.
-  virtual void didRunInsecureContent(
-      WebKit::WebFrame* frame,
-      const WebKit::WebSecurityOrigin& origin);
   virtual void didRunInsecureContent(
       WebKit::WebFrame* frame,
       const WebKit::WebSecurityOrigin& origin,

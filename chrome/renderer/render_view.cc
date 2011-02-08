@@ -3762,14 +3762,6 @@ void RenderView::didDisplayInsecureContent(WebFrame* frame) {
   Send(new ViewHostMsg_DidDisplayInsecureContent(routing_id_));
 }
 
-// We have two didRunInsecureContent's with the same name. That's because
-// we're in the process of adding an argument and one of them will be correct.
-// Once the WebKit change is in, the first should be removed.
-void RenderView::didRunInsecureContent(
-    WebFrame* frame, const WebSecurityOrigin& origin) {
-  didRunInsecureContent(frame, origin, GURL());
-}
-
 void RenderView::didRunInsecureContent(
     WebFrame* frame, const WebSecurityOrigin& origin, const WebURL& target) {
   Send(new ViewHostMsg_DidRunInsecureContent(

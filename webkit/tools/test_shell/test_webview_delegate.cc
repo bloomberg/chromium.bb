@@ -941,13 +941,6 @@ void TestWebViewDelegate::didFailResourceLoad(
 void TestWebViewDelegate::didDisplayInsecureContent(WebFrame* frame) {
 }
 
-// We have two didRunInsecureContent's with the same name. That's because
-// we're in the process of adding an argument and one of them will be correct.
-// Once the WebKit change is in, the first should be removed.
-void TestWebViewDelegate::didRunInsecureContent(
-    WebFrame* frame, const WebSecurityOrigin& origin) {
-}
-
 void TestWebViewDelegate::didRunInsecureContent(
     WebFrame* frame, const WebSecurityOrigin& origin, const WebURL& target) {
 }
