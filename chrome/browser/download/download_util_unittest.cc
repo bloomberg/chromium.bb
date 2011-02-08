@@ -42,17 +42,29 @@ const struct {
    "text/plain",
    L"my_download.txt"},
 
-  // Disposition has relative paths, remove them
+  // Disposition has relative paths, remove directory separators
   {"filename=../../../../././../a_file_name.txt",
    "http://www.evil.com/my_download.txt",
    "text/plain",
-   L"a_file_name.txt"},
+   L"_.._.._.._._._.._a_file_name.txt"},
 
-  // Disposition has parent directories, remove them
+  // Disposition has parent directories, remove directory separators
   {"filename=dir1/dir2/a_file_name.txt",
    "http://www.evil.com/my_download.txt",
    "text/plain",
-   L"a_file_name.txt"},
+   L"dir1_dir2_a_file_name.txt"},
+
+  // Disposition has relative paths, remove directory separators
+  {"filename=..\\..\\..\\..\\.\\.\\..\\a_file_name.txt",
+   "http://www.evil.com/my_download.txt",
+   "text/plain",
+   L"_.._.._.._._._.._a_file_name.txt"},
+
+  // Disposition has parent directories, remove directory separators
+  {"filename=dir1\\dir2\\a_file_name.txt",
+   "http://www.evil.com/my_download.txt",
+   "text/plain",
+   L"dir1_dir2_a_file_name.txt"},
 
   // No useful information in disposition or URL, use default
   {"", "http://www.truncated.com/path/", "text/plain",
@@ -183,12 +195,12 @@ const struct {
   {"filename=../foo.txt",
    "http://www.evil.com/../foo.txt",
    "text/plain",
-   L"foo.txt"},
+   L"_foo.txt"},
 
   {"filename=..\\foo.txt",
    "http://www.evil.com/..\\foo.txt",
    "text/plain",
-   L"foo.txt"
+   L"_foo.txt"
   },
 
   {"filename=.hidden",
