@@ -87,6 +87,14 @@ bool DispatchX2Event(RootView* root, XEvent* xev) {
     case XI_ButtonPress:
     case XI_ButtonRelease:
     case XI_Motion: {
+      // Scrolling the wheel generates press/release events with button id's 4
+      // and 5. In case of a wheelscroll, we do not want to show the cursor.
+      XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(cookie->data);
+      if (xievent->detail == 4 || xievent->detail == 5) {
+        MouseWheelEvent wheelev(xev);
+        return root->ProcessMouseWheelEvent(wheelev);
+      }
+
       MouseEvent mouseev(xev);
       if (!touch_event) {
         // Show the cursor, and decide whether or not the cursor should be

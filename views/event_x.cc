@@ -17,6 +17,9 @@ namespace views {
 
 namespace {
 
+// Scroll amount for each wheelscroll event. 53 is also the value used for GTK+.
+static int kWheelScrollAmount = 53;
+
 int GetEventFlagsFromXState(unsigned int state) {
   int flags = 0;
   if (state & ControlMask)
@@ -112,6 +115,16 @@ int GetTouchIDFromXEvent(XEvent* xev) {
 }
 
 #endif  // HAVE_XINPUT2
+
+int GetMouseWheelOffset(XEvent* xev) {
+#if defined(HAVE_XINPUT2)
+  if (xev->type == GenericEvent) {
+    XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(xev->xcookie.data);
+    return xiev->detail == 4 ? kWheelScrollAmount : -kWheelScrollAmount;
+  }
+#endif
+  return xev->xbutton.button == 4 ? kWheelScrollAmount : -kWheelScrollAmount;
+}
 
 Event::EventType GetMouseEventType(XEvent* xev) {
   switch (xev->type) {
@@ -219,8 +232,7 @@ MouseWheelEvent::MouseWheelEvent(XEvent* xev)
     : LocatedEvent(Event::ET_MOUSEWHEEL,
                    GetMouseEventLocation(xev),
                    GetEventFlagsFromXState(xev->xbutton.state)),
-      offset_(xev->xbutton.button == 4 ? 53 : -53) {  // '53' is also the value
-                                                      // used for GTK+.
+      offset_(GetMouseWheelOffset(xev)) {
 }
 
 #if defined(HAVE_XINPUT2)
