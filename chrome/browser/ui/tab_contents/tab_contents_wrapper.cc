@@ -21,7 +21,8 @@ static base::LazyInstance<PropertyAccessor<TabContentsWrapper*> >
 // TabContentsWrapper, public:
 
 TabContentsWrapper::TabContentsWrapper(TabContents* contents)
-    : is_starred_(false),
+    : delegate_(NULL),
+      is_starred_(false),
       tab_contents_(contents) {
   DCHECK(contents);
   // Stash this in the property bag so it can be retrieved without having to

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_TAB_CONTENTS_TAB_CONTENTS_WRAPPER_H_
 #pragma once
 
+#include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -125,6 +126,8 @@ class TabContentsWrapper : public NotificationObserver,
   // be called upon during its execution). As a result, this must come last
   // in the list.
   scoped_ptr<TabContents> tab_contents_;
+
+  DISALLOW_COPY_AND_ASSIGN(TabContentsWrapper);
 };
 
 #endif  // CHROME_BROWSER_UI_TAB_CONTENTS_TAB_CONTENTS_WRAPPER_H_
