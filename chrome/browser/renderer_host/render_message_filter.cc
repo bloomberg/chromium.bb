@@ -68,6 +68,7 @@
 #include "webkit/plugins/npapi/plugin_group.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/webplugin.h"
+#include "webkit/plugins/npapi/webplugininfo.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/plugin_selection_policy.h"
@@ -697,8 +698,11 @@ void RenderMessageFilter::OnGotPluginInfo(
   ContentSetting setting = CONTENT_SETTING_DEFAULT;
   webkit::npapi::WebPluginInfo info_copy = info;
   if (found) {
-    info_copy.enabled = info_copy.enabled &&
-        plugin_service_->PrivatePluginAllowedForURL(info_copy.path, policy_url);
+    // TODO(mpcomplete): The plugin service should do this check. We should
+    // not be calling the PluginList directly.
+    if (!plugin_service_->PrivatePluginAllowedForURL(
+            info_copy.path, policy_url))
+      info_copy.enabled |= webkit::npapi::WebPluginInfo::POLICY_DISABLED;
     std::string resource =
         webkit::npapi::PluginList::Singleton()->GetPluginGroupIdentifier(
             info_copy);

@@ -755,6 +755,41 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
   EXPECT_TRUE(result);
 }
 
+#if defined(OS_WIN) || defined(OS_LINUX)
+#define MAYBE_PluginPrivate PluginPrivate
+#else
+// TODO(mpcomplete): http://crbug.com/29900 need cross platform plugin support.
+#define MAYBE_PluginPrivate DISABLED_PluginPrivate
+#endif
+
+// Tests that private extension plugins are only visible to the extension.
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginPrivate) {
+  FilePath extension_dir =
+      test_data_dir_.AppendASCII("uitest").AppendASCII("plugins_private");
+
+  ExtensionService* service = browser()->profile()->GetExtensionService();
+  const size_t size_before = service->extensions()->size();
+  ASSERT_TRUE(LoadExtension(extension_dir));
+  EXPECT_EQ(size_before + 1, service->extensions()->size());
+
+  // Load the test page through the extension URL, and the plugin should work.
+  const Extension* extension = service->extensions()->back();
+  ui_test_utils::NavigateToURL(browser(),
+      extension->GetResourceURL("test.html"));
+  TabContents* tab = browser()->GetSelectedTabContents();
+  bool result = false;
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      tab->render_view_host(), L"", L"testPluginWorks()", &result));
+  EXPECT_TRUE(result);
+
+  // Now load it through a file URL. The plugin should not load.
+  ui_test_utils::NavigateToURL(browser(),
+      net::FilePathToFileURL(extension_dir.AppendASCII("test.html")));
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      tab->render_view_host(), L"", L"testPluginWorks()", &result));
+  EXPECT_FALSE(result);
+}
+
 // Used to simulate a click on the first button named 'Options'.
 static const wchar_t* jscript_click_option_button =
     L"(function() { "
