@@ -234,6 +234,20 @@ bool URLRequestAutomationJob::IsRedirectResponse(
   return true;
 }
 
+uint64 URLRequestAutomationJob::GetUploadProgress() const {
+  if (request_ && request_->status().is_success()) {
+    // We don't support incremental progress notifications in ChromeFrame. When
+    // we receive a response for the POST request from Chromeframe, it means
+    // that the upload is fully complete.
+    ResourceDispatcherHostRequestInfo* request_info =
+        ResourceDispatcherHost::InfoForRequest(request_);
+    if (request_info) {
+      return request_info->upload_size();
+    }
+  }
+  return 0;
+}
+
 bool URLRequestAutomationJob::MayFilterMessage(const IPC::Message& message,
                                                int* request_id) {
   switch (message.type()) {

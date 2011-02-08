@@ -45,6 +45,7 @@ class URLRequestAutomationJob : public net::URLRequestJob {
   virtual void GetResponseInfo(net::HttpResponseInfo* info);
   virtual int GetResponseCode() const;
   virtual bool IsRedirectResponse(GURL* location, int* http_status_code);
+  virtual uint64 GetUploadProgress() const;
 
   // Peek and process automation messages for URL requests.
   static bool MayFilterMessage(const IPC::Message& message, int* request_id);
