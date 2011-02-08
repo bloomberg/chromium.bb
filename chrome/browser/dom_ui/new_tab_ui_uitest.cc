@@ -18,6 +18,14 @@
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/testing_pref_service.h"
 
+// This tests are failing consistently on "Linux (dbg)" and "Mac (dbg)" bots.
+// See http://crbug.com/72286.
+#ifndef OS_WIN
+#define NavBeforeNTPCommits FAILS_NavBeforeNTPCommits
+#define AboutHangInNTP FAILS_AboutHangInNTP
+#define NTPHasThumbnails FAILS_NTPHasThumbnails
+#endif
+
 class NewTabUITest : public UITest {
  public:
   NewTabUITest() {
