@@ -29,7 +29,8 @@
 #pragma comment(linker, "/MERGE:.rdata=.text")
 
 #include <windows.h>
-#include <Shellapi.h>
+#include <setupapi.h>
+#include <shellapi.h>
 #include <shlwapi.h>
 
 #include "chrome/installer/mini_installer/appid.h"
@@ -506,27 +507,16 @@ bool UnpackBinaryResources(HMODULE module, const wchar_t* base_path,
     return false;
 
   if (::lstrlen(setup_path) > 0) {
-    // Uncompress LZ compressed resource using the existing
-    // program in the system32 folder named 'expand.exe'.
-    wchar_t expand_cmd[MAX_PATH * 3] = {0};
-    if (!SafeStrCopy(expand_cmd, _countof(expand_cmd), UNCOMPRESS_CMD) ||
-        !SafeStrCat(expand_cmd, _countof(expand_cmd), L"\"") ||
-        !SafeStrCat(expand_cmd, _countof(expand_cmd), setup_path) ||
-        !SafeStrCat(expand_cmd, _countof(expand_cmd), L"\" \"") ||
-        !SafeStrCat(expand_cmd, _countof(expand_cmd), setup_dest_path) ||
-        !SafeStrCat(expand_cmd, _countof(expand_cmd), L"\""))
-       return false;
-
-    // If we fail to uncompress the file, exit now and leave the file
-    // behind for postmortem analysis.
-    int exit_code = 0;
-    if (!RunProcessAndWait(NULL, expand_cmd, &exit_code) ||
-        (exit_code != 0))
+    // Uncompress LZ compressed resource. Setup is packed with 'MSCF'
+    // as opposed to old DOS way of 'SZDD'. Hence use SetupInstallFile
+    // instead of LZCopy.
+    // Note that the API will automatically delete the original file
+    // if the extraction was successful.
+    if (!SetupInstallFile(NULL, NULL, setup_path, NULL, setup_dest_path,
+                          SP_COPY_DELETESOURCE | SP_COPY_SOURCE_ABSOLUTE,
+                          NULL, NULL))
       return false;
 
-    // Uncompression was successful, delete the source but it is not critical
-    // if that fails.
-    ::DeleteFile(setup_path);
     if (!SafeStrCopy(setup_path, setup_path_size, setup_dest_path))
       return false;
 

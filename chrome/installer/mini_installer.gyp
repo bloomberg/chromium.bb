@@ -58,6 +58,7 @@
               '"$(VCInstallDir)crt\\src\\intel\\mt_lib\\memset.obj"',
               '"$(VCInstallDir)crt\\src\\intel\\mt_lib\\P4_memset.obj"',
               'shlwapi.lib',
+              'setupapi.lib',
             ],
           },
           'VCManifestTool': {
