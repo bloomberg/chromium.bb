@@ -48,6 +48,7 @@
 #include "chrome/browser/net/blob_url_request_job_factory.h"
 #include "chrome/browser/net/chrome_dns_cert_provenance_checker.h"
 #include "chrome/browser/net/chrome_dns_cert_provenance_checker_factory.h"
+#include "chrome/browser/net/file_system_url_request_job_factory.h"
 #include "chrome/browser/net/metadata_url_request.h"
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
@@ -1551,6 +1552,9 @@ int BrowserMain(const MainFunctionParams& parameters) {
   RegisterExtensionProtocols();
   RegisterMetadataURLRequestHandler();
   RegisterBlobURLRequestJobFactory();
+
+  if (parsed_command_line.HasSwitch(switches::kEnableFileSystemURLScheme))
+    RegisterFileSystemURLRequestJobFactory();
 
   // In unittest mode, this will do nothing.  In normal mode, this will create
   // the global GoogleURLTracker and IntranetRedirectDetector instances, which

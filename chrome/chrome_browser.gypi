@@ -1574,6 +1574,8 @@
         'browser/net/connect_interceptor.h',
         'browser/net/connection_tester.cc',
         'browser/net/connection_tester.h',
+        'browser/net/file_system_url_request_job_factory.cc',
+        'browser/net/file_system_url_request_job_factory.h',
         'browser/net/gaia/token_service.cc',
         'browser/net/gaia/token_service.h',
         'browser/net/load_timing_observer.cc',

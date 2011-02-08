@@ -509,6 +509,9 @@ const char kEnableFastback[]                = "enable-fastback";
 // testing, for example page cycler and layout tests.  See bug 1157243.
 const char kEnableFileCookies[]             = "enable-file-cookies";
 
+// Enable FileSystem API URLs.
+const char kEnableFileSystemURLScheme[]     = "enable-filesystem-url-scheme";
+
 // Enable the in-browser thumbnailing, which is more efficient than the
 // in-renderer thumbnailing, as we can use more information to determine
 // if we need to update thumbnails.

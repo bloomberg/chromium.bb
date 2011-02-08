@@ -18,6 +18,7 @@ const char kChromeUIScheme[] = "chrome";
 const char kDataScheme[] = "data";
 const char kExtensionScheme[] = "chrome-extension";
 const char kFileScheme[] = "file";
+const char kFileSystemScheme[] = "filesystem";
 const char kFtpScheme[] = "ftp";
 const char kGearsScheme[] = "gears";
 const char kHttpScheme[] = "http";

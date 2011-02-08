@@ -20,6 +20,7 @@ extern const char kCrosScheme[];      // The scheme used for ChromeOS.
 extern const char kDataScheme[];
 extern const char kExtensionScheme[];
 extern const char kFileScheme[];
+extern const char kFileSystemScheme[];
 extern const char kFtpScheme[];
 extern const char kGearsScheme[];
 extern const char kHttpScheme[];
