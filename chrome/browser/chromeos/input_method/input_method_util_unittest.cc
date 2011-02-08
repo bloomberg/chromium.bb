@@ -15,7 +15,21 @@
 namespace chromeos {
 namespace input_method {
 
-TEST(InputMethodUtilTest, GetStringUTF8) {
+class InputMethodUtilTest : public testing::Test {
+ public:
+  static void SetUpTestCase() {
+    // Reload the internal maps before running tests, with the stub
+    // libcros enabled, so that test data is loaded properly.
+    ScopedStubCrosEnabler stub_cros_enabler;
+    ReloadInternalMaps();
+  }
+
+ private:
+  // Ensure we always use the stub libcros in each test.
+  ScopedStubCrosEnabler stub_cros_enabler_;
+};
+
+TEST_F(InputMethodUtilTest, GetStringUTF8) {
   EXPECT_EQ("Pinyin input method",
             GetStringUTF8("Pinyin"));
   EXPECT_EQ("Japanese input method (for US Dvorak keyboard)",
@@ -24,14 +38,14 @@ TEST(InputMethodUtilTest, GetStringUTF8) {
             GetStringUTF8("Google Japanese Input (US Dvorak keyboard layout)"));
 }
 
-TEST(InputMethodUtilTest, StringIsSupported) {
+TEST_F(InputMethodUtilTest, StringIsSupported) {
   EXPECT_TRUE(StringIsSupported("Hiragana"));
   EXPECT_TRUE(StringIsSupported("Latin"));
   EXPECT_TRUE(StringIsSupported("Direct input"));
   EXPECT_FALSE(StringIsSupported("####THIS_STRING_IS_NOT_SUPPORTED####"));
 }
 
-TEST(InputMethodUtilTest, NormalizeLanguageCode) {
+TEST_F(InputMethodUtilTest, NormalizeLanguageCode) {
   // TODO(yusukes): test all language codes that IBus provides.
   EXPECT_EQ("ja", NormalizeLanguageCode("ja"));
   EXPECT_EQ("ja", NormalizeLanguageCode("jpn"));
@@ -54,12 +68,12 @@ TEST(InputMethodUtilTest, NormalizeLanguageCode) {
   EXPECT_EQ("sk", NormalizeLanguageCode("slo"));
 }
 
-TEST(InputMethodUtilTest, IsKeyboardLayout) {
+TEST_F(InputMethodUtilTest, IsKeyboardLayout) {
   EXPECT_TRUE(IsKeyboardLayout("xkb:us::eng"));
   EXPECT_FALSE(IsKeyboardLayout("anthy"));
 }
 
-TEST(InputMethodUtilTest, GetLanguageCodeFromDescriptor) {
+TEST_F(InputMethodUtilTest, GetLanguageCodeFromDescriptor) {
   EXPECT_EQ("ja", GetLanguageCodeFromDescriptor(
       InputMethodDescriptor("anthy", "Anthy", "us", "ja")));
   EXPECT_EQ("zh-TW", GetLanguageCodeFromDescriptor(
@@ -78,8 +92,7 @@ TEST(InputMethodUtilTest, GetLanguageCodeFromDescriptor) {
       InputMethodDescriptor("xkb:uk::eng", "United Kingdom", "us", "eng")));
 }
 
-TEST(InputMethodUtilTest, GetKeyboardLayoutName) {
-  ScopedStubCrosEnabler stub_cros_enabler;
+TEST_F(InputMethodUtilTest, GetKeyboardLayoutName) {
   // Unsupported case.
   EXPECT_EQ("", GetKeyboardLayoutName("UNSUPPORTED_ID"));
 
@@ -95,21 +108,19 @@ TEST(InputMethodUtilTest, GetKeyboardLayoutName) {
   EXPECT_EQ("us(colemak)", GetKeyboardLayoutName("xkb:us:colemak:eng"));
 }
 
-TEST(InputMethodUtilTest, GetLanguageCodeFromInputMethodId) {
-  ScopedStubCrosEnabler stub_cros_enabler;
+TEST_F(InputMethodUtilTest, GetLanguageCodeFromInputMethodId) {
   // Make sure that the -CN is added properly.
   EXPECT_EQ("zh-CN", GetLanguageCodeFromInputMethodId("pinyin"));
 }
 
-TEST(InputMethodUtilTest, GetInputMethodDisplayNameFromId) {
+TEST_F(InputMethodUtilTest, GetInputMethodDisplayNameFromId) {
   EXPECT_EQ("Pinyin input method", GetInputMethodDisplayNameFromId("pinyin"));
   EXPECT_EQ("English (United States)",
             GetInputMethodDisplayNameFromId("xkb:us::eng"));
   EXPECT_EQ("", GetInputMethodDisplayNameFromId("nonexistent"));
 }
 
-TEST(InputMethodUtilTest, GetInputMethodDescriptorFromId) {
-  ScopedStubCrosEnabler stub_cros_enabler;
+TEST_F(InputMethodUtilTest, GetInputMethodDescriptorFromId) {
   EXPECT_EQ(NULL, GetInputMethodDescriptorFromId("non_existent"));
 
   const InputMethodDescriptor* descriptor =
@@ -124,11 +135,11 @@ TEST(InputMethodUtilTest, GetInputMethodDescriptorFromId) {
   EXPECT_EQ("zh", descriptor->language_code);
 }
 
-TEST(InputMethodUtilTest, GetLanguageNativeDisplayNameFromCode) {
+TEST_F(InputMethodUtilTest, GetLanguageNativeDisplayNameFromCode) {
   EXPECT_EQ(UTF8ToUTF16("suomi"), GetLanguageNativeDisplayNameFromCode("fi"));
 }
 
-TEST(InputMethodUtilTest, SortLanguageCodesByNames) {
+TEST_F(InputMethodUtilTest, SortLanguageCodesByNames) {
   std::vector<std::string> language_codes;
   // Check if this function can handle an empty list.
   SortLanguageCodesByNames(&language_codes);
@@ -153,7 +164,7 @@ TEST(InputMethodUtilTest, SortLanguageCodesByNames) {
   ASSERT_EQ("t",  language_codes[3]);  // Others
 }
 
-TEST(LanguageConfigModelTest, SortInputMethodIdsByNamesInternal) {
+TEST_F(InputMethodUtilTest, SortInputMethodIdsByNamesInternal) {
   std::map<std::string, std::string> id_to_language_code_map;
   id_to_language_code_map.insert(std::make_pair("mozc", "ja"));
   id_to_language_code_map.insert(std::make_pair("mozc-jp", "ja"));
@@ -193,7 +204,7 @@ TEST(LanguageConfigModelTest, SortInputMethodIdsByNamesInternal) {
   ASSERT_EQ("mozc-jp", input_method_ids[3]);         // Japanese
 }
 
-TEST(LanguageConfigModelTest, GetInputMethodIdsForLanguageCode) {
+TEST_F(InputMethodUtilTest, GetInputMethodIdsForLanguageCode) {
   std::multimap<std::string, std::string> language_code_to_ids_map;
   language_code_to_ids_map.insert(std::make_pair("ja", "mozc"));
   language_code_to_ids_map.insert(std::make_pair("ja", "mozc-jp"));

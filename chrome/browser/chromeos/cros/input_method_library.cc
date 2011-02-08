@@ -63,6 +63,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
         enable_auto_ime_shutdown_(true),
         should_change_input_method_(false),
         ibus_daemon_process_id_(0),
+        initialized_successfully_(false),
         candidate_window_controller_(NULL) {
     current_input_method_ =
         input_method::GetHardwareInputMethodDescriptor();
@@ -76,6 +77,31 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     // details.
     notification_registrar_.Add(this, NotificationType::APP_TERMINATING,
                                 NotificationService::AllSources());
+  }
+
+  // Initializes the object. On success, returns true on and sets
+  // initialized_successfully_ to true.
+  //
+  // Note that we start monitoring input method status in here in Init()
+  // to avoid a potential race. If we start the monitoring right after
+  // starting ibus-daemon, there is a higher chance of a race between
+  // Chrome and ibus-daemon to occur.
+  bool Init() {
+    DCHECK(!initialized_successfully_) << "Already initialized";
+
+   if (!CrosLibrary::Get()->EnsureLoaded())
+     return false;
+   input_method_status_connection_ = chromeos::MonitorInputMethodStatus(
+       this,
+       &InputMethodChangedHandler,
+       &RegisterPropertiesHandler,
+       &UpdatePropertyHandler,
+       &ConnectionChangeHandler);
+   if (!input_method_status_connection_)
+     return false;
+
+   initialized_successfully_ = true;
+   return true;
   }
 
   virtual ~InputMethodLibraryImpl() {
@@ -117,50 +143,47 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   }
 
   virtual InputMethodDescriptors* GetSupportedInputMethods() {
-    InputMethodDescriptors* result = NULL;
-    // The connection does not need to be alive, but it does need to be created.
-    if (EnsureLoadedAndStarted()) {
-      result = chromeos::GetSupportedInputMethods(
-          input_method_status_connection_);
-    }
-    if (!result || result->empty()) {
-      delete result;
-      result = new InputMethodDescriptors;
+    if (!initialized_successfully_) {
+      // If initialization was failed, return the hardware input method,
+      // as this function is guaranteed to return at least one descriptor.
+      InputMethodDescriptors* result = new InputMethodDescriptors;
       result->push_back(input_method::GetHardwareInputMethodDescriptor());
+      return result;
     }
-    return result;
+
+    // This never returns NULL.
+    return chromeos::GetSupportedInputMethodDescriptors();
   }
 
   virtual void ChangeInputMethod(const std::string& input_method_id) {
-    if (EnsureLoadedAndStarted()) {
-      // If the input method daemon is not running and the specified input
-      // method is a keyboard layout, switch the keyboard directly.
-      if (ibus_daemon_process_id_ == 0 &&
-          chromeos::input_method::IsKeyboardLayout(input_method_id)) {
-        // We shouldn't use SetCurrentKeyboardLayoutByName() here. See
-        // comments at ChangeCurrentInputMethod() for details.
-        ChangeCurrentInputMethodFromId(input_method_id);
-      } else {
-        // Otherwise, start the input method daemon, and change the input
-        // method via the damon.
-        StartInputMethodDaemon();
-        // ChangeInputMethodViaIBus() fails if the IBus daemon is not
-        // ready yet. In this case, we'll defer the input method change
-        // until the daemon is ready.
-        if (!ChangeInputMethodViaIBus(input_method_id)) {
-          pending_input_method_id_ = input_method_id;
-        }
+    // If the input method daemon is not running and the specified input
+    // method is a keyboard layout, switch the keyboard directly.
+    if (ibus_daemon_process_id_ == 0 &&
+        chromeos::input_method::IsKeyboardLayout(input_method_id)) {
+      // We shouldn't use SetCurrentKeyboardLayoutByName() here. See
+      // comments at ChangeCurrentInputMethod() for details.
+      ChangeCurrentInputMethodFromId(input_method_id);
+    } else {
+      // Otherwise, start the input method daemon, and change the input
+      // method via the damon.
+      StartInputMethodDaemon();
+      // ChangeInputMethodViaIBus() fails if the IBus daemon is not
+      // ready yet. In this case, we'll defer the input method change
+      // until the daemon is ready.
+      if (!ChangeInputMethodViaIBus(input_method_id)) {
+        pending_input_method_id_ = input_method_id;
       }
     }
   }
 
   virtual void SetImePropertyActivated(const std::string& key,
                                        bool activated) {
+    if (!initialized_successfully_)
+      return;
+
     DCHECK(!key.empty());
-    if (EnsureLoadedAndStarted()) {
-      chromeos::SetImePropertyActivated(
-          input_method_status_connection_, key.c_str(), activated);
-    }
+    chromeos::SetImePropertyActivated(
+        input_method_status_connection_, key.c_str(), activated);
   }
 
   virtual bool InputMethodIsActivated(const std::string& input_method_id) {
@@ -177,14 +200,13 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   virtual bool GetImeConfig(const std::string& section,
                             const std::string& config_name,
                             ImeConfigValue* out_value) {
-    bool success = false;
-    if (EnsureLoadedAndStarted()) {
-      success = chromeos::GetImeConfig(input_method_status_connection_,
-                                       section.c_str(),
-                                       config_name.c_str(),
-                                       out_value);
-    }
-    return success;
+    if (!initialized_successfully_)
+      return false;
+
+    return chromeos::GetImeConfig(input_method_status_connection_,
+                                  section.c_str(),
+                                  config_name.c_str(),
+                                  out_value);
   }
 
   virtual bool SetImeConfig(const std::string& section,
@@ -231,10 +253,10 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   }
 
   virtual std::string GetKeyboardOverlayId(const std::string& input_method_id) {
-    if (CrosLibrary::Get()->EnsureLoaded()) {
-      return chromeos::GetKeyboardOverlayId(input_method_id);
-    }
-    return "";
+    if (!initialized_successfully_)
+      return "";
+
+    return chromeos::GetKeyboardOverlayId(input_method_id);
   }
 
  private:
@@ -248,22 +270,20 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
                                    const ImeConfigValue& value) {
     if (section == language_prefs::kGeneralSectionName &&
         config_name == language_prefs::kPreloadEnginesConfigName) {
-      if (EnsureLoadedAndStarted()) {
-        // If there is only one input method which is a keyboard layout,
-        // we don't start the input method processes.  When
-        // |defer_ime_startup_| is true, we don't start it either.
-        if ((value.type == ImeConfigValue::kValueTypeStringList &&
-              value.string_list_value.size() == 1 &&
-              chromeos::input_method::IsKeyboardLayout(
-                  value.string_list_value[0])) ||
-            defer_ime_startup_) {
-          // Change the keyboard layout per the only one input method now
-          // available. We shouldn't use SetCurrentKeyboardLayoutByName()
-          // here. See comments at ChangeCurrentInputMethod() for details.
-          ChangeCurrentInputMethodFromId(value.string_list_value[0]);
-        } else {
-          StartInputMethodDaemon();
-        }
+      // If there is only one input method which is a keyboard layout,
+      // we don't start the input method processes.  When
+      // |defer_ime_startup_| is true, we don't start it either.
+      if ((value.type == ImeConfigValue::kValueTypeStringList &&
+           value.string_list_value.size() == 1 &&
+           chromeos::input_method::IsKeyboardLayout(
+               value.string_list_value[0])) ||
+          defer_ime_startup_) {
+        // Change the keyboard layout per the only one input method now
+        // available. We shouldn't use SetCurrentKeyboardLayoutByName()
+        // here. See comments at ChangeCurrentInputMethod() for details.
+        ChangeCurrentInputMethodFromId(value.string_list_value[0]);
+      } else {
+        StartInputMethodDaemon();
       }
     }
   }
@@ -272,25 +292,23 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   // and input method configuration being updated.
   // See also: MaybeStartInputMethodDaemon().
   void MaybeStopInputMethodDaemon(const std::string& section,
-                                     const std::string& config_name,
-                                     const ImeConfigValue& value) {
+                                  const std::string& config_name,
+                                  const ImeConfigValue& value) {
     if (section == language_prefs::kGeneralSectionName &&
         config_name == language_prefs::kPreloadEnginesConfigName) {
-      if (EnsureLoadedAndStarted()) {
-        // If there is only one input method which is a keyboard layout,
-        // and |enable_auto_ime_shutdown_| is true, we'll stop the input
-        // method processes.
-        if (value.type == ImeConfigValue::kValueTypeStringList &&
-            value.string_list_value.size() == 1 &&
-            chromeos::input_method::IsKeyboardLayout(
-                value.string_list_value[0]) &&
-            enable_auto_ime_shutdown_) {
-          StopInputMethodDaemon();
-          // Change the keyboard layout per the only one input method now
-          // available. We shouldn't use SetCurrentKeyboardLayoutByName()
-          // here. See comments at ChangeCurrentInputMethod() for details.
-          ChangeCurrentInputMethodFromId(value.string_list_value[0]);
-        }
+      // If there is only one input method which is a keyboard layout,
+      // and |enable_auto_ime_shutdown_| is true, we'll stop the input
+      // method processes.
+      if (value.type == ImeConfigValue::kValueTypeStringList &&
+          value.string_list_value.size() == 1 &&
+          chromeos::input_method::IsKeyboardLayout(
+              value.string_list_value[0]) &&
+          enable_auto_ime_shutdown_) {
+        StopInputMethodDaemon();
+        // Change the keyboard layout per the only one input method now
+        // available. We shouldn't use SetCurrentKeyboardLayoutByName()
+        // here. See comments at ChangeCurrentInputMethod() for details.
+        ChangeCurrentInputMethodFromId(value.string_list_value[0]);
       }
     }
   }
@@ -301,7 +319,9 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   // true if the current engine is switched to |input_method_id| or the
   // first one.
   bool ChangeInputMethodViaIBus(const std::string& input_method_id) {
-    DCHECK(EnsureLoadedAndStarted());
+    if (!initialized_successfully_)
+      return false;
+
     std::string input_method_id_to_switch = input_method_id;
 
     if (!InputMethodIsActivated(input_method_id)) {
@@ -335,40 +355,41 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   // backend starts, we use a timer to periodically attempt to send the
   // config data to the config backend.
   void FlushImeConfig() {
+    if (!initialized_successfully_)
+      return;
+
     bool active_input_methods_are_changed = false;
-    if (EnsureLoadedAndStarted()) {
-      InputMethodConfigRequests::iterator iter =
-          pending_config_requests_.begin();
-      while (iter != pending_config_requests_.end()) {
-        const std::string& section = iter->first.first;
-        const std::string& config_name = iter->first.second;
-        const ImeConfigValue& value = iter->second;
-        if (chromeos::SetImeConfig(input_method_status_connection_,
-                                   section.c_str(),
-                                   config_name.c_str(),
-                                   value)) {
-          // Check if it's a change in active input methods.
-          if (config_name == language_prefs::kPreloadEnginesConfigName) {
-            active_input_methods_are_changed = true;
-            VLOG(1) << "Updated preload_engines: " << value.ToString();
-          }
-          // Successfully sent. Remove the command and proceed to the next one.
-          pending_config_requests_.erase(iter++);
-        } else {
-          // If SetImeConfig() fails, subsequent calls will likely fail.
-          break;
-        }
-      }
-      if (pending_config_requests_.empty()) {
-        // Calls to ChangeInputMethod() will fail if the input method has not
-        // yet been added to preload_engines.  As such, the call is deferred
-        // until after all config values have been sent to the IME process.
-        if (should_change_input_method_ && !pending_input_method_id_.empty()) {
-          ChangeInputMethodViaIBus(pending_input_method_id_);
-          pending_input_method_id_ = "";
-          should_change_input_method_ = false;
+    InputMethodConfigRequests::iterator iter =
+        pending_config_requests_.begin();
+    while (iter != pending_config_requests_.end()) {
+      const std::string& section = iter->first.first;
+      const std::string& config_name = iter->first.second;
+      const ImeConfigValue& value = iter->second;
+      if (chromeos::SetImeConfig(input_method_status_connection_,
+                                 section.c_str(),
+                                 config_name.c_str(),
+                                 value)) {
+        // Check if it's a change in active input methods.
+        if (config_name == language_prefs::kPreloadEnginesConfigName) {
           active_input_methods_are_changed = true;
+          VLOG(1) << "Updated preload_engines: " << value.ToString();
         }
+        // Successfully sent. Remove the command and proceed to the next one.
+        pending_config_requests_.erase(iter++);
+      } else {
+        // If SetImeConfig() fails, subsequent calls will likely fail.
+        break;
+      }
+    }
+    if (pending_config_requests_.empty()) {
+      // Calls to ChangeInputMethod() will fail if the input method has not
+      // yet been added to preload_engines.  As such, the call is deferred
+      // until after all config values have been sent to the IME process.
+      if (should_change_input_method_ && !pending_input_method_id_.empty()) {
+        ChangeInputMethodViaIBus(pending_input_method_id_);
+        pending_input_method_id_ = "";
+        should_change_input_method_ = false;
+        active_input_methods_are_changed = true;
       }
     }
 
@@ -487,27 +508,6 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     }
   }
 
-  // Ensures that the input method status monitoring is started.
-  bool EnsureStarted() {
-    if (!input_method_status_connection_) {
-      input_method_status_connection_ = chromeos::MonitorInputMethodStatus(
-          this,
-          &InputMethodChangedHandler,
-          &RegisterPropertiesHandler,
-          &UpdatePropertyHandler,
-          &ConnectionChangeHandler);
-    }
-    return true;
-  }
-
-  // Ensures that the libcros is loaded and the input method status
-  // monitoring is started. This function needs to be called where we use
-  // libcros functions with |input_method_status_connection_|.
-  bool EnsureLoadedAndStarted() {
-    return CrosLibrary::Get()->EnsureLoaded() &&
-           EnsureStarted();
-  }
-
   // Changes the current input method from the given input method
   // descriptor.  This function updates states like current_input_method_
   // and notifies observers about the change (that will update the
@@ -614,6 +614,11 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
 
   // Launches input method daemon if these are not yet running.
   void MaybeLaunchInputMethodDaemon() {
+    // CandidateWindowController requires libcros to be loaded. Besides,
+    // launching ibus-daemon without libcros loaded doesn't make sense.
+    if (!initialized_successfully_)
+      return;
+
     if (!should_launch_ime_) {
       return;
     }
@@ -654,6 +659,9 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   // called from MaybeStopInputMethodDaemon(), except one case where we
   // stop the input method daemon at Chrome shutdown in Observe().
   void StopInputMethodDaemon() {
+    if (!initialized_successfully_)
+      return;
+
     should_launch_ime_ = false;
     if (ibus_daemon_process_id_) {
       if (!chromeos::StopInputMethodProcess(input_method_status_connection_)) {
@@ -742,6 +750,11 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   // The process id of the IBus daemon. 0 if it's not running. The process
   // ID 0 is not used in Linux, hence it's safe to use 0 for this purpose.
   int ibus_daemon_process_id_;
+
+  // True if initialization is successfully done, meaning that libcros is
+  // loaded and input method status monitoring is started. This value
+  // should be checked where we call libcros functions.
+  bool initialized_successfully_;
 
   // The candidate window.
   scoped_ptr<CandidateWindowController> candidate_window_controller_;
@@ -1045,10 +1058,15 @@ class InputMethodLibraryStubImpl : public InputMethodLibrary {
 
 // static
 InputMethodLibrary* InputMethodLibrary::GetImpl(bool stub) {
-  if (stub)
+  if (stub) {
     return new InputMethodLibraryStubImpl();
-  else
-    return new InputMethodLibraryImpl();
+  } else {
+    InputMethodLibraryImpl* impl = new InputMethodLibraryImpl();
+    if (!impl->Init()) {
+      LOG(ERROR) << "Failed to initialize InputMethodLibraryImpl";
+    }
+    return impl;
+  }
 }
 
 }  // namespace chromeos

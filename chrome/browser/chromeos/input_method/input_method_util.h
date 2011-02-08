@@ -164,6 +164,10 @@ InputMethodDescriptor GetHardwareInputMethodDescriptor();
 // as the fallback, when there is no other choice.
 InputMethodDescriptor GetFallbackInputMethodDescriptor();
 
+// This function should be called when Chrome's application locale is
+// changed, so that the internal maps of this library is reloaded.
+void OnLocaleChanged();
+
 // DO NOT USE Functions below. These are only exported for unit tests.
 void SortInputMethodIdsByNamesInternal(
     const std::map<std::string, std::string>& id_to_language_code_map,
@@ -175,7 +179,7 @@ bool GetInputMethodIdsFromLanguageCodeInternal(
     InputMethodType type,
     std::vector<std::string>* out_input_method_ids);
 
-void OnLocaleChanged();
+void ReloadInternalMaps();
 
 }  // namespace input_method
 }  // namespace chromeos

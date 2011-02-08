@@ -607,8 +607,12 @@ InputMethodDescriptor GetFallbackInputMethodDescriptor() {
   return InputMethodDescriptor("xkb:us::eng", "USA", "us", "eng");
 }
 
-void OnLocaleChanged() {
+void ReloadInternalMaps() {
   IdMaps::GetInstance()->ReloadMaps();
+}
+
+void OnLocaleChanged() {
+  ReloadInternalMaps();
 }
 
 }  // namespace input_method
