@@ -3,7 +3,7 @@
 #include "winres.h"
 
 #ifdef APSTUDIO_INVOKED
-# error Don't open this in the GUI, it'll be massacred on save. Don't do it.
+# error Do not open this in the GUI, it will be massacred on save. Do not do it.
 #endif // APSTUDIO_INVOKED
 
 /////////////////////////////////////////////////////////////////////////////
