@@ -201,7 +201,8 @@ void ContentSettingImageView::PaintBackground(gfx::Canvas* canvas) {
   SkPaint paint;
   paint.setShader(gfx::CreateGradientShader(kEdgeThickness,
                   height() - (2 * kEdgeThickness),
-                  kTopBoxColor, kBottomBoxColor))->safeUnref();
+                  kTopBoxColor, kBottomBoxColor));
+  SkSafeUnref(paint.getShader());
   SkRect color_rect;
   color_rect.iset(0, 0, width() - 1, height() - 1);
   canvas->AsCanvasSkia()->drawRoundRect(color_rect, kBoxCornerRadius,
