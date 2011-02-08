@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -109,13 +109,18 @@ void Unmap(PP_Resource resource) {
     object->Unmap();
 }
 
-const PPB_Buffer_Dev ppb_buffer = {
+const PPB_Buffer_Dev buffer_interface = {
   &Create,
   &IsBuffer,
   &Describe,
   &Map,
   &Unmap,
 };
+
+InterfaceProxy* CreateBufferProxy(Dispatcher* dispatcher,
+                                  const void* target_interface) {
+  return new PPB_Buffer_Proxy(dispatcher, target_interface);
+}
 
 }  // namespace
 
@@ -127,12 +132,16 @@ PPB_Buffer_Proxy::PPB_Buffer_Proxy(Dispatcher* dispatcher,
 PPB_Buffer_Proxy::~PPB_Buffer_Proxy() {
 }
 
-const void* PPB_Buffer_Proxy::GetSourceInterface() const {
-  return &ppb_buffer;
-}
-
-InterfaceID PPB_Buffer_Proxy::GetInterfaceId() const {
-  return INTERFACE_ID_PPB_BUFFER;
+// static
+const InterfaceProxy::Info* PPB_Buffer_Proxy::GetInfo() {
+  static const Info info = {
+    &buffer_interface,
+    PPB_BUFFER_DEV_INTERFACE,
+    INTERFACE_ID_PPB_BUFFER,
+    false,
+    &CreateBufferProxy,
+  };
+  return &info;
 }
 
 bool PPB_Buffer_Proxy::OnMessageReceived(const IPC::Message& msg) {

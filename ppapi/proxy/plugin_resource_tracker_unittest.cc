@@ -45,11 +45,10 @@ class PluginResourceTrackerTest : public PluginProxyTest {
 };
 
 TEST_F(PluginResourceTrackerTest, PluginResourceForHostResource) {
-  PP_Instance instance = 0x1234;
   PP_Resource host_resource = 0x5678;
 
   HostResource serialized;
-  serialized.SetHostResource(instance, host_resource);
+  serialized.SetHostResource(pp_instance(), host_resource);
 
   // When we haven't added an object, the return value should be 0.
   EXPECT_EQ(0, tracker().PluginResourceForHostResource(serialized));

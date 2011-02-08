@@ -123,7 +123,7 @@ int32_t GetBoundSurfaces(PP_Resource context,
 }
 
 
-const PPB_Context3D_Dev ppb_context_3d = {
+const PPB_Context3D_Dev context_3d_interface = {
   &Create,
   &IsContext3D,
   &GetAttrib,
@@ -155,6 +155,11 @@ gpu::CommandBuffer::State GPUStateFromPPState(
 // Size of the transfer buffer.
 const int32 kCommandBufferSize = 1024 * 1024;
 const int32 kTransferBufferSize = 1024 * 1024;
+
+InterfaceProxy* CreateContext3DProxy(Dispatcher* dispatcher,
+                                     const void* target_interface) {
+  return new PPB_Context3D_Proxy(dispatcher, target_interface);
+}
 
 }  // namespace
 
@@ -446,19 +451,23 @@ PPB_Context3D_Proxy::PPB_Context3D_Proxy(Dispatcher* dispatcher,
 PPB_Context3D_Proxy::~PPB_Context3D_Proxy() {
 }
 
+// static
+const InterfaceProxy::Info* PPB_Context3D_Proxy::GetInfo() {
+  static const Info info = {
+    &context_3d_interface,
+    PPB_CONTEXT_3D_DEV_INTERFACE,
+    INTERFACE_ID_PPB_CONTEXT_3D,
+    false,
+    &CreateContext3DProxy,
+  };
+  return &info;
+}
+
 const PPB_Context3DTrusted_Dev*
 PPB_Context3D_Proxy::ppb_context_3d_trusted() const {
   return static_cast<const PPB_Context3DTrusted_Dev*>(
       dispatcher()->GetLocalInterface(
           PPB_CONTEXT_3D_TRUSTED_DEV_INTERFACE));
-}
-
-const void* PPB_Context3D_Proxy::GetSourceInterface() const {
-  return &ppb_context_3d;
-}
-
-InterfaceID PPB_Context3D_Proxy::GetInterfaceId() const {
-  return INTERFACE_ID_PPB_CONTEXT_3D;
 }
 
 bool PPB_Context3D_Proxy::OnMessageReceived(const IPC::Message& msg) {

@@ -74,14 +74,14 @@ class PPB_Context3D_Proxy : public InterfaceProxy {
   PPB_Context3D_Proxy(Dispatcher* dispatcher, const void* target_interface);
   virtual ~PPB_Context3D_Proxy();
 
+  static const Info* GetInfo();
+
   const PPB_Context3D_Dev* ppb_context_3d_target() const {
     return reinterpret_cast<const PPB_Context3D_Dev*>(target_interface());
   }
   const PPB_Context3DTrusted_Dev* ppb_context_3d_trusted() const;
 
   // InterfaceProxy implementation.
-  virtual const void* GetSourceInterface() const;
-  virtual InterfaceID GetInterfaceId() const;
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
  private:

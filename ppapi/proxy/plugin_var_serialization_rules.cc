@@ -4,6 +4,7 @@
 
 #include "ppapi/proxy/plugin_var_serialization_rules.h"
 
+#include "base/logging.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_var_tracker.h"
 
@@ -42,8 +43,11 @@ PP_Var PluginVarSerializationRules::BeginReceiveCallerOwned(
     return ret;
   }
 
-  if (var.type == PP_VARTYPE_OBJECT)
-    return var_tracker_->TrackObjectWithNoReference(var, dispatcher);
+  if (var.type == PP_VARTYPE_OBJECT) {
+    DCHECK(dispatcher->IsPlugin());
+    return var_tracker_->TrackObjectWithNoReference(
+        var, static_cast<PluginDispatcher*>(dispatcher));
+  }
 
   return var;
 }
@@ -85,7 +89,9 @@ PP_Var PluginVarSerializationRules::ReceivePassRef(const PP_Var& var,
   // folded in to its set of refs it maintains (with one ref representing all
   // fo them in the browser).
   if (var.type == PP_VARTYPE_OBJECT) {
-    return var_tracker_->ReceiveObjectPassRef(var, dispatcher);
+    DCHECK(dispatcher->IsPlugin());
+    return var_tracker_->ReceiveObjectPassRef(
+        var, static_cast<PluginDispatcher*>(dispatcher));
   }
 
   // Other types are unchanged.
@@ -124,8 +130,10 @@ void PluginVarSerializationRules::EndSendPassRef(const PP_Var& var,
   // The var we have in our inner class has been converted to a host object
   // by BeginSendPassRef. This means it's not a normal var valid in the plugin,
   // so we need to use the special ReleaseHostObject.
-  if (var.type == PP_VARTYPE_OBJECT)
-    var_tracker_->ReleaseHostObject(dispatcher, var);
+  if (var.type == PP_VARTYPE_OBJECT) {
+    var_tracker_->ReleaseHostObject(
+        static_cast<PluginDispatcher*>(dispatcher), var);
+  }
 }
 
 void PluginVarSerializationRules::ReleaseObjectRef(const PP_Var& var) {

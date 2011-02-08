@@ -98,13 +98,18 @@ int32_t SwapBuffers(PP_Resource surface_id,
   return PP_ERROR_WOULDBLOCK;
 }
 
-const PPB_Surface3D_Dev ppb_surface_3d = {
+const PPB_Surface3D_Dev surface_3d_interface = {
   &Create,
   &IsSurface3D,
   &SetAttrib,
   &GetAttrib,
   &SwapBuffers
 };
+
+InterfaceProxy* CreateSurface3DProxy(Dispatcher* dispatcher,
+                                     const void* target_interface) {
+  return new PPB_Surface3D_Proxy(dispatcher, target_interface);
+}
 
 }  // namespace
 
@@ -117,12 +122,16 @@ PPB_Surface3D_Proxy::PPB_Surface3D_Proxy(Dispatcher* dispatcher,
 PPB_Surface3D_Proxy::~PPB_Surface3D_Proxy() {
 }
 
-const void* PPB_Surface3D_Proxy::GetSourceInterface() const {
-  return &ppb_surface_3d;
-}
-
-InterfaceID PPB_Surface3D_Proxy::GetInterfaceId() const {
-  return INTERFACE_ID_PPB_SURFACE_3D;
+// static
+const InterfaceProxy::Info* PPB_Surface3D_Proxy::GetInfo() {
+  static const Info info = {
+    &surface_3d_interface,
+    PPB_SURFACE_3D_DEV_INTERFACE,
+    INTERFACE_ID_PPB_SURFACE_3D,
+    false,
+    &CreateSurface3DProxy,
+  };
+  return &info;
 }
 
 bool PPB_Surface3D_Proxy::OnMessageReceived(const IPC::Message& msg) {

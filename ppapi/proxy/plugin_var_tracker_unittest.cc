@@ -69,8 +69,8 @@ TEST_F(PluginVarTrackerTest, GetHostObject) {
 
   // Round-trip through the tracker to make sure the host object comes out the
   // other end.
-  PP_Var plugin_object = var_tracker().ReceiveObjectPassRef(host_object,
-                                                            &sink());
+  PP_Var plugin_object = var_tracker().ReceiveObjectPassRef(
+      host_object, plugin_dispatcher());
   PP_Var host_object2 = var_tracker().GetHostObject(plugin_object);
   EXPECT_EQ(PP_VARTYPE_OBJECT, host_object2.type);
   EXPECT_EQ(host_object.value.as_id, host_object2.value.as_id);
@@ -82,16 +82,16 @@ TEST_F(PluginVarTrackerTest, ReceiveObjectPassRef) {
   PP_Var host_object = MakeObject(12345);
 
   // Receive the object, we should have one ref and no messages.
-  PP_Var plugin_object = var_tracker().ReceiveObjectPassRef(host_object,
-                                                            &sink());
+  PP_Var plugin_object = var_tracker().ReceiveObjectPassRef(
+      host_object, plugin_dispatcher());
   EXPECT_EQ(0u, sink().message_count());
   EXPECT_EQ(1, var_tracker().GetRefCountForObject(plugin_object));
   EXPECT_EQ(0,
       var_tracker().GetTrackedWithNoReferenceCountForObject(plugin_object));
 
   // Receive the same object again, we should get the same plugin ID out.
-  PP_Var plugin_object2 = var_tracker().ReceiveObjectPassRef(host_object,
-                                                             &sink());
+  PP_Var plugin_object2 = var_tracker().ReceiveObjectPassRef(
+      host_object, plugin_dispatcher());
   EXPECT_EQ(plugin_object.value.as_id, plugin_object2.value.as_id);
   EXPECT_EQ(2, var_tracker().GetRefCountForObject(plugin_object));
   EXPECT_EQ(0,
@@ -117,9 +117,10 @@ TEST_F(PluginVarTrackerTest, FreeTrackedAndReferencedObject) {
   PP_Var host_object = MakeObject(12345);
 
   // Phase one: First receive via a "pass ref", then a tracked with no ref.
-  PP_Var plugin_var = var_tracker().ReceiveObjectPassRef(host_object, &sink());
-  PP_Var plugin_var2 =
-      var_tracker().TrackObjectWithNoReference(host_object, &sink());
+  PP_Var plugin_var = var_tracker().ReceiveObjectPassRef(
+      host_object, plugin_dispatcher());
+  PP_Var plugin_var2 = var_tracker().TrackObjectWithNoReference(
+      host_object, plugin_dispatcher());
   EXPECT_EQ(plugin_var.value.as_id, plugin_var2.value.as_id);
   EXPECT_EQ(1, var_tracker().GetRefCountForObject(plugin_var));
   EXPECT_EQ(1,
@@ -138,8 +139,10 @@ TEST_F(PluginVarTrackerTest, FreeTrackedAndReferencedObject) {
 
   // Phase two: Receive via a tracked, then get an addref.
   sink().ClearMessages();
-  plugin_var = var_tracker().TrackObjectWithNoReference(host_object, &sink());
-  plugin_var2 = var_tracker().ReceiveObjectPassRef(host_object, &sink());
+  plugin_var = var_tracker().TrackObjectWithNoReference(
+      host_object, plugin_dispatcher());
+  plugin_var2 = var_tracker().ReceiveObjectPassRef(
+      host_object, plugin_dispatcher());
   EXPECT_EQ(plugin_var.value.as_id, plugin_var2.value.as_id);
   EXPECT_EQ(1, var_tracker().GetRefCountForObject(plugin_var));
   EXPECT_EQ(1,
@@ -162,11 +165,11 @@ TEST_F(PluginVarTrackerTest, RecursiveTrackWithNoRef) {
 
   // Receive a tracked object twice.
   PP_Var plugin_var = var_tracker().TrackObjectWithNoReference(
-      host_object, &sink());
+      host_object, plugin_dispatcher());
   EXPECT_EQ(1,
             var_tracker().GetTrackedWithNoReferenceCountForObject(plugin_var));
-  PP_Var plugin_var2 = var_tracker().TrackObjectWithNoReference(host_object,
-                                                                &sink());
+  PP_Var plugin_var2 = var_tracker().TrackObjectWithNoReference(
+      host_object, plugin_dispatcher());
   EXPECT_EQ(plugin_var.value.as_id, plugin_var2.value.as_id);
   EXPECT_EQ(0, var_tracker().GetRefCountForObject(plugin_var));
   EXPECT_EQ(2,

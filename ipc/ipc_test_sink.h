@@ -42,6 +42,13 @@ class Message;
 //   // Go on to the next phase of the test.
 //   test_sink.ClearMessages();
 //
+// To read a sync reply, do this:
+//
+//   IPC::Message* msg = test_sink.GetUniqueMessageMatching(IPC_REPLY_ID);
+//   ASSERT_TRUE(msg);
+//   TupleTypes<ViewHostMsg_Foo::ReplyParam>::ValueType reply_data;
+//   EXPECT_TRUE(ViewHostMsg_Foo::ReadReplyParam(msg, &reply_data));
+//
 // You can also register to be notified when messages are posted to the sink.
 // This can be useful if you need to wait for a particular message that will
 // be posted asynchronously.  Example usage:

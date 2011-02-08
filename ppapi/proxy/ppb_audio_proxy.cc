@@ -72,8 +72,12 @@ PP_Resource Create(PP_Instance instance_id,
   if (!config)
     return 0;
 
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance_id);
+  if (!dispatcher)
+    return 0;
+
   HostResource result;
-  PluginDispatcher::Get()->Send(new PpapiHostMsg_PPBAudio_Create(
+  dispatcher->Send(new PpapiHostMsg_PPBAudio_Create(
       INTERFACE_ID_PPB_AUDIO, instance_id, config->host_resource(), &result));
   if (result.is_null())
     return 0;
@@ -120,6 +124,11 @@ const PPB_Audio audio_interface = {
   &StopPlayback
 };
 
+InterfaceProxy* CreateAudioProxy(Dispatcher* dispatcher,
+                                 const void* target_interface) {
+  return new PPB_Audio_Proxy(dispatcher, target_interface);
+}
+
 }  // namespace
 
 PPB_Audio_Proxy::PPB_Audio_Proxy(Dispatcher* dispatcher,
@@ -131,12 +140,16 @@ PPB_Audio_Proxy::PPB_Audio_Proxy(Dispatcher* dispatcher,
 PPB_Audio_Proxy::~PPB_Audio_Proxy() {
 }
 
-const void* PPB_Audio_Proxy::GetSourceInterface() const {
-  return &audio_interface;
-}
-
-InterfaceID PPB_Audio_Proxy::GetInterfaceId() const {
-  return INTERFACE_ID_PPB_AUDIO;
+// static
+const InterfaceProxy::Info* PPB_Audio_Proxy::GetInfo() {
+  static const Info info = {
+    &audio_interface,
+    PPB_AUDIO_INTERFACE,
+    INTERFACE_ID_PPB_AUDIO,
+    false,
+    &CreateAudioProxy,
+  };
+  return &info;
 }
 
 bool PPB_Audio_Proxy::OnMessageReceived(const IPC::Message& msg) {

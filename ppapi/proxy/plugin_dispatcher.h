@@ -41,23 +41,11 @@ class PluginDispatcher : public Dispatcher {
                    ShutdownModuleFunc shutdown_module);
   ~PluginDispatcher();
 
-  // Sets/gets the global dispatcher pointer. New code should use the
-  // GetForInstance version below, this is currently here as a stopgap while
-  // the transition is being made.
-  //
-  // TODO(brettw) remove this.
-  static PluginDispatcher* Get();
-  static void SetGlobal(PluginDispatcher* dispatcher);
-
   // The plugin side maintains a mapping from PP_Instance to Dispatcher so
   // that we can send the messages to the right channel if there are multiple
-  // renderers sharing the same plugin.
+  // renderers sharing the same plugin. This mapping is maintained by
+  // DidCreateInstance/DidDestroyInstance.
   static PluginDispatcher* GetForInstance(PP_Instance instance);
-  /* TODO(brettw) enable this when Get() is removed.
-  static void SetForInstance(PP_Instance instance,
-                             PluginDispatcher* dispatcher);
-  static void RemoveForInstance(PP_Instance instance);
-  */
 
   // Dispatcher overrides.
   virtual bool IsPlugin() const;
@@ -65,8 +53,8 @@ class PluginDispatcher : public Dispatcher {
   // IPC::Channel::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
-  // Keep track of all active instances to associate data with it, like the
-  // current size.
+  // Keeps track of which dispatcher to use for each instance, active instances
+  // and tracks associated data like the current size.
   void DidCreateInstance(PP_Instance instance);
   void DidDestroyInstance(PP_Instance instance);
 
@@ -75,12 +63,19 @@ class PluginDispatcher : public Dispatcher {
   InstanceData* GetInstanceData(PP_Instance instance);
 
  private:
+  friend class PluginDispatcherTest;
+
   // IPC message handlers.
   void OnMsgInitializeModule(PP_Module pp_module, bool* result);
   void OnMsgShutdown();
+  void OnMsgSupportsInterface(const std::string& interface_name, bool* result);
 
   InitModuleFunc init_module_;
   ShutdownModuleFunc shutdown_module_;
+
+  // All target proxies currently created. These are ones that receive
+  // messages.
+  scoped_ptr<InterfaceProxy> target_proxies_[INTERFACE_ID_COUNT];
 
   typedef base::hash_map<PP_Instance, InstanceData> InstanceDataMap;
   InstanceDataMap instance_map_;

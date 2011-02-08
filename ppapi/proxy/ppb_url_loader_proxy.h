@@ -29,6 +29,8 @@ class PPB_URLLoader_Proxy : public InterfaceProxy {
   PPB_URLLoader_Proxy(Dispatcher* dispatcher, const void* target_interface);
   virtual ~PPB_URLLoader_Proxy();
 
+  static const Info* GetInfo();
+
   // URLLoader objects are normally allocated by the Create function, but
   // they are also provided to PPP_Instance.OnMsgHandleDocumentLoad. This
   // function allows the proxy for DocumentLoad to create the correct plugin
@@ -41,8 +43,6 @@ class PPB_URLLoader_Proxy : public InterfaceProxy {
   }
 
   // InterfaceProxy implementation.
-  virtual const void* GetSourceInterface() const;
-  virtual InterfaceID GetInterfaceId() const;
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
  private:
@@ -86,13 +86,13 @@ class PPB_URLLoaderTrusted_Proxy : public InterfaceProxy {
                              const void* target_interface);
   virtual ~PPB_URLLoaderTrusted_Proxy();
 
+  static const Info* GetInfo();
+
   const PPB_URLLoaderTrusted* ppb_url_loader_trusted_target() const {
     return reinterpret_cast<const PPB_URLLoaderTrusted*>(target_interface());
   }
 
   // InterfaceProxy implementation.
-  virtual const void* GetSourceInterface() const;
-  virtual InterfaceID GetInterfaceId() const;
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
  private:

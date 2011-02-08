@@ -60,11 +60,16 @@ PP_Resource GetBodyAsFileRef(PP_Resource response) {
   return 0;
 }
 
-const PPB_URLResponseInfo ppb_urlresponseinfo = {
+const PPB_URLResponseInfo urlresponseinfo_interface = {
   &IsURLResponseInfo,
   &GetProperty,
   &GetBodyAsFileRef
 };
+
+InterfaceProxy* CreateURLResponseInfoProxy(Dispatcher* dispatcher,
+                                           const void* target_interface) {
+  return new PPB_URLResponseInfo_Proxy(dispatcher, target_interface);
+}
 
 }  // namespace
 
@@ -78,18 +83,22 @@ PPB_URLResponseInfo_Proxy::~PPB_URLResponseInfo_Proxy() {
 }
 
 // static
+const InterfaceProxy::Info* PPB_URLResponseInfo_Proxy::GetInfo() {
+  static const Info info = {
+    &urlresponseinfo_interface,
+    PPB_URLRESPONSEINFO_INTERFACE,
+    INTERFACE_ID_PPB_URL_RESPONSE_INFO,
+    false,
+    &CreateURLResponseInfoProxy,
+  };
+  return &info;
+}
+
+// static
 PP_Resource PPB_URLResponseInfo_Proxy::CreateResponseForResource(
     const HostResource& resource) {
   linked_ptr<URLResponseInfo> object(new URLResponseInfo(resource));
   return PluginResourceTracker::GetInstance()->AddResource(object);
-}
-
-const void* PPB_URLResponseInfo_Proxy::GetSourceInterface() const {
-  return &ppb_urlresponseinfo;
-}
-
-InterfaceID PPB_URLResponseInfo_Proxy::GetInterfaceId() const {
-  return INTERFACE_ID_PPB_URL_RESPONSE_INFO;
 }
 
 bool PPB_URLResponseInfo_Proxy::OnMessageReceived(const IPC::Message& msg) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -79,11 +79,16 @@ PP_Var GetDefaultCharSet(PP_Instance instance) {
   return result.Return(dispatcher);
 }
 
-const PPB_CharSet_Dev ppb_charset_interface = {
+const PPB_CharSet_Dev charset_interface = {
   &UTF16ToCharSet,
   &CharSetToUTF16,
   &GetDefaultCharSet
 };
+
+InterfaceProxy* CreateCharSetProxy(Dispatcher* dispatcher,
+                                   const void* target_interface) {
+  return new PPB_CharSet_Proxy(dispatcher, target_interface);
+}
 
 }  // namespace
 
@@ -96,12 +101,16 @@ PPB_CharSet_Proxy::PPB_CharSet_Proxy(Dispatcher* dispatcher,
 PPB_CharSet_Proxy::~PPB_CharSet_Proxy() {
 }
 
-const void* PPB_CharSet_Proxy::GetSourceInterface() const {
-  return &ppb_charset_interface;
-}
-
-InterfaceID PPB_CharSet_Proxy::GetInterfaceId() const {
-  return INTERFACE_ID_PPB_CHAR_SET;
+// static
+const InterfaceProxy::Info* PPB_CharSet_Proxy::GetInfo() {
+  static const Info info = {
+    &charset_interface,
+    PPB_CHAR_SET_DEV_INTERFACE,
+    INTERFACE_ID_PPB_CHAR_SET,
+    false,
+    &CreateCharSetProxy,
+  };
+  return &info;
 }
 
 bool PPB_CharSet_Proxy::OnMessageReceived(const IPC::Message& msg) {

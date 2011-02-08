@@ -40,8 +40,6 @@ class PPP_Class_Proxy : public InterfaceProxy {
                                     int64 class_data);
 
   // InterfaceProxy implementation.
-  virtual const void* GetSourceInterface() const;
-  virtual InterfaceID GetInterfaceId() const;
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
  private:

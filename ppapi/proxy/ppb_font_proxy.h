@@ -25,13 +25,13 @@ class PPB_Font_Proxy : public InterfaceProxy {
   PPB_Font_Proxy(Dispatcher* dispatcher, const void* target_interface);
   virtual ~PPB_Font_Proxy();
 
+  static const Info* GetInfo();
+
   const PPB_Font_Dev* ppb_font_target() const {
     return static_cast<const PPB_Font_Dev*>(target_interface());
   }
 
   // InterfaceProxy implementation.
-  virtual const void* GetSourceInterface() const;
-  virtual InterfaceID GetInterfaceId() const;
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
  private:

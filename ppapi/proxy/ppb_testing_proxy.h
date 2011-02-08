@@ -22,13 +22,13 @@ class PPB_Testing_Proxy : public InterfaceProxy {
   PPB_Testing_Proxy(Dispatcher* dispatcher, const void* target_interface);
   virtual ~PPB_Testing_Proxy();
 
+  static const Info* GetInfo();
+
   const PPB_Testing_Dev* ppb_testing_target() const {
     return static_cast<const PPB_Testing_Dev*>(target_interface());
   }
 
   // InterfaceProxy implementation.
-  virtual const void* GetSourceInterface() const;
-  virtual InterfaceID GetInterfaceId() const;
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
  private:

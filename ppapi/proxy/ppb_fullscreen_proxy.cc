@@ -35,10 +35,15 @@ PP_Bool SetFullscreen(PP_Instance instance, PP_Bool fullscreen) {
   return result;
 }
 
-const PPB_Fullscreen_Dev ppb_fullscreen = {
+const PPB_Fullscreen_Dev fullscreen_interface = {
   &IsFullscreen,
   &SetFullscreen
 };
+
+InterfaceProxy* CreateFullscreenProxy(Dispatcher* dispatcher,
+                                      const void* target_interface) {
+  return new PPB_Fullscreen_Proxy(dispatcher, target_interface);
+}
 
 }  // namespace
 
@@ -50,12 +55,16 @@ PPB_Fullscreen_Proxy::PPB_Fullscreen_Proxy(Dispatcher* dispatcher,
 PPB_Fullscreen_Proxy::~PPB_Fullscreen_Proxy() {
 }
 
-const void* PPB_Fullscreen_Proxy::GetSourceInterface() const {
-  return &ppb_fullscreen;
-}
-
-InterfaceID PPB_Fullscreen_Proxy::GetInterfaceId() const {
-  return INTERFACE_ID_PPB_FULLSCREEN;
+// static
+const InterfaceProxy::Info* PPB_Fullscreen_Proxy::GetInfo() {
+  static const Info info = {
+    &fullscreen_interface,
+    PPB_FULLSCREEN_DEV_INTERFACE,
+    INTERFACE_ID_PPB_FULLSCREEN,
+    false,
+    &CreateFullscreenProxy,
+  };
+  return &info;
 }
 
 bool PPB_Fullscreen_Proxy::OnMessageReceived(const IPC::Message& msg) {

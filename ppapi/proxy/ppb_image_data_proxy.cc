@@ -198,7 +198,7 @@ void Unmap(PP_Resource resource) {
     object->Unmap();
 }
 
-const PPB_ImageData ppb_imagedata = {
+const PPB_ImageData image_data_interface = {
   &GetNativeImageDataFormat,
   &IsImageDataFormatSupported,
   &Create,
@@ -207,6 +207,11 @@ const PPB_ImageData ppb_imagedata = {
   &Map,
   &Unmap,
 };
+
+InterfaceProxy* CreateImageDataProxy(Dispatcher* dispatcher,
+                                     const void* target_interface) {
+  return new PPB_ImageData_Proxy(dispatcher, target_interface);
+}
 
 }  // namespace
 
@@ -218,12 +223,16 @@ PPB_ImageData_Proxy::PPB_ImageData_Proxy(Dispatcher* dispatcher,
 PPB_ImageData_Proxy::~PPB_ImageData_Proxy() {
 }
 
-const void* PPB_ImageData_Proxy::GetSourceInterface() const {
-  return &ppb_imagedata;
-}
-
-InterfaceID PPB_ImageData_Proxy::GetInterfaceId() const {
-  return INTERFACE_ID_PPB_IMAGE_DATA;
+// static
+const InterfaceProxy::Info* PPB_ImageData_Proxy::GetInfo() {
+  static const Info info = {
+    &image_data_interface,
+    PPB_IMAGEDATA_INTERFACE,
+    INTERFACE_ID_PPB_IMAGE_DATA,
+    false,
+    &CreateImageDataProxy,
+  };
+  return &info;
 }
 
 bool PPB_ImageData_Proxy::OnMessageReceived(const IPC::Message& msg) {

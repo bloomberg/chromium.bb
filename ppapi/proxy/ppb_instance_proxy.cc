@@ -91,6 +91,11 @@ const PPB_Instance instance_interface = {
   &ExecuteScript
 };
 
+InterfaceProxy* CreateInstanceProxy(Dispatcher* dispatcher,
+                                    const void* target_interface) {
+  return new PPB_Instance_Proxy(dispatcher, target_interface);
+}
+
 }  // namespace
 
 PPB_Instance_Proxy::PPB_Instance_Proxy(Dispatcher* dispatcher,
@@ -101,12 +106,16 @@ PPB_Instance_Proxy::PPB_Instance_Proxy(Dispatcher* dispatcher,
 PPB_Instance_Proxy::~PPB_Instance_Proxy() {
 }
 
-const void* PPB_Instance_Proxy::GetSourceInterface() const {
-  return &instance_interface;
-}
-
-InterfaceID PPB_Instance_Proxy::GetInterfaceId() const {
-  return INTERFACE_ID_PPB_INSTANCE;
+// static
+const InterfaceProxy::Info* PPB_Instance_Proxy::GetInfo() {
+  static const Info info = {
+    &instance_interface,
+    PPB_INSTANCE_INTERFACE,
+    INTERFACE_ID_PPB_INSTANCE,
+    false,
+    &CreateInstanceProxy,
+  };
+  return &info;
 }
 
 bool PPB_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {

@@ -23,13 +23,13 @@ class PPB_CursorControl_Proxy : public InterfaceProxy {
   PPB_CursorControl_Proxy(Dispatcher* dispatcher, const void* target_interface);
   virtual ~PPB_CursorControl_Proxy();
 
+  static const Info* GetInfo();
+
   const PPB_CursorControl_Dev* ppb_cursor_control_target() const {
     return reinterpret_cast<const PPB_CursorControl_Dev*>(target_interface());
   }
 
   // InterfaceProxy implementation.
-  virtual const void* GetSourceInterface() const;
-  virtual InterfaceID GetInterfaceId() const;
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
  private:

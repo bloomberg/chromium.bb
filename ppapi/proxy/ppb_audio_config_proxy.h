@@ -22,13 +22,13 @@ class PPB_AudioConfig_Proxy : public InterfaceProxy {
   PPB_AudioConfig_Proxy(Dispatcher* dispatcher, const void* target_interface);
   virtual ~PPB_AudioConfig_Proxy();
 
+  static const Info* GetInfo();
+
   const PPB_AudioConfig* ppb_audio_config_target() const {
     return static_cast<const PPB_AudioConfig*>(target_interface());
   }
 
   // InterfaceProxy implementation.
-  virtual const void* GetSourceInterface() const;
-  virtual InterfaceID GetInterfaceId() const;
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
  private:

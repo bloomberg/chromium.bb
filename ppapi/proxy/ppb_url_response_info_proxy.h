@@ -25,6 +25,8 @@ class PPB_URLResponseInfo_Proxy : public InterfaceProxy {
                             const void* target_interface);
   virtual ~PPB_URLResponseInfo_Proxy();
 
+  static const Info* GetInfo();
+
   // URLResponseInfo objects are actually created and returned by the
   // URLLoader. This function allows the URLLoader to convert a new
   // HostResource representing a response info to a properly tracked
@@ -37,8 +39,6 @@ class PPB_URLResponseInfo_Proxy : public InterfaceProxy {
   }
 
   // InterfaceProxy implementation.
-  virtual const void* GetSourceInterface() const;
-  virtual InterfaceID GetInterfaceId() const;
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
  private:

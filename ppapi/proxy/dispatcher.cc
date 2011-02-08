@@ -10,6 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/singleton.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_test_sink.h"
@@ -68,6 +69,86 @@
 namespace pp {
 namespace proxy {
 
+namespace {
+
+struct InterfaceList {
+  InterfaceList();
+
+  static InterfaceList* GetInstance();
+
+  void AddPPP(const InterfaceProxy::Info* info);
+  void AddPPB(const InterfaceProxy::Info* info);
+
+  typedef std::map<std::string, const InterfaceProxy::Info*> NameToInfo;
+  NameToInfo name_to_plugin_info_;
+  NameToInfo name_to_browser_info_;
+
+  const InterfaceProxy::Info* id_to_plugin_info_[INTERFACE_ID_COUNT];
+  const InterfaceProxy::Info* id_to_browser_info_[INTERFACE_ID_COUNT];
+};
+
+InterfaceList::InterfaceList() {
+  memset(id_to_plugin_info_, 0,
+         static_cast<int>(INTERFACE_ID_COUNT) * sizeof(InterfaceID));
+  memset(id_to_browser_info_, 0,
+         static_cast<int>(INTERFACE_ID_COUNT) * sizeof(InterfaceID));
+
+  // PPB (browser) interfaces.
+  AddPPB(PPB_AudioConfig_Proxy::GetInfo());
+  AddPPB(PPB_Audio_Proxy::GetInfo());
+  AddPPB(PPB_Buffer_Proxy::GetInfo());
+  AddPPB(PPB_CharSet_Proxy::GetInfo());
+  AddPPB(PPB_Context3D_Proxy::GetInfo());
+  AddPPB(PPB_Core_Proxy::GetInfo());
+  AddPPB(PPB_CursorControl_Proxy::GetInfo());
+  AddPPB(PPB_Flash_Proxy::GetInfo());
+  AddPPB(PPB_Font_Proxy::GetInfo());
+  AddPPB(PPB_Fullscreen_Proxy::GetInfo());
+  AddPPB(PPB_GLESChromiumTextureMapping_Proxy::GetInfo());
+  AddPPB(PPB_Graphics2D_Proxy::GetInfo());
+  AddPPB(PPB_ImageData_Proxy::GetInfo());
+  AddPPB(PPB_Instance_Proxy::GetInfo());
+  AddPPB(PPB_OpenGLES2_Proxy::GetInfo());
+  AddPPB(PPB_PDF_Proxy::GetInfo());
+  AddPPB(PPB_Surface3D_Proxy::GetInfo());
+  AddPPB(PPB_Testing_Proxy::GetInfo());
+  AddPPB(PPB_URLLoader_Proxy::GetInfo());
+  AddPPB(PPB_URLLoaderTrusted_Proxy::GetInfo());
+  AddPPB(PPB_URLRequestInfo_Proxy::GetInfo());
+  AddPPB(PPB_URLResponseInfo_Proxy::GetInfo());
+  AddPPB(PPB_Var_Deprecated_Proxy::GetInfo());
+
+  // PPP (plugin) interfaces.
+  AddPPP(PPP_Instance_Proxy::GetInfo());
+}
+
+void InterfaceList::AddPPP(const InterfaceProxy::Info* info) {
+  DCHECK(name_to_plugin_info_.find(info->name) ==
+         name_to_plugin_info_.end());
+  DCHECK(info->id > 0 && info->id < INTERFACE_ID_COUNT);
+  DCHECK(id_to_plugin_info_[info->id] == NULL);
+
+  name_to_plugin_info_[info->name] = info;
+  id_to_plugin_info_[info->id] = info;
+}
+
+void InterfaceList::AddPPB(const InterfaceProxy::Info* info) {
+  DCHECK(name_to_browser_info_.find(info->name) ==
+         name_to_browser_info_.end());
+  DCHECK(info->id > 0 && info->id < INTERFACE_ID_COUNT);
+  DCHECK(id_to_browser_info_[info->id] == NULL);
+
+  name_to_browser_info_[std::string(info->name)] = info;
+  id_to_browser_info_[info->id] = info;
+}
+
+// static
+InterfaceList* InterfaceList::GetInstance() {
+  return Singleton<InterfaceList>::get();
+}
+
+}  // namespace
+
 Dispatcher::Dispatcher(base::ProcessHandle remote_process_handle,
                        GetInterfaceFunc local_get_interface)
     : pp_module_(0),
@@ -75,10 +156,7 @@ Dispatcher::Dispatcher(base::ProcessHandle remote_process_handle,
       test_sink_(NULL),
       disallow_trusted_interfaces_(false),  // TODO(brettw) make this settable.
       local_get_interface_(local_get_interface),
-      declared_supported_remote_interfaces_(false),
       callback_tracker_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
-  memset(id_to_proxy_, 0,
-         static_cast<int>(INTERFACE_ID_COUNT) * sizeof(InterfaceProxy*));
 }
 
 Dispatcher::~Dispatcher() {
@@ -105,27 +183,51 @@ bool Dispatcher::OnMessageReceived(const IPC::Message& msg) {
   if (msg.routing_id() == MSG_ROUTING_CONTROL) {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(Dispatcher, msg)
-      IPC_MESSAGE_HANDLER(PpapiMsg_DeclareInterfaces,
-                          OnMsgDeclareInterfaces)
-      IPC_MESSAGE_HANDLER(PpapiMsg_SupportsInterface, OnMsgSupportsInterface)
       IPC_MESSAGE_FORWARD(PpapiMsg_ExecuteCallback, &callback_tracker_,
                           CallbackTracker::ReceiveExecuteSerializedCallback)
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
     return handled;
   }
-
-  // Interface-specific messages.
-  if (msg.routing_id() > 0 && msg.routing_id() < INTERFACE_ID_COUNT) {
-    InterfaceProxy* proxy = id_to_proxy_[msg.routing_id()];
-    if (proxy)
-      return proxy->OnMessageReceived(msg);
-
-    NOTREACHED();
-    // TODO(brettw): kill the plugin if it starts sending invalid messages?
-  }
-
   return false;
+}
+
+// static
+const InterfaceProxy::Info* Dispatcher::GetPPBInterfaceInfo(
+    const std::string& name) {
+  const InterfaceList* list = InterfaceList::GetInstance();
+  InterfaceList::NameToInfo::const_iterator found =
+      list->name_to_browser_info_.find(name);
+  if (found == list->name_to_browser_info_.end())
+    return NULL;
+  return found->second;
+}
+
+// static
+const InterfaceProxy::Info* Dispatcher::GetPPBInterfaceInfo(InterfaceID id) {
+  if (id <= 0 || id >= INTERFACE_ID_COUNT)
+    return NULL;
+  const InterfaceList* list = InterfaceList::GetInstance();
+  return list->id_to_browser_info_[id];
+}
+
+// static
+const InterfaceProxy::Info* Dispatcher::GetPPPInterfaceInfo(
+    const std::string& name) {
+  const InterfaceList* list = InterfaceList::GetInstance();
+  InterfaceList::NameToInfo::const_iterator found =
+      list->name_to_plugin_info_.find(name);
+  if (found == list->name_to_plugin_info_.end())
+    return NULL;
+  return found->second;
+}
+
+// static
+const InterfaceProxy::Info* Dispatcher::GetPPPInterfaceInfo(InterfaceID id) {
+  if (id <= 0 || id >= INTERFACE_ID_COUNT)
+    return NULL;
+  const InterfaceList* list = InterfaceList::GetInstance();
+  return list->id_to_plugin_info_[id];
 }
 
 void Dispatcher::SetSerializationRules(
@@ -133,173 +235,14 @@ void Dispatcher::SetSerializationRules(
   serialization_rules_.reset(var_serialization_rules);
 }
 
-void Dispatcher::InjectProxy(InterfaceID id,
-                             const std::string& name,
-                             InterfaceProxy* proxy) {
-  proxies_[name] = linked_ptr<InterfaceProxy>(proxy);
-  id_to_proxy_[id] = proxy;
-}
-
 const void* Dispatcher::GetLocalInterface(const char* interface) {
   return local_get_interface_(interface);
-}
-
-const void* Dispatcher::GetProxiedInterface(const std::string& interface) {
-  // See if we already know about this interface and have created a host.
-  ProxyMap::const_iterator found = proxies_.find(interface);
-  if (found != proxies_.end())
-    return found->second->GetSourceInterface();
-
-  // When the remote side has sent us a declared list of all interfaces it
-  // supports and we don't have it in our list, we know the requested interface
-  // doesn't exist and we can return failure.
-  if (declared_supported_remote_interfaces_)
-    return NULL;
-
-  if (!RemoteSupportsTargetInterface(interface))
-    return NULL;
-
-  linked_ptr<InterfaceProxy> proxy(CreateProxyForInterface(interface, NULL));
-  if (!proxy.get())
-    return NULL;  // Don't know how to proxy this interface.
-
-  // Save our proxy.
-  proxies_[interface] = proxy;
-  InterfaceID id = proxy->GetInterfaceId();
-  if (id != INTERFACE_ID_NONE)
-    id_to_proxy_[id] = proxy.get();
-  return proxy->GetSourceInterface();
 }
 
 bool Dispatcher::Send(IPC::Message* msg) {
   if (test_sink_)
     return test_sink_->Send(msg);
   return channel_->Send(msg);
-}
-
-bool Dispatcher::RemoteSupportsTargetInterface(const std::string& interface) {
-  bool result = false;
-  Send(new PpapiMsg_SupportsInterface(interface, &result));
-  return result;
-}
-
-bool Dispatcher::IsInterfaceTrusted(const std::string& interface) {
-  // FIXME(brettw)
-  (void)interface;
-  return false;
-}
-
-bool Dispatcher::SetupProxyForTargetInterface(const std::string& interface) {
-  // If we already have a proxy that knows about the locally-implemented
-  // interface, we know it's supported and don't need to re-query.
-  ProxyMap::const_iterator found = proxies_.find(interface);
-  if (found != proxies_.end())
-    return true;
-
-  if (disallow_trusted_interfaces_ && IsInterfaceTrusted(interface))
-    return false;
-
-  // Create the proxy if it doesn't exist and set the local interface on it.
-  // This also handles the case where possibly an interface could be supported
-  // by both the local and remote side.
-  const void* interface_functions = local_get_interface_(interface.c_str());
-  if (!interface_functions)
-    return false;
-  InterfaceProxy* proxy = CreateProxyForInterface(interface,
-                                                  interface_functions);
-  if (!proxy)
-    return false;
-
-  proxies_[interface] = linked_ptr<InterfaceProxy>(proxy);
-  id_to_proxy_[proxy->GetInterfaceId()] = proxy;
-  return true;
-}
-
-void Dispatcher::OnMsgSupportsInterface(const std::string& interface_name,
-                                        bool* result) {
-  *result = SetupProxyForTargetInterface(interface_name);
-}
-
-void Dispatcher::OnMsgDeclareInterfaces(
-    const std::vector<std::string>& interfaces) {
-  // Make proxies for all the interfaces it supports that we also support.
-  for (size_t i = 0; i < interfaces.size(); i++) {
-    // Possibly the plugin could request an interface before the "declare"
-    // message is received, so we could already have an entry for this
-    // interface. In this case, we can just skip to the next one.
-    if (proxies_.find(interfaces[i]) != proxies_.end())
-      continue;
-
-    linked_ptr<InterfaceProxy> proxy(CreateProxyForInterface(interfaces[i],
-                                                             NULL));
-    if (!proxy.get()) {
-      // Since only the browser declares supported interfaces, we should never
-      // get one we don't support.
-      //NOTREACHED() << "Remote side declaring an unsupported proxy.";
-      continue;
-    }
-    proxies_[interfaces[i]] = proxy;
-    id_to_proxy_[proxy->GetInterfaceId()] = proxy.get();
-  }
-}
-
-InterfaceProxy* Dispatcher::CreateProxyForInterface(
-    const std::string& interface_name,
-    const void* interface_functions) {
-  if (interface_name == PPB_AUDIO_CONFIG_INTERFACE)
-    return new PPB_AudioConfig_Proxy(this, interface_functions);
-  if (interface_name == PPB_AUDIO_INTERFACE)
-    return new PPB_Audio_Proxy(this, interface_functions);
-  if (interface_name == PPB_BUFFER_DEV_INTERFACE)
-    return new PPB_Buffer_Proxy(this, interface_functions);
-  if (interface_name == PPB_CHAR_SET_DEV_INTERFACE)
-    return new PPB_CharSet_Proxy(this, interface_functions);
-  if (interface_name == PPB_CONTEXT_3D_DEV_INTERFACE)
-    return new PPB_Context3D_Proxy(this, interface_functions);
-  if (interface_name == PPB_CORE_INTERFACE)
-    return new PPB_Core_Proxy(this, interface_functions);
-  if (interface_name == PPB_CURSOR_CONTROL_DEV_INTERFACE)
-    return new PPB_CursorControl_Proxy(this, interface_functions);
-  if (interface_name == PPB_FONT_DEV_INTERFACE)
-    return new PPB_Font_Proxy(this, interface_functions);
-  if (interface_name == PPB_FULLSCREEN_DEV_INTERFACE)
-    return new PPB_Fullscreen_Proxy(this, interface_functions);
-  if (interface_name == PPB_GLES_CHROMIUM_TEXTURE_MAPPING_DEV_INTERFACE)
-    return new PPB_GLESChromiumTextureMapping_Proxy(this, interface_functions);
-  if (interface_name == PPB_GRAPHICS_2D_INTERFACE)
-    return new PPB_Graphics2D_Proxy(this, interface_functions);
-  if (interface_name == PPB_IMAGEDATA_INTERFACE)
-    return new PPB_ImageData_Proxy(this, interface_functions);
-  if (interface_name == PPB_INSTANCE_INTERFACE)
-    return new PPB_Instance_Proxy(this, interface_functions);
-  if (interface_name == PPB_OPENGLES2_DEV_INTERFACE)
-    return new PPB_OpenGLES2_Proxy(this, interface_functions);
-  if (interface_name == PPB_SURFACE_3D_DEV_INTERFACE)
-    return new PPB_Surface3D_Proxy(this, interface_functions);
-  if (interface_name == PPB_TESTING_DEV_INTERFACE)
-    return new PPB_Testing_Proxy(this, interface_functions);
-  if (interface_name == PPB_URLLOADER_INTERFACE)
-    return new PPB_URLLoader_Proxy(this, interface_functions);
-  if (interface_name == PPB_URLREQUESTINFO_INTERFACE)
-    return new PPB_URLRequestInfo_Proxy(this, interface_functions);
-  if (interface_name == PPB_URLRESPONSEINFO_INTERFACE)
-    return new PPB_URLResponseInfo_Proxy(this, interface_functions);
-  if (interface_name == PPB_VAR_DEPRECATED_INTERFACE)
-    return new PPB_Var_Deprecated_Proxy(this, interface_functions);
-  if (interface_name == PPP_INSTANCE_INTERFACE)
-    return new PPP_Instance_Proxy(this, interface_functions);
-
-  // Trusted interfaces.
-  if (!disallow_trusted_interfaces_) {
-    if (interface_name == PPB_FLASH_INTERFACE)
-      return new PPB_Flash_Proxy(this, interface_functions);
-    if (interface_name == PPB_PDF_INTERFACE)
-      return new PPB_PDF_Proxy(this, interface_functions);
-    if (interface_name == PPB_URLLOADERTRUSTED_INTERFACE)
-      return new PPB_URLLoaderTrusted_Proxy(this, interface_functions);
-  }
-
-  return NULL;
 }
 
 }  // namespace proxy

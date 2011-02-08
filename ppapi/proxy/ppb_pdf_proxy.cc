@@ -107,12 +107,17 @@ bool GetFontTableForPrivateFontFile(PP_Resource font_file,
   return true;
 }
 
-const PPB_PDF ppb_pdf = {
+const PPB_PDF pdf_interface = {
   NULL,  // &GetLocalizedString,
   NULL,  // &GetResourceImage,
   &GetFontFileWithFallback,
   &GetFontTableForPrivateFontFile,
 };
+
+InterfaceProxy* CreatePDFProxy(Dispatcher* dispatcher,
+                              const void* target_interface) {
+  return new PPB_PDF_Proxy(dispatcher, target_interface);
+}
 
 }  // namespace
 
@@ -124,12 +129,16 @@ PPB_PDF_Proxy::PPB_PDF_Proxy(Dispatcher* dispatcher,
 PPB_PDF_Proxy::~PPB_PDF_Proxy() {
 }
 
-const void* PPB_PDF_Proxy::GetSourceInterface() const {
-  return &ppb_pdf;
-}
-
-InterfaceID PPB_PDF_Proxy::GetInterfaceId() const {
-  return INTERFACE_ID_PPB_PDF;
+// static
+const InterfaceProxy::Info* PPB_PDF_Proxy::GetInfo() {
+  static const Info info = {
+    &pdf_interface,
+    PPB_PDF_INTERFACE,
+    INTERFACE_ID_PPB_PDF,
+    true,
+    &CreatePDFProxy,
+  };
+  return &info;
 }
 
 bool PPB_PDF_Proxy::OnMessageReceived(const IPC::Message& msg) {

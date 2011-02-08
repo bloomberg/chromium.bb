@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
+#include "ppapi/proxy/plugin_var_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppp_class_proxy.h"
 #include "ppapi/proxy/serialized_var.h"
@@ -19,6 +20,32 @@ namespace pp {
 namespace proxy {
 
 namespace {
+
+// Used to do get the set-up information for calling a var object. If the
+// exception is set, returns NULL. Otherwise, computes the dispatcher for the
+// given var object. If the var is not a valid object, returns NULL and sets
+// the exception.
+PluginDispatcher* CheckExceptionAndGetDispatcher(const PP_Var& object,
+                                                 PP_Var* exception) {
+  // If an exception is already set, we don't need to do anything, just return
+  // an error to the caller.
+  if (exception && exception->type != PP_VARTYPE_UNDEFINED)
+    return NULL;
+
+  PluginVarTracker* tracker = PluginVarTracker::GetInstance();
+  PluginDispatcher* dispatcher = tracker->DispatcherForPluginObject(object);
+  if (dispatcher)
+    return dispatcher;
+
+  // The object is invalid. This means we can't figure out which dispatcher
+  // to use, which is OK because the call will fail anyway. Set the exception.
+  if (exception) {
+    exception->type = PP_VARTYPE_STRING;
+    exception->value.as_id =
+        tracker->MakeString("Attempting to use an invalid object");
+  }
+  return NULL;
+}
 
 // PPP_Var_Deprecated plugin ---------------------------------------------------
 
@@ -52,7 +79,10 @@ const char* VarToUtf8(PP_Var var, uint32_t* len) {
 bool HasProperty(PP_Var var,
                  PP_Var name,
                  PP_Var* exception) {
-  Dispatcher* dispatcher = PluginDispatcher::Get();
+  Dispatcher* dispatcher = CheckExceptionAndGetDispatcher(var, exception);
+  if (!dispatcher)
+    return false;
+
   ReceiveSerializedException se(dispatcher, exception);
   PP_Bool result = PP_FALSE;
   if (!se.IsThrown()) {
@@ -67,7 +97,10 @@ bool HasProperty(PP_Var var,
 bool HasMethod(PP_Var var,
                PP_Var name,
                PP_Var* exception) {
-  Dispatcher* dispatcher = PluginDispatcher::Get();
+  Dispatcher* dispatcher = CheckExceptionAndGetDispatcher(var, exception);
+  if (!dispatcher)
+    return false;
+
   ReceiveSerializedException se(dispatcher, exception);
   PP_Bool result = PP_FALSE;
   if (!se.IsThrown()) {
@@ -82,7 +115,10 @@ bool HasMethod(PP_Var var,
 PP_Var GetProperty(PP_Var var,
                    PP_Var name,
                    PP_Var* exception) {
-  Dispatcher* dispatcher = PluginDispatcher::Get();
+  Dispatcher* dispatcher = CheckExceptionAndGetDispatcher(var, exception);
+  if (!dispatcher)
+    return PP_MakeUndefined();
+
   ReceiveSerializedException se(dispatcher, exception);
   ReceiveSerializedVarReturnValue result;
   if (!se.IsThrown()) {
@@ -98,7 +134,12 @@ void EnumerateProperties(PP_Var var,
                          uint32_t* property_count,
                          PP_Var** properties,
                          PP_Var* exception) {
-  Dispatcher* dispatcher = PluginDispatcher::Get();
+  Dispatcher* dispatcher = CheckExceptionAndGetDispatcher(var, exception);
+  if (!dispatcher) {
+    *property_count = 0;
+    *properties = NULL;
+    return;
+  }
 
   ReceiveSerializedVarVectorOutParam out_vector(dispatcher,
                                                 property_count, properties);
@@ -115,7 +156,10 @@ void SetProperty(PP_Var var,
                  PP_Var name,
                  PP_Var value,
                  PP_Var* exception) {
-  Dispatcher* dispatcher = PluginDispatcher::Get();
+  Dispatcher* dispatcher = CheckExceptionAndGetDispatcher(var, exception);
+  if (!dispatcher)
+    return;
+
   ReceiveSerializedException se(dispatcher, exception);
   if (!se.IsThrown()) {
     dispatcher->Send(new PpapiHostMsg_PPBVar_SetPropertyDeprecated(
@@ -129,7 +173,10 @@ void SetProperty(PP_Var var,
 void RemoveProperty(PP_Var var,
                     PP_Var name,
                     PP_Var* exception) {
-  Dispatcher* dispatcher = PluginDispatcher::Get();
+  Dispatcher* dispatcher = CheckExceptionAndGetDispatcher(var, exception);
+  if (!dispatcher)
+    return;
+
   ReceiveSerializedException se(dispatcher, exception);
   PP_Bool result = PP_FALSE;
   if (!se.IsThrown()) {
@@ -145,7 +192,10 @@ PP_Var Call(PP_Var object,
             uint32_t argc,
             PP_Var* argv,
             PP_Var* exception) {
-  Dispatcher* dispatcher = PluginDispatcher::Get();
+  Dispatcher* dispatcher = CheckExceptionAndGetDispatcher(object, exception);
+  if (!dispatcher)
+    return PP_MakeUndefined();
+
   ReceiveSerializedVarReturnValue result;
   ReceiveSerializedException se(dispatcher, exception);
   if (!se.IsThrown()) {
@@ -165,7 +215,10 @@ PP_Var Construct(PP_Var object,
                  uint32_t argc,
                  PP_Var* argv,
                  PP_Var* exception) {
-  Dispatcher* dispatcher = PluginDispatcher::Get();
+  Dispatcher* dispatcher = CheckExceptionAndGetDispatcher(object, exception);
+  if (!dispatcher)
+    return PP_MakeUndefined();
+
   ReceiveSerializedVarReturnValue result;
   ReceiveSerializedException se(dispatcher, exception);
   if (!se.IsThrown()) {
@@ -181,10 +234,13 @@ PP_Var Construct(PP_Var object,
 }
 
 bool IsInstanceOf(PP_Var var,
-                     const PPP_Class_Deprecated* ppp_class,
-                     void** ppp_class_data) {
+                  const PPP_Class_Deprecated* ppp_class,
+                  void** ppp_class_data) {
+  Dispatcher* dispatcher = CheckExceptionAndGetDispatcher(var, NULL);
+  if (!dispatcher)
+    return false;
+
   PP_Bool result = PP_FALSE;
-  Dispatcher* dispatcher = PluginDispatcher::Get();
   int64 class_int = static_cast<int64>(reinterpret_cast<intptr_t>(ppp_class));
   int64 class_data_int = 0;
   dispatcher->Send(new PpapiHostMsg_PPBVar_IsInstanceOfDeprecated(
@@ -198,7 +254,10 @@ bool IsInstanceOf(PP_Var var,
 PP_Var CreateObject(PP_Instance instance,
                     const PPP_Class_Deprecated* ppp_class,
                     void* ppp_class_data) {
-  Dispatcher* dispatcher = PluginDispatcher::Get();
+  Dispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return PP_MakeUndefined();
+
   ReceiveSerializedVarReturnValue result;
   int64 class_int = static_cast<int64>(reinterpret_cast<intptr_t>(ppp_class));
   int64 data_int =
@@ -226,6 +285,11 @@ const PPB_Var_Deprecated var_deprecated_interface = {
   &CreateObject
 };
 
+InterfaceProxy* CreateVarDeprecatedProxy(Dispatcher* dispatcher,
+                                         const void* target_interface) {
+  return new PPB_Var_Deprecated_Proxy(dispatcher, target_interface);
+}
+
 }  // namespace
 
 PPB_Var_Deprecated_Proxy::PPB_Var_Deprecated_Proxy(
@@ -237,12 +301,16 @@ PPB_Var_Deprecated_Proxy::PPB_Var_Deprecated_Proxy(
 PPB_Var_Deprecated_Proxy::~PPB_Var_Deprecated_Proxy() {
 }
 
-const void* PPB_Var_Deprecated_Proxy::GetSourceInterface() const {
-  return &var_deprecated_interface;
-}
-
-InterfaceID PPB_Var_Deprecated_Proxy::GetInterfaceId() const {
-  return INTERFACE_ID_PPB_VAR_DEPRECATED;
+// static
+const InterfaceProxy::Info* PPB_Var_Deprecated_Proxy::GetInfo() {
+  static const Info info = {
+    &var_deprecated_interface,
+    PPB_VAR_DEPRECATED_INTERFACE,
+    INTERFACE_ID_PPB_VAR_DEPRECATED,
+    false,
+    &CreateVarDeprecatedProxy,
+  };
+  return &info;
 }
 
 bool PPB_Var_Deprecated_Proxy::OnMessageReceived(const IPC::Message& msg) {

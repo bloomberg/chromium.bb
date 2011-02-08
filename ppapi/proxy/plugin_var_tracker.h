@@ -8,7 +8,6 @@
 #include <map>
 #include <string>
 
-#include "ipc/ipc_channel.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
 
@@ -18,6 +17,8 @@ template<typename T> struct DefaultSingletonTraits;
 
 namespace pp {
 namespace proxy {
+
+class PluginDispatcher;
 
 // Tracks live strings and objects in the plugin process.
 //
@@ -37,12 +38,6 @@ namespace proxy {
 class PluginVarTracker {
  public:
   typedef int64_t VarID;
-
-  // This uses the PluginDispatcher to identify the source of vars so that
-  // the proper messages can be sent back. However, since all we need is the
-  // ability to send messages, we can always use the Sender base class of
-  // Dispatcher in this class, which makes it easy to unit test.
-  typedef IPC::Channel::Sender Sender;
 
   // Called by tests that want to specify a specific VarTracker. This allows
   // them to use a unique one each time and avoids singletons sticking around
@@ -70,19 +65,23 @@ class PluginVarTracker {
   // Manages tracking for receiving a VARTYPE_OBJECT from the remote side
   // (either the plugin or the renderer) that has already had its reference
   // count incremented on behalf of the caller.
-  PP_Var ReceiveObjectPassRef(const PP_Var& var, Sender* channel);
+  PP_Var ReceiveObjectPassRef(const PP_Var& var, PluginDispatcher* dispatcher);
 
   PP_Var TrackObjectWithNoReference(const PP_Var& host_var,
-                                    Sender* channel);
+                                    PluginDispatcher* dispatcher);
   void StopTrackingObjectWithNoReference(const PP_Var& plugin_var);
 
   // Returns the host var for the corresponding plugin object var. The object
   // should be a VARTYPE_OBJECT
   PP_Var GetHostObject(const PP_Var& plugin_object) const;
 
+  PluginDispatcher* DispatcherForPluginObject(
+      const PP_Var& plugin_object) const;
+
   // Like Release() but the var is identified by its host object ID (as
   // returned by GetHostObject).
-  void ReleaseHostObject(Sender* sender, const PP_Var& host_object);
+  void ReleaseHostObject(PluginDispatcher* dispatcher,
+                         const PP_Var& host_object);
 
   // Retrieves the internal reference counts for testing. Returns 0 if we
   // know about the object but the corresponding value is 0, or -1 if the
@@ -96,13 +95,13 @@ class PluginVarTracker {
 
   // Represents a var as received from the host.
   struct HostVar {
-    HostVar(Sender* s, int64_t i);
+    HostVar(PluginDispatcher* d, int64_t i);
 
     bool operator<(const HostVar& other) const;
 
-    // The host that sent us this object. This is used so we know how to send
-    // back requests on this object.
-    Sender* channel;
+    // The dispatcher that sent us this object. This is used so we know how to
+    // send back requests on this object.
+    PluginDispatcher* dispatcher;
 
     // The object ID that the host generated to identify the object. This is
     // unique only within that host: different hosts could give us different
@@ -145,7 +144,7 @@ class PluginVarTracker {
 
   PluginVarInfoMap::iterator FindOrMakePluginVarFromHostVar(
       const PP_Var& var,
-      Sender* channel);
+      PluginDispatcher* dispatcher);
 
   // Checks the reference counds of the given plugin var info and removes the
   // tracking information if necessary. We're done with the object when its

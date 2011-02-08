@@ -189,7 +189,7 @@ int32_t Flush(PP_Resource graphics_2d,
   return PP_ERROR_WOULDBLOCK;
 }
 
-const PPB_Graphics2D ppb_graphics_2d = {
+const PPB_Graphics2D graphics_2d_interface = {
   &Create,
   &IsGraphics2D,
   &Describe,
@@ -198,6 +198,11 @@ const PPB_Graphics2D ppb_graphics_2d = {
   &ReplaceContents,
   &Flush
 };
+
+InterfaceProxy* CreateGraphics2DProxy(Dispatcher* dispatcher,
+                                      const void* target_interface) {
+  return new PPB_Graphics2D_Proxy(dispatcher, target_interface);
+}
 
 }  // namespace
 
@@ -210,12 +215,16 @@ PPB_Graphics2D_Proxy::PPB_Graphics2D_Proxy(Dispatcher* dispatcher,
 PPB_Graphics2D_Proxy::~PPB_Graphics2D_Proxy() {
 }
 
-const void* PPB_Graphics2D_Proxy::GetSourceInterface() const {
-  return &ppb_graphics_2d;
-}
-
-InterfaceID PPB_Graphics2D_Proxy::GetInterfaceId() const {
-  return INTERFACE_ID_PPB_GRAPHICS_2D;
+// static
+const InterfaceProxy::Info* PPB_Graphics2D_Proxy::GetInfo() {
+  static const Info info = {
+    &graphics_2d_interface,
+    PPB_GRAPHICS_2D_INTERFACE,
+    INTERFACE_ID_PPB_GRAPHICS_2D,
+    false,
+    &CreateGraphics2DProxy,
+  };
+  return &info;
 }
 
 bool PPB_Graphics2D_Proxy::OnMessageReceived(const IPC::Message& msg) {

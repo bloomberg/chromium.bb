@@ -267,8 +267,10 @@
       'sources': [
         'proxy/run_all_unittests.cc',
 
+        'proxy/host_dispatcher_unittest.cc',
         'proxy/mock_resource.cc',
         'proxy/mock_resource.h',
+        'proxy/plugin_dispatcher_unittest.cc',
         'proxy/plugin_resource_tracker_unittest.cc',
         'proxy/plugin_var_tracker_unittest.cc',
         'proxy/ppapi_proxy_test.cc',

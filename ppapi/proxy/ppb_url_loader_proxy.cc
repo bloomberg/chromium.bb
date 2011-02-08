@@ -246,7 +246,7 @@ void Close(PP_Resource loader_id) {
       INTERFACE_ID_PPB_URL_LOADER, loader_object->host_resource()));
 }
 
-const PPB_URLLoader ppb_urlloader = {
+const PPB_URLLoader urlloader_interface = {
   &Create,
   &IsURLLoader,
   &Open,
@@ -258,6 +258,11 @@ const PPB_URLLoader ppb_urlloader = {
   &FinishStreamingToFile,
   &Close
 };
+
+InterfaceProxy* CreateURLLoaderProxy(Dispatcher* dispatcher,
+                                     const void* target_interface) {
+  return new PPB_URLLoader_Proxy(dispatcher, target_interface);
+}
 
 // Plugin URLLoaderTrusted implementation --------------------------------------
 
@@ -272,10 +277,15 @@ void GrantUniversalAccess(PP_Resource loader_id) {
           INTERFACE_ID_PPB_URL_LOADER_TRUSTED, loader_object->host_resource()));
 }
 
-const PPB_URLLoaderTrusted ppb_urlloader_trusted = {
+const PPB_URLLoaderTrusted urlloader_trusted_interface = {
   &GrantUniversalAccess,
   NULL,  // RegisterStatusCallback is used internally by the proxy only.
 };
+
+InterfaceProxy* CreateURLLoaderTrustedProxy(Dispatcher* dispatcher,
+                                            const void* target_interface) {
+  return new PPB_URLLoaderTrusted_Proxy(dispatcher, target_interface);
+}
 
 }  // namespace
 
@@ -302,12 +312,16 @@ PP_Resource PPB_URLLoader_Proxy::TrackPluginResource(
   return PluginResourceTracker::GetInstance()->AddResource(object);
 }
 
-const void* PPB_URLLoader_Proxy::GetSourceInterface() const {
-  return &ppb_urlloader;
-}
-
-InterfaceID PPB_URLLoader_Proxy::GetInterfaceId() const {
-  return INTERFACE_ID_PPB_URL_LOADER;
+// static
+const InterfaceProxy::Info* PPB_URLLoader_Proxy::GetInfo() {
+  static const Info info = {
+    &urlloader_interface,
+    PPB_URLLOADER_INTERFACE,
+    INTERFACE_ID_PPB_URL_LOADER,
+    false,
+    &CreateURLLoaderProxy,
+  };
+  return &info;
 }
 
 bool PPB_URLLoader_Proxy::OnMessageReceived(const IPC::Message& msg) {
@@ -490,12 +504,16 @@ PPB_URLLoaderTrusted_Proxy::PPB_URLLoaderTrusted_Proxy(
 PPB_URLLoaderTrusted_Proxy::~PPB_URLLoaderTrusted_Proxy() {
 }
 
-const void* PPB_URLLoaderTrusted_Proxy::GetSourceInterface() const {
-  return &ppb_urlloader_trusted;
-}
-
-InterfaceID PPB_URLLoaderTrusted_Proxy::GetInterfaceId() const {
-  return INTERFACE_ID_PPB_URL_LOADER_TRUSTED;
+// static
+const InterfaceProxy::Info* PPB_URLLoaderTrusted_Proxy::GetInfo() {
+  static const Info info = {
+    &urlloader_trusted_interface,
+    PPB_URLLOADERTRUSTED_INTERFACE,
+    INTERFACE_ID_PPB_URL_LOADER_TRUSTED,
+    true,
+    &CreateURLLoaderTrustedProxy,
+  };
+  return &info;
 }
 
 bool PPB_URLLoaderTrusted_Proxy::OnMessageReceived(const IPC::Message& msg) {

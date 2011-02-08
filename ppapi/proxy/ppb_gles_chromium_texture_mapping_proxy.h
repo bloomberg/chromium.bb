@@ -18,6 +18,8 @@ class PPB_GLESChromiumTextureMapping_Proxy : public InterfaceProxy {
                                        const void* target_interface);
   virtual ~PPB_GLESChromiumTextureMapping_Proxy();
 
+  static const Info* GetInfo();
+
   const PPB_GLESChromiumTextureMapping_Dev*
   ppb_gles_chromium_tm_target() const {
     return reinterpret_cast<const PPB_GLESChromiumTextureMapping_Dev*>(
@@ -25,8 +27,6 @@ class PPB_GLESChromiumTextureMapping_Proxy : public InterfaceProxy {
   }
 
   // InterfaceProxy implementation.
-  virtual const void* GetSourceInterface() const;
-  virtual InterfaceID GetInterfaceId() const;
   virtual bool OnMessageReceived(const IPC::Message& msg);
 };
 

@@ -29,13 +29,13 @@ class PPB_Var_Deprecated_Proxy : public InterfaceProxy {
                            const void* target_interface);
   virtual ~PPB_Var_Deprecated_Proxy();
 
+  static const Info* GetInfo();
+
   const PPB_Var_Deprecated* ppb_var_target() const {
     return reinterpret_cast<const PPB_Var_Deprecated*>(target_interface());
   }
 
   // InterfaceProxy implementation.
-  virtual const void* GetSourceInterface() const;
-  virtual InterfaceID GetInterfaceId() const;
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
  private:

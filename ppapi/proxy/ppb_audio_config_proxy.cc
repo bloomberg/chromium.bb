@@ -95,6 +95,11 @@ const PPB_AudioConfig audio_config_interface = {
   &GetSampleFrameCount
 };
 
+InterfaceProxy* CreateAudioConfigProxy(Dispatcher* dispatcher,
+                                       const void* target_interface) {
+  return new PPB_AudioConfig_Proxy(dispatcher, target_interface);
+}
+
 }  // namespace
 
 PPB_AudioConfig_Proxy::PPB_AudioConfig_Proxy(Dispatcher* dispatcher,
@@ -105,12 +110,16 @@ PPB_AudioConfig_Proxy::PPB_AudioConfig_Proxy(Dispatcher* dispatcher,
 PPB_AudioConfig_Proxy::~PPB_AudioConfig_Proxy() {
 }
 
-const void* PPB_AudioConfig_Proxy::GetSourceInterface() const {
-  return &audio_config_interface;
-}
-
-InterfaceID PPB_AudioConfig_Proxy::GetInterfaceId() const {
-  return INTERFACE_ID_PPB_AUDIO_CONFIG;
+// static
+const InterfaceProxy::Info* PPB_AudioConfig_Proxy::GetInfo() {
+  static const Info info = {
+    &audio_config_interface,
+    PPB_AUDIO_CONFIG_INTERFACE,
+    INTERFACE_ID_PPB_AUDIO_CONFIG,
+    false,
+    &CreateAudioConfigProxy,
+  };
+  return &info;
 }
 
 bool PPB_AudioConfig_Proxy::OnMessageReceived(const IPC::Message& msg) {

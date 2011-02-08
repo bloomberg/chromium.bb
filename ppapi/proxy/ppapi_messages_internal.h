@@ -29,11 +29,6 @@ IPC_SYNC_MESSAGE_CONTROL1_1(PpapiMsg_SupportsInterface,
                             std::string /* interface_name */,
                             bool /* result */)
 
-// Way for the renderer to list all interfaces that is supports in advance to
-// avoid extra IPC traffic.
-IPC_MESSAGE_CONTROL1(PpapiMsg_DeclareInterfaces,
-                     std::vector<std::string> /* interfaces */)
-
 IPC_MESSAGE_CONTROL2(PpapiMsg_ExecuteCallback,
                      uint32 /* serialized_callback */,
                      int32 /* param */)

@@ -192,14 +192,6 @@ PP_Var PPP_Class_Proxy::CreateProxiedObject(const PPB_Var_Deprecated* var,
   return var->CreateObject(module_id, &class_interface, object_proxy);
 }
 
-const void* PPP_Class_Proxy::GetSourceInterface() const {
-  return &class_interface;
-}
-
-InterfaceID PPP_Class_Proxy::GetInterfaceId() const {
-  return INTERFACE_ID_PPP_CLASS;
-}
-
 bool PPP_Class_Proxy::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPP_Class_Proxy, msg)

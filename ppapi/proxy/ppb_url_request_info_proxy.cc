@@ -118,13 +118,18 @@ PP_Bool AppendFileToBody(PP_Resource request_id,
   return PP_TRUE;
 }
 
-const PPB_URLRequestInfo ppb_urlrequestinfo = {
+const PPB_URLRequestInfo urlrequestinfo_interface = {
   &Create,
   &IsURLRequestInfo,
   &SetProperty,
   &AppendDataToBody,
   &AppendFileToBody
 };
+
+InterfaceProxy* CreateURLRequestInfoProxy(Dispatcher* dispatcher,
+                                          const void* target_interface) {
+  return new PPB_URLRequestInfo_Proxy(dispatcher, target_interface);
+}
 
 }  // namespace
 
@@ -137,12 +142,16 @@ PPB_URLRequestInfo_Proxy::PPB_URLRequestInfo_Proxy(
 PPB_URLRequestInfo_Proxy::~PPB_URLRequestInfo_Proxy() {
 }
 
-const void* PPB_URLRequestInfo_Proxy::GetSourceInterface() const {
-  return &ppb_urlrequestinfo;
-}
-
-InterfaceID PPB_URLRequestInfo_Proxy::GetInterfaceId() const {
-  return INTERFACE_ID_PPB_URL_REQUEST_INFO;
+// static
+const InterfaceProxy::Info* PPB_URLRequestInfo_Proxy::GetInfo() {
+  static const Info info = {
+    &urlrequestinfo_interface,
+    PPB_URLREQUESTINFO_INTERFACE,
+    INTERFACE_ID_PPB_URL_REQUEST_INFO,
+    false,
+    &CreateURLRequestInfoProxy,
+  };
+  return &info;
 }
 
 bool PPB_URLRequestInfo_Proxy::OnMessageReceived(const IPC::Message& msg) {

@@ -21,13 +21,13 @@ class PPB_PDF_Proxy : public InterfaceProxy {
   PPB_PDF_Proxy(Dispatcher* dispatcher, const void* target_interface);
   virtual ~PPB_PDF_Proxy();
 
+  static const Info* GetInfo();
+
   const PPB_PDF* ppb_pdf_target() const {
     return static_cast<const PPB_PDF*>(target_interface());
   }
 
   // InterfaceProxy implementation.
-  virtual const void* GetSourceInterface() const;
-  virtual InterfaceID GetInterfaceId() const;
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
  private:

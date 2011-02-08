@@ -20,13 +20,13 @@ class PPB_Buffer_Proxy : public InterfaceProxy {
   PPB_Buffer_Proxy(Dispatcher* dispatcher, const void* target_interface);
   virtual ~PPB_Buffer_Proxy();
 
+  static const Info* GetInfo();
+
   const PPB_Buffer_Dev* ppb_buffer_target() const {
     return static_cast<const PPB_Buffer_Dev*>(target_interface());
   }
 
   // InterfaceProxy implementation.
-  virtual const void* GetSourceInterface() const;
-  virtual InterfaceID GetInterfaceId() const;
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
  private:

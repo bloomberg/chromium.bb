@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,6 @@ PpapiThread::PpapiThread()
 }
 
 PpapiThread::~PpapiThread() {
-  pp::proxy::PluginDispatcher::SetGlobal(NULL);
 }
 
 // The "regular" ChildThread implements this function and does some standard
@@ -38,12 +37,6 @@ PpapiThread::~PpapiThread() {
 bool PpapiThread::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(PpapiThread, msg)
     IPC_MESSAGE_HANDLER(PpapiMsg_LoadPlugin, OnMsgLoadPlugin)
-
-    // The rest of the messages go to the dispatcher.
-    /*IPC_MESSAGE_UNHANDLED(
-      if (dispatcher_.get())
-        dispatcher_->OnMessageReceived(msg)
-    )*/
   IPC_END_MESSAGE_MAP()
   return true;
 }
@@ -94,7 +87,6 @@ bool PpapiThread::LoadPluginLib(base::ProcessHandle host_process_handle,
   library_.Reset(library.Release());
   dispatcher_.reset(new pp::proxy::PluginDispatcher(
       host_process_handle, get_interface, init_module, shutdown_module));
-  pp::proxy::PluginDispatcher::SetGlobal(dispatcher_.get());
   return true;
 }
 

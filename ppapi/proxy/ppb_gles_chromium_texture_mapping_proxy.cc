@@ -37,10 +37,16 @@ void UnmapTexSubImage2DCHROMIUM(PP_Resource context_id, const void* mem) {
   context->gles2_impl()->UnmapTexSubImage2DCHROMIUM(mem);
 }
 
-const struct PPB_GLESChromiumTextureMapping_Dev ppb_gles2_chromium_tm = {
+const struct PPB_GLESChromiumTextureMapping_Dev gles2_chromium_tm_interface = {
   MapTexSubImage2DCHROMIUM,
   UnmapTexSubImage2DCHROMIUM
 };
+
+InterfaceProxy* CreateGLESChromiumTextureMappingProxy(
+    Dispatcher* dispatcher,
+    const void* target_interface) {
+  return new PPB_GLESChromiumTextureMapping_Proxy(dispatcher, target_interface);
+}
 
 }  // namespace
 
@@ -53,12 +59,16 @@ PPB_GLESChromiumTextureMapping_Proxy::PPB_GLESChromiumTextureMapping_Proxy(
 PPB_GLESChromiumTextureMapping_Proxy::~PPB_GLESChromiumTextureMapping_Proxy() {
 }
 
-const void* PPB_GLESChromiumTextureMapping_Proxy::GetSourceInterface() const {
-  return &ppb_gles2_chromium_tm;
-}
-
-InterfaceID PPB_GLESChromiumTextureMapping_Proxy::GetInterfaceId() const {
-  return INTERFACE_ID_NONE;
+// static
+const InterfaceProxy::Info* PPB_GLESChromiumTextureMapping_Proxy::GetInfo() {
+  static const Info info = {
+    &gles2_chromium_tm_interface,
+    PPB_GLES_CHROMIUM_TEXTURE_MAPPING_DEV_INTERFACE,
+    INTERFACE_ID_PPB_GLES_CHROMIUM_TM,
+    false,
+    &CreateGLESChromiumTextureMappingProxy,
+  };
+  return &info;
 }
 
 bool PPB_GLESChromiumTextureMapping_Proxy::OnMessageReceived(

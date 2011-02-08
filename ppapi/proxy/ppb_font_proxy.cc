@@ -185,7 +185,7 @@ int32_t PixelOffsetForCharacter(PP_Resource font_id,
   return result;
 }
 
-const PPB_Font_Dev ppb_font_interface = {
+const PPB_Font_Dev font_interface = {
   &Create,
   &IsFont,
   &Describe,
@@ -194,6 +194,11 @@ const PPB_Font_Dev ppb_font_interface = {
   &CharacterOffsetForPixel,
   &PixelOffsetForCharacter
 };
+
+InterfaceProxy* CreateFontProxy(Dispatcher* dispatcher,
+                                const void* target_interface) {
+  return new PPB_Font_Proxy(dispatcher, target_interface);
+}
 
 }  // namespace
 
@@ -205,12 +210,16 @@ PPB_Font_Proxy::PPB_Font_Proxy(Dispatcher* dispatcher,
 PPB_Font_Proxy::~PPB_Font_Proxy() {
 }
 
-const void* PPB_Font_Proxy::GetSourceInterface() const {
-  return &ppb_font_interface;
-}
-
-InterfaceID PPB_Font_Proxy::GetInterfaceId() const {
-  return INTERFACE_ID_PPB_FONT;
+// static
+const InterfaceProxy::Info* PPB_Font_Proxy::GetInfo() {
+  static const Info info = {
+    &font_interface,
+    PPB_FONT_DEV_INTERFACE,
+    INTERFACE_ID_PPB_FONT,
+    false,
+    &CreateFontProxy,
+  };
+  return &info;
 }
 
 bool PPB_Font_Proxy::OnMessageReceived(const IPC::Message& msg) {

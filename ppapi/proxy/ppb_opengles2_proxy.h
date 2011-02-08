@@ -17,13 +17,13 @@ class PPB_OpenGLES2_Proxy : public InterfaceProxy {
   PPB_OpenGLES2_Proxy(Dispatcher* dispatcher, const void* target_interface);
   virtual ~PPB_OpenGLES2_Proxy();
 
+  static const Info* GetInfo();
+
   const PPB_OpenGLES2_Dev* ppb_gles2_target() const {
     return reinterpret_cast<const PPB_OpenGLES2_Dev*>(target_interface());
   }
 
   // InterfaceProxy implementation.
-  virtual const void* GetSourceInterface() const;
-  virtual InterfaceID GetInterfaceId() const;
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
  private:

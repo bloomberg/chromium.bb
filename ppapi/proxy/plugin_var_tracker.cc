@@ -7,6 +7,7 @@
 #include "base/ref_counted.h"
 #include "base/singleton.h"
 #include "ppapi/c/ppb_var.h"
+#include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/interface_id.h"
 
@@ -42,15 +43,15 @@ RefCountedString* PluginStringFromID(PluginVarTracker::VarID id) {
 
 }  // namespace
 
-PluginVarTracker::HostVar::HostVar(Sender* d, VarID i)
-    : channel(d),
+PluginVarTracker::HostVar::HostVar(PluginDispatcher* d, VarID i)
+    : dispatcher(d),
       host_object_id(i) {
 }
 
 bool PluginVarTracker::HostVar::operator<(const HostVar& other) const {
-  if (channel < other.channel)
+  if (dispatcher < other.dispatcher)
     return true;
-  if (other.channel < channel)
+  if (other.dispatcher < dispatcher)
     return false;
   return host_object_id < other.host_object_id;
 }
@@ -149,12 +150,12 @@ void PluginVarTracker::Release(const PP_Var& var) {
 }
 
 PP_Var PluginVarTracker::ReceiveObjectPassRef(const PP_Var& var,
-                                              Sender* channel) {
+                                              PluginDispatcher* dispatcher) {
   DCHECK(var.type == PP_VARTYPE_OBJECT);
 
   // Find the plugin info.
   PluginVarInfoMap::iterator found =
-      FindOrMakePluginVarFromHostVar(var, channel);
+      FindOrMakePluginVarFromHostVar(var, dispatcher);
   if (found == plugin_var_info_.end()) {
     // The above code should have always made an entry in the map.
     NOTREACHED();
@@ -184,12 +185,13 @@ PP_Var PluginVarTracker::ReceiveObjectPassRef(const PP_Var& var,
   return ret;
 }
 
-PP_Var PluginVarTracker::TrackObjectWithNoReference(const PP_Var& host_var,
-                                                    Sender* channel) {
+PP_Var PluginVarTracker::TrackObjectWithNoReference(
+    const PP_Var& host_var,
+    PluginDispatcher* dispatcher) {
   DCHECK(host_var.type == PP_VARTYPE_OBJECT);
 
   PluginVarInfoMap::iterator found =
-      FindOrMakePluginVarFromHostVar(host_var, channel);
+      FindOrMakePluginVarFromHostVar(host_var, dispatcher);
   if (found == plugin_var_info_.end()) {
     // The above code should have always made an entry in the map.
     NOTREACHED();
@@ -232,12 +234,22 @@ PP_Var PluginVarTracker::GetHostObject(const PP_Var& plugin_object) const {
   return ret;
 }
 
-void PluginVarTracker::ReleaseHostObject(Sender* sender,
+PluginDispatcher* PluginVarTracker::DispatcherForPluginObject(
+    const PP_Var& plugin_object) const {
+  DCHECK(plugin_object.type == PP_VARTYPE_OBJECT);
+  PluginVarInfoMap::const_iterator found = plugin_var_info_.find(
+      plugin_object.value.as_id);
+  if (found != plugin_var_info_.end())
+    return found->second.host_var.dispatcher;
+  return NULL;
+}
+
+void PluginVarTracker::ReleaseHostObject(PluginDispatcher* dispatcher,
                                          const PP_Var& host_object) {
   // Convert the host object to a normal var valid in the plugin.
   DCHECK(host_object.type == PP_VARTYPE_OBJECT);
   HostVarToPluginVarMap::iterator found = host_var_to_plugin_var_.find(
-      HostVar(sender, host_object.value.as_id));
+      HostVar(dispatcher, host_object.value.as_id));
   if (found == host_var_to_plugin_var_.end()) {
     NOTREACHED();
     return;
@@ -268,20 +280,20 @@ int PluginVarTracker::GetTrackedWithNoReferenceCountForObject(
 }
 
 void PluginVarTracker::SendAddRefObjectMsg(const HostVar& host_var) {
-  host_var.channel->Send(new PpapiHostMsg_PPBVar_AddRefObject(
+  host_var.dispatcher->Send(new PpapiHostMsg_PPBVar_AddRefObject(
       INTERFACE_ID_PPB_VAR_DEPRECATED, host_var.host_object_id));
 }
 
 void PluginVarTracker::SendReleaseObjectMsg(const HostVar& host_var) {
-  host_var.channel->Send(new PpapiHostMsg_PPBVar_ReleaseObject(
+  host_var.dispatcher->Send(new PpapiHostMsg_PPBVar_ReleaseObject(
       INTERFACE_ID_PPB_VAR_DEPRECATED, host_var.host_object_id));
 }
 
 PluginVarTracker::PluginVarInfoMap::iterator
 PluginVarTracker::FindOrMakePluginVarFromHostVar(const PP_Var& var,
-                                                 Sender* channel) {
+                                                 PluginDispatcher* dispatcher) {
   DCHECK(var.type == PP_VARTYPE_OBJECT);
-  HostVar host_var(channel, var.value.as_id);
+  HostVar host_var(dispatcher, var.value.as_id);
 
   HostVarToPluginVarMap::iterator found =
       host_var_to_plugin_var_.find(host_var);

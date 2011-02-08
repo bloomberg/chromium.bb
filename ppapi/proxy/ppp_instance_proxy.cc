@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -100,6 +100,11 @@ static const PPP_Instance instance_interface = {
   &GetInstanceObject
 };
 
+InterfaceProxy* CreateInstanceProxy(Dispatcher* dispatcher,
+                                    const void* target_interface) {
+  return new PPP_Instance_Proxy(dispatcher, target_interface);
+}
+
 }  // namespace
 
 PPP_Instance_Proxy::PPP_Instance_Proxy(Dispatcher* dispatcher,
@@ -110,12 +115,16 @@ PPP_Instance_Proxy::PPP_Instance_Proxy(Dispatcher* dispatcher,
 PPP_Instance_Proxy::~PPP_Instance_Proxy() {
 }
 
-const void* PPP_Instance_Proxy::GetSourceInterface() const {
-  return &instance_interface;
-}
-
-InterfaceID PPP_Instance_Proxy::GetInterfaceId() const {
-  return INTERFACE_ID_PPP_INSTANCE;
+// static
+const InterfaceProxy::Info* PPP_Instance_Proxy::GetInfo() {
+  static const Info info = {
+    &instance_interface,
+    PPP_INSTANCE_INTERFACE,
+    INTERFACE_ID_PPP_INSTANCE,
+    false,
+    &CreateInstanceProxy,
+  };
+  return &info;
 }
 
 bool PPP_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
@@ -149,10 +158,12 @@ void PPP_Instance_Proxy::OnMsgDidCreate(
   if (argn.size() != argv.size())
     return;
 
-  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
-  if (!dispatcher)
-    return;
-  dispatcher->DidCreateInstance(instance);
+  // Set up the routing associating this new instance with the dispatcher we
+  // just got the message from. This must be done before calling into the
+  // plugin so it can in turn call PPAPI functions.
+  PluginDispatcher* plugin_dispatcher =
+      static_cast<PluginDispatcher*>(dispatcher());
+  plugin_dispatcher->DidCreateInstance(instance);
 
   // Make sure the arrays always have at least one element so we can take the
   // address below.
@@ -169,16 +180,16 @@ void PPP_Instance_Proxy::OnMsgDidCreate(
   *result = ppp_instance_target()->DidCreate(instance,
                                              static_cast<uint32_t>(argn.size()),
                                              &argn_array[0], &argv_array[0]);
-  DCHECK(*result);
+  if (!*result) {
+    // In the failure to create case, this plugin instance will be torn down
+    // without further notification, so we also need to undo the routing.
+    plugin_dispatcher->DidDestroyInstance(instance);
+  }
 }
 
 void PPP_Instance_Proxy::OnMsgDidDestroy(PP_Instance instance) {
   ppp_instance_target()->DidDestroy(instance);
-  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
-  if (!dispatcher)
-    return;
-
-  dispatcher->DidDestroyInstance(instance);
+  static_cast<PluginDispatcher*>(dispatcher())->DidDestroyInstance(instance);
 }
 
 void PPP_Instance_Proxy::OnMsgDidChangeView(PP_Instance instance,

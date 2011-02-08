@@ -70,6 +70,11 @@ const PPB_Testing_Dev testing_interface = {
   &GetLiveObjectsForInstance
 };
 
+InterfaceProxy* CreateTestingProxy(Dispatcher* dispatcher,
+                                   const void* target_interface) {
+  return new PPB_Testing_Proxy(dispatcher, target_interface);
+}
+
 }  // namespace
 
 PPB_Testing_Proxy::PPB_Testing_Proxy(Dispatcher* dispatcher,
@@ -80,12 +85,16 @@ PPB_Testing_Proxy::PPB_Testing_Proxy(Dispatcher* dispatcher,
 PPB_Testing_Proxy::~PPB_Testing_Proxy() {
 }
 
-const void* PPB_Testing_Proxy::GetSourceInterface() const {
-  return &testing_interface;
-}
-
-InterfaceID PPB_Testing_Proxy::GetInterfaceId() const {
-  return INTERFACE_ID_PPB_TESTING;
+// static
+const InterfaceProxy::Info* PPB_Testing_Proxy::GetInfo() {
+  static const Info info = {
+    &testing_interface,
+    PPB_TESTING_DEV_INTERFACE,
+    INTERFACE_ID_PPB_TESTING,
+    false,
+    &CreateTestingProxy,
+  };
+  return &info;
 }
 
 bool PPB_Testing_Proxy::OnMessageReceived(const IPC::Message& msg) {

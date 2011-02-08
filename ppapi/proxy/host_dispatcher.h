@@ -41,10 +41,6 @@ class HostDispatcher : public Dispatcher {
                  GetInterfaceFunc local_get_interface);
   ~HostDispatcher();
 
-  // Calls the plugin's PPP_InitializeModule function and returns true if
-  // the call succeeded.
-  bool InitializeModule();
-
   // The host side maintains a mapping from PP_Instance to Dispatcher so
   // that we can send the messages to the right channel.
   static HostDispatcher* GetForInstance(PP_Instance instance);
@@ -52,10 +48,36 @@ class HostDispatcher : public Dispatcher {
                              HostDispatcher* dispatcher);
   static void RemoveForInstance(PP_Instance instance);
 
+  // Calls the plugin's PPP_InitializeModule function and returns true if
+  // the call succeeded.
+  bool InitializeModule();
+
   // Dispatcher overrides.
   virtual bool IsPlugin() const;
 
+  // IPC::Channel::Listener.
+  virtual bool OnMessageReceived(const IPC::Message& msg);
+
+  // Proxied version of calling GetInterface on the plugin. This will check
+  // if the plugin supports the given interface (with caching) and returns the
+  // pointer to the proxied interface if it is supported. Returns NULL if the
+  // given interface isn't supported by the plugin or the proxy.
+  const void* GetProxiedInterface(const std::string& interface);
+
  private:
+  friend class HostDispatcherTest;
+
+  enum PluginInterfaceSupport {
+    INTERFACE_UNQUERIED = 0,  // Must be 0 so memset(0) will clear the list.
+    INTERFACE_SUPPORTED,
+    INTERFACE_UNSUPPORTED
+  };
+  PluginInterfaceSupport plugin_interface_support_[INTERFACE_ID_COUNT];
+
+  // All target proxies currently created. These are ones that receive
+  // messages. They are created on demand when we receive messages.
+  scoped_ptr<InterfaceProxy> target_proxies_[INTERFACE_ID_COUNT];
+
   DISALLOW_COPY_AND_ASSIGN(HostDispatcher);
 };
 

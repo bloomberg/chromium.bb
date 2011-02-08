@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -79,6 +79,11 @@ const PPB_Core core_interface = {
   &IsMainThread
 };
 
+InterfaceProxy* CreateCoreProxy(Dispatcher* dispatcher,
+                                const void* target_interface) {
+  return new PPB_Core_Proxy(dispatcher, target_interface);
+}
+
 }  // namespace
 
 PPB_Core_Proxy::PPB_Core_Proxy(Dispatcher* dispatcher,
@@ -89,12 +94,16 @@ PPB_Core_Proxy::PPB_Core_Proxy(Dispatcher* dispatcher,
 PPB_Core_Proxy::~PPB_Core_Proxy() {
 }
 
-const void* PPB_Core_Proxy::GetSourceInterface() const {
-  return &core_interface;
-}
-
-InterfaceID PPB_Core_Proxy::GetInterfaceId() const {
-  return INTERFACE_ID_PPB_CORE;
+// static
+const InterfaceProxy::Info* PPB_Core_Proxy::GetInfo() {
+  static const Info info = {
+    &core_interface,
+    PPB_CORE_INTERFACE,
+    INTERFACE_ID_PPB_CORE,
+    false,
+    &CreateCoreProxy,
+  };
+  return &info;
 }
 
 bool PPB_Core_Proxy::OnMessageReceived(const IPC::Message& msg) {

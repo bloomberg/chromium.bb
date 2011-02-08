@@ -98,6 +98,11 @@ const PPB_CursorControl_Dev cursor_control_interface = {
   &CanLockCursor
 };
 
+InterfaceProxy* CreateCursorControlProxy(Dispatcher* dispatcher,
+                                         const void* target_interface) {
+  return new PPB_CursorControl_Proxy(dispatcher, target_interface);
+}
+
 }  // namespace
 
 PPB_CursorControl_Proxy::PPB_CursorControl_Proxy(Dispatcher* dispatcher,
@@ -108,12 +113,16 @@ PPB_CursorControl_Proxy::PPB_CursorControl_Proxy(Dispatcher* dispatcher,
 PPB_CursorControl_Proxy::~PPB_CursorControl_Proxy() {
 }
 
-const void* PPB_CursorControl_Proxy::GetSourceInterface() const {
-  return &cursor_control_interface;
-}
-
-InterfaceID PPB_CursorControl_Proxy::GetInterfaceId() const {
-  return INTERFACE_ID_PPB_CURSORCONTROL;
+// static
+const InterfaceProxy::Info* PPB_CursorControl_Proxy::GetInfo() {
+  static const Info info = {
+    &cursor_control_interface,
+    PPB_CURSOR_CONTROL_DEV_INTERFACE,
+    INTERFACE_ID_PPB_CURSORCONTROL,
+    false,
+    &CreateCursorControlProxy,
+  };
+  return &info;
 }
 
 bool PPB_CursorControl_Proxy::OnMessageReceived(const IPC::Message& msg) {

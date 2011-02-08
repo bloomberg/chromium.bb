@@ -28,13 +28,13 @@ class PPP_Instance_Proxy : public InterfaceProxy {
   PPP_Instance_Proxy(Dispatcher* dispatcher, const void* target_interface);
   virtual ~PPP_Instance_Proxy();
 
+  static const Info* GetInfo();
+
   const PPP_Instance* ppp_instance_target() const {
     return reinterpret_cast<const PPP_Instance*>(target_interface());
   }
 
   // InterfaceProxy implementation.
-  virtual const void* GetSourceInterface() const;
-  virtual InterfaceID GetInterfaceId() const;
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
  private:
