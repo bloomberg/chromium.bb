@@ -151,8 +151,10 @@ int InitProxyResolver::DoWait() {
 
 int InitProxyResolver::DoWaitComplete(int result) {
   DCHECK_EQ(OK, result);
-  if (wait_delay_.ToInternalValue() != 0)
-    net_log_.EndEvent(NetLog::TYPE_INIT_PROXY_RESOLVER_WAIT, NULL);
+  if (wait_delay_.ToInternalValue() != 0) {
+    net_log_.EndEventWithNetErrorCode(NetLog::TYPE_INIT_PROXY_RESOLVER_WAIT,
+                                      result);
+  }
   next_state_ = GetStartState();
   return OK;
 }
@@ -185,14 +187,10 @@ int InitProxyResolver::DoFetchPacScript() {
 int InitProxyResolver::DoFetchPacScriptComplete(int result) {
   DCHECK(resolver_->expects_pac_bytes());
 
-  if (result == OK) {
-    net_log_.EndEvent(NetLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT, NULL);
-  } else {
-    net_log_.EndEvent(
-        NetLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT,
-        make_scoped_refptr(new NetLogIntegerParameter("net_error", result)));
+  net_log_.EndEventWithNetErrorCode(
+      NetLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT, result);
+  if (result != OK)
     return TryToFallbackPacUrl(result);
-  }
 
   next_state_ = STATE_SET_PAC_SCRIPT;
   return result;
@@ -219,12 +217,10 @@ int InitProxyResolver::DoSetPacScript() {
 }
 
 int InitProxyResolver::DoSetPacScriptComplete(int result) {
-  if (result != OK) {
-    net_log_.EndEvent(
-        NetLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT,
-        make_scoped_refptr(new NetLogIntegerParameter("net_error", result)));
+  net_log_.EndEventWithNetErrorCode(
+      NetLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT, result);
+  if (result != OK)
     return TryToFallbackPacUrl(result);
-  }
 
   // Let the caller know which automatic setting we ended up initializing the
   // resolver for (there may have been multiple fallbacks to choose from.)
@@ -240,7 +236,6 @@ int InitProxyResolver::DoSetPacScriptComplete(int result) {
     }
   }
 
-  net_log_.EndEvent(NetLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT, NULL);
   return result;
 }
 
