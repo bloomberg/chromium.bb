@@ -8,6 +8,7 @@
 #define CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_PATTERN_H_
 #pragma once
 
+#include <ostream>
 #include <string>
 
 class GURL;
