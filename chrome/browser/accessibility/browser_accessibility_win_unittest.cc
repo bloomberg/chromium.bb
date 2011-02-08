@@ -146,7 +146,7 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChange) {
   WebAccessibility text;
   text.id = 2;
   text.role = WebAccessibility::ROLE_STATIC_TEXT;
-  text.value = L"old text";
+  text.name = L"old text";
   text.state = 0;
 
   WebAccessibility root;
@@ -177,16 +177,16 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChange) {
   hr = text_dispatch.QueryInterface(text_accessible.Receive());
   ASSERT_EQ(S_OK, hr);
 
-  CComBSTR value;
-  hr = text_accessible->get_accValue(CreateI4Variant(CHILDID_SELF), &value);
+  CComBSTR name;
+  hr = text_accessible->get_accName(CreateI4Variant(CHILDID_SELF), &name);
   ASSERT_EQ(S_OK, hr);
-  EXPECT_STREQ(L"old text", value.m_str);
+  EXPECT_STREQ(L"old text", name.m_str);
 
   text_dispatch.Release();
   text_accessible.Release();
 
   // Notify the BrowserAccessibilityManager that the text child has changed.
-  text.value = L"new text";
+  text.name = L"new text";
   ViewHostMsg_AccessibilityNotification_Params param;
   param.notification_type =
       ViewHostMsg_AccessibilityNotification_Params::
@@ -206,9 +206,9 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChange) {
   hr = text_dispatch.QueryInterface(text_accessible.Receive());
   ASSERT_EQ(S_OK, hr);
 
-  hr = text_accessible->get_accValue(CreateI4Variant(CHILDID_SELF), &value);
+  hr = text_accessible->get_accName(CreateI4Variant(CHILDID_SELF), &name);
   ASSERT_EQ(S_OK, hr);
-  EXPECT_STREQ(L"new text", value.m_str);
+  EXPECT_STREQ(L"new text", name.m_str);
 
   text_dispatch.Release();
   text_accessible.Release();

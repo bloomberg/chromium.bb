@@ -1137,12 +1137,15 @@ void BrowserAccessibilityWin::Initialize() {
   if (GetAttribute(WebAccessibility::ATTR_DISPLAY, &display))
     html_attributes_.push_back(std::make_pair(L"display", display));
 
+  // If this is static text, put the text in the name rather than the value.
+  if (role_ == WebAccessibility::ROLE_STATIC_TEXT && name_.empty())
+    name_.swap(value_);
+
   // If this object doesn't have a name but it does have a description,
   // use the description as its name - because some screen readers only
   // announce the name.
-  if (name_.empty() && HasAttribute(WebAccessibility::ATTR_DESCRIPTION)) {
+  if (name_.empty() && HasAttribute(WebAccessibility::ATTR_DESCRIPTION))
     GetAttribute(WebAccessibility::ATTR_DESCRIPTION, &name_);
-  }
 
   instance_active_ = true;
 }
@@ -1320,6 +1323,8 @@ void BrowserAccessibilityWin::InitRoleAndState() {
   if ((state_ >> WebAccessibility::STATE_UNAVAILABLE) & 1)
     ia_state_|= STATE_SYSTEM_UNAVAILABLE;
 
+  string16 html_tag;
+  GetAttribute(WebAccessibility::ATTR_HTML_TAG, &html_tag);
   ia_role_ = 0;
   ia2_role_ = 0;
   switch (role_) {
@@ -1360,7 +1365,7 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia_role_ = ROLE_SYSTEM_COMBOBOX;
       break;
     case WebAccessibility::ROLE_DEFINITION_LIST_DEFINITION:
-      GetAttribute(WebAccessibility::ATTR_HTML_TAG, &role_name_);
+      role_name_ = html_tag;
       ia2_role_ = IA2_ROLE_PARAGRAPH;
       break;
     case WebAccessibility::ROLE_DEFINITION_LIST_TERM:
@@ -1387,23 +1392,28 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia_role_ = ROLE_SYSTEM_TABLE;
       break;
     case WebAccessibility::ROLE_GROUP:
-      GetAttribute(WebAccessibility::ATTR_HTML_TAG, &role_name_);
-      if (role_name_.empty())
-        role_name_ = L"div";
-      ia2_role_ = IA2_ROLE_SECTION;
+      if (html_tag == L"li") {
+        ia_role_ = ROLE_SYSTEM_LISTITEM;
+      } else {
+        if (html_tag.empty())
+          role_name_ = L"div";
+        else
+          role_name_ = html_tag;
+        ia2_role_ = IA2_ROLE_SECTION;
+      }
       break;
     case WebAccessibility::ROLE_GROW_AREA:
       ia_role_ = ROLE_SYSTEM_GRIP;
       break;
     case WebAccessibility::ROLE_HEADING:
-      GetAttribute(WebAccessibility::ATTR_HTML_TAG, &role_name_);
+      role_name_ = html_tag;
       ia2_role_ = IA2_ROLE_HEADING;
       break;
     case WebAccessibility::ROLE_IMAGE:
       ia_role_ = ROLE_SYSTEM_GRAPHIC;
       break;
     case WebAccessibility::ROLE_IMAGE_MAP:
-      GetAttribute(WebAccessibility::ATTR_HTML_TAG, &role_name_);
+      role_name_ = html_tag;
       ia2_role_ = IA2_ROLE_IMAGE_MAP;
       break;
     case WebAccessibility::ROLE_IMAGE_MAP_LINK:

@@ -388,7 +388,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
   // Check the browser's copy of the renderer accessibility tree.
   AccessibleChecker list_marker_checker(L"", ROLE_SYSTEM_LISTITEM, L"\x2022");
-  AccessibleChecker static_text_checker(L"", ROLE_SYSTEM_TEXT, L"li");
+  AccessibleChecker static_text_checker(L"li", ROLE_SYSTEM_TEXT, L"");
   AccessibleChecker list_item_checker(L"", ROLE_SYSTEM_LISTITEM, L"");
   list_item_checker.SetExpectedState(
       STATE_SYSTEM_READONLY);
@@ -477,7 +477,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
       NotificationType::RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED);
 
   // Check that the accessibility tree of the browser has been updated.
-  AccessibleChecker text_checker(L"", ROLE_SYSTEM_TEXT, L"new text");
+  AccessibleChecker text_checker(L"new text", ROLE_SYSTEM_TEXT, L"");
   body_checker.AppendExpectedChild(&text_checker);
   document_checker.CheckAccessible(GetRendererAccessible());
 }
@@ -503,7 +503,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
       NotificationType::RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED);
 
   // Check that the accessibility tree of the browser has been updated.
-  AccessibleChecker static_text_checker(L"", ROLE_SYSTEM_TEXT, L"text");
+  AccessibleChecker static_text_checker(L"text", ROLE_SYSTEM_TEXT, L"");
   AccessibleChecker div_checker(L"", L"div", L"");
   document_checker.AppendExpectedChild(&div_checker);
   div_checker.AppendExpectedChild(&static_text_checker);
