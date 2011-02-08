@@ -1637,10 +1637,12 @@ function handleCommand(e) {
       deleteBookmarks();
       break;
     case 'copy-command':
-      chrome.experimental.bookmarkManager.copy(getSelectedBookmarkIds());
+      chrome.experimental.bookmarkManager.copy(getSelectedBookmarkIds(),
+                                               updatePasteCommand);
       break;
     case 'cut-command':
-      chrome.experimental.bookmarkManager.cut(getSelectedBookmarkIds());
+      chrome.experimental.bookmarkManager.cut(getSelectedBookmarkIds(),
+                                              updatePasteCommand);
       break;
     case 'paste-command':
       selectItemsAfterUserAction(list);
