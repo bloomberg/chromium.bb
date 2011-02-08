@@ -4,7 +4,7 @@
 
 /**
  * The global object.
- * @param {!Object}
+ * @type {!Object}
  */
 const global = this;
 

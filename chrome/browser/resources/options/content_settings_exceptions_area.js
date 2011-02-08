@@ -239,8 +239,8 @@ cr.define('options.contentSettings', function() {
 
     /**
      * Editing is complete; update the model.
-     * @type {string} newPattern The pattern that the user entered.
-     * @type {string} newSetting The setting the user chose.
+     * @param {string} newPattern The pattern that the user entered.
+     * @param {string} newSetting The setting the user chose.
      */
     finishEdit: function(newPattern, newSetting) {
       this.patternLabel.textContent = newPattern;
@@ -311,8 +311,8 @@ cr.define('options.contentSettings', function() {
     /**
      * Editing is complete; update the model. As long as the pattern isn't
      * empty, we'll just add it.
-     * @type {string} newPattern The pattern that the user entered.
-     * @type {string} newSetting The setting the user chose.
+     * @param {string} newPattern The pattern that the user entered.
+     * @param {string} newSetting The setting the user chose.
      */
     finishEdit: function(newPattern, newSetting) {
       chrome.send('setException',

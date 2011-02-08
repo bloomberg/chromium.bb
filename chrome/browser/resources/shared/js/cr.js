@@ -210,10 +210,10 @@ const cr = (function() {
   /**
    * Defines a property on an object. When the setter changes the value a
    * property change event with the type {@code name + 'Change'} is fired.
-   * @param {!Object} The object to define the property for.
-   * @param {string} The name of the property.
+   * @param {!Object} obj The object to define the property for.
+   * @param {string} name The name of the property.
    * @param {cr.PropertyKind=} opt_kind What kind of underlying storage to use.
-   * @param {*} opt_defaultValue The default value.
+   * @param {*} opt_default The default value.
    */
   function defineProperty(obj, name, opt_kind, opt_default) {
     if (typeof obj == 'function')
