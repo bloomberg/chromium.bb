@@ -1,4 +1,3 @@
-Creating EventModule.
 
 "*** REGISTER REPLAY METHODS" 
 
@@ -7,33 +6,20 @@ Creating EventModule.
 "*** CREATE UPCALL SERVICE" 
 
 "*** INIT MODULE" 
+Creating EventModule.
 replaying PPB_GetInterface:s:i:
 output 0:  i(1)
-Creating EventInstance.
-EventInstance created.
-EventInstance::GetInstanceObject
-EventHandler created.
 
 "*** INIT INSTANCE" 
+Creating EventInstance.
+EventInstance created.
 PPP_Instance_DidCreate RESULTS:   i(1)
 
 "*** GET INSTANCE OBJECT" 
+EventInstance::GetInstanceObject
+EventHandler created.
 replaying PPB_GetInterface:s:i:
 output 0:  i(1)
-HandleInputEvent called
-5555: Mouse event:Down modifier:left-button-down  button:Left x:264 y:100 click_count:1 time:1
-HandleInputEvent called
-5555: Mouse event:Up modifier:left-button-down  button:Left x:264 y:100 click_count:0 time:1.0625
-HandleInputEvent called
-5555: Mouse event:Move modifier: button:Left x:264 y:100 click_count:0 time:1.125
-HandleInputEvent called
-5555: Mouse event:Enter modifier: button:Left x:264 y:100 click_count:0 time:1.1875
-HandleInputEvent called
-5555: Mouse event:Leave modifier: button:Left x:264 y:100 click_count:0 time:1.25
-HandleInputEvent called
-5555: Key event:Up modifier: key_code:84 time:1.375
-HandleInputEvent called
-5555: Key event:Down modifier: key_code:84 time:1.3125
 
 "*** GET PROPERTY (AT THE BEGINNING)" 
 HasProperty RESULTS:   i(1)  C(8,\x00\x00\x00\x00\x00\x00\x00\x00)
@@ -43,24 +29,38 @@ GetProperty RESULTS:   C(8,\x05\x00\x00\x00\x00\x00\x00\x00)  C(8,\x00\x00\x00\x
 PPP_Instance_DidChangeView RESULTS: 
 
 "*** SENT EVENTS EV_MOUSE_DOWN" 
+HandleInputEvent called
+5555: Mouse event:Down modifier:left-button-down  button:Left x:264 y:100 click_count:1 time:1
 PPP_Instance_HandleInputEvent RESULTS:   i(1)
 
 "*** SENT EVENTS EV_MOUSE_UP" 
+HandleInputEvent called
+5555: Mouse event:Up modifier:left-button-down  button:Left x:264 y:100 click_count:0 time:1.0625
 PPP_Instance_HandleInputEvent RESULTS:   i(1)
 
 "*** SENT EVENTS EV_MOUSE_MOVE" 
+HandleInputEvent called
+5555: Mouse event:Move modifier: button:Left x:264 y:100 click_count:0 time:1.125
 PPP_Instance_HandleInputEvent RESULTS:   i(1)
 
 "*** SENT EVENTS EV_MOUSE_ENTER" 
+HandleInputEvent called
+5555: Mouse event:Enter modifier: button:Left x:264 y:100 click_count:0 time:1.1875
 PPP_Instance_HandleInputEvent RESULTS:   i(1)
 
 "*** SENT EVENTS EV_MOUSE_LEAVE" 
+HandleInputEvent called
+5555: Mouse event:Leave modifier: button:Left x:264 y:100 click_count:0 time:1.25
 PPP_Instance_HandleInputEvent RESULTS:   i(1)
 
 "*** SENT EVENTS EV_KEY_UP" 
+HandleInputEvent called
+5555: Key event:Up modifier: key_code:84 time:1.375
 PPP_Instance_HandleInputEvent RESULTS:   i(1)
 
 "*** SENT EVENTS EV_KEY_DOWN" 
+HandleInputEvent called
+5555: Key event:Down modifier: key_code:84 time:1.3125
 PPP_Instance_HandleInputEvent RESULTS:   i(1)
 
 "*** GET PROPERTY (AT THE END)" 

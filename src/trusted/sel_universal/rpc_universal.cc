@@ -441,6 +441,9 @@ void NaClCommandLoop::StartInteractiveLoop() {
 
   NaClLog(1, "entering print eval loop\n");
   for (;;) {
+    fflush(stdout);
+    fflush(stderr);
+
     char buffer[kMaxCommandLineLength];
 
     fprintf(stderr, "%d> ", command_count);

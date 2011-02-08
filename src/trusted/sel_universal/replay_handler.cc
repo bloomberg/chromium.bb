@@ -112,7 +112,6 @@ void ReplayRpc(NaClSrpcRpc* rpc,
       string value = DumpArg(outputs[j], GlobalCommandLoop);
       printf("output %d:  %s\n", (int) j, value.c_str());
     }
-    fflush(stdout);
 
     rpc->result = NACL_SRPC_RESULT_OK;
     NaClLog(1, "invoke callback\n");
@@ -126,7 +125,6 @@ void ReplayRpc(NaClSrpcRpc* rpc,
     string value = DumpArg(inputs[i], GlobalCommandLoop);
     NaClLog(LOG_WARNING, "input %d:  %s\n", (int) i, value.c_str());
   }
-  fflush(stdout);
 
   // if we exit the for loop here we have an error
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
