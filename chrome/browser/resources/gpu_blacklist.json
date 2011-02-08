@@ -38,7 +38,7 @@
 {
   "name": "gpu blacklist",
   // Please update the version number whenever you change this file.
-  "version": "0.4",
+  "version": "0.5",
   "entries": [
     { // ATI Radeon X1900 on Mac, BUGWEBKIT=47028
       "id": "1",
@@ -85,10 +85,20 @@
     { // Intel Mobile 945 Express Chipset Family
       "id": "4",
       "os": {
-        "type": "win"
+        "type": "any"
       },
       "vendor_id": "0x8086",
       "device_id": "0x27AE",
+      "blacklist": [
+        "webgl"
+      ]
+    },
+    { // All ATI cards in linux, BUG=71381
+      "id": "5",
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x1002",
       "blacklist": [
         "webgl"
       ]
