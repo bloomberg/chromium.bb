@@ -3822,3 +3822,34 @@
    fun:_ZN4base9TestSuite3RunEv
    fun:main
 }
+{
+   bug_72288_a
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN20MockTabDownloadStateC1Ev
+   fun:*DownloadRequestInfobarDelegate_*
+   fun:_ZN7testing*35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
+}
+{
+   bug_72288_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base22PosixDynamicThreadPool8PostTaskEP4Task
+   fun:*WorkerPoolImpl8PostTaskERKN15tracked_objects8LocationEP4Taskb
+   fun:_ZN4base10WorkerPool8PostTaskERKN15tracked_objects8LocationEP4Taskb
+   fun:_ZN3net10FileStream12AsyncContext17InitiateAsyncReadEiPciP14CallbackRunnerI6Tuple1IiEE
+   fun:_ZN3net10FileStream4ReadEPciP14CallbackRunnerI6Tuple1IiEE
+   fun:_ZN7fileapi23FileSystemURLRequestJob11ReadRawDataEPN3net8IOBufferEiPi
+   fun:_ZN3net13URLRequestJob17ReadRawDataHelperEPNS_8IOBufferEiPi
+   fun:_ZN3net13URLRequestJob4ReadEPNS_8IOBufferEiPi
+   fun:_ZN3net10URLRequest4ReadEPNS_8IOBufferEiPi
+   fun:_ZN12TestDelegate17OnResponseStartedEPN3net10URLRequestE
+   fun:_ZN3net10URLRequest15ResponseStartedEv
+   fun:_ZN3net13URLRequestJob21NotifyHeadersCompleteEv
+   fun:_ZN7fileapi23FileSystemURLRequestJob7DidOpenEN4base17PlatformFileErrorENS1_16PassPlatformFileEb
+   fun:_Z16DispatchToMethodIN7fileapi23FileSystemURLRequestJobEMS1_FvN4base17PlatformFileErrorENS2_16PassPlatformFileEbES3_S4_bEvPT_T0_RK6Tuple3IT1_T2_T3_E
+   fun:_ZN4base21ScopedCallbackFactoryIN7fileapi23FileSystemURLRequestJobEE12CallbackImplIMS2_FvNS_17PlatformFileErrorENS_16PassPlatformFileEbE6Tuple3IS5_S6_bEE13RunWithParamsERKSA_
+   fun:_ZN14CallbackRunnerI6Tuple3IN4base17PlatformFileErrorENS1_16PassPlatformFileEbEE3RunIS2_S3_bEEvRKT_RKT0_RKT1_
+   fun:*RelayCreateOrOpen11RunCallbackEv
+}

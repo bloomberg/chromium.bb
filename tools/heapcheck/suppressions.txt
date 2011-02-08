@@ -1255,3 +1255,9 @@
    ...
    fun:ExtensionUpdaterTest*
 }
+{
+   bug_72288
+   Heapcheck:Leak
+   fun:MockTabDownloadState
+   fun:DownloadRequestInfobarDelegate_*_Test::TestBody
+}
