@@ -428,6 +428,7 @@ int STDCALL CPB_GetBrowsingContextInfo(
     void* buf, uint32 buf_size) {
   CHECK(ChromePluginLib::IsPluginThread());
 
+#if defined(OS_WIN)
   switch (type) {
   case CPBROWSINGCONTEXT_DATA_DIR_PTR: {
     if (buf_size < sizeof(char*))
@@ -437,7 +438,7 @@ int STDCALL CPB_GetBrowsingContextInfo(
                     GetSwitchValuePath(switches::kPluginDataDir);
     DCHECK(!path.empty());
     std::string retval = WideToUTF8(
-        path.Append(chrome::kChromePluginDataDirname).ToWStringHack());
+        path.Append(chrome::kChromePluginDataDirname).value());
     *static_cast<char**>(buf) = CPB_StringDup(CPB_Alloc, retval);
 
     return CPERR_SUCCESS;
@@ -451,6 +452,10 @@ int STDCALL CPB_GetBrowsingContextInfo(
     return CPERR_SUCCESS;
     }
   }
+#else
+  // TODO(aa): this code is only used by Gears, which we are removing.
+  NOTREACHED();
+#endif
 
   return CPERR_FAILURE;
 }

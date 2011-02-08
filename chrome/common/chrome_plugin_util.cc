@@ -126,6 +126,8 @@ int PluginResponseUtils::GetResponseInfo(
 
 CPError CPB_GetCommandLineArgumentsCommon(const char* url,
                                           std::string* arguments) {
+  // TODO(aa): all of this code is only used by Gears, which we are removing.
+#if defined(OS_WIN)
   const CommandLine cmd = *CommandLine::ForCurrentProcess();
   std::wstring arguments_w;
 
@@ -137,17 +139,9 @@ CPError CPB_GetCommandLineArgumentsCommon(const char* url,
         file_util::PathExists(user_data_dir)) {
       // TODO(evanm): use CommandLine APIs instead of this.
       arguments_w += std::wstring(L"--") + ASCIIToWide(switches::kUserDataDir) +
-                     L"=\"" + user_data_dir.ToWStringHack() + L"\" ";
+                     L"=\"" + user_data_dir.value() + L"\" ";
     }
   }
-
-#if defined(OS_CHROMEOS)
-  FilePath profile = cmd.GetSwitchValuePath(switches::kLoginProfile);
-  if (!profile.empty()) {
-    arguments_w += std::wstring(L"--") + ASCIIToWide(switches::kLoginProfile) +
-        L"=\"" + profile.ToWStringHack() + L"\" ";
-  }
-#endif
 
   // Use '--app=url' instead of just 'url' to launch the browser with minimal
   // chrome.
@@ -157,15 +151,18 @@ CPError CPB_GetCommandLineArgumentsCommon(const char* url,
   ReplaceSubstringsAfterOffset(&url_string, 0, "\"", "%22");
   ReplaceSubstringsAfterOffset(&url_string, 0, ";",  "%3B");
   ReplaceSubstringsAfterOffset(&url_string, 0, "$",  "%24");
-#if defined(OS_WIN)  // Windows shortcuts can't escape % so we use \x instead.
+  // Windows shortcuts can't escape % so we use \x instead.
   ReplaceSubstringsAfterOffset(&url_string, 0, "%",  "\\x");
-#endif
   std::wstring url_w = UTF8ToWide(url_string);
   // TODO(evanm): use CommandLine APIs instead of this.
   arguments_w += std::wstring(L"--") + ASCIIToWide(switches::kApp) +
       L"=\"" + url_w + L"\"";
 
   *arguments = WideToUTF8(arguments_w);
+#else
+  // None of this code is used on non-Windows platforms.
+  NOTREACHED();
+#endif
 
   return CPERR_SUCCESS;
 }

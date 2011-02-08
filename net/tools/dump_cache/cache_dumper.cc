@@ -83,7 +83,7 @@ int DiskDumper::CreateEntry(const std::string& key,
   // There is no way to prepend to a filename.  We simply *have*
   // to convert to a wstring to do this.
   std::wstring name = kLongFilenamePrefix;
-  name.append(entry_path_.ToWStringHack());
+  name.append(entry_path_.value());
   entry_path_ = FilePath(name);
 #endif
 
