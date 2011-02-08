@@ -56,7 +56,7 @@ cr.define('gpu', function() {
       browserBridge.callAsync('requestGpuInfo', undefined, (function(data) {
         this.gpuInfo_ = data;
         this.refresh();
-        if (!data || data.progress != 'complete') { // try again in 250 ms
+        if (!data || data.level != 'complete') { // try again in 250 ms
           window.setTimeout(this.beginRequestGpuInfo.bind(this), 250);
         }
       }).bind(this));
@@ -107,7 +107,8 @@ cr.define('gpu', function() {
         this.setTable_('basic-info', this.gpuInfo_.basic_info);
         if (this.gpuInfo_.diagnostics) {
           this.setTable_('diagnostics', this.gpuInfo_.diagnostics);
-        } else if (this.gpuInfo_.progress == 'partial') {
+        } else if (this.gpuInfo_.level == 'partial' ||
+                   this.gpuInfo_.level == 'completing') {
           this.setText_('diagnostics', '... loading...');
         } else {
           this.setText_('diagnostics', 'None');

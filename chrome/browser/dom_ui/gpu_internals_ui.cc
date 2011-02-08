@@ -306,9 +306,15 @@ DictionaryValue* GpuInfoToDict(const GPUInfo& gpu_info) {
 
   if (gpu_info.level() == GPUInfo::kPartial) {
     info->SetString("level", "partial");
+  } else if (gpu_info.level() == GPUInfo::kCompleting) {
+    info->SetString("level", "completing");    
+  } else if (gpu_info.level() == GPUInfo::kComplete) {
+    info->SetString("level", "complete");    
   } else {
-    info->SetString("level", "complete");
+    DCHECK(false) << "Unrecognized GPUInfo::Level value";
+    info->SetString("level", "");
   }
+
 #if defined(OS_WIN)
   if (gpu_info.level() == GPUInfo::kComplete) {
     ListValue* dx_info = DxDiagNodeToList(gpu_info.dx_diagnostics());
