@@ -133,7 +133,6 @@ std::string AppendCFUserAgentString(LPCWSTR headers,
 
 std::string ReplaceOrAddUserAgent(LPCWSTR headers,
                                   const std::string& user_agent_value) {
-  DCHECK(headers);
   using net::HttpUtil;
 
   std::string new_headers;
