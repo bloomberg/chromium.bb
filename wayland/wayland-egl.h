@@ -41,7 +41,8 @@ void
 wl_egl_display_destroy(struct wl_egl_display *egl_display);
 
 struct wl_egl_window *
-wl_egl_window_create(struct wl_surface *surface,
+wl_egl_window_create(struct wl_egl_display *egl_display,
+		     struct wl_surface *surface,
 		     int width, int height,
 		     struct wl_visual *visual);
 

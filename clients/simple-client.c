@@ -197,7 +197,8 @@ create_surface(struct window *window)
 	window->surface = wl_compositor_create_surface(display->compositor);
 	visual = wl_display_get_premultiplied_argb_visual(display->display);
 	window->native =
-		wl_egl_window_create(window->surface,
+		wl_egl_window_create(display->native,
+				     window->surface,
 				     window->geometry.width,
 				     window->geometry.height,
 				     visual);
