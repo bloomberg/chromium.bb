@@ -46,10 +46,11 @@ cr.define('cr.ui', function() {
     if (!opt_item)
       list.appendChild(item);
 
+    var rect = item.getBoundingClientRect();
     var cs = getComputedStyle(item);
     var mt = parseFloat(cs.marginTop);
     var mb = parseFloat(cs.marginBottom);
-    var h = item.offsetHeight;
+    var h = rect.height;
 
     // Handle margin collapsing.
     if (mt < 0 && mb < 0) {
@@ -283,7 +284,7 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * Returns the height of an item, measuring it if necessary.
+     * @return {number} The height of an item, measuring it if necessary.
      * @private
      */
     getItemHeight_: function() {
@@ -537,11 +538,13 @@ cr.define('cr.ui', function() {
       var paddingTop = parseFloat(getComputedStyle(this).paddingTop);
       var cs = getComputedStyle(item);
       var top = item.offsetTop - parseFloat(cs.marginTop) - paddingTop;
-      var index = Math.floor(top / this.getItemHeight_());
+      var itemHeight = this.getItemHeight_();
+      var index = Math.floor((top + itemHeight / 2) / itemHeight);
       var childIndex = index - this.firstIndex_ + 1;
       if (childIndex >= 0 && childIndex < this.children.length &&
-          this.children[childIndex] == item)
+          this.children[childIndex] == item) {
         return index;
+      }
       return -1;
     },
 
