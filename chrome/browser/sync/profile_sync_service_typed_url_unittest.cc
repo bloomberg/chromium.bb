@@ -84,7 +84,7 @@ class HistoryBackendMock : public HistoryBackend {
                                history::VisitSource visit_source));
   MOCK_METHOD1(RemoveVisits, bool(const history::VisitVector& visits));
   MOCK_METHOD2(GetURL, bool(const GURL& url_id, history::URLRow* url_row));
-  MOCK_METHOD2(SetPageTitle, void(const GURL& url, const std::wstring& title));
+  MOCK_METHOD2(SetPageTitle, void(const GURL& url, const string16& title));
   MOCK_METHOD1(DeleteURL, void(const GURL& url));
 };
 
