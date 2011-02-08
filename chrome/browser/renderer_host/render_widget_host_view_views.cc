@@ -493,7 +493,7 @@ void RenderWidgetHostViewViews::OnMouseExited(const views::MouseEvent& event) {
 
 bool RenderWidgetHostViewViews::OnMouseWheel(const views::MouseWheelEvent& e) {
   WebMouseWheelEvent wmwe;
-  InitializeWebMouseEventFromViewsEvent(e, GetPosition(), &wmwe);
+  InitializeWebMouseEventFromViewsEvent(e, GetMirroredPosition(), &wmwe);
 
   wmwe.type = WebKit::WebInputEvent::MouseWheel;
   wmwe.button = WebKit::WebMouseEvent::ButtonNone;
@@ -637,7 +637,7 @@ void RenderWidgetHostViewViews::AcceleratedCompositingActivated(
 WebKit::WebMouseEvent RenderWidgetHostViewViews::WebMouseEventFromViewsEvent(
     const views::MouseEvent& event) {
   WebKit::WebMouseEvent wmevent;
-  InitializeWebMouseEventFromViewsEvent(event, GetPosition(), &wmevent);
+  InitializeWebMouseEventFromViewsEvent(event, GetMirroredPosition(), &wmevent);
 
   // Setting |wmevent.button| is not necessary for -move events, but it is
   // necessary for -clicks and -drags.
@@ -733,7 +733,7 @@ views::View::TouchStatus RenderWidgetHostViewViews::OnTouchEvent(
       return status;
     }
   }
-  UpdateTouchPointPosition(&e, GetPosition(), point);
+  UpdateTouchPointPosition(&e, GetMirroredPosition(), point);
 
   // Mark the rest of the points as stationary.
   for (int i = 0; i < touch_event_.touchPointsLength; ++i) {
