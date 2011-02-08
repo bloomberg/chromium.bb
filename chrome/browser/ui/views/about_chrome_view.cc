@@ -396,8 +396,8 @@ void AboutChromeView::Layout() {
 
   sz = throbber_->GetPreferredSize();
   int throbber_topleft_x = kPanelHorizMargin;
-  int throbber_topleft_y = parent_bounds.bottom() - sz.height() -
-                           kButtonVEdgeMargin - 3;
+  int throbber_topleft_y =
+      parent_bounds.bottom() - sz.height() - views::kButtonVEdgeMargin - 3;
   throbber_->SetBounds(throbber_topleft_x, throbber_topleft_y,
                        sz.width(), sz.height());
 

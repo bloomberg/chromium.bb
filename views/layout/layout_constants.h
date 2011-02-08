@@ -53,6 +53,11 @@ const int kUnrelatedControlHorizontalSpacing = 12;
 // Larger horizontal spacing between unrelated controls.
 const int kUnrelatedControlLargeHorizontalSpacing = 20;
 
+// TODO(tfarina): Move this namespace to the top of this file around of all
+// these constants. But this needs to be done in small steps, as it's
+// impossible to convert everything at the same time.
+namespace views {
+
 // Vertical spacing between the edge of the window and the
 // top or bottom of a button.
 const int kButtonVEdgeMargin = 6;
@@ -60,11 +65,6 @@ const int kButtonVEdgeMargin = 6;
 // Vertical spacing between the edge of the window and the
 // left or right of a button.
 const int kButtonHEdgeMargin = 7;
-
-// TODO(tfarina): Move this namespace to the top of this file around of all
-// these constants. But this needs to be done in small steps, as it's
-// impossible to convert everything at the same time.
-namespace views {
 
 // Horizontal spacing between buttons that are logically related.
 const int kRelatedButtonHSpacing = 6;

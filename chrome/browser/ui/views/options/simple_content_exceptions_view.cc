@@ -69,7 +69,8 @@ void SimpleContentExceptionsView::Layout() {
   views::NativeButton* buttons[] = { remove_button_, remove_all_button_ };
 
   // The buttons are placed in the parent, but we need to lay them out.
-  int max_y = GetParent()->GetLocalBounds().bottom() - kButtonVEdgeMargin;
+  int max_y =
+      GetParent()->GetLocalBounds().bottom() - views::kButtonVEdgeMargin;
   int x = kPanelHorizMargin;
 
   for (size_t i = 0; i < arraysize(buttons); ++i) {

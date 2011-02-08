@@ -519,7 +519,8 @@ void TaskManagerView::Layout() {
 
   // y-coordinate of button top left.
   gfx::Rect parent_bounds = GetParent()->GetLocalBounds();
-  int y_buttons = parent_bounds.bottom() - prefered_height - kButtonVEdgeMargin;
+  int y_buttons =
+      parent_bounds.bottom() - prefered_height - views::kButtonVEdgeMargin;
 
   kill_button_->SetBounds(x() + width() - prefered_width - kPanelHorizMargin,
                           y_buttons,

@@ -193,7 +193,7 @@ void FirstRunBubbleView::Layout() {
   pref_size = change_button_->GetPreferredSize();
   change_button_->SetBounds(
       canvas.width() - pref_size.width() - kBubblePadding,
-      canvas.height() - pref_size.height() - kButtonVEdgeMargin,
+      canvas.height() - pref_size.height() - views::kButtonVEdgeMargin,
       pref_size.width(), pref_size.height());
 
   pref_size = keep_button_->GetPreferredSize();
