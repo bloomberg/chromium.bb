@@ -96,7 +96,7 @@ bool ExistingUserView::AcceleratorPressed(
     user_controller_->OnLoginAsGuest();
     return true;
   } else if (accelerator == accel_toggle_accessibility_) {
-    WizardAccessibilityHelper::GetInstance()->ToggleAccessibility(this);
+    WizardAccessibilityHelper::GetInstance()->ToggleAccessibility();
     return true;
   }
   return false;
@@ -135,13 +135,6 @@ void ExistingUserView::ClearAndFocusControls() {
 void ExistingUserView::ClearAndFocusPassword() {
   password_field_->SetText(string16());
   FocusPasswordField();
-}
-
-void ExistingUserView::ViewHierarchyChanged(bool is_add,
-                                            views::View* parent,
-                                            views::View* child) {
-  if (is_add && this == child)
-    WizardAccessibilityHelper::GetInstance()->MaybeEnableAccessibility(this);
 }
 
 void ExistingUserView::FocusPasswordField() {

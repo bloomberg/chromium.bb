@@ -43,7 +43,6 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/browser/ui/view_ids.h"
-#include "chrome/browser/ui/views/accessible_view_helper.h"
 #include "chrome/browser/ui/views/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/browser/ui/views/default_search_view.h"
@@ -1853,9 +1852,6 @@ void BrowserView::InitTabStrip(TabStripModel* model) {
 // BrowserView, private:
 
 void BrowserView::Init() {
-  accessible_view_helper_.reset(new AccessibleViewHelper(
-      this, browser_->profile()));
-
   SetLayoutManager(CreateLayoutManager());
   // Stow a pointer to this object onto the window handle so that we can get at
   // it later when all we have is a native view.

@@ -132,9 +132,8 @@ class ContentView : public views::View {
       return false;
 
     if (accel == accel_toggle_accessibility_) {
-      chromeos::WizardAccessibilityHelper::GetInstance()->ToggleAccessibility(
-          controller->contents()); }
-    else if (accel == accel_cancel_update_) {
+      chromeos::WizardAccessibilityHelper::GetInstance()->ToggleAccessibility();
+    } else if (accel == accel_cancel_update_) {
       controller->CancelOOBEUpdate();
 #if !defined(OFFICIAL_BUILD)
     } else if (accel == accel_account_screen_) {

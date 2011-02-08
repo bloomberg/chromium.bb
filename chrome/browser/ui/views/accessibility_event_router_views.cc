@@ -21,6 +21,7 @@
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/submenu_view.h"
 #include "views/view.h"
+#include "views/window/window.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/autocomplete/autocomplete_edit_view_win.h"
@@ -39,35 +40,6 @@ AccessibilityEventRouterViews::~AccessibilityEventRouterViews() {
 // static
 AccessibilityEventRouterViews* AccessibilityEventRouterViews::GetInstance() {
   return Singleton<AccessibilityEventRouterViews>::get();
-}
-
-bool AccessibilityEventRouterViews::AddViewTree(
-    views::View* view, Profile* profile) {
-  if (view_tree_profile_map_[view] != NULL)
-    return false;
-
-  view_tree_profile_map_[view] = profile;
-  return true;
-}
-
-void AccessibilityEventRouterViews::RemoveViewTree(views::View* view) {
-  DCHECK(view_tree_profile_map_.find(view) !=
-         view_tree_profile_map_.end());
-  view_tree_profile_map_.erase(view);
-}
-
-void AccessibilityEventRouterViews::IgnoreView(views::View* view) {
-  view_info_map_[view].ignore = true;
-}
-
-void AccessibilityEventRouterViews::SetViewName(
-    views::View* view, std::string name) {
-  view_info_map_[view].name = name;
-}
-
-void AccessibilityEventRouterViews::RemoveView(views::View* view) {
-  DCHECK(view_info_map_.find(view) != view_info_map_.end());
-  view_info_map_.erase(view);
 }
 
 void AccessibilityEventRouterViews::HandleAccessibilityEvent(
@@ -115,80 +87,40 @@ void AccessibilityEventRouterViews::HandleAccessibilityEvent(
 // Private methods
 //
 
-void AccessibilityEventRouterViews::FindView(
-    views::View* view, Profile** profile, bool* is_accessible) {
-  *is_accessible = false;
-
-  // First see if it's a descendant of an accessible view.
-  for (base::hash_map<views::View*, Profile*>::const_iterator iter =
-           view_tree_profile_map_.begin();
-       iter != view_tree_profile_map_.end();
-       ++iter) {
-    if (iter->first->IsParentOf(view)) {
-      *is_accessible = true;
-      if (profile)
-        *profile = iter->second;
-      break;
-    }
-  }
-
-  if (!*is_accessible)
-    return;
-
-  // Now make sure it's not marked as a widget to be ignored.
-  base::hash_map<views::View*, ViewInfo>::const_iterator iter =
-      view_info_map_.find(view);
-  if (iter != view_info_map_.end() && iter->second.ignore)
-    *is_accessible = false;
-}
-
 std::string AccessibilityEventRouterViews::GetViewName(views::View* view) {
-  std::string name;
-
-  // First see if we have a name registered for this view.
-  base::hash_map<views::View*, ViewInfo>::const_iterator iter =
-      view_info_map_.find(view);
-  if (iter != view_info_map_.end())
-    name = iter->second.name;
-
-  // Otherwise ask the view for its accessible name.
-  if (name.empty()) {
-    string16 wname;
-    view->GetAccessibleName(&wname);
-    name = UTF16ToUTF8(wname);
-  }
-
-  return name;
+  string16 wname;
+  view->GetAccessibleName(&wname);
+  return UTF16ToUTF8(wname);
 }
 
 void AccessibilityEventRouterViews::DispatchAccessibilityNotification(
     views::View* view, NotificationType type) {
+  // Get the profile associated with this view. If it's not found, use
+  // the most recent profile where accessibility events were sent, or
+  // the default profile.
   Profile* profile = NULL;
-  bool is_accessible;
-  FindView(view, &profile, &is_accessible);
-
-  // Special case: a menu isn't associated with any particular top-level
-  // window, so menu events get routed to the profile of the most recent
-  // event that was associated with a window, which should be the window
-  // that triggered opening the menu.
-  bool is_menu_event = IsMenuEvent(view, type);
-  if (is_menu_event && !profile && most_recent_profile_) {
-    profile = most_recent_profile_;
-    is_accessible = true;
+  views::Window* window = view->GetWindow();
+  if (window) {
+    profile = reinterpret_cast<Profile*>(window->GetNativeWindowProperty(
+        Profile::kProfileKey));
   }
-
-  if (!is_accessible)
+  if (!profile)
+    profile = most_recent_profile_;
+  if (!profile)
+    profile = g_browser_process->profile_manager()->GetDefaultProfile();
+  if (!profile) {
+    NOTREACHED();
     return;
+  }
 
   most_recent_profile_ = profile;
 
   std::string class_name = view->GetClassName();
-
   if (class_name == views::MenuButton::kViewClassName ||
       type == NotificationType::ACCESSIBILITY_MENU_OPENED ||
       type == NotificationType::ACCESSIBILITY_MENU_CLOSED) {
     SendMenuNotification(view, type, profile);
-  } else if (is_menu_event) {
+  } else if (IsMenuEvent(view, type)) {
     SendMenuItemNotification(view, type, profile);
   } else if (class_name == views::CustomButton::kViewClassName ||
              class_name == views::NativeButton::kViewClassName ||
@@ -198,8 +130,6 @@ void AccessibilityEventRouterViews::DispatchAccessibilityNotification(
     SendLinkNotification(view, type, profile);
   } else if (class_name == LocationBarView::kViewClassName) {
     SendLocationBarNotification(view, type, profile);
-  } else {
-    class_name += " ";
   }
 }
 

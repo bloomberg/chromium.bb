@@ -76,7 +76,6 @@ void PasswordChangedView::ViewHierarchyChanged(bool is_add,
                                                views::View* child) {
   if (is_add && child == this) {
     Init();
-    WizardAccessibilityHelper::GetInstance()->MaybeEnableAccessibility(this);
   }
 }
 

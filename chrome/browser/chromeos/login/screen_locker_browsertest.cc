@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/screen_locker_tester.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/common/chrome_switches.h"
@@ -282,6 +283,9 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestShowTwice) {
   scoped_ptr<test::ScreenLockerTester> tester(ScreenLocker::GetTester());
   LockScreenWithUser(tester.get(), "user");
 
+  // Ensure there's a profile or this test crashes.
+  ProfileManager::GetDefaultProfile();
+
   // Calling Show again simply send LockCompleted signal.
   ScreenLocker::Show();
   EXPECT_TRUE(tester->IsLocked());
@@ -298,6 +302,9 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestEscape) {
       .RetiresOnSaturation();
   scoped_ptr<test::ScreenLockerTester> tester(ScreenLocker::GetTester());
   LockScreenWithUser(tester.get(), "user");
+
+  // Ensure there's a profile or this test crashes.
+  ProfileManager::GetDefaultProfile();
 
   tester->SetPassword("password");
   EXPECT_EQ("password", tester->GetPassword());

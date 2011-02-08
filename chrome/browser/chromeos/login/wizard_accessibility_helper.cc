@@ -74,15 +74,6 @@ bool WizardAccessibilityHelper::IsAccessibilityEnabled() {
       prefs::kAccessibilityEnabled);
 }
 
-void WizardAccessibilityHelper::MaybeEnableAccessibility(
-    views::View* view_tree) {
-  if (IsAccessibilityEnabled()) {
-    EnableAccessibilityForView(view_tree);
-  } else {
-    AddViewToBuffer(view_tree);
-  }
-}
-
 void WizardAccessibilityHelper::MaybeSpeak(const char* str, bool queue,
     bool interruptible) {
   if (IsAccessibilityEnabled()) {
@@ -90,32 +81,12 @@ void WizardAccessibilityHelper::MaybeSpeak(const char* str, bool queue,
   }
 }
 
-void WizardAccessibilityHelper::EnableAccessibilityForView(
-    views::View* view_tree) {
-  VLOG(1) << "Enabling accessibility.";
-  if (!registered_notifications_)
-    RegisterNotifications();
-  SetAccessibilityEnabled(true);
-  if (view_tree) {
-    AddViewToBuffer(view_tree);
-    // If accessibility pref is set, enable accessibility for all views in
-    // the buffer for which access is not yet enabled.
-    for (std::map<views::View*, bool>::iterator iter =
-        views_buffer_.begin();
-        iter != views_buffer_.end(); ++iter) {
-      if (!(*iter).second) {
-        AccessibleViewHelper *helper = new AccessibleViewHelper((*iter).first,
-            profile_);
-        accessible_view_helpers_.push_back(helper);
-        (*iter).second = true;
-      }
-    }
-  }
-}
-
-void WizardAccessibilityHelper::ToggleAccessibility(views::View* view_tree) {
+void WizardAccessibilityHelper::ToggleAccessibility() {
   if (!IsAccessibilityEnabled()) {
-    EnableAccessibilityForView(view_tree);
+    VLOG(1) << "Enabling accessibility.";
+    if (!registered_notifications_)
+      RegisterNotifications();
+    SetAccessibilityEnabled(true);
   } else {
     SetAccessibilityEnabled(false);
     if (registered_notifications_)
@@ -138,23 +109,6 @@ void WizardAccessibilityHelper::SetAccessibilityEnabled(bool enabled) {
         l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_ACCESS_DISABLED).c_str(),
         false, true);
   }
-}
-
-void WizardAccessibilityHelper::AddViewToBuffer(views::View* view_tree) {
-  if (!view_tree->GetWidget())
-    return;
-  bool view_exists = false;
-  // Check if the view is already queued for enabling accessibility.
-  // Prevent adding the same view in the buffer twice.
-  for (std::map<views::View*, bool>::iterator iter = views_buffer_.begin();
-      iter != views_buffer_.end(); ++iter) {
-    if ((*iter).first == view_tree) {
-      view_exists = true;
-      break;
-    }
-  }
-  if (!view_exists)
-    views_buffer_[view_tree] = false;
 }
 
 }  // namespace chromeos

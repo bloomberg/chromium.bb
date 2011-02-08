@@ -290,13 +290,6 @@ void UserImageView::ShowCameraError() {
   user_image_->SetErrorState();
 }
 
-void UserImageView::ViewHierarchyChanged(bool is_add,
-                                         views::View* parent,
-                                         views::View* child) {
-  if (is_add && this == child)
-    WizardAccessibilityHelper::GetInstance()->MaybeEnableAccessibility(this);
-}
-
 gfx::Size UserImageView::GetPreferredSize() {
   return gfx::Size(width(), height());
 }
@@ -331,4 +324,3 @@ void UserImageView::ButtonPressed(
 }
 
 }  // namespace chromeos
-

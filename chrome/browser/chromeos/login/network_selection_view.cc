@@ -374,13 +374,6 @@ void NetworkSelectionView::OnLocaleChanged() {
   SchedulePaint();
 }
 
-void NetworkSelectionView::ViewHierarchyChanged(bool is_add,
-                                                View* parent,
-                                                View* child) {
-  if (is_add && this == child)
-    WizardAccessibilityHelper::GetInstance()->MaybeEnableAccessibility(this);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkSelectionView, public:
 

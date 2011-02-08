@@ -218,11 +218,4 @@ void ScreenLockView::Observe(
   user_view_->SetImage(user->image(), user->image());
 }
 
-void ScreenLockView::ViewHierarchyChanged(bool is_add,
-                                          views::View* parent,
-                                          views::View* child) {
-  if (is_add && this == child)
-    WizardAccessibilityHelper::GetInstance()->MaybeEnableAccessibility(this);
-}
-
 }  // namespace chromeos

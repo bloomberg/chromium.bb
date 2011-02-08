@@ -40,7 +40,6 @@
 // view: http://dev.chromium.org/developers/design-documents/browser-window
 
 class AccessiblePaneView;
-class AccessibleViewHelper;
 class BookmarkBarView;
 class Browser;
 class BrowserBubble;
@@ -674,8 +673,6 @@ class BrowserView : public BrowserBubbleHost,
   base::RepeatingTimer<BrowserView> loading_animation_timer_;
 
   UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;
-
-  scoped_ptr<AccessibleViewHelper> accessible_view_helper_;
 
   NotificationRegistrar registrar_;
 

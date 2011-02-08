@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,12 +62,6 @@ class UserImageView : public views::View,
   // Overridden from views::ButtonListener.
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
- protected:
-  // views::View overrides:
-  virtual void ViewHierarchyChanged(bool is_add,
-                                    views::View* parent,
-                                    views::View* child);
-
  private:
   // Initializes layout manager for this view.
   void InitLayout();
@@ -91,4 +85,3 @@ class UserImageView : public views::View,
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_USER_IMAGE_VIEW_H_
-

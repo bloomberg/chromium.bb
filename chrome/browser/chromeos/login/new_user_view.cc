@@ -218,7 +218,7 @@ bool NewUserView::AcceleratorPressed(const views::Accelerator& accelerator) {
   } else if (accelerator == accel_login_off_the_record_) {
     delegate_->OnLoginAsGuest();
   } else if (accelerator == accel_toggle_accessibility_) {
-    WizardAccessibilityHelper::GetInstance()->ToggleAccessibility(this);
+    WizardAccessibilityHelper::GetInstance()->ToggleAccessibility();
   } else {
     return false;
   }

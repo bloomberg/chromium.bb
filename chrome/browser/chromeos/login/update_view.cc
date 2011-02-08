@@ -196,11 +196,6 @@ void UpdateView::Layout() {
   SchedulePaint();
 }
 
-void UpdateView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
-  if (is_add && this == child)
-    WizardAccessibilityHelper::GetInstance()->MaybeEnableAccessibility(this);
-}
-
 void UpdateView::InitLabel(views::Label** label) {
   *label = new views::Label();
   (*label)->SetColor(kLabelColor);

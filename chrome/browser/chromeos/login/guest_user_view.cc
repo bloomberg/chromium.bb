@@ -76,7 +76,7 @@ bool GuestUserView::AcceleratorPressed(
   if (accelerator == accel_login_off_the_record_)
     user_controller_->OnLoginAsGuest();
   else if (accelerator == accel_toggle_accessibility_)
-    WizardAccessibilityHelper::GetInstance()->ToggleAccessibility(this);
+    WizardAccessibilityHelper::GetInstance()->ToggleAccessibility();
   else if (accelerator == accel_previous_pod_by_arrow_)
     user_controller_->SelectUserRelative(-1);
   else if (accelerator == accel_next_pod_by_arrow_)
@@ -98,13 +98,6 @@ void GuestUserView::ButtonPressed(
 
 void GuestUserView::EnableInputControls(bool enabled) {
   submit_button_->SetEnabled(enabled);
-}
-
-void GuestUserView::ViewHierarchyChanged(bool is_add,
-                                         views::View* parent,
-                                         views::View* child) {
-  if (is_add && this == child)
-    WizardAccessibilityHelper::GetInstance()->MaybeEnableAccessibility(this);
 }
 
 void GuestUserView::OnLocaleChanged() {
