@@ -675,11 +675,16 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_IncognitoDownload) {
 
   // Close the Incognito window and don't crash.
   incognito->CloseWindow();
+#if !defined(OS_MACOSX)
+  // On Mac OS X, the UI window close is delayed until the outermost
+  // message loop runs.  So it isn't possible to get a BROWSER_CLOSED
+  // notification inside of a test.
   ui_test_utils::WaitForNotificationFrom(NotificationType::BROWSER_CLOSED,
                                          Source<Browser>(incognito));
 
   window_count = BrowserList::size();
   EXPECT_EQ(1, window_count);
+#endif
 
   // Verify that the regular window does not have a download shelf.
   is_shelf_visible = browser()->window()->IsDownloadShelfVisible();
@@ -911,7 +916,10 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_NewWindow) {
   ASSERT_TRUE(InitialSetup(false));
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
+#if !defined(OS_MACOSX)
+  // See below.
   Browser* first_browser = browser();
+#endif
 
   // Download a file in a new window and wait.
   DownloadAndWaitWithDisposition(browser(),
@@ -939,11 +947,17 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_NewWindow) {
 
   // Close the new window.
   download_browser->CloseWindow();
+#if !defined(OS_MACOSX)
+  // On Mac OS X, the UI window close is delayed until the outermost
+  // message loop runs.  So it isn't possible to get a BROWSER_CLOSED
+  // notification inside of a test.
   ui_test_utils::WaitForNotificationFrom(NotificationType::BROWSER_CLOSED,
                                          Source<Browser>(download_browser));
   EXPECT_EQ(first_browser, browser());
   window_count = BrowserList::size();
   EXPECT_EQ(1, window_count);
+#endif
+
   EXPECT_EQ(1, browser()->tab_count());
   // The download shelf should not be visible in the remaining window.
   EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
