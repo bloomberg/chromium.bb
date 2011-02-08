@@ -23,6 +23,7 @@
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/download/save_file.h"
@@ -101,16 +102,25 @@ const int kSelectFileHtmlOnlyIndex = 1;
 const int kSelectFileCompleteIndex = 2;
 
 // Used for mapping between SavePackageType constants and the indexes above.
-const SavePackage::SavePackageType IndexToSaveType[] = {
+const SavePackage::SavePackageType kIndexToSaveType[] = {
   SavePackage::SAVE_TYPE_UNKNOWN,
   SavePackage::SAVE_AS_ONLY_HTML,
   SavePackage::SAVE_AS_COMPLETE_HTML,
 };
 
 // Used for mapping between the IDS_ string identifiers and the indexes above.
-const int IndexToIDS[] = {
+const int kIndexToIDS[] = {
   0, IDS_SAVE_PAGE_DESC_HTML_ONLY, IDS_SAVE_PAGE_DESC_COMPLETE,
 };
+
+int SavePackageTypeToIndex(SavePackage::SavePackageType type) {
+  for (size_t i = 0; i < arraysize(kIndexToSaveType); ++i) {
+    if (kIndexToSaveType[i] == type)
+      return i;
+  }
+  NOTREACHED();
+  return -1;
+}
 
 // Strip current ordinal number, if any. Should only be used on pure
 // file names, i.e. those stripped of their extensions.
@@ -1291,8 +1301,12 @@ void SavePackage::CreateDirectoryOnFileThread(
 
 void SavePackage::ContinueGetSaveInfo(const FilePath& suggested_path,
                                       bool can_save_as_complete) {
-  // Use "Web Page, Complete" option as default choice of saving page.
-  int file_type_index = kSelectFileCompleteIndex;
+  DownloadPrefs* download_prefs =
+      tab_contents_->profile()->GetDownloadManager()->download_prefs();
+  int file_type_index =
+      SavePackageTypeToIndex(
+          static_cast<SavePackageType>(download_prefs->save_file_type()));
+
   SelectFileDialog::FileTypeInfo file_type_info;
   FilePath::StringType default_extension;
 
@@ -1320,7 +1334,7 @@ void SavePackage::ContinueGetSaveInfo(const FilePath& suggested_path,
     }
 
     file_type_info.extension_description_overrides.push_back(
-        l10n_util::GetStringUTF16(IndexToIDS[kSelectFileCompleteIndex - 1]));
+        l10n_util::GetStringUTF16(kIndexToIDS[kSelectFileCompleteIndex - 1]));
     file_type_info.extensions[kSelectFileCompleteIndex - 1].push_back(
         FILE_PATH_LITERAL("htm"));
     file_type_info.extensions[kSelectFileCompleteIndex - 1].push_back(
@@ -1332,7 +1346,7 @@ void SavePackage::ContinueGetSaveInfo(const FilePath& suggested_path,
     }
 
     file_type_info.extension_description_overrides.push_back(
-        l10n_util::GetStringUTF16(IndexToIDS[kSelectFileCompleteIndex]));
+        l10n_util::GetStringUTF16(kIndexToIDS[kSelectFileCompleteIndex]));
     file_type_info.include_all_files = false;
     default_extension = kDefaultHtmlExtension;
   } else {
@@ -1396,7 +1410,9 @@ void SavePackage::ContinueSave(const FilePath& final_name,
     save_file_path.SetValue(path_string);
   }
 
-  save_type_ = IndexToSaveType[index];
+  save_type_ = kIndexToSaveType[index];
+
+  prefs->SetInteger(prefs::kSaveFileType, save_type_);
 
   if (save_type_ == SavePackage::SAVE_AS_COMPLETE_HTML) {
     // Make new directory for saving complete file.

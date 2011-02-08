@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,12 +12,14 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/download/download_extensions.h"
 #include "chrome/browser/download/download_util.h"
+#include "chrome/browser/download/save_package.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 
 DownloadPrefs::DownloadPrefs(PrefService* prefs) : prefs_(prefs) {
   prompt_for_download_.Init(prefs::kPromptForDownload, prefs, NULL);
   download_path_.Init(prefs::kDownloadDefaultDirectory, prefs, NULL);
+  save_file_type_.Init(prefs::kSaveFileType, prefs, NULL);
 
   // We store any file extension that should be opened automatically at
   // download completion in this pref.
@@ -46,6 +48,8 @@ void DownloadPrefs::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kPromptForDownload, false);
   prefs->RegisterStringPref(prefs::kDownloadExtensionsToOpen, "");
   prefs->RegisterBooleanPref(prefs::kDownloadDirUpgraded, false);
+  prefs->RegisterIntegerPref(prefs::kSaveFileType,
+                             SavePackage::SAVE_AS_COMPLETE_HTML);
 
   // The default download path is userprofile\download.
   const FilePath& default_download_path =

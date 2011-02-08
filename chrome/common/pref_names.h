@@ -298,6 +298,7 @@ extern const char kDownloadExtensionsToOpen[];
 extern const char kDownloadDirUpgraded[];
 
 extern const char kSaveFileDefaultDirectory[];
+extern const char kSaveFileType[];
 
 extern const char kSelectFileLastDirectory[];
 

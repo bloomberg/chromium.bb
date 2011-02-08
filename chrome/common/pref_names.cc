@@ -872,6 +872,10 @@ const char kDownloadDirUpgraded[] = "download.directory_upgrade";
 // String which specifies where to save html files to by default.
 const char kSaveFileDefaultDirectory[] = "savefile.default_directory";
 
+// The type used to save the page. See the enum SavePackage::SavePackageType in
+// the chrome/browser/download/save_package.h for the possible values.
+const char kSaveFileType[] = "savefile.type";
+
 // String which specifies the last directory that was chosen for uploading
 // or opening a file.
 const char kSelectFileLastDirectory[] = "selectfile.last_directory";

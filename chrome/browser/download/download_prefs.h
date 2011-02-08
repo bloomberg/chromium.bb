@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,6 +23,7 @@ class DownloadPrefs {
 
   bool prompt_for_download() const { return *prompt_for_download_; }
   FilePath download_path() const { return *download_path_; }
+  int save_file_type() const { return *save_file_type_; }
 
   // Returns true if there is at least one file extension registered
   // for auto-open.
@@ -48,6 +49,7 @@ class DownloadPrefs {
 
   BooleanPrefMember prompt_for_download_;
   FilePathPrefMember download_path_;
+  IntegerPrefMember save_file_type_;
 
   // Set of file extensions to open at download completion.
   struct AutoOpenCompareFunctor {
