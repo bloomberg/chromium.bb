@@ -236,7 +236,14 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, Scroll) {
   TabContents* tab_contents = browser()->GetSelectedTabContents();
   tab_contents->render_view_host()->ForwardWheelEvent(wheel_event);
   ASSERT_NO_FATAL_FAILURE(WaitForResponse());
-  ASSERT_NO_FATAL_FAILURE(VerifySnapshot("pdf_browsertest_scroll.png"));
+
+  int y_offset = 0;
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractInt(
+      browser()->GetSelectedTabContents()->render_view_host(),
+      std::wstring(),
+      L"window.domAutomationController.send(plugin.pageYOffset())",
+      &y_offset));
+  ASSERT_GT(y_offset, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(PDFBrowserTest, FindAndCopy) {
