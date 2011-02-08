@@ -3,9 +3,7 @@
 // found in the LICENSE file.
 
 #include "media/base/yuv_convert.h"
-#include "media/base/yuv_row.h"
-
-#if !USE_SSE2
+#include "media/base/yuv_convert_internal.h"
 
 namespace media {
 
@@ -18,15 +16,15 @@ static int clip_byte(int x) {
     return x;
 }
 
-void ConvertRGB32ToYUV(const uint8* rgbframe,
-                       uint8* yplane,
-                       uint8* uplane,
-                       uint8* vplane,
-                       int width,
-                       int height,
-                       int rgbstride,
-                       int ystride,
-                       int uvstride) {
+void ConvertRGB32ToYUV_C(const uint8* rgbframe,
+                         uint8* yplane,
+                         uint8* uplane,
+                         uint8* vplane,
+                         int width,
+                         int height,
+                         int rgbstride,
+                         int ystride,
+                         int uvstride) {
   for (int i = 0; i < height; ++i) {
     for (int j = 0; j < width; ++j) {
       // Since the input pixel format is RGB32, there are 4 bytes per pixel.
@@ -51,5 +49,3 @@ void ConvertRGB32ToYUV(const uint8* rgbframe,
 }
 
 }  // namespace media
-
-#endif

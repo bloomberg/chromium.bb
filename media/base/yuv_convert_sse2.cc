@@ -3,10 +3,8 @@
 // found in the LICENSE file.
 
 #include "media/base/yuv_convert.h"
+#include "media/base/yuv_convert_internal.h"
 #include "media/base/yuv_row.h"
-
-// TODO(hclam): Perform runtime check to enable SSE2 routines.
-#if USE_SSE2
 
 #if defined(_MSC_VER)
 #include <intrin.h>
@@ -162,16 +160,15 @@ void FastConvertRGB32ToYUVRow(const uint8* rgb_buf_1,
   }
 }
 
-// TODO(hclam): Add code to do runtime SSE2 detection.
-void ConvertRGB32ToYUV(const uint8* rgbframe,
-                       uint8* yplane,
-                       uint8* uplane,
-                       uint8* vplane,
-                       int width,
-                       int height,
-                       int rgbstride,
-                       int ystride,
-                       int uvstride) {
+extern void ConvertRGB32ToYUV_SSE2(const uint8* rgbframe,
+                                   uint8* yplane,
+                                   uint8* uplane,
+                                   uint8* vplane,
+                                   int width,
+                                   int height,
+                                   int rgbstride,
+                                   int ystride,
+                                   int uvstride) {
   // Make sure |width| is a multiple of 2.
   width = (width / 2) * 2;
   for (int i = 0; i < height; i += 2) {
@@ -190,5 +187,3 @@ void ConvertRGB32ToYUV(const uint8* rgbframe,
 }
 
 }  // namespace media
-
-#endif
