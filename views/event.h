@@ -396,7 +396,8 @@ class KeyEvent : public Event {
 //
 // MouseWheelEvent class
 //
-// A MouseWheelEvent is used to propagate mouse wheel user events
+// A MouseWheelEvent is used to propagate mouse wheel user events.
+// Note: e.GetOffset() > 0 means scroll up.
 //
 ////////////////////////////////////////////////////////////////////////////////
 class MouseWheelEvent : public LocatedEvent {

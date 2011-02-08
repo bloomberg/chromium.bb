@@ -82,7 +82,7 @@ bool NativeScrollBarGtk::OnKeyPressed(const KeyEvent& event) {
 bool NativeScrollBarGtk::OnMouseWheel(const MouseWheelEvent& e) {
   if (!native_view())
     return false;
-  MoveBy(e.GetOffset());
+  MoveBy(-e.GetOffset());  // e.GetOffset() > 0 means scroll up.
   return true;
 }
 

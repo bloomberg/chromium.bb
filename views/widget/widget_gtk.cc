@@ -1349,19 +1349,19 @@ bool WidgetGtk::ProcessScroll(GdkEventScroll* event) {
   bool is_horizontal = true;
   switch (event->direction) {
     case GDK_SCROLL_UP:
-      increment = -1;
+      increment = 1;
       is_horizontal = false;
       break;
     case GDK_SCROLL_DOWN:
-      increment = 1;
+      increment = -1;
       is_horizontal = false;
       break;
     case GDK_SCROLL_LEFT:
-      increment = -1;
+      increment = 1;
       is_horizontal = true;
       break;
     case GDK_SCROLL_RIGHT:
-      increment = 1;
+      increment = -1;
       is_horizontal = false;
       break;
   }
