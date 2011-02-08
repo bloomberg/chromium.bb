@@ -5,7 +5,7 @@
 #include "chrome/browser/renderer_host/gpu_message_filter.h"
 
 #include "base/callback.h"
-#include "chrome/browser/gpu_process_host.h"
+#include "chrome/browser/gpu_process_host_ui_shim.h"
 #include "chrome/common/gpu_create_command_buffer_config.h"
 #include "chrome/common/gpu_messages.h"
 #include "chrome/common/render_messages.h"
@@ -17,6 +17,13 @@ GpuMessageFilter::GpuMessageFilter(int render_process_id)
 GpuMessageFilter::~GpuMessageFilter() {
   // This function should be called on the IO thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+}
+
+void GpuMessageFilter::OverrideThreadForMessage(
+    const IPC::Message& message,
+    BrowserThread::ID* thread) {
+  if (IPC_MESSAGE_CLASS(message) == GpuMsgStart)
+    *thread = BrowserThread::UI;
 }
 
 bool GpuMessageFilter::OnMessageReceived(
@@ -56,7 +63,7 @@ class EstablishChannelCallback
 
   void Send(const IPC::ChannelHandle& channel,
             const GPUInfo& gpu_info) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     ViewMsg_GpuChannelEstablished* reply =
         new ViewMsg_GpuChannelEstablished(channel, gpu_info);
     // If the renderer process is performing synchronous initialization,
@@ -84,7 +91,7 @@ class SynchronizeCallback : public CallbackRunner<Tuple0> {
   }
 
   void Send() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     if (filter_)
       filter_->Send(reply_);
   }
@@ -107,7 +114,7 @@ class CreateCommandBufferCallback : public CallbackRunner<Tuple1<int32> > {
   }
 
   void Send(int32 route_id) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     GpuHostMsg_CreateViewCommandBuffer::WriteReplyParams(reply_, route_id);
     if (filter_)
       filter_->Send(reply_);
@@ -121,19 +128,20 @@ class CreateCommandBufferCallback : public CallbackRunner<Tuple1<int32> > {
 }  // namespace
 
 void GpuMessageFilter::OnEstablishGpuChannel() {
-  GpuProcessHost::Get()->EstablishGpuChannel(
+  GpuProcessHostUIShim::GetInstance()->EstablishGpuChannel(
       render_process_id_, new EstablishChannelCallback(this));
 }
 
 void GpuMessageFilter::OnSynchronizeGpu(IPC::Message* reply) {
-  GpuProcessHost::Get()->Synchronize(new SynchronizeCallback(this, reply));
+  GpuProcessHostUIShim::GetInstance()->
+      Synchronize(new SynchronizeCallback(this, reply));
 }
 
 void GpuMessageFilter::OnCreateViewCommandBuffer(
     int32 render_view_id,
     const GPUCreateCommandBufferConfig& init_params,
     IPC::Message* reply) {
-  GpuProcessHost::Get()->CreateViewCommandBuffer(
+  GpuProcessHostUIShim::GetInstance()->CreateViewCommandBuffer(
       render_view_id, render_process_id_, init_params,
       new CreateCommandBufferCallback(this, reply));
 }

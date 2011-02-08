@@ -26,6 +26,8 @@ class GpuMessageFilter : public BrowserMessageFilter,
   explicit GpuMessageFilter(int render_process_id);
 
   // BrowserMessageFilter methods:
+  virtual void OverrideThreadForMessage(const IPC::Message& message,
+                                        BrowserThread::ID* thread);
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok);
   virtual void OnDestruct() const;
