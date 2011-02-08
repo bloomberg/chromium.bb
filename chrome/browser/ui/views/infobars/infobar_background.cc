@@ -8,18 +8,8 @@
 #include "ui/gfx/canvas.h"
 #include "views/view.h"
 
-static const SkColor kWarningBackgroundColorTop = SkColorSetRGB(255, 242, 183);
-static const SkColor kWarningBackgroundColorBottom =
-    SkColorSetRGB(250, 230, 145);
-
-static const SkColor kPageActionBackgroundColorTop =
-    SkColorSetRGB(218, 231, 249);
-static const SkColor kPageActionBackgroundColorBottom =
-    SkColorSetRGB(179, 202, 231);
-
-static const int kSeparatorLineHeight = 1;
-
-// InfoBarBackground, public: --------------------------------------------------
+// static
+const int InfoBarBackground::kSeparatorLineHeight = 1;
 
 InfoBarBackground::InfoBarBackground(InfoBarDelegate::Type infobar_type) {
   gradient_background_.reset(
@@ -28,23 +18,31 @@ InfoBarBackground::InfoBarBackground(InfoBarDelegate::Type infobar_type) {
           GetBottomColor(infobar_type)));
 }
 
+InfoBarBackground::~InfoBarBackground() {
+}
+
 SkColor InfoBarBackground::GetTopColor(InfoBarDelegate::Type infobar_type) {
+  static const SkColor kWarningBackgroundColorTop =
+      SkColorSetRGB(255, 242, 183);
+  static const SkColor kPageActionBackgroundColorTop =
+      SkColorSetRGB(218, 231, 249);
+
   return (infobar_type == InfoBarDelegate::WARNING_TYPE) ?
       kWarningBackgroundColorTop : kPageActionBackgroundColorTop;
 }
 
 SkColor InfoBarBackground::GetBottomColor(InfoBarDelegate::Type infobar_type) {
+  static const SkColor kWarningBackgroundColorBottom =
+      SkColorSetRGB(250, 230, 145);
+  static const SkColor kPageActionBackgroundColorBottom =
+      SkColorSetRGB(179, 202, 231);
+
   return (infobar_type == InfoBarDelegate::WARNING_TYPE) ?
       kWarningBackgroundColorBottom : kPageActionBackgroundColorBottom;
 }
 
-// InfoBarBackground, views::Background overrides: -----------------------------
-
 void InfoBarBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
-  // First paint the gradient background.
   gradient_background_->Paint(canvas, view);
-
-  // Now paint the separator line.
   canvas->FillRectInt(ResourceBundle::toolbar_separator_color, 0,
                       view->height() - kSeparatorLineHeight, view->width(),
                       kSeparatorLineHeight);

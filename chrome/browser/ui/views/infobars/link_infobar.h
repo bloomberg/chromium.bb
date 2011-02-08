@@ -16,21 +16,22 @@ class LinkInfoBar : public InfoBarView,
                     public views::LinkController {
  public:
   explicit LinkInfoBar(LinkInfoBarDelegate* delegate);
-  virtual ~LinkInfoBar();
-
-  // Overridden from views::LinkController:
-  virtual void LinkActivated(views::Link* source, int event_flags);
-
-  // Overridden from views::View:
-  virtual void Layout();
 
  private:
+  virtual ~LinkInfoBar();
+
+  // InfoBarView:
+  virtual void Layout();
+
+  // views::LinkController:
+  virtual void LinkActivated(views::Link* source, int event_flags);
+
   LinkInfoBarDelegate* GetDelegate();
 
   views::ImageView* icon_;
   views::Label* label_1_;
-  views::Label* label_2_;
   views::Link* link_;
+  views::Label* label_2_;
 
   DISALLOW_COPY_AND_ASSIGN(LinkInfoBar);
 };

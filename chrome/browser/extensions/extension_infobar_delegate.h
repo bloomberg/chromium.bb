@@ -31,12 +31,13 @@ class ExtensionInfoBarDelegate : public InfoBarDelegate,
                            TabContents* contents,
                            const Extension* extension,
                            const GURL& url);
+
   const Extension* extension() { return extension_; }
   ExtensionHost* extension_host() { return extension_host_.get(); }
 
   void set_observer(DelegateObserver* observer) { observer_ = observer; }
 
-  bool closing() { return closing_; }
+  bool closing() const { return closing_; }
 
  private:
   virtual ~ExtensionInfoBarDelegate();

@@ -59,6 +59,11 @@ LinkInfoBarDelegate* InfoBarDelegate::AsLinkInfoBarDelegate() {
   return NULL;
 }
 
+PluginInstallerInfoBarDelegate*
+    InfoBarDelegate::AsPluginInstallerInfoBarDelegate() {
+  return NULL;
+}
+
 ThemeInstalledInfoBarDelegate*
     InfoBarDelegate::AsThemePreviewInfobarDelegate() {
   return NULL;

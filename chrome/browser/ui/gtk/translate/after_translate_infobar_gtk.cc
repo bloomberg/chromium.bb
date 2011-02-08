@@ -69,7 +69,7 @@ bool AfterTranslateInfoBar::ShowOptionsMenuButton() const {
 }
 
 void AfterTranslateInfoBar::OnOriginalLanguageModified(GtkWidget* sender) {
-  int index = GetLanguageComboboxActiveId(GTK_COMBO_BOX(sender));
+  size_t index = GetLanguageComboboxActiveId(GTK_COMBO_BOX(sender));
   if (index == GetDelegate()->original_language_index())
     return;
 
@@ -81,7 +81,7 @@ void AfterTranslateInfoBar::OnOriginalLanguageModified(GtkWidget* sender) {
 }
 
 void AfterTranslateInfoBar::OnTargetLanguageModified(GtkWidget* sender) {
-  int index = GetLanguageComboboxActiveId(GTK_COMBO_BOX(sender));
+  size_t index = GetLanguageComboboxActiveId(GTK_COMBO_BOX(sender));
   if (index == GetDelegate()->target_language_index())
     return;
 
@@ -94,10 +94,10 @@ void AfterTranslateInfoBar::OnRevertPressed(GtkWidget* sender) {
   GetDelegate()->RevertTranslation();
 }
 
-void AfterTranslateInfoBar::SetOriginalLanguage(int language_index) {
+void AfterTranslateInfoBar::SetOriginalLanguage(size_t language_index) {
   GetDelegate()->SetOriginalLanguage(language_index);
 }
 
-void AfterTranslateInfoBar::SetTargetLanguage(int language_index) {
+void AfterTranslateInfoBar::SetTargetLanguage(size_t language_index) {
   GetDelegate()->SetTargetLanguage(language_index);
 }

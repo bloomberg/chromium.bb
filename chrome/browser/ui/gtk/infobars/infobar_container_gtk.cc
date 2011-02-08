@@ -139,7 +139,7 @@ void InfoBarContainerGtk::Observe(NotificationType type,
 // InfoBarContainerGtk, private: -----------------------------------------------
 
 void InfoBarContainerGtk::UpdateInfoBars() {
-  for (int i = 0; i < tab_contents_->infobar_delegate_count(); ++i) {
+  for (size_t i = 0; i < tab_contents_->infobar_count(); ++i) {
     InfoBarDelegate* delegate = tab_contents_->GetInfoBarDelegateAt(i);
     AddInfoBar(delegate, false);
   }
@@ -201,7 +201,7 @@ void InfoBarContainerGtk::RemoveInfoBar(InfoBarDelegate* delegate,
   }
 
   InfoBarDelegate* next_delegate = NULL;
-  for (int i = 1; i < tab_contents_->infobar_delegate_count(); ++i) {
+  for (size_t i = 1; i < tab_contents_->infobar_count(); ++i) {
     if (tab_contents_->GetInfoBarDelegateAt(i - 1) == delegate) {
       next_delegate = tab_contents_->GetInfoBarDelegateAt(i);
       break;
@@ -211,8 +211,8 @@ void InfoBarContainerGtk::RemoveInfoBar(InfoBarDelegate* delegate,
   ShowArrowForDelegate(next_delegate, animate);
 }
 
-void InfoBarContainerGtk::UpdateToolbarInfoBarState(
-    InfoBar* infobar, bool animate) {
+void InfoBarContainerGtk::UpdateToolbarInfoBarState(InfoBar* infobar,
+                                                    bool animate) {
   GtkWindow* parent = platform_util::GetTopLevel(widget());
   BrowserWindowGtk* browser_window =
       BrowserWindowGtk::GetBrowserWindowForNativeWindow(parent);

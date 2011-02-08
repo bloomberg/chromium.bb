@@ -3344,7 +3344,7 @@ void Browser::Observe(NotificationType type,
       TabStripModel* model = tab_handler_->GetTabStripModel();
       for (int m = 0; m < model->count(); ++m) {
         TabContents* tab_contents = model->GetTabContentsAt(m)->tab_contents();
-        for (int i = 0; i < tab_contents->infobar_delegate_count(); ) {
+        for (size_t i = 0; i < tab_contents->infobar_count(); ) {
           CrashedExtensionInfoBarDelegate* delegate = tab_contents->
               GetInfoBarDelegateAt(i)->AsCrashedExtensionInfoBarDelegate();
           if (delegate && delegate->extension_id() == extension->id())

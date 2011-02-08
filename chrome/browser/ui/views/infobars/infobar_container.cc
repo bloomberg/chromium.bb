@@ -14,8 +14,6 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-// InfoBarContainer, public: ---------------------------------------------------
-
 InfoBarContainer::InfoBarContainer(Delegate* delegate)
     : delegate_(delegate),
       tab_contents_(NULL) {
@@ -62,13 +60,11 @@ void InfoBarContainer::RemoveDelegate(InfoBarDelegate* delegate) {
 void InfoBarContainer::PaintInfoBarArrows(gfx::Canvas* canvas,
                                           views::View* outer_view,
                                           int arrow_center_x) {
-  for(int i = 0; i < GetChildViewCount(); ++i) {
+  for (int i = 0; i < GetChildViewCount(); ++i) {
     InfoBarView* infobar = static_cast<InfoBarView*>(GetChildViewAt(i));
     infobar->PaintArrow(canvas, outer_view, arrow_center_x);
   }
 }
-
-// InfoBarContainer, views::View overrides: ------------------------------------
 
 gfx::Size InfoBarContainer::GetPreferredSize() {
   // We do not have a preferred width (we will expand to fit the available width
@@ -106,8 +102,6 @@ void InfoBarContainer::ViewHierarchyChanged(bool is_add,
   }
 }
 
-// InfoBarContainer, NotificationObserver implementation: ----------------------
-
 void InfoBarContainer::Observe(NotificationType type,
                                const NotificationSource& source,
                                const NotificationDetails& details) {
@@ -124,10 +118,8 @@ void InfoBarContainer::Observe(NotificationType type,
   }
 }
 
-// InfoBarContainer, private: --------------------------------------------------
-
 void InfoBarContainer::UpdateInfoBars() {
-  for (int i = 0; i < tab_contents_->infobar_delegate_count(); ++i) {
+  for (size_t i = 0; i < tab_contents_->infobar_count(); ++i) {
     InfoBarDelegate* delegate = tab_contents_->GetInfoBarDelegateAt(i);
     InfoBarView* infobar = static_cast<InfoBarView*>(delegate->CreateInfoBar());
     infobar->set_container(this);

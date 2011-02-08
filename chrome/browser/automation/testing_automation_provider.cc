@@ -1671,26 +1671,25 @@ void TestingAutomationProvider::RemoveBookmark(int handle,
   *success = false;
 }
 
-void TestingAutomationProvider::GetInfoBarCount(int handle, int* count) {
-  *count = -1;  // -1 means error.
+void TestingAutomationProvider::GetInfoBarCount(int handle, size_t* count) {
+  *count = static_cast<size_t>(-1);  // -1 means error.
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* nav_controller = tab_tracker_->GetResource(handle);
     if (nav_controller)
-      *count = nav_controller->tab_contents()->infobar_delegate_count();
+      *count = nav_controller->tab_contents()->infobar_count();
   }
 }
 
 void TestingAutomationProvider::ClickInfoBarAccept(
     int handle,
-    int info_bar_index,
+    size_t info_bar_index,
     bool wait_for_navigation,
     IPC::Message* reply_message) {
   bool success = false;
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* nav_controller = tab_tracker_->GetResource(handle);
     if (nav_controller) {
-      if (info_bar_index >= 0 && info_bar_index < nav_controller->
-          tab_contents()->infobar_delegate_count()) {
+      if (info_bar_index < nav_controller->tab_contents()->infobar_count()) {
         if (wait_for_navigation)
           AddNavigationStatusListener(nav_controller, reply_message, 1, false);
         InfoBarDelegate* delegate =
@@ -2165,7 +2164,7 @@ void TestingAutomationProvider::SetWindowDimensions(
 ListValue* TestingAutomationProvider::GetInfobarsInfo(TabContents* tc) {
   // Each infobar may have different properties depending on the type.
   ListValue* infobars = new ListValue;
-  for (int i = 0; i < tc->infobar_delegate_count(); ++i) {
+  for (size_t i = 0; i < tc->infobar_count(); ++i) {
     DictionaryValue* infobar_item = new DictionaryValue;
     InfoBarDelegate* infobar = tc->GetInfoBarDelegateAt(i);
     if (infobar->AsConfirmInfoBarDelegate()) {
@@ -2224,10 +2223,10 @@ void TestingAutomationProvider::PerformActionOnInfobar(
     IPC::Message* reply_message) {
   AutomationJSONReply reply(this, reply_message);
   int tab_index;
-  int infobar_index;
+  int infobar_index_int;
   std::string action;
   if (!args->GetInteger("tab_index", &tab_index) ||
-      !args->GetInteger("infobar_index", &infobar_index) ||
+      !args->GetInteger("infobar_index", &infobar_index_int) ||
       !args->GetString("action", &action)) {
     reply.SendError("Invalid or missing args");
     return;
@@ -2238,10 +2237,11 @@ void TestingAutomationProvider::PerformActionOnInfobar(
     return;
   }
   InfoBarDelegate* infobar = NULL;
-  if (infobar_index < 0 ||
-      infobar_index >= tab_contents->infobar_delegate_count() ||
+  size_t infobar_index = static_cast<size_t>(infobar_index_int);
+  if (infobar_index >= tab_contents->infobar_count() ||
       !(infobar = tab_contents->GetInfoBarDelegateAt(infobar_index))) {
-    reply.SendError(StringPrintf("No such infobar at index %d", infobar_index));
+    reply.SendError(StringPrintf("No such infobar at index %" PRIuS,
+                                 infobar_index));
     return;
   }
   if ("dismiss" == action) {
@@ -3408,7 +3408,7 @@ namespace {
   // Get the TranslateInfoBarDelegate from TabContents.
   TranslateInfoBarDelegate* GetTranslateInfoBarDelegate(
       TabContents* tab_contents) {
-    for (int i = 0; i < tab_contents->infobar_delegate_count(); i++) {
+    for (size_t i = 0; i < tab_contents->infobar_count(); i++) {
       InfoBarDelegate* infobar = tab_contents->GetInfoBarDelegateAt(i);
       if (infobar->AsTranslateInfoBarDelegate())
         return infobar->AsTranslateInfoBarDelegate();
@@ -3535,14 +3535,14 @@ void TestingAutomationProvider::SelectTranslateOption(
       return;
     }
     // Get the target language index based off of the language name.
-    int target_language_index = -1;
-    for (int i = 0; i < translate_bar->GetLanguageCount(); i++) {
+    size_t target_language_index = TranslateInfoBarDelegate::kNoIndex;
+    for (size_t i = 0; i < translate_bar->GetLanguageCount(); i++) {
       if (translate_bar->GetLanguageDisplayableNameAt(i) == target_language) {
         target_language_index = i;
         break;
       }
     }
-    if (target_language_index == -1) {
+    if (target_language_index == TranslateInfoBarDelegate::kNoIndex) {
        AutomationJSONReply(this, reply_message)
            .SendError("Invalid target language string.");
        return;
@@ -4517,7 +4517,7 @@ void TestingAutomationProvider::WaitForTabCountToBecome(
 
 void TestingAutomationProvider::WaitForInfoBarCount(
     int tab_handle,
-    int target_count,
+    size_t target_count,
     IPC::Message* reply_message) {
   if (!tab_tracker_->ContainsHandle(tab_handle)) {
     AutomationMsg_WaitForInfoBarCount::WriteReplyParams(reply_message_, false);

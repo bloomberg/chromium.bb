@@ -171,9 +171,8 @@ void ExtensionView::ViewHierarchyChanged(bool is_add,
 
 void ExtensionView::PreferredSizeChanged() {
   View::PreferredSizeChanged();
-  if (container_) {
+  if (container_)
     container_->OnExtensionPreferredSizeChanged(this);
-  }
 }
 
 bool ExtensionView::SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {

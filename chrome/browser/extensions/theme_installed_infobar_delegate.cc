@@ -33,7 +33,7 @@ ThemeInstalledInfoBarDelegate::ThemeInstalledInfoBarDelegate(
                  NotificationService::AllSources());
 }
 
-bool ThemeInstalledInfoBarDelegate::MatchesTheme(const Extension* theme) {
+bool ThemeInstalledInfoBarDelegate::MatchesTheme(const Extension* theme) const {
   return theme && (theme->id() == theme_id_);
 }
 

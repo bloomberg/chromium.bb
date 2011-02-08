@@ -10,6 +10,7 @@
 
 class FilePath;
 class GURL;
+class InfoBarDelegate;
 class PluginInstallerInfoBarDelegate;
 class TabContents;
 
@@ -30,8 +31,7 @@ class PluginObserver : public TabContentsObserver {
   void OnBlockedOutdatedPlugin(const string16& name, const GURL& update_url);
 
   TabContents* tab_contents_;  // Weak, owns us.
-  // PluginInstallerInfoBarDelegate, lazily created.
-  scoped_ptr<PluginInstallerInfoBarDelegate> plugin_installer_;
+  scoped_ptr<InfoBarDelegate> plugin_installer_;  // Lazily created.
 
   DISALLOW_COPY_AND_ASSIGN(PluginObserver);
 };

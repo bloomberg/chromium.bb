@@ -35,7 +35,6 @@ class DownloadRequestInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual string16 GetMessageText() const;
   virtual string16 GetButtonLabel(InfoBarButton button) const;
   virtual bool Accept();
-  virtual bool Cancel();
 
   DownloadRequestLimiter::TabDownloadState* host_;
 

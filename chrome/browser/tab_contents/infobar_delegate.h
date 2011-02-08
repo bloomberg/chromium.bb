@@ -16,6 +16,7 @@ class CrashedExtensionInfoBarDelegate;
 class ExtensionInfoBarDelegate;
 class InfoBar;
 class LinkInfoBarDelegate;
+class PluginInstallerInfoBarDelegate;
 class SkBitmap;
 class ThemeInstalledInfoBarDelegate;
 class TranslateInfoBarDelegate;
@@ -91,6 +92,7 @@ class InfoBarDelegate {
   virtual CrashedExtensionInfoBarDelegate* AsCrashedExtensionInfoBarDelegate();
   virtual ExtensionInfoBarDelegate* AsExtensionInfoBarDelegate();
   virtual LinkInfoBarDelegate* AsLinkInfoBarDelegate();
+  virtual PluginInstallerInfoBarDelegate* AsPluginInstallerInfoBarDelegate();
   virtual ThemeInstalledInfoBarDelegate* AsThemePreviewInfobarDelegate();
   virtual TranslateInfoBarDelegate* AsTranslateInfoBarDelegate();
 

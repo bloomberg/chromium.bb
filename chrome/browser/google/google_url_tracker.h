@@ -171,7 +171,7 @@ class GoogleURLTrackerInfoBarDelegate : public ConfirmInfoBarDelegate {
                                   GoogleURLTracker* google_url_tracker,
                                   const GURL& new_google_url);
 
-  // ConfirmInfoBarDelegate
+  // ConfirmInfoBarDelegate:
   virtual bool Accept();
   virtual bool Cancel();
   virtual void InfoBarClosed();
@@ -183,7 +183,7 @@ class GoogleURLTrackerInfoBarDelegate : public ConfirmInfoBarDelegate {
   const GURL new_google_url_;
 
  private:
-  // ConfirmInfoBarDelegate
+  // ConfirmInfoBarDelegate:
   virtual string16 GetMessageText() const;
   virtual string16 GetButtonLabel(InfoBarButton button) const;
 

@@ -33,6 +33,8 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
     ERROR_TO_NORMAL
   };
 
+  static const size_t kNoIndex;
+
   // Factory method to create a non-error translate infobar.
   // The original and target language specified are the ASCII language codes
   // (ex: en, fr...).
@@ -54,13 +56,13 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   virtual ~TranslateInfoBarDelegate();
 
   // Returns the number of languages supported.
-  int GetLanguageCount() const { return static_cast<int>(languages_.size()); }
+  size_t GetLanguageCount() const { return languages_.size(); }
 
   // Returns the ISO code for the language at |index|.
-  std::string GetLanguageCodeAt(int index) const;
+  std::string GetLanguageCodeAt(size_t index) const;
 
   // Returns the displayable name for the language at |index|.
-  string16 GetLanguageDisplayableNameAt(int index) const;
+  string16 GetLanguageDisplayableNameAt(size_t index) const;
 
   TabContents* tab_contents() const { return tab_contents_; }
 
@@ -68,8 +70,8 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
 
   TranslateErrors::Type error() const { return error_; }
 
-  int original_language_index() const { return original_language_index_; }
-  int target_language_index() const { return target_language_index_; }
+  size_t original_language_index() const { return original_language_index_; }
+  size_t target_language_index() const { return target_language_index_; }
 
   // Convenience methods.
   std::string GetOriginalLanguageCode() const;
@@ -77,8 +79,8 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
 
   // Called by the InfoBar to notify that the original/target language has
   // changed and is now the language at |language_index|.
-  virtual void SetOriginalLanguage(int language_index);
-  virtual void SetTargetLanguage(int language_index);
+  virtual void SetOriginalLanguage(size_t language_index);
+  virtual void SetTargetLanguage(size_t language_index);
 
   // Returns true if the current infobar indicates an error (in which case it
   // should get a yellow background instead of a blue one).
@@ -156,7 +158,7 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
  private:
   typedef std::pair<std::string, string16> LanguageNamePair;
 
-  // InfoBarDelegate implementation:
+  // InfoBarDelegate:
   virtual InfoBar* CreateInfoBar();
   virtual void InfoBarDismissed();
   virtual void InfoBarClosed();
@@ -181,17 +183,17 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   std::vector<LanguageNamePair> languages_;
 
   // The index for language the page is originally in.
-  int original_language_index_;
+  size_t original_language_index_;
 
   // The index for language the page is originally in that was originally
   // reported (original_language_index_ changes if the user selects a new
   // original language, but this one does not).  This is necessary to report
   // language detection errors with the right original language even if the user
   // changed the original language.
-  int initial_original_language_index_;
+  size_t initial_original_language_index_;
 
   // The index for language the page should be translated to.
-  int target_language_index_;
+  size_t target_language_index_;
 
   // The error that occurred when trying to translate (NONE if no error).
   TranslateErrors::Type error_;

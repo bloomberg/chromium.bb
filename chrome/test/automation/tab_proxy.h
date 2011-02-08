@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -338,16 +338,16 @@ class TabProxy : public AutomationResourceProxy,
                 SavePackage::SavePackageType type) WARN_UNUSED_RESULT;
 
   // Retrieves the number of info-bars currently showing in |count|.
-  bool GetInfoBarCount(int* count) WARN_UNUSED_RESULT;
+  bool GetInfoBarCount(size_t* count) WARN_UNUSED_RESULT;
 
   // Waits until the infobar count is |count|.
   // Returns true on success.
-  bool WaitForInfoBarCount(int count) WARN_UNUSED_RESULT;
+  bool WaitForInfoBarCount(size_t count) WARN_UNUSED_RESULT;
 
   // Causes a click on the "accept" button of the info-bar at |info_bar_index|.
   // If |wait_for_navigation| is true, this call does not return until a
   // navigation has occurred.
-  bool ClickInfoBarAccept(int info_bar_index,
+  bool ClickInfoBarAccept(size_t info_bar_index,
                           bool wait_for_navigation) WARN_UNUSED_RESULT;
 
   // Retrieves the time at which the last navigation occurred.  This is intended

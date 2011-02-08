@@ -195,7 +195,7 @@ bool KeystonePromotionInfoBarDelegate::Cancel() {
 
       // Only show if no other info bars are showing, because that's how the
       // default browser info bar works.
-      if (tabContents && tabContents->infobar_delegate_count() == 0) {
+      if (tabContents && tabContents->infobar_count() == 0) {
         tabContents->AddInfoBar(
             new KeystonePromotionInfoBarDelegate(tabContents));
       }

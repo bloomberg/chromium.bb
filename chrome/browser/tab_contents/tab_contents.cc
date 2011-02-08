@@ -413,7 +413,7 @@ TabContents::~TabContents() {
   // notification may trigger infobars calls that access their delegate. (and
   // some implementations of InfoBarDelegate do delete themselves on
   // InfoBarClosed()).
-  for (int i = 0; i < infobar_delegate_count(); ++i) {
+  for (size_t i = 0; i < infobar_count(); ++i) {
     InfoBarDelegate* delegate = GetInfoBarDelegateAt(i);
     delegate->InfoBarClosed();
   }
@@ -1115,7 +1115,7 @@ void TabContents::AddInfoBar(InfoBarDelegate* delegate) {
 
   // Look through the existing InfoBarDelegates we have for a match. If we've
   // already got one that matches, then we don't add the new one.
-  for (int i = 0; i < infobar_delegate_count(); ++i) {
+  for (size_t i = 0; i < infobar_count(); ++i) {
     if (GetInfoBarDelegateAt(i)->EqualsDelegate(delegate)) {
       // Tell the new infobar to close so that it can clean itself up.
       delegate->InfoBarClosed();
@@ -1721,8 +1721,11 @@ void TabContents::ExpireInfoBars(
   if (!details.is_user_initiated_main_frame_load())
     return;
 
-  for (int i = infobar_delegate_count() - 1; i >= 0; --i) {
-    InfoBarDelegate* delegate = GetInfoBarDelegateAt(i);
+  // NOTE: It is not safe to change the following code to count upwards or use
+  // iterators, as the RemoveInfoBar() call synchronously modifies our delegate
+  // list.
+  for (size_t i = infobar_count(); i > 0; --i) {
+    InfoBarDelegate* delegate = GetInfoBarDelegateAt(i - 1);
     if (delegate->ShouldExpire(details))
       RemoveInfoBar(delegate);
   }
@@ -2306,8 +2309,8 @@ void TabContents::RenderViewGone(RenderViewHost* rvh,
   SetIsCrashed(status, error_code);
 
   // Remove all infobars.
-  for (int i = infobar_delegate_count() - 1; i >=0 ; --i)
-    RemoveInfoBar(GetInfoBarDelegateAt(i));
+  while (!infobar_delegates_.empty())
+    RemoveInfoBar(GetInfoBarDelegateAt(infobar_count() - 1));
 
   // Tell the view that we've crashed so it can prepare the sad tab page.
   // Only do this if we're not in browser shutdown, so that TabContents

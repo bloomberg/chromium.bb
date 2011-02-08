@@ -14,12 +14,13 @@ class TranslateMessageInfoBar : public TranslateInfoBarBase {
  public:
   explicit TranslateMessageInfoBar(TranslateInfoBarDelegate* delegate);
 
-  virtual void Layout();
+ private:
+  virtual ~TranslateMessageInfoBar();
 
-  // views::ButtonListener implementation:
+  // TranslateInfoBarBase:
+  virtual void Layout();
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
- private:
   views::Label* label_;
   InfoBarTextButton* button_;
 

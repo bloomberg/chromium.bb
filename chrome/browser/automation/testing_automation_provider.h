@@ -290,13 +290,13 @@ class TestingAutomationProvider : public AutomationProvider,
                       bool* success);
 
   // Retrieves the number of info-bars currently showing in |count|.
-  void GetInfoBarCount(int handle, int* count);
+  void GetInfoBarCount(int handle, size_t* count);
 
   // Causes a click on the "accept" button of the info-bar at |info_bar_index|.
   // If |wait_for_navigation| is true, it sends the reply after a navigation has
   // occurred.
   void ClickInfoBarAccept(int handle,
-                          int info_bar_index,
+                          size_t info_bar_index,
                           bool wait_for_navigation,
                           IPC::Message* reply_message);
 
@@ -778,7 +778,7 @@ class TestingAutomationProvider : public AutomationProvider,
                                IPC::Message* reply_message);
 
   void WaitForInfoBarCount(int tab_handle,
-                           int target_count,
+                           size_t target_count,
                            IPC::Message* reply_message);
 
   // Gets the current used encoding name of the page in the specified tab.

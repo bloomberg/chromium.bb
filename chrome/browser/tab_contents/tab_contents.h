@@ -480,9 +480,10 @@ class TabContents : public PageNavigator,
                       InfoBarDelegate* new_delegate);
 
   // Enumeration and access functions.
-  int infobar_delegate_count() const { return infobar_delegates_.size(); }
-  InfoBarDelegate* GetInfoBarDelegateAt(int index) {
-    return infobar_delegates_.at(index);
+  size_t infobar_count() const { return infobar_delegates_.size(); }
+  // WARNING: This does not sanity-check |index|!
+  InfoBarDelegate* GetInfoBarDelegateAt(size_t index) {
+    return infobar_delegates_[index];
   }
 
   // Toolbars and such ---------------------------------------------------------

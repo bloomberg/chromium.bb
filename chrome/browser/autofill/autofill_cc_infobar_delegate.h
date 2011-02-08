@@ -22,13 +22,12 @@ class AutoFillCCInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // ConfirmInfoBarDelegate:
   virtual bool ShouldExpire(
-     const NavigationController::LoadCommittedDetails& details) const;
+      const NavigationController::LoadCommittedDetails& details) const;
   virtual void InfoBarClosed();
   virtual SkBitmap* GetIcon() const;
   virtual Type GetInfoBarType() const;
   virtual string16 GetMessageText() const;
-  virtual string16 GetButtonLabel(
-     ConfirmInfoBarDelegate::InfoBarButton button) const;
+  virtual string16 GetButtonLabel(InfoBarButton button) const;
   virtual bool Accept();
   virtual bool Cancel();
   virtual string16 GetLinkText();

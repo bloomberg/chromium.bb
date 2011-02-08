@@ -15,15 +15,14 @@ DownloadRequestInfoBarDelegate::DownloadRequestInfoBarDelegate(
     DownloadRequestLimiter::TabDownloadState* host)
     : ConfirmInfoBarDelegate(tab),
       host_(host) {
-  if (tab)
-    tab->AddInfoBar(this);
 }
 
 DownloadRequestInfoBarDelegate::~DownloadRequestInfoBarDelegate() {
 }
 
 void DownloadRequestInfoBarDelegate::InfoBarClosed() {
-  Cancel();
+  if (host_)
+    host_->Cancel();
   // This will delete us.
   ConfirmInfoBarDelegate::InfoBarClosed();
 }
@@ -50,12 +49,4 @@ bool DownloadRequestInfoBarDelegate::Accept() {
   }
 
   return !host_;
-}
-
-bool DownloadRequestInfoBarDelegate::Cancel() {
-  if (host_) {
-    host_->Cancel();
-    host_ = NULL;
-  }
-  return true;
 }

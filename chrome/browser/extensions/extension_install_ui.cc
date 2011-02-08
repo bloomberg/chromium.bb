@@ -248,7 +248,7 @@ void ExtensionInstallUI::ShowThemeInfoBar(const std::string& previous_theme_id,
 
   // First find any previous theme preview infobars.
   InfoBarDelegate* old_delegate = NULL;
-  for (int i = 0; i < tab_contents->infobar_delegate_count(); ++i) {
+  for (size_t i = 0; i < tab_contents->infobar_count(); ++i) {
     InfoBarDelegate* delegate = tab_contents->GetInfoBarDelegateAt(i);
     ThemeInstalledInfoBarDelegate* theme_infobar =
         delegate->AsThemePreviewInfobarDelegate();

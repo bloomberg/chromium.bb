@@ -12,15 +12,18 @@
 
 class InfoBarBackground : public views::Background {
  public:
-  explicit InfoBarBackground(InfoBarDelegate::Type infobar_type);
+  static const int kSeparatorLineHeight;
 
-  // Overridden from views::Background:
-  virtual void Paint(gfx::Canvas* canvas, views::View* view) const;
+  explicit InfoBarBackground(InfoBarDelegate::Type infobar_type);
+  virtual ~InfoBarBackground();
 
   static SkColor GetTopColor(InfoBarDelegate::Type infobar_type);
   static SkColor GetBottomColor(InfoBarDelegate::Type infobar_type);
 
  private:
+  // views::Background:
+  virtual void Paint(gfx::Canvas* canvas, views::View* view) const;
+
   scoped_ptr<views::Background> gradient_background_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBarBackground);

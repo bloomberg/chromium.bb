@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,8 +8,7 @@
 
 #include "views/border.h"
 
-#include "third_party/skia/include/core/SkBitmap.h"
-
+class SkBitmap;
 namespace gfx {
 class Canvas;
 }
@@ -19,18 +18,17 @@ class View;
 
 // A TextButtonBorder that is dark and also paints the button frame in the
 // normal state.
-
 class InfoBarButtonBorder : public views::Border {
  public:
   InfoBarButtonBorder();
+
+ private:
   virtual ~InfoBarButtonBorder();
 
-  // Overriden from Border:
+  // views::Border:
   virtual void GetInsets(gfx::Insets* insets) const;
   virtual void Paint(const views::View& view, gfx::Canvas* canvas) const;
 
- private:
-   // Images
   struct MBBImageSet {
     SkBitmap* top_left;
     SkBitmap* top;

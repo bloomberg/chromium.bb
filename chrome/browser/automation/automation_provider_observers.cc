@@ -1110,7 +1110,7 @@ void TabLanguageDeterminedObserver::Observe(
 InfoBarCountObserver::InfoBarCountObserver(AutomationProvider* automation,
                                            IPC::Message* reply_message,
                                            TabContents* tab_contents,
-                                           int target_count)
+                                           size_t target_count)
     : automation_(automation),
       reply_message_(reply_message),
       tab_contents_(tab_contents),
@@ -1130,7 +1130,7 @@ void InfoBarCountObserver::Observe(NotificationType type,
 }
 
 void InfoBarCountObserver::CheckCount() {
-  if (tab_contents_->infobar_delegate_count() != target_count_)
+  if (tab_contents_->infobar_count() != target_count_)
     return;
 
   AutomationMsg_WaitForInfoBarCount::WriteReplyParams(reply_message_, true);

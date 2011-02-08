@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -552,12 +552,12 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   iframe_xpath_ = L"//iframe[@id='iframe_1']";
   AddGeolocationWatch(true);
 
-  int num_infobars_before_cancel =
-      current_browser_->GetSelectedTabContents()->infobar_delegate_count();
+  size_t num_infobars_before_cancel =
+      current_browser_->GetSelectedTabContents()->infobar_count();
   // Change the iframe, and ensure the infobar is gone.
   IFrameLoader change_iframe_1(current_browser_, 1, current_url_);
-  int num_infobars_after_cancel =
-      current_browser_->GetSelectedTabContents()->infobar_delegate_count();
+  size_t num_infobars_after_cancel =
+      current_browser_->GetSelectedTabContents()->infobar_count();
   EXPECT_EQ(num_infobars_before_cancel, num_infobars_after_cancel + 1);
 }
 

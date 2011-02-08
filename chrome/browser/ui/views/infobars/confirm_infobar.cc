@@ -39,25 +39,24 @@ void AlertInfoBar::Layout() {
   InfoBarView::Layout();
 
   // Layout the icon and text.
-  gfx::Size icon_ps = icon_->GetPreferredSize();
-  icon_->SetBounds(kHorizontalPadding, OffsetY(this, icon_ps), icon_ps.width(),
-                   icon_ps.height());
+  gfx::Size icon_size = icon_->GetPreferredSize();
+  icon_->SetBounds(kHorizontalPadding, OffsetY(this, icon_size),
+                   icon_size.width(), icon_size.height());
 
-  gfx::Size text_ps = label_->GetPreferredSize();
-  int text_width = std::min(
-      text_ps.width(),
+  gfx::Size text_size = label_->GetPreferredSize();
+  int text_width = std::min(text_size.width(),
       GetAvailableWidth() - icon_->bounds().right() - kIconLabelSpacing);
   label_->SetBounds(icon_->bounds().right() + kIconLabelSpacing,
-                    OffsetY(this, text_ps), text_width, text_ps.height());
+                    OffsetY(this, text_size), text_width, text_size.height());
 }
 
-// ConfirmInfoBarDelegate, InfoBarDelegate overrides: --------------------------
+// ConfirmInfoBarDelegate -----------------------------------------------------
 
 InfoBar* ConfirmInfoBarDelegate::CreateInfoBar() {
   return new ConfirmInfoBar(this);
 }
 
-// ConfirmInfoBar, public: -----------------------------------------------------
+// ConfirmInfoBar -------------------------------------------------------------
 
 ConfirmInfoBar::ConfirmInfoBar(ConfirmInfoBarDelegate* delegate)
     : AlertInfoBar(delegate),
@@ -94,101 +93,87 @@ ConfirmInfoBar::~ConfirmInfoBar() {
   }
 }
 
-// ConfirmInfoBar, views::LinkController implementation: -----------------------
-
-void ConfirmInfoBar::LinkActivated(views::Link* source, int event_flags) {
-  DCHECK(source == link_);
-  DCHECK(link_->IsVisible());
-  DCHECK(!link_->GetText().empty());
-  if (GetDelegate()->LinkClicked(
-          event_utils::DispositionFromEventFlags(event_flags))) {
-    RemoveInfoBar();
-  }
-}
-
-// ConfirmInfoBar, views::View overrides: --------------------------------------
-
 void ConfirmInfoBar::Layout() {
-  // First layout right aligned items (from right to left) in order to determine
-  // the space avalable, then layout the left aligned items.
-
-  // Layout the close button.
   InfoBarView::Layout();
 
-  // Layout the cancel and OK buttons.
   int available_width = AlertInfoBar::GetAvailableWidth();
   int ok_button_width = 0;
   int cancel_button_width = 0;
-  gfx::Size ok_ps = ok_button_->GetPreferredSize();
-  gfx::Size cancel_ps = cancel_button_->GetPreferredSize();
+  gfx::Size ok_size = ok_button_->GetPreferredSize();
+  gfx::Size cancel_size = cancel_button_->GetPreferredSize();
 
   if (GetDelegate()->GetButtons() & ConfirmInfoBarDelegate::BUTTON_OK) {
-    ok_button_width = ok_ps.width();
+    ok_button_width = ok_size.width();
   } else {
     ok_button_->SetVisible(false);
   }
   if (GetDelegate()->GetButtons() & ConfirmInfoBarDelegate::BUTTON_CANCEL) {
-    cancel_button_width = cancel_ps.width();
+    cancel_button_width = cancel_size.width();
   } else {
     cancel_button_->SetVisible(false);
   }
 
   cancel_button_->SetBounds(available_width - cancel_button_width,
-                            OffsetY(this, cancel_ps), cancel_ps.width(),
-                            cancel_ps.height());
+      OffsetY(this, cancel_size), cancel_size.width(), cancel_size.height());
   int spacing = cancel_button_width > 0 ? kButtonButtonSpacing : 0;
   ok_button_->SetBounds(cancel_button_->x() - spacing - ok_button_width,
-                        OffsetY(this, ok_ps), ok_ps.width(), ok_ps.height());
+      OffsetY(this, ok_size), ok_size.width(), ok_size.height());
 
   // Layout the icon and label.
   AlertInfoBar::Layout();
 
   // Now append the link to the label's right edge.
   link_->SetVisible(!link_->GetText().empty());
-  gfx::Size link_ps = link_->GetPreferredSize();
+  gfx::Size link_size = link_->GetPreferredSize();
   int link_x = label()->bounds().right() + kEndOfLabelSpacing;
-  int link_w = std::min(GetAvailableWidth() - link_x, link_ps.width());
-  link_->SetBounds(link_x, OffsetY(this, link_ps), link_w, link_ps.height());
+  int link_w = std::min(GetAvailableWidth() - link_x, link_size.width());
+  link_->SetBounds(link_x, OffsetY(this, link_size), link_w,
+                   link_size.height());
 }
 
 void ConfirmInfoBar::ViewHierarchyChanged(bool is_add,
                                           views::View* parent,
                                           views::View* child) {
   if (is_add && child == this && !initialized_) {
-    Init();
+    AddChildView(ok_button_);
+    AddChildView(cancel_button_);
+    AddChildView(link_);
     initialized_ = true;
   }
+
+  // This must happen after adding all other children so InfoBarView can ensure
+  // the close button is the last child.
   InfoBarView::ViewHierarchyChanged(is_add, parent, child);
 }
-
-// ConfirmInfoBar, views::ButtonListener implementation: ---------------
-
-void ConfirmInfoBar::ButtonPressed(
-    views::Button* sender, const views::Event& event) {
-  InfoBarView::ButtonPressed(sender, event);
-  if (sender == ok_button_) {
-    if (GetDelegate()->Accept())
-      RemoveInfoBar();
-  } else if (sender == cancel_button_) {
-    if (GetDelegate()->Cancel())
-      RemoveInfoBar();
-  }
-}
-
-// ConfirmInfoBar, InfoBar overrides: ------------------------------------------
 
 int ConfirmInfoBar::GetAvailableWidth() const {
   return ok_button_->x() - kEndOfLabelSpacing;
 }
 
-// ConfirmInfoBar, private: ----------------------------------------------------
+void ConfirmInfoBar::ButtonPressed(views::Button* sender,
+                                   const views::Event& event) {
+  ConfirmInfoBarDelegate* delegate = GetDelegate();
+  if (sender == ok_button_) {
+    if (delegate->Accept())
+      RemoveInfoBar();
+  } else if (sender == cancel_button_) {
+    if (delegate->Cancel())
+      RemoveInfoBar();
+  } else {
+    InfoBarView::ButtonPressed(sender, event);
+  }
+}
+
+void ConfirmInfoBar::LinkActivated(views::Link* source, int event_flags) {
+  DCHECK_EQ(link_, source);
+  DCHECK(link_->IsVisible());
+  DCHECK(!link_->GetText().empty());
+  if (GetDelegate()->LinkClicked(
+      event_utils::DispositionFromEventFlags(event_flags))) {
+    RemoveInfoBar();
+  }
+}
 
 ConfirmInfoBarDelegate* ConfirmInfoBar::GetDelegate() {
   return delegate()->AsConfirmInfoBarDelegate();
-}
-
-void ConfirmInfoBar::Init() {
-  AddChildView(ok_button_);
-  AddChildView(cancel_button_);
-  AddChildView(link_);
 }

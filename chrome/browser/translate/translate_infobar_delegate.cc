@@ -19,6 +19,9 @@
 #include "ui/base/resource/resource_bundle.h"
 
 // static
+const size_t TranslateInfoBarDelegate::kNoIndex = static_cast<size_t>(-1);
+
+// static
 TranslateInfoBarDelegate* TranslateInfoBarDelegate::CreateDelegate(
     Type type,
     TabContents* tab_contents,
@@ -37,7 +40,7 @@ TranslateInfoBarDelegate* TranslateInfoBarDelegate::CreateDelegate(
   TranslateInfoBarDelegate* delegate =
       new TranslateInfoBarDelegate(type, TranslateErrors::NONE, tab_contents,
                                    original_language, target_language);
-  DCHECK_NE(-1, delegate->target_language_index());
+  DCHECK_NE(kNoIndex, delegate->target_language_index());
   return delegate;
 }
 
@@ -53,19 +56,19 @@ TranslateInfoBarDelegate* TranslateInfoBarDelegate::CreateErrorDelegate(
 TranslateInfoBarDelegate::~TranslateInfoBarDelegate() {
 }
 
-std::string TranslateInfoBarDelegate::GetLanguageCodeAt(int index) const {
-  DCHECK(index >= 0 && index < GetLanguageCount());
+std::string TranslateInfoBarDelegate::GetLanguageCodeAt(size_t index) const {
+  DCHECK_LT(index, GetLanguageCount());
   return languages_[index].first;
 }
 
 string16 TranslateInfoBarDelegate::GetLanguageDisplayableNameAt(
-    int index) const {
-  DCHECK(index >= 0 && index < GetLanguageCount());
+    size_t index) const {
+  DCHECK_LT(index, GetLanguageCount());
   return languages_[index].second;
 }
 
 std::string TranslateInfoBarDelegate::GetOriginalLanguageCode() const {
-  return (original_language_index() == -1) ?
+  return (original_language_index() == kNoIndex) ?
       chrome::kUnknownLanguageCode :
       GetLanguageCodeAt(original_language_index());
 }
@@ -74,7 +77,7 @@ std::string TranslateInfoBarDelegate::GetTargetLanguageCode() const {
   return GetLanguageCodeAt(target_language_index());
 }
 
-void TranslateInfoBarDelegate::SetOriginalLanguage(int language_index) {
+void TranslateInfoBarDelegate::SetOriginalLanguage(size_t language_index) {
   DCHECK_LT(language_index, GetLanguageCount());
   original_language_index_ = language_index;
   if (infobar_view_)
@@ -83,7 +86,7 @@ void TranslateInfoBarDelegate::SetOriginalLanguage(int language_index) {
     Translate();
 }
 
-void TranslateInfoBarDelegate::SetTargetLanguage(int language_index) {
+void TranslateInfoBarDelegate::SetTargetLanguage(size_t language_index) {
   DCHECK_LT(language_index, GetLanguageCount());
   target_language_index_ = language_index;
   if (infobar_view_)
@@ -306,9 +309,9 @@ TranslateInfoBarDelegate::TranslateInfoBarDelegate(
       type_(type),
       background_animation_(NONE),
       tab_contents_(tab_contents),
-      original_language_index_(-1),
-      initial_original_language_index_(-1),
-      target_language_index_(-1),
+      original_language_index_(kNoIndex),
+      initial_original_language_index_(kNoIndex),
+      target_language_index_(kNoIndex),
       error_(error),
       infobar_view_(NULL),
       prefs_(tab_contents_->profile()->GetPrefs()) {
@@ -362,7 +365,7 @@ SkBitmap* TranslateInfoBarDelegate::GetIcon() const {
 }
 
 InfoBarDelegate::Type TranslateInfoBarDelegate::GetInfoBarType() const {
-  return InfoBarDelegate::PAGE_ACTION_TYPE;
+  return PAGE_ACTION_TYPE;
 }
 
 TranslateInfoBarDelegate*

@@ -93,6 +93,7 @@ HintInfoBar::HintInfoBar(OmniboxSearchHint* omnibox_hint)
       method_factory_.NewRunnableMethod(&HintInfoBar::AllowExpiry),
       8000);  // 8 seconds.
 }
+
 HintInfoBar::~HintInfoBar() {
 }
 

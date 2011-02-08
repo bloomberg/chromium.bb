@@ -216,20 +216,22 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
 }
 
 - (void)sourceLanguageModified:(NSInteger)newLanguageIdx {
-  DCHECK_GT(newLanguageIdx, -1);
-  if (newLanguageIdx == [self delegate]->original_language_index())
+  size_t newLanguageIdxSizeT = static_cast<size_t>(newLanguageIdx);
+  DCHECK_NE(TranslateInfoBarDelegate::kNoIndex, newLanguageIdxSizeT);
+  if (newLanguageIdxSizeT == [self delegate]->original_language_index())
     return;
-  [self delegate]->SetOriginalLanguage(newLanguageIdx);
+  [self delegate]->SetOriginalLanguage(newLanguageIdxSizeT);
   int commandId = IDC_TRANSLATE_ORIGINAL_LANGUAGE_BASE + newLanguageIdx;
   int newMenuIdx = [fromLanguagePopUp_ indexOfItemWithTag:commandId];
   [fromLanguagePopUp_ selectItemAtIndex:newMenuIdx];
 }
 
 - (void)targetLanguageModified:(NSInteger)newLanguageIdx {
-  DCHECK_GT(newLanguageIdx, -1);
-  if (newLanguageIdx == [self delegate]->target_language_index())
+  size_t newLanguageIdxSizeT = static_cast<size_t>(newLanguageIdx);
+  DCHECK_NE(TranslateInfoBarDelegate::kNoIndex, newLanguageIdxSizeT);
+  if (newLanguageIdxSizeT == [self delegate]->target_language_index())
     return;
-  [self delegate]->SetTargetLanguage(newLanguageIdx);
+  [self delegate]->SetTargetLanguage(newLanguageIdxSizeT);
   int commandId = IDC_TRANSLATE_TARGET_LANGUAGE_BASE + newLanguageIdx;
   int newMenuIdx = [toLanguagePopUp_ indexOfItemWithTag:commandId];
   [toLanguagePopUp_ selectItemAtIndex:newMenuIdx];
@@ -355,7 +357,8 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
   NSMenu* originalLanguageMenu = [fromLanguagePopUp_ menu];
   [originalLanguageMenu setAutoenablesItems:NO];
   int selectedMenuIndex = 0;
-  int selectedLangIndex = [self delegate]->original_language_index();
+  int selectedLangIndex =
+      static_cast<int>([self delegate]->original_language_index());
   for (int i = 0; i < originalLanguageMenuModel_->GetItemCount(); ++i) {
     NSString* title = base::SysUTF16ToNSString(
         originalLanguageMenuModel_->GetLabelAt(i));
@@ -377,7 +380,8 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
 
   NSMenu* targetLanguageMenu = [toLanguagePopUp_ menu];
   [targetLanguageMenu setAutoenablesItems:NO];
-  selectedLangIndex = [self delegate]->target_language_index();
+  selectedLangIndex =
+      static_cast<int>([self delegate]->target_language_index());
   for (int i = 0; i < targetLanguageMenuModel_->GetItemCount(); ++i) {
     NSString* title = base::SysUTF16ToNSString(
         targetLanguageMenuModel_->GetLabelAt(i));

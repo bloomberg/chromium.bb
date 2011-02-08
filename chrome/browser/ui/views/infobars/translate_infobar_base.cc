@@ -16,9 +16,33 @@
 #include "ui/gfx/canvas_skia.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/image_view.h"
+#include "views/controls/label.h"
 
-TranslateInfoBarBase::TranslateInfoBarBase(
-    TranslateInfoBarDelegate* delegate)
+// TranslateInfoBarDelegate ---------------------------------------------------
+
+InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
+  TranslateInfoBarBase* infobar = NULL;
+  switch (type_) {
+    case BEFORE_TRANSLATE:
+      infobar = new BeforeTranslateInfoBar(this);
+      break;
+    case AFTER_TRANSLATE:
+      infobar = new AfterTranslateInfoBar(this);
+      break;
+    case TRANSLATING:
+    case TRANSLATION_ERROR:
+      infobar = new TranslateMessageInfoBar(this);
+      break;
+    default:
+      NOTREACHED();
+  }
+  infobar_view_ = infobar;
+  return infobar;
+}
+
+// TranslateInfoBarBase -------------------------------------------------------
+
+TranslateInfoBarBase::TranslateInfoBarBase(TranslateInfoBarDelegate* delegate)
     : InfoBarView(delegate),
       normal_background_(InfoBarDelegate::PAGE_ACTION_TYPE),
       error_background_(InfoBarDelegate::WARNING_TYPE) {
@@ -28,37 +52,24 @@ TranslateInfoBarBase::TranslateInfoBarBase(
     icon_->SetImage(image);
   AddChildView(icon_);
 
+  background_color_animation_.reset(new ui::SlideAnimation(this));
+  background_color_animation_->SetTweenType(ui::Tween::LINEAR);
+  background_color_animation_->SetSlideDuration(500);
   TranslateInfoBarDelegate::BackgroundAnimationType animation =
-      delegate->background_animation_type();
-  if (animation != TranslateInfoBarDelegate::NONE) {
-    background_color_animation_.reset(new ui::SlideAnimation(this));
-    background_color_animation_->SetTweenType(ui::Tween::LINEAR);
-    background_color_animation_->SetSlideDuration(500);
-    if (animation == TranslateInfoBarDelegate::NORMAL_TO_ERROR) {
-      background_color_animation_->Show();
-    } else {
-      DCHECK_EQ(TranslateInfoBarDelegate::ERROR_TO_NORMAL, animation);
-      // Hide() runs the animation in reverse.
-      background_color_animation_->Reset(1.0);
-      background_color_animation_->Hide();
-    }
+      GetDelegate()->background_animation_type();
+  if (animation == TranslateInfoBarDelegate::NORMAL_TO_ERROR) {
+    background_color_animation_->Show();
+  } else if (animation == TranslateInfoBarDelegate::ERROR_TO_NORMAL) {
+    // Hide() runs the animation in reverse.
+    background_color_animation_->Reset(1.0);
+    background_color_animation_->Hide();
   }
 }
 
 TranslateInfoBarBase::~TranslateInfoBarBase() {
 }
 
-// Overridden from views::View:
-void TranslateInfoBarBase::Layout() {
-  // Layout the close button.
-  InfoBarView::Layout();
-
-  // Layout the icon on left of bar.
-  gfx::Size icon_ps = icon_->GetPreferredSize();
-  icon_->SetBounds(InfoBarView::kHorizontalPadding,
-      InfoBarView::OffsetY(this, icon_ps), icon_ps.width(), icon_ps.height());
-}
-
+// static
 views::Label* TranslateInfoBarBase::CreateLabel(const string16& text) {
   views::Label* label = new views::Label(UTF16ToWideHack(text),
       ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::MediumFont));
@@ -67,27 +78,7 @@ views::Label* TranslateInfoBarBase::CreateLabel(const string16& text) {
   return label;
 }
 
-void TranslateInfoBarBase::PaintBackground(gfx::Canvas* canvas) {
-  // If we're not animating, simply paint the background for the current state.
-  if (background_color_animation_ == NULL ||
-      !background_color_animation_->is_animating()) {
-    GetBackground().Paint(canvas, this);
-    return;
-  }
-
-  FadeBackground(canvas, 1.0 - background_color_animation_->GetCurrentValue(),
-                 normal_background_);
-  FadeBackground(canvas, background_color_animation_->GetCurrentValue(),
-                 error_background_);
-}
-
-void TranslateInfoBarBase::AnimationProgressed(const ui::Animation* animation) {
-  if (background_color_animation_.get() == animation)
-    SchedulePaint();  // That'll trigger a PaintBackgroud.
-  else
-    InfoBarView::AnimationProgressed(animation);
-}
-
+// static
 views::MenuButton* TranslateInfoBarBase::CreateMenuButton(
     const string16& text,
     bool normal_has_border,
@@ -118,61 +109,49 @@ views::MenuButton* TranslateInfoBarBase::CreateMenuButton(
   return menu_button;
 }
 
-gfx::Point TranslateInfoBarBase::DetermineMenuPosition(
-    views::MenuButton* menu_button) {
-  gfx::Rect lb = menu_button->GetContentsBounds();
-  gfx::Point menu_position(lb.origin());
-  menu_position.Offset(2, lb.height() - 3);
-  if (base::i18n::IsRTL())
-    menu_position.Offset(lb.width() - 4, 0);
+void TranslateInfoBarBase::Layout() {
+  InfoBarView::Layout();
 
-  View::ConvertPointToScreen(menu_button, &menu_position);
-#if defined(OS_WIN)
-  int left_bound = GetSystemMetrics(SM_XVIRTUALSCREEN);
-  if (menu_position.x() < left_bound)
-    menu_position.set_x(left_bound);
-#endif
-  return menu_position;
+  gfx::Size icon_size = icon_->GetPreferredSize();
+  icon_->SetBounds(kHorizontalPadding, OffsetY(this, icon_size),
+                   icon_size.width(), icon_size.height());
 }
 
-TranslateInfoBarDelegate* TranslateInfoBarBase::GetDelegate() const {
-  return static_cast<TranslateInfoBarDelegate*>(delegate());
+TranslateInfoBarDelegate* TranslateInfoBarBase::GetDelegate() {
+  return delegate()->AsTranslateInfoBarDelegate();
 }
 
-const InfoBarBackground& TranslateInfoBarBase::GetBackground() const {
+void TranslateInfoBarBase::PaintBackground(gfx::Canvas* canvas) {
+  // If we're not animating, simply paint the background for the current state.
+  if (!background_color_animation_->is_animating()) {
+    GetBackground().Paint(canvas, this);
+    return;
+  }
+
+  FadeBackground(canvas, 1.0 - background_color_animation_->GetCurrentValue(),
+                 normal_background_);
+  FadeBackground(canvas, background_color_animation_->GetCurrentValue(),
+                 error_background_);
+}
+
+void TranslateInfoBarBase::AnimationProgressed(const ui::Animation* animation) {
+  if (animation == background_color_animation_.get())
+    SchedulePaint();  // That'll trigger a PaintBackgroud.
+  else
+    InfoBarView::AnimationProgressed(animation);
+}
+
+const views::Background& TranslateInfoBarBase::GetBackground() {
   return GetDelegate()->IsError() ? error_background_ : normal_background_;
 }
 
 void TranslateInfoBarBase::FadeBackground(gfx::Canvas* canvas,
                                           double animation_value,
-                                          const InfoBarBackground& background) {
+                                          const views::Background& background) {
   // Draw the background into an offscreen buffer with alpha value per animation
   // value, then blend it back into the current canvas.
   canvas->SaveLayerAlpha(static_cast<int>(animation_value * 255));
   canvas->AsCanvasSkia()->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
   background.Paint(canvas, this);
   canvas->Restore();
-}
-
-// TranslateInfoBarDelegate views specific method:
-InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
-  TranslateInfoBarBase* infobar = NULL;
-  switch (type_) {
-    case BEFORE_TRANSLATE:
-      infobar = new BeforeTranslateInfoBar(this);
-      break;
-    case AFTER_TRANSLATE:
-      infobar = new AfterTranslateInfoBar(this);
-      break;
-    case TRANSLATING:
-    case TRANSLATION_ERROR:
-      infobar = new TranslateMessageInfoBar(this);
-      break;
-    default:
-      NOTREACHED();
-  }
-  // Set |infobar_view_| so that the model can notify the infobar when it
-  // changes.
-  infobar_view_ = infobar;
-  return infobar;
 }

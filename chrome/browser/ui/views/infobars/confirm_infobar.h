@@ -11,7 +11,6 @@
 
 class ConfirmInfoBarDelegate;
 class InfoBarTextButton;
-
 namespace views {
 class Label;
 }
@@ -42,31 +41,23 @@ class AlertInfoBar : public InfoBarView {
 // TODO(pkasting): The above layout is the desired, but not current, layout; fix
 // coming in a future patch.
 class ConfirmInfoBar : public AlertInfoBar,
-                       public views::LinkController  {
+                       public views::LinkController {
  public:
   explicit ConfirmInfoBar(ConfirmInfoBarDelegate* delegate);
+
+ private:
   virtual ~ConfirmInfoBar();
 
-  // Overridden from views::LinkController:
-  virtual void LinkActivated(views::Link* source, int event_flags);
-
-  // Overridden from views::View:
+  // InfoBarView:
   virtual void Layout();
-
- protected:
-  // Overridden from views::View:
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,
                                     views::View* child);
-
-  // Overridden from views::ButtonListener:
+  virtual int GetAvailableWidth() const;
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
-  // Overridden from InfoBar:
-  virtual int GetAvailableWidth() const;
-
- private:
-  void Init();
+  // views::LinkController:
+  virtual void LinkActivated(views::Link* source, int event_flags);
 
   ConfirmInfoBarDelegate* GetDelegate();
 

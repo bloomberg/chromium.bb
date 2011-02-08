@@ -755,14 +755,14 @@ IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_BookmarkBarVisibility,
 // returns -1 if an error occurred.
 IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_GetInfoBarCount,
                             int /* tab_handle */,
-                            int /* info bar count */)
+                            size_t /* info bar count */)
 
 // This message triggers the action associated with the "accept" button in
 // the info-bar at the specified index.  If |wait for navigation| is true, it
 // won't return until a navigation has occurred.
 IPC_SYNC_MESSAGE_CONTROL3_1(AutomationMsg_ClickInfoBarAccept,
                             int /* tab_handle */,
-                            int /* info bar index */,
+                            size_t /* info bar index */,
                             bool /* wait for navigation */,
 // This line blank on purpose, see comment atop file about __LINE__.
                             /* navigation result */

@@ -22,12 +22,12 @@ class ExtensionInstallUIBrowserTest : public ExtensionBrowserTest {
   void VerifyThemeInfoBarAndUndoInstall() {
     TabContents* tab_contents = browser()->GetSelectedTabContents();
     ASSERT_TRUE(tab_contents);
-    ASSERT_EQ(1, tab_contents->infobar_delegate_count());
+    ASSERT_EQ(1U, tab_contents->infobar_count());
     ConfirmInfoBarDelegate* delegate =
         tab_contents->GetInfoBarDelegateAt(0)->AsConfirmInfoBarDelegate();
     ASSERT_TRUE(delegate);
     delegate->Cancel();
-    ASSERT_EQ(0, tab_contents->infobar_delegate_count());
+    ASSERT_EQ(0U, tab_contents->infobar_count());
   }
 };
 

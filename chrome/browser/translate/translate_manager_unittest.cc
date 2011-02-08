@@ -86,7 +86,7 @@ class TranslateManagerTest : public RenderViewHostTestHarness,
   // Returns the translate infobar if there is 1 infobar and it is a translate
   // infobar.
   TranslateInfoBarDelegate* GetTranslateInfoBar() {
-    return (contents()->infobar_delegate_count() == 1) ?
+    return (contents()->infobar_count() == 1) ?
         contents()->GetInfoBarDelegateAt(0)->AsTranslateInfoBarDelegate() :
         NULL;
   }
@@ -545,21 +545,21 @@ TEST_F(TranslateManagerTest, MultipleOnPageContents) {
 
   // Simulate clicking 'Nope' (don't translate).
   EXPECT_TRUE(DenyTranslation());
-  EXPECT_EQ(0, contents()->infobar_delegate_count());
+  EXPECT_EQ(0U, contents()->infobar_count());
 
   // Send a new PageContents, we should not show an infobar.
   SimulateOnPageContents(GURL("http://www.google.fr"), 0, "Le Google", "fr",
                          true);
-  EXPECT_EQ(0, contents()->infobar_delegate_count());
+  EXPECT_EQ(0U, contents()->infobar_count());
 
   // Do the same steps but simulate closing the infobar this time.
   SimulateNavigation(GURL("http://www.youtube.fr"), "Le YouTube", "fr",
                      true);
   EXPECT_TRUE(CloseTranslateInfoBar());
-  EXPECT_EQ(0, contents()->infobar_delegate_count());
+  EXPECT_EQ(0U, contents()->infobar_count());
   SimulateOnPageContents(GURL("http://www.youtube.fr"), 1, "Le YouTube", "fr",
                          true);
-  EXPECT_EQ(0, contents()->infobar_delegate_count());
+  EXPECT_EQ(0U, contents()->infobar_count());
 }
 
 // Test that reloading the page brings back the infobar.

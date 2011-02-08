@@ -17,79 +17,82 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "webkit/plugins/npapi/default_plugin_shared.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/webplugininfo.h"
 
 namespace {
 
-// PluginInfoBar --------------------------------------------------------------
+// PluginInfoBarDelegate ------------------------------------------------------
 
-class PluginInfoBar : public ConfirmInfoBarDelegate {
+class PluginInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  PluginInfoBar(TabContents* tab_contents, const string16& name);
-
-  // ConfirmInfoBarDelegate:
-  virtual SkBitmap* GetIcon() const;
-  virtual int GetButtons() const;
-  virtual string16 GetLinkText();
+  PluginInfoBarDelegate(TabContents* tab_contents, const string16& name);
 
  protected:
-  virtual ~PluginInfoBar();
+  virtual ~PluginInfoBarDelegate();
 
-  void CommonCancel();
-  void CommonClose();
-  void CommonLearnMore(WindowOpenDisposition disposition);
+  virtual void InfoBarClosed();
+  virtual bool Cancel();
+  virtual bool LinkClicked(WindowOpenDisposition disposition);
 
   string16 name_;
   TabContents* tab_contents_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(PluginInfoBar);
+  // ConfirmInfoBarDelegate:
+  virtual SkBitmap* GetIcon() const;
+  virtual string16 GetLinkText();
+
+  DISALLOW_COPY_AND_ASSIGN(PluginInfoBarDelegate);
 };
 
-PluginInfoBar::PluginInfoBar(TabContents* tab_contents, const string16& name)
+PluginInfoBarDelegate::PluginInfoBarDelegate(TabContents* tab_contents,
+                                             const string16& name)
     : ConfirmInfoBarDelegate(tab_contents),
       name_(name),
       tab_contents_(tab_contents) {
 }
 
-PluginInfoBar::~PluginInfoBar() {
+PluginInfoBarDelegate::~PluginInfoBarDelegate() {
 }
 
-void PluginInfoBar::CommonClose() {
+void PluginInfoBarDelegate::InfoBarClosed() {
   delete this;
 }
 
-SkBitmap* PluginInfoBar::GetIcon() const {
+bool PluginInfoBarDelegate::Cancel() {
+  tab_contents_->render_view_host()->LoadBlockedPlugins();
+  return true;
+}
+
+bool PluginInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
+  // TODO(bauerb): Navigate to a help page explaining why we disabled
+  // or blocked the plugin, once we have one.
+  return false;
+}
+
+SkBitmap* PluginInfoBarDelegate::GetIcon() const {
   return ResourceBundle::GetSharedInstance().GetBitmapNamed(
       IDR_INFOBAR_PLUGIN_INSTALL);
 }
 
-int PluginInfoBar::GetButtons() const {
-  return BUTTON_OK | BUTTON_CANCEL;
-}
-
-void PluginInfoBar::CommonCancel() {
-  tab_contents_->render_view_host()->LoadBlockedPlugins();
-}
-
-string16 PluginInfoBar::GetLinkText() {
+string16 PluginInfoBarDelegate::GetLinkText() {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 
-void PluginInfoBar::CommonLearnMore(WindowOpenDisposition disposition) {
-  // TODO(bauerb): Navigate to a help page explaining why we disabled
-  // or blocked the plugin, once we have one.
-}
 
-// BlockedPluginInfoBar -------------------------------------------------------
+// BlockedPluginInfoBarDelegate -----------------------------------------------
 
-class BlockedPluginInfoBar : public PluginInfoBar {
+class BlockedPluginInfoBarDelegate : public PluginInfoBarDelegate {
  public:
-  BlockedPluginInfoBar(TabContents* tab_contents,
-                       const string16& name);
+  BlockedPluginInfoBarDelegate(TabContents* tab_contents,
+                               const string16& name);
 
-  // ConfirmInfoBarDelegate:
+ private:
+  virtual ~BlockedPluginInfoBarDelegate();
+
+  // PluginInfoBarDelegate:
   virtual string16 GetMessageText() const;
   virtual string16 GetButtonLabel(InfoBarButton button) const;
   virtual bool Accept();
@@ -97,33 +100,30 @@ class BlockedPluginInfoBar : public PluginInfoBar {
   virtual void InfoBarClosed();
   virtual bool LinkClicked(WindowOpenDisposition disposition);
 
- protected:
-  virtual ~BlockedPluginInfoBar();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BlockedPluginInfoBar);
+  DISALLOW_COPY_AND_ASSIGN(BlockedPluginInfoBarDelegate);
 };
 
-BlockedPluginInfoBar::BlockedPluginInfoBar(TabContents* tab_contents,
-                                           const string16& name)
-    : PluginInfoBar(tab_contents, name) {
-  tab_contents->AddInfoBar(this);
+BlockedPluginInfoBarDelegate::BlockedPluginInfoBarDelegate(
+    TabContents* tab_contents,
+    const string16& name)
+    : PluginInfoBarDelegate(tab_contents, name) {
   UserMetrics::RecordAction(UserMetricsAction("BlockedPluginInfobar.Shown"));
 }
 
-BlockedPluginInfoBar::~BlockedPluginInfoBar() {
+BlockedPluginInfoBarDelegate::~BlockedPluginInfoBarDelegate() {
 }
 
-string16 BlockedPluginInfoBar::GetMessageText() const {
+string16 BlockedPluginInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringFUTF16(IDS_PLUGIN_NOT_AUTHORIZED, name_);
 }
 
-string16 BlockedPluginInfoBar::GetButtonLabel(InfoBarButton button) const {
+string16 BlockedPluginInfoBarDelegate::GetButtonLabel(
+    InfoBarButton button) const {
   return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
       IDS_PLUGIN_ENABLE_ALWAYS : IDS_PLUGIN_ENABLE_TEMPORARILY);
 }
 
-bool BlockedPluginInfoBar::Accept() {
+bool BlockedPluginInfoBarDelegate::Accept() {
   UserMetrics::RecordAction(
       UserMetricsAction("BlockedPluginInfobar.AlwaysAllow"));
   tab_contents_->profile()->GetHostContentSettingsMap()->AddExceptionForURL(
@@ -133,34 +133,36 @@ bool BlockedPluginInfoBar::Accept() {
   return true;
 }
 
-bool BlockedPluginInfoBar::Cancel() {
+bool BlockedPluginInfoBarDelegate::Cancel() {
   UserMetrics::RecordAction(
       UserMetricsAction("BlockedPluginInfobar.AllowThisTime"));
-  CommonCancel();
-  return true;
+  return PluginInfoBarDelegate::Cancel();
 }
 
-void BlockedPluginInfoBar::InfoBarClosed() {
+void BlockedPluginInfoBarDelegate::InfoBarClosed() {
   UserMetrics::RecordAction(UserMetricsAction("BlockedPluginInfobar.Closed"));
-  CommonClose();
+  PluginInfoBarDelegate::InfoBarClosed();
 }
 
-bool BlockedPluginInfoBar::LinkClicked(WindowOpenDisposition disposition) {
+bool BlockedPluginInfoBarDelegate::LinkClicked(
+    WindowOpenDisposition disposition) {
   UserMetrics::RecordAction(
       UserMetricsAction("BlockedPluginInfobar.LearnMore"));
-  CommonLearnMore(disposition);
-  return false;
+  return PluginInfoBarDelegate::LinkClicked(disposition);
 }
 
-// OutdatedPluginInfoBar ------------------------------------------------------
+// OutdatedPluginInfoBarDelegate ----------------------------------------------
 
-class OutdatedPluginInfoBar : public PluginInfoBar {
+class OutdatedPluginInfoBarDelegate : public PluginInfoBarDelegate {
  public:
-  OutdatedPluginInfoBar(TabContents* tab_contents,
-                        const string16& name,
-                        const GURL& update_url);
+  OutdatedPluginInfoBarDelegate(TabContents* tab_contents,
+                                const string16& name,
+                                const GURL& update_url);
 
-  // ConfirmInfoBarDelegate:
+ private:
+  virtual ~OutdatedPluginInfoBarDelegate();
+
+  // PluginInfoBarDelegate:
   virtual string16 GetMessageText() const;
   virtual string16 GetButtonLabel(InfoBarButton button) const;
   virtual bool Accept();
@@ -168,67 +170,68 @@ class OutdatedPluginInfoBar : public PluginInfoBar {
   virtual void InfoBarClosed();
   virtual bool LinkClicked(WindowOpenDisposition disposition);
 
- protected:
-  virtual ~OutdatedPluginInfoBar();
-
- private:
   GURL update_url_;
 
-  DISALLOW_COPY_AND_ASSIGN(OutdatedPluginInfoBar);
+  DISALLOW_COPY_AND_ASSIGN(OutdatedPluginInfoBarDelegate);
 };
 
-OutdatedPluginInfoBar::OutdatedPluginInfoBar(TabContents* tab_contents,
-                                             const string16& name,
-                                             const GURL& update_url)
-    : PluginInfoBar(tab_contents, name), update_url_(update_url) {
-  tab_contents->AddInfoBar(this);
+OutdatedPluginInfoBarDelegate::OutdatedPluginInfoBarDelegate(
+    TabContents* tab_contents,
+    const string16& name,
+    const GURL& update_url)
+    : PluginInfoBarDelegate(tab_contents, name), update_url_(update_url) {
   UserMetrics::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Shown"));
 }
 
-OutdatedPluginInfoBar::~OutdatedPluginInfoBar() {
+OutdatedPluginInfoBarDelegate::~OutdatedPluginInfoBarDelegate() {
 }
 
-string16 OutdatedPluginInfoBar::GetMessageText() const {
+string16 OutdatedPluginInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringFUTF16(IDS_PLUGIN_OUTDATED_PROMPT, name_);
 }
 
-string16 OutdatedPluginInfoBar::GetButtonLabel(InfoBarButton button) const {
+string16 OutdatedPluginInfoBarDelegate::GetButtonLabel(
+    InfoBarButton button) const {
   return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
       IDS_PLUGIN_UPDATE : IDS_PLUGIN_ENABLE_TEMPORARILY);
 }
 
-bool OutdatedPluginInfoBar::Accept() {
+bool OutdatedPluginInfoBarDelegate::Accept() {
   UserMetrics::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Update"));
   tab_contents_->OpenURL(update_url_, GURL(), NEW_FOREGROUND_TAB,
                          PageTransition::LINK);
   return false;
 }
 
-bool OutdatedPluginInfoBar::Cancel() {
+bool OutdatedPluginInfoBarDelegate::Cancel() {
   UserMetrics::RecordAction(
       UserMetricsAction("OutdatedPluginInfobar.AllowThisTime"));
-  CommonCancel();
-  return true;
+  return PluginInfoBarDelegate::Cancel();
 }
 
-void OutdatedPluginInfoBar::InfoBarClosed() {
+void OutdatedPluginInfoBarDelegate::InfoBarClosed() {
   UserMetrics::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Closed"));
-  CommonClose();
+  PluginInfoBarDelegate::InfoBarClosed();
 }
 
-bool OutdatedPluginInfoBar::LinkClicked(WindowOpenDisposition disposition) {
+bool OutdatedPluginInfoBarDelegate::LinkClicked(
+    WindowOpenDisposition disposition) {
   UserMetrics::RecordAction(
       UserMetricsAction("OutdatedPluginInfobar.LearnMore"));
-  CommonLearnMore(disposition);
-  return false;
+  return PluginInfoBarDelegate::LinkClicked(disposition);
 }
 
 }  // namespace
 
-PluginObserver::PluginObserver(TabContents* tab_contents)
-    : tab_contents_(tab_contents) { }
 
-PluginObserver::~PluginObserver() { }
+// PluginObserver -------------------------------------------------------------
+
+PluginObserver::PluginObserver(TabContents* tab_contents)
+    : tab_contents_(tab_contents) {
+}
+
+PluginObserver::~PluginObserver() {
+}
 
 bool PluginObserver::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(PluginObserver, message)
@@ -243,15 +246,29 @@ bool PluginObserver::OnMessageReceived(const IPC::Message& message) {
 }
 
 PluginInstallerInfoBarDelegate* PluginObserver::GetPluginInstaller() {
-  if (plugin_installer_.get() == NULL)
+  if (plugin_installer_ == NULL)
     plugin_installer_.reset(new PluginInstallerInfoBarDelegate(tab_contents_));
-  return plugin_installer_.get();
+  return plugin_installer_->AsPluginInstallerInfoBarDelegate();
 }
 
 void PluginObserver::OnMissingPluginStatus(int status) {
+  // TODO(PORT): pull in when plug-ins work
 #if defined(OS_WIN)
-// TODO(PORT): pull in when plug-ins work
-  GetPluginInstaller()->OnMissingPluginStatus(status);
+  if (status == webkit::npapi::default_plugin::MISSING_PLUGIN_AVAILABLE) {
+    tab_contents_->AddInfoBar(
+        new PluginInstallerInfoBarDelegate(tab_contents_));
+    return;
+  }
+
+  DCHECK_EQ(webkit::npapi::default_plugin::MISSING_PLUGIN_USER_STARTED_DOWNLOAD,
+            status);
+  for (size_t i = 0; i < tab_contents_->infobar_count(); ++i) {
+    InfoBarDelegate* delegate = tab_contents_->GetInfoBarDelegateAt(i);
+    if (delegate->AsPluginInstallerInfoBarDelegate() != NULL) {
+      tab_contents_->RemoveInfoBar(delegate);
+      return;
+    }
+  }
 #endif
 }
 
@@ -274,17 +291,17 @@ void PluginObserver::OnCrashedPlugin(const FilePath& plugin_path) {
   }
   SkBitmap* crash_icon = ResourceBundle::GetSharedInstance().GetBitmapNamed(
       IDR_INFOBAR_PLUGIN_CRASHED);
-  tab_contents_->AddInfoBar(new SimpleAlertInfoBarDelegate(
-      tab_contents_, crash_icon,
+  tab_contents_->AddInfoBar(new SimpleAlertInfoBarDelegate(tab_contents_,
+      crash_icon,
       l10n_util::GetStringFUTF16(IDS_PLUGIN_CRASHED_PROMPT, plugin_name),
       true));
 }
 
 void PluginObserver::OnBlockedOutdatedPlugin(const string16& name,
-                                                  const GURL& update_url) {
-  if (!update_url.is_empty())
-    new OutdatedPluginInfoBar(tab_contents_, name, update_url);
-  else
-    new BlockedPluginInfoBar(tab_contents_, name);
+                                             const GURL& update_url) {
+  tab_contents_->AddInfoBar(update_url.is_empty() ?
+      static_cast<InfoBarDelegate*>(new BlockedPluginInfoBarDelegate(
+          tab_contents_, name)) :
+      new OutdatedPluginInfoBarDelegate(tab_contents_, name, update_url));
 }
 

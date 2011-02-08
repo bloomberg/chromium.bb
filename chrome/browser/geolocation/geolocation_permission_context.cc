@@ -104,17 +104,10 @@ class GeolocationInfoBarQueueController : NotificationObserver {
   PendingInfoBarRequests pending_infobar_requests_;
 };
 
-namespace {
-
-const char kGeolocationLearnMoreUrl[] =
-#if defined(OS_CHROMEOS)
-    "http://www.google.com/support/chromeos/bin/answer.py?answer=142065";
-#else
-    "http://www.google.com/support/chrome/bin/answer.py?answer=142065";
-#endif
-
 
 // GeolocationConfirmInfoBarDelegate ------------------------------------------
+
+namespace {
 
 class GeolocationConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
@@ -218,6 +211,13 @@ string16 GeolocationConfirmInfoBarDelegate::GetLinkText() {
 
 bool GeolocationConfirmInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
+  const char kGeolocationLearnMoreUrl[] =
+#if defined(OS_CHROMEOS)
+      "http://www.google.com/support/chromeos/bin/answer.py?answer=142065";
+#else
+      "http://www.google.com/support/chrome/bin/answer.py?answer=142065";
+#endif
+
   // Ignore the click disposition and always open in a new top level tab.
   tab_contents_->OpenURL(
       google_util::AppendGoogleLocaleParam(GURL(kGeolocationLearnMoreUrl)),

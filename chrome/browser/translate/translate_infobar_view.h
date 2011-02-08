@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,8 +10,8 @@
 // sense) of the TranslateInfoBarDelegate (which is the model).
 class TranslateInfoBarView {
  public:
-  virtual void OriginalLanguageChanged() = 0;
-  virtual void TargetLanguageChanged() = 0;
+  virtual void OriginalLanguageChanged() {}
+  virtual void TargetLanguageChanged() {}
 
  protected:
   virtual ~TranslateInfoBarView() {}

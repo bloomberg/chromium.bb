@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -189,7 +189,7 @@ void ThumbnailLoader::LoadThumbnail() {
   // means I need to create InfoBarControllers here. At that point, we can get
   // the height from that controller. Until then, hardcode. :-/
   const int kInfoBarHeight = 31;
-  topOffset += contents_->infobar_delegate_count() * kInfoBarHeight;
+  topOffset += contents_->infobar_count() * kInfoBarHeight;
 
   bool always_show_bookmark_bar =
       contents_->profile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);

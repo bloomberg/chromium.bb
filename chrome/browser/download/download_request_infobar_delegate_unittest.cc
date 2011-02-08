@@ -20,6 +20,14 @@ class MockTabDownloadState : public DownloadRequestLimiter::TabDownloadState {
   ConfirmInfoBarDelegate* infobar() {
     return infobar_->AsConfirmInfoBarDelegate();
   }
+  void close_infobar() {
+    // TODO(pkasting): Right now InfoBarDelegates delete themselves via
+    // InfoBarClosed(); once InfoBars own their delegates, this can become a
+    // simple reset() call and ~MockTabDownloadState() will no longer need to
+    // call it.
+    if (infobar_ != NULL)
+      infobar_.release()->InfoBarClosed();
+  }
   bool responded() const { return responded_; }
   bool accepted() const { return accepted_; }
 
@@ -41,6 +49,7 @@ MockTabDownloadState::MockTabDownloadState()
 }
 
 MockTabDownloadState::~MockTabDownloadState() {
+  close_infobar();
   EXPECT_TRUE(responded_);
 }
 
@@ -54,6 +63,7 @@ void MockTabDownloadState::Accept() {
   EXPECT_FALSE(responded_);
   responded_ = true;
   accepted_ = true;
+  static_cast<DownloadRequestInfoBarDelegate*>(infobar_.get())->set_host(NULL);
 }
 
 
@@ -73,6 +83,6 @@ TEST(DownloadRequestInfobarDelegate, CancelTest) {
 
 TEST(DownloadRequestInfobarDelegate, CloseTest) {
   MockTabDownloadState state;
-  state.infobar()->InfoBarClosed();
+  state.close_infobar();
   EXPECT_FALSE(state.accepted());
 }

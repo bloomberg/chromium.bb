@@ -10,20 +10,20 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "views/controls/image_view.h"
 
-// LinkInfoBarDelegate, InfoBarDelegate overrides: -----------------------------
+// LinkInfoBarDelegate --------------------------------------------------------
 
 InfoBar* LinkInfoBarDelegate::CreateInfoBar() {
   return new LinkInfoBar(this);
 }
 
-// LinkInfoBar, public: --------------------------------------------------------
+// LinkInfoBar ----------------------------------------------------------------
 
 LinkInfoBar::LinkInfoBar(LinkInfoBarDelegate* delegate)
     : InfoBarView(delegate),
       icon_(new views::ImageView),
       label_1_(new views::Label),
-      label_2_(new views::Label),
-      link_(new views::Link) {
+      link_(new views::Link),
+      label_2_(new views::Label) {
   // Set up the icon.
   if (delegate->GetIcon())
     icon_->SetImage(delegate->GetIcon());
@@ -60,26 +60,13 @@ LinkInfoBar::LinkInfoBar(LinkInfoBarDelegate* delegate)
 LinkInfoBar::~LinkInfoBar() {
 }
 
-// LinkInfoBar, views::LinkController implementation: --------------------------
-
-void LinkInfoBar::LinkActivated(views::Link* source, int event_flags) {
-  DCHECK(source == link_);
-  if (GetDelegate()->LinkClicked(
-          event_utils::DispositionFromEventFlags(event_flags))) {
-    RemoveInfoBar();
-  }
-}
-
-// LinkInfoBar, views::View overrides: -----------------------------------------
-
 void LinkInfoBar::Layout() {
-  // Layout the close button.
   InfoBarView::Layout();
 
   // Layout the icon.
-  gfx::Size icon_ps = icon_->GetPreferredSize();
-  icon_->SetBounds(kHorizontalPadding, OffsetY(this, icon_ps), icon_ps.width(),
-                   icon_ps.height());
+  gfx::Size icon_size = icon_->GetPreferredSize();
+  icon_->SetBounds(kHorizontalPadding, OffsetY(this, icon_size),
+                   icon_size.width(), icon_size.height());
 
   int label_1_x = icon_->bounds().right() + kIconLabelSpacing;
 
@@ -88,32 +75,37 @@ void LinkInfoBar::Layout() {
   int available_width = GetAvailableWidth() - label_1_x;
 
   // Layout the left label.
-  gfx::Size label_1_ps = label_1_->GetPreferredSize();
-  label_1_->SetBounds(label_1_x, OffsetY(this, label_1_ps), label_1_ps.width(),
-                      label_1_ps.height());
+  gfx::Size label_1_size = label_1_->GetPreferredSize();
+  label_1_->SetBounds(label_1_x, OffsetY(this, label_1_size),
+                      label_1_size.width(), label_1_size.height());
 
   // Layout the link.
-  gfx::Size link_ps = link_->GetPreferredSize();
+  gfx::Size link_size = link_->GetPreferredSize();
   bool has_second_label = !label_2_->GetText().empty();
   if (has_second_label) {
     // Embed the link in the text string between the two labels.
-    link_->SetBounds(label_1_->bounds().right(),
-                     OffsetY(this, link_ps), link_ps.width(), link_ps.height());
+    link_->SetBounds(label_1_->bounds().right(), OffsetY(this, link_size),
+                     link_size.width(), link_size.height());
   } else {
     // Right-align the link toward the edge of the InfoBar.
-    link_->SetBounds(label_1_x + available_width - link_ps.width(),
-                     OffsetY(this, link_ps), link_ps.width(), link_ps.height());
+    link_->SetBounds(label_1_x + available_width - link_size.width(),
+        OffsetY(this, link_size), link_size.width(), link_size.height());
   }
 
   // Layout the right label (we do this regardless of whether or not it has
   // text).
-  gfx::Size label_2_ps = label_2_->GetPreferredSize();
-  label_2_->SetBounds(link_->bounds().right(),
-                      OffsetY(this, label_2_ps), label_2_ps.width(),
-                      label_2_ps.height());
+  gfx::Size label_2_size = label_2_->GetPreferredSize();
+  label_2_->SetBounds(link_->bounds().right(), OffsetY(this, label_2_size),
+                      label_2_size.width(), label_2_size.height());
 }
 
-// LinkInfoBar, private: -------------------------------------------------------
+void LinkInfoBar::LinkActivated(views::Link* source, int event_flags) {
+  DCHECK(source == link_);
+  if (GetDelegate()->LinkClicked(
+          event_utils::DispositionFromEventFlags(event_flags))) {
+    RemoveInfoBar();
+  }
+}
 
 LinkInfoBarDelegate* LinkInfoBar::GetDelegate() {
   return delegate()->AsLinkInfoBarDelegate();

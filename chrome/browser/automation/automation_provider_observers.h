@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -597,7 +597,7 @@ class InfoBarCountObserver : public NotificationObserver {
   InfoBarCountObserver(AutomationProvider* automation,
                        IPC::Message* reply_message,
                        TabContents* tab_contents,
-                       int target_count);
+                       size_t target_count);
 
   // NotificationObserver interface.
   virtual void Observe(NotificationType type,
@@ -614,7 +614,7 @@ class InfoBarCountObserver : public NotificationObserver {
   IPC::Message* reply_message_;
   TabContents* tab_contents_;
 
-  const int target_count_;
+  const size_t target_count_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBarCountObserver);
 };

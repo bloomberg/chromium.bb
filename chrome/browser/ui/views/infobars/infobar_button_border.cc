@@ -5,19 +5,13 @@
 #include "chrome/browser/ui/views/infobars/infobar_button_border.h"
 
 #include "grit/theme_resources.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "views/controls/button/text_button.h"
 
-// Preferred padding between text and edge
-static const int kPreferredPaddingHorizontal = 6;
-static const int kPreferredPaddingVertical = 5;
-
-// InfoBarButtonBorder, public: ----------------------------------------------
-
 InfoBarButtonBorder::InfoBarButtonBorder() {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-
   normal_set_.top_left = rb.GetBitmapNamed(IDR_INFOBARBUTTON_TOP_LEFT_N);
   normal_set_.top = rb.GetBitmapNamed(IDR_INFOBARBUTTON_TOP_N);
   normal_set_.top_right = rb.GetBitmapNamed(IDR_INFOBARBUTTON_TOP_RIGHT_N);
@@ -54,9 +48,9 @@ InfoBarButtonBorder::InfoBarButtonBorder() {
 InfoBarButtonBorder::~InfoBarButtonBorder() {
 }
 
-// InfoBarButtonBorder, Border overrides: ------------------------------------
-
 void InfoBarButtonBorder::GetInsets(gfx::Insets* insets) const {
+  static const int kPreferredPaddingHorizontal = 6;
+  static const int kPreferredPaddingVertical = 5;
   insets->Set(kPreferredPaddingVertical, kPreferredPaddingHorizontal,
               kPreferredPaddingVertical, kPreferredPaddingHorizontal);
 }
@@ -65,25 +59,19 @@ void InfoBarButtonBorder::Paint(const views::View& view,
                                 gfx::Canvas* canvas) const {
   const views::TextButton* mb = static_cast<const views::TextButton*>(&view);
   int state = mb->state();
-
-  // TextButton takes care of deciding when to call Paint.
   const MBBImageSet* set = &normal_set_;
   if (state == views::TextButton::BS_HOT)
     set = &hot_set_;
   else if (state == views::TextButton::BS_PUSHED)
     set = &pushed_set_;
 
-  gfx::Rect bounds = view.bounds();
-
   // Draw top left image.
   canvas->DrawBitmapInt(*set->top_left, 0, 0);
 
   // Stretch top image.
-  canvas->DrawBitmapInt(
-      *set->top,
-      0, 0, set->top->width(), set->top->height(),
-      set->top_left->width(),
-      0,
+  const gfx::Rect& bounds = view.bounds();
+  canvas->DrawBitmapInt(*set->top, 0, 0, set->top->width(), set->top->height(),
+      set->top_left->width(), 0,
       bounds.width() - set->top_right->width() - set->top_left->width(),
       set->top->height(), false);
 
@@ -92,46 +80,32 @@ void InfoBarButtonBorder::Paint(const views::View& view,
                         bounds.width() - set->top_right->width(), 0);
 
   // Stretch left image.
-  canvas->DrawBitmapInt(
-      *set->left,
-      0, 0, set->left->width(), set->left->height(),
-      0,
-      set->top_left->height(),
-      set->top_left->width(),
+  canvas->DrawBitmapInt(*set->left, 0, 0, set->left->width(),
+      set->left->height(), 0, set->top_left->height(), set->top_left->width(),
       bounds.height() - set->top->height() - set->bottom_left->height(), false);
 
   // Stretch center image.
-  canvas->DrawBitmapInt(
-      *set->center,
-      0, 0, set->center->width(), set->center->height(),
-      set->left->width(),
-      set->top->height(),
+  canvas->DrawBitmapInt(*set->center, 0, 0, set->center->width(),
+      set->center->height(), set->left->width(), set->top->height(),
       bounds.width() - set->right->width() - set->left->width(),
       bounds.height() - set->bottom->height() - set->top->height(), false);
 
   // Stretch right image.
-  canvas->DrawBitmapInt(
-      *set->right,
-      0, 0, set->right->width(), set->right->height(),
-      bounds.width() - set->right->width(),
-      set->top_right->height(),
-      set->right->width(),
-      bounds.height() - set->bottom_right->height() -
-          set->top_right->height(), false);
+  canvas->DrawBitmapInt(*set->right, 0, 0, set->right->width(),
+      set->right->height(), bounds.width() - set->right->width(),
+      set->top_right->height(), set->right->width(),
+      bounds.height() - set->bottom_right->height() - set->top_right->height(),
+      false);
 
   // Draw bottom left image.
-  canvas->DrawBitmapInt(*set->bottom_left,
-                        0,
+  canvas->DrawBitmapInt(*set->bottom_left, 0,
                         bounds.height() - set->bottom_left->height());
 
   // Stretch bottom image.
-  canvas->DrawBitmapInt(
-      *set->bottom,
-      0, 0, set->bottom->width(), set->bottom->height(),
-      set->bottom_left->width(),
+  canvas->DrawBitmapInt(*set->bottom, 0, 0, set->bottom->width(),
+      set->bottom->height(), set->bottom_left->width(),
       bounds.height() - set->bottom->height(),
-      bounds.width() - set->bottom_right->width() -
-          set->bottom_left->width(),
+      bounds.width() - set->bottom_right->width() - set->bottom_left->width(),
       set->bottom->height(), false);
 
   // Draw bottom right image.

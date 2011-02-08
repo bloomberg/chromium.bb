@@ -29,8 +29,8 @@ class AfterTranslateInfoBar : public TranslateInfoBarBase {
 
   // These methods set the original/target language on the
   // TranslateInfobarDelegate.
-  void SetOriginalLanguage(int language_index);
-  void SetTargetLanguage(int language_index);
+  void SetOriginalLanguage(size_t language_index);
+  void SetTargetLanguage(size_t language_index);
 
   ScopedRunnableMethodFactory<AfterTranslateInfoBar> method_factory_;
 

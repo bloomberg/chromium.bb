@@ -29,9 +29,9 @@ class CrashedExtensionInfoBarDelegate : public ConfirmInfoBarDelegate {
   const std::string extension_id() { return extension_id_; }
 
  private:
-   virtual ~CrashedExtensionInfoBarDelegate();
+  virtual ~CrashedExtensionInfoBarDelegate();
 
-  // ConfirmInfoBarDelegate
+  // ConfirmInfoBarDelegate:
   virtual bool ShouldExpire(
       const NavigationController::LoadCommittedDetails& details) const;
   virtual void InfoBarClosed();
@@ -39,8 +39,7 @@ class CrashedExtensionInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual CrashedExtensionInfoBarDelegate* AsCrashedExtensionInfoBarDelegate();
   virtual string16 GetMessageText() const;
   virtual int GetButtons() const;
-  virtual string16 GetButtonLabel(
-      ConfirmInfoBarDelegate::InfoBarButton button) const;
+  virtual string16 GetButtonLabel(InfoBarButton button) const;
   virtual bool Accept();
 
   ExtensionService* extensions_service_;

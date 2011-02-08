@@ -51,18 +51,16 @@ class InfoBarContainer : public AccessiblePaneView,
                           views::View* outer_view,
                           int arrow_center_x);
 
-  // Overridden from views::View:
+ private:
+  // AccessiblePaneView:
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();
   virtual AccessibilityTypes::Role GetAccessibleRole();
-
- protected:
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,
                                     views::View* child);
 
- private:
-  // Overridden from NotificationObserver:
+  // NotificationObserver:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);

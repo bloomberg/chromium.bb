@@ -148,7 +148,6 @@ class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual bool Accept();
   virtual bool Cancel();
 
- private:
   // The Profile that we restore sessions from.
   Profile* profile_;
 
@@ -256,7 +255,7 @@ void NotifyNotDefaultBrowserTask::Run() {
   // In ChromeBot tests, there might be a race. This line appears to get
   // called during shutdown and |tab| can be NULL.
   TabContents* tab = browser->GetSelectedTabContents();
-  if (!tab || tab->infobar_delegate_count() > 0)
+  if (!tab || tab->infobar_count() > 0)
     return;
   tab->AddInfoBar(new DefaultBrowserInfoBarDelegate(tab));
 }
@@ -295,8 +294,7 @@ void CheckDefaultBrowserTask::Run() {
 
 // SessionCrashedInfoBarDelegate ----------------------------------------------
 
-// A delegate for the InfoBar shown when the previous session has crashed. The
-// bar deletes itself automatically after it is closed.
+// A delegate for the InfoBar shown when the previous session has crashed.
 class SessionCrashedInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   explicit SessionCrashedInfoBarDelegate(TabContents* contents);

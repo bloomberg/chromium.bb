@@ -24,7 +24,7 @@ class ThemeInstalledInfoBarDelegate : public ConfirmInfoBarDelegate,
 
   // Returns true if the given theme is the same as the one associated with this
   // info bar.
-  bool MatchesTheme(const Extension* theme);
+  bool MatchesTheme(const Extension* theme) const;
 
  protected:
   virtual ~ThemeInstalledInfoBarDelegate();

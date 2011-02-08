@@ -49,10 +49,8 @@ class SSLCertAddedInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual string16 GetButtonLabel(InfoBarButton button) const;
   virtual bool Accept();
 
-  // The TabContents we are attached to
-  TabContents* tab_contents_;
-  // The cert we added.
-  scoped_refptr<net::X509Certificate> cert_;
+  TabContents* tab_contents_;  // The TabContents we are attached to.
+  scoped_refptr<net::X509Certificate> cert_;  // The cert we added.
 };
 
 SSLCertAddedInfoBarDelegate::SSLCertAddedInfoBarDelegate(
@@ -107,7 +105,7 @@ bool SSLCertAddedInfoBarDelegate::Accept() {
 
 class TabContentsSSLHelper::SSLAddCertData : public NotificationObserver {
  public:
-  SSLAddCertData(TabContents* tab, SSLAddCertHandler* handler);
+  explicit SSLAddCertData(TabContents* tab);
   virtual ~SSLAddCertData();
 
   // Displays |delegate| as an infobar in |tab_|, replacing our current one if
@@ -125,17 +123,14 @@ class TabContentsSSLHelper::SSLAddCertData : public NotificationObserver {
                        const NotificationDetails& details);
 
   TabContents* tab_contents_;
-  scoped_refptr<SSLAddCertHandler> handler_;  // The handler we call back to.
   InfoBarDelegate* infobar_delegate_;
   NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLAddCertData);
 };
 
-TabContentsSSLHelper::SSLAddCertData::SSLAddCertData(TabContents* tab_contents,
-                                                     SSLAddCertHandler* handler)
+TabContentsSSLHelper::SSLAddCertData::SSLAddCertData(TabContents* tab_contents)
     : tab_contents_(tab_contents),
-      handler_(handler),
       infobar_delegate_(NULL) {
   Source<TabContents> source(tab_contents_);
   registrar_.Add(this, NotificationType::TAB_CONTENTS_INFOBAR_REMOVED, source);
@@ -236,6 +231,6 @@ TabContentsSSLHelper::SSLAddCertData* TabContentsSSLHelper::GetAddCertData(
       request_id_to_add_cert_data_[handler->network_request_id()];
   // Fill it if necessary.
   if (!ptr_ref.get())
-    ptr_ref.reset(new SSLAddCertData(tab_contents_, handler));
+    ptr_ref.reset(new SSLAddCertData(tab_contents_));
   return ptr_ref.get();
 }

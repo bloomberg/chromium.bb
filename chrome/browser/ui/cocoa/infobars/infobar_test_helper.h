@@ -28,7 +28,7 @@ class MockLinkInfoBarDelegate : public LinkInfoBarDelegate {
   static const char kLink[];
 
  private:
-  // LinkInfoBarDelegate
+  // LinkInfoBarDelegate:
   virtual void InfoBarClosed();
   virtual SkBitmap* GetIcon() const;
   virtual string16 GetMessageTextWithOffset(size_t* link_offset) const;
@@ -68,7 +68,7 @@ class MockConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
   static const char kMessage[];
 
  private:
-  // ConfirmInfoBarDelegate
+  // ConfirmInfoBarDelegate:
   virtual void InfoBarClosed();
   virtual SkBitmap* GetIcon() const;
   virtual string16 GetMessageText() const;

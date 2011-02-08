@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_GTK_TRANSLATE_TRANSLATE_INFOBAR_BASE_GTK_H_
 #pragma once
 
-#include "chrome/browser/translate/translate_infobar_view.h"
 #include "chrome/browser/ui/gtk/infobars/infobar_gtk.h"
 #include "ui/base/animation/animation_delegate.h"
 
@@ -16,8 +15,7 @@ class TranslateInfoBarDelegate;
 
 // This class contains some of the base functionality that translate infobars
 // use.
-class TranslateInfoBarBase : public TranslateInfoBarView,
-                             public InfoBar,
+class TranslateInfoBarBase : public InfoBar,
                              public ui::AnimationDelegate {
  public:
   explicit TranslateInfoBarBase(TranslateInfoBarDelegate* delegate);
@@ -32,10 +30,6 @@ class TranslateInfoBarBase : public TranslateInfoBarView,
                            double* r, double* g, double *b);
   virtual void GetBottomColor(InfoBarDelegate::Type type,
                               double* r, double* g, double *b);
-
-  // Overridden from TranslateInfoBarView:
-  virtual void OriginalLanguageChanged() {}
-  virtual void TargetLanguageChanged() {}
 
   // Overridden from ui::AnimationDelegate:
   virtual void AnimationProgressed(const ui::Animation* animation);
@@ -53,13 +47,14 @@ class TranslateInfoBarBase : public TranslateInfoBarView,
   // |selected_language| is the language index (as used in the
   // TranslateInfoBarDelegate) that should be selected initially.
   // |exclude_language| is the language index of the language that should not be
-  // included in the list (-1 means no language excluded).
-  GtkWidget* CreateLanguageCombobox(int selected_language,
-                                    int exclude_language);
+  // included in the list (TranslateInfoBarDelegate::kNoIndex means no language
+  // excluded).
+  GtkWidget* CreateLanguageCombobox(size_t selected_language,
+                                    size_t exclude_language);
 
   // Given an above-constructed combobox, returns the currently selected
   // language id.
-  static int GetLanguageComboboxActiveId(GtkComboBox* combo);
+  static size_t GetLanguageComboboxActiveId(GtkComboBox* combo);
 
   // Convenience to retrieve the TranslateInfoBarDelegate for this infobar.
   TranslateInfoBarDelegate* GetDelegate() const;

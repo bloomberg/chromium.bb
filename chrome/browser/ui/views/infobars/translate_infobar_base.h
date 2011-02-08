@@ -25,50 +25,43 @@ class TranslateInfoBarBase : public TranslateInfoBarView,
   explicit TranslateInfoBarBase(TranslateInfoBarDelegate* delegate);
   virtual ~TranslateInfoBarBase();
 
-  // TranslateInfoBarView implementation:
-  virtual void OriginalLanguageChanged() {}
-  virtual void TargetLanguageChanged() {}
-
-  // Overridden from views::View:
-  virtual void Layout();
-  virtual void PaintBackground(gfx::Canvas* canvas);
-
  protected:
-  // Overridden from ui::AnimationDelegate:
-  virtual void AnimationProgressed(const ui::Animation* animation);
-
   // Creates a label with the appropriate font and color for the translate
   // infobars.
-  views::Label* CreateLabel(const string16& text);
+  static views::Label* CreateLabel(const string16& text);
 
   // Creates a menu-button with a custom appearance for the translate infobars.
-  views::MenuButton* CreateMenuButton(const string16& text,
-                                      bool normal_has_border,
-                                      views::ViewMenuDelegate* menu_delegate);
+  static views::MenuButton* CreateMenuButton(
+      const string16& text,
+      bool normal_has_border,
+      views::ViewMenuDelegate* menu_delegate);
 
-  // Returns the location at which the menu triggered by |menu_button| should be
-  // positioned.
-  gfx::Point DetermineMenuPosition(views::MenuButton* menu_button);
+  // InfoBarView:
+  virtual void Layout();
 
   // Convenience to retrieve the TranslateInfoBarDelegate for this infobar.
-  TranslateInfoBarDelegate* GetDelegate() const;
+  TranslateInfoBarDelegate* GetDelegate();
 
   // The translate icon.
   views::ImageView* icon_;
 
-  InfoBarBackground normal_background_;
-  InfoBarBackground error_background_;
-  scoped_ptr<ui::SlideAnimation> background_color_animation_;
-
  private:
+  // InfoBarView:
+  virtual void PaintBackground(gfx::Canvas* canvas);
+  virtual void AnimationProgressed(const ui::Animation* animation);
+
   // Returns the background that should be displayed when not animating.
-  const InfoBarBackground& GetBackground() const;
+  const views::Background& GetBackground();
 
   // Paints |background| to |canvas| with the opacity level based on
   // |animation_value|.
   void FadeBackground(gfx::Canvas* canvas,
                       double animation_value,
-                      const InfoBarBackground& background);
+                      const views::Background& background);
+
+  InfoBarBackground normal_background_;
+  InfoBarBackground error_background_;
+  scoped_ptr<ui::SlideAnimation> background_color_animation_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateInfoBarBase);
 };

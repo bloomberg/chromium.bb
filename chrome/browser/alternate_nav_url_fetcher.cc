@@ -166,6 +166,5 @@ void AlternateNavURLFetcher::ShowInfobarIfPossible() {
 
   infobar_contents_ = controller_->tab_contents();
   StoreActiveEntryUniqueID(infobar_contents_);
-  // We will be deleted when the InfoBar is destroyed. (See InfoBarClosed).
   infobar_contents_->AddInfoBar(this);
 }

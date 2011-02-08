@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -638,14 +638,14 @@ bool TabProxy::SavePage(const FilePath& file_name,
   return succeeded;
 }
 
-bool TabProxy::GetInfoBarCount(int* count) {
+bool TabProxy::GetInfoBarCount(size_t* count) {
   if (!is_valid())
     return false;
 
   return sender_->Send(new AutomationMsg_GetInfoBarCount(handle_, count));
 }
 
-bool TabProxy::WaitForInfoBarCount(int target_count) {
+bool TabProxy::WaitForInfoBarCount(size_t target_count) {
   if (!is_valid())
     return false;
 
@@ -654,7 +654,7 @@ bool TabProxy::WaitForInfoBarCount(int target_count) {
       handle_, target_count, &success)) && success;
 }
 
-bool TabProxy::ClickInfoBarAccept(int info_bar_index,
+bool TabProxy::ClickInfoBarAccept(size_t info_bar_index,
                                   bool wait_for_navigation) {
   if (!is_valid())
     return false;

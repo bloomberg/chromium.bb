@@ -385,7 +385,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
   // manager is still visible. Make sure we don't crash and the extension
   // gets reloaded and noticed in the task manager.
   TabContents* current_tab = browser()->GetSelectedTabContents();
-  ASSERT_EQ(1, current_tab->infobar_delegate_count());
+  ASSERT_EQ(1U, current_tab->infobar_count());
   ConfirmInfoBarDelegate* delegate =
       current_tab->GetInfoBarDelegateAt(0)->AsConfirmInfoBarDelegate();
   ASSERT_TRUE(delegate);
