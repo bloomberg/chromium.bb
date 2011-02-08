@@ -52,7 +52,7 @@ cr.define('options', function() {
     dismissOverlay_: function() {
       this.clearInputFields_();
       this.guid = '';
-      OptionsPage.clearOverlays();
+      OptionsPage.closeOverlay();
     },
 
     /**
@@ -173,5 +173,4 @@ cr.define('options', function() {
   return {
     AutoFillEditAddressOverlay: AutoFillEditAddressOverlay
   };
-
 });

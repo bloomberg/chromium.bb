@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-
   var OptionsPage = options.OptionsPage;
 
   /**
@@ -106,7 +105,7 @@ cr.define('options', function() {
   };
 
   ClearBrowserDataOverlay.dismiss = function() {
-    OptionsPage.clearOverlays();
+    OptionsPage.closeOverlay();
     this.setClearingState(false);
   };
 

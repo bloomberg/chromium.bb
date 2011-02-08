@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-
   var OptionsPage = options.OptionsPage;
 
   /////////////////////////////////////////////////////////////////////////////
@@ -50,7 +49,7 @@ cr.define('options', function() {
       $('rememberedSection').hidden = (templateData.rememberedList.length == 0);
       InternetOptions.setupAttributes(templateData);
       $('detailsInternetDismiss').addEventListener('click', function(event) {
-        OptionsPage.clearOverlays();
+        OptionsPage.clsoeOverlay(true);
       });
       $('detailsInternetLogin').addEventListener('click', function(event) {
         InternetOptions.loginFromDetails();
@@ -76,7 +75,7 @@ cr.define('options', function() {
       });
       $('buyplanDetails').addEventListener('click', function(event) {
         chrome.send('buyDataPlan', []);
-        OptionsPage.clearOverlays();
+        OptionsPage.closeOverlay();
       });
       this.showNetworkDetails_();
     },
@@ -121,7 +120,7 @@ cr.define('options', function() {
                                             servicePath,
                                             'connect']);
     }
-    OptionsPage.clearOverlays();
+    OptionsPage.closeOverlay();
   };
 
   InternetOptions.activateFromDetails = function () {
@@ -132,7 +131,7 @@ cr.define('options', function() {
                                           servicePath,
                                           'activate']);
     }
-    OptionsPage.clearOverlays();
+    OptionsPage.closeOverlay();
   };
 
   InternetOptions.setupAttributes = function(data) {
@@ -358,12 +357,11 @@ cr.define('options', function() {
       page.removeAttribute('cellular');
       page.removeAttribute('gsm');
     }
-    OptionsPage.showOverlay('detailsInternetPage');
+    OptionsPage.navigateToPage('detailsInternetPage');
   };
 
   // Export
   return {
     InternetOptions: InternetOptions
   };
-
 });

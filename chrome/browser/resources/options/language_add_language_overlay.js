@@ -5,8 +5,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // AddLanguageOverlay class:
 
-cr.define('options.language', function() {
-
+cr.define('options', function() {
   const OptionsPage = options.OptionsPage;
 
   /**
@@ -35,7 +34,7 @@ cr.define('options.language', function() {
 
       // Set up the cancel button.
       $('add-language-overlay-cancel-button').onclick = function(e) {
-        OptionsPage.clearOverlays();
+        OptionsPage.closeOverlay();
       };
 
       // Create the language list with which users can add a language.

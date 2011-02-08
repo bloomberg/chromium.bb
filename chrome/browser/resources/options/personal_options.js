@@ -63,7 +63,7 @@ cr.define('options', function() {
 
       if (!cr.isChromeOS) {
         $('import-data').onclick = function(event) {
-          OptionsPage.showOverlay('importDataOverlay');
+          OptionsPage.navigateToPage('importDataOverlay');
           chrome.send('coreOptionsUserMetricsAction', ['Import_ShowDlg']);
         };
 

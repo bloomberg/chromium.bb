@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-
   var OptionsPage = options.OptionsPage;
 
   /**
@@ -173,12 +172,11 @@ cr.define('options', function() {
    */
   ImportDataOverlay.dismiss = function() {
     ImportDataOverlay.setImportingState(false);
-    OptionsPage.clearOverlays();
-  }
+    OptionsPage.closeOverlay();
+  };
 
   // Export
   return {
     ImportDataOverlay: ImportDataOverlay
   };
-
 });

@@ -44,7 +44,7 @@ cr.define('options', function() {
         chrome.send('setStartupPagesToCurrentPages');
       };
       $('startupAddButton').onclick = function(event) {
-        OptionsPage.showOverlay('addStartupPageOverlay');
+        OptionsPage.navigateToPage('addStartupPageOverlay');
       };
       $('defaultSearchManageEnginesButton').onclick = function(event) {
         OptionsPage.navigateToPage('searchEngines');
@@ -58,7 +58,7 @@ cr.define('options', function() {
           // Leave disabled for now. The PrefCheckbox handler already set it to
           // true so undo that.
           Preferences.setBooleanPref(this.pref, false, this.metric);
-          OptionsPage.showOverlay('instantConfirmOverlay');
+          OptionsPage.navigateToPage('instantConfirmOverlay');
         }
       };
       $('defaultSearchEngine').onchange = this.setDefaultSearchEngine;

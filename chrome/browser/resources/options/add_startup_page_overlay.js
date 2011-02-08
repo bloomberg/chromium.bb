@@ -67,7 +67,7 @@ cr.define('options', function() {
       $('addStartupPageURL').value = '';
       $('addStartupRecentPageList').selectionModel.unselectAll();
       this.updateAddButtonState_();
-      OptionsPage.clearOverlays();
+      OptionsPage.closeOverlay();
     },
 
     /**

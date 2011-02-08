@@ -44,7 +44,7 @@ cr.define('options', function() {
      */
     dismissOverlay_: function() {
       this.clearInputFields_();
-      OptionsPage.clearOverlays();
+      OptionsPage.closeOverlay();
     },
 
     /**
@@ -82,7 +82,7 @@ cr.define('options', function() {
 
   CertificateRestoreOverlay.show = function() {
     CertificateRestoreOverlay.getInstance().clearInputFields_();
-    OptionsPage.showOverlay('certificateRestoreOverlay');
+    OptionsPage.navigateToPage('certificateRestoreOverlay');
   };
 
   CertificateRestoreOverlay.dismiss = function() {

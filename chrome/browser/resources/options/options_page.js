@@ -56,18 +56,17 @@ cr.define('options', function() {
    */
   OptionsPage.navigateToPage = function(pageName) {
     var visiblePage = this.getTopmostVisiblePage();
-    this.showPageByName_(pageName);
+
+    var targetPage = this.showPageByName_(pageName);
+    if (!targetPage)
+      return;
 
     if (!visiblePage) {
-      // Now that the desired page has been shown, get that page in order to add
-      // it to the history.
-      var page = this.getTopmostVisiblePage();
-
       // Use replaceState instead of pushState so that we don't get a
       // superfluous chrome://settings entry in addition to the desired
       // chrome://settings/pageName entry.
       window.history.replaceState(
-          {pageName: page.name}, page.title, '/' + page.name);
+          {pageName: targetPage.name}, targetPage.title, '/' + targetPage.name);
     } else if (visiblePage.name != pageName) {
       this.pushHistoryState_();
     }
@@ -76,10 +75,13 @@ cr.define('options', function() {
   /**
    * Shows a registered page. This handles both top-level pages and sub-pages.
    * @param {string} pageName Page name.
+   * @return {OptionsPage} The page that was shown.
    * @private
    */
   OptionsPage.showPageByName_ = function(pageName) {
     var targetPage = this.registeredPages[pageName];
+    if (!targetPage)
+      return this.showOverlay(pageName);
 
     // Determine if the root page is 'sticky', meaning that it
     // shouldn't change when showing a sub-page.  This can happen for special
@@ -124,6 +126,8 @@ cr.define('options', function() {
           page.isAncestorOfPage(targetPage)))
         page.didShowPage();
     }
+
+    return targetPage;
   };
 
   /**
@@ -133,8 +137,8 @@ cr.define('options', function() {
    */
   OptionsPage.pushHistoryState_ = function() {
     var page = this.getTopmostVisiblePage();
-    window.history.pushState({pageName: page.name}, page.title,
-                             '/' + page.name);
+    window.history.pushState(
+        {pageName: page.name}, page.title, '/' + page.name);
   };
 
   /**
@@ -151,11 +155,18 @@ cr.define('options', function() {
   /**
    * Shows a registered Overlay page.
    * @param {string} overlayName Page name.
+   * @return {OptionsPage} The overlay that was shown.
    */
   OptionsPage.showOverlay = function(overlayName) {
-    if (this.registeredOverlayPages[overlayName]) {
-      this.registeredOverlayPages[overlayName].visible = true;
-    }
+    var overlay = this.registeredOverlayPages[overlayName];
+    if (!overlay)
+      return null;
+
+    if (overlay.parentPage)
+      this.showPageByName_(overlay.parentPage.name);
+
+    this.registeredOverlayPages[overlayName].visible = true;
+    return overlay;
   };
 
   /**
@@ -181,13 +192,26 @@ cr.define('options', function() {
   };
 
   /**
-   * Clears overlays (i.e. hide all overlays).
+   * Closes the visible overlay. Updates the history state after closing the
+   * overlay.
    */
-  OptionsPage.clearOverlays = function() {
-     for (var name in this.registeredOverlayPages) {
-       var page = this.registeredOverlayPages[name];
-       page.visible = false;
-     }
+  OptionsPage.closeOverlay = function() {
+    var overlay = this.getVisibleOverlay_();
+    if (!overlay)
+      return;
+
+    overlay.visible = false;
+    this.pushHistoryState_();
+  };
+
+  /**
+   * Hides the visible overlay. Does not affect the history state.
+   * @private
+   */
+  OptionsPage.hideOverlay_ = function() {
+    var overlay = this.getVisibleOverlay_();
+    if (overlay)
+      overlay.visible = false;
   };
 
   /**
@@ -195,6 +219,11 @@ cr.define('options', function() {
    * @return {OptionPage} The topmost visible page.
    */
   OptionsPage.getTopmostVisiblePage = function() {
+    // Check overlays first since they're top-most if visible.
+    var overlay = this.getVisibleOverlay_();
+    if (overlay)
+      return overlay;
+
     var topPage = null;
     for (var name in this.registeredPages) {
       var page = this.registeredPages[name];
@@ -202,15 +231,17 @@ cr.define('options', function() {
           (!topPage || page.nestingLevel > topPage.nestingLevel))
         topPage = page;
     }
+
     return topPage;
   };
 
   /**
    * Closes the topmost open subpage, if any.
+   * @private
    */
-  OptionsPage.closeTopSubPage = function() {
+  OptionsPage.closeTopSubPage_ = function() {
     var topPage = this.getTopmostVisiblePage();
-    if (topPage && topPage.parentPage)
+    if (topPage && !topPage.isOverlay && topPage.parentPage)
       topPage.visible = false;
 
     this.pushHistoryState_();
@@ -234,9 +265,7 @@ cr.define('options', function() {
    * Updates managed banner visibility state based on the topmost page.
    */
   OptionsPage.updateManagedBannerVisibility = function() {
-    var topPage = this.getVisibleOverlay_();
-    if (topPage == null)
-      topPage = this.getTopmostVisiblePage();
+    var topPage = this.getTopmostVisiblePage();
     if (topPage)
       topPage.updateManagedBannerVisibility();
   };
@@ -313,8 +342,8 @@ cr.define('options', function() {
    * @param {OptionsPage} subPage Sub-page to register.
    * @param {OptionsPage} parentPage Associated parent page for this page.
    * @param {Array} associatedControls Array of control elements that lead to
-   *     this sub-page.  The first item is typically a button in a root-level
-   *     page.  There may be additional buttons for nested sub-pages.
+   *     this sub-page. The first item is typically a button in a root-level
+   *     page. There may be additional buttons for nested sub-pages.
    */
   OptionsPage.registerSubPage = function(subPage,
                                          parentPage,
@@ -334,23 +363,26 @@ cr.define('options', function() {
 
   /**
    * Registers a new Overlay page.
-   * @param {OptionsPage} page Page to register, must be a class derived from
+   * @param {OptionsPage} overlay Overlay to register.
+   * @param {OptionsPage} parentPage Associated parent page for this overlay.
    * @param {Array} associatedControls Array of control elements associated with
    *   this page.
    */
-  OptionsPage.registerOverlay = function(page,
+  OptionsPage.registerOverlay = function(overlay,
+                                         parentPage,
                                          associatedControls) {
-    this.registeredOverlayPages[page.name] = page;
+    this.registeredOverlayPages[overlay.name] = overlay;
+    overlay.parentPage = parentPage;
     if (associatedControls) {
-      page.associatedControls = associatedControls;
+      overlay.associatedControls = associatedControls;
       if (associatedControls.length) {
-        page.associatedSection =
+        overlay.associatedSection =
             this.findSectionForNode_(associatedControls[0]);
       }
     }
-    page.tab = undefined;
-    page.isOverlay = true;
-    page.initializePage();
+    overlay.tab = undefined;
+    overlay.isOverlay = true;
+    overlay.initializePage();
   };
 
   /**
@@ -359,13 +391,17 @@ cr.define('options', function() {
    */
   OptionsPage.setState = function(data) {
     if (data && data.pageName) {
+      // It's possible an overlay may be the last top-level page shown.
+      if (this.isOverlayVisible_())
+        this.hideOverlay_();
+
       this.showPageByName_(data.pageName);
     }
   };
 
   /**
-   * Initializes the complete options page.  This will cause
-   * all C++ handlers to be invoked to do final setup.
+   * Initializes the complete options page.  This will cause all C++ handlers to
+   * be invoked to do final setup.
    */
   OptionsPage.initialize = function() {
     chrome.send('coreOptionsInitialize');
@@ -393,7 +429,7 @@ cr.define('options', function() {
     subpageCloseButtons = document.querySelectorAll('.close-subpage');
     for (var i = 0; i < subpageCloseButtons.length; i++) {
       subpageCloseButtons[i].onclick = function() {
-        self.closeTopSubPage();
+        self.closeTopSubPage_();
       };
     };
 
@@ -433,15 +469,17 @@ cr.define('options', function() {
    */
   OptionsPage.manageFocusChange_ = function(e) {
     var focusableItemsRoot;
-    // If an overlay is visible, that defines the tab loop.
-    var topPage = this.getVisibleOverlay_();
-    if (topPage)
+    var topPage = this.getTopmostVisiblePage();
+    if (!topPage)
+      return;
+
+    if (topPage.isOverlay) {
+      // If an overlay is visible, that defines the tab loop.
       focusableItemsRoot = topPage.pageDiv;
-    // If a subpage is visible, use its parent as the tab loop constraint.
-    // (The parent is used because it contains the close button.)
-    if (!topPage) {
-      var topPage = this.getTopmostVisiblePage();
-      if (topPage && topPage.nestingLevel > 0)
+    } else {
+      // If a subpage is visible, use its parent as the tab loop constraint.
+      // (The parent is used because it contains the close button.)
+      if (topPage.nestingLevel > 0)
         focusableItemsRoot = topPage.pageDiv.parentNode;
     }
 
@@ -458,15 +496,11 @@ cr.define('options', function() {
   OptionsPage.bodyMouseEventHandler_ = function(event) {
     // Do nothing if a subpage isn't showing.
     var topPage = this.getTopmostVisiblePage();
-    if (!(topPage && topPage.parentPage))
+    if (!topPage || topPage.isOverlay || !topPage.parentPage)
       return;
 
     // Don't interfere with navbar clicks.
     if ($('navbar').contains(event.target))
-      return;
-
-    // If an overlay is currently visible, do nothing.
-    if (this.isOverlayVisible_())
       return;
 
     // If the click was within a subpage, do nothing.
@@ -492,9 +526,9 @@ cr.define('options', function() {
     // Close the top overlay or sub-page on esc.
     if (event.keyCode == 27) {  // Esc
       if (this.isOverlayVisible_())
-        this.clearOverlays();
+        this.closeOverlay();
       else
-        this.closeTopSubPage();
+        this.closeTopSubPage_();
     }
   };
 
@@ -690,13 +724,10 @@ cr.define('options', function() {
 
     /**
      * Handles a hash value in the URL (such as bar in
-     * chrome://options/foo#bar). Called on page load. By default, this shows
-     * an overlay that matches the hash name, but can be overriden by individual
-     * OptionsPage subclasses to get other behavior.
+     * chrome://options/foo#bar). Called on page load.
      * @param {string} hash The hash value.
      */
     handleHash: function(hash) {
-      OptionsPage.showOverlay(hash);
     },
   };
 
@@ -704,5 +735,4 @@ cr.define('options', function() {
   return {
     OptionsPage: OptionsPage
   };
-
 });

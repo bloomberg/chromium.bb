@@ -64,7 +64,7 @@ cr.define('options', function() {
       this.guid_ = '';
       this.storedCCNumber_ = '';
       this.hasEditedNumber_ = false;
-      OptionsPage.clearOverlays();
+      OptionsPage.closeOverlay();
     },
 
     /**
@@ -225,5 +225,4 @@ cr.define('options', function() {
   return {
     AutoFillEditCreditCardOverlay: AutoFillEditCreditCardOverlay
   };
-
 });

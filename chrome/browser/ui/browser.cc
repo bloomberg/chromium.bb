@@ -1847,9 +1847,7 @@ void Browser::OpenClearBrowsingDataDialog() {
                             profile_);
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableTabbedOptions)) {
-    ShowOptionsTab(
-        chrome::kAdvancedOptionsSubPage + std::string(kHashMark) +
-        chrome::kClearBrowserDataSubPage);
+    ShowOptionsTab(chrome::kClearBrowserDataSubPage);
   } else {
     window_->ShowClearBrowsingDataDialog();
   }
@@ -1883,9 +1881,7 @@ void Browser::OpenImportSettingsDialog() {
   UserMetrics::RecordAction(UserMetricsAction("Import_ShowDlg"), profile_);
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableTabbedOptions)) {
-    ShowOptionsTab(
-        chrome::kPersonalOptionsSubPage + std::string(kHashMark) +
-        chrome::kImportDataSubPage);
+    ShowOptionsTab(chrome::kImportDataSubPage);
   } else {
     window_->ShowImportDialog();
   }

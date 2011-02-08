@@ -41,7 +41,7 @@ cr.define('options', function() {
         OptionsPage.navigateToPage('language');
       };
       $('modifier-keys-button').onclick = function(event) {
-        OptionsPage.showOverlay('languageCustomizeModifierKeysOverlay');
+        OptionsPage.navigateToPage('languageCustomizeModifierKeysOverlay');
       };
       $('accesibility-check').onchange = function(event) {
         chrome.send('accessibilityChange',

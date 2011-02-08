@@ -30,7 +30,7 @@ cr.define('options', function() {
       OptionsPage.prototype.initializePage.call(this);
 
       $('certificateImportErrorOverlayOk').onclick = function(event) {
-        OptionsPage.clearOverlays();
+        OptionsPage.closeOverlay();
       };
     },
   };
@@ -57,7 +57,7 @@ cr.define('options', function() {
       ul.appendChild(li);
     }
 
-    OptionsPage.showOverlay('certificateImportErrorOverlay');
+    OptionsPage.navigateToPage('certificateImportErrorOverlay');
   }
 
   // Export

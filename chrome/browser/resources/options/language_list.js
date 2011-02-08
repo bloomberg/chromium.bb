@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('options.language', function() {
+cr.define('options', function() {
   const ArrayDataModel = cr.ui.ArrayDataModel;
   const LanguageOptions = options.LanguageOptions;
   const List = cr.ui.List;

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+var AddLanguageOverlay = options.AddLanguageOverlay;
 var AddStartupPageOverlay = options.AddStartupPageOverlay;
 var AdvancedOptions = options.AdvancedOptions;
 var AlertOverlay = options.AlertOverlay;
@@ -111,19 +112,31 @@ function load() {
     OptionsPage.registerSubPage(CertificateManager.getInstance(),
                                 AdvancedOptions.getInstance(),
                                 [$('show-cookies-button')]);
-    OptionsPage.registerOverlay(CertificateRestoreOverlay.getInstance());
-    OptionsPage.registerOverlay(CertificateBackupOverlay.getInstance());
-    OptionsPage.registerOverlay(CertificateEditCaTrustOverlay.getInstance());
-    OptionsPage.registerOverlay(CertificateImportErrorOverlay.getInstance());
+    OptionsPage.registerOverlay(CertificateRestoreOverlay.getInstance(),
+                                CertificateManager.getInstance());
+    OptionsPage.registerOverlay(CertificateBackupOverlay.getInstance(),
+                                CertificateManager.getInstance());
+    OptionsPage.registerOverlay(CertificateEditCaTrustOverlay.getInstance(),
+                                CertificateManager.getInstance());
+    OptionsPage.registerOverlay(CertificateImportErrorOverlay.getInstance(),
+                                CertificateManager.getInstance());
   }
-  OptionsPage.registerOverlay(AddStartupPageOverlay.getInstance());
+  OptionsPage.registerOverlay(AddLanguageOverlay.getInstance(),
+                              LanguageOptions.getInstance());
+  OptionsPage.registerOverlay(AddStartupPageOverlay.getInstance(),
+                              BrowserOptions.getInstance());
   OptionsPage.registerOverlay(AlertOverlay.getInstance());
-  OptionsPage.registerOverlay(AutoFillEditAddressOverlay.getInstance());
-  OptionsPage.registerOverlay(AutoFillEditCreditCardOverlay.getInstance());
+  OptionsPage.registerOverlay(AutoFillEditAddressOverlay.getInstance(),
+                              AutoFillOptions.getInstance());
+  OptionsPage.registerOverlay(AutoFillEditCreditCardOverlay.getInstance(),
+                              AutoFillOptions.getInstance());
   OptionsPage.registerOverlay(ClearBrowserDataOverlay.getInstance(),
+                              AdvancedOptions.getInstance(),
                               [$('privacyClearDataButton')]);
-  OptionsPage.registerOverlay(ImportDataOverlay.getInstance());
-  OptionsPage.registerOverlay(InstantConfirmOverlay.getInstance());
+  OptionsPage.registerOverlay(ImportDataOverlay.getInstance(),
+                              PersonalOptions.getInstance());
+  OptionsPage.registerOverlay(InstantConfirmOverlay.getInstance(),
+                              BrowserOptions.getInstance());
 
   if (cr.isChromeOS) {
     OptionsPage.register(AccountsOptions.getInstance());
@@ -132,13 +145,15 @@ function load() {
                                 [$('proxiesConfigureButton')]);
     OptionsPage.registerOverlay(new OptionsPage('detailsInternetPage',
                                                 'detailsInternetPage',
-                                                'detailsInternetPage'));
+                                                'detailsInternetPage'),
+                                InternetOptions.getInstance());
 
     var languageModifierKeysOverlay = new OptionsPage(
         'languageCustomizeModifierKeysOverlay',
         localStrings.getString('languageCustomizeModifierKeysOverlay'),
         'languageCustomizeModifierKeysOverlay')
     OptionsPage.registerOverlay(languageModifierKeysOverlay,
+                                SystemOptions.getInstance(),
                                 [$('modifier-keys-button')]);
   }
 

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-
   var OptionsPage = options.OptionsPage;
 
   function InstantConfirmOverlay() {
@@ -22,10 +21,10 @@ cr.define('options', function() {
       OptionsPage.prototype.initializePage.call(this);
 
       $('instantConfirmCancel').onclick = function() {
-        OptionsPage.clearOverlays();
+        OptionsPage.closeOverlay();
       };
       $('instantConfirmOk').onclick = function() {
-        OptionsPage.clearOverlays();
+        OptionsPage.closeOverlay();
         var instantDialogShown = $('instantDialogShown');
         Preferences.setBooleanPref(instantDialogShown.pref, true,
                                    instantDialogShown.metric);
@@ -40,5 +39,4 @@ cr.define('options', function() {
   return {
     InstantConfirmOverlay: InstantConfirmOverlay
   };
-
 });

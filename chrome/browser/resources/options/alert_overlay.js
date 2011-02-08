@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-
   var OptionsPage = options.OptionsPage;
 
   /**
@@ -44,7 +43,7 @@ cr.define('options', function() {
      * @private
      */
     handleOK_: function() {
-      OptionsPage.clearOverlays();
+      OptionsPage.closeOverlay();
       if (this.okCallback != undefined) {
         this.okCallback.call();
       }
@@ -56,7 +55,7 @@ cr.define('options', function() {
      * @private
      */
     handleCancel_: function() {
-      OptionsPage.clearOverlays();
+      OptionsPage.closeOverlay();
       if (this.cancelCallback != undefined) {
         this.cancelCallback.call();
       }
@@ -119,5 +118,4 @@ cr.define('options', function() {
   return {
     AlertOverlay: AlertOverlay
   };
-
 });

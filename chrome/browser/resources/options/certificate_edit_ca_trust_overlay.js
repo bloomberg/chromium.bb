@@ -26,7 +26,7 @@ cr.define('options', function() {
      * @private
      */
     dismissOverlay_: function() {
-      OptionsPage.clearOverlays();
+      OptionsPage.closeOverlay();
     },
 
     /**
@@ -126,7 +126,7 @@ cr.define('options', function() {
         localStrings.getStringF('certificateEditCaTrustDescriptionFormat',
                                 certName);
     self.enableInputs_(false);
-    OptionsPage.showOverlay('certificateEditCaTrustOverlay');
+    OptionsPage.navigateToPage('certificateEditCaTrustOverlay');
     chrome.send('getCaCertificateTrust', [certId]);
   }
 
@@ -150,7 +150,7 @@ cr.define('options', function() {
         localStrings.getStringF('certificateImportCaDescriptionFormat',
                                 certName);
     CertificateEditCaTrustOverlay.populateTrust(false, false, false);
-    OptionsPage.showOverlay('certificateEditCaTrustOverlay');
+    OptionsPage.navigateToPage('certificateEditCaTrustOverlay');
   }
 
   CertificateEditCaTrustOverlay.dismiss = function() {
@@ -161,5 +161,4 @@ cr.define('options', function() {
   return {
     CertificateEditCaTrustOverlay: CertificateEditCaTrustOverlay
   };
-
 });
