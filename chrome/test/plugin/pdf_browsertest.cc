@@ -216,7 +216,6 @@ class PDFBrowserTest : public InProcessBrowserTest,
 // Tests basic PDF rendering.  This can be broken depending on bad merges with
 // the vendor, so it's important that we have basic sanity checking.
 IN_PROC_BROWSER_TEST_F(PDFBrowserTest, Basic) {
-
   ASSERT_NO_FATAL_FAILURE(Load());
   ASSERT_NO_FATAL_FAILURE(WaitForResponse());
   ASSERT_NO_FATAL_FAILURE(VerifySnapshot("pdf_browsertest.png"));
@@ -325,6 +324,21 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, Loading) {
       ui_test_utils::WaitForLoadStop(controller);
     }
   }
+}
+
+IN_PROC_BROWSER_TEST_F(PDFBrowserTest, OnLoadAndReload) {
+  ASSERT_TRUE(pdf_test_server()->Start());
+
+  GURL url = pdf_test_server()->GetURL("files/onload_reload.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
+      browser()->GetSelectedTabContents()->render_view_host(),
+      std::wstring(),
+      L"reloadPDF();"));
+
+  ASSERT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));
+  ASSERT_EQ("success", browser()->GetSelectedTabContents()->GetURL().query());
 }
 
 }  // namespace
