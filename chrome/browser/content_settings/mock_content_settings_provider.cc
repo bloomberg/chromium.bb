@@ -6,7 +6,7 @@
 
 namespace content_settings {
 
-MockContentSettingsProvider::MockContentSettingsProvider(
+MockDefaultProvider::MockDefaultProvider(
     ContentSettingsType content_type,
     ContentSetting setting,
     bool is_managed,
@@ -17,27 +17,55 @@ MockContentSettingsProvider::MockContentSettingsProvider(
       can_override_(can_override) {
 }
 
-MockContentSettingsProvider::~MockContentSettingsProvider() {
+MockDefaultProvider::~MockDefaultProvider() {
 }
 
-ContentSetting MockContentSettingsProvider::ProvideDefaultSetting(
+ContentSetting MockDefaultProvider::ProvideDefaultSetting(
     ContentSettingsType content_type) const {
   return content_type == content_type_ ? setting_ : CONTENT_SETTING_DEFAULT;
 }
 
-void MockContentSettingsProvider::UpdateDefaultSetting(
+void MockDefaultProvider::UpdateDefaultSetting(
     ContentSettingsType content_type,
     ContentSetting setting) {
   if (can_override_ && content_type == content_type_)
     setting_ = setting;
 }
 
-bool MockContentSettingsProvider::DefaultSettingIsManaged(
+bool MockDefaultProvider::DefaultSettingIsManaged(
     ContentSettingsType content_type) const {
   return content_type == content_type_ && is_managed_;
 }
 
-void MockContentSettingsProvider::ResetToDefaults() {
+void MockDefaultProvider::ResetToDefaults() {
+}
+
+ContentSetting MockProvider::GetContentSetting(
+    const GURL& requesting_url,
+    const GURL& embedding_url,
+    ContentSettingsType content_type,
+    const ResourceIdentifier& resource_identifier) const {
+  if (requesting_url_pattern_.Matches(requesting_url) &&
+      content_type_ == content_type &&
+      resource_identifier_ == resource_identifier) {
+    return setting_;
+  }
+  return CONTENT_SETTING_DEFAULT;
+}
+
+void MockProvider::SetContentSetting(
+    const ContentSettingsPattern& requesting_url_pattern,
+    const ContentSettingsPattern& embedding_url_pattern,
+    ContentSettingsType content_type,
+    const ResourceIdentifier& resource_identifier,
+    ContentSetting content_setting) {
+  if (read_only_)
+    return;
+  requesting_url_pattern_ = ContentSettingsPattern(requesting_url_pattern);
+  embedding_url_pattern_ = ContentSettingsPattern(embedding_url_pattern);
+  content_type_ = content_type;
+  resource_identifier_ = resource_identifier;
+  setting_ = content_setting;
 }
 
 }  // namespace content_settings

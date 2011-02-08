@@ -11,15 +11,17 @@
 
 namespace content_settings {
 
-class MockContentSettingsProvider : public DefaultProviderInterface {
+// The class MockDefaultProvider is a mock for a default content settings
+// provider.
+class MockDefaultProvider : public DefaultProviderInterface {
  public:
   // Create a content settings provider that provides a given setting for a
   // given type.
-  MockContentSettingsProvider(ContentSettingsType content_type,
+  MockDefaultProvider(ContentSettingsType content_type,
                               ContentSetting setting,
                               bool is_managed,
                               bool can_override);
-  virtual ~MockContentSettingsProvider();
+  virtual ~MockDefaultProvider();
 
   // DefaultProviderInterface implementation.
   virtual ContentSetting ProvideDefaultSetting(
@@ -35,29 +37,51 @@ class MockContentSettingsProvider : public DefaultProviderInterface {
   bool is_managed_;
   bool can_override_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockContentSettingsProvider);
+  DISALLOW_COPY_AND_ASSIGN(MockDefaultProvider);
 };
 
+// The class MockProvider is a mock for a non default content settings provider.
 class MockProvider : public ProviderInterface {
  public:
-  MockProvider();
-  virtual ~MockProvider();
+  MockProvider()
+  : requesting_url_pattern_(ContentSettingsPattern()),
+    embedding_url_pattern_(ContentSettingsPattern()),
+    content_type_(CONTENT_SETTINGS_TYPE_COOKIES),
+    resource_identifier_(""),
+    setting_(CONTENT_SETTING_DEFAULT),
+    read_only_(false) {}
+
+  MockProvider(
+      ContentSettingsPattern requesting_url_pattern,
+      ContentSettingsPattern embedding_url_pattern,
+      ContentSettingsType content_type,
+      ResourceIdentifier resource_identifier,
+      ContentSetting setting,
+      bool read_only)
+  : requesting_url_pattern_(requesting_url_pattern),
+    embedding_url_pattern_(embedding_url_pattern),
+    content_type_(content_type),
+    resource_identifier_(resource_identifier),
+    setting_(setting),
+    read_only_(read_only) {}
+
+  virtual ~MockProvider() {}
 
   // ProviderInterface implementation
   virtual ContentSetting GetContentSetting(
       const GURL& requesting_url,
       const GURL& embedding_url,
       ContentSettingsType content_type,
-      const ResourceIdentifier& resource_identifier) const {
-    return CONTENT_SETTING_DEFAULT;
-  }
+      const ResourceIdentifier& resource_identifier) const;
 
+  // The MockProvider is only able to store one content setting. So every time
+  // this method is called the previously set content settings is overwritten.
   virtual void SetContentSetting(
       const ContentSettingsPattern& requesting_url_pattern,
       const ContentSettingsPattern& embedding_url_pattern,
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
-      ContentSetting content_setting) {}
+      ContentSetting content_setting);
 
   virtual void GetAllContentSettingsRules(
       ContentSettingsType content_type,
@@ -69,7 +93,62 @@ class MockProvider : public ProviderInterface {
 
   virtual void ResetToDefaults() {}
 
+  // Accessors
+  void set_requesting_url_pattern(ContentSettingsPattern pattern) {
+    requesting_url_pattern_ = pattern;
+  }
+
+  ContentSettingsPattern requesting_url_pattern() {
+    return requesting_url_pattern_;
+  }
+
+  void set_embedding_url_pattern(ContentSettingsPattern pattern) {
+    embedding_url_pattern_ = pattern;
+  }
+
+  ContentSettingsPattern embedding_url_pattern() {
+    return embedding_url_pattern_;
+  }
+
+  void set_content_type(ContentSettingsType content_type) {
+    content_type_ = content_type;
+  }
+
+  ContentSettingsType content_type() {
+    return content_type_;
+  }
+
+  void set_resource_identifier(ResourceIdentifier resource_identifier) {
+    resource_identifier_ = resource_identifier;
+  }
+
+  ResourceIdentifier resource_identifier() {
+    return resource_identifier_;
+  }
+
+  void set_setting(ContentSetting setting) {
+    setting_ = setting;
+  }
+
+  ContentSetting setting() {
+    return setting_;
+  }
+
+  void set_read_only(bool read_only) {
+    read_only_ = read_only;
+  }
+
+  bool read_only() {
+    return read_only_;
+  }
+
  private:
+  ContentSettingsPattern requesting_url_pattern_;
+  ContentSettingsPattern embedding_url_pattern_;
+  ContentSettingsType content_type_;
+  ResourceIdentifier resource_identifier_;
+  ContentSetting setting_;
+  bool read_only_;
 
   DISALLOW_COPY_AND_ASSIGN(MockProvider);
 };

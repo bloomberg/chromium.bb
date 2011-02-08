@@ -5,11 +5,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "chrome/browser/content_settings/mock_content_settings_provider.h"
+#include "googleurl/src/gurl.h"
 
 namespace content_settings {
 
 TEST(ContentSettingsProviderTest, Mock) {
-  MockContentSettingsProvider provider(CONTENT_SETTINGS_TYPE_COOKIES,
+  MockDefaultProvider provider(CONTENT_SETTINGS_TYPE_COOKIES,
                                        CONTENT_SETTING_ALLOW,
                                        false,
                                        true);
@@ -23,6 +24,47 @@ TEST(ContentSettingsProviderTest, Mock) {
                                 CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             provider.ProvideDefaultSetting(CONTENT_SETTINGS_TYPE_COOKIES));
+
+  ContentSettingsPattern pattern("[*.]youtube.com");
+  GURL url("http://www.youtube.com");
+
+  MockProvider mock_provider(
+      pattern,
+      pattern,
+      CONTENT_SETTINGS_TYPE_PLUGINS,
+      "java_plugin",
+      CONTENT_SETTING_BLOCK,
+      false);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, mock_provider.GetContentSetting(
+      url, url, CONTENT_SETTINGS_TYPE_PLUGINS, "java_plugin"));
+  EXPECT_EQ(CONTENT_SETTING_DEFAULT, mock_provider.GetContentSetting(
+      url, url, CONTENT_SETTINGS_TYPE_PLUGINS, "flash_plugin"));
+  EXPECT_EQ(CONTENT_SETTING_DEFAULT, mock_provider.GetContentSetting(
+      url, url, CONTENT_SETTINGS_TYPE_GEOLOCATION, ""));
+
+  mock_provider.SetContentSetting(
+      pattern,
+      pattern,
+      CONTENT_SETTINGS_TYPE_PLUGINS,
+      "java_plugin",
+      CONTENT_SETTING_ALLOW);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW, mock_provider.GetContentSetting(
+      url, url, CONTENT_SETTINGS_TYPE_PLUGINS, "java_plugin"));
+
+  mock_provider.set_read_only(true);
+  mock_provider.SetContentSetting(
+      pattern,
+      pattern,
+      CONTENT_SETTINGS_TYPE_PLUGINS,
+      "java_plugin",
+      CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW, mock_provider.GetContentSetting(
+      url, url, CONTENT_SETTINGS_TYPE_PLUGINS, "java_plugin"));
+
+  EXPECT_TRUE(mock_provider.read_only());
+  mock_provider.set_setting(CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, mock_provider.GetContentSetting(
+      url, url, CONTENT_SETTINGS_TYPE_PLUGINS, "java_plugin"));
 }
 
 }  // namespace content_settings
