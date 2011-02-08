@@ -23,12 +23,6 @@ TEST_F(IFrameTest, Crash) {
   NavigateAndVerifyTitle("iframe.html", L"iframe test");
 }
 
-#if defined(OS_LINUX)
-// Flakily crashes on linux: http://crbug.com/70192
-#define MAYBE_InEmptyFrame DISABLED_InEmptyFrame
-#else
-#define MAYBE_InEmptyFrame InEmptyFrame
-#endif
-TEST_F(IFrameTest, MAYBE_InEmptyFrame) {
+TEST_F(IFrameTest, InEmptyFrame) {
   NavigateAndVerifyTitle("iframe_in_empty_frame.html", L"iframe test");
 }

@@ -179,8 +179,10 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   // the animation state.
   void UpdateInstantViewColors();
 
+  // Returns the text view gtk widget. May return NULL if the widget
+  // has already been destroyed.
   GtkWidget* text_view() {
-    return text_view_.get();
+    return text_view_;
   }
 
  private:
@@ -370,10 +372,11 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   // since the height will change based on the font / font size, etc.
   OwnedWidgetGtk alignment_;
 
-  // The actual text entry which will be owned by the alignment_.
-  // This widget has to be owned too beause GTK destroys children
-  // when parent is destroyed even if the parent's refcount is > 0.
-  OwnedWidgetGtk text_view_;
+  // The actual text entry which will be owned by the alignment_.  The
+  // reference will be set to NULL upon destruction to tell if the gtk
+  // widget tree has been destroyed. This is because gtk destroies child
+  // widgets if the parent (alignemtn_)'s refcount does not go down to 0.
+  GtkWidget* text_view_;
 
   GtkTextTagTable* tag_table_;
   GtkTextBuffer* text_buffer_;
