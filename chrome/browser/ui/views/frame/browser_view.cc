@@ -1683,7 +1683,7 @@ views::ClientView* BrowserView::CreateClientView(views::Window* window) {
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, views::ClientView overrides:
 
-bool BrowserView::CanClose() const {
+bool BrowserView::CanClose() {
   // You cannot close a frame for which there is an active originating drag
   // session.
   if (tabstrip_->IsDragSessionActive())

@@ -65,7 +65,7 @@ class DialogClientView : public ClientView,
                                           RootView* root_view);
 
   // Overridden from ClientView:
-  virtual bool CanClose() const;
+  virtual bool CanClose();
   virtual void WindowClosing();
   virtual int NonClientHitTest(const gfx::Point& point);
   virtual DialogClientView* AsDialogClientView() { return this; }
@@ -134,8 +134,11 @@ class DialogClientView : public ClientView,
   // The layout rect of the size box, when visible.
   gfx::Rect size_box_bounds_;
 
-  // True if the window was Accepted by the user using the OK button.
-  bool accepted_;
+  // True if we've notified the delegate the window is closing and the delegate
+  // allosed the close. In some situations it's possible to get two closes (see
+  // http://crbug.com/71940). This is used to avoid notifying the delegate
+  // twice, which can have bad consequences.
+  bool notified_delegate_;
 
   // true if focus listener is added.
   bool listening_to_focus_;

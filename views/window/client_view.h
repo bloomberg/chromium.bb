@@ -37,7 +37,7 @@ class ClientView : public View {
   // ClientView subclasses can override this default behavior to allow the
   // close to be blocked until the user corrects mistakes, accepts a warning
   // dialog, etc.
-  virtual bool CanClose() const { return true; }
+  virtual bool CanClose() { return true; }
 
   // Notification that the window is closing.  The default implementation
   // forwards the notification to the delegate.

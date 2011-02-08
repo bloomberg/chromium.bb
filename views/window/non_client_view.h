@@ -151,7 +151,7 @@ class NonClientView : public View {
 
   // Returns true if the ClientView determines that the containing window can be
   // closed, false otherwise.
-  bool CanClose() const;
+  bool CanClose();
 
   // Called by the containing Window when it is closed.
   void WindowClosing();

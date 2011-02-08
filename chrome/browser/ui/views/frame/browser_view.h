@@ -388,7 +388,7 @@ class BrowserView : public BrowserBubbleHost,
   virtual views::ClientView* CreateClientView(views::Window* window);
 
   // Overridden from views::ClientView:
-  virtual bool CanClose() const;
+  virtual bool CanClose();
   virtual int NonClientHitTest(const gfx::Point& point);
   virtual gfx::Size GetMinimumSize();
 

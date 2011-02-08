@@ -115,7 +115,7 @@ DialogClientView::DialogClientView(Window* owner, View* contents_view)
       default_button_(NULL),
       extra_view_(NULL),
       size_extra_view_height_to_buttons_(false),
-      accepted_(false),
+      notified_delegate_(false),
       listening_to_focus_(false),
       saved_focus_manager_(NULL),
       bottom_view_(NULL) {
@@ -225,13 +225,13 @@ void DialogClientView::UpdateDialogButtons() {
 }
 
 void DialogClientView::AcceptWindow() {
-  if (accepted_) {
-    // We should only get into AcceptWindow once.
-    NOTREACHED();
+  if (notified_delegate_) {
+    // Only notify the delegate once. See comment in header above
+    // notified_delegate_ for details.
     return;
   }
   if (GetDialogDelegate()->Accept(false)) {
-    accepted_ = true;
+    notified_delegate_ = true;
     Close();
   }
 }
@@ -267,16 +267,19 @@ void DialogClientView::NativeViewHierarchyChanged(bool attached,
 ///////////////////////////////////////////////////////////////////////////////
 // DialogClientView, ClientView overrides:
 
-bool DialogClientView::CanClose() const {
-  if (!accepted_) {
-    DialogDelegate* dd = GetDialogDelegate();
-    int buttons = dd->GetDialogButtons();
-    if (buttons & MessageBoxFlags::DIALOGBUTTON_CANCEL)
-      return dd->Cancel();
-    if (buttons & MessageBoxFlags::DIALOGBUTTON_OK)
-      return dd->Accept(true);
-  }
-  return true;
+bool DialogClientView::CanClose() {
+  if (notified_delegate_)
+    return true;
+
+  DialogDelegate* dd = GetDialogDelegate();
+  int buttons = dd->GetDialogButtons();
+  bool close = true;
+  if (buttons & MessageBoxFlags::DIALOGBUTTON_CANCEL)
+    close = dd->Cancel();
+  else if (buttons & MessageBoxFlags::DIALOGBUTTON_OK)
+    close = dd->Accept(true);
+  notified_delegate_ = close;
+  return close;
 }
 
 void DialogClientView::WindowClosing() {

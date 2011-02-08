@@ -48,7 +48,7 @@ void NonClientView::SetFrameView(NonClientFrameView* frame_view) {
     AddChildView(kFrameViewIndex, frame_view_.get());
 }
 
-bool NonClientView::CanClose() const {
+bool NonClientView::CanClose() {
   return client_view_->CanClose();
 }
 
