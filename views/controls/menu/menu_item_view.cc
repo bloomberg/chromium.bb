@@ -610,7 +610,7 @@ void MenuItemView::RemoveEmptyMenus() {
 }
 
 void MenuItemView::AdjustBoundsForRTLUI(gfx::Rect* rect) const {
-  rect->set_x(MirroredLeftPointForRect(*rect));
+  rect->set_x(GetMirroredXForRect(*rect));
 }
 
 void MenuItemView::PaintAccelerator(gfx::Canvas* canvas) {
@@ -624,7 +624,7 @@ void MenuItemView::PaintAccelerator(gfx::Canvas* canvas) {
       parent_menu_item_->GetSubmenu()->max_accelerator_width();
   gfx::Rect accel_bounds(width() - item_right_margin_ - max_accel_width,
                          GetTopMargin(), max_accel_width, available_height);
-  accel_bounds.set_x(MirroredLeftPointForRect(accel_bounds));
+  accel_bounds.set_x(GetMirroredXForRect(accel_bounds));
   int flags = GetRootMenuItem()->GetDrawStringFlags() |
       gfx::Canvas::TEXT_VALIGN_MIDDLE;
   flags &= ~(gfx::Canvas::TEXT_ALIGN_RIGHT | gfx::Canvas::TEXT_ALIGN_LEFT);

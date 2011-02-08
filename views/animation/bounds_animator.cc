@@ -234,7 +234,7 @@ void BoundsAnimator::AnimationContainerProgressed(
     AnimationContainer* container) {
   if (!repaint_bounds_.IsEmpty()) {
     // Adjust for rtl.
-    repaint_bounds_.set_x(parent_->MirroredXWithWidthInsideView(
+    repaint_bounds_.set_x(parent_->GetMirroredXWithWidthInView(
         repaint_bounds_.x(), repaint_bounds_.width()));
     parent_->SchedulePaint(repaint_bounds_, false);
     repaint_bounds_.SetRect(0, 0, 0, 0);

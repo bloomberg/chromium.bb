@@ -122,8 +122,7 @@ void DrawTextStartingFrom(gfx::Canvas* canvas,
     // If we exceed the boundaries, we need to wrap.
     WrapIfWordDoesntFit(w, font.GetHeight(), position, bounds);
 
-    int x = label->MirroredXCoordinateInsideView(position->width()) +
-                                                 bounds.x();
+    int x = label->GetMirroredXInView(position->width()) + bounds.x();
     if (text_direction_is_rtl) {
       x -= w;
       // When drawing LTR strings inside RTL text we need to make sure we

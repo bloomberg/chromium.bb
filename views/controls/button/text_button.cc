@@ -343,7 +343,7 @@ void TextButton::Paint(gfx::Canvas* canvas, bool for_drag) {
     //
     // Due to the above, we must perform the flipping manually for RTL UIs.
     gfx::Rect text_bounds(text_x, text_y, text_width, text_size_.height());
-    text_bounds.set_x(MirroredLeftPointForRect(text_bounds));
+    text_bounds.set_x(GetMirroredXForRect(text_bounds));
 
     SkColor text_color = (show_multiple_icon_states_ &&
         (state() == BS_HOT || state() == BS_PUSHED)) ? color_hover_ : color_;
@@ -391,7 +391,7 @@ void TextButton::Paint(gfx::Canvas* canvas, bool for_drag) {
 
     // Mirroring the icon position if necessary.
     gfx::Rect icon_bounds(icon_x, icon_y, icon.width(), icon.height());
-    icon_bounds.set_x(MirroredLeftPointForRect(icon_bounds));
+    icon_bounds.set_x(GetMirroredXForRect(icon_bounds));
     canvas->DrawBitmapInt(icon, icon_bounds.x(), icon_bounds.y());
   }
 }

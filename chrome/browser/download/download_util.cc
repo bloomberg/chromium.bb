@@ -377,9 +377,9 @@ void PaintDownloadProgress(gfx::Canvas* canvas,
 
 #if defined(TOOLKIT_VIEWS)
   // Mirror the positions if necessary.
-  int mirrored_x = containing_view->MirroredLeftPointForRect(background_bounds);
+  int mirrored_x = containing_view->GetMirroredXForRect(background_bounds);
   background_bounds.set_x(mirrored_x);
-  mirrored_x = containing_view->MirroredLeftPointForRect(foreground_bounds);
+  mirrored_x = containing_view->GetMirroredXForRect(foreground_bounds);
   foreground_bounds.set_x(mirrored_x);
 #endif
 
@@ -464,8 +464,7 @@ void PaintDownloadComplete(gfx::Canvas* canvas,
                             complete->width(), complete->height());
 #if defined(TOOLKIT_VIEWS)
   // Mirror the positions if necessary.
-  complete_bounds.set_x(
-      containing_view->MirroredLeftPointForRect(complete_bounds));
+  complete_bounds.set_x(containing_view->GetMirroredXForRect(complete_bounds));
 #endif
 
   // Start at full opacity, then loop back and forth five times before ending

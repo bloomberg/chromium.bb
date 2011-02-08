@@ -437,7 +437,7 @@ void StatusBubbleViews::StatusView::Paint(gfx::Canvas* canvas) {
                         kShadowThickness,
                         std::max(0, text_width),
                         std::max(0, text_height));
-  body_bounds.set_x(MirroredLeftPointForRect(body_bounds));
+  body_bounds.set_x(GetMirroredXForRect(body_bounds));
   SkColor text_color =
       theme_provider_->GetColor(BrowserThemeProvider::COLOR_TAB_TEXT);
 
@@ -593,7 +593,7 @@ gfx::Size StatusBubbleViews::GetPreferredSize() {
 
 void StatusBubbleViews::SetBounds(int x, int y, int w, int h) {
   original_position_.SetPoint(x, y);
-  position_.SetPoint(base_view_->MirroredXWithWidthInsideView(x, w), y);
+  position_.SetPoint(base_view_->GetMirroredXWithWidthInView(x, w), y);
   size_.SetSize(w, h);
   Reposition();
 }

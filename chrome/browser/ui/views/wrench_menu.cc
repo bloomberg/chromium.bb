@@ -236,8 +236,7 @@ class ScheduleAllView : public views::View {
       return;
 
     if (GetParent()) {
-      GetParent()->SchedulePaint(GetBounds(APPLY_MIRRORING_TRANSFORMATION),
-                                 urgent);
+      GetParent()->SchedulePaint(GetMirroredBounds(), urgent);
     }
   }
 

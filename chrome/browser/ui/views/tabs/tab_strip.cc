@@ -671,7 +671,7 @@ gfx::Rect TabStrip::GetDropBounds(int drop_index,
   }
 
   // Mirror the center point if necessary.
-  center_x = MirroredXCoordinateInsideView(center_x);
+  center_x = GetMirroredXInView(center_x);
 
   // Determine the screen bounds.
   gfx::Point drop_loc(center_x - drop_indicator_width / 2,
@@ -699,7 +699,7 @@ void TabStrip::UpdateDropIndex(const DropTargetEvent& event) {
   // If the UI layout is right-to-left, we need to mirror the mouse
   // coordinates since we calculate the drop index based on the
   // original (and therefore non-mirrored) positions of the tabs.
-  const int x = MirroredXCoordinateInsideView(event.x());
+  const int x = GetMirroredXInView(event.x());
   // We don't allow replacing the urls of mini-tabs.
   for (int i = GetMiniTabCount(); i < tab_count(); ++i) {
     Tab* tab = GetTabAtTabDataIndex(i);

@@ -105,8 +105,7 @@ void TouchTab::PaintTabBackground(gfx::Canvas* canvas) {
 }
 
 void TouchTab::PaintActiveTabBackground(gfx::Canvas* canvas) {
-  int offset = GetX(views::View::APPLY_MIRRORING_TRANSFORMATION) +
-      background_offset_.x();
+  int offset = GetMirroredX() + background_offset_.x();
   ThemeProvider* tp = GetThemeProvider();
   if (!tp)
     NOTREACHED() << "Unable to get theme provider";

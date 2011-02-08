@@ -74,8 +74,7 @@ void DraggedTabView::MoveTo(const gfx::Point& screen_point) {
     // window position differently.
     gfx::Size ps = GetPreferredSize();
     x = screen_point.x() - ScaleValue(ps.width()) + mouse_tab_offset_.x() +
-        ScaleValue(
-            renderer_->MirroredXCoordinateInsideView(mouse_tab_offset_.x()));
+        ScaleValue(renderer_->GetMirroredXInView(mouse_tab_offset_.x()));
   } else {
     x = screen_point.x() + mouse_tab_offset_.x() -
         ScaleValue(mouse_tab_offset_.x());

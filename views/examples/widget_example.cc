@@ -144,7 +144,7 @@ void WidgetExample::CreatePopup(
 
   // Compute where to place the popup widget.
   // We'll place it right below the create button.
-  gfx::Point point = parent->GetPosition();
+  gfx::Point point = parent->GetMirroredPosition();
   // The position in point is relative to the parent. Make it absolute.
   views::View::ConvertPointToScreen(parent, &point);
   // Add the height of create_button_.

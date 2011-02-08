@@ -132,7 +132,7 @@ void ThemeInstallBubbleView::Paint(gfx::Canvas* canvas) {
 
   int text_width = views::Label::font().GetStringWidth(text_);
   gfx::Rect body_bounds(kTextHorizPadding / 2, 0, text_width, height());
-  body_bounds.set_x(MirroredLeftPointForRect(body_bounds));
+  body_bounds.set_x(GetMirroredXForRect(body_bounds));
 
   SkColor text_color = SK_ColorWHITE;
   canvas->DrawStringInt(text_,

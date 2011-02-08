@@ -129,14 +129,6 @@ class DragController {
 /////////////////////////////////////////////////////////////////////////////
 class View : public AcceleratorTarget {
  public:
-  // Used in the versions of GetBounds() and x() that take a transformation
-  // parameter in order to determine whether or not to take into account the
-  // mirroring setting of the View when returning bounds positions.
-  enum PositionMirroringSettings {
-    IGNORE_MIRRORING_TRANSFORMATION = 0,
-    APPLY_MIRRORING_TRANSFORMATION
-  };
-
 #if defined(TOUCH_UI)
   enum TouchStatus {
     TOUCH_STATUS_UNKNOWN = 0,  // Unknown touch status. This is used to indicate
@@ -344,45 +336,16 @@ class View : public AcceleratorTarget {
 
   // RTL positioning -----------------------------------------------------------
 
-  // Return the bounds of the View, relative to the parent. If
-  // |settings| is IGNORE_MIRRORING_TRANSFORMATION, the function returns the
-  // bounds_ rectangle. If |settings| is APPLY_MIRRORING_TRANSFORMATION AND the
-  // parent View is using a right-to-left UI layout, then the function returns
-  // a shifted version of the bounds_ rectangle that represents the mirrored
-  // View bounds.
+  // Methods for accessing the bounds and position of the view, relative to its
+  // parent. The position returned is mirrored if the parent view is using a RTL
+  // layout.
   //
   // NOTE: in the vast majority of the cases, the mirroring implementation is
   //       transparent to the View subclasses and therefore you should use the
-  //       version of GetBounds() which does not take a transformation settings
-  //       parameter.
-  gfx::Rect GetBounds(PositionMirroringSettings settings) const;
-
-  // Return the left coordinate of the View, relative to the parent. If
-  // |settings| is IGNORE_MIRRORING_SETTINGS, the function returns the value of
-  // bounds_.x(). If |settings| is APPLY_MIRRORING_SETTINGS AND the parent
-  // View is using a right-to-left UI layout, then the function returns the
-  // mirrored value of bounds_.x().
-  //
-  // NOTE: in the vast majority of the cases, the mirroring implementation is
-  //       transparent to the View subclasses and therefore you should use the
-  //       paremeterless version of x() when you need to get the X
-  //       coordinate of a child View.
-  int GetX(PositionMirroringSettings settings) const;
-
-  // Get the position of the View, relative to the parent.
-  //
-  // Note that if the parent uses right-to-left UI layout, then the mirrored
-  // position of this View is returned. Use x()/y() if you want to ignore
-  // mirroring.
-  gfx::Point GetPosition() const;
-
-  // Returns the mirrored X position for the view, relative to the parent. If
-  // the parent view is not mirrored, this function returns bound_.left.
-  //
-  // UI mirroring is transparent to most View subclasses and therefore there is
-  // no need to call this routine from anywhere within your subclass
-  // implementation.
-  int MirroredX() const;
+  //       bounds() accessor instead.
+  gfx::Rect GetMirroredBounds() const;
+  gfx::Point GetMirroredPosition() const;
+  int GetMirroredX() const;
 
   // Given a rectangle specified in this View's coordinate system, the function
   // computes the 'left' value for the mirrored rectangle within this View. If
@@ -391,7 +354,7 @@ class View : public AcceleratorTarget {
   // UI mirroring is transparent to most View subclasses and therefore there is
   // no need to call this routine from anywhere within your subclass
   // implementation.
-  int MirroredLeftPointForRect(const gfx::Rect& rect) const;
+  int GetMirroredXForRect(const gfx::Rect& rect) const;
 
   // Given the X coordinate of a point inside the View, this function returns
   // the mirrored X coordinate of the point if the View's UI layout is
@@ -401,12 +364,10 @@ class View : public AcceleratorTarget {
   // Following are a few examples of the values returned by this function for
   // a View with the bounds {0, 0, 100, 100} and a right-to-left layout:
   //
-  // MirroredXCoordinateInsideView(0) -> 100
-  // MirroredXCoordinateInsideView(20) -> 80
-  // MirroredXCoordinateInsideView(99) -> 1
-  int MirroredXCoordinateInsideView(int x) const {
-    return base::i18n::IsRTL() ? width() - x : x;
-  }
+  // GetMirroredXCoordinateInView(0) -> 100
+  // GetMirroredXCoordinateInView(20) -> 80
+  // GetMirroredXCoordinateInView(99) -> 1
+  int GetMirroredXInView(int x) const;
 
   // Given a X coordinate and a width inside the View, this function returns
   // the mirrored X coordinate if the View's UI layout is right-to-left. If the
@@ -415,11 +376,9 @@ class View : public AcceleratorTarget {
   // Following are a few examples of the values returned by this function for
   // a View with the bounds {0, 0, 100, 100} and a right-to-left layout:
   //
-  // MirroredXCoordinateInsideView(0, 10) -> 90
-  // MirroredXCoordinateInsideView(20, 20) -> 60
-  int MirroredXWithWidthInsideView(int x, int w) const {
-    return base::i18n::IsRTL() ? width() - x - w : x;
-  }
+  // GetMirroredXCoordinateInView(0, 10) -> 90
+  // GetMirroredXCoordinateInView(20, 20) -> 60
+  int GetMirroredXWithWidthInView(int x, int w) const;
 
   // Layout --------------------------------------------------------------------
 

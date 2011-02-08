@@ -286,9 +286,9 @@ gfx::Rect View::GetVisibleBounds() {
   int root_x = 0;
   int root_y = 0;
   while (view != NULL && !vis_bounds.IsEmpty()) {
-    root_x += view->GetX(APPLY_MIRRORING_TRANSFORMATION);
+    root_x += view->GetMirroredX();
     root_y += view->y();
-    vis_bounds.Offset(view->GetX(APPLY_MIRRORING_TRANSFORMATION), view->y());
+    vis_bounds.Offset(view->GetMirroredX(), view->y());
     View* ancestor = view->GetParent();
     if (ancestor != NULL) {
       ancestor_bounds.SetRect(0, 0, ancestor->width(),
@@ -378,36 +378,32 @@ bool View::IsEnabled() const {
 
 // RTL positioning -------------------------------------------------------------
 
-gfx::Rect View::GetBounds(PositionMirroringSettings settings) const {
+gfx::Rect View::GetMirroredBounds() const {
   gfx::Rect bounds(bounds_);
-
-  // If the parent uses an RTL UI layout and if we are asked to transform the
-  // bounds to their mirrored position if necessary, then we should shift the
-  // rectangle appropriately.
-  if (settings == APPLY_MIRRORING_TRANSFORMATION)
-    bounds.set_x(MirroredX());
-
+  bounds.set_x(GetMirroredX());
   return bounds;
 }
 
-// y(), width() and height() are agnostic to the RTL UI layout of the
-// parent view. x(), on the other hand, is not.
-int View::GetX(PositionMirroringSettings settings) const {
-  return settings == IGNORE_MIRRORING_TRANSFORMATION ? x() : MirroredX();
+gfx::Point View::GetMirroredPosition() const {
+  return gfx::Point(GetMirroredX(), y());
 }
 
-gfx::Point View::GetPosition() const {
-  return gfx::Point(GetX(APPLY_MIRRORING_TRANSFORMATION), y());
-}
-
-int View::MirroredX() const {
+int View::GetMirroredX() const {
   View* parent = GetParent();
-  return parent ? parent->MirroredLeftPointForRect(bounds_) : x();
+  return parent ? parent->GetMirroredXForRect(bounds_) : x();
 }
 
-int View::MirroredLeftPointForRect(const gfx::Rect& bounds) const {
+int View::GetMirroredXForRect(const gfx::Rect& bounds) const {
   return base::i18n::IsRTL() ?
       (width() - bounds.x() - bounds.width()) : bounds.x();
+}
+
+int View::GetMirroredXInView(int x) const {
+  return base::i18n::IsRTL() ? width() - x : x;
+}
+
+int View::GetMirroredXWithWidthInView(int x, int w) const {
+  return base::i18n::IsRTL() ? width() - x - w : x;
 }
 
 // Layout ----------------------------------------------------------------------
@@ -535,7 +531,7 @@ void View::ConvertPointToWidget(const View* src, gfx::Point* p) {
 
   gfx::Point offset;
   for (const View* v = src; v; v = v->GetParent()) {
-    offset.set_x(offset.x() + v->GetX(APPLY_MIRRORING_TRANSFORMATION));
+    offset.set_x(offset.x() + v->GetMirroredX());
     offset.set_y(offset.y() + v->y());
   }
   p->SetPoint(p->x() + offset.x(), p->y() + offset.y());
@@ -573,7 +569,7 @@ void View::SchedulePaint(const gfx::Rect& r, bool urgent) {
     // Translate the requested paint rect to the parent's coordinate system
     // then pass this notification up to the parent.
     gfx::Rect paint_rect = r;
-    paint_rect.Offset(GetPosition());
+    paint_rect.Offset(GetMirroredPosition());
     parent_->SchedulePaint(paint_rect, urgent);
   }
 }
@@ -626,10 +622,10 @@ void View::ProcessPaint(gfx::Canvas* canvas) {
   // Note that the X (or left) position we pass to ClipRectInt takes into
   // consideration whether or not the view uses a right-to-left layout so that
   // we paint our view in its mirrored position if need be.
-  if (canvas->ClipRectInt(MirroredX(), y(), width(), height())) {
+  if (canvas->ClipRectInt(GetMirroredX(), y(), width(), height())) {
     // Non-empty clip, translate the graphics such that 0,0 corresponds to
     // where this view is located (related to its parent).
-    canvas->TranslateInt(MirroredX(), y());
+    canvas->TranslateInt(GetMirroredX(), y());
 
     // If the View we are about to paint requested the canvas to be flipped, we
     // should change the transform appropriately.
@@ -965,7 +961,7 @@ void View::ScrollRectToVisible(const gfx::Rect& rect) {
   // the region.
   if (parent) {
     gfx::Rect scroll_rect(rect);
-    scroll_rect.Offset(GetX(APPLY_MIRRORING_TRANSFORMATION), y());
+    scroll_rect.Offset(GetMirroredX(), y());
     parent->ScrollRectToVisible(scroll_rect);
   }
 }
@@ -1339,10 +1335,8 @@ void View::ConvertPointToView(const View* src,
   const View* v;
   gfx::Point offset;
 
-  for (v = dst; v && v != src; v = v->GetParent()) {
-    offset.SetPoint(offset.x() + v->GetX(APPLY_MIRRORING_TRANSFORMATION),
-                    offset.y() + v->y());
-  }
+  for (v = dst; v && v != src; v = v->GetParent())
+    offset.SetPoint(offset.x() + v->GetMirroredX(), offset.y() + v->y());
 
   // The source was not found. The caller wants a conversion
   // from a view to a transitive parent.

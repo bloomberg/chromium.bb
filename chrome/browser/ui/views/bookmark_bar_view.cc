@@ -507,7 +507,7 @@ void BookmarkBarView::PaintChildren(gfx::Canvas* canvas) {
                                y,
                                kDropIndicatorWidth,
                                h);
-    indicator_bounds.set_x(MirroredLeftPointForRect(indicator_bounds));
+    indicator_bounds.set_x(GetMirroredXForRect(indicator_bounds));
 
     // TODO(sky/glen): make me pretty!
     canvas->FillRectInt(kDropIndicatorColor, indicator_bounds.x(),
@@ -777,7 +777,7 @@ const BookmarkNode* BookmarkBarView::GetNodeForButtonAt(const gfx::Point& loc,
   if (loc.x() < 0 || loc.x() >= width() || loc.y() < 0 || loc.y() >= height())
     return NULL;
 
-  gfx::Point adjusted_loc(MirroredXCoordinateInsideView(loc.x()), loc.y());
+  gfx::Point adjusted_loc(GetMirroredXInView(loc.x()), loc.y());
 
   // Check the buttons first.
   for (int i = 0; i < GetBookmarkButtonCount(); ++i) {
@@ -1378,7 +1378,7 @@ int BookmarkBarView::CalculateDropOperation(const DropTargetEvent& event,
   // right-to-left on RTL locales). Thus, in order to make sure the drop
   // coordinates calculation works, we mirror the event's X coordinate if the
   // locale is RTL.
-  int mirrored_x = MirroredXCoordinateInsideView(event.x());
+  int mirrored_x = GetMirroredXInView(event.x());
 
   *index = -1;
   *drop_on = false;

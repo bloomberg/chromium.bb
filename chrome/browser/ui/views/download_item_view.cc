@@ -498,7 +498,7 @@ void DownloadItemView::Paint(gfx::Canvas* canvas) {
   // Draw status before button image to effectively lighten text.
   if (!IsDangerousMode()) {
     if (show_status_text_) {
-      int mirrored_x = MirroredXWithWidthInsideView(
+      int mirrored_x = GetMirroredXWithWidthInView(
           download_util::kSmallProgressIconSize, kTextWidth);
       // Add font_.height() to compensate for title, which is drawn later.
       int y = box_y_ + kVerticalPadding + font_.GetHeight() +
@@ -625,7 +625,7 @@ void DownloadItemView::Paint(gfx::Canvas* canvas) {
                                             filename_string);
     }
 
-    int mirrored_x = MirroredXWithWidthInsideView(
+    int mirrored_x = GetMirroredXWithWidthInView(
         download_util::kSmallProgressIconSize, kTextWidth);
     SkColor file_name_color = GetThemeProvider()->GetColor(
         BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
@@ -667,7 +667,7 @@ void DownloadItemView::Paint(gfx::Canvas* canvas) {
     }
 
     // Draw the icon image.
-    int mirrored_x = MirroredXWithWidthInsideView(
+    int mirrored_x = GetMirroredXWithWidthInView(
         download_util::kSmallProgressIconOffset, icon->width());
     if (IsEnabled()) {
       canvas->DrawBitmapInt(*icon, mirrored_x,

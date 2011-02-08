@@ -157,7 +157,7 @@ int CustomFrameView::NonClientHitTest(const gfx::Point& point) {
   // of Fitts' Law.
   if (frame_->IsMaximized())
     sysmenu_rect.SetRect(0, 0, sysmenu_rect.right(), sysmenu_rect.bottom());
-  sysmenu_rect.set_x(MirroredLeftPointForRect(sysmenu_rect));
+  sysmenu_rect.set_x(GetMirroredXForRect(sysmenu_rect));
   if (sysmenu_rect.Contains(point))
     return (frame_component == HTCLIENT) ? HTCLIENT : HTSYSMENU;
 
@@ -165,19 +165,15 @@ int CustomFrameView::NonClientHitTest(const gfx::Point& point) {
     return frame_component;
 
   // Then see if the point is within any of the window controls.
-  if (close_button_->GetBounds(APPLY_MIRRORING_TRANSFORMATION).Contains(point))
+  if (close_button_->GetMirroredBounds().Contains(point))
     return HTCLOSE;
-  if (restore_button_->GetBounds(APPLY_MIRRORING_TRANSFORMATION).Contains(
-      point))
+  if (restore_button_->GetMirroredBounds().Contains(point))
     return HTMAXBUTTON;
-  if (maximize_button_->GetBounds(APPLY_MIRRORING_TRANSFORMATION).Contains(
-      point))
+  if (maximize_button_->GetMirroredBounds().Contains(point))
     return HTMAXBUTTON;
-  if (minimize_button_->GetBounds(APPLY_MIRRORING_TRANSFORMATION).Contains(
-      point))
+  if (minimize_button_->GetMirroredBounds().Contains(point))
     return HTMINBUTTON;
-  if (window_icon_ &&
-      window_icon_->GetBounds(APPLY_MIRRORING_TRANSFORMATION).Contains(point))
+  if (window_icon_ && window_icon_->GetMirroredBounds().Contains(point))
     return HTSYSMENU;
 
   int window_component = GetHTComponentForFrame(point, FrameBorderThickness(),
@@ -414,7 +410,7 @@ void CustomFrameView::PaintTitleBar(gfx::Canvas* canvas) {
     return;
 
   canvas->DrawStringInt(WideToUTF16Hack(d->GetWindowTitle()), *title_font_,
-                        SK_ColorWHITE, MirroredLeftPointForRect(title_bounds_),
+                        SK_ColorWHITE, GetMirroredXForRect(title_bounds_),
                         title_bounds_.y(), title_bounds_.width(),
                         title_bounds_.height());
 }

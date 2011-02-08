@@ -723,7 +723,7 @@ void DraggedTabController::MoveAttachedTab(const gfx::Point& screen_point) {
   attached_tab_->SchedulePaint();
   attached_tab_->SetX(dragged_view_point.x());
   attached_tab_->SetX(
-      attached_tabstrip_->MirroredLeftPointForRect(attached_tab_->bounds()));
+      attached_tabstrip_->GetMirroredXForRect(attached_tab_->bounds()));
   attached_tab_->SetY(dragged_view_point.y());
   attached_tab_->SchedulePaint();
 }
@@ -937,7 +937,7 @@ int DraggedTabController::GetInsertionIndexForDraggedBounds(
   // it uses the same orientation used by the tabs on the tab strip.
   gfx::Rect adjusted_bounds(dragged_bounds);
   adjusted_bounds.set_x(
-      attached_tabstrip_->MirroredLeftPointForRect(adjusted_bounds));
+      attached_tabstrip_->GetMirroredXForRect(adjusted_bounds));
 
   int index = -1;
   for (int i = 0; i < attached_tabstrip_->tab_count(); ++i) {

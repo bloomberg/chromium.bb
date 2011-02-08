@@ -713,7 +713,7 @@ void CandidateView::SetRowEnabled(bool enabled) {
 }
 
 gfx::Point CandidateView::GetCandidateLabelPosition() const {
-  return candidate_label_->GetPosition();
+  return candidate_label_->GetMirroredPosition();
 }
 
 bool CandidateView::OnMousePressed(const views::MouseEvent& event) {

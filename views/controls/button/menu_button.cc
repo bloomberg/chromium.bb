@@ -96,7 +96,7 @@ void MenuButton::Paint(gfx::Canvas* canvas, bool for_drag) {
                            height() / 2 - menu_marker_->height() / 2,
                            menu_marker_->width(),
                            menu_marker_->height());
-    arrow_bounds.set_x(MirroredLeftPointForRect(arrow_bounds));
+    arrow_bounds.set_x(GetMirroredXForRect(arrow_bounds));
     canvas->DrawBitmapInt(*menu_marker_, arrow_bounds.x(), arrow_bounds.y());
   }
 }

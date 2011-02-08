@@ -442,11 +442,11 @@ void AutocompleteResultView::Paint(gfx::Canvas* canvas) {
     canvas->AsCanvasSkia()->drawColor(GetColor(state, BACKGROUND));
 
   // Paint the icon.
-  canvas->DrawBitmapInt(*GetIcon(), MirroredLeftPointForRect(icon_bounds_),
+  canvas->DrawBitmapInt(*GetIcon(), GetMirroredXForRect(icon_bounds_),
                         icon_bounds_.y());
 
   // Paint the text.
-  int x = MirroredLeftPointForRect(text_bounds_);
+  int x = GetMirroredXForRect(text_bounds_);
   mirroring_context_->Initialize(x, text_bounds_.width());
   x = DrawString(canvas, match_.contents, match_.contents_class, false, x,
                  text_bounds_.y());

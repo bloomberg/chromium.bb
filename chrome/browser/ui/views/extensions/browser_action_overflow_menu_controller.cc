@@ -58,8 +58,7 @@ bool BrowserActionOverflowMenuController::RunMenu(gfx::NativeWindow window,
                                                   bool for_drop) {
   for_drop_ = for_drop;
 
-  gfx::Rect bounds = menu_button_->GetBounds(
-      views::View::IGNORE_MIRRORING_TRANSFORMATION);
+  gfx::Rect bounds = menu_button_->bounds();
   gfx::Point screen_loc;
   views::View::ConvertPointToScreen(menu_button_, &screen_loc);
   bounds.set_x(screen_loc.x());

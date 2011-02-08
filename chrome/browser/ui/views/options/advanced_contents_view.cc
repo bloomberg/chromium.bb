@@ -148,8 +148,7 @@ void FileDisplayArea::Paint(gfx::Canvas* canvas) {
       skia::SkColorToCOLORREF(text_field_background_color_), true, true);
   canvas->EndPlatformPaint();
   // Mirror left point for icon_bounds_ to draw icon in RTL locales correctly.
-  canvas->DrawBitmapInt(default_folder_icon_,
-                        MirroredLeftPointForRect(icon_bounds_),
+  canvas->DrawBitmapInt(default_folder_icon_, GetMirroredXForRect(icon_bounds_),
                         icon_bounds_.y());
 }
 

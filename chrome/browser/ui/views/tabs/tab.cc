@@ -301,7 +301,7 @@ void Tab::Layout() {
   // instance) are automatically mirrored by the mirroring infrastructure in
   // views. The elements Tab draws directly on the canvas need to be manually
   // mirrored if the View's layout is right-to-left.
-  title_bounds_.set_x(MirroredLeftPointForRect(title_bounds_));
+  title_bounds_.set_x(GetMirroredXForRect(title_bounds_));
 }
 
 void Tab::OnThemeChanged() {
@@ -439,8 +439,7 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
   // The tab image needs to be lined up with the background image
   // so that it feels partially transparent.  These offsets represent the tab
   // position within the frame background image.
-  int offset = GetX(views::View::APPLY_MIRRORING_TRANSFORMATION) +
-      background_offset_.x();
+  int offset = GetMirroredX() + background_offset_.x();
 
   int tab_id;
   if (GetWidget() &&
@@ -525,8 +524,7 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
 }
 
 void Tab::PaintActiveTabBackground(gfx::Canvas* canvas) {
-  int offset = GetX(views::View::APPLY_MIRRORING_TRANSFORMATION) +
-      background_offset_.x();
+  int offset = GetMirroredX() + background_offset_.x();
   ui::ThemeProvider* tp = GetThemeProvider();
   DCHECK(tp) << "Unable to get theme provider";
 

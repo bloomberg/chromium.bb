@@ -220,7 +220,7 @@ void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
   } else {
     DetachableToolbarView::PaintBackgroundAttachedMode(canvas, host_view_,
         browser_view_->OffsetPointForToolbarBackgroundImage(
-        gfx::Point(host_view_->MirroredX(), host_view_->y())));
+        gfx::Point(host_view_->GetMirroredX(), host_view_->y())));
     if (host_view_->height() >= toolbar_overlap)
       DetachableToolbarView::PaintHorizontalBorder(canvas, host_view_);
   }
@@ -582,7 +582,7 @@ gfx::Point BrowserView::OffsetPointForToolbarBackgroundImage(
   // The background image starts tiling horizontally at the window left edge and
   // vertically at the top edge of the horizontal tab strip (or where it would
   // be).  We expect our parent's origin to be the window origin.
-  gfx::Point window_point(point.Add(gfx::Point(MirroredX(), y())));
+  gfx::Point window_point(point.Add(GetMirroredPosition()));
   window_point.Offset(0, -frame_->GetHorizontalTabStripVerticalOffset(false));
   return window_point;
 }

@@ -709,8 +709,7 @@ int BrowserActionsContainer::OnPerformDrop(
 
   size_t i = 0;
   for (; i < browser_action_views_.size(); ++i) {
-    int view_x =
-        browser_action_views_[i]->GetBounds(APPLY_MIRRORING_TRANSFORMATION).x();
+    int view_x = browser_action_views_[i]->GetMirroredBounds().x();
     if (!browser_action_views_[i]->IsVisible() ||
         (base::i18n::IsRTL() ? (view_x < drop_indicator_position_) :
             (view_x >= drop_indicator_position_))) {

@@ -313,7 +313,7 @@ int ConstrainedWindowFrameView::NonClientHitTest(const gfx::Point& point) {
   // See if we're in the sysmenu region.  (We check the ClientView first to be
   // consistent with OpaqueBrowserFrameView; it's not really necessary here.)
   gfx::Rect sysmenu_rect(IconBounds());
-  sysmenu_rect.set_x(MirroredLeftPointForRect(sysmenu_rect));
+  sysmenu_rect.set_x(GetMirroredXForRect(sysmenu_rect));
   if (sysmenu_rect.Contains(point))
     return (frame_component == HTCLIENT) ? HTCLIENT : HTSYSMENU;
 
@@ -321,7 +321,7 @@ int ConstrainedWindowFrameView::NonClientHitTest(const gfx::Point& point) {
     return frame_component;
 
   // Then see if the point is within any of the window controls.
-  if (close_button_->GetBounds(APPLY_MIRRORING_TRANSFORMATION).Contains(point))
+  if (close_button_->GetMirroredBounds().Contains(point))
     return HTCLOSE;
 
   int window_component = GetHTComponentForFrame(point, kFrameBorderThickness,
@@ -481,7 +481,7 @@ void ConstrainedWindowFrameView::PaintFrameBorder(gfx::Canvas* canvas) {
 
 void ConstrainedWindowFrameView::PaintTitleBar(gfx::Canvas* canvas) {
   canvas->DrawStringInt(container_->GetWindowTitle(), *title_font_,
-      GetTitleColor(), MirroredLeftPointForRect(title_bounds_),
+      GetTitleColor(), GetMirroredXForRect(title_bounds_),
       title_bounds_.y(), title_bounds_.width(), title_bounds_.height());
 }
 

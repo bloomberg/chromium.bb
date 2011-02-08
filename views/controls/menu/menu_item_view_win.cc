@@ -88,7 +88,7 @@ void MenuItemView::Paint(gfx::Canvas* canvas, bool for_drag) {
   int accel_width = parent_menu_item_->GetSubmenu()->max_accelerator_width();
   int width = this->width() - item_right_margin_ - label_start_ - accel_width;
   gfx::Rect text_bounds(label_start_, top_margin, width, font.GetHeight());
-  text_bounds.set_x(MirroredLeftPointForRect(text_bounds));
+  text_bounds.set_x(GetMirroredXForRect(text_bounds));
   if (for_drag) {
     // With different themes, it's difficult to tell what the correct
     // foreground and background colors are for the text to draw the correct
@@ -113,7 +113,7 @@ void MenuItemView::Paint(gfx::Canvas* canvas, bool for_drag) {
                           bottom_margin - icon_.height()) / 2,
                           icon_.width(),
                           icon_.height());
-    icon_bounds.set_x(MirroredLeftPointForRect(icon_bounds));
+    icon_bounds.set_x(GetMirroredXForRect(icon_bounds));
     canvas->DrawBitmapInt(icon_, icon_bounds.x(), icon_bounds.y());
   }
 

@@ -90,7 +90,7 @@ void MenuItemView::Paint(gfx::Canvas* canvas, bool for_drag) {
   gfx::Rect text_bounds(label_start_, top_margin +
                         (available_height - font.GetHeight()) / 2, width,
                         font.GetHeight());
-  text_bounds.set_x(MirroredLeftPointForRect(text_bounds));
+  text_bounds.set_x(GetMirroredXForRect(text_bounds));
   canvas->DrawStringInt(WideToUTF16Hack(GetTitle()), font, fg_color,
                         text_bounds.x(), text_bounds.y(), text_bounds.width(),
                         text_bounds.height(),
@@ -105,7 +105,7 @@ void MenuItemView::Paint(gfx::Canvas* canvas, bool for_drag) {
                           bottom_margin - icon_.height()) / 2,
                           icon_.width(),
                           icon_.height());
-    icon_bounds.set_x(MirroredLeftPointForRect(icon_bounds));
+    icon_bounds.set_x(GetMirroredXForRect(icon_bounds));
     canvas->DrawBitmapInt(icon_, icon_bounds.x(), icon_bounds.y());
   }
 

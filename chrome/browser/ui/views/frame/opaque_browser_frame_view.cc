@@ -291,7 +291,7 @@ int OpaqueBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   // of Fitts' Law.
   if (frame_->GetWindow()->IsMaximized())
     sysmenu_rect.SetRect(0, 0, sysmenu_rect.right(), sysmenu_rect.bottom());
-  sysmenu_rect.set_x(MirroredLeftPointForRect(sysmenu_rect));
+  sysmenu_rect.set_x(GetMirroredXForRect(sysmenu_rect));
   if (sysmenu_rect.Contains(point))
     return (frame_component == HTCLIENT) ? HTCLIENT : HTSYSMENU;
 
@@ -300,19 +300,16 @@ int OpaqueBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
 
   // Then see if the point is within any of the window controls.
   if (close_button_->IsVisible() &&
-      close_button_->GetBounds(APPLY_MIRRORING_TRANSFORMATION).Contains(point))
+      close_button_->GetMirroredBounds().Contains(point))
     return HTCLOSE;
   if (restore_button_->IsVisible() &&
-      restore_button_->GetBounds(APPLY_MIRRORING_TRANSFORMATION).Contains(
-      point))
+      restore_button_->GetMirroredBounds().Contains(point))
     return HTMAXBUTTON;
   if (maximize_button_->IsVisible() &&
-      maximize_button_->GetBounds(APPLY_MIRRORING_TRANSFORMATION).Contains(
-      point))
+      maximize_button_->GetMirroredBounds().Contains(point))
     return HTMAXBUTTON;
   if (minimize_button_->IsVisible() &&
-      minimize_button_->GetBounds(APPLY_MIRRORING_TRANSFORMATION).Contains(
-      point))
+      minimize_button_->GetMirroredBounds().Contains(point))
     return HTMINBUTTON;
 
   views::WindowDelegate* delegate = frame_->GetWindow()->GetDelegate();
@@ -714,7 +711,7 @@ void OpaqueBrowserFrameView::PaintTitleBar(gfx::Canvas* canvas) {
   if (delegate->ShouldShowWindowTitle()) {
     canvas->DrawStringInt(WideToUTF16Hack(delegate->GetWindowTitle()),
                           BrowserFrame::GetTitleFont(),
-        SK_ColorWHITE, MirroredLeftPointForRect(title_bounds_),
+        SK_ColorWHITE, GetMirroredXForRect(title_bounds_),
         title_bounds_.y(), title_bounds_.width(), title_bounds_.height());
     /* TODO(pkasting):  If this window is active, we should also draw a drop
      * shadow on the title.  This is tricky, because we don't want to hardcode a
