@@ -2537,8 +2537,8 @@ void BrowserView::ProcessTabSelected(TabContentsWrapper* new_contents,
 
   // Update all the UI bits.
   UpdateTitleBar();
-  UpdateToolbar(new_contents, true);
-  UpdateUIForContents(new_contents);
+  // No need to update Toolbar because it's already updated in
+  // browser.cc.
 }
 
 gfx::Size BrowserView::GetResizeCornerSize() const {
