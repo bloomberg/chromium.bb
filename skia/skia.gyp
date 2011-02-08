@@ -778,6 +778,8 @@
         'defines': [
           'SK_BUILD_NO_IMAGE_ENCODE',
           'GR_GL_CUSTOM_SETUP_HEADER="GrGLConfig_chrome.h"',
+          'GR_AGGRESSIVE_SHADER_OPTS=1',
+          'GR_STATIC_RECT_VB=1',
           'GR_SKIP_2POINTRADIAL_PROGRAMS',
         ],
       },
