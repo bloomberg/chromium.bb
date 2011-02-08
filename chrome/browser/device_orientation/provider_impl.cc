@@ -10,6 +10,7 @@
 #include "base/message_loop.h"
 #include "base/task.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/device_orientation/orientation.h"
 #include "chrome/browser/device_orientation/provider_impl.h"
 
@@ -58,6 +59,10 @@ void ProviderImpl::Start() {
 
 void ProviderImpl::Stop() {
   DCHECK(MessageLoop::current() == creator_loop_);
+
+  // TODO(hans): Don't join the thread. See crbug.com/72286.
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+
   polling_thread_.reset();
   data_fetcher_.reset();
 }
