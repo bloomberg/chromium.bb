@@ -422,7 +422,6 @@
         'event_listener_unittest.cc',
         'image_decoder_unittest.cc',
         'image_decoder_unittest.h',
-        'layout_test_controller_unittest.cc',
         'listener_leak_test.cc',
         'media_leak_test.cc',
         'mock_spellcheck_unittest.cc',
