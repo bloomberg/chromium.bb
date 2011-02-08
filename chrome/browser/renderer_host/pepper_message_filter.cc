@@ -34,7 +34,8 @@ COMPILE_ASSERT(sizeof(reinterpret_cast<PP_Flash_NetAddress*>(0)->data) >=
 const PP_Flash_NetAddress kInvalidNetAddress = { 0 };
 
 PepperMessageFilter::PepperMessageFilter(Profile* profile)
-    : profile_(profile) {
+    : profile_(profile),
+      request_context_(profile_->GetRequestContext()) {
 }
 
 bool PepperMessageFilter::OnMessageReceived(const IPC::Message& msg,
@@ -170,7 +171,7 @@ void PepperMessageFilter::OnConnectTcp(int routing_id,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   net::URLRequestContext* req_context =
-      profile_->GetRequestContext()->GetURLRequestContext();
+      request_context_->GetURLRequestContext();
   net::HostResolver::RequestInfo request_info(net::HostPortPair(host, port));
 
   // The lookup request will delete itself on completion.
@@ -228,8 +229,6 @@ void PepperMessageFilter::ConnectTcpLookupFinished(
 void PepperMessageFilter::ConnectTcpOnWorkerThread(int routing_id,
                                                    int request_id,
                                                    net::AddressList addresses) {
-  DCHECK(!MessageLoop::current());  // Check we are on a worker thread.
-
   IPC::PlatformFileForTransit socket_for_transit =
       IPC::InvalidPlatformFileForTransit();
   PP_Flash_NetAddress local_addr = kInvalidNetAddress;
@@ -259,8 +258,6 @@ void PepperMessageFilter::ConnectTcpAddressOnWorkerThread(
     int routing_id,
     int request_id,
     PP_Flash_NetAddress addr) {
-  DCHECK(!MessageLoop::current());  // Check we are on a worker thread.
-
   IPC::PlatformFileForTransit socket_for_transit =
       IPC::InvalidPlatformFileForTransit();
   PP_Flash_NetAddress local_addr = kInvalidNetAddress;
