@@ -6017,7 +6017,7 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
       if (swap_buffers_callback_.get()) {
         swap_buffers_callback_->Run();
       }
-      return error::kNoError;
+      return error::kThrottle;
     } else {
       ScopedFrameBufferBinder binder(this,
                                      offscreen_target_frame_buffer_->id());
@@ -6039,7 +6039,7 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
       if (swap_buffers_callback_.get()) {
         swap_buffers_callback_->Run();
       }
-      return error::kNoError;
+      return error::kThrottle;
     }
   } else {
     if (!context_->SwapBuffers()) {
@@ -6052,7 +6052,14 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
     swap_buffers_callback_->Run();
   }
 
-  return error::kNoError;
+  // Do not throttle SwapBuffers by returning kThrottle. The intent of
+  // throttling the offscreen command buffers to a fixed number of frames
+  // ahead is to prevent them from rendering faster than they can be
+  // presented, not to limit the rate at which we present.
+  //
+  // This does not hold for ANGLE, possibly because all the GL contexts in a
+  // share group are actually one D3D device. Found by trial and error.
+  return IsAngle() ? error::kThrottle : error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleCommandBufferEnableCHROMIUM(

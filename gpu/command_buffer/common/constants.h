@@ -21,7 +21,13 @@ namespace error {
     kUnknownCommand,
     kInvalidArguments,
     kLostContext,
-    kGenericError
+    kGenericError,
+
+    // This is not an error. It is returned by commands to mark a position
+    // in the command buffer that should not be issued to the the GL backend
+    // until no more than a fixed number of such positions have already been
+    // issued.
+    kThrottle
   };
 }
 

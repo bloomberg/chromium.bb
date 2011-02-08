@@ -5,6 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GPU_PROCESSOR_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GPU_PROCESSOR_H_
 
+#include <queue>
 #include <vector>
 
 #include "app/surface/transport_dib.h"
@@ -137,6 +138,9 @@ class GPUProcessor : public CommandBufferEngine {
 
   scoped_ptr<gles2::GLES2Decoder> decoder_;
   scoped_ptr<CommandParser> parser_;
+
+  size_t num_throttle_fences_;
+  std::queue<unsigned> throttle_fences_;
 
 #if defined(OS_MACOSX)
   scoped_ptr<AcceleratedSurface> surface_;

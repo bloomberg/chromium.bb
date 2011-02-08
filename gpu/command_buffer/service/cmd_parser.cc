@@ -55,10 +55,11 @@ error::Error CommandParser::ProcessCommand() {
 
   error::Error result = handler_->DoCommand(
       header.command, header.size - 1, buffer_ + get);
+
   // TODO(gman): If you want to log errors this is the best place to catch them.
   //     It seems like we need an official way to turn on a debug mode and
   //     get these errors.
-  if (result != error::kNoError) {
+  if (result != error::kNoError && result != error::kThrottle) {
     ReportError(header.command, result);
   }
 

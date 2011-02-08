@@ -70,7 +70,7 @@ class GLES2Implementation {
   static const GLuint kClientSideElementArrayId = 0xFEDCBA99u;
 
   // Number of swap buffers allowed before waiting.
-  static const size_t kMaxSwapBuffers = 2;
+  static const size_t kMaxSwapBuffers = 1;
 
   GLES2Implementation(
       GLES2CmdHelper* helper,
