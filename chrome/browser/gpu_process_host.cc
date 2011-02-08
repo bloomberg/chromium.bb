@@ -5,15 +5,12 @@
 #include "chrome/browser/gpu_process_host.h"
 
 #include "app/app_switches.h"
-#include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/ref_counted.h"
 #include "base/string_piece.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/gpu_blacklist.h"
 #include "chrome/browser/gpu_process_host_ui_shim.h"
-#include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
@@ -23,11 +20,9 @@
 #include "chrome/common/gpu_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/gpu/gpu_thread.h"
-#include "grit/browser_resources.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_switches.h"
 #include "media/base/media_switches.h"
-#include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_LINUX)
 #include "ui/gfx/gtk_native_view_id_manager.h"
@@ -114,8 +109,7 @@ class GpuMainThread : public base::Thread {
 GpuProcessHost::GpuProcessHost()
     : BrowserChildProcessHost(GPU_PROCESS, NULL),
       initialized_(false),
-      initialized_successfully_(false),
-      gpu_feature_flags_set_(false) {
+      initialized_successfully_(false) {
   DCHECK_EQ(sole_instance_, static_cast<GpuProcessHost*>(NULL));
 }
 
@@ -136,9 +130,6 @@ bool GpuProcessHost::EnsureInitialized() {
 }
 
 bool GpuProcessHost::Init() {
-  if (!LoadGpuBlacklist())
-    return false;
-
   if (!CreateChannel())
     return false;
 
@@ -168,274 +159,27 @@ bool GpuProcessHost::Send(IPC::Message* msg) {
 
 bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
   DCHECK(CalledOnValidThread());
-
-  if (message.routing_id() == MSG_ROUTING_CONTROL)
-    return OnControlMessageReceived(message);
-
   RouteOnUIThread(message);
   return true;
-}
-
-// Post a Task to execute callbacks on a error conditions in order to
-// clear the call stacks (and aid debugging).
-namespace {
-
-void EstablishChannelCallbackDispatcher(
-    linked_ptr<GpuProcessHost::EstablishChannelCallback> callback,
-    const IPC::ChannelHandle& channel_handle,
-    const GPUInfo& gpu_info) {
-  callback->Run(channel_handle, gpu_info);
-}
-
-void EstablishChannelError(
-    linked_ptr<GpuProcessHost::EstablishChannelCallback> callback,
-    const IPC::ChannelHandle& channel_handle,
-    const GPUInfo& gpu_info) {
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableFunction(&EstablishChannelCallbackDispatcher,
-                          callback, channel_handle, gpu_info));
-}
-
-void SynchronizeCallbackDispatcher(
-    linked_ptr<GpuProcessHost::SynchronizeCallback> callback) {
-  callback->Run();
-}
-
-void SynchronizeError(
-    linked_ptr<GpuProcessHost::SynchronizeCallback> callback) {
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableFunction(&SynchronizeCallbackDispatcher, callback));
-}
-
-void CreateCommandBufferCallbackDispatcher(
-    linked_ptr<GpuProcessHost::CreateCommandBufferCallback> callback,
-    int32 route_id) {
-  callback->Run(route_id);
-}
-
-void CreateCommandBufferError(
-    linked_ptr<GpuProcessHost::CreateCommandBufferCallback> callback,
-    int32 route_id) {
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableFunction(&CreateCommandBufferCallbackDispatcher,
-                          callback, route_id));
-}
-
-}  // namespace
-
-void GpuProcessHost::EstablishGpuChannel(int renderer_id,
-                                         EstablishChannelCallback *callback) {
-  DCHECK(CalledOnValidThread());
-  linked_ptr<EstablishChannelCallback> wrapped_callback(callback);
-
-  if (Send(new GpuMsg_EstablishChannel(renderer_id))) {
-    channel_requests_.push(wrapped_callback);
-  } else {
-    EstablishChannelError(wrapped_callback, IPC::ChannelHandle(), GPUInfo());
-  }
-}
-
-void GpuProcessHost::Synchronize(SynchronizeCallback* callback) {
-  DCHECK(CalledOnValidThread());
-  linked_ptr<SynchronizeCallback> wrapped_callback(callback);
-
-  if (Send(new GpuMsg_Synchronize())) {
-    synchronize_requests_.push(wrapped_callback);
-  } else {
-    SynchronizeError(wrapped_callback);
-  }
-}
-
-class CVCBThreadHopping {
- public:
-  // Send the request for a command buffer from the IO thread and
-  // queue that we are expecting a response.
-  static void DispatchIPCAndQueueReply(
-      gfx::PluginWindowHandle view,
-      int32 render_view_id,
-      int32 renderer_id,
-      const GPUCreateCommandBufferConfig& init_params,
-      linked_ptr<GpuProcessHost::CreateCommandBufferCallback> callback);
-
-  // Get a window for the command buffer that we're creating.
-  static void GetViewWindow(
-      int32 render_view_id,
-      int32 renderer_id,
-      const GPUCreateCommandBufferConfig& init_params,
-      linked_ptr<GpuProcessHost::CreateCommandBufferCallback> callback);
-};
-
-void CVCBThreadHopping::DispatchIPCAndQueueReply(
-    gfx::PluginWindowHandle view,
-    int32 render_view_id,
-    int32 renderer_id,
-    const GPUCreateCommandBufferConfig& init_params,
-    linked_ptr<GpuProcessHost::CreateCommandBufferCallback> callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  GpuProcessHost* host = GpuProcessHost::Get();
-
-  if (view != gfx::kNullPluginWindow &&
-      SendDelayedMsg(new GpuMsg_CreateViewCommandBuffer(
-          view, render_view_id, renderer_id, init_params))) {
-    host->create_command_buffer_requests_.push(callback);
-  } else {
-    CreateCommandBufferError(callback, MSG_ROUTING_NONE);
-  }
-}
-
-void CVCBThreadHopping::GetViewWindow(
-    int32 render_view_id,
-    int32 renderer_id,
-    const GPUCreateCommandBufferConfig& init_params,
-    linked_ptr<GpuProcessHost::CreateCommandBufferCallback> callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  gfx::PluginWindowHandle window = gfx::kNullPluginWindow;
-  RenderProcessHost* process = RenderProcessHost::FromID(renderer_id);
-  RenderWidgetHost* host = NULL;
-  if (process) {
-    host = static_cast<RenderWidgetHost*>(
-        process->GetListenerByID(render_view_id));
-  }
-
-  RenderWidgetHostView* view = NULL;
-  if (host)
-    view = host->view();
-
-  if (view) {
-#if defined(OS_LINUX)
-    gfx::NativeViewId view_id = NULL;
-    view_id = gfx::IdFromNativeView(view->GetNativeView());
-
-    // Lock the window that we will draw into.
-    GtkNativeViewManager* manager = GtkNativeViewManager::GetInstance();
-    if (!manager->GetPermanentXIDForId(&window, view_id)) {
-      DLOG(ERROR) << "Can't find XID for view id " << view_id;
-    }
-#elif defined(OS_MACOSX)
-    // On Mac OS X we currently pass a (fake) PluginWindowHandle for the
-    // window that we draw to.
-    window = view->AllocateFakePluginWindowHandle(
-        /*opaque=*/true, /*root=*/true);
-#elif defined(OS_WIN)
-    // Create a window that we will overlay.
-    window = view->GetCompositorHostWindow();
-#endif
-  }
-
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, NewRunnableFunction(
-      &CVCBThreadHopping::DispatchIPCAndQueueReply,
-      window, render_view_id, renderer_id, init_params, callback));
-}
-
-void GpuProcessHost::CreateViewCommandBuffer(
-    int32 render_view_id,
-    int32 renderer_id,
-    const GPUCreateCommandBufferConfig& init_params,
-    CreateCommandBufferCallback* callback) {
-  DCHECK(CalledOnValidThread());
-
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, NewRunnableFunction(
-      &CVCBThreadHopping::GetViewWindow,
-      render_view_id, renderer_id, init_params,
-      linked_ptr<CreateCommandBufferCallback>(callback)));
-}
-
-bool GpuProcessHost::OnControlMessageReceived(const IPC::Message& message) {
-  DCHECK(CalledOnValidThread());
-
-  IPC_BEGIN_MESSAGE_MAP(GpuProcessHost, message)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_ChannelEstablished, OnChannelEstablished)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_SynchronizeReply, OnSynchronizeReply)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_CommandBufferCreated, OnCommandBufferCreated)
-    // If the IO thread does not handle the message then automatically route it
-    // to the UI thread. The UI thread will report an error if it does not
-    // handle it.
-    IPC_MESSAGE_UNHANDLED(RouteOnUIThread(message))
-  IPC_END_MESSAGE_MAP()
-
-  return true;
-}
-
-void GpuProcessHost::OnChannelEstablished(
-    const IPC::ChannelHandle& channel_handle,
-    const GPUInfo& gpu_info) {
-  if (channel_handle.name.size() != 0 && !gpu_feature_flags_set_) {
-    gpu_feature_flags_ = gpu_blacklist_->DetermineGpuFeatureFlags(
-        GpuBlacklist::kOsAny, NULL, gpu_info);
-    gpu_feature_flags_set_ = true;
-    uint32 max_entry_id = gpu_blacklist_->max_entry_id();
-    if (gpu_feature_flags_.flags() != 0) {
-      std::vector<uint32> flag_entries;
-      gpu_blacklist_->GetGpuFeatureFlagEntries(GpuFeatureFlags::kGpuFeatureAll,
-                                               flag_entries);
-      DCHECK_GT(flag_entries.size(), 0u);
-      for (size_t i = 0; i < flag_entries.size(); ++i) {
-        UMA_HISTOGRAM_ENUMERATION("GPU.BlacklistTestResultsPerEntry",
-                                  flag_entries[i], max_entry_id + 1);
-      }
-    } else {
-      // id 0 is never used by any entry, so we use it here to indicate that
-      // gpu is allowed.
-      UMA_HISTOGRAM_ENUMERATION("GPU.BlacklistTestResultsPerEntry",
-                                0, max_entry_id + 1);
-    }
-  }
-  linked_ptr<EstablishChannelCallback> callback = channel_requests_.front();
-  channel_requests_.pop();
-
-  // Currently if any of the GPU features are blacklisted, we don't establish a
-  // GPU channel.
-  if (gpu_feature_flags_.flags() != 0) {
-    Send(new GpuMsg_CloseChannel(channel_handle));
-    EstablishChannelError(callback, IPC::ChannelHandle(), gpu_info);
-  } else {
-    callback->Run(channel_handle, gpu_info);
-  }
-}
-
-void GpuProcessHost::OnSynchronizeReply() {
-  // Guard against race conditions in abrupt GPU process termination.
-  if (synchronize_requests_.size() > 0) {
-    linked_ptr<SynchronizeCallback> callback = synchronize_requests_.front();
-    synchronize_requests_.pop();
-    callback->Run();
-  }
-}
-
-void GpuProcessHost::OnCommandBufferCreated(const int32 route_id) {
-  if (create_command_buffer_requests_.size() > 0) {
-    linked_ptr<CreateCommandBufferCallback> callback =
-        create_command_buffer_requests_.front();
-    create_command_buffer_requests_.pop();
-    if (route_id == MSG_ROUTING_NONE)
-      CreateCommandBufferError(callback, route_id);
-    else
-      callback->Run(route_id);
-  }
-}
-
-void GpuProcessHost::SendOutstandingReplies() {
-  // First send empty channel handles for all EstablishChannel requests.
-  while (!channel_requests_.empty()) {
-    linked_ptr<EstablishChannelCallback> callback = channel_requests_.front();
-    channel_requests_.pop();
-    EstablishChannelError(callback, IPC::ChannelHandle(), GPUInfo());
-  }
-
-  // Now unblock all renderers waiting for synchronization replies.
-  while (!synchronize_requests_.empty()) {
-    linked_ptr<SynchronizeCallback> callback = synchronize_requests_.front();
-    synchronize_requests_.pop();
-    SynchronizeError(callback);
-  }
 }
 
 bool GpuProcessHost::CanShutdown() {
   return true;
 }
+
+namespace {
+
+void SendOutstandingRepliesDispatcher() {
+  GpuProcessHostUIShim::GetInstance()->SendOutstandingReplies();
+}
+
+void SendOutstandingReplies() {
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableFunction(&SendOutstandingRepliesDispatcher));
+}
+
+}  // namespace
 
 void GpuProcessHost::OnChildDied() {
   SendOutstandingReplies();
@@ -533,21 +277,3 @@ bool GpuProcessHost::LaunchGpuProcess() {
                             LAUNCHED, GPU_PROCESS_LIFETIME_EVENT_MAX);
   return true;
 }
-
-bool GpuProcessHost::LoadGpuBlacklist() {
-  if (gpu_blacklist_.get() != NULL)
-    return true;
-  static const base::StringPiece gpu_blacklist_json(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_GPU_BLACKLIST));
-  GpuBlacklist* blacklist = new GpuBlacklist();
-  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
-  if (browser_command_line.HasSwitch(switches::kIgnoreGpuBlacklist) ||
-      blacklist->LoadGpuBlacklist(gpu_blacklist_json.as_string(), true)) {
-    gpu_blacklist_.reset(blacklist);
-    return true;
-  }
-  delete blacklist;
-  return false;
-}
-
