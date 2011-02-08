@@ -1091,7 +1091,14 @@ exit 1
     for postbuild in spec.get('postbuilds', []):
       action_string_sh = gyp.common.EncodePOSIXShellList(postbuild['action'])
       script = 'exec ' + action_string_sh + '\nexit 1\n'
+
+      # Make the postbuild step depend on the output of ld or ar from this
+      # target. Apparently putting the script step after the link step isn't
+      # sufficient to ensure proper ordering in all cases. With an input
+      # declared but no outputs, the script step should run every time, as
+      # desired.
       ssbp = gyp.xcodeproj_file.PBXShellScriptBuildPhase({
+            'inputPaths': ['$(BUILT_PRODUCTS_DIR)/$(EXECUTABLE_PATH)'],
             'name': 'Postbuild "' + postbuild['postbuild_name'] + '"',
             'shellScript': script,
             'showEnvVarsInLog': 0,
