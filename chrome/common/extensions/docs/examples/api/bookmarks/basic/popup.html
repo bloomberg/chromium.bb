@@ -1,6 +1,6 @@
 <html>
 <head>
-<link type="text/css" href="http://jqueryui.com/themes/base/ui.all.css" rel="stylesheet">
+<link type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.2/themes/base/jquery-ui.css" rel="stylesheet">
 <style>
 div, td, th { color: black; }
 </style>
@@ -48,7 +48,7 @@ div, td, th { color: black; }
       });
       var span = $('<span>');
       var options = bookmarkNode.children ?
-        $('<span>[<a href="#" id='addlink'>Add</a>]</span>') :
+        $('<span>[<a href="#" id="addlink">Add</a>]</span>') :
         $('<span>[<a id="editlink" href="#">Edit</a> <a id="deletelink" ' +
           'href="#">Delete</a>]</span>');
       var edit = bookmarkNode.children ? $('<table><tr><td>Name</td><td>' +

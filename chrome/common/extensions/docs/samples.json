@@ -1072,7 +1072,7 @@
         "manifest.json", 
         "popup.html"
       ], 
-      "source_hash": "4f7509c56c2943cf8aedf1ee0b4b4a7d1e49f7d3", 
+      "source_hash": "5fd4c8e159a36d2462e9691db12d77a27684d6b7", 
       "zip_path": "examples/api/bookmarks/basic.zip"
     }, 
     {
