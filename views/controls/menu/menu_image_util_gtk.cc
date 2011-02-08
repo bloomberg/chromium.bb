@@ -1,10 +1,13 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/controls/menu/radio_button_image_gtk.h"
+#include "views/controls/menu/menu_image_util_gtk.h"
 
+#include "base/i18n/rtl.h"
+#include "grit/app_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
 
 namespace {
@@ -79,6 +82,19 @@ SkBitmap* CreateRadioButtonImage(bool selected) {
   return new SkBitmap(canvas.ExtractBitmap());
 }
 
+SkBitmap* GetRtlSubmenuArrowImage() {
+  static SkBitmap* kRtlArrow = NULL;
+  if (!kRtlArrow) {
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    SkBitmap* r = rb.GetBitmapNamed(IDR_MENU_ARROW);
+    gfx::CanvasSkia canvas(r->width(), r->height(), false);
+    canvas.ScaleInt(-1, 1);
+    canvas.DrawBitmapInt(*r, - r->width(), 0);
+    kRtlArrow = new SkBitmap(canvas.ExtractBitmap());
+  }
+  return kRtlArrow;
+}
+
 }  // namespace
 
 namespace views {
@@ -88,6 +104,12 @@ const SkBitmap* GetRadioButtonImage(bool selected) {
   static const SkBitmap* kRadioOff = CreateRadioButtonImage(false);
 
   return selected ? kRadioOn : kRadioOff;
+}
+
+const SkBitmap* GetSubmenuArrowImage() {
+  return base::i18n::IsRTL() ?
+      GetRtlSubmenuArrowImage() :
+      ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_MENU_ARROW);
 }
 
 }  // namespace views;
