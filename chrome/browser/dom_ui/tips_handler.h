@@ -19,13 +19,13 @@ class DOMUI;
 class ListValue;
 class PrefService;
 
-class TipsHandler : public DOMMessageHandler {
+class TipsHandler : public WebUIMessageHandler {
  public:
   TipsHandler() : tips_cache_(NULL) {}
   virtual ~TipsHandler() {}
 
-  // DOMMessageHandler implementation and overrides.
-  virtual DOMMessageHandler* Attach(DOMUI* dom_ui);
+  // WebUIMessageHandler implementation and overrides.
+  virtual WebUIMessageHandler* Attach(DOMUI* dom_ui);
   virtual void RegisterMessages();
 
   // Callback which pulls tips data from the preferences.

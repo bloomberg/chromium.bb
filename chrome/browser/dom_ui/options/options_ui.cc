@@ -217,7 +217,7 @@ OptionsUI::OptionsUI(TabContents* contents)
 OptionsUI::~OptionsUI() {
   // Uninitialize all registered handlers. The base class owns them and it will
   // eventually delete them. Skip over the generic handler.
-  for (std::vector<DOMMessageHandler*>::iterator iter = handlers_.begin() + 1;
+  for (std::vector<WebUIMessageHandler*>::iterator iter = handlers_.begin() + 1;
        iter != handlers_.end();
        ++iter) {
     static_cast<OptionsPageUIHandler*>(*iter)->Uninitialize();
@@ -268,7 +268,7 @@ void OptionsUI::InitializeHandlers() {
     return;
   initialized_handlers_ = true;
 
-  std::vector<DOMMessageHandler*>::iterator iter;
+  std::vector<WebUIMessageHandler*>::iterator iter;
   // Skip over the generic handler.
   for (iter = handlers_.begin() + 1; iter != handlers_.end(); ++iter) {
     (static_cast<OptionsPageUIHandler*>(*iter))->Initialize();

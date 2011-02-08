@@ -97,12 +97,12 @@ NewTabPageSyncHandler::MessageType
   }
 }
 
-DOMMessageHandler* NewTabPageSyncHandler::Attach(DOMUI* dom_ui) {
+WebUIMessageHandler* NewTabPageSyncHandler::Attach(DOMUI* dom_ui) {
   sync_service_ = dom_ui->GetProfile()->GetProfileSyncService();
   DCHECK(sync_service_);  // This shouldn't get called by an incognito NTP.
   DCHECK(!sync_service_->IsManaged());  // And neither if sync is managed.
   sync_service_->AddObserver(this);
-  return DOMMessageHandler::Attach(dom_ui);
+  return WebUIMessageHandler::Attach(dom_ui);
 }
 
 void NewTabPageSyncHandler::RegisterMessages() {

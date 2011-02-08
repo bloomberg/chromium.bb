@@ -31,7 +31,7 @@ template <typename T> struct DefaultSingletonTraits;
 class ImageBurnResourceManager;
 class TabContents;
 
-class ImageBurnHandler : public DOMMessageHandler,
+class ImageBurnHandler : public WebUIMessageHandler,
                          public chromeos::MountLibrary::Observer,
                          public chromeos::BurnLibrary::Observer,
                          public DownloadManager::Observer,
@@ -41,8 +41,8 @@ class ImageBurnHandler : public DOMMessageHandler,
   explicit ImageBurnHandler(TabContents* contents);
   virtual ~ImageBurnHandler();
 
-  // DOMMessageHandler implementation.
-  virtual DOMMessageHandler* Attach(DOMUI* dom_ui);
+  // WebUIMessageHandler implementation.
+  virtual WebUIMessageHandler* Attach(DOMUI* dom_ui);
   virtual void RegisterMessages();
 
   // chromeos::MountLibrary::Observer interface

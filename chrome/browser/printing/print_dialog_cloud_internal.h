@@ -81,20 +81,20 @@ class CloudPrintDataSender
 class CloudPrintHtmlDialogDelegate;
 
 // The CloudPrintFlowHandler connects the state machine (the UI delegate)
-// to the dialog backing HTML and JS by providing DOMMessageHandler
+// to the dialog backing HTML and JS by providing WebUIMessageHandler
 // functions for the JS to use.  This include refreshing the page
 // setup parameters (which will cause a re-generation of the PDF in
 // the renderer process - do we want a progress throbber shown?
 // Probably..), and packing up the PDF and job parameters and sending
 // them to the cloud.
-class CloudPrintFlowHandler : public DOMMessageHandler,
+class CloudPrintFlowHandler : public WebUIMessageHandler,
                               public NotificationObserver {
  public:
   explicit CloudPrintFlowHandler(const FilePath& path_to_pdf,
                                  const string16& print_job_title);
   virtual ~CloudPrintFlowHandler();
 
-  // DOMMessageHandler implementation.
+  // WebUIMessageHandler implementation.
   virtual void RegisterMessages();
 
   // NotificationObserver implementation.
@@ -146,8 +146,8 @@ class CloudPrintHtmlDialogDelegate : public HtmlDialogUIDelegate {
   virtual bool IsDialogModal() const;
   virtual std::wstring GetDialogTitle() const;
   virtual GURL GetDialogContentURL() const;
-  virtual void GetDOMMessageHandlers(
-      std::vector<DOMMessageHandler*>* handlers) const;
+  virtual void GetWebUIMessageHandlers(
+      std::vector<WebUIMessageHandler*>* handlers) const;
   virtual void GetDialogSize(gfx::Size* size) const;
   virtual std::string GetDialogArgs() const;
   virtual void OnDialogClosed(const std::string& json_retval);

@@ -44,8 +44,8 @@ class TestHtmlDialogUIDelegate : public HtmlDialogUIDelegate {
   virtual GURL GetDialogContentURL() const {
     return GURL(chrome::kAboutBlankURL);
   }
-  virtual void GetDOMMessageHandlers(
-      std::vector<DOMMessageHandler*>* handlers) const { }
+  virtual void GetWebUIMessageHandlers(
+      std::vector<WebUIMessageHandler*>* handlers) const { }
   virtual void GetDialogSize(gfx::Size* size) const {
     size->set_width(40);
     size->set_height(40);

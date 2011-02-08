@@ -61,10 +61,10 @@ GURL HtmlDialogGtk::GetDialogContentURL() const {
     return GURL();
 }
 
-void HtmlDialogGtk::GetDOMMessageHandlers(
-    std::vector<DOMMessageHandler*>* handlers) const {
+void HtmlDialogGtk::GetWebUIMessageHandlers(
+    std::vector<WebUIMessageHandler*>* handlers) const {
   if (delegate_)
-    delegate_->GetDOMMessageHandlers(handlers);
+    delegate_->GetWebUIMessageHandlers(handlers);
   else
     handlers->clear();
 }

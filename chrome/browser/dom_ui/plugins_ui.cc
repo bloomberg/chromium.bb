@@ -130,14 +130,14 @@ void PluginsUIHTMLSource::StartDataRequest(const std::string& path,
 // TODO(viettrungluu): Make plugin list updates notify, and then observe
 // changes; maybe replumb plugin list through plugin service?
 // <http://crbug.com/39101>
-class PluginsDOMHandler : public DOMMessageHandler,
+class PluginsDOMHandler : public WebUIMessageHandler,
                           public NotificationObserver {
  public:
   explicit PluginsDOMHandler();
   virtual ~PluginsDOMHandler() {}
 
-  // DOMMessageHandler implementation.
-  virtual DOMMessageHandler* Attach(DOMUI* dom_ui);
+  // WebUIMessageHandler implementation.
+  virtual WebUIMessageHandler* Attach(DOMUI* dom_ui);
   virtual void RegisterMessages();
 
   // Callback for the "requestPluginsData" message.
@@ -199,12 +199,12 @@ PluginsDOMHandler::PluginsDOMHandler()
                  NotificationService::AllSources());
 }
 
-DOMMessageHandler* PluginsDOMHandler::Attach(DOMUI* dom_ui) {
+WebUIMessageHandler* PluginsDOMHandler::Attach(DOMUI* dom_ui) {
   PrefService* prefs = dom_ui->GetProfile()->GetPrefs();
 
   show_details_.Init(prefs::kPluginsShowDetails, prefs, this);
 
-  return DOMMessageHandler::Attach(dom_ui);
+  return WebUIMessageHandler::Attach(dom_ui);
 }
 
 void PluginsDOMHandler::RegisterMessages() {

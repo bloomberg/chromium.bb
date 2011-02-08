@@ -75,10 +75,10 @@ class MenuUI : public DOMUI {
   DISALLOW_COPY_AND_ASSIGN(MenuUI);
 };
 
-// Base class for MenuUI's DOMMessageHandler.
-class MenuHandlerBase : public DOMMessageHandler {
+// Base class for MenuUI's WebUIMessageHandler.
+class MenuHandlerBase : public WebUIMessageHandler {
  public:
-  MenuHandlerBase() : DOMMessageHandler() {}
+  MenuHandlerBase() : WebUIMessageHandler() {}
 
   // Returns the menu control that is associated with the
   // MenuUI. This may return null when menu is being deleted.

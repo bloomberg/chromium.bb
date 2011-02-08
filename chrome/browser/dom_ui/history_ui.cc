@@ -127,7 +127,7 @@ BrowsingHistoryHandler::~BrowsingHistoryHandler() {
   cancelable_delete_consumer_.CancelAllRequests();
 }
 
-DOMMessageHandler* BrowsingHistoryHandler::Attach(DOMUI* dom_ui) {
+WebUIMessageHandler* BrowsingHistoryHandler::Attach(DOMUI* dom_ui) {
   // Create our favicon data source.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -139,7 +139,7 @@ DOMMessageHandler* BrowsingHistoryHandler::Attach(DOMUI* dom_ui) {
   // Get notifications when history is cleared.
   registrar_.Add(this, NotificationType::HISTORY_URLS_DELETED,
       Source<Profile>(dom_ui->GetProfile()->GetOriginalProfile()));
-  return DOMMessageHandler::Attach(dom_ui);
+  return WebUIMessageHandler::Attach(dom_ui);
 }
 
 void BrowsingHistoryHandler::RegisterMessages() {

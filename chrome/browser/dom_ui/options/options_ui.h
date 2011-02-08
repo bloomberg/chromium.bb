@@ -40,7 +40,7 @@ class OptionsUIHTMLSource : public ChromeURLDataManager::DataSource {
 };
 
 // The base class handler of Javascript messages of options pages.
-class OptionsPageUIHandler : public DOMMessageHandler,
+class OptionsPageUIHandler : public WebUIMessageHandler,
                              public NotificationObserver {
  public:
   OptionsPageUIHandler();
@@ -59,7 +59,7 @@ class OptionsPageUIHandler : public DOMMessageHandler,
   // Uninitializes the page.  Called just before the object is destructed.
   virtual void Uninitialize() {}
 
-  // DOMMessageHandler implementation.
+  // WebUIMessageHandler implementation.
   virtual void RegisterMessages() {}
 
   // NotificationObserver implementation.

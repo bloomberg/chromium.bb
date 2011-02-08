@@ -46,7 +46,7 @@ TextfieldsUIHTMLSource::~TextfieldsUIHTMLSource() {}
 /**
  * TextfieldsDOMHandler implementation.
  */
-TextfieldsDOMHandler::TextfieldsDOMHandler() : DOMMessageHandler() {}
+TextfieldsDOMHandler::TextfieldsDOMHandler() : WebUIMessageHandler() {}
 
 void TextfieldsDOMHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback("textfieldValue",

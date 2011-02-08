@@ -94,7 +94,7 @@ class TaskProxy;
 
 // The handler for Javascript messages related to the "filebrowse" view.
 class FilebrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
-                          public DOMMessageHandler,
+                          public WebUIMessageHandler,
 #if defined(OS_CHROMEOS)
                           public chromeos::MountLibrary::Observer,
 #endif
@@ -114,8 +114,8 @@ class FilebrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
       const net::DirectoryLister::DirectoryListerData& data);
   virtual void OnListDone(int error);
 
-  // DOMMessageHandler implementation.
-  virtual DOMMessageHandler* Attach(DOMUI* dom_ui);
+  // WebUIMessageHandler implementation.
+  virtual WebUIMessageHandler* Attach(DOMUI* dom_ui);
   virtual void RegisterMessages();
 
 #if defined(OS_CHROMEOS)
@@ -420,7 +420,7 @@ FilebrowseHandler::~FilebrowseHandler() {
   }
 }
 
-DOMMessageHandler* FilebrowseHandler::Attach(DOMUI* dom_ui) {
+WebUIMessageHandler* FilebrowseHandler::Attach(DOMUI* dom_ui) {
   // Create our favicon data source.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -430,7 +430,7 @@ DOMMessageHandler* FilebrowseHandler::Attach(DOMUI* dom_ui) {
           make_scoped_refptr(new WebUIFavIconSource(dom_ui->GetProfile()))));
   profile_ = dom_ui->GetProfile();
   tab_contents_ = dom_ui->tab_contents();
-  return DOMMessageHandler::Attach(dom_ui);
+  return WebUIMessageHandler::Attach(dom_ui);
 }
 
 void FilebrowseHandler::Init() {

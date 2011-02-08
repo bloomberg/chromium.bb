@@ -18,7 +18,7 @@ class LanguageOptionsHandler : public LanguageOptionsHandlerCommon {
   // OptionsUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
 
-  // DOMMessageHandler implementation.
+  // WebUIMessageHandler implementation.
   virtual void RegisterMessages();
 
   // The following static method is public for ease of testing.

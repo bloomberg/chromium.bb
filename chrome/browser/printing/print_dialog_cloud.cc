@@ -63,7 +63,7 @@
 // contents provides.  As part of bringing up the dialog,
 // HtmlDialogUI::RenderViewCreated is called (an override of
 // DOMUI::RenderViewCreated).  That routine, in turn, calls the
-// delegate's GetDOMMessageHandlers routine, at which point the
+// delegate's GetWebUIMessageHandlers routine, at which point the
 // ownership of the CloudPrintFlowHandler is handed over.  A pointer
 // to the flow handler is kept to facilitate communication back and
 // forth between the two classes.
@@ -452,8 +452,8 @@ GURL CloudPrintHtmlDialogDelegate::GetDialogContentURL() const {
   return params_.url;
 }
 
-void CloudPrintHtmlDialogDelegate::GetDOMMessageHandlers(
-    std::vector<DOMMessageHandler*>* handlers) const {
+void CloudPrintHtmlDialogDelegate::GetWebUIMessageHandlers(
+    std::vector<WebUIMessageHandler*>* handlers) const {
   handlers->push_back(flow_handler_);
   // We don't own flow_handler_ anymore, but it sticks around until at
   // least right after OnDialogClosed() is called (and this object is

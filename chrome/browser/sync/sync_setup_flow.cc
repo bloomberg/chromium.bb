@@ -552,8 +552,8 @@ void SyncSetupFlow::GetArgsForConfigure(ProfileSyncService* service,
   args->SetBoolean("usePassphrase", service->IsUsingSecondaryPassphrase());
 }
 
-void SyncSetupFlow::GetDOMMessageHandlers(
-    std::vector<DOMMessageHandler*>* handlers) const {
+void SyncSetupFlow::GetWebUIMessageHandlers(
+    std::vector<WebUIMessageHandler*>* handlers) const {
   handlers->push_back(flow_handler_);
   // We don't own flow_handler_ anymore, but it sticks around until at least
   // right after OnDialogClosed() is called (and this object is destroyed).

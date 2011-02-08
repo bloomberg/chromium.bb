@@ -11,7 +11,7 @@
 #include "chrome/browser/dom_ui/dom_ui.h"
 
 // This class registers test framework specific handlers on DOMUI objects.
-class DOMUITestHandler : public DOMMessageHandler {
+class DOMUITestHandler : public WebUIMessageHandler {
  public:
   // Executes a string of javascript.  Returns pass fail.
   bool Execute(const std::string& js_test);

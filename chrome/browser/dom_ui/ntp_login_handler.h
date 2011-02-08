@@ -13,15 +13,15 @@
 // The NTP login handler currently simply displays the current logged in
 // username at the top of the NTP (and update itself when that changes).
 // In the future it may expand to allow users to login from the NTP.
-class NTPLoginHandler : public DOMMessageHandler,
+class NTPLoginHandler : public WebUIMessageHandler,
                         public NotificationObserver {
  public:
   NTPLoginHandler();
   ~NTPLoginHandler();
 
-  virtual DOMMessageHandler* Attach(DOMUI* dom_ui);
+  virtual WebUIMessageHandler* Attach(DOMUI* dom_ui);
 
-  // DOMMessageHandler interface
+  // WebUIMessageHandler interface
   virtual void RegisterMessages();
 
   // NotificationObserver interface

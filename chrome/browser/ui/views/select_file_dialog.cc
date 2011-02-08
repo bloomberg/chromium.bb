@@ -109,8 +109,8 @@ class SelectFileDialogImpl : public SelectFileDialog {
     virtual bool IsDialogModal() const;
     virtual std::wstring GetDialogTitle() const;
     virtual GURL GetDialogContentURL() const;
-    virtual void GetDOMMessageHandlers(
-        std::vector<DOMMessageHandler*>* handlers) const;
+    virtual void GetWebUIMessageHandlers(
+        std::vector<WebUIMessageHandler*>* handlers) const;
     virtual void GetDialogSize(gfx::Size* size) const;
     virtual std::string GetDialogArgs() const;
     virtual void OnDialogClosed(const std::string& json_retval);
@@ -124,11 +124,11 @@ class SelectFileDialogImpl : public SelectFileDialog {
     DISALLOW_COPY_AND_ASSIGN(FileBrowseDelegate);
   };
 
-  class FileBrowseDelegateHandler : public DOMMessageHandler {
+  class FileBrowseDelegateHandler : public WebUIMessageHandler {
    public:
     explicit FileBrowseDelegateHandler(FileBrowseDelegate* delegate);
 
-    // DOMMessageHandler implementation.
+    // WebUIMessageHandler implementation.
     virtual void RegisterMessages();
 
     // Callback for the "setDialogTitle" message.
@@ -361,8 +361,8 @@ GURL SelectFileDialogImpl::FileBrowseDelegate::GetDialogContentURL() const {
   return GURL(url_string);
 }
 
-void SelectFileDialogImpl::FileBrowseDelegate::GetDOMMessageHandlers(
-    std::vector<DOMMessageHandler*>* handlers) const {
+void SelectFileDialogImpl::FileBrowseDelegate::GetWebUIMessageHandlers(
+    std::vector<WebUIMessageHandler*>* handlers) const {
   handlers->push_back(new FileBrowseDelegateHandler(
       const_cast<FileBrowseDelegate*>(this)));
   return;

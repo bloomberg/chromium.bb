@@ -24,7 +24,7 @@ class StatsOptionsHandler : public CrosOptionsPageUIHandler {
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
   virtual void Initialize();
 
-  // DOMMessageHandler implementation.
+  // WebUIMessageHandler implementation.
   virtual void RegisterMessages();
 
  private:

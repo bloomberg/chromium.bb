@@ -29,8 +29,8 @@ public:
   MOCK_CONST_METHOD0(IsDialogModal, bool());
   MOCK_CONST_METHOD0(GetDialogTitle, std::wstring());
   MOCK_CONST_METHOD0(GetDialogContentURL, GURL());
-  MOCK_CONST_METHOD1(GetDOMMessageHandlers,
-                     void(std::vector<DOMMessageHandler*>*));
+  MOCK_CONST_METHOD1(GetWebUIMessageHandlers,
+                     void(std::vector<WebUIMessageHandler*>*));
   MOCK_CONST_METHOD1(GetDialogSize, void(gfx::Size*));
   MOCK_CONST_METHOD0(GetDialogArgs, std::string());
   MOCK_METHOD1(OnDialogClosed, void(const std::string& json_retval));
@@ -63,8 +63,8 @@ using ::testing::Return;
 using ::testing::SetArgumentPointee;
 
 // TODO(akalin): We can't test much more than the below without a real browser.
-// In particular, GetDOMMessageHandlers() and GetDialogArgs() are never called.
-// This should be fixed.
+// In particular, GetWebUIMessageHandlers() and GetDialogArgs() are never
+// called. This should be fixed.
 
 TEST_F(HtmlDialogWindowControllerTest, showDialog) {
   // We want to make sure html_dialog_window_controller below gets

@@ -75,7 +75,7 @@ void BrowserSigninResourcesSource::StartDataRequest(const std::string& path,
 }
 
 class BrowserSigninHtml : public HtmlDialogUIDelegate,
-                          public DOMMessageHandler {
+                          public WebUIMessageHandler {
  public:
   BrowserSigninHtml(BrowserSignin* signin,
                     string16 suggested_email,
@@ -92,10 +92,10 @@ class BrowserSigninHtml : public HtmlDialogUIDelegate,
   virtual GURL GetDialogContentURL() const {
     return GURL("chrome://dialog/signin");
   }
-  virtual void GetDOMMessageHandlers(
-      std::vector<DOMMessageHandler*>* handlers) const {
-    const DOMMessageHandler* handler = this;
-    handlers->push_back(const_cast<DOMMessageHandler*>(handler));
+  virtual void GetWebUIMessageHandlers(
+      std::vector<WebUIMessageHandler*>* handlers) const {
+    const WebUIMessageHandler* handler = this;
+    handlers->push_back(const_cast<WebUIMessageHandler*>(handler));
   }
   virtual void GetDialogSize(gfx::Size* size) const {
     size->set_width(600);
@@ -112,7 +112,7 @@ class BrowserSigninHtml : public HtmlDialogUIDelegate,
   }
   virtual bool ShouldShowDialogTitle() const { return true; }
 
-  // DOMMessageHandler implementation.
+  // WebUIMessageHandler implementation.
   virtual void RegisterMessages();
 
   // Refreshes the UI, such as after an authentication error.

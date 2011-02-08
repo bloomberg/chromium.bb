@@ -19,8 +19,8 @@ class FontSettingsHandler : public OptionsPageUIHandler {
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
   virtual void Initialize();
 
-  // DOMMessageHandler implementation.
-  virtual DOMMessageHandler* Attach(DOMUI* dom_ui);
+  // WebUIMessageHandler implementation.
+  virtual WebUIMessageHandler* Attach(DOMUI* dom_ui);
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,

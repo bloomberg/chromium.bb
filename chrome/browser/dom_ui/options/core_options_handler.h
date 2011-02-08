@@ -29,9 +29,9 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // DOMMessageHandler implementation.
+  // WebUIMessageHandler implementation.
   virtual void RegisterMessages();
-  virtual DOMMessageHandler* Attach(DOMUI* dom_ui);
+  virtual WebUIMessageHandler* Attach(DOMUI* dom_ui);
 
  protected:
   // Fetches a pref value of given |pref_name|.

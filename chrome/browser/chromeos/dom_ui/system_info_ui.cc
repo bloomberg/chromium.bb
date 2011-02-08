@@ -59,14 +59,14 @@ class SystemInfoUIHTMLSource : public ChromeURLDataManager::DataSource {
 };
 
 // The handler for Javascript messages related to the "system" view.
-class SystemInfoHandler : public DOMMessageHandler,
+class SystemInfoHandler : public WebUIMessageHandler,
                           public base::SupportsWeakPtr<SystemInfoHandler> {
  public:
   SystemInfoHandler();
   virtual ~SystemInfoHandler();
 
-  // DOMMessageHandler implementation.
-  virtual DOMMessageHandler* Attach(DOMUI* dom_ui);
+  // WebUIMessageHandler implementation.
+  virtual WebUIMessageHandler* Attach(DOMUI* dom_ui);
   virtual void RegisterMessages();
 
  private:
@@ -158,9 +158,9 @@ SystemInfoHandler::SystemInfoHandler() {
 SystemInfoHandler::~SystemInfoHandler() {
 }
 
-DOMMessageHandler* SystemInfoHandler::Attach(DOMUI* dom_ui) {
+WebUIMessageHandler* SystemInfoHandler::Attach(DOMUI* dom_ui) {
   // TODO(stevenjb): customize handler attach if needed...
-  return DOMMessageHandler::Attach(dom_ui);
+  return WebUIMessageHandler::Attach(dom_ui);
 }
 
 void SystemInfoHandler::RegisterMessages() {

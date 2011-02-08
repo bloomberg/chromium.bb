@@ -39,8 +39,8 @@ public:
   virtual bool IsDialogModal() const;
   virtual std::wstring GetDialogTitle() const;
   virtual GURL GetDialogContentURL() const;
-  virtual void GetDOMMessageHandlers(
-      std::vector<DOMMessageHandler*>* handlers) const;
+  virtual void GetWebUIMessageHandlers(
+      std::vector<WebUIMessageHandler*>* handlers) const;
   virtual void GetDialogSize(gfx::Size* size) const;
   virtual std::string GetDialogArgs() const;
   virtual void OnDialogClosed(const std::string& json_retval);
@@ -133,10 +133,10 @@ GURL HtmlDialogWindowDelegateBridge::GetDialogContentURL() const {
   return delegate_ ? delegate_->GetDialogContentURL() : GURL();
 }
 
-void HtmlDialogWindowDelegateBridge::GetDOMMessageHandlers(
-    std::vector<DOMMessageHandler*>* handlers) const {
+void HtmlDialogWindowDelegateBridge::GetWebUIMessageHandlers(
+    std::vector<WebUIMessageHandler*>* handlers) const {
   if (delegate_) {
-    delegate_->GetDOMMessageHandlers(handlers);
+    delegate_->GetWebUIMessageHandlers(handlers);
   } else {
     // TODO(akalin): Add this clause in the windows version.  Also
     // make sure that everything expects handlers to be non-NULL and

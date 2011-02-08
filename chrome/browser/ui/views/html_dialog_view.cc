@@ -120,10 +120,10 @@ GURL HtmlDialogView::GetDialogContentURL() const {
   return GURL();
 }
 
-void HtmlDialogView::GetDOMMessageHandlers(
-    std::vector<DOMMessageHandler*>* handlers) const {
+void HtmlDialogView::GetWebUIMessageHandlers(
+    std::vector<WebUIMessageHandler*>* handlers) const {
   if (delegate_)
-    delegate_->GetDOMMessageHandlers(handlers);
+    delegate_->GetWebUIMessageHandlers(handlers);
 }
 
 void HtmlDialogView::GetDialogSize(gfx::Size* size) const {

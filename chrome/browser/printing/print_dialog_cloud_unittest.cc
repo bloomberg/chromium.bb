@@ -105,8 +105,8 @@ class MockCloudPrintHtmlDialogDelegate : public CloudPrintHtmlDialogDelegate {
       std::wstring());
   MOCK_CONST_METHOD0(GetDialogContentURL,
       GURL());
-  MOCK_CONST_METHOD1(GetDOMMessageHandlers,
-      void(std::vector<DOMMessageHandler*>* handlers));
+  MOCK_CONST_METHOD1(GetWebUIMessageHandlers,
+      void(std::vector<WebUIMessageHandler*>* handlers));
   MOCK_CONST_METHOD1(GetDialogSize,
       void(gfx::Size* size));
   MOCK_CONST_METHOD0(GetDialogArgs,
@@ -331,8 +331,8 @@ TEST_F(CloudPrintHtmlDialogDelegateTest, OwnedFlowDestroyed) {
 }
 
 TEST_F(CloudPrintHtmlDialogDelegateTest, UnownedFlowLetGo) {
-  std::vector<DOMMessageHandler*> handlers;
-  delegate_->GetDOMMessageHandlers(&handlers);
+  std::vector<WebUIMessageHandler*> handlers;
+  delegate_->GetWebUIMessageHandlers(&handlers);
   delegate_.reset();
   EXPECT_THAT(mock_flow_handler_.get(), NotNull());
 }

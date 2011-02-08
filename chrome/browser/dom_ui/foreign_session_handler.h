@@ -16,10 +16,10 @@
 
 namespace browser_sync {
 
-class ForeignSessionHandler : public DOMMessageHandler,
+class ForeignSessionHandler : public WebUIMessageHandler,
                               public NotificationObserver {
  public:
-  // DOMMessageHandler implementation.
+  // WebUIMessageHandler implementation.
   virtual void RegisterMessages();
 
   ForeignSessionHandler();

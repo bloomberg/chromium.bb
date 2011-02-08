@@ -152,7 +152,7 @@ class MobileSetupUIHTMLSource : public ChromeURLDataManager::DataSource {
 
 // The handler for Javascript messages related to the "register" view.
 class MobileSetupHandler
-  : public DOMMessageHandler,
+  : public WebUIMessageHandler,
     public chromeos::NetworkLibrary::NetworkManagerObserver,
     public chromeos::NetworkLibrary::NetworkObserver,
     public base::SupportsWeakPtr<MobileSetupHandler> {
@@ -163,8 +163,8 @@ class MobileSetupHandler
   // Init work after Attach.
   void Init(TabContents* contents);
 
-  // DOMMessageHandler implementation.
-  virtual DOMMessageHandler* Attach(DOMUI* dom_ui);
+  // WebUIMessageHandler implementation.
+  virtual WebUIMessageHandler* Attach(DOMUI* dom_ui);
   virtual void RegisterMessages();
 
   // NetworkLibrary::NetworkManagerObserver implementation.
@@ -464,8 +464,8 @@ MobileSetupHandler::~MobileSetupHandler() {
   ReEnableOtherConnections();
 }
 
-DOMMessageHandler* MobileSetupHandler::Attach(DOMUI* dom_ui) {
-  return DOMMessageHandler::Attach(dom_ui);
+WebUIMessageHandler* MobileSetupHandler::Attach(DOMUI* dom_ui) {
+  return WebUIMessageHandler::Attach(dom_ui);
 }
 
 void MobileSetupHandler::Init(TabContents* contents) {

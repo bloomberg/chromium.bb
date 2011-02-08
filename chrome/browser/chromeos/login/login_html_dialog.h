@@ -58,8 +58,8 @@ class LoginHtmlDialog : public HtmlDialogUIDelegate,
   virtual bool IsDialogModal() const { return true; }
   virtual std::wstring GetDialogTitle() const { return title_; }
   virtual GURL GetDialogContentURL() const { return url_; }
-  virtual void GetDOMMessageHandlers(
-      std::vector<DOMMessageHandler*>* handlers) const {}
+  virtual void GetWebUIMessageHandlers(
+      std::vector<WebUIMessageHandler*>* handlers) const {}
   virtual void GetDialogSize(gfx::Size* size) const;
   virtual std::string GetDialogArgs() const { return std::string(); }
   virtual void OnDialogClosed(const std::string& json_retval);

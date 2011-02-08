@@ -109,13 +109,13 @@ void ConflictsUIHTMLSource::StartDataRequest(const std::string& path,
 ////////////////////////////////////////////////////////////////////////////////
 
 // The handler for JavaScript messages for the about:flags page.
-class ConflictsDOMHandler : public DOMMessageHandler,
+class ConflictsDOMHandler : public WebUIMessageHandler,
                             public NotificationObserver {
  public:
   ConflictsDOMHandler() {}
   virtual ~ConflictsDOMHandler() {}
 
-  // DOMMessageHandler implementation.
+  // WebUIMessageHandler implementation.
   virtual void RegisterMessages();
 
   // Callback for the "requestModuleList" message.

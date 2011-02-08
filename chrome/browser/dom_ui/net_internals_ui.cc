@@ -138,15 +138,15 @@ class NetInternalsHTMLSource : public ChromeURLDataManager::DataSource {
 //
 // TODO(eroman): Can we start on the IO thread to begin with?
 class NetInternalsMessageHandler
-    : public DOMMessageHandler,
+    : public WebUIMessageHandler,
       public SelectFileDialog::Listener,
       public base::SupportsWeakPtr<NetInternalsMessageHandler> {
  public:
   NetInternalsMessageHandler();
   virtual ~NetInternalsMessageHandler();
 
-  // DOMMessageHandler implementation.
-  virtual DOMMessageHandler* Attach(DOMUI* dom_ui);
+  // WebUIMessageHandler implementation.
+  virtual WebUIMessageHandler* Attach(DOMUI* dom_ui);
   virtual void RegisterMessages();
 
   // Executes the javascript function |function_name| in the renderer, passing
@@ -210,7 +210,7 @@ class NetInternalsMessageHandler::IOThreadImpl
   typedef void (IOThreadImpl::*MessageHandler)(const ListValue*);
 
   // Creates a proxy for |handler| that will live on the IO thread.
-  // |handler| is a weak pointer, since it is possible for the DOMMessageHandler
+  // |handler| is a weak pointer, since it is possible for the WebUIMessageHandler
   // to be deleted on the UI thread while we were executing on the IO thread.
   // |io_thread| is the global IOThread (it is passed in as an argument since
   // we need to grab it from the UI thread).
@@ -437,11 +437,11 @@ NetInternalsMessageHandler::~NetInternalsMessageHandler() {
     select_log_file_dialog_->ListenerDestroyed();
 }
 
-DOMMessageHandler* NetInternalsMessageHandler::Attach(DOMUI* dom_ui) {
+WebUIMessageHandler* NetInternalsMessageHandler::Attach(DOMUI* dom_ui) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   proxy_ = new IOThreadImpl(this->AsWeakPtr(), g_browser_process->io_thread(),
                             dom_ui->GetProfile()->GetRequestContext());
-  DOMMessageHandler* result = DOMMessageHandler::Attach(dom_ui);
+  WebUIMessageHandler* result = WebUIMessageHandler::Attach(dom_ui);
   return result;
 }
 

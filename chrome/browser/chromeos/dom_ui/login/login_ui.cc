@@ -59,8 +59,8 @@ LoginUIHandler::LoginUIHandler()
   facade_->Setup();
 }
 
-DOMMessageHandler* LoginUIHandler::Attach(DOMUI* dom_ui) {
-  return DOMMessageHandler::Attach(dom_ui);
+WebUIMessageHandler* LoginUIHandler::Attach(DOMUI* dom_ui) {
+  return WebUIMessageHandler::Attach(dom_ui);
 }
 
 void LoginUIHandler::RegisterMessages() {

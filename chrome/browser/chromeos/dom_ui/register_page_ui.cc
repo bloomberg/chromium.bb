@@ -107,7 +107,7 @@ class RegisterPageUIHTMLSource : public ChromeURLDataManager::DataSource {
 };
 
 // The handler for Javascript messages related to the "register" view.
-class RegisterPageHandler : public DOMMessageHandler,
+class RegisterPageHandler : public WebUIMessageHandler,
                             public base::SupportsWeakPtr<RegisterPageHandler> {
  public:
   RegisterPageHandler();
@@ -116,8 +116,8 @@ class RegisterPageHandler : public DOMMessageHandler,
   // Init work after Attach.
   void Init();
 
-  // DOMMessageHandler implementation.
-  virtual DOMMessageHandler* Attach(DOMUI* dom_ui);
+  // WebUIMessageHandler implementation.
+  virtual WebUIMessageHandler* Attach(DOMUI* dom_ui);
   virtual void RegisterMessages();
 
  private:
@@ -200,8 +200,8 @@ RegisterPageHandler::RegisterPageHandler() {
 RegisterPageHandler::~RegisterPageHandler() {
 }
 
-DOMMessageHandler* RegisterPageHandler::Attach(DOMUI* dom_ui) {
-  return DOMMessageHandler::Attach(dom_ui);
+WebUIMessageHandler* RegisterPageHandler::Attach(DOMUI* dom_ui) {
+  return WebUIMessageHandler::Attach(dom_ui);
 }
 
 void RegisterPageHandler::Init() {

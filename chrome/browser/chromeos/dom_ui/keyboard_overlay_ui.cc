@@ -43,14 +43,14 @@ class KeyboardOverlayUIHTMLSource : public ChromeURLDataManager::DataSource {
 
 // The handler for Javascript messages related to the "keyboardoverlay" view.
 class KeyboardOverlayHandler
-    : public DOMMessageHandler,
+    : public WebUIMessageHandler,
       public base::SupportsWeakPtr<KeyboardOverlayHandler> {
  public:
   KeyboardOverlayHandler();
   virtual ~KeyboardOverlayHandler();
 
-  // DOMMessageHandler implementation.
-  virtual DOMMessageHandler* Attach(DOMUI* dom_ui);
+  // WebUIMessageHandler implementation.
+  virtual WebUIMessageHandler* Attach(DOMUI* dom_ui);
   virtual void RegisterMessages();
 
  private:
@@ -258,8 +258,8 @@ KeyboardOverlayHandler::KeyboardOverlayHandler() {
 KeyboardOverlayHandler::~KeyboardOverlayHandler() {
 }
 
-DOMMessageHandler* KeyboardOverlayHandler::Attach(DOMUI* dom_ui) {
-  return DOMMessageHandler::Attach(dom_ui);
+WebUIMessageHandler* KeyboardOverlayHandler::Attach(DOMUI* dom_ui) {
+  return WebUIMessageHandler::Attach(dom_ui);
 }
 
 void KeyboardOverlayHandler::RegisterMessages() {

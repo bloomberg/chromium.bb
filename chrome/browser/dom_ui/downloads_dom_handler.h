@@ -17,7 +17,7 @@ class ListValue;
 
 // The handler for Javascript messages related to the "downloads" view,
 // also observes changes to the download manager.
-class DownloadsDOMHandler : public DOMMessageHandler,
+class DownloadsDOMHandler : public WebUIMessageHandler,
                             public DownloadManager::Observer,
                             public DownloadItem::Observer {
  public:
@@ -26,7 +26,7 @@ class DownloadsDOMHandler : public DOMMessageHandler,
 
   void Init();
 
-  // DOMMessageHandler implementation.
+  // WebUIMessageHandler implementation.
   virtual void RegisterMessages();
 
   // DownloadItem::Observer interface

@@ -46,13 +46,13 @@ class LoginUIHTMLSource : public ChromeURLDataManager::DataSource {
 // login page to the AuthenticatorFacade. The facade then will call back into
 // this class with the result, which will then be used to determine the browser
 // behaviour.
-class LoginUIHandler : public DOMMessageHandler,
+class LoginUIHandler : public WebUIMessageHandler,
                        public chromeos::LoginStatusConsumer {
  public:
   LoginUIHandler();
 
-  // DOMMessageHandler implementation.
-  virtual DOMMessageHandler* Attach(DOMUI* dom_ui);
+  // WebUIMessageHandler implementation.
+  virtual WebUIMessageHandler* Attach(DOMUI* dom_ui);
   virtual void RegisterMessages();
 
   void HandleAuthenticateUser(const ListValue* args);

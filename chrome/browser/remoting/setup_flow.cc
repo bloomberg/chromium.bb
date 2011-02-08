@@ -156,8 +156,8 @@ GURL SetupFlow::GetDialogContentURL() const {
   return GURL("chrome://remotingresources/setup");
 }
 
-void SetupFlow::GetDOMMessageHandlers(
-    std::vector<DOMMessageHandler*>* handlers) const {
+void SetupFlow::GetWebUIMessageHandlers(
+    std::vector<WebUIMessageHandler*>* handlers) const {
   // The called will be responsible for deleting this object.
   handlers->push_back(const_cast<SetupFlow*>(this));
 }
@@ -202,10 +202,10 @@ bool SetupFlow::ShouldShowDialogTitle() const {
   return true;
 }
 
-DOMMessageHandler* SetupFlow::Attach(DOMUI* dom_ui) {
+WebUIMessageHandler* SetupFlow::Attach(DOMUI* dom_ui) {
   dom_ui_ = dom_ui;
   StartCurrentStep();
-  return DOMMessageHandler::Attach(dom_ui);
+  return WebUIMessageHandler::Attach(dom_ui);
 }
 
 void SetupFlow::RegisterMessages() {

@@ -161,7 +161,7 @@ struct SetupFlowContext {
 //
 // In this case auth_data would be passed in
 // SetupFlowStep::HandleMessage().
-class SetupFlow : public DOMMessageHandler,
+class SetupFlow : public WebUIMessageHandler,
                   public HtmlDialogUIDelegate {
  public:
   virtual ~SetupFlow();
@@ -178,8 +178,8 @@ class SetupFlow : public DOMMessageHandler,
 
   // HtmlDialogUIDelegate implementation.
   virtual GURL GetDialogContentURL() const;
-  virtual void GetDOMMessageHandlers(
-      std::vector<DOMMessageHandler*>* handlers) const;
+  virtual void GetWebUIMessageHandlers(
+      std::vector<WebUIMessageHandler*>* handlers) const;
   virtual void GetDialogSize(gfx::Size* size) const;
   virtual std::string GetDialogArgs() const;
   virtual void OnDialogClosed(const std::string& json_retval);
@@ -188,8 +188,8 @@ class SetupFlow : public DOMMessageHandler,
   virtual bool IsDialogModal() const;
   virtual bool ShouldShowDialogTitle() const;
 
-  // DOMMessageHandler implementation.
-  virtual DOMMessageHandler* Attach(DOMUI* dom_ui);
+  // WebUIMessageHandler implementation.
+  virtual WebUIMessageHandler* Attach(DOMUI* dom_ui);
   virtual void RegisterMessages();
 
   // Message handlers for the messages we receive from UI.

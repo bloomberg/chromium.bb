@@ -34,7 +34,7 @@ enum Section {
   MENU_APPS = 1 << (6 + 16),
 };
 
-class ShownSectionsHandler : public DOMMessageHandler,
+class ShownSectionsHandler : public WebUIMessageHandler,
                              public NotificationObserver {
  public:
   explicit ShownSectionsHandler(PrefService* pref_service);
@@ -47,7 +47,7 @@ class ShownSectionsHandler : public DOMMessageHandler,
   // same thing that happens if a user clicks on |section|.
   static void SetShownSection(PrefService* prefs, Section section);
 
-  // DOMMessageHandler implementation.
+  // WebUIMessageHandler implementation.
   virtual void RegisterMessages();
 
   // NotificationObserver implementation.

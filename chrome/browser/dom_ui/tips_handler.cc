@@ -18,11 +18,11 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-DOMMessageHandler* TipsHandler::Attach(DOMUI* dom_ui) {
+WebUIMessageHandler* TipsHandler::Attach(DOMUI* dom_ui) {
   dom_ui_ = dom_ui;
   tips_cache_ = dom_ui_->GetProfile()->GetPrefs()->
       GetMutableDictionary(prefs::kNTPWebResourceCache);
-  return DOMMessageHandler::Attach(dom_ui);
+  return WebUIMessageHandler::Attach(dom_ui);
 }
 
 void TipsHandler::RegisterMessages() {

@@ -246,8 +246,8 @@ class MenuHandler : public chromeos::MenuHandlerBase,
   MenuHandler();
   virtual ~MenuHandler();
 
-  // DOMMessageHandler implementation.
-  virtual DOMMessageHandler* Attach(DOMUI* dom_ui);
+  // WebUIMessageHandler implementation.
+  virtual WebUIMessageHandler* Attach(DOMUI* dom_ui);
   virtual void RegisterMessages();
 
  private:
@@ -349,8 +349,8 @@ MenuHandler::MenuHandler() : loaded_(false) {
 MenuHandler::~MenuHandler() {
 }
 
-DOMMessageHandler* MenuHandler::Attach(DOMUI* dom_ui) {
-  DOMMessageHandler* handler = DOMMessageHandler::Attach(dom_ui);
+WebUIMessageHandler* MenuHandler::Attach(DOMUI* dom_ui) {
+  WebUIMessageHandler* handler = WebUIMessageHandler::Attach(dom_ui);
   dom_ui->tab_contents()->set_delegate(this);
   return handler;
 }

@@ -50,8 +50,8 @@ GURL KeyboardOverlayDelegate::GetDialogContentURL() const {
   return GURL(url_string);
 }
 
-void KeyboardOverlayDelegate::GetDOMMessageHandlers(
-    std::vector<DOMMessageHandler*>* handlers) const {
+void KeyboardOverlayDelegate::GetWebUIMessageHandlers(
+    std::vector<WebUIMessageHandler*>* handlers) const {
 }
 
 void KeyboardOverlayDelegate::GetDialogSize(

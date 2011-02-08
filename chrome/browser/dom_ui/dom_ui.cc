@@ -147,7 +147,7 @@ RenderViewHost* DOMUI::GetRenderViewHost() const {
 
 // DOMUI, protected: ----------------------------------------------------------
 
-void DOMUI::AddMessageHandler(DOMMessageHandler* handler) {
+void DOMUI::AddMessageHandler(WebUIMessageHandler* handler) {
   handlers_.push_back(handler);
 }
 
@@ -156,17 +156,17 @@ void DOMUI::ExecuteJavascript(const std::wstring& javascript) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// DOMMessageHandler
+// WebUIMessageHandler
 
-DOMMessageHandler* DOMMessageHandler::Attach(DOMUI* dom_ui) {
+WebUIMessageHandler* WebUIMessageHandler::Attach(DOMUI* dom_ui) {
   dom_ui_ = dom_ui;
   RegisterMessages();
   return this;
 }
 
-// DOMMessageHandler, protected: ----------------------------------------------
+// WebUIMessageHandler, protected: ----------------------------------------------
 
-void DOMMessageHandler::SetURLAndTitle(DictionaryValue* dictionary,
+void WebUIMessageHandler::SetURLAndTitle(DictionaryValue* dictionary,
                                        string16 title,
                                        const GURL& gurl) {
   dictionary->SetString("url", gurl.spec());
@@ -192,7 +192,7 @@ void DOMMessageHandler::SetURLAndTitle(DictionaryValue* dictionary,
   dictionary->SetString("title", title_to_set);
 }
 
-bool DOMMessageHandler::ExtractIntegerValue(const ListValue* value,
+bool WebUIMessageHandler::ExtractIntegerValue(const ListValue* value,
                                             int* out_int) {
   std::string string_value;
   if (value->GetString(0, &string_value))
@@ -202,7 +202,7 @@ bool DOMMessageHandler::ExtractIntegerValue(const ListValue* value,
 }
 
 // TODO(viettrungluu): convert to string16 (or UTF-8 std::string?).
-std::wstring DOMMessageHandler::ExtractStringValue(const ListValue* value) {
+std::wstring WebUIMessageHandler::ExtractStringValue(const ListValue* value) {
   string16 string16_value;
   if (value->GetString(0, &string16_value))
     return UTF16ToWideHack(string16_value);

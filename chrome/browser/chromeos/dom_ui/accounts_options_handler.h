@@ -18,7 +18,7 @@ class AccountsOptionsHandler : public CrosOptionsPageUIHandler {
   AccountsOptionsHandler();
   virtual ~AccountsOptionsHandler();
 
-  // DOMMessageHandler implementation.
+  // WebUIMessageHandler implementation.
   virtual void RegisterMessages();
 
   // OptionsUIHandler implementation:

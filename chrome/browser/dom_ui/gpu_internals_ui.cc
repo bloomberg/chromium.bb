@@ -62,14 +62,14 @@ class GpuHTMLSource : public ChromeURLDataManager::DataSource {
 // Note that the DOMUI infrastructure runs on the UI thread, therefore all of
 // this class's methods are expected to run on the UI thread.
 class GpuMessageHandler
-    : public DOMMessageHandler,
+    : public WebUIMessageHandler,
       public base::SupportsWeakPtr<GpuMessageHandler> {
  public:
   GpuMessageHandler();
   virtual ~GpuMessageHandler();
 
-  // DOMMessageHandler implementation.
-  virtual DOMMessageHandler* Attach(DOMUI* dom_ui);
+  // WebUIMessageHandler implementation.
+  virtual WebUIMessageHandler* Attach(DOMUI* dom_ui);
   virtual void RegisterMessages();
 
   // Mesages
@@ -137,9 +137,9 @@ GpuMessageHandler::GpuMessageHandler() {
 
 GpuMessageHandler::~GpuMessageHandler() {}
 
-DOMMessageHandler* GpuMessageHandler::Attach(DOMUI* dom_ui) {
+WebUIMessageHandler* GpuMessageHandler::Attach(DOMUI* dom_ui) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DOMMessageHandler* result = DOMMessageHandler::Attach(dom_ui);
+  WebUIMessageHandler* result = WebUIMessageHandler::Attach(dom_ui);
   return result;
 }
 

@@ -16,7 +16,7 @@ class StopSyncingHandler : public OptionsPageUIHandler {
   // OptionsUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
 
-  // DOMMessageHandler implementation.
+  // WebUIMessageHandler implementation.
   virtual void RegisterMessages();
 
  private:

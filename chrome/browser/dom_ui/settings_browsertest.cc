@@ -66,7 +66,7 @@ class MockCoreOptionsHandler : public CoreOptionsHandler {
 
 class SettingsDOMUITest : public DOMUITest {
  protected:
-  virtual DOMMessageHandler* GetMockMessageHandler() {
+  virtual WebUIMessageHandler* GetMockMessageHandler() {
     return &mock_core_options_handler_;
   }
 

@@ -26,7 +26,7 @@ namespace gfx {
 
 // The handler for Javascript messages related to the "apps" view.
 class AppLauncherHandler
-    : public DOMMessageHandler,
+    : public WebUIMessageHandler,
       public ExtensionInstallUI::Delegate,
       public NotificationObserver {
  public:
@@ -41,8 +41,8 @@ class AppLauncherHandler
   // Callback for pings related to launching apps on the NTP.
   static bool HandlePing(Profile* profile, const std::string& path);
 
-  // DOMMessageHandler implementation.
-  virtual DOMMessageHandler* Attach(DOMUI* dom_ui);
+  // WebUIMessageHandler implementation.
+  virtual WebUIMessageHandler* Attach(DOMUI* dom_ui);
   virtual void RegisterMessages();
 
   // NotificationObserver

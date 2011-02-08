@@ -12,7 +12,7 @@
 #include "chrome/browser/dom_ui/dom_ui_handler_browsertest.h"
 #include "chrome/test/in_process_browser_test.h"
 
-class DOMMessageHandler;
+class WebUIMessageHandler;
 
 // The runner of DOMUI javascript based tests.
 // See chrome/test/data/dom_ui/test_api.js for the javascript side test API's.
@@ -31,7 +31,7 @@ class DOMUITest : public InProcessBrowserTest {
   virtual void SetUpInProcessBrowserTestFixture();
 
   // Returns a mock DOMUI object under test (if any).
-  virtual DOMMessageHandler* GetMockMessageHandler() { return NULL; }
+  virtual WebUIMessageHandler* GetMockMessageHandler() { return NULL; }
 
  private:
   // Builds a javascript test in the form:

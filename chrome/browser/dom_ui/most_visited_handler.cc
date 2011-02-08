@@ -63,7 +63,7 @@ MostVisitedHandler::MostVisitedHandler()
 MostVisitedHandler::~MostVisitedHandler() {
 }
 
-DOMMessageHandler* MostVisitedHandler::Attach(DOMUI* dom_ui) {
+WebUIMessageHandler* MostVisitedHandler::Attach(DOMUI* dom_ui) {
   url_blacklist_ = dom_ui->GetProfile()->GetPrefs()->
       GetMutableDictionary(prefs::kNTPMostVisitedURLsBlacklist);
   pinned_urls_ = dom_ui->GetProfile()->GetPrefs()->
@@ -89,7 +89,7 @@ DOMMessageHandler* MostVisitedHandler::Attach(DOMUI* dom_ui) {
   registrar_.Add(this, NotificationType::HISTORY_URLS_DELETED,
       Source<Profile>(dom_ui->GetProfile()));
 
-  DOMMessageHandler* result = DOMMessageHandler::Attach(dom_ui);
+  WebUIMessageHandler* result = WebUIMessageHandler::Attach(dom_ui);
 
   // We pre-emptively make a fetch for the most visited pages so we have the
   // results sooner.

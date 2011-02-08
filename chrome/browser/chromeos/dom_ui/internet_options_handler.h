@@ -28,7 +28,7 @@ class InternetOptionsHandler
   // OptionsUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
 
-  // DOMMessageHandler implementation.
+  // WebUIMessageHandler implementation.
   virtual void RegisterMessages();
 
   // NetworkLibrary::NetworkManagerObserver implementation.

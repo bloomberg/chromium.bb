@@ -67,13 +67,13 @@ const char kDefaultHtmlTextDirection[] = "ltr";
 ///////////////////////////////////////////////////////////////////////////////
 // RecentlyClosedTabsHandler
 
-class RecentlyClosedTabsHandler : public DOMMessageHandler,
+class RecentlyClosedTabsHandler : public WebUIMessageHandler,
                                   public TabRestoreServiceObserver {
  public:
   RecentlyClosedTabsHandler() : tab_restore_service_(NULL) {}
   virtual ~RecentlyClosedTabsHandler();
 
-  // DOMMessageHandler implementation.
+  // WebUIMessageHandler implementation.
   virtual void RegisterMessages();
 
   // Callback for the "reopenTab" message. Rewrites the history of the
@@ -168,12 +168,12 @@ void RecentlyClosedTabsHandler::TabRestoreServiceDestroyed(
 // information through RequestOpenURL. You will need to update the metrics
 // dashboard with the action names you use, as our processor won't catch that
 // information (treat it as RecordComputedMetrics)
-class MetricsHandler : public DOMMessageHandler {
+class MetricsHandler : public WebUIMessageHandler {
  public:
   MetricsHandler() {}
   virtual ~MetricsHandler() {}
 
-  // DOMMessageHandler implementation.
+  // WebUIMessageHandler implementation.
   virtual void RegisterMessages();
 
   // Callback which records a user action.
@@ -210,12 +210,12 @@ void MetricsHandler::HandleLogEventTime(const ListValue* args) {
 
 // Sets the new tab page as home page when user clicks on "make this my home
 // page" link.
-class NewTabPageSetHomePageHandler : public DOMMessageHandler {
+class NewTabPageSetHomePageHandler : public WebUIMessageHandler {
  public:
   NewTabPageSetHomePageHandler() {}
   virtual ~NewTabPageSetHomePageHandler() {}
 
-  // DOMMessageHandler implementation.
+  // WebUIMessageHandler implementation.
   virtual void RegisterMessages();
 
   // Callback for "setHomePage".
@@ -248,12 +248,12 @@ void NewTabPageSetHomePageHandler::HandleSetHomePage(
 
 // Turns off the promo line permanently when it has been explicitly closed by
 // the user.
-class NewTabPageClosePromoHandler : public DOMMessageHandler {
+class NewTabPageClosePromoHandler : public WebUIMessageHandler {
  public:
   NewTabPageClosePromoHandler() {}
   virtual ~NewTabPageClosePromoHandler() {}
 
-  // DOMMessageHandler implementation.
+  // WebUIMessageHandler implementation.
   virtual void RegisterMessages();
 
   // Callback for "closePromo".

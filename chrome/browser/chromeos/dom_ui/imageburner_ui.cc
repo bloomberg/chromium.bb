@@ -201,8 +201,8 @@ ImageBurnHandler::~ImageBurnHandler() {
       download_manager_->RemoveObserver(this);
 }
 
-DOMMessageHandler* ImageBurnHandler::Attach(DOMUI* dom_ui) {
-  return DOMMessageHandler::Attach(dom_ui);
+WebUIMessageHandler* ImageBurnHandler::Attach(DOMUI* dom_ui) {
+  return WebUIMessageHandler::Attach(dom_ui);
 }
 
 void ImageBurnHandler::RegisterMessages() {

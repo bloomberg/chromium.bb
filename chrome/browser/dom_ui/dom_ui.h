@@ -15,7 +15,7 @@
 #include "chrome/common/page_transition_types.h"
 
 class DictionaryValue;
-class DOMMessageHandler;
+class WebUIMessageHandler;
 class GURL;
 class ListValue;
 class Profile;
@@ -59,7 +59,7 @@ class DOMUI {
   // Called from TabContents.
   virtual void ProcessDOMUIMessage(const ViewHostMsg_DomMessage_Params& params);
 
-  // Used by DOMMessageHandlers.
+  // Used by WebUIMessageHandlers.
   typedef Callback1<const ListValue*>::Type MessageCallback;
   void RegisterMessageCallback(const std::string& message,
                                MessageCallback* callback);
@@ -149,7 +149,7 @@ class DOMUI {
   TabContents* tab_contents() const { return tab_contents_; }
 
  protected:
-  void AddMessageHandler(DOMMessageHandler* handler);
+  void AddMessageHandler(WebUIMessageHandler* handler);
 
   // Execute a string of raw Javascript on the page.  Overridable for
   // testing purposes.
@@ -169,8 +169,8 @@ class DOMUI {
   // Used by test mocks. See the public getters for more information.
   bool register_callback_overwrites_;  // Defaults to false.
 
-  // The DOMMessageHandlers we own.
-  std::vector<DOMMessageHandler*> handlers_;
+  // The WebUIMessageHandlers we own.
+  std::vector<WebUIMessageHandler*> handlers_;
 
   // Non-owning pointer to the TabContents this DOMUI is associated with.
   TabContents* tab_contents_;
@@ -183,18 +183,18 @@ class DOMUI {
   DISALLOW_COPY_AND_ASSIGN(DOMUI);
 };
 
-// Messages sent from the DOM are forwarded via the DOMUI to handler
-// classes. These objects are owned by DOMUI and destroyed when the
+// Messages sent from the DOM are forwarded via the WebUI to handler
+// classes. These objects are owned by WebUI and destroyed when the
 // host is destroyed.
-class DOMMessageHandler {
+class WebUIMessageHandler {
  public:
-  DOMMessageHandler() : dom_ui_(NULL) {}
-  virtual ~DOMMessageHandler() {}
+  WebUIMessageHandler() : dom_ui_(NULL) {}
+  virtual ~WebUIMessageHandler() {}
 
   // Attaches |this| to |dom_ui| in order to handle messages from it.  Declared
   // virtual so that subclasses can do special init work as soon as the dom_ui
   // is provided.  Returns |this| for convenience.
-  virtual DOMMessageHandler* Attach(DOMUI* dom_ui);
+  virtual WebUIMessageHandler* Attach(DOMUI* dom_ui);
 
  protected:
   // Adds "url" and "title" keys on incoming dictionary, setting title
@@ -215,7 +215,7 @@ class DOMMessageHandler {
   DOMUI* dom_ui_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(DOMMessageHandler);
+  DISALLOW_COPY_AND_ASSIGN(WebUIMessageHandler);
 };
 
 #endif  // CHROME_BROWSER_DOM_UI_DOM_UI_H_

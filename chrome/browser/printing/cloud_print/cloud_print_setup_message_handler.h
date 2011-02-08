@@ -13,17 +13,17 @@
 class CloudPrintSetupFlow;
 
 // This class is used to handle DOM messages from the setup dialog.
-class CloudPrintSetupMessageHandler : public DOMMessageHandler {
+class CloudPrintSetupMessageHandler : public WebUIMessageHandler {
  public:
   explicit CloudPrintSetupMessageHandler(CloudPrintSetupFlow* flow)
     : flow_(flow) {}
   virtual ~CloudPrintSetupMessageHandler() {}
 
-  // DOMMessageHandler implementation.
-  virtual DOMMessageHandler* Attach(DOMUI* dom_ui);
+  // WebUIMessageHandler implementation.
+  virtual WebUIMessageHandler* Attach(DOMUI* dom_ui);
 
  protected:
-  // DOMMessageHandler implementation.
+  // WebUIMessageHandler implementation.
   virtual void RegisterMessages();
 
   // Callbacks from the page.

@@ -101,12 +101,12 @@ void FlagsUIHTMLSource::StartDataRequest(const std::string& path,
 ////////////////////////////////////////////////////////////////////////////////
 
 // The handler for Javascript messages for the about:flags page.
-class FlagsDOMHandler : public DOMMessageHandler {
+class FlagsDOMHandler : public WebUIMessageHandler {
  public:
   FlagsDOMHandler() {}
   virtual ~FlagsDOMHandler() {}
 
-  // DOMMessageHandler implementation.
+  // WebUIMessageHandler implementation.
   virtual void RegisterMessages();
 
   // Callback for the "requestFlagsExperiments" message.

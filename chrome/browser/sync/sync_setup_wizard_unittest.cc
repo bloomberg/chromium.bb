@@ -127,10 +127,10 @@ class TestBrowserWindowForWizardTest : public TestBrowserWindow {
   virtual ~TestBrowserWindowForWizardTest() {
     if (flow_.get()) {
       // In real life, the handlers are destroyed by the DOMUI infrastructure,
-      // which calls GetDOMMessageHandlers to take ownership.  This does not
+      // which calls GetWebUIMessageHandlers to take ownership.  This does not
       // exist in our test, so we perform cleanup manually.
-      std::vector<DOMMessageHandler*> handlers;
-      flow_->GetDOMMessageHandlers(&handlers);
+      std::vector<WebUIMessageHandler*> handlers;
+      flow_->GetWebUIMessageHandlers(&handlers);
       // The handler contract is that they are valid for the lifetime of the
       // HTMLDialogUIDelegate, but are cleaned up after the dialog is closed
       // and/or deleted.
@@ -157,8 +157,8 @@ class TestBrowserWindowForWizardTest : public TestBrowserWindow {
   // Handles cleaning up the delegate and associated handlers.
   void CloseDialog() {
     if (flow_.get()) {
-      std::vector<DOMMessageHandler*> handlers;
-      flow_->GetDOMMessageHandlers(&handlers);
+      std::vector<WebUIMessageHandler*> handlers;
+      flow_->GetWebUIMessageHandlers(&handlers);
       // The flow deletes itself here.  Don't use reset().
       flow_.release()->OnDialogClosed("");
       STLDeleteElements(&handlers);

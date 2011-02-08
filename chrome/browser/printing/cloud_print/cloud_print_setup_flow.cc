@@ -109,8 +109,8 @@ GURL CloudPrintSetupFlow::GetDialogContentURL() const {
   return GURL("chrome://cloudprintsetup/setupflow");
 }
 
-void CloudPrintSetupFlow::GetDOMMessageHandlers(
-    std::vector<DOMMessageHandler*>* handlers) const {
+void CloudPrintSetupFlow::GetWebUIMessageHandlers(
+    std::vector<WebUIMessageHandler*>* handlers) const {
   // Create the message handler only after we are asked, the caller is
   // responsible for deleting the objects.
   handlers->push_back(

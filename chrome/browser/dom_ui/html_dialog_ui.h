@@ -31,12 +31,12 @@ class HtmlDialogUIDelegate {
   // Get the HTML file path for the content to load in the dialog.
   virtual GURL GetDialogContentURL() const = 0;
 
-  // Get DOMMessageHandler objects to handle messages from the HTML/JS page.
+  // Get WebUIMessageHandler objects to handle messages from the HTML/JS page.
   // The handlers are used to send and receive messages from the page while it
   // is still open.  Ownership of each handler is taken over by the DOMUI
   // hosting the page.
-  virtual void GetDOMMessageHandlers(
-      std::vector<DOMMessageHandler*>* handlers) const = 0;
+  virtual void GetWebUIMessageHandlers(
+      std::vector<WebUIMessageHandler*>* handlers) const = 0;
 
   // Get the size of the dialog.
   virtual void GetDialogSize(gfx::Size* size) const = 0;

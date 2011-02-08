@@ -58,7 +58,7 @@ class SlideshowUIHTMLSource : public ChromeURLDataManager::DataSource {
 
 // The handler for Javascript messages related to the "slideshow" view.
 class SlideshowHandler : public net::DirectoryLister::DirectoryListerDelegate,
-                         public DOMMessageHandler,
+                         public WebUIMessageHandler,
                          public base::SupportsWeakPtr<SlideshowHandler> {
  public:
   SlideshowHandler();
@@ -72,8 +72,8 @@ class SlideshowHandler : public net::DirectoryLister::DirectoryListerDelegate,
       const net::DirectoryLister::DirectoryListerData& data);
   virtual void OnListDone(int error);
 
-  // DOMMessageHandler implementation.
-  virtual DOMMessageHandler* Attach(DOMUI* dom_ui);
+  // WebUIMessageHandler implementation.
+  virtual WebUIMessageHandler* Attach(DOMUI* dom_ui);
   virtual void RegisterMessages();
 
   void GetChildrenForPath(const FilePath& path, bool is_refresh);
@@ -147,7 +147,7 @@ SlideshowHandler::~SlideshowHandler() {
   }
 }
 
-DOMMessageHandler* SlideshowHandler::Attach(DOMUI* dom_ui) {
+WebUIMessageHandler* SlideshowHandler::Attach(DOMUI* dom_ui) {
   // Create our favicon data source.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -156,7 +156,7 @@ DOMMessageHandler* SlideshowHandler::Attach(DOMUI* dom_ui) {
           &ChromeURLDataManager::AddDataSource,
           make_scoped_refptr(new WebUIFavIconSource(dom_ui->GetProfile()))));
   profile_ = dom_ui->GetProfile();
-  return DOMMessageHandler::Attach(dom_ui);
+  return WebUIMessageHandler::Attach(dom_ui);
 }
 
 void SlideshowHandler::Init() {

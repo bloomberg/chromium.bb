@@ -15,13 +15,13 @@ class PrintBackend;
 }
 
 // The handler for Javascript messages related to the "print preview" dialog.
-class PrintPreviewHandler : public DOMMessageHandler,
+class PrintPreviewHandler : public WebUIMessageHandler,
                             public base::SupportsWeakPtr<PrintPreviewHandler> {
  public:
   PrintPreviewHandler();
   virtual ~PrintPreviewHandler();
 
-  // DOMMessageHandler implementation.
+  // WebUIMessageHandler implementation.
   virtual void RegisterMessages();
 
  private:

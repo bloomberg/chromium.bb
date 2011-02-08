@@ -22,7 +22,7 @@ class ClearBrowserDataHandler : public OptionsPageUIHandler,
 
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
 
-  // DOMMessageHandler implementation.
+  // WebUIMessageHandler implementation.
   virtual void RegisterMessages();
 
   // NotificationObserver implementation.

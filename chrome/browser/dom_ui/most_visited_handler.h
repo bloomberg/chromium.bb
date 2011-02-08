@@ -23,15 +23,15 @@ class PrefService;
 class Value;
 
 // The handler for Javascript messages related to the "most visited" view.
-class MostVisitedHandler : public DOMMessageHandler,
+class MostVisitedHandler : public WebUIMessageHandler,
                            public NotificationObserver {
  public:
 
   MostVisitedHandler();
   virtual ~MostVisitedHandler();
 
-  // DOMMessageHandler override and implementation.
-  virtual DOMMessageHandler* Attach(DOMUI* dom_ui);
+  // WebUIMessageHandler override and implementation.
+  virtual WebUIMessageHandler* Attach(DOMUI* dom_ui);
   virtual void RegisterMessages();
 
   // Callback for the "getMostVisited" message.

@@ -16,14 +16,14 @@ class ListValue;
 
 // Sends sync-state changes to the New Tab Page for UI updating and forwards
 // link clicks on the page to the sync service.
-class NewTabPageSyncHandler : public DOMMessageHandler,
+class NewTabPageSyncHandler : public WebUIMessageHandler,
                               public ProfileSyncServiceObserver {
  public:
   NewTabPageSyncHandler();
   virtual ~NewTabPageSyncHandler();
 
-  // DOMMessageHandler implementation.
-  virtual DOMMessageHandler* Attach(DOMUI* dom_ui);
+  // WebUIMessageHandler implementation.
+  virtual WebUIMessageHandler* Attach(DOMUI* dom_ui);
   virtual void RegisterMessages();
 
   // Callback for "GetSyncMessage".

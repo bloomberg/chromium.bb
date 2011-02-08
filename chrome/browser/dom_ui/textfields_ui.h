@@ -39,7 +39,7 @@ class TextfieldsUIHTMLSource : public ChromeURLDataManager::DataSource {
 /**
  * Handler for JavaScript calls from the DOM.
  */
-class TextfieldsDOMHandler : public DOMMessageHandler {
+class TextfieldsDOMHandler : public WebUIMessageHandler {
  public:
   TextfieldsDOMHandler();
 

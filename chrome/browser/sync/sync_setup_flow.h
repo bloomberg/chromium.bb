@@ -78,8 +78,8 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
   virtual GURL GetDialogContentURL() const;
 
   // HtmlDialogUIDelegate implementation.
-  virtual void GetDOMMessageHandlers(
-      std::vector<DOMMessageHandler*>* handlers) const;
+  virtual void GetWebUIMessageHandlers(
+      std::vector<WebUIMessageHandler*>* handlers) const;
 
   // HtmlDialogUIDelegate implementation.
   // Get the size of the dialog.
@@ -192,14 +192,14 @@ class SyncSetupFlowContainer {
 };
 
 // The FlowHandler connects the state machine to the dialog backing HTML and
-// JS namespace by implementing DOMMessageHandler and being invoked by the
+// JS namespace by implementing WebUIMessageHandler and being invoked by the
 // SyncSetupFlow.  Exposed here to facilitate testing.
-class FlowHandler : public DOMMessageHandler {
+class FlowHandler : public WebUIMessageHandler {
  public:
   FlowHandler()  {}
   virtual ~FlowHandler() {}
 
-  // DOMMessageHandler implementation.
+  // WebUIMessageHandler implementation.
   virtual void RegisterMessages();
 
   // Callbacks from the page.

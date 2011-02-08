@@ -80,7 +80,7 @@ class MediaplayerUIHTMLSource : public ChromeURLDataManager::DataSource {
 };
 
 // The handler for Javascript messages related to the "mediaplayer" view.
-class MediaplayerHandler : public DOMMessageHandler,
+class MediaplayerHandler : public WebUIMessageHandler,
                            public base::SupportsWeakPtr<MediaplayerHandler> {
  public:
 
@@ -101,8 +101,8 @@ class MediaplayerHandler : public DOMMessageHandler,
   // Init work after Attach.
   void Init(bool is_playlist, TabContents* contents);
 
-  // DOMMessageHandler implementation.
-  virtual DOMMessageHandler* Attach(DOMUI* dom_ui);
+  // WebUIMessageHandler implementation.
+  virtual WebUIMessageHandler* Attach(DOMUI* dom_ui);
   virtual void RegisterMessages();
 
   // Callback for the "currentOffsetChanged" message.
@@ -207,7 +207,7 @@ MediaplayerHandler::MediaplayerHandler(bool is_playlist)
 MediaplayerHandler::~MediaplayerHandler() {
 }
 
-DOMMessageHandler* MediaplayerHandler::Attach(DOMUI* dom_ui) {
+WebUIMessageHandler* MediaplayerHandler::Attach(DOMUI* dom_ui) {
   // Create our favicon data source.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -216,7 +216,7 @@ DOMMessageHandler* MediaplayerHandler::Attach(DOMUI* dom_ui) {
           &ChromeURLDataManager::AddDataSource,
           make_scoped_refptr(new WebUIFavIconSource(dom_ui->GetProfile()))));
 
-  return DOMMessageHandler::Attach(dom_ui);
+  return WebUIMessageHandler::Attach(dom_ui);
 }
 
 void MediaplayerHandler::Init(bool is_playlist, TabContents* contents) {

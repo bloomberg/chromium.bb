@@ -35,14 +35,14 @@ class HistoryUIHTMLSource : public ChromeURLDataManager::DataSource {
 };
 
 // The handler for Javascript messages related to the "history" view.
-class BrowsingHistoryHandler : public DOMMessageHandler,
+class BrowsingHistoryHandler : public WebUIMessageHandler,
                                public NotificationObserver {
  public:
   BrowsingHistoryHandler();
   virtual ~BrowsingHistoryHandler();
 
-  // DOMMessageHandler implementation.
-  virtual DOMMessageHandler* Attach(DOMUI* dom_ui);
+  // WebUIMessageHandler implementation.
+  virtual WebUIMessageHandler* Attach(DOMUI* dom_ui);
   virtual void RegisterMessages();
 
   // Callback for the "getHistory" message.

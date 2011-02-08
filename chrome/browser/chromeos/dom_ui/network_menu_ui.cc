@@ -53,7 +53,7 @@ class NetworkMenuHandler : public chromeos::MenuHandlerBase,
   NetworkMenuHandler();
   virtual ~NetworkMenuHandler();
 
-  // DOMMessageHandler implementation.
+  // WebUIMessageHandler implementation.
   virtual void RegisterMessages();
 
  private:

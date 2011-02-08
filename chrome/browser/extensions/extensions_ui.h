@@ -61,7 +61,7 @@ class ExtensionsUIHTMLSource : public ChromeURLDataManager::DataSource {
 
 // The handler for JavaScript messages related to the "extensions" view.
 class ExtensionsDOMHandler
-    : public DOMMessageHandler,
+    : public WebUIMessageHandler,
       public NotificationObserver,
       public PackExtensionJob::Client,
       public SelectFileDialog::Listener,
@@ -105,7 +105,7 @@ class ExtensionsDOMHandler
   explicit ExtensionsDOMHandler(ExtensionService* extension_service);
   virtual ~ExtensionsDOMHandler();
 
-  // DOMMessageHandler implementation.
+  // WebUIMessageHandler implementation.
   virtual void RegisterMessages();
 
   // Extension Detail JSON Struct for page. (static for ease of testing).

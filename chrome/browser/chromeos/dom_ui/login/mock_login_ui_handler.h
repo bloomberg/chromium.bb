@@ -17,7 +17,7 @@ namespace chromeos {
 class MockLoginUIHandler : public chromeos::LoginUIHandler {
  public:
   MOCK_METHOD1(Attach,
-      DOMMessageHandler*(DOMUI* dom_ui));
+      WebUIMessageHandler*(DOMUI* dom_ui));
   MOCK_METHOD0(RegisterMessages,
       void());
   MOCK_METHOD1(OnLoginFailure,

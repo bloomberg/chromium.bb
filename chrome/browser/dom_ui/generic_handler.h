@@ -11,12 +11,12 @@
 class ListValue;
 
 // A place to add handlers for messages shared across all DOMUI pages.
-class GenericHandler : public DOMMessageHandler {
+class GenericHandler : public WebUIMessageHandler {
  public:
   GenericHandler();
   virtual ~GenericHandler();
 
-  // DOMMessageHandler implementation.
+  // WebUIMessageHandler implementation.
   virtual void RegisterMessages();
 
  private:

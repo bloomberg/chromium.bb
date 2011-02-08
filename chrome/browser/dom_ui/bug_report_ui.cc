@@ -183,7 +183,7 @@ class BugReportUIHTMLSource : public ChromeURLDataManager::DataSource {
 };
 
 // The handler for Javascript messages related to the "bug report" dialog
-class BugReportHandler : public DOMMessageHandler,
+class BugReportHandler : public WebUIMessageHandler,
                          public base::SupportsWeakPtr<BugReportHandler> {
  public:
   explicit BugReportHandler(TabContents* tab);
@@ -192,8 +192,8 @@ class BugReportHandler : public DOMMessageHandler,
   // Init work after Attach.
   base::StringPiece Init();
 
-  // DOMMessageHandler implementation.
-  virtual DOMMessageHandler* Attach(DOMUI* dom_ui);
+  // WebUIMessageHandler implementation.
+  virtual WebUIMessageHandler* Attach(DOMUI* dom_ui);
   virtual void RegisterMessages();
 
  private:
@@ -481,9 +481,9 @@ void BugReportHandler::SetupScreenshotsSource() {
           make_scoped_refptr(screenshot_source_)));
 }
 
-DOMMessageHandler* BugReportHandler::Attach(DOMUI* dom_ui) {
+WebUIMessageHandler* BugReportHandler::Attach(DOMUI* dom_ui) {
   SetupScreenshotsSource();
-  return DOMMessageHandler::Attach(dom_ui);
+  return WebUIMessageHandler::Attach(dom_ui);
 }
 
 base::StringPiece BugReportHandler::Init() {

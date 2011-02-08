@@ -27,7 +27,7 @@ void StatsOptionsHandler::Initialize() {
   SetupMetricsReportingCheckbox(false);
 }
 
-// DOMMessageHandler implementation.
+// WebUIMessageHandler implementation.
 void StatsOptionsHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback(
       "metricsReportingCheckboxAction",
