@@ -13,7 +13,7 @@
 #include "views/controls/textfield/native_textfield_views.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/controls/textfield/textfield_views_model.h"
-#include "views/event.h"
+#include "views/events/event.h"
 #include "views/focus/focus_manager.h"
 #include "views/test/test_views_delegate.h"
 #include "views/test/views_test_base.h"

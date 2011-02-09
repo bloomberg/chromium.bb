@@ -29,7 +29,7 @@
 #include "chrome/browser/icon_manager.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/gfx/font.h"
-#include "views/event.h"
+#include "views/events/event.h"
 #include "views/controls/button/button.h"
 #include "views/view.h"
 

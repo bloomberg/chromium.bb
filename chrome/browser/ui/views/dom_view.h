@@ -12,7 +12,7 @@
 #include "base/scoped_ptr.h"
 #include "googleurl/src/gurl.h"
 #include "views/controls/native/native_view_host.h"
-#include "views/event.h"
+#include "views/events/event.h"
 
 class Profile;
 class SiteInstance;

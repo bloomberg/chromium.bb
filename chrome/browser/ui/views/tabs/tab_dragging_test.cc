@@ -14,7 +14,7 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "ui/gfx/rect.h"
-#include "views/event.h"
+#include "views/events/event.h"
 
 #if defined(OS_LINUX)
 // This test doesn't make sense on chromeos as chromeos doesn't allow dragging

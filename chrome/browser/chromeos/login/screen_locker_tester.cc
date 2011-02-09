@@ -14,7 +14,7 @@
 #include "views/controls/button/button.h"
 #include "views/controls/label.h"
 #include "views/controls/textfield/textfield.h"
-#include "views/event.h"
+#include "views/events/event.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget_gtk.h"
 

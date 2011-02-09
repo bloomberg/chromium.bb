@@ -43,7 +43,7 @@
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/rect.h"
-#include "views/event.h"
+#include "views/events/event.h"
 
 using ui_test_utils::TimedMessageLoopRunner;
 using testing::CreateFunctor;

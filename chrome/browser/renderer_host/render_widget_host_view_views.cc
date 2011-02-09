@@ -25,7 +25,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/canvas.h"
-#include "views/event.h"
+#include "views/events/event.h"
 #include "views/widget/widget.h"
 #include "views/widget/widget_gtk.h"
 

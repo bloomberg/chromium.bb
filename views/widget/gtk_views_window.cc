@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include <gtk/gtk.h>
-#include "views/event.h"
+#include "views/events/event.h"
 #include "views/widget/gtk_views_window.h"
 #include "views/focus/focus_manager.h"
 

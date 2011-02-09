@@ -7,7 +7,7 @@
 #pragma once
 
 #include "ui/base/keycodes/keyboard_codes.h"
-#include "views/event.h"
+#include "views/events/event.h"
 
 #include <string>
 

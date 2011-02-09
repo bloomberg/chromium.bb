@@ -34,7 +34,7 @@
 
 #if defined(OS_WIN)
 #include "ui/gfx/native_widget_types.h"
-#include "views/event.h"
+#include "views/events/event.h"
 #endif  // defined(OS_WIN)
 
 class PopupMenuWaiter;

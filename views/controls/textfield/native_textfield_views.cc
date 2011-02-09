@@ -20,7 +20,7 @@
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/controls/textfield/textfield_views_model.h"
-#include "views/event.h"
+#include "views/events/event.h"
 #include "views/views_delegate.h"
 
 #if defined(OS_LINUX)

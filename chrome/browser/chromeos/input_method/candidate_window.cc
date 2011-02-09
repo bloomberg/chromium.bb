@@ -19,7 +19,7 @@
 #include "ui/gfx/font.h"
 #include "views/controls/label.h"
 #include "views/controls/textfield/textfield.h"
-#include "views/event.h"
+#include "views/events/event.h"
 #include "views/layout/fill_layout.h"
 #include "views/layout/grid_layout.h"
 #include "views/screen.h"

@@ -12,7 +12,7 @@
 #include "chrome/test/ui/ui_test.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
-#include "views/event.h"
+#include "views/events/event.h"
 
 AutomatedUITestBase::AutomatedUITestBase() {}
 

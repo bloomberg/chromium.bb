@@ -6,7 +6,7 @@
 #define VIEWS_CONTROLS_SCROLLBAR_SCROLLBAR_H_
 #pragma once
 
-#include "views/event.h"
+#include "views/events/event.h"
 #include "views/view.h"
 
 namespace views {

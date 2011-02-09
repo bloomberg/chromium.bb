@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
-#include "views/event.h"
+#include "views/events/event.h"
 #include "views/widget/root_view.h"
 
 namespace {

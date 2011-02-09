@@ -9,7 +9,7 @@
 #endif
 
 #include "base/basictypes.h"
-#include "views/event.h"
+#include "views/events/event.h"
 #include "views/view_constants.h"
 
 BookmarkDropInfo::BookmarkDropInfo(gfx::NativeWindow wnd, int top_margin)

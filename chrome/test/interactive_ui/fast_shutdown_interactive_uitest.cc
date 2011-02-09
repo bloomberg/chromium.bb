@@ -13,7 +13,7 @@
 #include "chrome/test/ui_test_utils.h"
 #include "ui/base/message_box_flags.h"
 #include "ui/gfx/rect.h"
-#include "views/event.h"
+#include "views/events/event.h"
 
 class FastShutdown : public UITest {
 };

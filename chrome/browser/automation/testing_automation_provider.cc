@@ -80,7 +80,7 @@
 #include "net/url_request/url_request_context.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/base/message_box_flags.h"
-#include "views/event.h"
+#include "views/events/event.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 
 namespace {

@@ -8,7 +8,7 @@
 #endif
 
 #include "base/logging.h"
-#include "views/event.h"
+#include "views/events/event.h"
 #include "views/view.h"
 
 namespace views {

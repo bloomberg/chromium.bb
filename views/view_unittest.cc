@@ -15,7 +15,7 @@
 #include "views/controls/native/native_view_host.h"
 #include "views/controls/scroll_view.h"
 #include "views/controls/textfield/textfield.h"
-#include "views/event.h"
+#include "views/events/event.h"
 #include "views/focus/accelerator_handler.h"
 #include "views/focus/view_storage.h"
 #include "views/test/views_test_base.h"

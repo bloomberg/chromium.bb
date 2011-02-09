@@ -24,7 +24,7 @@
 #include "views/controls/button/image_button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
-#include "views/event.h"
+#include "views/events/event.h"
 #include "views/painter.h"
 #include "views/view.h"
 #include "views/widget/widget_gtk.h"

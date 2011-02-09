@@ -9,7 +9,7 @@
 #include "chrome/test/ui/ui_test.h"
 #include "googleurl/src/gurl.h"
 #include "ui/base/keycodes/keyboard_codes.h"
-#include "views/event.h"
+#include "views/events/event.h"
 
 // This functionality currently works on Windows and on Linux when
 // toolkit_views is defined (i.e. for Chrome OS). It's not needed

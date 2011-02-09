@@ -6,7 +6,7 @@
 
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
-#include "views/event.h"
+#include "views/events/event.h"
 #include "views/focus/focus_manager.h"
 
 namespace views {

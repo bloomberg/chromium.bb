@@ -5,7 +5,7 @@
 #include "chrome/test/webdriver/keymap.h"
 
 #include "chrome/browser/automation/ui_controls.h"
-#include "views/event.h"
+#include "views/events/event.h"
 
 namespace webdriver {
 

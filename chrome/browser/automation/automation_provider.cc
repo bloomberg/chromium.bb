@@ -99,7 +99,7 @@
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/url_request/url_request_context.h"
 #include "chrome/browser/automation/ui_controls.h"
-#include "views/event.h"
+#include "views/events/event.h"
 #include "webkit/glue/password_form.h"
 
 #if defined(OS_WIN)

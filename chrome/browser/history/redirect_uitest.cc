@@ -22,7 +22,7 @@
 #include "chrome/test/ui/ui_test.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
-#include "views/event.h"
+#include "views/events/event.h"
 
 namespace {
 

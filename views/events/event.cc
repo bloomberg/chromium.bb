@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/event.h"
+#include "views/events/event.h"
 
 #include "views/view.h"
 

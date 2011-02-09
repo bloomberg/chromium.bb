@@ -13,7 +13,7 @@
 #endif
 
 #include "views/accelerator.h"
-#include "views/event.h"
+#include "views/events/event.h"
 #include "views/focus/focus_manager.h"
 #include "views/touchui/touch_factory.h"
 #include "views/widget/root_view.h"

@@ -31,7 +31,7 @@
 #include "chrome/test/ui_test_utils.h"
 #include "net/base/mock_host_resolver.h"
 #include "ui/base/keycodes/keyboard_codes.h"
-#include "views/event.h"
+#include "views/events/event.h"
 
 #if defined(OS_LINUX)
 #include <gdk/gdk.h>

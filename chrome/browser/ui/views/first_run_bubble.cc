@@ -21,7 +21,7 @@
 #include "views/controls/button/native_button.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/label.h"
-#include "views/event.h"
+#include "views/events/event.h"
 #include "views/focus/focus_manager.h"
 #include "views/layout/layout_constants.h"
 #include "views/widget/widget_win.h"

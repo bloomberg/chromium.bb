@@ -12,7 +12,7 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/font.h"
-#include "views/event.h"
+#include "views/events/event.h"
 
 #if defined(OS_LINUX)
 #include "ui/gfx/gtk_util.h"

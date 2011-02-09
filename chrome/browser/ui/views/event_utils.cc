@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/event_utils.h"
 
-#include "views/event.h"
+#include "views/events/event.h"
 
 using views::Event;
 

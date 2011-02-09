@@ -16,7 +16,7 @@
 
 #include "base/string16.h"
 #include "ui/base/models/accelerator.h"
-#include "views/event.h"
+#include "views/events/event.h"
 
 namespace views {
 

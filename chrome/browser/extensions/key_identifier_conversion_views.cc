@@ -10,7 +10,7 @@
 #include "base/hash_tables.h"
 #include "chrome/browser/browser_thread.h"
 #include "ui/base/keycodes/keyboard_codes.h"
-#include "views/event.h"
+#include "views/events/event.h"
 
 namespace {
 

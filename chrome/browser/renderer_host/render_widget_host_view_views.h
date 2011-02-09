@@ -16,7 +16,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/gfx/native_widget_types.h"
 #include "views/controls/native/native_view_host.h"
-#include "views/event.h"
+#include "views/events/event.h"
 #include "views/view.h"
 #include "webkit/glue/webcursor.h"
 
