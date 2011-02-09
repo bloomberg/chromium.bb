@@ -433,7 +433,7 @@ def _GrabAllRemotePackageIndexes(binhost_urls, subdirs):
 
   cross-compiler prebuilts have separate Packages files and prebuilts. These
   binhosts are stored in subdirectories of the regular binhosts. For each
-  binhost, we use cross_subdirs to find the subdirectories.
+  binhost, we use subdirs to find the subdirectories.
 
   Args:
     binhost_urls: The URLs for the directories containing the Packages files we
@@ -450,7 +450,7 @@ def _GrabAllRemotePackageIndexes(binhost_urls, subdirs):
     pkg_index = GrabRemotePackageIndex(url)
     if pkg_index:
       pkg_indexes.append(pkg_index)
-      for subdir in cross_subdirs:
+      for subdir in subdirs:
         cross_url = '%s/%s' % (url.rstrip('/'), subdir)
         cross_pkg_index = GrabRemotePackageIndex(cross_url)
         if cross_pkg_index:
