@@ -309,7 +309,7 @@ void Textfield::AboutToRequestFocusFromTabTraversal(bool reverse) {
 bool Textfield::SkipDefaultKeyEventProcessing(const KeyEvent& e) {
   // TODO(hamaji): Figure out which keyboard combinations we need to add here,
   //               similar to LocationBarView::SkipDefaultKeyEventProcessing.
-  ui::KeyboardCode key = e.key_code();
+  ui::KeyboardCode key = e.GetKeyCode();
   if (key == ui::VKEY_BACK)
     return true;  // We'll handle BackSpace ourselves.
 

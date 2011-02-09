@@ -230,7 +230,7 @@ bool NativeScrollBarWin::OnKeyPressed(const KeyEvent& event) {
   if (!sb_container_.get())
     return false;
   int code = -1;
-  switch (event.key_code()) {
+  switch (event.GetKeyCode()) {
     case ui::VKEY_UP:
       if (!native_scroll_bar_->IsHorizontal())
         code = SB_LINEUP;
@@ -272,7 +272,7 @@ bool NativeScrollBarWin::OnKeyPressed(const KeyEvent& event) {
 bool NativeScrollBarWin::OnMouseWheel(const MouseWheelEvent& e) {
   if (!sb_container_.get())
     return false;
-  sb_container_->ScrollWithOffset(e.offset());
+  sb_container_->ScrollWithOffset(e.GetOffset());
   return true;
 }
 

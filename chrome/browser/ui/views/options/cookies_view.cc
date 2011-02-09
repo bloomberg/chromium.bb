@@ -145,9 +145,9 @@ void CookiesView::ContentsChanged(views::Textfield* sender,
 
 bool CookiesView::HandleKeyEvent(views::Textfield* sender,
                                  const views::KeyEvent& key_event) {
-  if (key_event.key_code() == ui::VKEY_ESCAPE) {
+  if (key_event.GetKeyCode() == ui::VKEY_ESCAPE) {
     ResetSearchQuery();
-  } else if (key_event.key_code() == ui::VKEY_RETURN) {
+  } else if (key_event.GetKeyCode() == ui::VKEY_RETURN) {
     search_update_factory_.RevokeAll();
     UpdateSearchResults();
   }

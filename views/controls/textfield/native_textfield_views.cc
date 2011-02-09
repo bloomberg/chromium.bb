@@ -531,8 +531,8 @@ void NativeTextfieldViews::PaintTextAndCursor(gfx::Canvas* canvas) {
 
 bool NativeTextfieldViews::HandleKeyEvent(const KeyEvent& key_event) {
   // TODO(oshima): handle IME.
-  if (key_event.type() == views::Event::ET_KEY_PRESSED) {
-    ui::KeyboardCode key_code = key_event.key_code();
+  if (key_event.GetType() == views::Event::ET_KEY_PRESSED) {
+    ui::KeyboardCode key_code = key_event.GetKeyCode();
     // TODO(oshima): shift-tab does not work. Figure out why and fix.
     if (key_code == ui::VKEY_TAB)
       return false;
@@ -642,7 +642,7 @@ bool NativeTextfieldViews::HandleKeyEvent(const KeyEvent& key_event) {
 char16 NativeTextfieldViews::GetPrintableChar(const KeyEvent& key_event) {
   // TODO(oshima): IME, i18n support.
   // This only works for UCS-2 characters.
-  ui::KeyboardCode key_code = key_event.key_code();
+  ui::KeyboardCode key_code = key_event.GetKeyCode();
   bool shift = key_event.IsShiftDown();
   bool upper = shift ^ key_event.IsCapsLockDown();
   // TODO(oshima): We should have a utility function
@@ -790,9 +790,9 @@ size_t NativeTextfieldViews::FindCursorPosition(const gfx::Point& point) const {
 
 bool NativeTextfieldViews::HandleMousePressed(const views::MouseEvent& e) {
   textfield_->RequestFocus();
-  base::TimeDelta time_delta = e.time_stamp() - last_mouse_press_time_;
+  base::TimeDelta time_delta = e.GetTimeStamp() - last_mouse_press_time_;
   gfx::Point location_delta = e.location().Subtract(last_mouse_press_location_);
-  last_mouse_press_time_ = e.time_stamp();
+  last_mouse_press_time_ = e.GetTimeStamp();
   last_mouse_press_location_ = e.location();
   if (e.IsLeftMouseButton()) {
     if (!ExceededDragThreshold(location_delta.x(), location_delta.y())

@@ -1258,7 +1258,7 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
   // it'll be best if we can unify these conversion tables.
   // See http://crbug.com/54315
   views::KeyEvent views_event(event.os_event);
-  views::Accelerator accelerator(views_event.key_code(),
+  views::Accelerator accelerator(views_event.GetKeyCode(),
                                  views_event.IsShiftDown(),
                                  views_event.IsControlDown(),
                                  views_event.IsAltDown());

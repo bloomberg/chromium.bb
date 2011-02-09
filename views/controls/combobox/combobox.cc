@@ -77,7 +77,7 @@ void Combobox::SetEnabled(bool flag) {
 // VKEY_ESCAPE should be handled by this view when the drop down list is active.
 // In other words, the list should be closed instead of the dialog.
 bool Combobox::SkipDefaultKeyEventProcessing(const KeyEvent& e) {
-  if (e.key_code() != ui::VKEY_ESCAPE ||
+  if (e.GetKeyCode() != ui::VKEY_ESCAPE ||
       e.IsShiftDown() || e.IsControlDown() || e.IsAltDown()) {
     return false;
   }

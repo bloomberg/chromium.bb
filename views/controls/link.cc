@@ -121,13 +121,13 @@ void Link::OnMouseReleased(const MouseEvent& e, bool canceled) {
     RequestFocus();
 
     if (controller_)
-      controller_->LinkActivated(this, e.flags());
+      controller_->LinkActivated(this, e.GetFlags());
   }
 }
 
 bool Link::OnKeyPressed(const KeyEvent& e) {
-  bool activate = ((e.key_code() == ui::VKEY_SPACE) ||
-                   (e.key_code() == ui::VKEY_RETURN));
+  bool activate = ((e.GetKeyCode() == ui::VKEY_SPACE) ||
+                   (e.GetKeyCode() == ui::VKEY_RETURN));
   if (!activate)
     return false;
 
@@ -137,15 +137,15 @@ bool Link::OnKeyPressed(const KeyEvent& e) {
   RequestFocus();
 
   if (controller_)
-    controller_->LinkActivated(this, e.flags());
+    controller_->LinkActivated(this, e.GetFlags());
 
   return true;
 }
 
 bool Link::SkipDefaultKeyEventProcessing(const KeyEvent& e) {
   // Make sure we don't process space or enter as accelerators.
-  return (e.key_code() == ui::VKEY_SPACE) ||
-      (e.key_code() == ui::VKEY_RETURN);
+  return (e.GetKeyCode() == ui::VKEY_SPACE) ||
+      (e.GetKeyCode() == ui::VKEY_RETURN);
 }
 
 AccessibilityTypes::Role Link::GetAccessibleRole() {

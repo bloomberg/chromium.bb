@@ -44,7 +44,7 @@ gfx::Size NativeScrollBarGtk::GetPreferredSize() {
 bool NativeScrollBarGtk::OnKeyPressed(const KeyEvent& event) {
   if (!native_view())
     return false;
-  switch (event.key_code()) {
+  switch (event.GetKeyCode()) {
     case ui::VKEY_UP:
       if (!native_scroll_bar_->IsHorizontal())
         MoveStep(false /* negative */);
@@ -82,7 +82,7 @@ bool NativeScrollBarGtk::OnKeyPressed(const KeyEvent& event) {
 bool NativeScrollBarGtk::OnMouseWheel(const MouseWheelEvent& e) {
   if (!native_view())
     return false;
-  MoveBy(-e.offset());  // e.GetOffset() > 0 means scroll up.
+  MoveBy(-e.GetOffset());  // e.GetOffset() > 0 means scroll up.
   return true;
 }
 

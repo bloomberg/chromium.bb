@@ -1448,12 +1448,12 @@ class MessageTrackingView : public View {
  }
 
   virtual bool OnKeyPressed(const KeyEvent& e) {
-    keys_pressed_.push_back(e.key_code());
+    keys_pressed_.push_back(e.GetKeyCode());
     return true;
   }
 
   virtual bool OnKeyReleased(const KeyEvent& e) {
-    keys_released_.push_back(e.key_code());
+    keys_released_.push_back(e.GetKeyCode());
     return true;
   }
 

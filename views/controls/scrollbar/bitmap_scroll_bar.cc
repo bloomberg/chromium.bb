@@ -491,13 +491,13 @@ void BitmapScrollBar::OnMouseReleased(const MouseEvent& event, bool canceled) {
 }
 
 bool BitmapScrollBar::OnMouseWheel(const MouseWheelEvent& event) {
-  ScrollByContentsOffset(event.offset());
+  ScrollByContentsOffset(event.GetOffset());
   return true;
 }
 
 bool BitmapScrollBar::OnKeyPressed(const KeyEvent& event) {
   ScrollAmount amount = SCROLL_NONE;
-  switch (event.key_code()) {
+  switch (event.GetKeyCode()) {
     case ui::VKEY_UP:
       if (!IsHorizontal())
         amount = SCROLL_PREV_LINE;

@@ -17,7 +17,7 @@ NativeWebKeyboardEvent DropdownBarHost::GetKeyboardEvent(
      const TabContents* contents,
      const views::KeyEvent& key_event) {
   HWND hwnd = contents->GetContentNativeView();
-  WORD key = WindowsKeyCodeForKeyboardCode(key_event.key_code());
+  WORD key = WindowsKeyCodeForKeyboardCode(key_event.GetKeyCode());
 
   return NativeWebKeyboardEvent(hwnd, key_event.message(), key, 0);
 }

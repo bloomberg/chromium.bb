@@ -59,7 +59,8 @@ void StarView::OnMouseReleased(const views::MouseEvent& event, bool canceled) {
 }
 
 bool StarView::OnKeyPressed(const views::KeyEvent& e) {
-  if (e.key_code() == ui::VKEY_SPACE || e.key_code() == ui::VKEY_RETURN) {
+  if (e.GetKeyCode() == ui::VKEY_SPACE ||
+      e.GetKeyCode() == ui::VKEY_RETURN) {
     command_updater_->ExecuteCommand(IDC_BOOKMARK_PAGE);
     return true;
   }

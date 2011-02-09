@@ -355,7 +355,7 @@ int TabStrip::OnPerformDrop(const DropTargetEvent& event) {
 
   GURL url;
   std::wstring title;
-  if (!event.data().GetURLAndTitle(&url, &title) || !url.is_valid())
+  if (!event.GetData().GetURLAndTitle(&url, &title) || !url.is_valid())
     return ui::DragDropTypes::DRAG_NONE;
 
   controller()->PerformDrop(drop_before, drop_index, url);
@@ -758,7 +758,7 @@ void TabStrip::SetDropIndex(int tab_data_index, bool drop_before) {
 }
 
 int TabStrip::GetDropEffect(const views::DropTargetEvent& event) {
-  const int source_ops = event.source_operations();
+  const int source_ops = event.GetSourceOperations();
   if (source_ops & ui::DragDropTypes::DRAG_COPY)
     return ui::DragDropTypes::DRAG_COPY;
   if (source_ops & ui::DragDropTypes::DRAG_LINK)

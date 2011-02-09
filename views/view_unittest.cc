@@ -326,19 +326,19 @@ TEST_F(ViewTest, AddRemoveNotifications) {
 ////////////////////////////////////////////////////////////////////////////////
 
 bool TestView::OnMousePressed(const MouseEvent& event) {
-  last_mouse_event_type_ = event.type();
+  last_mouse_event_type_ = event.GetType();
   location_.SetPoint(event.x(), event.y());
   return true;
 }
 
 bool TestView::OnMouseDragged(const MouseEvent& event) {
-  last_mouse_event_type_ = event.type();
+  last_mouse_event_type_ = event.GetType();
   location_.SetPoint(event.x(), event.y());
   return true;
 }
 
 void TestView::OnMouseReleased(const MouseEvent& event, bool canceled) {
-  last_mouse_event_type_ = event.type();
+  last_mouse_event_type_ = event.GetType();
   location_.SetPoint(event.x(), event.y());
 }
 

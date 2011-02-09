@@ -140,7 +140,8 @@ void PageActionImageView::OnMouseReleased(const views::MouseEvent& event,
 }
 
 bool PageActionImageView::OnKeyPressed(const views::KeyEvent& e) {
-  if (e.key_code() == ui::VKEY_SPACE || e.key_code() == ui::VKEY_RETURN) {
+  if (e.GetKeyCode() == ui::VKEY_SPACE ||
+      e.GetKeyCode() == ui::VKEY_RETURN) {
     ExecuteAction(1, false);
     return true;
   }

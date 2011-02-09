@@ -36,7 +36,7 @@ void TextfieldWithMargin::Layout() {
 }
 
 bool TextfieldWithMargin::OnKeyPressed(const views::KeyEvent& e) {
-  if (e.key_code() == ui::VKEY_ESCAPE && !text().empty()) {
+  if (e.GetKeyCode() == ui::VKEY_ESCAPE && !text().empty()) {
     SetText(string16());
     return true;
   }

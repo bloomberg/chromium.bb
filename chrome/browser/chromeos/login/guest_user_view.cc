@@ -23,7 +23,7 @@ class UserEntryButton : public login::WideButton {
 
   // Overridden from views::View:
   virtual bool OnKeyPressed(const views::KeyEvent& e) {
-    if (e.key_code() == ui::VKEY_TAB) {
+    if (e.GetKeyCode() == ui::VKEY_TAB) {
       user_controller_->SelectUserRelative(e.IsShiftDown() ? -1 : 1);
       return true;
     }
@@ -31,7 +31,7 @@ class UserEntryButton : public login::WideButton {
   }
 
   virtual bool SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
-    if (e.key_code() == ui::VKEY_TAB)
+    if (e.GetKeyCode() == ui::VKEY_TAB)
       return true;
     return WideButton::SkipDefaultKeyEventProcessing(e);
   }

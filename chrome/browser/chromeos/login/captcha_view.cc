@@ -123,7 +123,7 @@ void CaptchaView::ViewHierarchyChanged(bool is_add,
 bool CaptchaView::HandleKeyEvent(views::Textfield* sender,
                                  const views::KeyEvent& key_event) {
   if (sender == captcha_textfield_ &&
-      key_event.key_code() == ui::VKEY_RETURN) {
+      key_event.GetKeyCode() == ui::VKEY_RETURN) {
     if (is_standalone_) {
       Accept();
     } else {

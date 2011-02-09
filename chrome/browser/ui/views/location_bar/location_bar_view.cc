@@ -697,13 +697,13 @@ void LocationBarView::SelectAll() {
 bool LocationBarView::OnMousePressed(const views::MouseEvent& event) {
   UINT msg;
   if (event.IsLeftMouseButton()) {
-    msg = (event.flags() & views::MouseEvent::EF_IS_DOUBLE_CLICK) ?
+    msg = (event.GetFlags() & views::MouseEvent::EF_IS_DOUBLE_CLICK) ?
         WM_LBUTTONDBLCLK : WM_LBUTTONDOWN;
   } else if (event.IsMiddleMouseButton()) {
-    msg = (event.flags() & views::MouseEvent::EF_IS_DOUBLE_CLICK) ?
+    msg = (event.GetFlags() & views::MouseEvent::EF_IS_DOUBLE_CLICK) ?
         WM_MBUTTONDBLCLK : WM_MBUTTONDOWN;
   } else if (event.IsRightMouseButton()) {
-    msg = (event.flags() & views::MouseEvent::EF_IS_DOUBLE_CLICK) ?
+    msg = (event.GetFlags() & views::MouseEvent::EF_IS_DOUBLE_CLICK) ?
         WM_RBUTTONDBLCLK : WM_RBUTTONDOWN;
   } else {
     NOTREACHED();

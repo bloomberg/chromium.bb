@@ -883,7 +883,7 @@ bool WidgetGtk::HandleKeyboardEvent(GdkEventKey* event) {
     return false;
 
   KeyEvent key(event);
-  int key_code = key.key_code();
+  int key_code = key.GetKeyCode();
   bool handled = false;
 
   // Always reset |should_handle_menu_key_release_| unless we are handling a
@@ -901,7 +901,7 @@ bool WidgetGtk::HandleKeyboardEvent(GdkEventKey* event) {
     else
       should_handle_menu_key_release_ = true;
   } else if (key_code == ui::VKEY_MENU && should_handle_menu_key_release_ &&
-             (key.flags() & ~Event::EF_ALT_DOWN) == 0) {
+             (key.GetFlags() & ~Event::EF_ALT_DOWN) == 0) {
     // Trigger VKEY_MENU when only this key is pressed and released, and both
     // press and release events are not handled by others.
     Accelerator accelerator(ui::VKEY_MENU, false, false, false);
@@ -1174,7 +1174,7 @@ gboolean WidgetGtk::OnKeyEvent(GtkWidget* widget, GdkEventKey* event) {
   // VKEY_MENU key release event. It ensures that VKEY_MENU accelerator can only
   // be activated when handling a VKEY_MENU key release event which is preceded
   // by an unhandled VKEY_MENU key press event. See also HandleKeyboardEvent().
-  if (key.key_code() != ui::VKEY_MENU || event->type != GDK_KEY_RELEASE)
+  if (key.GetKeyCode() != ui::VKEY_MENU || event->type != GDK_KEY_RELEASE)
     should_handle_menu_key_release_ = false;
 
   bool handled = false;
