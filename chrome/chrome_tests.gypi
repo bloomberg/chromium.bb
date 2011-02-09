@@ -1154,6 +1154,7 @@
         'browser/chromeos/login/signed_settings_temp_storage_unittest.cc',
         'browser/chromeos/login/user_controller_unittest.cc',
         'browser/chromeos/login/wizard_accessibility_handler_unittest.cc',
+        'browser/chromeos/network_message_observer_unittest.cc',
         'browser/chromeos/notifications/desktop_notifications_unittest.cc',
         'browser/chromeos/offline/offline_load_page_unittest.cc',
         'browser/chromeos/plugin_selection_policy_unittest.cc',

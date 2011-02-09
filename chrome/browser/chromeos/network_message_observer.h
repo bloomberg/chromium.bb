@@ -28,9 +28,15 @@ class NetworkMessageObserver : public NetworkLibrary::NetworkManagerObserver,
 
   typedef std::map<std::string, WifiNetwork*> ServicePathWifiMap;
   typedef std::map<std::string, CellularNetwork*> ServicePathCellularMap;
+  static bool IsApplicableBackupPlan(const CellularDataPlan* plan,
+                                     const CellularDataPlan* other_plan);
  private:
   virtual void OpenMobileSetupPage(const ListValue* args);
   virtual void OpenMoreInfoPage(const ListValue* args);
+  virtual void HideDataNotifications();
+  virtual void InitNewPlan(const CellularDataPlan* plan);
+  virtual void ShowNoDataNotification(const CellularDataPlan* plan);
+  virtual void ShowLowDataNotification(const CellularDataPlan* plan);
 
   // NetworkLibrary::NetworkManagerObserver implementation.
   virtual void OnNetworkManagerChanged(NetworkLibrary* obj);
@@ -44,9 +50,8 @@ class NetworkMessageObserver : public NetworkLibrary::NetworkManagerObserver,
 
   // Current connect celluar service path.
   std::string cellular_service_path_;
-  // Last cellular data plan name and type.
-  std::string cellular_data_plan_name_;
-  CellularDataPlanType cellular_data_plan_type_;
+  // Last cellular data plan unique id.
+  std::string cellular_data_plan_unique_id_;
 
   // Notification for connection errors
   SystemNotification notification_connection_error_;

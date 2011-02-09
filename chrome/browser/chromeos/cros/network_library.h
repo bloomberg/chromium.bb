@@ -200,6 +200,8 @@ class CellularDataPlan {
   string16 GetPlanExpiration() const;
   // Formats plan usage info.
   string16 GetUsageInfo() const;
+  // Returns a unique string for this plan that can be used for comparisons.
+  std::string GetUniqueIdentifier() const;
   base::TimeDelta remaining_time() const;
   int64 remaining_minutes() const;
   int64 remaining_data() const;

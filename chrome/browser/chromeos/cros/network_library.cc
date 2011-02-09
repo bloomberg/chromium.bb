@@ -167,7 +167,7 @@ static NetworkRoamingState ParseRoamingState(
   return ROAMING_STATE_UNKNOWN;
 }
 
-}
+}  // namespace
 
 // Helper function to wrap Html with <th> tag.
 static std::string WrapWithTH(std::string text) {
@@ -469,6 +469,17 @@ string16 CellularDataPlan::GetUsageInfo() const {
         UTF8ToUTF16(base::Int64ToString(remaining_mbytes())));
   }
   return string16();
+}
+
+std::string CellularDataPlan::GetUniqueIdentifier() const {
+  // A cellular plan is uniquely described by the union of name, type,
+  // start time, end time, and max bytes.
+  // So we just return a union of all these variables.
+  return plan_name + "|" +
+      base::Int64ToString(plan_type) + "|" +
+      base::Int64ToString(plan_start_time.ToInternalValue()) + "|" +
+      base::Int64ToString(plan_end_time.ToInternalValue()) + "|" +
+      base::Int64ToString(plan_data_bytes);
 }
 
 base::TimeDelta CellularDataPlan::remaining_time() const {
@@ -950,7 +961,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       return;
     is_locked_ = true;
     NotifyNetworkManagerChanged();
- }
+  }
 
   virtual void Unlock() {
     DCHECK(is_locked_);
