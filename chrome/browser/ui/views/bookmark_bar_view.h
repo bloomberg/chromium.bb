@@ -439,6 +439,10 @@ class BookmarkBarView : public DetachableToolbarView,
   // Updates the colors for all the child objects in the bookmarks bar.
   void UpdateColors();
 
+  // Updates the visibility of |other_bookmarked_button_| and
+  // |bookmarks_separator_view_|.
+  void UpdateOtherBookmarksVisibility();
+
   // This method computes the bounds for the bookmark bar items. If
   // |compute_bounds_only| = TRUE, the bounds for the items are just computed,
   // but are not set. This mode is used by GetPreferredSize() to obtain the

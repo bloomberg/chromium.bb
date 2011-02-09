@@ -929,8 +929,7 @@ void BookmarkBarView::Loaded(BookmarkModel* model) {
   for (int i = 0, child_count = node->GetChildCount(); i < child_count; ++i)
     AddChildView(i, CreateBookmarkButton(node->GetChild(i)));
   UpdateColors();
-  other_bookmarked_button_->SetVisible(
-      model->other_node()->GetChildCount() > 0);
+  UpdateOtherBookmarksVisibility();
   other_bookmarked_button_->SetEnabled(true);
 
   Layout();
@@ -968,8 +967,7 @@ void BookmarkBarView::BookmarkNodeAdded(BookmarkModel* model,
 void BookmarkBarView::BookmarkNodeAddedImpl(BookmarkModel* model,
                                             const BookmarkNode* parent,
                                             int index) {
-  other_bookmarked_button_->SetVisible(
-      model->other_node()->GetChildCount() > 0);
+  UpdateOtherBookmarksVisibility();
   NotifyModelChanged();
   if (parent != model_->GetBookmarkBarNode()) {
     // We only care about nodes on the bookmark bar.
@@ -996,8 +994,7 @@ void BookmarkBarView::BookmarkNodeRemoved(BookmarkModel* model,
 void BookmarkBarView::BookmarkNodeRemovedImpl(BookmarkModel* model,
                                               const BookmarkNode* parent,
                                               int index) {
-  other_bookmarked_button_->SetVisible(
-      model->other_node()->GetChildCount() > 0);
+  UpdateOtherBookmarksVisibility();
 
   StopThrobbing(true);
   // No need to start throbbing again as the bookmark bubble can't be up at
@@ -1588,6 +1585,12 @@ void BookmarkBarView::UpdateColors() {
   other_bookmarked_button()->SetEnabledColor(text_color);
 }
 
+void BookmarkBarView::UpdateOtherBookmarksVisibility() {
+  bool has_other_children = model_->other_node()->GetChildCount() > 0;
+  other_bookmarked_button_->SetVisible(has_other_children);
+  bookmarks_separator_view_->SetVisible(has_other_children);
+}
+
 gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
   gfx::Size prefsize;
   if (!GetParent() && !compute_bounds_only)
@@ -1678,15 +1681,17 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
   x += overflow_pref.width();
 
   // Separator.
-  if (!compute_bounds_only) {
-    bookmarks_separator_view_->SetBounds(x,
-                                         y - top_margin,
-                                         bookmarks_separator_pref.width(),
-                                         height + top_margin + kBottomMargin -
-                                         separator_margin);
-  }
+  if (bookmarks_separator_view_->IsVisible()) {
+    if (!compute_bounds_only) {
+      bookmarks_separator_view_->SetBounds(x,
+                                           y - top_margin,
+                                           bookmarks_separator_pref.width(),
+                                           height + top_margin + kBottomMargin -
+                                           separator_margin);
+    }
 
-  x += bookmarks_separator_pref.width();
+    x += bookmarks_separator_pref.width();
+  }
 
   // The other bookmarks button.
   if (other_bookmarked_button_->IsVisible()) {
