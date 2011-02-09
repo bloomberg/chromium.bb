@@ -15,6 +15,7 @@ BrowserMessageFilter::BrowserMessageFilter()
 }
 
 BrowserMessageFilter::~BrowserMessageFilter() {
+  base::CloseProcessHandle(peer_handle_);
 }
 
 void BrowserMessageFilter::OnFilterAdded(IPC::Channel* channel) {
