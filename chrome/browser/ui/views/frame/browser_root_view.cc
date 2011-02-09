@@ -56,7 +56,7 @@ void BrowserRootView::OnDragEntered(const views::DropTargetEvent& event) {
   if (ShouldForwardToTabStrip(event)) {
     forwarding_to_tab_strip_ = true;
     scoped_ptr<views::DropTargetEvent> mapped_event(
-        MapEventToTabStrip(event, event.GetData()));
+        MapEventToTabStrip(event, event.data()));
     tabstrip()->OnDragEntered(*mapped_event.get());
   }
 }
@@ -64,7 +64,7 @@ void BrowserRootView::OnDragEntered(const views::DropTargetEvent& event) {
 int BrowserRootView::OnDragUpdated(const views::DropTargetEvent& event) {
   if (ShouldForwardToTabStrip(event)) {
     scoped_ptr<views::DropTargetEvent> mapped_event(
-        MapEventToTabStrip(event, event.GetData()));
+        MapEventToTabStrip(event, event.data()));
     if (!forwarding_to_tab_strip_) {
       tabstrip()->OnDragEntered(*mapped_event.get());
       forwarding_to_tab_strip_ = true;
@@ -94,9 +94,9 @@ int BrowserRootView::OnPerformDrop(const views::DropTargetEvent& event) {
   GURL url;
   std::wstring title;
   ui::OSExchangeData mapped_data;
-  if (!event.GetData().GetURLAndTitle(&url, &title) || !url.is_valid()) {
+  if (!event.data().GetURLAndTitle(&url, &title) || !url.is_valid()) {
     // The url isn't valid. Use the paste and go url.
-    if (GetPasteAndGoURL(event.GetData(), &url))
+    if (GetPasteAndGoURL(event.data(), &url))
       mapped_data.SetURL(url, std::wstring());
     // else case: couldn't extract a url or 'paste and go' url. This ends up
     // passing through an ui::OSExchangeData with nothing in it. We need to do
@@ -129,7 +129,7 @@ views::DropTargetEvent* BrowserRootView::MapEventToTabStrip(
   ConvertPointToView(this, tabstrip(), &tab_strip_loc);
   return new views::DropTargetEvent(data, tab_strip_loc.x(),
                                     tab_strip_loc.y(),
-                                    event.GetSourceOperations());
+                                    event.source_operations());
 }
 
 BaseTabStrip* BrowserRootView::tabstrip() const {

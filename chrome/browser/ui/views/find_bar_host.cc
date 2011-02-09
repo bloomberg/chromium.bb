@@ -49,7 +49,7 @@ bool FindBarHost::MaybeForwardKeyEventToWebpage(
     return false;
   }
 
-  switch (key_event.GetKeyCode()) {
+  switch (key_event.key_code()) {
     case ui::VKEY_DOWN:
     case ui::VKEY_UP:
     case ui::VKEY_PRIOR:

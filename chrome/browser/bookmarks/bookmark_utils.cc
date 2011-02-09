@@ -244,7 +244,7 @@ int BookmarkDropOperation(Profile* profile,
     return ui::DragDropTypes::DRAG_MOVE;
   }
   // User is dragging from another app, copy.
-  return PreferredDropOperation(event.GetSourceOperations(),
+  return PreferredDropOperation(event.source_operations(),
       ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK);
 }
 

@@ -165,21 +165,21 @@ bool AutocompleteEditViewViews::HandleAfterKeyEvent(
   if (content_maybe_changed_by_key_press_)
     OnAfterPossibleChange();
 
-  if (event.GetKeyCode() == ui::VKEY_RETURN) {
+  if (event.key_code() == ui::VKEY_RETURN) {
     bool alt_held = event.IsAltDown();
     model_->AcceptInput(alt_held ? NEW_FOREGROUND_TAB : CURRENT_TAB, false);
     handled = true;
-  } else if (!handled && event.GetKeyCode() == ui::VKEY_ESCAPE) {
+  } else if (!handled && event.key_code() == ui::VKEY_ESCAPE) {
     // We can handle the Escape key if textfield did not handle it.
     // If it's not handled by us, then we need to propagate it up to the parent
     // widgets, so that Escape accelerator can still work.
     handled = model_->OnEscapeKeyPressed();
-  } else if (event.GetKeyCode() == ui::VKEY_CONTROL) {
+  } else if (event.key_code() == ui::VKEY_CONTROL) {
     // Omnibox2 can switch its contents while pressing a control key. To switch
     // the contents of omnibox2, we notify the AutocompleteEditModel class when
     // the control-key state is changed.
     model_->OnControlKeyChanged(true);
-  } else if (!text_changed_ && event.GetKeyCode() == ui::VKEY_DELETE &&
+  } else if (!text_changed_ && event.key_code() == ui::VKEY_DELETE &&
              event.IsShiftDown()) {
     // If shift+del didn't change the text, we let this delete an entry from
     // the popup.  We can't check to see if the IME handled it because even if
@@ -187,14 +187,14 @@ bool AutocompleteEditViewViews::HandleAfterKeyEvent(
     AutocompletePopupModel* popup_model = popup_view_->GetModel();
     if (popup_model->IsOpen())
       popup_model->TryDeletingCurrentItem();
-  } else if (!handled && event.GetKeyCode() == ui::VKEY_UP) {
+  } else if (!handled && event.key_code() == ui::VKEY_UP) {
     model_->OnUpOrDownKeyPressed(-1);
     handled = true;
-  } else if (!handled && event.GetKeyCode() == ui::VKEY_DOWN) {
+  } else if (!handled && event.key_code() == ui::VKEY_DOWN) {
     model_->OnUpOrDownKeyPressed(1);
     handled = true;
   } else if (!handled &&
-             event.GetKeyCode() == ui::VKEY_TAB &&
+             event.key_code() == ui::VKEY_TAB &&
              !event.IsShiftDown() &&
              !event.IsControlDown()) {
     if (model_->is_keyword_hint()) {
@@ -224,7 +224,7 @@ bool AutocompleteEditViewViews::HandleKeyReleaseEvent(
   // Omnibox2 can switch its contents while pressing a control key. To switch
   // the contents of omnibox2, we notify the AutocompleteEditModel class when
   // the control-key state is changed.
-  if (event.GetKeyCode() == ui::VKEY_CONTROL) {
+  if (event.key_code() == ui::VKEY_CONTROL) {
     // TODO(oshima): investigate if we need to support keyboard with two
     // controls. See autocomplete_edit_view_gtk.cc.
     model_->OnControlKeyChanged(false);
@@ -583,7 +583,7 @@ void AutocompleteEditViewViews::ContentsChanged(views::Textfield* sender,
 bool AutocompleteEditViewViews::HandleKeyEvent(
     views::Textfield* textfield,
     const views::KeyEvent& event) {
-  delete_was_pressed_ = event.GetKeyCode() == ui::VKEY_DELETE;
+  delete_was_pressed_ = event.key_code() == ui::VKEY_DELETE;
 
   // Reset |text_changed_| before passing the key event on to the text view.
   text_changed_ = false;
@@ -591,7 +591,7 @@ bool AutocompleteEditViewViews::HandleKeyEvent(
   handling_key_press_ = true;
   content_maybe_changed_by_key_press_ = false;
 
-  if (event.GetKeyCode() == ui::VKEY_BACK) {
+  if (event.key_code() == ui::VKEY_BACK) {
     // Checks if it's currently in keyword search mode.
     if (model_->is_keyword_hint() || model_->keyword().empty())
       return false;

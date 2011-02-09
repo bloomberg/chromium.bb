@@ -523,13 +523,13 @@ void MenuController::OnMouseReleased(SubmenuView* source,
   // contents of the folder.
   if (!part.is_scroll() && part.menu &&
       !(part.menu->HasSubmenu() &&
-        (event.GetFlags() == MouseEvent::EF_LEFT_BUTTON_DOWN))) {
+        (event.flags() == MouseEvent::EF_LEFT_BUTTON_DOWN))) {
     if (active_mouse_view_) {
       SendMouseReleaseToActiveView(source, event, false);
       return;
     }
     if (part.menu->GetDelegate()->IsTriggerableEvent(event)) {
-      Accept(part.menu, event.GetFlags());
+      Accept(part.menu, event.flags());
       return;
     }
   } else if (part.type == MenuPart::MENU_ITEM) {
@@ -1795,7 +1795,7 @@ void MenuController::UpdateActiveMouseView(SubmenuView* event_source,
 
       MouseEvent mouse_pressed_event(MouseEvent::ET_MOUSE_PRESSED,
                                      target_point.x(), target_point.y(),
-                                     event.GetFlags());
+                                     event.flags());
       active_mouse_view_->OnMousePressed(mouse_pressed_event);
     }
   }
@@ -1805,7 +1805,7 @@ void MenuController::UpdateActiveMouseView(SubmenuView* event_source,
     View::ConvertPointToView(target_menu, active_mouse_view_, &target_point);
     MouseEvent mouse_dragged_event(MouseEvent::ET_MOUSE_DRAGGED,
                                    target_point.x(), target_point.y(),
-                                   event.GetFlags());
+                                   event.flags());
     active_mouse_view_->OnMouseDragged(mouse_dragged_event);
   }
 }
@@ -1821,7 +1821,7 @@ void MenuController::SendMouseReleaseToActiveView(SubmenuView* event_source,
                              &target_loc);
   View::ConvertPointToView(NULL, active_mouse_view_, &target_loc);
   MouseEvent release_event(Event::ET_MOUSE_RELEASED, target_loc.x(),
-                           target_loc.y(), event.GetFlags());
+                           target_loc.y(), event.flags());
   // Reset the active_mouse_view_ before sending mouse released. That way if if
   // calls back to use we aren't in a weird state.
   View* active_view = active_mouse_view_;

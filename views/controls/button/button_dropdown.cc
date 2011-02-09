@@ -124,7 +124,7 @@ bool ButtonDropDown::ShouldEnterPushedState(const MouseEvent& e) {
   // Enter PUSHED state on press with Left or Right mouse button. Remain
   // in this state while the context menu is open.
   return ((MouseEvent::EF_LEFT_BUTTON_DOWN |
-    MouseEvent::EF_RIGHT_BUTTON_DOWN) & e.GetFlags()) != 0;
+    MouseEvent::EF_RIGHT_BUTTON_DOWN) & e.flags()) != 0;
 }
 
 void ButtonDropDown::ShowDropDownMenu(gfx::NativeView window) {

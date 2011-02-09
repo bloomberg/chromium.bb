@@ -92,7 +92,7 @@ void ContentSettingBubbleContents::Favicon::OnMouseReleased(
   if (!canceled &&
       (event.IsLeftMouseButton() || event.IsMiddleMouseButton()) &&
       HitTest(event.location()))
-    parent_->LinkActivated(link_, event.GetFlags());
+    parent_->LinkActivated(link_, event.flags());
 }
 
 gfx::NativeCursor ContentSettingBubbleContents::Favicon::GetCursorForPoint(

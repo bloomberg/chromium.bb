@@ -148,7 +148,7 @@ int BrowserActionOverflowMenuController::GetDropOperation(
   // (because we don't shrink the BrowserActionContainer when you do this).
   if ((item->GetCommand() == 0) && (*position == DROP_BEFORE)) {
     BrowserActionDragData drop_data;
-    if (!drop_data.Read(event.GetData()))
+    if (!drop_data.Read(event.data()))
       return ui::DragDropTypes::DRAG_NONE;
 
     if (drop_data.index() < owner_->VisibleBrowserActions())
@@ -163,7 +163,7 @@ int BrowserActionOverflowMenuController::OnPerformDrop(
     DropPosition position,
     const views::DropTargetEvent& event) {
   BrowserActionDragData drop_data;
-  if (!drop_data.Read(event.GetData()))
+  if (!drop_data.Read(event.data()))
     return ui::DragDropTypes::DRAG_NONE;
 
   size_t drop_index;

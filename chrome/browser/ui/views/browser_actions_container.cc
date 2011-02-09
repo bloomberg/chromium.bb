@@ -699,7 +699,7 @@ void BrowserActionsContainer::OnDragExited() {
 int BrowserActionsContainer::OnPerformDrop(
     const views::DropTargetEvent& event) {
   BrowserActionDragData data;
-  if (!data.Read(event.GetData()))
+  if (!data.Read(event.data()))
     return ui::DragDropTypes::DRAG_NONE;
 
   // Make sure we have the same view as we started with.

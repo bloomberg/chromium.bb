@@ -125,7 +125,7 @@ CustomButton::CustomButton(ButtonListener* listener)
 }
 
 bool CustomButton::IsTriggerableEvent(const MouseEvent& e) {
-  return (triggerable_event_flags_ & e.GetFlags()) != 0;
+  return (triggerable_event_flags_ & e.flags()) != 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -203,9 +203,9 @@ bool CustomButton::OnKeyPressed(const KeyEvent& e) {
   // Space sets button state to pushed. Enter clicks the button. This matches
   // the Windows native behavior of buttons, where Space clicks the button on
   // KeyRelease and Enter clicks the button on KeyPressed.
-  if (e.GetKeyCode() == ui::VKEY_SPACE) {
+  if (e.key_code() == ui::VKEY_SPACE) {
     SetState(BS_PUSHED);
-  } else if (e.GetKeyCode() == ui::VKEY_RETURN) {
+  } else if (e.key_code() == ui::VKEY_RETURN) {
     SetState(BS_NORMAL);
     NotifyClick(e);
   } else {
@@ -215,7 +215,7 @@ bool CustomButton::OnKeyPressed(const KeyEvent& e) {
 }
 
 bool CustomButton::OnKeyReleased(const KeyEvent& e) {
-  if ((state_ == BS_DISABLED) || (e.GetKeyCode() != ui::VKEY_SPACE))
+  if ((state_ == BS_DISABLED) || (e.key_code() != ui::VKEY_SPACE))
     return false;
 
   SetState(BS_NORMAL);

@@ -969,7 +969,7 @@ void AutocompleteEditViewWin::PasteAndGo(const string16& text) {
 
 bool AutocompleteEditViewWin::SkipDefaultKeyEventProcessing(
     const views::KeyEvent& e) {
-  ui::KeyboardCode key = e.GetKeyCode();
+  ui::KeyboardCode key = e.key_code();
   // We don't process ALT + numpad digit as accelerators, they are used for
   // entering special characters.  We do translate alt-home.
   if (e.IsAltDown() && (key != ui::VKEY_HOME) &&

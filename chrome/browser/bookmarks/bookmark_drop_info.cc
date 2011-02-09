@@ -26,7 +26,7 @@ BookmarkDropInfo::~BookmarkDropInfo() {
 }
 
 void BookmarkDropInfo::Update(const views::DropTargetEvent& event) {
-  source_operations_ = event.GetSourceOperations();
+  source_operations_ = event.source_operations();
   is_control_down_ = event.IsControlDown();
   last_y_ = event.y();
 

@@ -33,13 +33,13 @@ class UserEntryTextfield : public TextfieldWithMargin {
 
   // Overridden from views::View:
   virtual bool OnKeyPressed(const views::KeyEvent& e) {
-    if (e.GetKeyCode() == ui::VKEY_TAB) {
+    if (e.key_code() == ui::VKEY_TAB) {
       controller_->SelectUserRelative(e.IsShiftDown() ? -1 : 1);
       return true;
-    } else if (e.GetKeyCode() == ui::VKEY_LEFT) {
+    } else if (e.key_code() == ui::VKEY_LEFT) {
       controller_->SelectUserRelative(-1);
       return true;
-    } else if (e.GetKeyCode() == ui::VKEY_RIGHT) {
+    } else if (e.key_code() == ui::VKEY_RIGHT) {
       controller_->SelectUserRelative(1);
       return true;
     } else {
@@ -48,7 +48,7 @@ class UserEntryTextfield : public TextfieldWithMargin {
   }
 
   virtual bool SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
-    if (e.GetKeyCode() == ui::VKEY_TAB)
+    if (e.key_code() == ui::VKEY_TAB)
       return true;
     else
       return views::Textfield::SkipDefaultKeyEventProcessing(e);
@@ -104,7 +104,7 @@ bool ExistingUserView::AcceleratorPressed(
 
 bool ExistingUserView::HandleKeyEvent(views::Textfield* sender,
                                       const views::KeyEvent& key_event) {
-  if (key_event.GetKeyCode() == ui::VKEY_RETURN) {
+  if (key_event.key_code() == ui::VKEY_RETURN) {
     if (!password_field_->text().empty())
       user_controller_->OnLogin("", UTF16ToUTF8(password_field_->text()));
   } else {

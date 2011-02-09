@@ -193,12 +193,12 @@ class BookmarkFolderButton : public views::MenuButton {
   virtual bool IsTriggerableEvent(const views::MouseEvent& e) {
     // Left clicks should show the menu contents and right clicks should show
     // the context menu. They should not trigger the opening of underlying urls.
-    if (e.GetFlags() == views::MouseEvent::EF_LEFT_BUTTON_DOWN ||
-        e.GetFlags() == views::MouseEvent::EF_RIGHT_BUTTON_DOWN)
+    if (e.flags() == views::MouseEvent::EF_LEFT_BUTTON_DOWN ||
+        e.flags() == views::MouseEvent::EF_RIGHT_BUTTON_DOWN)
       return false;
 
     WindowOpenDisposition disposition(
-        event_utils::DispositionFromEventFlags(e.GetFlags()));
+        event_utils::DispositionFromEventFlags(e.flags()));
     return disposition != CURRENT_TAB;
   }
 
@@ -1402,9 +1402,8 @@ int BookmarkBarView::CalculateDropOperation(const DropTargetEvent& event,
     int ops = data.GetFirstNode(profile_)
         ? ui::DragDropTypes::DRAG_MOVE
         : ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK;
-    return
-        bookmark_utils::PreferredDropOperation(event.GetSourceOperations(),
-                                               ops);
+    return bookmark_utils::PreferredDropOperation(event.source_operations(),
+                                                  ops);
   }
 
   for (int i = 0; i < GetBookmarkButtonCount() &&

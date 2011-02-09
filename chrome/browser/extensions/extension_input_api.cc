@@ -89,12 +89,12 @@ bool SendKeyboardEventInputFunction::RunImpl() {
 
   const views::KeyEvent& prototype_event =
       KeyEventFromKeyIdentifier(identifier);
-  if (prototype_event.GetKeyCode() == ui::VKEY_UNKNOWN) {
+  if (prototype_event.key_code() == ui::VKEY_UNKNOWN) {
     error_ = kUnknownOrUnsupportedKeyIdentiferError;
     return false;
   }
 
-  int flags = prototype_event.GetFlags();
+  int flags = prototype_event.flags();
   bool alt = false;
   if (args->GetBoolean(kAlt, &alt))
     flags |= alt ? views::Event::EF_ALT_DOWN : 0;
@@ -119,7 +119,7 @@ bool SendKeyboardEventInputFunction::RunImpl() {
     return false;
   }
 
-  views::KeyEvent event(type, prototype_event.GetKeyCode(), flags, 0, 0);
+  views::KeyEvent event(type, prototype_event.key_code(), flags, 0, 0);
   if (!root_view->ProcessKeyEvent(event)) {
     error_ = kKeyEventUnprocessedError;
     return false;

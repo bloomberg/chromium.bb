@@ -120,7 +120,7 @@ bool FocusManager::OnKeyEvent(const KeyEvent& event) {
 #endif
 
   // Intercept arrow key messages to switch between grouped views.
-  ui::KeyboardCode key_code = event.GetKeyCode();
+  ui::KeyboardCode key_code = event.key_code();
   if (focused_view_ && focused_view_->GetGroup() != -1 &&
       (key_code == ui::VKEY_UP || key_code == ui::VKEY_DOWN ||
        key_code == ui::VKEY_LEFT || key_code == ui::VKEY_RIGHT)) {
@@ -146,7 +146,7 @@ bool FocusManager::OnKeyEvent(const KeyEvent& event) {
   // Process keyboard accelerators.
   // If the key combination matches an accelerator, the accelerator is
   // triggered, otherwise the key event is processed as usual.
-  Accelerator accelerator(event.GetKeyCode(),
+  Accelerator accelerator(event.key_code(),
                           event.IsShiftDown(),
                           event.IsControlDown(),
                           event.IsAltDown());
@@ -509,8 +509,7 @@ AcceleratorTarget* FocusManager::GetCurrentTargetForAccelerator(
 
 // static
 bool FocusManager::IsTabTraversalKeyEvent(const KeyEvent& key_event) {
-  return key_event.GetKeyCode() == ui::VKEY_TAB &&
-         !key_event.IsControlDown();
+  return key_event.key_code() == ui::VKEY_TAB && !key_event.IsControlDown();
 }
 
 void FocusManager::ViewRemoved(View* parent, View* removed) {
