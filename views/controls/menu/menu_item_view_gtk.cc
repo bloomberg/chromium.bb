@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,7 @@
 #include "ui/gfx/favicon_size.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/menu/menu_config.h"
-#include "views/controls/menu/radio_button_image_gtk.h"
+#include "views/controls/menu/menu_image_util_gtk.h"
 #include "views/controls/menu/submenu_view.h"
 
 namespace views {
@@ -69,11 +69,14 @@ void MenuItemView::Paint(gfx::Canvas* canvas, bool for_drag) {
   } else if (type_ == RADIO) {
     const SkBitmap* image =
         GetRadioButtonImage(GetDelegate()->IsItemChecked(GetCommand()));
-    canvas->DrawBitmapInt(*image,
-                          icon_x,
-                          top_margin +
-                          (height() - top_margin - bottom_margin -
-                           image->height()) / 2);
+    gfx::Rect radio_bounds(icon_x,
+                           top_margin +
+                           (height() - top_margin - bottom_margin -
+                            image->height()) / 2,
+                           image->width(),
+                           image->height());
+    AdjustBoundsForRTLUI(&radio_bounds);
+    canvas->DrawBitmapInt(*image, radio_bounds.x(), radio_bounds.y());
   }
 
   // Render the foreground.
@@ -117,8 +120,7 @@ void MenuItemView::Paint(gfx::Canvas* canvas, bool for_drag) {
                                          config.arrow_width) / 2,
                            config.arrow_width, height());
     AdjustBoundsForRTLUI(&arrow_bounds);
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    canvas->DrawBitmapInt(*rb.GetBitmapNamed(IDR_MENU_ARROW),
+    canvas->DrawBitmapInt(*GetSubmenuArrowImage(),
                           arrow_bounds.x(), arrow_bounds.y());
   }
 }

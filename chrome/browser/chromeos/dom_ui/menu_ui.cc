@@ -34,7 +34,7 @@
 #include "ui/gfx/font.h"
 #include "views/accelerator.h"
 #include "views/controls/menu/menu_config.h"
-#include "views/controls/menu/radio_button_image_gtk.h"
+#include "views/controls/menu/menu_image_util_gtk.h"
 #include "views/widget/widget_gtk.h"
 
 namespace {
