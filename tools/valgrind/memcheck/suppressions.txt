@@ -3745,76 +3745,10 @@
    fun:_ZN7testing8TestInfo3RunEv
 }
 {
-   bug_72170a
-   Memcheck:Addr4
-   fun:pthread_mutex_lock
-   fun:_ZN4base8internal8LockImpl4LockEv
-   fun:_ZN4base4Lock7AcquireEv
-   fun:_ZN4base8AutoLockC2ERNS_4LockE
-   fun:_ZN4base8AutoLockC1ERNS_4LockE
-   fun:_ZN14WebDataService13CancelRequestEi
-   fun:_ZN19PersonalDataManager18CancelPendingQueryEPi
-   fun:_ZN19PersonalDataManagerD0Ev
-   fun:_ZN4base20RefCountedThreadSafeI19PersonalDataManagerNS_33DefaultRefCountedThreadSafeTraitsIS1_EEE14DeleteInternalEPKS1_
-   fun:_ZN4base33DefaultRefCountedThreadSafeTraitsI19PersonalDataManagerE8DestructEPKS1_
-   fun:_ZNK4base20RefCountedThreadSafeI19PersonalDataManagerNS_33DefaultRefCountedThreadSafeTraitsIS1_EEE7ReleaseEv
-   fun:_ZN13scoped_refptrI19PersonalDataManagerED2Ev
-   fun:_ZN13scoped_refptrI19PersonalDataManagerED1Ev
-   fun:_ZN23PersonalDataManagerTestD2Ev
-   fun:_ZN68PersonalDataManagerTest_AggregateProfileWithInsufficientAddress_TestD0Ev
-   fun:_ZN7testing4Test11DeleteSelf_Ev
-   fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
-   fun:_ZN7testing8TestInfo3RunEv
-   fun:_ZN7testing8TestCase3RunEv
-   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-   fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_8internal12UnitTestImplEbEET0_PT_MS4_FS3_vEPKc
-   fun:_ZN7testing8UnitTest3RunEv
-}
-{
-   bug_72170b
-   Memcheck:Addr4
-   fun:_ZNK13scoped_refptrI14WebDataServiceE3getEv
-   fun:_ZN14TestingProfile17GetWebDataServiceEN7Profile17ServiceAccessTypeE
-   fun:_ZN19PersonalDataManager18CancelPendingQueryEPi
-   fun:_ZN19PersonalDataManagerD0Ev
-   fun:_ZN4base20RefCountedThreadSafeI19PersonalDataManagerNS_33DefaultRefCountedThreadSafeTraitsIS1_EEE14DeleteInternalEPKS1_
-   fun:_ZN4base33DefaultRefCountedThreadSafeTraitsI19PersonalDataManagerE8DestructEPKS1_
-   fun:_ZNK4base20RefCountedThreadSafeI19PersonalDataManagerNS_33DefaultRefCountedThreadSafeTraitsIS1_EEE7ReleaseEv
-   fun:_ZN13scoped_refptrI19PersonalDataManagerED2Ev
-   fun:_ZN13scoped_refptrI19PersonalDataManagerED1Ev
-   fun:_ZN23PersonalDataManagerTestD2Ev
-   fun:_ZN68PersonalDataManagerTest_AggregateProfileWithInsufficientAddress_TestD0Ev
-   fun:_ZN7testing4Test11DeleteSelf_Ev
-   fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
-   fun:_ZN7testing8TestInfo3RunEv
-   fun:_ZN7testing8TestCase3RunEv
-   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-   fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_8internal12UnitTestImplEbEET0_PT_MS4_FS3_vEPKc
-   fun:_ZN7testing8UnitTest3RunEv
-   fun:_ZN4base9TestSuite3RunEv
-   fun:main
-}
-{
-   bug_72170c
-   Memcheck:Addr4
-   fun:_ZN19PersonalDataManager18CancelPendingQueryEPi
-   fun:_ZN19PersonalDataManagerD0Ev
-   fun:_ZN4base20RefCountedThreadSafeI19PersonalDataManagerNS_33DefaultRefCountedThreadSafeTraitsIS1_EEE14DeleteInternalEPKS1_
-   fun:_ZN4base33DefaultRefCountedThreadSafeTraitsI19PersonalDataManagerE8DestructEPKS1_
-   fun:_ZNK4base20RefCountedThreadSafeI19PersonalDataManagerNS_33DefaultRefCountedThreadSafeTraitsIS1_EEE7ReleaseEv
-   fun:_ZN13scoped_refptrI19PersonalDataManagerED2Ev
-   fun:_ZN13scoped_refptrI19PersonalDataManagerED1Ev
-   fun:_ZN23PersonalDataManagerTestD2Ev
-   fun:_ZN68PersonalDataManagerTest_AggregateProfileWithInsufficientAddress_TestD0Ev
-   fun:_ZN7testing4Test11DeleteSelf_Ev
-   fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
-   fun:_ZN7testing8TestInfo3RunEv
-   fun:_ZN7testing8TestCase3RunEv
-   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-   fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_8internal12UnitTestImplEbEET0_PT_MS4_FS3_vEPKc
-   fun:_ZN7testing8UnitTest3RunEv
-   fun:_ZN4base9TestSuite3RunEv
-   fun:main
+   bug_71728
+   Memcheck:Leak
+   fun:_Znw*
+   fun:*DownloadFileTest5SetUpEv
 }
 {
    bug_72288_a

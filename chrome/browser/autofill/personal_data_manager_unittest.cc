@@ -59,6 +59,7 @@ class PersonalDataManagerTest : public testing::Test {
   }
 
   virtual void TearDown() {
+    personal_data_ = NULL;
     if (profile_.get())
       profile_.reset(NULL);
 
@@ -265,6 +266,8 @@ TEST_F(PersonalDataManagerTest, SetProfilesAndCreditCards) {
   ASSERT_EQ(2U, results1.size());
   EXPECT_EQ(0, profile0.Compare(*results1.at(0)));
   EXPECT_EQ(0, profile1.Compare(*results1.at(1)));
+
+  MessageLoop::current()->Run();
 
   // Add two test credit cards to the database.
   std::vector<CreditCard> update_cc;
@@ -1165,6 +1168,17 @@ TEST_F(PersonalDataManagerTest, AggregateProfileWithInsufficientAddress) {
   const CreditCard* imported_credit_card;
   EXPECT_FALSE(personal_data_->ImportFormData(forms, &imported_credit_card));
   ASSERT_FALSE(imported_credit_card);
+
+  // Wait for the refresh.
+  EXPECT_CALL(personal_data_observer_,
+      OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
+
+  MessageLoop::current()->Run();
+
+  const std::vector<AutoFillProfile*>& profiles = personal_data_->profiles();
+  ASSERT_EQ(0U, profiles.size());
+  const std::vector<CreditCard*>& credit_cards = personal_data_->credit_cards();
+  ASSERT_EQ(0U, credit_cards.size());
 }
 
 
