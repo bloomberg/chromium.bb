@@ -1390,7 +1390,6 @@
         'browser/safe_browsing/safe_browsing_blocking_page_unittest.cc',
         'browser/safe_browsing/safe_browsing_database_unittest.cc',
         'browser/safe_browsing/safe_browsing_store_file_unittest.cc',
-        'browser/safe_browsing/safe_browsing_store_sqlite_unittest.cc',
         'browser/safe_browsing/safe_browsing_store_unittest.cc',
         'browser/safe_browsing/safe_browsing_store_unittest_helper.cc',
         'browser/safe_browsing/safe_browsing_util_unittest.cc',

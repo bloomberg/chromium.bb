@@ -348,8 +348,8 @@ class SafeBrowsingService
   // Used for issuing only one GetHash request for a given prefix.
   GetHashRequests gethash_requests_;
 
-  // The sqlite database.  We don't use a scoped_ptr because it needs to be
-  // destructed on a different thread than this object.
+  // The persistent database.  We don't use a scoped_ptr because it
+  // needs to be destructed on a different thread than this object.
   SafeBrowsingDatabase* database_;
 
   // Lock used to prevent possible data races due to compiler optimizations.

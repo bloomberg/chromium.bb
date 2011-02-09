@@ -14,12 +14,6 @@
 #include "base/callback.h"
 #include "base/file_util.h"
 
-// TODO(shess): Data is migrated from SafeBrowsingStoreSqlite as part
-// of the next update.  That way everyone doesn't pull a new database
-// when the code rolls out (and the migration code isn't gnarly).
-// After substantially everyone has migrated, the migration code can
-// be removed.  Make sure that it deletes any journal file.
-
 // Implement SafeBrowsingStore in terms of a flat file.  The file
 // format is pretty literal:
 //
@@ -110,9 +104,6 @@
 // often, consider retaining the last known-good file for recovery
 // purposes, rather than deleting it.
 
-// TODO(shess): Remove after migration.
-class SafeBrowsingStoreSqlite;
-
 class SafeBrowsingStoreFile : public SafeBrowsingStore {
  public:
   SafeBrowsingStoreFile();
@@ -176,7 +167,7 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
   enum FormatEventType {
     // Corruption detected, broken down by file format.
     FORMAT_EVENT_FILE_CORRUPT,
-    FORMAT_EVENT_SQLITE_CORRUPT,
+    FORMAT_EVENT_SQLITE_CORRUPT,  // Obsolete
 
     // The type of format found in the file.  The expected case (new
     // file format) is intentionally not covered.
@@ -186,8 +177,8 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
     // The number of SQLite-format files deleted should be the same as
     // FORMAT_EVENT_FOUND_SQLITE.  It can differ if the delete fails,
     // or if a failure prevents the update from succeeding.
-    FORMAT_EVENT_SQLITE_DELETED,
-    FORMAT_EVENT_SQLITE_DELETE_FAILED,
+    FORMAT_EVENT_SQLITE_DELETED,  // Obsolete
+    FORMAT_EVENT_SQLITE_DELETE_FAILED,  // Obsolete
 
     // Found and deleted (or failed to delete) the ancient "Safe
     // Browsing" file.
@@ -262,11 +253,6 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
   file_util::ScopedFILE file_;
   file_util::ScopedFILE new_file_;
   bool empty_;
-
-  // If the main file existed, but was an SQLite store, this is a
-  // handle to it.
-  // TODO(shess): Remove this (and all references) after migration.
-  scoped_ptr<SafeBrowsingStoreSqlite> old_store_;
 
   // Cache of chunks which have been seen.  Loaded from the database
   // on BeginUpdate() so that it can be queried during the

@@ -2058,8 +2058,6 @@
         'browser/safe_browsing/safe_browsing_store.h',
         'browser/safe_browsing/safe_browsing_store_file.cc',
         'browser/safe_browsing/safe_browsing_store_file.h',
-        'browser/safe_browsing/safe_browsing_store_sqlite.cc',
-        'browser/safe_browsing/safe_browsing_store_sqlite.h',
         'browser/safe_browsing/safe_browsing_util.cc',
         'browser/safe_browsing/safe_browsing_util.h',
         'browser/search_engines/edit_search_engine_controller.cc',

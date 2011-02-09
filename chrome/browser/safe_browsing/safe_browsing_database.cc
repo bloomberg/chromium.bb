@@ -13,8 +13,6 @@
 #include "base/sha2.h"
 #include "chrome/browser/safe_browsing/bloom_filter.h"
 #include "chrome/browser/safe_browsing/safe_browsing_store_file.h"
-#include "chrome/browser/safe_browsing/safe_browsing_store_sqlite.h"
-#include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "googleurl/src/gurl.h"
 
 namespace {
@@ -206,11 +204,9 @@ SafeBrowsingDatabaseFactory* SafeBrowsingDatabase::factory_ = NULL;
 
 // Factory method, non-thread safe. Caller has to make sure this s called
 // on SafeBrowsing Thread.
-// TODO(shess): Milestone-7 is converting from SQLite-based
-// SafeBrowsingDatabaseBloom to the new file format with
-// SafeBrowsingDatabaseNew.  Once that conversion is too far along to
-// consider reversing, circle back and lift SafeBrowsingDatabaseNew up
-// to SafeBrowsingDatabase and get rid of the abstract class.
+// TODO(shess): There's no need for a factory any longer.  Convert
+// SafeBrowsingDatabaseNew to SafeBrowsingDatabase, and have Create()
+// callers just construct things directly.
 SafeBrowsingDatabase* SafeBrowsingDatabase::Create(
     bool enable_download_protection) {
   if (!factory_)
@@ -259,7 +255,7 @@ void SafeBrowsingDatabase::RecordFailure(FailureType failure_type) {
 
 SafeBrowsingDatabaseNew::SafeBrowsingDatabaseNew()
     : creation_loop_(MessageLoop::current()),
-      browse_store_(new SafeBrowsingStoreSqlite),
+      browse_store_(new SafeBrowsingStoreFile),
       download_store_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(reset_factory_(this)) {
   DCHECK(browse_store_.get());

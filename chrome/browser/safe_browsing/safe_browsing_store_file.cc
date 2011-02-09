@@ -8,9 +8,6 @@
 #include "base/metrics/histogram.h"
 #include "base/md5.h"
 
-// TODO(shess): Remove after migration.
-#include "chrome/browser/safe_browsing/safe_browsing_store_sqlite.h"
-
 namespace {
 
 // NOTE(shess): kFileMagic should not be a byte-wise palindrome, so
@@ -261,16 +258,13 @@ bool SafeBrowsingStoreFile::Delete() {
     return false;
   }
 
-  // Also make sure any SQLite data is deleted.  This should only be
-  // needed if a journal file is left from a crash and the database is
-  // reset before SQLite gets a chance to straighten things out.
-  // TODO(shess): Remove after migration.
-  SafeBrowsingStoreSqlite old_store;
-  old_store.Init(
-      filename_,
-      NewCallback(this, &SafeBrowsingStoreFile::HandleCorruptDatabase));
-  if (!old_store.Delete())
-    return false;
+  // With SQLite support gone, one way to get to this code is if the
+  // existing file is a SQLite file.  Make sure the journal file is
+  // also removed.
+  const FilePath journal_filename(
+      filename_.value() + FILE_PATH_LITERAL("-journal"));
+  if (file_util::PathExists(journal_filename))
+    file_util::Delete(journal_filename, false);
 
   return true;
 }
@@ -344,27 +338,17 @@ bool SafeBrowsingStoreFile::OnCorruptDatabase() {
   return false;
 }
 
-void SafeBrowsingStoreFile::HandleCorruptDatabase() {
-  if (!corruption_seen_)
-    RecordFormatEvent(FORMAT_EVENT_SQLITE_CORRUPT);
-  corruption_seen_ = true;
-
-  if (corruption_callback_.get())
-    corruption_callback_->Run();
-}
-
 bool SafeBrowsingStoreFile::Close() {
   ClearUpdateBuffers();
 
   // Make sure the files are closed.
   file_.reset();
   new_file_.reset();
-  old_store_.reset();
   return true;
 }
 
 bool SafeBrowsingStoreFile::BeginUpdate() {
-  DCHECK(!file_.get() && !new_file_.get() && !old_store_.get());
+  DCHECK(!file_.get() && !new_file_.get());
 
   // Structures should all be clear unless something bad happened.
   DCHECK(add_chunks_cache_.empty());
@@ -412,32 +396,10 @@ bool SafeBrowsingStoreFile::BeginUpdate() {
       RecordFormatEvent(FORMAT_EVENT_FOUND_UNKNOWN);
     }
 
-    // Something about having the file open causes a problem with
-    // SQLite opening it.  Perhaps PRAGMA locking_mode = EXCLUSIVE?
+    // Close the file so that it can be deleted.
     file.reset();
 
-    // Magic numbers didn't match, maybe it's a SQLite database.
-    scoped_ptr<SafeBrowsingStoreSqlite>
-        sqlite_store(new SafeBrowsingStoreSqlite());
-    sqlite_store->Init(
-        filename_,
-        NewCallback(this, &SafeBrowsingStoreFile::HandleCorruptDatabase));
-    if (!sqlite_store->BeginUpdate())
-      return OnCorruptDatabase();
-
-    // Pull chunks-seen data into local structures, rather than
-    // optionally wiring various calls through to the SQLite store.
-    std::vector<int32> chunks;
-    sqlite_store->GetAddChunks(&chunks);
-    add_chunks_cache_.insert(chunks.begin(), chunks.end());
-
-    sqlite_store->GetSubChunks(&chunks);
-    sub_chunks_cache_.insert(chunks.begin(), chunks.end());
-
-    new_file_.swap(new_file);
-    old_store_.swap(sqlite_store);
-
-    return true;
+    return OnCorruptDatabase();
   }
 
   // TODO(shess): Under POSIX it is possible that this could size a
@@ -489,7 +451,7 @@ bool SafeBrowsingStoreFile::DoUpdate(
     const std::set<SBPrefix>& prefix_misses,
     std::vector<SBAddPrefix>* add_prefixes_result,
     std::vector<SBAddFullHash>* add_full_hashes_result) {
-  DCHECK(old_store_.get() || file_.get() || empty_);
+  DCHECK(file_.get() || empty_);
   DCHECK(new_file_.get());
   CHECK(add_prefixes_result);
   CHECK(add_full_hashes_result);
@@ -499,29 +461,8 @@ bool SafeBrowsingStoreFile::DoUpdate(
   std::vector<SBAddFullHash> add_full_hashes;
   std::vector<SBSubFullHash> sub_full_hashes;
 
-  // Read |old_store_| into the vectors.
-  if (old_store_.get()) {
-    // Push deletions to |old_store_| so they can be applied to the
-    // data being read.
-    for (base::hash_set<int32>::const_iterator iter = add_del_cache_.begin();
-         iter != add_del_cache_.end(); ++iter) {
-      old_store_->DeleteAddChunk(*iter);
-    }
-    for (base::hash_set<int32>::const_iterator iter = sub_del_cache_.begin();
-         iter != sub_del_cache_.end(); ++iter) {
-      old_store_->DeleteSubChunk(*iter);
-    }
-
-    if (!old_store_->ReadAddPrefixes(&add_prefixes) ||
-        !old_store_->ReadSubPrefixes(&sub_prefixes) ||
-        !old_store_->ReadAddHashes(&add_full_hashes) ||
-        !old_store_->ReadSubHashes(&sub_full_hashes))
-      return OnCorruptDatabase();
-
-    // Do not actually update the old store.
-    if (!old_store_->CancelUpdate())
-      return OnCorruptDatabase();
-  } else if (!empty_) {
+  // Read original data into the vectors.
+  if (!empty_) {
     DCHECK(file_.get());
 
     if (!FileRewind(file_.get()))
@@ -677,19 +618,9 @@ bool SafeBrowsingStoreFile::DoUpdate(
 
   // Close the file handle and swizzle the file into place.
   new_file_.reset();
-  if (old_store_.get()) {
-    const bool deleted = old_store_->Delete();
-    old_store_.reset();
-    if (!deleted) {
-      RecordFormatEvent(FORMAT_EVENT_SQLITE_DELETE_FAILED);
-      return false;
-    }
-    RecordFormatEvent(FORMAT_EVENT_SQLITE_DELETED);
-  } else {
-    if (!file_util::Delete(filename_, false) &&
-        file_util::PathExists(filename_))
-      return false;
-  }
+  if (!file_util::Delete(filename_, false) &&
+      file_util::PathExists(filename_))
+    return false;
 
   const FilePath new_filename = TemporaryFileForFilename(filename_);
   if (!file_util::Move(new_filename, filename_))
@@ -724,13 +655,11 @@ bool SafeBrowsingStoreFile::FinishUpdate(
 
   DCHECK(!new_file_.get());
   DCHECK(!file_.get());
-  DCHECK(!old_store_.get());
 
   return Close();
 }
 
 bool SafeBrowsingStoreFile::CancelUpdate() {
-  old_store_.reset();
   return Close();
 }
 

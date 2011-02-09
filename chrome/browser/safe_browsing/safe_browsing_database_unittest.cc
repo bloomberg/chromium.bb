@@ -14,7 +14,6 @@
 #include "base/time.h"
 #include "chrome/browser/safe_browsing/safe_browsing_database.h"
 #include "chrome/browser/safe_browsing/safe_browsing_store_file.h"
-#include "chrome/browser/safe_browsing/safe_browsing_store_sqlite.h"
 #include "chrome/browser/safe_browsing/safe_browsing_store_unittest_helper.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -217,57 +216,6 @@ class ScopedLogMessageIgnorer {
     return false;
   }
 };
-
-// Helper function which corrupts the root page of the indicated
-// table.  After this the table can be opened successfully, and
-// queries to other tables work, and possibly queries to this table
-// which only hit an index may work, but queries which hit the table
-// itself should not.  Returns |true| on success.
-bool CorruptSqliteTable(const FilePath& filename,
-                        const std::string& table_name) {
-  size_t root_page;  // Root page of the table.
-  size_t page_size;  // Page size of the database.
-
-  sql::Connection db;
-  if (!db.Open(filename))
-    return false;
-
-  sql::Statement stmt(db.GetUniqueStatement("PRAGMA page_size"));
-  if (!stmt.Step())
-    return false;
-  page_size = stmt.ColumnInt(0);
-
-  stmt.Assign(db.GetUniqueStatement(
-      "SELECT rootpage FROM sqlite_master WHERE name = ?"));
-  stmt.BindString(0, "sub_prefix");
-  if (!stmt.Step())
-    return false;
-  root_page = stmt.ColumnInt(0);
-
-  // The page numbers are 1-based.
-  const size_t root_page_offset = (root_page - 1) * page_size;
-
-  // Corrupt the file by overwriting the table's root page.
-  FILE* fp = file_util::OpenFile(filename, "r+");
-  if (!fp)
-    return false;
-
-  file_util::ScopedFILE file_closer(fp);
-  if (fseek(fp, root_page_offset, SEEK_SET) == -1)
-    return false;
-
-  for (size_t i = 0; i < page_size; ++i) {
-    fputc('!', fp);  // Character experimentally verified.
-  }
-
-  // Close the file manually because if there is an error in the
-  // close, it's likely because the data could not be flushed to the
-  // file.
-  if (!file_util::CloseFile(file_closer.release()))
-    return false;
-
-  return true;
-}
 
 }  // namespace
 
@@ -1082,84 +1030,6 @@ TEST_F(SafeBrowsingDatabaseTest, HashCaching) {
       GURL("http://www.fullevil.com/bad2.html"),
       &listname, &prefixes, &full_hashes,
       Time::Now()));
-}
-
-// Test that corrupt databases are appropriately handled, even if the
-// corruption is detected in the midst of the update.
-// TODO(shess): Disabled until ScopedLogMessageIgnorer resolved.
-// http://crbug.com/56448
-TEST_F(SafeBrowsingDatabaseTest, DISABLED_SqliteCorruptionHandling) {
-  // Re-create the database in a captive message loop so that we can
-  // influence task-posting.  Database specifically needs to the
-  // SQLite-backed.
-  database_.reset();
-  MessageLoop loop(MessageLoop::TYPE_DEFAULT);
-  SafeBrowsingStoreSqlite* store = new SafeBrowsingStoreSqlite();
-  database_.reset(new SafeBrowsingDatabaseNew(store, NULL));
-  database_->Init(database_filename_);
-
-  // This will cause an empty database to be created.
-  std::vector<SBListChunkRanges> lists;
-  EXPECT_TRUE(database_->UpdateStarted(&lists));
-  database_->UpdateFinished(true);
-
-  // Create a sub chunk to insert.
-  SBChunkList chunks;
-  SBChunk chunk;
-  SBChunkHost host;
-  host.host = Sha256Prefix("www.subbed.com/");
-  host.entry = SBEntry::Create(SBEntry::SUB_PREFIX, 1);
-  host.entry->set_chunk_id(7);
-  host.entry->SetChunkIdAtPrefix(0, 19);
-  host.entry->SetPrefixAt(0, Sha256Prefix("www.subbed.com/notevil1.html"));
-  chunk.chunk_number = 7;
-  chunk.is_add = false;
-  chunk.hosts.clear();
-  chunk.hosts.push_back(host);
-  chunks.clear();
-  chunks.push_back(chunk);
-
-  // Corrupt the |sub_prefix| table.
-  ASSERT_TRUE(CorruptSqliteTable(database_filename_, "sub_prefix"));
-
-  {
-    // The following code will cause DCHECKs, so suppress the crashes.
-    ScopedLogMessageIgnorer ignorer;
-
-    // Start an update.  The insert will fail due to corruption.
-    EXPECT_TRUE(database_->UpdateStarted(&lists));
-    VLOG(1) << "Expect failed check on: sqlite error 11";
-    database_->InsertChunks(safe_browsing_util::kMalwareList, chunks);
-
-    // Database file still exists until the corruption handler has run.
-    EXPECT_TRUE(file_util::PathExists(database_filename_));
-
-    // Flush through the corruption-handler task.
-    VLOG(1) << "Expect failed check on: SafeBrowsing database reset";
-    MessageLoop::current()->RunAllPending();
-  }
-
-  // Database file should not exist.
-  EXPECT_FALSE(file_util::PathExists(database_filename_));
-
-  // Finish the transaction.  This should short-circuit, so no
-  // DCHECKs.
-  database_->InsertChunks(safe_browsing_util::kMalwareList, chunks);
-  database_->UpdateFinished(true);
-
-  // Flush through any posted tasks.
-  MessageLoop::current()->RunAllPending();
-
-  // Database file should still not exist.
-  EXPECT_FALSE(file_util::PathExists(database_filename_));
-
-  // Run the update again successfully.
-  EXPECT_TRUE(database_->UpdateStarted(&lists));
-  database_->InsertChunks(safe_browsing_util::kMalwareList, chunks);
-  database_->UpdateFinished(true);
-  EXPECT_TRUE(file_util::PathExists(database_filename_));
-
-  database_.reset();
 }
 
 // Test that corrupt databases are appropriately handled, even if the
