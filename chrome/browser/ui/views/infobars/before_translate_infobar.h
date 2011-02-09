@@ -31,7 +31,7 @@ class BeforeTranslateInfoBar : public TranslateInfoBarBase,
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
   virtual void OriginalLanguageChanged();
 
-  // Overridden from views::ViewMenuDelegate:
+  // views::ViewMenuDelegate:
   virtual void RunMenu(View* source, const gfx::Point& pt);
 
   // Sets the text of the original language menu button to reflect the current

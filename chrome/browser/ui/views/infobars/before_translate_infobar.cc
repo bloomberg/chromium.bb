@@ -137,8 +137,7 @@ void BeforeTranslateInfoBar::OriginalLanguageChanged() {
   UpdateOriginalButtonText();
 }
 
-void BeforeTranslateInfoBar::RunMenu(views::View* source,
-                                     const gfx::Point& pt) {
+void BeforeTranslateInfoBar::RunMenu(View* source, const gfx::Point& pt) {
   if (source == language_menu_button_) {
     if (!languages_menu_.get())
       languages_menu_.reset(new views::Menu2(&languages_menu_model_));

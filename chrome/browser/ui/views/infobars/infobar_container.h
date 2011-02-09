@@ -48,7 +48,7 @@ class InfoBarContainer : public AccessiblePaneView,
   // the desired location of the center of the arrow in the
   // |outer_view| coordinate system.
   void PaintInfoBarArrows(gfx::Canvas* canvas,
-                          views::View* outer_view,
+                          View* outer_view,
                           int arrow_center_x);
 
  private:
@@ -56,9 +56,7 @@ class InfoBarContainer : public AccessiblePaneView,
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();
   virtual AccessibilityTypes::Role GetAccessibleRole();
-  virtual void ViewHierarchyChanged(bool is_add,
-                                    views::View* parent,
-                                    views::View* child);
+  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
 
   // NotificationObserver:
   virtual void Observe(NotificationType type,

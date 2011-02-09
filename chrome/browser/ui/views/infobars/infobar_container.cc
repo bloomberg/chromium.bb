@@ -58,7 +58,7 @@ void InfoBarContainer::RemoveDelegate(InfoBarDelegate* delegate) {
 }
 
 void InfoBarContainer::PaintInfoBarArrows(gfx::Canvas* canvas,
-                                          views::View* outer_view,
+                                          View* outer_view,
                                           int arrow_center_x) {
   for (int i = 0; i < GetChildViewCount(); ++i) {
     InfoBarView* infobar = static_cast<InfoBarView*>(GetChildViewAt(i));
@@ -68,8 +68,8 @@ void InfoBarContainer::PaintInfoBarArrows(gfx::Canvas* canvas,
 
 gfx::Size InfoBarContainer::GetPreferredSize() {
   // We do not have a preferred width (we will expand to fit the available width
-  // of the delegate). Our preferred height is the sum of the preferred
-  // heights of the InfoBars contained within us.
+  // of the delegate). Our preferred height is the sum of the preferred heights
+  // of the InfoBars contained within us.
   int height = 0;
   for (int i = 0; i < GetChildViewCount(); ++i)
     height += GetChildViewAt(i)->GetPreferredSize().height();
@@ -79,7 +79,7 @@ gfx::Size InfoBarContainer::GetPreferredSize() {
 void InfoBarContainer::Layout() {
   int top = 0;
   for (int i = 0; i < GetChildViewCount(); ++i) {
-    views::View* child = GetChildViewAt(i);
+    View* child = GetChildViewAt(i);
     gfx::Size ps = child->GetPreferredSize();
     child->SetBounds(0, top, width(), ps.height());
     top += ps.height();
@@ -91,8 +91,8 @@ AccessibilityTypes::Role InfoBarContainer::GetAccessibleRole() {
 }
 
 void InfoBarContainer::ViewHierarchyChanged(bool is_add,
-                                            views::View* parent,
-                                            views::View* child) {
+                                            View* parent,
+                                            View* child) {
   if (parent == this && child->GetParent() == this) {
     if (delegate_) {
       // An InfoBar child was added or removed. Tell the delegate it needs to

@@ -105,7 +105,7 @@ bool SSLCertAddedInfoBarDelegate::Accept() {
 
 class TabContentsSSLHelper::SSLAddCertData : public NotificationObserver {
  public:
-  explicit SSLAddCertData(TabContents* tab);
+  explicit SSLAddCertData(TabContents* tab_contents);
   virtual ~SSLAddCertData();
 
   // Displays |delegate| as an infobar in |tab_|, replacing our current one if

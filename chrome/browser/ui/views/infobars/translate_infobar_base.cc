@@ -42,6 +42,9 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
 
 // TranslateInfoBarBase -------------------------------------------------------
 
+// static
+const int TranslateInfoBarBase::kButtonInLabelSpacing = 5;
+
 TranslateInfoBarBase::TranslateInfoBarBase(TranslateInfoBarDelegate* delegate)
     : InfoBarView(delegate),
       normal_background_(InfoBarDelegate::PAGE_ACTION_TYPE),

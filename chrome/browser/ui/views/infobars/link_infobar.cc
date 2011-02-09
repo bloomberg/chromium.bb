@@ -100,11 +100,10 @@ void LinkInfoBar::Layout() {
 }
 
 void LinkInfoBar::LinkActivated(views::Link* source, int event_flags) {
-  DCHECK(source == link_);
+  DCHECK_EQ(link_, source);
   if (GetDelegate()->LinkClicked(
-          event_utils::DispositionFromEventFlags(event_flags))) {
+      event_utils::DispositionFromEventFlags(event_flags)))
     RemoveInfoBar();
-  }
 }
 
 LinkInfoBarDelegate* LinkInfoBar::GetDelegate() {

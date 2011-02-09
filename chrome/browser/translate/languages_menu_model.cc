@@ -13,9 +13,10 @@ LanguagesMenuModel::LanguagesMenuModel(
     : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
       translate_infobar_delegate_(translate_delegate),
       language_type_(language_type) {
-  for (size_t i = 0; i < translate_delegate->GetLanguageCount(); ++i)
+  for (size_t i = 0; i < translate_delegate->GetLanguageCount(); ++i) {
     AddCheckItem(static_cast<int>(i),
                  translate_delegate->GetLanguageDisplayableNameAt(i));
+  }
 }
 
 LanguagesMenuModel::~LanguagesMenuModel() {

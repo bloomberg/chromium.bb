@@ -32,8 +32,6 @@ const int InfoBarView::kHorizontalPadding = 6;
 const int InfoBarView::kIconLabelSpacing = 6;
 const int InfoBarView::kButtonButtonSpacing = 10;
 const int InfoBarView::kEndOfLabelSpacing = 16;
-const int InfoBarView::kCloseButtonSpacing = 12;
-const int InfoBarView::kButtonInLabelSpacing = 5;
 
 InfoBarView::InfoBarView(InfoBarDelegate* delegate)
     : InfoBar(delegate),
@@ -42,8 +40,7 @@ InfoBarView::InfoBarView(InfoBarDelegate* delegate)
           close_button_(new views::ImageButton(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(delete_factory_(this)),
       target_height_(kDefaultTargetHeight) {
-  // InfoBar deletes itself at the appropriate time.
-  set_parent_owned(false);
+  set_parent_owned(false);  // InfoBar deletes itself at the appropriate time.
 
   InfoBarDelegate::Type infobar_type = delegate->GetInfoBarType();
   set_background(new InfoBarBackground(infobar_type));
@@ -85,9 +82,8 @@ void InfoBarView::AnimateClose() {
   // Do not restore focus (and active state with it) on Windows if some other
   // top-level window became active.
   if (GetWidget() &&
-      !ui::DoesWindowBelongToActiveWindow(GetWidget()->GetNativeView())) {
+      !ui::DoesWindowBelongToActiveWindow(GetWidget()->GetNativeView()))
     restore_focus = false;
-  }
 #endif  // defined(OS_WIN)
   DestroyFocusTracker(restore_focus);
   animation_->Hide();
@@ -105,11 +101,27 @@ void InfoBarView::Close() {
 }
 
 void InfoBarView::PaintArrow(gfx::Canvas* canvas,
-                             views::View* outer_view,
+                             View* outer_view,
                              int arrow_center_x) {
   gfx::Point infobar_top(0, y());
   ConvertPointToView(GetParent(), outer_view, &infobar_top);
   int infobar_top_y = infobar_top.y();
+  SkPoint gradient_points[2] = {
+      {SkIntToScalar(0), SkIntToScalar(infobar_top_y)},
+      {SkIntToScalar(0), SkIntToScalar(infobar_top_y + target_height_)}
+  };
+  InfoBarDelegate::Type infobar_type = delegate_->GetInfoBarType();
+  SkColor gradient_colors[2] = {
+      InfoBarBackground::GetTopColor(infobar_type),
+      InfoBarBackground::GetBottomColor(infobar_type),
+  };
+  SkShader* gradient_shader = SkGradientShader::CreateLinear(gradient_points,
+      gradient_colors, NULL, 2, SkShader::kMirror_TileMode);
+  SkPaint paint;
+  paint.setStrokeWidth(1);
+  paint.setStyle(SkPaint::kFill_Style);
+  paint.setShader(gradient_shader);
+  gradient_shader->unref();
 
   // The size of the arrow (its height; also half its width).  The
   // arrow area is |arrow_size| ^ 2.  By taking the square root of the
@@ -118,7 +130,6 @@ void InfoBarView::PaintArrow(gfx::Canvas* canvas,
   const int kArrowSize = 10;
   int arrow_size = static_cast<int>(kArrowSize *
                                     sqrt(animation_->GetCurrentValue()));
-
   SkPath fill_path;
   fill_path.moveTo(SkPoint::Make(SkIntToScalar(arrow_center_x - arrow_size),
                                  SkIntToScalar(infobar_top_y)));
@@ -126,32 +137,12 @@ void InfoBarView::PaintArrow(gfx::Canvas* canvas,
   fill_path.rLineTo(SkIntToScalar(arrow_size), SkIntToScalar(arrow_size));
   SkPath border_path(fill_path);
   fill_path.close();
-
-  SkPaint paint;
-  paint.setStrokeWidth(1);
-  paint.setStyle(SkPaint::kFill_Style);
-
-  SkPoint grad_points[2];
-  grad_points[0].set(SkIntToScalar(0), SkIntToScalar(infobar_top_y));
-  grad_points[1].set(SkIntToScalar(0),
-                     SkIntToScalar(infobar_top_y + target_height_));
-
-  SkColor grad_colors[2];
-  grad_colors[0] = InfoBarBackground::GetTopColor(delegate_->GetInfoBarType());
-  grad_colors[1] =
-      InfoBarBackground::GetBottomColor(delegate_->GetInfoBarType());
-
-  SkShader* gradient_shader = SkGradientShader::CreateLinear(
-      grad_points, grad_colors, NULL, 2, SkShader::kMirror_TileMode);
-  paint.setShader(gradient_shader);
-  gradient_shader->unref();
-
   gfx::CanvasSkia* canvas_skia = canvas->AsCanvasSkia();
   canvas_skia->drawPath(fill_path, paint);
 
   paint.setShader(NULL);
   paint.setColor(SkColorSetA(ResourceBundle::toolbar_separator_color,
-                             SkColorGetA(grad_colors[0])));
+                             SkColorGetA(gradient_colors[0])));
   paint.setStyle(SkPaint::kStroke_Style);
   canvas_skia->drawPath(border_path, paint);
 }
@@ -166,9 +157,9 @@ void InfoBarView::Layout() {
                            button_size.height());
 }
 
-void InfoBarView::ViewHierarchyChanged(bool is_add,
-                                       views::View* parent,
-                                       views::View* child) {
+void InfoBarView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
+  View::ViewHierarchyChanged(is_add, parent, child);
+
   if (child == this) {
     if (is_add) {
       // The container_ pointer must be set before adding to the view hierarchy.
@@ -225,6 +216,7 @@ void InfoBarView::AnimationProgressed(const ui::Animation* animation) {
 }
 
 int InfoBarView::GetAvailableWidth() const {
+  const int kCloseButtonSpacing = 12;
   return close_button_->x() - kCloseButtonSpacing;
 }
 
@@ -237,7 +229,7 @@ int InfoBarView::CenterY(const gfx::Size prefsize) const {
   return std::max((target_height_ - prefsize.height()) / 2, 0);
 }
 
-int InfoBarView::OffsetY(views::View* parent, const gfx::Size prefsize) const {
+int InfoBarView::OffsetY(View* parent, const gfx::Size prefsize) const {
   return CenterY(prefsize) - (target_height_ - parent->height());
 }
 
@@ -246,8 +238,8 @@ AccessibilityTypes::Role InfoBarView::GetAccessibleRole() {
 }
 
 gfx::Size InfoBarView::GetPreferredSize() {
-  int height = static_cast<int>(target_height_ * animation_->GetCurrentValue());
-  return gfx::Size(0, height);
+  return gfx::Size(0,
+      static_cast<int>(target_height_ * animation_->GetCurrentValue()));
 }
 
 void InfoBarView::FocusWillChange(View* focused_before, View* focused_now) {

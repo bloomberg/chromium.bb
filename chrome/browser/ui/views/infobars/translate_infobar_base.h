@@ -26,6 +26,8 @@ class TranslateInfoBarBase : public TranslateInfoBarView,
   virtual ~TranslateInfoBarBase();
 
  protected:
+  static const int kButtonInLabelSpacing;
+
   // Creates a label with the appropriate font and color for the translate
   // infobars.
   static views::Label* CreateLabel(const string16& text);

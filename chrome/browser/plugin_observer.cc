@@ -32,6 +32,7 @@ class PluginInfoBarDelegate : public ConfirmInfoBarDelegate {
  protected:
   virtual ~PluginInfoBarDelegate();
 
+  // ConfirmInfoBarDelegate:
   virtual void InfoBarClosed();
   virtual bool Cancel();
   virtual bool LinkClicked(WindowOpenDisposition disposition);
@@ -179,7 +180,8 @@ OutdatedPluginInfoBarDelegate::OutdatedPluginInfoBarDelegate(
     TabContents* tab_contents,
     const string16& name,
     const GURL& update_url)
-    : PluginInfoBarDelegate(tab_contents, name), update_url_(update_url) {
+    : PluginInfoBarDelegate(tab_contents, name),
+      update_url_(update_url) {
   UserMetrics::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Shown"));
 }
 

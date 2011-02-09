@@ -132,8 +132,8 @@ void ConfirmInfoBar::Layout() {
 }
 
 void ConfirmInfoBar::ViewHierarchyChanged(bool is_add,
-                                          views::View* parent,
-                                          views::View* child) {
+                                          View* parent,
+                                          View* child) {
   if (is_add && child == this && !initialized_) {
     AddChildView(ok_button_);
     AddChildView(cancel_button_);
@@ -166,12 +166,9 @@ void ConfirmInfoBar::ButtonPressed(views::Button* sender,
 
 void ConfirmInfoBar::LinkActivated(views::Link* source, int event_flags) {
   DCHECK_EQ(link_, source);
-  DCHECK(link_->IsVisible());
-  DCHECK(!link_->GetText().empty());
   if (GetDelegate()->LinkClicked(
-      event_utils::DispositionFromEventFlags(event_flags))) {
+      event_utils::DispositionFromEventFlags(event_flags)))
     RemoveInfoBar();
-  }
 }
 
 ConfirmInfoBarDelegate* ConfirmInfoBar::GetDelegate() {

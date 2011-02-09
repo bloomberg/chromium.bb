@@ -124,6 +124,7 @@ void GeolocationPermissionContextTests::CheckPermissionMessageSent(
     bool allowed) {
   CheckPermissionMessageSentInternal(process(), bridge_id, allowed);
 }
+
 void GeolocationPermissionContextTests::CheckPermissionMessageSentForTab(
     int tab,
     int bridge_id,

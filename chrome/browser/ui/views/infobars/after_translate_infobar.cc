@@ -117,8 +117,7 @@ void AfterTranslateInfoBar::ButtonPressed(views::Button* sender,
     TranslateInfoBarBase::ButtonPressed(sender, event);
 }
 
-void AfterTranslateInfoBar::RunMenu(views::View* source,
-                                    const gfx::Point& pt) {
+void AfterTranslateInfoBar::RunMenu(View* source, const gfx::Point& pt) {
   if (source == original_language_menu_button_) {
     if (!original_language_menu_.get()) {
       original_language_menu_.reset(
@@ -126,11 +125,11 @@ void AfterTranslateInfoBar::RunMenu(views::View* source,
     }
     original_language_menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
   } else if (source == target_language_menu_button_) {
-      if (!target_language_menu_.get()) {
-        target_language_menu_.reset(
-            new views::Menu2(&target_language_menu_model_));
-      }
-      target_language_menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
+    if (!target_language_menu_.get()) {
+      target_language_menu_.reset(
+          new views::Menu2(&target_language_menu_model_));
+    }
+    target_language_menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
   } else {
     DCHECK_EQ(options_menu_button_, source);
     if (!options_menu_.get())

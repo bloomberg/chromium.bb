@@ -32,7 +32,7 @@ class AfterTranslateInfoBar : public TranslateInfoBarBase,
   virtual void OriginalLanguageChanged();
   virtual void TargetLanguageChanged();
 
-  // views::ViewMenuDelegate:
+  // ViewMenuDelegate:
   virtual void RunMenu(View* source, const gfx::Point& pt);
 
   // Sets the text of the original or target language menu buttons to reflect
@@ -41,9 +41,8 @@ class AfterTranslateInfoBar : public TranslateInfoBarBase,
 
   // The text displayed in the infobar is something like:
   // "Translated from <lang1> to <lang2> [more text in some languages]"
-  // ...where <lang1> and <lang2> are comboboxes.
-  // So the text is split in 3 chunks, each one displayed in one of the labels
-  // below.
+  // ...where <lang1> and <lang2> are comboboxes.  So the text is split in 3
+  // chunks, each one displayed in one of the labels below.
   views::Label* label_1_;
   views::Label* label_2_;
   views::Label* label_3_;

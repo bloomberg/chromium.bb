@@ -1414,7 +1414,7 @@ IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_WaitForTabCountToBecome,
 // Waits for the infobar count to reach given number.
 IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_WaitForInfoBarCount,
                             int /* tab handle */,
-                            int /* target count */,
+                            size_t /* target count */,
                             bool /* success */)
 
 // Waits for the autocomplete edit to receive focus.

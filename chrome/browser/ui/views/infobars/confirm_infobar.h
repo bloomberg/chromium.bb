@@ -50,9 +50,7 @@ class ConfirmInfoBar : public AlertInfoBar,
 
   // InfoBarView:
   virtual void Layout();
-  virtual void ViewHierarchyChanged(bool is_add,
-                                    views::View* parent,
-                                    views::View* child);
+  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
   virtual int GetAvailableWidth() const;
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
