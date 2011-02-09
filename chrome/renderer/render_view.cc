@@ -2964,19 +2964,26 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
 
   // Detect when we're crossing a permission-based boundary (e.g. into or out of
   // an extension or app origin, leaving a DOMUI page, etc). We only care about
-  // top-level navigations withing the current tab (as opposed to, for example,
+  // top-level navigations within the current tab (as opposed to, for example,
   // opening a new window). But we sometimes navigate to about:blank to clear a
   // tab, and we want to still allow that.
   //
-  // Note: we do this only for GET requests because we our mechanism for
-  // switching processes only issues GET requests. In particular, POST
-  // requests don't work, because this mechanism does not preserve form POST
-  // data. If it becomes necessary to support process switching for POST
-  // requests, we will need to send the request's httpBody data up to the
-  // browser process, and issue a special POST navigation in WebKit (via
-  // FrameLoader::loadFrameRequest). See ResourceDispatcher and
-  // WebURLLoaderImpl for examples of how to send the httpBody data.
-  if (!frame->parent() && is_content_initiated &&
+  // Note: we do this only for GET requests because our mechanism for switching
+  // processes only issues GET requests. In particular, POST requests don't
+  // work, because this mechanism does not preserve form POST data. If it
+  // becomes necessary to support process switching for POST requests, we will
+  // need to send the request's httpBody data up to the browser process, and
+  // issue a special POST navigation in WebKit (via
+  // FrameLoader::loadFrameRequest). See ResourceDispatcher and WebURLLoaderImpl
+  // for examples of how to send the httpBody data.
+  // Note2: We normally don't do this for browser-initiated navigations, since
+  // it's pointless to tell the browser about navigations it gave us. But
+  // we do potentially ask the browser to handle a redirect that was originally
+  // initiated by the browser. See http://crbug.com/70943
+  //
+  // TODO(creis): Move this redirect check to the browser process to avoid
+  // ping-ponging.  See http://crbug.com/72380.
+  if (!frame->parent() && (is_content_initiated || is_redirect) &&
       default_policy == WebKit::WebNavigationPolicyCurrentTab &&
       request.httpMethod() == "GET" && !url.SchemeIs(chrome::kAboutScheme)) {
     bool send_referrer = false;
