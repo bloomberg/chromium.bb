@@ -279,6 +279,10 @@ void DevToolsHttpProtocolHandler::OnWebSocketRequestUI(
   manager->RegisterDevToolsClientHostFor(
       tab_contents->render_view_host(),
       client_host);
+  manager->ForwardToDevToolsAgent(
+      client_host,
+      DevToolsAgentMsg_FrontendLoaded());
+
   AcceptWebSocket(connection_id, request);
 }
 
@@ -292,12 +296,9 @@ void DevToolsHttpProtocolHandler::OnWebSocketMessageUI(
 
   DevToolsManager* manager = DevToolsManager::GetInstance();
 
-  if (data == "loaded") {
-    manager->ForwardToDevToolsAgent(
-        it->second,
-        DevToolsAgentMsg_FrontendLoaded());
+  //TODO(pfeldman): remove this once front-end stops sending it upstream.
+  if (data == "loaded")
     return;
-  }
 
   manager->ForwardToDevToolsAgent(
       it->second,
