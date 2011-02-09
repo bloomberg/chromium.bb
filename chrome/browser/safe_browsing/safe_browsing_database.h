@@ -272,6 +272,10 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   // Causes the update functions to fail with no side effects, until
   // the next call to |UpdateStarted()|.
   bool corruption_detected_;
+
+  // Set to true if any chunks are added or deleted during an update.
+  // Used to optimize away database update.
+  bool change_detected_;
 };
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_DATABASE_H_

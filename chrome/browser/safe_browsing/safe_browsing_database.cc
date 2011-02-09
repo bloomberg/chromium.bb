@@ -566,6 +566,8 @@ void SafeBrowsingDatabaseNew::InsertChunks(const std::string& list_name,
   SafeBrowsingStore* store = GetStore(list_id);
   if (!store) return;
 
+  change_detected_ = true;
+
   store->BeginChunk();
   if (chunks.front().is_add) {
     InsertAddChunks(list_id, chunks);
@@ -589,6 +591,8 @@ void SafeBrowsingDatabaseNew::DeleteChunks(
 
   SafeBrowsingStore* store = GetStore(list_id);
   if (!store) return;
+
+  change_detected_ = true;
 
   for (size_t i = 0; i < chunk_deletes.size(); ++i) {
     std::vector<int> chunk_numbers;
@@ -677,6 +681,7 @@ bool SafeBrowsingDatabaseNew::UpdateStarted(
   }
 
   corruption_detected_ = false;
+  change_detected_ = false;
   return true;
 }
 
@@ -685,8 +690,10 @@ void SafeBrowsingDatabaseNew::UpdateFinished(bool update_succeeded) {
   if (corruption_detected_)
     return;
 
-  // Unroll any partially-received transaction.
-  if (!update_succeeded) {
+  // Unroll the transaction if there was a protocol error or if the
+  // transaction was empty.  This will leave the bloom filter, the
+  // pending hashes, and the prefix miss cache in place.
+  if (!update_succeeded || !change_detected_) {
     browse_store_->CancelUpdate();
     if (download_store_.get())
       download_store_->CancelUpdate();

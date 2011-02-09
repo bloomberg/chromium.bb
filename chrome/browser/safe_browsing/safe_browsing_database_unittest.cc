@@ -1421,3 +1421,59 @@ TEST_F(SafeBrowsingDatabaseTest, BinHashEntries) {
   // database is available in database.
   database_.reset();
 }
+
+// Test that an empty update doesn't actually update the database.
+// This isn't a functionality requirement, but it is a useful
+// optimization.
+TEST_F(SafeBrowsingDatabaseTest, EmptyUpdate) {
+  SBChunkList chunks;
+  SBChunk chunk;
+
+  FilePath filename = database_->BrowseDBFilename(database_filename_);
+
+  // Prime the database.
+  std::vector<SBListChunkRanges> lists;
+  EXPECT_TRUE(database_->UpdateStarted(&lists));
+
+  InsertAddChunkHostPrefixUrl(&chunk, 1, "www.evil.com/",
+                              "www.evil.com/malware.html");
+  chunks.clear();
+  chunks.push_back(chunk);
+  database_->InsertChunks(safe_browsing_util::kMalwareList, chunks);
+  database_->UpdateFinished(true);
+
+  // Inserting another chunk updates the database file.  The sleep is
+  // needed because otherwise the entire test can finish w/in the
+  // resolution of the lastmod time.
+  base::PlatformFileInfo before_info, after_info;
+  base::PlatformThread::Sleep(1500);
+  ASSERT_TRUE(file_util::GetFileInfo(filename, &before_info));
+  EXPECT_TRUE(database_->UpdateStarted(&lists));
+  chunk.hosts.clear();
+  InsertAddChunkHostPrefixUrl(&chunk, 2, "www.foo.com/",
+                              "www.foo.com/malware.html");
+  chunks.clear();
+  chunks.push_back(chunk);
+  database_->InsertChunks(safe_browsing_util::kMalwareList, chunks);
+  database_->UpdateFinished(true);
+  ASSERT_TRUE(file_util::GetFileInfo(filename, &after_info));
+  EXPECT_LT(before_info.last_modified, after_info.last_modified);
+
+  // Deleting a chunk updates the database file.
+  base::PlatformThread::Sleep(1500);
+  ASSERT_TRUE(file_util::GetFileInfo(filename, &before_info));
+  EXPECT_TRUE(database_->UpdateStarted(&lists));
+  AddDelChunk(safe_browsing_util::kMalwareList, chunk.chunk_number);
+  database_->UpdateFinished(true);
+  ASSERT_TRUE(file_util::GetFileInfo(filename, &after_info));
+  EXPECT_LT(before_info.last_modified, after_info.last_modified);
+
+  // Simply calling |UpdateStarted()| then |UpdateFinished()| does not
+  // update the database file.
+  base::PlatformThread::Sleep(1500);
+  ASSERT_TRUE(file_util::GetFileInfo(filename, &before_info));
+  EXPECT_TRUE(database_->UpdateStarted(&lists));
+  database_->UpdateFinished(true);
+  ASSERT_TRUE(file_util::GetFileInfo(filename, &after_info));
+  EXPECT_EQ(before_info.last_modified, after_info.last_modified);
+}
