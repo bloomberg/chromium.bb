@@ -67,8 +67,12 @@ DictionaryValue* ProxyConfigDictionary::CreatePacScript(
 DictionaryValue* ProxyConfigDictionary::CreateFixedServers(
     const std::string& proxy_server,
     const std::string& bypass_list) {
-  return CreateDictionary(
-      ProxyPrefs::MODE_FIXED_SERVERS, "", proxy_server, bypass_list);
+  if (!proxy_server.empty()) {
+    return CreateDictionary(
+        ProxyPrefs::MODE_FIXED_SERVERS, "", proxy_server, bypass_list);
+  } else {
+    return CreateDirect();
+  }
 }
 
 // static

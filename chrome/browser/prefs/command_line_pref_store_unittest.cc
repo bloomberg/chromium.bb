@@ -153,4 +153,10 @@ TEST(CommandLinePrefStoreTest, ManualProxyModeInference) {
   scoped_refptr<TestCommandLinePrefStore> store2 =
         new TestCommandLinePrefStore(&cl2);
   store2->VerifyProxyMode(ProxyPrefs::MODE_PAC_SCRIPT);
+
+  CommandLine cl3(CommandLine::NO_PROGRAM);
+  cl3.AppendSwitchASCII(switches::kProxyServer, "");
+  scoped_refptr<TestCommandLinePrefStore> store3 =
+        new TestCommandLinePrefStore(&cl3);
+  store3->VerifyProxyMode(ProxyPrefs::MODE_DIRECT);
 }
