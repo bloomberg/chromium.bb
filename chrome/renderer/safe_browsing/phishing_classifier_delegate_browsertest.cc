@@ -104,16 +104,12 @@ TEST_F(PhishingClassifierDelegateTest, Navigation) {
   ASSERT_TRUE(classifier->is_ready());
 
   // Test an initial load.  We expect classification to happen normally.
-  EXPECT_CALL(*classifier, CancelPendingClassification());
+  EXPECT_CALL(*classifier, CancelPendingClassification()).Times(2);
   responses_["http://host.com/"] =
       "<html><body><iframe src=\"http://sub1.com/\"></iframe></body></html>";
   LoadURL("http://host.com/");
-  WebKit::WebFrame* child_frame = GetMainFrame()->firstChild();
-  string16 page_text = ASCIIToUTF16("dummy");
-  EXPECT_CALL(*classifier, CancelPendingClassification()).Times(2);
-  delegate->DidCommitProvisionalLoad(GetMainFrame(), true);
-  delegate->DidCommitProvisionalLoad(child_frame, true);
   Mock::VerifyAndClearExpectations(classifier);
+  string16 page_text = ASCIIToUTF16("dummy");
   EXPECT_CALL(*classifier, BeginClassification(Pointee(page_text), _)).
       WillOnce(DeleteArg<1>());
   delegate->PageCaptured(page_text);
@@ -122,8 +118,9 @@ TEST_F(PhishingClassifierDelegateTest, Navigation) {
   // Reloading the same page should not trigger a reclassification.
   // However, it will cancel any pending classification since the
   // content is being replaced.
-  EXPECT_CALL(*classifier, CancelPendingClassification());
-  delegate->DidCommitProvisionalLoad(GetMainFrame(), true);
+  EXPECT_CALL(*classifier, CancelPendingClassification()).Times(2);
+  GetMainFrame()->reload();
+  message_loop_.Run();
   Mock::VerifyAndClearExpectations(classifier);
   delegate->PageCaptured(page_text);
 
@@ -131,10 +128,9 @@ TEST_F(PhishingClassifierDelegateTest, Navigation) {
   // the toplevel URL.  This should cancel pending classification since the
   // page content is changing, and not begin a new classification.
   EXPECT_CALL(*classifier, CancelPendingClassification());
-  child_frame->loadRequest(WebKit::WebURLRequest(GURL("http://sub2.com/")));
+  GetMainFrame()->firstChild()->loadRequest(
+      WebKit::WebURLRequest(GURL("http://sub2.com/")));
   message_loop_.Run();
-  EXPECT_CALL(*classifier, CancelPendingClassification());
-  delegate->DidCommitProvisionalLoad(child_frame, true);
   Mock::VerifyAndClearExpectations(classifier);
   delegate->PageCaptured(page_text);
 
@@ -142,16 +138,13 @@ TEST_F(PhishingClassifierDelegateTest, Navigation) {
   // not trigger a reclassification.  A pending classification should not
   // be cancelled, since the content is not changing.
   LoadURL("http://host.com/#foo");
-  delegate->DidCommitProvisionalLoad(GetMainFrame(), true);
   delegate->PageCaptured(page_text);
 
   // Now load a new toplevel page, which should trigger another classification.
   EXPECT_CALL(*classifier, CancelPendingClassification());
   LoadURL("http://host2.com/");
-  page_text = ASCIIToUTF16("dummy2");
-  EXPECT_CALL(*classifier, CancelPendingClassification());
-  delegate->DidCommitProvisionalLoad(GetMainFrame(), true);
   Mock::VerifyAndClearExpectations(classifier);
+  page_text = ASCIIToUTF16("dummy2");
   EXPECT_CALL(*classifier, BeginClassification(Pointee(page_text), _)).
       WillOnce(DeleteArg<1>());
   delegate->PageCaptured(page_text);
@@ -172,11 +165,9 @@ TEST_F(PhishingClassifierDelegateTest, PendingClassification) {
   // Queue up a pending classification, cancel it, then queue up another one.
   LoadURL("http://host.com/");
   string16 page_text = ASCIIToUTF16("dummy");
-  delegate->DidCommitProvisionalLoad(GetMainFrame(), true);
   delegate->PageCaptured(page_text);
 
   LoadURL("http://host2.com/");
-  delegate->DidCommitProvisionalLoad(GetMainFrame(), true);
   page_text = ASCIIToUTF16("dummy2");
   delegate->PageCaptured(page_text);
 
@@ -205,14 +196,12 @@ TEST_F(PhishingClassifierDelegateTest, PendingClassification_Ref) {
 
   // Queue up a pending classification, cancel it, then queue up another one.
   LoadURL("http://host.com/");
-  delegate->DidCommitProvisionalLoad(GetMainFrame(), true);
   string16 orig_page_text = ASCIIToUTF16("dummy");
   string16 page_text = orig_page_text;
   delegate->PageCaptured(page_text);
 
   LoadURL("http://host.com/#foo");
   page_text = orig_page_text;
-  delegate->DidCommitProvisionalLoad(GetMainFrame(), true);
   delegate->PageCaptured(page_text);
 
   // Now set a scorer, which should cause a classifier to be created and
@@ -242,10 +231,8 @@ TEST_F(PhishingClassifierDelegateTest, DetectedPhishingSite) {
   responses_["http://host.com/"] = "<html><body>phish</body></html>";
   EXPECT_CALL(*classifier, CancelPendingClassification());
   LoadURL("http://host.com/");
-  string16 page_text = ASCIIToUTF16("phish");
-  EXPECT_CALL(*classifier, CancelPendingClassification());
-  delegate->DidCommitProvisionalLoad(GetMainFrame(), true);
   Mock::VerifyAndClearExpectations(classifier);
+  string16 page_text = ASCIIToUTF16("phish");
   EXPECT_CALL(*classifier, BeginClassification(Pointee(page_text), _)).
       WillOnce(DeleteArg<1>());
   delegate->PageCaptured(page_text);

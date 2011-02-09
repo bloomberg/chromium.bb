@@ -117,9 +117,6 @@ void PhishingClassifierDelegate::SetPhishingScorer(
 
 void PhishingClassifierDelegate::DidCommitProvisionalLoad(
     WebKit::WebFrame* frame, bool is_new_navigation) {
-  if (!is_new_navigation)
-    return;
-
   // A new page is starting to load.  Unless the load is a navigation within
   // the same page, we need to cancel classification since the content will
   // now be inconsistent with the phishing model.
