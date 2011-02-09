@@ -94,10 +94,14 @@ AutomatedUITestBase.CloseTab
 # See http://crbug.com/57717
 ResourceDispatcherTest.CrossSiteFailedRequest
 
+# Valgrind internal error: received SIGSERV. http://crbug.com/51716
+AutomationProxyTest.AcceleratorDownloads
+
 # Valgrind dies on assertion, see http://crbug.com/58145
 AutomationProxyTest.GetTabCount
-SunSpiderTest.Perf
 DromaeoTest.DOMCorePerf
+MetricsServiceTest.CloseRenderersNormally
+SunSpiderTest.Perf
 
 # Can't load a nib under Valgrind, see http://crbug.com/58124
 ImagesTest.AnimatedGIFs
