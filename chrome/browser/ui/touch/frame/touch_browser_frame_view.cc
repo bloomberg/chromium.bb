@@ -131,7 +131,7 @@ void TouchBrowserFrameView::UpdateKeyboardAndLayout(bool should_show_keyboard) {
 
   // Because the NonClientFrameView is a sibling of the ClientView, we rely on
   // the parent to resize the ClientView instead of resizing it directly.
-  GetParent()->Layout();
+  parent()->Layout();
 
   // The keyboard that pops up may end up hiding the text entry. So make sure
   // the renderer scrolls when necessary to keep the textfield visible.

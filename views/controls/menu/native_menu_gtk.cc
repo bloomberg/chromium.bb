@@ -22,10 +22,6 @@
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/menu/nested_dispatcher_gtk.h"
 
-#if defined(TOUCH_UI)
-#include "views/focus/accelerator_handler.h"
-#endif
-
 namespace {
 
 const char kPositionString[] = "position";
@@ -227,12 +223,6 @@ void NativeMenuGtk::RemoveMenuListener(MenuListener* listener) {
 void NativeMenuGtk::SetMinimumWidth(int width) {
   gtk_widget_set_size_request(menu_, width, -1);
 }
-
-#if defined(TOUCH_UI)
-bool NativeMenuGtk::Dispatch(XEvent* xevent) {
-  return DispatchXEvent(xevent);
-}
-#endif
 
 bool NativeMenuGtk::Dispatch(GdkEvent* event) {
   if (menu_hidden_) {

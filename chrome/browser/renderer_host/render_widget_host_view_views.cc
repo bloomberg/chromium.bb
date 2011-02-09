@@ -298,8 +298,8 @@ void RenderWidgetHostViewViews::Destroy() {
   // host_'s destruction brought us here, null it out so we don't use it
   host_ = NULL;
 
-  if (GetParent())
-    GetParent()->RemoveChildView(this);
+  if (parent())
+    parent()->RemoveChildView(this);
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
@@ -339,7 +339,8 @@ BackingStore* RenderWidgetHostViewViews::AllocBackingStore(
 gfx::NativeView RenderWidgetHostViewViews::GetInnerNativeView() const {
   // TODO(sad): Ideally this function should be equivalent to GetNativeView, and
   // WidgetGtk-specific function call should not be necessary.
-  views::WidgetGtk* widget = static_cast<views::WidgetGtk*>(GetWidget());
+  const views::WidgetGtk* widget =
+      static_cast<const views::WidgetGtk*>(GetWidget());
   return widget ? widget->window_contents() : NULL;
 }
 
