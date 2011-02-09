@@ -152,6 +152,13 @@ const Experiment kExperiments[] = {
      SINGLE_VALUE_TYPE(switches::kEnableAcceleratedLayers)
   },
   {
+    "composited-layer-borders",
+    IDS_FLAGS_COMPOSITED_LAYER_BORDERS,
+    IDS_FLAGS_COMPOSITED_LAYER_BORDERS_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kShowCompositedLayerBorders)
+  },
+  {
     "gpu-canvas-2d",  // FLAGS:RECORD_UMA
     IDS_FLAGS_ACCELERATED_CANVAS_2D_NAME,
     IDS_FLAGS_ACCELERATED_CANVAS_2D_DESCRIPTION,
