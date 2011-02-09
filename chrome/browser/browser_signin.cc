@@ -215,12 +215,11 @@ BrowserSignin::BrowserSignin(Profile* profile)
     : profile_(profile),
       delegate_(NULL),
       html_dialog_ui_delegate_(NULL) {
-  BrowserSigninResourcesSource* source = new BrowserSigninResourcesSource();
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(ChromeURLDataManager::GetInstance(),
-                        &ChromeURLDataManager::AddDataSource,
-                        make_scoped_refptr(source)));
+  // profile is NULL during testing.
+  if (profile) {
+    BrowserSigninResourcesSource* source = new BrowserSigninResourcesSource();
+    profile->GetChromeURLDataManager()->AddDataSource(source);
+  }
 }
 
 BrowserSignin::~BrowserSignin() {

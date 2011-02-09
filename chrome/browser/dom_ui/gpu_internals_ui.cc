@@ -29,6 +29,8 @@
 #include "chrome/browser/net/passive_log_collector.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/jstemplate_builder.h"
@@ -307,9 +309,9 @@ DictionaryValue* GpuInfoToDict(const GPUInfo& gpu_info) {
   if (gpu_info.level() == GPUInfo::kPartial) {
     info->SetString("level", "partial");
   } else if (gpu_info.level() == GPUInfo::kCompleting) {
-    info->SetString("level", "completing");    
+    info->SetString("level", "completing");
   } else if (gpu_info.level() == GPUInfo::kComplete) {
-    info->SetString("level", "complete");    
+    info->SetString("level", "complete");
   } else {
     DCHECK(false) << "Unrecognized GPUInfo::Level value";
     info->SetString("level", "");
@@ -365,11 +367,6 @@ GpuInternalsUI::GpuInternalsUI(TabContents* contents) : DOMUI(contents) {
   GpuHTMLSource* html_source = new GpuHTMLSource();
 
   // Set up the chrome://gpu/ source.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          ChromeURLDataManager::GetInstance(),
-          &ChromeURLDataManager::AddDataSource,
-          make_scoped_refptr(html_source)));
+  contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
 }
 

@@ -18,8 +18,7 @@ class GURL;
 // A DataSource for chrome://resources/ URLs.
 class SharedResourcesDataSource : public ChromeURLDataManager::DataSource {
  public:
-  // Registers an instance of this data source with the ChromeUrlDataManager.
-  static void Register();
+  SharedResourcesDataSource();
 
   // Overridden from ChromeURLDataManager::DataSource:
   virtual void StartDataRequest(const std::string& path,
@@ -28,7 +27,6 @@ class SharedResourcesDataSource : public ChromeURLDataManager::DataSource {
   virtual std::string GetMimeType(const std::string&) const;
 
  private:
-  SharedResourcesDataSource();
   ~SharedResourcesDataSource();
 
   DISALLOW_COPY_AND_ASSIGN(SharedResourcesDataSource);

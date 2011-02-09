@@ -209,12 +209,9 @@ MediaplayerHandler::~MediaplayerHandler() {
 
 WebUIMessageHandler* MediaplayerHandler::Attach(DOMUI* dom_ui) {
   // Create our favicon data source.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          ChromeURLDataManager::GetInstance(),
-          &ChromeURLDataManager::AddDataSource,
-          make_scoped_refptr(new WebUIFavIconSource(dom_ui->GetProfile()))));
+  Profile* profile = dom_ui->GetProfile();
+  profile->GetChromeURLDataManager()->AddDataSource(
+      new WebUIFavIconSource(profile));
 
   return WebUIMessageHandler::Attach(dom_ui);
 }
@@ -612,10 +609,5 @@ MediaplayerUI::MediaplayerUI(TabContents* contents) : DOMUI(contents) {
       new MediaplayerUIHTMLSource(is_playlist);
 
   // Set up the chrome://mediaplayer/ source.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          ChromeURLDataManager::GetInstance(),
-          &ChromeURLDataManager::AddDataSource,
-          make_scoped_refptr(html_source)));
+  contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
 }

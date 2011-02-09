@@ -115,18 +115,16 @@ void SetupFlowDoneStep::DoStart() {
 SetupFlowContext::SetupFlowContext() { }
 SetupFlowContext::~SetupFlowContext() { }
 
-SetupFlow::SetupFlow(const std::string& args, Profile* profile,
+SetupFlow::SetupFlow(const std::string& args,
+                     Profile* profile,
                      SetupFlowStep* first_step)
     : dom_ui_(NULL),
       dialog_start_args_(args),
       profile_(profile),
       current_step_(first_step) {
   // TODO(hclam): The data source should be added once.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(ChromeURLDataManager::GetInstance(),
-                        &ChromeURLDataManager::AddDataSource,
-                        make_scoped_refptr(new RemotingResourcesSource())));
+  profile->GetChromeURLDataManager()->AddDataSource(
+      new RemotingResourcesSource());
 }
 
 SetupFlow::~SetupFlow() { }

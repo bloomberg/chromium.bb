@@ -30,12 +30,8 @@ SyncInternalsUI::SyncInternalsUI(TabContents* contents)
   // If this PostTask() call fails, it's most likely because this is
   // being run from a unit test.  The created objects will be cleaned
   // up, anyway.
-  (void)BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          ChromeURLDataManager::GetInstance(),
-          &ChromeURLDataManager::AddDataSource,
-          make_scoped_refptr(new SyncInternalsHTMLSource())));
+  contents->profile()->GetChromeURLDataManager()->AddDataSource(
+      new SyncInternalsHTMLSource());
 }
 
 SyncInternalsUI::~SyncInternalsUI() {

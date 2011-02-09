@@ -391,11 +391,7 @@ ExtensionFunctionDispatcher::ExtensionFunctionDispatcher(
   // ChromeURLDataManager.
   if (extension->HasHostPermission(GURL(chrome::kChromeUIFavIconURL))) {
     WebUIFavIconSource* favicon_source = new WebUIFavIconSource(profile_);
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(ChromeURLDataManager::GetInstance(),
-                          &ChromeURLDataManager::AddDataSource,
-                          make_scoped_refptr(favicon_source)));
+    profile_->GetChromeURLDataManager()->AddDataSource(favicon_source);
   }
 
   // Update the extension permissions. Doing this each time we create an EFD

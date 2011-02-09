@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -12,6 +13,8 @@
 using ::testing::Return;
 using ::testing::NiceMock;
 TEST(SyncUIUtilTest, ConstructAboutInformationWithUnrecoverableErrorTest) {
+  MessageLoopForUI message_loop;
+  BrowserThread ui_thread(BrowserThread::UI, &message_loop);
   NiceMock<ProfileSyncServiceMock> service;
   DictionaryValue strings;
 

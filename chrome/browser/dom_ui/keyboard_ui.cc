@@ -9,6 +9,7 @@
 #include "base/string_piece.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "grit/browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -19,12 +20,7 @@
 KeyboardUI::KeyboardUI(TabContents* contents)
     : DOMUI(contents) {
   KeyboardHTMLSource* html_source = new KeyboardHTMLSource();
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          ChromeURLDataManager::GetInstance(),
-          &ChromeURLDataManager::AddDataSource,
-          make_scoped_refptr(html_source)));
+  contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
 }
 
 KeyboardUI::~KeyboardUI() {
