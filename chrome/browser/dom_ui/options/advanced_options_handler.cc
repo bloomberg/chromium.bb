@@ -66,138 +66,129 @@ void AdvancedOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
+  OptionsStringResource resources[] = {
+    { "downloadLocationGroupName",
+      IDS_OPTIONS_DOWNLOADLOCATION_GROUP_NAME },
+    { "downloadLocationChangeButton",
+      IDS_OPTIONS_DOWNLOADLOCATION_CHANGE_BUTTON },
+    { "downloadLocationBrowseTitle",
+      IDS_OPTIONS_DOWNLOADLOCATION_BROWSE_TITLE },
+    { "downloadLocationBrowseWindowTitle",
+      IDS_OPTIONS_DOWNLOADLOCATION_BROWSE_WINDOW_TITLE },
+    { "downloadLocationAskForSaveLocation",
+      IDS_OPTIONS_DOWNLOADLOCATION_ASKFORSAVELOCATION },
+    { "autoOpenFileTypesInfo",
+      IDS_OPTIONS_OPEN_FILE_TYPES_AUTOMATICALLY },
+    { "autoOpenFileTypesResetToDefault",
+      IDS_OPTIONS_AUTOOPENFILETYPES_RESETTODEFAULT },
+    { "gearSettingsConfigureGearsButton",
+      IDS_OPTIONS_GEARSSETTINGS_CONFIGUREGEARS_BUTTON },
+    { "translateEnableTranslate",
+      IDS_OPTIONS_TRANSLATE_ENABLE_TRANSLATE },
+    { "certificatesManageButton",
+      IDS_OPTIONS_CERTIFICATES_MANAGE_BUTTON },
+    { "proxiesLabel",
+      IDS_OPTIONS_PROXIES_LABEL },
+    { "proxiesConfigureButton",
+      IDS_OPTIONS_PROXIES_CONFIGURE_BUTTON },
+    { "safeBrowsingEnableProtection",
+      IDS_OPTIONS_SAFEBROWSING_ENABLEPROTECTION },
+    { "sslGroupDescription",
+      IDS_OPTIONS_SSL_GROUP_DESCRIPTION },
+    { "sslCheckRevocation",
+      IDS_OPTIONS_SSL_CHECKREVOCATION },
+    { "sslUseSSL3",
+      IDS_OPTIONS_SSL_USESSL3 },
+    { "sslUseTLS1",
+      IDS_OPTIONS_SSL_USETLS1 },
+    { "networkDNSPrefetchEnabledDescription",
+      IDS_NETWORK_DNS_PREFETCH_ENABLED_DESCRIPTION },
+    { "privacyContentSettingsButton",
+      IDS_OPTIONS_PRIVACY_CONTENT_SETTINGS_BUTTON },
+    { "privacyClearDataButton",
+      IDS_OPTIONS_PRIVACY_CLEAR_DATA_BUTTON },
+    { "linkDoctorPref",
+      IDS_OPTIONS_LINKDOCTOR_PREF },
+    { "suggestPref",
+      IDS_OPTIONS_SUGGEST_PREF },
+    { "tabsToLinksPref",
+      IDS_OPTIONS_TABS_TO_LINKS_PREF },
+    { "fontSettingsInfo",
+      IDS_OPTIONS_FONTSETTINGS_INFO },
+    { "defaultZoomLevelLabel",
+      IDS_OPTIONS_DEFAULT_ZOOM_LEVEL_LABEL },
+    { "defaultFontSizeLabel",
+      IDS_OPTIONS_DEFAULT_FONT_SIZE_LABEL },
+    { "fontSizeLabelVerySmall",
+      IDS_OPTIONS_FONT_SIZE_LABEL_VERY_SMALL },
+    { "fontSizeLabelSmall",
+      IDS_OPTIONS_FONT_SIZE_LABEL_SMALL },
+    { "fontSizeLabelMedium",
+      IDS_OPTIONS_FONT_SIZE_LABEL_MEDIUM },
+    { "fontSizeLabelLarge",
+      IDS_OPTIONS_FONT_SIZE_LABEL_LARGE },
+    { "fontSizeLabelVeryLarge",
+      IDS_OPTIONS_FONT_SIZE_LABEL_VERY_LARGE },
+    { "fontSizeLabelCustom",
+      IDS_OPTIONS_FONT_SIZE_LABEL_CUSTOM },
+    { "fontSettingsCustomizeFontsButton",
+      IDS_OPTIONS_FONTSETTINGS_CUSTOMIZE_FONTS_BUTTON },
+    { "languageAndSpellCheckSettingsButton",
+      IDS_OPTIONS_LANGUAGE_AND_SPELLCHECK_BUTTON, true },
+    { "advancedSectionTitlePrivacy",
+      IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY, true },
+    { "advancedSectionTitleContent",
+      IDS_OPTIONS_ADVANCED_SECTION_TITLE_CONTENT, true },
+    { "advancedSectionTitleSecurity",
+      IDS_OPTIONS_ADVANCED_SECTION_TITLE_SECURITY, true },
+    { "advancedSectionTitleNetwork",
+      IDS_OPTIONS_ADVANCED_SECTION_TITLE_NETWORK, true },
+    { "advancedSectionTitleTranslate",
+      IDS_OPTIONS_ADVANCED_SECTION_TITLE_TRANSLATE, true },
+    { "translateEnableTranslate",
+      IDS_OPTIONS_TRANSLATE_ENABLE_TRANSLATE },
+    { "enableLogging",
+      IDS_OPTIONS_ENABLE_LOGGING },
+    { "improveBrowsingExperience",
+      IDS_OPTIONS_IMPROVE_BROWSING_EXPERIENCE },
+    { "disableWebServices",
+      IDS_OPTIONS_DISABLE_WEB_SERVICES },
+#if !defined(OS_CHROMEOS)
+    { "advancedSectionTitleCloudPrint",
+      IDS_OPTIONS_ADVANCED_SECTION_TITLE_CLOUD_PRINT },
+    { "cloudPrintProxyDisabledLabel",
+      IDS_OPTIONS_CLOUD_PRINT_PROXY_DISABLED_LABEL },
+    { "cloudPrintProxyDisabledButton",
+      IDS_OPTIONS_CLOUD_PRINT_PROXY_DISABLED_BUTTON },
+    { "cloudPrintProxyEnabledButton",
+      IDS_OPTIONS_CLOUD_PRINT_PROXY_ENABLED_BUTTON },
+    { "cloudPrintProxyEnabledManageButton",
+      IDS_OPTIONS_CLOUD_PRINT_PROXY_ENABLED_MANAGE_BUTTON },
+    { "cloudPrintProxyEnablingButton",
+      IDS_OPTIONS_CLOUD_PRINT_PROXY_ENABLING_BUTTON },
+#endif
+#if defined(ENABLE_REMOTING)
+    { "advancedSectionTitleRemoting",
+      IDS_OPTIONS_ADVANCED_SECTION_TITLE_REMOTING },
+    { "remotingSetupButton",
+      IDS_OPTIONS_REMOTING_SETUP_BUTTON },
+    { "remotingStopButton",
+      IDS_OPTIONS_REMOTING_STOP_BUTTON },
+#endif
+  };
+
+  RegisterStrings(localized_strings, resources, arraysize(resources));
+
   localized_strings->SetString("privacyLearnMoreURL",
       google_util::AppendGoogleLocaleParam(
           GURL(chrome::kPrivacyLearnMoreURL)).spec());
-  localized_strings->SetString("downloadLocationGroupName",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_DOWNLOADLOCATION_GROUP_NAME));
-  localized_strings->SetString("downloadLocationChangeButton",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_DOWNLOADLOCATION_CHANGE_BUTTON));
-  localized_strings->SetString("downloadLocationBrowseTitle",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_DOWNLOADLOCATION_BROWSE_TITLE));
-  localized_strings->SetString("downloadLocationBrowseWindowTitle",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_DOWNLOADLOCATION_BROWSE_WINDOW_TITLE));
-  localized_strings->SetString("downloadLocationAskForSaveLocation",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_DOWNLOADLOCATION_ASKFORSAVELOCATION));
-  localized_strings->SetString("autoOpenFileTypesInfo",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_OPEN_FILE_TYPES_AUTOMATICALLY));
-  localized_strings->SetString("autoOpenFileTypesResetToDefault",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_AUTOOPENFILETYPES_RESETTODEFAULT));
-  localized_strings->SetString("gearSettingsConfigureGearsButton",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_GEARSSETTINGS_CONFIGUREGEARS_BUTTON));
-  localized_strings->SetString("translateEnableTranslate",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_TRANSLATE_ENABLE_TRANSLATE));
-  localized_strings->SetString("certificatesManageButton",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_CERTIFICATES_MANAGE_BUTTON));
-  localized_strings->SetString("proxiesLabel",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_PROXIES_LABEL));
-  localized_strings->SetString("proxiesConfigureButton",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_PROXIES_CONFIGURE_BUTTON));
-  localized_strings->SetString("safeBrowsingEnableProtection",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SAFEBROWSING_ENABLEPROTECTION));
-  localized_strings->SetString("sslGroupDescription",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SSL_GROUP_DESCRIPTION));
-  localized_strings->SetString("sslCheckRevocation",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SSL_CHECKREVOCATION));
-  localized_strings->SetString("sslUseSSL3",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SSL_USESSL3));
-  localized_strings->SetString("sslUseTLS1",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SSL_USETLS1));
-  localized_strings->SetString("networkDNSPrefetchEnabledDescription",
-      l10n_util::GetStringUTF16(IDS_NETWORK_DNS_PREFETCH_ENABLED_DESCRIPTION));
-  localized_strings->SetString("privacyContentSettingsButton",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_PRIVACY_CONTENT_SETTINGS_BUTTON));
-  localized_strings->SetString("privacyClearDataButton",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_PRIVACY_CLEAR_DATA_BUTTON));
-  localized_strings->SetString("linkDoctorPref",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_LINKDOCTOR_PREF));
-  localized_strings->SetString("suggestPref",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SUGGEST_PREF));
-  localized_strings->SetString("tabsToLinksPref",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_TABS_TO_LINKS_PREF));
-  localized_strings->SetString("fontSettingsInfo",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_FONTSETTINGS_INFO));
-  localized_strings->SetString("defaultZoomLevelLabel",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_DEFAULT_ZOOM_LEVEL_LABEL));
-  localized_strings->SetString("defaultFontSizeLabel",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_DEFAULT_FONT_SIZE_LABEL));
-  localized_strings->SetString("fontSizeLabelVerySmall",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_FONT_SIZE_LABEL_VERY_SMALL));
-  localized_strings->SetString("fontSizeLabelSmall",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_FONT_SIZE_LABEL_SMALL));
-  localized_strings->SetString("fontSizeLabelMedium",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_FONT_SIZE_LABEL_MEDIUM));
-  localized_strings->SetString("fontSizeLabelLarge",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_FONT_SIZE_LABEL_LARGE));
-  localized_strings->SetString("fontSizeLabelVeryLarge",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_FONT_SIZE_LABEL_VERY_LARGE));
-  localized_strings->SetString("fontSizeLabelCustom",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_FONT_SIZE_LABEL_CUSTOM));
-  localized_strings->SetString("fontSettingsCustomizeFontsButton",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_FONTSETTINGS_CUSTOMIZE_FONTS_BUTTON));
-  localized_strings->SetString("languageAndSpellCheckSettingsButton",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_LANGUAGE_AND_SPELLCHECK_BUTTON));
-  localized_strings->SetString("advancedSectionTitlePrivacy",
-      dom_options_util::StripColon(
-          l10n_util::GetStringUTF16(
-              IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY)));
-  localized_strings->SetString("advancedSectionTitleContent",
-      dom_options_util::StripColon(
-          l10n_util::GetStringUTF16(
-              IDS_OPTIONS_ADVANCED_SECTION_TITLE_CONTENT)));
-  localized_strings->SetString("advancedSectionTitleSecurity",
-      dom_options_util::StripColon(
-          l10n_util::GetStringUTF16(
-              IDS_OPTIONS_ADVANCED_SECTION_TITLE_SECURITY)));
-  localized_strings->SetString("advancedSectionTitleNetwork",
-      dom_options_util::StripColon(
-          l10n_util::GetStringUTF16(
-              IDS_OPTIONS_ADVANCED_SECTION_TITLE_NETWORK)));
-  localized_strings->SetString("advancedSectionTitleTranslate",
-      dom_options_util::StripColon(
-          l10n_util::GetStringUTF16(
-              IDS_OPTIONS_ADVANCED_SECTION_TITLE_TRANSLATE)));
-  localized_strings->SetString("translateEnableTranslate",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_TRANSLATE_ENABLE_TRANSLATE));
 #if !defined(OS_CHROMEOS)
   // Add the cloud print proxy management ui section if it's been runtime
   // enabled.
-  localized_strings->SetString("enable-cloud-print-proxy",
-      cloud_print_proxy_ui_enabled_ ? "true" : "false");
-  localized_strings->SetString("advancedSectionTitleCloudPrint",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_ADVANCED_SECTION_TITLE_CLOUD_PRINT));
-  localized_strings->SetString("cloudPrintProxyDisabledLabel",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_CLOUD_PRINT_PROXY_DISABLED_LABEL));
-  localized_strings->SetString("cloudPrintProxyDisabledButton",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_CLOUD_PRINT_PROXY_DISABLED_BUTTON));
-  localized_strings->SetString("cloudPrintProxyEnabledButton",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_CLOUD_PRINT_PROXY_ENABLED_BUTTON));
-  localized_strings->SetString("cloudPrintProxyEnabledManageButton",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_CLOUD_PRINT_PROXY_ENABLED_MANAGE_BUTTON));
-  localized_strings->SetString("cloudPrintProxyEnablingButton",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_CLOUD_PRINT_PROXY_ENABLING_BUTTON));
+  localized_strings->SetString(
+      "enable-cloud-print-proxy",
+      cloud_print_proxy_ui_enabled_ ? "true" : "false" );
 #endif
-#if defined(ENABLE_REMOTING)
-  localized_strings->SetString("advancedSectionTitleRemoting",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_ADVANCED_SECTION_TITLE_REMOTING));
-  localized_strings->SetString("remotingSetupButton",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_REMOTING_SETUP_BUTTON));
-  localized_strings->SetString("remotingStopButton",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_REMOTING_STOP_BUTTON));
-#endif
-  localized_strings->SetString("enableLogging",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_ENABLE_LOGGING));
-  localized_strings->SetString("improveBrowsingExperience",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_IMPROVE_BROWSING_EXPERIENCE));
-  localized_strings->SetString("disableWebServices",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_DISABLE_WEB_SERVICES));
 }
 
 void AdvancedOptionsHandler::Initialize() {
