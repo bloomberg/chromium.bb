@@ -1006,7 +1006,7 @@ bool BrowserWindowGtk::PreHandleKeyboardEvent(
     return false;
 
   // Executing the command may cause |this| object to be destroyed.
-  if (browser_->IsReservedCommand(id) && !event.match_edit_command)
+  if (browser_->IsReservedCommandOrKey(id, event) && !event.match_edit_command)
     return browser_->ExecuteCommandIfEnabled(id);
 
   // The |event| is a keyboard shortcut.

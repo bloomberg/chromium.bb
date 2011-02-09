@@ -436,7 +436,7 @@ bool BrowserWindowCocoa::PreHandleKeyboardEvent(
   if (id == -1)
     return false;
 
-  if (browser_->IsReservedCommand(id))
+  if (browser_->IsReservedCommandOrKey(id, event))
     return HandleKeyboardEventInternal(event.os_event);
 
   DCHECK(is_keyboard_shortcut != NULL);
@@ -495,7 +495,7 @@ int BrowserWindowCocoa::GetCommandId(const NativeWebKeyboardEvent& event) {
 
   // "Close window" doesn't use the |commandDispatch:| mechanism. Menu items
   // that do not correspond to IDC_ constants need no special treatment however,
-  // as they can't be blacklisted in |Browser::IsReservedCommand()| anyhow.
+  // as they can't be blacklisted in |Browser::IsReservedCommandOrKey()| anyhow.
   if (item && [item action] == @selector(performClose:))
     return IDC_CLOSE_WINDOW;
 

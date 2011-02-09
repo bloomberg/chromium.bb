@@ -613,9 +613,11 @@ class Browser : public TabHandlerDelegate,
   // Returns true if the command is executed.
   bool ExecuteCommandIfEnabled(int id);
 
-  // Returns whether the |id| is a reserved command, whose keyboard shortcuts
-  // should not be sent to the renderer.
-  bool IsReservedCommand(int id);
+  // Returns true if |command_id| is a reserved command whose keyboard shortcuts
+  // should not be sent to the renderer or |event| was triggered by a key that
+  // we never want to send to the renderer.
+  bool IsReservedCommandOrKey(int command_id,
+                              const NativeWebKeyboardEvent& event);
 
   // Sets if command execution shall be blocked. If |block| is true then
   // following calls to ExecuteCommand() or ExecuteCommandWithDisposition()

@@ -1295,9 +1295,10 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
 
   // Executing the command may cause |this| object to be destroyed.
 #if defined(OS_LINUX) && !defined(TOUCH_UI)
-  if (browser_->IsReservedCommand(id) && !event.match_edit_command) {
+  if (browser_->IsReservedCommandOrKey(id, event) &&
+      !event.match_edit_command) {
 #else
-  if (browser_->IsReservedCommand(id)) {
+  if (browser_->IsReservedCommandOrKey(id, event)) {
 #endif
     UpdateAcceleratorMetrics(accelerator, id);
     return browser_->ExecuteCommandIfEnabled(id);
