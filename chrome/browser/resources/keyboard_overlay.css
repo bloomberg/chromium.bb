@@ -12,26 +12,34 @@ body {
 }
 
 .keyboard-overlay-instructions {
-  border-radius: 5px;
+  -webkit-box-orient: vertical;
   background: -webkit-linear-gradient(#334c7e, #0d172b);
+  border-radius: 5px;
   border: 2px solid #576ccf;
   color: #fff;
-  display: table;
+  display: -webkit-box;
   position: absolute;
   vertical-align: middle;
   z-index: 100;
 }
 
 .keyboard-overlay-instructions-text {
-  display: table-cell;
+  -webkit-box-flex: 3;
+  margin-top: 13px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.keyboard-overlay-instructions-hide-text {
+  -webkit-box-flex: 2;
   font-weight: bold;
   text-align: center;
   vertical-align: middle;
 }
 
 .keyboard-overlay-key {
-  border-radius: 4px;
   -webkit-box-orient: vertical;
+  border-radius: 4px;
   background-color: rgba(24, 24, 24, 0.9);
   border: 2px solid #7f7f7f;
   color: #979796;

@@ -10748,7 +10748,10 @@ This web page was killed, either because Chrome ran out of memory, or you chose 
         Keyboard Overlay
       </message>
       <message name="IDS_KEYBOARD_OVERLAY_INSTRUCTIONS" desc="The instructions for the keyboard overlay.">
-        Hold Control, Alt, or Shift to see keyboard shortcuts&lt;br&gt;for those modifiers
+        Hold Control, Alt, or Shift to see keyboard&lt;br&gt;shortcuts for those modifiers.
+      </message>
+      <message name="IDS_KEYBOARD_OVERLAY_INSTRUCTIONS_HIDE" desc="The instruction for hiding the keyboard overlay.">
+        Hit Cntrol-Alt-/ to hide
       </message>
       <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_LAST_TAB" desc="The text in the keyboard overlay to explain the shortcut.">
         Activate last tab

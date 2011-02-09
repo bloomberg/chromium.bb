@@ -80,6 +80,8 @@ void KeyboardOverlayUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_TITLE));
   localized_strings.SetString("keyboardOverlayInstructions",
       l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_INSTRUCTIONS));
+  localized_strings.SetString("keyboardOverlayInstructionsHide",
+      l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_INSTRUCTIONS_HIDE));
   localized_strings.SetString("keyboardOverlayActivateLastTab",
       l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_ACTIVATE_LAST_TAB));
   localized_strings.SetString("keyboardOverlayActivateNextTab",

@@ -6,14 +6,14 @@ var BASE_KEYBOARD = {
   top: 0,
   left: 0,
   width: 1237,
-  height: 468
+  height: 514
 };
 
 var BASE_INSTRUCTIONS = {
-  top: 174,
+  top: 194,
   left: 370,
   width: 498,
-  height: 81
+  height: 112
 };
 
 var LABEL_TO_KEY_TEXT = {
@@ -33,11 +33,14 @@ var LABEL_TO_KEY_TEXT = {
   glyph_enter: 'enter',
   glyph_forward: 'forward',
   glyph_fullscreen: 'fullscreen',
+  glyph_ime: 'ime',
+  glyph_lock: 'lock',
   glyph_overview: 'windows',
   glyph_power: 'power',
-  glyph_reload: 'reload',
+  glyph_right: 'right',
   glyph_reload: 'reload',
   glyph_search: 'search',
+  glyph_shift: 'shift',
   glyph_tab: 'tab',
   glyph_tools: 'tools',
   glyph_volume_down: 'vol. down',
@@ -377,8 +380,7 @@ function initLayout() {
   keyboard.style.width = (width + 2 * (minX + 1)) + 'px';
   keyboard.style.height = (height + 2 * (minY + 1)) + 'px';
 
-  var instructions = document.createElement('instructions');
-  instructions = document.createElement('div');
+  var instructions = document.createElement('div');
   instructions.id = 'instructions';
   instructions.className = 'keyboard-overlay-instructions';
   instructions.style.left = ((BASE_INSTRUCTIONS.left - BASE_KEYBOARD.left) *
@@ -390,11 +392,16 @@ function initLayout() {
   instructions.style.height = (height * BASE_INSTRUCTIONS.height /
                                BASE_KEYBOARD.height) + 'px';
 
-  var instructionsText = document.createElement('span');
+  var instructionsText = document.createElement('div');
   instructionsText.id = 'instructions-text';
   instructionsText.className = 'keyboard-overlay-instructions-text';
   instructionsText.innerHTML = templateData.keyboardOverlayInstructions;
   instructions.appendChild(instructionsText);
+  var instructionsHideText = document.createElement('div');
+  instructionsHideText.id = 'instructions-hide-text';
+  instructionsHideText.className = 'keyboard-overlay-instructions-hide-text';
+  instructionsHideText.innerHTML = templateData.keyboardOverlayInstructionsHide;
+  instructions.appendChild(instructionsHideText);
   keyboard.appendChild(instructions);
 }
 
