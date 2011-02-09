@@ -25,7 +25,7 @@ DecompressorZlib::DecompressorZlib() {
 }
 
 DecompressorZlib::~DecompressorZlib() {
-  Reset();
+  inflateEnd(stream_.get());
 }
 
 void DecompressorZlib::Reset() {

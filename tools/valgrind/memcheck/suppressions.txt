@@ -2902,16 +2902,6 @@
    fun:_ZN14RunnableMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEE6Tuple1IS3_EE3RunEv
 }
 {
-   bug_57910
-   Memcheck:Leak
-   fun:malloc
-   ...
-   fun:*inflateInit2_
-   ...
-   fun:_ZN8remoting16DecompressorZlib10InitStreamEv
-   fun:_ZN8remoting16DecompressorZlib5ResetEv
-}
-{
    bug_57949
    Memcheck:Addr4
    fun:_ZNK22OpaqueBrowserFrameView24NonClientTopBorderHeightEbb
