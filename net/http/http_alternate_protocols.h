@@ -34,9 +34,13 @@ class HttpAlternateProtocols {
       return port == other.port && protocol == other.protocol;
     }
 
+    std::string ToString() const;
+
     uint16 port;
     Protocol protocol;
   };
+
+  typedef std::map<HostPortPair, PortProtocolPair> ProtocolMap;
 
   static const char kHeader[];
   static const char* const kProtocolStrings[NUM_ALTERNATE_PROTOCOLS];
@@ -64,6 +68,8 @@ class HttpAlternateProtocols {
   // attempts to set the alternate protocol for |http_host_port_pair| will fail.
   void MarkBrokenAlternateProtocolFor(const HostPortPair& http_host_port_pair);
 
+  const ProtocolMap& protocol_map() const { return protocol_map_; }
+
   // Debugging to simulate presence of an AlternateProtocol.
   // If we don't have an alternate protocol in the map for any given host/port
   // pair, force this ProtocolPortPair.
@@ -71,9 +77,9 @@ class HttpAlternateProtocols {
   static void DisableForcedAlternateProtocol();
 
  private:
-  typedef std::map<HostPortPair, PortProtocolPair> ProtocolMap;
-
   ProtocolMap protocol_map_;
+
+  static const char* ProtocolToString(Protocol protocol);
 
   // The forced alternate protocol.  If not-null, there is a protocol being
   // forced.

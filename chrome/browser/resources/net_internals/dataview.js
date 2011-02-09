@@ -270,6 +270,20 @@ DataView.prototype.onUpdateAllCompleted = function(data) {
 
   text.push('');
   text.push('----------------------------------------------');
+  text.push(' SPDY Status');
+  text.push('----------------------------------------------');
+  text.push('');
+
+  text.push('SPDY Enabled: ' + data.spdyStatus.spdy_enabled);
+  text.push('Use Alternate Protocol: ' +
+      data.spdyStatus.use_alternate_protocols);
+  text.push('Force SPDY Always: ' + data.spdyStatus.force_spdy_always);
+  text.push('Force SPDY Over SSL: ' + data.spdyStatus.force_spdy_over_ssl);
+  text.push('Next Protocols: ' + data.spdyStatus.next_protos);
+
+
+  text.push('');
+  text.push('----------------------------------------------');
   text.push(' SPDY Sessions');
   text.push('----------------------------------------------');
   text.push('');
@@ -279,6 +293,22 @@ DataView.prototype.onUpdateAllCompleted = function(data) {
   } else {
     var spdyTablePrinter =
       SpdyView.createSessionTablePrinter(data.spdySessionInfo);
+    text.push(spdyTablePrinter.toText(2));
+  }
+
+  text.push('');
+  text.push('----------------------------------------------');
+  text.push(' Alternate Protocol Mappings');
+  text.push('----------------------------------------------');
+  text.push('');
+
+  if (data.spdyAlternateProtocolMappings == null ||
+      data.spdyAlternateProtocolMappings.length == 0) {
+    text.push('None');
+  } else {
+    var spdyTablePrinter =
+      SpdyView.createAlternateProtocolMappingsTablePrinter(
+          data.spdyAlternateProtocolMappings);
     text.push(spdyTablePrinter.toText(2));
   }
 

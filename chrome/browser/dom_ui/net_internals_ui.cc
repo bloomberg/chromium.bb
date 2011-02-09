@@ -44,7 +44,9 @@
 #include "net/base/net_util.h"
 #include "net/base/sys_addrinfo.h"
 #include "net/disk_cache/disk_cache.h"
+#include "net/http/http_alternate_protocols.h"
 #include "net/http/http_cache.h"
+#include "net/http/http_stream_factory.h"
 #include "net/http/http_network_layer.h"
 #include "net/http/http_network_session.h"
 #include "net/proxy/proxy_service.h"
@@ -256,6 +258,8 @@ class NetInternalsMessageHandler::IOThreadImpl
   void OnGetHttpCacheInfo(const ListValue* list);
   void OnGetSocketPoolInfo(const ListValue* list);
   void OnGetSpdySessionInfo(const ListValue* list);
+  void OnGetSpdyStatus(const ListValue* list);
+  void OnGetSpdyAlternateProtocolMappings(const ListValue* list);
 #ifdef OS_WIN
   void OnGetServiceProviders(const ListValue* list);
 #endif
@@ -511,6 +515,13 @@ void NetInternalsMessageHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback(
       "getSpdySessionInfo",
       proxy_->CreateCallback(&IOThreadImpl::OnGetSpdySessionInfo));
+  dom_ui_->RegisterMessageCallback(
+      "getSpdyStatus",
+      proxy_->CreateCallback(&IOThreadImpl::OnGetSpdyStatus));
+  dom_ui_->RegisterMessageCallback(
+      "getSpdyAlternateProtocolMappings",
+      proxy_->CreateCallback(
+          &IOThreadImpl::OnGetSpdyAlternateProtocolMappings));
 #ifdef OS_WIN
   dom_ui_->RegisterMessageCallback(
       "getServiceProviders",
@@ -989,6 +1000,57 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetSpdySessionInfo(
   }
 
   CallJavascriptFunction(L"g_browser.receivedSpdySessionInfo", spdy_info);
+}
+
+void NetInternalsMessageHandler::IOThreadImpl::OnGetSpdyStatus(
+    const ListValue* list) {
+  DictionaryValue* status_dict = new DictionaryValue();
+
+  status_dict->Set("spdy_enabled",
+                   Value::CreateBooleanValue(
+                       net::HttpStreamFactory::spdy_enabled()));
+  status_dict->Set("use_alternate_protocols",
+                   Value::CreateBooleanValue(
+                       net::HttpStreamFactory::use_alternate_protocols()));
+  status_dict->Set("force_spdy_over_ssl",
+                   Value::CreateBooleanValue(
+                       net::HttpStreamFactory::force_spdy_over_ssl()));
+  status_dict->Set("force_spdy_always",
+                   Value::CreateBooleanValue(
+                       net::HttpStreamFactory::force_spdy_always()));
+  status_dict->Set("next_protos",
+                   Value::CreateStringValue(
+                       *net::HttpStreamFactory::next_protos()));
+
+  CallJavascriptFunction(L"g_browser.receivedSpdyStatus", status_dict);
+}
+
+void
+NetInternalsMessageHandler::IOThreadImpl::OnGetSpdyAlternateProtocolMappings(
+    const ListValue* list) {
+  net::HttpNetworkSession* http_network_session =
+      GetHttpNetworkSession(context_getter_->GetURLRequestContext());
+
+  ListValue* dict_list = new ListValue();
+
+  if (http_network_session) {
+    const net::HttpAlternateProtocols& http_alternate_protocols =
+        http_network_session->alternate_protocols();
+    const net::HttpAlternateProtocols::ProtocolMap& map =
+        http_alternate_protocols.protocol_map();
+
+    for (net::HttpAlternateProtocols::ProtocolMap::const_iterator it =
+             map.begin();
+         it != map.end(); ++it) {
+      DictionaryValue* dict = new DictionaryValue();
+      dict->SetString("host_port_pair", it->first.ToString());
+      dict->SetString("alternate_protocol", it->second.ToString());
+      dict_list->Append(dict);
+    }
+  }
+
+  CallJavascriptFunction(L"g_browser.receivedSpdyAlternateProtocolMappings",
+                         dict_list);
 }
 
 #ifdef OS_WIN

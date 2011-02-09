@@ -95,10 +95,15 @@ function onLoaded() {
                                     'socketPoolGroupsDiv');
 
   var spdyView = new SpdyView('spdyTabContent',
+                              'spdyEnabledSpan',
+                              'spdyUseAlternateProtocolSpan',
+                              'spdyForceAlwaysSpan',
+                              'spdyForceOverSslSpan',
+                              'spdyNextProtocolsSpan',
+                              'spdyAlternateProtocolMappingsDiv',
                               'spdySessionNoneSpan',
                               'spdySessionLinkSpan',
                               'spdySessionDiv');
-
 
   var serviceView;
   if (g_browser.isPlatformWindows()) {
@@ -184,6 +189,13 @@ function BrowserBridge() {
   this.pollableDataHelpers_.spdySessionInfo =
       new PollableDataHelper('onSpdySessionInfoChanged',
                              this.sendGetSpdySessionInfo.bind(this));
+  this.pollableDataHelpers_.spdyStatus =
+      new PollableDataHelper('onSpdyStatusChanged',
+                             this.sendGetSpdyStatus.bind(this));
+  this.pollableDataHelpers_.spdyAlternateProtocolMappings =
+      new PollableDataHelper('onSpdyAlternateProtocolMappingsChanged',
+                             this.sendGetSpdyAlternateProtocolMappings.bind(
+                                 this));
   if (this.isPlatformWindows()) {
     this.pollableDataHelpers_.serviceProviders =
         new PollableDataHelper('onServiceProvidersChanged',
@@ -301,6 +313,14 @@ BrowserBridge.prototype.sendGetSpdySessionInfo = function() {
   chrome.send('getSpdySessionInfo');
 };
 
+BrowserBridge.prototype.sendGetSpdyStatus = function() {
+  chrome.send('getSpdyStatus');
+};
+
+BrowserBridge.prototype.sendGetSpdyAlternateProtocolMappings = function() {
+  chrome.send('getSpdyAlternateProtocolMappings');
+};
+
 BrowserBridge.prototype.sendGetServiceProviders = function() {
   chrome.send('getServiceProviders');
 };
@@ -388,6 +408,16 @@ BrowserBridge.prototype.receivedSocketPoolInfo = function(socketPoolInfo) {
 
 BrowserBridge.prototype.receivedSpdySessionInfo = function(spdySessionInfo) {
   this.pollableDataHelpers_.spdySessionInfo.update(spdySessionInfo);
+};
+
+BrowserBridge.prototype.receivedSpdyStatus = function(spdyStatus) {
+  this.pollableDataHelpers_.spdyStatus.update(spdyStatus);
+};
+
+BrowserBridge.prototype.receivedSpdyAlternateProtocolMappings =
+    function(spdyAlternateProtocolMappings) {
+  this.pollableDataHelpers_.spdyAlternateProtocolMappings.update(
+      spdyAlternateProtocolMappings);
 };
 
 BrowserBridge.prototype.receivedServiceProviders = function(serviceProviders) {
@@ -606,6 +636,28 @@ BrowserBridge.prototype.addSocketPoolInfoObserver = function(observer) {
  */
 BrowserBridge.prototype.addSpdySessionInfoObserver = function(observer) {
   this.pollableDataHelpers_.spdySessionInfo.addObserver(observer);
+};
+
+/**
+ * Adds a listener of the SPDY status. |observer| will be called back
+ * when data is received, through:
+ *
+ *   observer.onSpdyStatusChanged(spdyStatus)
+ */
+BrowserBridge.prototype.addSpdyStatusObserver = function(observer) {
+  this.pollableDataHelpers_.spdyStatus.addObserver(observer);
+};
+
+/**
+ * Adds a listener of the AlternateProtocolMappings. |observer| will be called
+ * back when data is received, through:
+ *
+ *   observer.onSpdyAlternateProtocolMappingsChanged(
+ *       spdyAlternateProtocolMappings)
+ */
+BrowserBridge.prototype.addSpdyAlternateProtocolMappingsObserver =
+    function(observer) {
+  this.pollableDataHelpers_.spdyAlternateProtocolMappings.addObserver(observer);
 };
 
 /**

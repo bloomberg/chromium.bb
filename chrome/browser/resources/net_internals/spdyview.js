@@ -8,11 +8,27 @@
  *
  * @constructor
  */
-function SpdyView(mainBoxId, spdySessionNoneSpanId, spdySessionLinkSpanId,
+function SpdyView(mainBoxId, spdyEnabledSpanId,
+                  spdyUseAlternateProtocolSpanId,
+                  spdyForceAlwaysSpanId, spdyForceOverSslSpanId,
+                  spdyNextProtocolsSpanId, spdyAlternateProtocolMappingsDivId,
+                  spdySessionNoneSpanId, spdySessionLinkSpanId,
                   spdySessionDivId) {
   DivView.call(this, mainBoxId);
   g_browser.addSpdySessionInfoObserver(this);
+  g_browser.addSpdyStatusObserver(this);
+  g_browser.addSpdyAlternateProtocolMappingsObserver(this);
 
+  this.spdyEnabledSpan_ = document.getElementById(spdyEnabledSpanId);
+  this.spdyUseAlternateProtocolSpan_ =
+      document.getElementById(spdyUseAlternateProtocolSpanId);
+  this.spdyForceAlwaysSpan_ = document.getElementById(spdyForceAlwaysSpanId);
+  this.spdyForceOverSslSpan_ = document.getElementById(spdyForceOverSslSpanId);
+  this.spdyNextProtocolsSpan_ =
+      document.getElementById(spdyNextProtocolsSpanId);
+
+  this.spdyAlternateProtocolMappingsDiv_ =
+      document.getElementById(spdyAlternateProtocolMappingsDivId);
   this.spdySessionNoneSpan_ = document.getElementById(spdySessionNoneSpanId);
   this.spdySessionLinkSpan_ = document.getElementById(spdySessionLinkSpanId);
   this.spdySessionDiv_ = document.getElementById(spdySessionDivId);
@@ -36,6 +52,39 @@ SpdyView.prototype.onSpdySessionInfoChanged = function(spdySessionInfo) {
 
   var tablePrinter = SpdyView.createSessionTablePrinter(spdySessionInfo);
   tablePrinter.toHTML(this.spdySessionDiv_, 'styledTable');
+
+};
+
+/**
+ * Displays information on the global SPDY status.
+ */
+SpdyView.prototype.onSpdyStatusChanged = function(spdyStatus) {
+  this.spdyEnabledSpan_.innerText = spdyStatus.spdy_enabled;
+  this.spdyUseAlternateProtocolSpan_.innerText =
+      spdyStatus.use_alternate_protocols;
+  this.spdyForceAlwaysSpan_.innerText = spdyStatus.force_spdy_always;
+  this.spdyForceOverSslSpan_.innerText = spdyStatus.force_spdy_over_ssl;
+  this.spdyNextProtocolsSpan_.innerText = spdyStatus.next_protos;
+}
+
+/**
+ * If |spdyAlternateProtocolMappings| is not empty, displays a single table
+ * with information on each alternate protocol enabled server.  Otherwise,
+ * displays "None".
+ */
+SpdyView.prototype.onSpdyAlternateProtocolMappingsChanged =
+    function(spdyAlternateProtocolMappings) {
+
+  this.spdyAlternateProtocolMappingsDiv_.innerHTML = '';
+
+  if (spdyAlternateProtocolMappings != null &&
+      spdyAlternateProtocolMappings.length > 0) {
+    var tabPrinter = SpdyView.createAlternateProtocolMappingsTablePrinter(
+            spdyAlternateProtocolMappings);
+    tabPrinter.toHTML(this.spdyAlternateProtocolMappingsDiv_, 'styledTable');
+  } else {
+    this.spdyAlternateProtocolMappingsDiv_.innerHTML = 'None';
+  }
 };
 
 /**
@@ -81,6 +130,27 @@ SpdyView.createSessionTablePrinter = function(spdySessions) {
     tablePrinter.addCell(session.sent_settings);
     tablePrinter.addCell(session.received_settings);
     tablePrinter.addCell(session.error);
+  }
+  return tablePrinter;
+};
+
+
+/**
+ * Creates a table printer to print out the list of alternate protocol
+ * mappings.
+ */
+SpdyView.createAlternateProtocolMappingsTablePrinter =
+    function(spdyAlternateProtocolMappings) {
+  var tablePrinter = new TablePrinter();
+  tablePrinter.addHeaderCell('Host');
+  tablePrinter.addHeaderCell('Alternate Protocol');
+
+  for (var i = 0; i < spdyAlternateProtocolMappings.length; i++) {
+    var entry = spdyAlternateProtocolMappings[i];
+    tablePrinter.addRow();
+
+    tablePrinter.addCell(entry.host_port_pair);
+    tablePrinter.addCell(entry.alternate_protocol);
   }
   return tablePrinter;
 };

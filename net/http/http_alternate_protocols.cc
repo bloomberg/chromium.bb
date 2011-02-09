@@ -5,6 +5,7 @@
 #include "net/http/http_alternate_protocols.h"
 
 #include "base/logging.h"
+#include "base/stringprintf.h"
 #include "base/stl_util-inl.h"
 
 namespace net {
@@ -14,6 +15,28 @@ const char* const HttpAlternateProtocols::kProtocolStrings[] = {
   "npn-spdy/1",
   "npn-spdy/2",
 };
+
+const char* HttpAlternateProtocols::ProtocolToString(
+    HttpAlternateProtocols::Protocol protocol) {
+  switch (protocol) {
+    case HttpAlternateProtocols::NPN_SPDY_1:
+    case HttpAlternateProtocols::NPN_SPDY_2:
+      return HttpAlternateProtocols::kProtocolStrings[protocol];
+    case HttpAlternateProtocols::BROKEN:
+      return "Broken";
+    case HttpAlternateProtocols::UNINITIALIZED:
+      return "Uninitialized";
+    default:
+      NOTREACHED();
+      return "";
+  }
+}
+
+
+std::string HttpAlternateProtocols::PortProtocolPair::ToString() const {
+  return base::StringPrintf("%d:%s", port,
+                            HttpAlternateProtocols::ProtocolToString(protocol));
+}
 
 // static
 HttpAlternateProtocols::PortProtocolPair*
