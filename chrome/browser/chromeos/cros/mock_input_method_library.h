@@ -27,8 +27,6 @@ class MockInputMethodLibrary : public InputMethodLibrary {
   MOCK_METHOD1(ChangeInputMethod, void(const std::string&));
   MOCK_METHOD2(SetImePropertyActivated, void(const std::string&, bool));
   MOCK_METHOD1(InputMethodIsActivated, bool(const std::string&));
-  MOCK_METHOD3(GetImeConfig, bool(const std::string&, const std::string&,
-                                  ImeConfigValue*));
   MOCK_METHOD3(SetImeConfig, bool(const std::string&, const std::string&,
                                   const ImeConfigValue&));
   MOCK_CONST_METHOD0(previous_input_method, const InputMethodDescriptor&(void));

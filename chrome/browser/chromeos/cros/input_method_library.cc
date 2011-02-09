@@ -200,18 +200,6 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     return false;
   }
 
-  virtual bool GetImeConfig(const std::string& section,
-                            const std::string& config_name,
-                            ImeConfigValue* out_value) {
-    if (!initialized_successfully_)
-      return false;
-
-    return chromeos::GetImeConfig(input_method_status_connection_,
-                                  section.c_str(),
-                                  config_name.c_str(),
-                                  out_value);
-  }
-
   virtual bool SetImeConfig(const std::string& section,
                             const std::string& config_name,
                             const ImeConfigValue& value) {
@@ -826,12 +814,6 @@ class InputMethodLibraryStubImpl : public InputMethodLibrary {
 
   virtual bool InputMethodIsActivated(const std::string& input_method_id) {
     return true;
-  }
-
-  virtual bool GetImeConfig(const std::string& section,
-                            const std::string& config_name,
-                            ImeConfigValue* out_value) {
-    return false;
   }
 
   virtual bool SetImeConfig(const std::string& section,

@@ -83,20 +83,12 @@ class InputMethodLibrary {
   // Returns true if the input method specified by |input_method_id| is active.
   virtual bool InputMethodIsActivated(const std::string& input_method_id) = 0;
 
-  // Get a configuration of ibus-daemon or IBus engines and stores it on
-  // |out_value|. Returns true if |out_value| is successfully updated.
-  // When you would like to retrieve 'panel/custom_font', |section| should
-  // be "panel", and |config_name| should be "custom_font".
-  virtual bool GetImeConfig(const std::string& section,
-                            const std::string& config_name,
-                            ImeConfigValue* out_value) = 0;
-
   // Updates a configuration of ibus-daemon or IBus engines with |value|.
   // Returns true if the configuration (and all pending configurations, if any)
   // are processed. If ibus-daemon is not running, this function just queues
   // the request and returns false.
-  // You can specify |section| and |config_name| arguments in the same way
-  // as GetImeConfig() above.
+  // When you would like to set 'panel/custom_font', |section| should
+  // be "panel", and |config_name| should be "custom_font".
   // Notice: This function might call the Observer::ActiveInputMethodsChanged()
   // callback function immediately, before returning from the SetImeConfig
   // function. See also http://crosbug.com/5217.
