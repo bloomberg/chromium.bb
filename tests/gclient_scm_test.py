@@ -18,6 +18,7 @@ import __builtin__
 # Fixes include path.
 from super_mox import mox, StdoutCheck, TestCaseUtils, SuperMoxTestBase
 
+import logging
 import sys
 import gclient_scm
 
@@ -737,12 +738,25 @@ from :3
                         '069c602044c5388d2d15c3f875b057c852003458')
     finally:
       rmtree(root_dir)
-    self.checkstdout(
-        ('\n_____ foo at refs/heads/master\n\n'
-         '________ running \'git clone -b master --verbose %s %s\' in \'%s\'\n'
-         'Initialized empty Git repository in %s\n') %
-            (join(self.root_dir, '.', '.git'), join(root_dir, 'foo'), root_dir,
-             join(gclient_scm.os.path.realpath(root_dir), 'foo', '.git') + '/'))
+    msg1 = (
+        "\n_____ foo at refs/heads/master\n\n"
+        "________ running 'git clone -b master --verbose %s %s' in '%s'\n"
+        "Initialized empty Git repository in %s\n") % (
+          join(self.root_dir, '.', '.git'),
+          join(root_dir, 'foo'),
+          root_dir,
+          join(gclient_scm.os.path.realpath(root_dir), 'foo', '.git') + '/')
+    msg2 = (
+        "\n_____ foo at refs/heads/master\n\n"
+        "________ running 'git clone -b master --verbose %s %s' in '%s'\n"
+        "Cloning into %s...\ndone.\n") % (
+          join(self.root_dir, '.', '.git'),
+          join(root_dir, 'foo'),
+          root_dir,
+          join(gclient_scm.os.path.realpath(root_dir), 'foo'))
+    out = sys.stdout.getvalue()
+    sys.stdout.close()
+    self.assertTrue(out in (msg1, msg2), (out, msg1, msg2))
 
   def testUpdateUpdate(self):
     if not self.enabled:
@@ -769,12 +783,17 @@ from :3
                                 relpath=self.relpath)
     file_path = join(self.base_path, 'b')
     open(file_path, 'w').writelines('conflict\n')
-    exception = (
-        "error: Your local changes to 'b' would be overwritten by merge.  "
-        "Aborting.\n"
-        "Please, commit your changes or stash them before you can merge.\n")
-    self.assertRaisesError(exception, scm.update, options, (), [])
-    self.checkstdout('\n_____ . at refs/heads/master\n')
+    try:
+      scm.update(options, (), [])
+      self.fail()
+    except gclient_scm.gclient_utils.CheckCallError:
+      # The exact exception text varies across git versions so it's not worth
+      # verifying it. It's fine as long as it throws.
+      pass
+    # Manually flush stdout since we can't verify it's content accurately across
+    # git versions.
+    sys.stdout.getvalue()
+    sys.stdout.close()
 
   def testUpdateConflict(self):
     if not self.enabled:
@@ -833,6 +852,11 @@ from :3
 
 
 if __name__ == '__main__':
+  if '-v' in sys.argv:
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format='%(asctime).19s %(levelname)s %(filename)s:'
+               '%(lineno)s %(message)s')
   unittest.main()
 
 # vim: ts=2:sw=2:tw=80:et:
