@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 
+#include "chrome/browser/browser_window.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -21,6 +22,18 @@
 #define MAYBE_Tabs DISABLED_Tabs
 #else
 #define MAYBE_Tabs Tabs
+#endif
+
+// Window resizes are not completed by the time the callback happens,
+// so these tests fail on linux. http://crbug.com/72369
+#if defined(OS_LINUX)
+#define MAYBE_FocusWindowDoesNotExitFullscreen \
+  DISABLED_FocusWindowDoesNotExitFullscreen
+#define MAYBE_UpdateWindowSizeExitsFullscreen \
+  DISABLED_UpdateWindowSizeExitsFullscreen
+#else
+#define MAYBE_FocusWindowDoesNotExitFullscreen FocusWindowDoesNotExitFullscreen
+#define MAYBE_UpdateWindowSizeExitsFullscreen UpdateWindowSizeExitsFullscreen
 #endif
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Tabs) {
@@ -87,6 +100,30 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabsOnUpdated) {
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("tabs/on_updated")) << message_;
 }
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
+                       MAYBE_FocusWindowDoesNotExitFullscreen) {
+  browser()->window()->SetFullscreen(true);
+  bool is_fullscreen = browser()->window()->IsFullscreen();
+  ASSERT_TRUE(RunExtensionTest("window_update/focus")) << message_;
+  ASSERT_EQ(is_fullscreen, browser()->window()->IsFullscreen());
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
+                       MAYBE_UpdateWindowSizeExitsFullscreen) {
+  browser()->window()->SetFullscreen(true);
+  ASSERT_TRUE(RunExtensionTest("window_update/sizing")) << message_;
+  ASSERT_FALSE(browser()->window()->IsFullscreen());
+}
+
+#if defined(OS_WIN)
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FocusWindowDoesNotUnmaximize) {
+  gfx::NativeWindow window = browser()->window()->GetNativeHandle();
+  ::SendMessage(window, WM_SYSCOMMAND, SC_MAXIMIZE, 0);
+  ASSERT_TRUE(RunExtensionTest("window_update/focus")) << message_;
+  ASSERT_TRUE(::IsZoomed(window));
+}
+#endif  // OS_WIN
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoDisabledByPref) {
   ASSERT_TRUE(StartTestServer());

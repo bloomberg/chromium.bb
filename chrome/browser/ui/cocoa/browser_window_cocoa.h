@@ -49,6 +49,7 @@ class BrowserWindowCocoa : public BrowserWindow,
   virtual void UpdateLoadingAnimations(bool should_animate);
   virtual void SetStarredState(bool is_starred);
   virtual gfx::Rect GetRestoredBounds() const;
+  virtual gfx::Rect GetBounds() const;
   virtual bool IsMaximized() const;
   virtual void SetFullscreen(bool fullscreen);
   virtual bool IsFullscreen() const;

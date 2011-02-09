@@ -154,7 +154,11 @@ DictionaryValue* ExtensionTabUtil::CreateWindowValue(const Browser* browser,
   result->SetBoolean(keys::kIncognitoKey,
                      browser->profile()->IsOffTheRecord());
   result->SetBoolean(keys::kFocusedKey, browser->window()->IsActive());
-  gfx::Rect bounds = browser->window()->GetRestoredBounds();
+  gfx::Rect bounds;
+  if (browser->window()->IsMaximized() || browser->window()->IsFullscreen())
+    bounds = browser->window()->GetBounds();
+  else
+    bounds = browser->window()->GetRestoredBounds();
 
   result->SetInteger(keys::kLeftKey, bounds.x());
   result->SetInteger(keys::kTopKey, bounds.y());
@@ -500,6 +504,7 @@ bool UpdateWindowFunction::RunImpl() {
   }
 
   gfx::Rect bounds = browser->window()->GetRestoredBounds();
+  bool set_bounds = false;
   // Any part of the bounds can optionally be set by the caller.
   int bounds_val;
   if (update_props->HasKey(keys::kLeftKey)) {
@@ -507,6 +512,7 @@ bool UpdateWindowFunction::RunImpl() {
         keys::kLeftKey,
         &bounds_val));
     bounds.set_x(bounds_val);
+    set_bounds = true;
   }
 
   if (update_props->HasKey(keys::kTopKey)) {
@@ -514,6 +520,7 @@ bool UpdateWindowFunction::RunImpl() {
         keys::kTopKey,
         &bounds_val));
     bounds.set_y(bounds_val);
+    set_bounds = true;
   }
 
   if (update_props->HasKey(keys::kWidthKey)) {
@@ -521,6 +528,7 @@ bool UpdateWindowFunction::RunImpl() {
         keys::kWidthKey,
         &bounds_val));
     bounds.set_width(bounds_val);
+    set_bounds = true;
   }
 
   if (update_props->HasKey(keys::kHeightKey)) {
@@ -528,8 +536,10 @@ bool UpdateWindowFunction::RunImpl() {
         keys::kHeightKey,
         &bounds_val));
     bounds.set_height(bounds_val);
+    set_bounds = true;
   }
-  browser->window()->SetBounds(bounds);
+  if (set_bounds)
+    browser->window()->SetBounds(bounds);
 
   bool selected_val = false;
   if (update_props->HasKey(keys::kFocusedKey)) {

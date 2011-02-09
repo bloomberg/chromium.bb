@@ -77,6 +77,7 @@ void BrowserWindowCocoa::Show() {
 }
 
 void BrowserWindowCocoa::SetBounds(const gfx::Rect& bounds) {
+  SetFullscreen(false);
   NSRect cocoa_bounds = NSMakeRect(bounds.x(), 0, bounds.width(),
                                    bounds.height());
   // Flip coordinates based on the primary screen.
@@ -198,6 +199,10 @@ gfx::Rect BrowserWindowCocoa::GetRestoredBounds() const {
   gfx::Rect bounds(frame.origin.x, 0, frame.size.width, frame.size.height);
   bounds.set_y([screen frame].size.height - frame.origin.y - frame.size.height);
   return bounds;
+}
+
+gfx::Rect BrowserWindowCocoa::GetBounds() const {
+  return GetRestoredBounds();
 }
 
 bool BrowserWindowCocoa::IsMaximized() const {

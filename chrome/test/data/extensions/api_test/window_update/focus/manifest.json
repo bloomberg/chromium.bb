@@ -1,0 +1,7 @@
+{
+  "name": "window/update.focus",
+  "version": "0.1",
+  "description": "Tests the window.update focus parameter.",
+  "background_page": "test.html",
+  "permissions": ["tabs"]
+}

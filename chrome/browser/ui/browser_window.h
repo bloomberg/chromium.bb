@@ -119,6 +119,11 @@ class BrowserWindow {
   // currently maximized or minimized) in terms of the screen coordinates.
   virtual gfx::Rect GetRestoredBounds() const = 0;
 
+  // Retrieves the window's current bounds, including its frame.
+  // This will only differ from GetRestoredBounds() for maximized
+  // and minimized windows.
+  virtual gfx::Rect GetBounds() const = 0;
+
   // TODO(beng): REMOVE?
   // Returns true if the frame is maximized (aka zoomed).
   virtual bool IsMaximized() const = 0;

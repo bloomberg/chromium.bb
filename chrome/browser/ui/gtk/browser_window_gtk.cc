@@ -583,6 +583,8 @@ void BrowserWindowGtk::SetBoundsImpl(const gfx::Rect& bounds,
 }
 
 void BrowserWindowGtk::SetBounds(const gfx::Rect& bounds) {
+  if (IsFullscreen())
+    SetFullscreen(false);
   SetBoundsImpl(bounds, true, true);
 }
 
@@ -721,6 +723,10 @@ void BrowserWindowGtk::SetStarredState(bool is_starred) {
 
 gfx::Rect BrowserWindowGtk::GetRestoredBounds() const {
   return restored_bounds_;
+}
+
+gfx::Rect BrowserWindowGtk::GetBounds() const {
+  return bounds_;
 }
 
 bool BrowserWindowGtk::IsMaximized() const {

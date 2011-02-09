@@ -736,6 +736,7 @@ void BrowserView::Show() {
 }
 
 void BrowserView::SetBounds(const gfx::Rect& bounds) {
+  SetFullscreen(false);
   GetWidget()->SetBounds(bounds);
 }
 
@@ -837,6 +838,10 @@ void BrowserView::SetStarredState(bool is_starred) {
 
 gfx::Rect BrowserView::GetRestoredBounds() const {
   return frame_->GetWindow()->GetNormalBounds();
+}
+
+gfx::Rect BrowserView::GetBounds() const {
+  return frame_->GetWindow()->GetBounds();
 }
 
 bool BrowserView::IsMaximized() const {
