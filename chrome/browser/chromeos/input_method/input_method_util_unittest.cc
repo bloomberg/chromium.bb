@@ -106,6 +106,7 @@ TEST_F(InputMethodUtilTest, GetKeyboardLayoutName) {
   EXPECT_EQ("us", GetKeyboardLayoutName("xkb:us::eng"));
   EXPECT_EQ("us(dvorak)", GetKeyboardLayoutName("xkb:us:dvorak:eng"));
   EXPECT_EQ("us(colemak)", GetKeyboardLayoutName("xkb:us:colemak:eng"));
+  EXPECT_EQ("de(neo)", GetKeyboardLayoutName("xkb:de:neo:ger"));
 }
 
 TEST_F(InputMethodUtilTest, GetLanguageCodeFromInputMethodId) {

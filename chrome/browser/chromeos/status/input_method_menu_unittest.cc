@@ -49,6 +49,11 @@ TEST(InputMethodMenuTest, GetTextForIndicatorTest) {
     EXPECT_EQ(L"INTL", InputMethodMenu::GetTextForIndicator(desc));
   }
   {
+    InputMethodDescriptor desc("xkb:de:neo:ger", "Germany - Neo 2", "de(neo)",
+                               "ger");
+    EXPECT_EQ(L"NEO", InputMethodMenu::GetTextForIndicator(desc));
+  }
+  {
     InputMethodDescriptor desc("mozc", "Mozc", "us", "ja");
     EXPECT_EQ(UTF8ToWide("\xe3\x81\x82"),
               InputMethodMenu::GetTextForIndicator(desc));

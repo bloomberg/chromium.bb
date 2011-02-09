@@ -11043,6 +11043,9 @@ This web page was killed, either because Chrome ran out of memory, or you chose 
       <message name="IDS_STATUSBAR_LAYOUT_GERMANY" desc="In the language menu button, this shows the input mode.">
         German keyboard layout
       </message>
+      <message name="IDS_STATUSBAR_LAYOUT_GERMANY_NEO2" desc="In the language menu button, this shows the input mode.">
+        German (Neo 2)
+      </message>
       <message name="IDS_STATUSBAR_LAYOUT_ITALY" desc="In the language menu button, this shows the input mode.">
         Italian
       </message>

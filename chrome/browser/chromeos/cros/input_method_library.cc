@@ -928,6 +928,8 @@ class InputMethodLibraryStubImpl : public InputMethodLibrary {
     descriptions->push_back(InputMethodDescriptor(
         "xkb:de::ger", "Germany", "de", "ger"));
     descriptions->push_back(InputMethodDescriptor(
+        "xkb:de:neo:ger", "Germany - Neo 2", "de(neo)", "ger"));
+    descriptions->push_back(InputMethodDescriptor(
         "xkb:gr::gre", "Greece", "gr", "gre"));
     descriptions->push_back(InputMethodDescriptor(
         "xkb:hu::hun", "Hungary", "hu", "hun"));

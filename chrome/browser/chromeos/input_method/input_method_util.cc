@@ -178,6 +178,7 @@ const struct EnglishToResouceId {
   { "Japan", IDS_STATUSBAR_LAYOUT_JAPAN },
   { "Slovenia", IDS_STATUSBAR_LAYOUT_SLOVENIA },
   { "Germany", IDS_STATUSBAR_LAYOUT_GERMANY },
+  { "Germany - Neo 2", IDS_STATUSBAR_LAYOUT_GERMANY_NEO2 },
   { "Italy", IDS_STATUSBAR_LAYOUT_ITALY },
   { "Estonia", IDS_STATUSBAR_LAYOUT_ESTONIA },
   { "Hungary", IDS_STATUSBAR_LAYOUT_HUNGARY },
