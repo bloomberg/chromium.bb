@@ -27,4 +27,3 @@ BUG_LOISLO MAC : canvas/philip/tests/2d.shadow.enable.x.html = TEXT
 BUG_LOISLO MAC : canvas/philip/tests/2d.shadow.enable.y.html = TEXT
 BUG_LOISLO MAC : canvas/philip/tests/2d.strokeRect.zero.4.html = TEXT
 
-BUG_LOISLO MAC : plugins/plugin-document-back-forward.html = TEXT
