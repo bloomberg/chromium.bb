@@ -329,6 +329,8 @@ void InputMethodMenu::ActivatedAt(int index) {
         = input_method_descriptors_->at(index);
     CrosLibrary::Get()->GetInputMethodLibrary()->ChangeInputMethod(
         input_method.id);
+    UserMetrics::RecordAction(
+        UserMetricsAction("LanguageMenuButton_InputMethodChanged"));
     return;
   }
 
@@ -379,8 +381,6 @@ void InputMethodMenu::InputMethodChanged(
     const InputMethodDescriptor& previous_input_method,
     const InputMethodDescriptor& current_input_method,
     size_t num_active_input_methods) {
-  UserMetrics::RecordAction(
-      UserMetricsAction("LanguageMenuButton_InputMethodChanged"));
   UpdateUIFromInputMethod(current_input_method, num_active_input_methods);
 }
 
