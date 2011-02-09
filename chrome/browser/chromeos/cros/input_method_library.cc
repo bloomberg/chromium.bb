@@ -240,6 +240,8 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
 
     // Stop input method process if necessary.
     MaybeStopInputMethodDaemon(section, config_name, value);
+    // Change the current keyboard layout if necessary.
+    MaybeChangeCurrentKeyboardLayout(section, config_name, value);
     return pending_config_requests_.empty();
   }
 
@@ -263,6 +265,17 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   }
 
  private:
+  // Returns true if the given input method config value is a single
+  // element string list that contains an input method ID of a keyboard
+  // layout.
+  bool ContainOnlyOneKeyboardLayout(
+      const ImeConfigValue& value) {
+    return (value.type == ImeConfigValue::kValueTypeStringList &&
+            value.string_list_value.size() == 1 &&
+            chromeos::input_method::IsKeyboardLayout(
+                value.string_list_value[0]));
+  }
+
   // Starts input method daemon based on the |defer_ime_startup_| flag and
   // input method configuration being updated. |section| is a section name of
   // the input method configuration (e.g. "general", "general/hotkey").
@@ -276,16 +289,11 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
       // If there is only one input method which is a keyboard layout,
       // we don't start the input method processes.  When
       // |defer_ime_startup_| is true, we don't start it either.
-      if ((value.type == ImeConfigValue::kValueTypeStringList &&
-           value.string_list_value.size() == 1 &&
-           chromeos::input_method::IsKeyboardLayout(
-               value.string_list_value[0])) ||
+      if (ContainOnlyOneKeyboardLayout(value) ||
           defer_ime_startup_) {
-        // Change the keyboard layout per the only one input method now
-        // available. We shouldn't use SetCurrentKeyboardLayoutByName()
-        // here. See comments at ChangeCurrentInputMethod() for details.
-        ChangeCurrentInputMethodFromId(value.string_list_value[0]);
+        // Do not start the input method daemon.
       } else {
+        // Otherwise, start the input method daemon.
         StartInputMethodDaemon();
       }
     }
@@ -297,22 +305,32 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   void MaybeStopInputMethodDaemon(const std::string& section,
                                   const std::string& config_name,
                                   const ImeConfigValue& value) {
+    // If there is only one input method which is a keyboard layout,
+    // and |enable_auto_ime_shutdown_| is true, we'll stop the input
+    // method daemon.
     if (section == language_prefs::kGeneralSectionName &&
-        config_name == language_prefs::kPreloadEnginesConfigName) {
-      // If there is only one input method which is a keyboard layout,
-      // and |enable_auto_ime_shutdown_| is true, we'll stop the input
-      // method processes.
-      if (value.type == ImeConfigValue::kValueTypeStringList &&
-          value.string_list_value.size() == 1 &&
-          chromeos::input_method::IsKeyboardLayout(
-              value.string_list_value[0]) &&
-          enable_auto_ime_shutdown_) {
-        StopInputMethodDaemon();
-        // Change the keyboard layout per the only one input method now
-        // available. We shouldn't use SetCurrentKeyboardLayoutByName()
-        // here. See comments at ChangeCurrentInputMethod() for details.
-        ChangeCurrentInputMethodFromId(value.string_list_value[0]);
-      }
+        config_name == language_prefs::kPreloadEnginesConfigName &&
+        ContainOnlyOneKeyboardLayout(value) &&
+        enable_auto_ime_shutdown_) {
+      StopInputMethodDaemon();
+    }
+  }
+
+  // Change the keyboard layout per input method configuration being
+  // updated, if necessary. See also: MaybeStartInputMethodDaemon().
+  void MaybeChangeCurrentKeyboardLayout(const std::string& section,
+                                        const std::string& config_name,
+                                        const ImeConfigValue& value) {
+
+    // If there is only one input method which is a keyboard layout, we'll
+    // change the keyboard layout per the only one input method now
+    // available.
+    if (section == language_prefs::kGeneralSectionName &&
+        config_name == language_prefs::kPreloadEnginesConfigName &&
+        ContainOnlyOneKeyboardLayout(value)) {
+      // We shouldn't use SetCurrentKeyboardLayoutByName() here. See
+      // comments at ChangeCurrentInputMethod() for details.
+      ChangeCurrentInputMethodFromId(value.string_list_value[0]);
     }
   }
 
@@ -518,8 +536,11 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   // just need to change the current keyboard layout.
   void ChangeCurrentInputMethod(const InputMethodDescriptor& new_input_method) {
     // Change the keyboard layout to a preferred layout for the input method.
-    CrosLibrary::Get()->GetKeyboardLibrary()->SetCurrentKeyboardLayoutByName(
-        new_input_method.keyboard_layout);
+    if (!CrosLibrary::Get()->GetKeyboardLibrary()->
+        SetCurrentKeyboardLayoutByName(new_input_method.keyboard_layout)) {
+      LOG(ERROR) << "Failed to change keyboard layout to "
+                 << new_input_method.keyboard_layout;
+    }
 
     if (current_input_method_.id != new_input_method.id) {
       previous_input_method_ = current_input_method_;
