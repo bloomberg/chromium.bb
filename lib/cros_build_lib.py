@@ -10,6 +10,8 @@ import re
 import signal
 import subprocess
 import sys
+from terminal import Color
+
 
 _STDOUT_IS_TTY = hasattr(sys.stdout, 'isatty') and sys.stdout.isatty()
 
@@ -111,37 +113,6 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
       Warning(str(e))
 
   return cmd_result
-
-
-class Color(object):
-  """Conditionally wraps text in ANSI color escape sequences."""
-  BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE = range(8)
-  BOLD = -1
-  COLOR_START = '\033[1;%dm'
-  BOLD_START = '\033[1m'
-  RESET = '\033[0m'
-
-  def __init__(self, enabled=True):
-    self._enabled = enabled
-
-  def Color(self, color, text):
-    """Returns text with conditionally added color escape sequences.
-
-    Args:
-      color: Text color -- one of the color constants defined in this class.
-      text: The text to color.
-
-    Returns:
-      If self._enabled is False, returns the original text. If it's True,
-      returns text with color escape sequences based on the value of color.
-    """
-    if not self._enabled:
-      return text
-    if color == self.BOLD:
-      start = self.BOLD_START
-    else:
-      start = self.COLOR_START % (color + 30)
-    return start + text + self.RESET
 
 
 def Die(message):
