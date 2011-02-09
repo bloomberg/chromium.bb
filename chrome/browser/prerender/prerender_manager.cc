@@ -185,17 +185,17 @@ void PrerenderManager::RecordPerceivedPageLoadTime(base::TimeDelta pplt) {
   bool record_windowed_pplt = ShouldRecordWindowedPPLT();
   switch (mode_) {
     case PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP:
-      UMA_HISTOGRAM_TIMES("PLT.PerceivedPageLoadTime_PrerenderControl", pplt);
+      UMA_HISTOGRAM_TIMES("Prerender.PerceivedPageLoadTime_Control", pplt);
       if (record_windowed_pplt) {
-        UMA_HISTOGRAM_TIMES(
-            "PLT.PerceivedPageLoadTime_WindowPrerenderControl", pplt);
+        UMA_HISTOGRAM_TIMES("Prerender.PerceivedPageLoadTime_WindowControl",
+                            pplt);
       }
       break;
     case PRERENDER_MODE_EXPERIMENT_PRERENDER_GROUP:
-      UMA_HISTOGRAM_TIMES("PLT.PerceivedPageLoadTime_PrerenderTreatment", pplt);
+      UMA_HISTOGRAM_TIMES("Prerender.PerceivedPageLoadTime_Treatment", pplt);
       if (record_windowed_pplt) {
-        UMA_HISTOGRAM_TIMES(
-            "PLT.PerceivedPageLoadTime_WindowPrerenderTreatment", pplt);
+        UMA_HISTOGRAM_TIMES("Prerender.PerceivedPageLoadTime_WindowTreatment",
+                            pplt);
       }
       break;
     default:
@@ -205,8 +205,7 @@ void PrerenderManager::RecordPerceivedPageLoadTime(base::TimeDelta pplt) {
 
 void PrerenderManager::RecordTimeUntilUsed(base::TimeDelta time_until_used) {
   if (mode_ == PRERENDER_MODE_EXPERIMENT_PRERENDER_GROUP) {
-    UMA_HISTOGRAM_TIMES("PLT.TimeUntilUsed_PrerenderTreatment",
-                        time_until_used);
+    UMA_HISTOGRAM_TIMES("Prerender.TimeUntilUsed", time_until_used);
   }
 }
 
