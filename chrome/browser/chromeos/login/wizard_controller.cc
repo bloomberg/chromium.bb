@@ -996,8 +996,7 @@ void ShowLoginWizard(const std::string& first_screen_name,
     // chromeos::LanguageSwitchMenu::SwitchLanguage here before
     // EmitLoginPromptReady.
     const std::string current_locale =
-        g_browser_process->local_state()->GetString(
-            prefs::kApplicationLocale);
+        g_browser_process->local_state()->GetString(prefs::kApplicationLocale);
     VLOG(1) << "Current locale: " << current_locale;
     if (current_locale.empty()) {
       locale = controller->GetCustomization()->initial_locale();

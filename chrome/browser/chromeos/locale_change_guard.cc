@@ -102,8 +102,9 @@ void LocaleChangeGuard::CheckLocaleChange(TabContents* tab_contents) {
 
   std::string to_locale = prefs->GetString(prefs::kApplicationLocale);
   if (to_locale != cur_locale) {
-    // This conditional branch can occur in case kApplicationLocale
-    // preference was modified by synchronization.
+    // This conditional branch can occur in cases like:
+    // (1) kApplicationLocale preference was modified by synchronization;
+    // (2) kApplicationLocale is managed by policy.
     return;
   }
 

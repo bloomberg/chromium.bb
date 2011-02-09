@@ -1401,6 +1401,10 @@ void ProfileImpl::ChangeAppLocale(
     NOTREACHED();
     return;
   }
+  PrefService* local_state = g_browser_process->local_state();
+  DCHECK(local_state);
+  if (local_state->IsManagedPreference(prefs::kApplicationLocale))
+    return;
   std::string pref_locale = GetPrefs()->GetString(prefs::kApplicationLocale);
   bool do_update_pref = true;
   switch (via) {
@@ -1457,16 +1461,12 @@ void ProfileImpl::ChangeAppLocale(
   }
   if (do_update_pref)
     GetPrefs()->SetString(prefs::kApplicationLocale, new_locale);
-  if (!chromeos::OwnershipService::GetSharedInstance()->IsAlreadyOwned() ||
-      chromeos::OwnershipService::GetSharedInstance()->CurrentUserIsOwner()) {
-    g_browser_process->local_state()->SetString(
-        prefs::kOwnerLocale, new_locale);
-    g_browser_process->local_state()->SetString(
-        prefs::kApplicationLocale, new_locale);
-  }
+  if (chromeos::OwnershipService::GetSharedInstance()->CurrentUserIsOwner())
+    local_state->SetString(prefs::kOwnerLocale, new_locale);
+  local_state->SetString(prefs::kApplicationLocale, new_locale);
 
   GetPrefs()->ScheduleSavePersistentPrefs();
-  g_browser_process->local_state()->ScheduleSavePersistentPrefs();
+  local_state->ScheduleSavePersistentPrefs();
 }
 
 chromeos::ProxyConfigServiceImpl*

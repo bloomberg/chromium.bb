@@ -152,11 +152,9 @@ bool LanguageSwitchMenu::GetAcceleratorForCommandId(
 void LanguageSwitchMenu::ExecuteCommand(int command_id) {
   const std::string locale = language_list_->GetLocaleFromIndex(command_id);
   SwitchLanguage(locale);
-  if (!chromeos::OwnershipService::GetSharedInstance()->IsAlreadyOwned()) {
-    g_browser_process->local_state()->SetString(
-        prefs::kApplicationLocale, locale);
-    g_browser_process->local_state()->ScheduleSavePersistentPrefs();
-  }
+  g_browser_process->local_state()->SetString(
+      prefs::kApplicationLocale, locale);
+  g_browser_process->local_state()->ScheduleSavePersistentPrefs();
   InitLanguageMenu();
 
   // Update all view hierarchies that the locale has changed.

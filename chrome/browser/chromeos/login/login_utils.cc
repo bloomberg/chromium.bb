@@ -392,18 +392,6 @@ void LoginUtilsImpl::CompleteOffTheRecordLogin(const GURL& start_url) {
                                    browser_command_line,
                                    &command_line);
 
-    PrefService* local_state = g_browser_process->local_state();
-    std::string cur_locale = g_browser_process->GetApplicationLocale();
-    // Guest session is starting in a new process so we need to communicate
-    // current locale to it.  Current locale may differ from value of
-    // kApplicationLocale because switching language on new user pod does not
-    // change kApplicationLocale after ownership has been taken.
-    // We will restore kApplicationLocale back to kOwnerValue on next startup.
-    if (local_state->GetString(prefs::kApplicationLocale) != cur_locale) {
-      local_state->SetString(prefs::kApplicationLocale, cur_locale);
-      local_state->SavePersistentPrefs();
-    }
-
     CrosLibrary::Get()->GetLoginLibrary()->RestartJob(getpid(), cmd_line_str);
   }
 }

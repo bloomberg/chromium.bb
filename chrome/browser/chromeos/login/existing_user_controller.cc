@@ -106,14 +106,11 @@ void ExistingUserController::Init(const UserVector& users) {
   if (g_browser_process) {
     PrefService* state = g_browser_process->local_state();
     if (state) {
-      std::string owner_locale =
-          state->GetString(prefs::kOwnerLocale);
-      // Ensure that we start with owner's locale.  Under common usage
-      // kApplicationLocale value equals to kOwnerLocale value.
-      // However in current implementation it may breach during guest session:
-      // we store current locale into kApplicationLocale to setup guest session.
+      std::string owner_locale = state->GetString(prefs::kOwnerLocale);
+      // Ensure that we start with owner's locale.
       if (!owner_locale.empty() &&
-          state->GetString(prefs::kApplicationLocale) != owner_locale) {
+          state->GetString(prefs::kApplicationLocale) != owner_locale &&
+          !state->IsManagedPreference(prefs::kApplicationLocale)) {
         state->SetString(prefs::kApplicationLocale, owner_locale);
         state->ScheduleSavePersistentPrefs();
         LanguageSwitchMenu::SwitchLanguage(owner_locale);
