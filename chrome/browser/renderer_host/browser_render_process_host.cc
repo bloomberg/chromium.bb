@@ -1146,7 +1146,8 @@ void BrowserRenderProcessHost::Observe(NotificationType type,
 }
 
 void BrowserRenderProcessHost::OnProcessLaunched() {
-  child_process_->SetProcessBackgrounded(backgrounded_);
+  if (child_process_.get())
+    child_process_->SetProcessBackgrounded(backgrounded_);
 
   Send(new ViewMsg_SetIsIncognitoProcess(profile()->IsOffTheRecord()));
 
