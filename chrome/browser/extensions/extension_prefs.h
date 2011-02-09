@@ -56,7 +56,12 @@ class ExtensionPrefs {
     LAUNCH_PINNED,
     LAUNCH_REGULAR,
     LAUNCH_FULLSCREEN,
-    LAUNCH_WINDOW
+    LAUNCH_WINDOW,
+
+    // Launch an app in the in the way a click on the NTP would,
+    // if no user pref were set.  Update this constant to change
+    // the default for the NTP and chrome.management.launchApp().
+    LAUNCH_DEFAULT = LAUNCH_REGULAR
   };
 
   // Does not assume ownership of |prefs| and |incognito_prefs|.

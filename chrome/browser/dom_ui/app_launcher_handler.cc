@@ -102,7 +102,7 @@ void AppLauncherHandler::CreateAppInfo(const Extension* extension,
   value->SetInteger("launch_container", extension->launch_container());
   value->SetInteger("launch_type",
       extension_prefs->GetLaunchType(extension->id(),
-                                     ExtensionPrefs::LAUNCH_REGULAR));
+                                     ExtensionPrefs::LAUNCH_DEFAULT));
 
   int app_launch_index = extension_prefs->GetAppLaunchIndex(extension->id());
   if (app_launch_index == -1) {
@@ -308,7 +308,7 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
   // is set, launch as a regular tab.
   extension_misc::LaunchContainer launch_container =
       extensions_service_->extension_prefs()->GetLaunchContainer(
-          extension, ExtensionPrefs::LAUNCH_REGULAR);
+          extension, ExtensionPrefs::LAUNCH_DEFAULT);
 
   TabContents* new_contents = Browser::OpenApplication(
       profile, extension, launch_container, old_contents);

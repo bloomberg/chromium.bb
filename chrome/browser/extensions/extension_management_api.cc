@@ -167,8 +167,13 @@ bool LaunchAppFunction::RunImpl() {
     return false;
   }
 
-  extension_misc::LaunchContainer container = extension->launch_container();
-  Browser::OpenApplication(profile(), extension, container, NULL);
+  // Look at prefs to find the right launch container.
+  // |default_pref_value| is set to LAUNCH_REGULAR so that if
+  // the user has not set a preference, we open the app in a tab.
+  extension_misc::LaunchContainer launch_container =
+      service()->extension_prefs()->GetLaunchContainer(
+          extension, ExtensionPrefs::LAUNCH_DEFAULT);
+  Browser::OpenApplication(profile(), extension, launch_container, NULL);
 
   return true;
 }

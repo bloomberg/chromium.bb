@@ -611,23 +611,51 @@ ExtensionPrefs::LaunchType ExtensionPrefs::GetLaunchType(
 extension_misc::LaunchContainer ExtensionPrefs::GetLaunchContainer(
     const Extension* extension,
     ExtensionPrefs::LaunchType default_pref_value) {
-  extension_misc::LaunchContainer launch_container =
+  extension_misc::LaunchContainer manifest_launch_container =
       extension->launch_container();
 
-  // Apps with app.launch.container = 'panel' should always
-  // open in a panel.
-  if (launch_container == extension_misc::LAUNCH_PANEL)
-    return extension_misc::LAUNCH_PANEL;
+  const extension_misc::LaunchContainer kInvalidLaunchContainer =
+      static_cast<extension_misc::LaunchContainer>(-1);
 
-  ExtensionPrefs::LaunchType prefs_launch_type =
-      GetLaunchType(extension->id(), default_pref_value);
+  extension_misc::LaunchContainer result = kInvalidLaunchContainer;
 
-  // If the user chose to open in a window, then launch in one.
-  if (prefs_launch_type == ExtensionPrefs::LAUNCH_WINDOW)
-    return extension_misc::LAUNCH_WINDOW;
+  if (manifest_launch_container == extension_misc::LAUNCH_PANEL) {
+    // Apps with app.launch.container = 'panel' should always
+    // open in a panel.
+    result = extension_misc::LAUNCH_PANEL;
 
-  // Otherwise, use the container the extension chose.
-  return launch_container;
+  } else if (manifest_launch_container == extension_misc::LAUNCH_TAB) {
+    // Look for prefs that indicate the user's choice of launch
+    // container.  The app's menu on the NTP provides a UI to set
+    // this preference.  If no preference is set, |default_pref_value|
+    // is used.
+    ExtensionPrefs::LaunchType prefs_launch_type =
+        GetLaunchType(extension->id(), default_pref_value);
+
+    if (prefs_launch_type == ExtensionPrefs::LAUNCH_WINDOW) {
+      // If the pref is set to launch a window (or no pref is set, and
+      // window opening is the default), make the container a window.
+      result = extension_misc::LAUNCH_WINDOW;
+
+    } else {
+      // All other launch types (tab, pinned, fullscreen) are
+      // implemented as tabs in a window.
+      result = extension_misc::LAUNCH_TAB;
+    }
+  } else {
+    // If a new value for app.launch.container is added, logic
+    // for it should be added here.  extension_misc::LAUNCH_WINDOW
+    // is not present because there is no way to set it in a manifest.
+    NOTREACHED() << manifest_launch_container;
+  }
+
+  // All paths should set |result|.
+  if (result == kInvalidLaunchContainer) {
+    DLOG(FATAL) << "Failed to set a launch container.";
+    result = extension_misc::LAUNCH_TAB;
+  }
+
+  return result;
 }
 
 void ExtensionPrefs::SetLaunchType(const std::string& extension_id,

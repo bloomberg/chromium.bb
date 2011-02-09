@@ -626,7 +626,7 @@ TabContents* Browser::OpenApplicationTab(Profile* profile,
 
   ExtensionPrefs::LaunchType launch_type =
       extensions_service->extension_prefs()->GetLaunchType(
-          extension->id(), ExtensionPrefs::LAUNCH_REGULAR);
+          extension->id(), ExtensionPrefs::LAUNCH_DEFAULT);
   UMA_HISTOGRAM_ENUMERATION("Extensions.AppTabLaunchType", launch_type, 100);
   int add_type = TabStripModel::ADD_SELECTED;
   if (launch_type == ExtensionPrefs::LAUNCH_PINNED)
@@ -2530,7 +2530,7 @@ void Browser::DuplicateContentsAt(int index) {
     new_window->SetBounds(gfx::Rect(new_window->GetRestoredBounds().origin(),
                           window()->GetRestoredBounds().size()));
 
-    // We need to show the browser now. Otherwise ContainerWin assumes the
+    // We need to show the browser now.  Otherwise ContainerWin assumes the
     // TabContents is invisible and won't size it.
     browser->window()->Show();
 

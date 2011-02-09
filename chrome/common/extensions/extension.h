@@ -703,7 +703,11 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // absolute. If relative, it is relative to web_origin.
   std::string launch_web_url_;
 
-  // The type of container to launch into.
+  // The window type that an app's manifest specifies to launch into.
+  // This is not always the window type an app will open into, because
+  // users can override the way each app launches.  See
+  // ExtensionPrefs::GetLaunchContainer(), which looks at a per-app pref
+  // to decide what container an app will launch in.
   extension_misc::LaunchContainer launch_container_;
 
   // The default size of the container when launching. Only respected for
