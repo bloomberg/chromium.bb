@@ -575,17 +575,21 @@ bool Plugin::LoadNaClModule(nacl::string full_url, int file_desc) {
   }
   nacl::scoped_ptr<nacl::DescWrapper>
       wrapper(wrapper_factory_->MakeFileDesc(file_desc, O_RDONLY));
-#if !defined(NACL_STANDALONE)
-  return LoadNaClModule(wrapper.get(), /* start_from_browser */ true);
-#else
+#if defined(NACL_STANDALONE)
   return LoadNaClModule(wrapper.get(), /* start_from_browser */ false);
+#else
+  return LoadNaClModule(wrapper.get(), /* start_from_browser */ true);
 #endif
 }
 
 bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper) {
   PLUGIN_PRINTF(("Plugin::LoadNaClModule (wrapper=%p)\n",
                  reinterpret_cast<void*>(wrapper)));
+#if defined(NACL_STANDALONE)
   return LoadNaClModule(wrapper, /* start_from_browser */ false);
+#else
+  return LoadNaClModule(wrapper, /* start_from_browser */ true);
+#endif
 }
 
 bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
