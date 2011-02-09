@@ -30,6 +30,8 @@ extern "C" {
 
 #include <wayland-client.h>
 
+#define WL_EGL_PLATFORM 1
+
 struct wl_egl_display;
 struct wl_egl_window;
 struct wl_egl_pixmap;
