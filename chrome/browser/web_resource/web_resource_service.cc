@@ -89,8 +89,12 @@ class WebResourceService::WebResourceFetcher
     else
       web_resource_service_->in_fetch_ = true;
 
+    std::string locale = g_browser_process->GetApplicationLocale();
+    std::string web_resource_server = kDefaultWebResourceServer;
+    web_resource_server.append(locale);
+
     url_fetcher_.reset(new URLFetcher(GURL(
-        kDefaultWebResourceServer),
+        web_resource_server),
         URLFetcher::GET, this));
     // Do not let url fetcher affect existing state in profile (by setting
     // cookies, for example.
@@ -224,7 +228,7 @@ class WebResourceService::UnpackerClient
 // Server for dynamically loaded NTP HTML elements. TODO(mirandac): append
 // locale for future usage, when we're serving localizable strings.
 const char* WebResourceService::kDefaultWebResourceServer =
-    "https://www.google.com/support/chrome/bin/topic/1142433/inproduct";
+    "https://www.google.com/support/chrome/bin/topic/1142433/inproduct?hl=";
 
 WebResourceService::WebResourceService(Profile* profile)
     : prefs_(profile->GetPrefs()),
