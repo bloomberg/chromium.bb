@@ -242,3 +242,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderRedirect) {
                    PrerenderContents::FINAL_STATUS_USED, 2);
   NavigateToDestURL();
 }
+
+// Checks that popups on a prerendered page cause cancellation.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPopup) {
+  PrerenderTestURL("prerender_popup.html",
+                   PrerenderContents::FINAL_STATUS_CREATE_NEW_WINDOW, 1);
+}
+
