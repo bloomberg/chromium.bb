@@ -234,6 +234,26 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
     // Unlike kLanguagePreloadEngines and some other input method
     // preferencs, we don't need to send this to ibus-daemon.
   }
+
+  // Here, we set up the the modifier key mapping. This has to be done
+  // before changing the current keyboard layout, so that the modifier key
+  // preference is properly preserved. For this reason, we should do this
+  // before setting preload engines, that could change the current
+  // keyboard layout as needed.
+  if (!pref_name || (*pref_name == prefs::kLanguageXkbRemapSearchKeyTo ||
+                     *pref_name == prefs::kLanguageXkbRemapControlKeyTo ||
+                     *pref_name == prefs::kLanguageXkbRemapAltKeyTo)) {
+    UpdateModifierKeyMapping();
+  }
+  if (!pref_name || *pref_name == prefs::kLanguageXkbAutoRepeatEnabled) {
+    const bool enabled = language_xkb_auto_repeat_enabled_.GetValue();
+    CrosLibrary::Get()->GetKeyboardLibrary()->SetAutoRepeatEnabled(enabled);
+  }
+  if (!pref_name || ((*pref_name == prefs::kLanguageXkbAutoRepeatDelay) ||
+                     (*pref_name == prefs::kLanguageXkbAutoRepeatInterval))) {
+    UpdateAutoRepeatRate();
+  }
+
   if (!pref_name || *pref_name == prefs::kLanguagePreloadEngines) {
     SetLanguageConfigStringListAsCSV(language_prefs::kGeneralSectionName,
                                      language_prefs::kPreloadEnginesConfigName,
@@ -336,19 +356,6 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
           language_prefs::kMozcIntegerPrefs[i].ibus_config_name,
           language_mozc_integer_prefs_[i].GetValue());
     }
-  }
-  if (!pref_name || (*pref_name == prefs::kLanguageXkbRemapSearchKeyTo ||
-                     *pref_name == prefs::kLanguageXkbRemapControlKeyTo ||
-                     *pref_name == prefs::kLanguageXkbRemapAltKeyTo)) {
-    UpdateModifierKeyMapping();
-  }
-  if (!pref_name || *pref_name == prefs::kLanguageXkbAutoRepeatEnabled) {
-    const bool enabled = language_xkb_auto_repeat_enabled_.GetValue();
-    CrosLibrary::Get()->GetKeyboardLibrary()->SetAutoRepeatEnabled(enabled);
-  }
-  if (!pref_name || ((*pref_name == prefs::kLanguageXkbAutoRepeatDelay) ||
-                     (*pref_name == prefs::kLanguageXkbAutoRepeatInterval))) {
-    UpdateAutoRepeatRate();
   }
 
   // Init or update power manager config.
