@@ -46,7 +46,7 @@ void PopupNonClientFrameView::ResetWindowControls() {
 
 gfx::Rect PopupNonClientFrameView::GetBoundsForTabStrip(
     BaseTabStrip* tabstrip) const {
-  return gfx::Rect(0, 0, width(), tabstrip->GetPreferredHeight());
+  return gfx::Rect(0, 0, width(), tabstrip->GetPreferredSize().height());
 }
 
 int PopupNonClientFrameView::GetHorizontalTabStripVerticalOffset(

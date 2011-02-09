@@ -56,7 +56,6 @@ class TabStrip : public BaseTabStrip,
   virtual void MouseMovedOutOfView();
 
   // BaseTabStrip implementation:
-  virtual int GetPreferredHeight();
   virtual void SetBackgroundOffset(const gfx::Point& offset);
   virtual bool IsPositionInWindowCaption(const gfx::Point& point);
   virtual void PrepareForCloseAt(int model_index);
