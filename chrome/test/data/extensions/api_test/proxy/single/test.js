@@ -8,25 +8,12 @@
 chrome.test.runTests([
   function setSingleProxy() {
     var oneProxy = {
-      scheme: "http",
       host: "127.0.0.1",
       port: 100
     };
 
-    // Single proxy should override HTTP proxy.
-    var httpProxy = {
-      host: "8.8.8.8"
-    };
-
-    // Single proxy should not override SOCKS proxy.
-    var socksProxy = {
-      host: "9.9.9.9"
-    };
-
     var rules = {
-      singleProxy: oneProxy,
-      proxyForHttp: httpProxy,
-      socksProxy: socksProxy,
+      singleProxy: oneProxy
     };
 
     var config = { rules: rules, mode: "fixed_servers" };

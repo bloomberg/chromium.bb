@@ -118,12 +118,9 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, ProxyFixedSingle) {
 
   PrefService* pref_service = browser()->profile()->GetPrefs();
   ValidateSettings(ProxyPrefs::MODE_FIXED_SERVERS,
-                   "http=http://127.0.0.1:100;"
-                       "https=http://127.0.0.1:100;"
-                       "ftp=http://127.0.0.1:100;"
-                       "socks=http://9.9.9.9",
-                   kNoPac,
-                   pref_service);
+                 "127.0.0.1:100",
+                 kNoPac,
+                 pref_service);
 }
 
 // Tests setting to use the system's proxy settings.

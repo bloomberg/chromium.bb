@@ -49,6 +49,7 @@ COMPILE_ASSERT(arraysize(field_name) == SCHEME_MAX + 1,
                field_name_array_is_wrong_size);
 COMPILE_ASSERT(arraysize(scheme_name) == SCHEME_MAX + 1,
                scheme_name_array_is_wrong_size);
+COMPILE_ASSERT(SCHEME_ALL == 0, singleProxy_must_be_first_option);
 
 void ProxySettingsFunction::ApplyPreference(const char* pref_path,
                                             Value* pref_value,
@@ -176,23 +177,34 @@ bool UseCustomProxySettingsFunction::GetProxyRules(
     }
   }
 
-  // A single proxy supersedes individual HTTP, HTTPS, and FTP proxies.
+  // Handle case that only singleProxy is specified.
   if (has_proxy[SCHEME_ALL]) {
-    proxy_server[SCHEME_HTTP] = proxy_server[SCHEME_ALL];
-    proxy_server[SCHEME_HTTPS] = proxy_server[SCHEME_ALL];
-    proxy_server[SCHEME_FTP] = proxy_server[SCHEME_ALL];
-    has_proxy[SCHEME_HTTP] = true;
-    has_proxy[SCHEME_HTTPS] = true;
-    has_proxy[SCHEME_FTP] = true;
-    has_proxy[SCHEME_ALL] = false;
+    for (size_t i = 1; i <= SCHEME_MAX; ++i) {
+      if (has_proxy[i]) {
+        LOG(ERROR) << "Proxy rule for " << field_name[SCHEME_ALL] << " and "
+                   << field_name[i] << " cannot be set at the same time.";
+        return false;
+      }
+    }
+    if (!proxy_server[SCHEME_ALL].scheme.empty())
+      LOG(WARNING) << "Ignoring scheme attribute from proxy server.";
+    // Build the proxy preference string.
+    std::string proxy_pref;
+    proxy_pref.append(proxy_server[SCHEME_ALL].host);
+    if (proxy_server[SCHEME_ALL].port != ProxyServer::INVALID_PORT) {
+      proxy_pref.append(":");
+      proxy_pref.append(base::StringPrintf("%d",
+                                           proxy_server[SCHEME_ALL].port));
+    }
+    *out = proxy_pref;
+    return true;
   }
 
-  // TODO(pamg): Ensure that if a value is empty, that means "don't use a proxy
-  // for this scheme".
+  // Handle case the anything but singleProxy is specified.
 
   // Build the proxy preference string.
   std::string proxy_pref;
-  for (size_t i = 0; i <= SCHEME_MAX; ++i) {
+  for (size_t i = 1; i <= SCHEME_MAX; ++i) {
     if (has_proxy[i]) {
       // http=foopy:4010;ftp=socks://foopy2:80
       if (!proxy_pref.empty())
