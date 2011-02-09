@@ -103,6 +103,10 @@ SkBitmap* AlternateNavURLFetcher::GetIcon() const {
       IDR_INFOBAR_ALT_NAV_URL);
 }
 
+InfoBarDelegate::Type AlternateNavURLFetcher::GetInfoBarType() const {
+  return PAGE_ACTION_TYPE;
+}
+
 string16 AlternateNavURLFetcher::GetMessageTextWithOffset(
     size_t* link_offset) const {
   const string16 label = l10n_util::GetStringFUTF16(

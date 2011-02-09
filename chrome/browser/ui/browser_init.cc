@@ -305,6 +305,7 @@ class SessionCrashedInfoBarDelegate : public ConfirmInfoBarDelegate {
   // ConfirmInfoBarDelegate:
   virtual void InfoBarClosed();
   virtual SkBitmap* GetIcon() const;
+  virtual Type GetInfoBarType() const;
   virtual string16 GetMessageText() const;
   virtual int GetButtons() const;
   virtual string16 GetButtonLabel(InfoBarButton button) const;
@@ -332,6 +333,10 @@ void SessionCrashedInfoBarDelegate::InfoBarClosed() {
 SkBitmap* SessionCrashedInfoBarDelegate::GetIcon() const {
   return ResourceBundle::GetSharedInstance().GetBitmapNamed(
       IDR_INFOBAR_RESTORE_SESSION);
+}
+
+InfoBarDelegate::Type SessionCrashedInfoBarDelegate::GetInfoBarType() const {
+  return PAGE_ACTION_TYPE;
 }
 
 string16 SessionCrashedInfoBarDelegate::GetMessageText() const {
