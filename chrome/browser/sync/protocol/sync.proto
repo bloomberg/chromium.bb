@@ -309,6 +309,11 @@ message DataTypeProgressMarker {
   // will perform a get updates operation as normal from the indicated
   // timestamp, and return only an opaque progress token.
   optional int64 timestamp_token_for_migration = 3;
+
+  // An opaque-to-the-client string of bytes, received through a notification,
+  // that the server may interpret as a hint about the location of the latest
+  // version of the data for this type.
+  optional string notification_hint = 4;
 }
 
 message GetUpdatesMessage {
@@ -366,7 +371,7 @@ message ClearUserDataResponse {
 
 message ClientToServerMessage {
   required string share = 1;
-  optional int32 protocol_version = 2 [default = 25];
+  optional int32 protocol_version = 2 [default = 26];
   enum Contents {
     COMMIT = 1;
     GET_UPDATES = 2;
