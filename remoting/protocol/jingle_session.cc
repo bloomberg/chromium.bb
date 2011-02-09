@@ -182,12 +182,13 @@ bool JingleSession::HasSession(cricket::Session* cricket_session) {
 cricket::Session* JingleSession::ReleaseSession() {
   DCHECK_EQ(jingle_session_manager_->message_loop(), MessageLoop::current());
 
-  SetState(CLOSED);
+  // Session may be destroyed only after it is closed.
+  DCHECK(closed_);
+
   cricket::Session* session = cricket_session_;
   if (cricket_session_)
     cricket_session_->SignalState.disconnect(this);
   cricket_session_ = NULL;
-  closed_ = true;
   return session;
 }
 
