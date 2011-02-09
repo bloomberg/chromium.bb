@@ -28,30 +28,6 @@ class UseCustomProxySettingsFunction : public ProxySettingsFunction {
   virtual bool RunImpl();
 
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.proxy.useCustomProxySettings")
-
- private:
-  // Temporary data container to pass structured elements between functions.
-  struct ProxyServer {
-    enum {
-      INVALID_PORT = -1
-    };
-    ProxyServer() : scheme("http"), host(""), port(INVALID_PORT) {}
-
-    // The scheme of the proxy URI itself.
-    std::string scheme;
-    std::string host;
-    int port;
-  };
-
-  // Converts a proxy server description |dict| as passed by the API caller
-  // (e.g. for the http proxy in the rules element) and converts it to a
-  // ProxyServer. Returns true if successful.
-  bool GetProxyServer(const DictionaryValue* dict, ProxyServer* proxy_server);
-
-  // Converts a proxy "rules" element passed by the API caller into a proxy
-  // configuration string that can be used by the proxy subsystem (see
-  // proxy_config.h). Returns true if successful.
-  bool GetProxyRules(DictionaryValue* proxy_rules, std::string* out);
 };
 
 class RemoveCustomProxySettingsFunction : public ProxySettingsFunction {

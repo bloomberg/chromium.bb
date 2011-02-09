@@ -5,12 +5,13 @@
 #include "chrome/browser/extensions/extension_proxy_api.h"
 
 #include "base/string_util.h"
-#include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/pref_names.h"
+#include "net/base/host_port_pair.h"
+#include "net/proxy/proxy_server.h"
 
 namespace {
 
@@ -42,14 +43,102 @@ const char* scheme_name[] = { "*error*",
                               "ftp",
                               "socks" };
 
-}  // namespace
-
 COMPILE_ASSERT(SCHEME_MAX == SCHEME_SOCKS, SCHEME_MAX_must_equal_SCHEME_SOCKS);
 COMPILE_ASSERT(arraysize(field_name) == SCHEME_MAX + 1,
                field_name_array_is_wrong_size);
 COMPILE_ASSERT(arraysize(scheme_name) == SCHEME_MAX + 1,
                scheme_name_array_is_wrong_size);
 COMPILE_ASSERT(SCHEME_ALL == 0, singleProxy_must_be_first_option);
+
+// Converts a proxy server description |dict| as passed by the API caller
+// (e.g. for the http proxy in the rules element) and converts it to a
+// ProxyServer. Returns true if successful.
+bool GetProxyServer(const DictionaryValue* dict,
+                    net::ProxyServer::Scheme default_scheme,
+                    net::ProxyServer* proxy_server) {
+  std::string scheme_string;  // optional.
+  dict->GetString("scheme", &scheme_string);
+
+  net::ProxyServer::Scheme scheme =
+      net::ProxyServer::GetSchemeFromURI(scheme_string);
+  if (scheme == net::ProxyServer::SCHEME_INVALID)
+    scheme = default_scheme;
+
+  std::string host;
+  if (!dict->GetString("host", &host))
+    return false;
+
+  int port;  // optional.
+  if (!dict->GetInteger("port", &port))
+    port = net::ProxyServer::GetDefaultPortForScheme(scheme);
+
+  *proxy_server = net::ProxyServer(scheme, net::HostPortPair(host, port));
+
+  return true;
+}
+
+// Converts a proxy "rules" element passed by the API caller into a proxy
+// configuration string that can be used by the proxy subsystem (see
+// proxy_config.h). Returns true if successful.
+bool GetProxyRules(DictionaryValue* proxy_rules, std::string* out) {
+  if (!proxy_rules)
+    return false;
+
+  // Local data into which the parameters will be parsed. has_proxy describes
+  // whether a setting was found for the scheme; proxy_dict holds the
+  // DictionaryValues which in turn contain proxy server descriptions, and
+  // proxy_server holds ProxyServer structs containing those descriptions.
+  bool has_proxy[SCHEME_MAX + 1];
+  DictionaryValue* proxy_dict[SCHEME_MAX + 1];
+  net::ProxyServer proxy_server[SCHEME_MAX + 1];
+
+  // Looking for all possible proxy types is inefficient if we have a
+  // singleProxy that will supersede per-URL proxies, but it's worth it to keep
+  // the code simple and extensible.
+  for (size_t i = 0; i <= SCHEME_MAX; ++i) {
+    has_proxy[i] = proxy_rules->GetDictionary(field_name[i], &proxy_dict[i]);
+    if (has_proxy[i]) {
+      net::ProxyServer::Scheme default_scheme =
+          (i != SCHEME_SOCKS) ? net::ProxyServer::SCHEME_HTTP
+                              : net::ProxyServer::SCHEME_SOCKS5;
+      if (!GetProxyServer(proxy_dict[i], default_scheme, &proxy_server[i]))
+        return false;
+    }
+  }
+
+  // Handle case that only singleProxy is specified.
+  if (has_proxy[SCHEME_ALL]) {
+    for (size_t i = 1; i <= SCHEME_MAX; ++i) {
+      if (has_proxy[i]) {
+        LOG(ERROR) << "Proxy rule for " << field_name[SCHEME_ALL] << " and "
+                   << field_name[i] << " cannot be set at the same time.";
+        return false;
+      }
+    }
+    *out = proxy_server[SCHEME_ALL].ToURI();
+    return true;
+  }
+
+  // Handle case that anything but singleProxy is specified.
+
+  // Build the proxy preference string.
+  std::string proxy_pref;
+  for (size_t i = 1; i <= SCHEME_MAX; ++i) {
+    if (has_proxy[i]) {
+      // http=foopy:4010;ftp=socks://foopy2:80
+      if (!proxy_pref.empty())
+        proxy_pref.append(";");
+      proxy_pref.append(scheme_name[i]);
+      proxy_pref.append("=");
+      proxy_pref.append(proxy_server[i].ToURI());
+    }
+  }
+
+  *out = proxy_pref;
+  return true;
+}
+
+}  // namespace
 
 void ProxySettingsFunction::ApplyPreference(const char* pref_path,
                                             Value* pref_value,
@@ -144,90 +233,11 @@ bool UseCustomProxySettingsFunction::RunImpl() {
   return true;
 }
 
-bool UseCustomProxySettingsFunction::GetProxyServer(
-    const DictionaryValue* dict, ProxyServer* proxy_server) {
-  dict->GetString("scheme", &proxy_server->scheme);
-  EXTENSION_FUNCTION_VALIDATE(dict->GetString("host", &proxy_server->host));
-  dict->GetInteger("port", &proxy_server->port);
-  return true;
-}
-
-bool UseCustomProxySettingsFunction::GetProxyRules(
-    DictionaryValue* proxy_rules,
-    std::string* out) {
-  if (!proxy_rules)
-    return false;
-
-  // Local data into which the parameters will be parsed. has_proxy describes
-  // whether a setting was found for the scheme; proxy_dict holds the
-  // DictionaryValues which in turn contain proxy server descriptions, and
-  // proxy_server holds ProxyServer structs containing those descriptions.
-  bool has_proxy[SCHEME_MAX + 1];
-  DictionaryValue* proxy_dict[SCHEME_MAX + 1];
-  ProxyServer proxy_server[SCHEME_MAX + 1];
-
-  // Looking for all possible proxy types is inefficient if we have a
-  // singleProxy that will supersede per-URL proxies, but it's worth it to keep
-  // the code simple and extensible.
-  for (size_t i = 0; i <= SCHEME_MAX; ++i) {
-    has_proxy[i] = proxy_rules->GetDictionary(field_name[i], &proxy_dict[i]);
-    if (has_proxy[i]) {
-      if (!GetProxyServer(proxy_dict[i], &proxy_server[i]))
-        return false;
-    }
-  }
-
-  // Handle case that only singleProxy is specified.
-  if (has_proxy[SCHEME_ALL]) {
-    for (size_t i = 1; i <= SCHEME_MAX; ++i) {
-      if (has_proxy[i]) {
-        LOG(ERROR) << "Proxy rule for " << field_name[SCHEME_ALL] << " and "
-                   << field_name[i] << " cannot be set at the same time.";
-        return false;
-      }
-    }
-    if (!proxy_server[SCHEME_ALL].scheme.empty())
-      LOG(WARNING) << "Ignoring scheme attribute from proxy server.";
-    // Build the proxy preference string.
-    std::string proxy_pref;
-    proxy_pref.append(proxy_server[SCHEME_ALL].host);
-    if (proxy_server[SCHEME_ALL].port != ProxyServer::INVALID_PORT) {
-      proxy_pref.append(":");
-      proxy_pref.append(base::StringPrintf("%d",
-                                           proxy_server[SCHEME_ALL].port));
-    }
-    *out = proxy_pref;
-    return true;
-  }
-
-  // Handle case the anything but singleProxy is specified.
-
-  // Build the proxy preference string.
-  std::string proxy_pref;
-  for (size_t i = 1; i <= SCHEME_MAX; ++i) {
-    if (has_proxy[i]) {
-      // http=foopy:4010;ftp=socks://foopy2:80
-      if (!proxy_pref.empty())
-        proxy_pref.append(";");
-      proxy_pref.append(scheme_name[i]);
-      proxy_pref.append("=");
-      proxy_pref.append(proxy_server[i].scheme);
-      proxy_pref.append("://");
-      proxy_pref.append(proxy_server[i].host);
-      if (proxy_server[i].port != ProxyServer::INVALID_PORT) {
-        proxy_pref.append(":");
-        proxy_pref.append(base::StringPrintf("%d", proxy_server[i].port));
-      }
-    }
-  }
-
-  *out = proxy_pref;
-  return true;
-}
-
 bool RemoveCustomProxySettingsFunction::RunImpl() {
   bool incognito = false;
-  args_->GetBoolean(0, &incognito);
+  if (HasOptionalArgument(0)) {
+    EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(0, &incognito));
+  }
 
   RemovePreference(prefs::kProxy, incognito);
   return true;

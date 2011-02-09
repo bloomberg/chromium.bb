@@ -147,9 +147,9 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, ProxyFixedIndividual) {
 
   PrefService* pref_service = browser()->profile()->GetPrefs();
   ValidateSettings(ProxyPrefs::MODE_FIXED_SERVERS,
-                   "http=http://1.1.1.1;"
-                       "https=socks://2.2.2.2;"
-                       "ftp=http://3.3.3.3:9000;"
+                   "http=1.1.1.1:80;"  // http:// is pruned.
+                       "https=2.2.2.2:80;"  // http:// is pruned.
+                       "ftp=3.3.3.3:9000;"  // http:// is pruned.
                        "socks=socks4://4.4.4.4:9090",
                    kNoPac,
                    pref_service);
@@ -157,9 +157,9 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, ProxyFixedIndividual) {
   // Now check the incognito preferences.
   pref_service = browser()->profile()->GetOffTheRecordProfile()->GetPrefs();
   ValidateSettings(ProxyPrefs::MODE_FIXED_SERVERS,
-                   "http=http://1.1.1.1;"
-                       "https=socks://2.2.2.2;"
-                       "ftp=http://3.3.3.3:9000;"
+                   "http=1.1.1.1:80;"
+                       "https=2.2.2.2:80;"
+                       "ftp=3.3.3.3:9000;"
                        "socks=socks4://4.4.4.4:9090",
                    kNoPac,
                    pref_service);
@@ -181,9 +181,9 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest,
   // Now check the incognito preferences.
   pref_service = browser()->profile()->GetOffTheRecordProfile()->GetPrefs();
   ValidateSettings(ProxyPrefs::MODE_FIXED_SERVERS,
-                   "http=http://1.1.1.1;"
-                       "https=socks://2.2.2.2;"
-                       "ftp=http://3.3.3.3:9000;"
+                   "http=1.1.1.1:80;"
+                       "https=socks5://2.2.2.2:1080;"  // socks5 equals socks.
+                       "ftp=3.3.3.3:9000;"
                        "socks=socks4://4.4.4.4:9090",
                    kNoPac,
                    pref_service);
@@ -201,9 +201,9 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest,
 
   PrefService* pref_service = browser()->profile()->GetPrefs();
   ValidateSettings(ProxyPrefs::MODE_FIXED_SERVERS,
-                   "http=http://1.1.1.1;"
-                       "https=socks://2.2.2.2;"
-                       "ftp=http://3.3.3.3:9000;"
+                   "http=1.1.1.1:80;"
+                       "https=socks5://2.2.2.2:1080;"
+                       "ftp=3.3.3.3:9000;"
                        "socks=socks4://4.4.4.4:9090",
                    kNoPac,
                    pref_service);
@@ -211,9 +211,9 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest,
   // Now check the incognito preferences.
   pref_service = browser()->profile()->GetOffTheRecordProfile()->GetPrefs();
   ValidateSettings(ProxyPrefs::MODE_FIXED_SERVERS,
-                   "http=http://5.5.5.5;"
-                       "https=socks://6.6.6.6;"
-                       "ftp=http://7.7.7.7:9000;"
+                   "http=5.5.5.5:80;"
+                       "https=socks5://6.6.6.6:1080;"
+                       "ftp=7.7.7.7:9000;"
                        "socks=socks4://8.8.8.8:9090",
                    kNoPac,
                    pref_service);

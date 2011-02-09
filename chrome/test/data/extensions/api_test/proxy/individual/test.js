@@ -11,7 +11,6 @@ chrome.test.runTests([
       host: "1.1.1.1"
     };
     var httpsProxy = {
-      scheme: "socks",
       host: "2.2.2.2"
     };
     var ftpProxy = {
