@@ -5,6 +5,7 @@
 #include "chrome_frame/test/automation_client_mock.h"
 
 #include "base/callback.h"
+#include "chrome/common/automation_messages.h"
 #include "chrome_frame/custom_sync_call_context.h"
 #include "chrome_frame/navigation_constraints.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"

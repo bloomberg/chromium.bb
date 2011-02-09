@@ -6,6 +6,7 @@
 #include <atlcom.h>
 
 #include "app/win/scoped_com_initializer.h"
+#include "chrome/common/automation_messages.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/test_server.h"
 #include "chrome_frame/test/test_with_web_server.h"

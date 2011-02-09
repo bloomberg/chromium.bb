@@ -14,8 +14,19 @@
 
 #include "base/file_path.h"
 #include "base/synchronization/lock.h"
-#include "chrome/common/automation_messages.h"
+#include "base/task.h"
+#include "chrome/common/automation_constants.h"
 #include "ipc/ipc_message.h"
+
+class GURL;
+struct AttachExternalTabParams;
+struct AutomationURLRequest;
+struct MiniContextMenuParams;
+struct NavigationInfo;
+
+namespace net {
+class URLRequestStatus;
+}
 
 // A common interface supported by all the browser specific ChromeFrame
 // implementations.

@@ -148,6 +148,18 @@ class ATL_NO_VTABLE ProxyDIChromeFrameEvents
 
 extern bool g_first_launch_by_process_;
 
+namespace chrome_frame {
+// Implemented outside this file so that the header doesn't include
+// automation_messages.h.
+std::string ActiveXCreateUrl(const GURL& parsed_url,
+                             const AttachExternalTabParams& params);
+int GetDisposition(const AttachExternalTabParams& params);
+void GetMiniContextMenuData(UINT cmd,
+                            const MiniContextMenuParams& params,
+                            GURL* referrer,
+                            GURL* url);
+}  // namespace chrome_frame
+
 // Common implementation for ActiveX and Active Document
 template <class T, const CLSID& class_id>
 class ATL_NO_VTABLE ChromeFrameActivexBase :  // NOLINT
@@ -357,10 +369,8 @@ END_MSG_MAP()
         case IDS_CONTENT_CONTEXT_SAVEVIDEOAS:
         case IDS_CONTENT_CONTEXT_SAVEIMAGEAS:
         case IDS_CONTENT_CONTEXT_SAVELINKAS: {
-          const GURL& referrer = params.frame_url.is_empty() ?
-              params.page_url : params.frame_url;
-          const GURL& url = (cmd == IDS_CONTENT_CONTEXT_SAVELINKAS ?
-              params.link_url : params.src_url);
+          GURL referrer, url;
+          chrome_frame::GetMiniContextMenuData(cmd, params, &referrer, &url);
           DoFileDownloadInIE(UTF8ToWide(url.spec()).c_str());
           return true;
         }
@@ -492,17 +502,8 @@ END_MSG_MAP()
       parsed_url = parsed_url.ReplaceComponents(r);
     }
 
-    std::string url = base::StringPrintf(
-        "%hs?attach_external_tab&%I64u&%d&%d&%d&%d&%d&%hs",
-        parsed_url.GetOrigin().spec().c_str(),
-        params.cookie,
-        params.disposition,
-        params.dimensions.x(),
-        params.dimensions.y(),
-        params.dimensions.width(),
-        params.dimensions.height(),
-        params.profile_name.c_str());
-    HostNavigate(GURL(url), GURL(), params.disposition);
+    std::string url = chrome_frame::ActiveXCreateUrl(parsed_url, params);
+    HostNavigate(GURL(url), GURL(), chrome_frame::GetDisposition(params));
   }
 
   virtual void OnHandleContextMenu(HANDLE menu_handle,

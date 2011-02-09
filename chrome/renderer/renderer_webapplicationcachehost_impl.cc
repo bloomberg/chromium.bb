@@ -5,6 +5,7 @@
 #include "chrome/renderer/renderer_webapplicationcachehost_impl.h"
 
 #include "chrome/common/content_settings_types.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"

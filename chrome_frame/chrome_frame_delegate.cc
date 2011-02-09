@@ -4,6 +4,8 @@
 
 #include "chrome_frame/chrome_frame_delegate.h"
 
+#include "chrome/common/automation_messages.h"
+
 bool ChromeFrameDelegateImpl::IsTabMessage(const IPC::Message& message) {
   bool is_tab_message = true;
   IPC_BEGIN_MESSAGE_MAP(ChromeFrameDelegateImpl, message)

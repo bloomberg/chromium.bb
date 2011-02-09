@@ -20,6 +20,7 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/devtools_messages.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "googleurl/src/gurl.h"

@@ -921,6 +921,7 @@
         'chrome_frame_automation.cc',
         'chrome_frame_delegate.h',
         'chrome_frame_delegate.cc',
+        'chrome_frame_plugin.cc',
         'chrome_frame_plugin.h',
         'chrome_launcher_utils.cc',
         'chrome_launcher_utils.h',

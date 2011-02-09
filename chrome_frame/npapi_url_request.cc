@@ -6,6 +6,7 @@
 
 #include "base/string_number_conversions.h"
 #include "base/threading/platform_thread.h"
+#include "chrome/common/automation_messages.h"
 #include "chrome_frame/chrome_frame_npapi.h"
 #include "chrome_frame/np_browser_functions.h"
 #include "chrome_frame/np_utils.h"

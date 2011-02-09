@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "chrome/common/devtools_messages.h"
 #include "chrome/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgentClient.h"
 
@@ -19,6 +18,8 @@ class WebDevToolsAgent;
 }
 
 struct DevToolsMessageData;
+
+typedef std::map<std::string, std::string> DevToolsRuntimeProperties;
 
 // DevToolsAgent belongs to the inspectable RenderView and provides Glue's
 // agents with the communication capabilities. All messages from/to Glue's

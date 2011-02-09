@@ -23,6 +23,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_variant.h"
+#include "chrome/common/automation_messages.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/automation/tab_proxy.h"
@@ -114,6 +115,36 @@ HHOOK InstallLocalWindowHook(HWND window) {
 }
 
 }  // unnamed namespace
+
+namespace chrome_frame {
+std::string ActiveXCreateUrl(const GURL& parsed_url,
+                             const AttachExternalTabParams& params) {
+  return base::StringPrintf(
+      "%hs?attach_external_tab&%I64u&%d&%d&%d&%d&%d&%hs",
+      parsed_url.GetOrigin().spec().c_str(),
+      params.cookie,
+      params.disposition,
+      params.dimensions.x(),
+      params.dimensions.y(),
+      params.dimensions.width(),
+      params.dimensions.height(),
+      params.profile_name.c_str());
+}
+
+int GetDisposition(const AttachExternalTabParams& params) {
+  return params.disposition;
+}
+
+void GetMiniContextMenuData(UINT cmd,
+                            const MiniContextMenuParams& params,
+                            GURL* referrer,
+                            GURL* url) {
+  *referrer = params.frame_url.is_empty() ? params.page_url : params.frame_url;
+  *url = (cmd == IDS_CONTENT_CONTEXT_SAVELINKAS ?
+      params.link_url : params.src_url);
+}
+
+}  // namespace chrome_frame
 
 ChromeFrameActivex::ChromeFrameActivex()
     : chrome_wndproc_hook_(NULL) {

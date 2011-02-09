@@ -448,7 +448,7 @@ END_EXEC_COMMAND_MAP()
  protected:
   typedef std::map<int, OLECMDF> CommandStatusMap;
 
-  NavigationInfo navigation_info_;
+  scoped_ptr<NavigationInfo> navigation_info_;
   bool is_doc_object_;
 
   // This indicates whether this is the first navigation in this

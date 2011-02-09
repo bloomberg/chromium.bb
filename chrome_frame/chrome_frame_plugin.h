@@ -20,6 +20,12 @@
 
 #define IDC_ABOUT_CHROME_FRAME 40018
 
+// Helper so that this file doesn't include the messages header.
+void ChromeFramePluginGetParamsCoordinates(
+    const MiniContextMenuParams& params,
+    int* x,
+    int* y);
+
 // A class to implement common functionality for all types of
 // plugins: NPAPI. ActiveX and ActiveDoc
 template <typename T>
@@ -141,8 +147,9 @@ END_MSG_MAP()
       SetFocus(GetWindow());
       ignore_setfocus_ = false;
       UINT flags = align_flags | TPM_LEFTBUTTON | TPM_RETURNCMD | TPM_RECURSE;
-      UINT selected = TrackPopupMenuEx(copy, flags, params.screen_x,
-                                       params.screen_y, GetWindow(), NULL);
+      int x, y;
+      ChromeFramePluginGetParamsCoordinates(params, &x, &y);
+      UINT selected = TrackPopupMenuEx(copy, flags, x, y, GetWindow(), NULL);
       // Menu is over now give focus back to chrome
       GiveFocusToChrome(false);
       if (IsValid() && selected != 0 &&

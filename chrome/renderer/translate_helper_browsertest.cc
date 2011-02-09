@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/renderer/translate_helper.h"
 #include "chrome/test/render_view_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
