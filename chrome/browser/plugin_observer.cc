@@ -6,6 +6,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/plugin_installer_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
@@ -13,6 +14,7 @@
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -68,8 +70,9 @@ bool PluginInfoBarDelegate::Cancel() {
 }
 
 bool PluginInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
-  // TODO(bauerb): Navigate to a help page explaining why we disabled
-  // or blocked the plugin, once we have one.
+  GURL url = google_util::AppendGoogleLocaleParam(
+      GURL(chrome::kOutdatedPluginLearnMoreURL));
+  tab_contents_->OpenURL(url, GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
   return false;
 }
 

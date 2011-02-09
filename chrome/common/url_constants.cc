@@ -1,5 +1,4 @@
-
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -233,7 +232,10 @@ const char kPrivacyLearnMoreURL[] =
 const char kChromiumProjectURL[] = "http://code.google.com/chromium/";
 
 const char kLearnMoreReportingURL[] =
-    "http://www.google.com/support/chrome/bin/answer.py?answer=96817&amp;";
+    "http://www.google.com/support/chrome/bin/answer.py?answer=96817";
+
+const char kOutdatedPluginLearnMoreURL[] =
+    "http://www.google.com/support/chrome/bin/answer.py?answer=1181003";
 
 void RegisterChromeSchemes() {
   // Don't need "chrome-internal" which was used in old versions of Chrome for
