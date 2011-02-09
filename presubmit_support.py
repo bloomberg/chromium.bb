@@ -1053,6 +1053,7 @@ def ScanSubDirs(mask, recursive):
 
 
 def ParseFiles(args, recursive):
+  logging.debug('Searching for %s' % args)
   files = []
   for arg in args:
     files.extend([('M', f) for f in ScanSubDirs(arg, recursive)])
@@ -1083,15 +1084,9 @@ def Main(argv):
   parser.add_option("--default_presubmit")
   parser.add_option("--may_prompt", action='store_true', default=False)
   options, args = parser.parse_args(argv[1:])
-  if os.path.isdir(os.path.join(options.root, '.git')):
-    change_class = GitChange
-    if not options.files:
-      if args:
-        options.files = ParseFiles(args, options.recursive)
-      else:
-        # Grab modified files.
-        options.files = scm.GIT.CaptureStatus([options.root])
-  elif os.path.isdir(os.path.join(options.root, '.svn')):
+  if options.verbose:
+    logging.basicConfig(level=logging.DEBUG)
+  if os.path.isdir(os.path.join(options.root, '.svn')):
     change_class = SvnChange
     if not options.files:
       if args:
@@ -1100,10 +1095,27 @@ def Main(argv):
         # Grab modified files.
         options.files = scm.SVN.CaptureStatus([options.root])
   else:
-    # Doesn't seem under source control.
-    change_class = Change
+    is_git = os.path.isdir(os.path.join(options.root, '.git'))
+    if not is_git:
+      is_git = (0 == subprocess.call(
+          ['git', 'rev-parse', '--show-cdup'],
+          stdout=subprocess.PIPE, cwd=options.root))
+    if is_git:
+      # Only look at the subdirectories below cwd.
+      change_class = GitChange
+      if not options.files:
+        if args:
+          options.files = ParseFiles(args, options.recursive)
+        else:
+          # Grab modified files.
+          options.files = scm.GIT.CaptureStatus([options.root])
+    else:
+      logging.info('Doesn\'t seem under source control.')
+      change_class = Change
   if options.verbose:
-    if len(options.files) != 1:
+    if not options.files:
+      print "Found no files."
+    elif len(options.files) != 1:
       print "Found %d files." % len(options.files)
     else:
       print "Found 1 file."

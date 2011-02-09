@@ -596,11 +596,14 @@ def CheckChangeOnCommit(input_api, output_api):
     self.UnMock(presubmit.os.path, 'exists')
     self.mox.StubOutWithMock(presubmit, 'DoPresubmitChecks')
     self.mox.StubOutWithMock(presubmit, 'ParseFiles')
-    presubmit.os.path.isdir(presubmit.os.path.join(self.fake_root_dir, '.git')
-        ).AndReturn(False)
     presubmit.os.path.isdir(presubmit.os.path.join(self.fake_root_dir, '.svn')
         ).AndReturn(False)
-    #presubmit.ParseFiles([], None).AndReturn([])
+    presubmit.os.path.isdir(presubmit.os.path.join(self.fake_root_dir, '.git')
+        ).AndReturn(False)
+    presubmit.subprocess.call(
+        ['git', 'rev-parse', '--show-cdup'],
+        cwd=self.fake_root_dir,
+        stdout=presubmit.subprocess.PIPE).AndReturn(1)
     presubmit.DoPresubmitChecks(mox.IgnoreArg(), False, False,
                                 mox.IgnoreArg(),
                                 mox.IgnoreArg(),
