@@ -568,6 +568,9 @@ const char kPluginsPluginsBlacklist[] = "plugins.plugins_blacklist";
 // enable it by default, we'll want to do so only once.
 const char kPluginsEnabledInternalPDF[] = "plugins.enabled_internal_pdf3";
 
+const char kPluginsShowSetReaderDefaultInfobar[] =
+    "plugins.show_set_reader_default";
+
 // Whether about:plugins is shown in the details mode or not.
 const char kPluginsShowDetails[] = "plugins.show_details";
 

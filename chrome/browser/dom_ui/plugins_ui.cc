@@ -370,4 +370,5 @@ void PluginsUI::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterListPref(prefs::kPluginsPluginsList);
   prefs->RegisterBooleanPref(prefs::kPluginsEnabledInternalPDF, false);
   prefs->RegisterBooleanPref(prefs::kPluginsShowDetails, false);
+  prefs->RegisterBooleanPref(prefs::kPluginsShowSetReaderDefaultInfobar, true);
 }

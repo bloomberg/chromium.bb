@@ -9,6 +9,8 @@
 #include "base/version.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/plugin_service.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
@@ -16,6 +18,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/pepper_plugin_registry.h"
+#include "chrome/common/pref_names.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -41,7 +44,8 @@ class PDFEnableAdobeReaderConfirmInfoBarDelegate
  public:
   PDFEnableAdobeReaderConfirmInfoBarDelegate(
       TabContents* tab_contents)
-      : ConfirmInfoBarDelegate(tab_contents) {
+      : ConfirmInfoBarDelegate(tab_contents),
+        tab_contents_(tab_contents) {
     UserMetrics::RecordAction(
         UserMetricsAction("PDF_EnableReaderInfoBarShown"));
   }
@@ -60,6 +64,8 @@ class PDFEnableAdobeReaderConfirmInfoBarDelegate
   }
 
   virtual bool Accept() {
+    tab_contents_->profile()->GetPrefs()->SetBoolean(
+        prefs::kPluginsShowSetReaderDefaultInfobar, false);
     return OnNo();
   }
 
@@ -108,6 +114,8 @@ class PDFEnableAdobeReaderConfirmInfoBarDelegate
     return true;
   }
 
+  TabContents* tab_contents_;
+
   DISALLOW_IMPLICIT_CONSTRUCTORS(PDFEnableAdobeReaderConfirmInfoBarDelegate);
 };
 
@@ -120,7 +128,8 @@ void OpenReaderUpdateURL(TabContents* tab) {
 // Opens the PDF using Adobe Reader.
 void OpenUsingReader(TabContents* tab,
                      const WebPluginInfo& reader_plugin,
-                     InfoBarDelegate* old_delegate) {
+                     InfoBarDelegate* old_delegate,
+                     InfoBarDelegate* new_delegate) {
   PluginService::OverriddenPlugin plugin;
   plugin.render_process_id = tab->GetRenderProcessHost()->id();
   plugin.render_view_id = tab->render_view_host()->routing_id();
@@ -136,11 +145,12 @@ void OpenUsingReader(TabContents* tab,
   PluginService::GetInstance()->OverridePluginForTab(plugin);
   tab->render_view_host()->ReloadFrame();
 
-  InfoBarDelegate* bar = new PDFEnableAdobeReaderConfirmInfoBarDelegate(tab);
-  if (old_delegate) {
-    tab->ReplaceInfoBar(old_delegate, bar);
-  } else {
-    tab->AddInfoBar(bar);
+  if (new_delegate) {
+    if (old_delegate) {
+      tab->ReplaceInfoBar(old_delegate, new_delegate);
+    } else {
+      tab->AddInfoBar(new_delegate);
+    }
   }
 }
 
@@ -201,7 +211,7 @@ class PDFUnsupportedFeatureInterstitial : public InterstitialPage {
     } else if (command == "2") {
       UserMetrics::RecordAction(
           UserMetricsAction("PDF_ReaderInterstitialIgnore"));
-      OpenUsingReader(tab(), reader_webplugininfo_, NULL);
+      OpenUsingReader(tab(), reader_webplugininfo_, NULL, NULL);
     } else {
       NOTREACHED();
     }
@@ -314,13 +324,22 @@ class PDFUnsupportedFeatureConfirmInfoBarDelegate
       return true;
     }
 
+    InfoBarDelegate* bar = NULL;
     // Don't show the enable Reader by default info bar for now.
     /*
-    OpenUsingReader(tab_contents_, reader_webplugininfo_, this);
-    return false;
+    if (tab_contents_->profile()->GetPrefs()->GetBoolean(
+            prefs::kPluginsShowSetReaderDefaultInfobar)) {
+      bar = new PDFEnableAdobeReaderConfirmInfoBarDelegate(tab_contents_);
+    }
     */
-    OpenUsingReader(tab_contents_, reader_webplugininfo_, NULL);
-    return true;
+
+    if (bar) {
+      OpenUsingReader(tab_contents_, reader_webplugininfo_, this, bar);
+      return false;
+    } else {
+      OpenUsingReader(tab_contents_, reader_webplugininfo_, NULL, NULL);
+      return true;
+    }
   }
 
   bool OnNo() {

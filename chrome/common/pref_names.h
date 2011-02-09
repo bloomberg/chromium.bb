@@ -206,6 +206,7 @@ extern const char kPluginsLastInternalDirectory[];
 extern const char kPluginsPluginsList[];
 extern const char kPluginsPluginsBlacklist[];
 extern const char kPluginsEnabledInternalPDF[];
+extern const char kPluginsShowSetReaderDefaultInfobar[];
 extern const char kPluginsShowDetails[];
 extern const char kCheckDefaultBrowser[];
 extern const char kDefaultBrowserSettingEnabled[];
