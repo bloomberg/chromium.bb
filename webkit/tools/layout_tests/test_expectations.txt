@@ -14,6 +14,7 @@ BUG_DGLAZKOV MAC : fast/blockflow/Kusa-Makura-background-canvas.html = IMAGE
 BUG_DGLAZKOV MAC : fast/blockflow/japanese-ruby-vertical-lr.html = IMAGE
 BUG_DGLAZKOV MAC : fast/blockflow/japanese-ruby-vertical-rl.html = IMAGE
 
+// can be removed after roll to r78031
 BUG_LOISLO MAC : canvas/philip/tests/2d.gradient.radial.cone.front.html = TEXT
 BUG_LOISLO MAC : canvas/philip/tests/2d.gradient.radial.inside2.html = TEXT
 BUG_LOISLO MAC : canvas/philip/tests/2d.gradient.radial.inside3.html = TEXT
@@ -27,8 +28,3 @@ BUG_LOISLO MAC : canvas/philip/tests/2d.shadow.enable.y.html = TEXT
 BUG_LOISLO MAC : canvas/philip/tests/2d.strokeRect.zero.4.html = TEXT
 
 BUG_LOISLO MAC : plugins/plugin-document-back-forward.html = TEXT
-
-// temporary for rebaseline after r77781
-BUG_LOISLO MAC : fast/html/keygen.html = IMAGE+TEXT
-BUG_LOISLO : fast/invalid/residual-style.html = TEXT
-BUG_LOISLO : html5lib/runner.html = TEXT
