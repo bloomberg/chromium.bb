@@ -8,7 +8,7 @@
 #include "base/file_path.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/prefs/pref_service_mock_builder.h"
-#include "chrome/browser/prefs/proxy_prefs.h"
+#include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_pref_service.h"
@@ -114,10 +114,8 @@ TEST_F(PrefProxyConfigServiceTest, BaseConfiguration) {
 
 TEST_F(PrefProxyConfigServiceTest, DynamicPrefOverrides) {
   pref_service_->SetManagedPref(
-      prefs::kProxyServer, Value::CreateStringValue("http://example.com:3128"));
-  pref_service_->SetManagedPref(
-      prefs::kProxyMode,
-      Value::CreateIntegerValue(ProxyPrefs::MODE_FIXED_SERVERS));
+      prefs::kProxy,
+      ProxyConfigDictionary::CreateFixedServers("http://example.com:3128", ""));
   loop_.RunAllPending();
 
   net::ProxyConfig actual_config;
@@ -129,9 +127,8 @@ TEST_F(PrefProxyConfigServiceTest, DynamicPrefOverrides) {
             net::ProxyServer::FromURI("http://example.com:3128",
                                       net::ProxyServer::SCHEME_HTTP));
 
-  pref_service_->SetManagedPref(
-      prefs::kProxyMode,
-      Value::CreateIntegerValue(ProxyPrefs::MODE_AUTO_DETECT));
+  pref_service_->SetManagedPref(prefs::kProxy,
+                                ProxyConfigDictionary::CreateAutoDetect());
   loop_.RunAllPending();
 
   proxy_config_service_->GetLatestProxyConfig(&actual_config);
@@ -164,17 +161,9 @@ TEST_F(PrefProxyConfigServiceTest, Observers) {
 
   EXPECT_CALL(observer,
               OnProxyConfigChanged(ProxyConfigMatches(pref_config))).Times(1);
-
-  pref_service_->SetManagedPref(prefs::kProxyPacUrl,
-                                Value::CreateStringValue(kFixedPacUrl));
-  // The above does not trigger a notification, because PrefProxyConfig still
-  // sees the mode as the default (ProxyPrefs::SYSTEM), so that it doesn't claim
-  // to have proxy config.
-  // TODO(battre): Remove this comment when http://crbug.com/65732 is
-  // resolved.
   pref_service_->SetManagedPref(
-      prefs::kProxyMode,
-      Value::CreateIntegerValue(ProxyPrefs::MODE_PAC_SCRIPT));
+      prefs::kProxy,
+      ProxyConfigDictionary::CreatePacScript(kFixedPacUrl));
   loop_.RunAllPending();
   Mock::VerifyAndClearExpectations(&observer);
 
@@ -190,12 +179,7 @@ TEST_F(PrefProxyConfigServiceTest, Observers) {
   // Clear the override should switch back to the fixed configuration.
   EXPECT_CALL(observer,
               OnProxyConfigChanged(ProxyConfigMatches(config3))).Times(1);
-  pref_service_->RemoveManagedPref(prefs::kProxyMode);
-  // The above switches the mode to the default (ProxyPrefs::SYSTEM), so the
-  // next removal won't bother PrefProxyConfigService.
-  // TODO(battre): Remove this comment when http://crbug.com/65732 is
-  // completed.
-  pref_service_->RemoveManagedPref(prefs::kProxyPacUrl);
+  pref_service_->RemoveManagedPref(prefs::kProxy);
   loop_.RunAllPending();
   Mock::VerifyAndClearExpectations(&observer);
 

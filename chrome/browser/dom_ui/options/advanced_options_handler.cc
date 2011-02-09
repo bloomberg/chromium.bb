@@ -598,10 +598,10 @@ void AdvancedOptionsHandler::SetupProxySettingsSection() {
   // Disable the button if proxy settings are managed by a sysadmin or
   // overridden by an extension.
   PrefService* pref_service = dom_ui_->GetProfile()->GetPrefs();
-  const PrefService::Preference* proxy_server =
-      pref_service->FindPreference(prefs::kProxyServer);
-  bool is_extension_controlled = (proxy_server &&
-                                  proxy_server->IsExtensionControlled());
+  const PrefService::Preference* proxy_config =
+      pref_service->FindPreference(prefs::kProxy);
+  bool is_extension_controlled = (proxy_config &&
+                                  proxy_config->IsExtensionControlled());
 
   FundamentalValue disabled(proxy_prefs_->IsManaged() ||
                             is_extension_controlled);

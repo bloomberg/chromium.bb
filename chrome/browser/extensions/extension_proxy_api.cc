@@ -7,7 +7,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
-#include "chrome/browser/prefs/proxy_prefs.h"
+#include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/pref_names.h"
@@ -75,18 +75,72 @@ bool UseCustomProxySettingsFunction::RunImpl() {
 
   std::string proxy_mode;
   proxy_config->GetString("mode", &proxy_mode);
+  ProxyPrefs::ProxyMode mode_enum;
+  if (!ProxyPrefs::StringToProxyMode(proxy_mode, &mode_enum)) {
+    LOG(ERROR) << "Invalid mode for proxy settings: " << proxy_mode << ". "
+               << "Setting custom proxy settings failed.";
+    return false;
+  }
 
   DictionaryValue* pac_dict = NULL;
   proxy_config->GetDictionary("pacScript", &pac_dict);
+  std::string pac_url;
+  if (pac_dict && !pac_dict->GetString("url", &pac_url)) {
+    LOG(ERROR) << "'pacScript' requires a 'url' field. "
+               << "Setting custom proxy settings failed.";
+    return false;
+  }
 
   DictionaryValue* proxy_rules = NULL;
   proxy_config->GetDictionary("rules", &proxy_rules);
+  std::string proxy_rules_string;
+  if (proxy_rules && !GetProxyRules(proxy_rules, &proxy_rules_string)) {
+    LOG(ERROR) << "Invalid 'rules' specified. "
+               << "Setting custom proxy settings failed.";
+    return false;
+  }
 
-  // TODO(battre,gfeher): Make sure all the preferences get always
-  // overwritten.
-  return ApplyMode(proxy_mode, incognito) &&
-      ApplyPacScript(pac_dict, incognito) &&
-      ApplyProxyRules(proxy_rules, incognito);
+  // not supported, yet.
+  std::string bypass_list;
+
+  DictionaryValue* result_proxy_config = NULL;
+  switch (mode_enum) {
+    case ProxyPrefs::MODE_DIRECT:
+      result_proxy_config = ProxyConfigDictionary::CreateDirect();
+      break;
+    case ProxyPrefs::MODE_AUTO_DETECT:
+      result_proxy_config = ProxyConfigDictionary::CreateAutoDetect();
+      break;
+    case ProxyPrefs::MODE_PAC_SCRIPT: {
+      if (!pac_dict) {
+        LOG(ERROR) << "Proxy mode 'pac_script' requires a 'pacScript' field. "
+                   << "Setting custom proxy settings failed.";
+        return false;
+      }
+      result_proxy_config = ProxyConfigDictionary::CreatePacScript(pac_url);
+      break;
+    }
+    case ProxyPrefs::MODE_FIXED_SERVERS: {
+      if (!proxy_rules) {
+        LOG(ERROR) << "Proxy mode 'fixed_servers' requires a 'rules' field. "
+                   << "Setting custom proxy settings failed.";
+        return false;
+      }
+      result_proxy_config = ProxyConfigDictionary::CreateFixedServers(
+          proxy_rules_string, bypass_list);
+      break;
+    }
+    case ProxyPrefs::MODE_SYSTEM:
+      result_proxy_config = ProxyConfigDictionary::CreateSystem();
+      break;
+    case ProxyPrefs::kModeCount:
+      NOTREACHED();
+  }
+  if (!result_proxy_config)
+    return false;
+
+  ApplyPreference(prefs::kProxy, result_proxy_config, incognito);
+  return true;
 }
 
 bool UseCustomProxySettingsFunction::GetProxyServer(
@@ -97,45 +151,11 @@ bool UseCustomProxySettingsFunction::GetProxyServer(
   return true;
 }
 
-bool UseCustomProxySettingsFunction::ApplyMode(const std::string& mode,
-                                               bool incognito) {
-  // We take control of the mode preference even if none was specified, so that
-  // all proxy preferences are controlled by the same extension (if not by a
-  // higher-priority source).
-  bool result = true;
-  ProxyPrefs::ProxyMode mode_enum;
-  if (!ProxyPrefs::StringToProxyMode(mode, &mode_enum)) {
-    mode_enum = ProxyPrefs::MODE_SYSTEM;
-    LOG(WARNING) << "Invalid mode for proxy settings: " << mode;
-    result = false;
-  }
-  ApplyPreference(
-      prefs::kProxyMode, Value::CreateIntegerValue(mode_enum), incognito);
-  return result;
-}
-
-bool UseCustomProxySettingsFunction::ApplyPacScript(DictionaryValue* pac_dict,
-                                                    bool incognito) {
-  std::string pac_url;
-  if (pac_dict)
-    pac_dict->GetString("url", &pac_url);
-
-  // We take control of the PAC preference even if none was specified, so that
-  // all proxy preferences are controlled by the same extension (if not by a
-  // higher-priority source).
-  ApplyPreference(
-      prefs::kProxyPacUrl, Value::CreateStringValue(pac_url), incognito);
-  return true;
-}
-
-bool UseCustomProxySettingsFunction::ApplyProxyRules(
+bool UseCustomProxySettingsFunction::GetProxyRules(
     DictionaryValue* proxy_rules,
-    bool incognito) {
-  if (!proxy_rules) {
-    ApplyPreference(
-        prefs::kProxyServer, Value::CreateStringValue(""), incognito);
-    return true;
-  }
+    std::string* out) {
+  if (!proxy_rules)
+    return false;
 
   // Local data into which the parameters will be parsed. has_proxy describes
   // whether a setting was found for the scheme; proxy_dict holds the
@@ -189,8 +209,7 @@ bool UseCustomProxySettingsFunction::ApplyProxyRules(
     }
   }
 
-  ApplyPreference(
-      prefs::kProxyServer, Value::CreateStringValue(proxy_pref), incognito);
+  *out = proxy_pref;
   return true;
 }
 
@@ -198,8 +217,6 @@ bool RemoveCustomProxySettingsFunction::RunImpl() {
   bool incognito = false;
   args_->GetBoolean(0, &incognito);
 
-  RemovePreference(prefs::kProxyMode, incognito);
-  RemovePreference(prefs::kProxyPacUrl, incognito);
-  RemovePreference(prefs::kProxyServer, incognito);
+  RemovePreference(prefs::kProxy, incognito);
   return true;
 }

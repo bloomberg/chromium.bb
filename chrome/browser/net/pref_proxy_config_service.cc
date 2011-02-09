@@ -8,7 +8,7 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_set_observer.h"
-#include "chrome/browser/prefs/proxy_prefs.h"
+#include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
@@ -86,9 +86,10 @@ bool PrefProxyConfigTracker::ReadPrefConfig(net::ProxyConfig* config) {
   // Clear the configuration.
   *config = net::ProxyConfig();
 
+  ProxyConfigDictionary proxy_dict(pref_service_->GetDictionary(prefs::kProxy));
+
   ProxyPrefs::ProxyMode mode;
-  int proxy_mode = pref_service_->GetInteger(prefs::kProxyMode);
-  if (!ProxyPrefs::IntToProxyMode(proxy_mode, &mode)) {
+  if (!proxy_dict.GetMode(&mode)) {
     // Fall back to system settings if the mode preference is invalid.
     return false;
   }
@@ -105,12 +106,12 @@ bool PrefProxyConfigTracker::ReadPrefConfig(net::ProxyConfig* config) {
       config->set_auto_detect(true);
       return true;
     case ProxyPrefs::MODE_PAC_SCRIPT: {
-      if (!pref_service_->HasPrefPath(prefs::kProxyPacUrl)) {
+      std::string proxy_pac;
+      if (!proxy_dict.GetPacUrl(&proxy_pac)) {
         LOG(ERROR) << "Proxy settings request PAC script but do not specify "
                    << "its URL. Falling back to direct connection.";
         return true;
       }
-      std::string proxy_pac = pref_service_->GetString(prefs::kProxyPacUrl);
       GURL proxy_pac_url(proxy_pac);
       if (!proxy_pac_url.is_valid()) {
         LOG(ERROR) << "Invalid proxy PAC url: " << proxy_pac;
@@ -120,18 +121,16 @@ bool PrefProxyConfigTracker::ReadPrefConfig(net::ProxyConfig* config) {
       return true;
     }
     case ProxyPrefs::MODE_FIXED_SERVERS: {
-      if (!pref_service_->HasPrefPath(prefs::kProxyServer)) {
+      std::string proxy_server;
+      if (!proxy_dict.GetProxyServer(&proxy_server)) {
         LOG(ERROR) << "Proxy settings request fixed proxy servers but do not "
                    << "specify their URLs. Falling back to direct connection.";
         return true;
       }
-      std::string proxy_server =
-          pref_service_->GetString(prefs::kProxyServer);
       config->proxy_rules().ParseFromString(proxy_server);
 
-      if (pref_service_->HasPrefPath(prefs::kProxyBypassList)) {
-        std::string proxy_bypass =
-            pref_service_->GetString(prefs::kProxyBypassList);
+      std::string proxy_bypass;
+      if (proxy_dict.GetBypassList(&proxy_bypass)) {
         config->proxy_rules().bypass_rules.ParseFromString(proxy_bypass);
       }
       return true;
@@ -229,8 +228,6 @@ void PrefProxyConfigService::RegisterObservers() {
 // static
 void PrefProxyConfigService::RegisterUserPrefs(
     PrefService* pref_service) {
-  pref_service->RegisterIntegerPref(prefs::kProxyMode, ProxyPrefs::MODE_SYSTEM);
-  pref_service->RegisterStringPref(prefs::kProxyServer, "");
-  pref_service->RegisterStringPref(prefs::kProxyPacUrl, "");
-  pref_service->RegisterStringPref(prefs::kProxyBypassList, "");
+  DictionaryValue* default_settings = ProxyConfigDictionary::CreateSystem();
+  pref_service->RegisterDictionaryPref(prefs::kProxy, default_settings);
 }

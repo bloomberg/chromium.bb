@@ -47,10 +47,7 @@ PrefSetObserver* PrefSetObserver::CreateProxyPrefSetObserver(
     PrefService* pref_service,
     NotificationObserver* observer) {
   PrefSetObserver* pref_set = new PrefSetObserver(pref_service, observer);
-  pref_set->AddPref(prefs::kProxyMode);
-  pref_set->AddPref(prefs::kProxyServer);
-  pref_set->AddPref(prefs::kProxyPacUrl);
-  pref_set->AddPref(prefs::kProxyBypassList);
+  pref_set->AddPref(prefs::kProxy);
 
   return pref_set;
 }

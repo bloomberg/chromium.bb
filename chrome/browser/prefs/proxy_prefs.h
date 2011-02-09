@@ -47,6 +47,7 @@ extern const char kSystemProxyModeName[];
 bool IntToProxyMode(int in_value, ProxyMode* out_value);
 bool StringToProxyMode(const std::string& in_value,
                        ProxyMode* out_value);
+const char* GetProxyModeName(ProxyMode mode);
 
 }  // namespace ProxyPrefs
 

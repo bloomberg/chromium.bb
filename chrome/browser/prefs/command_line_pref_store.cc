@@ -7,7 +7,7 @@
 #include "app/app_switches.h"
 #include "base/logging.h"
 #include "base/values.h"
-#include "chrome/browser/prefs/proxy_prefs.h"
+#include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "ui/base/ui_base_switches.h"
@@ -15,9 +15,6 @@
 const CommandLinePrefStore::StringSwitchToPreferenceMapEntry
     CommandLinePrefStore::string_switch_map_[] = {
       { switches::kLang, prefs::kApplicationLocale },
-      { switches::kProxyServer, prefs::kProxyServer },
-      { switches::kProxyPacUrl, prefs::kProxyPacUrl },
-      { switches::kProxyBypassList, prefs::kProxyBypassList },
       { switches::kAuthSchemes, prefs::kAuthSchemes },
       { switches::kAuthServerWhitelist, prefs::kAuthServerWhitelist },
       { switches::kAuthNegotiateDelegateWhitelist,
@@ -79,16 +76,23 @@ bool CommandLinePrefStore::ValidateProxySwitches() {
 
 void CommandLinePrefStore::ApplyProxyMode() {
   if (command_line_->HasSwitch(switches::kNoProxyServer)) {
-    SetValue(prefs::kProxyMode,
-             Value::CreateIntegerValue(ProxyPrefs::MODE_DIRECT));
+    SetValue(prefs::kProxy,
+             ProxyConfigDictionary::CreateDirect());
   } else if (command_line_->HasSwitch(switches::kProxyPacUrl)) {
-    SetValue(prefs::kProxyMode,
-             Value::CreateIntegerValue(ProxyPrefs::MODE_PAC_SCRIPT));
+    std::string pac_script_url =
+        command_line_->GetSwitchValueASCII(switches::kProxyPacUrl);
+    SetValue(prefs::kProxy,
+             ProxyConfigDictionary::CreatePacScript(pac_script_url));
   } else if (command_line_->HasSwitch(switches::kProxyAutoDetect)) {
-    SetValue(prefs::kProxyMode,
-             Value::CreateIntegerValue(ProxyPrefs::MODE_AUTO_DETECT));
+    SetValue(prefs::kProxy,
+             ProxyConfigDictionary::CreateAutoDetect());
   } else if (command_line_->HasSwitch(switches::kProxyServer)) {
-    SetValue(prefs::kProxyMode,
-             Value::CreateIntegerValue(ProxyPrefs::MODE_FIXED_SERVERS));
+    std::string proxy_server =
+        command_line_->GetSwitchValueASCII(switches::kProxyServer);
+    std::string bypass_list =
+        command_line_->GetSwitchValueASCII(switches::kProxyBypassList);
+    SetValue(prefs::kProxy,
+             ProxyConfigDictionary::CreateFixedServers(proxy_server,
+                                                       bypass_list));
   }
 }

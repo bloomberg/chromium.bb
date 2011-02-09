@@ -23,7 +23,7 @@
 #include "chrome/browser/policy/device_management_policy_provider.h"
 #include "chrome/browser/policy/profile_policy_context.h"
 #include "chrome/browser/prefs/pref_value_map.h"
-#include "chrome/browser/prefs/proxy_prefs.h"
+#include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -255,13 +255,6 @@ const ConfigurationPolicyPrefKeeper::PolicyToPreferenceMapEntry
     prefs::kDefaultSearchProviderIconURL },
   { Value::TYPE_STRING, kPolicyDefaultSearchProviderEncodings,
     prefs::kDefaultSearchProviderEncodings },
-};
-
-const ConfigurationPolicyPrefKeeper::PolicyToPreferenceMapEntry
-    ConfigurationPolicyPrefKeeper::kProxyPolicyMap[] = {
-  { Value::TYPE_STRING, kPolicyProxyServer, prefs::kProxyServer },
-  { Value::TYPE_STRING, kPolicyProxyPacUrl, prefs::kProxyPacUrl },
-  { Value::TYPE_STRING, kPolicyProxyBypassList, prefs::kProxyBypassList }
 };
 
 ConfigurationPolicyPrefKeeper::ConfigurationPolicyPrefKeeper(
@@ -649,26 +642,37 @@ void ConfigurationPolicyPrefKeeper::ApplyProxySettings() {
   } else {
     return;
   }
-  prefs_.SetValue(prefs::kProxyMode, Value::CreateIntegerValue(mode));
-
-  if (HasProxyPolicy(kPolicyProxyServer)) {
-    prefs_.SetValue(prefs::kProxyServer, proxy_policies_[kPolicyProxyServer]);
-    proxy_policies_[kPolicyProxyServer] = NULL;
-  } else {
-    prefs_.SetValue(prefs::kProxyServer, Value::CreateNullValue());
-  }
-  if (HasProxyPolicy(kPolicyProxyPacUrl)) {
-    prefs_.SetValue(prefs::kProxyPacUrl, proxy_policies_[kPolicyProxyPacUrl]);
-    proxy_policies_[kPolicyProxyPacUrl] = NULL;
-  } else {
-    prefs_.SetValue(prefs::kProxyPacUrl, Value::CreateNullValue());
-  }
-  if (HasProxyPolicy(kPolicyProxyBypassList)) {
-    prefs_.SetValue(prefs::kProxyBypassList,
-                proxy_policies_[kPolicyProxyBypassList]);
-    proxy_policies_[kPolicyProxyBypassList] = NULL;
-  } else {
-    prefs_.SetValue(prefs::kProxyBypassList, Value::CreateNullValue());
+  switch (mode) {
+    case ProxyPrefs::MODE_DIRECT:
+      prefs_.SetValue(prefs::kProxy, ProxyConfigDictionary::CreateDirect());
+      break;
+    case ProxyPrefs::MODE_AUTO_DETECT:
+      prefs_.SetValue(prefs::kProxy, ProxyConfigDictionary::CreateAutoDetect());
+      break;
+    case ProxyPrefs::MODE_PAC_SCRIPT: {
+      std::string pac_url;
+      proxy_policies_[kPolicyProxyPacUrl]->GetAsString(&pac_url);
+      prefs_.SetValue(prefs::kProxy,
+                      ProxyConfigDictionary::CreatePacScript(pac_url));
+      break;
+    }
+    case ProxyPrefs::MODE_FIXED_SERVERS: {
+      std::string proxy_server;
+      proxy_policies_[kPolicyProxyServer]->GetAsString(&proxy_server);
+      std::string bypass_list;
+      if (HasProxyPolicy(kPolicyProxyBypassList))
+        proxy_policies_[kPolicyProxyBypassList]->GetAsString(&bypass_list);
+      prefs_.SetValue(prefs::kProxy,
+                      ProxyConfigDictionary::CreateFixedServers(proxy_server,
+                                                                bypass_list));
+      break;
+    }
+    case ProxyPrefs::MODE_SYSTEM:
+      prefs_.SetValue(prefs::kProxy,
+                      ProxyConfigDictionary::CreateSystem());
+      break;
+    case ProxyPrefs::kModeCount:
+      NOTREACHED();
   }
 }
 

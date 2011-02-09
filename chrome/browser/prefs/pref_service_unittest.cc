@@ -16,7 +16,7 @@
 #include "chrome/browser/prefs/pref_observer_mock.h"
 #include "chrome/browser/prefs/pref_service_mock_builder.h"
 #include "chrome/browser/prefs/pref_value_store.h"
-#include "chrome/browser/prefs/proxy_prefs.h"
+#include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/browser/prefs/testing_pref_store.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -169,6 +169,54 @@ TEST(PrefServiceTest, GetValueChangedType) {
   EXPECT_EQ(kTestValue, actual_int_value);
 }
 
+void assertProxyMode(const ProxyConfigDictionary& dict,
+                     ProxyPrefs::ProxyMode expected_mode) {
+  ProxyPrefs::ProxyMode actual_mode;
+  ASSERT_TRUE(dict.GetMode(&actual_mode));
+  EXPECT_EQ(expected_mode, actual_mode);
+}
+
+void assertProxyServer(const ProxyConfigDictionary& dict,
+                       const std::string& expected) {
+  std::string actual;
+  if (!expected.empty()) {
+    ASSERT_TRUE(dict.GetProxyServer(&actual));
+    EXPECT_EQ(expected, actual);
+  } else {
+    EXPECT_FALSE(dict.GetProxyServer(&actual));
+  }
+}
+
+void assertPacUrl(const ProxyConfigDictionary& dict,
+                  const std::string& expected) {
+  std::string actual;
+  if (!expected.empty()) {
+    ASSERT_TRUE(dict.GetPacUrl(&actual));
+    EXPECT_EQ(expected, actual);
+  } else {
+    EXPECT_FALSE(dict.GetPacUrl(&actual));
+  }
+}
+
+void assertBypassList(const ProxyConfigDictionary& dict,
+                      const std::string& expected) {
+  std::string actual;
+  if (!expected.empty()) {
+    ASSERT_TRUE(dict.GetBypassList(&actual));
+    EXPECT_EQ(expected, actual);
+  } else {
+    EXPECT_FALSE(dict.GetBypassList(&actual));
+  }
+}
+
+void assertProxyModeWithoutParams(const ProxyConfigDictionary& dict,
+                                  ProxyPrefs::ProxyMode proxy_mode) {
+  assertProxyMode(dict, proxy_mode);
+  assertProxyServer(dict, "");
+  assertPacUrl(dict, "");
+  assertBypassList(dict, "");
+}
+
 TEST(PrefServiceTest, ProxyPolicyOverridesCommandLineOptions) {
   CommandLine command_line(CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(switches::kProxyBypassList, "123");
@@ -189,11 +237,11 @@ TEST(PrefServiceTest, ProxyPolicyOverridesCommandLineOptions) {
   builder.WithCommandLine(&command_line);
   scoped_ptr<PrefService> prefs(builder.Create());
   browser::RegisterUserPrefs(prefs.get());
-  EXPECT_EQ(ProxyPrefs::MODE_FIXED_SERVERS,
-            prefs->GetInteger(prefs::kProxyMode));
-  EXPECT_EQ("789", prefs->GetString(prefs::kProxyServer));
-  EXPECT_EQ(std::string(), prefs->GetString(prefs::kProxyPacUrl));
-  EXPECT_EQ("123", prefs->GetString(prefs::kProxyBypassList));
+  ProxyConfigDictionary dict(prefs->GetDictionary(prefs::kProxy));
+  assertProxyMode(dict, ProxyPrefs::MODE_FIXED_SERVERS);
+  assertProxyServer(dict, "789");
+  assertPacUrl(dict, "");
+  assertBypassList(dict, "123");
 
   // Try a second time time with the managed PrefStore in place, the
   // manual proxy policy should have removed all traces of the command
@@ -202,11 +250,11 @@ TEST(PrefServiceTest, ProxyPolicyOverridesCommandLineOptions) {
   builder.WithManagedPlatformProvider(provider.get());
   scoped_ptr<PrefService> prefs2(builder.Create());
   browser::RegisterUserPrefs(prefs2.get());
-  EXPECT_EQ(ProxyPrefs::MODE_FIXED_SERVERS,
-            prefs2->GetInteger(prefs::kProxyMode));
-  EXPECT_EQ("ghi", prefs2->GetString(prefs::kProxyServer));
-  EXPECT_EQ(std::string(), prefs2->GetString(prefs::kProxyPacUrl));
-  EXPECT_EQ("abc", prefs2->GetString(prefs::kProxyBypassList));
+  ProxyConfigDictionary dict2(prefs2->GetDictionary(prefs::kProxy));
+  assertProxyMode(dict2, ProxyPrefs::MODE_FIXED_SERVERS);
+  assertProxyServer(dict2, "ghi");
+  assertPacUrl(dict2, "");
+  assertBypassList(dict2, "abc");
 }
 
 TEST(PrefServiceTest, ProxyPolicyOverridesUnrelatedCommandLineOptions) {
@@ -225,10 +273,11 @@ TEST(PrefServiceTest, ProxyPolicyOverridesUnrelatedCommandLineOptions) {
   builder.WithCommandLine(&command_line);
   scoped_ptr<PrefService> prefs(builder.Create());
   browser::RegisterUserPrefs(prefs.get());
-  EXPECT_EQ(ProxyPrefs::MODE_FIXED_SERVERS,
-            prefs->GetInteger(prefs::kProxyMode));
-  EXPECT_EQ("789", prefs->GetString(prefs::kProxyServer));
-  EXPECT_EQ("123", prefs->GetString(prefs::kProxyBypassList));
+  ProxyConfigDictionary dict(prefs->GetDictionary(prefs::kProxy));
+  assertProxyMode(dict, ProxyPrefs::MODE_FIXED_SERVERS);
+  assertProxyServer(dict, "789");
+  assertPacUrl(dict, "");
+  assertBypassList(dict, "123");
 
   // Try a second time time with the managed PrefStore in place, the
   // no proxy policy should have removed all traces of the command
@@ -238,11 +287,8 @@ TEST(PrefServiceTest, ProxyPolicyOverridesUnrelatedCommandLineOptions) {
   builder.WithManagedPlatformProvider(provider.get());
   scoped_ptr<PrefService> prefs2(builder.Create());
   browser::RegisterUserPrefs(prefs2.get());
-  EXPECT_EQ(ProxyPrefs::MODE_AUTO_DETECT,
-      prefs2->GetInteger(prefs::kProxyMode));
-  EXPECT_EQ(std::string(), prefs2->GetString(prefs::kProxyServer));
-  EXPECT_EQ(std::string(), prefs2->GetString(prefs::kProxyPacUrl));
-  EXPECT_EQ(std::string(), prefs2->GetString(prefs::kProxyBypassList));
+  ProxyConfigDictionary dict2(prefs2->GetDictionary(prefs::kProxy));
+  assertProxyModeWithoutParams(dict2, ProxyPrefs::MODE_AUTO_DETECT);
 }
 
 TEST(PrefServiceTest, ProxyPolicyOverridesCommandLineNoProxy) {
@@ -260,10 +306,8 @@ TEST(PrefServiceTest, ProxyPolicyOverridesCommandLineNoProxy) {
   builder.WithCommandLine(&command_line);
   scoped_ptr<PrefService> prefs(builder.Create());
   browser::RegisterUserPrefs(prefs.get());
-  EXPECT_EQ(ProxyPrefs::MODE_DIRECT, prefs->GetInteger(prefs::kProxyMode));
-  EXPECT_EQ(std::string(), prefs->GetString(prefs::kProxyServer));
-  EXPECT_EQ(std::string(), prefs->GetString(prefs::kProxyPacUrl));
-  EXPECT_EQ(std::string(), prefs->GetString(prefs::kProxyBypassList));
+  ProxyConfigDictionary dict(prefs->GetDictionary(prefs::kProxy));
+  assertProxyModeWithoutParams(dict, ProxyPrefs::MODE_DIRECT);
 
   // Try a second time time with the managed PrefStore in place, the
   // auto-detect should be overridden. The default pref store must be
@@ -272,11 +316,8 @@ TEST(PrefServiceTest, ProxyPolicyOverridesCommandLineNoProxy) {
   builder.WithManagedPlatformProvider(provider.get());
   scoped_ptr<PrefService> prefs2(builder.Create());
   browser::RegisterUserPrefs(prefs2.get());
-  EXPECT_EQ(ProxyPrefs::MODE_AUTO_DETECT,
-      prefs2->GetInteger(prefs::kProxyMode));
-  EXPECT_EQ(std::string(), prefs2->GetString(prefs::kProxyServer));
-  EXPECT_EQ(std::string(), prefs2->GetString(prefs::kProxyPacUrl));
-  EXPECT_EQ(std::string(), prefs2->GetString(prefs::kProxyBypassList));
+  ProxyConfigDictionary dict2(prefs2->GetDictionary(prefs::kProxy));
+  assertProxyModeWithoutParams(dict2, ProxyPrefs::MODE_AUTO_DETECT);
 }
 
 TEST(PrefServiceTest, ProxyPolicyOverridesCommandLineAutoDetect) {
@@ -294,10 +335,8 @@ TEST(PrefServiceTest, ProxyPolicyOverridesCommandLineAutoDetect) {
   builder.WithCommandLine(&command_line);
   scoped_ptr<PrefService> prefs(builder.Create());
   browser::RegisterUserPrefs(prefs.get());
-  EXPECT_EQ(ProxyPrefs::MODE_AUTO_DETECT, prefs->GetInteger(prefs::kProxyMode));
-  EXPECT_EQ(std::string(), prefs->GetString(prefs::kProxyServer));
-  EXPECT_EQ(std::string(), prefs->GetString(prefs::kProxyPacUrl));
-  EXPECT_EQ(std::string(), prefs->GetString(prefs::kProxyBypassList));
+  ProxyConfigDictionary dict(prefs->GetDictionary(prefs::kProxy));
+  assertProxyModeWithoutParams(dict, ProxyPrefs::MODE_AUTO_DETECT);
 
   // Try a second time time with the managed PrefStore in place, the
   // auto-detect should be overridden. The default pref store must be
@@ -306,10 +345,8 @@ TEST(PrefServiceTest, ProxyPolicyOverridesCommandLineAutoDetect) {
   builder.WithManagedPlatformProvider(provider.get());
   scoped_ptr<PrefService> prefs2(builder.Create());
   browser::RegisterUserPrefs(prefs2.get());
-  EXPECT_EQ(ProxyPrefs::MODE_DIRECT, prefs2->GetInteger(prefs::kProxyMode));
-  EXPECT_EQ(std::string(), prefs2->GetString(prefs::kProxyServer));
-  EXPECT_EQ(std::string(), prefs2->GetString(prefs::kProxyPacUrl));
-  EXPECT_EQ(std::string(), prefs2->GetString(prefs::kProxyBypassList));
+  ProxyConfigDictionary dict2(prefs2->GetDictionary(prefs::kProxy));
+  assertProxyModeWithoutParams(dict2, ProxyPrefs::MODE_DIRECT);
 }
 
 class PrefServiceSetValueTest : public testing::Test {

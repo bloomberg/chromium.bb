@@ -251,8 +251,17 @@ void PrefService::RegisterListPref(const char* path) {
   RegisterPreference(path, new ListValue());
 }
 
+void PrefService::RegisterListPref(const char* path, ListValue* default_value) {
+  RegisterPreference(path, default_value);
+}
+
 void PrefService::RegisterDictionaryPref(const char* path) {
   RegisterPreference(path, new DictionaryValue());
+}
+
+void PrefService::RegisterDictionaryPref(const char* path,
+                                         DictionaryValue* default_value) {
+  RegisterPreference(path, default_value);
 }
 
 void PrefService::RegisterLocalizedBooleanPref(const char* path,

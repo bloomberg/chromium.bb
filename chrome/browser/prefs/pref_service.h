@@ -151,6 +151,9 @@ class PrefService : public base::NonThreadSafe {
   void RegisterFilePathPref(const char* path, const FilePath& default_value);
   void RegisterListPref(const char* path);
   void RegisterDictionaryPref(const char* path);
+  // These take ownership of the default_value:
+  void RegisterListPref(const char* path, ListValue* default_value);
+  void RegisterDictionaryPref(const char* path, DictionaryValue* default_value);
 
   // These variants use a default value from the locale dll instead.
   void RegisterLocalizedBooleanPref(const char* path,

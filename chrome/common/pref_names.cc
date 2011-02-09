@@ -1216,18 +1216,8 @@ const char kCloudPrintPrintSystemSettings[] =
 // Used by the service process to determine if the remoting host is enabled.
 const char kRemotingHostEnabled[] = "remoting.host_enabled";
 
-// Integer to specify the type of proxy settings.
-// See ProxyPrefs for possible values and interactions with the other proxy
-// preferences.
-const char kProxyMode[] = "proxy.mode";
-// String specifying the proxy server. For a specification of the expected
-// syntax see net::ProxyConfig::ProxyRules::ParseFromString().
-const char kProxyServer[] = "proxy.server";
-// URL to the proxy .pac file.
-const char kProxyPacUrl[] = "proxy.pac_url";
-// String containing proxy bypass rules. For a specification of the
-// expected syntax see net::ProxyBypassRules::ParseFromString().
-const char kProxyBypassList[] = "proxy.bypass_list";
+// Preference to story proxy settings.
+const char kProxy[] = "proxy";
 
 // Preferences that are exclusivly used to store managed values for default
 // content settings.

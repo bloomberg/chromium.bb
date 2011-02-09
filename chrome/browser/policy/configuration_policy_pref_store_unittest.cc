@@ -6,7 +6,7 @@
 #include "base/ref_counted.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
-#include "chrome/browser/prefs/proxy_prefs.h"
+#include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_store_observer_mock.h"
@@ -242,33 +242,32 @@ class ConfigurationPolicyPrefStoreProxyTest : public testing::Test {
       const std::string& expected_proxy_bypass_list,
       const ProxyPrefs::ProxyMode& expected_proxy_mode) {
     Value* value = NULL;
-
+    ASSERT_EQ(PrefStore::READ_OK,
+              store.GetValue(prefs::kProxy, &value));
+    ASSERT_EQ(Value::TYPE_DICTIONARY, value->GetType());
+    ProxyConfigDictionary dict(static_cast<DictionaryValue*>(value));
+    std::string s;
     if (expected_proxy_server.empty()) {
-      EXPECT_EQ(PrefStore::READ_USE_DEFAULT,
-                store.GetValue(prefs::kProxyServer, NULL));
+      EXPECT_FALSE(dict.GetProxyServer(&s));
     } else {
-      EXPECT_EQ(PrefStore::READ_OK,
-                store.GetValue(prefs::kProxyServer, &value));
-      EXPECT_TRUE(StringValue(expected_proxy_server).Equals(value));
+      ASSERT_TRUE(dict.GetProxyServer(&s));
+      EXPECT_EQ(expected_proxy_server, s);
     }
     if (expected_proxy_pac_url.empty()) {
-      EXPECT_EQ(PrefStore::READ_USE_DEFAULT,
-                store.GetValue(prefs::kProxyPacUrl, NULL));
+      EXPECT_FALSE(dict.GetPacUrl(&s));
     } else {
-      EXPECT_EQ(PrefStore::READ_OK,
-                store.GetValue(prefs::kProxyPacUrl, &value));
-      EXPECT_TRUE(StringValue(expected_proxy_pac_url).Equals(value));
+      ASSERT_TRUE(dict.GetPacUrl(&s));
+      EXPECT_EQ(expected_proxy_pac_url, s);
     }
     if (expected_proxy_bypass_list.empty()) {
-      EXPECT_EQ(PrefStore::READ_USE_DEFAULT,
-                store.GetValue(prefs::kProxyBypassList, NULL));
+      EXPECT_FALSE(dict.GetBypassList(&s));
     } else {
-      EXPECT_EQ(PrefStore::READ_OK,
-                store.GetValue(prefs::kProxyBypassList, &value));
-      EXPECT_TRUE(StringValue(expected_proxy_bypass_list).Equals(value));
+      ASSERT_TRUE(dict.GetBypassList(&s));
+      EXPECT_EQ(expected_proxy_bypass_list, s);
     }
-    EXPECT_EQ(PrefStore::READ_OK, store.GetValue(prefs::kProxyMode, &value));
-    EXPECT_TRUE(FundamentalValue(expected_proxy_mode).Equals(value));
+    ProxyPrefs::ProxyMode mode;
+    ASSERT_TRUE(dict.GetMode(&mode));
+    EXPECT_EQ(expected_proxy_mode, mode);
   }
 };
 
@@ -413,8 +412,9 @@ TEST_F(ConfigurationPolicyPrefStoreProxyTest, ProxyInvalid) {
 
     scoped_refptr<ConfigurationPolicyPrefStore> store(
         new ConfigurationPolicyPrefStore(&provider));
+    Value* value = NULL;
     EXPECT_EQ(PrefStore::READ_NO_VALUE,
-              store->GetValue(prefs::kProxyMode, NULL));
+              store->GetValue(prefs::kProxy, &value));
   }
 }
 

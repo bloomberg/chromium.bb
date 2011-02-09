@@ -87,10 +87,7 @@ void ManagedPrefsBannerBase::Init(PrefService* local_state,
 #if defined(GOOGLE_CHROME_BUILD)
       AddLocalStatePref(prefs::kMetricsReportingEnabled);
 #endif
-      AddUserPref(prefs::kProxyMode);
-      AddUserPref(prefs::kProxyServer);
-      AddUserPref(prefs::kProxyPacUrl);
-      AddUserPref(prefs::kProxyBypassList);
+      AddUserPref(prefs::kProxy);
       AddUserPref(prefs::kCloudPrintProxyEnabled);
       break;
     default:

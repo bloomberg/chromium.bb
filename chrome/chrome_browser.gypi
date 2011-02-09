@@ -1836,6 +1836,8 @@
         'browser/prefs/pref_value_map.h',
         'browser/prefs/pref_value_store.cc',
         'browser/prefs/pref_value_store.h',
+        'browser/prefs/proxy_config_dictionary.cc',
+        'browser/prefs/proxy_config_dictionary.h',
         'browser/prefs/proxy_prefs.cc',
         'browser/prefs/proxy_prefs.h',
         'browser/prefs/scoped_pref_update.cc',
