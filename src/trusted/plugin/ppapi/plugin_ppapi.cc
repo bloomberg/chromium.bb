@@ -16,11 +16,14 @@
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/ppapi_proxy/browser_ppp.h"
+#include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/handle_pass/browser_handle.h"
+#include "native_client/src/trusted/plugin/desc_based_handle.h"
 #include "native_client/src/trusted/plugin/nexe_arch.h"
 #include "native_client/src/trusted/plugin/ppapi/browser_interface_ppapi.h"
 #include "native_client/src/trusted/plugin/ppapi/scriptable_handle_ppapi.h"
 #include "native_client/src/trusted/plugin/scriptable_handle.h"
+#include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppp_instance.h"
@@ -45,6 +48,21 @@ const ssize_t kNaclManifestMaxFileBytesNoNull =
 // The "nexes" attr of the <embed> tag, and the key used to find the dicitonary
 // of nexe URLs in the manifest file.
 const char* const kNexesAttribute = "nexes";
+
+bool UrlAsNaClDesc(void* obj, plugin::SrpcParams* params) {
+  // TODO(sehr,polina); this API should take a selector specify which of
+  // UMP, CORS, or traditional origin policy should be used.
+  NaClSrpcArg** ins = params->ins();
+  PLUGIN_PRINTF(("UrlAsNaClDesc (obj=%p, url=%s, callback=%p)\n",
+                 obj, ins[0]->arrays.str, ins[1]->arrays.oval));
+
+  PluginPpapi* plugin =
+      static_cast<PluginPpapi*>(reinterpret_cast<Plugin*>(obj));
+  const char* url = ins[0]->arrays.str;
+  // TODO(sehr,polina): Ensure that origin checks are performed here.
+  return plugin->RequestUrl(url,
+                            *reinterpret_cast<pp::Var*>(ins[1]->arrays.oval));
+}
 
 }  // namespace
 
@@ -123,6 +141,8 @@ bool PluginPpapi::Init(uint32_t argc, const char* argn[], const char* argv[]) {
     }
   }
 
+  AddMethodCall(UrlAsNaClDesc, "__urlAsNaClDesc", "so", "");
+
   PLUGIN_PRINTF(("PluginPpapi::Init (status=%d)\n", status));
   return status;
 }
@@ -135,7 +155,7 @@ PluginPpapi::PluginPpapi(PP_Instance pp_instance)
   PLUGIN_PRINTF(("PluginPpapi::PluginPpapi (this=%p, pp_instance=%"
                  NACL_PRId32")\n", static_cast<void*>(this), pp_instance));
   NaClSrpcModuleInit();
-  url_downloader_.Initialize(this);
+  nexe_downloader_.Initialize(this);
   callback_factory_.Initialize(this);
 }
 
@@ -148,6 +168,12 @@ PluginPpapi::~PluginPpapi() {
 #if NACL_WINDOWS && !defined(NACL_STANDALONE)
   NaClHandlePassBrowserDtor();
 #endif
+
+  std::set<FileDownloader*>::iterator i;
+  for (i = url_downloaders_.begin(); i != url_downloaders_.end(); ++i) {
+    std::set<FileDownloader*>::iterator current = i;
+    url_downloaders_.erase(current);
+  }
 
   ShutdownProxy();
   ScriptableHandle* scriptable_handle_ = scriptable_handle();
@@ -227,13 +253,13 @@ pp::Var PluginPpapi::GetInstanceObject() {
 void PluginPpapi::NexeFileDidOpen(int32_t pp_error) {
   PLUGIN_PRINTF(("PluginPpapi::NexeFileDidOpen (pp_error=%"NACL_PRId32")\n",
                  pp_error));
-  int32_t file_desc = url_downloader_.GetPOSIXFileDescriptor();
+  int32_t file_desc = nexe_downloader_.GetPOSIXFileDescriptor();
   PLUGIN_PRINTF(("PluginPpapi::NexeFileDidOpen (file_desc=%"NACL_PRId32")\n",
                  file_desc));
   if (pp_error != PP_OK || file_desc == NACL_NO_FILE_DESC) {
     Failure("NaCl module load failed: could not load url.");
   } else {
-    LoadNaClModule(url_downloader_.url(), file_desc);
+    LoadNaClModule(nexe_downloader_.url(), file_desc);
   }
 }
 
@@ -245,7 +271,7 @@ bool PluginPpapi::RequestNaClModule(const nacl::string& url) {
   // If an error occurs during Open(), |open_callback| will be called with the
   // appropriate error value.  If the URL loading started up OK, then
   // |open_callback| will be called later on as the URL loading progresses.
-  return url_downloader_.Open(url, open_callback);
+  return nexe_downloader_.Open(url, open_callback);
 }
 
 
@@ -320,7 +346,7 @@ void PluginPpapi::ShutdownProxy() {
 void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
   PLUGIN_PRINTF(("PluginPpapi::NaClManifestFileDidOpen (pp_error=%"
                  NACL_PRId32")\n", pp_error));
-  int32_t file_desc = url_downloader_.GetPOSIXFileDescriptor();
+  int32_t file_desc = nexe_downloader_.GetPOSIXFileDescriptor();
   PLUGIN_PRINTF(("PluginPpapi::NaClManifestFileDidOpen (file_desc=%"
                  NACL_PRId32")\n", file_desc));
   if (pp_error != PP_OK || file_desc == NACL_NO_FILE_DESC) {
@@ -357,7 +383,7 @@ void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
   // allows for early returns without leaking the |json_file| FILE object.
   fclose(json_file);
   if (read_error || file_too_large) {
-    // No need to close |file_desc|, that is handled by |url_downloader_|.
+    // No need to close |file_desc|, that is handled by |nexe_downloader_|.
     PLUGIN_PRINTF(("PluginPpapi::NaClManifestFileDidOpen failed: "
                    "read_error=%d file_too_large=%d "
                    "read_byte_count=%"NACL_PRIuS"\n",
@@ -386,7 +412,7 @@ bool PluginPpapi::RequestNaClManifest(const nacl::string& url) {
   // If an error occurs during Open(), |open_callback| will be called with the
   // appropriate error value.  If the URL loading started up OK, then
   // |open_callback| will be called later on as the URL loading progresses.
-  return url_downloader_.Open(url, open_callback);
+  return nexe_downloader_.Open(url, open_callback);
 }
 
 
@@ -425,6 +451,71 @@ bool PluginPpapi::SelectNexeURLFromManifest(
   }
   *result = nexe_url.AsString();
   return true;
+}
+
+
+void PluginPpapi::UrlDidOpen(int32_t pp_error,
+                             FileDownloader*& url_downloader,
+                             pp::Var& js_callback) {
+  PLUGIN_PRINTF(("PluginPpapi::UrlDidOpen (pp_error=%"NACL_PRId32
+                 ", url_downloader=%p, js_callback=%p)\n", pp_error,
+                 reinterpret_cast<void*>(url_downloader),
+                 reinterpret_cast<void*>(&js_callback)));
+
+  int32_t file_desc = NACL_NO_FILE_DESC;
+  nacl::DescWrapper* desc_wrapper = NULL;
+  ScriptableHandlePpapi* handle = NULL;
+  pp::Var status("URL get failed");
+  pp::Var selector("onfail");
+  nacl::scoped_ptr<FileDownloader> downloader(url_downloader);
+  url_downloaders_.erase(downloader.get());
+  do {
+    int32_t browser_file_desc = downloader->GetPOSIXFileDescriptor();
+    if (pp_error == PP_OK && browser_file_desc != NACL_NO_FILE_DESC) {
+      // We should never close the browser owned descriptor, so we need to
+      // duplicate it.
+      file_desc = DUP(browser_file_desc);
+      desc_wrapper = wrapper_factory()->MakeFileDesc(file_desc,
+                                                     NACL_ABI_O_RDONLY);
+      if (desc_wrapper == NULL) {
+        status = pp::Var("MakeFileDesc failed");
+        break;
+      }
+      // If we get here, MakeFileDesc took ownership of file_desc.
+      file_desc = NACL_NO_FILE_DESC;
+      handle = ScriptableHandlePpapi::New(DescBasedHandle::New(plugin(),
+                                                               desc_wrapper));
+      if (handle == NULL) {
+        status = pp::Var("ScriptableHandlePpapi::New failed");
+        break;
+      }
+      // If we get here, ScriptableHandlePpapi took ownership of desc_wrapper.
+      desc_wrapper = NULL;
+      // Success.
+      selector = pp::Var("onload");
+      status = pp::Var(this, handle);
+    }
+  } while (0);
+  pp::Var result = js_callback.Call(selector, status);
+  delete desc_wrapper;
+  CLOSE(file_desc);
+}
+
+
+bool PluginPpapi::RequestUrl(const nacl::string& url,
+                             pp::Var js_callback) {
+  PLUGIN_PRINTF(("PluginPpapi::RequestUrl (url='%s')\n", url.c_str()));
+  FileDownloader* downloader = new FileDownloader();
+  downloader->Initialize(this);
+  url_downloaders_.insert(downloader);
+  pp::CompletionCallback open_callback =
+      callback_factory_.NewCallback(&PluginPpapi::UrlDidOpen,
+                                    downloader,
+                                    js_callback);
+  // If an error occurs during Open(), |open_callback| will be called with the
+  // appropriate error value.  If the URL loading started up OK, then
+  // |open_callback| will be called later on as the URL loading progresses.
+  return downloader->Open(url, open_callback);
 }
 
 

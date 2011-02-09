@@ -9,9 +9,11 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_PLUGIN_PPAPI_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_PLUGIN_PPAPI_H_
 
+#include <set>
 #include <string>
 
 #include "native_client/src/include/nacl_string.h"
+#include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/trusted/plugin/plugin.h"
 #include "native_client/src/trusted/plugin/ppapi/file_downloader.h"
 
@@ -72,6 +74,9 @@ class PluginPpapi : public pp::Instance, public Plugin {
   // Getter for PPAPI proxy interface.
   ppapi_proxy::BrowserPpp* ppapi_proxy() const { return ppapi_proxy_; }
 
+  // Request an URL for return by __urlAsNaClDesc.
+  bool RequestUrl(const nacl::string& url, pp::Var js_callback);
+
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(PluginPpapi);
   // Prevent construction and destruction from outside the class:
@@ -81,14 +86,13 @@ class PluginPpapi : public pp::Instance, public Plugin {
   // pointer to this object, not from base's Delete().
   virtual ~PluginPpapi();
 
-  // File download support.  |url_downloader_| can be opened with a specific
+  // File download support.  |nexe_downloader_| can be opened with a specific
   // callback to run when the file has been downloaded and is opened for
-  // reading.  We use one RemoteFile downloader for all URL downloads to
-  // prevent issuing multiple GETs that might arrive out of order.  For example,
-  // this will prevent a GET of a NaCl manifest while a .nexe GET is pending.
-  // Note that this will also prevent simultaneous handling of multiple
-  // .nexes on a page.
-  FileDownloader url_downloader_;
+  // reading.  We use one downloader for all URL downloads to prevent issuing
+  // multiple GETs that might arrive out of order.  For example, this will
+  // prevent a GET of a NaCl manifest while a .nexe GET is pending.  Note that
+  // this will also prevent simultaneous handling of multiple .nexes on a page.
+  FileDownloader nexe_downloader_;
   pp::CompletionCallbackFactory<PluginPpapi> callback_factory_;
 
   // Callback used when getting the URL for the .nexe file.  If the URL loading
@@ -131,6 +135,11 @@ class PluginPpapi : public pp::Instance, public Plugin {
   bool SelectNexeURLFromManifest(const nacl::string& nexe_manifest_json,
                                  nacl::string* result);
 
+  // Callback used when getting the URL for an __urlAsNaClDesc invocation.
+  void UrlDidOpen(int32_t pp_error,
+                  FileDownloader*& url_downloader,
+                  pp::Var& js_callback);
+
   // Shuts down the proxy for PPAPI nexes.
   void ShutdownProxy();
 
@@ -149,6 +158,9 @@ class PluginPpapi : public pp::Instance, public Plugin {
   bool replayDidChangeView;
   pp::Rect replayDidChangeViewPosition;
   pp::Rect replayDidChangeViewClip;
+
+  // Keep track of the FileDownloaders created to fetch __urlAsNaClDescs.
+  std::set<FileDownloader*> url_downloaders_;
 };
 
 }  // namespace plugin

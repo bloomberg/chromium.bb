@@ -121,9 +121,20 @@ template<typename T> void PPVarToArray(const pp::Var& var,
 }
 
 
-// Returns ScriptableHandle* corresponding to |var|. Sets |exception| on error.
-ScriptableHandle* PPVarToScriptableHandle(const pp::Var& var,
-                                          pp::Var* exception) {
+// Returns the address of |var| if var is an object.  Sets |exception| on error.
+// |var| was passed in from SRPC input marshalling.  It is guaranteed to be
+// alive until the SRPC method is dispatched to.
+pp::Var* PPVarToObjectVar(const pp::Var& var, pp::Var* exception) {
+  if (!var.is_object()) {
+    *exception = "incompatible argument: type is not object";
+    return NULL;
+  }
+  return const_cast<pp::Var*>(&var);
+}
+
+
+// Returns NaClDesc* corresponding to |var|. Sets |exception| on error.
+NaClDesc* PPVarToNaClDesc(const pp::Var& var, pp::Var* exception) {
   if (!var.is_object()) {
     *exception = "incompatible argument: type is not object";
     return NULL;
@@ -138,16 +149,6 @@ ScriptableHandle* PPVarToScriptableHandle(const pp::Var& var,
       static_cast<ScriptableHandlePpapi*>(scriptable_object);
   if (!ScriptableHandle::is_valid(scriptable_handle)) {
     *exception = "incompatible argument: not a valid scriptable handle";
-    return NULL;
-  }
-  return scriptable_handle;
-}
-
-
-// Returns NaClDesc* corresponding to |var|. Sets |exception| on error.
-NaClDesc* PPVarToNaClDesc(const pp::Var& var, pp::Var* exception) {
-  ScriptableHandle* scriptable_handle = PPVarToScriptableHandle(var, exception);
-  if (scriptable_handle == NULL) {
     return NULL;
   }
   NaClDesc* nacl_desc = scriptable_handle->handle()->desc();
@@ -276,10 +277,7 @@ bool PPVarToNaClSrpcArg(const pp::Var& var,
       break;
     case NACL_SRPC_ARG_TYPE_OBJECT:
       arg->arrays.oval = reinterpret_cast<void*>(
-          PPVarToScriptableHandle(var, exception));
-      // There are currently no predeclared PPAPI plugin methods that
-      // take objects as input, so this should never be reached.
-      NACL_NOTREACHED();
+          PPVarToObjectVar(var, exception));
       break;
     case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
     case NACL_SRPC_ARG_TYPE_INVALID:

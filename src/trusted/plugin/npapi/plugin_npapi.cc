@@ -48,7 +48,6 @@ void InitializeIdentifiers() {
   identifiers_initialized = true;
 }
 
-// TODO(polina): is there a way to share this with PluginPPAPI?
 bool UrlAsNaClDesc(void* obj, plugin::SrpcParams* params) {
   NaClSrpcArg** ins = params->ins();
   PLUGIN_PRINTF(("UrlAsNaClDesc (obj=%p, url=%s, callback=%p)\n",
