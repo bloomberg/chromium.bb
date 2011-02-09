@@ -1520,16 +1520,29 @@ function newFolder() {
       if (isTree) {
         newItem = bmm.treeLookup[newNode.id];
         tree.selectedItem = newItem;
+        newItem.editing = true;
       } else {
         var index = list.dataModel.findIndexById(newNode.id);
         var sm = list.selectionModel;
         sm.anchorIndex = sm.leadIndex = sm.selectedIndex = index;
-        list.scrollIndexIntoView(index);
-        newItem = list.getListItemByIndex(index);
+        scrollIntoViewAndMakeEditable(index);
       }
-
-      newItem.editing = true;
     }, 50);
+  });
+}
+
+/**
+ * Scrolls the list item into view and makes it editable.
+ * @param {number} index The index of the item to make editable.
+ */
+function scrollIntoViewAndMakeEditable(index) {
+  list.scrollIndexIntoView(index);
+  // onscroll is now dispatched asynchronously so we have to postpone
+  // the rest.
+  setTimeout(function() {
+    var item = list.getListItemByIndex(index);
+    if (item)
+      item.editing = true;
   });
 }
 
@@ -1551,12 +1564,7 @@ function addPage() {
   dataModel.splice(length, 0, fakeNode);
   var sm = list.selectionModel;
   sm.anchorIndex = sm.leadIndex = sm.selectedIndex = length;
-  list.scrollIndexIntoView(length);
-  // onscroll is now dispatched asynchronously so we have to postpone the rest.
-  setTimeout(function() {
-    var li = list.getListItemByIndex(length);
-    li.editing = true;
-  });
+  scrollIntoViewAndMakeEditable(length);
 }
 
 /**
