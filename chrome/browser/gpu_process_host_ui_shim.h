@@ -115,6 +115,10 @@ class GpuProcessHostUIShim : public IPC::Channel::Sender,
 
   ListValue* logMessages() const { return log_messages_.DeepCopy(); }
 
+  // Can be called directly from the UI thread to log a message.
+  void AddCustomLogMessage(int level, const std::string& header,
+      const std::string& message);
+
   bool LoadGpuBlacklist();
 
  private:
