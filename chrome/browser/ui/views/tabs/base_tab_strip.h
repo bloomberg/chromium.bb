@@ -32,10 +32,6 @@ class BaseTabStrip : public views::View,
 
   Type type() const { return type_; }
 
-  // Returns the preferred height of this TabStrip. This is based on the
-  // typical height of its constituent tabs.
-  virtual int GetPreferredHeight() = 0;
-
   // Set the background offset used by inactive tabs to match the frame image.
   virtual void SetBackgroundOffset(const gfx::Point& offset) = 0;
 

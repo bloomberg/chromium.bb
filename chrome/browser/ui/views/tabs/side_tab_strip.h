@@ -19,7 +19,6 @@ class SideTabStrip : public BaseTabStrip {
   virtual ~SideTabStrip();
 
   // BaseTabStrip implementation:
-  virtual int GetPreferredHeight();
   virtual void SetBackgroundOffset(const gfx::Point& offset);
   virtual bool IsPositionInWindowCaption(const gfx::Point& point);
 
