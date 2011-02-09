@@ -85,4 +85,12 @@ void Capturer::FinishCapture(scoped_refptr<CaptureData> data,
   delete callback;
 }
 
+bool Capturer::IsCaptureFullScreen() {
+  base::AutoLock auto_inval_rects_lock(inval_rects_lock_);
+  return inval_rects_.size() == 1u &&
+      inval_rects_.begin()->x() == 0 && inval_rects_.begin()->y() == 0 &&
+      inval_rects_.begin()->width() == width_ &&
+      inval_rects_.begin()->height() == height_;
+}
+
 }  // namespace remoting

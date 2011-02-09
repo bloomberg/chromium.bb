@@ -114,6 +114,10 @@ class Capturer {
   void FinishCapture(scoped_refptr<CaptureData> data,
                      CaptureCompletedCallback* callback);
 
+  // Called by subclasses' CalculateInvalidRects() method to check if
+  // InvalidateFullScreen() was called by user.
+  bool IsCaptureFullScreen();
+
   // Number of screen buffers.
   static const int kNumBuffers = 2;
 

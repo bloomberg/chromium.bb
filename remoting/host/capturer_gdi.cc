@@ -88,8 +88,10 @@ void CapturerGdi::ScreenConfigurationChanged() {
 }
 
 void CapturerGdi::CalculateInvalidRects() {
-  ClearInvalidRects();
   CaptureImage();
+
+  if (IsCaptureFullScreen())
+    capture_fullscreen_ = true;
 
   if (capture_fullscreen_) {
     InvalidateFullScreen();

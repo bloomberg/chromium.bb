@@ -202,6 +202,9 @@ bool CapturerLinuxPimpl::Init() {
 }
 
 void CapturerLinuxPimpl::CalculateInvalidRects() {
+  if (capturer_->IsCaptureFullScreen())
+    capture_fullscreen_ = true;
+
   // TODO(ajwong): The capture_fullscreen_ logic here is very ugly. Refactor.
 
   // Find the number of events that are outstanding "now."  We don't just loop

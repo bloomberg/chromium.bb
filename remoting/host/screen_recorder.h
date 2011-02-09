@@ -121,6 +121,7 @@ class ScreenRecorder : public base::RefCountedThreadSafe<ScreenRecorder> {
   void DoCapture();
   void CaptureDoneCallback(scoped_refptr<CaptureData> capture_data);
   void DoFinishOneRecording();
+  void DoInvalidateFullScreen();
 
   // Network thread -----------------------------------------------------------
 

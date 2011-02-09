@@ -79,6 +79,10 @@ void ScreenRecorder::AddConnection(
     scoped_refptr<ConnectionToClient> connection) {
   ScopedTracer tracer("AddConnection");
 
+  capture_loop_->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(this, &ScreenRecorder::DoInvalidateFullScreen));
+
   // Add the client to the list so it can receive update stream.
   network_loop_->PostTask(
       FROM_HERE,
@@ -242,6 +246,12 @@ void ScreenRecorder::DoFinishOneRecording() {
     DoCapture();
 }
 
+void ScreenRecorder::DoInvalidateFullScreen() {
+  DCHECK_EQ(capture_loop_, MessageLoop::current());
+
+  capturer_->InvalidateFullScreen();
+}
+
 // Network thread --------------------------------------------------------------
 
 void ScreenRecorder::DoSendVideoPacket(VideoPacket* packet) {
@@ -291,7 +301,6 @@ void ScreenRecorder::DoAddConnection(
     scoped_refptr<ConnectionToClient> connection) {
   DCHECK_EQ(network_loop_, MessageLoop::current());
 
-  // TODO(hclam): Force a full frame for next encode.
   connections_.push_back(connection);
 }
 
@@ -299,7 +308,6 @@ void ScreenRecorder::DoRemoveClient(
     scoped_refptr<ConnectionToClient> connection) {
   DCHECK_EQ(network_loop_, MessageLoop::current());
 
-  // TODO(hclam): Is it correct to do to a scoped_refptr?
   ConnectionToClientList::iterator it =
       std::find(connections_.begin(), connections_.end(), connection);
   if (it != connections_.end()) {
@@ -345,7 +353,6 @@ void ScreenRecorder::DoEncode(
     return;
   }
 
-  // TODO(hclam): Invalidate the full screen if there is a new connection added.
   TraceContext::tracer()->PrintString("Encode start");
   encoder()->Encode(
       capture_data, false,

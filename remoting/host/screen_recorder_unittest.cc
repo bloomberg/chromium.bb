@@ -109,6 +109,7 @@ TEST_F(ScreenRecorderTest, OneRecordCycle) {
                                                   kHeight, kFormat));
   EXPECT_CALL(capturer_, width()).WillRepeatedly(Return(kWidth));
   EXPECT_CALL(capturer_, height()).WillRepeatedly(Return(kHeight));
+  EXPECT_CALL(capturer_, InvalidateFullScreen());
 
   // First the capturer is called.
   EXPECT_CALL(capturer_, CaptureInvalidRects(NotNull()))
@@ -159,6 +160,7 @@ TEST_F(ScreenRecorderTest, StartAndStop) {
                                                   kHeight, kFormat));
   EXPECT_CALL(capturer_, width()).WillRepeatedly(Return(kWidth));
   EXPECT_CALL(capturer_, height()).WillRepeatedly(Return(kHeight));
+  EXPECT_CALL(capturer_, InvalidateFullScreen());
 
   // First the capturer is called.
   EXPECT_CALL(capturer_, CaptureInvalidRects(NotNull()))
