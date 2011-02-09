@@ -21,6 +21,7 @@
 #include "base/observer_list.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
+#include "base/weak_ptr.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/cancelable_request.h"
@@ -80,6 +81,7 @@ class Point;
 class AutomationProvider
     : public IPC::Channel::Listener,
       public IPC::Message::Sender,
+      public base::SupportsWeakPtr<AutomationProvider>,
       public base::RefCountedThreadSafe<AutomationProvider,
                                         BrowserThread::DeleteOnUIThread> {
  public:
@@ -103,28 +105,6 @@ class AutomationProvider
   // Called when the inital set of tabs has finished loading.
   // Call SetExpectedTabCount(0) to set this to true immediately.
   void OnInitialLoadsComplete();
-
-  // Add a listener for navigation status notification. Currently only
-  // navigation completion is observed; when the |number_of_navigations|
-  // complete, the completed_response object is sent; if the server requires
-  // authentication, we instead send the auth_needed_response object.  A pointer
-  // to the added navigation observer is returned. This object should NOT be
-  // deleted and should be released by calling the corresponding
-  // RemoveNavigationStatusListener method.
-  NotificationObserver* AddNavigationStatusListener(
-      NavigationController* tab, IPC::Message* reply_message,
-      int number_of_navigations, bool include_current_navigation);
-
-  void RemoveNavigationStatusListener(NotificationObserver* obs);
-
-  // Add an observer for the TabStrip. Currently only Tab append is observed. A
-  // navigation listener is created on successful notification of tab append. A
-  // pointer to the added navigation observer is returned. This object should
-  // NOT be deleted and should be released by calling the corresponding
-  // RemoveTabStripObserver method.
-  NotificationObserver* AddTabStripObserver(Browser* parent,
-                                            IPC::Message* reply_message);
-  void RemoveTabStripObserver(NotificationObserver* obs);
 
   // Get the index of a particular NavigationController object
   // in the given parent window.  This method uses
@@ -204,9 +184,6 @@ class AutomationProvider
   scoped_ptr<NavigationControllerRestoredObserver> restore_tracker_;
   scoped_ptr<AutomationTabTracker> tab_tracker_;
   scoped_ptr<AutomationWindowTracker> window_tracker_;
-
-  typedef ObserverList<NotificationObserver> NotificationObserverList;
-  NotificationObserverList notification_observer_list_;
 
   typedef std::map<NavigationController*, LoginHandler*> LoginHandlerMap;
   LoginHandlerMap login_handler_map_;
@@ -408,7 +385,6 @@ class AutomationProvider
   scoped_ptr<NotificationObserver> new_tab_ui_load_observer_;
   scoped_ptr<NotificationObserver> find_in_page_observer_;
   scoped_ptr<NotificationObserver> dom_operation_observer_;
-  scoped_ptr<NotificationObserver> dom_inspector_observer_;
   scoped_ptr<ExtensionTestResultNotificationObserver>
       extension_test_result_observer_;
   scoped_ptr<AutomationExtensionTracker> extension_tracker_;

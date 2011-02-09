@@ -11,6 +11,7 @@
 #include <set>
 
 #include "base/scoped_ptr.h"
+#include "base/weak_ptr.h"
 #include "chrome/browser/automation/automation_provider_json.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/browsing_data_remover.h"
@@ -77,7 +78,7 @@ class InitialLoadObserver : public NotificationObserver {
 
   NotificationRegistrar registrar_;
 
-  AutomationProvider* automation_;
+  base::WeakPtr<AutomationProvider> automation_;
   size_t outstanding_tab_count_;
   base::TimeTicks init_time_;
   TabTimeMap loading_tabs_;
@@ -98,7 +99,7 @@ class NewTabUILoadObserver : public NotificationObserver {
 
  private:
   NotificationRegistrar registrar_;
-  AutomationProvider* automation_;
+  base::WeakPtr<AutomationProvider> automation_;
 
   DISALLOW_COPY_AND_ASSIGN(NewTabUILoadObserver);
 };
@@ -119,9 +120,9 @@ class NavigationControllerRestoredObserver : public NotificationObserver {
   void SendDone();
 
   NotificationRegistrar registrar_;
-  AutomationProvider* automation_;
+  base::WeakPtr<AutomationProvider> automation_;
   NavigationController* controller_;
-  IPC::Message* reply_message_;
+  scoped_ptr<IPC::Message> reply_message_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationControllerRestoredObserver);
 };
@@ -143,8 +144,8 @@ class NavigationNotificationObserver : public NotificationObserver {
   void ConditionMet(AutomationMsg_NavigationResponseValues navigation_result);
 
   NotificationRegistrar registrar_;
-  AutomationProvider* automation_;
-  IPC::Message* reply_message_;
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
   NavigationController* controller_;
   int navigations_remaining_;
   bool navigation_started_;
@@ -166,7 +167,7 @@ class TabStripNotificationObserver : public NotificationObserver {
 
  protected:
   NotificationRegistrar registrar_;
-  AutomationProvider* automation_;
+  base::WeakPtr<AutomationProvider> automation_;
   NotificationType notification_;
 };
 
@@ -180,7 +181,7 @@ class TabAppendedNotificationObserver : public TabStripNotificationObserver {
 
  protected:
   Browser* parent_;
-  IPC::Message* reply_message_;
+  scoped_ptr<IPC::Message> reply_message_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TabAppendedNotificationObserver);
@@ -197,7 +198,7 @@ class TabClosedNotificationObserver : public TabStripNotificationObserver {
   void set_for_browser_command(bool for_browser_command);
 
  protected:
-  IPC::Message* reply_message_;
+  scoped_ptr<IPC::Message> reply_message_;
   bool for_browser_command_;
 
  private:
@@ -225,8 +226,8 @@ class TabCountChangeObserver : public TabStripModelObserver {
   // sends the reply message and deletes self.
   void CheckTabCount();
 
-  AutomationProvider* automation_;
-  IPC::Message* reply_message_;
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
 
   TabStripModel* tab_strip_model_;
 
@@ -254,9 +255,9 @@ class ExtensionInstallNotificationObserver : public NotificationObserver {
   void SendResponse(AutomationMsg_ExtensionResponseValues response);
 
   NotificationRegistrar registrar_;
-  scoped_refptr<AutomationProvider> automation_;
+  base::WeakPtr<AutomationProvider> automation_;
   int id_;
-  IPC::Message* reply_message_;
+  scoped_ptr<IPC::Message> reply_message_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstallNotificationObserver);
 };
@@ -279,9 +280,9 @@ class ExtensionReadyNotificationObserver : public NotificationObserver {
  private:
   NotificationRegistrar registrar_;
   ExtensionProcessManager* manager_;
-  scoped_refptr<AutomationProvider> automation_;
+  base::WeakPtr<AutomationProvider> automation_;
   int id_;
-  IPC::Message* reply_message_;
+  scoped_ptr<IPC::Message> reply_message_;
   const Extension* extension_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionReadyNotificationObserver);
@@ -325,7 +326,7 @@ class ExtensionTestResultNotificationObserver : public NotificationObserver {
 
  private:
   NotificationRegistrar registrar_;
-  AutomationProvider* automation_;
+  base::WeakPtr<AutomationProvider> automation_;
   // Two queues containing the test results. Although typically only
   // one result will be in each queue, there are cases where a queue is
   // needed.
@@ -353,8 +354,8 @@ class BrowserOpenedNotificationObserver : public NotificationObserver {
 
  private:
   NotificationRegistrar registrar_;
-  AutomationProvider* automation_;
-  IPC::Message* reply_message_;
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
   bool for_browser_command_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserOpenedNotificationObserver);
@@ -374,8 +375,8 @@ class BrowserClosedNotificationObserver : public NotificationObserver {
 
  private:
   NotificationRegistrar registrar_;
-  AutomationProvider* automation_;
-  IPC::Message* reply_message_;
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
   bool for_browser_command_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserClosedNotificationObserver);
@@ -394,8 +395,8 @@ class BrowserCountChangeNotificationObserver : public NotificationObserver {
  private:
   int target_count_;
   NotificationRegistrar registrar_;
-  AutomationProvider* automation_;
-  IPC::Message* reply_message_;
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserCountChangeNotificationObserver);
 };
@@ -412,8 +413,8 @@ class AppModalDialogShownObserver : public NotificationObserver {
 
  private:
   NotificationRegistrar registrar_;
-  AutomationProvider* automation_;
-  IPC::Message* reply_message_;
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
 
   DISALLOW_COPY_AND_ASSIGN(AppModalDialogShownObserver);
 };
@@ -440,9 +441,9 @@ class ExecuteBrowserCommandObserver : public NotificationObserver {
   bool GetNotificationType(int command, NotificationType::Type* type);
 
   NotificationRegistrar registrar_;
-  scoped_refptr<AutomationProvider> automation_;
+  base::WeakPtr<AutomationProvider> automation_;
   NotificationType::Type notification_type_;
-  IPC::Message* reply_message_;
+  scoped_ptr<IPC::Message> reply_message_;
 
   DISALLOW_COPY_AND_ASSIGN(ExecuteBrowserCommandObserver);
 };
@@ -470,13 +471,13 @@ class FindInPageNotificationObserver : public NotificationObserver {
 
  private:
   NotificationRegistrar registrar_;
-  AutomationProvider* automation_;
+  base::WeakPtr<AutomationProvider> automation_;
   // We will at some point (before final update) be notified of the ordinal and
   // we need to preserve it so we can send it later.
   int active_match_ordinal_;
   // Send reply using json automation interface.
   bool reply_with_json_;
-  IPC::Message* reply_message_;
+  scoped_ptr<IPC::Message> reply_message_;
 
   DISALLOW_COPY_AND_ASSIGN(FindInPageNotificationObserver);
 };
@@ -500,13 +501,12 @@ class DomOperationObserver : public NotificationObserver {
 
 class DomOperationMessageSender : public DomOperationObserver {
  public:
-  explicit DomOperationMessageSender(AutomationProvider* automation)
-      : automation_(automation) {}
+  explicit DomOperationMessageSender(AutomationProvider* automation);
 
   virtual void OnDomOperationCompleted(const std::string& json);
 
  private:
-  AutomationProvider* automation_;
+  base::WeakPtr<AutomationProvider> automation_;
 
   DISALLOW_COPY_AND_ASSIGN(DomOperationMessageSender);
 };
@@ -522,9 +522,9 @@ class DocumentPrintedNotificationObserver : public NotificationObserver {
 
  private:
   NotificationRegistrar registrar_;
-  scoped_refptr<AutomationProvider> automation_;
+  base::WeakPtr<AutomationProvider> automation_;
   bool success_;
-  IPC::Message* reply_message_;
+  scoped_ptr<IPC::Message> reply_message_;
 
   DISALLOW_COPY_AND_ASSIGN(DocumentPrintedNotificationObserver);
 };
@@ -565,8 +565,8 @@ class PageTranslatedObserver : public NotificationObserver {
 
  private:
   NotificationRegistrar registrar_;
-  scoped_refptr<AutomationProvider> automation_;
-  IPC::Message* reply_message_;
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
 
   DISALLOW_COPY_AND_ASSIGN(PageTranslatedObserver);
 };
@@ -585,8 +585,8 @@ class TabLanguageDeterminedObserver : public NotificationObserver {
 
  private:
   NotificationRegistrar registrar_;
-  AutomationProvider* automation_;
-  IPC::Message* reply_message_;
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
   TabContents* tab_contents_;
   TranslateInfoBarDelegate* translate_bar_;
 
@@ -611,8 +611,8 @@ class InfoBarCountObserver : public NotificationObserver {
   void CheckCount();
 
   NotificationRegistrar registrar_;
-  AutomationProvider* automation_;
-  IPC::Message* reply_message_;
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
   TabContents* tab_contents_;
 
   const size_t target_count_;
@@ -634,8 +634,8 @@ class LoginManagerObserver : public NotificationObserver {
 
  private:
   NotificationRegistrar registrar_;
-  AutomationProvider* automation_;
-  IPC::Message* reply_message_;
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginManagerObserver);
 };
@@ -699,8 +699,8 @@ class AutomationProviderBookmarkModelObserver : BookmarkModelObserver {
   // observer list).
   void ReplyAndDelete(bool success);
 
-  scoped_refptr<AutomationProvider> automation_provider_;
-  IPC::Message* reply_message_;
+  base::WeakPtr<AutomationProvider> automation_provider_;
+  scoped_ptr<IPC::Message> reply_message_;
   BookmarkModel* model_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationProviderBookmarkModelObserver);
@@ -712,20 +712,15 @@ class AutomationProviderDownloadItemObserver : public DownloadItem::Observer {
   AutomationProviderDownloadItemObserver(
       AutomationProvider* provider,
       IPC::Message* reply_message,
-      int downloads) {
-    provider_ = provider;
-    reply_message_ = reply_message;
-    downloads_ = downloads;
-  }
-  virtual ~AutomationProviderDownloadItemObserver() {}
+      int downloads);
 
-  virtual void OnDownloadUpdated(DownloadItem* download) { }
+  virtual void OnDownloadUpdated(DownloadItem* download);
   virtual void OnDownloadFileCompleted(DownloadItem* download);
-  virtual void OnDownloadOpened(DownloadItem* download) { }
+  virtual void OnDownloadOpened(DownloadItem* download);
 
  private:
-  AutomationProvider* provider_;
-  IPC::Message* reply_message_;
+  base::WeakPtr<AutomationProvider> provider_;
+  scoped_ptr<IPC::Message> reply_message_;
   int downloads_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationProviderDownloadItemObserver);
@@ -739,18 +734,15 @@ class AutomationProviderDownloadUpdatedObserver
   AutomationProviderDownloadUpdatedObserver(
       AutomationProvider* provider,
       IPC::Message* reply_message,
-      bool wait_for_open)
-    : provider_(provider),
-      reply_message_(reply_message),
-      wait_for_open_(wait_for_open) {}
+      bool wait_for_open);
 
   virtual void OnDownloadUpdated(DownloadItem* download);
   virtual void OnDownloadOpened(DownloadItem* download);
-  virtual void OnDownloadFileCompleted(DownloadItem* download) { }
+  virtual void OnDownloadFileCompleted(DownloadItem* download);
 
  private:
-  AutomationProvider* provider_;
-  IPC::Message* reply_message_;
+  base::WeakPtr<AutomationProvider> provider_;
+  scoped_ptr<IPC::Message> reply_message_;
   bool wait_for_open_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationProviderDownloadUpdatedObserver);
@@ -764,16 +756,13 @@ class AutomationProviderDownloadModelChangedObserver
   AutomationProviderDownloadModelChangedObserver(
       AutomationProvider* provider,
       IPC::Message* reply_message,
-      DownloadManager* download_manager)
-    : provider_(provider),
-      reply_message_(reply_message),
-      download_manager_(download_manager) {}
+      DownloadManager* download_manager);
 
   virtual void ModelChanged();
 
  private:
-  AutomationProvider* provider_;
-  IPC::Message* reply_message_;
+  base::WeakPtr<AutomationProvider> provider_;
+  scoped_ptr<IPC::Message> reply_message_;
   DownloadManager* download_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationProviderDownloadModelChangedObserver);
@@ -786,15 +775,13 @@ class AutomationProviderSearchEngineObserver
  public:
   AutomationProviderSearchEngineObserver(
       AutomationProvider* provider,
-      IPC::Message* reply_message)
-    : provider_(provider),
-      reply_message_(reply_message) {}
+      IPC::Message* reply_message);
 
   virtual void OnTemplateURLModelChanged();
 
  private:
-  AutomationProvider* provider_;
-  IPC::Message* reply_message_;
+  base::WeakPtr<AutomationProvider> provider_;
+  scoped_ptr<IPC::Message> reply_message_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationProviderSearchEngineObserver);
 };
@@ -804,17 +791,14 @@ class AutomationProviderHistoryObserver {
  public:
   AutomationProviderHistoryObserver(
       AutomationProvider* provider,
-      IPC::Message* reply_message) {
-    provider_ = provider;
-    reply_message_ = reply_message;
-  }
-  ~AutomationProviderHistoryObserver() {}
+      IPC::Message* reply_message);
+
   void HistoryQueryComplete(HistoryService::Handle request_handle,
                             history::QueryResults* results);
 
  private:
-  AutomationProvider* provider_;
-  IPC::Message* reply_message_;
+  base::WeakPtr<AutomationProvider> provider_;
+  scoped_ptr<IPC::Message> reply_message_;
 };
 
 // Allows the automation provider to wait for import queries to finish.
@@ -823,16 +807,15 @@ class AutomationProviderImportSettingsObserver
  public:
   AutomationProviderImportSettingsObserver(
       AutomationProvider* provider,
-      IPC::Message* reply_message)
-    : provider_(provider),
-      reply_message_(reply_message) {}
-  virtual void ImportStarted() {}
-  virtual void ImportItemStarted(importer::ImportItem item) {}
-  virtual void ImportItemEnded(importer::ImportItem item) {}
+      IPC::Message* reply_message);
+
+  virtual void ImportStarted();
+  virtual void ImportItemStarted(importer::ImportItem item);
+  virtual void ImportItemEnded(importer::ImportItem item);
   virtual void ImportEnded();
  private:
-  AutomationProvider* provider_;
-  IPC::Message* reply_message_;
+  base::WeakPtr<AutomationProvider> provider_;
+  scoped_ptr<IPC::Message> reply_message_;
 };
 
 // Allows automation provider to wait for getting passwords to finish.
@@ -841,16 +824,14 @@ class AutomationProviderGetPasswordsObserver
  public:
   AutomationProviderGetPasswordsObserver(
       AutomationProvider* provider,
-      IPC::Message* reply_message)
-    : provider_(provider),
-      reply_message_(reply_message) {}
+      IPC::Message* reply_message);
 
   virtual void OnPasswordStoreRequestDone(
       int handle, const std::vector<webkit_glue::PasswordForm*>& result);
 
  private:
-  AutomationProvider* provider_;
-  IPC::Message* reply_message_;
+  base::WeakPtr<AutomationProvider> provider_;
+  scoped_ptr<IPC::Message> reply_message_;
 };
 
 // Allows the automation provider to wait for clearing browser data to finish.
@@ -859,14 +840,13 @@ class AutomationProviderBrowsingDataObserver
  public:
   AutomationProviderBrowsingDataObserver(
       AutomationProvider* provider,
-      IPC::Message* reply_message)
-    : provider_(provider),
-      reply_message_(reply_message) {}
+      IPC::Message* reply_message);
+
   virtual void OnBrowsingDataRemoverDone();
 
  private:
-  AutomationProvider* provider_;
-  IPC::Message* reply_message_;
+  base::WeakPtr<AutomationProvider> provider_;
+  scoped_ptr<IPC::Message> reply_message_;
 };
 
 // Allows automation provider to wait until page load after selecting an item
@@ -884,8 +864,8 @@ class OmniboxAcceptNotificationObserver : public NotificationObserver {
 
  private:
   NotificationRegistrar registrar_;
-  AutomationProvider* automation_;
-  IPC::Message* reply_message_;
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
   NavigationController* controller_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxAcceptNotificationObserver);
@@ -905,8 +885,8 @@ class SavePackageNotificationObserver : public NotificationObserver {
 
  private:
   NotificationRegistrar registrar_;
-  AutomationProvider* automation_;
-  IPC::Message* reply_message_;
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
 
   DISALLOW_COPY_AND_ASSIGN(SavePackageNotificationObserver);
 };
@@ -937,8 +917,8 @@ class PageSnapshotTaker : public DomOperationObserver {
   // Helper method to send a response back to the client. Deletes this.
   void SendMessage(bool success);
 
-  AutomationProvider* automation_;
-  IPC::Message* reply_message_;
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
   RenderViewHost* render_view_;
   FilePath image_path_;
   bool received_width_;
@@ -962,8 +942,8 @@ class NTPInfoObserver : public NotificationObserver {
   void OnTopSitesLoaded();
   void OnTopSitesReceived(const history::MostVisitedURLList& visited_list);
 
-  AutomationProvider* automation_;
-  IPC::Message* reply_message_;
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
   CancelableRequestConsumer* consumer_;
   CancelableRequestProvider::Handle request_;
   scoped_ptr<DictionaryValue> ntp_info_;
@@ -987,8 +967,8 @@ class AutocompleteEditFocusedObserver : public NotificationObserver {
 
  private:
   NotificationRegistrar registrar_;
-  AutomationProvider* automation_;
-  IPC::Message* reply_message_;
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
   AutocompleteEditModel* autocomplete_edit_model_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteEditFocusedObserver);
@@ -1046,8 +1026,8 @@ class RendererProcessClosedObserver : public NotificationObserver {
 
  private:
   NotificationRegistrar registrar_;
-  AutomationProvider* automation_;
-  IPC::Message* reply_message_;
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererProcessClosedObserver);
 };
@@ -1066,8 +1046,8 @@ class InputEventAckNotificationObserver : public NotificationObserver {
 
  private:
   NotificationRegistrar registrar_;
-  AutomationProvider* automation_;
-  IPC::Message* reply_message_;
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
   int event_type_;
 
   DISALLOW_COPY_AND_ASSIGN(InputEventAckNotificationObserver);
@@ -1086,8 +1066,8 @@ class NewTabObserver : public NotificationObserver {
   ~NewTabObserver();
 
   NotificationRegistrar registrar_;
-  scoped_refptr<AutomationProvider> automation_;
-  IPC::Message* reply_message_;
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
 
   DISALLOW_COPY_AND_ASSIGN(NewTabObserver);
 };
@@ -1096,22 +1076,23 @@ class NewTabObserver : public NotificationObserver {
 // back to the UI thread that notifies the provider we're done.
 class WaitForProcessLauncherThreadToGoIdleObserver
     : public base::RefCountedThreadSafe<
-          WaitForProcessLauncherThreadToGoIdleObserver> {
+          WaitForProcessLauncherThreadToGoIdleObserver,
+          BrowserThread::DeleteOnUIThread> {
  public:
   WaitForProcessLauncherThreadToGoIdleObserver(
       AutomationProvider* automation, IPC::Message* reply_message);
 
  private:
-  friend class base::RefCountedThreadSafe<
-      WaitForProcessLauncherThreadToGoIdleObserver>;
+  friend class BrowserThread;
+  friend class DeleteTask<WaitForProcessLauncherThreadToGoIdleObserver>;
 
   ~WaitForProcessLauncherThreadToGoIdleObserver();
 
   void RunOnProcessLauncherThread();
   void RunOnUIThread();
 
-  scoped_refptr<AutomationProvider> automation_;
-  IPC::Message* reply_message_;
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
 
   DISALLOW_COPY_AND_ASSIGN(WaitForProcessLauncherThreadToGoIdleObserver);
 };

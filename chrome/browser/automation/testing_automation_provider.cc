@@ -450,7 +450,8 @@ void TestingAutomationProvider::AppendTab(int handle,
 
   if (browser_tracker_->ContainsHandle(handle)) {
     Browser* browser = browser_tracker_->GetResource(handle);
-    observer = AddTabStripObserver(browser, reply_message);
+    observer = new TabAppendedNotificationObserver(browser, this,
+                                                   reply_message);
     TabContentsWrapper* contents =
         browser->AddSelectedTabWithURL(url, PageTransition::TYPED);
     if (contents) {
@@ -460,11 +461,10 @@ void TestingAutomationProvider::AppendTab(int handle,
   }
 
   if (append_tab_response < 0) {
-    // The append tab failed. Remove the TabStripObserver
-    if (observer) {
-      RemoveTabStripObserver(observer);
+    // Appending tab failed. Clean up and send failure response.
+
+    if (observer)
       delete observer;
-    }
 
     AutomationMsg_AppendTab::WriteReplyParams(reply_message,
                                               append_tab_response);
@@ -586,8 +586,8 @@ void TestingAutomationProvider::NavigateToURLBlockUntilNavigationsComplete(
     Browser* browser = FindAndActivateTab(tab);
 
     if (browser) {
-      AddNavigationStatusListener(tab, reply_message, number_of_navigations,
-                                  false);
+      new NavigationNotificationObserver(tab, this, reply_message,
+                                         number_of_navigations, false);
 
       // TODO(darin): avoid conversion to GURL.
       browser->OpenURL(url, GURL(), CURRENT_TAB, PageTransition::TYPED);
@@ -635,7 +635,7 @@ void TestingAutomationProvider::Reload(int handle,
     NavigationController* tab = tab_tracker_->GetResource(handle);
     Browser* browser = FindAndActivateTab(tab);
     if (browser && browser->command_updater()->IsCommandEnabled(IDC_RELOAD)) {
-      AddNavigationStatusListener(tab, reply_message, 1, false);
+      new NavigationNotificationObserver(tab, this, reply_message, 1, false);
       browser->Reload(CURRENT_TAB);
       return;
     }
@@ -659,7 +659,7 @@ void TestingAutomationProvider::SetAuth(int tab_handle,
       // not strictly correct, because a navigation can require both proxy and
       // server auth, but it should be OK for now.
       LoginHandler* handler = iter->second;
-      AddNavigationStatusListener(tab, reply_message, 1, false);
+      new NavigationNotificationObserver(tab, this, reply_message, 1, false);
       handler->SetAuth(username, password);
       return;
     }
@@ -679,7 +679,7 @@ void TestingAutomationProvider::CancelAuth(int tab_handle,
     if (iter != login_handler_map_.end()) {
       // If auth is needed again after this, something is screwy.
       LoginHandler* handler = iter->second;
-      AddNavigationStatusListener(tab, reply_message, 1, false);
+      new NavigationNotificationObserver(tab, this, reply_message, 1, false);
       handler->CancelAuth();
       return;
     }
@@ -1236,7 +1236,9 @@ void TestingAutomationProvider::ShowInterstitialPage(
     NavigationController* controller = tab_tracker_->GetResource(tab_handle);
     TabContents* tab_contents = controller->tab_contents();
 
-    AddNavigationStatusListener(controller, reply_message, 1, false);
+    new NavigationNotificationObserver(controller, this, reply_message, 1,
+                                       false);
+
     AutomationInterstitialPage* interstitial =
         new AutomationInterstitialPage(tab_contents,
                                        GURL("about:interstitial"),
@@ -1334,7 +1336,8 @@ void TestingAutomationProvider::ActionOnSSLBlockingPage(
           InterstitialPage::GetInterstitialPage(tab_contents);
       if (ssl_blocking_page) {
         if (proceed) {
-          AddNavigationStatusListener(tab, reply_message, 1, false);
+          new NavigationNotificationObserver(tab, this, reply_message, 1,
+                                             false);
           ssl_blocking_page->Proceed();
           return;
         }
@@ -1375,15 +1378,24 @@ void TestingAutomationProvider::IsMenuCommandEnabled(int browser_handle,
 
 void TestingAutomationProvider::PrintNow(int tab_handle,
                                          IPC::Message* reply_message) {
+
   NavigationController* tab = NULL;
   TabContents* tab_contents = GetTabContentsForHandle(tab_handle, &tab);
   if (tab_contents) {
     FindAndActivateTab(tab);
-    notification_observer_list_.AddObserver(
-        new DocumentPrintedNotificationObserver(this, reply_message));
-    if (tab_contents->PrintNow())
-      return;
+
+    NotificationObserver* observer =
+        new DocumentPrintedNotificationObserver(this, reply_message);
+
+    if (!tab_contents->PrintNow()) {
+      // Clean up the observer. It will send the reply message.
+      delete observer;
+    }
+
+    // Return now to avoid sending reply message twice.
+    return;
   }
+
   AutomationMsg_PrintNow::WriteReplyParams(reply_message, false);
   Send(reply_message);
 }
@@ -1690,8 +1702,10 @@ void TestingAutomationProvider::ClickInfoBarAccept(
     NavigationController* nav_controller = tab_tracker_->GetResource(handle);
     if (nav_controller) {
       if (info_bar_index < nav_controller->tab_contents()->infobar_count()) {
-        if (wait_for_navigation)
-          AddNavigationStatusListener(nav_controller, reply_message, 1, false);
+        if (wait_for_navigation) {
+          new NavigationNotificationObserver(nav_controller, this,
+                                             reply_message, 1, false);
+        }
         InfoBarDelegate* delegate =
             nav_controller->tab_contents()->GetInfoBarDelegateAt(
                 info_bar_index);
@@ -1733,7 +1747,7 @@ void TestingAutomationProvider::WaitForNavigation(int handle,
     return;
   }
 
-  AddNavigationStatusListener(controller, reply_message, 1, true);
+  new NavigationNotificationObserver(controller, this, reply_message, 1, true);
 }
 
 void TestingAutomationProvider::SetIntPreference(int handle,
@@ -1857,8 +1871,8 @@ void TestingAutomationProvider::GoBackBlockUntilNavigationsComplete(
     NavigationController* tab = tab_tracker_->GetResource(handle);
     Browser* browser = FindAndActivateTab(tab);
     if (browser && browser->command_updater()->IsCommandEnabled(IDC_BACK)) {
-      AddNavigationStatusListener(tab, reply_message, number_of_navigations,
-                                  false);
+      new NavigationNotificationObserver(tab, this, reply_message,
+                                         number_of_navigations, false);
       browser->GoBack(CURRENT_TAB);
       return;
     }
@@ -1875,8 +1889,8 @@ void TestingAutomationProvider::GoForwardBlockUntilNavigationsComplete(
     NavigationController* tab = tab_tracker_->GetResource(handle);
     Browser* browser = FindAndActivateTab(tab);
     if (browser && browser->command_updater()->IsCommandEnabled(IDC_FORWARD)) {
-      AddNavigationStatusListener(tab, reply_message, number_of_navigations,
-                                  false);
+      new NavigationNotificationObserver(tab, this, reply_message,
+                                         number_of_navigations, false);
       browser->GoForward(CURRENT_TAB);
       return;
     }
@@ -2943,11 +2957,7 @@ void TestingAutomationProvider::OmniboxAcceptInput(
     IPC::Message* reply_message) {
   NavigationController& controller =
       browser->GetSelectedTabContents()->controller();
-  // Setup observer to wait until the selected item loads.
-  NotificationObserver* observer =
-      new OmniboxAcceptNotificationObserver(&controller, this, reply_message);
-  notification_observer_list_.AddObserver(observer);
-
+  new OmniboxAcceptNotificationObserver(&controller, this, reply_message);
   browser->window()->GetLocationBar()->AcceptInput();
 }
 

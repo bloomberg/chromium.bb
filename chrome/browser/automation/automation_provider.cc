@@ -138,15 +138,9 @@ AutomationProvider::~AutomationProvider() {
                                        port_containers_.end());
   port_containers_.clear();
 
-  // Make sure that any outstanding NotificationObservers also get destroyed.
-  ObserverList<NotificationObserver>::Iterator it(notification_observer_list_);
-  NotificationObserver* observer;
-  while ((observer = it.GetNext()) != NULL)
-    delete observer;
-
-  if (channel_.get()) {
+  if (channel_.get())
     channel_->Close();
-  }
+
   g_browser_process->ReleaseModule();
 }
 
@@ -200,37 +194,6 @@ void AutomationProvider::OnInitialLoadsComplete() {
   initial_loads_complete_ = true;
   if (is_connected_)
     Send(new AutomationMsg_InitialLoadsComplete());
-}
-
-NotificationObserver* AutomationProvider::AddNavigationStatusListener(
-    NavigationController* tab, IPC::Message* reply_message,
-    int number_of_navigations, bool include_current_navigation) {
-  NotificationObserver* observer =
-      new NavigationNotificationObserver(tab, this, reply_message,
-                                         number_of_navigations,
-                                         include_current_navigation);
-
-  notification_observer_list_.AddObserver(observer);
-  return observer;
-}
-
-void AutomationProvider::RemoveNavigationStatusListener(
-    NotificationObserver* obs) {
-  notification_observer_list_.RemoveObserver(obs);
-}
-
-NotificationObserver* AutomationProvider::AddTabStripObserver(
-    Browser* parent,
-    IPC::Message* reply_message) {
-  NotificationObserver* observer =
-      new TabAppendedNotificationObserver(parent, this, reply_message);
-  notification_observer_list_.AddObserver(observer);
-
-  return observer;
-}
-
-void AutomationProvider::RemoveTabStripObserver(NotificationObserver* obs) {
-  notification_observer_list_.RemoveObserver(obs);
 }
 
 void AutomationProvider::AddLoginHandler(NavigationController* tab,
