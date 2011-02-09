@@ -119,7 +119,6 @@ const PPB_Context3D_Dev ppb_context3d = {
   &GetBoundSurfaces,
 };
 
-
 PP_Resource CreateRaw(PP_Instance instance_id,
                       PP_Config3D_Dev config,
                       PP_Resource share_context,
@@ -144,7 +143,7 @@ PP_Resource CreateRaw(PP_Instance instance_id,
 PP_Bool Initialize(PP_Resource context_id, int32_t size) {
   scoped_refptr<PPB_Context3D_Impl> context(
       Resource::GetAs<PPB_Context3D_Impl>(context_id));
-  if (!context.get())
+  if (!context.get() || !context->command_buffer())
     return PP_FALSE;
   return context->command_buffer()->Initialize(size) ? PP_TRUE : PP_FALSE;
 }
@@ -154,7 +153,7 @@ PP_Bool GetRingBuffer(PP_Resource context_id,
                       uint32_t* shm_size) {
   scoped_refptr<PPB_Context3D_Impl> context(
       Resource::GetAs<PPB_Context3D_Impl>(context_id));
-  if (!context.get())
+  if (!context.get() || !context->command_buffer())
     return PP_FALSE;
 
   gpu::Buffer buffer = context->command_buffer()->GetRingBuffer();
@@ -166,7 +165,7 @@ PP_Bool GetRingBuffer(PP_Resource context_id,
 PP_Context3DTrustedState GetState(PP_Resource context_id) {
   scoped_refptr<PPB_Context3D_Impl> context(
       Resource::GetAs<PPB_Context3D_Impl>(context_id));
-  if (!context.get()) {
+  if (!context.get() || !context->command_buffer()) {
     PP_Context3DTrustedState error_state = { 0 };
     return error_state;
   }
@@ -177,7 +176,7 @@ PP_Context3DTrustedState GetState(PP_Resource context_id) {
 PP_Bool Flush(PP_Resource context_id, int32_t put_offset) {
   scoped_refptr<PPB_Context3D_Impl> context(
       Resource::GetAs<PPB_Context3D_Impl>(context_id));
-  if (!context.get())
+  if (!context.get() || !context->command_buffer())
     return PP_FALSE;
 
   context->command_buffer()->Flush(put_offset);
@@ -187,7 +186,7 @@ PP_Bool Flush(PP_Resource context_id, int32_t put_offset) {
 PP_Context3DTrustedState FlushSync(PP_Resource context_id, int32_t put_offset) {
   scoped_refptr<PPB_Context3D_Impl> context(
       Resource::GetAs<PPB_Context3D_Impl>(context_id));
-  if (!context.get()) {
+  if (!context.get() || !context->command_buffer()) {
     PP_Context3DTrustedState error_state = { 0 };
     return error_state;
   }
@@ -198,7 +197,7 @@ PP_Context3DTrustedState FlushSync(PP_Resource context_id, int32_t put_offset) {
 int32_t CreateTransferBuffer(PP_Resource context_id, size_t size) {
   scoped_refptr<PPB_Context3D_Impl> context(
       Resource::GetAs<PPB_Context3D_Impl>(context_id));
-  if (!context.get())
+  if (!context.get() || !context->command_buffer())
     return 0;
   return context->command_buffer()->CreateTransferBuffer(size);
 }
@@ -206,7 +205,7 @@ int32_t CreateTransferBuffer(PP_Resource context_id, size_t size) {
 PP_Bool DestroyTransferBuffer(PP_Resource context_id, int32_t id) {
   scoped_refptr<PPB_Context3D_Impl> context(
       Resource::GetAs<PPB_Context3D_Impl>(context_id));
-  if (!context.get())
+  if (!context.get() || !context->command_buffer())
     return PP_FALSE;
   context->command_buffer()->DestroyTransferBuffer(id);
   return PP_TRUE;
@@ -218,14 +217,13 @@ PP_Bool GetTransferBuffer(PP_Resource context_id,
                           uint32_t* shm_size) {
   scoped_refptr<PPB_Context3D_Impl> context(
       Resource::GetAs<PPB_Context3D_Impl>(context_id));
-  if (!context.get())
+  if (!context.get() || !context->command_buffer())
     return PP_FALSE;
   gpu::Buffer buffer = context->command_buffer()->GetTransferBuffer(id);
 
   return ShmToHandle(buffer.shared_memory, buffer.size, shm_handle, shm_size)
       ? PP_TRUE : PP_FALSE;
 }
-
 
 }  // namespace
 
@@ -359,7 +357,7 @@ void PPB_Context3D_Impl::Destroy() {
 
   gles2_impl_.reset();
 
-  if (platform_context_.get() && transfer_buffer_id_ != 0) {
+  if (command_buffer() && transfer_buffer_id_ != 0) {
     command_buffer()->DestroyTransferBuffer(transfer_buffer_id_);
     transfer_buffer_id_ = 0;
   }
@@ -369,7 +367,7 @@ void PPB_Context3D_Impl::Destroy() {
 }
 
 gpu::CommandBuffer *PPB_Context3D_Impl::command_buffer() {
-  return platform_context_->GetCommandBuffer();
+  return platform_context_.get() ? platform_context_->GetCommandBuffer() : NULL;
 }
 
 }  // namespace ppapi

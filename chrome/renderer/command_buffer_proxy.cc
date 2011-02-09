@@ -85,6 +85,7 @@ bool CommandBufferProxy::Initialize(int32 size) {
 }
 
 Buffer CommandBufferProxy::GetRingBuffer() {
+  DCHECK(ring_buffer_.get());
   // Return locally cached ring buffer.
   Buffer buffer;
   buffer.ptr = ring_buffer_->memory();
