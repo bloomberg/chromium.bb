@@ -1358,9 +1358,6 @@ const char kPasswordStore[]                 = "password-store";
 // has been out there for a few dev channel releases without problems.
 const char kDisableHolePunching[]           = "disable-hole-punching";
 
-// Enables the tabs expose feature ( http://crbug.com/50307 ).
-const char kEnableExposeForTabs[] = "enable-expose-for-tabs";
-
 // Cause the OS X sandbox write to syslog every time an access to a resource
 // is denied by the sandbox.
 const char kEnableSandboxLogging[]          = "enable-sandbox-logging";

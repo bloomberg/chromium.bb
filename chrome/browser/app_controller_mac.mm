@@ -609,11 +609,6 @@ void RecordLastRunAppBundlePath() {
     [self openUrls:startupUrls_];
     [self clearStartupUrls];
   }
-
-  const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
-  if (!parsed_command_line.HasSwitch(switches::kEnableExposeForTabs)) {
-    [tabposeMenuItem_ setHidden:YES];
-  }
 }
 
 // This is called after profiles have been loaded and preferences registered.

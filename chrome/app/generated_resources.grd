@@ -3948,12 +3948,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE" desc="The link for enabling a labs experiment.">
         Enable
       </message>
-      <message name="IDS_FLAGS_TABPOSE_NAME" desc="Name of the 'Tab Overview' lab.">
-        Tab Overview
-      </message>
-      <message name="IDS_FLAGS_TABPOSE_DESCRIPTION" desc="Description of the 'Tab Overview' lab.">
-        Swipe down with three fingers on your trackpad to see an overview of all your tabs. Click on a thumbnail to select it. Works great in fullscreen mode.
-      </message>
       <message name="IDS_FLAGS_MEDIA_PLAYER_NAME" desc="Name of the 'Media Player' lab.">
         Media Player
       </message>

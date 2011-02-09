@@ -70,18 +70,6 @@ const char kVerticalTabsExperimentName[] = "vertical-tabs";
 // When adding a new choice, add it to the end of the list.
 const Experiment kExperiments[] = {
   {
-    "expose-for-tabs",  // FLAGS:RECORD_UMA
-    IDS_FLAGS_TABPOSE_NAME,
-    IDS_FLAGS_TABPOSE_DESCRIPTION,
-    kOsMac,
-#if defined(OS_MACOSX)
-    // The switch exists only on OS X.
-    SINGLE_VALUE_TYPE(switches::kEnableExposeForTabs)
-#else
-    SINGLE_VALUE_TYPE("")
-#endif
-  },
-  {
     kMediaPlayerExperimentName,
     IDS_FLAGS_MEDIA_PLAYER_NAME,
     IDS_FLAGS_MEDIA_PLAYER_DESCRIPTION,
