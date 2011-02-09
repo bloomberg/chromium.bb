@@ -531,7 +531,9 @@ void AutomationProvider::SendFindRequest(
   }
   TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
-  wrapper->GetFindManager()->set_current_find_request_id(request_id);
+  if (wrapper)
+    wrapper->GetFindManager()->set_current_find_request_id(request_id);
+
   tab_contents->render_view_host()->StartFinding(
       FindInPageNotificationObserver::kFindInPageRequestId,
       search_string,
