@@ -855,8 +855,6 @@
         'browser/dom_ui/bookmarks_ui.h',
         'browser/dom_ui/bug_report_ui.cc',
         'browser/dom_ui/bug_report_ui.h',
-        'browser/dom_ui/chrome_url_data_manager_backend.cc',
-        'browser/dom_ui/chrome_url_data_manager_backend.h',
         'browser/dom_ui/chrome_url_data_manager.cc',
         'browser/dom_ui/chrome_url_data_manager.h',
         'browser/dom_ui/constrained_html_ui.cc',

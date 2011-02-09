@@ -1323,5 +1323,10 @@ MobileSetupUI::MobileSetupUI(TabContents* contents) : DOMUI(contents) {
       new MobileSetupUIHTMLSource(service_path);
 
   // Set up the chrome://mobilesetup/ source.
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          ChromeURLDataManager::GetInstance(),
+          &ChromeURLDataManager::AddDataSource,
+          make_scoped_refptr(html_source)));
 }

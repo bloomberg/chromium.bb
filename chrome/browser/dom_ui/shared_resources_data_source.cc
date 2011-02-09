@@ -53,6 +53,17 @@ int PathToIDR(const std::string& path) {
 
 }  // namespace
 
+// static
+void SharedResourcesDataSource::Register() {
+  SharedResourcesDataSource* source = new SharedResourcesDataSource();
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          ChromeURLDataManager::GetInstance(),
+          &ChromeURLDataManager::AddDataSource,
+          make_scoped_refptr(source)));
+}
+
 SharedResourcesDataSource::SharedResourcesDataSource()
     : DataSource(chrome::kChromeUIResourcesHost, NULL) {
 }

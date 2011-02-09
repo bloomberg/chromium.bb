@@ -12,8 +12,6 @@
 #include "chrome/browser/chromeos/cros/input_method_library.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
 #include "grit/browser_resources.h"
@@ -296,5 +294,10 @@ KeyboardOverlayUI::KeyboardOverlayUI(TabContents* contents)
   KeyboardOverlayUIHTMLSource* html_source = new KeyboardOverlayUIHTMLSource();
 
   // Set up the chrome://keyboardoverlay/ source.
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          ChromeURLDataManager::GetInstance(),
+          &ChromeURLDataManager::AddDataSource,
+          make_scoped_refptr(html_source)));
 }

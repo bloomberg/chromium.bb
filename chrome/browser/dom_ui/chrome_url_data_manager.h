@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,45 +9,35 @@
 #include <map>
 #include <string>
 
+#include "base/singleton.h"
 #include "base/task.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/browser_thread.h"
 
-class ChromeURLDataManagerBackend;
 class DictionaryValue;
 class FilePath;
+class GURL;
 class MessageLoop;
-class Profile;
 class RefCountedMemory;
+class URLRequestChromeJob;
+
+namespace net {
+class URLRequest;
+class URLRequestJob;
+}  // namespace net
 
 // To serve dynamic data off of chrome: URLs, implement the
 // ChromeURLDataManager::DataSource interface and register your handler
-// with AddDataSource. DataSources must be added on the UI thread (they are also
-// deleted on the UI thread). Internally the DataSources are maintained by
-// ChromeURLDataManagerBackend, see it for details.
+// with AddDataSource.
+
+// ChromeURLDataManager lives on the IO thread, so any interfacing with
+// it from the UI thread needs to go through an InvokeLater.
 class ChromeURLDataManager {
  public:
-  class DataSource;
+  // Returns the singleton instance.
+  static ChromeURLDataManager* GetInstance();
 
-  // Trait used to handle deleting a DataSource. Deletion happens on the UI
-  // thread.
-  //
-  // Implementation note: the normal shutdown sequence is for the UI loop to
-  // stop pumping events then the IO loop and thread are stopped. When the
-  // DataSources are no longer referenced (which happens when IO thread stops)
-  // they get added to the UI message loop for deletion. But because the UI loop
-  // has stopped by the time this happens the DataSources would be leaked.
-  //
-  // To make sure DataSources are properly deleted ChromeURLDataManager manages
-  // deletion of the DataSources.  When a DataSource is no longer referenced it
-  // is added to |data_sources_| and a task is posted to the UI thread to handle
-  // the actual deletion. During shutdown |DeleteDataSources| is invoked so that
-  // all pending DataSources are properly deleted.
-  struct DeleteDataSource {
-    static void Destruct(const DataSource* data_source) {
-      ChromeURLDataManager::DeleteDataSource(data_source);
-    }
-  };
+  typedef int RequestID;
 
   // A DataSource is an object that can answer requests for data
   // asynchronously. DataSources are collectively owned with refcounting smart
@@ -59,10 +49,11 @@ class ChromeURLDataManager {
   // StartDataRequest() by starting its (implementation-specific) asynchronous
   // request for the data, then call SendResponse() to notify.
   class DataSource : public base::RefCountedThreadSafe<
-      DataSource, DeleteDataSource> {
+      DataSource, BrowserThread::DeleteOnUIThread> {
    public:
     // See source_name_ and message_loop_ below for docs on these parameters.
-    DataSource(const std::string& source_name, MessageLoop* message_loop);
+    DataSource(const std::string& source_name,
+               MessageLoop* message_loop);
 
     // Sent by the DataManager to request data at |path|.  The source should
     // call SendResponse() when the data is available or if the request could
@@ -97,18 +88,13 @@ class ChromeURLDataManager {
     static void SetFontAndTextDirection(DictionaryValue* localized_strings);
 
    protected:
+    friend class base::RefCountedThreadSafe<DataSource>;
+    friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
+    friend class DeleteTask<DataSource>;
+
     virtual ~DataSource();
 
    private:
-    friend class ChromeURLDataManagerBackend;
-    friend class ChromeURLDataManager;
-    friend class DeleteTask<DataSource>;
-
-    // SendResponse invokes this on the IO thread. Notifies the backend to
-    // handle the actual work of sending the data.
-    virtual void SendResponseOnIOThread(int request_id,
-                                        scoped_refptr<RefCountedMemory> bytes);
-
     // The name of this source.
     // E.g., for favicons, this could be "favicon", which results in paths for
     // specific resources like "favicon/34" getting sent to this source.
@@ -117,53 +103,89 @@ class ChromeURLDataManager {
     // The MessageLoop for the thread where this DataSource lives.
     // Used to send messages to the DataSource.
     MessageLoop* message_loop_;
-
-    // This field is set and maintained by ChromeURLDataManagerBackend. It is
-    // set when the DataSource is added, and unset if the DataSource is removed.
-    // A DataSource can be removed in two ways: the ChromeURLDataManagerBackend
-    // is deleted, or another DataSource is registered with the same
-    // name. backend_ should only be accessed on the IO thread.
-    // This reference can't be via a scoped_refptr else there would be a cycle
-    // between the backend and data source.
-    ChromeURLDataManagerBackend* backend_;
   };
 
-  explicit ChromeURLDataManager(Profile* profile);
-  ~ChromeURLDataManager();
+  // Add a DataSource to the collection of data sources.
+  // Because we don't track users of a given path, we can't know when it's
+  // safe to remove them, so the added source effectively leaks.
+  // This could be improved in the future but currently the users of this
+  // interface are conceptually permanent registration anyway.
+  // Adding a second DataSource with the same name clobbers the first.
+  // NOTE: Calling this from threads other the IO thread must be done via
+  // InvokeLater.
+  void AddDataSource(scoped_refptr<DataSource> source);
+  // Called during shutdown, before destruction of |BrowserThread|.
+  void RemoveDataSourceForTest(const char* source_name);  // For unit tests.
+  void RemoveAllDataSources();  // For the browser.
 
-  // Adds a DataSource to the collection of data sources. This *must* be invoked
-  // on the UI thread.
-  //
-  // If |AddDataSource| is called more than once for a particular name it will
-  // release the old |DataSource|, most likely resulting in it getting deleted
-  // as there are no other references to it. |DataSource| uses the
-  // |DeleteOnUIThread| trait to insure that the destructor is called on the UI
-  // thread. This is necessary as some |DataSource|s notably |FileIconSource|
-  // and |WebUIFavIconSource|, have members that will DCHECK if they are not
-  // destructed in the same thread as they are constructed (the UI thread).
-  void AddDataSource(DataSource* source);
+  // Add/remove a path from the collection of file sources.
+  // A file source acts like a file:// URL to the specified path.
+  // Calling this from threads other the IO thread must be done via
+  // InvokeLater.
+  void AddFileSource(const std::string& source_name, const FilePath& path);
+  void RemoveFileSource(const std::string& source_name);
 
-  // Deletes any data sources no longer referenced. This is normally invoked
-  // for you, but can be invoked to force deletion (such as during shutdown).
-  static void DeleteDataSources();
+  static net::URLRequestJob* Factory(net::URLRequest* request,
+                                     const std::string& scheme);
 
  private:
-  typedef std::vector<const ChromeURLDataManager::DataSource*> DataSources;
+  friend class URLRequestChromeJob;
+  friend struct DefaultSingletonTraits<ChromeURLDataManager>;
 
-  // If invoked on the UI thread the DataSource is deleted immediatlye,
-  // otherwise it is added to |data_sources_| and a task is scheduled to handle
-  // deletion on the UI thread. See note abouve DeleteDataSource for more info.
-  static void DeleteDataSource(const DataSource* data_source);
+  ChromeURLDataManager();
+  ~ChromeURLDataManager();
 
-  Profile* profile_;
+  // Parse a URL into the components used to resolve its request.
+  static void URLToRequest(const GURL& url,
+                           std::string* source,
+                           std::string* path);
 
-  // Lock used when accessing |data_sources_|.
-  static base::Lock delete_lock_;
+  // Translate a chrome resource URL into a local file path if there is one.
+  // Returns false if there is no file handler for this URL
+  static bool URLToFilePath(const GURL& url, FilePath* file_path);
 
-  // |data_sources_| that are no longer referenced and scheduled for deletion.
-  static DataSources* data_sources_;
+  // Called by the job when it's starting up.
+  // Returns false if |url| is not a URL managed by this object.
+  bool StartRequest(const GURL& url, URLRequestChromeJob* job);
+  // Remove a request from the list of pending requests.
+  void RemoveRequest(URLRequestChromeJob* job);
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeURLDataManager);
+  // Returns true if the job exists in |pending_requests_|. False otherwise.
+  // Called by ~URLRequestChromeJob to verify that |pending_requests_| is kept
+  // up to date.
+  bool HasPendingJob(URLRequestChromeJob* job) const;
+
+  // Sent by Request::SendResponse.
+  void DataAvailable(RequestID request_id,
+                     scoped_refptr<RefCountedMemory> bytes);
+
+  // File sources of data, keyed by source name (e.g. "inspector").
+  typedef std::map<std::string, FilePath> FileSourceMap;
+  FileSourceMap file_sources_;
+
+  // Custom sources of data, keyed by source path (e.g. "favicon").
+  typedef std::map<std::string, scoped_refptr<DataSource> > DataSourceMap;
+  DataSourceMap data_sources_;
+
+  // All pending URLRequestChromeJobs, keyed by ID of the request.
+  // URLRequestChromeJob calls into this object when it's constructed and
+  // destructed to ensure that the pointers in this map remain valid.
+  typedef std::map<RequestID, URLRequestChromeJob*> PendingRequestMap;
+  PendingRequestMap pending_requests_;
+
+  // The ID we'll use for the next request we receive.
+  RequestID next_request_id_;
 };
+
+// Since we have a single global ChromeURLDataManager, we don't need to
+// grab a reference to it when creating Tasks involving it.
+DISABLE_RUNNABLE_METHOD_REFCOUNT(ChromeURLDataManager);
+
+// Register our special URL handler under our special URL scheme.
+// Must be done once at startup.
+void RegisterURLRequestChromeJob();
+
+// Undoes the registration done by RegisterURLRequestChromeJob.
+void UnregisterURLRequestChromeJob();
 
 #endif  // CHROME_BROWSER_DOM_UI_CHROME_URL_DATA_MANAGER_H_

@@ -148,10 +148,14 @@ SlideshowHandler::~SlideshowHandler() {
 }
 
 WebUIMessageHandler* SlideshowHandler::Attach(DOMUI* dom_ui) {
-  profile_ = dom_ui->GetProfile();
   // Create our favicon data source.
-  profile_->GetChromeURLDataManager()->AddDataSource(
-      new WebUIFavIconSource(profile_));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          ChromeURLDataManager::GetInstance(),
+          &ChromeURLDataManager::AddDataSource,
+          make_scoped_refptr(new WebUIFavIconSource(dom_ui->GetProfile()))));
+  profile_ = dom_ui->GetProfile();
   return WebUIMessageHandler::Attach(dom_ui);
 }
 
@@ -280,5 +284,10 @@ SlideshowUI::SlideshowUI(TabContents* contents) : DOMUI(contents) {
   SlideshowUIHTMLSource* html_source = new SlideshowUIHTMLSource();
 
   // Set up the chrome://slideshow/ source.
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          ChromeURLDataManager::GetInstance(),
+          &ChromeURLDataManager::AddDataSource,
+          make_scoped_refptr(html_source)));
 }

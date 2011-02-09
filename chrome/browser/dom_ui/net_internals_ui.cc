@@ -210,10 +210,10 @@ class NetInternalsMessageHandler::IOThreadImpl
   typedef void (IOThreadImpl::*MessageHandler)(const ListValue*);
 
   // Creates a proxy for |handler| that will live on the IO thread.
-  // |handler| is a weak pointer, since it is possible for the
-  // WebUIMessageHandler to be deleted on the UI thread while we were executing
-  // on the IO thread. |io_thread| is the global IOThread (it is passed in as
-  // an argument since we need to grab it from the UI thread).
+  // |handler| is a weak pointer, since it is possible for the WebUIMessageHandler
+  // to be deleted on the UI thread while we were executing on the IO thread.
+  // |io_thread| is the global IOThread (it is passed in as an argument since
+  // we need to grab it from the UI thread).
   IOThreadImpl(
       const base::WeakPtr<NetInternalsMessageHandler>& handler,
       IOThread* io_thread,
@@ -1162,5 +1162,10 @@ NetInternalsUI::NetInternalsUI(TabContents* contents) : DOMUI(contents) {
   NetInternalsHTMLSource* html_source = new NetInternalsHTMLSource();
 
   // Set up the chrome://net-internals/ source.
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          ChromeURLDataManager::GetInstance(),
+          &ChromeURLDataManager::AddDataSource,
+          make_scoped_refptr(html_source)));
 }

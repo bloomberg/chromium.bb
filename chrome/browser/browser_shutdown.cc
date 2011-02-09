@@ -257,11 +257,16 @@ void Shutdown() {
     file_util::WriteFile(shutdown_ms_file, shutdown_ms.c_str(), len);
   }
 
+  UnregisterURLRequestChromeJob();
+
 #if defined(OS_CHROMEOS)
   BrowserList::NotifyAndTerminate(false);
 #endif
 
-  ChromeURLDataManager::DeleteDataSources();
+  // Clean up data sources before the UI thread is removed.
+  ChromeURLDataManager* data_manager = ChromeURLDataManager::GetInstance();
+  if (data_manager)
+    data_manager->RemoveAllDataSources();
 }
 
 void ReadLastShutdownFile(

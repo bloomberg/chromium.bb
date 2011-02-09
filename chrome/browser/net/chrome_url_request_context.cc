@@ -11,7 +11,6 @@
 #include "base/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/dom_ui/chrome_url_data_manager_backend.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/io_thread.h"
@@ -731,13 +730,6 @@ void ChromeURLRequestContextGetter::GetCookieStoreAsyncHelper(
 ChromeURLRequestContext::ChromeURLRequestContext()
     : is_off_the_record_(false) {
   CheckCurrentlyOnIOThread();
-}
-
-ChromeURLDataManagerBackend*
-    ChromeURLRequestContext::GetChromeURLDataManagerBackend() {
-  if (!chrome_url_data_manager_backend_.get())
-    chrome_url_data_manager_backend_.reset(new ChromeURLDataManagerBackend());
-  return chrome_url_data_manager_backend_.get();
 }
 
 ChromeURLRequestContext::~ChromeURLRequestContext() {

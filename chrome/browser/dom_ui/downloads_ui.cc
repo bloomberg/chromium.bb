@@ -14,7 +14,6 @@
 #include "chrome/browser/dom_ui/downloads_dom_handler.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
 #include "grit/browser_resources.h"
@@ -135,7 +134,11 @@ DownloadsUI::DownloadsUI(TabContents* contents) : DOMUI(contents) {
   DownloadsUIHTMLSource* html_source = new DownloadsUIHTMLSource();
 
   // Set up the chrome://downloads/ source.
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableMethod(ChromeURLDataManager::GetInstance(),
+                        &ChromeURLDataManager::AddDataSource,
+                        make_scoped_refptr(html_source)));
 }
 
 // static

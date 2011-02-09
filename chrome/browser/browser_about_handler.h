@@ -28,7 +28,7 @@ bool WillHandleBrowserAboutURL(GURL* url, Profile* profile);
 
 // Register the data source for chrome://about URLs.
 // Safe to call multiple times.
-void InitializeAboutDataSource(Profile* profile);
+void InitializeAboutDataSource();
 
 // We have a few magic commands that don't cause navigations, but rather pop up
 // dialogs. This function handles those cases, and returns true if so. In this

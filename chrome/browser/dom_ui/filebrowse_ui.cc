@@ -422,9 +422,13 @@ FilebrowseHandler::~FilebrowseHandler() {
 
 WebUIMessageHandler* FilebrowseHandler::Attach(DOMUI* dom_ui) {
   // Create our favicon data source.
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          ChromeURLDataManager::GetInstance(),
+          &ChromeURLDataManager::AddDataSource,
+          make_scoped_refptr(new WebUIFavIconSource(dom_ui->GetProfile()))));
   profile_ = dom_ui->GetProfile();
-  profile_->GetChromeURLDataManager()->AddDataSource(
-      new WebUIFavIconSource(profile_));
   tab_contents_ = dom_ui->tab_contents();
   return WebUIMessageHandler::Attach(dom_ui);
 }
@@ -1135,7 +1139,12 @@ FileBrowseUI::FileBrowseUI(TabContents* contents) : HtmlDialogUI(contents) {
   FileBrowseUIHTMLSource* html_source = new FileBrowseUIHTMLSource();
 
   // Set up the chrome://filebrowse/ source.
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          ChromeURLDataManager::GetInstance(),
+          &ChromeURLDataManager::AddDataSource,
+          make_scoped_refptr(html_source)));
 }
 
 // static

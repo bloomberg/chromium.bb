@@ -5,10 +5,8 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/browser_about_handler.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/common/about_handler.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/test/testing_profile.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -98,16 +96,13 @@ TEST(BrowserAboutHandlerTest, WillHandleBrowserAboutURL) {
         true
       },
   };
-  MessageLoopForUI message_loop;
-  BrowserThread ui_thread(BrowserThread::UI, &message_loop);
-  TestingProfile profile;
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
     GURL url(test_data[i].test_url);
     EXPECT_EQ(test_data[i].about_handled,
               chrome_about_handler::WillHandle(url));
     EXPECT_EQ(test_data[i].browser_handled,
-              WillHandleBrowserAboutURL(&url, &profile));
+              WillHandleBrowserAboutURL(&url, NULL));
     EXPECT_EQ(test_data[i].result_url, url);
   }
 
