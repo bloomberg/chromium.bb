@@ -1,0 +1,53 @@
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/ui/browser_navigator_browsertest.h"
+
+#include "base/command_line.h"
+#include "chrome/browser/chromeos/login/login_utils.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_navigator.h"
+
+namespace {
+
+// Subclass that tests navigation while in the Guest session.
+class BrowserGuestSessionNavigatorTest: public BrowserNavigatorTest {
+ protected:
+  virtual void SetUpCommandLine(CommandLine* command_line) {
+    CommandLine command_line_copy = *command_line;
+    chromeos::LoginUtils::Get()->GetOffTheRecordCommandLine(GetGoogleURL(),
+                                                            command_line_copy,
+                                                            command_line);
+  }
+};
+
+// This test verifies that the settings page is opened in the incognito window
+// in Guest Session (as well as all other windows in Guest session).
+IN_PROC_BROWSER_TEST_F(BrowserGuestSessionNavigatorTest,
+                       Disposition_Settings_UseIncognitoWindow) {
+  Browser* incognito_browser = CreateIncognitoBrowser();
+
+  EXPECT_EQ(2u, BrowserList::size());
+  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(1, incognito_browser->tab_count());
+
+  // Navigate to the settings page.
+  browser::NavigateParams p(MakeNavigateParams(incognito_browser));
+  p.disposition = SINGLETON_TAB;
+  p.url = GURL("chrome://settings");
+  p.show_window = true;
+  p.ignore_path = true;
+  browser::Navigate(&p);
+
+  // Settings page should be opened in incognito window.
+  EXPECT_NE(browser(), p.browser);
+  EXPECT_EQ(incognito_browser, p.browser);
+  EXPECT_EQ(2, incognito_browser->tab_count());
+  EXPECT_EQ(GURL("chrome://settings"),
+            incognito_browser->GetSelectedTabContents()->GetURL());
+}
+
+}  // namespace

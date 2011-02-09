@@ -105,7 +105,8 @@ int GetIndexOfSingletonTab(browser::NavigateParams* params) {
 
 // Change some of the navigation parameters based on the particular URL.
 // Currently this applies to chrome://settings and the bookmark manager,
-// which we always want to open in a normal (not incognito) window.
+// which we always want to open in a normal (not incognito) window. Guest
+// session is an exception.
 void AdjustNavigateParamsForURL(browser::NavigateParams* params) {
   if (!params->target_contents &&
       params->url.scheme() == chrome::kChromeUIScheme &&
@@ -114,7 +115,7 @@ void AdjustNavigateParamsForURL(browser::NavigateParams* params) {
     Profile* profile =
         params->browser ? params->browser->profile() : params->profile;
 
-    if (profile->IsOffTheRecord()) {
+    if (profile->IsOffTheRecord() && !Profile::IsGuestSession()) {
       profile = profile->GetOriginalProfile();
 
       params->disposition = SINGLETON_TAB;

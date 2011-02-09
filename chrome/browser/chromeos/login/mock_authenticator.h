@@ -158,6 +158,13 @@ class MockLoginUtils : public LoginUtils {
     return background_view_;
   }
 
+  virtual std::string GetOffTheRecordCommandLine(
+      const GURL& start_url,
+      const CommandLine& base_command_line,
+      CommandLine* command_line) {
+    return std::string();
+  }
+
  private:
   std::string expected_username_;
   std::string expected_password_;

@@ -2195,6 +2195,8 @@
         'browser/task_manager/task_manager_browsertest.cc',
         'browser/ui/browser_init_browsertest.cc',
         'browser/ui/browser_navigator_browsertest.cc',
+        'browser/ui/browser_navigator_browsertest.h',
+        'browser/ui/browser_navigator_browsertest_chromeos.cc',
         'browser/ui/cocoa/view_id_util_browsertest.mm',
         'browser/ui/cocoa/applescript/browsercrapplication+applescript_test.mm',
         'browser/ui/cocoa/applescript/window_applescript_test.mm',

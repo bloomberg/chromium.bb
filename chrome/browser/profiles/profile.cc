@@ -32,6 +32,7 @@
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
@@ -124,6 +125,16 @@ void Profile::RegisterUserPrefs(PrefService* prefs) {
 // static
 URLRequestContextGetter* Profile::GetDefaultRequestContext() {
   return default_request_context_;
+}
+
+bool Profile::IsGuestSession() {
+#if defined(OS_CHROMEOS)
+  static bool is_guest_session =
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession);
+  return is_guest_session;
+#else
+  return false;
+#endif
 }
 
 bool Profile::IsSyncAccessible() {
@@ -711,6 +722,25 @@ class OffTheRecordProfileImpl : public Profile,
   DISALLOW_COPY_AND_ASSIGN(OffTheRecordProfileImpl);
 };
 
+#if defined(OS_CHROMEOS)
+// Special case of the OffTheRecordProfileImpl which is used while Guest
+// session in CrOS.
+class GuestSessionProfile : public OffTheRecordProfileImpl {
+ public:
+  explicit GuestSessionProfile(Profile* real_profile)
+      : OffTheRecordProfileImpl(real_profile) {
+  }
+
+  virtual PersonalDataManager* GetPersonalDataManager() {
+    return GetOriginalProfile()->GetPersonalDataManager();
+  }
+};
+#endif
+
 Profile* Profile::CreateOffTheRecordProfile() {
+#if defined(OS_CHROMEOS)
+  if (Profile::IsGuestSession())
+    return new GuestSessionProfile(this);
+#endif
   return new OffTheRecordProfileImpl(this);
 }

@@ -530,6 +530,9 @@ class Profile {
   // profile.
   virtual PrerenderManager* GetPrerenderManager() = 0;
 
+  // Returns whether it is a guest session.
+  static bool IsGuestSession();
+
 #ifdef UNIT_TEST
   // Use with caution.  GetDefaultRequestContext may be called on any thread!
   static void set_default_request_context(URLRequestContextGetter* c) {

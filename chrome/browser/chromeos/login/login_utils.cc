@@ -153,6 +153,12 @@ class LoginUtilsImpl : public LoginUtils {
   // Gets the current background view.
   virtual chromeos::BackgroundView* GetBackgroundView();
 
+ protected:
+  virtual std::string GetOffTheRecordCommandLine(
+      const GURL& start_url,
+      const CommandLine& base_command_line,
+      CommandLine *command_line);
+
  private:
   // Check user's profile for kApplicationLocale setting.
   void RespectLocalePreference(Profile* pref);
@@ -379,53 +385,12 @@ void LoginUtilsImpl::CompleteOffTheRecordLogin(const GURL& start_url) {
   if (CrosLibrary::Get()->EnsureLoaded()) {
     // For guest session we ask session manager to restart Chrome with --bwsi
     // flag. We keep only some of the arguments of this process.
-    static const char* kForwardSwitches[] = {
-        switches::kEnableLogging,
-        switches::kUserDataDir,
-        switches::kScrollPixels,
-        switches::kEnableGView,
-        switches::kNoFirstRun,
-        switches::kLoginProfile,
-        switches::kCompressSystemFeedback,
-        switches::kDisableSeccompSandbox,
-#if defined(HAVE_XINPUT2)
-        switches::kTouchDevices,
-#endif
-    };
-    const CommandLine& browser_command_line =
-        *CommandLine::ForCurrentProcess();
+    const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
     CommandLine command_line(browser_command_line.GetProgram());
-    command_line.CopySwitchesFrom(browser_command_line,
-                                  kForwardSwitches,
-                                  arraysize(kForwardSwitches));
-    command_line.AppendSwitch(switches::kGuestSession);
-    command_line.AppendSwitch(switches::kIncognito);
-    command_line.AppendSwitchASCII(switches::kLoggingLevel,
-                                   kGuestModeLoggingLevel);
-    command_line.AppendSwitchASCII(
-        switches::kLoginUser,
-        UserManager::Get()->logged_in_user().email());
-
-    if (start_url.is_valid())
-      command_line.AppendArg(start_url.spec());
-
-    // Override the value of the homepage that is set in first run mode.
-    // TODO(altimofeev): extend action of the |kNoFirstRun| to cover this case.
-    command_line.AppendSwitchASCII(
-        switches::kHomePage,
-        GURL(chrome::kChromeUINewTabURL).spec());
-
-    std::string cmd_line_str = command_line.command_line_string();
-    // Special workaround for the arguments that should be quoted.
-    // Copying switches won't be needed when Guest mode won't need restart
-    // http://crosbug.com/6924
-    if (browser_command_line.HasSwitch(switches::kRegisterPepperPlugins)) {
-      cmd_line_str += base::StringPrintf(
-          kSwitchFormatString,
-          switches::kRegisterPepperPlugins,
-          browser_command_line.GetSwitchValueNative(
-              switches::kRegisterPepperPlugins).c_str());
-    }
+    std::string cmd_line_str =
+        GetOffTheRecordCommandLine(start_url,
+                                   browser_command_line,
+                                   &command_line);
 
     PrefService* local_state = g_browser_process->local_state();
     std::string cur_locale = g_browser_process->GetApplicationLocale();
@@ -441,6 +406,55 @@ void LoginUtilsImpl::CompleteOffTheRecordLogin(const GURL& start_url) {
 
     CrosLibrary::Get()->GetLoginLibrary()->RestartJob(getpid(), cmd_line_str);
   }
+}
+
+std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
+    const GURL& start_url,
+    const CommandLine& base_command_line,
+    CommandLine* command_line) {
+  static const char* kForwardSwitches[] = {
+      switches::kEnableLogging,
+      switches::kUserDataDir,
+      switches::kScrollPixels,
+      switches::kEnableGView,
+      switches::kNoFirstRun,
+      switches::kLoginProfile,
+      switches::kCompressSystemFeedback,
+      switches::kDisableSeccompSandbox,
+#if defined(HAVE_XINPUT2)
+      switches::kTouchDevices,
+#endif
+  };
+  command_line->CopySwitchesFrom(base_command_line,
+                                 kForwardSwitches,
+                                 arraysize(kForwardSwitches));
+  command_line->AppendSwitch(switches::kGuestSession);
+  command_line->AppendSwitch(switches::kIncognito);
+  command_line->AppendSwitchASCII(switches::kLoggingLevel,
+                                 kGuestModeLoggingLevel);
+
+  if (start_url.is_valid())
+    command_line->AppendArg(start_url.spec());
+
+  // Override the value of the homepage that is set in first run mode.
+  // TODO(altimofeev): extend action of the |kNoFirstRun| to cover this case.
+  command_line->AppendSwitchASCII(
+      switches::kHomePage,
+      GURL(chrome::kChromeUINewTabURL).spec());
+
+  std::string cmd_line_str = command_line->command_line_string();
+  // Special workaround for the arguments that should be quoted.
+  // Copying switches won't be needed when Guest mode won't need restart
+  // http://crosbug.com/6924
+  if (base_command_line.HasSwitch(switches::kRegisterPepperPlugins)) {
+    cmd_line_str += base::StringPrintf(
+        kSwitchFormatString,
+        switches::kRegisterPepperPlugins,
+        base_command_line.GetSwitchValueNative(
+            switches::kRegisterPepperPlugins).c_str());
+  }
+
+  return cmd_line_str;
 }
 
 void LoginUtilsImpl::SetFirstLoginPrefs(PrefService* prefs) {
