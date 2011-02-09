@@ -421,53 +421,8 @@ void PersonalDataManager::AddProfile(const AutoFillProfile& profile) {
       return;
   }
 
-  // Set to true if |profile| is merged into the profile list.
-  bool merged = false;
-
-  // First preference is to add missing values to an existing profile.
-  // Only merge with the first match.
   std::vector<AutoFillProfile> profiles;
-  for (std::vector<AutoFillProfile*>::const_iterator iter =
-           web_profiles_.begin();
-       iter != web_profiles_.end(); ++iter) {
-    if (!merged) {
-      if (profile.IsSubsetOf(**iter)) {
-        // In this case, the existing profile already contains all of the data
-        // in |profile|, so consider the profiles already merged.
-        merged = true;
-      } else if ((*iter)->IntersectionOfTypesHasEqualValues(profile)) {
-        // |profile| contains all of the data in this profile, plus more.
-        merged = true;
-        (*iter)->MergeWith(profile);
-      }
-    }
-    profiles.push_back(**iter);
-  }
-
-  // The second preference, if not merged above, is to alter non-primary values
-  // where the primary values match.
-  // Again, only merge with the first match.
-  if (!merged) {
-    profiles.clear();
-    for (std::vector<AutoFillProfile*>::const_iterator iter =
-             web_profiles_.begin();
-         iter != web_profiles_.end(); ++iter) {
-      if (!merged) {
-        if (!profile.PrimaryValue().empty() &&
-            (*iter)->PrimaryValue() == profile.PrimaryValue()) {
-          merged = true;
-          (*iter)->OverwriteWith(profile);
-        }
-      }
-      profiles.push_back(**iter);
-    }
-  }
-
-  // Finally, if the new profile was not merged with an existing profile then
-  // add the new profile to the list.
-  if (!merged)
-    profiles.push_back(profile);
-
+  MergeProfile(profile, web_profiles_.get(), &profiles);
   SetProfiles(&profiles);
 }
 
@@ -783,6 +738,63 @@ void PersonalDataManager::SaveImportedProfile(
 
   AddProfile(imported_profile);
 }
+
+bool PersonalDataManager::MergeProfile(
+    const AutoFillProfile& profile,
+    const std::vector<AutoFillProfile*>& existing_profiles,
+    std::vector<AutoFillProfile>* merged_profiles) {
+  DCHECK(merged_profiles);
+  merged_profiles->clear();
+
+  // Set to true if |profile| is merged into |existing_profiles|.
+  bool merged = false;
+
+  // First preference is to add missing values to an existing profile.
+  // Only merge with the first match.
+  for (std::vector<AutoFillProfile*>::const_iterator iter =
+           existing_profiles.begin();
+       iter != existing_profiles.end(); ++iter) {
+    if (!merged) {
+      if (profile.IsSubsetOf(**iter)) {
+        // In this case, the existing profile already contains all of the data
+        // in |profile|, so consider the profiles already merged.
+        merged = true;
+      } else if ((*iter)->IntersectionOfTypesHasEqualValues(profile)) {
+        // |profile| contains all of the data in this profile, plus more.
+        merged = true;
+        (*iter)->MergeWith(profile);
+      }
+    }
+    merged_profiles->push_back(**iter);
+  }
+
+  // The second preference, if not merged above, is to alter non-primary values
+  // where the primary values match.
+  // Again, only merge with the first match.
+  if (!merged) {
+    merged_profiles->clear();
+    for (std::vector<AutoFillProfile*>::const_iterator iter =
+             existing_profiles.begin();
+         iter != existing_profiles.end(); ++iter) {
+      if (!merged) {
+        if (!profile.PrimaryValue().empty() &&
+            (*iter)->PrimaryValue() == profile.PrimaryValue()) {
+          merged = true;
+          (*iter)->OverwriteWith(profile);
+        }
+      }
+      merged_profiles->push_back(**iter);
+    }
+  }
+
+  // Finally, if the new profile was not merged with an existing profile then
+  // add the new profile to the list.
+  if (!merged)
+    merged_profiles->push_back(profile);
+
+  return merged;
+}
+
 
 void PersonalDataManager::SaveImportedCreditCard(
     const CreditCard& imported_credit_card) {

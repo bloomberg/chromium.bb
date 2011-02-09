@@ -203,6 +203,13 @@ class PersonalDataManager
   // Saves |imported_profile| to the WebDB if it exists.
   virtual void SaveImportedProfile(const AutoFillProfile& imported_profile);
 
+  // Merges |profile| into one of the |existing_profiles| if possible; otherwise
+  // appends |profile| to the end of that list. Fills |merged_profiles| with the
+  // result.
+  bool MergeProfile(const AutoFillProfile& profile,
+                    const std::vector<AutoFillProfile*>& existing_profiles,
+                    std::vector<AutoFillProfile>* merged_profiles);
+
   // The profile hosting this PersonalDataManager.
   Profile* profile_;
 
