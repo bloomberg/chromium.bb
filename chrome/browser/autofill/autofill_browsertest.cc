@@ -28,7 +28,7 @@
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/keycodes/keyboard_code_conversion.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 
 static const char* kDataURIPrefix = "data:text/html;charset=utf-8,";
 static const char* kTestFormString =

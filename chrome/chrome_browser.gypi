@@ -1224,6 +1224,8 @@
         'browser/extensions/gtk_theme_installed_infobar_delegate.h',
         'browser/extensions/image_loading_tracker.cc',
         'browser/extensions/image_loading_tracker.h',
+        'browser/extensions/key_identifier_conversion_views.cc',
+        'browser/extensions/key_identifier_conversion_views.h',
         'browser/extensions/pack_extension_job.cc',
         'browser/extensions/pack_extension_job.h',
         'browser/extensions/sandboxed_extension_unpacker.cc',
@@ -4313,6 +4315,8 @@
               'sources/': [
                 ['exclude', '^browser/extensions/extension_input_api.cc'],
                 ['exclude', '^browser/extensions/extension_input_api.h'],
+                ['exclude', '^browser/extensions/key_identifier_conversion_views.cc'],
+                ['exclude', '^browser/extensions/key_identifier_conversion_views.h'],
               ],
             }],
             # These GTK files haven't been ported to views, while ChromeOS has

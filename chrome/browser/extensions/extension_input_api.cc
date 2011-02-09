@@ -10,12 +10,12 @@
 #include "base/values.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
+#include "chrome/browser/extensions/key_identifier_conversion_views.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
-#include "ui/base/keycodes/keyboard_code_conversion.h"
 #include "views/event.h"
 #include "views/widget/root_view.h"
 
@@ -35,6 +35,7 @@ const char kKeyUp[] = "keyup";
 const char kUnknownEventTypeError[] = "Unknown event type.";
 const char kUnknownOrUnsupportedKeyIdentiferError[] = "Unknown or unsupported "
     "key identifier.";
+const char kUnsupportedModifier[] = "Unsupported modifier.";
 const char kNoValidRecipientError[] = "No valid recipient for event.";
 const char kKeyEventUnprocessedError[] = "Event was not handled.";
 
@@ -86,25 +87,31 @@ bool SendKeyboardEventInputFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args->GetString(kKeyIdentifier, &identifier));
   TrimWhitespaceASCII(identifier, TRIM_ALL, &identifier);
 
-  ui::KeyboardCode code = ui::KeyCodeFromKeyIdentifier(identifier);
-  if (code == ui::VKEY_UNKNOWN) {
+  const views::KeyEvent& prototype_event =
+      KeyEventFromKeyIdentifier(identifier);
+  if (prototype_event.GetKeyCode() == ui::VKEY_UNKNOWN) {
     error_ = kUnknownOrUnsupportedKeyIdentiferError;
     return false;
   }
 
-  int flags = 0;
+  int flags = prototype_event.GetFlags();
   bool alt = false;
   if (args->GetBoolean(kAlt, &alt))
-    flags |= alt ? WebKit::WebInputEvent::AltKey : 0;
+    flags |= alt ? views::Event::EF_ALT_DOWN : 0;
   bool ctrl = false;
   if (args->GetBoolean(kCtrl, &ctrl))
-    flags |= ctrl ? WebKit::WebInputEvent::ControlKey : 0;
-  bool meta = false;
-  if (args->GetBoolean(kMeta, &meta))
-    flags |= meta ? WebKit::WebInputEvent::MetaKey : 0;
+    flags |= ctrl ? views::Event::EF_CONTROL_DOWN : 0;
   bool shift = false;
   if (args->GetBoolean(kShift, &shift))
-    flags |= shift ? WebKit::WebInputEvent::ShiftKey : 0;
+    flags |= shift ? views::Event::EF_SHIFT_DOWN : 0;
+  bool meta = false;
+  if (args->GetBoolean(kMeta, &meta)) {
+    // Views does not have a Meta event flag, so return an error for now.
+    if (meta) {
+      error_ = kUnsupportedModifier;
+      return false;
+    }
+  }
 
   views::RootView* root_view = GetRootView();
   if (!root_view) {
@@ -112,7 +119,7 @@ bool SendKeyboardEventInputFunction::RunImpl() {
     return false;
   }
 
-  views::KeyEvent event(type, code, flags, 0, 0);
+  views::KeyEvent event(type, prototype_event.GetKeyCode(), flags, 0, 0);
   if (!root_view->ProcessKeyEvent(event)) {
     error_ = kKeyEventUnprocessedError;
     return false;

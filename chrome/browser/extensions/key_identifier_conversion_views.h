@@ -2,21 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_KEYCODES_KEYBOARD_CODE_CONVERSION_H_
-#define UI_BASE_KEYCODES_KEYBOARD_CODE_CONVERSION_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_KEY_IDENTIFIER_CONVERSION_VIEWS_H_
+#define CHROME_BROWSER_EXTENSIONS_KEY_IDENTIFIER_CONVERSION_VIEWS_H_
 #pragma once
 
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "views/event.h"
 
 #include <string>
 
-namespace ui {
-
 // Convert a KeyIdentifer (see Section 6.3.3 here:
 // http://www.w3.org/TR/DOM-Level-3-Events/#keyset-keyidentifiers)
-// to a ui::KeyboardCode.
-KeyboardCode KeyCodeFromKeyIdentifier(const std::string& key_identifier);
+// to a views::KeyEvent.
+const views::KeyEvent& KeyEventFromKeyIdentifier(
+    const std::string& key_identifier);
 
-}  // namespace ui
-
-#endif  // UI_BASE_KEYCODES_KEYBOARD_CODE_CONVERSION_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_KEY_IDENTIFIER_CONVERSION_VIEWS_H_

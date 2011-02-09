@@ -1215,6 +1215,7 @@
         'browser/extensions/external_policy_extension_loader_unittest.cc',
         'browser/extensions/file_reader_unittest.cc',
         'browser/extensions/image_loading_tracker_unittest.cc',
+        'browser/extensions/key_identifier_conversion_views_unittest.cc',
         'browser/extensions/sandboxed_extension_unpacker_unittest.cc',
         'browser/extensions/user_script_listener_unittest.cc',
         'browser/extensions/user_script_master_unittest.cc',
@@ -1981,6 +1982,7 @@
           'sources/': [
             ['exclude', '^browser/ui/views/'],
             ['exclude', '^../views/'],
+            ['exclude', '^browser/extensions/key_identifier_conversion_views_unittest.cc'],
           ],
         }],
         ['use_openssl==1', {
