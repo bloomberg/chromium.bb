@@ -38,8 +38,6 @@ cr.define('options', function() {
       options.accounts.UserNameEdit.decorate(userNameEdit);
       userNameEdit.addEventListener('add', this.handleAddUser_);
 
-      userList.disabled =
-      userNameEdit.disabled = !AccountsOptions.currentUserIsOwner();
       // If the current user is not the owner, show some warning,
       // and do not show the user list.
       if (AccountsOptions.currentUserIsOwner()) {
@@ -50,8 +48,22 @@ cr.define('options', function() {
 
       this.addEventListener('visibleChange', this.handleVisibleChange_);
 
-      $('useWhitelistCheck').addEventListener('click',
-          this.handleUseWhitelistCheckClick_);
+      $('useWhitelistCheck').addEventListener('change',
+          this.handleUseWhitelistCheckChange_.bind(this));
+
+      Preferences.getInstance().addEventListener(
+          $('useWhitelistCheck').pref,
+          this.handleUseWhitelistPrefChange_.bind(this));
+    },
+
+    /**
+     * Update user list control state.
+     * @private
+     */
+    updateControls_: function() {
+      $('userList').disabled =
+      $('userNameEdit').disabled = !AccountsOptions.currentUserIsOwner() ||
+                                   !$('useWhitelistCheck').checked;
     },
 
     /**
@@ -64,18 +76,30 @@ cr.define('options', function() {
         // fetchUserPictures calls back AccountsOptions.setUserPictures and
         // triggers redraw.
         chrome.send('fetchUserPictures', []);
+
+        this.updateControls_();
       }
     },
 
     /**
-     * Handler for allow guest check click.
+     * Handler for allow guest check change.
      * @private
      */
-    handleUseWhitelistCheckClick_: function(e) {
+    handleUseWhitelistCheckChange_: function(e) {
       // Whitelist existing users when guest login is being disabled.
       if ($('useWhitelistCheck').checked) {
         chrome.send('whitelistExistingUsers', []);
       }
+
+      this.updateControls_();
+    },
+
+    /**
+     * handler for allow guest pref change.
+     * @private
+     */
+    handleUseWhitelistPrefChange_: function(e) {
+      this.updateControls_();
     },
 
     /**
