@@ -131,7 +131,7 @@ void TestingAutomationProvider::WindowGetViewBounds(int handle,
           views::View::ConvertPointToScreen(view, &point);
         else
           views::View::ConvertPointToView(view, root_view, &point);
-        *bounds = view->GetLocalBounds();
+        *bounds = view->GetContentsBounds();
         bounds->set_origin(point);
       }
     }

@@ -28,7 +28,7 @@ NativeScrollBarGtk::~NativeScrollBarGtk() {
 // NativeScrollBarGtk, View overrides:
 
 void NativeScrollBarGtk::Layout() {
-  SetBoundsRect(native_scroll_bar_->GetContentsBounds());
+  SetBoundsRect(native_scroll_bar_->GetLocalBounds());
   NativeControlGtk::Layout();
 }
 

@@ -977,7 +977,7 @@ void AutocompletePopupContentsView::Paint(gfx::Canvas* canvas) {
   shader->unref();
 
   gfx::Path path;
-  MakeContentsPath(&path, GetLocalBounds());
+  MakeContentsPath(&path, GetContentsBounds());
   canvas->AsCanvasSkia()->drawPath(path, paint);
 
   // Now we paint the border, so it will be alpha-blended atop the contents.
@@ -990,7 +990,7 @@ void AutocompletePopupContentsView::Layout() {
   UpdateBlurRegion();
 
   // Size our children to the available content area.
-  gfx::Rect contents_rect = GetLocalBounds();
+  gfx::Rect contents_rect = GetContentsBounds();
   int child_count = GetChildViewCount();
   int top = contents_rect.y();
   for (int i = 0; i < child_count; ++i) {
@@ -1115,7 +1115,7 @@ void AutocompletePopupContentsView::UpdateBlurRegion() {
 
   // Translate the contents rect into widget coordinates, since that's what
   // DwmEnableBlurBehindWindow expects a region in.
-  gfx::Rect contents_rect = GetLocalBounds();
+  gfx::Rect contents_rect = GetContentsBounds();
   gfx::Point origin(contents_rect.origin());
   views::View::ConvertPointToWidget(this, &origin);
   contents_rect.set_origin(origin);
@@ -1174,7 +1174,7 @@ size_t AutocompletePopupContentsView::GetIndexForPoint(
 }
 
 gfx::Rect AutocompletePopupContentsView::CalculateTargetBounds(int h) {
-  gfx::Rect location_bar_bounds(location_bar_->GetLocalBounds());
+  gfx::Rect location_bar_bounds(location_bar_->GetContentsBounds());
   const views::Border* border = location_bar_->border();
   if (border) {
     // Adjust for the border so that the bubble and location bar borders are

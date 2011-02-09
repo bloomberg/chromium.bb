@@ -284,7 +284,7 @@ size_t Textfield::GetCursorPosition() const {
 
 void Textfield::Layout() {
   if (native_wrapper_) {
-    native_wrapper_->GetView()->SetBoundsRect(GetContentsBounds());
+    native_wrapper_->GetView()->SetBoundsRect(GetLocalBounds());
     native_wrapper_->GetView()->Layout();
   }
 }

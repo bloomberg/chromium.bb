@@ -248,7 +248,7 @@ void BrowserViewLayout::ViewRemoved(views::View* host, views::View* view) {
 }
 
 void BrowserViewLayout::Layout(views::View* host) {
-  vertical_layout_rect_ = browser_view_->GetContentsBounds();
+  vertical_layout_rect_ = browser_view_->GetLocalBounds();
   int top = LayoutTabStrip();
   if (browser_view_->IsTabStripVisible() && !browser_view_->UseVerticalTabs()) {
     tabstrip_->SetBackgroundOffset(gfx::Point(
@@ -448,7 +448,7 @@ void BrowserViewLayout::LayoutTabContents(int top, int bottom) {
       !browser_view_->frame_->GetWindow()->IsFullscreen()) {
     gfx::Size resize_corner_size = browser_view_->GetResizeCornerSize();
     if (!resize_corner_size.IsEmpty()) {
-      gfx::Rect bounds = browser_view_->GetLocalBounds();
+      gfx::Rect bounds = browser_view_->GetContentsBounds();
       gfx::Point resize_corner_origin(
           bounds.right() - resize_corner_size.width(),
           bounds.bottom() - resize_corner_size.height());

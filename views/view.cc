@@ -575,7 +575,7 @@ void View::SchedulePaint(const gfx::Rect& r, bool urgent) {
 }
 
 void View::SchedulePaint() {
-  SchedulePaint(GetContentsBounds(), false);
+  SchedulePaint(GetLocalBounds(), false);
 }
 
 void View::Paint(gfx::Canvas* canvas) {

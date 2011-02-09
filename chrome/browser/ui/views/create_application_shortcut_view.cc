@@ -156,7 +156,7 @@ void AppInfoView::UpdateIcon(const SkBitmap& new_icon) {
 }
 
 void AppInfoView::Paint(gfx::Canvas* canvas) {
-  gfx::Rect bounds = GetContentsBounds();
+  gfx::Rect bounds = GetLocalBounds();
 
   SkRect border_rect = {
     SkIntToScalar(bounds.x()),

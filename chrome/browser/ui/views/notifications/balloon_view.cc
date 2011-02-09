@@ -476,7 +476,7 @@ void BalloonViewImpl::Paint(gfx::Canvas* canvas) {
   DCHECK(canvas);
   // Paint the menu bar area white, with proper rounded corners.
   gfx::Path path;
-  gfx::Rect rect = GetLocalBounds();
+  gfx::Rect rect = GetContentsBounds();
   rect.set_height(GetShelfHeight());
   GetFrameMask(rect, &path);
 

@@ -3931,11 +3931,11 @@
             '../google_update/google_update.gyp:google_update',
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '../third_party/isimpledom/isimpledom.gyp:isimpledom',
-            '../views/views.gyp:views',
+            '../views/views.gyp:*',
             '../rlz/rlz.gyp:rlz_lib',
           ],
           'export_dependent_settings': [
-            '../views/views.gyp:views',
+            '../views/views.gyp:*',
           ],
           'direct_dependent_settings': {
             'link_settings': {
@@ -3986,7 +3986,7 @@
           'conditions': [
             ['OS=="linux" and toolkit_views==1',{
               'dependencies': [
-                '../views/views.gyp:views',
+                '../views/views.gyp:*',
               ],
               'include_dirs': [
                 '<(INTERMEDIATE_DIR)',

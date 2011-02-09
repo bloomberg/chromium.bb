@@ -127,7 +127,7 @@ View* Checkbox::GetViewForPoint(const gfx::Point& point) {
 
 View* Checkbox::GetViewForPoint(const gfx::Point& point,
                                 bool can_create_floating) {
-  return GetContentsBounds().Contains(point) ? this : NULL;
+  return GetLocalBounds().Contains(point) ? this : NULL;
 }
 
 void Checkbox::OnMouseEntered(const MouseEvent& e) {

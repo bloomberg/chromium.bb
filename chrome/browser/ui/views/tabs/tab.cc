@@ -212,7 +212,7 @@ void Tab::Paint(gfx::Canvas* canvas) {
 }
 
 void Tab::Layout() {
-  gfx::Rect lb = GetLocalBounds();
+  gfx::Rect lb = GetContentsBounds();
   if (lb.IsEmpty())
     return;
   lb.Inset(kLeftPadding, kTopPadding, kRightPadding, kBottomPadding);

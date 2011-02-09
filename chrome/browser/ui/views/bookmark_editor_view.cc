@@ -139,7 +139,7 @@ void BookmarkEditorView::Layout() {
 
   // Manually lay out the New Folder button in the same row as the OK/Cancel
   // buttons...
-  gfx::Rect parent_bounds = GetParent()->GetLocalBounds();
+  gfx::Rect parent_bounds = GetParent()->GetContentsBounds();
   gfx::Size prefsize = new_group_button_->GetPreferredSize();
   int button_y =
       parent_bounds.bottom() - prefsize.height() - views::kButtonVEdgeMargin;

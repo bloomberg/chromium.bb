@@ -1268,7 +1268,7 @@ gfx::Point DraggedTabController::GetCursorScreenPoint() const {
 gfx::Rect DraggedTabController::GetViewScreenBounds(views::View* view) const {
   gfx::Point view_topleft;
   views::View::ConvertPointToScreen(view, &view_topleft);
-  gfx::Rect view_screen_bounds = view->GetContentsBounds();
+  gfx::Rect view_screen_bounds = view->GetLocalBounds();
   view_screen_bounds.Offset(view_topleft.x(), view_topleft.y());
   return view_screen_bounds;
 }

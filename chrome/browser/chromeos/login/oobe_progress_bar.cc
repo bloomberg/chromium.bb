@@ -53,7 +53,7 @@ void OobeProgressBar::InitClass() {
 }
 
 void OobeProgressBar::Paint(gfx::Canvas* canvas) {
-  gfx::Rect bounds = GetLocalBounds();
+  gfx::Rect bounds = GetContentsBounds();
 
   int x = bounds.x();
   int y = bounds.y();

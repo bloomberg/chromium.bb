@@ -434,7 +434,7 @@ void DialogClientView::PaintSizeBox(gfx::Canvas* canvas) {
     //             a theme-supplied gripper. We should probably improvise
     //             something, which would also require changing |gripper_size|
     //             to have different default values, too...
-    size_box_bounds_ = GetLocalBounds();
+    size_box_bounds_ = GetContentsBounds();
     size_box_bounds_.set_x(size_box_bounds_.right() - gripper_size.cx);
     size_box_bounds_.set_y(size_box_bounds_.bottom() - gripper_size.cy);
     RECT native_bounds = size_box_bounds_.ToRECT();

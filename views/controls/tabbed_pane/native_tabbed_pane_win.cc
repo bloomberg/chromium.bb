@@ -57,7 +57,7 @@ class TabLayout : public LayoutManager {
       View* child = host->GetChildViewAt(i);
       // The child might not have been laid out yet.
       if (child == page)
-        child->SetBoundsRect(host->GetLocalBounds());
+        child->SetBoundsRect(host->GetContentsBounds());
       child->SetVisible(child == page);
     }
 
@@ -72,7 +72,7 @@ class TabLayout : public LayoutManager {
  private:
   // LayoutManager overrides:
   virtual void Layout(View* host) {
-    gfx::Rect bounds(host->GetLocalBounds());
+    gfx::Rect bounds(host->GetContentsBounds());
     for (int i = 0; i < host->GetChildViewCount(); ++i) {
       View* child = host->GetChildViewAt(i);
       // We only layout visible children, since it may be expensive.

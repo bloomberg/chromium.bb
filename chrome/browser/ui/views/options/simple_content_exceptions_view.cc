@@ -70,7 +70,7 @@ void SimpleContentExceptionsView::Layout() {
 
   // The buttons are placed in the parent, but we need to lay them out.
   int max_y =
-      GetParent()->GetLocalBounds().bottom() - views::kButtonVEdgeMargin;
+      GetParent()->GetContentsBounds().bottom() - views::kButtonVEdgeMargin;
   int x = kPanelHorizMargin;
 
   for (size_t i = 0; i < arraysize(buttons); ++i) {

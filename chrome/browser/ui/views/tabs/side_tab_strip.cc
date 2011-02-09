@@ -155,7 +155,7 @@ BaseTab* SideTabStrip::CreateTab() {
 }
 
 void SideTabStrip::GenerateIdealBounds() {
-  gfx::Rect layout_rect = GetLocalBounds();
+  gfx::Rect layout_rect = GetContentsBounds();
   layout_rect.Inset(kTabStripInset, kTabStripInset);
 
   int y = layout_rect.y();

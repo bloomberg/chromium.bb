@@ -243,7 +243,7 @@ gfx::Rect RootView::GetScheduledPaintRectConstrainedToSize() {
   if (invalid_rect_.IsEmpty())
     return invalid_rect_;
 
-  return invalid_rect_.Intersect(GetContentsBounds());
+  return invalid_rect_.Intersect(GetLocalBounds());
 }
 
 /////////////////////////////////////////////////////////////////////////////

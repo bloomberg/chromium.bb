@@ -129,7 +129,7 @@ bool ButtonDropDown::ShouldEnterPushedState(const MouseEvent& e) {
 
 void ButtonDropDown::ShowDropDownMenu(gfx::NativeView window) {
   if (model_) {
-    gfx::Rect lb = GetContentsBounds();
+    gfx::Rect lb = GetLocalBounds();
 
     // Both the menu position and the menu anchor type change if the UI layout
     // is right-to-left.
