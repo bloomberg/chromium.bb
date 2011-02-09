@@ -667,8 +667,13 @@ TabContents* Browser::OpenApplicationTab(Profile* profile,
     contents = params.target_contents->tab_contents();
   }
 
-  if (launch_type == ExtensionPrefs::LAUNCH_FULLSCREEN)
-    browser->window()->SetFullscreen(true);
+  // TODO(skerner):  If we are already in full screen mode, and the user
+  // set the app to open as a regular or pinned tab, what should happen?
+  // Today we open the tab, but stay in full screen mode.  Should we leave
+  // full screen mode in this case?
+  if (launch_type == ExtensionPrefs::LAUNCH_FULLSCREEN &&
+      !browser->window()->IsFullscreen())
+    browser->ToggleFullscreenMode();
 
   return contents;
 }
