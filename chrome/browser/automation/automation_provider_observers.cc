@@ -16,6 +16,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/automation/automation_provider.h"
@@ -1634,8 +1635,10 @@ void PageSnapshotTaker::ExecuteScript(const std::wstring& javascript) {
       L"window.domAutomationController.setAutomationId(%d);",
       reply_message_->routing_id());
 
-  render_view_->ExecuteJavascriptInWebFrame(L"", set_automation_id);
-  render_view_->ExecuteJavascriptInWebFrame(L"", javascript);
+  render_view_->ExecuteJavascriptInWebFrame(string16(),
+                                            WideToUTF16Hack(set_automation_id));
+  render_view_->ExecuteJavascriptInWebFrame(string16(),
+                                            WideToUTF16Hack(javascript));
 }
 
 void PageSnapshotTaker::SendMessage(bool success) {

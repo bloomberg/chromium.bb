@@ -64,11 +64,11 @@ class LoginHandlerGtk : public LoginHandler,
 
   // LoginHandler:
   virtual void BuildViewForPasswordManager(PasswordManager* manager,
-                                           std::wstring explanation) {
+                                           const string16& explanation) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
     root_.Own(gtk_vbox_new(FALSE, gtk_util::kContentAreaBorder));
-    GtkWidget* label = gtk_label_new(WideToUTF8(explanation).c_str());
+    GtkWidget* label = gtk_label_new(UTF16ToUTF8(explanation).c_str());
     gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
     gtk_box_pack_start(GTK_BOX(root_.get()), label, FALSE, FALSE, 0);
 
@@ -153,8 +153,8 @@ class LoginHandlerGtk : public LoginHandler,
 
 void LoginHandlerGtk::OnOKClicked(GtkWidget* sender) {
   SetAuth(
-      UTF8ToWide(gtk_entry_get_text(GTK_ENTRY(username_entry_))),
-      UTF8ToWide(gtk_entry_get_text(GTK_ENTRY(password_entry_))));
+      UTF8ToUTF16(gtk_entry_get_text(GTK_ENTRY(username_entry_))),
+      UTF8ToUTF16(gtk_entry_get_text(GTK_ENTRY(password_entry_))));
 }
 
 void LoginHandlerGtk::OnCancelClicked(GtkWidget* sender) {

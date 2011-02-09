@@ -126,7 +126,7 @@ void AccountScreen::NavigationStateChanged(const TabContents* source,
     source->render_view_host()->InsertCSSInWebFrame(
         L"", kCreateAccountCSS, "");
     source->render_view_host()->ExecuteJavascriptInWebFrame(
-        L"", ASCIIToWide(kCreateAccountJS));
+        string16(), ASCIIToUTF16(kCreateAccountJS));
   }
 }
 

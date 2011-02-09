@@ -6,6 +6,7 @@
 #include <list>
 #include <map>
 
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/ui/browser.h"
@@ -56,7 +57,8 @@ void LoginPromptBrowserTest::SetAuthFor(LoginHandler* handler) {
   EXPECT_TRUE(auth_map_.end() != i);
   if (i != auth_map_.end()) {
     const AuthInfo& info = i->second;
-    handler->SetAuth(info.username_, info.password_);
+    handler->SetAuth(WideToUTF16Hack(info.username_),
+                     WideToUTF16Hack(info.password_));
   }
 }
 
@@ -364,7 +366,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, DISABLED_IncorrectConfirmation) {
     LoginHandler* handler = *observer.handlers_.begin();
 
     ASSERT_TRUE(handler);
-    handler->SetAuth(bad_username_, bad_password_);
+    handler->SetAuth(WideToUTF16Hack(bad_username_),
+                     WideToUTF16Hack(bad_password_));
     LOG(INFO) << "Waiting for initial AUTH_SUPPLIED";
     auth_supplied_waiter.Wait();
 

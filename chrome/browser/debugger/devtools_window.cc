@@ -276,17 +276,17 @@ bool DevToolsWindow::IsInspectedBrowserPopup() {
 }
 
 void DevToolsWindow::SetAttachedWindow() {
-  tab_contents_->render_view_host()->
-      ExecuteJavascriptInWebFrame(
-          L"", docked_ ? L"WebInspector.setAttachedWindow(true);" :
-                         L"WebInspector.setAttachedWindow(false);");
+  tab_contents_->render_view_host()->ExecuteJavascriptInWebFrame(
+      string16(),
+      docked_ ? ASCIIToUTF16("WebInspector.setAttachedWindow(true);")
+              : ASCIIToUTF16("WebInspector.setAttachedWindow(false);"));
 }
 
 
 void DevToolsWindow::AddDevToolsExtensionsToClient() {
   if (inspected_tab_) {
     FundamentalValue tabId(inspected_tab_->controller().session_id().id());
-    CallClientFunction(L"WebInspector.setInspectedTabId", tabId);
+    CallClientFunction(ASCIIToUTF16("WebInspector.setInspectedTabId"), tabId);
   }
   ListValue results;
   const ExtensionService* extension_service =
@@ -306,16 +306,17 @@ void DevToolsWindow::AddDevToolsExtensionsToClient() {
         new StringValue((*extension)->devtools_url().spec()));
     results.Append(extension_info);
   }
-  CallClientFunction(L"WebInspector.addExtensions", results);
+  CallClientFunction(ASCIIToUTF16("WebInspector.addExtensions"), results);
 }
 
-void DevToolsWindow::CallClientFunction(const std::wstring& function_name,
-                                         const Value& arg) {
+void DevToolsWindow::CallClientFunction(const string16& function_name,
+                                        const Value& arg) {
   std::string json;
   base::JSONWriter::Write(&arg, false, &json);
-  std::wstring javascript = function_name + L"(" + UTF8ToWide(json) + L");";
+  string16 javascript = function_name + char16('(') + UTF8ToUTF16(json) +
+      ASCIIToUTF16(");");
   tab_contents_->render_view_host()->
-      ExecuteJavascriptInWebFrame(L"", javascript);
+      ExecuteJavascriptInWebFrame(string16(), javascript);
 }
 
 void DevToolsWindow::Observe(NotificationType type,
@@ -352,13 +353,12 @@ void DevToolsWindow::DoAction() {
   // TODO: these messages should be pushed through the WebKit API instead.
   switch (action_on_load_) {
     case DEVTOOLS_TOGGLE_ACTION_SHOW_CONSOLE:
-      tab_contents_->render_view_host()->
-          ExecuteJavascriptInWebFrame(L"", L"WebInspector.showConsole();");
+      tab_contents_->render_view_host()->ExecuteJavascriptInWebFrame(
+          string16(), ASCIIToUTF16("WebInspector.showConsole();"));
       break;
     case DEVTOOLS_TOGGLE_ACTION_INSPECT:
-      tab_contents_->render_view_host()->
-          ExecuteJavascriptInWebFrame(
-              L"", L"WebInspector.toggleSearchingForNode();");
+      tab_contents_->render_view_host()->ExecuteJavascriptInWebFrame(
+          string16(), ASCIIToUTF16("WebInspector.toggleSearchingForNode();"));
     case DEVTOOLS_TOGGLE_ACTION_NONE:
       // Do nothing.
       break;
@@ -407,7 +407,7 @@ void DevToolsWindow::UpdateTheme() {
       SkColorToRGBAString(color_toolbar).c_str(),
       SkColorToRGBAString(color_tab_text).c_str());
   tab_contents_->render_view_host()->
-      ExecuteJavascriptInWebFrame(L"", UTF8ToWide(command));
+      ExecuteJavascriptInWebFrame(string16(), UTF8ToUTF16(command));
 }
 
 void DevToolsWindow::AddNewContents(TabContents* source,

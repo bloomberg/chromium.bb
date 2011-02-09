@@ -169,7 +169,8 @@ void BrowserSigninHtml::HandleSigninInit(const ListValue* args) {
     return;
 
   RenderViewHost* rvh = dom_ui_->tab_contents()->render_view_host();
-  rvh->ExecuteJavascriptInWebFrame(L"//iframe[@id='login']", L"hideBlurb();");
+  rvh->ExecuteJavascriptInWebFrame(ASCIIToUTF16("//iframe[@id='login']"),
+                                   ASCIIToUTF16("hideBlurb();"));
 
   DictionaryValue json_args;
   std::string json;
@@ -188,7 +189,8 @@ void BrowserSigninHtml::HandleSigninInit(const ListValue* args) {
 
   base::JSONWriter::Write(&json_args, false, &json);
   javascript += L"showGaiaLogin(" + UTF8ToWide(json) + L");";
-  rvh->ExecuteJavascriptInWebFrame(L"//iframe[@id='login']", javascript);
+  rvh->ExecuteJavascriptInWebFrame(ASCIIToUTF16("//iframe[@id='login']"),
+                                   WideToUTF16Hack(javascript));
 }
 
 void BrowserSigninHtml::HandleSubmitAuth(const ListValue* args) {

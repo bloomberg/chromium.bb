@@ -152,7 +152,8 @@ void DOMUI::AddMessageHandler(WebUIMessageHandler* handler) {
 }
 
 void DOMUI::ExecuteJavascript(const std::wstring& javascript) {
-  GetRenderViewHost()->ExecuteJavascriptInWebFrame(std::wstring(), javascript);
+  GetRenderViewHost()->ExecuteJavascriptInWebFrame(string16(),
+                                                   WideToUTF16Hack(javascript));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -164,7 +165,7 @@ WebUIMessageHandler* WebUIMessageHandler::Attach(DOMUI* dom_ui) {
   return this;
 }
 
-// WebUIMessageHandler, protected: ----------------------------------------------
+// WebUIMessageHandler, protected: ---------------------------------------------
 
 void WebUIMessageHandler::SetURLAndTitle(DictionaryValue* dictionary,
                                        string16 title,

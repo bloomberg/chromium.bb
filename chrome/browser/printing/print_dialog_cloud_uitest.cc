@@ -12,6 +12,7 @@
 #include "base/path_service.h"
 #include "base/singleton.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_thread.h"
@@ -249,9 +250,9 @@ IN_PROC_BROWSER_TEST_F(PrintDialogCloudTest, DISABLED_DialogGrabbed) {
   ASSERT_TRUE(browser()->GetSelectedTabContents());
   ASSERT_TRUE(browser()->GetSelectedTabContents()->render_view_host());
 
-  std::wstring window_print(L"window.print()");
+  string16 window_print = ASCIIToUTF16("window.print()");
   browser()->GetSelectedTabContents()->render_view_host()->
-      ExecuteJavascriptInWebFrame(std::wstring(), window_print);
+      ExecuteJavascriptInWebFrame(string16(), window_print);
 
   ui_test_utils::RunMessageLoop();
 

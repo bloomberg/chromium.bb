@@ -288,6 +288,7 @@ void CloudPrintSetupFlow::ExecuteJavascriptInIFrame(
     const std::wstring& js) {
   if (dom_ui_) {
     RenderViewHost* rvh = dom_ui_->tab_contents()->render_view_host();
-    rvh->ExecuteJavascriptInWebFrame(iframe_xpath, js);
+    rvh->ExecuteJavascriptInWebFrame(WideToUTF16Hack(iframe_xpath),
+                                     WideToUTF16Hack(js));
   }
 }

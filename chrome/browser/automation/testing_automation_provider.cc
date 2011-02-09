@@ -660,7 +660,7 @@ void TestingAutomationProvider::SetAuth(int tab_handle,
       // server auth, but it should be OK for now.
       LoginHandler* handler = iter->second;
       new NavigationNotificationObserver(tab, this, reply_message, 1, false);
-      handler->SetAuth(username, password);
+      handler->SetAuth(WideToUTF16Hack(username), WideToUTF16Hack(password));
       return;
     }
   }
@@ -1139,9 +1139,9 @@ void TestingAutomationProvider::ExecuteJavascript(
   reply_message_ = reply_message;
 
   tab_contents->render_view_host()->ExecuteJavascriptInWebFrame(
-      frame_xpath, UTF8ToWide(set_automation_id));
+      WideToUTF16Hack(frame_xpath), UTF8ToUTF16(set_automation_id));
   tab_contents->render_view_host()->ExecuteJavascriptInWebFrame(
-      frame_xpath, script);
+      WideToUTF16Hack(frame_xpath), WideToUTF16Hack(script));
 }
 
 void TestingAutomationProvider::GetConstrainedWindowCount(int handle,

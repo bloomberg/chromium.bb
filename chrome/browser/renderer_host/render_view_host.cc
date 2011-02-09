@@ -471,10 +471,9 @@ void RenderViewHost::ReservePageIDRange(int size) {
 }
 
 void RenderViewHost::ExecuteJavascriptInWebFrame(
-    const std::wstring& frame_xpath,
-    const std::wstring& jscript) {
-  Send(new ViewMsg_ScriptEvalRequest(routing_id(), WideToUTF16(frame_xpath),
-                                     WideToUTF16(jscript),
+    const string16& frame_xpath,
+    const string16& jscript) {
+  Send(new ViewMsg_ScriptEvalRequest(routing_id(), frame_xpath, jscript,
                                      0, false));
 }
 

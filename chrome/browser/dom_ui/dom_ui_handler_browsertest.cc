@@ -10,7 +10,7 @@
 
 bool DOMUITestHandler::Execute(const std::string& js_test) {
   dom_ui_->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
-      std::wstring(), UTF8ToWide(js_test));
+      string16(), UTF8ToUTF16(js_test));
   return WaitForResult();
 }
 

@@ -51,7 +51,7 @@ class IFrameLoader : public NotificationObserver {
         iframe_id,
         url.spec().c_str());
     browser->GetSelectedTabContents()->render_view_host()->
-        ExecuteJavascriptInWebFrame(L"", UTF8ToWide(script));
+        ExecuteJavascriptInWebFrame(string16(), UTF8ToUTF16(script));
     ui_test_utils::RunMessageLoop();
 
     EXPECT_EQ(StringPrintf("\"%d\"", iframe_id), javascript_response_);
@@ -130,8 +130,8 @@ class GeolocationNotificationObserver : public NotificationObserver {
     std::string script =
         "window.domAutomationController.setAutomationId(0);"
         "window.domAutomationController.send(geoStart());";
-    render_view_host->ExecuteJavascriptInWebFrame(iframe_xpath,
-                                                  UTF8ToWide(script));
+    render_view_host->ExecuteJavascriptInWebFrame(WideToUTF16Hack(iframe_xpath),
+                                                  UTF8ToUTF16(script));
     ui_test_utils::RunMessageLoop();
     registrar_.RemoveAll();
     LOG(WARNING) << "got geolocation watch" << javascript_response_;

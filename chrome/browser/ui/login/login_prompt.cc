@@ -124,8 +124,8 @@ RenderViewHostDelegate* LoginHandler::GetRenderViewHostDelegate() const {
   return rvh->delegate();
 }
 
-void LoginHandler::SetAuth(const std::wstring& username,
-                           const std::wstring& password) {
+void LoginHandler::SetAuth(const string16& username,
+                           const string16& password) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (TestAndSetAuthHandled())
@@ -133,8 +133,8 @@ void LoginHandler::SetAuth(const std::wstring& username,
 
   // Tell the password manager the credentials were submitted / accepted.
   if (password_manager_) {
-    password_form_.username_value = WideToUTF16Hack(username);
-    password_form_.password_value = WideToUTF16Hack(password);
+    password_form_.username_value = username;
+    password_form_.password_value = password;
     password_manager_->ProvisionallySavePassword(password_form_);
   }
 
@@ -293,8 +293,8 @@ void LoginHandler::NotifyAuthCancelled() {
                   Details<LoginNotificationDetails>(&details));
 }
 
-void LoginHandler::NotifyAuthSupplied(const std::wstring& username,
-                                      const std::wstring& password) {
+void LoginHandler::NotifyAuthSupplied(const string16& username,
+                                      const string16& password) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(WasAuthHandled());
 
@@ -345,12 +345,12 @@ bool LoginHandler::TestAndSetAuthHandled() {
 }
 
 // Calls SetAuth from the IO loop.
-void LoginHandler::SetAuthDeferred(const std::wstring& username,
-                                   const std::wstring& password) {
+void LoginHandler::SetAuthDeferred(const string16& username,
+                                   const string16& password) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (request_) {
-    request_->SetAuth(WideToUTF16Hack(username), WideToUTF16Hack(password));
+    request_->SetAuth(username, password);
     ResetLoginHandlerForRequest(request_);
   }
 }
@@ -421,8 +421,7 @@ class LoginDialogTask : public Task {
         l10n_util::GetStringFUTF16(IDS_LOGIN_DIALOG_DESCRIPTION,
                                    host_and_port_hack16,
                                    realm_hack16);
-    handler_->BuildViewForPasswordManager(password_manager,
-                                          UTF16ToWideHack(explanation));
+    handler_->BuildViewForPasswordManager(password_manager, explanation);
   }
 
  private:
