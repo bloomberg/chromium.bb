@@ -10,8 +10,6 @@
 #include "base/task.h"
 #include "base/ref_counted.h"
 #include "base/scoped_temp_dir.h"
-#include "chrome/test/automation/browser_proxy.h"
-#include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_test.h"
 
 namespace webdriver {
@@ -22,7 +20,8 @@ namespace webdriver {
 // http://code.google.com/p/chromium/issues/detail?id=56865
 class Automation : private UITestBase {
  public:
-  Automation() {}
+  Automation();
+  virtual ~Automation();
 
   // Creates a browser.
   void Init(bool* success);

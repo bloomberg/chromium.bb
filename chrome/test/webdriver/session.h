@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,9 @@
 #include "base/scoped_ptr.h"
 #include "chrome/test/webdriver/automation.h"
 #include "chrome/test/webdriver/error_codes.h"
+
+class ListValue;
+class Value;
 
 namespace base {
 class WaitableEvent;
@@ -25,6 +28,7 @@ namespace webdriver {
 class Session {
  public:
   explicit Session(const std::string& id);
+  ~Session();
 
   // Creates a browser.
   bool Init();

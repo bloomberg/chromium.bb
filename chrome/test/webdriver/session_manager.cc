@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -176,6 +176,10 @@ Session* SessionManager::GetSession(const std::string& id) const {
   }
   return it->second;
 }
+
+SessionManager::SessionManager() : addr_(""), port_(""), count_(0) {}
+
+SessionManager::~SessionManager() {}
 
 // static
 SessionManager* SessionManager::GetInstance() {

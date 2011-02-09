@@ -13,8 +13,6 @@
 #include "base/process_util.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_vector.h"
-#include "chrome/browser/sync/profile_sync_service_harness.h"
-#include "chrome/common/net/test_url_fetcher_factory.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/test/test_server.h"
 
@@ -23,7 +21,9 @@
 
 class CommandLine;
 class Profile;
+class ProfileSyncServiceHarness;
 class URLRequestContextGetter;
+class FakeURLFetcherFactory;
 
 namespace net {
 class ProxyConfig;
@@ -58,7 +58,7 @@ class LiveSyncTest : public InProcessBrowserTest {
   // A LiveSyncTest must be associated with a particular test type.
   explicit LiveSyncTest(TestType test_type);
 
-  virtual ~LiveSyncTest() {}
+  virtual ~LiveSyncTest();
 
   // Validates command line parameters and creates a local python test server if
   // specified.

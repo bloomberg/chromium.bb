@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,21 +24,19 @@ namespace webdriver {
 // http://code.google.com/p/selenium/wiki/JsonWireProtocol
 class Command {
  public:
-  inline Command(const std::vector<std::string>& path_segments,
-                 const DictionaryValue* const parameters)
-      : path_segments_(path_segments),
-        parameters_(parameters) {}
-  virtual ~Command() {}
+  Command(const std::vector<std::string>& path_segments,
+          const DictionaryValue* const parameters);
+  virtual ~Command();
 
   // Indicates which HTTP methods this command URL responds to.
-  virtual bool DoesDelete() { return false; }
-  virtual bool DoesGet() { return false; }
-  virtual bool DoesPost() { return false; }
+  virtual bool DoesDelete();
+  virtual bool DoesGet();
+  virtual bool DoesPost();
 
   // Initializes this command for execution. If initialization fails, will
   // return |false| and populate the |response| with the necessary information
   // to return to the client.
-  virtual bool Init(Response* const response) { return true; }
+  virtual bool Init(Response* const response);
 
   // Executes the corresponding variant of this command URL.
   // Always called after |Init()| and called from the Execute function.

@@ -20,10 +20,12 @@
 #include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "chrome/common/net/url_request_context_getter.h"
+#include "chrome/common/net/test_url_fetcher_factory.h"
 #include "chrome/test/testing_browser_process.h"
 #include "chrome/test/ui_test_utils.h"
 #include "googleurl/src/gurl.h"
@@ -125,6 +127,8 @@ LiveSyncTest::LiveSyncTest(TestType test_type)
     }
   }
 }
+
+LiveSyncTest::~LiveSyncTest() {}
 
 void LiveSyncTest::SetUp() {
   CommandLine* cl = CommandLine::ForCurrentProcess();

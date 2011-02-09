@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,15 @@
 #include "chrome/test/webdriver/utility_functions.h"
 
 namespace webdriver {
+
+FindElementCommand::FindElementCommand(
+    const std::vector<std::string>& path_segments,
+    const DictionaryValue* const parameters,
+    const bool find_one_element)
+    : WebDriverCommand(path_segments, parameters),
+      find_one_element_(find_one_element) {}
+
+FindElementCommand::~FindElementCommand() {}
 
 bool FindElementCommand::Init(Response* const response) {
   if (!WebDriverCommand::Init(response)) {
@@ -46,6 +55,10 @@ bool FindElementCommand::Init(Response* const response) {
   // "/session/$session/element/$id/element(s)"
   root_element_id_ = GetPathVariable(4);
 
+  return true;
+}
+
+bool FindElementCommand::DoesPost() {
   return true;
 }
 
@@ -106,6 +119,10 @@ void FindElementCommand::ExecutePost(Response* const response) {
 
   response->set_value(result);
   response->set_status(error);
+}
+
+bool FindElementCommand::RequiresValidTab() {
+  return false;
 }
 
 }  // namespace webdriver

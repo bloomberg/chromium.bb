@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,111 +13,44 @@
 #include "base/scoped_vector.h"
 #include "base/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
-#include "chrome/browser/browser_window.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/sessions/base_session_service.h"
 #include "chrome/browser/sessions/session_service_test_helper.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/sessions/session_types.h"
 #include "chrome/test/live_sync/live_sync_test.h"
-#include "chrome/test/ui_test_utils.h"
-#include "googleurl/src/gurl.h"
-#include "webkit/glue/window_open_disposition.h"
+
+class GURL;
+class Profile;
+class TabContents;
 
 // Helper for accessing session service internals.
 class TestSessionService
     : public SessionServiceTestHelper,
       public base::RefCountedThreadSafe<TestSessionService> {
  public:
-  TestSessionService()
-      : SessionServiceTestHelper(),
-        done_saving_(false, false),
-        got_windows_(false, false),
-        profile_(NULL),
-        window_bounds_(0, 1, 2, 3) {}
-  TestSessionService(SessionService* service, Profile* profile)
-      : SessionServiceTestHelper(service),
-        done_saving_(false, false),
-        got_windows_(false, false),
-        profile_(profile),
-        window_bounds_(0, 1, 2, 3) {}
+  TestSessionService();
+  TestSessionService(SessionService* service, Profile* profile);
 
-  void SetUp() {
-    ASSERT_TRUE(service()) << "SetUp() called without setting SessionService";
-    ASSERT_TRUE(profile_);
-    service()->SetWindowType(window_id_, Browser::TYPE_NORMAL);
-    service()->SetWindowBounds(window_id_, window_bounds_, false);
-  }
+  void SetUp();
 
   // Trigger saving the current session commands to file.
-  void Save() {
-    service()->Save();
-  }
+  void Save();
 
   // Synchronously reads the contents of the current session.
-  std::vector<SessionWindow*>* ReadWindows() {
-    // The session backend will post the callback as a task to whatever thread
-    // called it. In our case, we don't want the main test thread to have tasks
-    // posted to, so we perform the actual call to session service from the same
-    // thread the work will be done on (backend_thread aka file thread). As a
-    // result, it will directly call back, instead of posting a task, and we can
-    // block on that callback.
-    BrowserThread::PostTask(
-        BrowserThread::FILE,
-        FROM_HERE,
-        NewRunnableMethod(this, &TestSessionService::DoReadWindows));
-
-    // Wait for callback to happen.
-    got_windows_.Wait();
-
-    // By the time we reach here we've received the windows, so return them.
-    return windows_;
-  }
+  std::vector<SessionWindow*>* ReadWindows();
 
   // Makes the actual call to session service.
   // Lives on the file thread.
-  void DoReadWindows() {
-    if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
-      LOG(ERROR) << "DoReadWindows called from wrong thread!";
-      windows_ = NULL;
-      got_windows_.Signal();
-      return;
-    }
-    SessionService::SessionCallback* callback =
-        NewCallback(this, &TestSessionService::OnGotSession);
-    service()->GetCurrentSession(&consumer_, callback);
-  }
+  void DoReadWindows();
 
   // Internal method used in the callback to obtain the current session.
   // Lives on and called from backend thread (file_thread).
   // We don't own windows so need to make a deep copy.
   // In this case, we only copy those values compared against in WindowsMatch
   // (number of windows, number of tabs, and navigations within tabs).
-  void OnGotSession(int handle, std::vector<SessionWindow*>* windows) {
-    scoped_ptr<ForeignSession> foreign_session(new ForeignSession());
-    for (size_t w = 0; w < windows->size(); ++w) {
-      const SessionWindow& window = *windows->at(w);
-      scoped_ptr<SessionWindow> new_window(new SessionWindow());
-      for (size_t t = 0; t < window.tabs.size(); ++t) {
-        const SessionTab& tab = *window.tabs.at(t);
-        scoped_ptr<SessionTab> new_tab(new SessionTab());
-        new_tab->navigations.resize(tab.navigations.size());
-        std::copy(tab.navigations.begin(), tab.navigations.end(),
-                  new_tab->navigations.begin());
-        new_window->tabs.push_back(new_tab.release());
-      }
-      foreign_session->windows.push_back(new_window.release());
-    }
-    windows_ = &(foreign_session->windows);
-    foreign_sessions_.push_back(foreign_session.release());
-    got_windows_.Signal();
-  }
+  void OnGotSession(int handle, std::vector<SessionWindow*>* windows);
 
  private:
-  ~TestSessionService() {
-    ReleaseService();  // We don't own this, so don't destroy it.
-  }
+  virtual ~TestSessionService();
 
   friend class base::RefCountedThreadSafe<TestSessionService>;
 
@@ -148,177 +81,67 @@ class TestSessionService
 
 class LiveSessionsSyncTest : public LiveSyncTest {
  public:
-  explicit LiveSessionsSyncTest(TestType test_type)
-      : LiveSyncTest(test_type),
-        done_closing_(false, false) {}
-  virtual ~LiveSessionsSyncTest() {}
+  explicit LiveSessionsSyncTest(TestType test_type);
+  virtual ~LiveSessionsSyncTest();
 
   // Used to access the session service associated with a specific sync profile.
-  SessionService* GetSessionService(int index) {
-    return GetProfile(index)->GetSessionService();
-  }
+  SessionService* GetSessionService(int index);
 
   // Used to access the session service test helper associated with a specific
   // sync profile.
-  TestSessionService* GetHelper(int index) {
-    return test_session_services_[index]->get();
-  }
+  TestSessionService* GetHelper(int index);
 
   // Used to access the browser associated with a specific sync profile.
-  Browser* GetBrowser(int index) {
-    return browsers_[index];
-  }
+  Browser* GetBrowser(int index);
 
   // Sets up the TestSessionService helper and the new browser windows.
-  bool SetupClients() {
-    if (!LiveSyncTest::SetupClients()) {
-      return false;
-    }
-
-    // Go through and make the TestSessionServices and Browsers.
-    for (int i = 0; i < num_clients(); ++i) {
-      scoped_refptr<TestSessionService>* new_tester =
-          new scoped_refptr<TestSessionService>;
-      *new_tester = new TestSessionService(
-          GetSessionService(i), GetProfile(i));
-      test_session_services_.push_back(new_tester);
-      GetHelper(i)->SetUp();
-
-      browsers_.push_back(Browser::Create(GetProfile(i)));
-    }
-
-    return true;
-  }
+  bool SetupClients();
 
   // Open a single tab and return the TabContents. TabContents must be checked
   // to ensure the tab opened successsfully.
-  TabContents* OpenTab(int index, GURL url) WARN_UNUSED_RESULT {
-     TabContents* tab = GetBrowser(index)->
-        AddSelectedTabWithURL(url, PageTransition::START_PAGE)->tab_contents();
-
-     // Wait for the page to finish loading.
-     ui_test_utils::WaitForNavigation(
-         &GetBrowser(index)->GetSelectedTabContents()->controller());
-
-     return tab;
-  }
+  TabContents* OpenTab(int index, GURL url) WARN_UNUSED_RESULT;
 
   // Creates and verifies the creation of a new window with one tab displaying
   // the specified GURL.
   // Returns: the SessionWindow associated with the new window.
   std::vector<SessionWindow*>* InitializeNewWindowWithTab(int index, GURL url)
-      WARN_UNUSED_RESULT {
-    if (!OpenTab(index, url)) {
-      return NULL;
-    }
-    GetHelper(index)->Save();
-    std::vector<SessionWindow*>* windows = GetHelper(index)->ReadWindows();
-    if (windows->size() != 1) {
-      LOG(ERROR) << "InitializeNewWindowWithTab called with open windows!";
-      return NULL;
-    }
-    if (1U != (*windows)[0]->tabs.size())
-      return NULL;
-    SortSessionWindows(windows);
-    return windows;
-  }
+      WARN_UNUSED_RESULT;
 
   // Checks that window count and foreign session count are 0.
-  bool CheckInitialState(int index) WARN_UNUSED_RESULT {
-    if (0 != GetNumWindows(index))
-      return false;
-    if (0 != GetNumForeignSessions(index))
-      return false;
-    return true;
-  }
+  bool CheckInitialState(int index) WARN_UNUSED_RESULT;
 
   // Returns number of open windows for a profile.
-  int GetNumWindows(int index) {
-    // We don't own windows.
-    std::vector<SessionWindow*>* windows = GetHelper(index)->ReadWindows();
-    return windows->size();
-  }
+  int GetNumWindows(int index);
 
   // Returns number of foreign sessions for a profile.
-  int GetNumForeignSessions(int index) {
-    std::vector<const ForeignSession*> sessions;
-    if (!GetProfile(index)->GetProfileSyncService()->
-        GetSessionModelAssociator()->GetAllForeignSessions(&sessions))
-        return 0;
-    return sessions.size();
-  }
+  int GetNumForeignSessions(int index);
 
   // Fills the sessions vector with the model associator's foreign session data.
   // Caller owns |sessions|, but not ForeignSession objects within.
   bool GetSessionData(int index, std::vector<const ForeignSession*>* sessions)
-      WARN_UNUSED_RESULT {
-    if (!GetProfile(index)->GetProfileSyncService()->
-        GetSessionModelAssociator()->GetAllForeignSessions(sessions))
-      return false;
-    SortForeignSessions(sessions);
-    return true;
-  }
+      WARN_UNUSED_RESULT;
 
   // Compare session windows based on their first tab's url.
   // Returns true if the virtual url of the lhs is < the rhs.
-  static bool CompareSessionWindows(SessionWindow* lhs, SessionWindow* rhs) {
-    if (!lhs ||
-        !rhs ||
-        lhs->tabs.size() < 1 ||
-        rhs->tabs.size() < 1 ||
-        lhs->tabs[0]->navigations.size() < 1 ||
-        rhs->tabs[0]->navigations.size() < 1) {
-      // Catchall for uncomparable data.
-      return false;
-    }
-
-    return lhs->tabs[0]->navigations[0].virtual_url() <
-        rhs->tabs[0]->navigations[0].virtual_url();
-  }
+  static bool CompareSessionWindows(SessionWindow* lhs, SessionWindow* rhs);
 
   // Sort session windows using our custom comparator (first tab url
   // comparison).
-  void SortSessionWindows(std::vector<SessionWindow*>* windows) {
-    std::sort(windows->begin(), windows->end(),
-              LiveSessionsSyncTest::CompareSessionWindows);
-  }
+  void SortSessionWindows(std::vector<SessionWindow*>* windows);
 
   // Compares a foreign session based on the first session window.
   // Returns true based on the comparison of the session windows.
   static bool CompareForeignSessions(
       const ForeignSession* lhs,
-      const ForeignSession* rhs) {
-    if (!lhs ||
-        !rhs ||
-        lhs->windows.size() < 1 ||
-        rhs->windows.size() < 1) {
-      // Catchall for uncomparable data.
-      return false;
-    }
-
-    return CompareSessionWindows(lhs->windows[0], rhs->windows[0]);
-  }
+      const ForeignSession* rhs);
 
   // Sort a foreign session vector using our custom foreign session comparator.
-  void SortForeignSessions(std::vector<const ForeignSession*>* sessions) {
-    std::sort(sessions->begin(), sessions->end(),
-        LiveSessionsSyncTest::CompareForeignSessions);
-  }
+  void SortForeignSessions(std::vector<const ForeignSession*>* sessions);
 
   // Compares two tab navigations base on the parameters we sync.
   // (Namely, we don't sync state or type mask)
   bool NavigationEquals(const TabNavigation& expected,
-                        const TabNavigation& actual) {
-    if (expected.virtual_url() != actual.virtual_url())
-      return false;
-    if (expected.referrer() != actual.referrer())
-      return false;
-    if (expected.title() != actual.title())
-      return false;
-    if (expected.transition() != actual.transition())
-      return false;
-    return true;
-  }
+                        const TabNavigation& actual);
 
   // Verifies that two SessionWindows match.
   // Returns:
@@ -329,28 +152,7 @@ class LiveSessionsSyncTest : public LiveSyncTest {
   //    4. actual tab navigations contents
   // - false otherwise.
   bool WindowsMatch(const std::vector<SessionWindow*> &win1,
-      const std::vector<SessionWindow*> &win2) WARN_UNUSED_RESULT {
-    SessionTab* client0_tab;
-    SessionTab* client1_tab;
-    if (win1.size() != win2.size())
-      return false;
-    for (size_t i = 0; i < win1.size(); ++i) {
-      if (win1[i]->tabs.size() != win2[i]->tabs.size())
-        return false;
-      for (size_t j = 0; j < win1[i]->tabs.size(); ++j) {
-        client0_tab = win1[i]->tabs[j];
-        client1_tab = win2[i]->tabs[j];
-        for (size_t k = 0; k < client0_tab->navigations.size(); ++k) {
-          if (!NavigationEquals(client0_tab->navigations[k],
-                                client1_tab->navigations[k])) {
-            return false;
-          }
-        }
-      }
-    }
-
-    return true;
-  }
+                    const std::vector<SessionWindow*> &win2) WARN_UNUSED_RESULT;
 
   // Retrieves the foreign sessions for a particular profile and compares them
   // with a reference SessionWindow list.
@@ -358,39 +160,11 @@ class LiveSessionsSyncTest : public LiveSyncTest {
   // reference.
   bool CheckForeignSessionsAgainst(int index,
       const std::vector<std::vector<SessionWindow*>* >& windows)
-      WARN_UNUSED_RESULT {
-    std::vector<const ForeignSession*> sessions;
-    if (!GetSessionData(index, &sessions))
-      return false;
-    if ((size_t)(num_clients()-1) != sessions.size())
-      return false;
-
-    int window_index = 0;
-    for (size_t j = 0; j < sessions.size(); ++j, ++window_index) {
-      if (window_index == index)
-        window_index++;  // Skip self.
-      if (!WindowsMatch(sessions[j]->windows, *windows[window_index]))
-        return false;
-    }
-
-    return true;
-  }
+      WARN_UNUSED_RESULT;
 
  protected:
   // Clean up our mess.
-  virtual void CleanUpOnMainThread() {
-    // Close all browsers. We need to do this now, as opposed to letting the
-    // test framework handle it, because we created our own browser for each
-    // sync profile.
-    BrowserList::CloseAllBrowsers();
-    ui_test_utils::RunAllPendingInMessageLoop();
-
-    // All browsers should be closed at this point, else when the framework
-    // calls QuitBrowsers() we could see memory corruption.
-    ASSERT_EQ(0U, BrowserList::size());
-
-    LiveSyncTest::CleanUpOnMainThread();
-  }
+  virtual void CleanUpOnMainThread();
 
   // Vector of our TestSessionService helpers.
   ScopedVector<scoped_refptr<TestSessionService> > test_session_services_;

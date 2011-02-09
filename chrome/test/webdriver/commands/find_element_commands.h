@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,18 +19,16 @@ class FindElementCommand : public WebDriverCommand {
  public:
    FindElementCommand(const std::vector<std::string>& path_segments,
                       const DictionaryValue* const parameters,
-                      const bool find_one_element)
-      : WebDriverCommand(path_segments, parameters),
-        find_one_element_(find_one_element) {}
-  virtual ~FindElementCommand() {}
+                      const bool find_one_element);
+  virtual ~FindElementCommand();
 
   virtual bool Init(Response* const response);
 
-  virtual bool DoesPost() { return true; }
+  virtual bool DoesPost();
   virtual void ExecutePost(Response* const response);
 
  private:
-  virtual bool RequiresValidTab() { return false; }
+  virtual bool RequiresValidTab();
   const bool find_one_element_;
   std::string root_element_id_;
   std::string use_;

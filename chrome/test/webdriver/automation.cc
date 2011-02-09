@@ -8,10 +8,16 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/test/automation/browser_proxy.h"
+#include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/test_launcher_utils.h"
 #include "googleurl/src/gurl.h"
 
 namespace webdriver {
+
+Automation::Automation() {}
+
+Automation::~Automation() {}
 
 void Automation::Init(bool* success) {
   *success = false;

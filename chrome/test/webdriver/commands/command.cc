@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,29 @@ const char* const Response::kClassKey = "class";
 const char* const Response::kStackTrace = "stackTrace";
 const char* const Response::kFileName = "fileName";
 const char* const Response::kLineNumber = "lineNumber";
+
+Command::Command(const std::vector<std::string>& path_segments,
+                 const DictionaryValue* const parameters)
+    : path_segments_(path_segments),
+      parameters_(parameters) {}
+
+Command::~Command() {}
+
+bool Command::DoesDelete() {
+  return false;
+}
+
+bool Command::DoesGet() {
+  return false;
+}
+
+bool Command::DoesPost() {
+  return false;
+}
+
+bool Command::Init(Response* const response) {
+  return true;
+}
 
 bool Command::GetStringParameter(const std::string& key,
                                  string16* out) const {

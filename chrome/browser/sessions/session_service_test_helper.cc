@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;
+
+SessionServiceTestHelper::SessionServiceTestHelper() {}
+
+SessionServiceTestHelper::SessionServiceTestHelper(SessionService* service)
+    : service_(service) {}
+
+SessionServiceTestHelper::~SessionServiceTestHelper() {}
 
 void SessionServiceTestHelper::RestoreSessionFromCommands(
     const std::vector<SessionCommand*>& commands,

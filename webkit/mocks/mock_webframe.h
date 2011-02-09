@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,11 +48,8 @@ namespace webkit_glue {
 
 class MockWebFrame : public WebKit::WebFrame {
  public:
-  MockWebFrame() {
-  }
-
-  virtual ~MockWebFrame() {
-  }
+  MockWebFrame();
+  virtual ~MockWebFrame();
 
   MOCK_METHOD2(setReferrerForRequest, void(WebURLRequest&, const WebURL&));
   MOCK_METHOD1(dispatchWillSendRequest, void(WebURLRequest&));
@@ -65,286 +62,148 @@ class MockWebFrame : public WebKit::WebFrame {
     return NULL;
   }
 
-  virtual WebString name() const {
-    return WebString();
-  }
-  virtual void setName(const WebString&) {}
-  virtual long long identifier() const {
-    return 0;
-  }
-  virtual WebURL url() const {
-    return WebURL();
-  }
-  virtual WebURL favIconURL() const {
-    return WebURL();
-  }
-  virtual WebURL openSearchDescriptionURL() const {
-    return WebURL();
-  }
-  virtual WebString encoding() const {
-    return WebString();
-  }
-  virtual void setCanHaveScrollbars(bool) {}
-  virtual WebSize scrollOffset() const {
-    return WebSize(0,0);
-  }
-  virtual WebSize contentsSize() const {
-     return WebSize();
-  }
-  virtual int contentsPreferredWidth() const {
-    return 0;
-  }
-  virtual int documentElementScrollHeight() const {
-    return 0;
-  }
-  virtual bool hasVisibleContent() const {
-    return false;
-  }
-  virtual WebView* view() const {
-    return NULL;
-  }
-  virtual WebFrame* opener() const {
-    return NULL;
-  }
-  virtual WebFrame* parent() const {
-    return NULL;
-  }
-  virtual WebFrame* top() const {
-    return NULL;
-  }
-  virtual WebFrame* firstChild() const {
-    return NULL;
-  }
-  virtual WebFrame* lastChild() const {
-    return NULL;
-  }
-  virtual WebFrame* nextSibling() const {
-    return NULL;
-  }
-  virtual WebFrame* previousSibling() const {
-    return NULL;
-  }
-  virtual WebFrame* traverseNext(bool wrap) const {
-    return NULL;
-  }
-  virtual WebFrame* traversePrevious(bool wrap) const {
-    return NULL;
-  }
-  virtual WebFrame* findChildByName(const WebString& name) const {
-    return NULL;
-  }
-  virtual WebFrame* findChildByExpression(const WebString& xpath) const {
-    return NULL;
-  }
-  virtual WebDocument document() const {
-    return WebDocument();
-  }
-  virtual void forms(WebVector<WebFormElement>&) const {}
-  virtual WebAnimationController* animationController() {
-    return NULL;
-  }
-  virtual WebPerformance performance() const {
-    return WebPerformance();
-  }
-  virtual WebSecurityOrigin securityOrigin() const {
-    return WebSecurityOrigin();
-  }
-  virtual void grantUniversalAccess() {}
-  virtual NPObject* windowObject() const {
-    return NULL;
-  }
-  virtual void bindToWindowObject(const WebString& name, NPObject*) {}
-  virtual void executeScript(const WebScriptSource&) {}
+  virtual WebString name() const;
+  virtual void setName(const WebString&);
+  virtual long long identifier() const;
+  virtual WebURL url() const;
+  virtual WebURL favIconURL() const;
+  virtual WebURL openSearchDescriptionURL() const;
+  virtual WebString encoding() const;
+  virtual void setCanHaveScrollbars(bool);
+  virtual WebSize scrollOffset() const;
+  virtual WebSize contentsSize() const;
+  virtual int contentsPreferredWidth() const;
+  virtual int documentElementScrollHeight() const;
+  virtual bool hasVisibleContent() const;
+  virtual WebView* view() const;
+  virtual WebFrame* opener() const;
+  virtual WebFrame* parent() const;
+  virtual WebFrame* top() const;
+  virtual WebFrame* firstChild() const;
+  virtual WebFrame* lastChild() const;
+  virtual WebFrame* nextSibling() const;
+  virtual WebFrame* previousSibling() const;
+  virtual WebFrame* traverseNext(bool wrap) const;
+  virtual WebFrame* traversePrevious(bool wrap) const;
+  virtual WebFrame* findChildByName(const WebString& name) const;
+  virtual WebFrame* findChildByExpression(const WebString& xpath) const;
+  virtual WebDocument document() const;
+  virtual void forms(WebVector<WebFormElement>&) const;
+  virtual WebAnimationController* animationController();
+  virtual WebPerformance performance() const;
+  virtual WebSecurityOrigin securityOrigin() const;
+  virtual void grantUniversalAccess();
+  virtual NPObject* windowObject() const;
+  virtual void bindToWindowObject(const WebString& name, NPObject*);
+  virtual void executeScript(const WebScriptSource&);
   virtual void executeScriptInIsolatedWorld(
       int worldId, const WebScriptSource* sources, unsigned numSources,
-      int extensionGroup) {}
-  virtual void addMessageToConsole(const WebConsoleMessage&) {}
-  virtual void collectGarbage() {}
+      int extensionGroup);
+  virtual void addMessageToConsole(const WebConsoleMessage&);
+  virtual void collectGarbage();
 #if WEBKIT_USING_V8
   virtual v8::Handle<v8::Value> executeScriptAndReturnValue(
-      const WebScriptSource&) {
-    return v8::Handle<v8::Value>();
-  }
-  virtual v8::Local<v8::Context> mainWorldScriptContext() const {
-    return v8::Local<v8::Context>();
-  }
+      const WebScriptSource&);
+  virtual v8::Local<v8::Context> mainWorldScriptContext() const;
 #endif
   virtual bool insertStyleText(const WebString& styleText,
-                               const WebString& elementId) {
-    return false;
-  }
-  virtual void reload(bool ignoreCache = false) {}
-  virtual void loadRequest(const WebURLRequest&) {}
-  virtual void loadHistoryItem(const WebHistoryItem&) {}
+                               const WebString& elementId);
+  virtual void reload(bool ignoreCache = false);
+  virtual void loadRequest(const WebURLRequest&);
+  virtual void loadHistoryItem(const WebHistoryItem&);
   virtual void loadData(const WebData& data,
                         const WebString& mimeType,
                         const WebString& textEncoding,
                         const WebURL& baseURL,
                         const WebURL& unreachableURL = WebURL(),
-                        bool replace = false) {}
+                        bool replace = false);
   virtual void loadHTMLString(const WebData& html,
                               const WebURL& baseURL,
                               const WebURL& unreachableURL = WebURL(),
-                              bool replace = false) {}
-  virtual bool isLoading() const {
-    return false;
-  }
-  virtual void stopLoading() {}
-  virtual WebKit::WebDataSource* provisionalDataSource() const {
-    return NULL;
-  }
-  virtual WebKit::WebDataSource* dataSource() const {
-    return NULL;
-  }
-  virtual WebHistoryItem previousHistoryItem() const {
-    return WebHistoryItem();
-  }
-  virtual WebHistoryItem currentHistoryItem() const {
-    return WebHistoryItem();
-  }
-  virtual void enableViewSourceMode(bool) {}
-  virtual bool isViewSourceModeEnabled() const {
-    return false;
-  }
+                              bool replace = false);
+  virtual bool isLoading() const;
+  virtual void stopLoading();
+  virtual WebKit::WebDataSource* provisionalDataSource() const;
+  virtual WebKit::WebDataSource* dataSource() const;
+  virtual WebHistoryItem previousHistoryItem() const;
+  virtual WebHistoryItem currentHistoryItem() const;
+  virtual void enableViewSourceMode(bool);
+  virtual bool isViewSourceModeEnabled() const;
   // The next two methods were mocked above.
   // virtual void setReferrerForRequest(WebURLRequest&, const WebURL&) {}
   // virtual void dispatchWillSendRequest(WebURLRequest&) {}
-  virtual WebURLLoader* createAssociatedURLLoader() {
-    return NULL;
-  }
-  virtual void commitDocumentData(const char* data, size_t length) {}
-  virtual unsigned unloadListenerCount() const {
-    return 0;
-  }
-  virtual bool isProcessingUserGesture() const {
-    return false;
-  }
-  virtual bool willSuppressOpenerInNewFrame() const {
-    return false;
-  }
-  virtual void replaceSelection(const WebString& text) {}
-  virtual void insertText(const WebString& text) {}
+  virtual WebURLLoader* createAssociatedURLLoader();
+  virtual void commitDocumentData(const char* data, size_t length);
+  virtual unsigned unloadListenerCount() const;
+  virtual bool isProcessingUserGesture() const;
+  virtual bool willSuppressOpenerInNewFrame() const;
+  virtual void replaceSelection(const WebString& text);
+  virtual void insertText(const WebString& text);
   virtual void setMarkedText(const WebString& text,
                              unsigned location,
-                             unsigned length) {}
-  virtual void unmarkText() {}
-  virtual bool hasMarkedText() const {
-    return false;
-  }
-  virtual WebRange markedRange() const {
-    return WebRange();
-  }
+                             unsigned length);
+  virtual void unmarkText();
+  virtual bool hasMarkedText() const;
+  virtual WebRange markedRange() const;
   virtual bool firstRectForCharacterRange(unsigned location,
                                           unsigned length,
-                                          WebRect&) const {
-    return false;
-  }
-  virtual bool executeCommand(const WebString&) {
-    return false;
-  }
-  virtual bool executeCommand(const WebString&, const WebString& value) {
-    return false;
-  }
-  virtual bool isCommandEnabled(const WebString&) const {
-    return false;
-  }
-  virtual void enableContinuousSpellChecking(bool) {}
-  virtual bool isContinuousSpellCheckingEnabled() const {
-    return false;
-  }
-  virtual bool hasSelection() const {
-    return false;
-  }
-  virtual WebRange selectionRange() const {
-    return WebRange();
-  }
-  virtual WebString selectionAsText() const {
-    return WebString();
-  }
-  virtual WebString selectionAsMarkup() const {
-    return WebString();
-  }
-  virtual bool selectWordAroundCaret() {
-    return false;
-  }
+                                          WebRect&) const;
+  virtual bool executeCommand(const WebString&);
+  virtual bool executeCommand(const WebString&, const WebString& value);
+  virtual bool isCommandEnabled(const WebString&) const;
+  virtual void enableContinuousSpellChecking(bool);
+  virtual bool isContinuousSpellCheckingEnabled() const;
+  virtual bool hasSelection() const;
+  virtual WebRange selectionRange() const;
+  virtual WebString selectionAsText() const;
+  virtual WebString selectionAsMarkup() const;
+  virtual bool selectWordAroundCaret();
   virtual int printBegin(const WebSize& pageSize,
                          const WebNode& constrainToNode,
                          int printerDPI = 72,
-                         bool* useBrowserOverlays = 0) {
-    return 0;
-  }
-  virtual float getPrintPageShrink(int page) {
-    return 0;
-  }
-  virtual float printPage(int pageToPrint, WebCanvas*) {
-    return 0;
-  }
-  virtual void printEnd() {}
-  virtual bool isPageBoxVisible(int pageIndex) {
-    return false;
-  }
+                         bool* useBrowserOverlays = 0);
+  virtual float getPrintPageShrink(int page);
+  virtual float printPage(int pageToPrint, WebCanvas*);
+  virtual void printEnd();
+  virtual bool isPageBoxVisible(int pageIndex);
   virtual void pageSizeAndMarginsInPixels(int pageIndex,
                                           WebSize& pageSize,
                                           int& marginTop,
                                           int& marginRight,
                                           int& marginBottom,
-                                          int& marginLeft) {}
+                                          int& marginLeft);
   virtual bool find(int identifier,
                     const WebString& searchText,
                     const WebFindOptions& options,
                     bool wrapWithinFrame,
-                    WebRect* selectionRect) {
-    return false;
-  }
-  virtual void stopFinding(bool clearSelection) {}
+                    WebRect* selectionRect);
+  virtual void stopFinding(bool clearSelection);
   virtual void scopeStringMatches(int identifier,
                                   const WebString& searchText,
                                   const WebFindOptions& options,
-                                  bool reset) {}
-  virtual void cancelPendingScopingEffort() {}
-  virtual void increaseMatchCount(int count, int identifier) {}
-  virtual void resetMatchCount() {}
+                                  bool reset);
+  virtual void cancelPendingScopingEffort();
+  virtual void increaseMatchCount(int count, int identifier);
+  virtual void resetMatchCount();
   virtual bool registerPasswordListener(
       WebInputElement,
-      WebPasswordAutocompleteListener*) {
-    return false;
-  }
+      WebPasswordAutocompleteListener*);
   virtual void notifiyPasswordListenerOfAutocomplete(
-      const WebInputElement&) {}
-  virtual WebString contentAsText(size_t maxChars) const {
-    return WebString();
-  }
-  virtual WebString contentAsMarkup() const {
-    return WebString();
-  }
-  virtual WebString renderTreeAsText() const {
-    return WebString();
-  }
-  virtual WebString counterValueForElementById(const WebString& id) const {
-    return WebString();
-  }
-  virtual WebString markerTextForListItem(const WebElement&) const {
-    return WebString();
-  }
+      const WebInputElement&);
+  virtual WebString contentAsText(size_t maxChars) const;
+  virtual WebString contentAsMarkup() const;
+  virtual WebString renderTreeAsText() const;
+  virtual WebString counterValueForElementById(const WebString& id) const;
+  virtual WebString markerTextForListItem(const WebElement&) const;
   virtual int pageNumberForElementById(const WebString& id,
                                        float pageWidthInPixels,
-                                       float pageHeightInPixels) const {
-    return 0;
-  }
-  virtual WebRect selectionBoundsRect() const {
-    return WebRect();
-  }
-  virtual bool selectionStartHasSpellingMarkerFor(int from, int length) const {
-    return false;
-  }
+                                       float pageHeightInPixels) const;
+  virtual WebRect selectionBoundsRect() const;
+  virtual bool selectionStartHasSpellingMarkerFor(int from, int length) const;
   virtual bool pauseSVGAnimation(const WebString& animationId,
                                  double time,
-                                 const WebString& elementId) {
-    return false;
-  }
-  virtual WebString layerTreeAsText() const {
-    return WebString();
-  }
+                                 const WebString& elementId);
+  virtual WebString layerTreeAsText() const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockWebFrame);
