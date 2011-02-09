@@ -36,6 +36,7 @@
       'browsing_data',
       'codesign',
       'content',
+      '-content.ContentTest.testTopSitesContent',  # crbug.com/71824
       'cookies',
       'crash_reporter',
       'databases',
