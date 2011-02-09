@@ -105,7 +105,7 @@ init_egl(struct display *display)
 	EGLBoolean ret;
 
 	display->egl.dpy =
-		eglGetDisplay((EGLNativeDisplayType) display->native);
+		eglGetDisplay(display->native);
 	assert(display->egl.dpy);
 
 	ret = eglInitialize(display->egl.dpy, &major, &minor);
@@ -205,7 +205,7 @@ create_surface(struct window *window)
 	window->egl_surface =
 		eglCreateWindowSurface(display->egl.dpy,
 				       display->egl.conf,
-				       (EGLNativeWindowType) window->native,
+				       window->native,
 				       NULL);
 
 	wl_surface_map_toplevel(window->surface);

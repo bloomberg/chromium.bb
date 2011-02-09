@@ -36,6 +36,8 @@
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <sys/mman.h>
 
+#include <wayland-egl.h>
+
 #define EGL_EGLEXT_PROTOTYPES 1
 #define GL_GLEXT_PROTOTYPES 1
 #include <GL/gl.h>
@@ -47,8 +49,6 @@
 #endif
 
 #include <X11/extensions/XKBcommon.h>
-
-#include <wayland-egl.h>
 
 #include <linux/input.h>
 #include "wayland-util.h"
@@ -1593,7 +1593,7 @@ init_egl(struct display *d)
 {
 	EGLint major, minor;
 
-	d->dpy = eglGetDisplay((EGLNativeDisplayType) d->native_dpy);
+	d->dpy = eglGetDisplay(d->native_dpy);
 	if (!eglInitialize(d->dpy, &major, &minor)) {
 		fprintf(stderr, "failed to initialize display\n");
 		return -1;
