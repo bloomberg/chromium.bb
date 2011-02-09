@@ -75,6 +75,7 @@ class InputMethodMenu : public views::ViewMenuDelegate,
     InputMethodLibrary* obj,
     const InputMethodDescriptor& previous_input_method,
     const InputMethodDescriptor& current_input_method);
+  virtual void FirstObserverIsAdded(InputMethodLibrary* obj);
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,

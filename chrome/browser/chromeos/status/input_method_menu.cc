@@ -135,26 +135,15 @@ InputMethodMenu::InputMethodMenu(PrefService* pref_service,
          !input_method_descriptors_->empty());
 
   // Sync current and previous input methods on Chrome prefs with ibus-daemon.
-  // InputMethodChanged() will be called soon and the indicator will be updated.
-  InputMethodLibrary* library = CrosLibrary::Get()->GetInputMethodLibrary();
-  if (pref_service && (screen_mode_ == StatusAreaHost::kBrowserMode)) {
+  if (pref_service_ && (screen_mode_ == StatusAreaHost::kBrowserMode)) {
     previous_input_method_pref_.Init(
         prefs::kLanguagePreviousInputMethod, pref_service, this);
-    const std::string previous_input_method_id =
-        previous_input_method_pref_.GetValue();
-    if (!previous_input_method_id.empty()) {
-      library->ChangeInputMethod(previous_input_method_id);
-    }
-
     current_input_method_pref_.Init(
         prefs::kLanguageCurrentInputMethod, pref_service, this);
-    const std::string current_input_method_id =
-        current_input_method_pref_.GetValue();
-    if (!current_input_method_id.empty()) {
-      library->ChangeInputMethod(current_input_method_id);
-    }
   }
-  library->AddObserver(this);
+
+  InputMethodLibrary* library = CrosLibrary::Get()->GetInputMethodLibrary();
+  library->AddObserver(this);  // FirstObserverIsAdded() might be called back.
 
   if (screen_mode_ == StatusAreaHost::kLoginMode) {
     // This button is for the login screen.
@@ -399,6 +388,30 @@ void InputMethodMenu::PreferenceUpdateNeeded(
       g_browser_process->local_state()->SetString(
           language_prefs::kPreferredKeyboardLayout, current_input_method.id);
       g_browser_process->local_state()->SavePersistentPrefs();
+    }
+  }
+}
+
+void InputMethodMenu::FirstObserverIsAdded(InputMethodLibrary* obj) {
+  // NOTICE: Since this function might be called from the constructor of this
+  // class, it's better to avoid calling virtual functions.
+
+  if (pref_service_ && (screen_mode_ == StatusAreaHost::kBrowserMode)) {
+    // Get the input method name in the Preferences file which was in use last
+    // time, and switch to the method. We remember two input method names in the
+    // preference so that the Control+space hot-key could work fine from the
+    // beginning. InputMethodChanged() will be called soon and the indicator
+    // will be updated.
+    InputMethodLibrary* library = CrosLibrary::Get()->GetInputMethodLibrary();
+    const std::string previous_input_method_id =
+        previous_input_method_pref_.GetValue();
+    if (!previous_input_method_id.empty()) {
+      library->ChangeInputMethod(previous_input_method_id);
+    }
+    const std::string current_input_method_id =
+        current_input_method_pref_.GetValue();
+    if (!current_input_method_id.empty()) {
+      library->ChangeInputMethod(current_input_method_id);
     }
   }
 }

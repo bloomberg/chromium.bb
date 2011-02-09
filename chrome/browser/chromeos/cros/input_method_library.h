@@ -43,6 +43,9 @@ class InputMethodLibrary {
         InputMethodLibrary* obj,
         const InputMethodDescriptor& previous_input_method,
         const InputMethodDescriptor& current_input_method) = 0;
+
+    // Called by AddObserver() when the first observer is added.
+    virtual void FirstObserverIsAdded(InputMethodLibrary* obj) = 0;
   };
   virtual ~InputMethodLibrary() {}
 
