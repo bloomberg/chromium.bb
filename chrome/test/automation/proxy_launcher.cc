@@ -511,12 +511,12 @@ void NamedProxyLauncher::InitializeConnection(const LaunchState& state,
   if (launch_browser_) {
     // Set up IPC testing interface as a client.
     LaunchBrowser(state);
-
-    // Wait for browser to be ready for connections.
-    struct stat file_info;
-    while (stat(channel_id_.c_str(), &file_info))
-      base::PlatformThread::Sleep(automation::kSleepTime);
   }
+
+  // Wait for browser to be ready for connections.
+  struct stat file_info;
+  while (stat(channel_id_.c_str(), &file_info))
+    base::PlatformThread::Sleep(automation::kSleepTime);
 
   ConnectToRunningBrowser(wait_for_initial_loads);
 }
