@@ -55,7 +55,7 @@ const char kPluginDescription[] = "Native Client Plugin was built on "
                                   "";
 
 char* NPP_GetMIMEDescription() {
-  return const_cast<char*>("application/x-nacl-srpc:nexe:NativeClient"
+  return const_cast<char*>("application/x-nacl:nexe:NativeClient"
                            " Simple RPC module;");
 }
 
@@ -90,7 +90,7 @@ NPError NPP_New(NPMIMEType plugin_type,
   if (npp == NULL) {
     return NPERR_INVALID_INSTANCE_ERROR;
   }
-  if (strcmp(plugin_type, "application/x-nacl-srpc") == 0) {
+  if (strcmp(plugin_type, "application/x-nacl") == 0) {
     npp->pdata = static_cast<nacl::NPInstance*>(
         plugin::PluginNpapi::New(npp, argc, argn, argv));
     if (npp->pdata == NULL) {

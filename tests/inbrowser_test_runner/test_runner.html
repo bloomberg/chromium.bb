@@ -60,7 +60,7 @@ function startProcess(url, callback) {
   var node = document.createElement('div');
   document.getElementById('scratch_space').appendChild(node);
   node.innerHTML = '<embed name=foo width=0 height=0 ' +
-    'type="application/x-nacl-srpc" onload="'+onload_id+'()" />';
+    'type="application/x-nacl" onload="'+onload_id+'()" />';
   var plugin = node.childNodes[0];
   plugin.src = url;
 }

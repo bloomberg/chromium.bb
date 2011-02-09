@@ -5,7 +5,7 @@
 
 # A way to build the nexe as a trusted plugin to validate directly
 # against Chrome on Linux using
-# --register-pepper-plugins="/path/to/libppapi_geturl.so;application/x-ppapi-nacl-srpc"
+# --register-pepper-plugins="/path/to/libppapi_geturl.so;application/x-nacl"
 # http://localhost:5103/scons-out/nacl-x86-../staging/ppapi_geturl.html
 
 Import('env')

@@ -30,7 +30,7 @@
   <string>npGoogleNaClPlugin</string>
 	<key>WebPluginMIMETypes</key>
 	<dict>
-		<key>application/x-nacl-srpc</key>
+		<key>application/x-nacl</key>
 		<dict>
 			<key>WebPluginTypeDescription</key>
 			<string>Native Client SimpleRPC interaction</string>

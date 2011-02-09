@@ -252,7 +252,7 @@ if not env.Bit('target_arm'):
 #
 # We build a shared library with this build script to allow easier build
 # testing. This library can also be loaded into Chrome using --no-sandbox
-# --register-pepper-plugins="path/to/library;application/x-ppapi-nacl-srpc".
+# --register-pepper-plugins="path/to/library;application/x-nacl".
 #
 # The .gyp files include rules used to link the plugin statically into Chrome.
 # (This is still work in progress as of mid-Nov 2010.)

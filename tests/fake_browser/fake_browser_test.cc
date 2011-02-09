@@ -580,7 +580,7 @@ void DestroyPluginInstance(NPP plugin_instance, bool reverse_deallocate) {
 void TestNewAndDestroy() {
   printf("Test NPP_New() and NPP_Destroy()...\n");
 
-  NPMIMEType mime_type = const_cast<char*>("application/x-nacl-srpc");
+  NPMIMEType mime_type = const_cast<char*>("application/x-nacl");
   NPP plugin_instance = new NPP_t;
   int argc = 0;
   char** arg_names = NULL;
@@ -603,7 +603,7 @@ void TestNewAndDestroy() {
 }
 
 void TestHelloWorldMethod(const char* nexe_url, bool reverse_deallocate) {
-  NPMIMEType mime_type = const_cast<char*>("application/x-nacl-srpc");
+  NPMIMEType mime_type = const_cast<char*>("application/x-nacl");
   NPP plugin_instance = new NPP_t;
   int argc = 0;
   char** arg_names = NULL;
@@ -649,7 +649,7 @@ void TestMissingSrpcInit() {
   printf("Test failure to init SRPC...\n");
   const char* nexe_url = "http://localhost/hello_world.nexe";
 
-  NPMIMEType mime_type = const_cast<char*>("application/x-nacl-srpc");
+  NPMIMEType mime_type = const_cast<char*>("application/x-nacl");
   NPP plugin_instance = new NPP_t;
   CheckRetval(plugin_funcs.newp(mime_type, plugin_instance, NP_EMBED,
                                 0, NULL, NULL, NULL));
@@ -683,7 +683,7 @@ void TestOverlappingLaunch() {
   printf("Test assigning to src twice...\n");
   const char* nexe_url = "http://localhost/spin.nexe";
 
-  NPMIMEType mime_type = const_cast<char*>("application/x-nacl-srpc");
+  NPMIMEType mime_type = const_cast<char*>("application/x-nacl");
   NPP plugin_instance = new NPP_t;
   CheckRetval(plugin_funcs.newp(mime_type, plugin_instance, NP_EMBED,
                                 0, NULL, NULL, NULL));
@@ -710,7 +710,7 @@ void TestAsyncMessages() {
   printf("Test asynchronous messages...\n");
   const char* nexe_url = "http://localhost/async_message_test.nexe";
 
-  NPMIMEType mime_type = const_cast<char*>("application/x-nacl-srpc");
+  NPMIMEType mime_type = const_cast<char*>("application/x-nacl");
   NPP plugin_instance = new NPP_t;
   CheckRetval(plugin_funcs.newp(mime_type, plugin_instance, NP_EMBED,
                                 0, NULL, NULL, NULL));
@@ -821,7 +821,7 @@ void TestDeferredSrpcInit() {
   printf("Test __startSrpcServices()...\n");
   const char* nexe_url = "http://localhost/deferred_srpc_init.nexe";
 
-  NPMIMEType mime_type = const_cast<char*>("application/x-nacl-srpc");
+  NPMIMEType mime_type = const_cast<char*>("application/x-nacl");
   NPP plugin_instance = new NPP_t;
   CheckRetval(plugin_funcs.newp(mime_type, plugin_instance, NP_EMBED,
                                 0, NULL, NULL, NULL));

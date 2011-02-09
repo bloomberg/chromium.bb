@@ -30,7 +30,7 @@
     <string>ppNaClPlugin</string>
     <key>WebPluginMIMETypes</key>
     <dict>
-        <key>application/x-ppapi-nacl-srpc</key>
+        <key>application/x-nacl</key>
         <dict>
             <key>WebPluginTypeDescription</key>
             <string>PPAPI Native Client SimpleRPC interaction</string>

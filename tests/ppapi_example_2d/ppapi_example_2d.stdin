@@ -118,7 +118,7 @@ rpc PPP_InitializeModule i(0) ${MODULE} h(pepper_desc) s("${service_string}") * 
 echo
 echo "*** INIT INSTANCE"
 set_variable TAGS C(23,id\000name\000src\000style\000type\000)
-set_variable VALUES C(85,naclModule\000naclModule\000ppapi.nexe\000background-color:gray\000application/x-ppapi-nacl-srpc\000)
+set_variable VALUES C(74,naclModule\000naclModule\000ppapi.nexe\000background-color:gray\000application/x-nacl\000)
 
 # The PPP_GetInterface() call is probably not necessary, we just emulate what
 # happens in real life

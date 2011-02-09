@@ -10,6 +10,6 @@ resource 'STR#' (127) { {
 } };
 
 resource 'STR#' (128) { {
-  "application/x-ppapi-nacl-srpc",
+  "application/x-nacl",
   "nexe",
 } };

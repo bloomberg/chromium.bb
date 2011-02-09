@@ -48,7 +48,7 @@ def StartChrome(chrome_browser_exe, argv, extra_args):
 ######################################################################
 # Linux Specific Definitions and Functions
 ######################################################################
-PPAPI_MIME_TYPE = 'application/x-ppapi-nacl-srpc'
+PPAPI_MIME_TYPE = 'application/x-nacl'
 
 def StartChromeLinux(argv):
   browser = os.getenv('CHROME_BROWSER_EXE', None)

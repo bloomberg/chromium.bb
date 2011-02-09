@@ -8,14 +8,6 @@ import platform
 Import('env')
 
 
-# In Chrome, we can share the nexe between the NPAPI (built-in) and
-# PPAPI (loaded with --register-pepper-plugins) versions of NaCl, but the html
-# needs to be different to specify different plugin content types:
-# "application/x-nacl-srpc" for srpc nexes with NPAPI plugin and
-# "application/x-ppapi-nacl-srpc" for for srpc nexes with PPAPI plugin.
-# TODO(polina): at some point there should only be "application/x-nacl".
-
-
 ######################################################################
 # Simple RPC basic methods tests
 ######################################################################

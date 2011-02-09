@@ -91,7 +91,7 @@ static void RegisterCommon() {
       FilePath(FILE_PATH_LITERAL("internal_nacl")),
       "Google Native Client",
       "Google Native Client",
-      "application/x-nacl-srpc",
+      "application/x-nacl",
       entry_points);
 }
 
