@@ -216,6 +216,9 @@ linux_from_udev(int fd, struct kms_driver **out)
 int
 linux_create(int fd, struct kms_driver **out)
 {
+	if (!dumb_create(fd, out))
+		return 0;
+
 	if (!linux_from_udev(fd, out))
 		return 0;
 

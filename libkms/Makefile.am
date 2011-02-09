@@ -16,6 +16,7 @@ libkms_la_SOURCES = \
 	internal.h \
 	linux.c \
 	intel.c \
+	dumb.c \
 	api.c
 
 if HAVE_VMWGFX
