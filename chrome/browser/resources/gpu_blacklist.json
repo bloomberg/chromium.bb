@@ -38,7 +38,7 @@
 {
   "name": "gpu blacklist",
   // Please update the version number whenever you change this file.
-  "version": "0.6",
+  "version": "0.7",
   "entries": [
     { // ATI Radeon X1900 on Mac, BUGWEBKIT=47028
       "id": "1",
@@ -110,6 +110,18 @@
       },
       "vendor_id": "0x1002",
       "device_id": "0x9583",
+      "blacklist": [
+        "webgl",
+        "accelerated_compositing"
+      ]
+    },
+    { // ATI Radeon HD2400 on Mac, BUG=68859
+      "id": "7",
+      "os": {
+        "type": "macosx"
+      },
+      "vendor_id": "0x1002",
+      "device_id": "0x94c8",
       "blacklist": [
         "webgl",
         "accelerated_compositing"
