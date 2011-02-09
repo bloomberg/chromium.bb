@@ -37,6 +37,65 @@ def GetPreferredTrySlaves():
   return %s
 """
 
+  presubmit_diffs = """
+--- file1       2011-02-09 10:38:16.517224845 -0800
++++ file2       2011-02-09 10:38:53.177226516 -0800
+@@ -1,6 +1,5 @@
+ this is line number 0
+ this is line number 1
+-this is line number 2 to be deleted
+ this is line number 3
+ this is line number 4
+ this is line number 5
+@@ -8,7 +7,7 @@
+ this is line number 7
+ this is line number 8
+ this is line number 9
+-this is line number 10 to be modified
++this is line number 10
+ this is line number 11
+ this is line number 12
+ this is line number 13
+@@ -21,9 +20,8 @@
+ this is line number 20
+ this is line number 21
+ this is line number 22
+-this is line number 23
+-this is line number 24
+-this is line number 25
++this is line number 23.1
++this is line number 25.1
+ this is line number 26
+ this is line number 27
+ this is line number 28
+@@ -31,6 +29,7 @@
+ this is line number 30
+ this is line number 31
+ this is line number 32
++this is line number 32.1
+ this is line number 33
+ this is line number 34
+ this is line number 35
+@@ -38,14 +37,14 @@
+ this is line number 37
+ this is line number 38
+ this is line number 39
+-
+ this is line number 40
+-this is line number 41
++this is line number 41.1
+ this is line number 42
+ this is line number 43
+ this is line number 44
+ this is line number 45
++
+ this is line number 46
+ this is line number 47
+-this is line number 48
++this is line number 48.1
+ this is line number 49
+"""
+
   def setUp(self):
     SuperMoxTestBase.setUp(self)
     self.mox.StubOutWithMock(presubmit, 'random')
@@ -56,6 +115,7 @@ def GetPreferredTrySlaves():
     self.mox.StubOutWithMock(presubmit.scm.SVN, 'GetFileProperty')
     self.mox.StubOutWithMock(presubmit.gclient_utils, 'FileRead')
     self.mox.StubOutWithMock(presubmit.gclient_utils, 'FileWrite')
+    self.mox.StubOutWithMock(presubmit.scm.SVN, 'GenerateDiff')
 
 
 class PresubmitUnittest(PresubmitTestsBase):
@@ -197,8 +257,9 @@ class PresubmitUnittest(PresubmitTestsBase):
     presubmit.scm.SVN.CaptureInfo(notfound).AndReturn({})
     presubmit.scm.SVN.CaptureInfo(flap).AndReturn(
             {'URL': 'svn:/foo/boo/flap.h'})
-    presubmit.gclient_utils.FileRead(blat, 'rU').AndReturn('boo!\nahh?')
-    presubmit.gclient_utils.FileRead(notfound, 'rU').AndReturn('look!\nthere?')
+    presubmit.scm.SVN.GenerateDiff(blat).AndReturn(self.presubmit_diffs)
+    presubmit.scm.SVN.GenerateDiff(notfound).AndReturn(self.presubmit_diffs)
+
     self.mox.ReplayAll()
 
     change = presubmit.SvnChange('mychange', '\n'.join(description_lines),
@@ -242,20 +303,24 @@ class PresubmitUnittest(PresubmitTestsBase):
     for line in change.RightHandSideLines():
       rhs_lines.append(line)
     self.assertEquals(rhs_lines[0][0].LocalPath(), files[0][1])
-    self.assertEquals(rhs_lines[0][1], 1)
-    self.assertEquals(rhs_lines[0][2],'boo!')
+    self.assertEquals(rhs_lines[0][1], 10)
+    self.assertEquals(rhs_lines[0][2],'this is line number 10')
 
-    self.assertEquals(rhs_lines[1][0].LocalPath(), files[0][1])
-    self.assertEquals(rhs_lines[1][1], 2)
-    self.assertEquals(rhs_lines[1][2], 'ahh?')
+    self.assertEquals(rhs_lines[3][0].LocalPath(), files[0][1])
+    self.assertEquals(rhs_lines[3][1], 32)
+    self.assertEquals(rhs_lines[3][2], 'this is line number 32.1')
 
-    self.assertEquals(rhs_lines[2][0].LocalPath(), files[3][1])
-    self.assertEquals(rhs_lines[2][1], 1)
-    self.assertEquals(rhs_lines[2][2], 'look!')
+    self.assertEquals(rhs_lines[8][0].LocalPath(), files[3][1])
+    self.assertEquals(rhs_lines[8][1], 23)
+    self.assertEquals(rhs_lines[8][2], 'this is line number 23.1')
 
-    self.assertEquals(rhs_lines[3][0].LocalPath(), files[3][1])
-    self.assertEquals(rhs_lines[3][1], 2)
-    self.assertEquals(rhs_lines[3][2], 'there?')
+    self.assertEquals(rhs_lines[12][0].LocalPath(), files[3][1])
+    self.assertEquals(rhs_lines[12][1], 46)
+    self.assertEquals(rhs_lines[12][2], '')
+
+    self.assertEquals(rhs_lines[13][0].LocalPath(), files[3][1])
+    self.assertEquals(rhs_lines[13][1], 49)
+    self.assertEquals(rhs_lines[13][2], 'this is line number 48.1')
 
   def testExecPresubmitScript(self):
     description_lines = ('Hello there',
@@ -711,10 +776,9 @@ class InputApiUnittest(PresubmitTestsBase):
     presubmit.scm.SVN.GetFileProperty(another, 'svn:mime-type').AndReturn(None)
     presubmit.scm.SVN.GetFileProperty(third_party, 'svn:mime-type'
         ).AndReturn(None)
-    presubmit.gclient_utils.FileRead(blat, 'rU'
-                                     ).AndReturn('whatever\ncookie')
-    presubmit.gclient_utils.FileRead(another, 'rU'
-                                     ).AndReturn('whatever\ncookie2')
+    presubmit.scm.SVN.GenerateDiff(blat).AndReturn(self.presubmit_diffs)
+    presubmit.scm.SVN.GenerateDiff(another).AndReturn(self.presubmit_diffs)
+
     self.mox.ReplayAll()
 
     change = presubmit.SvnChange('mychange', '\n'.join(description_lines),
@@ -737,14 +801,14 @@ class InputApiUnittest(PresubmitTestsBase):
     # binary isn't a text file and beingdeleted doesn't exist. The rest is
     # outside foo/.
     rhs_lines = [x for x in input_api.RightHandSideLines(None)]
-    self.assertEquals(len(rhs_lines), 4)
+    self.assertEquals(len(rhs_lines), 14)
     self.assertEqual(rhs_lines[0][0].LocalPath(),
                      presubmit.normpath(files[0][1]))
-    self.assertEqual(rhs_lines[1][0].LocalPath(),
-                     presubmit.normpath(files[0][1]))
-    self.assertEqual(rhs_lines[2][0].LocalPath(),
-                     presubmit.normpath(files[4][1]))
     self.assertEqual(rhs_lines[3][0].LocalPath(),
+                     presubmit.normpath(files[0][1]))
+    self.assertEqual(rhs_lines[7][0].LocalPath(),
+                     presubmit.normpath(files[4][1]))
+    self.assertEqual(rhs_lines[13][0].LocalPath(),
                      presubmit.normpath(files[4][1]))
 
   def testDefaultWhiteListBlackListFilters(self):
@@ -758,11 +822,13 @@ class InputApiUnittest(PresubmitTestsBase):
           f('experimental/b'),
           f('a/experimental'),
           f('a/experimental.cc'),
+          f('a/experimental.S'),
         ],
         [
           # Expected.
           'a/experimental',
           'a/experimental.cc',
+          'a/experimental.S',
         ],
       ),
       (
@@ -808,7 +874,7 @@ class InputApiUnittest(PresubmitTestsBase):
     input_api = presubmit.InputApi(None, './PRESUBMIT.py', False)
     self.mox.ReplayAll()
 
-    self.assertEqual(len(input_api.DEFAULT_WHITE_LIST), 20)
+    self.assertEqual(len(input_api.DEFAULT_WHITE_LIST), 22)
     self.assertEqual(len(input_api.DEFAULT_BLACK_LIST), 9)
     for item in files:
       results = filter(input_api.FilterSourceFile, item[0])
@@ -1018,8 +1084,9 @@ class AffectedFileUnittest(PresubmitTestsBase):
   def testMembersChanged(self):
     self.mox.ReplayAll()
     members = [
-      'AbsoluteLocalPath', 'Action', 'IsDirectory', 'IsTextFile', 'LocalPath',
-      'NewContents', 'OldContents', 'OldFileTempPath', 'Property', 'ServerPath',
+      'AbsoluteLocalPath', 'Action', 'ChangedContents', 'GenerateScmDiff',
+      'IsDirectory', 'IsTextFile', 'LocalPath', 'NewContents', 'OldContents',
+      'OldFileTempPath', 'Property', 'ServerPath',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit.AffectedFile('a', 'b'), members)

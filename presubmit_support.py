@@ -86,11 +86,9 @@ def PromptYesNo(input_stream, output_stream, prompt):
 def _RightHandSideLinesImpl(affected_files):
   """Implements RightHandSideLines for InputApi and GclChange."""
   for af in affected_files:
-    lines = af.NewContents()
-    line_number = 0
+    lines = af.ChangedContents()
     for line in lines:
-      line_number += 1
-      yield (af, line_number, line)
+      yield (af, line[0], line[1])
 
 
 class OutputApi(object):
@@ -188,7 +186,7 @@ class InputApi(object):
   DEFAULT_WHITE_LIST = (
       # C++ and friends
       r".*\.c$", r".*\.cc$", r".*\.cpp$", r".*\.h$", r".*\.m$", r".*\.mm$",
-      r".*\.inl$", r".*\.asm$", r".*\.hxx$", r".*\.hpp$",
+      r".*\.inl$", r".*\.asm$", r".*\.hxx$", r".*\.hpp$", r".*\.s$", r".*\.S$",
       # Scripts
       r".*\.js$", r".*\.py$", r".*\.sh$", r".*\.rb$", r".*\.pl$", r".*\.pm$",
       # No extension at all, note that ALL CAPS files are black listed in
@@ -209,7 +207,7 @@ class InputApi(object):
       r".*\bxcodebuild[\\\/].*",
       r".*\bsconsbuild[\\\/].*",
       # All caps files like README and LICENCE.
-      r".*\b[A-Z0-9_]+$",
+      r".*\b[A-Z0-9_]{2,}$",
       # SCM (can happen in dual SCM configuration). (Slightly over aggressive)
       r"(|.*[\\\/])\.git[\\\/].*",
       r"(|.*[\\\/])\.svn[\\\/].*",
@@ -345,8 +343,8 @@ class InputApi(object):
     Note: Copy-paste this function to suit your needs or use a lambda function.
     """
     def Find(affected_file, items):
+      local_path = affected_file.LocalPath()
       for item in items:
-        local_path = affected_file.LocalPath()
         if self.re.match(item, local_path):
           logging.debug("%s matched %s" % (item, local_path))
           return True
@@ -481,9 +479,36 @@ class AffectedFile(object):
     """
     raise NotImplementedError()  # Implement if/when needed.
 
+  def ChangedContents(self):
+    """Returns a list of tuples (line number, line text) of all new lines.
+
+     This relies on the scm diff output describing each changed code section
+     with a line of the form
+
+     ^@@ <old line num>,<old size> <new line num>,<new size> @@$
+    """
+    new_lines = []
+    line_num = 0
+
+    if self.IsDirectory():
+      return []
+
+    for line in self.GenerateScmDiff().splitlines():
+      m = re.match(r'^@@ [0-9\,\+\-]+ \+([0-9]+)\,[0-9]+ @@', line)
+      if m:
+        line_num = int(m.groups(1)[0])
+        continue
+      if line.startswith('+') and not line.startswith('++'):
+        new_lines.append((line_num, line[1:]))
+      if not line.startswith('-'):
+        line_num += 1
+    return new_lines
+
   def __str__(self):
     return self.LocalPath()
 
+  def GenerateScmDiff(self):
+    raise NotImplementedError()  # Implemented in derived classes.
 
 class SvnAffectedFile(AffectedFile):
   """Representation of a file in a change out of a Subversion checkout."""
@@ -532,6 +557,8 @@ class SvnAffectedFile(AffectedFile):
         self._is_text_file = (not mime_type or mime_type.startswith('text/'))
     return self._is_text_file
 
+  def GenerateScmDiff(self):
+    return scm.SVN.GenerateDiff(self.AbsoluteLocalPath())
 
 class GitAffectedFile(AffectedFile):
   """Representation of a file in a change out of a git checkout."""
@@ -577,6 +604,8 @@ class GitAffectedFile(AffectedFile):
         self._is_text_file = os.path.isfile(self.AbsoluteLocalPath())
     return self._is_text_file
 
+  def GenerateScmDiff(self):
+    return scm.GIT.GenerateDiff(self._local_root, files=[self.LocalPath(),])
 
 class Change(object):
   """Describe a change.
