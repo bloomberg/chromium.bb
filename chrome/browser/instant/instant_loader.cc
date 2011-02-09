@@ -448,6 +448,8 @@ void InstantLoader::Update(TabContentsWrapper* tab_contents,
                            const string16& user_text,
                            bool verbatim,
                            string16* suggested_text) {
+  DCHECK(!url.is_empty() && url.is_valid());
+
   // Strip leading ?.
   string16 new_user_text =
       !user_text.empty() && (UTF16ToWide(user_text)[0] == L'?') ?
@@ -469,10 +471,12 @@ void InstantLoader::Update(TabContentsWrapper* tab_contents,
       (template_url_id_ &&
        (new_user_text.empty() || user_text_ == new_user_text))) {
     suggested_text->assign(last_suggestion_);
+    // Track the url even if we're not going to update. This is important as
+    // when we get the suggest text we set user_text_ to the new suggest text,
+    // but yet the url is much different.
+    url_ = url;
     return;
   }
-
-  DCHECK(!url.is_empty() && url.is_valid());
 
   url_ = url;
   user_text_ = new_user_text;

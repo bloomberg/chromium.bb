@@ -164,6 +164,10 @@ class InstantController : public InstantLoaderDelegate {
   // (until the search provider loads, then both return true).
   bool MightSupportInstant();
 
+  // Returns the URL currently being loaded or shown if everything has finished
+  // loading.
+  GURL GetCurrentURL();
+
   // InstantLoaderDelegate
   virtual void ShowInstantLoader(InstantLoader* loader);
   virtual void SetSuggestedTextFor(InstantLoader* loader,

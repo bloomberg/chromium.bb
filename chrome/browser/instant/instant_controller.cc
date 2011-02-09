@@ -334,6 +334,11 @@ bool InstantController::MightSupportInstant() {
       loader_manager_->active_loader()->is_showing_instant();
 }
 
+GURL InstantController::GetCurrentURL() {
+  return loader_manager_.get() && loader_manager_->active_loader() ?
+      loader_manager_->active_loader()->url() : GURL();
+}
+
 void InstantController::ShowInstantLoader(InstantLoader* loader) {
   DCHECK(loader_manager_.get());
   if (loader_manager_->current_loader() == loader) {

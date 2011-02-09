@@ -294,6 +294,16 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnChangeEvent) {
 
   ASSERT_EQ(ASCIIToUTF16("abcdef"), location_bar_->location_entry()->GetText());
 
+  // Make sure the url that will get committed when we press enter matches that
+  // of the default search provider.
+  const TemplateURL* default_turl =
+      browser()->profile()->GetTemplateURLModel()->GetDefaultSearchProvider();
+  ASSERT_TRUE(default_turl);
+  ASSERT_TRUE(default_turl->url());
+  EXPECT_EQ(default_turl->url()->ReplaceSearchTerms(
+                *default_turl, ASCIIToUTF16("abcdef"), 0, string16()),
+            browser()->instant()->GetCurrentURL().spec());
+
   // Check that the value is reflected and onchange is called.
   EXPECT_EQ("true 0 0 1 2 a false abc false 3 3",
             GetSearchStateAsString(preview_));
