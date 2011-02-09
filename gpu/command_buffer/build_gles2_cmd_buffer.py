@@ -5483,19 +5483,33 @@ def main(argv):
       "\"chrome_ppapi_proxy\" will generate the glue for the chrome IPC ppapi"
       "proxy.")
   parser.add_option(
+      "--output-dir",
+      help="base directory for resulting files, under chrome/src. default is "
+      "empty. Use this if you want the result stored under gen.")
+  parser.add_option(
       "-v", "--verbose", action="store_true",
       help="prints more output.")
 
   (options, args) = parser.parse_args(args=argv)
 
+  # This script lives under gpu/command_buffer, cd to base directory.
+  os.chdir(os.path.dirname(__file__) + "/../..")
+
   gen = GLGenerator(options.verbose)
   gen.ParseGLH("common/GLES2/gl2.h")
 
+  # Support generating files under gen/
+  if options.output_dir != None:
+    os.chdir(options.output_dir)
+
   if options.alternate_mode == "ppapi":
-    gen.WritePepperGLES2Interface("ppapi/c/dev/ppb_opengles_dev.h")
-    gen.WriteGLES2ToPPAPIBridge("ppapi/lib/gl/gles2/gles2.c")
+    # To trigger this action, do "make ppapi_gles_bindings"
+    os.chdir("ppapi");
+    gen.WritePepperGLES2Interface("c/dev/ppb_opengles_dev.h")
+    gen.WriteGLES2ToPPAPIBridge("lib/gl/gles2/gles2.c")
 
   elif options.alternate_mode == "chrome_ppapi":
+    # To trigger this action, do "make ppapi_gles_implementation"
     gen.WritePepperGLES2Implementation(
         "webkit/plugins/ppapi/ppb_opengles_impl.cc")
 
@@ -5504,6 +5518,7 @@ def main(argv):
         "ppapi/proxy/ppb_opengles2_proxy.cc")
 
   else:
+    os.chdir("gpu/command_buffer")
     gen.WriteCommandIds("common/gles2_cmd_ids_autogen.h")
     gen.WriteFormat("common/gles2_cmd_format_autogen.h")
     gen.WriteFormatTest("common/gles2_cmd_format_test_autogen.h")
