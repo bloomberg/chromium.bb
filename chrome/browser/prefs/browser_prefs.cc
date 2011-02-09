@@ -178,7 +178,7 @@ void MigrateBrowserPrefs(PrefService* user_prefs, PrefService* local_state) {
     if (local_state->HasPrefPath(prefs::kBrowserWindowPlacement)) {
       user_prefs->Set(prefs::kBrowserWindowPlacement,
           *(local_state->FindPreference(prefs::kBrowserWindowPlacement)->
-              GetValue()->DeepCopy()));
+              GetValue()));
     }
     local_state->ClearPref(prefs::kBrowserWindowPlacement);
 
