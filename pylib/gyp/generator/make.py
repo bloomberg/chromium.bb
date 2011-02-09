@@ -72,6 +72,12 @@ SHARED_HEADER = ("""\
 # It's even quicker (saves ~200ms) to pass -r on the command line.
 MAKEFLAGS=-r
 
+# The source directory tree.
+srcdir := %(srcdir)s
+
+# The name of the builddir.
+builddir_name ?= %(builddir)s
+
 # The V=1 flag on command line makes us verbosely print command lines.
 ifdef V
   quiet=
@@ -80,7 +86,7 @@ else
 endif
 
 # Specify BUILDTYPE=Release on the command line for a release build.
-BUILDTYPE ?= __default_configuration__
+BUILDTYPE ?= %(default_configuration)s
 
 # Directory all our build output goes into.
 # Note that this must be two directories beneath src/ for unit tests to pass,
@@ -216,7 +222,7 @@ quiet_cmd_cxx = CXX($(TOOLSET)) $@
 cmd_cxx = $(CXX.$(TOOLSET)) $(GYP_CXXFLAGS) $(DEPFLAGS) $(CXXFLAGS.$(TOOLSET)) -c -o $@ $<
 
 quiet_cmd_alink = AR($(TOOLSET)) $@
-cmd_alink = rm -f $@ && $(AR.$(TOOLSET)) $(ARFLAGS.$(TOOLSET)) $@ $(filter %.o,$^)
+cmd_alink = rm -f $@ && $(AR.$(TOOLSET)) $(ARFLAGS.$(TOOLSET)) $@ $(filter %%.o,$^)
 
 quiet_cmd_touch = TOUCH $@
 cmd_touch = touch $@
@@ -252,7 +258,7 @@ escape_vars = $(subst $$,$$$$,$(1))
 # make. This uses printf instead of echo because printf's behaviour with respect
 # to escape sequences is more portable than echo's across different shells
 # (e.g., dash, bash).
-exact_echo = printf '%s\n' '$(call escape_quotes,$(1))'
+exact_echo = printf '%%s\n' '$(call escape_quotes,$(1))'
 """
 """
 # Helper to compare the command we're about to run against the command
@@ -415,19 +421,6 @@ SHARED_HEADER_SUFFIX_RULES = (
     ''.join(SHARED_HEADER_SUFFIX_RULES_OBJDIR1.values()) +
     ''.join(SHARED_HEADER_SUFFIX_RULES_OBJDIR2.values())
 )
-
-# This gets added to the very beginning of the Makefile.
-SHARED_HEADER_SRCDIR = ("""\
-# The source directory tree.
-srcdir := %s
-
-""")
-
-SHARED_HEADER_BUILDDIR_NAME = ("""\
-# The name of the builddir.
-builddir_name ?= %s
-
-""")
 
 SHARED_FOOTER = """\
 # "all" is a concatenation of the "all" targets from all the included
@@ -1295,10 +1288,11 @@ def GenerateOutput(target_list, target_dicts, data, params):
     srcdir_prefix = '$(srcdir)/'
   ensure_directory_exists(makefile_path)
   root_makefile = open(makefile_path, 'w')
-  root_makefile.write(SHARED_HEADER_SRCDIR % srcdir)
-  root_makefile.write(SHARED_HEADER_BUILDDIR_NAME % builddir_name)
-  root_makefile.write(SHARED_HEADER.replace('__default_configuration__',
-                                            default_configuration))
+  root_makefile.write(SHARED_HEADER % {
+      'srcdir': srcdir,
+      'builddir': builddir_name,
+      'default_configuration': default_configuration
+      })
   for toolset in toolsets:
     root_makefile.write('TOOLSET := %s\n' % toolset)
     root_makefile.write(ROOT_HEADER_SUFFIX_RULES)
