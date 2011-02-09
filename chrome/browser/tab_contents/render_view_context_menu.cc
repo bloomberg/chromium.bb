@@ -463,15 +463,21 @@ void RenderViewContextMenu::InitMenu() {
       !has_link &&
       !params_.is_editable &&
       !has_selection) {
-    // If context is in subframe, show subframe options instead.
-    if (!params_.frame_url.is_empty()) {
-      is_devtools = IsDevToolsURL(params_.frame_url);
-      if (!is_devtools && !IsInternalResourcesURL(params_.frame_url))
-        AppendFrameItems();
-    } else if (!params_.page_url.is_empty()) {
+    if (!params_.page_url.is_empty()) {
       is_devtools = IsDevToolsURL(params_.page_url);
-      if (!is_devtools && !IsInternalResourcesURL(params_.page_url))
+      if (!is_devtools && !IsInternalResourcesURL(params_.page_url)) {
         AppendPageItems();
+        // Merge in frame items if we clicked within a frame that needs them.
+        if (!params_.frame_url.is_empty()) {
+          is_devtools = IsDevToolsURL(params_.frame_url);
+          if (!is_devtools && !IsInternalResourcesURL(params_.frame_url)) {
+            menu_model_.AddSeparator();
+            AppendFrameItems();
+          }
+        }
+      }
+    } else {
+      DCHECK(params_.frame_url.is_empty());
     }
   }
 
@@ -643,12 +649,8 @@ void RenderViewContextMenu::AppendPageItems() {
 }
 
 void RenderViewContextMenu::AppendFrameItems() {
-  menu_model_.AddItemWithStringId(IDC_BACK, IDS_CONTENT_CONTEXT_BACK);
-  menu_model_.AddItemWithStringId(IDC_FORWARD, IDS_CONTENT_CONTEXT_FORWARD);
-  menu_model_.AddSeparator();
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_RELOADFRAME,
                                   IDS_CONTENT_CONTEXT_RELOADFRAME);
-  menu_model_.AddSeparator();
   // These two menu items have yet to be implemented.
   // http://code.google.com/p/chromium/issues/detail?id=11827
   //   IDS_CONTENT_CONTEXT_SAVEFRAMEAS
