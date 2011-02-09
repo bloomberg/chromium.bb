@@ -38,8 +38,6 @@
 
 #include <wayland-egl.h>
 
-#define EGL_EGLEXT_PROTOTYPES 1
-#define GL_GLEXT_PROTOTYPES 1
 #include <GL/gl.h>
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
@@ -81,6 +79,10 @@ struct display {
 	cairo_surface_t **pointer_surfaces;
 
 	display_global_handler_t global_handler;
+
+	PFNGLEGLIMAGETARGETTEXTURE2DOESPROC image_target_texture_2d;
+	PFNEGLCREATEIMAGEKHRPROC create_image;
+	PFNEGLDESTROYIMAGEKHRPROC destroy_image;
 };
 
 struct window {
@@ -204,7 +206,7 @@ egl_image_surface_data_destroy(void *p)
 	glDeleteTextures(1, &data->texture);
 	cairo_device_release(d->device);
 
-	eglDestroyImageKHR(d->dpy, data->image);
+	d->destroy_image(d->dpy, data->image);
 	wl_buffer_destroy(data->data.buffer);
 	wl_egl_pixmap_destroy(data->pixmap);
 	free(p);
@@ -246,9 +248,10 @@ display_create_egl_image_surface(struct display *display,
 		return NULL;
 	}
 
-	data->image = eglCreateImageKHR(dpy, NULL,
-					EGL_NATIVE_PIXMAP_KHR,
-					(EGLClientBuffer) data->pixmap, NULL);
+	data->image = display->create_image(dpy, NULL,
+					    EGL_NATIVE_PIXMAP_KHR,
+					    (EGLClientBuffer) data->pixmap,
+					    NULL);
 	if (data->image == EGL_NO_IMAGE_KHR) {
 		wl_egl_pixmap_destroy(data->pixmap);
 		free(data);
@@ -261,7 +264,7 @@ display_create_egl_image_surface(struct display *display,
 	cairo_device_acquire(display->device);
 	glGenTextures(1, &data->texture);
 	glBindTexture(GL_TEXTURE_2D, data->texture);
-	glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, data->image);
+	display->image_target_texture_2d(GL_TEXTURE_2D, data->image);
 	cairo_device_release(display->device);
 
 	surface = cairo_gl_surface_create_for_texture(display->device,
@@ -1679,6 +1682,11 @@ display_create(int *argc, char **argv[], const GOptionEntry *option_entries)
 
 	if (init_egl(d) < 0)
 		return NULL;
+
+	d->image_target_texture_2d =
+		(void *) eglGetProcAddress("glEGLImageTargetTexture2DOES");
+	d->create_image = (void *) eglGetProcAddress("eglCreateImageKHR");
+	d->destroy_image = (void *) eglGetProcAddress("eglDestroyImageKHR");
 
 	create_pointer_surfaces(d);
 
