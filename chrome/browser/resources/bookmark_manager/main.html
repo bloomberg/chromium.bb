@@ -1387,7 +1387,8 @@ function showInFolder() {
   // After the list is loaded we should select the revealed item.
   function f(e) {
     var index;
-    if (bookmarkNode && (index = list.dataModel.indexOf(bookmarkNode))) {
+    if (bookmarkNode &&
+        (index = list.dataModel.findIndexById(bookmarkNode.id)) != -1) {
       var sm = list.selectionModel;
       sm.anchorIndex = sm.leadIndex = sm.selectedIndex = index;
       list.scrollIndexIntoView(index);
