@@ -54,6 +54,7 @@ AudioMixerAlsa::AudioMixerAlsa()
 AudioMixerAlsa::~AudioMixerAlsa() {
   FreeAlsaMixer();
   if (thread_ != NULL) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     // A ScopedAllowIO object is required to join the thread when calling Stop.
     // The worker thread should be idle at this time.
     // See http://crosbug.com/11110 for discussion.
@@ -199,6 +200,7 @@ bool AudioMixerAlsa::InitThread() {
     return false;
 
   if (thread_ == NULL) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     thread_.reset(new base::Thread("AudioMixerAlsa"));
     if (!thread_->Start()) {
       thread_.reset();

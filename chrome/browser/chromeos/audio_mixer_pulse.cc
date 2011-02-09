@@ -10,6 +10,7 @@
 #include "base/message_loop.h"
 #include "base/task.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/browser_thread.h"
 
 namespace chromeos {
 
@@ -61,6 +62,7 @@ AudioMixerPulse::AudioMixerPulse()
 AudioMixerPulse::~AudioMixerPulse() {
   PulseAudioFree();
   if (thread_ != NULL) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     // A ScopedAllowIO object is required to join the thread when calling Stop.
     // The worker thread should be idle at this time.
     // See http://crosbug.com/11110 for discussion.
@@ -176,6 +178,7 @@ bool AudioMixerPulse::InitThread() {
     return false;
 
   if (thread_ == NULL) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     thread_.reset(new base::Thread("AudioMixerPulse"));
     if (!thread_->Start()) {
       thread_.reset();

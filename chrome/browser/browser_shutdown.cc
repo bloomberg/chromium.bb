@@ -50,6 +50,7 @@
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
+#include "chrome/browser/chromeos/system_key_event_listener.h"
 #endif
 
 using base::Time;
@@ -127,6 +128,12 @@ void Shutdown() {
 
   // Shutdown all IPC channels to service processes.
   ServiceProcessControlManager::GetInstance()->Shutdown();
+
+#if defined(OS_CHROMEOS)
+  // The system key event listener needs to be shut down earlier than when
+  // Singletons are finally destroyed in AtExitManager.
+  chromeos::SystemKeyEventListener::GetInstance()->Stop();
+#endif
 
   // WARNING: During logoff/shutdown (WM_ENDSESSION) we may not have enough
   // time to get here. If you have something that *must* happen on end session,

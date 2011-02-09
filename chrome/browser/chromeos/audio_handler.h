@@ -43,6 +43,9 @@ class AudioHandler {
   // Mutes all audio.  Non-blocking call.
   void SetMute(bool do_mute);
 
+  // Disconnects from mixer.  Called during shutdown.
+  void Disconnect();
+
  private:
   enum MixerType {
     MIXER_TYPE_PULSEAUDIO = 0,

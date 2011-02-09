@@ -27,7 +27,8 @@ SystemKeyEventListener* SystemKeyEventListener::GetInstance() {
 }
 
 SystemKeyEventListener::SystemKeyEventListener()
-    : audio_handler_(AudioHandler::GetInstance()) {
+    : stopped_(false),
+      audio_handler_(AudioHandler::GetInstance()) {
   WmMessageListener::GetInstance()->AddObserver(this);
 
   key_volume_mute_ = XKeysymToKeycode(GDK_DISPLAY(), XF86XK_AudioMute);
@@ -50,9 +51,18 @@ SystemKeyEventListener::SystemKeyEventListener()
 }
 
 SystemKeyEventListener::~SystemKeyEventListener() {
+  Stop();
+}
+
+void SystemKeyEventListener::Stop() {
+  if (stopped_)
+    return;
   WmMessageListener::GetInstance()->RemoveObserver(this);
   gdk_window_remove_filter(NULL, GdkEventFilter, this);
+  audio_handler_->Disconnect();
+  stopped_ = true;
 }
+
 
 void SystemKeyEventListener::ProcessWmMessage(const WmIpc::Message& message,
                                               GdkWindow* window) {

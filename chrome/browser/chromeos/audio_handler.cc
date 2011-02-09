@@ -93,6 +93,10 @@ void AudioHandler::SetMute(bool do_mute) {
   mixer_->SetMute(do_mute);
 }
 
+void AudioHandler::Disconnect() {
+  mixer_.reset();
+}
+
 bool AudioHandler::TryToConnect(bool async) {
   if (mixer_type_ == MIXER_TYPE_PULSEAUDIO) {
     VLOG(1) << "Trying to connect to PulseAudio";
@@ -156,7 +160,6 @@ AudioHandler::AudioHandler()
       max_volume_db_(kMaxVolumeDb),
       min_volume_db_(kMinVolumeDb),
       mixer_type_(MIXER_TYPE_PULSEAUDIO) {
-
   // Start trying to connect to mixers asychronously, starting with the current
   // mixer_type_.  If the connection fails, another TryToConnect() for the next
   // mixer will be posted at that time.
@@ -164,7 +167,7 @@ AudioHandler::AudioHandler()
 }
 
 AudioHandler::~AudioHandler() {
-  mixer_.reset();
+  Disconnect();
 };
 
 bool AudioHandler::VerifyMixerConnection() {
