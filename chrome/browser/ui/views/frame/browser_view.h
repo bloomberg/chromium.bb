@@ -677,6 +677,9 @@ class BrowserView : public BrowserBubbleHost,
 
   NotificationRegistrar registrar_;
 
+  // Used to measure the loading spinner animation rate.
+  base::TimeTicks last_animation_time_;
+
   DISALLOW_COPY_AND_ASSIGN(BrowserView);
 };
 

@@ -1146,15 +1146,7 @@ void BrowserRenderProcessHost::Observe(NotificationType type,
 }
 
 void BrowserRenderProcessHost::OnProcessLaunched() {
-  // At this point, we used to set the process priority if it were marked as
-  // backgrounded_.  We don't do that anymore because when we create a process,
-  // we really don't know how it will be used.  If it is backgrounded, and not
-  // yet processed, a stray hung-cpu process (not chrome) can cause pages to
-  // not load at all.  (see http://crbug.com/21884).
-  // If we could perfectly track when a process is created as visible or not,
-  // we could potentially call SetBackgrounded() properly at this point.  But
-  // there are many cases, and no effective way to automate those cases.
-  // I'm choosing correctness over the feature of de-prioritizing this work.
+  child_process_->SetProcessBackgrounded(backgrounded_);
 
   Send(new ViewMsg_SetIsIncognitoProcess(profile()->IsOffTheRecord()));
 

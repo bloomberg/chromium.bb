@@ -10,6 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
+#include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -819,12 +820,14 @@ void BrowserView::UpdateLoadingAnimations(bool should_animate) {
   if (should_animate) {
     if (!loading_animation_timer_.IsRunning()) {
       // Loads are happening, and the timer isn't running, so start it.
+      last_animation_time_ = base::TimeTicks::Now();
       loading_animation_timer_.Start(
           TimeDelta::FromMilliseconds(kLoadingAnimationFrameTimeMs), this,
           &BrowserView::LoadingAnimationCallback);
     }
   } else {
     if (loading_animation_timer_.IsRunning()) {
+      last_animation_time_ = base::TimeTicks();
       loading_animation_timer_.Stop();
       // Loads are now complete, update the state if a task was scheduled.
       LoadingAnimationCallback();
@@ -2407,6 +2410,13 @@ int BrowserView::GetCommandIDForAppCommandID(int app_command_id) const {
 }
 
 void BrowserView::LoadingAnimationCallback() {
+  base::TimeTicks now = base::TimeTicks::Now();
+  if (!last_animation_time_.is_null()) {
+    UMA_HISTOGRAM_TIMES(
+        "Tabs.LoadingAnimationTime",
+        now - last_animation_time_);
+  }
+  last_animation_time_ = now;
   if (browser_->type() == Browser::TYPE_NORMAL) {
     // Loading animations are shown in the tab for tabbed windows.  We check the
     // browser type instead of calling IsTabStripVisible() because the latter
