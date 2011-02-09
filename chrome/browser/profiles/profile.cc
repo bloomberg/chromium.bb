@@ -17,6 +17,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chrome_blob_storage_context.h"
+#include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
@@ -630,6 +631,12 @@ class OffTheRecordProfileImpl : public Profile,
     return NULL;
   }
 
+  virtual ChromeURLDataManager* GetChromeURLDataManager() {
+    if (!chrome_url_data_manager_.get())
+      chrome_url_data_manager_.reset(new ChromeURLDataManager(this));
+    return chrome_url_data_manager_.get();
+  }
+
   virtual PromoCounter* GetInstantPromoCounter() {
     return NULL;
   }
@@ -718,6 +725,8 @@ class OffTheRecordProfileImpl : public Profile,
   scoped_refptr<fileapi::SandboxedFileSystemContext> file_system_context_;
 
   scoped_refptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
+
+  scoped_ptr<ChromeURLDataManager> chrome_url_data_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(OffTheRecordProfileImpl);
 };

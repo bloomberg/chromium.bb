@@ -11,6 +11,8 @@
 #include "base/string_piece.h"
 #include "base/values.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
 #include "grit/browser_resources.h"
@@ -68,9 +70,5 @@ TextfieldsUI::TextfieldsUI(TabContents* contents) : DOMUI(contents) {
   TextfieldsUIHTMLSource* html_source = new TextfieldsUIHTMLSource();
 
   // Set up the chrome://textfields/ source.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(ChromeURLDataManager::GetInstance(),
-                        &ChromeURLDataManager::AddDataSource,
-                        make_scoped_refptr(html_source)));
+  contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
 }

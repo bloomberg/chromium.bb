@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/views/native_menu_webui.h"
 #include "chrome/browser/chromeos/views/webui_menu_widget.h"
 #include "chrome/browser/dom_ui/web_ui_theme_source.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
@@ -117,13 +118,8 @@ NetworkMenuUI::NetworkMenuUI(TabContents* contents)
   AddMessageHandler((handler)->Attach(this));
 
   // Set up chrome://theme/ source.
-  WebUIThemeSource* theme = new WebUIThemeSource(GetProfile());
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          ChromeURLDataManager::GetInstance(),
-          &ChromeURLDataManager::AddDataSource,
-          make_scoped_refptr(theme)));
+  WebUIThemeSource* theme = new WebUIThemeSource(contents->profile());
+  contents->profile()->GetChromeURLDataManager()->AddDataSource(theme);
 }
 
 bool NetworkMenuUI::ModelAction(const ui::MenuModel* model,

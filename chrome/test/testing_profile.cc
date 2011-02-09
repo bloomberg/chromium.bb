@@ -16,6 +16,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/dom_ui/ntp_resource_cache.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_pref_value_map.h"
@@ -49,6 +50,7 @@
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "webkit/database/database_tracker.h"
+
 #if defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/gtk/gtk_theme_provider.h"
 #endif
@@ -757,6 +759,12 @@ PromoCounter* TestingProfile::GetInstantPromoCounter() {
 
 policy::ProfilePolicyContext* TestingProfile::GetPolicyContext() {
   return NULL;
+}
+
+ChromeURLDataManager* TestingProfile::GetChromeURLDataManager() {
+  if (!chrome_url_data_manager_.get())
+    chrome_url_data_manager_.reset(new ChromeURLDataManager(this));
+  return chrome_url_data_manager_.get();
 }
 
 PrerenderManager* TestingProfile::GetPrerenderManager() {

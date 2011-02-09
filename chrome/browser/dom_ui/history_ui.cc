@@ -129,16 +129,13 @@ BrowsingHistoryHandler::~BrowsingHistoryHandler() {
 
 WebUIMessageHandler* BrowsingHistoryHandler::Attach(DOMUI* dom_ui) {
   // Create our favicon data source.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          ChromeURLDataManager::GetInstance(),
-          &ChromeURLDataManager::AddDataSource,
-          make_scoped_refptr(new WebUIFavIconSource(dom_ui->GetProfile()))));
+  Profile* profile = dom_ui->GetProfile();
+  profile->GetChromeURLDataManager()->AddDataSource(
+      new WebUIFavIconSource(profile));
 
   // Get notifications when history is cleared.
   registrar_.Add(this, NotificationType::HISTORY_URLS_DELETED,
-      Source<Profile>(dom_ui->GetProfile()->GetOriginalProfile()));
+      Source<Profile>(profile->GetOriginalProfile()));
   return WebUIMessageHandler::Attach(dom_ui);
 }
 
@@ -388,12 +385,7 @@ HistoryUI::HistoryUI(TabContents* contents) : DOMUI(contents) {
   HistoryUIHTMLSource* html_source = new HistoryUIHTMLSource();
 
   // Set up the chrome://history/ source.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          ChromeURLDataManager::GetInstance(),
-          &ChromeURLDataManager::AddDataSource,
-          make_scoped_refptr(html_source)));
+  contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
 }
 
 // static

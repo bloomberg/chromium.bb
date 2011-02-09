@@ -40,6 +40,7 @@ class DnsCertProvenanceChecker;
 class NetworkDelegate;
 }
 
+class ChromeURLDataManagerBackend;
 class ChromeURLRequestContext;
 class ChromeURLRequestContextFactory;
 
@@ -101,6 +102,8 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   PrerenderManager* prerender_manager() {
     return prerender_manager_.get();
   }
+
+  ChromeURLDataManagerBackend* GetChromeURLDataManagerBackend();
 
  protected:
   virtual ~ChromeURLRequestContext();
@@ -191,6 +194,7 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   scoped_refptr<ExtensionInfoMap> extension_info_map_;
   scoped_refptr<ExtensionIOEventRouter> extension_io_event_router_;
   scoped_refptr<PrerenderManager> prerender_manager_;
+  scoped_ptr<ChromeURLDataManagerBackend> chrome_url_data_manager_backend_;
 
   bool is_off_the_record_;
 

@@ -332,12 +332,7 @@ NewTabUI::NewTabUI(TabContents* contents)
   InitializeCSSCaches();
   NewTabHTMLSource* html_source =
       new NewTabHTMLSource(GetProfile()->GetOriginalProfile());
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          ChromeURLDataManager::GetInstance(),
-          &ChromeURLDataManager::AddDataSource,
-          make_scoped_refptr(html_source)));
+  contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
 
   // Listen for theme installation.
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
@@ -422,13 +417,9 @@ void NewTabUI::Observe(NotificationType type,
 }
 
 void NewTabUI::InitializeCSSCaches() {
-  WebUIThemeSource* theme = new WebUIThemeSource(GetProfile());
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          ChromeURLDataManager::GetInstance(),
-          &ChromeURLDataManager::AddDataSource,
-          make_scoped_refptr(theme)));
+  Profile* profile = GetProfile();
+  WebUIThemeSource* theme = new WebUIThemeSource(profile);
+  profile->GetChromeURLDataManager()->AddDataSource(theme);
 }
 
 // static

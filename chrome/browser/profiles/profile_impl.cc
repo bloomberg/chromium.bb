@@ -26,6 +26,7 @@
 #include "chrome/browser/chrome_blob_storage_context.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/dom_ui/ntp_resource_cache.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/extensions/default_apps.h"
@@ -1370,6 +1371,12 @@ policy::ProfilePolicyContext* ProfileImpl::GetPolicyContext() {
     profile_policy_context_.reset(new policy::ProfilePolicyContext(this));
 
   return profile_policy_context_.get();
+}
+
+ChromeURLDataManager* ProfileImpl::GetChromeURLDataManager() {
+  if (!chrome_url_data_manager_.get())
+    chrome_url_data_manager_.reset(new ChromeURLDataManager(this));
+  return chrome_url_data_manager_.get();
 }
 
 PromoCounter* ProfileImpl::GetInstantPromoCounter() {
