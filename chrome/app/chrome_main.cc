@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,7 +47,6 @@
 #include <malloc.h>
 #include <new.h>
 #include "base/win/registry.h"
-#include "policy/policy_constants.h"
 #include "sandbox/src/sandbox.h"
 #include "tools/memory_watcher/memory_watcher.h"
 #endif
@@ -117,6 +116,17 @@ extern "C" {
 __attribute__((visibility("default")))
 int ChromeMain(int argc, char** argv);
 }
+#endif
+
+// Checks if the UserDataDir policy has been set and returns its value in the
+// |user_data_dir| parameter. If no policy is set the parameter is not changed.
+void CheckUserDataDirPolicy(FilePath* user_data_dir);
+
+#if !defined(OS_WIN)
+// This policy is not implemented for Linux and ChromeOS. The win and mac ver-
+// sions are implemented in the platform specific version of chrome_main.cc e.g.
+// chrome_main_win.cc or chrome_main_mac.mm .
+void CheckUserDataDirPolicy(FilePath* user_data_dir) {}
 #endif
 
 namespace {
@@ -516,43 +526,6 @@ void HandleHelpSwitches(const CommandLine& command_line) {
 #endif
 
 #endif  // OS_POSIX
-
-#if defined(OS_WIN)
-// Checks if the registry key exists in the given hive and expands any
-// environment variables in the string.
-bool LoadUserDataDirPolicyFromRegistry(HKEY hive, FilePath* user_data_dir) {
-  std::wstring key_name = UTF8ToWide(policy::key::kUserDataDir);
-  std::wstring value;
-
-  base::win::RegKey hklm_policy_key(hive, policy::kRegistrySubKey, KEY_READ);
-  if (hklm_policy_key.ReadValue(key_name.c_str(), &value) == ERROR_SUCCESS) {
-    // Try to expand the env variables if not possible fallback to no expansion.
-    DWORD expanded_len = ::ExpandEnvironmentStrings(value.c_str(), NULL, 0);
-    if (expanded_len) {
-      scoped_array<WCHAR> expanded_value(new WCHAR[expanded_len]);
-      ::ExpandEnvironmentStrings(value.c_str(),
-                                 expanded_value.get(), expanded_len);
-      *user_data_dir = FilePath::FromWStringHack(expanded_value.get());
-    } else {
-      *user_data_dir = FilePath::FromWStringHack(value);
-    }
-    return true;
-  }
-  return false;
-}
-#endif  // OS_WIN
-
-// Checks if the UserDataDir policy has been set and returns its value in the
-// |user_data_dir| parameter. If no policy is set the parameter is not changed.
-void CheckUserDataDirPolicy(FilePath* user_data_dir) {
-#if defined(OS_WIN)
-  // Policy from the HKLM hive has precedence over HKCU so if we have one here
-  // we don't have to try to load HKCU.
-  if (LoadUserDataDirPolicyFromRegistry(HKEY_LOCAL_MACHINE, user_data_dir))
-    return;
-  LoadUserDataDirPolicyFromRegistry(HKEY_CURRENT_USER, user_data_dir);
-#endif
-}
 
 // We dispatch to a process-type-specific FooMain() based on a command-line
 // flag.  This struct is used to build a table of (flag, main function) pairs.

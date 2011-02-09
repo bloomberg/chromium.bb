@@ -94,6 +94,7 @@
                 'app/chrome_dll.rc',
                 'app/chrome_dll_resource.h',
                 'app/chrome_main.cc',
+                'app/chrome_main_win.cc',
                 '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',
 
                 '../webkit/glue/resources/aliasb.cur',
@@ -576,6 +577,7 @@
             'app/chrome_command_ids.h',
             'app/chrome_dll_resource.h',
             'app/chrome_main.cc',
+            'app/chrome_main_win.cc',
             'browser/renderer_host/render_process_host_dummy.cc',
             'common/googleurl_dummy.cc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',
