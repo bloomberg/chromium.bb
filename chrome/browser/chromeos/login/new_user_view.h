@@ -14,13 +14,13 @@
 #include "chrome/browser/chromeos/login/user_input.h"
 #include "views/accelerator.h"
 #include "views/controls/button/button.h"
-#include "views/controls/button/menu_button.h"
 #include "views/controls/link.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/view.h"
 
 namespace views {
 class Label;
+class MenuButton;
 class NativeButton;
 }  // namespace views
 

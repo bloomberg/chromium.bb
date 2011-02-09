@@ -16,12 +16,15 @@
 #include "base/process_util.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/textfield_with_margin.h"
 #include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #include "chrome/browser/chromeos/views/copy_background.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/common/pref_names.h"
 #include "grit/app_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -29,6 +32,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font.h"
+#include "views/controls/button/menu_button.h"
 #include "views/controls/label.h"
 #include "views/controls/throbber.h"
 #include "views/widget/widget_gtk.h"
@@ -236,6 +240,8 @@ void NewUserView::RecreatePeculiarControls() {
           IDR_MENU_DROPARROW_SHARP));
   languages_menubutton_->SetEnabledColor(kLanguagesMenuTextColor);
   languages_menubutton_->SetFocusable(true);
+  languages_menubutton_->SetEnabled(!g_browser_process->local_state()->
+      IsManagedPreference(prefs::kApplicationLocale));
 
   // There is no way to get native button preferred size after the button was
   // sized so delete and recreate the button on text update.
@@ -525,7 +531,8 @@ void NewUserView::ContentsChanged(views::Textfield* sender,
 }
 
 void NewUserView::EnableInputControls(bool enabled) {
-  languages_menubutton_->SetEnabled(enabled);
+  languages_menubutton_->SetEnabled(g_browser_process->local_state()->
+      IsManagedPreference(prefs::kApplicationLocale) ? false : enabled);
   username_field_->SetEnabled(enabled);
   password_field_->SetEnabled(enabled);
   sign_in_button_->SetEnabled(enabled);

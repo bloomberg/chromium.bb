@@ -84,8 +84,6 @@ void LanguageSwitchMenu::SwitchLanguage(const std::string& locale) {
   if (g_browser_process->GetApplicationLocale() == locale) {
     return;
   }
-  // TODO(markusheintz): If the preference is managed and can not be changed by
-  // the user, changing the language should be disabled in the UI.
   // TODO(markusheintz): Change the if condition to prefs->IsUserModifiable()
   // once Mattias landed his pending patch.
   if (!g_browser_process->local_state()->

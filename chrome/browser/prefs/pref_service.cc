@@ -562,6 +562,8 @@ void PrefService::RegisterInt64Pref(const char* path, int64 default_value) {
 
 DictionaryValue* PrefService::GetMutableDictionary(const char* path) {
   DCHECK(CalledOnValidThread());
+  DLOG_IF(WARNING, IsManagedPreference(path)) <<
+      "Attempt to change managed preference " << path;
 
   const Preference* pref = FindPreference(path);
   if (!pref) {
@@ -590,6 +592,8 @@ DictionaryValue* PrefService::GetMutableDictionary(const char* path) {
 
 ListValue* PrefService::GetMutableList(const char* path) {
   DCHECK(CalledOnValidThread());
+  DLOG_IF(WARNING, IsManagedPreference(path)) <<
+      "Attempt to change managed preference " << path;
 
   const Preference* pref = FindPreference(path);
   if (!pref) {
@@ -618,6 +622,8 @@ ListValue* PrefService::GetMutableList(const char* path) {
 
 void PrefService::SetUserPrefValue(const char* path, Value* new_value) {
   DCHECK(CalledOnValidThread());
+  DLOG_IF(WARNING, IsManagedPreference(path)) <<
+      "Attempt to change managed preference " << path;
 
   const Preference* pref = FindPreference(path);
   if (!pref) {

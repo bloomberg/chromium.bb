@@ -120,6 +120,9 @@ void UpdateCacheString(const std::string& name,
 }
 
 bool GetUserWhitelist(ListValue* user_list) {
+  PrefService* prefs = g_browser_process->local_state();
+  DCHECK(!prefs->IsManagedPreference(kAccountsPrefUsers));
+
   std::vector<std::string> whitelist;
   if (!CrosLibrary::Get()->EnsureLoaded() ||
       !CrosLibrary::Get()->GetLoginLibrary()->EnumerateWhitelisted(
@@ -128,7 +131,6 @@ bool GetUserWhitelist(ListValue* user_list) {
     return false;
   }
 
-  PrefService* prefs = g_browser_process->local_state();
   ListValue* cached_whitelist = prefs->GetMutableList(kAccountsPrefUsers);
   cached_whitelist->Clear();
 
@@ -150,7 +152,6 @@ bool GetUserWhitelist(ListValue* user_list) {
   }
 
   prefs->ScheduleSavePersistentPrefs();
-
   return true;
 }
 
@@ -162,8 +163,11 @@ class UserCrosSettingsTrust : public SignedSettingsHelper::Callback,
   }
 
   // Working horse for UserCrosSettingsProvider::RequestTrusted* family.
-  bool RequestTrustedEntity(const std::string& name, Task* callback) {
+  bool RequestTrustedEntity(const std::string& name) {
     if (GetOwnershipStatus() == OWNERSHIP_NONE)
+      return true;
+    PrefService* prefs = g_browser_process->local_state();
+    if (prefs->IsManagedPreference(name.c_str()))
       return true;
     if (GetOwnershipStatus() == OWNERSHIP_TAKEN) {
       DCHECK(g_browser_process);
@@ -172,12 +176,24 @@ class UserCrosSettingsTrust : public SignedSettingsHelper::Callback,
       if (prefs->GetBoolean((name + kTrustedSuffix).c_str()))
         return true;
     }
-    if (callback)
-      callbacks_[name].push_back(callback);
     return false;
   }
 
+  bool RequestTrustedEntity(const std::string& name, Task* callback) {
+    if (RequestTrustedEntity(name)) {
+      delete callback;
+      return true;
+    } else {
+      if (callback)
+        callbacks_[name].push_back(callback);
+      return false;
+    }
+  }
+
   void Set(const std::string& path, Value* in_value) {
+    PrefService* prefs = g_browser_process->local_state();
+    DCHECK(!prefs->IsManagedPreference(path.c_str()));
+
     if (!UserManager::Get()->current_user_is_owner()) {
       LOG(WARNING) << "Changing settings from non-owner, setting=" << path;
 
@@ -492,14 +508,17 @@ bool UserCrosSettingsProvider::cached_show_users_on_signin() {
 const ListValue* UserCrosSettingsProvider::cached_whitelist() {
   PrefService* prefs = g_browser_process->local_state();
   const ListValue* cached_users = prefs->GetList(kAccountsPrefUsers);
-
-  if (!cached_users) {
-    // Update whitelist cache.
-    GetUserWhitelist(NULL);
-
-    cached_users = prefs->GetList(kAccountsPrefUsers);
+  if (!prefs->IsManagedPreference(kAccountsPrefUsers)) {
+    if (cached_users == NULL) {
+      // Update whitelist cache.
+      GetUserWhitelist(NULL);
+      cached_users = prefs->GetList(kAccountsPrefUsers);
+    }
   }
-
+  if (cached_users == NULL) {
+    NOTREACHED();
+    cached_users = new ListValue;
+  }
   return cached_users;
 }
 
