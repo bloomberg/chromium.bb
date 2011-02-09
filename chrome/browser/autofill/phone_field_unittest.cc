@@ -263,4 +263,95 @@ TEST_F(PhoneFieldTest, ThreePartPhoneNumberPrefixSuffix) {
   EXPECT_EQ(PHONE_HOME_NUMBER, field_type_map_[ASCIIToUTF16("suffix1")]);
 }
 
+TEST_F(PhoneFieldTest, ParseOneLineFax) {
+  list_.push_back(
+      new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Fax"),
+                                               ASCIIToUTF16("fax"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               0,
+                                               false),
+                        ASCIIToUTF16("fax1")));
+  list_.push_back(NULL);
+  iter_ = list_.begin();
+  field_.reset(PhoneField::Parse(&iter_, false));
+  ASSERT_NE(static_cast<PhoneField*>(NULL), field_.get());
+  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(
+      field_type_map_.find(ASCIIToUTF16("fax1")) != field_type_map_.end());
+  EXPECT_EQ(PHONE_FAX_WHOLE_NUMBER, field_type_map_[ASCIIToUTF16("fax1")]);
+}
+
+TEST_F(PhoneFieldTest, ParseTwoLineFax) {
+  list_.push_back(
+      new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Area Code"),
+                                               ASCIIToUTF16("area code"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               0,
+                                               false),
+                        ASCIIToUTF16("areacode1")));
+  list_.push_back(
+      new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Fax"),
+                                               ASCIIToUTF16("fax"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               0,
+                                               false),
+                        ASCIIToUTF16("fax1")));
+  list_.push_back(NULL);
+  iter_ = list_.begin();
+  field_.reset(PhoneField::Parse(&iter_, false));
+  ASSERT_NE(static_cast<PhoneField*>(NULL), field_.get());
+  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(
+      field_type_map_.find(ASCIIToUTF16("areacode1")) != field_type_map_.end());
+  // It should be FAX, based on the other phone in the group.
+  EXPECT_EQ(PHONE_FAX_CITY_CODE, field_type_map_[ASCIIToUTF16("areacode1")]);
+  ASSERT_TRUE(
+      field_type_map_.find(ASCIIToUTF16("fax1")) != field_type_map_.end());
+  EXPECT_EQ(PHONE_FAX_NUMBER, field_type_map_[ASCIIToUTF16("fax1")]);
+}
+
+TEST_F(PhoneFieldTest, ThreePartFaxNumberPrefixSuffix) {
+  list_.push_back(
+      new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Fax:"),
+                                               ASCIIToUTF16("area"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               0,
+                                               false),
+                        ASCIIToUTF16("areacode1")));
+  list_.push_back(
+      new AutoFillField(webkit_glue::FormField(string16(),
+                                               ASCIIToUTF16("prefix"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               0,
+                                               false),
+                        ASCIIToUTF16("prefix1")));
+  list_.push_back(
+      new AutoFillField(webkit_glue::FormField(string16(),
+                                               ASCIIToUTF16("suffix"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               0,
+                                               false),
+                        ASCIIToUTF16("suffix1")));
+  list_.push_back(NULL);
+  iter_ = list_.begin();
+  field_.reset(PhoneField::Parse(&iter_, false));
+  ASSERT_NE(static_cast<PhoneField*>(NULL), field_.get());
+  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(
+      field_type_map_.find(ASCIIToUTF16("areacode1")) != field_type_map_.end());
+  EXPECT_EQ(PHONE_FAX_CITY_CODE, field_type_map_[ASCIIToUTF16("areacode1")]);
+  ASSERT_TRUE(
+      field_type_map_.find(ASCIIToUTF16("prefix1")) != field_type_map_.end());
+  EXPECT_EQ(PHONE_FAX_NUMBER, field_type_map_[ASCIIToUTF16("prefix1")]);
+  ASSERT_TRUE(
+      field_type_map_.find(ASCIIToUTF16("suffix1")) != field_type_map_.end());
+  EXPECT_EQ(PHONE_FAX_NUMBER, field_type_map_[ASCIIToUTF16("suffix1")]);
+}
+
 }  // namespace

@@ -171,9 +171,10 @@ class AutoFillManager : public TabContentsObserver,
                      AutoFillType type,
                      webkit_glue::FormField* field);
 
-  // Set |field| argument's value for phone number based on contents of the
-  // |profile|.
+  // Set |field| argument's value for phone/fax number based on contents of the
+  // |profile|. |type| is the type of the phone.
   void FillPhoneNumberField(const AutoFillProfile* profile,
+                            AutoFillType type,
                             webkit_glue::FormField* field);
 
   // Parses the forms using heuristic matching and querying the AutoFill server.

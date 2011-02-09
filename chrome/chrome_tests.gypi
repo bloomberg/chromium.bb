@@ -1096,7 +1096,6 @@
         'browser/autofill/contact_info_unittest.cc',
         'browser/autofill/credit_card_field_unittest.cc',
         'browser/autofill/credit_card_unittest.cc',
-        'browser/autofill/fax_field_unittest.cc',
         'browser/autofill/form_field_unittest.cc',
         'browser/autofill/form_structure_unittest.cc',
         'browser/autofill/name_field_unittest.cc',

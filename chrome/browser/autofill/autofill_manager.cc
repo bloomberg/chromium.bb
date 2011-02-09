@@ -577,6 +577,7 @@ void AutoFillManager::DeterminePossibleFieldTypesForUpload(
     const AutoFillField* field = submitted_form->field(i);
     FieldTypeSet field_types;
     personal_data_->GetPossibleFieldTypes(field->value(), &field_types);
+
     DCHECK(!field_types.empty());
     submitted_form->set_possible_types(i, field_types);
   }
@@ -909,7 +910,7 @@ void AutoFillManager::FillFormField(const AutoFillProfile* profile,
   DCHECK(field);
 
   if (type.subgroup() == AutoFillType::PHONE_NUMBER) {
-    FillPhoneNumberField(profile, field);
+    FillPhoneNumberField(profile, type, field);
   } else {
     if (field->form_control_type() == ASCIIToUTF16("select-one"))
       autofill::FillSelectControl(profile, type, field);
@@ -919,10 +920,11 @@ void AutoFillManager::FillFormField(const AutoFillProfile* profile,
 }
 
 void AutoFillManager::FillPhoneNumberField(const AutoFillProfile* profile,
+                                           AutoFillType type,
                                            webkit_glue::FormField* field) {
   // If we are filling a phone number, check to see if the size field
   // matches the "prefix" or "suffix" sizes and fill accordingly.
-  string16 number = profile->GetFieldText(AutoFillType(PHONE_HOME_NUMBER));
+  string16 number = profile->GetFieldText(AutoFillType(type));
   bool has_valid_suffix_and_prefix = (number.length() ==
       static_cast<size_t>(PhoneNumber::kPrefixLength +
                           PhoneNumber::kSuffixLength));

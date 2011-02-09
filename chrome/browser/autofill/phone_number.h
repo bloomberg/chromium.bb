@@ -45,6 +45,14 @@ class PhoneNumber : public FormGroup {
   static const int kSuffixOffset = 3;
   static const int kSuffixLength = 4;
 
+  // The following functions should return the field type for each part of the
+  // phone number.  Currently, these are either fax or home phone number types.
+  virtual AutoFillFieldType GetNumberType() const = 0;
+  virtual AutoFillFieldType GetCityCodeType() const = 0;
+  virtual AutoFillFieldType GetCountryCodeType() const = 0;
+  virtual AutoFillFieldType GetCityAndNumberType() const = 0;
+  virtual AutoFillFieldType GetWholeNumberType() const = 0;
+
  protected:
   explicit PhoneNumber(const PhoneNumber& phone_number);
 
@@ -83,14 +91,6 @@ class PhoneNumber : public FormGroup {
   bool IsCountryCode(const string16& text) const;
   bool IsCityAndNumber(const string16& text) const;
   bool IsWholeNumber(const string16& text) const;
-
-  // The following functions should return the field type for each part of the
-  // phone number.  Currently, these are either fax or home phone number types.
-  virtual AutoFillFieldType GetNumberType() const = 0;
-  virtual AutoFillFieldType GetCityCodeType() const = 0;
-  virtual AutoFillFieldType GetCountryCodeType() const = 0;
-  virtual AutoFillFieldType GetCityAndNumberType() const = 0;
-  virtual AutoFillFieldType GetWholeNumberType() const = 0;
 
   // Verifies that |number| is a valid phone number.
   bool Validate(const string16& number) const;

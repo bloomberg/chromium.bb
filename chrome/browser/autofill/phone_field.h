@@ -8,8 +8,10 @@
 
 #include <vector>
 
+#include "base/scoped_ptr.h"
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/form_field.h"
+#include "chrome/browser/autofill/phone_number.h"
 
 class AutoFillField;
 
@@ -28,6 +30,39 @@ class PhoneField : public FormField {
 
  private:
   PhoneField();
+
+  enum PHONE_TYPE {
+    PHONE_TYPE_FIRST = 0,
+    HOME_PHONE = PHONE_TYPE_FIRST,
+    FAX_PHONE,
+
+    // Must be last.
+    PHONE_TYPE_MAX,
+  };
+
+  // Some field names are different for phone and fax.
+  string16 GetAreaRegex() const;
+  string16 GetPhoneRegex() const;
+  string16 GetPrefixRegex() const;
+  string16 GetSuffixRegex() const;
+  string16 GetExtensionRegex() const;
+
+  // |field| - field to fill up on successful parsing.
+  // |iter| - in/out. Form field iterator, points to the first field that is
+  //   attempted to be parsed. If parsing successful, points to the first field
+  //   after parsed fields.
+  // |regular_phone| - true if the parsed phone is a HOME phone, false
+  //   otherwise.
+  static bool ParseInternal(PhoneField* field,
+                            std::vector<AutoFillField*>::const_iterator* iter,
+                            bool regular_phone);
+
+  void SetPhoneType(PHONE_TYPE phone_type);
+
+  // Field types are different as well, so we create a temporary phone number,
+  // to get relevant field types.
+  scoped_ptr<PhoneNumber> number_;
+  PHONE_TYPE phone_type_;
 
   // Always present; holds suffix if prefix is present.
   AutoFillField* phone_;

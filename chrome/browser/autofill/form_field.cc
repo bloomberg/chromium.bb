@@ -9,7 +9,6 @@
 #include "chrome/browser/autofill/address_field.h"
 #include "chrome/browser/autofill/autofill_field.h"
 #include "chrome/browser/autofill/credit_card_field.h"
-#include "chrome/browser/autofill/fax_field.h"
 #include "chrome/browser/autofill/name_field.h"
 #include "chrome/browser/autofill/phone_field.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRegularExpression.h"
@@ -148,10 +147,8 @@ FormField* FormField::ParseFormField(
   field = EmailField::Parse(iter, is_ecml);
   if (field != NULL)
     return field;
+  // Parses both phone and fax.
   field = PhoneField::Parse(iter, is_ecml);
-  if (field != NULL)
-    return field;
-  field = FaxField::Parse(iter);
   if (field != NULL)
     return field;
   field = AddressField::Parse(iter, is_ecml);
