@@ -424,7 +424,7 @@ div.cancelbutton {
   margin: 3px;
 }
 
-div.newfolderbutton {
+#newfolderbutton {
   bottom: 3px;
   left: 10px;
   position: absolute;
@@ -591,7 +591,9 @@ function $(o) {
 function partial(fn, var_args) {
   var args = Array.prototype.slice.call(arguments, 1);
   return function(e) {
-    if (e.stopPropagation) e.stopPropagation();
+    if (e.stopPropagation) {
+      e.stopPropagation();
+    }
     // Prepend the bound arguments to the current arguments.
     var newArgs = Array.prototype.slice.call(arguments);
     newArgs.unshift.apply(newArgs, args);
@@ -676,9 +678,9 @@ function enabledResult(info) {
 
         var cancelbutton = document.createElement('button');
         cancelbutton.className = 'cancelbutton';
-        buttonsContainer.appendChild(cancelbutton);
         cancelbutton.textContent = localStrings.getString('confirmcancel');
         cancelbutton.onclick = dialogCancelClick;
+        buttonsContainer.appendChild(cancelbutton);
 
         var filenameprompt = document.createElement('div');
         filenameprompt.className = 'filenameprompt';
@@ -695,6 +697,7 @@ function enabledResult(info) {
         filename.id = 'filename';
         filename.value = args.current_file;
         savemenu.appendChild(filename);
+
         if (advancedEnabled) {
           var newfolderbutton = document.createElement('button');
           newfolderbutton.id = 'newfolderbutton';
@@ -703,6 +706,7 @@ function enabledResult(info) {
           newfolderbutton.onclick = dialogNewFolderClick;
           savemenu.appendChild(newfolderbutton);
         }
+        
         document.body.appendChild(savemenu);
         // Give focus to the save button. This has to be done after the
         // parent node is added to document.body.
@@ -765,16 +769,19 @@ function enabledResult(info) {
   chrome.send('getDownloads', []);
 }
 
+function isPathUnderRoot(path, includeRoot) {
+  var downloadpath = localStrings.getString('downloadpath');
+  return (!includeRoot || path !== downloadpath) 
+    && path.search(downloadpath) === 0;
+}
+
 function goBackInList() {
   currentNode--;
-  if (currentSavedPath == localStrings.getString('downloadpath')) {
-    currentSavedPath = 'roots';
+  if (isPathUnderRoot(currentSavedPath, true)) {
+    var c = currentSavedPath.split('/');
+    c.pop();
+    currentSavedPath = c.join('/');
   } else {
-    var lastDirArray = currentSavedPath.split('/');
-    lastDirArray.splice(lastDirArray.length - 1, 1);
-    currentSavedPath = lastDirArray.join('/');
-  }
-  if (currentSavedPath == localStrings.getString('mediapath')) {
     currentSavedPath = 'roots';
   }
   getDataForPath(currentSavedPath);
@@ -862,7 +869,6 @@ function browseFileResult(info, results) {
       var dest = currentSavedPath + '/' + path[2];
       var dirId = $('list/dir/' + currentSavedPath);
       if (dirId) {
-
         var element = $(dest);
         if (!element) {
           // TODO(dhg): We probably should do some checking for
@@ -911,12 +917,18 @@ function getClassForPath(path, isDirectory) {
 }
 
 function getDataForPath(path) {
+  var newfolderbutton = $('newfolderbutton');
+  if (newfolderbutton && advancedEnabled) {
+    // Enable newfolder button for paths under downloadpath
+    if (inSaveMode && isPathUnderRoot(path, false)) {
+      newfolderbutton.className = 'newfolderbutton';
+    } else {
+      newfolderbutton.className = 'newfolderbutton disabled';
+    }
+  }
+  
   if (path == 'roots') {
     if (inSaveMode) {
-      if (advancedEnabled) {
-        var newfolderbutton = $('newfolderbutton');
-        newfolderbutton.className = 'newfolderbutton disabled';
-      }
       var savebutton = $('savebutton');
       savebutton.className = 'openbutton disabled';
     } else if (inSelectMode) {
@@ -926,10 +938,6 @@ function getDataForPath(path) {
     chrome.send('getRoots', []);
   } else {
     if (inSaveMode) {
-      if (advancedEnabled) {
-        var newfolderbutton = $('newfolderbutton');
-        newfolderbutton.className = 'newfolderbutton';
-      }
       var savebutton = $('savebutton');
       savebutton.className = 'openbutton';
     } else if (inSelectMode) {
@@ -1025,50 +1033,53 @@ function createNewFormItem(
 function createFolder(elementId) {
   var currentPath = currentSavedPath;
   var element = $('newfoldername');
-  if (element) {
-    element.id = '';
-    var filename = element.value;
-    currentPath += '/';
-    currentPath += filename;
-    var existingfolder = $(currentPath);
-    var counter = 1;
-    while (existingfolder) {
-      var testfilepath = currentPath;
-      testfilepath = testfilepath + counter;
-      existingfolder = $(testfilepath);
-      if (!existingfolder) {
-        currentPath = testfilepath;
-        filename = filename + counter;
-        break;
-      }
-      counter++;
-    }
-    if (filename == '') {
-      return false;
-    }
-    var parent = element.parentNode;
-    parent.removeChild(element);
-    listitem = parent.parentNode;
-
-    parent.onclick = getFunctionForItem(currentPath, listitem.id, true);
-
-    var span = document.createElement('span');
-    if (inSelectMode) {
-      span.className = 'name';
-    } else {
-      span.className = 'namelink';
-    }
-    span.textContent = filename;
-    parent.appendChild(span);
-
-    var rightArrow = document.createElement('span');
-    rightArrow.textContent = '»';
-    rightArrow.className = 'rightarrow';
-    parent.appendChild(rightArrow);
-
-    chrome.send('createNewFolder', [currentPath]);
+  if (!element) {
+    return false;
   }
-  return false;
+  element.id = '';
+  var filename = element.value;
+  currentPath += '/';
+  currentPath += filename;
+  var existingfolder = $(currentPath);
+  var counter = 1;
+  while (existingfolder) {
+    var testfilepath = currentPath;
+    testfilepath = testfilepath + counter;
+    existingfolder = $(testfilepath);
+    if (!existingfolder) {
+      currentPath = testfilepath;
+      filename = filename + counter;
+      break;
+    }
+    counter++;
+  }
+  
+  // Disallow / in folder name.
+  if (filename.match(/^[^\/]+$/) === null) {
+    return false;
+  }
+
+  var parent = element.parentNode;
+  parent.removeChild(element);
+  listitem = parent.parentNode;
+
+  parent.onclick = getFunctionForItem(currentPath, listitem.id, true);
+
+  var span = document.createElement('span');
+  if (inSelectMode) {
+    span.className = 'name';
+  } else {
+    span.className = 'namelink';
+  }
+  span.textContent = filename;
+  parent.appendChild(span);
+
+  var rightArrow = document.createElement('span');
+  rightArrow.textContent = '»';
+  rightArrow.className = 'rightarrow';
+  parent.appendChild(rightArrow);
+
+  chrome.send('createNewFolder', [currentPath]);
 }
 
 function deleteFile(path) {
@@ -1156,7 +1167,8 @@ function getPathAndFilenameForPath(path) {
 }
 
 function newDownload(results) {
-  for (var x = 0; x < results.length; x++) {
+  var x;
+  for (x = 0; x < results.length; x++) {
     var element = $(results[x].file_path);
     if (!element && results[x].state != 'CANCELLED') {
       var extracted = getPathAndFilenameForPath(results[x].file_path);
