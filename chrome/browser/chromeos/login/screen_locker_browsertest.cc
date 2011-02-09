@@ -174,8 +174,7 @@ class ScreenLockerTest : public CrosInProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(ScreenLockerTest);
 };
 
-// PulseAudioMixer sometimes crashes at exit. See http://crosbug.om/9303
-IN_PROC_BROWSER_TEST_F(ScreenLockerTest, FLAKY_TestBasic) {
+IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestBasic) {
   EXPECT_CALL(*mock_input_method_library_, GetNumActiveInputMethods())
       .Times(1)
       .WillRepeatedly((testing::Return(0)))
