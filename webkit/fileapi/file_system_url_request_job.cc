@@ -41,7 +41,6 @@ FileSystemURLRequestJob::FileSystemURLRequestJob(
       stream_(NULL),
       is_directory_(false),
       remaining_bytes_(0),
-      startup_error_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)),
       file_thread_proxy_(file_thread_proxy) {
@@ -125,27 +124,23 @@ void FileSystemURLRequestJob::SetExtraRequestHeaders(
         // We don't support multiple range requests in one single URL request.
         // TODO(adamk): decide whether we want to support multiple range
         // requests.
-        startup_error_ = net::ERR_REQUEST_RANGE_NOT_SATISFIABLE;
+        NotifyFailed(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE);
       }
     }
   }
 }
 
 void FileSystemURLRequestJob::StartAsync() {
-  if (startup_error_) {
-    NotifyFailed(startup_error_);
-    return;
-  }
-
+  GURL origin_url;
   FileSystemType type;
-  if (!CrackFileSystemURL(request_->url(), &origin_url_, &type,
+  if (!CrackFileSystemURL(request_->url(), &origin_url, &type,
                           &relative_file_path_)) {
     NotifyFailed(net::ERR_INVALID_URL);
     return;
   }
 
   path_manager_->GetFileSystemRootPath(
-      origin_url_, type, false,  // create
+      origin_url, type, false,  // create
       callback_factory_.NewCallback(&FileSystemURLRequestJob::DidGetRootPath));
 }
 

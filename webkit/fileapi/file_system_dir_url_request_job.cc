@@ -75,15 +75,16 @@ bool FileSystemDirURLRequestJob::GetCharset(std::string* charset) {
 }
 
 void FileSystemDirURLRequestJob::StartAsync() {
+  GURL origin_url;
   FileSystemType type;
-  if (!CrackFileSystemURL(request_->url(), &origin_url_, &type,
+  if (!CrackFileSystemURL(request_->url(), &origin_url, &type,
                           &relative_dir_path_)) {
     NotifyFailed(net::ERR_INVALID_URL);
     return;
   }
 
   path_manager_->GetFileSystemRootPath(
-      origin_url_, type, false,  // create
+      origin_url, type, false,  // create
       callback_factory_.NewCallback(
           &FileSystemDirURLRequestJob::DidGetRootPath));
 }

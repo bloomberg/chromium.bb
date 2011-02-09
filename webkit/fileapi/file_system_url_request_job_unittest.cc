@@ -220,7 +220,6 @@ TEST_F(FileSystemURLRequestJobTest, FileTestMultipleRangesNotSupported) {
   headers.SetHeader(net::HttpRequestHeaders::kRange,
                     "bytes=0-5,10-200,200-300");
   TestRequestWithHeaders(CreateFileSystemURL("file1.dat"), &headers);
-  ASSERT_FALSE(request_->is_pending());
   EXPECT_TRUE(delegate_->request_failed());
   EXPECT_EQ(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE,
             request_->status().os_error());

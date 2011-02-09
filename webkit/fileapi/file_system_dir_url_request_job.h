@@ -15,7 +15,6 @@
 #include "base/platform_file.h"
 #include "base/scoped_callback_factory.h"
 #include "base/task.h"
-#include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_job.h"
 
 namespace fileapi {
@@ -32,9 +31,12 @@ class FileSystemDirURLRequestJob : public net::URLRequestJob {
   virtual void Start();
   virtual void Kill();
   virtual bool ReadRawData(net::IOBuffer* buf, int buf_size, int* bytes_read);
-  virtual bool GetMimeType(std::string* mime_type) const;
   virtual bool GetCharset(std::string* charset);
-  // TODO(adamk): Implement the rest of the methods required to simulate HTTP.
+
+  // FilterContext methods (via URLRequestJob):
+  virtual bool GetMimeType(std::string* mime_type) const;
+  // TODO(adamk): Implement GetResponseInfo and GetResponseCode to simulate
+  // an HTTP response.
 
  private:
   virtual ~FileSystemDirURLRequestJob();
@@ -50,7 +52,6 @@ class FileSystemDirURLRequestJob : public net::URLRequestJob {
   std::string data_;
   FilePath relative_dir_path_;
   FilePath absolute_dir_path_;
-  GURL origin_url_;
   FileSystemPathManager* const path_manager_;
 
   ScopedRunnableMethodFactory<FileSystemDirURLRequestJob> method_factory_;

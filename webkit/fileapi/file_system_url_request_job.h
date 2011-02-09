@@ -14,10 +14,11 @@
 #include "base/scoped_callback_factory.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/completion_callback.h"
 #include "net/http/http_byte_range.h"
 #include "net/url_request/url_request_job.h"
+
+class GURL;
 
 namespace net {
 class FileStream;
@@ -38,9 +39,13 @@ class FileSystemURLRequestJob : public net::URLRequestJob {
   virtual void Kill();
   virtual bool ReadRawData(net::IOBuffer* buf, int buf_size, int* bytes_read);
   virtual bool IsRedirectResponse(GURL* location, int* http_status_code);
-  virtual bool GetMimeType(std::string* mime_type) const;
   virtual void SetExtraRequestHeaders(const net::HttpRequestHeaders& headers);
-  // TODO(adamk): Implement the rest of the methods required to simulate HTTP.
+
+  // FilterContext methods (via URLRequestJob):
+  virtual bool GetMimeType(std::string* mime_type) const;
+
+  // TODO(adamk): Implement GetResponseInfo and GetResponseCode to simulate
+  // an HTTP response.
 
  private:
   virtual ~FileSystemURLRequestJob();
@@ -58,7 +63,6 @@ class FileSystemURLRequestJob : public net::URLRequestJob {
 
   FilePath relative_file_path_;
   FilePath absolute_file_path_;
-  GURL origin_url_;
   FileSystemPathManager* const path_manager_;
 
   net::CompletionCallbackImpl<FileSystemURLRequestJob> io_callback_;
@@ -67,7 +71,6 @@ class FileSystemURLRequestJob : public net::URLRequestJob {
 
   net::HttpByteRange byte_range_;
   int64 remaining_bytes_;
-  int startup_error_;
 
   ScopedRunnableMethodFactory<FileSystemURLRequestJob> method_factory_;
   base::ScopedCallbackFactory<FileSystemURLRequestJob> callback_factory_;
