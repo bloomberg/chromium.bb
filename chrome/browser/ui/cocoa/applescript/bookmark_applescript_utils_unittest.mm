@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,12 +49,17 @@ static FakeScriptCommand* kFakeCurrentCommand;
 BookmarkAppleScriptTest::BookmarkAppleScriptTest() {
   appDelegate_.reset([[FakeAppDelegate alloc] init]);
   [appDelegate_.get() setHelper:&helper_];
+  DCHECK([NSApp delegate] == nil);
   [NSApp setDelegate:appDelegate_];
   const BookmarkNode* root = model().GetBookmarkBarNode();
   const std::string modelString("a f1:[ b d c ] d f2:[ e f g ] h ");
   model_test_utils::AddNodesFromModelString(model(), root, modelString);
   bookmarkBar_.reset([[BookmarkFolderAppleScript alloc]
       initWithBookmarkNode:model().GetBookmarkBarNode()]);
+}
+
+BookmarkAppleScriptTest::~BookmarkAppleScriptTest() {
+  [NSApp setDelegate:nil];
 }
 
 BookmarkModel& BookmarkAppleScriptTest::model() {
