@@ -40,7 +40,7 @@ void CookieFilterPageView::InitControlLayout() {
 
   GridLayout* layout = static_cast<GridLayout*>(GetLayoutManager());
   const int single_column_set_id = 0;
-  layout->AddPaddingRow(0, kUnrelatedControlLargeVerticalSpacing);
+  layout->AddPaddingRow(0, views::kUnrelatedControlLargeVerticalSpacing);
 
   block_3rdparty_check_ = new views::Checkbox(UTF16ToWide(
       l10n_util::GetStringUTF16(IDS_COOKIES_BLOCK_3RDPARTY_CHKBOX)));

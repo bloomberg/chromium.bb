@@ -124,13 +124,14 @@ void PasswordChangedView::Init() {
   column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
   column_set = layout->AddColumnSet(1);
-  column_set->AddPaddingColumn(0, kUnrelatedControlLargeHorizontalSpacing);
+  column_set->AddPaddingColumn(
+      0, views::kUnrelatedControlLargeHorizontalSpacing);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, 0);
   layout->AddView(title_label_);
-  layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 
   layout->StartRow(0, 0);
   layout->AddView(description_label_);
@@ -147,7 +148,7 @@ void PasswordChangedView::Init() {
   layout->StartRow(0, 1);
   layout->AddView(
       old_password_field_, 1, 1, GridLayout::LEADING, GridLayout::CENTER);
-  layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 
   layout->StartRow(0, 0);
   layout->AddView(old_password_field_);

@@ -277,7 +277,7 @@ void FontsPageView::InitControlLayout() {
   layout->StartRow(0, single_column_view_set_id);
   InitFontLayout();
   layout->AddView(fonts_contents_);
-  layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 
   // Encoding group.
   encoding_group_title_ = new views::Label(

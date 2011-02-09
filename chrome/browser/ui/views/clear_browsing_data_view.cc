@@ -223,7 +223,7 @@ void ClearBrowsingDataView2::InitControlLayout() {
   layout->AddView(time_period_combobox_, 1, 1, views::GridLayout::LEADING,
                   views::GridLayout::CENTER);
 
-  layout->AddPaddingRow(0, kUnrelatedControlLargeVerticalSpacing);
+  layout->AddPaddingRow(0, views::kUnrelatedControlLargeVerticalSpacing);
 
   // Left-align the throbber
   layout->StartRow(0, two_column_set_id);

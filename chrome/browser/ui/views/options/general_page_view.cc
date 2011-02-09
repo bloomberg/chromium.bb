@@ -720,7 +720,7 @@ void GeneralPageView::InitDefaultSearchGroup() {
   layout->StartRow(0, double_column_view_set_id);
   layout->AddView(default_search_engine_combobox_);
   layout->AddView(default_search_manage_engines_button_);
-  layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 
   layout->StartRow(0, checkbox_column_view_set_id);
   layout->AddView(instant_checkbox_);

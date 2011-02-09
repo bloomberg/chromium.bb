@@ -166,7 +166,7 @@ void MessageBoxView::ResetLayoutManager() {
     column_set->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
                           GridLayout::FIXED, icon_size.width(),
                           icon_size.height());
-    column_set->AddPaddingColumn(0, kUnrelatedControlHorizontalSpacing);
+    column_set->AddPaddingColumn(0, views::kUnrelatedControlHorizontalSpacing);
   }
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::FIXED, message_width_, 0);
@@ -176,8 +176,8 @@ void MessageBoxView::ResetLayoutManager() {
   if (prompt_field_) {
     column_set = layout->AddColumnSet(textfield_column_view_set_id);
     if (icon_) {
-      column_set->AddPaddingColumn(0,
-          icon_size.width() + kUnrelatedControlHorizontalSpacing);
+      column_set->AddPaddingColumn(
+          0, icon_size.width() + views::kUnrelatedControlHorizontalSpacing);
     }
     column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                           GridLayout::USE_PREF, 0, 0);
@@ -188,8 +188,8 @@ void MessageBoxView::ResetLayoutManager() {
   if (checkbox_) {
     column_set = layout->AddColumnSet(checkbox_column_view_set_id);
     if (icon_) {
-      column_set->AddPaddingColumn(0,
-          icon_size.width() + kUnrelatedControlHorizontalSpacing);
+      column_set->AddPaddingColumn(
+          0, icon_size.width() + views::kUnrelatedControlHorizontalSpacing);
     }
     column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                           GridLayout::USE_PREF, 0, 0);

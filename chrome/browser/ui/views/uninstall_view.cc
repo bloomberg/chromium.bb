@@ -52,7 +52,7 @@ void UninstallView::SetupControls() {
   confirm_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   layout->AddView(confirm_label_);
 
-  layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 
   // The "delete profile" check box.
   ++column_set_id;

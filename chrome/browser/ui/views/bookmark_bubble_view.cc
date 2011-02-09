@@ -220,7 +220,7 @@ void BookmarkBubbleView::Init() {
   // Top (title) row.
   cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0, GridLayout::USE_PREF,
                 0, 0);
-  cs->AddPaddingColumn(1, kUnrelatedControlHorizontalSpacing);
+  cs->AddPaddingColumn(1, views::kUnrelatedControlHorizontalSpacing);
   cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0, GridLayout::USE_PREF,
                 0, 0);
 

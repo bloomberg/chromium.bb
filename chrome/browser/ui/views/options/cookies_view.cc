@@ -343,7 +343,7 @@ void CookiesView::Init() {
   layout->AddView(search_label_);
   layout->AddView(search_field_);
   layout->AddView(clear_search_button_);
-  layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 
   layout->StartRow(0, single_column_layout_id);
   layout->AddView(description_label_);

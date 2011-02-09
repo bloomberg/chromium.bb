@@ -326,7 +326,8 @@ void ContentSettingBubbleContents::InitControlLayout() {
       layout->AddColumnSet(double_column_set_id);
   double_column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 1,
                         GridLayout::USE_PREF, 0, 0);
-  double_column_set->AddPaddingColumn(0, kUnrelatedControlHorizontalSpacing);
+  double_column_set->AddPaddingColumn(
+      0, views::kUnrelatedControlHorizontalSpacing);
   double_column_set->AddColumn(GridLayout::TRAILING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
 

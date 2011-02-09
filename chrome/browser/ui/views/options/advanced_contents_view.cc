@@ -304,7 +304,7 @@ void AdvancedSection::AddDependentTwoColumnSet(views::GridLayout* layout,
   column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kUnrelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kUnrelatedControlHorizontalSpacing);
 }
 
 void AdvancedSection::AddTwoColumnSet(views::GridLayout* layout, int id) {
@@ -352,8 +352,8 @@ void AdvancedSection::AddLabeledTwoColumnRow(views::GridLayout* layout,
                                              bool related_follows) {
   label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   AddTwoColumnRow(layout, label, control, control_stretches, id,
-      related_follows ?
-          kRelatedControlVerticalSpacing : kUnrelatedControlVerticalSpacing);
+      related_follows ? kRelatedControlVerticalSpacing
+                      : views::kUnrelatedControlVerticalSpacing);
 }
 
 void AdvancedSection::AddTwoColumnRow(views::GridLayout* layout,
@@ -384,8 +384,9 @@ void AdvancedSection::AddLeadingControl(views::GridLayout* layout,
 
 void AdvancedSection::AddSpacing(views::GridLayout* layout,
                                  bool related_follows) {
-  layout->AddPaddingRow(0, related_follows ? kRelatedControlVerticalSpacing
-                                           : kUnrelatedControlVerticalSpacing);
+  layout->AddPaddingRow(
+      0, related_follows ? kRelatedControlVerticalSpacing
+                         : views::kUnrelatedControlVerticalSpacing);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -403,7 +404,7 @@ void AdvancedSection::InitControlLayout() {
                         GridLayout::USE_PREF, 0, 0);
   const int inset_column_layout_id = 1;
   column_set = layout->AddColumnSet(inset_column_layout_id);
-  column_set->AddPaddingColumn(0, kUnrelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kUnrelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::FILL, GridLayout::LEADING, 1,
                         GridLayout::USE_PREF, 0, 0);
 
@@ -589,7 +590,8 @@ void PrivacySection::InitControlLayout() {
   AddIndentedColumnSet(layout, indented_column_set_id);
 
   AddTwoColumnRow(layout, content_settings_button_, clear_data_button_, false,
-                  leading_column_set_id, kUnrelatedControlLargeVerticalSpacing);
+                  leading_column_set_id,
+                  views::kUnrelatedControlLargeVerticalSpacing);
 
   // The description label at the top and label.
   section_description_label_->SetMultiLine(true);
@@ -1181,7 +1183,7 @@ void DownloadSection::InitControlLayout() {
   column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kUnrelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kUnrelatedControlHorizontalSpacing);
   layout->StartRow(0, double_column_view_set_id);
   layout->AddView(download_default_download_location_display_, 1, 1,
                   GridLayout::FILL, GridLayout::CENTER);

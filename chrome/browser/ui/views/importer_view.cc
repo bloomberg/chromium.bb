@@ -95,7 +95,7 @@ void ImporterView::SetupControl() {
   layout->AddView(import_from_label_);
   layout->AddView(profile_combobox_);
 
-  layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
   layout->StartRow(0, column_set_id);
   layout->AddView(import_items_label_, 3, 1);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);

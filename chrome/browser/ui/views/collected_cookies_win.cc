@@ -253,12 +253,12 @@ void CollectedCookiesWin::Init() {
       l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_BLOCK_BUTTON)));
   layout->AddView(
       block_allowed_button_, 1, 1, GridLayout::LEADING, GridLayout::CENTER);
-  layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 
   layout->StartRow(0, single_column_layout_id);
   layout->AddView(
       new views::Separator(), 1, 1, GridLayout::FILL, GridLayout::FILL);
-  layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 
   layout->StartRow(0, single_column_layout_id);
   layout->AddView(blocked_label_, 1, 1, GridLayout::FILL, GridLayout::FILL);

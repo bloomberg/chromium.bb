@@ -206,8 +206,9 @@ void ClearServerDataView::AddWrappingLabelRow(views::GridLayout* layout,
 
 void ClearServerDataView::AddSpacing(views::GridLayout* layout,
                                      bool related_follows) {
-  layout->AddPaddingRow(0, related_follows ? kRelatedControlVerticalSpacing
-                                           : kUnrelatedControlVerticalSpacing);
+  layout->AddPaddingRow(
+      0, related_follows ? kRelatedControlVerticalSpacing
+                         : views::kUnrelatedControlVerticalSpacing);
 }
 
 gfx::Size ClearServerDataView::GetPreferredSize() {

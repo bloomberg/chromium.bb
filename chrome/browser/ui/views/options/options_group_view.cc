@@ -80,7 +80,7 @@ void OptionsGroupView::Paint(gfx::Canvas* canvas) {
     SkColor background_color = SkColorSetRGB(GetRValue(infocolor),
                                              GetGValue(infocolor),
                                              GetBValue(infocolor));
-    int y_offset = kUnrelatedControlVerticalSpacing / 2;
+    int y_offset = views::kUnrelatedControlVerticalSpacing / 2;
     canvas->FillRectInt(background_color, 0, 0, width(),
                         height() - y_offset);
   }
@@ -129,7 +129,7 @@ void OptionsGroupView::Init() {
   layout->StartRow(1, two_column_layout_id);
   layout->AddView(description_label_, 1, 1,
                   GridLayout::FILL, GridLayout::LEADING);
-  layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 
   if (show_separator_) {
     const int single_column_layout_id = 1;

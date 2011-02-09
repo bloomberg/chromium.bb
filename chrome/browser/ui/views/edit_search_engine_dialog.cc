@@ -144,7 +144,7 @@ void EditSearchEngineDialog::Init() {
 
   const int related_x = kRelatedControlHorizontalSpacing;
   const int related_y = kRelatedControlVerticalSpacing;
-  const int unrelated_y = kUnrelatedControlVerticalSpacing;
+  const int unrelated_y = views::kUnrelatedControlVerticalSpacing;
 
   // View and GridLayout take care of deleting GridLayout for us.
   GridLayout* layout = GridLayout::CreatePanel(this);

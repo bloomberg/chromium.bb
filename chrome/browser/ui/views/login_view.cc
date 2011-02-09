@@ -68,7 +68,7 @@ LoginView::LoginView(const std::wstring& explanation,
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(message_label_);
 
-  layout->AddPaddingRow(0, kUnrelatedControlLargeVerticalSpacing);
+  layout->AddPaddingRow(0, views::kUnrelatedControlLargeVerticalSpacing);
 
   layout->StartRow(0, labels_column_set_id);
   layout->AddView(username_label_);
@@ -80,7 +80,7 @@ LoginView::LoginView(const std::wstring& explanation,
   layout->AddView(password_label_);
   layout->AddView(password_field_);
 
-  layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 }
 
 LoginView::~LoginView() {

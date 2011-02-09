@@ -530,7 +530,8 @@ void TaskManagerView::Layout() {
   if (purge_memory_button_) {
     size = purge_memory_button_->GetPreferredSize();
     purge_memory_button_->SetBounds(
-        kill_button_->x() - size.width() - kUnrelatedControlHorizontalSpacing,
+        kill_button_->x() - size.width() -
+            views::kUnrelatedControlHorizontalSpacing,
         y_buttons, size.width(), size.height());
   }
 

@@ -374,7 +374,8 @@ void HungRendererDialogView::Init() {
   ColumnSet* column_set = layout->AddColumnSet(double_column_set_id);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
                         GridLayout::FIXED, frozen_icon_->width(), 0);
-  column_set->AddPaddingColumn(0, kUnrelatedControlLargeHorizontalSpacing);
+  column_set->AddPaddingColumn(
+      0, views::kUnrelatedControlLargeHorizontalSpacing);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
 
@@ -382,7 +383,7 @@ void HungRendererDialogView::Init() {
   layout->AddView(frozen_icon_view_, 1, 3);
   layout->AddView(info_label_);
 
-  layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 
   layout->StartRow(0, double_column_set_id);
   layout->SkipColumns(1);
@@ -406,7 +407,7 @@ void HungRendererDialogView::CreateKillButtonView() {
   const int single_column_set_id = 0;
   ColumnSet* column_set = layout->AddColumnSet(single_column_set_id);
   column_set->AddPaddingColumn(0, frozen_icon_->width() +
-      kPanelHorizMargin + kUnrelatedControlHorizontalSpacing);
+      kPanelHorizMargin + views::kUnrelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
                         GridLayout::USE_PREF, 0, 0);
 

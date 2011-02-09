@@ -310,7 +310,7 @@ void ContentPageView::InitPasswordSavingGroup() {
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(passwords_neversave_radio_, 1, 1,
                   GridLayout::FILL, GridLayout::LEADING);
-  layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(show_passwords_button_);
 

@@ -29,7 +29,7 @@ void PluginFilterPageView::InitControlLayout() {
 
   GridLayout* layout = static_cast<GridLayout*>(GetLayoutManager());
   const int single_column_set_id = 0;
-  layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 
   views::Link* plugins_page_link = new views::Link(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_PLUGIN_SELECTIVE_DISABLE)));

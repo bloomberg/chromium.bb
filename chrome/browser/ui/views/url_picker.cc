@@ -93,7 +93,7 @@ UrlPicker::UrlPicker(UrlPickerDelegate* delegate,
   url_field_->SetController(this);
   layout->AddView(url_field_);
 
-  layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 
   layout->StartRow(0, single_column_view_set_id);
   views::Label* description_label = new views::Label();

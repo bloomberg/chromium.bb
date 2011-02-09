@@ -244,19 +244,21 @@ void ImportingProgressView::InitControlLayout() {
                         GridLayout::USE_PREF, 0, 0);
   const int double_column_view_set_id = 1;
   column_set = layout->AddColumnSet(double_column_view_set_id);
-  column_set->AddPaddingColumn(0, kUnrelatedControlLargeHorizontalSpacing);
+  column_set->AddPaddingColumn(
+      0, views::kUnrelatedControlLargeHorizontalSpacing);
   column_set->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
                         GridLayout::FIXED, ps.width(), 0);
   column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 1,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kUnrelatedControlLargeHorizontalSpacing);
+  column_set->AddPaddingColumn(
+      0, views::kUnrelatedControlLargeHorizontalSpacing);
 
   layout->StartRow(0, single_column_view_set_id);
   if (bookmarks_import_)
     layout->AddView(state_bookmarks_.get());
   layout->AddView(label_info_);
-  layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 
   if (items_ & importer::HISTORY) {
     layout->StartRow(0, double_column_view_set_id);

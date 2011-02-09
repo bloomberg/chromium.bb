@@ -35,17 +35,16 @@ const int kRelatedControlVerticalSpacing = 8;
 // Small vertical spacing between controls that are logically related.
 const int kRelatedControlSmallVerticalSpacing = 4;
 
-// Vertical spacing between controls that are logically unrelated.
-const int kUnrelatedControlVerticalSpacing = 20;
-
-// Larger vertical spacing between unrelated controls.
-const int kUnrelatedControlLargeVerticalSpacing = 30;
-
 // Small horizontal spacing between controls that are logically related.
 const int kRelatedControlSmallHorizontalSpacing = 8;
 
 // Horizontal spacing between controls that are logically related.
 const int kRelatedControlHorizontalSpacing = 8;
+
+// TODO(tfarina): Move this namespace to the top of this file around of all
+// these constants. But this needs to be done in small steps, as it's
+// impossible to convert everything at the same time.
+namespace views {
 
 // Horizontal spacing between controls that are logically unrelated.
 const int kUnrelatedControlHorizontalSpacing = 12;
@@ -53,10 +52,11 @@ const int kUnrelatedControlHorizontalSpacing = 12;
 // Larger horizontal spacing between unrelated controls.
 const int kUnrelatedControlLargeHorizontalSpacing = 20;
 
-// TODO(tfarina): Move this namespace to the top of this file around of all
-// these constants. But this needs to be done in small steps, as it's
-// impossible to convert everything at the same time.
-namespace views {
+// Vertical spacing between controls that are logically unrelated.
+const int kUnrelatedControlVerticalSpacing = 20;
+
+// Larger vertical spacing between unrelated controls.
+const int kUnrelatedControlLargeVerticalSpacing = 30;
 
 // Vertical spacing between the edge of the window and the
 // top or bottom of a button.
