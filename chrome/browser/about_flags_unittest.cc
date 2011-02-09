@@ -26,6 +26,7 @@ const char kMultiSwitch2[] = "multi_switch2";
 namespace about_flags {
 
 const Experiment::Choice kMultiChoices[] = {
+  { IDS_PRODUCT_NAME, "" },
   { IDS_PRODUCT_NAME, kMultiSwitch1 },
   { IDS_PRODUCT_NAME, kMultiSwitch2 },
 };
@@ -222,22 +223,21 @@ TEST_F(AboutFlagsTest, PersistAndPrune) {
   EXPECT_EQ(arraysize(kExperiments) - 1, switch_prefs->GetSize());
 }
 
-// Tests enabling multi-value type experiments.
+// Tests multi-value type experiments.
 TEST_F(AboutFlagsTest, MultiValues) {
-  // Enable the multi value experiment, which should enable the first choice.
-  SetExperimentEnabled(&prefs_, kFlags4, true);
+  // Initially, the first "deactivated" option of the multi experiment should
+  // be set.
   {
     CommandLine command_line(CommandLine::NO_PROGRAM);
     ConvertFlagsToSwitches(&prefs_, &command_line);
-    EXPECT_TRUE(command_line.HasSwitch(kMultiSwitch1));
+    EXPECT_FALSE(command_line.HasSwitch(kMultiSwitch1));
     EXPECT_FALSE(command_line.HasSwitch(kMultiSwitch2));
   }
 
-  // Enable the 2nd choice of the multi-value, which should disable the first
-  // choice.
+  // Enable the 2nd choice of the multi-value.
   SetExperimentEnabled(&prefs_, std::string(kFlags4) +
                        std::string(testing::kMultiSeparator) +
-                       base::IntToString(1), true);
+                       base::IntToString(2), true);
   {
     CommandLine command_line(CommandLine::NO_PROGRAM);
     ConvertFlagsToSwitches(&prefs_, &command_line);
@@ -246,7 +246,9 @@ TEST_F(AboutFlagsTest, MultiValues) {
   }
 
   // Disable the multi-value experiment.
-  SetExperimentEnabled(&prefs_, kFlags4, false);
+  SetExperimentEnabled(&prefs_, std::string(kFlags4) +
+                       std::string(testing::kMultiSeparator) +
+                       base::IntToString(0), true);
   {
     CommandLine command_line(CommandLine::NO_PROGRAM);
     ConvertFlagsToSwitches(&prefs_, &command_line);

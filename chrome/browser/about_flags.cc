@@ -62,9 +62,10 @@ const char kVerticalTabsExperimentName[] = "vertical-tabs";
 // distinct types of experiments:
 // . SINGLE_VALUE: experiment is either on or off. Use the SINGLE_VALUE_TYPE
 //   macro for this type supplying the command line to the macro.
-// . MULTI_VALUE: if enabled the command line of the selected choice is enabled.
-//   To specify this type of experiment use the macro MULTI_VALUE_TYPE supplying
-//   it the array of choices.
+// . MULTI_VALUE: a list of choices, the first of which should correspond to a
+//   deactivated state for this lab (i.e. no command line option).  To specify
+//   this type of experiment use the macro MULTI_VALUE_TYPE supplying it the
+//   array of choices.
 // See the documentation of Experiment for details on the fields.
 //
 // When adding a new choice, add it to the end of the list.
@@ -334,13 +335,35 @@ void AddInternalName(const Experiment& e, std::set<std::string>* names) {
   }
 }
 
+// Confirms that an experiment is valid, used in a DCHECK in
+// SanitizeList below.
+bool ValidateExperiment(const Experiment& e) {
+  switch (e.type) {
+    case Experiment::SINGLE_VALUE:
+      DCHECK_EQ(0, e.num_choices);
+      DCHECK(!e.choices);
+      break;
+    case Experiment::MULTI_VALUE:
+      DCHECK_GT(e.num_choices, 0);
+      DCHECK(e.choices);
+      DCHECK(e.choices[0].command_line);
+      DCHECK_EQ('\0', e.choices[0].command_line[0]);
+      break;
+    default:
+      NOTREACHED();
+  }
+  return true;
+}
+
 // Removes all experiments from prefs::kEnabledLabsExperiments that are
 // unknown, to prevent this list to become very long as experiments are added
 // and removed.
 void SanitizeList(PrefService* prefs) {
   std::set<std::string> known_experiments;
-  for (size_t i = 0; i < num_experiments; ++i)
+  for (size_t i = 0; i < num_experiments; ++i) {
+    DCHECK(ValidateExperiment(experiments[i]));
     AddInternalName(experiments[i], &known_experiments);
+  }
 
   std::set<std::string> enabled_experiments;
   GetEnabledFlags(prefs, &enabled_experiments);
@@ -386,10 +409,8 @@ void GetSanitizedEnabledFlagsForCurrentPlatform(
 }
 
 // Returns the Value representing the choice data in the specified experiment.
-// If one of the choices is enabled |is_one_selected| is set to true.
 Value* CreateChoiceData(const Experiment& experiment,
-                        const std::set<std::string>& enabled_experiments,
-                        bool* is_one_selected) {
+                        const std::set<std::string>& enabled_experiments) {
   DCHECK(experiment.type == Experiment::MULTI_VALUE);
   ListValue* result = new ListValue;
   for (int i = 0; i < experiment.num_choices; ++i) {
@@ -399,10 +420,7 @@ Value* CreateChoiceData(const Experiment& experiment,
     value->SetString("description",
                      l10n_util::GetStringUTF16(choice.description_id));
     value->SetString("internal_name", name);
-    bool is_selected = enabled_experiments.count(name) > 0;
-    if (is_selected)
-      *is_one_selected = true;
-    value->SetBoolean("selected", is_selected);
+    value->SetBoolean("selected", enabled_experiments.count(name) > 0);
     result->Append(value);
   }
   return result;
@@ -434,14 +452,19 @@ ListValue* GetFlagsExperimentsData(PrefService* prefs) {
                     l10n_util::GetStringUTF16(
                         experiment.visible_description_id));
 
-    bool enabled = enabled_experiments.count(experiment.internal_name) > 0;
-
-    if (experiment.type == Experiment::MULTI_VALUE) {
-      data->Set("choices", CreateChoiceData(experiment, enabled_experiments,
-                                            &enabled));
+    switch (experiment.type) {
+      case Experiment::SINGLE_VALUE:
+        data->SetBoolean(
+            "enabled",
+            enabled_experiments.count(experiment.internal_name) > 0);
+        break;
+      case Experiment::MULTI_VALUE:
+        data->Set("choices", CreateChoiceData(experiment, enabled_experiments));
+        break;
+      default:
+        NOTREACHED();
     }
 
-    data->SetBoolean("enabled", enabled);
     experiments_data->Append(data);
   }
   return experiments_data;
@@ -551,13 +574,16 @@ void FlagsState::SetExperimentEnabled(
     // We're being asked to enable a multi-choice experiment. Disable the
     // currently selected choice.
     DCHECK_NE(at_index, 0u);
-    SetExperimentEnabled(prefs, internal_name.substr(0, at_index), false);
+    const std::string experiment_name = internal_name.substr(0, at_index);
+    SetExperimentEnabled(prefs, experiment_name, false);
 
-    // And enable the new choice.
-    std::set<std::string> enabled_experiments;
-    GetSanitizedEnabledFlags(prefs, &enabled_experiments);
-    enabled_experiments.insert(internal_name);
-    SetEnabledFlags(prefs, enabled_experiments);
+    // And enable the new choice, if it is not the default first choice.
+    if (internal_name != experiment_name + "@0") {
+      std::set<std::string> enabled_experiments;
+      GetSanitizedEnabledFlags(prefs, &enabled_experiments);
+      enabled_experiments.insert(internal_name);
+      SetEnabledFlags(prefs, enabled_experiments);
+    }
     return;
   }
 

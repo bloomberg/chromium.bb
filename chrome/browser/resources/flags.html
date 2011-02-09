@@ -176,6 +176,7 @@ var flagsExperimentsDataFormat = {
       'internal_name': 'Experiment ID string',
       'name': 'Experiment Name',
       'description': 'description',
+      /* enabled is only set if the experiment is single valued */
       'enabled': true,
       /* choices is only set if the experiment has multiple values */
       'choices': [
@@ -313,6 +314,9 @@ document.addEventListener('DOMContentLoaded', requestFlagsExperimentsData);
             </div>
           </div>
           <div class="experiment-actions">
+	    <!-- If enabled isn't set (i.e. in multi_type options),
+		 then both jsdisplay tests fail, and we get no
+		 rendering from this section. -->
             <span>
               <a
                 jsvalues=".internal_name:internal_name"

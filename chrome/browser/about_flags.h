@@ -29,9 +29,10 @@ struct Experiment {
     SINGLE_VALUE,
 
     // The experiment has multiple values only one of which is ever enabled.
-    // For MULTI_VALUE experiments the command_line of the Experiment is not
-    // used. If the experiment is enabled the command line of the selected
-    // Choice is enabled.
+    // The first of the values should correspond to a deactivated state for this
+    // lab (i.e. no command line option). For MULTI_VALUE experiments the
+    // command_line of the Experiment is not used. If the experiment is enabled
+    // the command line of the selected Choice is enabled.
     MULTI_VALUE,
   };
 
