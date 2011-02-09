@@ -5279,7 +5279,8 @@ class GLGenerator(object):
       file.Write("typedef %s %s;\n" % (v, k))
     file.Write("#endif  // __gl2_h_\n\n")
 
-    file.Write("#define PPB_OPENGLES2_DEV_INTERFACE \"PPB_OpenGLES(Dev);2.0\"\n")
+    file.Write("#define PPB_OPENGLES2_DEV_INTERFACE "
+        "\"PPB_OpenGLES(Dev);2.0\"\n")
 
     file.Write("\nstruct PPB_OpenGLES2_Dev {\n")
     for func in self.original_functions:
@@ -5463,6 +5464,57 @@ bool PPB_OpenGLES2_Proxy::OnMessageReceived(const IPC::Message& msg) {
                  (return_str, interface_str, func.name, arg))
       file.Write("}\n\n")
 
+  def WritePepperGLES2NaClProxy(self, filename):
+    """Writes the Pepper OpenGLES interface implementation for NaCl."""
+
+    file = CWriter(filename)
+    file.Write(_LICENSE)
+    file.Write("// This file is auto-generated. DO NOT EDIT!\n\n")
+
+    file.Write("#include \"native_client/src/shared/ppapi_proxy"
+        "/plugin_context_3d.h\"\n\n")
+
+    file.Write("#include \"gpu/command_buffer/client/gles2_implementation.h\"")
+    file.Write("\n#include \"ppapi/c/dev/ppb_opengles_dev.h\"\n\n")
+
+    file.Write("using ppapi_proxy::PluginContext3D;\n")
+    file.Write("using ppapi_proxy::PluginResource;\n\n")
+    file.Write("namespace {\n\n")
+
+    for func in self.original_functions:
+      if not func.IsCoreGLFunction():
+        continue
+      args = func.MakeTypedOriginalArgString("")
+      if len(args) != 0:
+        args = ", " + args
+      file.Write("%s %s(PP_Resource context%s) {\n" %
+                 (func.return_type, func.name, args))
+      return_string = "return "
+      if func.return_type == "void":
+        return_string = ""
+      file.Write("  %sPluginResource::GetAs<PluginContext3D>(context)->impl()->"
+                 "%s(%s);\n" %
+                 (return_string,
+                  func.original_name,
+                  func.MakeOriginalArgString("")))
+      file.Write("}\n")
+
+    file.Write("\n} // namespace\n\n")
+
+    file.Write("const PPB_OpenGLES2_Dev* "
+               "PluginContext3D::GetOpenGLESInterface() {\n")
+
+    file.Write("  const static struct PPB_OpenGLES2_Dev ppb_opengles = {\n")
+    file.Write("    &")
+    file.Write(",\n    &".join(
+      f.name for f in self.original_functions if f.IsCoreGLFunction()))
+    file.Write("\n")
+    file.Write("  };\n")
+    file.Write("  return &ppb_opengles;\n")
+    file.Write("}\n")
+    file.Close()
+
+
 def main(argv):
   """This is the main function."""
   parser = OptionParser()
@@ -5477,11 +5529,11 @@ def main(argv):
       help="generate a docs friendly version of the command formats.")
   parser.add_option(
       "--alternate-mode", type="choice",
-      choices=("ppapi", "chrome_ppapi", "chrome_ppapi_proxy"),
+      choices=("ppapi", "chrome_ppapi", "chrome_ppapi_proxy", "nacl_ppapi"),
       help="generate files for other projects. \"ppapi\" will generate ppapi "
       "bindings. \"chrome_ppapi\" generate chrome implementation for ppapi. "
       "\"chrome_ppapi_proxy\" will generate the glue for the chrome IPC ppapi"
-      "proxy.")
+      "proxy. \"nacl_ppapi\" will generate NaCl implementation for ppapi")
   parser.add_option(
       "--output-dir",
       help="base directory for resulting files, under chrome/src. default is "
@@ -5516,6 +5568,10 @@ def main(argv):
   elif options.alternate_mode == "chrome_ppapi_proxy":
     gen.WritePepperGLES2ProxyImplementation(
         "ppapi/proxy/ppb_opengles2_proxy.cc")
+
+  elif options.alternate_mode == "nacl_ppapi":
+    gen.WritePepperGLES2NaClProxy(
+        "native_client/src/shared/ppapi_proxy/plugin_opengles.cc")
 
   else:
     os.chdir("gpu/command_buffer")
