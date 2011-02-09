@@ -1195,19 +1195,6 @@
    fun:ProfileSyncService
 }
 {
-   bug_71582
-   Heapcheck:Leak
-   ...
-   fun:SiteInstance::GetProcess
-   fun:RenderViewHost
-   fun:RenderViewHostFactory::Create
-   fun:RenderViewHostManager::Init
-   fun:TabContents
-   fun:TestTabContents
-   fun:SyncInternalsUITest
-   fun:SyncInternalsUITest_*
-}
-{
    bug_71728a
    Heapcheck:Leak
    fun:__gnu_cxx::new_allocator::allocate

@@ -10,6 +10,7 @@
 #include "base/message_loop.h"
 #include "base/values.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/renderer_host/test/test_render_view_host.h"
 #include "chrome/browser/sync/js_arg_list.h"
 #include "chrome/browser/sync/js_test_util.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
@@ -37,30 +38,41 @@ class TestSyncInternalsUI : public SyncInternalsUI {
   MOCK_METHOD1(ExecuteJavascript, void(const std::wstring&));
 };
 
-class SyncInternalsUITest : public testing::Test {
+class SyncInternalsUITest : public RenderViewHostTestHarness {
  protected:
   // We allocate memory for |sync_internals_ui_| but we don't
   // construct it.  This is because we want to set mock expectations
   // with its address before we construct it, and its constructor
   // calls into our mocks.
   SyncInternalsUITest()
+      // The message loop is provided by RenderViewHostTestHarness.
       : ui_thread_(BrowserThread::UI, MessageLoopForUI::current()),
-        test_tab_contents_(&profile_mock_, NULL),
-        test_sync_internals_ui_buf_(
-            operator new(sizeof(TestSyncInternalsUI))),
+        test_sync_internals_ui_buf_(NULL),
         test_sync_internals_ui_constructor_called_(false) {}
 
-  virtual ~SyncInternalsUITest() {
+  virtual void SetUp() {
+    test_sync_internals_ui_buf_ = operator new(sizeof(TestSyncInternalsUI));
+    test_sync_internals_ui_constructor_called_ = false;
+    profile_.reset(new NiceMock<ProfileMock>());
+    RenderViewHostTestHarness::SetUp();
+  }
+
+  virtual void TearDown() {
     if (test_sync_internals_ui_constructor_called_) {
       GetTestSyncInternalsUI()->~TestSyncInternalsUI();
     }
     operator delete(test_sync_internals_ui_buf_);
+    RenderViewHostTestHarness::TearDown();
+  }
+
+  NiceMock<ProfileMock>* GetProfileMock() {
+    return static_cast<NiceMock<ProfileMock>*>(profile());
   }
 
   // Set up boilerplate expectations for calls done during
   // SyncInternalUI's construction/destruction.
   void ExpectSetupTeardownCalls() {
-    EXPECT_CALL(profile_mock_, GetProfileSyncService())
+    EXPECT_CALL(*GetProfileMock(), GetProfileSyncService())
         .WillRepeatedly(Return(&profile_sync_service_mock_));
 
     EXPECT_CALL(profile_sync_service_mock_, GetJsFrontend())
@@ -82,7 +94,7 @@ class SyncInternalsUITest : public testing::Test {
   // Like ExpectSetupTeardownCalls() but with a NULL
   // ProfileSyncService.
   void ExpectSetupTeardownCallsNullService() {
-    EXPECT_CALL(profile_mock_, GetProfileSyncService())
+    EXPECT_CALL(*GetProfileMock(), GetProfileSyncService())
         .WillRepeatedly(Return(static_cast<ProfileSyncService*>(NULL)));
   }
 
@@ -92,7 +104,7 @@ class SyncInternalsUITest : public testing::Test {
                     << "at most once per test";
       return;
     }
-    new(test_sync_internals_ui_buf_) TestSyncInternalsUI(&test_tab_contents_);
+    new(test_sync_internals_ui_buf_) TestSyncInternalsUI(contents());
     test_sync_internals_ui_constructor_called_ = true;
   }
 
@@ -107,19 +119,16 @@ class SyncInternalsUITest : public testing::Test {
 
   // Used for passing into EXPECT_CALL().
   TestSyncInternalsUI* GetTestSyncInternalsUIAddress() {
+    EXPECT_TRUE(test_sync_internals_ui_buf_);
     return static_cast<TestSyncInternalsUI*>(test_sync_internals_ui_buf_);
   }
 
-  NiceMock<ProfileMock> profile_mock_;
   StrictMock<ProfileSyncServiceMock> profile_sync_service_mock_;
   StrictMock<browser_sync::MockJsFrontend> mock_js_backend_;
 
  private:
-  // Needed by |ui_thread_|.
-  MessageLoopForUI ui_loop_;
-  // Needed by |test_tab_contents_|.
+  // Needed by |contents()|.
   BrowserThread ui_thread_;
-  TestTabContents test_tab_contents_;
   void* test_sync_internals_ui_buf_;
   bool test_sync_internals_ui_constructor_called_;
 };
