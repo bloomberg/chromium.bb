@@ -29,10 +29,19 @@ class PluginsCheck(pyauto.PyUITest):
 
   def testPluginsStates(self):
     """Verify plugins' versions and states."""
+    if self.IsLinux():
+      # TODO(rohitbm)
+      # Add plugins_check support for Linux
+      logging.debug('Not performing plugins check on linux')
+      return
     browser_plugins_list = self.GetPluginsInfo().Plugins()
+    version_sep = '.'
+    if self.IsWin():
+      # Windows flash plugin version uses |,| instead of |.|
+      version_sep = ','
     for plugin in self._ReadPluginsList(): 
       test_plugin = [x['name'] for x in browser_plugins_list \
-          if x['version'] == plugin['version'] and \
+          if x['version'] == plugin['version'].replace('.', version_sep) and \
              str(x['enabled']) == plugin['enabled'] and \
              x['name'] == plugin['name']]
       plugin_info = '[ NAME : %s, VERSION: %s, ENABLED: %s]' % \
