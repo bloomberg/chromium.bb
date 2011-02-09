@@ -3698,3 +3698,20 @@
    fun:_ZN14CallbackRunnerI6Tuple3IN4base17PlatformFileErrorENS1_16PassPlatformFileEbEE3RunIS2_S3_bEEvRKT_RKT0_RKT1_
    fun:*RelayCreateOrOpen11RunCallbackEv
 }
+{
+   bug_65680
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN8remoting12TraceContext3GetEv
+   fun:_ZN8remoting12TraceContext6tracerEv
+   fun:_ZN8remoting14ScreenRecorder9DoCaptureEv
+   fun:_ZN8remoting14ScreenRecorder7DoStartEv
+   fun:_Z16DispatchToMethodIN8remoting14ScreenRecorderEMS1_FvvEEvPT_T0_RK6Tuple0
+   fun:_ZN14RunnableMethodIN8remoting14ScreenRecorderEMS1_FvvE6Tuple0E3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
+   fun:_ZN11MessageLoop6DoWorkEv
+   fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
+   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN11MessageLoop10RunHandlerEv
+}
