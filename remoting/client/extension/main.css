@@ -105,6 +105,7 @@ a.hostentry { text-decoration: none; }
 }
 
 .status_msg {
+  -webkit-user-select: none;
   position: absolute;
   left: 20px;
   top: 20px;
@@ -115,6 +116,7 @@ a.hostentry { text-decoration: none; }
 }
 
 .login_panel {
+  -webkit-user-select: none;
   position: absolute;
   display: none;
   z-index: 1;
@@ -127,5 +129,9 @@ a.hostentry { text-decoration: none; }
   width: 250px;
 }
 
-.plugin {
+.plugin-scroll-panel {
+  -webkit-user-select: none;
+  overflow: auto;
+  width: 100%;
+  height: 100%;
 }

@@ -193,6 +193,8 @@ void PepperView::SetViewport(int x, int y, int width, int height) {
     LOG(ERROR) << "Couldn't bind the device context.";
     return;
   }
+
+  instance_->GetScriptableObject()->SetDesktopSize(width, height);
 }
 
 void PepperView::AllocateFrame(media::VideoFrame::Format format,

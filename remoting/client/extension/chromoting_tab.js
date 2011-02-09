@@ -72,27 +72,16 @@ function pluginLoginChallenge() {
 }
 
 /**
- * This is the callback that the plugin invokes to indicate that the host/
- * client connection status has changed.
+ * This is a callback that gets called when the desktop size contained in the
+ * the plugin has changed.
  */
-function pluginCallback() {
-  var status = chromoting.plugin.status;
-  var quality = chromoting.plugin.quality;
+function desktopSizeChanged() {
+  var width = chromoting.plugin.desktopWidth;
+  var height = chromoting.plugin.desktopHeight;
 
-  if (status == chromoting.plugin.STATUS_UNKNOWN) {
-    showClientStateMessage('');
-  } else if (status == chromoting.plugin.STATUS_CONNECTING) {
-    showClientStateMessage('Connecting to ' + chromoting.hostname +
-                          ' as ' + chromoting.username);
-  } else if (status == chromoting.plugin.STATUS_INITIALIZING) {
-    showClientStateMessage('Initializing connection to ' + chromoting.hostname);
-  } else if (status == chromoting.plugin.STATUS_CONNECTED) {
-    showClientStateMessage('Connected to ' + chromoting.hostname, 1000);
-  } else if (status == chromoting.plugin.STATUS_CLOSED) {
-    showClientStateMessage('Closed');
-  } else if (status == chromoting.plugin.STATUS_FAILED) {
-    showClientStateMessage('Failed');
-  }
+  console.log('desktop size changed: ' + width + 'x' + height);
+  chromoting.plugin.style.width = width + "px";
+  chromoting.plugin.style.height = height + "px";
 }
 
 /**
@@ -106,7 +95,7 @@ function pluginCallback() {
 function showClientStateMessage(message, duration) {
   // Increment message id to ignore any previous fadeout requests.
   chromoting.messageId++;
-  console.log('setting message ' + chromoting.messageId);
+  console.log('setting message ' + chromoting.messageId + '!');
 
   // Update the status message.
   var msg = document.getElementById('status_msg');
@@ -138,6 +127,7 @@ function pluginCallback() {
     setClientStateMessageFade('Initializing connection to ' +
                               chromoting.hostname);
   } else if (status == chromoting.plugin.STATUS_CONNECTED) {
+    desktopSizeChanged();
     setClientStateMessageFade('Connected to ' + chromoting.hostname, 1000);
   } else if (status == chromoting.plugin.STATUS_CLOSED) {
     setClientStateMessage('Closed');

@@ -132,8 +132,8 @@ void ChromotingClient::DispatchPacket() {
 
 void ChromotingClient::OnConnectionOpened(protocol::ConnectionToHost* conn) {
   VLOG(1) << "ChromotingClient::OnConnectionOpened";
-  SetConnectionState(CONNECTED);
   Initialize();
+  SetConnectionState(CONNECTED);
 }
 
 void ChromotingClient::OnConnectionClosed(protocol::ConnectionToHost* conn) {

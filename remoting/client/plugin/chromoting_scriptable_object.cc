@@ -15,6 +15,8 @@ namespace remoting {
 
 const char kStatusAttribute[] = "status";
 const char kQualityAttribute[] = "quality";
+const char kDesktopWidth[] = "desktopWidth";
+const char kDesktopHeight[] = "desktopHeight";
 const char kConnectionInfoUpdate[] = "connectionInfoUpdate";
 const char kLoginChallenge[] = "loginChallenge";
 
@@ -51,6 +53,8 @@ void ChromotingScriptableObject::Init() {
 
   AddAttribute(kConnectionInfoUpdate, Var());
   AddAttribute(kLoginChallenge, Var());
+  AddAttribute(kDesktopWidth, Var(0));
+  AddAttribute(kDesktopHeight, Var(0));
 
   AddMethod("connect", &ChromotingScriptableObject::DoConnect);
   AddMethod("disconnect", &ChromotingScriptableObject::DoDisconnect);
@@ -132,7 +136,9 @@ void ChromotingScriptableObject::SetProperty(const Var& name,
   // chromoting_scriptable_object.h for the object interface definition.
   std::string property_name = name.AsString();
   if (property_name != kConnectionInfoUpdate &&
-      property_name != kLoginChallenge) {
+      property_name != kLoginChallenge &&
+      property_name != kDesktopWidth &&
+      property_name != kDesktopHeight) {
     *exception =
         Var("Cannot set property " + property_name + " on this object.");
     return;
@@ -168,6 +174,17 @@ void ChromotingScriptableObject::SetConnectionInfo(ConnectionStatus status,
 
     // Signal the Chromoting Tab UI to get the update connection state values.
     SignalConnectionInfoChange();
+  }
+}
+
+void ChromotingScriptableObject::SetDesktopSize(int width, int height) {
+  int width_index = property_names_[kDesktopWidth];
+  int height_index = property_names_[kDesktopHeight];
+
+  if (properties_[width_index].attribute.AsInt() != width ||
+      properties_[height_index].attribute.AsInt() != height) {
+    properties_[width_index].attribute = Var(width);
+    properties_[height_index].attribute = Var(height);
   }
 }
 

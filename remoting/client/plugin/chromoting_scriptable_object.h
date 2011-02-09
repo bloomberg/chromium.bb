@@ -9,7 +9,11 @@
 //
 //   // Connection status.
 //   readonly attribute unsigned short connection_status;
-
+//
+//   // Dimension of the desktop area.
+//   readonly attribute int desktopWidth;
+//   readonly attribute int desktopHeight;
+//
 //   // Constants for connection status.
 //   const unsigned short STATUS_UNKNOWN = 0;
 //   const unsigned short STATUS_CONNECTING = 1;
@@ -102,6 +106,7 @@ class ChromotingScriptableObject : public pp::deprecated::ScriptableObject {
                        pp::Var* exception);
 
   void SetConnectionInfo(ConnectionStatus status, ConnectionQuality quality);
+  void SetDesktopSize(int width, int height);
 
   // This should be called to signal JS code to provide login information.
   void SignalLoginChallenge();
