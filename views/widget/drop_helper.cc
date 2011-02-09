@@ -96,7 +96,7 @@ View* DropHelper::CalculateTargetViewImpl(
   // drop.
   while (view && view != target_view_ &&
          (!view->IsEnabled() || !view->CanDrop(data))) {
-    view = view->GetParent();
+    view = view->parent();
   }
 #else
   int formats = 0;
@@ -111,7 +111,7 @@ View* DropHelper::CalculateTargetViewImpl(
     }
     formats = 0;
     custom_formats.clear();
-    view = view->GetParent();
+    view = view->parent();
   }
 #endif
   return view;

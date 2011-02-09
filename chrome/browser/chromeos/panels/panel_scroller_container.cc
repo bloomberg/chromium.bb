@@ -11,7 +11,7 @@ PanelScrollerContainer::PanelScrollerContainer(PanelScroller* scroller,
     : views::View(),
       scroller_(scroller),
       contents_(contents) {
-  AddChildView(0, contents_);
+  AddChildViewAt(contents_, 0);
   // TODO(brettw) figure out memory management.
 }
 

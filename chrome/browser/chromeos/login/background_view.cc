@@ -196,7 +196,7 @@ void BackgroundView::CreateModalPopup(views::WindowDelegate* view) {
 
 gfx::NativeWindow BackgroundView::GetNativeWindow() const {
   return
-      GTK_WINDOW(static_cast<WidgetGtk*>(GetWidget())->GetNativeView());
+      GTK_WINDOW(static_cast<const WidgetGtk*>(GetWidget())->GetNativeView());
 }
 
 void BackgroundView::SetStatusAreaVisible(bool visible) {

@@ -15,7 +15,7 @@ FillLayout::~FillLayout() {
 }
 
 void FillLayout::Layout(View* host) {
-  if (host->GetChildViewCount() == 0)
+  if (!host->has_children())
     return;
 
   View* frame_view = host->GetChildViewAt(0);
@@ -23,7 +23,7 @@ void FillLayout::Layout(View* host) {
 }
 
 gfx::Size FillLayout::GetPreferredSize(View* host) {
-  DCHECK(host->GetChildViewCount() == 1);
+  DCHECK(host->child_count() == 1);
   return host->GetChildViewAt(0)->GetPreferredSize();
 }
 

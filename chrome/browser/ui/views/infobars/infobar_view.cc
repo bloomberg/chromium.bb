@@ -90,7 +90,7 @@ void InfoBarView::AnimateClose() {
 }
 
 void InfoBarView::Close() {
-  GetParent()->RemoveChildView(this);
+  parent()->RemoveChildView(this);
   // Note that we only tell the delegate we're closed here, and not when we're
   // simply destroyed (by virtue of a tab switch or being moved from window to
   // window), since this action can cause the delegate to destroy itself.
@@ -104,7 +104,7 @@ void InfoBarView::PaintArrow(gfx::Canvas* canvas,
                              View* outer_view,
                              int arrow_center_x) {
   gfx::Point infobar_top(0, y());
-  ConvertPointToView(GetParent(), outer_view, &infobar_top);
+  ConvertPointToView(parent(), outer_view, &infobar_top);
   int infobar_top_y = infobar_top.y();
   SkPoint gradient_points[2] = {
       {SkIntToScalar(0), SkIntToScalar(infobar_top_y)},
@@ -194,8 +194,8 @@ void InfoBarView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
 
   // For accessibility, ensure the close button is the last child view.
   if ((parent == this) && (child != close_button_) &&
-      HasChildView(close_button_) &&
-      (GetChildViewAt(GetChildViewCount() - 1) != close_button_)) {
+      (close_button_->parent() == this) &&
+      (GetChildViewAt(child_count() - 1) != close_button_)) {
     RemoveChildView(close_button_);
     AddChildView(close_button_);
   }
@@ -245,8 +245,8 @@ gfx::Size InfoBarView::GetPreferredSize() {
 void InfoBarView::FocusWillChange(View* focused_before, View* focused_now) {
   // This will trigger some screen readers to read the entire contents of this
   // infobar.
-  if (focused_before && focused_now && !this->IsParentOf(focused_before) &&
-      this->IsParentOf(focused_now))
+  if (focused_before && focused_now && !this->Contains(focused_before) &&
+      this->Contains(focused_now))
     NotifyAccessibilityEvent(AccessibilityTypes::EVENT_ALERT);
 }
 

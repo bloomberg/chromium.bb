@@ -108,25 +108,12 @@ STDMETHODIMP ViewAccessibility::accLocation(
   if (!view_)
     return E_FAIL;
 
-  gfx::Rect view_bounds;
-  // Retrieving the parent View to be used for converting from view-to-screen
-  // coordinates.
-  views::View* parent = view_->GetParent();
-
-  if (parent == NULL) {
-    // If no parent, remain within the same View.
-    parent = view_;
-  }
-
-  // Retrieve active View's bounds.
-  view_bounds = view_->bounds();
-
-  if (!view_bounds.IsEmpty()) {
-    *width  = view_bounds.width();
-    *height = view_bounds.height();
-
-    gfx::Point topleft(view_bounds.origin());
-    views::View::ConvertPointToScreen(parent, &topleft);
+  if (!view_->bounds().IsEmpty()) {
+    *width  = view_->width();
+    *height = view_->height();
+    gfx::Point topleft(view_->bounds().origin());
+    views::View::ConvertPointToScreen(view_->parent() ? view_->parent() : view_,
+                                      &topleft);
     *x_left = topleft.x();
     *y_top  = topleft.y();
   } else {
@@ -149,16 +136,15 @@ STDMETHODIMP ViewAccessibility::accNavigate(LONG nav_dir, VARIANT start,
       if (start.lVal != CHILDID_SELF) {
         // Start of navigation must be on the View itself.
         return E_INVALIDARG;
-      } else if (view_->GetChildViewCount() == 0) {
+      } else if (!view_->has_children()) {
         // No children found.
         return S_FALSE;
       }
 
       // Set child_id based on first or last child.
       int child_id = 0;
-      if (nav_dir == NAVDIR_LASTCHILD) {
-        child_id = view_->GetChildViewCount() - 1;
-      }
+      if (nav_dir == NAVDIR_LASTCHILD)
+        child_id = view_->child_count() - 1;
 
       views::View* child = view_->GetChildViewAt(child_id);
       end->vt = VT_DISPATCH;
@@ -173,17 +159,17 @@ STDMETHODIMP ViewAccessibility::accNavigate(LONG nav_dir, VARIANT start,
     case NAVDIR_DOWN:
     case NAVDIR_NEXT: {
       // Retrieve parent to access view index and perform bounds checking.
-      views::View* parent = view_->GetParent();
+      views::View* parent = view_->parent();
       if (!parent) {
         return E_FAIL;
       }
 
       if (start.lVal == CHILDID_SELF) {
-        int view_index = parent->GetChildIndex(view_);
+        int view_index = parent->GetIndexOf(view_);
         // Check navigation bounds, adjusting for View child indexing (MSAA
         // child indexing starts with 1, whereas View indexing starts with 0).
         if (!IsValidNav(nav_dir, view_index, -1,
-                        parent->GetChildViewCount() - 1)) {
+                        parent->child_count() - 1)) {
           // Navigation attempted to go out-of-bounds.
           end->vt = VT_EMPTY;
           return S_FALSE;
@@ -203,8 +189,7 @@ STDMETHODIMP ViewAccessibility::accNavigate(LONG nav_dir, VARIANT start,
       } else {
         // Check navigation bounds, adjusting for MSAA child indexing (MSAA
         // child indexing starts with 1, whereas View indexing starts with 0).
-        if (!IsValidNav(nav_dir, start.lVal, 0,
-                        parent->GetChildViewCount() + 1)) {
+        if (!IsValidNav(nav_dir, start.lVal, 0, parent->child_count() + 1)) {
             // Navigation attempted to go out-of-bounds.
             end->vt = VT_EMPTY;
             return S_FALSE;
@@ -255,9 +240,10 @@ STDMETHODIMP ViewAccessibility::get_accChild(VARIANT var_child,
 
   views::View* child_view = NULL;
   if (child_id > 0) {
-    if (child_id <= view_->GetChildViewCount()) {
+    int child_id_as_index = child_id - 1;
+    if (child_id_as_index < view_->child_count()) {
       // Note: child_id is a one based index when indexing children.
-      child_view = view_->GetChildViewAt(child_id - 1);
+      child_view = view_->GetChildViewAt(child_id_as_index);
     } else {
       // Attempt to retrieve a child view with the specified id.
       child_view = view_->GetViewByID(child_id);
@@ -287,7 +273,7 @@ STDMETHODIMP ViewAccessibility::get_accChildCount(LONG* child_count) {
   if (!view_)
     return E_FAIL;
 
-  *child_count = view_->GetChildViewCount();
+  *child_count = view_->child_count();
   return S_OK;
 }
 
@@ -344,7 +330,7 @@ STDMETHODIMP ViewAccessibility::get_accFocus(VARIANT* focus_child) {
     // This view has focus.
     focus_child->vt = VT_I4;
     focus_child->lVal = CHILDID_SELF;
-  } else if (focus && view_->IsParentOf(focus)) {
+  } else if (focus && view_->Contains(focus)) {
     // Return the child object that has the keyboard focus.
     focus_child->pdispVal = GetAccessibleForView(focus);
     focus_child->pdispVal->AddRef();
@@ -404,7 +390,7 @@ STDMETHODIMP ViewAccessibility::get_accParent(IDispatch** disp_parent) {
   if (!view_)
     return E_FAIL;
 
-  views::View* parent_view = view_->GetParent();
+  views::View* parent_view = view_->parent();
 
   if (!parent_view) {
     // This function can get called during teardown of WidetWin so we
@@ -528,21 +514,14 @@ void ViewAccessibility::SetState(VARIANT* msaa_state, views::View* view) {
   if (!view)
     return;
 
-  if (!view->IsEnabled()) {
+  if (!view->IsEnabled())
     msaa_state->lVal |= STATE_SYSTEM_UNAVAILABLE;
-  }
-  if (!view->IsVisible()) {
+  if (!view->IsVisible())
     msaa_state->lVal |= STATE_SYSTEM_INVISIBLE;
-  }
-  if (view->IsHotTracked()) {
+  if (view->IsHotTracked())
     msaa_state->lVal |= STATE_SYSTEM_HOTTRACKED;
-  }
-  if (view->IsPushed()) {
+  if (view->IsPushed())
     msaa_state->lVal |= STATE_SYSTEM_PRESSED;
-  }
-  // Check both for actual View focus, as well as accessibility focus.
-  views::View* parent = view->GetParent();
-
   if (view->HasFocus())
     msaa_state->lVal |= STATE_SYSTEM_FOCUSED;
 

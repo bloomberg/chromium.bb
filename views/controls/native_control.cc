@@ -146,7 +146,7 @@ class NativeControlContainer : public CWindowImpl<NativeControlContainer,
         if (brush)
           return reinterpret_cast<LRESULT>(brush);
       }
-      ancestor = ancestor->GetParent();
+      ancestor = ancestor->parent();
     }
 
     // COLOR_BTNFACE is the default for dialog box backgrounds.

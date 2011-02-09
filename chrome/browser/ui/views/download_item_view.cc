@@ -393,7 +393,7 @@ void DownloadItemView::OnDownloadUpdated(DownloadItem* download) {
   // We use the parent's (DownloadShelfView's) SchedulePaint, since there
   // are spaces between each DownloadItemView that the parent is responsible
   // for painting.
-  GetParent()->SchedulePaint();
+  parent()->SchedulePaint();
 }
 
 void DownloadItemView::OnDownloadOpened(DownloadItem* download) {
@@ -961,7 +961,7 @@ void DownloadItemView::OpenDownload() {
 void DownloadItemView::OnExtractIconComplete(IconManager::Handle handle,
                                              SkBitmap* icon_bitmap) {
   if (icon_bitmap)
-    GetParent()->SchedulePaint();
+    parent()->SchedulePaint();
 }
 
 void DownloadItemView::LoadIcon() {

@@ -131,8 +131,8 @@ void DropdownBarHost::FocusWillChange(views::View* focused_before,
                                       views::View* focused_now) {
   // First we need to determine if one or both of the views passed in are child
   // views of our view.
-  bool our_view_before = focused_before && view_->IsParentOf(focused_before);
-  bool our_view_now = focused_now && view_->IsParentOf(focused_now);
+  bool our_view_before = focused_before && view_->Contains(focused_before);
+  bool our_view_now = focused_now && view_->Contains(focused_now);
 
   // When both our_view_before and our_view_now are false, it means focus is
   // changing hands elsewhere in the application (and we shouldn't do anything).

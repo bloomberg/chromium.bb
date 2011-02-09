@@ -73,13 +73,12 @@ void CookiesTreeView::RemoveSelectedItems() {
 class CookiesView::InfoPanelView : public views::View {
  public:
   virtual void Layout() {
-    int child_count = GetChildViewCount();
-    for (int i = 0; i < child_count; ++i)
+    for (int i = 0; i < child_count(); ++i)
       GetChildViewAt(i)->SetBounds(0, 0, width(), height());
   }
 
   virtual gfx::Size GetPreferredSize() {
-    DCHECK(GetChildViewCount() > 0);
+    DCHECK(has_children());
     return GetChildViewAt(0)->GetPreferredSize();
   }
 };
@@ -177,7 +176,7 @@ views::View* CookiesView::GetContentsView() {
 void CookiesView::Layout() {
   // Lay out the Remove/Remove All buttons in the parent view.
   gfx::Size ps = remove_button_->GetPreferredSize();
-  gfx::Rect parent_bounds = GetParent()->GetContentsBounds();
+  gfx::Rect parent_bounds = parent()->GetContentsBounds();
   int y_buttons =
       parent_bounds.bottom() - ps.height() - views::kButtonVEdgeMargin;
 
@@ -362,9 +361,8 @@ void CookiesView::Init() {
   layout->AddView(info_panel_);
 
   // Add the Remove/Remove All buttons to the ClientView
-  View* parent = GetParent();
-  parent->AddChildView(remove_button_);
-  parent->AddChildView(remove_all_button_);
+  parent()->AddChildView(remove_button_);
+  parent()->AddChildView(remove_all_button_);
   if (!cookies_tree_model_.get()->GetRoot()->GetChildCount()) {
     UpdateForEmptyState();
   } else {

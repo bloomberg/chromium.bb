@@ -24,7 +24,7 @@ View* FocusSearch::FindNextFocusableView(View* starting_view,
   *focus_traversable = NULL;
   *focus_traversable_view = NULL;
 
-  if (root_->GetChildViewCount() == 0) {
+  if (!root_->has_children()) {
     NOTREACHED();
     // Nothing to focus on here.
     return NULL;
@@ -39,14 +39,14 @@ View* FocusSearch::FindNextFocusableView(View* starting_view,
     // Default to the first/last child
     starting_view =
         reverse ?
-        root_->GetChildViewAt(root_->GetChildViewCount() - 1) :
+        root_->GetChildViewAt(root_->child_count() - 1) :
         root_->GetChildViewAt(0);
     // If there was no starting view, then the one we select is a potential
     // focus candidate.
     check_starting_view = true;
   } else {
     // The starting view should be a direct or indirect child of the root.
-    DCHECK(root_->IsParentOf(starting_view));
+    DCHECK(root_->Contains(starting_view));
   }
 
   View* v = NULL;
@@ -70,7 +70,7 @@ View* FocusSearch::FindNextFocusableView(View* starting_view,
   }
 
   // Don't set the focus to something outside of this view hierarchy.
-  if (v && v != root_ && !root_->IsParentOf(v))
+  if (v && v != root_ && !root_->Contains(v))
     v = NULL;
 
   // If |cycle_| is true, prefer to keep cycling rather than returning NULL.
@@ -121,11 +121,7 @@ View* FocusSearch::FindSelectedViewForGroup(View* view) {
 }
 
 View* FocusSearch::GetParent(View* v) {
-  if (root_->IsParentOf(v)) {
-    return v->GetParent();
-  } else {
-    return NULL;
-  }
+  return root_->Contains(v) ? v->parent() : NULL;
 }
 
 // Strategy for finding the next focusable view:
@@ -162,7 +158,7 @@ View* FocusSearch::FindNextFocusableViewImpl(
 
   // First let's try the left child.
   if (can_go_down) {
-    if (starting_view->GetChildViewCount() > 0) {
+    if (starting_view->has_children()) {
       View* v = FindNextFocusableViewImpl(starting_view->GetChildViewAt(0),
                                           true, false, true, skip_group_id,
                                           focus_traversable,
@@ -227,9 +223,9 @@ View* FocusSearch::FindPreviousFocusableViewImpl(
       return NULL;
     }
 
-    if (starting_view->GetChildViewCount() > 0) {
+    if (starting_view->has_children()) {
       View* view =
-          starting_view->GetChildViewAt(starting_view->GetChildViewCount() - 1);
+          starting_view->GetChildViewAt(starting_view->child_count() - 1);
       View* v = FindPreviousFocusableViewImpl(view, true, false, true,
                                               skip_group_id,
                                               focus_traversable,

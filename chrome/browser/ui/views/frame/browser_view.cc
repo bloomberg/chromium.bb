@@ -261,14 +261,13 @@ class ResizeCorner : public views::View {
   }
 
   virtual void Layout() {
-    views::View* parent_view = GetParent();
-    if (parent_view) {
+    if (parent()) {
       gfx::Size ps = GetPreferredSize();
       // No need to handle Right to left text direction here,
       // our parent must take care of it for us...
       // TODO(alekseys): fix it.
-      SetBounds(parent_view->width() - ps.width(),
-                parent_view->height() - ps.height(), ps.width(), ps.height());
+      SetBounds(parent()->width() - ps.width(),
+                parent()->height() - ps.height(), ps.width(), ps.height());
     }
   }
 
@@ -477,7 +476,7 @@ BrowserView::~BrowserView() {
 
   // The TabStrip attaches a listener to the model. Make sure we shut down the
   // TabStrip first so that it can cleanly remove the listener.
-  tabstrip_->GetParent()->RemoveChildView(tabstrip_);
+  tabstrip_->parent()->RemoveChildView(tabstrip_);
   delete tabstrip_;
   tabstrip_ = NULL;
 
@@ -560,7 +559,7 @@ gfx::Rect BrowserView::GetToolbarBounds() const {
 gfx::Rect BrowserView::GetClientAreaBounds() const {
   gfx::Rect container_bounds = contents_->bounds();
   gfx::Point container_origin = container_bounds.origin();
-  ConvertPointToView(this, GetParent(), &container_origin);
+  ConvertPointToView(this, parent(), &container_origin);
   container_bounds.set_origin(container_origin);
   return container_bounds;
 }
@@ -963,7 +962,7 @@ void BrowserView::RotatePaneFocus(bool forwards) {
   if (focused_view) {
     for (int i = 0; i < count; ++i) {
       if (accessible_views[i] == focused_view ||
-          accessible_views[i]->IsParentOf(focused_view)) {
+          accessible_views[i]->Contains(focused_view)) {
         index = i;
         break;
       }
@@ -1819,7 +1818,7 @@ void BrowserView::InfoBarContainerSizeChanged(bool is_animating) {
 }
 
 bool BrowserView::SplitHandleMoved(views::SingleSplitView* view) {
-  for (int i = 0; i < view->GetChildViewCount(); ++i)
+  for (int i = 0; i < view->child_count(); ++i)
     view->GetChildViewAt(i)->InvalidateLayout();
   SchedulePaint();
   Layout();
@@ -1833,9 +1832,8 @@ views::LayoutManager* BrowserView::CreateLayoutManager() const {
 void BrowserView::InitTabStrip(TabStripModel* model) {
   // Throw away the existing tabstrip if we're switching display modes.
   scoped_ptr<BaseTabStrip> old_strip(tabstrip_);
-  if (tabstrip_) {
-    tabstrip_->GetParent()->RemoveChildView(tabstrip_);
-  }
+  if (tabstrip_)
+    tabstrip_->parent()->RemoveChildView(tabstrip_);
 
   BrowserTabStripController* tabstrip_controller =
       new BrowserTabStripController(browser_.get(), model);

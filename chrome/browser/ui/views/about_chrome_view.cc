@@ -391,7 +391,7 @@ void AboutChromeView::Layout() {
 
   // Get the y-coordinate of our parent so we can position the text left of the
   // buttons at the bottom.
-  gfx::Rect parent_bounds = GetParent()->GetContentsBounds();
+  gfx::Rect parent_bounds = parent()->GetContentsBounds();
 
   sz = throbber_->GetPreferredSize();
   int throbber_topleft_x = kPanelHorizMargin;
@@ -825,8 +825,7 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
     throbber_->Stop();
 
   // We have updated controls on the parent, so we need to update its layout.
-  View* parent = GetParent();
-  parent->Layout();
+  parent()->Layout();
 
   // Check button may have appeared/disappeared. We cannot call this during
   // ViewHierarchyChanged because the |window()| pointer hasn't been set yet.

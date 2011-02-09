@@ -436,8 +436,8 @@ void NativeTextfieldWin::InitializeAccessibilityInfo() {
       CHILDID_SELF, PROPID_ACC_ROLE, var);
 
   // Set the accessible name by getting the label text.
-  View* parent = textfield_->GetParent();
-  int label_index = parent->GetChildIndex(textfield_) - 1;
+  View* parent = textfield_->parent();
+  int label_index = parent->GetIndexOf(textfield_) - 1;
   if (label_index >= 0) {
     // Try to find the name of this text field.
     // We expect it to be a Label preceeding this view (if it exists).

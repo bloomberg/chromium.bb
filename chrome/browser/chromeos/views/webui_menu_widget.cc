@@ -82,7 +82,7 @@ class InsetsLayout : public views::LayoutManager {
  private:
   // views::LayoutManager implementatios.
   virtual void Layout(views::View* host) {
-    if (host->GetChildViewCount() == 0)
+    if (!host->has_children())
       return;
     gfx::Insets insets = host->GetInsets();
     views::View* view = host->GetChildViewAt(0);
@@ -93,7 +93,7 @@ class InsetsLayout : public views::LayoutManager {
   }
 
   virtual gfx::Size GetPreferredSize(views::View* host) {
-    DCHECK(host->GetChildViewCount() == 1);
+    DCHECK(host->child_count() == 1);
     gfx::Insets insets = host->GetInsets();
     gfx::Size size = host->GetChildViewAt(0)->GetPreferredSize();
     return gfx::Size(size.width() + insets.width(),
@@ -157,7 +157,7 @@ void WebUIMenuWidget::Hide() {
 
 void WebUIMenuWidget::Close() {
   if (dom_view_ != NULL) {
-    dom_view_->GetParent()->RemoveChildView(dom_view_);
+    dom_view_->parent()->RemoveChildView(dom_view_);
     delete dom_view_;
     dom_view_ = NULL;
   }
@@ -274,7 +274,7 @@ void WebUIMenuWidget::ShowAt(chromeos::MenuLocator* locator) {
     dom_view_->LoadURL(webui_menu_->menu_url());
   } else {
     webui_menu_->UpdateStates();
-    dom_view_->GetParent()->set_border(new RoundedBorder(locator));
+    dom_view_->parent()->set_border(new RoundedBorder(locator));
     menu_locator_->Move(this);
   }
   Show();

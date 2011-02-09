@@ -126,8 +126,8 @@ bool FocusManager::OnKeyEvent(const KeyEvent& event) {
        key_code == ui::VKEY_LEFT || key_code == ui::VKEY_RIGHT)) {
     bool next = (key_code == ui::VKEY_RIGHT || key_code == ui::VKEY_DOWN);
     std::vector<View*> views;
-    focused_view_->GetParent()->GetViewsWithGroup(focused_view_->GetGroup(),
-                                                  &views);
+    focused_view_->parent()->GetViewsWithGroup(focused_view_->GetGroup(),
+                                               &views);
     std::vector<View*>::const_iterator iter = std::find(views.begin(),
                                                         views.end(),
                                                         focused_view_);
@@ -224,7 +224,7 @@ View* FocusManager::GetNextFocusableView(View* original_starting_view,
         starting_view = original_starting_view;
         break;
       }
-      pane_search = pane_search->GetParent();
+      pane_search = pane_search->parent();
     }
 
     if (!focus_traversable) {

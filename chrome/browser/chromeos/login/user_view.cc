@@ -201,8 +201,8 @@ class RemoveButton : public views::TextButton {
     origin.Offset(-size.width(), 0);
     SetBoundsRect(gfx::Rect(origin, size));
 
-    if (GetParent())
-      GetParent()->SchedulePaint();
+    if (parent())
+      parent()->SchedulePaint();
   }
 
   SkBitmap icon_;

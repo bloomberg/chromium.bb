@@ -13,10 +13,10 @@ using ::testing::Return;
 namespace {
 
 static void VerifySplitViewLayout(const views::SingleSplitView& split) {
-  ASSERT_EQ(2, split.GetChildViewCount());
+  ASSERT_EQ(2, split.child_count());
 
-  views::View* leading = split.GetChildViewAt(0);
-  views::View* trailing = split.GetChildViewAt(1);
+  const views::View* leading = split.GetChildViewAt(0);
+  const views::View* trailing = split.GetChildViewAt(1);
 
   if (split.bounds().IsEmpty()) {
     EXPECT_TRUE(leading->bounds().IsEmpty());

@@ -333,7 +333,7 @@ BaseTab* BaseTabStrip::GetTabAt(BaseTab* tab,
 
   // Walk up the view hierarchy until we find a tab, or the TabStrip.
   while (view && view != this && view->GetID() != VIEW_ID_TAB)
-    view = view->GetParent();
+    view = view->parent();
 
   return view && view->GetID() == VIEW_ID_TAB ?
       static_cast<BaseTab*>(view) : NULL;

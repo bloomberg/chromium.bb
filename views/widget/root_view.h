@@ -80,7 +80,8 @@ class RootView : public View,
   // Tree functions
 
   // Get the Widget that hosts this View.
-  virtual Widget* GetWidget() const;
+  virtual const Widget* GetWidget() const;
+  virtual Widget* GetWidget();
 
   // Public API for broadcasting theme change notifications to this View
   // hierarchy.

@@ -265,14 +265,14 @@ void NewUserView::AddChildView(View* view) {
   // so we restore their original position in layout.
   if (view == languages_menubutton_) {
     if (languages_menubutton_order_ < 0) {
-      languages_menubutton_order_ = GetChildViewCount();
+      languages_menubutton_order_ = child_count();
     }
-    views::View::AddChildView(languages_menubutton_order_, view);
+    views::View::AddChildViewAt(view, languages_menubutton_order_);
   } else if (view == sign_in_button_) {
     if (sign_in_button_order_ < 0) {
-      sign_in_button_order_ = GetChildViewCount();
+      sign_in_button_order_ = child_count();
     }
-    views::View::AddChildView(sign_in_button_order_, view);
+    views::View::AddChildViewAt(view, sign_in_button_order_);
   } else {
     views::View::AddChildView(view);
   }

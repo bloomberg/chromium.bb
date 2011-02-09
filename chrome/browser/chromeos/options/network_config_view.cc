@@ -38,7 +38,8 @@ NetworkConfigView::NetworkConfigView()
 }
 
 gfx::NativeWindow NetworkConfigView::GetNativeWindow() const {
-  return GTK_WINDOW(static_cast<WidgetGtk*>(GetWidget())->GetNativeView());
+  return
+      GTK_WINDOW(static_cast<const WidgetGtk*>(GetWidget())->GetNativeView());
 }
 
 std::wstring NetworkConfigView::GetDialogButtonLabel(

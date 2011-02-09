@@ -162,10 +162,10 @@ void AccessibilityEventRouterViews::SendMenuItemNotification(
   if (view->GetClassName() == views::MenuItemView::kViewClassName)
     has_submenu = static_cast<views::MenuItemView*>(view)->HasSubmenu();
 
-  views::View* parent_menu = view->GetParent();
+  views::View* parent_menu = view->parent();
   while (parent_menu != NULL && parent_menu->GetClassName() !=
          views::SubmenuView::kViewClassName) {
-    parent_menu = parent_menu->GetParent();
+    parent_menu = parent_menu->parent();
   }
   if (parent_menu) {
     count = 0;
@@ -178,7 +178,7 @@ void AccessibilityEventRouterViews::SendMenuItemNotification(
 
 void AccessibilityEventRouterViews::RecursiveGetMenuItemIndexAndCount(
     views::View* menu, views::View* item, int* index, int* count) {
-  for (int i = 0; i < menu->GetChildViewCount(); ++i) {
+  for (int i = 0; i < menu->child_count(); ++i) {
     views::View* child = menu->GetChildViewAt(i);
     int previous_count = *count;
     RecursiveGetMenuItemIndexAndCount(child, item, index, count);
@@ -207,7 +207,7 @@ bool AccessibilityEventRouterViews::IsMenuEvent(
         role == AccessibilityTypes::ROLE_MENUPOPUP) {
       return true;
     }
-    view = view->GetParent();
+    view = view->parent();
   }
 
   return false;

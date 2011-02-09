@@ -135,7 +135,7 @@ int BrowserViewLayout::NonClientHitTest(
   // area of the window. So we need to treat hit-tests in these regions as
   // hit-tests of the titlebar.
 
-  views::View* parent = browser_view_->GetParent();
+  views::View* parent = browser_view_->parent();
 
   gfx::Point point_in_browser_view_coords(point);
   views::View::ConvertPointToView(
@@ -299,7 +299,7 @@ int BrowserViewLayout::LayoutTabStrip() {
   gfx::Rect tabstrip_bounds(
       browser_view_->frame()->GetBoundsForTabStrip(tabstrip_));
   gfx::Point tabstrip_origin(tabstrip_bounds.origin());
-  views::View::ConvertPointToView(browser_view_->GetParent(), browser_view_,
+  views::View::ConvertPointToView(browser_view_->parent(), browser_view_,
                                   &tabstrip_origin);
   tabstrip_bounds.set_origin(tabstrip_origin);
 
@@ -383,7 +383,7 @@ void BrowserViewLayout::UpdateReservedContentsRect(
   gfx::Point resize_corner_origin(browser_reserved_rect.origin());
   // Convert |resize_corner_origin| from browser_view_ to source's parent
   // coordinates.
-  views::View::ConvertPointToView(browser_view_, source->GetParent(),
+  views::View::ConvertPointToView(browser_view_, source->parent(),
                                   &resize_corner_origin);
   // Create |reserved_rect| in source's parent coordinates.
   gfx::Rect reserved_rect(resize_corner_origin, browser_reserved_rect.size());

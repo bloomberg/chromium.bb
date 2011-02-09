@@ -159,7 +159,7 @@ class ContentView : public views::View {
   }
 
   virtual void Layout() {
-    for (int i = 0; i < GetChildViewCount(); ++i) {
+    for (int i = 0; i < child_count(); ++i) {
       views::View* cur = GetChildViewAt(i);
       if (cur->IsVisible())
         cur->SetBounds(0, 0, width(), height());

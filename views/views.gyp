@@ -251,6 +251,8 @@
         'controls/throbber.h',
         'controls/tree/tree_view.cc',
         'controls/tree/tree_view.h',
+        'debug_utils.cc',
+        'debug_utils.h',
         'drag_utils.cc',
         'drag_utils.h',
         'drag_utils_gtk.cc',

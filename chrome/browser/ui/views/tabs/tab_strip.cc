@@ -310,7 +310,7 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
 }
 
 // Overridden to support automation. See automation_proxy_uitest.cc.
-views::View* TabStrip::GetViewByID(int view_id) const {
+const views::View* TabStrip::GetViewByID(int view_id) const {
   if (tab_count() > 0) {
     if (view_id == VIEW_ID_TAB_LAST) {
       return GetTabAtTabDataIndex(tab_count() - 1);

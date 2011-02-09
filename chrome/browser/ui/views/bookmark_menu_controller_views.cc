@@ -388,7 +388,7 @@ void BookmarkMenuController::WillRemoveBookmarksImpl(
                      // be a menu.
       removed_menus->insert(menu);
       changed_parent_menus.insert(menu->GetParentMenuItem());
-      menu->GetParent()->RemoveChildView(menu);
+      menu->parent()->RemoveChildView(menu);
       node_to_menu_id_map_.erase(node_to_menu);
     }
   }

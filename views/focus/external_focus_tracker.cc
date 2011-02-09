@@ -30,7 +30,7 @@ ExternalFocusTracker::~ExternalFocusTracker() {
 
 void ExternalFocusTracker::FocusWillChange(View* focused_before,
                                            View* focused_now) {
-  if (focused_now && !parent_view_->IsParentOf(focused_now) &&
+  if (focused_now && !parent_view_->Contains(focused_now) &&
       parent_view_ != focused_now) {
     // Store the newly focused view.
     StoreLastFocusedView(focused_now);

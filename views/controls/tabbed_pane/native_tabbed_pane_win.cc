@@ -53,7 +53,7 @@ class TabLayout : public LayoutManager {
 
   // Switches to the tab page identified by the given index.
   void SwitchToPage(View* host, View* page) {
-    for (int i = 0; i < host->GetChildViewCount(); ++i) {
+    for (int i = 0; i < host->child_count(); ++i) {
       View* child = host->GetChildViewAt(i);
       // The child might not have been laid out yet.
       if (child == page)
@@ -64,8 +64,8 @@ class TabLayout : public LayoutManager {
     FocusManager* focus_manager = page->GetFocusManager();
     DCHECK(focus_manager);
     View* focused_view = focus_manager->GetFocusedView();
-    if (focused_view && host->IsParentOf(focused_view) &&
-        !page->IsParentOf(focused_view))
+    if (focused_view && host->Contains(focused_view) &&
+        !page->Contains(focused_view))
       focus_manager->SetFocusedView(page);
   }
 
@@ -73,7 +73,7 @@ class TabLayout : public LayoutManager {
   // LayoutManager overrides:
   virtual void Layout(View* host) {
     gfx::Rect bounds(host->GetContentsBounds());
-    for (int i = 0; i < host->GetChildViewCount(); ++i) {
+    for (int i = 0; i < host->child_count(); ++i) {
       View* child = host->GetChildViewAt(i);
       // We only layout visible children, since it may be expensive.
       if (child->IsVisible() && child->bounds() != bounds)
@@ -84,7 +84,7 @@ class TabLayout : public LayoutManager {
   virtual gfx::Size GetPreferredSize(View* host) {
     // First, query the preferred sizes to determine a good width.
     int width = 0;
-    for (int i = 0; i < host->GetChildViewCount(); ++i) {
+    for (int i = 0; i < host->child_count(); ++i) {
       View* page = host->GetChildViewAt(i);
       width = std::max(width, page->GetPreferredSize().width());
     }
@@ -94,7 +94,7 @@ class TabLayout : public LayoutManager {
 
   virtual int GetPreferredHeightForWidth(View* host, int width) {
     int height = 0;
-    for (int i = 0; i < host->GetChildViewCount(); ++i) {
+    for (int i = 0; i < host->child_count(); ++i) {
       View* page = host->GetChildViewAt(i);
       height = std::max(height, page->GetHeightForWidth(width));
     }

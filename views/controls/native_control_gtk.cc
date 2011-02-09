@@ -67,13 +67,13 @@ void NativeControlGtk::Focus() {
   DCHECK(native_view());
   gtk_widget_grab_focus(native_view());
 
-  GetParent()->NotifyAccessibilityEvent(AccessibilityTypes::EVENT_FOCUS);
+  parent()->NotifyAccessibilityEvent(AccessibilityTypes::EVENT_FOCUS);
 }
 
 void NativeControlGtk::NativeControlCreated(GtkWidget* native_control) {
   Attach(native_control);
 
-  // Update the newly created GtkWdigetwith any resident enabled state.
+  // Update the newly created GtkWidget with any resident enabled state.
   gtk_widget_set_sensitive(native_view(), IsEnabled());
 
   // Listen for focus change event to update the FocusManager focused view.

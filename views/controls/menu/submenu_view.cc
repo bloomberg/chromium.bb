@@ -47,7 +47,7 @@ SubmenuView::~SubmenuView() {
 
 int SubmenuView::GetMenuItemCount() {
   int count = 0;
-  for (int i = 0; i < GetChildViewCount(); ++i) {
+  for (int i = 0; i < child_count(); ++i) {
     if (GetChildViewAt(i)->GetID() == MenuItemView::kMenuItemViewID)
       count++;
   }
@@ -55,7 +55,7 @@ int SubmenuView::GetMenuItemCount() {
 }
 
 MenuItemView* SubmenuView::GetMenuItemAt(int index) {
-  for (int i = 0, count = 0; i < GetChildViewCount(); ++i) {
+  for (int i = 0, count = 0; i < child_count(); ++i) {
     if (GetChildViewAt(i)->GetID() == MenuItemView::kMenuItemViewID &&
         count++ == index) {
       return static_cast<MenuItemView*>(GetChildViewAt(i));
@@ -67,24 +67,23 @@ MenuItemView* SubmenuView::GetMenuItemAt(int index) {
 
 void SubmenuView::Layout() {
   // We're in a ScrollView, and need to set our width/height ourselves.
-  View* parent = GetParent();
-  if (!parent)
+  if (!parent())
     return;
 
   // Use our current y, unless it means part of the menu isn't visible anymore.
   int pref_height = GetPreferredSize().height();
   int new_y;
-  if (pref_height > parent->height())
-    new_y = std::max(parent->height() - pref_height, y());
+  if (pref_height > parent()->height())
+    new_y = std::max(parent()->height() - pref_height, y());
   else
     new_y = 0;
-  SetBounds(x(), new_y, parent->width(), pref_height);
+  SetBounds(x(), new_y, parent()->width(), pref_height);
 
   gfx::Insets insets = GetInsets();
   int x = insets.left();
   int y = insets.top();
   int menu_item_width = width() - insets.width();
-  for (int i = 0; i < GetChildViewCount(); ++i) {
+  for (int i = 0; i < child_count(); ++i) {
     View* child = GetChildViewAt(i);
     if (child->IsVisible()) {
       gfx::Size child_pref_size = child->GetPreferredSize();
@@ -95,13 +94,13 @@ void SubmenuView::Layout() {
 }
 
 gfx::Size SubmenuView::GetPreferredSize() {
-  if (GetChildViewCount() == 0)
+  if (!has_children())
     return gfx::Size();
 
   max_accelerator_width_ = 0;
   int max_width = 0;
   int height = 0;
-  for (int i = 0; i < GetChildViewCount(); ++i) {
+  for (int i = 0; i < child_count(); ++i) {
     View* child = GetChildViewAt(i);
     gfx::Size child_pref_size = child->IsVisible() ?
         child->GetPreferredSize() : gfx::Size();

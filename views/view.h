@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -191,62 +191,57 @@ class View : public AcceleratorTarget {
 
   // Tree operations -----------------------------------------------------------
 
-  // Add a child View.
-  void AddChildView(View* v);
+  // Get the Widget that hosts this View, if any.
+  virtual const Widget* GetWidget() const;
+  virtual Widget* GetWidget();
 
-  // Adds a child View at the specified position.
-  void AddChildView(int index, View* v);
+  // Add a child View, optionally at |index|.
+  void AddChildView(View* view);
+  void AddChildViewAt(View* view, int index);
 
-  // Get the child View at the specified index.
-  View* GetChildViewAt(int index) const;
-
-  // Remove a child view from this view. v's parent will change to NULL
-  void RemoveChildView(View *v);
+  // Remove a child view from this view. The view's parent will change to NULL.
+  void RemoveChildView(View* views);
 
   // Remove all child view from this view.  If |delete_views| is true, the views
   // are deleted, unless marked as not parent owned.
   void RemoveAllChildViews(bool delete_views);
 
+  // Returns the View at the specified |index|.
+  const View* GetChildViewAt(int index) const;
+  View* GetChildViewAt(int index);
+
   // Get the number of child Views.
-  int GetChildViewCount() const;
+  int child_count() const { return static_cast<int>(children_.size()); }
+  bool has_children() const { return !children_.empty(); }
 
-  // Tests if this view has a given view as direct child.
-  bool HasChildView(View* a_view);
+  // Get the parent View
+  const View* parent() const { return parent_; }
+  View* parent() { return parent_; }
 
-  // Get the Widget that hosts this View, if any.
-  virtual Widget* GetWidget() const;
+  // Returns true if |child| is contained within this View's hierarchy, even as
+  // an indirect descendant. Will return true if child is also this View.
+  bool Contains(const View* view) const;
 
+  // Returns the index of the specified |view| in this view's children, or -1
+  // if the specified view is not a child of this view.
+  int GetIndexOf(const View* view) const;
+
+  // TODO(beng): REMOVE (Views need not know about Window).
   // Gets the Widget that most closely contains this View, if any.
   // NOTE: almost all views displayed on screen have a Widget, but not
   // necessarily a Window. This is due to widgets being able to create top
   // level windows (as is done for popups, bubbles and menus).
-  virtual Window* GetWindow() const;
+  virtual const Window* GetWindow() const;
+  virtual Window* GetWindow();
 
+  // TODO(beng): REMOVE (TBD)
   // Returns true if the native view |native_view| is contained in the view
   // hierarchy beneath this view.
   virtual bool ContainsNativeView(gfx::NativeView native_view) const;
 
+  // TODO(beng): REMOVE (RootView->internal API)
   // Get the containing RootView
   virtual RootView* GetRootView();
-
-  // Get the parent View
-  View* GetParent() const { return parent_; }
-
-  // Returns the index of the specified |view| in this view's children, or -1
-  // if the specified view is not a child of this view.
-  int GetChildIndex(const View* v) const;
-
-  // Returns true if the specified view is a direct or indirect child of this
-  // view.
-  bool IsParentOf(View* v) const;
-
-#ifndef NDEBUG
-  // Debug method that logs the view hierarchy to the output.
-  void PrintViewHierarchy();
-
-  // Debug method that logs the focus traversal hierarchy to the output.
-  void PrintFocusHierarchy();
-#endif
 
   // Size and disposition ------------------------------------------------------
   // Methods for obtaining and modifying the position and size of the view.
@@ -417,7 +412,8 @@ class View : public AcceleratorTarget {
   // Recursively descends the view tree starting at this view, and returns
   // the first child that it encounters that has the given ID.
   // Returns NULL if no matching child view is found.
-  virtual View* GetViewByID(int id) const;
+  virtual const View* GetViewByID(int id) const;
+  virtual View* GetViewByID(int id);
 
   // Sets and gets the ID for this view.  ID should be unique within the subtree
   // that you intend to search for it.  0 is the default ID for views.
@@ -704,6 +700,7 @@ class View : public AcceleratorTarget {
 
   // Returns the view that should be selected next when pressing Tab.
   View* GetNextFocusableView();
+  const View* GetNextFocusableView() const;
 
   // Returns the view that should be selected next when pressing Shift-Tab.
   View* GetPreviousFocusableView();
@@ -1194,10 +1191,6 @@ class View : public AcceleratorTarget {
                                 View* parent,
                                 View* child);
 
-  // Actual implementation of PrintFocusHierarchy.
-  void PrintViewHierarchyImp(int indent);
-  void PrintFocusHierarchyImp(int indent);
-
   // Size and disposition ------------------------------------------------------
 
   // Call VisibilityChanged() recursively for all children.
@@ -1305,8 +1298,8 @@ class View : public AcceleratorTarget {
   View* parent_;
 
   // This view's children.
-  typedef std::vector<View*> ViewList;
-  ViewList child_views_;
+  typedef std::vector<View*> ViewVector;
+  ViewVector children_;
 
   // Size and disposition ------------------------------------------------------
 
@@ -1324,7 +1317,7 @@ class View : public AcceleratorTarget {
   bool registered_for_visible_bounds_notification_;
 
   // List of descendants wanting notification when their visible bounds change.
-  scoped_ptr<ViewList> descendants_to_notify_;
+  scoped_ptr<ViewVector> descendants_to_notify_;
 
   // Layout --------------------------------------------------------------------
 

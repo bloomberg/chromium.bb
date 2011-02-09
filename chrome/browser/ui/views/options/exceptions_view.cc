@@ -84,7 +84,7 @@ void ExceptionsView::Layout() {
 
   // The buttons are placed in the parent, but we need to lay them out.
   int max_y =
-      GetParent()->GetContentsBounds().bottom() - views::kButtonVEdgeMargin;
+      parent()->GetContentsBounds().bottom() - views::kButtonVEdgeMargin;
   int x = kPanelHorizMargin;
 
   for (size_t i = 0; i < arraysize(buttons); ++i) {
@@ -196,11 +196,10 @@ void ExceptionsView::Init() {
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_EXCEPTIONS_REMOVEALL_BUTTON)));
   remove_all_button_->set_tag(IDS_EXCEPTIONS_REMOVEALL_BUTTON);
 
-  View* parent = GetParent();
-  parent->AddChildView(add_button_);
-  parent->AddChildView(edit_button_);
-  parent->AddChildView(remove_button_);
-  parent->AddChildView(remove_all_button_);
+  parent()->AddChildView(add_button_);
+  parent()->AddChildView(edit_button_);
+  parent()->AddChildView(remove_button_);
+  parent()->AddChildView(remove_all_button_);
 
   GridLayout* layout = new GridLayout(this);
   layout->SetInsets(kExceptionsViewInsetSize, kExceptionsViewInsetSize,

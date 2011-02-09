@@ -378,7 +378,8 @@ void NetworkSelectionView::OnLocaleChanged() {
 // NetworkSelectionView, public:
 
 gfx::NativeWindow NetworkSelectionView::GetNativeWindow() const {
-  return GTK_WINDOW(static_cast<WidgetGtk*>(GetWidget())->GetNativeView());
+  return
+      GTK_WINDOW(static_cast<const WidgetGtk*>(GetWidget())->GetNativeView());
 }
 
 views::View* NetworkSelectionView::GetNetworkControlView() const {

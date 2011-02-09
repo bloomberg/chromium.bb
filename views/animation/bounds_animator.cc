@@ -39,7 +39,7 @@ BoundsAnimator::~BoundsAnimator() {
 
 void BoundsAnimator::AnimateViewTo(View* view, const gfx::Rect& target) {
   DCHECK(view);
-  DCHECK_EQ(view->GetParent(), parent_);
+  DCHECK_EQ(view->parent(), parent_);
 
   Data existing_data;
 

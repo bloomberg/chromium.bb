@@ -75,7 +75,7 @@ enum kLayoutColumnsets {
 struct FillLayoutWithBorder : public views::LayoutManager {
   // Overridden from LayoutManager:
   virtual void Layout(views::View* host) {
-    DCHECK(host->GetChildViewCount());
+    DCHECK(host->has_children());
     host->GetChildViewAt(0)->SetBoundsRect(host->GetContentsBounds());
   }
   virtual gfx::Size GetPreferredSize(views::View* host) {

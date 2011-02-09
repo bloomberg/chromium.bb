@@ -927,7 +927,7 @@ void BookmarkBarView::Loaded(BookmarkModel* model) {
   DCHECK(node && model_->other_node());
   // Create a button for each of the children on the bookmark bar.
   for (int i = 0, child_count = node->GetChildCount(); i < child_count; ++i)
-    AddChildView(i, CreateBookmarkButton(node->GetChild(i)));
+    AddChildViewAt(CreateBookmarkButton(node->GetChild(i)), i);
   UpdateColors();
   UpdateOtherBookmarksVisibility();
   other_bookmarked_button_->SetEnabled(true);
@@ -978,7 +978,7 @@ void BookmarkBarView::BookmarkNodeAddedImpl(BookmarkModel* model,
   if (!throbbing_view_ && sync_service_ && sync_service_->SetupInProgress()) {
     StartThrobbing(node, true);
   }
-  AddChildView(index, CreateBookmarkButton(node));
+  AddChildViewAt(CreateBookmarkButton(node), index);
   UpdateColors();
   Layout();
   SchedulePaint();
@@ -1054,7 +1054,7 @@ void BookmarkBarView::BookmarkNodeChildrenReordered(BookmarkModel* model,
 
   // Create the new buttons.
   for (int i = 0, child_count = node->GetChildCount(); i < child_count; ++i)
-    AddChildView(i, CreateBookmarkButton(node->GetChild(i)));
+    AddChildViewAt(CreateBookmarkButton(node->GetChild(i)), i);
   UpdateColors();
 
   Layout();
@@ -1147,7 +1147,7 @@ void BookmarkBarView::RunMenu(views::View* view, const gfx::Point& pt) {
     node = model_->GetBookmarkBarNode();
     start_index = GetFirstHiddenNodeIndex();
   } else {
-    int button_index = GetChildIndex(view);
+    int button_index = GetIndexOf(view);
     DCHECK_NE(-1, button_index);
     node = model_->GetBookmarkBarNode()->GetChild(button_index);
   }
@@ -1172,7 +1172,7 @@ void BookmarkBarView::ButtonPressed(views::Button* sender,
   if (sender->tag() == kOtherFolderButtonTag) {
     node = model_->other_node();
   } else {
-    int index = GetChildIndex(sender);
+    int index = GetIndexOf(sender);
     DCHECK_NE(-1, index);
     node = model_->GetBookmarkBarNode()->GetChild(index);
   }
@@ -1210,7 +1210,7 @@ void BookmarkBarView::ShowContextMenu(View* source,
   } else if (source != this) {
     // User clicked on one of the bookmark buttons, find which one they
     // clicked on.
-    int bookmark_button_index = GetChildIndex(source);
+    int bookmark_button_index = GetIndexOf(source);
     DCHECK(bookmark_button_index != -1 &&
            bookmark_button_index < GetBookmarkButtonCount());
     const BookmarkNode* node =
@@ -1522,7 +1522,7 @@ int BookmarkBarView::GetBookmarkButtonCount() {
   // We contain five non-bookmark button views: other bookmarks, bookmarks
   // separator, chevrons (for overflow), the instruction label and the sync
   // error button.
-  return GetChildViewCount() - 5;
+  return child_count() - 5;
 }
 
 void BookmarkBarView::StopThrobbing(bool immediate) {
@@ -1593,7 +1593,7 @@ void BookmarkBarView::UpdateOtherBookmarksVisibility() {
 
 gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
   gfx::Size prefsize;
-  if (!GetParent() && !compute_bounds_only)
+  if (!parent() && !compute_bounds_only)
     return prefsize;
 
   int x = kLeftMargin;

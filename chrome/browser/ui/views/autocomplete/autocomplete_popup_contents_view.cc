@@ -837,7 +837,7 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
   // Update the match cached by each row, in the process of doing so make sure
   // we have enough row views.
   int total_child_height = 0;
-  size_t child_rv_count = GetChildViewCount();
+  size_t child_rv_count = child_count();
   if (opt_in_view_) {
     DCHECK(child_rv_count > 0);
     child_rv_count--;
@@ -847,7 +847,7 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
     if (i >= child_rv_count) {
       result_view =
           new AutocompleteResultView(this, i, result_font_, result_bold_font_);
-      AddChildView(static_cast<int>(i), result_view);
+      AddChildViewAt(result_view, static_cast<int>(i));
     } else {
       result_view = static_cast<AutocompleteResultView*>(GetChildViewAt(i));
       result_view->SetVisible(true);
@@ -991,9 +991,8 @@ void AutocompletePopupContentsView::Layout() {
 
   // Size our children to the available content area.
   gfx::Rect contents_rect = GetContentsBounds();
-  int child_count = GetChildViewCount();
   int top = contents_rect.y();
-  for (int i = 0; i < child_count; ++i) {
+  for (int i = 0; i < child_count(); ++i) {
     View* v = GetChildViewAt(i);
     if (v->IsVisible()) {
       v->SetBounds(contents_rect.x(), top, contents_rect.width(),
@@ -1071,7 +1070,7 @@ views::View* AutocompletePopupContentsView::GetViewForPoint(
   views::View* child = views::View::GetViewForPoint(point);
   views::View* ancestor = child;
   while (ancestor && ancestor != opt_in_view_)
-    ancestor = ancestor->GetParent();
+    ancestor = ancestor->parent();
   return ancestor ? child : this;
 }
 
@@ -1162,7 +1161,7 @@ size_t AutocompletePopupContentsView::GetIndexForPoint(
     return AutocompletePopupModel::kNoMatch;
 
   int nb_match = model_->result().size();
-  DCHECK(nb_match <= GetChildViewCount());
+  DCHECK(nb_match <= child_count());
   for (int i = 0; i < nb_match; ++i) {
     views::View* child = GetChildViewAt(i);
     gfx::Point point_in_child_coords(point);

@@ -170,7 +170,7 @@ void BrowserActionButton::UpdateState() {
     name = UTF8ToUTF16(extension()->name());
   SetTooltipText(UTF16ToWideHack(name));
   SetAccessibleName(name);
-  GetParent()->SchedulePaint();
+  parent()->SchedulePaint();
 }
 
 void BrowserActionButton::Observe(NotificationType type,
@@ -505,7 +505,7 @@ void BrowserActionsContainer::OnBrowserActionExecuted(
   // We can get the execute event for browser actions that are not visible,
   // since buttons can be activated from the overflow menu (chevron). In that
   // case we show the popup as originating from the chevron.
-  View* reference_view = button->GetParent()->IsVisible() ? button : chevron_;
+  View* reference_view = button->parent()->IsVisible() ? button : chevron_;
   gfx::Point origin;
   View::ConvertPointToScreen(reference_view, &origin);
   gfx::Rect rect = reference_view->bounds();
@@ -912,7 +912,7 @@ void BrowserActionsContainer::BrowserActionAdded(const Extension* extension,
     index = model_->OriginalIndexToIncognito(index);
   BrowserActionView* view = new BrowserActionView(extension, this);
   browser_action_views_.insert(browser_action_views_.begin() + index, view);
-  AddChildView(index, view);
+  AddChildViewAt(view, index);
 
   // If we are still initializing the container, don't bother animating.
   if (!model_->extensions_initialized())

@@ -233,14 +233,14 @@ void NativeRadioButtonGtk::SetGroupFrom(NativeButtonWrapper* wrapper) {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeRadioButtonGtk, NativeControlGtk overrides:
 void NativeRadioButtonGtk::ViewHierarchyChanged(bool is_add,
-                                                View *parent, View *child) {
+                                                View* parent, View* child) {
   NativeControlGtk::ViewHierarchyChanged(is_add, parent, child);
 
   // look for the same group and update
   if (is_add && child == this) {
-    View* container = GetParent();
-    while (container && container->GetParent())
-      container = container->GetParent();
+    View* container = parent;
+    while (container && container->parent())
+      container = container->parent();
     if (container) {
       std::vector<View*> other;
       container->GetViewsWithGroup(native_button_->GetGroup(), &other);

@@ -115,7 +115,7 @@ MessageBubble* MessageBubble::Show(views::Widget* parent,
   MessageBubble* bubble = new MessageBubble(
       views::WidgetGtk::TYPE_WINDOW, parent, image, text, help, true, delegate);
   bubble->Init(parent, position_relative_to, arrow_location,
-               bubble->text_->GetParent(), delegate);
+               bubble->text_->parent(), delegate);
   return bubble;
 }
 
@@ -132,7 +132,7 @@ MessageBubble* MessageBubble::ShowNoGrab(
   MessageBubble* bubble = new MessageBubble(
       views::WidgetGtk::TYPE_CHILD, parent, image, text, help, false, delegate);
   bubble->Init(parent, position_relative_to, arrow_location,
-               bubble->text_->GetParent(), delegate);
+               bubble->text_->parent(), delegate);
   return bubble;
 }
 

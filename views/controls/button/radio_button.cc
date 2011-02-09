@@ -34,9 +34,9 @@ void RadioButton::SetChecked(bool checked) {
     // We can't just get the root view here because sometimes the radio
     // button isn't attached to a root view (e.g., if it's part of a tab page
     // that is currently not active).
-    View* container = GetParent();
-    while (container && container->GetParent())
-      container = container->GetParent();
+    View* container = parent();
+    while (container && container->parent())
+      container = container->parent();
     if (container) {
       std::vector<View*> other;
       container->GetViewsWithGroup(GetGroup(), &other);

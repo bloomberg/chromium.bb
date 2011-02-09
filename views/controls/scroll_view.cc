@@ -19,13 +19,13 @@ class Viewport : public View {
   virtual ~Viewport() {}
 
   virtual void ScrollRectToVisible(const gfx::Rect& rect) {
-    if (!GetChildViewCount() || !GetParent())
+    if (!has_children() || !parent())
       return;
 
     View* contents = GetChildViewAt(0);
     gfx::Rect scroll_rect(rect);
     scroll_rect.Offset(-contents->x(), -contents->y());
-    static_cast<ScrollView*>(GetParent())->ScrollContentsRegionToBeVisible(
+    static_cast<ScrollView*>(parent())->ScrollContentsRegionToBeVisible(
         scroll_rect);
   }
 
@@ -46,17 +46,14 @@ ScrollView::ScrollView(ScrollBar* horizontal_scrollbar,
 
 ScrollView::~ScrollView() {
   // If scrollbars are currently not used, delete them
-  if (!horiz_sb_->GetParent()) {
+  if (!horiz_sb_->parent())
     delete horiz_sb_;
-  }
 
-  if (!vert_sb_->GetParent()) {
+  if (!vert_sb_->parent())
     delete vert_sb_;
-  }
 
-  if (resize_corner_ && !resize_corner_->GetParent()) {
+  if (resize_corner_ && !resize_corner_->parent())
     delete resize_corner_;
-  }
 }
 
 void ScrollView::SetContents(View* a_view) {
@@ -449,7 +446,7 @@ int VariableRowHeightScrollHelper::GetPageScrollIncrement(
     return 0;
   // y coordinate is most likely negative.
   int y = abs(scroll_view->GetContents()->y());
-  int vis_height = scroll_view->GetContents()->GetParent()->height();
+  int vis_height = scroll_view->GetContents()->parent()->height();
   if (is_positive) {
     // Align the bottom most row to the top of the view.
     int bottom = std::min(scroll_view->GetContents()->height() - 1,

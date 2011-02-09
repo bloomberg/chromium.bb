@@ -129,7 +129,7 @@ void ContentSettingsWindowView::Layout() {
                       listbox_width,
                       height() - (3 * kDialogPadding) - label_->height());
 
-  if (pages_[current_page_]->GetParent()) {
+  if (pages_[current_page_]->parent()) {
     pages_[current_page_]->SetBounds(
         2 * kDialogPadding + listbox_width,
         2 * kDialogPadding + label_->height(),
@@ -196,7 +196,7 @@ void ContentSettingsWindowView::Init() {
 }
 
 void ContentSettingsWindowView::ShowSettingsPage(int page) {
-  if (pages_[current_page_]->GetParent())
+  if (pages_[current_page_]->parent())
     RemoveChildView(pages_[current_page_]);
   current_page_ = page;
   AddChildView(pages_[current_page_]);

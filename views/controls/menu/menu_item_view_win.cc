@@ -30,7 +30,7 @@ void MenuItemView::Paint(gfx::Canvas* canvas, bool for_drag) {
   bool render_selection =
       (!for_drag && IsSelected() &&
        parent_menu_item_->GetSubmenu()->GetShowSelection(this) &&
-       GetChildViewCount() == 0);
+       !has_children());
   int state = render_selection ? MPI_HOT :
                                  (IsEnabled() ? MPI_NORMAL : MPI_DISABLED);
   HDC dc = canvas->BeginPlatformPaint();

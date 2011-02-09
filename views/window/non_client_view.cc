@@ -44,8 +44,8 @@ void NonClientView::SetFrameView(NonClientFrameView* frame_view) {
   if (frame_view_.get())
     RemoveChildView(frame_view_.get());
   frame_view_.reset(frame_view);
-  if (GetParent())
-    AddChildView(kFrameViewIndex, frame_view_.get());
+  if (parent())
+    AddChildViewAt(frame_view_.get(), kFrameViewIndex);
 }
 
 bool NonClientView::CanClose() {
@@ -153,8 +153,8 @@ void NonClientView::ViewHierarchyChanged(bool is_add, View* parent,
   // are subsequently resized all the parent-child relationships are
   // established.
   if (is_add && GetWidget() && child == this) {
-    AddChildView(kFrameViewIndex, frame_view_.get());
-    AddChildView(kClientViewIndex, client_view_);
+    AddChildViewAt(frame_view_.get(), kFrameViewIndex);
+    AddChildViewAt(client_view_, kClientViewIndex);
   }
 }
 

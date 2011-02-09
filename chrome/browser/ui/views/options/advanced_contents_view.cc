@@ -1473,9 +1473,9 @@ void CloudPrintProxySection::NotifyPrefChanged(const std::string* pref_name) {
     // possible that the section_description_label_ has changed
     // heights.  And scroll us back to being visible in that case, to
     // be nice to the user.
-    views::View* view = section_description_label_->GetParent();
+    views::View* view = section_description_label_->parent();
     while (view && view->GetClassName() != views::ScrollView::kViewClassName)
-      view = view->GetParent();
+      view = view->parent();
     if (view) {
       gfx::Rect visible_bounds = GetVisibleBounds();
       bool was_all_visible = (visible_bounds.size() == size());
@@ -1548,9 +1548,8 @@ int AdvancedContentsView::GetLineScrollIncrement(
 }
 
 void AdvancedContentsView::Layout() {
-  views::View* parent = GetParent();
-  if (parent && parent->width()) {
-    const int width = parent->width();
+  if (parent() && parent()->width()) {
+    const int width = parent()->width();
     const int height = GetHeightForWidth(width);
     SetBounds(0, 0, width, height);
   } else {

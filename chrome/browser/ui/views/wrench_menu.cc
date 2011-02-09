@@ -235,9 +235,8 @@ class ScheduleAllView : public views::View {
     if (!IsVisible())
       return;
 
-    if (GetParent()) {
-      GetParent()->SchedulePaint(GetMirroredBounds(), urgent);
-    }
+    if (parent())
+      parent()->SchedulePaint(GetMirroredBounds(), urgent);
   }
 
  private:
@@ -343,13 +342,13 @@ class WrenchMenu::CutCopyPasteView : public WrenchMenuView {
   gfx::Size GetPreferredSize() {
     // Returned height doesn't matter as MenuItemView forces everything to the
     // height of the menuitemview.
-    return gfx::Size(GetMaxChildViewPreferredWidth() * GetChildViewCount(), 0);
+    return gfx::Size(GetMaxChildViewPreferredWidth() * child_count(), 0);
   }
 
   void Layout() {
     // All buttons are given the same width.
     int width = GetMaxChildViewPreferredWidth();
-    for (int i = 0; i < GetChildViewCount(); ++i)
+    for (int i = 0; i < child_count(); ++i)
       GetChildViewAt(i)->SetBounds(i * width, 0, width, height());
   }
 
@@ -362,7 +361,7 @@ class WrenchMenu::CutCopyPasteView : public WrenchMenuView {
   // Returns the max preferred width of all the children.
   int GetMaxChildViewPreferredWidth() {
     int width = 0;
-    for (int i = 0; i < GetChildViewCount(); ++i)
+    for (int i = 0; i < child_count(); ++i)
       width = std::max(width, GetChildViewAt(i)->GetPreferredSize().width());
     return width;
   }

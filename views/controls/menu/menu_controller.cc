@@ -81,7 +81,7 @@ static View* GetFirstHotTrackedView(View* view) {
   if (view->IsHotTracked())
     return view;
 
-  for (int i = 0; i < view->GetChildViewCount(); ++i) {
+  for (int i = 0; i < view->child_count(); ++i) {
     View* hot_view = GetFirstHotTrackedView(view->GetChildViewAt(i));
     if (hot_view)
       return hot_view;
@@ -96,15 +96,14 @@ static View* GetFirstHotTrackedView(View* view) {
 // to first.
 static View* GetFirstFocusableView(View* view, int start, bool forward) {
   if (forward) {
-    for (int i = start == -1 ? 0 : start; i < view->GetChildViewCount(); ++i) {
+    for (int i = start == -1 ? 0 : start; i < view->child_count(); ++i) {
       View* deepest = GetFirstFocusableView(view->GetChildViewAt(i), -1,
                                             forward);
       if (deepest)
         return deepest;
     }
   } else {
-    for (int i = start == -1 ? view->GetChildViewCount() - 1 : start;
-         i >= 0; --i) {
+    for (int i = start == -1 ? view->child_count() - 1 : start; i >= 0; --i) {
       View* deepest = GetFirstFocusableView(view->GetChildViewAt(i), -1,
                                             forward);
       if (deepest)
@@ -124,11 +123,11 @@ static View* GetInitialFocusableView(View* start, bool forward) {
 static View* GetNextFocusableView(View* ancestor,
                                   View* start_at,
                                   bool forward) {
-  DCHECK(ancestor->IsParentOf(start_at));
+  DCHECK(ancestor->Contains(start_at));
   View* parent = start_at;
   do {
-    View* new_parent = parent->GetParent();
-    int index = new_parent->GetChildIndex(parent);
+    View* new_parent = parent->parent();
+    int index = new_parent->GetIndexOf(parent);
     index += forward ? 1 : -1;
     if (forward || index != -1) {
       View* next = GetFirstFocusableView(new_parent, index, forward);
@@ -1098,7 +1097,7 @@ MenuItemView* MenuController::GetMenuItemAt(View* source, int x, int y) {
   View* child_under_mouse = source->GetViewForPoint(gfx::Point(x, y));
   while (child_under_mouse &&
          child_under_mouse->GetID() != MenuItemView::kMenuItemViewID) {
-    child_under_mouse = child_under_mouse->GetParent();
+    child_under_mouse = child_under_mouse->parent();
   }
   if (child_under_mouse && child_under_mouse->IsEnabled() &&
       child_under_mouse->GetID() == MenuItemView::kMenuItemViewID) {
@@ -1493,7 +1492,7 @@ void MenuController::IncrementSelection(int delta) {
     }
   }
 
-  if (item->GetChildViewCount()) {
+  if (item->has_children()) {
     View* hot_view = GetFirstHotTrackedView(item);
     if (hot_view) {
       hot_view->SetHotTracked(false);
@@ -1766,7 +1765,7 @@ void MenuController::UpdateActiveMouseView(SubmenuView* event_source,
                                            View* target_menu) {
   View* target = NULL;
   gfx::Point target_menu_loc(event.location());
-  if (target_menu && target_menu->GetChildViewCount()) {
+  if (target_menu && target_menu->has_children()) {
     // Locate the deepest child view to send events to.  This code assumes we
     // don't have to walk up the tree to find a view interested in events. This
     // is currently true for the cases we are embedding views, but if we embed

@@ -139,7 +139,7 @@ void BookmarkEditorView::Layout() {
 
   // Manually lay out the New Folder button in the same row as the OK/Cancel
   // buttons...
-  gfx::Rect parent_bounds = GetParent()->GetContentsBounds();
+  gfx::Rect parent_bounds = parent()->GetContentsBounds();
   gfx::Size prefsize = new_group_button_->GetPreferredSize();
   int button_y =
       parent_bounds.bottom() - prefsize.height() - views::kButtonVEdgeMargin;
@@ -403,7 +403,7 @@ void BookmarkEditorView::BookmarkNodeChildrenReordered(
 
 void BookmarkEditorView::Reset() {
   if (!show_tree_) {
-    if (GetParent())
+    if (parent())
       UserInputChanged();
     return;
   }
@@ -422,7 +422,7 @@ void BookmarkEditorView::Reset() {
 
   context_menu_.reset();
 
-  if (GetParent())
+  if (parent())
     ExpandAndSelect();
 }
 GURL BookmarkEditorView::GetInputURL() const {

@@ -438,7 +438,7 @@ void InfoBubble::Init(views::Widget* parent,
       arrow_location, false, contents->GetPreferredSize(),
       &contents_bounds, &window_bounds);
   // This new view must be added before |contents| so it will paint under it.
-  contents_view->AddChildView(0, border_contents_);
+  contents_view->AddChildViewAt(border_contents_, 0);
 
   // |contents_view| has no layout manager, so we have to explicitly position
   // its children.
@@ -500,7 +500,7 @@ void InfoBubble::OnActivate(UINT action, BOOL minimized, HWND window) {
   if (action == WA_INACTIVE) {
     Close();
   } else if (action == WA_ACTIVE) {
-    DCHECK_GT(GetRootView()->GetChildViewCount(), 0);
+    DCHECK(GetRootView()->has_children());
     GetRootView()->GetChildViewAt(0)->RequestFocus();
   }
 }

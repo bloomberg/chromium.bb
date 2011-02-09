@@ -275,7 +275,7 @@ class GrabWidgetRootView
     }
     screen_lock_view_ =  screen_lock_view;
     if (screen_lock_view_) {
-      AddChildView(0, screen_lock_view_);
+      AddChildViewAt(screen_lock_view_, 0);
     }
     Layout();
   }

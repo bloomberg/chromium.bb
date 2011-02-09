@@ -60,7 +60,7 @@ void InfoBarContainer::RemoveDelegate(InfoBarDelegate* delegate) {
 void InfoBarContainer::PaintInfoBarArrows(gfx::Canvas* canvas,
                                           View* outer_view,
                                           int arrow_center_x) {
-  for (int i = 0; i < GetChildViewCount(); ++i) {
+  for (int i = 0; i < child_count(); ++i) {
     InfoBarView* infobar = static_cast<InfoBarView*>(GetChildViewAt(i));
     infobar->PaintArrow(canvas, outer_view, arrow_center_x);
   }
@@ -71,14 +71,14 @@ gfx::Size InfoBarContainer::GetPreferredSize() {
   // of the delegate). Our preferred height is the sum of the preferred heights
   // of the InfoBars contained within us.
   int height = 0;
-  for (int i = 0; i < GetChildViewCount(); ++i)
+  for (int i = 0; i < child_count(); ++i)
     height += GetChildViewAt(i)->GetPreferredSize().height();
   return gfx::Size(0, height);
 }
 
 void InfoBarContainer::Layout() {
   int top = 0;
-  for (int i = 0; i < GetChildViewCount(); ++i) {
+  for (int i = 0; i < child_count(); ++i) {
     View* child = GetChildViewAt(i);
     gfx::Size ps = child->GetPreferredSize();
     child->SetBounds(0, top, width(), ps.height());
@@ -93,7 +93,7 @@ AccessibilityTypes::Role InfoBarContainer::GetAccessibleRole() {
 void InfoBarContainer::ViewHierarchyChanged(bool is_add,
                                             View* parent,
                                             View* child) {
-  if (parent == this && child->GetParent() == this) {
+  if (parent == this && child->parent() == this) {
     if (delegate_) {
       // An InfoBar child was added or removed. Tell the delegate it needs to
       // re-layout since our preferred size will have changed.
@@ -147,7 +147,7 @@ void InfoBarContainer::RemoveInfoBar(InfoBarDelegate* delegate,
   // a child view until its close animation completes, which can result in
   // different number of infobars in container and infobar delegates in tab
   // contents.
-  for (int i = 0; i < GetChildViewCount(); ++i) {
+  for (int i = 0; i < child_count(); ++i) {
     InfoBarView* infobar = static_cast<InfoBarView*>(GetChildViewAt(i));
     if (infobar->delegate() == delegate) {
       if (use_animation) {

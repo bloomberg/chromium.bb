@@ -41,7 +41,7 @@ void MenuItemView::Paint(gfx::Canvas* canvas, bool for_drag) {
   bool render_selection =
       (!for_drag && IsSelected() &&
        parent_menu_item_->GetSubmenu()->GetShowSelection(this) &&
-       GetChildViewCount() == 0);
+       !has_children());
 
   int icon_x = config.item_left_margin;
   int top_margin = GetTopMargin();

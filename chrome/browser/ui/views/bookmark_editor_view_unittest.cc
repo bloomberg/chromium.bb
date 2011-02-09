@@ -86,7 +86,7 @@ class BookmarkEditorViewTest : public testing::Test {
   }
 
   bool URLTFHasParent() {
-    return editor_->url_tf_.GetParent();
+    return editor_->url_tf_.parent();
   }
 
  private:

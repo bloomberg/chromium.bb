@@ -866,7 +866,7 @@ void CandidateWindowView::ShowAuxiliaryText() {
       header_area_contents_.get() :
       footer_area_contents_.get());
 
-  if (!target_area->HasChildView(target_contents)) {
+  if (target_contents->parent() != target_area) {
     // If contents not in display area, put it in.
     target_area->RemoveAllChildViews(false);  // Don't delete child views.
     target_area->AddChildView(target_contents);

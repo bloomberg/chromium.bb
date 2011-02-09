@@ -30,7 +30,7 @@ void BoxLayout::Layout(View* host) {
                    inside_border_vertical_spacing_);
   int x = child_area.x();
   int y = child_area.y();
-  for (int i = 0; i < host->GetChildViewCount(); ++i) {
+  for (int i = 0; i < host->child_count(); ++i) {
     View* child = host->GetChildViewAt(i);
     if (child->IsVisible()) {
       gfx::Rect bounds(x, y, child_area.width(), child_area.height());
@@ -51,7 +51,7 @@ void BoxLayout::Layout(View* host) {
 gfx::Size BoxLayout::GetPreferredSize(View* host) {
   gfx::Rect bounds;
   int position = 0;
-  for (int i = 0; i < host->GetChildViewCount(); ++i) {
+  for (int i = 0; i < host->child_count(); ++i) {
     View* child = host->GetChildViewAt(i);
     if (child->IsVisible()) {
       gfx::Size size(child->GetPreferredSize());

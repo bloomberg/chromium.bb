@@ -820,9 +820,9 @@ class BookmarkBarViewTest9 : public BookmarkBarViewEventTestBase {
     start_y_ = menu_loc.y();
 
     // Move the mouse over the scroll button.
-    views::View* scroll_container = menu->GetSubmenu()->GetParent();
+    views::View* scroll_container = menu->GetSubmenu()->parent();
     ASSERT_TRUE(scroll_container != NULL);
-    scroll_container = scroll_container->GetParent();
+    scroll_container = scroll_container->parent();
     ASSERT_TRUE(scroll_container != NULL);
     views::View* scroll_down_button = scroll_container->GetChildViewAt(1);
     ASSERT_TRUE(scroll_down_button);
@@ -1172,7 +1172,7 @@ class BookmarkBarViewTest13 : public BookmarkBarViewEventTestBase {
     // Find the first separator.
     views::SubmenuView* submenu = menu->GetSubmenu();
     views::View* separator_view = NULL;
-    for (int i = 0; i < submenu->GetChildViewCount(); ++i) {
+    for (int i = 0; i < submenu->child_count(); ++i) {
       if (submenu->GetChildViewAt(i)->GetID() !=
           views::MenuItemView::kMenuItemViewID) {
         separator_view = submenu->GetChildViewAt(i);

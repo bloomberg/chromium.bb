@@ -968,7 +968,7 @@ void LocationBarView::RefreshPageActionViews() {
       page_action_views_[i] = new PageActionWithBadgeView(
           new PageActionImageView(this, profile_, page_actions[i]));
       page_action_views_[i]->SetVisible(false);
-      AddChildView(GetChildIndex(star_view_), page_action_views_[i]);
+      AddChildViewAt(page_action_views_[i], GetIndexOf(star_view_));
     }
   }
 

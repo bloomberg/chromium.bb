@@ -400,7 +400,7 @@ MenuItemView* MenuItemView::GetMenuItemByID(int id) {
     return this;
   if (!HasSubmenu())
     return NULL;
-  for (int i = 0; i < GetSubmenu()->GetChildViewCount(); ++i) {
+  for (int i = 0; i < GetSubmenu()->child_count(); ++i) {
     View* child = GetSubmenu()->GetChildViewAt(i);
     if (child->GetID() == MenuItemView::kMenuItemViewID) {
       MenuItemView* result = static_cast<MenuItemView*>(child)->
@@ -435,13 +435,13 @@ void MenuItemView::ChildrenChanged() {
 }
 
 void MenuItemView::Layout() {
-  int child_count = GetChildViewCount();
-  if (child_count == 0)
+  if (!has_children())
     return;
 
-  // Child views are layed out right aligned and given the full height. To right
+  // Child views are laid out right aligned and given the full height. To right
   // align start with the last view and progress to the first.
-  for (int i = child_count - 1, x = width() - item_right_margin_; i >= 0; --i) {
+  for (int i = child_count() - 1, x = width() - item_right_margin_; i >= 0;
+       --i) {
     View* child = GetChildViewAt(i);
     int width = child->GetPreferredSize().width();
     child->SetBounds(x - width, 0, width, height());
@@ -581,8 +581,8 @@ int MenuItemView::GetDrawStringFlags() {
 
 void MenuItemView::AddEmptyMenus() {
   DCHECK(HasSubmenu());
-  if (submenu_->GetChildViewCount() == 0) {
-    submenu_->AddChildView(0, new EmptyMenuMenuItem(this));
+  if (!submenu_->has_children()) {
+    submenu_->AddChildViewAt(new EmptyMenuMenuItem(this), 0);
   } else {
     for (int i = 0, item_count = submenu_->GetMenuItemCount(); i < item_count;
          ++i) {
@@ -597,7 +597,7 @@ void MenuItemView::RemoveEmptyMenus() {
   DCHECK(HasSubmenu());
   // Iterate backwards as we may end up removing views, which alters the child
   // view count.
-  for (int i = submenu_->GetChildViewCount() - 1; i >= 0; --i) {
+  for (int i = submenu_->child_count() - 1; i >= 0; --i) {
     View* child = submenu_->GetChildViewAt(i);
     if (child->GetID() == MenuItemView::kMenuItemViewID) {
       MenuItemView* menu_item = static_cast<MenuItemView*>(child);
@@ -664,12 +664,11 @@ int MenuItemView::GetBottomMargin() {
 }
 
 int MenuItemView::GetChildPreferredWidth() {
-  int child_count = GetChildViewCount();
-  if (child_count == 0)
+  if (!has_children())
     return 0;
 
   int width = 0;
-  for (int i = 0; i < child_count; ++i) {
+  for (int i = 0; i < child_count(); ++i) {
     if (i)
       width += kChildXPadding;
     width += GetChildViewAt(i)->GetPreferredSize().width();

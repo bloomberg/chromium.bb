@@ -395,7 +395,7 @@ bool OpaqueBrowserFrameView::HitTest(const gfx::Point& l) const {
   // completely. We need to do this since we're not a parent of the tabstrip,
   // meaning ConvertPointToView would otherwise return something bogus.
   gfx::Point browser_view_point(l);
-  View::ConvertPointToView(GetParent(), browser_view_, &browser_view_point);
+  View::ConvertPointToView(parent(), browser_view_, &browser_view_point);
   return browser_view_->IsPositionInWindowCaption(browser_view_point);
 }
 

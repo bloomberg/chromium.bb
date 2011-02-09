@@ -58,12 +58,12 @@ class TabCloseButton : public views::ImageButton {
   // fire before Enter events, so this works.
   virtual void OnMouseEntered(const views::MouseEvent& event) {
     CustomButton::OnMouseEntered(event);
-    GetParent()->OnMouseEntered(event);
+    parent()->OnMouseEntered(event);
   }
 
   virtual void OnMouseExited(const views::MouseEvent& event) {
     CustomButton::OnMouseExited(event);
-    GetParent()->OnMouseExited(event);
+    parent()->OnMouseExited(event);
   }
 
  private:

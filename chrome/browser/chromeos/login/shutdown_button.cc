@@ -109,9 +109,9 @@ void ShutdownButton::LayoutIn(views::View* parent) {
 
 void ShutdownButton::OnLocaleChanged() {
   SetText(UTF8ToWide(l10n_util::GetStringUTF8(IDS_SHUTDOWN_BUTTON)));
-  if (GetParent()) {
-    GetParent()->Layout();
-    GetParent()->SchedulePaint();
+  if (parent()) {
+    parent()->Layout();
+    parent()->SchedulePaint();
   }
 }
 

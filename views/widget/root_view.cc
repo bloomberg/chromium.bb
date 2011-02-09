@@ -104,7 +104,7 @@ RootView::RootView(Widget* widget)
 RootView::~RootView() {
   // If we have children remove them explicitly so to make sure a remove
   // notification is sent for each one of them.
-  if (!child_views_.empty())
+  if (has_children())
     RemoveAllChildViews(true);
 
   if (pending_paint_task_)
@@ -117,7 +117,7 @@ void RootView::SetContentsView(View* contents_view) {
   // The ContentsView must be set up _after_ the window is created so that its
   // Widget pointer is valid.
   SetLayoutManager(new FillLayout);
-  if (GetChildViewCount() != 0)
+  if (has_children())
     RemoveAllChildViews(true);
   AddChildView(contents_view);
 
@@ -252,8 +252,12 @@ gfx::Rect RootView::GetScheduledPaintRectConstrainedToSize() {
 //
 /////////////////////////////////////////////////////////////////////////////
 
-Widget* RootView::GetWidget() const {
+const Widget* RootView::GetWidget() const {
   return widget_;
+}
+
+Widget* RootView::GetWidget() {
+  return const_cast<Widget*>(const_cast<const RootView*>(this)->GetWidget());
 }
 
 void RootView::NotifyThemeChanged() {
@@ -332,7 +336,7 @@ View::TouchStatus RootView::OnTouchEvent(const TouchEvent& e) {
   // Walk up the tree until we find a view that wants the touch event.
   for (touch_pressed_handler_ = GetViewForPoint(e.location());
        touch_pressed_handler_ && (touch_pressed_handler_ != this);
-       touch_pressed_handler_ = touch_pressed_handler_->GetParent()) {
+       touch_pressed_handler_ = touch_pressed_handler_->parent()) {
     if (!touch_pressed_handler_->IsEnabled()) {
       // Disabled views eat events but are treated as not handled by the
       // the GestureManager.
@@ -407,7 +411,7 @@ bool RootView::OnMousePressed(const MouseEvent& e) {
   // Walk up the tree until we find a view that wants the mouse event.
   for (mouse_pressed_handler_ = GetViewForPoint(e.location());
        mouse_pressed_handler_ && (mouse_pressed_handler_ != this);
-       mouse_pressed_handler_ = mouse_pressed_handler_->GetParent()) {
+       mouse_pressed_handler_ = mouse_pressed_handler_->parent()) {
     if (!mouse_pressed_handler_->IsEnabled()) {
       // Disabled views should eat events instead of propagating them upwards.
       hit_disabled_view = true;
@@ -547,7 +551,7 @@ void RootView::OnMouseMoved(const MouseEvent& e) {
   // disabled while handling moves, it's wrong to suddenly send ET_MOUSE_EXITED
   // and ET_MOUSE_ENTERED events, because the mouse hasn't actually exited yet.
   while (v && !v->IsEnabled() && (v != mouse_move_handler_))
-    v = v->GetParent();
+    v = v->parent();
   if (v && v != this) {
     if (v != mouse_move_handler_) {
       if (mouse_move_handler_ != NULL) {
@@ -681,7 +685,7 @@ bool RootView::ProcessKeyEvent(const KeyEvent& event) {
     v->ShowContextMenu(v->GetKeyboardContextMenuLocation(), false);
     return true;
   }
-  for (; v && v != this && !consumed; v = v->GetParent()) {
+  for (; v && v != this && !consumed; v = v->parent()) {
     consumed = (event.GetType() == Event::ET_KEY_PRESSED) ?
         v->OnKeyPressed(event) : v->OnKeyReleased(event);
   }
@@ -699,10 +703,8 @@ bool RootView::ProcessMouseWheelEvent(const MouseWheelEvent& e) {
   View* v;
   bool consumed = false;
   if (GetFocusedView()) {
-    for (v = GetFocusedView();
-         v && v != this && !consumed; v = v->GetParent()) {
+    for (v = GetFocusedView(); v && v != this && !consumed; v = v->parent())
       consumed = v->OnMouseWheel(e);
-    }
   }
 
   if (!consumed && default_keyboard_handler_) {
@@ -736,10 +738,10 @@ void RootView::RegisterViewForVisibleBoundsNotification(View* view) {
   if (view->registered_for_visible_bounds_notification_)
     return;
   view->registered_for_visible_bounds_notification_ = true;
-  View* ancestor = view->GetParent();
+  View* ancestor = view->parent();
   while (ancestor) {
     ancestor->AddDescendantToNotify(view);
-    ancestor = ancestor->GetParent();
+    ancestor = ancestor->parent();
   }
 }
 
@@ -748,10 +750,10 @@ void RootView::UnregisterViewForVisibleBoundsNotification(View* view) {
   if (!view->registered_for_visible_bounds_notification_)
     return;
   view->registered_for_visible_bounds_notification_ = false;
-  View* ancestor = view->GetParent();
+  View* ancestor = view->parent();
   while (ancestor) {
     ancestor->RemoveDescendantToNotify(view);
-    ancestor = ancestor->GetParent();
+    ancestor = ancestor->parent();
   }
 }
 

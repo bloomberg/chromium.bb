@@ -38,7 +38,7 @@ BookmarkBarInstructionsView::BookmarkBarInstructionsView(Delegate* delegate)
 
 gfx::Size BookmarkBarInstructionsView::GetPreferredSize() {
   int ascent = 0, descent = 0, height = 0, width = 0;
-  for (int i = 0; i < GetChildViewCount(); ++i) {
+  for (int i = 0; i < child_count(); ++i) {
     View* view = GetChildViewAt(i);
     gfx::Size pref = view->GetPreferredSize();
     int baseline = view->GetBaseline();
@@ -50,7 +50,7 @@ gfx::Size BookmarkBarInstructionsView::GetPreferredSize() {
     }
     width += pref.width();
   }
-  width += (GetChildViewCount() - 1) * kViewPadding;
+  width += (child_count() - 1) * kViewPadding;
   if (ascent != 0)
     height = std::max(ascent + descent, height);
   return gfx::Size(width, height);
@@ -59,7 +59,7 @@ gfx::Size BookmarkBarInstructionsView::GetPreferredSize() {
 void BookmarkBarInstructionsView::Layout() {
   int remaining_width = width();
   int x = 0;
-  for (int i = 0; i < GetChildViewCount(); ++i) {
+  for (int i = 0; i < child_count(); ++i) {
     View* view = GetChildViewAt(i);
     gfx::Size pref = view->GetPreferredSize();
     int baseline = view->GetBaseline();

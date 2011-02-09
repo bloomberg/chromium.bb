@@ -62,7 +62,7 @@ DraggedTabView::DraggedTabView(views::View* renderer,
 }
 
 DraggedTabView::~DraggedTabView() {
-  GetParent()->RemoveChildView(this);
+  parent()->RemoveChildView(this);
   container_->CloseNow();
 }
 

@@ -960,9 +960,9 @@ void GridLayout::CalculateMasterColumnsIfNecessary() {
 }
 
 void GridLayout::AddViewState(ViewState* view_state) {
-  DCHECK(view_state->view && (view_state->view->GetParent() == NULL ||
-                              view_state->view->GetParent() == host_));
-  if (!view_state->view->GetParent()) {
+  DCHECK(view_state->view && (view_state->view->parent() == NULL ||
+                              view_state->view->parent() == host_));
+  if (!view_state->view->parent()) {
     adding_view_ = true;
     host_->AddChildView(view_state->view);
     adding_view_ = false;

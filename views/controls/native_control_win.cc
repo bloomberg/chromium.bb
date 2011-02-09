@@ -102,7 +102,7 @@ void NativeControlWin::Focus() {
 
   // Since we are being wrapped by a view, accessibility should receive
   // the super class as the focused view.
-  View* parent_view = GetParent();
+  View* parent_view = parent();
 
   // Due to some controls not behaving as expected without having
   // a native win32 control, we don't always send a native (MSAA)
@@ -184,7 +184,7 @@ LRESULT NativeControlWin::GetControlColor(UINT message, HDC dc, HWND sender) {
       if (brush)
         return reinterpret_cast<LRESULT>(brush);
     }
-    ancestor = ancestor->GetParent();
+    ancestor = ancestor->parent();
   }
 
   // COLOR_BTNFACE is the default for dialog box backgrounds.
