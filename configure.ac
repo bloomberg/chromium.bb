@@ -18,24 +18,34 @@
 #  IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 #  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-AC_PREREQ(2.60)
-AC_INIT([libdrm], 2.4.24, [dri-devel@lists.sourceforge.net], libdrm)
-AC_USE_SYSTEM_EXTENSIONS
+AC_PREREQ([2.63])
+AC_INIT([libdrm],
+        [2.4.24],
+        [https://bugs.freedesktop.org/enter_bug.cgi?product=DRI],
+        [libdrm])
+
+AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_SRCDIR([Makefile.am])
-AM_INIT_AUTOMAKE([dist-bzip2])
+AC_CONFIG_MACRO_DIR([m4])
+AC_CONFIG_AUX_DIR([build-aux])
 
-AM_CONFIG_HEADER([config.h])
-
-AC_DISABLE_STATIC
-AC_PROG_LIBTOOL
-AC_PROG_CC
-
-AC_HEADER_STDC
-AC_SYS_LARGEFILE
-AC_FUNC_ALLOCA
+AM_INIT_AUTOMAKE([1.10 foreign dist-bzip2])
+AM_MAINTAINER_MODE([enable])
 
 # Enable quiet compiles on automake 1.11.
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
+
+# Check for programs
+AC_PROG_CC
+
+AC_USE_SYSTEM_EXTENSIONS
+AC_SYS_LARGEFILE
+AC_FUNC_ALLOCA
+
+# Initialize libtool
+LT_PREREQ([2.2])
+LT_INIT([disable-static])
+
 
 PKG_CHECK_MODULES(PTHREADSTUBS, pthread-stubs)
 AC_SUBST(PTHREADSTUBS_CFLAGS)
@@ -43,9 +53,10 @@ AC_SUBST(PTHREADSTUBS_LIBS)
 
 pkgconfigdir=${libdir}/pkgconfig
 AC_SUBST(pkgconfigdir)
-AC_ARG_ENABLE(udev,	AS_HELP_STRING([--enable-udev],
-				[Enable support for using udev instead of mknod (default: disabled)]),
-				[UDEV=$enableval], [UDEV=no])
+AC_ARG_ENABLE([udev],
+              [AS_HELP_STRING([--enable-udev],
+                              [Enable support for using udev instead of mknod (default: disabled)])],
+              [UDEV=$enableval], [UDEV=no])
 
 AC_ARG_ENABLE(libkms,
 	      AS_HELP_STRING([--disable-libkms],
@@ -188,12 +199,11 @@ if test "x$INTEL" != "xno" -o "x$RADEON" != "xno"; then
     [
 	    drm_cv_atomic_primitives="none"
 
-	    AC_TRY_LINK([
+	    AC_LINK_IFELSE([AC_LANG_PROGRAM([[
     int atomic_add(int i) { return __sync_fetch_and_add (&i, 1); }
     int atomic_cmpxchg(int i, int j, int k) { return __sync_val_compare_and_swap (&i, j, k); }
-    ], [],
-	      drm_cv_atomic_primitives="Intel"
-	      )
+                                            ]],[[]])],
+                           [drm_cv_atomic_primitives="Intel"],[])
 
 	    if test "x$drm_cv_atomic_primitives" = "xnone"; then
 		    AC_CHECK_HEADER([atomic_ops.h], drm_cv_atomic_primitives="libatomic-ops")
@@ -255,7 +265,7 @@ AC_ARG_WITH([kernel-source],
 AC_SUBST(kernel_source)
 
 AC_SUBST(WARN_CFLAGS)
-AC_OUTPUT([
+AC_CONFIG_FILES([
 	Makefile
 	libkms/Makefile
 	libkms/libkms.pc
@@ -273,6 +283,7 @@ AC_OUTPUT([
 	include/Makefile
 	include/drm/Makefile
 	libdrm.pc])
+AC_OUTPUT
 
 echo ""
 echo "$PACKAGE_STRING will be compiled with:"
