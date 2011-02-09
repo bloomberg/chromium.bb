@@ -35,6 +35,10 @@ TouchTabStrip::~TouchTabStrip() {
 ////////////////////////////////////////////////////////////////////////////////
 // TouchTabStrip, BaseTabStrip implementation:
 
+int TouchTabStrip::GetPreferredHeight() {
+  return GetPreferredSize().height();
+}
+
 void TouchTabStrip::SetBackgroundOffset(const gfx::Point& offset) {
   for (int i = 0; i < tab_count(); ++i)
     GetTabAtTabDataIndex(i)->set_background_offset(offset);

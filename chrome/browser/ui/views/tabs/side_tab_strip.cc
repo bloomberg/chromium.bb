@@ -89,6 +89,10 @@ SideTabStrip::~SideTabStrip() {
 ////////////////////////////////////////////////////////////////////////////////
 // SideTabStrip, BaseTabStrip implementation:
 
+int SideTabStrip::GetPreferredHeight() {
+  return 0;
+}
+
 void SideTabStrip::SetBackgroundOffset(const gfx::Point& offset) {
 }
 

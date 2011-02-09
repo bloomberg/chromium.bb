@@ -164,6 +164,10 @@ void TabStrip::MouseMovedOutOfView() {
 ////////////////////////////////////////////////////////////////////////////////
 // TabStrip, BaseTabStrip implementation:
 
+int TabStrip::GetPreferredHeight() {
+  return GetPreferredSize().height();
+}
+
 void TabStrip::SetBackgroundOffset(const gfx::Point& offset) {
   for (int i = 0; i < tab_count(); ++i)
     GetTabAtTabDataIndex(i)->set_background_offset(offset);

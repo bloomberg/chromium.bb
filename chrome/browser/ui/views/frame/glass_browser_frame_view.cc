@@ -105,7 +105,7 @@ gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
           kNewTabCaptionMaximizedSpacing : kNewTabCaptionRestoredSpacing);
   return gfx::Rect(tabstrip_x, GetHorizontalTabStripVerticalOffset(false),
                    std::max(0, tabstrip_width),
-                   tabstrip->GetPreferredSize().height());
+                   tabstrip->GetPreferredHeight());
 }
 
 int GlassBrowserFrameView::GetHorizontalTabStripVerticalOffset(
