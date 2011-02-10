@@ -131,6 +131,7 @@ const char kOSCreditsPath[] = "os-credits";
 
 // Add path here to be included in about:about
 const char *kAllAboutPaths[] = {
+  kAboutPath,
   kAppCacheInternalsPath,
   kBlobInternalsPath,
   kCachePath,
@@ -259,24 +260,13 @@ std::string AboutAbout() {
   std::string html;
   html.append("<html><head><title>About Pages</title></head><body>\n");
   html.append("<h2>List of About pages</h2><ul>\n");
-  for (size_t i = 0; i < arraysize(kAllAboutPaths); i++) {
-    if (kAllAboutPaths[i] == kAppCacheInternalsPath ||
-        kAllAboutPaths[i] == kBlobInternalsPath ||
-        kAllAboutPaths[i] == kCachePath ||
-#if defined(OS_WIN)
-        kAllAboutPaths[i] == kConflictsPath ||
-#endif
-        kAllAboutPaths[i] == kFlagsPath ||
-        kAllAboutPaths[i] == kGpuPath ||
-        kAllAboutPaths[i] == kNetInternalsPath ||
-        kAllAboutPaths[i] == kPluginsPath) {
-      html.append("<li><a href='chrome://");
-    } else {
-      html.append("<li><a href='chrome://about/");
-    }
-    html.append(kAllAboutPaths[i]);
-    html.append("/'>about:");
-    html.append(kAllAboutPaths[i]);
+  std::vector<std::string> paths = AboutPaths();
+  for (std::vector<std::string>::const_iterator path = paths.begin();
+      path != paths.end(); ++path) {
+    html.append("<li><a href='");
+    html.append(AboutPathToURL(*path).spec());
+    html.append("'>about:");
+    html.append(*path);
     html.append("</a>\n");
   }
   const char *debug[] = { "crash", "kill", "hang", "shorthang",
@@ -1078,4 +1068,31 @@ bool HandleNonNavigationAboutURL(const GURL& url) {
 #endif  // OFFICIAL_BUILD
 
   return false;
+}
+
+std::vector<std::string> AboutPaths() {
+  std::vector<std::string> paths;
+  paths.reserve(arraysize(kAllAboutPaths));
+  for (size_t i = 0; i < arraysize(kAllAboutPaths); i++)
+    paths.push_back(kAllAboutPaths[i]);
+  return paths;
+}
+
+GURL AboutPathToURL(const std::string& path) {
+  InitializeAboutDataSource();
+  if (LowerCaseEqualsASCII(path, kAppCacheInternalsPath) ||
+      LowerCaseEqualsASCII(path, kBlobInternalsPath) ||
+      LowerCaseEqualsASCII(path, kCachePath) ||
+#if defined(OS_WIN)
+      LowerCaseEqualsASCII(path, kConflictsPath) ||
+#endif
+      LowerCaseEqualsASCII(path, kFlagsPath) ||
+      LowerCaseEqualsASCII(path, kGpuPath) ||
+      LowerCaseEqualsASCII(path, kNetInternalsPath) ||
+      LowerCaseEqualsASCII(path, kPluginsPath)) {
+    return GURL(std::string("chrome://") + std::string(path) +
+                std::string("/"));
+  }
+  return GURL(std::string("chrome://about/") + std::string(path) +
+              std::string("/"));
 }

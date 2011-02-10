@@ -54,6 +54,7 @@
 // Search Primary Provider (navigational suggestion)                   |  800++
 // HistoryContents (any match in title of nonstarred page)             |  700++
 // Search Primary Provider (suggestion)                                |  600++
+// Built-in                                                            |  575++
 // HistoryContents (any match in body of starred page)                 |  550++
 // HistoryContents (any match in body of nonstarred page)              |  500++
 // Keyword (inexact match)                                             |  450
@@ -76,6 +77,7 @@
 // Search Primary Provider (navigational suggestion)                   |  800++
 // HistoryContents (any match in title of nonstarred page)             |  700++
 // Search Primary Provider (suggestion)                                |  600++
+// Built-in                                                            |  575++
 // HistoryContents (any match in body of starred page)                 |  550++
 // HistoryContents (any match in body of nonstarred page)              |  500++
 // Keyword (inexact match)                                             |  450
@@ -95,6 +97,7 @@
 // Search Primary Provider (navigational suggestion)                   |  800++
 // Search Primary Provider (past query in history)                     |  750--
 // Keyword (inexact match)                                             |  700
+// Built-in                                                            |  575++
 // Search Primary Provider (suggestion)                                |  300++
 // Search Secondary Provider (what you typed)                          |  250
 // Search Secondary Provider (past query in history)                   |  200--
