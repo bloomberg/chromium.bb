@@ -506,8 +506,9 @@ void ToolbarView::Layout() {
   if (back_ == NULL)
     return;
 
+  bool maximized = browser_->window() && browser_->window()->IsMaximized();
   if (!IsDisplayModeNormal()) {
-    int edge_width = (browser_->window() && browser_->window()->IsMaximized()) ?
+    int edge_width = maximized ?
         0 : kPopupBackgroundEdge->width();  // See Paint().
     location_bar_->SetBounds(edge_width, PopupTopSpacing(),
         width() - (edge_width * 2), location_bar_->GetPreferredSize().height());
@@ -527,7 +528,7 @@ void ToolbarView::Layout() {
   //                Layout() in this case.
   //                http://crbug.com/5540
   int back_width = back_->GetPreferredSize().width();
-  if (browser_->window() && browser_->window()->IsMaximized())
+  if (maximized)
     back_->SetBounds(0, child_y, back_width + kEdgeSpacing, child_height);
   else
     back_->SetBounds(kEdgeSpacing, child_y, back_width, child_height);
@@ -574,6 +575,10 @@ void ToolbarView::Layout() {
   //                required.
   browser_actions_->Layout();
 
+  // Extend the app menu to the screen's right edge in maximized mode just like
+  // we extend the back button to the left edge.
+  if (maximized)
+    app_menu_width += kEdgeSpacing;
 #if defined(OS_CHROMEOS)
   feedback_->SetBounds(browser_actions_->x() + browser_actions_width, child_y,
                        feedback_->GetPreferredSize().width(), child_height);
