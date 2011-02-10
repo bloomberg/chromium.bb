@@ -697,6 +697,7 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kEnableVideoLogging,
     switches::kEnableWatchdog,
     switches::kEnableWebAudio,
+    switches::kEnableJavaScriptI18NAPI,
     switches::kExperimentalSpellcheckerFeatures,
     switches::kFullMemoryCrashReport,
 #if !defined (GOOGLE_CHROME_BUILD)

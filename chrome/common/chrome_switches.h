@@ -155,6 +155,7 @@ extern const char kEnableFileSystemURLScheme[];
 extern const char kEnableGPUPlugin[];
 extern const char kEnableInBrowserThumbnailing[];
 extern const char kEnableIPv6[];
+extern const char kEnableJavaScriptI18NAPI[];
 extern const char kEnableLogging[];
 extern const char kEnableMemoryInfo[];
 extern const char kEnableMonitorProfile[];

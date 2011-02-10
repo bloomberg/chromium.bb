@@ -526,6 +526,9 @@ const char kEnableIPv6[]                    = "enable-ipv6";
 // Enable the GPU plugin and Pepper 3D rendering.
 const char kEnableGPUPlugin[]               = "enable-gpu-plugin";
 
+// Enable experimental JavaScript I18N API.
+const char kEnableJavaScriptI18NAPI[]       = "enable-javascript-i18n-api";
+
 // Force logging to be enabled.  Logging is disabled by default in release
 // builds.
 const char kEnableLogging[]                 = "enable-logging";

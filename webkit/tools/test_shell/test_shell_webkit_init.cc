@@ -47,6 +47,9 @@ TestShellWebKitInit::TestShellWebKitInit(bool layout_test_mode) {
   WebKit::WebRuntimeFeatures::enableDeviceMotion(false);
   WebKit::WebRuntimeFeatures::enableDeviceOrientation(true);
 
+  // Enable experimental I18N API for testing.
+  WebKit::WebRuntimeFeatures::enableJavaScriptI18NAPI(true);
+
   // Load libraries for media and enable the media player.
   FilePath module_path;
   WebKit::WebRuntimeFeatures::enableMediaPlayer(
