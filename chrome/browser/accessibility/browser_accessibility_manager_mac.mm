@@ -5,6 +5,7 @@
 #include "chrome/browser/accessibility/browser_accessibility_manager_mac.h"
 
 #import "chrome/browser/accessibility/browser_accessibility_cocoa.h"
+#include "chrome/common/render_messages_params.h"
 
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
@@ -29,11 +30,11 @@ BrowserAccessibilityManagerMac::BrowserAccessibilityManagerMac(
 }
 
 void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
-    ViewHostMsg_AccessibilityNotification_Params::NotificationType n,
+    int type,
     BrowserAccessibility* node) {
   // Refer to AXObjectCache.mm (webkit).
   NSString* event_id = @"";
-  switch (n) {
+  switch (type) {
     case ViewHostMsg_AccessibilityNotification_Params::
         NOTIFICATION_TYPE_CHECK_STATE_CHANGED:
       // Does not exist on Mac.

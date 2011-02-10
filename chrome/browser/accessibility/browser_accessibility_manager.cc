@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/accessibility/browser_accessibility.h"
+#include "chrome/common/render_messages_params.h"
 
 using webkit_glue::WebAccessibility;
 

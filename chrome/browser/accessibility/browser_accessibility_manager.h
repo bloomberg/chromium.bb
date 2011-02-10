@@ -11,7 +11,6 @@
 #include "base/hash_tables.h"
 #include "base/scoped_ptr.h"
 #include "build/build_config.h"
-#include "chrome/common/render_messages_params.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/webaccessibility.h"
 
@@ -19,6 +18,8 @@ class BrowserAccessibility;
 #if defined(OS_WIN)
 class BrowserAccessibilityManagerWin;
 #endif
+
+struct ViewHostMsg_AccessibilityNotification_Params;
 
 using webkit_glue::WebAccessibility;
 
@@ -54,8 +55,11 @@ class BrowserAccessibilityManager {
 
   virtual ~BrowserAccessibilityManager();
 
+  // Type is a ViewHostMsg_AccessibilityNotification_Params::NotificationType.
+  // We pass it as int so that we don't include the render message declaration
+  // header here.
   virtual void NotifyAccessibilityEvent(
-      ViewHostMsg_AccessibilityNotification_Params::NotificationType n,
+      int type,
       BrowserAccessibility* node) = 0;
 
   // Returns the next unique child id.

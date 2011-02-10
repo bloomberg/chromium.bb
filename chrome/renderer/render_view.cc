@@ -41,6 +41,7 @@
 #include "chrome/common/pepper_messages.h"
 #include "chrome/common/pepper_plugin_registry.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 #include "chrome/common/render_view_commands.h"
 #include "chrome/common/renderer_preferences.h"
 #include "chrome/common/thumbnail_score.h"
@@ -755,8 +756,8 @@ void RenderView::RemoveObserver(RenderViewObserver* observer) {
 
 bool RenderView::RendererAccessibilityNotification::ShouldIncludeChildren() {
   typedef ViewHostMsg_AccessibilityNotification_Params params;
-  if (type == params::NOTIFICATION_TYPE_CHILDREN_CHANGED ||
-      type == params::NOTIFICATION_TYPE_LOAD_COMPLETE) {
+  if (type == WebKit::WebAccessibilityNotificationChildrenChanged ||
+      type == WebKit::WebAccessibilityNotificationLoadComplete) {
     return true;
   }
   return false;
@@ -2285,7 +2286,8 @@ void RenderView::SendPendingAccessibilityNotifications() {
       continue;
 
     ViewHostMsg_AccessibilityNotification_Params param;
-    param.notification_type = pending_accessibility_notifications_[i].type;
+    WebAccessibilityNotificationToViewHostMsg(
+        pending_accessibility_notifications_[i].type, &param.notification_type);
     param.acc_obj = WebAccessibility(
         obj, accessibility_.get(), notification.ShouldIncludeChildren());
     notifications.push_back(param);
@@ -5342,14 +5344,13 @@ void RenderView::postAccessibilityNotification(
   // Add the accessibility object to our cache and ensure it's valid.
   RendererAccessibilityNotification acc_notification;
   acc_notification.id = accessibility_->addOrGetId(obj);
+  acc_notification.type = notification;
   if (acc_notification.id < 0)
     return;
 
-  if (!WebAccessibilityNotificationToViewHostMsg(
-          notification,
-          &acc_notification.type)) {
+  ViewHostMsg_AccessibilityNotification_Params::NotificationType temp;
+  if (!WebAccessibilityNotificationToViewHostMsg(notification, &temp))
     return;
-  }
 
   // Discard duplicate accessibility notifications.
   for (uint32 i = 0; i < pending_accessibility_notifications_.size(); i++) {

@@ -13,9 +13,7 @@
 class BrowserAccessibilityManagerMac : public BrowserAccessibilityManager {
  public:
   // Implementation of BrowserAccessibilityManager.
-  virtual void NotifyAccessibilityEvent(
-      ViewHostMsg_AccessibilityNotification_Params::NotificationType n,
-      BrowserAccessibility* node);
+  virtual void NotifyAccessibilityEvent(int type, BrowserAccessibility* node);
 
  private:
   // This gives BrowserAccessibilityManager::Create access to the class

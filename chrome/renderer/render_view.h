@@ -25,7 +25,6 @@
 #include "chrome/common/edit_command.h"
 #include "chrome/common/navigation_gesture.h"
 #include "chrome/common/page_zoom.h"
-#include "chrome/common/render_messages_params.h"
 #include "chrome/common/renderer_preferences.h"
 #include "chrome/common/view_types.h"
 #include "chrome/renderer/external_popup_menu.h"
@@ -35,6 +34,7 @@
 #include "chrome/renderer/renderer_webcookiejar_impl.h"
 #include "chrome/renderer/searchbox.h"
 #include "ipc/ipc_platform_file.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityNotification.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystem.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrameClient.h"
@@ -82,8 +82,14 @@ class WebPluginDelegateProxy;
 struct ContextMenuMediaParams;
 struct PP_Flash_NetAddress;
 struct ThumbnailScore;
+struct ViewHostMsg_DomMessage_Params;
+struct ViewHostMsg_GetSearchProviderInstallState_Params;
+struct ViewHostMsg_PageHasOSDD_Type;
+struct ViewHostMsg_RunFileChooser_Params;
 struct ViewMsg_ClosePage_Params;
+struct ViewMsg_ExecuteCode_Params;
 struct ViewMsg_Navigate_Params;
+struct ViewMsg_StopFinding_Params;
 struct WebApplicationInfo;
 struct WebDropData;
 
@@ -702,7 +708,7 @@ class RenderView : public RenderWidget,
     int32 id;
 
     // The accessibility notification type.
-    ViewHostMsg_AccessibilityNotification_Params::NotificationType type;
+    WebKit::WebAccessibilityNotification type;
   };
 
   enum ErrorPageType {

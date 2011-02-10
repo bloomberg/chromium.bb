@@ -5,6 +5,7 @@
 #include "chrome/browser/accessibility/browser_accessibility_manager_win.h"
 
 #include "chrome/browser/accessibility/browser_accessibility_win.h"
+#include "chrome/common/render_messages_params.h"
 
 using webkit_glue::WebAccessibility;
 
@@ -52,10 +53,10 @@ IAccessible* BrowserAccessibilityManagerWin::GetParentWindowIAccessible() {
 }
 
 void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
-    ViewHostMsg_AccessibilityNotification_Params::NotificationType n,
+    int type,
     BrowserAccessibility* node) {
   LONG event_id;
-  switch (n) {
+  switch (type) {
     case ViewHostMsg_AccessibilityNotification_Params::
           NOTIFICATION_TYPE_CHECK_STATE_CHANGED:
       event_id = EVENT_OBJECT_STATECHANGE;

@@ -10,7 +10,6 @@
 
 #include "base/scoped_comptr_win.h"
 #include "chrome/browser/accessibility/browser_accessibility_manager.h"
-#include "chrome/common/render_messages_params.h"
 #include "webkit/glue/webaccessibility.h"
 
 class BrowserAccessibilityWin;
@@ -28,9 +27,7 @@ class BrowserAccessibilityManagerWin : public BrowserAccessibilityManager {
   IAccessible* GetParentWindowIAccessible();
 
   // BrowserAccessibilityManager methods
-  virtual void NotifyAccessibilityEvent(
-      ViewHostMsg_AccessibilityNotification_Params::NotificationType n,
-      BrowserAccessibility* node);
+  virtual void NotifyAccessibilityEvent(int type, BrowserAccessibility* node);
 
  private:
   BrowserAccessibilityManagerWin(
