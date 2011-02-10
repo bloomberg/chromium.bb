@@ -442,7 +442,13 @@ class DownloadTest : public InProcessBrowserTest {
 // Mock responses have extension .mock-http-headers appended to the file name.
 
 // Download a file due to the associated MIME type.
-IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadMimeType) {
+//
+// Test is believed good (non-flaky) in itself, but it
+// sometimes trips over underlying flakiness in the downloads
+// subsystem in in http://crbug.com/63237.  Until that bug is
+// fixed, this test should be considered flaky.  It's entered as
+// DISABLED since if 63237 does cause a failure, it'll be a timeout.
+IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_DownloadMimeType) {
   ASSERT_TRUE(InitialSetup(false));
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
@@ -526,7 +532,13 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, NoDownload) {
 // download tab opened and the file exists as the filename specified in the
 // header.  This also ensures we properly handle empty file downloads.
 // The download shelf should be visible in the current tab.
-IN_PROC_BROWSER_TEST_F(DownloadTest, ContentDisposition) {
+//
+// Test is believed mostly good (non-flaky) in itself, but it
+// sometimes trips over underlying flakiness in the downloads
+// subsystem in in http://crbug.com/63237.  Until that bug is
+// fixed, this test should be considered flaky.  It's entered as
+// DISABLED since if 63237 does cause a failure, it'll be a timeout.
+IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_ContentDisposition) {
   ASSERT_TRUE(InitialSetup(false));
   FilePath file(FILE_PATH_LITERAL("download-test3.gif"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
@@ -545,7 +557,11 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, ContentDisposition) {
 // Test that the download shelf is per-window by starting a download in one
 // tab, opening a second tab, closing the shelf, going back to the first tab,
 // and checking that the shelf is closed.
-IN_PROC_BROWSER_TEST_F(DownloadTest, PerWindowShelf) {
+//
+// The test sometimes trips over underlying flakiness in the downloads
+// subsystem in in http://crbug.com/63237.  It's entered as
+// DISABLED since if 63237 does cause a failure, it'll be a timeout.
+IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_PerWindowShelf) {
   ASSERT_TRUE(InitialSetup(false));
   FilePath file(FILE_PATH_LITERAL("download-test3.gif"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
@@ -586,7 +602,13 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, PerWindowShelf) {
 // "download-finish".  At that time, the download will finish.
 // These tests don't currently test much due to holes in |RunSizeTest()|.  See
 // comments in that routine for details.
-IN_PROC_BROWSER_TEST_F(DownloadTest, UnknownSize) {
+
+// Test is believed mostly good (non-flaky) in itself, but it
+// very occasionally trips over underlying flakiness in the downloads
+// subsystem in in http://crbug.com/63237.  Until that bug is
+// fixed, this test should be considered flaky.  It's entered as
+// DISABLED since if 63237 does cause a failure, it'll be a timeout.
+IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_UnknownSize) {
   GURL url(URLRequestSlowDownloadJob::kUnknownSizeUrl);
   FilePath filename;
   net::FileURLToFilePath(url, &filename);
@@ -598,7 +620,12 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, UnknownSize) {
                   ASCIIToUTF16("100% - ") + filename.LossyDisplayName()));
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadTest, KnownSize) {
+// Test is believed mostly good (non-flaky) in itself, but it
+// very occasionally trips over underlying flakiness in the downloads
+// subsystem in in http://crbug.com/63237.  Until that bug is
+// fixed, this test should be considered flaky.  It's entered as
+// DISABLED since if 63237 does cause a failure, it'll be a timeout.
+IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_KnownSize) {
   GURL url(URLRequestSlowDownloadJob::kKnownSizeUrl);
   FilePath filename;
   net::FileURLToFilePath(url, &filename);
@@ -614,7 +641,13 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, KnownSize) {
 // closing the last Incognito window (http://crbug.com/13983).
 // Also check that the download shelf is not visible after closing the
 // Incognito window.
-IN_PROC_BROWSER_TEST_F(DownloadTest, IncognitoDownload) {
+//
+// Test is believed mostly good (non-flaky) in itself, but it
+// sometimes trips over underlying flakiness in the downloads
+// subsystem in in http://crbug.com/63237.  Until that bug is
+// fixed, this test should be considered flaky.  It's entered as
+// DISABLED since if 63237 does cause a failure, it'll be a timeout.
+IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_IncognitoDownload) {
   ASSERT_TRUE(InitialSetup(false));
 
   // Open an Incognito window.
@@ -683,7 +716,11 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DontCloseNewTab1) {
 
 // Download a file in a background tab. Verify that the tab is closed
 // automatically, and that the download shelf is visible in the current tab.
-IN_PROC_BROWSER_TEST_F(DownloadTest, CloseNewTab1) {
+//
+// The test sometimes trips over underlying flakiness in the downloads
+// subsystem in http://crbug.com/63237.  It's entered as
+// DISABLED since if 63237 does cause a failure, it'll be a timeout.
+IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_CloseNewTab1) {
   ASSERT_TRUE(InitialSetup(false));
 
   // Download a file in a new background tab and wait.  The tab is automatically
@@ -711,7 +748,11 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CloseNewTab1) {
 //
 // The download_page1.html page contains an openNew() function that opens a
 // tab and then downloads download-test1.lib.
-IN_PROC_BROWSER_TEST_F(DownloadTest, DontCloseNewTab2) {
+//
+// The test sometimes trips over underlying flakiness in the downloads
+// subsystem in in http://crbug.com/63237.  It's entered as
+// DISABLED since if 63237 does cause a failure, it'll be a timeout.
+IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_DontCloseNewTab2) {
   ASSERT_TRUE(InitialSetup(false));
   // Because it's an HTML link, it should open a web page rather than
   // downloading.
@@ -743,7 +784,11 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DontCloseNewTab2) {
 //
 // The download_page2.html page contains an openNew() function that opens a
 // tab.
-IN_PROC_BROWSER_TEST_F(DownloadTest, DontCloseNewTab3) {
+//
+// The test sometimes trips over underlying flakiness in the downloads
+// subsystem in in http://crbug.com/63237.  It's entered as
+// DISABLED since if 63237 does cause a failure, it'll be a timeout.
+IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_DontCloseNewTab3) {
   ASSERT_TRUE(InitialSetup(false));
   // Because it's an HTML link, it should open a web page rather than
   // downloading.
@@ -785,7 +830,11 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DontCloseNewTab3) {
 // The download_page3.html page contains an openNew() function that opens a
 // tab with download-test1.lib in the URL.  When the URL is determined to be
 // a download, the tab is closed automatically.
-IN_PROC_BROWSER_TEST_F(DownloadTest, CloseNewTab2) {
+//
+// The test sometimes trips over underlying flakiness in the downloads
+// subsystem in in http://crbug.com/63237.  It's entered as
+// DISABLED since if 63237 does cause a failure, it'll be a timeout.
+IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_CloseNewTab2) {
   ASSERT_TRUE(InitialSetup(false));
   // Because it's an HTML link, it should open a web page rather than
   // downloading.
@@ -818,7 +867,11 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CloseNewTab2) {
 //
 // The download_page4.html page contains a form with download-test1.lib as the
 // action.
-IN_PROC_BROWSER_TEST_F(DownloadTest, CloseNewTab3) {
+//
+// The test sometimes trips over underlying flakiness in the downloads
+// subsystem in in http://crbug.com/63237.  It's entered as
+// DISABLED since if 63237 does cause a failure, it'll be a timeout.
+IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_CloseNewTab3) {
   ASSERT_TRUE(InitialSetup(false));
   // Because it's an HTML link, it should open a web page rather than
   // downloading.
@@ -853,7 +906,13 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CloseNewTab3) {
 // Verify that we have 1 window, and the download shelf is not visible.
 //
 // Regression test for http://crbug.com/44454
-IN_PROC_BROWSER_TEST_F(DownloadTest, NewWindow) {
+//
+// Test is believed mostly good (non-flaky) in itself, but it
+// sometimes trips over underlying flakiness in the downloads
+// subsystem in in http://crbug.com/63237.  Until that bug is
+// fixed, this test should be considered flaky.  It's entered as
+// DISABLED since if 63237 does cause a failure, it'll be a timeout.
+IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_NewWindow) {
   ASSERT_TRUE(InitialSetup(false));
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
