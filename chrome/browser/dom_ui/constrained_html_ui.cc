@@ -15,7 +15,7 @@ static base::LazyInstance<PropertyAccessor<ConstrainedHtmlUIDelegate*> >
     g_constrained_html_ui_property_accessor(base::LINKER_INITIALIZED);
 
 ConstrainedHtmlUI::ConstrainedHtmlUI(TabContents* contents)
-    : DOMUI(contents) {
+    : WebUI(contents) {
 }
 
 ConstrainedHtmlUI::~ConstrainedHtmlUI() {

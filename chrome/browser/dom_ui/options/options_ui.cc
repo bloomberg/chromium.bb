@@ -149,7 +149,7 @@ void OptionsPageUIHandler::RegisterStrings(
 ////////////////////////////////////////////////////////////////////////////////
 
 OptionsUI::OptionsUI(TabContents* contents)
-    : DOMUI(contents), initialized_handlers_(false) {
+    : WebUI(contents), initialized_handlers_(false) {
   DictionaryValue* localized_strings = new DictionaryValue();
 
 #if defined(OS_CHROMEOS)
@@ -240,7 +240,7 @@ void OptionsUI::RenderViewCreated(RenderViewHost* render_view_host) {
 #endif
 
   render_view_host->SetDOMUIProperty("commandLineString", command_line_string);
-  DOMUI::RenderViewCreated(render_view_host);
+  WebUI::RenderViewCreated(render_view_host);
 }
 
 void OptionsUI::DidBecomeActiveForReusedRenderView() {
@@ -252,7 +252,7 @@ void OptionsUI::DidBecomeActiveForReusedRenderView() {
   // initialized).
   CallJavascriptFunction(L"OptionsPage.reinitializeCore");
 
-  DOMUI::DidBecomeActiveForReusedRenderView();
+  WebUI::DidBecomeActiveForReusedRenderView();
 }
 
 // static

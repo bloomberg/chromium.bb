@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -201,8 +201,8 @@ ImageBurnHandler::~ImageBurnHandler() {
       download_manager_->RemoveObserver(this);
 }
 
-WebUIMessageHandler* ImageBurnHandler::Attach(DOMUI* dom_ui) {
-  return WebUIMessageHandler::Attach(dom_ui);
+WebUIMessageHandler* ImageBurnHandler::Attach(WebUI* web_ui) {
+  return WebUIMessageHandler::Attach(web_ui);
 }
 
 void ImageBurnHandler::RegisterMessages() {
@@ -645,7 +645,7 @@ net::FileStream* ImageBurnResourceManager::CreateFileStream(
 // ImageBurnUI
 //
 ////////////////////////////////////////////////////////////////////////////////
-ImageBurnUI::ImageBurnUI(TabContents* contents) : DOMUI(contents) {
+ImageBurnUI::ImageBurnUI(TabContents* contents) : WebUI(contents) {
   ImageBurnHandler* handler = new ImageBurnHandler(contents);
   AddMessageHandler((handler)->Attach(this));
   ImageBurnUIHTMLSource* html_source = new ImageBurnUIHTMLSource();

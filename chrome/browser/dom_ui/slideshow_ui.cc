@@ -73,7 +73,7 @@ class SlideshowHandler : public net::DirectoryLister::DirectoryListerDelegate,
   virtual void OnListDone(int error);
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(DOMUI* dom_ui);
+  virtual WebUIMessageHandler* Attach(WebUI* web_ui);
   virtual void RegisterMessages();
 
   void GetChildrenForPath(const FilePath& path, bool is_refresh);
@@ -147,12 +147,12 @@ SlideshowHandler::~SlideshowHandler() {
   }
 }
 
-WebUIMessageHandler* SlideshowHandler::Attach(DOMUI* dom_ui) {
-  profile_ = dom_ui->GetProfile();
+WebUIMessageHandler* SlideshowHandler::Attach(WebUI* web_ui) {
+  profile_ = web_ui->GetProfile();
   // Create our favicon data source.
   profile_->GetChromeURLDataManager()->AddDataSource(
       new WebUIFavIconSource(profile_));
-  return WebUIMessageHandler::Attach(dom_ui);
+  return WebUIMessageHandler::Attach(web_ui);
 }
 
 void SlideshowHandler::Init() {
@@ -273,7 +273,7 @@ void SlideshowHandler::OnListDone(int error) {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-SlideshowUI::SlideshowUI(TabContents* contents) : DOMUI(contents) {
+SlideshowUI::SlideshowUI(TabContents* contents) : WebUI(contents) {
   SlideshowHandler* handler = new SlideshowHandler();
   AddMessageHandler((handler)->Attach(this));
   handler->Init();

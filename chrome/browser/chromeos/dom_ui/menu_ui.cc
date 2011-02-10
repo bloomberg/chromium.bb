@@ -248,7 +248,7 @@ class MenuHandler : public chromeos::MenuHandlerBase,
   virtual ~MenuHandler();
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(DOMUI* dom_ui);
+  virtual WebUIMessageHandler* Attach(WebUI* web_ui);
   virtual void RegisterMessages();
 
  private:
@@ -259,7 +259,7 @@ class MenuHandler : public chromeos::MenuHandlerBase,
   void HandleMoveInputToParent(const ListValue* values);
   void HandleCloseAll(const ListValue* values);
   void HandleModelUpdated(const ListValue* values);
-  // This is a utility DOMUI message to print debug message.
+  // This is a utility WebUI message to print debug message.
   // Menu can't use dev tool as it lives outside of browser.
   // TODO(oshima): This is inconvenient and figure out how we can use
   // dev tools for menus (and other domui that does not belong to browser).
@@ -350,9 +350,9 @@ MenuHandler::MenuHandler() : loaded_(false) {
 MenuHandler::~MenuHandler() {
 }
 
-WebUIMessageHandler* MenuHandler::Attach(DOMUI* dom_ui) {
-  WebUIMessageHandler* handler = WebUIMessageHandler::Attach(dom_ui);
-  dom_ui->tab_contents()->set_delegate(this);
+WebUIMessageHandler* MenuHandler::Attach(WebUI* web_ui) {
+  WebUIMessageHandler* handler = WebUIMessageHandler::Attach(web_ui);
+  web_ui->tab_contents()->set_delegate(this);
   return handler;
 }
 
@@ -528,7 +528,7 @@ ui::MenuModel* MenuHandlerBase::GetMenuModel() {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-MenuUI::MenuUI(TabContents* contents) : DOMUI(contents) {
+MenuUI::MenuUI(TabContents* contents) : WebUI(contents) {
   MenuHandler* handler = new MenuHandler();
   AddMessageHandler((handler)->Attach(this));
 
@@ -537,7 +537,7 @@ MenuUI::MenuUI(TabContents* contents) : DOMUI(contents) {
 }
 
 MenuUI::MenuUI(TabContents* contents, ChromeURLDataManager::DataSource* source)
-    : DOMUI(contents) {
+    : WebUI(contents) {
   MenuHandler* handler = new MenuHandler();
   AddMessageHandler((handler)->Attach(this));
 

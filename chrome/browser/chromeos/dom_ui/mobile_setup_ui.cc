@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -164,7 +164,7 @@ class MobileSetupHandler
   void Init(TabContents* contents);
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(DOMUI* dom_ui);
+  virtual WebUIMessageHandler* Attach(WebUI* web_ui);
   virtual void RegisterMessages();
 
   // NetworkLibrary::NetworkManagerObserver implementation.
@@ -222,7 +222,7 @@ class MobileSetupHandler
     DISALLOW_COPY_AND_ASSIGN(TaskProxy);
   };
 
-  // Handlers for JS DOMUI messages.
+  // Handlers for JS WebUI messages.
   void HandleSetTransactionStatus(const ListValue* args);
   void HandleStartActivation(const ListValue* args);
   void SetTransactionStatus(const std::string& status);
@@ -260,7 +260,7 @@ class MobileSetupHandler
   // Check the current cellular network for error conditions.
   bool GotActivationError(const chromeos::CellularNetwork* network,
                           std::string* error);
-  // Sends status updates to DOMUI page.
+  // Sends status updates to WebUI page.
   void UpdatePage(chromeos::CellularNetwork* network,
                   const std::string& error_description);
   // Changes internal state.
@@ -464,8 +464,8 @@ MobileSetupHandler::~MobileSetupHandler() {
   ReEnableOtherConnections();
 }
 
-WebUIMessageHandler* MobileSetupHandler::Attach(DOMUI* dom_ui) {
-  return WebUIMessageHandler::Attach(dom_ui);
+WebUIMessageHandler* MobileSetupHandler::Attach(WebUI* web_ui) {
+  return WebUIMessageHandler::Attach(web_ui);
 }
 
 void MobileSetupHandler::Init(TabContents* contents) {
@@ -1313,7 +1313,7 @@ void MobileSetupHandler::LoadCellularConfig() {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-MobileSetupUI::MobileSetupUI(TabContents* contents) : DOMUI(contents) {
+MobileSetupUI::MobileSetupUI(TabContents* contents) : WebUI(contents) {
   const chromeos::CellularNetwork* network = GetCellularNetwork();
   std::string service_path = network ? network->service_path() : std::string();
   MobileSetupHandler* handler = new MobileSetupHandler(service_path);

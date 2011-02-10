@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -118,11 +118,11 @@ class RegisterPageHandler : public WebUIMessageHandler,
   void Init();
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(DOMUI* dom_ui);
+  virtual WebUIMessageHandler* Attach(WebUI* web_ui);
   virtual void RegisterMessages();
 
  private:
-  // Handlers for JS DOMUI messages.
+  // Handlers for JS WebUI messages.
   void HandleGetRegistrationUrl(const ListValue* args);
   void HandleGetUserInfo(const ListValue* args);
 
@@ -201,8 +201,8 @@ RegisterPageHandler::RegisterPageHandler() {
 RegisterPageHandler::~RegisterPageHandler() {
 }
 
-WebUIMessageHandler* RegisterPageHandler::Attach(DOMUI* dom_ui) {
-  return WebUIMessageHandler::Attach(dom_ui);
+WebUIMessageHandler* RegisterPageHandler::Attach(WebUI* web_ui) {
+  return WebUIMessageHandler::Attach(web_ui);
 }
 
 void RegisterPageHandler::Init() {
@@ -317,7 +317,7 @@ void RegisterPageHandler::SendUserInfo() {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-RegisterPageUI::RegisterPageUI(TabContents* contents) : DOMUI(contents){
+RegisterPageUI::RegisterPageUI(TabContents* contents) : WebUI(contents){
   RegisterPageHandler* handler = new RegisterPageHandler();
   AddMessageHandler((handler)->Attach(this));
   handler->Init();

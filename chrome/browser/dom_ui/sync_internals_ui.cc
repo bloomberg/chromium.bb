@@ -22,7 +22,7 @@
 #include "chrome/common/render_messages_params.h"
 
 SyncInternalsUI::SyncInternalsUI(TabContents* contents)
-    : DOMUI(contents) {
+    : WebUI(contents) {
   browser_sync::JsFrontend* backend = GetJsFrontend();
   if (backend) {
     backend->AddHandler(this);

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,7 +61,7 @@ class GpuHTMLSource : public ChromeURLDataManager::DataSource {
 };
 
 // This class receives javascript messages from the renderer.
-// Note that the DOMUI infrastructure runs on the UI thread, therefore all of
+// Note that the WebUI infrastructure runs on the UI thread, therefore all of
 // this class's methods are expected to run on the UI thread.
 class GpuMessageHandler
     : public WebUIMessageHandler,
@@ -71,7 +71,7 @@ class GpuMessageHandler
   virtual ~GpuMessageHandler();
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(DOMUI* dom_ui);
+  virtual WebUIMessageHandler* Attach(WebUI* web_ui);
   virtual void RegisterMessages();
 
   // Mesages
@@ -139,9 +139,9 @@ GpuMessageHandler::GpuMessageHandler() {
 
 GpuMessageHandler::~GpuMessageHandler() {}
 
-WebUIMessageHandler* GpuMessageHandler::Attach(DOMUI* dom_ui) {
+WebUIMessageHandler* GpuMessageHandler::Attach(WebUI* web_ui) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  WebUIMessageHandler* result = WebUIMessageHandler::Attach(dom_ui);
+  WebUIMessageHandler* result = WebUIMessageHandler::Attach(web_ui);
   return result;
 }
 
@@ -361,7 +361,7 @@ Value* GpuMessageHandler::OnRequestLogMessages(const ListValue*) {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-GpuInternalsUI::GpuInternalsUI(TabContents* contents) : DOMUI(contents) {
+GpuInternalsUI::GpuInternalsUI(TabContents* contents) : WebUI(contents) {
   AddMessageHandler((new GpuMessageHandler())->Attach(this));
 
   GpuHTMLSource* html_source = new GpuHTMLSource();

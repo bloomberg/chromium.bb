@@ -15,18 +15,18 @@
 static base::LazyInstance<PropertyAccessor<HtmlDialogUIDelegate*> >
     g_html_dialog_ui_property_accessor(base::LINKER_INITIALIZED);
 
-HtmlDialogUI::HtmlDialogUI(TabContents* tab_contents) : DOMUI(tab_contents) {
+HtmlDialogUI::HtmlDialogUI(TabContents* tab_contents) : WebUI(tab_contents) {
 }
 
 HtmlDialogUI::~HtmlDialogUI() {
   // Don't unregister our property. During the teardown of the TabContents,
   // this will be deleted, but the TabContents will already be destroyed.
   //
-  // This object is owned indirectly by the TabContents. DOMUIs can change, so
-  // it's scary if this DOMUI is changed out and replaced with something else,
+  // This object is owned indirectly by the TabContents. WebUIs can change, so
+  // it's scary if this WebUI is changed out and replaced with something else,
   // since the property will still point to the old delegate. But the delegate
   // is itself the owner of the TabContents for a dialog so will be in scope,
-  // and the HTML dialogs won't swap DOMUIs anyway since they don't navigate.
+  // and the HTML dialogs won't swap WebUIs anyway since they don't navigate.
 }
 
 // static

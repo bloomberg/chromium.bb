@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,7 @@
 // KeyboardUI
 
 KeyboardUI::KeyboardUI(TabContents* contents)
-    : DOMUI(contents) {
+    : WebUI(contents) {
   KeyboardHTMLSource* html_source = new KeyboardHTMLSource();
   contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
 }

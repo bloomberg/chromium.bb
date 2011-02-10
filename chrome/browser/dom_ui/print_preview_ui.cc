@@ -12,7 +12,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 
 PrintPreviewUI::PrintPreviewUI(TabContents* contents)
-    : DOMUI(contents),
+    : WebUI(contents),
       html_source_(new PrintPreviewUIHTMLSource()) {
   // PrintPreviewUI owns |handler|.
   PrintPreviewHandler* handler = new PrintPreviewHandler();

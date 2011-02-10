@@ -102,7 +102,7 @@ class MediaplayerHandler : public WebUIMessageHandler,
   void Init(bool is_playlist, TabContents* contents);
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(DOMUI* dom_ui);
+  virtual WebUIMessageHandler* Attach(WebUI* web_ui);
   virtual void RegisterMessages();
 
   // Callback for the "currentOffsetChanged" message.
@@ -207,13 +207,13 @@ MediaplayerHandler::MediaplayerHandler(bool is_playlist)
 MediaplayerHandler::~MediaplayerHandler() {
 }
 
-WebUIMessageHandler* MediaplayerHandler::Attach(DOMUI* dom_ui) {
+WebUIMessageHandler* MediaplayerHandler::Attach(WebUI* web_ui) {
   // Create our favicon data source.
-  Profile* profile = dom_ui->GetProfile();
+  Profile* profile = web_ui->GetProfile();
   profile->GetChromeURLDataManager()->AddDataSource(
       new WebUIFavIconSource(profile));
 
-  return WebUIMessageHandler::Attach(dom_ui);
+  return WebUIMessageHandler::Attach(web_ui);
 }
 
 void MediaplayerHandler::Init(bool is_playlist, TabContents* contents) {
@@ -594,7 +594,7 @@ MediaPlayer::MediaPlayer()
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-MediaplayerUI::MediaplayerUI(TabContents* contents) : DOMUI(contents) {
+MediaplayerUI::MediaplayerUI(TabContents* contents) : WebUI(contents) {
   const GURL& url = contents->GetURL();
   bool is_playlist = (url.ref() == "playlist");
   MediaplayerHandler* handler = new MediaplayerHandler(is_playlist);

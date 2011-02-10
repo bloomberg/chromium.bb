@@ -137,7 +137,7 @@ class PluginsDOMHandler : public WebUIMessageHandler,
   virtual ~PluginsDOMHandler() {}
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(DOMUI* dom_ui);
+  virtual WebUIMessageHandler* Attach(WebUI* web_ui);
   virtual void RegisterMessages();
 
   // Callback for the "requestPluginsData" message.
@@ -199,12 +199,12 @@ PluginsDOMHandler::PluginsDOMHandler()
                  NotificationService::AllSources());
 }
 
-WebUIMessageHandler* PluginsDOMHandler::Attach(DOMUI* dom_ui) {
-  PrefService* prefs = dom_ui->GetProfile()->GetPrefs();
+WebUIMessageHandler* PluginsDOMHandler::Attach(WebUI* web_ui) {
+  PrefService* prefs = web_ui->GetProfile()->GetPrefs();
 
   show_details_.Init(prefs::kPluginsShowDetails, prefs, this);
 
-  return WebUIMessageHandler::Attach(dom_ui);
+  return WebUIMessageHandler::Attach(web_ui);
 }
 
 void PluginsDOMHandler::RegisterMessages() {
@@ -343,7 +343,7 @@ void PluginsDOMHandler::PluginsLoaded(ListWrapper* wrapper) {
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-PluginsUI::PluginsUI(TabContents* contents) : DOMUI(contents) {
+PluginsUI::PluginsUI(TabContents* contents) : WebUI(contents) {
   AddMessageHandler((new PluginsDOMHandler())->Attach(this));
 
   PluginsUIHTMLSource* html_source = new PluginsUIHTMLSource();

@@ -123,7 +123,7 @@ const char ExtensionWebUI::kExtensionURLOverrides[] =
     "extensions.chrome_url_overrides";
 
 ExtensionWebUI::ExtensionWebUI(TabContents* tab_contents, const GURL& url)
-    : DOMUI(tab_contents),
+    : WebUI(tab_contents),
       url_(url) {
   ExtensionService* service = tab_contents->profile()->GetExtensionService();
   const Extension* extension = service->GetExtensionByURL(url);
@@ -135,7 +135,7 @@ ExtensionWebUI::ExtensionWebUI(TabContents* tab_contents, const GURL& url)
   should_hide_url_ = !extension->is_hosted_app();
 
   bindings_ = BindingsPolicy::EXTENSION;
-  // Bind externalHost to Extension DOMUI loaded in Chrome Frame.
+  // Bind externalHost to Extension WebUI loaded in Chrome Frame.
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
   if (browser_command_line.HasSwitch(switches::kChromeFrame))
     bindings_ |= BindingsPolicy::EXTERNAL_HOST;
@@ -209,7 +209,7 @@ gfx::NativeWindow ExtensionWebUI::GetCustomFrameNativeWindow() {
     return NULL;
 
   // If there was no browser associated with the function dispatcher delegate,
-  // then this DOMUI may be hosted in an ExternalTabContainer, and a framing
+  // then this WebUI may be hosted in an ExternalTabContainer, and a framing
   // window will be accessible through the tab_contents.
   TabContentsDelegate* tab_contents_delegate = tab_contents()->delegate();
   if (tab_contents_delegate)

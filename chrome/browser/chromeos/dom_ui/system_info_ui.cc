@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -68,7 +68,7 @@ class SystemInfoHandler : public WebUIMessageHandler,
   virtual ~SystemInfoHandler();
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(DOMUI* dom_ui);
+  virtual WebUIMessageHandler* Attach(WebUI* web_ui);
   virtual void RegisterMessages();
 
  private:
@@ -160,9 +160,9 @@ SystemInfoHandler::SystemInfoHandler() {
 SystemInfoHandler::~SystemInfoHandler() {
 }
 
-WebUIMessageHandler* SystemInfoHandler::Attach(DOMUI* dom_ui) {
+WebUIMessageHandler* SystemInfoHandler::Attach(WebUI* web_ui) {
   // TODO(stevenjb): customize handler attach if needed...
-  return WebUIMessageHandler::Attach(dom_ui);
+  return WebUIMessageHandler::Attach(web_ui);
 }
 
 void SystemInfoHandler::RegisterMessages() {
@@ -175,7 +175,7 @@ void SystemInfoHandler::RegisterMessages() {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-SystemInfoUI::SystemInfoUI(TabContents* contents) : DOMUI(contents) {
+SystemInfoUI::SystemInfoUI(TabContents* contents) : WebUI(contents) {
   SystemInfoHandler* handler = new SystemInfoHandler();
   AddMessageHandler((handler)->Attach(this));
   SystemInfoUIHTMLSource* html_source = new SystemInfoUIHTMLSource();

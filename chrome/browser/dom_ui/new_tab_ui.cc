@@ -284,7 +284,7 @@ void NewTabPageClosePromoHandler::HandleClosePromo(
 // NewTabUI
 
 NewTabUI::NewTabUI(TabContents* contents)
-    : DOMUI(contents) {
+    : WebUI(contents) {
   // Override some options on the Web UI.
   hide_favicon_ = true;
   force_bookmark_bar_visible_ = true;

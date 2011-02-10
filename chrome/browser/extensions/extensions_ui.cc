@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -948,7 +948,7 @@ ExtensionsDOMHandler::~ExtensionsDOMHandler() {
 
 // ExtensionsDOMHandler, public: -----------------------------------------------
 
-ExtensionsUI::ExtensionsUI(TabContents* contents) : DOMUI(contents) {
+ExtensionsUI::ExtensionsUI(TabContents* contents) : WebUI(contents) {
   ExtensionService *exstension_service =
       GetProfile()->GetOriginalProfile()->GetExtensionService();
 
