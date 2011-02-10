@@ -558,7 +558,8 @@ class SvnAffectedFile(AffectedFile):
     return self._is_text_file
 
   def GenerateScmDiff(self):
-    return scm.SVN.GenerateDiff(self.AbsoluteLocalPath())
+    return scm.SVN.GenerateDiff([self.AbsoluteLocalPath()])
+
 
 class GitAffectedFile(AffectedFile):
   """Representation of a file in a change out of a git checkout."""
