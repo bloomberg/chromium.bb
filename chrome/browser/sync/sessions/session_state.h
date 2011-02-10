@@ -23,6 +23,8 @@
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 
+class DictionaryValue;
+
 namespace syncable {
 class DirectoryManager;
 }
@@ -48,6 +50,9 @@ TypePayloadMap MakeTypePayloadMapFromRoutingInfo(
     const ModelSafeRoutingInfo& routes,
     const std::string& payload);
 
+// Caller takes ownership of the returned dictionary.
+DictionaryValue* TypePayloadMapToValue(const TypePayloadMap& type_payloads);
+
 // Coalesce |update| into |original|, overwriting only when |update| has
 // a non-empty payload.
 void CoalescePayloads(TypePayloadMap* original, const TypePayloadMap& update);
@@ -62,6 +67,9 @@ struct SyncSourceInfo {
       const TypePayloadMap& t);
   ~SyncSourceInfo();
 
+  // Caller takes ownership of the returned dictionary.
+  DictionaryValue* ToValue() const;
+
   sync_pb::GetUpdatesCallerInfo::GetUpdatesSource updates_source;
   TypePayloadMap types;
 };
@@ -69,6 +77,9 @@ struct SyncSourceInfo {
 // Data pertaining to the status of an active Syncer object.
 struct SyncerStatus {
   SyncerStatus();
+
+  // Caller takes ownership of the returned dictionary.
+  DictionaryValue* ToValue() const;
 
   // True when we get such an INVALID_STORE error from the server.
   bool invalid_store;
@@ -87,6 +98,10 @@ struct SyncerStatus {
 // Counters for various errors that can occur repeatedly during a sync session.
 struct ErrorCounters {
   ErrorCounters();
+
+  // Caller takes ownership of the returned dictionary.
+  DictionaryValue* ToValue() const;
+
   int num_conflicting_commits;
 
   // Number of commits hitting transient errors since the last successful
@@ -99,6 +114,11 @@ struct ErrorCounters {
   int consecutive_errors;
 };
 
+// Caller takes ownership of the returned dictionary.
+DictionaryValue* DownloadProgressMarkersToValue(
+    const std::string
+        (&download_progress_markers)[syncable::MODEL_TYPE_COUNT]);
+
 // An immutable snapshot of state from a SyncSession.  Convenient to use as
 // part of notifications as it is inherently thread-safe.
 struct SyncSessionSnapshot {
@@ -108,7 +128,8 @@ struct SyncSessionSnapshot {
       int64 num_server_changes_remaining,
       bool is_share_usable,
       const syncable::ModelTypeBitSet& initial_sync_ended,
-      std::string download_progress_markers[syncable::MODEL_TYPE_COUNT],
+      const std::string
+          (&download_progress_markers)[syncable::MODEL_TYPE_COUNT],
       bool more_to_sync,
       bool is_silenced,
       int64 unsynced_count,
@@ -116,6 +137,9 @@ struct SyncSessionSnapshot {
       bool did_commit_items,
       const SyncSourceInfo& source);
   ~SyncSessionSnapshot();
+
+  // Caller takes ownership of the returned dictionary.
+  DictionaryValue* ToValue() const;
 
   const SyncerStatus syncer_status;
   const ErrorCounters errors;

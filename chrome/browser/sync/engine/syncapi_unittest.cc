@@ -25,6 +25,7 @@
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/test/sync/engine/test_directory_setter_upper.h"
+#include "chrome/test/values_test_util.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,11 +35,41 @@ using browser_sync::KeyParams;
 using browser_sync::JsArgList;
 using browser_sync::MockJsEventHandler;
 using browser_sync::MockJsEventRouter;
+using test::ExpectDictionaryValue;
+using test::ExpectStringValue;
 using testing::_;
+using testing::Invoke;
 using testing::SaveArg;
 using testing::StrictMock;
 
 namespace sync_api {
+
+namespace {
+
+void ExpectInt64Value(int64 expected_value,
+                      const DictionaryValue& value, const std::string& key) {
+  std::string int64_str;
+  EXPECT_TRUE(value.GetString(key, &int64_str));
+  int64 val = 0;
+  EXPECT_TRUE(base::StringToInt64(int64_str, &val));
+  EXPECT_EQ(expected_value, val);
+}
+
+// Makes a non-folder child of the root node.  Returns the id of the
+// newly-created node.
+int64 MakeNode(UserShare* share,
+               syncable::ModelType model_type,
+               const std::string& client_tag) {
+  WriteTransaction trans(share);
+  ReadNode root_node(&trans);
+  root_node.InitByRootLookup();
+  WriteNode node(&trans);
+  EXPECT_TRUE(node.InitUniqueByCreation(model_type, root_node, client_tag));
+  node.SetIsFolder(false);
+  return node.GetId();
+}
+
+}  // namespace
 
 class SyncApiTest : public testing::Test {
  public:
@@ -79,16 +110,14 @@ TEST_F(SyncApiTest, SanityCheckTest) {
 
 TEST_F(SyncApiTest, BasicTagWrite) {
   {
-    WriteTransaction trans(&share_);
+    ReadTransaction trans(&share_);
     ReadNode root_node(&trans);
     root_node.InitByRootLookup();
     EXPECT_EQ(root_node.GetFirstChildId(), 0);
-
-    WriteNode wnode(&trans);
-    EXPECT_TRUE(wnode.InitUniqueByCreation(syncable::BOOKMARKS,
-        root_node, "testtag"));
-    wnode.SetIsFolder(false);
   }
+
+  ignore_result(MakeNode(&share_, syncable::BOOKMARKS, "testtag"));
+
   {
     ReadTransaction trans(&share_);
     ReadNode node(&trans);
@@ -124,22 +153,12 @@ TEST_F(SyncApiTest, ModelTypesSiloed) {
     ReadNode root_node(&trans);
     root_node.InitByRootLookup();
     EXPECT_EQ(root_node.GetFirstChildId(), 0);
-
-    WriteNode bookmarknode(&trans);
-    EXPECT_TRUE(bookmarknode.InitUniqueByCreation(syncable::BOOKMARKS,
-        root_node, "collideme"));
-    bookmarknode.SetIsFolder(false);
-
-    WriteNode prefnode(&trans);
-    EXPECT_TRUE(prefnode.InitUniqueByCreation(syncable::PREFERENCES,
-        root_node, "collideme"));
-    prefnode.SetIsFolder(false);
-
-    WriteNode autofillnode(&trans);
-    EXPECT_TRUE(autofillnode.InitUniqueByCreation(syncable::AUTOFILL,
-        root_node, "collideme"));
-    autofillnode.SetIsFolder(false);
   }
+
+  ignore_result(MakeNode(&share_, syncable::BOOKMARKS, "collideme"));
+  ignore_result(MakeNode(&share_, syncable::PREFERENCES, "collideme"));
+  ignore_result(MakeNode(&share_, syncable::AUTOFILL, "collideme"));
+
   {
     ReadTransaction trans(&share_);
 
@@ -286,29 +305,16 @@ TEST_F(SyncApiTest, WriteAndReadPassword) {
 
 namespace {
 
-int64 GetInt64Value(const DictionaryValue& value, const std::string& key) {
-  std::string str;
-  EXPECT_TRUE(value.GetString(key, &str));
-  int64 val = 0;
-  EXPECT_TRUE(base::StringToInt64(str, &val));
-  return val;
-}
-
 void CheckNodeValue(const BaseNode& node, const DictionaryValue& value) {
-  EXPECT_EQ(node.GetId(), GetInt64Value(value, "id"));
-  EXPECT_EQ(node.GetModificationTime(),
-            GetInt64Value(value, "modificationTime"));
-  EXPECT_EQ(node.GetParentId(), GetInt64Value(value, "parentId"));
+  ExpectInt64Value(node.GetId(), value, "id");
+  ExpectInt64Value(node.GetModificationTime(), value, "modificationTime");
+  ExpectInt64Value(node.GetParentId(), value, "parentId");
   {
     bool is_folder = false;
     EXPECT_TRUE(value.GetBoolean("isFolder", &is_folder));
     EXPECT_EQ(node.GetIsFolder(), is_folder);
   }
-  {
-    std::string title;
-    EXPECT_TRUE(value.GetString("title", &title));
-    EXPECT_EQ(node.GetTitle(), UTF8ToWide(title));
-  }
+  ExpectStringValue(WideToUTF8(node.GetTitle()), value, "title");
   {
     syncable::ModelType expected_model_type = node.GetModelType();
     std::string type_str;
@@ -333,10 +339,10 @@ void CheckNodeValue(const BaseNode& node, const DictionaryValue& value) {
     EXPECT_TRUE(value.Get("specifics", &specifics));
     EXPECT_TRUE(Value::Equals(specifics, expected_specifics.get()));
   }
-  EXPECT_EQ(node.GetExternalId(), GetInt64Value(value, "externalId"));
-  EXPECT_EQ(node.GetPredecessorId(), GetInt64Value(value, "predecessorId"));
-  EXPECT_EQ(node.GetSuccessorId(), GetInt64Value(value, "successorId"));
-  EXPECT_EQ(node.GetFirstChildId(), GetInt64Value(value, "firstChildId"));
+  ExpectInt64Value(node.GetExternalId(), value, "externalId");
+  ExpectInt64Value(node.GetPredecessorId(), value, "predecessorId");
+  ExpectInt64Value(node.GetSuccessorId(), value, "successorId");
+  ExpectInt64Value(node.GetFirstChildId(), value, "firstChildId");
   EXPECT_EQ(11u, value.size());
 }
 
@@ -351,6 +357,139 @@ TEST_F(SyncApiTest, BaseNodeToValue) {
     CheckNodeValue(node, *value);
   } else {
     ADD_FAILURE();
+  }
+}
+
+namespace {
+
+void ExpectChangeRecordActionValue(SyncManager::ChangeRecord::Action
+                                       expected_value,
+                                   const DictionaryValue& value,
+                                   const std::string& key) {
+  std::string str_value;
+  EXPECT_TRUE(value.GetString(key, &str_value));
+  switch (expected_value) {
+    case SyncManager::ChangeRecord::ACTION_ADD:
+      EXPECT_EQ("Add", str_value);
+      break;
+    case SyncManager::ChangeRecord::ACTION_UPDATE:
+      EXPECT_EQ("Update", str_value);
+      break;
+    case SyncManager::ChangeRecord::ACTION_DELETE:
+      EXPECT_EQ("Delete", str_value);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+}
+
+void CheckNonDeleteChangeRecordValue(const SyncManager::ChangeRecord& record,
+                                     const DictionaryValue& value,
+                                     BaseTransaction* trans) {
+  EXPECT_NE(SyncManager::ChangeRecord::ACTION_DELETE, record.action);
+  ExpectChangeRecordActionValue(record.action, value, "action");
+  {
+    ReadNode node(trans);
+    EXPECT_TRUE(node.InitByIdLookup(record.id));
+    scoped_ptr<DictionaryValue> expected_node_value(node.ToValue());
+    ExpectDictionaryValue(*expected_node_value, value, "node");
+  }
+}
+
+void CheckDeleteChangeRecordValue(const SyncManager::ChangeRecord& record,
+                                  const DictionaryValue& value) {
+  EXPECT_EQ(SyncManager::ChangeRecord::ACTION_DELETE, record.action);
+  ExpectChangeRecordActionValue(record.action, value, "action");
+  DictionaryValue* node_value = NULL;
+  EXPECT_TRUE(value.GetDictionary("node", &node_value));
+  if (node_value) {
+    ExpectInt64Value(record.id, *node_value, "id");
+    scoped_ptr<DictionaryValue> expected_specifics_value(
+        browser_sync::EntitySpecificsToValue(record.specifics));
+    ExpectDictionaryValue(*expected_specifics_value,
+                          *node_value, "specifics");
+    scoped_ptr<DictionaryValue> expected_extra_value;
+    if (record.extra.get()) {
+      expected_extra_value.reset(record.extra->ToValue());
+    }
+    Value* extra_value = NULL;
+    EXPECT_EQ(record.extra.get() != NULL,
+              node_value->Get("extra", &extra_value));
+    EXPECT_TRUE(Value::Equals(extra_value, expected_extra_value.get()));
+  }
+}
+
+class MockExtraChangeRecordData : public SyncManager::ExtraChangeRecordData {
+ public:
+  MOCK_CONST_METHOD0(ToValue, DictionaryValue*());
+};
+
+}  // namespace
+
+TEST_F(SyncApiTest, ChangeRecordToValue) {
+  int64 child_id = MakeNode(&share_, syncable::BOOKMARKS, "testtag");
+  sync_pb::EntitySpecifics child_specifics;
+  {
+    ReadTransaction trans(&share_);
+    ReadNode node(&trans);
+    EXPECT_TRUE(node.InitByIdLookup(child_id));
+    child_specifics = node.GetEntry()->Get(syncable::SPECIFICS);
+  }
+
+  // Add
+  {
+    ReadTransaction trans(&share_);
+    SyncManager::ChangeRecord record;
+    record.action = SyncManager::ChangeRecord::ACTION_ADD;
+    record.id = 1;
+    record.specifics = child_specifics;
+    record.extra.reset(new StrictMock<MockExtraChangeRecordData>());
+    scoped_ptr<DictionaryValue> value(record.ToValue(&trans));
+    CheckNonDeleteChangeRecordValue(record, *value, &trans);
+  }
+
+  // Update
+  {
+    ReadTransaction trans(&share_);
+    SyncManager::ChangeRecord record;
+    record.action = SyncManager::ChangeRecord::ACTION_UPDATE;
+    record.id = child_id;
+    record.specifics = child_specifics;
+    record.extra.reset(new StrictMock<MockExtraChangeRecordData>());
+    scoped_ptr<DictionaryValue> value(record.ToValue(&trans));
+    CheckNonDeleteChangeRecordValue(record, *value, &trans);
+  }
+
+  // Delete (no extra)
+  {
+    ReadTransaction trans(&share_);
+    SyncManager::ChangeRecord record;
+    record.action = SyncManager::ChangeRecord::ACTION_DELETE;
+    record.id = child_id + 1;
+    record.specifics = child_specifics;
+    scoped_ptr<DictionaryValue> value(record.ToValue(&trans));
+    CheckDeleteChangeRecordValue(record, *value);
+  }
+
+  // Delete (with extra)
+  {
+    ReadTransaction trans(&share_);
+    SyncManager::ChangeRecord record;
+    record.action = SyncManager::ChangeRecord::ACTION_DELETE;
+    record.id = child_id + 1;
+    record.specifics = child_specifics;
+
+    DictionaryValue extra_value;
+    extra_value.SetString("foo", "bar");
+    scoped_ptr<StrictMock<MockExtraChangeRecordData> > extra(
+        new StrictMock<MockExtraChangeRecordData>());
+    EXPECT_CALL(*extra, ToValue()).Times(2).WillRepeatedly(
+        Invoke(&extra_value, &DictionaryValue::DeepCopy));
+
+    record.extra.reset(extra.release());
+    scoped_ptr<DictionaryValue> value(record.ToValue(&trans));
+    CheckDeleteChangeRecordValue(record, *value);
   }
 }
 
@@ -506,19 +645,8 @@ void CheckGetNodeByIdReturnArgs(const SyncManager& sync_manager,
 }
 
 TEST_F(SyncManagerTest, ProcessMessageGetNodeById) {
-  int64 child_id = kInvalidId;
-  {
-    WriteTransaction trans(sync_manager_.GetUserShare());
-
-    ReadNode root_node(&trans);
-    root_node.InitByRootLookup();
-
-    WriteNode node(&trans);
-    EXPECT_TRUE(node.InitUniqueByCreation(syncable::BOOKMARKS,
-                                          root_node, "testtag"));
-    node.SetIsFolder(false);
-    child_id = node.GetId();
-  }
+  int64 child_id =
+      MakeNode(sync_manager_.GetUserShare(), syncable::BOOKMARKS, "testtag");
 
   browser_sync::JsBackend* js_backend = sync_manager_.GetJsBackend();
 

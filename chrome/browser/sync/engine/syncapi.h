@@ -592,8 +592,10 @@ class SyncManager {
   // wrapper / add a templated method to return unencrypted protobufs.
   class ExtraChangeRecordData {
    public:
-    ExtraChangeRecordData() {}
-    virtual ~ExtraChangeRecordData() {}
+    virtual ~ExtraChangeRecordData();
+
+    // Transfers ownership of the DictionaryValue to the caller.
+    virtual DictionaryValue* ToValue() const = 0;
   };
 
   // ChangeRecord indicates a single item that changed as a result of a sync
@@ -607,7 +609,9 @@ class SyncManager {
       ACTION_UPDATE,
     };
     ChangeRecord();
-    ~ChangeRecord();
+
+    // Transfers ownership of the DictionaryValue to the caller.
+    DictionaryValue* ToValue(const BaseTransaction* trans) const;
 
     int64 id;
     Action action;
@@ -622,9 +626,12 @@ class SyncManager {
     explicit ExtraPasswordChangeRecordData(
         const sync_pb::PasswordSpecificsData& data);
     virtual ~ExtraPasswordChangeRecordData();
-    const sync_pb::PasswordSpecificsData& unencrypted() {
-      return unencrypted_;
-    }
+
+    // Transfers ownership of the DictionaryValue to the caller.
+    virtual DictionaryValue* ToValue() const;
+
+    const sync_pb::PasswordSpecificsData& unencrypted() const;
+
    private:
     sync_pb::PasswordSpecificsData unencrypted_;
   };
