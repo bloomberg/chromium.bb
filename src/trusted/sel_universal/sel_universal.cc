@@ -38,7 +38,7 @@ using nacl::DescWrapper;
 static const char* kUsage =
   "Usage:\n"
   "\n"
-  "sel_universal [-f nacl_file] [sel_ldr_arg*] [-- [nacl_file] module_arg*]\n"
+  "sel_universal <sel_ldr_arg>* [-- <nexe> <nexe_arg>*]\n"
   "\n"
   "Exactly one nacl_file argument is required.\n"
   "After startup the user is prompted for interactive commands.\n"
@@ -71,10 +71,7 @@ static nacl::string ProcessArguments(int argc,
   for (int i = 1; i < argc; i++) {
     const string flag(argv[i]);
     // Check if the argument has the form -f nacl_file
-    if (flag == "-f" && i + 1 < argc) {
-      app_name = argv[i + 1];
-      ++i;
-    } else if (flag == "--help") {
+    if (flag == "--help") {
       printf("%s", kUsage);
       exit(0);
     } else if (flag == "--debug") {

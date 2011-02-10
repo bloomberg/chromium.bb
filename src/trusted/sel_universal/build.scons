@@ -16,13 +16,13 @@ if env.Bit('linux') and env.Bit('target_x86'):
 
 extra_srcs = []
 if env.Bit('linux'):
-  extra_srcs.append('rpc_universal_sysv.cc')
+  extra_srcs.append('rpc_universal_linux.cc')
 
 # NOTE: we need Cocoa because of the GetPluginDir() implementation
 #       on mac (nonnacl_util_c)
 
 env.ComponentProgram('sel_universal',
-                    ['sel_universal_new.cc',
+                    ['sel_universal.cc',
                      'rpc_universal.cc',
                      'pepper_handler.cc',
                      'replay_handler.cc',

@@ -33,7 +33,7 @@
     '../../../build/common.gypi',
   ],
   'variables': {
-      'src_files': ['sel_universal_new.cc',
+      'src_files': ['sel_universal.cc',
                     'rpc_universal.cc',
                     'replay_handler.cc',
                     'pepper_handler.cc',
@@ -60,7 +60,7 @@
               '-ldl',
             ],
           },
-          'sources': ['rpc_universal_sysv.cc'],
+          'sources': ['rpc_universal_linux.cc'],
         }],
       ],
     },
