@@ -349,7 +349,11 @@ PluginsUI::PluginsUI(TabContents* contents) : DOMUI(contents) {
   PluginsUIHTMLSource* html_source = new PluginsUIHTMLSource();
 
   // Set up the chrome://plugins/ source.
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableMethod(ChromeURLDataManager::GetInstance(),
+                        &ChromeURLDataManager::AddDataSource,
+                        make_scoped_refptr(html_source)));
 }
 
 

@@ -160,6 +160,9 @@ const char *kAllAboutPaths[] = {
 #endif
   };
 
+// Points to the singleton AboutSource object, if any.
+ChromeURLDataManager::DataSource* about_source = NULL;
+
 // When you type about:memory, it actually loads an intermediate URL that
 // redirects you to the final page. This avoids the problem where typing
 // "about:memory" on the new tab page or any other page where a process
@@ -689,9 +692,21 @@ std::string VersionNumberToString(uint32 value) {
 
 AboutSource::AboutSource()
     : DataSource(chrome::kAboutScheme, MessageLoop::current()) {
+  // This should be a singleton.
+  DCHECK(!about_source);
+  about_source = this;
+
+  // Add us to the global URL handler on the IO thread.
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          ChromeURLDataManager::GetInstance(),
+          &ChromeURLDataManager::AddDataSource,
+          make_scoped_refptr(this)));
 }
 
 AboutSource::~AboutSource() {
+  about_source = NULL;
 }
 
 void AboutSource::StartDataRequest(const std::string& path_raw,
@@ -1039,7 +1054,7 @@ bool WillHandleBrowserAboutURL(GURL* url, Profile* profile) {
     return false;
 
   // Anything else requires our special handler; make sure it's initialized.
-  InitializeAboutDataSource(profile);
+  InitializeAboutDataSource();
 
   // Special case about:memory to go through a redirect before ending up on
   // the final page. See GetAboutMemoryRedirectResponse above for why.
@@ -1057,8 +1072,14 @@ bool WillHandleBrowserAboutURL(GURL* url, Profile* profile) {
   return true;
 }
 
-void InitializeAboutDataSource(Profile* profile) {
-  profile->GetChromeURLDataManager()->AddDataSource(new AboutSource());
+void InitializeAboutDataSource() {
+  // We only need to register the AboutSource once and it is kept globally.
+  // There is currently no way to remove a data source.
+  static bool initialized = false;
+  if (!initialized) {
+    about_source = new AboutSource();
+    initialized = true;
+  }
 }
 
 // This function gets called with the fixed-up chrome: URLs, so we have to

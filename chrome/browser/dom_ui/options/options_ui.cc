@@ -207,15 +207,25 @@ OptionsUI::OptionsUI(TabContents* contents)
       new OptionsUIHTMLSource(localized_strings);
 
   // Set up the chrome://settings/ source.
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          ChromeURLDataManager::GetInstance(),
+          &ChromeURLDataManager::AddDataSource,
+          make_scoped_refptr(html_source)));
 
   // Set up the chrome://theme/ source.
-  WebUIThemeSource* theme = new WebUIThemeSource(contents->profile());
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(theme);
+  WebUIThemeSource* theme = new WebUIThemeSource(GetProfile());
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          ChromeURLDataManager::GetInstance(),
+          &ChromeURLDataManager::AddDataSource,
+          make_scoped_refptr(theme)));
 
   // Initialize the chrome://about/ source in case the user clicks the credits
   // link.
-  InitializeAboutDataSource(contents->profile());
+  InitializeAboutDataSource();
 }
 
 OptionsUI::~OptionsUI() {

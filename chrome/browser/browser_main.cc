@@ -36,7 +36,7 @@
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/dom_ui/chrome_url_data_manager_backend.h"
+#include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/extensions/extension_protocols.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extensions_startup.h"
@@ -1548,7 +1548,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   // Register our global network handler for chrome:// and
   // chrome-extension:// URLs.
-  ChromeURLDataManagerBackend::Register();
+  RegisterURLRequestChromeJob();
   RegisterExtensionProtocols();
   RegisterMetadataURLRequestHandler();
   RegisterBlobURLRequestJobFactory();

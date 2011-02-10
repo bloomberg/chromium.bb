@@ -50,7 +50,7 @@ class BrowserSignin;
 class BrowserThemeProvider;
 class ChromeAppCacheService;
 class ChromeBlobStorageContext;
-class ChromeURLDataManager;
+class ChromeURLRequestContextGetter;
 class CloudPrintProxyService;
 class DesktopNotificationService;
 class DownloadManager;
@@ -496,9 +496,6 @@ class Profile {
 
   // Gets the policy context associated with this profile.
   virtual policy::ProfilePolicyContext* GetPolicyContext() = 0;
-
-  // Returns the ChromeURLDataManager for this profile.
-  virtual ChromeURLDataManager* GetChromeURLDataManager() = 0;
 
 #if defined(OS_CHROMEOS)
   enum AppLocaleChangedVia {

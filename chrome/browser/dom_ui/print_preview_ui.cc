@@ -8,8 +8,6 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/dom_ui/print_preview_handler.h"
 #include "chrome/browser/dom_ui/print_preview_ui_html_source.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 
 PrintPreviewUI::PrintPreviewUI(TabContents* contents)
     : DOMUI(contents),
@@ -19,7 +17,12 @@ PrintPreviewUI::PrintPreviewUI(TabContents* contents)
   AddMessageHandler(handler->Attach(this));
 
   // Set up the chrome://print/ source.
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source_);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          ChromeURLDataManager::GetInstance(),
+          &ChromeURLDataManager::AddDataSource,
+          html_source_));
 }
 
 PrintPreviewUI::~PrintPreviewUI() {

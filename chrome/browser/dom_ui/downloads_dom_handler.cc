@@ -22,7 +22,6 @@
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/metrics/user_metrics.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
@@ -52,8 +51,12 @@ DownloadsDOMHandler::DownloadsDOMHandler(DownloadManager* dlm)
       download_manager_(dlm),
       callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   // Create our fileicon data source.
-  dlm->profile()->GetChromeURLDataManager()->AddDataSource(
-      new FileIconSource());
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          ChromeURLDataManager::GetInstance(),
+          &ChromeURLDataManager::AddDataSource,
+          make_scoped_refptr(new FileIconSource())));
 }
 
 DownloadsDOMHandler::~DownloadsDOMHandler() {

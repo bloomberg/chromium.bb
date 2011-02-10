@@ -273,7 +273,6 @@ class TestingProfile : public Profile {
   virtual ExtensionInfoMap* GetExtensionInfoMap();
   virtual PromoCounter* GetInstantPromoCounter();
   virtual policy::ProfilePolicyContext* GetPolicyContext();
-  virtual ChromeURLDataManager* GetChromeURLDataManager();
   virtual PrerenderManager* GetPrerenderManager();
   virtual PrefService* GetOffTheRecordPrefs();
 
@@ -382,8 +381,6 @@ class TestingProfile : public Profile {
 
   // We use a temporary directory to store testing profile data.
   ScopedTempDir temp_dir_;
-
-  scoped_ptr<ChromeURLDataManager> chrome_url_data_manager_;
 };
 
 // A profile that derives from another profile.  This does not actually

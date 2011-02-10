@@ -88,8 +88,11 @@ CloudPrintSetupFlow::CloudPrintSetupFlow(const std::string& args,
       delegate_(delegate) {
   // TODO(hclam): The data source should be added once.
   profile_ = profile;
-  profile->GetChromeURLDataManager()->AddDataSource(
-      new CloudPrintSetupSource());
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableMethod(ChromeURLDataManager::GetInstance(),
+                        &ChromeURLDataManager::AddDataSource,
+                        make_scoped_refptr(new CloudPrintSetupSource())));
 }
 
 CloudPrintSetupFlow::~CloudPrintSetupFlow() {

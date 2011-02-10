@@ -9,4 +9,6 @@
 ProfileSyncServiceMock::ProfileSyncServiceMock() {}
 
 ProfileSyncServiceMock::~ProfileSyncServiceMock() {
+  ChromeURLDataManager::GetInstance()->RemoveDataSourceForTest(
+      chrome::kChromeUISyncResourcesHost);
 }

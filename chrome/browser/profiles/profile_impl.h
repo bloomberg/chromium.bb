@@ -131,7 +131,6 @@ class ProfileImpl : public Profile,
   virtual PromoCounter* GetInstantPromoCounter();
   virtual BrowserSignin* GetBrowserSignin();
   virtual policy::ProfilePolicyContext* GetPolicyContext();
-  virtual ChromeURLDataManager* GetChromeURLDataManager();
 
 #if defined(OS_CHROMEOS)
   virtual void ChangeAppLocale(const std::string& locale, AppLocaleChangedVia);
@@ -306,8 +305,6 @@ class ProfileImpl : public Profile,
   scoped_refptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
 
   scoped_refptr<PrerenderManager> prerender_manager_;
-
-  scoped_ptr<ChromeURLDataManager> chrome_url_data_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileImpl);
 };

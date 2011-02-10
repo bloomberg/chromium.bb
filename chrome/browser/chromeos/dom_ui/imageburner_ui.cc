@@ -649,5 +649,10 @@ ImageBurnUI::ImageBurnUI(TabContents* contents) : DOMUI(contents) {
   ImageBurnHandler* handler = new ImageBurnHandler(contents);
   AddMessageHandler((handler)->Attach(this));
   ImageBurnUIHTMLSource* html_source = new ImageBurnUIHTMLSource();
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
+  BrowserThread::PostTask(
+       BrowserThread::IO, FROM_HERE,
+       NewRunnableMethod(
+           ChromeURLDataManager::GetInstance(),
+           &ChromeURLDataManager::AddDataSource,
+           make_scoped_refptr(html_source)));
 }

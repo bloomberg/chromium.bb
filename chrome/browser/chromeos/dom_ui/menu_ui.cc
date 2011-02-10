@@ -20,7 +20,6 @@
 #include "chrome/browser/chromeos/views/native_menu_webui.h"
 #include "chrome/browser/chromeos/views/webui_menu_widget.h"
 #include "chrome/browser/dom_ui/web_ui_util.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/common/url_constants.h"
@@ -532,8 +531,12 @@ MenuUI::MenuUI(TabContents* contents) : DOMUI(contents) {
   MenuHandler* handler = new MenuHandler();
   AddMessageHandler((handler)->Attach(this));
 
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(
-      CreateDataSource());
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          ChromeURLDataManager::GetInstance(),
+          &ChromeURLDataManager::AddDataSource,
+          make_scoped_refptr(CreateDataSource())));
 }
 
 MenuUI::MenuUI(TabContents* contents, ChromeURLDataManager::DataSource* source)
@@ -541,7 +544,12 @@ MenuUI::MenuUI(TabContents* contents, ChromeURLDataManager::DataSource* source)
   MenuHandler* handler = new MenuHandler();
   AddMessageHandler((handler)->Attach(this));
 
-  contents->profile()->GetChromeURLDataManager()->AddDataSource(source);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          ChromeURLDataManager::GetInstance(),
+          &ChromeURLDataManager::AddDataSource,
+          make_scoped_refptr(source)));
 }
 
 void MenuUI::ModelUpdated(const ui::MenuModel* model) {

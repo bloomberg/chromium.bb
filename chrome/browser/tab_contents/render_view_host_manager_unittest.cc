@@ -275,7 +275,6 @@ TEST_F(RenderViewHostManagerTest, DOMUI) {
 // still swap processes if ShouldSwapProcessesForNavigation is true.
 // Regression test for bug 46290.
 TEST_F(RenderViewHostManagerTest, NonDOMUIChromeURLs) {
-  BrowserThread thread(BrowserThread::UI, &message_loop_);
   SiteInstance* instance = SiteInstance::CreateSiteInstance(profile_.get());
   TestTabContents tab_contents(profile_.get(), instance);
   RenderViewHostManager manager(&tab_contents, &tab_contents);
