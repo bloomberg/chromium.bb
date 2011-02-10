@@ -43,17 +43,18 @@ import sys
 
 INITIAL_ENV = {
   # Internal settings
-  'EMIT_LL'     : '0',   # Produce an intermediate .ll file
+  'EMIT_LL'     : '1',   # Produce an intermediate .ll file
+                         # Currently enabled for debugging.
+                         # TODO(pdox): Disable for SDK version
   'USE_MC_ASM'  : '1',   # Use llvm-mc instead of nacl-as
   'MC_DIRECT'   : '1',   # Use MC direct object emission instead of
                          # producing an intermediate .s file
   'CLEANUP'     : '0',   # Clean up temporary files
-  'SANDBOXED_ARCH': '',  # Use sandboxed toolchain for this arch.
-                         # Current options are X8632 or X8664.
+                         # TODO(pdox): Enable for SDK version
+  'SANDBOXED'   : '0',   # Use sandboxed toolchain for this arch.
 
   # Command-line options
   'GCC_MODE'    : '',     # '' (default), '-E', '-c', or '-S'
-  'EMIT_LLVM'   : '0',    # -emit-llvm
   'PIC'         : '0',    # -fPIC
   'STATIC'      : '1',    # -static was given (on by default for now)
   'NOSTDINC'    : '0',    # -nostdinc
@@ -237,6 +238,7 @@ INITIAL_ENV = {
 ######################################################################
 DriverPatterns = [
   ( '--pnacl-driver-verbose',          "Log.LOG_OUT.append(sys.stderr)"),
+  ( '--pnacl-driver-save-temps',       "env.set('CLEANUP', '0')"),
   ( '--driver=(.+)',                   "env.set('LLVM_GCC', $0)"),
   ( '--pnacl-driver-set-([^=]+)=(.*)', "env.set($0, $1)"),
   ( ('-arch','(.+)'),                  "env.set('ARCH', FixArch($0))"),
@@ -246,11 +248,10 @@ DriverPatterns = [
   ( '--pnacl-gcc',                     "env.set('INCARNATION', 'gcc')"),
   ( '--pnacl-bcld',                    "env.set('INCARNATION', 'bcld')"),
   ( '--pnacl-translate',               "env.set('INCARNATION', 'translate')"),
-  ( '-emit-llvm',                      "env.set('EMIT_LLVM', '1')"),
-  ( '--emit-llvm',                     "env.set('EMIT_LLVM', '1')"),
-  ( '--pnacl-sb-arm',                  "env.set('SANDBOXED_ARCH', 'ARM')"),
-  ( '--pnacl-sb-x86-32',               "env.set('SANDBOXED_ARCH', 'X8632')"),
-  ( '--pnacl-sb-x86-64',               "env.set('SANDBOXED_ARCH', 'X8664')"),
+  ( '-emit-llvm',                      ""), # TODO(pdox): Since this is now
+  ( '--emit-llvm',                     ""), # the default, remove this flag
+                                            # from scons and spec2k.
+  ( '--pnacl-sb',                      "env.set('SANDBOXED', '1')"),
   ( '--dry-run',                       "env.set('DRY_RUN', '1')"),
  ]
 
@@ -328,8 +329,16 @@ CatchAllPattern = [
 
 def FixArch(arch):
   archfix = { 'x86-32': 'X8632',
+              'x86_32': 'X8632',
+              'i686'  : 'X8632',
+              'ia32'  : 'X8632',
+
+              'amd64' : 'X8664',
+              'x86_64': 'X8664',
               'x86-64': 'X8664',
-              'arm'   : 'ARM' }
+
+              'arm'   : 'ARM',
+              'armv7' : 'ARM' }
   if arch not in archfix:
     Log.Fatal('Unrecognized arch "%s"!', arch)
   return archfix[arch]
@@ -348,7 +357,8 @@ def PrepareFlags():
     env.clear('STDLIB_BC_SUFFIX')
 
   # Disable MC for ARM until we have it working
-  if env.has('ARCH') and env.get('ARCH') == 'ARM':
+  arch = GetArch()
+  if arch and arch == 'ARM':
     env.set('USE_MC_ASM', '0')
     env.set('MC_DIRECT', '0')
 
@@ -357,11 +367,11 @@ def PrepareFlags():
   else:
     env.set('LD_FLAGS', '${LD_FLAGS_SHARED}')
 
-  sbtc = env.get('SANDBOXED_ARCH')
-  if sbtc != '':
-    env.set('LLC', '${LLC_SB_%s}' % sbtc)
-    env.set('AS', '${AS_SB_%s}' % sbtc)
-    env.set('LD', '${LD_SB_%s}' % sbtc)
+  if env.getbool('SANDBOXED'):
+    arch = GetArch(required = True)
+    env.set('LLC', '${LLC_SB_%s}' % arch)
+    env.set('AS', '${AS_SB_%s}' % arch)
+    env.set('LD', '${LD_SB_%s}' % arch)
     env.set('LD_FLAGS', '${LD_SB_FLAGS}')
 
 
@@ -463,7 +473,7 @@ def main(argv):
 
   unmatched = env.get('UNMATCHED').strip()
   if len(unmatched) > 0:
-    Log.Fatal('Unmatched parameters: ' + unmatched)
+    Log.Fatal('Unrecognized parameters: ' + unmatched)
 
   PrepareFlags()
   PrepareChainMap()
@@ -484,10 +494,14 @@ def main(argv):
 
   return func()
 
-def GetArch():
-  if not env.has('ARCH'):
+def GetArch(required = False):
+  arch = None
+  if env.has('ARCH'):
+    arch = env.get('ARCH')
+
+  if required and not arch:
     Log.Fatal('Missing -arch!')
-  arch = env.get('ARCH')
+
   return arch
 
 def Incarnation_opt():
@@ -510,10 +524,7 @@ def Incarnation_opt():
 def Incarnation_gcc():
   inputs = shell.split(env.get('INPUTS'))
   output = env.get('OUTPUT')
-  emit_llvm = env.getbool('EMIT_LLVM')
-  arch = None
-  if not emit_llvm:
-    arch = GetArch()
+  arch = GetArch()
   gcc_mode = env.get('GCC_MODE')
   output_type_map = {
     ('-E', True) : 'pp',
@@ -524,7 +535,7 @@ def Incarnation_gcc():
     ('-S', False): 's',
     ('',   True) : 'pexe',
     ('',   False): 'nexe' }
-  output_type = output_type_map[(gcc_mode, emit_llvm)]
+  output_type = output_type_map[(gcc_mode, arch is None)]
   if output == '' and output_type in ('pexe', 'nexe'):
     output = 'a.out'
   elif output == '' and output_type == 'pp':
@@ -535,6 +546,9 @@ def Incarnation_gcc():
   Compile(arch, inputs, output, output_type)
   return 0
 
+def Incarnation_ld():
+  return Incarnation_bcld()
+
 def Incarnation_bcld():
   # TODO(pdox): Fix the optimization bug(s) that require this.
   # See: http://code.google.com/p/nativeclient/issues/detail?id=1225
@@ -542,13 +556,12 @@ def Incarnation_bcld():
 
   inputs = shell.split(env.get('INPUTS'))
   output = env.get('OUTPUT')
-  emit_llvm = env.getbool('EMIT_LLVM')
+  arch = GetArch()
+
   output_type = 'pexe'
-  if not emit_llvm:
+  if arch:
     output_type = 'nexe'
-  arch = None
-  if not emit_llvm:
-    arch = GetArch()
+
   for i in inputs:
     if FileType(i) not in ('bc','o','lib'):
       Log.Fatal('Expecting only bitcode files for bcld invocation')
@@ -563,8 +576,13 @@ def Incarnation_translate():
   inputs = shell.split(env.get('INPUTS'))
   output = env.get('OUTPUT')
   output_type = 'nexe'
-  arch = GetArch()
-  assert(len(inputs) == 1)
+  arch = GetArch(required=True)
+  if len(inputs) != 1:
+    Log.Fatal('Expecting one input file')
+
+  if FileType(inputs[0]) != 'bc':
+    Log.Fatal('Expecting input to be a bitcode file')
+
   if output == '':
     output = DefaultOutputName(inputs[0], output_type)
   Compile(arch, inputs, output, output_type)
@@ -581,15 +599,15 @@ def Incarnation_as_x86_64():
 def Incarnation_as():
   inputs = shell.split(env.get('INPUTS'))
   output = env.get('OUTPUT')
-  emit_llvm = env.getbool('EMIT_LLVM')
-  output_type = 'bc'
-  if not emit_llvm:
+  arch = GetArch()
+  if arch:
     output_type = 'o'
-  arch = None
-  if not emit_llvm:
-    arch = GetArch()
+  else:
+    output_type = 'bc'
 
-  assert(len(inputs) == 1)
+  if len(inputs) != 1:
+    Log.Fatal('Expecting one input file')
+
   if output == '':
     output = DefaultOutputName(inputs[0], output_type)
   Compile(arch, inputs, output, output_type)
@@ -624,7 +642,7 @@ def Incarnation_dis():
   if output == '':
     output = '-'
   if intype in ('o', 'nexe'):
-    arch = GetArch()
+    arch = GetArch(required = True)
     RunWithEnv('RUN_NATIVE_DIS', input=inputs[0], arch=arch)
   elif intype in ('pexe', 'bc'):
     RunWithEnv('RUN_LLVM_DIS', input=inputs[0], output=output)
@@ -700,6 +718,7 @@ def Compile(arch, inputs, output, output_type):
   if output_type not in ('nexe', 'pexe'):
     assert(len(inputs) == 1)
     CompileOne(arch, output_type, inputs[0], output)
+    ClearTemps()
     return 0
 
   # Compile all source files (c/c++/ll) to .bc
@@ -722,12 +741,14 @@ def Compile(arch, inputs, output, output_type):
 
   if output_type == 'nexe':
     LinkAll(arch, inputs, output)
+    ClearTemps()
+    return
   elif output_type == 'pexe':
     LinkBC(inputs, output)
-  else:
-    Log.Fatal('Unexpected case')
+    ClearTemps()
+    return
 
-  ClearTemps()
+  Log.Fatal('Unexpected output type')
 
 def LinkAll(arch, inputs, output):
   if not env.getbool('PRELINKED'):
@@ -779,9 +800,8 @@ def LinkBC(inputs, output = None):
   # we need to specify the native libraries to be used in the final linking,
   # just so the linker can resolve the symbols. We'd like to eliminate
   # this somehow.
-  if env.has('ARCH'):
-    arch = env.get('ARCH')
-  else:
+  arch = GetArch()
+  if not arch:
     arch = 'ARM'
   RunWithEnv('RUN_BCLD', arch = arch,
              inputs = shell.join(inputs),
@@ -1031,7 +1051,16 @@ def FileType(filename):
   if filename.startswith('-l'):
     return 'lib'
 
-  ext = filename.split('.')[-1]
+  # Auto-detect bitcode files, since we can't rely on extensions
+  try:
+    fp = open(filename, 'rb')
+  except Exception:
+    print "Failed to open input file " + filename
+    NiceExit(1)
+  header = fp.read(2)
+  fp.close()
+  if header == 'BC':
+    return 'bc'
 
   # File Extension -> Type string
   ExtensionMap = {
@@ -1050,20 +1079,9 @@ def FileType(filename):
     'os'  : 'o',
     'nexe': 'nexe'
   }
+  ext = filename.split('.')[-1]
   if ext not in ExtensionMap:
     Log.Fatal('Unknown file extension: %s' % filename)
-
-  # Ugly hack. Why do we name bitcode files .o ?
-  if ext == 'o' or ext == 'os':
-    try:
-      fp = open(filename, 'rb')
-    except Exception:
-      print "Failed to open input file " + filename
-      NiceExit(1)
-    header = fp.read(2)
-    fp.close()
-    if header == 'BC':
-      ext = 'bc'
 
   return ExtensionMap[ext]
 
@@ -1110,10 +1128,12 @@ def InitTempNames(inputs, output):
   TempMap = dict()
   TempBase = output
 
-  if len(inputs) == 1:
-    # There's only one input file, don't bother adding the source name.
-    TempMap[inputs[0]] = output
-    return
+  # TODO(pdox): Figure out if there's a less confusing way
+  #             to simplify the intermediate filename in this case.
+  #if len(inputs) == 1:
+  #  # There's only one input file, don't bother adding the source name.
+  #  TempMap[inputs[0]] = output + '---'
+  #  return
 
   # Build the initial mapping
   TempMap = dict()
@@ -1154,7 +1174,7 @@ def InitTempNames(inputs, output):
 def TempNameForOutput(imtype):
   global TempList, TempBase
 
-  temp = TempBase + '.' + imtype
+  temp = TempBase + '---linked.' + imtype
   TempList.append(temp)
   return temp
 
@@ -1163,7 +1183,7 @@ def TempNameForInput(input, imtype):
   fullpath = os.path.abspath(input)
   # If input is already a temporary name, just change the extension
   if fullpath.startswith(TempBase):
-    temp = TempBase + '.' + imtype
+    temp = TempBase + '---linked.' + imtype
   else:
     # Source file
     temp = TempMap[fullpath] + '.' + imtype
@@ -1176,6 +1196,7 @@ def ClearTemps():
   if env.getbool('CLEANUP'):
     for f in TempList:
       os.remove(f)
+    TempList = []
 
 ######################################################################
 # Shell Utilities

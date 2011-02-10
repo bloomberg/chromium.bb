@@ -2251,7 +2251,7 @@ driver-install() {
   mkdir -p "${INSTALL_BIN}"
   cp tools/llvm/driver.py "${INSTALL_BIN}"
   for s in gcc g++ as as_x86_32 as_x86_64 \
-           bclink bcopt dis bcld translate illegal nop ; do
+           bclink bcopt dis ld bcld translate illegal nop ; do
     local t="pnacl-$s"
     rm -f "${INSTALL_BIN}/$t"
     ln -fs driver.py "${INSTALL_BIN}/$t"
