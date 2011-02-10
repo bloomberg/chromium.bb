@@ -8,7 +8,7 @@
       'target_name': 'es_util',
       'type': 'static_library',
       'dependencies': [
-        '../../gpu/gpu.gyp:gles2_c_lib',
+        '../../gpu/gpu.gyp:gles2_c_lib_nocheck',
       ],
       'include_dirs': [
         'Common/Include',
