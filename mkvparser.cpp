@@ -1511,6 +1511,11 @@ long Segment::LoadCluster(
         if (size < 0)  //error
             return static_cast<long>(size);
 
+        const long long unknown_size = (1LL << (7 * len)) - 1;
+
+        if (size == unknown_size)
+            return E_FILE_FORMAT_INVALID;  //TODO: allow this
+
         pos += len;  //consume length of size of element
 
         const long long element_size = size + pos - idpos;
@@ -3361,7 +3366,10 @@ long Segment::ParseNext(
             return result;
 
         if (result > 0)  //no more clusters
+        {
+            //pResult = &m_eos;
             return 1;
+        }
 
         pResult = GetLast();
         return 0;  //success
@@ -3607,7 +3615,10 @@ long Segment::ParseNext(
     }
 
     if (off_next <= 0)  //no next cluster found
+    {
+        //pResult = &m_eos;
         return 1;
+    }
 
     //We have parsed the next cluster, and can even guarantee
     //that its payload is all available (via IMkvReader::Length).
