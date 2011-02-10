@@ -84,6 +84,7 @@ class SafeBrowsingService
 
     GURL url;
     GURL original_url;
+    std::vector<GURL> redirect_urls;
     ResourceType::Type resource_type;
     UrlCheckResult threat_type;
     Client* client;
@@ -155,6 +156,7 @@ class SafeBrowsingService
   // chain). Otherwise, |original_url| = |url|.
   void DisplayBlockingPage(const GURL& url,
                            const GURL& original_url,
+                           const std::vector<GURL>& redirect_urls,
                            ResourceType::Type resource_type,
                            UrlCheckResult result,
                            Client* client,

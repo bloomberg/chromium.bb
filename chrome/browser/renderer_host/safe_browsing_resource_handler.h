@@ -7,6 +7,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "base/ref_counted.h"
 #include "base/time.h"
@@ -130,6 +131,9 @@ class SafeBrowsingResourceHandler : public ResourceHandler,
 
   // Timer to abort the safe browsing check if it takes too long.
   base::OneShotTimer<SafeBrowsingResourceHandler> timer_;
+
+  // The redirect chain for this resource
+  std::vector<GURL> redirect_urls_;
 
   // Details on the deferred request (either a start or redirect). It is only
   // valid to access these members when defer_state_ != DEFERRED_NONE.

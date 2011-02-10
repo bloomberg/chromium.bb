@@ -55,6 +55,9 @@ bool SafeBrowsingResourceHandler::OnRequestRedirected(
   CHECK(state_ == STATE_NONE);
   CHECK(defer_state_ == DEFERRED_NONE);
 
+  // Save the redirect urls for possible malware detail reporting later.
+  redirect_urls_.push_back(new_url);
+
   // We need to check the new URL before following the redirect.
   if (CheckUrl(new_url)) {
     return next_handler_->OnRequestRedirected(
@@ -180,8 +183,8 @@ void SafeBrowsingResourceHandler::StartDisplayingBlockingPage(
     original_url = url;
 
   safe_browsing_->DisplayBlockingPage(
-      url, original_url, resource_type_, result, this, render_process_host_id_,
-      render_view_id_);
+      url, original_url, redirect_urls_, resource_type_,
+      result, this, render_process_host_id_, render_view_id_);
 }
 
 // SafeBrowsingService::Client implementation, called on the IO thread when

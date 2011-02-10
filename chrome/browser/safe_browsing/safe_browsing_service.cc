@@ -296,13 +296,15 @@ void SafeBrowsingService::CancelCheck(Client* client) {
   }
 }
 
-void SafeBrowsingService::DisplayBlockingPage(const GURL& url,
-                                              const GURL& original_url,
-                                              ResourceType::Type resource_type,
-                                              UrlCheckResult result,
-                                              Client* client,
-                                              int render_process_host_id,
-                                              int render_view_id) {
+void SafeBrowsingService::DisplayBlockingPage(
+    const GURL& url,
+    const GURL& original_url,
+    const std::vector<GURL>& redirect_urls,
+    ResourceType::Type resource_type,
+    UrlCheckResult result,
+    Client* client,
+    int render_process_host_id,
+    int render_view_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // Check if the user has already ignored our warning for this render_view
@@ -324,6 +326,7 @@ void SafeBrowsingService::DisplayBlockingPage(const GURL& url,
   UnsafeResource resource;
   resource.url = url;
   resource.original_url = original_url;
+  resource.redirect_urls = redirect_urls;
   resource.resource_type = resource_type;
   resource.threat_type= result;
   resource.client = client;
