@@ -146,6 +146,7 @@ Importer* ImporterList::CreateImporterByType(importer::ProfileType type) {
 ImporterList::ImporterList()
     : source_thread_id_(BrowserThread::UI),
       observer_(NULL),
+      is_observed_(false),
       source_profiles_loaded_(false) {
 }
 
@@ -155,6 +156,7 @@ ImporterList::~ImporterList() {
 void ImporterList::DetectSourceProfiles(Observer* observer) {
   DCHECK(observer);
   observer_ = observer;
+  is_observed_ = true;
 
   BrowserThread::GetCurrentThreadIdentifier(&source_thread_id_);
 
@@ -209,8 +211,8 @@ bool ImporterList::source_profiles_loaded() const {
 
 void ImporterList::DetectSourceProfilesWorker() {
   // TODO(jhawkins): Remove this condition once DetectSourceProfileHack is
-  // removed. |observer_| is NULL when said method is called.
-  if (observer_)
+  // removed.
+  if (is_observed_)
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   std::vector<importer::ProfileInfo*> profiles;
@@ -240,8 +242,8 @@ void ImporterList::DetectSourceProfilesWorker() {
 #endif
 
   // TODO(jhawkins): Remove this condition once DetectSourceProfileHack is
-  // removed. |observer_| is NULL when said method is called.
-  if (observer_) {
+  // removed.
+  if (is_observed_) {
     BrowserThread::PostTask(
         source_thread_id_,
         FROM_HERE,
@@ -254,7 +256,9 @@ void ImporterList::DetectSourceProfilesWorker() {
 
 void ImporterList::SourceProfilesLoaded(
     const std::vector<importer::ProfileInfo*>& profiles) {
-  DCHECK_NE(static_cast<Observer*>(NULL), observer_);
+  // |observer_| may be NULL if it removed itself before being notified.
+  if (!observer_)
+    return;
 
   BrowserThread::ID current_thread_id;
   BrowserThread::GetCurrentThreadIdentifier(&current_thread_id);
@@ -264,8 +268,9 @@ void ImporterList::SourceProfilesLoaded(
   source_profiles_loaded_ = true;
   source_thread_id_ = BrowserThread::UI;
 
-  if (observer_) {
-    observer_->SourceProfilesLoaded();
-    observer_ = NULL;
-  }
+  observer_->SourceProfilesLoaded();
+  observer_ = NULL;
+
+  // TODO(jhawkins): Remove once DetectSourceProfileHack is removed.
+  is_observed_ = false;
 }
