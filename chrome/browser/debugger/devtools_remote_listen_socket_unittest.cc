@@ -48,8 +48,36 @@ static const char* kSemaphoreName = "chromium.listen_socket";
 #endif
 
 
+ListenSocketTestAction::ListenSocketTestAction() : action_(ACTION_NONE) {}
+
+ListenSocketTestAction::ListenSocketTestAction(ActionType action)
+      : action_(action) {}
+
+ListenSocketTestAction::ListenSocketTestAction(ActionType action,
+                                               std::string data)
+    : action_(action),
+      data_(data) {}
+
+ListenSocketTestAction::ListenSocketTestAction(
+    ActionType action,
+    const DevToolsRemoteMessage& message)
+    : action_(action),
+      message_(message) {}
+
+ListenSocketTestAction::~ListenSocketTestAction() {}
+
 ListenSocket* DevToolsRemoteListenSocketTester::DoListen() {
   return DevToolsRemoteListenSocket::Listen(kLoopback, kTestPort, this);
+}
+
+DevToolsRemoteListenSocketTester::DevToolsRemoteListenSocketTester()
+    : semaphore_(NULL),
+      thread_(NULL),
+      loop_(NULL),
+      server_(NULL),
+      connection_(NULL),
+      test_socket_(INVALID_SOCKET) {
+  memset(&lock_, 0, sizeof(lock_));
 }
 
 void DevToolsRemoteListenSocketTester::SetUp() {
@@ -322,6 +350,7 @@ void DevToolsRemoteListenSocketTester::TestServerSend() {
   ASSERT_STREQ(buf, kChromeDevToolsHandshake);
 }
 
+DevToolsRemoteListenSocketTester::~DevToolsRemoteListenSocketTester() {}
 
 class DevToolsRemoteListenSocketTest: public PlatformTest {
  public:

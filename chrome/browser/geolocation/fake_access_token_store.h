@@ -12,32 +12,21 @@
 // A fake (non-persisted) access token store instance useful for testing.
 class FakeAccessTokenStore : public AccessTokenStore {
  public:
-  FakeAccessTokenStore() {}
+  FakeAccessTokenStore();
 
-  void NotifyDelegateTokensLoaded() {
-    CHECK(request_ != NULL);
-    request_->ForwardResult(MakeTuple(access_token_set_));
-    request_ = NULL;
-  }
+  void NotifyDelegateTokensLoaded();
 
   // AccessTokenStore
   virtual void DoLoadAccessTokens(
-      scoped_refptr<CancelableRequest<LoadAccessTokensCallbackType> > request) {
-    DCHECK(request_ == NULL)
-        << "Fake token store currently only allows one request at a time";
-    request_ = request;
-  }
+      scoped_refptr<CancelableRequest<LoadAccessTokensCallbackType> > request);
   virtual void SaveAccessToken(
-      const GURL& server_url, const string16& access_token) {
-    DCHECK(server_url.is_valid());
-    access_token_set_[server_url] = access_token;
-  }
+      const GURL& server_url, const string16& access_token);
 
   AccessTokenSet access_token_set_;
   scoped_refptr<CancelableRequest<LoadAccessTokensCallbackType> > request_;
 
  private:
-  virtual ~FakeAccessTokenStore() {}
+  virtual ~FakeAccessTokenStore();
 
   DISALLOW_COPY_AND_ASSIGN(FakeAccessTokenStore);
 };

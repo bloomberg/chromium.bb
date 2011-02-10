@@ -4,6 +4,13 @@
 
 #include "chrome/browser/mock_plugin_exceptions_table_model.h"
 
+MockPluginExceptionsTableModel::MockPluginExceptionsTableModel(
+    HostContentSettingsMap* map,
+    HostContentSettingsMap* otr_map)
+    : PluginExceptionsTableModel(map, otr_map) {}
+
+MockPluginExceptionsTableModel::~MockPluginExceptionsTableModel() {}
+
 void MockPluginExceptionsTableModel::set_plugins(
     std::vector<webkit::npapi::PluginGroup>& plugins) {
   plugins_ = plugins;

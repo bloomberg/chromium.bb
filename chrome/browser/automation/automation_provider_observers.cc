@@ -331,6 +331,8 @@ TabAppendedNotificationObserver::TabAppendedNotificationObserver(
       reply_message_(reply_message) {
 }
 
+TabAppendedNotificationObserver::~TabAppendedNotificationObserver() {}
+
 void TabAppendedNotificationObserver::ObserveTab(
     NavigationController* controller) {
   if (!automation_)
@@ -356,6 +358,8 @@ TabClosedNotificationObserver::TabClosedNotificationObserver(
       reply_message_(reply_message),
       for_browser_command_(false) {
 }
+
+TabClosedNotificationObserver::~TabClosedNotificationObserver() {}
 
 void TabClosedNotificationObserver::ObserveTab(
     NavigationController* controller) {
@@ -686,6 +690,8 @@ BrowserClosedNotificationObserver::BrowserClosedNotificationObserver(
                  Source<Browser>(browser));
 }
 
+BrowserClosedNotificationObserver::~BrowserClosedNotificationObserver() {}
+
 void BrowserClosedNotificationObserver::Observe(
     NotificationType type, const NotificationSource& source,
     const NotificationDetails& details) {
@@ -726,6 +732,9 @@ BrowserCountChangeNotificationObserver::BrowserCountChangeNotificationObserver(
   registrar_.Add(this, NotificationType::BROWSER_CLOSED,
                  NotificationService::AllSources());
 }
+
+BrowserCountChangeNotificationObserver::
+~BrowserCountChangeNotificationObserver() {}
 
 void BrowserCountChangeNotificationObserver::Observe(
     NotificationType type,
@@ -969,6 +978,8 @@ DomOperationObserver::DomOperationObserver() {
                  NotificationService::AllSources());
 }
 
+DomOperationObserver::~DomOperationObserver() {}
+
 void DomOperationObserver::Observe(
     NotificationType type, const NotificationSource& source,
     const NotificationDetails& details) {
@@ -982,6 +993,8 @@ DomOperationMessageSender::DomOperationMessageSender(
     AutomationProvider* automation)
     : automation_(automation->AsWeakPtr()) {
 }
+
+DomOperationMessageSender::~DomOperationMessageSender() {}
 
 void DomOperationMessageSender::OnDomOperationCompleted(
     const std::string& json) {
@@ -1118,6 +1131,8 @@ TabLanguageDeterminedObserver::TabLanguageDeterminedObserver(
                  Source<TabContents>(tab_contents));
 }
 
+TabLanguageDeterminedObserver::~TabLanguageDeterminedObserver() {}
+
 void TabLanguageDeterminedObserver::Observe(
     NotificationType type, const NotificationSource& source,
     const NotificationDetails& details) {
@@ -1180,6 +1195,8 @@ InfoBarCountObserver::InfoBarCountObserver(AutomationProvider* automation,
   registrar_.Add(this, NotificationType::TAB_CONTENTS_INFOBAR_REMOVED, source);
   CheckCount();
 }
+
+InfoBarCountObserver::~InfoBarCountObserver() {}
 
 void InfoBarCountObserver::Observe(NotificationType type,
                                    const NotificationSource& source,
@@ -1300,6 +1317,9 @@ AutomationProviderDownloadItemObserver::AutomationProviderDownloadItemObserver(
       downloads_(downloads) {
 }
 
+AutomationProviderDownloadItemObserver::
+~AutomationProviderDownloadItemObserver() {}
+
 void AutomationProviderDownloadItemObserver::OnDownloadUpdated(
     DownloadItem* download) {
 }
@@ -1329,6 +1349,9 @@ AutomationProviderDownloadUpdatedObserver(
       reply_message_(reply_message),
       wait_for_open_(wait_for_open) {
 }
+
+AutomationProviderDownloadUpdatedObserver::
+~AutomationProviderDownloadUpdatedObserver() {}
 
 void AutomationProviderDownloadUpdatedObserver::OnDownloadUpdated(
     DownloadItem* download) {
@@ -1375,6 +1398,9 @@ AutomationProviderDownloadModelChangedObserver(
       download_manager_(download_manager) {
 }
 
+AutomationProviderDownloadModelChangedObserver::
+~AutomationProviderDownloadModelChangedObserver() {}
+
 void AutomationProviderDownloadModelChangedObserver::ModelChanged() {
   download_manager_->RemoveObserver(this);
 
@@ -1389,6 +1415,9 @@ AutomationProviderSearchEngineObserver::AutomationProviderSearchEngineObserver(
     : provider_(provider->AsWeakPtr()),
       reply_message_(reply_message) {
 }
+
+AutomationProviderSearchEngineObserver::
+~AutomationProviderSearchEngineObserver() {}
 
 void AutomationProviderSearchEngineObserver::OnTemplateURLModelChanged() {
   TemplateURLModel* url_model = provider_->profile()->GetTemplateURLModel();
@@ -1405,6 +1434,8 @@ AutomationProviderHistoryObserver::AutomationProviderHistoryObserver(
     : provider_(provider->AsWeakPtr()),
       reply_message_(reply_message) {
 }
+
+AutomationProviderHistoryObserver::~AutomationProviderHistoryObserver() {}
 
 void AutomationProviderHistoryObserver::HistoryQueryComplete(
     HistoryService::Handle request_handle,
@@ -1446,6 +1477,9 @@ AutomationProviderImportSettingsObserver(
       reply_message_(reply_message) {
 }
 
+AutomationProviderImportSettingsObserver::
+~AutomationProviderImportSettingsObserver() {}
+
 void AutomationProviderImportSettingsObserver::ImportStarted() {
 }
 
@@ -1469,6 +1503,9 @@ AutomationProviderGetPasswordsObserver::AutomationProviderGetPasswordsObserver(
     : provider_(provider->AsWeakPtr()),
       reply_message_(reply_message) {
 }
+
+AutomationProviderGetPasswordsObserver::
+~AutomationProviderGetPasswordsObserver() {}
 
 void AutomationProviderGetPasswordsObserver::OnPasswordStoreRequestDone(
     int handle, const std::vector<webkit_glue::PasswordForm*>& result) {
@@ -1513,6 +1550,9 @@ AutomationProviderBrowsingDataObserver::AutomationProviderBrowsingDataObserver(
     : provider_(provider->AsWeakPtr()),
       reply_message_(reply_message) {
 }
+
+AutomationProviderBrowsingDataObserver::
+~AutomationProviderBrowsingDataObserver() {}
 
 void AutomationProviderBrowsingDataObserver::OnBrowsingDataRemoverDone() {
   if (provider_)
@@ -1563,6 +1603,8 @@ SavePackageNotificationObserver::SavePackageNotificationObserver(
                  source);
 }
 
+SavePackageNotificationObserver::~SavePackageNotificationObserver() {}
+
 void SavePackageNotificationObserver::Observe(
     NotificationType type,
     const NotificationSource& source,
@@ -1587,6 +1629,8 @@ PageSnapshotTaker::PageSnapshotTaker(AutomationProvider* automation,
       render_view_(render_view),
       image_path_(path),
       received_width_(false) {}
+
+PageSnapshotTaker::~PageSnapshotTaker() {}
 
 void PageSnapshotTaker::Start() {
   ExecuteScript(L"window.domAutomationController.send(document.width);");
@@ -1753,6 +1797,8 @@ AutocompleteEditFocusedObserver::AutocompleteEditFocusedObserver(
   registrar_.Add(this, NotificationType::AUTOCOMPLETE_EDIT_FOCUSED, source);
 }
 
+AutocompleteEditFocusedObserver::~AutocompleteEditFocusedObserver() {}
+
 void AutocompleteEditFocusedObserver::Observe(
     NotificationType type,
     const NotificationSource& source,
@@ -1802,6 +1848,8 @@ GetActiveNotificationsObserver::GetActiveNotificationsObserver(
                    NotificationService::AllSources());
   }
 }
+
+GetActiveNotificationsObserver::~GetActiveNotificationsObserver() {}
 
 void GetActiveNotificationsObserver::Observe(
     NotificationType type,
@@ -1864,6 +1912,8 @@ RendererProcessClosedObserver::RendererProcessClosedObserver(
                  NotificationService::AllSources());
 }
 
+RendererProcessClosedObserver::~RendererProcessClosedObserver() {}
+
 void RendererProcessClosedObserver::Observe(
     NotificationType type,
     const NotificationSource& source,
@@ -1886,6 +1936,8 @@ InputEventAckNotificationObserver::InputEventAckNotificationObserver(
       this, NotificationType::RENDER_WIDGET_HOST_DID_RECEIVE_INPUT_EVENT_ACK,
       NotificationService::AllSources());
 }
+
+InputEventAckNotificationObserver::~InputEventAckNotificationObserver() {}
 
 void InputEventAckNotificationObserver::Observe(
     NotificationType type,

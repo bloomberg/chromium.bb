@@ -13,9 +13,8 @@
 class MockPluginExceptionsTableModel : public PluginExceptionsTableModel {
  public:
   MockPluginExceptionsTableModel(HostContentSettingsMap* map,
-                                 HostContentSettingsMap* otr_map)
-      : PluginExceptionsTableModel(map, otr_map) {}
-  virtual ~MockPluginExceptionsTableModel() {}
+                                 HostContentSettingsMap* otr_map);
+  virtual ~MockPluginExceptionsTableModel();
 
   void set_plugins(std::vector<webkit::npapi::PluginGroup>& plugins);
 

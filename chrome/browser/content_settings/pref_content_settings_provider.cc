@@ -89,6 +89,11 @@ ContentSetting ClickToPlayFixup(ContentSettingsType content_type,
 
 namespace content_settings {
 
+struct PrefProvider::ExtendedContentSettings {
+  ContentSettings content_settings;
+  ResourceContentSettings content_settings_for_resources;
+};
+
 PrefDefaultProvider::PrefDefaultProvider(Profile* profile)
     : profile_(profile),
       is_off_the_record_(profile_->IsOffTheRecord()),

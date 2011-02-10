@@ -17,6 +17,8 @@ static const FilePath::CharType* kDOMUILibraryJS =
 static const FilePath::CharType* kDOMUITestFolder =
     FILE_PATH_LITERAL("dom_ui");
 
+DOMUITest::~DOMUITest() {}
+
 bool DOMUITest::RunDOMUITest(const FilePath::CharType* src_path) {
   std::string content;
   BuildJavaScriptTest(FilePath(src_path), &content);

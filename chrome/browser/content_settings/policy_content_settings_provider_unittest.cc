@@ -4,7 +4,8 @@
 
 #include "chrome/browser/content_settings/policy_content_settings_provider.h"
 
-#include "chrome/browser/content_settings/host_content_settings_map_unittest.h"
+#include "chrome/browser/browser_thread.h"
+#include "chrome/browser/content_settings/stub_settings_observer.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"

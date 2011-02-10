@@ -54,16 +54,12 @@ enum ActionType {
 
 class ListenSocketTestAction {
  public:
-  ListenSocketTestAction() : action_(ACTION_NONE) {}
-  explicit ListenSocketTestAction(ActionType action)
-      : action_(action) {}
-  ListenSocketTestAction(ActionType action, std::string data)
-      : action_(action),
-        data_(data) {}
+  ListenSocketTestAction();
+  explicit ListenSocketTestAction(ActionType action);
+  ListenSocketTestAction(ActionType action, std::string data);
   ListenSocketTestAction(ActionType action,
-                         const DevToolsRemoteMessage& message)
-      : action_(action),
-        message_(message) {}
+                         const DevToolsRemoteMessage& message);
+  ~ListenSocketTestAction();
 
   const std::string data() const { return data_; }
   const DevToolsRemoteMessage message() { return message_; }
@@ -81,15 +77,7 @@ class ListenSocketTestAction {
 class DevToolsRemoteListenSocketTester :
     public DevToolsRemoteListener {
  public:
-  DevToolsRemoteListenSocketTester()
-      : semaphore_(NULL),
-        thread_(NULL),
-        loop_(NULL),
-        server_(NULL),
-        connection_(NULL),
-        test_socket_(INVALID_SOCKET) {
-    memset(&lock_, 0, sizeof(lock_));
-  }
+  DevToolsRemoteListenSocketTester();
 
   virtual void SetUp();
   virtual void TearDown();
@@ -135,7 +123,7 @@ class DevToolsRemoteListenSocketTester :
   virtual ListenSocket* DoListen();
 
  private:
-  virtual ~DevToolsRemoteListenSocketTester() {}
+  virtual ~DevToolsRemoteListenSocketTester();
 };
 
 #endif  // CHROME_BROWSER_DEBUGGER_DEVTOOLS_REMOTE_LISTEN_SOCKET_UNITTEST_H_

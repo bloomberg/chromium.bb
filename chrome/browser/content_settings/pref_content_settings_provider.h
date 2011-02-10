@@ -136,10 +136,7 @@ class PrefProvider : public ProviderInterface,
   typedef std::map<ContentSettingsTypeResourceIdentifierPair, ContentSetting>
       ResourceContentSettings;
 
-  struct ExtendedContentSettings {
-    ContentSettings content_settings;
-    ResourceContentSettings content_settings_for_resources;
-  };
+  struct ExtendedContentSettings;
 
   typedef std::map<std::string, ExtendedContentSettings> HostContentSettings;
 

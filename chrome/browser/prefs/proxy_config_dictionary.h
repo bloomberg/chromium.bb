@@ -27,6 +27,7 @@ class ProxyConfigDictionary {
  public:
   // Creates a deep copy of |dict| and leaves ownership to caller.
   explicit ProxyConfigDictionary(const DictionaryValue* dict);
+  ~ProxyConfigDictionary();
 
   bool GetMode(ProxyPrefs::ProxyMode* out) const;
   bool GetPacUrl(std::string* out) const;

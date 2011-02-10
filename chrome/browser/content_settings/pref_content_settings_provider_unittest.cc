@@ -6,15 +6,16 @@
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
-#include "chrome/browser/content_settings/host_content_settings_map_unittest.h"
+#include "chrome/browser/browser_thread.h"
+#include "chrome/browser/content_settings/stub_settings_observer.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/testing_pref_service.h"
 #include "chrome/test/testing_profile.h"
+#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
 
 namespace content_settings {
 

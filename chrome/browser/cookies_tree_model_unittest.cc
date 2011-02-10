@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "chrome/browser/content_settings/host_content_settings_map_unittest.h"
+#include "chrome/browser/content_settings/stub_settings_observer.h"
 #include "chrome/browser/mock_browsing_data_appcache_helper.h"
 #include "chrome/browser/mock_browsing_data_database_helper.h"
 #include "chrome/browser/mock_browsing_data_indexed_db_helper.h"

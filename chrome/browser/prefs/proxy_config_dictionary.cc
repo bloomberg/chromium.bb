@@ -29,6 +29,8 @@ ProxyConfigDictionary::ProxyConfigDictionary(const DictionaryValue* dict)
     : dict_(dict->DeepCopy()) {
 }
 
+ProxyConfigDictionary::~ProxyConfigDictionary() {}
+
 bool ProxyConfigDictionary::GetMode(ProxyPrefs::ProxyMode* out) const {
   std::string mode_str;
   return dict_->GetString(kProxyMode, &mode_str)

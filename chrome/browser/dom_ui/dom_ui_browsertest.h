@@ -22,6 +22,8 @@ class WebUIMessageHandler;
 // and the lone test within this class.
 class DOMUITest : public InProcessBrowserTest {
  public:
+  virtual ~DOMUITest();
+
   bool RunDOMUITest(const FilePath::CharType* src_path);
 
  protected:

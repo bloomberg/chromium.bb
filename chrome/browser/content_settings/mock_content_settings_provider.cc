@@ -40,6 +40,29 @@ bool MockDefaultProvider::DefaultSettingIsManaged(
 void MockDefaultProvider::ResetToDefaults() {
 }
 
+MockProvider::MockProvider()
+    : requesting_url_pattern_(ContentSettingsPattern()),
+      embedding_url_pattern_(ContentSettingsPattern()),
+      content_type_(CONTENT_SETTINGS_TYPE_COOKIES),
+      resource_identifier_(""),
+      setting_(CONTENT_SETTING_DEFAULT),
+      read_only_(false) {}
+
+MockProvider::MockProvider(ContentSettingsPattern requesting_url_pattern,
+                           ContentSettingsPattern embedding_url_pattern,
+                           ContentSettingsType content_type,
+                           ResourceIdentifier resource_identifier,
+                           ContentSetting setting,
+                           bool read_only)
+    : requesting_url_pattern_(requesting_url_pattern),
+      embedding_url_pattern_(embedding_url_pattern),
+      content_type_(content_type),
+      resource_identifier_(resource_identifier),
+      setting_(setting),
+      read_only_(read_only) {}
+
+MockProvider::~MockProvider() {}
+
 ContentSetting MockProvider::GetContentSetting(
     const GURL& requesting_url,
     const GURL& embedding_url,
