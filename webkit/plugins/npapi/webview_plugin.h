@@ -69,6 +69,8 @@ class WebViewPlugin: public WebKit::WebPlugin, public WebKit::WebViewClient,
   // this method on the actual plug-in.
   void ReplayReceivedData(WebKit::WebPlugin* plugin);
 
+  void RestoreTitleText();
+
   // WebPlugin methods:
   virtual bool initialize(WebKit::WebPluginContainer*);
   virtual void destroy();
