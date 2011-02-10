@@ -43,6 +43,7 @@ struct drm_compositor {
 	struct {
 		int fd;
 	} drm;
+	uint32_t crtc_allocator;
 	struct tty *tty;
 };
 
@@ -204,7 +205,8 @@ create_output_for_connector(struct drm_compositor *ec,
 	}
 
 	for (i = 0; i < resources->count_crtcs; i++) {
-		if (encoder->possible_crtcs & (1 << i))
+		if (encoder->possible_crtcs & (1 << i) &&
+		    !(ec->crtc_allocator & (1 << i)))
 			break;
 	}
 	if (i == resources->count_crtcs) {
@@ -216,6 +218,7 @@ create_output_for_connector(struct drm_compositor *ec,
 	wlsc_output_init(&output->base, &ec->base, 0, 0,
 			 mode->hdisplay, mode->vdisplay, 0);
 
+	ec->crtc_allocator |= (1 << i);
 	output->crtc_id = resources->crtcs[i];
 	output->connector_id = connector->connector_id;
 	output->mode = *mode;
