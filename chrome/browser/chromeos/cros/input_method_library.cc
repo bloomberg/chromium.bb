@@ -65,8 +65,10 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
         ibus_daemon_process_id_(0),
         initialized_successfully_(false),
         candidate_window_controller_(NULL) {
-    current_input_method_ =
-        input_method::GetHardwareInputMethodDescriptor();
+    // Here, we use the fallback input method descriptor but
+    // |current_input_method_| will be updated as soon as the login screen
+    // is shown or the user is logged in, so there is no problem.
+    current_input_method_ = input_method::GetFallbackInputMethodDescriptor();
     active_input_method_ids_.push_back(current_input_method_.id);
     // Observe APP_TERMINATING to stop input method daemon gracefully.
     // We should not use APP_EXITING here since logout might be canceled by
@@ -134,8 +136,11 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
         LOG(ERROR) << "Descriptor is not found for: " << input_method_id;
       }
     }
+    // This shouldn't happen as there should be at least one active input
+    // method, but just in case.
     if (result->empty()) {
-      result->push_back(input_method::GetHardwareInputMethodDescriptor());
+      LOG(ERROR) << "No active input methods found.";
+      result->push_back(input_method::GetFallbackInputMethodDescriptor());
     }
     return result;
   }
@@ -147,10 +152,10 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
 
   virtual InputMethodDescriptors* GetSupportedInputMethods() {
     if (!initialized_successfully_) {
-      // If initialization was failed, return the hardware input method,
+      // If initialization was failed, return the fallback input method,
       // as this function is guaranteed to return at least one descriptor.
       InputMethodDescriptors* result = new InputMethodDescriptors;
-      result->push_back(input_method::GetHardwareInputMethodDescriptor());
+      result->push_back(input_method::GetFallbackInputMethodDescriptor());
       return result;
     }
 

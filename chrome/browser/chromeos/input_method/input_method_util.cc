@@ -577,8 +577,7 @@ void EnableInputMethods(const std::string& language_code, InputMethodType type,
   GetInputMethodIdsFromLanguageCode(language_code, type, &input_method_ids);
 
   // Add the hardware keyboard.
-  const std::string keyboard =
-      input_method::GetHardwareInputMethodDescriptor().id;
+  const std::string keyboard = GetHardwareInputMethodId();
   if (std::count(input_method_ids.begin(), input_method_ids.end(),
                  keyboard) == 0) {
     input_method_ids.push_back(keyboard);
@@ -599,9 +598,9 @@ void EnableInputMethods(const std::string& language_code, InputMethodType type,
   }
 }
 
-InputMethodDescriptor GetHardwareInputMethodDescriptor() {
+std::string GetHardwareInputMethodId() {
   // TODO(satorux): Rework this function. crosbug.com/11528.
-  return GetFallbackInputMethodDescriptor();
+  return GetFallbackInputMethodDescriptor().id;
 }
 
 InputMethodDescriptor GetFallbackInputMethodDescriptor() {

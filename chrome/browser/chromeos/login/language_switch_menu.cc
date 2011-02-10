@@ -104,7 +104,7 @@ void LanguageSwitchMenu::SwitchLanguage(const std::string& locale) {
     // new locale.
     input_method::EnableInputMethods(
         locale, input_method::kKeyboardLayoutsOnly,
-        input_method::GetHardwareInputMethodDescriptor().id);
+        input_method::GetHardwareInputMethodId());
 
     // The following line does not seem to affect locale anyhow. Maybe in
     // future..

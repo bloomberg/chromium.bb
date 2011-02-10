@@ -52,7 +52,7 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
                             kFallbackInputMethodLocale);
   prefs->RegisterStringPref(
       prefs::kLanguagePreloadEngines,
-      input_method::GetHardwareInputMethodDescriptor().id);
+      input_method::GetHardwareInputMethodId());
   for (size_t i = 0; i < language_prefs::kNumChewingBooleanPrefs; ++i) {
     prefs->RegisterBooleanPref(
         language_prefs::kChewingBooleanPrefs[i].pref_name,
