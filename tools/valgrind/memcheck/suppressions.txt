@@ -3740,3 +3740,67 @@
    Memcheck:Addr8
    obj:*/unit_tests
 }
+{
+   bug_72538
+   Memcheck:Cond
+   fun:_ZN2v88internal11StackTracer5TraceEPNS0_10TickSampleE
+   fun:_ZN2v88internal6Object15IsJSGlobalProxyEv
+}
+{
+   bug_72541
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base21ScopedCallbackFactoryIN7fileapi23FileSystemURLRequestJobEE11NewCallbackINS_17PlatformFileErrorERKNS_16PlatformFileInfoEEEPN9Callback2IT_T0_E4TypeEMS2_FvSA_SB_E
+   fun:_ZN7fileapi23FileSystemURLRequestJob14DidGetRootPathEbRK8FilePathRKSs
+   fun:_Z16DispatchToMethodIN7fileapi23FileSystemURLRequestJobEMS1_FvbRK8FilePathRKSsEbS4_S6_EvPT_T0_RK6Tuple3IT1_T2_T3_E
+   fun:_ZN4base21ScopedCallbackFactoryIN7fileapi23FileSystemURLRequestJobEE12CallbackImplIMS2_FvbRK8FilePathRKSsE6Tuple3IbS7_S9_EE13RunWithParamsERKSD_
+   fun:_ZN14CallbackRunnerI6Tuple3IbRK8FilePathRKSsEE3RunIbS1_SsEEvRKT_RKT0_RKT1_
+   fun:_ZN7fileapi21FileSystemPathManager25GetFileSystemRootPathTask16DispatchCallbackERK8FilePath
+}
+{
+   bug_72542
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN17FilebrowseHandler4InitEv
+   fun:_ZN12FileBrowseUIC1EP11TabContents
+   fun:_Z8NewDOMUII12FileBrowseUIEP5WebUIP11TabContentsRK4GURL
+   fun:_ZN12WebUIFactory17CreateWebUIForURLEP11TabContentsRK4GURL
+   fun:_ZN11TabContents27CreateDOMUIForRenderManagerERK4GURL
+   fun:_ZN21RenderViewHostManager30UpdateRendererStateForNavigateERK15NavigationEntry
+   fun:_ZN21RenderViewHostManager8NavigateERK15NavigationEntry
+   fun:_ZN11TabContents15NavigateToEntryERK15NavigationEntryN20NavigationController10ReloadTypeE
+   fun:_ZN11TabContents22NavigateToPendingEntryEN20NavigationController10ReloadTypeE
+   fun:_ZN20NavigationController22NavigateToPendingEntryENS_10ReloadTypeE
+   fun:_ZN20NavigationController9LoadEntryEP15NavigationEntry
+   fun:_ZN20NavigationController7LoadURLERK4GURLS2_j
+   fun:_ZN7browser8NavigateEPNS_14NavigateParamsE
+   fun:_ZN12FileBrowseUI9OpenPopupEP7ProfileRKSsii
+   fun:_ZN7Browser15OnStartDownloadEP12DownloadItemP11TabContents
+   fun:_ZN11TabContents15OnStartDownloadEP12DownloadItem
+   fun:_ZN11SavePackage4InitEv
+   fun:_ZN11TabContents8SavePageERK8FilePathS2_N11SavePackage15SavePackageTypeE
+   fun:_ZN25TestingAutomationProvider8SavePageEiRK8FilePathS2_iPb
+   fun:_Z16DispatchToMethodI25TestingAutomationProviderMS0_FviRK8FilePathS3_iPbEiS1_S1_ibEvPT_T0_RK6Tuple4IT1_T2_T3_T4_EP6Tuple1IT5_E
+}
+{
+   bug_72544
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEj
+   fun:_ZN3WTF10RefCountedIN7WebCore14StyleSheetListEEnwEj
+   fun:_ZN7WebCore14StyleSheetList6createEPNS_8DocumentE
+   fun:_ZN7WebCore8DocumentC2EPNS_5FrameERKNS_4KURLEbbS5_
+   fun:_ZN7WebCore12HTMLDocumentC1EPNS_5FrameERKNS_4KURLES5_
+   fun:_ZN7WebCore12HTMLDocument6createEPNS_5FrameERKNS_4KURLES5_
+   fun:_ZN7WebCore17DOMImplementation14createDocumentERKN3WTF6StringEPNS_5FrameERKNS_4KURLEb
+   fun:_ZN7WebCore14DocumentWriter14createDocumentERKNS_4KURLE
+   fun:_ZN7WebCore14DocumentWriter5beginERKNS_4KURLEbPNS_14SecurityOriginE
+   fun:_ZN7WebCore11FrameLoader4initEv
+   fun:_ZN7WebCore5Frame4initEv
+   fun:_ZN6WebKit12WebFrameImpl21initializeAsMainFrameEPNS_11WebViewImplE
+   fun:_ZN6WebKit11WebViewImpl19initializeMainFrameEPNS_14WebFrameClientE
+   fun:_ZN10RenderViewC1EP16RenderThreadBaseiiRK19RendererPreferencesRK14WebPreferencesPN4base14RefCountedDataIiEEixRKSbItNS8_20string16_char_traitsESaItEE
+   fun:_ZN10RenderView6CreateEP16RenderThreadBaseiiRK19RendererPreferencesRK14WebPreferencesPN4base14RefCountedDataIiEEixRKSbItNS8_20string16_char_traitsESaItEE
+   fun:_ZN12RenderThread15OnCreateNewViewERK18ViewMsg_New_Params
+   fun:_Z16DispatchToMethodI12RenderThreadMS0_FvRK18ViewMsg_New_ParamsES1_EvPT_T0_RK6Tuple1IT1_E
+}

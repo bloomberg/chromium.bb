@@ -93,6 +93,7 @@ AutomatedUITestBase.CloseTab
 
 # See http://crbug.com/57717
 ResourceDispatcherTest.CrossSiteFailedRequest
+ResourceDispatcherTest.RespectNoSniffDirective
 
 # Valgrind internal error: received SIGSERV. http://crbug.com/51716
 AutomatedUITestBase.Navigate
