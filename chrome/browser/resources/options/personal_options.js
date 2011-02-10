@@ -76,9 +76,17 @@ cr.define('options', function() {
         chrome.send('loadAccountPicture');
       }
 
-      // Disable the screen lock checkbox for the guest mode.
-      if (cr.commandLine.options['--bwsi'])
+      if (cr.commandLine.options['--bwsi']) {
+        // Disable the screen lock checkbox for the guest mode.
         $('enable-screen-lock').disabled = true;
+
+        // Disable passwords management settings for the guest mode.
+        $('passwords-offersave').disabled = true;
+        $('passwords-neversave').disabled = true;
+        $('passwords-offersave').value = false;
+        $('passwords-neversave').value = true;
+        $('manage-passwords').disabled = true;
+      }
     },
 
     showStopSyncingOverlay_: function(event) {
