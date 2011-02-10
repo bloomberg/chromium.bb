@@ -344,7 +344,7 @@
           <div id="methodsTemplate" class="apiGroup"
                jsdisplay="$this.functions && $this.functions.length > 0">
             <a jsvalues=".name:getAnchorName('global', 'methods', $scope)"></a>
-            <h3>Methods</h3>
+            <h3 jscontent="$scope ? 'Methods of ' + $scope : 'Methods'">Methods</h3>
 
             <!-- iterates over all functions -->
             <div class="apiItem" jsselect="functions.sort(sortByName)"
@@ -364,7 +364,7 @@
                 </p>
 
                 <!-- PARAMETERS -->
-                <h4>Parameters</h4>
+                <h4 jsdisplay="$this.parameters && $this.parameters.length > 0">Parameters</h4>
                 <dl>
                   <div jsselect="parameters">
                     <div transclude="valueTemplate">
@@ -422,7 +422,7 @@
           <div id="eventsTemplate" class="apiGroup"
                jsdisplay="$this.events && $this.events.length > 0">
             <a jsvalues=".name:getAnchorName('global', 'events', $scope)"></a>
-            <h3>Events</h3>
+            <h3 jscontent="$scope ? 'Events of ' + $scope : 'Events'">Events</h3>
             <!-- iterates over all events -->
             <div class="apiItem" jsselect="$this.events.sort(sortByName)"
                  jsdisplay="!($this.nodoc)">
