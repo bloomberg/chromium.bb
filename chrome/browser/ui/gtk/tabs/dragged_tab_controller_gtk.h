@@ -87,7 +87,7 @@ class DraggedTabControllerGtk : public NotificationObserver,
   virtual void LoadingStateChanged(TabContents* source);
   virtual void CloseContents(TabContents* source);
   virtual void MoveContents(TabContents* source, const gfx::Rect& pos);
-  virtual bool IsPopup(TabContents* source);
+  virtual bool IsPopup(TabContents* source) const;
   virtual void ToolbarSizeChanged(TabContents* source, bool is_animating);
   virtual void UpdateTargetURL(TabContents* source, const GURL& url);
 
