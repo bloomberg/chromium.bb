@@ -90,7 +90,7 @@ class OptionsPageUIHandler : public WebUIMessageHandler,
   DISALLOW_COPY_AND_ASSIGN(OptionsPageUIHandler);
 };
 
-class OptionsUI : public DOMUI {
+class OptionsUI : public WebUI {
  public:
   explicit OptionsUI(TabContents* contents);
   virtual ~OptionsUI();

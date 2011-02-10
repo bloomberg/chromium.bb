@@ -131,7 +131,7 @@ class NetInternalsHTMLSource : public ChromeURLDataManager::DataSource {
 };
 
 // This class receives javascript messages from the renderer.
-// Note that the DOMUI infrastructure runs on the UI thread, therefore all of
+// Note that the WebUI infrastructure runs on the UI thread, therefore all of
 // this class's methods are expected to run on the UI thread.
 //
 // Since the network code we want to run lives on the IO thread, we proxy
@@ -148,7 +148,7 @@ class NetInternalsMessageHandler
   virtual ~NetInternalsMessageHandler();
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(DOMUI* dom_ui);
+  virtual WebUIMessageHandler* Attach(WebUI* web_ui);
   virtual void RegisterMessages();
 
   // Executes the javascript function |function_name| in the renderer, passing
@@ -225,11 +225,11 @@ class NetInternalsMessageHandler::IOThreadImpl
 
   // Creates a callback that will run |method| on the IO thread.
   //
-  // This can be used with DOMUI::RegisterMessageCallback() to bind to a method
+  // This can be used with WebUI::RegisterMessageCallback() to bind to a method
   // on the IO thread.
-  DOMUI::MessageCallback* CreateCallback(MessageHandler method);
+  WebUI::MessageCallback* CreateCallback(MessageHandler method);
 
-  // Called once the DOMUI has been deleted (i.e. renderer went away), on the
+  // Called once the WebUI has been deleted (i.e. renderer went away), on the
   // IO thread.
   void Detach();
 
@@ -237,7 +237,7 @@ class NetInternalsMessageHandler::IOThreadImpl
   // handler, called on the IO thread.
   void SendPassiveLogEntries(const ChromeNetLog::EntryList& passive_entries);
 
-  // Called when the DOMUI is deleted.  Prevents calling Javascript functions
+  // Called when the WebUI is deleted.  Prevents calling Javascript functions
   // afterwards.  Called on UI thread.
   void OnDOMUIDeleted();
 
@@ -334,10 +334,10 @@ class NetInternalsMessageHandler::IOThreadImpl
   scoped_ptr<ListValue> pending_entries_;
 };
 
-// Helper class for a DOMUI::MessageCallback which when excuted calls
+// Helper class for a WebUI::MessageCallback which when excuted calls
 // instance->*method(value) on the IO thread.
 class NetInternalsMessageHandler::IOThreadImpl::CallbackHelper
-    : public DOMUI::MessageCallback {
+    : public WebUI::MessageCallback {
  public:
   CallbackHelper(IOThreadImpl* instance, IOThreadImpl::MessageHandler method)
       : instance_(instance),
@@ -441,11 +441,11 @@ NetInternalsMessageHandler::~NetInternalsMessageHandler() {
     select_log_file_dialog_->ListenerDestroyed();
 }
 
-WebUIMessageHandler* NetInternalsMessageHandler::Attach(DOMUI* dom_ui) {
+WebUIMessageHandler* NetInternalsMessageHandler::Attach(WebUI* web_ui) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   proxy_ = new IOThreadImpl(this->AsWeakPtr(), g_browser_process->io_thread(),
-                            dom_ui->GetProfile()->GetRequestContext());
-  WebUIMessageHandler* result = WebUIMessageHandler::Attach(dom_ui);
+                            web_ui->GetProfile()->GetRequestContext());
+  WebUIMessageHandler* result = WebUIMessageHandler::Attach(web_ui);
   return result;
 }
 
@@ -586,7 +586,7 @@ NetInternalsMessageHandler::IOThreadImpl::~IOThreadImpl() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-DOMUI::MessageCallback*
+WebUI::MessageCallback*
 NetInternalsMessageHandler::IOThreadImpl::CreateCallback(
     MessageHandler method) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -1218,7 +1218,7 @@ void NetInternalsMessageHandler::IOThreadImpl::CallJavascriptFunction(
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-NetInternalsUI::NetInternalsUI(TabContents* contents) : DOMUI(contents) {
+NetInternalsUI::NetInternalsUI(TabContents* contents) : WebUI(contents) {
   AddMessageHandler((new NetInternalsMessageHandler())->Attach(this));
 
   NetInternalsHTMLSource* html_source = new NetInternalsHTMLSource();

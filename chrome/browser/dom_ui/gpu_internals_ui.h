@@ -8,7 +8,7 @@
 
 #include "chrome/browser/dom_ui/web_ui.h"
 
-class GpuInternalsUI : public DOMUI {
+class GpuInternalsUI : public WebUI {
  public:
   explicit GpuInternalsUI(TabContents* contents);
 

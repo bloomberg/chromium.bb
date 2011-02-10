@@ -11,7 +11,7 @@
 
 class PrintPreviewUIHTMLSource;
 
-class PrintPreviewUI : public DOMUI {
+class PrintPreviewUI : public WebUI {
  public:
   explicit PrintPreviewUI(TabContents* contents);
   virtual ~PrintPreviewUI();

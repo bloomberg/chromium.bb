@@ -11,7 +11,7 @@
 class PrefService;
 class RefCountedMemory;
 
-class PluginsUI : public DOMUI {
+class PluginsUI : public WebUI {
  public:
   explicit PluginsUI(TabContents* contents);
 

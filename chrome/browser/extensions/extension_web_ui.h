@@ -23,12 +23,12 @@ class RenderViewHost;
 class TabContents;
 struct ViewHostMsg_DomMessage_Params;
 
-// This class implements DOMUI for extensions and allows extensions to put UI in
+// This class implements WebUI for extensions and allows extensions to put UI in
 // the main tab contents area. For example, each extension can specify an
 // "options_page", and that page is displayed in the tab contents area and is
 // hosted by this class.
 class ExtensionWebUI
-    : public DOMUI,
+    : public WebUI,
       public ExtensionFunctionDispatcher::Delegate {
  public:
   static const char kExtensionURLOverrides[];
@@ -41,7 +41,7 @@ class ExtensionWebUI
     return extension_function_dispatcher_.get();
   }
 
-  // DOMUI
+  // WebUI
   virtual void RenderViewCreated(RenderViewHost* render_view_host);
   virtual void RenderViewReused(RenderViewHost* render_view_host);
   virtual void ProcessDOMUIMessage(const ViewHostMsg_DomMessage_Params& params);
@@ -99,7 +99,7 @@ class ExtensionWebUI
   scoped_ptr<ExtensionBookmarkManagerEventRouter>
       extension_bookmark_manager_event_router_;
 
-  // The URL this DOMUI was created for.
+  // The URL this WebUI was created for.
   GURL url_;
 };
 

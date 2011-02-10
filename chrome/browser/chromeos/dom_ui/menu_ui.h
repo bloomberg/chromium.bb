@@ -35,12 +35,12 @@ class MenuSourceDelegate {
   virtual void AddLocalizedStrings(DictionaryValue* localized_strings) const {}
 };
 
-class MenuUI : public DOMUI {
+class MenuUI : public WebUI {
  public:
   explicit MenuUI(TabContents* contents);
 
   // A callback method that is invoked when a menu model associated
-  // with the DOMUI Menu gets updated.
+  // with the WebUI Menu gets updated.
   virtual void ModelUpdated(const ui::MenuModel* new_model);
 
   // Creates a menu item for the menu item at index in the model.
@@ -52,7 +52,7 @@ class MenuUI : public DOMUI {
 
   // A utility function which creates a concrete html file from
   // template file |menu_resource_id| and |menu_css_id| for given |menu_class|.
-  // The resource_name is the host part of DOMUI's url.
+  // The resource_name is the host part of WebUI's url.
   static ChromeURLDataManager::DataSource* CreateMenuUIHTMLSource(
       const MenuSourceDelegate* delegate,
       const std::string& source_name,

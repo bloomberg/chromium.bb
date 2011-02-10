@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,15 +15,15 @@
 
 namespace chromeos {
 
-class MockDOMUI : public DOMUI {
+class MockWebUI : public WebUI {
  public:
-  MockDOMUI() : DOMUI(NULL) {}
+  MockWebUI() : WebUI(NULL) {}
   MOCK_METHOD2(RegisterMessageCallback,
                void(const std::string& message,
                     MessageCallback* callback));
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockDOMUI);
+  DISALLOW_COPY_AND_ASSIGN(MockWebUI);
 };
 
 class LoginUIHandlerHarness : public LoginUIHandler {
@@ -38,7 +38,7 @@ class LoginUIHandlerHarness : public LoginUIHandler {
     browser_operations_.reset(new MockBrowserOperationsInterface());
   }
 
-  DOMUI* GetDOMUI() const { return dom_ui_;}
+  WebUI* GetWebUI() const { return dom_ui_;}
   MockAuthenticatorFacadeCros* GetMockFacade() const {
     return static_cast<MockAuthenticatorFacadeCros*>
         (facade_.get());

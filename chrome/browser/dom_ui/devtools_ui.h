@@ -8,11 +8,11 @@
 
 #include "chrome/browser/dom_ui/web_ui.h"
 
-class DevToolsUI : public DOMUI {
+class DevToolsUI : public WebUI {
  public:
   explicit DevToolsUI(TabContents* contents);
 
-  // DOMUI overrides.
+  // WebUI
   virtual void RenderViewCreated(RenderViewHost* render_view_host);
 
  private:

@@ -14,7 +14,7 @@
 class Profile;
 
 // The TabContents used for the keyboard page.
-class KeyboardUI : public DOMUI {
+class KeyboardUI : public WebUI {
  public:
   explicit KeyboardUI(TabContents* manager);
   ~KeyboardUI();

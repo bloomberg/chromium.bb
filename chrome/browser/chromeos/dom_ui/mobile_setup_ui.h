@@ -8,9 +8,9 @@
 
 #include "chrome/browser/dom_ui/web_ui.h"
 
-// A custom DOMUI that defines datasource for mobile setup registration page
+// A custom WebUI that defines datasource for mobile setup registration page
 // that is used in Chrome OS activate modem and perform plan subscription tasks.
-class MobileSetupUI : public DOMUI {
+class MobileSetupUI : public WebUI {
  public:
   explicit MobileSetupUI(TabContents* contents);
 

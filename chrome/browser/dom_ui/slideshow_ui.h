@@ -8,7 +8,7 @@
 
 #include "chrome/browser/dom_ui/web_ui.h"
 
-class SlideshowUI : public DOMUI {
+class SlideshowUI : public WebUI {
  public:
   explicit SlideshowUI(TabContents* contents);
 

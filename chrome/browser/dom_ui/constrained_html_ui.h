@@ -25,13 +25,13 @@ class ConstrainedHtmlUIDelegate {
   virtual void OnDialogClose() = 0;
 };
 
-// ConstrainedHtmlUI is a facility to show HTML DOM_UI content
+// ConstrainedHtmlUI is a facility to show HTML WebUI content
 // in a tab-modal constrained dialog.  It is implemented as an adapter
 // between an HtmlDialogUI object and a ConstrainedWindow object.
 //
 // Since ConstrainedWindow requires platform-specific delegate
 // implementations, this class is just a factory stub.
-class ConstrainedHtmlUI : public DOMUI {
+class ConstrainedHtmlUI : public WebUI {
  public:
   explicit ConstrainedHtmlUI(TabContents* contents);
   virtual ~ConstrainedHtmlUI();

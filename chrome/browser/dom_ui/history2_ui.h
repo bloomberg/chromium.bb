@@ -46,7 +46,7 @@ class BrowsingHistoryHandler2 : public WebUIMessageHandler,
   virtual ~BrowsingHistoryHandler2();
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(DOMUI* dom_ui);
+  virtual WebUIMessageHandler* Attach(WebUI* web_ui);
   virtual void RegisterMessages();
 
   // Callback for the "getHistory" message.
@@ -96,7 +96,7 @@ class BrowsingHistoryHandler2 : public WebUIMessageHandler,
   DISALLOW_COPY_AND_ASSIGN(BrowsingHistoryHandler2);
 };
 
-class HistoryUI2 : public DOMUI {
+class HistoryUI2 : public WebUI {
  public:
   explicit HistoryUI2(TabContents* contents);
 

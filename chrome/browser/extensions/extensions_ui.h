@@ -261,7 +261,7 @@ class ExtensionsDOMHandler
   DISALLOW_COPY_AND_ASSIGN(ExtensionsDOMHandler);
 };
 
-class ExtensionsUI : public DOMUI {
+class ExtensionsUI : public WebUI {
  public:
   explicit ExtensionsUI(TabContents* contents);
 

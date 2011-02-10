@@ -33,7 +33,7 @@ class HtmlDialogUIDelegate {
 
   // Get WebUIMessageHandler objects to handle messages from the HTML/JS page.
   // The handlers are used to send and receive messages from the page while it
-  // is still open.  Ownership of each handler is taken over by the DOMUI
+  // is still open.  Ownership of each handler is taken over by the WebUI
   // hosting the page.
   virtual void GetWebUIMessageHandlers(
       std::vector<WebUIMessageHandler*>* handlers) const = 0;
@@ -67,15 +67,15 @@ class HtmlDialogUIDelegate {
 
 // Displays file URL contents inside a modal HTML dialog.
 //
-// This application really should not use TabContents + DOMUI. It should instead
+// This application really should not use TabContents + WebUI. It should instead
 // just embed a RenderView in a dialog and be done with it.
 //
-// Before loading a URL corresponding to this DOMUI, the caller should set its
-// delegate as a property on the TabContents. This DOMUI will pick it up from
+// Before loading a URL corresponding to this WebUI, the caller should set its
+// delegate as a property on the TabContents. This WebUI will pick it up from
 // there and call it back. This is a bit of a hack to allow the dialog to pass
 // its delegate to the Web UI without having nasty accessors on the TabContents.
 // The correct design using RVH directly would avoid all of this.
-class HtmlDialogUI : public DOMUI {
+class HtmlDialogUI : public WebUI {
  public:
   struct HtmlDialogParams {
     // The URL for the content that will be loaded in the dialog.
@@ -97,7 +97,7 @@ class HtmlDialogUI : public DOMUI {
   static PropertyAccessor<HtmlDialogUIDelegate*>& GetPropertyAccessor();
 
  private:
-  // DOMUI overrides.
+  // WebUI
   virtual void RenderViewCreated(RenderViewHost* render_view_host);
 
   // JS message handler.

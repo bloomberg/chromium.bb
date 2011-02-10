@@ -11,7 +11,7 @@
 class PrefService;
 class RefCountedMemory;
 
-class RemotingUI : public DOMUI {
+class RemotingUI : public WebUI {
  public:
   explicit RemotingUI(TabContents* contents);
 

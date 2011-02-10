@@ -17,12 +17,12 @@ class JsFrontend;
 }  // namespace browser_sync
 
 // The implementation for the chrome://sync-internals page.
-class SyncInternalsUI : public DOMUI, public browser_sync::JsEventHandler {
+class SyncInternalsUI : public WebUI, public browser_sync::JsEventHandler {
  public:
   explicit SyncInternalsUI(TabContents* contents);
   virtual ~SyncInternalsUI();
 
-  // DOMUI implementation.
+  // WebUI implementation.
   //
   // The following messages are processed:
   //

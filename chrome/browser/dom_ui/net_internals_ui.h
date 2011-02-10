@@ -8,7 +8,7 @@
 
 #include "chrome/browser/dom_ui/web_ui.h"
 
-class NetInternalsUI : public DOMUI {
+class NetInternalsUI : public WebUI {
  public:
   explicit NetInternalsUI(TabContents* contents);
 

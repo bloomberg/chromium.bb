@@ -32,7 +32,7 @@ class BookmarksUIHTMLSource : public ChromeURLDataManager::DataSource {
 
 // This class is used to hook up chrome://bookmarks/ which in turn gets
 // overridden by an extension.
-class BookmarksUI : public DOMUI {
+class BookmarksUI : public WebUI {
  public:
   explicit BookmarksUI(TabContents* contents);
 

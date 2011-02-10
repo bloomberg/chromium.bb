@@ -64,7 +64,7 @@ class MockCoreOptionsHandler : public CoreOptionsHandler {
   }
 };
 
-class SettingsDOMUITest : public DOMUITest {
+class SettingsWebUITest : public DOMUITest {
  protected:
   virtual WebUIMessageHandler* GetMockMessageHandler() {
     return &mock_core_options_handler_;
@@ -73,10 +73,10 @@ class SettingsDOMUITest : public DOMUITest {
   StrictMock<MockCoreOptionsHandler> mock_core_options_handler_;
 };
 
-// Test the end to end js to DOMUI handler code path for
+// Test the end to end js to WebUI handler code path for
 // the message setBooleanPref.
 // TODO(dtseng): add more EXPECT_CALL's when updating js test.
-IN_PROC_BROWSER_TEST_F(SettingsDOMUITest, TestSetBooleanPrefTriggers) {
+IN_PROC_BROWSER_TEST_F(SettingsWebUITest, TestSetBooleanPrefTriggers) {
   // This serves as an example of a very constrained test.
   ListValue true_list_value;
   true_list_value.Append(Value::CreateStringValue("browser.show_home_button"));

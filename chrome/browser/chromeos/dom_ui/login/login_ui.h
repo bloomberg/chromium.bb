@@ -79,7 +79,7 @@ class LoginUIHandler : public WebUIMessageHandler,
 
 // Boilerplate class that is used to associate the LoginUI code with the DOMui
 // code.
-class LoginUI : public DOMUI {
+class LoginUI : public WebUI {
  public:
   explicit LoginUI(TabContents* contents);
 

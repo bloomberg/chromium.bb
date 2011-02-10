@@ -13,7 +13,7 @@
 class RefCountedMemory;
 
 // The Web UI handler for about:conflicts.
-class ConflictsUI : public DOMUI {
+class ConflictsUI : public WebUI {
  public:
   explicit ConflictsUI(TabContents* contents);
 

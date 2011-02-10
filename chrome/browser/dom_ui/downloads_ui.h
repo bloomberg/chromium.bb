@@ -10,7 +10,7 @@
 
 class RefCountedMemory;
 
-class DownloadsUI : public DOMUI {
+class DownloadsUI : public WebUI {
  public:
   explicit DownloadsUI(TabContents* contents);
 

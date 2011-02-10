@@ -11,7 +11,7 @@
 class PrefService;
 class RefCountedMemory;
 
-class FlagsUI : public DOMUI {
+class FlagsUI : public WebUI {
  public:
   explicit FlagsUI(TabContents* contents);
 

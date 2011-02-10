@@ -167,11 +167,12 @@ class ImageBurnResourceManager : public DownloadManager::Observer,
   DISALLOW_COPY_AND_ASSIGN(ImageBurnResourceManager);
 };
 
-class ImageBurnUI : public DOMUI {
+class ImageBurnUI : public WebUI {
  public:
   explicit ImageBurnUI(TabContents* contents);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ImageBurnUI);
 };
+
 #endif  // CHROME_BROWSER_CHROMEOS_DOM_UI_IMAGEBURNER_UI_H_

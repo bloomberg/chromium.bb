@@ -8,7 +8,7 @@
 
 #include "chrome/browser/dom_ui/web_ui.h"
 
-class SystemInfoUI : public DOMUI {
+class SystemInfoUI : public WebUI {
  public:
   explicit SystemInfoUI(TabContents* contents);
 

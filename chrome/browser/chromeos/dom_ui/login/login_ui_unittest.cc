@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,7 @@ using ::testing::StrEq;
 // LoginUIHandler::RegisterMessage
 //
 // There is currently no test for LoginUIHandler::RegisterMessage, b/c the
-// function DOMUI::RegisterMesssageCallback is not declared virtual. This means
+// function WebUI::RegisterMesssageCallback is not declared virtual. This means
 // that it cannot be mocked easily and it is non-trivial to resolve, since just
 // making the function virtual causes other problems. Either this class or that
 // class needs to be refactored to deal with this before one can write this
@@ -53,10 +53,10 @@ namespace chromeos {
 TEST(LoginUIHandlerTest, Attach) {
   // Don't care about the expected in this test
   LoginUIHandlerHarness handler_harness("", "");
-  MockDOMUI dom_ui;
+  MockWebUI web_ui;
 
-  EXPECT_EQ(&handler_harness, handler_harness.Attach(&dom_ui));
-  EXPECT_EQ(&dom_ui, handler_harness.GetDOMUI());
+  EXPECT_EQ(&handler_harness, handler_harness.Attach(&web_ui));
+  EXPECT_EQ(&web_ui, handler_harness.GetWebUI());
 }
 
 // Helper for LoginUIHandler::HandleAuthenticateUser

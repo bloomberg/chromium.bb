@@ -150,7 +150,7 @@ class MediaPlayer : public NotificationObserver,
   DISALLOW_COPY_AND_ASSIGN(MediaPlayer);
 };
 
-class MediaplayerUI : public DOMUI {
+class MediaplayerUI : public WebUI {
  public:
   explicit MediaplayerUI(TabContents* contents);
 

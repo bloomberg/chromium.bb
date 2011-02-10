@@ -22,13 +22,13 @@ class PrefService;
 class Profile;
 
 // The TabContents used for the New Tab page.
-class NewTabUI : public DOMUI,
+class NewTabUI : public WebUI,
                  public NotificationObserver {
  public:
   explicit NewTabUI(TabContents* manager);
   ~NewTabUI();
 
-  // Override DOMUI methods so we can hook up the paint timer to the render
+  // Override WebUI methods so we can hook up the paint timer to the render
   // view host.
   virtual void RenderViewCreated(RenderViewHost* render_view_host);
   virtual void RenderViewReused(RenderViewHost* render_view_host);

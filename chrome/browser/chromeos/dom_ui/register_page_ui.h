@@ -8,9 +8,9 @@
 
 #include "chrome/browser/dom_ui/web_ui.h"
 
-// A custom DOMUI that defines datasource for host registration page that
+// A custom WebUI that defines datasource for host registration page that
 // is used in Chrome OS to register product on first sign in.
-class RegisterPageUI : public DOMUI {
+class RegisterPageUI : public WebUI {
  public:
   explicit RegisterPageUI(TabContents* contents);
 
