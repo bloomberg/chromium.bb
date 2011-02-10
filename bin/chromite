@@ -55,6 +55,16 @@ for path in Search(os.getcwd()):
     import chromite.shell.main
     break
   except ImportError, e:
+    # Just in case there is actually something wrong with Chromite, print
+    # a sensible error. We match only the end of the string so that we can
+    # handle an error within the chromite directory.
+    # The full error is 'No module named (chromite.)shell.main'
+    # Note: If you hit the directory containing chromite on the way up, then
+    # the error will be 'No module named shell.main' so we must check only the
+    # shell.main part.
+    if not str(e).endswith('shell.main'):
+      raise
+
     # We've got different modules named chromite in the tree, pulling in the
     # wrong one will break the right one.  So unload it.
     if 'chromite' in sys.modules:
