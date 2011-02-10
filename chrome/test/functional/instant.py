@@ -165,6 +165,58 @@ class InstantTest(pyauto.PyUITest):
     self.OpenFindInPage()
     self.assertEqual(self.GetActiveTabTitle(), '')
 
+  def _AssertInstantDoesNotDownloadFile(self, path):
+    """Asserts instant does not download the specified file.
+
+       Args:
+         path: Path to file.
+    """
+    self.NavigateToURL('chrome://downloads')
+    filepath = self.GetFileURLForDataPath(path)
+    self.SetOmniboxText(filepath)
+    self.WaitUntilOmniboxQueryDone()
+    self.WaitForAllDownloadsToComplete()
+    self.assertFalse(self.GetDownloadsInfo().Downloads(),
+                     msg='Should not download: %s' % filepath)
+
+  def testInstantDoesNotDownloadZipFile(self):
+    """Test that instant does not download zip file."""
+    self._AssertInstantDoesNotDownloadFile(os.path.join('zip', 'test.zip'))
+
+  def testInstantDoesNotDownloadPDFFile(self):
+    """Test that instant does not download PDF file."""
+    self._AssertInstantDoesNotDownloadFile(os.path.join('printing',
+                                           'cloud_print_unittest.pdf'))
+
+  def _AssertInstantLoadsFile(self, path):
+    """Asserts instant loads the specified file.
+
+       Args:
+         path: Path to file.
+    """
+    filepath = self.GetFileURLForDataPath(path)
+    error = 'Failed to load: %s' % filepath
+    self.SetOmniboxText(filepath)
+    self.assertTrue(self.WaitUntil(self._DoneLoading), msg=error)
+    self.assertEqual(self.GetInstantInfo()['location'], filepath, msg=error)
+
+  def testInstantLoadsGIF(self):
+    """Test that instant loads GIF file."""
+    self._AssertInstantLoadsFile(os.path.join('animate1.gif'))
+
+  def testInstantLoadsJPEG(self):
+    """Test that instant loads JPEG file."""
+    self._AssertInstantLoadsFile(os.path.join('gpu', 'webgl_teapot',
+                                              'bump.jpg'))
+
+  def testInstantLoadsPNG(self):
+    """Test that instant loads PNG file."""
+    self._AssertInstantLoadsFile(os.path.join('save_page', '1.png'))
+
+  def testInstantLoadsSVG(self):
+    """Test that instant loads SVG file."""
+    self._AssertInstantLoadsFile(os.path.join('circle.svg'))
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()
