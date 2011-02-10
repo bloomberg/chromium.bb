@@ -21,6 +21,9 @@ class ImporterHost;
 class ImporterLockView : public views::View,
                          public views::DialogDelegate {
  public:
+  static void Show(gfx::NativeWindow parent, ImporterHost* importer_host);
+
+ private:
   explicit ImporterLockView(ImporterHost* host);
   virtual ~ImporterLockView();
 

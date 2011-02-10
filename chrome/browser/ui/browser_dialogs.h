@@ -11,6 +11,7 @@
 
 class HtmlDialogUIDelegate;
 class Profile;
+class ImporterHost;
 
 namespace browser {
 
@@ -31,6 +32,13 @@ void ShowAboutIPCDialog();
 // to do so, i.e. before OnDialogClosed() is called on the delegate.
 gfx::NativeWindow ShowHtmlDialog(gfx::NativeWindow parent, Profile* profile,
                                  HtmlDialogUIDelegate* delegate);
+
+// This function is called by an ImporterHost, and displays the Firefox profile
+// locked warning by creating a dialog.  On the closing of the dialog, the
+// ImportHost receives a callback with the message either to skip the import,
+// or to try again.
+void ShowImportLockDialog(gfx::NativeWindow parent,
+                          ImporterHost* importer_host);
 
 } // namespace browser
 

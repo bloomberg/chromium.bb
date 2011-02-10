@@ -18,6 +18,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/notification_source.h"
@@ -30,13 +31,8 @@
 
 // TODO(port): Port these files.
 #if defined(OS_WIN)
-#include "chrome/browser/ui/views/importer_lock_view.h"
 #include "ui/base/message_box_win.h"
 #include "views/window/window.h"
-#elif defined(OS_MACOSX)
-#include "chrome/browser/ui/cocoa/importer/importer_lock_dialog.h"
-#elif defined(TOOLKIT_USES_GTK)
-#include "chrome/browser/ui/gtk/import_lock_dialog_gtk.h"
 #endif
 
 using webkit_glue::PasswordForm;
@@ -128,14 +124,7 @@ void ImporterHost::ShowWarningDialog() {
   if (headless_) {
     OnLockViewEnd(false);
   } else {
-#if defined(OS_WIN)
-    views::Window::CreateChromeWindow(NULL, gfx::Rect(),
-                                      new ImporterLockView(this))->Show();
-#elif defined(TOOLKIT_USES_GTK)
-    ImportLockDialogGtk::Show(parent_window_, this);
-#else
-    ImportLockDialogCocoa::ShowWarning(this);
-#endif
+    browser::ShowImportLockDialog(parent_window_, this);
   }
 }
 
@@ -386,7 +375,7 @@ ExternalProcessImporterClient::ExternalProcessImporterClient(
       items_(items),
       import_to_bookmark_bar_(import_to_bookmark_bar),
       bridge_(bridge),
-      cancelled_(FALSE) {
+      cancelled_(false) {
   bridge_->AddRef();
   process_importer_host_->ImportStarted();
 }

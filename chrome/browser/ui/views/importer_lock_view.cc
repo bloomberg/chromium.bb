@@ -19,6 +19,23 @@
 static const int kDefaultWindowWidth = 320;
 static const int kDefaultWindowHeight = 100;
 
+namespace browser {
+
+void ShowImportLockDialog(gfx::NativeWindow parent,
+                          ImporterHost* importer_host) {
+  ImporterLockView::Show(parent, importer_host);
+}
+
+}  // namespace browser
+
+// static
+void ImporterLockView::Show(gfx::NativeWindow parent,
+                            ImporterHost* importer_host) {
+  views::Window::CreateChromeWindow(
+      NULL, gfx::Rect(),
+      new ImporterLockView(importer_host))->Show();
+}
+
 ImporterLockView::ImporterLockView(ImporterHost* host)
     : description_label_(NULL),
       importer_host_(host) {
