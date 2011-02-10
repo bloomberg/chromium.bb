@@ -21,6 +21,7 @@ class EntitySpecifics;
 class ExtensionSpecifics;
 class NigoriSpecifics;
 class PasswordSpecifics;
+class PasswordSpecificsData;
 class PreferenceSpecifics;
 class SessionHeader;
 class SessionSpecifics;
@@ -62,6 +63,11 @@ DictionaryValue* SessionWindowToValue(
 
 DictionaryValue* TabNavigationToValue(
     const sync_pb::TabNavigation& tab_navigation);
+
+// Sub-protocol of PasswordSpecifics.
+
+DictionaryValue* PasswordSpecificsDataToValue(
+    const sync_pb::PasswordSpecificsData& password_specifics_data);
 
 // Main *SpecificsToValue functions.
 

@@ -17,6 +17,8 @@
 #include "base/logging.h"
 #include "base/time.h"
 
+class ListValue;
+
 namespace sync_pb {
 class EntitySpecifics;
 class SyncEntity;
@@ -112,6 +114,9 @@ ModelType ModelTypeFromString(const std::string& model_type_string);
 bool ModelTypeBitSetFromString(
     const std::string& model_type_bitset_string,
     ModelTypeBitSet* model_types);
+
+// Caller takes ownership of returned list.
+ListValue* ModelTypeBitSetToValue(const ModelTypeBitSet& model_types);
 
 // Posts timedeltas to histogram of datatypes. Allows tracking of the frequency
 // at which datatypes cause syncs.

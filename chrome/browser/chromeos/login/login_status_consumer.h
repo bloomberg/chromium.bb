@@ -7,6 +7,8 @@
 #pragma once
 
 #include <string>
+
+#include "base/logging.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "net/base/net_errors.h"

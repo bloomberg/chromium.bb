@@ -7,6 +7,10 @@
 #include <set>
 #include <vector>
 
+#include "base/base64.h"
+#include "base/values.h"
+#include "chrome/browser/sync/protocol/proto_enum_conversions.h"
+
 using std::set;
 using std::vector;
 
@@ -37,6 +41,15 @@ TypePayloadMap MakeTypePayloadMapFromRoutingInfo(
   return types_with_payloads;
 }
 
+DictionaryValue* TypePayloadMapToValue(const TypePayloadMap& type_payloads) {
+  DictionaryValue* value = new DictionaryValue();
+  for (TypePayloadMap::const_iterator it = type_payloads.begin();
+       it != type_payloads.end(); ++it) {
+    value->SetString(syncable::ModelTypeToString(it->first), it->second);
+  }
+  return value;
+}
+
 void CoalescePayloads(TypePayloadMap* original,
                       const TypePayloadMap& update) {
   for (TypePayloadMap::const_iterator i = update.begin();
@@ -63,6 +76,14 @@ SyncSourceInfo::SyncSourceInfo(
 
 SyncSourceInfo::~SyncSourceInfo() {}
 
+DictionaryValue* SyncSourceInfo::ToValue() const {
+  DictionaryValue* value = new DictionaryValue();
+  value->SetString("updatesSource",
+                   GetUpdatesSourceString(updates_source));
+  value->Set("types", TypePayloadMapToValue(types));
+  return value;
+}
+
 SyncerStatus::SyncerStatus()
     : invalid_store(false),
       syncer_stuck(false),
@@ -73,10 +94,52 @@ SyncerStatus::SyncerStatus()
       num_tombstone_updates_downloaded_total(0) {
 }
 
+DictionaryValue* SyncerStatus::ToValue() const {
+  DictionaryValue* value = new DictionaryValue();
+  value->SetBoolean("invalidStore", invalid_store);
+  value->SetBoolean("syncerStuck", syncer_stuck);
+  value->SetBoolean("syncing", syncing);
+  value->SetInteger("numSuccessfulCommits", num_successful_commits);
+  value->SetInteger("numSuccessfulBookmarkCommits",
+                num_successful_bookmark_commits);
+  value->SetInteger("numUpdatesDownloadedTotal",
+                num_updates_downloaded_total);
+  value->SetInteger("numTombstoneUpdatesDownloadedTotal",
+                num_tombstone_updates_downloaded_total);
+  return value;
+}
+
+DictionaryValue* DownloadProgressMarkersToValue(
+    const std::string
+        (&download_progress_markers)[syncable::MODEL_TYPE_COUNT]) {
+  DictionaryValue* value = new DictionaryValue();
+  for (int i = syncable::FIRST_REAL_MODEL_TYPE;
+       i < syncable::MODEL_TYPE_COUNT; ++i) {
+    // TODO(akalin): Unpack the value into a protobuf.
+    std::string base64_marker;
+    bool encoded =
+        base::Base64Encode(download_progress_markers[i], &base64_marker);
+    DCHECK(encoded);
+    value->SetString(
+        syncable::ModelTypeToString(syncable::ModelTypeFromInt(i)),
+        base64_marker);
+  }
+  return value;
+}
+
 ErrorCounters::ErrorCounters()
     : num_conflicting_commits(0),
       consecutive_transient_error_commits(0),
       consecutive_errors(0) {
+}
+
+DictionaryValue* ErrorCounters::ToValue() const {
+  DictionaryValue* value = new DictionaryValue();
+  value->SetInteger("numConflictingCommits", num_conflicting_commits);
+  value->SetInteger("consecutiveTransientErrorCommits",
+                consecutive_transient_error_commits);
+  value->SetInteger("consecutiveErrors", consecutive_errors);
+  return value;
 }
 
 SyncSessionSnapshot::SyncSessionSnapshot(
@@ -85,7 +148,8 @@ SyncSessionSnapshot::SyncSessionSnapshot(
     int64 num_server_changes_remaining,
     bool is_share_usable,
     const syncable::ModelTypeBitSet& initial_sync_ended,
-    std::string download_progress_markers[syncable::MODEL_TYPE_COUNT],
+    const std::string
+        (&download_progress_markers)[syncable::MODEL_TYPE_COUNT],
     bool more_to_sync,
     bool is_silenced,
     int64 unsynced_count,
@@ -104,13 +168,37 @@ SyncSessionSnapshot::SyncSessionSnapshot(
       num_conflicting_updates(num_conflicting_updates),
       did_commit_items(did_commit_items),
       source(source) {
-  for (int i = 0; i < syncable::MODEL_TYPE_COUNT; ++i) {
+  for (int i = syncable::FIRST_REAL_MODEL_TYPE;
+       i < syncable::MODEL_TYPE_COUNT; ++i) {
     const_cast<std::string&>(this->download_progress_markers[i]).assign(
         download_progress_markers[i]);
   }
 }
 
 SyncSessionSnapshot::~SyncSessionSnapshot() {}
+
+DictionaryValue* SyncSessionSnapshot::ToValue() const {
+  DictionaryValue* value = new DictionaryValue();
+  value->Set("syncerStatus", syncer_status.ToValue());
+  value->Set("errors", errors.ToValue());
+  // We don't care too much if we lose precision here.
+  value->SetInteger("numServerChangesRemaining",
+                    static_cast<int>(num_server_changes_remaining));
+  value->SetBoolean("isShareUsable", is_share_usable);
+  value->Set("initialSyncEnded",
+             syncable::ModelTypeBitSetToValue(initial_sync_ended));
+  value->Set("downloadProgressMarkers",
+             DownloadProgressMarkersToValue(download_progress_markers));
+  value->SetBoolean("hasMoreToSync", has_more_to_sync);
+  value->SetBoolean("isSilenced", is_silenced);
+  // We don't care too much if we lose precision here, also.
+  value->SetInteger("unsyncedCount",
+                    static_cast<int>(unsynced_count));
+  value->SetInteger("numConflictingUpdates", num_conflicting_updates);
+  value->SetBoolean("didCommitItems", did_commit_items);
+  value->Set("source", source.ToValue());
+  return value;
+}
 
 ConflictProgress::ConflictProgress(bool* dirty_flag) : dirty_(dirty_flag) {}
 
