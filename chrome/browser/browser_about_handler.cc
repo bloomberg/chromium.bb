@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/i18n/number_formatting.h"
+#include "base/json/json_writer.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/stats_table.h"
 #include "base/path_service.h"
@@ -427,10 +428,23 @@ static std::string AboutObjects(const std::string& query) {
 }
 #endif  // TRACK_ALL_TASK_OBJECTS
 
-std::string AboutStats() {
+// Handler for filling in the "about:stats" page, as called by the browser's
+// About handler processing.
+// |query| is roughly the query string of the about:stats URL.
+// Returns a string containing the HTML to render for the about:stats page.
+// Conditional Output:
+//      if |query| is "json", returns a JSON format of all counters.
+//      if |query| is "raw", returns plain text of counter deltas.
+//      otherwise, returns HTML with pretty JS/HTML to display the data.
+std::string AboutStats(const std::string& query) {
   // We keep the DictionaryValue tree live so that we can do delta
   // stats computations across runs.
   static DictionaryValue root;
+  static base::TimeTicks last_sample_time = base::TimeTicks::Now();
+
+  base::TimeTicks now = base::TimeTicks::Now();
+  base::TimeDelta time_since_last_sample = now - last_sample_time;
+  last_sample_time = now;
 
   base::StatsTable* table = base::StatsTable::current();
   if (!table)
@@ -518,22 +532,58 @@ std::string AboutStats() {
     }
   }
 
-  // Get about_stats.html
-  static const base::StringPiece stats_html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_ABOUT_STATS_HTML));
+  std::string data;
+  if (query == "json") {
+    base::JSONWriter::WriteWithOptionalEscape(&root, true, false, &data);
+  } else if (query == "raw") {
+    // Dump the raw counters which have changed in text format.
+    data = "<pre>";
+    data.append(StringPrintf("Counter changes in the last %ldms\n",
+        static_cast<long int>(time_since_last_sample.InMilliseconds())));
+    for (size_t i = 0; i < counters->GetSize(); ++i) {
+      Value* entry = NULL;
+      bool rv = counters->Get(i, &entry);
+      if (!rv)
+        continue;  // None of these should fail.
+      DictionaryValue* counter = static_cast<DictionaryValue*>(entry);
+      int delta;
+      rv = counter->GetInteger("delta", &delta);
+      if (!rv)
+        continue;
+      if (delta > 0) {
+        std::string name;
+        rv = counter->GetString("name", &name);
+        if (!rv)
+          continue;
+        int value;
+        rv = counter->GetInteger("value", &value);
+        if (!rv)
+          continue;
+        data.append(name);
+        data.append(":");
+        data.append(base::IntToString(delta));
+        data.append("\n");
+      }
+    }
+    data.append("</pre>");
+  } else {
+    // Get about_stats.html and process a pretty page.
+    static const base::StringPiece stats_html(
+        ResourceBundle::GetSharedInstance().GetRawDataResource(
+            IDR_ABOUT_STATS_HTML));
 
-  // Create jstemplate and return.
-  std::string data = jstemplate_builder::GetTemplateHtml(
-      stats_html, &root, "t" /* template root node id */);
+    // Create jstemplate and return.
+    data = jstemplate_builder::GetTemplateHtml(
+        stats_html, &root, "t" /* template root node id */);
 
-  // Clear the timer list since we stored the data in the timers list as well.
-  for (int index = static_cast<int>(timers->GetSize())-1; index >= 0;
-       index--) {
-    Value* value;
-    timers->Remove(index, &value);
-    // We don't care about the value pointer; it's still tracked
-    // on the counters list.
+    // Clear the timer list since we stored the data in the timers list as well.
+    for (int index = static_cast<int>(timers->GetSize())-1; index >= 0;
+         index--) {
+      Value* value;
+      timers->Remove(index, &value);
+      // We don't care about the value pointer; it's still tracked
+      // on the counters list.
+    }
   }
 
   return data;
@@ -721,7 +771,7 @@ void AboutSource::StartDataRequest(const std::string& path_raw,
     response = AboutObjects(info);
 #endif
   } else if (path == kStatsPath) {
-    response = AboutStats();
+    response = AboutStats(info);
 #if defined(USE_TCMALLOC)
   } else if (path == kTcmallocPath) {
     response = AboutTcmalloc(info);
