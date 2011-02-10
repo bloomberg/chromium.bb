@@ -1769,17 +1769,33 @@ long Segment::Load()
     assert(m_clusters == NULL);
     assert(m_clusterSize == 0);
     assert(m_clusterCount == 0);
-    assert(m_size >= 0);  //TODO: we now allow size < 0
+    //assert(m_size >= 0);
 
     //Outermost (level 0) segment object has been constructed,
     //and pos designates start of payload.  We need to find the
     //inner (level 1) elements.
 
-    const long long stop = m_start + m_size;
+    long long total, avail;
 
-    while (m_pos < stop)
+    const long status = m_pReader->Length(&total, &avail);
+
+    if (status < 0)  //error
+        return status;
+
+    assert((total < 0) || (avail <= total));
+
+    const long long segment_stop = (m_size < 0) ? -1 : m_start + m_size;
+
+    for (;;)
     {
         long long pos = m_pos;
+
+        if ((total >= 0) && (pos >= total))
+            break;
+
+        if ((segment_stop >= 0) && (pos >= segment_stop))
+            break;
+
         const long long element_start = pos;
 
         long len;
@@ -1789,7 +1805,7 @@ long Segment::Load()
         if (result < 0)  //error
             return static_cast<long>(result);
 
-        if ((pos + len) > stop)
+        if ((segment_stop >= 0) && ((pos + len) > segment_stop))
             return E_FILE_FORMAT_INVALID;
 
         const long long idpos = pos;
@@ -1806,7 +1822,7 @@ long Segment::Load()
         if (result < 0)  //error
             return static_cast<long>(result);
 
-        if ((pos + len) > stop)
+        if ((segment_stop >= 0) && ((pos + len) > segment_stop))
             return E_FILE_FORMAT_INVALID;
 
         const long long size = ReadUInt(m_pReader, pos, len);
@@ -1814,13 +1830,18 @@ long Segment::Load()
         if (size < 0)  //error
             return static_cast<long>(size);
 
+        const long long unknown_size = (1LL << (7 * len)) - 1;
+
+        if (size == unknown_size)
+            return E_FILE_FORMAT_INVALID;
+
         pos += len;  //consume length of size of element
 
         const long long element_size = size + pos - element_start;
 
         //Pos now points to start of payload
 
-        if ((pos + size) > stop)
+        if ((segment_stop >= 0) && ((pos + size) > segment_stop))
             return E_FILE_FORMAT_INVALID;
 
         if (id == 0x0F43B675)  //Cluster ID
@@ -1875,8 +1896,6 @@ long Segment::Load()
 
         m_pos = pos + size;  //consume payload
     }
-
-    assert(m_pos >= stop);
 
     if (m_pInfo == NULL)
         return E_FILE_FORMAT_INVALID;  //TODO: ignore this case?
@@ -5493,6 +5512,10 @@ void Cluster::LoadBlockEntries() const
 
         const long long size = ReadUInt(pReader, pos, len);
         assert(size > 0);
+
+        const long long unknown_size = (1LL << (7 * len)) - 1;
+        unknown_size;
+        assert(size != unknown_size);
 
         pos += len;  //consume size
 
