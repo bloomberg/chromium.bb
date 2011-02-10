@@ -56,6 +56,7 @@ FormStructureBrowserTest::~FormStructureBrowserTest() {
 
 void FormStructureBrowserTest::GenerateResults(const std::string& input,
                                                std::string* output) {
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(),
                                                        HTMLToDataURI(input)));
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::ClickOnView(browser(),
@@ -91,14 +92,7 @@ std::string FormStructureBrowserTest::FormStructuresToString(
   return forms_string;
 }
 
-#if defined(OS_WIN)
-// This test fails on the 'Win' full builder: http://crbug.com/72401
-#define MAYBE_DataDrivenHeuristics DISABLED_DataDrivenHeuristics
-#else
-#define MAYBE_DataDrivenHeuristics DataDrivenHeuristics
-#endif
-IN_PROC_BROWSER_TEST_F(FormStructureBrowserTest, MAYBE_DataDrivenHeuristics) {
-  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+IN_PROC_BROWSER_TEST_F(FormStructureBrowserTest, DataDrivenHeuristics) {
   RunDataDrivenTest(GetInputDirectory(kTestName),
                     GetOutputDirectory(kTestName),
                     kFileNamePattern);
