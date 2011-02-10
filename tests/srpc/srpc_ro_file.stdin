@@ -1,0 +1,3 @@
+# myfile needs to be set via commanline
+readonly_file myfile ${myfile}
+rpc cat h(myfile) * C(200)

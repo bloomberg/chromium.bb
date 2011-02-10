@@ -424,6 +424,7 @@ nacl_glibc_skiplist = set([
     # TODO(robertm): This needs further investigation.
     'run_ppapi_example_2d_test',
     'run_ppapi_event_test',
+    'run_srpc_ro_file_test',
     ])
 
 
@@ -1120,7 +1121,7 @@ def CommandGdbTestNacl(env, name, command,
 pre_base_env.AddMethod(CommandGdbTestNacl)
 
 
-def SelUniversalTest(env, name, command, **kwargs):
+def SelUniversalTest(env, name, command, sel_universal_flags=None, **kwargs):
   # sel_universal does not know how to invoke sel_ldr via QEMU, so it
   # does not work when testing the ARM build on another architecture.
   # See http://code.google.com/p/nativeclient/issues/detail?id=1300
@@ -1134,7 +1135,11 @@ def SelUniversalTest(env, name, command, **kwargs):
   # option to ld.so to disable its argv-over-IPC feature.
   if env.Bit('nacl_glibc') and not env.Bit('nacl_static_link'):
     return []
-  node = CommandSelLdrTestNacl(env, name, command, loader='sel_universal',
+  node = CommandSelLdrTestNacl(env,
+                               name,
+                               command,
+                               loader='sel_universal',
+                               sel_ldr_flags=sel_universal_flags,
                                **kwargs)
   # sel_universal locates sel_ldr via /proc/self/exe on Linux.
   if not env.Bit('built_elsewhere'):
@@ -1155,6 +1160,7 @@ def AddToStringifiedList(lst, additions):
 def CommandSelLdrTestNacl(env, name, command,
                           log_verbosity=2,
                           sel_ldr_flags=None,
+                          leading_flags=None,
                           loader='sel_ldr',
                           size='medium',
                           # True for *.nexe statically linked with glibc
@@ -1173,6 +1179,7 @@ def CommandSelLdrTestNacl(env, name, command,
     print 'WARNING: no sel_ldr found. Skipping test %s' % name
     return []
 
+  # Avoid problems with [] as default arguments
   if sel_ldr_flags is None:
     sel_ldr_flags = []
 

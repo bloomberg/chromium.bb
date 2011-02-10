@@ -13,8 +13,11 @@
 #endif
 
 #include <stdio.h>
+
+#include <map>
 #include <string>
 #include <vector>
+
 
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/nacl_macros.h"
@@ -27,8 +30,9 @@
 #include "native_client/src/trusted/sel_universal/replay_handler.h"
 #include "native_client/src/trusted/sel_universal/rpc_universal.h"
 
-using std::vector;
+using std::map;
 using std::string;
+using std::vector;
 using nacl::DescWrapper;
 
 static const char* kUsage =
@@ -43,8 +47,11 @@ static const char* kUsage =
 // NOTE: this used to be stack allocated inside main which cause
 // problems on ARM (probably a tool chain bug).
 // NaClSrpcChannel is pretty big (> 256kB)
-struct NaClSrpcChannel command_channel;
-struct NaClSrpcChannel channel;
+static NaClSrpcChannel command_channel;
+static NaClSrpcChannel channel;
+
+// variables set via command line
+static map<string, string> initial_vars;
 
 // When given argc and argv this function (a) extracts the nacl_file argument,
 // (b) populates sel_ldr_argv with sel_ldr arguments, and (c) populates
@@ -62,16 +69,27 @@ static nacl::string ProcessArguments(int argc,
   // Extract '-f nacl_file' from args and transfer the rest to sel_ldr_argv
   nacl::string app_name;
   for (int i = 1; i < argc; i++) {
+    const string flag(argv[i]);
     // Check if the argument has the form -f nacl_file
-    if (string(argv[i]) == "-f" && i + 1 < argc) {
+    if (flag == "-f" && i + 1 < argc) {
       app_name = argv[i + 1];
       ++i;
-    } else if (string(argv[i]) == "--help") {
+    } else if (flag == "--help") {
       printf("%s", kUsage);
       exit(0);
-    } else if (string(argv[i]) == "--debug") {
+    } else if (flag == "--debug") {
       NaClLogSetVerbosity(1);
-    } else if (string(argv[i]) == "--") {
+    } else if (flag == "--var") {
+      if (i + 2 >= argc) {
+        NaClLog(LOG_FATAL, "not enough args for --var option\n");
+        exit(1);
+      }
+
+      const string tag = string(argv[i + 1]);
+      const string val = string(argv[i + 2]);
+      i += 2;
+      initial_vars[tag] = val;
+    } else if (flag == "--") {
       // Done processing sel_ldr args. If no '-f nacl_file' was given earlier,
       // the first argument after '--' is the nacl_file.
       i++;
@@ -144,15 +162,25 @@ int main(int argc, char* argv[]) {
   loop.AddHandler("replay", HandlerReplay);
 
 #if NACL_LINUX
+  // TODO(robertm): rename rpc_universal_sysv.cc and a header file
   extern bool HandlerSysv(NaClCommandLoop* ncl, const vector<string>& args);
   loop.AddHandler("sysv", HandlerSysv);
+
+  extern bool HandlerReadonlyFile(NaClCommandLoop* ncl, const vector<string>& args);
+  loop.AddHandler("readonly_file", HandlerReadonlyFile);
 
   extern bool HandlerSleep(NaClCommandLoop* ncl, const vector<string>& args);
   loop.AddHandler("sleep", HandlerSleep);
 #endif  /* NACL_LINUX */
 
-  NaClLog(1, "starting loop\n");
+  NaClLog(1, "populating initial vars\n");
+  for (map<string, string>::iterator it = initial_vars.begin();
+       it != initial_vars.end();
+       ++it) {
+    loop.SetVariable(it->first, it->second);
+  }
 
+  NaClLog(1, "starting loop\n");
   loop.StartInteractiveLoop();
 
   // Close the connections to sel_ldr.

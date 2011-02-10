@@ -192,6 +192,20 @@ node = env.BrowserTester(
      )
 env.AddNodeToTestSuite(node, ['browser_tests'],
                        'run_srpc_url_as_nacl_desc_browser_test')
+
+# NOTE: sel_universal only supports read-only files under linux
+if trusted_env and trusted_env.Bit('linux'):
+  node = env.SelUniversalTest(
+      'srpc_rofile.out',
+      command=[env.File('cat.nexe')],
+      sel_universal_flags=['--var', 'myfile', env.File('dummy.txt')],
+      stdin=env.File('srpc_ro_file.stdin'),
+      stdout_golden=env.File('srpc_ro_file.stdout'),
+      filter_regex="'CatFile'",
+      filter_inverse='true',
+      )
+  env.AddNodeToTestSuite(node, ['small_tests'], 'run_srpc_ro_file_test')
+
 ######################################################################
 ## PPAPI Browser Tests
 ######################################################################

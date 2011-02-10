@@ -4,6 +4,8 @@
  * found in the LICENSE file.
  */
 
+#include <fcntl.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/ipc.h>
 #include <sys/mman.h>
@@ -67,10 +69,13 @@ uintptr_t Align(uintptr_t start, uintptr_t alignment) {
 }
 
 NaClDesc* SysvShmDesc(int size) {
-  // small leak
-  NaClDescSysvShm* shm_desc = new NaClDescSysvShm;
+  // small leak of desciptor(s)
+  // freed via free()
+  NaClDescSysvShm* shm_desc = reinterpret_cast<NaClDescSysvShm*>(
+    calloc(1, sizeof(*shm_desc)));
   // alias to prevent several typecasts
   NaClDesc* desc = reinterpret_cast<NaClDesc*>(shm_desc);
+
 
   /* Construct the descriptor with a new shared memory region. */
   if (!NaClDescSysvShmCtor(shm_desc, (nacl_off64_t) size)) {
@@ -124,6 +129,25 @@ NaClDesc* SysvShmDesc(int size) {
   return desc;
 }
 
+
+NaClDesc* ReadonlyFileDesc(string fname) {
+  // small leak of descriptor(s)
+  // freed via free()
+  NaClHostDesc *host_desc = reinterpret_cast<struct NaClHostDesc*>(
+      calloc(1, sizeof(host_desc)));
+
+  if (0 != NaClHostDescOpen(host_desc, fname.c_str(),  O_RDONLY, 0)) {
+    return kNaClSrpcInvalidImcDesc;
+  }
+
+  NaClDescIoDesc* io_desc = NaClDescIoDescMake(host_desc);
+  if (NULL == io_desc) {
+    return kNaClSrpcInvalidImcDesc;
+  }
+
+  return reinterpret_cast<struct NaClDesc*>(io_desc);
+}
+
 }  // namespace
 
 bool HandlerSysv(NaClCommandLoop* ncl, const vector<string>& args) {
@@ -142,6 +166,22 @@ bool HandlerSysv(NaClCommandLoop* ncl, const vector<string>& args) {
   stringstream str;
   str << "0x" << std::hex << GlobalAddressMap.Get(desc);
   ncl->SetVariable(args[2], str.str());
+  return true;
+}
+
+
+bool HandlerReadonlyFile(NaClCommandLoop* ncl, const vector<string>& args) {
+  if (args.size() < 3) {
+    NaClLog(LOG_ERROR, "not enough args\n");
+    return false;
+  }
+
+  NaClDesc* desc = ReadonlyFileDesc(args[2].c_str());
+  if (kNaClSrpcInvalidImcDesc == desc) {
+    NaClLog(LOG_ERROR, "cound not create desc for %s\n", args[2].c_str());
+    return false;
+  }
+  ncl->AddDesc(desc, args[1]);
   return true;
 }
 
