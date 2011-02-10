@@ -149,7 +149,7 @@ void ClearBrowsingDataView2::Init() {
   }
   column_set->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
   layout->StartRow(1, 0);
@@ -176,7 +176,7 @@ void ClearBrowsingDataView2::InitControlLayout() {
   column_set = layout->AddColumnSet(two_column_set_id);
   column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
                         GridLayout::USE_PREF, 0, 0);
 
@@ -188,32 +188,32 @@ void ClearBrowsingDataView2::InitControlLayout() {
   // Delete All label goes to the top left corner.
   layout->StartRow(0, leading_column_set_id);
   layout->AddView(delete_all_label_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   // Check-boxes go beneath it (with a little indentation).
   layout->StartRow(0, indented_column_set_id);
   layout->AddView(del_history_checkbox_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   layout->StartRow(0, indented_column_set_id);
   layout->AddView(del_downloads_checkbox_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   layout->StartRow(0, indented_column_set_id);
   layout->AddView(del_cache_checkbox_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   layout->StartRow(0, indented_column_set_id);
   layout->AddView(del_cookies_checkbox_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   layout->StartRow(0, indented_column_set_id);
   layout->AddView(del_passwords_checkbox_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   layout->StartRow(0, indented_column_set_id);
   layout->AddView(del_form_data_checkbox_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   // Time period label is next below the combo boxes followed by time
   // period combo box

@@ -129,10 +129,10 @@ void ClearServerDataView::InitControlLayout() {
   column_set = layout->AddColumnSet(three_column_set_id);
   column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
                         GridLayout::USE_PREF, 0, 0);
 
@@ -207,7 +207,7 @@ void ClearServerDataView::AddWrappingLabelRow(views::GridLayout* layout,
 void ClearServerDataView::AddSpacing(views::GridLayout* layout,
                                      bool related_follows) {
   layout->AddPaddingRow(
-      0, related_follows ? kRelatedControlVerticalSpacing
+      0, related_follows ? views::kRelatedControlVerticalSpacing
                          : views::kUnrelatedControlVerticalSpacing);
 }
 

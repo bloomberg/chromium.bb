@@ -354,23 +354,23 @@ void GeneralPageView::InitControlLayout() {
   layout->StartRow(0, single_column_view_set_id);
   InitStartupGroup();
   layout->AddView(startup_group_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   layout->StartRow(0, single_column_view_set_id);
   InitHomepageGroup();
   layout->AddView(homepage_group_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   layout->StartRow(0, single_column_view_set_id);
   InitDefaultSearchGroup();
   layout->AddView(default_search_group_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
 #if !defined(OS_CHROMEOS)
   layout->StartRow(0, single_column_view_set_id);
   InitDefaultBrowserGroup();
   layout->AddView(default_browser_group_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 #endif
 
   // Register pref observers that update the controls when a pref changes.
@@ -562,20 +562,20 @@ void GeneralPageView::InitStartupGroup() {
   column_set = layout->AddColumnSet(double_column_view_set_id);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0,
                         GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(startup_homepage_radio_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(startup_last_session_radio_, 1, 1,
                   GridLayout::FILL, GridLayout::LEADING);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(startup_custom_radio_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   layout->StartRow(0, double_column_view_set_id);
   layout->AddView(startup_custom_pages_table_, 1, 1,
@@ -591,11 +591,11 @@ void GeneralPageView::InitStartupGroup() {
   button_stack_layout->StartRow(0, single_column_view_set_id);
   button_stack_layout->AddView(startup_add_custom_page_button_,
                                1, 1, GridLayout::FILL, GridLayout::CENTER);
-  button_stack_layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  button_stack_layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   button_stack_layout->StartRow(0, single_column_view_set_id);
   button_stack_layout->AddView(startup_remove_custom_page_button_,
                                1, 1, GridLayout::FILL, GridLayout::CENTER);
-  button_stack_layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  button_stack_layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   button_stack_layout->StartRow(0, single_column_view_set_id);
   button_stack_layout->AddView(startup_use_current_page_button_,
                                1, 1, GridLayout::FILL, GridLayout::CENTER);
@@ -642,18 +642,18 @@ void GeneralPageView::InitHomepageGroup() {
   column_set = layout->AddColumnSet(double_column_view_set_id);
   column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(homepage_use_newtab_radio_, 1, 1,
                   GridLayout::FILL, GridLayout::LEADING);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   layout->StartRow(0, double_column_view_set_id);
   layout->AddView(homepage_use_url_radio_);
   layout->AddView(homepage_use_url_textfield_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(homepage_show_home_button_checkbox_, 1, 1,
                   GridLayout::FILL, GridLayout::LEADING);
@@ -698,7 +698,7 @@ void GeneralPageView::InitDefaultSearchGroup() {
   ColumnSet* column_set = layout->AddColumnSet(double_column_view_set_id);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
 
@@ -713,7 +713,7 @@ void GeneralPageView::InitDefaultSearchGroup() {
   column_set->AddPaddingColumn(0, views::Checkbox::GetTextIndent() + 3);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
 
@@ -764,7 +764,7 @@ void GeneralPageView::InitDefaultBrowserGroup() {
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(default_browser_status_label_, 1, 1,
                   GridLayout::FILL, GridLayout::LEADING);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(default_browser_use_as_default_button_);
 

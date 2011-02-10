@@ -273,7 +273,7 @@ void FontsPageView::InitControlLayout() {
   fonts_group_title_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(fonts_group_title_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   layout->StartRow(0, single_column_view_set_id);
   InitFontLayout();
   layout->AddView(fonts_contents_);
@@ -287,7 +287,7 @@ void FontsPageView::InitControlLayout() {
   encoding_group_title_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(encoding_group_title_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   layout->StartRow(0, single_column_view_set_id);
   InitEncodingLayout();
   layout->AddView(encoding_contents_);
@@ -364,10 +364,10 @@ void FontsPageView::InitFontLayout() {
 
   column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
 
@@ -377,7 +377,7 @@ void FontsPageView::InitFontLayout() {
   layout->AddView(serif_font_display_view_, 1, 1,
                   GridLayout::FILL, GridLayout::CENTER);
   layout->AddView(serif_font_change_page_button_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   // Sans serif font controls.
   layout->StartRow(0, triple_column_view_set_id);
@@ -385,7 +385,7 @@ void FontsPageView::InitFontLayout() {
   layout->AddView(sans_serif_font_display_view_, 1, 1,
                   GridLayout::FILL, GridLayout::CENTER);
   layout->AddView(sans_serif_font_change_page_button_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   // Fixed-width font controls.
   layout->StartRow(0, triple_column_view_set_id);
@@ -393,7 +393,7 @@ void FontsPageView::InitFontLayout() {
   layout->AddView(fixed_width_font_display_view_, 1, 1,
                   GridLayout::FILL, GridLayout::CENTER);
   layout->AddView(fixed_width_font_change_page_button_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 }
 
 void FontsPageView::InitEncodingLayout() {
@@ -423,7 +423,7 @@ void FontsPageView::InitEncodingLayout() {
   ColumnSet* column_set = layout->AddColumnSet(double_column_view_set_id);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
 

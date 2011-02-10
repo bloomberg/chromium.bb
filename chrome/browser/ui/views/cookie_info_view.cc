@@ -163,7 +163,7 @@ void CookieInfoView::AddLabelRow(int layout_id, views::GridLayout* layout,
   layout->AddView(label);
   layout->AddView(value, 2, 1, views::GridLayout::FILL,
                   views::GridLayout::CENTER);
-  layout->AddPaddingRow(0, kRelatedControlSmallVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
 }
 
 void CookieInfoView::AddControlRow(int layout_id, views::GridLayout* layout,
@@ -171,7 +171,7 @@ void CookieInfoView::AddControlRow(int layout_id, views::GridLayout* layout,
   layout->StartRow(0, layout_id);
   layout->AddView(label);
   layout->AddView(control, 1, 1);
-  layout->AddPaddingRow(0, kRelatedControlSmallVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -225,7 +225,7 @@ void CookieInfoView::Init() {
   ColumnSet* column_set = layout->AddColumnSet(three_column_layout_id);
   column_set->AddColumn(GridLayout::TRAILING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::TRAILING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
   column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,

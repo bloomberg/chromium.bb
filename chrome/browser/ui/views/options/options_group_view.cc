@@ -113,19 +113,19 @@ void OptionsGroupView::Init() {
 
   const int two_column_layout_id = 0;
   ColumnSet* column_set = layout->AddColumnSet(two_column_layout_id);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
                         GridLayout::FIXED, left_column_width, 0);
   column_set->AddPaddingColumn(0, kOptionsGroupViewColumnSpacing);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 1,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
 
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   layout->StartRow(0, two_column_layout_id);
   layout->AddView(title_label_, 1, 1, GridLayout::FILL, GridLayout::LEADING);
   layout->AddView(contents_, 1, 3, GridLayout::FILL, GridLayout::FILL);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   layout->StartRow(1, two_column_layout_id);
   layout->AddView(description_label_, 1, 1,
                   GridLayout::FILL, GridLayout::LEADING);

@@ -48,7 +48,7 @@ void CookieFilterPageView::InitControlLayout() {
 
   layout->StartRow(0, single_column_set_id);
   layout->AddView(block_3rdparty_check_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   // Now that this has been added to the view hierarchy, it's safe to call
   // SetChecked() on it.
@@ -62,7 +62,7 @@ void CookieFilterPageView::InitControlLayout() {
 
   layout->StartRow(0, single_column_set_id);
   layout->AddView(clear_on_close_check_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   show_cookies_button_ = new views::NativeButton(this,
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_COOKIES_SHOW_COOKIES_BUTTON)));
@@ -70,7 +70,7 @@ void CookieFilterPageView::InitControlLayout() {
   layout->StartRow(0, single_column_set_id);
   layout->AddView(show_cookies_button_, 1, 1, GridLayout::LEADING,
                   GridLayout::FILL);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   views::Link* flash_settings_link = new views::Link(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_FLASH_STORAGE_SETTINGS)));

@@ -138,7 +138,7 @@ void ExceptionsPageView::InitControlLayout() {
   ColumnSet* column_set = layout->AddColumnSet(top_column_set_id);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
 
@@ -148,11 +148,11 @@ void ExceptionsPageView::InitControlLayout() {
                   GridLayout::FILL);
   layout->AddView(&remove_button_);
   layout->StartRowWithPadding(0, top_column_set_id, 0,
-                              kRelatedControlVerticalSpacing);
+                              views::kRelatedControlVerticalSpacing);
   layout->SkipColumns(1);
   layout->AddView(&remove_all_button_);
   layout->StartRowWithPadding(0, top_column_set_id, 0,
-                              kRelatedControlVerticalSpacing);
+                              views::kRelatedControlVerticalSpacing);
 
   layout->SkipColumns(1);
   layout->AddView(&show_button_);

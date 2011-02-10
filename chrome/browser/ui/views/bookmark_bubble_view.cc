@@ -228,13 +228,13 @@ void BookmarkBubbleView::Init() {
   cs = layout->AddColumnSet(2);
   cs->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                 GridLayout::USE_PREF, 0, 0);
-  cs->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  cs->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   cs->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
                 GridLayout::USE_PREF, 0, kMinimumFieldSize);
 
   // Bottom (buttons) row.
   cs = layout->AddColumnSet(3);
-  cs->AddPaddingColumn(1, kRelatedControlHorizontalSpacing);
+  cs->AddPaddingColumn(1, views::kRelatedControlHorizontalSpacing);
   cs->AddColumn(GridLayout::LEADING, GridLayout::TRAILING, 0,
                 GridLayout::USE_PREF, 0, 0);
   // We subtract 2 to account for the natural button padding, and
@@ -248,7 +248,7 @@ void BookmarkBubbleView::Init() {
   layout->AddView(title_label);
   layout->AddView(remove_link_);
 
-  layout->AddPaddingRow(0, kRelatedControlSmallVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
   layout->StartRow(0, 2);
   layout->AddView(new Label(UTF16ToWide(
       l10n_util::GetStringUTF16(IDS_BOOMARK_BUBBLE_TITLE_TEXT))));
@@ -256,12 +256,12 @@ void BookmarkBubbleView::Init() {
   title_tf_->SetText(GetTitle());
   layout->AddView(title_tf_);
 
-  layout->AddPaddingRow(0, kRelatedControlSmallVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
 
   layout->StartRow(0, 2);
   layout->AddView(combobox_label);
   layout->AddView(parent_combobox_);
-  layout->AddPaddingRow(0, kRelatedControlSmallVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
 
   layout->StartRow(0, 3);
   layout->AddView(edit_button_);

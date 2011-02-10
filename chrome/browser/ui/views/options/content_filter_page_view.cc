@@ -50,10 +50,10 @@ void ContentFilterPageView::InitControlLayout() {
 
   const int single_column_set_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(single_column_set_id);
-  column_set->AddPaddingColumn(0, kRelatedControlVerticalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlVerticalSpacing);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   static const int kTitleIDs[] = {
     IDS_MODIFY_COOKIE_STORING_LABEL,
@@ -73,7 +73,7 @@ void ContentFilterPageView::InitControlLayout() {
 
   layout->StartRow(0, single_column_set_id);
   layout->AddView(title_label);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   static const int kAllowIDs[] = {
     IDS_COOKIES_ALLOW_RADIO,
@@ -94,7 +94,7 @@ void ContentFilterPageView::InitControlLayout() {
   allow_radio_->SetMultiLine(true);
   layout->StartRow(0, single_column_set_id);
   layout->AddView(allow_radio_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   static const int kAskIDs[] = {
     IDS_COOKIES_ASK_EVERY_TIME_RADIO,
@@ -121,7 +121,7 @@ void ContentFilterPageView::InitControlLayout() {
       ask_radio_->SetMultiLine(true);
       layout->StartRow(0, single_column_set_id);
       layout->AddView(ask_radio_);
-      layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+      layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
     }
   }
 
@@ -143,7 +143,7 @@ void ContentFilterPageView::InitControlLayout() {
   block_radio_->SetMultiLine(true);
   layout->StartRow(0, single_column_set_id);
   layout->AddView(block_radio_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   exceptions_button_ = new views::NativeButton(this,
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_COOKIES_EXCEPTIONS_BUTTON)));

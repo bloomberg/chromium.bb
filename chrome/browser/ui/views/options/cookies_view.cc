@@ -185,7 +185,7 @@ void CookiesView::Layout() {
 
   ps = remove_all_button_->GetPreferredSize();
   int remove_all_x = remove_button_->x() + remove_button_->width() +
-      kRelatedControlHorizontalSpacing;
+      views::kRelatedControlHorizontalSpacing;
   remove_all_button_->SetBounds(remove_all_x, y_buttons, ps.width(),
                                 ps.height());
 
@@ -327,10 +327,10 @@ void CookiesView::Init() {
   ColumnSet* column_set = layout->AddColumnSet(five_column_layout_id);
   column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0,
                         GridLayout::USE_PREF, 0, 0);
 
@@ -348,7 +348,7 @@ void CookiesView::Init() {
   layout->StartRow(0, single_column_layout_id);
   layout->AddView(description_label_);
 
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   layout->StartRow(1, single_column_layout_id);
   cookies_tree_->set_lines_at_root(true);
   cookies_tree_->set_auto_expand_children(true);
@@ -356,7 +356,7 @@ void CookiesView::Init() {
 
   cookies_tree_->SetController(this);
 
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   layout->StartRow(0, single_column_layout_id);
   layout->AddView(info_panel_);
 

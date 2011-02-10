@@ -251,7 +251,7 @@ void AboutIPCDialog::SetupControls() {
   layout->AddView(track_toggle_);
   layout->AddView(clear_button_);
   layout->AddView(filter_button_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   layout->StartRow(1.0f, table_column_set);
   layout->AddView(table_);
 }

@@ -476,14 +476,14 @@ void AutoFillProfilesView::Init() {
       layout->AddColumnSet(table_with_buttons_column_view_set_id);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
                         views::GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 0,
                         views::GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, table_with_buttons_column_view_set_id);
   layout->AddView(enable_auto_fill_button_, 3, 1, views::GridLayout::FILL,
                   views::GridLayout::FILL);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   layout->StartRow(0, table_with_buttons_column_view_set_id);
   layout->AddView(scroll_view_, 1, 8, views::GridLayout::FILL,
@@ -491,17 +491,17 @@ void AutoFillProfilesView::Init() {
   layout->AddView(add_address_button_);
 
   layout->StartRowWithPadding(0, table_with_buttons_column_view_set_id, 0,
-                              kRelatedControlVerticalSpacing);
+                              views::kRelatedControlVerticalSpacing);
   layout->SkipColumns(2);
   layout->AddView(add_credit_card_button_);
 
   layout->StartRowWithPadding(0, table_with_buttons_column_view_set_id, 0,
-                              kRelatedControlVerticalSpacing);
+                              views::kRelatedControlVerticalSpacing);
   layout->SkipColumns(2);
   layout->AddView(edit_button_);
 
   layout->StartRowWithPadding(0, table_with_buttons_column_view_set_id, 0,
-                              kRelatedControlVerticalSpacing);
+                              views::kRelatedControlVerticalSpacing);
   layout->SkipColumns(2);
   layout->AddView(remove_button_);
 
@@ -629,7 +629,7 @@ void AutoFillProfilesView::PhoneSubView::ViewHierarchyChanged(
         layout->AddColumnSet(two_column_fill_view_set_id);
     column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 1,
         views::GridLayout::USE_PREF, 0, 0);
-    column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+    column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
     column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 0,
         views::GridLayout::USE_PREF, 0, 0);
     layout->StartRow(0, two_column_fill_view_set_id);
@@ -926,21 +926,21 @@ void AutoFillProfilesView::EditableSetViewContents::InitAddressFields(
         AutoFillType(address_fields_[field].type)));
   }
 
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   layout->StartRow(0, double_column_fill_view_set_id_);
   layout->AddView(CreateLeftAlignedLabel(IDS_AUTOFILL_DIALOG_FULL_NAME));
 
   layout->StartRow(0, double_column_fill_view_set_id_);
   layout->AddView(text_fields_[TEXT_FULL_NAME]);
 
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   layout->StartRow(0, double_column_fill_view_set_id_);
   layout->AddView(CreateLeftAlignedLabel(IDS_AUTOFILL_DIALOG_COMPANY_NAME));
 
   layout->StartRow(0, double_column_fill_view_set_id_);
   layout->AddView(text_fields_[TEXT_COMPANY]);
 
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   layout->StartRow(0, double_column_leading_view_set_id_);
   layout->AddView(new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
                   IDS_AUTOFILL_DIALOG_ADDRESS_LINE_1))));
@@ -948,7 +948,7 @@ void AutoFillProfilesView::EditableSetViewContents::InitAddressFields(
   layout->StartRow(0, double_column_fill_view_set_id_);
   layout->AddView(text_fields_[TEXT_ADDRESS_LINE_1]);
 
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   layout->StartRow(0, double_column_leading_view_set_id_);
   layout->AddView(new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
                   IDS_AUTOFILL_DIALOG_ADDRESS_LINE_2))));
@@ -956,7 +956,7 @@ void AutoFillProfilesView::EditableSetViewContents::InitAddressFields(
   layout->StartRow(0, double_column_fill_view_set_id_);
   layout->AddView(text_fields_[TEXT_ADDRESS_LINE_2]);
 
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   layout->StartRow(0, triple_column_fill_view_set_id_);
   layout->AddView(CreateLeftAlignedLabel(IDS_AUTOFILL_DIALOG_CITY));
   layout->AddView(CreateLeftAlignedLabel(IDS_AUTOFILL_DIALOG_STATE));
@@ -971,7 +971,7 @@ void AutoFillProfilesView::EditableSetViewContents::InitAddressFields(
   layout->AddView(text_fields_[TEXT_ADDRESS_STATE]);
   layout->AddView(text_fields_[TEXT_ADDRESS_ZIP]);
 
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   layout->StartRow(0, double_column_fill_view_set_id_);
   layout->AddView(CreateLeftAlignedLabel(IDS_AUTOFILL_DIALOG_COUNTRY));
 
@@ -994,12 +994,12 @@ void AutoFillProfilesView::EditableSetViewContents::InitAddressFields(
 
   phone_sub_views_.push_back(fax);
 
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   layout->StartRow(0, double_column_fill_view_set_id_);
   layout->AddView(phone);
   layout->AddView(fax);
 
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   layout->StartRow(0, double_column_fill_view_set_id_);
   layout->AddView(CreateLeftAlignedLabel(IDS_AUTOFILL_DIALOG_EMAIL));
 
@@ -1047,14 +1047,14 @@ void AutoFillProfilesView::EditableSetViewContents::InitCreditCardFields(
     text_fields_[credit_card_fields_[field].text_field]->SetText(field_text);
   }
 
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   layout->StartRow(0, double_column_fill_view_set_id_);
   layout->AddView(CreateLeftAlignedLabel(IDS_AUTOFILL_DIALOG_NAME_ON_CARD));
   layout->StartRow(0, double_column_fill_view_set_id_);
   layout->AddView(text_fields_[TEXT_CC_NAME]);
 
   // Layout credit card info
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   layout->StartRow(0, double_column_ccnumber_cvc_);
   layout->AddView(
       CreateLeftAlignedLabel(IDS_AUTOFILL_DIALOG_CREDIT_CARD_NUMBER));
@@ -1063,7 +1063,7 @@ void AutoFillProfilesView::EditableSetViewContents::InitCreditCardFields(
   text_fields_[TEXT_CC_NUMBER]->set_default_width_in_chars(20);
   layout->AddView(text_fields_[TEXT_CC_NUMBER]);
 
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   layout->StartRow(0, double_column_ccexpiration_);
   layout->AddView(
       CreateLeftAlignedLabel(IDS_AUTOFILL_DIALOG_EXPIRATION_DATE), 3, 1);
@@ -1096,28 +1096,28 @@ void AutoFillProfilesView::EditableSetViewContents::InitLayoutGrid(
   int i;
   for (i = 0; i < 2; ++i) {
     if (i)
-      column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+      column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
     column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 1,
                           views::GridLayout::USE_PREF, 0, 0);
   }
   column_set = layout->AddColumnSet(double_column_leading_view_set_id_);
   for (i = 0; i < 2; ++i) {
     if (i)
-      column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+      column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
     column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
                           1, views::GridLayout::USE_PREF, 0, 0);
   }
   column_set = layout->AddColumnSet(triple_column_fill_view_set_id_);
   for (i = 0; i < 3; ++i) {
     if (i)
-      column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+      column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
     column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 1,
                           views::GridLayout::USE_PREF, 0, 0);
   }
   column_set = layout->AddColumnSet(triple_column_leading_view_set_id_);
   for (i = 0; i < 3; ++i) {
     if (i)
-      column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+      column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
     column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
                           1, views::GridLayout::USE_PREF, 0, 0);
   }
@@ -1125,13 +1125,13 @@ void AutoFillProfilesView::EditableSetViewContents::InitLayoutGrid(
   column_set = layout->AddColumnSet(four_column_city_state_zip_set_id_);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
                         16, views::GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
                         16, views::GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
                         5, views::GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
                         11, views::GridLayout::USE_PREF, 0, 0);
 
@@ -1139,7 +1139,7 @@ void AutoFillProfilesView::EditableSetViewContents::InitLayoutGrid(
   // Number and CVC are in ratio 20:4
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
                         20, views::GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
                         4, views::GridLayout::USE_PREF, 0, 0);
 
@@ -1153,7 +1153,7 @@ void AutoFillProfilesView::EditableSetViewContents::InitLayoutGrid(
   column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
                         0, views::GridLayout::FIXED,
                         font.GetStringWidth(ASCIIToUTF16("000000")), 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
                         0, views::GridLayout::FIXED,
                         font.GetStringWidth(ASCIIToUTF16("00000000")), 0);
@@ -1161,10 +1161,10 @@ void AutoFillProfilesView::EditableSetViewContents::InitLayoutGrid(
   column_set = layout->AddColumnSet(three_column_header_);
   column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL,
                         0, views::GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
                         1, views::GridLayout::FIXED, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
                         1, views::GridLayout::FIXED, 0, 0);
 }

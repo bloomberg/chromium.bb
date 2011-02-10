@@ -77,7 +77,7 @@ void SimpleContentExceptionsView::Layout() {
     gfx::Size pref = buttons[i]->GetPreferredSize();
     buttons[i]->SetBounds(x, max_y - pref.height(), pref.width(),
                           pref.height());
-    x += pref.width() + kRelatedControlHorizontalSpacing;
+    x += pref.width() + views::kRelatedControlHorizontalSpacing;
   }
 
   // Lay out the rest of this view.
@@ -153,14 +153,14 @@ void SimpleContentExceptionsView::Init() {
 
   const int single_column_layout_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(single_column_layout_id);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   layout->StartRow(1, single_column_layout_id);
   layout->AddView(table_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   UpdateButtonState();
 }

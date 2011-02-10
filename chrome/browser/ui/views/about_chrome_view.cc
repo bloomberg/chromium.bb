@@ -295,13 +295,13 @@ void AboutChromeView::Init() {
 
   // Add up the height of the various elements on the page.
   int height = about_background_logo->height() +
-               kRelatedControlVerticalSpacing +
+               views::kRelatedControlVerticalSpacing +
                // Copyright line.
                font.GetHeight() +
                // Main label.
                dummy_text.GetHeightForWidth(
                    dialog_dimensions_.width() - (2 * kPanelHorizMargin)) +
-               kRelatedControlVerticalSpacing;
+               views::kRelatedControlVerticalSpacing;
 
 #if defined(GOOGLE_CHROME_BUILD)
   std::vector<size_t> url_offsets;
@@ -320,7 +320,7 @@ void AboutChromeView::Init() {
   terms_of_service_url_->SetController(this);
 
   // Add the Terms of Service line and some whitespace.
-  height += font.GetHeight() + kRelatedControlVerticalSpacing;
+  height += font.GetHeight() + views::kRelatedControlVerticalSpacing;
 #endif
 
   // Use whichever is greater (the calculated height or the specified minimum
@@ -355,7 +355,7 @@ void AboutChromeView::Layout() {
   version_label_->SetBounds(kPanelHorizMargin,
                             about_title_label_->y() +
                                 about_title_label_->height() +
-                                kRelatedControlVerticalSpacing,
+                                views::kRelatedControlVerticalSpacing,
                             kVersionFieldWidth,
                             sz.height());
 
@@ -366,14 +366,14 @@ void AboutChromeView::Layout() {
       kPanelHorizMargin,
       version_label_->y() +
           version_label_->height() +
-          kRelatedControlVerticalSpacing,
+          views::kRelatedControlVerticalSpacing,
       kVersionFieldWidth,
       sz.height());
 #endif
 
   // For the width of the main text label we want to use up the whole panel
   // width and remaining height, minus a little margin on each side.
-  int y_pos = background_image_height + kRelatedControlVerticalSpacing;
+  int y_pos = background_image_height + views::kRelatedControlVerticalSpacing;
   sz.set_width(panel_size.width() - 2 * kPanelHorizMargin);
 
   // Draw the text right below the background image.
@@ -420,7 +420,7 @@ void AboutChromeView::Layout() {
   // variable length messages.
   sz = update_label_.GetPreferredSize();
   int update_label_x = throbber_->x() + throbber_->width() +
-                       kRelatedControlHorizontalSpacing;
+                       views::kRelatedControlHorizontalSpacing;
   update_label_.SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   update_label_.SetBounds(update_label_x,
                           throbber_topleft_y + 1,
@@ -472,7 +472,7 @@ void AboutChromeView::Paint(gfx::Canvas* canvas) {
 #if defined(GOOGLE_CHROME_BUILD)
   // Insert a line break and some whitespace.
   position.set_width(0);
-  position.Enlarge(0, font.GetHeight() + kRelatedControlVerticalSpacing);
+  position.Enlarge(0, font.GetHeight() + views::kRelatedControlVerticalSpacing);
 
   // And now the Terms of Service and position the TOS url.
   view_text_utils::DrawTextAndPositionUrl(canvas, main_text_label_,

@@ -214,7 +214,7 @@ class AutocompletePopupContentsView::InstantOptInView
     views::ColumnSet* column_set = layout->AddColumnSet(first_column_set);
     column_set->AddColumn(views::GridLayout::TRAILING, v_align, 1,
                           views::GridLayout::USE_PREF, 0, 0);
-    column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+    column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
     column_set->AddColumn(views::GridLayout::CENTER, v_align, 0,
                           views::GridLayout::USE_PREF, 0, 0);
     column_set->AddPaddingColumn(0, kOptInButtonPadding);

@@ -91,7 +91,7 @@ void ExceptionsView::Layout() {
     gfx::Size pref = buttons[i]->GetPreferredSize();
     buttons[i]->SetBounds(x, max_y - pref.height(), pref.width(),
                           pref.height());
-    x += pref.width() + kRelatedControlHorizontalSpacing;
+    x += pref.width() + views::kRelatedControlHorizontalSpacing;
   }
 
   // Lay out the rest of this view.
@@ -208,14 +208,14 @@ void ExceptionsView::Init() {
 
   const int single_column_layout_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(single_column_layout_id);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   layout->StartRow(1, single_column_layout_id);
   layout->AddView(table_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   if (allow_off_the_record_) {
     views::Label* label = new views::Label(
@@ -223,7 +223,7 @@ void ExceptionsView::Init() {
     label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     layout->StartRow(0, single_column_layout_id);
     layout->AddView(label, 1, 1, GridLayout::LEADING, GridLayout::CENTER);
-    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   }
 
   UpdateButtonState();

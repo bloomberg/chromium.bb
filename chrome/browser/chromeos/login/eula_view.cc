@@ -143,7 +143,7 @@ void TpmInfoView::Init() {
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   layout->AddView(label);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   layout->StartRow(0, 0);
   label = new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
@@ -151,7 +151,7 @@ void TpmInfoView::Init() {
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   layout->AddView(label);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   column_set = layout->AddColumnSet(1);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
@@ -164,7 +164,7 @@ void TpmInfoView::Init() {
   password_label_ = new views::Label(L"", password_font);
   password_label_->SetVisible(false);
   layout->AddView(password_label_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   column_set = layout->AddColumnSet(2);
   column_set->AddPaddingColumn(1, 0);
@@ -172,7 +172,7 @@ void TpmInfoView::Init() {
   // placed in the center.
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
                         views::GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
                         views::GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(1, 0);
@@ -187,7 +187,7 @@ void TpmInfoView::Init() {
   busy_label_ = new views::Label(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_EULA_TPM_BUSY)));
   layout->AddView(busy_label_);
-  layout->AddPaddingRow(0, kRelatedControlHorizontalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlHorizontalSpacing);
 
   PullPassword();
 }
@@ -280,7 +280,7 @@ static void SetUpGridLayout(views::GridLayout* layout) {
                         views::GridLayout::USE_PREF, 0, 0);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
                         views::GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
                         views::GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, kLastButtonHorizontalMargin + kBorderSize);
@@ -343,7 +343,7 @@ void EulaView::Init() {
   layout->AddView(google_eula_label_, 1, 1,
                   views::GridLayout::LEADING, views::GridLayout::FILL);
 
-  layout->AddPaddingRow(0, kRelatedControlSmallVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
   layout->StartRow(1, SINGLE_CONTROL_ROW);
   views::View* box_view = new views::View();
   box_view->set_border(views::Border::CreateSolidBorder(1, SK_ColorBLACK));
@@ -353,7 +353,7 @@ void EulaView::Init() {
   google_eula_view_ = new DOMView();
   box_view->AddChildView(google_eula_view_);
 
-  layout->AddPaddingRow(0, kRelatedControlSmallVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
   layout->StartRow(0, SINGLE_CONTROL_WITH_SHIFT_ROW);
   usage_statistics_checkbox_ = new views::Checkbox();
   usage_statistics_checkbox_->SetMultiLine(true);
@@ -365,7 +365,7 @@ void EulaView::Init() {
   learn_more_link_->SetController(this);
   layout->AddView(learn_more_link_);
 
-  layout->AddPaddingRow(0, kRelatedControlSmallVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
   layout->StartRow(0, SINGLE_CONTROL_ROW);
   oem_eula_label_ = new views::Label(std::wstring(), label_font);
   layout->AddView(oem_eula_label_, 1, 1,
@@ -373,7 +373,7 @@ void EulaView::Init() {
 
   oem_eula_page_ = GetOemEulaPagePath();
   if (!oem_eula_page_.is_empty()) {
-    layout->AddPaddingRow(0, kRelatedControlSmallVerticalSpacing);
+    layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
     layout->StartRow(1, SINGLE_CONTROL_ROW);
     box_view = new views::View();
     box_view->SetLayoutManager(new FillLayoutWithBorder());
@@ -384,7 +384,7 @@ void EulaView::Init() {
     box_view->AddChildView(oem_eula_view_);
   }
 
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   layout->StartRow(0, LAST_ROW);
   system_security_settings_link_ = new views::Link();
   system_security_settings_link_->SetController(this);

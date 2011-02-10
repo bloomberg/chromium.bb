@@ -659,7 +659,7 @@ class TryChromeDialog : public views::ButtonListener,
     columns->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
                        GridLayout::FIXED, icon_size.width(),
                        icon_size.height());
-    columns->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+    columns->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
     columns->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                        GridLayout::USE_PREF, 0, 0);
     columns->AddColumn(GridLayout::TRAILING, GridLayout::FILL, 1,
@@ -667,19 +667,19 @@ class TryChromeDialog : public views::ButtonListener,
     // Second row: [pad][pad][radio 1].
     columns = layout->AddColumnSet(1);
     columns->AddPaddingColumn(0, icon_size.width());
-    columns->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+    columns->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
     columns->AddColumn(GridLayout::LEADING, GridLayout::FILL, 1,
                        GridLayout::USE_PREF, 0, 0);
     // Third row: [pad][pad][radio 2].
     columns = layout->AddColumnSet(2);
     columns->AddPaddingColumn(0, icon_size.width());
-    columns->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+    columns->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
     columns->AddColumn(GridLayout::LEADING, GridLayout::FILL, 1,
                        GridLayout::USE_PREF, 0, 0);
     // Fourth row: [pad][pad][button][pad][button].
     columns = layout->AddColumnSet(3);
     columns->AddPaddingColumn(0, icon_size.width());
-    columns->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+    columns->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
     columns->AddColumn(GridLayout::LEADING, GridLayout::FILL, 0,
                        GridLayout::USE_PREF, 0, 0);
     columns->AddPaddingColumn(0, views::kRelatedButtonHSpacing);
@@ -688,7 +688,7 @@ class TryChromeDialog : public views::ButtonListener,
     // Fifth row: [pad][pad][link].
     columns = layout->AddColumnSet(4);
     columns->AddPaddingColumn(0, icon_size.width());
-    columns->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+    columns->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
     columns->AddColumn(GridLayout::LEADING, GridLayout::FILL, 1,
                        GridLayout::USE_PREF, 0, 0);
     // First row views.

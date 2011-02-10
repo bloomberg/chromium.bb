@@ -175,7 +175,7 @@ void FirstRunBubbleView::Layout() {
                      pref_size.height());
 
   int next_v_space = label1_->y() + pref_size.height() +
-                     kRelatedControlSmallVerticalSpacing;
+                     views::kRelatedControlSmallVerticalSpacing;
 
   pref_size = label2_->GetPreferredSize();
   label2_->SetBounds(kBubblePadding, next_v_space,
@@ -332,7 +332,8 @@ void FirstRunOEMBubbleView::Layout() {
       pref_size.height());
 
   int next_v_space =
-      label1_->y() + pref_size.height() + kRelatedControlSmallVerticalSpacing;
+      label1_->y() + pref_size.height() +
+          views::kRelatedControlSmallVerticalSpacing;
 
   pref_size = label3_->GetPreferredSize();
   label3_->SetBounds(kOEMBubblePadding, next_v_space,
@@ -445,7 +446,7 @@ void FirstRunMinimalBubbleView::Layout() {
                      pref_size.height());
 
   int next_v_space = label1_->y() + pref_size.height() +
-                     kRelatedControlSmallVerticalSpacing;
+                     views::kRelatedControlSmallVerticalSpacing;
 
   pref_size = label2_->GetPreferredSize();
   label2_->SetBounds(kBubblePadding, next_v_space,

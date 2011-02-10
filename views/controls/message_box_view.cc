@@ -202,16 +202,16 @@ void MessageBoxView::ResetLayoutManager() {
   layout->AddView(message_label_);
 
   if (prompt_field_) {
-    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
     layout->StartRow(0, textfield_column_view_set_id);
     layout->AddView(prompt_field_);
   }
 
   if (checkbox_) {
-    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
     layout->StartRow(0, checkbox_column_view_set_id);
     layout->AddView(checkbox_);
   }
 
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 }

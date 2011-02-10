@@ -244,7 +244,8 @@ void DefaultSearchView::SetupControls(PrefService* prefs) {
   choices_column_set->AddPaddingColumn(1, kPanelVertMargin);
   choices_column_set->AddColumn(GridLayout::CENTER, GridLayout::CENTER,
                                 1, GridLayout::USE_PREF, 0, 0);
-  choices_column_set->AddPaddingColumn(1, kRelatedControlHorizontalSpacing);
+  choices_column_set->AddPaddingColumn(
+      1, views::kRelatedControlHorizontalSpacing);
   choices_column_set->AddColumn(GridLayout::CENTER, GridLayout::CENTER,
                                 1, GridLayout::USE_PREF, 0, 0);
   choices_column_set->LinkColumnSizes(0, 2, -1);
@@ -275,19 +276,19 @@ void DefaultSearchView::SetupControls(PrefService* prefs) {
 
   // Add the labels for the tops of the choices.
   layout->StartRowWithPadding(0, kChoicesViewSetId,
-                              0, kRelatedControlVerticalSpacing);
+                              0, views::kRelatedControlVerticalSpacing);
   layout->AddView(CreateProviderLabel(IDS_DEFAULT_SEARCH_LABEL_CURRENT));
   layout->AddView(CreateProviderLabel(IDS_DEFAULT_SEARCH_LABEL_PROPOSED));
 
   // Add the logos.
   layout->StartRowWithPadding(0, kChoicesViewSetId,
-                              0, kRelatedControlVerticalSpacing);
+                              0, views::kRelatedControlVerticalSpacing);
   layout->AddView(CreateProviderLogo(default_logo_id, default_short_name));
   layout->AddView(CreateProviderLogo(proposed_logo_id, proposed_short_name));
 
   // Add the buttons.
   layout->StartRowWithPadding(0, kChoicesViewSetId,
-                              0, kRelatedControlVerticalSpacing);
+                              0, views::kRelatedControlVerticalSpacing);
   default_provider_button_ = CreateProviderChoiceButton(
       this,
       IDS_DEFAULT_SEARCH_PROMPT_CURRENT,

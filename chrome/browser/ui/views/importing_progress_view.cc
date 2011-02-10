@@ -238,7 +238,7 @@ void ImportingProgressView::InitControlLayout() {
   if (bookmarks_import_) {
     column_set->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
                           GridLayout::FIXED, ps.width(), 0);
-    column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+    column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   }
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
@@ -248,7 +248,7 @@ void ImportingProgressView::InitControlLayout() {
       0, views::kUnrelatedControlLargeHorizontalSpacing);
   column_set->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
                         GridLayout::FIXED, ps.width(), 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 1,
                         GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(
@@ -264,31 +264,31 @@ void ImportingProgressView::InitControlLayout() {
     layout->StartRow(0, double_column_view_set_id);
     layout->AddView(state_history_.get());
     layout->AddView(label_history_.get());
-    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   }
   if (items_ & importer::FAVORITES && !bookmarks_import_) {
     layout->StartRow(0, double_column_view_set_id);
     layout->AddView(state_bookmarks_.get());
     layout->AddView(label_bookmarks_.get());
-    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   }
   if (items_ & importer::SEARCH_ENGINES) {
     layout->StartRow(0, double_column_view_set_id);
     layout->AddView(state_searches_.get());
     layout->AddView(label_searches_.get());
-    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   }
   if (items_ & importer::PASSWORDS) {
     layout->StartRow(0, double_column_view_set_id);
     layout->AddView(state_passwords_.get());
     layout->AddView(label_passwords_.get());
-    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   }
   if (items_ & importer::COOKIES) {
     layout->StartRow(0, double_column_view_set_id);
     layout->AddView(state_cookies_.get());
     layout->AddView(label_cookies_.get());
-    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   }
 }
 

@@ -39,7 +39,7 @@ void ManagedPrefsBannerView::Init() {
       new views::BoxLayout(views::BoxLayout::kHorizontal,
                            kPrefsBannerPadding,
                            kPrefsBannerPadding,
-                           kRelatedControlSmallHorizontalSpacing));
+                           views::kRelatedControlSmallHorizontalSpacing));
   content_->AddChildView(warning_image_);
   content_->AddChildView(label_);
   OnUpdateVisibility();
@@ -51,12 +51,13 @@ gfx::Size ManagedPrefsBannerView::GetPreferredSize() {
 
   // Add space below the banner.
   gfx::Size size(content_->GetPreferredSize());
-  size.Enlarge(0, kRelatedControlVerticalSpacing);
+  size.Enlarge(0, views::kRelatedControlVerticalSpacing);
   return size;
 }
 
 void ManagedPrefsBannerView::Layout() {
-  content_->SetBounds(0, 0, width(), height() - kRelatedControlVerticalSpacing);
+  content_->SetBounds(
+      0, 0, width(), height() - views::kRelatedControlVerticalSpacing);
 }
 
 void ManagedPrefsBannerView::ViewHierarchyChanged(bool is_add,

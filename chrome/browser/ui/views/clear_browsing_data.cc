@@ -156,7 +156,7 @@ void ClearBrowsingDataView::Init() {
   }
   column_set->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
   layout->StartRow(1, 0);
@@ -186,42 +186,42 @@ void ClearBrowsingDataView::Layout() {
   del_history_checkbox_->SetBounds(2 * kPanelHorizMargin,
                                    delete_all_label_->y() +
                                        delete_all_label_->height() +
-                                       kRelatedControlVerticalSpacing,
+                                       views::kRelatedControlVerticalSpacing,
                                    sz.width(), sz.height());
 
   sz = del_downloads_checkbox_->GetPreferredSize();
   del_downloads_checkbox_->SetBounds(2 * kPanelHorizMargin,
                                      del_history_checkbox_->y() +
                                          del_history_checkbox_->height() +
-                                         kRelatedControlVerticalSpacing,
+                                         views::kRelatedControlVerticalSpacing,
                                      sz.width(), sz.height());
 
   sz = del_cache_checkbox_->GetPreferredSize();
   del_cache_checkbox_->SetBounds(2 * kPanelHorizMargin,
                                  del_downloads_checkbox_->y() +
                                      del_downloads_checkbox_->height() +
-                                     kRelatedControlVerticalSpacing,
+                                     views::kRelatedControlVerticalSpacing,
                                  sz.width(), sz.height());
 
   sz = del_cookies_checkbox_->GetPreferredSize();
   del_cookies_checkbox_->SetBounds(2 * kPanelHorizMargin,
                                    del_cache_checkbox_->y() +
                                        del_cache_checkbox_->height() +
-                                       kRelatedControlVerticalSpacing,
+                                       views::kRelatedControlVerticalSpacing,
                                    sz.width(), sz.height());
 
   sz = del_passwords_checkbox_->GetPreferredSize();
   del_passwords_checkbox_->SetBounds(2 * kPanelHorizMargin,
                                      del_cookies_checkbox_->y() +
                                          del_cookies_checkbox_->height() +
-                                         kRelatedControlVerticalSpacing,
+                                         views::kRelatedControlVerticalSpacing,
                                      sz.width(), sz.height());
 
   sz = del_form_data_checkbox_->GetPreferredSize();
   del_form_data_checkbox_->SetBounds(2 * kPanelHorizMargin,
                                      del_passwords_checkbox_->y() +
                                          del_passwords_checkbox_->height() +
-                                         kRelatedControlVerticalSpacing,
+                                         views::kRelatedControlVerticalSpacing,
                                      sz.width(), sz.height());
 
   // Time period label is next below the combo boxes.
@@ -229,7 +229,7 @@ void ClearBrowsingDataView::Layout() {
   time_period_label_->SetBounds(kPanelHorizMargin,
                                 del_form_data_checkbox_->y() +
                                     del_form_data_checkbox_->height() +
-                                    kRelatedControlVerticalSpacing +
+                                    views::kRelatedControlVerticalSpacing +
                                     kExtraMarginForTimePeriodLabel,
                                 sz.width(), sz.height());
 
@@ -239,7 +239,7 @@ void ClearBrowsingDataView::Layout() {
   sz = time_period_combobox_->GetPreferredSize();
   time_period_combobox_->SetBounds(time_period_label_->x() +
                                        time_period_label_->width() +
-                                       kRelatedControlVerticalSpacing,
+                                       views::kRelatedControlVerticalSpacing,
                                    time_period_label_->y() -
                                        ((sz.height() - label_y_size) / 2),
                                    sz.width(), sz.height());
@@ -348,7 +348,7 @@ views::ClientView* ClearBrowsingDataView::CreateClientView(
                         GridLayout::USE_PREF, 0, 0);
   layout->StartRow(0, 0);
   layout->AddView(new views::Separator());
-  layout->StartRowWithPadding(0, 0, 0, kRelatedControlVerticalSpacing);
+  layout->StartRowWithPadding(0, 0, 0, views::kRelatedControlVerticalSpacing);
   layout->AddView(flash_link, 1, 1, GridLayout::LEADING, GridLayout::CENTER);
 
   views::DialogClientView* client_view =

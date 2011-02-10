@@ -142,7 +142,7 @@ void AdvancedPageView::InitControlLayout() {
 
   layout->StartRow(1, single_column_view_set_id);
   layout->AddView(advanced_scroll_view_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(reset_to_default_button_, 1, 1,

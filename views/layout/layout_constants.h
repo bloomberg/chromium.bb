@@ -29,11 +29,10 @@ const int kPanelSubVerticalSpacing = 24;
 // Vertical spacing between a label and some control.
 const int kLabelToControlVerticalSpacing = 8;
 
-// Vertical spacing between controls that are logically related.
-const int kRelatedControlVerticalSpacing = 8;
-
-// Small vertical spacing between controls that are logically related.
-const int kRelatedControlSmallVerticalSpacing = 4;
+// TODO(tfarina): Move this namespace to the top of this file around of all
+// these constants. But this needs to be done in small steps, as it's
+// impossible to convert everything at the same time.
+namespace views {
 
 // Small horizontal spacing between controls that are logically related.
 const int kRelatedControlSmallHorizontalSpacing = 8;
@@ -41,10 +40,11 @@ const int kRelatedControlSmallHorizontalSpacing = 8;
 // Horizontal spacing between controls that are logically related.
 const int kRelatedControlHorizontalSpacing = 8;
 
-// TODO(tfarina): Move this namespace to the top of this file around of all
-// these constants. But this needs to be done in small steps, as it's
-// impossible to convert everything at the same time.
-namespace views {
+// Vertical spacing between controls that are logically related.
+const int kRelatedControlVerticalSpacing = 8;
+
+// Small vertical spacing between controls that are logically related.
+const int kRelatedControlSmallVerticalSpacing = 4;
 
 // Horizontal spacing between controls that are logically unrelated.
 const int kUnrelatedControlHorizontalSpacing = 12;

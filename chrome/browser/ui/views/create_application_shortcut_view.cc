@@ -289,13 +289,13 @@ void CreateApplicationShortcutView::InitControls() {
   layout->AddView(desktop_check_box_);
 
   if (menu_check_box_ != NULL) {
-    layout->AddPaddingRow(0, kRelatedControlSmallVerticalSpacing);
+    layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
     layout->StartRow(0, kTableColumnSetId);
     layout->AddView(menu_check_box_);
   }
 
   if (quick_launch_check_box_ != NULL) {
-    layout->AddPaddingRow(0, kRelatedControlSmallVerticalSpacing);
+    layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
     layout->StartRow(0, kTableColumnSetId);
     layout->AddView(quick_launch_check_box_);
   }

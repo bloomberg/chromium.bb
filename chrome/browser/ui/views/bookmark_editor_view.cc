@@ -324,7 +324,7 @@ void BookmarkEditorView::Init() {
   ColumnSet* column_set = layout->AddColumnSet(labels_column_set_id);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
                         GridLayout::USE_PREF, 0, 0);
 
@@ -335,10 +335,10 @@ void BookmarkEditorView::Init() {
   column_set = layout->AddColumnSet(buttons_column_set_id);
   column_set->AddColumn(GridLayout::FILL, GridLayout::LEADING, 0,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(1, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(1, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::FILL, GridLayout::LEADING, 0,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::FILL, GridLayout::LEADING, 0,
                         GridLayout::USE_PREF, 0, 0);
   column_set->LinkColumnSizes(0, 2, 4, -1);
@@ -349,7 +349,7 @@ void BookmarkEditorView::Init() {
   layout->AddView(&title_tf_);
 
   if (details_.type != EditDetails::NEW_FOLDER) {
-    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
     layout->StartRow(0, labels_column_set_id);
     layout->AddView(url_label_);
@@ -357,12 +357,12 @@ void BookmarkEditorView::Init() {
   }
 
   if (show_tree_) {
-    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
     layout->StartRow(1, single_column_view_set_id);
     layout->AddView(tree_view_);
   }
 
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   if (!show_tree_ || bb_model_->IsLoaded())
     Reset();

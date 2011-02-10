@@ -177,7 +177,7 @@ void ContentView::InitControlLayout() {
   ColumnSet* c1 = layout->AddColumnSet(0);
   c1->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
                 GridLayout::USE_PREF, 0, 0);
-  c1->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  c1->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   c1->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
                 GridLayout::USE_PREF, kTextfieldWidth, kTextfieldWidth);
 

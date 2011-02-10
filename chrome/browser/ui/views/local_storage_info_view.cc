@@ -102,18 +102,18 @@ void LocalStorageInfoView::Init() {
   views::ColumnSet* column_set = layout->AddColumnSet(three_column_layout_id);
   column_set->AddColumn(GridLayout::TRAILING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, three_column_layout_id);
   layout->AddView(origin_label);
   layout->AddView(origin_value_field_);
-  layout->AddPaddingRow(0, kRelatedControlSmallVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
   layout->StartRow(0, three_column_layout_id);
   layout->AddView(size_label);
   layout->AddView(size_value_field_);
-  layout->AddPaddingRow(0, kRelatedControlSmallVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
   layout->StartRow(0, three_column_layout_id);
   layout->AddView(last_modified_label);
   layout->AddView(last_modified_value_field_);

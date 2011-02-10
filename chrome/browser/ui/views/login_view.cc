@@ -60,7 +60,7 @@ LoginView::LoginView(const std::wstring& explanation,
   column_set->AddPaddingColumn(0, kTextfieldStackHorizontalSpacing);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
                         GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, kTextfieldStackHorizontalSpacing);
@@ -74,7 +74,7 @@ LoginView::LoginView(const std::wstring& explanation,
   layout->AddView(username_label_);
   layout->AddView(username_field_);
 
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   layout->StartRow(0, labels_column_set_id);
   layout->AddView(password_label_);

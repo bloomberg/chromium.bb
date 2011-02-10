@@ -301,7 +301,7 @@ void AdvancedSection::AddDependentTwoColumnSet(views::GridLayout* layout,
   column_set->AddPaddingColumn(0, views::Checkbox::GetTextIndent());
   column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
                         GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, views::kUnrelatedControlHorizontalSpacing);
@@ -311,7 +311,7 @@ void AdvancedSection::AddTwoColumnSet(views::GridLayout* layout, int id) {
   ColumnSet* column_set = layout->AddColumnSet(id);
   column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
                         GridLayout::USE_PREF, 0, 0);
 }
@@ -352,7 +352,7 @@ void AdvancedSection::AddLabeledTwoColumnRow(views::GridLayout* layout,
                                              bool related_follows) {
   label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   AddTwoColumnRow(layout, label, control, control_stretches, id,
-      related_follows ? kRelatedControlVerticalSpacing
+      related_follows ? views::kRelatedControlVerticalSpacing
                       : views::kUnrelatedControlVerticalSpacing);
 }
 
@@ -385,7 +385,7 @@ void AdvancedSection::AddLeadingControl(views::GridLayout* layout,
 void AdvancedSection::AddSpacing(views::GridLayout* layout,
                                  bool related_follows) {
   layout->AddPaddingRow(
-      0, related_follows ? kRelatedControlVerticalSpacing
+      0, related_follows ? views::kRelatedControlVerticalSpacing
                          : views::kUnrelatedControlVerticalSpacing);
 }
 
@@ -410,7 +410,7 @@ void AdvancedSection::InitControlLayout() {
 
   layout->StartRow(0, single_column_layout_id);
   layout->AddView(title_label_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   layout->StartRow(0, inset_column_layout_id);
   layout->AddView(contents_);
 }
@@ -1180,7 +1180,7 @@ void DownloadSection::InitControlLayout() {
   ColumnSet* column_set = layout->AddColumnSet(double_column_view_set_id);
   column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, views::kUnrelatedControlHorizontalSpacing);
@@ -1419,7 +1419,7 @@ void CloudPrintProxySection::InitControlLayout() {
 
   // The enable / disable button and manage button.
   AddTwoColumnRow(layout, enable_disable_button_, manage_printer_button_, false,
-                  control_view_set_id, kRelatedControlVerticalSpacing);
+                  control_view_set_id, views::kRelatedControlVerticalSpacing);
 
   // Attach the preferences so we can flip things appropriately.
   cloud_print_proxy_email_.Init(prefs::kCloudPrintEmail,

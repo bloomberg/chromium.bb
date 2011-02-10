@@ -114,7 +114,7 @@ class InfobarView : public views::View {
         new views::BoxLayout(views::BoxLayout::kHorizontal,
                              kInfobarHorizontalPadding,
                              kInfobarVerticalPadding,
-                             kRelatedControlSmallHorizontalSpacing));
+                             views::kRelatedControlSmallHorizontalSpacing));
     content_->AddChildView(info_image_);
     content_->AddChildView(label_);
     UpdateVisibility(false, CONTENT_SETTING_BLOCK, std::wstring());
@@ -127,14 +127,14 @@ class InfobarView : public views::View {
 
     // Add space around the banner.
     gfx::Size size(content_->GetPreferredSize());
-    size.Enlarge(0, 2 * kRelatedControlVerticalSpacing);
+    size.Enlarge(0, 2 * views::kRelatedControlVerticalSpacing);
     return size;
   }
 
   virtual void Layout() {
     content_->SetBounds(
-        0, kRelatedControlVerticalSpacing,
-        width(), height() - kRelatedControlVerticalSpacing);
+        0, views::kRelatedControlVerticalSpacing,
+        width(), height() - views::kRelatedControlVerticalSpacing);
   }
 
   virtual void ViewHierarchyChanged(bool is_add,
@@ -234,19 +234,19 @@ void CollectedCookiesWin::Init() {
   column_set = layout->AddColumnSet(three_columns_layout_id);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, single_column_layout_id);
   layout->AddView(allowed_label_);
 
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   layout->StartRow(1, single_column_layout_id);
   layout->AddView(
       allowed_cookies_tree_, 1, 1, GridLayout::FILL, GridLayout::FILL,
       kTreeViewWidth, kTreeViewHeight);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   layout->StartRow(0, single_column_layout_id);
   block_allowed_button_ = new views::NativeButton(this, UTF16ToWide(
@@ -263,12 +263,12 @@ void CollectedCookiesWin::Init() {
   layout->StartRow(0, single_column_layout_id);
   layout->AddView(blocked_label_, 1, 1, GridLayout::FILL, GridLayout::FILL);
 
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   layout->StartRow(1, single_column_layout_id);
   layout->AddView(
       blocked_cookies_tree_, 1, 1, GridLayout::FILL, GridLayout::FILL,
       kTreeViewWidth, kTreeViewHeight);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   layout->StartRow(0, three_columns_layout_id);
   allow_blocked_button_ = new views::NativeButton(this, UTF16ToWide(

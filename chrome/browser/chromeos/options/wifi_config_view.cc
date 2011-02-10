@@ -312,7 +312,7 @@ void WifiConfigView::Init() {
     label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     layout->AddView(label);
   }
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   // Certificate input
   // Loaded certificates (i.e. stored in a pkcs11 device) do not require
@@ -335,7 +335,7 @@ void WifiConfigView::Init() {
     if (!wifi_->identity().empty())
       identity_textfield_->SetText(UTF8ToUTF16(wifi_->identity()));
     layout->AddView(identity_textfield_);
-    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
     layout->StartRow(0, column_view_set_id);
     layout->AddView(new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
         IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT))));
@@ -359,7 +359,7 @@ void WifiConfigView::Init() {
       certificate_browse_button_ = new views::NativeButton(this, label);
       layout->AddView(certificate_browse_button_);
     }
-    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   }
 
   // Security select
@@ -370,7 +370,7 @@ void WifiConfigView::Init() {
     security_combobox_ = new views::Combobox(new SecurityComboboxModel());
     security_combobox_->set_listener(this);
     layout->AddView(security_combobox_);
-    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   }
 
   // Passphrase input
@@ -402,7 +402,7 @@ void WifiConfigView::Init() {
   passphrase_visible_button_->SetImageAlignment(
       views::ImageButton::ALIGN_CENTER, views::ImageButton::ALIGN_MIDDLE);
   layout->AddView(passphrase_visible_button_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   // Create an error label.
   layout->StartRow(0, column_view_set_id);
@@ -411,7 +411,7 @@ void WifiConfigView::Init() {
   error_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   error_label_->SetColor(SK_ColorRED);
   layout->AddView(error_label_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   // Set or hide the error text.
   UpdateErrorLabel(false);
 }

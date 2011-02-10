@@ -72,7 +72,7 @@ void GenericInfoView::InitGenericInfoView() {
   views::ColumnSet* column_set = layout->AddColumnSet(kLayoutId);
   column_set->AddColumn(GridLayout::TRAILING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
 
@@ -81,7 +81,7 @@ void GenericInfoView::InitGenericInfoView() {
 
   for (int i = 0; i < number_of_rows_; ++i) {
     if (i)
-      layout->AddPaddingRow(0, kRelatedControlSmallVerticalSpacing);
+      layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
     name_views_[i] = new views::Label;
     value_views_[i] = new views::Textfield;
     AddRow(kLayoutId, layout, name_views_[i], value_views_[i]);

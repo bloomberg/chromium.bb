@@ -130,10 +130,10 @@ void ExceptionEditorView::Init() {
   views::ColumnSet* column_set = layout->AddColumnSet(1);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
 
@@ -143,12 +143,12 @@ void ExceptionEditorView::Init() {
   layout->AddView(pattern_tf_);
   layout->AddView(pattern_iv_);
 
-  layout->StartRowWithPadding(0, 1, 0, kRelatedControlVerticalSpacing);
+  layout->StartRowWithPadding(0, 1, 0, views::kRelatedControlVerticalSpacing);
   layout->AddView(CreateLabel(IDS_EXCEPTION_EDITOR_ACTION_TITLE));
   layout->AddView(action_cb_);
 
   if (allow_off_the_record_) {
-    layout->StartRowWithPadding(0, 1, 0, kRelatedControlVerticalSpacing);
+    layout->StartRowWithPadding(0, 1, 0, views::kRelatedControlVerticalSpacing);
     layout->AddView(incognito_cb_, 3, 1, GridLayout::FILL, GridLayout::FILL);
   }
 }

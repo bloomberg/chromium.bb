@@ -214,7 +214,7 @@ void ContentSettingBubbleContents::InitControlLayout() {
   const std::set<std::string>& plugins = bubble_content.resource_identifiers;
   if (!plugins.empty()) {
     if (!bubble_content_empty)
-      layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+      layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
     for (std::set<std::string>::const_iterator it = plugins.begin();
         it != plugins.end(); ++it) {
       std::wstring name = UTF16ToWide(
@@ -234,7 +234,8 @@ void ContentSettingBubbleContents::InitControlLayout() {
         layout->AddColumnSet(popup_column_set_id);
     popup_column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 0,
                                 GridLayout::USE_PREF, 0, 0);
-    popup_column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+    popup_column_set->AddPaddingColumn(
+        0, views::kRelatedControlHorizontalSpacing);
     popup_column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 1,
                                 GridLayout::USE_PREF, 0, 0);
 
@@ -242,7 +243,7 @@ void ContentSettingBubbleContents::InitControlLayout() {
          i(bubble_content.popup_items.begin());
          i != bubble_content.popup_items.end(); ++i) {
       if (!bubble_content_empty)
-        layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+        layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
       layout->StartRow(0, popup_column_set_id);
 
       views::Link* link = new views::Link(UTF8ToWide(i->title));
@@ -265,7 +266,7 @@ void ContentSettingBubbleContents::InitControlLayout() {
       radio->set_listener(this);
       radio_group_.push_back(radio);
       if (!bubble_content_empty)
-        layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+        layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
       layout->StartRow(0, single_column_set_id);
       layout->AddView(radio);
       bubble_content_empty = false;
@@ -306,18 +307,18 @@ void ContentSettingBubbleContents::InitControlLayout() {
     custom_link_->SetEnabled(bubble_content.custom_link_enabled);
     custom_link_->SetController(this);
     if (!bubble_content_empty)
-      layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+      layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
     layout->StartRow(0, single_column_set_id);
     layout->AddView(custom_link_);
     bubble_content_empty = false;
   }
 
   if (!bubble_content_empty) {
-    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
     layout->StartRow(0, single_column_set_id);
     layout->AddView(new views::Separator, 1, 1,
                     GridLayout::FILL, GridLayout::FILL);
-    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   }
 
   const int double_column_set_id = 1;

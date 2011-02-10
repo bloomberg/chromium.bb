@@ -75,7 +75,7 @@ UrlPicker::UrlPicker(UrlPickerDelegate* delegate,
   ColumnSet* column_set = layout->AddColumnSet(labels_column_set_id);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
                         GridLayout::USE_PREF, 0, 0);
 
@@ -104,12 +104,12 @@ UrlPicker::UrlPicker(UrlPickerDelegate* delegate,
       description_label->font().DeriveFont(0, gfx::Font::BOLD));
   layout->AddView(description_label);
 
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   layout->StartRow(1, single_column_view_set_id);
   layout->AddView(url_table_);
 
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   AddAccelerator(views::Accelerator(ui::VKEY_RETURN, false, false, false));
 }

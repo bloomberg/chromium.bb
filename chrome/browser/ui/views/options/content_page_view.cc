@@ -193,28 +193,28 @@ void ContentPageView::InitControlLayout() {
     layout->StartRow(0, single_column_view_set_id);
     InitSyncGroup();
     layout->AddView(sync_group_);
-    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   }
 
   layout->StartRow(0, single_column_view_set_id);
   InitPasswordSavingGroup();
   layout->AddView(passwords_group_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   layout->StartRow(0, single_column_view_set_id);
   InitFormAutofillGroup();
   layout->AddView(form_autofill_group_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   layout->StartRow(0, single_column_view_set_id);
   InitBrowsingDataGroup();
   layout->AddView(browsing_data_group_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   layout->StartRow(0, single_column_view_set_id);
   InitThemesGroup();
   layout->AddView(themes_group_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   // Init member prefs so we can update the controls if prefs change.
   ask_to_save_passwords_.Init(prefs::kPasswordManagerEnabled,
@@ -306,7 +306,7 @@ void ContentPageView::InitPasswordSavingGroup() {
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(passwords_asktosave_radio_, 1, 1,
                   GridLayout::FILL, GridLayout::LEADING);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(passwords_neversave_radio_, 1, 1,
                   GridLayout::FILL, GridLayout::LEADING);
@@ -369,7 +369,7 @@ void ContentPageView::InitThemesGroup() {
   ColumnSet* double_col_set = layout->AddColumnSet(double_column_view_set_id);
   double_col_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                             GridLayout::USE_PREF, 0, 0);
-  double_col_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  double_col_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   double_col_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                             GridLayout::USE_PREF, 0, 0);
 
@@ -442,7 +442,7 @@ void ContentPageView::InitSyncGroup() {
   ColumnSet* column_set = layout->AddColumnSet(single_column_view_set_id);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 1,
                         GridLayout::USE_PREF, 0, 0);
 
@@ -451,11 +451,11 @@ void ContentPageView::InitSyncGroup() {
                   GridLayout::FILL, GridLayout::LEADING);
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(sync_action_link_, 3, 1);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(sync_start_stop_button_);
   layout->AddView(sync_customize_button_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(privacy_dashboard_link_, 3, 1);
 

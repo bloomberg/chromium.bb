@@ -87,7 +87,7 @@ void ImporterView::SetupControl() {
   ColumnSet* column_set = layout->AddColumnSet(column_set_id);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 0,
                         GridLayout::FIXED, 200, 0);
 
@@ -98,19 +98,19 @@ void ImporterView::SetupControl() {
   layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
   layout->StartRow(0, column_set_id);
   layout->AddView(import_items_label_, 3, 1);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   layout->StartRow(0, column_set_id);
   layout->AddView(favorites_checkbox_, 3, 1);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   layout->StartRow(0, column_set_id);
   layout->AddView(search_engines_checkbox_, 3, 1);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   layout->StartRow(0, column_set_id);
   layout->AddView(passwords_checkbox_, 3, 1);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   layout->StartRow(0, column_set_id);
   layout->AddView(history_checkbox_, 3, 1);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 }
 
 gfx::Size ImporterView::GetPreferredSize() {

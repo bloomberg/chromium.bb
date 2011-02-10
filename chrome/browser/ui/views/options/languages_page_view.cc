@@ -282,7 +282,7 @@ void LanguagesPageView::InitControlLayout() {
       views::Label::ALIGN_LEFT);
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(languages_instructions_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   // Add two columns - for table, and for button stack.
   std::vector<TableColumn> columns;
@@ -297,7 +297,7 @@ void LanguagesPageView::InitControlLayout() {
   column_set = layout->AddColumnSet(double_column_view_set_id);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0,
                         GridLayout::USE_PREF, 0, 0);
 
@@ -317,15 +317,15 @@ void LanguagesPageView::InitControlLayout() {
   button_stack_layout->StartRow(0, single_column_view_set_id);
   button_stack_layout->AddView(add_button_, 1, 1, GridLayout::FILL,
                                GridLayout::CENTER);
-  button_stack_layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  button_stack_layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   button_stack_layout->StartRow(0, single_column_view_set_id);
   button_stack_layout->AddView(remove_button_, 1, 1, GridLayout::FILL,
                                GridLayout::CENTER);
-  button_stack_layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  button_stack_layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   button_stack_layout->StartRow(0, single_column_view_set_id);
   button_stack_layout->AddView(move_up_button_, 1, 1, GridLayout::FILL,
                                GridLayout::CENTER);
-  button_stack_layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  button_stack_layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   button_stack_layout->StartRow(0, single_column_view_set_id);
   button_stack_layout->AddView(move_down_button_, 1, 1, GridLayout::FILL,
                                GridLayout::CENTER);
@@ -371,17 +371,17 @@ void LanguagesPageView::InitControlLayout() {
   // SpellCheck language settings.
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(enable_spellchecking_checkbox_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   if (command_line.HasSwitch(switches::kExperimentalSpellcheckerFeatures)) {
     layout->StartRow(0, single_column_view_set_id);
     layout->AddView(enable_autospellcorrect_checkbox_);
-    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   }
   const int double_column_view_set_2_id = 2;
   column_set = layout->AddColumnSet(double_column_view_set_2_id);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
 
@@ -393,12 +393,12 @@ void LanguagesPageView::InitControlLayout() {
   layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(language_info_label_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   layout->StartRow(0, double_column_view_set_2_id);
   layout->AddView(ui_language_label_);
   layout->AddView(change_ui_language_combobox_);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   // Init member prefs so we can update the controls if prefs change.
   app_locale_.Init(prefs::kApplicationLocale,

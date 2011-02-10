@@ -57,7 +57,7 @@ void UninstallView::SetupControls() {
   // The "delete profile" check box.
   ++column_set_id;
   column_set = layout->AddColumnSet(column_set_id);
-  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
   layout->StartRow(0, column_set_id);
@@ -72,14 +72,14 @@ void UninstallView::SetupControls() {
     browsers_.reset(new BrowsersMap());
     ShellUtil::GetRegisteredBrowsers(dist, browsers_.get());
     if (!browsers_->empty()) {
-      layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+      layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
       ++column_set_id;
       column_set = layout->AddColumnSet(column_set_id);
-      column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+      column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
       column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                             GridLayout::USE_PREF, 0, 0);
-      column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+      column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
       column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                             GridLayout::USE_PREF, 0, 0);
       layout->StartRow(0, column_set_id);
@@ -93,7 +93,7 @@ void UninstallView::SetupControls() {
     }
   }
 
-  layout->AddPaddingRow(0, kRelatedControlSmallVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
 }
 
 bool UninstallView::Accept() {
