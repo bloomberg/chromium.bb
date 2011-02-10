@@ -28,6 +28,7 @@ class AutomationProvider;
 class Browser;
 class Profile;
 class TabContentsContainer;
+class TabContentsWrapper;
 class RenderViewContextMenuViews;
 struct NavigationInfo;
 
@@ -52,7 +53,7 @@ class ExternalTabContainer : public TabContentsDelegate,
   ExternalTabContainer(AutomationProvider* automation,
       AutomationResourceMessageFilter* filter);
 
-  TabContents* tab_contents() const { return tab_contents_; }
+  TabContents* tab_contents() const;
 
   // Temporary hack so we can send notifications back
   void SetTabHandle(int handle);
@@ -67,7 +68,7 @@ class ExternalTabContainer : public TabContentsDelegate,
             DWORD style,
             bool load_requests_via_automation,
             bool handle_top_level_requests,
-            TabContents* existing_tab_contents,
+            TabContentsWrapper* existing_tab_contents,
             const GURL& initial_url,
             const GURL& referrer,
             bool infobars_enabled,
@@ -265,7 +266,7 @@ class ExternalTabContainer : public TabContentsDelegate,
   // Creates and initializes the view hierarchy for this ExternalTabContainer.
   void SetupExternalTabView();
 
-  TabContents* tab_contents_;
+  scoped_ptr<TabContentsWrapper> tab_contents_;
   scoped_refptr<AutomationProvider> automation_;
 
   NotificationRegistrar registrar_;

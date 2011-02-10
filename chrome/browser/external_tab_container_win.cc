@@ -27,8 +27,8 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "chrome/browser/tab_contents/provisional_load_details.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/browser/ui/views/page_info_bubble_view.h"
 #include "chrome/browser/ui/views/tab_contents/render_view_context_menu_views.h"
@@ -88,7 +88,6 @@ base::LazyInstance<ExternalTabContainer::PendingTabs>
 ExternalTabContainer::ExternalTabContainer(
     AutomationProvider* automation, AutomationResourceMessageFilter* filter)
     : automation_(automation),
-      tab_contents_(NULL),
       tab_contents_container_(NULL),
       tab_handle_(0),
       ignore_next_load_notification_(false),
@@ -109,13 +108,17 @@ ExternalTabContainer::~ExternalTabContainer() {
   Uninitialize();
 }
 
+TabContents* ExternalTabContainer::tab_contents() const {
+  return tab_contents_.get() ? tab_contents_->tab_contents() : NULL;
+}
+
 bool ExternalTabContainer::Init(Profile* profile,
                                 HWND parent,
                                 const gfx::Rect& bounds,
                                 DWORD style,
                                 bool load_requests_via_automation,
                                 bool handle_top_level_requests,
-                                TabContents* existing_contents,
+                                TabContentsWrapper* existing_contents,
                                 const GURL& initial_url,
                                 const GURL& referrer,
                                 bool infobars_enabled,
@@ -142,17 +145,19 @@ bool ExternalTabContainer::Init(Profile* profile,
   prop_.reset(new ViewProp(GetNativeView(), kWindowObjectKey, this));
 
   if (existing_contents) {
-    tab_contents_ = existing_contents;
+    tab_contents_.reset(existing_contents);
     tab_contents_->controller().set_profile(profile);
   } else {
-    tab_contents_ = new TabContents(profile, NULL, MSG_ROUTING_NONE,
-                                    NULL, NULL);
+    TabContents* new_contents = new TabContents(profile, NULL, MSG_ROUTING_NONE,
+                                                NULL, NULL);
+    tab_contents_.reset(new TabContentsWrapper(new_contents));
   }
 
-  tab_contents_->set_delegate(this);
+  tab_contents_->tab_contents()->set_delegate(this);
 
-  tab_contents_->GetMutableRendererPrefs()->browser_handles_top_level_requests =
-      handle_top_level_requests;
+  tab_contents_->tab_contents()->
+      GetMutableRendererPrefs()->browser_handles_top_level_requests =
+          handle_top_level_requests;
 
   if (!existing_contents) {
     tab_contents_->render_view_host()->AllowBindings(
@@ -167,9 +172,9 @@ bool ExternalTabContainer::Init(Profile* profile,
   registrar_.Add(this, NotificationType::LOAD_STOP,
                  Source<NavigationController>(controller));
   registrar_.Add(this, NotificationType::RENDER_VIEW_HOST_CREATED_FOR_TAB,
-                 Source<TabContents>(tab_contents_));
+                 Source<TabContents>(tab_contents_->tab_contents()));
   registrar_.Add(this, NotificationType::RENDER_VIEW_HOST_DELETED,
-                 Source<TabContents>(tab_contents_));
+                 Source<TabContents>(tab_contents_->tab_contents()));
 
   NotificationService::current()->Notify(
       NotificationType::EXTERNAL_TAB_CREATED,
@@ -197,7 +202,7 @@ bool ExternalTabContainer::Init(Profile* profile,
   if (parent)
     SetParent(GetNativeView(), parent);
 
-  ::ShowWindow(tab_contents_->GetNativeView(), SW_SHOWNA);
+  ::ShowWindow(tab_contents_->tab_contents()->GetNativeView(), SW_SHOWNA);
 
   LoadAccelerators();
   SetupExternalTabView();
@@ -210,7 +215,7 @@ void ExternalTabContainer::Uninitialize() {
   }
 
   registrar_.RemoveAll();
-  if (tab_contents_) {
+  if (tab_contents_.get()) {
     RenderViewHost* rvh = tab_contents_->render_view_host();
     if (rvh) {
       if (DevToolsManager::GetInstance())
@@ -228,8 +233,7 @@ void ExternalTabContainer::Uninitialize() {
         Source<NavigationController>(&tab_contents_->controller()),
         Details<ExternalTabContainer>(this));
 
-    delete tab_contents_;
-    tab_contents_ = NULL;
+    tab_contents_.reset(NULL);
   }
 
   if (focus_manager_) {
@@ -278,16 +282,16 @@ void ExternalTabContainer::ProcessUnhandledAccelerator(const MSG& msg) {
 
 void ExternalTabContainer::FocusThroughTabTraversal(
     bool reverse, bool restore_focus_to_view) {
-  DCHECK(tab_contents_);
-  if (tab_contents_)
-    tab_contents_->Focus();
+  DCHECK(tab_contents_.get());
+  if (tab_contents_.get())
+    tab_contents_->tab_contents()->Focus();
 
   // The tab_contents_ member can get destroyed in the context of the call to
   // TabContentsViewWin::Focus() above. This method eventually calls SetFocus
   // on the native window, which could end up dispatching messages like
   // WM_DESTROY for the external tab.
-  if (tab_contents_ && restore_focus_to_view)
-    tab_contents_->FocusThroughTabTraversal(reverse);
+  if (tab_contents_.get() && restore_focus_to_view)
+    tab_contents_->tab_contents()->FocusThroughTabTraversal(reverse);
 }
 
 // static
@@ -366,8 +370,10 @@ void ExternalTabContainer::OpenURLFromTab(TabContents* source,
         details.did_replace_entry = false;
 
         scoped_refptr<history::HistoryAddPageArgs> add_page_args(
-            tab_contents_->CreateHistoryAddPageArgs(url, details, params));
-        tab_contents_->UpdateHistoryForNavigation(add_page_args);
+            tab_contents_->tab_contents()->
+                CreateHistoryAddPageArgs(url, details, params));
+        tab_contents_->tab_contents()->
+            UpdateHistoryForNavigation(add_page_args);
       }
       break;
     default:
@@ -417,6 +423,7 @@ void ExternalTabContainer::AddNewContents(TabContents* source,
 
   // Make sure that ExternalTabContainer instance is initialized with
   // an unwrapped Profile.
+  scoped_ptr<TabContentsWrapper> wrapper(new TabContentsWrapper(new_contents));
   bool result = new_container->Init(
       new_contents->profile()->GetOriginalProfile(),
       NULL,
@@ -424,13 +431,14 @@ void ExternalTabContainer::AddNewContents(TabContents* source,
       WS_CHILD,
       load_requests_via_automation_,
       handle_top_level_requests_,
-      new_contents,
+      wrapper.get(),
       GURL(),
       GURL(),
       true,
       route_all_top_level_navigations_);
 
   if (result) {
+    wrapper.release();  // Ownership has been transferred.
     if (route_all_top_level_navigations_) {
       return;
     }
@@ -828,7 +836,8 @@ void ExternalTabContainer::RunUnloadHandlers(IPC::Message* reply_message) {
      automation_->Send(reply_message);
      return;
   }
-  if (tab_contents_ && Browser::RunUnloadEventsHelper(tab_contents_)) {
+  if (tab_contents_.get() &&
+      Browser::RunUnloadEventsHelper(tab_contents_->tab_contents())) {
     unload_reply_message_ = reply_message;
   } else {
     AutomationMsg_RunUnloadHandlers::WriteReplyParams(reply_message, true);
@@ -908,12 +917,13 @@ scoped_refptr<ExternalTabContainer> ExternalTabContainer::RemovePendingTab(
 void ExternalTabContainer::SetEnableExtensionAutomation(
     const std::vector<std::string>& functions_enabled) {
   if (functions_enabled.size() > 0) {
-    if (!tab_contents_) {
+    if (!tab_contents_.get()) {
       NOTREACHED() << "Being invoked via tab so should have TabContents";
       return;
     }
 
-    AutomationExtensionFunction::Enable(tab_contents_, functions_enabled);
+    AutomationExtensionFunction::Enable(tab_contents_->tab_contents(),
+                                        functions_enabled);
     enabled_extension_automation_ = true;
   } else {
     AutomationExtensionFunction::Disable();
@@ -937,7 +947,7 @@ bool ExternalTabContainer::AcceleratorPressed(
       accelerator_table_.find(accelerator);
   DCHECK(iter != accelerator_table_.end());
 
-  if (!tab_contents_ || !tab_contents_->render_view_host()) {
+  if (!tab_contents_.get() || !tab_contents_->render_view_host()) {
     NOTREACHED();
     return false;
   }
@@ -975,7 +985,7 @@ bool ExternalTabContainer::AcceleratorPressed(
 }
 
 void ExternalTabContainer::Navigate(const GURL& url, const GURL& referrer) {
-  if (!tab_contents_) {
+  if (!tab_contents_.get()) {
     NOTREACHED();
     return;
   }
@@ -1042,7 +1052,7 @@ void ExternalTabContainer::OnReinitialize() {
     }
   }
 
-  NavigationStateChanged(tab_contents_, 0);
+  NavigationStateChanged(tab_contents(), 0);
   ServicePendingOpenURLRequests();
 }
 
@@ -1052,10 +1062,10 @@ void ExternalTabContainer::ServicePendingOpenURLRequests() {
   set_pending(false);
 
   for (size_t index = 0; index < pending_open_url_requests_.size();
-       index ++) {
+       ++index) {
     const PendingTopLevelNavigation& url_request =
         pending_open_url_requests_[index];
-    OpenURLFromTab(tab_contents_, url_request.url, url_request.referrer,
+    OpenURLFromTab(tab_contents(), url_request.url, url_request.referrer,
                    url_request.disposition, url_request.transition);
   }
   pending_open_url_requests_.clear();
@@ -1071,7 +1081,7 @@ void ExternalTabContainer::SetupExternalTabView() {
   external_tab_view_ = new views::View();
 
   InfoBarContainer* info_bar_container = new InfoBarContainer(this);
-  info_bar_container->ChangeTabContents(tab_contents_);
+  info_bar_container->ChangeTabContents(tab_contents());
 
   views::GridLayout* layout = new views::GridLayout(external_tab_view_);
   // Give this column an identifier of 0.
@@ -1091,7 +1101,7 @@ void ExternalTabContainer::SetupExternalTabView() {
   layout->AddView(tab_contents_container_);
   SetContentsView(external_tab_view_);
   // Note that SetTabContents must be called after AddChildView is called
-  tab_contents_container_->ChangeTabContents(tab_contents_);
+  tab_contents_container_->ChangeTabContents(tab_contents());
 }
 
 TemporaryPopupExternalTabContainer::TemporaryPopupExternalTabContainer(
