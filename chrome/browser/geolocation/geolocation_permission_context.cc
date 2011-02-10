@@ -4,6 +4,7 @@
 
 #include "chrome/browser/geolocation/geolocation_permission_context.h"
 
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -87,20 +88,21 @@ class GeolocationInfoBarQueueController : NotificationObserver {
 
  private:
   struct PendingInfoBarRequest;
+  class RequestEquals;
+
   typedef std::vector<PendingInfoBarRequest> PendingInfoBarRequests;
 
   // Shows the first pending infobar for this tab.
   void ShowQueuedInfoBar(int render_process_id, int render_view_id);
 
   // Cancels an InfoBar request and returns the next iterator position.
-  std::vector<PendingInfoBarRequest>::iterator CancelInfoBarRequestInternal(
-      std::vector<PendingInfoBarRequest>::iterator i);
+  PendingInfoBarRequests::iterator CancelInfoBarRequestInternal(
+      PendingInfoBarRequests::iterator i);
 
   NotificationRegistrar registrar_;
 
   GeolocationPermissionContext* const geolocation_permission_context_;
   Profile* const profile_;
-  // Contains all pending infobar requests.
   PendingInfoBarRequests pending_infobar_requests_;
 };
 
@@ -228,34 +230,99 @@ bool GeolocationConfirmInfoBarDelegate::LinkClicked(
 }  // namespace
 
 
-// GeolocationInfoBarQueueController ------------------------------------------
+// GeolocationInfoBarQueueController::PendingInfoBarRequest -------------------
 
 struct GeolocationInfoBarQueueController::PendingInfoBarRequest {
+ public:
+  PendingInfoBarRequest(int render_process_id,
+                        int render_view_id,
+                        int bridge_id,
+                        GURL requesting_frame,
+                        GURL embedder);
+
+  bool IsForTab(int p_render_process_id, int p_render_view_id) const;
+  bool IsForPair(const GURL& p_requesting_frame,
+                 const GURL& p_embedder) const;
+  bool Equals(int p_render_process_id,
+              int p_render_view_id,
+              int p_bridge_id) const;
+
   int render_process_id;
   int render_view_id;
   int bridge_id;
   GURL requesting_frame;
   GURL embedder;
-  // If non-NULL, it's the current geolocation infobar for this tab.
   InfoBarDelegate* infobar_delegate;
-
-  bool IsForTab(int p_render_process_id, int p_render_view_id) const {
-    return render_process_id == p_render_process_id &&
-           render_view_id == p_render_view_id;
-  }
-
-  bool IsForPair(const GURL& p_requesting_frame, const GURL& p_embedder) const {
-    return requesting_frame == p_requesting_frame &&
-           embedder == p_embedder;
-  }
-
-  bool Equals(int p_render_process_id,
-              int p_render_view_id,
-              int p_bridge_id) const {
-    return IsForTab(p_render_process_id, p_render_view_id) &&
-           bridge_id == p_bridge_id;
-  }
 };
+
+GeolocationInfoBarQueueController::PendingInfoBarRequest::PendingInfoBarRequest(
+    int render_process_id,
+    int render_view_id,
+    int bridge_id,
+    GURL requesting_frame,
+    GURL embedder)
+    : render_process_id(render_process_id),
+      render_view_id(render_view_id),
+      bridge_id(bridge_id),
+      requesting_frame(requesting_frame),
+      embedder(embedder),
+      infobar_delegate(NULL) {
+}
+
+bool GeolocationInfoBarQueueController::PendingInfoBarRequest::IsForTab(
+    int p_render_process_id,
+    int p_render_view_id) const {
+  return (render_process_id == p_render_process_id) &&
+      (render_view_id == p_render_view_id);
+}
+
+bool GeolocationInfoBarQueueController::PendingInfoBarRequest::IsForPair(
+    const GURL& p_requesting_frame,
+    const GURL& p_embedder) const {
+  return (requesting_frame == p_requesting_frame) && (embedder == p_embedder);
+}
+
+bool GeolocationInfoBarQueueController::PendingInfoBarRequest::Equals(
+    int p_render_process_id,
+    int p_render_view_id,
+    int p_bridge_id) const {
+  return IsForTab(p_render_process_id, p_render_view_id) &&
+     (bridge_id == p_bridge_id);
+}
+
+
+// GeolocationInfoBarQueueController::RequestEquals ---------------------------
+
+// Useful predicate for checking PendingInfoBarRequest equality.
+class GeolocationInfoBarQueueController::RequestEquals
+    : public std::unary_function<PendingInfoBarRequest, bool> {
+ public:
+  RequestEquals(int render_process_id, int render_view_id, int bridge_id);
+
+  bool operator()(const PendingInfoBarRequest& request) const;
+
+ private:
+  int render_process_id_;
+  int render_view_id_;
+  int bridge_id_;
+};
+
+GeolocationInfoBarQueueController::RequestEquals::RequestEquals(
+    int render_process_id,
+    int render_view_id,
+    int bridge_id)
+    : render_process_id_(render_process_id),
+      render_view_id_(render_view_id),
+      bridge_id_(bridge_id) {
+}
+
+bool GeolocationInfoBarQueueController::RequestEquals::operator()(
+    const PendingInfoBarRequest& request) const {
+  return request.Equals(render_process_id_, render_view_id_, bridge_id_);
+}
+
+
+// GeolocationInfoBarQueueController ------------------------------------------
 
 GeolocationInfoBarQueueController::GeolocationInfoBarQueueController(
     GeolocationPermissionContext* geolocation_permission_context,
@@ -273,30 +340,16 @@ void GeolocationInfoBarQueueController::CreateInfoBarRequest(
     int bridge_id,
     const GURL& requesting_frame,
     const GURL& embedder) {
-  // This makes sure that no duplicates are added to
-  // |pending_infobar_requests_| as an artificial permission request may
-  // already exist in the queue as per
-  // GeolocationPermissionContext::StartUpdatingRequested
-  // See http://crbug.com/51899 for more details.
-  // TODO(joth): Once we have CLIENT_BASED_GEOLOCATION and
-  // WTF_USE_PREEMPT_GEOLOCATION_PERMISSION set in WebKit we should be able to
-  // just use a DCHECK to check if a duplicate is attempting to be added.
-  for (PendingInfoBarRequests::iterator i = pending_infobar_requests_.begin();
-       i != pending_infobar_requests_.end(); ++i) {
-    if (i->Equals(render_process_id, render_view_id, bridge_id)) {
-      // The request already exists.
-      DCHECK(i->IsForPair(requesting_frame, embedder));
-      return;
-    }
-  }
-  PendingInfoBarRequest pending_infobar_request;
-  pending_infobar_request.render_process_id = render_process_id;
-  pending_infobar_request.render_view_id = render_view_id;
-  pending_infobar_request.bridge_id = bridge_id;
-  pending_infobar_request.requesting_frame = requesting_frame;
-  pending_infobar_request.embedder = embedder;
-  pending_infobar_request.infobar_delegate = NULL;
-  pending_infobar_requests_.push_back(pending_infobar_request);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // We shouldn't get duplicate requests.
+  DCHECK(std::find_if(pending_infobar_requests_.begin(),
+      pending_infobar_requests_.end(),
+      RequestEquals(render_process_id, render_view_id, bridge_id)) ==
+      pending_infobar_requests_.end());
+
+  pending_infobar_requests_.push_back(PendingInfoBarRequest(render_process_id,
+      render_view_id, bridge_id, requesting_frame, embedder));
   ShowQueuedInfoBar(render_process_id, render_view_id);
 }
 
@@ -304,26 +357,27 @@ void GeolocationInfoBarQueueController::CancelInfoBarRequest(
     int render_process_id,
     int render_view_id,
     int bridge_id) {
-  for (PendingInfoBarRequests::iterator i = pending_infobar_requests_.begin();
-       i != pending_infobar_requests_.end(); ++i) {
-    if (i->Equals(render_process_id, render_view_id, bridge_id)) {
-      CancelInfoBarRequestInternal(i);
-      return;
-    }
-  }
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  PendingInfoBarRequests::iterator i = std::find_if(
+      pending_infobar_requests_.begin(), pending_infobar_requests_.end(),
+      RequestEquals(render_process_id, render_view_id, bridge_id));
+  // TODO(pkasting): Can this conditional become a DCHECK()?
+  if (i != pending_infobar_requests_.end())
+    CancelInfoBarRequestInternal(i);
 }
 
 void GeolocationInfoBarQueueController::OnInfoBarClosed(int render_process_id,
                                                         int render_view_id,
                                                         int bridge_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  for (PendingInfoBarRequests::iterator i = pending_infobar_requests_.begin();
-       i != pending_infobar_requests_.end(); ++i) {
-    if (i->Equals(render_process_id, render_view_id, bridge_id)) {
-      pending_infobar_requests_.erase(i);
-      break;
-    }
-  }
+
+  PendingInfoBarRequests::iterator i = std::find_if(
+      pending_infobar_requests_.begin(), pending_infobar_requests_.end(),
+      RequestEquals(render_process_id, render_view_id, bridge_id));
+  if (i != pending_infobar_requests_.end())
+    pending_infobar_requests_.erase(i);
+
   ShowQueuedInfoBar(render_process_id, render_view_id);
 }
 
@@ -335,28 +389,31 @@ void GeolocationInfoBarQueueController::OnPermissionSet(
     const GURL& embedder,
     bool allowed) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // Persist the permission.
+
   ContentSetting content_setting =
       allowed ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
   profile_->GetGeolocationContentSettingsMap()->SetContentSetting(
       requesting_frame.GetOrigin(), embedder.GetOrigin(), content_setting);
 
-  // Now notify all pending requests that the permission has been set.
   for (PendingInfoBarRequests::iterator i = pending_infobar_requests_.begin();
-       i != pending_infobar_requests_.end();) {
+       i != pending_infobar_requests_.end(); ) {
     if (i->IsForPair(requesting_frame, embedder)) {
-      // There was a pending request for the same [frame, embedder].
-      if (i->Equals(render_process_id, render_view_id, bridge_id)) {
-        // The request that set permission will be removed by TabContents
-        // itself, that is, we should not try to cancel the infobar that has
-        // just notified us.
-        i->infobar_delegate = NULL;
-      }
-      // Cancel it first, and then notify the permission.
-      // Note: if the pending request had an infobar, TabContents will
-      // eventually close it and we will pump the queue via OnInfoBarClosed().
+      // Cancel this request first, then notify listeners.  TODO(pkasting): Why
+      // is this order important?
+      // NOTE: If the pending request had an infobar, TabContents will close it
+      // either synchronously or asynchronously, which will then pump the queue
+      // via OnInfoBarClosed().
       PendingInfoBarRequest copied_request = *i;
+      // Don't let CancelInfoBarRequestInternal() call RemoveInfoBar() on the
+      // delegate that's currently calling us.  That delegate is in either
+      // Accept() or Cancel(), so its owning InfoBar will call RemoveInfoBar()
+      // later on in this callstack anyway; and if we do it here, and it causes
+      // the delegate to be deleted, our GURL& args will point to garbage and we
+      // may also cause other problems during stack unwinding.
+      if (i->Equals(render_process_id, render_view_id, bridge_id))
+        i->infobar_delegate = NULL;
       i = CancelInfoBarRequestInternal(i);
+
       geolocation_permission_context_->NotifyPermissionSet(
           copied_request.render_process_id, copied_request.render_view_id,
           copied_request.bridge_id, copied_request.requesting_frame, allowed);
@@ -389,47 +446,52 @@ void GeolocationInfoBarQueueController::ShowQueuedInfoBar(int render_process_id,
   TabContents* tab_contents =
       tab_util::GetTabContentsByID(render_process_id, render_view_id);
   for (PendingInfoBarRequests::iterator i = pending_infobar_requests_.begin();
-       i != pending_infobar_requests_.end();) {
-    if (!i->IsForTab(render_process_id, render_view_id)) {
-      ++i;
-      continue;
-    }
-    if (!tab_contents) {
-      i = pending_infobar_requests_.erase(i);
-      continue;
-    }
-    // Check if already displayed.
-    if (i->infobar_delegate)
+       i != pending_infobar_requests_.end(); ) {
+    if (i->IsForTab(render_process_id, render_view_id)) {
+      if (!tab_contents) {
+        i = pending_infobar_requests_.erase(i);
+        continue;
+      }
+
+      if (!i->infobar_delegate) {
+        if (!registrar_.IsRegistered(this,
+                                     NotificationType::TAB_CONTENTS_DESTROYED,
+                                     Source<TabContents>(tab_contents))) {
+          registrar_.Add(this, NotificationType::TAB_CONTENTS_DESTROYED,
+                         Source<TabContents>(tab_contents));
+        }
+        i->infobar_delegate = new GeolocationConfirmInfoBarDelegate(
+            tab_contents, this, render_process_id, render_view_id, i->bridge_id,
+            i->requesting_frame,
+            profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
+        tab_contents->AddInfoBar(i->infobar_delegate);
+      }
       break;
-    if (!registrar_.IsRegistered(this, NotificationType::TAB_CONTENTS_DESTROYED,
-        Source<TabContents>(tab_contents))) {
-      registrar_.Add(this, NotificationType::TAB_CONTENTS_DESTROYED,
-          Source<TabContents>(tab_contents));
     }
-    i->infobar_delegate = new GeolocationConfirmInfoBarDelegate(tab_contents,
-        this, render_process_id, render_view_id, i->bridge_id,
-        i->requesting_frame,
-        profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
-    tab_contents->AddInfoBar(i->infobar_delegate);
-    break;
+    ++i;
   }
 }
 
-std::vector<GeolocationInfoBarQueueController::PendingInfoBarRequest>::iterator
+GeolocationInfoBarQueueController::PendingInfoBarRequests::iterator
     GeolocationInfoBarQueueController::CancelInfoBarRequestInternal(
-        std::vector<PendingInfoBarRequest>::iterator i) {
+    PendingInfoBarRequests::iterator i) {
+  InfoBarDelegate* delegate = i->infobar_delegate;
+  if (!delegate)
+    return pending_infobar_requests_.erase(i);
+
   TabContents* tab_contents =
       tab_util::GetTabContentsByID(i->render_process_id, i->render_view_id);
-  if (tab_contents && i->infobar_delegate) {
-    // TabContents will destroy the InfoBar, which will remove from our vector
-    // asynchronously.
-    tab_contents->RemoveInfoBar(i->infobar_delegate);
-    return ++i;
-  } else {
-    // Remove it directly from the pending vector.
+  if (!tab_contents)
     return pending_infobar_requests_.erase(i);
-  }
+
+  // TabContents will destroy the InfoBar, which will remove from our vector
+  // asynchronously.
+  tab_contents->RemoveInfoBar(i->infobar_delegate);
+  return ++i;
 }
+
+
+// GeolocationPermissionContext -----------------------------------------------
 
 GeolocationPermissionContext::GeolocationPermissionContext(
     Profile* profile)
