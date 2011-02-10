@@ -122,10 +122,10 @@ class URLRow {
     favicon_id_ = favicon_id;
   }
 
+ protected:
   // Swaps the contents of this URLRow with another, which allows it to be
   // destructively copied without memory allocations.
-  // (Virtual because it's overridden by URLResult.)
-  virtual void Swap(URLRow* other);
+  void Swap(URLRow* other);
 
  private:
   // This class writes directly into this structure and clears our dirty bits
@@ -359,7 +359,7 @@ class URLResult : public URLRow {
     return title_match_positions_;
   }
 
-  virtual void Swap(URLResult* other);
+  void SwapResult(URLResult* other);
 
  private:
   friend class HistoryBackend;

@@ -149,7 +149,7 @@ URLResult::URLResult(const GURL& url,
 URLResult::~URLResult() {
 }
 
-void URLResult::Swap(URLResult* other) {
+void URLResult::SwapResult(URLResult* other) {
   URLRow::Swap(other);
   std::swap(visit_time_, other->visit_time_);
   snippet_.Swap(&other->snippet_);
@@ -192,7 +192,7 @@ void QueryResults::Swap(QueryResults* other) {
 
 void QueryResults::AppendURLBySwapping(URLResult* result) {
   URLResult* new_result = new URLResult;
-  new_result->Swap(result);
+  new_result->SwapResult(result);
 
   results_.push_back(new_result);
   AddURLUsageAtIndex(new_result->url(), results_.size() - 1);
