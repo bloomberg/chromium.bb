@@ -24,10 +24,11 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_METHOD0(OnBackendInitialized, void());
   MOCK_METHOD0(OnSyncCycleCompleted, void());
   MOCK_METHOD0(OnAuthError, void());
-  MOCK_METHOD3(OnUserSubmittedAuth,
+  MOCK_METHOD4(OnUserSubmittedAuth,
                void(const std::string& username,
                     const std::string& password,
-                    const std::string& captcha));
+                    const std::string& captcha,
+                    const std::string& access_code));
   MOCK_METHOD0(OnUserCancelledDialog, void());
   MOCK_CONST_METHOD0(GetAuthenticatedUsername, string16());
   MOCK_METHOD2(OnUnrecoverableError,
