@@ -143,7 +143,7 @@
       <enums title="Enumeration List"/>
       <enumvalues title=""/>
       <functions title="Function List"/>
-      <variables title=""/>
+      <!-- <variables title=""/> -->
       <signals title=""/>
       <publicslots title=""/>
       <protectedslots title=""/>
@@ -160,7 +160,7 @@
       <enums title="Enumeration Details"/>
       <enumvalues title=""/>
       <functions title="Function Deatils"/>
-      <variables title=""/>
+      <!-- <variables title=""/> -->
       <signals title=""/>
       <publicslots title=""/>
       <protectedslots title=""/>
