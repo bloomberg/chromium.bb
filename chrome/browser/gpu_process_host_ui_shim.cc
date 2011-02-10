@@ -275,12 +275,6 @@ const GPUInfo& GpuProcessHostUIShim::gpu_info() const {
   return gpu_info_;
 }
 
-void GpuProcessHostUIShim::AddCustomLogMessage(int level,
-    const std::string& header,
-    const std::string& message) {
- OnLogMessage(level, header, message);
-}
-
 bool GpuProcessHostUIShim::OnControlMessageReceived(
     const IPC::Message& message) {
   DCHECK(CalledOnValidThread());
@@ -346,7 +340,6 @@ void GpuProcessHostUIShim::OnChannelEstablished(
   if (gpu_feature_flags_.flags() != 0) {
     Send(new GpuMsg_CloseChannel(channel_handle));
     EstablishChannelError(callback.release(), IPC::ChannelHandle(), gpu_info);
-    AddCustomLogMessage(logging::LOG_WARNING, "WARNING", "GPU is blacklisted.");
   } else {
     callback->Run(channel_handle, gpu_info);
   }
