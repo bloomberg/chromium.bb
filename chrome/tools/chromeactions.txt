@@ -1012,6 +1012,8 @@
 0x0b8efe82e35086c2	ScreenLocker_Show
 0xe643aadfeec1d6fc	ScreenLocker_Signout
 0x61ce545b97b3f1cd	ScreenLocker_StartScreenSaver
+0x7a0c1d1c5392ec8e	SearchWithRLZ
+0x2e17e73bd11af537	SearchWithoutRLZ
 0x702bbdc91c8e399d	SelectAll
 0xd016dafd5f0eca55	SelectLastTab
 0x64658593002b74ad	SelectLine

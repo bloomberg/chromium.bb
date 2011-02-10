@@ -9,13 +9,17 @@
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/search_engines/search_engine_type.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/installer/util/google_update_settings.h"
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/favicon_size.h"
+// TODO(pastarmovj): Remove google_update_settings and user_metrics when the
+// CollectRLZMetrics function is not needed anymore.
 
 // The TemplateURLRef has any number of terms that need to be replaced. Each of
 // the terms is enclosed in braces. If the character preceeding the final
@@ -516,6 +520,28 @@ bool TemplateURLRef::HasGoogleBaseURLs() const {
 bool TemplateURLRef::SameUrlRefs(const TemplateURLRef* ref1,
  const TemplateURLRef* ref2) {
   return ref1 == ref2 || (ref1 && ref2 && ref1->url() == ref2->url());
+}
+
+void TemplateURLRef::CollectRLZMetrics() const {
+#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+  ParseIfNecessary();
+  for (size_t i = 0; i < replacements_.size(); ++i) {
+    // We are interesed in searches that were supposed to send the RLZ token.
+    if (replacements_[i].type == GOOGLE_RLZ) {
+      string16 brand;
+      // We only have RLZ tocken on a branded browser version.
+      if (GoogleUpdateSettings::GetBrand(&brand) && !brand.empty() &&
+           !GoogleUpdateSettings::IsOrganic(brand)) {
+        // Now we know we should have had RLZ token check if there was one.
+        if (url().find("rlz=") != std::string::npos)
+          UserMetrics::RecordAction(UserMetricsAction("SearchWithRLZ"));
+        else
+          UserMetrics::RecordAction(UserMetricsAction("SearchWithoutRLZ"));
+      }
+      return;
+    }
+  }
+#endif
 }
 
 void TemplateURLRef::InvalidateCachedValues() const {

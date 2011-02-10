@@ -373,8 +373,14 @@ void AutocompleteEditModel::AcceptInput(WindowOpenDisposition disposition,
     const TemplateURL* default_provider =
         profile_->GetTemplateURLModel()->GetDefaultSearchProvider();
     if (default_provider && default_provider->url() &&
-        default_provider->url()->HasGoogleBaseURLs())
+        default_provider->url()->HasGoogleBaseURLs()) {
       GoogleURLTracker::GoogleURLSearchCommitted();
+#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+      // TODO(pastarmovj): Remove these metrics once we have proven that (close
+      // to) none searches that should have RLZ are sent out without one.
+      default_provider->url()->CollectRLZMetrics();
+#endif
+    }
   }
   view_->OpenURL(match.destination_url, disposition, match.transition,
                  alternate_nav_url, AutocompletePopupModel::kNoMatch,

@@ -132,6 +132,9 @@ class TemplateURLRef {
   static bool SameUrlRefs(const TemplateURLRef* ref1,
                           const TemplateURLRef* ref2);
 
+  // Collects metrics whether searches through Google are sent with RLZ string.
+  void CollectRLZMetrics() const;
+
  private:
   friend class SearchHostToURLsMapTest;
   friend class TemplateURL;
