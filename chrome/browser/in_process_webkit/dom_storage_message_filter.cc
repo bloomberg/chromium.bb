@@ -102,6 +102,10 @@ bool DOMStorageMessageFilter::OnMessageReceived(const IPC::Message& message,
   return handled;
 }
 
+void DOMStorageMessageFilter::OnDestruct() {
+  BrowserThread::DeleteOnIOThread::Destruct(this);
+}
+
 void DOMStorageMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message,
     BrowserThread::ID* thread) {

@@ -35,6 +35,7 @@ class DOMStorageMessageFilter : public BrowserMessageFilter {
                                         BrowserThread::ID* thread);
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok);
+  virtual void OnDestruct();
 
   // Only call on the WebKit thread.
   static void DispatchStorageEvent(const NullableString16& key,
@@ -42,7 +43,8 @@ class DOMStorageMessageFilter : public BrowserMessageFilter {
       const string16& origin, const GURL& url, bool is_local_storage);
 
  private:
-  friend class base::RefCountedThreadSafe<DOMStorageMessageFilter>;
+  friend class BrowserThread;
+  friend class DeleteTask<DOMStorageMessageFilter>;
   ~DOMStorageMessageFilter();
 
   // Message Handlers.
