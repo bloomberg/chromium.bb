@@ -68,8 +68,15 @@ enum TaskManagerColumn {
   kTaskManagerWebCoreCssCache,
   kTaskManagerSqliteMemoryUsed,
   kTaskManagerGoatsTeleported,
+  // Columns below this point are not visible in the task manager.
+  kTaskManagerBackgroundColor,
   kTaskManagerColumnCount,
 };
+
+const TaskManagerColumn kTaskManagerLastVisibleColumn =
+    kTaskManagerGoatsTeleported;
+
+static const GdkColor kHighlightColor = GDK_COLOR_RGB(0xff, 0xfa, 0xcd);
 
 TaskManagerColumn TaskManagerResourceIDToColumnID(int id) {
   switch (id) {
@@ -169,9 +176,15 @@ void TreeViewInsertColumnWithPixbuf(GtkWidget* treeview, int resid) {
   gtk_tree_view_column_pack_start(column, image_renderer, FALSE);
   gtk_tree_view_column_add_attribute(column, image_renderer,
                                      "pixbuf", kTaskManagerIcon);
+  gtk_tree_view_column_add_attribute(column, image_renderer,
+                                     "cell-background-gdk",
+                                     kTaskManagerBackgroundColor);
   GtkCellRenderer* text_renderer = gtk_cell_renderer_text_new();
   gtk_tree_view_column_pack_start(column, text_renderer, TRUE);
   gtk_tree_view_column_add_attribute(column, text_renderer, "text", colid);
+  gtk_tree_view_column_add_attribute(column, text_renderer,
+                                     "cell-background-gdk",
+                                     kTaskManagerBackgroundColor);
   gtk_tree_view_column_set_resizable(column, TRUE);
   // This is temporary: we'll turn expanding off after getting the size.
   gtk_tree_view_column_set_expand(column, TRUE);
@@ -183,10 +196,12 @@ void TreeViewInsertColumnWithPixbuf(GtkWidget* treeview, int resid) {
 void TreeViewInsertColumnWithName(GtkWidget* treeview,
                                   TaskManagerColumn colid, const char* name) {
   GtkCellRenderer* renderer = gtk_cell_renderer_text_new();
-  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(treeview), -1,
-                                              name, renderer,
-                                              "text", colid,
-                                              NULL);
+  gtk_tree_view_insert_column_with_attributes(
+      GTK_TREE_VIEW(treeview), -1,
+      name, renderer,
+      "text", colid,
+      "cell-background-gdk", kTaskManagerBackgroundColor,
+      NULL);
   GtkTreeViewColumn* column = gtk_tree_view_get_column(
       GTK_TREE_VIEW(treeview), TreeViewColumnIndexFromID(colid));
   gtk_tree_view_column_set_resizable(column, TRUE);
@@ -219,7 +234,7 @@ class TaskManagerGtk::ContextMenuController
   explicit ContextMenuController(TaskManagerGtk* task_manager)
       : task_manager_(task_manager) {
     menu_model_.reset(new ui::SimpleMenuModel(this));
-    for (int i = kTaskManagerPage; i < kTaskManagerColumnCount; i++) {
+    for (int i = kTaskManagerPage; i <= kTaskManagerLastVisibleColumn; i++) {
       menu_model_->AddCheckItemWithStringId(
           i, TaskManagerColumnIDToResourceID(i));
     }
@@ -296,14 +311,15 @@ class TaskManagerGtk::ContextMenuController
   DISALLOW_COPY_AND_ASSIGN(ContextMenuController);
 };
 
-TaskManagerGtk::TaskManagerGtk()
+TaskManagerGtk::TaskManagerGtk(bool highlight_background_resources)
   : task_manager_(TaskManager::GetInstance()),
     model_(TaskManager::GetInstance()->model()),
     dialog_(NULL),
     treeview_(NULL),
     process_list_(NULL),
     process_count_(0),
-    ignore_selection_changed_(false) {
+    ignore_selection_changed_(false),
+    highlight_background_resources_(highlight_background_resources) {
   Init();
 }
 
@@ -392,13 +408,26 @@ void TaskManagerGtk::OnItemsRemoved(int start, int length) {
 ////////////////////////////////////////////////////////////////////////////////
 // TaskManagerGtk, public:
 
+void TaskManagerGtk::Close() {
+  // Blow away our dialog - this will cause TaskManagerGtk to free itself.
+  gtk_widget_destroy(dialog_);
+  DCHECK(!instance_);
+}
+
 // static
-void TaskManagerGtk::Show() {
+void TaskManagerGtk::Show(bool highlight_background_resources) {
+  if (instance_ &&
+      instance_->highlight_background_resources_ !=
+          highlight_background_resources) {
+    instance_->Close();
+    DCHECK(!instance_);
+  }
+
   if (instance_) {
     // If there's a Task manager window open already, just activate it.
     gtk_util::PresentWindow(instance_->dialog_, 0);
   } else {
-    instance_ = new TaskManagerGtk;
+    instance_ = new TaskManagerGtk(highlight_background_resources);
     instance_->model_->StartUpdating();
   }
 }
@@ -548,7 +577,7 @@ void TaskManagerGtk::CreateTaskManagerTreeview() {
       GDK_TYPE_PIXBUF, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
       G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
       G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-      G_TYPE_STRING);
+      G_TYPE_STRING, GDK_TYPE_COLOR);
 
   // Support sorting on all columns.
   process_list_sort_ = gtk_tree_model_sort_new_with_model(
@@ -731,6 +760,9 @@ void TaskManagerGtk::SetRowDataFromModel(int row, GtkTreeIter* iter) {
 
   std::string goats = GetModelText(
       row, IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN);
+
+  bool is_background = model_->IsBackgroundResource(row) &&
+      highlight_background_resources_;
   gtk_list_store_set(process_list_, iter,
                      kTaskManagerIcon, icon,
                      kTaskManagerPage, page.c_str(),
@@ -745,6 +777,8 @@ void TaskManagerGtk::SetRowDataFromModel(int row, GtkTreeIter* iter) {
                      kTaskManagerWebCoreCssCache, wk_css_cache.c_str(),
                      kTaskManagerSqliteMemoryUsed, sqlite_memory.c_str(),
                      kTaskManagerGoatsTeleported, goats.c_str(),
+                     kTaskManagerBackgroundColor,
+                     is_background ? &kHighlightColor : NULL,
                      -1);
   g_object_unref(icon);
 }

@@ -21,7 +21,7 @@ class Point;
 
 class TaskManagerGtk : public TaskManagerModelObserver {
  public:
-  TaskManagerGtk();
+  explicit TaskManagerGtk(bool highlight_background_resources);
   virtual ~TaskManagerGtk();
 
   // TaskManagerModelObserver
@@ -30,9 +30,14 @@ class TaskManagerGtk : public TaskManagerModelObserver {
   virtual void OnItemsAdded(int start, int length);
   virtual void OnItemsRemoved(int start, int length);
 
+  // Closes the task manager window.
+  void Close();
+
   // Creates the task manager if it doesn't exist; otherwise, it activates the
-  // existing task manager window.
-  static void Show();
+  // existing task manager window. If |highlight_background_resources| is true,
+  // background resources are rendered with a yellow highlight (for the
+  // "View Background Pages" menu item).
+  static void Show(bool highlight_background_resources);
 
  private:
   class ContextMenuController;
@@ -222,6 +227,9 @@ class TaskManagerGtk : public TaskManagerModelObserver {
   // variable to prevent ourselves from handling further changes that we
   // ourselves caused.
   bool ignore_selection_changed_;
+
+  // If true, background resources are rendered with a yellow highlight.
+  bool highlight_background_resources_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskManagerGtk);
 };

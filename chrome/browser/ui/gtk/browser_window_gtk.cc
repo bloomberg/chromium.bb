@@ -848,13 +848,11 @@ void BrowserWindowGtk::ShowUpdateChromeDialog() {
 }
 
 void BrowserWindowGtk::ShowTaskManager() {
-  TaskManagerGtk::Show();
+  TaskManagerGtk::Show(false);
 }
 
 void BrowserWindowGtk::ShowBackgroundPages() {
-  // TODO(atwilson): Support highlighting background resources.
-  // (http://crbug.com/71490)
-  TaskManagerGtk::Show();
+  TaskManagerGtk::Show(true);
 }
 
 void BrowserWindowGtk::ShowBookmarkBubble(const GURL& url,
