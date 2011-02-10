@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,10 +12,9 @@
 
 #include <string>
 
-#include "chrome/browser/dom_ui/dom_ui.h"
+#include "chrome/browser/dom_ui/web_ui.h"
 
 class DictionaryValue;
-class DOMUI;
 class ListValue;
 class PrefService;
 
@@ -25,7 +24,7 @@ class TipsHandler : public WebUIMessageHandler {
   virtual ~TipsHandler() {}
 
   // WebUIMessageHandler implementation and overrides.
-  virtual WebUIMessageHandler* Attach(DOMUI* dom_ui);
+  virtual WebUIMessageHandler* Attach(WebUI* web_ui);
   virtual void RegisterMessages();
 
   // Callback which pulls tips data from the preferences.
@@ -45,7 +44,7 @@ class TipsHandler : public WebUIMessageHandler {
                int tip_index);
 
   // So we can push data out to the page that has called this handler.
-  DOMUI* dom_ui_;
+  WebUI* web_ui_;
 
   // Filled with data from cache in preferences.
   DictionaryValue* tips_cache_;

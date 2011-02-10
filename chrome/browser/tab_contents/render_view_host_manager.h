@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_observer.h"
 
-class DOMUI;
+class WebUI;
 class InterstitialPage;
 class NavigationController;
 class NavigationEntry;
@@ -52,10 +52,10 @@ class RenderViewHostManager
     virtual void NotifySwappedFromRenderManager() = 0;
     virtual NavigationController& GetControllerForRenderManager() = 0;
 
-    // Creates a DOMUI object for the given URL if one applies. Ownership of the
-    // returned pointer will be passed to the caller. If no DOMUI applies,
+    // Creates a WebUI object for the given URL if one applies. Ownership of the
+    // returned pointer will be passed to the caller. If no WebUI applies,
     // returns NULL.
-    virtual DOMUI* CreateDOMUIForRenderManager(const GURL& url) = 0;
+    virtual WebUI* CreateDOMUIForRenderManager(const GURL& url) = 0;
 
     // Returns the navigation entry of the current navigation, or NULL if there
     // is none.
@@ -109,10 +109,10 @@ class RenderViewHostManager
   }
 
   // Returns the current committed Web UI or NULL if none applies.
-  DOMUI* dom_ui() const { return dom_ui_.get(); }
+  WebUI* web_ui() const { return web_ui_.get(); }
 
   // Returns the Web UI for the pending navigation, or NULL of none applies.
-  DOMUI* pending_dom_ui() const { return pending_dom_ui_.get(); }
+  WebUI* pending_web_ui() const { return pending_web_ui_.get(); }
 
   // Called when we want to instruct the renderer to navigate to the given
   // navigation entry. It may create a new RenderViewHost or re-use an existing
@@ -137,10 +137,10 @@ class RenderViewHostManager
   // Called when a renderer's main frame navigates.
   void DidNavigateMainFrame(RenderViewHost* render_view_host);
 
-  // Set the DOMUI after committing a page load. This is useful for navigations
-  // initiated from a renderer, where we want to give the new renderer DOMUI
+  // Set the WebUI after committing a page load. This is useful for navigations
+  // initiated from a renderer, where we want to give the new renderer WebUI
   // privileges from the originating renderer.
-  void SetDOMUIPostCommit(DOMUI* dom_ui);
+  void SetDOMUIPostCommit(WebUI* web_ui);
 
   // Called when a provisional load on the given renderer is aborted.
   void RendererAbortedProvisionalLoad(RenderViewHost* render_view_host);
@@ -215,7 +215,7 @@ class RenderViewHostManager
   bool InitRenderView(RenderViewHost* render_view_host,
                       const NavigationEntry& entry);
 
-  // Sets the pending RenderViewHost/DOMUI to be the active one. Note that this
+  // Sets the pending RenderViewHost/WebUI to be the active one. Note that this
   // doesn't require the pending render_view_host_ pointer to be non-NULL, since
   // there could be Web UI switching as well. Call this for every commit.
   void CommitPending();
@@ -241,19 +241,19 @@ class RenderViewHostManager
   // non-DOM-UI pages). This object is responsible for all communication with
   // a child RenderView instance.
   RenderViewHost* render_view_host_;
-  scoped_ptr<DOMUI> dom_ui_;
+  scoped_ptr<WebUI> web_ui_;
 
   // A RenderViewHost used to load a cross-site page. This remains hidden
   // while a cross-site request is pending until it calls DidNavigate. It may
   // have an associated Web UI, in which case the Web UI pointer will be non-
   // NULL.
   //
-  // The pending_dom_ui may be non-NULL even when the pending_render_view_host_
+  // The pending_web_ui may be non-NULL even when the pending_render_view_host_
   // is. This will happen when we're transitioning between two Web UI pages:
   // the RVH won't be swapped, so the pending pointer will be unused, but there
   // will be a pending Web UI associated with the navigation.
   RenderViewHost* pending_render_view_host_;
-  scoped_ptr<DOMUI> pending_dom_ui_;
+  scoped_ptr<WebUI> pending_web_ui_;
 
   // The intersitial page currently shown if any, not own by this class
   // (the InterstitialPage is self-owned, it deletes itself when hidden).

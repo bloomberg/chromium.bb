@@ -9,23 +9,23 @@
 #include "base/basictypes.h"
 #include "chrome/browser/favicon_service.h"
 
-class DOMUI;
+class WebUI;
 class GURL;
 class Profile;
 class RefCountedMemory;
 class TabContents;
 
-// An opaque identifier used to identify a DOMUI. This can only be compared to
-// kNoWebUI or other DOMUI types. See GetWebUIType.
+// An opaque identifier used to identify a WebUI. This can only be compared to
+// kNoWebUI or other WebUI types. See GetWebUIType.
 typedef void* WebUITypeID;
 
 class WebUIFactory {
  public:
-  // A special DOMUI type that signifies that a given page would not use the
+  // A special WebUI type that signifies that a given page would not use the
   // Web UI system.
   static const WebUITypeID kNoWebUI;
 
-  // Returns a type identifier indicating what DOMUI we would use for the
+  // Returns a type identifier indicating what WebUI we would use for the
   // given URL. This is useful for comparing the potential DOMUIs for two URLs.
   // Returns kNoWebUI if the given URL will not use the Web UI system.
   static WebUITypeID GetWebUIType(Profile* profile, const GURL& url);
@@ -44,10 +44,10 @@ class WebUIFactory {
   // javascript: URLs or about:hang.
   static bool IsURLAcceptableForWebUI(Profile* profile, const GURL& url);
 
-  // Allocates a new DOMUI object for the given URL, and returns it. If the URL
+  // Allocates a new WebUI object for the given URL, and returns it. If the URL
   // is not a Web UI URL, then it will return NULL. When non-NULL, ownership of
   // the returned pointer is passed to the caller.
-  static DOMUI* CreateWebUIForURL(TabContents* tab_contents, const GURL& url);
+  static WebUI* CreateWebUIForURL(TabContents* tab_contents, const GURL& url);
 
   // Get the favicon for |page_url| and forward the result to the |request|
   // when loaded.
@@ -56,7 +56,7 @@ class WebUIFactory {
                                const GURL& page_url);
 
  private:
-  // Gets the data for the favicon for a DOMUI page. Returns NULL if the DOMUI
+  // Gets the data for the favicon for a WebUI page. Returns NULL if the WebUI
   // does not have a favicon.
   static RefCountedMemory* GetFaviconResourceBytes(Profile* profile,
                                                    const GURL& page_url);

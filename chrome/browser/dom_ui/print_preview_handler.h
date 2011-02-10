@@ -8,7 +8,7 @@
 
 #include "base/ref_counted.h"
 #include "base/weak_ptr.h"
-#include "chrome/browser/dom_ui/dom_ui.h"
+#include "chrome/browser/dom_ui/web_ui.h"
 
 namespace printing {
 class PrintBackend;

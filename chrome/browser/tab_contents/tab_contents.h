@@ -57,7 +57,7 @@ class PrintViewManager;
 class AutocompleteHistoryManager;
 class AutoFillManager;
 class BlockedContentContainer;
-class DOMUI;
+class WebUI;
 class DesktopNotificationHandler;
 class DownloadItem;
 class Extension;
@@ -159,9 +159,9 @@ class TabContents : public PageNavigator,
     return render_manager_.current_host();
   }
 
-  DOMUI* dom_ui() const {
-    return render_manager_.dom_ui() ? render_manager_.dom_ui()
-        : render_manager_.pending_dom_ui();
+  WebUI* web_ui() const {
+    return render_manager_.web_ui() ? render_manager_.web_ui()
+        : render_manager_.pending_web_ui();
   }
 
   // Returns the currently active RenderWidgetHostView. This may change over
@@ -812,9 +812,9 @@ class TabContents : public PageNavigator,
   void ExpireInfoBars(
       const NavigationController::LoadCommittedDetails& details);
 
-  // Returns the DOMUI for the current state of the tab. This will either be
-  // the pending DOMUI, the committed DOMUI, or NULL.
-  DOMUI* GetDOMUIForCurrentState();
+  // Returns the WebUI for the current state of the tab. This will either be
+  // the pending WebUI, the committed WebUI, or NULL.
+  WebUI* GetDOMUIForCurrentState();
 
   // Navigation helpers --------------------------------------------------------
   //
@@ -991,7 +991,7 @@ class TabContents : public PageNavigator,
   virtual void UpdateRenderViewSizeForRenderManager();
   virtual void NotifySwappedFromRenderManager();
   virtual NavigationController& GetControllerForRenderManager();
-  virtual DOMUI* CreateDOMUIForRenderManager(const GURL& url);
+  virtual WebUI* CreateDOMUIForRenderManager(const GURL& url);
   virtual NavigationEntry* GetLastCommittedNavigationEntryForRenderManager();
 
   // Initializes the given renderer if necessary and creates the view ID

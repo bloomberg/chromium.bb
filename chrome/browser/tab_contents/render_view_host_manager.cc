@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "chrome/browser/dom_ui/dom_ui.h"
+#include "chrome/browser/dom_ui/web_ui.h"
 #include "chrome/browser/dom_ui/web_ui_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -179,7 +179,7 @@ void RenderViewHostManager::DidNavigateMainFrame(
     DCHECK(render_view_host == render_view_host_);
 
     // Even when there is no pending RVH, there may be a pending Web UI.
-    if (pending_dom_ui_.get())
+    if (pending_web_ui_.get())
       CommitPending();
     return;
   }
@@ -199,9 +199,9 @@ void RenderViewHostManager::DidNavigateMainFrame(
   }
 }
 
-void RenderViewHostManager::SetDOMUIPostCommit(DOMUI* dom_ui) {
-  DCHECK(!dom_ui_.get());
-  dom_ui_.reset(dom_ui);
+void RenderViewHostManager::SetDOMUIPostCommit(WebUI* web_ui) {
+  DCHECK(!web_ui_.get());
+  web_ui_.reset(web_ui);
 }
 
 void RenderViewHostManager::RendererAbortedProvisionalLoad(
@@ -480,10 +480,10 @@ bool RenderViewHostManager::CreatePendingRenderView(
 
 bool RenderViewHostManager::InitRenderView(RenderViewHost* render_view_host,
                                            const NavigationEntry& entry) {
-  // If the pending navigation is to a DOMUI, tell the RenderView about any
+  // If the pending navigation is to a WebUI, tell the RenderView about any
   // bindings it will need enabled.
-  if (pending_dom_ui_.get())
-    render_view_host->AllowBindings(pending_dom_ui_->bindings());
+  if (pending_web_ui_.get())
+    render_view_host->AllowBindings(pending_web_ui_->bindings());
 
   // Tell the RenderView whether it will be used for an extension process.
   Profile* profile = delegate_->GetControllerForRenderManager().profile();
@@ -497,15 +497,15 @@ bool RenderViewHostManager::InitRenderView(RenderViewHost* render_view_host,
 void RenderViewHostManager::CommitPending() {
   // First check whether we're going to want to focus the location bar after
   // this commit.  We do this now because the navigation hasn't formally
-  // committed yet, so if we've already cleared |pending_dom_ui_| the call chain
+  // committed yet, so if we've already cleared |pending_web_ui_| the call chain
   // this triggers won't be able to figure out what's going on.
   bool will_focus_location_bar = delegate_->FocusLocationBarByDefault();
 
   // Next commit the Web UI, if any.
-  dom_ui_.swap(pending_dom_ui_);
-  if (dom_ui_.get() && pending_dom_ui_.get() && !pending_render_view_host_)
-    dom_ui_->DidBecomeActiveForReusedRenderView();
-  pending_dom_ui_.reset();
+  web_ui_.swap(pending_web_ui_);
+  if (web_ui_.get() && pending_web_ui_.get() && !pending_render_view_host_)
+    web_ui_->DidBecomeActiveForReusedRenderView();
+  pending_web_ui_.reset();
 
   // It's possible for the pending_render_view_host_ to be NULL when we aren't
   // crossing process boundaries. If so, we just needed to handle the Web UI
@@ -577,9 +577,9 @@ RenderViewHost* RenderViewHostManager::UpdateRendererStateForNavigate(
   // page. We'll use this later to give the page special access. This must
   // happen before the new renderer is created below so it will get bindings.
   // It must also happen after the above conditional call to CancelPending(),
-  // otherwise CancelPending may clear the pending_dom_ui_ and the page will
+  // otherwise CancelPending may clear the pending_web_ui_ and the page will
   // not have it's bindings set appropriately.
-  pending_dom_ui_.reset(delegate_->CreateDOMUIForRenderManager(entry.url()));
+  pending_web_ui_.reset(delegate_->CreateDOMUIForRenderManager(entry.url()));
 
   // render_view_host_ will not be deleted before the end of this method, so we
   // don't have to worry about this SiteInstance's ref count dropping to zero.
@@ -647,8 +647,8 @@ RenderViewHost* RenderViewHostManager::UpdateRendererStateForNavigate(
 
     return pending_render_view_host_;
   } else {
-    if (pending_dom_ui_.get() && render_view_host_->IsRenderViewLive())
-      pending_dom_ui_->RenderViewReused(render_view_host_);
+    if (pending_web_ui_.get() && render_view_host_->IsRenderViewLive())
+      pending_web_ui_->RenderViewReused(render_view_host_);
 
     // The renderer can exit view source mode when any error or cancellation
     // happen. We must overwrite to recover the mode.
@@ -669,7 +669,7 @@ void RenderViewHostManager::CancelPending() {
   pending_render_view_host_ = NULL;
   pending_render_view_host->Shutdown();
 
-  pending_dom_ui_.reset();
+  pending_web_ui_.reset();
 }
 
 void RenderViewHostManager::RenderViewDeleted(RenderViewHost* rvh) {
@@ -687,7 +687,7 @@ void RenderViewHostManager::RenderViewDeleted(RenderViewHost* rvh) {
 }
 
 void RenderViewHostManager::SwapInRenderViewHost(RenderViewHost* rvh) {
-  dom_ui_.reset();
+  web_ui_.reset();
 
   // Hide the current view and prepare to destroy it.
   if (render_view_host_->view())

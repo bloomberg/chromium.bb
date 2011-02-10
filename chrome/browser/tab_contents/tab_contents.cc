@@ -26,7 +26,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/desktop_notification_handler.h"
 #include "chrome/browser/dom_operation_notification_details.h"
-#include "chrome/browser/dom_ui/dom_ui.h"
+#include "chrome/browser/dom_ui/web_ui.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_request_limiter.h"
@@ -609,14 +609,14 @@ const string16& TabContents::GetTitle() const {
     return entry->GetTitleForDisplay(profile()->GetPrefs()->
         GetString(prefs::kAcceptLanguages));
   }
-  DOMUI* our_dom_ui = render_manager_.pending_dom_ui() ?
-      render_manager_.pending_dom_ui() : render_manager_.dom_ui();
-  if (our_dom_ui) {
+  WebUI* our_web_ui = render_manager_.pending_web_ui() ?
+      render_manager_.pending_web_ui() : render_manager_.web_ui();
+  if (our_web_ui) {
     // Don't override the title in view source mode.
     entry = controller_.GetActiveEntry();
     if (!(entry && entry->IsViewSourceMode())) {
       // Give the Web UI the chance to override our title.
-      const string16& title = our_dom_ui->overridden_title();
+      const string16& title = our_web_ui->overridden_title();
       if (!title.empty())
         return title;
     }
@@ -667,9 +667,9 @@ bool TabContents::ShouldDisplayURL() {
     return true;
   }
 
-  DOMUI* dom_ui = GetDOMUIForCurrentState();
-  if (dom_ui)
-    return !dom_ui->should_hide_url();
+  WebUI* web_ui = GetDOMUIForCurrentState();
+  if (web_ui)
+    return !web_ui->should_hide_url();
   return true;
 }
 
@@ -703,9 +703,9 @@ bool TabContents::ShouldDisplayFavIcon() {
   if (controller_.GetLastCommittedEntry() && controller_.pending_entry())
     return true;
 
-  DOMUI* dom_ui = GetDOMUIForCurrentState();
-  if (dom_ui)
-    return !dom_ui->hide_favicon();
+  WebUI* web_ui = GetDOMUIForCurrentState();
+  if (web_ui)
+    return !web_ui->hide_favicon();
   return true;
 }
 
@@ -1093,9 +1093,9 @@ void TabContents::FocusThroughTabTraversal(bool reverse) {
 }
 
 bool TabContents::FocusLocationBarByDefault() {
-  DOMUI* dom_ui = GetDOMUIForCurrentState();
-  if (dom_ui)
-    return dom_ui->focus_location_bar_by_default();
+  WebUI* web_ui = GetDOMUIForCurrentState();
+  if (web_ui)
+    return web_ui->focus_location_bar_by_default();
   NavigationEntry* entry = controller_.GetActiveEntry();
   if (entry && entry->url() == GURL(chrome::kAboutBlankURL))
     return true;
@@ -1203,17 +1203,17 @@ bool TabContents::ShouldShowBookmarkBar() {
   // is so the bookmarks bar disappears at the same time the page does.
   if (controller_.GetLastCommittedEntry()) {
     // Not the first load, always use the committed Web UI.
-    return (render_manager_.dom_ui() == NULL) ?
-        false : render_manager_.dom_ui()->force_bookmark_bar_visible();
+    return (render_manager_.web_ui() == NULL) ?
+        false : render_manager_.web_ui()->force_bookmark_bar_visible();
   }
 
   // When it's the first load, we know either the pending one or the committed
   // one will have the Web UI in it (see GetDOMUIForCurrentState), and only one
   // of them will be valid, so we can just check both.
-  if (render_manager_.pending_dom_ui())
-    return render_manager_.pending_dom_ui()->force_bookmark_bar_visible();
-  return (render_manager_.dom_ui() == NULL) ?
-      false : render_manager_.dom_ui()->force_bookmark_bar_visible();
+  if (render_manager_.pending_web_ui())
+    return render_manager_.pending_web_ui()->force_bookmark_bar_visible();
+  return (render_manager_.web_ui() == NULL) ?
+      false : render_manager_.web_ui()->force_bookmark_bar_visible();
 }
 
 void TabContents::ToolbarSizeChanged(bool is_animating) {
@@ -1733,8 +1733,8 @@ void TabContents::ExpireInfoBars(
   }
 }
 
-DOMUI* TabContents::GetDOMUIForCurrentState() {
-  // When there is a pending navigation entry, we want to use the pending DOMUI
+WebUI* TabContents::GetDOMUIForCurrentState() {
+  // When there is a pending navigation entry, we want to use the pending WebUI
   // that goes along with it to control the basic flags. For example, we want to
   // show the pending URL in the URL bar, so we want the display_url flag to
   // be from the pending entry.
@@ -1748,7 +1748,7 @@ DOMUI* TabContents::GetDOMUIForCurrentState() {
   //
   //  - For subsequent new tabs, they'll get a new SiteInstance which will then
   //    get switched to the one previously associated with the new tab pages.
-  //    This switching will cause the manager to commit the RVH/DOMUI. So we'll
+  //    This switching will cause the manager to commit the RVH/WebUI. So we'll
   //    have a committed Web UI in this case.
   //
   // This condition handles all of these cases:
@@ -1768,9 +1768,9 @@ DOMUI* TabContents::GetDOMUIForCurrentState() {
   //    -> Use committed Web UI.
   if (controller_.pending_entry() &&
       (controller_.GetLastCommittedEntry() ||
-       render_manager_.pending_dom_ui()))
-    return render_manager_.pending_dom_ui();
-  return render_manager_.dom_ui();
+       render_manager_.pending_web_ui()))
+    return render_manager_.pending_web_ui();
+  return render_manager_.web_ui();
 }
 
 void TabContents::DidNavigateMainFramePostCommit(
@@ -1782,11 +1782,11 @@ void TabContents::DidNavigateMainFramePostCommit(
     // privileges.
     if (opener_web_ui_type_ ==
         WebUIFactory::GetWebUIType(profile(), GetURL())) {
-      DOMUI* dom_ui = WebUIFactory::CreateWebUIForURL(this, GetURL());
-      // dom_ui might be NULL if the URL refers to a non-existent extension.
-      if (dom_ui) {
-        render_manager_.SetDOMUIPostCommit(dom_ui);
-        dom_ui->RenderViewCreated(render_view_host());
+      WebUI* web_ui = WebUIFactory::CreateWebUIForURL(this, GetURL());
+      // web_ui might be NULL if the URL refers to a non-existent extension.
+      if (web_ui) {
+        render_manager_.SetDOMUIPostCommit(web_ui);
+        web_ui->RenderViewCreated(render_view_host());
       }
     }
     opener_web_ui_type_ = WebUIFactory::kNoWebUI;
@@ -2263,8 +2263,8 @@ void TabContents::RenderViewCreated(RenderViewHost* render_view_host) {
 
   // When we're creating views, we're still doing initial setup, so we always
   // use the pending Web UI rather than any possibly existing committed one.
-  if (render_manager_.pending_dom_ui()) {
-    render_manager_.pending_dom_ui()->RenderViewCreated(render_view_host);
+  if (render_manager_.pending_web_ui()) {
+    render_manager_.pending_web_ui()->RenderViewCreated(render_view_host);
   }
 
   if (entry->IsViewSourceMode()) {
@@ -2587,7 +2587,7 @@ void TabContents::DocumentOnLoadCompletedInMainFrame(
 
 void TabContents::RequestOpenURL(const GURL& url, const GURL& referrer,
                                  WindowOpenDisposition disposition) {
-  if (render_manager_.dom_ui()) {
+  if (render_manager_.web_ui()) {
     // When we're a Web UI, it will provide a page transition type for us (this
     // is so the new tab page can specify AUTO_BOOKMARK for automatically
     // generated suggestions).
@@ -2597,7 +2597,7 @@ void TabContents::RequestOpenURL(const GURL& url, const GURL& referrer,
     // chrome: URLs might have search terms or other stuff we don't want to
     // send to the site), so we send no referrer.
     OpenURL(url, GURL(), disposition,
-            render_manager_.dom_ui()->link_transition_type());
+            render_manager_.web_ui()->link_transition_type());
   } else {
     OpenURL(url, referrer, disposition, PageTransition::LINK);
   }
@@ -2609,13 +2609,13 @@ void TabContents::DomOperationResponse(const std::string& json_string,
 
 void TabContents::ProcessDOMUIMessage(
     const ViewHostMsg_DomMessage_Params& params) {
-  if (!render_manager_.dom_ui()) {
+  if (!render_manager_.web_ui()) {
     // This can happen if someone uses window.open() to open an extension URL
     // from a non-extension context.
     render_view_host()->BlockExtensionRequest(params.request_id);
     return;
   }
-  render_manager_.dom_ui()->ProcessDOMUIMessage(params);
+  render_manager_.web_ui()->ProcessDOMUIMessage(params);
 }
 
 void TabContents::ProcessExternalHostMessage(const std::string& message,
@@ -2783,9 +2783,9 @@ GURL TabContents::GetAlternateErrorPageURL() const {
 
 WebPreferences TabContents::GetWebkitPrefs() {
   Profile* profile = render_view_host()->process()->profile();
-  bool is_dom_ui = false;
+  bool is_web_ui = false;
   WebPreferences web_prefs =
-      RenderViewHostDelegateHelper::GetWebkitPrefs(profile, is_dom_ui);
+      RenderViewHostDelegateHelper::GetWebkitPrefs(profile, is_web_ui);
 
   // Force accelerated compositing and 2d canvas off for chrome: and
   // chrome-extension: pages.
@@ -2949,7 +2949,7 @@ NavigationController& TabContents::GetControllerForRenderManager() {
   return controller();
 }
 
-DOMUI* TabContents::CreateDOMUIForRenderManager(const GURL& url) {
+WebUI* TabContents::CreateDOMUIForRenderManager(const GURL& url) {
   return WebUIFactory::CreateWebUIForURL(this, url);
 }
 

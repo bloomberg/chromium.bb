@@ -52,14 +52,14 @@ void DOMUITest::BuildJavaScriptTest(const FilePath& src_path,
 }
 
 void DOMUITest::SetupHandlers() {
-  DOMUI* dom_ui_instance =
-      browser()->GetSelectedTabContents()->dom_ui();
-  ASSERT_TRUE(dom_ui_instance != NULL);
-  dom_ui_instance->register_callback_overwrites(true);
-  test_handler_->Attach(dom_ui_instance);
+  WebUI* web_ui_instance =
+      browser()->GetSelectedTabContents()->web_ui();
+  ASSERT_TRUE(web_ui_instance != NULL);
+  web_ui_instance->register_callback_overwrites(true);
+  test_handler_->Attach(web_ui_instance);
 
   if (GetMockMessageHandler())
-    GetMockMessageHandler()->Attach(dom_ui_instance);
+    GetMockMessageHandler()->Attach(web_ui_instance);
 }
 
 IN_PROC_BROWSER_TEST_F(DOMUITest, TestSamplePass) {

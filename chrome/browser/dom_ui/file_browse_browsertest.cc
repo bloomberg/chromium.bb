@@ -4,7 +4,7 @@
 
 #include "base/task.h"
 #include "base/path_service.h"
-#include "chrome/browser/dom_ui/dom_ui.h"
+#include "chrome/browser/dom_ui/web_ui.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/views/html_dialog_view.h"
@@ -89,8 +89,8 @@ class FileBrowseUiObserver : public NotificationObserver {
     return file_browse_tab_;
   }
 
-  DOMUI* file_browse_ui() {
-    return file_browse_tab_ ? file_browse_tab_->render_manager()->dom_ui() :
+  WebUI* file_browse_ui() {
+    return file_browse_tab_ ? file_browse_tab_->render_manager()->web_ui() :
                               NULL;
   }
 

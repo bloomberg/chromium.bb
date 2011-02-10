@@ -1,8 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/dom_ui/dom_ui.h"
+#include "chrome/browser/dom_ui/web_ui.h"
 
 #include "base/i18n/rtl.h"
 #include "base/json/json_writer.h"
@@ -38,7 +38,7 @@ std::wstring GetJavascript(const std::wstring& function_name,
 
 }  // namespace
 
-DOMUI::DOMUI(TabContents* contents)
+WebUI::WebUI(TabContents* contents)
     : hide_favicon_(false),
       force_bookmark_bar_visible_(false),
       focus_location_bar_by_default_(false),
@@ -51,15 +51,15 @@ DOMUI::DOMUI(TabContents* contents)
   AddMessageHandler(handler->Attach(this));
 }
 
-DOMUI::~DOMUI() {
+WebUI::~WebUI() {
   STLDeleteContainerPairSecondPointers(message_callbacks_.begin(),
                                        message_callbacks_.end());
   STLDeleteContainerPointers(handlers_.begin(), handlers_.end());
 }
 
-// DOMUI, public: -------------------------------------------------------------
+// WebUI, public: -------------------------------------------------------------
 
-void DOMUI::ProcessDOMUIMessage(const ViewHostMsg_DomMessage_Params& params) {
+void WebUI::ProcessDOMUIMessage(const ViewHostMsg_DomMessage_Params& params) {
   // Look up the callback for this message.
   MessageCallbackMap::const_iterator callback =
       message_callbacks_.find(params.name);
@@ -70,19 +70,19 @@ void DOMUI::ProcessDOMUIMessage(const ViewHostMsg_DomMessage_Params& params) {
   callback->second->Run(&params.arguments);
 }
 
-void DOMUI::CallJavascriptFunction(const std::wstring& function_name) {
+void WebUI::CallJavascriptFunction(const std::wstring& function_name) {
   std::wstring javascript = function_name + L"();";
   ExecuteJavascript(javascript);
 }
 
-void DOMUI::CallJavascriptFunction(const std::wstring& function_name,
+void WebUI::CallJavascriptFunction(const std::wstring& function_name,
                                    const Value& arg) {
   std::vector<const Value*> args;
   args.push_back(&arg);
   ExecuteJavascript(GetJavascript(function_name, args));
 }
 
-void DOMUI::CallJavascriptFunction(
+void WebUI::CallJavascriptFunction(
     const std::wstring& function_name,
     const Value& arg1, const Value& arg2) {
   std::vector<const Value*> args;
@@ -91,7 +91,7 @@ void DOMUI::CallJavascriptFunction(
   ExecuteJavascript(GetJavascript(function_name, args));
 }
 
-void DOMUI::CallJavascriptFunction(
+void WebUI::CallJavascriptFunction(
     const std::wstring& function_name,
     const Value& arg1, const Value& arg2, const Value& arg3) {
   std::vector<const Value*> args;
@@ -101,7 +101,7 @@ void DOMUI::CallJavascriptFunction(
   ExecuteJavascript(GetJavascript(function_name, args));
 }
 
-void DOMUI::CallJavascriptFunction(
+void WebUI::CallJavascriptFunction(
     const std::wstring& function_name,
     const Value& arg1,
     const Value& arg2,
@@ -115,17 +115,17 @@ void DOMUI::CallJavascriptFunction(
   ExecuteJavascript(GetJavascript(function_name, args));
 }
 
-void DOMUI::CallJavascriptFunction(
+void WebUI::CallJavascriptFunction(
     const std::wstring& function_name,
     const std::vector<const Value*>& args) {
   ExecuteJavascript(GetJavascript(function_name, args));
 }
 
-ui::ThemeProvider* DOMUI::GetThemeProvider() const {
+ui::ThemeProvider* WebUI::GetThemeProvider() const {
   return GetProfile()->GetThemeProvider();
 }
 
-void DOMUI::RegisterMessageCallback(const std::string &message,
+void WebUI::RegisterMessageCallback(const std::string &message,
                                     MessageCallback *callback) {
   std::pair<MessageCallbackMap::iterator, bool> result =
       message_callbacks_.insert(std::make_pair(message, callback));
@@ -135,31 +135,36 @@ void DOMUI::RegisterMessageCallback(const std::string &message,
     result.first->second = callback;
 }
 
-Profile* DOMUI::GetProfile() const {
+Profile* WebUI::GetProfile() const {
   DCHECK(tab_contents());
   return tab_contents()->profile();
 }
 
-RenderViewHost* DOMUI::GetRenderViewHost() const {
+RenderViewHost* WebUI::GetRenderViewHost() const {
   DCHECK(tab_contents());
   return tab_contents()->render_view_host();
 }
 
-// DOMUI, protected: ----------------------------------------------------------
+// WebUI, protected: ----------------------------------------------------------
 
-void DOMUI::AddMessageHandler(WebUIMessageHandler* handler) {
+void WebUI::AddMessageHandler(WebUIMessageHandler* handler) {
   handlers_.push_back(handler);
 }
 
-void DOMUI::ExecuteJavascript(const std::wstring& javascript) {
+void WebUI::ExecuteJavascript(const std::wstring& javascript) {
   GetRenderViewHost()->ExecuteJavascriptInWebFrame(string16(),
                                                    WideToUTF16Hack(javascript));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // WebUIMessageHandler
+WebUIMessageHandler::WebUIMessageHandler() : dom_ui_(NULL) {
+}
 
-WebUIMessageHandler* WebUIMessageHandler::Attach(DOMUI* dom_ui) {
+WebUIMessageHandler::~WebUIMessageHandler() {
+}
+
+WebUIMessageHandler* WebUIMessageHandler::Attach(WebUI* dom_ui) {
   dom_ui_ = dom_ui;
   RegisterMessages();
   return this;
@@ -168,8 +173,8 @@ WebUIMessageHandler* WebUIMessageHandler::Attach(DOMUI* dom_ui) {
 // WebUIMessageHandler, protected: ---------------------------------------------
 
 void WebUIMessageHandler::SetURLAndTitle(DictionaryValue* dictionary,
-                                       string16 title,
-                                       const GURL& gurl) {
+                                         string16 title,
+                                         const GURL& gurl) {
   dictionary->SetString("url", gurl.spec());
 
   bool using_url_as_the_title = false;
@@ -194,7 +199,7 @@ void WebUIMessageHandler::SetURLAndTitle(DictionaryValue* dictionary,
 }
 
 bool WebUIMessageHandler::ExtractIntegerValue(const ListValue* value,
-                                            int* out_int) {
+                                              int* out_int) {
   std::string string_value;
   if (value->GetString(0, &string_value))
     return base::StringToInt(string_value, out_int);

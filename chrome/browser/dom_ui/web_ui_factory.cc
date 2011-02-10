@@ -63,21 +63,21 @@
 
 const WebUITypeID WebUIFactory::kNoWebUI = NULL;
 
-// A function for creating a new DOMUI. The caller owns the return value, which
+// A function for creating a new WebUI. The caller owns the return value, which
 // may be NULL (for example, if the URL refers to an non-existent extension).
-typedef DOMUI* (*WebUIFactoryFunction)(TabContents* tab_contents,
+typedef WebUI* (*WebUIFactoryFunction)(TabContents* tab_contents,
                                        const GURL& url);
 
 // Template for defining WebUIFactoryFunction.
 template<class T>
-DOMUI* NewDOMUI(TabContents* contents, const GURL& url) {
+WebUI* NewDOMUI(TabContents* contents, const GURL& url) {
   return new T(contents);
 }
 
 // Special case for extensions.
 template<>
-DOMUI* NewDOMUI<ExtensionWebUI>(TabContents* contents, const GURL& url) {
-  // Don't use a DOMUI for incognito tabs because we require extensions to run
+WebUI* NewDOMUI<ExtensionWebUI>(TabContents* contents, const GURL& url) {
+  // Don't use a WebUI for incognito tabs because we require extensions to run
   // within a single process.
   ExtensionService* service = contents->profile()->GetExtensionService();
   if (service &&
@@ -87,9 +87,9 @@ DOMUI* NewDOMUI<ExtensionWebUI>(TabContents* contents, const GURL& url) {
   return NULL;
 }
 
-// Returns a function that can be used to create the right type of DOMUI for a
-// tab, based on its URL. Returns NULL if the URL doesn't have DOMUI associated
-// with it. Even if the factory function is valid, it may yield a NULL DOMUI
+// Returns a function that can be used to create the right type of WebUI for a
+// tab, based on its URL. Returns NULL if the URL doesn't have WebUI associated
+// with it. Even if the factory function is valid, it may yield a NULL WebUI
 // when invoked for a particular tab - see NewDOMUI<ExtensionWebUI>.
 static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
     const GURL& url) {
@@ -132,7 +132,7 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
 
   // Give about:about a generic Web UI so it can navigate to pages with Web UIs.
   if (url.spec() == chrome::kChromeUIAboutAboutURL)
-    return &NewDOMUI<DOMUI>;
+    return &NewDOMUI<WebUI>;
 
   // We must compare hosts only since some of the Web UIs append extra stuff
   // after the host name.
@@ -265,7 +265,7 @@ bool WebUIFactory::IsURLAcceptableForWebUI(Profile* profile, const GURL& url) {
 }
 
 // static
-DOMUI* WebUIFactory::CreateWebUIForURL(TabContents* tab_contents,
+WebUI* WebUIFactory::CreateWebUIForURL(TabContents* tab_contents,
                                        const GURL& url) {
   WebUIFactoryFunction function = GetWebUIFactoryFunction(
       tab_contents->profile(), url);

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,13 +6,13 @@
 
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/dom_ui/dom_ui.h"
+#include "chrome/browser/dom_ui/web_ui.h"
 #include "chrome/browser/profiles/profile.h"
 
 OptionsManagedBannerHandler::OptionsManagedBannerHandler(
-    DOMUI* dom_ui, const string16& page_name, OptionsPage page)
-    : policy::ManagedPrefsBannerBase(dom_ui->GetProfile()->GetPrefs(), page),
-      dom_ui_(dom_ui), page_name_(page_name), page_(page) {
+    WebUI* web_ui, const string16& page_name, OptionsPage page)
+    : policy::ManagedPrefsBannerBase(web_ui->GetProfile()->GetPrefs(), page),
+      web_ui_(web_ui), page_name_(page_name), page_(page) {
   // Initialize the visibility state of the banner.
   SetupBannerVisibilty();
 }
@@ -34,5 +34,5 @@ void OptionsManagedBannerHandler::SetupBannerVisibilty() {
   FundamentalValue visibility(DetermineVisibility());
 
   // Set the managed state in the javascript handler.
-  dom_ui_->CallJavascriptFunction(UTF16ToWideHack(script), visibility);
+  web_ui_->CallJavascriptFunction(UTF16ToWideHack(script), visibility);
 }

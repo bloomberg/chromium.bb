@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@
 #include <string>
 
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
-#include "chrome/browser/dom_ui/dom_ui.h"
+#include "chrome/browser/dom_ui/web_ui.h"
 
 class RefCountedMemory;
 
@@ -55,7 +55,7 @@ class TextfieldsDOMHandler : public WebUIMessageHandler {
   DISALLOW_COPY_AND_ASSIGN(TextfieldsDOMHandler);
 };
 
-class TextfieldsUI : public DOMUI {
+class TextfieldsUI : public WebUI {
  public:
   explicit TextfieldsUI(TabContents* contents);
 

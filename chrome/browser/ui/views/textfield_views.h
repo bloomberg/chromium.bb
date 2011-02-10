@@ -19,7 +19,7 @@ class TextfieldViews : public DOMView {
   void SetText(const std::wstring& text);
 
  private:
-  TextfieldsUI* dom_ui();
+  TextfieldsUI* web_ui();
 
   DISALLOW_COPY_AND_ASSIGN(TextfieldViews);
 };

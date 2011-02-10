@@ -1,6 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+#include "chrome/browser/dom_ui/tips_handler.h"
 
 #include <string>
 
@@ -8,7 +10,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/dom_ui/tips_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_resource/web_resource_service.h"
 #include "chrome/common/pref_names.h"
@@ -18,15 +19,15 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-WebUIMessageHandler* TipsHandler::Attach(DOMUI* dom_ui) {
-  dom_ui_ = dom_ui;
-  tips_cache_ = dom_ui_->GetProfile()->GetPrefs()->
+WebUIMessageHandler* TipsHandler::Attach(WebUI* web_ui) {
+  web_ui_ = web_ui;
+  tips_cache_ = web_ui_->GetProfile()->GetPrefs()->
       GetMutableDictionary(prefs::kNTPWebResourceCache);
-  return WebUIMessageHandler::Attach(dom_ui);
+  return WebUIMessageHandler::Attach(web_ui);
 }
 
 void TipsHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback("getTips",
+  web_ui_->RegisterMessageCallback("getTips",
       NewCallback(this, &TipsHandler::HandleGetTips));
 }
 
@@ -44,13 +45,13 @@ void TipsHandler::HandleGetTips(const ListValue* args) {
   // If tips are not correct for our language, do not send.  Wait for update.
   // We need to check here because the new tab page calls for tips before
   // the tip service starts up.
-  PrefService* current_prefs = dom_ui_->GetProfile()->GetPrefs();
+  PrefService* current_prefs = web_ui_->GetProfile()->GetPrefs();
   if (current_prefs->HasPrefPath(prefs::kNTPTipsResourceServer)) {
     std::string server = current_prefs->GetString(
         prefs::kNTPTipsResourceServer);
     std::string locale = g_browser_process->GetApplicationLocale();
     if (!EndsWith(server, locale, false)) {
-      dom_ui_->CallJavascriptFunction(L"tips", list_value);
+      web_ui_->CallJavascriptFunction(L"tips", list_value);
       return;
     }
   }
@@ -66,7 +67,7 @@ void TipsHandler::HandleGetTips(const ListValue* args) {
         // to set home page before resetting tip index to 0.
         current_tip_index = 0;
         const PrefService::Preference* pref =
-            dom_ui_->GetProfile()->GetPrefs()->FindPreference(
+            web_ui_->GetProfile()->GetPrefs()->FindPreference(
                 prefs::kHomePageIsNewTabPage);
         bool value;
         if (pref && !pref->IsManaged() &&
@@ -93,7 +94,7 @@ void TipsHandler::SendTip(const std::string& tip, const std::string& tip_type,
   tips_cache_->SetInteger(WebResourceService::kCurrentTipPrefName,
                           tip_index);
   // Send list of web resource items back out to the DOM.
-  dom_ui_->CallJavascriptFunction(L"tips", list_value);
+  web_ui_->CallJavascriptFunction(L"tips", list_value);
 }
 
 // static

@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DOM_UI_DOM_UI_H_
-#define CHROME_BROWSER_DOM_UI_DOM_UI_H_
+#ifndef CHROME_BROWSER_DOM_UI_WEB_UI_H_
+#define CHROME_BROWSER_DOM_UI_WEB_UI_H_
 #pragma once
 
 #include <map>
@@ -28,12 +28,12 @@ namespace ui {
 class ThemeProvider;
 }
 
-// A DOMUI sets up the datasources and message handlers for a given HTML-based
+// A WebUI sets up the datasources and message handlers for a given HTML-based
 // UI. It is contained by a DOMUIManager.
-class DOMUI {
+class WebUI {
  public:
-  explicit DOMUI(TabContents* contents);
-  virtual ~DOMUI();
+  explicit WebUI(TabContents* contents);
+  virtual ~WebUI();
 
   // Called by RenderViewHost when the RenderView is first created. This is
   // *not* called for every page load because in some cases
@@ -45,11 +45,11 @@ class DOMUI {
   // page.
   virtual void RenderViewReused(RenderViewHost* render_view_host) {}
 
-  // Called when this becomes the active DOMUI instance for a re-used
-  // RenderView; this is the point at which this DOMUI instance will receive
-  // DOM messages instead of the previous DOMUI instance.
+  // Called when this becomes the active WebUI instance for a re-used
+  // RenderView; this is the point at which this WebUI instance will receive
+  // DOM messages instead of the previous WebUI instance.
   //
-  // If a DOMUI instance has code that is usually triggered from a JavaScript
+  // If a WebUI instance has code that is usually triggered from a JavaScript
   // onload handler, this should be overridden to check to see if the web page's
   // DOM is still intact (e.g., due to a back/forward navigation that remains
   // within the same page), and if so trigger that code manually since onload
@@ -140,10 +140,10 @@ class DOMUI {
 
   ui::ThemeProvider* GetThemeProvider() const;
 
-  // May be overridden by DOMUI's which do not have a tab contents.
+  // May be overridden by WebUI's which do not have a tab contents.
   virtual Profile* GetProfile() const;
 
-  // May be overridden by DOMUI's which do not have a tab contents.
+  // May be overridden by WebUI's which do not have a tab contents.
   virtual RenderViewHost* GetRenderViewHost() const;
 
   TabContents* tab_contents() const { return tab_contents_; }
@@ -172,7 +172,7 @@ class DOMUI {
   // The WebUIMessageHandlers we own.
   std::vector<WebUIMessageHandler*> handlers_;
 
-  // Non-owning pointer to the TabContents this DOMUI is associated with.
+  // Non-owning pointer to the TabContents this WebUI is associated with.
   TabContents* tab_contents_;
 
  private:
@@ -180,21 +180,26 @@ class DOMUI {
   typedef std::map<std::string, MessageCallback*> MessageCallbackMap;
   MessageCallbackMap message_callbacks_;
 
-  DISALLOW_COPY_AND_ASSIGN(DOMUI);
+  DISALLOW_COPY_AND_ASSIGN(WebUI);
 };
+
+// TODO(tfarina): Remove this when all the references to DOMUI class are fixed.
+// This is temporary until we can rename all the entries to WebUI.
+// See crbug.com/59945 for more information.
+typedef WebUI DOMUI;
 
 // Messages sent from the DOM are forwarded via the WebUI to handler
 // classes. These objects are owned by WebUI and destroyed when the
 // host is destroyed.
 class WebUIMessageHandler {
  public:
-  WebUIMessageHandler() : dom_ui_(NULL) {}
-  virtual ~WebUIMessageHandler() {}
+  WebUIMessageHandler();
+  virtual ~WebUIMessageHandler();
 
-  // Attaches |this| to |dom_ui| in order to handle messages from it.  Declared
-  // virtual so that subclasses can do special init work as soon as the dom_ui
+  // Attaches |this| to |web_ui| in order to handle messages from it.  Declared
+  // virtual so that subclasses can do special init work as soon as the web_ui
   // is provided.  Returns |this| for convenience.
-  virtual WebUIMessageHandler* Attach(DOMUI* dom_ui);
+  virtual WebUIMessageHandler* Attach(WebUI* web_ui);
 
  protected:
   // Adds "url" and "title" keys on incoming dictionary, setting title
@@ -212,10 +217,10 @@ class WebUIMessageHandler {
   // Extract a string value from a list Value.
   std::wstring ExtractStringValue(const ListValue* value);
 
-  DOMUI* dom_ui_;
+  WebUI* dom_ui_; // TODO(tfarina): Rename the variable to web_ui_.
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebUIMessageHandler);
 };
 
-#endif  // CHROME_BROWSER_DOM_UI_DOM_UI_H_
+#endif  // CHROME_BROWSER_DOM_UI_WEB_UI_H_

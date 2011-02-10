@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_REMOTING_REMOTING_OPTIONS_HANDLER_H_
 #define CHROME_BROWSER_REMOTING_REMOTING_OPTIONS_HANDLER_H_
 
+#include "base/basictypes.h"
 #include "chrome/browser/service/service_process_control.h"
 
-class DOMUI;
+class WebUI;
 
 namespace remoting {
 
@@ -16,13 +17,12 @@ namespace remoting {
 // messages from the service process (by registering MessageHandler
 // callback in the ServiceProcessControl) and updates current status
 // as neccessary.
-class RemotingOptionsHandler
-    : public ServiceProcessControl::MessageHandler {
+class RemotingOptionsHandler : public ServiceProcessControl::MessageHandler {
  public:
   RemotingOptionsHandler();
   virtual ~RemotingOptionsHandler();
 
-  void Init(DOMUI* dom_ui);
+  void Init(WebUI* web_ui);
 
   // ServiceProcessControl::MessageHandler interface.
   virtual void OnRemotingHostInfo(
@@ -31,7 +31,7 @@ class RemotingOptionsHandler
  private:
   void SetStatus(bool enabled, const std::string& login);
 
-  DOMUI* dom_ui_;
+  WebUI* web_ui_;
   ServiceProcessControl* process_control_;
 
   DISALLOW_COPY_AND_ASSIGN(RemotingOptionsHandler);

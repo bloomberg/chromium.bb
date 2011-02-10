@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
+#include "chrome/browser/dom_ui/web_ui.h"
 #include "chrome/common/remoting/chromoting_host_info.h"
 
 class ListValue;
@@ -168,7 +169,7 @@ class SetupFlow : public WebUIMessageHandler,
 
   static SetupFlow* OpenSetupDialog(Profile* profile);
 
-  DOMUI* dom_ui() { return dom_ui_; }
+  WebUI* web_ui() { return web_ui_; }
   Profile* profile() { return profile_; }
   SetupFlowContext* context() { return &context_; }
 
@@ -189,7 +190,7 @@ class SetupFlow : public WebUIMessageHandler,
   virtual bool ShouldShowDialogTitle() const;
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(DOMUI* dom_ui);
+  virtual WebUIMessageHandler* Attach(WebUI* web_ui);
   virtual void RegisterMessages();
 
   // Message handlers for the messages we receive from UI.
@@ -201,7 +202,7 @@ class SetupFlow : public WebUIMessageHandler,
 
   // Pointer to the Web UI. This is provided by RemotingSetupMessageHandler
   // when attached.
-  DOMUI* dom_ui_;
+  WebUI* web_ui_;
 
   // The args to pass to the initial page.
   std::string dialog_start_args_;

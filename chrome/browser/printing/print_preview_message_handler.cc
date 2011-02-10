@@ -54,7 +54,7 @@ void PrintPreviewMessageHandler::OnPagesReadyForPreview(
 
 #if defined(OS_MACOSX)
   PrintPreviewUI* print_preview_ui =
-      static_cast<PrintPreviewUI*>(print_preview_tab->dom_ui());
+      static_cast<PrintPreviewUI*>(print_preview_tab->web_ui());
   print_preview_ui->html_source()->SetPrintPreviewData(
       std::make_pair(shared_buf, params.data_size));
   print_preview_ui->PreviewDataIsAvailable();

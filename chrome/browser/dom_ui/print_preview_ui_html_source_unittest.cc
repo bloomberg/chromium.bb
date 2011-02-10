@@ -38,7 +38,7 @@ TEST_F(PrintPreviewUIHTMLSourceTest, PrintPreviewData) {
   EXPECT_EQ(2, browser()->tab_count());
 
   PrintPreviewUI* preview_ui =
-      reinterpret_cast<PrintPreviewUI*>(preview_tab->dom_ui());
+      reinterpret_cast<PrintPreviewUI*>(preview_tab->web_ui());
   ASSERT_TRUE(preview_ui != NULL);
   PrintPreviewUIHTMLSource* html_source = preview_ui->html_source();
 

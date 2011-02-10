@@ -51,10 +51,10 @@ SetupFlowStep* SetupFlowStepBase::GetNextStep() {
 
 void SetupFlowStepBase::ExecuteJavascriptInIFrame(
     const std::wstring& iframe_xpath, const std::wstring& js) {
-  DOMUI* dom_ui = flow()->dom_ui();
-  DCHECK(dom_ui);
+  WebUI* web_ui = flow()->web_ui();
+  DCHECK(web_ui);
 
-  RenderViewHost* rvh = dom_ui->tab_contents()->render_view_host();
+  RenderViewHost* rvh = web_ui->tab_contents()->render_view_host();
   rvh->ExecuteJavascriptInWebFrame(WideToUTF16Hack(iframe_xpath),
                                    WideToUTF16Hack(js));
 }
@@ -82,7 +82,7 @@ void SetupFlowErrorStepBase::DoStart() {
       L"setMessage('" + UTF16ToWide(GetErrorMessage()) + L"');";
   ExecuteJavascriptInIFrame(kErrorIframeXPath, javascript);
 
-  flow()->dom_ui()->CallJavascriptFunction(L"showError");
+  flow()->web_ui()->CallJavascriptFunction(L"showError");
 
   ExecuteJavascriptInIFrame(kErrorIframeXPath, L"onPageShown();");
 }
@@ -108,7 +108,7 @@ void SetupFlowDoneStep::DoStart() {
       L"setMessage('" + UTF16ToWide(message_) + L"');";
   ExecuteJavascriptInIFrame(kDoneIframeXPath, javascript);
 
-  flow()->dom_ui()->CallJavascriptFunction(L"showSetupDone");
+  flow()->web_ui()->CallJavascriptFunction(L"showSetupDone");
 
   ExecuteJavascriptInIFrame(kDoneIframeXPath, L"onPageShown();");
 }
@@ -118,7 +118,7 @@ SetupFlowContext::~SetupFlowContext() { }
 
 SetupFlow::SetupFlow(const std::string& args, Profile* profile,
                      SetupFlowStep* first_step)
-    : dom_ui_(NULL),
+    : web_ui_(NULL),
       dialog_start_args_(args),
       profile_(profile),
       current_step_(first_step) {
@@ -203,16 +203,16 @@ bool SetupFlow::ShouldShowDialogTitle() const {
   return true;
 }
 
-WebUIMessageHandler* SetupFlow::Attach(DOMUI* dom_ui) {
-  dom_ui_ = dom_ui;
+WebUIMessageHandler* SetupFlow::Attach(WebUI* web_ui) {
+  web_ui_ = web_ui;
   StartCurrentStep();
-  return WebUIMessageHandler::Attach(dom_ui);
+  return WebUIMessageHandler::Attach(web_ui);
 }
 
 void SetupFlow::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "SubmitAuth", NewCallback(this, &SetupFlow::HandleSubmitAuth));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "RemotingSetup", NewCallback(this, &SetupFlow::HandleUIMessage));
 }
 

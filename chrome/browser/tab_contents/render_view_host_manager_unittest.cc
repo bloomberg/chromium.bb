@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -263,8 +263,8 @@ TEST_F(RenderViewHostManagerTest, DOMUI) {
 
   // The Web UI is committed immediately because the RenderViewHost has not been
   // used yet. UpdateRendererStateForNavigate() took the short cut path.
-  EXPECT_FALSE(manager.pending_dom_ui());
-  EXPECT_TRUE(manager.dom_ui());
+  EXPECT_FALSE(manager.pending_web_ui());
+  EXPECT_TRUE(manager.web_ui());
 
   // Commit.
   manager.DidNavigateMainFrame(host);

@@ -12,12 +12,12 @@
 TextfieldViews::TextfieldViews() : DOMView() {}
 
 std::wstring TextfieldViews::GetText() {
-  TextfieldsUI* textfields_ui = dom_ui();
+  TextfieldsUI* textfields_ui = web_ui();
   return (textfields_ui) ? textfields_ui->text() : std::wstring();
 }
 
 void TextfieldViews::SetText(const std::wstring& text) {
-  TextfieldsUI* textfields_ui = dom_ui();
+  TextfieldsUI* textfields_ui = web_ui();
   if (textfields_ui) {
     StringValue text_value(WideToUTF16(text));
     textfields_ui->CallJavascriptFunction(L"setTextfieldValue", text_value);
@@ -25,10 +25,10 @@ void TextfieldViews::SetText(const std::wstring& text) {
   SchedulePaint();
 }
 
-TextfieldsUI* TextfieldViews::dom_ui() {
-  TextfieldsUI* dom_ui = NULL;
-  if (tab_contents_.get() && tab_contents_->dom_ui()) {
-    dom_ui = static_cast<TextfieldsUI*>(tab_contents_->dom_ui());
+TextfieldsUI* TextfieldViews::web_ui() {
+  TextfieldsUI* web_ui = NULL;
+  if (tab_contents_.get() && tab_contents_->web_ui()) {
+    web_ui = static_cast<TextfieldsUI*>(tab_contents_->web_ui());
   }
-  return dom_ui;
+  return web_ui;
 }

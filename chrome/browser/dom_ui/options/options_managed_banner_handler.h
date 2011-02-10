@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,14 +10,14 @@
 #include "chrome/browser/policy/managed_prefs_banner_base.h"
 #include "chrome/browser/ui/options/options_window.h"
 
-class DOMUI;
+class WebUI;
 
 // Managed options banner handler.
 // Controls the display of a banner if an options panel contains options
 // that are under administator control.
 class OptionsManagedBannerHandler : public policy::ManagedPrefsBannerBase {
  public:
-  OptionsManagedBannerHandler(DOMUI* dom_ui, const string16& page_name,
+  OptionsManagedBannerHandler(WebUI* web_ui, const string16& page_name,
                               OptionsPage page);
   virtual ~OptionsManagedBannerHandler();
 
@@ -29,7 +29,7 @@ class OptionsManagedBannerHandler : public policy::ManagedPrefsBannerBase {
   // Set the managed options banner to be visible or invisible.
   void SetupBannerVisibilty();
 
-  DOMUI* dom_ui_;  // weak reference to the dom-ui.
+  WebUI* web_ui_;  // weak reference to the WebUI.
   string16 page_name_;  // current options page name.
   OptionsPage page_;  // current options page value.
 
