@@ -32,7 +32,7 @@ cr.define('options', function() {
 
       var self = this;
       $('sync-action-link').onclick = function(event) {
-        chrome.send('showSyncLoginDialog');
+        chrome.send('showSyncActionDialog');
       };
       $('start-stop-sync').onclick = function(event) {
         if (self.syncSetupCompleted)

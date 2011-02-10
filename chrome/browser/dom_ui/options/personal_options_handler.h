@@ -42,6 +42,7 @@ class PersonalOptionsHandler : public OptionsPageUIHandler,
 
  private:
   void ObserveThemeChanged();
+  void ShowSyncActionDialog(const ListValue* args);
   void ShowSyncLoginDialog(const ListValue* args);
   void ShowCustomizeSyncDialog(const ListValue* args);
   void ThemesReset(const ListValue* args);
