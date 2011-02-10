@@ -10,7 +10,6 @@
 
 #include <map>
 #include <string>
-#include <vector>
 
 #include "base/process.h"
 #include "base/string_util.h"
@@ -35,12 +34,6 @@ void InitializeAboutDataSource(Profile* profile);
 // dialogs. This function handles those cases, and returns true if so. In this
 // case, normal tab navigation should be skipped.
 bool HandleNonNavigationAboutURL(const GURL& url);
-
-// Gets the paths that are shown in about:about.
-std::vector<std::string> AboutPaths();
-
-// Translates one of the paths shown in about:about into a URL.
-GURL AboutPathToURL(const std::string& path);
 
 #if defined(USE_TCMALLOC)
 // A map of header strings (e.g. "Browser", "Renderer PID 123")
