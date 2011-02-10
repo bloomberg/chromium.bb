@@ -5,7 +5,7 @@ vars = {
   # revs to match the version pulled-in by Chromium's own DEPS in the new rev.
   "chromium_rev": "51794",
   "chromium_breakpad_rev": "47985",
-  "o3d_code_rev": "227",
+  "o3d_code_rev": "229",
   "skia_rev": "586",
   "gyp_rev": "820",
   "gtest_rev": "408",
@@ -159,6 +159,19 @@ deps_os = {
 
     "third_party/python_24":
       Var("chromium_trunk") + "/deps/third_party/python_24@19441",
+
+    "third_party/pixman":
+      "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/pixman@" + Var("o3d_code_rev"),
+
+    "third_party/cairo":
+      "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/cairo@" + Var("o3d_code_rev"),
+  },
+  "mac": {
+    "third_party/pixman":
+      "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/pixman@" + Var("o3d_code_rev"),
+
+    "third_party/cairo":
+      "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/cairo@" + Var("o3d_code_rev"),
   },
   "unix": {
     # Linux, really.
