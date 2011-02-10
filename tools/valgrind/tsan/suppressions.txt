@@ -111,6 +111,28 @@
   fun:ServiceProcessState::SignalStopped*
 }
 
+{
+  bug_72169a
+  ThreadSanitizer:Race
+  fun:base::Thread::ThreadMain*
+}
+
+{
+  bug_72169b
+  ThreadSanitizer:Race
+  fun:base::Thread::message_loop*
+  ...
+  fun:*::InotifyReader::OnInotifyEvent*
+}
+
+{
+  bug_74295
+  ThreadSanitizer:Race
+  fun:JSC::Yarr::Interpreter::*Disjunction*
+  fun:JSC::Yarr::Interpreter::interpret*
+  fun:JSC::Yarr::interpret
+}
+
 ############################
 # Benign races
 {
