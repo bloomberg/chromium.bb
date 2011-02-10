@@ -7,7 +7,6 @@
 #include <sstream>
 
 #include "base/metrics/histogram.h"
-#include "base/values.h"
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/protocol/app_specifics.pb.h"
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
@@ -254,18 +253,6 @@ bool ModelTypeBitSetFromString(
   iss >> *model_types;
   iss.peek();   // Need to peek before checking EOF.
   return iss.eof();
-}
-
-ListValue* ModelTypeBitSetToValue(const ModelTypeBitSet& model_types) {
-  ListValue* value = new ListValue();
-  for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
-    if (model_types[i]) {
-      value->Append(
-          Value::CreateStringValue(
-              ModelTypeToString(ModelTypeFromInt(i))));
-    }
-  }
-  return value;
 }
 
 // For now, this just implements UMA_HISTOGRAM_LONG_TIMES. This can be adjusted

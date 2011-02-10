@@ -99,67 +99,6 @@ DictionaryValue* EncryptedDataToValue(const sync_pb::EncryptedData& proto) {
   return value;
 }
 
-DictionaryValue* SessionHeaderToValue(
-    const sync_pb::SessionHeader& proto) {
-  DictionaryValue* value = new DictionaryValue();
-  SET_REP(window, SessionWindowToValue);
-  return value;
-}
-
-DictionaryValue* SessionTabToValue(
-    const sync_pb::SessionTab& proto) {
-  DictionaryValue* value = new DictionaryValue();
-  SET_INT32(tab_id);
-  SET_INT32(window_id);
-  SET_INT32(tab_visual_index);
-  SET_INT32(current_navigation_index);
-  SET_BOOL(pinned);
-  SET_STR(extension_app_id);
-  SET_REP(navigation, TabNavigationToValue);
-  return value;
-}
-
-DictionaryValue* SessionWindowToValue(
-    const sync_pb::SessionWindow& proto) {
-  DictionaryValue* value = new DictionaryValue();
-  SET_INT32(window_id);
-  SET_INT32(selected_tab_index);
-  SET_INT32_REP(tab);
-  SET_ENUM(browser_type, GetBrowserTypeString);
-  return value;
-}
-
-DictionaryValue* TabNavigationToValue(
-    const sync_pb::TabNavigation& proto) {
-  DictionaryValue* value = new DictionaryValue();
-  SET_INT32(index);
-  SET_STR(virtual_url);
-  SET_STR(referrer);
-  SET_STR(title);
-  SET_STR(state);
-  SET_ENUM(page_transition, GetPageTransitionString);
-  SET_ENUM(navigation_qualifier, GetPageTransitionQualifierString);
-  return value;
-}
-
-DictionaryValue* PasswordSpecificsDataToValue(
-    const sync_pb::PasswordSpecificsData& proto) {
-  DictionaryValue* value = new DictionaryValue();
-  SET_INT32(scheme);
-  SET_STR(signon_realm);
-  SET_STR(origin);
-  SET_STR(action);
-  SET_STR(username_element);
-  SET_STR(username_value);
-  SET_STR(password_element);
-  value->SetString("password_value", "<redacted>");
-  SET_BOOL(ssl_valid);
-  SET_BOOL(preferred);
-  SET_INT64(date_created);
-  SET_BOOL(blacklisted);
-  return value;
-}
-
 DictionaryValue* AppSpecificsToValue(
     const sync_pb::AppSpecifics& proto) {
   DictionaryValue* value = new DictionaryValue();
@@ -258,6 +197,49 @@ DictionaryValue* PreferenceSpecificsToValue(
   DictionaryValue* value = new DictionaryValue();
   SET_STR(name);
   SET_STR(value);
+  return value;
+}
+
+DictionaryValue* SessionHeaderToValue(
+    const sync_pb::SessionHeader& proto) {
+  DictionaryValue* value = new DictionaryValue();
+  SET_REP(window, SessionWindowToValue);
+  return value;
+}
+
+DictionaryValue* SessionTabToValue(
+    const sync_pb::SessionTab& proto) {
+  DictionaryValue* value = new DictionaryValue();
+  SET_INT32(tab_id);
+  SET_INT32(window_id);
+  SET_INT32(tab_visual_index);
+  SET_INT32(current_navigation_index);
+  SET_BOOL(pinned);
+  SET_STR(extension_app_id);
+  SET_REP(navigation, TabNavigationToValue);
+  return value;
+}
+
+DictionaryValue* SessionWindowToValue(
+    const sync_pb::SessionWindow& proto) {
+  DictionaryValue* value = new DictionaryValue();
+  SET_INT32(window_id);
+  SET_INT32(selected_tab_index);
+  SET_INT32_REP(tab);
+  SET_ENUM(browser_type, GetBrowserTypeString);
+  return value;
+}
+
+DictionaryValue* TabNavigationToValue(
+    const sync_pb::TabNavigation& proto) {
+  DictionaryValue* value = new DictionaryValue();
+  SET_INT32(index);
+  SET_STR(virtual_url);
+  SET_STR(referrer);
+  SET_STR(title);
+  SET_STR(state);
+  SET_ENUM(page_transition, GetPageTransitionString);
+  SET_ENUM(navigation_qualifier, GetPageTransitionQualifierString);
   return value;
 }
 

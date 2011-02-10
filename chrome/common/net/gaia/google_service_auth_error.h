@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,10 +24,9 @@
 #pragma once
 
 #include <string>
-
+#include "base/logging.h"
 #include "googleurl/src/gurl.h"
-
-class DictionaryValue;
+#include "net/base/net_errors.h"
 
 class GoogleServiceAuthError {
  public:
@@ -80,48 +79,78 @@ class GoogleServiceAuthError {
 
   // Additional data for CAPTCHA_REQUIRED errors.
   struct Captcha {
-    Captcha(const std::string& t, const GURL& img, const GURL& unlock);
+    Captcha() {}
+    Captcha(const std::string& t, const GURL& img, const GURL& unlock)
+        : token(t), image_url(img), unlock_url(unlock) {}
     std::string token;  // Globally identifies the specific CAPTCHA challenge.
     GURL image_url;     // The CAPTCHA image to show the user.
     GURL unlock_url;    // Pretty unlock page containing above captcha.
   };
 
   // For test only.
-  bool operator==(const GoogleServiceAuthError &b) const;
+  inline bool operator==(const GoogleServiceAuthError &b) const {
+    return (state_ == b.state_ &&
+            network_error_ == b.network_error_ &&
+            captcha_.token == b.captcha_.token &&
+            captcha_.image_url == b.captcha_.image_url &&
+            captcha_.unlock_url == b.captcha_.unlock_url);
+  }
 
   // Construct a GoogleServiceAuthError from a State with no additional data.
-  explicit GoogleServiceAuthError(State s);
+  explicit GoogleServiceAuthError(State s)
+      : state_(s),
+        captcha_("", GURL(), GURL()),
+        network_error_(0) {
+    // If the caller has no idea, then we just set it to a generic failure.
+    if (s == CONNECTION_FAILED) {
+      network_error_ = net::ERR_FAILED;
+    }
+  }
 
   // Construct a GoogleServiceAuthError from a network error.
   // It will be created with CONNECTION_FAILED set.
-  static GoogleServiceAuthError FromConnectionError(int error);
+  static GoogleServiceAuthError FromConnectionError(int error) {
+    return GoogleServiceAuthError(CONNECTION_FAILED, error);
+  }
 
   // Construct a CAPTCHA_REQUIRED error with CAPTCHA challenge data.
   static GoogleServiceAuthError FromCaptchaChallenge(
       const std::string& captcha_token,
       const GURL& captcha_image_url,
-      const GURL& captcha_unlock_url);
+      const GURL& captcha_unlock_url) {
+    return GoogleServiceAuthError(CAPTCHA_REQUIRED, captcha_token,
+                                  captcha_image_url, captcha_unlock_url);
+  }
 
   // Provided for convenience for clients needing to reset an instance to NONE.
   // (avoids err_ = GoogleServiceAuthError(GoogleServiceAuthError::NONE), due
   // to explicit class and State enum relation. Note: shouldn't be inlined!
-  static GoogleServiceAuthError None();
+  static const GoogleServiceAuthError None() {
+    static const GoogleServiceAuthError e(NONE);
+    return e;
+  }
 
   // The error information.
-  const State& state() const;
-  const Captcha& captcha() const;
-  int network_error() const;
-
-  // Returns info about this object in a dictionary.  Caller takes
-  // ownership of returned dictionary.
-  DictionaryValue* ToValue() const;
+  const State& state() const { return state_; }
+  const Captcha& captcha() const { return captcha_; }
+  int network_error() const {
+    return network_error_;
+  }
 
  private:
-  GoogleServiceAuthError(State s, int error);
+  GoogleServiceAuthError(State s, int error)
+      : state_(s),
+        captcha_("", GURL(), GURL()),
+        network_error_(error) {
+  }
 
   GoogleServiceAuthError(State s, const std::string& captcha_token,
                          const GURL& captcha_image_url,
-                         const GURL& captcha_unlock_url);
+                         const GURL& captcha_unlock_url)
+      : state_(s),
+        captcha_(captcha_token, captcha_image_url, captcha_unlock_url),
+        network_error_(0) {
+  }
 
   State state_;
   Captcha captcha_;

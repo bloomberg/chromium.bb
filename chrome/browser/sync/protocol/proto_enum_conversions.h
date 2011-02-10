@@ -28,9 +28,6 @@ const char* GetPageTransitionQualifierString(
     sync_pb::TabNavigation::PageTransitionQualifier
         page_transition_qualifier);
 
-const char* GetUpdatesSourceString(
-    sync_pb::GetUpdatesCallerInfo::GetUpdatesSource updates_source);
-
 }  // namespace browser_sync
 
 #endif  // CHROME_BROWSER_SYNC_PROTOCOL_PROTO_ENUM_CONVERSIONS_H_

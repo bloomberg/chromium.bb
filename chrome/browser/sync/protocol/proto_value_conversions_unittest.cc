@@ -56,32 +56,6 @@ TEST_F(ProtoValueConversionsTest, EncryptedDataToValue) {
   TestSpecificsToValue(EncryptedDataToValue);
 }
 
-TEST_F(ProtoValueConversionsTest, SessionHeaderToValue) {
-  TestSpecificsToValue(SessionHeaderToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, SessionTabToValue) {
-  TestSpecificsToValue(SessionTabToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, SessionWindowToValue) {
-  TestSpecificsToValue(SessionWindowToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, TabNavigationToValue) {
-  TestSpecificsToValue(TabNavigationToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, PasswordSpecificsData) {
-  sync_pb::PasswordSpecificsData specifics;
-  specifics.set_password_value("secret");
-  scoped_ptr<DictionaryValue> value(PasswordSpecificsDataToValue(specifics));
-  EXPECT_FALSE(value->empty());
-  std::string password_value;
-  EXPECT_TRUE(value->GetString("password_value", &password_value));
-  EXPECT_EQ("<redacted>", password_value);
-}
-
 TEST_F(ProtoValueConversionsTest, AppSpecificsToValue) {
   TestSpecificsToValue(AppSpecificsToValue);
 }
@@ -118,8 +92,24 @@ TEST_F(ProtoValueConversionsTest, PreferenceSpecificsToValue) {
   TestSpecificsToValue(PreferenceSpecificsToValue);
 }
 
+TEST_F(ProtoValueConversionsTest, SessionHeaderToValue) {
+  TestSpecificsToValue(SessionHeaderToValue);
+}
+
 TEST_F(ProtoValueConversionsTest, SessionSpecificsToValue) {
   TestSpecificsToValue(SessionSpecificsToValue);
+}
+
+TEST_F(ProtoValueConversionsTest, SessionTabToValue) {
+  TestSpecificsToValue(SessionTabToValue);
+}
+
+TEST_F(ProtoValueConversionsTest, SessionWindowToValue) {
+  TestSpecificsToValue(SessionWindowToValue);
+}
+
+TEST_F(ProtoValueConversionsTest, TabNavigationToValue) {
+  TestSpecificsToValue(TabNavigationToValue);
 }
 
 TEST_F(ProtoValueConversionsTest, ThemeSpecificsToValue) {

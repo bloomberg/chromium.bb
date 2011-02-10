@@ -68,23 +68,6 @@ const char* GetPageTransitionQualifierString(
   return "";
 }
 
-const char* GetUpdatesSourceString(
-    sync_pb::GetUpdatesCallerInfo::GetUpdatesSource updates_source) {
-  ASSERT_ENUM_BOUNDS(sync_pb::GetUpdatesCallerInfo, GetUpdatesSource,
-                     UNKNOWN, CLEAR_PRIVATE_DATA);
-  switch (updates_source) {
-    ENUM_CASE(sync_pb::GetUpdatesCallerInfo, UNKNOWN);
-    ENUM_CASE(sync_pb::GetUpdatesCallerInfo, FIRST_UPDATE);
-    ENUM_CASE(sync_pb::GetUpdatesCallerInfo, LOCAL);
-    ENUM_CASE(sync_pb::GetUpdatesCallerInfo, NOTIFICATION);
-    ENUM_CASE(sync_pb::GetUpdatesCallerInfo, PERIODIC);
-    ENUM_CASE(sync_pb::GetUpdatesCallerInfo, SYNC_CYCLE_CONTINUATION);
-    ENUM_CASE(sync_pb::GetUpdatesCallerInfo, CLEAR_PRIVATE_DATA);
-  }
-  NOTREACHED();
-  return "";
-}
-
 #undef ASSERT_ENUM_BOUNDS
 #undef ENUM_CASE
 

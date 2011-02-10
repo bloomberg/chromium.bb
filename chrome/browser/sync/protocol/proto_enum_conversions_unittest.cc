@@ -51,12 +51,5 @@ TEST_F(ProtoEnumConversionsTest, GetPageTransitionQualifierString) {
       sync_pb::TabNavigation::PageTransitionQualifier_MAX);
 }
 
-TEST_F(ProtoEnumConversionsTest, GetUpdatesSourceString) {
-  TestEnumStringFunction(
-      GetUpdatesSourceString,
-      sync_pb::GetUpdatesCallerInfo::GetUpdatesSource_MIN,
-      sync_pb::GetUpdatesCallerInfo::GetUpdatesSource_MAX);
-}
-
 }  // namespace
 }  // namespace browser_sync

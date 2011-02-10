@@ -521,7 +521,6 @@
         'common/net/gaia/gaia_auth_fetcher.h',
         'common/net/gaia/gaia_authenticator.cc',
         'common/net/gaia/gaia_authenticator.h',
-        'common/net/gaia/google_service_auth_error.cc',
         'common/net/gaia/google_service_auth_error.h',
         'common/net/x509_certificate_model.cc',
         'common/net/x509_certificate_model_nss.cc',

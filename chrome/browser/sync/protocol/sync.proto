@@ -266,7 +266,7 @@ message GetUpdatesCallerInfo {
                                   // continuation of a previous update.
     CLEAR_PRIVATE_DATA = 6;       // Source is a call to remove all private data                                  
   }
-
+  
   required GetUpdatesSource source = 1;
 
   // True only if notifications were enabled for this GetUpdateMessage.
