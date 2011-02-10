@@ -95,6 +95,8 @@ struct wl_display {
 	uint32_t key;
 };
 
+static int wl_debug = 0;
+
 static int
 connection_update(struct wl_connection *connection,
 		  uint32_t mask, void *data)
@@ -203,6 +205,12 @@ wl_proxy_marshal(struct wl_proxy *proxy, uint32_t opcode, ...)
 	va_end(ap);
 
 	wl_closure_send(closure, proxy->display->connection);
+
+	if (wl_debug) {
+		fprintf(stderr, " -> ");
+		wl_closure_print(closure, &proxy->object);
+	}
+
 	wl_closure_destroy(closure);
 }
 
@@ -334,7 +342,12 @@ wl_display_connect(const char *name)
 	struct sockaddr_un addr;
 	socklen_t size;
 	const char *runtime_dir;
+	const char *debug;
 	size_t name_size;
+
+	debug = getenv("WAYLAND_DEBUG");
+	if (debug)
+		wl_debug = 1;
 
 	display = malloc(sizeof *display);
 	if (display == NULL)
@@ -479,6 +492,9 @@ handle_event(struct wl_display *display,
 	message = &proxy->object.interface->events[opcode];
 	closure = wl_connection_demarshal(display->connection,
 					  size, display->objects, message);
+
+	if (wl_debug)
+		wl_closure_print(closure, &proxy->object);
 
 	wl_list_for_each(listener, &proxy->listener_list, link)
 		wl_closure_invoke(closure, &proxy->object,
