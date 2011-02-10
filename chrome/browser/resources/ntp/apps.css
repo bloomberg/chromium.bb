@@ -48,7 +48,7 @@ enough extra space in the small grid layout.
   background: rgba(255, 255, 255, 0) /* transparent white */
               no-repeat center 10px;
   background-size: 96px 96px;
-  font-family: Helvetica, Arial;
+  font-family: Helvetica, Arial, sans-serif;
   font-size: 107%;
   overflow: hidden;
   padding: 111px 10px 10px;  /* 10 + 96 + 5 */
