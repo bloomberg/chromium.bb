@@ -607,7 +607,9 @@ def _AdjustSourcesForRules(rules, sources, excluded_sources):
       trigger_files = _FindRuleTriggerFiles(rule, sources)
       for tf in trigger_files:
         inputs, outputs = _RuleInputsAndOutputs(rule, tf)
-        inputs.remove(tf)
+        inputs = set([_FixPath(i) for i in inputs])
+        outputs = set([_FixPath(i) for i in outputs])
+        inputs.remove(_FixPath(tf))
         sources.update(inputs)
         excluded_sources.update(inputs)
         sources.update(outputs)
