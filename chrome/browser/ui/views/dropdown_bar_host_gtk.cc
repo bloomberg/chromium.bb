@@ -37,12 +37,12 @@ NativeWebKeyboardEvent DropdownBarHost::GetKeyboardEvent(
   // Refactor and eliminate the dup code.
   NativeWebKeyboardEvent wke;
   wke.type = WebKit::WebInputEvent::KeyDown;
-  wke.windowsKeyCode = key_event.key_code();
+  wke.windowsKeyCode = key_event.GetKeyCode();
   wke.setKeyIdentifierFromWindowsKeyCode();
 
   wke.text[0] = wke.unmodifiedText[0] =
     static_cast<unsigned short>(gdk_keyval_to_unicode(
-          ui::GdkKeyCodeForWindowsKeyCode(key_event.key_code(),
+          ui::GdkKeyCodeForWindowsKeyCode(key_event.GetKeyCode(),
               key_event.IsShiftDown() ^ key_event.IsCapsLockDown())));
   return wke;
 #else

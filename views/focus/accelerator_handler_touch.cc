@@ -99,7 +99,7 @@ bool DispatchX2Event(RootView* root, XEvent* xev) {
       if (!touch_event) {
         // Show the cursor, and decide whether or not the cursor should be
         // automatically hidden after a certain time of inactivity.
-        int button_flags = mouseev.flags() & (ui::EF_RIGHT_BUTTON_DOWN |
+        int button_flags = mouseev.GetFlags() & (ui::EF_RIGHT_BUTTON_DOWN |
             ui::EF_MIDDLE_BUTTON_DOWN | ui::EF_LEFT_BUTTON_DOWN);
         bool start_timer = false;
 
@@ -130,7 +130,7 @@ bool DispatchX2Event(RootView* root, XEvent* xev) {
           root->OnMouseReleased(mouseev, false);
           return true;
         case XI_Motion: {
-          if (mouseev.type() == ui::ET_MOUSE_DRAGGED) {
+          if (mouseev.GetType() == ui::ET_MOUSE_DRAGGED) {
             return root->OnMouseDragged(mouseev);
           } else {
             root->OnMouseMoved(mouseev);
@@ -188,7 +188,7 @@ bool DispatchXEvent(XEvent* xev) {
 
       case MotionNotify: {
         MouseEvent mouseev(xev);
-        if (mouseev.type() == ui::ET_MOUSE_DRAGGED) {
+        if (mouseev.GetType() == ui::ET_MOUSE_DRAGGED) {
           return root->OnMouseDragged(mouseev);
         } else {
           root->OnMouseMoved(mouseev);
