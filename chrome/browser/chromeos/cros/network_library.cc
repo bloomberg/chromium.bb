@@ -1222,7 +1222,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
         GetWirelessNetworkByPath(cellular_networks_,
                                  network->service_path());
     if (!cellular) {
-      LOG(WARNING) << "Save to unknown network: " << cellular->service_path();
+      LOG(WARNING) << "Save to unknown network: " << network->service_path();
       return;
     }
 
@@ -1240,7 +1240,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     WifiNetwork* wifi = GetWirelessNetworkByPath(wifi_networks_,
                                                  network->service_path());
     if (!wifi) {
-      LOG(WARNING) << "Save to unknown network: " << wifi->service_path();
+      LOG(WARNING) << "Save to unknown network: " << network->service_path();
       return;
     }
     // Immediately update properties in the cached structure.
