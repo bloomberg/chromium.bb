@@ -14,6 +14,7 @@
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/enumerate_modules_model_win.h"
 #include "chrome/browser/metrics/user_metrics.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/notification_observer.h"
@@ -202,11 +203,7 @@ ConflictsUI::ConflictsUI(TabContents* contents) : DOMUI(contents) {
   ConflictsUIHTMLSource* html_source = new ConflictsUIHTMLSource();
 
   // Set up the about:conflicts source.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(ChromeURLDataManager::GetInstance(),
-                        &ChromeURLDataManager::AddDataSource,
-                        make_scoped_refptr(html_source)));
+  contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
 }
 
 // static

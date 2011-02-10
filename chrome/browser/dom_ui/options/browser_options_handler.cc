@@ -126,12 +126,8 @@ void BrowserOptionsHandler::Initialize() {
   Profile* profile = dom_ui_->GetProfile();
 
   // Create our favicon data source.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          ChromeURLDataManager::GetInstance(),
-          &ChromeURLDataManager::AddDataSource,
-          make_scoped_refptr(new WebUIFavIconSource(profile))));
+  profile->GetChromeURLDataManager()->AddDataSource(
+      new WebUIFavIconSource(profile));
 
   homepage_.Init(prefs::kHomePage, profile->GetPrefs(), NULL);
   default_browser_policy_.Init(prefs::kDefaultBrowserSettingEnabled,

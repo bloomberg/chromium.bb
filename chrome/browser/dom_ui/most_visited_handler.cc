@@ -64,30 +64,21 @@ MostVisitedHandler::~MostVisitedHandler() {
 }
 
 WebUIMessageHandler* MostVisitedHandler::Attach(DOMUI* dom_ui) {
-  url_blacklist_ = dom_ui->GetProfile()->GetPrefs()->
-      GetMutableDictionary(prefs::kNTPMostVisitedURLsBlacklist);
-  pinned_urls_ = dom_ui->GetProfile()->GetPrefs()->
-      GetMutableDictionary(prefs::kNTPMostVisitedPinnedURLs);
+  Profile* profile = dom_ui->GetProfile();
+  url_blacklist_ = profile->GetPrefs()->GetMutableDictionary(
+      prefs::kNTPMostVisitedURLsBlacklist);
+  pinned_urls_ = profile->GetPrefs()->GetMutableDictionary(
+      prefs::kNTPMostVisitedPinnedURLs);
   // Set up our sources for thumbnail and favicon data.
-  WebUIThumbnailSource* thumbnail_src =
-      new WebUIThumbnailSource(dom_ui->GetProfile());
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(ChromeURLDataManager::GetInstance(),
-                        &ChromeURLDataManager::AddDataSource,
-                        make_scoped_refptr(thumbnail_src)));
+  WebUIThumbnailSource* thumbnail_src = new WebUIThumbnailSource(profile);
+  profile->GetChromeURLDataManager()->AddDataSource(thumbnail_src);
 
-  WebUIFavIconSource* favicon_src =
-      new WebUIFavIconSource(dom_ui->GetProfile());
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(ChromeURLDataManager::GetInstance(),
-                        &ChromeURLDataManager::AddDataSource,
-                        make_scoped_refptr(favicon_src)));
+  WebUIFavIconSource* favicon_src = new WebUIFavIconSource(profile);
+  profile->GetChromeURLDataManager()->AddDataSource(favicon_src);
 
   // Get notifications when history is cleared.
   registrar_.Add(this, NotificationType::HISTORY_URLS_DELETED,
-      Source<Profile>(dom_ui->GetProfile()));
+                 Source<Profile>(profile));
 
   WebUIMessageHandler* result = WebUIMessageHandler::Attach(dom_ui);
 

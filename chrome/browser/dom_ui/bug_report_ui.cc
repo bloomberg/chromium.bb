@@ -21,6 +21,7 @@
 #include "chrome/browser/bug_report_data.h"
 #include "chrome/browser/bug_report_util.h"
 #include "chrome/browser/dom_ui/web_ui_screenshot_source.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -432,9 +433,9 @@ void BugReportData::SendReport() {
 //
 ////////////////////////////////////////////////////////////////////////////////
 BugReportHandler::BugReportHandler(TabContents* tab)
-    : tab_(tab)
-    , screenshot_source_(NULL)
-    , bug_report_(NULL)
+    : tab_(tab),
+      screenshot_source_(NULL),
+      bug_report_(NULL)
 #if defined(OS_CHROMEOS)
     , syslogs_handle_(0)
 #endif
@@ -454,12 +455,8 @@ void BugReportHandler::ClobberScreenshotsSource() {
   // Re-create our screenshots data source (this clobbers the last source)
   // setting the screenshot to NULL, effectively disabling the source
   // TODO(rkc): Once there is a method to 'remove' a source, change this code
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          ChromeURLDataManager::GetInstance(),
-          &ChromeURLDataManager::AddDataSource,
-          make_scoped_refptr(new WebUIScreenshotSource(NULL))));
+  tab_->profile()->GetChromeURLDataManager()->AddDataSource(
+      new WebUIScreenshotSource(NULL));
 
   // clobber last screenshot
   if (browser::last_screenshot_png)
@@ -473,12 +470,7 @@ void BugReportHandler::SetupScreenshotsSource() {
         browser::last_screenshot_png);
 
   // Add the source to the data manager.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          ChromeURLDataManager::GetInstance(),
-          &ChromeURLDataManager::AddDataSource,
-          make_scoped_refptr(screenshot_source_)));
+  tab_->profile()->GetChromeURLDataManager()->AddDataSource(screenshot_source_);
 }
 
 WebUIMessageHandler* BugReportHandler::Attach(DOMUI* dom_ui) {
@@ -749,10 +741,5 @@ BugReportUI::BugReportUI(TabContents* tab) : HtmlDialogUI(tab) {
   BugReportUIHTMLSource* html_source =
       new BugReportUIHTMLSource(handler->Init());
   // Set up the chrome://bugreport/ source.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          ChromeURLDataManager::GetInstance(),
-          &ChromeURLDataManager::AddDataSource,
-          make_scoped_refptr(html_source)));
+  tab->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
 }
