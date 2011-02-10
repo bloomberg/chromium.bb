@@ -3668,16 +3668,7 @@
    fun:*DownloadFileTest5SetUpEv
 }
 {
-   bug_72288_a
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN20MockTabDownloadStateC1Ev
-   fun:*DownloadRequestInfobarDelegate_*
-   fun:_ZN7testing*35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
-}
-{
-   bug_72288_b
+   bug_72547
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN4base22PosixDynamicThreadPool8PostTaskEP4Task

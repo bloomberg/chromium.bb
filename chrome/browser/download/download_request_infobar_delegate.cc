@@ -23,8 +23,7 @@ DownloadRequestInfoBarDelegate::~DownloadRequestInfoBarDelegate() {
 void DownloadRequestInfoBarDelegate::InfoBarClosed() {
   if (host_)
     host_->Cancel();
-  // This will delete us.
-  ConfirmInfoBarDelegate::InfoBarClosed();
+  delete this;
 }
 
 SkBitmap* DownloadRequestInfoBarDelegate::GetIcon() const {
