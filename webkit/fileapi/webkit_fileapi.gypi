@@ -26,6 +26,8 @@
         'file_system_types.h',
         'file_system_url_request_job.cc',
         'file_system_url_request_job.h',
+        'file_system_usage_tracker.cc',
+        'file_system_usage_tracker.h',
         'file_system_util.cc',
         'file_system_util.h',
         'file_writer_delegate.cc',

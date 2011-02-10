@@ -5,8 +5,6 @@
 #ifndef WEBKIT_FILEAPI_FILE_SYSTEM_PATH_MANAGER_H_
 #define WEBKIT_FILEAPI_FILE_SYSTEM_PATH_MANAGER_H_
 
-#include <map>
-
 #include "base/callback.h"
 #include "base/file_path.h"
 #include "base/scoped_ptr.h"
@@ -20,6 +18,12 @@ class MessageLoopProxy;
 
 namespace fileapi {
 
+// An interface to construct or crack sandboxed filesystem paths.
+// Currently each sandboxed filesystem path looks like:
+//
+//   <profile_dir>/FileSystem/<origin_identifier>/<type>/chrome-<unique>/...
+//
+// where <type> is either one of "Temporary" or "Persistent".
 class FileSystemPathManager {
  public:
   FileSystemPathManager(scoped_refptr<base::MessageLoopProxy> file_message_loop,
@@ -74,8 +78,24 @@ class FileSystemPathManager {
     return base_path_;
   }
 
+  // Returns the filesystem name string for the given |origin_url| and |type|.
+  static std::string GetFileSystemName(const GURL& url,
+                                       fileapi::FileSystemType type);
+
   // Returns the storage identifier string for the given |url|.
   static std::string GetStorageIdentifierFromURL(const GURL& url);
+
+  // Gets a base directory path of the sandboxed filesystem that is
+  // specified by |origin_url| and |type|.
+  // |base_path| must be pointing the FileSystem's data directory
+  // under the profile directory, i.e. <profile_dir>/kFileSystemDirectory.
+  // Returns an empty path if any of the given parameters are invalid.
+  // Returned directory path does not contain 'unique' part, therefore
+  // it is not an actural root path for the filesystem.
+  static FilePath GetFileSystemBaseDirectoryForOriginAndType(
+      const FilePath& base_path,
+      const GURL& origin_url,
+      fileapi::FileSystemType type);
 
  private:
   class GetFileSystemRootPathTask;

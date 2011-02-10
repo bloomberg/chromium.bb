@@ -8,6 +8,7 @@
 #include "base/message_loop_proxy.h"
 #include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/file_system_quota_manager.h"
+#include "webkit/fileapi/file_system_usage_tracker.h"
 
 namespace fileapi {
 
@@ -23,16 +24,12 @@ SandboxedFileSystemContext::SandboxedFileSystemContext(
       path_manager_(new FileSystemPathManager(
           file_message_loop, profile_path, is_incognito, allow_file_access)),
       quota_manager_(new FileSystemQuotaManager(
-          allow_file_access, unlimited_quota)) {
+          allow_file_access, unlimited_quota)),
+      usage_tracker_(new FileSystemUsageTracker(
+          file_message_loop, profile_path, is_incognito)) {
 }
 
 SandboxedFileSystemContext::~SandboxedFileSystemContext() {
-}
-
-void SandboxedFileSystemContext::Shutdown() {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
-  path_manager_.reset();
-  quota_manager_.reset();
 }
 
 void SandboxedFileSystemContext::DeleteDataForOriginOnFileThread(

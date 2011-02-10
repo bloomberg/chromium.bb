@@ -379,6 +379,7 @@
         '../../fileapi/file_system_operation_unittest.cc',
         '../../fileapi/file_system_path_manager_unittest.cc',
         '../../fileapi/file_system_quota_manager_unittest.cc',
+        '../../fileapi/file_system_usage_tracker_unittest.cc',
         '../../fileapi/file_system_util_unittest.cc',
         '../../fileapi/webfilewriter_base_unittest.cc',
         '../../glue/bookmarklet_unittest.cc',
