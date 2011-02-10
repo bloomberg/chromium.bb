@@ -130,7 +130,7 @@
   ThreadSanitizer:Race
   fun:JSC::Yarr::Interpreter::*Disjunction*
   fun:JSC::Yarr::Interpreter::interpret*
-  fun:JSC::Yarr::interpret
+  fun:JSC::Yarr::interpret*
 }
 
 ############################
