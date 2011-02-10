@@ -32,8 +32,8 @@ class MockAudioInputCallback : public AudioInputStream::AudioInputCallback {
 
 // ============================================================================
 // Validate that the AudioManager::AUDIO_MOCK callbacks work.
-// Flaky, http://crbug.com/49497.
-TEST(FakeAudioInputTest, FLAKY_BasicCallbacks) {
+// Crashes, http://crbug.com/49497.
+TEST(FakeAudioInputTest, DISABLED_BasicCallbacks) {
   MockAudioInputCallback callback;
   EXPECT_CALL(callback, OnData(NotNull(), _, _)).Times(AtLeast(5));
   EXPECT_CALL(callback, OnError(NotNull(), _)).Times(Exactly(0));
