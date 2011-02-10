@@ -37,7 +37,6 @@ class UserCrosSettingsProvider;
 // the user logs in (or chooses to see other settings).
 class ExistingUserController : public LoginDisplay::Delegate,
                                public NotificationObserver,
-                               public WmMessageListener::Observer,
                                public LoginPerformer::Delegate,
                                public CaptchaView::Delegate,
                                public PasswordChangedView::Delegate {
@@ -76,10 +75,6 @@ class ExistingUserController : public LoginDisplay::Delegate,
   friend class MockLoginPerformerDelegate;
 
   ~ExistingUserController();
-
-  // WmMessageListener::Observer:
-  virtual void ProcessWmMessage(const WmIpc::Message& message,
-                                GdkWindow* window);
 
   // LoginPerformer::Delegate implementation:
   virtual void OnLoginFailure(const LoginFailure& error);
@@ -149,7 +144,8 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // logins for the same user.
   size_t num_login_attempts_;
 
-  // See comment in ProcessWmMessage.
+  // Timer which is used to defer deleting and gave abitility to WM to smoothly
+  // hide the windows.
   base::OneShotTimer<ExistingUserController> delete_timer_;
 
   // Pointer to the current instance of the controller to be used by

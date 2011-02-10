@@ -173,6 +173,10 @@ void ViewsLoginDisplay::OnUserRemoved(const std::string& username) {
   EnableTooltipsIfNeeded(controllers_);
 }
 
+void ViewsLoginDisplay::OnFadeOut() {
+  controllers_[selected_view_index_]->StopThrobber();
+}
+
 void ViewsLoginDisplay::SetUIEnabled(bool is_enabled) {
   // Send message to WM to enable/disable click on windows.
   WmIpc::Message message(WM_IPC_MESSAGE_WM_SET_LOGIN_STATE);

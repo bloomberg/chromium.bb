@@ -64,6 +64,10 @@ class LoginDisplay {
   // Called right after user removal process has been initiated.
   virtual void OnUserRemoved(const std::string& username) = 0;
 
+  // After this call login display should be ready to be smoothly destroyed
+  // (e.g. hide throbber, etc.).
+  virtual void OnFadeOut() = 0;
+
   // Changes enabled state of the UI.
   virtual void SetUIEnabled(bool is_enabled) = 0;
 

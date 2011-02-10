@@ -40,6 +40,7 @@ class ViewsLoginDisplay : public LoginDisplay,
   virtual void OnBeforeUserRemoved(const std::string& username);
   virtual void OnUserImageChanged(UserManager::User* user);
   virtual void OnUserRemoved(const std::string& username);
+  virtual void OnFadeOut();
   virtual void SetUIEnabled(bool is_enabled);
   virtual void ShowError(int error_msg_id,
                          int login_attempts,
@@ -96,4 +97,3 @@ class ViewsLoginDisplay : public LoginDisplay,
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_VIEWS_LOGIN_DISPLAY_H_
-

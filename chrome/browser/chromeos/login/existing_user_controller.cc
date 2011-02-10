@@ -151,8 +151,6 @@ void ExistingUserController::Init(const UserVector& users) {
   login_display_->set_parent_window(GetNativeWindow());
   login_display_->Init(filtered_users, show_guest, show_new_user);
 
-  WmMessageListener::GetInstance()->AddObserver(this);
-
   LoginUtils::Get()->PrewarmAuthentication();
   if (CrosLibrary::Get()->EnsureLoaded())
     CrosLibrary::Get()->GetLoginLibrary()->EmitLoginPromptReady();
@@ -187,22 +185,8 @@ ExistingUserController::~ExistingUserController() {
   if (background_window_)
     background_window_->Close();
 
-  WmMessageListener::GetInstance()->RemoveObserver(this);
-
   DCHECK(current_controller_ != NULL);
   current_controller_ = NULL;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// ExistingUserController, WmMessageListener::Observer implementation:
-//
-
-void ExistingUserController::ProcessWmMessage(const WmIpc::Message& message,
-                                              GdkWindow* window) {
-  if (message.type() != WM_IPC_MESSAGE_CHROME_CREATE_GUEST_WINDOW)
-    return;
-
-  ActivateWizard(std::string());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -393,14 +377,11 @@ void ExistingUserController::OnLoginSuccess(
                                      password,
                                      credentials,
                                      pending_requests);
+
     ActivateWizard(WizardController::IsDeviceRegistered() ?
         WizardController::kUserImageScreenName :
         WizardController::kRegistrationScreenName);
   } else {
-    // Hide the login windows now.
-    WmIpc::Message message(WM_IPC_MESSAGE_WM_HIDE_LOGIN);
-    WmIpc::instance()->SendMessage(message);
-
     LoginUtils::Get()->CompleteLogin(username,
                                      password,
                                      credentials,
@@ -492,6 +473,8 @@ void ExistingUserController::ActivateWizard(const std::string& screen_name) {
   controller->Init(screen_name, background_bounds_);
   if (chromeos::UserManager::Get()->IsLoggedInAsGuest())
     controller->set_start_url(guest_mode_url_);
+
+  login_display_->OnFadeOut();
 
   delete_timer_.Start(base::TimeDelta::FromSeconds(1), this,
                       &ExistingUserController::Delete);
