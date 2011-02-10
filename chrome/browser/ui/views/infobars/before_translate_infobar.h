@@ -34,10 +34,6 @@ class BeforeTranslateInfoBar : public TranslateInfoBarBase,
   // views::ViewMenuDelegate:
   virtual void RunMenu(View* source, const gfx::Point& pt);
 
-  // Sets the text of the original language menu button to reflect the current
-  // value from the delegate.
-  void UpdateOriginalButtonText();
-
   // The text displayed in the infobar is something like:
   // "The page is in <lang>. Would you like to translate it?"
   // ...where <lang> is a combobox.  So the text is split in 2 chunks, each

@@ -120,6 +120,19 @@ void TranslateInfoBarBase::Layout() {
                    icon_size.width(), icon_size.height());
 }
 
+void TranslateInfoBarBase::UpdateLanguageButtonText(
+    views::MenuButton* button,
+    LanguagesMenuModel::LanguageType language_type) {
+  TranslateInfoBarDelegate* delegate = GetDelegate();
+  button->SetText(UTF16ToWideHack(delegate->GetLanguageDisplayableNameAt(
+      (language_type == LanguagesMenuModel::ORIGINAL) ?
+          delegate->original_language_index() :
+          delegate->target_language_index())));
+  // The button may have to grow to show the new text.
+  Layout();
+  SchedulePaint();
+}
+
 TranslateInfoBarDelegate* TranslateInfoBarBase::GetDelegate() {
   return delegate()->AsTranslateInfoBarDelegate();
 }

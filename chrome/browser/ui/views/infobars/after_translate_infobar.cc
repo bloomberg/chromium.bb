@@ -54,8 +54,8 @@ AfterTranslateInfoBar::AfterTranslateInfoBar(
       l10n_util::GetStringUTF16(IDS_TRANSLATE_INFOBAR_OPTIONS), false, this);
   AddChildView(options_menu_button_);
 
-  UpdateLanguageButtonText(LanguagesMenuModel::ORIGINAL);
-  UpdateLanguageButtonText(LanguagesMenuModel::TARGET);
+  OriginalLanguageChanged();
+  TargetLanguageChanged();
 }
 
 AfterTranslateInfoBar::~AfterTranslateInfoBar() {
@@ -101,20 +101,22 @@ void AfterTranslateInfoBar::Layout() {
       OffsetY(this, options_size), options_size.width(), options_size.height());
 }
 
-void AfterTranslateInfoBar::OriginalLanguageChanged() {
-  UpdateLanguageButtonText(LanguagesMenuModel::ORIGINAL);
-}
-
-void AfterTranslateInfoBar::TargetLanguageChanged() {
-  UpdateLanguageButtonText(LanguagesMenuModel::TARGET);
-}
-
 void AfterTranslateInfoBar::ButtonPressed(views::Button* sender,
                                           const views::Event& event) {
   if (sender == revert_button_)
     GetDelegate()->RevertTranslation();
   else
     TranslateInfoBarBase::ButtonPressed(sender, event);
+}
+
+void AfterTranslateInfoBar::OriginalLanguageChanged() {
+  UpdateLanguageButtonText(original_language_menu_button_,
+                           LanguagesMenuModel::ORIGINAL);
+}
+
+void AfterTranslateInfoBar::TargetLanguageChanged() {
+  UpdateLanguageButtonText(target_language_menu_button_,
+                           LanguagesMenuModel::TARGET);
 }
 
 void AfterTranslateInfoBar::RunMenu(View* source, const gfx::Point& pt) {
@@ -136,25 +138,4 @@ void AfterTranslateInfoBar::RunMenu(View* source, const gfx::Point& pt) {
       options_menu_.reset(new views::Menu2(&options_menu_model_));
     options_menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
   }
-}
-
-void AfterTranslateInfoBar::UpdateLanguageButtonText(
-    LanguagesMenuModel::LanguageType language_type) {
-  int language_index;
-  views::MenuButton* language_button;
-  if (language_type == LanguagesMenuModel::ORIGINAL) {
-    language_index = GetDelegate()->original_language_index();
-    language_button = original_language_menu_button_;
-  } else {
-    language_index = GetDelegate()->target_language_index();
-    language_button = target_language_menu_button_;
-  }
-  string16 language =
-      GetDelegate()->GetLanguageDisplayableNameAt(language_index);
-  language_button->SetText(UTF16ToWideHack(language));
-  // The following line is necessary for the preferred size to be recomputed.
-  language_button->ClearMaxTextSize();
-  // The button may have to grow to show the new text.
-  Layout();
-  SchedulePaint();
 }

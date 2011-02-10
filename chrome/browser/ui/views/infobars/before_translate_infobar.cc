@@ -59,7 +59,7 @@ BeforeTranslateInfoBar::BeforeTranslateInfoBar(
       l10n_util::GetStringUTF16(IDS_TRANSLATE_INFOBAR_OPTIONS), false, this);
   AddChildView(options_menu_button_);
 
-  UpdateOriginalButtonText();
+  OriginalLanguageChanged();
 }
 
 BeforeTranslateInfoBar::~BeforeTranslateInfoBar() {
@@ -134,7 +134,7 @@ void BeforeTranslateInfoBar::ButtonPressed(views::Button* sender,
 }
 
 void BeforeTranslateInfoBar::OriginalLanguageChanged() {
-  UpdateOriginalButtonText();
+  UpdateLanguageButtonText(language_menu_button_, LanguagesMenuModel::ORIGINAL);
 }
 
 void BeforeTranslateInfoBar::RunMenu(View* source, const gfx::Point& pt) {
@@ -148,15 +148,4 @@ void BeforeTranslateInfoBar::RunMenu(View* source, const gfx::Point& pt) {
       options_menu_.reset(new views::Menu2(&options_menu_model_));
     options_menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
   }
-}
-
-void BeforeTranslateInfoBar::UpdateOriginalButtonText() {
-  string16 language = GetDelegate()->GetLanguageDisplayableNameAt(
-      GetDelegate()->original_language_index());
-  language_menu_button_->SetText(UTF16ToWideHack(language));
-  // The following line is necessary for the preferred size to be recomputed.
-  language_menu_button_->ClearMaxTextSize();
-  // The button may have to grow to show the new text.
-  Layout();
-  SchedulePaint();
 }
