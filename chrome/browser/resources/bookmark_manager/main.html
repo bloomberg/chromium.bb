@@ -1655,7 +1655,8 @@ function handleCommand(e) {
       break;
     case 'paste-command':
       selectItemsAfterUserAction(list);
-      chrome.experimental.bookmarkManager.paste(list.parentId);
+      chrome.experimental.bookmarkManager.paste(list.parentId,
+                                                getSelectedBookmarkIds());
       break;
     case 'sort-command':
       chrome.experimental.bookmarkManager.sortChildren(list.parentId);

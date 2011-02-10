@@ -43,10 +43,10 @@ const BookmarkNode* GetNodeFromArguments(BookmarkModel* model,
 // Gets a vector of bookmark nodes from the argument list of IDs.
 // This returns false in the case of failure.
 bool GetNodesFromArguments(BookmarkModel* model, const ListValue* args,
-    std::vector<const BookmarkNode*>* nodes) {
+    size_t args_index, std::vector<const BookmarkNode*>* nodes) {
 
   ListValue* ids;
-  if (!args->GetList(0, &ids))
+  if (!args->GetList(args_index, &ids))
     return false;
 
   size_t count = ids->GetSize();
@@ -214,7 +214,7 @@ bool ClipboardBookmarkManagerFunction::CopyOrCut(bool cut) {
   BookmarkModel* model = profile()->GetBookmarkModel();
   std::vector<const BookmarkNode*> nodes;
   EXTENSION_FUNCTION_VALIDATE(GetNodesFromArguments(model, args_.get(),
-                                                    &nodes));
+                                                    0, &nodes));
   bookmark_utils::CopyToClipboard(model, nodes, cut);
   return true;
 }
@@ -237,7 +237,20 @@ bool PasteBookmarkManagerFunction::RunImpl() {
   bool can_paste = bookmark_utils::CanPasteFromClipboard(parent_node);
   if (!can_paste)
     return false;
-  bookmark_utils::PasteFromClipboard(model, parent_node, -1);
+
+  // We want to use the highest index of the selected nodes as a destination.
+  std::vector<const BookmarkNode*> nodes;
+  // No need to test return value, if we got an empty list, we insert at end.
+  GetNodesFromArguments(model, args_.get(), 1, &nodes);
+  int highest_index = -1;  // -1 means insert at end of list.
+  for (size_t node = 0; node < nodes.size(); ++node) {
+    // + 1 so that we insert after the selection.
+    int this_node_index = parent_node->IndexOfChild(nodes[node]) + 1;
+    if (this_node_index > highest_index)
+      highest_index = this_node_index;
+  }
+
+  bookmark_utils::PasteFromClipboard(model, parent_node, highest_index);
   return true;
 }
 
@@ -340,7 +353,7 @@ bool StartDragBookmarkManagerFunction::RunImpl() {
   BookmarkModel* model = profile()->GetBookmarkModel();
   std::vector<const BookmarkNode*> nodes;
   EXTENSION_FUNCTION_VALIDATE(
-      GetNodesFromArguments(model, args_.get(), &nodes));
+      GetNodesFromArguments(model, args_.get(), 0, &nodes));
 
   if (dispatcher()->render_view_host()->delegate()->GetRenderViewType() ==
       ViewType::TAB_CONTENTS) {

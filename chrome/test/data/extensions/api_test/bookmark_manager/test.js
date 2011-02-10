@@ -7,7 +7,7 @@ const assertEq = chrome.test.assertEq;
 const assertTrue = chrome.test.assertTrue;
 const bookmarks = chrome.bookmarks;
 const bookmarkManager = chrome.experimental.bookmarkManager;
-var node, node2, count, emptyFolder, emptyFolder2;
+var fooNode, fooNode2, barNode, gooNode, count, emptyFolder, emptyFolder2;
 var folder, nodeA, nodeB;
 var childFolder, grandChildFolder, childNodeA, childNodeB;
 
@@ -111,33 +111,58 @@ var tests = [
   // operations to finish.
   function clipboard() {
     // Create a new bookmark.
-    node = {
+    fooNode = {
       parentId: '1',
       title: 'Foo',
       url: 'http://www.example.com/foo'
     };
-    
+
     emptyFolder = {
       parentId: '1',
       title: 'Empty Folder'
     }
 
-    bookmarks.create(node, pass(function(result) {
-      node.id = result.id;
-      node.index = result.index;
+    bookmarks.create(fooNode, pass(function(result) {
+      fooNode.id = result.id;
+      fooNode.index = result.index;
       count = result.index + 1;
     }));
-    
+
     bookmarks.create(emptyFolder, pass(function(result) {
       emptyFolder.id = result.id;
       emptyFolder.index = result.index;
       count = result.index + 1;
     }));
+
+    // Create a couple more bookmarks to test proper insertion of pasted items.
+    barNode = {
+      parentId: '1',
+      title: 'Bar',
+      url: 'http://www.example.com/bar'
+    };
+
+    bookmarks.create(barNode, pass(function(result) {
+      barNode.id = result.id;
+      barNode.index = result.index;
+      count = result.index + 1;
+    }));
+
+    gooNode = {
+      parentId: '1',
+      title: 'Goo',
+      url: 'http://www.example.com/goo'
+    };
+
+    bookmarks.create(gooNode, pass(function(result) {
+      gooNode.id = result.id;
+      gooNode.index = result.index;
+      count = result.index + 1;
+    }));
   },
 
   function clipboard2() {
-    // Copy it.
-    bookmarkManager.copy([node.id]);
+    // Copy the fooNode.
+    bookmarkManager.copy([fooNode.id]);
 
     // Ensure canPaste is now true.
     bookmarkManager.canPaste('1', pass(function(result) {
@@ -147,22 +172,22 @@ var tests = [
     // Paste it.
     bookmarkManager.paste('1');
 
-    // Ensure it got added.
+    // Ensure it got added at the end.
     bookmarks.getChildren('1', pass(function(result) {
       count++;
       assertEq(count, result.length);
 
-      node2 = result[result.length - 1];
+      fooNode2 = result[result.length - 1];
 
-      assertEq(node.title, node2.title);
-      assertEq(node.url, node2.url);
-      assertEq(node.parentId, node2.parentId);
+      assertEq(fooNode.title, fooNode2.title);
+      assertEq(fooNode.url, fooNode2.url);
+      assertEq(fooNode.parentId, fooNode2.parentId);
     }));
   },
 
   function clipboard3() {
-    // Cut this and the previous bookmark.
-    bookmarkManager.cut([node.id, node2.id]);
+    // Cut fooNode bookmarks.
+    bookmarkManager.cut([fooNode.id, fooNode2.id]);
 
     // Ensure count decreased by 2.
     bookmarks.getChildren('1', pass(function(result) {
@@ -177,19 +202,32 @@ var tests = [
   },
 
   function clipboard4() {
-    // Paste.
-    bookmarkManager.paste('1');
+    // Paste the cut bookmarks at a specific position between bar and goo.
+    bookmarkManager.paste('1', [barNode.id]);
 
-    // Check the last two bookmarks.
+    // Check that the two bookmarks were pasted after bar.
     bookmarks.getChildren('1', pass(function(result) {
       count += 2;
       assertEq(count, result.length);
 
-      var last = result[result.length - 2];
-      var last2 = result[result.length - 1];
+      // Look for barNode's index.
+      for (var barIndex = 0; barIndex < result.length; barIndex++) {
+        if (result[barIndex].id == barNode.id)
+          break;
+      }
+      assertTrue(barIndex + 2 < result.length);
+
+      var last = result[barIndex + 1];
+      var last2 = result[barIndex + 2];
+      assertEq(fooNode.title, last.title);
+      assertEq(fooNode.url, last.url);
+      assertEq(fooNode.parentId, last.parentId);
       assertEq(last.title, last2.title);
       assertEq(last.url, last2.url);
       assertEq(last.parentId, last2.parentId);
+
+      // Remember last2 id, so we can use it in next test.
+      fooNode2.id = last2.id;
     }));
   },
 
@@ -203,15 +241,22 @@ var tests = [
       assertTrue(result, 'Should be able to paste now');
     }));
 
-    // Paste it.
-    bookmarkManager.paste('1');
+    // Paste it at the end of a multiple selection.
+    bookmarkManager.paste('1', [barNode.id, fooNode2.id]);
 
-    // Ensure it got added.
+    // Ensure it got added at the right place.
     bookmarks.getChildren('1', pass(function(result) {
       count++;
       assertEq(count, result.length);
 
-      emptyFolder2 = result[result.length - 1];
+      // Look for fooNode2's index.
+      for (var foo2Index = 0; foo2Index < result.length; foo2Index++) {
+        if (result[foo2Index].id == fooNode2.id)
+          break;
+      }
+      assertTrue(foo2Index + 1 < result.length);
+
+      emptyFolder2 = result[foo2Index + 1];
 
       assertEq(emptyFolder2.title, emptyFolder.title);
       assertEq(emptyFolder2.url, emptyFolder.url);
