@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,8 @@
 #include "base/callback.h"
 #include "base/file_path.h"
 #include "base/ref_counted.h"
+#include "base/scoped_ptr.h"
+#include "base/synchronization/lock.h"
 #include "base/time.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
@@ -101,11 +103,42 @@ class CannedBrowsingDataIndexedDBHelper
   virtual void DeleteIndexedDBFile(const FilePath& file_path) {}
 
  private:
+  struct PendingIndexedDBInfo {
+    PendingIndexedDBInfo();
+    PendingIndexedDBInfo(const GURL& origin, const string16& description);
+    ~PendingIndexedDBInfo();
+
+    GURL origin;
+    string16 description;
+  };
+
   virtual ~CannedBrowsingDataIndexedDBHelper();
+
+  // Convert the pending indexed db info to indexed db info objects.
+  void ConvertPendingInfoInWebKitThread();
+
+  void NotifyInUIThread();
 
   Profile* profile_;
 
+  // Lock to protect access to pending_indexed_db_info_;
+  mutable base::Lock lock_;
+
+  // This may mutate on WEBKIT and UI threads.
+  std::vector<PendingIndexedDBInfo> pending_indexed_db_info_;
+
+  // This only mutates on the WEBKIT thread.
   std::vector<IndexedDBInfo> indexed_db_info_;
+
+  // This only mutates on the UI thread.
+  scoped_ptr<Callback1<const std::vector<IndexedDBInfo>& >::Type >
+      completion_callback_;
+
+  // Indicates whether or not we're currently fetching information:
+  // it's true when StartFetching() is called in the UI thread, and it's reset
+  // after we notified the callback in the UI thread.
+  // This only mutates on the UI thread.
+  bool is_fetching_;
 
   DISALLOW_COPY_AND_ASSIGN(CannedBrowsingDataIndexedDBHelper);
 };

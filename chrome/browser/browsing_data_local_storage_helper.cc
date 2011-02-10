@@ -16,6 +16,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "webkit/glue/webkit_glue.h"
 
+using WebKit::WebSecurityOrigin;
+
 BrowsingDataLocalStorageHelper::LocalStorageInfo::LocalStorageInfo() {}
 
 BrowsingDataLocalStorageHelper::LocalStorageInfo::LocalStorageInfo(
@@ -91,8 +93,8 @@ void BrowsingDataLocalStorageHelper::FetchLocalStorageInfoInWebKitThread() {
   for (FilePath file_path = file_enumerator.Next(); !file_path.empty();
        file_path = file_enumerator.Next()) {
     if (file_path.Extension() == DOMStorageContext::kLocalStorageExtension) {
-      WebKit::WebSecurityOrigin web_security_origin =
-          WebKit::WebSecurityOrigin::createFromDatabaseIdentifier(
+      WebSecurityOrigin web_security_origin =
+          WebSecurityOrigin::createFromDatabaseIdentifier(
               webkit_glue::FilePathToWebString(file_path.BaseName()));
       if (EqualsASCII(web_security_origin.protocol(),
                       chrome::kExtensionScheme)) {
@@ -147,40 +149,72 @@ CannedBrowsingDataLocalStorageHelper::CannedBrowsingDataLocalStorageHelper(
 
 void CannedBrowsingDataLocalStorageHelper::AddLocalStorage(
     const GURL& origin) {
-  WebKit::WebSecurityOrigin web_security_origin =
-      WebKit::WebSecurityOrigin::createFromString(
-          UTF8ToUTF16(origin.spec()));
-  std::string security_origin(web_security_origin.toString().utf8());
-
-  for (std::vector<LocalStorageInfo>::iterator
-       local_storage = local_storage_info_.begin();
-       local_storage != local_storage_info_.end(); ++local_storage) {
-    if (local_storage->origin == security_origin)
-      return;
-  }
-
-  local_storage_info_.push_back(LocalStorageInfo(
-      web_security_origin.protocol().utf8(),
-      web_security_origin.host().utf8(),
-      web_security_origin.port(),
-      web_security_origin.databaseIdentifier().utf8(),
-      security_origin,
-      profile_->GetWebKitContext()->dom_storage_context()->
-          GetLocalStorageFilePath(web_security_origin.databaseIdentifier()),
-      0,
-      base::Time()));
+  base::AutoLock auto_lock(lock_);
+  pending_local_storage_info_.push_back(origin);
 }
 
 void CannedBrowsingDataLocalStorageHelper::Reset() {
+  base::AutoLock auto_lock(lock_);
   local_storage_info_.clear();
+  pending_local_storage_info_.clear();
 }
 
 bool CannedBrowsingDataLocalStorageHelper::empty() const {
-  return local_storage_info_.empty();
+  base::AutoLock auto_lock(lock_);
+  return local_storage_info_.empty() && pending_local_storage_info_.empty();
 }
 
 void CannedBrowsingDataLocalStorageHelper::StartFetching(
     Callback1<const std::vector<LocalStorageInfo>& >::Type* callback) {
-  callback->Run(local_storage_info_);
-  delete callback;
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!is_fetching_);
+  DCHECK(callback);
+  is_fetching_ = true;
+  completion_callback_.reset(callback);
+  BrowserThread::PostTask(
+      BrowserThread::WEBKIT, FROM_HERE,
+      NewRunnableMethod(
+          this,
+          &CannedBrowsingDataLocalStorageHelper::
+              ConvertPendingInfoInWebKitThread));
+}
+
+void CannedBrowsingDataLocalStorageHelper::ConvertPendingInfoInWebKitThread() {
+  base::AutoLock auto_lock(lock_);
+  for (std::vector<GURL>::iterator info = pending_local_storage_info_.begin();
+       info != pending_local_storage_info_.end(); ++info) {
+    WebSecurityOrigin web_security_origin =
+        WebSecurityOrigin::createFromString(
+            UTF8ToUTF16(info->spec()));
+    std::string security_origin(web_security_origin.toString().utf8());
+
+    bool duplicate = false;
+    for (std::vector<LocalStorageInfo>::iterator
+         local_storage = local_storage_info_.begin();
+         local_storage != local_storage_info_.end(); ++local_storage) {
+      if (local_storage->origin == security_origin) {
+        duplicate = true;
+        break;
+      }
+    }
+    if (duplicate)
+      continue;
+
+    local_storage_info_.push_back(LocalStorageInfo(
+        web_security_origin.protocol().utf8(),
+        web_security_origin.host().utf8(),
+        web_security_origin.port(),
+        web_security_origin.databaseIdentifier().utf8(),
+        security_origin,
+        profile_->GetWebKitContext()->dom_storage_context()->
+            GetLocalStorageFilePath(web_security_origin.databaseIdentifier()),
+        0,
+        base::Time()));
+  }
+  pending_local_storage_info_.clear();
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(
+          this, &CannedBrowsingDataLocalStorageHelper::NotifyInUIThread));
 }

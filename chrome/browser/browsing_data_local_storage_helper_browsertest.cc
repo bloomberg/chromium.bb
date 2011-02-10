@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "base/ref_counted.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/in_process_webkit/webkit_thread.h"
+#include "chrome/browser/browsing_data_helper_browsertest.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/testing_profile.h"
@@ -18,19 +19,23 @@
 #include "chrome/test/ui_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-static const FilePath::CharType kTestFile0[] =
+namespace {
+typedef
+    BrowsingDataHelperCallback<BrowsingDataLocalStorageHelper::LocalStorageInfo>
+    TestCompletionCallback;
+
+const FilePath::CharType kTestFile0[] =
     FILE_PATH_LITERAL("http_www.chromium.org_0.localstorage");
 
-static const FilePath::CharType kTestFile1[] =
+const FilePath::CharType kTestFile1[] =
     FILE_PATH_LITERAL("http_www.google.com_0.localstorage");
 
-static const FilePath::CharType kTestFileInvalid[] =
+const FilePath::CharType kTestFileInvalid[] =
     FILE_PATH_LITERAL("http_www.google.com_localstorage_0.foo");
 
 // This is only here to test that extension state is not listed by the helper.
-static const FilePath::CharType kTestFileExtension[] = FILE_PATH_LITERAL(
+const FilePath::CharType kTestFileExtension[] = FILE_PATH_LITERAL(
     "chrome-extension_behllobkkfkfnphdnhnkndlbkcpglgmj_0.localstorage");
-
 
 class BrowsingDataLocalStorageHelperTest : public InProcessBrowserTest {
  protected:
@@ -128,3 +133,51 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest, DeleteSingleFile) {
   }
   ASSERT_EQ(3, num_files);
 }
+
+IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest,
+                       CannedAddLocalStorage) {
+  const GURL origin1("http://host1:1/");
+  const GURL origin2("http://host2:1/");
+  const FilePath::CharType file1[] =
+      FILE_PATH_LITERAL("http_host1_1.localstorage");
+  const FilePath::CharType file2[] =
+      FILE_PATH_LITERAL("http_host2_1.localstorage");
+
+  scoped_refptr<CannedBrowsingDataLocalStorageHelper> helper(
+      new CannedBrowsingDataLocalStorageHelper(&testing_profile_));
+  helper->AddLocalStorage(origin1);
+  helper->AddLocalStorage(origin2);
+
+  TestCompletionCallback callback;
+  helper->StartFetching(
+      NewCallback(&callback, &TestCompletionCallback::callback));
+
+  std::vector<BrowsingDataLocalStorageHelper::LocalStorageInfo> result =
+      callback.result();
+
+  ASSERT_EQ(2u, result.size());
+  EXPECT_EQ(FilePath(file1).value(), result[0].file_path.BaseName().value());
+  EXPECT_EQ(FilePath(file2).value(), result[1].file_path.BaseName().value());
+}
+
+IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest, CannedUnique) {
+  const GURL origin("http://host1:1/");
+  const FilePath::CharType file[] =
+      FILE_PATH_LITERAL("http_host1_1.localstorage");
+
+  scoped_refptr<CannedBrowsingDataLocalStorageHelper> helper(
+      new CannedBrowsingDataLocalStorageHelper(&testing_profile_));
+  helper->AddLocalStorage(origin);
+  helper->AddLocalStorage(origin);
+
+  TestCompletionCallback callback;
+  helper->StartFetching(
+      NewCallback(&callback, &TestCompletionCallback::callback));
+
+  std::vector<BrowsingDataLocalStorageHelper::LocalStorageInfo> result =
+      callback.result();
+
+  ASSERT_EQ(1u, result.size());
+  EXPECT_EQ(FilePath(file).value(), result[0].file_path.BaseName().value());
+}
+}  // namespace

@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/file_path.h"
 #include "base/scoped_ptr.h"
+#include "base/synchronization/lock.h"
 #include "base/time.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
@@ -74,7 +75,20 @@ class BrowsingDataLocalStorageHelper
   friend class base::RefCountedThreadSafe<BrowsingDataLocalStorageHelper>;
   virtual ~BrowsingDataLocalStorageHelper();
 
+  // Notifies the completion callback in the UI thread.
+  void NotifyInUIThread();
+
   Profile* profile_;
+
+  // This only mutates on the UI thread.
+  scoped_ptr<Callback1<const std::vector<LocalStorageInfo>& >::Type >
+      completion_callback_;
+
+  // Indicates whether or not we're currently fetching information:
+  // it's true when StartFetching() is called in the UI thread, and it's reset
+  // after we notified the callback in the UI thread.
+  // This only mutates on the UI thread.
+  bool is_fetching_;
 
   // This only mutates in the WEBKIT thread.
   std::vector<LocalStorageInfo> local_storage_info_;
@@ -82,19 +96,8 @@ class BrowsingDataLocalStorageHelper
  private:
   // Enumerates all local storage files in the WEBKIT thread.
   void FetchLocalStorageInfoInWebKitThread();
-  // Notifies the completion callback in the UI thread.
-  void NotifyInUIThread();
   // Delete a single local storage file in the WEBKIT thread.
   void DeleteLocalStorageFileInWebKitThread(const FilePath& file_path);
-
-  // This only mutates on the UI thread.
-  scoped_ptr<Callback1<const std::vector<LocalStorageInfo>& >::Type >
-      completion_callback_;
-  // Indicates whether or not we're currently fetching information:
-  // it's true when StartFetching() is called in the UI thread, and it's reset
-  // after we notified the callback in the UI thread.
-  // This only mutates on the UI thread.
-  bool is_fetching_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataLocalStorageHelper);
 };
@@ -124,6 +127,15 @@ class CannedBrowsingDataLocalStorageHelper
 
  private:
   virtual ~CannedBrowsingDataLocalStorageHelper() {}
+
+  // Convert the pending local storage info to local storage info objects.
+  void ConvertPendingInfoInWebKitThread();
+
+  // Used to protect access to pending_local_storage_info_.
+  mutable base::Lock lock_;
+
+  // May mutate on WEBKIT and UI threads.
+  std::vector<GURL> pending_local_storage_info_;
 
   DISALLOW_COPY_AND_ASSIGN(CannedBrowsingDataLocalStorageHelper);
 };

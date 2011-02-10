@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
+
+using WebKit::WebSecurityOrigin;
 
 BrowsingDataDatabaseHelper::DatabaseInfo::DatabaseInfo() {}
 
@@ -43,9 +45,9 @@ bool BrowsingDataDatabaseHelper::DatabaseInfo::IsFileSchemeData() {
 }
 
 BrowsingDataDatabaseHelper::BrowsingDataDatabaseHelper(Profile* profile)
-    : tracker_(profile->GetDatabaseTracker()),
-      completion_callback_(NULL),
-      is_fetching_(false) {
+    : completion_callback_(NULL),
+      is_fetching_(false),
+      tracker_(profile->GetDatabaseTracker()) {
 }
 
 BrowsingDataDatabaseHelper::~BrowsingDataDatabaseHelper() {
@@ -59,8 +61,8 @@ void BrowsingDataDatabaseHelper::StartFetching(
   is_fetching_ = true;
   database_info_.clear();
   completion_callback_.reset(callback);
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, NewRunnableMethod(
-      this, &BrowsingDataDatabaseHelper::FetchDatabaseInfoInFileThread));
+  BrowserThread::PostTask(BrowserThread::WEBKIT, FROM_HERE, NewRunnableMethod(
+      this, &BrowsingDataDatabaseHelper::FetchDatabaseInfoInWebKitThread));
 }
 
 void BrowsingDataDatabaseHelper::CancelNotification() {
@@ -71,13 +73,13 @@ void BrowsingDataDatabaseHelper::CancelNotification() {
 void BrowsingDataDatabaseHelper::DeleteDatabase(const std::string& origin,
                                                 const std::string& name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, NewRunnableMethod(
-      this, &BrowsingDataDatabaseHelper::DeleteDatabaseInFileThread, origin,
+  BrowserThread::PostTask(BrowserThread::WEBKIT, FROM_HERE, NewRunnableMethod(
+      this, &BrowsingDataDatabaseHelper::DeleteDatabaseInWebKitThread, origin,
       name));
 }
 
-void BrowsingDataDatabaseHelper::FetchDatabaseInfoInFileThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+void BrowsingDataDatabaseHelper::FetchDatabaseInfoInWebKitThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   std::vector<webkit_database::OriginInfo> origins_info;
   if (tracker_.get() && tracker_->GetAllOriginsInfo(&origins_info)) {
     for (std::vector<webkit_database::OriginInfo>::const_iterator ori =
@@ -89,8 +91,8 @@ void BrowsingDataDatabaseHelper::FetchDatabaseInfoInFileThread() {
         // Extension state is not considered browsing data.
         continue;
       }
-      WebKit::WebSecurityOrigin web_security_origin =
-          WebKit::WebSecurityOrigin::createFromDatabaseIdentifier(
+      WebSecurityOrigin web_security_origin =
+          WebSecurityOrigin::createFromDatabaseIdentifier(
               ori->GetOrigin());
       std::vector<string16> databases;
       ori->GetAllDatabaseNames(&databases);
@@ -129,14 +131,27 @@ void BrowsingDataDatabaseHelper::NotifyInUIThread() {
   database_info_.clear();
 }
 
-void BrowsingDataDatabaseHelper::DeleteDatabaseInFileThread(
+void BrowsingDataDatabaseHelper::DeleteDatabaseInWebKitThread(
     const std::string& origin,
     const std::string& name) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   if (!tracker_.get())
     return;
   tracker_->DeleteDatabase(UTF8ToUTF16(origin), UTF8ToUTF16(name), NULL);
 }
+
+CannedBrowsingDataDatabaseHelper::PendingDatabaseInfo::PendingDatabaseInfo() {}
+
+CannedBrowsingDataDatabaseHelper::PendingDatabaseInfo::PendingDatabaseInfo(
+    const GURL& origin,
+    const std::string& name,
+    const std::string& description)
+    : origin(origin),
+      name(name),
+      description(description) {
+}
+
+CannedBrowsingDataDatabaseHelper::PendingDatabaseInfo::~PendingDatabaseInfo() {}
 
 CannedBrowsingDataDatabaseHelper::CannedBrowsingDataDatabaseHelper(
     Profile* profile)
@@ -147,39 +162,67 @@ void CannedBrowsingDataDatabaseHelper::AddDatabase(
     const GURL& origin,
     const std::string& name,
     const std::string& description) {
-  WebKit::WebSecurityOrigin web_security_origin =
-      WebKit::WebSecurityOrigin::createFromString(
-          UTF8ToUTF16(origin.spec()));
-  std::string origin_identifier =
-      web_security_origin.databaseIdentifier().utf8();
-
-  for (std::vector<DatabaseInfo>::iterator database = database_info_.begin();
-       database != database_info_.end(); ++database) {
-    if (database->origin_identifier == origin_identifier &&
-        database->database_name == name)
-      return;
-  }
-
-  database_info_.push_back(DatabaseInfo(
-        web_security_origin.host().utf8(),
-        name,
-        origin_identifier,
-        description,
-        web_security_origin.toString().utf8(),
-        0,
-        base::Time()));
+  base::AutoLock auto_lock(lock_);
+  pending_database_info_.push_back(PendingDatabaseInfo(
+        origin, name, description));
 }
 
 void CannedBrowsingDataDatabaseHelper::Reset() {
+  base::AutoLock auto_lock(lock_);
   database_info_.clear();
+  pending_database_info_.clear();
 }
 
 bool CannedBrowsingDataDatabaseHelper::empty() const {
- return database_info_.empty();
+  base::AutoLock auto_lock(lock_);
+ return database_info_.empty() && pending_database_info_.empty();
 }
 
 void CannedBrowsingDataDatabaseHelper::StartFetching(
     Callback1<const std::vector<DatabaseInfo>& >::Type* callback) {
-  callback->Run(database_info_);
-  delete callback;
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!is_fetching_);
+  DCHECK(callback);
+  is_fetching_ = true;
+  completion_callback_.reset(callback);
+  BrowserThread::PostTask(BrowserThread::WEBKIT, FROM_HERE, NewRunnableMethod(
+      this, &CannedBrowsingDataDatabaseHelper::ConvertInfoInWebKitThread));
+}
+
+void CannedBrowsingDataDatabaseHelper::ConvertInfoInWebKitThread() {
+  base::AutoLock auto_lock(lock_);
+  for (std::vector<PendingDatabaseInfo>::const_iterator
+       info = pending_database_info_.begin();
+       info != pending_database_info_.end(); ++info) {
+    WebSecurityOrigin web_security_origin =
+        WebSecurityOrigin::createFromString(
+            UTF8ToUTF16(info->origin.spec()));
+    std::string origin_identifier =
+        web_security_origin.databaseIdentifier().utf8();
+
+    bool duplicate = false;
+    for (std::vector<DatabaseInfo>::iterator database = database_info_.begin();
+         database != database_info_.end(); ++database) {
+      if (database->origin_identifier == origin_identifier &&
+          database->database_name == info->name) {
+        duplicate = true;
+        break;
+      }
+    }
+    if (duplicate)
+      continue;
+
+    database_info_.push_back(DatabaseInfo(
+        web_security_origin.host().utf8(),
+        info->name,
+        origin_identifier,
+        info->description,
+        web_security_origin.toString().utf8(),
+        0,
+        base::Time()));
+  }
+  pending_database_info_.clear();
+
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, NewRunnableMethod(
+      this, &CannedBrowsingDataDatabaseHelper::NotifyInUIThread));
 }

@@ -2036,6 +2036,8 @@
         'browser/autofill/form_structure_browsertest.cc',
         'browser/browser_browsertest.cc',
         'browser/browsing_data_database_helper_browsertest.cc',
+        'browser/browsing_data_helper_browsertest.h',
+        'browser/browsing_data_indexed_db_helper_browsertest.cc',
         'browser/browsing_data_local_storage_helper_browsertest.cc',
         'browser/child_process_security_policy_browsertest.cc',
         'browser/chromeos/cros/cros_in_process_browser_test.cc',

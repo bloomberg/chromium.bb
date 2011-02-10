@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -109,7 +109,7 @@ void BrowsingDataIndexedDBHelperImpl::FetchIndexedDBInfoInWebKitThread() {
        file_path = file_enumerator.Next()) {
     if (file_path.Extension() == IndexedDBContext::kIndexedDBExtension) {
       WebSecurityOrigin web_security_origin =
-          WebKit::WebSecurityOrigin::createFromDatabaseIdentifier(
+          WebSecurityOrigin::createFromDatabaseIdentifier(
               webkit_glue::FilePathToWebString(file_path.BaseName()));
       if (EqualsASCII(web_security_origin.protocol(),
                       chrome::kExtensionScheme)) {
@@ -185,50 +185,109 @@ BrowsingDataIndexedDBHelper* BrowsingDataIndexedDBHelper::Create(
   return new BrowsingDataIndexedDBHelperImpl(profile);
 }
 
+CannedBrowsingDataIndexedDBHelper::
+PendingIndexedDBInfo::PendingIndexedDBInfo() {
+}
+
+CannedBrowsingDataIndexedDBHelper::
+PendingIndexedDBInfo::PendingIndexedDBInfo(const GURL& origin,
+                                           const string16& description)
+    : origin(origin),
+      description(description) {
+}
+
+CannedBrowsingDataIndexedDBHelper::
+PendingIndexedDBInfo::~PendingIndexedDBInfo() {
+}
+
 CannedBrowsingDataIndexedDBHelper::CannedBrowsingDataIndexedDBHelper(
     Profile* profile)
-    : profile_(profile) {
+    : profile_(profile),
+      completion_callback_(NULL),
+      is_fetching_(false) {
   DCHECK(profile);
 }
 
 void CannedBrowsingDataIndexedDBHelper::AddIndexedDB(
     const GURL& origin, const string16& description) {
-  WebSecurityOrigin web_security_origin =
-      WebSecurityOrigin::createFromString(
-          UTF8ToUTF16(origin.spec()));
-  std::string security_origin(web_security_origin.toString().utf8());
-
-  for (std::vector<IndexedDBInfo>::iterator
-       indexed_db = indexed_db_info_.begin();
-       indexed_db != indexed_db_info_.end(); ++indexed_db) {
-    if (indexed_db->origin == security_origin)
-      return;
-  }
-
-  indexed_db_info_.push_back(IndexedDBInfo(
-      web_security_origin.protocol().utf8(),
-      web_security_origin.host().utf8(),
-      web_security_origin.port(),
-      web_security_origin.databaseIdentifier().utf8(),
-      security_origin,
-      profile_->GetWebKitContext()->indexed_db_context()->
-          GetIndexedDBFilePath(web_security_origin.databaseIdentifier()),
-      0,
-      base::Time()));
+  base::AutoLock auto_lock(lock_);
+  pending_indexed_db_info_.push_back(PendingIndexedDBInfo(origin, description));
 }
 
 void CannedBrowsingDataIndexedDBHelper::Reset() {
+  base::AutoLock auto_lock(lock_);
   indexed_db_info_.clear();
+  pending_indexed_db_info_.clear();
 }
 
 bool CannedBrowsingDataIndexedDBHelper::empty() const {
-  return indexed_db_info_.empty();
+  base::AutoLock auto_lock(lock_);
+  return indexed_db_info_.empty() && pending_indexed_db_info_.empty();
 }
 
 void CannedBrowsingDataIndexedDBHelper::StartFetching(
     Callback1<const std::vector<IndexedDBInfo>& >::Type* callback) {
-  callback->Run(indexed_db_info_);
-  delete callback;
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!is_fetching_);
+  DCHECK(callback);
+  is_fetching_ = true;
+  completion_callback_.reset(callback);
+  BrowserThread::PostTask(BrowserThread::WEBKIT, FROM_HERE, NewRunnableMethod(
+      this,
+      &CannedBrowsingDataIndexedDBHelper::ConvertPendingInfoInWebKitThread));
 }
 
 CannedBrowsingDataIndexedDBHelper::~CannedBrowsingDataIndexedDBHelper() {}
+
+void CannedBrowsingDataIndexedDBHelper::ConvertPendingInfoInWebKitThread() {
+  base::AutoLock auto_lock(lock_);
+  for (std::vector<PendingIndexedDBInfo>::const_iterator
+       info = pending_indexed_db_info_.begin();
+       info != pending_indexed_db_info_.end(); ++info) {
+    WebSecurityOrigin web_security_origin =
+        WebSecurityOrigin::createFromString(
+            UTF8ToUTF16(info->origin.spec()));
+    std::string security_origin(web_security_origin.toString().utf8());
+
+    bool duplicate = false;
+    for (std::vector<IndexedDBInfo>::iterator
+         indexed_db = indexed_db_info_.begin();
+         indexed_db != indexed_db_info_.end(); ++indexed_db) {
+      if (indexed_db->origin == security_origin) {
+        duplicate = true;
+        break;
+      }
+    }
+    if (duplicate)
+      continue;
+
+    indexed_db_info_.push_back(IndexedDBInfo(
+        web_security_origin.protocol().utf8(),
+        web_security_origin.host().utf8(),
+        web_security_origin.port(),
+        web_security_origin.databaseIdentifier().utf8(),
+        security_origin,
+        profile_->GetWebKitContext()->indexed_db_context()->
+            GetIndexedDBFilePath(web_security_origin.databaseIdentifier()),
+        0,
+        base::Time()));
+  }
+  pending_indexed_db_info_.clear();
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(
+          this, &CannedBrowsingDataIndexedDBHelper::NotifyInUIThread));
+}
+
+void CannedBrowsingDataIndexedDBHelper::NotifyInUIThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(is_fetching_);
+  // Note: completion_callback_ mutates only in the UI thread, so it's safe to
+  // test it here.
+  if (completion_callback_ != NULL) {
+    completion_callback_->Run(indexed_db_info_);
+    completion_callback_.reset();
+  }
+  is_fetching_ = false;
+}
