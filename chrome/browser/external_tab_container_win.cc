@@ -219,6 +219,10 @@ void ExternalTabContainer::Uninitialize() {
       UnregisterRenderViewHost(rvh);
     }
 
+    if (GetRootView()) {
+      GetRootView()->RemoveAllChildViews(true);
+    }
+
     NotificationService::current()->Notify(
         NotificationType::EXTERNAL_TAB_CLOSED,
         Source<NavigationController>(&tab_contents_->controller()),
