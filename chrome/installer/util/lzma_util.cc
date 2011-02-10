@@ -105,8 +105,10 @@ DWORD LzmaUtil::OpenArchive(const std::wstring& archivePath) {
   DWORD ret = NO_ERROR;
   archive_handle_ = CreateFile(archivePath.c_str(), GENERIC_READ,
       FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-  if (archive_handle_ == INVALID_HANDLE_VALUE)
+  if (archive_handle_ == INVALID_HANDLE_VALUE) {
+    archive_handle_ = NULL;  // The rest of the code only checks for NULL.
     ret = GetLastError();
+  }
   return ret;
 }
 
@@ -164,11 +166,11 @@ DWORD LzmaUtil::UnPack(const std::wstring& location,
 
     // If archive entry is directory create it and move on to the next entry.
     if (f->IsDirectory) {
-      file_util::CreateDirectory(file_path);
+      CreateDirectory(file_path);
       continue;
     }
 
-    file_util::CreateDirectory(file_path.DirName());
+    CreateDirectory(file_path.DirName());
 
     HANDLE hFile;
     hFile = CreateFile(file_path.value().c_str(), GENERIC_WRITE, 0, NULL,
@@ -214,4 +216,14 @@ void LzmaUtil::CloseArchive() {
     CloseHandle(archive_handle_);
     archive_handle_ = NULL;
   }
+}
+
+bool LzmaUtil::CreateDirectory(const FilePath& dir) {
+  bool ret = true;
+  if (directories_created_.find(dir.value()) == directories_created_.end()) {
+    ret = file_util::CreateDirectory(dir);
+    if (ret)
+      directories_created_.insert(dir.value());
+  }
+  return ret;
 }
