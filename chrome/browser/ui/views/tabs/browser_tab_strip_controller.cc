@@ -386,7 +386,7 @@ void BrowserTabStripController::SetTabRendererDataFromModel(
   data->network_state = TabContentsNetworkState(contents);
   data->title = contents->GetTitle();
   data->loading = contents->is_loading();
-  data->crashed = contents->is_crashed();
+  data->crashed_status = contents->crashed_status();
   data->off_the_record = contents->profile()->IsOffTheRecord();
   data->show_icon = contents->ShouldDisplayFavIcon();
   data->mini = model_->IsMiniTab(model_index);

@@ -157,9 +157,30 @@ void BaseTab::SetData(const TabRendererData& data) {
   TabRendererData old(data_);
   data_ = data;
 
-  if (data_.crashed) {
-    if (!should_display_crashed_favicon_ && !IsPerformingCrashAnimation())
-      StartCrashAnimation();
+  if (data_.IsCrashed()) {
+    if (!should_display_crashed_favicon_ && !IsPerformingCrashAnimation()) {
+      // When --reload-killed-tabs is specified, then the idea is that
+      // when tab is killed, the tab has no visual indication that it
+      // died and should reload when the tab is next focused without
+      // the user seeing the killed tab page.
+      //
+      // The only exception to this is when the tab is in the
+      // foreground (i.e. when it's the selected tab), because we
+      // don't want to go into an infinite loop reloading a page that
+      // will constantly get killed, or if it's the only tab.  So this
+      // code makes it so that the favicon will only be shown for
+      // killed tabs when the tab is currently selected.
+      if (CommandLine::ForCurrentProcess()->
+          HasSwitch(switches::kReloadKilledTabs) && !IsSelected()) {
+        // If we're reloading killed tabs, we don't want to display
+        // the crashed animation at all if the process was killed and
+        // the tab wasn't the current tab.
+        if (data_.crashed_status != base::TERMINATION_STATUS_PROCESS_WAS_KILLED)
+          StartCrashAnimation();
+      } else {
+        StartCrashAnimation();
+      }
+    }
   } else {
     if (IsPerformingCrashAnimation())
       StopCrashAnimation();

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_RENDERER_DATA_H_
 #pragma once
 
+#include "base/process_util.h"
 #include "base/string16.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -23,7 +24,7 @@ struct TabRendererData {
   TabRendererData()
       : network_state(NETWORK_STATE_NONE),
         loading(false),
-        crashed(false),
+        crashed_status(base::TERMINATION_STATUS_STILL_RUNNING),
         off_the_record(false),
         show_icon(true),
         mini(false),
@@ -31,11 +32,20 @@ struct TabRendererData {
         app(false) {
   }
 
+  // This interprets the crashed status to decide whether or not this
+  // render data represents a tab that is "crashed" (i.e. the render
+  // process died unexpectedly).
+  bool IsCrashed() const {
+    return (crashed_status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED ||
+            crashed_status == base::TERMINATION_STATUS_PROCESS_CRASHED ||
+            crashed_status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION);
+  }
+
   SkBitmap favicon;
   NetworkState network_state;
   string16 title;
   bool loading;
-  bool crashed;
+  base::TerminationStatus crashed_status;
   bool off_the_record;
   bool show_icon;
   bool mini;
