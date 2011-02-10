@@ -169,6 +169,10 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
                   const IndexedDBKey& key,
                   int32 transaction_id,
                   WebKit::WebExceptionCode* ec);
+    void OnClear(int idb_object_store_id,
+                 int32 response_id,
+                 int32 transaction_id,
+                 WebKit::WebExceptionCode* ec);
     void OnCreateIndex(
         const IndexedDBHostMsg_ObjectStoreCreateIndex_Params& params,
         int32* index_id,

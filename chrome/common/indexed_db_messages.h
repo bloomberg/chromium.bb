@@ -444,6 +444,13 @@ IPC_SYNC_MESSAGE_CONTROL4_1(IndexedDBHostMsg_ObjectStoreDelete,
                             int32, /* transaction_id */
                             WebKit::WebExceptionCode /* ec */)
 
+// WebIDBObjectStore::clear() message.
+IPC_SYNC_MESSAGE_CONTROL3_1(IndexedDBHostMsg_ObjectStoreClear,
+                            int32, /* idb_object_store_id */
+                            int32, /* response_id */
+                            int32, /* transaction_id */
+                            WebKit::WebExceptionCode /* ec */)
+
 // WebIDBObjectStore::createIndex() message.
 IPC_SYNC_MESSAGE_CONTROL1_2(IndexedDBHostMsg_ObjectStoreCreateIndex,
                             IndexedDBHostMsg_ObjectStoreCreateIndex_Params,

@@ -584,6 +584,7 @@ bool IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnMessageReceived(
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_ObjectStoreGet, OnGet)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_ObjectStorePut, OnPut)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_ObjectStoreDelete, OnDelete)
+    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_ObjectStoreClear, OnClear)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_ObjectStoreCreateIndex, OnCreateIndex)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_ObjectStoreIndex, OnIndex)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_ObjectStoreDeleteIndex, OnDeleteIndex)
@@ -681,6 +682,25 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnDelete(
       new IndexedDBCallbacks<WebSerializedScriptValue>(parent_, response_id));
   idb_object_store->deleteFunction(
       key, callbacks.release(), *idb_transaction, *ec);
+}
+
+void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnClear(
+    int idb_object_store_id,
+    int32 response_id,
+    int32 transaction_id,
+    WebKit::WebExceptionCode* ec) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
+  WebIDBObjectStore* idb_object_store = parent_->GetOrTerminateProcess(
+      &map_, idb_object_store_id);
+  WebIDBTransaction* idb_transaction = parent_->GetOrTerminateProcess(
+      &parent_->transaction_dispatcher_host_->map_, transaction_id);
+  if (!idb_transaction || !idb_object_store)
+    return;
+
+  *ec = 0;
+  scoped_ptr<WebIDBCallbacks> callbacks(
+      new IndexedDBCallbacks<WebSerializedScriptValue>(parent_, response_id));
+  idb_object_store->clear(callbacks.release(), *idb_transaction, *ec);
 }
 
 void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnCreateIndex(

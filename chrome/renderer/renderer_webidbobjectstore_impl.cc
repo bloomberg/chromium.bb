@@ -105,6 +105,16 @@ void RendererWebIDBObjectStoreImpl::deleteFunction(
       IndexedDBKey(key), callbacks, idb_object_store_id_, transaction, &ec);
 }
 
+void RendererWebIDBObjectStoreImpl::clear(
+    WebIDBCallbacks* callbacks,
+    const WebIDBTransaction& transaction,
+    WebExceptionCode& ec) {
+  IndexedDBDispatcher* dispatcher =
+      RenderThread::current()->indexed_db_dispatcher();
+  dispatcher->RequestIDBObjectStoreClear(
+      callbacks, idb_object_store_id_, transaction, &ec);
+}
+
 WebIDBIndex* RendererWebIDBObjectStoreImpl::createIndex(
     const WebString& name,
     const WebString& key_path,

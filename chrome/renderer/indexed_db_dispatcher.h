@@ -112,6 +112,12 @@ class IndexedDBDispatcher : public IPC::Channel::Listener {
       const WebKit::WebIDBTransaction& transaction,
       WebKit::WebExceptionCode* ec);
 
+  void RequestIDBObjectStoreClear(
+      WebKit::WebIDBCallbacks* callbacks,
+      int32 idb_object_store_id,
+      const WebKit::WebIDBTransaction& transaction,
+      WebKit::WebExceptionCode* ec);
+
   void RequestIDBObjectStoreOpenCursor(
       const WebKit::WebIDBKeyRange& idb_key_range,
       unsigned short direction,

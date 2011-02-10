@@ -43,6 +43,9 @@ class RendererWebIDBObjectStoreImpl : public WebKit::WebIDBObjectStore {
                               WebKit::WebIDBCallbacks* callbacks,
                               const WebKit::WebIDBTransaction& transaction,
                               WebKit::WebExceptionCode& ec);
+  virtual void clear(WebKit::WebIDBCallbacks* callbacks,
+                     const WebKit::WebIDBTransaction& transaction,
+                     WebKit::WebExceptionCode& ec);
 
   virtual WebKit::WebIDBIndex* createIndex(
       const WebKit::WebString& name,
