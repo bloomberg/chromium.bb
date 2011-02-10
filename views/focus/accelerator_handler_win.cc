@@ -24,7 +24,7 @@ bool AcceleratorHandler::Dispatch(const MSG& msg) {
       switch (msg.message) {
         case WM_KEYDOWN:
         case WM_SYSKEYDOWN: {
-          KeyEvent event(Event::ET_KEY_PRESSED,
+          KeyEvent event(ui::ET_KEY_PRESSED,
                          ui::KeyboardCodeForWindowsKeyCode(msg.wParam),
                          KeyEvent::GetKeyStateFlags(),
                          msg.lParam & 0xFFFF,

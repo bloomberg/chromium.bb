@@ -32,25 +32,25 @@ class Accelerator : public ui::Accelerator {
     key_code_ = keycode;
     modifiers_ = 0;
     if (shift_pressed)
-      modifiers_ |= Event::EF_SHIFT_DOWN;
+      modifiers_ |= ui::EF_SHIFT_DOWN;
     if (ctrl_pressed)
-      modifiers_ |= Event::EF_CONTROL_DOWN;
+      modifiers_ |= ui::EF_CONTROL_DOWN;
     if (alt_pressed)
-      modifiers_ |= Event::EF_ALT_DOWN;
+      modifiers_ |= ui::EF_ALT_DOWN;
   }
 
   virtual ~Accelerator() {}
 
   bool IsShiftDown() const {
-    return (modifiers_ & Event::EF_SHIFT_DOWN) == Event::EF_SHIFT_DOWN;
+    return (modifiers_ & ui::EF_SHIFT_DOWN) == ui::EF_SHIFT_DOWN;
   }
 
   bool IsCtrlDown() const {
-    return (modifiers_ & Event::EF_CONTROL_DOWN) == Event::EF_CONTROL_DOWN;
+    return (modifiers_ & ui::EF_CONTROL_DOWN) == ui::EF_CONTROL_DOWN;
   }
 
   bool IsAltDown() const {
-    return (modifiers_ & Event::EF_ALT_DOWN) == Event::EF_ALT_DOWN;
+    return (modifiers_ & ui::EF_ALT_DOWN) == ui::EF_ALT_DOWN;
   }
 
   // Returns a string with the localized shortcut if any.

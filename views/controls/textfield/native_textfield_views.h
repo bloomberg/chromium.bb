@@ -57,7 +57,7 @@ class NativeTextfieldViews : public views::View,
   virtual void WillGainFocus();
   virtual void DidGainFocus();
   virtual void WillLoseFocus();
-  virtual gfx::NativeCursor GetCursorForPoint(Event::EventType event_type,
+  virtual gfx::NativeCursor GetCursorForPoint(ui::EventType event_type,
                                               const gfx::Point& p);
 
   // views::ContextMenuController overrides:

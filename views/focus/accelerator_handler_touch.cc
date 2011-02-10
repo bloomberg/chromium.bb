@@ -99,8 +99,8 @@ bool DispatchX2Event(RootView* root, XEvent* xev) {
       if (!touch_event) {
         // Show the cursor, and decide whether or not the cursor should be
         // automatically hidden after a certain time of inactivity.
-        int button_flags = mouseev.GetFlags() & (Event::EF_RIGHT_BUTTON_DOWN |
-            Event::EF_MIDDLE_BUTTON_DOWN | Event::EF_LEFT_BUTTON_DOWN);
+        int button_flags = mouseev.GetFlags() & (ui::EF_RIGHT_BUTTON_DOWN |
+            ui::EF_MIDDLE_BUTTON_DOWN | ui::EF_LEFT_BUTTON_DOWN);
         bool start_timer = false;
 
         switch (cookie->evtype) {
@@ -110,9 +110,9 @@ bool DispatchX2Event(RootView* root, XEvent* xev) {
           case XI_ButtonRelease:
             // For a release, start the timer if this was only button pressed
             // that is being released.
-            if (button_flags == Event::EF_RIGHT_BUTTON_DOWN ||
-                button_flags == Event::EF_LEFT_BUTTON_DOWN ||
-                button_flags == Event::EF_MIDDLE_BUTTON_DOWN)
+            if (button_flags == ui::EF_RIGHT_BUTTON_DOWN ||
+                button_flags == ui::EF_LEFT_BUTTON_DOWN ||
+                button_flags == ui::EF_MIDDLE_BUTTON_DOWN)
               start_timer = true;
             break;
           case XI_Motion:
@@ -130,7 +130,7 @@ bool DispatchX2Event(RootView* root, XEvent* xev) {
           root->OnMouseReleased(mouseev, false);
           return true;
         case XI_Motion: {
-          if (mouseev.GetType() == Event::ET_MOUSE_DRAGGED) {
+          if (mouseev.GetType() == ui::ET_MOUSE_DRAGGED) {
             return root->OnMouseDragged(mouseev);
           } else {
             root->OnMouseMoved(mouseev);
@@ -188,7 +188,7 @@ bool DispatchXEvent(XEvent* xev) {
 
       case MotionNotify: {
         MouseEvent mouseev(xev);
-        if (mouseev.GetType() == Event::ET_MOUSE_DRAGGED) {
+        if (mouseev.GetType() == ui::ET_MOUSE_DRAGGED) {
           return root->OnMouseDragged(mouseev);
         } else {
           root->OnMouseMoved(mouseev);

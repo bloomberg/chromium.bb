@@ -258,9 +258,9 @@ void KeywordEditorView::OnDoubleClick() {
   if (edit_button_->IsEnabled()) {
     DWORD pos = GetMessagePos();
     gfx::Point cursor_point(pos);
-    views::MouseEvent event(views::Event::ET_MOUSE_RELEASED,
+    views::MouseEvent event(ui::ET_MOUSE_RELEASED,
                             cursor_point.x(), cursor_point.y(),
-                            views::Event::EF_LEFT_BUTTON_DOWN);
+                            ui::EF_LEFT_BUTTON_DOWN);
     ButtonPressed(edit_button_, event);
   }
 }

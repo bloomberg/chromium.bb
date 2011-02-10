@@ -35,11 +35,11 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/tree_node_iterator.h"
-#include "views/events/event.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "views/drag_utils.h"
+#include "views/events/event.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 #elif defined(TOOLKIT_GTK)
@@ -227,6 +227,7 @@ int BookmarkDragOperation(const BookmarkNode* node) {
   return ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_MOVE;
 }
 
+#if defined(TOOLKIT_VIEWS)
 int BookmarkDropOperation(Profile* profile,
                           const views::DropTargetEvent& event,
                           const BookmarkNodeData& data,
@@ -244,9 +245,10 @@ int BookmarkDropOperation(Profile* profile,
     return ui::DragDropTypes::DRAG_MOVE;
   }
   // User is dragging from another app, copy.
-  return PreferredDropOperation(event.GetSourceOperations(),
+  return PreferredDropOperation(event.source_operations(),
       ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK);
 }
+#endif  // defined(TOOLKIT_VIEWS)
 
 int PerformBookmarkDrop(Profile* profile,
                         const BookmarkNodeData& data,

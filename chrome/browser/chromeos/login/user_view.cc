@@ -235,7 +235,7 @@ class PodImageView : public views::ImageView {
   }
 
   gfx::NativeCursor GetCursorForPoint(
-      views::Event::EventType event_type,
+      ui::EventType event_type,
       const gfx::Point& p) {
     return (delegate_->IsUserSelected()) ? NULL : gfx::GetCursor(GDK_HAND2);
   }

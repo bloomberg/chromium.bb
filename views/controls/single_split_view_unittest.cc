@@ -146,25 +146,25 @@ TEST(SingleSplitViewTest, MouseDrag) {
 
   // Drag divider to the right, in 2 steps.
   MouseEvent mouse_pressed(
-      Event::ET_MOUSE_PRESSED, 7, kInitialDividerOffset + kMouseOffset, 0);
+      ui::ET_MOUSE_PRESSED, 7, kInitialDividerOffset + kMouseOffset, 0);
   ASSERT_TRUE(split.OnMousePressed(mouse_pressed));
   EXPECT_EQ(kInitialDividerOffset, split.divider_offset());
 
   MouseEvent mouse_dragged_1(
-      Event::ET_MOUSE_DRAGGED, 5,
+      ui::ET_MOUSE_DRAGGED, 5,
       kInitialDividerOffset + kMouseOffset + kMouseMoveDelta, 0);
   ASSERT_TRUE(split.OnMouseDragged(mouse_dragged_1));
   EXPECT_EQ(kInitialDividerOffset + kMouseMoveDelta, split.divider_offset());
 
   MouseEvent mouse_dragged_2(
-      Event::ET_MOUSE_DRAGGED, 6,
+      ui::ET_MOUSE_DRAGGED, 6,
       kInitialDividerOffset + kMouseOffset + kMouseMoveDelta * 2, 0);
   ASSERT_TRUE(split.OnMouseDragged(mouse_dragged_2));
   EXPECT_EQ(kInitialDividerOffset + kMouseMoveDelta * 2,
             split.divider_offset());
 
   MouseEvent mouse_released(
-      Event::ET_MOUSE_RELEASED, 7,
+      ui::ET_MOUSE_RELEASED, 7,
       kInitialDividerOffset + kMouseOffset + kMouseMoveDelta * 2, 0);
   split.OnMouseReleased(mouse_released, false);
   EXPECT_EQ(kInitialDividerOffset + kMouseMoveDelta * 2,

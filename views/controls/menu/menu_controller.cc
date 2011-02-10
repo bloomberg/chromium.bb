@@ -523,13 +523,13 @@ void MenuController::OnMouseReleased(SubmenuView* source,
   // contents of the folder.
   if (!part.is_scroll() && part.menu &&
       !(part.menu->HasSubmenu() &&
-        (event.GetFlags() == MouseEvent::EF_LEFT_BUTTON_DOWN))) {
+        (event.flags() == ui::EF_LEFT_BUTTON_DOWN))) {
     if (active_mouse_view_) {
       SendMouseReleaseToActiveView(source, event, false);
       return;
     }
     if (part.menu->GetDelegate()->IsTriggerableEvent(event)) {
-      Accept(part.menu, event.GetFlags());
+      Accept(part.menu, event.flags());
       return;
     }
   } else if (part.type == MenuPart::MENU_ITEM) {
@@ -1780,7 +1780,7 @@ void MenuController::UpdateActiveMouseView(SubmenuView* event_source,
   if (target != active_mouse_view_) {
     if (active_mouse_view_) {
       // Send a mouse release with cancel set to true.
-      MouseEvent release_event(Event::ET_MOUSE_RELEASED, -1, -1, 0);
+      MouseEvent release_event(ui::ET_MOUSE_RELEASED, -1, -1, 0);
       active_mouse_view_->OnMouseReleased(release_event, true);
 
       active_mouse_view_ = NULL;
@@ -1789,13 +1789,13 @@ void MenuController::UpdateActiveMouseView(SubmenuView* event_source,
     if (active_mouse_view_) {
       gfx::Point target_point(target_menu_loc);
       View::ConvertPointToView(target_menu, active_mouse_view_, &target_point);
-      MouseEvent mouse_entered_event(MouseEvent::ET_MOUSE_ENTERED,
+      MouseEvent mouse_entered_event(ui::ET_MOUSE_ENTERED,
                                      target_point.x(), target_point.y(), 0);
       active_mouse_view_->OnMouseEntered(mouse_entered_event);
 
-      MouseEvent mouse_pressed_event(MouseEvent::ET_MOUSE_PRESSED,
+      MouseEvent mouse_pressed_event(ui::ET_MOUSE_PRESSED,
                                      target_point.x(), target_point.y(),
-                                     event.GetFlags());
+                                     event.flags());
       active_mouse_view_->OnMousePressed(mouse_pressed_event);
     }
   }
@@ -1803,9 +1803,9 @@ void MenuController::UpdateActiveMouseView(SubmenuView* event_source,
   if (active_mouse_view_) {
     gfx::Point target_point(target_menu_loc);
     View::ConvertPointToView(target_menu, active_mouse_view_, &target_point);
-    MouseEvent mouse_dragged_event(MouseEvent::ET_MOUSE_DRAGGED,
+    MouseEvent mouse_dragged_event(ui::ET_MOUSE_DRAGGED,
                                    target_point.x(), target_point.y(),
-                                   event.GetFlags());
+                                   event.flags());
     active_mouse_view_->OnMouseDragged(mouse_dragged_event);
   }
 }
@@ -1820,8 +1820,8 @@ void MenuController::SendMouseReleaseToActiveView(SubmenuView* event_source,
   View::ConvertPointToScreen(event_source->GetScrollViewContainer(),
                              &target_loc);
   View::ConvertPointToView(NULL, active_mouse_view_, &target_loc);
-  MouseEvent release_event(Event::ET_MOUSE_RELEASED, target_loc.x(),
-                           target_loc.y(), event.GetFlags());
+  MouseEvent release_event(ui::ET_MOUSE_RELEASED, target_loc.x(),
+                           target_loc.y(), event.flags());
   // Reset the active_mouse_view_ before sending mouse released. That way if if
   // calls back to use we aren't in a weird state.
   View* active_view = active_mouse_view_;
@@ -1833,7 +1833,7 @@ void MenuController::SendMouseReleaseToActiveView() {
   if (!active_mouse_view_)
     return;
 
-  MouseEvent release_event(Event::ET_MOUSE_RELEASED, -1, -1, 0);
+  MouseEvent release_event(ui::ET_MOUSE_RELEASED, -1, -1, 0);
   // Reset the active_mouse_view_ before sending mouse released. That way if if
   // calls back to use we aren't in a weird state.
   View* active_view = active_mouse_view_;

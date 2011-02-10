@@ -11,15 +11,15 @@ using views::Event;
 namespace event_utils {
 
 WindowOpenDisposition DispositionFromEventFlags(int event_flags) {
-  if (((event_flags & Event::EF_MIDDLE_BUTTON_DOWN) ==
-          Event::EF_MIDDLE_BUTTON_DOWN) ||
-      ((event_flags & Event::EF_CONTROL_DOWN) ==
-          Event::EF_CONTROL_DOWN)) {
-    return ((event_flags & Event::EF_SHIFT_DOWN) ==  Event::EF_SHIFT_DOWN) ?
+  if (((event_flags & ui::EF_MIDDLE_BUTTON_DOWN) ==
+          ui::EF_MIDDLE_BUTTON_DOWN) ||
+      ((event_flags & ui::EF_CONTROL_DOWN) ==
+          ui::EF_CONTROL_DOWN)) {
+    return ((event_flags & ui::EF_SHIFT_DOWN) ==  ui::EF_SHIFT_DOWN) ?
         NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB;
   }
 
-  if ((event_flags & Event::EF_SHIFT_DOWN) == Event::EF_SHIFT_DOWN)
+  if ((event_flags & ui::EF_SHIFT_DOWN) == ui::EF_SHIFT_DOWN)
     return NEW_WINDOW;
   return false /*event.IsAltDown()*/ ? SAVE_TO_DISK : CURRENT_TAB;
 }

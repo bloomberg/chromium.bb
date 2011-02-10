@@ -159,18 +159,18 @@ static const KeyIdentifier kKeyIdentifiers[] = {
   { {"Cancel", "", "U+0018"}, ui::VKEY_UNKNOWN, 0 },
   { {"Esc", "", "U+001B"}, ui::VKEY_ESCAPE, 0 },
   { {"Spacebar", " ", "U+0020"}, ui::VKEY_SPACE, 0 },
-  { {"Exclamation", "!", "U+0021"}, ui::VKEY_1, views::Event::EF_SHIFT_DOWN },
+  { {"Exclamation", "!", "U+0021"}, ui::VKEY_1, ui::EF_SHIFT_DOWN },
   { {"DoubleQuote", "\"", "U+0022"},
-      ui::VKEY_OEM_7, views::Event::EF_SHIFT_DOWN },
-  { {"Hash", "#", "U+0023"}, ui::VKEY_3, views::Event::EF_SHIFT_DOWN },
-  { {"Dollar", "$", "U+0024"}, ui::VKEY_4, views::Event::EF_SHIFT_DOWN },
-  { {"Ampersand", "&", "U+0026"}, ui::VKEY_7, views::Event::EF_SHIFT_DOWN },
+      ui::VKEY_OEM_7, ui::EF_SHIFT_DOWN },
+  { {"Hash", "#", "U+0023"}, ui::VKEY_3, ui::EF_SHIFT_DOWN },
+  { {"Dollar", "$", "U+0024"}, ui::VKEY_4, ui::EF_SHIFT_DOWN },
+  { {"Ampersand", "&", "U+0026"}, ui::VKEY_7, ui::EF_SHIFT_DOWN },
   { {"Apostrophe", "\'", "U+0027"}, ui::VKEY_OEM_7, 0 },
-  { {"LeftParen", "(", "U+0028"}, ui::VKEY_9, views::Event::EF_SHIFT_DOWN },
-  { {"RightParen", ")", "U+0029"}, ui::VKEY_0, views::Event::EF_SHIFT_DOWN },
-  { {"Asterisk", "*", "U+002A"}, ui::VKEY_8, views::Event::EF_SHIFT_DOWN },
-  { {"Plus", "+", "U+002B"}, ui::VKEY_OEM_PLUS, views::Event::EF_SHIFT_DOWN },
-  { {"Percent", "%", "U+0025"}, ui::VKEY_5, views::Event::EF_SHIFT_DOWN },
+  { {"LeftParen", "(", "U+0028"}, ui::VKEY_9, ui::EF_SHIFT_DOWN },
+  { {"RightParen", ")", "U+0029"}, ui::VKEY_0, ui::EF_SHIFT_DOWN },
+  { {"Asterisk", "*", "U+002A"}, ui::VKEY_8, ui::EF_SHIFT_DOWN },
+  { {"Plus", "+", "U+002B"}, ui::VKEY_OEM_PLUS, ui::EF_SHIFT_DOWN },
+  { {"Percent", "%", "U+0025"}, ui::VKEY_5, ui::EF_SHIFT_DOWN },
   { {"Comma", ",", "U+002C"}, ui::VKEY_OEM_COMMA, 0 },
   { {"HyphenMinus", "-", "U+002D"}, ui::VKEY_OEM_MINUS, 0 },
   { {"Period", ".", "U+002E"}, ui::VKEY_OEM_PERIOD, 0 },
@@ -185,16 +185,16 @@ static const KeyIdentifier kKeyIdentifiers[] = {
   { {"", "7", "U+0037"}, ui::VKEY_7, 0 },
   { {"", "8", "U+0038"}, ui::VKEY_8, 0 },
   { {"", "9", "U+0039"}, ui::VKEY_9, 0 },
-  { {"Colon", ":", "U+003A"}, ui::VKEY_OEM_1, views::Event::EF_SHIFT_DOWN },
+  { {"Colon", ":", "U+003A"}, ui::VKEY_OEM_1, ui::EF_SHIFT_DOWN },
   { {"Semicolon", ";", "U+003B"}, ui::VKEY_OEM_1, 0 },
   { {"LessThan", "<", "U+003C"},
-      ui::VKEY_OEM_COMMA, views::Event::EF_SHIFT_DOWN },
+      ui::VKEY_OEM_COMMA, ui::EF_SHIFT_DOWN },
   { {"Equals", "=", "U+003D"}, ui::VKEY_OEM_PLUS, 0 },
   { {"GreaterThan", ">", "U+003E"},
-      ui::VKEY_OEM_PERIOD, views::Event::EF_SHIFT_DOWN },
+      ui::VKEY_OEM_PERIOD, ui::EF_SHIFT_DOWN },
   { {"QuestionMark", "?", "U+003F"},
-      ui::VKEY_OEM_2, views::Event::EF_SHIFT_DOWN },
-  { {"At", "@", "U+0040"}, ui::VKEY_2, views::Event::EF_SHIFT_DOWN },
+      ui::VKEY_OEM_2, ui::EF_SHIFT_DOWN },
+  { {"At", "@", "U+0040"}, ui::VKEY_2, ui::EF_SHIFT_DOWN },
   { {"", "A", "U+0041"}, ui::VKEY_A, 0 },
   { {"", "B", "U+0042"}, ui::VKEY_B, 0 },
   { {"", "C", "U+0043"}, ui::VKEY_C, 0 },
@@ -250,16 +250,16 @@ static const KeyIdentifier kKeyIdentifiers[] = {
   { {"LeftSquareBracket", "[", "U+005B"}, ui::VKEY_OEM_4, 0 },
   { {"Backslash", "\\", "U+005C"}, ui::VKEY_OEM_5, 0 },
   { {"RightSquareBracket", "]", "U+005D"}, ui::VKEY_OEM_6, 0 },
-  { {"Circumflex", "^", "U+005E"}, ui::VKEY_6, views::Event::EF_SHIFT_DOWN },
+  { {"Circumflex", "^", "U+005E"}, ui::VKEY_6, ui::EF_SHIFT_DOWN },
   { {"Underscore", "_", "U+005F"},
-      ui::VKEY_OEM_MINUS, views::Event::EF_SHIFT_DOWN },
+      ui::VKEY_OEM_MINUS, ui::EF_SHIFT_DOWN },
   { {"Grave", "`", "U+0060"}, ui::VKEY_OEM_3, 0 },
-  { {"Tilde", "~", "U+007E"}, ui::VKEY_OEM_3, views::Event::EF_SHIFT_DOWN },
+  { {"Tilde", "~", "U+007E"}, ui::VKEY_OEM_3, ui::EF_SHIFT_DOWN },
   { {"LeftCurlyBracket", "{", "U+007B"},
-      ui::VKEY_OEM_4, views::Event::EF_SHIFT_DOWN },
-  { {"Pipe", "|", "U+007C"}, ui::VKEY_OEM_5, views::Event::EF_SHIFT_DOWN },
+      ui::VKEY_OEM_4, ui::EF_SHIFT_DOWN },
+  { {"Pipe", "|", "U+007C"}, ui::VKEY_OEM_5, ui::EF_SHIFT_DOWN },
   { {"RightCurlyBracket", "}", "U+007D"},
-      ui::VKEY_OEM_6, views::Event::EF_SHIFT_DOWN },
+      ui::VKEY_OEM_6, ui::EF_SHIFT_DOWN },
   { {"Del", "", "U+007F"}, ui::VKEY_DELETE, 0 },
   { {"InvertedExclamation", "", "U+00A1"}, ui::VKEY_UNKNOWN, 0 },
   { {"DeadGrave", "", "U+0300"}, ui::VKEY_UNKNOWN, 0 },
@@ -294,7 +294,7 @@ static void InitializeMaps() {
     return;
 
   kUnknownKeyEvent = new views::KeyEvent(
-    views::Event::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, 0, 0, 0);
+    ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, 0, 0, 0);
 
   for (int i = 0; i < kNumIdentifierTypes; ++i)
     identifierMaps[i] = new IdentifierMap;
@@ -303,7 +303,7 @@ static void InitializeMaps() {
     const KeyIdentifier& key = kKeyIdentifiers[i];
 
     views::KeyEvent* event = new views::KeyEvent(
-        views::Event::ET_KEY_PRESSED, key.key_code, key.event_flags, 0, 0);
+        ui::ET_KEY_PRESSED, key.key_code, key.event_flags, 0, 0);
 
     for (int j = 0; j < kNumIdentifierTypes; ++j) {
       if (key.identifiers[j][0] != '\0') {

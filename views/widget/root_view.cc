@@ -386,8 +386,8 @@ bool RootView::OnMousePressed(const MouseEvent& e) {
   // are formed from a single-click followed by a double-click event. When the
   // double-click event lands on a different view than its single-click part,
   // we transform it into a single-click which prevents odd things.
-  if ((e.GetFlags() & MouseEvent::EF_IS_NON_CLIENT) &&
-      !(e.GetFlags() & MouseEvent::EF_IS_DOUBLE_CLICK)) {
+  if ((e.flags() & ui::EF_IS_NON_CLIENT) &&
+      !(e.flags() & ui::EF_IS_DOUBLE_CLICK)) {
     last_click_handler_ = NULL;
     return false;
   }
@@ -424,8 +424,8 @@ bool RootView::OnMousePressed(const MouseEvent& e) {
     // Remove the double-click flag if the handler is different than the
     // one which got the first click part of the double-click.
     if (mouse_pressed_handler_ != last_click_handler_)
-      mouse_pressed_event.set_flags(e.GetFlags() &
-                                    ~MouseEvent::EF_IS_DOUBLE_CLICK);
+      mouse_pressed_event.set_flags(e.flags() &
+                                    ~ui::EF_IS_DOUBLE_CLICK);
 
     drag_info.Reset();
     bool handled = mouse_pressed_handler_->ProcessMousePressed(
@@ -469,7 +469,7 @@ bool RootView::OnMousePressed(const MouseEvent& e) {
   // entire hierarchy (even as a single-click when sent to a different view),
   // it must be marked as handled to avoid anything happening from default
   // processing if it the first click-part was handled by us.
-  if (last_click_handler_ && e.GetFlags() & MouseEvent::EF_IS_DOUBLE_CLICK)
+  if (last_click_handler_ && e.flags() & ui::EF_IS_DOUBLE_CLICK)
     hit_disabled_view = true;
 
   last_click_handler_ = NULL;
@@ -508,7 +508,7 @@ void RootView::UpdateCursor(const MouseEvent& e) {
   if (v && v != this) {
     gfx::Point l(e.location());
     View::ConvertPointToView(this, v, &l);
-    cursor = v->GetCursorForPoint(e.GetType(), l);
+    cursor = v->GetCursorForPoint(e.type(), l);
   }
   SetActiveCursor(cursor);
 }
@@ -521,7 +521,7 @@ bool RootView::OnMouseDragged(const MouseEvent& e) {
 
     gfx::Point p;
     ConvertPointToMouseHandler(e.location(), &p);
-    MouseEvent mouse_event(e.GetType(), p.x(), p.y(), e.GetFlags());
+    MouseEvent mouse_event(e.type(), p.x(), p.y(), e.flags());
     return mouse_pressed_handler_->ProcessMouseDragged(mouse_event, &drag_info);
   }
   return false;
@@ -533,7 +533,7 @@ void RootView::OnMouseReleased(const MouseEvent& e, bool canceled) {
   if (mouse_pressed_handler_) {
     gfx::Point p;
     ConvertPointToMouseHandler(e.location(), &p);
-    MouseEvent mouse_released(e.GetType(), p.x(), p.y(), e.GetFlags());
+    MouseEvent mouse_released(e.type(), p.x(), p.y(), e.flags());
     // We allow the view to delete us from ProcessMouseReleased. As such,
     // configure state such that we're done first, then call View.
     View* mouse_pressed_handler = mouse_pressed_handler_;
@@ -555,20 +555,20 @@ void RootView::OnMouseMoved(const MouseEvent& e) {
   if (v && v != this) {
     if (v != mouse_move_handler_) {
       if (mouse_move_handler_ != NULL) {
-        MouseEvent exited_event(Event::ET_MOUSE_EXITED, 0, 0, 0);
+        MouseEvent exited_event(ui::ET_MOUSE_EXITED, 0, 0, 0);
         mouse_move_handler_->OnMouseExited(exited_event);
       }
 
       mouse_move_handler_ = v;
 
-      MouseEvent entered_event(Event::ET_MOUSE_ENTERED,
+      MouseEvent entered_event(ui::ET_MOUSE_ENTERED,
                                this,
                                mouse_move_handler_,
                                e.location(),
                                0);
       mouse_move_handler_->OnMouseEntered(entered_event);
     }
-    MouseEvent moved_event(Event::ET_MOUSE_MOVED,
+    MouseEvent moved_event(ui::ET_MOUSE_MOVED,
                            this,
                            mouse_move_handler_,
                            e.location(),
@@ -576,10 +576,10 @@ void RootView::OnMouseMoved(const MouseEvent& e) {
     mouse_move_handler_->OnMouseMoved(moved_event);
 
     gfx::NativeCursor cursor = mouse_move_handler_->GetCursorForPoint(
-        moved_event.GetType(), moved_event.location());
+        moved_event.type(), moved_event.location());
     SetActiveCursor(cursor);
   } else if (mouse_move_handler_ != NULL) {
-    MouseEvent exited_event(Event::ET_MOUSE_EXITED, 0, 0, 0);
+    MouseEvent exited_event(ui::ET_MOUSE_EXITED, 0, 0, 0);
     mouse_move_handler_->OnMouseExited(exited_event);
     SetActiveCursor(NULL);
   }
@@ -587,7 +587,7 @@ void RootView::OnMouseMoved(const MouseEvent& e) {
 
 void RootView::ProcessOnMouseExited() {
   if (mouse_move_handler_ != NULL) {
-    MouseEvent exited_event(Event::ET_MOUSE_EXITED, 0, 0, 0);
+    MouseEvent exited_event(ui::ET_MOUSE_EXITED, 0, 0, 0);
     mouse_move_handler_->OnMouseExited(exited_event);
     mouse_move_handler_ = NULL;
   }
@@ -602,7 +602,7 @@ void RootView::SetMouseHandler(View *new_mh) {
 void RootView::ProcessMouseDragCanceled() {
   if (mouse_pressed_handler_) {
     // Synthesize a release event.
-    MouseEvent release_event(Event::ET_MOUSE_RELEASED, last_mouse_event_x_,
+    MouseEvent release_event(ui::ET_MOUSE_RELEASED, last_mouse_event_x_,
                              last_mouse_event_y_, last_mouse_event_flags_);
     OnMouseReleased(release_event, true);
   }
@@ -680,18 +680,18 @@ bool RootView::ProcessKeyEvent(const KeyEvent& event) {
   View* v = GetFocusedView();
   // Special case to handle right-click context menus triggered by the
   // keyboard.
-  if (v && v->IsEnabled() && ((event.GetKeyCode() == ui::VKEY_APPS) ||
-     (event.GetKeyCode() == ui::VKEY_F10 && event.IsShiftDown()))) {
+  if (v && v->IsEnabled() && ((event.key_code() == ui::VKEY_APPS) ||
+     (event.key_code() == ui::VKEY_F10 && event.IsShiftDown()))) {
     v->ShowContextMenu(v->GetKeyboardContextMenuLocation(), false);
     return true;
   }
   for (; v && v != this && !consumed; v = v->parent()) {
-    consumed = (event.GetType() == Event::ET_KEY_PRESSED) ?
+    consumed = (event.type() == ui::ET_KEY_PRESSED) ?
         v->OnKeyPressed(event) : v->OnKeyReleased(event);
   }
 
   if (!consumed && default_keyboard_handler_) {
-    consumed = (event.GetType() == Event::ET_KEY_PRESSED) ?
+    consumed = (event.type() == ui::ET_KEY_PRESSED) ?
         default_keyboard_handler_->OnKeyPressed(event) :
         default_keyboard_handler_->OnKeyReleased(event);
   }
@@ -758,7 +758,7 @@ void RootView::UnregisterViewForVisibleBoundsNotification(View* view) {
 }
 
 void RootView::SetMouseLocationAndFlags(const MouseEvent& e) {
-  last_mouse_event_flags_ = e.GetFlags();
+  last_mouse_event_flags_ = e.flags();
   last_mouse_event_x_ = e.x();
   last_mouse_event_y_ = e.y();
 }

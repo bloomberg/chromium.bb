@@ -116,7 +116,7 @@ void ShutdownButton::OnLocaleChanged() {
 }
 
 gfx::NativeCursor ShutdownButton::GetCursorForPoint(
-    views::Event::EventType event_type,
+    ui::EventType event_type,
     const gfx::Point& p) {
   if (!IsEnabled()) {
     return NULL;

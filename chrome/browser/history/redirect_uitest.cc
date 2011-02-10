@@ -22,7 +22,7 @@
 #include "chrome/test/ui/ui_test.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
-#include "views/events/event.h"
+#include "ui/base/events.h"
 
 namespace {
 
@@ -165,9 +165,8 @@ TEST_F(RedirectTest, MAYBE_ClientCancelled) {
   ASSERT_TRUE(browser->BringToFront());
   ASSERT_TRUE(window->GetViewBounds(VIEW_ID_TAB_CONTAINER, &tab_view_bounds,
                                     true));
-  ASSERT_TRUE(
-      window->SimulateOSClick(tab_view_bounds.CenterPoint(),
-                              views::Event::EF_LEFT_BUTTON_DOWN));
+  ASSERT_TRUE(window->SimulateOSClick(tab_view_bounds.CenterPoint(),
+                                      ui::EF_LEFT_BUTTON_DOWN));
   EXPECT_TRUE(tab_proxy->WaitForNavigation(last_nav_time));
 
   std::vector<GURL> redirects;

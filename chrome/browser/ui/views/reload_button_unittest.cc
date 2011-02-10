@@ -57,7 +57,7 @@ TEST_F(ReloadButtonTest, Basic) {
              false);
 
   // Press the button.  This should start the double-click timer.
-  views::MouseEvent e(views::Event::ET_MOUSE_PRESSED, 0, 0, 0);
+  views::MouseEvent e(ui::ET_MOUSE_PRESSED, 0, 0, 0);
   reload_.ButtonPressed(&reload_, e);
   CheckState(true, ReloadButton::MODE_RELOAD, ReloadButton::MODE_RELOAD, true,
              false);
@@ -76,7 +76,7 @@ TEST_F(ReloadButtonTest, Basic) {
 
 TEST_F(ReloadButtonTest, DoubleClickTimer) {
   // Start by pressing the button.
-  views::MouseEvent e(views::Event::ET_MOUSE_PRESSED, 0, 0, 0);
+  views::MouseEvent e(ui::ET_MOUSE_PRESSED, 0, 0, 0);
   reload_.ButtonPressed(&reload_, e);
 
   // Try to press the button again.  This should do nothing because the timer is
@@ -102,7 +102,7 @@ TEST_F(ReloadButtonTest, DoubleClickTimer) {
 
 TEST_F(ReloadButtonTest, DisableOnHover) {
   // Change to stop and hover.
-  views::MouseEvent e(views::Event::ET_MOUSE_PRESSED, 0, 0, 0);
+  views::MouseEvent e(ui::ET_MOUSE_PRESSED, 0, 0, 0);
   reload_.ButtonPressed(&reload_, e);
   reload_.ChangeMode(ReloadButton::MODE_STOP, false);
   set_mouse_hovered(true);
@@ -115,7 +115,7 @@ TEST_F(ReloadButtonTest, DisableOnHover) {
 
   // Un-hover the button, which should allow it to reset.
   set_mouse_hovered(false);
-  views::MouseEvent e2(views::Event::ET_MOUSE_MOVED, 0, 0, 0);
+  views::MouseEvent e2(ui::ET_MOUSE_MOVED, 0, 0, 0);
   reload_.OnMouseExited(e2);
   CheckState(true, ReloadButton::MODE_RELOAD, ReloadButton::MODE_RELOAD, false,
              false);
@@ -123,7 +123,7 @@ TEST_F(ReloadButtonTest, DisableOnHover) {
 
 TEST_F(ReloadButtonTest, ResetOnClick) {
   // Change to stop and hover.
-  views::MouseEvent e(views::Event::ET_MOUSE_PRESSED, 0, 0, 0);
+  views::MouseEvent e(ui::ET_MOUSE_PRESSED, 0, 0, 0);
   reload_.ButtonPressed(&reload_, e);
   reload_.ChangeMode(ReloadButton::MODE_STOP, false);
   set_mouse_hovered(true);
@@ -137,7 +137,7 @@ TEST_F(ReloadButtonTest, ResetOnClick) {
 
 TEST_F(ReloadButtonTest, ResetOnTimer) {
   // Change to stop, hover, and change back to reload.
-  views::MouseEvent e(views::Event::ET_MOUSE_PRESSED, 0, 0, 0);
+  views::MouseEvent e(ui::ET_MOUSE_PRESSED, 0, 0, 0);
   reload_.ButtonPressed(&reload_, e);
   reload_.ChangeMode(ReloadButton::MODE_STOP, false);
   set_mouse_hovered(true);

@@ -10,9 +10,9 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui/ui_test.h"
+#include "ui/base/events.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
-#include "views/events/event.h"
 
 AutomatedUITestBase::AutomatedUITestBase() {}
 
@@ -139,8 +139,7 @@ bool AutomatedUITestBase::DragTabOut() {
   end.set_x(start.x());
   end.set_y(start.y() + 3 * urlbar_bounds.height());
 
-  if (!browser->SimulateDrag(start, end, views::Event::EF_LEFT_BUTTON_DOWN,
-                             false)) {
+  if (!browser->SimulateDrag(start, end, ui::EF_LEFT_BUTTON_DOWN, false)) {
     LogWarningMessage("failed_to_simulate_drag");
     return false;
   }
@@ -208,7 +207,7 @@ bool AutomatedUITestBase::DragActiveTab(bool drag_right) {
   }
 
   if (!browser->SimulateDrag(dragged_tab_point, destination_point,
-                             views::Event::EF_LEFT_BUTTON_DOWN, false)) {
+                             ui::EF_LEFT_BUTTON_DOWN, false)) {
     LogWarningMessage("failed_to_simulate_drag");
     return false;
   }

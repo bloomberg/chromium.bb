@@ -12,8 +12,8 @@
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui/ui_test.h"
 #include "net/url_request/url_request_test_util.h"
+#include "ui/base/events.h"
 #include "ui/base/message_box_flags.h"
-#include "views/events/event.h"
 
 const std::string NOLISTENERS_HTML =
     "<html><head><title>nolisteners</title></head><body></body></html>";
@@ -245,7 +245,7 @@ TEST_F(UnloadTest, MAYBE_CrossSiteInfiniteUnloadAsyncInputEvent) {
   gfx::Rect bounds;
   ASSERT_TRUE(window->GetViewBounds(VIEW_ID_TAB_0, &bounds, false));
   ASSERT_TRUE(browser->SimulateDrag(bounds.CenterPoint(), bounds.CenterPoint(),
-                                    views::Event::EF_LEFT_BUTTON_DOWN, false));
+                                    ui::EF_LEFT_BUTTON_DOWN, false));
 
   // The title should update before the timeout in CheckTitle.
   CheckTitle(L"Title Of Awesomeness");
@@ -437,7 +437,7 @@ TEST_F(UnloadTest, MAYBE_BrowserCloseTabWhenOtherTabHasListener) {
   // Simulate a click to force user_gesture to true; if we don't, the resulting
   // popup will be constrained, which isn't what we want to test.
   ASSERT_TRUE(window->SimulateOSClick(tab_view_bounds.CenterPoint(),
-                                      views::Event::EF_LEFT_BUTTON_DOWN));
+                                      ui::EF_LEFT_BUTTON_DOWN));
   ASSERT_TRUE(browser->WaitForTabCountToBecome(2));
 
   scoped_refptr<TabProxy> popup_tab(browser->GetActiveTab());

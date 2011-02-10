@@ -672,7 +672,7 @@ View* View::GetViewForPoint(const gfx::Point& point) {
   return this;
 }
 
-gfx::NativeCursor View::GetCursorForPoint(Event::EventType event_type,
+gfx::NativeCursor View::GetCursorForPoint(ui::EventType event_type,
                                           const gfx::Point& p) {
   return NULL;
 }

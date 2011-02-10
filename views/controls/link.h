@@ -60,7 +60,7 @@ class Link : public Label {
   // Set whether the link is enabled.
   virtual void SetEnabled(bool f);
 
-  virtual gfx::NativeCursor GetCursorForPoint(Event::EventType event_type,
+  virtual gfx::NativeCursor GetCursorForPoint(ui::EventType event_type,
                                               const gfx::Point& p);
 
   virtual std::string GetClassName() const;

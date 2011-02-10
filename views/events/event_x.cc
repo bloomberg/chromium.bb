@@ -23,19 +23,19 @@ static int kWheelScrollAmount = 53;
 int GetEventFlagsFromXState(unsigned int state) {
   int flags = 0;
   if (state & ControlMask)
-    flags |= Event::EF_CONTROL_DOWN;
+    flags |= ui::EF_CONTROL_DOWN;
   if (state & ShiftMask)
-    flags |= Event::EF_SHIFT_DOWN;
+    flags |= ui::EF_SHIFT_DOWN;
   if (state & Mod1Mask)
-    flags |= Event::EF_ALT_DOWN;
+    flags |= ui::EF_ALT_DOWN;
   if (state & LockMask)
-    flags |= Event::EF_CAPS_LOCK_DOWN;
+    flags |= ui::EF_CAPS_LOCK_DOWN;
   if (state & Button1Mask)
-    flags |= Event::EF_LEFT_BUTTON_DOWN;
+    flags |= ui::EF_LEFT_BUTTON_DOWN;
   if (state & Button2Mask)
-    flags |= Event::EF_MIDDLE_BUTTON_DOWN;
+    flags |= ui::EF_MIDDLE_BUTTON_DOWN;
   if (state & Button3Mask)
-    flags |= Event::EF_RIGHT_BUTTON_DOWN;
+    flags |= ui::EF_RIGHT_BUTTON_DOWN;
 
   return flags;
 }
@@ -51,11 +51,11 @@ int GetEventFlagsFromXState(unsigned int state) {
 int GetEventFlagsForButton(int button) {
   switch (button) {
     case 1:
-      return Event::EF_LEFT_BUTTON_DOWN;
+      return ui::EF_LEFT_BUTTON_DOWN;
     case 2:
-      return Event::EF_MIDDLE_BUTTON_DOWN;
+      return ui::EF_MIDDLE_BUTTON_DOWN;
     case 3:
-      return Event::EF_RIGHT_BUTTON_DOWN;
+      return ui::EF_RIGHT_BUTTON_DOWN;
   }
 
   DLOG(WARNING) << "Unexpected button (" << button << ") received.";
@@ -75,15 +75,15 @@ int GetButtonMaskForX2Event(XIDeviceEvent* xievent) {
   return buttonflags;
 }
 
-Event::EventType GetTouchEventType(XEvent* xev) {
+ui::EventType GetTouchEventType(XEvent* xev) {
   XGenericEventCookie* cookie = &xev->xcookie;
   switch (cookie->evtype) {
     case XI_ButtonPress:
-      return Event::ET_TOUCH_PRESSED;
+      return ui::ET_TOUCH_PRESSED;
     case XI_ButtonRelease:
-      return Event::ET_TOUCH_RELEASED;
+      return ui::ET_TOUCH_RELEASED;
     case XI_Motion:
-      return Event::ET_TOUCH_MOVED;
+      return ui::ET_TOUCH_MOVED;
 
     // Note: We will not generate a _STATIONARY event here. It will be created,
     // when necessary, by a RWHVV.
@@ -93,7 +93,7 @@ Event::EventType GetTouchEventType(XEvent* xev) {
     // touch-sequence?
   }
 
-  return Event::ET_UNKNOWN;
+  return ui::ET_UNKNOWN;
 }
 
 gfx::Point GetTouchEventLocation(XEvent* xev) {
@@ -126,35 +126,35 @@ int GetMouseWheelOffset(XEvent* xev) {
   return xev->xbutton.button == 4 ? kWheelScrollAmount : -kWheelScrollAmount;
 }
 
-Event::EventType GetMouseEventType(XEvent* xev) {
+ui::EventType GetMouseEventType(XEvent* xev) {
   switch (xev->type) {
     case ButtonPress:
-      return Event::ET_MOUSE_PRESSED;
+      return ui::ET_MOUSE_PRESSED;
     case ButtonRelease:
-      return Event::ET_MOUSE_RELEASED;
+      return ui::ET_MOUSE_RELEASED;
     case MotionNotify:
       if (xev->xmotion.state & (Button1Mask | Button2Mask | Button3Mask)) {
-        return Event::ET_MOUSE_DRAGGED;
+        return ui::ET_MOUSE_DRAGGED;
       }
-      return Event::ET_MOUSE_MOVED;
+      return ui::ET_MOUSE_MOVED;
 #if defined(HAVE_XINPUT2)
     case GenericEvent: {
       XIDeviceEvent* xievent =
           static_cast<XIDeviceEvent*>(xev->xcookie.data);
       switch (xievent->evtype) {
         case XI_ButtonPress:
-          return Event::ET_MOUSE_PRESSED;
+          return ui::ET_MOUSE_PRESSED;
         case XI_ButtonRelease:
-          return Event::ET_MOUSE_RELEASED;
+          return ui::ET_MOUSE_RELEASED;
         case XI_Motion:
-          return GetButtonMaskForX2Event(xievent) ? Event::ET_MOUSE_DRAGGED :
-              Event::ET_MOUSE_MOVED;
+          return GetButtonMaskForX2Event(xievent) ? ui::ET_MOUSE_DRAGGED :
+              ui::ET_MOUSE_MOVED;
       }
     }
 #endif
   }
 
-  return Event::ET_UNKNOWN;
+  return ui::ET_UNKNOWN;
 }
 
 gfx::Point GetMouseEventLocation(XEvent* xev) {
@@ -214,7 +214,7 @@ int GetMouseEventFlags(XEvent* xev) {
 
 KeyEvent::KeyEvent(XEvent* xev)
     : Event(xev->type == KeyPress ?
-            Event::ET_KEY_PRESSED : Event::ET_KEY_RELEASED,
+            ui::ET_KEY_PRESSED : ui::ET_KEY_RELEASED,
             GetEventFlagsFromXState(xev->xkey.state)),
       key_code_(ui::KeyboardCodeFromXKeyEvent(xev)),
       repeat_count_(0),
@@ -229,7 +229,7 @@ MouseEvent::MouseEvent(XEvent* xev)
 }
 
 MouseWheelEvent::MouseWheelEvent(XEvent* xev)
-    : LocatedEvent(Event::ET_MOUSEWHEEL,
+    : LocatedEvent(ui::ET_MOUSEWHEEL,
                    GetMouseEventLocation(xev),
                    GetEventFlagsFromXState(xev->xbutton.state)),
       offset_(GetMouseWheelOffset(xev)) {

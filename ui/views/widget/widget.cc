@@ -161,7 +161,7 @@ void Widget::OnMouseCaptureLost() {
 bool Widget::OnMouseEvent(const MouseEvent& event) {
   last_mouse_event_was_move_ = false;
   switch (event.type()) {
-    case Event::ET_MOUSE_PRESSED:
+    case ui::ET_MOUSE_PRESSED:
       if (root_view_->OnMousePressed(event)) {
         is_mouse_button_pressed_ = true;
         if (!native_widget_->HasMouseCapture())
@@ -169,7 +169,7 @@ bool Widget::OnMouseEvent(const MouseEvent& event) {
         return true;
       }
       return false;
-    case Event::ET_MOUSE_RELEASED:
+    case ui::ET_MOUSE_RELEASED:
       // TODO(beng): NativeWidgetGtk should not call this function if drag data
       //             exists, see comment in this function in WidgetGtk.
       // Release the capture first, that way we don't get confused if
@@ -181,7 +181,7 @@ bool Widget::OnMouseEvent(const MouseEvent& event) {
       is_mouse_button_pressed_ = false;
       root_view_->OnMouseReleased(event);
       return true;
-    case Event::ET_MOUSE_MOVED:
+    case ui::ET_MOUSE_MOVED:
       if (native_widget_->HasMouseCapture() && is_mouse_button_pressed_) {
         last_mouse_event_was_move_ = false;
         root_view_->OnMouseDragged(event);
@@ -198,7 +198,7 @@ bool Widget::OnMouseEvent(const MouseEvent& event) {
         root_view_->OnMouseMoved(event);
       }
       break;
-    case Event::ET_MOUSE_EXITED:
+    case ui::ET_MOUSE_EXITED:
       root_view_->OnMouseExited(event);
       return true;
   }

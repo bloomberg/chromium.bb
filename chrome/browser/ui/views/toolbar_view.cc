@@ -146,8 +146,8 @@ void ToolbarView::Init(Profile* profile) {
   }
 #endif
   back_ = new views::ButtonDropDown(this, back_menu_model_.get());
-  back_->set_triggerable_event_flags(views::Event::EF_LEFT_BUTTON_DOWN |
-                                     views::Event::EF_MIDDLE_BUTTON_DOWN);
+  back_->set_triggerable_event_flags(ui::EF_LEFT_BUTTON_DOWN |
+                                     ui::EF_MIDDLE_BUTTON_DOWN);
   back_->set_tag(IDC_BACK);
   back_->SetImageAlignment(views::ImageButton::ALIGN_RIGHT,
                            views::ImageButton::ALIGN_TOP);
@@ -157,8 +157,8 @@ void ToolbarView::Init(Profile* profile) {
   back_->SetID(VIEW_ID_BACK_BUTTON);
 
   forward_ = new views::ButtonDropDown(this, forward_menu_model_.get());
-  forward_->set_triggerable_event_flags(views::Event::EF_LEFT_BUTTON_DOWN |
-                                        views::Event::EF_MIDDLE_BUTTON_DOWN);
+  forward_->set_triggerable_event_flags(ui::EF_LEFT_BUTTON_DOWN |
+                                        ui::EF_MIDDLE_BUTTON_DOWN);
   forward_->set_tag(IDC_FORWARD);
   forward_->SetTooltipText(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_TOOLTIP_FORWARD)));
@@ -171,8 +171,8 @@ void ToolbarView::Init(Profile* profile) {
           LocationBarView::POPUP : LocationBarView::NORMAL);
 
   reload_ = new ReloadButton(location_bar_, browser_);
-  reload_->set_triggerable_event_flags(views::Event::EF_LEFT_BUTTON_DOWN |
-                                       views::Event::EF_MIDDLE_BUTTON_DOWN);
+  reload_->set_triggerable_event_flags(ui::EF_LEFT_BUTTON_DOWN |
+                                       ui::EF_MIDDLE_BUTTON_DOWN);
   reload_->set_tag(IDC_RELOAD);
   reload_->SetTooltipText(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_TOOLTIP_RELOAD)));
@@ -182,8 +182,8 @@ void ToolbarView::Init(Profile* profile) {
 #if defined(OS_CHROMEOS)
   feedback_ = new views::ImageButton(this);
   feedback_->set_tag(IDC_FEEDBACK);
-  feedback_->set_triggerable_event_flags(views::Event::EF_LEFT_BUTTON_DOWN |
-                                         views::Event::EF_MIDDLE_BUTTON_DOWN);
+  feedback_->set_triggerable_event_flags(ui::EF_LEFT_BUTTON_DOWN |
+                                         ui::EF_MIDDLE_BUTTON_DOWN);
   feedback_->set_tag(IDC_FEEDBACK);
   feedback_->SetTooltipText(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_TOOLTIP_FEEDBACK)));
@@ -191,8 +191,8 @@ void ToolbarView::Init(Profile* profile) {
 #endif
 
   home_ = new views::ImageButton(this);
-  home_->set_triggerable_event_flags(views::Event::EF_LEFT_BUTTON_DOWN |
-                                     views::Event::EF_MIDDLE_BUTTON_DOWN);
+  home_->set_triggerable_event_flags(ui::EF_LEFT_BUTTON_DOWN |
+                                     ui::EF_MIDDLE_BUTTON_DOWN);
   home_->set_tag(IDC_HOME);
   home_->SetTooltipText(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_TOOLTIP_HOME)));

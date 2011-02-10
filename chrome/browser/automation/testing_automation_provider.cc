@@ -79,8 +79,8 @@
 #include "net/base/cookie_store.h"
 #include "net/url_request/url_request_context.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "ui/base/events.h"
 #include "ui/base/message_box_flags.h"
-#include "views/events/event.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 
 namespace {
@@ -115,14 +115,14 @@ void DeleteCookieOnIOThread(
 
 void SendMouseClick(int flags) {
   ui_controls::MouseButton button = ui_controls::LEFT;
-  if ((flags & views::Event::EF_LEFT_BUTTON_DOWN) ==
-      views::Event::EF_LEFT_BUTTON_DOWN) {
+  if ((flags & ui::EF_LEFT_BUTTON_DOWN) ==
+      ui::EF_LEFT_BUTTON_DOWN) {
     button = ui_controls::LEFT;
-  } else if ((flags & views::Event::EF_RIGHT_BUTTON_DOWN) ==
-             views::Event::EF_RIGHT_BUTTON_DOWN) {
+  } else if ((flags & ui::EF_RIGHT_BUTTON_DOWN) ==
+             ui::EF_RIGHT_BUTTON_DOWN) {
     button = ui_controls::RIGHT;
-  } else if ((flags & views::Event::EF_MIDDLE_BUTTON_DOWN) ==
-             views::Event::EF_MIDDLE_BUTTON_DOWN) {
+  } else if ((flags & ui::EF_MIDDLE_BUTTON_DOWN) ==
+             ui::EF_MIDDLE_BUTTON_DOWN) {
     button = ui_controls::MIDDLE;
   } else {
     NOTREACHED();
@@ -879,14 +879,14 @@ void TestingAutomationProvider::WindowSimulateKeyPress(
   gfx::NativeWindow window = window_tracker_->GetResource(handle);
   // The key event is sent to whatever window is active.
   ui_controls::SendKeyPress(window, static_cast<ui::KeyboardCode>(key),
-                            ((flags & views::Event::EF_CONTROL_DOWN) ==
-                             views::Event::EF_CONTROL_DOWN),
-                            ((flags & views::Event::EF_SHIFT_DOWN) ==
-                             views::Event::EF_SHIFT_DOWN),
-                            ((flags & views::Event::EF_ALT_DOWN) ==
-                             views::Event::EF_ALT_DOWN),
-                            ((flags & views::Event::EF_COMMAND_DOWN) ==
-                             views::Event::EF_COMMAND_DOWN));
+                            ((flags & ui::EF_CONTROL_DOWN) ==
+                             ui::EF_CONTROL_DOWN),
+                            ((flags & ui::EF_SHIFT_DOWN) ==
+                             ui::EF_SHIFT_DOWN),
+                            ((flags & ui::EF_ALT_DOWN) ==
+                             ui::EF_ALT_DOWN),
+                            ((flags & ui::EF_COMMAND_DOWN) ==
+                             ui::EF_COMMAND_DOWN));
 }
 
 void TestingAutomationProvider::GetTabCount(int handle, int* tab_count) {

@@ -876,8 +876,7 @@ bool DownloadItemView::OnKeyPressed(const views::KeyEvent& e) {
   if (IsDangerousMode())
     return true;
 
-  if (e.GetKeyCode() == ui::VKEY_SPACE ||
-      e.GetKeyCode() == ui::VKEY_RETURN) {
+  if (e.key_code() == ui::VKEY_SPACE || e.key_code() == ui::VKEY_RETURN) {
     OpenDownload();
     return true;
   }

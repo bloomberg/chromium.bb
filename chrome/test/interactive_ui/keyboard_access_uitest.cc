@@ -8,8 +8,8 @@
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui/ui_test.h"
 #include "googleurl/src/gurl.h"
+#include "ui/base/events.h"
 #include "ui/base/keycodes/keyboard_codes.h"
-#include "views/events/event.h"
 
 // This functionality currently works on Windows and on Linux when
 // toolkit_views is defined (i.e. for Chrome OS). It's not needed
@@ -118,7 +118,7 @@ TEST_F(KeyboardAccessTest, DISABLED_TestAltMenuKeyboardAccess) {
 
 // Flaky, http://crbug.com/62311.
 TEST_F(KeyboardAccessTest, FLAKY_TestShiftAltMenuKeyboardAccess) {
-  TestMenuKeyboardAccess(true, views::Event::EF_SHIFT_DOWN);
+  TestMenuKeyboardAccess(true, ui::EF_SHIFT_DOWN);
 }
 
 #if defined(OS_CHROMEOS)
@@ -154,14 +154,13 @@ TEST_F(KeyboardAccessTest, MAYBE_ReserveKeyboardAccelerators) {
   scoped_refptr<WindowProxy> window(browser->GetWindow());
   ASSERT_TRUE(window);
   ASSERT_TRUE(window->SimulateOSKeyPress(
-      ui::VKEY_TAB, views::Event::EF_CONTROL_DOWN));
+      ui::VKEY_TAB, ui::EF_CONTROL_DOWN));
   ASSERT_TRUE(browser->WaitForTabToBecomeActive(
       0, TestTimeouts::action_max_timeout_ms()));
 
 #if !defined(OS_MACOSX)  // see BrowserWindowCocoa::GetCommandId
   ASSERT_TRUE(browser->ActivateTab(1));
-  ASSERT_TRUE(window->SimulateOSKeyPress(
-      ui::VKEY_F4, views::Event::EF_CONTROL_DOWN));
+  ASSERT_TRUE(window->SimulateOSKeyPress(ui::VKEY_F4, ui::EF_CONTROL_DOWN));
   ASSERT_TRUE(browser->WaitForTabCountToBecome(1));
 #endif
 }

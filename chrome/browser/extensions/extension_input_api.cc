@@ -39,13 +39,13 @@ const char kUnsupportedModifier[] = "Unsupported modifier.";
 const char kNoValidRecipientError[] = "No valid recipient for event.";
 const char kKeyEventUnprocessedError[] = "Event was not handled.";
 
-views::Event::EventType GetTypeFromString(const std::string& type) {
+ui::EventType GetTypeFromString(const std::string& type) {
   if (type == kKeyDown) {
-    return views::Event::ET_KEY_PRESSED;
+    return ui::ET_KEY_PRESSED;
   } else if (type == kKeyUp) {
-    return views::Event::ET_KEY_RELEASED;
+    return ui::ET_KEY_RELEASED;
   }
-  return views::Event::ET_UNKNOWN;
+  return ui::ET_UNKNOWN;
 }
 
 }  // namespace
@@ -77,8 +77,8 @@ bool SendKeyboardEventInputFunction::RunImpl() {
 
   std::string type_name;
   EXTENSION_FUNCTION_VALIDATE(args->GetString(kType, &type_name));
-  views::Event::EventType type = GetTypeFromString(type_name);
-  if (type == views::Event::ET_UNKNOWN) {
+  ui::EventType type = GetTypeFromString(type_name);
+  if (type == ui::ET_UNKNOWN) {
     error_ = kUnknownEventTypeError;
     return false;
   }
@@ -89,21 +89,21 @@ bool SendKeyboardEventInputFunction::RunImpl() {
 
   const views::KeyEvent& prototype_event =
       KeyEventFromKeyIdentifier(identifier);
-  if (prototype_event.GetKeyCode() == ui::VKEY_UNKNOWN) {
+  if (prototype_event.key_code() == ui::VKEY_UNKNOWN) {
     error_ = kUnknownOrUnsupportedKeyIdentiferError;
     return false;
   }
 
-  int flags = prototype_event.GetFlags();
+  int flags = prototype_event.flags();
   bool alt = false;
   if (args->GetBoolean(kAlt, &alt))
-    flags |= alt ? views::Event::EF_ALT_DOWN : 0;
+    flags |= alt ? ui::EF_ALT_DOWN : 0;
   bool ctrl = false;
   if (args->GetBoolean(kCtrl, &ctrl))
-    flags |= ctrl ? views::Event::EF_CONTROL_DOWN : 0;
+    flags |= ctrl ? ui::EF_CONTROL_DOWN : 0;
   bool shift = false;
   if (args->GetBoolean(kShift, &shift))
-    flags |= shift ? views::Event::EF_SHIFT_DOWN : 0;
+    flags |= shift ? ui::EF_SHIFT_DOWN : 0;
   bool meta = false;
   if (args->GetBoolean(kMeta, &meta)) {
     // Views does not have a Meta event flag, so return an error for now.
@@ -119,7 +119,7 @@ bool SendKeyboardEventInputFunction::RunImpl() {
     return false;
   }
 
-  views::KeyEvent event(type, prototype_event.GetKeyCode(), flags, 0, 0);
+  views::KeyEvent event(type, prototype_event.key_code(), flags, 0, 0);
   if (!root_view->ProcessKeyEvent(event)) {
     error_ = kKeyEventUnprocessedError;
     return false;

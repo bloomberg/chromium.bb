@@ -5,7 +5,7 @@
 #include "chrome/test/webdriver/keymap.h"
 
 #include "chrome/browser/automation/ui_controls.h"
-#include "views/events/event.h"
+#include "ui/base/events.h"
 
 namespace webdriver {
 
@@ -147,17 +147,17 @@ bool KeyMap::Press(const scoped_refptr<WindowProxy>& window,
 
   int modifiers = 0;
   if (shift_ || shifted_keys_.find(key) != shifted_keys_.end()) {
-    modifiers = modifiers | views::Event::EF_SHIFT_DOWN;
+    modifiers = modifiers | ui::EF_SHIFT_DOWN;
   }
   if (control_) {
-    modifiers = modifiers | views::Event::EF_CONTROL_DOWN;
+    modifiers = modifiers | ui::EF_CONTROL_DOWN;
   }
   if (alt_) {
-    modifiers = modifiers | views::Event::EF_ALT_DOWN;
+    modifiers = modifiers | ui::EF_ALT_DOWN;
   }
   if (command_) {
     VLOG(1) << "Pressing command key on linux!!";
-    modifiers = modifiers | views::Event::EF_COMMAND_DOWN;
+    modifiers = modifiers | ui::EF_COMMAND_DOWN;
   }
 
   // TODO(jmikhail): need to be able to capture modifier key up.

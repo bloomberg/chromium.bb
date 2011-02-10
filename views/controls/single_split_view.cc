@@ -91,7 +91,7 @@ gfx::Size SingleSplitView::GetPreferredSize() {
 }
 
 gfx::NativeCursor SingleSplitView::GetCursorForPoint(
-    Event::EventType event_type,
+    ui::EventType event_type,
     const gfx::Point& p) {
   if (IsPointInDivider(p)) {
 #if defined(OS_WIN)

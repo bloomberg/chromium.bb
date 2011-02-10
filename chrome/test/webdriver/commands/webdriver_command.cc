@@ -19,7 +19,6 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/webdriver/utility_functions.h"
-#include "views/events/event.h"
 
 namespace webdriver {
 

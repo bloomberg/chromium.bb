@@ -11,9 +11,9 @@
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui/ui_test.h"
 #include "chrome/test/ui_test_utils.h"
+#include "ui/base/events.h"
 #include "ui/base/message_box_flags.h"
 #include "ui/gfx/rect.h"
-#include "views/events/event.h"
 
 class FastShutdown : public UITest {
 };
@@ -42,7 +42,7 @@ TEST_F(FastShutdown, MAYBE_SlowTermination) {
   ASSERT_TRUE(window->GetViewBounds(VIEW_ID_TAB_CONTAINER, &bounds, true));
   // This click will launch a popup which has a before unload handler.
   ASSERT_TRUE(window->SimulateOSClick(bounds.CenterPoint(),
-                                      views::Event::EF_LEFT_BUTTON_DOWN));
+                                      ui::EF_LEFT_BUTTON_DOWN));
   ASSERT_TRUE(browser->WaitForTabCountToBecome(2));
   // Close the tab, removing the one and only before unload handler.
   scoped_refptr<TabProxy> tab(browser->GetTab(1));

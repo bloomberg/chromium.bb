@@ -326,19 +326,19 @@ TEST_F(ViewTest, AddRemoveNotifications) {
 ////////////////////////////////////////////////////////////////////////////////
 
 bool TestView::OnMousePressed(const MouseEvent& event) {
-  last_mouse_event_type_ = event.GetType();
+  last_mouse_event_type_ = event.type();
   location_.SetPoint(event.x(), event.y());
   return true;
 }
 
 bool TestView::OnMouseDragged(const MouseEvent& event) {
-  last_mouse_event_type_ = event.GetType();
+  last_mouse_event_type_ = event.type();
   location_.SetPoint(event.x(), event.y());
   return true;
 }
 
 void TestView::OnMouseReleased(const MouseEvent& event, bool canceled) {
-  last_mouse_event_type_ = event.GetType();
+  last_mouse_event_type_ = event.type();
   location_.SetPoint(event.x(), event.y());
 }
 
@@ -364,12 +364,12 @@ TEST_F(ViewTest, MouseEvent) {
   v1->Reset();
   v2->Reset();
 
-  MouseEvent pressed(Event::ET_MOUSE_PRESSED,
+  MouseEvent pressed(ui::ET_MOUSE_PRESSED,
                      110,
                      120,
-                     Event::EF_LEFT_BUTTON_DOWN);
+                     ui::EF_LEFT_BUTTON_DOWN);
   root->OnMousePressed(pressed);
-  EXPECT_EQ(v2->last_mouse_event_type_, Event::ET_MOUSE_PRESSED);
+  EXPECT_EQ(v2->last_mouse_event_type_, ui::ET_MOUSE_PRESSED);
   EXPECT_EQ(v2->location_.x(), 10);
   EXPECT_EQ(v2->location_.y(), 20);
   // Make sure v1 did not receive the event
@@ -378,12 +378,12 @@ TEST_F(ViewTest, MouseEvent) {
   // Drag event out of bounds. Should still go to v2
   v1->Reset();
   v2->Reset();
-  MouseEvent dragged(Event::ET_MOUSE_DRAGGED,
+  MouseEvent dragged(ui::ET_MOUSE_DRAGGED,
                      50,
                      40,
-                     Event::EF_LEFT_BUTTON_DOWN);
+                     ui::EF_LEFT_BUTTON_DOWN);
   root->OnMouseDragged(dragged);
-  EXPECT_EQ(v2->last_mouse_event_type_, Event::ET_MOUSE_DRAGGED);
+  EXPECT_EQ(v2->last_mouse_event_type_, ui::ET_MOUSE_DRAGGED);
   EXPECT_EQ(v2->location_.x(), -50);
   EXPECT_EQ(v2->location_.y(), -60);
   // Make sure v1 did not receive the event
@@ -392,9 +392,9 @@ TEST_F(ViewTest, MouseEvent) {
   // Releasted event out of bounds. Should still go to v2
   v1->Reset();
   v2->Reset();
-  MouseEvent released(Event::ET_MOUSE_RELEASED, 0, 0, 0);
+  MouseEvent released(ui::ET_MOUSE_RELEASED, 0, 0, 0);
   root->OnMouseDragged(released);
-  EXPECT_EQ(v2->last_mouse_event_type_, Event::ET_MOUSE_RELEASED);
+  EXPECT_EQ(v2->last_mouse_event_type_, ui::ET_MOUSE_RELEASED);
   EXPECT_EQ(v2->location_.x(), -100);
   EXPECT_EQ(v2->location_.y(), -100);
   // Make sure v1 did not receive the event
@@ -429,12 +429,12 @@ View::TouchStatus TestView::OnTouchEvent(const TouchEvent& event) {
   last_touch_event_type_ = event.GetType();
   location_.SetPoint(event.x(), event.y());
   if (!in_touch_sequence_) {
-    if (event.GetType() == Event::ET_TOUCH_PRESSED) {
+    if (event.GetType() == ui::ET_TOUCH_PRESSED) {
       in_touch_sequence_ = true;
       return TOUCH_STATUS_START;
     }
   } else {
-    if (event.GetType() == Event::ET_TOUCH_RELEASED) {
+    if (event.GetType() == ui::ET_TOUCH_RELEASED) {
       in_touch_sequence_ = false;
       return TOUCH_STATUS_END;
     }
@@ -474,7 +474,7 @@ TEST_F(ViewTest, TouchEvent) {
   v2->Reset();
   gm->Reset();
 
-  TouchEvent unhandled(Event::ET_TOUCH_MOVED,
+  TouchEvent unhandled(ui::ET_TOUCH_MOVED,
                        400,
                        400,
                        0, /* no flags */
@@ -485,7 +485,7 @@ TEST_F(ViewTest, TouchEvent) {
   EXPECT_EQ(v2->last_touch_event_type_, 0);
 
   EXPECT_EQ(gm->previously_handled_flag_, false);
-  EXPECT_EQ(gm->last_touch_event_, Event::ET_TOUCH_MOVED);
+  EXPECT_EQ(gm->last_touch_event_, ui::ET_TOUCH_MOVED);
   EXPECT_EQ(gm->last_view_, root);
   EXPECT_EQ(gm->dispatched_synthetic_event_, true);
 
@@ -494,7 +494,7 @@ TEST_F(ViewTest, TouchEvent) {
   v2->Reset();
   gm->Reset();
 
-  TouchEvent pressed(Event::ET_TOUCH_PRESSED,
+  TouchEvent pressed(ui::ET_TOUCH_PRESSED,
                      110,
                      120,
                      0, /* no flags */
@@ -502,7 +502,7 @@ TEST_F(ViewTest, TouchEvent) {
   v2->last_touch_event_was_handled_ = true;
   root->OnTouchEvent(pressed);
 
-  EXPECT_EQ(v2->last_touch_event_type_, Event::ET_TOUCH_PRESSED);
+  EXPECT_EQ(v2->last_touch_event_type_, ui::ET_TOUCH_PRESSED);
   EXPECT_EQ(v2->location_.x(), 10);
   EXPECT_EQ(v2->location_.y(), 20);
   // Make sure v1 did not receive the event
@@ -516,13 +516,13 @@ TEST_F(ViewTest, TouchEvent) {
   // Drag event out of bounds. Should still go to v2
   v1->Reset();
   v2->Reset();
-  TouchEvent dragged(Event::ET_TOUCH_MOVED,
+  TouchEvent dragged(ui::ET_TOUCH_MOVED,
                      50,
                      40,
                      0, /* no flags */
                      0  /* first finger touch */);
   root->OnTouchEvent(dragged);
-  EXPECT_EQ(v2->last_touch_event_type_, Event::ET_TOUCH_MOVED);
+  EXPECT_EQ(v2->last_touch_event_type_, ui::ET_TOUCH_MOVED);
   EXPECT_EQ(v2->location_.x(), -50);
   EXPECT_EQ(v2->location_.y(), -60);
   // Make sure v1 did not receive the event
@@ -535,10 +535,10 @@ TEST_F(ViewTest, TouchEvent) {
   // Released event out of bounds. Should still go to v2
   v1->Reset();
   v2->Reset();
-  TouchEvent released(Event::ET_TOUCH_RELEASED, 0, 0, 0, 0 /* first finger */);
+  TouchEvent released(ui::ET_TOUCH_RELEASED, 0, 0, 0, 0 /* first finger */);
   v2->last_touch_event_was_handled_ = true;
   root->OnTouchEvent(released);
-  EXPECT_EQ(v2->last_touch_event_type_, Event::ET_TOUCH_RELEASED);
+  EXPECT_EQ(v2->last_touch_event_type_, ui::ET_TOUCH_RELEASED);
   EXPECT_EQ(v2->location_.x(), -100);
   EXPECT_EQ(v2->location_.y(), -100);
   // Make sure v1 did not receive the event
@@ -1270,7 +1270,7 @@ class DefaultButtonTest : public ViewTest {
   }
 
   void SimularePressingEnterAndCheckDefaultButton(ButtonID button_id) {
-    KeyEvent event(Event::ET_KEY_PRESSED, ui::VKEY_RETURN, 0, 0, 0);
+    KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, 0, 0, 0);
     focus_manager_->OnKeyEvent(event);
     switch (button_id) {
       case OK:

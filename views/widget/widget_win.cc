@@ -689,7 +689,7 @@ void WidgetWin::OnInitMenuPopup(HMENU menu,
 }
 
 void WidgetWin::OnKeyDown(TCHAR c, UINT rep_cnt, UINT flags) {
-  KeyEvent event(Event::ET_KEY_PRESSED, ui::KeyboardCodeForWindowsKeyCode(c),
+  KeyEvent event(ui::ET_KEY_PRESSED, ui::KeyboardCodeForWindowsKeyCode(c),
                  KeyEvent::GetKeyStateFlags(), rep_cnt, flags,
                  WM_KEYDOWN);
   RootView* root_view = GetFocusedViewRootView();
@@ -700,7 +700,7 @@ void WidgetWin::OnKeyDown(TCHAR c, UINT rep_cnt, UINT flags) {
 }
 
 void WidgetWin::OnKeyUp(TCHAR c, UINT rep_cnt, UINT flags) {
-  KeyEvent event(Event::ET_KEY_RELEASED, ui::KeyboardCodeForWindowsKeyCode(c),
+  KeyEvent event(ui::ET_KEY_RELEASED, ui::KeyboardCodeForWindowsKeyCode(c),
                  KeyEvent::GetKeyStateFlags(), rep_cnt, flags,
                  WM_KEYUP);
   RootView* root_view = GetFocusedViewRootView();
@@ -1020,11 +1020,11 @@ bool WidgetWin::ProcessMousePressed(const CPoint& point,
   gfx::Point converted_point(point);
   if (non_client)
     View::ConvertPointToView(NULL, root_view_.get(), &converted_point);
-  MouseEvent mouse_pressed(Event::ET_MOUSE_PRESSED,
+  MouseEvent mouse_pressed(ui::ET_MOUSE_PRESSED,
                            converted_point.x(),
                            converted_point.y(),
-                           (dbl_click ? MouseEvent::EF_IS_DOUBLE_CLICK : 0) |
-                           (non_client ? MouseEvent::EF_IS_NON_CLIENT : 0) |
+                           (dbl_click ? ui::EF_IS_DOUBLE_CLICK : 0) |
+                           (non_client ? ui::EF_IS_NON_CLIENT : 0) |
                            Event::ConvertWindowsFlags(flags));
   if (root_view_->OnMousePressed(mouse_pressed)) {
     is_mouse_down_ = true;
@@ -1039,7 +1039,7 @@ bool WidgetWin::ProcessMousePressed(const CPoint& point,
 
 void WidgetWin::ProcessMouseDragged(const CPoint& point, UINT flags) {
   last_mouse_event_was_move_ = false;
-  MouseEvent mouse_drag(Event::ET_MOUSE_DRAGGED,
+  MouseEvent mouse_drag(ui::ET_MOUSE_DRAGGED,
                         point.x,
                         point.y,
                         Event::ConvertWindowsFlags(flags));
@@ -1048,7 +1048,7 @@ void WidgetWin::ProcessMouseDragged(const CPoint& point, UINT flags) {
 
 void WidgetWin::ProcessMouseReleased(const CPoint& point, UINT flags) {
   last_mouse_event_was_move_ = false;
-  MouseEvent mouse_up(Event::ET_MOUSE_RELEASED,
+  MouseEvent mouse_up(ui::ET_MOUSE_RELEASED,
                       point.x,
                       point.y,
                       Event::ConvertWindowsFlags(flags));
@@ -1082,7 +1082,7 @@ void WidgetWin::ProcessMouseMoved(const CPoint &point, UINT flags,
     last_mouse_move_x_ = screen_loc.x();
     last_mouse_move_y_ = screen_loc.y();
     last_mouse_event_was_move_ = true;
-    MouseEvent mouse_move(Event::ET_MOUSE_MOVED,
+    MouseEvent mouse_move(ui::ET_MOUSE_MOVED,
                           point.x,
                           point.y,
                           Event::ConvertWindowsFlags(flags));

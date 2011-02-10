@@ -198,7 +198,7 @@ bool ScreenLockView::HandleKeyEvent(
     views::Textfield* sender,
     const views::KeyEvent& key_event) {
   screen_locker_->ClearErrors();
-  if (key_event.GetKeyCode() == ui::VKEY_RETURN) {
+  if (key_event.key_code() == ui::VKEY_RETURN) {
     screen_locker_->Authenticate(password_field_->text());
     return true;
   }

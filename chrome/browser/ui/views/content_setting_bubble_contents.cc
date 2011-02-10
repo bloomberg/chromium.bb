@@ -57,9 +57,8 @@ class ContentSettingBubbleContents::Favicon : public views::ImageView {
   // views::View overrides:
   virtual bool OnMousePressed(const views::MouseEvent& event);
   virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled);
-  virtual gfx::NativeCursor GetCursorForPoint(
-      views::Event::EventType event_type,
-      const gfx::Point& p);
+  virtual gfx::NativeCursor GetCursorForPoint(ui::EventType event_type,
+                                              const gfx::Point& p);
 
   ContentSettingBubbleContents* parent_;
   views::Link* link_;
@@ -92,11 +91,11 @@ void ContentSettingBubbleContents::Favicon::OnMouseReleased(
   if (!canceled &&
       (event.IsLeftMouseButton() || event.IsMiddleMouseButton()) &&
       HitTest(event.location()))
-    parent_->LinkActivated(link_, event.GetFlags());
+    parent_->LinkActivated(link_, event.flags());
 }
 
 gfx::NativeCursor ContentSettingBubbleContents::Favicon::GetCursorForPoint(
-    views::Event::EventType event_type,
+    ui::EventType event_type,
     const gfx::Point& p) {
 #if defined(OS_WIN)
   if (!g_hand_cursor)

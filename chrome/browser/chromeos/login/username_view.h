@@ -46,7 +46,7 @@ class UsernameView : public views::Label {
  private:
   // Overriden from View.
   virtual gfx::NativeCursor GetCursorForPoint(
-      views::Event::EventType event_type,
+      ui::EventType event_type,
       const gfx::Point& p);
   virtual void OnLocaleChanged();
 

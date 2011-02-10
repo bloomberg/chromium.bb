@@ -940,22 +940,22 @@ void NativeTextfieldWin::HandleKeystroke(UINT message,
   Textfield::Controller* controller = textfield_->GetController();
   bool handled = false;
   if (controller) {
-    Event::EventType type;
+    ui::EventType type;
     switch (message) {
       case WM_KEYDOWN:
       case WM_SYSKEYDOWN:
       case WM_CHAR:
       case WM_SYSCHAR:
-        type = Event::ET_KEY_PRESSED;
+        type = ui::ET_KEY_PRESSED;
         break;
       case WM_KEYUP:
       case WM_SYSKEYUP:
-        type = Event::ET_KEY_RELEASED;
+        type = ui::ET_KEY_RELEASED;
         break;
       default:
         NOTREACHED() << "Unknown message:" << message;
         // Passing through to avoid crash on release build.
-        type = Event::ET_KEY_PRESSED;
+        type = ui::ET_KEY_PRESSED;
     }
     KeyEvent key_event(type,
                        ui::KeyboardCodeForWindowsKeyCode(key),

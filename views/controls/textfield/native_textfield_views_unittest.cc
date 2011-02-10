@@ -113,10 +113,10 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
                                     bool shift,
                                     bool control,
                                     bool capslock) {
-    int flags = (shift ? KeyEvent::EF_SHIFT_DOWN : 0) |
-        (control ? KeyEvent::EF_CONTROL_DOWN : 0) |
-        (capslock ? KeyEvent::EF_CAPS_LOCK_DOWN : 0);
-    KeyEvent event(KeyEvent::ET_KEY_PRESSED, key_code, flags, 1, 0);
+    int flags = (shift ? ui::EF_SHIFT_DOWN : 0) |
+        (control ? ui::EF_CONTROL_DOWN : 0) |
+        (capslock ? ui::EF_CAPS_LOCK_DOWN : 0);
+    KeyEvent event(ui::ET_KEY_PRESSED, key_code, flags, 1, 0);
     return textfield_->OnKeyPressed(event);
   }
 
@@ -435,7 +435,7 @@ TEST_F(NativeTextfieldViewsTest, ContextMenuDisplayTest) {
 TEST_F(NativeTextfieldViewsTest, DoubleAndTripleClickTest) {
   InitTextfield(Textfield::STYLE_DEFAULT);
   textfield_->SetText(ASCIIToUTF16("hello world"));
-  MouseEvent me(MouseEvent::ET_MOUSE_PRESSED, 0, 0, Event::EF_LEFT_BUTTON_DOWN);
+  MouseEvent me(ui::ET_MOUSE_PRESSED, 0, 0, ui::EF_LEFT_BUTTON_DOWN);
   EXPECT_EQ(NativeTextfieldViews::NONE, GetClickState());
 
   // Test for double click.

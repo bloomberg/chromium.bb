@@ -12,7 +12,7 @@ namespace views {
 
 KeyEvent::KeyEvent(const GdkEventKey* event)
     : Event(event->type == GDK_KEY_PRESS ?
-            Event::ET_KEY_PRESSED : Event::ET_KEY_RELEASED,
+            ui::ET_KEY_PRESSED : ui::ET_KEY_RELEASED,
             GetFlagsFromGdkState(event->state)),
       // TODO(erg): All these values are iffy.
       key_code_(ui::WindowsKeyCodeForGdkKeyCode(event->keyval)),
@@ -28,19 +28,19 @@ KeyEvent::KeyEvent(const GdkEventKey* event)
 int Event::GetFlagsFromGdkState(int state) {
   int flags = 0;
   if (state & GDK_LOCK_MASK)
-    flags |= Event::EF_CAPS_LOCK_DOWN;
+    flags |= ui::EF_CAPS_LOCK_DOWN;
   if (state & GDK_CONTROL_MASK)
-    flags |= Event::EF_CONTROL_DOWN;
+    flags |= ui::EF_CONTROL_DOWN;
   if (state & GDK_SHIFT_MASK)
-    flags |= Event::EF_SHIFT_DOWN;
+    flags |= ui::EF_SHIFT_DOWN;
   if (state & GDK_MOD1_MASK)
-    flags |= Event::EF_ALT_DOWN;
+    flags |= ui::EF_ALT_DOWN;
   if (state & GDK_BUTTON1_MASK)
-    flags |= Event::EF_LEFT_BUTTON_DOWN;
+    flags |= ui::EF_LEFT_BUTTON_DOWN;
   if (state & GDK_BUTTON2_MASK)
-    flags |= Event::EF_MIDDLE_BUTTON_DOWN;
+    flags |= ui::EF_MIDDLE_BUTTON_DOWN;
   if (state & GDK_BUTTON3_MASK)
-    flags |= Event::EF_RIGHT_BUTTON_DOWN;
+    flags |= ui::EF_RIGHT_BUTTON_DOWN;
   return flags;
 }
 

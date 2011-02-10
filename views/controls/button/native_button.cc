@@ -116,9 +116,9 @@ void NativeButton::ButtonPressed() {
   gfx::Point cursor_point = Screen::GetCursorScreenPoint();
 #endif
 
-  views::MouseEvent event(views::Event::ET_MOUSE_RELEASED,
+  views::MouseEvent event(ui::ET_MOUSE_RELEASED,
                           cursor_point.x(), cursor_point.y(),
-                          views::Event::EF_LEFT_BUTTON_DOWN);
+                          ui::EF_LEFT_BUTTON_DOWN);
   NotifyClick(event);
 }
 
@@ -192,9 +192,9 @@ bool NativeButton::AcceleratorPressed(const Accelerator& accelerator) {
 #elif defined(OS_LINUX)
     gfx::Point cursor_point = Screen::GetCursorScreenPoint();
 #endif
-    views::MouseEvent event(views::Event::ET_MOUSE_RELEASED,
+    views::MouseEvent event(ui::ET_MOUSE_RELEASED,
                             cursor_point.x(), cursor_point.y(),
-                            views::Event::EF_LEFT_BUTTON_DOWN);
+                            ui::EF_LEFT_BUTTON_DOWN);
     NotifyClick(event);
     return true;
   }

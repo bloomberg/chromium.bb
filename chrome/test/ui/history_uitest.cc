@@ -12,8 +12,8 @@
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui/ui_test.h"
 #include "chrome/test/ui_test_utils.h"
+#include "ui/base/events.h"
 #include "ui/gfx/rect.h"
-#include "views/events/event.h"
 
 namespace {
 
@@ -109,9 +109,8 @@ TEST_F(HistoryTester, ConsiderRedirectAfterGestureAsUserInitiated) {
   gfx::Rect tab_view_bounds;
   ASSERT_TRUE(window->GetViewBounds(VIEW_ID_TAB_CONTAINER, &tab_view_bounds,
                                     true));
-  ASSERT_TRUE(
-      window->SimulateOSClick(tab_view_bounds.CenterPoint(),
-                              views::Event::EF_LEFT_BUTTON_DOWN));
+  ASSERT_TRUE(window->SimulateOSClick(tab_view_bounds.CenterPoint(),
+                                      ui::EF_LEFT_BUTTON_DOWN));
 
   NavigateToURL(GURL("javascript:redirectToPage12()"));
   WaitForFinish("History_Length_Test_12", "1", url, kTestCompleteCookie,

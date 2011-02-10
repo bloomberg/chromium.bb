@@ -85,7 +85,7 @@ class UsernameField : public chromeos::TextfieldWithMargin {
 
   // Overridden from views::View:
   virtual bool OnKeyPressed(const views::KeyEvent& e) {
-    if (e.GetKeyCode() == ui::VKEY_LEFT) {
+    if (e.key_code() == ui::VKEY_LEFT) {
       return controller_->NavigateAway();
     }
     return false;
@@ -512,7 +512,7 @@ bool NewUserView::HandleKeyEvent(views::Textfield* sender,
   if (!CrosLibrary::Get()->EnsureLoaded() || login_in_process_)
     return false;
 
-  if (key_event.GetKeyCode() == ui::VKEY_RETURN) {
+  if (key_event.key_code() == ui::VKEY_RETURN) {
     if (!username_field_->text().empty() && !password_field_->text().empty())
       Login();
     // Return true so that processing ends

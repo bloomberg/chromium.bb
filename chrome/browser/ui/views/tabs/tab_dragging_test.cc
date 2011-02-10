@@ -134,7 +134,7 @@ TEST_F(TabDraggingTest, MAYBE_Tab1Tab2) {
                    bounds1.y() + bounds1.height() / 2);
   gfx::Point end(start.x() + 2 * bounds1.width() / 3, start.y());
   ASSERT_TRUE(browser->SimulateDrag(start, end,
-                                    views::Event::EF_LEFT_BUTTON_DOWN,
+                                    ui::EF_LEFT_BUTTON_DOWN,
                                     false));
 
   // Now check for expected results.
@@ -234,7 +234,7 @@ TEST_F(TabDraggingTest, MAYBE_Tab1Tab3) {
                      bounds3.width() / 2,
                  start.y());
   ASSERT_TRUE(browser->SimulateDrag(start, end,
-                                    views::Event::EF_LEFT_BUTTON_DOWN,
+                                    ui::EF_LEFT_BUTTON_DOWN,
                                     false));
 
   // Now check for expected results.
@@ -344,7 +344,7 @@ TEST_F(TabDraggingTest, MAYBE_Tab1Tab3Escape) {
   // Simulate drag with 'true' as the last parameter. This will interrupt
   // in-flight with Escape.
   ASSERT_TRUE(browser->SimulateDrag(start, end,
-                                    views::Event::EF_LEFT_BUTTON_DOWN,
+                                    ui::EF_LEFT_BUTTON_DOWN,
                                     true));
 
   // Now check for expected results.
@@ -465,7 +465,7 @@ TEST_F(TabDraggingTest, MAYBE_Tab2OutOfTabStrip) {
 
   // Simulate tab drag.
   ASSERT_TRUE(browser->SimulateDrag(start, end,
-                                    views::Event::EF_LEFT_BUTTON_DOWN,
+                                    ui::EF_LEFT_BUTTON_DOWN,
                                     false));
 
   // Now, first make sure that the old window has only two tabs remaining.

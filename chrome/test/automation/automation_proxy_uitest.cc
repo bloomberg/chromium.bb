@@ -43,7 +43,6 @@
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/rect.h"
-#include "views/events/event.h"
 
 using ui_test_utils::TimedMessageLoopRunner;
 using testing::CreateFunctor;
@@ -191,8 +190,7 @@ TEST_F(AutomationProxyVisibleTest, MAYBE_WindowGetViewBounds) {
     start.y = bounds.y() + bounds.height() / 2;
     end.x = start.x + 2 * bounds.width() / 3;
     end.y = start.y;
-    ASSERT_TRUE(browser->SimulateDrag(start, end,
-                                      views::Event::EF_LEFT_BUTTON_DOWN));
+    ASSERT_TRUE(browser->SimulateDrag(start, end, ui::EF_LEFT_BUTTON_DOWN));
 
     // Check to see that the drag event successfully swapped the two tabs.
     tab1 = browser->GetTab(0);

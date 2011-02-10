@@ -570,7 +570,7 @@ class View : public AcceleratorTarget {
   // lifetime of the returned object, though that lifetime may vary from
   // platform to platform. On Windows, the cursor is a shared resource but in
   // Gtk, the framework destroys the returned cursor after setting it.
-  virtual gfx::NativeCursor GetCursorForPoint(Event::EventType event_type,
+  virtual gfx::NativeCursor GetCursorForPoint(ui::EventType event_type,
                                               const gfx::Point& p);
 
   // Convenience to test whether a point is within this view's bounds

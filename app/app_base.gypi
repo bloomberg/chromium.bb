@@ -131,6 +131,7 @@
         '../ui/base/dragdrop/os_exchange_data_provider_win.h',
         '../ui/base/dragdrop/os_exchange_data.cc',
         '../ui/base/dragdrop/os_exchange_data.h',
+        '../ui/base/events.h',
         '../ui/base/gtk/event_synthesis_gtk.cc',
         '../ui/base/gtk/event_synthesis_gtk.h',
         '../ui/base/gtk/gtk_signal.h',

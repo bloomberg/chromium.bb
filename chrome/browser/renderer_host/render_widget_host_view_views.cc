@@ -60,13 +60,13 @@ int WebInputEventFlagsFromViewsEvent(const views::Event& event) {
 WebKit::WebTouchPoint::State TouchPointStateFromEvent(
     const views::TouchEvent* event) {
   switch (event->GetType()) {
-    case views::Event::ET_TOUCH_PRESSED:
+    case ui::ET_TOUCH_PRESSED:
       return WebKit::WebTouchPoint::StatePressed;
-    case views::Event::ET_TOUCH_RELEASED:
+    case ui::ET_TOUCH_RELEASED:
       return WebKit::WebTouchPoint::StateReleased;
-    case views::Event::ET_TOUCH_MOVED:
+    case ui::ET_TOUCH_MOVED:
       return WebKit::WebTouchPoint::StateMoved;
-    case views::Event::ET_TOUCH_CANCELLED:
+    case ui::ET_TOUCH_CANCELLED:
       return WebKit::WebTouchPoint::StateCancelled;
     default:
       return WebKit::WebTouchPoint::StateUndefined;
@@ -76,13 +76,13 @@ WebKit::WebTouchPoint::State TouchPointStateFromEvent(
 WebKit::WebInputEvent::Type TouchEventTypeFromEvent(
     const views::TouchEvent* event) {
   switch (event->GetType()) {
-    case views::Event::ET_TOUCH_PRESSED:
+    case ui::ET_TOUCH_PRESSED:
       return WebKit::WebInputEvent::TouchStart;
-    case views::Event::ET_TOUCH_RELEASED:
+    case ui::ET_TOUCH_RELEASED:
       return WebKit::WebInputEvent::TouchEnd;
-    case views::Event::ET_TOUCH_MOVED:
+    case ui::ET_TOUCH_MOVED:
       return WebKit::WebInputEvent::TouchMove;
-    case views::Event::ET_TOUCH_CANCELLED:
+    case ui::ET_TOUCH_CANCELLED:
       return WebKit::WebInputEvent::TouchCancel;
     default:
       return WebKit::WebInputEvent::Undefined;
@@ -446,7 +446,7 @@ void RenderWidgetHostViewViews::Paint(gfx::Canvas* canvas) {
 }
 
 gfx::NativeCursor RenderWidgetHostViewViews::GetCursorForPoint(
-    views::Event::EventType type, const gfx::Point& point) {
+    ui::EventType type, const gfx::Point& point) {
   return native_cursor_;
 }
 
@@ -684,7 +684,7 @@ views::View::TouchStatus RenderWidgetHostViewViews::OnTouchEvent(
   TouchStatus status = TOUCH_STATUS_UNKNOWN;
 
   switch (e.GetType()) {
-    case views::Event::ET_TOUCH_PRESSED:
+    case ui::ET_TOUCH_PRESSED:
       // Add a new touch point.
       if (touch_event_.touchPointsLength <
           WebTouchEvent::touchPointsLengthCap) {
@@ -700,9 +700,9 @@ views::View::TouchStatus RenderWidgetHostViewViews::OnTouchEvent(
         }
       }
       break;
-    case views::Event::ET_TOUCH_RELEASED:
-    case views::Event::ET_TOUCH_CANCELLED:
-    case views::Event::ET_TOUCH_MOVED: {
+    case ui::ET_TOUCH_RELEASED:
+    case ui::ET_TOUCH_CANCELLED:
+    case ui::ET_TOUCH_MOVED: {
       // The touch point should have been added to the event from an earlier
       // _PRESSED event. So find that.
       // At the moment, only a maximum of 4 touch-points are allowed. So a
@@ -755,7 +755,7 @@ views::View::TouchStatus RenderWidgetHostViewViews::OnTouchEvent(
   host_->ForwardTouchEvent(touch_event_);
 
   // If the touch was released, then remove it from the list of touch points.
-  if (e.GetType() == views::Event::ET_TOUCH_RELEASED) {
+  if (e.GetType() == ui::ET_TOUCH_RELEASED) {
     --touch_event_.touchPointsLength;
     for (int i = point - touch_event_.touchPoints;
          i < touch_event_.touchPointsLength;
@@ -764,7 +764,7 @@ views::View::TouchStatus RenderWidgetHostViewViews::OnTouchEvent(
     }
     if (touch_event_.touchPointsLength == 0)
       status = TOUCH_STATUS_END;
-  } else if (e.GetType() == views::Event::ET_TOUCH_CANCELLED) {
+  } else if (e.GetType() == ui::ET_TOUCH_CANCELLED) {
     status = TOUCH_STATUS_CANCEL;
   }
 

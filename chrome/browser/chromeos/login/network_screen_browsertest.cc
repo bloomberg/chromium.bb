@@ -118,9 +118,9 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
     controller()->set_observer(mock_screen_observer.get());
     DummyButtonListener button_listener;
     views::TextButton button(&button_listener, L"Button");
-    views::MouseEvent event(views::Event::ET_MOUSE_RELEASED,
+    views::MouseEvent event(ui::ET_MOUSE_RELEASED,
                             0, 0,
-                            views::Event::EF_LEFT_BUTTON_DOWN);
+                            ui::EF_LEFT_BUTTON_DOWN);
     network_screen->ButtonPressed(&button, event);
     ui_test_utils::RunAllPendingInMessageLoop();
     controller()->set_observer(NULL);

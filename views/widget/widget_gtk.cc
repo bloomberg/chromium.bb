@@ -883,7 +883,7 @@ bool WidgetGtk::HandleKeyboardEvent(GdkEventKey* event) {
     return false;
 
   KeyEvent key(event);
-  int key_code = key.GetKeyCode();
+  int key_code = key.key_code();
   bool handled = false;
 
   // Always reset |should_handle_menu_key_release_| unless we are handling a
@@ -901,7 +901,7 @@ bool WidgetGtk::HandleKeyboardEvent(GdkEventKey* event) {
     else
       should_handle_menu_key_release_ = true;
   } else if (key_code == ui::VKEY_MENU && should_handle_menu_key_release_ &&
-             (key.GetFlags() & ~Event::EF_ALT_DOWN) == 0) {
+             (key.flags() & ~ui::EF_ALT_DOWN) == 0) {
     // Trigger VKEY_MENU when only this key is pressed and released, and both
     // press and release events are not handled by others.
     Accelerator accelerator(ui::VKEY_MENU, false, false, false);
@@ -916,20 +916,20 @@ int WidgetGtk::GetFlagsForEventButton(const GdkEventButton& event) {
   int flags = Event::GetFlagsFromGdkState(event.state);
   switch (event.button) {
     case 1:
-      flags |= Event::EF_LEFT_BUTTON_DOWN;
+      flags |= ui::EF_LEFT_BUTTON_DOWN;
       break;
     case 2:
-      flags |= Event::EF_MIDDLE_BUTTON_DOWN;
+      flags |= ui::EF_MIDDLE_BUTTON_DOWN;
       break;
     case 3:
-      flags |= Event::EF_RIGHT_BUTTON_DOWN;
+      flags |= ui::EF_RIGHT_BUTTON_DOWN;
       break;
     default:
       // We only deal with 1-3.
       break;
   }
   if (event.type == GDK_2BUTTON_PRESS)
-    flags |= MouseEvent::EF_IS_DOUBLE_CLICK;
+    flags |= ui::EF_IS_DOUBLE_CLICK;
   return flags;
 }
 
@@ -1078,10 +1078,10 @@ gboolean WidgetGtk::OnEnterNotify(GtkWidget* widget, GdkEventCrossing* event) {
     // modifiers is set. Unset it as we're compensating for the leave generated
     // when you press a button.
     int flags = (Event::GetFlagsFromGdkState(event->state) &
-                 ~(Event::EF_LEFT_BUTTON_DOWN |
-                   Event::EF_MIDDLE_BUTTON_DOWN |
-                   Event::EF_RIGHT_BUTTON_DOWN));
-    MouseEvent mouse_move(Event::ET_MOUSE_MOVED, x, y, flags);
+                 ~(ui::EF_LEFT_BUTTON_DOWN |
+                   ui::EF_MIDDLE_BUTTON_DOWN |
+                   ui::EF_RIGHT_BUTTON_DOWN));
+    MouseEvent mouse_move(ui::ET_MOUSE_MOVED, x, y, flags);
     root_view_->OnMouseMoved(mouse_move);
   }
 
@@ -1102,7 +1102,7 @@ gboolean WidgetGtk::OnMotionNotify(GtkWidget* widget, GdkEventMotion* event) {
   if (has_capture_ && is_mouse_down_) {
     last_mouse_event_was_move_ = false;
     int flags = Event::GetFlagsFromGdkState(event->state);
-    MouseEvent mouse_drag(Event::ET_MOUSE_DRAGGED, x, y, flags);
+    MouseEvent mouse_drag(ui::ET_MOUSE_DRAGGED, x, y, flags);
     root_view_->OnMouseDragged(mouse_drag);
     return true;
   }
@@ -1116,7 +1116,7 @@ gboolean WidgetGtk::OnMotionNotify(GtkWidget* widget, GdkEventMotion* event) {
   last_mouse_move_y_ = screen_loc.y();
   last_mouse_event_was_move_ = true;
   int flags = Event::GetFlagsFromGdkState(event->state);
-  MouseEvent mouse_move(Event::ET_MOUSE_MOVED, x, y, flags);
+  MouseEvent mouse_move(ui::ET_MOUSE_MOVED, x, y, flags);
   root_view_->OnMouseMoved(mouse_move);
   return true;
 }
@@ -1174,7 +1174,7 @@ gboolean WidgetGtk::OnKeyEvent(GtkWidget* widget, GdkEventKey* event) {
   // VKEY_MENU key release event. It ensures that VKEY_MENU accelerator can only
   // be activated when handling a VKEY_MENU key release event which is preceded
   // by an unhandled VKEY_MENU key press event. See also HandleKeyboardEvent().
-  if (key.GetKeyCode() != ui::VKEY_MENU || event->type != GDK_KEY_RELEASE)
+  if (key.key_code() != ui::VKEY_MENU || event->type != GDK_KEY_RELEASE)
     should_handle_menu_key_release_ = false;
 
   bool handled = false;
@@ -1308,7 +1308,7 @@ bool WidgetGtk::ProcessMousePressed(GdkEventButton* event) {
   int y = 0;
   GetContainedWidgetEventCoordinates(event, &x, &y);
   last_mouse_event_was_move_ = false;
-  MouseEvent mouse_pressed(Event::ET_MOUSE_PRESSED, x, y,
+  MouseEvent mouse_pressed(ui::ET_MOUSE_PRESSED, x, y,
                            GetFlagsForEventButton(*event));
 
   if (root_view_->OnMousePressed(mouse_pressed)) {
@@ -1327,7 +1327,7 @@ void WidgetGtk::ProcessMouseReleased(GdkEventButton* event) {
   GetContainedWidgetEventCoordinates(event, &x, &y);
 
   last_mouse_event_was_move_ = false;
-  MouseEvent mouse_up(Event::ET_MOUSE_RELEASED, x, y,
+  MouseEvent mouse_up(ui::ET_MOUSE_RELEASED, x, y,
                       GetFlagsForEventButton(*event));
   // Release the capture first, that way we don't get confused if
   // OnMouseReleased blocks.
