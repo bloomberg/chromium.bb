@@ -2,3 +2,4 @@ reliability_tests
 automated_ui_tests
 lib.target/_pyautolib.so
 pyautolib.py
+chromedriver
