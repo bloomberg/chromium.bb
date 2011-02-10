@@ -521,6 +521,12 @@ bool SafeBrowsingStoreFile::DoUpdate(
   if (!file_util::GetFileSize(TemporaryFileForFilename(filename_), &size))
     return OnCorruptDatabase();
 
+  // Track update size to answer questions at http://crbug.com/72216 .
+  // Log small updates as 1k so that the 0 (underflow) bucket can be
+  // used for "empty" in SafeBrowsingDatabase.
+  UMA_HISTOGRAM_COUNTS("SB2.DatabaseUpdateKilobytes",
+                       std::max(static_cast<int>(size / 1024), 1));
+
   // Append the accumulated chunks onto the vectors read from |file_|.
   for (int i = 0; i < chunks_written_; ++i) {
     ChunkHeader header;

@@ -690,6 +690,9 @@ void SafeBrowsingDatabaseNew::UpdateFinished(bool update_succeeded) {
   // transaction was empty.  This will leave the bloom filter, the
   // pending hashes, and the prefix miss cache in place.
   if (!update_succeeded || !change_detected_) {
+    // Track empty updates to answer questions at http://crbug.com/72216 .
+    if (update_succeeded && !change_detected_)
+      UMA_HISTOGRAM_COUNTS("SB2.DatabaseUpdateKilobytes", 0);
     browse_store_->CancelUpdate();
     if (download_store_.get())
       download_store_->CancelUpdate();
