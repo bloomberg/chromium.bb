@@ -353,6 +353,9 @@ void LocationBarViewGtk::BuildSiteTypeArea() {
   gtk_box_pack_start(GTK_BOX(hbox_.get()), site_type_alignment_,
                      FALSE, FALSE, 0);
 
+  gtk_widget_set_tooltip_text(location_icon_image_,
+      l10n_util::GetStringUTF8(IDS_TOOLTIP_LOCATION_ICON).c_str());
+
   g_signal_connect(site_type_event_box_, "button-release-event",
                    G_CALLBACK(&OnIconReleasedThunk), this);
 }
