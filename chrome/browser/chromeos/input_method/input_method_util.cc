@@ -22,6 +22,8 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/keyboard_library.h"
 #include "chrome/browser/chromeos/language_preferences.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_collator.h"
@@ -599,8 +601,20 @@ void EnableInputMethods(const std::string& language_code, InputMethodType type,
 }
 
 std::string GetHardwareInputMethodId() {
-  // TODO(satorux): Rework this function. crosbug.com/11528.
-  return GetFallbackInputMethodDescriptor().id;
+  if (!(g_browser_process && g_browser_process->local_state())) {
+    // This shouldn't happen but just in case.
+    LOG(ERROR) << "Local state is not yet ready";
+    return GetFallbackInputMethodDescriptor().id;
+  }
+
+  const std::string input_method_id =
+      g_browser_process->local_state()->GetString(
+          prefs::kHardwareKeyboardLayout);
+  if (input_method_id.empty()) {
+    LOG(ERROR) << "Hardware keyboard is not found (not yet stored?)";
+    return GetFallbackInputMethodDescriptor().id;
+  }
+  return input_method_id;
 }
 
 InputMethodDescriptor GetFallbackInputMethodDescriptor() {

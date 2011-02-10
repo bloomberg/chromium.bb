@@ -656,6 +656,8 @@ PrefService* InitializeLocalState(const CommandLine& parsed_command_line,
   local_state->RegisterStringPref(prefs::kApplicationLocale, std::string());
 #if defined(OS_CHROMEOS)
   local_state->RegisterStringPref(prefs::kOwnerLocale, std::string());
+  local_state->RegisterStringPref(prefs::kHardwareKeyboardLayout,
+                                  std::string());
 #endif  // defined(OS_CHROMEOS)
 #if !defined(OS_CHROMEOS)
   local_state->RegisterBooleanPref(prefs::kMetricsReportingEnabled,

@@ -1196,6 +1196,10 @@ const char kGSSAPILibraryName[] = "auth.gssapi_library_name";
 // Dictionary for transient storage of settings that should go into signed
 // settings storage before owner has been assigned.
 const char kSignedSettingsTempStorage[] = "signed_settings_temp_storage";
+
+// The hardware keyboard layout of the device. This should look like
+// "xkb:us::eng".
+const char kHardwareKeyboardLayout[] = "intl.hardware_keyboard";
 #endif
 
 // *************** SERVICE PREFS ***************

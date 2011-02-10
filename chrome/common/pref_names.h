@@ -436,6 +436,7 @@ extern const char kManagedDefaultPopupsSetting[];
 
 #if defined(OS_CHROMEOS)
 extern const char kSignedSettingsTempStorage[];
+extern const char kHardwareKeyboardLayout[];
 #endif
 
 extern const char kRegisteredBackgroundContents[];

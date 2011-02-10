@@ -237,6 +237,27 @@ void SaveIntegerPreferenceForced(const char* pref_name, int value) {
   prefs->SavePersistentPrefs();
 }
 
+// Saves the hardware keyboard to "Locale State" from the locale code.
+// The information will be used in input_method::GetHardwareInputMethodId().
+void SaveHardwareKeyboardFromLocaleCode(const std::string& locale) {
+  std::vector<std::string> input_method_ids;
+  if (chromeos::input_method::GetInputMethodIdsFromLanguageCode(
+          locale,
+          chromeos::input_method::kKeyboardLayoutsOnly,
+          &input_method_ids)) {
+    // The output list |input_method_ids| is sorted by popularity, hence
+    // input_method_ids[0] now contains the most popular keyboard layout
+    // for the given locale.
+    PrefService* prefs = g_browser_process->local_state();
+    prefs->SetString(prefs::kHardwareKeyboardLayout, input_method_ids[0]);
+    // This asks the file thread to save the prefs (i.e. doesn't block).
+    // The latest values of Local State reside in memory so we can safely
+    // get the value of kHardwareKeyboardLayout even if the data is not
+    // yet saved to disk.
+    prefs->SavePersistentPrefs();
+  }
+}
+
 }  // namespace
 
 const char WizardController::kNetworkScreenName[] = "network";
@@ -945,6 +966,7 @@ void ShowLoginWizard(const std::string& first_screen_name,
   // and US dvorak keyboard layouts.
   if (g_browser_process && g_browser_process->local_state()) {
     const std::string locale = g_browser_process->GetApplicationLocale();
+    // If the preferred keyboard for the login screen has been saved, use it.
     const std::string initial_input_method_id =
         g_browser_process->local_state()->GetString(
             chromeos::language_prefs::kPreferredKeyboardLayout);
@@ -1002,6 +1024,13 @@ void ShowLoginWizard(const std::string& first_screen_name,
       locale = controller->GetCustomization()->initial_locale();
       VLOG(1) << "Initial locale: " << locale;
       if (!locale.empty()) {
+        // Save the hardware keyboard from the locale code.
+        SaveHardwareKeyboardFromLocaleCode(locale);
+        // Then, enable the hardware keyboard.
+        chromeos::input_method::EnableInputMethods(
+            locale,
+            chromeos::input_method::kKeyboardLayoutsOnly,
+            chromeos::input_method::GetHardwareInputMethodId());
         // Reloading resource bundle causes us to do blocking IO on UI thread.
         // Temporarily allow it until we fix http://crosbug.com/11102
         base::ThreadRestrictions::ScopedAllowIO allow_io;
