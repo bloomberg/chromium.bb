@@ -64,7 +64,6 @@ class InputMethodMenu : public views::ViewMenuDelegate,
   // InputMethodLibrary::Observer implementation.
   virtual void InputMethodChanged(
       InputMethodLibrary* obj,
-      const InputMethodDescriptor& previous_input_method,
       const InputMethodDescriptor& current_input_method,
       size_t num_active_input_methods);
   virtual void ActiveInputMethodsChanged(

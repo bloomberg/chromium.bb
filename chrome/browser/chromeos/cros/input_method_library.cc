@@ -528,35 +528,39 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   // preferences), hence this function should always be used even if you
   // just need to change the current keyboard layout.
   void ChangeCurrentInputMethod(const InputMethodDescriptor& new_input_method) {
-    // Change the keyboard layout to a preferred layout for the input method.
-    if (!CrosLibrary::Get()->GetKeyboardLibrary()->
-        SetCurrentKeyboardLayoutByName(new_input_method.keyboard_layout)) {
-      LOG(ERROR) << "Failed to change keyboard layout to "
-                 << new_input_method.keyboard_layout;
-    }
-
     if (current_input_method_.id != new_input_method.id) {
       previous_input_method_ = current_input_method_;
       current_input_method_ = new_input_method;
+
+      // Change the keyboard layout to a preferred layout for the input method.
+      if (!CrosLibrary::Get()->GetKeyboardLibrary()->
+          SetCurrentKeyboardLayoutByName(
+              current_input_method_.keyboard_layout)) {
+        LOG(ERROR) << "Failed to change keyboard layout to "
+                   << current_input_method_.keyboard_layout;
+      }
+
+      // Ask the first observer to update preferences. We should not ask every
+      // observer to do so. Otherwise, we'll end up updating preferences many
+      // times when many observers are attached (ex. many windows are opened),
+      // which is unnecessary and expensive.
+      ObserverListBase<Observer>::Iterator it(observers_);
+      Observer* first_observer = it.GetNext();
+      if (first_observer) {
+        first_observer->PreferenceUpdateNeeded(this,
+                                               previous_input_method_,
+                                               current_input_method_);
+      }
     }
+
+    // Update input method indicators (e.g. "US", "DV") in Chrome windows.
+    // For now, we have to do this every time to keep indicators updated. See
+    // comments near the FOR_EACH_OBSERVER call in FlushImeConfig() for details.
     const size_t num_active_input_methods = GetNumActiveInputMethods();
     FOR_EACH_OBSERVER(Observer, observers_,
                       InputMethodChanged(this,
-                                         previous_input_method_,
                                          current_input_method_,
                                          num_active_input_methods));
-
-    // Ask the first observer to update preferences. We should not ask every
-    // observer to do so. Otherwise, we'll end up updating preferences many
-    // times when many observers are attached (ex. many windows are opened),
-    // which is unnecessary and expensive.
-    ObserverListBase<Observer>::Iterator it(observers_);
-    Observer* first_observer = it.GetNext();
-    if (first_observer) {
-      first_observer->PreferenceUpdateNeeded(this,
-                                             previous_input_method_,
-                                             current_input_method_);
-    }
   }
 
   // Changes the current input method from the given input method ID.

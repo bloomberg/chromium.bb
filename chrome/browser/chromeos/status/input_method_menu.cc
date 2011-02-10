@@ -368,7 +368,6 @@ void InputMethodMenu::RunMenu(
 
 void InputMethodMenu::InputMethodChanged(
     InputMethodLibrary* obj,
-    const InputMethodDescriptor& previous_input_method,
     const InputMethodDescriptor& current_input_method,
     size_t num_active_input_methods) {
   UpdateUIFromInputMethod(current_input_method, num_active_input_methods);

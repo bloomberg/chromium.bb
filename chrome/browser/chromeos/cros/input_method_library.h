@@ -28,7 +28,6 @@ class InputMethodLibrary {
     // Called when the current input method is changed.
     virtual void InputMethodChanged(
         InputMethodLibrary* obj,
-        const InputMethodDescriptor& previous_input_method,
         const InputMethodDescriptor& current_input_method,
         size_t num_active_input_methods) = 0;
 
