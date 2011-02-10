@@ -35,7 +35,7 @@ class DOMStorageMessageFilter : public BrowserMessageFilter {
                                         BrowserThread::ID* thread);
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok);
-  virtual void OnDestruct();
+  virtual void OnDestruct() const;
 
   // Only call on the WebKit thread.
   static void DispatchStorageEvent(const NullableString16& key,
