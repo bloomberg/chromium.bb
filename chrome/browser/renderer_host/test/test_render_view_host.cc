@@ -131,7 +131,7 @@ void TestRenderWidgetHostView::ShowPopupWithItems(
     bool right_aligned) {
 }
 
-gfx::Rect TestRenderWidgetHostView::GetWindowRect() {
+gfx::Rect TestRenderWidgetHostView::GetViewCocoaBounds() const {
   return gfx::Rect();
 }
 

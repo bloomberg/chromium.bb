@@ -135,6 +135,39 @@ void DisablePasswordInput() {
   TSMRemoveDocumentProperty(0, kTSMDocumentEnabledInputSourcesPropertyTag);
 }
 
+// Adjusts an NSRect in Cocoa screen coordinates to have an origin in the upper
+// left of the primary screen (Carbon coordinates), and stuffs it into a
+// gfx::Rect.
+gfx::Rect FlipNSRectToRectScreen(const NSRect& rect) {
+  gfx::Rect new_rect(NSRectToCGRect(rect));
+  if ([[NSScreen screens] count] > 0) {
+    new_rect.set_y([[[NSScreen screens] objectAtIndex:0] frame].size.height -
+                   new_rect.y() - new_rect.height());
+  }
+  return new_rect;
+}
+
+// Returns the window that visually contains the given view. This is different
+// from [view window] in the case of tab dragging, where the view's owning
+// window is a floating panel attached to the actual browser window that the tab
+// is visually part of.
+NSWindow* ApparentWindowForView(NSView* view) {
+  // TODO(shess): In case of !window, the view has been removed from
+  // the view hierarchy because the tab isn't main.  Could retrieve
+  // the information from the main tab for our window.
+  NSWindow* enclosing_window = [view window];
+
+  // See if this is a tab drag window. The width check is to distinguish that
+  // case from extension popup windows.
+  NSWindow* ancestor_window = [enclosing_window parentWindow];
+  if (ancestor_window && (NSWidth([enclosing_window frame]) ==
+                          NSWidth([ancestor_window frame]))) {
+    enclosing_window = ancestor_window;
+  }
+
+  return enclosing_window;
+}
+
 }  // namespace
 
 // AcceleratedPluginView ------------------------------------------------------
@@ -738,7 +771,17 @@ bool RenderWidgetHostViewMac::IsShowing() {
 }
 
 gfx::Rect RenderWidgetHostViewMac::GetViewBounds() const {
-  return [cocoa_view_ flipNSRectToRect:[cocoa_view_ bounds]];
+  // TODO(shess): In case of !window, the view has been removed from
+  // the view hierarchy because the tab isn't main.  Could retrieve
+  // the information from the main tab for our window.
+  NSWindow* enclosing_window = ApparentWindowForView(cocoa_view_);
+  if (!enclosing_window)
+    return gfx::Rect();
+
+  NSRect bounds = [cocoa_view_ bounds];
+  bounds = [cocoa_view_ convertRect:bounds toView:nil];
+  bounds.origin = [enclosing_window convertBaseToScreen:bounds.origin];
+  return FlipNSRectToRectScreen(bounds);
 }
 
 void RenderWidgetHostViewMac::UpdateCursor(const WebCursor& cursor) {
@@ -1244,55 +1287,8 @@ bool RenderWidgetHostViewMac::IsVoiceOverRunning() {
   return 1 == [user_defaults integerForKey:@"voiceOverOnOffKey"];
 }
 
-namespace {
-
-// Adjusts an NSRect in Cocoa screen coordinates to have an origin in the upper
-// left of the primary screen (Carbon coordinates), and stuffs it into a
-// gfx::Rect.
-gfx::Rect FlipNSRectToRectScreen(const NSRect& rect) {
-  gfx::Rect new_rect(NSRectToCGRect(rect));
-  if ([[NSScreen screens] count] > 0) {
-    new_rect.set_y([[[NSScreen screens] objectAtIndex:0] frame].size.height -
-                   new_rect.y() - new_rect.height());
-  }
-  return new_rect;
-}
-
-// Returns the window that visually contains the given view. This is different
-// from [view window] in the case of tab dragging, where the view's owning
-// window is a floating panel attached to the actual browser window that the tab
-// is visually part of.
-NSWindow* ApparentWindowForView(NSView* view) {
-  // TODO(shess): In case of !window, the view has been removed from
-  // the view hierarchy because the tab isn't main.  Could retrieve
-  // the information from the main tab for our window.
-  NSWindow* enclosing_window = [view window];
-
-  // See if this is a tab drag window. The width check is to distinguish that
-  // case from extension popup windows.
-  NSWindow* ancestor_window = [enclosing_window parentWindow];
-  if (ancestor_window && (NSWidth([enclosing_window frame]) ==
-                          NSWidth([ancestor_window frame]))) {
-    enclosing_window = ancestor_window;
-  }
-
-  return enclosing_window;
-}
-
-}  // namespace
-
-gfx::Rect RenderWidgetHostViewMac::GetWindowRect() {
-  // TODO(shess): In case of !window, the view has been removed from
-  // the view hierarchy because the tab isn't main.  Could retrieve
-  // the information from the main tab for our window.
-  NSWindow* enclosing_window = ApparentWindowForView(cocoa_view_);
-  if (!enclosing_window)
-    return gfx::Rect();
-
-  NSRect bounds = [cocoa_view_ bounds];
-  bounds = [cocoa_view_ convertRect:bounds toView:nil];
-  bounds.origin = [enclosing_window convertBaseToScreen:bounds.origin];
-  return FlipNSRectToRectScreen(bounds);
+gfx::Rect RenderWidgetHostViewMac::GetViewCocoaBounds() const {
+  return gfx::Rect(NSRectToCGRect([cocoa_view_ bounds]));
 }
 
 gfx::Rect RenderWidgetHostViewMac::GetRootWindowRect() {
@@ -1327,7 +1323,7 @@ void RenderWidgetHostViewMac::WindowFrameChanged() {
   if (render_widget_host_) {
     render_widget_host_->Send(new ViewMsg_WindowFrameChanged(
         render_widget_host_->routing_id(), GetRootWindowRect(),
-        GetWindowRect()));
+        GetViewBounds()));
   }
 }
 

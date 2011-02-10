@@ -98,7 +98,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
                                   int selected_item,
                                   const std::vector<WebMenuItem>& items,
                                   bool right_aligned);
-  virtual gfx::Rect GetWindowRect();
+  virtual gfx::Rect GetViewCocoaBounds() const;
   virtual gfx::Rect GetRootWindowRect();
   virtual void SetActive(bool active);
   virtual void SetWindowVisibility(bool visible) {}

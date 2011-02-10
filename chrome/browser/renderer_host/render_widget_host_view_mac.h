@@ -213,7 +213,8 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   virtual void SelectionChanged(const std::string& text);
   virtual BackingStore* AllocBackingStore(const gfx::Size& size);
   virtual void SetTakesFocusOnlyOnMouseDown(bool flag);
-  virtual gfx::Rect GetWindowRect();
+  // See comment in RenderWidgetHostView!
+  virtual gfx::Rect GetViewCocoaBounds() const;
   virtual gfx::Rect GetRootWindowRect();
   virtual void SetActive(bool active);
   virtual void SetWindowVisibility(bool visible);

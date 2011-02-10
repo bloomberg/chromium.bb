@@ -286,7 +286,15 @@ void RenderWidgetHost::WasResized() {
     return;
   }
 
+#if !defined(OS_MACOSX)
   gfx::Size new_size = view_->GetViewBounds().size();
+#else
+  // When UI scaling is enabled on OS X, allocate a smaller bitmap and
+  // pixel-scale it up.
+  // TODO(thakis): Use pixel size on mac and set UI scale in renderer.
+  // http://crbug.com/31960
+  gfx::Size new_size(view_->GetViewCocoaBounds().size());
+#endif
   gfx::Rect reserved_rect = view_->reserved_contents_rect();
 
   // Avoid asking the RenderWidget to resize to its current size, since it
@@ -1039,7 +1047,7 @@ void RenderWidgetHost::OnMsgGetScreenInfo(gfx::NativeViewId view,
 void RenderWidgetHost::OnMsgGetWindowRect(gfx::NativeViewId window_id,
                                           gfx::Rect* results) {
   if (view_) {
-    *results = view_->GetWindowRect();
+    *results = view_->GetViewBounds();
   }
 }
 

@@ -61,6 +61,9 @@ void ExtensionViewMac::UpdatePreferredSize(const gfx::Size& new_size) {
   frame.size.width = new_size.width();
   frame.size.height = new_size.height();
 
+  // |new_size| is in pixels. Convert to view units.
+  frame.size = [view convertSize:frame.size fromView:nil];
+
   // On first display of some extensions, this function is called with zero
   // width after the correct size has been set. Bail if zero is seen, assuming
   // that an extension's view doesn't want any dimensions to ever be zero.

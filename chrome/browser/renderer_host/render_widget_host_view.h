@@ -188,8 +188,11 @@ class RenderWidgetHostView {
   // |flag| is false, the view participates in the key-view chain as normal.
   virtual void SetTakesFocusOnlyOnMouseDown(bool flag) = 0;
 
-  // Get the view's position on the screen.
-  virtual gfx::Rect GetWindowRect() = 0;
+  // Retrieve the bounds of the view, in cocoa view coordinates.
+  // If the UI scale factor is 2, |GetViewBounds()| will return a size of e.g.
+  // (400, 300) in pixels, while this method will return (200, 150).
+  // Even though this returns an gfx::Rect, the result is NOT IN PIXELS.
+  virtual gfx::Rect GetViewCocoaBounds() const = 0;
 
   // Get the view's window's position on the screen.
   virtual gfx::Rect GetRootWindowRect() = 0;
