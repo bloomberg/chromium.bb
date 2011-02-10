@@ -54,7 +54,7 @@ if test x$enable_wayland_compositor == xyes; then
 fi
 
 
-PKG_CHECK_MODULES(CAIRO_EGL, [cairo-egl],
+PKG_CHECK_MODULES(CAIRO_EGL, [cairo-egl >= 1.11.3],
 		  [have_cairo_egl=yes], [have_cairo_egl=no])
 AS_IF([test "x$have_cairo_egl" = "xyes"],
       [AC_DEFINE([HAVE_CAIRO_EGL], [1], [Have cairo-egl])])

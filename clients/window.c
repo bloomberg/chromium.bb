@@ -66,6 +66,7 @@ struct display {
 	struct rectangle screen_allocation;
 	int authenticated;
 	EGLDisplay dpy;
+	EGLConfig conf;
 	EGLContext ctx;
 	cairo_device_t *device;
 	int fd;
@@ -187,6 +188,64 @@ struct surface_data {
 	do { t = c * a + 0x7f; _d = ((t >> 8) + t) >> 8; } while (0)
 
 #ifdef HAVE_CAIRO_EGL
+
+struct egl_window_surface_data {
+	struct display *display;
+	struct wl_surface *surface;
+	struct wl_egl_window *window;
+	EGLSurface surf;
+};
+
+static void
+egl_window_surface_data_destroy(void *p)
+{
+	struct egl_window_surface_data *data = p;
+	struct display *d = data->display;
+
+	eglDestroySurface(d->dpy, data->surf);
+	wl_egl_window_destroy(data->window);
+	data->surface = NULL;
+
+	free(p);
+}
+
+static cairo_surface_t *
+display_create_egl_window_surface(struct display *display,
+				  struct wl_surface *surface,
+				  struct rectangle *rectangle)
+{
+	cairo_surface_t *cairo_surface;
+	struct egl_window_surface_data *data;
+	struct wl_visual *visual;
+
+	data = malloc(sizeof *data);
+	if (data == NULL)
+		return NULL;
+
+	data->display = display;
+	data->surface = surface;
+
+	visual = wl_display_get_premultiplied_argb_visual(display->display);
+
+	data->window = wl_egl_window_create(display->native_dpy,
+					    surface,
+					    rectangle->width,
+					    rectangle->height,
+					    visual);
+
+	data->surf = eglCreateWindowSurface(display->dpy, display->conf,
+					    data->window, NULL);
+
+	cairo_surface = cairo_gl_surface_create_for_egl(display->device,
+							data->surf,
+							rectangle->width,
+							rectangle->height);
+
+	cairo_surface_set_user_data(cairo_surface, &surface_data_key,
+				    data, egl_window_surface_data_destroy);
+
+	return cairo_surface;
+}
 
 struct egl_image_surface_data {
 	struct surface_data data;
@@ -499,13 +558,20 @@ check_size(struct rectangle *rect)
 
 cairo_surface_t *
 display_create_surface(struct display *display,
+		       struct wl_surface *surface,
 		       struct rectangle *rectangle)
 {
 	if (check_size(rectangle) < 0)
 		return NULL;
 #ifdef HAVE_CAIRO_EGL
 	if (display->dpy) {
-		return display_create_egl_image_surface(display, rectangle);
+		if (surface)
+			return display_create_egl_window_surface(display,
+								 surface,
+								 rectangle);
+		else
+			return display_create_egl_image_surface(display,
+								rectangle);
 	}
 #endif
 	return display_create_shm_surface(display, rectangle);
@@ -607,32 +673,52 @@ window_attach_surface(struct window *window)
 {
 	struct display *display = window->display;
 	struct wl_buffer *buffer;
+	struct egl_window_surface_data *data;
 	int32_t x, y;
+	int width = window->allocation.width;
+	int height = window->allocation.height;
 
-	if (window->pending_surface != NULL)
-		return;
-
-	window->pending_surface = window->cairo_surface;
-	window->cairo_surface = NULL;
-
-	buffer = display_get_buffer_for_surface(display,
-						window->pending_surface);
 	if (window->resize_edges & WINDOW_RESIZING_LEFT)
-		x = window->server_allocation.width -
-			window->allocation.width;
+		x = window->server_allocation.width - width;
 	else
 		x = 0;
 
 	if (window->resize_edges & WINDOW_RESIZING_TOP)
-		y = window->server_allocation.height -
-			window->allocation.height;
+		y = window->server_allocation.height - height;
 	else
 		y = 0;
 
-	window->server_allocation = window->allocation;
 	window->resize_edges = 0;
-	wl_surface_attach(window->surface, buffer, x, y);
-	wl_display_sync_callback(display->display, free_surface, window);
+
+	switch (window->buffer_type) {
+	case WINDOW_BUFFER_TYPE_EGL_WINDOW:
+		data = cairo_surface_get_user_data(window->cairo_surface,
+						   &surface_data_key);
+
+		wl_egl_window_resize(data->window, width, height, x, y);
+		cairo_gl_surface_swapbuffers(window->cairo_surface);
+		wl_egl_window_get_attached_size(data->window,
+				&window->server_allocation.width,
+				&window->server_allocation.height);
+		break;
+	case WINDOW_BUFFER_TYPE_EGL_IMAGE:
+	case WINDOW_BUFFER_TYPE_SHM:
+		if (window->pending_surface != NULL)
+			return;
+
+		window->pending_surface = window->cairo_surface;
+		window->cairo_surface = NULL;
+
+		buffer =
+			display_get_buffer_for_surface(display,
+						       window->pending_surface);
+
+		wl_surface_attach(window->surface, buffer, x, y);
+		window->server_allocation = window->allocation;
+		wl_display_sync_callback(display->display, free_surface,
+					 window);
+		break;
+	}
 
 	if (window->fullscreen)
 		wl_surface_map_fullscreen(window->surface);
@@ -666,6 +752,22 @@ window_set_surface(struct window *window, cairo_surface_t *surface)
 	window->cairo_surface = surface;
 }
 
+static void
+window_resize_cairo_window_surface(struct window *window)
+{
+	struct egl_window_surface_data *data;
+
+	data = cairo_surface_get_user_data(window->cairo_surface,
+					   &surface_data_key);
+
+	wl_egl_window_resize(data->window,
+			     window->allocation.width,
+			     window->allocation.height, 0, 0);
+	cairo_gl_surface_set_size(window->cairo_surface,
+				  window->allocation.width,
+				  window->allocation.height);
+}
+
 void
 window_create_surface(struct window *window)
 {
@@ -673,8 +775,18 @@ window_create_surface(struct window *window)
 
 	switch (window->buffer_type) {
 #ifdef HAVE_CAIRO_EGL
+	case WINDOW_BUFFER_TYPE_EGL_WINDOW:
+		if (window->cairo_surface) {
+			window_resize_cairo_window_surface(window);
+			return;
+		}
+		surface = display_create_surface(window->display,
+						 window->surface,
+						 &window->allocation);
+		break;
 	case WINDOW_BUFFER_TYPE_EGL_IMAGE:
 		surface = display_create_surface(window->display,
+						 NULL,
 						 &window->allocation);
 		break;
 #endif
@@ -1325,7 +1437,8 @@ window_create_internal(struct display *display, struct window *parent,
 	window->decoration = 1;
 
 	if (display->dpy)
-		window->buffer_type = WINDOW_BUFFER_TYPE_EGL_IMAGE;
+		/* FIXME: make TYPE_EGL_IMAGE choosable for testing */
+		window->buffer_type = WINDOW_BUFFER_TYPE_EGL_WINDOW;
 	else
 		window->buffer_type = WINDOW_BUFFER_TYPE_SHM;
 
@@ -1595,6 +1708,17 @@ static int
 init_egl(struct display *d)
 {
 	EGLint major, minor;
+	EGLint n;
+	static const EGLint cfg_attribs[] = {
+		EGL_SURFACE_TYPE, EGL_WINDOW_BIT | EGL_PIXMAP_BIT,
+		EGL_RED_SIZE, 1,
+		EGL_GREEN_SIZE, 1,
+		EGL_BLUE_SIZE, 1,
+		EGL_ALPHA_SIZE, 1,
+		EGL_DEPTH_SIZE, 1,
+		EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
+		EGL_NONE
+	};
 
 	d->dpy = eglGetDisplay(d->native_dpy);
 	if (!eglInitialize(d->dpy, &major, &minor)) {
@@ -1607,7 +1731,12 @@ init_egl(struct display *d)
 		return -1;
 	}
 
-	d->ctx = eglCreateContext(d->dpy, NULL, EGL_NO_CONTEXT, NULL);
+	if (!eglChooseConfig(d->dpy, cfg_attribs, &d->conf, 1, &n) || n != 1) {
+		fprintf(stderr, "failed to choose config\n");
+		return -1;
+	}
+
+	d->ctx = eglCreateContext(d->dpy, d->conf, EGL_NO_CONTEXT, NULL);
 	if (d->ctx == NULL) {
 		fprintf(stderr, "failed to create context\n");
 		return -1;

@@ -359,6 +359,7 @@ gears_create(struct display *display)
 	gears->d = display;
 	gears->window = window_create(display, width, height);
 	window_set_title(gears->window, "Wayland Gears");
+	window_set_buffer_type(gears->window, WINDOW_BUFFER_TYPE_EGL_IMAGE);
 
 	gears->display = display_get_egl_display(gears->d);
 	if (gears->display == NULL)

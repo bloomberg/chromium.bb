@@ -64,6 +64,7 @@ display_get_image_for_egl_image_surface(struct display *display,
 
 cairo_surface_t *
 display_create_surface(struct display *display,
+		       struct wl_surface *surface,
 		       struct rectangle *rectangle);
 
 struct wl_buffer *
@@ -167,6 +168,7 @@ void
 window_create_surface(struct window *window);
 
 enum window_buffer_type {
+	WINDOW_BUFFER_TYPE_EGL_WINDOW,
 	WINDOW_BUFFER_TYPE_EGL_IMAGE,
 	WINDOW_BUFFER_TYPE_SHM,
 };
