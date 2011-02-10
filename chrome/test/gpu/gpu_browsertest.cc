@@ -46,7 +46,14 @@ class GPUBrowserTest : public InProcessBrowserTest {
   FilePath gpu_test_dir_;
 };
 
-IN_PROC_BROWSER_TEST_F(GPUBrowserTest, BrowserTestCanLaunchWithOSMesa) {
+#if defined(OS_WIN)
+// Flaky on Windows (dbg): http://crbug.com/72608
+#define MAYBE_BrowserTestCanLaunchWithOSMesa FLAKY_BrowserTestCanLaunchWithOSMesa
+#else
+#define MAYBE_BrowserTestCanLaunchWithOSMesa BrowserTestCanLaunchWithOSMesa
+#endif
+
+IN_PROC_BROWSER_TEST_F(GPUBrowserTest, MAYBE_BrowserTestCanLaunchWithOSMesa) {
   // Check the webgl test reports success and that the renderer was OSMesa.
   ui_test_utils::NavigateToURL(
       browser(),
