@@ -12,6 +12,7 @@
 #include "base/process_util.h"
 #include "base/sha2.h"
 #include "chrome/browser/safe_browsing/bloom_filter.h"
+#include "chrome/browser/safe_browsing/prefix_set.h"
 #include "chrome/browser/safe_browsing/safe_browsing_store_file.h"
 #include "googleurl/src/gurl.h"
 
@@ -177,6 +178,37 @@ bool SBAddFullHashPrefixLess(const SBAddFullHash& a, const SBAddFullHash& b) {
   return a.full_hash.prefix < b.full_hash.prefix;
 }
 
+// Create a |PrefixSet| from a vector of add-prefixes.
+safe_browsing::PrefixSet* CreatePrefixSet(
+    const std::vector<SBAddPrefix>& add_prefixes) {
+  std::vector<SBPrefix> prefixes;
+  for (size_t i = 0; i < add_prefixes.size(); ++i) {
+    prefixes.push_back(add_prefixes[i].prefix);
+  }
+  return new safe_browsing::PrefixSet(prefixes);
+}
+
+// As compared to the bloom filter, PrefixSet should have these
+// properties:
+// - Any bloom filter miss should be a prefix set miss.
+// - Any prefix set hit should be a bloom filter hit.
+// - Bloom filter false positives are prefix set misses.
+// The following is to log actual performance to verify this.
+enum PrefixSetEvent {
+  PREFIX_SET_EVENT_HIT,
+  PREFIX_SET_EVENT_BLOOM_HIT,
+  PREFIX_SET_EVENT_BLOOM_MISS_PREFIX_HIT,
+
+  // Memory space for histograms is determined by the max.  ALWAYS ADD
+  // NEW VALUES BEFORE THIS ONE.
+  PREFIX_SET_EVENT_MAX
+};
+
+void RecordPrefixSetInfo(PrefixSetEvent event_type) {
+  UMA_HISTOGRAM_ENUMERATION("SB2.PrefixSetEvent", event_type,
+                            PREFIX_SET_EVENT_MAX);
+}
+
 }  // namespace
 
 // The default SafeBrowsingDatabaseFactory.
@@ -327,6 +359,9 @@ bool SafeBrowsingDatabaseNew::ResetDatabase() {
     // TODO(shess): This could probably be |bloom_filter_.reset()|.
     browse_bloom_filter_ = new BloomFilter(BloomFilter::kBloomFilterMinSize *
                                            BloomFilter::kBloomFilterSizeRatio);
+    // TODO(shess): It is simpler for the code to assume that presence
+    // of a bloom filter always implies presence of a prefix set.
+    prefix_set_.reset(CreatePrefixSet(std::vector<SBAddPrefix>()));
   }
 
   return true;
@@ -355,13 +390,24 @@ bool SafeBrowsingDatabaseNew::ContainsBrowseUrl(
 
   if (!browse_bloom_filter_.get())
     return false;
+  DCHECK(prefix_set_.get());
 
   size_t miss_count = 0;
   for (size_t i = 0; i < prefixes.size(); ++i) {
+    bool found = prefix_set_->Exists(prefixes[i]);
+
     if (browse_bloom_filter_->Exists(prefixes[i])) {
+      RecordPrefixSetInfo(PREFIX_SET_EVENT_BLOOM_HIT);
+      if (found)
+        RecordPrefixSetInfo(PREFIX_SET_EVENT_HIT);
       prefix_hits->push_back(prefixes[i]);
       if (prefix_miss_cache_.count(prefixes[i]) > 0)
         ++miss_count;
+    } else {
+      // Bloom filter misses should never be in prefix set.
+      DCHECK(!found);
+      if (found)
+        RecordPrefixSetInfo(PREFIX_SET_EVENT_BLOOM_MISS_PREFIX_HIT);
     }
   }
 
@@ -778,6 +824,9 @@ void SafeBrowsingDatabaseNew::UpdateBrowseStore() {
     filter->Insert(add_prefixes[i].prefix);
   }
 
+  scoped_ptr<safe_browsing::PrefixSet>
+      prefix_set(CreatePrefixSet(add_prefixes));
+
   // This needs to be in sorted order by prefix for efficient access.
   std::sort(add_full_hashes.begin(), add_full_hashes.end(),
             SBAddFullHashPrefixLess);
@@ -795,6 +844,7 @@ void SafeBrowsingDatabaseNew::UpdateBrowseStore() {
     pending_browse_hashes_.clear();
     prefix_miss_cache_.clear();
     browse_bloom_filter_.swap(filter);
+    prefix_set_.swap(prefix_set);
   }
 
   const base::TimeDelta bloom_gen = base::Time::Now() - before;
@@ -878,6 +928,12 @@ void SafeBrowsingDatabaseNew::LoadBloomFilter() {
 
   if (!browse_bloom_filter_.get())
     RecordFailure(FAILURE_DATABASE_FILTER_READ);
+
+  // Manually re-generate the prefix set from the main database.
+  // TODO(shess): Write/read for prefix set.
+  std::vector<SBAddPrefix> add_prefixes;
+  browse_store_->GetAddPrefixes(&add_prefixes);
+  prefix_set_.reset(CreatePrefixSet(add_prefixes));
 }
 
 bool SafeBrowsingDatabaseNew::Delete() {
