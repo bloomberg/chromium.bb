@@ -46,13 +46,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, OriginPrivileges) {
     &result));
   EXPECT_EQ(result, "Loaded");
 
-  // A web host that does not have permission.
-  ui_test_utils::NavigateToURL(
-      browser(), web_resource.ReplaceComponents(make_host_b_com));
+  // A web host that loads a non-existent extension.
+  GURL non_existent_extension(
+      test_server()->GetURL(
+          "files/extensions/api_test/extension_resource_request_policy/"
+          "non_existent_extension.html"));
+  ui_test_utils::NavigateToURL(browser(), non_existent_extension);
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-      browser()->GetSelectedTabContents()->render_view_host(), L"",
+    browser()->GetSelectedTabContents()->render_view_host(), L"",
       L"window.domAutomationController.send(document.title)",
-      &result));
+    &result));
   EXPECT_EQ(result, "Image failed to load");
 
   // A data URL. Data URLs should always be able to load chrome-extension://
