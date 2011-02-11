@@ -74,7 +74,6 @@
 #include "chrome/browser/chromeos/plugin_selection_policy.h"
 #endif
 #if defined(OS_MACOSX)
-#include "chrome/browser/cocoa/task_helpers.h"
 #include "chrome/common/font_descriptor_mac.h"
 #include "chrome/common/font_loader_mac.h"
 #endif
@@ -980,14 +979,10 @@ void RenderMessageFilter::OnDidZoomURL(const IPC::Message& message,
                                        double zoom_level,
                                        bool remember,
                                        const GURL& url) {
-  Task* task = NewRunnableMethod(this,
-      &RenderMessageFilter::UpdateHostZoomLevelsOnUIThread, zoom_level,
-      remember, url, render_process_id_, message.routing_id());
-#if defined(OS_MACOSX)
-  cocoa_utils::PostTaskInEventTrackingRunLoopMode(FROM_HERE, task);
-#else
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, task);
-#endif
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(this,
+          &RenderMessageFilter::UpdateHostZoomLevelsOnUIThread,
+          zoom_level, remember, url, render_process_id_, message.routing_id()));
 }
 
 void RenderMessageFilter::UpdateHostZoomLevelsOnUIThread(

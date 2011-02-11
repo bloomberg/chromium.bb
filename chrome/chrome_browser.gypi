@@ -801,8 +801,6 @@
         'browser/cocoa/keystone_glue.h',
         'browser/cocoa/keystone_glue.mm',
         'browser/cocoa/scoped_authorizationref.h',
-        'browser/cocoa/task_helpers.h',
-        'browser/cocoa/task_helpers.mm',
         'browser/command_updater.cc',
         'browser/command_updater.h',
         'browser/content_exceptions_table_model.cc',
