@@ -401,7 +401,7 @@ TEST_F(RenderViewTest, OnSetTextDirection) {
 TEST_F(RenderViewTest, OnPrintPages) {
   // Lets simulate a print pages with Hello world.
   LoadHTML("<body><p>Hello World!</p></body>");
-  view_->OnPrintPages();
+  view_->print_helper_->OnPrintPages();
 
   VerifyPageCount(1);
   VerifyPagesPrinted();
@@ -443,7 +443,7 @@ TEST_F(RenderViewTest, PrintWithIframe) {
             view_->webview()->mainFrame());
 
   // Initiate printing.
-  view_->OnPrintPages();
+  view_->print_helper_->OnPrintPages();
 
   // Verify output through MockPrinter.
   const MockPrinter* printer(render_thread_.printer());
@@ -514,7 +514,7 @@ TEST_F(RenderViewTest, MAYBE_PrintLayoutTest) {
   for (size_t i = 0; i < arraysize(kTestPages); ++i) {
     // Load an HTML page and print it.
     LoadHTML(kTestPages[i].page);
-    view_->OnPrintPages();
+    view_->print_helper_->OnPrintPages();
 
     // MockRenderThread::Send() just calls MockRenderThread::OnMsgReceived().
     // So, all IPC messages sent in the above RenderView::OnPrintPages() call

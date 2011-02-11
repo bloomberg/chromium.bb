@@ -218,10 +218,6 @@ class RenderView : public RenderWidget,
     return view_type_;
   }
 
-  PrintWebViewHelper* print_helper() const {
-    return print_helper_.get();
-  }
-
   int page_id() const {
     return page_id_;
   }
@@ -249,6 +245,8 @@ class RenderView : public RenderWidget,
   const SearchBox& searchbox() const {
     return search_box_;
   }
+
+  const WebKit::WebNode& context_menu_node() { return context_menu_node_; }
 
   // Functions to add and remove observers for this object.
   void AddObserver(RenderViewObserver* observer);
@@ -893,10 +891,6 @@ class RenderView : public RenderWidget,
 #if defined(OS_MACOSX)
   void OnPluginImeCompositionCompleted(const string16& text, int plugin_id);
 #endif
-  void OnPrintingDone(int document_cookie, bool success);
-  void OnPrintPages();
-  void OnPrintPreview();
-  void OnPrintNodeUnderContextMenu();
   void OnRedo();
   void OnReloadFrame();
   void OnReplace(const string16& text);
@@ -1078,15 +1072,6 @@ class RenderView : public RenderWidget,
   bool MaybeLoadAlternateErrorPage(WebKit::WebFrame* frame,
                                    const WebKit::WebURLError& error,
                                    bool replace);
-
-  // Common method for OnPrintPages() and OnPrintPreview().
-  void OnPrint(bool is_preview);
-
-  // Prints |frame|.
-  void Print(WebKit::WebFrame* frame, bool script_initiated, bool is_preview);
-
-  // Returns the PrintWebViewHelper for this class, creating if necessary.
-  PrintWebViewHelper* GetPrintWebViewHelper();
 
   // Starts nav_state_sync_timer_ if it isn't already running.
   void StartNavStateSyncTimerIfNecessary();
@@ -1353,9 +1338,9 @@ class RenderView : public RenderWidget,
   // Device orientation dispatcher attached to this view; lazily initialized.
   DeviceOrientationDispatcher* device_orientation_dispatcher_;
 
-  // PrintWebViewHelper handles printing.  Note that this object is constructed
-  // when printing for the first time but only destroyed with the RenderView.
-  scoped_ptr<PrintWebViewHelper> print_helper_;
+  // PrintWebViewHelper handles printing.  Weak pointer since it implements
+  // RenderViewObserver interface.
+  PrintWebViewHelper* print_helper_;
 
   scoped_refptr<AudioMessageFilter> audio_message_filter_;
 

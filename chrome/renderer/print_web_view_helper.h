@@ -10,6 +10,7 @@
 
 #include "base/scoped_ptr.h"
 #include "base/time.h"
+#include "chrome/renderer/render_view_observer.h"
 #include "printing/native_metafile.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrameClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebViewClient.h"
@@ -23,17 +24,12 @@ namespace gfx {
 class Size;
 }
 
-namespace IPC {
-class Message;
-}
-
 #if defined(USE_X11)
 namespace skia {
 class VectorCanvas;
 }
 #endif
 
-class RenderView;
 struct ViewMsg_Print_Params;
 struct ViewMsg_PrintPage_Params;
 struct ViewMsg_PrintPages_Params;
@@ -80,27 +76,23 @@ class PrepareFrameAndViewForPrint {
 // PrintWebViewHelper handles most of the printing grunt work for RenderView.
 // We plan on making print asynchronous and that will require copying the DOM
 // of the document and creating a new WebView with the contents.
-class PrintWebViewHelper : public WebKit::WebViewClient,
+class PrintWebViewHelper : public RenderViewObserver ,
+                           public WebKit::WebViewClient,
                            public WebKit::WebFrameClient {
  public:
   explicit PrintWebViewHelper(RenderView* render_view);
   virtual ~PrintWebViewHelper();
 
+  // Prints |frame|.
   void PrintFrame(WebKit::WebFrame* frame,
                   bool script_initiated,
                   bool is_preview);
 
-  void PrintNode(WebKit::WebNode* node,
-                 bool script_initiated,
-                 bool is_preview);
-
-  // Is there a background print in progress?
-  bool IsPrinting() {
-    return print_web_view_ != NULL;
-  }
-
-  // Notification when printing is done - signal teardown
-  void DidFinishPrinting(bool success);
+  // Message handlers.  Public for testing.
+  void OnPrintingDone(int document_cookie, bool success);
+  void OnPrintPages();
+  void OnPrintPreview();
+  void OnPrintNodeUnderContextMenu();
 
  protected:
   bool CopyAndPrint(WebKit::WebFrame* web_frame);
@@ -124,11 +116,6 @@ class PrintWebViewHelper : public WebKit::WebViewClient,
                   WebKit::WebFrame* frame,
                   WebKit::WebNode* node);
 
-  // IPC::Message::Sender
-  bool Send(IPC::Message* msg);
-
-  int32 routing_id();
-
   // WebKit::WebViewClient override:
   virtual void didStopLoading();
 
@@ -143,6 +130,19 @@ class PrintWebViewHelper : public WebKit::WebViewClient,
       double* margin_right_in_points,
       double* margin_bottom_in_points,
       double* margin_left_in_points);
+
+  // RenderViewObserver implementation.
+  virtual bool OnMessageReceived(const IPC::Message& message);
+
+  // Common method for OnPrintPages() and OnPrintPreview().
+  void OnPrint(bool is_preview);
+
+  void PrintNode(WebKit::WebNode* node,
+                 bool script_initiated,
+                 bool is_preview);
+
+  // Notification when printing is done - signal teardown
+  void DidFinishPrinting(bool success);
 
   void Print(WebKit::WebFrame* frame,
              WebKit::WebNode* node,
@@ -195,7 +195,6 @@ class PrintWebViewHelper : public WebKit::WebViewClient,
       base::SharedMemoryHandle* shared_mem_handle);
 #endif
 
-  RenderView* render_view_;
   WebKit::WebView* print_web_view_;
   scoped_ptr<ViewMsg_PrintPages_Params> print_pages_params_;
   base::Time last_cancelled_script_print_;

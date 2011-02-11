@@ -577,6 +577,7 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       geolocation_dispatcher_(NULL),
       speech_input_dispatcher_(NULL),
       device_orientation_dispatcher_(NULL),
+      print_helper_(NULL),
       accessibility_ack_pending_(false),
       pending_app_icon_requests_(0),
       session_storage_namespace_id_(session_storage_namespace_id) {
@@ -649,6 +650,7 @@ RenderView::RenderView(RenderThreadBase* render_thread,
   page_click_tracker->AddListener(password_autofill_manager);
   page_click_tracker->AddListener(autofill_agent);
   new TranslateHelper(this);
+  print_helper_ = new PrintWebViewHelper(this);
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableClientSidePhishingDetection)) {
@@ -972,11 +974,6 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(RenderView, message)
     IPC_MESSAGE_HANDLER(ViewMsg_CaptureThumbnail, OnCaptureThumbnail)
     IPC_MESSAGE_HANDLER(ViewMsg_CaptureSnapshot, OnCaptureSnapshot)
-    IPC_MESSAGE_HANDLER(ViewMsg_PrintPages, OnPrintPages)
-    IPC_MESSAGE_HANDLER(ViewMsg_PrintingDone, OnPrintingDone)
-    IPC_MESSAGE_HANDLER(ViewMsg_PrintPreview, OnPrintPreview)
-    IPC_MESSAGE_HANDLER(ViewMsg_PrintNodeUnderContextMenu,
-                        OnPrintNodeUnderContextMenu)
     IPC_MESSAGE_HANDLER(ViewMsg_Navigate, OnNavigate)
     IPC_MESSAGE_HANDLER(ViewMsg_Stop, OnStop)
     IPC_MESSAGE_HANDLER(ViewMsg_ReloadFrame, OnReloadFrame)
@@ -1150,35 +1147,6 @@ void RenderView::OnCaptureSnapshot() {
 
   // Send the snapshot to the browser process.
   Send(new ViewHostMsg_Snapshot(routing_id_, snapshot));
-}
-
-void RenderView::OnPrintPages() {
-  OnPrint(false);
-}
-
-void RenderView::OnPrintingDone(int document_cookie, bool success) {
-  // Ignoring document cookie here since only one print job can be outstanding
-  // per renderer and document_cookie is 0 when printing is successful.
-  DCHECK(print_helper_.get());
-  if (print_helper_.get() != NULL) {
-    print_helper_->DidFinishPrinting(success);
-  }
-}
-
-void RenderView::OnPrintPreview() {
-  OnPrint(true);
-}
-
-void RenderView::OnPrintNodeUnderContextMenu() {
-  if (context_menu_node_.isNull()) {
-    NOTREACHED();
-    return;
-  }
-
-  // Make a copy of the node, since we will do a sync call to the browser and
-  // during that time OnContextMenuClosed might reset context_menu_node_.
-  WebNode context_menu_node(context_menu_node_);
-  GetPrintWebViewHelper()->PrintNode(&context_menu_node, false, false);
 }
 
 void RenderView::CapturePageInfo(int load_id, bool preliminary_capture) {
@@ -2150,9 +2118,9 @@ void RenderView::printPage(WebFrame* frame) {
   DCHECK(frame);
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnablePrintPreview)) {
-    Print(frame, true, true);
+    print_helper_->PrintFrame(frame, true, true);
   } else {
-    Print(frame, true, false);
+    print_helper_->PrintFrame(frame, true, false);
   }
 }
 
@@ -5363,31 +5331,6 @@ void RenderView::postAccessibilityNotification(
         accessibility_method_factory_.NewRunnableMethod(
             &RenderView::SendPendingAccessibilityNotifications));
   }
-}
-
-void RenderView::OnPrint(bool is_preview) {
-  DCHECK(webview());
-  if (webview()) {
-    // If the user has selected text in the currently focused frame we print
-    // only that frame (this makes print selection work for multiple frames).
-    if (webview()->focusedFrame()->hasSelection())
-      Print(webview()->focusedFrame(), false, is_preview);
-    else
-      Print(webview()->mainFrame(), false, is_preview);
-  }
-}
-
-void RenderView::Print(WebFrame* frame,
-                       bool script_initiated,
-                       bool is_preview) {
-  DCHECK(frame);
-  GetPrintWebViewHelper()->PrintFrame(frame, script_initiated, is_preview);
-}
-
-PrintWebViewHelper* RenderView::GetPrintWebViewHelper() {
-  if (print_helper_.get() == NULL)
-    print_helper_.reset(new PrintWebViewHelper(this));
-  return print_helper_.get();
 }
 
 void RenderView::OnSetEditCommandsForNextKeyEvent(
