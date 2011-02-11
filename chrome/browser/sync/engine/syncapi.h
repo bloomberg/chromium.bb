@@ -710,9 +710,6 @@ class SyncManager {
   // to dispatch to a native thread or synchronize accordingly.
   class Observer {
    public:
-    Observer() { }
-    virtual ~Observer() { }
-
     // Notify the observer that changes have been applied to the sync model.
     //
     // This will be invoked on the same thread as on which ApplyChanges was
@@ -807,8 +804,8 @@ class SyncManager {
     virtual void OnClearServerDataSucceeded() = 0;
     virtual void OnClearServerDataFailed() = 0;
 
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Observer);
+   protected:
+    virtual ~Observer();
   };
 
   // Create an uninitialized SyncManager.  Callers must Init() before using.
@@ -905,12 +902,12 @@ class SyncManager {
   // Adds a listener to be notified of sync events.
   // NOTE: It is OK (in fact, it's probably a good idea) to call this before
   // having received OnInitializationCompleted.
-  void SetObserver(Observer* observer);
+  void AddObserver(Observer* observer);
 
-  // Remove the observer set by SetObserver (no op if none was set).
-  // Make sure to call this if the Observer set in SetObserver is being
-  // destroyed so the SyncManager doesn't potentially dereference garbage.
-  void RemoveObserver();
+  // Remove the given observer.  Make sure to call this if the
+  // Observer is being destroyed so the SyncManager doesn't
+  // potentially dereference garbage.
+  void RemoveObserver(Observer* observer);
 
   // Returns a pointer to the JsBackend (which is owned by the sync
   // manager).  Never returns NULL.  The following events are sent by

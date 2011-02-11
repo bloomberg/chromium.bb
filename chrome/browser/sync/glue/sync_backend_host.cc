@@ -572,6 +572,7 @@ bool SyncBackendHost::HasUnsyncedItems() const {
 SyncBackendHost::Core::Core(SyncBackendHost* backend)
     : host_(backend),
       syncapi_(new sync_api::SyncManager()),
+      sync_manager_observer_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       parent_router_(NULL) {
 }
 
@@ -619,7 +620,7 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
   bool success = file_util::CreateDirectory(host_->sync_data_folder_path());
   DCHECK(success);
 
-  syncapi_->SetObserver(this);
+  syncapi_->AddObserver(this);
   const FilePath& path_str = host_->sync_data_folder_path();
   success = syncapi_->Init(
       path_str,
@@ -667,7 +668,7 @@ void SyncBackendHost::Core::DoShutdown(bool sync_disabled) {
 
   save_changes_timer_.Stop();
   syncapi_->Shutdown();  // Stops the SyncerThread.
-  syncapi_->RemoveObserver();
+  syncapi_->RemoveObserver(this);
   DisconnectChildJsEventRouter();
   host_->ui_worker()->OnSyncerShutdownComplete();
 
@@ -996,12 +997,18 @@ void SyncBackendHost::Core::ProcessMessage(
 
 void SyncBackendHost::Core::ConnectChildJsEventRouter() {
   DCHECK_EQ(MessageLoop::current(), host_->core_thread_.message_loop());
-  syncapi_->GetJsBackend()->SetParentJsEventRouter(this);
+  // We need this check since AddObserver() can be called at most once
+  // for a given observer.
+  if (!syncapi_->GetJsBackend()->GetParentJsEventRouter()) {
+    syncapi_->GetJsBackend()->SetParentJsEventRouter(this);
+    syncapi_->AddObserver(&sync_manager_observer_);
+  }
 }
 
 void SyncBackendHost::Core::DisconnectChildJsEventRouter() {
   DCHECK_EQ(MessageLoop::current(), host_->core_thread_.message_loop());
   syncapi_->GetJsBackend()->RemoveParentJsEventRouter();
+  syncapi_->RemoveObserver(&sync_manager_observer_);
 }
 
 void SyncBackendHost::Core::DoProcessMessage(

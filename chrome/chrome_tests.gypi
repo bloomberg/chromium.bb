@@ -2821,6 +2821,7 @@
         'browser/sync/engine/verify_updates_command_unittest.cc',
         'browser/sync/js_arg_list_unittest.cc',
         'browser/sync/js_event_handler_list_unittest.cc',
+        'browser/sync/js_sync_manager_observer_unittest.cc',
         'browser/sync/notifier/cache_invalidation_packet_handler_unittest.cc',
         'browser/sync/notifier/chrome_invalidation_client_unittest.cc',
         'browser/sync/notifier/chrome_system_resources_unittest.cc',

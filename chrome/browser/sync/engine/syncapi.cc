@@ -13,6 +13,7 @@
 #include "base/base64.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/observer_list.h"
 #include "base/scoped_ptr.h"
 #include "base/sha1.h"
 #include "base/string_number_conversions.h"
@@ -1011,7 +1012,6 @@ class SyncManager::SyncInternal
  public:
   explicit SyncInternal(SyncManager* sync_manager)
       : core_message_loop_(NULL),
-        observer_(NULL),
         parent_router_(NULL),
         sync_manager_(sync_manager),
         registrar_(NULL),
@@ -1097,6 +1097,10 @@ class SyncManager::SyncInternal
   // sync_notifier::StateWriter implementation.
   virtual void WriteState(const std::string& state);
 
+  void AddObserver(SyncManager::Observer* observer);
+
+  void RemoveObserver(SyncManager::Observer* observer);
+
   // Accessors for the private members.
   DirectoryManager* dir_manager() { return share_.dir_manager.get(); }
   SyncAPIServerConnectionManager* connection_manager() {
@@ -1104,7 +1108,6 @@ class SyncManager::SyncInternal
   }
   SyncerThread* syncer_thread() { return syncer_thread_.get(); }
   TalkMediator* talk_mediator() { return talk_mediator_.get(); }
-  void set_observer(SyncManager::Observer* observer) { observer_ = observer; }
   UserShare* GetUserShare() { return &share_; }
 
   // Return the currently active (validated) username for use with syncable
@@ -1317,9 +1320,7 @@ class SyncManager::SyncInternal
 
   MessageLoop* core_message_loop_;
 
-  // Observer registered via SetObserver/RemoveObserver.
-  // WARNING: This can be NULL!
-  SyncManager::Observer* observer_;
+  ObserverList<SyncManager::Observer> observers_;
 
   browser_sync::JsEventRouter* parent_router_;
 
@@ -1388,6 +1389,8 @@ class SyncManager::SyncInternal
 };
 const int SyncManager::SyncInternal::kDefaultNudgeDelayMilliseconds = 200;
 const int SyncManager::SyncInternal::kPreferencesNudgeDelayMilliseconds = 2000;
+
+SyncManager::Observer::~Observer() {}
 
 SyncManager::SyncManager() {
   data_ = new SyncInternal(this);
@@ -1577,7 +1580,8 @@ void SyncManager::SyncInternal::BootstrapEncryption(
       cryptographer->SetKeys(nigori.encrypted());
     } else {
       cryptographer->SetPendingKeys(nigori.encrypted());
-      observer_->OnPassphraseRequired(true);
+      FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
+                        OnPassphraseRequired(true));
     }
   }
 }
@@ -1604,8 +1608,8 @@ void SyncManager::SyncInternal::MarkAndNotifyInitializationComplete() {
   }
 
   // Notify that initialization is complete.
-  if (observer_)
-    observer_->OnInitializationComplete();
+  FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
+                    OnInitializationComplete());
 }
 
 void SyncManager::SyncInternal::SendPendingXMPPNotification(
@@ -1648,8 +1652,8 @@ bool SyncManager::SyncInternal::OpenDirectory() {
   bool share_opened = dir_manager()->Open(username_for_share());
   DCHECK(share_opened);
   if (!share_opened) {
-    if (observer_)
-      observer_->OnStopSyncingPermanently();
+    FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
+                      OnStopSyncingPermanently());
 
     LOG(ERROR) << "Could not open share for:" << username_for_share();
     return false;
@@ -1731,9 +1735,9 @@ void SyncManager::SyncInternal::InitializeTalkMediator() {
 }
 
 void SyncManager::SyncInternal::RaiseAuthNeededEvent() {
-  if (observer_) {
-    observer_->OnAuthError(AuthError(AuthError::INVALID_GAIA_CREDENTIALS));
-  }
+  FOR_EACH_OBSERVER(
+      SyncManager::Observer, observers_,
+      OnAuthError(AuthError(AuthError::INVALID_GAIA_CREDENTIALS)));
 }
 
 void SyncManager::SyncInternal::SetUsingExplicitPassphrasePrefForMigration() {
@@ -1755,7 +1759,8 @@ void SyncManager::SyncInternal::SetPassphrase(
   KeyParams params = {"localhost", "dummy", passphrase};
   if (cryptographer->has_pending_keys()) {
     if (!cryptographer->DecryptPendingKeys(params)) {
-      observer_->OnPassphraseRequired(true);
+      FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
+                        OnPassphraseRequired(true));
       return;
     }
 
@@ -1797,7 +1802,8 @@ void SyncManager::SyncInternal::SetPassphrase(
 
   std::string bootstrap_token;
   cryptographer->GetBootstrapToken(&bootstrap_token);
-  observer_->OnPassphraseAccepted(bootstrap_token);
+  FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
+                    OnPassphraseAccepted(bootstrap_token));
 }
 
 bool SyncManager::SyncInternal::IsUsingExplicitPassphrase() {
@@ -1840,12 +1846,12 @@ SyncManager::~SyncManager() {
   delete data_;
 }
 
-void SyncManager::SetObserver(Observer* observer) {
-  data_->set_observer(observer);
+void SyncManager::AddObserver(Observer* observer) {
+  data_->AddObserver(observer);
 }
 
-void SyncManager::RemoveObserver() {
-  data_->set_observer(NULL);
+void SyncManager::RemoveObserver(Observer* observer) {
+  data_->RemoveObserver(observer);
 }
 
 browser_sync::JsBackend* SyncManager::GetJsBackend() {
@@ -1963,13 +1969,14 @@ void SyncManager::SyncInternal::HandleTransactionCompleteChangeEvent(
   // This allows work to be performed without holding the WriteTransaction lock
   // but before the transaction is finished.
   DCHECK_EQ(event.todo, syncable::DirectoryChangeEvent::TRANSACTION_COMPLETE);
-  if (!observer_)
+  if (observers_.size() <= 0)
     return;
 
   // Call commit
   for (int i = 0; i < syncable::MODEL_TYPE_COUNT; ++i) {
     if (model_has_change_.test(i)) {
-      observer_->OnChangesComplete(syncable::ModelTypeFromInt(i));
+      FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
+                        OnChangesComplete(syncable::ModelTypeFromInt(i)));
       model_has_change_.reset(i);
     }
   }
@@ -1981,15 +1988,14 @@ void SyncManager::SyncInternal::HandleServerConnectionEvent(
   if (event.what_happened == ServerConnectionEvent::STATUS_CHANGED) {
     if (event.connection_code ==
         browser_sync::HttpResponse::SERVER_CONNECTION_OK) {
-      if (observer_) {
-        observer_->OnAuthError(AuthError::None());
-      }
+      FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
+                        OnAuthError(AuthError::None()));
     }
 
     if (event.connection_code == browser_sync::HttpResponse::SYNC_AUTH_ERROR) {
-      if (observer_) {
-        observer_->OnAuthError(AuthError(AuthError::INVALID_GAIA_CREDENTIALS));
-      }
+      FOR_EACH_OBSERVER(
+          SyncManager::Observer, observers_,
+          OnAuthError(AuthError(AuthError::INVALID_GAIA_CREDENTIALS)));
     }
   }
 }
@@ -2000,7 +2006,7 @@ void SyncManager::SyncInternal::HandleTransactionEndingChangeEvent(
   // falls out of scope. It happens while the channel mutex is still held,
   // and while the transaction mutex is held, so it cannot be re-entrant.
   DCHECK_EQ(event.todo, syncable::DirectoryChangeEvent::TRANSACTION_ENDING);
-  if (!observer_ || ChangeBuffersAreEmpty())
+  if (observers_.size() <= 0 || ChangeBuffersAreEmpty())
     return;
 
   // This will continue the WriteTransaction using a read only wrapper.
@@ -2016,8 +2022,10 @@ void SyncManager::SyncInternal::HandleTransactionEndingChangeEvent(
     vector<ChangeRecord> ordered_changes;
     change_buffers_[i].GetAllChangesInTreeOrder(&trans, &ordered_changes);
     if (!ordered_changes.empty()) {
-      observer_->OnChangesApplied(syncable::ModelTypeFromInt(i), &trans,
-                                  &ordered_changes[0], ordered_changes.size());
+      FOR_EACH_OBSERVER(
+          SyncManager::Observer, observers_,
+          OnChangesApplied(syncable::ModelTypeFromInt(i), &trans,
+                           &ordered_changes[0], ordered_changes.size()));
       model_has_change_.set(i, true);
     }
     change_buffers_[i].Clear();
@@ -2132,7 +2140,7 @@ SyncManager::Status SyncManager::SyncInternal::GetStatus() {
 
 void SyncManager::SyncInternal::OnSyncEngineEvent(
     const SyncEngineEvent& event) {
-  if (!observer_)
+  if (observers_.size() <= 0)
     return;
 
   // Only send an event if this is due to a cycle ending and this cycle
@@ -2165,9 +2173,11 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
       // If we've completed a sync cycle and the cryptographer isn't ready yet,
       // prompt the user for a passphrase.
       if (cryptographer->has_pending_keys()) {
-        observer_->OnPassphraseRequired(true);
+        FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
+                          OnPassphraseRequired(true));
       } else if (!cryptographer->is_ready()) {
-        observer_->OnPassphraseRequired(false);
+        FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
+                          OnPassphraseRequired(false));
       }
     }
 
@@ -2175,7 +2185,8 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
       return;
 
     if (!event.snapshot->has_more_to_sync) {
-      observer_->OnSyncCycleCompleted(event.snapshot);
+      FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
+                        OnSyncCycleCompleted(event.snapshot));
     }
 
     if (notifier_options_.notification_method !=
@@ -2194,32 +2205,38 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
   }
 
   if (event.what_happened == SyncEngineEvent::SYNCER_THREAD_PAUSED) {
-    observer_->OnPaused();
+    FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
+                      OnPaused());
     return;
   }
 
   if (event.what_happened == SyncEngineEvent::SYNCER_THREAD_RESUMED) {
-    observer_->OnResumed();
+    FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
+                      OnResumed());
     return;
   }
 
   if (event.what_happened == SyncEngineEvent::STOP_SYNCING_PERMANENTLY) {
-    observer_->OnStopSyncingPermanently();
+    FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
+                      OnStopSyncingPermanently());
     return;
   }
 
   if (event.what_happened == SyncEngineEvent::CLEAR_SERVER_DATA_SUCCEEDED) {
-    observer_->OnClearServerDataSucceeded();
+    FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
+                      OnClearServerDataSucceeded());
     return;
   }
 
   if (event.what_happened == SyncEngineEvent::CLEAR_SERVER_DATA_FAILED) {
-    observer_->OnClearServerDataFailed();
+    FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
+                      OnClearServerDataFailed());
     return;
   }
 
   if (event.what_happened == SyncEngineEvent::UPDATED_TOKEN) {
-    observer_->OnUpdatedToken(event.updated_token);
+    FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
+                      OnUpdatedToken(event.updated_token));
     return;
   }
 }
@@ -2455,6 +2472,16 @@ void SyncManager::SyncInternal::WriteState(const std::string& state) {
   }
   lookup->SetNotificationState(state);
   lookup->SaveChanges();
+}
+
+void SyncManager::SyncInternal::AddObserver(
+    SyncManager::Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void SyncManager::SyncInternal::RemoveObserver(
+    SyncManager::Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 SyncManager::Status::Summary SyncManager::GetStatusSummary() const {

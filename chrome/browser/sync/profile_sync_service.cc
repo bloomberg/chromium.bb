@@ -540,6 +540,8 @@ void ProfileSyncService::UpdateLastSyncedTime() {
 
 void ProfileSyncService::NotifyObservers() {
   FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
+  // TODO(akalin): Make an Observer subclass that listens and does the
+  // event routing.
   js_event_handlers_.RouteJsEvent(
       "onSyncServiceStateChanged", browser_sync::JsArgList(), NULL);
 }

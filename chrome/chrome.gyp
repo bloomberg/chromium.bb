@@ -964,6 +964,8 @@
         'browser/sync/js_event_handler_list.h',
         'browser/sync/js_event_router.h',
         'browser/sync/js_frontend.h',
+        'browser/sync/js_sync_manager_observer.cc',
+        'browser/sync/js_sync_manager_observer.h',
         'browser/sync/protocol/proto_enum_conversions.cc',
         'browser/sync/protocol/proto_enum_conversions.h',
         'browser/sync/protocol/proto_value_conversions.cc',

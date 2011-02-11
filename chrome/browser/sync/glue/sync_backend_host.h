@@ -20,6 +20,7 @@
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/js_backend.h"
+#include "chrome/browser/sync/js_sync_manager_observer.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/ui_model_worker.h"
 #include "chrome/browser/sync/js_event_router.h"
@@ -462,6 +463,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
 
     // The top-level syncapi entry point.
     scoped_ptr<sync_api::SyncManager> syncapi_;
+
+    JsSyncManagerObserver sync_manager_observer_;
 
     JsEventRouter* parent_router_;
 

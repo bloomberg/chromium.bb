@@ -55,6 +55,7 @@ using browser_sync::SyncBackendHost;
 using browser_sync::SyncBackendHostMock;
 using browser_sync::UnrecoverableErrorHandler;
 using testing::_;
+using testing::AtMost;
 using testing::Return;
 using testing::StrictMock;
 using testing::WithArg;
@@ -990,6 +991,11 @@ TEST_F(ProfileSyncServiceTest,
   EXPECT_CALL(event_handler,
               HandleJsEvent("onSyncServiceStateChanged",
                             HasArgs(JsArgList()))).Times(3);
+  // For some reason, these two events don't fire on Linux.
+  EXPECT_CALL(event_handler, HandleJsEvent("onChangesApplied", _))
+      .Times(AtMost(1));
+  EXPECT_CALL(event_handler, HandleJsEvent("onChangesComplete", _))
+      .Times(AtMost(1));
 
   EXPECT_EQ(NULL, service_->GetBackendForTest());
   EXPECT_FALSE(service_->sync_initialized());
@@ -1070,6 +1076,11 @@ TEST_F(ProfileSyncServiceTest,
   StartSyncServiceAndSetInitialSyncEnded(true, false);
 
   StrictMock<MockJsEventHandler> event_handler;
+  // For some reason, these two events don't fire on Linux.
+  EXPECT_CALL(event_handler, HandleJsEvent("onChangesApplied", _))
+      .Times(AtMost(1));
+  EXPECT_CALL(event_handler, HandleJsEvent("onChangesComplete", _))
+      .Times(AtMost(1));
 
   ListValue arg_list1;
   arg_list1.Append(Value::CreateBooleanValue(true));

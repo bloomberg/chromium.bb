@@ -13,6 +13,8 @@ Both messages and events have a name and a list of arguments, the
 latter of which is represented by a JsArgList (js_arg_list.h) object,
 which is basically a wrapper around an immutable ListValue.
 
+TODO(akalin): Move all the js_* files into a js/ subdirectory.
+
 Message/event flow
 ------------------
 

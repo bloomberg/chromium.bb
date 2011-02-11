@@ -87,6 +87,60 @@ function onSyncIncomingNotification(changedTypes) {
   jstProcess(new JsEvalContext({ 'notificationCounts': infos }),
              notificationCountsInfo);
 }
+
+// TODO(akalin): Do something with these notifications.
+
+function onChangesApplied(modelType, changes) {
+  console.log('onChangesApplied: ' + modelType + ': ' + jsonToString(changes));
+}
+
+function onChangesComplete(modelType) {
+ console.log('onChangesComplete: ' + modelType);
+}
+
+function onSyncCycleCompleted(snapshot) {
+  console.log('onSyncCycleCompleted: ' + jsonToString(snapshot));
+}
+
+function onAuthError(authError) {
+  console.log('onAuthError: ' + jsonToString(authError));
+}
+
+function onUpdatedToken(token) {
+  console.log('onUpdatedToken: ' + token);
+}
+
+function onPassphraseRequired(forDecryption) {
+  console.log('onPassphraseRequired: ' + forDecryption);
+}
+
+function onPassphraseAccepted(bootstrapToken) {
+  console.log('onPassphraseAccepted: ' + bootstrapToken);
+}
+
+function onInitializationComplete() {
+  console.log('onInitializationComplete');
+}
+
+function onPaused() {
+  console.log('onPaused');
+}
+
+function onResumed() {
+  console.log('onResumed');
+}
+
+function onStopSyncingPermanently() {
+  console.log('onStopSyncingPermanently');
+}
+
+function onClearServerDataSucceeded() {
+  console.log('onClearServerDataSucceeded');
+}
+
+function onClearServerDataFailed() {
+  console.log('onClearServerDataFailed');
+}
 </script>
 
 <style type="text/css">
