@@ -231,7 +231,7 @@ Rect Rect::AdjustToFit(const Rect& rect) const {
 }
 
 Point Rect::CenterPoint() const {
-  return Point(x() + (width() + 1) / 2, y() + (height() + 1) / 2);
+  return Point(x() + (width() - 1) / 2, y() + (height() - 1) / 2);
 }
 
 Rect Rect::Center(const gfx::Size& size) const {
