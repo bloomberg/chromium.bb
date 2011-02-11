@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "views/controls/scrollbar/native_scroll_bar.h"
-#include "views/widget/widget_win.h"
+#include "views/widget/native_widget_win.h"
 
 void FindBarHost::AudibleAlert() {
   MessageBeep(MB_OK);
@@ -20,7 +20,7 @@ void FindBarHost::AudibleAlert() {
 void FindBarHost::GetWidgetPositionNative(gfx::Rect* avoid_overlapping_rect) {
   RECT frame_rect = {0}, webcontents_rect = {0};
   ::GetWindowRect(
-      static_cast<views::WidgetWin*>(host())->GetParent(), &frame_rect);
+      static_cast<views::NativeWidgetWin*>(host())->GetParent(), &frame_rect);
   ::GetWindowRect(
       find_bar_controller_->
           tab_contents()->tab_contents()->view()->GetNativeView(),

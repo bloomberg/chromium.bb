@@ -22,7 +22,7 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "views/accelerator.h"
-#include "views/widget/widget_win.h"
+#include "views/widget/native_widget_win.h"
 
 class AutomationProvider;
 class Browser;
@@ -42,7 +42,7 @@ class ViewProp;
 // TabContents as well as an implementation of TabContentsDelegate.
 class ExternalTabContainer : public TabContentsDelegate,
                              public NotificationObserver,
-                             public views::WidgetWin,
+                             public views::NativeWidgetWin,
                              public base::RefCounted<ExternalTabContainer>,
                              public views::AcceleratorTarget,
                              public InfoBarContainer::Delegate,
@@ -192,7 +192,7 @@ class ExternalTabContainer : public TabContentsDelegate,
   void SetEnableExtensionAutomation(
       const std::vector<std::string>& functions_enabled);
 
-  // Overridden from views::WidgetWin:
+  // Overridden from views::NativeWidgetWin:
   virtual views::Window* GetWindow();
 
   // Handles the specified |accelerator| being pressed.
@@ -217,7 +217,7 @@ class ExternalTabContainer : public TabContentsDelegate,
 
  protected:
   ~ExternalTabContainer();
-  // Overridden from views::WidgetWin:
+  // Overridden from views::NativeWidgetWin:
   virtual LRESULT OnCreate(LPCREATESTRUCT create_struct);
   virtual void OnDestroy();
   virtual void OnFinalMessage(HWND window);

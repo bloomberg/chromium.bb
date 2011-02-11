@@ -52,8 +52,8 @@
 #include "views/focus/accelerator_handler.h"
 #include "views/layout/grid_layout.h"
 #include "views/layout/layout_constants.h"
+#include "views/widget/native_widget_win.h"
 #include "views/widget/root_view.h"
-#include "views/widget/widget_win.h"
 #include "views/window/window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -631,7 +631,7 @@ class TryChromeDialog : public views::ButtonListener,
 
     // An approximate window size. After Layout() we'll get better bounds.
     gfx::Rect pos(310, 160);
-    views::WidgetWin* popup = new views::WidgetWin();
+    views::NativeWidgetWin* popup = new views::NativeWidgetWin;
     if (!popup) {
       NOTREACHED();
       return Upgrade::TD_DIALOG_ERROR;
@@ -848,7 +848,7 @@ class TryChromeDialog : public views::ButtonListener,
 
   // We don't own any of this pointers. The |popup_| owns itself and owns
   // the other views.
-  views::WidgetWin* popup_;
+  views::NativeWidgetWin* popup_;
   views::RadioButton* try_chrome_;
   views::RadioButton* kill_chrome_;
   Upgrade::TryResult result_;

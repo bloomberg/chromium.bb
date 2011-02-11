@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
 #include "views/controls/scrollbar/native_scroll_bar.h"
-#include "views/widget/widget_win.h"
+#include "views/widget/native_widget_win.h"
 
 NativeWebKeyboardEvent DropdownBarHost::GetKeyboardEvent(
      const TabContents* contents,
@@ -23,8 +23,8 @@ NativeWebKeyboardEvent DropdownBarHost::GetKeyboardEvent(
 }
 
 views::Widget* DropdownBarHost::CreateHost() {
-  views::WidgetWin* widget = new views::WidgetWin();
-  // Don't let WidgetWin manage our lifetime. We want our lifetime to
+  views::NativeWidgetWin* widget = new views::NativeWidgetWin;
+  // Don't let NativeWidgetWin manage our lifetime. We want our lifetime to
   // coincide with TabContents.
   widget->set_delete_on_destroy(false);
   widget->set_window_style(WS_CHILD | WS_CLIPCHILDREN);

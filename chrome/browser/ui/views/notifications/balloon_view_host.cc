@@ -18,12 +18,6 @@
 #endif
 #endif
 #include "views/widget/widget.h"
-#if defined(OS_WIN)
-#include "views/widget/widget_win.h"
-#endif
-#if defined(OS_LINUX)
-#include "views/widget/widget_gtk.h"
-#endif
 
 class BalloonViewHostView : public views::NativeViewHost {
  public:

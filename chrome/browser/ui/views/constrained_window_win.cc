@@ -27,7 +27,7 @@
 #include "ui/gfx/rect.h"
 #include "views/controls/button/image_button.h"
 #include "views/focus/focus_manager.h"
-#include "views/widget/widget_win.h"
+#include "views/widget/native_widget_win.h"
 #include "views/window/client_view.h"
 #include "views/window/non_client_view.h"
 #include "views/window/window_resources.h"
@@ -198,8 +198,8 @@ class ConstrainedWindowFrameView
 
   SkColor GetTitleColor() const {
     return (container_->owner()->profile()->IsOffTheRecord() ||
-            !views::WidgetWin::IsAeroGlassEnabled()) ? SK_ColorWHITE
-                                                     : SK_ColorBLACK;
+            !views::NativeWidgetWin::IsAeroGlassEnabled()) ? SK_ColorWHITE
+                                                           : SK_ColorBLACK;
   }
 
   // Loads the appropriate set of WindowResources for the frame view.
@@ -536,7 +536,7 @@ gfx::Rect ConstrainedWindowFrameView::CalculateClientAreaBounds(
 }
 
 void ConstrainedWindowFrameView::InitWindowResources() {
-  resources_.reset(views::WidgetWin::IsAeroGlassEnabled() ?
+  resources_.reset(views::NativeWidgetWin::IsAeroGlassEnabled() ?
     static_cast<views::WindowResources*>(new VistaWindowResources) :
     new XPWindowResources);
 }
@@ -632,7 +632,7 @@ void ConstrainedWindowWin::ActivateConstrainedWindow() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ConstrainedWindowWin, views::WidgetWin overrides:
+// ConstrainedWindowWin, views::NativeWidgetWin overrides:
 
 void ConstrainedWindowWin::OnDestroy() {
   // TODO(jcampan): figure out focus restoration

@@ -8,14 +8,14 @@
 #pragma once
 
 #include "views/controls/menu/menu_host.h"
-#include "views/widget/widget_win.h"
+#include "views/widget/native_widget_win.h"
 
 namespace views {
 
 class SubmenuView;
 
 // MenuHost implementation for windows.
-class MenuHostWin : public WidgetWin, public MenuHost {
+class MenuHostWin : public NativeWidgetWin, public MenuHost {
  public:
   explicit MenuHostWin(SubmenuView* submenu);
   virtual ~MenuHostWin();
@@ -33,7 +33,7 @@ class MenuHostWin : public WidgetWin, public MenuHost {
   virtual void ReleaseMenuHostCapture();
   virtual gfx::NativeWindow GetMenuHostWindow();
 
-  // WidgetWin overrides:
+  // NativeWidgetWin overrides:
   virtual void OnDestroy();
   virtual void OnCaptureChanged(HWND hwnd);
   virtual void OnCancelMode();

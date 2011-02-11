@@ -5,7 +5,7 @@
 #include "views/focus/focus_manager.h"
 
 #include "views/view.h"
-#include "views/widget/widget_win.h"
+#include "views/widget/native_widget_win.h"
 
 namespace views {
 
@@ -23,7 +23,7 @@ void FocusManager::FocusNativeView(gfx::NativeView native_view) {
 // static
 FocusManager* FocusManager::GetFocusManagerForNativeView(
     gfx::NativeView native_view) {
-  WidgetWin* widget = WidgetWin::GetRootWidget(native_view);
+  NativeWidgetWin* widget = NativeWidgetWin::GetRootWidget(native_view);
   return widget ? widget->GetFocusManager() : NULL;
 }
 

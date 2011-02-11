@@ -5,11 +5,11 @@
 #include "chrome/browser/ui/views/browser_bubble.h"
 
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "views/widget/native_widget_win.h"
 #include "views/widget/root_view.h"
-#include "views/widget/widget_win.h"
 #include "views/window/window.h"
 
-class BubbleWidget : public views::WidgetWin {
+class BubbleWidget : public views::NativeWidgetWin {
  public:
   explicit BubbleWidget(BrowserBubble* bubble)
       : bubble_(bubble) {
@@ -21,7 +21,7 @@ class BubbleWidget : public views::WidgetWin {
     if (activate)
       ShowWindow(SW_SHOW);
     else
-      views::WidgetWin::Show();
+      views::NativeWidgetWin::Show();
   }
 
   void Close() {
@@ -32,7 +32,7 @@ class BubbleWidget : public views::WidgetWin {
       if (delegate)
         delegate->BubbleLostFocus(bubble_, NULL);
     }
-    views::WidgetWin::Close();
+    views::NativeWidgetWin::Close();
     bubble_ = NULL;
   }
 
@@ -42,11 +42,11 @@ class BubbleWidget : public views::WidgetWin {
       if (delegate)
         delegate->BubbleLostFocus(bubble_, NULL);
     }
-    views::WidgetWin::Hide();
+    views::NativeWidgetWin::Hide();
   }
 
   void OnActivate(UINT action, BOOL minimized, HWND window) {
-    WidgetWin::OnActivate(action, minimized, window);
+    NativeWidgetWin::OnActivate(action, minimized, window);
     if (!bubble_)
       return;
 
@@ -82,7 +82,7 @@ class BubbleWidget : public views::WidgetWin {
   }
 
   virtual void OnSetFocus(HWND focused_window) {
-    WidgetWin::OnSetFocus(focused_window);
+    NativeWidgetWin::OnSetFocus(focused_window);
     if (bubble_ && bubble_->delegate())
       bubble_->delegate()->BubbleGotFocus(bubble_);
   }
@@ -94,9 +94,9 @@ class BubbleWidget : public views::WidgetWin {
 };
 
 void BrowserBubble::InitPopup() {
-  // popup_ is a Widget, but we need to do some WidgetWin stuff first, then
-  // we'll assign it into popup_.
-  views::WidgetWin* pop = new BubbleWidget(this);
+  // popup_ is a Widget, but we need to do some NativeWidgetWin stuff first,
+  // then we'll assign it into popup_.
+  views::NativeWidgetWin* pop = new BubbleWidget(this);
 
   // Enable the drop-shadow through the native windows drop-shadow support.
   if (drop_shadow_enabled_)
@@ -111,7 +111,7 @@ void BrowserBubble::InitPopup() {
 }
 
 void BrowserBubble::MovePopup(int x, int y, int w, int h) {
-  views::WidgetWin* pop = static_cast<views::WidgetWin*>(popup_);
+  views::NativeWidgetWin* pop = static_cast<views::NativeWidgetWin*>(popup_);
   pop->SetBounds(gfx::Rect(x, y, w, h));
 }
 
@@ -126,7 +126,7 @@ void BrowserBubble::Show(bool activate) {
 void BrowserBubble::Hide() {
   if (!visible_)
     return;
-  views::WidgetWin* pop = static_cast<views::WidgetWin*>(popup_);
+  views::NativeWidgetWin* pop = static_cast<views::NativeWidgetWin*>(popup_);
   pop->Hide();
   visible_ = false;
 }

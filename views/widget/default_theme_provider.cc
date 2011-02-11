@@ -7,7 +7,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_WIN)
-#include "views/widget/widget_win.h"
+#include "views/widget/native_widget_win.h"
 #endif
 
 namespace views {
@@ -18,7 +18,7 @@ SkBitmap* DefaultThemeProvider::GetBitmapNamed(int id) const {
 
 bool DefaultThemeProvider::ShouldUseNativeFrame() const {
 #if defined(OS_WIN)
-  return WidgetWin::IsAeroGlassEnabled();
+  return NativeWidgetWin::IsAeroGlassEnabled();
 #else
   return false;
 #endif

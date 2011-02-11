@@ -13,7 +13,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/rect.h"
 #include "views/controls/image_view.h"
-#include "views/widget/widget_win.h"
+#include "views/widget/native_widget_win.h"
 
 // How long to spend moving downwards and fading out after waiting.
 static const int kMoveTimeMs = 600;
@@ -55,7 +55,7 @@ class DownloadStartedAnimationWin : public ui::LinearAnimation,
                        const NotificationDetails& details);
 
   // We use a HWND for the popup so that it may float above any HWNDs in our UI.
-  views::WidgetWin* popup_;
+  views::NativeWidgetWin* popup_;
 
   // The content area holding us.
   TabContents* tab_contents_;
@@ -102,7 +102,7 @@ DownloadStartedAnimationWin::DownloadStartedAnimationWin(
   SetImage(kDownloadImage);
 
   gfx::Rect rc(0, 0, 0, 0);
-  popup_ = new views::WidgetWin;
+  popup_ = new views::NativeWidgetWin;
   popup_->set_window_style(WS_POPUP);
   popup_->set_window_ex_style(WS_EX_LAYERED | WS_EX_TOOLWINDOW |
                               WS_EX_TRANSPARENT);

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/widget/widget_win.h"
+#include "views/widget/native_widget_win.h"
 
 #include "base/basictypes.h"
 #include "base/message_loop.h"
@@ -11,13 +11,13 @@
 
 using namespace views;
 
-class WidgetWinTest : public testing::Test {
+class NativeWidgetWinTest : public testing::Test {
  public:
-  WidgetWinTest() {
+  NativeWidgetWinTest() {
     OleInitialize(NULL);
   }
 
-  ~WidgetWinTest() {
+  ~NativeWidgetWinTest() {
     OleUninitialize();
   }
 
@@ -29,7 +29,7 @@ class WidgetWinTest : public testing::Test {
 
   // Create a simple widget win. The caller is responsible for taking ownership
   // of the returned value.
-  WidgetWin* CreateWidgetWin();
+  NativeWidgetWin* CreateNativeWidgetWin();
 
   void RunPendingMessages() {
     message_loop_.RunAllPending();
@@ -38,20 +38,20 @@ class WidgetWinTest : public testing::Test {
  private:
   MessageLoopForUI message_loop_;
 
-  DISALLOW_COPY_AND_ASSIGN(WidgetWinTest);
+  DISALLOW_COPY_AND_ASSIGN(NativeWidgetWinTest);
 };
 
 
-WidgetWin* WidgetWinTest::CreateWidgetWin() {
-  scoped_ptr<WidgetWin> window(new WidgetWin());
+NativeWidgetWin* NativeWidgetWinTest::CreateNativeWidgetWin() {
+  scoped_ptr<NativeWidgetWin> window(new NativeWidgetWin);
   window->set_delete_on_destroy(false);
   window->set_window_style(WS_OVERLAPPEDWINDOW);
   window->Init(NULL, gfx::Rect(50, 50, 650, 650));
   return window.release();
 }
 
-TEST_F(WidgetWinTest, ZoomWindow) {
-  scoped_ptr<WidgetWin> window(CreateWidgetWin());
+TEST_F(NativeWidgetWinTest, ZoomWindow) {
+  scoped_ptr<NativeWidgetWin> window(CreateNativeWidgetWin());
   window->ShowWindow(SW_HIDE);
   EXPECT_FALSE(window->IsActive());
   window->ShowWindow(SW_MAXIMIZE);
@@ -59,13 +59,13 @@ TEST_F(WidgetWinTest, ZoomWindow) {
   window->CloseNow();
 }
 
-TEST_F(WidgetWinTest, SetBoundsForZoomedWindow) {
-  scoped_ptr<WidgetWin> window(CreateWidgetWin());
+TEST_F(NativeWidgetWinTest, SetBoundsForZoomedWindow) {
+  scoped_ptr<NativeWidgetWin> window(CreateNativeWidgetWin());
   window->ShowWindow(SW_MAXIMIZE);
   EXPECT_TRUE(window->IsZoomed());
 
   // Create another window, so that it will be active.
-  scoped_ptr<WidgetWin> window2(CreateWidgetWin());
+  scoped_ptr<NativeWidgetWin> window2(CreateNativeWidgetWin());
   window2->ShowWindow(SW_MAXIMIZE);
   EXPECT_TRUE(window2->IsActive());
   EXPECT_FALSE(window->IsActive());

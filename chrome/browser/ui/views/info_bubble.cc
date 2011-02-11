@@ -208,7 +208,7 @@ void BorderWidget::Init(BorderContents* border_contents, HWND owner) {
   DCHECK(!border_contents_);
   border_contents_ = border_contents;
   border_contents_->Init();
-  WidgetWin::Init(owner, gfx::Rect());
+  NativeWidgetWin::Init(owner, gfx::Rect());
   SetContentsView(border_contents_);
   SetWindowPos(owner, 0, 0, 0, 0,
                SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOREDRAW);
@@ -383,7 +383,7 @@ void InfoBubble::Init(views::Widget* parent,
 
   // We make the BorderWidget the owner of the InfoBubble HWND, so that the
   // latter is displayed on top of the former.
-  WidgetWin::Init(border_->GetNativeView(), gfx::Rect());
+  NativeWidgetWin::Init(border_->GetNativeView(), gfx::Rect());
 
   SetWindowText(GetNativeView(), delegate_->accessible_name().c_str());
 #elif defined(OS_LINUX)
@@ -522,7 +522,7 @@ void InfoBubble::DoClose(bool closed_by_escape) {
   show_status_ = kClosed;
 #if defined(OS_WIN)
   border_->Close();
-  WidgetWin::Close();
+  NativeWidgetWin::Close();
 #elif defined(OS_LINUX)
   WidgetGtk::Close();
 #endif

@@ -42,7 +42,7 @@ void MenuHostWin::Init(HWND parent,
                        const gfx::Rect& bounds,
                        View* contents_view,
                        bool do_capture) {
-  WidgetWin::Init(parent, bounds);
+  NativeWidgetWin::Init(parent, bounds);
   SetContentsView(contents_view);
   ShowMenuHost(do_capture);
 }
@@ -63,7 +63,7 @@ void MenuHostWin::HideMenuHost() {
   // Make sure we release capture before hiding.
   ReleaseMenuHostCapture();
 
-  WidgetWin::Hide();
+  NativeWidgetWin::Hide();
 }
 
 void MenuHostWin::DestroyMenuHost() {
@@ -94,11 +94,11 @@ void MenuHostWin::OnDestroy() {
     // the SubmenuView to drop references to us.
     submenu_->MenuHostDestroyed();
   }
-  WidgetWin::OnDestroy();
+  NativeWidgetWin::OnDestroy();
 }
 
 void MenuHostWin::OnCaptureChanged(HWND hwnd) {
-  WidgetWin::OnCaptureChanged(hwnd);
+  NativeWidgetWin::OnCaptureChanged(hwnd);
   owns_capture_ = false;
 }
 

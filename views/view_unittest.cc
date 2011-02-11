@@ -26,9 +26,9 @@
 #include "views/window/window.h"
 
 #if defined(OS_WIN)
-#include "views/widget/widget_win.h"
 #include "views/controls/button/native_button_win.h"
 #include "views/test/test_views_delegate.h"
+#include "views/widget/native_widget_win.h"
 #elif defined(OS_LINUX)
 #include "views/widget/widget_gtk.h"
 #include "views/window/window_gtk.h"
@@ -51,7 +51,7 @@ class ViewTest : public ViewsTestBase {
 
   Widget* CreateWidget() {
 #if defined(OS_WIN)
-    return new WidgetWin();
+    return new NativeWidgetWin;
 #elif defined(OS_LINUX)
     return new WidgetGtk(WidgetGtk::TYPE_WINDOW);
 #endif
@@ -351,7 +351,7 @@ TEST_F(ViewTest, MouseEvent) {
 
   scoped_ptr<Widget> window(CreateWidget());
 #if defined(OS_WIN)
-  WidgetWin* window_win = static_cast<WidgetWin*>(window.get());
+  NativeWidgetWin* window_win = static_cast<NativeWidgetWin*>(window.get());
   window_win->set_delete_on_destroy(false);
   window_win->set_window_style(WS_OVERLAPPEDWINDOW);
   window_win->Init(NULL, gfx::Rect(50, 50, 650, 650));
@@ -457,7 +457,7 @@ TEST_F(ViewTest, TouchEvent) {
 #if defined(OS_WIN)
   // This code would need to be here when we support
   // touch on windows?
-  WidgetWin* window_win = static_cast<WidgetWin*>(window.get());
+  NativeWidgetWin* window_win = static_cast<NativeWidgetWin*>(window.get());
   window_win->set_delete_on_destroy(false);
   window_win->set_window_style(WS_OVERLAPPEDWINDOW);
   window_win->Init(NULL, gfx::Rect(50, 50, 650, 650));
@@ -575,7 +575,7 @@ TEST_F(ViewTest, DISABLED_Painting) {
                             RDW_UPDATENOW | RDW_INVALIDATE | RDW_ALLCHILDREN);
   bool empty_paint = paint_window.empty_paint();
 
-  views::WidgetWin window;
+  views::NativeWidgetWin window;
   window.set_delete_on_destroy(false);
   window.set_window_style(WS_OVERLAPPEDWINDOW);
   window.Init(NULL, gfx::Rect(50, 50, 650, 650), NULL);
@@ -844,7 +844,7 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
 
   Widget* window = CreateWidget();
 #if defined(OS_WIN)
-  static_cast<WidgetWin*>(window)->Init(NULL, gfx::Rect(0, 0, 100, 100));
+  static_cast<NativeWidgetWin*>(window)->Init(NULL, gfx::Rect(0, 0, 100, 100));
 #endif
   RootView* root_view = window->GetRootView();
 
@@ -966,7 +966,7 @@ TEST_F(ViewTest, ActivateAccelerator) {
   EXPECT_EQ(view->accelerator_count_map_[return_accelerator], 0);
 
   // Create a window and add the view as its child.
-  WidgetWin window;
+  NativeWidgetWin window;
   window.Init(NULL, gfx::Rect(0, 0, 100, 100));
   window.set_delete_on_destroy(false);
   window.set_window_style(WS_OVERLAPPEDWINDOW);
@@ -1030,7 +1030,7 @@ TEST_F(ViewTest, HiddenViewWithAccelerator) {
   view->AddAccelerator(return_accelerator);
   EXPECT_EQ(view->accelerator_count_map_[return_accelerator], 0);
 
-  WidgetWin window;
+  NativeWidgetWin window;
   window.Init(NULL, gfx::Rect(0, 0, 100, 100));
   window.set_delete_on_destroy(false);
   window.set_window_style(WS_OVERLAPPEDWINDOW);

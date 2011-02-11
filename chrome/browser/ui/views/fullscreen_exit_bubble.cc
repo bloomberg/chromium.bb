@@ -18,7 +18,7 @@
 
 #if defined(OS_WIN)
 #include "ui/base/l10n/l10n_util_win.h"
-#include "views/widget/widget_win.h"
+#include "views/widget/native_widget_win.h"
 #elif defined(OS_LINUX)
 #include "views/widget/widget_gtk.h"
 #endif
@@ -108,12 +108,13 @@ void FullscreenExitBubble::FullscreenExitView::Paint(gfx::Canvas* canvas) {
 // FullscreenExitPopup ---------------------------------------------------------
 
 #if defined(OS_WIN)
-class FullscreenExitBubble::FullscreenExitPopup : public views::WidgetWin {
+class FullscreenExitBubble::FullscreenExitPopup
+    : public views::NativeWidgetWin {
  public:
-  FullscreenExitPopup() : views::WidgetWin() {}
+  FullscreenExitPopup() : views::NativeWidgetWin() {}
   virtual ~FullscreenExitPopup() {}
 
-  // views::WidgetWin:
+  // views::NativeWidgetWin:
   virtual LRESULT OnMouseActivate(HWND window,
                                   UINT hittest_code,
                                   UINT message) {

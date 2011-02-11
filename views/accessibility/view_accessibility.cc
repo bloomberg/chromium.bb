@@ -6,8 +6,8 @@
 
 #include "ui/base/view_prop.h"
 #include "views/controls/button/native_button.h"
+#include "views/widget/native_widget_win.h"
 #include "views/widget/widget.h"
-#include "views/widget/widget_win.h"
 
 const char kViewsNativeHostPropForAccessibility[] =
     "Views_NativeViewHostHWNDForAccessibility";
@@ -35,8 +35,8 @@ IAccessible* ViewAccessibility::GetAccessibleForView(views::View* view) {
 
   // Next, see if the view is a widget container.
   if (view->child_widget()) {
-    views::WidgetWin* native_widget =
-      reinterpret_cast<views::WidgetWin*>(view->child_widget());
+    views::NativeWidgetWin* native_widget =
+      reinterpret_cast<views::NativeWidgetWin*>(view->child_widget());
     if (GetNativeIAccessibleInterface(
         native_widget->GetNativeView(), &accessible) == S_OK) {
       return accessible;
@@ -249,9 +249,10 @@ STDMETHODIMP ViewAccessibility::get_accChild(VARIANT var_child,
       child_view = view_->GetViewByID(child_id);
     }
   } else {
-    // Negative values are used for events fired using the view's WidgetWin
-    views::WidgetWin* widget =
-        static_cast<views::WidgetWin*>(view_->GetWidget());
+    // Negative values are used for events fired using the view's
+    // NativeWidgetWin.
+    views::NativeWidgetWin* widget =
+        static_cast<views::NativeWidgetWin*>(view_->GetWidget());
     child_view = widget->GetAccessibilityViewEventAt(child_id);
   }
 

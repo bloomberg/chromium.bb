@@ -10,7 +10,7 @@
 #include "base/timer.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "ui/gfx/size.h"
-#include "views/widget/widget_win.h"
+#include "views/widget/native_widget_win.h"
 
 class RenderViewContextMenuViews;
 class SadTabView;
@@ -26,7 +26,7 @@ class Point;
 // Windows-specific implementation of the TabContentsView. It is a HWND that
 // contains all of the contents of the tab and associated child views.
 class TabContentsViewWin : public TabContentsView,
-                           public views::WidgetWin {
+                           public views::NativeWidgetWin {
  public:
   // The corresponding TabContents is passed in the constructor, and manages our
   // lifetime. This doesn't need to be the case, but is this way currently
@@ -75,7 +75,7 @@ class TabContentsViewWin : public TabContentsView,
   virtual void GotFocus();
   virtual void TakeFocus(bool reverse);
 
-  // WidgetWin overridde.
+  // NativeWidgetWin overridde.
   virtual views::FocusManager* GetFocusManager();
 
   void EndDragging();
@@ -88,7 +88,7 @@ class TabContentsViewWin : public TabContentsView,
 
   // Windows events ------------------------------------------------------------
 
-  // Overrides from WidgetWin.
+  // Overrides from NativeWidgetWin.
   virtual void OnDestroy();
   virtual void OnHScroll(int scroll_type, short position, HWND scrollbar);
   virtual void OnMouseLeave();

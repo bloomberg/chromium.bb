@@ -18,8 +18,8 @@ AutocompletePopupWin::AutocompletePopupWin(
   // Create the popup.
   set_window_style(WS_POPUP | WS_CLIPCHILDREN);
   set_window_ex_style(WS_EX_TOOLWINDOW | WS_EX_LAYERED);
-  WidgetWin::Init(GetAncestor(edit_view->GetNativeView(), GA_ROOT),
-                  contents->GetPopupBounds());
+  NativeWidgetWin::Init(GetAncestor(edit_view->GetNativeView(), GA_ROOT),
+                        contents->GetPopupBounds());
   // The contents is owned by the LocationBarView.
   contents->set_parent_owned(false);
   SetContentsView(contents);

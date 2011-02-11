@@ -134,7 +134,7 @@ bool ExternalTabContainer::Init(Profile* profile,
   route_all_top_level_navigations_ = route_all_top_level_navigations;
 
   set_window_style(WS_POPUP | WS_CLIPCHILDREN);
-  views::WidgetWin::Init(NULL, bounds);
+  views::NativeWidgetWin::Init(NULL, bounds);
   if (!IsWindow()) {
     NOTREACHED();
     return false;
@@ -798,10 +798,10 @@ void ExternalTabContainer::Observe(NotificationType type,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ExternalTabContainer, views::WidgetWin overrides:
+// ExternalTabContainer, views::NativeWidgetWin overrides:
 
 LRESULT ExternalTabContainer::OnCreate(LPCREATESTRUCT create_struct) {
-  LRESULT result = views::WidgetWin::OnCreate(create_struct);
+  LRESULT result = views::NativeWidgetWin::OnCreate(create_struct);
   if (result == 0) {
     // Grab a reference here which will be released in OnFinalMessage
     AddRef();
@@ -812,7 +812,7 @@ LRESULT ExternalTabContainer::OnCreate(LPCREATESTRUCT create_struct) {
 void ExternalTabContainer::OnDestroy() {
   prop_.reset();
   Uninitialize();
-  WidgetWin::OnDestroy();
+  NativeWidgetWin::OnDestroy();
   if (browser_.get()) {
     ::DestroyWindow(browser_->window()->GetNativeHandle());
   }
