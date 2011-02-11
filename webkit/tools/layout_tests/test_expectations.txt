@@ -24,5 +24,3 @@ BUG_LOISLO MAC : canvas/philip/tests/2d.shadow.enable.x.html = TEXT
 BUG_LOISLO MAC : canvas/philip/tests/2d.shadow.enable.y.html = TEXT
 BUG_LOISLO MAC : canvas/philip/tests/2d.strokeRect.zero.4.html = TEXT
 
-BUG_ZMO : fast/dom/prototype-inheritance.html = TEXT
-
