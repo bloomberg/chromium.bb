@@ -3776,22 +3776,6 @@
    fun:_Znw*
    ...
    fun:_ZN13ProfileIOData23InitializeProfileParamsEP7ProfilePNS_13ProfileParamsE
-   fun:_ZNK17ProfileImplIOData6Handle14LazyInitializeEv
-   fun:_ZNK17ProfileImplIOData6Handle27GetMainRequestContextGetterEv
-   fun:_ZN11ProfileImpl17GetRequestContextEv
-   fun:_ZN19SafeBrowsingService5StartEv
-   fun:_ZN19SafeBrowsingService10InitializeEv
-   fun:_ZN22ResourceDispatcherHost10InitializeEv
-   fun:_ZN18BrowserProcessImpl28CreateResourceDispatcherHostEv
-   fun:_ZN18BrowserProcessImpl24resource_dispatcher_hostEv
-   fun:_ZN16ExtensionService4InitEv
-   fun:_ZN11ProfileImpl14InitExtensionsEv
-   fun:_ZN14ProfileManager10AddProfileEP7Profileb
-   fun:_ZN14ProfileManager10GetProfileERK8FilePathb
-   fun:_ZN14ProfileManager10GetProfileERK8FilePath
-   fun:_ZN14ProfileManager17GetDefaultProfileERK8FilePath
-   fun:*13CreateProfileERK18MainFunctionParamsRK8FilePath
-   fun:_Z11BrowserMainRK18MainFunctionParams
 }
 {
    bug_72698_b
@@ -3799,33 +3783,4 @@
    fun:_Znw*
    ...
    fun:_ZNK13ProfileIOData14LazyInitializeEv
-   fun:_ZNK13ProfileIOData21GetMainRequestContextEv
-   fun:*14FactoryForMain6CreateEv
-   fun:_ZN29ChromeURLRequestContextGetter20GetURLRequestContextEv
 }
-{
-   bug_72698_c
-   Memcheck:Leak
-   fun:_Znw*
-   fun:*27ChromeCookieMonsterDelegateC1EP7Profile
-   fun:_ZN13ProfileIOData23InitializeProfileParamsEP7ProfilePNS_13ProfileParamsE
-   fun:_ZNK25OffTheRecordProfileIOData6Handle14LazyInitializeEv
-   fun:_ZNK25OffTheRecordProfileIOData6Handle27GetMainRequestContextGetterEv
-   fun:_ZN23OffTheRecordProfileImpl17GetRequestContextEv
-   fun:_ZN26BrowsingDataAppCacheHelperC2EP7Profile
-   fun:_ZN32CannedBrowsingDataAppCacheHelperC1EP7Profile
-   fun:_ZN26TabSpecificContentSettings27LocalSharedObjectsContainerC1EP7Profile
-   fun:_ZN26TabSpecificContentSettingsC1EPNS_8DelegateEP7Profile
-   fun:_ZN11TabContentsC1EP7ProfileP12SiteInstanceiPKS_P23SessionStorageNamespace
-   fun:_ZN7Browser18TabContentsFactoryEP7ProfileP12SiteInstanceiPK11TabContentsP23SessionStorageNamespace
-   fun:_ZN7browser8NavigateEPNS_14NavigateParamsE
-   fun:_ZN11BrowserInit17LaunchWithProfile17OpenTabsInBrowserEP7BrowserbRKSt6vectorINS0_3TabESaIS4_EE
-   fun:_ZN11BrowserInit17LaunchWithProfile17OpenURLsInBrowserEP7BrowserbRKSt6vectorI4GURLSaIS4_EE
-   fun:_ZN11BrowserInit17LaunchWithProfile17ProcessLaunchURLsEbRKSt6vectorI4GURLSaIS2_EE
-   fun:_ZN11BrowserInit17LaunchWithProfile6LaunchEP7Profileb
-   fun:_ZN11BrowserInit13LaunchBrowserERK11CommandLineP7ProfileRK8FilePathbPi
-   fun:_ZN11BrowserInit18ProcessCmdLineImplERK11CommandLineRK8FilePathbP7ProfilePiPS_
-   fun:_ZN11BrowserInit5StartERK11CommandLineRK8FilePathP7ProfilePi
-   fun:_Z11BrowserMainRK18MainFunctionParams
-}
-
