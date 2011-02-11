@@ -177,6 +177,13 @@ void LiveSyncTest::SetUpCommandLine(CommandLine* cl) {
   // Disable non-essential access of external network resources.
   if (!cl->HasSwitch(switches::kDisableBackgroundNetworking))
     cl->AppendSwitch(switches::kDisableBackgroundNetworking);
+
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+  // Use a basic non-encrypted password store on Linux while running tests.
+  // See http://code.google.com/p/chromium/wiki/LinuxPasswordStorage.
+  if (!cl->HasSwitch(switches::kPasswordStore))
+    cl->AppendSwitchASCII(switches::kPasswordStore, "basic");
+#endif
 }
 
 // static
