@@ -59,8 +59,6 @@ cr.define('mobile', function() {
       $('closeButton').addEventListener('click', function(e) {
           $('finalStatus').classList.add('hidden');
       });
-      $('carrierPage').contentWindow.location.href =
-          carrierPage;
       $(frame_name).addEventListener('load', function(e) {
         // Flip the visibility of the payment page only after the frame is
         // fully loaded.
@@ -165,6 +163,10 @@ cr.define('mobile', function() {
           $('paymentForm').classList.remove('hidden');
           $('closeButton').classList.remove('hidden');
           $('finalStatus').classList.remove('hidden');
+          if (this.payment_shown_)
+            $('closeButton').classList.remove('hidden');
+          else
+            $('closeButton').classList.add('hidden');
           break;
         case MobileSetup.PLAN_ACTIVATION_ERROR:
           $('statusHeader').textContent = '';
