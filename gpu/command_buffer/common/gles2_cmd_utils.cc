@@ -22,7 +22,7 @@ enum GLErrorBit {
   kInvalidValue = (1 << 1),
   kInvalidOperation = (1 << 2),
   kOutOfMemory = (1 << 3),
-  kInvalidFrameBufferOperation = (1 << 4),
+  kInvalidFrameBufferOperation = (1 << 4)
 };
 }
 

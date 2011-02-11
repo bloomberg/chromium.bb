@@ -757,7 +757,7 @@ void GLES2Implementation::GetVertexAttribPointerv(
     index, pname, result_shm_id(), result_shm_offset());
   WaitForCmd();
   result->CopyResult(ptr);
-};
+}
 
 GLint GLES2Implementation::GetAttribLocation(
     GLuint program, const char* name) {
