@@ -59,7 +59,7 @@ int WebInputEventFlagsFromViewsEvent(const views::Event& event) {
 
 WebKit::WebTouchPoint::State TouchPointStateFromEvent(
     const views::TouchEvent* event) {
-  switch (event->GetType()) {
+  switch (event->type()) {
     case ui::ET_TOUCH_PRESSED:
       return WebKit::WebTouchPoint::StatePressed;
     case ui::ET_TOUCH_RELEASED:
@@ -75,7 +75,7 @@ WebKit::WebTouchPoint::State TouchPointStateFromEvent(
 
 WebKit::WebInputEvent::Type TouchEventTypeFromEvent(
     const views::TouchEvent* event) {
-  switch (event->GetType()) {
+  switch (event->type()) {
     case ui::ET_TOUCH_PRESSED:
       return WebKit::WebInputEvent::TouchStart;
     case ui::ET_TOUCH_RELEASED:
@@ -502,7 +502,7 @@ bool RenderWidgetHostViewViews::OnMouseWheel(const views::MouseWheelEvent& e) {
   wmwe.button = WebKit::WebMouseEvent::ButtonNone;
 
   // TODO(sadrul): How do we determine if it's a horizontal scroll?
-  wmwe.deltaY = e.GetOffset();
+  wmwe.deltaY = e.offset();
   wmwe.wheelTicksY = wmwe.deltaY > 0 ? 1 : -1;
 
   GetRenderWidgetHost()->ForwardWheelEvent(wmwe);
@@ -528,12 +528,12 @@ bool RenderWidgetHostViewViews::OnKeyPressed(const views::KeyEvent &e) {
 
   NativeWebKeyboardEvent wke;
   wke.type = WebKit::WebInputEvent::RawKeyDown;
-  wke.windowsKeyCode = e.GetKeyCode();
+  wke.windowsKeyCode = e.key_code();
   wke.setKeyIdentifierFromWindowsKeyCode();
 
   wke.text[0] = wke.unmodifiedText[0] =
     static_cast<unsigned short>(gdk_keyval_to_unicode(
-          ui::GdkKeyCodeForWindowsKeyCode(e.GetKeyCode(),
+          ui::GdkKeyCodeForWindowsKeyCode(e.key_code(),
               e.IsShiftDown() ^ e.IsCapsLockDown())));
 
   wke.modifiers = WebInputEventFlagsFromViewsEvent(e);
@@ -551,7 +551,7 @@ bool RenderWidgetHostViewViews::OnKeyReleased(const views::KeyEvent &e) {
   NativeWebKeyboardEvent wke;
 
   wke.type = WebKit::WebInputEvent::KeyUp;
-  wke.windowsKeyCode = e.GetKeyCode();
+  wke.windowsKeyCode = e.key_code();
   wke.setKeyIdentifierFromWindowsKeyCode();
 
   ForwardKeyboardEvent(wke);
@@ -682,7 +682,7 @@ views::View::TouchStatus RenderWidgetHostViewViews::OnTouchEvent(
   WebKit::WebTouchPoint* point = NULL;
   TouchStatus status = TOUCH_STATUS_UNKNOWN;
 
-  switch (e.GetType()) {
+  switch (e.type()) {
     case ui::ET_TOUCH_PRESSED:
       // Add a new touch point.
       if (touch_event_.touchPointsLength <
@@ -716,7 +716,7 @@ views::View::TouchStatus RenderWidgetHostViewViews::OnTouchEvent(
       break;
     }
     default:
-      DLOG(WARNING) << "Unknown touch event " << e.GetType();
+      DLOG(WARNING) << "Unknown touch event " << e.type();
       break;
   }
 
@@ -754,7 +754,7 @@ views::View::TouchStatus RenderWidgetHostViewViews::OnTouchEvent(
   host_->ForwardTouchEvent(touch_event_);
 
   // If the touch was released, then remove it from the list of touch points.
-  if (e.GetType() == ui::ET_TOUCH_RELEASED) {
+  if (e.type() == ui::ET_TOUCH_RELEASED) {
     --touch_event_.touchPointsLength;
     for (int i = point - touch_event_.touchPoints;
          i < touch_event_.touchPointsLength;
@@ -763,7 +763,7 @@ views::View::TouchStatus RenderWidgetHostViewViews::OnTouchEvent(
     }
     if (touch_event_.touchPointsLength == 0)
       status = TOUCH_STATUS_END;
-  } else if (e.GetType() == ui::ET_TOUCH_CANCELLED) {
+  } else if (e.type() == ui::ET_TOUCH_CANCELLED) {
     status = TOUCH_STATUS_CANCEL;
   }
 

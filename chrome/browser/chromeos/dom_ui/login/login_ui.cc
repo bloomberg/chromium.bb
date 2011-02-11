@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/dom_ui/login/authenticator_facade_cros.h"
 #include "chrome/browser/chromeos/dom_ui/login/login_ui.h"
 #include "chrome/browser/chromeos/dom_ui/login/login_ui_helpers.h"
+#include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
@@ -157,7 +158,7 @@ LoginUI::LoginUI(TabContents* contents)
   LoginUIHTMLSource* html_source =
       new LoginUIHTMLSource(MessageLoop::current());
 
-  contents->profile->GetChromeURLDataManager()->AddDataSource(html_source);
+  contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
 }
 
 }  // namespace chromeos
