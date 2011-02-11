@@ -21,6 +21,8 @@ MockGaiaAuthenticator::MockGaiaAuthenticator(const char* user_agent,
   // doesn't care about them.
 }
 
+MockGaiaAuthenticator::~MockGaiaAuthenticator() {}
+
 // Add a mock user to internal list of users.
 void MockGaiaAuthenticator::AddMockUser(MockUser mock_user) {
   mock_credentials_[mock_user.email] = mock_user;
@@ -105,6 +107,46 @@ bool MockGaiaAuthenticator::Authenticate(const char* email,
 // details of mock users.
 void MockGaiaAuthenticator::ResetCredentials() {
   current_user_ = "";
+}
+
+std::string MockGaiaAuthenticator::email() {
+  return (current_user_.empty() || !should_save_credentials_) ? "" :
+      mock_credentials_[current_user_].email;
+}
+
+std::string MockGaiaAuthenticator::auth_token() {
+  return (current_user_.empty()) ? "" :
+      mock_credentials_[current_user_].auth_token;
+}
+
+std::string MockGaiaAuthenticator::sid() {
+  return (current_user_.empty()) ? "" :
+      mock_credentials_[current_user_].sid;
+}
+
+std::string MockGaiaAuthenticator::lsid() {
+  return (current_user_.empty()) ? "" :
+      mock_credentials_[current_user_].lsid;
+}
+
+gaia::AuthenticationError MockGaiaAuthenticator::auth_error() {
+  return (current_user_.empty()) ? gaia::CredentialsNotSet :
+      mock_credentials_[current_user_].auth_error;
+}
+
+std::string MockGaiaAuthenticator::auth_error_url() {
+  return (current_user_.empty()) ? "" :
+      mock_credentials_[current_user_].error_url;
+}
+
+std::string MockGaiaAuthenticator::captcha_token() {
+  return (current_user_.empty()) ? "" :
+      mock_credentials_[current_user_].captcha_token;
+}
+
+std::string MockGaiaAuthenticator::captcha_url() {
+  return (current_user_.empty()) ? "" :
+      mock_credentials_[current_user_].captcha_url;
 }
 
 }  // namespace browser_sync

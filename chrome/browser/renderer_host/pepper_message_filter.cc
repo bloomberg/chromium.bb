@@ -38,6 +38,8 @@ PepperMessageFilter::PepperMessageFilter(Profile* profile)
       request_context_(profile_->GetRequestContext()) {
 }
 
+PepperMessageFilter::~PepperMessageFilter() {}
+
 bool PepperMessageFilter::OnMessageReceived(const IPC::Message& msg,
                                             bool* message_was_ok) {
 #if defined(ENABLE_FLAPPER_HACKS)

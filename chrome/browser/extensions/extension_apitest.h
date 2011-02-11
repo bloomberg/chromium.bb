@@ -25,6 +25,10 @@ class Extension;
 // TODO(erikkay): There should also be a way to drive events in these tests.
 
 class ExtensionApiTest : public ExtensionBrowserTest {
+ public:
+  ExtensionApiTest();
+  virtual ~ExtensionApiTest();
+
  protected:
   // Helper class that observes tests failing or passing. Observation starts
   // when the class is constructed. Get the next result by calling

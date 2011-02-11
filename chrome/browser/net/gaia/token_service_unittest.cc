@@ -7,10 +7,67 @@
 #include "chrome/browser/net/gaia/token_service_unittest.h"
 
 #include "base/command_line.h"
+#include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher_unittest.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/test_url_fetcher_factory.h"
+
+TokenServiceTestHarness::TokenServiceTestHarness()
+    : ui_thread_(BrowserThread::UI, &message_loop_),
+      db_thread_(BrowserThread::DB) {
+}
+
+TokenServiceTestHarness::~TokenServiceTestHarness() {}
+
+void TokenServiceTestHarness::SetUp() {
+#if defined(OS_MACOSX)
+  Encryptor::UseMockKeychain(true);
+#endif
+  credentials_.sid = "sid";
+  credentials_.lsid = "lsid";
+  credentials_.token = "token";
+  credentials_.data = "data";
+
+  ASSERT_TRUE(db_thread_.Start());
+
+  profile_.reset(new TestingProfile());
+  profile_->CreateWebDataService(false);
+  WaitForDBLoadCompletion();
+
+  success_tracker_.ListenFor(NotificationType::TOKEN_AVAILABLE,
+                             Source<TokenService>(&service_));
+  failure_tracker_.ListenFor(NotificationType::TOKEN_REQUEST_FAILED,
+                             Source<TokenService>(&service_));
+
+  service_.Initialize("test", profile_.get());
+
+  URLFetcher::set_factory(NULL);
+}
+
+void TokenServiceTestHarness::TearDown() {
+  // You have to destroy the profile before the db_thread_ stops.
+  if (profile_.get()) {
+    profile_.reset(NULL);
+  }
+
+  db_thread_.Stop();
+  MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask);
+  MessageLoop::current()->Run();
+}
+
+void TokenServiceTestHarness::WaitForDBLoadCompletion() {
+  // The WebDB does all work on the DB thread. This will add an event
+  // to the end of the DB thread, so when we reach this task, all DB
+  // operations should be complete.
+  WaitableEvent done(false, false);
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE, new SignalingTask(&done));
+  done.Wait();
+
+  // Notifications should be returned from the DB thread onto the UI thread.
+  message_loop_.RunAllPending();
+}
 
 class TokenServiceTest : public TokenServiceTestHarness {
  public:

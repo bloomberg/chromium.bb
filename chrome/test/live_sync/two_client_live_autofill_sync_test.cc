@@ -4,6 +4,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
+#include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/test/live_sync/live_autofill_sync_test.h"
 
 IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, WebDataServiceSanity) {
@@ -101,19 +102,19 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest,
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   // Client0 adds a profile.
-  AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
+  AddProfile(0, CreateAutofillProfile(LiveAutofillSyncTest::PROFILE_HOMER));
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(ProfilesMatch(0,1));
   ASSERT_EQ(1U, GetAllProfiles(0).size());
 
   // Client1 adds a profile.
-  AddProfile(1, CreateAutofillProfile(PROFILE_MARION));
+  AddProfile(1, CreateAutofillProfile(LiveAutofillSyncTest::PROFILE_MARION));
   ASSERT_TRUE(GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0)));
   ASSERT_TRUE(ProfilesMatch(0,1));
   ASSERT_EQ(2U, GetAllProfiles(0).size());
 
   // Client0 adds the same profile.
-  AddProfile(0, CreateAutofillProfile(PROFILE_MARION));
+  AddProfile(0, CreateAutofillProfile(LiveAutofillSyncTest::PROFILE_MARION));
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(ProfilesMatch(0,1));
   ASSERT_EQ(2U, GetAllProfiles(0).size());
@@ -141,8 +142,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest,
 IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, AddDuplicateProfiles) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
-  AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
-  AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
+  AddProfile(0, CreateAutofillProfile(LiveAutofillSyncTest::PROFILE_HOMER));
+  AddProfile(0, CreateAutofillProfile(LiveAutofillSyncTest::PROFILE_HOMER));
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(ProfilesMatch(0,1));
@@ -153,8 +154,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, AddDuplicateProfiles) {
 IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, SameProfileWithConflict) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
-  AutoFillProfile profile0 = CreateAutofillProfile(PROFILE_HOMER);
-  AutoFillProfile profile1 = CreateAutofillProfile(PROFILE_HOMER);
+  AutoFillProfile profile0 =
+      CreateAutofillProfile(LiveAutofillSyncTest::PROFILE_HOMER);
+  AutoFillProfile profile1 =
+      CreateAutofillProfile(LiveAutofillSyncTest::PROFILE_HOMER);
   profile1.SetInfo(AutoFillType(PHONE_FAX_WHOLE_NUMBER),
                    ASCIIToUTF16("1234567890"));
 
@@ -170,7 +173,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, SameProfileWithConflict) {
 IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, AddEmptyProfile) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  AddProfile(0, CreateAutofillProfile(PROFILE_NULL));
+  AddProfile(0, CreateAutofillProfile(LiveAutofillSyncTest::PROFILE_NULL));
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(ProfilesMatch(0,1));
   ASSERT_EQ(0U, GetAllProfiles(0).size());
@@ -180,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, AddEmptyProfile) {
 IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, AddProfile) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
+  AddProfile(0, CreateAutofillProfile(LiveAutofillSyncTest::PROFILE_HOMER));
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(ProfilesMatch(0,1));
   ASSERT_EQ(1U, GetAllProfiles(0).size());
@@ -190,9 +193,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, AddProfile) {
 IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, AddMultipleProfiles) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
-  AddProfile(0, CreateAutofillProfile(PROFILE_MARION));
-  AddProfile(0, CreateAutofillProfile(PROFILE_FRASIER));
+  AddProfile(0, CreateAutofillProfile(LiveAutofillSyncTest::PROFILE_HOMER));
+  AddProfile(0, CreateAutofillProfile(LiveAutofillSyncTest::PROFILE_MARION));
+  AddProfile(0, CreateAutofillProfile(LiveAutofillSyncTest::PROFILE_FRASIER));
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(ProfilesMatch(0,1));
   ASSERT_EQ(3U, GetAllProfiles(0).size());
@@ -202,7 +205,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, AddMultipleProfiles) {
 IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, DeleteProfile) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
+  AddProfile(0, CreateAutofillProfile(LiveAutofillSyncTest::PROFILE_HOMER));
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(ProfilesMatch(0,1));
   ASSERT_EQ(1U, GetAllProfiles(0).size());
@@ -217,9 +220,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, DeleteProfile) {
 IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, MergeProfiles) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
-  AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
-  AddProfile(1, CreateAutofillProfile(PROFILE_MARION));
-  AddProfile(1, CreateAutofillProfile(PROFILE_FRASIER));
+  AddProfile(0, CreateAutofillProfile(LiveAutofillSyncTest::PROFILE_HOMER));
+  AddProfile(1, CreateAutofillProfile(LiveAutofillSyncTest::PROFILE_MARION));
+  AddProfile(1, CreateAutofillProfile(LiveAutofillSyncTest::PROFILE_FRASIER));
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(ProfilesMatch(0,1));
@@ -230,7 +233,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, MergeProfiles) {
 IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, UpdateFields) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
+  AddProfile(0, CreateAutofillProfile(LiveAutofillSyncTest::PROFILE_HOMER));
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(ProfilesMatch(0,1));
   ASSERT_EQ(1U, GetAllProfiles(0).size());
@@ -248,7 +251,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, UpdateFields) {
 IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, ConflictingFields) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
+  AddProfile(0, CreateAutofillProfile(LiveAutofillSyncTest::PROFILE_HOMER));
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(ProfilesMatch(0,1));
   ASSERT_EQ(1U, GetAllProfiles(0).size());

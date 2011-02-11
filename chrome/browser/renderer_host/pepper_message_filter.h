@@ -24,6 +24,7 @@ class AddressList;
 class PepperMessageFilter : public BrowserMessageFilter {
  public:
   explicit PepperMessageFilter(Profile* profile);
+  virtual ~PepperMessageFilter();
 
  private:
   // BrowserMessageFilter methods.

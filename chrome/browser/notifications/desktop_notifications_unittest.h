@@ -28,7 +28,8 @@ typedef LoggingNotificationDelegate<DesktopNotificationsTest>
 // of notifications that are added to it.
 class MockBalloonCollection : public BalloonCollectionImpl {
  public:
-  MockBalloonCollection() {}
+  MockBalloonCollection();
+  virtual ~MockBalloonCollection();
 
   // Our mock collection has an area large enough for a fixed number
   // of balloons.
@@ -70,7 +71,7 @@ class MockBalloonCollection : public BalloonCollectionImpl {
 class DesktopNotificationsTest : public testing::Test {
  public:
   DesktopNotificationsTest();
-  ~DesktopNotificationsTest();
+  virtual ~DesktopNotificationsTest();
 
   static void log(const std::string& message) {
     log_output_.append(message);

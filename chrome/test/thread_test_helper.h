@@ -6,6 +6,7 @@
 #define CHROME_TEST_THREAD_TEST_HELPER_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/browser_thread.h"
@@ -17,37 +18,23 @@
 // executed.
 class ThreadTestHelper : public base::RefCountedThreadSafe<ThreadTestHelper> {
  public:
-  explicit ThreadTestHelper(BrowserThread::ID thread_id)
-    : test_result_(false),
-      thread_id_(thread_id),
-      done_event_(false, false) {
-  }
+  explicit ThreadTestHelper(BrowserThread::ID thread_id);
 
   // True if RunTest() was successfully executed on the target thread.
-  bool Run() WARN_UNUSED_RESULT {
-    if (!BrowserThread::PostTask(thread_id_, FROM_HERE, NewRunnableMethod(
-        this, &ThreadTestHelper::RunInThread))) {
-      return false;
-    }
-    done_event_.Wait();
-    return test_result_;
-  }
+  bool Run() WARN_UNUSED_RESULT;
 
-  virtual void RunTest() { set_test_result(true); }
+  virtual void RunTest();
 
  protected:
   friend class base::RefCountedThreadSafe<ThreadTestHelper>;
 
-  virtual ~ThreadTestHelper() {}
+  virtual ~ThreadTestHelper();
 
   // Use this method to store the result of RunTest().
   void set_test_result(bool test_result) { test_result_ = test_result; }
 
  private:
-  void RunInThread() {
-    RunTest();
-    done_event_.Signal();
-  }
+  void RunInThread();
 
   bool test_result_;
   BrowserThread::ID thread_id_;

@@ -285,7 +285,7 @@ class GLES2DecoderTestBase : public testing::Test {
     virtual ~MockCommandBufferEngine() {
     }
 
-    Buffer GetSharedMemoryBuffer(int32 shm_id) {
+    virtual Buffer GetSharedMemoryBuffer(int32 shm_id) {
       return shm_id == kSharedMemoryId ? valid_buffer_ : invalid_buffer_;
     }
 
@@ -293,7 +293,7 @@ class GLES2DecoderTestBase : public testing::Test {
       memset(data_.get(), kInitialMemoryValue, kSharedBufferSize);
     }
 
-    void set_token(int32 token) {
+    virtual void set_token(int32 token) {
       DCHECK(false);
     }
 

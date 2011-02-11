@@ -19,6 +19,10 @@ const char kTestServerPort[] = "testServer.port";
 
 };  // namespace
 
+ExtensionApiTest::ExtensionApiTest() {}
+
+ExtensionApiTest::~ExtensionApiTest() {}
+
 ExtensionApiTest::ResultCatcher::ResultCatcher()
     : profile_restriction_(NULL),
       waiting_(false) {

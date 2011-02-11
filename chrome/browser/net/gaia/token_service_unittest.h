@@ -9,7 +9,6 @@
 #pragma once
 
 #include "chrome/browser/net/gaia/token_service.h"
-#include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/common/notification_details.h"
@@ -64,59 +63,14 @@ class TokenFailedTracker : public TestNotificationTracker {
 
 class TokenServiceTestHarness : public testing::Test {
  public:
-  TokenServiceTestHarness()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        db_thread_(BrowserThread::DB) {
-  }
+  TokenServiceTestHarness();
+  virtual ~TokenServiceTestHarness();
 
-  virtual void SetUp() {
-#if defined(OS_MACOSX)
-    Encryptor::UseMockKeychain(true);
-#endif
-    credentials_.sid = "sid";
-    credentials_.lsid = "lsid";
-    credentials_.token = "token";
-    credentials_.data = "data";
+  virtual void SetUp();
 
-    ASSERT_TRUE(db_thread_.Start());
+  virtual void TearDown();
 
-    profile_.reset(new TestingProfile());
-    profile_->CreateWebDataService(false);
-    WaitForDBLoadCompletion();
-
-    success_tracker_.ListenFor(NotificationType::TOKEN_AVAILABLE,
-                               Source<TokenService>(&service_));
-    failure_tracker_.ListenFor(NotificationType::TOKEN_REQUEST_FAILED,
-                               Source<TokenService>(&service_));
-
-    service_.Initialize("test", profile_.get());
-
-    URLFetcher::set_factory(NULL);
-  }
-
-  virtual void TearDown() {
-    // You have to destroy the profile before the db_thread_ stops.
-    if (profile_.get()) {
-      profile_.reset(NULL);
-    }
-
-    db_thread_.Stop();
-    MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask);
-    MessageLoop::current()->Run();
-  }
-
-  void WaitForDBLoadCompletion() {
-    // The WebDB does all work on the DB thread. This will add an event
-    // to the end of the DB thread, so when we reach this task, all DB
-    // operations should be complete.
-    WaitableEvent done(false, false);
-    BrowserThread::PostTask(
-        BrowserThread::DB, FROM_HERE, new SignalingTask(&done));
-    done.Wait();
-
-    // Notifications should be returned from the DB thread onto the UI thread.
-    message_loop_.RunAllPending();
-  }
+  void WaitForDBLoadCompletion();
 
   MessageLoopForUI message_loop_;
   BrowserThread ui_thread_;  // Mostly so DCHECKS pass.

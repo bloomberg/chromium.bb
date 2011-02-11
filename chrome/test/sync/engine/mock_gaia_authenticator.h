@@ -57,6 +57,7 @@ class MockGaiaAuthenticator {
  public:
   MockGaiaAuthenticator(const char* user_agent, const char* service_id,
                         const char* gaia_url);
+  ~MockGaiaAuthenticator();
 
   // Add a mock user; takes a struct. You can populate any or all fields when
   // adding a user. The email field is required, all others optional.
@@ -96,45 +97,14 @@ class MockGaiaAuthenticator {
   void ResetCredentials();
 
   // Accessors follow.
-  std::string email() {
-    return (current_user_.length() == 0 || !should_save_credentials_) ? "" :
-      mock_credentials_[current_user_].email;
-  }
-
-  std::string auth_token() {
-    return (current_user_.length() == 0) ? "" :
-      mock_credentials_[current_user_].auth_token;
-  }
-
-  std::string sid() {
-    return (current_user_.length() == 0) ? "" :
-      mock_credentials_[current_user_].sid;
-  }
-
-  std::string lsid() {
-    return (current_user_.length() == 0) ? "" :
-      mock_credentials_[current_user_].lsid;
-  }
-
-  gaia::AuthenticationError auth_error() {
-    return (current_user_.length() == 0) ? gaia::CredentialsNotSet :
-      mock_credentials_[current_user_].auth_error;
-  }
-
-  std::string auth_error_url() {
-    return (current_user_.length() == 0) ? "" :
-      mock_credentials_[current_user_].error_url;
-  }
-
-  std::string captcha_token() {
-    return (current_user_.length() == 0) ? "" :
-      mock_credentials_[current_user_].captcha_token;
-  }
-
-  std::string captcha_url() {
-    return (current_user_.length() == 0) ? "" :
-      mock_credentials_[current_user_].captcha_url;
-  }
+  std::string email();
+  std::string auth_token();
+  std::string sid();
+  std::string lsid();
+  gaia::AuthenticationError auth_error();
+  std::string auth_error_url();
+  std::string captcha_token();
+  std::string captcha_url();
 
  private:
   bool should_save_credentials_;

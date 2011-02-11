@@ -5,6 +5,10 @@
 #include "base/string_util.h"
 #include "chrome/test/v8_unit_test.h"
 
+V8UnitTest::V8UnitTest() {}
+
+V8UnitTest::~V8UnitTest() {}
+
 void V8UnitTest::SetUp() {
   v8::Handle<v8::ObjectTemplate> global = v8::ObjectTemplate::New();
   global->Set(v8::String::New("log"),

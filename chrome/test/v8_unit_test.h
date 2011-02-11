@@ -20,7 +20,9 @@ class StringPiece;
 // this context as well as call functions in the context.
 class V8UnitTest : public testing::Test {
  public:
-  V8UnitTest() {}
+  V8UnitTest();
+  virtual ~V8UnitTest();
+
   virtual void SetUp();
 
  protected:

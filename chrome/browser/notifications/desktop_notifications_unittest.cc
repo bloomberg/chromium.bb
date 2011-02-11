@@ -17,6 +17,10 @@ const int MockBalloonCollection::kMockBalloonSpace = 5;
 // static
 std::string DesktopNotificationsTest::log_output_;
 
+MockBalloonCollection::MockBalloonCollection() {}
+
+MockBalloonCollection::~MockBalloonCollection() {}
+
 void MockBalloonCollection::Add(const Notification& notification,
                                 Profile* profile) {
   // Swap in a logging proxy for the purpose of logging calls that
