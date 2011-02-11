@@ -88,7 +88,7 @@ class UsernameField : public chromeos::TextfieldWithMargin {
     if (e.key_code() == ui::VKEY_LEFT) {
       return controller_->NavigateAway();
     }
-    return false;
+    return TextfieldWithMargin::OnKeyPressed(e);
   }
 
  private:

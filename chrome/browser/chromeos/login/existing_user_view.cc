@@ -43,7 +43,7 @@ class UserEntryTextfield : public TextfieldWithMargin {
       controller_->SelectUserRelative(1);
       return true;
     } else {
-      return false;
+      return TextfieldWithMargin::OnKeyPressed(e);
     }
   }
 
