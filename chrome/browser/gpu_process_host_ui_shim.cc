@@ -317,25 +317,34 @@ bool GpuProcessHostUIShim::OnControlMessageReceived(
 void GpuProcessHostUIShim::OnChannelEstablished(
     const IPC::ChannelHandle& channel_handle,
     const GPUInfo& gpu_info) {
-  if (channel_handle.name.size() != 0 && !gpu_feature_flags_set_) {
-    gpu_feature_flags_ = gpu_blacklist_->DetermineGpuFeatureFlags(
-        GpuBlacklist::kOsAny, NULL, gpu_info);
+  uint32 max_entry_id = gpu_blacklist_->max_entry_id();
+  // max_entry_id can be zero if we failed to load the GPU blacklist, don't
+  // bother with histograms then.
+  if (channel_handle.name.size() != 0 && !gpu_feature_flags_set_ &&
+      max_entry_id != 0)
+  {
     gpu_feature_flags_set_ = true;
-    uint32 max_entry_id = gpu_blacklist_->max_entry_id();
-    if (gpu_feature_flags_.flags() != 0) {
-      std::vector<uint32> flag_entries;
-      gpu_blacklist_->GetGpuFeatureFlagEntries(GpuFeatureFlags::kGpuFeatureAll,
-                                               flag_entries);
-      DCHECK_GT(flag_entries.size(), 0u);
-      for (size_t i = 0; i < flag_entries.size(); ++i) {
+
+    const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+    if (!browser_command_line.HasSwitch(switches::kIgnoreGpuBlacklist)) {
+      gpu_feature_flags_ = gpu_blacklist_->DetermineGpuFeatureFlags(
+          GpuBlacklist::kOsAny, NULL, gpu_info);
+
+      if (gpu_feature_flags_.flags() != 0) {
+        std::vector<uint32> flag_entries;
+        gpu_blacklist_->GetGpuFeatureFlagEntries(
+            GpuFeatureFlags::kGpuFeatureAll, flag_entries);
+        DCHECK_GT(flag_entries.size(), 0u);
+        for (size_t i = 0; i < flag_entries.size(); ++i) {
+          UMA_HISTOGRAM_ENUMERATION("GPU.BlacklistTestResultsPerEntry",
+              flag_entries[i], max_entry_id + 1);
+        }
+      } else {
+        // id 0 is never used by any entry, so we use it here to indicate that
+        // gpu is allowed.
         UMA_HISTOGRAM_ENUMERATION("GPU.BlacklistTestResultsPerEntry",
-                                  flag_entries[i], max_entry_id + 1);
+            0, max_entry_id + 1);
       }
-    } else {
-      // id 0 is never used by any entry, so we use it here to indicate that
-      // gpu is allowed.
-      UMA_HISTOGRAM_ENUMERATION("GPU.BlacklistTestResultsPerEntry",
-                                0, max_entry_id + 1);
     }
   }
   linked_ptr<EstablishChannelCallback> callback = channel_requests_.front();
@@ -494,11 +503,8 @@ bool GpuProcessHostUIShim::LoadGpuBlacklist() {
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_GPU_BLACKLIST));
   gpu_blacklist_.reset(new GpuBlacklist());
-  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
-  if (browser_command_line.HasSwitch(switches::kIgnoreGpuBlacklist) ||
-      gpu_blacklist_->LoadGpuBlacklist(gpu_blacklist_json.as_string(), true)) {
+  if (gpu_blacklist_->LoadGpuBlacklist(gpu_blacklist_json.as_string(), true))
     return true;
-  }
   gpu_blacklist_.reset(NULL);
   return false;
 }
