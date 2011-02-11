@@ -77,10 +77,19 @@ void RequestRestart(NSWindow* parent) {
   [alert addButtonWithTitle:notNowButtin];
   [alert addButtonWithTitle:restartButton];
 
-  [alert beginSheetModalForWindow:parent
-                    modalDelegate:helper
-                   didEndSelector:@selector(alertDidEnd:returnCode:contextInfo:)
-                      contextInfo:nil];
+  if (parent) {
+    [alert beginSheetModalForWindow:parent
+                      modalDelegate:helper
+                     didEndSelector:@selector(alertDidEnd:
+                                               returnCode:
+                                              contextInfo:)
+                        contextInfo:nil];
+  } else {
+    NSInteger returnCode = [alert runModal];
+    [helper alertDidEnd:alert
+             returnCode:returnCode
+            contextInfo:NULL];
+  }
 }
 
 }  // namespace restart_browser

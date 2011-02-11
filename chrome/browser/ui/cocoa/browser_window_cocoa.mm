@@ -310,7 +310,7 @@ views::Window* BrowserWindowCocoa::ShowAboutChromeDialog() {
 }
 
 void BrowserWindowCocoa::ShowUpdateChromeDialog() {
-  restart_browser::RequestRestart(nil);
+  restart_browser::RequestRestart(window());
 }
 
 void BrowserWindowCocoa::ShowTaskManager() {
