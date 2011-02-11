@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_KEYSTONE_GLUE_H_
-#define CHROME_BROWSER_UI_COCOA_KEYSTONE_GLUE_H_
+#ifndef CHROME_BROWSER_COCOA_KEYSTONE_GLUE_H_
+#define CHROME_BROWSER_COCOA_KEYSTONE_GLUE_H_
 #pragma once
 
 #include "base/string16.h"
@@ -13,7 +13,7 @@
 #import <Foundation/Foundation.h>
 
 #import "base/scoped_nsobject.h"
-#include "chrome/browser/ui/cocoa/scoped_authorizationref.h"
+#include "chrome/browser/cocoa/scoped_authorizationref.h"
 
 // Possible outcomes of various operations.  A version may accompany some of
 // these, but beware: a version is never required.  For statuses that can be
@@ -206,4 +206,4 @@ string16 CurrentlyInstalledVersion();
 
 }  // namespace keystone_glue
 
-#endif  // CHROME_BROWSER_UI_COCOA_KEYSTONE_GLUE_H_
+#endif  // CHROME_BROWSER_COCOA_KEYSTONE_GLUE_H_

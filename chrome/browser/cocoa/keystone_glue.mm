@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/keystone_glue.h"
+#import "chrome/browser/cocoa/keystone_glue.h"
 
 #include <sys/param.h>
 #include <sys/mount.h>
@@ -16,7 +16,7 @@
 #include "base/ref_counted.h"
 #include "base/task.h"
 #include "base/threading/worker_pool.h"
-#include "chrome/browser/ui/cocoa/authorization_util.h"
+#include "chrome/browser/cocoa/authorization_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

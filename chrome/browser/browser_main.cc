@@ -155,7 +155,7 @@
 
 #if defined(OS_MACOSX)
 #include <Security/Security.h>
-#include "chrome/browser/ui/cocoa/install_from_dmg.h"
+#include "chrome/browser/cocoa/install_from_dmg.h"
 #endif
 
 #if defined(TOOLKIT_VIEWS)

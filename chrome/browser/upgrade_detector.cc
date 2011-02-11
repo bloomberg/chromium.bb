@@ -27,7 +27,7 @@
 #if defined(OS_WIN)
 #include "chrome/installer/util/install_util.h"
 #elif defined(OS_MACOSX)
-#include "chrome/browser/ui/cocoa/keystone_glue.h"
+#include "chrome/browser/cocoa/keystone_glue.h"
 #elif defined(OS_POSIX)
 #include "base/process_util.h"
 #include "base/version.h"

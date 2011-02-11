@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/cocoa/authorization_util.h"
+#include "chrome/browser/cocoa/authorization_util.h"
 
 #import <Foundation/Foundation.h>
 #include <sys/wait.h>
@@ -15,7 +15,7 @@
 #import "base/mac/mac_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
-#include "chrome/browser/ui/cocoa/scoped_authorizationref.h"
+#include "chrome/browser/cocoa/scoped_authorizationref.h"
 
 namespace authorization_util {
 
