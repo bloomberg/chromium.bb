@@ -14,7 +14,7 @@
 #include "chrome/browser/dom_ui/web_ui.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/pack_extension_job.h"
-#include "chrome/browser/shell_dialogs.h"
+#include "chrome/browser/ui/shell_dialogs.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"

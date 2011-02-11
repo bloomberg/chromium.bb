@@ -18,7 +18,7 @@
 #include "chrome/browser/language_order_table_model.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/shell_dialogs.h"
+#include "chrome/browser/ui/shell_dialogs.h"
 #include "chrome/browser/ui/views/restart_message_box.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"

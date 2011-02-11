@@ -16,8 +16,8 @@
 #include "base/hash_tables.h"
 #include "base/ref_counted.h"
 #include "base/task.h"
-#include "chrome/browser/shell_dialogs.h"
 #include "chrome/browser/tab_contents/tab_contents_observer.h"
+#include "chrome/browser/ui/shell_dialogs.h"
 #include "googleurl/src/gurl.h"
 
 class SaveFileManager;

@@ -42,7 +42,7 @@
 #include "base/weak_ptr.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/download/download_status_updater_delegate.h"
-#include "chrome/browser/shell_dialogs.h"
+#include "chrome/browser/ui/shell_dialogs.h"
 
 class DownloadFileManager;
 class DownloadHistory;

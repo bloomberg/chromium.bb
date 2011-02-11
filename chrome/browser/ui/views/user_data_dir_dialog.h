@@ -11,7 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/message_loop.h"
-#include "chrome/browser/shell_dialogs.h"
+#include "chrome/browser/ui/shell_dialogs.h"
 #include "views/window/dialog_delegate.h"
 
 class FilePath;

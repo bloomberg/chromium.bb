@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/shell_dialogs.h"
+#include "chrome/browser/ui/shell_dialogs.h"
 
 #include "base/callback.h"
 #include "base/file_path.h"
@@ -16,7 +16,6 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/shell_dialogs.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -375,16 +374,16 @@ void SelectFileDialogImpl::FileBrowseDelegate::GetDialogSize(
 
 std::string SelectFileDialogImpl::FileBrowseDelegate::GetDialogArgs() const {
   // SelectFile inputs as json.
-  //  {
-  //    "type"            : "open",   // (or "open_multiple", "save", "folder"
-  //    "all_files"       : true,
-  //    "file_types"      : {
-  //                          "exts" : [ ["htm", "html"], ["txt"] ],
-  //                          "desc" : [ "HTML files", "Text files" ],
-  //                        },
-  //    "file_type_index" : 1,    // 1-based file type index.
-  //  }
-  //  See browser/shell_dialogs.h for more details.
+  //   {
+  //     "type"            : "open",   // (or "open_multiple", "save", "folder"
+  //     "all_files"       : true,
+  //     "file_types"      : {
+  //                           "exts" : [ ["htm", "html"], ["txt"] ],
+  //                           "desc" : [ "HTML files", "Text files" ],
+  //                         },
+  //     "file_type_index" : 1,    // 1-based file type index.
+  //   }
+  // See browser/ui/shell_dialogs.h for more details.
 
   std::string type_string;
   switch (type_) {

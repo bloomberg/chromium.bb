@@ -9,7 +9,7 @@
 #include <string>
 
 #include "chrome/browser/prefs/pref_member.h"
-#include "chrome/browser/shell_dialogs.h"
+#include "chrome/browser/ui/shell_dialogs.h"
 #include "chrome/browser/ui/views/options/options_page_view.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/button/button.h"

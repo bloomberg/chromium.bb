@@ -16,7 +16,7 @@
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/importer_list.h"
-#include "chrome/browser/shell_dialogs.h"
+#include "chrome/browser/ui/shell_dialogs.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 

@@ -11,7 +11,7 @@
 #include "chrome/browser/prefs/pref_set_observer.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_flow.h"
 #include "chrome/browser/remoting/remoting_options_handler.h"
-#include "chrome/browser/shell_dialogs.h"
+#include "chrome/browser/ui/shell_dialogs.h"
 
 class OptionsManagedBannerHandler;
 

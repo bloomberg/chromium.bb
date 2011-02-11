@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SHELL_DIALOGS_H_
-#define CHROME_BROWSER_SHELL_DIALOGS_H_
+#ifndef CHROME_BROWSER_UI_SHELL_DIALOGS_H_
+#define CHROME_BROWSER_UI_SHELL_DIALOGS_H_
 #pragma once
 
 #include <string>
@@ -199,4 +199,4 @@ class SelectFontDialog
   virtual ~SelectFontDialog();
 };
 
-#endif  // CHROME_BROWSER_SHELL_DIALOGS_H_
+#endif  // CHROME_BROWSER_UI_SHELL_DIALOGS_H_

@@ -8,7 +8,7 @@
 
 #include <vector>
 
-#include "chrome/browser/shell_dialogs.h"
+#include "chrome/browser/ui/shell_dialogs.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "net/base/directory_lister.h"
