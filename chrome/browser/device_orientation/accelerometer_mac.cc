@@ -111,6 +111,9 @@ const AccelerometerMac::SensorDescriptor
   // Tested by S.Selz. (via avi) on a 13" MacBook.
   { "MacBook2,1",    { { 0, true  }, { 2, false }, { 4, true  } } },
 
+  // Tested by adlr on a 13" MacBook.
+  { "MacBook4,1",    { { 0, true  }, { 2, true  }, { 4, false } } },
+
   // Tested by avi on a 13" MacBook.
   { "MacBook7,1",    { { 0, true  }, { 2, true  }, { 4, false } } },
 
@@ -139,7 +142,7 @@ const AccelerometerMac::SensorDescriptor
   // Tested by leandrogracia on a 15" MacBook Pro.
   { "MacBookPro5,1", { { 0, false }, { 2, false }, { 4, false } } },
 
-  // Tested by S.Selz. (via avi) on a 15" MacBook Pro.
+  // Tested by S.Selz. (via avi) on a 17" MacBook Pro.
   { "MacBookPro5,2", { { 0, false }, { 2, false }, { 4, false } } },
 
   // Tested by dmaclach on a 15" MacBook Pro.
@@ -166,14 +169,14 @@ const AccelerometerMac::SensorDescriptor
   // TODO(avi): Find these past models and test on them; test on future models.
   //  MacBook1,1
   //  MacBook3,1
-  //  MacBook4,1
   //  MacBook5,1
   //  MacBook5,2
   //  MacBook6,1
   //  MacBookAir1,1
   //  MacBookPro1,1
   //  MacBookPro1,2
-  //  MacBookPro5,2
+  //  MacBookPro3,1 (17" to compare to 15")
+  //  MacBookPro4,1 (17" to compare to 15")
   { "", { { 0, true  }, { 2, true  }, { 4, false } } }
 };
 
