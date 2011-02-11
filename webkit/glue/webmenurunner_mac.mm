@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,28 +6,31 @@
 
 #include "base/sys_string_conversions.h"
 
-namespace {
-
-const CGFloat kPopupXOffset = -10.0f;
-BOOL gNewNSMenuAPI;
-
-}  // namespace
-
 #if !defined(MAC_OS_X_VERSION_10_6) || \
     MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6
-@interface NSMenu (SnowLeopardSDKDeclarations)
-- (BOOL)popUpMenuPositioningItem:(NSMenuItem *)item
-                      atLocation:(NSPoint)location
-                          inView:(NSView *)view;
-- (void)setFont:(NSFont *)font;
+enum {
+  NSUserInterfaceLayoutDirectionLeftToRight = 0,
+  NSUserInterfaceLayoutDirectionRightToLeft = 1
+};
+typedef NSInteger NSUserInterfaceLayoutDirection;
+
+@interface NSCell (SnowLeopardSDKDeclarations)
+- (void)setUserInterfaceLayoutDirection:
+    (NSUserInterfaceLayoutDirection)layoutDirection;
 @end
+
+enum {
+  NSTextWritingDirectionEmbedding = (0 << 1),
+  NSTextWritingDirectionOverride = (1 << 1)
+};
+
+static NSString* NSWritingDirectionAttributeName = @"NSWritingDirection";
 #endif
 
 @interface WebMenuRunner (PrivateAPI)
 
 // Worker function used during initialization.
-- (void)addItem:(const WebMenuItem&)item
- withAttributes:(NSDictionary*)attrs;
+- (void)addItem:(const WebMenuItem&)item;
 
 // A callback for the menu controller object to call when an item is selected
 // from the menu. This is not called if the menu is dismissed without a
@@ -41,39 +44,19 @@ BOOL gNewNSMenuAPI;
 - (id)initWithItems:(const std::vector<WebMenuItem>&)items
            fontSize:(CGFloat)fontSize
        rightAligned:(BOOL)rightAligned {
-  static BOOL newNSMenuAPIInitialized = NO;
-  if (!newNSMenuAPIInitialized) {
-    newNSMenuAPIInitialized = YES;
-    gNewNSMenuAPI = [NSMenu instancesRespondToSelector:
-        @selector(popUpMenuPositioningItem:atLocation:inView:)] &&
-        [NSMenu instancesRespondToSelector:@selector(setFont:)];
-  }
-
   if ((self = [super init])) {
     menu_.reset([[NSMenu alloc] initWithTitle:@""]);
-    if (gNewNSMenuAPI)
-      [menu_ setFont:[NSFont menuFontOfSize:fontSize]];
     [menu_ setAutoenablesItems:NO];
     index_ = -1;
     fontSize_ = fontSize;
-    scoped_nsobject<NSDictionary> attrs;
-    if (rightAligned) {
-      // NB: Right-aligning menu items in this manner is known to not work in
-      // Mac OS X 10.5.
-      scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
-          [[NSMutableParagraphStyle alloc] init]);
-      [paragraphStyle setAlignment:NSRightTextAlignment];
-      attrs.reset([[NSDictionary alloc] initWithObjectsAndKeys:
-          paragraphStyle, NSParagraphStyleAttributeName, nil]);
-    }
+    rightAligned_ = rightAligned;
     for (size_t i = 0; i < items.size(); ++i)
-      [self addItem:items[i] withAttributes:attrs];
+      [self addItem:items[i]];
   }
   return self;
 }
 
-- (void)addItem:(const WebMenuItem&)item
- withAttributes:(NSDictionary*)attrs {
+- (void)addItem:(const WebMenuItem&)item {
   if (item.type == WebMenuItem::SEPARATOR) {
     [menu_ addItem:[NSMenuItem separatorItem]];
     return;
@@ -85,12 +68,38 @@ BOOL gNewNSMenuAPI;
                                    keyEquivalent:@""];
   [menuItem setEnabled:(item.enabled && item.type != WebMenuItem::GROUP)];
   [menuItem setTarget:self];
-  if (attrs) {
-    scoped_nsobject<NSAttributedString> attrTitle(
-        [[NSAttributedString alloc] initWithString:title
-                                        attributes:attrs]);
-    [menuItem setAttributedTitle:attrTitle];
+
+  // Set various alignment/language attributes. Note that many (if not most) of
+  // these attributes are functional only on 10.6 and above.
+  scoped_nsobject<NSMutableDictionary> attrs(
+      [[NSMutableDictionary alloc] initWithCapacity:3]);
+  scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
+      [[NSMutableParagraphStyle alloc] init]);
+  [paragraphStyle setAlignment:rightAligned_ ? NSRightTextAlignment
+                                             : NSLeftTextAlignment];
+  NSWritingDirection writingDirection =
+      item.rtl ? NSWritingDirectionRightToLeft
+               : NSWritingDirectionLeftToRight;
+  [paragraphStyle setBaseWritingDirection:writingDirection];
+  [attrs setObject:paragraphStyle forKey:NSParagraphStyleAttributeName];
+
+  if (item.has_directional_override) {
+    scoped_nsobject<NSNumber> directionValue(
+        [[NSNumber alloc] initWithInteger:
+            writingDirection + NSTextWritingDirectionOverride]);
+    scoped_nsobject<NSArray> directionArray(
+        [[NSArray alloc] initWithObjects:directionValue.get(), nil]);
+    [attrs setObject:directionArray forKey:NSWritingDirectionAttributeName];
   }
+
+  [attrs setObject:[NSFont menuFontOfSize:fontSize_]
+            forKey:NSFontAttributeName];
+
+  scoped_nsobject<NSAttributedString> attrTitle(
+      [[NSAttributedString alloc] initWithString:title
+                                      attributes:attrs]);
+  [menuItem setAttributedTitle:attrTitle];
+
   [menuItem setTag:[menu_ numberOfItems] - 1];
 }
 
@@ -104,53 +113,41 @@ BOOL gNewNSMenuAPI;
 
 - (void)menuItemSelected:(id)sender {
   menuItemWasChosen_ = YES;
-  if (gNewNSMenuAPI)
-    index_ = [sender tag];
 }
 
 - (void)runMenuInView:(NSView*)view
            withBounds:(NSRect)bounds
          initialIndex:(int)index {
-  if (gNewNSMenuAPI) {
-    // index might be out of bounds, in which case we set no selection.
-    NSMenuItem* selectedItem = [menu_ itemWithTag:index];
-    if (selectedItem) {
-      [selectedItem setState:NSOnState];
-    } else {
-      selectedItem = [menu_ itemWithTag:0];
-    }
-    NSPoint anchor = NSMakePoint(NSMinX(bounds) + kPopupXOffset,
-                                 NSMaxY(bounds));
-    [menu_ popUpMenuPositioningItem:selectedItem
-                         atLocation:anchor
-                             inView:view];
-  } else {
-    // Set up the button cell, converting to NSView coordinates. The menu is
-    // positioned such that the currently selected menu item appears over the
-    // popup button, which is the expected Mac popup menu behavior.
-    NSPopUpButtonCell* button = [[NSPopUpButtonCell alloc] initTextCell:@""
-                                                              pullsDown:NO];
-    [button autorelease];
-    [button setMenu:menu_];
-    // We use selectItemWithTag below so if the index is out-of-bounds nothing
-    // bad happens.
-    [button selectItemWithTag:index];
-    [button setFont:[NSFont menuFontOfSize:fontSize_]];
+  // Set up the button cell, converting to NSView coordinates. The menu is
+  // positioned such that the currently selected menu item appears over the
+  // popup button, which is the expected Mac popup menu behavior.
+  NSPopUpButtonCell* button = [[NSPopUpButtonCell alloc] initTextCell:@""
+                                                            pullsDown:NO];
+  [button autorelease];
+  [button setMenu:menu_];
+  // We use selectItemWithTag below so if the index is out-of-bounds nothing
+  // bad happens.
+  [button selectItemWithTag:index];
 
-    // Create a dummy view to associate the popup with, since the OS will use
-    // that view for positioning the menu.
-    NSView* dummyView = [[[NSView alloc] initWithFrame:bounds] autorelease];
-    [view addSubview:dummyView];
-    NSRect dummyBounds = [dummyView convertRect:bounds fromView:view];
-
-    // Display the menu, and set a flag if a menu item was chosen.
-    [button performClickWithFrame:dummyBounds inView:dummyView];
-
-    if ([self menuItemWasChosen])
-      index_ = [button indexOfSelectedItem];
-
-    [dummyView removeFromSuperview];
+  if (rightAligned_ &&
+      [button respondsToSelector:@selector(setUserInterfaceLayoutDirection:)]) {
+    [button setUserInterfaceLayoutDirection:
+        NSUserInterfaceLayoutDirectionRightToLeft];
   }
+
+  // Create a dummy view to associate the popup with, since the OS will use
+  // that view for positioning the menu.
+  NSView* dummyView = [[[NSView alloc] initWithFrame:bounds] autorelease];
+  [view addSubview:dummyView];
+  NSRect dummyBounds = [dummyView convertRect:bounds fromView:view];
+
+  // Display the menu, and set a flag if a menu item was chosen.
+  [button performClickWithFrame:dummyBounds inView:dummyView];
+
+  if ([self menuItemWasChosen])
+    index_ = [button indexOfSelectedItem];
+
+  [dummyView removeFromSuperview];
 }
 
 - (int)indexOfSelectedItem {

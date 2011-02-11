@@ -772,9 +772,11 @@ void ParamTraits<WebDropData>::Log(const param_type& p, std::string* l) {
 void ParamTraits<WebMenuItem>::Write(Message* m, const param_type& p) {
   WriteParam(m, p.label);
   WriteParam(m, p.type);
+  WriteParam(m, p.action);
+  WriteParam(m, p.rtl);
+  WriteParam(m, p.has_directional_override);
   WriteParam(m, p.enabled);
   WriteParam(m, p.checked);
-  WriteParam(m, p.action);
   WriteParam(m, p.submenu);
 }
 
@@ -784,9 +786,11 @@ bool ParamTraits<WebMenuItem>::Read(const Message* m,
   return
       ReadParam(m, iter, &p->label) &&
       ReadParam(m, iter, &p->type) &&
+      ReadParam(m, iter, &p->action) &&
+      ReadParam(m, iter, &p->rtl) &&
+      ReadParam(m, iter, &p->has_directional_override) &&
       ReadParam(m, iter, &p->enabled) &&
       ReadParam(m, iter, &p->checked) &&
-      ReadParam(m, iter, &p->action) &&
       ReadParam(m, iter, &p->submenu);
 }
 
@@ -796,11 +800,15 @@ void ParamTraits<WebMenuItem>::Log(const param_type& p, std::string* l) {
   l->append(", ");
   LogParam(p.type, l);
   l->append(", ");
+  LogParam(p.action, l);
+  l->append(", ");
+  LogParam(p.rtl, l);
+  l->append(", ");
+  LogParam(p.has_directional_override, l);
+  l->append(", ");
   LogParam(p.enabled, l);
   l->append(", ");
   LogParam(p.checked, l);
-  l->append(", ");
-  LogParam(p.action, l);
   l->append(", ");
   LogParam(p.submenu, l);
   l->append(")");

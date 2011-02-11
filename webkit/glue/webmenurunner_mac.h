@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,6 +33,9 @@
 
   // The font size being used for the menu.
   CGFloat fontSize_;
+
+  // Whether the menu should be displayed right-aligned.
+  BOOL rightAligned_;
 }
 
 // Initializes the MenuDelegate with a list of items sent from WebKit.

@@ -29,6 +29,8 @@ struct WebMenuItem {
   string16 label;
   Type type;
   unsigned action;
+  bool rtl;
+  bool has_directional_override;
   bool enabled;
   bool checked;
   std::vector<WebMenuItem> submenu;
