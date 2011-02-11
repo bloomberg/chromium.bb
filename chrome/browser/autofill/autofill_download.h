@@ -87,7 +87,7 @@ class AutoFillDownloadManager : public URLFetcher::Delegate {
   // GetNegativeUploadRate() for non matched.
   double GetPositiveUploadRate() const;
   double GetNegativeUploadRate() const;
-  // These functions called very rarely outside of theunit-tests. With current
+  // These functions called very rarely outside of the unit-tests. With current
   // percentages, they would be called once per 100 auto-fillable forms filled
   // and submitted by user. The order of magnitude would remain similar in the
   // future.

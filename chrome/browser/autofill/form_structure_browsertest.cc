@@ -56,16 +56,8 @@ FormStructureBrowserTest::~FormStructureBrowserTest() {
 
 void FormStructureBrowserTest::GenerateResults(const std::string& input,
                                                std::string* output) {
-  LOG(WARNING) << "Before NavigateToURL";
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(),
                                                        HTMLToDataURI(input)));
-  LOG(WARNING) << "Before ClickOnView";
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::ClickOnView(browser(),
-                                                     VIEW_ID_TAB_CONTAINER));
-  LOG(WARNING) << "Before IsViewFocused";
-  ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(),
-                                           VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
-  LOG(WARNING) << "After IsViewFocused";
 
   AutoFillManager* autofill_manager =
       browser()->GetSelectedTabContents()->autofill_manager();
@@ -95,11 +87,7 @@ std::string FormStructureBrowserTest::FormStructuresToString(
   return forms_string;
 }
 
-IN_PROC_BROWSER_TEST_F(FormStructureBrowserTest,
-                       DISABLED_DataDrivenHeuristics) {
-  LOG(WARNING) << "Before BringBrowserWindowToFront";
-  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
-  LOG(WARNING) << "After BringBrowserWindowToFront";
+IN_PROC_BROWSER_TEST_F(FormStructureBrowserTest, DataDrivenHeuristics) {
   RunDataDrivenTest(GetInputDirectory(kTestName),
                     GetOutputDirectory(kTestName),
                     kFileNamePattern);

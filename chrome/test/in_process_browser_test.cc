@@ -210,7 +210,7 @@ void InProcessBrowserTest::PrepareTestCommandLine(
                                  subprocess_path);
 #endif
 
-  // If ncecessary, disable TabCloseableStateWatcher.
+  // If neccessary, disable TabCloseableStateWatcher.
   if (!tab_closeable_state_watcher_enabled_)
     command_line->AppendSwitch(switches::kDisableTabCloseableStateWatcher);
 }
