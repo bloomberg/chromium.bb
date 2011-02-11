@@ -34,6 +34,7 @@ Dictionaries\en-US.bdic: %(ChromeDir)s\Dictionaries
 chrome.dll: %(VersionDir)s\
 nacl64.exe: %(VersionDir)s\
 nacl64.dll: %(VersionDir)s\
+ppGoogleNaClPluginChrome.dll: %(VersionDir)s\
 icudt42.dll: %(VersionDir)s\
 gears.dll: %(VersionDir)s\
 resources.pak: %(VersionDir)s\

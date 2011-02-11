@@ -178,6 +178,7 @@
                 '<(PRODUCT_DIR)/chrome.dll',
                 '<(PRODUCT_DIR)/nacl64.exe',
                 '<(PRODUCT_DIR)/nacl64.dll',
+                '<(PRODUCT_DIR)/ppGoogleNaClPluginChrome.dll',
                 '<(PRODUCT_DIR)/locales/en-US.dll',
                 '<(PRODUCT_DIR)/icudt42.dll',
               ],
