@@ -1699,6 +1699,8 @@
         'browser/ui/login/login_prompt_unittest.cc',
         'browser/ui/tabs/dock_info_unittest.cc',
         'browser/ui/tabs/tab_menu_model_unittest.cc',
+        'browser/ui/tests/ui_gfx_image_unittest.cc',
+        'browser/ui/tests/ui_gfx_image_unittest.mm',
         'browser/ui/toolbar/back_forward_menu_model_unittest.cc',
         'browser/ui/toolbar/encoding_menu_controller_unittest.cc',
         'browser/ui/toolbar/wrench_menu_model_unittest.cc',
@@ -1915,6 +1917,7 @@
             # Blocked on bookmark manager.
             'browser/bookmarks/bookmark_context_menu_controller_unittest.cc',
             'browser/ui/tabs/dock_info_unittest.cc',
+            'browser/ui/tests/ui_gfx_image_unittest.cc',
             'browser/ui/gtk/reload_button_gtk_unittest.cc',
             'browser/password_manager/password_store_default_unittest.cc',
             'tools/convert_dict/convert_dict_unittest.cc',
