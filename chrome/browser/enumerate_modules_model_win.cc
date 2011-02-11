@@ -326,7 +326,8 @@ ModuleEnumerator::ModuleStatus ModuleEnumerator::Match(
 }
 
 ModuleEnumerator::ModuleEnumerator(EnumerateModulesModel* observer)
-    : observer_(observer),
+    : enumerated_modules_(NULL),
+      observer_(observer),
       limited_mode_(false),
       callback_thread_id_(BrowserThread::ID_COUNT) {
 }
