@@ -28,7 +28,7 @@ class MessagePumpGlibXDispatcher : public MessagePumpForUI::Dispatcher {
   // Dispatches the event. EVENT_IGNORED is returned if the event was ignored
   // (i.e. not processed). EVENT_PROCESSED is returned if the event was
   // processed. The nested loop exits immediately if EVENT_QUIT is returned.
-  virtual DispatchStatus Dispatch(XEvent* xevent) = 0;
+  virtual DispatchStatus DispatchX(XEvent* xevent) = 0;
 };
 
 }  // namespace base

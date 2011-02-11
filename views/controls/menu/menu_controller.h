@@ -209,7 +209,7 @@ class MenuController : public MessageLoopForUI::Dispatcher {
 #endif
 
 #if defined(TOUCH_UI)
-  virtual MessagePumpGlibXDispatcher::DispatchStatus Dispatch(XEvent* xevent);
+  virtual MessagePumpGlibXDispatcher::DispatchStatus DispatchX(XEvent* xevent);
 #endif
 
   // Key processing. The return value of this is returned from Dispatch.

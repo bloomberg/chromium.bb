@@ -220,8 +220,8 @@ bool AcceleratorHandler::Dispatch(GdkEvent* event) {
   return true;
 }
 
-base::MessagePumpGlibXDispatcher::DispatchStatus AcceleratorHandler::Dispatch(
-    XEvent* xev) {
+base::MessagePumpGlibXDispatcher::DispatchStatus
+    AcceleratorHandler::DispatchX(XEvent* xev) {
   return DispatchXEvent(xev) ?
       base::MessagePumpGlibXDispatcher::EVENT_PROCESSED :
       base::MessagePumpGlibXDispatcher::EVENT_IGNORED;

@@ -145,7 +145,7 @@ bool MessagePumpGlibX::RunOnce(GMainContext* context, bool block) {
 
       MessagePumpGlibXDispatcher::DispatchStatus status =
           static_cast<MessagePumpGlibXDispatcher*>
-          (GetDispatcher())->Dispatch(&xev);
+          (GetDispatcher())->DispatchX(&xev);
 
       if (status == MessagePumpGlibXDispatcher::EVENT_QUIT) {
         should_quit = true;

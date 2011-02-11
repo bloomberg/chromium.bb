@@ -46,9 +46,9 @@ bool NestedDispatcherGtk::Dispatch(GdkEvent* event) {
 }
 
 #if defined(TOUCH_UI)
-base::MessagePumpGlibXDispatcher::DispatchStatus NestedDispatcherGtk::Dispatch(
-    XEvent* xevent) {
-  return creator_->Dispatch(xevent);
+base::MessagePumpGlibXDispatcher::DispatchStatus
+    NestedDispatcherGtk::DispatchX(XEvent* xevent) {
+  return creator_->DispatchX(xevent);
 }
 #endif
 

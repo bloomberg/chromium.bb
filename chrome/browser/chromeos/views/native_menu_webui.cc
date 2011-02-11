@@ -251,8 +251,8 @@ bool NativeMenuWebUI::Dispatch(GdkEvent* event) {
 }
 
 #if defined(TOUCH_UI)
-base::MessagePumpGlibXDispatcher::DispatchStatus NativeMenuWebUI::Dispatch(
-    XEvent* xevent) {
+base::MessagePumpGlibXDispatcher::DispatchStatus
+    NativeMenuWebUI::DispatchX(XEvent* xevent) {
   return views::DispatchXEvent(xevent) ?
       base::MessagePumpGlibXDispatcher::EVENT_PROCESSED :
       base::MessagePumpGlibXDispatcher::EVENT_IGNORED;

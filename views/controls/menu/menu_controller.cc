@@ -866,8 +866,8 @@ bool MenuController::Dispatch(GdkEvent* event) {
 }
 
 #if defined(TOUCH_UI)
-base::MessagePumpGlibXDispatcher::DispatchStatus MenuController::Dispatch(
-    XEvent* xev) {
+base::MessagePumpGlibXDispatcher::DispatchStatus
+    MenuController::DispatchX(XEvent* xev) {
   if (!DispatchXEvent(xev))
     return EVENT_IGNORED;
 

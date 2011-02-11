@@ -64,7 +64,7 @@ class NativeMenuWebUI : public views::MenuWrapper,
   // Overridden from MessageLoopForUI::Dispatcher:
   virtual bool Dispatch(GdkEvent* event);
 #if defined(TOUCH_UI)
-  virtual base::MessagePumpGlibXDispatcher::DispatchStatus Dispatch(
+  virtual base::MessagePumpGlibXDispatcher::DispatchStatus DispatchX(
       XEvent* xevent);
 #endif
 
