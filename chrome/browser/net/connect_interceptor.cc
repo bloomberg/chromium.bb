@@ -49,19 +49,15 @@ net::URLRequestJob* ConnectInterceptor::MaybeIntercept(
     }
   } else {
     GURL referring_scheme_host = GURL(request->referrer()).GetWithEmptyPath();
-    if (referring_scheme_host == request_scheme_host) {
-      // There is nothing to learn about preconnections when the referrer is
-      // already the site needed in the request URL.  Similarly, we've already
-      // made any/all predictions when we navigated to the referring host, so we
-      // can bail out here. This will also avoid useless boosting of the number
-      // of times we navigated to this site, which was already accounted for by
-      // the navigation to the referrering_url.
-      return NULL;
-    }
     bool is_subresource = !(request->load_flags() & net::LOAD_MAIN_FRAME);
     // Learn about our referring URL, for use in the future.
     if (is_subresource)
       LearnFromNavigation(referring_scheme_host, request_scheme_host);
+    if (referring_scheme_host == request_scheme_host) {
+      // We've already made any/all predictions when we navigated to the
+      // referring host, so we can bail out here.
+      return NULL;
+    }
   }
 
   // Subresources for main frames usually get predicted when we detected the

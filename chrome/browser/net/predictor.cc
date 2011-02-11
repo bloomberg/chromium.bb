@@ -133,7 +133,6 @@ void Predictor::LearnFromNavigation(const GURL& referring_url,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(referring_url == referring_url.GetWithEmptyPath());
   DCHECK(target_url == target_url.GetWithEmptyPath());
-  DCHECK(target_url != referring_url);
   if (referring_url.has_host()) {
     referrers_[referring_url].SuggestHost(target_url);
   }
@@ -258,6 +257,8 @@ void Predictor::PrepareFrameSubresources(const GURL& url) {
       evalution = PRECONNECTION;
       future_url->second.IncrementPreconnectionCount();
       int count = static_cast<int>(std::ceil(connection_expectation));
+      if (url.host() == future_url->first.host())
+        ++count;
       Preconnect::PreconnectOnIOThread(future_url->first, motivation, count);
     } else if (connection_expectation > kDNSPreresolutionWorthyExpectedValue) {
       evalution = PRERESOLUTION;
