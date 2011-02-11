@@ -27,7 +27,7 @@
 <translation id="2843244238218937196">Renderizador de Chromium</translation>
 <translation id="2966088006374919794">Chromium precisa iniciar un aplicativo externo que manexe as ligazóns <ph name="SCHEME"/>. A ligazón da petición é <ph name="PROTOLINK"/>.</translation>
 <translation id="3014684866565908571">Utilidade de Chromium</translation>
-<translation id="3069161343438701711">Operador de Chromium</translation>
+<translation id="3069161343438701711">Traballador de Chromium</translation>
 <translation id="309634601461115233">Peche a sesión de Chromium OS e inicie unha nova para que este cambio sexa aplicado.</translation>
 <translation id="3103660991484857065">Produciuse un fallo no instalador ao descomprimir o arquivo. Descargue Chromium de novo.</translation>
 <translation id="3289786827957973841">Cambiar o idioma que se emprega nos menús de Chromium,n as caixas de diálogo e nas axudas.</translation>
@@ -95,7 +95,7 @@
 <translation id="8621669128220841554">A instalación fallou debido a un erro non especificado. Descargue Chromium de novo.</translation>
 <translation id="8738921060445980047">Versión descoñecida</translation>
 <translation id="8770560772173120024">Chromium está importando os favoritos/marcadores.</translation>
-<translation id="8860251088736138354">Vaites! Chromium reventou. Desexa reincialo?</translation>
+<translation id="8860251088736138354">Vaites! Chromium estragouse. Desexa reincialo?</translation>
 <translation id="8862326446509486874">Non ten os permisos axeitados para facer unha instalación a nivel de sistema. Execute o instalador como administrador.</translation>
 <translation id="8865765905101981392">Navegador web</translation>
 <translation id="8971920611044657379">Chromium Frame</translation>

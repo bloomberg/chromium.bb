@@ -62,7 +62,7 @@
 <translation id="5947389362804196214">Dina inställningar kan inte läsas in.\n\nEn del funktioner kan vara otillgängliga och inställningsändringar kommer inte att sparas.</translation>
 <translation id="5981059579301719217">Din profil kan inte användas eftersom den kommer från en nyare version av Chromium.\n\nEn del funktioner kan vara otillgängliga. Ange en annan profilkatalog eller använd en nyare version av Chromium.</translation>
 <translation id="6055895534982063517">Det finns en ny version av Chromium tillgänglig och den är snabbare än någonsin.</translation>
-<translation id="6089587093203430357">Direkt</translation>
+<translation id="6089587093203430357">Instant</translation>
 <translation id="6209318267439329">Chromium kan använda webbtjänster för att förbättra din användarupplevelse. Du kan även inaktivera dessa tjänster.</translation>
 <translation id="6248213926982192922">Gör Chromium till din standardwebbläsare</translation>
 <translation id="6287463253129672858">Kan inte installera samma version av Chromium Frame som just nu kör. Stäng Chromium Frame och försök igen.</translation>

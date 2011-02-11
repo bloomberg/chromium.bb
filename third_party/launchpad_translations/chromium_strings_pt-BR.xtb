@@ -107,4 +107,9 @@
 <translation id="7138853919861947730">Chromium pode utilizar serviços da web para melhorar a sua experiência de navegação.</translation>
 <translation id="8974095189086268230">Chromium OS é possível devido aos <ph name="BEGIN_LINK_CROS_OSS"/>softwares de modelo open source<ph name="END_LINK_CROS_OSS"/> adicionais.</translation>
 <translation id="4330297532943865716">Uma instalação conflitante do Chromium ou Chromium Frame foi encontrado no sistema. Por favor remova e tente novamente.</translation>
+<translation id="1293235220023151515">Um conflito de instalação do Chromium foi encontrado no sistema. Desinstale-o e tente novamente.</translation>
+<translation id="2927042866129133279">Argumentos inválidos. O Chromium Frame não pode ser instalado para ser usado sem instalar o Chromium.</translation>
+<translation id="3096463977885168586">Copyright © 2006-2011 Os Autores do Chromium. Todos os direitos reservados.</translation>
+<translation id="4649468518813464896">http://www.google.com/support/chrome/bin/answer.py?hl=[GRITLANGCODE]&amp;answer=161796</translation>
+<translation id="8046283042877435986">Este site recomenda o Chromium Frame (já instalado)</translation>
 </translationbundle>
