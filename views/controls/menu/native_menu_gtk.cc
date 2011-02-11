@@ -143,6 +143,8 @@ void NativeMenuGtk::RunMenuAt(const gfx::Point& point, int alignment) {
                                      activate_factory_.NewRunnableMethod(
                                          &NativeMenuGtk::ProcessActivate));
   }
+
+  model_->MenuClosed();
 }
 
 void NativeMenuGtk::CancelMenu() {
