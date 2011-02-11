@@ -141,6 +141,12 @@ class WidgetWin : public ui::WindowImpl,
     MESSAGE_HANDLER_EX(WM_MOUSELEAVE, OnMouseLeave)
     MESSAGE_HANDLER_EX(WM_MOUSEWHEEL, OnMouseWheel)
 
+    // Key events.
+    MESSAGE_HANDLER_EX(WM_KEYDOWN, OnKeyDown)
+    MESSAGE_HANDLER_EX(WM_KEYUP, OnKeyUp)
+    MESSAGE_HANDLER_EX(WM_SYSKEYDOWN, OnKeyDown);
+    MESSAGE_HANDLER_EX(WM_SYSKEYUP, OnKeyUp);
+
     // This list is in _ALPHABETICAL_ order! OR I WILL HURT YOU.
     MSG_WM_ACTIVATE(OnActivate)
     MSG_WM_ACTIVATEAPP(OnActivateApp)
@@ -161,11 +167,7 @@ class WidgetWin : public ui::WindowImpl,
     MSG_WM_HSCROLL(OnHScroll)
     MSG_WM_INITMENU(OnInitMenu)
     MSG_WM_INITMENUPOPUP(OnInitMenuPopup)
-    MSG_WM_KEYDOWN(OnKeyDown)
-    MSG_WM_KEYUP(OnKeyUp)
     MSG_WM_KILLFOCUS(OnKillFocus)
-    MSG_WM_SYSKEYDOWN(OnKeyDown)
-    MSG_WM_SYSKEYUP(OnKeyUp)
     MSG_WM_LBUTTONDBLCLK(OnLButtonDblClk)
     MSG_WM_LBUTTONDOWN(OnLButtonDown)
     MSG_WM_LBUTTONUP(OnLButtonUp)
@@ -367,8 +369,8 @@ class WidgetWin : public ui::WindowImpl,
   virtual void OnHScroll(int scroll_type, short position, HWND scrollbar);
   virtual void OnInitMenu(HMENU menu);
   virtual void OnInitMenuPopup(HMENU menu, UINT position, BOOL is_system_menu);
-  virtual void OnKeyDown(TCHAR c, UINT rep_cnt, UINT flags);
-  virtual void OnKeyUp(TCHAR c, UINT rep_cnt, UINT flags);
+  virtual LRESULT OnKeyDown(UINT message, WPARAM w_param, LPARAM l_param);
+  virtual LRESULT OnKeyUp(UINT message, WPARAM w_param, LPARAM l_param);
   virtual void OnKillFocus(HWND focused_window);
   virtual void OnLButtonDblClk(UINT flags, const CPoint& point);
   virtual void OnLButtonDown(UINT flags, const CPoint& point);
@@ -519,6 +521,9 @@ class WidgetWin : public ui::WindowImpl,
   static void PostProcessActivateMessage(WidgetWin* widget,
                                          int activation_state);
 
+  // Fills out a MSG struct with the supplied values.
+  void MakeMSG(MSG* msg, UINT message, WPARAM w_param, LPARAM l_param) const;
+
   // The following factory is used for calls to close the WidgetWin
   // instance.
   ScopedRunnableMethodFactory<WidgetWin> close_widget_factory_;
@@ -598,9 +603,6 @@ class WidgetWin : public ui::WindowImpl,
   int accessibility_view_events_index_;
 
   ViewProps props_;
-
-  // Keeps track of the current message.
-  std::vector<MSG> current_messages_;
 
   DISALLOW_COPY_AND_ASSIGN(WidgetWin);
 };

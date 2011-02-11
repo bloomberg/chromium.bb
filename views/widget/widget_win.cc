@@ -523,13 +523,11 @@ bool WidgetWin::ContainsNativeView(gfx::NativeView native_view) {
 // MessageLoop::Observer
 
 void WidgetWin::WillProcessMessage(const MSG& msg) {
-  current_messages_.push_back(msg);
 }
 
 void WidgetWin::DidProcessMessage(const MSG& msg) {
   if (root_view_->NeedsPainting(true))
     PaintNow(root_view_->GetScheduledPaintRect());
-  current_messages_.pop_back();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -691,22 +689,26 @@ void WidgetWin::OnInitMenuPopup(HMENU menu,
   SetMsgHandled(FALSE);
 }
 
-void WidgetWin::OnKeyDown(TCHAR c, UINT rep_cnt, UINT flags) {
-  KeyEvent event(current_messages_.back());
+LRESULT WidgetWin::OnKeyDown(UINT message, WPARAM w_param, LPARAM l_param) {
   RootView* root_view = GetFocusedViewRootView();
   if (!root_view)
     root_view = root_view_.get();
 
-  SetMsgHandled(root_view->ProcessKeyEvent(event));
+  MSG msg;
+  MakeMSG(&msg, message, w_param, l_param);
+  SetMsgHandled(root_view->ProcessKeyEvent(KeyEvent(msg)));
+  return 0;
 }
 
-void WidgetWin::OnKeyUp(TCHAR c, UINT rep_cnt, UINT flags) {
-  KeyEvent event(current_messages_.back());
+LRESULT WidgetWin::OnKeyUp(UINT message, WPARAM w_param, LPARAM l_param) {
   RootView* root_view = GetFocusedViewRootView();
   if (!root_view)
     root_view = root_view_.get();
 
-  SetMsgHandled(root_view->ProcessKeyEvent(event));
+  MSG msg;
+  MakeMSG(&msg, message, w_param, l_param);
+  SetMsgHandled(root_view->ProcessKeyEvent(KeyEvent(msg)));
+  return 0;
 }
 
 void WidgetWin::OnKillFocus(HWND focused_window) {
@@ -1296,6 +1298,16 @@ void WidgetWin::PostProcessActivateMessage(WidgetWin* widget,
     }
     widget->focus_manager_->RestoreFocusedView();
   }
+}
+
+void WidgetWin::MakeMSG(MSG* msg, UINT message, WPARAM w_param,
+                        LPARAM l_param) const {
+  msg->hwnd = hwnd();
+  msg->message = message;
+  msg->wParam = w_param;
+  msg->lParam = l_param;
+  msg->time = 0;
+  msg->pt.x = msg->pt.y = 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
