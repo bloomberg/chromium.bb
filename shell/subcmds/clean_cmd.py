@@ -59,8 +59,8 @@ def _DoClean(chroot_config, build_config, want_force_yes):
   assert os.path.isabs(board_dir), 'Board dir better be absolute'
   assert board_dir != '/', 'Board dir better not be /'
   assert '*' not in board_dir, 'Board dir better not have any *s'
-  assert build_config.get('BUILD', 'target'), 'Target better not be blank'
-  assert build_config.get('BUILD', 'target') in board_dir, \
+  assert build_config.get('DEFAULT', 'target'), 'Target better not be blank'
+  assert build_config.get('DEFAULT', 'target') in board_dir, \
          'Target name better be in board dir'
 
   argv = ['sudo', '--', 'rm', '-rf', board_dir]

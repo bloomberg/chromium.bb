@@ -119,7 +119,7 @@ class WrappedChrootCmd(ChromiteCmd):
         argv_prefix = self._host_cmd
       else:
         # Make argv_prefix w/ target.
-        target_name = build_config.get('BUILD', 'target')
+        target_name = build_config.get('DEFAULT', 'target')
         argv_prefix = [arg % target_name for arg in self._target_cmd]
 
       # Not a great way to to specify arguments, but works for now...  Wrapped

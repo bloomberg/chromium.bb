@@ -8,7 +8,7 @@
 # Use RFC 822 format
 
 
-[BUILD]
+[DEFAULT]
 
 # The target name that will be passed to various commands.
 #
@@ -16,6 +16,9 @@
 #
 # DEFAULT: the name of the subclass spec file, without the suffix
 target: %(name)s
+
+
+[BUILD]
 
 # Flags to pass to setup_board (other than --board).  Note that setup_board is
 # only called once per board, unless you use "chromite clean" to clean your

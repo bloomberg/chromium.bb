@@ -75,7 +75,7 @@ def _DoSetupBoard(build_config, clean_first):
   # Put together command.
   cmd_list = [
       './setup_board',
-      '--board="%s"' % build_config.get('BUILD', 'target'),
+      '--board="%s"' % build_config.get('DEFAULT', 'target'),
       build_config.get('BUILD', 'setup_board_flags'),
   ]
   if clean_first:
@@ -109,7 +109,7 @@ def _DoBuildPackages(build_config):
   # config file in there.
   cmd = '%s ./build_packages --board="%s" %s' % (
       build_config.get('BUILD', 'build_packages_environ'),
-      build_config.get('BUILD', 'target'),
+      build_config.get('DEFAULT', 'target'),
       build_config.get('BUILD', 'build_packages_flags')
   )
 
@@ -136,7 +136,7 @@ def _DoBuildImage(build_config):
   # config file in there.
   cmd = '%s ./build_image --board="%s" %s' % (
       build_config.get('IMAGE', 'build_image_environ'),
-      build_config.get('BUILD', 'target'),
+      build_config.get('DEFAULT', 'target'),
       build_config.get('IMAGE', 'build_image_flags')
   )
 

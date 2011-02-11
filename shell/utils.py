@@ -50,7 +50,7 @@ def GetBoardDir(build_config):
   Returns:
     The absolute path to the board.
   """
-  target_name = build_config.get('BUILD', 'target')
+  target_name = build_config.get('DEFAULT', 'target')
 
   # Extra checks on these, since we sometimes might do a rm -f on the board
   # directory and these could cause some really bad behavior.
