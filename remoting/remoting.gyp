@@ -183,7 +183,6 @@
         'chromoting_base',
         'chromoting_jingle_glue',
         'chromoting_protocol',
-        'differ_block',
       ],
       'sources': [
         'host/access_verifier.cc',
@@ -198,6 +197,8 @@
         'host/chromoting_host_context.h',
         'host/differ.h',
         'host/differ.cc',
+        'host/differ_block.h',
+        'host/differ_block.cc',
         'host/screen_recorder.cc',
         'host/screen_recorder.h',
         'host/heartbeat_sender.cc',
@@ -418,46 +419,6 @@
         'protocol/video_writer.h',
       ],
     },  # end of target 'chromoting_protocol'
-
-    {
-      'target_name': 'differ_block',
-      'type': '<(library)',
-      'include_dirs': [
-        '..',
-      ],
-      'dependencies': [
-        '../media/media.gyp:cpu_features',
-      ],
-      'conditions': [
-        [ 'target_arch == "ia32" or target_arch == "x64"', {
-          'dependencies': [
-            'differ_block_sse2',
-          ],
-        }],
-      ],
-      'sources': [
-        'host/differ_block.cc',
-        'host/differ_block.h',
-      ],
-    }, # end of target differ_block
-
-    {
-      'target_name': 'differ_block_sse2',
-      'type': '<(library)',
-      'include_dirs': [
-        '..',
-      ],
-      'conditions': [
-        [ 'OS == "linux" or OS == "freebsd" or OS == "openbsd"', {
-          'cflags': [
-            '-msse2',
-          ],
-        }],
-      ],
-      'sources': [
-        'host/differ_block_sse2.cc',
-      ],
-    }, # end of target differ_block_sse2
 
     {
       'target_name': 'chromotocol_test_client',
