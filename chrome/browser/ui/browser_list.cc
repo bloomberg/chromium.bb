@@ -202,13 +202,16 @@ void BrowserList::NotifyWindowManagerAboutSignout() {
     notified = true;
   }
 }
+
+// static
+bool BrowserList::signout_ = false;
+
 #endif
 
 // static
 void BrowserList::NotifyAndTerminate(bool fast_path) {
-  if (!signout_) return;
-
 #if defined(OS_CHROMEOS)
+  if (!signout_) return;
   NotifyWindowManagerAboutSignout();
 #endif
 
@@ -372,12 +375,9 @@ void BrowserList::CloseAllBrowsers() {
 }
 
 // static
-bool BrowserList::signout_ = false;
-
-// static
 void BrowserList::Exit() {
-  signout_ = true;
 #if defined(OS_CHROMEOS)
+  signout_ = true;
   // Fast shutdown for ChromeOS when there's no unload processing to be done.
   if (chromeos::CrosLibrary::Get()->EnsureLoaded()
       && !NeedBeforeUnloadFired()

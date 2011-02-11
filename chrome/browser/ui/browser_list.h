@@ -176,6 +176,8 @@ class BrowserList {
   static bool NeedBeforeUnloadFired();
   static bool PendingDownloads();
   static void NotifyWindowManagerAboutSignout();
+
+  static bool signout_;
 #endif
 
   static BrowserVector browsers_;
@@ -185,7 +187,6 @@ class BrowserList {
   // Counter of calls to StartKeepAlive(). If non-zero, the application will
   // continue running after the last browser has exited.
   static int keep_alive_count_;
-  static bool signout_;
 };
 
 class TabContents;
