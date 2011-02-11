@@ -106,10 +106,10 @@ so we include the original license below:
     <output filename="inspectorStrings_te.js" type="js_map_format" lang="te" />
     <output filename="inspectorStrings_th.js" type="js_map_format" lang="th" />
     <output filename="inspectorStrings_tr.js" type="js_map_format" lang="tr" />
-    <output filename="inspectorStrings_uk.js" type="js_map_format" lang="uk" />
     <if expr="pp_ifdef('use_third_party_translations')">
       <output filename="inspectorStrings_ug.js" type="js_map_format" lang="ug" />
     </if>
+    <output filename="inspectorStrings_uk.js" type="js_map_format" lang="uk" />
     <output filename="inspectorStrings_vi.js" type="js_map_format" lang="vi" />
     <output filename="inspectorStrings_zh-CN.js" type="js_map_format" lang="zh-CN" />
     <output filename="inspectorStrings_zh-TW.js" type="js_map_format" lang="zh-TW" />

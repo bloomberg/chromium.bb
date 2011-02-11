@@ -257,4 +257,20 @@
 <translation id="9219103736887031265">Bilder</translation>
 <translation id="964811242908289581"><ph name="COUNT"/> fel</translation>
 <translation id="981121421437150478">Frånkopplad</translation>
+<translation id="1436722359433789623">Nod borttagen</translation>
+<translation id="2326802841004704199">Lägg till villkorlig brytpunkt...</translation>
+<translation id="2441568932527294164">Nästa/föregående egenskap</translation>
+<translation id="2660779039299703961">Händelse</translation>
+<translation id="3169289721517350539">Töm processorprofiler.</translation>
+<translation id="492139119201427519">Ärvdes från</translation>
+<translation id="5217253600698456221">Rensa konsoll</translation>
+<translation id="5299075592160799973"><ph name="NUMBER"/> konsollmeddelanden visas inte.</translation>
+<translation id="5476516521619370280">Brytpunkten på rad <ph name="LINE_NUMBER"/> kommer endast att stoppas om detta uttryck är sant:</translation>
+<translation id="6122191549521593678">Ansluten</translation>
+<translation id="67576730271671014">Stega ut från aktuell funktion.</translation>
+<translation id="6876511917337708686">\xb1 Storlek</translation>
+<translation id="756738664276087144">Välj ett element i sidan för att inspektera det.</translation>
+<translation id="8019846316555056879">Stega in i nästa funktionsanrop.</translation>
+<translation id="8814517835479322133">\xb1 Antal</translation>
+<translation id="8910814431610153472">Du kan spara bandbredd genom att få din webbserver att komprimera denna överföring med gzip eller zlib.</translation>
 </translationbundle>

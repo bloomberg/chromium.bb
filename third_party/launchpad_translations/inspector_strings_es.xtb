@@ -416,4 +416,12 @@
 <translation id="9219103736887031265">Imágenes</translation>
 <translation id="964811242908289581"><ph name="COUNT"/> error</translation>
 <translation id="981121421437150478">Sin conexión</translation>
+<translation id="2965436661362105284">Imagen del bloque de memoria</translation>
+<translation id="3387873041565926208">Obtenga una imagen del bloque de memoria presionando el botón <ph name="BUTTON"/> en la barra de estado</translation>
+<translation id="4172725583035809347"><ph name="TOTAL_TIME"/> (cargando: <ph name="ONLOAD_TIME"/>, DOMContentLoaded: <ph name="DOMCONTENT_TIME"/>)</translation>
+<translation id="4542837164280679094">Omitir paso</translation>
+<translation id="4958877645380050233">Tomar una imagen del bloque de memoria</translation>
+<translation id="5297100000449674173">Permite trabajadores de depuración. Activando esta opción se reemplazarán los trabajadores nativos con la implementación de JavaScript basada en iframe.</translation>
+<translation id="7798798603569425953">Respuesta de cookies</translation>
+<translation id="9009901108071066356">Tamaño del bloque de memoria usado</translation>
 </translationbundle>
