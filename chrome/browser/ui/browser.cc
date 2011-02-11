@@ -132,7 +132,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/boot_times_loader.h"
-#include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
 #endif
 
 using base::TimeDelta;
@@ -2320,7 +2319,6 @@ bool Browser::ExecuteCommandIfEnabled(int id) {
 
 bool Browser::IsReservedCommandOrKey(int command_id,
                                      const NativeWebKeyboardEvent& event) {
-  bool is_reserved_key = false;
 #if defined(OS_CHROMEOS)
   // Chrome OS's top row of keys produces F1-10.  Make sure that web pages
   // aren't able to block Chrome from performing the standard actions for F1-F4
@@ -2328,7 +2326,7 @@ bool Browser::IsReservedCommandOrKey(int command_id,
   // and F8-10 are handled separately in Chrome via a GDK event filter, but
   // let's future-proof this).
   ui::KeyboardCode key_code =
-      ui::WindowsKeyCodeForGdkKeyCode(event.os_event->keyval);
+      static_cast<ui::KeyboardCode>(event.windowsKeyCode);
   if (key_code == ui::VKEY_F1 ||
       key_code == ui::VKEY_F2 ||
       key_code == ui::VKEY_F3 ||
@@ -2339,12 +2337,11 @@ bool Browser::IsReservedCommandOrKey(int command_id,
       key_code == ui::VKEY_F8 ||
       key_code == ui::VKEY_F9 ||
       key_code == ui::VKEY_F10) {
-    is_reserved_key = true;
+    return true;
   }
 #endif
 
-  return is_reserved_key ||
-         command_id == IDC_CLOSE_TAB ||
+  return command_id == IDC_CLOSE_TAB ||
          command_id == IDC_CLOSE_WINDOW ||
          command_id == IDC_NEW_INCOGNITO_WINDOW ||
          command_id == IDC_NEW_TAB ||
