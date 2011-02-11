@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/page_transition_types.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/test/testing_profile.h"
 
@@ -95,7 +96,7 @@ void BrowserWithTestWindowTest::CommitPendingLoad(
 void BrowserWithTestWindowTest::NavigateAndCommit(
     NavigationController* controller,
     const GURL& url) {
-  controller->LoadURL(url, GURL(), 0);
+  controller->LoadURL(url, GURL(), PageTransition::LINK);
   CommitPendingLoad(controller);
 }
 

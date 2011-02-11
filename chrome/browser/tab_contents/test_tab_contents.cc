@@ -14,6 +14,7 @@
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_source.h"
+#include "chrome/common/page_transition_types.h"
 
 TestTabContents::TestTabContents(Profile* profile, SiteInstance* instance)
     : TabContents(profile, instance, MSG_ROUTING_NONE, NULL, NULL),
@@ -68,7 +69,7 @@ TabContents* TestTabContents::Clone() {
 }
 
 void TestTabContents::NavigateAndCommit(const GURL& url) {
-  controller().LoadURL(url, GURL(), 0);
+  controller().LoadURL(url, GURL(), PageTransition::LINK);
   GURL loaded_url(url);
   bool reverse_on_redirect = false;
   BrowserURLHandler::RewriteURLIfNecessary(

@@ -6,6 +6,7 @@
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/test_tab_contents.h"
+#include "chrome/common/page_transition_types.h"
 #include "chrome/common/render_messages.h"
 
 class RenderViewHostTest : public RenderViewHostTestHarness {
@@ -45,7 +46,7 @@ TEST_F(RenderViewHostTest, ResetUnloadOnReload) {
   //     fires the tab gets closed.
 
   NavigateAndCommit(url1);
-  controller().LoadURL(url2, GURL(), 0);
+  controller().LoadURL(url2, GURL(), PageTransition::LINK);
   // Simulate the ClosePage call which is normally sent by the net::URLRequest.
   rvh()->ClosePage(true, 0, 0);
   // Needed so that navigations are not suspended on the RVH. Normally handled
