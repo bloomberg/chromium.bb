@@ -453,7 +453,7 @@ class RenderViewHost : public RenderWidgetHost {
   void CreateNewWidget(int route_id, WebKit::WebPopupType popup_type);
 
   // Creates a full screen RenderWidget.
-  void CreateNewFullscreenWidget(int route_id, WebKit::WebPopupType popup_type);
+  void CreateNewFullscreenWidget(int route_id);
 
   // Sends the response to an extension api call.
   void SendExtensionResponse(int request_id, bool success,

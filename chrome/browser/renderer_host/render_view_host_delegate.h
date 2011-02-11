@@ -129,8 +129,7 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
                                  WebKit::WebPopupType popup_type) = 0;
 
     // Creates a full screen RenderWidget. Similar to above.
-    virtual void CreateNewFullscreenWidget(
-        int route_id, WebKit::WebPopupType popup_type) = 0;
+    virtual void CreateNewFullscreenWidget(int route_id) = 0;
 
     // Show a previously created page with the specified disposition and bounds.
     // The window is identified by the route_id passed to CreateNewWindow.

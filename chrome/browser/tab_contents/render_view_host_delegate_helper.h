@@ -53,9 +53,7 @@ class RenderViewHostDelegateViewHelper {
                                                 RenderProcessHost* process);
 
   virtual RenderWidgetHostView* CreateNewFullscreenWidget(
-      int route_id,
-      WebKit::WebPopupType popup_type,
-      RenderProcessHost* process);
+      int route_id, RenderProcessHost* process);
 
   // Finds the new RenderWidgetHost and returns it. Note that this can only be
   // called once as this call also removes it from the internal map.

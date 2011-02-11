@@ -16,15 +16,13 @@ class RenderWidgetFullscreen : public RenderWidget {
   // RenderView that this widget lives inside. The render_thread is any
   // RenderThreadBase implementation, mostly commonly RenderThread::current().
   static RenderWidgetFullscreen* Create(int32 opener_id,
-                                        RenderThreadBase* render_thread,
-                                        WebKit::WebPopupType popup_type);
+                                        RenderThreadBase* render_thread);
 
   virtual void show(WebKit::WebNavigationPolicy);
 
  protected:
   virtual WebKit::WebWidget* CreateWebWidget();
-  RenderWidgetFullscreen(RenderThreadBase* render_thread,
-                         WebKit::WebPopupType popup_type);
+  RenderWidgetFullscreen(RenderThreadBase* render_thread);
 
   void Init(int32 opener_id);
 };

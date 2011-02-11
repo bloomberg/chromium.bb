@@ -95,8 +95,7 @@ class InterstitialPage::InterstitialPageRVHViewDelegate
       const ViewHostMsg_CreateWindow_Params& params);
   virtual void CreateNewWidget(int route_id,
                                WebKit::WebPopupType popup_type);
-  virtual void CreateNewFullscreenWidget(int route_id,
-                                         WebKit::WebPopupType popup_type);
+  virtual void CreateNewFullscreenWidget(int route_id);
   virtual void ShowCreatedWindow(int route_id,
                                  WindowOpenDisposition disposition,
                                  const gfx::Rect& initial_pos,
@@ -604,7 +603,7 @@ void InterstitialPage::InterstitialPageRVHViewDelegate::CreateNewWidget(
 
 void
 InterstitialPage::InterstitialPageRVHViewDelegate::CreateNewFullscreenWidget(
-    int route_id, WebKit::WebPopupType popup_type) {
+    int route_id) {
   NOTREACHED()
       << "InterstitialPage does not support showing full screen popups.";
 }

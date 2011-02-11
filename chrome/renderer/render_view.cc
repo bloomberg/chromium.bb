@@ -2120,13 +2120,6 @@ WebExternalPopupMenu* RenderView::createExternalPopupMenu(
   return external_popup_menu_.get();
 }
 
-WebWidget* RenderView::createFullscreenWindow(WebKit::WebPopupType popup_type) {
-  RenderWidget* widget = RenderWidgetFullscreen::Create(routing_id_,
-                                                        render_thread_,
-                                                        popup_type);
-  return widget->webwidget();
-}
-
 webkit::ppapi::FullscreenContainer*
 RenderView::CreatePepperFullscreenContainer(
     webkit::ppapi::PluginInstance* plugin) {

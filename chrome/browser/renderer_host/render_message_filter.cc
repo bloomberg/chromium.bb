@@ -470,10 +470,9 @@ void RenderMessageFilter::OnMsgCreateWidget(int opener_id,
   render_widget_helper_->CreateNewWidget(opener_id, popup_type, route_id);
 }
 
-void RenderMessageFilter::OnMsgCreateFullscreenWidget(
-    int opener_id, WebKit::WebPopupType popup_type, int* route_id) {
-  render_widget_helper_->CreateNewFullscreenWidget(
-      opener_id, popup_type, route_id);
+void RenderMessageFilter::OnMsgCreateFullscreenWidget(int opener_id,
+                                                      int* route_id) {
+  render_widget_helper_->CreateNewFullscreenWidget(opener_id, route_id);
 }
 
 void RenderMessageFilter::OnSetCookie(const IPC::Message& message,

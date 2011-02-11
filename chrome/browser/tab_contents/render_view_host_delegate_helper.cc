@@ -129,12 +129,11 @@ RenderWidgetHostView* RenderViewHostDelegateViewHelper::CreateNewWidget(
 
 RenderWidgetHostView*
 RenderViewHostDelegateViewHelper::CreateNewFullscreenWidget(
-    int route_id, WebKit::WebPopupType popup_type, RenderProcessHost* process) {
+    int route_id, RenderProcessHost* process) {
   RenderWidgetFullscreenHost* fullscreen_widget_host =
       new RenderWidgetFullscreenHost(process, route_id);
   RenderWidgetHostView* widget_view =
       RenderWidgetHostView::CreateViewForWidget(fullscreen_widget_host);
-  widget_view->set_popup_type(popup_type);
   pending_widget_views_[route_id] = widget_view;
   return widget_view;
 }

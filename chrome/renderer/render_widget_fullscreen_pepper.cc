@@ -160,7 +160,7 @@ RenderWidgetFullscreenPepper* RenderWidgetFullscreenPepper::Create(
 RenderWidgetFullscreenPepper::RenderWidgetFullscreenPepper(
     RenderThreadBase* render_thread,
     webkit::ppapi::PluginInstance* plugin)
-    : RenderWidgetFullscreen(render_thread, WebKit::WebPopupTypeSelect),
+    : RenderWidgetFullscreen(render_thread),
       plugin_(plugin),
       context_(NULL),
       buffer_(0),

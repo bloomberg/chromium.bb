@@ -53,7 +53,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
 
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
                            const gfx::Rect& pos) {}
-  virtual void InitAsFullscreen(RenderWidgetHostView* parent_host_view) {}
+  virtual void InitAsFullscreen() {}
   virtual RenderWidgetHost* GetRenderWidgetHost() const { return NULL; }
   virtual void DidBecomeSelected() {}
   virtual void WasHidden() {}

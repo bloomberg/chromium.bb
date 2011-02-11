@@ -22,7 +22,7 @@ TEST_F(RenderViewHostTest, FilterAbout) {
 // Create a full screen popup RenderWidgetHost and View.
 TEST_F(RenderViewHostTest, CreateFullscreenWidget) {
   int routing_id = process()->GetNextRoutingID();
-  rvh()->CreateNewFullscreenWidget(routing_id, WebKit::WebPopupTypeNone);
+  rvh()->CreateNewFullscreenWidget(routing_id);
 }
 
 // Makes sure that RenderViewHost::is_waiting_for_unload_ack_ is false when

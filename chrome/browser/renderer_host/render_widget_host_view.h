@@ -82,7 +82,7 @@ class RenderWidgetHostView {
 
   // Perform all the initialization steps necessary for this object to represent
   // a full screen window.
-  virtual void InitAsFullscreen(RenderWidgetHostView* parent_host_view) = 0;
+  virtual void InitAsFullscreen() = 0;
 
   // Returns the associated RenderWidgetHost.
   virtual RenderWidgetHost* GetRenderWidgetHost() const = 0;

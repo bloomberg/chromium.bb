@@ -325,8 +325,7 @@ void RenderWidgetHostViewWin::InitAsPopup(
   ShowWindow(IsActivatable() ? SW_SHOW : SW_SHOWNA);
 }
 
-void RenderWidgetHostViewWin::InitAsFullscreen(
-    RenderWidgetHostView* parent_host_view) {
+void RenderWidgetHostViewWin::InitAsFullscreen() {
   NOTIMPLEMENTED() << "Fullscreen not implemented on Win";
 }
 

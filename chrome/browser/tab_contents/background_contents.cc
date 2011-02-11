@@ -234,8 +234,7 @@ void BackgroundContents::CreateNewWidget(int route_id,
   NOTREACHED();
 }
 
-void BackgroundContents::CreateNewFullscreenWidget(
-    int route_id, WebKit::WebPopupType popup_type) {
+void BackgroundContents::CreateNewFullscreenWidget(int route_id) {
   NOTREACHED();
 }
 

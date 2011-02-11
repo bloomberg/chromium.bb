@@ -1083,9 +1083,8 @@ IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_CreateWidget,
 
 // Similar to ViewHostMsg_CreateWidget except the widget is a full screen
 // window.
-IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_CreateFullscreenWidget,
+IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_CreateFullscreenWidget,
                             int /* opener_id */,
-                            WebKit::WebPopupType /* popup type */,
                             int /* route_id */)
 
 // These three messages are sent to the parent RenderViewHost to display the

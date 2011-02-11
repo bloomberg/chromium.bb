@@ -253,14 +253,14 @@ void RenderWidgetHelper::CreateNewWidget(int opener_id,
           popup_type));
 }
 
-void RenderWidgetHelper::CreateNewFullscreenWidget(
-    int opener_id, WebKit::WebPopupType popup_type, int* route_id) {
+void RenderWidgetHelper::CreateNewFullscreenWidget(int opener_id,
+                                                   int* route_id) {
   *route_id = GetNextRoutingID();
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
           this, &RenderWidgetHelper::OnCreateFullscreenWidgetOnUI,
-          opener_id, *route_id, popup_type));
+          opener_id, *route_id));
 }
 
 void RenderWidgetHelper::OnCreateWidgetOnUI(
@@ -270,11 +270,11 @@ void RenderWidgetHelper::OnCreateWidgetOnUI(
     host->CreateNewWidget(route_id, popup_type);
 }
 
-void RenderWidgetHelper::OnCreateFullscreenWidgetOnUI(
-    int opener_id, int route_id, WebKit::WebPopupType popup_type) {
+void RenderWidgetHelper::OnCreateFullscreenWidgetOnUI(int opener_id,
+                                                      int route_id) {
   RenderViewHost* host = RenderViewHost::FromID(render_process_id_, opener_id);
   if (host)
-    host->CreateNewFullscreenWidget(route_id, popup_type);
+    host->CreateNewFullscreenWidget(route_id);
 }
 
 #if defined(OS_MACOSX)

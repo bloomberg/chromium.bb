@@ -59,9 +59,8 @@ void TabContentsView::CreateNewWidget(int route_id,
   CreateNewWidgetInternal(route_id, popup_type);
 }
 
-void TabContentsView::CreateNewFullscreenWidget(
-    int route_id, WebKit::WebPopupType popup_type) {
-  CreateNewFullscreenWidgetInternal(route_id, popup_type);
+void TabContentsView::CreateNewFullscreenWidget(int route_id) {
+  CreateNewFullscreenWidgetInternal(route_id);
 }
 
 void TabContentsView::ShowCreatedWindow(int route_id,
@@ -145,9 +144,9 @@ RenderWidgetHostView* TabContentsView::CreateNewWidgetInternal(
 }
 
 RenderWidgetHostView* TabContentsView::CreateNewFullscreenWidgetInternal(
-    int route_id, WebKit::WebPopupType popup_type) {
+    int route_id) {
   return delegate_view_helper_.CreateNewFullscreenWidget(
-      route_id, popup_type, tab_contents()->render_view_host()->process());
+      route_id, tab_contents()->render_view_host()->process());
 }
 
 void TabContentsView::ShowCreatedWidgetInternal(
@@ -165,6 +164,6 @@ void TabContentsView::ShowCreatedFullscreenWidgetInternal(
   if (tab_contents_->delegate())
     tab_contents_->delegate()->RenderWidgetShowing();
 
-  widget_host_view->InitAsFullscreen(tab_contents_->GetRenderWidgetHostView());
+  widget_host_view->InitAsFullscreen();
   widget_host_view->GetRenderWidgetHost()->Init();
 }

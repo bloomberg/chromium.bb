@@ -101,9 +101,7 @@ class RenderMessageFilter : public BrowserMessageFilter,
   void OnMsgCreateWidget(int opener_id,
                          WebKit::WebPopupType popup_type,
                          int* route_id);
-  void OnMsgCreateFullscreenWidget(int opener_id,
-                                   WebKit::WebPopupType popup_type,
-                                   int* route_id);
+  void OnMsgCreateFullscreenWidget(int opener_id, int* route_id);
   void OnSetCookie(const IPC::Message& message,
                    const GURL& url,
                    const GURL& first_party_for_cookies,

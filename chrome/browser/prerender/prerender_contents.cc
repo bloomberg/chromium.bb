@@ -274,8 +274,7 @@ void PrerenderContents::CreateNewWidget(int route_id,
   NOTREACHED();
 }
 
-void PrerenderContents::CreateNewFullscreenWidget(
-    int route_id, WebKit::WebPopupType popup_type) {
+void PrerenderContents::CreateNewFullscreenWidget(int route_id) {
   NOTREACHED();
 }
 

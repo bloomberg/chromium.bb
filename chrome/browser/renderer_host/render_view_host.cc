@@ -865,11 +865,10 @@ void RenderViewHost::CreateNewWidget(int route_id,
     view->CreateNewWidget(route_id, popup_type);
 }
 
-void RenderViewHost::CreateNewFullscreenWidget(
-    int route_id, WebKit::WebPopupType popup_type) {
+void RenderViewHost::CreateNewFullscreenWidget(int route_id) {
   RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
   if (view)
-    view->CreateNewFullscreenWidget(route_id, popup_type);
+    view->CreateNewFullscreenWidget(route_id);
 }
 
 void RenderViewHost::OnMsgShowView(int route_id,

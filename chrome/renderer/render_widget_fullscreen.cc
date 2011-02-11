@@ -12,11 +12,10 @@ using WebKit::WebWidget;
 
 // static
 RenderWidgetFullscreen* RenderWidgetFullscreen::Create(
-    int32 opener_id, RenderThreadBase* render_thread,
-    WebKit::WebPopupType popup_type) {
+    int32 opener_id, RenderThreadBase* render_thread) {
   DCHECK_NE(MSG_ROUTING_NONE, opener_id);
-  scoped_refptr<RenderWidgetFullscreen> widget(new RenderWidgetFullscreen(
-      render_thread, popup_type));
+  scoped_refptr<RenderWidgetFullscreen> widget(
+      new RenderWidgetFullscreen(render_thread));
   widget->Init(opener_id);
   return widget.release();
 }
@@ -32,8 +31,7 @@ void RenderWidgetFullscreen::Init(int32 opener_id) {
   RenderWidget::DoInit(
       opener_id,
       CreateWebWidget(),
-      new ViewHostMsg_CreateFullscreenWidget(
-          opener_id, popup_type_, &routing_id_));
+      new ViewHostMsg_CreateFullscreenWidget(opener_id, &routing_id_));
 }
 
 void RenderWidgetFullscreen::show(WebKit::WebNavigationPolicy) {
@@ -48,7 +46,6 @@ void RenderWidgetFullscreen::show(WebKit::WebNavigationPolicy) {
   }
 }
 
-RenderWidgetFullscreen::RenderWidgetFullscreen(RenderThreadBase* render_thread,
-                                               WebKit::WebPopupType popup_type)
-    : RenderWidget(render_thread, popup_type) {
+RenderWidgetFullscreen::RenderWidgetFullscreen(RenderThreadBase* render_thread)
+    : RenderWidget(render_thread, WebKit::WebPopupTypeNone) {
 }

@@ -560,8 +560,7 @@ void ExtensionHost::CreateNewWidget(int route_id,
   CreateNewWidgetInternal(route_id, popup_type);
 }
 
-void ExtensionHost::CreateNewFullscreenWidget(int route_id,
-                                              WebKit::WebPopupType popup_type) {
+void ExtensionHost::CreateNewFullscreenWidget(int route_id) {
   NOTREACHED()
       << "ExtensionHost does not support showing full screen popups yet.";
 }
