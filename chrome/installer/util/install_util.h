@@ -15,10 +15,10 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/command_line.h"
+#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/util_constants.h"
 
-class BrowserDistribution;
-class CommandLine;
 class Version;
 class WorkItemList;
 
@@ -39,8 +39,9 @@ class InstallUtil {
   // Reads the uninstall command for Chromium from registry and returns it.
   // If system_install is true the command is read from HKLM, otherwise
   // from HKCU.
-  static std::wstring GetChromeUninstallCmd(bool system_install,
-                                            BrowserDistribution* dist);
+  static CommandLine GetChromeUninstallCmd(
+      bool system_install,
+      BrowserDistribution::Type distribution_type);
 
   // Find the version of Chrome installed on the system by checking the
   // Google Update registry key. Returns the version or NULL if no version is

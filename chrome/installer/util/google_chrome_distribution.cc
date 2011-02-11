@@ -686,9 +686,8 @@ void GoogleChromeDistribution::InactiveUserToastExperiment(int flavor,
   bool system_level_toast = CommandLine::ForCurrentProcess()->HasSwitch(
       installer::switches::kSystemLevelToast);
 
-  std::wstring cmd(InstallUtil::GetChromeUninstallCmd(
-      system_level_toast, this));
-
+  CommandLine cmd(InstallUtil::GetChromeUninstallCmd(system_level_toast,
+                                                     GetType()));
   base::LaunchApp(cmd, false, false, NULL);
 }
 #endif
