@@ -19,11 +19,15 @@
 #include "base/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/renderer_host/test/test_render_view_host.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/browser/safe_browsing/csd.pb.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/common/net/test_url_fetcher_factory.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "googleurl/src/gurl.h"
+#include "ipc/ipc_channel.h"
+#include "ipc/ipc_test_sink.h"
 #include "net/url_request/url_request_status.h"
 
 namespace safe_browsing {
@@ -222,6 +226,81 @@ TEST_F(ClientSideDetectionServiceTest, GetNumReportTest) {
   report_times.push(now);
 
   EXPECT_EQ(2, GetNumReportsPerDay());
+}
+
+// We use a separate test fixture for testing the ClientSideDetectionService's
+// handling of load notifications from TabContents.  This uses
+// RenderViewHostTestHarness to set up a fake TabContents and related objects.
+class ClientSideDetectionServiceHooksTest : public RenderViewHostTestHarness,
+                                            public IPC::Channel::Listener {
+ public:
+  // IPC::Channel::Listener
+  virtual bool OnMessageReceived(const IPC::Message& msg) {
+    if (msg.type() == ViewMsg_StartPhishingDetection::ID) {
+      received_msg_ = msg;
+      did_receive_msg_ = true;
+      return true;
+    }
+    return false;
+  }
+
+ protected:
+  virtual void SetUp() {
+    RenderViewHostTestHarness::SetUp();
+    file_thread_.reset(new BrowserThread(BrowserThread::FILE, &message_loop_));
+    ui_thread_.reset(new BrowserThread(BrowserThread::UI, &message_loop_));
+
+    // We're not exercising model fetching here, so just set up a canned
+    // success response.
+    factory_.reset(new FakeURLFetcherFactory());
+    factory_->SetFakeResponse(ClientSideDetectionService::kClientModelUrl,
+                              "dummy model data", true);
+    URLFetcher::set_factory(factory_.get());
+
+    process()->sink().AddFilter(this);
+  }
+
+  virtual void TearDown() {
+    process()->sink().RemoveFilter(this);
+    URLFetcher::set_factory(NULL);
+    file_thread_.reset();
+    ui_thread_.reset();
+    RenderViewHostTestHarness::TearDown();
+  }
+
+  scoped_ptr<FakeURLFetcherFactory> factory_;
+  scoped_ptr<BrowserThread> ui_thread_;
+  scoped_ptr<BrowserThread> file_thread_;
+  IPC::Message received_msg_;
+  bool did_receive_msg_;
+};
+
+TEST_F(ClientSideDetectionServiceHooksTest, ShouldClassifyUrl) {
+  ScopedTempDir tmp_dir;
+  ASSERT_TRUE(tmp_dir.CreateUniqueTempDir());
+  FilePath model_path = tmp_dir.path().AppendASCII("model");
+
+  scoped_ptr<ClientSideDetectionService> csd_service(
+      ClientSideDetectionService::Create(model_path, NULL));
+
+  // Navigate the tab to a page.  We should see a StartPhishingDetection IPC.
+  did_receive_msg_ = false;
+  NavigateAndCommit(GURL("http://host.com/"));
+  // The IPC is sent asynchronously, so run the message loop to wait for
+  // the message.
+  MessageLoop::current()->RunAllPending();
+  ASSERT_TRUE(did_receive_msg_);
+
+  Tuple1<GURL> url;
+  ViewMsg_StartPhishingDetection::Read(&received_msg_, &url);
+  EXPECT_EQ(GURL("http://host.com/"), url.a);
+  EXPECT_EQ(rvh()->routing_id(), received_msg_.routing_id());
+
+  // Now try an in-page navigation.  This should not trigger an IPC.
+  did_receive_msg_ = false;
+  NavigateAndCommit(GURL("http://host.com/#foo"));
+  MessageLoop::current()->RunAllPending();
+  ASSERT_FALSE(did_receive_msg_);
 }
 
 }  // namespace safe_browsing

@@ -33,6 +33,8 @@
 #include "base/time.h"
 #include "chrome/browser/safe_browsing/csd.pb.h"
 #include "chrome/common/net/url_fetcher.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 
 class URLRequestContextGetter;
@@ -43,7 +45,8 @@ class URLRequestStatus;
 
 namespace safe_browsing {
 
-class ClientSideDetectionService : public URLFetcher::Delegate {
+class ClientSideDetectionService : public URLFetcher::Delegate,
+                                   public NotificationObserver {
  public:
   typedef Callback1<base::PlatformFile>::Type OpenModelDoneCallback;
 
@@ -67,6 +70,11 @@ class ClientSideDetectionService : public URLFetcher::Delegate {
                                   const ResponseCookies& cookies,
                                   const std::string& data);
 
+  // From the NotificationObserver interface.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
   // Gets the model file descriptor once the model is ready and stored
   // on disk.  If there was an error the callback is called and the
   // platform file is set to kInvalidPlatformFileValue. The
@@ -89,6 +97,8 @@ class ClientSideDetectionService : public URLFetcher::Delegate {
 
  private:
   friend class ClientSideDetectionServiceTest;
+  friend class ClientSideDetectionServiceHooksTest;
+  class ShouldClassifyUrlRequest;
 
   enum ModelStatus {
     // It's unclear whether or not the model was already fetched.
@@ -198,6 +208,9 @@ class ClientSideDetectionService : public URLFetcher::Delegate {
 
   // The context we use to issue network requests.
   scoped_refptr<URLRequestContextGetter> request_context_getter_;
+
+  // Used to register for page load notifications.
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientSideDetectionService);
 };

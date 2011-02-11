@@ -23,6 +23,13 @@
 
 namespace safe_browsing {
 
+
+static GURL StripRef(const GURL& url) {
+  GURL::Replacements replacements;
+  replacements.ClearRef();
+  return url.ReplaceComponents(replacements);
+}
+
 typedef std::set<PhishingClassifierDelegate*> PhishingClassifierDelegates;
 static base::LazyInstance<PhishingClassifierDelegates>
     g_delegates(base::LINKER_INITIALIZED);
@@ -75,8 +82,8 @@ PhishingClassifierDelegate::PhishingClassifierDelegate(
     RenderView* render_view,
     PhishingClassifier* classifier)
     : RenderViewObserver(render_view),
-      last_page_id_sent_to_classifier_(-1),
-      pending_classification_(false) {
+      last_finished_load_id_(-1),
+      last_page_id_sent_to_classifier_(-1) {
   g_delegates.Get().insert(this);
   if (!classifier) {
     classifier = new PhishingClassifier(render_view,
@@ -100,26 +107,24 @@ void PhishingClassifierDelegate::SetPhishingScorer(
     return;  // RenderView is tearing down.
 
   classifier_->set_phishing_scorer(scorer);
+  // Start classifying the current page if all conditions are met.
+  // See MaybeStartClassification() for details.
+  MaybeStartClassification();
+}
 
-  if (pending_classification_) {
-    pending_classification_ = false;
-    // If we have a pending classificaton, it should always be true that the
-    // main frame URL and page id have not changed since we queued the
-    // classification.  This is because we stop any pending classification on
-    // main frame loads in RenderView::didCommitProvisionalLoad().
-    DCHECK_EQ(StripToplevelUrl(), last_url_sent_to_classifier_);
-    DCHECK_EQ(render_view()->page_id(), last_page_id_sent_to_classifier_);
-    classifier_->BeginClassification(
-        &classifier_page_text_,
-        NewCallback(this, &PhishingClassifierDelegate::ClassificationDone));
-  }
+
+void PhishingClassifierDelegate::OnStartPhishingDetection(const GURL& url) {
+  last_url_received_from_browser_ = StripRef(url);
+  // Start classifying the current page if all conditions are met.
+  // See MaybeStartClassification() for details.
+  MaybeStartClassification();
 }
 
 void PhishingClassifierDelegate::DidCommitProvisionalLoad(
     WebKit::WebFrame* frame, bool is_new_navigation) {
   // A new page is starting to load.  Unless the load is a navigation within
-  // the same page, we need to cancel classification since the content will
-  // now be inconsistent with the phishing model.
+  // the same page, we need to cancel classification since we may get an
+  // inconsistent result.
   NavigationState* state = NavigationState::FromDataSource(
       frame->dataSource());
   if (!state->was_within_same_page()) {
@@ -128,36 +133,10 @@ void PhishingClassifierDelegate::DidCommitProvisionalLoad(
 }
 
 void PhishingClassifierDelegate::PageCaptured(const string16& page_text) {
-  // We check that the page id has incremented so that we don't reclassify
-  // pages as the user moves back and forward in session history.  Note: we
-  // don't send every page id to the classifier, only those where the toplevel
-  // URL changed.
-  int load_id = render_view()->page_id();
-  if (load_id <= last_page_id_sent_to_classifier_) {
-    return;
-  }
-
-  GURL url_without_ref = StripToplevelUrl();
-  if (url_without_ref == last_url_sent_to_classifier_) {
-    // The toplevle URL is the same, except for the ref.
-    // Update the last page id we sent, but don't trigger a new classification.
-    last_page_id_sent_to_classifier_ = load_id;
-    return;
-  }
-
-  last_url_sent_to_classifier_ = url_without_ref;
-  last_page_id_sent_to_classifier_ = load_id;
+  last_finished_load_id_ = render_view()->page_id();
+  last_finished_load_url_ = StripToplevelUrl();
   classifier_page_text_ = page_text;
-
-  if (classifier_->is_ready()) {
-    classifier_->BeginClassification(
-        &classifier_page_text_,
-        NewCallback(this, &PhishingClassifierDelegate::ClassificationDone));
-  } else {
-    // If there is no phishing classifier yet, we'll begin classification once
-    // SetPhishingScorer() is called by the RenderView.
-    pending_classification_ = true;
-  }
+  MaybeStartClassification();
 }
 
 void PhishingClassifierDelegate::CancelPendingClassification() {
@@ -165,19 +144,17 @@ void PhishingClassifierDelegate::CancelPendingClassification() {
     classifier_->CancelPendingClassification();
   }
   classifier_page_text_.clear();
-  pending_classification_ = false;
 }
 
 bool PhishingClassifierDelegate::OnMessageReceived(
     const IPC::Message& message) {
-  /*
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PhishingClassifierDelegate, message)
+    IPC_MESSAGE_HANDLER(ViewMsg_StartPhishingDetection,
+                        OnStartPhishingDetection)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-  */
-  return false;
 }
 
 void PhishingClassifierDelegate::ClassificationDone(bool is_phishy,
@@ -196,10 +173,71 @@ void PhishingClassifierDelegate::ClassificationDone(bool is_phishy,
 }
 
 GURL PhishingClassifierDelegate::StripToplevelUrl() {
-  GURL toplevel_url = render_view()->webview()->mainFrame()->url();
-  GURL::Replacements replacements;
-  replacements.ClearRef();
-  return toplevel_url.ReplaceComponents(replacements);
+  return StripRef(render_view()->webview()->mainFrame()->url());
+}
+
+void PhishingClassifierDelegate::MaybeStartClassification() {
+  // We can begin phishing classification when the following conditions are
+  // met:
+  //  1. A Scorer has been created
+  //  2. The browser has sent a StartPhishingDetection message for the current
+  //     toplevel URL.
+  //  3. The page has finished loading and the page text has been extracted.
+  //  4. The load is a new navigation (not a session history navigation).
+  //  5. The toplevel URL has not already been classified.
+  //
+  // Note that if we determine that this particular navigation should not be
+  // classified at all (as opposed to deferring it until we get an IPC or the
+  // load completes), we discard the page text since it won't be needed.
+  if (!classifier_->is_ready()) {
+    VLOG(2) << "Not starting classification, no Scorer created.";
+    // Keep classifier_page_text_, in case a Scorer is set later.
+    return;
+  }
+
+  if (last_finished_load_id_ <= last_page_id_sent_to_classifier_) {
+    // Skip loads from session history navigation.
+    VLOG(2) << "Not starting classification, last finished load id is "
+            << last_finished_load_id_ << " but we have classified up to "
+            << "load id " << last_page_id_sent_to_classifier_;
+    classifier_page_text_.clear();  // we won't need this.
+    return;
+  }
+
+  if (last_finished_load_id_ != render_view()->page_id()) {
+    VLOG(2) << "Render view page has changed, not starting classification";
+    classifier_page_text_.clear();  // we won't need this.
+    return;
+  }
+  // If the page id is unchanged, the toplevel URL should also be unchanged.
+  DCHECK_EQ(StripToplevelUrl(), last_finished_load_url_);
+
+  if (last_finished_load_url_ == last_url_sent_to_classifier_) {
+    // We've already classified this toplevel URL, so this was likely an
+    // in-page navigation or a subframe navigation.  The browser should not
+    // send a StartPhishingDetection IPC in this case.
+    VLOG(2) << "Toplevel URL is unchanged, not starting classification.";
+    classifier_page_text_.clear();  // we won't need this.
+    return;
+  }
+
+  if (last_url_received_from_browser_ != last_finished_load_url_) {
+    // The browser has not yet confirmed that this URL should be classified,
+    // so defer classification for now.
+    VLOG(2) << "Not starting classification, last url from browser is "
+            << last_url_received_from_browser_ << ", last finished load is "
+            << last_finished_load_url_;
+    // Keep classifier_page_text_, in case the browser notifies us later that
+    // we should classify the URL.
+    return;
+  }
+
+  VLOG(2) << "Starting classification for " << last_finished_load_url_;
+  last_url_sent_to_classifier_ = last_finished_load_url_;
+  last_page_id_sent_to_classifier_ = last_finished_load_id_;
+  classifier_->BeginClassification(
+      &classifier_page_text_,
+      NewCallback(this, &PhishingClassifierDelegate::ClassificationDone));
 }
 
 }  // namespace safe_browsing

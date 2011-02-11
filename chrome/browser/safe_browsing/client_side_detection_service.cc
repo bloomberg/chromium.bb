@@ -16,10 +16,16 @@
 #include "base/task.h"
 #include "base/time.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/safe_browsing/csd.pb.h"
+#include "chrome/browser/tab_contents/provisional_load_details.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/net/http_return.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "chrome/common/net/url_request_context_getter.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_type.h"
+#include "chrome/common/render_messages.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_status.h"
@@ -38,6 +44,73 @@ struct ClientSideDetectionService::ClientReportInfo {
   GURL phishing_url;
 };
 
+// ShouldClassifyUrlRequest tracks the pre-classification checks for a
+// toplevel URL that has started loading into a renderer.  When these
+// checks are complete, the renderer is notified if it should run
+// client-side phishing classification, then the ShouldClassifyUrlRequest
+// deletes itself.
+class ClientSideDetectionService::ShouldClassifyUrlRequest
+    : public NotificationObserver {
+ public:
+  ShouldClassifyUrlRequest(const GURL& url, TabContents* tab_contents)
+      : url_(url),
+        tab_contents_(tab_contents),
+        ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    registrar_.Add(this,
+                   NotificationType::TAB_CONTENTS_DESTROYED,
+                   Source<TabContents>(tab_contents));
+  }
+
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) {
+    switch (type.value) {
+      case NotificationType::TAB_CONTENTS_DESTROYED:
+        Cancel();
+        break;
+      default:
+        NOTREACHED();
+    };
+  }
+
+  void Start() {
+    // TODO(bryner): add pre-classification checks here.
+    // For now we just call Finish() asynchronously for consistency,
+    // since the pre-classification checks are asynchronous.
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    BrowserThread::PostTask(BrowserThread::UI,
+                            FROM_HERE,
+                            method_factory_.NewRunnableMethod(
+                                &ShouldClassifyUrlRequest::Finish));
+  }
+
+ private:
+  // This object always deletes itself, so make the destructor private.
+  virtual ~ShouldClassifyUrlRequest() {}
+
+  void Cancel() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    tab_contents_ = NULL;
+    Finish();
+  }
+
+  void Finish() {
+    if (tab_contents_) {
+      RenderViewHost* rvh = tab_contents_->render_view_host();
+      rvh->Send(new ViewMsg_StartPhishingDetection(rvh->routing_id(), url_));
+    }
+    delete this;
+  }
+
+  GURL url_;
+  TabContents* tab_contents_;
+  NotificationRegistrar registrar_;
+  ScopedRunnableMethodFactory<ShouldClassifyUrlRequest> method_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShouldClassifyUrlRequest);
+};
+
 ClientSideDetectionService::ClientSideDetectionService(
     const FilePath& model_path,
     URLRequestContextGetter* request_context_getter)
@@ -47,6 +120,11 @@ ClientSideDetectionService::ClientSideDetectionService(
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)),
       request_context_getter_(request_context_getter) {
+  // Register to find out when pages begin loading into a renderer.
+  // When this happens, we'll start our pre-classificaton checks.
+  registrar_.Add(this,
+                 NotificationType::FRAME_PROVISIONAL_LOAD_COMMITTED,
+                 NotificationService::AllSources());
 }
 
 ClientSideDetectionService::~ClientSideDetectionService() {
@@ -116,6 +194,32 @@ void ClientSideDetectionService::OnURLFetchComplete(
   } else {
     NOTREACHED();
   }
+}
+
+void ClientSideDetectionService::Observe(NotificationType type,
+                                         const NotificationSource& source,
+                                         const NotificationDetails& details) {
+  switch (type.value) {
+    case NotificationType::FRAME_PROVISIONAL_LOAD_COMMITTED: {
+      // Check whether the load should trigger a phishing classification.
+      // This is true if the navigation happened in the main frame and was
+      // not an in-page navigation.
+      ProvisionalLoadDetails* load_details =
+          Details<ProvisionalLoadDetails>(details).ptr();
+
+      if (load_details->main_frame() && !load_details->in_page_navigation()) {
+        NavigationController* controller =
+            Source<NavigationController>(source).ptr();
+        ShouldClassifyUrlRequest* request =
+            new ShouldClassifyUrlRequest(load_details->url(),
+                                         controller->tab_contents());
+        request->Start();  // the request will delete itself on completion
+      }
+      break;
+    }
+    default:
+      NOTREACHED();
+  };
 }
 
 void ClientSideDetectionService::SetModelStatus(ModelStatus status) {

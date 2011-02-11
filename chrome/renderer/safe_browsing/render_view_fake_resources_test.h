@@ -94,6 +94,9 @@ class RenderViewFakeResourcesTest : public ::testing::Test,
   // not supported.
   void LoadURLWithPost(const std::string& url);
 
+  // Navigates the main frame back in session history.
+  void GoBack();
+
   // Returns the main WebFrame for our RenderView.
   WebKit::WebFrame* GetMainFrame();
 

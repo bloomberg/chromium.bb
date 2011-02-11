@@ -1048,6 +1048,10 @@ IPC_MESSAGE_ROUTED3(ViewMsg_AsyncOpenFile_ACK,
 IPC_MESSAGE_CONTROL1(ViewMsg_SetPhishingModel,
                      IPC::PlatformFileForTransit /* model_file */)
 
+// Tells the renderer to begin phishing detection for the given toplevel URL
+// which it has started loading.
+IPC_MESSAGE_ROUTED1(ViewMsg_StartPhishingDetection, GURL)
+
 // External popup menus.
 IPC_MESSAGE_ROUTED1(ViewMsg_SelectPopupMenuItem,
                     int /* selected index, -1 means no selection */)
