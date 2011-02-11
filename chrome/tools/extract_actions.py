@@ -173,6 +173,7 @@ def AddClosedSourceActions(actions):
   actions.add('PDF_Unsupported_Digital_Signature')
   actions.add('PDF_Unsupported_Shared_Review')
   actions.add('PDF_Unsupported_Shared_Form')
+  actions.add('PDF_Unsupported_Bookmarks')
 
 def AddAboutFlagsActions(actions):
   """This parses the experimental feature flags for UMA actions.
