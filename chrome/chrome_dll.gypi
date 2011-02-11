@@ -175,8 +175,9 @@
               'sources': [
                 'app/chrome_command_ids.h',
                 'app/chrome_dll_resource.h',
-                'app/chrome_main_app_mode_mac.mm',
                 'app/chrome_main.cc',
+                'app/chrome_main_app_mode_mac.mm',
+                'app/chrome_main_mac.mm',
               ],
               'include_dirs': [
                 '<(grit_out_dir)',

@@ -122,7 +122,7 @@ int ChromeMain(int argc, char** argv);
 // |user_data_dir| parameter. If no policy is set the parameter is not changed.
 void CheckUserDataDirPolicy(FilePath* user_data_dir);
 
-#if !defined(OS_WIN)
+#if !defined(OS_WIN) && !defined(OS_MACOSX)
 // This policy is not implemented for Linux and ChromeOS. The win and mac ver-
 // sions are implemented in the platform specific version of chrome_main.cc e.g.
 // chrome_main_win.cc or chrome_main_mac.mm .

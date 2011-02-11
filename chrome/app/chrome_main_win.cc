@@ -10,6 +10,8 @@
 #include "base/win/registry.h"
 #include "policy/policy_constants.h"
 
+namespace {
+
 const WCHAR* kMachineNamePolicyVarName = L"${machine_name}";
 const WCHAR* kUserNamePolicyVarName = L"${user_name}";
 const WCHAR* kWinDocumentsFolderVarName = L"${documents}";
@@ -91,6 +93,8 @@ bool LoadUserDataDirPolicyFromRegistry(HKEY hive, FilePath* user_data_dir) {
   }
   return false;
 }
+
+}  // namespace
 
 // Checks if the UserDataDir policy has been set and returns its value in the
 // |user_data_dir| parameter. If no policy is set the parameter is not changed.
