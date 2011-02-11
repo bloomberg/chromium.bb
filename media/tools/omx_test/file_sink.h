@@ -21,9 +21,17 @@ class FileSink {
  public:
   FileSink(const FilePath& output_path,
            bool simulate_copy,
-           bool enable_csc);
+           bool enable_csc)
+      : output_path_(output_path),
+        simulate_copy_(simulate_copy),
+        enable_csc_(enable_csc),
+        width_(0),
+        height_(0),
+        copy_buf_size_(0),
+        csc_buf_size_(0) {
+  }
 
-  virtual ~FileSink();
+  virtual ~FileSink() {}
 
   virtual void BufferReady(int size, uint8* buffer);
 

@@ -13,8 +13,8 @@ namespace media {
 
 class MockVideoDecodeEngine : public VideoDecodeEngine {
  public:
-  MockVideoDecodeEngine();
-  virtual ~MockVideoDecodeEngine();
+  MockVideoDecodeEngine() {}
+  virtual ~MockVideoDecodeEngine() {}
 
   MOCK_METHOD4(Initialize, void(MessageLoop* message_loop,
                                 EventHandler* event_handler,
@@ -32,8 +32,8 @@ class MockVideoDecodeEngine : public VideoDecodeEngine {
 
 class MockVideoDecodeContext : public VideoDecodeContext {
  public:
-  MockVideoDecodeContext();
-  virtual ~MockVideoDecodeContext();
+  MockVideoDecodeContext() {}
+  virtual ~MockVideoDecodeContext() {}
 
   MOCK_METHOD0(GetDevice, void*());
   MOCK_METHOD6(AllocateVideoFrames, void(

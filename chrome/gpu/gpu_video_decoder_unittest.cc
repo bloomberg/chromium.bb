@@ -8,7 +8,7 @@
 #include "chrome/gpu/gpu_video_decoder.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
 #include "ipc/ipc_message_utils.h"
-#include "media/video/video_mock_objects.h"
+#include "media/video/mock_objects.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
