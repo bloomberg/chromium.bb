@@ -40,11 +40,13 @@ long long mkvparser::ReadUInt(IMkvReader* pReader, long long pos, long& len)
     assert((available - pos) >= 1);  //assume here max u-int len is 8
 #endif
 
+    len = 1;
+
     unsigned char b;
 
     status = pReader->Read(pos, 1, &b);
 
-    if (status < 0)  //error
+    if (status < 0)  //error or underflow
         return status;
 
     if (status > 0)  //interpreted as "underflow"
@@ -54,7 +56,6 @@ long long mkvparser::ReadUInt(IMkvReader* pReader, long long pos, long& len)
         return E_FILE_FORMAT_INVALID;
 
     unsigned char m = 0x80;
-    len = 1;
 
     while (!(b & m))
     {
@@ -74,10 +75,16 @@ long long mkvparser::ReadUInt(IMkvReader* pReader, long long pos, long& len)
         status = pReader->Read(pos, 1, &b);
 
         if (status < 0)
+        {
+            len = 1;
             return status;
+        }
 
         if (status > 0)
+        {
+            len = 1;
             return E_BUFFER_NOT_FULL;
+        }
 
         result <<= 8;
         result |= b;
@@ -105,6 +112,8 @@ long long mkvparser::GetUIntLength(
     if (pos >= available)
         return pos;  //too few bytes available
 
+    len = 1;
+
     unsigned char b;
 
     status = pReader->Read(pos, 1, &b);
@@ -118,7 +127,6 @@ long long mkvparser::GetUIntLength(
         return E_FILE_FORMAT_INVALID;
 
     unsigned char m = 0x80;
-    len = 1;
 
     while (!(b & m))
     {
@@ -5186,10 +5194,10 @@ long Cluster::LoadBlockEntries(long long& pos, long& len) const
 
     long long result = GetUIntLength(pReader, pos, len);
 
-    if (result < 0)  //error
+    if (result < 0)  //error or underflow
         return static_cast<long>(result);
 
-    if (result > 0)  //weird
+    if (result > 0)  //underflow (weird)
     {
         len = 1;
         return E_BUFFER_NOT_FULL;
