@@ -19,7 +19,7 @@ if env.Bit('linux'):
               'url_load_request.cc' ]
 
   libs = [ 'ppapi_cpp',
-           'google_nacl_imc',
+           'imc',
            'gio',
            'pthread' ]
 

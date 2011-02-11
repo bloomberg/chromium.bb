@@ -46,8 +46,7 @@ LUA_DIR := lua-5.1.4
 CCFLAGS=-Wall -Werror
 NAME:=lua_module
 
-LIBS = -lgoogle_nacl_npruntime
-LIBS+= -lgoogle_nacl_imc
+LIBS = -limc
 #NACL_INCLUDE = -I$(GOOGLE_CLIENT)/third_party/npapi/files/include
 
 LUA_FILES := lapi.c

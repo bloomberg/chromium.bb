@@ -32,7 +32,7 @@ env.ComponentProgram('libs_present_test.nexe',
                            'av',
                            'pthread',
                            'srpc',
-                           'google_nacl_imc',
+                           'imc',
                            'nosys'])
 
 # Check that GDB can print backtrace.

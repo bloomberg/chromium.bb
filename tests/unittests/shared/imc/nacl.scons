@@ -7,9 +7,8 @@ Import('env')
 
 env.ComponentProgram('nacl_close_test.nexe',
                      ['nacl_close_test.c'],
-                     EXTRA_LIBS=['google_nacl_imc_c',
-                                 'google_nacl_imc',
-                                 'google_nacl_platform',
+                     EXTRA_LIBS=['imc',
+                                 'platform',
                                  'gio'])
 node = env.CommandSelLdrTestNacl(
     'nacl_close_test_nexe.out',
@@ -21,9 +20,8 @@ env.AddNodeToTestSuite(node,
 
 env.ComponentProgram('double_nacl_close_test.nexe',
                      ['double_nacl_close_test.c'],
-                     EXTRA_LIBS=['google_nacl_imc_c',
-                                 'google_nacl_imc',
-                                 'google_nacl_platform',
+                     EXTRA_LIBS=['imc',
+                                 'platform',
                                  'gio'])
 node = env.CommandSelLdrTestNacl(
     'double_nacl_close_test_nexe.out',
@@ -36,9 +34,8 @@ env.AddNodeToTestSuite(node,
 
 env.ComponentProgram('nacl_create_memory_object_test.nexe',
                      ['nacl_create_memory_object_test.c'],
-                     EXTRA_LIBS=['google_nacl_imc_c',
-                                 'google_nacl_imc',
-                                 'google_nacl_platform',
+                     EXTRA_LIBS=['imc',
+                                 'platform',
                                  'gio'])
 node = env.CommandSelLdrTestNacl(
     'nacl_create_memory_object_test_nexe.out',

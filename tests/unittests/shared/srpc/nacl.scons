@@ -9,9 +9,8 @@ Import('env')
 env.ComponentProgram('simple_srpc_test.nexe',
                      ['simple_srpc_test.c'],
                      EXTRA_LIBS=['srpc',
-                                 'google_nacl_imc_c',
-                                 'google_nacl_imc',
-                                 'google_nacl_platform',
+                                 'imc',
+                                 'platform',
                                  'gio',
                                  'pthread'])
 node = env.CommandSelLdrTestNacl(
@@ -24,9 +23,8 @@ env.AddNodeToTestSuite(node, ['small_tests'], 'run_simple_srpc_test_nexe')
 env.ComponentProgram('types_srpc_test.nexe',
                      ['types_srpc_test.c'],
                      EXTRA_LIBS=['srpc',
-                                 'google_nacl_imc_c',
-                                 'google_nacl_imc',
-                                 'google_nacl_platform',
+                                 'imc',
+                                 'platform',
                                  'gio',
                                  'pthread'])
 node = env.CommandSelLdrTestNacl(

@@ -6,7 +6,7 @@
 Import('env')
 
 nexe = env.ComponentProgram('srpc_hw.nexe', 'srpc_hw.c',
-                            EXTRA_LIBS=['srpc', 'google_nacl_imc_c','pthread'])
+                            EXTRA_LIBS=['srpc', 'imc','pthread'])
 
 # Note that the html is required to run this program.
 # In Chrome, we can share the nexe between the NPAPI (built-in) and

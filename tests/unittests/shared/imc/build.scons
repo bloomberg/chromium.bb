@@ -9,8 +9,8 @@ Import('env')
 nacl_close_test_exe = env.ComponentProgram(
     'nacl_close_test',
     'nacl_close_test.c',
-    EXTRA_LIBS=['google_nacl_imc',
-                'google_nacl_imc_c',
+    EXTRA_LIBS=['imc',
+                'imc',
                 'platform',
                 'gio'])
 node = env.CommandTest(
@@ -21,8 +21,8 @@ env.AddNodeToTestSuite(node, ['small_tests'], 'run_nacl_close_test')
 double_nacl_close_test_exe = env.ComponentProgram(
     'double_nacl_close_test',
     'double_nacl_close_test.c',
-    EXTRA_LIBS=['google_nacl_imc',
-                'google_nacl_imc_c',
+    EXTRA_LIBS=['imc',
+                'imc',
                 'platform',
                 'gio'])
 node = env.CommandTest(
@@ -33,8 +33,8 @@ env.AddNodeToTestSuite(node, ['small_tests'], 'run_double_nacl_close_test')
 nacl_create_memory_object_test_exe = env.ComponentProgram(
     'nacl_create_memory_object_test',
     'nacl_create_memory_object_test.c',
-    EXTRA_LIBS=['google_nacl_imc',
-                'google_nacl_imc_c',
+    EXTRA_LIBS=['imc',
+                'imc',
                 'platform',
                 'gio'])
 node = env.CommandTest(

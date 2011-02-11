@@ -38,7 +38,7 @@ ifeq (nacl,$(filter nacl,$(MAKECMDGOALS)))
 POST_BUILD = cp $(EXE_NAME) awk_module.nexe
 CC = $(NACL_BIN_PATH)/nacl-gcc
 
-LIBS = -lgoogle_nacl_imc
+LIBS = -limc
 NACL_INCLUDE = -I$(GOOGLE_CLIENT)/third_party/npapi/files/include
 
 else
@@ -79,4 +79,3 @@ download:
 	mkdir awk_src
 	cd awk_src ; tar xzf ../awk.tar.gz
 	rm -f awk.tar.gz
-

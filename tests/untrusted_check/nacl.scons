@@ -9,7 +9,7 @@ Import('env')
 
 env.ComponentProgram('untrusted_check_test.nexe',
                      ['untrusted_check_test.c'],
-                     EXTRA_LIBS=['google_nacl_platform',
+                     EXTRA_LIBS=['platform',
                                  'gio',
                                  'pthread'])
 

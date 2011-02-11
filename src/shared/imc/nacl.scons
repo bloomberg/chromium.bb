@@ -6,20 +6,9 @@
 
 Import('env')
 
-nacl_imc_inputs = [
-    'nacl_imc_common.cc',
-    'nacl/nacl_imc.cc',
-]
+env.ComponentLibrary('imc', ['nacl_imc_common.cc',
+                             'nacl_imc_c.cc',
+                             'nacl/nacl_imc.cc'])
 
-# TODO: investigate whether this is really necessary
-# Build inputs, so that c and c++ variants share the same environment.
-nacl_imc_inputs = env.ComponentObject(nacl_imc_inputs)
-
-nacl_imc_c_inputs = nacl_imc_inputs + ['nacl_imc_c.cc']
-
-env.ComponentLibrary('google_nacl_imc', nacl_imc_inputs)
-env.ComponentLibrary('google_nacl_imc_c', nacl_imc_c_inputs)
-
-
-env.AddLibraryToSdk(['google_nacl_imc', 'google_nacl_imc_c'])
+env.AddLibraryToSdk(['imc'])
 env.AddHeaderToSdk(['nacl_imc.h', 'nacl_imc_c.h'])

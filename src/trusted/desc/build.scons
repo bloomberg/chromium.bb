@@ -84,7 +84,7 @@ nacl_desc_quota_test_exe = env.ComponentProgram('nacl_desc_quota_test',
                                                 ['nacl_desc_quota_test.c'],
                                                 EXTRA_LIBS=['nrd_xfer',
                                                             'nacl_base',
-                                                            'google_nacl_imc_c',
+                                                            'imc',
                                                             'platform',
                                                             'gio',])
 

@@ -14,6 +14,7 @@ if env.Bit('linux'):
 
 nacl_imc_inputs = [
     'nacl_imc_common.cc',
+    'nacl_imc_c.cc',
 ]
 
 if env.Bit('windows'):
@@ -35,26 +36,21 @@ if env.Bit('mac'):
   ]
 
 
-common_objs = env.DualObject(nacl_imc_inputs)
-
-nacl_imc_c_inputs = ['nacl_imc_c.cc']
-
-env.DualLibrary('google_nacl_imc', common_objs)
-env.DualLibrary('google_nacl_imc_c', common_objs + nacl_imc_c_inputs)
+env.DualLibrary('imc', nacl_imc_inputs)
 
 env.ComponentProgram('client',
                      'nacl_imc_test_client.cc',
-                     EXTRA_LIBS=['google_nacl_imc', 'platform', 'gio'])
+                     EXTRA_LIBS=['imc', 'platform', 'gio'])
 
 env.ComponentProgram('server',
                      'nacl_imc_test_server.cc',
-                     EXTRA_LIBS=['google_nacl_imc', 'platform', 'gio'])
+                     EXTRA_LIBS=['imc', 'platform', 'gio'])
 
 
 sigpipe_test_exe = env.ComponentProgram(
     'sigpipe_test',
     'sigpipe_test.cc',
-    EXTRA_LIBS=['platform', 'gio', 'google_nacl_imc'])
+    EXTRA_LIBS=['platform', 'gio', 'imc'])
 node = env.CommandTest(
     'sigpipe_test.out',
     command=[sigpipe_test_exe])

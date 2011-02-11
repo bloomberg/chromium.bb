@@ -36,16 +36,16 @@ command_buffer_client_srcs = [
 
 command_buffer_srcs = command_buffer_common_srcs + command_buffer_client_srcs;
 
-env.ComponentLibrary('google_nacl_gpu', command_buffer_srcs)
-env.AddLibraryToSdk(['google_nacl_gpu'])
+env.ComponentLibrary('gpu', command_buffer_srcs)
+env.AddLibraryToSdk(['gpu'])
 
 pgl_srcs = [
     'pgl/command_buffer_pepper.cc',
     'pgl/pgl.cc',
     ]
 
-env.ComponentLibrary('google_nacl_pgl', pgl_srcs)
-env.AddLibraryToSdk(['google_nacl_pgl'])
+env.ComponentLibrary('pgl', pgl_srcs)
+env.AddLibraryToSdk(['pgl'])
 
 # GLES2 headers go into the GLES2 subdir, Khronos headers into the KHR subdir,
 # pgl header go int he pgl subdir.

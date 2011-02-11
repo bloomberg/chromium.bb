@@ -10,8 +10,8 @@ env.Prepend(CPPDEFINES=['XP_UNIX'])
 ppapi_bad_nexe = env.ComponentProgram('ppapi_bad.nexe',
                                       ['ppapi_bad.cc', ],
                                       EXTRA_LIBS=['ppruntime',
-                                                  'google_nacl_imc',
-                                                  'google_nacl_platform',
+                                                  'imc',
+                                                  'platform',
                                                   'gio',
                                                   'pthread',
                                                   'srpc'])

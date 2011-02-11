@@ -7,13 +7,13 @@ Import('env')
 
 
 env.ComponentProgram('mandel_tiled.nexe', 'mandel_tiled.c',
-                     EXTRA_LIBS=['srpc', 'google_nacl_imc_c', 'pthread'])
+                     EXTRA_LIBS=['srpc', 'imc', 'pthread'])
 
 env.Publish('mandel_tiled.nexe', 'run', 'mandel_tiled.html')
 
 
 env.ComponentProgram('mandel.nexe', 'mandel.c',
-                     EXTRA_LIBS=['srpc', 'google_nacl_imc_c', 'pthread'])
+                     EXTRA_LIBS=['srpc', 'imc', 'pthread'])
 
 env.Publish('mandel.nexe', 'run', [])
 

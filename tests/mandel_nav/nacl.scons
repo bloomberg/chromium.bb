@@ -24,7 +24,7 @@ mandel_nav_files = [
 # glibc.
 env.ComponentProgram('mandel_nav.nexe', 'mandel_nav.c',
                      CPPDEFINES=['_XOPEN_SOURCE'],
-                     EXTRA_LIBS=['av', 'srpc', 'google_nacl_imc_c', 'pthread'])
+                     EXTRA_LIBS=['av', 'srpc', 'imc', 'pthread'])
 
 env.Publish('mandel_nav.nexe', 'run', mandel_nav_files)
 

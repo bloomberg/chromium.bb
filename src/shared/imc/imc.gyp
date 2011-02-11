@@ -32,13 +32,10 @@
   'variables': {
     'COMMAND_TESTER': '<(DEPTH)/native_client/tools/command_tester.py',
     'common_sources': [
+      'nacl_imc_c.cc',
       'nacl_imc_common.cc',
       'nacl_imc.h',
-    ],
-    'c_sources': [
-        '<@(common_sources)',
-        'nacl_imc_c.cc',
-        'nacl_imc_c.h',
+      'nacl_imc_c.h',
     ],
     'conditions': [
       ['OS=="linux"', {
@@ -76,18 +73,10 @@
   'targets': [
     # ----------------------------------------------------------------------
     {
-      'target_name': 'google_nacl_imc',
+      'target_name': 'imc',
       'type': 'static_library',
       'sources': [
         '<@(common_sources)',
-      ],
-    },
-    # ----------------------------------------------------------------------
-    {
-      'target_name': 'google_nacl_imc_c',
-      'type': 'static_library',
-      'sources': [
-        '<@(c_sources)',
       ],
     },
     # ----------------------------------------------------------------------
@@ -98,7 +87,7 @@
         'sigpipe_test.cc',
       ],
       'dependencies': [
-        '<(DEPTH)/native_client/src/shared/imc/imc.gyp:google_nacl_imc',
+        '<(DEPTH)/native_client/src/shared/imc/imc.gyp:imc',
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
         '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio',
       ],
@@ -142,23 +131,10 @@
       'targets': [
         # ---------------------------------------------------------------------
         {
-          'target_name': 'google_nacl_imc64',
+          'target_name': 'imc64',
           'type': 'static_library',
           'sources': [
             '<@(common_sources)',
-          ],
-          'configurations': {
-            'Common_Base': {
-              'msvs_target_platform': 'x64',
-            },
-          },
-        },
-        # ---------------------------------------------------------------------
-        {
-          'target_name': 'google_nacl_imc_c64',
-          'type': 'static_library',
-          'sources': [
-            '<@(c_sources)',
           ],
           'configurations': {
             'Common_Base': {
@@ -179,7 +155,7 @@
             },
           },
           'dependencies': [
-            '<(DEPTH)/native_client/src/shared/imc/imc.gyp:google_nacl_imc64',
+            '<(DEPTH)/native_client/src/shared/imc/imc.gyp:imc64',
             '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',
             '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio64',
           ],

@@ -46,7 +46,7 @@
       'type': 'executable',
       'sources': ['<@(src_files)'],
       'dependencies': [
-        '<(DEPTH)/native_client/src/shared/imc/imc.gyp:google_nacl_imc_c',
+        '<(DEPTH)/native_client/src/shared/imc/imc.gyp:imc',
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
         '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc',
         '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
@@ -76,7 +76,7 @@
           },
           'sources': ['<@(src_files)'],
           'dependencies': [
-            '<(DEPTH)/native_client/src/shared/imc/imc.gyp:google_nacl_imc_c64',
+            '<(DEPTH)/native_client/src/shared/imc/imc.gyp:imc64',
             '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',
             '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc64',
             '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer64',

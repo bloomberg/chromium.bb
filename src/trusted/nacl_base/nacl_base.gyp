@@ -61,7 +61,7 @@
             },
           },
           'dependencies': [
-            '<(DEPTH)/native_client/src/shared/imc/imc.gyp:google_nacl_imc_c64',
+            '<(DEPTH)/native_client/src/shared/imc/imc.gyp:imc64',
             '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',
           ],
         },

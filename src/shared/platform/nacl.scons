@@ -18,7 +18,7 @@ platform_inputs = [
     'time.cc',
     ]
 
-env.ComponentLibrary('google_nacl_platform', platform_inputs)
+env.ComponentLibrary('platform', platform_inputs)
 
 headers = [
     'nacl_check.h',
@@ -27,6 +27,6 @@ headers = [
     ]
 
 header_install = env.AddHeaderToSdk(headers)
-env.AddLibraryToSdk(['google_nacl_platform'])
+env.AddLibraryToSdk(['platform'])
 
-env.Requires('google_nacl_platform', header_install)
+env.Requires('platform', header_install)

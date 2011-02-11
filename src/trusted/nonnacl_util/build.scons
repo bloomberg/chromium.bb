@@ -78,7 +78,7 @@ test_deps = [ 'gtest',
               'nrd_xfer',
               'nacl_base',
               'platform',
-              'google_nacl_imc_c',
+              'imc',
               'gio',
               'nonnacl_srpc',
               'env_cleanser' ]

@@ -66,7 +66,7 @@ static void TestLibsPresent() {
   if (run_tests)
     nacl_multimedia_init(NACL_SUBSYSTEM_VIDEO);
 
-  // Test that libgoogle_nacl_imc is present.
+  // Test that libimc is present.
   if (run_tests)
     nacl::Close(nacl::kInvalidHandle);
 

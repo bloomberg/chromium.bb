@@ -90,7 +90,7 @@ def MakePythonExtension(env, module_name, sources):
 libraries = [
     'nrd_xfer',
     'nacl_base',
-    'google_nacl_imc_c',
+    'imc',
     'platform',
     'gio',
     ]

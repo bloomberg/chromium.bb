@@ -106,7 +106,7 @@ common_libs = [
     'gio_wrapped_desc',
     'nrd_xfer',
     'nacl_base',
-    'google_nacl_imc_c',
+    'imc',
     'platform',
     'platform_qual_lib',
     'gio',

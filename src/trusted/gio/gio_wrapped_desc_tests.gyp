@@ -33,7 +33,7 @@
       'type': 'executable',
       'dependencies': [
         '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio',
-        '<(DEPTH)/native_client/src/shared/imc/imc.gyp:google_nacl_imc_c',
+        '<(DEPTH)/native_client/src/shared/imc/imc.gyp:imc_c',
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
         '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc',
         '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
@@ -49,7 +49,7 @@
       'type': 'executable',
       'dependencies': [
         '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio',
-        '<(DEPTH)/native_client/src/shared/imc/imc.gyp:google_nacl_imc_c',
+        '<(DEPTH)/native_client/src/shared/imc/imc.gyp:imc_c',
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
         '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc',
         '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
@@ -65,7 +65,7 @@
       'type': 'executable',
       'dependencies': [
         '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio',
-        '<(DEPTH)/native_client/src/shared/imc/imc.gyp:google_nacl_imc_c',
+        '<(DEPTH)/native_client/src/shared/imc/imc.gyp:imc_c',
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
         '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc',
         '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',

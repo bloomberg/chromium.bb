@@ -9,10 +9,9 @@ Import('env')
 nacl_thread_create_joinable_test_exe = env.ComponentProgram(
     'nacl_thread_create_joinable_test',
     'nacl_thread_create_joinable_test.c',
-    # TODO(krasin): remove google_nacl_imc and google_nacl_imc_c deps
+    # TODO(krasin): remove imc dep
     # after moving NaClGetLastErrorString to shared/platform.
-    EXTRA_LIBS=['google_nacl_imc',
-                'google_nacl_imc_c',
+    EXTRA_LIBS=['imc',
                 'platform',
                 'gio'])
 node = env.CommandTest(

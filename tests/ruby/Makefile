@@ -18,8 +18,7 @@ RUBY_URL := ftp://ftp.ruby-lang.org/pub/ruby/1.8/ruby-1.8.6-p368.tar.gz
 CCFLAGS=-Wall
 NAME:=ruby
 
-LIBS = -lgoogle_nacl_npruntime
-LIBS+= -lgoogle_nacl_imc
+LIBS = -limc
 LIBS+= -lnosys
 NACL_INCLUDE = -I$(GOOGLE_CLIENT)/third_party/npapi/files/include \
                -I$(GOOGLE_CLIENT)/native_client/tests/ruby/$(RUBY_DIR)/
