@@ -24,29 +24,9 @@ function onGetRootNodeFinished(rootNodeInfo) {
   onGetNodeByIdFinished(rootNodeInfo);
 }
 
-// TODO(akalin): Use an existing JSON-to-string library.
-function jsonToString(json) {
-  var str = '{ ';
-  for (var i in json) {
-    str += i + ': ';
-    var v = json[i];
-    var t = typeof v;
-    if (t === 'object') {
-      str += jsonToString(v);
-    } else if (t === 'string') {
-      str += '"' + v + '"';
-    } else {
-      str += json[i];
-    }
-    str += ', ';
-  }
-  str += ' }';
-  return str;
-}
-
 function onGetNodeByIdFinished(nodeInfo) {
   var nodeBrowser = document.getElementById('nodeBrowser');
-  nodeInfo.specifics = jsonToString(nodeInfo.specifics);
+  nodeInfo.specifics = JSON.stringify(nodeInfo.specifics);
   jstProcess(new JsEvalContext(nodeInfo), nodeBrowser);
 }
 
@@ -91,7 +71,7 @@ function onSyncIncomingNotification(changedTypes) {
 // TODO(akalin): Do something with these notifications.
 
 function onChangesApplied(modelType, changes) {
-  console.log('onChangesApplied: ' + modelType + ': ' + jsonToString(changes));
+  console.log('onChangesApplied: ' + modelType + ': ' + JSON.stringify(changes));
 }
 
 function onChangesComplete(modelType) {
@@ -99,11 +79,11 @@ function onChangesComplete(modelType) {
 }
 
 function onSyncCycleCompleted(snapshot) {
-  console.log('onSyncCycleCompleted: ' + jsonToString(snapshot));
+  console.log('onSyncCycleCompleted: ' + JSON.stringify(snapshot));
 }
 
 function onAuthError(authError) {
-  console.log('onAuthError: ' + jsonToString(authError));
+  console.log('onAuthError: ' + JSON.stringify(authError));
 }
 
 function onUpdatedToken(token) {
