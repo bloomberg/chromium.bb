@@ -53,21 +53,31 @@ TEST_F(DeleteRegValueWorkItemTest, DeleteExistingValue) {
   DWORD data_dword = 100;
   ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(name_dword.c_str(), data_dword));
 
+  std::wstring name_empty(L"name_empty");
+  ASSERT_EQ(ERROR_SUCCESS, RegSetValueEx(key.Handle(), name_empty.c_str(), NULL,
+                                         REG_SZ, NULL, 0));
+
   scoped_ptr<DeleteRegValueWorkItem> work_item1(
       WorkItem::CreateDeleteRegValueWorkItem(HKEY_CURRENT_USER, parent_key,
                                              name_str));
   scoped_ptr<DeleteRegValueWorkItem> work_item2(
       WorkItem::CreateDeleteRegValueWorkItem(HKEY_CURRENT_USER, parent_key,
                                              name_dword));
+  scoped_ptr<DeleteRegValueWorkItem> work_item3(
+      WorkItem::CreateDeleteRegValueWorkItem(HKEY_CURRENT_USER, parent_key,
+                                             name_empty));
 
   EXPECT_TRUE(work_item1->Do());
   EXPECT_TRUE(work_item2->Do());
+  EXPECT_TRUE(work_item3->Do());
 
   EXPECT_FALSE(key.ValueExists(name_str.c_str()));
   EXPECT_FALSE(key.ValueExists(name_dword.c_str()));
+  EXPECT_FALSE(key.ValueExists(name_empty.c_str()));
 
   work_item1->Rollback();
   work_item2->Rollback();
+  work_item3->Rollback();
 
   std::wstring read_str;
   DWORD read_dword;
@@ -75,6 +85,14 @@ TEST_F(DeleteRegValueWorkItemTest, DeleteExistingValue) {
   EXPECT_EQ(ERROR_SUCCESS, key.ReadValueDW(name_dword.c_str(), &read_dword));
   EXPECT_EQ(read_str, data_str);
   EXPECT_EQ(read_dword, data_dword);
+
+  // Verify empty value.
+  DWORD type = 0;
+  DWORD size = 0;
+  EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(name_empty.c_str(), NULL, &size,
+                                         &type));
+  EXPECT_EQ(REG_SZ, type);
+  EXPECT_EQ(0, size);
 }
 
 // Try deleting a value that doesn't exist.

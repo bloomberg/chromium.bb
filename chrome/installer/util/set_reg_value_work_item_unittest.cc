@@ -182,34 +182,56 @@ TEST_F(SetRegValueWorkItemTest, WriteExistingOverwrite) {
   std::wstring name(L"name_str");
   ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(name.c_str(), data_str_1));
 
+  std::wstring name_empty(L"name_empty");
+  ASSERT_EQ(ERROR_SUCCESS, RegSetValueEx(key.Handle(), name_empty.c_str(), NULL,
+                                         REG_SZ, NULL, 0));
+
   std::wstring data(data_str_2);
-  scoped_ptr<SetRegValueWorkItem> work_item(
+  scoped_ptr<SetRegValueWorkItem> work_item1(
       WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER, parent_key,
                                           name, data, true));
-  EXPECT_TRUE(work_item->Do());
+  scoped_ptr<SetRegValueWorkItem> work_item2(
+      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER, parent_key,
+                                          name_empty, data, true));
+
+  EXPECT_TRUE(work_item1->Do());
+  EXPECT_TRUE(work_item2->Do());
 
   std::wstring read_out;
   EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(name.c_str(), &read_out));
   EXPECT_EQ(0, read_out.compare(data_str_2));
 
-  work_item->Rollback();
+  EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(name_empty.c_str(), &read_out));
+  EXPECT_EQ(0, read_out.compare(data_str_2));
+
+  work_item1->Rollback();
+  work_item2->Rollback();
+
   EXPECT_TRUE(key.ValueExists(name.c_str()));
   EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(name.c_str(), &read_out));
   EXPECT_EQ(read_out, data_str_1);
+
+  DWORD type = 0;
+  DWORD size = 0;
+  EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(name_empty.c_str(), NULL, &size,
+                                         &type));
+  EXPECT_EQ(REG_SZ, type);
+  EXPECT_EQ(0, size);
 
   // Now test REG_DWORD value.
   // Write data to the value we are going to set.
   name.assign(L"name_dword");
   ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(name.c_str(), dword1));
-  work_item.reset(WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER,
-      parent_key, name, dword2, true));
-  EXPECT_TRUE(work_item->Do());
+  scoped_ptr<SetRegValueWorkItem> work_item3(
+      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER, parent_key, name,
+                                          dword2, true));
+  EXPECT_TRUE(work_item3->Do());
 
   DWORD read_dword;
   EXPECT_EQ(ERROR_SUCCESS, key.ReadValueDW(name.c_str(), &read_dword));
   EXPECT_EQ(read_dword, dword2);
 
-  work_item->Rollback();
+  work_item3->Rollback();
   EXPECT_TRUE(key.ValueExists(name.c_str()));
   EXPECT_EQ(ERROR_SUCCESS, key.ReadValueDW(name.c_str(), &read_dword));
   EXPECT_EQ(read_dword, dword1);

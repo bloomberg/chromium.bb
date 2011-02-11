@@ -89,12 +89,16 @@ bool SetRegValueWorkItem::Do() {
 
   // If there's something to be saved, save it.
   if (result == ERROR_SUCCESS) {
-    previous_value_.resize(size);
-    result = key.ReadValue(value_name_.c_str(), &previous_value_[0], &size,
-                           &previous_type_);
-    if (result != ERROR_SUCCESS) {
-      previous_value_.clear();
-      VLOG(1) << "Failed to save original value. Error: " << result;
+    if (!size) {
+      previous_type_ = type;
+    } else {
+      previous_value_.resize(size);
+      result = key.ReadValue(value_name_.c_str(), &previous_value_[0], &size,
+                             &previous_type_);
+      if (result != ERROR_SUCCESS) {
+        previous_value_.clear();
+        VLOG(1) << "Failed to save original value. Error: " << result;
+      }
     }
   }
 
@@ -133,7 +137,9 @@ void SetRegValueWorkItem::Rollback() {
     result = key.DeleteValue(value_name_.c_str());
     VLOG(1) << "rollback: deleting " << value_name_ << " error: " << result;
   } else if (status_ == VALUE_OVERWRITTEN) {
-    result = key.WriteValue(value_name_.c_str(), &previous_value_[0],
+    const unsigned char* previous_value =
+        previous_value_.empty() ? NULL : &previous_value_[0];
+    result = key.WriteValue(value_name_.c_str(), previous_value,
                             static_cast<DWORD>(previous_value_.size()),
                             previous_type_);
     VLOG(1) << "rollback: restoring " << value_name_ << " error: " << result;

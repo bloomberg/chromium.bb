@@ -49,12 +49,16 @@ bool DeleteRegValueWorkItem::Do() {
   }
 
   if (result == ERROR_SUCCESS) {
-    previous_value_.resize(size);
-    result = key.ReadValue(value_name_.c_str(), &previous_value_[0], &size,
-                           &previous_type_);
-    if (result != ERROR_SUCCESS) {
-      previous_value_.erase();
-      VLOG(1) << "Failed to save original value. Error: " << result;
+    if (!size) {
+      previous_type_ = type;
+    } else {
+      previous_value_.resize(size);
+      result = key.ReadValue(value_name_.c_str(), &previous_value_[0], &size,
+                             &previous_type_);
+      if (result != ERROR_SUCCESS) {
+        previous_value_.erase();
+        VLOG(1) << "Failed to save original value. Error: " << result;
+      }
     }
   }
 
