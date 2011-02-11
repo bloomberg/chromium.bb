@@ -106,8 +106,8 @@ html[dir=rtl] list > * > button {
 /* Edit mode
 */
 
-list .label input,
-list .url input {
+list [editing] .label input,
+list [editing] .url input {
   /* Do not inherit the line-height */
   font-family: inherit;
   font-size: inherit;
@@ -120,6 +120,17 @@ list .url input {
   -webkit-padding-start: 1px;
   -webkit-padding-end: 3px;
   text-decoration: none;
+}
+
+.tree-item [editing] input {
+  margin: 0;
+  padding: 0;
+  -webkit-margin-start: -3px;
+  -webkit-padding-end: 7px;
+}
+
+html[os=mac] .tree-label [editing] input {
+  padding-top: 1px;
 }
 
 html:not([os=mac]) list .label input,
