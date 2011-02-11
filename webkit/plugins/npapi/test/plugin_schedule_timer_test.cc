@@ -48,7 +48,7 @@ NPError ScheduleTimerTest::New(
     return error;
 
   start_time_ = Time::Now();
-  HandleEvent(0);
+  HandleEventIndex(0);
 
   return NPERR_NO_ERROR;
 }
@@ -66,7 +66,7 @@ void ScheduleTimerTest::OnTimer(uint32 timer_id) {
     return;
   }
 
-  HandleEvent(event_index);
+  HandleEventIndex(event_index);
 
   // Finish test if all events have happened.
   if (num_received_events_ == kNumEvents)
@@ -94,7 +94,7 @@ void OnTimerHelper(NPP id, uint32 timer_id) {
 }
 }
 
-void ScheduleTimerTest::HandleEvent(int event_index) {
+void ScheduleTimerTest::HandleEventIndex(int event_index) {
   const Event& event = schedule_[event_index];
 
   // Mark event as received.

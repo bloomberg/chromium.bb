@@ -56,7 +56,7 @@ class ScheduleTimerTest : public PluginTest {
 
   // Returns index of matching unreceived event or -1 if not found.
   int FindUnreceivedEvent(int time, uint32 timer_id);
-  void HandleEvent(int event_index);
+  void HandleEventIndex(int event_index);
 };
 
 }  // namespace NPAPIClient
