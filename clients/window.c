@@ -1614,7 +1614,7 @@ init_egl(struct display *d)
 	}
 
 	if (!eglMakeCurrent(d->dpy, NULL, NULL, d->ctx)) {
-		fprintf(stderr, "faile to make context current\n");
+		fprintf(stderr, "failed to make context current\n");
 		return -1;
 	}
 
