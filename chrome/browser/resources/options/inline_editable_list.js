@@ -96,14 +96,18 @@ cr.define('options', function() {
 
         cr.dispatchSimpleEvent(this, 'edit', true);
 
+        var self = this;
         var focusElement = this.initialFocusElement;
         // When this is called in response to the selectedChange event,
         // the list grabs focus immediately afterwards. Thus we must delay
         // our focus grab.
         if (focusElement) {
           window.setTimeout(function() {
-            focusElement.focus();
-            focusElement.select();
+            // Make sure we are still in edit mode by the time we execute.
+            if (self.editing) {
+              focusElement.focus();
+              focusElement.select();
+            }
           }, 50);
         }
       } else {

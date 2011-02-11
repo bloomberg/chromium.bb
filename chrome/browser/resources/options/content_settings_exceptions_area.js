@@ -108,17 +108,13 @@ cr.define('options.contentSettings', function() {
 
       this.updateEditables();
 
+      // Editing notifications and geolocation is disabled for now.
+      if (this.contentType == 'notifications' ||
+          this.contentType == 'location') {
+        this.editable = false;
+      }
+
       var listItem = this;
-
-      this.addEventListener('selectedChange', function(event) {
-        // Editing notifications and geolocation is disabled for now.
-        if (listItem.contentType == 'notifications' ||
-            listItem.contentType == 'location')
-          return;
-
-        listItem.editing = listItem.selected;
-      });
-
       // Handle events on the editable nodes.
       input.oninput = function(event) {
         listItem.inputValidityKnown = false;
@@ -465,15 +461,6 @@ cr.define('options.contentSettings', function() {
 
       chrome.send('removeException', args);
     },
-
-    /**
-     * Puts the selected row in editing mode.
-     */
-    editSelectedRow: function() {
-      var li = this.getListItem(this.selectedItem);
-      if (li)
-        li.editing = true;
-    }
   };
 
   var OptionsPage = options.OptionsPage;
