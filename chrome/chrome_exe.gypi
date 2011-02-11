@@ -443,7 +443,7 @@
           'dependencies': [
             'installer_util',
             'installer_util_strings',
-	    'policy',
+            'policy',
             '../breakpad/breakpad.gyp:breakpad_handler',
             '../breakpad/breakpad.gyp:breakpad_sender',
             '../sandbox/sandbox.gyp:sandbox',
@@ -493,7 +493,7 @@
             'installer_util_nacl_win64',
             'common_constants_win64',
             'chrome_dll_nacl_win64',
-	    'policy_win64',
+            'policy_win64',
             '../breakpad/breakpad.gyp:breakpad_handler_win64',
             '../breakpad/breakpad.gyp:breakpad_sender_win64',
             '../base/base.gyp:base_nacl_win64',
