@@ -95,8 +95,7 @@ std::string FormStructureBrowserTest::FormStructuresToString(
   return forms_string;
 }
 
-IN_PROC_BROWSER_TEST_F(FormStructureBrowserTest,
-                       DISABLED_DataDrivenHeuristics) {
+IN_PROC_BROWSER_TEST_F(FormStructureBrowserTest, DataDrivenHeuristics) {
   LOG(WARNING) << "Before BringBrowserWindowToFront";
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   LOG(WARNING) << "After BringBrowserWindowToFront";
