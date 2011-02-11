@@ -164,7 +164,8 @@ bool DispatchXEvent(XEvent* xev) {
     switch (xev->type) {
       case KeyPress:
       case KeyRelease: {
-        KeyEvent keyev(xev, FromNativeEvent2);
+        Event::FromNativeEvent2 from_native_2;
+        KeyEvent keyev(xev, from_native_2);
         return root->ProcessKeyEvent(keyev);
       }
 

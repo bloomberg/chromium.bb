@@ -228,7 +228,8 @@ int GetMouseEventFlags(XEvent* xev) {
 ////////////////////////////////////////////////////////////////////////////////
 // Event, private:
 
-void Event::InitWithNativeEvent2(NativeEvent2 native_event_2) {
+void Event::InitWithNativeEvent2(NativeEvent2 native_event_2,
+                                 FromNativeEvent2) {
   native_event_ = NULL;
   // TODO(beng): remove once we rid views of Gtk/Gdk.
   native_event_2_ = native_event_2;
@@ -237,11 +238,11 @@ void Event::InitWithNativeEvent2(NativeEvent2 native_event_2) {
 ////////////////////////////////////////////////////////////////////////////////
 // KeyEvent, public:
 
-KeyEvent::KeyEvent(NativeEvent2 native_event_2, FromNativeEvent2)
+KeyEvent::KeyEvent(NativeEvent2 native_event_2, FromNativeEvent2 from_native_2)
     : Event(native_event_2,
             EventTypeFromNative(native_event_2),
             GetEventFlagsFromXState(native_event_2->xkey.state),
-            FromNativeEvent2),
+            from_native_2),
       key_code_(ui::KeyboardCodeFromXKeyEvent(native_event_2)) {
 }
 
