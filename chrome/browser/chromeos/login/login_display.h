@@ -24,6 +24,9 @@ class LoginDisplay {
     // Create new Google account.
     virtual void CreateAccount() = 0;
 
+    // Users decides to sign in into captive portal.
+    virtual void FixCaptivePortal() = 0;
+
     // Sign in using |username| and |password| specified.
     // Used for both known and new users.
     virtual void Login(const std::string& username,

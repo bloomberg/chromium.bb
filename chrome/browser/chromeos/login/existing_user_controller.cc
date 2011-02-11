@@ -50,6 +50,9 @@ const char kGetStartedURL[] =
 const char kCreateAccountURL[] =
     "https://www.google.com/accounts/NewAccount?service=mail";
 
+// Landing URL when launching Guest mode to fix captive portal.
+const char kCaptivePortalLaunchURL[] = "http://www.google.com/";
+
 // Used to handle the asynchronous response of deleting a cryptohome directory.
 class RemoveAttempt : public CryptohomeLibrary::Delegate {
  public:
@@ -199,6 +202,11 @@ void ExistingUserController::CreateAccount() {
   LoginAsGuest();
 }
 
+void ExistingUserController::FixCaptivePortal() {
+  guest_mode_url_ = GURL(kCaptivePortalLaunchURL);
+  LoginAsGuest();
+}
+
 void ExistingUserController::Login(const std::string& username,
                                    const std::string& password) {
   if (username.empty() || password.empty())
@@ -328,6 +336,14 @@ void ExistingUserController::OnLoginFailure(const LoginFailure& failure) {
                failure.error().state() ==
                    GoogleServiceAuthError::HOSTED_NOT_ALLOWED) {
       ShowError(IDS_LOGIN_ERROR_AUTHENTICATING_HOSTED, error);
+    } else if (failure.reason() == LoginFailure::NETWORK_AUTH_FAILED &&
+               failure.error().state() ==
+                   GoogleServiceAuthError::SERVICE_UNAVAILABLE) {
+      // SERVICE_UNAVAILABLE is generated in 2 cases:
+      // 1. ClientLogin returns ServiceUnavailable code.
+      // 2. Internet connectivity may be behind the captive portal.
+      // Suggesting user to try sign in to a portal in Guest mode.
+      ShowError(IDS_LOGIN_ERROR_CAPTIVE_PORTAL, error);
     } else {
       if (!UserManager::Get()->IsKnownUser(last_login_attempt_username_))
         ShowError(IDS_LOGIN_ERROR_AUTHENTICATING_NEW, error);

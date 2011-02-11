@@ -80,6 +80,9 @@ class ViewsLoginDisplay : public LoginDisplay,
   // The set of visible UserControllers.
   std::vector<UserController*> controllers_;
 
+  // Last error message ID.
+  int error_msg_id_;
+
   // Help application used for help dialogs.
   scoped_refptr<HelpAppLauncher> help_app_;
 

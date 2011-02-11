@@ -59,6 +59,7 @@ class ExistingUserController : public LoginDisplay::Delegate,
 
   // LoginDisplay::Delegate: implementation
   virtual void CreateAccount();
+  virtual void FixCaptivePortal();
   virtual void Login(const std::string& username,
                      const std::string& password);
   virtual void LoginAsGuest();

@@ -25,7 +25,7 @@ const int kBottomPadding = 12;
 const int kRightPadding = 12;
 
 // Normal/Hover colors.
-const SkColor kShutdownButtonColor = 0xFF242A35;
+const SkColor kShutdownButtonColor = 0xFF303845;
 const SkColor kShutdownHoverColor = 0xFF353E4E;
 
 // Padding inside button.

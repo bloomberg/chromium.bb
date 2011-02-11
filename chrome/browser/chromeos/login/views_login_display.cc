@@ -192,6 +192,7 @@ void ViewsLoginDisplay::ShowError(int error_msg_id,
                                   HelpAppLauncher::HelpTopic help_topic_id) {
   ClearErrors();
   string16 error_text;
+  error_msg_id_ = error_msg_id;
   help_topic_id_ = help_topic_id;
 
   // GetStringF fails on debug build if there's no replacement in the string.
@@ -214,8 +215,10 @@ void ViewsLoginDisplay::ShowError(int error_msg_id,
   }
 
   string16 help_link;
-  if (error_msg_id == IDS_LOGIN_ERROR_AUTHENTICATING_HOSTED ||
-      login_attempts > 1) {
+  if (error_msg_id == IDS_LOGIN_ERROR_CAPTIVE_PORTAL) {
+    help_link = l10n_util::GetStringUTF16(IDS_LOGIN_FIX_CAPTIVE_PORTAL);
+  } else if (error_msg_id == IDS_LOGIN_ERROR_AUTHENTICATING_HOSTED ||
+             login_attempts > 1) {
     help_link = l10n_util::GetStringUTF16(IDS_LEARN_MORE);
   }
 
@@ -288,6 +291,10 @@ void ViewsLoginDisplay::SelectUser(int index) {
 
 void ViewsLoginDisplay::OnHelpLinkActivated() {
   ClearErrors();
+  if (error_msg_id_ == IDS_LOGIN_ERROR_CAPTIVE_PORTAL) {
+    delegate()->FixCaptivePortal();
+    return;
+  }
   if (!parent_window())
     return;
   if (!help_app_.get())

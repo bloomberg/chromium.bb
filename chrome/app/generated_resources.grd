@@ -11218,6 +11218,12 @@ This web page was killed, either because Chrome ran out of memory, or you chose 
       <message name="IDS_LOGIN_ERROR_KEYBOARD_SWITCH_HINT" desc="A hint text for the login and lock screens">
         Hit Shift-Alt to switch keyboard layout
       </message>
+      <message name="IDS_LOGIN_ERROR_CAPTIVE_PORTAL" desc="An error message shown when we suggest that user may be behind the captive portal.">
+        There is a problem with your Internet connectivity. Please launch a guest session to fix this.
+      </message>
+      <message name="IDS_LOGIN_FIX_CAPTIVE_PORTAL" desc="An link text to fix Internet connection (captive portal) in guest mode.">
+        Launch guest session
+      </message>
       <message name="IDS_NOTIFICATION_PANEL_TITLE" desc="Text for the title of the notification panel.">
         Notifications
       </message>
