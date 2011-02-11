@@ -140,6 +140,14 @@ void InfoBarView::PaintArrow(gfx::Canvas* canvas,
   gfx::CanvasSkia* canvas_skia = canvas->AsCanvasSkia();
   canvas_skia->drawPath(fill_path, paint);
 
+  // Fill and stroke have different opinions about how to treat paths.  Because
+  // in Skia integral coordinates represent pixel boundaries, offsetting the
+  // path makes it go exactly through pixel centers; this results in lines that
+  // are exactly where we expect, instead of having odd "off by one" issues.
+  // Were we to do this for |fill_path|, however, which tries to fill "inside"
+  // the path (using some questionable math), we'd get a fill at a very
+  // different place than we'd want.
+  border_path.offset(SK_ScalarHalf, SK_ScalarHalf);
   paint.setShader(NULL);
   paint.setColor(SkColorSetA(ResourceBundle::toolbar_separator_color,
                              SkColorGetA(gradient_colors[0])));
