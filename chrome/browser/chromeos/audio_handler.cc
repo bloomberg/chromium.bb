@@ -28,8 +28,9 @@ const int kMaxReconnectTries = 4;
 
 }  // namespace
 
-// This class will set volume using PulseAudio or ALSA to adjust volume and
-// mute, and handles the volume level logic.
+// chromeos:  This class will set the volume using ALSA to adjust volume and
+// mute, and handle the volume level logic.  PulseAudio is no longer called
+// and support can be removed once there is no need to go back to using PA.
 
 double AudioHandler::GetVolumePercent() {
   if (!VerifyMixerConnection())
@@ -159,8 +160,12 @@ AudioHandler::AudioHandler()
       reconnect_tries_(0),
       max_volume_db_(kMaxVolumeDb),
       min_volume_db_(kMinVolumeDb),
-      mixer_type_(MIXER_TYPE_PULSEAUDIO) {
-  // Start trying to connect to mixers asychronously, starting with the current
+      mixer_type_(MIXER_TYPE_ALSA) {
+  // TODO(davej): Only attempting a connection to the ALSA mixer now as a first
+  // step in removing pulseaudio.  If all goes well, the other references to
+  // the pulseaudio mixer can be removed.
+
+  // Start trying to connect to mixers asynchronously, starting with the current
   // mixer_type_.  If the connection fails, another TryToConnect() for the next
   // mixer will be posted at that time.
   TryToConnect(true);

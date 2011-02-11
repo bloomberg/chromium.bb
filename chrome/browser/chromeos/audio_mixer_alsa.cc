@@ -48,12 +48,20 @@ AudioMixerAlsa::AudioMixerAlsa()
       alsa_mixer_(NULL),
       elem_master_(NULL),
       elem_pcm_(NULL),
-      prefs_(NULL) {
+      prefs_(NULL),
+      done_event_(true, false) {
 }
 
 AudioMixerAlsa::~AudioMixerAlsa() {
-  FreeAlsaMixer();
   if (thread_ != NULL) {
+    {
+      base::AutoLock lock(mixer_state_lock_);
+      mixer_state_ = SHUTTING_DOWN;
+      thread_->message_loop()->PostTask(FROM_HERE,
+          NewRunnableMethod(this, &AudioMixerAlsa::FreeAlsaMixer));
+    }
+    done_event_.Wait();
+
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     // A ScopedAllowIO object is required to join the thread when calling Stop.
     // The worker thread should be idle at this time.
@@ -75,10 +83,16 @@ void AudioMixerAlsa::Init(InitDoneCallback* callback) {
   }
   InitPrefs();
 
-  // Post the task of starting up, which may block on the order of ms,
-  // so best not to do it on the caller's thread.
-  thread_->message_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &AudioMixerAlsa::DoInit, callback));
+  {
+    base::AutoLock lock(mixer_state_lock_);
+    if (mixer_state_ == SHUTTING_DOWN)
+      return;
+
+    // Post the task of starting up, which may block on the order of ms,
+    // so best not to do it on the caller's thread.
+    thread_->message_loop()->PostTask(FROM_HERE,
+        NewRunnableMethod(this, &AudioMixerAlsa::DoInit, callback));
+  }
 }
 
 bool AudioMixerAlsa::InitSync() {
@@ -283,12 +297,11 @@ bool AudioMixerAlsa::InitializeAlsaMixer() {
 }
 
 void AudioMixerAlsa::FreeAlsaMixer() {
-  base::AutoLock lock(mixer_state_lock_);
-  mixer_state_ = SHUTTING_DOWN;
   if (alsa_mixer_) {
     snd_mixer_close(alsa_mixer_);
     alsa_mixer_ = NULL;
   }
+  done_event_.Signal();
 }
 
 void AudioMixerAlsa::DoSetVolumeMute(double pref_volume, int pref_mute) {
@@ -323,9 +336,14 @@ void AudioMixerAlsa::RestoreVolumeMuteOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // This happens during init, so set the volume off the UI thread.
   int mute = prefs_->GetInteger(prefs::kAudioMute);
-  double volume = prefs_->GetDouble(prefs::kAudioVolume);
-  thread_->message_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &AudioMixerAlsa::DoSetVolumeMute, volume, mute));
+  double vol = prefs_->GetDouble(prefs::kAudioVolume);
+  {
+    base::AutoLock lock(mixer_state_lock_);
+    if (mixer_state_ == SHUTTING_DOWN)
+      return;
+    thread_->message_loop()->PostTask(FROM_HERE,
+        NewRunnableMethod(this, &AudioMixerAlsa::DoSetVolumeMute, vol, mute));
+  }
 }
 
 double AudioMixerAlsa::DoGetVolumeDb_Locked() const {

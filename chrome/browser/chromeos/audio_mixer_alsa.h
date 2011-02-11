@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/scoped_ptr.h"
 #include "base/synchronization/lock.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/chromeos/audio_mixer.h"
 
@@ -98,6 +99,7 @@ class AudioMixerAlsa : public AudioMixer {
   _snd_mixer_elem* elem_pcm_;
 
   PrefService* prefs_;
+  base::WaitableEvent done_event_;
 
   scoped_ptr<base::Thread> thread_;
 
