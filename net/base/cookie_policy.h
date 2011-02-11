@@ -21,8 +21,6 @@ enum {
 
 class CookiePolicy {
  public:
-  virtual ~CookiePolicy() {}
-
   // Determines if the URL's cookies may be read.
   //
   // Returns:
@@ -59,6 +57,9 @@ class CookiePolicy {
                            const GURL& first_party_for_cookies,
                            const std::string& cookie_line,
                            CompletionCallback* callback) = 0;
+
+ protected:
+  virtual ~CookiePolicy() {}
 };
 
 }  // namespace net
