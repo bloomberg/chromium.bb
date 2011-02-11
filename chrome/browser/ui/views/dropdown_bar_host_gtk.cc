@@ -46,6 +46,6 @@ NativeWebKeyboardEvent DropdownBarHost::GetKeyboardEvent(
               key_event.IsShiftDown() ^ key_event.IsCapsLockDown())));
   return wke;
 #else
-  return NativeWebKeyboardEvent(key_event.native_event());
+  return NativeWebKeyboardEvent(&key_event.native_event()->key);
 #endif
 }

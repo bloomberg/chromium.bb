@@ -1,9 +1,9 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_EVENT_H_
-#define VIEWS_EVENT_H_
+#ifndef VIEWS_EVENTS_EVENT_H_
+#define VIEWS_EVENTS_EVENT_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -12,10 +12,6 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/point.h"
 #include "views/native_types.h"
-
-#if defined(OS_LINUX)
-typedef struct _GdkEventKey GdkEventKey;
-#endif
 
 #if defined(TOUCH_UI)
 typedef union _XEvent XEvent;
@@ -44,7 +40,13 @@ class View;
 ////////////////////////////////////////////////////////////////////////////////
 class Event {
  public:
+  // This type exists to distinguish between the NativeEvent and NativeEvent2
+  // constructors.
+  // TODO(beng): remove once we rid views of Gtk/Gdk.
+  struct FromNativeEvent2 {};
+
   const NativeEvent& native_event() const { return native_event_; }
+  const NativeEvent2& native_event_2() const { return native_event_2_; }
   ui::EventType type() const { return type_; }
   const base::Time& time_stamp() const { return time_stamp_; }
   int flags() const { return flags_; }
@@ -90,6 +92,12 @@ class Event {
 
  protected:
   Event(ui::EventType type, int flags);
+  Event(NativeEvent native_event, ui::EventType type, int flags);
+  // Because the world is complicated, sometimes we have two different kinds of
+  // NativeEvent in play in the same executable. See native_types.h for the tale
+  // of woe.
+  Event(NativeEvent2 native_event, ui::EventType type, int flags,
+        FromNativeEvent2);
 
   Event(const Event& model)
       : native_event_(model.native_event()),
@@ -101,7 +109,13 @@ class Event {
  private:
   void operator=(const Event&);
 
+  // Safely initializes the native event members of this class.
+  void Init();
+  void InitWithNativeEvent(NativeEvent native_event);
+  void InitWithNativeEvent2(NativeEvent2 native_event_2, FromNativeEvent2);
+
   NativeEvent native_event_;
+  NativeEvent2 native_event_2_;
   ui::EventType type_;
   base::Time time_stamp_;
   int flags_;
@@ -246,64 +260,28 @@ class TouchEvent : public LocatedEvent {
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
-//
 // KeyEvent class
 //
-// A key event is used for any input event related to the keyboard.
-// Note: this event is about key pressed, not typed characters.
+//  KeyEvent encapsulates keyboard input events - key press and release.
 //
-////////////////////////////////////////////////////////////////////////////////
 class KeyEvent : public Event {
  public:
-  // Create a new key event
+  explicit KeyEvent(NativeEvent native_event);
+  explicit KeyEvent(NativeEvent2 native_event_2, FromNativeEvent2);
+
+  // Creates a new KeyEvent synthetically (i.e. not in response to an input
+  // event from the host environment). This is typically only used in testing as
+  // some metadata obtainable from the underlying native event is not present.
+  // TODO(beng): see if we can kill this.
   KeyEvent(ui::EventType type,
            ui::KeyboardCode key_code,
-           int event_flags,
-           int repeat_count,
-           int message_flags);
-
-#if defined(OS_WIN)
-  KeyEvent(ui::EventType type,
-           ui::KeyboardCode key_code,
-           int event_flags,
-           int repeat_count,
-           int message_flags,
-           UINT message);
-#endif
-#if defined(OS_LINUX)
-  explicit KeyEvent(const GdkEventKey* event);
-
-  const GdkEventKey* native_event() const { return native_event_; }
-#endif
-#if defined(TOUCH_UI)
-  // Create a key event from an X key event.
-  explicit KeyEvent(XEvent* xevent);
-#endif
+           int event_flags);
 
   ui::KeyboardCode key_code() const { return key_code_; }
 
-#if defined(OS_WIN)
-  bool IsExtendedKey() const;
-
-  UINT message() const { return message_; }
-#endif
-
-  int repeat_count() const { return repeat_count_; }
-
-#if defined(OS_WIN)
-  static int GetKeyStateFlags();
-#endif
-
  private:
-
   ui::KeyboardCode key_code_;
-  int repeat_count_;
-  int message_flags_;
-#if defined(OS_WIN)
-  UINT message_;
-#elif defined(OS_LINUX)
-  const GdkEventKey* native_event_;
-#endif
+
   DISALLOW_COPY_AND_ASSIGN(KeyEvent);
 };
 
@@ -369,4 +347,4 @@ class DropTargetEvent : public LocatedEvent {
 
 }  // namespace views
 
-#endif  // VIEWS_EVENT_H_
+#endif  // VIEWS_EVENTS_EVENT_H_

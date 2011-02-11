@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,6 +60,19 @@ int GetEventFlagsForButton(int button) {
 
   DLOG(WARNING) << "Unexpected button (" << button << ") received.";
   return 0;
+}
+
+ui::EventType EventTypeFromNative(NativeEvent2 native_event) {
+  switch (native_event->type) {
+    case KeyPress:
+      return ui::ET_KEY_PRESSED;
+    case KeyRelease:
+      return ui::ET_KEY_RELEASED;
+    default:
+      NOTREACHED();
+      break;
+  }
+  return ui::ET_UNKNOWN;
 }
 
 #if defined(HAVE_XINPUT2)
@@ -212,15 +225,28 @@ int GetMouseEventFlags(XEvent* xev) {
 
 }  // namespace
 
-KeyEvent::KeyEvent(XEvent* xev)
-    : Event(xev->type == KeyPress ?
-            ui::ET_KEY_PRESSED : ui::ET_KEY_RELEASED,
-            GetEventFlagsFromXState(xev->xkey.state)),
-      key_code_(ui::KeyboardCodeFromXKeyEvent(xev)),
-      repeat_count_(0),
-      message_flags_(0),
-      native_event_(NULL) {
+////////////////////////////////////////////////////////////////////////////////
+// Event, private:
+
+void Event::InitWithNativeEvent2(NativeEvent2 native_event_2) {
+  native_event_ = NULL;
+  // TODO(beng): remove once we rid views of Gtk/Gdk.
+  native_event_2_ = native_event_2;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// KeyEvent, public:
+
+KeyEvent::KeyEvent(NativeEvent2 native_event_2, FromNativeEvent2)
+    : Event(native_event_2,
+            EventTypeFromNative(native_event_2),
+            GetEventFlagsFromXState(native_event_2->xkey.state),
+            FromNativeEvent2),
+      key_code_(ui::KeyboardCodeFromXKeyEvent(native_event_2)) {
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// MouseEvent, public:
 
 MouseEvent::MouseEvent(XEvent* xev)
     : LocatedEvent(GetMouseEventType(xev),
@@ -228,12 +254,18 @@ MouseEvent::MouseEvent(XEvent* xev)
                    GetMouseEventFlags(xev)) {
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// MouseWheelEvent, public:
+
 MouseWheelEvent::MouseWheelEvent(XEvent* xev)
     : LocatedEvent(ui::ET_MOUSEWHEEL,
                    GetMouseEventLocation(xev),
                    GetEventFlagsFromXState(xev->xbutton.state)),
       offset_(GetMouseWheelOffset(xev)) {
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// TouchEvent, public:
 
 #if defined(HAVE_XINPUT2)
 TouchEvent::TouchEvent(XEvent* xev)

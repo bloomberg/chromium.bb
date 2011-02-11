@@ -187,7 +187,9 @@ class NativeTextfieldWin
 
   // Helper function for OnChar() and OnKeyDown() that handles keystrokes that
   // could change the text in the edit.
-  void HandleKeystroke(UINT message, TCHAR key, UINT repeat_count, UINT flags);
+  // Note: This function assumes GetCurrentMessage() returns a MSG with
+  // msg > WM_KEYFIRST and < WM_KEYLAST.
+  void HandleKeystroke();
 
   // Every piece of code that can change the edit should call these functions
   // before and after the change.  These functions determine if anything

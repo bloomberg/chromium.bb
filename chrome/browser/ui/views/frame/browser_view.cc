@@ -1257,7 +1257,7 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
   // TODO(suzhe): We need to check if Windows code also has this issue, and
   // it'll be best if we can unify these conversion tables.
   // See http://crbug.com/54315
-  views::KeyEvent views_event(event.os_event);
+  views::KeyEvent views_event(reinterpret_cast<GdkEvent*>(event.os_event));
   views::Accelerator accelerator(views_event.key_code(),
                                  views_event.IsShiftDown(),
                                  views_event.IsControlDown(),

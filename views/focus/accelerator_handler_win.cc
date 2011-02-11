@@ -24,11 +24,7 @@ bool AcceleratorHandler::Dispatch(const MSG& msg) {
       switch (msg.message) {
         case WM_KEYDOWN:
         case WM_SYSKEYDOWN: {
-          KeyEvent event(ui::ET_KEY_PRESSED,
-                         ui::KeyboardCodeForWindowsKeyCode(msg.wParam),
-                         KeyEvent::GetKeyStateFlags(),
-                         msg.lParam & 0xFFFF,
-                         (msg.lParam & 0xFFFF0000) >> 16);
+          KeyEvent event(msg);
           process_message = focus_manager->OnKeyEvent(event);
           if (!process_message) {
             // Record that this key is pressed so we can remember not to

@@ -51,6 +51,7 @@
 #include "ui/gfx/canvas_skia.h"
 #include "views/controls/textfield/native_textfield_win.h"
 #include "views/drag_utils.h"
+#include "views/events/event_utils_win.h"
 #include "views/focus/focus_util_win.h"
 #include "views/widget/widget.h"
 
@@ -973,7 +974,7 @@ bool AutocompleteEditViewWin::SkipDefaultKeyEventProcessing(
   // We don't process ALT + numpad digit as accelerators, they are used for
   // entering special characters.  We do translate alt-home.
   if (e.IsAltDown() && (key != ui::VKEY_HOME) &&
-      views::NativeTextfieldWin::IsNumPadDigit(key, e.IsExtendedKey()))
+      views::NativeTextfieldWin::IsNumPadDigit(key, views::IsExtendedKey(e)))
     return true;
 
   // Skip accelerators for key combinations omnibox wants to crack. This list

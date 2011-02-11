@@ -882,7 +882,7 @@ bool WidgetGtk::HandleKeyboardEvent(GdkEventKey* event) {
   if (!focus_manager_)
     return false;
 
-  KeyEvent key(event);
+  KeyEvent key(reinterpret_cast<NativeEvent>(event));
   int key_code = key.key_code();
   bool handled = false;
 
@@ -1168,7 +1168,7 @@ gboolean WidgetGtk::OnFocusOut(GtkWidget* widget, GdkEventFocus* event) {
 }
 
 gboolean WidgetGtk::OnKeyEvent(GtkWidget* widget, GdkEventKey* event) {
-  KeyEvent key(event);
+  KeyEvent key(reinterpret_cast<NativeEvent>(event));
 
   // Always reset |should_handle_menu_key_release_| unless we are handling a
   // VKEY_MENU key release event. It ensures that VKEY_MENU accelerator can only

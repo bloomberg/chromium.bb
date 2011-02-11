@@ -261,6 +261,8 @@
         'events/event.h',
         'events/event_gtk.cc',
         'events/event_win.cc',
+        'events/event_utils_win.cc',
+        'events/event_utils_win.h',
         'events/event_x.cc',
         'focus/accelerator_handler.h',
         'focus/accelerator_handler_gtk.cc',

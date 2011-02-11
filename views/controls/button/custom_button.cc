@@ -137,7 +137,7 @@ bool CustomButton::AcceleratorPressed(const Accelerator& accelerator) {
 
   SetState(BS_NORMAL);
   KeyEvent key_event(ui::ET_KEY_RELEASED, accelerator.GetKeyCode(),
-                     accelerator.modifiers(), 0, 0);
+                     accelerator.modifiers());
   NotifyClick(key_event);
   return true;
 }

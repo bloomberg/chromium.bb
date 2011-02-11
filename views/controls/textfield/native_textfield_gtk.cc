@@ -384,7 +384,7 @@ gboolean NativeTextfieldGtk::OnKeyPressEventHandler(
 gboolean NativeTextfieldGtk::OnKeyPressEvent(GdkEventKey* event) {
   Textfield::Controller* controller = textfield_->GetController();
   if (controller) {
-    KeyEvent key_event(event);
+    KeyEvent key_event(reinterpret_cast<GdkEvent*>(event));
     return controller->HandleKeyEvent(textfield_, key_event);
   }
   return false;
@@ -407,7 +407,7 @@ gboolean NativeTextfieldGtk::OnActivate() {
 
   Textfield::Controller* controller = textfield_->GetController();
   if (controller) {
-    KeyEvent views_key_event(key_event);
+    KeyEvent views_key_event(event);
     handled = controller->HandleKeyEvent(textfield_, views_key_event);
   }
 

@@ -34,6 +34,7 @@ class Rect;
 
 namespace views {
 
+class CurrentMessageWatcher;
 class DefaultThemeProvider;
 class DropTargetWin;
 class FocusSearch;
@@ -598,6 +599,9 @@ class WidgetWin : public ui::WindowImpl,
   int accessibility_view_events_index_;
 
   ViewProps props_;
+
+  // Keeps track of the current message.
+  static CurrentMessageWatcher* message_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(WidgetWin);
 };

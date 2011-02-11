@@ -119,7 +119,7 @@ bool SendKeyboardEventInputFunction::RunImpl() {
     return false;
   }
 
-  views::KeyEvent event(type, prototype_event.key_code(), flags, 0, 0);
+  views::KeyEvent event(type, prototype_event.key_code(), flags);
   if (!root_view->ProcessKeyEvent(event)) {
     error_ = kKeyEventUnprocessedError;
     return false;

@@ -326,7 +326,7 @@ class GrabWidget : public views::WidgetGtk {
   }
 
   virtual gboolean OnKeyEvent(GtkWidget* widget, GdkEventKey* event) {
-    views::KeyEvent key_event(event);
+    views::KeyEvent key_event(reinterpret_cast<GdkEvent*>(event));
     // This is a hack to workaround the issue crosbug.com/10655 due to
     // the limitation that a focus manager cannot handle views in
     // TYPE_CHILD WidgetGtk correctly.

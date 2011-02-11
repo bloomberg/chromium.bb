@@ -488,7 +488,7 @@ void NativeTextfieldWin::UpdateAccessibleValue(const std::wstring& value) {
 // NativeTextfieldWin, private:
 
 void NativeTextfieldWin::OnChar(TCHAR ch, UINT repeat_count, UINT flags) {
-  HandleKeystroke(GetCurrentMessage()->message, ch, repeat_count, flags);
+  HandleKeystroke();
 }
 
 void NativeTextfieldWin::OnContextMenu(HWND window, const POINT& point) {
@@ -687,7 +687,7 @@ void NativeTextfieldWin::OnKeyDown(TCHAR key, UINT repeat_count, UINT flags) {
 
   // CRichEditCtrl changes its text on WM_KEYDOWN instead of WM_CHAR for many
   // different keys (backspace, ctrl-v, ...), so we call this in both cases.
-  HandleKeystroke(GetCurrentMessage()->message, key, repeat_count, flags);
+  HandleKeystroke();
 }
 
 void NativeTextfieldWin::OnLButtonDblClk(UINT keys, const CPoint& point) {
@@ -931,45 +931,21 @@ void NativeTextfieldWin::OnSysChar(TCHAR ch, UINT repeat_count, UINT flags) {
     SetMsgHandled(false);
 }
 
-void NativeTextfieldWin::HandleKeystroke(UINT message,
-                                         TCHAR key,
-                                         UINT repeat_count,
-                                         UINT flags) {
+void NativeTextfieldWin::HandleKeystroke() {
+  const MSG* msg = GetCurrentMessage();
   ScopedFreeze freeze(this, GetTextObjectModel());
 
   Textfield::Controller* controller = textfield_->GetController();
   bool handled = false;
   if (controller) {
-    ui::EventType type;
-    switch (message) {
-      case WM_KEYDOWN:
-      case WM_SYSKEYDOWN:
-      case WM_CHAR:
-      case WM_SYSCHAR:
-        type = ui::ET_KEY_PRESSED;
-        break;
-      case WM_KEYUP:
-      case WM_SYSKEYUP:
-        type = ui::ET_KEY_RELEASED;
-        break;
-      default:
-        NOTREACHED() << "Unknown message:" << message;
-        // Passing through to avoid crash on release build.
-        type = ui::ET_KEY_PRESSED;
-    }
-    KeyEvent key_event(type,
-                       ui::KeyboardCodeForWindowsKeyCode(key),
-                       KeyEvent::GetKeyStateFlags(),
-                       repeat_count,
-                       flags,
-                       message);
-    handled = controller->HandleKeyEvent(textfield_, key_event);
+    KeyEvent event(*msg);
+    handled = controller->HandleKeyEvent(textfield_, event);
   }
 
   if (!handled) {
     OnBeforePossibleChange();
 
-    if (key == ui::VKEY_HOME || key == ui::VKEY_END) {
+    if (msg->wParam == ui::VKEY_HOME || msg->wParam == ui::VKEY_END) {
       // DefWindowProc() might reset the keyboard layout when it receives a
       // keydown event for VKEY_HOME or VKEY_END. When the window was created
       // with WS_EX_LAYOUTRTL and the current keyboard layout is not a RTL one,
@@ -984,10 +960,10 @@ void NativeTextfieldWin::HandleKeystroke(UINT message,
       // change behavior is surprising and inconsistent with keyboard behavior
       // elsewhere, so reset the layout in this case.
       HKL layout = GetKeyboardLayout(0);
-      DefWindowProc(message, key, MAKELPARAM(repeat_count, flags));
+      DefWindowProc(msg->message, msg->wParam, msg->lParam);
       ActivateKeyboardLayout(layout, KLF_REORDER);
     } else {
-      DefWindowProc(message, key, MAKELPARAM(repeat_count, flags));
+      DefWindowProc(msg->message, msg->wParam, msg->lParam);
     }
 
     // CRichEditCtrl automatically turns on IMF_AUTOKEYBOARD when the user

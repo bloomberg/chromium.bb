@@ -18,7 +18,7 @@ static void gtk_views_window_move_focus(GtkWindow* window,
   if (focus_manager) {
     GdkEvent* key = gtk_get_current_event();
     if (key && key->type == GDK_KEY_PRESS) {
-      views::KeyEvent key_event(reinterpret_cast<GdkEventKey*>(key));
+      views::KeyEvent key_event(key);
       focus_manager->OnKeyEvent(key_event);
     }
   } else if (GTK_WINDOW_CLASS(gtk_views_window_parent_class)->move_focus) {

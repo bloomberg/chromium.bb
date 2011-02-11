@@ -116,7 +116,7 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
     int flags = (shift ? ui::EF_SHIFT_DOWN : 0) |
         (control ? ui::EF_CONTROL_DOWN : 0) |
         (capslock ? ui::EF_CAPS_LOCK_DOWN : 0);
-    KeyEvent event(ui::ET_KEY_PRESSED, key_code, flags, 1, 0);
+    KeyEvent event(ui::ET_KEY_PRESSED, key_code, flags);
     return textfield_->OnKeyPressed(event);
   }
 

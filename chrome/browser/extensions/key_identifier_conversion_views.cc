@@ -294,7 +294,7 @@ static void InitializeMaps() {
     return;
 
   kUnknownKeyEvent = new views::KeyEvent(
-    ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, 0, 0, 0);
+    ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, 0);
 
   for (int i = 0; i < kNumIdentifierTypes; ++i)
     identifierMaps[i] = new IdentifierMap;
@@ -303,7 +303,7 @@ static void InitializeMaps() {
     const KeyIdentifier& key = kKeyIdentifiers[i];
 
     views::KeyEvent* event = new views::KeyEvent(
-        ui::ET_KEY_PRESSED, key.key_code, key.event_flags, 0, 0);
+        ui::ET_KEY_PRESSED, key.key_code, key.event_flags);
 
     for (int j = 0; j < kNumIdentifierTypes; ++j) {
       if (key.identifiers[j][0] != '\0') {

@@ -55,7 +55,7 @@ void ScreenLockerTester::EnterPassword(const std::string& password) {
   views::Textfield* pass = GetPasswordField();
   GdkEvent* event = gdk_event_new(GDK_KEY_PRESS);
   event->key.keyval = GDK_Return;
-  views::KeyEvent key_event(&event->key);
+  views::KeyEvent key_event(event);
   ScreenLocker::screen_locker_->screen_lock_view_->HandleKeyEvent(
       pass, key_event);
   gdk_event_free(event);

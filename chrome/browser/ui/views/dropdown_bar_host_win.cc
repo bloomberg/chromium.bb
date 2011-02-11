@@ -19,7 +19,7 @@ NativeWebKeyboardEvent DropdownBarHost::GetKeyboardEvent(
   HWND hwnd = contents->GetContentNativeView();
   WORD key = WindowsKeyCodeForKeyboardCode(key_event.key_code());
 
-  return NativeWebKeyboardEvent(hwnd, key_event.message(), key, 0);
+  return NativeWebKeyboardEvent(hwnd, key_event.native_event().message, key, 0);
 }
 
 views::Widget* DropdownBarHost::CreateHost() {

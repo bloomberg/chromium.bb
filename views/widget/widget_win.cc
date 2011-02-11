@@ -19,6 +19,7 @@
 #include "ui/gfx/path.h"
 #include "views/accessibility/view_accessibility.h"
 #include "views/controls/native_control_win.h"
+#include "views/focus/accelerator_handler.h"
 #include "views/focus/focus_util_win.h"
 #include "views/views_delegate.h"
 #include "views/widget/aero_tooltip_manager.h"
@@ -47,13 +48,42 @@ bool IsWindowActive(HWND hwnd) {
 
 namespace views {
 
+// A singleton object that keeps track of the current message.
+class CurrentMessageWatcher : public MessageLoopForUI::Observer {
+ public:
+  CurrentMessageWatcher() {
+    MessageLoopForUI::current()->AddObserver(this);
+  }
+  virtual ~CurrentMessageWatcher() {
+  }
+
+  const MSG& current_message() const { return current_messages_.back(); }
+
+ private:
+  // Overridden from MessageLoop::Observer:
+  void WillProcessMessage(const MSG& msg) {
+    current_messages_.push_back(msg);
+  }
+  virtual void DidProcessMessage(const MSG& msg) {
+    current_messages_.pop_back();
+  }
+
+  std::vector<MSG> current_messages_;
+
+  DISALLOW_COPY_AND_ASSIGN(CurrentMessageWatcher);
+};
+
 // Property used to link the HWND to its RootView.
 static const char* const kRootViewWindowProperty = "__ROOT_VIEW__";
 
 // Links the HWND to it's Widget (as a Widget, not a WidgetWin).
 static const char* const kWidgetKey = "__VIEWS_WIDGET__";
 
+// static
 bool WidgetWin::screen_reader_active_ = false;
+
+// static
+CurrentMessageWatcher* WidgetWin::message_watcher_ = NULL;
 
 // A custom MSAA object id used to determine if a screen reader is actively
 // listening for MSAA events.
@@ -82,6 +112,8 @@ WidgetWin::WidgetWin()
       delegate_(NULL),
       accessibility_view_events_index_(-1),
       accessibility_view_events_(kMaxAccessibilityViewEvents) {
+  if (!message_watcher_)
+    message_watcher_ = new CurrentMessageWatcher;
 }
 
 WidgetWin::~WidgetWin() {
@@ -524,9 +556,8 @@ void WidgetWin::WillProcessMessage(const MSG& msg) {
 }
 
 void WidgetWin::DidProcessMessage(const MSG& msg) {
-  if (root_view_->NeedsPainting(true)) {
+  if (root_view_->NeedsPainting(true))
     PaintNow(root_view_->GetScheduledPaintRect());
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -689,9 +720,7 @@ void WidgetWin::OnInitMenuPopup(HMENU menu,
 }
 
 void WidgetWin::OnKeyDown(TCHAR c, UINT rep_cnt, UINT flags) {
-  KeyEvent event(ui::ET_KEY_PRESSED, ui::KeyboardCodeForWindowsKeyCode(c),
-                 KeyEvent::GetKeyStateFlags(), rep_cnt, flags,
-                 WM_KEYDOWN);
+  KeyEvent event(message_watcher_->current_message());
   RootView* root_view = GetFocusedViewRootView();
   if (!root_view)
     root_view = root_view_.get();
@@ -700,9 +729,7 @@ void WidgetWin::OnKeyDown(TCHAR c, UINT rep_cnt, UINT flags) {
 }
 
 void WidgetWin::OnKeyUp(TCHAR c, UINT rep_cnt, UINT flags) {
-  KeyEvent event(ui::ET_KEY_RELEASED, ui::KeyboardCodeForWindowsKeyCode(c),
-                 KeyEvent::GetKeyStateFlags(), rep_cnt, flags,
-                 WM_KEYUP);
+  KeyEvent event(message_watcher_->current_message());
   RootView* root_view = GetFocusedViewRootView();
   if (!root_view)
     root_view = root_view_.get();

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,23 +6,36 @@
 
 #include <gdk/gdk.h>
 
+#include "base/logging.h"
 #include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
 
 namespace views {
 
-KeyEvent::KeyEvent(const GdkEventKey* event)
-    : Event(event->type == GDK_KEY_PRESS ?
-            ui::ET_KEY_PRESSED : ui::ET_KEY_RELEASED,
-            GetFlagsFromGdkState(event->state)),
-      // TODO(erg): All these values are iffy.
-      key_code_(ui::WindowsKeyCodeForGdkKeyCode(event->keyval)),
-      repeat_count_(0),
-      message_flags_(0)
-#if !defined(TOUCH_UI)
-      , native_event_(event)
-#endif
-{
+namespace {
+
+ui::EventType EventTypeFromNative(NativeEvent native_event) {
+  switch (native_event->type) {
+    case GDK_KEY_PRESS:
+      return ui::ET_KEY_PRESSED;
+    case GDK_KEY_RELEASE:
+      return ui::ET_KEY_RELEASED;
+    default:
+      NOTREACHED();
+      break;
+  }
+  return ui::ET_UNKNOWN;
 }
+
+GdkEventKey* GetGdkEventKeyFromNative(NativeEvent native_event) {
+  DCHECK(native_event->type == GDK_KEY_PRESS ||
+         native_event->type == GDK_KEY_RELEASE);
+  return &native_event->key;
+}
+
+}  // namespace
+
+////////////////////////////////////////////////////////////////////////////////
+// Event, public:
 
 // static
 int Event::GetFlagsFromGdkState(int state) {
@@ -43,5 +56,49 @@ int Event::GetFlagsFromGdkState(int state) {
     flags |= ui::EF_RIGHT_BUTTON_DOWN;
   return flags;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// Event, private:
+
+void Event::Init() {
+  native_event_ = NULL;
+  native_event_2_ = NULL;
+}
+
+void Event::InitWithNativeEvent(NativeEvent native_event) {
+  native_event_ = native_event;
+  // TODO(beng): remove once we rid views of Gtk/Gdk.
+  native_event_2_ = NULL;
+}
+
+#if !defined(TOUCH_UI)
+void Event::InitWithNativeEvent2(NativeEvent2 native_event_2,
+                                 FromNativeEvent2) {
+  // No one should ever call this on non-Touch Linux.
+  // TODO(beng): remove once we rid views of Gtk/Gdk.
+  NOTREACHED();
+  native_event_2_ = NULL;
+}
+#endif
+
+////////////////////////////////////////////////////////////////////////////////
+// KeyEvent, public:
+
+KeyEvent::KeyEvent(NativeEvent native_event)
+    : Event(native_event, EventTypeFromNative(native_event),
+            GetFlagsFromGdkState(
+                GetGdkEventKeyFromNative(native_event)->state)),
+      key_code_(ui::WindowsKeyCodeForGdkKeyCode(
+                GetGdkEventKeyFromNative(native_event)->keyval)) {
+}
+
+#if !defined(TOUCH_UI)
+KeyEvent::KeyEvent(NativeEvent2 native_event_2, FromNativeEvent2 from_native)
+    : Event(native_event_2, ui::ET_UNKNOWN, 0, from_native) {
+  // No one should ever call this on Gtk-views.
+  // TODO(beng): remove once we rid views of Gtk/Gdk.
+  NOTREACHED();
+}
+#endif
 
 }  // namespace views
