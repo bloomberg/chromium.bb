@@ -108,48 +108,72 @@ const AccelerometerMac::GenericMacbookSensor
 // All non-tested entries from SMSLib have been removed.
 const AccelerometerMac::SensorDescriptor
     AccelerometerMac::kSupportedSensors[] = {
-  // Tested by avi on a 13'' MacBook.
+  // Tested by S.Selz. (via avi) on a 13" MacBook.
+  { "MacBook2,1",    { { 0, true  }, { 2, false }, { 4, true  } } },
+
+  // Tested by avi on a 13" MacBook.
   { "MacBook7,1",    { { 0, true  }, { 2, true  }, { 4, false } } },
 
-  // Tested by sfiera, pjw on a 13'' MacBook Air.
+  // Tested by sfiera, pjw on a 13" MacBook Air.
   { "MacBookAir2,1", { { 0, true  }, { 2, true  }, { 4, false } } },
 
-  // Note: MacBookAir3,1 (11'' MacBook Air) and MacBookAir3,2 (13'' MacBook Air)
+  // Note: MacBookAir3,1 (11" MacBook Air) and MacBookAir3,2 (13" MacBook Air)
   // have no accelerometer sensors.
 
-  // Tested by leandrogracia on a 15'' MacBook Pro.
+  // Not tested; data acquired by avi from L.V. from a 17" MacBook Pro.
+  { "MacBookPro2,1", { { 0, true  }, { 2, false }, { 4, true  } } },
+
+  // Tested by leandrogracia on a 15" MacBook Pro.
   { "MacBookPro2,2", { { 0, true  }, { 2, true  }, { 4, false } } },
 
-  // Tested by leandrogracia on a 15'' MacBook Pro.
+  // Tested by leandrogracia on a 15" MacBook Pro.
+  // TODO(avi): this model name was also used for the 17" version; verify that
+  // these parameters are also valid for that model.
   { "MacBookPro3,1", { { 0, false }, { 2, true  }, { 4, true  } } },
 
-  // Tested by leandrogracia on a 15'' MacBook Pro.
+  // Tested by leandrogracia on a 15" MacBook Pro.
+  // TODO(avi): this model name was also used for the 17" version; verify that
+  // these parameters are also valid for that model.
   { "MacBookPro4,1", { { 0, true  }, { 2, true  }, { 4, false } } },
 
-  // Tested by leandrogracia on a 15'' MacBook Pro.
+  // Tested by leandrogracia on a 15" MacBook Pro.
   { "MacBookPro5,1", { { 0, false }, { 2, false }, { 4, false } } },
 
-  // Tested by dmaclach on a 15'' MacBook Pro.
+  // Tested by S.Selz. (via avi) on a 15" MacBook Pro.
+  { "MacBookPro5,2", { { 0, false }, { 2, false }, { 4, false } } },
+
+  // Tested by dmaclach on a 15" MacBook Pro.
   { "MacBookPro5,3", { { 2, false }, { 0, false }, { 4, true  } } },
 
-  // Tested by leandrogracia on a 15'' MacBook Pro.
+  // Tested by leandrogracia on a 15" MacBook Pro.
   { "MacBookPro5,4", { { 0, false }, { 2, false }, { 4, false } } },
 
-  // Tested by leandrogracia on a 13'' MacBook Pro.
+  // Tested by leandrogracia on a 13" MacBook Pro.
   { "MacBookPro5,5", { { 0, true  }, { 2, true  }, { 4, false } } },
 
-  // Tested by khom, leadpipe on a 17'' MacBook Pro.
+  // Tested by khom, leadpipe on a 17" MacBook Pro.
   { "MacBookPro6,1", { { 0, false }, { 2, false }, { 4, false } } },
 
-  // Tested by leandrogracia on a 15'' MacBook Pro.
+  // Tested by leandrogracia on a 15" MacBook Pro.
   { "MacBookPro6,2", { { 0, true  }, { 2, false }, { 4, true  } } },
 
-  // Tested by leandrogracia on a 13'' MacBook Pro.
+  // Tested by leandrogracia on a 13" MacBook Pro.
   { "MacBookPro7,1", { { 0, true  }, { 2, true  }, { 4, false } } },
 
-  // Generic MacBook accelerometer sensor data.
-  // Added for compatibility with non-tested models
-  // Note: there may be problems with inverted axes.
+  // Generic MacBook accelerometer sensor data, used for for both future models
+  // and past models for which there has been no testing. Note that this generic
+  // configuration may well have problems with inverted axes.
+  // TODO(avi): Find these past models and test on them; test on future models.
+  //  MacBook1,1
+  //  MacBook3,1
+  //  MacBook4,1
+  //  MacBook5,1
+  //  MacBook5,2
+  //  MacBook6,1
+  //  MacBookAir1,1
+  //  MacBookPro1,1
+  //  MacBookPro1,2
+  //  MacBookPro5,2
   { "", { { 0, true  }, { 2, true  }, { 4, false } } }
 };
 
