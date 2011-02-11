@@ -673,8 +673,8 @@ untrusted_sdk() {
   clean
   everything
   prune
-  install-translators
-  prune-translator-install
+  install-translators nonsrpc
+  prune-translator-install nonsrpc
   tarball $1
 }
 
@@ -1514,32 +1514,39 @@ binutils-liberty-x86-install() {
 #     CLIENT BINARIES (SANDBOXED)
 #########################################################################
 
-#+-------------------------------------------------------------------------
-#+ llvm-tools-sb       - Build and install llvm tools (sandboxed) for x86
-llvm-tools-sb() {
-  local srcdir="${TC_SRC_LLVM}"
-
-  assert-dir "${srcdir}" "You need to checkout llvm."
-
-  if [ $# -lt 1 ] || [ $# -gt 2 ]; then
-    echo "ERROR: Usage llvm-tools-sb <arch> <mode>"
+check-sb-mode() {
+  local mode=$1
+  if [ ${mode} != "srpc" ] && [ ${mode} != "nonsrpc" ]; then
+    echo "ERROR: Unsupported mode. Choose one of: srpc, nonsrpc"
     exit -1
   fi
+}
 
+check-sb-arch() {
+  # TODO(pdox): allow ARM when we self-build.
   local arch=$1
   if [ ${arch} != "x8632" ] && [ ${arch} != "x8664" ]; then
     echo "ERROR: Unsupported arch. Choose one of: x8632, x8664"
     exit -1
   fi
+}
 
-  local mode="nonsrpc"
-  if [ $# == 2 ]; then
-    mode=$2
-    if [ ${mode} != "srpc" ]; then
-      echo "ERROR: Unsupported mode. Choose one of: <blank>, srpc"
-      exit -1
-    fi
+#+-------------------------------------------------------------------------
+#+ llvm-tools-sb <arch> <mode> - Build and install llvm tools (sandboxed)
+llvm-tools-sb() {
+  local srcdir="${TC_SRC_LLVM}"
+
+  assert-dir "${srcdir}" "You need to checkout llvm."
+
+  if [ $# -ne 2 ]; then
+    echo "ERROR: Usage llvm-tools-sb <arch> <mode>"
+    exit -1
   fi
+
+  local arch=$1
+  local mode=$2
+  check-sb-arch ${arch}
+  check-sb-mode ${mode}
 
   if [ ! -d ${NACL_TOOLCHAIN} ] ; then
     echo "ERROR: Install Native Client toolchain"
@@ -1691,31 +1698,21 @@ llvm-tools-sb-install() {
 }
 
 #+-------------------------------------------------------------------------
-#+ binutils-sb       - Build and install binutils (sandboxed) x86
+#+ binutils-sb <arch> <mode> - Build and install binutils (sandboxed)
 binutils-sb() {
   local srcdir="${TC_SRC_BINUTILS}"
 
   assert-dir "${srcdir}" "You need to checkout binutils."
 
-  if [ $# -lt 1 ] || [ $# -gt 2 ]; then
+  if [ $# -ne 2 ]; then
     echo "ERROR: Usage binutils-sb <arch> <mode>"
     exit -1
   fi
 
   local arch=$1
-  if [ ${arch} != "x8632" ] && [ ${arch} != "x8664" ]; then
-    echo "ERROR: Unsupported arch. Choose one of: x8632, x8664"
-    exit -1
-  fi
-
-  local mode="nonsrpc"
-  if [ $# == 2 ]; then
-    mode=$2
-    if [ ${mode} != "srpc" ]; then
-      echo "ERROR: Unsupported mode. Choose one of: <blank>, srpc"
-      exit -1
-    fi
-  fi
+  local mode=$2
+  check-sb-arch ${arch}
+  check-sb-mode ${mode}
 
   if [ ! -d ${NACL_TOOLCHAIN} ] ; then
     echo "ERROR: Install Native Client toolchain"
@@ -1856,9 +1853,18 @@ binutils-sb-install() {
 }
 
 #+--------------------------------------------------------------------------
-#@ install-translators - Builds and installs sandboxed translator components
+#@ install-translators {srpc/nonsrpc} - Builds and installs sandboxed
+#@                                      translator components
 install-translators() {
-  StepBanner "INSTALL SANDBOXED TRANSLATORS"
+  if [ $# -ne 1 ]; then
+    echo "ERROR: Usage install-translators <srpc/nonsrpc>"
+    exit -1
+  fi
+
+  local srpc_kind=$1
+  check-sb-mode ${srpc_kind}
+
+  StepBanner "INSTALL SANDBOXED TRANSLATORS (${srpc_kind})"
 
   # StepBanner "ARM" "Sandboxing"
   # StepBanner "---" "----------"
@@ -1871,8 +1877,8 @@ install-translators() {
 
   StepBanner "32-bit X86" "Sandboxing"
   StepBanner "----------" "----------"
-  binutils-sb x8632
-  llvm-tools-sb x8632
+  binutils-sb x8632 ${srpc_kind}
+  llvm-tools-sb x8632 ${srpc_kind}
   echo ""
 
   mkdir -p ${PNACL_SB_X8632}/script
@@ -1887,8 +1893,8 @@ install-translators() {
 
   StepBanner "64-bit X86" "Sandboxing"
   StepBanner "----------" "----------"
-  binutils-sb x8664
-  llvm-tools-sb x8664
+  binutils-sb x8664 ${srpc_kind}
+  llvm-tools-sb x8664 ${srpc_kind}
   echo ""
 
   mkdir -p ${PNACL_SB_X8664}/script
@@ -1907,15 +1913,22 @@ install-translators() {
 #+-------------------------------------------------------------------------
 #@ prune-translator-install - Prunes translator install directories
 prune-translator-install() {
+  if [ $# -ne 1 ]; then
+    echo "ERROR: Usage prune-translator-install <srpc/nonsrpc>"
+    exit -1
+  fi
 
-  StepBanner "PRUNE" "Pruning translator installs"
+  local srpc_kind=$1
+  check-sb-mode ${srpc_kind}
 
-  spushd "${PNACL_SB_X8632}/nonsrpc"
+  StepBanner "PRUNE" "Pruning translator installs (${srpc_kind})"
+
+  spushd "${PNACL_SB_X8632}/${srpc_kind}"
   rm -rf include lib nacl share
   rm -rf bin/llvm-config bin/tblgen
   spopd
 
-  spushd "${PNACL_SB_X8664}/nonsrpc"
+  spushd "${PNACL_SB_X8664}/${srpc_kind}"
   rm -rf include lib nacl64 share
   rm -rf bin/llvm-config bin/tblgen
   spopd
