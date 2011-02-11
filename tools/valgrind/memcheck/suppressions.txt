@@ -3749,31 +3749,6 @@
    fun:_ZN7fileapi21FileSystemPathManager25GetFileSystemRootPathTask16DispatchCallbackERK8FilePath
 }
 {
-   bug_72542
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN17FilebrowseHandler4InitEv
-   fun:_ZN12FileBrowseUIC1EP11TabContents
-   fun:_Z8NewDOMUII12FileBrowseUIEP5WebUIP11TabContentsRK4GURL
-   fun:_ZN12WebUIFactory17CreateWebUIForURLEP11TabContentsRK4GURL
-   fun:_ZN11TabContents27CreateDOMUIForRenderManagerERK4GURL
-   fun:_ZN21RenderViewHostManager30UpdateRendererStateForNavigateERK15NavigationEntry
-   fun:_ZN21RenderViewHostManager8NavigateERK15NavigationEntry
-   fun:_ZN11TabContents15NavigateToEntryERK15NavigationEntryN20NavigationController10ReloadTypeE
-   fun:_ZN11TabContents22NavigateToPendingEntryEN20NavigationController10ReloadTypeE
-   fun:_ZN20NavigationController22NavigateToPendingEntryENS_10ReloadTypeE
-   fun:_ZN20NavigationController9LoadEntryEP15NavigationEntry
-   fun:_ZN20NavigationController7LoadURLERK4GURLS2_j
-   fun:_ZN7browser8NavigateEPNS_14NavigateParamsE
-   fun:_ZN12FileBrowseUI9OpenPopupEP7ProfileRKSsii
-   fun:_ZN7Browser15OnStartDownloadEP12DownloadItemP11TabContents
-   fun:_ZN11TabContents15OnStartDownloadEP12DownloadItem
-   fun:_ZN11SavePackage4InitEv
-   fun:_ZN11TabContents8SavePageERK8FilePathS2_N11SavePackage15SavePackageTypeE
-   fun:_ZN25TestingAutomationProvider8SavePageEiRK8FilePathS2_iPb
-   fun:_Z16DispatchToMethodI25TestingAutomationProviderMS0_FviRK8FilePathS3_iPbEiS1_S1_ibEvPT_T0_RK6Tuple4IT1_T2_T3_T4_EP6Tuple1IT5_E
-}
-{
    bug_72544
    Memcheck:Leak
    fun:malloc
