@@ -14,6 +14,7 @@ This module holds a subclass of subprocess.Popen with our own required
 features.
 """
 
+import errno
 import os
 import pty
 import select
@@ -53,8 +54,16 @@ class Popen(subprocess.Popen):
 
     Args:
       args: Program and arguments for subprocess to execute.
-      env: Environment to use for this subprocess, or None to inherit parent.
+      stdin: See subprocess.Popen()
+      stdout: See subprocess.Popen(), except that we support the sentinel
+          value of cros_subprocess.Popen.PIPE_PTY.
+      stderr: See subprocess.Popen(), except that we support the sentinel
+          value of cros_subprocess.Popen.PIPE_PTY.
+      shell: See subprocess.Popen()
       cwd: Working directory to change to for subprocess, or None if none.
+      env: Environment to use for this subprocess, or None to inherit parent.
+      kwargs: No other arguments are supported at the moment.  Passing other
+          arguments will cause a ValueError to be raised.
     """
     stdout_pty = None
     stderr_pty = None
@@ -69,16 +78,19 @@ class Popen(subprocess.Popen):
     super(Popen, self).__init__(args, stdin=stdin,
         stdout=stdout, stderr=stderr, shell=shell, cwd=cwd, env=env,
         **kwargs)
-    if stdout_pty:
-      self.stdout = os.fdopen(stdout_pty[0])
 
-    if stderr_pty:
+    # If we're on a PTY, we passed the slave half of the PTY to the subprocess.
+    # We want to use the master half on our end from now on.  Setting this here
+    # does make some assumptions about the implementation of subprocess, but
+    # those assumptions are pretty minor.
+    if stdout_pty is not None:
+      self.stdout = os.fdopen(stdout_pty[0])
+    if stderr_pty is not None:
       self.stderr = os.fdopen(stderr_pty[0])
 
     # Insist that unit tests exist for other arguments we don't support.
     if kwargs:
-      raise ValueError ("Unit tests do not test extra args - please add tests")
-
+      raise ValueError("Unit tests do not test extra args - please add tests")
 
   def CommunicateFilter(self, operation):
     """Interact with process: Read data from stdout and stderr.
@@ -130,7 +142,7 @@ class Popen(subprocess.Popen):
     input_offset = 0
     while read_set or write_set:
       try:
-        rlist, wlist, xlist = select.select(read_set, write_set, [])
+        rlist, wlist, _ = select.select(read_set, write_set, [])
       except select.error, e:
         if e.args[0] == errno.EINTR:
           continue
@@ -152,7 +164,7 @@ class Popen(subprocess.Popen):
         # We will get an error on read if the pty is closed
         try:
           data = os.read(self.stdout.fileno(), 1024)
-        except OSError as (errno, errstr):
+        except OSError:
           pass
         if data == "":
           self.stdout.close()
@@ -166,7 +178,7 @@ class Popen(subprocess.Popen):
         # We will get an error on read if the pty is closed
         try:
           data = os.read(self.stderr.fileno(), 1024)
-        except OSError as (errno, errstr):
+        except OSError:
           pass
         if data == "":
           self.stderr.close()
@@ -197,6 +209,11 @@ class Popen(subprocess.Popen):
     return (stdout, stderr, combined)
 
 
+# Just being a unittest.TestCase gives us 14 public methods.  Unless we
+# disable this, we can only have 6 tests in a TestCase.  That's not enough.
+#
+# pylint: disable=R0904
+
 class TestSubprocess(unittest.TestCase):
   """Our simple unit test for this module"""
 
@@ -220,17 +237,17 @@ class TestSubprocess(unittest.TestCase):
         self._stdin_write_pipe = os.fdopen(pipe[1], 'w')
 
     def Output(self, stream, data):
-        """Output handler for Popen. Stores the data for later comparison"""
-        if stream == sys.stdout:
-          self.stdout_data += data
-        if stream == sys.stderr:
-          self.stderr_data += data
-        self.combined_data += data
+      """Output handler for Popen. Stores the data for later comparison"""
+      if stream == sys.stdout:
+        self.stdout_data += data
+      if stream == sys.stderr:
+        self.stderr_data += data
+      self.combined_data += data
 
-        # Output the input string if we have one.
-        if self._input_to_send:
-          self._stdin_write_pipe.write(self._input_to_send + '\r\n')
-          self._stdin_write_pipe.flush()
+      # Output the input string if we have one.
+      if self._input_to_send:
+        self._stdin_write_pipe.write(self._input_to_send + '\r\n')
+        self._stdin_write_pipe.flush()
 
   def _BasicCheck(self, plist, oper):
     """Basic checks that the output looks sane."""
@@ -348,4 +365,4 @@ class TestSubprocess(unittest.TestCase):
     self.assertEqual(plist [1], 'not 2\n')
 
 if __name__ == '__main__':
-    unittest.main()
+  unittest.main()
