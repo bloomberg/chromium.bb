@@ -47,3 +47,18 @@ build_image_flags:
 
 # Environment for build_image.  Same syntax as for build_packages_environ.
 build_image_environ:
+
+# We will run these steps as a post-processing stage after the image is
+# built.  The name of each step will be used to find the command to run
+# by looking at the value of "post_process_cmdname_cmd".  See commented-out
+# example.  Note that order matters here.
+#
+# These are all run from within the choot w/ CWD as src/scripts.
+post_process_steps:
+
+#post_process_steps: test recovery factory_shim factory_test
+
+post_process_test_cmd: ./mod_image_for_test.sh --board=%(target)s --yes --noinplace
+post_process_recovery_cmd: ./mod_image_for_recovery.sh --board=%(target)s
+post_process_factory_shim_cmd: ./build_image --board=%(target)s --factory_install --replace --build_attempt=7
+post_process_factory_test_cmd: ./mod_image_for_test.sh --board=%(target)s --yes --factory --noinplace

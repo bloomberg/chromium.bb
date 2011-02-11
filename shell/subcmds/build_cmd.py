@@ -148,6 +148,32 @@ def _DoBuildImage(build_config):
   cros_lib.RunCommand(cmd, shell=True, cwd=cwd, ignore_sigint=True)
 
 
+def _DoImagePostProcessing(build_config):
+  """Do post processing steps after the build image runs.
+
+  Args:
+    build_config: A SafeConfigParser representing the build config.
+  """
+  # We'll put CWD as src/scripts when running the commands, since many of these
+  # legacy commands live in src/scripts.
+  # TODO(dianders): Don't set CWD once crosutils are properly installed.
+  cwd = os.path.join(utils.SRCROOT_PATH, 'src', 'scripts')
+
+  # The user specifies a list of "steps" in this space-separated variable.
+  # We'll use each step name to construct other variable names to look for
+  # the actual commands.
+  steps = build_config.get('IMAGE', 'post_process_steps')
+  for step_name in steps.split():
+    cros_lib.Info('IMAGING POST-PROCESS: %s' % step_name)
+
+    # Get the name of the variable that the user stored the cmd in.
+    cmd_var_name = 'post_process_%s_cmd' % step_name
+
+    # Run the command.  Exceptions will cause the program to exit.
+    cmd = build_config.get('IMAGE', cmd_var_name)
+    cros_lib.RunCommand(cmd, shell=True, cwd=cwd, ignore_sigint=True)
+
+
 class BuildCmd(subcmd.ChromiteCmd):
   """Build the chroot (if needed), the packages for a target, and the image."""
 
@@ -200,3 +226,4 @@ class BuildCmd(subcmd.ChromiteCmd):
       _DoSetupBoard(build_config, options.clean)
       _DoBuildPackages(build_config)
       _DoBuildImage(build_config)
+      _DoImagePostProcessing(build_config)
