@@ -36,12 +36,6 @@ class Differ {
   void MarkDirtyBlocks(const void* prev_buffer, const void* curr_buffer);
 
   // Diff a small block of image and return non-zero if there is a diff.
-  // Currently, this just returns 0 or 1, but this may change in the future
-  // to return the number of pixels changed.
-  DiffInfo DiffBlock(const uint8* prev_buffer, const uint8* curr_buffer,
-                     int stride);
-
-  // Diff a small block of image and return non-zero if there is a diff.
   // This checks only the part of the block specified by the width and
   // height parameters.
   // This is much slower than DiffBlock() since it cannot assume that the
