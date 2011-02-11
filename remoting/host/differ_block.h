@@ -17,6 +17,7 @@ static const int kBytesPerPixel = 4;
 // Low level functions to compare 2 blocks of pixels.
 //   zero means the blocks are identical.
 //   one means  the blocks are different.
+
 int BlockDifference(const uint8* image1, const uint8* image2, int stride);
 
 }  // namespace remoting

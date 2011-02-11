@@ -5,7 +5,6 @@
 #include "remoting/host/differ.h"
 
 #include "base/logging.h"
-#include "remoting/host/differ_block.h"
 
 namespace remoting {
 
@@ -73,7 +72,7 @@ void Differ::MarkDirtyBlocks(const void* prev_buffer, const void* curr_buffer) {
     uint8* diff_info = diff_info_row_start;
 
     for (int x = 0; x < x_full_blocks; x++) {
-      DiffInfo diff = BlockDifference(prev_block, curr_block, bytes_per_row_);
+      DiffInfo diff = DiffBlock(prev_block, curr_block, bytes_per_row_);
       if (diff != 0) {
         // Mark this block as being modified so that it gets incorporated into
         // a dirty rect.
@@ -97,6 +96,35 @@ void Differ::MarkDirtyBlocks(const void* prev_buffer, const void* curr_buffer) {
   if (partial_row_height != 0) {
     // TODO(garykac): Handle last partial row.
   }
+}
+
+DiffInfo Differ::DiffBlock(const uint8* prev_buffer, const uint8* curr_buffer,
+                           int stride) {
+  const uint8* prev_row_start = prev_buffer;
+  const uint8* curr_row_start = curr_buffer;
+
+  // Number of uint64s in each row of the block.
+  // This must be an integral number.
+  int int64s_per_row = (kBlockSize * bytes_per_pixel_) / sizeof(uint64);
+  DCHECK(((kBlockSize * bytes_per_pixel_) % sizeof(uint64)) == 0);
+
+  for (int y = 0; y < kBlockSize; y++) {
+    const uint64* prev = reinterpret_cast<const uint64*>(prev_row_start);
+    const uint64* curr = reinterpret_cast<const uint64*>(curr_row_start);
+
+    // Check each row in uint64-sized chunks.
+    // Note that this check may straddle multiple pixels. This is OK because
+    // we're interested in identifying whether or not there was change - we
+    // don't care what the actual change is.
+    for (int x = 0; x < int64s_per_row; x++) {
+      if (*prev++ != *curr++) {
+        return 1;
+      }
+    }
+    prev_row_start += stride;
+    curr_row_start += stride;
+  }
+  return 0;
 }
 
 DiffInfo Differ::DiffPartialBlock(const uint8* prev_buffer,
