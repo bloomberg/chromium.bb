@@ -25,7 +25,7 @@ GpuWatchdogThread::GpuWatchdogThread(int timeout)
       armed_(false),
 #if defined(OS_WIN)
       watched_thread_handle_(0),
-      arm_time_(0),
+      arm_cpu_time_(0),
 #endif
       ALLOW_THIS_IN_INITIALIZER_LIST(task_observer_(this)) {
   DCHECK(timeout >= 0);
@@ -172,8 +172,10 @@ void GpuWatchdogThread::OnCheck() {
   armed_ = true;
 
 #if defined(OS_WIN)
-  arm_time_ = GetWatchedThreadTime();
+  arm_cpu_time_ = GetWatchedThreadTime();
 #endif
+
+  arm_absolute_time_ = base::Time::Now();
 
   // Post a task to the monitored thread that does nothing but wake up the
   // TaskObserver. Any other tasks that are pending on the watched thread will
@@ -193,8 +195,9 @@ void GpuWatchdogThread::OnCheck() {
 // Use the --disable-gpu-watchdog command line switch to disable this.
 void GpuWatchdogThread::OnExit() {
 #if defined(OS_WIN)
-  // Defer termination until a certain amount of user time has elapsed.
-  int64 time_since_arm = GetWatchedThreadTime() - arm_time_;
+  // Defer termination until a certain amount of CPU time has elapsed on the
+  // watched thread.
+  int64 time_since_arm = GetWatchedThreadTime() - arm_cpu_time_;
   if (time_since_arm < timeout_) {
     message_loop()->PostDelayedTask(
         FROM_HERE,
@@ -203,6 +206,17 @@ void GpuWatchdogThread::OnExit() {
     return;
   }
 #endif
+
+  // If the watchdog woke up significantly behind schedule, disarm and reset
+  // the watchdog check. This is to prevent the watchdog thread from terminating
+  // when a machine wakes up from sleep or hibernation, which would otherwise
+  // appear to be a hang.
+  if ((base::Time::Now() - arm_absolute_time_).InMilliseconds() >
+      timeout_ * 2) {
+    armed_ = false;
+    OnCheck();
+    return;
+  }
 
   // Make sure the timeout period is on the stack before crashing.
   volatile int timeout = timeout_;

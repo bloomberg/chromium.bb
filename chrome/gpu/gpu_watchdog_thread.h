@@ -10,6 +10,7 @@
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "base/threading/thread.h"
+#include "base/time.h"
 
 // A thread that intermitently sends tasks to a group of watched message loops
 // and deliberately crashes if one of them does not respond after a timeout.
@@ -59,8 +60,10 @@ class GpuWatchdogThread : public base::Thread,
 
 #if defined(OS_WIN)
   void* watched_thread_handle_;
-  int64 arm_time_;
+  int64 arm_cpu_time_;
 #endif
+
+  base::Time arm_absolute_time_;
 
   typedef ScopedRunnableMethodFactory<GpuWatchdogThread> MethodFactory;
   scoped_ptr<MethodFactory> method_factory_;
