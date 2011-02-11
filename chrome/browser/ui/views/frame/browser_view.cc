@@ -1974,12 +1974,11 @@ void BrowserView::InitSystemMenu() {
 #endif
 
 int BrowserView::GetInfoBarArrowCenterX() const {
-  LocationBarView* location_bar_view = toolbar_->location_bar();
   const LocationIconView* location_icon_view =
-      location_bar_view->location_icon_view();
-  gfx::Rect icon_bounds = location_icon_view->bounds();
+      toolbar_->location_bar()->location_icon_view();
+  gfx::Rect icon_bounds = location_icon_view->GetLocalBounds();
   gfx::Point icon_center = icon_bounds.CenterPoint();
-  ConvertPointToView(location_bar_view, this, &icon_center);
+  ConvertPointToView(location_icon_view, this, &icon_center);
   return icon_center.x();
 }
 
