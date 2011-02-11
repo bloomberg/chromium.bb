@@ -696,8 +696,8 @@
       # be found at: http://seleniumhq.org/docs/09_webdriver.html.
       # The documention of the protocol implemented is at:
       # http://code.google.com/p/selenium/wiki/JsonWireProtocol
-      'target_name': 'chromedriver',
-      'type': 'executable',
+      'target_name': 'chromedriver_lib',
+      'type': '<(library)',
       'dependencies': [
         'browser',
         'chrome',
@@ -710,7 +710,6 @@
         '../build/temp_gyp/googleurl.gyp:googleurl',
         '../net/net.gyp:net',
         '../skia/skia.gyp:skia',
-        '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
@@ -730,7 +729,6 @@
         'test/webdriver/error_codes.h',
         'test/webdriver/keymap.h',
         'test/webdriver/keymap.cc',
-        'test/webdriver/server.cc',
         'test/webdriver/session.h',
         'test/webdriver/session.cc',
         'test/webdriver/session_manager.h',
@@ -777,15 +775,34 @@
             '../views/views.gyp:views',
           ],
         }],
+        ['OS=="linux" or OS=="freebsd"', {
+          'conditions': [
+            ['linux_use_tcmalloc==1', {
+              'dependencies': [
+                '../base/allocator/allocator.gyp:allocator',
+              ],
+            }],
+          ],
+        }],
+      ],
+    },
+    {
+      'target_name': 'chromedriver',
+      'type': 'executable',
+      'msvs_guid': '3F9C9B6D-BBB6-480F-B038-23BF35A432DC',
+      'dependencies': [
+        'chromedriver_lib',
+        '../skia/skia.gyp:skia',
+        '../testing/gtest.gyp:gtest',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'test/webdriver/server.cc',
+      ],
+      'conditions': [
         ['OS=="win"', {
-          'include_dirs': [
-            'third_party/wtl/include',
-          ],
-          'dependencies': [
-            'test_support_common',
-            '../google_update/google_update.gyp:google_update',
-            '../views/views.gyp:views',
-          ],
           'conditions': [
             ['win_use_allocator_shim==1', {
               'dependencies': [
@@ -808,15 +825,49 @@
               },
             },
           },
-        },],
-        ['OS=="linux" or OS=="freebsd"', {
+        }],
+      ]
+    },
+    {
+      'target_name': 'chromedriver_unittests',
+      'type': 'executable',
+      'msvs_guid': 'E24B445D-96E3-4272-BB54-AACBC6D3FE7E',
+      'dependencies': [
+        'chromedriver_lib',
+        '../base/base.gyp:test_support_base',
+        '../testing/gtest.gyp:gtest',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        '../base/test/run_all_unittests.cc',
+        'test/webdriver/utility_functions_unittest.cc',
+      ],
+      'conditions': [
+        ['OS=="win"', {
           'conditions': [
-            ['linux_use_tcmalloc==1', {
+            ['win_use_allocator_shim==1', {
               'dependencies': [
-                '../base/allocator/allocator.gyp:allocator',
+                '<(allocator_target)',
               ],
             }],
           ],
+          'link_settings': {
+            'libraries': [
+              '-lOleAcc.lib',
+              '-lws2_32.lib',
+            ],
+          },
+          'configurations': {
+            'Debug': {
+              'msvs_settings': {
+                'VCLinkerTool': {
+                  'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
+                },
+              },
+            },
+          },
         }],
       ],
     },

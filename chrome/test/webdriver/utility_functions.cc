@@ -9,9 +9,13 @@
 #include <algorithm>
 #include <sstream>
 
+#include "base/basictypes.h"
+#include "base/format_macros.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/rand_util.h"
 #include "base/scoped_ptr.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "third_party/webdriver/atoms.h"
 
@@ -82,5 +86,10 @@ bool ParseJSONDictionary(const std::string& json, DictionaryValue** dict,
   return true;
 }
 
-}  // namespace webdriver
+std::string GenerateRandomID() {
+  uint64 msb = base::RandUint64();
+  uint64 lsb = base::RandUint64();
+  return base::StringPrintf("%016" PRIx64 "%016" PRIx64, msb, lsb);
+}
 
+}  // namespace webdriver

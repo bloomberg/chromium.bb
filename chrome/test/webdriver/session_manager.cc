@@ -4,14 +4,10 @@
 
 #include "chrome/test/webdriver/session_manager.h"
 
-#include "base/command_line.h"
 #include "base/logging.h"
-#include "base/process.h"
-#include "base/process_util.h"
-#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/threading/thread.h"
-#include "chrome/common/chrome_constants.h"
+#include "chrome/test/webdriver/utility_functions.h"
 
 #if defined(OS_POSIX)
 #include <arpa/inet.h>
@@ -108,25 +104,8 @@ bool SessionManager::SetIPAddress(const std::string& p) {
 #endif
 }
 
-std::string SessionManager::GenerateSessionID() {
-  static const char text[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQ"\
-                             "RSTUVWXYZ0123456789";
-  session_generation_.Acquire();
-  std::string id = "";
-  count_++;  // For every connection made increment the global count.
-  for (int i = 0; i < 32; ++i) {
-#ifdef OS_POSIX
-    id += text[random() % (sizeof text - 1)];
-#else
-    id += text[rand() % (sizeof text - 1)];
-#endif
-  }
-  session_generation_.Release();
-  return id;
-}
-
 Session* SessionManager::Create() {
-  std::string id = GenerateSessionID();
+  std::string id = GenerateRandomID();
   {
     base::AutoLock lock(map_lock_);
     if (map_.find(id) != map_.end()) {
@@ -177,7 +156,7 @@ Session* SessionManager::GetSession(const std::string& id) const {
   return it->second;
 }
 
-SessionManager::SessionManager() : addr_(""), port_(""), count_(0) {}
+SessionManager::SessionManager() : addr_(""), port_("") {}
 
 SessionManager::~SessionManager() {}
 

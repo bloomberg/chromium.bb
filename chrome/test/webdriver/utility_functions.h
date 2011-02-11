@@ -28,7 +28,9 @@ void CheckValueType(const Value::ValueType expected, const Value* const actual);
 bool ParseJSONDictionary(const std::string& json, DictionaryValue** dict,
                          std::string* error);
 
+// Generates a random, 32-character hexidecimal ID.
+std::string GenerateRandomID();
+
 }  // namespace webdriver
 
 #endif  // CHROME_TEST_WEBDRIVER_UTILITY_FUNCTIONS_H_
-

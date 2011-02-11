@@ -37,19 +37,16 @@ class SessionManager {
   SessionManager();
   ~SessionManager();
   friend struct DefaultSingletonTraits<SessionManager>;
-  std::string GenerateSessionID();
   std::string IPLookup(const std::string& nic);
 
   std::map<std::string, Session*> map_;
   mutable base::Lock map_lock_;
-  base::Lock session_generation_;
   // Record the address and port for the HTTP 303 See other redirect.
   // We save the IP and Port of the machine chromedriver is running on since
   // a HTTP 303, see other,  resdirect is sent after a successful creation of
   // a session, ie: http://172.22.41.105:8080/session/DFSSE453CV588
   std::string addr_;
   std::string port_;
-  int count_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionManager);
 };
