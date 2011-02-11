@@ -94,14 +94,6 @@ TEST_F(OwnershipServiceTest, IsUnowned) {
   EXPECT_FALSE(service_->IsAlreadyOwned());
 }
 
-TEST_F(OwnershipServiceTest, LoadOwnerKeyUnowned) {
-  StartUnowned();
-
-  EXPECT_CALL(*mock_, GetOwnerKeyFilePath())
-      .WillRepeatedly(Return(tmpfile_));
-  EXPECT_FALSE(service_->StartLoadOwnerKeyAttempt());
-}
-
 TEST_F(OwnershipServiceTest, LoadOwnerKeyFail) {
   MockKeyLoadObserver loader;
   EXPECT_CALL(*mock_, GetOwnerKeyFilePath())
@@ -110,7 +102,7 @@ TEST_F(OwnershipServiceTest, LoadOwnerKeyFail) {
       .WillOnce(Return(false))
       .RetiresOnSaturation();
 
-  EXPECT_TRUE(service_->StartLoadOwnerKeyAttempt());
+  service_->StartLoadOwnerKeyAttempt();
 
   // Run remaining events, until ExportPublicKeyViaDbus().
   message_loop_.Run();
@@ -126,15 +118,9 @@ TEST_F(OwnershipServiceTest, LoadOwnerKey) {
       .WillOnce(DoAll(SetArgumentPointee<1>(fake_public_key_),
                       Return(true)))
       .RetiresOnSaturation();
-  EXPECT_TRUE(service_->StartLoadOwnerKeyAttempt());
+  service_->StartLoadOwnerKeyAttempt();
 
   message_loop_.Run();
-}
-
-TEST_F(OwnershipServiceTest, TakeOwnershipAlreadyOwned) {
-  EXPECT_CALL(*mock_, GetOwnerKeyFilePath())
-      .WillRepeatedly(Return(tmpfile_));
-  EXPECT_FALSE(service_->StartTakeOwnershipAttempt("you"));
 }
 
 TEST_F(OwnershipServiceTest, AttemptKeyGeneration) {
@@ -150,7 +136,7 @@ TEST_F(OwnershipServiceTest, AttemptKeyGeneration) {
   EXPECT_CALL(*mock_, GetOwnerKeyFilePath())
       .WillRepeatedly(Return(tmpfile_));
 
-  EXPECT_TRUE(service_->StartTakeOwnershipAttempt("me"));
+  service_->StartTakeOwnershipAttempt("me");
 
   message_loop_.Run();
 }
@@ -160,9 +146,11 @@ TEST_F(OwnershipServiceTest, NotYetOwnedVerify) {
 
   EXPECT_CALL(*mock_, GetOwnerKeyFilePath())
       .WillRepeatedly(Return(tmpfile_));
-  // Create delegate that does not quit the message loop on callback.
-  MockKeyUser delegate(OwnerManager::KEY_UNAVAILABLE, false);
+
+  MockKeyUser delegate(OwnerManager::KEY_UNAVAILABLE);
   service_->StartVerifyAttempt("", std::vector<uint8>(), &delegate);
+
+  message_loop_.Run();
 }
 
 TEST_F(OwnershipServiceTest, GetKeyFailDuringVerify) {

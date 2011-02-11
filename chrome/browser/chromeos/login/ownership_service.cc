@@ -7,7 +7,6 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
-#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_thread.h"
 
 namespace chromeos {
@@ -29,73 +28,50 @@ OwnershipService::~OwnershipService() {}
 
 
 bool OwnershipService::IsAlreadyOwned() {
-  // This should not do blocking IO from the UI thread.
-  // Temporarily allow it for now. http://crbug.com/70097
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
   return file_util::PathExists(utils_->GetOwnerKeyFilePath());
 }
 
-bool OwnershipService::StartLoadOwnerKeyAttempt() {
-  if (!IsAlreadyOwned()) {
-    LOG(WARNING) << "Device not yet owned";
-    return false;
-  }
+void OwnershipService::StartLoadOwnerKeyAttempt() {
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(manager_.get(), &OwnerManager::LoadOwnerKey));
-  return true;
+      NewRunnableFunction(&TryLoadOwnerKeyAttempt, this));
 }
 
-bool OwnershipService::StartTakeOwnershipAttempt(const std::string& owner) {
-  if (IsAlreadyOwned()) {
-    VLOG(1) << "Device is already owned";
-    return false;
-  }
+void OwnershipService::StartTakeOwnershipAttempt(const std::string& unused) {
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(manager_.get(),
-                        &OwnerManager::GenerateKeysAndExportPublic));
-  return true;
+      NewRunnableFunction(&OwnershipService::TryTakeOwnershipAttempt, this));
 }
 
 void OwnershipService::StartSigningAttempt(const std::string& data,
                                            OwnerManager::Delegate* d) {
-  if (!IsAlreadyOwned()) {
-    LOG(ERROR) << "Device not yet owned";
-    d->OnKeyOpComplete(OwnerManager::KEY_UNAVAILABLE, std::vector<uint8>());
-    return;
-  }
   BrowserThread::ID thread_id;
   if (!BrowserThread::GetCurrentThreadIdentifier(&thread_id))
     thread_id = BrowserThread::UI;
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(manager_.get(),
-                        &OwnerManager::Sign,
-                        thread_id,
-                        data, d));
+      NewRunnableFunction(&OwnershipService::TrySigningAttempt,
+                          this,
+                          thread_id,
+                          data,
+                          d));
   return;
 }
 
 void OwnershipService::StartVerifyAttempt(const std::string& data,
                                           const std::vector<uint8>& signature,
                                           OwnerManager::Delegate* d) {
-  if (!IsAlreadyOwned()) {
-    LOG(ERROR) << "Device not yet owned";
-    d->OnKeyOpComplete(OwnerManager::KEY_UNAVAILABLE, std::vector<uint8>());
-    return;
-  }
   BrowserThread::ID thread_id;
   if (!BrowserThread::GetCurrentThreadIdentifier(&thread_id))
     thread_id = BrowserThread::UI;
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(manager_.get(),
-                        &OwnerManager::Verify,
-                        thread_id,
-                        data,
-                        signature,
-                        d));
+      NewRunnableFunction(&OwnershipService::TryVerifyAttempt,
+                          this,
+                          thread_id,
+                          data,
+                          signature,
+                          d));
   return;
 }
 
@@ -103,6 +79,64 @@ bool OwnershipService::CurrentUserIsOwner() {
   // If this user has the private key associated with the owner's
   // public key, this user is the owner.
   return IsAlreadyOwned() && manager_->EnsurePrivateKey();
+}
+
+// static
+void OwnershipService::TryLoadOwnerKeyAttempt(OwnershipService* service) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  if (!service->IsAlreadyOwned()) {
+    VLOG(1) << "Device not yet owned";
+    return;
+  }
+  service->manager()->LoadOwnerKey();
+}
+
+// static
+void OwnershipService::TryTakeOwnershipAttempt(OwnershipService* service) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  if (service->IsAlreadyOwned()) {
+    VLOG(1) << "Device is already owned";
+    return;
+  }
+  service->manager()->GenerateKeysAndExportPublic();
+}
+
+// static
+void OwnershipService::TrySigningAttempt(OwnershipService* service,
+                                         const BrowserThread::ID thread_id,
+                                         const std::string& data,
+                                         OwnerManager::Delegate* d) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  if (!service->IsAlreadyOwned()) {
+    LOG(ERROR) << "Device not yet owned";
+    BrowserThread::PostTask(
+        thread_id, FROM_HERE,
+        NewRunnableFunction(&OwnershipService::FailAttempt, d));
+    return;
+  }
+  service->manager()->Sign(thread_id, data, d);
+}
+
+// static
+void OwnershipService::TryVerifyAttempt(OwnershipService* service,
+                                        const BrowserThread::ID thread_id,
+                                        const std::string& data,
+                                        const std::vector<uint8>& signature,
+                                        OwnerManager::Delegate* d) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  if (!service->IsAlreadyOwned()) {
+    LOG(ERROR) << "Device not yet owned";
+    BrowserThread::PostTask(
+        thread_id, FROM_HERE,
+        NewRunnableFunction(&OwnershipService::FailAttempt, d));
+    return;
+  }
+  service->manager()->Verify(thread_id, data, signature, d);
+}
+
+// static
+void OwnershipService::FailAttempt(OwnerManager::Delegate* d) {
+  d->OnKeyOpComplete(OwnerManager::KEY_UNAVAILABLE, std::vector<uint8>());
 }
 
 }  // namespace chromeos

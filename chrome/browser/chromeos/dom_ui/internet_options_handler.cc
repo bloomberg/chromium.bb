@@ -22,7 +22,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/login/ownership_service.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/status/network_menu.h"
 #include "chrome/browser/dom_ui/web_ui_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -459,7 +459,7 @@ void InternetOptionsHandler::SetDetailsCallback(const ListValue* args) {
     return;
   }
 
-  if (!chromeos::OwnershipService::GetSharedInstance()->CurrentUserIsOwner()) {
+  if (!chromeos::UserManager::Get()->current_user_is_owner()) {
     LOG(WARNING) << "Non-owner tried to change a network.";
     return;
   }
@@ -766,8 +766,7 @@ void InternetOptionsHandler::HandleWifiButtonClick(
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   chromeos::WifiNetwork* network;
   if (command == "forget") {
-    if (!chromeos::OwnershipService::GetSharedInstance()->
-        CurrentUserIsOwner()) {
+    if (!chromeos::UserManager::Get()->current_user_is_owner()) {
       LOG(WARNING) << "Non-owner tried to forget a network.";
       return;
     }

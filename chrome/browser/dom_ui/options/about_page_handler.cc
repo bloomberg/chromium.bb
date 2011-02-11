@@ -37,7 +37,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/power_library.h"
 #include "chrome/browser/chromeos/cros/update_library.h"
-#include "chrome/browser/chromeos/login/ownership_service.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #endif
 
@@ -313,7 +313,7 @@ void AboutPageHandler::PageReady(const ListValue* args) {
 
 void AboutPageHandler::SetReleaseTrack(const ListValue* args) {
 #if defined(OS_CHROMEOS)
-  if (!chromeos::OwnershipService::GetSharedInstance()->CurrentUserIsOwner()) {
+  if (!chromeos::UserManager::Get()->current_user_is_owner()) {
     LOG(WARNING) << "Non-owner tried to change release track.";
     return;
   }

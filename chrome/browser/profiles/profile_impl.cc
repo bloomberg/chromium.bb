@@ -122,7 +122,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/ownership_service.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/preferences.h"
 #endif
 
@@ -1472,7 +1472,7 @@ void ProfileImpl::ChangeAppLocale(
   }
   if (do_update_pref)
     GetPrefs()->SetString(prefs::kApplicationLocale, new_locale);
-  if (chromeos::OwnershipService::GetSharedInstance()->CurrentUserIsOwner())
+  if (chromeos::UserManager::Get()->current_user_is_owner())
     local_state->SetString(prefs::kOwnerLocale, new_locale);
   local_state->SetString(prefs::kApplicationLocale, new_locale);
 
