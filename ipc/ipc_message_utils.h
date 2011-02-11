@@ -121,6 +121,12 @@ class MessageIterator {
 };
 
 //-----------------------------------------------------------------------------
+// A dummy struct to place first just to allow leading commas for all
+// members in the macro-generated constructor initializer lists.
+struct NoParams {
+};
+
+//-----------------------------------------------------------------------------
 // ParamTraits specializations, etc.
 
 template <class P>

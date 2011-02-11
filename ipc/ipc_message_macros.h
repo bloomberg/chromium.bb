@@ -1,18 +1,143 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This header is meant to be included in multiple passes, hence no traditional
-// header guard.
+// Defining IPC Messages
 //
-// In your XXX_messages_internal.h file, before defining any messages do:
-//     #define IPC_MESSAGE_START XMsgStart
-// XMstStart value is from the IPCMessageStart enum in ipc_message_utils.h, and
-// needs to be unique for each different file.
-// In your XXX_messages.cc file, after all the includes for param types:
+// Your IPC messages will be defined by macros inside of an XXX_messages.h
+// header file.  Most of the time, the system can automatically generate all
+// of messaging mechanism from these definitions, but sometimes some manual
+// coding is required.  In these cases, you will also have an XXX_messages.cc
+// implemation file as well.
+//
+// The senders of your messages will include your XXX_messages.h file to
+// get the full set of definitions they need to send your messages.
+//
+// Each XXX_messages.h file must be registered with the IPC system.  This
+// requires adding two things:
+//   - An XXXMsgStart value to the IPCMessageStart enum in ipc_message_utils.h
+//   - An inclusion of XXX_messages.h file in a message generator .h file
+//
+// The XXXMsgStart value is an enumeration that ensures uniqueness for
+// each different message file.  Later, you will use this inside your
+// XXX_messages.h file before invoking message declatation macros:
+//     #define IPC_MESSAGE_START XXXMsgStart
+//       ( ... your macro invocations go here ... )
+//
+// Message Generator Files
+//
+// A message generator .h header file pulls in all other message-declaring
+// headers for a given component.  It is included by a message generator
+// .cc file, which is where all the generated code will wind up.  Typically,
+// you will use an existing generator (e.g. common_message_generator.cc and
+// common_message_generator.h in /chrome/common), but there are circumstances
+// where you may add a new one.
+//
+// In the rare cicrucmstances where you can't re-use an existing file,
+// your YYY_message_generator.cc file for a component YYY would contain
+// the following code:
+//     // Get basic type definitions.
 //     #define IPC_MESSAGE_IMPL
-//     #include "X_messages.h"
+//     #include "path/to/YYY_message_generator.h"
+//     // Generate constructors.
+//     #include "ipc/struct_constructor_macros.h"
+//     #include "path/to/YYY_message_generator.h"
+//     // Generate destructors.
+//     #include "ipc/struct_destructor_macros.h"
+//     #include "path/to/YYY_message_generator.h"
+//     namespace IPC {
+//     // Generate param traits write methods.
+//     #include "ipc/param_traits_write_macros.h"
+//     #include "path/to/YYY_message_generator.h"
+//     // Generate param traits read methods.
+//     #include "ipc/param_traits_read_macros.h"
+//     #include "path/to/YYY_message_generator.h"
+//     // Generate param traits log methods.
+//     #include "ipc/param_traits_log_macros.h"
+//     #include "path/to/YYY_message_generator.h"
+//     }  // namespace IPC
 //
+// In cases where manual generation is required, in your XXX_messages.cc
+// file, put the following after all the includes for param types:
+//     #define IPC_MESSAGE_IMPL
+//     #include "XXX_messages.h"
+//        (... implementation of traits not auto-generated ...)
+//
+// Multiple Inclusion
+//
+// The XXX_messages.h file will be multiply-included by the
+// YYY_message_generator.cc file, so your XXX_messages file can't be
+// guarded in the usual manner.  Ideally, there will be no need for any
+// inclusion guard, since the XXX_messages.h file should consist soley
+// of inclusions of other headers (which are self-guarding) and IPC
+// macros (which are multiply evaluating).
+//
+// Note that there is no #pragma once either; doing so would mark the whole
+// file as being singly-included.  Since your XXX_messages.h file is only
+// partially-guarded, care must be taken to ensure that it is only included
+// by other .cc files (and the YYY_message_generator.h file).  Including an
+// XXX_messages.h file in some other .h file may result in duplicate
+// declarations and a compilation failure.
+//
+// Type Declarations
+//
+// It is generally a bad idea to have type definitions in a XXX_messages.h
+// file; most likely the typedef will then be used in the message, as opposed
+// to the struct iself.  Later, an IPC message dispatcher wil need to call
+// a function taking that type, and that function is declared in some other
+// header.  Thus, in order to get the type definition, the other header
+// would have to include the XXX_messages.h file, violating the rule above
+// about not including XXX_messages.h file in other .h files.
+//
+// One approach here is to move these type definitions to another (guarded)
+// .h file and include this second .h in your XXX_messages.h file.  This
+// is still less than ideal, because the dispatched function would have to
+// redeclare the typedef or include this second header.  This may be
+// reasonable in a few cases.
+//
+// Failing all of the above, then you will want to bracket the smallest
+// possible section of your XXX_messages.h file containing these types
+// with an include guard macro.  Be aware that providing an incomplete
+// class type declaration to avoid pulling in a long chain of headers is
+// acceptable when your XXX_messages.h header is being included by the
+// message sending caller's code, but not when the YYY_message_generator.c
+// is building the messages. In addtion, due to the multiple inclusion
+// restriction, these type ought to be guarded.  Follow a convention like:
+//      #ifndef SOME_GUARD_MACRO
+//      #define SOME_GUARD_MACRO
+//      class some_class;        // One incomplete class declaration
+//      class_some_other_class;  // Another incomplete class declaration
+//      #endif  // SOME_GUARD_MACRO
+//      #ifdef IPC_MESSAGE_IMPL
+//      #inlcude "path/to/some_class.h"        // Full class declaration
+//      #inlcude "path/to/some_other_class.h"  // Full class declaration
+//      #endif  // IPC_MESSAGE_IMPL
+//        (.. IPC macros using some_class and some_other_class ...)
+//
+// Macro Invocations
+//
+// You will use IPC message macro invocations for three things:
+//   - New struct definitions for IPC
+//   - Registering existing struct and enum definitions with IPC
+//   - Defining the messages themselves
+//
+// New structs are defined with IPC_STRUCT_BEGIN(), IPC_STRUCT_MEMBER(),
+// IPC_STRUCT_END() family of macros.  These cause the XXX_messages.h
+// to proclaim equivalent struct declarations for use by callers, as well
+// as later registering the type with the message generation.  Note that
+// IPC_STRUCT_MEMBER() is only permitted inside matching calls to
+// IPC_STRUCT_BEGIN() / IPC_STRUCT_END().
+//
+// Externally-defined structs are registered with IPC_STRUCT_TRAITS_BEGIN(),
+// IPC_STRUCT_TRAITS_MEMBER(), and IPC_STRUCT_TRAITS_END() macros. These
+// cause registration of the types with message generation only.  Note that
+// IPC_STRUCT_TRAITS_MEMBER() is only permitted inside matching calls
+// to IPC_STRUCT_TRAITS_BEGIN() / IPC_STRUCT_TRAITS_END().
+//
+// Enum types are registered with a single IPC_ENUM_TRAITS() macro.  There
+// is no need to enumerate each value to the IPC mechanism.
+//
+// Once the types have been declared / registered, message definitions follow.
 // "Sync" messages are just synchronous calls, the Send() call doesn't return
 // until a reply comes back.  Input parameters are first (const TYPE&), and
 // To declare a sync message, use the IPC_SYNC_ macros.  The numbers at the
@@ -20,7 +145,6 @@
 // out). The caller does a Send([route id, ], in1, &out1, &out2).
 // The receiver's handler function will be
 //     void OnSyncMessageName(const type1& in1, type2* out1, type3* out2)
-//
 //
 // A caller can also send a synchronous message, while the receiver can respond
 // at a later time.  This is transparent from the sender's side.  The receiver
@@ -38,11 +162,12 @@
 //     ViewHostMsg_SyncMessageName::WriteReplyParams(reply_msg, out1, out2);
 //     Send(reply_msg);
 
-#include "ipc/ipc_message_utils.h"
+#ifndef IPC_IPC_MESSAGE_MACROS_H_
+#define IPC_IPC_MESSAGE_MACROS_H_
+// Can use #pragma once all XXX_messages.h files clean up IPC_MESSAGE_START
 
-// In case a file includes several X_messages.h files, we don't want to get
-// errors because each X_messages_internal.h file will define this.
-#undef IPC_MESSAGE_START
+#include "ipc/ipc_message_utils.h"
+#include "ipc/param_traits_macros.h"
 
 #if defined(IPC_MESSAGE_IMPL)
 #include "ipc/ipc_message_impl_macros.h"
@@ -60,7 +185,7 @@ typedef void (*LogFunction)(std::string* name,
 typedef base::hash_map<uint32, LogFunction > LogFunctionMap;
 LogFunctionMap g_log_function_mapping;
 
-#endif
+#endif  // IPC_LOG_TABLE_CREATED
 
 
 #define IPC_MESSAGE_LOG(msg_class) \
@@ -280,7 +405,7 @@ LogFunctionMap g_log_function_mapping;
 #define IPC_SYNC_MESSAGE_ROUTED5_4_EXTRA(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in, type1_out, type2_out, type3_out, type4_out) \
   IPC_MESSAGE_LOG(msg_class)
 
-#else
+#else  // defined(IPC_MESSAGE_MACROS_LOG_ENABLED)
 
 #define IPC_MESSAGE_CONTROL0_EXTRA(msg_class)
 #define IPC_MESSAGE_CONTROL1_EXTRA(msg_class, type1)
@@ -352,7 +477,18 @@ LogFunctionMap g_log_function_mapping;
 #define IPC_SYNC_MESSAGE_ROUTED5_3_EXTRA(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in, type1_out, type2_out, type3_out)
 #define IPC_SYNC_MESSAGE_ROUTED5_4_EXTRA(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in, type1_out, type2_out, type4_out)
 
-#endif
+#endif  // defined(IPC_MESSAGE_MACROS_LOG_ENABLED)
+
+// Macros for defining structs.  May be subsequently redefined.
+#define IPC_STRUCT_BEGIN(struct_name) \
+  struct struct_name; \
+  IPC_STRUCT_TRAITS_BEGIN(struct_name) \
+  IPC_STRUCT_TRAITS_END() \
+  struct struct_name : IPC::NoParams { \
+    struct_name(); \
+    ~struct_name();
+#define IPC_STRUCT_MEMBER(type, name) type name;
+#define IPC_STRUCT_END() };
 
 // Note: we currently use __LINE__ to give unique IDs to messages within a file.
 // They're globally unique since each file defines its own IPC_MESSAGE_START.
@@ -1243,3 +1379,11 @@ LogFunctionMap g_log_function_mapping;
 // This corresponds to an enum value from IPCMessageStart.
 #define IPC_MESSAGE_CLASS(message) \
   message.type() >> 16
+
+#endif  // IPC_IPC_MESSAGE_MACROS_H_
+
+// Clean up IPC_MESSAGE_START in this unguarded section so that the
+// XXX_messages.h files need not do so themselves.  This makes the
+// XXX_messages.h files easier to write.
+#undef IPC_MESSAGE_START
+

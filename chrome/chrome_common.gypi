@@ -46,6 +46,7 @@
           'common/chrome_counters.h',
           'common/chrome_version_info.cc',
           'common/chrome_version_info.h',
+          'common/common_message_generator.cc',
           'common/common_param_traits.cc',
           'common/common_param_traits.h',
           'common/content_restriction.h',

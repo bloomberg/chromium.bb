@@ -40,6 +40,12 @@
           'ipc_sync_message.h',
           'ipc_sync_message_filter.cc',
           'ipc_sync_message_filter.h',
+          'param_traits_log_macros.h',
+          'param_traits_macros.h',
+          'param_traits_read_macros.h',
+          'param_traits_write_macros.h',
+          'struct_constructor_macros.h',
+          'struct_destructor_macros.h',
         ],
         'include_dirs': [
           '..',
