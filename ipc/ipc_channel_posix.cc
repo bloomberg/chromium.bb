@@ -868,7 +868,7 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
       }
       PLOG(ERROR) << "pipe error on "
                   << fd_written
-                  << " Currently writing message of size:"
+                  << " Currently writing message of size: "
                   << msg->size();
       return false;
     }
