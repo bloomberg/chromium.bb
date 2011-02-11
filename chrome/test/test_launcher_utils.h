@@ -29,6 +29,12 @@ bool OverrideGLImplementation(
     CommandLine* command_line,
     const std::string& implementation_name) WARN_UNUSED_RESULT;
 
+// Returns test termination tiemout based on test name
+// and a default timeout. Makes it possible to override
+// the default timeout using command-line or test prefix.
+int GetTestTerminationTimeout(const std::string& test_name,
+                              int default_timeout_ms);
+
 }  // namespace test_launcher_utils
 
 #endif  // CHROME_TEST_TEST_LAUNCHER_UTILS_H_

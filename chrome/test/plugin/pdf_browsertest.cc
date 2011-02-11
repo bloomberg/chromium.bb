@@ -23,27 +23,12 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/gfx/codec/png_codec.h"
 
-extern base::hash_map<std::string, int> g_test_timeout_overrides;
-
 namespace {
 
 // Include things like browser frame and scrollbar and make sure we're bigger
 // than the test pdf document.
 static const int kBrowserWidth = 1000;
 static const int kBrowserHeight = 600;
-static const int kLoadingTestTimeoutMs = 60000;
-
-// The loading test is really a collection of tests, each one being a different
-// PDF file.  But it would be busy work to add a different test for each file.
-// Since we run them all in one test, we want a bigger timeout.
-class IncreaseLoadingTimeout {
- public:
-  IncreaseLoadingTimeout() {
-    g_test_timeout_overrides["PDFBrowserTest.Loading"] = kLoadingTestTimeoutMs;
-  }
-};
-
-IncreaseLoadingTimeout g_increase_loading_timeout;
 
 class PDFBrowserTest : public InProcessBrowserTest,
                        public NotificationObserver {
@@ -272,7 +257,7 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, FindAndCopy) {
 // Tests that loading async pdfs works correctly (i.e. document fully loads).
 // This also loads all documents that used to crash, to ensure we don't have
 // regressions.
-IN_PROC_BROWSER_TEST_F(PDFBrowserTest, Loading) {
+IN_PROC_BROWSER_TEST_F(PDFBrowserTest, SLOW_Loading) {
   ASSERT_TRUE(pdf_test_server()->Start());
 
   NavigationController* controller =

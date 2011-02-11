@@ -18,8 +18,11 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/test/test_suite.h"
+#include "base/test/test_timeouts.h"
 #include "base/time.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/test/in_process_browser_test.h"
+#include "chrome/test/test_launcher_utils.h"
 #include "chrome/test/unit/chrome_test_suite.h"
 #include "net/base/escape.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -42,12 +45,6 @@
 typedef int (*DLL_MAIN)(HINSTANCE, sandbox::SandboxInterfaceInfo*, wchar_t*);
 #endif  // defined(OS_WIN)
 
-// Allows a specific test to increase its timeout.  This should be used very
-// sparingly, i.e. when a "test" is a really a collection of sub tests and it's
-// not possible to break them up.  An example is PDFBrowserTest.Loading, which
-// loads all the files it can find in a directory.
-base::hash_map<std::string, int> g_test_timeout_overrides;
-
 namespace {
 
 const char kGTestFilterFlag[] = "gtest_filter";
@@ -65,20 +62,22 @@ const char kChildProcessFlag[]   = "child";
 
 const char kHelpFlag[]   = "help";
 
-const char kTestTerminateTimeoutFlag[] = "test-terminate-timeout";
-
 // The environment variable name for the total number of test shards.
 static const char kTestTotalShards[] = "GTEST_TOTAL_SHARDS";
 // The environment variable name for the test shard index.
 static const char kTestShardIndex[] = "GTEST_SHARD_INDEX";
 
-// How long we wait for the subprocess to exit (with a success/failure code).
-// See http://crbug.com/43862 for some discussion of the value.
-const int kDefaultTestTimeoutMs = 20000;
-
 // The default output file for XML output.
 static const FilePath::CharType kDefaultOutputFile[] = FILE_PATH_LITERAL(
     "test_detail.xml");
+
+// Name of the empty test below.
+static const char kEmptyTestName[] = "InProcessBrowserTest.Empty";
+
+// An empty test (it starts up and shuts down the browser as part of its
+// setup and teardown) used to prefetch all of the browser code into memory.
+IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, Empty) {
+}
 
 // Parses the environment variable var as an Int32.  If it is unset, returns
 // default_val.  If it is set, unsets it then converts it to Int32 before
@@ -305,7 +304,7 @@ bool MatchesFilter(const std::string& name, const std::string& filter) {
 
 // Runs test specified by |test_name| in a child process,
 // and returns the exit code.
-int RunTest(const std::string& test_name) {
+int RunTest(const std::string& test_name, int default_timeout_ms) {
   // Some of the below method calls will leak objects if there is no
   // autorelease pool in place.
   base::mac::ScopedNSAutoreleasePool pool;
@@ -376,21 +375,14 @@ int RunTest(const std::string& test_name) {
     return false;
 #endif
 
-  int test_terminate_timeout_ms = kDefaultTestTimeoutMs;
-  if (g_test_timeout_overrides.count(test_name))
-    test_terminate_timeout_ms = g_test_timeout_overrides[test_name];
-  if (cmd_line->HasSwitch(kTestTerminateTimeoutFlag)) {
-    std::string timeout_str =
-        cmd_line->GetSwitchValueASCII(kTestTerminateTimeoutFlag);
-    int timeout;
-    base::StringToInt(timeout_str, &timeout);
-    test_terminate_timeout_ms = std::max(test_terminate_timeout_ms, timeout);
-  }
+  int timeout_ms =
+      test_launcher_utils::GetTestTerminationTimeout(test_name,
+                                                     default_timeout_ms);
 
   int exit_code = 0;
   if (!base::WaitForExitCodeWithTimeout(process_handle, &exit_code,
-                                        test_terminate_timeout_ms)) {
-    LOG(ERROR) << "Test timeout (" << test_terminate_timeout_ms
+                                        timeout_ms)) {
+    LOG(ERROR) << "Test timeout (" << timeout_ms
                << " ms) exceeded for " << test_name;
 
     exit_code = -1;  // Set a non-zero exit code to signal a failure.
@@ -447,16 +439,23 @@ bool RunTests() {
                                  test_case->total_test_count());
     for (int j = 0; j < test_case->total_test_count(); ++j) {
       const testing::TestInfo* test_info = test_case->GetTestInfo(j);
+      std::string test_name = test_info->test_case_name();
+      test_name.append(".");
+      test_name.append(test_info->name());
+
+      // Skip our special test so it's not run twice. That confuses
+      // the log parser.
+      if (test_name == kEmptyTestName)
+        continue;
+
       // Skip disabled tests.
-      if (std::string(test_info->name()).find("DISABLED") == 0 &&
+      if (test_name.find("DISABLED") != std::string::npos &&
           !command_line->HasSwitch(kGTestRunDisabledTestsFlag)) {
         printer.OnTestEnd(test_info->name(), test_case->name(),
                           false, false, false, 0);
         continue;
       }
-      std::string test_name = test_info->test_case_name();
-      test_name.append(".");
-      test_name.append(test_info->name());
+
       // Skip the test that doesn't match the filter string (if given).
       if ((!positive_filter.empty() &&
            !MatchesFilter(test_name, positive_filter)) ||
@@ -465,6 +464,7 @@ bool RunTests() {
                           false, false, false, 0);
         continue;
       }
+
       // Decide if this test should be run.
       bool should_run = true;
       if (should_shard) {
@@ -476,9 +476,10 @@ bool RunTests() {
       if (!should_run) {
         continue;
       }
+
       base::Time start_time = base::Time::Now();
       ++test_run_count;
-      int exit_code = RunTest(test_name);
+      int exit_code = RunTest(test_name, TestTimeouts::action_max_timeout_ms());
       if (exit_code == 0) {
         // Test passed.
         printer.OnTestEnd(test_info->name(), test_case->name(), true, false,
@@ -606,6 +607,12 @@ int main(int argc, char** argv) {
       "--single_process (to run all tests in one launcher/browser process) or\n"
       "--single-process (to do the above, and also run Chrome in single-\n"
       "process mode).\n");
+
+  // Make sure the entire browser code is loaded into memory. Reading it
+  // from disk may be slow on a busy bot, and can easily exceed the default
+  // timeout causing flaky test failures. Use an empty test that only starts
+  // and closes a browser with a long timeout to avoid those problems.
+  RunTest(kEmptyTestName, TestTimeouts::large_test_timeout_ms());
 
   int cycles = 1;
   if (command_line->HasSwitch(kGTestRepeatFlag)) {

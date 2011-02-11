@@ -11,25 +11,7 @@
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 
-extern base::hash_map<std::string, int> g_test_timeout_overrides;
-
 namespace {
-
-static const int kTimeout = 30000;
-
-class IncreaseLoadingTimeout {
- public:
-  IncreaseLoadingTimeout() {
-    // Those tests are at the beginning of the browser_tests suite. On the
-    // XP buildbot the cold start is often slow enough to make it go over the
-    // default timeout of 20 seconds.  Bump those initial tests to 30 seconds.
-    g_test_timeout_overrides["DOMAutomationTest.FindByXPath"] = kTimeout;
-    g_test_timeout_overrides["DOMAutomationTest.FindBySelectors"] = kTimeout;
-    g_test_timeout_overrides["DOMAutomationTest.FindByText"] = kTimeout;
-  }
-};
-
-IncreaseLoadingTimeout g_increase_loading_timeout;
 
 // Tests the DOMAutomation framework for manipulating DOMElements within
 // browser tests.
