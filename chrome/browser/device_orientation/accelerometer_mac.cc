@@ -120,7 +120,7 @@ const AccelerometerMac::SensorDescriptor
   // Note: MacBookAir3,1 (11" MacBook Air) and MacBookAir3,2 (13" MacBook Air)
   // have no accelerometer sensors.
 
-  // Not tested; data acquired by avi from L.V. from a 17" MacBook Pro.
+  // Tested by L.V. (via avi) on a 17" MacBook Pro.
   { "MacBookPro2,1", { { 0, true  }, { 2, false }, { 4, true  } } },
 
   // Tested by leandrogracia on a 15" MacBook Pro.
@@ -310,7 +310,6 @@ bool AccelerometerMac::Init() {
   const SensorDescriptor* sensor_candidate = NULL;
 
   // Look for the current model in the supported sensor list.
-  io_object_t device = 0;
   const int kNumSensors = arraysize(kSupportedSensors);
 
   for (int i = 0; i < kNumSensors; ++i) {
@@ -339,7 +338,9 @@ bool AccelerometerMac::Init() {
     }
 
     // Get the first device in the list.
-    if ((device = IOIteratorNext(device_iterator)) == 0)
+    io_object_t device = IOIteratorNext(device_iterator);
+    IOObjectRelease(device_iterator);
+    if (device == 0)
       continue;
 
     // Try to open device.
