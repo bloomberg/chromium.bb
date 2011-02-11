@@ -98,6 +98,8 @@ TEST_F(ImageTest, PlatformToPlatform) {
 TEST_F(ImageTest, CheckSkiaColor) {
   ui::gfx::Image image(CreatePlatformImage());
   const SkBitmap& bitmap(image);
+
+  SkAutoLockPixels auto_lock(bitmap);
   uint32_t* pixel = bitmap.getAddr32(10, 10);
   EXPECT_EQ(SK_ColorRED, *pixel);
 }
