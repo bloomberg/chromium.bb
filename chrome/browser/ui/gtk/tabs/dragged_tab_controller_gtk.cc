@@ -170,7 +170,7 @@ void DraggedTabControllerGtk::MoveContents(TabContents* source,
   // own window. Should be ignored since we're moving the window...
 }
 
-bool DraggedTabControllerGtk::IsPopup(TabContents* source) const {
+bool DraggedTabControllerGtk::IsPopup(const TabContents* source) const {
   return false;
 }
 
