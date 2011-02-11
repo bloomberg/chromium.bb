@@ -97,7 +97,7 @@ class InputMethodMenu : public views::ViewMenuDelegate,
   static std::wstring GetTextForMenu(const InputMethodDescriptor& input_method);
 
  protected:
-  // Rebuilds model and menu2 objects in preparetion to open the menu.
+  // Prepares menu: saves user metrics and rebuilds.
   void PrepareForMenuOpen();
 
   // Returns menu2 object for language menu.
@@ -106,6 +106,9 @@ class InputMethodMenu : public views::ViewMenuDelegate,
   }
 
  private:
+  // Rebuilds model and menu2 objects.
+  void PrepareMenu();
+
   // Updates UI of a container of the menu (e.g. the "US" menu button in the
   // status area). Sub classes have to implement the interface for their own UI.
   virtual void UpdateUI(const std::string& input_method_id,  // e.g. "mozc"
