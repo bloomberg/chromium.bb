@@ -29,6 +29,7 @@
 #include "chrome/common/net/url_fetcher.h"
 #include "chrome/common/pref_names.h"
 #include "net/base/cert_verifier.h"
+#include "net/base/cookie_monster.h"
 #include "net/base/dnsrr_resolver.h"
 #include "net/base/host_cache.h"
 #include "net/base/host_resolver.h"

@@ -36,12 +36,12 @@ void TestShellRequestContext::Init(
     const FilePath& cache_path,
     net::HttpCache::Mode cache_mode,
     bool no_proxy) {
-  cookie_store_ = new net::CookieMonster(NULL, NULL);
-  cookie_policy_ = new net::StaticCookiePolicy();
+  set_cookie_store(new net::CookieMonster(NULL, NULL));
+  set_cookie_policy(new net::StaticCookiePolicy());
 
   // hard-code A-L and A-C for test shells
-  accept_language_ = "en-us,en";
-  accept_charset_ = "iso-8859-1,*,utf-8";
+  set_accept_language("en-us,en");
+  set_accept_charset("iso-8859-1,*,utf-8");
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Use no proxy to avoid ProxyConfigServiceLinux.
@@ -60,41 +60,41 @@ void TestShellRequestContext::Init(
       net::ProxyService::CreateSystemProxyConfigService(
           MessageLoop::current(), NULL));
 #endif
-  host_resolver_ =
+  set_host_resolver(
       net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
-                                    NULL, NULL);
-  cert_verifier_ = new net::CertVerifier;
-  proxy_service_ = net::ProxyService::CreateUsingSystemProxyResolver(
-      proxy_config_service.release(), 0, NULL);
-  ssl_config_service_ = net::SSLConfigService::CreateSystemSSLConfigService();
+                                    NULL, NULL));
+  set_cert_verifier(new net::CertVerifier);
+  set_proxy_service(net::ProxyService::CreateUsingSystemProxyResolver(
+      proxy_config_service.release(), 0, NULL));
+  set_ssl_config_service(net::SSLConfigService::CreateSystemSSLConfigService());
 
-  http_auth_handler_factory_ = net::HttpAuthHandlerFactory::CreateDefault(
-      host_resolver_);
+  set_http_auth_handler_factory(net::HttpAuthHandlerFactory::CreateDefault(
+      host_resolver()));
 
   net::HttpCache::DefaultBackend* backend = new net::HttpCache::DefaultBackend(
       cache_path.empty() ? net::MEMORY_CACHE : net::DISK_CACHE,
       cache_path, 0, SimpleResourceLoaderBridge::GetCacheThread());
 
   net::HttpCache* cache =
-      new net::HttpCache(host_resolver_, cert_verifier_, NULL, NULL,
-                         proxy_service_, ssl_config_service_,
-                         http_auth_handler_factory_, NULL, NULL, backend);
+      new net::HttpCache(host_resolver(), cert_verifier(), NULL, NULL,
+                         proxy_service(), ssl_config_service(),
+                         http_auth_handler_factory(), NULL, NULL, backend);
 
   cache->set_mode(cache_mode);
-  http_transaction_factory_ = cache;
+  set_http_transaction_factory(cache);
 
-  ftp_transaction_factory_ = new net::FtpNetworkLayer(host_resolver_);
+  set_ftp_transaction_factory(new net::FtpNetworkLayer(host_resolver()));
 
   blob_storage_controller_.reset(new webkit_blob::BlobStorageController());
 }
 
 TestShellRequestContext::~TestShellRequestContext() {
-  delete ftp_transaction_factory_;
-  delete http_transaction_factory_;
-  delete http_auth_handler_factory_;
-  delete static_cast<net::StaticCookiePolicy*>(cookie_policy_);
-  delete cert_verifier_;
-  delete host_resolver_;
+  delete ftp_transaction_factory();
+  delete http_transaction_factory();
+  delete http_auth_handler_factory();
+  delete cookie_policy();
+  delete cert_verifier();
+  delete host_resolver();
 }
 
 const std::string& TestShellRequestContext::GetUserAgent(
