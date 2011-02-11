@@ -15,9 +15,11 @@ namespace net {
 
 DiskCacheBasedSSLHostInfo::CallbackImpl::CallbackImpl(
     const base::WeakPtr<DiskCacheBasedSSLHostInfo>& obj,
-    void (DiskCacheBasedSSLHostInfo::*meth) (int))
+    void (DiskCacheBasedSSLHostInfo::*meth)(int))
     : obj_(obj),
-      meth_(meth) {
+      meth_(meth),
+      backend_(NULL),
+      entry_(NULL) {
 }
 
 DiskCacheBasedSSLHostInfo::CallbackImpl::~CallbackImpl() {}
@@ -266,4 +268,4 @@ bool DiskCacheBasedSSLHostInfo::IsCallbackPending() const {
   }
 }
 
-} // namespace net
+}  // namespace net

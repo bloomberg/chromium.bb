@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_HTTP_DISK_CACHE_BASED_SSL_HOST_INFO_H
-#define NET_HTTP_DISK_CACHE_BASED_SSL_HOST_INFO_H
+#ifndef NET_HTTP_DISK_CACHE_BASED_SSL_HOST_INFO_H_
+#define NET_HTTP_DISK_CACHE_BASED_SSL_HOST_INFO_H_
 
 #include <string>
 
@@ -56,7 +56,7 @@ class DiskCacheBasedSSLHostInfo : public SSLHostInfo,
   class CallbackImpl : public CallbackRunner<Tuple1<int> > {
    public:
     CallbackImpl(const base::WeakPtr<DiskCacheBasedSSLHostInfo>& obj,
-                 void (DiskCacheBasedSSLHostInfo::*meth) (int));
+                 void (DiskCacheBasedSSLHostInfo::*meth)(int));
     virtual ~CallbackImpl();
 
     disk_cache::Backend** backend_pointer() { return &backend_; }
@@ -69,7 +69,7 @@ class DiskCacheBasedSSLHostInfo : public SSLHostInfo,
 
    private:
     base::WeakPtr<DiskCacheBasedSSLHostInfo> obj_;
-    void (DiskCacheBasedSSLHostInfo::*meth_) (int);
+    void (DiskCacheBasedSSLHostInfo::*meth_)(int);
 
     disk_cache::Backend* backend_;
     disk_cache::Entry* entry_;
@@ -119,4 +119,4 @@ class DiskCacheBasedSSLHostInfo : public SSLHostInfo,
 
 }  // namespace net
 
-#endif  // NET_HTTP_DISK_CACHE_BASED_SSL_HOST_INFO_H
+#endif  // NET_HTTP_DISK_CACHE_BASED_SSL_HOST_INFO_H_
