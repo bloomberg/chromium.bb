@@ -67,7 +67,7 @@ const int LocationBarView::kVerticalEdgeThickness = 2;
 const int LocationBarView::kItemPadding = 3;
 const int LocationBarView::kExtensionItemPadding = 5;
 const int LocationBarView::kEdgeItemPadding = kItemPadding;
-const int LocationBarView::kBubblePadding = 1;
+const int LocationBarView::kBubbleHorizontalPadding = 1;
 const char LocationBarView::kViewClassName[] =
     "browser/ui/views/location_bar/LocationBarView";
 
@@ -428,6 +428,8 @@ void LocationBarView::Layout() {
       LocationBarView::kItemPadding - kEditInternalSpace;
   const int kEdgeEditPadding =
       LocationBarView::kEdgeItemPadding - kEditInternalSpace;
+  const int kBubbleVerticalPadding = (mode_ == POPUP) ?
+      -1 : kBubbleHorizontalPadding;
 
   // Start by reserving the padding at the right edge.
   int entry_width = width() - kEdgeThickness - kEdgeItemPadding;
@@ -479,7 +481,7 @@ void LocationBarView::Layout() {
     static const int kMinElidedBubbleWidth = 150;
     static const double kMaxBubbleFraction = 0.5;
     const int total_padding =
-        kEdgeThickness + kBubblePadding + kItemEditPadding;
+        kEdgeThickness + kBubbleHorizontalPadding + kItemEditPadding;
     ev_bubble_width = std::min(ev_bubble_width, std::max(kMinElidedBubbleWidth,
         static_cast<int>((entry_width - total_padding) * kMaxBubbleFraction)));
     entry_width -= (total_padding + ev_bubble_width);
@@ -562,21 +564,21 @@ void LocationBarView::Layout() {
         location_y, location_icon_width, location_height);
     offset = location_icon_view_->bounds().right() + kItemEditPadding;
   } else if (ev_bubble_view_->IsVisible()) {
-    ev_bubble_view_->SetBounds(kEdgeThickness + kBubblePadding,
-        location_y + kBubblePadding, ev_bubble_width,
+    ev_bubble_view_->SetBounds(kEdgeThickness + kBubbleHorizontalPadding,
+        location_y + kBubbleVerticalPadding, ev_bubble_width,
         ev_bubble_view_->GetPreferredSize().height());
     offset = ev_bubble_view_->bounds().right() + kItemEditPadding;
   } else {
     offset = kEdgeThickness +
-        (show_selected_keyword ? kBubblePadding : kEdgeEditPadding);
+        (show_selected_keyword ? kBubbleHorizontalPadding : kEdgeEditPadding);
   }
 
   // Now lay out the edit field and views that autocollapse to give it more
   // room.
   gfx::Rect location_bounds(offset, location_y, entry_width, location_height);
   if (show_selected_keyword) {
-    selected_keyword_view_->SetBounds(0, location_y + kBubblePadding, 0,
-        selected_keyword_view_->GetPreferredSize().height());
+    selected_keyword_view_->SetBounds(0, location_y + kBubbleVerticalPadding,
+        0, selected_keyword_view_->GetPreferredSize().height());
     LayoutView(selected_keyword_view_, kItemEditPadding, available_width,
                true, &location_bounds);
     location_bounds.set_x(selected_keyword_view_->IsVisible() ?

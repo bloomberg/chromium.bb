@@ -265,7 +265,7 @@ class LocationBarView : public LocationBar,
   // Space between the edges and the items next to them.
   static const int kEdgeItemPadding;
   // Space between the edge and a bubble.
-  static const int kBubblePadding;
+  static const int kBubbleHorizontalPadding;
 
  protected:
   void Focus();
