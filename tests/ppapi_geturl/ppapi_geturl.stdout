@@ -1,0 +1,151 @@
+
+"*** REGISTER REPLAY METHODS"
+
+"*** INITIALIZE PEPPER"
+
+"*** CREATE UPCALL SERVICE"
+
+"*** INIT MODULE"
+--- Module::Module
+replaying PPB_GetInterface:s:i:
+output 0:  i(1)
+replaying PPB_GetInterface:s:i:
+output 0:  i(1)
+replaying PPB_GetInterface:s:i:
+output 0:  i(1)
+
+"*** INIT INSTANCE"
+--- PPP_GetInterface(PPP_Instance;0.4)
+--- Module::GetPluginInterface(PPP_Instance;0.4)
+--- Instance_DidCreate
+PPP_Instance_DidCreate RESULTS:  i(1)
+
+"*** TRIGGER REPAINT"
+PPP_Instance_DidChangeView RESULTS:
+
+"*** GET INSTANCE OBJECT"
+--- Instance_GetInstanceObject
+
+"*** HAS PROPERTY/METHOD (loadUrl)"
+HasProperty RESULTS:  i(0)  C(8,\x00\x00\x00\x00\x00\x00\x00\x00)
+HasMethod RESULTS:  i(1)  C(8,\x00\x00\x00\x00\x00\x00\x00\x00)
+
+"*** CALL loadUrl(): url1 as buffer"
+--- ScriptableObject::LoadUrl('ppapi_geturl_success.html')
+--- UrlLoadRequest::Load(as_file=0, 'ppapi_geturl_success.html')
+replaying PPB_GetInterface:s:i:
+output 0:  i(1)
+replaying PPB_URLRequestInfo_Create:i:i:
+output 0:  i(30)
+replaying PPB_GetInterface:s:i:
+output 0:  i(1)
+replaying PPB_GetInterface:s:i:
+output 0:  i(1)
+--- TestIsInterface: PPB_URLRequestInfo;0.2
+replaying PPB_URLLoader_Create:i:i:
+output 0:  i(34)
+replaying PPB_URLRequestInfo_IsURLRequestInfo:i:i:
+output 0:  i(1)
+replaying PPB_URLResponseInfo_IsURLResponseInfo:i:i:
+output 0:  i(0)
+--- TestIsInterface: PPB_URLLoader;0.1
+replaying PPB_URLLoader_IsURLLoader:i:i:
+output 0:  i(0)
+replaying PPB_URLRequestInfo_IsURLRequestInfo:i:i:
+output 0:  i(0)
+replaying PPB_URLResponseInfo_IsURLResponseInfo:i:i:
+output 0:  i(0)
+replaying PPB_URLLoader_IsURLLoader:i:i:
+output 0:  i(1)
+replaying PPB_URLRequestInfo_SetProperty:iiC:i:
+output 0:  i(1)
+replaying PPB_URLRequestInfo_SetProperty:iiC:i:
+output 0:  i(1)
+replaying PPB_URLRequestInfo_SetProperty:iiC:i:
+output 0:  i(1)
+replaying PPB_URLLoader_Open:iii:i:
+output 0:  i(-1)
+Call RESULTS:  C(8,\x00\x00\x00\x00\x00\x00\x00\x00)  C(8,\x00\x00\x00\x00\x00\x00\x00\x00)
+
+"*** async response for url1 part1"
+--- UrlLoadRequest::OpenCallback
+--- TestIsInterface: PPB_URLResponseInfo;0.1
+replaying PPB_URLLoader_GetResponseInfo:i:i:
+output 0:  i(38)
+replaying PPB_URLRequestInfo_IsURLRequestInfo:i:i:
+output 0:  i(0)
+replaying PPB_URLResponseInfo_IsURLResponseInfo:i:i:
+output 0:  i(1)
+replaying PPB_URLLoader_IsURLLoader:i:i:
+output 0:  i(0)
+replaying PPB_URLResponseInfo_GetProperty:ii:C:
+output 0:  C(56,\x05\x00\x00\x00/\x00\x00\x00http://localhost:5103/ppapi_geturl_success.html\x00)
+replaying PPB_URLResponseInfo_GetProperty:ii:C:
+output 0:  C(8,\x03\x00\x00\x00\xc8\x00\x00\x00)
+replaying PPB_URLLoader_ReadResponseBody:iii:Ci:
+output 0:  C(0,)
+output 1:  i(-1)
+RunCompletionCallback RESULTS:
+
+"*** async response for url1 part2"
+--- UrlLoadRequest::ReadResponseBodyCallback
+replaying PPB_URLLoader_ReadResponseBody:iii:Ci:
+output 0:  C(0,)
+output 1:  i(-1)
+RunCompletionCallback RESULTS:
+
+"*** async response for url1 eof - report success"
+--- UrlLoadRequest::ReadResponseBodyCallback
+--- ReportResult('http://localhost:5103/ppapi_geturl_success.html', as_file=0, 'hello world!', success=1)
+replaying PPB_Instance_GetWindowObject:i:C:
+output 0:  C(24,\x06\x00\x00\x00\x00\x00\x00\x00\x9f\x00\x00\x00\x00\x00\x00\x00)_\x00\x00\x00\x00\x00\x00)
+replaying Call:CCiCC:CC:
+output 0:  C(8,\x00\x00\x00\x00\x00\x00\x00\x00)
+output 1:  C(8,\x00\x00\x00\x00\x00\x00\x00\x00)
+replaying PPB_Core_ReleaseResource:i::
+replaying PPB_Core_ReleaseResource:i::
+replaying PPB_Core_ReleaseResource:i::
+RunCompletionCallback RESULTS:
+
+"*** CALL loadUrl(): url2 as buffer - expected to fail"
+--- ScriptableObject::LoadUrl('http://www.google.com/robots.txt')
+--- UrlLoadRequest::Load(as_file=0, 'http://www.google.com/robots.txt')
+replaying PPB_URLRequestInfo_Create:i:i:
+output 0:  i(40)
+--- TestIsInterface: PPB_URLRequestInfo;0.2
+replaying PPB_URLLoader_Create:i:i:
+output 0:  i(44)
+replaying PPB_URLRequestInfo_IsURLRequestInfo:i:i:
+output 0:  i(1)
+replaying PPB_URLResponseInfo_IsURLResponseInfo:i:i:
+output 0:  i(0)
+--- TestIsInterface: PPB_URLLoader;0.1
+replaying PPB_URLLoader_IsURLLoader:i:i:
+output 0:  i(0)
+replaying PPB_URLRequestInfo_IsURLRequestInfo:i:i:
+output 0:  i(0)
+replaying PPB_URLResponseInfo_IsURLResponseInfo:i:i:
+output 0:  i(0)
+replaying PPB_URLLoader_IsURLLoader:i:i:
+output 0:  i(1)
+replaying PPB_URLRequestInfo_SetProperty:iiC:i:
+output 0:  i(1)
+replaying PPB_URLRequestInfo_SetProperty:iiC:i:
+output 0:  i(1)
+replaying PPB_URLRequestInfo_SetProperty:iiC:i:
+output 0:  i(1)
+--- ReportResult('http://www.google.com/robots.txt', as_file=0, 'PPB_URLLoader::Open: PP_ERROR_NOACCESS', success=0)
+replaying PPB_URLLoader_Open:iii:i:
+output 0:  i(-7)
+replaying PPB_Instance_GetWindowObject:i:C:
+output 0:  C(24,\x06\x00\x00\x00\x00\x00\x00\x00\x9f\x00\x00\x00\x00\x00\x00\x00)_\x00\x00\x00\x00\x00\x00)
+replaying Call:CCiCC:CC:
+output 0:  C(8,\x00\x00\x00\x00\x00\x00\x00\x00)
+output 1:  C(8,\x00\x00\x00\x00\x00\x00\x00\x00)
+replaying PPB_Core_ReleaseResource:i::
+replaying PPB_Core_ReleaseResource:i::
+Call RESULTS:  C(8,\x00\x00\x00\x00\x00\x00\x00\x00)  C(8,\x00\x00\x00\x00\x00\x00\x00\x00)
+
+"*** DONE"
+--- PPP_ShutdownModule
+PPP_ShutdownModule RESULTS:

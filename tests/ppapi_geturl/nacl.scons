@@ -50,3 +50,21 @@ env.AddNodeToTestSuite(node,
                        ['pepper_browser_tests'],
                        'run_ppapi_geturl_browser_test',
                        )
+
+node = env.SelUniversalTest(
+     'ppapi_geturl.out',
+     command=[env.File('ppapi_geturl.nexe')],
+     stdin=env.File('ppapi_geturl.stdin'),
+     stdout_golden=env.File('ppapi_geturl.stdout'),
+     # filter out a line that contains unpredictable values
+     filter_regex="'PPP_InitializeModule|PPP_Instance_GetInstanceObject|ScriptableObject::Call'",
+     filter_inverse='true',
+     )
+
+# Note: we use the sysv shm feature in sel_universal which is only available
+# on linux.
+is_broken = not env.Bit('host_linux')
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'sel_ldr_tests'],
+                       'run_ppapi_geturl_test',
+                       is_broken=is_broken)

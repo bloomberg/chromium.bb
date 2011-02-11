@@ -74,6 +74,10 @@ void ReplayRpc(NaClSrpcRpc* rpc,
                NaClSrpcArg** inputs,
                NaClSrpcArg** outputs,
                NaClSrpcClosure* done) {
+  // we just control from the nexe - clean the pipes
+  fflush(stdout);
+  fflush(stderr);
+
   const char* rpc_name;
   const char* arg_types;
   const char* ret_types;
