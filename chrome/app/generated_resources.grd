@@ -5347,6 +5347,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_UPGRADE_ERROR" desc="Status label: Error occurred during upgrade">
         Update server not available (error: <ph name="ERROR_NUMBER">$1<ex>1</ex></ph>)
       </message>
+      <message name="IDS_UPGRADE_DISABLED_BY_POLICY" desc="Status label: Upgrades disabled by policy">
+        Updates are disabled by the administrator
+      </message>
 
       <!-- Print -->
       <message name="IDS_DEFAULT_PRINT_DOCUMENT_TITLE" desc="Default title for a print document">

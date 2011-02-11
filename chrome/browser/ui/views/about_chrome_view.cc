@@ -806,8 +806,13 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
       UserMetrics::RecordAction(UserMetricsAction("UpgradeCheck_Error"),
                                 profile_);
       restart_button_visible_ = false;
-      update_label_.SetText(UTF16ToWide(
-          l10n_util::GetStringFUTF16Int(IDS_UPGRADE_ERROR, error_code)));
+      if (error_code != GOOGLE_UPDATE_DISABLED_BY_POLICY) {
+        update_label_.SetText(UTF16ToWide(
+            l10n_util::GetStringFUTF16Int(IDS_UPGRADE_ERROR, error_code)));
+      } else {
+        update_label_.SetText(UTF16ToWide(
+            l10n_util::GetStringUTF16(IDS_UPGRADE_DISABLED_BY_POLICY)));
+      }
       show_timeout_indicator = true;
       break;
     default:

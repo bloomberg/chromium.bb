@@ -14,6 +14,7 @@
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/threading/thread.h"
+#include "base/win/registry.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -26,12 +27,40 @@
 using views::Window;
 
 namespace {
+
+// The registry location of the Google Update policies.
+const wchar_t kGUPolicyRegistrySubKey[] =
+    L"SOFTWARE\\Policies\\Google\\Update";
+const wchar_t kGUPolicyGlobalValue[] = L"UpdateDefault";
+const wchar_t kGUPolicyAppValuePrefix[] = L"Update";
+const DWORD kGUPolicyUpdatesDisabled = 0;
+
+// Checks if the updates have been disabled by policy.
+bool IsUpdateDisabledByPolicy(const std::wstring& guid) {
+#if !defined(GOOGLE_CHROME_BUILD)
+  return true;
+#else
+  std::wstring value_name(kGUPolicyAppValuePrefix);
+  value_name.append(guid);
+  DWORD value = 0;
+  base::win::RegKey policy(HKEY_LOCAL_MACHINE,
+                           kGUPolicyRegistrySubKey, KEY_READ);
+  // Per application settings override global setting.
+  if ((policy.ReadValueDW(value_name.c_str(), &value) == ERROR_SUCCESS) ||
+      (policy.ReadValueDW(kGUPolicyGlobalValue, &value) == ERROR_SUCCESS)) {
+    return value == kGUPolicyUpdatesDisabled;
+  }
+  return false;
+#endif  // defined(GOOGLE_CHROME_BUILD)
+}
+
 // Check if the currently running instance can be updated by Google Update.
 // Returns true only if the instance running is a Google Chrome
 // distribution installed in a standard location.
-bool CanUpdateCurrentChrome(const std::wstring& chrome_exe_path) {
+GoogleUpdateErrorCode CanUpdateCurrentChrome(
+    const std::wstring& chrome_exe_path) {
 #if !defined(GOOGLE_CHROME_BUILD)
-  return false;
+  return CANNOT_UPGRADE_CHROME_IN_THIS_DIRECTORY;
 #else
   // TODO(tommi): Check if using the default distribution is always the right
   // thing to do.
@@ -50,10 +79,17 @@ bool CanUpdateCurrentChrome(const std::wstring& chrome_exe_path) {
                << L"non-standard location: " << chrome_exe_path.c_str()
                << L". The standard location is: " << user_exe_path.c_str()
                << L" or " << machine_exe_path.c_str() << L".";
-    return false;
+    return CANNOT_UPGRADE_CHROME_IN_THIS_DIRECTORY;
   }
 
-  return true;
+  std::wstring app_guid = installer::GetAppGuidForUpdates(
+      !InstallUtil::IsPerUserInstall(chrome_exe_path.c_str()));
+  DCHECK(!app_guid.empty());
+
+  if (IsUpdateDisabledByPolicy(app_guid))
+    return GOOGLE_UPDATE_DISABLED_BY_POLICY;
+
+  return GOOGLE_UPDATE_NO_ERROR;
 #endif
 }
 
@@ -241,10 +277,10 @@ bool GoogleUpdate::InitiateGoogleUpdateCheck(bool install_if_newer,
   std::transform(chrome_exe.begin(), chrome_exe.end(),
                  chrome_exe.begin(), tolower);
 
-  if (!CanUpdateCurrentChrome(chrome_exe)) {
+  GoogleUpdateErrorCode error_code = CanUpdateCurrentChrome(chrome_exe);
+  if (error_code != GOOGLE_UPDATE_NO_ERROR) {
     main_loop->PostTask(FROM_HERE, NewRunnableMethod(this,
-        &GoogleUpdate::ReportResults, UPGRADE_ERROR,
-        CANNOT_UPGRADE_CHROME_IN_THIS_DIRECTORY));
+        &GoogleUpdate::ReportResults, UPGRADE_ERROR, error_code));
     return false;
   }
 
