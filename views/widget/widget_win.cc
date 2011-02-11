@@ -48,31 +48,6 @@ bool IsWindowActive(HWND hwnd) {
 
 namespace views {
 
-// A singleton object that keeps track of the current message.
-class CurrentMessageWatcher : public MessageLoopForUI::Observer {
- public:
-  CurrentMessageWatcher() {
-    MessageLoopForUI::current()->AddObserver(this);
-  }
-  virtual ~CurrentMessageWatcher() {
-  }
-
-  const MSG& current_message() const { return current_messages_.back(); }
-
- private:
-  // Overridden from MessageLoop::Observer:
-  void WillProcessMessage(const MSG& msg) {
-    current_messages_.push_back(msg);
-  }
-  virtual void DidProcessMessage(const MSG& msg) {
-    current_messages_.pop_back();
-  }
-
-  std::vector<MSG> current_messages_;
-
-  DISALLOW_COPY_AND_ASSIGN(CurrentMessageWatcher);
-};
-
 // Property used to link the HWND to its RootView.
 static const char* const kRootViewWindowProperty = "__ROOT_VIEW__";
 
@@ -81,9 +56,6 @@ static const char* const kWidgetKey = "__VIEWS_WIDGET__";
 
 // static
 bool WidgetWin::screen_reader_active_ = false;
-
-// static
-CurrentMessageWatcher* WidgetWin::message_watcher_ = NULL;
 
 // A custom MSAA object id used to determine if a screen reader is actively
 // listening for MSAA events.
@@ -112,8 +84,6 @@ WidgetWin::WidgetWin()
       delegate_(NULL),
       accessibility_view_events_index_(-1),
       accessibility_view_events_(kMaxAccessibilityViewEvents) {
-  if (!message_watcher_)
-    message_watcher_ = new CurrentMessageWatcher;
 }
 
 WidgetWin::~WidgetWin() {
@@ -553,11 +523,13 @@ bool WidgetWin::ContainsNativeView(gfx::NativeView native_view) {
 // MessageLoop::Observer
 
 void WidgetWin::WillProcessMessage(const MSG& msg) {
+  current_messages_.push_back(msg);
 }
 
 void WidgetWin::DidProcessMessage(const MSG& msg) {
   if (root_view_->NeedsPainting(true))
     PaintNow(root_view_->GetScheduledPaintRect());
+  current_messages_.pop_back();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -720,7 +692,7 @@ void WidgetWin::OnInitMenuPopup(HMENU menu,
 }
 
 void WidgetWin::OnKeyDown(TCHAR c, UINT rep_cnt, UINT flags) {
-  KeyEvent event(message_watcher_->current_message());
+  KeyEvent event(current_messages_.back());
   RootView* root_view = GetFocusedViewRootView();
   if (!root_view)
     root_view = root_view_.get();
@@ -729,7 +701,7 @@ void WidgetWin::OnKeyDown(TCHAR c, UINT rep_cnt, UINT flags) {
 }
 
 void WidgetWin::OnKeyUp(TCHAR c, UINT rep_cnt, UINT flags) {
-  KeyEvent event(message_watcher_->current_message());
+  KeyEvent event(current_messages_.back());
   RootView* root_view = GetFocusedViewRootView();
   if (!root_view)
     root_view = root_view_.get();
