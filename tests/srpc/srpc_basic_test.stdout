@@ -16,23 +16,23 @@ RPC Name                 Input args Output args
  14 handleret                       h         
  15 invalid_handle       h                    
  16 invalid_handle_ret              h         
-bool RESULTS:   b(1)
-bool RESULTS:   b(0)
-double RESULTS:   d(-1)
-nan RESULTS:   d(NaN)
-int RESULTS:   i(-1)
-long RESULTS:   l(-1)
-string RESULTS:   i(5)
-char_array RESULTS:   C(5,olleh)
-char_array RESULTS:   C(12,.dlrow,olleH)
-char_array RESULTS:   C(9,\x7f\\\"\"\t\n\f\bA)
-char_array RESULTS:   C(7,\xee\xdd\xcc\xbb\xaa\x99\x88)
-double_array RESULTS:   D(5,5.9,1.5,4.1,1.4,3.1)
-int_array RESULTS:   I(5,5,4,3,2,1)
-long_array RESULTS:   L(5,5,4,3,2,1)
-null_method RESULTS: 
-stringret RESULTS:   s("Ich weiss nicht, was soll es bedeutenDass ich so traurig bin,Ein Maerchen aus uralten Zeiten,Das kommt mir nicht aus dem Sinn.Die Luft ist kuehl und es dunkelt,Und ruhig fliesst der Rhein;Der Gipfel des Berges funkelt,Im Abendsonnenschein.Die schoenste Jungfrau sitzetDort oben wunderbar,Ihr gold'nes Geschmeide blitzet,Sie kaemmt ihr goldenes Haar,Sie kaemmt es mit goldenem Kamme,Und singt ein Lied dabei;Das hat eine wundersame,Gewalt'ge Melodei.")
-handle RESULTS: 
-handleret RESULTS:   h(imported_0)
-invalid_handle RESULTS: 
-invalid_handle_ret RESULTS:   h(invalid)
+bool RESULTS:  b(1)
+bool RESULTS:  b(0)
+double RESULTS:  d(-1)
+nan RESULTS:  d(NaN)
+int RESULTS:  i(-1)
+long RESULTS:  l(-1)
+string RESULTS:  i(5)
+char_array RESULTS:  C(5,olleh)
+char_array RESULTS:  C(12,.dlrow,olleH)
+char_array RESULTS:  C(9,\x7f\\\"\"\t\n\f\bA)
+char_array RESULTS:  C(7,\xee\xdd\xcc\xbb\xaa\x99\x88)
+double_array RESULTS:  D(5,5.9,1.5,4.1,1.4,3.1)
+int_array RESULTS:  I(5,5,4,3,2,1)
+long_array RESULTS:  L(5,5,4,3,2,1)
+null_method RESULTS:
+stringret RESULTS:  s("Ich weiss nicht, was soll es bedeutenDass ich so traurig bin,Ein Maerchen aus uralten Zeiten,Das kommt mir nicht aus dem Sinn.Die Luft ist kuehl und es dunkelt,Und ruhig fliesst der Rhein;Der Gipfel des Berges funkelt,Im Abendsonnenschein.Die schoenste Jungfrau sitzetDort oben wunderbar,Ihr gold'nes Geschmeide blitzet,Sie kaemmt ihr goldenes Haar,Sie kaemmt es mit goldenem Kamme,Und singt ein Lied dabei;Das hat eine wundersame,Gewalt'ge Melodei.")
+handle RESULTS:
+handleret RESULTS:  h(imported_0)
+invalid_handle RESULTS:
+invalid_handle_ret RESULTS:  h(invalid)

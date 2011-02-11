@@ -16,4 +16,6 @@ node = env.SelUniversalTest(
     stdin=env.File('basic_srpc_test.stdin'),
     stdout_golden=env.File('basic_srpc_test.stdout'),
     )
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_basic_srpc_test')
+env.AddNodeToTestSuite(node,
+                       ['sel_ldr_tests', 'small_tests'],
+                       'run_basic_srpc_test')

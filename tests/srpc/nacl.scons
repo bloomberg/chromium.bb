@@ -96,7 +96,9 @@ node = env.SelUniversalTest(
     stdin=env.File('srpc_basic_test.stdin'),
     stdout_golden=env.File('srpc_basic_test.stdout'),
     )
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_srpc_basic_test')
+env.AddNodeToTestSuite(node,
+                       ['sel_ldr_tests', 'small_tests'],
+                       'run_srpc_basic_test')
 
 trusted_env = env.get('TRUSTED_ENV')
 # NOTE: sel_universal only supports shmem under linux
@@ -107,14 +109,18 @@ if trusted_env and trusted_env.Bit('linux'):
       stdin=env.File('srpc_sysv_shm_test.stdin'),
       stdout_golden=env.File('srpc_sysv_shm_test.stdout'),
       )
-  env.AddNodeToTestSuite(node, ['small_tests'], 'run_srpc_sysv_shm_test')
+  env.AddNodeToTestSuite(node,
+                         ['sel_ldr_tests', 'small_tests'],
+                         'run_srpc_sysv_shm_test')
 
 node = env.SelUniversalTest(
     'srpc_bad_service.out',
     command=[env.File('srpc_bad_service.nexe')],
     exit_status='1'
     )
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_srpc_bad_service_test')
+env.AddNodeToTestSuite(node,
+                       ['sel_ldr_tests', 'small_tests'],
+                       'run_srpc_bad_service_test')
 
 ######################################################################
 ## NPAPI Browser Tests

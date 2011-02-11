@@ -174,8 +174,10 @@ bool NaClCommandLoop::HandleSetVariable(NaClCommandLoop* ncl,
 bool NaClCommandLoop::HandleEcho(NaClCommandLoop* ncl,
                                  const vector<string>& args) {
   UNREFERENCED_PARAMETER(ncl);
+  const char* delim = "";
   for (size_t i = 1; i < args.size(); ++i) {
-    printf("%s ", args[i].c_str());
+    printf("%s%s", delim, args[i].c_str());
+    delim = " ";
   }
   printf("\n");
   return true;
@@ -375,7 +377,7 @@ static bool HandleRpc(NaClCommandLoop* ncl, const vector<string>& args) {
     return false;
   }
 
-  printf("%s RESULTS: ", args[1].c_str());
+  printf("%s RESULTS:", args[1].c_str());
 
 
   for (size_t i = 0; outv[i] != 0; ++i) {
