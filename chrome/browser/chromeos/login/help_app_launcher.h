@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_HELP_APP_LAUNCHER_H_
 #pragma once
 
+#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/login_html_dialog.h"
 #include "ui/gfx/native_widget_types.h"
@@ -15,7 +16,8 @@ namespace chromeos {
 // Provides help content during OOBE / login.
 // Based on connectivity state (offline/online) shows help topic dialog
 // or launches HelpApp in BWSI mode.
-class HelpAppLauncher : public LoginHtmlDialog::Delegate {
+class HelpAppLauncher : public LoginHtmlDialog::Delegate,
+                        public base::RefCountedThreadSafe<HelpAppLauncher> {
  public:
   // IDs of help topics available from HelpApp.
   enum HelpTopic {
@@ -49,11 +51,19 @@ class HelpAppLauncher : public LoginHtmlDialog::Delegate {
   virtual void OnDialogClosed() {}
 
  private:
+  // Checks whether local help file with |filename| exists
+  // and opens it in a dialog if it does.
+  // Executed on a FILE thread.
+  void FindStaticHelpTopic(const std::string& filename);
+
   // Shows help topic dialog for specified GURL.
   void ShowHelpTopicDialog(const GURL& topic_url);
 
   // Dialog used to display help like "Can't access your account".
   scoped_ptr<LoginHtmlDialog> dialog_;
+
+  // Last requested help topic ID.
+  HelpTopic help_topic_id_;
 
   // Parent window which is passed to help dialog.
   gfx::NativeWindow parent_window_;

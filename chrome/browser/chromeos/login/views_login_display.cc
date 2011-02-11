@@ -287,10 +287,11 @@ void ViewsLoginDisplay::SelectUser(int index) {
 //
 
 void ViewsLoginDisplay::OnHelpLinkActivated() {
+  ClearErrors();
   if (!parent_window())
     return;
   if (!help_app_.get())
-    help_app_.reset(new HelpAppLauncher(parent_window()));
+    help_app_ = new HelpAppLauncher(parent_window());
   help_app_->ShowHelpTopic(help_topic_id_);
 }
 

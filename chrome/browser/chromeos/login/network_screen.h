@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_NETWORK_SCREEN_H_
 #pragma once
 
-#include "base/scoped_ptr.h"
+#include "base/ref_counted.h"
 #include "base/string16.h"
 #include "base/task.h"
 #include "base/timer.h"
@@ -111,7 +111,7 @@ class NetworkScreen : public ViewScreen<NetworkSelectionView>,
   MessageBubble* bubble_;
 
   // Help application used for help dialogs.
-  scoped_ptr<HelpAppLauncher> help_app_;
+  scoped_refptr<HelpAppLauncher> help_app_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkScreen);
 };

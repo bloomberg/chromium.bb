@@ -471,7 +471,7 @@ void EulaView::LinkActivated(views::Link* source, int event_flags) {
       LoginUtils::Get()->GetBackgroundView()->GetNativeWindow();
   if (source == learn_more_link_) {
     if (!help_app_.get())
-      help_app_.reset(new HelpAppLauncher(parent_window));
+      help_app_ = new HelpAppLauncher(parent_window);
     help_app_->ShowHelpTopic(HelpAppLauncher::HELP_STATS_USAGE);
   } else if (source == system_security_settings_link_) {
     TpmInfoView* view = new TpmInfoView(&tpm_password_);

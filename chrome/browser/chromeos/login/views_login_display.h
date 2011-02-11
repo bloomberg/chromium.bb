@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/ref_counted.h"
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/message_bubble.h"
 #include "chrome/browser/chromeos/login/user_controller.h"
@@ -80,7 +81,7 @@ class ViewsLoginDisplay : public LoginDisplay,
   std::vector<UserController*> controllers_;
 
   // Help application used for help dialogs.
-  scoped_ptr<HelpAppLauncher> help_app_;
+  scoped_refptr<HelpAppLauncher> help_app_;
 
   // Last error help topic ID.
   HelpAppLauncher::HelpTopic help_topic_id_;

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_EULA_VIEW_H_
 #pragma once
 
-#include "base/scoped_ptr.h"
+#include "base/ref_counted.h"
 #include "chrome/browser/chromeos/login/message_bubble.h"
 #include "chrome/browser/chromeos/login/view_screen.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
@@ -139,7 +139,7 @@ class EulaView
   GURL oem_eula_page_;
 
   // Help application used for help dialogs.
-  scoped_ptr<HelpAppLauncher> help_app_;
+  scoped_refptr<HelpAppLauncher> help_app_;
 
   // Pointer to shown message bubble. We don't need to delete it because
   // it will be deleted on bubble closing.
