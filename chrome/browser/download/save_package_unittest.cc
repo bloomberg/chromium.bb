@@ -30,8 +30,10 @@ namespace {
 // This constant copied from save_package.cc.
 #if defined(OS_WIN)
 const uint32 kMaxFilePathLength = MAX_PATH - 1;
+const uint32 kMaxFileNameLength = MAX_PATH - 1;
 #elif defined(OS_POSIX)
 const uint32 kMaxFilePathLength = PATH_MAX - 1;
+const uint32 kMaxFileNameLength = NAME_MAX;
 #endif
 
 // Used to make long filenames.
@@ -209,6 +211,23 @@ TEST_F(SavePackageTest, TestLongSavePackageFilename) {
   EXPECT_NE(filename, filename2);
 }
 
+TEST_F(SavePackageTest, TestLongSafePureFilename) {
+  const FilePath save_dir(FPL("test_dir"));
+  const FilePath::StringType ext(FPL_HTML_EXTENSION);
+  FilePath::StringType filename =
+#if defined(OS_WIN)
+      ASCIIToWide(long_file_name);
+#else
+      long_file_name;
+#endif
+
+  // Test that the filename + extension doesn't exceed kMaxFileNameLength
+  uint32 max_path = SavePackage::GetMaxPathLengthForDirectory(save_dir);
+  ASSERT_TRUE(SavePackage::GetSafePureFileName(save_dir, ext, max_path,
+                                               &filename));
+  EXPECT_TRUE(filename.length() <= kMaxFileNameLength-ext.length());
+}
+
 static const struct {
   const FilePath::CharType* page_title;
   const FilePath::CharType* expected_name;
@@ -369,4 +388,3 @@ TEST_F(SavePackageTest, TestGetUrlToBeSavedViewSource) {
   EXPECT_EQ(actual_url, GetUrlToBeSaved());
   EXPECT_EQ(view_source_url, contents()->GetURL());
 }
-

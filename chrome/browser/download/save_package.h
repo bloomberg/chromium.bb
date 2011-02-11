@@ -166,6 +166,17 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
   // TabContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message);
 
+  // Return max length of a path for a specific base directory.
+  // This is needed on POSIX, which restrict the length of file names in
+  // addition to the restriction on the length of path names.
+  // |base_dir| is assumed to be a directory name with no trailing slash.
+  static uint32 GetMaxPathLengthForDirectory(const FilePath& base_dir);
+
+  static bool GetSafePureFileName(const FilePath& dir_path,
+                                  const FilePath::StringType& file_name_ext,
+                                  uint32 max_file_path_len,
+                                  FilePath::StringType* pure_file_name);
+
   // Create a file name based on the response from the server.
   bool GenerateFileName(const std::string& disposition,
                         const GURL& url,
@@ -311,6 +322,7 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
 
   friend class SavePackageTest;
   FRIEND_TEST_ALL_PREFIXES(SavePackageTest, TestSuggestedSaveNames);
+  FRIEND_TEST_ALL_PREFIXES(SavePackageTest, TestLongSafePureFilename);
 
   ScopedRunnableMethodFactory<SavePackage> method_factory_;
 

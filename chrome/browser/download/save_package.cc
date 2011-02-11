@@ -151,50 +151,6 @@ bool CanSaveAsComplete(const std::string& contents_mime_type) {
          contents_mime_type == "application/xhtml+xml";
 }
 
-// File name is considered being consist of pure file name, dot and file
-// extension name. File name might has no dot and file extension, or has
-// multiple dot inside file name. The dot, which separates the pure file
-// name and file extension name, is last dot in the whole file name.
-// This function is for making sure the length of specified file path is not
-// great than the specified maximum length of file path and getting safe pure
-// file name part if the input pure file name is too long.
-// The parameter |dir_path| specifies directory part of the specified
-// file path. The parameter |file_name_ext| specifies file extension
-// name part of the specified file path (including start dot). The parameter
-// |max_file_path_len| specifies maximum length of the specified file path.
-// The parameter |pure_file_name| input pure file name part of the specified
-// file path. If the length of specified file path is great than
-// |max_file_path_len|, the |pure_file_name| will output new pure file name
-// part for making sure the length of specified file path is less than
-// specified maximum length of file path. Return false if the function can
-// not get a safe pure file name, otherwise it returns true.
-bool GetSafePureFileName(const FilePath& dir_path,
-                         const FilePath::StringType& file_name_ext,
-                         uint32 max_file_path_len,
-                         FilePath::StringType* pure_file_name) {
-  DCHECK(!pure_file_name->empty());
-  int available_length = static_cast<int>(
-    max_file_path_len - dir_path.value().length() - file_name_ext.length());
-  // Need an extra space for the separator.
-  if (!file_util::EndsWithSeparator(dir_path))
-    --available_length;
-
-  // Plenty of room.
-  if (static_cast<int>(pure_file_name->length()) <= available_length)
-    return true;
-
-  // Limited room. Truncate |pure_file_name| to fit.
-  if (available_length > 0) {
-    *pure_file_name =
-        pure_file_name->substr(0, available_length);
-    return true;
-  }
-
-  // Not enough room to even use a shortened |pure_file_name|.
-  pure_file_name->clear();
-  return false;
-}
-
 }  // namespace
 
 SavePackage::SavePackage(TabContents* tab_contents,
@@ -396,6 +352,63 @@ bool SavePackage::Init() {
   return true;
 }
 
+// On POSIX, the length of |pure_file_name| + |file_name_ext| is further
+// restricted by NAME_MAX. The maximum allowed path looks like:
+// '/path/to/save_dir' + '/' + NAME_MAX.
+uint32 SavePackage::GetMaxPathLengthForDirectory(const FilePath& base_dir) {
+#if defined(OS_POSIX)
+  return std::min(kMaxFilePathLength,
+                  static_cast<uint32>(base_dir.value().length()) +
+                  NAME_MAX + 1);
+#else
+  return kMaxFilePathLength;
+#endif
+}
+
+// File name is considered being consist of pure file name, dot and file
+// extension name. File name might has no dot and file extension, or has
+// multiple dot inside file name. The dot, which separates the pure file
+// name and file extension name, is last dot in the whole file name.
+// This function is for making sure the length of specified file path is not
+// great than the specified maximum length of file path and getting safe pure
+// file name part if the input pure file name is too long.
+// The parameter |dir_path| specifies directory part of the specified
+// file path. The parameter |file_name_ext| specifies file extension
+// name part of the specified file path (including start dot). The parameter
+// |max_file_path_len| specifies maximum length of the specified file path.
+// The parameter |pure_file_name| input pure file name part of the specified
+// file path. If the length of specified file path is great than
+// |max_file_path_len|, the |pure_file_name| will output new pure file name
+// part for making sure the length of specified file path is less than
+// specified maximum length of file path. Return false if the function can
+// not get a safe pure file name, otherwise it returns true.
+bool SavePackage::GetSafePureFileName(const FilePath& dir_path,
+                                      const FilePath::StringType& file_name_ext,
+                                      uint32 max_file_path_len,
+                                      FilePath::StringType* pure_file_name) {
+  DCHECK(!pure_file_name->empty());
+  int available_length = static_cast<int>(max_file_path_len -
+                                          dir_path.value().length() -
+                                          file_name_ext.length());
+  // Need an extra space for the separator.
+  if (!file_util::EndsWithSeparator(dir_path))
+    --available_length;
+
+  // Plenty of room.
+  if (static_cast<int>(pure_file_name->length()) <= available_length)
+    return true;
+
+  // Limited room. Truncate |pure_file_name| to fit.
+  if (available_length > 0) {
+    *pure_file_name = pure_file_name->substr(0, available_length);
+    return true;
+  }
+
+  // Not enough room to even use a shortened |pure_file_name|.
+  pure_file_name->clear();
+  return false;
+}
+
 // Generate name for saving resource.
 bool SavePackage::GenerateFileName(const std::string& disposition,
                                    const GURL& url,
@@ -429,9 +442,12 @@ bool SavePackage::GenerateFileName(const std::string& disposition,
     file_name_ext.append(kDefaultHtmlExtension);
   }
 
+  // Need to make sure the suggested file name is not too long.
+  uint32 max_path = GetMaxPathLengthForDirectory(saved_main_directory_path_);
+
   // Get safe pure file name.
   if (!GetSafePureFileName(saved_main_directory_path_, file_name_ext,
-                           kMaxFilePathLength, &pure_file_name))
+                           max_path, &pure_file_name))
     return false;
 
   FilePath::StringType file_name = pure_file_name + file_name_ext;
@@ -446,7 +462,7 @@ bool SavePackage::GenerateFileName(const std::string& disposition,
     // We need to make sure the length of base file name plus maximum ordinal
     // number path will be less than or equal to kMaxFilePathLength.
     if (!GetSafePureFileName(saved_main_directory_path_, file_name_ext,
-        kMaxFilePathLength - kMaxFileOrdinalNumberPartLength, &base_file_name))
+        max_path - kMaxFileOrdinalNumberPartLength, &base_file_name))
       return false;
 
     // Prepare the new ordinal number.
@@ -469,7 +485,7 @@ bool SavePackage::GenerateFileName(const std::string& disposition,
       // Get safe pure file name.
       if (!GetSafePureFileName(saved_main_directory_path_,
                                FilePath::StringType(),
-                               kMaxFilePathLength, &file_name))
+                               max_path, &file_name))
         return false;
     } else {
       for (int i = ordinal_number; i < kMaxFileOrdinalNumber; ++i) {
@@ -1274,15 +1290,8 @@ void SavePackage::CreateDirectoryOnFileThread(
   FilePath::StringType file_name_ext = suggested_filename.Extension();
 
   // Need to make sure the suggested file name is not too long.
-  uint32 max_path = kMaxFilePathLength;
-#if defined(OS_POSIX)
-  // On POSIX, the length of |pure_file_name| + |file_name_ext| is further
-  // restricted by NAME_MAX. The maximum allowed path looks like:
-  // '/path/to/save_dir' + '/' + NAME_MAX.
-  max_path = std::min(max_path,
-                      static_cast<uint32>(save_dir.value().length()) +
-                      NAME_MAX + 1);
-#endif
+  uint32 max_path = GetMaxPathLengthForDirectory(save_dir);
+
   if (GetSafePureFileName(save_dir, file_name_ext, max_path, &pure_file_name)) {
     save_dir = save_dir.Append(pure_file_name + file_name_ext);
   } else {
