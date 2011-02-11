@@ -121,7 +121,13 @@ IN_PROC_BROWSER_TEST_F(DOMAutomationTest, FindBySelectors) {
   ASSERT_EQ(3, nested_count);
 }
 
-IN_PROC_BROWSER_TEST_F(DOMAutomationTest, FindByText) {
+#if defined(OS_WIN)
+// http://crbug.com/72745
+#define MAYBE_FindByText FLAKY_FindByText
+#else
+#define MAYBE_FindByText FindByText
+#endif
+IN_PROC_BROWSER_TEST_F(DOMAutomationTest, MAYBE_FindByText) {
   ASSERT_TRUE(test_server()->Start());
   ui_test_utils::NavigateToURL(browser(),
                                GetTestURL("find_elements/test.html"));
