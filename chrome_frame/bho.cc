@@ -12,7 +12,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/win/scoped_bstr.h"
-#include "chrome_tab.h" // NOLINT
+#include "chrome_frame/buggy_bho_handling.h"
 #include "chrome_frame/crash_reporting/crash_metrics.h"
 #include "chrome_frame/extra_system_apis.h"
 #include "chrome_frame/html_utils.h"
@@ -138,6 +138,10 @@ STDMETHODIMP Bho::SetSite(IUnknown* site) {
     MetricsService::Start();
   } else {
     UnregisterThreadInstance();
+    buggy_bho::BuggyBhoTls::DestroyInstance();
+    ScopedComPtr<IWebBrowser2> web_browser2;
+    web_browser2.QueryFrom(m_spUnkSite);
+    DispEventUnadvise(web_browser2, &DIID_DWebBrowserEvents2);
     Release();
   }
 

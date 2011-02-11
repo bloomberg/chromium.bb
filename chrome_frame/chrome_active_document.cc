@@ -738,6 +738,19 @@ void ChromeActiveDocument::UpdateNavigationState(
            OLECMDEXECOPT_DODEFAULT, secure_lock_status.AsInput(), NULL);
   }
 
+  // A number of poorly written bho's crash in their event sink callbacks if
+  // chrome frame is the currently loaded document. This is because they expect
+  // chrome frame to implement interfaces like IHTMLDocument, etc. We patch the
+  // event sink's of these bho's and don't invoke the event sink if chrome
+  // frame is the currently loaded document.
+  if (GetConfigBool(true, kEnableBuggyBhoIntercept)) {
+    ScopedComPtr<IWebBrowser2> wb2;
+    DoQueryService(SID_SWebBrowserApp, m_spClientSite, wb2.Receive());
+    if (wb2 && buggy_bho::BuggyBhoTls::GetInstance()) {
+      buggy_bho::BuggyBhoTls::GetInstance()->PatchBuggyBHOs(wb2);
+    }
+  }
+
   // Ideally all navigations should come to Chrome Frame so that we can call
   // BeforeNavigate2 on installed BHOs and give them a chance to cancel the
   // navigation. However, in practice what happens is as below:
@@ -767,15 +780,6 @@ void ChromeActiveDocument::UpdateNavigationState(
   if (is_internal_navigation) {
     ScopedComPtr<IDocObjectService> doc_object_svc;
     ScopedComPtr<IWebBrowserEventsService> web_browser_events_svc;
-
-    buggy_bho::BuggyBhoTls bad_bho_tls;
-    if (GetConfigBool(true, kEnableBuggyBhoIntercept)) {
-      ScopedComPtr<IWebBrowser2> wb2;
-      DoQueryService(SID_SWebBrowserApp, m_spClientSite, wb2.Receive());
-      if (wb2) {
-        buggy_bho::BuggyBhoTls::PatchBuggyBHOs(wb2);
-      }
-    }
 
     DoQueryService(__uuidof(web_browser_events_svc), m_spClientSite,
                    web_browser_events_svc.Receive());

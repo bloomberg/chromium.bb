@@ -39,6 +39,8 @@
 #include "net/base/escape.h"
 #include "net/http/http_util.h"
 
+#include "chrome_tab.h"  // NOLINT
+
 using base::win::RegKey;
 using base::win::ScopedComPtr;
 
@@ -1583,3 +1585,21 @@ std::wstring GetCurrentModuleVersion() {
   DCHECK(module_version_info.get() != NULL);
   return module_version_info->file_version();
 }
+
+bool IsChromeFrameDocument(IWebBrowser2* web_browser) {
+  if (!web_browser)
+    return false;
+
+  ScopedComPtr<IDispatch> doc;
+  web_browser->get_Document(doc.Receive());
+  if (doc) {
+    // Detect if CF is rendering based on whether the document is a
+    // ChromeActiveDocument. Detecting based on hwnd is problematic as
+    // the CF Active Document window may not have been created yet.
+    ScopedComPtr<IChromeFrame> chrome_frame;
+    chrome_frame.QueryFrom(doc);
+    return chrome_frame.get() != NULL;
+  }
+  return false;
+}
+

@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/threading/thread_local.h"
+#include "base/win/scoped_comptr.h"
 
 namespace buggy_bho {
 
@@ -21,23 +22,32 @@ typedef HRESULT (__stdcall* InvokeFunc)(IDispatch* me, DISPID dispid,
                                         DISPPARAMS* params, VARIANT* result,
                                         EXCEPINFO* ei, UINT* err);
 
-// Construct an instance of this class on the stack when firing web browser
+// Construct a per thread instance of this class before firing web browser
 // events that can be sent to buggy BHOs.  This class will intercept those
 // BHOs (see list in cc file) and ignore notifications to those components
-// for as long as the BuggyBhoTls instance on the stack lives.
+// as long as ChromeFrame is the active view.
 class BuggyBhoTls {
  public:
-  BuggyBhoTls();
-  ~BuggyBhoTls();
-
-  // Call after instantiating an instance of BuggyBhoTls.  This method traverses
-  // the list of DWebBrowserEvents and DWebBrowserEvents2 subscribers and checks
-  // if any of the sinks belong to a list of known-to-be-buggy BHOs.
+  // This method traverses the list of DWebBrowserEvents and DWebBrowserEvents2
+  // subscribers and checks if any of the sinks belong to a list of
+  // known-to-be-buggy BHOs.
   // For each of those, a patch will be applied that temporarily ignores certain
   // invokes.
-  static HRESULT PatchBuggyBHOs(IWebBrowser2* browser);
+  HRESULT PatchBuggyBHOs(IWebBrowser2* browser);
+
+  // Returns the instance of the BuggyBhoTls object for the current thread.
+  static BuggyBhoTls* GetInstance();
+
+  // Destroys the BuggyBhoTls instance foe the current thread.
+  static void DestroyInstance();
+
+  void set_web_browser(IWebBrowser2* web_browser2) {
+    web_browser2_ = web_browser2;
+  }
 
  protected:
+  BuggyBhoTls();
+  ~BuggyBhoTls();
   // internal implementation:
 
   // Called when a buggy instance is found to be subscribing to browser events.
@@ -48,15 +58,12 @@ class BuggyBhoTls {
   // object running on the same thread (e.g. IE6) with one running CF and the
   // other MSHTML.  We don't want to drop events being fired by MSHTML, only
   // events fired by CF since these BHOs should handle MSHTML correctly.
-  bool IsBuggyObject(IDispatch* obj) const;
+  bool ShouldSkipInvoke(IDispatch* obj) const;
 
   // Static, protected member methods
 
-  // Returns the currently registered (TLS) BuggyBhoTls instance or NULL.
-  static BuggyBhoTls* FromCurrentThread();
-
   // Patches a subscriber if it belongs to a buggy dll.
-  static bool PatchIfBuggy(CONNECTDATA* cd, const IID& diid);
+  bool PatchIfBuggy(IUnknown* unk, const IID& diid);
 
   // Patches the IDispatch::Invoke method.
   static HRESULT PatchInvokeMethod(PROC* invoke);
@@ -71,14 +78,12 @@ class BuggyBhoTls {
  protected:
   // List of buggy subscribers.
   std::vector<IDispatch*> bad_objects_;
-
-  // Pointer to a previous instance of BuggyBhoTls on this thread if any.
-  // Under regular circumstances, this will be NULL.  However, there's a chance
-  // that we could get reentrant calls, hence we maintain a stack.
-  BuggyBhoTls* previous_instance_;
-
   // Where we store the current thread's instance.
   static base::ThreadLocalPointer<BuggyBhoTls> s_bad_object_tls_;
+  // The IWebBrowser2 instance for this thread.
+  base::win::ScopedComPtr<IWebBrowser2> web_browser2_;
+  // Set to true when we are done patching the event sinks of buggy bho's.
+  bool patched_;
 };
 
 }  // end namespace buggy_bho

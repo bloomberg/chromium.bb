@@ -75,27 +75,105 @@ bool IsBuggyBho(HMODULE mod) {
   return false;
 }
 
-BuggyBhoTls::BuggyBhoTls() : previous_instance_(s_bad_object_tls_.Get()) {
+BuggyBhoTls::BuggyBhoTls()
+    : patched_(false) {
+  DCHECK(s_bad_object_tls_.Get() == NULL);
   s_bad_object_tls_.Set(this);
 }
 
 BuggyBhoTls::~BuggyBhoTls() {
-  DCHECK(FromCurrentThread() == this);
-  s_bad_object_tls_.Set(previous_instance_);
+  DCHECK(BuggyBhoTls::GetInstance() == this);
+  s_bad_object_tls_.Set(NULL);
 }
 
 void BuggyBhoTls::AddBuggyObject(IDispatch* obj) {
   bad_objects_.push_back(obj);
 }
 
-bool BuggyBhoTls::IsBuggyObject(IDispatch* obj) const {
-  return std::find(bad_objects_.begin(), bad_objects_.end(), obj) !=
-         bad_objects_.end();
+bool BuggyBhoTls::ShouldSkipInvoke(IDispatch* obj) const {
+  DCHECK(web_browser2_ != NULL);
+  if (IsChromeFrameDocument(web_browser2_)) {
+    return std::find(bad_objects_.begin(), bad_objects_.end(), obj) !=
+           bad_objects_.end();
+  }
+  return false;
 }
 
 // static
-BuggyBhoTls* BuggyBhoTls::FromCurrentThread() {
-  return s_bad_object_tls_.Get();
+BuggyBhoTls* BuggyBhoTls::GetInstance() {
+  BuggyBhoTls* tls_instance = s_bad_object_tls_.Get();
+  if (!tls_instance) {
+    tls_instance = new BuggyBhoTls();
+    DCHECK(s_bad_object_tls_.Get() != NULL);
+  }
+  return tls_instance;
+}
+
+// static
+void BuggyBhoTls::DestroyInstance() {
+  BuggyBhoTls* tls_instance = s_bad_object_tls_.Get();
+  if (tls_instance) {
+    delete tls_instance;
+    DCHECK(s_bad_object_tls_.Get() == NULL);
+  }
+}
+
+HRESULT BuggyBhoTls::PatchBuggyBHOs(IWebBrowser2* browser) {
+  if (patched_)
+    return S_FALSE;
+
+  DCHECK(browser);
+  DCHECK(web_browser2_ == NULL);
+
+  ScopedComPtr<IConnectionPointContainer> cpc;
+  HRESULT hr = cpc.QueryFrom(browser);
+  if (SUCCEEDED(hr)) {
+    const GUID sinks[] = { DIID_DWebBrowserEvents2, DIID_DWebBrowserEvents };
+    for (size_t i = 0; i < arraysize(sinks); ++i) {
+      ScopedComPtr<IConnectionPoint> cp;
+      cpc->FindConnectionPoint(sinks[i], cp.Receive());
+      if (cp) {
+        ScopedComPtr<IEnumConnections> connections;
+        cp->EnumConnections(connections.Receive());
+        if (connections) {
+          CONNECTDATA cd = {0};
+          DWORD fetched = 0;
+          while (connections->Next(1, &cd, &fetched) == S_OK && fetched) {
+            PatchIfBuggy(cd.pUnk, sinks[i]);
+            cd.pUnk->Release();
+            fetched = 0;
+          }
+        }
+      }
+    }
+  }
+  patched_ = true;
+  web_browser2_ = browser;
+  return hr;
+}
+
+bool BuggyBhoTls::PatchIfBuggy(IUnknown* unk, const IID& diid) {
+  DCHECK(unk);
+  PROC* methods = *reinterpret_cast<PROC**>(unk);
+  HMODULE mod = GetModuleFromAddress(methods[0]);
+  if (!IsBuggyBho(mod))
+    return false;
+
+  ScopedComPtr<IDispatch> disp;
+  HRESULT hr = unk->QueryInterface(diid,
+      reinterpret_cast<void**>(disp.Receive()));
+  if (FAILED(hr))  // Sometimes only IDispatch QI is supported
+    hr = disp.QueryFrom(unk);
+  DCHECK(SUCCEEDED(hr));
+
+  if (SUCCEEDED(hr)) {
+    const int kInvokeIndex = 6;
+    DCHECK(static_cast<IUnknown*>(disp) == unk);
+    if (SUCCEEDED(PatchInvokeMethod(&methods[kInvokeIndex]))) {
+      AddBuggyObject(disp);
+    }
+  }
+  return false;
 }
 
 // static
@@ -106,8 +184,10 @@ STDMETHODIMP BuggyBhoTls::BuggyBhoInvoke(InvokeFunc original, IDispatch* me,
                                          UINT* err) {
   DVLOG(1) << __FUNCTION__;
 
-  const BuggyBhoTls* tls = BuggyBhoTls::FromCurrentThread();
-  if (tls && tls->IsBuggyObject(me)) {
+  DCHECK(BuggyBhoTls::GetInstance())
+      << "You must first have an instance of BuggyBhoTls on this thread";
+  if (BuggyBhoTls::GetInstance() &&
+      BuggyBhoTls::GetInstance()->ShouldSkipInvoke(me)) {
     // Ignore this call and avoid the bug.
     // TODO(tommi): Maybe we should check a specific list of DISPIDs too?
     return S_OK;
@@ -147,71 +227,7 @@ HRESULT BuggyBhoTls::PatchInvokeMethod(PROC* invoke) {
       ::FlushInstructionCache(::GetCurrentProcess(), invoke, sizeof(PROC));
     }
   }
-
   ::VirtualProtect(invoke, sizeof(PROC), flags, &flags);
-
-  return hr;
-}
-
-// static
-bool BuggyBhoTls::PatchIfBuggy(CONNECTDATA* cd, const IID& diid) {
-  DCHECK(cd);
-  PROC* methods = *reinterpret_cast<PROC**>(cd->pUnk);
-  HMODULE mod = GetModuleFromAddress(methods[0]);
-  if (!IsBuggyBho(mod))
-    return false;
-
-  ScopedComPtr<IDispatch> disp;
-  HRESULT hr = cd->pUnk->QueryInterface(diid,
-      reinterpret_cast<void**>(disp.Receive()));
-  if (FAILED(hr))  // Sometimes only IDispatch QI is supported
-    hr = disp.QueryFrom(cd->pUnk);
-  DCHECK(SUCCEEDED(hr));
-
-  if (SUCCEEDED(hr)) {
-    const int kInvokeIndex = 6;
-    DCHECK(static_cast<IUnknown*>(disp) == cd->pUnk);
-    if (SUCCEEDED(PatchInvokeMethod(&methods[kInvokeIndex]))) {
-      BuggyBhoTls* tls = BuggyBhoTls::FromCurrentThread();
-      DCHECK(tls);
-      if (tls) {
-        tls->AddBuggyObject(disp);
-      }
-    }
-  }
-
-  return false;
-}
-
-// static
-HRESULT BuggyBhoTls::PatchBuggyBHOs(IWebBrowser2* browser) {
-  DCHECK(browser);
-  DCHECK(BuggyBhoTls::FromCurrentThread())
-      << "You must first have an instance of BuggyBhoTls on this thread";
-
-  ScopedComPtr<IConnectionPointContainer> cpc;
-  HRESULT hr = cpc.QueryFrom(browser);
-  if (SUCCEEDED(hr)) {
-    const GUID sinks[] = { DIID_DWebBrowserEvents2, DIID_DWebBrowserEvents };
-    for (size_t i = 0; i < arraysize(sinks); ++i) {
-      ScopedComPtr<IConnectionPoint> cp;
-      cpc->FindConnectionPoint(sinks[i], cp.Receive());
-      if (cp) {
-        ScopedComPtr<IEnumConnections> connections;
-        cp->EnumConnections(connections.Receive());
-        if (connections) {
-          CONNECTDATA cd = {0};
-          DWORD fetched = 0;
-          while (connections->Next(1, &cd, &fetched) == S_OK && fetched) {
-            PatchIfBuggy(&cd, sinks[i]);
-            cd.pUnk->Release();
-            fetched = 0;
-          }
-        }
-      }
-    }
-  }
-
   return hr;
 }
 

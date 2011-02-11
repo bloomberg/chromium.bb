@@ -8,7 +8,6 @@
 #include <OAidl.h>
 #include <windows.h>
 #include <wininet.h>
-
 #include <string>
 #include <vector>
 
@@ -23,6 +22,7 @@
 
 class FilePath;
 interface IBrowserService;
+interface IWebBrowser2;
 
 // utils.h : Various utility functions and classes
 
@@ -614,5 +614,8 @@ bool CheckXUaCompatibleDirective(const std::string& directive,
 
 // Returns the version of the current module as a string.
 std::wstring GetCurrentModuleVersion();
+
+// Returns true if ChromeFrame is the currently loaded document.
+bool IsChromeFrameDocument(IWebBrowser2* web_browser);
 
 #endif  // CHROME_FRAME_UTILS_H_
