@@ -111,7 +111,7 @@ cr.define('options', function() {
     AlertOverlay.getInstance().okCallback = okCallback;
     AlertOverlay.getInstance().cancelCallback = cancelCallback;
 
-    OptionsPage.showOverlay('alertOverlay');
+    OptionsPage.showPageByName('alertOverlay', false);
   }
 
   // Export

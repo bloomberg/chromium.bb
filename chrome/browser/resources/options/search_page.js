@@ -107,6 +107,7 @@ cr.define('options', function() {
       searchField.setAttribute('autosave', 'org.chromium.options.search');
       searchField.setAttribute('results', '10');
       searchField.setAttribute('incremental', 'true');
+      this.searchField = searchField;
 
       // Replace the contents of the navigation tab with the search field.
       self.tab.textContent = '';
@@ -116,7 +117,34 @@ cr.define('options', function() {
       // Handle search events. (No need to throttle, WebKit's search field
       // will do that automatically.)
       searchField.onsearch = function(e) {
-        self.setSearchText_(this.value);
+        self.setSearchText_(SearchPage.canonicalizeQuery(this.value));
+      };
+
+      // We update the history stack every time the search field blurs. This way
+      // we get a history entry for each search, roughly, but not each letter
+      // typed.
+      searchField.onblur = function(e) {
+        var query = SearchPage.canonicalizeQuery(searchField.value);
+        if (!query)
+          return;
+
+        // Don't push the same page onto the history stack more than once (if
+        // the user clicks in the search field and away several times).
+        var currentHash = location.hash;
+        var newHash = '#' + escape(query);
+        if (currentHash == newHash)
+          return;
+
+        // If there is no hash on the current URL, the history entry has no
+        // search query. Replace the history entry with no search with an entry
+        // that does have a search. Otherwise, add it onto the history stack.
+        var historyFunction = currentHash ? window.history.pushState :
+                                            window.history.replaceState;
+        historyFunction.call(
+            window.history,
+            {pageName: self.name},
+            self.title,
+            '/' + self.name + newHash);
       };
 
       // Install handler for key presses.
@@ -166,12 +194,15 @@ cr.define('options', function() {
       if (!this.searchActive_ && !active)
         return;
 
-      if (this.searchActive_ != active) {
-        this.searchActive_ = active;
-        if (!active) {
+      this.searchActive_ = active;
+
+      if (active) {
+        var hash = location.hash;
+        if (hash)
+          this.searchField.value = unescape(hash.slice(1));
+      } else {
           // Just wipe out any active search text since it's no longer relevant.
-          $('search-field').value = '';
-        }
+        this.searchField.value = '';
       }
 
       var pagesToSearch = this.getSearchablePages_();
@@ -200,8 +231,10 @@ cr.define('options', function() {
         }
       }
 
-      // After hiding all page content, remove any search results.
-      if (!active) {
+      if (active) {
+        this.setSearchText_(this.searchField.value);
+      } else {
+        // After hiding all page content, remove any search results.
         this.unhighlightMatches_();
         this.removeSearchBubbles_();
       }
@@ -213,10 +246,6 @@ cr.define('options', function() {
      * @private
      */
     setSearchText_: function(text) {
-      // Consider whitespace-only strings as empty.
-      if (!text.replace(/^\s+/, '').length)
-        text = '';
-
       // Toggle the search page if necessary.
       if (text.length) {
         if (!this.searchActive_)
@@ -468,11 +497,21 @@ cr.define('options', function() {
       // Focus the search field on an unused forward-slash.
       if (event.keyCode == 191 &&
           !/INPUT|SELECT|BUTTON|TEXTAREA/.test(event.target.tagName)) {
-        $('search-field').focus();
+        this.searchField.focus();
         event.stopPropagation();
         event.preventDefault();
       }
-    }
+    },
+  };
+
+  /**
+   * Standardizes a user-entered text query by removing extra whitespace.
+   * @param {string} The user-entered text.
+   * @return {string} The trimmed query.
+   */
+  SearchPage.canonicalizeQuery = function(text) {
+    // Trim beginning and ending whitespace.
+    return text.replace(/^\s+|\s+$/g, '');
   };
 
   // Export

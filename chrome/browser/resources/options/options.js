@@ -161,11 +161,14 @@ function load() {
   OptionsPage.initialize();
 
   var path = document.location.pathname;
+  // TODO(estade): remove this explicit hash handling. Pages should check for
+  // location.hash in didShowPage.
   var hash = document.location.hash;
 
   if (path.length > 1) {
     var pageName = path.slice(1);
-    OptionsPage.navigateToPage(pageName);
+    // Show page, but don't update history (there's already an entry for it).
+    OptionsPage.showPageByName(pageName, false);
     if (hash.length > 1)
       OptionsPage.handleHashForPage(pageName, hash.slice(1));
   } else {

@@ -489,6 +489,9 @@ cr.define('options.contentSettings', function() {
       }
 
       ContentSettingsExceptionsArea.hideOTRLists();
+
+      // If the user types in the URL without a hash, show just cookies.
+      this.showList('cookies');
     },
 
     /**
@@ -508,16 +511,6 @@ cr.define('options.contentSettings', function() {
       }
     },
 
-   /**
-     * Handles a hash value in the URL (such as bar in
-     * chrome://options/foo#bar).
-     * @param {string} hash The hash value.
-     */
-    handleHash: function(hash) {
-      if (hash)
-        this.showList(hash);
-    },
-
     /**
      * Called after the page has been shown. Show the content type for the
      * location's hash.
@@ -525,7 +518,7 @@ cr.define('options.contentSettings', function() {
     didShowPage: function() {
       var hash = location.hash;
       if (hash)
-        this.handleHash(hash.slice(1));
+        this.showList(hash.slice(1));
     },
   };
 

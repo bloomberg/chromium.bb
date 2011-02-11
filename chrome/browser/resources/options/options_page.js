@@ -55,33 +55,24 @@ cr.define('options', function() {
    * @param {string} pageName Page name.
    */
   OptionsPage.navigateToPage = function(pageName) {
-    var visiblePage = this.getTopmostVisiblePage();
-
-    var targetPage = this.showPageByName_(pageName);
-    if (!targetPage)
-      return;
-
-    if (!visiblePage) {
-      // Use replaceState instead of pushState so that we don't get a
-      // superfluous chrome://settings entry in addition to the desired
-      // chrome://settings/pageName entry.
-      window.history.replaceState(
-          {pageName: targetPage.name}, targetPage.title, '/' + targetPage.name);
-    } else if (visiblePage.name != pageName) {
-      this.pushHistoryState_();
-    }
+    this.showPageByName(pageName, true);
   };
 
   /**
    * Shows a registered page. This handles both top-level pages and sub-pages.
    * @param {string} pageName Page name.
-   * @return {OptionsPage} The page that was shown.
+   * @param {boolean} updateHistory True if we should update the history after
+   *     showing the page.
    * @private
    */
-  OptionsPage.showPageByName_ = function(pageName) {
+  OptionsPage.showPageByName = function(pageName, updateHistory) {
     var targetPage = this.registeredPages[pageName];
-    if (!targetPage)
-      return this.showOverlay(pageName);
+    if (!targetPage) {
+      this.showOverlay_(pageName);
+      if (updateHistory)
+        this.updateHistoryState_();
+      return;
+    }
 
     // Determine if the root page is 'sticky', meaning that it
     // shouldn't change when showing a sub-page.  This can happen for special
@@ -117,6 +108,10 @@ cr.define('options', function() {
            page.isAncestorOfPage(targetPage));
     }
 
+    // Update the history and current location.
+    if (updateHistory)
+      this.updateHistoryState_();
+
     // Notify pages if they were shown.
     for (var name in this.registeredPages) {
       var page = this.registeredPages[name];
@@ -126,19 +121,31 @@ cr.define('options', function() {
           page.isAncestorOfPage(targetPage)))
         page.didShowPage();
     }
-
-    return targetPage;
   };
 
   /**
-   * Pushes |page| onto the history stack.
-   * @param {Object} page The page to push onto the history stack.
+   * Pushes the current page onto the history stack, overriding the last page
+   * if it is the generic chrome://settings/.
    * @private
    */
-  OptionsPage.pushHistoryState_ = function() {
+  OptionsPage.updateHistoryState_ = function() {
     var page = this.getTopmostVisiblePage();
-    window.history.pushState(
-        {pageName: page.name}, page.title, '/' + page.name);
+    var path = location.pathname;
+    if (path)
+      path = path.slice(1);
+    // The page is already in history (the user may have clicked the same link
+    // twice). Do nothing.
+    if (path == page.name)
+      return;
+
+    // If there is no path, the current location is chrome://settings/.
+    // Override this with the new page.
+    var historyFunction = path ? window.history.pushState :
+                                 window.history.replaceState;
+    historyFunction.call(window.history,
+                         {pageName: page.name},
+                         page.title,
+                         '/' + page.name);
   };
 
   /**
@@ -153,20 +160,16 @@ cr.define('options', function() {
   };
 
   /**
-   * Shows a registered Overlay page.
+   * Shows a registered Overlay page. Does not update history.
    * @param {string} overlayName Page name.
-   * @return {OptionsPage} The overlay that was shown.
    */
-  OptionsPage.showOverlay = function(overlayName) {
+  OptionsPage.showOverlay_ = function(overlayName) {
     var overlay = this.registeredOverlayPages[overlayName];
-    if (!overlay)
-      return null;
 
     if (overlay.parentPage)
-      this.showPageByName_(overlay.parentPage.name);
+      this.showPageByName(overlay.parentPage.name, false);
 
     this.registeredOverlayPages[overlayName].visible = true;
-    return overlay;
   };
 
   /**
@@ -201,7 +204,7 @@ cr.define('options', function() {
       return;
 
     overlay.visible = false;
-    this.pushHistoryState_();
+    this.updateHistoryState_();
   };
 
   /**
@@ -244,7 +247,7 @@ cr.define('options', function() {
     if (topPage && !topPage.isOverlay && topPage.parentPage)
       topPage.visible = false;
 
-    this.pushHistoryState_();
+    this.updateHistoryState_();
   };
 
   /**
@@ -258,7 +261,7 @@ cr.define('options', function() {
       topPage = topPage.parentPage;
     }
 
-    this.pushHistoryState_();
+    this.updateHistoryState_();
   };
 
   /**
@@ -395,7 +398,7 @@ cr.define('options', function() {
       if (this.isOverlayVisible_())
         this.hideOverlay_();
 
-      this.showPageByName_(data.pageName);
+      this.showPageByName(data.pageName, false);
     }
   };
 
