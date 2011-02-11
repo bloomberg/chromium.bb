@@ -134,7 +134,7 @@ WebUIMenuWidget::WebUIMenuWidget(chromeos::NativeMenuWebUI* webui_menu,
       is_root_(root) {
   DCHECK(webui_menu_);
   // TODO(oshima): Disabling transparent until we migrate bookmark
-  // menus to DOMUI.  See crosbug.com/7718.
+  // menus to WebUI.  See crosbug.com/7718.
   // MakeTransparent();
 }
 

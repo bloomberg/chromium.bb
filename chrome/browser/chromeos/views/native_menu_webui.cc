@@ -71,7 +71,7 @@ namespace chromeos {
 
 // static
 void NativeMenuWebUI::SetMenuURL(views::Menu2* menu2, const GURL& url) {
-  // No-op if DOMUI menu is disabled.
+  // No-op if WebUI menu is disabled.
   if (!MenuUI::IsEnabled())
     return;
 

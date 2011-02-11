@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -134,7 +134,7 @@ void InputMethodMenuButton::UpdateUI(const std::string& input_method_id,
 }
 
 void InputMethodMenuButton::OpenConfigUI() {
-  host_->OpenButtonOptions(this);  // ask browser to open the DOMUI page.
+  host_->OpenButtonOptions(this);  // ask browser to open the WebUI page.
 }
 
 bool InputMethodMenuButton::ShouldSupportConfigUI() {

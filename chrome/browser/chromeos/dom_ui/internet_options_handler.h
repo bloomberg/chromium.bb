@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -121,7 +121,7 @@ class InternetOptionsHandler
   // If any network is currently active, this is its service path.
   std::string active_network_;
 
-  // A boolean flag of whether to use DOMUI for connect UI. True to use DOMUI
+  // A boolean flag of whether to use WebUI for connect UI. True to use WebUI
   // and false to use Views dialogs.
   bool use_settings_ui_;
 

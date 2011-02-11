@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,7 +75,7 @@ class NetworkMenu : public views::ViewMenuDelegate,
   NetworkMenu();
   virtual ~NetworkMenu();
 
-  // Retrieves network info for the DOMUI NetworkMenu (NetworkMenuUI).
+  // Retrieves network info for the WebUI NetworkMenu (NetworkMenuUI).
   // |index| is the index in menu_items_, set when the menu is built.
   bool GetNetworkAt(int index, NetworkInfo* info) const;
 

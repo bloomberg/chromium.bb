@@ -36,7 +36,7 @@ namespace chromeos {
 class MenuLocator;
 class WebUIMenuWidget;
 
-// A DOMUI implementation of MenuWrapper.
+// A WebUI implementation of MenuWrapper.
 class NativeMenuWebUI : public views::MenuWrapper,
                         public WebUIMenuControl,
                         public MessageLoop::Dispatcher {
@@ -145,7 +145,7 @@ class NativeMenuWebUI : public views::MenuWrapper,
   // Vector of listeners to receive callbacks when the menu opens.
   ObserverList<views::MenuListener> listeners_;
 
-  // URL to invoke Menu DOMUI. Default menu is chrome://menu, but
+  // URL to invoke Menu WebUI. Default menu is chrome://menu, but
   // custom menu can use different url using SetMenuURL method
   // (e.g. chrome://wrench-menu for wrench menu).
   GURL menu_url_;

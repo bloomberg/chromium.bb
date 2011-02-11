@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,7 +76,7 @@ class BalloonCollectionImpl : public BalloonCollection,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // Adds a callback for DOMUI message. Returns true if the callback
+  // Adds a callback for WebUI message. Returns true if the callback
   // is succssfully registered, or false otherwise. It fails to add if
   // there is no notification that matches NotificationDelegate::id(),
   // or a callback for given message already exists. The callback

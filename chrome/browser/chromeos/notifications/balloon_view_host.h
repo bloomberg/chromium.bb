@@ -26,14 +26,14 @@ class BalloonViewHost : public ::BalloonViewHost {
   explicit BalloonViewHost(Balloon* balloon) : ::BalloonViewHost(balloon) {}
   virtual ~BalloonViewHost();
 
-  // Adds a callback for DOMUI message. Returns true if the callback
+  // Adds a callback for WebUI message. Returns true if the callback
   // is succssfully registered, or false otherwise. It fails to add if
   // a callback for given message already exists. The callback object
   // is owned and deleted by callee.
   bool AddDOMUIMessageCallback(const std::string& message,
                                MessageCallback* callback);
 
-  // Process DOMUI message.
+  // Process WebUI message.
   virtual void ProcessDOMUIMessage(const ViewHostMsg_DomMessage_Params& params);
 
  private:

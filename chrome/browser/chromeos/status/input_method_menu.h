@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -118,7 +118,7 @@ class InputMethodMenu : public views::ViewMenuDelegate,
 
   // Sub classes have to implement the interface. This interface should return
   // true if the dropdown menu should show an item like "Customize languages
-  // and input..." DOMUI.
+  // and input..." WebUI.
   virtual bool ShouldSupportConfigUI() = 0;
 
   // Sub classes have to implement the interface which opens an UI for

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,7 +50,7 @@ class ProxyConfigServiceImpl
   // (GetLatestProxyConfig, AddObserver, RemoveObserver).
   //
   // From the UI thread, it is accessed via
-  // DOMUI::GetProfile::GetChromeOSProxyConfigServiceImpl to allow user to read
+  // WebUI::GetProfile::GetChromeOSProxyConfigServiceImpl to allow user to read
   // or modify the proxy configuration via UIGetProxyConfig or
   // UISetProxyConfigTo* respectively.
   // The new modified proxy config is posted to the IO thread through
