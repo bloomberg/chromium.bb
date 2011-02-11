@@ -9,6 +9,7 @@
 #define PPAPI_C_DEV_PPB_OPENGLES_DEV_H_
 
 #include "ppapi/c/pp_resource.h"
+#include "ppapi/c/pp_stdint.h"
 
 #ifndef __gl2_h_
 typedef unsigned int GLenum;
@@ -23,9 +24,9 @@ typedef unsigned int GLbitfield;
 typedef short GLshort;
 typedef float GLfloat;
 typedef float GLclampf;
-typedef signed char GLbyte;
-typedef unsigned char GLubyte;
-typedef int GLfixed;
+typedef int8_t GLbyte;
+typedef uint8_t GLubyte;
+typedef int32_t GLfixed;
 typedef unsigned short GLushort;
 typedef int GLclampx;
 #endif  // __gl2_h_
