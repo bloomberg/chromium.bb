@@ -306,7 +306,7 @@ cr.define('options', function() {
     pageNav.id = page.name + 'PageNav';
     pageNav.className = 'navbar-item';
     pageNav.setAttribute('pageName', page.name);
-    pageNav.textContent = page.title;
+    pageNav.textContent = page.pageDiv.querySelector('h1').textContent;
     pageNav.tabIndex = 0;
     pageNav.onclick = function(event) {
       OptionsPage.navigateToPage(this.getAttribute('pageName'));

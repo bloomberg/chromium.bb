@@ -143,7 +143,7 @@ cr.define('options', function() {
    */
   function CertificateManager(model) {
     OptionsPage.call(this, 'certificateManager',
-                     localStrings.getString('certificateManagerPage'),
+                     templateData.certificateManagerPageTabTitle,
                      'certificateManagerPage');
   }
 

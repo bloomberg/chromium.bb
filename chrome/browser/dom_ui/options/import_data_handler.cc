@@ -35,8 +35,8 @@ ImportDataHandler::~ImportDataHandler() {
 void ImportDataHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
-  localized_strings->SetString("importDataTitle",
-      l10n_util::GetStringUTF16(IDS_IMPORT_SETTINGS_TITLE));
+  RegisterTitle(localized_strings, "importDataOverlay",
+                IDS_IMPORT_SETTINGS_TITLE);
   localized_strings->SetString("importFromLabel",
       l10n_util::GetStringUTF16(IDS_IMPORT_FROM_LABEL));
   localized_strings->SetString("importLoading",

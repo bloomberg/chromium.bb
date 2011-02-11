@@ -28,7 +28,7 @@ cr.define('options', function() {
    * @constructor
    */
   function LanguageOptions(model) {
-    OptionsPage.call(this, 'language', localStrings.getString('languagePage'),
+    OptionsPage.call(this, 'language', templateData.languagePageTabTitle,
                      'languagePage');
   }
 

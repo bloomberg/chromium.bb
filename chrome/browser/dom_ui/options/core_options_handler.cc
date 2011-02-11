@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,28 +35,8 @@ void CoreOptionsHandler::GetLocalizedValues(
   // Main
   localized_strings->SetString("title",
       l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE));
-  localized_strings->SetString("browserPage",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_GENERAL_TAB_LABEL));
-  localized_strings->SetString("personalPage",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_CONTENT_TAB_LABEL));
-  localized_strings->SetString("advancedPage",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_ADVANCED_TAB_LABEL));
-#if defined(OS_CHROMEOS)
-  localized_strings->SetString("internetPage",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_INTERNET_TAB_LABEL));
-  localized_strings->SetString("languageChewingPage",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTINGS_TITLE));
-  localized_strings->SetString("languageHangulPage",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_LANGUAGES_HANGUL_SETTINGS_TITLE));
-  localized_strings->SetString("languageMozcPage",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SETTINGS_TITLE));
-  localized_strings->SetString("languagePinyinPage",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTINGS_TITLE));
-#endif
+
+  // Managed prefs
   localized_strings->SetString("managedPrefsBannerText",
       l10n_util::GetStringUTF16(IDS_OPTIONS_MANAGED_PREFS));
 

@@ -484,7 +484,8 @@ cr.define('options.contentSettings', function() {
    */
   function ContentSettingsExceptionsArea() {
     OptionsPage.call(this, 'contentExceptions',
-                     '', 'content-settings-exceptions-area');
+                     templateData.contentSettingsPageTabTitle,
+                     'content-settings-exceptions-area');
   }
 
   cr.addSingletonGetter(ContentSettingsExceptionsArea);

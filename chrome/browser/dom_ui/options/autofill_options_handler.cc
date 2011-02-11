@@ -63,8 +63,8 @@ void AutoFillOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
-  localized_strings->SetString("autoFillOptionsTitle",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_OPTIONS_TITLE));
+  RegisterTitle(localized_strings, "autoFillOptionsPage",
+                IDS_AUTOFILL_OPTIONS_TITLE);
   localized_strings->SetString("autoFillAddresses",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_ADDRESSES_GROUP_NAME));
   localized_strings->SetString("autoFillCreditCards",

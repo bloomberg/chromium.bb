@@ -36,8 +36,9 @@ void ClearBrowserDataHandler::Initialize() {
 void ClearBrowserDataHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
-  localized_strings->SetString("clearBrowserDataTitle",
-      l10n_util::GetStringUTF16(IDS_CLEAR_BROWSING_DATA_TITLE));
+  RegisterTitle(localized_strings, "clearBrowserDataOverlay",
+                IDS_CLEAR_BROWSING_DATA_TITLE);
+
   localized_strings->SetString("clearBrowserDataLabel",
       l10n_util::GetStringUTF16(IDS_CLEAR_BROWSING_DATA_LABEL));
   localized_strings->SetString("deleteBrowsingHistoryCheckbox",

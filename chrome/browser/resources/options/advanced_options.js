@@ -11,7 +11,7 @@ var OptionsPage = options.OptionsPage;
   // Encapsulated handling of advanced options page.
   //
   function AdvancedOptions() {
-    OptionsPage.call(this, 'advanced', templateData.advancedPage,
+    OptionsPage.call(this, 'advanced', templateData.advancedPageTabTitle,
                      'advancedPage');
   }
 

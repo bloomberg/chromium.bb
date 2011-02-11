@@ -30,8 +30,8 @@ void PasswordManagerHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
-  localized_strings->SetString("passwordsTitle",
-      l10n_util::GetStringUTF16(IDS_PASSWORDS_EXCEPTIONS_WINDOW_TITLE));
+  RegisterTitle(localized_strings, "passwordsPage",
+                IDS_PASSWORDS_EXCEPTIONS_WINDOW_TITLE);
   localized_strings->SetString("savedPasswordsTitle",
       l10n_util::GetStringUTF16(IDS_PASSWORDS_SHOW_PASSWORDS_TAB_TITLE));
   localized_strings->SetString("passwordExceptionsTitle",

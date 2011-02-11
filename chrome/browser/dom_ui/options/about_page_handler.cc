@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -92,7 +92,6 @@ const LocalizeEntry localize_table[] = {
     { "channel_warning_text", IDS_ABOUT_PAGE_CHANNEL_WARNING_TEXT },
     { "user_agent", IDS_ABOUT_VERSION_USER_AGENT },
     { "command_line", IDS_ABOUT_VERSION_COMMAND_LINE },
-    { "aboutPage", IDS_ABOUT }
 };
 
 void LocalizedStrings(DictionaryValue* localized_strings) {
@@ -145,6 +144,8 @@ void AboutPageHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
   LocalizedStrings(localized_strings);
+
+  RegisterTitle(localized_strings, "aboutPage", IDS_ABOUT_TAB_TITLE);
 
   // browser version
 

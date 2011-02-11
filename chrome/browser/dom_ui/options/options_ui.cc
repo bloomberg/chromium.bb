@@ -142,6 +142,17 @@ void OptionsPageUIHandler::RegisterStrings(
   }
 }
 
+void OptionsPageUIHandler::RegisterTitle(DictionaryValue* localized_strings,
+                                         const std::string& variable_name,
+                                         int title_id) {
+  localized_strings->SetString(variable_name,
+      l10n_util::GetStringUTF16(title_id));
+  localized_strings->SetString(variable_name + "TabTitle",
+      l10n_util::GetStringFUTF16(IDS_OPTIONS_TAB_TITLE,
+          l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE),
+          l10n_util::GetStringUTF16(title_id)));
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // OptionsUI

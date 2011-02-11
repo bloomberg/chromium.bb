@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,7 +30,10 @@ LanguageChewingOptionsHandler::~LanguageChewingOptionsHandler() {
 void LanguageChewingOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
-  // Language Chewing page - ChromeOS
+
+  RegisterTitle(localized_strings, "languageChewingPage",
+                IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTINGS_TITLE);
+
   for (size_t i = 0; i < language_prefs::kNumChewingBooleanPrefs; ++i) {
     localized_strings->SetString(
         GetI18nContentValue(language_prefs::kChewingBooleanPrefs[i],

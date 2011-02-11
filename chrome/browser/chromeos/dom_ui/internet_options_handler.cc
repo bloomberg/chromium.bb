@@ -76,9 +76,9 @@ InternetOptionsHandler::~InternetOptionsHandler() {
 void InternetOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
-  // Internet page - ChromeOS
-  localized_strings->SetString("internetPage",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_INTERNET_TAB_LABEL));
+
+  RegisterTitle(localized_strings, "internetPage",
+                IDS_OPTIONS_INTERNET_TAB_LABEL);
 
   localized_strings->SetString("wired_title",
       l10n_util::GetStringUTF16(

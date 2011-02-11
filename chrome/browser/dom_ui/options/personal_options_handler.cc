@@ -57,6 +57,9 @@ void PersonalOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
+  RegisterTitle(localized_strings, "personalPage",
+                IDS_OPTIONS_CONTENT_TAB_LABEL);
+
   localized_strings->SetString("syncSection",
       dom_options_util::StripColon(
           l10n_util::GetStringUTF16(IDS_SYNC_OPTIONS_GROUP_NAME)));

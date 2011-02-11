@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,10 @@ LanguagePinyinOptionsHandler::~LanguagePinyinOptionsHandler() {
 void LanguagePinyinOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
-  // Language Pinyin page - ChromeOS
+
+  RegisterTitle(localized_strings, "languagePinyinPage",
+                IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTINGS_TITLE);
+
   for (size_t i = 0; i < language_prefs::kNumPinyinBooleanPrefs; ++i) {
     localized_strings->SetString(
         GetI18nContentValue(language_prefs::kPinyinBooleanPrefs[i],

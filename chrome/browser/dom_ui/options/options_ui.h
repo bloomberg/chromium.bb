@@ -84,6 +84,11 @@ class OptionsPageUIHandler : public WebUIMessageHandler,
                               const OptionsStringResource* resources,
                               size_t length);
 
+  // Registers string resources for a page's header and tab title.
+  static void RegisterTitle(DictionaryValue* localized_strings,
+                            const std::string& variable_name,
+                            int title_id);
+
   NotificationRegistrar registrar_;
 
  private:

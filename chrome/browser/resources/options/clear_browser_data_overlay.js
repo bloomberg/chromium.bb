@@ -12,7 +12,7 @@ cr.define('options', function() {
    */
   function ClearBrowserDataOverlay() {
     OptionsPage.call(this, 'clearBrowserDataOverlay',
-                     templateData.clearBrowserDataTitle,
+                     templateData.clearBrowserDataOverlayTabTitle,
                      'clearBrowserDataOverlay');
   }
 

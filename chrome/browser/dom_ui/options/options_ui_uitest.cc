@@ -29,7 +29,9 @@ class OptionsUITest : public UITest {
     std::wstring title;
     ASSERT_TRUE(tab->GetTabTitle(&title));
     string16 expected_title = l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE);
-    ASSERT_EQ(expected_title, WideToUTF16Hack(title));
+    // The only guarantee we can make about the title of a settings tab is that
+    // it should contain IDS_SETTINGS_TITLE somewhere.
+    ASSERT_FALSE(WideToUTF16Hack(title).find(expected_title) == string16::npos);
   }
 };
 

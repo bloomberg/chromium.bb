@@ -14,7 +14,8 @@ cr.define('options', function() {
    */
 
   function SystemOptions() {
-    OptionsPage.call(this, 'system', templateData.systemPage, 'systemPage');
+    OptionsPage.call(this, 'system', templateData.systemPageTabTitle,
+                     'systemPage');
   }
 
   cr.addSingletonGetter(SystemOptions);

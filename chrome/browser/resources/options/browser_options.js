@@ -11,7 +11,9 @@ cr.define('options', function() {
   // Encapsulated handling of browser options page.
   //
   function BrowserOptions() {
-    OptionsPage.call(this, 'browser', templateData.browserPage, 'browserPage');
+    OptionsPage.call(this, 'browser',
+                     templateData.browserPageTabTitle,
+                     'browserPage');
   }
 
   cr.addSingletonGetter(BrowserOptions);

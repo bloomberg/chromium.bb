@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,10 @@ LanguageHangulOptionsHandler::~LanguageHangulOptionsHandler() {
 void LanguageHangulOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
-  // Language Hangul page - ChromeOS
+
+  RegisterTitle(localized_strings, "languageHangulPage",
+                IDS_OPTIONS_SETTINGS_LANGUAGES_HANGUL_SETTINGS_TITLE);
+
   localized_strings->SetString("hangul_keyboard_layout",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_KEYBOARD_LAYOUT_TEXT));
 

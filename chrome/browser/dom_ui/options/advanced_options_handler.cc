@@ -178,6 +178,8 @@ void AdvancedOptionsHandler::GetLocalizedValues(
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
+  RegisterTitle(localized_strings, "advancedPage",
+                IDS_OPTIONS_ADVANCED_TAB_LABEL);
 
   localized_strings->SetString("privacyLearnMoreURL",
       google_util::AppendGoogleLocaleParam(

@@ -15,7 +15,8 @@ cr.define('options', function() {
    * @constructor
    */
   function PersonalOptions() {
-    OptionsPage.call(this, 'personal', templateData.personalPage,
+    OptionsPage.call(this, 'personal',
+                     templateData.personalPageTabTitle,
                      'personal-page');
   }
 

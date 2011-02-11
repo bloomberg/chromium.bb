@@ -47,6 +47,10 @@ BrowserOptionsHandler::~BrowserOptionsHandler() {
 void BrowserOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
+
+  RegisterTitle(localized_strings, "browserPage",
+                IDS_OPTIONS_GENERAL_TAB_LABEL);
+
   localized_strings->SetString("startupGroupName",
       dom_options_util::StripColon(
           l10n_util::GetStringUTF16(IDS_OPTIONS_STARTUP_GROUP_NAME)));

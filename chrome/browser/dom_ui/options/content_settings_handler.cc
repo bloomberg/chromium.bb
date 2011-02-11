@@ -177,10 +177,11 @@ void ContentSettingsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
+  RegisterTitle(localized_strings, "contentSettingsPage",
+                IDS_CONTENT_SETTINGS_TITLE);
+
   localized_strings->SetString("content_exceptions",
       l10n_util::GetStringUTF16(IDS_COOKIES_EXCEPTIONS_BUTTON));
-  localized_strings->SetString("contentSettingsPage",
-      l10n_util::GetStringUTF16(IDS_CONTENT_SETTINGS_TITLE));
   localized_strings->SetString("allowException",
       l10n_util::GetStringUTF16(IDS_EXCEPTIONS_ALLOW_BUTTON));
   localized_strings->SetString("blockException",

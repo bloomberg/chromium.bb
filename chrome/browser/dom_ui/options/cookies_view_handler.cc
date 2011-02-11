@@ -214,8 +214,8 @@ void CookiesViewHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
-  localized_strings->SetString("cookiesViewPage",
-      l10n_util::GetStringUTF16(IDS_COOKIES_WEBSITE_PERMISSIONS_WINDOW_TITLE));
+  RegisterTitle(localized_strings, "cookiesViewPage",
+                IDS_COOKIES_WEBSITE_PERMISSIONS_WINDOW_TITLE);
 
   localized_strings->SetString("label_cookie_search",
       l10n_util::GetStringUTF16(IDS_COOKIES_SEARCH_LABEL));

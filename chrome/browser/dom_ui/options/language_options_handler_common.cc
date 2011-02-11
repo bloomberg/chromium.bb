@@ -34,8 +34,8 @@ void LanguageOptionsHandlerCommon::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
   string16 product_name = GetProductName();
-  localized_strings->SetString("languagePage",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_LANGUAGES_DIALOG_TITLE));
+  RegisterTitle(localized_strings, "languagePage",
+                IDS_OPTIONS_SETTINGS_LANGUAGES_DIALOG_TITLE);
   localized_strings->SetString("add_button",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_LANGUAGES_ADD_BUTTON));
   localized_strings->SetString("languages",

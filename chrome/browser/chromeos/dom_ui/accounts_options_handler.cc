@@ -38,8 +38,9 @@ void AccountsOptionsHandler::RegisterMessages() {
 void AccountsOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
-  localized_strings->SetString("accountsPage", l10n_util::GetStringUTF16(
-      IDS_OPTIONS_ACCOUNTS_TAB_LABEL));
+
+  RegisterTitle(localized_strings, "accountsPage",
+                IDS_OPTIONS_ACCOUNTS_TAB_LABEL);
 
   localized_strings->SetString("allow_BWSI", l10n_util::GetStringUTF16(
       IDS_OPTIONS_ACCOUNTS_ALLOW_BWSI_DESCRIPTION));

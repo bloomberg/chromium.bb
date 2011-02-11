@@ -6630,8 +6630,14 @@ This web page was killed, either because Chrome ran out of memory, or you chose 
       <message name="IDS_OPTIONS_LEARN_MORE_LABEL" desc="In the options dialog, we have links to the support web pages where the user can learn more about a feature.">
         Learn more
       </message>
+      <message name="IDS_OPTIONS_TAB_TITLE" desc="The format of the title on the browser tab for an options subpage, e.g. Settings - Basics">
+        <ph name="OPTIONS_TITLE">$1<ex>Settings</ex></ph> - <ph name="SUBPAGE_TITLE">$2<ex>Under the Hood</ex></ph>
+      </message>
 
       <!-- The About page is now part of options. -->
+      <message name="IDS_ABOUT_TAB_TITLE" desc="Label used for tab of about page.">
+        About
+      </message>
       <message name="IDS_ABOUT_PAGE_LOADING" desc="Label used for async data before data is available. Example is Chrome OS version.">
         Loading&#x2026;
       </message>

@@ -247,8 +247,8 @@ void CertificateManagerHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
-  localized_strings->SetString("certificateManagerPage",
-      l10n_util::GetStringUTF16(IDS_CERTIFICATE_MANAGER_TITLE));
+  RegisterTitle(localized_strings, "certificateManagerPage",
+                IDS_CERTIFICATE_MANAGER_TITLE);
 
   // Tabs.
   localized_strings->SetString("personalCertsTabTitle",

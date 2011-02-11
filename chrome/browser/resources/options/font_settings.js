@@ -14,7 +14,7 @@ cr.define('options', function() {
   function FontSettings() {
     OptionsPage.call(this,
                      'fontSettings',
-                     templateData.fontSettingsTitle,
+                     templateData.fontSettingsPageTabTitle,
                      'font-settings');
   }
 

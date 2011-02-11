@@ -70,22 +70,22 @@ function load() {
                                 [$('language-button')]);
     OptionsPage.registerSubPage(
         new OptionsPage('languageChewing',
-                        localStrings.getString('languageChewingPage'),
+                        templateData.languageChewingPageTabTitle,
                         'languageChewingPage'),
         LanguageOptions.getInstance());
     OptionsPage.registerSubPage(
         new OptionsPage('languageHangul',
-                        localStrings.getString('languageHangulPage'),
+                        templateData.languageHangulPageTabTitle,
                         'languageHangulPage'),
         LanguageOptions.getInstance());
     OptionsPage.registerSubPage(
         new OptionsPage('languageMozc',
-                        localStrings.getString('languageMozcPage'),
+                        templateData.languageMozcPageTabTitle,
                         'languageMozcPage'),
         LanguageOptions.getInstance());
     OptionsPage.registerSubPage(
         new OptionsPage('languagePinyin',
-                        localStrings.getString('languagePinyinPage'),
+                        templateData.languagePinyinPageTabTitle,
                         'languagePinyinPage'),
         LanguageOptions.getInstance());
     OptionsPage.register(InternetOptions.getInstance());

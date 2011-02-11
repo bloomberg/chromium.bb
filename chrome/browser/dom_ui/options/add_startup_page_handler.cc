@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,8 +27,7 @@ AddStartupPageHandler::~AddStartupPageHandler() {
 void AddStartupPageHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
-  localized_strings->SetString("addStartupPageTitle",
-      l10n_util::GetStringUTF16(IDS_ASI_ADD_TITLE));
+  RegisterTitle(localized_strings, "addStartupPage", IDS_ASI_ADD_TITLE);
   localized_strings->SetString("addStartupPageURLLabel",
       l10n_util::GetStringUTF16(IDS_ASI_URL));
   localized_strings->SetString("addStartupPageAddButton",

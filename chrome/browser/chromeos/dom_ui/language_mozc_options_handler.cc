@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,7 +27,10 @@ LanguageMozcOptionsHandler::~LanguageMozcOptionsHandler() {
 void LanguageMozcOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
-  // Language Mozc page - ChromeOS
+
+  RegisterTitle(localized_strings, "languageMozcPage",
+                IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SETTINGS_TITLE);
+
   for (size_t i = 0; i < language_prefs::kNumMozcBooleanPrefs; ++i) {
     localized_strings->SetString(
         GetI18nContentValue(language_prefs::kMozcBooleanPrefs[i], kI18nPrefix),
