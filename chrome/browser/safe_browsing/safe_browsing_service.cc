@@ -9,6 +9,7 @@
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/metrics/metrics_service.h"
@@ -578,7 +579,12 @@ void SafeBrowsingService::OnIOShutdown() {
   // Note that to avoid leaking the database, we rely on the fact that no new
   // tasks will be added to the db thread between the call above and this one.
   // See comments on the declaration of |safe_browsing_thread_|.
-  safe_browsing_thread_.reset();
+  {
+    // A ScopedAllowIO object is required to join the thread when calling Stop.
+    // See http://crbug.com/72696.
+    base::ThreadRestrictions::ScopedAllowIO allow_io_for_thread_join;
+    safe_browsing_thread_.reset();
+  }
 
   // Delete pending checks, calling back any clients with 'URL_SAFE'.  We have
   // to do this after the db thread returns because methods on it can have
