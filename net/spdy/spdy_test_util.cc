@@ -914,32 +914,32 @@ HttpNetworkSession* SpdySessionDependencies::SpdyCreateSessionDeterministic(
 }
 
 SpdyURLRequestContext::SpdyURLRequestContext() {
-  host_resolver_ = new MockHostResolver();
-  cert_verifier_ = new CertVerifier;
-  proxy_service_ = ProxyService::CreateDirect();
-  ssl_config_service_ = new SSLConfigServiceDefaults;
-  http_auth_handler_factory_ = HttpAuthHandlerFactory::CreateDefault(
-      host_resolver_);
+  set_host_resolver(new MockHostResolver());
+  set_cert_verifier(new CertVerifier);
+  set_proxy_service(ProxyService::CreateDirect());
+  set_ssl_config_service(new SSLConfigServiceDefaults);
+  set_http_auth_handler_factory(HttpAuthHandlerFactory::CreateDefault(
+      host_resolver()));
   net::HttpNetworkSession::Params params;
   params.client_socket_factory = &socket_factory_;
-  params.host_resolver = host_resolver_;
-  params.cert_verifier = cert_verifier_;
-  params.proxy_service = proxy_service_;
-  params.ssl_config_service = ssl_config_service_;
-  params.http_auth_handler_factory = http_auth_handler_factory_;
-  params.network_delegate = network_delegate_;
+  params.host_resolver = host_resolver();
+  params.cert_verifier = cert_verifier();
+  params.proxy_service = proxy_service();
+  params.ssl_config_service = ssl_config_service();
+  params.http_auth_handler_factory = http_auth_handler_factory();
+  params.network_delegate = network_delegate();
   scoped_refptr<HttpNetworkSession> network_session(
       new HttpNetworkSession(params));
-  http_transaction_factory_ = new HttpCache(
+  set_http_transaction_factory(new HttpCache(
       network_session,
-      HttpCache::DefaultBackend::InMemory(0));
+      HttpCache::DefaultBackend::InMemory(0)));
 }
 
 SpdyURLRequestContext::~SpdyURLRequestContext() {
-  delete http_transaction_factory_;
-  delete http_auth_handler_factory_;
-  delete cert_verifier_;
-  delete host_resolver_;
+  delete http_transaction_factory();
+  delete http_auth_handler_factory();
+  delete cert_verifier();
+  delete host_resolver();
 }
 
 const SpdyHeaderInfo make_spdy_header(spdy::SpdyControlType type) {

@@ -10,85 +10,51 @@
 #include "base/file_path.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "chrome/browser/net/chrome_url_request_context.h"
+#include "net/base/cookie_monster.h"
 
+class CommandLine;
+class ChromeAppCacheService;
+class ChromeBlobStorageContext;
 class ChromeURLRequestContext;
 class ChromeURLRequestContextGetter;
+class ExtensionInfoMap;
+class ExtensionIOEventRouter;
+namespace fileapi {
+class SandboxedFileSystemContext;
+}
+class HostContentSettingsMap;
+class HostZoomMap;
 class IOThread;
+namespace net {
+class DnsCertProvenanceChecker;
+class NetLog;
+class ProxyConfigService;
+class ProxyService;
+class SSLConfigService;
+class TransportSecurityState;
+}  // namespace net
+class PrerenderManager;
 class Profile;
+namespace webkit_database {
+class DatabaseTracker;
+}  // webkit_database
 
-// ProfileImpl owns a ProfileIOData::Handle, which holds a reference to the
-// ProfileIOData. ProfileIOData is intended to own all the objects owned by
-// ProfileImpl which live on the IO thread, such as, but not limited to, network
-// objects like CookieMonster, HttpTransactionFactory, etc. ProfileIOData is
-// owned by the ProfileImpl and ProfileIOData's ChromeURLRequestContexts. When
-// all of them go away, then ProfileIOData will be deleted. Note that the
-// ProfileIOData will typically outlive the Profile it is "owned" by, so it's
-// important for ProfileIOData not to hold any references to the Profile beyond
-// what's used by LazyParams (which should be deleted after lazy
-// initialization).
+// Conceptually speaking, the ProfileIOData represents data that lives on the IO
+// thread that is owned by a Profile, such as, but not limited to, network
+// objects like CookieMonster, HttpTransactionFactory, etc. The Profile
+// implementation will maintain a reference to the ProfileIOData. The
+// ProfileIOData will originally own a reference to the ChromeURLRequestContexts
+// that reference its members. When an accessor for a ChromeURLRequestContext is
+// invoked, then ProfileIOData will release its reference to the
+// ChromeURLRequestContext and the ChromeURLRequestContext will acquire a
+// reference to the ProfileIOData, so they exchange ownership. This is done
+// because it's possible for a context's accessor never to be invoked, so this
+// ownership reversal prevents shutdown leaks. ProfileIOData will lazily
+// initialize its members on the first invocation of a ChromeURLRequestContext
+// accessor.
 class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
  public:
-  class Handle {
-   public:
-    Handle();
-    ~Handle();
-
-    // Init() must be called before ~Handle(). It records all the necessary
-    // parameters needed to construct a ChromeURLRequestContextGetter.
-    void Init(const FilePath& cookie_path,
-              const FilePath& cache_path,
-              int cache_max_size,
-              const FilePath& media_cache_path,
-              int media_cache_max_size,
-              const FilePath& extensions_cookie_path,
-              Profile* profile);
-
-    bool HasMainRequestContext() const {
-      return main_request_context_getter_ != NULL;
-    }
-    scoped_refptr<ChromeURLRequestContextGetter>
-        GetMainRequestContextGetter() const;
-    scoped_refptr<ChromeURLRequestContextGetter>
-        GetMediaRequestContextGetter() const;
-    scoped_refptr<ChromeURLRequestContextGetter>
-        GetExtensionsRequestContextGetter() const;
-
-   private:
-    // Ordering is important here. Do not reorder unless you know what you're
-    // doing. |io_data_| must be released before the getters to ensure
-    // that ProfileIOData is deleted on the IO thread.
-    mutable scoped_refptr<ChromeURLRequestContextGetter>
-        main_request_context_getter_;
-    mutable scoped_refptr<ChromeURLRequestContextGetter>
-        media_request_context_getter_;
-    mutable scoped_refptr<ChromeURLRequestContextGetter>
-        extensions_request_context_getter_;
-    const scoped_refptr<ProfileIOData> io_data_;
-
-    DISALLOW_COPY_AND_ASSIGN(Handle);
-  };
-
-  // TODO(willchan): Move this to the private section when
-  // ChromeURLRequestContextFactory subclasses don't need it anymore.
-  struct LazyParams {
-    LazyParams();
-    ~LazyParams();
-
-    // All of these parameters are intended to be read on the IO thread.
-    FilePath cookie_path;
-    FilePath cache_path;
-    int cache_max_size;
-    FilePath media_cache_path;
-    int media_cache_max_size;
-    FilePath extensions_cookie_path;
-    IOThread* io_thread;
-
-    // TODO(willchan): Kill this, since the IO thread shouldn't be reading from
-    // the Profile. Instead, replace this with the parameters we want to copy
-    // from the UI thread to the IO thread.
-    Profile* profile;
-  };
-
   // These should only be called at most once each. Ownership is reversed they
   // get called, from ProfileIOData owning ChromeURLRequestContext to vice
   // versa.
@@ -96,30 +62,93 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
   scoped_refptr<ChromeURLRequestContext> GetMediaRequestContext() const;
   scoped_refptr<ChromeURLRequestContext> GetExtensionsRequestContext() const;
 
-  // TODO(willchan): Delete this when ChromeURLRequestContextFactory subclasses
-  // don't need it anymore.
-  const LazyParams& lazy_params() const;
-
- private:
+ protected:
   friend class base::RefCountedThreadSafe<ProfileIOData>;
 
-  class RequestContext;
+  class RequestContext : public ChromeURLRequestContext {
+   public:
+    RequestContext();
+    ~RequestContext();
 
-  ProfileIOData();
-  ~ProfileIOData();
+    // Setter is used to transfer ownership of the ProfileIOData to the context.
+    void set_profile_io_data(const ProfileIOData* profile_io_data) {
+      profile_io_data_ = profile_io_data;
+    }
 
-  // Lazily initializes ProfileIOData.
+   private:
+    scoped_refptr<const ProfileIOData> profile_io_data_;
+  };
+
+  // Created on the UI thread, read on the IO thread during ProfileIOData lazy
+  // initialization.
+  struct ProfileParams {
+    ProfileParams();
+    ~ProfileParams();
+
+    bool is_off_the_record;
+    bool clear_local_state_on_exit;
+    std::string accept_language;
+    std::string accept_charset;
+    std::string referrer_charset;
+    FilePath user_script_dir_path;
+    scoped_refptr<HostContentSettingsMap> host_content_settings_map;
+    scoped_refptr<HostZoomMap> host_zoom_map;
+    scoped_refptr<net::TransportSecurityState> transport_security_state;
+    scoped_refptr<net::SSLConfigService> ssl_config_service;
+    scoped_refptr<net::CookieMonster::Delegate> cookie_monster_delegate;
+    scoped_refptr<webkit_database::DatabaseTracker> database_tracker;
+    scoped_refptr<ChromeAppCacheService> appcache_service;
+    scoped_refptr<ChromeBlobStorageContext> blob_storage_context;
+    scoped_refptr<fileapi::SandboxedFileSystemContext> file_system_context;
+    scoped_refptr<ExtensionInfoMap> extension_info_map;
+    scoped_refptr<ExtensionIOEventRouter> extension_io_event_router;
+    scoped_refptr<PrerenderManager> prerender_manager;
+    // We need to initialize the ProxyConfigService from the UI thread
+    // because on linux it relies on initializing things through gconf,
+    // and needs to be on the main thread.
+    scoped_ptr<net::ProxyConfigService> proxy_config_service;
+  };
+
+  explicit ProfileIOData(bool is_off_the_record);
+  virtual ~ProfileIOData();
+
+  // Static helper functions to assist in common operations executed by
+  // subtypes.
+
+  static void InitializeProfileParams(Profile* profile, ProfileParams* params);
+  static void ApplyProfileParamsToContext(const ProfileParams& profile_params,
+                                          ChromeURLRequestContext* context);
+  static net::ProxyConfigService* CreateProxyConfigService(Profile* profile);
+  static net::ProxyService* CreateProxyService(
+    net::NetLog* net_log,
+    net::URLRequestContext* context,
+    net::ProxyConfigService* proxy_config_service,
+    const CommandLine& command_line);
+
+  // Lazy initializes the ProfileIOData object the first time a request context
+  // is requested. The lazy logic is implemented here. The actual initialization
+  // is done in LazyInitializeInternal(), implemented by subtypes. Static helper
+  // functions have been provided to assist in common operations.
   void LazyInitialize() const;
 
-  // Lazy initialization params.
-  // TODO(willchan): Delete after Initialize() finishes initializing all the
-  // contexts.
-  scoped_ptr<const LazyParams> lazy_params_;
+  // --------------------------------------------
+  // Virtual interface for subtypes to implement:
+  // --------------------------------------------
+
+  // Does that actual initialization of the ProfileIOData subtype. Subtypes
+  // should use the static helper functions above to implement this.
+  virtual void LazyInitializeInternal() const = 0;
+
+  // These functions are used to transfer ownership of the lazily initialized
+  // context from ProfileIOData to the URLRequestContextGetter.
+  virtual scoped_refptr<ChromeURLRequestContext>
+      AcquireMainRequestContext() const = 0;
+  virtual scoped_refptr<ChromeURLRequestContext>
+      AcquireMediaRequestContext() const = 0;
+  virtual scoped_refptr<ChromeURLRequestContext>
+      AcquireExtensionsRequestContext() const = 0;
 
   mutable bool initialized_;
-  mutable scoped_refptr<RequestContext> main_request_context_;
-  mutable scoped_refptr<RequestContext> media_request_context_;
-  mutable scoped_refptr<RequestContext> extensions_request_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileIOData);
 };
