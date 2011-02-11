@@ -360,6 +360,12 @@ const PPB_Zoom_Dev* PluginInstance::GetZoomInterface() {
   return &ppb_zoom;
 }
 
+// NOTE: Any of these methods that calls into the plugin needs to take into
+// account that the plugin may use Var to remove the <embed> from the DOM, which
+// will make the WebPluginImpl drop its reference, usually the last one. If a
+// method needs to access a member of the instance after the call has returned,
+// then it needs to keep its own reference on the stack.
+
 void PluginInstance::Paint(WebCanvas* canvas,
                            const gfx::Rect& plugin_rect,
                            const gfx::Rect& paint_rect) {
@@ -536,6 +542,8 @@ PP_Var PluginInstance::ExecuteScript(PP_Var script, PP_Var* exception) {
 }
 
 void PluginInstance::Delete() {
+  // Keep a reference on the stack. See NOTE above.
+  scoped_refptr<PluginInstance> ref(this);
   instance_interface_->DidDestroy(pp_instance());
 
   if (fullscreen_container_) {
@@ -575,6 +583,8 @@ bool PluginInstance::HandleDocumentLoad(PPB_URLLoader_Impl* loader) {
 
 bool PluginInstance::HandleInputEvent(const WebKit::WebInputEvent& event,
                                       WebCursorInfo* cursor_info) {
+  // Keep a reference on the stack. See NOTE above.
+  scoped_refptr<PluginInstance> ref(this);
   std::vector<PP_InputEvent> pp_events;
   CreatePPEvent(event, &pp_events);
 
@@ -646,6 +656,8 @@ void PluginInstance::ViewInitiatedPaint() {
 }
 
 void PluginInstance::ViewFlushedPaint() {
+  // Keep a reference on the stack. See NOTE above.
+  scoped_refptr<PluginInstance> ref(this);
   if (bound_graphics_2d())
     bound_graphics_2d()->ViewFlushedPaint();
   if (bound_graphics_3d())
@@ -682,6 +694,8 @@ bool PluginInstance::GetBitmapForOptimizedPluginPaint(
 }
 
 string16 PluginInstance::GetSelectedText(bool html) {
+  // Keep a reference on the stack. See NOTE above.
+  scoped_refptr<PluginInstance> ref(this);
   if (!LoadSelectionInterface())
     return string16();
 
@@ -695,6 +709,8 @@ string16 PluginInstance::GetSelectedText(bool html) {
 }
 
 string16 PluginInstance::GetLinkAtPosition(const gfx::Point& point) {
+  // Keep a reference on the stack. See NOTE above.
+  scoped_refptr<PluginInstance> ref(this);
   if (!LoadPdfInterface())
     return string16();
 
@@ -710,6 +726,8 @@ string16 PluginInstance::GetLinkAtPosition(const gfx::Point& point) {
 }
 
 void PluginInstance::Zoom(double factor, bool text_only) {
+  // Keep a reference on the stack. See NOTE above.
+  scoped_refptr<PluginInstance> ref(this);
   if (!LoadZoomInterface())
     return;
   plugin_zoom_interface_->Zoom(pp_instance(), factor, BoolToPPBool(text_only));
@@ -718,6 +736,8 @@ void PluginInstance::Zoom(double factor, bool text_only) {
 bool PluginInstance::StartFind(const string16& search_text,
                                bool case_sensitive,
                                int identifier) {
+  // Keep a reference on the stack. See NOTE above.
+  scoped_refptr<PluginInstance> ref(this);
   if (!LoadFindInterface())
     return false;
   find_identifier_ = identifier;
@@ -729,12 +749,16 @@ bool PluginInstance::StartFind(const string16& search_text,
 }
 
 void PluginInstance::SelectFindResult(bool forward) {
+  // Keep a reference on the stack. See NOTE above.
+  scoped_refptr<PluginInstance> ref(this);
   if (LoadFindInterface())
     plugin_find_interface_->SelectFindResult(pp_instance(),
                                              BoolToPPBool(forward));
 }
 
 void PluginInstance::StopFind() {
+  // Keep a reference on the stack. See NOTE above.
+  scoped_refptr<PluginInstance> ref(this);
   if (!LoadFindInterface())
     return;
   find_identifier_ = -1;
@@ -787,6 +811,8 @@ bool PluginInstance::PluginHasFocus() const {
 
 bool PluginInstance::GetPreferredPrintOutputFormat(
     PP_PrintOutputFormat_Dev* format) {
+  // Keep a reference on the stack. See NOTE above.
+  scoped_refptr<PluginInstance> ref(this);
   if (!plugin_print_interface_) {
     plugin_print_interface_ =
         reinterpret_cast<const PPP_Printing_Dev*>(module_->GetPluginInterface(
@@ -825,6 +851,8 @@ bool PluginInstance::SupportsPrintInterface() {
 
 int PluginInstance::PrintBegin(const gfx::Rect& printable_area,
                                int printer_dpi) {
+  // Keep a reference on the stack. See NOTE above.
+  scoped_refptr<PluginInstance> ref(this);
   PP_PrintOutputFormat_Dev format;
   if (!GetPreferredPrintOutputFormat(&format)) {
     // PrintBegin should not have been called since SupportsPrintInterface
@@ -867,6 +895,8 @@ bool PluginInstance::PrintPage(int page_number, WebKit::WebCanvas* canvas) {
 bool PluginInstance::PrintPageHelper(PP_PrintPageNumberRange_Dev* page_ranges,
                                      int num_ranges,
                                      WebKit::WebCanvas* canvas) {
+  // Keep a reference on the stack. See NOTE above.
+  scoped_refptr<PluginInstance> ref(this);
   PP_Resource print_output = plugin_print_interface_->PrintPages(
       pp_instance(), page_ranges, num_ranges);
   if (!print_output)
@@ -886,6 +916,8 @@ bool PluginInstance::PrintPageHelper(PP_PrintPageNumberRange_Dev* page_ranges,
 }
 
 void PluginInstance::PrintEnd() {
+  // Keep a reference on the stack. See NOTE above.
+  scoped_refptr<PluginInstance> ref(this);
 #if defined(OS_LINUX)
   // This hack is here because all pages need to be written to PDF at once.
   if (!ranges_.empty())
@@ -909,6 +941,8 @@ bool PluginInstance::IsFullscreen() {
 }
 
 bool PluginInstance::SetFullscreen(bool fullscreen) {
+  // Keep a reference on the stack. See NOTE above.
+  scoped_refptr<PluginInstance> ref(this);
   bool is_fullscreen = (fullscreen_container_ != NULL);
   if (fullscreen == is_fullscreen)
     return true;
