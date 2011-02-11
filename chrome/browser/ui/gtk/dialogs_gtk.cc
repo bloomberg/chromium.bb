@@ -265,6 +265,9 @@ void SelectFileDialogImpl::AddFilters(GtkFileChooser* chooser) {
       if (!file_types_.extensions[i][j].empty()) {
         if (!filter)
           filter = gtk_file_filter_new();
+
+        // Allow IO in the file dialog. http://crbug.com/72637
+        base::ThreadRestrictions::ScopedAllowIO allow_io;
         std::string mime_type = mime_util::GetFileMimeType(
             FilePath("name").ReplaceExtension(file_types_.extensions[i][j]));
         gtk_file_filter_add_mime_type(filter, mime_type.c_str());
