@@ -19,7 +19,6 @@
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/notification_details.h"
-#include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/url_constants.h"

@@ -10,7 +10,6 @@
 
 #include "base/basictypes.h"
 #include "build/build_config.h"
-#include "chrome/common/notification_observer.h"
 
 class NativeAppModalDialog;
 class TabContents;

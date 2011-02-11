@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_HISTORY_HISTORY_H_
 #pragma once
 
+#include <set>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/search_engines/template_url_id.h"
+#include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/common/ref_counted_util.h"
@@ -327,8 +329,8 @@ class HistoryService : public CancelableRequestProvider,
   typedef Callback4<Handle,
                     bool,        // Were we able to determine the # of visits?
                     int,         // Number of visits.
-                    base::Time>::Type // Time of first visit. Only first bool is
-                                 // true and int is > 0.
+                    base::Time>::Type  // Time of first visit. Only first bool
+                                       // is true and int is > 0.
       GetVisitCountToHostCallback;
 
   // Requests the number of visits to all urls on the scheme/host/post

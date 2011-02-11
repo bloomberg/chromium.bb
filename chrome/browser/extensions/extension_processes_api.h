@@ -11,7 +11,6 @@
 
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/task_manager/task_manager.h"
-#include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
 // Observes the Task Manager and routes the notifications as events to the

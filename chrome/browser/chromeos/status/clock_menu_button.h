@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,6 @@
 #include "base/timer.h"
 #include "chrome/browser/chromeos/cros/system_library.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
-#include "chrome/common/notification_observer.h"
 #include "unicode/calendar.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/menu_2.h"
