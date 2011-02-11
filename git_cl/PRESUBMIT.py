@@ -63,7 +63,7 @@ def RunTests(input_api, output_api):
       proc.communicate()
       if proc.returncode != 0:
         output.append(output_api.PresubmitError('%s failed' % test))
-  except setup_mock.Failure, e:
+  except local_rietveld.Failure, e:
     output.append(output_api.PresubmitError('\n'.join(str(i) for i in e.args)))
   finally:
     server.stop_server()
