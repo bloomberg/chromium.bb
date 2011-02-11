@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/common/chrome_switches.h"
@@ -19,16 +20,18 @@ const char kFlags4[] = "flag4";
 const char kSwitch1[] = "switch";
 const char kSwitch2[] = "switch2";
 const char kSwitch3[] = "switch3";
+const char kValueForSwitch2[] = "value_for_switch2";
 
 const char kMultiSwitch1[] = "multi_switch1";
 const char kMultiSwitch2[] = "multi_switch2";
+const char kValueForMultiSwitch2[] = "value_for_multi_switch2";
 
 namespace about_flags {
 
 const Experiment::Choice kMultiChoices[] = {
-  { IDS_PRODUCT_NAME, "" },
-  { IDS_PRODUCT_NAME, kMultiSwitch1 },
-  { IDS_PRODUCT_NAME, kMultiSwitch2 },
+  { IDS_PRODUCT_NAME, "", "" },
+  { IDS_PRODUCT_NAME, kMultiSwitch1, "" },
+  { IDS_PRODUCT_NAME, kMultiSwitch2, kValueForMultiSwitch2 },
 };
 
 // The experiments that are set for these tests. The 3rd experiment is not
@@ -41,6 +44,7 @@ static Experiment kExperiments[] = {
     0,  // Ends up being mapped to the current platform.
     Experiment::SINGLE_VALUE,
     kSwitch1,
+    "",
     NULL,
     0
   },
@@ -51,6 +55,7 @@ static Experiment kExperiments[] = {
     0,  // Ends up being mapped to the current platform.
     Experiment::SINGLE_VALUE,
     kSwitch2,
+    kValueForSwitch2,
     NULL,
     0
   },
@@ -61,6 +66,7 @@ static Experiment kExperiments[] = {
     0,  // This ends up enabling for an OS other than the current.
     Experiment::SINGLE_VALUE,
     kSwitch3,
+    "",
     NULL,
     0
   },
@@ -70,6 +76,7 @@ static Experiment kExperiments[] = {
     IDS_PRODUCT_NAME,
     0,  // Ends up being mapped to the current platform.
     Experiment::MULTI_VALUE,
+    "",
     "",
     kMultiChoices,
     arraysize(kMultiChoices)
@@ -223,6 +230,57 @@ TEST_F(AboutFlagsTest, PersistAndPrune) {
   EXPECT_EQ(arraysize(kExperiments) - 1, switch_prefs->GetSize());
 }
 
+// Tests that switches which should have values get them in the command
+// line.
+TEST_F(AboutFlagsTest, CheckValues) {
+  // Enable experiments 1 and 2.
+  SetExperimentEnabled(&prefs_, kFlags1, true);
+  SetExperimentEnabled(&prefs_, kFlags2, true);
+  CommandLine command_line(CommandLine::NO_PROGRAM);
+  EXPECT_FALSE(command_line.HasSwitch(kSwitch1));
+  EXPECT_FALSE(command_line.HasSwitch(kSwitch2));
+
+  // Convert the flags to switches.
+  ConvertFlagsToSwitches(&prefs_, &command_line);
+  EXPECT_TRUE(command_line.HasSwitch(kSwitch1));
+  EXPECT_EQ(std::string(""),
+            command_line.GetSwitchValueASCII(kSwitch1));
+  EXPECT_TRUE(command_line.HasSwitch(kSwitch2));
+  EXPECT_EQ(std::string(kValueForSwitch2),
+            command_line.GetSwitchValueASCII(kSwitch2));
+
+  // Confirm that there is no '=' in the command line for simple switches.
+  std::string switch1_with_equals = std::string("--") +
+                                    std::string(kSwitch1) +
+                                    std::string("=");
+#if defined(OS_WIN)
+  EXPECT_EQ(std::wstring::npos,
+            command_line.command_line_string().find(
+                ASCIIToWide(switch1_with_equals)));
+#else
+  EXPECT_EQ(std::string::npos,
+            command_line.command_line_string().find(switch1_with_equals));
+#endif
+
+  // And confirm there is a '=' for switches with values.
+  std::string switch2_with_equals = std::string("--") +
+                                    std::string(kSwitch2) +
+                                    std::string("=");
+#if defined(OS_WIN)            
+  EXPECT_NE(std::wstring::npos,
+            command_line.command_line_string().find(
+                ASCIIToWide(switch2_with_equals)));
+#else
+  EXPECT_NE(std::string::npos,
+            command_line.command_line_string().find(switch2_with_equals));
+#endif
+
+  // And it should persist
+  scoped_ptr<ListValue> switch_prefs(GetFlagsExperimentsData(&prefs_));
+  ASSERT_TRUE(switch_prefs.get());
+  EXPECT_EQ(arraysize(kExperiments) - 1, switch_prefs->GetSize());
+}
+
 // Tests multi-value type experiments.
 TEST_F(AboutFlagsTest, MultiValues) {
   // Initially, the first "deactivated" option of the multi experiment should
@@ -243,6 +301,8 @@ TEST_F(AboutFlagsTest, MultiValues) {
     ConvertFlagsToSwitches(&prefs_, &command_line);
     EXPECT_FALSE(command_line.HasSwitch(kMultiSwitch1));
     EXPECT_TRUE(command_line.HasSwitch(kMultiSwitch2));
+    EXPECT_EQ(std::string(kValueForMultiSwitch2),
+              command_line.GetSwitchValueASCII(kMultiSwitch2));
   }
 
   // Disable the multi-value experiment.

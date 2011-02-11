@@ -23,10 +23,12 @@
 namespace about_flags {
 
 // Macros to simplify specifying the type.
-#define SINGLE_VALUE_TYPE(command_line) Experiment::SINGLE_VALUE, \
-    command_line, NULL, 0
-#define MULTI_VALUE_TYPE(choices) Experiment::MULTI_VALUE, "", choices, \
-    arraysize(choices)
+#define SINGLE_VALUE_TYPE_AND_VALUE(command_line_switch, switch_value) \
+    Experiment::SINGLE_VALUE, command_line_switch, switch_value, NULL, 0
+#define SINGLE_VALUE_TYPE(command_line_switch) \
+    SINGLE_VALUE_TYPE_AND_VALUE(command_line_switch, "")
+#define MULTI_VALUE_TYPE(choices) \
+    Experiment::MULTI_VALUE, "", choices, arraysize(choices)
 
 namespace {
 
@@ -146,10 +148,10 @@ const Experiment kExperiments[] = {
   },
   {
     "gpu-compositing",
-     IDS_FLAGS_ACCELERATED_COMPOSITING_NAME,
-     IDS_FLAGS_ACCELERATED_COMPOSITING_DESCRIPTION,
-     kOsAll,
-     SINGLE_VALUE_TYPE(switches::kEnableAcceleratedLayers)
+    IDS_FLAGS_ACCELERATED_COMPOSITING_NAME,
+    IDS_FLAGS_ACCELERATED_COMPOSITING_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableAcceleratedLayers)
   },
   {
     "composited-layer-borders",
@@ -282,7 +284,7 @@ class FlagsState {
 
  private:
   bool needs_restart_;
-  std::set<std::string> flags_switches_;
+  std::map<std::string, std::string> flags_switches_;
 
   DISALLOW_COPY_AND_ASSIGN(FlagsState);
 };
@@ -353,8 +355,8 @@ bool ValidateExperiment(const Experiment& e) {
     case Experiment::MULTI_VALUE:
       DCHECK_GT(e.num_choices, 0);
       DCHECK(e.choices);
-      DCHECK(e.choices[0].command_line);
-      DCHECK_EQ('\0', e.choices[0].command_line[0]);
+      DCHECK(e.choices[0].command_line_switch);
+      DCHECK_EQ('\0', e.choices[0].command_line_switch[0]);
       break;
     default:
       NOTREACHED();
@@ -535,36 +537,50 @@ void FlagsState::ConvertFlagsToSwitches(
 
   GetSanitizedEnabledFlagsForCurrentPlatform(prefs, &enabled_experiments);
 
-  typedef std::map<std::string, std::string> NameToSwitchMap;
-  NameToSwitchMap name_to_switch_map;
+  typedef std::map<std::string, std::pair<std::string, std::string> >
+      NameToSwitchAndValueMap;
+  NameToSwitchAndValueMap name_to_switch_map;
   for (size_t i = 0; i < num_experiments; ++i) {
     const Experiment& e = experiments[i];
     if (e.type == Experiment::SINGLE_VALUE) {
-      name_to_switch_map[e.internal_name] = e.command_line;
+      name_to_switch_map[e.internal_name] =
+          std::pair<std::string, std::string>(e.command_line_switch,
+                                              e.command_line_value);
     } else {
       for (int j = 0; j < e.num_choices; ++j)
-        name_to_switch_map[NameForChoice(e, j)] = e.choices[j].command_line;
+        name_to_switch_map[NameForChoice(e, j)] =
+            std::pair<std::string, std::string>(
+                e.choices[j].command_line_switch,
+                e.choices[j].command_line_value);
     }
   }
 
   command_line->AppendSwitch(switches::kFlagSwitchesBegin);
-  flags_switches_.insert(switches::kFlagSwitchesBegin);
+  flags_switches_.insert(
+      std::pair<std::string, std::string>(switches::kFlagSwitchesBegin,
+                                          std::string()));
   for (std::set<std::string>::iterator it = enabled_experiments.begin();
        it != enabled_experiments.end();
        ++it) {
     const std::string& experiment_name = *it;
-    NameToSwitchMap::const_iterator name_to_switch_it =
+    NameToSwitchAndValueMap::const_iterator name_to_switch_it =
         name_to_switch_map.find(experiment_name);
     if (name_to_switch_it == name_to_switch_map.end()) {
       NOTREACHED();
       continue;
     }
 
-    command_line->AppendSwitch(name_to_switch_it->second);
-    flags_switches_.insert(name_to_switch_it->second);
+    const std::pair<std::string, std::string>&
+        switch_and_value_pair = name_to_switch_it->second;
+
+    command_line->AppendSwitchASCII(switch_and_value_pair.first,
+                                    switch_and_value_pair.second);
+    flags_switches_[switch_and_value_pair.first] = switch_and_value_pair.second;
   }
   command_line->AppendSwitch(switches::kFlagSwitchesEnd);
-  flags_switches_.insert(switches::kFlagSwitchesEnd);
+  flags_switches_.insert(
+      std::pair<std::string, std::string>(switches::kFlagSwitchesEnd,
+                                          std::string()));
 }
 
 bool FlagsState::IsRestartNeededToCommitChanges() {
@@ -634,10 +650,9 @@ void FlagsState::SetExperimentEnabled(
 
 void FlagsState::RemoveFlagsSwitches(
     std::map<std::string, CommandLine::StringType>* switch_list) {
-  for (std::set<std::string>::const_iterator it = flags_switches_.begin();
-       it != flags_switches_.end();
-       ++it) {
-    switch_list->erase(*it);
+  for (std::map<std::string, std::string>::const_iterator
+           it = flags_switches_.begin(); it != flags_switches_.end(); ++it) {
+    switch_list->erase(it->first);
   }
 }
 
