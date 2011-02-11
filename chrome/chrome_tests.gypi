@@ -1155,6 +1155,7 @@
         'browser/autofill/personal_data_manager_unittest.cc',
         'browser/autofill/phone_field_unittest.cc',
         'browser/autofill/phone_number_unittest.cc',
+        'browser/autofill/select_control_handler_unittest.cc',
         'browser/automation/automation_provider_unittest.cc',
         'browser/background_contents_service_unittest.cc',
         'browser/background_mode_manager_unittest.cc',

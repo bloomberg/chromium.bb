@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -385,6 +385,11 @@ const char* const kMonthsFull[] = {
   "July", "August", "September", "October", "November", "December",
 };
 
+const char* const kMonthsNumeric[] = {
+  NULL,  // Padding so index 1 = month 1 = January.
+  "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12",
+};
+
 // Returns true if the value was successfully set, meaning |value| was found in
 // the list of select options in |field|.
 bool SetSelectControlValue(const string16& value,
@@ -467,7 +472,8 @@ bool FillExpirationMonthSelectControl(const string16& value,
 
   bool filled =
       SetSelectControlValue(ASCIIToUTF16(kMonthsAbbreviated[index]), field) ||
-      SetSelectControlValue(ASCIIToUTF16(kMonthsFull[index]), field);
+      SetSelectControlValue(ASCIIToUTF16(kMonthsFull[index]), field) ||
+      SetSelectControlValue(ASCIIToUTF16(kMonthsNumeric[index]), field);
   return filled;
 }
 
@@ -475,15 +481,14 @@ bool FillExpirationMonthSelectControl(const string16& value,
 
 namespace autofill {
 
-void FillSelectControl(const FormGroup* form_group,
+void FillSelectControl(const FormGroup& form_group,
                        AutoFillType type,
                        webkit_glue::FormField* field) {
-  DCHECK(form_group);
   DCHECK(field);
   DCHECK(field->form_control_type() == ASCIIToUTF16("select-one"));
 
   string16 value;
-  string16 field_text = form_group->GetFieldText(type);
+  string16 field_text = form_group.GetFieldText(type);
   for (size_t i = 0; i < field->option_strings().size(); ++i) {
     if (field_text == field->option_strings()[i]) {
       // An exact match, use it.

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -885,7 +885,7 @@ void AutoFillManager::FillCreditCardFormField(const CreditCard* credit_card,
   DCHECK(field);
 
   if (field->form_control_type() == ASCIIToUTF16("select-one")) {
-    autofill::FillSelectControl(credit_card, type, field);
+    autofill::FillSelectControl(*credit_card, type, field);
   } else if (field->form_control_type() == ASCIIToUTF16("month")) {
     // HTML5 input="month" consists of year-month.
     string16 year = credit_card->GetFieldText(
@@ -913,7 +913,7 @@ void AutoFillManager::FillFormField(const AutoFillProfile* profile,
     FillPhoneNumberField(profile, type, field);
   } else {
     if (field->form_control_type() == ASCIIToUTF16("select-one"))
-      autofill::FillSelectControl(profile, type, field);
+      autofill::FillSelectControl(*profile, type, field);
     else
       field->set_value(profile->GetFieldText(type));
   }
