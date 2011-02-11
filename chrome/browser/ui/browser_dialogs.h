@@ -9,9 +9,12 @@
 #include "ipc/ipc_message.h"
 #include "ui/gfx/native_widget_types.h"
 
+class Browser;
+class Extension;
+class ImporterHost;
 class HtmlDialogUIDelegate;
 class Profile;
-class ImporterHost;
+class SkBitmap;
 
 namespace browser {
 
@@ -39,6 +42,15 @@ gfx::NativeWindow ShowHtmlDialog(gfx::NativeWindow parent, Profile* profile,
 // or to try again.
 void ShowImportLockDialog(gfx::NativeWindow parent,
                           ImporterHost* importer_host);
+
+// Creates the ExtensionInstalledBubble and schedules it to be shown once
+// the extension has loaded. |extension| is the installed extension. |browser|
+// is the browser window which will host the bubble. |icon| is the install
+// icon of the extension.
+void ShowExtensionInstalledBubble(const Extension* extension,
+                                  Browser* browser,
+                                  SkBitmap icon,
+                                  Profile* profile);
 
 } // namespace browser
 

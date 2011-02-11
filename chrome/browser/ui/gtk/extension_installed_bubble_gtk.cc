@@ -10,6 +10,7 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/gtk/browser_actions_toolbar_gtk.h"
 #include "chrome/browser/ui/gtk/browser_toolbar_gtk.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
@@ -45,6 +46,18 @@ const int kAnimationWaitMS = 50;
 const int kContentBorder = 7;
 
 }  // namespace
+
+namespace browser {
+
+void ShowExtensionInstalledBubble(
+    const Extension* extension,
+    Browser* browser,
+    SkBitmap icon,
+    Profile* profile) {
+  ExtensionInstalledBubbleGtk::Show(extension, browser, icon);
+}
+
+} // namespace browser
 
 void ExtensionInstalledBubbleGtk::Show(const Extension* extension,
                                        Browser* browser,

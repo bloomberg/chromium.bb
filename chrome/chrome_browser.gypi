@@ -2594,7 +2594,6 @@
         'browser/ui/cocoa/extensions/extension_install_prompt.mm',
         'browser/ui/cocoa/extensions/extension_install_prompt_controller.h',
         'browser/ui/cocoa/extensions/extension_install_prompt_controller.mm',
-        'browser/ui/cocoa/extensions/extension_installed_bubble_bridge.h',
         'browser/ui/cocoa/extensions/extension_installed_bubble_bridge.mm',
         'browser/ui/cocoa/extensions/extension_installed_bubble_controller.h',
         'browser/ui/cocoa/extensions/extension_installed_bubble_controller.mm',

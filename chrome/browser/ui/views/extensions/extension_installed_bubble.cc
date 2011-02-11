@@ -11,6 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/browser_actions_container.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
@@ -60,6 +61,18 @@ const int kAnimationWaitTime = 50;
 const int kAnimationWaitMaxRetry = 10;
 
 }  // namespace
+
+namespace browser {
+
+void ShowExtensionInstalledBubble(
+    const Extension* extension,
+    Browser* browser,
+    SkBitmap icon,
+    Profile* profile) {
+  ExtensionInstalledBubble::Show(extension, browser, icon);
+}
+
+} // namespace browser
 
 // InstalledBubbleContent is the content view which is placed in the
 // ExtensionInstalledBubble. It displays the install icon and explanatory
