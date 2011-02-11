@@ -695,7 +695,7 @@ void CookieMonster::SetExpiryAndKeyScheme(ExpiryAndKeyScheme key_scheme) {
 }
 
 void CookieMonster::SetClearPersistentStoreOnExit(bool clear_local_store) {
-  if(store_)
+  if (store_)
     store_->SetClearLocalStateOnExit(clear_local_store);
 }
 
@@ -1842,7 +1842,10 @@ void CookieMonster::ParsedCookie::SetupAttributes() {
   }
 }
 
-CookieMonster::CanonicalCookie::CanonicalCookie() {
+CookieMonster::CanonicalCookie::CanonicalCookie()
+    : has_expires_(false),
+      secure_(false),
+      httponly_(false) {
 }
 
 CookieMonster::CanonicalCookie::CanonicalCookie(const std::string& name,
