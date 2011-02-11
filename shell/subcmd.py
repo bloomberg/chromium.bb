@@ -17,8 +17,24 @@ class ChromiteCmd(object):
   """The abstract base class of commands listed at the top level of chromite."""
 
   def __init__(self):
-    """ChromiteCmd constructor."""
+    """ChromiteCmd constructor.
+
+    Args:
+      cr: ChromiteEnv object to use for this command
+    """
     super(ChromiteCmd, self).__init__()
+    self.cros_env = None
+
+  def SetChromiteEnv(self, cros_env):
+    """Sets the Chromite environment for this command
+
+    This is split out from __init() since subclasses of ChromiteCmd do not
+    have similar constructors and there are a lot of them, and the number is
+    likely to grow.
+
+    Please call this method after the constructor.
+    """
+    self.cros_env = cros_env
 
   def Run(self, raw_argv, chroot_config=None):
     """Run the command.

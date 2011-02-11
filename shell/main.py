@@ -20,6 +20,8 @@ from chromite.shell.subcmds import clean_cmd
 from chromite.shell.subcmds import portage_cmds
 from chromite.shell.subcmds import shell_cmd
 from chromite.shell.subcmds import workon_cmd
+from chromite.shell import chromite_env
+from chromite.lib import operation
 
 
 # Define command handlers and command strings.
@@ -177,9 +179,18 @@ def main():
     # Validate the subcmd, popping a menu if needed.
     cmd_str = _FindCommand(cmd_str)
 
+    # Set up the cros system.
+    cros_env = chromite_env.ChromiteEnv()
+
+    # Configure the operation setup.
+    oper = cros_env.GetOperation()
+    oper.SetVerbose(True)
+    oper.SetProgress(True)
+
     # Finally, call the function w/ standard argv.
     cmd_cls = _COMMAND_HANDLERS[_COMMAND_STRS.index(cmd_str)]
     cmd_obj = cmd_cls()
+    cmd_obj.SetChromiteEnv(cros_env)
     cmd_obj.Run([cmd_str] + argv, chroot_config=chroot_config)
 
 
