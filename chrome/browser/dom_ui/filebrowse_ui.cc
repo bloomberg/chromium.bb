@@ -118,7 +118,7 @@ class FilebrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
   virtual void OnListDone(int error);
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(DOMUI* dom_ui);
+  virtual WebUIMessageHandler* Attach(WebUI* web_ui);
   virtual void RegisterMessages();
 
 #if defined(OS_CHROMEOS)
@@ -442,13 +442,13 @@ FilebrowseHandler::~FilebrowseHandler() {
   }
 }
 
-WebUIMessageHandler* FilebrowseHandler::Attach(DOMUI* dom_ui) {
+WebUIMessageHandler* FilebrowseHandler::Attach(WebUI* web_ui) {
   // Create our favicon data source.
-  profile_ = dom_ui->GetProfile();
+  profile_ = web_ui->GetProfile();
   profile_->GetChromeURLDataManager()->AddDataSource(
       new WebUIFavIconSource(profile_));
-  tab_contents_ = dom_ui->tab_contents();
-  return WebUIMessageHandler::Attach(dom_ui);
+  tab_contents_ = web_ui->tab_contents();
+  return WebUIMessageHandler::Attach(web_ui);
 }
 
 void FilebrowseHandler::Init() {

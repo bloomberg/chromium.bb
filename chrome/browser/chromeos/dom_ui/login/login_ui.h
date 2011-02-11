@@ -52,7 +52,7 @@ class LoginUIHandler : public WebUIMessageHandler,
   LoginUIHandler();
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(DOMUI* dom_ui);
+  virtual WebUIMessageHandler* Attach(WebUI* web_ui);
   virtual void RegisterMessages();
 
   void HandleAuthenticateUser(const ListValue* args);

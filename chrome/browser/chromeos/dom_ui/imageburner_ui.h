@@ -42,7 +42,7 @@ class ImageBurnHandler : public WebUIMessageHandler,
   virtual ~ImageBurnHandler();
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(DOMUI* dom_ui);
+  virtual WebUIMessageHandler* Attach(WebUI* web_ui);
   virtual void RegisterMessages();
 
   // chromeos::MountLibrary::Observer interface

@@ -132,17 +132,17 @@ bool GetPageSetupParameters(const std::string& json,
 
 void CloudPrintDataSenderHelper::CallJavascriptFunction(
     const std::wstring& function_name) {
-  dom_ui_->CallJavascriptFunction(function_name);
+  web_ui_->CallJavascriptFunction(function_name);
 }
 
 void CloudPrintDataSenderHelper::CallJavascriptFunction(
     const std::wstring& function_name, const Value& arg) {
-  dom_ui_->CallJavascriptFunction(function_name, arg);
+  web_ui_->CallJavascriptFunction(function_name, arg);
 }
 
 void CloudPrintDataSenderHelper::CallJavascriptFunction(
     const std::wstring& function_name, const Value& arg1, const Value& arg2) {
-  dom_ui_->CallJavascriptFunction(function_name, arg1, arg2);
+  web_ui_->CallJavascriptFunction(function_name, arg1, arg2);
 }
 
 // Clears out the pointer we're using to communicate.  Either routine is

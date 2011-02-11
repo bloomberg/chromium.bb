@@ -81,7 +81,7 @@ CloudPrintSetupFlow::CloudPrintSetupFlow(const std::string& args,
                                          Profile* profile,
                                          Delegate* delegate,
                                          bool setup_done)
-    : dom_ui_(NULL),
+    : web_ui_(NULL),
       dialog_start_args_(args),
       setup_done_(setup_done),
       process_control_(NULL),
@@ -193,8 +193,8 @@ void CloudPrintSetupFlow::OnClientLoginSuccess(
 
 ///////////////////////////////////////////////////////////////////////////////
 // Methods called by CloudPrintSetupMessageHandler
-void CloudPrintSetupFlow::Attach(DOMUI* dom_ui) {
-  dom_ui_ = dom_ui;
+void CloudPrintSetupFlow::Attach(WebUI* web_ui) {
+  web_ui_ = web_ui;
 }
 
 void CloudPrintSetupFlow::OnUserSubmittedAuth(const std::string& user,
@@ -215,13 +215,13 @@ void CloudPrintSetupFlow::OnUserSubmittedAuth(const std::string& user,
 }
 
 void CloudPrintSetupFlow::OnUserClickedLearnMore() {
-  dom_ui_->tab_contents()->OpenURL(CloudPrintURL::GetCloudPrintLearnMoreURL(),
+  web_ui_->tab_contents()->OpenURL(CloudPrintURL::GetCloudPrintLearnMoreURL(),
                                    GURL(), NEW_FOREGROUND_TAB,
                                    PageTransition::LINK);
 }
 
 void CloudPrintSetupFlow::OnUserClickedPrintTestPage() {
-  dom_ui_->tab_contents()->OpenURL(CloudPrintURL::GetCloudPrintTestPageURL(),
+  web_ui_->tab_contents()->OpenURL(CloudPrintURL::GetCloudPrintTestPageURL(),
                                    GURL(), NEW_FOREGROUND_TAB,
                                    PageTransition::LINK);
 }
@@ -229,8 +229,8 @@ void CloudPrintSetupFlow::OnUserClickedPrintTestPage() {
 ///////////////////////////////////////////////////////////////////////////////
 // Helper methods for showing contents of the Web UI
 void CloudPrintSetupFlow::ShowGaiaLogin(const DictionaryValue& args) {
-  if (dom_ui_)
-    dom_ui_->CallJavascriptFunction(L"cloudprint.showSetupLogin");
+  if (web_ui_)
+    web_ui_->CallJavascriptFunction(L"cloudprint.showSetupLogin");
 
   std::string json;
   base::JSONWriter::Write(&args, false, &json);
@@ -264,7 +264,7 @@ void CloudPrintSetupFlow::ShowSetupDone() {
   std::wstring javascript = L"cloudprint.setMessage('" + message + L"');";
   ExecuteJavascriptInIFrame(kDoneIframeXPath, javascript);
 
-  if (dom_ui_) {
+  if (web_ui_) {
     PrefService* prefs = profile_->GetPrefs();
     gfx::Font approximate_web_font(
         UTF8ToUTF16(prefs->GetString(prefs::kWebKitSansSerifFontFamily)),
@@ -276,7 +276,7 @@ void CloudPrintSetupFlow::ShowSetupDone() {
 
     FundamentalValue new_width(done_size.width());
     FundamentalValue new_height(done_size.height());
-    dom_ui_->CallJavascriptFunction(L"cloudprint.showSetupDone",
+    web_ui_->CallJavascriptFunction(L"cloudprint.showSetupDone",
                                     new_width, new_height);
   }
 
@@ -286,8 +286,8 @@ void CloudPrintSetupFlow::ShowSetupDone() {
 void CloudPrintSetupFlow::ExecuteJavascriptInIFrame(
     const std::wstring& iframe_xpath,
     const std::wstring& js) {
-  if (dom_ui_) {
-    RenderViewHost* rvh = dom_ui_->tab_contents()->render_view_host();
+  if (web_ui_) {
+    RenderViewHost* rvh = web_ui_->tab_contents()->render_view_host();
     rvh->ExecuteJavascriptInWebFrame(WideToUTF16Hack(iframe_xpath),
                                      WideToUTF16Hack(js));
   }

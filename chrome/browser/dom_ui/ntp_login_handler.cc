@@ -22,11 +22,11 @@ NTPLoginHandler::NTPLoginHandler() {
 NTPLoginHandler::~NTPLoginHandler() {
 }
 
-WebUIMessageHandler* NTPLoginHandler::Attach(DOMUI* dom_ui) {
-  PrefService* pref_service = dom_ui->GetProfile()->GetPrefs();
+WebUIMessageHandler* NTPLoginHandler::Attach(WebUI* web_ui) {
+  PrefService* pref_service = web_ui->GetProfile()->GetPrefs();
   username_pref_.Init(prefs::kGoogleServicesUsername, pref_service, this);
 
-  return WebUIMessageHandler::Attach(dom_ui);
+  return WebUIMessageHandler::Attach(web_ui);
 }
 
 void NTPLoginHandler::RegisterMessages() {

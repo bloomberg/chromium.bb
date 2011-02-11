@@ -20,7 +20,7 @@ class FontSettingsHandler : public OptionsPageUIHandler {
   virtual void Initialize();
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(DOMUI* dom_ui);
+  virtual WebUIMessageHandler* Attach(WebUI* web_ui);
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,

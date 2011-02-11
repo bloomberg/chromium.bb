@@ -194,7 +194,7 @@ class BugReportHandler : public WebUIMessageHandler,
   base::StringPiece Init();
 
   // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(DOMUI* dom_ui);
+  virtual WebUIMessageHandler* Attach(WebUI* web_ui);
   virtual void RegisterMessages();
 
  private:
@@ -473,9 +473,9 @@ void BugReportHandler::SetupScreenshotsSource() {
   tab_->profile()->GetChromeURLDataManager()->AddDataSource(screenshot_source_);
 }
 
-WebUIMessageHandler* BugReportHandler::Attach(DOMUI* dom_ui) {
+WebUIMessageHandler* BugReportHandler::Attach(WebUI* web_ui) {
   SetupScreenshotsSource();
-  return WebUIMessageHandler::Attach(dom_ui);
+  return WebUIMessageHandler::Attach(web_ui);
 }
 
 base::StringPiece BugReportHandler::Init() {

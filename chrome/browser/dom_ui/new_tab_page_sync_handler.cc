@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -97,12 +97,12 @@ NewTabPageSyncHandler::MessageType
   }
 }
 
-WebUIMessageHandler* NewTabPageSyncHandler::Attach(DOMUI* dom_ui) {
-  sync_service_ = dom_ui->GetProfile()->GetProfileSyncService();
+WebUIMessageHandler* NewTabPageSyncHandler::Attach(WebUI* web_ui) {
+  sync_service_ = web_ui->GetProfile()->GetProfileSyncService();
   DCHECK(sync_service_);  // This shouldn't get called by an incognito NTP.
   DCHECK(!sync_service_->IsManaged());  // And neither if sync is managed.
   sync_service_->AddObserver(this);
-  return WebUIMessageHandler::Attach(dom_ui);
+  return WebUIMessageHandler::Attach(web_ui);
 }
 
 void NewTabPageSyncHandler::RegisterMessages() {

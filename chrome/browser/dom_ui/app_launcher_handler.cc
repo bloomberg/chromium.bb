@@ -138,9 +138,9 @@ bool AppLauncherHandler::HandlePing(Profile* profile, const std::string& path) {
   return true;
 }
 
-WebUIMessageHandler* AppLauncherHandler::Attach(DOMUI* dom_ui) {
+WebUIMessageHandler* AppLauncherHandler::Attach(WebUI* web_ui) {
   // TODO(arv): Add initialization code to the Apps store etc.
-  return WebUIMessageHandler::Attach(dom_ui);
+  return WebUIMessageHandler::Attach(web_ui);
 }
 
 void AppLauncherHandler::RegisterMessages() {

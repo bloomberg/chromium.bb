@@ -89,8 +89,8 @@ void CoreOptionsHandler::Uninitialize() {
   }
 }
 
-WebUIMessageHandler* CoreOptionsHandler::Attach(DOMUI* dom_ui) {
-  WebUIMessageHandler* result = WebUIMessageHandler::Attach(dom_ui);
+WebUIMessageHandler* CoreOptionsHandler::Attach(WebUI* web_ui) {
+  WebUIMessageHandler* result = WebUIMessageHandler::Attach(web_ui);
   DCHECK(dom_ui_);
   registrar_.Init(dom_ui_->GetProfile()->GetPrefs());
   return result;

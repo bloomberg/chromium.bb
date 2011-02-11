@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,7 @@ namespace chromeos {
 class MockLoginUIHandler : public chromeos::LoginUIHandler {
  public:
   MOCK_METHOD1(Attach,
-      WebUIMessageHandler*(DOMUI* dom_ui));
+      WebUIMessageHandler*(WebUI* web_ui));
   MOCK_METHOD0(RegisterMessages,
       void());
   MOCK_METHOD1(OnLoginFailure,

@@ -226,9 +226,9 @@ void AdvancedOptionsHandler::Initialize() {
                                       OPTIONS_PAGE_ADVANCED));
 }
 
-WebUIMessageHandler* AdvancedOptionsHandler::Attach(DOMUI* dom_ui) {
+WebUIMessageHandler* AdvancedOptionsHandler::Attach(WebUI* web_ui) {
   // Call through to superclass.
-  WebUIMessageHandler* handler = OptionsPageUIHandler::Attach(dom_ui);
+  WebUIMessageHandler* handler = OptionsPageUIHandler::Attach(web_ui);
 
   // Register for preferences that we need to observe manually.  These have
   // special behaviors that aren't handled by the standard prefs UI.

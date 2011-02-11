@@ -126,9 +126,9 @@ void FontSettingsHandler::Initialize() {
   SetupFixedFontSample();
 }
 
-WebUIMessageHandler* FontSettingsHandler::Attach(DOMUI* dom_ui) {
+WebUIMessageHandler* FontSettingsHandler::Attach(WebUI* web_ui) {
   // Call through to superclass.
-  WebUIMessageHandler* handler = OptionsPageUIHandler::Attach(dom_ui);
+  WebUIMessageHandler* handler = OptionsPageUIHandler::Attach(web_ui);
 
   // Perform validation for saved fonts.
   DCHECK(dom_ui_);

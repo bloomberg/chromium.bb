@@ -26,10 +26,10 @@ namespace internal_cloud_print_helpers {
 // Small class to virtualize a few functions to aid with unit testing.
 class CloudPrintDataSenderHelper {
  public:
-  explicit CloudPrintDataSenderHelper(DOMUI* dom_ui) : dom_ui_(dom_ui) {}
+  explicit CloudPrintDataSenderHelper(WebUI* web_ui) : web_ui_(web_ui) {}
   virtual ~CloudPrintDataSenderHelper() {}
 
-  // Virtualize the overrides of these three functions from DOMUI to
+  // Virtualize the overrides of these three functions from WebUI to
   // facilitate unit testing.
   virtual void CallJavascriptFunction(const std::wstring& function_name);
   virtual void CallJavascriptFunction(const std::wstring& function_name,
@@ -39,7 +39,7 @@ class CloudPrintDataSenderHelper {
                                       const Value& arg2);
 
  private:
-  DOMUI* dom_ui_;
+  WebUI* web_ui_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPrintDataSenderHelper);
 };

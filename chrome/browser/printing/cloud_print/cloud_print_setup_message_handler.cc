@@ -10,10 +10,10 @@
 #include "chrome/browser/dom_ui/web_ui_util.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_flow.h"
 
-WebUIMessageHandler* CloudPrintSetupMessageHandler::Attach(DOMUI* dom_ui) {
-  // Pass the DOMUI object to the setup flow.
-  flow_->Attach(dom_ui);
-  return WebUIMessageHandler::Attach(dom_ui);
+WebUIMessageHandler* CloudPrintSetupMessageHandler::Attach(WebUI* web_ui) {
+  // Pass the WebUI object to the setup flow.
+  flow_->Attach(web_ui);
+  return WebUIMessageHandler::Attach(web_ui);
 }
 
 void CloudPrintSetupMessageHandler::RegisterMessages() {
