@@ -34,7 +34,7 @@ class BalloonViewHost : public ::BalloonViewHost {
                                MessageCallback* callback);
 
   // Process WebUI message.
-  virtual void ProcessDOMUIMessage(const ViewHostMsg_DomMessage_Params& params);
+  virtual void ProcessWebUIMessage(const ViewHostMsg_DomMessage_Params& params);
 
  private:
   // A map of message name -> message handling callback.

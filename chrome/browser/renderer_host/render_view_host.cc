@@ -1162,7 +1162,7 @@ void RenderViewHost::OnMsgDOMUISend(
   params.request_id = -1;
   params.has_callback = false;
   params.user_gesture = false;
-  delegate_->ProcessDOMUIMessage(params);
+  delegate_->ProcessWebUIMessage(params);
 }
 
 void RenderViewHost::OnMsgForwardMessageToExternalHost(
@@ -1491,7 +1491,7 @@ void RenderViewHost::OnExtensionRequest(
     return;
   }
 
-  delegate_->ProcessDOMUIMessage(params);
+  delegate_->ProcessWebUIMessage(params);
 }
 
 void RenderViewHost::SendExtensionResponse(int request_id, bool success,

@@ -161,7 +161,7 @@ TEST_F(SyncInternalsUITest, HandleJsEventNullService) {
   GetTestSyncInternalsUI()->HandleJsEvent("testMessage", JsArgList(args));
 }
 
-TEST_F(SyncInternalsUITest, ProcessDOMUIMessageBasic) {
+TEST_F(SyncInternalsUITest, ProcessWebUIMessageBasic) {
   ExpectSetupTeardownCalls();
 
   ViewHostMsg_DomMessage_Params params;
@@ -174,10 +174,10 @@ TEST_F(SyncInternalsUITest, ProcessDOMUIMessageBasic) {
 
   ConstructTestSyncInternalsUI();
 
-  GetTestSyncInternalsUI()->ProcessDOMUIMessage(params);
+  GetTestSyncInternalsUI()->ProcessWebUIMessage(params);
 }
 
-TEST_F(SyncInternalsUITest, ProcessDOMUIMessageBasicNullService) {
+TEST_F(SyncInternalsUITest, ProcessWebUIMessageBasicNullService) {
   ExpectSetupTeardownCallsNullService();
 
   ConstructTestSyncInternalsUI();
@@ -187,7 +187,7 @@ TEST_F(SyncInternalsUITest, ProcessDOMUIMessageBasicNullService) {
   params.arguments.Append(Value::CreateIntegerValue(5));
 
   // Should drop the message.
-  GetTestSyncInternalsUI()->ProcessDOMUIMessage(params);
+  GetTestSyncInternalsUI()->ProcessWebUIMessage(params);
 }
 
 namespace {
@@ -195,7 +195,7 @@ const wchar_t kAboutInfoCall[] =
     L"onGetAboutInfoFinished({\"summary\":\"SYNC DISABLED\"});";
 }  // namespace
 
-TEST_F(SyncInternalsUITest, ProcessDOMUIMessageGetAboutInfo) {
+TEST_F(SyncInternalsUITest, ProcessWebUIMessageGetAboutInfo) {
   ExpectSetupTeardownCalls();
 
   ViewHostMsg_DomMessage_Params params;
@@ -206,10 +206,10 @@ TEST_F(SyncInternalsUITest, ProcessDOMUIMessageGetAboutInfo) {
   EXPECT_CALL(*GetTestSyncInternalsUI(),
               ExecuteJavascript(std::wstring(kAboutInfoCall)));
 
-  GetTestSyncInternalsUI()->ProcessDOMUIMessage(params);
+  GetTestSyncInternalsUI()->ProcessWebUIMessage(params);
 }
 
-TEST_F(SyncInternalsUITest, ProcessDOMUIMessageGetAboutInfoNullService) {
+TEST_F(SyncInternalsUITest, ProcessWebUIMessageGetAboutInfoNullService) {
   ExpectSetupTeardownCallsNullService();
 
   ViewHostMsg_DomMessage_Params params;
@@ -220,7 +220,7 @@ TEST_F(SyncInternalsUITest, ProcessDOMUIMessageGetAboutInfoNullService) {
   EXPECT_CALL(*GetTestSyncInternalsUI(),
               ExecuteJavascript(std::wstring(kAboutInfoCall)));
 
-  GetTestSyncInternalsUI()->ProcessDOMUIMessage(params);
+  GetTestSyncInternalsUI()->ProcessWebUIMessage(params);
 }
 
 }  // namespace

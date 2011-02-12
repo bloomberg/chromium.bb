@@ -57,7 +57,7 @@ class WebUI {
   virtual void DidBecomeActiveForReusedRenderView() {}
 
   // Called from TabContents.
-  virtual void ProcessDOMUIMessage(const ViewHostMsg_DomMessage_Params& params);
+  virtual void ProcessWebUIMessage(const ViewHostMsg_DomMessage_Params& params);
 
   // Used by WebUIMessageHandlers.
   typedef Callback1<const ListValue*>::Type MessageCallback;

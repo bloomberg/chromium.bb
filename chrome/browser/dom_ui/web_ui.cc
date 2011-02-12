@@ -59,7 +59,7 @@ WebUI::~WebUI() {
 
 // WebUI, public: -------------------------------------------------------------
 
-void WebUI::ProcessDOMUIMessage(const ViewHostMsg_DomMessage_Params& params) {
+void WebUI::ProcessWebUIMessage(const ViewHostMsg_DomMessage_Params& params) {
   // Look up the callback for this message.
   MessageCallbackMap::const_iterator callback =
       message_callbacks_.find(params.name);

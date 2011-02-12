@@ -936,7 +936,7 @@ class TabContents : public PageNavigator,
                               WindowOpenDisposition disposition);
   virtual void DomOperationResponse(const std::string& json_string,
                                     int automation_id);
-  virtual void ProcessDOMUIMessage(const ViewHostMsg_DomMessage_Params& params);
+  virtual void ProcessWebUIMessage(const ViewHostMsg_DomMessage_Params& params);
   virtual void ProcessExternalHostMessage(const std::string& message,
                                           const std::string& origin,
                                           const std::string& target);

@@ -44,7 +44,7 @@ class ExtensionWebUI
   // WebUI
   virtual void RenderViewCreated(RenderViewHost* render_view_host);
   virtual void RenderViewReused(RenderViewHost* render_view_host);
-  virtual void ProcessDOMUIMessage(const ViewHostMsg_DomMessage_Params& params);
+  virtual void ProcessWebUIMessage(const ViewHostMsg_DomMessage_Params& params);
 
   // ExtensionFunctionDispatcher::Delegate
   virtual Browser* GetBrowser();

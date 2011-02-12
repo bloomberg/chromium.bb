@@ -127,7 +127,7 @@ class ExtensionHost : public RenderViewHostDelegate,
   // RenderViewHostDelegate implementation.
   virtual RenderViewHostDelegate::View* GetViewDelegate();
   virtual WebPreferences GetWebkitPrefs();
-  virtual void ProcessDOMUIMessage(const ViewHostMsg_DomMessage_Params& params);
+  virtual void ProcessWebUIMessage(const ViewHostMsg_DomMessage_Params& params);
   virtual void RunJavaScriptMessage(const std::wstring& message,
                                     const std::wstring& default_prompt,
                                     const GURL& frame_url,

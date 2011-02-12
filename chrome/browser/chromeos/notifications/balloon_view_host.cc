@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,9 +26,9 @@ bool BalloonViewHost::AddDOMUIMessageCallback(
   return ret.second;
 }
 
-void BalloonViewHost::ProcessDOMUIMessage(
+void BalloonViewHost::ProcessWebUIMessage(
     const ViewHostMsg_DomMessage_Params& params) {
-  ::BalloonViewHost::ProcessDOMUIMessage(params);
+  ::BalloonViewHost::ProcessWebUIMessage(params);
 
   // Look up the callback for this message.
   MessageCallbackMap::const_iterator callback =

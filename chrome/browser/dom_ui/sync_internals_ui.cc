@@ -41,7 +41,7 @@ SyncInternalsUI::~SyncInternalsUI() {
   }
 }
 
-void SyncInternalsUI::ProcessDOMUIMessage(
+void SyncInternalsUI::ProcessWebUIMessage(
     const ViewHostMsg_DomMessage_Params& params) {
   const std::string& name = params.name;
   browser_sync::JsArgList args(params.arguments);

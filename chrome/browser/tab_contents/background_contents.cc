@@ -209,7 +209,7 @@ WebPreferences BackgroundContents::GetWebkitPrefs() {
                                                       false);  // is_dom_ui
 }
 
-void BackgroundContents::ProcessDOMUIMessage(
+void BackgroundContents::ProcessWebUIMessage(
     const ViewHostMsg_DomMessage_Params& params) {
   // TODO(rafaelw): It may make sense for extensions to be able to open
   // BackgroundContents to chrome-extension://<id> pages. Consider implementing.

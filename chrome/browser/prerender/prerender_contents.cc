@@ -256,7 +256,7 @@ WebPreferences PrerenderContents::GetWebkitPrefs() {
                                                       false);  // is_dom_ui
 }
 
-void PrerenderContents::ProcessDOMUIMessage(
+void PrerenderContents::ProcessWebUIMessage(
     const ViewHostMsg_DomMessage_Params& params) {
   render_view_host_->BlockExtensionRequest(params.request_id);
 }

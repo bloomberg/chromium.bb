@@ -179,7 +179,7 @@ void ExtensionWebUI::RenderViewReused(RenderViewHost* render_view_host) {
   ResetExtensionBookmarkManagerEventRouter();
 }
 
-void ExtensionWebUI::ProcessDOMUIMessage(
+void ExtensionWebUI::ProcessWebUIMessage(
     const ViewHostMsg_DomMessage_Params& params) {
   extension_function_dispatcher_->HandleRequest(params);
 }

@@ -129,7 +129,7 @@ RenderViewHostDelegate::View* BalloonHost::GetViewDelegate() {
   return this;
 }
 
-void BalloonHost::ProcessDOMUIMessage(
+void BalloonHost::ProcessWebUIMessage(
     const ViewHostMsg_DomMessage_Params& params) {
   if (extension_function_dispatcher_.get()) {
     extension_function_dispatcher_->HandleRequest(params);

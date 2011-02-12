@@ -60,7 +60,7 @@ class BalloonHost : public RenderViewHostDelegate,
   virtual int GetBrowserWindowID() const;
   virtual ViewType::Type GetRenderViewType() const;
   virtual RenderViewHostDelegate::View* GetViewDelegate();
-  virtual void ProcessDOMUIMessage(const ViewHostMsg_DomMessage_Params& params);
+  virtual void ProcessWebUIMessage(const ViewHostMsg_DomMessage_Params& params);
 
   // NotificationObserver override.
   virtual void Observe(NotificationType type,
