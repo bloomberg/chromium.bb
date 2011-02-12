@@ -29,6 +29,10 @@ void IndexedDBCallbacksBase::onError(const WebKit::WebIDBDatabaseError& error) {
       response_id_, error.code(), error.message()));
 }
 
+void IndexedDBCallbacksBase::onBlocked() {
+  dispatcher_host_->Send(new IndexedDBMsg_CallbacksBlocked(response_id_));
+}
+
 void IndexedDBTransactionCallbacks::onAbort() {
   dispatcher_host_->Send(
       new IndexedDBMsg_TransactionCallbacksAbort(transaction_id_));
