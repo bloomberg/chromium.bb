@@ -27,6 +27,7 @@ ppapi_core_nexe = env.ComponentProgram(nexe,
                                                    'platform',
                                                    'gio',
                                                    'pthread',
+                                                   'm',
                                                    'srpc'])
 
 # Note that the html is required to run this program.

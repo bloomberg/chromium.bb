@@ -20,6 +20,7 @@ env.ComponentProgram('ppapi_basic_object.nexe',
                                  'platform',
                                  'gio',
                                  'pthread',
+                                 'm',
                                  'srpc'])
 
 # Note that the html is required to run this program.
@@ -35,6 +36,7 @@ env.ComponentProgram('ppapi_user_main.nexe',
                                  'platform',
                                  'gio',
                                  'pthread',
+                                 'm',
                                  'srpc'])
 
 # Note that the html is required to run this program.
@@ -50,6 +52,7 @@ env.ComponentProgram('ppapi_event_example.nexe',
                                  'gio',
                                  'ppapi_cpp',
                                  'pthread',
+                                 'm',
                                  'srpc'])
 
 # Note that the html is required to run this program.

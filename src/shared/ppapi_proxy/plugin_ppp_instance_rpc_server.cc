@@ -12,6 +12,7 @@
 #include "srpcgen/ppp_rpc.h"
 #include "native_client/src/shared/ppapi_proxy/object_capability.h"
 #include "native_client/src/shared/ppapi_proxy/object_serialize.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_instance_data.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "ppapi/c/ppp.h"
 #include "ppapi/c/pp_resource.h"
@@ -80,6 +81,8 @@ void PppInstanceRpcServer::PPP_Instance_DidCreate(
     uint32_t argv_bytes, char* argv,
     // outputs
     int32_t* success) {
+  ppapi_proxy::PluginInstanceData::DidCreate(instance);
+
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   *success = kMethodFailure;
@@ -109,6 +112,8 @@ void PppInstanceRpcServer::PPP_Instance_DidDestroy(
     NaClSrpcClosure* done,
     // inputs
     PP_Instance instance) {
+  ppapi_proxy::PluginInstanceData::DidDestroy(instance);
+
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NaClSrpcClosureRunner runner(done);
   const PPP_Instance* instance_interface = GetInstanceInterface();
@@ -124,9 +129,17 @@ void PppInstanceRpcServer::PPP_Instance_DidChangeView(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
     // inputs
-    PP_Instance instance,
+    PP_Instance instance_id,
     uint32_t position_count, int32_t* position,
     uint32_t clip_count, int32_t* clip) {
+  const PP_Rect position_rect =
+      PP_MakeRectFromXYWH(position[0], position[1], position[2], position[3]);
+  const PP_Rect clip_rect =
+      PP_MakeRectFromXYWH(clip[0], clip[1], clip[2], clip[3]);
+
+  ppapi_proxy::PluginInstanceData::DidChangeView(instance_id,
+                                                 position_rect,
+                                                 clip_rect);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NaClSrpcClosureRunner runner(done);
   const PPP_Instance* instance_interface = GetInstanceInterface();
@@ -137,12 +150,8 @@ void PppInstanceRpcServer::PPP_Instance_DidChangeView(
   if (position_count != 4 || clip_count != 4) {
     return;
   }
-  const PP_Rect position_rect =
-      PP_MakeRectFromXYWH(position[0], position[1], position[2], position[3]);
-  const PP_Rect clip_rect =
-      PP_MakeRectFromXYWH(clip[0], clip[1], clip[2], clip[3]);
 
-  instance_interface->DidChangeView(instance, &position_rect, &clip_rect);
+  instance_interface->DidChangeView(instance_id, &position_rect, &clip_rect);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 

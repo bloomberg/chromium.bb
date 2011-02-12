@@ -12,6 +12,9 @@
 #include "ppapi/c/ppb.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_graphics_2d.h"
+#include "ppapi/c/dev/ppb_context_3d_dev.h"
+#include "ppapi/c/dev/ppb_context_3d_trusted_dev.h"
+#include "ppapi/c/dev/ppb_surface_3d_dev.h"
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/ppb_url_loader.h"
@@ -63,11 +66,14 @@ const void* GetBrowserInterfaceSafe(const char* interface_name);
 // Functions marked "shared" are to be provided by both the browser and the
 // plugin side of the proxy, so they can be used by the shared proxy code
 // under both trusted and untrusted compilation.
+const PPB_Context3D_Dev* PPBContext3DInterface();
+const PPB_Context3DTrusted_Dev* PPBContext3DTrustedInterface();
 const PPB_Core* PPBCoreInterface();  // shared
 const PPB_Graphics2D* PPBGraphics2DInterface();
 const PPB_ImageData* PPBImageDataInterface();
 const PPB_ImageDataTrusted* PPBImageDataTrustedInterface();
 const PPB_Instance* PPBInstanceInterface();
+const PPB_Surface3D_Dev* PPBSurface3DInterface();
 const PPB_URLLoader* PPBURLLoaderInterface();
 const PPB_URLRequestInfo* PPBURLRequestInfoInterface();
 const PPB_URLResponseInfo* PPBURLResponseInfoInterface();

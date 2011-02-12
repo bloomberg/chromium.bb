@@ -17,9 +17,10 @@ namespace ppapi_proxy {
   F(PluginAudio) \
   F(PluginAudioConfig) \
   F(PluginBuffer) \
+  F(PluginContext3D) \
   F(PluginGraphics2D) \
-  F(PluginGraphics3D) \
-  F(PluginImageData)
+  F(PluginImageData) \
+  F(PluginSurface3D)
 
 // Forward declaration of PluginResource classes.
 #define DECLARE_RESOURCE_CLASS(RESOURCE) class RESOURCE;

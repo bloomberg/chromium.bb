@@ -29,6 +29,7 @@ ppapi_geturl_nexe = env.ComponentProgram('ppapi_geturl.nexe',
                                                      'platform',
                                                      'gio',
                                                      'pthread',
+                                                     'm',
                                                      'srpc'])
 
 # Note that the html is required to run this program.

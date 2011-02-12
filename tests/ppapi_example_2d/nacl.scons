@@ -16,6 +16,7 @@ ppapi_example_2d_nexe = env.ComponentProgram('ppapi_example_2d.nexe',
                 'platform',
                 'gio',
                 'pthread',
+                'm',
                 'srpc'])
 
 # Note that the html is required to run this program.

@@ -85,6 +85,19 @@ cpp_sources = [
 
 env.ComponentLibrary('ppapi_cpp', cpp_sources)
 
+env.Append(CPPPATH=[
+    '$SOURCE_ROOT/ppapi/lib/gl/gles2'])
+
+gles2_sources = [
+    # Updated automatically by update-scons.py.
+    # From ppapi_gl.gypi:ppapi_gles2:.*\.c
+    'lib/gl/gles2/gl2ext_ppapi.c',
+    'lib/gl/gles2/gles2.c',
+    # End ppapi_gl.gypi
+]
+
+env.ComponentLibrary('ppapi_gles2', gles2_sources)
+
 c_headers = [
     # Updated automatically by update-scons.py.
     # From ppapi_cpp.gypi:ppapi_c:c/[^/]*\.h
@@ -129,6 +142,7 @@ c_dev_headers = [
     'c/dev/ppb_buffer_dev.h',
     'c/dev/ppb_char_set_dev.h',
     'c/dev/ppb_context_3d_dev.h',
+    'c/dev/ppb_context_3d_trusted_dev.h',
     'c/dev/ppb_cursor_control_dev.h',
     'c/dev/ppb_directory_reader_dev.h',
     'c/dev/ppb_file_chooser_dev.h',
@@ -225,6 +239,13 @@ cpp_dev_headers = [
     # End ppapi_cpp.gypi
     ]
 
+gles2_headers = [
+    # Updated automatically by update-scons.py.
+    # From ppapi_gl.gypi:ppapi_gles2:.*\.h
+    'lib/gl/gles2/gl2ext_ppapi.h',
+    # End ppapi_gl.gypi
+]
+
 c_header_install = env.AddHeaderToSdk(
   ['$SOURCE_ROOT/ppapi/' + h for h in c_headers], os.path.join('ppapi', 'c'))
 c_dev_header_install = env.AddHeaderToSdk(
@@ -241,3 +262,10 @@ env.Requires('ppapi_cpp', [c_header_install,
                            c_dev_header_install,
                            cpp_header_install,
                            cpp_dev_header_install])
+
+gles2_header_install = env.AddHeaderToSdk(
+  ['$SOURCE_ROOT/ppapi/' + h for h in gles2_headers],
+  os.path.join('ppapi', 'gles2'))
+env.AddLibraryToSdk(['ppapi_gles2'])
+env.Requires('ppapi_gles1', [gles2_header_install])
+
