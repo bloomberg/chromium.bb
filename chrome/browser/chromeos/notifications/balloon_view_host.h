@@ -30,7 +30,7 @@ class BalloonViewHost : public ::BalloonViewHost {
   // is succssfully registered, or false otherwise. It fails to add if
   // a callback for given message already exists. The callback object
   // is owned and deleted by callee.
-  bool AddDOMUIMessageCallback(const std::string& message,
+  bool AddWebUIMessageCallback(const std::string& message,
                                MessageCallback* callback);
 
   // Process WebUI message.

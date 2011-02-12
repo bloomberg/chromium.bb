@@ -81,7 +81,7 @@ class BalloonCollectionImpl : public BalloonCollection,
   // there is no notification that matches NotificationDelegate::id(),
   // or a callback for given message already exists. The callback
   // object is owned and deleted by callee.
-  bool AddDOMUIMessageCallback(const Notification& notification,
+  bool AddWebUIMessageCallback(const Notification& notification,
                                const std::string& message,
                                MessageCallback* callback);
 

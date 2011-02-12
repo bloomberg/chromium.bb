@@ -16,7 +16,7 @@ BalloonViewHost::~BalloonViewHost() {
                                        message_callbacks_.end());
 }
 
-bool BalloonViewHost::AddDOMUIMessageCallback(
+bool BalloonViewHost::AddWebUIMessageCallback(
     const std::string& message,
     MessageCallback* callback) {
   std::pair<MessageCallbackMap::iterator, bool> ret;

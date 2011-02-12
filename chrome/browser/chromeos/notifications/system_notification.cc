@@ -75,7 +75,7 @@ void SystemNotification::Show(const string16& message,
     collection_->AddSystemNotification(notify, profile_,
                                        sticky,
                                        false /* no controls */);
-    collection_->AddDOMUIMessageCallback(notify, "link", callback);
+    collection_->AddWebUIMessageCallback(notify, "link", callback);
   }
   visible_ = true;
   urgent_ = urgent;
