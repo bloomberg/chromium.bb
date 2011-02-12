@@ -70,13 +70,13 @@ typedef WebUI* (*WebUIFactoryFunction)(TabContents* tab_contents,
 
 // Template for defining WebUIFactoryFunction.
 template<class T>
-WebUI* NewDOMUI(TabContents* contents, const GURL& url) {
+WebUI* NewWebUI(TabContents* contents, const GURL& url) {
   return new T(contents);
 }
 
 // Special case for extensions.
 template<>
-WebUI* NewDOMUI<ExtensionWebUI>(TabContents* contents, const GURL& url) {
+WebUI* NewWebUI<ExtensionWebUI>(TabContents* contents, const GURL& url) {
   // Don't use a WebUI for incognito tabs because we require extensions to run
   // within a single process.
   ExtensionService* service = contents->profile()->GetExtensionService();
@@ -90,25 +90,25 @@ WebUI* NewDOMUI<ExtensionWebUI>(TabContents* contents, const GURL& url) {
 // Returns a function that can be used to create the right type of WebUI for a
 // tab, based on its URL. Returns NULL if the URL doesn't have WebUI associated
 // with it. Even if the factory function is valid, it may yield a NULL WebUI
-// when invoked for a particular tab - see NewDOMUI<ExtensionWebUI>.
+// when invoked for a particular tab - see NewWebUI<ExtensionWebUI>.
 static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
     const GURL& url) {
   // Currently, any gears: URL means an HTML dialog.
   if (url.SchemeIs(chrome::kGearsScheme))
-    return &NewDOMUI<HtmlDialogUI>;
+    return &NewWebUI<HtmlDialogUI>;
 
   if (url.host() == chrome::kChromeUIDialogHost)
-    return &NewDOMUI<ConstrainedHtmlUI>;
+    return &NewWebUI<ConstrainedHtmlUI>;
 
   ExtensionService* service = profile ? profile->GetExtensionService() : NULL;
   if (service && service->ExtensionBindingsAllowed(url))
-    return &NewDOMUI<ExtensionWebUI>;
+    return &NewWebUI<ExtensionWebUI>;
 
   // All platform builds of Chrome will need to have a cloud printing
   // dialog as backup.  It's just that on Chrome OS, it's the only
   // print dialog.
   if (url.host() == chrome::kCloudPrintResourcesHost)
-    return &NewDOMUI<ExternalHtmlDialogUI>;
+    return &NewWebUI<ExternalHtmlDialogUI>;
 
   // This will get called a lot to check all URLs, so do a quick check of other
   // schemes (gears was handled above) to filter out most URLs.
@@ -120,7 +120,7 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
   if (url.host() == chrome::kChromeUISyncResourcesHost ||
       url.host() == chrome::kChromeUIRemotingResourcesHost ||
       url.host() == chrome::kCloudPrintSetupHost)
-    return &NewDOMUI<HtmlDialogUI>;
+    return &NewWebUI<HtmlDialogUI>;
 
   // Special case the new tab page. In older versions of Chrome, the new tab
   // page was hosted at chrome-internal:<blah>. This might be in people's saved
@@ -128,104 +128,104 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
   // tab page.
   if (url.host() == chrome::kChromeUINewTabHost ||
       url.SchemeIs(chrome::kChromeInternalScheme))
-    return &NewDOMUI<NewTabUI>;
+    return &NewWebUI<NewTabUI>;
 
   // Give about:about a generic Web UI so it can navigate to pages with Web UIs.
   if (url.spec() == chrome::kChromeUIAboutAboutURL)
-    return &NewDOMUI<WebUI>;
+    return &NewWebUI<WebUI>;
 
   // We must compare hosts only since some of the Web UIs append extra stuff
   // after the host name.
   if (url.host() == chrome::kChromeUIBookmarksHost)
-    return &NewDOMUI<BookmarksUI>;
+    return &NewWebUI<BookmarksUI>;
   if (url.host() == chrome::kChromeUIBugReportHost)
-    return &NewDOMUI<BugReportUI>;
+    return &NewWebUI<BugReportUI>;
   if (url.host() == chrome::kChromeUIDevToolsHost)
-    return &NewDOMUI<DevToolsUI>;
+    return &NewWebUI<DevToolsUI>;
 #if defined(OS_WIN)
   if (url.host() == chrome::kChromeUIConflictsHost)
-    return &NewDOMUI<ConflictsUI>;
+    return &NewWebUI<ConflictsUI>;
 #endif
   if (url.host() == chrome::kChromeUIDownloadsHost)
-    return &NewDOMUI<DownloadsUI>;
+    return &NewWebUI<DownloadsUI>;
   if (url.host() == chrome::kChromeUITextfieldsHost)
-    return &NewDOMUI<TextfieldsUI>;
+    return &NewWebUI<TextfieldsUI>;
   if (url.host() == chrome::kChromeUIExtensionsHost)
-    return &NewDOMUI<ExtensionsUI>;
+    return &NewWebUI<ExtensionsUI>;
   if (url.host() == chrome::kChromeUIHistoryHost)
-    return &NewDOMUI<HistoryUI>;
+    return &NewWebUI<HistoryUI>;
   if (url.host() == chrome::kChromeUIHistory2Host)
-    return &NewDOMUI<HistoryUI2>;
+    return &NewWebUI<HistoryUI2>;
   if (url.host() == chrome::kChromeUIFlagsHost)
-    return &NewDOMUI<FlagsUI>;
+    return &NewWebUI<FlagsUI>;
 #if defined(TOUCH_UI)
   if (url.host() == chrome::kChromeUIKeyboardHost)
-    return &NewDOMUI<KeyboardUI>;
+    return &NewWebUI<KeyboardUI>;
 #endif
   if (url.host() == chrome::kChromeUIGpuInternalsHost)
-    return &NewDOMUI<GpuInternalsUI>;
+    return &NewWebUI<GpuInternalsUI>;
   if (url.host() == chrome::kChromeUINetInternalsHost)
-    return &NewDOMUI<NetInternalsUI>;
+    return &NewWebUI<NetInternalsUI>;
   if (url.host() == chrome::kChromeUIPluginsHost)
-    return &NewDOMUI<PluginsUI>;
+    return &NewWebUI<PluginsUI>;
   if (url.host() == chrome::kChromeUISyncInternalsHost)
-    return &NewDOMUI<SyncInternalsUI>;
+    return &NewWebUI<SyncInternalsUI>;
 #if defined(ENABLE_REMOTING)
   if (url.host() == chrome::kChromeUIRemotingHost) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kEnableRemoting)) {
-      return &NewDOMUI<RemotingUI>;
+      return &NewWebUI<RemotingUI>;
     }
   }
 #endif
 
 #if defined(OS_CHROMEOS)
   if (url.host() == chrome::kChromeUIFileBrowseHost)
-    return &NewDOMUI<FileBrowseUI>;
+    return &NewWebUI<FileBrowseUI>;
   if (url.host() == chrome::kChromeUIImageBurnerHost)
-    return &NewDOMUI<ImageBurnUI>;
+    return &NewWebUI<ImageBurnUI>;
   if (url.host() == chrome::kChromeUIKeyboardOverlayHost)
-    return &NewDOMUI<KeyboardOverlayUI>;
+    return &NewWebUI<KeyboardOverlayUI>;
   if (url.host() == chrome::kChromeUIMediaplayerHost)
-    return &NewDOMUI<MediaplayerUI>;
+    return &NewWebUI<MediaplayerUI>;
   if (url.host() == chrome::kChromeUIMobileSetupHost)
-    return &NewDOMUI<MobileSetupUI>;
+    return &NewWebUI<MobileSetupUI>;
   if (url.host() == chrome::kChromeUIRegisterPageHost)
-    return &NewDOMUI<RegisterPageUI>;
+    return &NewWebUI<RegisterPageUI>;
   if (url.host() == chrome::kChromeUISettingsHost)
-    return &NewDOMUI<OptionsUI>;
+    return &NewWebUI<OptionsUI>;
   if (url.host() == chrome::kChromeUISlideshowHost)
-    return &NewDOMUI<SlideshowUI>;
+    return &NewWebUI<SlideshowUI>;
   if (url.host() == chrome::kChromeUISystemInfoHost)
-    return &NewDOMUI<SystemInfoUI>;
+    return &NewWebUI<SystemInfoUI>;
   if (url.host() == chrome::kChromeUIMenu)
-    return &NewDOMUI<chromeos::MenuUI>;
+    return &NewWebUI<chromeos::MenuUI>;
   if (url.host() == chrome::kChromeUIWrenchMenu)
-    return &NewDOMUI<chromeos::WrenchMenuUI>;
+    return &NewWebUI<chromeos::WrenchMenuUI>;
   if (url.host() == chrome::kChromeUINetworkMenu)
-    return &NewDOMUI<chromeos::NetworkMenuUI>;
+    return &NewWebUI<chromeos::NetworkMenuUI>;
 #else
   if (url.host() == chrome::kChromeUISettingsHost) {
     if (!CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kDisableTabbedOptions)) {
-      return &NewDOMUI<OptionsUI>;
+      return &NewWebUI<OptionsUI>;
     }
   }
   if (url.host() == chrome::kChromeUIPrintHost) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kEnablePrintPreview)) {
-      return &NewDOMUI<PrintPreviewUI>;
+      return &NewWebUI<PrintPreviewUI>;
     }
   }
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(TOUCH_UI) && defined(OS_CHROMEOS)
   if (url.host() == chrome::kChromeUILoginHost)
-    return &NewDOMUI<chromeos::LoginUI>;
+    return &NewWebUI<chromeos::LoginUI>;
 #endif
 
   if (url.spec() == chrome::kChromeUIConstrainedHTMLTestURL)
-    return &NewDOMUI<ConstrainedHtmlUI>;
+    return &NewWebUI<ConstrainedHtmlUI>;
 
   return NULL;
 }
