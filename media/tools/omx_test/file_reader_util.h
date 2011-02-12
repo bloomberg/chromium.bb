@@ -61,6 +61,8 @@ class YuvFileReader : public BasicFileReader {
                 int height,
                 int loop_count,
                 bool output_nv21);
+  virtual ~YuvFileReader();
+
   virtual void Read(uint8** output, int* size);
 
  private:
@@ -105,6 +107,7 @@ class FFmpegFileReader : public FileReader {
 class H264FileReader : public BasicFileReader {
  public:
   explicit H264FileReader(const FilePath& path);
+  virtual ~H264FileReader();
   virtual void Read(uint8** output, int* size);
 
  private:
