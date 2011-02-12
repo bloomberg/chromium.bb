@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DOM_UI_DOM_UI_HANDLER_BROWSERTEST_H_
-#define CHROME_BROWSER_DOM_UI_DOM_UI_HANDLER_BROWSERTEST_H_
+#ifndef CHROME_BROWSER_DOM_UI_WEB_UI_HANDLER_BROWSERTEST_H_
+#define CHROME_BROWSER_DOM_UI_WEB_UI_HANDLER_BROWSERTEST_H_
 #pragma once
 
 #include <string>
@@ -11,7 +11,7 @@
 #include "chrome/browser/dom_ui/web_ui.h"
 
 // This class registers test framework specific handlers on WebUI objects.
-class DOMUITestHandler : public WebUIMessageHandler {
+class WebUIHandlerBrowserTest : public WebUIMessageHandler {
  public:
   // Executes a string of javascript.  Returns pass fail.
   bool Execute(const std::string& js_test);
@@ -37,4 +37,4 @@ class DOMUITestHandler : public WebUIMessageHandler {
   bool is_waiting_;
 };
 
-#endif  // CHROME_BROWSER_DOM_UI_DOM_UI_HANDLER_BROWSERTEST_H_
+#endif  // CHROME_BROWSER_DOM_UI_WEB_UI_HANDLER_BROWSERTEST_H_

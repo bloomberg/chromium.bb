@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/dom_ui/dom_ui_browsertest.h"
+#include "chrome/browser/dom_ui/web_ui_browsertest.h"
 
 #include "base/path_service.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -17,18 +17,19 @@ static const FilePath::CharType* kWebUILibraryJS =
 static const FilePath::CharType* kWebUITestFolder =
     FILE_PATH_LITERAL("dom_ui");
 
-DOMUITest::~DOMUITest() {}
+WebUIBrowserTest::~WebUIBrowserTest() {}
 
-bool DOMUITest::RunDOMUITest(const FilePath::CharType* src_path) {
+bool WebUIBrowserTest::RunWebUITest(const FilePath::CharType* src_path) {
   std::string content;
   BuildJavaScriptTest(FilePath(src_path), &content);
   SetupHandlers();
   return test_handler_->Execute(content);
 }
 
-DOMUITest::DOMUITest() : test_handler_(new DOMUITestHandler()) {}
+WebUIBrowserTest::WebUIBrowserTest()
+    : test_handler_(new WebUIHandlerBrowserTest()) {}
 
-void DOMUITest::SetUpInProcessBrowserTestFixture() {
+void WebUIBrowserTest::SetUpInProcessBrowserTestFixture() {
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory_));
   test_data_directory_ = test_data_directory_.Append(kWebUITestFolder);
 
@@ -38,8 +39,8 @@ void DOMUITest::SetUpInProcessBrowserTestFixture() {
   ResourceBundle::AddDataPackToSharedInstance(resources_pack_path);
 }
 
-void DOMUITest::BuildJavaScriptTest(const FilePath& src_path,
-                                    std::string* content) {
+void WebUIBrowserTest::BuildJavaScriptTest(const FilePath& src_path,
+                                           std::string* content) {
   ASSERT_TRUE(content != NULL);
   std::string library_content, src_content;
   ASSERT_TRUE(file_util::ReadFileToString(
@@ -53,7 +54,7 @@ void DOMUITest::BuildJavaScriptTest(const FilePath& src_path,
   content->append(src_content);
 }
 
-void DOMUITest::SetupHandlers() {
+void WebUIBrowserTest::SetupHandlers() {
   WebUI* web_ui_instance =
       browser()->GetSelectedTabContents()->web_ui();
   ASSERT_TRUE(web_ui_instance != NULL);
@@ -64,10 +65,10 @@ void DOMUITest::SetupHandlers() {
     GetMockMessageHandler()->Attach(web_ui_instance);
 }
 
-IN_PROC_BROWSER_TEST_F(DOMUITest, TestSamplePass) {
+IN_PROC_BROWSER_TEST_F(WebUIBrowserTest, TestSamplePass) {
   // Navigate to UI.
   // TODO(dtseng): make accessor for subclasses to return?
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIDownloadsURL));
 
-  ASSERT_TRUE(RunDOMUITest(FILE_PATH_LITERAL("sample_downloads.js")));
+  ASSERT_TRUE(RunWebUITest(FILE_PATH_LITERAL("sample_downloads.js")));
 }

@@ -33,9 +33,9 @@ class MockThemeSource : public WebUIThemeSource {
   ~MockThemeSource() {}
 };
 
-class DOMUISourcesTest : public testing::Test {
+class WebUISourcesTest : public testing::Test {
  public:
-  DOMUISourcesTest() : ui_thread_(BrowserThread::UI, MessageLoop::current()) {}
+  WebUISourcesTest() : ui_thread_(BrowserThread::UI, MessageLoop::current()) {}
 
   TestingProfile* profile() const { return profile_.get(); }
   MockThemeSource* theme_source() const { return theme_source_.get(); }
@@ -58,13 +58,13 @@ class DOMUISourcesTest : public testing::Test {
   scoped_refptr<MockThemeSource> theme_source_;
 };
 
-TEST_F(DOMUISourcesTest, ThemeSourceMimeTypes) {
+TEST_F(WebUISourcesTest, ThemeSourceMimeTypes) {
   EXPECT_EQ(theme_source()->GetMimeType("css/newtab.css"), "text/css");
   EXPECT_EQ(theme_source()->GetMimeType("css/newtab.css?foo"), "text/css");
   EXPECT_EQ(theme_source()->GetMimeType("WRONGURL"), "image/png");
 }
 
-TEST_F(DOMUISourcesTest, ThemeSourceImages) {
+TEST_F(WebUISourcesTest, ThemeSourceImages) {
   // We used to PNGEncode the images ourselves, but encoder differences
   // invalidated that. We now just check that the image exists.
   theme_source()->StartDataRequest("IDR_THEME_FRAME_INCOGNITO", true, 1);
@@ -77,7 +77,7 @@ TEST_F(DOMUISourcesTest, ThemeSourceImages) {
   EXPECT_GT(theme_source()->result_data_size_, min);
 }
 
-TEST_F(DOMUISourcesTest, ThemeSourceCSS) {
+TEST_F(WebUISourcesTest, ThemeSourceCSS) {
   BrowserThread io_thread(BrowserThread::IO, MessageLoop::current());
   // Generating the test data for the NTP CSS would just involve copying the
   // method, or being super brittle and hard-coding the result (requiring

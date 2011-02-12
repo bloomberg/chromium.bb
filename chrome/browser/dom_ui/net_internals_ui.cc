@@ -197,10 +197,10 @@ class NetInternalsMessageHandler
 };
 
 // This class is the "real" message handler. It is allocated and destroyed on
-// the UI thread.  With the exception of OnAddEntry, OnDOMUIDeleted, and
+// the UI thread.  With the exception of OnAddEntry, OnWebUIDeleted, and
 // CallJavascriptFunction, its methods are all expected to be called from the IO
 // thread.  OnAddEntry and CallJavascriptFunction can be called from any thread,
-// and OnDOMUIDeleted can only be called from the UI thread.
+// and OnWebUIDeleted can only be called from the UI thread.
 class NetInternalsMessageHandler::IOThreadImpl
     : public base::RefCountedThreadSafe<
           NetInternalsMessageHandler::IOThreadImpl,
@@ -239,7 +239,7 @@ class NetInternalsMessageHandler::IOThreadImpl
 
   // Called when the WebUI is deleted.  Prevents calling Javascript functions
   // afterwards.  Called on UI thread.
-  void OnDOMUIDeleted();
+  void OnWebUIDeleted();
 
   //--------------------------------
   // Javascript message handlers:
@@ -432,7 +432,7 @@ NetInternalsMessageHandler::NetInternalsMessageHandler() {}
 
 NetInternalsMessageHandler::~NetInternalsMessageHandler() {
   if (proxy_) {
-    proxy_.get()->OnDOMUIDeleted();
+    proxy_.get()->OnWebUIDeleted();
     // Notify the handler on the IO thread that the renderer is gone.
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(proxy_.get(), &IOThreadImpl::Detach));
@@ -620,7 +620,7 @@ void NetInternalsMessageHandler::IOThreadImpl::SendPassiveLogEntries(
   CallJavascriptFunction(L"g_browser.receivedPassiveLogEntries", dict_list);
 }
 
-void NetInternalsMessageHandler::IOThreadImpl::OnDOMUIDeleted() {
+void NetInternalsMessageHandler::IOThreadImpl::OnWebUIDeleted() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   was_domui_deleted_ = true;
 }

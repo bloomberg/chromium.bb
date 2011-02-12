@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DOM_UI_DOM_UI_BROWSERTEST_H_
-#define CHROME_BROWSER_DOM_UI_DOM_UI_BROWSERTEST_H_
+#ifndef CHROME_BROWSER_DOM_UI_WEB_UI_BROWSERTEST_H_
+#define CHROME_BROWSER_DOM_UI_WEB_UI_BROWSERTEST_H_
 #pragma once
 
 #include <string>
 
 #include "base/file_path.h"
-#include "chrome/browser/dom_ui/dom_ui_handler_browsertest.h"
+#include "chrome/browser/dom_ui/web_ui_handler_browsertest.h"
 #include "chrome/test/in_process_browser_test.h"
 
 class WebUIMessageHandler;
@@ -20,14 +20,14 @@ class WebUIMessageHandler;
 // These tests should follow the form given in:
 // chrome/test/data/dom_ui/sample_downloads.js.
 // and the lone test within this class.
-class DOMUITest : public InProcessBrowserTest {
+class WebUIBrowserTest : public InProcessBrowserTest {
  public:
-  virtual ~DOMUITest();
+  virtual ~WebUIBrowserTest();
 
-  bool RunDOMUITest(const FilePath::CharType* src_path);
+  bool RunWebUITest(const FilePath::CharType* src_path);
 
  protected:
-  DOMUITest();
+  WebUIBrowserTest();
 
   // Setup test path.
   virtual void SetUpInProcessBrowserTestFixture();
@@ -49,10 +49,10 @@ class DOMUITest : public InProcessBrowserTest {
   void SetupHandlers();
 
   // Handles test framework messages.
-  scoped_ptr<DOMUITestHandler> test_handler_;
+  scoped_ptr<WebUIHandlerBrowserTest> test_handler_;
 
   // Location of test data (currently test/data/dom_ui).
   FilePath test_data_directory_;
 };
 
-#endif  // CHROME_BROWSER_DOM_UI_DOM_UI_BROWSERTEST_H_
+#endif  // CHROME_BROWSER_DOM_UI_WEB_UI_BROWSERTEST_H_

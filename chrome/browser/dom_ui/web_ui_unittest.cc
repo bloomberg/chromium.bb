@@ -12,9 +12,9 @@
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class DOMUITest : public RenderViewHostTestHarness {
+class WebUITest : public RenderViewHostTestHarness {
  public:
-  DOMUITest() : ui_thread_(BrowserThread::UI, MessageLoop::current()) {}
+  WebUITest() : ui_thread_(BrowserThread::UI, MessageLoop::current()) {}
 
   // Tests navigating with a Web UI from a fresh (nothing pending or committed)
   // state, through pending, committed, then another navigation. The first page
@@ -82,13 +82,13 @@ class DOMUITest : public RenderViewHostTestHarness {
  private:
   BrowserThread ui_thread_;
 
-  DISALLOW_COPY_AND_ASSIGN(DOMUITest);
+  DISALLOW_COPY_AND_ASSIGN(WebUITest);
 };
 
 // Tests that the New Tab Page flags are correctly set and propogated by
 // TabContents when we first navigate to a Web UI page, then to a standard
 // non-DOM-UI page.
-TEST_F(DOMUITest, WebUIToStandard) {
+TEST_F(WebUITest, WebUIToStandard) {
   DoNavigationTest(contents(), 1);
 
   // Test the case where we're not doing the initial navigation. This is
@@ -100,7 +100,7 @@ TEST_F(DOMUITest, WebUIToStandard) {
   DoNavigationTest(&contents2, 101);
 }
 
-TEST_F(DOMUITest, DOMUIToDOMUI) {
+TEST_F(WebUITest, WebUIToWebUI) {
   // Do a load (this state is tested above).
   GURL new_tab_url(chrome::kChromeUINewTabURL);
   controller().LoadURL(new_tab_url, GURL(), PageTransition::LINK);
@@ -117,7 +117,7 @@ TEST_F(DOMUITest, DOMUIToDOMUI) {
   EXPECT_TRUE(contents()->FocusLocationBarByDefault());
 }
 
-TEST_F(DOMUITest, StandardToDOMUI) {
+TEST_F(WebUITest, StandardToWebUI) {
   // Start a pending navigation to a regular page.
   GURL std_url("http://google.com/");
 
@@ -160,7 +160,7 @@ class TabContentsForFocusTest : public TestTabContents {
   int focus_called_;
 };
 
-TEST_F(DOMUITest, FocusOnNavigate) {
+TEST_F(WebUITest, FocusOnNavigate) {
   // Setup.  |tc| will be used to track when we try to focus the location bar.
   TabContentsForFocusTest* tc = new TabContentsForFocusTest(
       contents()->profile(),

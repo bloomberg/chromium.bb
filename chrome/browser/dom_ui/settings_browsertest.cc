@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/dom_ui/dom_ui_browsertest.h"
+#include "chrome/browser/dom_ui/web_ui_browsertest.h"
 #include "chrome/browser/dom_ui/options/core_options_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/ui_test_utils.h"
@@ -64,7 +64,7 @@ class MockCoreOptionsHandler : public CoreOptionsHandler {
   }
 };
 
-class SettingsWebUITest : public DOMUITest {
+class SettingsWebUITest : public WebUIBrowserTest {
  protected:
   virtual WebUIMessageHandler* GetMockMessageHandler() {
     return &mock_core_options_handler_;
@@ -86,7 +86,7 @@ IN_PROC_BROWSER_TEST_F(SettingsWebUITest, TestSetBooleanPrefTriggers) {
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUISettingsURL));
   EXPECT_CALL(mock_core_options_handler_,
       HandleSetBooleanPref(Eq_ListValue(&true_list_value)));
-  ASSERT_TRUE(RunDOMUITest(
+  ASSERT_TRUE(RunWebUITest(
       FILE_PATH_LITERAL("settings_set_boolean_pref_triggers.js")));
 }
 
