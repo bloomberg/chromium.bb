@@ -56,7 +56,7 @@ class ConstrainedHtmlDelegateGtk : public ConstrainedWindowGtkDelegate,
   HtmlDialogUIDelegate* html_delegate_;
 
   // The constrained window that owns |this|. It's saved here because it needs
-  // to be closed in response to the DOMUI OnDialogClose callback.
+  // to be closed in response to the WebUI OnDialogClose callback.
   ConstrainedWindow* window_;
 };
 

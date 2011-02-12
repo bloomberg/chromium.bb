@@ -286,7 +286,7 @@ void BrowserSignin::Cancel() {
 void BrowserSignin::OnLoginFinished() {
   if (html_dialog_ui_delegate_)
     html_dialog_ui_delegate_->ForceDialogClose();
-  // The dialog will be deleted by DOMUI due to the dialog close,
+  // The dialog will be deleted by WebUI due to the dialog close,
   // don't hold a reference.
   html_dialog_ui_delegate_ = NULL;
 

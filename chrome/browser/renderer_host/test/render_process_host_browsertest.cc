@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -95,7 +95,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ProcessPerTab) {
   EXPECT_EQ(tab_count, browser()->tab_count());
   EXPECT_EQ(host_count, RenderProcessHostCount());
 
-  // Create another new tab.  It should share the process with the other DOMUI.
+  // Create another new tab.  It should share the process with the other WebUI.
   browser()->NewTab();
   if (browser()->tab_count() == tab_count)
     ui_test_utils::WaitForNewTab(browser());
@@ -103,7 +103,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ProcessPerTab) {
   EXPECT_EQ(tab_count, browser()->tab_count());
   EXPECT_EQ(host_count, RenderProcessHostCount());
 
-  // Create another new tab.  It should share the process with the other DOMUI.
+  // Create another new tab.  It should share the process with the other WebUI.
   browser()->NewTab();
   if (browser()->tab_count() == tab_count)
     ui_test_utils::WaitForNewTab(browser());
@@ -234,7 +234,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, DISABLED_ProcessOverflow) {
 
   // Create another TYPE_DOMUI tab.  It should share the process with newtab.
   // Note: intentionally create this tab after the TYPE_NORMAL tabs to exercise
-  // bug 43448 where extension and DOMUI tabs could get combined into normal
+  // bug 43448 where extension and WebUI tabs could get combined into normal
   // renderers.
   GURL history(chrome::kChromeUIHistoryURL);
   browser()->ShowSingletonTab(history, false);

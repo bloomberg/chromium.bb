@@ -56,13 +56,13 @@ TabContentsViewViews::~TabContentsViewViews() {
 
 void TabContentsViewViews::AttachConstrainedWindow(
     ConstrainedWindowGtk* constrained_window) {
-  // TODO(anicolao): reimplement all dialogs as DOMUI
+  // TODO(anicolao): reimplement all dialogs as WebUI
   NOTIMPLEMENTED();
 }
 
 void TabContentsViewViews::RemoveConstrainedWindow(
     ConstrainedWindowGtk* constrained_window) {
-  // TODO(anicolao): reimplement all dialogs as DOMUI
+  // TODO(anicolao): reimplement all dialogs as WebUI
   NOTIMPLEMENTED();
 }
 
@@ -328,6 +328,6 @@ void TabContentsViewViews::WasSized(const gfx::Size& size) {
 }
 
 void TabContentsViewViews::SetFloatingPosition(const gfx::Size& size) {
-  // TODO(anicolao): rework this once we have DOMUI views for dialogs
+  // TODO(anicolao): rework this once we have WebUI views for dialogs
   SetBounds(x(), y(), size.width(), size.height());
 }

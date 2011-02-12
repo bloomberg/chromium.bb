@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,7 +51,7 @@ class ConstrainedHtmlDelegateMac :
   HtmlDialogUIDelegate* html_delegate_;  // weak.
 
   // The constrained window that owns |this|. Saved here because it needs to be
-  // closed in response to the DOMUI OnDialogClose callback.
+  // closed in response to the WebUI OnDialogClose callback.
   ConstrainedWindow* constrained_window_;
 
   DISALLOW_COPY_AND_ASSIGN(ConstrainedHtmlDelegateMac);

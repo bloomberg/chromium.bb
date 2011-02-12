@@ -60,7 +60,7 @@ function setUserInfo(userInfo) {
   $('form').contentWindow.postMessage(msg, registrationUrl);
 }
 
-// Called by DOMUI handler when startup manifest is not defined.
+// Called by WebUI handler when startup manifest is not defined.
 function skipRegistration() {
   location.replace(registerSkipUrl);
 }

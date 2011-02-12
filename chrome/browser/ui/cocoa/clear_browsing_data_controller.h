@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,7 +58,7 @@ extern NSString* const kClearBrowsingDataControllerRemoveMask;
 
 // Show the clear browsing data window.  Do not use |-initWithProfile:|,
 // go through this instead so we don't end up with multiple instances.
-// This function does not block, so it can be used from DOMUI calls.
+// This function does not block, so it can be used from WebUI calls.
 + (void)showClearBrowsingDialogForProfile:(Profile*)profile;
 + (ClearBrowsingDataController*)controllerForProfile:(Profile*)profile;
 

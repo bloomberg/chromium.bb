@@ -235,8 +235,8 @@ TEST_F(RenderViewHostManagerTest, Navigate) {
       NotificationType::RENDER_VIEW_HOST_CHANGED));
 }
 
-// Tests DOMUI creation.
-TEST_F(RenderViewHostManagerTest, DOMUI) {
+// Tests WebUI creation.
+TEST_F(RenderViewHostManagerTest, WebUI) {
   BrowserThread ui_thread(BrowserThread::UI, MessageLoop::current());
   SiteInstance* instance = SiteInstance::CreateSiteInstance(profile_.get());
 
@@ -275,7 +275,7 @@ TEST_F(RenderViewHostManagerTest, DOMUI) {
 // Web UI renderers, even if --process-per-tab is enabled.  In that mode, we
 // still swap processes if ShouldSwapProcessesForNavigation is true.
 // Regression test for bug 46290.
-TEST_F(RenderViewHostManagerTest, NonDOMUIChromeURLs) {
+TEST_F(RenderViewHostManagerTest, NonWebUIChromeURLs) {
   BrowserThread thread(BrowserThread::UI, &message_loop_);
   SiteInstance* instance = SiteInstance::CreateSiteInstance(profile_.get());
   TestTabContents tab_contents(profile_.get(), instance);

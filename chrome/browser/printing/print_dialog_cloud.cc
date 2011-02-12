@@ -62,13 +62,13 @@
 // print data and getting any page setup parameters that the dialog
 // contents provides.  As part of bringing up the dialog,
 // HtmlDialogUI::RenderViewCreated is called (an override of
-// DOMUI::RenderViewCreated).  That routine, in turn, calls the
+// WebUI::RenderViewCreated).  That routine, in turn, calls the
 // delegate's GetWebUIMessageHandlers routine, at which point the
 // ownership of the CloudPrintFlowHandler is handed over.  A pointer
 // to the flow handler is kept to facilitate communication back and
 // forth between the two classes.
 
-// The DOMUI continues dialog bring-up, calling
+// The WebUI continues dialog bring-up, calling
 // CloudPrintFlowHandler::RegisterMessages.  This is where the
 // additional object model capabilities are registered for the dialog
 // contents to use.  It is also at this time that capabilities for the

@@ -496,8 +496,8 @@ IPC_MESSAGE_ROUTED0(ViewMsg_DragSourceSystemDragEnded)
 IPC_MESSAGE_ROUTED1(ViewMsg_AllowBindings,
                     int /* enabled_bindings_flags */)
 
-// Tell the renderer to add a property to the DOMUI binding object.  This
-// only works if we allowed DOMUI bindings.
+// Tell the renderer to add a property to the WebUI binding object.  This
+// only works if we allowed WebUI bindings.
 IPC_MESSAGE_ROUTED2(ViewMsg_SetDOMUIProperty,
                     std::string /* property_name */,
                     std::string /* property_value_json */)

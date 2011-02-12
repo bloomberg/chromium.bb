@@ -2926,7 +2926,7 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
   GURL old_url(frame->url());
 
   // Detect when we're crossing a permission-based boundary (e.g. into or out of
-  // an extension or app origin, leaving a DOMUI page, etc). We only care about
+  // an extension or app origin, leaving a WebUI page, etc). We only care about
   // top-level navigations within the current tab (as opposed to, for example,
   // opening a new window). But we sometimes navigate to about:blank to clear a
   // tab, and we want to still allow that.

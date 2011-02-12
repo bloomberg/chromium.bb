@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@ cr.define('gpu', function() {
    * @constructor
    */
   function BrowserBridge() {
-    // If we are not running inside DOMUI, output chrome.send messages
+    // If we are not running inside WebUI, output chrome.send messages
     // to the console to help with quick-iteration debugging.
     if (chrome.send === undefined && console.log) {
       chrome.send = function(messageHandler, args) {

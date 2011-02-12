@@ -1982,7 +1982,7 @@ void Browser::OpenLanguageOptionsDialog() {
       switches::kDisableTabbedOptions)) {
     ShowOptionsTab(chrome::kLanguageOptionsSubPage);
   } else {
-    // Language options dialog has been replaced by DOMUI.
+    // Language options dialog has been replaced by WebUI.
   }
 }
 

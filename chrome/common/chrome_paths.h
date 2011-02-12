@@ -24,7 +24,7 @@ enum {
   DIR_RESOURCES,                // Directory containing separate file resources
                                 // used by Chrome at runtime.
   DIR_SHARED_RESOURCES,         // Directory containing js and css files used
-                                // by DOMUI and component extensions.
+                                // by WebUI and component extensions.
   DIR_INSPECTOR,                // Directory where web inspector is located.
   DIR_APP_DICTIONARIES,         // Directory where the global dictionaries are.
   DIR_USER_DOCUMENTS,           // Directory for a user's "My Documents".

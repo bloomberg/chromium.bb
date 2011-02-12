@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -205,7 +205,7 @@ TEST_F(CloudPrintURLTest, CheckDefaultURLs) {
   EXPECT_TRUE(test_page_url.has_query());
 }
 
-// Testing for CloudPrintDataSender needs a mock DOMUI.
+// Testing for CloudPrintDataSender needs a mock WebUI.
 class CloudPrintDataSenderTest : public testing::Test {
  public:
   CloudPrintDataSenderTest()
@@ -275,7 +275,7 @@ TEST_F(CloudPrintDataSenderTest, EmptyFile) {
 
 // Testing for CloudPrintFlowHandler needs a mock
 // CloudPrintHtmlDialogDelegate, mock CloudPrintDataSender, and a mock
-// DOMUI.
+// WebUI.
 
 // Testing for CloudPrintHtmlDialogDelegate needs a mock
 // CloudPrintFlowHandler.

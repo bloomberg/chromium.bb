@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -126,7 +126,7 @@ class TestBrowserWindowForWizardTest : public TestBrowserWindow {
 
   virtual ~TestBrowserWindowForWizardTest() {
     if (flow_.get()) {
-      // In real life, the handlers are destroyed by the DOMUI infrastructure,
+      // In real life, the handlers are destroyed by the WebUI infrastructure,
       // which calls GetWebUIMessageHandlers to take ownership.  This does not
       // exist in our test, so we perform cleanup manually.
       std::vector<WebUIMessageHandler*> handlers;

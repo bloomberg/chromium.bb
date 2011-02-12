@@ -217,7 +217,7 @@ void RenderViewHost::Navigate(const ViewMsg_Navigate_Params& params) {
     // browser. But we want to keep the throbber in sync with what's happening
     // in the UI. For example, we want to start throbbing immediately when the
     // user naivgates even if the renderer is delayed. There is also an issue
-    // with the throbber starting because the DOMUI (which controls whether the
+    // with the throbber starting because the WebUI (which controls whether the
     // favicon is displayed) happens synchronously. If the start loading
     // messages was asynchronous, then the default favicon would flash in.
     //
@@ -1156,8 +1156,8 @@ void RenderViewHost::OnMsgDOMUISend(
   if (value.get())
     params.arguments.Swap(static_cast<ListValue*>(value.get()));
   params.source_url = source_url;
-  // DOMUI doesn't use these values yet.
-  // TODO(aa): When DOMUI is ported to ExtensionFunctionDispatcher, send real
+  // WebUI doesn't use these values yet.
+  // TODO(aa): When WebUI is ported to ExtensionFunctionDispatcher, send real
   // values here.
   params.request_id = -1;
   params.has_callback = false;

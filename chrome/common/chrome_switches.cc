@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -373,7 +373,7 @@ const char kDisableSyncPreferences[]        = "disable-sync-preferences";
 // Disable syncing of themes.
 const char kDisableSyncThemes[]             = "disable-sync-themes";
 
-// Disable tabbed options, i.e., DOMUI version of options window.
+// Disable tabbed options, i.e., WebUI version of options window.
 const char kDisableTabbedOptions[]           = "disable-tabbed-options";
 
 // TabCloseableStateWatcher disallows closing of tabs and browsers under certain
@@ -1317,7 +1317,7 @@ const char kCompressSystemFeedback[]        = "compress-sys-feedback";
 // switch separates chrome code from the rest of ChromeOS.
 const char kForceStubLibcros[]              = "force-stub-libcros";
 
-// Enables DOMUI menu.
+// Enables WebUI menu.
 const char kEnableDOMUIMenu[]               = "enable-domui-menu";
 
 // Enables Media Player.

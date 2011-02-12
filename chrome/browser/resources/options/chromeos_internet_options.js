@@ -93,7 +93,7 @@ cr.define('options', function() {
   };
 
   // A boolean flag from InternerOptionsHandler to indicate whether to use
-  // inline DOMUI for ethernet/wifi login/options.
+  // inline WebUI for ethernet/wifi login/options.
   InternetOptions.useSettingsUI = false;
 
   // Network status update will be blocked while typing in WEP password etc.

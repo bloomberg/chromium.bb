@@ -439,7 +439,7 @@ TEST_F(SiteInstanceTest, ProcessSharingByType) {
   EXPECT_EQ(extension1_instance->GetProcess(),
             extension2_instance->GetProcess());
 
-  // Create some DOMUI instances and make sure they share a process.
+  // Create some WebUI instances and make sure they share a process.
   scoped_refptr<SiteInstance> dom1_instance(
       CreateSiteInstance(&rph_factory, GURL("chrome://newtab")));
   policy->GrantWebUIBindings(dom1_instance->GetProcess()->id());
