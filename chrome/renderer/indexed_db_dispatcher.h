@@ -144,7 +144,6 @@ class IndexedDBDispatcher : public IPC::Channel::Listener {
   void OnSuccessSerializedScriptValue(int32 response_id,
                                       const SerializedScriptValue& value);
   void OnError(int32 response_id, int code, const string16& message);
-  void OnBlocked(int32 response_id);
   void OnAbort(int32 transaction_id);
   void OnComplete(int32 transaction_id);
   void OnTimeout(int32 transaction_id);

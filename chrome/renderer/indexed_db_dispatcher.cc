@@ -52,7 +52,6 @@ bool IndexedDBDispatcher::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksSuccessSerializedScriptValue,
                         OnSuccessSerializedScriptValue)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksError, OnError)
-    IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksBlocked, OnBlocked)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_TransactionCallbacksAbort, OnAbort)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_TransactionCallbacksComplete, OnComplete)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_TransactionCallbacksTimeout, OnTimeout)
@@ -376,11 +375,6 @@ void IndexedDBDispatcher::OnSuccessOpenCursor(int32 repsonse_id,
       pending_callbacks_.Lookup(repsonse_id);
   callbacks->onSuccess(new RendererWebIDBCursorImpl(object_id));
   pending_callbacks_.Remove(repsonse_id);
-}
-
-void IndexedDBDispatcher::OnBlocked(int32 response_id) {
-  WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(response_id);
-  callbacks->onBlocked();
 }
 
 void IndexedDBDispatcher::OnError(int32 response_id, int code,

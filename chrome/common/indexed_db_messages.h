@@ -250,8 +250,6 @@ IPC_MESSAGE_CONTROL3(IndexedDBMsg_CallbacksError,
                      int32 /* response_id */,
                      int /* code */,
                      string16 /* message */)
-IPC_MESSAGE_CONTROL1(IndexedDBMsg_CallbacksBlocked,
-                     int32 /* response_id */)
 
 // IDBTransactionCallback message handlers.
 IPC_MESSAGE_CONTROL1(IndexedDBMsg_TransactionCallbacksAbort,
@@ -351,10 +349,6 @@ IPC_SYNC_MESSAGE_CONTROL4_2(IndexedDBHostMsg_DatabaseTransaction,
                             int32, /* timeout */
                             int32, /* idb_transaction_id */
                             WebKit::WebExceptionCode /* ec */)
-
-// WebIDBDatabase::close() message.
-IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_DatabaseOpen,
-                     int32 /* idb_database_id */)
 
 // WebIDBDatabase::close() message.
 IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_DatabaseClose,
