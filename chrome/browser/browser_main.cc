@@ -161,6 +161,7 @@
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/chrome_views_delegate.h"
 #include "views/focus/accelerator_handler.h"
+#include "views/widget/root_view.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -937,6 +938,9 @@ void InitializeToolkit(const MainFunctionParams& parameters) {
   // display the correct icon.
   if (!views::ViewsDelegate::views_delegate)
     views::ViewsDelegate::views_delegate = new ChromeViewsDelegate;
+
+  if (parameters.command_line_.HasSwitch(switches::kDebugViewsPaint))
+    views::RootView::EnableDebugPaint();
 #endif
 
 #if defined(OS_WIN)

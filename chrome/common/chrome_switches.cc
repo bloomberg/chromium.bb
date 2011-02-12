@@ -1369,6 +1369,12 @@ const char kEnableSandboxLogging[]          = "enable-sandbox-logging";
 const char kKioskMode[]                     = "kiosk";
 #endif
 
+// Enables debug paint in views framework. Enabling this causes the damaged
+// region being painted to flash in red.
+#if defined(TOOLKIT_VIEWS)
+const char kDebugViewsPaint[]               = "debug-views-paint";
+#endif
+
 #ifndef NDEBUG
 // Clear the token service before using it.  This allows simulating
 // the expiration of credentials during testing.

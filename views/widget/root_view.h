@@ -189,6 +189,9 @@ class RootView : public View,
   void SetGestureManager(GestureManager* g) { gesture_manager_ = g; }
 #endif
 
+  // Enables debug painting. See |debug_paint_enabled_| for details.
+  static void EnableDebugPaint();
+
  protected:
 
   // Overridden to properly reset our event propagation member
@@ -353,6 +356,11 @@ class RootView : public View,
   // True if we're currently processing paint.
   bool is_processing_paint_;
 #endif
+
+  // True to enable debug painting. Enabling causes the damaged
+  // region to be painted to flash in red.
+  static bool debug_paint_enabled_;
+
   DISALLOW_COPY_AND_ASSIGN(RootView);
 };
 }  // namespace views

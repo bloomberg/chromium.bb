@@ -5,18 +5,34 @@
 #include "views/widget/root_view.h"
 
 #include <gtk/gtk.h>
+#include <X11/Xlib.h>
 
 #include "base/logging.h"
+#include "ui/base/x/x11_util.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "views/widget/widget_gtk.h"
 
 namespace views {
 
 void RootView::OnPaint(GdkEventExpose* event) {
+
   WidgetGtk* widget = static_cast<WidgetGtk*>(GetWidget());
   if (!widget) {
     NOTREACHED();
     return;
+  }
+  if (debug_paint_enabled_) {
+    // Using cairo directly because using skia didn't have immediate effect.
+    cairo_t* cr = gdk_cairo_create(event->window);
+    gdk_cairo_region(cr, event->region);
+    cairo_set_source_rgb(cr, 1, 0, 0);  // red
+    cairo_rectangle(cr,
+                    event->area.x, event->area.y,
+                    event->area.width, event->area.height);
+    cairo_fill(cr);
+    cairo_destroy(cr);
+    // Make sure that users see the red flash.
+    XSync(ui::GetXDisplay(), false /* don't discard events */);
   }
   gfx::Rect scheduled_dirty_rect = GetScheduledPaintRectConstrainedToSize();
   gfx::Rect expose_rect = gfx::Rect(event->area);

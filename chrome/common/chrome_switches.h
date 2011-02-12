@@ -396,6 +396,10 @@ extern const char kEnableSandboxLogging[];
 extern const char kKioskMode[];
 #endif
 
+#if defined(TOOLKIT_VIEWS)
+extern const char kDebugViewsPaint[];
+#endif
+
 #ifndef NDEBUG
 extern const char kClearTokenService[];
 extern const char kGearsPluginPathOverride[];

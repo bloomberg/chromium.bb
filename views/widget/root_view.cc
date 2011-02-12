@@ -63,6 +63,8 @@ class PaintTask : public Task {
 };
 
 const char RootView::kViewClassName[] = "views/RootView";
+// static
+bool RootView::debug_paint_enabled_ = false;
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -775,6 +777,11 @@ void RootView::ClearPaintRect() {
 
   // If a pending_paint_task_ does Run(), we don't need to do anything.
   paint_task_needed_ = false;
+}
+
+// static
+void RootView::EnableDebugPaint() {
+  debug_paint_enabled_ = true;
 }
 
 /////////////////////////////////////////////////////////////////////////////
