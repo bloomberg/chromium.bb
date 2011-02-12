@@ -14,7 +14,7 @@
 
 class WebUIMessageHandler;
 
-// The runner of DOMUI javascript based tests.
+// The runner of WebUI javascript based tests.
 // See chrome/test/data/dom_ui/test_api.js for the javascript side test API's.
 //
 // These tests should follow the form given in:
@@ -32,7 +32,7 @@ class DOMUITest : public InProcessBrowserTest {
   // Setup test path.
   virtual void SetUpInProcessBrowserTestFixture();
 
-  // Returns a mock DOMUI object under test (if any).
+  // Returns a mock WebUI object under test (if any).
   virtual WebUIMessageHandler* GetMockMessageHandler() { return NULL; }
 
  private:

@@ -12,9 +12,9 @@
 #include "chrome/test/ui_test_utils.h"
 #include "ui/base/resource/resource_bundle.h"
 
-static const FilePath::CharType* kDOMUILibraryJS =
+static const FilePath::CharType* kWebUILibraryJS =
     FILE_PATH_LITERAL("test_api.js");
-static const FilePath::CharType* kDOMUITestFolder =
+static const FilePath::CharType* kWebUITestFolder =
     FILE_PATH_LITERAL("dom_ui");
 
 DOMUITest::~DOMUITest() {}
@@ -30,9 +30,9 @@ DOMUITest::DOMUITest() : test_handler_(new DOMUITestHandler()) {}
 
 void DOMUITest::SetUpInProcessBrowserTestFixture() {
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory_));
-  test_data_directory_ = test_data_directory_.Append(kDOMUITestFolder);
+  test_data_directory_ = test_data_directory_.Append(kWebUITestFolder);
 
-  // TODO(dtseng): should this be part of every BrowserTest or just DOMUI test.
+  // TODO(dtseng): should this be part of every BrowserTest or just WebUI test.
   FilePath resources_pack_path;
   PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
   ResourceBundle::AddDataPackToSharedInstance(resources_pack_path);
@@ -43,7 +43,7 @@ void DOMUITest::BuildJavaScriptTest(const FilePath& src_path,
   ASSERT_TRUE(content != NULL);
   std::string library_content, src_content;
   ASSERT_TRUE(file_util::ReadFileToString(
-      test_data_directory_.Append(FilePath(kDOMUILibraryJS)),
+      test_data_directory_.Append(FilePath(kWebUILibraryJS)),
           &library_content));
   ASSERT_TRUE(file_util::ReadFileToString(
       test_data_directory_.Append(src_path), &src_content));

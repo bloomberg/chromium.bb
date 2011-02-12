@@ -62,7 +62,7 @@ void* HexStringToPointer(const std::string& str) {
 // Populate given |dict| with cookie tree node properties.
 void GetCookieTreeNodeDictionary(const CookieTreeNode& node,
                                  DictionaryValue* dict) {
-  // Use node's address as an id for DOMUI to look it up.
+  // Use node's address as an id for WebUI to look it up.
   dict->SetString(kKeyId, PointerToHexString(&node));
   dict->SetString(kKeyTitle, node.GetTitle());
   dict->SetBoolean(kKeyHasChildren, !!node.GetChildCount());
@@ -195,7 +195,7 @@ void GetChildNodeList(CookieTreeNode* parent, int start, int count,
 }
 
 // TODO(xiyuan): Remove this function when strings are updated.
-// Remove "&" in button label for DOMUI.
+// Remove "&" in button label for WebUI.
 string16 CleanButtonLabel(const string16& text) {
   string16 out(text);
   ReplaceFirstSubstringAfterOffset(&out, 0, ASCIIToUTF16("&"), string16());

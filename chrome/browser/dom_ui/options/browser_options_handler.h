@@ -51,43 +51,43 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // Sets the home page to the given string. Called from DOMUI.
+  // Sets the home page to the given string. Called from WebUI.
   void SetHomePage(const ListValue* args);
 
-  // Makes this the default browser. Called from DOMUI.
+  // Makes this the default browser. Called from WebUI.
   void BecomeDefaultBrowser(const ListValue* args);
 
-  // Sets the search engine at the given index to be default. Called from DOMUI.
+  // Sets the search engine at the given index to be default. Called from WebUI.
   void SetDefaultSearchEngine(const ListValue* args);
 
-  // Removes the startup page at the given indexes. Called from DOMUI.
+  // Removes the startup page at the given indexes. Called from WebUI.
   void RemoveStartupPages(const ListValue* args);
 
   // Adds a startup page with the given URL after the given index.
-  // Called from DOMUI.
+  // Called from WebUI.
   void AddStartupPage(const ListValue* args);
 
   // Changes the startup page at the given index to the given URL.
-  // Called from DOMUI.
+  // Called from WebUI.
   void EditStartupPage(const ListValue* args);
 
-  // Sets the startup page set to the current pages. Called from DOMUI.
+  // Sets the startup page set to the current pages. Called from WebUI.
   void SetStartupPagesToCurrentPages(const ListValue* args);
 
   // Returns the string ID for the given default browser state.
   int StatusStringIdForState(ShellIntegration::DefaultBrowserState state);
 
   // Gets the current default browser state, and asynchronously reports it to
-  // the DOMUI page.
+  // the WebUI page.
   void UpdateDefaultBrowserState();
 
   // Updates the UI with the given state for the default browser.
   void SetDefaultBrowserUIString(int status_string_id);
 
-  // Loads the current set of custom startup pages and reports it to the DOMUI.
+  // Loads the current set of custom startup pages and reports it to the WebUI.
   void UpdateStartupPages();
 
-  // Loads the possible default search engine list and reports it to the DOMUI.
+  // Loads the possible default search engine list and reports it to the WebUI.
   void UpdateSearchEngines();
 
   // Writes the current set of startup pages to prefs.

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,30 +41,30 @@ class SearchEngineManagerHandler : public OptionsPageUIHandler,
   scoped_ptr<KeywordEditorController> list_controller_;
   scoped_ptr<EditSearchEngineController> edit_controller_;
 
-  // Removes the search engine at the given index. Called from DOMUI.
+  // Removes the search engine at the given index. Called from WebUI.
   void RemoveSearchEngine(const ListValue* args);
 
-  // Sets the search engine at the given index to be default. Called from DOMUI.
+  // Sets the search engine at the given index to be default. Called from WebUI.
   void SetDefaultSearchEngine(const ListValue* args);
 
   // Starts an edit session for the search engine at the given index. If the
   // index is -1, starts editing a new search engine instead of an existing one.
-  // Called from DOMUI.
+  // Called from WebUI.
   void EditSearchEngine(const ListValue* args);
 
   // Validates the given search engine values, and reports the results back
-  // to DOMUI. Called from DOMUI.
+  // to WebUI. Called from WebUI.
   void CheckSearchEngineInfoValidity(const ListValue* args);
 
   // Called when an edit is cancelled.
-  // Called from DOMUI.
+  // Called from WebUI.
   void EditCancelled(const ListValue* args);
 
   // Called when an edit is finished and should be saved.
-  // Called from DOMUI.
+  // Called from WebUI.
   void EditCompleted(const ListValue* args);
 
-  // Returns a dictionary to pass to DOMUI representing the given search engine.
+  // Returns a dictionary to pass to WebUI representing the given search engine.
   DictionaryValue* CreateDictionaryForEngine(int index, bool is_default);
 
   DISALLOW_COPY_AND_ASSIGN(SearchEngineManagerHandler);

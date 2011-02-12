@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,26 +44,26 @@ class AutoFillOptionsHandler : public OptionsPageUIHandler,
   // |args| - A string, the GUID of the credit card to remove.
   void RemoveCreditCard(const ListValue* args);
 
-  // Requests profile data for a specific address. Calls into DOMUI with the
+  // Requests profile data for a specific address. Calls into WebUI with the
   // loaded profile data to open the address editor.
   // |args| - A string, the GUID of the address to load.
   void LoadAddressEditor(const ListValue* args);
 
-  // Requests profile data for a specific credit card. Calls into DOMUI with the
+  // Requests profile data for a specific credit card. Calls into WebUI with the
   // loaded profile data to open the credit card editor.
   // |args| - A string, the GUID of the credit card to load.
   void LoadCreditCardEditor(const ListValue* args);
 
   // Adds or updates an address, depending on the GUID of the profile. If the
   // GUID is empty, a new address is added to the WebDatabase; otherwise, the
-  // address with the matching GUID is updated. Called from DOMUI.
+  // address with the matching GUID is updated. Called from WebUI.
   // |args| - an array containing the GUID of the address followed by the
   // address data.
   void SetAddress(const ListValue* args);
 
   // Adds or updates a credit card, depending on the GUID of the profile. If the
   // GUID is empty, a new credit card is added to the WebDatabase; otherwise,
-  // the credit card with the matching GUID is updated. Called from DOMUI.
+  // the credit card with the matching GUID is updated. Called from WebUI.
   // |args| - an array containing the GUID of the credit card followed by the
   // credit card data.
   void SetCreditCard(const ListValue* args);

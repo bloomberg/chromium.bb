@@ -14,7 +14,7 @@ class SkBitmap;
 namespace web_ui_util {
 
 // Convenience routine to get the response string from an argument
-// list.  Typically used when supporting a DOMUI and getting calls
+// list.  Typically used when supporting a WebUI and getting calls
 // from the hosted code.  Content must be a ListValue with at least
 // one entry in it, and that first entry must be a string, which is
 // returned.  The parameter is a Value for convenience.  Returns an
@@ -33,7 +33,7 @@ std::string GetJsonResponseFromArgumentList(const ListValue* args,
 
 
 // Convenience routine to convert SkBitmap object to data url
-// so that it can be used in DOMUI.
+// so that it can be used in WebUI.
 std::string GetImageDataUrl(const SkBitmap& bitmap);
 
 // Convenience routine to get data url that corresponds to given

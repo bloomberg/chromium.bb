@@ -300,13 +300,13 @@ void AboutPageHandler::PageReady(const ListValue* args) {
   update_observer_.reset(new UpdateObserver(this));
   update_library->AddObserver(update_observer_.get());
 
-  // Update the DOMUI page with the current status. See comments below.
+  // Update the WebUI page with the current status. See comments below.
   UpdateStatus(update_library->status());
 
   // Initiate update check. UpdateStatus() below will be called when we
   // get update status via update_observer_. If the update has been
   // already complete, update_observer_ won't receive a notification.
-  // This is why we manually update the DOMUI page above.
+  // This is why we manually update the WebUI page above.
   CheckNow(NULL);
 #endif
 }

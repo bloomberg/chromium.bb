@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,7 +61,7 @@ class DOMUITest : public RenderViewHostTestHarness {
     // Commit the regular page load. Note that we must send it to the "pending"
     // RenderViewHost if there is one, since this transition will also cause a
     // process transition, and our RVH pointer will be the "committed" one.
-    // In the second call to this function from DOMUIToStandard, it won't
+    // In the second call to this function from WebUIToStandard, it won't
     // actually be pending, which is the point of this test.
     if (contents->render_manager()->pending_render_view_host()) {
       static_cast<TestRenderViewHost*>(
@@ -88,7 +88,7 @@ class DOMUITest : public RenderViewHostTestHarness {
 // Tests that the New Tab Page flags are correctly set and propogated by
 // TabContents when we first navigate to a Web UI page, then to a standard
 // non-DOM-UI page.
-TEST_F(DOMUITest, DOMUIToStandard) {
+TEST_F(DOMUITest, WebUIToStandard) {
   DoNavigationTest(contents(), 1);
 
   // Test the case where we're not doing the initial navigation. This is
@@ -136,7 +136,7 @@ TEST_F(DOMUITest, StandardToDOMUI) {
   EXPECT_FALSE(contents()->ShouldShowBookmarkBar());
   EXPECT_FALSE(contents()->FocusLocationBarByDefault());
 
-  // Start a pending load for a DOMUI.
+  // Start a pending load for a WebUI.
   GURL new_tab_url(chrome::kChromeUINewTabURL);
   controller().LoadURL(new_tab_url, GURL(), PageTransition::LINK);
   EXPECT_FALSE(contents()->ShouldDisplayURL());

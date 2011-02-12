@@ -10,20 +10,20 @@
 
 #include "chrome/browser/dom_ui/web_ui.h"
 
-// This class registers test framework specific handlers on DOMUI objects.
+// This class registers test framework specific handlers on WebUI objects.
 class DOMUITestHandler : public WebUIMessageHandler {
  public:
   // Executes a string of javascript.  Returns pass fail.
   bool Execute(const std::string& js_test);
 
  protected:
-  // DOMUI handlers which deliver results to any waiting message loops.
+  // WebUI handlers which deliver results to any waiting message loops.
   // |args| is currently ignored.
   void HandlePass(const ListValue* args);
   void HandleFail(const ListValue* args);
 
-  // DOMUIMessageHandler overrides.
-  // Add test handlers to the current DOMUI object.
+  // WebUIMessageHandler overrides.
+  // Add test handlers to the current WebUI object.
   virtual void RegisterMessages();
 
  private:

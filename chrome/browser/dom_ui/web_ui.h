@@ -29,7 +29,7 @@ class ThemeProvider;
 }
 
 // A WebUI sets up the datasources and message handlers for a given HTML-based
-// UI. It is contained by a DOMUIManager.
+// UI. It is contained by a WebUIManager.
 class WebUI {
  public:
   explicit WebUI(TabContents* contents);

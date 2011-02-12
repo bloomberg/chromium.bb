@@ -10,7 +10,7 @@
 
 class ListValue;
 
-// A place to add handlers for messages shared across all DOMUI pages.
+// A place to add handlers for messages shared across all WebUI pages.
 class GenericHandler : public WebUIMessageHandler {
  public:
   GenericHandler();

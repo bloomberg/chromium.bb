@@ -26,7 +26,7 @@ class WebUIFactory {
   static const WebUITypeID kNoWebUI;
 
   // Returns a type identifier indicating what WebUI we would use for the
-  // given URL. This is useful for comparing the potential DOMUIs for two URLs.
+  // given URL. This is useful for comparing the potential WebUIs for two URLs.
   // Returns kNoWebUI if the given URL will not use the Web UI system.
   static WebUITypeID GetWebUIType(Profile* profile, const GURL& url);
 
