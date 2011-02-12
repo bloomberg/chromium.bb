@@ -8,6 +8,7 @@
 }
 
 #import-throbber {
-  margin: -3px 10px;
+  margin: 4px 10px;
+  vertical-align: middle;
   visibility: hidden;
 }

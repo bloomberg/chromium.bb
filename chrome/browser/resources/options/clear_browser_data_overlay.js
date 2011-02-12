@@ -16,8 +16,6 @@ cr.define('options', function() {
                      'clearBrowserDataOverlay');
   }
 
-  ClearBrowserDataOverlay.throbIntervalId = 0;
-
   cr.addSingletonGetter(ClearBrowserDataOverlay);
 
   ClearBrowserDataOverlay.prototype = {

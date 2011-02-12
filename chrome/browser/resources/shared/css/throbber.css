@@ -1,17 +1,6 @@
 .throbber {
-  -webkit-animation: throbber-animation 1s steps(36, end) 0 infinite;
-  background-image: url("../../../../../app/resources/throbber.png");
-  background-position: 0;
+  background: url('chrome://resources/images/throbber.svg');
   display: inline-block;
   height: 16px;
   width: 16px;
-}
-
-@-webkit-keyframes throbber-animation {
-  from {
-    background-position-x: 0;
-  }
-  to {
-    background-position-x: -576px;
-  }
 }

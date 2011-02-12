@@ -18,10 +18,7 @@ found in the LICENSE file.
 }
 
 #cbdThrobber {
-  background-image: url("../../../../app/resources/throbber.png");
-  display: inline-block;
-  height: 16px;
-  margin: -3px 10px;
+  margin: 4px 10px;
+  vertical-align: middle;
   visibility: hidden;
-  width: 16px;
 }
