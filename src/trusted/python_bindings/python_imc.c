@@ -7,6 +7,10 @@
 #if NACL_WINDOWS
 # include "io.h"
 # include "fcntl.h"
+/* The version of Python we pull in for Windows includes python26.lib
+   but not python26_d.lib, which pyconfig.h insists on linking against
+   when _DEBUG is defined.  We work around this by undefining _DEBUG. */
+# undef _DEBUG
 #endif
 
 #include <Python.h>

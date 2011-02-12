@@ -33,12 +33,6 @@ if env.Bit('windows') and env.Bit('build_x86_64'):
 # Python installed.
 if env.Bit('mac') and env.Bit('build_x86_64'):
   Return()
-# The version of Python we pull in for Windows includes python26.lib
-# but not python26_d.lib, which pyconfig.h insists on linking against
-# when _DEBUG is defined.
-# TODO(mseaborn): Find a fix for this.
-if env.Bit('windows') and env.Bit('debug'):
-  Return()
 # Our ARM cross toolchain tarball does not contain a copy of Python.
 if env.Bit('build_arm'):
   Return()
