@@ -489,7 +489,9 @@ bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
   }
 
   BrowserInit::LaunchWithProfile lwp(cur_dir, command_line, this);
-  bool launched = lwp.Launch(profile, process_startup);
+  std::vector<GURL> urls_to_launch = BrowserInit::GetURLsFromCommandLine(
+      command_line, cur_dir, profile);
+  bool launched = lwp.Launch(profile, urls_to_launch, process_startup);
   in_startup = false;
 
   if (!launched) {
@@ -590,8 +592,10 @@ BrowserInit::LaunchWithProfile::LaunchWithProfile(
 BrowserInit::LaunchWithProfile::~LaunchWithProfile() {
 }
 
-bool BrowserInit::LaunchWithProfile::Launch(Profile* profile,
-                                            bool process_startup) {
+bool BrowserInit::LaunchWithProfile::Launch(
+    Profile* profile,
+    const std::vector<GURL>& urls_to_open,
+    bool process_startup) {
   DCHECK(profile);
   profile_ = profile;
 
@@ -635,7 +639,6 @@ bool BrowserInit::LaunchWithProfile::Launch(Profile* profile,
   // Open the required browser windows and tabs.
   // First, see if we're being run as an application window.
   if (!OpenApplicationWindow(profile)) {
-    std::vector<GURL> urls_to_open = GetURLsFromCommandLine(profile_);
     RecordLaunchModeHistogram(urls_to_open.empty()?
                               LM_TO_BE_DECIDED : LM_WITH_URLS);
     ProcessLaunchURLs(process_startup, urls_to_open);
@@ -963,58 +966,6 @@ void BrowserInit::LaunchWithProfile::AddBadFlagsInfoBarIfNecessary(
   }
 }
 
-std::vector<GURL> BrowserInit::LaunchWithProfile::GetURLsFromCommandLine(
-    Profile* profile) {
-  std::vector<GURL> urls;
-  const std::vector<CommandLine::StringType>& params = command_line_.args();
-
-  for (size_t i = 0; i < params.size(); ++i) {
-    FilePath param = FilePath(params[i]);
-    // Handle Vista way of searching - "? <search-term>"
-    if (param.value().find(FILE_PATH_LITERAL("? ")) == 0) {
-      const TemplateURL* default_provider =
-          profile->GetTemplateURLModel()->GetDefaultSearchProvider();
-      if (!default_provider || !default_provider->url()) {
-        // No search provider available. Just treat this as regular URL.
-        urls.push_back(URLFixerUpper::FixupRelativeFile(cur_dir_, param));
-        continue;
-      }
-      const TemplateURLRef* search_url = default_provider->url();
-      DCHECK(search_url->SupportsReplacement());
-      std::wstring search_term = param.ToWStringHack().substr(2);
-      urls.push_back(GURL(search_url->ReplaceSearchTerms(
-          *default_provider, WideToUTF16Hack(search_term),
-          TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16())));
-    } else {
-      // This will create a file URL or a regular URL.
-      // This call can (in rare circumstances) block the UI thread.
-      // Allow it until this bug is fixed.
-      //  http://code.google.com/p/chromium/issues/detail?id=60641
-      GURL url;
-      {
-        base::ThreadRestrictions::ScopedAllowIO allow_io;
-        url = URLFixerUpper::FixupRelativeFile(cur_dir_, param);
-      }
-      // Exclude dangerous schemes.
-      if (url.is_valid()) {
-        ChildProcessSecurityPolicy *policy =
-            ChildProcessSecurityPolicy::GetInstance();
-        if (policy->IsWebSafeScheme(url.scheme()) ||
-            url.SchemeIs(chrome::kFileScheme) ||
-#if defined(OS_CHROMEOS)
-            // In ChromeOS, allow a settings page to be specified on the
-            // command line. See ExistingUserController::OnLoginSuccess.
-            (url.spec().find(chrome::kChromeUISettingsURL) == 0) ||
-#endif
-            (url.spec().compare(chrome::kAboutBlankURL) == 0)) {
-          urls.push_back(url);
-        }
-      }
-    }
-  }
-  return urls;
-}
-
 void BrowserInit::LaunchWithProfile::AddStartupURLs(
     std::vector<GURL>* startup_urls) const {
   // If we have urls specified beforehand (i.e. from command line) use them
@@ -1081,6 +1032,60 @@ void BrowserInit::LaunchWithProfile::CheckDefaultBrowser(Profile* profile) {
       BrowserThread::FILE, FROM_HERE, new CheckDefaultBrowserTask());
 }
 
+std::vector<GURL> BrowserInit::GetURLsFromCommandLine(
+    const CommandLine& command_line,
+    const FilePath& cur_dir,
+    Profile* profile) {
+  std::vector<GURL> urls;
+  const std::vector<CommandLine::StringType>& params = command_line.args();
+
+  for (size_t i = 0; i < params.size(); ++i) {
+    FilePath param = FilePath(params[i]);
+    // Handle Vista way of searching - "? <search-term>"
+    if (param.value().find(FILE_PATH_LITERAL("? ")) == 0) {
+      const TemplateURL* default_provider =
+          profile->GetTemplateURLModel()->GetDefaultSearchProvider();
+      if (!default_provider || !default_provider->url()) {
+        // No search provider available. Just treat this as regular URL.
+        urls.push_back(URLFixerUpper::FixupRelativeFile(cur_dir, param));
+        continue;
+      }
+      const TemplateURLRef* search_url = default_provider->url();
+      DCHECK(search_url->SupportsReplacement());
+      std::wstring search_term = param.ToWStringHack().substr(2);
+      urls.push_back(GURL(search_url->ReplaceSearchTerms(
+          *default_provider, WideToUTF16Hack(search_term),
+          TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16())));
+    } else {
+      // This will create a file URL or a regular URL.
+      // This call can (in rare circumstances) block the UI thread.
+      // Allow it until this bug is fixed.
+      //  http://code.google.com/p/chromium/issues/detail?id=60641
+      GURL url;
+      {
+        base::ThreadRestrictions::ScopedAllowIO allow_io;
+        url = URLFixerUpper::FixupRelativeFile(cur_dir, param);
+      }
+      // Exclude dangerous schemes.
+      if (url.is_valid()) {
+        ChildProcessSecurityPolicy *policy =
+            ChildProcessSecurityPolicy::GetInstance();
+        if (policy->IsWebSafeScheme(url.scheme()) ||
+            url.SchemeIs(chrome::kFileScheme) ||
+#if defined(OS_CHROMEOS)
+            // In ChromeOS, allow a settings page to be specified on the
+            // command line. See ExistingUserController::OnLoginSuccess.
+            (url.spec().find(chrome::kChromeUISettingsURL) == 0) ||
+#endif
+            (url.spec().compare(chrome::kAboutBlankURL) == 0)) {
+          urls.push_back(url);
+        }
+      }
+    }
+  }
+  return urls;
+}
+
 bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
                                      const FilePath& cur_dir,
                                      bool process_startup,
@@ -1114,8 +1119,10 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
             command_line.GetSwitchValueASCII(switches::kRestoreLastSession));
         base::StringToInt(restore_session_value, &expected_tab_count);
       } else {
+        std::vector<GURL> urls_to_open = GetURLsFromCommandLine(
+            command_line, cur_dir, profile);
         expected_tab_count =
-            std::max(1, static_cast<int>(command_line.args().size()));
+            std::max(1, static_cast<int>(urls_to_open.size()));
       }
       if (!CreateAutomationProvider<TestingAutomationProvider>(
           testing_channel_id,
@@ -1132,8 +1139,10 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
         switches::kAutomationClientChannelID);
     // If there are any extra parameters, we expect each one to generate a
     // new tab; if there are none then we have no tabs
+    std::vector<GURL> urls_to_open = GetURLsFromCommandLine(
+        command_line, cur_dir, profile);
     size_t expected_tabs =
-        std::max(static_cast<int>(command_line.args().size()), 0);
+        std::max(static_cast<int>(urls_to_open.size()), 0);
     if (expected_tabs == 0)
       silent_launch = true;
 
