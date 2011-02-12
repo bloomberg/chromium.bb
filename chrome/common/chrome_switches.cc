@@ -397,6 +397,9 @@ const char kDisableWebSecurity[]            = "disable-web-security";
 // Disable Web Sockets support.
 const char kDisableWebSockets[]             = "disable-web-sockets";
 
+// Disable WebKit's XSSAuditor.  The XSSAuditor mitigates reflective XSS.
+const char kDisableXSSAuditor[]             = "disable-xss-auditor";
+
 // Use a specific disk cache location, rather than one derived from the
 // UserDatadir.
 const char kDiskCacheDir[]                  = "disk-cache-dir";
@@ -623,9 +626,6 @@ const char kEnableWatchdog[]                = "enable-watchdog";
 
 // Enable web audio API.
 const char kEnableWebAudio[]                = "enable-webaudio";
-
-// Disable WebKit's XSSAuditor.  The XSSAuditor mitigates reflective XSS.
-const char kEnableXSSAuditor[]              = "enable-xss-auditor";
 
 // Enables experimental features for the geolocation API.
 // Current features:

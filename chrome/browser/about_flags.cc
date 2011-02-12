@@ -111,13 +111,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableRemoting)
   },
   {
-    "xss-auditor",  // FLAGS:RECORD_UMA
-    IDS_FLAGS_XSS_AUDITOR_NAME,
-    IDS_FLAGS_XSS_AUDITOR_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableXSSAuditor)
-  },
-  {
     "conflicting-modules-check",  // FLAGS:RECORD_UMA
     IDS_FLAGS_CONFLICTS_CHECK_NAME,
     IDS_FLAGS_CONFLICTS_CHECK_DESCRIPTION,

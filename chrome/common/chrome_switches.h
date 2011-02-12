@@ -121,6 +121,7 @@ extern const char kDisableTranslate[];
 extern const char kDisableWebResources[];
 extern const char kDisableWebSecurity[];
 extern const char kDisableWebSockets[];
+extern const char kDisableXSSAuditor[];
 extern const char kDiskCacheDir[];
 extern const char kDiskCacheSize[];
 extern const char kDnsLogDetails[];
@@ -185,7 +186,6 @@ extern const char kEnableVideoFullscreen[];
 extern const char kEnableVideoLogging[];
 extern const char kEnableWatchdog[];
 extern const char kEnableWebAudio[];
-extern const char kEnableXSSAuditor[];
 // Experimental features.
 extern const char kExperimentalLocationFeatures[];
 extern const char kExperimentalSpellcheckerFeatures[];
