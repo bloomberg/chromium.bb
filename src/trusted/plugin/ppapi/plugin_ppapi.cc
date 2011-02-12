@@ -50,7 +50,7 @@ const ssize_t kNaclManifestMaxFileBytesNoNull =
 const char* const kNexesAttribute = "nexes";
 
 bool UrlAsNaClDesc(void* obj, plugin::SrpcParams* params) {
-  // TODO(sehr,polina); this API should take a selector specify which of
+  // TODO(sehr,polina): this API should take a selector specify which of
   // UMP, CORS, or traditional origin policy should be used.
   NaClSrpcArg** ins = params->ins();
   PLUGIN_PRINTF(("UrlAsNaClDesc (obj=%p, url=%s, callback=%p)\n",
@@ -458,47 +458,35 @@ void PluginPpapi::UrlDidOpen(int32_t pp_error,
                              FileDownloader*& url_downloader,
                              pp::Var& js_callback) {
   PLUGIN_PRINTF(("PluginPpapi::UrlDidOpen (pp_error=%"NACL_PRId32
-                 ", url_downloader=%p, js_callback=%p)\n", pp_error,
-                 reinterpret_cast<void*>(url_downloader),
-                 reinterpret_cast<void*>(&js_callback)));
+                 ", url_downloader=%p)\n", pp_error,
+                 reinterpret_cast<void*>(url_downloader)));
+  url_downloaders_.erase(url_downloader);
+  nacl::scoped_ptr<FileDownloader> scoped_url_downloader(url_downloader);
 
-  int32_t file_desc = NACL_NO_FILE_DESC;
-  nacl::DescWrapper* desc_wrapper = NULL;
-  ScriptableHandlePpapi* handle = NULL;
-  pp::Var status("URL get failed");
-  pp::Var selector("onfail");
-  nacl::scoped_ptr<FileDownloader> downloader(url_downloader);
-  url_downloaders_.erase(downloader.get());
-  do {
-    int32_t browser_file_desc = downloader->GetPOSIXFileDescriptor();
-    if (pp_error == PP_OK && browser_file_desc != NACL_NO_FILE_DESC) {
-      // We should never close the browser owned descriptor, so we need to
-      // duplicate it.
-      file_desc = DUP(browser_file_desc);
-      desc_wrapper = wrapper_factory()->MakeFileDesc(file_desc,
-                                                     NACL_ABI_O_RDONLY);
-      if (desc_wrapper == NULL) {
-        status = pp::Var("MakeFileDesc failed");
-        break;
-      }
-      // If we get here, MakeFileDesc took ownership of file_desc.
-      file_desc = NACL_NO_FILE_DESC;
-      handle = ScriptableHandlePpapi::New(DescBasedHandle::New(plugin(),
-                                                               desc_wrapper));
-      if (handle == NULL) {
-        status = pp::Var("ScriptableHandlePpapi::New failed");
-        break;
-      }
-      // If we get here, ScriptableHandlePpapi took ownership of desc_wrapper.
-      desc_wrapper = NULL;
-      // Success.
-      selector = pp::Var("onload");
-      status = pp::Var(this, handle);
-    }
-  } while (0);
-  pp::Var result = js_callback.Call(selector, status);
-  delete desc_wrapper;
-  CLOSE(file_desc);
+  int32_t file_desc = scoped_url_downloader->GetPOSIXFileDescriptor();
+  int32_t file_desc_ok_to_close = DUP(file_desc);
+  if (pp_error != PP_OK || file_desc_ok_to_close == NACL_NO_FILE_DESC) {
+    js_callback.Call(pp::Var("onfail"), pp::Var("URL get failed"));
+    return;
+  }
+
+  nacl::scoped_ptr<nacl::DescWrapper> scoped_desc_wrapper(
+      wrapper_factory()->MakeFileDesc(
+          file_desc_ok_to_close, NACL_ABI_O_RDONLY));
+  if (scoped_desc_wrapper.get() == NULL) {
+    // MakeFileDesc() already closed the file descriptor.
+    js_callback.Call(pp::Var("onfail"), pp::Var("nacl desc wrapper failed"));
+    return;
+  }
+
+  ScriptableHandlePpapi* handle = ScriptableHandlePpapi::New(
+      DescBasedHandle::New(plugin(), scoped_desc_wrapper.get()));
+  if (handle == NULL) {
+    js_callback.Call(pp::Var("onfail"), pp::Var("scriptable handle failed"));
+    return;
+  }
+
+  js_callback.Call(pp::Var("onload"), pp::Var(this, handle));
 }
 
 
