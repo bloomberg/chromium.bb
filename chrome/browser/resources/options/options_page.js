@@ -146,6 +146,8 @@ cr.define('options', function() {
                          {pageName: page.name},
                          page.title,
                          '/' + page.name);
+    // Update tab title.
+    document.title = page.title;
   };
 
   /**
