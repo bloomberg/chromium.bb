@@ -78,6 +78,38 @@ class ImcTest(unittest.TestCase):
     self._CheckDataMessages(sock1, sock2)
     self._CheckDataMessages(sock2, sock1)
 
+  def test_raw_file_descriptor(self):
+    fd = os.open(os.devnull, os.O_RDONLY)
+    if sys.platform == "win32":
+      # Unwrap the file descriptor (which is emulated by python.exe's
+      # instance of crt) to get a Windows handle.
+      import msvcrt
+      fd = msvcrt.get_osfhandle(fd)
+    fd_wrapper = naclimc.from_os_file_descriptor(fd)
+
+    # Check that the resulting NaClDesc can be sent in a message.  On
+    # Windows, there must be a receiver doing imc_recvmsg()
+    # concurrently for the imc_sendmsg() call to complete.
+    sock1, sock2 = MakeSocketPair()
+    result = [None]
+    def RunThread():
+      result[0] = sock2.imc_recvmsg(1000)
+    thread = threading.Thread(target=RunThread)
+    thread.start()
+    sock1.imc_sendmsg("message data", tuple([fd_wrapper]))
+    thread.join()
+    if result[0] is None:
+      raise AssertionError("imc_recvmsg() failed")
+    data, fds = result[0]
+    self.assertEquals(data, "message data")
+    self.assertEquals(len(fds), 1)
+
+    # If we had Python wrappers for the NaClDesc methods Read(),
+    # Write(), Map() etc., then we could test fd_wrapper further.  For
+    # the time being, though, we cannot test fd_wrapper further
+    # without launching a NaCl process in sel_ldr, which is out of
+    # scope for these unit tests.
+
   def test_granting_to_subprocess(self):
     parent_socket, child_socket = naclimc.os_socketpair()
     if sys.platform == "win32":

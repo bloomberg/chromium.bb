@@ -4,10 +4,16 @@
  * be found in the LICENSE file.
  */
 
+#if NACL_WINDOWS
+# include "io.h"
+# include "fcntl.h"
+#endif
+
 #include <Python.h>
 
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
+#include "native_client/src/trusted/desc/nacl_desc_io.h"
 #include "native_client/src/trusted/desc/nrd_all_modules.h"
 #include "native_client/src/trusted/desc/nrd_xfer.h"
 
@@ -102,6 +108,29 @@ static PyObject *PyDescFromOsSocket(PyObject *self, PyObject *args) {
     return NULL;
   }
   return NaClToPyDesc(&nacldesc->base.base);
+}
+
+static PyObject *PyDescFromOsFileDescriptor(PyObject *self, PyObject *args) {
+  unsigned long fd;
+  struct NaClDescIoDesc *nacldesc;
+  UNREFERENCED_PARAMETER(self);
+
+  if (!PyArg_ParseTuple(args, "k", &fd))
+    return NULL;
+#if NACL_WINDOWS
+  /* Wrap the Windows handle to get a crt-emulated file descriptor.
+     The FD is specific to the instance of crt that we are linked to,
+     which is the same instance used by the NaClDesc library. */
+  fd = _open_osfhandle(fd, _O_RDWR | _O_BINARY);
+#endif
+  /* The "mode" argument is only used for a sanity check and is not
+     stored, so passing 0 works. */
+  nacldesc = NaClDescIoDescMake(NaClHostDescPosixMake(fd, /* mode= */ 0));
+  if (nacldesc == NULL) {
+    PyErr_SetString(PyExc_MemoryError, "Failed to create NaClDesc wrapper");
+    return NULL;
+  }
+  return NaClToPyDesc(&nacldesc->base);
 }
 
 
@@ -349,6 +378,17 @@ static PyMethodDef module_methods[] = {
     "This takes ownership of the host-OS socket.  "
     "This is for setting up a connection inside or to a "
     "newly-spawned subprocess."
+  },
+  { "from_os_file_descriptor", PyDescFromOsFileDescriptor, METH_VARARGS,
+    "from_os_file_descriptor(fd) -> nacldesc\n\n"
+    "Takes a host-OS file handle and returns a NaClDesc wrapper for it.  "
+    "This takes ownership of the host-OS file handle.\n\n"
+    "On Unix, this takes a file descriptor.\n\n"
+    "On Windows, this takes a Windows handle, not a file descriptor.  "
+    "This is because Windows file descriptors are emulated by crt (the "
+    "C runtime library), and python.exe can be linked to a different crt "
+    "instance from the Python extension DLL, and so the two can be using "
+    "separate file descriptor tables."
   },
   { NULL, NULL, 0, NULL }
 };
