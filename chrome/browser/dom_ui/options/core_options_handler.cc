@@ -32,6 +32,9 @@ CoreOptionsHandler::~CoreOptionsHandler() {}
 void CoreOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
+  // Main
+  localized_strings->SetString("title",
+      l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE));
 
   // Managed prefs
   localized_strings->SetString("managedPrefsBannerText",
