@@ -300,19 +300,20 @@ static PyObject *PyDescImcRecvmsg(PyObject *self, PyObject *args) {
 
 static PyMethodDef nacldesc_methods[] = {
   { "imc_connect", (PyCFunction) PyDescImcConnect, METH_NOARGS,
-    "imc_connect()\n\n"
+    "imc_connect() -> socket\n\n"
     "Make a connection to a NaCl IMC SocketAddress."
   },
   { "imc_accept", (PyCFunction) PyDescImcAccept, METH_NOARGS,
-    "imc_accept()\n\n"
+    "imc_accept() -> socket\n\n"
     "Accept a connection on a NaCl IMC BoundSocket."
   },
   { "imc_sendmsg", (PyCFunction) PyDescImcSendmsg, METH_VARARGS,
-    "imc_sendmsg(data)\n\n"
-    "Send a message on a NaCl IMC connected socket."
+    "imc_sendmsg(data, desc_tuple) -> byte_count\n\n"
+    "Send a message on a NaCl IMC connected socket.  "
+    "Returns the number of bytes sent."
   },
   { "imc_recvmsg", (PyCFunction) PyDescImcRecvmsg, METH_VARARGS,
-    "imc_recvmsg(buffer_size)\n\n"
+    "imc_recvmsg(buffer_size) -> (data, desc_tuple)\n\n"
     "Receive a message on a NaCl IMC connected socket."
   },
   { NULL, NULL, 0, NULL }

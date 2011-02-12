@@ -36,7 +36,8 @@ def MakeSocketPair():
 class ImcTest(unittest.TestCase):
 
   def _CheckDataMessages(self, sock1, sock2):
-    sock1.imc_sendmsg("foo", ())
+    bytes_sent = sock1.imc_sendmsg("foo", ())
+    self.assertEquals(bytes_sent, 3)
     got = sock2.imc_recvmsg(100)
     self.assertEquals(got, ("foo", ()))
 
