@@ -404,7 +404,7 @@ bool GpuBlacklist::GpuBlacklistEntry::Contains(
 
 GpuBlacklist::OsType GpuBlacklist::GpuBlacklistEntry::GetOsType() const {
   if (os_info_.get() == NULL)
-    return kOsUnknown;
+    return kOsAny;
   return os_info_->type();
 }
 

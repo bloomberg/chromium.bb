@@ -110,6 +110,7 @@ TEST(GpuBlacklistTest, BlacklistLogic) {
       "    }\n"
       "  ]\n"
       "}";
+  // Blacklist entries won't be filtered to the current OS only upon loading.
   EXPECT_TRUE(blacklist.LoadGpuBlacklist(vendor_json, false));
   flags = blacklist.DetermineGpuFeatureFlags(
       GpuBlacklist::kOsMacosx, os_version.get(), gpu_info);
@@ -123,6 +124,23 @@ TEST(GpuBlacklistTest, BlacklistLogic) {
       GpuBlacklist::kOsLinux, os_version.get(), gpu_info);
   EXPECT_EQ(flags.flags(),
             static_cast<uint32>(GpuFeatureFlags::kGpuFeatureWebgl));
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
+  // Blacklist entries will be filtered to the current OS only upon loading.
+  EXPECT_TRUE(blacklist.LoadGpuBlacklist(vendor_json, true));
+  flags = blacklist.DetermineGpuFeatureFlags(
+      GpuBlacklist::kOsMacosx, os_version.get(), gpu_info);
+  EXPECT_EQ(flags.flags(),
+            static_cast<uint32>(GpuFeatureFlags::kGpuFeatureWebgl));
+  flags = blacklist.DetermineGpuFeatureFlags(
+      GpuBlacklist::kOsWin, os_version.get(), gpu_info);
+  EXPECT_EQ(flags.flags(),
+            static_cast<uint32>(GpuFeatureFlags::kGpuFeatureWebgl));
+  flags = blacklist.DetermineGpuFeatureFlags(
+      GpuBlacklist::kOsLinux, os_version.get(), gpu_info);
+  EXPECT_EQ(flags.flags(),
+            static_cast<uint32>(GpuFeatureFlags::kGpuFeatureWebgl));
+#endif
+
 
   // Blacklist a vendor on Linux only.
   const std::string vendor_linux_json =
