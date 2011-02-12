@@ -126,8 +126,9 @@
 }
 
 {
-  bug_74295
+  bug_72548
   ThreadSanitizer:Race
+  ...
   fun:JSC::Yarr::Interpreter::*Disjunction*
   fun:JSC::Yarr::Interpreter::interpret*
   fun:JSC::Yarr::interpret*

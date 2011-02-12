@@ -2692,11 +2692,10 @@
    bug_52900
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN20RenderWidgetHostView19CreateViewForWidgetEP16RenderWidgetHost
-   fun:_ZN32RenderViewHostDelegateViewHelper25CreateNewFullscreenWidgetEiN6WebKit12WebPopupTypeEP17RenderProcessHost
-   fun:_ZN15TabContentsView33CreateNewFullscreenWidgetInternalEiN6WebKit12WebPopupTypeE
-   fun:_ZN15TabContentsView25CreateNewFullscreenWidgetEiN6WebKit12WebPopupTypeE
-   fun:_ZN14RenderViewHost25CreateNewFullscreenWidgetEiN6WebKit12WebPopupTypeE
+   fun:_ZN32RenderViewHostDelegateViewHelper25CreateNewFullscreenWidgetEiP17RenderProcessHost
+   fun:_ZN15TabContentsView33CreateNewFullscreenWidgetInternalEi
+   fun:_ZN15TabContentsView25CreateNewFullscreenWidgetEi
+   fun:_ZN14RenderViewHost25CreateNewFullscreenWidgetEi
    fun:_ZN46RenderViewHostTest_CreateFullscreenWidget_Test8TestBodyEv
 }
 {
@@ -2708,15 +2707,6 @@
    fun:_Z16DispatchToMethodI9GpuThreadMS0_FviEiEvPT_T0_RK6Tuple1IT1_E
    fun:_ZN3IPC16MessageWithTupleI6Tuple1IiEE8DispatchI9GpuThreadMS5_FviEEEbPKNS_7MessageEPT_T0_
    fun:_ZN9GpuThread24OnControlMessageReceivedERKN3IPC7MessageE
-}
-{
-   bug_53187
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN32RenderViewHostDelegateViewHelper25CreateNewFullscreenWidgetEiN6WebKit12WebPopupTypeEP17RenderProcessHost
-   fun:_ZN15TabContentsView33CreateNewFullscreenWidgetInternalEiN6WebKit12WebPopupTypeE
-   fun:_ZN15TabContentsView25CreateNewFullscreenWidgetEiN6WebKit12WebPopupTypeE
-   fun:_ZN14RenderViewHost25CreateNewFullscreenWidgetEiN6WebKit12WebPopupTypeE
 }
 {
    bug_53349
@@ -2767,7 +2757,7 @@
    fun:_ZN21MockRenderProcessHost*Profile
 }
 {
-   bug_56090
+   bug_56090a
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN11ProfileImpl20CreateWebDataServiceEv
@@ -2780,11 +2770,6 @@
    fun:_ZN11ProfileImpl21GetProfileSyncServiceEv
    ...
    fun:_ZN7BrowserC1ENS_4TypeEP7Profile
-   ...
-   fun:_ZN11BrowserInit17LaunchWithProfile6LaunchEP7Profileb
-   fun:_ZN11BrowserInit13LaunchBrowserERK11CommandLineP7ProfileRK8FilePathbPi
-   fun:_ZN11BrowserInit18ProcessCmdLineImplERK11CommandLineRK8FilePathbP7ProfilePiPS_
-   fun:_ZN11BrowserInit5StartERK11CommandLineRK8FilePathP7ProfilePi
 }
 {
    bug_56090b
@@ -3735,7 +3720,6 @@
    bug_72538
    Memcheck:Cond
    fun:_ZN2v88internal11StackTracer5TraceEPNS0_10TickSampleE
-   fun:_ZN2v88internal6Object15IsJSGlobalProxyEv
 }
 {
    bug_72541
