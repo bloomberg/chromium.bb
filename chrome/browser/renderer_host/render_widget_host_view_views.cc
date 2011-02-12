@@ -26,12 +26,27 @@
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/canvas.h"
 #include "views/events/event.h"
+#include "views/ime/ime_context.h"
 #include "views/widget/widget.h"
 #include "views/widget/widget_gtk.h"
 
 static const int kMaxWindowWidth = 4000;
 static const int kMaxWindowHeight = 4000;
 static const char* kRenderWidgetHostViewKey = "__RENDER_WIDGET_HOST_VIEW__";
+
+// Copied from third_party/WebKit/Source/WebCore/page/EventHandler.cpp
+//
+// Match key code of composition keydown event on windows.
+// IE sends VK_PROCESSKEY which has value 229;
+//
+// Please refer to following documents for detals:
+// - Virtual-Key Codes
+//   http://msdn.microsoft.com/en-us/library/ms645540(VS.85).aspx
+// - How the IME System Works
+//   http://msdn.microsoft.com/en-us/library/cc194848.aspx
+// - ImmGetVirtualKey Function
+//   http://msdn.microsoft.com/en-us/library/dd318570(VS.85).aspx
+static const int kCompositionEventKeyCode = 229;
 
 using WebKit::WebInputEventFactory;
 using WebKit::WebMouseWheelEvent;
@@ -113,6 +128,149 @@ void InitializeWebMouseEventFromViewsEvent(const views::LocatedEvent& e,
 
 }  // namespace
 
+class IMEContextHandler : public views::CommitTextListener,
+                          public views::CompositionListener,
+                          public views::ForwardKeyEventListener {
+ public:
+  explicit IMEContextHandler(
+      RenderWidgetHostViewViews* host_view)
+    : host_view_(host_view),
+      is_enabled_(false),
+      is_focused_(false),
+      ime_context_(views::IMEContext::Create(host_view_)) {
+    ime_context_->set_commit_text_listener(this);
+    ime_context_->set_composition_listener(this);
+    ime_context_->set_forward_key_event_listener(this);
+  }
+
+  // IMEContext Listeners implementation
+  virtual void OnCommitText(views::IMEContext* sender,
+                            const string16& text) {
+    DCHECK(ime_context_ == sender);
+
+    RenderWidgetHost* host = host_view_->GetRenderWidgetHost();
+    if (host) {
+      SendFakeCompositionWebKeyboardEvent(WebKit::WebInputEvent::RawKeyDown);
+      host->ImeConfirmComposition(text);
+      SendFakeCompositionWebKeyboardEvent(WebKit::WebInputEvent::KeyUp);
+    }
+  }
+
+  virtual void OnStartComposition(views::IMEContext* sender) {
+    DCHECK(ime_context_ == sender);
+  }
+
+  virtual void OnEndComposition(views::IMEContext* sender) {
+    DCHECK(ime_context_ == sender);
+
+    RenderWidgetHost* host = host_view_->GetRenderWidgetHost();
+    if (host)
+      host->ImeCancelComposition();
+  }
+
+  virtual void OnSetComposition(views::IMEContext* sender,
+      const string16& text,
+      const views::CompositionAttributeList& attributes,
+      uint32 cursor_pos) {
+    DCHECK(ime_context_ == sender);
+
+    RenderWidgetHost* host = host_view_->GetRenderWidgetHost();
+    if (host) {
+      SendFakeCompositionWebKeyboardEvent(WebKit::WebInputEvent::RawKeyDown);
+
+      // Cast CompositonAttribute to WebKit::WebCompositionUnderline directly,
+      // becasue CompositionAttribute is duplicated from
+      // WebKit::WebCompositionUnderline.
+      const std::vector<WebKit::WebCompositionUnderline>& underlines =
+          reinterpret_cast<const std::vector<WebKit::WebCompositionUnderline>&>(
+              attributes);
+      host->ImeSetComposition(text, underlines, cursor_pos, cursor_pos);
+      SendFakeCompositionWebKeyboardEvent(WebKit::WebInputEvent::KeyUp);
+    }
+  }
+
+  virtual void OnForwardKeyEvent(views::IMEContext* sender,
+                                 const views::KeyEvent& event) {
+    DCHECK(ime_context_ == sender);
+
+    host_view_->ForwardKeyEvent(event);
+  }
+
+  bool FilterKeyEvent(const views::KeyEvent& event) {
+    return is_enabled_ && ime_context_->FilterKeyEvent(event);
+  }
+
+  void Focus() {
+    if (!is_focused_) {
+      ime_context_->Focus();
+      is_focused_ = true;
+    }
+
+    // Enables RenderWidget's IME related events, so that we can be notified
+    // when WebKit wants to enable or disable IME.
+    RenderWidgetHost* host = host_view_->GetRenderWidgetHost();
+    if (host)
+      host->SetInputMethodActive(true);
+  }
+
+  void Blur() {
+    if (is_focused_) {
+      ime_context_->Blur();
+      is_focused_ = false;
+    }
+
+    // Disable RenderWidget's IME related events to save bandwidth.
+    RenderWidgetHost* host = host_view_->GetRenderWidgetHost();
+    if (host)
+      host->SetInputMethodActive(false);
+  }
+
+  void ImeUpdateTextInputState(WebKit::WebTextInputType type,
+                               const gfx::Rect& caret_rect) {
+    bool enable =
+        (type != WebKit::WebTextInputTypeNone) &&
+        (type != WebKit::WebTextInputTypePassword);
+
+    if (is_enabled_ != enable) {
+      is_enabled_ = enable;
+      if (is_focused_) {
+        if (is_enabled_)
+          ime_context_->Focus();
+        else
+          ime_context_->Blur();
+      }
+    }
+
+    if (is_enabled_) {
+      gfx::Point p(caret_rect.origin());
+      views::View::ConvertPointToScreen(host_view_, &p);
+
+      ime_context_->SetCursorLocation(gfx::Rect(p, caret_rect.size()));
+    }
+  }
+
+  void Reset() {
+    ime_context_->Reset();
+  }
+
+ private:
+  void SendFakeCompositionWebKeyboardEvent(WebKit::WebInputEvent::Type type) {
+    NativeWebKeyboardEvent fake_event;
+    fake_event.windowsKeyCode = kCompositionEventKeyCode;
+    fake_event.skip_in_browser = true;
+    fake_event.type = type;
+    host_view_->ForwardWebKeyboardEvent(fake_event);
+  }
+
+ private:
+  RenderWidgetHostViewViews* host_view_;
+  bool is_enabled_;
+  bool is_focused_;
+  scoped_ptr<views::IMEContext> ime_context_;
+
+  DISALLOW_COPY_AND_ASSIGN(IMEContextHandler);
+};
+
 // static
 RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
     RenderWidgetHost* widget) {
@@ -137,6 +295,7 @@ RenderWidgetHostViewViews::~RenderWidgetHostViewViews() {
 
 void RenderWidgetHostViewViews::InitAsChild() {
   Show();
+  ime_context_.reset(new IMEContextHandler(this));
 }
 
 RenderWidgetHost* RenderWidgetHostViewViews::GetRenderWidgetHost() const {
@@ -249,13 +408,11 @@ void RenderWidgetHostViewViews::SetIsLoading(bool is_loading) {
 void RenderWidgetHostViewViews::ImeUpdateTextInputState(
     WebKit::WebTextInputType type,
     const gfx::Rect& caret_rect) {
-  // TODO(bryeung): im_context_->UpdateInputMethodState(type, caret_rect);
-  NOTIMPLEMENTED();
+  ime_context_->ImeUpdateTextInputState(type, caret_rect);
 }
 
 void RenderWidgetHostViewViews::ImeCancelComposition() {
-  // TODO(bryeung): im_context_->CancelComposition();
-  NOTIMPLEMENTED();
+  ime_context_->Reset();
 }
 
 void RenderWidgetHostViewViews::DidUpdateBackingStore(
@@ -509,53 +666,15 @@ bool RenderWidgetHostViewViews::OnMouseWheel(const views::MouseWheelEvent& e) {
   return true;
 }
 
-bool RenderWidgetHostViewViews::OnKeyPressed(const views::KeyEvent &e) {
-  // Send key event to input method.
-  // TODO host_view->im_context_->ProcessKeyEvent(event);
-
-  // This is how it works:
-  // (1) If a RawKeyDown event is an accelerator for a reserved command (see
-  //     Browser::IsReservedCommand), then the command is executed. Otherwise,
-  //     the event is first sent off to the renderer. The renderer is also
-  //     notified whether the event would trigger an accelerator in the browser.
-  // (2) A Char event is then sent to the renderer.
-  // (3) If the renderer does not process the event in step (1), and the event
-  //     triggers an accelerator, then it will ignore the event in step (2). The
-  //     renderer also sends back notification to the browser for both steps (1)
-  //     and (2) about whether the events were processed or not. If the event
-  //     for (1) is not processed by the renderer, then it is processed by the
-  //     browser, and (2) is ignored.
-
-  NativeWebKeyboardEvent wke;
-  wke.type = WebKit::WebInputEvent::RawKeyDown;
-  wke.windowsKeyCode = e.key_code();
-  wke.setKeyIdentifierFromWindowsKeyCode();
-
-  wke.text[0] = wke.unmodifiedText[0] =
-    static_cast<unsigned short>(gdk_keyval_to_unicode(
-          ui::GdkKeyCodeForWindowsKeyCode(e.key_code(),
-              e.IsShiftDown() ^ e.IsCapsLockDown())));
-
-  wke.modifiers = WebInputEventFlagsFromViewsEvent(e);
-  ForwardKeyboardEvent(wke);
-
-  // send the keypress event
-  wke.type = WebKit::WebInputEvent::Char;
-  ForwardKeyboardEvent(wke);
-
+bool RenderWidgetHostViewViews::OnKeyPressed(const views::KeyEvent& e) {
+  if (!ime_context_->FilterKeyEvent(e))
+    ForwardKeyEvent(e);
   return TRUE;
 }
 
-bool RenderWidgetHostViewViews::OnKeyReleased(const views::KeyEvent &e) {
-  // TODO(bryeung): deal with input methods
-  NativeWebKeyboardEvent wke;
-
-  wke.type = WebKit::WebInputEvent::KeyUp;
-  wke.windowsKeyCode = e.key_code();
-  wke.setKeyIdentifierFromWindowsKeyCode();
-
-  ForwardKeyboardEvent(wke);
-
+bool RenderWidgetHostViewViews::OnKeyReleased(const views::KeyEvent& e) {
+  if (!ime_context_->FilterKeyEvent(e))
+    ForwardKeyEvent(e);
   return TRUE;
 }
 
@@ -585,7 +704,7 @@ void RenderWidgetHostViewViews::DidGainFocus() {
     GetRenderWidgetHost()->ForwardMouseEvent(fake_event);
   }
 #endif
-
+  ime_context_->Focus();
   ShowCurrentCursor();
   GetRenderWidgetHost()->GotFocus();
 }
@@ -595,6 +714,7 @@ void RenderWidgetHostViewViews::WillLoseFocus() {
   // focus.
   if (!is_showing_context_menu_ && !is_hidden_)
     GetRenderWidgetHost()->Blur();
+  ime_context_->Blur();
 }
 
 
@@ -660,19 +780,63 @@ WebKit::WebMouseEvent RenderWidgetHostViewViews::WebMouseEventFromViewsEvent(
   return wmevent;
 }
 
-void RenderWidgetHostViewViews::ForwardKeyboardEvent(
+void RenderWidgetHostViewViews::ForwardKeyEvent(
+    const views::KeyEvent& event) {
+  // This is how it works:
+  // (1) If a RawKeyDown event is an accelerator for a reserved command (see
+  //     Browser::IsReservedCommand), then the command is executed. Otherwise,
+  //     the event is first sent off to the renderer. The renderer is also
+  //     notified whether the event would trigger an accelerator in the browser.
+  // (2) A Char event is then sent to the renderer.
+  // (3) If the renderer does not process the event in step (1), and the event
+  //     triggers an accelerator, then it will ignore the event in step (2). The
+  //     renderer also sends back notification to the browser for both steps (1)
+  //     and (2) about whether the events were processed or not. If the event
+  //     for (1) is not processed by the renderer, then it is processed by the
+  //     browser, and (2) is ignored.
+  if (event.type() == ui::ET_KEY_PRESSED) {
+    NativeWebKeyboardEvent wke;
+
+    wke.type = WebKit::WebInputEvent::RawKeyDown;
+    wke.windowsKeyCode = event.key_code();
+    wke.setKeyIdentifierFromWindowsKeyCode();
+
+    int keyval = ui::GdkKeyCodeForWindowsKeyCode(event.key_code(),
+        event.IsShiftDown() ^ event.IsCapsLockDown());
+
+    wke.text[0] = wke.unmodifiedText[0] =
+        static_cast<unsigned short>(gdk_keyval_to_unicode(keyval));
+
+    wke.modifiers = WebInputEventFlagsFromViewsEvent(event);
+
+    ForwardWebKeyboardEvent(wke);
+
+    wke.type = WebKit::WebInputEvent::Char;
+    ForwardWebKeyboardEvent(wke);
+  } else {
+    NativeWebKeyboardEvent wke;
+
+    wke.type = WebKit::WebInputEvent::KeyUp;
+    wke.windowsKeyCode = event.key_code();
+    wke.setKeyIdentifierFromWindowsKeyCode();
+    ForwardWebKeyboardEvent(wke);
+  }
+}
+
+void RenderWidgetHostViewViews::ForwardWebKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
   if (!host_)
     return;
 
   EditCommands edit_commands;
 #if 0
-TODO(bryeung): key bindings
+  // TODO(bryeung): key bindings
   if (!event.skip_in_browser &&
       key_bindings_handler_->Match(event, &edit_commands)) {
     host_->ForwardEditCommandsForNextKeyEvent(edit_commands);
   }
 #endif
+
   host_->ForwardKeyboardEvent(event);
 }
 

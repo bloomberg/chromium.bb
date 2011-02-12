@@ -20,6 +20,7 @@
 #include "views/view.h"
 #include "webkit/glue/webcursor.h"
 
+class IMEContextHandler;
 class RenderWidgetHost;
 struct NativeWebKeyboardEvent;
 
@@ -107,8 +108,11 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   virtual void DidGainFocus();
   virtual void WillLoseFocus();
 
+  // Forwards a web keyboard event to renderer.
+  void ForwardWebKeyboardEvent(const NativeWebKeyboardEvent& event);
+
   // Forwards a keyboard event to renderer.
-  void ForwardKeyboardEvent(const NativeWebKeyboardEvent& event);
+  void ForwardKeyEvent(const views::KeyEvent& event);
 
   // Views touch events, overridden from views::View.
   virtual View::TouchStatus OnTouchEvent(const views::TouchEvent& e);
@@ -175,6 +179,10 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   // touch-point is added from an ET_TOUCH_PRESSED event, and a touch-point is
   // removed from the list on an ET_TOUCH_RELEASED event.
   WebKit::WebTouchEvent touch_event_;
+
+  // Input method context used to translating sequence of key events into other
+  // languages.
+  scoped_ptr<IMEContextHandler> ime_context_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewViews);
 };

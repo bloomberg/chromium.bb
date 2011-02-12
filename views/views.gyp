@@ -49,6 +49,7 @@
       ]}],
       ['touchui==0', {'sources/': [
         ['exclude', 'events/event_x.cc$'],
+        ['exclude', 'ime/'],
         ['exclude', 'native_menu_x.cc$'],
         ['exclude', 'native_menu_x.h$'],
         ['exclude', 'touchui/'],
@@ -280,6 +281,9 @@
         'focus/focus_util_win.h',
         'focus/view_storage.cc',
         'focus/view_storage.h',
+        'ime/ibus_ime_context.cc',
+        'ime/ime_context.cc',
+        'ime/ime_context.h',
         'layout/box_layout.cc',
         'layout/box_layout.h',
         'layout/fill_layout.cc',
@@ -415,6 +419,9 @@
           ],
         }],
         ['touchui==1', {
+          'dependencies': [
+            '../build/linux/system.gyp:ibus',
+          ],
           'defines': ['TOUCH_UI=1'],
           'sources/': [
             ['exclude', 'focus/accelerator_handler_gtk.cc'],
@@ -427,6 +434,12 @@
                 ['exclude', 'touchui/touch_factory.cc'],
                 ['exclude', 'touchui/touch_factory.h'],
               ],
+            }],
+            ['"<!@(<(pkg-config) --atleast-version=1.3.99 ibus-1.0 || echo $?)"!=""', {
+              'sources/': [
+                ['exclude', 'ime/ibus_ime_context.cc'],
+              ],
+              'defines': ['USE_DUMMY_IME_CONTEXT'],
             }],
           ],
         }],
