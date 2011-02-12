@@ -377,14 +377,13 @@ def main(argv):
     Banner('setting environment')
     # BUG(robertm): , is a legitimate character for an environment variable
     # value.
-    env = GlobalSettings['osenv'].split(',')
-    for e in env:
-      # = is valid in val of an env
-      eq_pos=e.find('=')
-      key = e[:eq_pos]
-      val = e[eq_pos+1:]
-      Print('[%s] = [%s]' % (key, val))
-      os.putenv(key, val)
+    env_vars = GlobalSettings['osenv'].split(',')
+  else:
+    env_vars = []
+  for env_var in env_vars:
+    key, val = env_var.split('=', 1)
+    Print('[%s] = [%s]' % (key, val))
+    os.putenv(key, val)
 
   if GlobalSettings['logout']:
     try:
@@ -402,7 +401,7 @@ def main(argv):
 
   Banner('running %s' % str(command))
   # print the command in copy-and-pastable fashion
-  print " ".join(command)
+  print " ".join(env_vars + command)
   (total_time, exit_status,
    failed, stdout, stderr) = test_lib.RunTestWithInputOutput(
       command, stdin_data)
