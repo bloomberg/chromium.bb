@@ -1,3 +1,7 @@
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 // Variable to track if a captcha challenge was issued. If this gets set to
 // true, it stays that way until we are told about successful login from
 // the browser.  This means subsequent errors (like invalid password) are
@@ -37,7 +41,6 @@ function gaia_setFocus() {
     }
   }
 }
-
 
 function showGaiaLogin(args) {
   document.getElementById('logging_in_throbber').style.display = "none";
@@ -99,8 +102,6 @@ function showCaptcha(args) {
   var gaiaTable = document.getElementById('gaia_table');
   gaiaTable.cellPadding = 0;
   gaiaTable.cellSpacing = 1;
-  document.getElementById('cancelspacer').className =
-      "cancelspaceforcaptcha";
   document.getElementById('createaccountcell').height = 0;
 
   // It's showtime for the captcha now.
@@ -137,8 +138,10 @@ function showGaiaSuccessAndSettingUp() {
   document.getElementById("signIn").value = templateData['settingup'];
 }
 
-// Called once, when this html/js is loaded.
-function initGaiaLoginForm() {
+/**
+ * DOMContentLoaded handler, sets up the page.
+ */
+function load() {
   var acct_text = document.getElementById("gaia_account_text");
   var translated_text = acct_text.textContent;
   var posGoogle = translated_text.indexOf('Google');
@@ -153,6 +156,18 @@ function initGaiaLoginForm() {
     }
     acct_text.textContent = translated_text.replace('Google','');
   }
+
+  var loginForm = document.getElementById("gaia_loginform");
+  loginForm.onsubmit = function() {
+    sendCredentialsAndClose();
+    return false;
+  };
+
+  var gaiaCancel = document.getElementById("gaia-cancel");
+  gaiaCancel.onclick = function() {
+    CloseDialog();
+  };
+
   var args = JSON.parse(chrome.dialogArguments);
   showGaiaLogin(args);
 }
@@ -243,3 +258,5 @@ function onPreLogin() {
     return true;
   }
 }
+
+document.addEventListener('DOMContentLoaded', load);

@@ -1,125 +1,188 @@
-body,td,div,p,a,font,span {font-family: arial,sans-serif;}
 body {
-  background-color:#ffffff;
   -webkit-user-select: none;
+  background-color: #fff;
+  margin-bottom: 6px;
+  margin-top: 6px;
 }
-A:link {color:#0000cc; }
-A:visited { color:#551a8b; }
-A:active { color:#ff0000; }
-.form-noindent {background-color: #ffffff; border: #C3D9FF 1px solid}
-.body { margin-left: 3em;
-  margin-right: 5em;
-  font-family: arial,sans-serif; }
-.endaligned {
-  text-align: right;
+
+a:link {
+  color: #00c;
 }
-html[dir='rtl'] .endaligned {
-  text-align: left;
+
+a:visited {
+  color: #551a8b;
 }
-#gaia_account_text { font-weight: bold; }
-#email_readonly { font-size: 10pt;
-                  font-weight: bold;
-                  display: none; }
-div.errorbox-good {}
-div.errorbox-bad {}
-div.errormsg { color: red; font-size: smaller;
-  font-family: arial,sans-serif;
-  display: none;}
-font.errormsg { color: red; font-size: smaller;
-  font-family: arial,sans-serif;}
-div.errormsgspacer { min-height: 1em;}
-font.errormsgspacer { font-size: smaller;
-  font-family: arial,sans-serif;}
+
+a:active {
+  color: #f00;
+}
 
 hr {
+  background-color: #ddd;
   border: 0;
-  background-color:#DDDDDD;
   height: 1px;
-  width: 100%;
-  text-align: left;
   margin: 5px;
+  text-align: left;
+  width: 100%;
 }
+
+input[type='button'],
+input[type='submit'] {
+  min-height: 26px;
+  min-width: 87px;
+}
+
+.form-noindent {
+  background-color: #fff;
+  border: #c3d9ff 1px solid;
+}
+
+.endaligned {
+  text-align: end;
+}
+
+#gaia_account_text {
+  font-weight: bold;
+}
+
+#email_readonly {
+  display: none;
+  font-size: 10pt;
+  font-weight: bold;
+}
+
+div.errormsg {
+  color: red;
+  display: none;
+  font-size: smaller;
+}
+
+font.errormsg {
+  color: red;
+  font-size: smaller;
+}
+
+div.errormsgspacer {
+  min-height: 1em;
+}
+
+font.errormsgspacer {
+  font-size: smaller;
+}
+
 #gaia_loginform {
   margin-bottom: 0;
 }
 
 #captcha_wrapper {
-  background-size: 200px 70px;
   background: no-repeat;
-  background-position: center;
   background-color: #e8eefa;
+  background-position: center;
+  background-size: 200px 70px;
   display: block;
 }
+
 .captcha_image {
   display: block;
-  width: 200px;
   height: 70px;
+  width: 200px;
 }
+
 #logging_in_throbber {
-  margin: 0px 10px 0px 10px;
+  margin: 0 10px;
 }
+
 .toppageverticalspace {
   height: 15px;
 }
+
 .bottompaddedcell {
   padding-bottom: 3px;
 }
+
 .noverticalpadding {
-  padding-top: 0;
   padding-bottom: 0;
+  padding-top: 0;
 }
+
 .cancelspacenocaptcha {
   height: 22px;
 }
+
 .cancelspaceforcaptcha {
   height: 5px;
 }
+
 #top_blurb {
   font-size: 11pt;
   line-height: 1.5em;
 }
-input[type='button'],
-input[type='submit'] {
-  min-width: 87px;
-  min-height: 26px;
-}
+
 #top_blurb_error {
-  display: block;
-  margin-bottom: 10px;
-  margin-right: auto;
-  margin-left: auto;
-  width: 70%;
-  text-align: center;
-  padding: 4px 10px;
   background-color: #eeb939;
   border-radius: 4px;
-  font-weight: bold;
+  display: block;
   font-size: 11pt;
+  font-weight: bold;
+  margin-bottom: 10px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 4px 10px;
+  text-align: center;
+  visibility: hidden;
+  width: 70%;
 }
+
 #content_table {
  padding: 2px;
 }
+
 .access_code_row {
   display: none;
 }
+
 .access_code_row > td {
-  text-align: center;
   padding-bottom: 1px;
+  text-align: center;
 }
+
 #access_code_label_row > td {
   padding-top: 6px;
 }
+
 .centeredtext {
   text-align: center;
 }
-div.errormsg { color: red; font-size: smaller; font-family:arial,sans-serif; }
-font.errormsg { color: red; font-size: smaller; font-family:arial,sans-serif;}
-.gaia.le.lbl { font-family: Arial, Helvetica, sans-serif; font-size: smaller; }
-.gaia.le.fpwd { font-family: Arial, Helvetica, sans-serif; font-size: 70%; }
-.gaia.le.chusr { font-family: Arial, Helvetica, sans-serif; font-size: 70%; }
-.gaia.le.val { font-family: Arial, Helvetica, sans-serif; font-size: smaller; }
-.gaia.le.button { font-family: Arial, Helvetica, sans-serif; }
-.gaia.le.rem { font-family: Arial, Helvetica, sans-serif; font-size: smaller; }
-.gaia.captchahtml.desc { font-family: arial, sans-serif; font-size: smaller; }
-.gaia.captchahtml.cmt { font-family: arial, sans-serif; font-size: smaller;
-                        font-style: italic; }
+
+.gaia.le.lbl,
+.gaia.le.val,
+.gaia.le.rem,
+.gaia.captchahtml.desc
+.gaia.captchahtml.cmt {
+  font-size: smaller;
+}
+
+.gaia.captchahtml.cmt {
+  font-style: italic;
+}
+
+.gaia.le.fpwd,
+.gaia.le.chusr {
+  font-size: 70%;
+}
+
+#error_custom {
+  display: none;
+}
+
+#captchadiv {
+  display: none;
+}
+
+#password_row {
+  margin-top: 2px;
+}
+
+#action-area {
+  margin-top: 2px;
+}

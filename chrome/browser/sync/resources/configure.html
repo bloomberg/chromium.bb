@@ -389,6 +389,10 @@ html[os='mac'] input[type='submit'] {
           "sync-config-tab-contents-inactive";
     }
 
+    // Default to the 'Data Types' tab.
+    if (!newTab)
+      newTab = "data-type";
+
     document.getElementById(newTab + "-tab").className =
         "sync-config-tab-active";
     document.getElementById(newTab + "-tab-contents").className =

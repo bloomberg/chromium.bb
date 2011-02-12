@@ -2,210 +2,210 @@
 <head>
 <link rel="stylesheet" href="gaia_login.css">
 <link rel="stylesheet" href="chrome://resources/css/throbber.css">
+<script src="gaia_login.js"></script>
 </head>
-<body bgcolor="#ffffff" vlink="#666666"
-      i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize"
-      style="margin-bottom: 6px; margin-top: 6px;" onload="initGaiaLoginForm();">
-  <table width="100%" height="100%" align="center" cellpadding="1" cellspacing="1">
-  <tr>
-  <td valign="top"> <!-- LOGIN BOX -->
-  <script src="gaia_login.js"></script>
-  <div id="top_blurb">
-    <span i18n-content="introduction"></span>
-  </div>
-  <div id="top_blurb_error" style="visibility:hidden">
+<body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+<div>
+  <div>
+    <div id="top_blurb">
+      <span i18n-content="introduction"></span>
+    </div>
+    <div id="top_blurb_error">
       <span id="error_signing_in" i18n-content="errorsigningin"></span>
-      <span id="error_custom" style="display:none;"></span>
-  </div>
-<form id="gaia_loginform" onsubmit="sendCredentialsAndClose(); return false;">
-<div id="gaia_loginbox">
-<table id="content_table" class="form-noindent" cellspacing="0" cellpadding="5"
-       width="75%" border="0" align="center">
-  <tr>
-    <td valign="top" style="text-align:center" nowrap="nowrap"
-        bgcolor="#e8eefa">
-      <div>
-        <table id="gaia_table" align="center" border="0" cellpadding="1"
-               cellspacing="0">
+      <span id="error_custom"></span>
+    </div>
+    <form id="gaia_loginform">
+      <div id="gaia_loginbox">
+        <table id="content_table" class="form-noindent" cellspacing="0"
+            cellpadding="5" width="75%" border="0" align="center">
           <tr>
-            <td colspan="2" align="center">
-              <table>
-                <tr>
-                  <td valign="top" id="gaia_logo">
-                    <img src="google_transparent.png" alt="Google">
-                  </td>
-                  <td valign="middle">
-                    <font size="+0">
-                      <span id="gaia_account_text" i18n-content="signinsuffix"></span>
-                    </font>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-          <tr>
-            <td colspan="2" align="center"> </td>
-          </tr>
-          <tr id="email_row">
-            <td nowrap="nowrap">
-              <div class="endaligned">
-                <span class="gaia le lbl" i18n-content="emaillabel">
-                </span>
-              </div>
-            </td>
-            <td>
-              <input type="text" name="Email"  id="Email" size="18"
-                     value="" class='gaia le val' />
-              <span id="email_readonly"></span>
-            </td>
-          </tr>
-          <tr id="access_code_label_row" class="access_code_row">
-            <td colspan="2">
-                <span class="gaia le lbl" i18n-content="enteraccesscode"></span>
-            </td>
-          </tr>
-          <tr id="access_code_help_row" class="access_code_row">
-            <td colspan="2" class="gaia le fpwd">
-              <a i18n-values="href:getaccesscodeurl" i18n-content="getaccesscodehelp" target="_blank"></a>
-            </td>
-          <tr>
-            <td></td>
-            <td>
-              <div class="errormsg" id="errormsg_0_Email"
-                   i18n-content="cannotbeblank">
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td></td>
-            <td></td>
-          </tr>
-          <tr id="password_row">
-            <td class="endaligned">
-              <span class="gaia le lbl" i18n-content="passwordlabel">
-              </span>
-            </td>
-            <td>
-              <input type="password" name="Passwd" id="Passwd" size="18"
-                     class="gaia le val"/>
-            </td>
-          </tr>
-          <tr id="access_code_input_row" class="access_code_row">
-            <td colspan="2">
-              <input type="password" name="AccessCode" id="AccessCode" size="18"
-                     class="gaia le val"/>
-            </td>
-          </tr>
-          <tr>
-            <td>
-            </td>
-            <td>
-              <div class="errormsgspacer">
-                <div class="errormsg" id="errormsg_0_Password"
-                     i18n-content="cannotbeblank">
-                </div>
-                <div class="errormsg" id="errormsg_1_Password">
-                  <span i18n-content="invalidcredentials"></span>[<a i18n-values="href:invalidpasswordhelpurl" target="_blank">?</a>]
-                </div>
-                <div class="errormsg centeredtext" id="errormsg_0_AccessCode"
-                     i18n-content="invalidaccesscode">
-                </div>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td colspan="2">
-              <div id="captchadiv" style="display:none">
-                <table cellpadding="1" cellspacing="0" border="0">
-                  <tbody>
-                    <tr>
-                      <td colspan="2" align="center" class="bottompaddedcell">
-                        <font size="-1">
-                          <span i18n-content="captchainstructions"></span>
-                        </font>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td colspan="2" align="center" class="bottompaddedcell">
-                        <span id="captcha_wrapper">
-                          <span class="captcha_image"></span>
+            <td valign="top" style="text-align:center" nowrap="nowrap"
+                bgcolor="#e8eefa">
+              <div>
+                <table id="gaia_table" align="center" border="0"
+                    cellpadding="1" cellspacing="0">
+                  <tr>
+                    <td colspan="2" align="center">
+                      <table>
+                        <tr>
+                          <td valign="top" id="gaia_logo">
+                            <img src="google_transparent.png" alt="Google">
+                          </td>
+                          <td valign="middle">
+                            <font size="+0">
+                              <span id="gaia_account_text"
+                                  i18n-content="signinsuffix"></span>
+                            </font>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="2" align="center"> </td>
+                  </tr>
+                  <tr id="email_row">
+                    <td nowrap="nowrap">
+                      <div class="endaligned">
+                        <span class="gaia le lbl" i18n-content="emaillabel">
                         </span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td colspan="2" align="center">
-                        <input type="text" name="CaptchaValue"
-                               id="CaptchaValue" size="18"
-                               value="" class="gaia le val" />
-                      </td>
-                    </tr>
-                  </tbody>
+                      </div>
+                    </td>
+                    <td>
+                      <input type="text" name="Email"  id="Email" size="18"
+                          value="" class='gaia le val'>
+                      <span id="email_readonly"></span>
+                    </td>
+                  </tr>
+                  <tr id="access_code_label_row" class="access_code_row">
+                    <td colspan="2">
+                      <span class="gaia le lbl"
+                          i18n-content="enteraccesscode"></span>
+                    </td>
+                  </tr>
+                  <tr id="access_code_help_row" class="access_code_row">
+                    <td colspan="2" class="gaia le fpwd">
+                      <a i18n-values="href:getaccesscodeurl"
+                          i18n-content="getaccesscodehelp" target="_blank">
+                      </a>
+                    </td>
+                  <tr>
+                    <td></td>
+                    <td>
+                      <div class="errormsg" id="errormsg_0_Email"
+                          i18n-content="cannotbeblank">
+                      </div>
+                    </td>
+                  </tr>
+                  <tr id="password_row">
+                    <td class="endaligned">
+                      <span class="gaia le lbl"
+                          i18n-content="passwordlabel"></span>
+                    </td>
+                    <td>
+                      <input type="password" name="Passwd" id="Passwd"
+                          size="18" class="gaia le val">
+                    </td>
+                  </tr>
+                  <tr id="access_code_input_row" class="access_code_row">
+                    <td colspan="2">
+                      <input type="password" name="AccessCode"
+                          id="AccessCode" size="18" class="gaia le val">
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+                    <td>
+                      <div class="errormsgspacer">
+                        <div class="errormsg" id="errormsg_0_Password"
+                            i18n-content="cannotbeblank">
+                        </div>
+                        <div class="errormsg" id="errormsg_1_Password">
+                          <span i18n-content="invalidcredentials"></span>
+                          <!-- Brackets are intentional -->
+                          [<a i18n-values="href:invalidpasswordhelpurl"
+                               target="_blank">?</a>]
+                        </div>
+                        <div class="errormsg centeredtext"
+                            id="errormsg_0_AccessCode"
+                            i18n-content="invalidaccesscode">
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="2">
+                      <div id="captchadiv">
+                        <table cellpadding="1" cellspacing="0" border="0">
+                          <tbody>
+                            <tr>
+                              <td colspan="2" align="center"
+                                  class="bottompaddedcell">
+                                <font size="-1">
+                                  <span i18n-content="captchainstructions">
+                                  </span>
+                                </font>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td colspan="2" align="center"
+                                  class="bottompaddedcell">
+                                <span id="captcha_wrapper">
+                                  <span class="captcha_image"></span>
+                                </span>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td colspan="2" align="center">
+                                <input type="text" name="CaptchaValue"
+                                    id="CaptchaValue" size="18" value=""
+                                    class="gaia le val">
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="2" align="center">
+                      <div class="errormsg" id="errormsg_0_Connection"
+                          i18n-content="couldnotconnect">
+                      </div>
+                    </td>
+                  </tr>
+                  <tr id="action-area">
+                    <td colspan="2">
+                      <table align="center" cellpadding="0"
+                          cellspacing="0">
+                        <tr>
+                          <td>
+                            <div id="logging_in_throbber" class="throbber">
+                            </div>
+                          </td>
+                          <td class="noverticalpadding">
+                            <input id="signIn" type="submit"
+                                class="gaia le button" name="signIn"
+                                i18n-values="value:signin">
+                            <input id="gaia-cancel" type="button"
+                                name="cancel"
+                                i18n-values="value:cancel">
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                  <tr id="ga-fprow">
+                    <td colspan="2" height="16.0" class="gaia le fpwd"
+                        align="center" valign="bottom">
+                      <a i18n-values="href:cannotaccessaccounturl"
+                          target="_blank"
+                          i18n-content="cannotaccessaccount">
+                      </a>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td id="createaccountcell" colspan="2" height="16.0"
+                        class="gaia le fpwd" align="center" valign="bottom">
+                      <div id="createaccountdiv">
+                        <a i18n-values="href:createnewaccounturl"
+                            i18n-content="createaccount" target="_blank">
+                        </a>
+                      </div>
+                   </td>
+                  </tr>
                 </table>
               </div>
             </td>
           </tr>
-          <tr>
-            <td colspan="2" align="center">
-              <div class="errormsg" id="errormsg_0_Connection"
-                   i18n-content="couldnotconnect">
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td>
-            </td>
-            <td>
-            </td>
-          </tr>
-          <tr>
-            <td colspan="2">
-              <table align="center" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td>
-                    <div id="logging_in_throbber" class="throbber"></div>
-                  </td>
-                  <td class="noverticalpadding">
-                    <input id="signIn" type="submit" class="gaia le button"
-                           name="signIn" i18n-values="value:signin"/>
-                    <input type="button" name="cancel" i18n-values="value:cancel"
-                           onclick="CloseDialog();" >
-
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-          <tr id="ga-fprow">
-            <td colspan="2" height="16.0" class="gaia le fpwd"
-                align="center" valign="bottom">
-              <a i18n-values="href:cannotaccessaccounturl"
-                 target="_blank" i18n-content="cannotaccessaccount">
-              </a>
-            </td>
-          </tr>
-          <tr>
-            <td id="createaccountcell" colspan="2" height="16.0"
-                class="gaia le fpwd" align="center" valign="bottom">
-              <div id="createaccountdiv">
-                <a i18n-values="href:createnewaccounturl"
-                   i18n-content="createaccount" target="_blank">
-                </a>
-              </div>
-           </td>
-          </tr>
         </table>
       </div>
-    </td>
-  </tr>
-</table>
+    </form>
+  </div>
+  <div>
+    <div class="cancelspacenocaptcha" id="cancelspacer" colspan="2">
+    </div>
+  </div>
 </div>
-</form>
-</td>
-</tr>
-<tr>
-  <td class="cancelspacenocaptcha" id="cancelspacer" colspan="2">
-  </td>
-</tr>
-</table>
 </body>
 </html>
