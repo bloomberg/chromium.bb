@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,9 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
+#include "grit/generated_resources.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 // The info-bubble point should look like it points to the bottom of the lock
 // icon. Determined with Pixie.app.
@@ -17,7 +19,10 @@ const CGFloat kBubblePointYOffset = 2.0;
 
 LocationIconDecoration::LocationIconDecoration(LocationBarViewMac* owner)
     : owner_(owner) {
+  tooltip_.reset(
+      [l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_LOCATION_ICON) retain]);
 }
+
 LocationIconDecoration::~LocationIconDecoration() {
 }
 
@@ -69,4 +74,8 @@ bool LocationIconDecoration::OnMousePressed(NSRect frame) {
   }
   tab->ShowPageInfo(nav_entry->url(), nav_entry->ssl(), true);
   return true;
+}
+
+NSString* LocationIconDecoration::GetToolTip() {
+  return tooltip_.get();
 }

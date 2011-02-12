@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,10 +35,14 @@ class LocationIconDecoration : public ImageDecoration {
   // Show the page info panel on click.
   virtual bool OnMousePressed(NSRect frame);
   virtual bool AcceptsMousePress() { return true; }
+  virtual NSString* GetToolTip();
 
  private:
   // The location bar view that owns us.
   LocationBarViewMac* owner_;
+
+  // The string to show for a tooltip.
+  scoped_nsobject<NSString> tooltip_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationIconDecoration);
 };
