@@ -92,7 +92,8 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) {
-    command_line->AppendSwitch(switches::kEnablePagePrerender);
+    command_line->AppendSwitchASCII(switches::kPrerender,
+                                    switches::kPrerenderSwitchValueEnabled);
 #if defined(OS_MACOSX)
     // The plugins directory isn't read by default on the Mac, so it needs to be
     // explicitly registered.

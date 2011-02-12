@@ -208,11 +208,6 @@ const char kDisableBlockContentAnimation[]  =
 // exceeded.
 const char kDisableConnectBackupJobs[]      = "disable-connect-backup-jobs";
 
-// Disable requests that webkit labels TargetIsPrefetch.  As of
-// writing only <link rel=prefetch...> but also eventually
-// Link: headers.
-const char kDisableContentPrefetch[]        = "disable-content-prefetch";
-
 // Disables the custom JumpList on Windows 7.
 const char kDisableCustomJumpList[]         = "disable-custom-jumplist";
 
@@ -480,11 +475,6 @@ const char kEnableConfirmToQuit[]           = "enable-confirm-to-quit";
 // exceeded.
 const char kEnableConnectBackupJobs[]       = "enable-connect-backup-jobs";
 
-// Enable requests that webkit labels TargetIsPrefetch.  As of
-// writing only <link rel=prefetch...> but also eventually
-// Link: headers.
-const char kEnableContentPrefetch[]         = "enable-content-prefetch";
-
 // Enables web developers to create apps for Chrome without using crx packages.
 const char kEnableCrxlessWebApps[]          = "enable-crxless-web-apps";
 
@@ -561,9 +551,6 @@ const char kEnableRemoting[]                = "enable-remoting";
 // Enable content settings based on host *and* plug-in.
 const char kEnableResourceContentSettings[] =
     "enable-resource-content-settings";
-
-// Enable speculative prerendering of pages.
-const char kEnablePagePrerender[]           = "enable-page-prerender";
 
 // Enable speculative TCP/IP preconnection.
 const char kEnablePreconnect[]              = "enable-preconnect";
@@ -943,6 +930,19 @@ const char kPpapiPluginProcess[]            = "ppapi";
 
 // Causes the PPAPI sub process to display a dialog on launch.
 const char kPpapiStartupDialog[]            = "ppapi-startup-dialog";
+
+// Controls speculative prerendering of pages, and content prefetching.  Both
+// are dispatched from <link rel=prefetch href=...> elements.
+const char kPrerender[]                     = "prerender";
+// These are the values the switch may have, as in "--prerender=auto".
+//   auto: Allow field trial selection in both prerender and prefetch.
+const char kPrerenderSwitchValueAuto[]      = "auto";
+//   disabled: No prerendering or prefetching.
+const char kPrerenderSwitchValueDisabled[]  = "disabled";
+//   enabled: Both prerendering and prefetching.
+const char kPrerenderSwitchValueEnabled[]   = "enabled";
+//   prefetch_only: No prerendering, but enable prefetching.
+const char kPrerenderSwitchValuePrefetchOnly[] = "prefetch_only";
 
 // Prints the pages on the screen.
 const char kPrint[]                         = "print";

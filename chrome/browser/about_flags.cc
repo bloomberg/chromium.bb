@@ -28,7 +28,7 @@ namespace about_flags {
 #define SINGLE_VALUE_TYPE(command_line_switch) \
     SINGLE_VALUE_TYPE_AND_VALUE(command_line_switch, "")
 #define MULTI_VALUE_TYPE(choices) \
-    Experiment::MULTI_VALUE, "", choices, arraysize(choices)
+    Experiment::MULTI_VALUE, "", "", choices, arraysize(choices)
 
 namespace {
 
@@ -39,6 +39,14 @@ const unsigned kOsAll = kOsMac | kOsWin | kOsLinux | kOsCrOS;
 const char kMediaPlayerExperimentName[] = "media-player";
 const char kAdvancedFileSystemExperimentName[] = "advanced-file-system";
 const char kVerticalTabsExperimentName[] = "vertical-tabs";
+
+const Experiment::Choice kPagePrerenderChoices[] = {
+  { IDS_FLAGS_PAGE_PRERENDER_AUTOMATIC, "", "" },
+  { IDS_FLAGS_PAGE_PRERENDER_ENABLED,
+    switches::kPrerender, switches::kPrerenderSwitchValueEnabled },
+  { IDS_FLAGS_PAGE_PRERENDER_DISABLED,
+    switches::kPrerender, switches::kPrerenderSwitchValueDisabled },
+};
 
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
@@ -195,7 +203,7 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_PAGE_PRERENDER_NAME,
     IDS_FLAGS_PAGE_PRERENDER_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnablePagePrerender)
+    MULTI_VALUE_TYPE(kPagePrerenderChoices)
   },
   {
     "confirm-to-quit",  // FLAGS:RECORD_UMA

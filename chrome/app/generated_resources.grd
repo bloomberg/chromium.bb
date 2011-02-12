@@ -4050,11 +4050,20 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DNS_SERVER_DESCRIPTION" desc="">
         User specified DNS server, which Chrome will use for DNS resolutions rather than the system defaults.
       </message>
-      <message name="IDS_FLAGS_PAGE_PRERENDER_NAME" desc="">
+      <message name="IDS_FLAGS_PAGE_PRERENDER_NAME" desc="Name of the 'Prerendering' lab.">
         Web Page Prerendering.
       </message>
-      <message name="IDS_FLAGS_PAGE_PRERENDER_DESCRIPTION" desc="">
-        Speculatively prerenders complete webpages in the background for a faster browsing experience.
+      <message name="IDS_FLAGS_PAGE_PRERENDER_DESCRIPTION" desc="Description of the 'Prerendering' lab.">
+        Speculatively prerenders complete webpages in the background for a faster browsing experience.  The default setting of automatic can cause this feature to enable/disable randomly for testing purposes.\n
+      </message>
+      <message name="IDS_FLAGS_PAGE_PRERENDER_AUTOMATIC" desc="Option name for automatic selection in the 'Prerendering' lab">
+	Automatic
+      </message>
+      <message name="IDS_FLAGS_PAGE_PRERENDER_ENABLED" desc="Option name for always enabling the 'Prerendering' lab">
+	Always Enabled
+      </message>
+      <message name="IDS_FLAGS_PAGE_PRERENDER_DISABLED" desc="Option name for always disabling the 'Prerendering' lab">
+	Always Disabled
       </message>
       <message name="IDS_FLAGS_CONFIRM_TO_QUIT_NAME" desc="Name of the 'Confirm to Quit' lab.">
         Confirm to Quit

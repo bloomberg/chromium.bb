@@ -429,39 +429,76 @@ void BrowserMainParts::SpdyFieldTrial() {
   }
 }
 
-// If any of --enable-prerender, --enable-content-prefetch or
-// --disable-content-prefetch are set, use those to determine if
-// prefetch is enabled. Otherwise, randomly assign users to an A/B test for
-// prefetching.
+// Parse the --prerender= command line switch, which controls both prerendering
+// and prefetching.  If the switch is unset, or is set to "auto", then the user
+// is assigned to a field trial.
 void BrowserMainParts::PrefetchAndPrerenderFieldTrial() {
-  if (parsed_command_line().HasSwitch(switches::kEnableContentPrefetch) ||
-      parsed_command_line().HasSwitch(switches::kEnablePagePrerender))
-    ResourceDispatcherHost::set_is_prefetch_enabled(true);
-  else if (parsed_command_line().HasSwitch(switches::kDisableContentPrefetch)) {
-    ResourceDispatcherHost::set_is_prefetch_enabled(false);
-  } else {
-    const base::FieldTrial::Probability kPrefetchDivisor = 1000;
-    const base::FieldTrial::Probability no_prefetch_probability = 500;
-    // After June 30, 2011 builds, it will always be in default group.
-    scoped_refptr<base::FieldTrial> trial(
-        new base::FieldTrial("Prefetch", kPrefetchDivisor,
-            "ContentPrefetchEnabled", 2011, 6, 30));
-    const int yes_prefetch_grp = trial->kDefaultGroupNumber;
-    trial->AppendGroup("ContentPrefetchDisabled", no_prefetch_probability);
-    const int trial_grp = trial->group();
-    ResourceDispatcherHost::set_is_prefetch_enabled(
-        trial_grp == yes_prefetch_grp);
+  enum PrerenderOption {
+    PRERENDER_OPTION_AUTO,
+    PRERENDER_OPTION_DISABLED,
+    PRERENDER_OPTION_ENABLED,
+    PRERENDER_OPTION_PREFETCH_ONLY,
+  };
+
+  PrerenderOption prerender_option = PRERENDER_OPTION_AUTO;
+  if (parsed_command_line().HasSwitch(switches::kPrerender)) {
+    const std::string switch_value =
+        parsed_command_line().GetSwitchValueASCII(switches::kPrerender);
+
+    if (switch_value == switches::kPrerenderSwitchValueAuto) {
+      prerender_option = PRERENDER_OPTION_AUTO;
+    } else if (switch_value == switches::kPrerenderSwitchValueDisabled) {
+      prerender_option = PRERENDER_OPTION_DISABLED;
+    } else if (switch_value.empty() ||
+               switch_value == switches::kPrerenderSwitchValueEnabled) {
+      // The empty string means the option was provided with no value, and that
+      // means enable.
+      prerender_option = PRERENDER_OPTION_ENABLED;
+    } else if (switch_value == switches::kPrerenderSwitchValuePrefetchOnly) {
+      prerender_option = PRERENDER_OPTION_PREFETCH_ONLY;
+    } else {
+      prerender_option = PRERENDER_OPTION_DISABLED;
+      LOG(ERROR) << "Invalid --prerender option received on command line: "
+                 << switch_value;
+      LOG(ERROR) << "Disabling prerendering!";
+    }
   }
 
-  PrerenderManager::PrerenderManagerMode prerender_mode =
-      PrerenderManager::PRERENDER_MODE_DISABLED;
-  if (parsed_command_line().HasSwitch(switches::kEnablePagePrerender))
-    prerender_mode = PrerenderManager::PRERENDER_MODE_ENABLED;
-  else
-    prerender_mode = PrerenderManager::PRERENDER_MODE_DISABLED;
-  PrerenderManager::SetMode(prerender_mode);
+  switch (prerender_option) {
+    case PRERENDER_OPTION_AUTO: {
+      const base::FieldTrial::Probability kPrefetchDivisor = 1000;
+      const base::FieldTrial::Probability no_prefetch_probability = 500;
+      // After June 30, 2011 builds, it will always be in default group.
+      scoped_refptr<base::FieldTrial> trial(
+          new base::FieldTrial("Prefetch", kPrefetchDivisor,
+                               "ContentPrefetchEnabled", 2011, 6, 30));
+      const int yes_prefetch_grp = trial->kDefaultGroupNumber;
+      trial->AppendGroup("ContentPrefetchDisabled", no_prefetch_probability);
+      const int trial_grp = trial->group();
+      ResourceDispatcherHost::set_is_prefetch_enabled(
+          trial_grp == yes_prefetch_grp);
 
-  UMA_HISTOGRAM_ENUMERATION("Prerender.Sessions", prerender_mode,
+      // There is currently no prerendering field trial.
+      PrerenderManager::SetMode(PrerenderManager::PRERENDER_MODE_DISABLED);
+      break;
+    }
+    case PRERENDER_OPTION_DISABLED:
+      ResourceDispatcherHost::set_is_prefetch_enabled(false);
+      PrerenderManager::SetMode(PrerenderManager::PRERENDER_MODE_DISABLED);
+      break;
+    case PRERENDER_OPTION_ENABLED:
+      ResourceDispatcherHost::set_is_prefetch_enabled(true);
+      PrerenderManager::SetMode(PrerenderManager::PRERENDER_MODE_ENABLED);
+      break;
+    case PRERENDER_OPTION_PREFETCH_ONLY:
+      ResourceDispatcherHost::set_is_prefetch_enabled(true);
+      PrerenderManager::SetMode(PrerenderManager::PRERENDER_MODE_DISABLED);
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("Prerender.Sessions", PrerenderManager::GetMode(),
                             PrerenderManager::PRERENDER_MODE_MAX);
 }
 

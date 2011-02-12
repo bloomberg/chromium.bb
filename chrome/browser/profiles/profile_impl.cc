@@ -1500,8 +1500,7 @@ PrefProxyConfigTracker* ProfileImpl::GetProxyConfigTracker() {
 }
 
 PrerenderManager* ProfileImpl::GetPrerenderManager() {
-  CommandLine* cl = CommandLine::ForCurrentProcess();
-  if (!cl->HasSwitch(switches::kEnablePagePrerender))
+  if (!PrerenderManager::IsPrerenderingEnabled())
     return NULL;
   if (!prerender_manager_)
     prerender_manager_ = new PrerenderManager(this);

@@ -66,6 +66,7 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
 
   static PrerenderManagerMode GetMode();
   static void SetMode(PrerenderManagerMode mode);
+  static bool IsPrerenderingEnabled();
 
   // The following static method can be called from any thread, but will result
   // in posting a task to the UI thread if we are not in the UI thread.

@@ -33,6 +33,13 @@ void PrerenderManager::SetMode(PrerenderManagerMode mode) {
   mode_ = mode;
 }
 
+// static
+bool PrerenderManager::IsPrerenderingEnabled() {
+  return
+      GetMode() == PRERENDER_MODE_ENABLED ||
+      GetMode() == PRERENDER_MODE_EXPERIMENT_PRERENDER_GROUP;
+}
+
 struct PrerenderManager::PrerenderContentsData {
   PrerenderContents* contents_;
   base::Time start_time_;
