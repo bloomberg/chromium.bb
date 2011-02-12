@@ -21,6 +21,7 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/include/nacl_string.h"
+#include "native_client/src/include/portability_io.h"
 #include "native_client/src/include/portability_string.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
@@ -573,8 +574,12 @@ bool Plugin::LoadNaClModule(nacl::string full_url, int file_desc) {
   if (!IsValidNexeOrigin(full_url, NACL_NO_FILE_PATH)) {
     return false;
   }
+  int32_t file_desc_ok_to_close = DUP(file_desc);
+  if (file_desc_ok_to_close == NACL_NO_FILE_DESC) {
+    return false;
+  }
   nacl::scoped_ptr<nacl::DescWrapper>
-      wrapper(wrapper_factory_->MakeFileDesc(file_desc, O_RDONLY));
+      wrapper(wrapper_factory_->MakeFileDesc(file_desc_ok_to_close, O_RDONLY));
 #if defined(NACL_STANDALONE)
   return LoadNaClModule(wrapper.get(), /* start_from_browser */ false);
 #else
