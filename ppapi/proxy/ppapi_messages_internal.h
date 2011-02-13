@@ -12,16 +12,13 @@
 
 // These are from the plugin to the renderer
 // Loads the given plugin.
-IPC_MESSAGE_CONTROL3(PpapiMsg_LoadPlugin,
+IPC_MESSAGE_CONTROL1(PpapiMsg_LoadPlugin, FilePath /* path */)
+
+// Creates a channel to talk to a renderer. The plugin will respond with
+// PpapiHostMsg_ChannelCreated.
+IPC_MESSAGE_CONTROL2(PpapiMsg_CreateChannel,
                      base::ProcessHandle /* host_process_handle */,
-                     FilePath /* path */,
-                     int /* renderer_id */)
-
-IPC_SYNC_MESSAGE_CONTROL1_1(PpapiMsg_InitializeModule,
-                            PP_Module /* module_id */,
-                            bool /* result */)
-
-IPC_MESSAGE_CONTROL0(PpapiMsg_Shutdown)
+                     int /* renderer_id */);
 
 // Sent in both directions to see if the other side supports the given
 // interface.
@@ -152,8 +149,12 @@ IPC_MESSAGE_ROUTED3(PpapiMsg_PPBURLLoader_ReadResponseBody_Ack,
 
 // -----------------------------------------------------------------------------
 // These are from the plugin to the renderer.
-// Reply to PpapiMsg_LoadPlugin.
-IPC_MESSAGE_CONTROL1(PpapiHostMsg_PluginLoaded,
+
+// Reply to PpapiMsg_CreateChannel. The handle will be NULL if the channel
+// could not be established. This could be because the IPC could not be created
+// for some weird reason, but more likely that the plugin failed to load or
+// initialize properly.
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_ChannelCreated,
                      IPC::ChannelHandle /* handle */)
 
 // PPB_Audio.

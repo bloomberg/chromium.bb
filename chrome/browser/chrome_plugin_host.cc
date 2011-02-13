@@ -702,7 +702,7 @@ CPBool STDCALL CPB_IsPluginProcessRunning(CPID id) {
   PluginService* service = PluginService::GetInstance();
   if (!service)
     return false;
-  PluginProcessHost *host = service->FindPluginProcess(plugin->filename());
+  PluginProcessHost *host = service->FindNpapiPluginProcess(plugin->filename());
   return host ? true : false;
 }
 
@@ -720,7 +720,7 @@ CPError STDCALL CPB_SendMessage(CPID id, const void *data, uint32 data_len) {
   if (!service)
     return CPERR_FAILURE;
   PluginProcessHost *host =
-  service->FindOrStartPluginProcess(plugin->filename());
+  service->FindOrStartNpapiPluginProcess(plugin->filename());
   if (!host)
     return CPERR_FAILURE;
 

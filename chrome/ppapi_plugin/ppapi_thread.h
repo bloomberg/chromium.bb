@@ -12,6 +12,8 @@
 #include "base/scoped_ptr.h"
 #include "build/build_config.h"
 #include "chrome/common/child_thread.h"
+#include "ppapi/c/pp_module.h"
+#include "ppapi/proxy/dispatcher.h"
 
 class FilePath;
 
@@ -35,35 +37,27 @@ class PpapiThread : public ChildThread {
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
   // Message handlers.
-  void OnMsgLoadPlugin(base::ProcessHandle renderer_handle,
-                       const FilePath& path,
-                       int renderer_id);
-
-  bool LoadPluginLib(base::ProcessHandle host_process_handle,
-                     const FilePath& path);
+  void OnMsgLoadPlugin(const FilePath& path);
+  void OnMsgCreateChannel(base::ProcessHandle host_process_handle,
+                          int renderer_id);
 
   // Sets up the channel to the given renderer. On success, returns true and
   // fills the given ChannelHandle with the information from the new channel.
-  bool SetupRendererChannel(int renderer_id,
+  bool SetupRendererChannel(base::ProcessHandle host_process_handle,
+                            int renderer_id,
                             IPC::ChannelHandle* handle);
-
-#if defined(OS_POSIX)
-  // Close the plugin process' copy of the renderer's side of the plugin
-  // channel.  This can be called after the renderer is known to have its own
-  // copy of renderer_fd_.
-  void CloseRendererFD();
-#endif
 
   base::ScopedNativeLibrary library_;
 
-  scoped_ptr<pp::proxy::PluginDispatcher> dispatcher_;
+  pp::proxy::Dispatcher::GetInterfaceFunc get_plugin_interface_;
 
-#if defined(OS_POSIX)
-  // FD for the renderer end of the socket. It is closed when the IPC layer
-  // indicates that the channel is connected, proving that the renderer has
-  // access to its side of the socket.
-  int renderer_fd_;
-#endif
+  // Local concept of the module ID. Some functions take this. It's necessary
+  // for the in-process PPAPI to handle this properly, but for proxied it's
+  // unnecessary. The proxy talking to multiple renderers means that each
+  // renderer has a different idea of what the module ID is for this plugin.
+  // To force people to "do the right thing" we generate a random module ID
+  // and pass it around as necessary.
+  PP_Module local_pp_module_;
 
   DISALLOW_COPY_AND_ASSIGN(PpapiThread);
 };

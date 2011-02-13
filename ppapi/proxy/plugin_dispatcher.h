@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "base/hash_tables.h"
 #include "base/process.h"
 #include "base/scoped_ptr.h"
+#include "build/build_config.h"
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/dispatcher.h"
@@ -36,9 +37,7 @@ class PluginDispatcher : public Dispatcher {
   //
   // You must call Dispatcher::InitWithChannel after the constructor.
   PluginDispatcher(base::ProcessHandle remote_process_handle,
-                   GetInterfaceFunc get_interface,
-                   InitModuleFunc init_module,
-                   ShutdownModuleFunc shutdown_module);
+                   GetInterfaceFunc get_interface);
   ~PluginDispatcher();
 
   // The plugin side maintains a mapping from PP_Instance to Dispatcher so
@@ -47,11 +46,14 @@ class PluginDispatcher : public Dispatcher {
   // DidCreateInstance/DidDestroyInstance.
   static PluginDispatcher* GetForInstance(PP_Instance instance);
 
+  static const void* GetInterfaceFromDispatcher(const char* interface);
+
   // Dispatcher overrides.
   virtual bool IsPlugin() const;
 
   // IPC::Channel::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
+  virtual void OnChannelError();
 
   // Keeps track of which dispatcher to use for each instance, active instances
   // and tracks associated data like the current size.
@@ -62,16 +64,28 @@ class PluginDispatcher : public Dispatcher {
   // correspond to  a known instance.
   InstanceData* GetInstanceData(PP_Instance instance);
 
+#if defined(OS_POSIX)
+  // See renderer_fd_ below.
+  int GetRendererFD();
+  void CloseRendererFD();
+#endif
+
  private:
   friend class PluginDispatcherTest;
 
+  // Notifies all live instances that they're now closed. This is used when
+  // a renderer crashes or some other error is received.
+  void ForceFreeAllInstances();
+
   // IPC message handlers.
-  void OnMsgInitializeModule(PP_Module pp_module, bool* result);
-  void OnMsgShutdown();
   void OnMsgSupportsInterface(const std::string& interface_name, bool* result);
 
-  InitModuleFunc init_module_;
-  ShutdownModuleFunc shutdown_module_;
+#if defined(OS_POSIX)
+  // FD for the renderer end of the socket. It is closed when the IPC layer
+  // indicates that the channel is connected, proving that the renderer has
+  // access to its side of the socket.
+  int renderer_fd_;
+#endif
 
   // All target proxies currently created. These are ones that receive
   // messages.

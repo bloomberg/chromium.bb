@@ -36,14 +36,6 @@ HostDispatcher::HostDispatcher(base::ProcessHandle remote_process_handle,
 }
 
 HostDispatcher::~HostDispatcher() {
-  // Notify the plugin that it should exit.
-  Send(new PpapiMsg_Shutdown());
-}
-
-bool HostDispatcher::InitializeModule() {
-  bool init_result = false;
-  Send(new PpapiMsg_InitializeModule(pp_module(), &init_result));
-  return init_result;
 }
 
 // static
@@ -114,6 +106,10 @@ bool HostDispatcher::OnMessageReceived(const IPC::Message& msg) {
   }
 
   return proxy->OnMessageReceived(msg);
+}
+
+void HostDispatcher::OnChannelError() {
+  // TODO(brettw) plugin has crashed, handle this.
 }
 
 const void* HostDispatcher::GetProxiedInterface(const std::string& interface) {

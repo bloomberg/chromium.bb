@@ -365,12 +365,6 @@ bool DispatcherWrapper::Init(
     dispatcher_.reset();
     return false;
   }
-
-  if (!dispatcher_->InitializeModule()) {
-    // TODO(brettw) does the module get unloaded in this case?
-    dispatcher_.reset();
-    return false;
-  }
   return true;
 }
 

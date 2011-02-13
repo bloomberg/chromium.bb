@@ -34,7 +34,6 @@ struct FontDescriptor;
 class HostContentSettingsMap;
 class HostZoomMap;
 class NotificationsPrefsCache;
-class PpapiPluginProcessHost;
 class Profile;
 class RenderWidgetHelper;
 class URLRequestContextGetter;
@@ -409,9 +408,6 @@ class RenderMessageFilter : public BrowserMessageFilter,
   bool cloud_print_enabled_;
 
   base::TimeTicks last_plugin_refresh_time_;  // Initialized to 0.
-
-  // A list of all Ppapi plugin processes for this renderer.
-  std::vector<linked_ptr<PpapiPluginProcessHost> > ppapi_plugin_hosts_;
 
   scoped_refptr<WebKitContext> webkit_context_;
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,7 @@
 #include "chrome/browser/chrome_plugin_host.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/plugin_updater.h"
+#include "chrome/browser/ppapi_plugin_process_host.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -240,7 +241,7 @@ const std::string& PluginService::GetUILocale() {
   return ui_locale_;
 }
 
-PluginProcessHost* PluginService::FindPluginProcess(
+PluginProcessHost* PluginService::FindNpapiPluginProcess(
     const FilePath& plugin_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -254,11 +255,27 @@ PluginProcessHost* PluginService::FindPluginProcess(
   return NULL;
 }
 
-PluginProcessHost* PluginService::FindOrStartPluginProcess(
+PpapiPluginProcessHost* PluginService::FindPpapiPluginProcess(
     const FilePath& plugin_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  PluginProcessHost* plugin_host = FindPluginProcess(plugin_path);
+  for (BrowserChildProcessHost::Iterator iter(
+           ChildProcessInfo::PPAPI_PLUGIN_PROCESS);
+       !iter.Done(); ++iter) {
+    PpapiPluginProcessHost* plugin =
+        static_cast<PpapiPluginProcessHost*>(*iter);
+    if (plugin->plugin_path() == plugin_path)
+      return plugin;
+  }
+
+  return NULL;
+}
+
+PluginProcessHost* PluginService::FindOrStartNpapiPluginProcess(
+    const FilePath& plugin_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  PluginProcessHost* plugin_host = FindNpapiPluginProcess(plugin_path);
   if (plugin_host)
     return plugin_host;
 
@@ -271,14 +288,42 @@ PluginProcessHost* PluginService::FindOrStartPluginProcess(
   // This plugin isn't loaded by any plugin process, so create a new process.
   scoped_ptr<PluginProcessHost> new_host(new PluginProcessHost());
   if (!new_host->Init(info, ui_locale_)) {
-    NOTREACHED();  // Init is not expected to fail
+    NOTREACHED();  // Init is not expected to fail.
     return NULL;
   }
-
   return new_host.release();
 }
 
-void PluginService::OpenChannelToPlugin(
+PpapiPluginProcessHost* PluginService::FindOrStartPpapiPluginProcess(
+    const FilePath& plugin_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  PpapiPluginProcessHost* plugin_host = FindPpapiPluginProcess(plugin_path);
+  if (plugin_host)
+    return plugin_host;
+
+  // Validate that the plugin is actually registered. There should generally
+  // be very few plugins so a brute-force search is fine.
+  PepperPluginInfo* info = NULL;
+  for (size_t i = 0; i < ppapi_plugins_.size(); i++) {
+    if (ppapi_plugins_[i].path == plugin_path) {
+      info = &ppapi_plugins_[i];
+      break;
+    }
+  }
+  if (!info)
+    return NULL;
+
+  // This plugin isn't loaded by any plugin process, so create a new process.
+  scoped_ptr<PpapiPluginProcessHost> new_host(new PpapiPluginProcessHost);
+  if (!new_host->Init(plugin_path)) {
+    NOTREACHED();  // Init is not expected to fail.
+    return NULL;
+  }
+  return new_host.release();
+}
+
+void PluginService::OpenChannelToNpapiPlugin(
     int render_process_id,
     int render_view_id,
     const GURL& url,
@@ -291,6 +336,16 @@ void PluginService::OpenChannelToPlugin(
       NewRunnableMethod(
           this, &PluginService::GetAllowedPluginForOpenChannelToPlugin,
           render_process_id, render_view_id, url, mime_type, client));
+}
+
+void PluginService::OpenChannelToPpapiPlugin(
+    const FilePath& path,
+    PpapiPluginProcessHost::Client* client) {
+  PpapiPluginProcessHost* plugin_host = FindOrStartPpapiPluginProcess(path);
+  if (plugin_host)
+    plugin_host->OpenChannelToPlugin(client);
+  else  // Send error.
+    client->OnChannelOpened(base::kNullProcessHandle, IPC::ChannelHandle());
 }
 
 void PluginService::GetAllowedPluginForOpenChannelToPlugin(
@@ -320,7 +375,7 @@ void PluginService::FinishOpenChannelToPlugin(
     PluginProcessHost::Client* client) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  PluginProcessHost* plugin_host = FindOrStartPluginProcess(plugin_path);
+  PluginProcessHost* plugin_host = FindOrStartNpapiPluginProcess(plugin_path);
   if (plugin_host)
     plugin_host->OpenChannelToPlugin(client);
   else
@@ -392,7 +447,7 @@ void PluginService::OnWaitableEventSignaled(
 
 static void ForceShutdownPlugin(const FilePath& plugin_path) {
   PluginProcessHost* plugin =
-      PluginService::GetInstance()->FindPluginProcess(plugin_path);
+      PluginService::GetInstance()->FindNpapiPluginProcess(plugin_path);
   if (plugin)
     plugin->ForceShutdown();
 }
@@ -490,26 +545,25 @@ void PluginService::OverridePluginForTab(OverriddenPlugin plugin) {
 }
 
 void PluginService::RegisterPepperPlugins() {
-  std::vector<PepperPluginInfo> plugins;
-  PepperPluginRegistry::ComputeList(&plugins);
-  for (size_t i = 0; i < plugins.size(); ++i) {
+  PepperPluginRegistry::ComputeList(&ppapi_plugins_);
+  for (size_t i = 0; i < ppapi_plugins_.size(); ++i) {
     webkit::npapi::WebPluginInfo info;
-    info.path = plugins[i].path;
-    info.name = plugins[i].name.empty() ?
-        plugins[i].path.BaseName().LossyDisplayName() :
-        ASCIIToUTF16(plugins[i].name);
-    info.desc = ASCIIToUTF16(plugins[i].description);
+    info.path = ppapi_plugins_[i].path;
+    info.name = ppapi_plugins_[i].name.empty() ?
+        ppapi_plugins_[i].path.BaseName().LossyDisplayName() :
+        ASCIIToUTF16(ppapi_plugins_[i].name);
+    info.desc = ASCIIToUTF16(ppapi_plugins_[i].description);
     info.enabled = webkit::npapi::WebPluginInfo::USER_ENABLED_POLICY_UNMANAGED;
 
     // TODO(evan): Pepper shouldn't require us to parse strings to get
     // the list of mime types out.
     if (!webkit::npapi::PluginList::ParseMimeTypes(
-            JoinString(plugins[i].mime_types, '|'),
-            plugins[i].file_extensions,
-            ASCIIToUTF16(plugins[i].type_descriptions),
+            JoinString(ppapi_plugins_[i].mime_types, '|'),
+            ppapi_plugins_[i].file_extensions,
+            ASCIIToUTF16(ppapi_plugins_[i].type_descriptions),
             &info.mime_types)) {
       LOG(ERROR) << "Error parsing mime types for "
-                 << plugins[i].path.LossyDisplayName();
+                 << ppapi_plugins_[i].path.LossyDisplayName();
       return;
     }
 

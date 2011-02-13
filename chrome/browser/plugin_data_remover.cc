@@ -49,7 +49,7 @@ base::WaitableEvent* PluginDataRemover::StartRemoving(
   is_removing_ = true;
 
   AddRef();
-  PluginService::GetInstance()->OpenChannelToPlugin(
+  PluginService::GetInstance()->OpenChannelToNpapiPlugin(
       0, 0, GURL(), mime_type_, this);
 
   BrowserThread::PostDelayedTask(

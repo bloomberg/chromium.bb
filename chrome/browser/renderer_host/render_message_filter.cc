@@ -167,39 +167,62 @@ void RenderParamsFromPrintSettings(const printing::PrintSettings& settings,
   params->supports_alpha_blend = settings.supports_alpha_blend();
 }
 
-class ClearCacheCompletion : public net::CompletionCallback {
+// Common functionality for converting a sync renderer message to a callback
+// function in the browser. Derive from this, create it on the heap when
+// issuing your callback. When done, write your reply parameters into
+// reply_msg(), and then call SendReplyAndDeleteThis().
+class RenderMessageCompletionCallback {
  public:
-  ClearCacheCompletion(IPC::Message* reply_msg,
-                       RenderMessageFilter* filter)
-      : reply_msg_(reply_msg),
-        filter_(filter) {
+  RenderMessageCompletionCallback(RenderMessageFilter* filter,
+                                  IPC::Message* reply_msg)
+      : filter_(filter),
+        reply_msg_(reply_msg) {
   }
 
-  virtual void RunWithParams(const Tuple1<int>& params) {
-    ViewHostMsg_ClearCache::WriteReplyParams(reply_msg_, params.a);
+  virtual ~RenderMessageCompletionCallback() {
+  }
+
+  RenderMessageFilter* filter() { return filter_.get(); }
+  IPC::Message* reply_msg() { return reply_msg_; }
+
+  void SendReplyAndDeleteThis() {
     filter_->Send(reply_msg_);
     delete this;
   }
 
  private:
-  IPC::Message* reply_msg_;
   scoped_refptr<RenderMessageFilter> filter_;
+  IPC::Message* reply_msg_;
 };
 
-class OpenChannelToPluginCallback : public PluginProcessHost::Client {
+class ClearCacheCompletion : public RenderMessageCompletionCallback,
+                             public net::CompletionCallback {
  public:
-  OpenChannelToPluginCallback(RenderMessageFilter* filter,
-                              IPC::Message* reply_msg)
-      : filter_(filter),
-        reply_msg_(reply_msg) {
+  ClearCacheCompletion(RenderMessageFilter* filter,
+                       IPC::Message* reply_msg)
+      : RenderMessageCompletionCallback(filter, reply_msg) {
+  }
+
+  virtual void RunWithParams(const Tuple1<int>& params) {
+    ViewHostMsg_ClearCache::WriteReplyParams(reply_msg(), params.a);
+    SendReplyAndDeleteThis();
+  }
+};
+
+class OpenChannelToNpapiPluginCallback : public RenderMessageCompletionCallback,
+                                         public PluginProcessHost::Client {
+ public:
+  OpenChannelToNpapiPluginCallback(RenderMessageFilter* filter,
+                                   IPC::Message* reply_msg)
+      : RenderMessageCompletionCallback(filter, reply_msg) {
   }
 
   virtual int ID() {
-    return filter_->render_process_id();
+    return filter()->render_process_id();
   }
 
   virtual bool OffTheRecord() {
-    return filter_->off_the_record();
+    return filter()->off_the_record();
   }
 
   virtual void SetPluginInfo(const webkit::npapi::WebPluginInfo& info) {
@@ -207,25 +230,43 @@ class OpenChannelToPluginCallback : public PluginProcessHost::Client {
   }
 
   virtual void OnChannelOpened(const IPC::ChannelHandle& handle) {
-    WriteReply(handle);
+    WriteReplyAndDeleteThis(handle);
   }
 
   virtual void OnError() {
-    WriteReply(IPC::ChannelHandle());
+    WriteReplyAndDeleteThis(IPC::ChannelHandle());
   }
 
  private:
-  void WriteReply(const IPC::ChannelHandle& handle) {
-    ViewHostMsg_OpenChannelToPlugin::WriteReplyParams(reply_msg_,
-                                                      handle,
-                                                      info_);
-    filter_->Send(reply_msg_);
-    delete this;
+  void WriteReplyAndDeleteThis(const IPC::ChannelHandle& handle) {
+    ViewHostMsg_OpenChannelToPlugin::WriteReplyParams(reply_msg(),
+                                                      handle, info_);
+    SendReplyAndDeleteThis();
   }
 
-  scoped_refptr<RenderMessageFilter> filter_;
-  IPC::Message* reply_msg_;
   webkit::npapi::WebPluginInfo info_;
+};
+
+class OpenChannelToPpapiPluginCallback : public RenderMessageCompletionCallback,
+                                         public PpapiPluginProcessHost::Client {
+ public:
+  OpenChannelToPpapiPluginCallback(RenderMessageFilter* filter,
+                                   IPC::Message* reply_msg)
+      : RenderMessageCompletionCallback(filter, reply_msg) {
+  }
+
+  virtual void GetChannelInfo(base::ProcessHandle* renderer_handle,
+                              int* renderer_id) {
+    *renderer_handle = filter()->peer_handle();
+    *renderer_id = filter()->render_process_id();
+  }
+
+  virtual void OnChannelOpened(base::ProcessHandle plugin_process_handle,
+                               const IPC::ChannelHandle& channel_handle) {
+    ViewHostMsg_OpenChannelToPepperPlugin::WriteReplyParams(
+        reply_msg(), plugin_process_handle, channel_handle);
+    SendReplyAndDeleteThis();
+  }
 };
 
 }  // namespace
@@ -719,17 +760,16 @@ void RenderMessageFilter::OnOpenChannelToPlugin(int routing_id,
                                                 const GURL& url,
                                                 const std::string& mime_type,
                                                 IPC::Message* reply_msg) {
-  plugin_service_->OpenChannelToPlugin(
+  plugin_service_->OpenChannelToNpapiPlugin(
       render_process_id_, routing_id, url, mime_type,
-      new OpenChannelToPluginCallback(this, reply_msg));
+      new OpenChannelToNpapiPluginCallback(this, reply_msg));
 }
 
 void RenderMessageFilter::OnOpenChannelToPepperPlugin(
     const FilePath& path,
     IPC::Message* reply_msg) {
-  PpapiPluginProcessHost* host = new PpapiPluginProcessHost(this);
-  host->Init(path, reply_msg);
-  ppapi_plugin_hosts_.push_back(linked_ptr<PpapiPluginProcessHost>(host));
+  plugin_service_->OpenChannelToPpapiPlugin(
+      path, new OpenChannelToPpapiPluginCallback(this, reply_msg));
 }
 
 void RenderMessageFilter::OnLaunchNaCl(
@@ -1293,7 +1333,7 @@ void RenderMessageFilter::OnClearCache(IPC::Message* reply_msg) {
         http_transaction_factory()->GetCache()->GetCurrentBackend();
     if (backend) {
       ClearCacheCompletion* callback =
-          new ClearCacheCompletion(reply_msg, this);
+          new ClearCacheCompletion(this, reply_msg);
       rv = backend->DoomAllEntries(callback);
       if (rv == net::ERR_IO_PENDING) {
         // The callback will send the reply.

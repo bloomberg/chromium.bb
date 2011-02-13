@@ -20,6 +20,7 @@
 #include "base/synchronization/waitable_event_watcher.h"
 #include "build/build_config.h"
 #include "chrome/browser/plugin_process_host.h"
+#include "chrome/browser/ppapi_plugin_process_host.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
@@ -46,8 +47,9 @@ class Message;
 }
 
 class MessageLoop;
-class Profile;
+struct PepperPluginInfo;
 class PluginDirWatcherDelegate;
+class Profile;
 class ResourceDispatcherHost;
 
 namespace net {
@@ -89,22 +91,28 @@ class PluginService
   // Returns the plugin process host corresponding to the plugin process that
   // has been started by this service. Returns NULL if no process has been
   // started.
-  PluginProcessHost* FindPluginProcess(const FilePath& plugin_path);
+  PluginProcessHost* FindNpapiPluginProcess(const FilePath& plugin_path);
+  PpapiPluginProcessHost* FindPpapiPluginProcess(const FilePath& plugin_path);
 
   // Returns the plugin process host corresponding to the plugin process that
   // has been started by this service. This will start a process to host the
   // 'plugin_path' if needed. If the process fails to start, the return value
   // is NULL. Must be called on the IO thread.
-  PluginProcessHost* FindOrStartPluginProcess(const FilePath& plugin_path);
+  PluginProcessHost* FindOrStartNpapiPluginProcess(
+      const FilePath& plugin_path);
+  PpapiPluginProcessHost* FindOrStartPpapiPluginProcess(
+      const FilePath& plugin_path);
 
   // Opens a channel to a plugin process for the given mime type, starting
   // a new plugin process if necessary.  This must be called on the IO thread
   // or else a deadlock can occur.
-  void OpenChannelToPlugin(int render_process_id,
-                           int render_view_id,
-                           const GURL& url,
-                           const std::string& mime_type,
-                           PluginProcessHost::Client* client);
+  void OpenChannelToNpapiPlugin(int render_process_id,
+                                int render_view_id,
+                                const GURL& url,
+                                const std::string& mime_type,
+                                PluginProcessHost::Client* client);
+  void OpenChannelToPpapiPlugin(const FilePath& path,
+                                PpapiPluginProcessHost::Client* client);
 
   // Gets the first allowed plugin in the list of plugins that matches
   // the given url and mime type.  Must be called on the FILE thread.
@@ -170,10 +178,6 @@ class PluginService
       FilePathWatcher::Delegate* delegate);
 #endif
 
-  // mapping between plugin path and PluginProcessHost
-  typedef base::hash_map<FilePath, PluginProcessHost*> PluginMap;
-  PluginMap plugin_hosts_;
-
   // The main thread's message loop.
   MessageLoop* main_message_loop_;
 
@@ -211,6 +215,8 @@ class PluginService
   ScopedVector<FilePathWatcher> file_watchers_;
   scoped_refptr<PluginDirWatcherDelegate> file_watcher_delegate_;
 #endif
+
+  std::vector<PepperPluginInfo> ppapi_plugins_;
 
   // Set to true if chrome plugins are enabled. Defaults to true.
   static bool enable_chrome_plugins_;

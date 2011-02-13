@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,11 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppp_class_proxy.h"
 
+#if defined(OS_POSIX)
+#include "base/eintr_wrapper.h"
+#include "ipc/ipc_channel_posix.h"
+#endif
+
 namespace pp {
 namespace proxy {
 
@@ -24,23 +29,15 @@ namespace {
 typedef std::map<PP_Instance, PluginDispatcher*> InstanceToDispatcherMap;
 InstanceToDispatcherMap* g_instance_to_dispatcher = NULL;
 
-const void* GetInterfaceFromDispatcher(const char* interface) {
-  // All interfaces the plugin requests of the browser are "PPB".
-  const InterfaceProxy::Info* info = Dispatcher::GetPPBInterfaceInfo(interface);
-  if (!info)
-    return NULL;
-  return info->interface;
-}
-
 }  // namespace
 
 PluginDispatcher::PluginDispatcher(base::ProcessHandle remote_process_handle,
-                                   GetInterfaceFunc get_interface,
-                                   InitModuleFunc init_module,
-                                   ShutdownModuleFunc shutdown_module)
-    : Dispatcher(remote_process_handle, get_interface),
-      init_module_(init_module),
-      shutdown_module_(shutdown_module) {
+                                   GetInterfaceFunc get_interface)
+    : Dispatcher(remote_process_handle, get_interface)
+#if defined(OS_POSIX)
+    , renderer_fd_(-1)
+#endif
+    {
   SetSerializationRules(new PluginVarSerializationRules);
 
   // As a plugin, we always support the PPP_Class interface. There's no
@@ -49,8 +46,9 @@ PluginDispatcher::PluginDispatcher(base::ProcessHandle remote_process_handle,
 }
 
 PluginDispatcher::~PluginDispatcher() {
-  if (shutdown_module_)
-    shutdown_module_();
+#if defined(OS_POSIX)
+  CloseRendererFD();
+#endif
 }
 
 // static
@@ -62,6 +60,16 @@ PluginDispatcher* PluginDispatcher::GetForInstance(PP_Instance instance) {
   if (found == g_instance_to_dispatcher->end())
     return NULL;
   return found->second;
+}
+
+// static
+const void* PluginDispatcher::GetInterfaceFromDispatcher(
+    const char* interface) {
+  // All interfaces the plugin requests of the browser are "PPB".
+  const InterfaceProxy::Info* info = GetPPBInterfaceInfo(interface);
+  if (!info)
+    return NULL;
+  return info->interface;
 }
 
 bool PluginDispatcher::IsPlugin() const {
@@ -78,8 +86,6 @@ bool PluginDispatcher::OnMessageReceived(const IPC::Message& msg) {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(PluginDispatcher, msg)
       IPC_MESSAGE_HANDLER(PpapiMsg_SupportsInterface, OnMsgSupportsInterface)
-      IPC_MESSAGE_HANDLER(PpapiMsg_InitializeModule, OnMsgInitializeModule)
-      IPC_MESSAGE_HANDLER(PpapiMsg_Shutdown, OnMsgShutdown)
     IPC_END_MESSAGE_MAP()
     return handled;
   }
@@ -122,6 +128,14 @@ bool PluginDispatcher::OnMessageReceived(const IPC::Message& msg) {
   return proxy->OnMessageReceived(msg);
 }
 
+void PluginDispatcher::OnChannelError() {
+  // The renderer has crashed. This channel and all instances associated with
+  // it are no longer valid.
+  ForceFreeAllInstances();
+  // TODO(brettw) free resources too!
+  delete this;
+}
+
 void PluginDispatcher::DidCreateInstance(PP_Instance instance) {
   if (!g_instance_to_dispatcher)
     g_instance_to_dispatcher = new InstanceToDispatcherMap;
@@ -152,16 +166,24 @@ InstanceData* PluginDispatcher::GetInstanceData(PP_Instance instance) {
   return (it == instance_map_.end()) ? NULL : &it->second;
 }
 
-void PluginDispatcher::OnMsgInitializeModule(PP_Module pp_module,
-                                             bool* result) {
-  set_pp_module(pp_module);
-  *result = init_module_(pp_module, &GetInterfaceFromDispatcher) == PP_OK;
+#if defined(OS_POSIX)
+int PluginDispatcher::GetRendererFD() {
+  if (renderer_fd_ == -1)
+    renderer_fd_ = channel()->GetClientFileDescriptor();
+  return renderer_fd_;
 }
 
-void PluginDispatcher::OnMsgShutdown() {
-  if (shutdown_module_)
-    shutdown_module_();
-  MessageLoop::current()->Quit();
+void PluginDispatcher::CloseRendererFD() {
+  if (renderer_fd_ != -1) {
+    if (HANDLE_EINTR(close(renderer_fd_)) < 0)
+      PLOG(ERROR) << "close";
+    renderer_fd_ = -1;
+  }
+}
+#endif
+
+void PluginDispatcher::ForceFreeAllInstances() {
+  // TODO(brettw) implement freeing instances on crash.
 }
 
 void PluginDispatcher::OnMsgSupportsInterface(

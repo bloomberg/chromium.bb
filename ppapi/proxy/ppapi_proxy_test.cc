@@ -94,9 +94,7 @@ void PluginProxyTest::SetUp() {
 
   plugin_dispatcher_.reset(new PluginDispatcher(
       base::Process::Current().handle(),
-      &MockGetInterface,
-      &MockInitModule,
-      &MockShutdownModuleFunc));
+      &MockGetInterface));
   plugin_dispatcher_->InitWithTestSink(&sink());
   plugin_dispatcher_->DidCreateInstance(pp_instance());
 }

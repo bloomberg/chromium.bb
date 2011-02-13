@@ -5399,16 +5399,21 @@ const PPB_OpenGLES2_Dev* PPB_OpenGLES_Impl::GetInterface() {
                   func.MakeOriginalArgString("")))
       file.Write("}\n\n")
 
-    file.Write("const struct PPB_OpenGLES2_Dev ppb_opengles2 = {\n")
+    file.Write("const struct PPB_OpenGLES2_Dev opengles2_interface = {\n")
     file.Write("  &")
     file.Write(",\n  &".join(
       f.name for f in self.original_functions if f.IsCoreGLFunction()))
     file.Write("\n")
     file.Write("};\n\n")
 
-    file.Write("}  // namespace\n")
-
     file.Write("""
+InterfaceProxy* CreateOpenGLES2Proxy(Dispatcher* dispatcher,
+                                     const void* target_interface) {
+  return new PPB_OpenGLES2_Proxy(dispatcher, target_interface);
+}
+
+}  // namespace
+
 PPB_OpenGLES2_Proxy::PPB_OpenGLES2_Proxy(Dispatcher* dispatcher,
                                          const void* target_interface)
     : InterfaceProxy(dispatcher, target_interface) {
@@ -5417,12 +5422,16 @@ PPB_OpenGLES2_Proxy::PPB_OpenGLES2_Proxy(Dispatcher* dispatcher,
 PPB_OpenGLES2_Proxy::~PPB_OpenGLES2_Proxy() {
 }
 
-const void* PPB_OpenGLES2_Proxy::GetSourceInterface() const {
-  return &ppb_opengles2;
-}
-
-InterfaceID PPB_OpenGLES2_Proxy::GetInterfaceId() const {
-  return INTERFACE_ID_NONE;
+// static
+const InterfaceProxy::Info* PPB_OpenGLES2_Proxy::GetInfo() {
+  static const Info info = {
+    &opengles2_interface,
+    PPB_OPENGLES2_DEV_INTERFACE,
+    INTERFACE_ID_PPB_OPENGLES2,
+    false,
+    &CreateOpenGLES2Proxy,
+  };
+  return &info;
 }
 
 bool PPB_OpenGLES2_Proxy::OnMessageReceived(const IPC::Message& msg) {

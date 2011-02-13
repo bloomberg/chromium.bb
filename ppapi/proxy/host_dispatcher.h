@@ -48,15 +48,12 @@ class HostDispatcher : public Dispatcher {
                              HostDispatcher* dispatcher);
   static void RemoveForInstance(PP_Instance instance);
 
-  // Calls the plugin's PPP_InitializeModule function and returns true if
-  // the call succeeded.
-  bool InitializeModule();
-
   // Dispatcher overrides.
   virtual bool IsPlugin() const;
 
   // IPC::Channel::Listener.
   virtual bool OnMessageReceived(const IPC::Message& msg);
+  virtual void OnChannelError();
 
   // Proxied version of calling GetInterface on the plugin. This will check
   // if the plugin supports the given interface (with caching) and returns the
