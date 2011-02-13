@@ -363,7 +363,7 @@ class RenderViewHost : public RenderWidgetHost {
 
   // Sets a property with the given name and value on the Web UI binding object.
   // Must call AllowWebUIBindings() on this renderer first.
-  void SetDOMUIProperty(const std::string& name, const std::string& value);
+  void SetWebUIProperty(const std::string& name, const std::string& value);
 
   // Tells the renderer view to focus the first (last if reverse is true) node.
   void SetInitialFocus(bool reverse);
@@ -579,7 +579,7 @@ class RenderViewHost : public RenderWidgetHost {
   void OnMsgDidContentsPreferredSizeChange(const gfx::Size& new_size);
   void OnMsgDomOperationResponse(const std::string& json_string,
                                  int automation_id);
-  void OnMsgDOMUISend(const GURL& source_url,
+  void OnMsgWebUISend(const GURL& source_url,
                       const std::string& message,
                       const std::string& content);
   void OnMsgForwardMessageToExternalHost(const std::string& message,

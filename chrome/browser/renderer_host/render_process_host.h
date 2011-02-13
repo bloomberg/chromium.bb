@@ -43,7 +43,7 @@ class RenderProcessHost : public IPC::Channel::Sender,
   // in which case we call it an "extension" renderer.
   enum Type {
     TYPE_NORMAL,     // Normal renderer, no extra privileges.
-    TYPE_DOMUI,      // Renderer with WebUI privileges, like New Tab.
+    TYPE_WEBUI,      // Renderer with WebUI privileges, like New Tab.
     TYPE_EXTENSION,  // Renderer with extension privileges.
   };
 

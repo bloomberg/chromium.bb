@@ -4351,7 +4351,7 @@
                 ['include', '^browser/ui/views/tab_contents/tab_contents_view_views.h'],
                 ['include', '^browser/ui/views/tab_contents/tab_contents_container_views.cc'],
                 ['include', '^browser/ui/views/tab_contents/tab_contents_container_views.h'],
-                # TODO(anicolao): exclude these once we have DOMUI dialogs
+                # TODO(anicolao): exclude these once we have WebUI dialogs
                 # ['exclude', '^browser/ui/gtk/constrained_window_gtk.cc'],
                 # ['exclude', '^browser/ui/gtk/constrained_window_gtk.h'],
                 ['exclude', '^browser/ui/views/frame/browser_non_client_frame_view_factory_gtk.cc'],

@@ -631,10 +631,10 @@ void RenderViewHost::AllowBindings(int bindings_flags) {
   enabled_bindings_ |= bindings_flags;
 }
 
-void RenderViewHost::SetDOMUIProperty(const std::string& name,
+void RenderViewHost::SetWebUIProperty(const std::string& name,
                                       const std::string& value) {
   DCHECK(BindingsPolicy::is_dom_ui_enabled(enabled_bindings_));
-  Send(new ViewMsg_SetDOMUIProperty(routing_id(), name, value));
+  Send(new ViewMsg_SetWebUIProperty(routing_id(), name, value));
 }
 
 void RenderViewHost::GotFocus() {
@@ -764,7 +764,7 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgDidContentsPreferredSizeChange)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DomOperationResponse,
                         OnMsgDomOperationResponse)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DOMUISend, OnMsgDOMUISend)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_WebUISend, OnMsgWebUISend)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ForwardMessageToExternalHost,
                         OnMsgForwardMessageToExternalHost)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetTooltipText, OnMsgSetTooltipText)
@@ -1131,7 +1131,7 @@ void RenderViewHost::OnMsgDomOperationResponse(
       Details<DomOperationNotificationDetails>(&details));
 }
 
-void RenderViewHost::OnMsgDOMUISend(
+void RenderViewHost::OnMsgWebUISend(
     const GURL& source_url, const std::string& message,
     const std::string& content) {
   if (!ChildProcessSecurityPolicy::GetInstance()->
@@ -1146,7 +1146,7 @@ void RenderViewHost::OnMsgDOMUISend(
     if (!value.get() || !value->IsType(Value::TYPE_LIST)) {
       // The page sent us something that we didn't understand.
       // This probably indicates a programming error.
-      NOTREACHED() << "Invalid JSON argument in OnMsgDOMUISend.";
+      NOTREACHED() << "Invalid JSON argument in OnMsgWebUISend.";
       return;
     }
   }

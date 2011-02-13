@@ -908,7 +908,7 @@ class RenderView : public RenderWidget,
   void OnSetContentSettingsForLoadingURL(
       const GURL& url,
       const ContentSettings& content_settings);
-  void OnSetDOMUIProperty(const std::string& name, const std::string& value);
+  void OnSetWebUIProperty(const std::string& name, const std::string& value);
   void OnSetEditCommandsForNextKeyEvent(const EditCommands& edit_commands);
   void OnSetInitialFocus(bool reverse);
   void OnScrollFocusedEditableNodeIntoView();

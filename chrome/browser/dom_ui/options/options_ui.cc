@@ -250,7 +250,7 @@ void OptionsUI::RenderViewCreated(RenderViewHost* render_view_host) {
   command_line_string = CommandLine::ForCurrentProcess()->command_line_string();
 #endif
 
-  render_view_host->SetDOMUIProperty("commandLineString", command_line_string);
+  render_view_host->SetWebUIProperty("commandLineString", command_line_string);
   WebUI::RenderViewCreated(render_view_host);
 }
 

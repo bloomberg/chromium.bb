@@ -54,7 +54,7 @@ class RenderViewHostManager
     // Creates a WebUI object for the given URL if one applies. Ownership of the
     // returned pointer will be passed to the caller. If no WebUI applies,
     // returns NULL.
-    virtual WebUI* CreateDOMUIForRenderManager(const GURL& url) = 0;
+    virtual WebUI* CreateWebUIForRenderManager(const GURL& url) = 0;
 
     // Returns the navigation entry of the current navigation, or NULL if there
     // is none.
@@ -139,7 +139,7 @@ class RenderViewHostManager
   // Set the WebUI after committing a page load. This is useful for navigations
   // initiated from a renderer, where we want to give the new renderer WebUI
   // privileges from the originating renderer.
-  void SetDOMUIPostCommit(WebUI* web_ui);
+  void SetWebUIPostCommit(WebUI* web_ui);
 
   // Called when a provisional load on the given renderer is aborted.
   void RendererAbortedProvisionalLoad(RenderViewHost* render_view_host);

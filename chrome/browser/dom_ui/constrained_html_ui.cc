@@ -30,7 +30,7 @@ void ConstrainedHtmlUI::RenderViewCreated(
   HtmlDialogUIDelegate* dialog_delegate = delegate->GetHtmlDialogUIDelegate();
   std::vector<WebUIMessageHandler*> handlers;
   dialog_delegate->GetWebUIMessageHandlers(&handlers);
-  render_view_host->SetDOMUIProperty("dialogArguments",
+  render_view_host->SetWebUIProperty("dialogArguments",
                                      dialog_delegate->GetDialogArgs());
   for (std::vector<WebUIMessageHandler*>::iterator it = handlers.begin();
        it != handlers.end(); ++it) {

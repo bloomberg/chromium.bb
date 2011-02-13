@@ -221,9 +221,9 @@ void BalloonHost::Init() {
   initialized_ = true;
 }
 
-void BalloonHost::EnableDOMUI() {
+void BalloonHost::EnableWebUI() {
   DCHECK(render_view_host_ == NULL) <<
-      "EnableDOMUI has to be called before a renderer is created.";
+      "EnableWebUI has to be called before a renderer is created.";
   enable_dom_ui_ = true;
 }
 

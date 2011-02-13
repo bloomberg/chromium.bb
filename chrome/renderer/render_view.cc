@@ -1017,7 +1017,7 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_DragTargetDragLeave, OnDragTargetDragLeave)
     IPC_MESSAGE_HANDLER(ViewMsg_DragTargetDrop, OnDragTargetDrop)
     IPC_MESSAGE_HANDLER(ViewMsg_AllowBindings, OnAllowBindings)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetDOMUIProperty, OnSetDOMUIProperty)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetWebUIProperty, OnSetWebUIProperty)
     IPC_MESSAGE_HANDLER(ViewMsg_DragSourceEndedOrMoved,
                         OnDragSourceEndedOrMoved)
     IPC_MESSAGE_HANDLER(ViewMsg_DragSourceSystemDragEnded,
@@ -4624,7 +4624,7 @@ void RenderView::OnAllowBindings(int enabled_bindings_flags) {
   enabled_bindings_ |= enabled_bindings_flags;
 }
 
-void RenderView::OnSetDOMUIProperty(const std::string& name,
+void RenderView::OnSetWebUIProperty(const std::string& name,
                                     const std::string& value) {
   DCHECK(BindingsPolicy::is_dom_ui_enabled(enabled_bindings_));
   GetWebUIBindings()->SetProperty(name, value);

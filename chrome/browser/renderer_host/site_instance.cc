@@ -212,7 +212,7 @@ RenderProcessHost::Type SiteInstance::RendererTypeForURL(const GURL& url) {
 
   // TODO(erikkay) creis recommends using UseWebUIForURL instead.
   if (WebUIFactory::HasWebUIScheme(url))
-    return RenderProcessHost::TYPE_DOMUI;
+    return RenderProcessHost::TYPE_WEBUI;
 
   return RenderProcessHost::TYPE_NORMAL;
 }

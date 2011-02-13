@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,7 +29,7 @@ const NetworkOther = 'other';
 })();
 
 /**
- * Sends "connect" using the 'action' DOMUI message.
+ * Sends "connect" using the 'action' WebUI message.
  */
 function sendConnect(index, passphrase, identity, auto_connect) {
   chrome.send('action',

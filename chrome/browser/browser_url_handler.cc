@@ -60,7 +60,7 @@ static bool ReverseViewSource(GURL* url, Profile* profile) {
 }
 
 // Handles rewriting Web UI URLs.
-static bool HandleDOMUI(GURL* url, Profile* profile) {
+static bool HandleWebUI(GURL* url, Profile* profile) {
   if (!WebUIFactory::UseWebUIForURL(profile, *url))
     return false;
 
@@ -99,7 +99,7 @@ void BrowserURLHandler::InitURLHandlers() {
   url_handlers_.push_back(HandlerPair(&WillHandleBrowserAboutURL,
                                       null_handler));
   // chrome: & friends.
-  url_handlers_.push_back(HandlerPair(&HandleDOMUI, null_handler));
+  url_handlers_.push_back(HandlerPair(&HandleWebUI, null_handler));
   // view-source:
   url_handlers_.push_back(HandlerPair(&HandleViewSource, &ReverseViewSource));
 }

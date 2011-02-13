@@ -667,7 +667,7 @@ bool TabContents::ShouldDisplayURL() {
     return true;
   }
 
-  WebUI* web_ui = GetDOMUIForCurrentState();
+  WebUI* web_ui = GetWebUIForCurrentState();
   if (web_ui)
     return !web_ui->should_hide_url();
   return true;
@@ -703,7 +703,7 @@ bool TabContents::ShouldDisplayFavIcon() {
   if (controller_.GetLastCommittedEntry() && controller_.pending_entry())
     return true;
 
-  WebUI* web_ui = GetDOMUIForCurrentState();
+  WebUI* web_ui = GetWebUIForCurrentState();
   if (web_ui)
     return !web_ui->hide_favicon();
   return true;
@@ -1093,7 +1093,7 @@ void TabContents::FocusThroughTabTraversal(bool reverse) {
 }
 
 bool TabContents::FocusLocationBarByDefault() {
-  WebUI* web_ui = GetDOMUIForCurrentState();
+  WebUI* web_ui = GetWebUIForCurrentState();
   if (web_ui)
     return web_ui->focus_location_bar_by_default();
   NavigationEntry* entry = controller_.GetActiveEntry();
@@ -1198,7 +1198,7 @@ bool TabContents::ShouldShowBookmarkBar() {
   if (!browser_defaults::bookmarks_enabled)
     return false;
 
-  // See GetDOMUIForCurrentState() comment for more info. This case is very
+  // See GetWebUIForCurrentState() comment for more info. This case is very
   // similar, but for non-first loads, we want to use the committed entry. This
   // is so the bookmarks bar disappears at the same time the page does.
   if (controller_.GetLastCommittedEntry()) {
@@ -1208,7 +1208,7 @@ bool TabContents::ShouldShowBookmarkBar() {
   }
 
   // When it's the first load, we know either the pending one or the committed
-  // one will have the Web UI in it (see GetDOMUIForCurrentState), and only one
+  // one will have the Web UI in it (see GetWebUIForCurrentState), and only one
   // of them will be valid, so we can just check both.
   if (render_manager_.pending_web_ui())
     return render_manager_.pending_web_ui()->force_bookmark_bar_visible();
@@ -1733,7 +1733,7 @@ void TabContents::ExpireInfoBars(
   }
 }
 
-WebUI* TabContents::GetDOMUIForCurrentState() {
+WebUI* TabContents::GetWebUIForCurrentState() {
   // When there is a pending navigation entry, we want to use the pending WebUI
   // that goes along with it to control the basic flags. For example, we want to
   // show the pending URL in the URL bar, so we want the display_url flag to
@@ -1785,7 +1785,7 @@ void TabContents::DidNavigateMainFramePostCommit(
       WebUI* web_ui = WebUIFactory::CreateWebUIForURL(this, GetURL());
       // web_ui might be NULL if the URL refers to a non-existent extension.
       if (web_ui) {
-        render_manager_.SetDOMUIPostCommit(web_ui);
+        render_manager_.SetWebUIPostCommit(web_ui);
         web_ui->RenderViewCreated(render_view_host());
       }
     }
@@ -2949,7 +2949,7 @@ NavigationController& TabContents::GetControllerForRenderManager() {
   return controller();
 }
 
-WebUI* TabContents::CreateDOMUIForRenderManager(const GURL& url) {
+WebUI* TabContents::CreateWebUIForRenderManager(const GURL& url) {
   return WebUIFactory::CreateWebUIForURL(this, url);
 }
 

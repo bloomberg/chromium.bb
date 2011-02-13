@@ -199,7 +199,7 @@ void RenderViewHostManager::DidNavigateMainFrame(
   }
 }
 
-void RenderViewHostManager::SetDOMUIPostCommit(WebUI* web_ui) {
+void RenderViewHostManager::SetWebUIPostCommit(WebUI* web_ui) {
   DCHECK(!web_ui_.get());
   web_ui_.reset(web_ui);
 }
@@ -579,7 +579,7 @@ RenderViewHost* RenderViewHostManager::UpdateRendererStateForNavigate(
   // It must also happen after the above conditional call to CancelPending(),
   // otherwise CancelPending may clear the pending_web_ui_ and the page will
   // not have it's bindings set appropriately.
-  pending_web_ui_.reset(delegate_->CreateDOMUIForRenderManager(entry.url()));
+  pending_web_ui_.reset(delegate_->CreateWebUIForRenderManager(entry.url()));
 
   // render_view_host_ will not be deleted before the end of this method, so we
   // don't have to worry about this SiteInstance's ref count dropping to zero.

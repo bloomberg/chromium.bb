@@ -113,7 +113,7 @@ class BalloonHost : public RenderViewHostDelegate,
   virtual RendererPreferences GetRendererPrefs(Profile* profile) const;
 
   // Enable Web UI. This has to be called before renderer is created.
-  void EnableDOMUI();
+  void EnableWebUI();
 
   virtual void UpdateInspectorSetting(const std::string& key,
                                       const std::string& value);

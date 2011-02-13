@@ -66,7 +66,7 @@ static bool IsSuitableHost(RenderProcessHost* host, Profile* profile,
 
   RenderProcessHost::Type host_type = RenderProcessHost::TYPE_NORMAL;
   if (ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(host->id()))
-    host_type = RenderProcessHost::TYPE_DOMUI;
+    host_type = RenderProcessHost::TYPE_WEBUI;
   if (ChildProcessSecurityPolicy::GetInstance()->
         HasExtensionBindings(host->id()))
     host_type = RenderProcessHost::TYPE_EXTENSION;

@@ -183,11 +183,6 @@ class WebUI {
   DISALLOW_COPY_AND_ASSIGN(WebUI);
 };
 
-// TODO(tfarina): Remove this when all the references to DOMUI class are fixed.
-// This is temporary until we can rename all the entries to WebUI.
-// See crbug.com/59945 for more information.
-typedef WebUI DOMUI;
-
 // Messages sent from the DOM are forwarded via the WebUI to handler
 // classes. These objects are owned by WebUI and destroyed when the
 // host is destroyed.

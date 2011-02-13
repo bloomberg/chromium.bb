@@ -814,7 +814,7 @@ class TabContents : public PageNavigator,
 
   // Returns the WebUI for the current state of the tab. This will either be
   // the pending WebUI, the committed WebUI, or NULL.
-  WebUI* GetDOMUIForCurrentState();
+  WebUI* GetWebUIForCurrentState();
 
   // Navigation helpers --------------------------------------------------------
   //
@@ -991,7 +991,7 @@ class TabContents : public PageNavigator,
   virtual void UpdateRenderViewSizeForRenderManager();
   virtual void NotifySwappedFromRenderManager();
   virtual NavigationController& GetControllerForRenderManager();
-  virtual WebUI* CreateDOMUIForRenderManager(const GURL& url);
+  virtual WebUI* CreateWebUIForRenderManager(const GURL& url);
   virtual NavigationEntry* GetLastCommittedNavigationEntryForRenderManager();
 
   // Initializes the given renderer if necessary and creates the view ID

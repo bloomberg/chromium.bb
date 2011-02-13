@@ -641,7 +641,7 @@ ChromeURLDataManager::DataSource* MenuUI::CreateMenuUIHTMLSource(
 // static
 bool MenuUI::IsEnabled() {
   return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableDOMUIMenu);
+      switches::kEnableWebUIMenu);
 }
 
 ChromeURLDataManager::DataSource* MenuUI::CreateDataSource() {

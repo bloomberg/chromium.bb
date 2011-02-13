@@ -213,7 +213,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   balloon_ = balloon;
   html_contents_ = new BalloonViewHost(balloon);
   if (dom_ui_)
-    html_contents_->EnableDOMUI();
+    html_contents_->EnableWebUI();
   AddChildView(html_contents_->view());
   notification_registrar_.Add(this,
     NotificationType::NOTIFY_BALLOON_DISCONNECTED, Source<Balloon>(balloon));

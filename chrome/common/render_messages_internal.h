@@ -498,7 +498,7 @@ IPC_MESSAGE_ROUTED1(ViewMsg_AllowBindings,
 
 // Tell the renderer to add a property to the WebUI binding object.  This
 // only works if we allowed WebUI bindings.
-IPC_MESSAGE_ROUTED2(ViewMsg_SetDOMUIProperty,
+IPC_MESSAGE_ROUTED2(ViewMsg_SetWebUIProperty,
                     std::string /* property_name */,
                     std::string /* property_value_json */)
 
@@ -1507,7 +1507,7 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_DomOperationResponse,
 
 // A message from HTML-based UI.  When (trusted) Javascript calls
 // send(message, args), this message is sent to the browser.
-IPC_MESSAGE_ROUTED3(ViewHostMsg_DOMUISend,
+IPC_MESSAGE_ROUTED3(ViewHostMsg_WebUISend,
                     GURL /* source_url */,
                     std::string  /* message */,
                     std::string  /* args (as a JSON string) */)

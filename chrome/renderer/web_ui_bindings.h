@@ -52,7 +52,7 @@ class DOMBoundBrowserObject : public CppBoundClass {
 //
 // We expose one function, for sending a message to the browser:
 //   send(String name, Object argument);
-// It's plumbed through to the OnDOMUIMessage callback on RenderViewHost
+// It's plumbed through to the OnWebUIMessage callback on RenderViewHost
 // delegate.
 class WebUIBindings : public DOMBoundBrowserObject {
  public:

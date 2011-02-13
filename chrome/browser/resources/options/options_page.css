@@ -430,7 +430,7 @@ list:not([disabled]) > :hover {
   background-color: #e4ecf7;
 }
 
-/* TODO(stuartmorgan): Once this becomes the list style for other DOMUI pages
+/* TODO(stuartmorgan): Once this becomes the list style for other WebUI pages
  * these rules can be simplified (since they wont need to override other rules).
  */
 

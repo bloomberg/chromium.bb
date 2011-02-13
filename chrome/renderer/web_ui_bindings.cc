@@ -87,7 +87,7 @@ void WebUIBindings::send(const CppArgumentList& args, CppVariant* result) {
 
   // Send the message up to the browser.
   sender()->Send(
-      new ViewHostMsg_DOMUISend(routing_id(), source_url, message, content));
+      new ViewHostMsg_WebUISend(routing_id(), source_url, message, content));
 }
 
 void DOMBoundBrowserObject::SetProperty(const std::string& name,

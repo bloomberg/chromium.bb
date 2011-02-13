@@ -70,7 +70,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ProcessPerTab) {
   int tab_count = 1;
   int host_count = 1;
 
-  // Change the first tab to be the new tab page (TYPE_DOMUI).
+  // Change the first tab to be the new tab page (TYPE_WEBUI).
   GURL newtab(chrome::kChromeUINewTabURL);
   ui_test_utils::NavigateToURL(browser(), newtab);
   EXPECT_EQ(tab_count, browser()->tab_count());
@@ -197,7 +197,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, DISABLED_ProcessOverflow) {
   RenderProcessHost* rph2 = NULL;
   RenderProcessHost* rph3 = NULL;
 
-  // Change the first tab to be the new tab page (TYPE_DOMUI).
+  // Change the first tab to be the new tab page (TYPE_WEBUI).
   GURL newtab(chrome::kChromeUINewTabURL);
   ui_test_utils::NavigateToURL(browser(), newtab);
   EXPECT_EQ(tab_count, browser()->tab_count());
@@ -232,7 +232,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, DISABLED_ProcessOverflow) {
   EXPECT_EQ(host_count, RenderProcessHostCount());
   EXPECT_EQ(tab2->GetRenderProcessHost(), rph2);
 
-  // Create another TYPE_DOMUI tab.  It should share the process with newtab.
+  // Create another TYPE_WEBUI tab.  It should share the process with newtab.
   // Note: intentionally create this tab after the TYPE_NORMAL tabs to exercise
   // bug 43448 where extension and WebUI tabs could get combined into normal
   // renderers.

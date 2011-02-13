@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,7 @@ var MNEMONIC_REGEXP = /([^&]*)&(.)(.*)/;
 var localStrings = new LocalStrings();
 
 /**
- * Sends 'activate' DOMUI message.
+ * Sends 'activate' WebUI message.
  * @param {number} index The index of menu item to activate in menu model.
  * @param {string} mode The activation mode, one of 'close_and_activate', or
  *    'activate_no_close'.
@@ -105,7 +105,7 @@ MenuItem.prototype = {
   },
 
   /**
-   * Sends open_submenu DOMUI message.
+   * Sends open_submenu WebUI message.
    */
   sendOpenSubmenuCommand: function() {
     chrome.send('open_submenu',
