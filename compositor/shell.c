@@ -40,9 +40,11 @@ move_grab_motion(struct wl_grab *grab,
 	struct wlsc_move_grab *move = (struct wlsc_move_grab *) grab;
 	struct wlsc_surface *es = move->surface;
 
+	wlsc_surface_damage(es);
 	es->x = x + move->dx;
 	es->y = y + move->dy;
 	wlsc_surface_update_matrix(es);
+	wlsc_surface_damage(es);
 }
 
 static void

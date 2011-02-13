@@ -163,6 +163,27 @@ wlsc_surface_create(struct wlsc_compositor *compositor,
 	return surface;
 }
 
+void
+wlsc_surface_damage_rectangle(struct wlsc_surface *surface,
+			      int32_t x, int32_t y,
+			      int32_t width, int32_t height)
+{
+	struct wlsc_compositor *compositor = surface->compositor;
+
+	pixman_region32_union_rect(&compositor->damage_region,
+				   &compositor->damage_region,
+				   surface->x + x, surface->y + y,
+				   width, height);
+	wlsc_compositor_schedule_repaint(compositor);
+}
+
+void
+wlsc_surface_damage(struct wlsc_surface *surface)
+{
+	wlsc_surface_damage_rectangle(surface, 0, 0,
+				      surface->width, surface->height);
+}
+
 uint32_t
 get_time(void)
 {
@@ -178,9 +199,10 @@ destroy_surface(struct wl_resource *resource, struct wl_client *client)
 {
 	struct wlsc_surface *surface =
 		container_of(resource, struct wlsc_surface, surface.resource);
-	struct wlsc_compositor *compositor = surface->compositor;
 	struct wl_listener *l, *next;
 	uint32_t time;
+
+	wlsc_surface_damage(surface);
 
 	wl_list_remove(&surface->link);
 	glDeleteTextures(1, &surface->texture);
@@ -191,8 +213,6 @@ destroy_surface(struct wl_resource *resource, struct wl_client *client)
 		l->func(l, &surface->surface, time);
 
 	free(surface);
-
-	wlsc_compositor_schedule_repaint(compositor);
 }
 
 uint32_t *
@@ -407,8 +427,27 @@ wlsc_output_repaint(struct wlsc_output *output)
 	struct wlsc_compositor *ec = output->compositor;
 	struct wlsc_surface *es;
 	struct wlsc_input_device *eid;
+	pixman_region32_t new_damage, total_damage;
+	pixman_box32_t *extents;
 
 	glViewport(0, 0, output->width, output->height);
+
+	pixman_region32_init(&new_damage);
+	pixman_region32_init(&total_damage);
+	pixman_region32_intersect_rect(&new_damage,
+				       &ec->damage_region,
+				       output->x, output->y,
+				       output->width, output->height);
+	pixman_region32_subtract(&ec->damage_region,
+				 &ec->damage_region, &new_damage);
+	pixman_region32_union(&total_damage, &new_damage,
+			      &output->previous_damage_region);
+	pixman_region32_copy(&output->previous_damage_region, &new_damage);
+
+	extents = pixman_region32_extents(&total_damage);
+	glEnable(GL_SCISSOR_TEST);
+	glScissor(extents->x1, extents->y1,
+		  extents->x2 - extents->x1, extents->y2 - extents->y1);
 
 	es = container_of(ec->surface_list.next, struct wlsc_surface, link);
 	if (es->map_type == WLSC_SURFACE_MAP_FULLSCREEN &&
@@ -483,6 +522,12 @@ surface_attach(struct wl_client *client,
 {
 	struct wlsc_surface *es = (struct wlsc_surface *) surface;
 
+	/* FIXME: This damages the entire old surface, but we should
+	 * really just damage the part that's no longer covered by the
+	 * surface.  Anything covered by the new surface will be
+	 * damaged by the client. */
+	wlsc_surface_damage(es);
+
 	buffer->attach(buffer, surface);
 	es->buffer = buffer;
 	es->x += x;
@@ -517,7 +562,7 @@ surface_map_toplevel(struct wl_client *client,
 		break;
 	}
 
-	wlsc_compositor_schedule_repaint(es->compositor);
+	wlsc_surface_damage(es);
 	es->map_type = WLSC_SURFACE_MAP_TOPLEVEL;
 }
 
@@ -544,7 +589,7 @@ surface_map_transient(struct wl_client *client,
 	es->y = pes->y + y;
 
 	wlsc_surface_update_matrix(es);
-	wlsc_compositor_schedule_repaint(es->compositor);
+	wlsc_surface_damage(es);
 	es->map_type = WLSC_SURFACE_MAP_TRANSIENT;
 }
 
@@ -577,7 +622,7 @@ surface_map_fullscreen(struct wl_client *client, struct wl_surface *surface)
 	es->y = (output->height - es->height) / 2;
 	es->fullscreen_output = output;
 	wlsc_surface_update_matrix(es);
-	wlsc_compositor_schedule_repaint(es->compositor);
+	wlsc_surface_damage(es);
 	es->map_type = WLSC_SURFACE_MAP_FULLSCREEN;
 }
 
@@ -589,7 +634,8 @@ surface_damage(struct wl_client *client,
 	struct wlsc_surface *es = (struct wlsc_surface *) surface;
 
 	es->buffer->damage(es->buffer, surface, x, y, width, height);
-	wlsc_compositor_schedule_repaint(es->compositor);
+
+	wlsc_surface_damage_rectangle(es, x, y, width, height);
 }
 
 const static struct wl_surface_interface surface_interface = {
@@ -605,8 +651,7 @@ static void
 wlsc_input_device_attach(struct wlsc_input_device *device,
 			 struct wl_buffer *buffer, int x, int y)
 {
-	struct wlsc_compositor *ec =
-		(struct wlsc_compositor *) device->input_device.compositor;
+	wlsc_surface_damage(device->sprite);
 
 	buffer->attach(buffer, &device->sprite->surface);
 	device->hotspot_x = x;
@@ -618,7 +663,7 @@ wlsc_input_device_attach(struct wlsc_input_device *device,
 	device->sprite->height = buffer->height;
 	wlsc_surface_update_matrix(device->sprite);
 
-	wlsc_compositor_schedule_repaint(ec);
+	wlsc_surface_damage(device->sprite);
 }
 
 
@@ -770,11 +815,13 @@ notify_motion(struct wl_input_device *device, uint32_t time, int x, int y)
 					     time, x, y, sx, sy);
 	}
 
+	wlsc_surface_damage(wd->sprite);
+
 	wd->sprite->x = device->x - wd->hotspot_x;
 	wd->sprite->y = device->y - wd->hotspot_y;
 	wlsc_surface_update_matrix(wd->sprite);
 
-	wlsc_compositor_schedule_repaint(ec);
+	wlsc_surface_damage(wd->sprite);
 }
 
 static void
@@ -854,6 +901,7 @@ wlsc_switcher_next(struct wlsc_switcher *switcher)
 {
 	struct wl_list *l;
 
+	wlsc_surface_damage(switcher->current);
 	l = switcher->current->link.next;
 	if (l == &switcher->compositor->surface_list)
 		l = switcher->compositor->surface_list.next;
@@ -861,7 +909,7 @@ wlsc_switcher_next(struct wlsc_switcher *switcher)
 	wl_list_remove(&switcher->listener.link);
 	wl_list_insert(switcher->current->surface.destroy_listener_list.prev,
 		       &switcher->listener.link);
-	wlsc_compositor_schedule_repaint(switcher->compositor);
+	wlsc_surface_damage(switcher->current);
 }
 
 static void
@@ -1006,7 +1054,7 @@ notify_pointer_focus(struct wl_input_device *device,
 		compositor->focus = 0;
 	}
 
-	wlsc_compositor_schedule_repaint(compositor);
+	wlsc_surface_damage(wd->sprite);
 }
 
 void
@@ -1213,6 +1261,8 @@ wlsc_output_init(struct wlsc_output *output, struct wlsc_compositor *c,
 	output->width = width;
 	output->height = height;
 
+	pixman_region32_init(&output->previous_damage_region);
+
 	output->background =
 		background_create(output, option_background);
 
@@ -1227,6 +1277,10 @@ wlsc_output_init(struct wlsc_output *output, struct wlsc_compositor *c,
 	wl_display_add_object(c->wl_display, &output->object);
 	wl_display_add_global(c->wl_display, &output->object,
 			      wlsc_output_post_geometry);
+
+	pixman_region32_union_rect(&c->damage_region,
+				   &c->damage_region,
+				   x, y, width, height);
 }
 
 int
@@ -1266,6 +1320,7 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 
 	loop = wl_display_get_event_loop(ec->wl_display);
 	ec->timer_source = wl_event_loop_add_timer(loop, repaint, ec);
+	pixman_region32_init(&ec->damage_region);
 	wlsc_compositor_schedule_repaint(ec);
 
 	return 0;

@@ -22,6 +22,7 @@
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 #include <libudev.h>
+#include <pixman.h>
 #include "wayland-server.h"
 #include "wayland-util.h"
 
@@ -47,6 +48,7 @@ struct wlsc_output {
 	struct wlsc_surface *background;
 	struct wlsc_matrix matrix;
 	int32_t x, y, width, height;
+	pixman_region32_t previous_damage_region;
 };
 
 enum wlsc_pointer_type {
@@ -109,6 +111,7 @@ struct wlsc_compositor {
 	int repaint_needed;
 	int repaint_on_timeout;
 	struct timespec previous_swap;
+	pixman_region32_t damage_region;
 
 	struct wlsc_switcher *switcher;
 	uint32_t focus;
@@ -180,6 +183,14 @@ void
 wlsc_compositor_finish_frame(struct wlsc_compositor *compositor, int msecs);
 void
 wlsc_compositor_schedule_repaint(struct wlsc_compositor *compositor);
+
+void
+wlsc_surface_damage(struct wlsc_surface *surface);
+
+void
+wlsc_surface_damage_rectangle(struct wlsc_surface *surface,
+			      int32_t x, int32_t y,
+			      int32_t width, int32_t height);
 
 void
 wlsc_input_device_set_pointer_image(struct wlsc_input_device *device,
