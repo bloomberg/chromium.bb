@@ -17,17 +17,11 @@ class RefCountedBase {
  public:
   static bool ImplementsThreadSafeReferenceCounting() { return false; }
 
-  bool HasOneRef() const { return counter_holder_->ref_count == 1; }
+  bool HasOneRef() const { return ref_count_ == 1; }
 
  protected:
   RefCountedBase();
   ~RefCountedBase();
-
-  struct CounterHolder {
-    CounterHolder() : ref_count(0), weak_count(0) {}
-    int ref_count;
-    int weak_count;  // Simulates weak pointer.
-  };
 
   void AddRef() const;
 
@@ -35,7 +29,7 @@ class RefCountedBase {
   bool Release() const;
 
  private:
-  mutable CounterHolder* counter_holder_;
+  mutable int ref_count_;
 #ifndef NDEBUG
   mutable bool in_dtor_;
 #endif
@@ -61,12 +55,7 @@ class RefCountedThreadSafeBase {
   bool Release() const;
 
  private:
-  struct CounterHolder {
-    CounterHolder() : ref_count(0), weak_count(0) {}
-    AtomicRefCount ref_count;
-    AtomicRefCount weak_count; // Simulates weak pointer.
-  };
-  mutable CounterHolder* counter_holder_;
+  mutable AtomicRefCount ref_count_;
 #ifndef NDEBUG
   mutable bool in_dtor_;
 #endif

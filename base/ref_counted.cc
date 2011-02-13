@@ -12,7 +12,7 @@ namespace base {
 namespace subtle {
 
 RefCountedBase::RefCountedBase()
-    : counter_holder_(new CounterHolder)
+    : ref_count_(0)
 #ifndef NDEBUG
     , in_dtor_(false)
 #endif
@@ -20,7 +20,6 @@ RefCountedBase::RefCountedBase()
 }
 
 RefCountedBase::~RefCountedBase() {
-  delete counter_holder_;
 #ifndef NDEBUG
   DCHECK(in_dtor_) << "RefCounted object deleted without calling Release()";
 #endif
@@ -33,7 +32,7 @@ void RefCountedBase::AddRef() const {
 #ifndef NDEBUG
   DCHECK(!in_dtor_);
 #endif
-  ++(counter_holder_->ref_count);
+  ++ref_count_;
 }
 
 bool RefCountedBase::Release() const {
@@ -43,7 +42,7 @@ bool RefCountedBase::Release() const {
 #ifndef NDEBUG
   DCHECK(!in_dtor_);
 #endif
-  if (--(counter_holder_->ref_count) == 0) {
+  if (--ref_count_ == 0) {
 #ifndef NDEBUG
     in_dtor_ = true;
 #endif
@@ -54,19 +53,16 @@ bool RefCountedBase::Release() const {
 
 bool RefCountedThreadSafeBase::HasOneRef() const {
   return AtomicRefCountIsOne(
-      &const_cast<RefCountedThreadSafeBase*>(this)->
-          counter_holder_->ref_count);
+      &const_cast<RefCountedThreadSafeBase*>(this)->ref_count_);
 }
 
-RefCountedThreadSafeBase::RefCountedThreadSafeBase()
-  : counter_holder_(new CounterHolder) {
+RefCountedThreadSafeBase::RefCountedThreadSafeBase() : ref_count_(0) {
 #ifndef NDEBUG
   in_dtor_ = false;
 #endif
 }
 
 RefCountedThreadSafeBase::~RefCountedThreadSafeBase() {
-  delete counter_holder_;
 #ifndef NDEBUG
   DCHECK(in_dtor_) << "RefCountedThreadSafe object deleted without "
                       "calling Release()";
@@ -77,15 +73,15 @@ void RefCountedThreadSafeBase::AddRef() const {
 #ifndef NDEBUG
   DCHECK(!in_dtor_);
 #endif
-  AtomicRefCountInc(&counter_holder_->ref_count);
+  AtomicRefCountInc(&ref_count_);
 }
 
 bool RefCountedThreadSafeBase::Release() const {
 #ifndef NDEBUG
   DCHECK(!in_dtor_);
-  DCHECK(!AtomicRefCountIsZero(&counter_holder_->ref_count));
+  DCHECK(!AtomicRefCountIsZero(&ref_count_));
 #endif
-  if (!AtomicRefCountDec(&counter_holder_->ref_count)) {
+  if (!AtomicRefCountDec(&ref_count_)) {
 #ifndef NDEBUG
     in_dtor_ = true;
 #endif
