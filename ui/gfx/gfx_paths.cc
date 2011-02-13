@@ -24,6 +24,7 @@ bool PathProvider(int key, FilePath* result) {
     case DIR_TEST_DATA:
       if (!PathService::Get(base::DIR_SOURCE_ROOT, &cur))
         return false;
+      cur = cur.Append(FILE_PATH_LITERAL("ui"));
       cur = cur.Append(FILE_PATH_LITERAL("gfx"));
       cur = cur.Append(FILE_PATH_LITERAL("test"));
       cur = cur.Append(FILE_PATH_LITERAL("data"));
