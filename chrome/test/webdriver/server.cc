@@ -39,7 +39,7 @@
 #include "chrome/test/webdriver/commands/speed_command.h"
 #include "chrome/test/webdriver/commands/title_command.h"
 #include "chrome/test/webdriver/commands/url_command.h"
-
+#include "chrome/test/webdriver/commands/webelement_commands.h"
 #include "third_party/mongoose/mongoose.h"
 
 // Make sure we have ho zombies from CGIs.
@@ -94,11 +94,14 @@ void InitCallbacks(struct mg_context* ctx,
   SetCallback<FindManyElementsCommand>(ctx, "/session/*/elements");
   SetCallback<FindOneElementCommand>(ctx,   "/session/*/element/*/element");
   SetCallback<FindManyElementsCommand>(ctx, "/session/*/elements/*/elements");
+  SetCallback<ElementValueCommand>(ctx,     "/session/*/element/*/value");
+  SetCallback<ElementTextCommand>(ctx,      "/session/*/element/*/text");
 
   // Since the /session/* is a wild card that would match the above URIs, this
   // line MUST be the last registered URI with the server.
   SetCallback<SessionWithID>(ctx, "/session/*");
 }
+
 }  // namespace webdriver
 
 // Configures mongoose according to the given command line flags.

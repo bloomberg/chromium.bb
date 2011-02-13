@@ -65,5 +65,10 @@ bool Command::GetIntegerParameter(const std::string& key,
   return parameters_.get() != NULL && parameters_->GetInteger(key, out);
 }
 
+bool Command::GetListParameter(const std::string& key,
+                               ListValue** out) const {
+  return parameters_.get() != NULL && parameters_->GetList(key, out);
+}
+
 }  // namespace webdriver
 

@@ -10,9 +10,30 @@
 #include "base/task.h"
 #include "base/ref_counted.h"
 #include "base/scoped_temp_dir.h"
+#include "chrome/common/automation_constants.h"
 #include "chrome/test/ui/ui_test.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 
 namespace webdriver {
+
+struct WebKeyEvent {
+  WebKeyEvent(automation::KeyEventTypes type,
+              ui::KeyboardCode key_code,
+              const std::string& unmodified_text,
+              const std::string& modified_text,
+              int modifiers)
+      : type(type),
+        key_code(key_code),
+        unmodified_text(unmodified_text),
+        modified_text(modified_text),
+        modifiers(modifiers) {}
+
+  automation::KeyEventTypes type;
+  ui::KeyboardCode key_code;
+  std::string unmodified_text;
+  std::string modified_text;
+  int modifiers;
+};
 
 // Creates and controls the Chrome instance.
 // This class should be created and accessed on a single thread.
@@ -36,6 +57,10 @@ class Automation : private UITestBase {
                      const std::string& script,
                      std::string* result,
                      bool* success);
+
+  // Sends a key event to the current browser. Waits until the key has
+  // been processed by the web page.
+  void SendWebKeyEvent(const WebKeyEvent& key_event, bool* success);
 
   void NavigateToURL(const std::string& url, bool* success);
   void GoForward(bool* success);

@@ -8,6 +8,8 @@
 #include <string>
 
 #include "base/scoped_ptr.h"
+#include "base/string16.h"
+#include "base/values.h"
 #include "chrome/test/webdriver/automation.h"
 #include "chrome/test/webdriver/error_codes.h"
 
@@ -46,6 +48,9 @@ class Session {
                           const ListValue* const args,
                           Value** value);
 
+  // Send the given keys to the given element dictionary. This function takes
+  // ownership of |element|.
+  ErrorCode SendKeys(DictionaryValue* element, const string16& keys);
 
   bool NavigateToURL(const std::string& url);
   bool GoForward();
@@ -82,6 +87,7 @@ class Session {
       base::WaitableEvent* done_event);
   void InitOnSessionThread(bool* success);
   void TerminateOnSessionThread();
+  void SendKeysOnSessionThread(const string16& keys, bool* success);
 
   scoped_ptr<Automation> automation_;
   base::Thread thread_;

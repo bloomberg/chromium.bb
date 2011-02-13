@@ -74,6 +74,10 @@ class Command {
   // false if there is no such parameter, or if it is not a int.
   bool GetIntegerParameter(const std::string& key, int* out) const;
 
+  // Returns the command parameter with the given |key| as a list. Returns
+  // false if there is no such parameter, or if it is not a list.
+  bool GetListParameter(const std::string& key, ListValue** out) const;
+
  private:
   const std::vector<std::string> path_segments_;
   const scoped_ptr<const DictionaryValue> parameters_;

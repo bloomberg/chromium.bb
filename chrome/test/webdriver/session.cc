@@ -22,6 +22,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/test_launcher_utils.h"
 #include "chrome/test/webdriver/utility_functions.h"
+#include "chrome/test/webdriver/webdriver_key_converter.h"
 #include "third_party/webdriver/atoms.h"
 
 namespace webdriver {
@@ -127,6 +128,28 @@ ErrorCode Session::ExecuteScript(const std::string& script,
   return static_cast<ErrorCode>(status);
 }
 
+ErrorCode Session::SendKeys(DictionaryValue* element, const string16& keys) {
+  ListValue args;
+  args.Append(element);
+  // TODO(jleyba): Update this to use the correct atom.
+  std::string script = "document.activeElement.blur();arguments[0].focus();";
+  Value* unscoped_result = NULL;
+  ErrorCode code = ExecuteScript(script, &args, &unscoped_result);
+  scoped_ptr<Value> result(unscoped_result);
+  if (code != kSuccess)
+    return code;
+
+  bool success = false;
+  RunSessionTask(NewRunnableMethod(
+      this,
+      &Session::SendKeysOnSessionThread,
+      keys,
+      &success));
+  if (!success)
+    return kUnknownError;
+  return kSuccess;
+}
+
 bool Session::NavigateToURL(const std::string& url) {
   bool success = false;
   RunSessionTask(NewRunnableMethod(
@@ -209,6 +232,26 @@ void Session::InitOnSessionThread(bool* success) {
 void Session::TerminateOnSessionThread() {
   automation_->Terminate();
   automation_.reset();
+}
+
+void Session::SendKeysOnSessionThread(const string16& keys,
+                                      bool* success) {
+  *success = true;
+  std::vector<WebKeyEvent> key_events;
+  ConvertKeysToWebKeyEvents(keys, &key_events);
+  for (size_t i = 0; i < key_events.size(); ++i) {
+    bool key_success = false;
+    automation_->SendWebKeyEvent(key_events[i], &key_success);
+    if (!key_success) {
+      LOG(ERROR) << "Failed to send key event. Event details:\n"
+                 << "Type: " << key_events[i].type << "\n"
+                 << "KeyCode: " << key_events[i].key_code << "\n"
+                 << "UnmodifiedText: " << key_events[i].unmodified_text << "\n"
+                 << "ModifiedText: " << key_events[i].modified_text << "\n"
+                 << "Modifiers: " << key_events[i].modifiers << "\n";
+      *success = false;
+    }
+  }
 }
 
 }  // namespace webdriver

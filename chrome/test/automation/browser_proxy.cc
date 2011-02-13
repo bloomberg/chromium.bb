@@ -581,9 +581,11 @@ bool BrowserProxy::SendJSONRequest(const std::string& request,
     return false;
 
   bool result = false;
-  return sender_->Send(new AutomationMsg_SendJSONRequest(handle_,
-                                                         request, response,
-                                                         &result));
+  if (!sender_->Send(new AutomationMsg_SendJSONRequest(handle_,
+                                                       request,
+                                                       response,
+                                                       &result)))
+    return false;
   return result;
 }
 

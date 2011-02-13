@@ -736,6 +736,8 @@
         'test/webdriver/session_manager.cc',
         'test/webdriver/utility_functions.h',
         'test/webdriver/utility_functions.cc',
+        'test/webdriver/webdriver_key_converter.h',
+        'test/webdriver/webdriver_key_converter.cc',
         'test/webdriver/commands/command.h',
         'test/webdriver/commands/command.cc',
         'test/webdriver/commands/create_session.h',
@@ -761,8 +763,8 @@
         'test/webdriver/commands/url_command.cc',
         'test/webdriver/commands/webdriver_command.h',
         'test/webdriver/commands/webdriver_command.cc',
-        'test/webdriver/commands/webelement_command.h',
-        'test/webdriver/commands/webelement_command.cc',
+        'test/webdriver/commands/webelement_commands.h',
+        'test/webdriver/commands/webelement_commands.cc',
       ],
       'conditions': [
         ['OS=="linux"', {
@@ -837,6 +839,7 @@
         'chromedriver_lib',
         '../base/base.gyp:test_support_base',
         '../testing/gtest.gyp:gtest',
+        '../skia/skia.gyp:skia',
       ],
       'include_dirs': [
         '..',
@@ -844,6 +847,7 @@
       'sources': [
         '../base/test/run_all_unittests.cc',
         'test/webdriver/utility_functions_unittest.cc',
+        'test/webdriver/webdriver_key_converter_unittest.cc',
       ],
       'conditions': [
         ['OS=="win"', {

@@ -5,8 +5,10 @@
 #include "chrome/test/webdriver/automation.h"
 
 #include "base/command_line.h"
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
@@ -63,6 +65,26 @@ void Automation::ExecuteScript(const std::string& frame_xpath,
       wide_xpath, wide_script, &wide_result);
   if (*success)
     *result = WideToUTF8(wide_result);
+}
+
+void Automation::SendWebKeyEvent(const WebKeyEvent& key_event,
+                                 bool* success) {
+  scoped_ptr<DictionaryValue> dict(new DictionaryValue);
+  dict->SetString("command", "SendKeyEventToActiveTab");
+  dict->SetInteger("type", key_event.type);
+  dict->SetInteger("nativeKeyCode", key_event.key_code);
+  dict->SetInteger("windowsKeyCode", key_event.key_code);
+  dict->SetString("unmodifiedText", key_event.unmodified_text);
+  dict->SetString("text", key_event.modified_text);
+  dict->SetInteger("modifiers", key_event.modifiers);
+  dict->SetBoolean("isSystemKey", false);
+  std::string request;
+  base::JSONWriter::Write(dict.get(), false, &request);
+  std::string reply;
+  *success = browser_->SendJSONRequest(request, &reply);
+  if (!*success) {
+    LOG(ERROR) << "Could not send web key event. Reply: " << reply;
+  }
 }
 
 void Automation::NavigateToURL(const std::string& url,
