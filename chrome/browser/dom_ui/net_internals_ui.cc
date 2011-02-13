@@ -322,7 +322,7 @@ class NetInternalsMessageHandler::IOThreadImpl
   // or partial entries.
   //
   // This is only read and written to on the UI thread.
-  bool was_domui_deleted_;
+  bool was_webui_deleted_;
 
   // True if we have attached an observer to the NetLog already.
   bool is_observing_log_;
@@ -577,7 +577,7 @@ NetInternalsMessageHandler::IOThreadImpl::IOThreadImpl(
       handler_(handler),
       io_thread_(io_thread),
       context_getter_(context_getter),
-      was_domui_deleted_(false),
+      was_webui_deleted_(false),
       is_observing_log_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -622,7 +622,7 @@ void NetInternalsMessageHandler::IOThreadImpl::SendPassiveLogEntries(
 
 void NetInternalsMessageHandler::IOThreadImpl::OnWebUIDeleted() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  was_domui_deleted_ = true;
+  was_webui_deleted_ = true;
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
@@ -1189,7 +1189,7 @@ void NetInternalsMessageHandler::IOThreadImpl::CallJavascriptFunction(
     const std::wstring& function_name,
     Value* arg) {
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    if (handler_ && !was_domui_deleted_) {
+    if (handler_ && !was_webui_deleted_) {
       // We check |handler_| in case it was deleted on the UI thread earlier
       // while we were running on the IO thread.
       handler_->CallJavascriptFunction(function_name, arg);

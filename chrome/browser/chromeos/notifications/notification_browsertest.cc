@@ -572,7 +572,7 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestAddWebUIMessageCallback) {
 IN_PROC_BROWSER_TEST_F(NotificationTest, TestWebUIMessageCallback) {
   BalloonCollectionImpl* collection = GetBalloonCollectionImpl();
   Profile* profile = browser()->profile();
-  // a notification that sends 'test' domui message back to chrome.
+  // A notification that sends 'test' WebUI message back to chrome.
   const GURL content_url(
       "data:text/html;charset=utf-8,"
       "<html><script>function send() { chrome.send('test', ['']); }</script>"

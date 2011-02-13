@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,10 +18,10 @@ namespace chromeos {
 
 class LoginStatusConsumer;
 
-// AuthenticatorFacade operates as an interface between the DOMui login handling
+// AuthenticatorFacade operates as an interface between the WebUI login handling
 // layer and the authentication layer. This allows for using a stubbed version
 // of authentication during testing if needed. Also this allows for a clear
-// seperation between the DOMui login handling code and the code that deals with
+// seperation between the WebUI login handling code and the code that deals with
 // authentication.
 // What code will be compiled with what DEPS flags:
 // touchui == 0 || chromeos == 0

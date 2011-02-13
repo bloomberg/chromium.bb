@@ -262,7 +262,7 @@ class MenuHandler : public chromeos::MenuHandlerBase,
   // This is a utility WebUI message to print debug message.
   // Menu can't use dev tool as it lives outside of browser.
   // TODO(oshima): This is inconvenient and figure out how we can use
-  // dev tools for menus (and other domui that does not belong to browser).
+  // dev tools for menus (and other WebUI that does not belong to browser).
   void HandleLog(const ListValue* values);
 
   // TabContentsDelegate implements:

@@ -41,7 +41,7 @@ class LoginUIHTMLSource : public ChromeURLDataManager::DataSource {
   DISALLOW_COPY_AND_ASSIGN(LoginUIHTMLSource);
 };
 
-// Main LoginUI handling function. It handles the DOMui hooks that are supplied
+// Main LoginUI handling function. It handles the WebUI hooks that are supplied
 // for the login page to use for authentication. It passes the key pair form the
 // login page to the AuthenticatorFacade. The facade then will call back into
 // this class with the result, which will then be used to determine the browser
@@ -77,7 +77,7 @@ class LoginUIHandler : public WebUIMessageHandler,
   DISALLOW_COPY_AND_ASSIGN(LoginUIHandler);
 };
 
-// Boilerplate class that is used to associate the LoginUI code with the DOMui
+// Boilerplate class that is used to associate the LoginUI code with the WebUI
 // code.
 class LoginUI : public WebUI {
  public:

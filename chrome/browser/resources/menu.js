@@ -48,7 +48,7 @@ MenuItem.prototype = {
    *    will be added to.
    * @param {Object} attrs JSON object that represents this menu items
    *    properties.  This is created from menu model in C code.  See
-   *    chromeos/views/native_menu_domui.cc.
+   *    chromeos/views/native_menu_webui.cc.
    * @param {Object} model The model object.
    */
   init: function(menu, attrs, model) {
@@ -252,7 +252,7 @@ Menu.prototype = {
   /**
    * Initialize the menu.
    * @param {Object} config Configuration parameters in JSON format.
-   *  See chromeos/views/native_menu_domui.cc for details.
+   *  See chromeos/views/native_menu_webui.cc for details.
    */
   init: function(config) {
     // List of menu items

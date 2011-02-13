@@ -1318,7 +1318,7 @@ const char kCompressSystemFeedback[]        = "compress-sys-feedback";
 const char kForceStubLibcros[]              = "force-stub-libcros";
 
 // Enables WebUI menu.
-const char kEnableWebUIMenu[]               = "enable-domui-menu";
+const char kEnableWebUIMenu[]               = "enable-webui-menu";
 
 // Enables Media Player.
 const char kEnableMediaPlayer[]             = "enable-media-player";

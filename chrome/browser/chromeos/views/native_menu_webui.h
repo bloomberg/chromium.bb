@@ -95,7 +95,7 @@ class NativeMenuWebUI : public views::MenuWrapper,
   // Used in interactive_ui_test to wait for menu opened.
   void InputIsReady();
 
-  // Sets/Gets the url for the domui menu.
+  // Sets/Gets the url for the WebUI menu.
   void set_menu_url(const GURL& url) { menu_url_ = url; }
   const GURL& menu_url() const { return menu_url_; }
 

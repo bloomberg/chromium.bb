@@ -340,7 +340,7 @@ void ToolbarView::RunMenu(views::View* source, const gfx::Point& /* pt */) {
     wrench_menu_2_->RunMenuAt(gfx::Point(bounds.right(), bounds.bottom()),
                               views::Menu2::ALIGN_TOPRIGHT);
     // TODO(oshima): nuke this once we made decision about go or no go
-    // for domui menu.
+    // for WebUI menu.
     goto cleanup;
   }
 #endif

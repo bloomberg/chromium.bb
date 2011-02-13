@@ -461,7 +461,7 @@ function requestExtensionsData() {
 
 // Used for observing function of the backend datasource for this page by
 // tests.
-var domui_responded_ = false;
+var webui_responded_ = false;
 
 // Used to only do some work the first time we render.
 var rendered_once_ = false;
@@ -471,7 +471,7 @@ var rendered_once_ = false;
  * the current state of installed extensions.
  */
 function returnExtensionsData(extensionsData){
-  domui_responded_ = true;
+  webui_responded_ = true;
   devModeExpanded = extensionsData.developerMode;
 
   var bodyContainer = document.getElementById('body-container');

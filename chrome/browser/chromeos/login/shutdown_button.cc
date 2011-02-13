@@ -97,8 +97,7 @@ void ShutdownButton::Init() {
 }
 
 void ShutdownButton::LayoutIn(views::View* parent) {
-  // No RTL for now. RTL will be handled in new
-  // domui based Login/Locker.
+  // No RTL for now. RTL will be handled in new WebUI based Login/Locker.
   gfx::Size button_size = GetPreferredSize();
   SetBounds(
       parent->width() - button_size.width()- kRightPadding,
