@@ -95,9 +95,14 @@ class IOThread : public BrowserProcessSubThread {
   void UnregisterURLRequestContextGetter(
       ChromeURLRequestContextGetter* url_request_context_getter);
 
-  // Handles changing to On The Record mode.  Posts a task for this onto the
+  // Handles changing to On The Record mode.  Post a task for this onto the
   // IOThread's message loop.
   void ChangedToOnTheRecord();
+
+  // Clears the host cache.  Intended to be used to prevent exposing recently
+  // visited sites on about:net-internals/#dns and about:dns pages.  Must be
+  // called on the IO thread.
+  void ClearHostCache();
 
  protected:
   virtual void Init();

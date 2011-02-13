@@ -500,14 +500,21 @@ void IOThread::ChangedToOnTheRecordOnIOThread() {
 
   // Clear the host cache to avoid showing entries from the OTR session
   // in about:net-internals.
+  ClearHostCache();
+
+  // Clear all of the passively logged data.
+  // TODO(eroman): this is a bit heavy handed, really all we need to do is
+  //               clear the data pertaining to off the record context.
+  net_log_->ClearAllPassivelyCapturedEvents();
+}
+
+void IOThread::ClearHostCache() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
   if (globals_->host_resolver->GetAsHostResolverImpl()) {
     net::HostCache* host_cache =
         globals_->host_resolver.get()->GetAsHostResolverImpl()->cache();
     if (host_cache)
       host_cache->clear();
   }
-  // Clear all of the passively logged data.
-  // TODO(eroman): this is a bit heavy handed, really all we need to do is
-  //               clear the data pertaining to off the record context.
-  net_log_->ClearAllPassivelyCapturedEvents();
 }

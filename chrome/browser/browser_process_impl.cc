@@ -598,6 +598,10 @@ bool BrowserProcessImpl::have_inspector_files() const {
   return have_inspector_files_;
 }
 
+ChromeNetLog* BrowserProcessImpl::net_log() {
+  return net_log_.get();
+}
+
 void BrowserProcessImpl::ClearLocalState(const FilePath& profile_path) {
   webkit_database::DatabaseTracker::ClearLocalState(profile_path);
 }

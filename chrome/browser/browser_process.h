@@ -23,6 +23,7 @@ namespace safe_browsing {
 class ClientSideDetectionService;
 }
 
+class ChromeNetLog;
 class DevToolsManager;
 class DownloadRequestLimiter;
 class DownloadStatusUpdater;
@@ -184,6 +185,8 @@ class BrowserProcess {
   // call this function before we have a definite answer from the disk. In that
   // case, we default to returning true.
   virtual bool have_inspector_files() const = 0;
+
+  virtual ChromeNetLog* net_log() = 0;
 
 #if defined(IPC_MESSAGE_LOG_ENABLED)
   // Enable or disable IPC logging for the browser, all processes
