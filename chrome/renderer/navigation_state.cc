@@ -20,6 +20,16 @@ void NavigationState::swap_user_script_idle_scheduler(
   user_script_idle_scheduler_.swap(state->user_script_idle_scheduler_);
 }
 
+const base::Time& NavigationState::prerendered_page_display_time() const {
+  return prerendered_page_display_time_;
+}
+
+void NavigationState::set_prerendered_page_display_time(
+    const base::Time& value) {
+  DCHECK(prerendered_page_display_time_.is_null());
+  prerendered_page_display_time_ = value;
+}
+
 void NavigationState::set_password_form_data(webkit_glue::PasswordForm* data) {
   password_form_data_.reset(data);
 }
@@ -27,6 +37,24 @@ void NavigationState::set_password_form_data(webkit_glue::PasswordForm* data) {
 void NavigationState::set_alt_error_page_fetcher(
     webkit_glue::AltErrorPageResourceFetcher* f) {
   alt_error_page_fetcher_.reset(f);
+}
+
+bool NavigationState::is_prerendering() const {
+  return is_prerendering_;
+}
+
+void NavigationState::set_is_prerendering(bool is_prerendering) {
+  is_prerendering_ = is_prerendering;
+}
+
+bool NavigationState::was_started_as_prerender() const {
+  return was_started_as_prerender_;
+}
+
+void NavigationState::set_was_started_as_prerender(
+    bool was_started_as_prerender) {
+  DCHECK(!was_started_as_prerender_);
+  was_started_as_prerender_ = was_started_as_prerender;
 }
 
 NavigationState::NavigationState(PageTransition::Type transition_type,
@@ -45,6 +73,7 @@ NavigationState::NavigationState(PageTransition::Type transition_type,
       pending_history_list_offset_(pending_history_list_offset),
       postpone_loading_data_(false),
       is_prerendering_(false),
+      was_started_as_prerender_(false),
       cache_policy_override_set_(false),
       cache_policy_override_(WebKit::WebURLRequest::UseProtocolCachePolicy),
       user_script_idle_scheduler_(NULL),

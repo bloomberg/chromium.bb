@@ -1424,6 +1424,7 @@ void RenderView::OnNavigate(const ViewMsg_Navigate_Params& params) {
         navigation_state->set_load_type(NavigationState::NORMAL_LOAD);
       } else {
         navigation_state->set_load_type(NavigationState::PRERENDER_LOAD);
+        navigation_state->set_was_started_as_prerender(true);
         navigation_state->set_is_prerendering(true);
       }
     }
@@ -3221,8 +3222,11 @@ void RenderView::didCreateDataSource(WebFrame* frame, WebDataSource* ds) {
     if (ds_old) {
       NavigationState* navigation_state =
           NavigationState::FromDataSource(ds_old);
-      if (navigation_state)
+      if (navigation_state) {
         state->set_is_prerendering(navigation_state->is_prerendering());
+        state->set_was_started_as_prerender(
+            navigation_state->was_started_as_prerender());
+      }
     }
   }
 
@@ -4716,6 +4720,7 @@ void RenderView::OnDisplayPrerenderedPage() {
 
   DCHECK(navigation_state->is_prerendering());
   navigation_state->set_is_prerendering(false);
+  navigation_state->set_prerendered_page_display_time(Time::Now());
 }
 
 void RenderView::OnFileChooserResponse(const std::vector<FilePath>& paths) {
