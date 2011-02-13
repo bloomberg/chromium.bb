@@ -91,7 +91,7 @@ struct wlsc_compositor {
 	struct wlsc_shm shm;
 	EGLDisplay display;
 	EGLContext context;
-	GLuint fbo, vbo;
+	GLuint fbo;
 	GLuint proj_uniform, tex_uniform;
 	struct wl_buffer **pointer_buffers;
 	struct wl_display *wl_display;

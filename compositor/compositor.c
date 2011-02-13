@@ -363,12 +363,7 @@ static void
 wlsc_surface_draw(struct wlsc_surface *es, struct wlsc_output *output)
 {
 	struct wlsc_compositor *ec = es->compositor;
-	struct wlsc_matrix tmp;
-
-	tmp = es->matrix;
-	wlsc_matrix_multiply(&tmp, &output->matrix);
-	glUniformMatrix4fv(ec->proj_uniform, 1, GL_FALSE, tmp.d);
-	glUniform1i(ec->tex_uniform, 0);
+	GLfloat vertices[4 * 4];
 
 	if (es->visual == &ec->compositor.argb_visual) {
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -380,12 +375,31 @@ wlsc_surface_draw(struct wlsc_surface *es, struct wlsc_output *output)
 		glDisable(GL_BLEND);
 	}
 
+	vertices[ 0] = es->x;
+	vertices[ 1] = es->y;
+	vertices[ 2] = 0.0;
+	vertices[ 3] = 0.0;
+
+	vertices[ 4] = es->x;
+	vertices[ 5] = es->y + es->height;
+	vertices[ 6] = 0.0;
+	vertices[ 7] = 1.0;
+
+	vertices[ 8] = es->x + es->width;
+	vertices[ 9] = es->y;
+	vertices[10] = 1.0;
+	vertices[11] = 0.0;
+
+	vertices[12] = es->x + es->width;
+	vertices[13] = es->y + es->height;
+	vertices[14] = 1.0;
+	vertices[15] = 1.0;
+
 	glBindTexture(GL_TEXTURE_2D, es->texture);
-	glBindBuffer(GL_ARRAY_BUFFER, ec->vbo);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE,
-			      5 * sizeof(GLfloat), NULL);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE,
+			      4 * sizeof(GLfloat), vertices);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE,
-			      5 * sizeof(GLfloat), (GLfloat *) 0 + 3);
+			      4 * sizeof(GLfloat), &vertices[2]);
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
@@ -431,6 +445,9 @@ wlsc_output_repaint(struct wlsc_output *output)
 	pixman_box32_t *extents;
 
 	glViewport(0, 0, output->width, output->height);
+
+	glUniformMatrix4fv(ec->proj_uniform, 1, GL_FALSE, output->matrix.d);
+	glUniform1i(ec->tex_uniform, 0);
 
 	pixman_region32_init(&new_damage);
 	pixman_region32_init(&total_damage);
@@ -1153,12 +1170,12 @@ wlsc_output_post_geometry(struct wl_client *client, struct wl_object *global)
 
 static const char vertex_shader[] =
 	"uniform mat4 proj;\n"
-	"attribute vec4 position;\n"
+	"attribute vec2 position;\n"
 	"attribute vec2 texcoord;\n"
 	"varying vec2 v_texcoord;\n"
 	"void main()\n"
 	"{\n"
-	"   gl_Position = proj * position;\n"
+	"   gl_Position = proj * vec4(position, 0.0, 1.0);\n"
 	"   v_texcoord = texcoord;\n"
 	"}\n";
 
@@ -1177,7 +1194,6 @@ init_shaders(struct wlsc_compositor *ec)
 	GLuint v, f, program;
 	const char *p;
 	char msg[512];
-	GLfloat vertices[4 * 5];
 	GLint status;
 
 	p = vertex_shader;
@@ -1219,34 +1235,6 @@ init_shaders(struct wlsc_compositor *ec)
 	glUseProgram(program);
 	ec->proj_uniform = glGetUniformLocation(program, "proj");
 	ec->tex_uniform = glGetUniformLocation(program, "tex");
-
-	vertices[ 0] = 0.0;
-	vertices[ 1] = 0.0;
-	vertices[ 2] = 0.0;
-	vertices[ 3] = 0.0;
-	vertices[ 4] = 0.0;
-
-	vertices[ 5] = 0.0;
-	vertices[ 6] = 1.0;
-	vertices[ 7] = 0.0;
-	vertices[ 8] = 0.0;
-	vertices[ 9] = 1.0;
-
-	vertices[10] = 1.0;
-	vertices[11] = 0.0;
-	vertices[12] = 0.0;
-	vertices[13] = 1.0;
-	vertices[14] = 0.0;
-
-	vertices[15] = 1.0;
-	vertices[16] = 1.0;
-	vertices[17] = 0.0;
-	vertices[18] = 1.0;
-	vertices[19] = 1.0;
-
-	glGenBuffers(1, &ec->vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, ec->vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof vertices, vertices, GL_STATIC_DRAW);
 
 	return 0;
 }
