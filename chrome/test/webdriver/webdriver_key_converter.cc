@@ -200,7 +200,7 @@ void ConvertKeysToWebKeyEvents(const string16& client_keys,
     if (IsModifierKey(key)) {
       // Press or release the modifier, and adjust |sticky_modifiers|.
       bool modifier_down = false;
-      ui::KeyboardCode key_code;
+      ui::KeyboardCode key_code = ui::VKEY_UNKNOWN;
       if (key == kWebDriverShiftKey) {
         sticky_modifiers ^= automation::kShiftKeyMask;
         modifier_down = sticky_modifiers & automation::kShiftKeyMask;
@@ -217,6 +217,8 @@ void ConvertKeysToWebKeyEvents(const string16& client_keys,
         sticky_modifiers ^= automation::kMetaKeyMask;
         modifier_down = sticky_modifiers & automation::kMetaKeyMask;
         key_code = ui::VKEY_COMMAND;
+      } else {
+        NOTREACHED();
       }
       if (modifier_down)
         key_events->push_back(CreateKeyDownEvent(key_code, sticky_modifiers));
