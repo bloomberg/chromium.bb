@@ -24,8 +24,7 @@ class SessionManager {
   // Returns the singleton instance.
   static SessionManager* GetInstance();
 
-  std::string GetIPAddress();
-  bool SetIPAddress(const std::string& port);
+  std::string GetAddress();
 
   Session* Create();
   bool Delete(const std::string& id);
@@ -33,19 +32,15 @@ class SessionManager {
 
   Session* GetSession(const std::string& id) const;
 
+  void set_port(const std::string& port) { port_ = port; }
+
  private:
   SessionManager();
   ~SessionManager();
   friend struct DefaultSingletonTraits<SessionManager>;
-  std::string IPLookup(const std::string& nic);
 
   std::map<std::string, Session*> map_;
   mutable base::Lock map_lock_;
-  // Record the address and port for the HTTP 303 See other redirect.
-  // We save the IP and Port of the machine chromedriver is running on since
-  // a HTTP 303, see other,  resdirect is sent after a successful creation of
-  // a session, ie: http://172.22.41.105:8080/session/DFSSE453CV588
-  std::string addr_;
   std::string port_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionManager);

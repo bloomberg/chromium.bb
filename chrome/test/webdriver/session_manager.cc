@@ -5,103 +5,29 @@
 #include "chrome/test/webdriver/session_manager.h"
 
 #include "base/logging.h"
-#include "base/scoped_ptr.h"
-#include "base/threading/thread.h"
 #include "chrome/test/webdriver/utility_functions.h"
+#include "net/base/net_util.h"
 
-#if defined(OS_POSIX)
-#include <arpa/inet.h>
-#include <net/if.h>
-#include <netdb.h>
-#include <sys/ioctl.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <unistd.h>
-#elif defined(OS_WIN)
-#include <Shellapi.h>
+#if defined(OS_WIN)
 #include <Winsock2.h>
 #endif
 
 namespace webdriver {
 
-std::string SessionManager::GetIPAddress() {
-  return std::string(addr_) + std::string(":") + port_;
-}
-
-std::string SessionManager::IPLookup(const std::string& nic) {
-#ifdef OS_POSIX
-    int socket_conn;
-    struct ifreq ifr;
-    struct sockaddr_in *sin = (struct sockaddr_in *) &ifr.ifr_addr;
-
-    memset(&ifr, 0, sizeof(ifr));
-    snprintf(ifr.ifr_name, IFNAMSIZ, "%s", nic.c_str());
-    sin->sin_family = AF_INET;
-
-    if (0 > (socket_conn = socket(AF_INET, SOCK_STREAM, 0))) {
-      return std::string("");
-    }
-
-    if (0 == ioctl(socket_conn, SIOCGIFADDR, &ifr)) {
-      return std::string(inet_ntoa(sin->sin_addr));
-    }
-#endif  // Cann't use else since a warning will be generated.
-  return std::string("");
-}
-
-bool SessionManager::SetIPAddress(const std::string& p) {
-  port_ = p;
-  std::string prefix("192.");
-#ifdef OS_POSIX
-  char buff[32];
-
-  for (int i = 0; i < 10; ++i) {
-#ifdef OS_MACOSX
-    snprintf(buff, sizeof(buff), "%s%d", "en", i);
-#elif OS_LINUX
-    snprintf(buff, sizeof(buff), "%s%d", "eth", i);
+std::string SessionManager::GetAddress() {
+  std::string hostname = net::GetHostName();
+#if defined(OS_WIN)
+  if (hostname.length()) {
+    // Get the fully qualified name.
+    struct hostent* host_entry = gethostbyname(hostname.c_str());
+    if (host_entry)
+      hostname = host_entry->h_name;
+  }
 #endif
-    addr_ = IPLookup(std::string(buff));
-    if (addr_.length() > 0) {
-      if ((addr_.compare("127.0.0.1") != 0) &&
-          (addr_.compare("127.0.1.1") != 0) &&
-          (addr_.compare(0, prefix.size(), prefix) != 0)) {
-         return true;
-      }
-    }
+  if (hostname.empty()) {
+    hostname = "localhost";
   }
-  return false;
-#elif OS_WIN
-  hostent *h;
-  char host[1024];
-  WORD wVersionRequested;
-  WSADATA wsaData;
-
-  memset(host, 0, sizeof host);
-  wVersionRequested = MAKEWORD(2, 0);
-  if (WSAStartup(wVersionRequested, &wsaData) != 0) {
-    LOG(ERROR) << "Could not initialize the Windows Sockets library";
-    return false;
-  }
-  if (gethostname(host, sizeof host) != 0) {
-    LOG(ERROR) << "Could not find the hostname of this machine";
-    WSACleanup();
-    return false;
-  }
-  h = gethostbyname(host);
-  for (int i = 0; ((h->h_addr_list[i]) && (i < h->h_length)); ++i) {
-    addr_ = std::string(inet_ntoa(*(struct in_addr *)h->h_addr_list[i]));
-    if ((addr_.compare("127.0.0.1") != 0) &&
-        (addr_.compare("127.0.1.1") != 0) &&
-        (addr_.compare(0, prefix.size(), prefix) != 0)) {
-      WSACleanup();
-      return true;
-    }
-  }
-
-  WSACleanup();
-  return false;
-#endif
+  return hostname + ":" + port_;
 }
 
 Session* SessionManager::Create() {
@@ -156,7 +82,7 @@ Session* SessionManager::GetSession(const std::string& id) const {
   return it->second;
 }
 
-SessionManager::SessionManager() : addr_(""), port_("") {}
+SessionManager::SessionManager() : port_("") {}
 
 SessionManager::~SessionManager() {}
 

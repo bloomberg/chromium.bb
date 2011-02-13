@@ -36,7 +36,7 @@ void CreateSession::ExecutePost(Response* const response) {
 
   VLOG(1) << "Created session " << session_id;
   std::ostringstream stream;
-  stream << "http://" << session_manager->GetIPAddress() << "/session/"
+  stream << "http://" << session_manager->GetAddress() << "/session/"
          << session_id;
   response->set_status(kSeeOther);
   response->set_value(Value::CreateStringValue(stream.str()));

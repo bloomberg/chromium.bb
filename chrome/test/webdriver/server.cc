@@ -155,8 +155,8 @@ int main(int argc, char *argv[]) {
     root = cmd_line->GetSwitchValueASCII("root");
 
   VLOG(1) << "Using port: " << port;
-  webdriver::SessionManager* session = webdriver::SessionManager::GetInstance();
-  session->SetIPAddress(port);
+  webdriver::SessionManager* manager = webdriver::SessionManager::GetInstance();
+  manager->set_port(port);
 
   // Initialize SHTTPD context.
   // Listen on port 9515 or port specified on command line.
