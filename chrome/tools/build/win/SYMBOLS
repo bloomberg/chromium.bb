@@ -3,4 +3,7 @@ chrome_exe.pdb
 libEGL.pdb
 libGLESv2.pdb
 mini_installer.pdb
+nacl64_dll.pdb
+nacl64_exe.pdb
+ppGoogleNaClPluginChrome.pdb
 setup.pdb
