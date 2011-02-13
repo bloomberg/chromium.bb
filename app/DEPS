@@ -1,5 +1,4 @@
 include_rules = [
-  "+gfx",
   "+grit/app_locale_settings.h",
   "+grit/app_strings.h",
   "+net",

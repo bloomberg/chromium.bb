@@ -27,9 +27,9 @@
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/common/url_constants.h"
-#include "gfx/codec/png_codec.h"
-#include "gfx/favicon_size.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/favicon_size.h"
 
 namespace {
 

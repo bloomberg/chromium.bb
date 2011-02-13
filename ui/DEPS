@@ -1,5 +1,4 @@
 include_rules = [
-  "+gfx",
   "+net",
   "+skia",
   "+third_party/mozilla",

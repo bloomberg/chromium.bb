@@ -11,7 +11,7 @@
 
 #if defined(OS_LINUX)
 #include <gtk/gtk.h>
-#include "gfx/gtk_util.h"
+#include "ui/gfx/gtk_util.h"
 #elif defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #include "skia/ext/skia_utils_mac.h"

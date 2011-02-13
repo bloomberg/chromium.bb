@@ -1,6 +1,0 @@
-include_rules = [
-  "+base",
-  "+grit/gfx_resources.h",
-  "+skia",
-  "+ui/gfx",
-]

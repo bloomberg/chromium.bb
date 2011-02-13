@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "build/build_config.h"
-#include "gfx/native_widget_types.h"  // Forward-declares GdkPixbuf and NSImage.
+#include "ui/gfx/native_widget_types.h"  // Forward-declares GdkPixbuf and NSImage.
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace {

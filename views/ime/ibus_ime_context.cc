@@ -6,10 +6,10 @@
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "gfx/rect.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
+#include "ui/gfx/rect.h"
 #include "views/events/event.h"
 #include "views/ime/ime_context.h"
 

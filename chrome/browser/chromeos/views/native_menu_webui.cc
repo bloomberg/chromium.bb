@@ -16,8 +16,8 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/url_constants.h"
-#include "gfx/rect.h"
 #include "ui/base/models/menu_model.h"
+#include "ui/gfx/rect.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/menu/nested_dispatcher_gtk.h"
 

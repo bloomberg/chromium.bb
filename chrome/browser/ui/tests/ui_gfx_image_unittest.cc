@@ -10,7 +10,7 @@
 
 #if defined(OS_LINUX)
 #include <gtk/gtk.h>
-#include "gfx/gtk_util.h"
+#include "ui/gfx/gtk_util.h"
 #endif
 
 #if defined(TOOLKIT_VIEWS)

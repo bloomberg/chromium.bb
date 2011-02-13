@@ -7,8 +7,6 @@
     <output filename="grit/gfx_resources_map.cc" type="resource_map_source" />
     <output filename="grit/gfx_resources_map.h" type="resource_map_header" />
     <output filename="gfx_resources.pak" type="data_package" />
-    <!-- TODO(sail): remove this file once WebKit has been updated. -->
-    <output filename="../../gfx/gfx_resources.pak" type="data_package" />
     <output filename="gfx_resources.rc" type="rc_all" />
   </outputs>
   <release seq="1">
