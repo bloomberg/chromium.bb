@@ -13,8 +13,9 @@
 
 namespace {
 
-const char NO_SERVER[] = "";
-const char NO_PAC[] = "";
+const char kNoServer[] = "";
+const char kNoBypass[] = "";
+const char kNoPac[] = "";
 
 }  // namespace
 
@@ -22,6 +23,7 @@ class ProxySettingsApiTest : public ExtensionApiTest {
  protected:
   void ValidateSettings(int expected_mode,
                         const std::string& expected_server,
+                        const std::string& bypass,
                         const std::string& expected_pac_url,
                         PrefService* pref_service) {
     const PrefService::Preference* pref =
@@ -36,6 +38,13 @@ class ProxySettingsApiTest : public ExtensionApiTest {
     EXPECT_EQ(expected_mode, mode);
 
     std::string value;
+    if (!bypass.empty()) {
+       ASSERT_TRUE(dict.GetBypassList(&value));
+       EXPECT_EQ(bypass, value);
+     } else {
+       EXPECT_FALSE(dict.GetBypassList(&value));
+     }
+
     if (!expected_pac_url.empty()) {
        ASSERT_TRUE(dict.GetPacUrl(&value));
        EXPECT_EQ(expected_pac_url, value);
@@ -59,13 +68,6 @@ class ProxySettingsApiTest : public ExtensionApiTest {
   }
 };
 
-namespace {
-
-const char kNoServer[] = "";
-const char kNoPac[] = "";
-
-}  // namespace
-
 // Tests direct connection settings.
 IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, ProxyDirectSettings) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -76,7 +78,8 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, ProxyDirectSettings) {
   ASSERT_TRUE(extension);
 
   PrefService* pref_service = browser()->profile()->GetPrefs();
-  ValidateSettings(ProxyPrefs::MODE_DIRECT, kNoServer, kNoPac, pref_service);
+  ValidateSettings(ProxyPrefs::MODE_DIRECT, kNoServer, kNoBypass, kNoPac,
+                   pref_service);
 }
 
 // Tests auto-detect settings.
@@ -89,7 +92,7 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, ProxyAutoSettings) {
   ASSERT_TRUE(extension);
 
   PrefService* pref_service = browser()->profile()->GetPrefs();
-  ValidateSettings(ProxyPrefs::MODE_AUTO_DETECT, kNoServer, kNoPac,
+  ValidateSettings(ProxyPrefs::MODE_AUTO_DETECT, kNoServer, kNoBypass, kNoPac,
                    pref_service);
 }
 
@@ -103,7 +106,7 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, ProxyPacScript) {
   ASSERT_TRUE(extension);
 
   PrefService* pref_service = browser()->profile()->GetPrefs();
-  ValidateSettings(ProxyPrefs::MODE_PAC_SCRIPT, kNoServer,
+  ValidateSettings(ProxyPrefs::MODE_PAC_SCRIPT, kNoServer, kNoBypass,
                    "http://wpad/windows.pac", pref_service);
 }
 
@@ -119,6 +122,7 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, ProxyFixedSingle) {
   PrefService* pref_service = browser()->profile()->GetPrefs();
   ValidateSettings(ProxyPrefs::MODE_FIXED_SERVERS,
                  "127.0.0.1:100",
+                 kNoBypass,
                  kNoPac,
                  pref_service);
 }
@@ -133,7 +137,8 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, ProxySystem) {
   ASSERT_TRUE(extension);
 
   PrefService* pref_service = browser()->profile()->GetPrefs();
-  ValidateSettings(ProxyPrefs::MODE_SYSTEM, kNoServer, kNoPac, pref_service);
+  ValidateSettings(ProxyPrefs::MODE_SYSTEM, kNoServer, kNoBypass, kNoPac,
+                   pref_service);
 }
 
 // Tests setting separate proxies for each scheme.
@@ -151,6 +156,7 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, ProxyFixedIndividual) {
                        "https=2.2.2.2:80;"  // http:// is pruned.
                        "ftp=3.3.3.3:9000;"  // http:// is pruned.
                        "socks=socks4://4.4.4.4:9090",
+                   kNoBypass,
                    kNoPac,
                    pref_service);
 
@@ -161,6 +167,7 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, ProxyFixedIndividual) {
                        "https=2.2.2.2:80;"
                        "ftp=3.3.3.3:9000;"
                        "socks=socks4://4.4.4.4:9090",
+                   kNoBypass,
                    kNoPac,
                    pref_service);
 }
@@ -185,6 +192,7 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest,
                        "https=socks5://2.2.2.2:1080;"  // socks5 equals socks.
                        "ftp=3.3.3.3:9000;"
                        "socks=socks4://4.4.4.4:9090",
+                   kNoBypass,
                    kNoPac,
                    pref_service);
 }
@@ -205,6 +213,7 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest,
                        "https=socks5://2.2.2.2:1080;"
                        "ftp=3.3.3.3:9000;"
                        "socks=socks4://4.4.4.4:9090",
+                   kNoBypass,
                    kNoPac,
                    pref_service);
 
@@ -215,6 +224,7 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest,
                        "https=socks5://6.6.6.6:1080;"
                        "ftp=7.7.7.7:9000;"
                        "socks=socks4://8.8.8.8:9090",
+                   kNoBypass,
                    kNoPac,
                    pref_service);
 }
@@ -230,4 +240,29 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, ProxyFixedIndividualRemove) {
 
   PrefService* pref_service = browser()->profile()->GetPrefs();
   ExpectNoSettings(pref_service);
+}
+
+IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest,
+    ProxyBypass) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalExtensionApis);
+
+  ASSERT_TRUE(RunExtensionTest("proxy/bypass")) << message_;
+  const Extension* extension = GetSingleLoadedExtension();
+  ASSERT_TRUE(extension);
+
+  PrefService* pref_service = browser()->profile()->GetPrefs();
+  ValidateSettings(ProxyPrefs::MODE_FIXED_SERVERS,
+                   "http=1.1.1.1:80",
+                   "localhost,::1,foo.bar,<local>",
+                   kNoPac,
+                   pref_service);
+
+  // Now check the incognito preferences.
+  pref_service = browser()->profile()->GetOffTheRecordProfile()->GetPrefs();
+  ValidateSettings(ProxyPrefs::MODE_FIXED_SERVERS,
+                   "http=1.1.1.1:80",
+                   "localhost,::1,foo.bar,<local>",
+                   kNoPac,
+                   pref_service);
 }

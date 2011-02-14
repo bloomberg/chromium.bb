@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_proxy_api.h"
 
 #include "base/string_util.h"
+#include "base/string_tokenizer.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/browser/profiles/profile.h"
@@ -49,6 +50,7 @@ const char kProxyCfgPacScriptUrl[] = "url";
 const char kProxyCfgRules[] = "rules";
 const char kProxyCfgRuleHost[] = "host";
 const char kProxyCfgRulePort[] = "port";
+const char kProxyCfgBypassList[] = "bypassList";
 const char kProxyCfgScheme[] = "scheme";
 
 COMPILE_ASSERT(SCHEME_MAX == SCHEME_SOCKS, SCHEME_MAX_must_equal_SCHEME_SOCKS);
@@ -58,6 +60,35 @@ COMPILE_ASSERT(arraysize(scheme_name) == SCHEME_MAX + 1,
                scheme_name_array_is_wrong_size);
 COMPILE_ASSERT(SCHEME_ALL == 0, singleProxy_must_be_first_option);
 
+bool TokenizeToStringList(
+    const std::string& in, const std::string& delims, ListValue** out) {
+  scoped_ptr<ListValue> result(new ListValue);
+  StringTokenizer entries(in, delims);
+  while (entries.GetNext()) {
+    result->Append(Value::CreateStringValue(entries.token()));
+  }
+  *out = result.release();
+  return true;
+}
+
+bool JoinStringList(
+    ListValue* list, const std::string& joiner, std::string* out) {
+  std::string result;
+  for (size_t i = 0; i < list->GetSize(); ++i) {
+    if (!result.empty())
+      result.append(joiner);
+    // TODO(battre): handle UTF-8 (http://crbug.com/72692)
+    string16 entry;
+    if (!list->GetString(i, &entry))
+      return false;
+    if (!IsStringASCII(entry))
+      return false;
+    result.append(UTF16ToASCII(entry));
+  }
+  *out = result;
+  return true;
+}
+
 // Converts a proxy server description |dict| as passed by the API caller
 // (e.g. for the http proxy in the rules element) and converts it to a
 // ProxyServer. Returns true if successful.
@@ -65,16 +96,22 @@ bool GetProxyServer(const DictionaryValue* dict,
                     net::ProxyServer::Scheme default_scheme,
                     net::ProxyServer* proxy_server) {
   std::string scheme_string;  // optional.
-  dict->GetString(kProxyCfgScheme, &scheme_string);
+  // We can safely assume that this is ASCII due to the allowed enumeration
+  // values specified in extension_api.json.
+  dict->GetStringASCII(kProxyCfgScheme, &scheme_string);
 
   net::ProxyServer::Scheme scheme =
       net::ProxyServer::GetSchemeFromURI(scheme_string);
   if (scheme == net::ProxyServer::SCHEME_INVALID)
     scheme = default_scheme;
 
-  std::string host;
-  if (!dict->GetString(kProxyCfgRuleHost, &host))
+  // TODO(battre): handle UTF-8 in hostnames (http://crbug.com/72692)
+  string16 host16;
+  if (!dict->GetString(kProxyCfgRuleHost, &host16))
     return false;
+  if (!IsStringASCII(host16))
+    return false;
+  std::string host = UTF16ToASCII(host16);
 
   int port;  // optional.
   if (!dict->GetInteger(kProxyCfgRulePort, &port))
@@ -146,6 +183,25 @@ bool GetProxyRules(DictionaryValue* proxy_rules, std::string* out) {
   return true;
 }
 
+// Creates a string of the "bypassList" entries of a ProxyRules object (see API
+// documentation) by joining the elements with commas.
+// Returns true if successful (i.e. string could be delivered or no "bypassList"
+// exists in the |proxy_rules|).
+bool GetBypassList(DictionaryValue* proxy_rules, std::string* out) {
+  if (!proxy_rules)
+    return false;
+
+  ListValue* bypass_list;
+  if (!proxy_rules->HasKey(kProxyCfgBypassList)) {
+    *out = "";
+    return true;
+  }
+  if (!proxy_rules->GetList(kProxyCfgBypassList, &bypass_list))
+    return false;
+
+  return JoinStringList(bypass_list, ",", out);
+}
+
 }  // namespace
 
 void ProxySettingsFunction::ApplyPreference(const char* pref_path,
@@ -180,7 +236,9 @@ bool UseCustomProxySettingsFunction::RunImpl() {
   }
 
   std::string proxy_mode;
-  proxy_config->GetString(kProxyCfgMode, &proxy_mode);
+  // We can safely assume that this is ASCII due to the allowed enumeration
+  // values specified in extension_api.json.
+  proxy_config->GetStringASCII(kProxyCfgMode, &proxy_mode);
   ProxyPrefs::ProxyMode mode_enum;
   if (!ProxyPrefs::StringToProxyMode(proxy_mode, &mode_enum)) {
     LOG(ERROR) << "Invalid mode for proxy settings: " << proxy_mode << ". "
@@ -190,12 +248,18 @@ bool UseCustomProxySettingsFunction::RunImpl() {
 
   DictionaryValue* pac_dict = NULL;
   proxy_config->GetDictionary(kProxyCfgPacScript, &pac_dict);
-  std::string pac_url;
-  if (pac_dict && !pac_dict->GetString(kProxyCfgPacScriptUrl, &pac_url)) {
+  // TODO(battre): Handle UTF-8 URLs (http://crbug.com/72692)
+  string16 pac_url16;
+  if (pac_dict && !pac_dict->GetString(kProxyCfgPacScriptUrl, &pac_url16)) {
     LOG(ERROR) << "'pacScript' requires a 'url' field. "
                << "Setting custom proxy settings failed.";
     return false;
   }
+  if (!IsStringASCII(pac_url16)) {
+    LOG(ERROR) << "Only ASCII URLs are supported, yet";
+    return false;
+  }
+  std::string pac_url = UTF16ToASCII(pac_url16);
 
   DictionaryValue* proxy_rules = NULL;
   proxy_config->GetDictionary(kProxyCfgRules, &proxy_rules);
@@ -205,9 +269,12 @@ bool UseCustomProxySettingsFunction::RunImpl() {
                << "Setting custom proxy settings failed.";
     return false;
   }
-
-  // not supported, yet.
   std::string bypass_list;
+  if (proxy_rules && !GetBypassList(proxy_rules, &bypass_list)) {
+    LOG(ERROR) << "Invalid 'bypassList' specified. "
+               << "Setting custom proxy settings failed.";
+    return false;
+  }
 
   DictionaryValue* result_proxy_config = NULL;
   switch (mode_enum) {
@@ -315,18 +382,34 @@ bool GetCurrentProxySettingsFunction::ConvertToApiFormat(
       break;
     }
     case ProxyPrefs::MODE_FIXED_SERVERS: {
-      // TODO(battre): Handle bypass list.
+      scoped_ptr<DictionaryValue> rules_dict(new DictionaryValue);
+
       std::string proxy_servers;
       if (!dict.GetProxyServer(&proxy_servers)) {
-        LOG(ERROR) << "Missing proxy servers";
+        LOG(ERROR) << "Missing proxy servers in configuration";
         return false;
       }
-      DictionaryValue* rules_dict = new DictionaryValue;
-      if (!ParseRules(proxy_servers, rules_dict)) {
+      if (!ParseRules(proxy_servers, rules_dict.get())) {
         LOG(ERROR) << "Could not parse proxy rules";
         return false;
       }
-      api_proxy_config->Set(kProxyCfgRules, rules_dict);
+
+      bool hasBypassList = dict.HasBypassList();
+      if (hasBypassList) {
+        std::string bypass_list_string;
+        if (!dict.GetBypassList(&bypass_list_string)) {
+          LOG(ERROR) << "Invalid bypassList in configuration";
+          return false;
+        }
+        ListValue* bypass_list = NULL;
+        if (TokenizeToStringList(bypass_list_string, ",;", &bypass_list)) {
+          rules_dict->Set(kProxyCfgBypassList, bypass_list);
+        } else {
+          LOG(ERROR) << "Error parsing bypassList " << bypass_list_string;
+          return false;
+        }
+      }
+      api_proxy_config->Set(kProxyCfgRules, rules_dict.release());
       break;
     }
     case ProxyPrefs::kModeCount:

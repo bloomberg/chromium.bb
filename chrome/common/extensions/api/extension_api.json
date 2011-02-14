@@ -3757,7 +3757,8 @@
           "proxyForHttp": {"$ref": "ProxyServer", "optional": true, "description": "The proxy server to be used for HTTP requests."},
           "proxyForHttps": {"$ref": "ProxyServer", "optional": true, "description": "The proxy server to be used for HTTPS requests."},
           "proxyForFtp": {"$ref": "ProxyServer", "optional": true, "description": "The proxy server to be used for FTP requests."},
-          "socksProxy": {"$ref": "ProxyServer", "optional": true, "description": "The proxy server to be used for SOCKS requests."}
+          "socksProxy": {"$ref": "ProxyServer", "optional": true, "description": "The proxy server to be used for SOCKS requests."},
+          "bypassList": {"type": "array", "items": {"type": "string"}, "optional": true, "description": "List of servers to connect to without a proxy server."}
         }
       },
       {

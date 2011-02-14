@@ -33,6 +33,7 @@ class ProxyConfigDictionary {
   bool GetPacUrl(std::string* out) const;
   bool GetProxyServer(std::string* out) const;
   bool GetBypassList(std::string* out) const;
+  bool HasBypassList() const;
 
   static DictionaryValue* CreateDirect();
   static DictionaryValue* CreateAutoDetect();
