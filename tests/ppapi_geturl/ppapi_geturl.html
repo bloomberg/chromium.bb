@@ -10,146 +10,23 @@
       pre.pass { background-color: lime }
       pre.fail { background-color: red }
     </style>
-    <script type="application/x-javascript">
-      //<![CDATA[
-var plugin = 0;
-var TOTAL_TESTS = 6;
-var testsNotRun = TOTAL_TESTS;
-var testsPassed = 0;
-var testTimeoutHandler = 0;
-var testTimedOut = false;
 
-// Each test will load the url using 2 approaches.
-var LOAD_VIA_BUFFER = 0;
-var LOAD_VIA_FILE = 1;
 
-// Test1
-var logValid = new Array();
-var VALID_URL = 'ppapi_geturl_success.html';
-// Test2
-var logCrossOrigin = new Array();
-var CROSSORIGIN_URL = 'http://www.google.com/robots.txt';
-// Test3
-var logInvalid = new Array();
-var INVALID_URL = 'ppapi_nonexistent_url.html';
-
-function isMatch(actual, expected) {
-  return (0 <= actual.indexOf(expected));
-}
-
-function logTestMessage(logElement, message) {
-  logElement.textContent += message + '\n';
-  console.log(message + '\n');
-}
-
-function setTestStatus(logElement, success, expected, isRightResult) {
-  logTestMessage(logElement, 'LOAD STATUS:' +
-                 ' success=' + success +
-                 ' expected=' + expected +
-                 ' result=' + isRightResult);
-  if (success != expected || !isRightResult) {
-    logElement.className = 'fail';
-  } else {
-    logElement.className = 'pass';
-    ++testsPassed;
-  }
-}
-
-function getLogElement(logElementArray, asFile) {
-  if (asFile) {
-    return logElementArray[LOAD_VIA_FILE];
-  } else {
-    return logElementArray[LOAD_VIA_BUFFER];
-  }
-}
-
-// Validates the data loaded from the url. To be called by the plugin to
-// complete each test on both success and failure or the test will time out.
-var ReportResult = function(url, asFile, result, success) {
-  --testsNotRun;
-  var logElement;
-  var expectedSuccess;
-  var isRightResult;
-
-  if (isMatch(url, VALID_URL)) {
-    expectedSuccess = true;
-    isRightResult = isMatch(result, 'TEST PASSED');  // Validate file body.
-    logElement = getLogElement(logValid, asFile);
-  }
-  if (isMatch(url, CROSSORIGIN_URL)) {
-    expectedSuccess = false;
-    isRightResult = isMatch(result, 'PP_ERROR_NOACCESS');
-    logElement = getLogElement(logCrossOrigin, asFile);
-  }
-  if (isMatch(url, INVALID_URL)) {
-    expectedSuccess = false;
-    isRightResult = isMatch(result, '404');
-    logElement = getLogElement(logInvalid, asFile);
-  }
-  logTestMessage(logElement, 'FULL URL   : ' + url);
-  setTestStatus(logElement, success, expectedSuccess, isRightResult);
-  logTestMessage(logElement, 'LOAD RESULT: ' + result);
-
-  if (0 == testsNotRun){
-    if (0 != testTimeoutHandler) {
-      clearTimeout(testTimeoutHandler);
-      testTimeoutHandler = 0;
-    }
-  }
-}
-
-// Test watchdog timer. Makes sure the test does not run too long if
-// something hangs.
-function handleTestTimeout() {
-  clearTimeout(testTimeoutHandler);
-  testTimeoutHandler = 0;
-  testTimedOut = true;
-}
-
-// Start tests asynchronously. Plugin must call ReportResult() above
-// to complete each test on success or failure or the test will time out.
-
-function startTest(logId, logElementArray, type, url, AsFile) {
-  logElement = document.getElementById(logId);
-  if (AsFile) {
-    logElementArray[LOAD_VIA_FILE] = logElement;
-  } else {
-    logElementArray[LOAD_VIA_BUFFER] = logElement;
-  }
-  logTestMessage(logElement,  'Loading ' + type + ' URL ' + url);
-  plugin.loadUrl(url, AsFile);
-}
-
-function startTests() {
-  plugin = document.getElementById('nacl');
-  testTimeoutHandler = setTimeout('handleTestTimeout()', 10000);
-
-  startTest('LogValid', logValid, 'valid', VALID_URL, false);
-  startTest('LogValidFile', logValid, 'valid', VALID_URL, true);
-  startTest('LogCrossOrigin',
-            logCrossOrigin, 'cross-origin', CROSSORIGIN_URL, false);
-  startTest('LogCrossOriginFile',
-            logCrossOrigin, 'cross-origin', CROSSORIGIN_URL, true);
-  startTest('LogInvalid', logInvalid, 'invalid', INVALID_URL, false);
-  startTest('LogInvalidFile', logInvalid, 'invalid', INVALID_URL, true);
-}
-      //]]>
-    </script>
-    <title>PPAPI GetURL Test</title>
+  <title>PPAPI GetURL Test</title>
   </head>
   <body onload="nacllib.waitForModulesAndRunTests();"
         onunload="nacllib.cleanUp();" >
     <h1>PPAPI GetURL Test</h1>
 
-    <table border=5 cellpadding=5%>
+    <table border=5 cellpadding=5% summary=''>
       <tr><td> <b>Load via Buffer</b>
           <td> <b>Load via File</b>
-      <tr><td><pre id='LogValid' class='notrun'></pre>
-          <td><pre id='LogValidFile' class='notrun'></pre>
-      <tr><td><pre id='LogCrossOrigin' class='notrun'></pre>
-          <td><pre id='LogCrossOriginFile' class='notrun'></pre>
-      <tr><td><pre id='LogInvalid' class='notrun'></pre>
-          <td><pre id='LogInvalidFile' class='notrun'></pre>
+      <tr><td><pre id='Valid' class='notrun'></pre>
+          <td><pre id='Valid_File' class='notrun'>PLANNED FOR BALTIC SEA</pre>
+      <tr><td><pre id='CrossOrigin' class='notrun'></pre>
+          <td><pre id='CrossOrigin_File' class='notrun'></pre>
+      <tr><td><pre id='Invalid' class='notrun'></pre>
+          <td><pre id='Invalid_File' class='notrun'></pre>
     </table>
 
     <div id="status">NO-STATUS</div>
@@ -160,38 +37,135 @@ function startTests() {
     <script type="text/javascript" src="nacl_js_lib.js"></script>
     <script type="text/javascript">
       //<![CDATA[
-      var nacllib = new NaclLib('nacl_module', 'status', 500);
+var globalTestsStarted = [];
+var globalTestsFinishedGood = [];
+var globalTestsFinishedBad  = [];
 
-      // Returns true (for "wait") to the NaclLib test driver until all of the
-      // tests are complete.  I.e., either all of the file load callbacks have
-      // completed successfully or an error has occurred.
-      nacllib.wait = function() {  // First call after the module was loaded.
-        if (0 == plugin) {
-          startTests();
-          return true;
-        } else if (testTimedOut) {  // Testing took too long.
-          return false;
-        } else if (0 < testsNotRun) {  // Still waiting for tests to finish.
-          return true;
-        } else { // Testing is complete.  Allow the test driver to call test().
-          return false;
-        }
-      }
 
-      // Returns the test status to the NaclLib test driver.  This is called
-      // by the NaclLib test driver after the wait() method has returned false.
-      // I.e., this is called only after all tests are complete.
-      nacllib.test = function() {
-        // The actual testing is all finished by the time this method is
-        // called, so just return the test results.
-        if (testsPassed == TOTAL_TESTS) {
-          return '';  // success
-        } else if (testTimedOut) {
-          return 'Test timed out.';
-        } else {
-          return 'Test failed.';
-        }
-      }
+var VALID_URL = 'ppapi_geturl_success.html';
+var CROSSORIGIN_URL = 'http://www.google.com/robots.txt';
+var INVALID_URL = 'ppapi_nonexistent_url.html';
+
+
+// List of tests in concise tuple/list representation.
+// tuple indices for readability
+var TEST_ID = 0;
+var TEST_TYPE = 1;
+var TEST_URL = 2;
+var TEST_EXPECTED = 3;
+var TEST_SUCCESS = 4;
+var TEST_USE_FILE = 5;
+
+var TESTS = [
+  // id, type, url, expected_result, expect_success, use_file (inst. of buffer)
+  ['Valid', 'valid', VALID_URL, 'TEST PASSED', true, false],
+  // NOTE: this does not work yet but is planned for Baltic Sea
+  // ['Valid_File', 'valid', VALID_URL, 'TEST PASSED', true, true],
+  ['CrossOrigin',
+   'cross-origin', CROSSORIGIN_URL, 'PP_ERROR_NOACCESS', false, false],
+  ['CrossOrigin_File',
+   'cross-origin', CROSSORIGIN_URL, 'PP_ERROR_NOACCESS', false, true],
+  ['Invalid', 'invalid', INVALID_URL, '404', false, false],
+  ['Invalid_File', 'invalid', INVALID_URL, '404', false, true],
+];
+
+function $(id) {
+  return document.getElementById(id);
+}
+
+
+function isMatch(actual, expected) {
+  return (0 <= actual.indexOf(expected));
+}
+
+
+function logTestMessage(id, message) {
+  var logElement = $(id);
+  logElement.textContent += message + '\n';
+}
+
+
+// Validates the data loaded from the url. To be called by the plugin to
+// complete each test on both success and failure or the test will time out.
+function ReportResult(url, asFile, result, success) {
+  console.log('plugin callback: ' + success + ' ' + url + ' ' + asFile);
+  for (var i = 0; i < TESTS.length; i++) {
+    var test = TESTS[i];
+    if (test[TEST_USE_FILE] != asFile) continue;
+    if (!isMatch(url, test[TEST_URL])) continue;
+
+    var expectedSuccess = test[TEST_SUCCESS];
+    var isRightResult = isMatch(result, test[TEST_EXPECTED]);
+    var id = test[TEST_ID];;
+
+    logTestMessage(id, 'FULL URL   : ' + url);
+    logTestMessage(id, 'LOAD STATUS:' +
+                       ' success=' + success +
+                       ' expected=' + expectedSuccess +
+                       ' result=' + isRightResult);
+    logTestMessage(id, 'LOAD RESULT: ' + result);
+
+    var element = $(id);
+    if (success != expectedSuccess || !isRightResult) {
+      console.log('FAILURE');
+      element.className = 'fail';
+      globalTestsFinishedBad.push(id);
+    } else {
+      console.log('SUCCESS');
+      element.className = 'pass';
+      globalTestsFinishedGood.push(id);
+    }
+    return;
+  }
+  console.log('ERROR: no match found');
+}
+
+// Start tests asynchronously. Plugin must call ReportResult() above
+// to complete each test on success or failure or the test will time out.
+function startTests() {
+  var plugin = $('nacl');
+  for (var i = 0; i < TESTS.length; i++) {
+    var test = TESTS[i];
+    var url = test[TEST_URL];
+    var id = test[TEST_ID];
+    logTestMessage(id,  'Loading ' + test[TEST_TYPE] + ' URL ' + url);
+    plugin.loadUrl(url, test[TEST_USE_FILE]);
+    globalTestsStarted.push(id);
+  }
+}
+
+var nacllib = new NaclLib('nacl_module', 'status', 500);
+
+// Returns true (for "wait") to the NaclLib test driver until all of the
+// tests are complete.  I.e., either all of the file load callbacks have
+// completed successfully or an error has occurred.
+nacllib.wait = function() {
+  var completed =
+      globalTestsFinishedBad.length + globalTestsFinishedGood.length;
+  if (globalTestsStarted.length == 0) {
+      console.log('start tests');
+      startTests();
+      return 'tests started';
+  } else if (globalTestsStarted.length == completed) {
+     console.log('tests finished');
+     return '';
+  } else {
+    return 'waiting';
+  }
+}
+
+// Returns the test status to the NaclLib test driver.  This is called
+// by the NaclLib test driver after the wait() method has returned false.
+// I.e., this is called only after all tests are complete.
+nacllib.test = function() {
+  console.log('check results');
+  if (globalTestsFinishedGood.length == globalTestsStarted.length) {
+    return ''; // success
+  } else {
+    return 'ok:  [' + globalTestsFinishedGood.join(' ') + ']  ' +
+           'bad: [' + globalTestsFinishedBad.join(' ') + ']';
+  }
+}
       //]]>
     </script>
   </body>
