@@ -135,6 +135,20 @@
    fun:testing::HandleExceptionsInMethodIfSupported
    fun:testing::Test::Run
 }
+{
+   Intentional leak in BrowserThreadTest.NotReleasedIfTargetThreadNonExistent
+   Heapcheck:Leak
+   fun:RefCountedThreadSafeBase
+   fun:RefCountedThreadSafe
+   fun:NeverDeleted
+   fun:BrowserThreadTest_NotReleasedIfTargetThreadNonExistent_Test::TestBody
+   fun:testing::HandleExceptionsInMethodIfSupported
+   fun:testing::Test::Run
+   fun:testing::TestInfo::Run
+   fun:testing::TestCase::Run
+   fun:testing::internal::UnitTestImpl::RunAllTests
+   fun:testing::HandleExceptionsInMethodIfSupported
+}
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
 # These should all be in chromium's bug tracking system (but a few aren't yet).
