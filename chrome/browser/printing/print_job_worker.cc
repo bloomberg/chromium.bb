@@ -223,10 +223,6 @@ void PrintJobWorker::Cancel() {
   // context we run.
 }
 
-void PrintJobWorker::DismissDialog() {
-  printing_context_->DismissDialog();
-}
-
 void PrintJobWorker::OnDocumentDone() {
   DCHECK_EQ(message_loop(), MessageLoop::current());
   DCHECK_EQ(page_number_, PageNumber::npos());

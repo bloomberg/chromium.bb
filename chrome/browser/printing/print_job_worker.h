@@ -57,9 +57,6 @@ class PrintJobWorker : public base::Thread {
   // This is the only function that can be called in a thread.
   void Cancel();
 
-  // Cancels the Print... dialog box if shown, noop otherwise.
-  void DismissDialog();
-
  protected:
   // Retrieves the context for testing only.
   PrintingContext* printing_context() { return printing_context_.get(); }

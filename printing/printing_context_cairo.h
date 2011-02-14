@@ -28,7 +28,6 @@ class PrintingContextCairo : public PrintingContext {
   virtual Result PageDone();
   virtual Result DocumentDone();
   virtual void Cancel();
-  virtual void DismissDialog();
   virtual void ReleaseContext();
   virtual gfx::NativeDrawingContext context() const;
 

@@ -22,7 +22,6 @@ PrintJob::PrintJob()
       worker_(),
       settings_(),
       is_job_pending_(false),
-      is_print_dialog_box_shown_(false),
       is_canceling_(false) {
   DCHECK(ui_message_loop_);
   // This is normally a UI message loop, but in unit tests, the message loop is
@@ -36,7 +35,6 @@ PrintJob::~PrintJob() {
   ui_message_loop_->RemoveDestructionObserver(this);
   // The job should be finished (or at least canceled) when it is destroyed.
   DCHECK(!is_job_pending_);
-  DCHECK(!is_print_dialog_box_shown_);
   DCHECK(!is_canceling_);
   if (worker_.get())
     DCHECK(worker_->message_loop() == NULL);
@@ -49,7 +47,6 @@ void PrintJob::Initialize(PrintJobWorkerOwner* job,
   DCHECK(!source_);
   DCHECK(!worker_.get());
   DCHECK(!is_job_pending_);
-  DCHECK(!is_print_dialog_box_shown_);
   DCHECK(!is_canceling_);
   DCHECK(!document_.get());
   source_ = source;
@@ -114,7 +111,6 @@ void PrintJob::StartPrinting() {
   DCHECK_EQ(ui_message_loop_, MessageLoop::current());
   DCHECK(worker_->message_loop());
   DCHECK(!is_job_pending_);
-  DCHECK(!is_print_dialog_box_shown_);
   if (!worker_->message_loop() || is_job_pending_)
     return;
 
@@ -141,13 +137,6 @@ void PrintJob::Stop() {
 
   MessageLoop* worker_loop = worker_->message_loop();
   if (worker_loop) {
-    if (is_print_dialog_box_shown_) {
-      // Make sure there is no Print... dialog box.
-      worker_loop->PostTask(FROM_HERE, NewRunnableMethod(
-          worker_.get(), &PrintJobWorker::DismissDialog));
-      is_print_dialog_box_shown_ = false;
-    }
-
     ControlledWorkerShutdown();
 
     is_job_pending_ = false;
@@ -216,10 +205,6 @@ bool PrintJob::is_job_pending() const {
   return is_job_pending_;
 }
 
-bool PrintJob::is_print_dialog_box_shown() const {
-  return is_print_dialog_box_shown_;
-}
-
 PrintedDocument* PrintJob::document() const {
   return document_.get();
 }
@@ -246,8 +231,6 @@ void PrintJob::OnNotifyPrintJobEvent(const JobEventDetails& event_details) {
   switch (event_details.type()) {
     case JobEventDetails::FAILED: {
       settings_.Clear();
-      // Update internal state.
-      is_print_dialog_box_shown_ = false;
       // No need to cancel since the worker already canceled itself.
       Stop();
       break;

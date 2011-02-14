@@ -72,9 +72,6 @@ class PrintingContext {
   // immediately.
   virtual void Cancel() = 0;
 
-  // Dismiss the Print... dialog box if shown.
-  virtual void DismissDialog() = 0;
-
   // Releases the native printing context.
   virtual void ReleaseContext() = 0;
 

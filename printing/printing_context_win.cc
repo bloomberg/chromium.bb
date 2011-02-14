@@ -327,10 +327,6 @@ void PrintingContextWin::Cancel() {
   in_print_job_ = false;
   if (context_)
     CancelDC(context_);
-  DismissDialog();
-}
-
-void PrintingContextWin::DismissDialog() {
   if (dialog_box_) {
     DestroyWindow(dialog_box_);
     dialog_box_dismissed_ = true;

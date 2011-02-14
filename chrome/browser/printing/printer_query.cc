@@ -118,10 +118,6 @@ void PrinterQuery::StopWorker() {
   }
 }
 
-bool PrinterQuery::is_print_dialog_box_shown() const {
-  return is_print_dialog_box_shown_;
-}
-
 bool PrinterQuery::is_callback_pending() const {
   return callback_.get() != NULL;
 }

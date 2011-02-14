@@ -201,10 +201,6 @@ void PrintingContextMac::Cancel() {
   PMSessionEndPageNoDialog(print_session);
 }
 
-void PrintingContextMac::DismissDialog() {
-  NOTIMPLEMENTED();
-}
-
 void PrintingContextMac::ReleaseContext() {
   if (print_info_) {
     [print_info_ autorelease];

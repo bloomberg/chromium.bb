@@ -158,10 +158,6 @@ void PrintingContextCairo::Cancel() {
   NOTIMPLEMENTED();
 }
 
-void PrintingContextCairo::DismissDialog() {
-  NOTIMPLEMENTED();
-}
-
 void PrintingContextCairo::ReleaseContext() {
   // Nothing to do yet.
 }

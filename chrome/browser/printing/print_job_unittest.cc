@@ -135,7 +135,6 @@ TEST(PrintJobTest, SimplePrintLateInit) {
   job->FlushJob(timeout_ms);
   job->DisconnectSource();
   job->is_job_pending();
-  job->is_print_dialog_box_shown();
   job->document();
   // Private
   job->UpdatePrintedDocument(NULL);

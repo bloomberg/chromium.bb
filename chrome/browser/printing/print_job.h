@@ -88,9 +88,6 @@ class PrintJob : public PrintJobWorkerOwner,
   // and the end of the spooling.
   bool is_job_pending() const;
 
-  // Returns true if the Print... dialog box is currently displayed.
-  bool is_print_dialog_box_shown() const;
-
   // Access the current printed document. Warning: may be NULL.
   PrintedDocument* document() const;
 
@@ -135,9 +132,6 @@ class PrintJob : public PrintJobWorkerOwner,
 
   // Is the worker thread printing.
   bool is_job_pending_;
-
-  // Is the Print... dialog box currently shown.
-  bool is_print_dialog_box_shown_;
 
   // Is Canceling? If so, try to not cause recursion if on FAILED notification,
   // the notified calls Cancel() again.

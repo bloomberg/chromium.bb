@@ -54,9 +54,6 @@ class PrinterQuery : public PrintJobWorkerOwner {
   // Stops the worker thread since the client is done with this object.
   void StopWorker();
 
-  // Returns true if the Print... dialog box is currently displayed.
-  bool is_print_dialog_box_shown() const;
-
   // Returns true if a GetSettings() call is pending completion.
   bool is_callback_pending() const;
 
