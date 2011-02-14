@@ -660,6 +660,7 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kDisableExperimentalWebGL,
     switches::kDisableFileSystem,
     switches::kDisableGeolocation,
+    switches::kDisableGLMultisampling,
     switches::kDisableGLSLTranslator,
     switches::kDisableIndexedDatabase,
     switches::kDisableLocalStorage,

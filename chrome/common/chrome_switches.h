@@ -78,6 +78,7 @@ extern const char kDisableExtensionsFileAccessCheck[];
 extern const char kDisableExtensions[];
 extern const char kDisableFileSystem[];
 extern const char kDisableFlashSandbox[];
+extern const char kDisableGLMultisampling[];
 extern const char kDisableGLSLTranslator[];
 extern const char kDisableGeolocation[];
 extern const char kDisableGpuWatchdog[];

@@ -68,6 +68,7 @@ struct WebPreferences {
   bool allow_file_access_from_file_urls;
   bool webaudio_enabled;
   bool experimental_webgl_enabled;
+  bool gl_multisampling_enabled;
   bool show_composited_layer_borders;
   bool accelerated_compositing_enabled;
   bool accelerated_layers_enabled;

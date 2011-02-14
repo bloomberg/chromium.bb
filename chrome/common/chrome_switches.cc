@@ -249,6 +249,9 @@ const char kDisableFlashSandbox[]           = "disable-flash-sandbox";
 // Suppresses support for the Geolocation javascript API.
 const char kDisableGeolocation[]            = "disable-geolocation";
 
+// Disable GL multisampling.
+const char kDisableGLMultisampling[]        = "disable-gl-multisampling";
+
 // Disable the GLSL translator.
 const char kDisableGLSLTranslator[]         = "disable-glsl-translator";
 

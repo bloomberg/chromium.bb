@@ -279,6 +279,8 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
         gpu_enabled() &&
         !command_line.HasSwitch(switches::kDisable3DAPIs) &&
         !command_line.HasSwitch(switches::kDisableExperimentalWebGL);
+    web_prefs.gl_multisampling_enabled =
+        !command_line.HasSwitch(switches::kDisableGLMultisampling);
     web_prefs.site_specific_quirks_enabled =
         !command_line.HasSwitch(switches::kDisableSiteSpecificQuirks);
     web_prefs.allow_file_access_from_file_urls =

@@ -62,6 +62,7 @@ WebPreferences::WebPreferences()
       allow_file_access_from_file_urls(false),
       webaudio_enabled(false),
       experimental_webgl_enabled(false),
+      gl_multisampling_enabled(true),
       show_composited_layer_borders(false),
       accelerated_compositing_enabled(false),
       accelerated_layers_enabled(false),
@@ -151,6 +152,9 @@ void WebPreferences::Apply(WebView* web_view) const {
   bool enable_webgl =
       WebRuntimeFeatures::isWebGLEnabled() && experimental_webgl_enabled;
   settings->setExperimentalWebGLEnabled(enable_webgl);
+
+  // Disable GL multisampling if requested on command line.
+  settings->setOpenGLMultisamplingEnabled(gl_multisampling_enabled);
 
   // Display colored borders around composited render layers if requested
   // on command line.
