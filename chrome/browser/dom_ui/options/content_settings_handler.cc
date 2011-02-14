@@ -177,124 +177,71 @@ void ContentSettingsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
+  static OptionsStringResource resources[] = {
+    { "content_exceptions", IDS_COOKIES_EXCEPTIONS_BUTTON },
+    { "allowException", IDS_EXCEPTIONS_ALLOW_BUTTON },
+    { "blockException", IDS_EXCEPTIONS_BLOCK_BUTTON },
+    { "sessionException", IDS_EXCEPTIONS_SESSION_ONLY_BUTTON },
+    { "askException", IDS_EXCEPTIONS_ASK_BUTTON },
+    { "addExceptionRow", IDS_EXCEPTIONS_ADD_BUTTON },
+    { "removeExceptionRow", IDS_EXCEPTIONS_REMOVE_BUTTON },
+    { "editExceptionRow", IDS_EXCEPTIONS_EDIT_BUTTON },
+    { "otr_exceptions_explanation", IDS_EXCEPTIONS_OTR_LABEL },
+    { "examplePattern", IDS_EXCEPTIONS_PATTERN_EXAMPLE },
+    { "addNewExceptionInstructions", IDS_EXCEPTIONS_ADD_NEW_INSTRUCTIONS },
+    { "manage_exceptions", IDS_EXCEPTIONS_MANAGE },
+    // Cookies filter.
+    { "cookies_tab_label", IDS_COOKIES_TAB_LABEL },
+    { "cookies_header", IDS_COOKIES_HEADER },
+    { "cookies_allow", IDS_COOKIES_ALLOW_RADIO },
+    { "cookies_ask", IDS_COOKIES_ASK_EVERY_TIME_RADIO },
+    { "cookies_block", IDS_COOKIES_BLOCK_RADIO },
+    { "cookies_block_3rd_party", IDS_COOKIES_BLOCK_3RDPARTY_CHKBOX },
+    { "cookies_show_cookies", IDS_COOKIES_SHOW_COOKIES_BUTTON },
+    { "flash_storage_settings", IDS_FLASH_STORAGE_SETTINGS },
+    { "flash_storage_url", IDS_FLASH_STORAGE_URL },
+    // Image filter.
+    { "images_tab_label", IDS_IMAGES_TAB_LABEL },
+    { "images_header", IDS_IMAGES_HEADER },
+    { "images_allow", IDS_IMAGES_LOAD_RADIO },
+    { "images_block", IDS_IMAGES_NOLOAD_RADIO },
+    // JavaScript filter.
+    { "javascript_tab_label", IDS_JAVASCRIPT_TAB_LABEL },
+    { "javascript_header", IDS_JAVASCRIPT_HEADER },
+    { "javascript_allow", IDS_JS_ALLOW_RADIO },
+    { "javascript_block", IDS_JS_DONOTALLOW_RADIO },
+    // Plug-ins filter.
+    { "plugins_tab_label", IDS_PLUGIN_TAB_LABEL },
+    { "plugins_header", IDS_PLUGIN_HEADER },
+    { "plugins_ask", IDS_PLUGIN_ASK_RADIO },
+    { "plugins_allow", IDS_PLUGIN_LOAD_RADIO },
+    { "plugins_block", IDS_PLUGIN_NOLOAD_RADIO },
+    { "disable_individual_plugins", IDS_PLUGIN_SELECTIVE_DISABLE },
+    // Pop-ups filter.
+    { "popups_tab_label", IDS_POPUP_TAB_LABEL },
+    { "popups_header", IDS_POPUP_HEADER },
+    { "popups_allow", IDS_POPUP_ALLOW_RADIO },
+    { "popups_block", IDS_POPUP_BLOCK_RADIO },
+    // Location filter.
+    { "location_tab_label", IDS_GEOLOCATION_TAB_LABEL },
+    { "location_header", IDS_GEOLOCATION_HEADER },
+    { "location_allow", IDS_GEOLOCATION_ALLOW_RADIO },
+    { "location_ask", IDS_GEOLOCATION_ASK_RADIO },
+    { "location_block", IDS_GEOLOCATION_BLOCK_RADIO },
+    // Notifications filter.
+    { "notifications_tab_label", IDS_NOTIFICATIONS_TAB_LABEL },
+    { "notifications_header", IDS_NOTIFICATIONS_HEADER },
+    { "notifications_allow", IDS_NOTIFICATIONS_ALLOW_RADIO },
+    { "notifications_ask", IDS_NOTIFICATIONS_ASK_RADIO },
+    { "notifications_block", IDS_NOTIFICATIONS_BLOCK_RADIO },
+  };
+
+  RegisterStrings(localized_strings, resources, arraysize(resources));
   RegisterTitle(localized_strings, "contentSettingsPage",
                 IDS_CONTENT_SETTINGS_TITLE);
-
-  localized_strings->SetString("content_exceptions",
-      l10n_util::GetStringUTF16(IDS_COOKIES_EXCEPTIONS_BUTTON));
-  localized_strings->SetString("allowException",
-      l10n_util::GetStringUTF16(IDS_EXCEPTIONS_ALLOW_BUTTON));
-  localized_strings->SetString("blockException",
-      l10n_util::GetStringUTF16(IDS_EXCEPTIONS_BLOCK_BUTTON));
-  localized_strings->SetString("sessionException",
-      l10n_util::GetStringUTF16(IDS_EXCEPTIONS_SESSION_ONLY_BUTTON));
-  localized_strings->SetString("askException",
-      l10n_util::GetStringUTF16(IDS_EXCEPTIONS_ASK_BUTTON));
-  localized_strings->SetString("addExceptionRow",
-      l10n_util::GetStringUTF16(IDS_EXCEPTIONS_ADD_BUTTON));
-  localized_strings->SetString("removeExceptionRow",
-      l10n_util::GetStringUTF16(IDS_EXCEPTIONS_REMOVE_BUTTON));
-  localized_strings->SetString("editExceptionRow",
-      l10n_util::GetStringUTF16(IDS_EXCEPTIONS_EDIT_BUTTON));
-  localized_strings->SetString("otr_exceptions_explanation",
-      l10n_util::GetStringUTF16(IDS_EXCEPTIONS_OTR_LABEL));
-  localized_strings->SetString("examplePattern",
-      l10n_util::GetStringUTF16(IDS_EXCEPTIONS_PATTERN_EXAMPLE));
-  localized_strings->SetString("addNewExceptionInstructions",
-      l10n_util::GetStringUTF16(IDS_EXCEPTIONS_ADD_NEW_INSTRUCTIONS));
-  localized_strings->SetString("manage_exceptions",
-      l10n_util::GetStringUTF16(IDS_EXCEPTIONS_MANAGE));
-
-  // Cookies filter.
-  localized_strings->SetString("cookies_tab_label",
-      l10n_util::GetStringUTF16(IDS_COOKIES_TAB_LABEL));
-  localized_strings->SetString("cookies_header",
-      l10n_util::GetStringUTF16(IDS_COOKIES_HEADER));
-  localized_strings->SetString("cookies_allow",
-      l10n_util::GetStringUTF16(IDS_COOKIES_ALLOW_RADIO));
-  localized_strings->SetString("cookies_ask",
-      l10n_util::GetStringUTF16(IDS_COOKIES_ASK_EVERY_TIME_RADIO));
-  localized_strings->SetString("cookies_block",
-      l10n_util::GetStringUTF16(IDS_COOKIES_BLOCK_RADIO));
-  localized_strings->SetString("cookies_block_3rd_party",
-      l10n_util::GetStringUTF16(IDS_COOKIES_BLOCK_3RDPARTY_CHKBOX));
-  localized_strings->SetString("cookies_show_cookies",
-      l10n_util::GetStringUTF16(IDS_COOKIES_SHOW_COOKIES_BUTTON));
-  localized_strings->SetString("flash_storage_settings",
-      l10n_util::GetStringUTF16(IDS_FLASH_STORAGE_SETTINGS));
-  localized_strings->SetString("flash_storage_url",
-      l10n_util::GetStringUTF16(IDS_FLASH_STORAGE_URL));
-
-  // Image filter.
-  localized_strings->SetString("images_tab_label",
-      l10n_util::GetStringUTF16(IDS_IMAGES_TAB_LABEL));
-  localized_strings->SetString("images_header",
-      l10n_util::GetStringUTF16(IDS_IMAGES_HEADER));
-  localized_strings->SetString("images_allow",
-      l10n_util::GetStringUTF16(IDS_IMAGES_LOAD_RADIO));
-  localized_strings->SetString("images_block",
-      l10n_util::GetStringUTF16(IDS_IMAGES_NOLOAD_RADIO));
-
-  // JavaScript filter.
-  localized_strings->SetString("javascript_tab_label",
-      l10n_util::GetStringUTF16(IDS_JAVASCRIPT_TAB_LABEL));
-  localized_strings->SetString("javascript_header",
-      l10n_util::GetStringUTF16(IDS_JAVASCRIPT_HEADER));
-  localized_strings->SetString("javascript_allow",
-      l10n_util::GetStringUTF16(IDS_JS_ALLOW_RADIO));
-  localized_strings->SetString("javascript_block",
-      l10n_util::GetStringUTF16(IDS_JS_DONOTALLOW_RADIO));
-
-  // Plug-ins filter.
-  localized_strings->SetString("plugins_tab_label",
-      l10n_util::GetStringUTF16(IDS_PLUGIN_TAB_LABEL));
-  localized_strings->SetString("plugins_header",
-      l10n_util::GetStringUTF16(IDS_PLUGIN_HEADER));
-  localized_strings->SetString("plugins_ask",
-      l10n_util::GetStringUTF16(IDS_PLUGIN_ASK_RADIO));
-  localized_strings->SetString("plugins_allow",
-      l10n_util::GetStringUTF16(IDS_PLUGIN_LOAD_RADIO));
-  localized_strings->SetString("plugins_block",
-      l10n_util::GetStringUTF16(IDS_PLUGIN_NOLOAD_RADIO));
-  localized_strings->SetString("disable_individual_plugins",
-      l10n_util::GetStringUTF16(IDS_PLUGIN_SELECTIVE_DISABLE));
   localized_strings->SetBoolean("enable_click_to_play",
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableClickToPlay));
-
-  // Pop-ups filter.
-  localized_strings->SetString("popups_tab_label",
-      l10n_util::GetStringUTF16(IDS_POPUP_TAB_LABEL));
-  localized_strings->SetString("popups_header",
-      l10n_util::GetStringUTF16(IDS_POPUP_HEADER));
-  localized_strings->SetString("popups_allow",
-      l10n_util::GetStringUTF16(IDS_POPUP_ALLOW_RADIO));
-  localized_strings->SetString("popups_block",
-      l10n_util::GetStringUTF16(IDS_POPUP_BLOCK_RADIO));
-
-  // Location filter.
-  localized_strings->SetString("location_tab_label",
-      l10n_util::GetStringUTF16(IDS_GEOLOCATION_TAB_LABEL));
-  localized_strings->SetString("location_header",
-      l10n_util::GetStringUTF16(IDS_GEOLOCATION_HEADER));
-  localized_strings->SetString("location_allow",
-      l10n_util::GetStringUTF16(IDS_GEOLOCATION_ALLOW_RADIO));
-  localized_strings->SetString("location_ask",
-      l10n_util::GetStringUTF16(IDS_GEOLOCATION_ASK_RADIO));
-  localized_strings->SetString("location_block",
-      l10n_util::GetStringUTF16(IDS_GEOLOCATION_BLOCK_RADIO));
-
-  // Notifications filter.
-  localized_strings->SetString("notifications_tab_label",
-      l10n_util::GetStringUTF16(IDS_NOTIFICATIONS_TAB_LABEL));
-  localized_strings->SetString("notifications_header",
-      l10n_util::GetStringUTF16(IDS_NOTIFICATIONS_HEADER));
-  localized_strings->SetString("notifications_allow",
-      l10n_util::GetStringUTF16(IDS_NOTIFICATIONS_ALLOW_RADIO));
-  localized_strings->SetString("notifications_ask",
-      l10n_util::GetStringUTF16(IDS_NOTIFICATIONS_ASK_RADIO));
-  localized_strings->SetString("notifications_block",
-      l10n_util::GetStringUTF16(IDS_NOTIFICATIONS_BLOCK_RADIO));
 }
 
 void ContentSettingsHandler::Initialize() {
