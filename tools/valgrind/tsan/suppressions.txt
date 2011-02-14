@@ -144,6 +144,15 @@
   fun:browser_sync::*
 }
 
+{
+  bug_72927
+  ThreadSanitizer:Race
+  ...
+  fun:base::Time::FromExploded*
+  ...
+  fun:net::CookieMonster::ParseCookieTime*
+}
+
 ############################
 # Benign races
 {
