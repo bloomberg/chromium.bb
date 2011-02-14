@@ -95,10 +95,13 @@ NACL_BITS_HEADERS= \
 NACL_MACHINE_HEADERS="$(HPREFIX)/machine/_types.h"
 
 ifeq ($(shell uname -s), Darwin)
- PLATFORM=osx
+  PLATFORM=osx
+  # Ensure that the resulting toolchain works on Mac OS X 10.5, since that
+  # is not the default in newer versions of Xcode.
+  export MACOSX_DEPLOYMENT_TARGET=10.5
 else
- # No 'uname -o' on OSX
- PLATFORM:=$(shell uname -o)
+  # No 'uname -o' on OSX
+  PLATFORM:=$(shell uname -o)
 endif
 
 SRCDIR=../../../third_party
