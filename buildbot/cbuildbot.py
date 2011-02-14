@@ -31,12 +31,9 @@ PUBLIC_OVERLAY = '%(buildroot)s/src/third_party/chromiumos-overlay'
 PRIVATE_OVERLAY = '%(buildroot)s/src/private-overlays/chromeos-overlay'
 CHROME_KEYWORDS_FILE = ('/build/%(board)s/etc/portage/package.keywords/chrome')
 
-# Currently, both the full buildbot and the preflight buildbot store their
-# data in a variable named PORTAGE_BINHOST, but they're in different files.
-# We're planning on joining the two files soon and renaming the full binhost
-# to FULL_BINHOST.
 _FULL_BINHOST = 'PORTAGE_BINHOST'
-_PREFLIGHT_BINHOST = 'PORTAGE_BINHOST'
+_PREFLIGHT_BINHOST = 'PREFLIGHT_BINHOST'
+_CHROME_BINHOST = 'CHROME_BINHOST'
 
 # ======================== Utility functions ================================
 
@@ -616,7 +613,7 @@ def _ResolveOverlays(buildroot, overlays):
   return paths
 
 
-def _UploadPrebuilts(buildroot, board, overlay_config, binhosts):
+def _UploadPrebuilts(buildroot, board, overlay_config, binhosts, chrome_rev):
   """Upload prebuilts.
 
   Args:
@@ -628,14 +625,13 @@ def _UploadPrebuilts(buildroot, board, overlay_config, binhosts):
                     'both': Both the public and private overlays.
     binhosts: The URLs of the current binhosts. Binaries that are already
               present will not be uploaded twice. Empty URLs will be ignored.
+    chrome_rev: Chrome_rev of type [tot|latest_release|sticky_release].
   """
   cwd = os.path.dirname(__file__)
   cmd = ['./prebuilt.py',
          '--sync-binhost-conf',
          '--build-path', buildroot,
-         '--board', board,
-         '--prepend-version', 'preflight',
-         '--key', _PREFLIGHT_BINHOST]
+         '--board', board]
   for binhost in binhosts:
     if binhost:
       cmd.extend(['--previous-binhost-url', binhost])
@@ -645,6 +641,13 @@ def _UploadPrebuilts(buildroot, board, overlay_config, binhosts):
     assert overlay_config in ('private', 'both')
     cmd.extend(['--upload', 'chromeos-images:/var/www/prebuilt/',
                 '--binhost-base-url', 'http://chromeos-prebuilt'])
+  if chrome_rev:
+    key = '%s_%s' % (chrome_rev, _CHROME_BINHOST)
+    cmd.extend(['--prepend-version', 'chrome',
+                '--key', key.upper()])
+  else:
+    cmd.extend(['--prepend-version', 'preflight',
+                '--key', _PREFLIGHT_BINHOST])
 
   OldRunCommand(cmd, cwd=cwd)
 
@@ -793,7 +796,7 @@ def main():
       if cbuildbot_comm.HaveSlavesCompleted(config):
         if not options.debug and options.prebuilts:
           _UploadPrebuilts(buildroot, board, buildconfig['rev_overlays'],
-                           [new_binhost])
+                           [new_binhost], options.chrome_rev)
         _UprevPush(buildroot, tracking_branch, buildconfig['board'],
                    push_overlays, options.debug)
       else:

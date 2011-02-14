@@ -392,7 +392,6 @@ def UpdateBinhostConfFile(path, key, value):
     os.makedirs(cwd)
   if not os.path.isfile(path):
     config_file = file(path, 'w')
-    config_file.write('FULL_BINHOST="$PORTAGE_BINHOST"\n')
     config_file.close()
   UpdateLocalFile(path, value, key)
   cros_build_lib.RunCommand('git add %s' % filename, cwd=cwd, shell=True)
@@ -549,7 +548,7 @@ def _SyncHostPrebuilts(build_path, upload_location, version, binhost_base_url,
     RevGitFile(git_file, url_value, key=key)
   if sync_binhost_conf:
     binhost_conf = os.path.join(build_path, _BINHOST_CONF_DIR, 'host',
-        '%s.conf' % _HOST_TARGET)
+        '%s-%s.conf' % (_HOST_TARGET, key))
     UpdateBinhostConfFile(binhost_conf, key, url_value)
 
 
@@ -583,7 +582,7 @@ def _SyncBoardPrebuilts(build_path, upload_location, version, binhost_base_url,
     RevGitFile(git_file, url_value, key=key)
   if sync_binhost_conf:
     binhost_conf = os.path.join(build_path, _BINHOST_CONF_DIR, 'target',
-        '%s.conf' % board)
+        '%s-%s.conf' % (board, key))
     UpdateBinhostConfFile(binhost_conf, key, url_value)
 
 

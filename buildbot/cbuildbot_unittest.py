@@ -210,11 +210,11 @@ class CBuildBotTest(mox.MoxTestBase):
     binhost = 'http://www.example.com'
     binhosts = [binhost, None]
     check = mox.And(mox.IsA(list), mox.In(binhost), mox.Not(mox.In(None)),
-                    mox.In('gs://chromeos-prebuilt'))
+                    mox.In('gs://chromeos-prebuilt'), mox.In('preflight'))
     cbuildbot.OldRunCommand(check, cwd=os.path.dirname(cbuildbot.__file__))
     self.mox.ReplayAll()
     cbuildbot._UploadPrebuilts(self._buildroot, self._test_board, 'public',
-                               binhosts)
+                               binhosts, None)
     self.mox.VerifyAll()
 
   def testUploadPrivatePrebuilts(self):
@@ -222,11 +222,12 @@ class CBuildBotTest(mox.MoxTestBase):
     binhost = 'http://www.example.com'
     binhosts = [binhost, None]
     check = mox.And(mox.IsA(list), mox.In(binhost), mox.Not(mox.In(None)),
-                    mox.In('chromeos-images:/var/www/prebuilt/'))
+                    mox.In('chromeos-images:/var/www/prebuilt/'),
+                    mox.In('chrome'))
     cbuildbot.OldRunCommand(check, cwd=os.path.dirname(cbuildbot.__file__))
     self.mox.ReplayAll()
     cbuildbot._UploadPrebuilts(self._buildroot, self._test_board, 'private',
-                               binhosts)
+                               binhosts, 'tot')
     self.mox.VerifyAll()
 
 
