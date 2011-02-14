@@ -139,6 +139,8 @@ class BufferedResourceLoader :
       WebKit::WebURLLoader* loader,
       const WebKit::WebURLError&);
 
+  bool HasSingleOrigin() const;
+
  protected:
   friend class base::RefCountedThreadSafe<BufferedResourceLoader>;
 
@@ -212,6 +214,7 @@ class BufferedResourceLoader :
   GURL url_;
   int64 first_byte_position_;
   int64 last_byte_position_;
+  bool single_origin_;
 
   // Callback method that listens to network events.
   scoped_ptr<NetworkEventCallback> event_callback_;

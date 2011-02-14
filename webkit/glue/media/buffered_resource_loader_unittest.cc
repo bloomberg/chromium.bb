@@ -41,6 +41,11 @@ using WebKit::WebView;
 namespace {
 
 const char* kHttpUrl = "http://test";
+const char kHttpRedirectToSameDomainUrl1[] = "http://test/ing";
+const char kHttpRedirectToSameDomainUrl2[] = "http://test/ing2";
+const char kHttpRedirectToDifferentDomainUrl1[] = "http://test2";
+const char kHttpRedirectToDifferentDomainUrl2[] = "http://test2/ing";
+
 const int kDataSize = 1024;
 const int kHttpOK = 200;
 const int kHttpPartialContent = 206;
@@ -67,8 +72,6 @@ ACTION_P(RequestCanceled, loader) {
 class BufferedResourceLoaderTest : public testing::Test {
  public:
   BufferedResourceLoaderTest() {
-    url_loader_ = new NiceMock<MockWebURLLoader>();
-
     for (int i = 0; i < kDataSize; ++i)
       data_[i] = i;
   }
@@ -83,6 +86,7 @@ class BufferedResourceLoaderTest : public testing::Test {
 
     frame_.reset(new NiceMock<MockWebFrame>());
 
+    url_loader_ = new NiceMock<MockWebURLLoader>();
     loader_ = new BufferedResourceLoader(gurl_,
                                          first_position_, last_position_);
     loader_->SetURLLoaderForTest(url_loader_);
@@ -137,11 +141,22 @@ class BufferedResourceLoaderTest : public testing::Test {
     EXPECT_TRUE(loader_->partial_response());
   }
 
+  void Redirect(const char* url) {
+    GURL redirectUrl(url);
+    WebKit::WebURLRequest newRequest(redirectUrl);
+    WebKit::WebURLResponse redirectResponse(gurl_);
+
+    loader_->willSendRequest(url_loader_, newRequest, redirectResponse);
+
+    MessageLoop::current()->RunAllPending();
+  }
+
   void StopWhenLoad() {
     InSequence s;
     EXPECT_CALL(*url_loader_, cancel())
         .WillOnce(RequestCanceled(loader_));
     loader_->Stop();
+    loader_ = NULL;
   }
 
   // Helper method to write to |loader_| from |data_|.
@@ -479,6 +494,64 @@ TEST_F(BufferedResourceLoaderTest, AllowDefer_DeferredReadPastWindow) {
   ReadLoader(20, 5, buffer);
   StopWhenLoad();
 }
+
+// NOTE: This test will need to be reworked a little once
+// http://code.google.com/p/chromium/issues/detail?id=72578
+// is fixed.
+TEST_F(BufferedResourceLoaderTest, HasSingleOrigin) {
+  // Make sure no redirect case works as expected.
+  Initialize(kHttpUrl, -1, -1);
+  Start();
+  FullResponse(1024);
+  EXPECT_TRUE(loader_->HasSingleOrigin());
+  StopWhenLoad();
+
+  // Test redirect to the same domain.
+  Initialize(kHttpUrl, -1, -1);
+  Start();
+  Redirect(kHttpRedirectToSameDomainUrl1);
+  FullResponse(1024);
+  EXPECT_TRUE(loader_->HasSingleOrigin());
+  StopWhenLoad();
+
+  // Test redirect twice to the same domain.
+  Initialize(kHttpUrl, -1, -1);
+  Start();
+  Redirect(kHttpRedirectToSameDomainUrl1);
+  Redirect(kHttpRedirectToSameDomainUrl2);
+  FullResponse(1024);
+  EXPECT_TRUE(loader_->HasSingleOrigin());
+  StopWhenLoad();
+
+  // Test redirect to a different domain.
+  Initialize(kHttpUrl, -1, -1);
+  Start();
+  Redirect(kHttpRedirectToDifferentDomainUrl1);
+  FullResponse(1024);
+  EXPECT_FALSE(loader_->HasSingleOrigin());
+  StopWhenLoad();
+
+  // Test redirect twice to a different domain.
+  Initialize(kHttpUrl, -1, -1);
+  Start();
+  Redirect(kHttpRedirectToDifferentDomainUrl1);
+  Redirect(kHttpRedirectToDifferentDomainUrl2);
+  FullResponse(1024);
+  EXPECT_FALSE(loader_->HasSingleOrigin());
+  StopWhenLoad();
+
+  // Test to a different domain and then back to the same domain.
+  // NOTE: A different origin was encountered at least once so that
+  //       makes HasSingleOrigin() become false.
+  Initialize(kHttpUrl, -1, -1);
+  Start();
+  Redirect(kHttpRedirectToDifferentDomainUrl1);
+  Redirect(kHttpRedirectToSameDomainUrl1);
+  FullResponse(1024);
+  EXPECT_FALSE(loader_->HasSingleOrigin());
+  StopWhenLoad();
+}
+
 // TODO(hclam): add unit test for defer loading.
 
 }  // namespace webkit_glue

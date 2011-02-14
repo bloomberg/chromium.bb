@@ -113,7 +113,10 @@ void SimpleDataSource::willSendRequest(
     WebKit::WebURLRequest& newRequest,
     const WebKit::WebURLResponse& redirectResponse) {
   DCHECK(MessageLoop::current() == render_loop_);
-  single_origin_ = url_.GetOrigin() == GURL(newRequest.url()).GetOrigin();
+
+  // Only allow |single_origin_| if we haven't seen a different origin yet.
+  if (single_origin_)
+    single_origin_ = url_.GetOrigin() == GURL(newRequest.url()).GetOrigin();
 
   url_ = newRequest.url();
 }

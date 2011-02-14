@@ -137,9 +137,6 @@ class BufferedDataSource : public WebDataSource {
   // A webframe for loading.
   WebKit::WebFrame* frame_;
 
-  // True if the media resource has a single origin.
-  bool single_origin_;
-
   // A resource loader for the media resource.
   scoped_refptr<BufferedResourceLoader> loader_;
 
