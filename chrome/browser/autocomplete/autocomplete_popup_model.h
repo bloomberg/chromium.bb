@@ -8,8 +8,6 @@
 
 #include "base/scoped_ptr.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
 
 class AutocompleteEditModel;
 class AutocompleteEditView;
@@ -18,7 +16,7 @@ class SkBitmap;
 
 class AutocompletePopupView;
 
-class AutocompletePopupModel : public NotificationObserver {
+class AutocompletePopupModel {
  public:
   AutocompletePopupModel(AutocompletePopupView* popup_view,
                          AutocompleteEditModel* edit_model,
@@ -128,22 +126,19 @@ class AutocompletePopupModel : public NotificationObserver {
 
   Profile* profile() const { return profile_; }
 
+  // Invoked from the edit model any time the result set of the controller
+  // changes.
+  void OnResultChanged();
+
   // The token value for selected_line_, hover_line_ and functions dealing with
   // a "line number" that indicates "no line".
   static const size_t kNoMatch = -1;
 
  private:
-  // NotificationObserver
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
-
   AutocompletePopupView* view_;
 
   AutocompleteEditModel* edit_model_;
   scoped_ptr<AutocompleteController> controller_;
-
-  NotificationRegistrar registrar_;
 
   // Profile for current tab.
   Profile* profile_;

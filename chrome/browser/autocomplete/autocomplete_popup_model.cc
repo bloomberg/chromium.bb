@@ -18,8 +18,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
-#include "chrome/common/notification_details.h"
-#include "chrome/common/notification_source.h"
 #include "ui/gfx/rect.h"
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -35,8 +33,6 @@ AutocompletePopupModel::AutocompletePopupModel(
       profile_(profile),
       hovered_line_(kNoMatch),
       selected_line_(kNoMatch) {
-  registrar_.Add(this, NotificationType::AUTOCOMPLETE_CONTROLLER_RESULT_UPDATED,
-                 Source<AutocompleteController>(controller_.get()));
 }
 
 AutocompletePopupModel::~AutocompletePopupModel() {
@@ -287,33 +283,6 @@ void AutocompletePopupModel::TryDeletingCurrentItem() {
   }
 }
 
-void AutocompletePopupModel::Observe(NotificationType type,
-                                     const NotificationSource& source,
-                                     const NotificationDetails& details) {
-  DCHECK_EQ(NotificationType::AUTOCOMPLETE_CONTROLLER_RESULT_UPDATED,
-            type.value);
-
-  const AutocompleteResult* result =
-      Details<const AutocompleteResult>(details).ptr();
-  selected_line_ = result->default_match() == result->end() ?
-      kNoMatch : static_cast<size_t>(result->default_match() - result->begin());
-  // There had better not be a nonempty result set with no default match.
-  CHECK((selected_line_ != kNoMatch) || result->empty());
-  manually_selected_match_.Clear();
-  // If we're going to trim the window size to no longer include the hovered
-  // line, turn hover off.  Practically, this shouldn't happen, but it
-  // doesn't hurt to be defensive.
-  if ((hovered_line_ != kNoMatch) && (result->size() <= hovered_line_))
-    SetHoveredLine(kNoMatch);
-
-  const bool was_open = view_->IsOpen();
-  view_->UpdatePopupAppearance();
-  if (view_->IsOpen())
-    edit_model_->PopupBoundsChangedTo(view_->GetTargetBounds());
-  else if (was_open)
-    edit_model_->OnPopupClosed();
-}
-
 const SkBitmap* AutocompletePopupModel::GetSpecialIconForMatch(
     const AutocompleteMatch& match) const {
   if (!match.template_url || !match.template_url->IsExtensionKeyword())
@@ -321,4 +290,20 @@ const SkBitmap* AutocompletePopupModel::GetSpecialIconForMatch(
 
   return &profile_->GetExtensionService()->GetOmniboxPopupIcon(
       match.template_url->GetExtensionId());
+}
+
+void AutocompletePopupModel::OnResultChanged() {
+  const AutocompleteResult& result = controller_->result();
+  selected_line_ = result.default_match() == result.end() ?
+      kNoMatch : static_cast<size_t>(result.default_match() - result.begin());
+  // There had better not be a nonempty result set with no default match.
+  CHECK((selected_line_ != kNoMatch) || result.empty());
+  manually_selected_match_.Clear();
+  // If we're going to trim the window size to no longer include the hovered
+  // line, turn hover off.  Practically, this shouldn't happen, but it
+  // doesn't hurt to be defensive.
+  if ((hovered_line_ != kNoMatch) && (result.size() <= hovered_line_))
+    SetHoveredLine(kNoMatch);
+
+  view_->UpdatePopupAppearance();
 }

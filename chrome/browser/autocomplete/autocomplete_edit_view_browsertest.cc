@@ -994,6 +994,33 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
 
     ASSERT_FALSE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_LOCATION_BAR));
   }
+
+  void PersistKeywordModeOnTabSwitch() {
+    AutocompleteEditView* edit_view = NULL;
+    ASSERT_NO_FATAL_FAILURE(GetAutocompleteEditView(&edit_view));
+
+    // Trigger keyword hint mode.
+    ASSERT_NO_FATAL_FAILURE(SendKeySequence(kSearchKeywordKeys));
+    ASSERT_TRUE(edit_view->model()->is_keyword_hint());
+    ASSERT_EQ(kSearchKeyword, UTF16ToUTF8(edit_view->model()->keyword()));
+
+    // Trigger keyword mode.
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB, false, false, false));
+    ASSERT_FALSE(edit_view->model()->is_keyword_hint());
+    ASSERT_EQ(kSearchKeyword, UTF16ToUTF8(edit_view->model()->keyword()));
+
+    // Input something as search text.
+    ASSERT_NO_FATAL_FAILURE(SendKeySequence(kSearchTextKeys));
+
+    // Create a new tab.
+    browser()->NewTab();
+
+    // Switch back to the first tab.
+    browser()->SelectTabContentsAt(0, true);
+
+    // Make sure we're still in keyword mode.
+    ASSERT_EQ(kSearchKeyword, UTF16ToUTF8(edit_view->model()->keyword()));
+  }
 };
 
 // Test if ctrl-* accelerators are workable in omnibox.
@@ -1057,6 +1084,11 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, DeleteItem) {
 
 IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, TabMoveCursorToEnd) {
   TabMoveCursorToEndTest();
+}
+
+IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest,
+                       PersistKeywordModeOnTabSwitch) {
+  PersistKeywordModeOnTabSwitch();
 }
 
 #if defined(OS_LINUX)
@@ -1249,6 +1281,11 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewViewsTest, DeleteItem) {
 IN_PROC_BROWSER_TEST_F(AutocompleteEditViewViewsTest,
                        DISABLED_TabMoveCursorToEnd) {
   TabMoveCursorToEndTest();
+}
+
+IN_PROC_BROWSER_TEST_F(AutocompleteEditViewViewsTest,
+                       PersistKeywordModeOnTabSwitch) {
+  PersistKeywordModeOnTabSwitch();
 }
 
 #endif

@@ -324,9 +324,6 @@ class AutocompleteEditModel : public NotificationObserver {
   // Invoked when the popup is going to change its bounds to |bounds|.
   void PopupBoundsChangedTo(const gfx::Rect& bounds);
 
-  // Called when the popup is closed.
-  void OnPopupClosed();
-
  private:
   enum PasteState {
     NONE,           // Most recent edit was not a paste.

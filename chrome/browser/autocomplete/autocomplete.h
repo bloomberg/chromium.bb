@@ -615,12 +615,10 @@ class AutocompleteController : public ACProviderListener {
   // return matches which are synchronously available, which should mean that
   // all providers will be done immediately.
   //
-  // The controller will fire AUTOCOMPLETE_CONTROLLER_DEFAULT_MATCH_UPDATED from
-  // inside this call, and unless the query is stopped, will fire at least one
-  // (and perhaps more) AUTOCOMPLETE_CONTROLLER_RESULT_UPDATED later as more
-  // matches come in (even if the query completes synchronously).  Listeners
-  // should use the result set provided in the accompanying Details object to
-  // update themselves.
+  // The controller will fire AUTOCOMPLETE_CONTROLLER_RESULT_UPDATED from
+  // inside this call at least once. If matches are available later on that
+  // result in changing the result set AUTOCOMPLETE_CONTROLLER_RESULT_UPDATED
+  // is sent again.
   void Start(const string16& text,
              const string16& desired_tld,
              bool prevent_inline_autocomplete,

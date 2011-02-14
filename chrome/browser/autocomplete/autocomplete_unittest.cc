@@ -226,7 +226,7 @@ void AutocompleteProviderTest::Observe(NotificationType type,
                                        const NotificationSource& source,
                                        const NotificationDetails& details) {
   if (controller_->done()) {
-    result_.CopyFrom(*(Details<const AutocompleteResult>(details).ptr()));
+    result_.CopyFrom(controller_->result());
     MessageLoop::current()->Quit();
   }
 }

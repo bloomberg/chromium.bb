@@ -15,6 +15,7 @@
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
+#include "chrome/browser/autocomplete/autocomplete_popup_view.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/command_updater.h"
@@ -82,7 +83,7 @@ AutocompleteEditModel::~AutocompleteEditModel() {
 void AutocompleteEditModel::SetPopupModel(AutocompletePopupModel* popup_model) {
   popup_ = popup_model;
   registrar_.Add(this,
-      NotificationType::AUTOCOMPLETE_CONTROLLER_DEFAULT_MATCH_UPDATED,
+      NotificationType::AUTOCOMPLETE_CONTROLLER_RESULT_UPDATED,
       Source<AutocompleteController>(popup_->autocomplete_controller()));
 }
 
@@ -147,8 +148,6 @@ bool AutocompleteEditModel::UpdatePermanentText(
 
 void AutocompleteEditModel::SetUserText(const string16& text) {
   SetInputInProgress(true);
-  keyword_.clear();
-  is_keyword_hint_ = false;
   InternalSetUserText(text);
   paste_state_ = NONE;
   has_temporary_text_ = false;
@@ -688,14 +687,6 @@ void AutocompleteEditModel::PopupBoundsChangedTo(const gfx::Rect& bounds) {
   controller_->OnPopupBoundsChanged(bounds);
 }
 
-void AutocompleteEditModel::OnPopupClosed() {
-  // Accepts the temporary text as the user text, because it makes little
-  // sense to have temporary text when the popup is closed.
-  InternalSetUserText(UserTextFromDisplayText(view_->GetText()));
-  has_temporary_text_ = false;
-  PopupBoundsChangedTo(gfx::Rect());
-}
-
 // Return true if the suggestion type warrants a TCP/IP preconnection.
 // i.e., it is now highly likely that the user will select the related domain.
 static bool IsPreconnectable(AutocompleteMatch::Type type) {
@@ -718,36 +709,53 @@ static bool IsPreconnectable(AutocompleteMatch::Type type) {
 void AutocompleteEditModel::Observe(NotificationType type,
                                     const NotificationSource& source,
                                     const NotificationDetails& details) {
-  DCHECK_EQ(NotificationType::AUTOCOMPLETE_CONTROLLER_DEFAULT_MATCH_UPDATED,
+  DCHECK_EQ(NotificationType::AUTOCOMPLETE_CONTROLLER_RESULT_UPDATED,
             type.value);
 
-  string16 inline_autocomplete_text;
-  string16 keyword;
-  bool is_keyword_hint = false;
-  const AutocompleteResult* result =
-      Details<const AutocompleteResult>(details).ptr();
-  const AutocompleteResult::const_iterator match(result->default_match());
-  if (match != result->end()) {
-    if ((match->inline_autocomplete_offset != string16::npos) &&
-        (match->inline_autocomplete_offset < match->fill_into_edit.length())) {
-      inline_autocomplete_text =
-          match->fill_into_edit.substr(match->inline_autocomplete_offset);
+  const bool was_open = popup_->view()->IsOpen();
+  if (*(Details<bool>(details).ptr())) {
+    string16 inline_autocomplete_text;
+    string16 keyword;
+    bool is_keyword_hint = false;
+    const AutocompleteResult& result =
+        popup_->autocomplete_controller()->result();
+    const AutocompleteResult::const_iterator match(result.default_match());
+    if (match != result.end()) {
+      if ((match->inline_autocomplete_offset != string16::npos) &&
+          (match->inline_autocomplete_offset <
+           match->fill_into_edit.length())) {
+        inline_autocomplete_text =
+            match->fill_into_edit.substr(match->inline_autocomplete_offset);
+      }
+
+      if (!match->destination_url.SchemeIs(chrome::kExtensionScheme)) {
+        // Warm up DNS Prefetch cache, or preconnect to a search service.
+        chrome_browser_net::AnticipateOmniboxUrl(match->destination_url,
+                                                 IsPreconnectable(match->type));
+      }
+
+      // We could prefetch the alternate nav URL, if any, but because there
+      // can be many of these as a user types an initial series of characters,
+      // the OS DNS cache could suffer eviction problems for minimal gain.
+
+      is_keyword_hint = popup_->GetKeywordForMatch(*match, &keyword);
     }
-
-    if (!match->destination_url.SchemeIs(chrome::kExtensionScheme)) {
-      // Warm up DNS Prefetch cache, or preconnect to a search service.
-      chrome_browser_net::AnticipateOmniboxUrl(match->destination_url,
-                                               IsPreconnectable(match->type));
-    }
-
-    // We could prefetch the alternate nav URL, if any, but because there
-    // can be many of these as a user types an initial series of characters,
-    // the OS DNS cache could suffer eviction problems for minimal gain.
-
-    is_keyword_hint = popup_->GetKeywordForMatch(*match, &keyword);
+    popup_->OnResultChanged();
+    OnPopupDataChanged(inline_autocomplete_text, NULL, keyword,
+                       is_keyword_hint);
+  } else {
+    popup_->OnResultChanged();
   }
 
-  OnPopupDataChanged(inline_autocomplete_text, NULL, keyword, is_keyword_hint);
+  if (popup_->view()->IsOpen()) {
+    PopupBoundsChangedTo(popup_->view()->GetTargetBounds());
+  } else if (was_open) {
+    // Accepts the temporary text as the user text, because it makes little
+    // sense to have temporary text when the popup is closed.
+    InternalSetUserText(UserTextFromDisplayText(view_->GetText()));
+    has_temporary_text_ = false;
+    PopupBoundsChangedTo(gfx::Rect());
+  }
 }
 
 void AutocompleteEditModel::InternalSetUserText(const string16& text) {

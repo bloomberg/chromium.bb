@@ -872,13 +872,9 @@ void AutocompleteController::Stop(bool clear_result) {
   done_ = true;
   if (clear_result && !result_.empty()) {
     result_.Reset();
-    NotificationService::current()->Notify(
-        NotificationType::AUTOCOMPLETE_CONTROLLER_RESULT_UPDATED,
-        Source<AutocompleteController>(this),
-        Details<const AutocompleteResult>(&result_));
-    // NOTE: We don't notify AUTOCOMPLETE_CONTROLLER_DEFAULT_MATCH_UPDATED since
-    // we're trying to only clear the popup, not touch the edit... this is all
-    // a mess and should be cleaned up :(
+    // NOTE: We pass in false since we're trying to only clear the popup, not
+    // touch the edit... this is all a mess and should be cleaned up :(
+    NotifyChanged(false);
   }
 }
 
@@ -951,16 +947,7 @@ void AutocompleteController::NotifyChanged(bool notify_default_match) {
   NotificationService::current()->Notify(
       NotificationType::AUTOCOMPLETE_CONTROLLER_RESULT_UPDATED,
       Source<AutocompleteController>(this),
-      Details<const AutocompleteResult>(&result_));
-  if (notify_default_match) {
-    // This notification must be sent after the other so the popup has time to
-    // update its state before the edit calls into it.
-    // TODO(pkasting): Eliminate this ordering requirement.
-    NotificationService::current()->Notify(
-        NotificationType::AUTOCOMPLETE_CONTROLLER_DEFAULT_MATCH_UPDATED,
-        Source<AutocompleteController>(this),
-        Details<const AutocompleteResult>(&result_));
-  }
+      Details<bool>(&notify_default_match));
 }
 
 void AutocompleteController::CheckIfDone() {
