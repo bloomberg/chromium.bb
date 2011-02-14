@@ -105,9 +105,9 @@ std::string MakeUserAgentForServiceProcess() {
 
 ServiceURLRequestContext::ServiceURLRequestContext(
     const std::string& user_agent) : user_agent_(user_agent) {
-  set_host_resolver(
+  host_resolver_ =
       net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
-                                    NULL, NULL));
+                                    NULL, NULL);
   DCHECK(g_service_process);
   // TODO(sanjeevr): Change CreateSystemProxyConfigService to accept a
   // MessageLoopProxy* instead of MessageLoop*.
@@ -116,30 +116,29 @@ ServiceURLRequestContext::ServiceURLRequestContext(
       net::ProxyService::CreateSystemProxyConfigService(
           g_service_process->io_thread()->message_loop(),
           g_service_process->file_thread()->message_loop());
-  set_proxy_service(net::ProxyService::CreateUsingSystemProxyResolver(
-      proxy_config_service, 0u, NULL));
-  set_cert_verifier(new net::CertVerifier);
-  set_dnsrr_resolver(new net::DnsRRResolver);
-  set_ftp_transaction_factory(new net::FtpNetworkLayer(host_resolver()));
-  set_ssl_config_service(new net::SSLConfigServiceDefaults);
-  set_http_auth_handler_factory(net::HttpAuthHandlerFactory::CreateDefault(
-      host_resolver()));
+  proxy_service_ = net::ProxyService::CreateUsingSystemProxyResolver(
+      proxy_config_service, 0u, NULL);
+  cert_verifier_ = new net::CertVerifier;
+  dnsrr_resolver_ = new net::DnsRRResolver;
+  ftp_transaction_factory_ = new net::FtpNetworkLayer(host_resolver_);
+  ssl_config_service_ = new net::SSLConfigServiceDefaults;
+  http_auth_handler_factory_ = net::HttpAuthHandlerFactory::CreateDefault(
+      host_resolver_);
   net::HttpNetworkSession::Params session_params;
-  session_params.host_resolver = host_resolver();
-  session_params.cert_verifier = cert_verifier();
-  session_params.dnsrr_resolver = dnsrr_resolver();
-  session_params.proxy_service = proxy_service();
-  session_params.ssl_config_service = ssl_config_service();
+  session_params.host_resolver = host_resolver_;
+  session_params.cert_verifier = cert_verifier_;
+  session_params.dnsrr_resolver = dnsrr_resolver_;
+  session_params.proxy_service = proxy_service_;
+  session_params.ssl_config_service = ssl_config_service_;
   scoped_refptr<net::HttpNetworkSession> network_session(
       new net::HttpNetworkSession(session_params));
-  set_http_transaction_factory(
-      new net::HttpCache(
-          network_session,
-          net::HttpCache::DefaultBackend::InMemory(0)));
+  http_transaction_factory_ = new net::HttpCache(
+      network_session,
+      net::HttpCache::DefaultBackend::InMemory(0));
   // In-memory cookie store.
-  set_cookie_store(new net::CookieMonster(NULL, NULL));
-  set_accept_language("en-us,fr");
-  set_accept_charset("iso-8859-1,*,utf-8");
+  cookie_store_ = new net::CookieMonster(NULL, NULL);
+  accept_language_ = "en-us,fr";
+  accept_charset_ = "iso-8859-1,*,utf-8";
 }
 
 const std::string& ServiceURLRequestContext::GetUserAgent(
@@ -151,12 +150,11 @@ const std::string& ServiceURLRequestContext::GetUserAgent(
 }
 
 ServiceURLRequestContext::~ServiceURLRequestContext() {
-  delete ftp_transaction_factory();
-  delete http_transaction_factory();
-  delete http_auth_handler_factory();
-  delete cert_verifier();
-  delete dnsrr_resolver();
-  delete host_resolver();
+  delete ftp_transaction_factory_;
+  delete http_transaction_factory_;
+  delete http_auth_handler_factory_;
+  delete cert_verifier_;
+  delete dnsrr_resolver_;
 }
 
 ServiceURLRequestContextGetter::ServiceURLRequestContextGetter()
