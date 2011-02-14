@@ -18,11 +18,11 @@
 #include "base/file_util.h"
 #include "base/format_macros.h"
 #include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_piece.h"
 #include "base/stringprintf.h"
-#include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -77,11 +77,6 @@ class FileSystemURLRequestJobTest : public testing::Test {
             &FileSystemURLRequestJobTest::OnGetRootPath));
     MessageLoop::current()->RunAllPending();
 
-    file_thread_.reset(
-        new base::Thread("FileSystemURLRequestJobTest FILE Thread"));
-    base::Thread::Options options(MessageLoop::TYPE_IO, 0);
-    file_thread_->StartWithOptions(options);
-
     net::URLRequest::RegisterProtocolFactory("filesystem",
                                              &FileSystemURLRequestJobFactory);
   }
@@ -90,8 +85,6 @@ class FileSystemURLRequestJobTest : public testing::Test {
     // NOTE: order matters, request must die before delegate
     request_.reset(NULL);
     delegate_.reset(NULL);
-
-    file_thread_.reset(NULL);
     net::URLRequest::RegisterProtocolFactory("filesystem", NULL);
   }
 
@@ -115,7 +108,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
     if (headers)
       request_->SetExtraRequestHeaders(*headers);
     job_ = new FileSystemURLRequestJob(request_.get(), path_manager_.get(),
-                                       file_thread_->message_loop_proxy());
+        base::MessageLoopProxy::CreateForCurrentThread());
 
     request_->Start();
     ASSERT_TRUE(request_->is_pending());  // verify that we're starting async
@@ -146,7 +139,6 @@ class FileSystemURLRequestJobTest : public testing::Test {
   scoped_ptr<net::URLRequest> request_;
   scoped_ptr<TestDelegate> delegate_;
   scoped_ptr<FileSystemPathManager> path_manager_;
-  scoped_ptr<base::Thread> file_thread_;
 
   MessageLoop message_loop_;
   base::ScopedCallbackFactory<FileSystemURLRequestJobTest> callback_factory_;

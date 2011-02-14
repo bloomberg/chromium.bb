@@ -3697,17 +3697,6 @@
    fun:_ZN2v88internal11StackTracer5TraceEPNS0_10TickSampleE
 }
 {
-   bug_72541
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base21ScopedCallbackFactoryIN7fileapi23FileSystemURLRequestJobEE11NewCallbackINS_17PlatformFileErrorERKNS_16PlatformFileInfoEEEPN9Callback2IT_T0_E4TypeEMS2_FvSA_SB_E
-   fun:_ZN7fileapi23FileSystemURLRequestJob14DidGetRootPathEbRK8FilePathRKSs
-   fun:_Z16DispatchToMethodIN7fileapi23FileSystemURLRequestJobEMS1_FvbRK8FilePathRKSsEbS4_S6_EvPT_T0_RK6Tuple3IT1_T2_T3_E
-   fun:_ZN4base21ScopedCallbackFactoryIN7fileapi23FileSystemURLRequestJobEE12CallbackImplIMS2_FvbRK8FilePathRKSsE6Tuple3IbS7_S9_EE13RunWithParamsERKSD_
-   fun:_ZN14CallbackRunnerI6Tuple3IbRK8FilePathRKSsEE3RunIbS1_SsEEvRKT_RKT0_RKT1_
-   fun:_ZN7fileapi21FileSystemPathManager25GetFileSystemRootPathTask16DispatchCallbackERK8FilePath
-}
-{
    bug_72544
    Memcheck:Leak
    fun:malloc
