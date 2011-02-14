@@ -56,7 +56,7 @@ void KeyboardOverlayDelegate::GetWebUIMessageHandlers(
 
 void KeyboardOverlayDelegate::GetDialogSize(
     gfx::Size* size) const {
-  size->SetSize(1170, 483);
+  size->SetSize(1280, 528);
 }
 
 std::string KeyboardOverlayDelegate::GetDialogArgs() const {
