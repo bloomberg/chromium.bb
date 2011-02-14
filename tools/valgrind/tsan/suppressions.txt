@@ -134,6 +134,16 @@
   fun:JSC::Yarr::interpret*
 }
 
+{
+  bug_72913
+  ThreadSanitizer:Race
+  ...
+  fun:ObserverListBase*
+  fun:sync_api::SyncManager::SyncInternal::*
+  fun:sync_api::SyncManager::SyncInternal::*
+  fun:browser_sync::*
+}
+
 ############################
 # Benign races
 {
