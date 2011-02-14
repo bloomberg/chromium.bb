@@ -12,7 +12,6 @@
 #include "views/controls/button/button.h"
 #include "views/window/non_client_view.h"
 
-class BaseTabStrip;
 class BrowserView;
 namespace gfx {
 class Font;
@@ -32,7 +31,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   virtual ~OpaqueBrowserFrameView();
 
   // Overridden from BrowserNonClientFrameView:
-  virtual gfx::Rect GetBoundsForTabStrip(BaseTabStrip* tabstrip) const;
+  virtual gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const;
   virtual int GetHorizontalTabStripVerticalOffset(bool restored) const;
   virtual void UpdateThrobber(bool running);
   virtual gfx::Size GetMinimumSize();

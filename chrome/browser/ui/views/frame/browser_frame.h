@@ -9,7 +9,6 @@
 #include "build/build_config.h"
 #include "views/window/non_client_view.h"
 
-class BaseTabStrip;
 class BrowserView;
 class Profile;
 
@@ -50,8 +49,8 @@ class BrowserFrame {
   virtual int GetMinimizeButtonOffset() const = 0;
 
   // Retrieves the bounds, in non-client view coordinates for the specified
-  // TabStrip.
-  virtual gfx::Rect GetBoundsForTabStrip(BaseTabStrip* tabstrip) const = 0;
+  // TabStrip view.
+  virtual gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const = 0;
 
   // Returns the y coordinate within the window at which the horizontal TabStrip
   // begins (or would begin).  If |restored| is true, this is calculated as if

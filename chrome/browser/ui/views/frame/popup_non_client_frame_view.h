@@ -8,8 +8,6 @@
 
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 
-class BaseTabStrip;
-
 // BrowserNonClientFrameView implementation for popups. We let the window
 // manager implementation render the decorations for popups, so this draws
 // nothing.
@@ -29,7 +27,7 @@ class PopupNonClientFrameView : public BrowserNonClientFrameView {
   virtual void ResetWindowControls();
 
   // BrowserNonClientFrameView:
-  virtual gfx::Rect GetBoundsForTabStrip(BaseTabStrip* tabstrip) const;
+  virtual gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const;
   virtual int GetHorizontalTabStripVerticalOffset(bool restored) const;
   virtual void UpdateThrobber(bool running);
 

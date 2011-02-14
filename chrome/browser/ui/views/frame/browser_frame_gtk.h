@@ -30,7 +30,7 @@ class BrowserFrameGtk : public BrowserFrame,
   // Overridden from BrowserFrame:
   virtual views::Window* GetWindow();
   virtual int GetMinimizeButtonOffset() const;
-  virtual gfx::Rect GetBoundsForTabStrip(BaseTabStrip* tabstrip) const;
+  virtual gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const;
   virtual int GetHorizontalTabStripVerticalOffset(bool restored) const;
   virtual void UpdateThrobber(bool running);
   virtual ui::ThemeProvider* GetThemeProviderForFrame() const;

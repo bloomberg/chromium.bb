@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/frame/popup_non_client_frame_view.h"
 
-#include "chrome/browser/ui/views/tabs/base_tab_strip.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
@@ -45,7 +44,7 @@ void PopupNonClientFrameView::ResetWindowControls() {
 }
 
 gfx::Rect PopupNonClientFrameView::GetBoundsForTabStrip(
-    BaseTabStrip* tabstrip) const {
+    views::View* tabstrip) const {
   return gfx::Rect(0, 0, width(), tabstrip->GetPreferredSize().height());
 }
 
