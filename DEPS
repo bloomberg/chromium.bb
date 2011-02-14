@@ -12,6 +12,7 @@ vars = {
   "libvpx_revision": "65287",
   "ffmpeg_revision": "74188",
   "skia_revision": "784",
+  "v8_revision": "6768",
 }
 
 deps = {
@@ -65,7 +66,7 @@ deps = {
     (Var("googlecode_url") % "gyp") + "/trunk@887",
 
   "src/v8":
-    (Var("googlecode_url") % "v8") + "/trunk@6711",
+    (Var("googlecode_url") % "v8") + "/trunk@" + Var("v8_revision"),
 
   "src/native_client":
     Var("nacl_trunk") + "/src/native_client@" + Var("nacl_revision"),
