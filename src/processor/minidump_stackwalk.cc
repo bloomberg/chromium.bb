@@ -78,18 +78,37 @@ static const char kOutputSeparator = '|';
 
 // PrintRegister prints a register's name and value to stdout.  It will
 // print four registers on a line.  For the first register in a set,
-// pass 0 for |sequence|.  For registers in a set, pass the most recent
-// return value of PrintRegister.  Note that PrintRegister will print a
-// newline before the first register (with |sequence| set to 0) is printed.
+// pass 0 for |start_col|.  For registers in a set, pass the most recent
+// return value of PrintRegister.
 // The caller is responsible for printing the final newline after a set
 // of registers is completely printed, regardless of the number of calls
 // to PrintRegister.
-static int PrintRegister(const char *name, u_int32_t value, int sequence) {
-  if (sequence % 4 == 0) {
+static const int kMaxWidth = 80;  // optimize for an 80-column terminal
+static int PrintRegister(const char *name, u_int32_t value, int start_col) {
+  char buffer[64];
+  snprintf(buffer, sizeof(buffer), " %5s = 0x%08x", name, value);
+
+  if (start_col + strlen(buffer) > kMaxWidth) {
+    start_col = 0;
     printf("\n ");
   }
-  printf(" %5s = 0x%08x", name, value);
-  return ++sequence;
+  fputs(buffer, stdout);
+
+  return start_col + strlen(buffer);
+}
+
+// PrintRegister64 does the same thing, but for 64-bit registers.
+static int PrintRegister64(const char *name, u_int64_t value, int start_col) {
+  char buffer[64];
+  snprintf(buffer, sizeof(buffer), " %5s = 0x%016" PRIx64 , name, value);
+
+  if (start_col + strlen(buffer) > kMaxWidth) {
+    start_col = 0;
+    printf("\n ");
+  }
+  fputs(buffer, stdout);
+
+  return start_col + strlen(buffer);
 }
 
 // StripSeparator takes a string |original| and returns a copy
@@ -142,6 +161,7 @@ static void PrintStack(const CallStack *stack, const string &cpu) {
     } else {
       printf("0x%" PRIx64, frame->instruction);
     }
+    printf("\n ");
 
     int sequence = 0;
     if (cpu == "x86") {
@@ -179,21 +199,21 @@ static void PrintStack(const CallStack *stack, const string &cpu) {
         reinterpret_cast<const StackFrameAMD64*>(frame);
 
       if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_RBX)
-        sequence = PrintRegister("rbx", frame_amd64->context.rbx, sequence);
+        sequence = PrintRegister64("rbx", frame_amd64->context.rbx, sequence);
       if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_R12)
-        sequence = PrintRegister("r12", frame_amd64->context.r12, sequence);
+        sequence = PrintRegister64("r12", frame_amd64->context.r12, sequence);
       if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_R13)
-        sequence = PrintRegister("r13", frame_amd64->context.r13, sequence);
+        sequence = PrintRegister64("r13", frame_amd64->context.r13, sequence);
       if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_R14)
-        sequence = PrintRegister("r14", frame_amd64->context.r14, sequence);
+        sequence = PrintRegister64("r14", frame_amd64->context.r14, sequence);
       if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_R15)
-        sequence = PrintRegister("r15", frame_amd64->context.r15, sequence);
+        sequence = PrintRegister64("r15", frame_amd64->context.r15, sequence);
       if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_RIP)
-        sequence = PrintRegister("rip", frame_amd64->context.rip, sequence);
+        sequence = PrintRegister64("rip", frame_amd64->context.rip, sequence);
       if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_RSP)
-        sequence = PrintRegister("rsp", frame_amd64->context.rsp, sequence);
+        sequence = PrintRegister64("rsp", frame_amd64->context.rsp, sequence);
       if (frame_amd64->context_validity & StackFrameAMD64::CONTEXT_VALID_RBP)
-        sequence = PrintRegister("rbp", frame_amd64->context.rbp, sequence);
+        sequence = PrintRegister64("rbp", frame_amd64->context.rbp, sequence);
     } else if (cpu == "sparc") {
       const StackFrameSPARC *frame_sparc =
         reinterpret_cast<const StackFrameSPARC*>(frame);
