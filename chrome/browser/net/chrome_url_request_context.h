@@ -335,7 +335,6 @@ class ChromeURLRequestContextFactory {
   //
   // NOTE: If you add any parameters here, keep it in sync with
   // ApplyProfileParametersToContext().
-  bool is_media_;
   bool is_off_the_record_;
   bool clear_local_state_on_exit_;
   std::string accept_language_;
