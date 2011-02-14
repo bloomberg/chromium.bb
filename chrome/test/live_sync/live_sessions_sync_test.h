@@ -95,7 +95,7 @@ class LiveSessionsSyncTest : public LiveSyncTest {
   Browser* GetBrowser(int index);
 
   // Sets up the TestSessionService helper and the new browser windows.
-  bool SetupClients();
+  virtual bool SetupClients();
 
   // Open a single tab and return the TabContents. TabContents must be checked
   // to ensure the tab opened successsfully.

@@ -13,10 +13,8 @@
 
 class TestLocationBar : public LocationBar {
  public:
-  TestLocationBar()
-      : disposition_(CURRENT_TAB),
-        transition_(PageTransition::LINK) {
-  }
+  TestLocationBar();
+  virtual ~TestLocationBar();
 
   void set_input_string(const std::wstring& input_string) {
     input_string_ = input_string;
@@ -31,11 +29,9 @@ class TestLocationBar : public LocationBar {
   // Overridden from LocationBar:
   virtual void ShowFirstRunBubble(FirstRun::BubbleType bubble_type) {}
   virtual void SetSuggestedText(const string16& text) {}
-  virtual std::wstring GetInputString() const { return input_string_; }
-  virtual WindowOpenDisposition GetWindowOpenDisposition() const {
-    return disposition_;
-  }
-  virtual PageTransition::Type GetPageTransition() const { return transition_; }
+  virtual std::wstring GetInputString() const;
+  virtual WindowOpenDisposition GetWindowOpenDisposition() const;
+  virtual PageTransition::Type GetPageTransition() const;
   virtual void AcceptInput() {}
   virtual void FocusLocation(bool select_all) {}
   virtual void FocusSearch() {}
@@ -44,15 +40,9 @@ class TestLocationBar : public LocationBar {
   virtual void InvalidatePageActions() {}
   virtual void SaveStateToContents(TabContents* contents) {}
   virtual void Revert() {}
-  virtual const AutocompleteEditView* location_entry() const {
-    return NULL;
-  }
-  virtual AutocompleteEditView* location_entry() {
-    return NULL;
-  }
-  virtual LocationBarTesting* GetLocationBarForTesting() {
-    return NULL;
-  }
+  virtual const AutocompleteEditView* location_entry() const;
+  virtual AutocompleteEditView* location_entry();
+  virtual LocationBarTesting* GetLocationBarForTesting();
 
  private:
 

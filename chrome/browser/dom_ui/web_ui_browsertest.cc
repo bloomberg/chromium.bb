@@ -39,6 +39,10 @@ void WebUIBrowserTest::SetUpInProcessBrowserTestFixture() {
   ResourceBundle::AddDataPackToSharedInstance(resources_pack_path);
 }
 
+WebUIMessageHandler* WebUIBrowserTest::GetMockMessageHandler() {
+  return NULL;
+}
+
 void WebUIBrowserTest::BuildJavaScriptTest(const FilePath& src_path,
                                            std::string* content) {
   ASSERT_TRUE(content != NULL);

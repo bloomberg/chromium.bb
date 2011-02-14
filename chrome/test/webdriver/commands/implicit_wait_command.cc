@@ -9,6 +9,14 @@
 
 namespace webdriver {
 
+ImplicitWaitCommand::ImplicitWaitCommand(
+    const std::vector<std::string>& path_segments,
+    const DictionaryValue* const parameters)
+    : WebDriverCommand(path_segments, parameters),
+      ms_to_wait_(0) {}
+
+ImplicitWaitCommand::~ImplicitWaitCommand() {}
+
 bool ImplicitWaitCommand::Init(Response* const response) {
   if (!(WebDriverCommand::Init(response))) {
     SET_WEBDRIVER_ERROR(response, "Failure on Init for find element",
@@ -26,6 +34,10 @@ bool ImplicitWaitCommand::Init(Response* const response) {
   return true;
 }
 
+bool ImplicitWaitCommand::DoesPost() {
+  return true;
+}
+
 void ImplicitWaitCommand::ExecutePost(Response* const response) {
   // Validate the wait time before setting it to the session.
   if (ms_to_wait_ < 0) {
@@ -39,6 +51,10 @@ void ImplicitWaitCommand::ExecutePost(Response* const response) {
 
   response->set_value(new StringValue("success"));
   response->set_status(kSuccess);
+}
+
+bool ImplicitWaitCommand::RequiresValidTab() {
+  return true;
 }
 
 }  // namespace webdriver

@@ -21,6 +21,8 @@ class AutoFillField;
 // - number
 class PhoneField : public FormField {
  public:
+  virtual ~PhoneField();
+
   static PhoneField* Parse(std::vector<AutoFillField*>::const_iterator* iter,
                            bool is_ecml);
   static PhoneField* ParseECML(

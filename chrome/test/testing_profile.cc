@@ -781,3 +781,12 @@ void TestingProfile::DestroyWebDataService() {
 
   web_data_service_->Shutdown();
 }
+
+DerivedTestingProfile::DerivedTestingProfile(Profile* profile)
+    : original_profile_(profile) {}
+
+DerivedTestingProfile::~DerivedTestingProfile() {}
+
+ProfileId DerivedTestingProfile::GetRuntimeId() {
+  return original_profile_->GetRuntimeId();
+}

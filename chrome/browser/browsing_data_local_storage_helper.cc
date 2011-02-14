@@ -179,6 +179,8 @@ void CannedBrowsingDataLocalStorageHelper::StartFetching(
               ConvertPendingInfoInWebKitThread));
 }
 
+CannedBrowsingDataLocalStorageHelper::~CannedBrowsingDataLocalStorageHelper() {}
+
 void CannedBrowsingDataLocalStorageHelper::ConvertPendingInfoInWebKitThread() {
   base::AutoLock auto_lock(lock_);
   for (std::vector<GURL>::iterator info = pending_local_storage_info_.begin();

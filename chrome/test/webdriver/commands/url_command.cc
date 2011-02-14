@@ -8,6 +8,20 @@
 
 namespace webdriver {
 
+URLCommand::URLCommand(const std::vector<std::string>& path_segments,
+                       const DictionaryValue* const parameters)
+    : WebDriverCommand(path_segments, parameters) {}
+
+URLCommand::~URLCommand() {}
+
+bool URLCommand::DoesGet() {
+  return true;
+}
+
+bool URLCommand::DoesPost() {
+  return true;
+}
+
 void URLCommand::ExecuteGet(Response* const response) {
   std::string url;
   if (!session_->GetURL(&url)) {
@@ -36,6 +50,10 @@ void URLCommand::ExecutePost(Response* const response) {
   session_->set_current_frame_xpath("");
   response->set_value(new StringValue(url));
   response->set_status(kSuccess);
+}
+
+bool URLCommand::RequiresValidTab() {
+  return true;
 }
 
 }  // namespace webdriver

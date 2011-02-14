@@ -391,12 +391,10 @@ class TestingProfile : public Profile {
 // site information.
 class DerivedTestingProfile : public TestingProfile {
  public:
-  explicit DerivedTestingProfile(Profile* profile)
-      : original_profile_(profile) {}
+  explicit DerivedTestingProfile(Profile* profile);
+  virtual ~DerivedTestingProfile();
 
-  virtual ProfileId GetRuntimeId() {
-    return original_profile_->GetRuntimeId();
-  }
+  virtual ProfileId GetRuntimeId();
 
  protected:
   Profile* original_profile_;

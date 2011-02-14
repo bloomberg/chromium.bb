@@ -939,6 +939,8 @@ SyncManager::ExtraChangeRecordData::~ExtraChangeRecordData() {}
 SyncManager::ChangeRecord::ChangeRecord()
     : id(kInvalidId), action(ACTION_ADD) {}
 
+SyncManager::ChangeRecord::~ChangeRecord() {}
+
 DictionaryValue* SyncManager::ChangeRecord::ToValue(
     const BaseTransaction* trans) const {
   DictionaryValue* value = new DictionaryValue();

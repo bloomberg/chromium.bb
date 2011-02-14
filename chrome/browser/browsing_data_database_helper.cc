@@ -189,6 +189,8 @@ void CannedBrowsingDataDatabaseHelper::StartFetching(
       this, &CannedBrowsingDataDatabaseHelper::ConvertInfoInWebKitThread));
 }
 
+CannedBrowsingDataDatabaseHelper::~CannedBrowsingDataDatabaseHelper() {}
+
 void CannedBrowsingDataDatabaseHelper::ConvertInfoInWebKitThread() {
   base::AutoLock auto_lock(lock_);
   for (std::vector<PendingDatabaseInfo>::const_iterator

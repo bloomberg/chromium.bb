@@ -21,12 +21,11 @@ namespace webdriver {
 // http://code.google.com/p/selenium/wiki/JsonWireProtocol#/session
 class CreateSession : public Command {
  public:
-  inline CreateSession(const std::vector<std::string>& path_segments,
-                       const DictionaryValue* const parameters)
-      : Command(path_segments, parameters) {}
-  virtual ~CreateSession() {}
+  CreateSession(const std::vector<std::string>& path_segments,
+                const DictionaryValue* const parameters);
+  virtual ~CreateSession();
 
-  virtual bool DoesPost() { return true; }
+  virtual bool DoesPost();
   virtual void ExecutePost(Response* const response);
 
  private:

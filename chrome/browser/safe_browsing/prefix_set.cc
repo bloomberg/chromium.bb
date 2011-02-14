@@ -68,6 +68,8 @@ PrefixSet::PrefixSet(const std::vector<SBPrefix>& prefixes) {
   }
 }
 
+PrefixSet::~PrefixSet() {}
+
 bool PrefixSet::Exists(SBPrefix prefix) const {
   if (index_.empty())
     return false;

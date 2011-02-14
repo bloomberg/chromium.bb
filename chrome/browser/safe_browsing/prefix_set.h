@@ -60,6 +60,7 @@ namespace safe_browsing {
 class PrefixSet {
  public:
   explicit PrefixSet(const std::vector<SBPrefix>& prefixes);
+  ~PrefixSet();
 
   // |true| if |prefix| was in |prefixes| passed to the constructor.
   bool Exists(SBPrefix prefix) const;

@@ -58,6 +58,7 @@
         'sql/connection_unittest.cc',
         'sql/statement_unittest.cc',
         'sql/transaction_unittest.cc',
+        'test_suite.cc',
         'test_suite.h',
       ],
       'include_dirs': [

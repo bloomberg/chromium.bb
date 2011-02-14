@@ -33,7 +33,7 @@ class WebUIBrowserTest : public InProcessBrowserTest {
   virtual void SetUpInProcessBrowserTestFixture();
 
   // Returns a mock WebUI object under test (if any).
-  virtual WebUIMessageHandler* GetMockMessageHandler() { return NULL; }
+  virtual WebUIMessageHandler* GetMockMessageHandler();
 
  private:
   // Builds a javascript test in the form:

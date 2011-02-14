@@ -609,6 +609,7 @@ class SyncManager {
       ACTION_UPDATE,
     };
     ChangeRecord();
+    ~ChangeRecord();
 
     // Transfers ownership of the DictionaryValue to the caller.
     DictionaryValue* ToValue(const BaseTransaction* trans) const;

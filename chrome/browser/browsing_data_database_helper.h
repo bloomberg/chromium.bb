@@ -139,7 +139,7 @@ class CannedBrowsingDataDatabaseHelper : public BrowsingDataDatabaseHelper {
     std::string description;
   };
 
-  virtual ~CannedBrowsingDataDatabaseHelper() {}
+  virtual ~CannedBrowsingDataDatabaseHelper();
 
   // Converts the pending database info structs to database info structs.
   void ConvertInfoInWebKitThread();

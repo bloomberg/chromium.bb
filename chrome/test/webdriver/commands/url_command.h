@@ -17,18 +17,17 @@ namespace webdriver {
 // http://code.google.com/p/selenium/wiki/JsonWireProtocol#/session/:sessionId/url
 class URLCommand : public WebDriverCommand {
  public:
-  inline URLCommand(const std::vector<std::string>& path_segments,
-                    const DictionaryValue* const parameters)
-      : WebDriverCommand(path_segments, parameters) {}
-  virtual ~URLCommand() {}
+  URLCommand(const std::vector<std::string>& path_segments,
+             const DictionaryValue* const parameters);
+  virtual ~URLCommand();
 
-  virtual bool DoesGet() { return true; }
-  virtual bool DoesPost() { return true; }
+  virtual bool DoesGet();
+  virtual bool DoesPost();
   virtual void ExecuteGet(Response* const response);
   virtual void ExecutePost(Response* const response);
 
  private:
-  virtual bool RequiresValidTab() { return true; }
+  virtual bool RequiresValidTab();
 
   DISALLOW_COPY_AND_ASSIGN(URLCommand);
 };

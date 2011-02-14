@@ -55,6 +55,14 @@ void MockRenderThread::RemoveFilter(IPC::ChannelProxy::MessageFilter* filter) {
   filter->OnFilterRemoved();
 }
 
+bool MockRenderThread::IsExtensionProcess() const {
+  return is_extension_process_;
+}
+
+bool MockRenderThread::IsIncognitoProcess() const {
+  return false;
+}
+
 // Called by the Widget. Used to send messages to the browser.
 // We short-circuit the mechanim and handle the messages right here on this
 // class.

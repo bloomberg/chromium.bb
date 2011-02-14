@@ -15,6 +15,8 @@
 #include "grit/autofill_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+PhoneField::~PhoneField() {}
+
 // static
 PhoneField* PhoneField::Parse(std::vector<AutoFillField*>::const_iterator* iter,
                               bool is_ecml) {

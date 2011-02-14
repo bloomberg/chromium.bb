@@ -111,6 +111,35 @@ TestRenderWidgetHostView::TestRenderWidgetHostView(RenderWidgetHost* rwh)
 TestRenderWidgetHostView::~TestRenderWidgetHostView() {
 }
 
+RenderWidgetHost* TestRenderWidgetHostView::GetRenderWidgetHost() const {
+  return NULL;
+}
+
+gfx::NativeView TestRenderWidgetHostView::GetNativeView() {
+  return NULL;
+}
+
+bool TestRenderWidgetHostView::HasFocus() {
+  return true;
+}
+
+void TestRenderWidgetHostView::Show() {
+  is_showing_ = true;
+}
+
+void TestRenderWidgetHostView::Hide() {
+  is_showing_ = false;
+}
+
+bool TestRenderWidgetHostView::IsShowing() {
+  return is_showing_;
+}
+
+void TestRenderWidgetHostView::RenderViewGone(base::TerminationStatus status,
+                                              int error_code) {
+  delete this;
+}
+
 gfx::Rect TestRenderWidgetHostView::GetViewBounds() const {
   return gfx::Rect();
 }
@@ -201,6 +230,11 @@ void TestRenderWidgetHostView::WillWmDestroy() {
 void TestRenderWidgetHostView::ShowCompositorHostWindow(bool show) {
 }
 #endif
+
+bool TestRenderWidgetHostView::ContainsNativeView(
+    gfx::NativeView native_view) const {
+  return false;
+}
 
 TestRenderViewHostFactory::TestRenderViewHostFactory(
     RenderProcessHostFactory* rph_factory)

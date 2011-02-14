@@ -8,21 +8,21 @@
 #define CHROME_TEST_SIGNALING_TASK_H_
 #pragma once
 
-#include "base/synchronization/waitable_event.h"
+#include "base/task.h"
 
-using base::WaitableEvent;
+namespace base {
+class WaitableEvent;
+}
 
 class SignalingTask : public Task {
  public:
-  explicit SignalingTask(WaitableEvent* event) : event_(event) {
-  }
+  explicit SignalingTask(base::WaitableEvent* event);
+  virtual ~SignalingTask();
 
-  virtual void Run() {
-    event_->Signal();
-  }
+  virtual void Run();
 
  private:
-  WaitableEvent* event_;
+  base::WaitableEvent* event_;
 };
 
 #endif  // CHROME_TEST_SIGNALING_TASK_H_

@@ -15,6 +15,14 @@
 
 namespace webdriver {
 
+CreateSession::CreateSession(const std::vector<std::string>& path_segments,
+                             const DictionaryValue* const parameters)
+    : Command(path_segments, parameters) {}
+
+CreateSession::~CreateSession() {}
+
+bool CreateSession::DoesPost() { return true; }
+
 void CreateSession::ExecutePost(Response* const response) {
   SessionManager* session_manager = SessionManager::GetInstance();
   Session* session = session_manager->Create();

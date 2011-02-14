@@ -126,7 +126,7 @@ class CannedBrowsingDataLocalStorageHelper
   virtual void CancelNotification() {}
 
  private:
-  virtual ~CannedBrowsingDataLocalStorageHelper() {}
+  virtual ~CannedBrowsingDataLocalStorageHelper();
 
   // Convert the pending local storage info to local storage info objects.
   void ConvertPendingInfoInWebKitThread();

@@ -7,6 +7,7 @@
 #include "chrome/browser/net/gaia/token_service_unittest.h"
 
 #include "base/command_line.h"
+#include "base/synchronization/waitable_event.h"
 #include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher_unittest.h"
@@ -60,7 +61,7 @@ void TokenServiceTestHarness::WaitForDBLoadCompletion() {
   // The WebDB does all work on the DB thread. This will add an event
   // to the end of the DB thread, so when we reach this task, all DB
   // operations should be complete.
-  WaitableEvent done(false, false);
+  base::WaitableEvent done(false, false);
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE, new SignalingTask(&done));
   done.Wait();
