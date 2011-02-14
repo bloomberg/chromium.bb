@@ -167,8 +167,9 @@
       'filepath': 'chrome/browser/labs' \
                   '|chrome/browser/dom_ui/labs'
     },
-    'file_system': {
-      'filepath': 'file_system/.*',
+    'fileapi': {
+      'filepath': 'file_system/.*' \
+                  '|fileapi/.*'
     },
     'pepper_api': {
       'filepath': 'ppapi/c/.*',
@@ -238,7 +239,7 @@
     'pyauto': ['anantha@chromium.org', 'jrg@chromium.org',
                'nirnimesh@chromium.org', 'dyu@chromium.org'],
     'labs': ['thakis@chromium.org'],
-    'file_system': ['kinuko@chromium.org'],
+    'fileapi': ['kinuko+watch@chromium.org'],
     'pepper_api': ['piman+watch@chromium.org'],
     'prerender': ['cbentzel+watch@chromium.org'],
   },
