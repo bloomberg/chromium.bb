@@ -27,138 +27,156 @@ void FastConvertRGB32ToYUVRow(const uint8* rgb_buf_1,
                               uint8* u_buf,
                               uint8* v_buf,
                               int width) {
+// 64-bits system has more registers and so saving the pointers to the tables
+// will be faster. But on 32-bits system we want to save registers so calculate
+// the offset each time.
+#if defined(ARCH_CPU_X86_64)
   const uint64* r_table = reinterpret_cast<uint64*>(kCoefficientsYuvR);
   const uint64* g_table = reinterpret_cast<uint64*>(kCoefficientsYuvR + 256);
   const uint64* b_table = reinterpret_cast<uint64*>(kCoefficientsYuvR + 512);
+#define R_TABLE r_table
+#define G_TABLE g_table
+#define B_TABLE b_table
+#else // On 32-bits system we compute the offset.
+  const uint64* r_table = reinterpret_cast<uint64*>(kCoefficientsYuvR);
+#define R_TABLE r_table
+#define G_TABLE (r_table + 256)
+#define B_TABLE (r_table + 512)
+#endif
+
   uint16* y_row_1 = reinterpret_cast<uint16*>(y_buf_1);
   uint16* y_row_2 = reinterpret_cast<uint16*>(y_buf_2);
-  const uint32* rgb_row_1 = reinterpret_cast<const uint32*>(rgb_buf_1);
-  const uint32* rgb_row_2 = reinterpret_cast<const uint32*>(rgb_buf_2);
-
-  SIMD_ALIGNED(int8 output_stage[8]);
   __m128i offset = _mm_load_si128(reinterpret_cast<const __m128i*>(kYuvOffset));
 
-  for (int i = 0; i < width; i += 2) {
-    // Load the first pixel (a).
-    register unsigned int pixel = *rgb_row_1++;
+  for (; width > 1; width -= 2) {
+// MSVC generates very different intrinsic code for reading that affects
+// performance significantly so we define two different ways.
+#if defined(COMPILER_MSVC)
+uint32 pixel;
+#define READ_RGB(buf) pixel = *reinterpret_cast<const uint32*>(buf); buf += 4;
+#define READ_B(buf) (pixel & 0xFF)
+#define READ_G(buf) ((pixel >> 8) & 0xFF)
+#define READ_R(buf) ((pixel >> 16) & 0xFF)
+#define READ_A(buf)
+#else
+#define READ_RGB(buf)
+#define READ_B(buf) (*buf++)
+#define READ_G(buf) (*buf++)
+#define READ_R(buf) (*buf++)
+#define READ_A(buf) (buf++)
+#endif
+    // Load the first pixel (a) in the first row.
+    READ_RGB(rgb_buf_1);
     __m128i b_comp_a = _mm_loadl_epi64(
-        reinterpret_cast<const __m128i*>(b_table + (pixel & 0xFF)));
-    pixel >>= 8;
+        reinterpret_cast<const __m128i*>(B_TABLE + READ_B(rgb_buf_1)));
     __m128i g_comp_a = _mm_loadl_epi64(
-        reinterpret_cast<const __m128i*>(g_table + (pixel & 0xFF)));
-    pixel >>= 8;
+        reinterpret_cast<const __m128i*>(G_TABLE + READ_G(rgb_buf_1)));
     __m128i r_comp_a = _mm_loadl_epi64(
-        reinterpret_cast<const __m128i*>(r_table + (pixel & 0xFF)));
+        reinterpret_cast<const __m128i*>(R_TABLE + READ_R(rgb_buf_1)));
+    READ_A(rgb_buf_1);
 
-    // Load the first pixel (c) in the second row.
-    pixel = *rgb_row_2++;
-    __m128i b_comp_c = _mm_loadl_epi64(
-        reinterpret_cast<const __m128i*>(b_table + (pixel & 0xFF)));
-    pixel >>= 8;
-    __m128i g_comp_c = _mm_loadl_epi64(
-        reinterpret_cast<const __m128i*>(g_table + (pixel & 0xFF)));
-    pixel >>= 8;
-    __m128i r_comp_c = _mm_loadl_epi64(
-        reinterpret_cast<const __m128i*>(r_table + (pixel & 0xFF)));
+    // Load the second pixel (b) in the first row.
+    READ_RGB(rgb_buf_1);
+    __m128i b_comp_b = _mm_loadl_epi64(
+        reinterpret_cast<const __m128i*>(B_TABLE + READ_B(rgb_buf_1)));
+    __m128i g_comp_b = _mm_loadl_epi64(
+        reinterpret_cast<const __m128i*>(G_TABLE + READ_G(rgb_buf_1)));
+    __m128i r_comp_b = _mm_loadl_epi64(
+        reinterpret_cast<const __m128i*>(R_TABLE + READ_R(rgb_buf_1)));
+    READ_A(rgb_buf_1);
 
     // Pack two pixels into one register.
-    __m128i b_comp_ac = _mm_unpacklo_epi64(b_comp_a, b_comp_c);
-    __m128i g_comp_ac = _mm_unpacklo_epi64(g_comp_a, g_comp_c);
-    __m128i r_comp_ac = _mm_unpacklo_epi64(r_comp_a, r_comp_c);
+    __m128i b_comp_ab = _mm_unpacklo_epi64(b_comp_a, b_comp_b);
+    __m128i g_comp_ab = _mm_unpacklo_epi64(g_comp_a, g_comp_b);
+    __m128i r_comp_ab = _mm_unpacklo_epi64(r_comp_a, r_comp_b);
 
     // Add the coefficients together.
     //                  127                  0
-    // |yuv_ac| will be (Vc Uc 0 Yc Va Ua 0 Ya).
-    __m128i yuv_ac = _mm_adds_epi16(r_comp_ac,
-                                    _mm_adds_epi16(g_comp_ac, b_comp_ac));
+    // |yuv_ab| will be (Vb Ub 0 Yb Va Ua 0 Ya).
+    __m128i yuv_ab = _mm_adds_epi16(r_comp_ab,
+                                    _mm_adds_epi16(g_comp_ab, b_comp_ab));
 
     // Right shift 6 bits to perform divide by 64 and then add the offset.
-    yuv_ac = _mm_srai_epi16(yuv_ac, 6);
-    yuv_ac = _mm_adds_epi16(yuv_ac, offset);
+    yuv_ab = _mm_srai_epi16(yuv_ab, 6);
+    yuv_ab = _mm_adds_epi16(yuv_ab, offset);
 
-    // Now perform on the second column on pixel (b).
-    pixel = *rgb_row_1++;
-    __m128i b_comp_b = _mm_loadl_epi64(
-        reinterpret_cast<const __m128i*>(b_table + (pixel & 0xFF)));
-    pixel >>= 8;
-    __m128i g_comp_b = _mm_loadl_epi64(
-        reinterpret_cast<const __m128i*>(g_table + (pixel & 0xFF)));
-    pixel >>= 8;
-    __m128i r_comp_b = _mm_loadl_epi64(
-        reinterpret_cast<const __m128i*>(r_table + (pixel & 0xFF)));
+    // Do a shuffle to obtain (Vb Ub Va Ua 0 Yb 0 Ya).
+    yuv_ab = _mm_shuffle_epi32(yuv_ab, 0xD8);
+
+    // Load the first pixel (c) in the second row.
+    READ_RGB(rgb_buf_2);
+    __m128i b_comp_c = _mm_loadl_epi64(
+        reinterpret_cast<const __m128i*>(B_TABLE + READ_B(rgb_buf_2)));
+    __m128i g_comp_c = _mm_loadl_epi64(
+        reinterpret_cast<const __m128i*>(G_TABLE + READ_G(rgb_buf_2)));
+    __m128i r_comp_c = _mm_loadl_epi64(
+        reinterpret_cast<const __m128i*>(R_TABLE + READ_R(rgb_buf_2)));
+    READ_A(rgb_buf_2);
 
     // Load the second pixel (d) in the second row.
-    pixel = *rgb_row_2++;
+    READ_RGB(rgb_buf_2);
     __m128i b_comp_d = _mm_loadl_epi64(
-        reinterpret_cast<const __m128i*>(b_table + (pixel & 0xFF)));
-    pixel >>= 8;
+        reinterpret_cast<const __m128i*>(B_TABLE + READ_B(rgb_buf_2)));
     __m128i g_comp_d = _mm_loadl_epi64(
-        reinterpret_cast<const __m128i*>(g_table + (pixel & 0xFF)));
-    pixel >>= 8;
+        reinterpret_cast<const __m128i*>(G_TABLE + READ_G(rgb_buf_2)));
     __m128i r_comp_d = _mm_loadl_epi64(
-        reinterpret_cast<const __m128i*>(r_table + (pixel & 0xFF)));
+        reinterpret_cast<const __m128i*>(R_TABLE + READ_R(rgb_buf_2)));
+    READ_A(rgb_buf_2);
 
     // Pack two pixels into one register.
-    __m128i b_comp_bd = _mm_unpacklo_epi64(b_comp_b, b_comp_d);
-    __m128i g_comp_bd = _mm_unpacklo_epi64(g_comp_b, g_comp_d);
-    __m128i r_comp_bd = _mm_unpacklo_epi64(r_comp_b, r_comp_d);
+    __m128i b_comp_cd = _mm_unpacklo_epi64(b_comp_c, b_comp_d);
+    __m128i g_comp_cd = _mm_unpacklo_epi64(g_comp_c, g_comp_d);
+    __m128i r_comp_cd = _mm_unpacklo_epi64(r_comp_c, r_comp_d);
 
     // Add the coefficients together.
     //                   127                  0
-    // |yuv_bd| will be (Vd Ud 0 Yd Vb Ub 0 Yb).
-    __m128i yuv_bd = _mm_adds_epi16(r_comp_bd,
-                                    _mm_adds_epi16(g_comp_bd, b_comp_bd));
+    // |yuv_cd| will be (Vd Ud 0 Yd Vc Uc 0 Yc).
+    __m128i yuv_cd = _mm_adds_epi16(r_comp_cd,
+                                    _mm_adds_epi16(g_comp_cd, b_comp_cd));
 
     // Right shift 6 bits to perform divide by 64 and then add the offset.
-    yuv_bd = _mm_srai_epi16(yuv_bd, 6);
-    yuv_bd = _mm_adds_epi16(yuv_bd, offset);
+    yuv_cd = _mm_srai_epi16(yuv_cd, 6);
+    yuv_cd = _mm_adds_epi16(yuv_cd, offset);
 
-    // |yuv_row_1| will have (Vb Va Ub Ua 0 0 Yb Ya) and
-    // |yuv_row_2| will have (Vd Vc Ud Uc 0 0 Yd Yc).
-    __m128i yuv_row_1 = _mm_unpacklo_epi16(yuv_ac, yuv_bd);
-    __m128i yuv_row_2 = _mm_unpackhi_epi16(yuv_ac, yuv_bd);
+    // Do a shuffle to obtain (Vd Ud Vc Uc 0 Yd 0 Yc).
+    yuv_cd = _mm_shuffle_epi32(yuv_cd, 0xD8);
 
-    // |y_comp| will have (0 0 0 0 Yd Yc Yb Ya).
-    __m128i y_comp = _mm_unpacklo_epi32(yuv_row_1, yuv_row_2);
+    // This will form (0 Yd 0 Yc 0 Yb 0 Ya).
+    __m128i y_comp = _mm_unpacklo_epi64(yuv_ab, yuv_cd);
 
-    // Down size to 8 bits.
+    // Pack to 8-bits Y values.
+    y_comp = _mm_packs_epi32(y_comp, y_comp);
     y_comp = _mm_packus_epi16(y_comp, y_comp);
 
-    // |uv_comp| will have (Vd Vc Vb Va Ud Uc Ub Ua).
-    __m128i uv_comp = _mm_unpackhi_epi32(yuv_row_1, yuv_row_2);
+    // And then store.
+    *y_row_1++ = _mm_extract_epi16(y_comp, 0);
+    *y_row_2++ = _mm_extract_epi16(y_comp, 1);
 
-    // Generate |unity| to become (1 1 1 1 1 1 1 1).
-    __m128i unity = _mm_cmpeq_epi16(offset, offset);
-    unity = _mm_srli_epi16(unity, 15);
+    // Find the average between pixel a and c then move to lower 64bit.
+    __m128i uv_comp = _mm_avg_epu16(yuv_ab, yuv_cd);
+    uv_comp = _mm_unpackhi_epi64(uv_comp, uv_comp);
 
-    // |uv_comp| will have (Vc + Vd, Va + Vb, Uc + Ud, Ua + Ub).
-    uv_comp = _mm_madd_epi16(uv_comp, unity);
+    // Shuffle and then find average again.
+    __m128i uv_comp_2 = _mm_shuffle_epi32(uv_comp, 0x01);
+    uv_comp = _mm_avg_epu16(uv_comp, uv_comp_2);
 
-    // Pack |uv_comp| into 16 bit signed integers.
-    uv_comp = _mm_packs_epi32(uv_comp, uv_comp);
-
-    // And then do a multiply-add again. r1 will have 4 32-bits integers.
-    uv_comp = _mm_madd_epi16(uv_comp, unity);
-
-    // Do a right shift to perform divide by 4.
-    uv_comp = _mm_srai_epi32(uv_comp, 2);
-
-    // And then pack twice to form 2 8-bits unsigned integers of U and V.
-    uv_comp = _mm_packs_epi32(uv_comp, uv_comp);
+    // Pack to 8-bits then store.
     uv_comp = _mm_packus_epi16(uv_comp, uv_comp);
+    int uv = _mm_extract_epi16(uv_comp, 0);
 
-    // And then finally pack the output.
-    __m128i output = _mm_unpacklo_epi32(y_comp, uv_comp);
-
-    // Store the output.
-    _mm_storel_epi64(reinterpret_cast<__m128i*>(output_stage), output);
-
-    *y_row_1++ = *reinterpret_cast<uint16*>(output_stage);
-    *y_row_2++ = *reinterpret_cast<uint16*>(output_stage + 2);
-    *u_buf++ = output_stage[4];
-    *v_buf++ = output_stage[5];
+    *u_buf++ = uv & 0xff;
+    *v_buf++ = uv >> 8;
   }
 }
+
+#undef R_TABLE
+#undef G_TABLE
+#undef B_TABLE
+#undef READ_RGB
+#undef READ_R
+#undef READ_G
+#undef READ_B
+#undef READ_A
 
 extern void ConvertRGB32ToYUV_SSE2(const uint8* rgbframe,
                                    uint8* yplane,
