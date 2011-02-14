@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_INDEXED_DB_MESSAGES_H_
-#define CHROME_COMMON_INDEXED_DB_MESSAGES_H_
-#pragma once
+// Message definition file, included multiple times, hence no include guard.
+
+#include <vector>
 
 #include "chrome/common/indexed_db_key.h"
 #include "chrome/common/indexed_db_param_traits.h"
@@ -16,211 +16,107 @@
 
 #define IPC_MESSAGE_START IndexedDBMsgStart
 
+// Argument structures used in messages
+
+IPC_ENUM_TRAITS(WebKit::WebIDBObjectStore::PutMode)
+
 // Used to open an indexed database.
-struct IndexedDBHostMsg_FactoryOpen_Params {
-  IndexedDBHostMsg_FactoryOpen_Params();
-  ~IndexedDBHostMsg_FactoryOpen_Params();
-
+IPC_STRUCT_BEGIN(IndexedDBHostMsg_FactoryOpen_Params)
   // The routing ID of the view initiating the open.
-  int32 routing_id;
-
+  IPC_STRUCT_MEMBER(int32, routing_id)
   // The response should have this id.
-  int32 response_id;
-
+  IPC_STRUCT_MEMBER(int32, response_id)
   // The origin doing the initiating.
-  string16 origin;
-
+  IPC_STRUCT_MEMBER(string16, origin)
   // The name of the database.
-  string16 name;
-
+  IPC_STRUCT_MEMBER(string16, name)
   // The maximum size of the database.
-  uint64 maximum_size;
-};
+  IPC_STRUCT_MEMBER(uint64, maximum_size)
+IPC_STRUCT_END()
 
 // Used to create an object store.
-struct IndexedDBHostMsg_DatabaseCreateObjectStore_Params {
-  IndexedDBHostMsg_DatabaseCreateObjectStore_Params();
-  ~IndexedDBHostMsg_DatabaseCreateObjectStore_Params();
-
+IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabaseCreateObjectStore_Params)
   // The name of the object store.
-  string16 name;
-
+  IPC_STRUCT_MEMBER(string16, name)
   // The keyPath of the object store.
-  NullableString16 key_path;
-
+  IPC_STRUCT_MEMBER(NullableString16, key_path)
   // Whether the object store created should have a key generator.
-  bool auto_increment;
-
+  IPC_STRUCT_MEMBER(bool, auto_increment)
   // The transaction this is associated with.
-  int32 transaction_id;
-
+  IPC_STRUCT_MEMBER(int32, transaction_id)
   // The database the object store belongs to.
-  int32 idb_database_id;
-};
+  IPC_STRUCT_MEMBER(int32, idb_database_id)
+IPC_STRUCT_END()
 
 // Used to open both cursors and object cursors in IndexedDB.
-struct IndexedDBHostMsg_IndexOpenCursor_Params {
-  IndexedDBHostMsg_IndexOpenCursor_Params();
-  ~IndexedDBHostMsg_IndexOpenCursor_Params();
-
+IPC_STRUCT_BEGIN(IndexedDBHostMsg_IndexOpenCursor_Params)
   // The response should have this id.
-  int32 response_id;
-
+  IPC_STRUCT_MEMBER(int32, response_id)
   // The serialized lower key.
-  IndexedDBKey lower_key;
-
+  IPC_STRUCT_MEMBER(IndexedDBKey, lower_key)
   // The serialized upper key.
-  IndexedDBKey upper_key;
-
+  IPC_STRUCT_MEMBER(IndexedDBKey, upper_key)
   // Is the lower bound open?
-  bool lower_open;
-
+  IPC_STRUCT_MEMBER(bool, lower_open)
   // Is the upper bound open?
-  bool upper_open;
-
+  IPC_STRUCT_MEMBER(bool, upper_open)
   // The direction of this cursor.
-  int32 direction;
-
+  IPC_STRUCT_MEMBER(int32, direction)
   // The index the index belongs to.
-  int32 idb_index_id;
-
+  IPC_STRUCT_MEMBER(int32, idb_index_id)
   // The transaction this request belongs to.
-  int transaction_id;
-};
+  IPC_STRUCT_MEMBER(int, transaction_id)
+IPC_STRUCT_END()
 
 // Used to set a value in an object store.
-struct IndexedDBHostMsg_ObjectStorePut_Params {
-  IndexedDBHostMsg_ObjectStorePut_Params();
-  ~IndexedDBHostMsg_ObjectStorePut_Params();
-
+IPC_STRUCT_BEGIN(IndexedDBHostMsg_ObjectStorePut_Params)
   // The object store's id.
-  int32 idb_object_store_id;
-
+  IPC_STRUCT_MEMBER(int32, idb_object_store_id)
   // The id any response should contain.
-  int32 response_id;
-
+  IPC_STRUCT_MEMBER(int32, response_id)
   // The value to set.
-  SerializedScriptValue serialized_value;
-
+  IPC_STRUCT_MEMBER(SerializedScriptValue, serialized_value)
   // The key to set it on (may not be "valid"/set in some cases).
-  IndexedDBKey key;
-
+  IPC_STRUCT_MEMBER(IndexedDBKey, key)
   // Whether this is an add or a put.
-  WebKit::WebIDBObjectStore::PutMode put_mode;
-
+  IPC_STRUCT_MEMBER(WebKit::WebIDBObjectStore::PutMode, put_mode)
   // The transaction it's associated with.
-  int transaction_id;
-};
+  IPC_STRUCT_MEMBER(int, transaction_id)
+IPC_STRUCT_END()
 
 // Used to create an index.
-struct IndexedDBHostMsg_ObjectStoreCreateIndex_Params {
-  IndexedDBHostMsg_ObjectStoreCreateIndex_Params();
-  ~IndexedDBHostMsg_ObjectStoreCreateIndex_Params();
-
+IPC_STRUCT_BEGIN(IndexedDBHostMsg_ObjectStoreCreateIndex_Params)
   // The name of the index.
-  string16 name;
-
+  IPC_STRUCT_MEMBER(string16, name)
   // The keyPath of the index.
-  NullableString16 key_path;
-
+  IPC_STRUCT_MEMBER(NullableString16, key_path)
   // Whether the index created has unique keys.
-  bool unique;
-
+  IPC_STRUCT_MEMBER(bool, unique)
   // The transaction this is associated with.
-  int32 transaction_id;
-
+  IPC_STRUCT_MEMBER(int32, transaction_id)
   // The object store the index belongs to.
-  int32 idb_object_store_id;
-};
+  IPC_STRUCT_MEMBER(int32, idb_object_store_id)
+IPC_STRUCT_END()
 
 // Used to open an IndexedDB cursor.
-struct IndexedDBHostMsg_ObjectStoreOpenCursor_Params {
-  IndexedDBHostMsg_ObjectStoreOpenCursor_Params();
-  ~IndexedDBHostMsg_ObjectStoreOpenCursor_Params();
-
+IPC_STRUCT_BEGIN(IndexedDBHostMsg_ObjectStoreOpenCursor_Params)
   // The response should have this id.
-  int32 response_id;
-
+  IPC_STRUCT_MEMBER(int32, response_id)
   // The serialized lower key.
-  IndexedDBKey lower_key;
-
+  IPC_STRUCT_MEMBER(IndexedDBKey, lower_key)
   // The serialized upper key.
-  IndexedDBKey upper_key;
-
+  IPC_STRUCT_MEMBER(IndexedDBKey, upper_key)
   // Is the lower bound open?
-  bool lower_open;
-
+  IPC_STRUCT_MEMBER(bool, lower_open)
   // Is the upper bound open?
-  bool upper_open;
-
+  IPC_STRUCT_MEMBER(bool, upper_open)
   // The direction of this cursor.
-  int32 direction;
-
+  IPC_STRUCT_MEMBER(int32, direction)
   // The object store the cursor belongs to.
-  int32 idb_object_store_id;
-
+  IPC_STRUCT_MEMBER(int32, idb_object_store_id)
   // The transaction this request belongs to.
-  int transaction_id;
-};
-
-namespace IPC {
-template <>
-struct ParamTraits<IndexedDBHostMsg_FactoryOpen_Params> {
-  typedef IndexedDBHostMsg_FactoryOpen_Params param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<IndexedDBHostMsg_DatabaseCreateObjectStore_Params> {
-  typedef IndexedDBHostMsg_DatabaseCreateObjectStore_Params param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<IndexedDBHostMsg_IndexOpenCursor_Params> {
-  typedef IndexedDBHostMsg_IndexOpenCursor_Params param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<IndexedDBHostMsg_ObjectStorePut_Params> {
-  typedef IndexedDBHostMsg_ObjectStorePut_Params param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<IndexedDBHostMsg_ObjectStoreCreateIndex_Params> {
-  typedef IndexedDBHostMsg_ObjectStoreCreateIndex_Params param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<IndexedDBHostMsg_ObjectStoreOpenCursor_Params> {
-  typedef IndexedDBHostMsg_ObjectStoreOpenCursor_Params param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<WebKit::WebIDBObjectStore::PutMode> {
-  typedef WebKit::WebIDBObjectStore::PutMode param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-}  // namespace IPC
+  IPC_STRUCT_MEMBER(int, transaction_id)
+IPC_STRUCT_END()
 
 // Indexed DB messages sent from the browser to the renderer.
 
@@ -508,4 +404,3 @@ IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_TransactionDidCompleteTaskEvents,
 IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_TransactionDestroyed,
                      int32 /* idb_transaction_id */)
 
-#endif  // CHROME_COMMON_INDEXED_DB_MESSAGES_H_

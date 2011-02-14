@@ -103,7 +103,6 @@
           'common/hi_res_timer_manager.h',
           'common/indexed_db_key.cc',
           'common/indexed_db_key.h',
-          'common/indexed_db_messages.cc',
           'common/indexed_db_messages.h',
           'common/indexed_db_param_traits.cc',
           'common/indexed_db_param_traits.h',
