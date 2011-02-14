@@ -59,9 +59,8 @@ string16 KeyboardSwitchMenu::GetCurrentKeyboardName() const {
   VLOG(1) << "The input method menu is not ready yet. Show the display "
           << "name of the current input method";
   InputMethodLibrary* library = CrosLibrary::Get()->GetInputMethodLibrary();
-  return (input_method::GetStringUTF16(
-              input_method::GetInputMethodDisplayNameFromId(
-                  library->current_input_method().id)));
+  return UTF8ToUTF16(input_method::GetInputMethodDisplayNameFromId(
+      library->current_input_method().id));
 }
 
 }  // namespace chromeos
