@@ -9,7 +9,10 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/extensions/external_extension_provider_impl.h"
 
-ExternalExtensionLoader::ExternalExtensionLoader() : running_(false) {}
+ExternalExtensionLoader::ExternalExtensionLoader()
+    : owner_(NULL),
+      running_(false) {
+}
 
 void ExternalExtensionLoader::Init(
     ExternalExtensionProviderImpl* owner) {
