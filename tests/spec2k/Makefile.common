@@ -172,10 +172,10 @@ $(IT).nacl.dyn.opt.x8664: $(SRC) $(CPPSRC)
 
 PNACL_ROOT=$(TC_ROOT)/linux_arm-untrusted
 PNACL_BIN=$(PNACL_ROOT)/bin
-TRANSLATOR_X8632=$(PNACL_BIN)/pnacl-translate --pnacl-sb-x86-32 -arch x86-32
-TRANSLATOR_X8664=$(PNACL_BIN)/pnacl-translate --pnacl-sb-x86-64 -arch x86-64
-BC_GCC=$(PNACL_BIN)/pnacl-gcc -emit-llvm
-BC_GPP=$(PNACL_BIN)/pnacl-g++ -emit-llvm
+TRANSLATOR_X8632=$(PNACL_BIN)/pnacl-translate --pnacl-sb -arch x86-32
+TRANSLATOR_X8664=$(PNACL_BIN)/pnacl-translate --pnacl-sb -arch x86-64
+BC_GCC=$(PNACL_BIN)/pnacl-gcc
+BC_GPP=$(PNACL_BIN)/pnacl-g++
 BC_OPT=$(PNACL_BIN)/pnacl-bcopt -O3
 BC_LINK=$(PNACL_BIN)/pnacl-bclink
 BC_TRANSLATE=$(TIME_CMD) $(PNACL_BIN)/pnacl-bcld
@@ -251,7 +251,7 @@ $(IT).pnacl.opt.x8664: $(IT).opt.bc
 # tools/llvm/utman.sh build-sandboxed-translators
 # tools/llvm/utman.sh install-translators
 ######################################################################
-BC_PRELINK=$(PNACL_BIN)/pnacl-bcld -emit-llvm
+BC_PRELINK=$(PNACL_BIN)/pnacl-bcld
 
 # optimized llvm bit code combined and interprocedurally optimized
 $(IT).opt.prelinked.bc: $(IT).opt.bc
