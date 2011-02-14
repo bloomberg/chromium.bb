@@ -768,10 +768,10 @@ void SafeBrowsingDatabaseNew:: UpdateDownloadStore() {
   std::vector<SBAddPrefix> add_prefixes_result;
   std::vector<SBAddFullHash> add_full_hashes_result;
 
-  if (download_store_->FinishUpdate(empty_add_hashes,
-                                    empty_miss_cache,
-                                    &add_prefixes_result,
-                                    &add_full_hashes_result))
+  if (!download_store_->FinishUpdate(empty_add_hashes,
+                                     empty_miss_cache,
+                                     &add_prefixes_result,
+                                     &add_full_hashes_result))
     RecordFailure(FAILURE_DOWNLOAD_DATABASE_UPDATE_FINISH);
   return;
 }
