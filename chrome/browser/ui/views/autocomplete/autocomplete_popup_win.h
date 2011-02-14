@@ -7,13 +7,13 @@
 #pragma once
 
 #include "base/weak_ptr.h"
-#include "views/widget/native_widget_win.h"
+#include "views/widget/widget_win.h"
 
 class AutocompleteEditView;
 class AutocompletePopupContentsView;
 
 class AutocompletePopupWin
-    : public views::NativeWidgetWin,
+    : public views::WidgetWin,
       public base::SupportsWeakPtr<AutocompletePopupWin> {
  public:
   // Creates the popup and shows it. |edit_view| is the edit that created us.
@@ -22,7 +22,7 @@ class AutocompletePopupWin
   virtual ~AutocompletePopupWin();
 
  private:
-  // Overridden from NativeWidgetWin:
+  // Overridden from WidgetWin:
   virtual LRESULT OnMouseActivate(HWND window,
                                   UINT hit_test,
                                   UINT mouse_message);

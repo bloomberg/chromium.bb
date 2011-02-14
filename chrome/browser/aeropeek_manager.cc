@@ -36,7 +36,7 @@
 #include "ui/base/win/window_impl.h"
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/icon_util.h"
-#include "views/widget/native_widget_win.h"
+#include "views/widget/widget_win.h"
 
 namespace {
 
@@ -1016,7 +1016,7 @@ bool AeroPeekManager::Enabled() {
   // flooding users with tab thumbnails.
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   return base::win::GetVersion() >= base::win::VERSION_WIN7 &&
-      views::NativeWidgetWin::IsAeroGlassEnabled() &&
+      views::WidgetWin::IsAeroGlassEnabled() &&
       !command_line->HasSwitch(switches::kApp) &&
       command_line->HasSwitch(switches::kEnableAeroPeekTabs);
 }

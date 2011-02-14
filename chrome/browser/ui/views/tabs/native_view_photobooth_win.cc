@@ -8,7 +8,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/point.h"
-#include "views/widget/native_widget_win.h"
+#include "views/widget/widget_win.h"
 
 namespace {
 
@@ -149,7 +149,7 @@ void NativeViewPhotoboothWin::CreateCaptureWindow(HWND initial_hwnd) {
   gfx::Point window_position = GetCaptureWindowPosition();
   gfx::Rect capture_bounds(window_position.x(), window_position.y(),
                            contents_rect.Width(), contents_rect.Height());
-  capture_window_ = new views::NativeWidgetWin;
+  capture_window_ = new views::WidgetWin;
   capture_window_->set_window_style(WS_POPUP);
   // WS_EX_TOOLWINDOW ensures the capture window doesn't produce a Taskbar
   // button.

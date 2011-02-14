@@ -20,7 +20,7 @@
 #include "grit/theme_resources.h"
 #include "ui/gfx/font.h"
 #include "views/screen.h"
-#include "views/widget/native_widget_win.h"
+#include "views/widget/widget_win.h"
 #include "views/window/window_delegate.h"
 #include "views/window/window_win.h"
 
@@ -111,7 +111,7 @@ bool BrowserFrameWin::AlwaysUseNativeFrame() const {
   // theme is active for normal browser windows, we don't want to use the custom
   // frame for popups/apps.
   if (!browser_view_->IsBrowserTypeNormal() &&
-      views::NativeWidgetWin::IsAeroGlassEnabled())
+      views::WidgetWin::IsAeroGlassEnabled())
     return true;
 
   // Otherwise, we use the native frame when we're told we should by the theme
@@ -168,7 +168,7 @@ void BrowserFrameWin::OnEnterSizeMove() {
 }
 
 void BrowserFrameWin::OnExitSizeMove() {
-  views::NativeWidgetWin::OnExitSizeMove();
+  views::WidgetWin::OnExitSizeMove();
 }
 
 void BrowserFrameWin::OnInitMenuPopup(HMENU menu, UINT position,

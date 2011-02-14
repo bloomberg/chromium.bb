@@ -12,7 +12,7 @@
 #include "views/window/window.h"
 
 #if defined(OS_WIN)
-#include "views/widget/native_widget_win.h"
+#include "views/widget/widget_win.h"
 #endif
 
 namespace {
@@ -99,7 +99,7 @@ class BaseTabStrip::RemoveTabDelegate
     POINT cursor_point = {GET_X_LPARAM(pos), GET_Y_LPARAM(pos)};
     MapWindowPoints(NULL, widget->GetNativeView(), &cursor_point, 1);
 
-    static_cast<views::NativeWidgetWin*>(widget)->ResetLastMouseMoveFlag();
+    static_cast<views::WidgetWin*>(widget)->ResetLastMouseMoveFlag();
     // Return to message loop - otherwise we may disrupt some operation that's
     // in progress.
     SendMessage(widget->GetNativeView(), WM_MOUSEMOVE, 0,

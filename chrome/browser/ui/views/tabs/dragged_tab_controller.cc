@@ -40,7 +40,7 @@
 #include "views/window/window.h"
 
 #if defined(OS_WIN)
-#include "views/widget/native_widget_win.h"
+#include "views/widget/widget_win.h"
 #endif
 
 #if defined(OS_LINUX)
@@ -211,7 +211,7 @@ class DraggedTabController::DockDisplayer : public ui::AnimationDelegate {
         hidden_(false),
         in_enable_area_(info.in_enable_area()) {
 #if defined(OS_WIN)
-    views::NativeWidgetWin* popup = new views::NativeWidgetWin;
+    views::WidgetWin* popup = new views::WidgetWin;
     popup_ = popup;
     popup->set_window_style(WS_POPUP);
     popup->set_window_ex_style(WS_EX_LAYERED | WS_EX_TOOLWINDOW |
@@ -274,7 +274,7 @@ class DraggedTabController::DockDisplayer : public ui::AnimationDelegate {
     if (!hidden_)
       return;
 #if defined(OS_WIN)
-    static_cast<views::NativeWidgetWin*>(popup_)->Close();
+    static_cast<views::WidgetWin*>(popup_)->Close();
 #else
     NOTIMPLEMENTED();
 #endif
@@ -284,7 +284,7 @@ class DraggedTabController::DockDisplayer : public ui::AnimationDelegate {
   virtual void UpdateLayeredAlpha() {
 #if defined(OS_WIN)
     double scale = in_enable_area_ ? 1 : .5;
-    static_cast<views::NativeWidgetWin*>(popup_)->SetOpacity(
+    static_cast<views::WidgetWin*>(popup_)->SetOpacity(
         static_cast<BYTE>(animation_.GetCurrentValue() * scale * 255.0));
     popup_->GetRootView()->SchedulePaint();
 #else

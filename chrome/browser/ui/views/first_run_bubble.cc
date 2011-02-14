@@ -24,7 +24,7 @@
 #include "views/events/event.h"
 #include "views/focus/focus_manager.h"
 #include "views/layout/layout_constants.h"
-#include "views/widget/native_widget_win.h"
+#include "views/widget/widget_win.h"
 #include "views/window/window.h"
 
 namespace {
@@ -359,7 +359,7 @@ gfx::Size FirstRunOEMBubbleView::GetPreferredSize() {
   // now, we force Vista to show a correctly-sized box by taking account of
   // the difference in font size calculation. The coefficient should not be
   // stored in a variable because it's a hack and should go away.
-  if (views::NativeWidgetWin::IsAeroGlassEnabled()) {
+  if (views::WidgetWin::IsAeroGlassEnabled()) {
     size.set_width(static_cast<int>(size.width() * 0.85));
     size.set_height(static_cast<int>(size.height() * 0.85));
   }

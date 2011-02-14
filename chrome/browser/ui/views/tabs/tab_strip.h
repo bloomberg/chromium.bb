@@ -22,7 +22,7 @@ class ImageView;
 #if defined(OS_LINUX)
 class WidgetGtk;
 #elif defined(OS_WIN)
-class NativeWidgetWin;
+class WidgetWin;
 #endif
 }
 
@@ -126,7 +126,7 @@ class TabStrip : public BaseTabStrip,
     // Renders the drop indicator.
     // TODO(beng): should be views::Widget.
 #if defined(OS_WIN)
-    views::NativeWidgetWin* arrow_window;
+    views::WidgetWin* arrow_window;
 #else
     views::WidgetGtk* arrow_window;
 #endif

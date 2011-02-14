@@ -13,7 +13,7 @@
 #include "views/view.h"
 
 #if defined(OS_WIN)
-#include "views/widget/native_widget_win.h"
+#include "views/widget/widget_win.h"
 #elif defined(OS_LINUX)
 #include "views/widget/widget_gtk.h"
 #endif
@@ -117,7 +117,7 @@ class BorderContents : public views::View {
 // we can use >1-bit alpha shadow images on the borders, which look nicer than
 // the Windows CS_DROPSHADOW shadows.  The info bubble window itself cannot be a
 // layered window because that prevents it from hosting native child controls.
-class BorderWidget : public views::NativeWidgetWin {
+class BorderWidget : public views::WidgetWin {
  public:
   BorderWidget();
   virtual ~BorderWidget() { }
@@ -142,7 +142,7 @@ class BorderWidget : public views::NativeWidgetWin {
   BorderContents* border_contents_;
 
  private:
-  // Overridden from NativeWidgetWin:
+  // Overridden from WidgetWin:
   virtual LRESULT OnMouseActivate(HWND window,
                                   UINT hit_test,
                                   UINT mouse_message);
@@ -179,7 +179,7 @@ class InfoBubbleDelegate {
 // That way InfoBubble has no (or very few) ifdefs.
 class InfoBubble
 #if defined(OS_WIN)
-    : public views::NativeWidgetWin,
+    : public views::WidgetWin,
 #elif defined(OS_LINUX)
     : public views::WidgetGtk,
 #endif
@@ -228,7 +228,7 @@ class InfoBubble
     fade_away_on_close_ = fade_away_on_close;
   }
 
-  // Overridden from NativeWidgetWin:
+  // Overridden from WidgetWin:
   virtual void Close();
 
   // Overridden from ui::AnimationDelegate:
@@ -256,7 +256,7 @@ class InfoBubble
   virtual BorderContents* CreateBorderContents();
 
 #if defined(OS_WIN)
-  // Overridden from NativeWidgetWin:
+  // Overridden from WidgetWin:
   virtual void OnActivate(UINT action, BOOL minimized, HWND window);
 #elif defined(OS_LINUX)
   // Overridden from WidgetGtk:

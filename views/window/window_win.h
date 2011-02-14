@@ -6,7 +6,7 @@
 #define VIEWS_WINDOW_WINDOW_WIN_H_
 #pragma once
 
-#include "views/widget/native_widget_win.h"
+#include "views/widget/widget_win.h"
 #include "views/window/window.h"
 
 namespace gfx {
@@ -31,14 +31,15 @@ void EnsureRectIsVisibleInRect(const gfx::Rect& parent_rect,
 class Client;
 class WindowDelegate;
 
-////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 //
 // WindowWin
 //
-//  A WindowWin is a NativeWidgetWin that represents a Window.
+//  A WindowWin is a WidgetWin that has a caption and a border. The frame is
+//  rendered by the operating system.
 //
-////////////////////////////////////////////////////////////////////////////////
-class WindowWin : public NativeWidgetWin,
+///////////////////////////////////////////////////////////////////////////////
+class WindowWin : public WidgetWin,
                   public Window {
  public:
   virtual ~WindowWin();
@@ -123,7 +124,7 @@ class WindowWin : public NativeWidgetWin,
   // crazily complicated.
   virtual gfx::Insets GetClientAreaInsets() const;
 
-  // Overridden from NativeWidgetWin:
+  // Overridden from WidgetWin:
   virtual void OnActivate(UINT action, BOOL minimized, HWND window);
   virtual void OnActivateApp(BOOL active, DWORD thread_id);
   virtual LRESULT OnAppCommand(HWND window, short app_command, WORD device,

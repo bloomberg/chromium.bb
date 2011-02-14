@@ -15,8 +15,8 @@
 #include "ui/gfx/native_theme_win.h"
 #include "views/controls/tabbed_pane/tabbed_pane.h"
 #include "views/layout/fill_layout.h"
-#include "views/widget/native_widget_win.h"
 #include "views/widget/root_view.h"
+#include "views/widget/widget_win.h"
 
 namespace views {
 
@@ -288,7 +288,7 @@ void NativeTabbedPaneWin::CreateNativeControl() {
   SendMessage(tab_control, WM_SETFONT, reinterpret_cast<WPARAM>(font), FALSE);
 
   // Create the view container which is a child of the TabControl.
-  content_window_ = new NativeWidgetWin;
+  content_window_ = new WidgetWin();
   content_window_->Init(tab_control, gfx::Rect());
 
   // Explicitly setting the WS_EX_LAYOUTRTL property for the HWND (see above

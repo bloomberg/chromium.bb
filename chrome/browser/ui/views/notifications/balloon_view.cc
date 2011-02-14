@@ -36,7 +36,12 @@
 #include "views/controls/native/native_view_host.h"
 #include "views/painter.h"
 #include "views/widget/root_view.h"
-#include "views/widget/widget.h"
+#if defined(OS_WIN)
+#include "views/widget/widget_win.h"
+#endif
+#if defined(OS_LINUX)
+#include "views/widget/widget_gtk.h"
+#endif
 
 using views::Widget;
 
@@ -94,7 +99,7 @@ BalloonViewImpl::BalloonViewImpl(BalloonCollection* collection)
       frame_container_(NULL),
       html_container_(NULL),
       html_contents_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+      method_factory_(this),
       close_button_(NULL),
       animation_(NULL),
       options_menu_model_(NULL),

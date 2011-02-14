@@ -58,7 +58,7 @@ TabContentsViewWin::~TabContentsViewWin() {
 void TabContentsViewWin::Unparent() {
   // Remember who our FocusManager is, we won't be able to access it once
   // unparented.
-  focus_manager_ = views::NativeWidgetWin::GetFocusManager();
+  focus_manager_ = views::WidgetWin::GetFocusManager();
   // Note that we do not DCHECK on focus_manager_ as it may be NULL when used
   // with an external tab container.
   ::SetParent(GetNativeView(), NULL);
@@ -69,7 +69,7 @@ void TabContentsViewWin::CreateView(const gfx::Size& initial_size) {
   // Since we create these windows parented to the desktop window initially, we
   // don't want to create them initially visible.
   set_window_style(WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
-  NativeWidgetWin::Init(GetDesktopWindow(), gfx::Rect());
+  WidgetWin::Init(GetDesktopWindow(), gfx::Rect());
 
   // Remove the root view drop target so we can register our own.
   RevokeDragDrop(GetNativeView());
@@ -102,7 +102,7 @@ RenderWidgetHostView* TabContentsViewWin::CreateViewForWidget(
 }
 
 gfx::NativeView TabContentsViewWin::GetNativeView() const {
-  return NativeWidgetWin::GetNativeView();
+  return WidgetWin::GetNativeView();
 }
 
 gfx::NativeView TabContentsViewWin::GetContentNativeView() const {
@@ -144,7 +144,7 @@ void TabContentsViewWin::OnDestroy() {
     drop_target_ = NULL;
   }
 
-  NativeWidgetWin::OnDestroy();
+  WidgetWin::OnDestroy();
 }
 
 void TabContentsViewWin::SetPageTitle(const std::wstring& title) {
@@ -307,7 +307,7 @@ void TabContentsViewWin::TakeFocus(bool reverse) {
 }
 
 views::FocusManager* TabContentsViewWin::GetFocusManager() {
-  views::FocusManager* focus_manager = NativeWidgetWin::GetFocusManager();
+  views::FocusManager* focus_manager = WidgetWin::GetFocusManager();
   if (focus_manager) {
     // If focus_manager_ is non NULL, it means we have been reparented, in which
     // case its value may not be valid anymore.
@@ -372,7 +372,7 @@ void TabContentsViewWin::OnMouseLeave() {
 LRESULT TabContentsViewWin::OnMouseRange(UINT msg,
                                          WPARAM w_param, LPARAM l_param) {
   if (tab_contents()->is_crashed() && sad_tab_ != NULL) {
-    return NativeWidgetWin::OnMouseRange(msg, w_param, l_param);
+    return WidgetWin::OnMouseRange(msg, w_param, l_param);
   }
 
   switch (msg) {

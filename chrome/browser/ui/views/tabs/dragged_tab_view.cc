@@ -10,7 +10,7 @@
 #include "views/widget/widget.h"
 
 #if defined(OS_WIN)
-#include "views/widget/native_widget_win.h"
+#include "views/widget/widget_win.h"
 #elif defined(OS_LINUX)
 #include "views/widget/widget_gtk.h"
 #endif
@@ -38,7 +38,7 @@ DraggedTabView::DraggedTabView(views::View* renderer,
   set_parent_owned(false);
 
 #if defined(OS_WIN)
-  container_.reset(new views::NativeWidgetWin);
+  container_.reset(new views::WidgetWin);
   container_->set_delete_on_destroy(false);
   container_->set_window_style(WS_POPUP);
   container_->set_window_ex_style(

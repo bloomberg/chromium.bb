@@ -14,7 +14,7 @@
 #include "views/window/window.h"
 
 #if defined(OS_WIN)
-#include "views/widget/native_widget_win.h"
+#include "views/widget/widget_win.h"
 #endif
 
 // This class is only used on windows for now.
@@ -25,7 +25,7 @@ using namespace views;
 class GenericInfoViewTest : public testing::Test {
  public:
   Widget* CreateWidget() {
-    return new NativeWidgetWin;
+    return new WidgetWin();
   }
  private:
   MessageLoopForUI message_loop_;
@@ -36,7 +36,7 @@ TEST_F(GenericInfoViewTest, GenericInfoView) {
   const string16 kValue = ASCIIToUTF16("Value");
 
   Widget* window = CreateWidget();
-  static_cast<NativeWidgetWin*>(window)->Init(NULL, gfx::Rect(0, 0, 100, 100));
+  static_cast<WidgetWin*>(window)->Init(NULL, gfx::Rect(0, 0, 100, 100));
   RootView* root_view = window->GetRootView();
 
   GenericInfoView* view1 = new GenericInfoView(1);

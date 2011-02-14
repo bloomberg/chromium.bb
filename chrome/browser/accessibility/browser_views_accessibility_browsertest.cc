@@ -20,6 +20,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "views/accessibility/view_accessibility.h"
 #include "views/widget/root_view.h"
+#include "views/widget/widget_win.h"
 #include "views/window/window.h"
 
 namespace {

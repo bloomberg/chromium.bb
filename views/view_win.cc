@@ -18,7 +18,7 @@
 #include "views/views_delegate.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
-#include "views/widget/native_widget_win.h"
+#include "views/widget/widget_win.h"
 
 namespace views {
 
@@ -46,7 +46,7 @@ void View::NotifyAccessibilityEvent(AccessibilityTypes::Event event_type,
   // with this view so that clients can call get_accChild in ViewAccessibility
   // to retrieve the IAccessible associated with this view.
   if (send_native_event) {
-    NativeWidgetWin* view_widget = static_cast<NativeWidgetWin*>(GetWidget());
+    WidgetWin* view_widget = static_cast<WidgetWin*>(GetWidget());
     int child_id = view_widget->AddAccessibilityViewEvent(this);
     ::NotifyWinEvent(ViewAccessibility::MSAAEvent(event_type),
         view_widget->GetNativeView(), OBJID_CLIENT, child_id);

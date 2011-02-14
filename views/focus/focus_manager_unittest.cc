@@ -33,7 +33,7 @@
 #include "views/window/window_delegate.h"
 
 #if defined(OS_WIN)
-#include "views/widget/native_widget_win.h"
+#include "views/widget/widget_win.h"
 #include "views/window/window_win.h"
 #elif defined(OS_LINUX)
 #include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
@@ -293,7 +293,7 @@ class BorderView : public NativeViewHost {
     if (child == this && is_add) {
       if (!widget_) {
 #if defined(OS_WIN)
-        NativeWidgetWin* widget_win = new NativeWidgetWin;
+        WidgetWin* widget_win = new WidgetWin();
         widget_win->Init(parent->GetRootView()->GetWidget()->GetNativeView(),
                          gfx::Rect(0, 0, 0, 0));
         widget_win->SetFocusTraversableParentView(this);
@@ -1605,7 +1605,7 @@ TEST_F(FocusManagerTest, CreationForNativeRoot) {
   ASSERT_TRUE(hwnd);
 
   // Create a view window parented to native dialog.
-  NativeWidgetWin window1;
+  WidgetWin window1;
   window1.set_delete_on_destroy(false);
   window1.set_window_style(WS_CHILD);
   window1.Init(hwnd, gfx::Rect(0, 0, 100, 100));
@@ -1616,7 +1616,7 @@ TEST_F(FocusManagerTest, CreationForNativeRoot) {
   EXPECT_TRUE(focus_manager_member1);
 
   // Create another view window parented to the first view window.
-  NativeWidgetWin window2;
+  WidgetWin window2;
   window2.set_delete_on_destroy(false);
   window2.set_window_style(WS_CHILD);
   window2.Init(window1.GetNativeView(), gfx::Rect(0, 0, 100, 100));

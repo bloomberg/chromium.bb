@@ -13,7 +13,7 @@
 
 namespace views {
 
-class NativeWidgetWin;
+class WidgetWin;
 class TabLayout;
 
 class NativeTabbedPaneWin : public NativeControlWin,
@@ -86,7 +86,7 @@ class NativeTabbedPaneWin : public NativeControlWin,
   int selected_index_;
 
   // The window displayed in the tab.
-  NativeWidgetWin* content_window_;
+  WidgetWin* content_window_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeTabbedPaneWin);
 };
