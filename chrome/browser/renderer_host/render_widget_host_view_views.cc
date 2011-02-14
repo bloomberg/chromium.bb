@@ -14,6 +14,7 @@
 #include "base/string_number_conversions.h"
 #include "base/task.h"
 #include "base/time.h"
+#include "chrome/browser/renderer_host/backing_store_skia.h"
 #include "chrome/browser/renderer_host/backing_store_x.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/common/native_web_keyboard_event.h"
@@ -25,6 +26,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/canvas_skia.h"
 #include "views/events/event.h"
 #include "views/ime/ime_context.h"
 #include "views/widget/widget.h"
@@ -32,7 +34,8 @@
 
 static const int kMaxWindowWidth = 4000;
 static const int kMaxWindowHeight = 4000;
-static const char* kRenderWidgetHostViewKey = "__RENDER_WIDGET_HOST_VIEW__";
+static const char kRenderWidgetHostViewKey[] = "__RENDER_WIDGET_HOST_VIEW__";
+static const char kBackingStoreSkiaSwitch[] = "use-backing-store-skia";
 
 // Copied from third_party/WebKit/Source/WebCore/page/EventHandler.cpp
 //
@@ -56,6 +59,18 @@ const char RenderWidgetHostViewViews::kViewClassName[] =
     "browser/renderer_host/RenderWidgetHostViewViews";
 
 namespace {
+
+bool UsingBackingStoreSkia() {
+  static bool decided = false;
+  static bool use_skia = false;
+  if (!decided) {
+    CommandLine* cmdline = CommandLine::ForCurrentProcess();
+    use_skia = (cmdline && cmdline->HasSwitch(kBackingStoreSkiaSwitch));
+    decided = true;
+  }
+
+  return use_skia;
+}
 
 int WebInputEventFlagsFromViewsEvent(const views::Event& event) {
   int modifiers = 0;
@@ -487,9 +502,14 @@ BackingStore* RenderWidgetHostViewViews::AllocBackingStore(
   gfx::NativeView nview = GetInnerNativeView();
   if (!nview)
     return NULL;
-  return new BackingStoreX(host_, size,
-                           ui::GetVisualFromGtkWidget(nview),
-                           gtk_widget_get_visual(nview)->depth);
+
+  if (UsingBackingStoreSkia()) {
+    return new BackingStoreSkia(host_, size);
+  } else {
+    return new BackingStoreX(host_, size,
+                             ui::GetVisualFromGtkWidget(nview),
+                             gtk_widget_get_visual(nview)->depth);
+  }
 }
 
 gfx::NativeView RenderWidgetHostViewViews::GetInnerNativeView() const {
@@ -540,8 +560,7 @@ void RenderWidgetHostViewViews::Paint(gfx::Canvas* canvas) {
   ConvertPointToWidget(this, &origin);
 
   about_to_validate_and_paint_ = true;
-  BackingStoreX* backing_store = static_cast<BackingStoreX*>(
-      host_->GetBackingStore(true));
+  BackingStore* backing_store = host_->GetBackingStore(true);
   // Calling GetBackingStore maybe have changed |invalid_rect_|...
   about_to_validate_and_paint_ = false;
 
@@ -556,9 +575,15 @@ void RenderWidgetHostViewViews::Paint(gfx::Canvas* canvas) {
       if (!visually_deemphasized_) {
         // In the common case, use XCopyArea. We don't draw more than once, so
         // we don't need to double buffer.
-        backing_store->XShowRect(origin,
-            paint_rect, ui::GetX11WindowFromGdkWindow(window));
-      } else {
+
+        if (UsingBackingStoreSkia()) {
+          static_cast<BackingStoreSkia*>(backing_store)->SkiaShowRect(
+              gfx::Point(paint_rect.x(), paint_rect.y()), canvas);
+        } else {
+          static_cast<BackingStoreX*>(backing_store)->XShowRect(origin,
+              paint_rect, ui::GetX11WindowFromGdkWindow(window));
+        }
+      } else if (!UsingBackingStoreSkia()) {
         // If the grey blend is showing, we make two drawing calls. Use double
         // buffering to prevent flicker. Use CairoShowRect because XShowRect
         // shortcuts GDK's double buffering.
@@ -566,7 +591,8 @@ void RenderWidgetHostViewViews::Paint(gfx::Canvas* canvas) {
                               paint_rect.width(), paint_rect.height() };
         gdk_window_begin_paint_rect(window, &rect);
 
-        backing_store->CairoShowRect(paint_rect, GDK_DRAWABLE(window));
+        static_cast<BackingStoreX*>(backing_store)->CairoShowRect(
+            paint_rect, GDK_DRAWABLE(window));
 
         cairo_t* cr = gdk_cairo_create(window);
         gdk_cairo_rectangle(cr, &rect);
@@ -575,6 +601,9 @@ void RenderWidgetHostViewViews::Paint(gfx::Canvas* canvas) {
         cairo_destroy(cr);
 
         gdk_window_end_paint(window);
+      } else {
+        // TODO(sad)
+        NOTIMPLEMENTED();
       }
     }
     if (!whiteout_start_time_.is_null()) {
