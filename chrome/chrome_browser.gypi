@@ -1941,8 +1941,6 @@
         'browser/renderer_host/backing_store_mac.mm',
         'browser/renderer_host/backing_store_manager.cc',
         'browser/renderer_host/backing_store_manager.h',
-        'browser/renderer_host/backing_store_skia.cc',
-        'browser/renderer_host/backing_store_skia.h',
         'browser/renderer_host/backing_store_win.cc',
         'browser/renderer_host/backing_store_win.h',
         'browser/renderer_host/backing_store_x.cc',
