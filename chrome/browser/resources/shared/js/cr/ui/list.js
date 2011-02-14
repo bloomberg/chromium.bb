@@ -580,7 +580,6 @@ cr.define('cr.ui', function() {
         return;
       }
 
-      console.time('redraw');
       var scrollTop = this.scrollTop;
       var clientHeight = this.clientHeight;
 
@@ -634,8 +633,6 @@ cr.define('cr.ui', function() {
       this.lastIndex_ = lastIndex;
 
       this.cachedItems_ = newCachedItems;
-
-      console.timeEnd('redraw');
 
       // Measure again in case the item height has change due to a page zoom.
       //
