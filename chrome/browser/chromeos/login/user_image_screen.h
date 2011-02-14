@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/threading/thread.h"
+#include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/camera.h"
 #include "chrome/browser/chromeos/login/user_image_view.h"
 #include "chrome/browser/chromeos/login/view_screen.h"
@@ -64,7 +65,7 @@ class UserImageScreen: public ViewScreen<UserImageView>,
   int camera_init_failure_counter_;
 
   // Thread for camera to work on.
-  base::Thread camera_thread_;
+  scoped_ptr<base::Thread> camera_thread_;
 
   NotificationRegistrar registrar_;
 
