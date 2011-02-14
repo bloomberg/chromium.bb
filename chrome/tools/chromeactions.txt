@@ -1081,6 +1081,8 @@
 0x77ae5b6a7529d8b5	Themes.Migrated
 0x0e6b2a071df7800e	Themes_Installed
 0xf1b1f7db67f07b8c	Themes_Reset
+0xc2c0c13f120b9c7c	ThirdPartyCookieBlockingDisabled
+0x60aa171d4c36e576	ThirdPartyCookieBlockingEnabled
 0x9e2832408b48e761	ToggleBold
 0x303ce89ccac1592b	ToggleCompactNavigationBar
 0x94122935e94b54f3	ToggleDevTools

@@ -84,6 +84,13 @@ HostContentSettingsMap::HostContentSettingsMap(Profile* profile)
   // Read misc. global settings.
   block_third_party_cookies_ =
       prefs->GetBoolean(prefs::kBlockThirdPartyCookies);
+  if (block_third_party_cookies_) {
+    UserMetrics::RecordAction(
+        UserMetricsAction("ThirdPartyCookieBlockingEnabled"));
+  } else {
+    UserMetrics::RecordAction(
+        UserMetricsAction("ThirdPartyCookieBlockingDisabled"));
+  }
   is_block_third_party_cookies_managed_ =
       prefs->IsManagedPreference(prefs::kBlockThirdPartyCookies);
   block_nonsandboxed_plugins_ =
