@@ -496,7 +496,9 @@ void GetMostRecentlyAddedEntries(BookmarkModel* model,
   }
 }
 
-TitleMatch::TitleMatch() {}
+TitleMatch::TitleMatch()
+    : node(NULL) {
+}
 
 TitleMatch::~TitleMatch() {}
 
