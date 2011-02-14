@@ -48,7 +48,7 @@ class GPUBrowserTest : public InProcessBrowserTest {
 
 #if defined(OS_WIN)
 // Flaky on Windows (dbg): http://crbug.com/72608
-#define MAYBE_BrowserTestCanLaunchWithOSMesa FLAKY_BrowserTestCanLaunchWithOSMesa
+#define MAYBE_BrowserTestCanLaunchWithOSMesa DISABLED_BrowserTestCanLaunchWithOSMesa
 #else
 #define MAYBE_BrowserTestCanLaunchWithOSMesa BrowserTestCanLaunchWithOSMesa
 #endif
