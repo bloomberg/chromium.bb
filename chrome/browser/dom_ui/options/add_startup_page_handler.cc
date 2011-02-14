@@ -40,12 +40,12 @@ void AddStartupPageHandler::Initialize() {
   url_table_model_.reset(new PossibleURLModel());
   if (url_table_model_.get()) {
     url_table_model_->SetObserver(this);
-    url_table_model_->Reload(dom_ui_->GetProfile());
+    url_table_model_->Reload(web_ui_->GetProfile());
   }
 }
 
 void AddStartupPageHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "updateAddStartupFieldWithPage",
       NewCallback(this, &AddStartupPageHandler::UpdateFieldWithRecentPage));
 }
@@ -57,7 +57,7 @@ void AddStartupPageHandler::UpdateFieldWithRecentPage(const ListValue* args) {
     return;
   }
   std::string languages =
-      dom_ui_->GetProfile()->GetPrefs()->GetString(prefs::kAcceptLanguages);
+      web_ui_->GetProfile()->GetPrefs()->GetString(prefs::kAcceptLanguages);
   // Because this gets parsed by FixupURL(), it's safe to omit the scheme or
   // trailing slash, and unescape most characters, but we need to not drop any
   // username/password, or unescape anything that changes the meaning.
@@ -66,7 +66,7 @@ void AddStartupPageHandler::UpdateFieldWithRecentPage(const ListValue* args) {
       UnescapeRule::SPACES, NULL, NULL, NULL);
 
   scoped_ptr<Value> url_value(Value::CreateStringValue(url_string));
-  dom_ui_->CallJavascriptFunction(L"AddStartupPageOverlay.setInputFieldValue",
+  web_ui_->CallJavascriptFunction(L"AddStartupPageOverlay.setInputFieldValue",
                                   *url_value.get());
 }
 
@@ -81,7 +81,7 @@ void AddStartupPageHandler::OnModelChanged() {
     pages.Append(dict);
   }
 
-  dom_ui_->CallJavascriptFunction(L"AddStartupPageOverlay.updateRecentPageList",
+  web_ui_->CallJavascriptFunction(L"AddStartupPageOverlay.updateRecentPageList",
                                   pages);
 }
 

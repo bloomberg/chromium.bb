@@ -206,13 +206,13 @@ WebUIMessageHandler* ImageBurnHandler::Attach(WebUI* web_ui) {
 }
 
 void ImageBurnHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback("getRoots",
+  web_ui_->RegisterMessageCallback("getRoots",
       NewCallback(this, &ImageBurnHandler::HandleGetRoots));
-  dom_ui_->RegisterMessageCallback("downloadImage",
+  web_ui_->RegisterMessageCallback("downloadImage",
       NewCallback(this, &ImageBurnHandler::HandleDownloadImage));
-  dom_ui_->RegisterMessageCallback("burnImage",
+  web_ui_->RegisterMessageCallback("burnImage",
       NewCallback(this, &ImageBurnHandler::HandleBurnImage));
-  dom_ui_->RegisterMessageCallback("cancelBurnImage",
+  web_ui_->RegisterMessageCallback("cancelBurnImage",
       NewCallback(this, &ImageBurnHandler::HandleCancelBurnImage));
 }
 
@@ -222,7 +222,7 @@ void ImageBurnHandler::MountChanged(chromeos::MountLibrary* obj,
   if ((evt == chromeos::DISK_REMOVED ||
       evt == chromeos::DISK_CHANGED ||
       evt == chromeos::DEVICE_REMOVED)) {
-    dom_ui_->CallJavascriptFunction(L"rootsChanged");
+    web_ui_->CallJavascriptFunction(L"rootsChanged");
   }
 }
 
@@ -247,7 +247,7 @@ void ImageBurnHandler::OnDownloadUpdated(DownloadItem* download) {
       && download->state() != DownloadItem::COMPLETE) {
     scoped_ptr<DictionaryValue> result_value(
         download_util::CreateDownloadItemValue(download, 0));
-    dom_ui_->CallJavascriptFunction(L"downloadUpdated", *result_value);
+    web_ui_->CallJavascriptFunction(L"downloadUpdated", *result_value);
   }
   if (download->state() == DownloadItem::CANCELLED)
     DownloadCompleted(false);
@@ -306,7 +306,7 @@ void ImageBurnHandler::HandleGetRoots(const ListValue* args) {
   }
   info_value.SetString("functionCall", "getRoots");
   info_value.SetString(std::string(kPropertyPath), "");
-  dom_ui_->CallJavascriptFunction(L"browseFileResult",
+  web_ui_->CallJavascriptFunction(L"browseFileResult",
                                   info_value, results_value);
 }
 
@@ -339,12 +339,12 @@ void ImageBurnHandler::DownloadCompleted(bool is_successful) {
   DictionaryValue signal_value;
   if (is_successful) {
     signal_value.SetString("state", "COMPLETE");
-    dom_ui_->CallJavascriptFunction(L"downloadUpdated", signal_value);
-    dom_ui_->CallJavascriptFunction(L"promtUserDownloadFinished");
+    web_ui_->CallJavascriptFunction(L"downloadUpdated", signal_value);
+    web_ui_->CallJavascriptFunction(L"promtUserDownloadFinished");
   } else {
     signal_value.SetString("state", "CANCELLED");
-    dom_ui_->CallJavascriptFunction(L"downloadUpdated", signal_value);
-    dom_ui_->CallJavascriptFunction(L"alertUserDownloadAborted");
+    web_ui_->CallJavascriptFunction(L"downloadUpdated", signal_value);
+    web_ui_->CallJavascriptFunction(L"alertUserDownloadAborted");
   }
 }
 
@@ -357,13 +357,13 @@ void ImageBurnHandler::BurnImage() {
     signal_value.SetString("path", image_target_.value());
     signal_value.SetInteger("received", 0);
     signal_value.SetString("progress_status_text", "");
-    dom_ui_->CallJavascriptFunction(L"burnProgressUpdated", signal_value);
+    web_ui_->CallJavascriptFunction(L"burnProgressUpdated", signal_value);
   }
 }
 
 void ImageBurnHandler::FinalizeBurn(bool successful) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  dom_ui_->CallJavascriptFunction(successful ?
+  web_ui_->CallJavascriptFunction(successful ?
       L"burnSuccessful" : L"burnUnsuccessful");
 }
 
@@ -384,7 +384,7 @@ void ImageBurnHandler::UpdateBurnProgress(int64 total_burnt,
   progress_value.SetInteger("total", image_size);
   progress_value.SetString("path", path);
 
-  dom_ui_->CallJavascriptFunction(L"burnProgressUpdated", progress_value);
+  web_ui_->CallJavascriptFunction(L"burnProgressUpdated", progress_value);
 }
 
 string16 ImageBurnHandler::GetBurnProgressText(int64 total_burnt,

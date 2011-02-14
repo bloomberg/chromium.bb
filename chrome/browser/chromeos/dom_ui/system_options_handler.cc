@@ -76,17 +76,17 @@ void SystemOptionsHandler::GetLocalizedValues(
 }
 
 void SystemOptionsHandler::Initialize() {
-  DCHECK(dom_ui_);
+  DCHECK(web_ui_);
   PrefService* pref_service = g_browser_process->local_state();
   bool acc_enabled = pref_service->GetBoolean(prefs::kAccessibilityEnabled);
   FundamentalValue checked(acc_enabled);
-  dom_ui_->CallJavascriptFunction(
+  web_ui_->CallJavascriptFunction(
       L"options.SystemOptions.SetAccessibilityCheckboxState", checked);
 }
 
 void SystemOptionsHandler::RegisterMessages() {
-  DCHECK(dom_ui_);
-  dom_ui_->RegisterMessageCallback("accessibilityChange",
+  DCHECK(web_ui_);
+  web_ui_->RegisterMessageCallback("accessibilityChange",
       NewCallback(this, &SystemOptionsHandler::AccessibilityChangeCallback));
 }
 

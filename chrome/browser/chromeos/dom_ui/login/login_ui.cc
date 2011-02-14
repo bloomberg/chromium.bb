@@ -67,15 +67,15 @@ WebUIMessageHandler* LoginUIHandler::Attach(WebUI* web_ui) {
 }
 
 void LoginUIHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "LaunchIncognito",
       NewCallback(this,
                   &LoginUIHandler::HandleLaunchIncognito));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "AuthenticateUser",
       NewCallback(this,
                   &LoginUIHandler::HandleAuthenticateUser));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "ShutdownSystem",
       NewCallback(this,
                   &LoginUIHandler::HandleShutdownSystem));

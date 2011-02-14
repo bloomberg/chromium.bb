@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,7 +29,7 @@ void StatsOptionsHandler::Initialize() {
 
 // WebUIMessageHandler implementation.
 void StatsOptionsHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "metricsReportingCheckboxAction",
       NewCallback(this, &StatsOptionsHandler::HandleMetricsReportingCheckbox));
 }
@@ -57,7 +57,7 @@ void StatsOptionsHandler::SetupMetricsReportingCheckbox(bool user_changed) {
   FundamentalValue checked(MetricsCrosSettingsProvider::GetMetricsStatus());
   FundamentalValue disabled(!UserManager::Get()->current_user_is_owner());
   FundamentalValue user_has_changed(user_changed);
-  dom_ui_->CallJavascriptFunction(
+  web_ui_->CallJavascriptFunction(
       L"options.AdvancedOptions.SetMetricsReportingCheckboxState", checked,
       disabled, user_has_changed);
 #endif

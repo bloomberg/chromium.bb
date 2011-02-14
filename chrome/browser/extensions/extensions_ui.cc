@@ -300,33 +300,33 @@ ExtensionsDOMHandler::ExtensionsDOMHandler(ExtensionService* extension_service)
 }
 
 void ExtensionsDOMHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback("requestExtensionsData",
+  web_ui_->RegisterMessageCallback("requestExtensionsData",
       NewCallback(this, &ExtensionsDOMHandler::HandleRequestExtensionsData));
-  dom_ui_->RegisterMessageCallback("toggleDeveloperMode",
+  web_ui_->RegisterMessageCallback("toggleDeveloperMode",
       NewCallback(this, &ExtensionsDOMHandler::HandleToggleDeveloperMode));
-  dom_ui_->RegisterMessageCallback("inspect",
+  web_ui_->RegisterMessageCallback("inspect",
       NewCallback(this, &ExtensionsDOMHandler::HandleInspectMessage));
-  dom_ui_->RegisterMessageCallback("reload",
+  web_ui_->RegisterMessageCallback("reload",
       NewCallback(this, &ExtensionsDOMHandler::HandleReloadMessage));
-  dom_ui_->RegisterMessageCallback("enable",
+  web_ui_->RegisterMessageCallback("enable",
       NewCallback(this, &ExtensionsDOMHandler::HandleEnableMessage));
-  dom_ui_->RegisterMessageCallback("enableIncognito",
+  web_ui_->RegisterMessageCallback("enableIncognito",
       NewCallback(this, &ExtensionsDOMHandler::HandleEnableIncognitoMessage));
-  dom_ui_->RegisterMessageCallback("allowFileAccess",
+  web_ui_->RegisterMessageCallback("allowFileAccess",
       NewCallback(this, &ExtensionsDOMHandler::HandleAllowFileAccessMessage));
-  dom_ui_->RegisterMessageCallback("uninstall",
+  web_ui_->RegisterMessageCallback("uninstall",
       NewCallback(this, &ExtensionsDOMHandler::HandleUninstallMessage));
-  dom_ui_->RegisterMessageCallback("options",
+  web_ui_->RegisterMessageCallback("options",
       NewCallback(this, &ExtensionsDOMHandler::HandleOptionsMessage));
-  dom_ui_->RegisterMessageCallback("showButton",
+  web_ui_->RegisterMessageCallback("showButton",
       NewCallback(this, &ExtensionsDOMHandler::HandleShowButtonMessage));
-  dom_ui_->RegisterMessageCallback("load",
+  web_ui_->RegisterMessageCallback("load",
       NewCallback(this, &ExtensionsDOMHandler::HandleLoadMessage));
-  dom_ui_->RegisterMessageCallback("pack",
+  web_ui_->RegisterMessageCallback("pack",
       NewCallback(this, &ExtensionsDOMHandler::HandlePackMessage));
-  dom_ui_->RegisterMessageCallback("autoupdate",
+  web_ui_->RegisterMessageCallback("autoupdate",
       NewCallback(this, &ExtensionsDOMHandler::HandleAutoUpdateMessage));
-  dom_ui_->RegisterMessageCallback("selectFilePath",
+  web_ui_->RegisterMessageCallback("selectFilePath",
       NewCallback(this, &ExtensionsDOMHandler::HandleSelectFilePathMessage));
 }
 
@@ -381,7 +381,7 @@ void ExtensionsDOMHandler::HandleRequestExtensionsData(const ListValue* args) {
   }
   results->Set("extensions", extensions_list);
 
-  bool developer_mode = dom_ui_->GetProfile()->GetPrefs()
+  bool developer_mode = web_ui_->GetProfile()->GetPrefs()
       ->GetBoolean(prefs::kExtensionsUIDeveloperMode);
   results->SetBoolean("developerMode", developer_mode);
 
@@ -393,7 +393,7 @@ void ExtensionsDOMHandler::HandleRequestExtensionsData(const ListValue* args) {
 }
 
 void ExtensionsDOMHandler::OnIconsLoaded(DictionaryValue* json) {
-  dom_ui_->CallJavascriptFunction(L"returnExtensionsData", *json);
+  web_ui_->CallJavascriptFunction(L"returnExtensionsData", *json);
   delete json;
 
   // Register for notifications that we need to reload the page.
@@ -436,14 +436,14 @@ ExtensionResource ExtensionsDOMHandler::PickExtensionIcon(
 
 ExtensionInstallUI* ExtensionsDOMHandler::GetExtensionInstallUI() {
   if (!install_ui_.get())
-    install_ui_.reset(new ExtensionInstallUI(dom_ui_->GetProfile()));
+    install_ui_.reset(new ExtensionInstallUI(web_ui_->GetProfile()));
   return install_ui_.get();
 }
 
 void ExtensionsDOMHandler::HandleToggleDeveloperMode(const ListValue* args) {
-  bool developer_mode = dom_ui_->GetProfile()->GetPrefs()
+  bool developer_mode = web_ui_->GetProfile()->GetPrefs()
       ->GetBoolean(prefs::kExtensionsUIDeveloperMode);
-  dom_ui_->GetProfile()->GetPrefs()->SetBoolean(
+  web_ui_->GetProfile()->GetPrefs()->SetBoolean(
       prefs::kExtensionsUIDeveloperMode, !developer_mode);
 }
 
@@ -484,7 +484,7 @@ void ExtensionsDOMHandler::HandleEnableMessage(const ListValue* args) {
       const Extension* extension =
           extensions_service_->GetExtensionById(extension_id, true);
       ShowExtensionDisabledDialog(extensions_service_,
-                                  dom_ui_->GetProfile(), extension);
+                                  web_ui_->GetProfile(), extension);
     } else {
       extensions_service_->EnableExtension(extension_id);
     }
@@ -567,7 +567,7 @@ void ExtensionsDOMHandler::HandleOptionsMessage(const ListValue* args) {
   const Extension* extension = GetExtension(args);
   if (!extension || extension->options_url().is_empty())
     return;
-  dom_ui_->GetProfile()->GetExtensionProcessManager()->OpenOptionsPage(
+  web_ui_->GetProfile()->GetExtensionProcessManager()->OpenOptionsPage(
       extension, NULL);
 }
 
@@ -586,7 +586,7 @@ void ExtensionsDOMHandler::HandleLoadMessage(const ListValue* args) {
 void ExtensionsDOMHandler::ShowAlert(const std::string& message) {
   ListValue arguments;
   arguments.Append(Value::CreateStringValue(message));
-  dom_ui_->CallJavascriptFunction(L"alert", arguments);
+  web_ui_->CallJavascriptFunction(L"alert", arguments);
 }
 
 void ExtensionsDOMHandler::HandlePackMessage(const ListValue* args) {
@@ -628,7 +628,7 @@ void ExtensionsDOMHandler::OnPackSuccess(const FilePath& crx_file,
                                                                  pem_file)));
 
   ListValue results;
-  dom_ui_->CallJavascriptFunction(L"hidePackDialog", results);
+  web_ui_->CallJavascriptFunction(L"hidePackDialog", results);
 }
 
 void ExtensionsDOMHandler::OnPackFailure(const std::string& error) {
@@ -678,7 +678,7 @@ void ExtensionsDOMHandler::HandleSelectFilePathMessage(const ListValue* args) {
   load_extension_dialog_ = SelectFileDialog::Create(this);
   load_extension_dialog_->SelectFile(type, select_title, FilePath(), &info,
       file_type_index, FILE_PATH_LITERAL(""),
-      dom_ui_->tab_contents()->view()->GetTopLevelNativeWindow(), NULL);
+      web_ui_->tab_contents()->view()->GetTopLevelNativeWindow(), NULL);
 }
 
 
@@ -687,7 +687,7 @@ void ExtensionsDOMHandler::FileSelected(const FilePath& path, int index,
   // Add the extensions to the results structure.
   ListValue results;
   results.Append(Value::CreateStringValue(path.value()));
-  dom_ui_->CallJavascriptFunction(L"window.handleFilePathSelected", results);
+  web_ui_->CallJavascriptFunction(L"window.handleFilePathSelected", results);
 }
 
 void ExtensionsDOMHandler::MultiFilesSelected(
@@ -742,7 +742,7 @@ const Extension* ExtensionsDOMHandler::GetExtension(const ListValue* args) {
 }
 
 void ExtensionsDOMHandler::MaybeUpdateAfterNotification() {
-  if (!ignore_notifications_ && dom_ui_->tab_contents())
+  if (!ignore_notifications_ && web_ui_->tab_contents())
     HandleRequestExtensionsData(NULL);
   deleting_rvh_ = NULL;
 }

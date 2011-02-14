@@ -212,7 +212,7 @@ class WebUIMessageHandler {
   // Extract a string value from a list Value.
   std::wstring ExtractStringValue(const ListValue* value);
 
-  WebUI* dom_ui_; // TODO(tfarina): Rename the variable to web_ui_.
+  WebUI* web_ui_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebUIMessageHandler);

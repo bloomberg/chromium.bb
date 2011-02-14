@@ -41,25 +41,25 @@ class MockCoreOptionsHandler : public CoreOptionsHandler {
       void(const ListValue* args));
 
   virtual void RegisterMessages() {
-    dom_ui_->RegisterMessageCallback("coreOptionsInitialize",
+    web_ui_->RegisterMessageCallback("coreOptionsInitialize",
         NewCallback(this, &MockCoreOptionsHandler ::HandleInitialize));
-    dom_ui_->RegisterMessageCallback("fetchPrefs",
+    web_ui_->RegisterMessageCallback("fetchPrefs",
         NewCallback(this, &MockCoreOptionsHandler ::HandleFetchPrefs));
-    dom_ui_->RegisterMessageCallback("observePrefs",
+    web_ui_->RegisterMessageCallback("observePrefs",
         NewCallback(this, &MockCoreOptionsHandler ::HandleObservePrefs));
-    dom_ui_->RegisterMessageCallback("setBooleanPref",
+    web_ui_->RegisterMessageCallback("setBooleanPref",
         NewCallback(this, &MockCoreOptionsHandler ::HandleSetBooleanPref));
-    dom_ui_->RegisterMessageCallback("setIntegerPref",
+    web_ui_->RegisterMessageCallback("setIntegerPref",
         NewCallback(this, &MockCoreOptionsHandler ::HandleSetIntegerPref));
-    dom_ui_->RegisterMessageCallback("setDoublePref",
+    web_ui_->RegisterMessageCallback("setDoublePref",
         NewCallback(this, &MockCoreOptionsHandler ::HandleSetDoublePref));
-    dom_ui_->RegisterMessageCallback("setStringPref",
+    web_ui_->RegisterMessageCallback("setStringPref",
         NewCallback(this, &MockCoreOptionsHandler ::HandleSetStringPref));
-    dom_ui_->RegisterMessageCallback("setObjectPref",
+    web_ui_->RegisterMessageCallback("setObjectPref",
         NewCallback(this, &MockCoreOptionsHandler ::HandleSetObjectPref));
-    dom_ui_->RegisterMessageCallback("clearPref",
+    web_ui_->RegisterMessageCallback("clearPref",
         NewCallback(this, &MockCoreOptionsHandler ::HandleClearPref));
-    dom_ui_->RegisterMessageCallback("coreOptionsUserMetricsAction",
+    web_ui_->RegisterMessageCallback("coreOptionsUserMetricsAction",
         NewCallback(this, &MockCoreOptionsHandler ::HandleUserMetricsAction));
   }
 };

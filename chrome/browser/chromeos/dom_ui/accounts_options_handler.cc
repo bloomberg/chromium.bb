@@ -24,14 +24,14 @@ AccountsOptionsHandler::~AccountsOptionsHandler() {
 }
 
 void AccountsOptionsHandler::RegisterMessages() {
-  DCHECK(dom_ui_);
-  dom_ui_->RegisterMessageCallback("whitelistUser",
+  DCHECK(web_ui_);
+  web_ui_->RegisterMessageCallback("whitelistUser",
       NewCallback(this, &AccountsOptionsHandler::WhitelistUser));
-  dom_ui_->RegisterMessageCallback("unwhitelistUser",
+  web_ui_->RegisterMessageCallback("unwhitelistUser",
       NewCallback(this, &AccountsOptionsHandler::UnwhitelistUser));
-  dom_ui_->RegisterMessageCallback("fetchUserPictures",
+  web_ui_->RegisterMessageCallback("fetchUserPictures",
       NewCallback(this, &AccountsOptionsHandler::FetchUserPictures));
-  dom_ui_->RegisterMessageCallback("whitelistExistingUsers",
+  web_ui_->RegisterMessageCallback("whitelistExistingUsers",
       NewCallback(this, &AccountsOptionsHandler::WhitelistExistingUsers));
 }
 
@@ -100,7 +100,7 @@ void AccountsOptionsHandler::FetchUserPictures(const ListValue* args) {
     }
   }
 
-  dom_ui_->CallJavascriptFunction(L"AccountsOptions.setUserPictures",
+  web_ui_->CallJavascriptFunction(L"AccountsOptions.setUserPictures",
       user_pictures);
 }
 
@@ -121,7 +121,7 @@ void AccountsOptionsHandler::WhitelistExistingUsers(const ListValue* args) {
     }
   }
 
-  dom_ui_->CallJavascriptFunction(L"AccountsOptions.addUsers", whitelist_users);
+  web_ui_->CallJavascriptFunction(L"AccountsOptions.addUsers", whitelist_users);
 }
 
 }  // namespace chromeos

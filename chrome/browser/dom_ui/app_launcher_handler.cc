@@ -144,19 +144,19 @@ WebUIMessageHandler* AppLauncherHandler::Attach(WebUI* web_ui) {
 }
 
 void AppLauncherHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback("getApps",
+  web_ui_->RegisterMessageCallback("getApps",
       NewCallback(this, &AppLauncherHandler::HandleGetApps));
-  dom_ui_->RegisterMessageCallback("launchApp",
+  web_ui_->RegisterMessageCallback("launchApp",
       NewCallback(this, &AppLauncherHandler::HandleLaunchApp));
-  dom_ui_->RegisterMessageCallback("setLaunchType",
+  web_ui_->RegisterMessageCallback("setLaunchType",
       NewCallback(this, &AppLauncherHandler::HandleSetLaunchType));
-  dom_ui_->RegisterMessageCallback("uninstallApp",
+  web_ui_->RegisterMessageCallback("uninstallApp",
       NewCallback(this, &AppLauncherHandler::HandleUninstallApp));
-  dom_ui_->RegisterMessageCallback("hideAppsPromo",
+  web_ui_->RegisterMessageCallback("hideAppsPromo",
       NewCallback(this, &AppLauncherHandler::HandleHideAppsPromo));
-  dom_ui_->RegisterMessageCallback("createAppShortcut",
+  web_ui_->RegisterMessageCallback("createAppShortcut",
       NewCallback(this, &AppLauncherHandler::HandleCreateAppShortcut));
-  dom_ui_->RegisterMessageCallback("reorderApps",
+  web_ui_->RegisterMessageCallback("reorderApps",
       NewCallback(this, &AppLauncherHandler::HandleReorderApps));
 }
 
@@ -170,16 +170,16 @@ void AppLauncherHandler::Observe(NotificationType type,
     case NotificationType::EXTENSION_LOADED:
     case NotificationType::EXTENSION_UNLOADED:
     case NotificationType::EXTENSION_LAUNCHER_REORDERED:
-      if (dom_ui_->tab_contents())
+      if (web_ui_->tab_contents())
         HandleGetApps(NULL);
       break;
     case NotificationType::PREF_CHANGED: {
-      if (!dom_ui_->tab_contents())
+      if (!web_ui_->tab_contents())
         break;
 
       DictionaryValue dictionary;
       FillAppDictionary(&dictionary);
-      dom_ui_->CallJavascriptFunction(L"appsPrefChangeCallback", dictionary);
+      web_ui_->CallJavascriptFunction(L"appsPrefChangeCallback", dictionary);
       break;
     }
     default:
@@ -242,7 +242,7 @@ void AppLauncherHandler::HandleGetApps(const ListValue* args) {
       ignore_changes_ = true;
       UninstallDefaultApps();
       ignore_changes_ = false;
-      ShownSectionsHandler::SetShownSection(dom_ui_->GetProfile()->GetPrefs(),
+      ShownSectionsHandler::SetShownSection(web_ui_->GetProfile()->GetPrefs(),
                                             THUMB);
     }
     dictionary.SetBoolean("showPromo", false);
@@ -250,7 +250,7 @@ void AppLauncherHandler::HandleGetApps(const ListValue* args) {
   }
 
   FillAppDictionary(&dictionary);
-  dom_ui_->CallJavascriptFunction(L"getAppsCallback", dictionary);
+  web_ui_->CallJavascriptFunction(L"getAppsCallback", dictionary);
 
   // First time we get here we set up the observer so that we can tell update
   // the apps as they change.
@@ -289,7 +289,7 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
   // Offset the rect by the tab contents bounds.
   gfx::Rect rect(left, top, width, height);
   gfx::Rect tab_contents_bounds;
-  dom_ui_->tab_contents()->GetContainerBounds(&tab_contents_bounds);
+  web_ui_->tab_contents()->GetContainerBounds(&tab_contents_bounds);
   rect.Offset(tab_contents_bounds.origin());
 
   const Extension* extension =
@@ -362,7 +362,7 @@ void AppLauncherHandler::HandleHideAppsPromo(const ListValue* args) {
                             extension_misc::PROMO_CLOSE,
                             extension_misc::PROMO_BUCKET_BOUNDARY);
 
-  ShownSectionsHandler::SetShownSection(dom_ui_->GetProfile()->GetPrefs(),
+  ShownSectionsHandler::SetShownSection(web_ui_->GetProfile()->GetPrefs(),
                                         THUMB);
   ignore_changes_ = true;
   UninstallDefaultApps();
@@ -442,7 +442,7 @@ void AppLauncherHandler::InstallUIAbort() {
 
 ExtensionInstallUI* AppLauncherHandler::GetExtensionInstallUI() {
   if (!install_ui_.get())
-    install_ui_.reset(new ExtensionInstallUI(dom_ui_->GetProfile()));
+    install_ui_.reset(new ExtensionInstallUI(web_ui_->GetProfile()));
   return install_ui_.get();
 }
 

@@ -309,30 +309,30 @@ void InternetOptionsHandler::GetLocalizedValues(
 
 void InternetOptionsHandler::RegisterMessages() {
   // Setup handlers specific to this panel.
-  DCHECK(dom_ui_);
-  dom_ui_->RegisterMessageCallback("buttonClickCallback",
+  DCHECK(web_ui_);
+  web_ui_->RegisterMessageCallback("buttonClickCallback",
       NewCallback(this, &InternetOptionsHandler::ButtonClickCallback));
-  dom_ui_->RegisterMessageCallback("refreshCellularPlan",
+  web_ui_->RegisterMessageCallback("refreshCellularPlan",
       NewCallback(this, &InternetOptionsHandler::RefreshCellularPlanCallback));
-  dom_ui_->RegisterMessageCallback("loginToNetwork",
+  web_ui_->RegisterMessageCallback("loginToNetwork",
       NewCallback(this, &InternetOptionsHandler::LoginCallback));
-  dom_ui_->RegisterMessageCallback("loginToCertNetwork",
+  web_ui_->RegisterMessageCallback("loginToCertNetwork",
       NewCallback(this, &InternetOptionsHandler::LoginCertCallback));
-  dom_ui_->RegisterMessageCallback("loginToOtherNetwork",
+  web_ui_->RegisterMessageCallback("loginToOtherNetwork",
       NewCallback(this, &InternetOptionsHandler::LoginToOtherCallback));
-  dom_ui_->RegisterMessageCallback("setDetails",
+  web_ui_->RegisterMessageCallback("setDetails",
       NewCallback(this, &InternetOptionsHandler::SetDetailsCallback));
-  dom_ui_->RegisterMessageCallback("enableWifi",
+  web_ui_->RegisterMessageCallback("enableWifi",
       NewCallback(this, &InternetOptionsHandler::EnableWifiCallback));
-  dom_ui_->RegisterMessageCallback("disableWifi",
+  web_ui_->RegisterMessageCallback("disableWifi",
       NewCallback(this, &InternetOptionsHandler::DisableWifiCallback));
-  dom_ui_->RegisterMessageCallback("enableCellular",
+  web_ui_->RegisterMessageCallback("enableCellular",
       NewCallback(this, &InternetOptionsHandler::EnableCellularCallback));
-  dom_ui_->RegisterMessageCallback("disableCellular",
+  web_ui_->RegisterMessageCallback("disableCellular",
       NewCallback(this, &InternetOptionsHandler::DisableCellularCallback));
-  dom_ui_->RegisterMessageCallback("buyDataPlan",
+  web_ui_->RegisterMessageCallback("buyDataPlan",
       NewCallback(this, &InternetOptionsHandler::BuyDataPlanCallback));
-  dom_ui_->RegisterMessageCallback("showMorePlanInfo",
+  web_ui_->RegisterMessageCallback("showMorePlanInfo",
       NewCallback(this, &InternetOptionsHandler::BuyDataPlanCallback));
 }
 
@@ -361,10 +361,10 @@ void InternetOptionsHandler::DisableCellularCallback(const ListValue* args) {
 }
 
 void InternetOptionsHandler::BuyDataPlanCallback(const ListValue* args) {
-  if (!dom_ui_)
+  if (!web_ui_)
     return;
   Browser* browser = BrowserList::FindBrowserWithFeature(
-      dom_ui_->GetProfile(), Browser::FEATURE_TABSTRIP);
+      web_ui_->GetProfile(), Browser::FEATURE_TABSTRIP);
   if (browser)
     browser->OpenMobilePlanTabAndActivate();
 }
@@ -373,13 +373,13 @@ void InternetOptionsHandler::RefreshNetworkData(
     chromeos::NetworkLibrary* cros) {
   DictionaryValue dictionary;
   FillNetworkInfo(&dictionary, cros);
-  dom_ui_->CallJavascriptFunction(
+  web_ui_->CallJavascriptFunction(
       L"options.InternetOptions.refreshNetworkData", dictionary);
 }
 
 void InternetOptionsHandler::OnNetworkManagerChanged(
     chromeos::NetworkLibrary* cros) {
-  if (!dom_ui_)
+  if (!web_ui_)
     return;
   MonitorActiveNetwork(cros);
   RefreshNetworkData(cros);
@@ -388,7 +388,7 @@ void InternetOptionsHandler::OnNetworkManagerChanged(
 void InternetOptionsHandler::OnNetworkChanged(
     chromeos::NetworkLibrary* cros,
     const chromeos::Network* network) {
-  if (dom_ui_)
+  if (web_ui_)
     RefreshNetworkData(cros);
 }
 
@@ -414,7 +414,7 @@ void InternetOptionsHandler::MonitorActiveNetwork(
 
 void InternetOptionsHandler::OnCellularDataPlanChanged(
     chromeos::NetworkLibrary* obj) {
-  if (!dom_ui_)
+  if (!web_ui_)
     return;
   const chromeos::CellularNetwork* cellular = obj->cellular_network();
   if (!cellular)
@@ -432,7 +432,7 @@ void InternetOptionsHandler::OnCellularDataPlanChanged(
   connection_plans.SetBoolean("activated",
       cellular->activation_state() == chromeos::ACTIVATION_STATE_ACTIVATED);
   connection_plans.Set("plans", plan_list);
-  dom_ui_->CallJavascriptFunction(
+  web_ui_->CallJavascriptFunction(
       L"options.InternetOptions.updateCellularPlans", connection_plans);
 }
 
@@ -568,7 +568,7 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
     }
   }
 
-  dom_ui_->CallJavascriptFunction(
+  web_ui_->CallJavascriptFunction(
       L"options.InternetOptions.showDetailedInfo", dictionary);
 }
 
@@ -725,7 +725,7 @@ void InternetOptionsHandler::CreateModalPopup(views::WindowDelegate* view) {
 
   // TODO(beng): This is an improper direct dependency on Browser. Route this
   // through some sort of delegate.
-  Browser* browser = BrowserList::FindBrowserWithProfile(dom_ui_->GetProfile());
+  Browser* browser = BrowserList::FindBrowserWithProfile(web_ui_->GetProfile());
   views::Window* window = browser::CreateViewsWindow(
       browser->window()->GetNativeHandle(), gfx::Rect(), view);
   window->SetIsAlwaysOnTop(true);
@@ -784,7 +784,7 @@ void InternetOptionsHandler::HandleWifiButtonClick(
           } else {
             DictionaryValue dictionary;
             dictionary.SetString("servicePath", network->service_path());
-            dom_ui_->CallJavascriptFunction(
+            web_ui_->CallJavascriptFunction(
                 L"options.InternetOptions.showPasswordEntry", dictionary);
           }
         } else {

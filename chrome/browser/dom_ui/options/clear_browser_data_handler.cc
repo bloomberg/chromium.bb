@@ -92,8 +92,8 @@ void ClearBrowserDataHandler::GetLocalizedValues(
 
 void ClearBrowserDataHandler::RegisterMessages() {
   // Setup handlers specific to this panel.
-  DCHECK(dom_ui_);
-  dom_ui_->RegisterMessageCallback("performClearBrowserData",
+  DCHECK(web_ui_);
+  web_ui_->RegisterMessageCallback("performClearBrowserData",
       NewCallback(this, &ClearBrowserDataHandler::HandleClearBrowserData));
 }
 
@@ -116,7 +116,7 @@ void ClearBrowserDataHandler::Observe(NotificationType type,
 }
 
 void ClearBrowserDataHandler::HandleClearBrowserData(const ListValue* value) {
-  Profile* profile = dom_ui_->GetProfile();
+  Profile* profile = web_ui_->GetProfile();
   PrefService* prefs = profile->GetPrefs();
 
   int remove_mask = 0;
@@ -139,7 +139,7 @@ void ClearBrowserDataHandler::HandleClearBrowserData(const ListValue* value) {
   int period_selected = prefs->GetInteger(prefs::kDeleteTimePeriod);
 
   FundamentalValue state(true);
-  dom_ui_->CallJavascriptFunction(L"ClearBrowserDataOverlay.setClearingState",
+  web_ui_->CallJavascriptFunction(L"ClearBrowserDataOverlay.setClearingState",
                                   state);
 
   // BrowsingDataRemover deletes itself when done.
@@ -156,7 +156,7 @@ void ClearBrowserDataHandler::UpdateClearPluginLSOData() {
       IDS_DEL_COOKIES_CHKBOX;
   scoped_ptr<Value> label(
       Value::CreateStringValue(l10n_util::GetStringUTF16(label_id)));
-  dom_ui_->CallJavascriptFunction(
+  web_ui_->CallJavascriptFunction(
       L"ClearBrowserDataOverlay.setClearLocalDataLabel", *label);
 }
 
@@ -164,6 +164,6 @@ void ClearBrowserDataHandler::OnBrowsingDataRemoverDone() {
   // No need to remove ourselves as an observer as BrowsingDataRemover deletes
   // itself after we return.
   remover_ = NULL;
-  DCHECK(dom_ui_);
-  dom_ui_->CallJavascriptFunction(L"ClearBrowserDataOverlay.doneClearing");
+  DCHECK(web_ui_);
+  web_ui_->CallJavascriptFunction(L"ClearBrowserDataOverlay.doneClearing");
 }

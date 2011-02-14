@@ -269,13 +269,13 @@ void CookiesViewHandler::GetLocalizedValues(
 }
 
 void CookiesViewHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback("updateCookieSearchResults",
+  web_ui_->RegisterMessageCallback("updateCookieSearchResults",
       NewCallback(this, &CookiesViewHandler::UpdateSearchResults));
-  dom_ui_->RegisterMessageCallback("removeAllCookies",
+  web_ui_->RegisterMessageCallback("removeAllCookies",
       NewCallback(this, &CookiesViewHandler::RemoveAll));
-  dom_ui_->RegisterMessageCallback("removeCookie",
+  web_ui_->RegisterMessageCallback("removeCookie",
       NewCallback(this, &CookiesViewHandler::Remove));
-  dom_ui_->RegisterMessageCallback("loadCookie",
+  web_ui_->RegisterMessageCallback("loadCookie",
       NewCallback(this, &CookiesViewHandler::LoadChildren));
 }
 
@@ -296,7 +296,7 @@ void CookiesViewHandler::TreeNodesAdded(ui::TreeModel* model,
       Value::CreateStringValue(PointerToHexString(parent)));
   args.Append(Value::CreateIntegerValue(start));
   args.Append(children);
-  dom_ui_->CallJavascriptFunction(L"CookiesView.onTreeItemAdded", args);
+  web_ui_->CallJavascriptFunction(L"CookiesView.onTreeItemAdded", args);
 }
 
 void CookiesViewHandler::TreeNodesRemoved(ui::TreeModel* model,
@@ -313,7 +313,7 @@ void CookiesViewHandler::TreeNodesRemoved(ui::TreeModel* model,
       Value::CreateStringValue(PointerToHexString(parent)));
   args.Append(Value::CreateIntegerValue(start));
   args.Append(Value::CreateIntegerValue(count));
-  dom_ui_->CallJavascriptFunction(L"CookiesView.onTreeItemRemoved", args);
+  web_ui_->CallJavascriptFunction(L"CookiesView.onTreeItemRemoved", args);
 }
 
 void CookiesViewHandler::TreeModelBeginBatch(CookiesTreeModel* model) {
@@ -335,7 +335,7 @@ void CookiesViewHandler::UpdateSearchResults(const ListValue* args) {
   }
 
   if (!cookies_tree_model_.get()) {
-    Profile* profile = dom_ui_->GetProfile();
+    Profile* profile = web_ui_->GetProfile();
     cookies_tree_model_.reset(new CookiesTreeModel(
         profile->GetRequestContext()->GetCookieStore()->GetCookieMonster(),
         new BrowsingDataDatabaseHelper(profile),
@@ -409,5 +409,5 @@ void CookiesViewHandler::SendChildren(CookieTreeNode* parent) {
       Value::CreateStringValue(PointerToHexString(parent)));
   args.Append(children);
 
-  dom_ui_->CallJavascriptFunction(L"CookiesView.loadChildren", args);
+  web_ui_->CallJavascriptFunction(L"CookiesView.loadChildren", args);
 }

@@ -9,7 +9,7 @@
 #include "chrome/test/ui_test_utils.h"
 
 bool WebUIHandlerBrowserTest::Execute(const std::string& js_test) {
-  dom_ui_->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
+  web_ui_->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
       string16(), UTF8ToUTF16(js_test));
   return WaitForResult();
 }
@@ -27,9 +27,9 @@ void WebUIHandlerBrowserTest::HandleFail(const ListValue* args) {
 }
 
 void WebUIHandlerBrowserTest::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback("Pass",
+  web_ui_->RegisterMessageCallback("Pass",
       NewCallback(this, &WebUIHandlerBrowserTest::HandlePass));
-  dom_ui_->RegisterMessageCallback("Fail",
+  web_ui_->RegisterMessageCallback("Fail",
       NewCallback(this, &WebUIHandlerBrowserTest::HandleFail));
 }
 

@@ -16,7 +16,7 @@ GenericHandler::~GenericHandler() {
 }
 
 void GenericHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback("navigateToUrl",
+  web_ui_->RegisterMessageCallback("navigateToUrl",
       NewCallback(this, &GenericHandler::HandleNavigateToUrl));
 }
 
@@ -45,7 +45,7 @@ void GenericHandler::HandleNavigateToUrl(const ListValue* args) {
     disposition = alt_string == "true" ? SAVE_TO_DISK : CURRENT_TAB;
   }
 
-  dom_ui_->tab_contents()->OpenURL(
+  web_ui_->tab_contents()->OpenURL(
       GURL(url_string), GURL(), disposition, PageTransition::LINK);
 
   // This may delete us!

@@ -159,9 +159,9 @@ void SlideshowHandler::Init() {
 }
 
 void SlideshowHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback("getChildren",
+  web_ui_->RegisterMessageCallback("getChildren",
       NewCallback(this, &SlideshowHandler::HandleGetChildren));
-  dom_ui_->RegisterMessageCallback("refreshDirectory",
+  web_ui_->RegisterMessageCallback("refreshDirectory",
       NewCallback(this, &SlideshowHandler::HandleRefreshDirectory));
 }
 
@@ -263,7 +263,7 @@ void SlideshowHandler::OnListDone(int error) {
     info_value.SetString("functionCall", "getChildren");
   }
   info_value.SetString(kPropertyPath, currentpath_.value());
-  dom_ui_->CallJavascriptFunction(L"browseFileResult",
+  web_ui_->CallJavascriptFunction(L"browseFileResult",
                                   info_value, *(filelist_value_.get()));
 }
 

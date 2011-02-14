@@ -106,9 +106,9 @@ WebUIMessageHandler* NewTabPageSyncHandler::Attach(WebUI* web_ui) {
 }
 
 void NewTabPageSyncHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback("GetSyncMessage",
+  web_ui_->RegisterMessageCallback("GetSyncMessage",
       NewCallback(this, &NewTabPageSyncHandler::HandleGetSyncMessage));
-  dom_ui_->RegisterMessageCallback("SyncLinkClicked",
+  web_ui_->RegisterMessageCallback("SyncLinkClicked",
       NewCallback(this, &NewTabPageSyncHandler::HandleSyncLinkClicked));
 }
 
@@ -162,7 +162,7 @@ void NewTabPageSyncHandler::HandleSyncLinkClicked(const ListValue* args) {
     value.SetString("syncEnabledMessage",
                     l10n_util::GetStringFUTF16(IDS_SYNC_NTP_SYNCED_TO,
                         sync_service_->GetAuthenticatedUsername()));
-    dom_ui_->CallJavascriptFunction(L"syncAlreadyEnabled", value);
+    web_ui_->CallJavascriptFunction(L"syncAlreadyEnabled", value);
   } else {
     // User clicked the 'Start now' link to begin syncing.
     ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_NTP);
@@ -217,5 +217,5 @@ void NewTabPageSyncHandler::SendSyncMessageToPage(
       }
     }
   }
-  dom_ui_->CallJavascriptFunction(L"syncMessageChanged", value);
+  web_ui_->CallJavascriptFunction(L"syncMessageChanged", value);
 }

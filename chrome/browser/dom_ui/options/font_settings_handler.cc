@@ -131,8 +131,8 @@ WebUIMessageHandler* FontSettingsHandler::Attach(WebUI* web_ui) {
   WebUIMessageHandler* handler = OptionsPageUIHandler::Attach(web_ui);
 
   // Perform validation for saved fonts.
-  DCHECK(dom_ui_);
-  PrefService* pref_service = dom_ui_->GetProfile()->GetPrefs();
+  DCHECK(web_ui_);
+  PrefService* pref_service = web_ui_->GetProfile()->GetPrefs();
   FontSettingsUtilities::ValidateSavedFonts(pref_service);
 
   // Register for preferences that we need to observe manually.
@@ -165,24 +165,24 @@ void FontSettingsHandler::Observe(NotificationType type,
 }
 
 void FontSettingsHandler::SetupSerifFontSample() {
-  DCHECK(dom_ui_);
+  DCHECK(web_ui_);
   StringValue font_value(serif_font_.GetValue());
   FundamentalValue size_value(default_font_size_.GetValue());
-  dom_ui_->CallJavascriptFunction(
+  web_ui_->CallJavascriptFunction(
       L"FontSettings.setupSerifFontSample", font_value, size_value);
 }
 
 void FontSettingsHandler::SetupFixedFontSample() {
-  DCHECK(dom_ui_);
+  DCHECK(web_ui_);
   StringValue font_value(fixed_font_.GetValue());
   FundamentalValue size_value(default_fixed_font_size_.GetValue());
-  dom_ui_->CallJavascriptFunction(
+  web_ui_->CallJavascriptFunction(
       L"FontSettings.setupFixedFontSample", font_value, size_value);
 }
 
 void FontSettingsHandler::SetupMinimumFontSample() {
-  DCHECK(dom_ui_);
+  DCHECK(web_ui_);
   FundamentalValue size_value(minimum_font_size_.GetValue());
-  dom_ui_->CallJavascriptFunction(
+  web_ui_->CallJavascriptFunction(
       L"FontSettings.setupMinimumFontSample", size_value);
 }

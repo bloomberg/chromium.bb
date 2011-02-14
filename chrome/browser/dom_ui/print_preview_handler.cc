@@ -15,7 +15,7 @@ PrintPreviewHandler::~PrintPreviewHandler() {
 }
 
 void PrintPreviewHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback("getPrinters",
+  web_ui_->RegisterMessageCallback("getPrinters",
       NewCallback(this, &PrintPreviewHandler::HandleGetPrinters));
 }
 
@@ -29,5 +29,5 @@ void PrintPreviewHandler::HandleGetPrinters(const ListValue*) {
     printers.Append(new StringValue(index->printer_name));
   }
 
-  dom_ui_->CallJavascriptFunction(L"setPrinters", printers);
+  web_ui_->CallJavascriptFunction(L"setPrinters", printers);
 }

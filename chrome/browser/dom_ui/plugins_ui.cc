@@ -208,15 +208,15 @@ WebUIMessageHandler* PluginsDOMHandler::Attach(WebUI* web_ui) {
 }
 
 void PluginsDOMHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback("requestPluginsData",
+  web_ui_->RegisterMessageCallback("requestPluginsData",
       NewCallback(this, &PluginsDOMHandler::HandleRequestPluginsData));
-  dom_ui_->RegisterMessageCallback("enablePlugin",
+  web_ui_->RegisterMessageCallback("enablePlugin",
       NewCallback(this, &PluginsDOMHandler::HandleEnablePluginMessage));
-  dom_ui_->RegisterMessageCallback("showTermsOfService",
+  web_ui_->RegisterMessageCallback("showTermsOfService",
       NewCallback(this, &PluginsDOMHandler::HandleShowTermsOfServiceMessage));
-  dom_ui_->RegisterMessageCallback("saveShowDetailsToPrefs",
+  web_ui_->RegisterMessageCallback("saveShowDetailsToPrefs",
       NewCallback(this, &PluginsDOMHandler::HandleSaveShowDetailsToPrefs));
-  dom_ui_->RegisterMessageCallback("getShowDetails",
+  web_ui_->RegisterMessageCallback("getShowDetails",
       NewCallback(this, &PluginsDOMHandler::HandleGetShowDetails));
 }
 
@@ -265,12 +265,12 @@ void PluginsDOMHandler::HandleEnablePluginMessage(const ListValue* args) {
   // TODO(viettrungluu): We might also want to ensure that the plugins
   // list is always written to prefs even when the user hasn't disabled a
   // plugin. <http://crbug.com/39101>
-  plugin_updater->UpdatePreferences(dom_ui_->GetProfile(), 0);
+  plugin_updater->UpdatePreferences(web_ui_->GetProfile(), 0);
 }
 
 void PluginsDOMHandler::HandleShowTermsOfServiceMessage(const ListValue* args) {
   // Show it in a new browser window....
-  Browser* browser = Browser::Create(dom_ui_->GetProfile());
+  Browser* browser = Browser::Create(web_ui_->GetProfile());
   browser->OpenURL(GURL(chrome::kAboutTermsURL),
                    GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
   browser->window()->Show();
@@ -287,7 +287,7 @@ void PluginsDOMHandler::HandleSaveShowDetailsToPrefs(const ListValue* args) {
 
 void PluginsDOMHandler::HandleGetShowDetails(const ListValue* args) {
   FundamentalValue show_details(show_details_.GetValue());
-  dom_ui_->CallJavascriptFunction(L"loadShowDetailsFromPrefs", show_details);
+  web_ui_->CallJavascriptFunction(L"loadShowDetailsFromPrefs", show_details);
 }
 
 void PluginsDOMHandler::Observe(NotificationType type,
@@ -332,7 +332,7 @@ void PluginsDOMHandler::PluginsLoaded(ListWrapper* wrapper) {
   DictionaryValue results;
   results.Set("plugins", wrapper->list);
   wrapper->list = NULL;  // So it doesn't get deleted.
-  dom_ui_->CallJavascriptFunction(L"returnPluginsData", results);
+  web_ui_->CallJavascriptFunction(L"returnPluginsData", results);
 }
 
 }  // namespace

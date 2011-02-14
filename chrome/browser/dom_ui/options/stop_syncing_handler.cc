@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,13 +32,13 @@ void StopSyncingHandler::GetLocalizedValues(
 }
 
 void StopSyncingHandler::RegisterMessages() {
-  DCHECK(dom_ui_);
-  dom_ui_->RegisterMessageCallback("stopSyncing",
+  DCHECK(web_ui_);
+  web_ui_->RegisterMessageCallback("stopSyncing",
       NewCallback(this, &StopSyncingHandler::StopSyncing));
 }
 
 void StopSyncingHandler::StopSyncing(const ListValue* args){
-  ProfileSyncService* service = dom_ui_->GetProfile()->GetProfileSyncService();
+  ProfileSyncService* service = web_ui_->GetProfile()->GetProfileSyncService();
   if (service != NULL && ProfileSyncService::IsSyncEnabled()) {
     service->DisableForUser();
     ProfileSyncService::SyncEvent(ProfileSyncService::STOP_FROM_OPTIONS);

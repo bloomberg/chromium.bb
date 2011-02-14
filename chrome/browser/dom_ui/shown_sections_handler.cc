@@ -64,9 +64,9 @@ ShownSectionsHandler::ShownSectionsHandler(PrefService* pref_service)
 }
 
 void ShownSectionsHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback("getShownSections",
+  web_ui_->RegisterMessageCallback("getShownSections",
       NewCallback(this, &ShownSectionsHandler::HandleGetShownSections));
-  dom_ui_->RegisterMessageCallback("setShownSections",
+  web_ui_->RegisterMessageCallback("setShownSections",
       NewCallback(this, &ShownSectionsHandler::HandleSetShownSections));
 }
 
@@ -78,7 +78,7 @@ void ShownSectionsHandler::Observe(NotificationType type,
     DCHECK(*pref_name == prefs::kNTPShownSections);
     int sections = pref_service_->GetInteger(prefs::kNTPShownSections);
     FundamentalValue sections_value(sections);
-    dom_ui_->CallJavascriptFunction(L"setShownSections", sections_value);
+    web_ui_->CallJavascriptFunction(L"setShownSections", sections_value);
   } else {
     NOTREACHED();
   }
@@ -87,7 +87,7 @@ void ShownSectionsHandler::Observe(NotificationType type,
 void ShownSectionsHandler::HandleGetShownSections(const ListValue* args) {
   int sections = GetShownSections(pref_service_);
   FundamentalValue sections_value(sections);
-  dom_ui_->CallJavascriptFunction(L"onShownSections", sections_value);
+  web_ui_->CallJavascriptFunction(L"onShownSections", sections_value);
 }
 
 void ShownSectionsHandler::HandleSetShownSections(const ListValue* args) {
@@ -97,7 +97,7 @@ void ShownSectionsHandler::HandleSetShownSections(const ListValue* args) {
   int old_mode = pref_service_->GetInteger(prefs::kNTPShownSections);
 
   if (old_mode != mode) {
-    NotifySectionDisabled(mode, old_mode, dom_ui_->GetProfile());
+    NotifySectionDisabled(mode, old_mode, web_ui_->GetProfile());
     pref_service_->SetInteger(prefs::kNTPShownSections, mode);
   }
 }

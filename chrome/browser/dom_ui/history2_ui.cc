@@ -140,13 +140,13 @@ WebUIMessageHandler* BrowsingHistoryHandler2::Attach(WebUI* web_ui) {
 }
 
 void BrowsingHistoryHandler2::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback("getHistory",
+  web_ui_->RegisterMessageCallback("getHistory",
       NewCallback(this, &BrowsingHistoryHandler2::HandleGetHistory));
-  dom_ui_->RegisterMessageCallback("searchHistory",
+  web_ui_->RegisterMessageCallback("searchHistory",
       NewCallback(this, &BrowsingHistoryHandler2::HandleSearchHistory));
-  dom_ui_->RegisterMessageCallback("removeURLsOnOneDay",
+  web_ui_->RegisterMessageCallback("removeURLsOnOneDay",
       NewCallback(this, &BrowsingHistoryHandler2::HandleRemoveURLsOnOneDay));
-  dom_ui_->RegisterMessageCallback("clearBrowsingData",
+  web_ui_->RegisterMessageCallback("clearBrowsingData",
       NewCallback(this, &BrowsingHistoryHandler2::HandleClearBrowsingData));
 }
 
@@ -169,7 +169,7 @@ void BrowsingHistoryHandler2::HandleGetHistory(const ListValue* args) {
   search_text_ = string16();
 
   HistoryService* hs =
-      dom_ui_->GetProfile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
+      web_ui_->GetProfile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
   hs->QueryHistory(search_text_,
       options,
       &cancelable_search_consumer_,
@@ -194,7 +194,7 @@ void BrowsingHistoryHandler2::HandleSearchHistory(const ListValue* args) {
   // Need to remember the query string for our results.
   search_text_ = query;
   HistoryService* hs =
-      dom_ui_->GetProfile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
+      web_ui_->GetProfile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
   hs->QueryHistory(search_text_,
       options,
       &cancelable_search_consumer_,
@@ -203,7 +203,7 @@ void BrowsingHistoryHandler2::HandleSearchHistory(const ListValue* args) {
 
 void BrowsingHistoryHandler2::HandleRemoveURLsOnOneDay(const ListValue* args) {
   if (cancelable_delete_consumer_.HasPendingRequests()) {
-    dom_ui_->CallJavascriptFunction(L"deleteFailed");
+    web_ui_->CallJavascriptFunction(L"deleteFailed");
     return;
   }
 
@@ -231,7 +231,7 @@ void BrowsingHistoryHandler2::HandleRemoveURLsOnOneDay(const ListValue* args) {
   }
 
   HistoryService* hs =
-      dom_ui_->GetProfile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
+      web_ui_->GetProfile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
   hs->ExpireHistoryBetween(
       urls, begin_time, end_time, &cancelable_delete_consumer_,
       NewCallback(this, &BrowsingHistoryHandler2::RemoveComplete));
@@ -240,7 +240,7 @@ void BrowsingHistoryHandler2::HandleRemoveURLsOnOneDay(const ListValue* args) {
 void BrowsingHistoryHandler2::HandleClearBrowsingData(const ListValue* args) {
   // TODO(beng): This is an improper direct dependency on Browser. Route this
   // through some sort of delegate.
-  Browser* browser = BrowserList::FindBrowserWithProfile(dom_ui_->GetProfile());
+  Browser* browser = BrowserList::FindBrowserWithProfile(web_ui_->GetProfile());
   if (browser)
     browser->OpenClearBrowsingDataDialog();
 }
@@ -288,7 +288,7 @@ void BrowsingHistoryHandler2::QueryComplete(
       page_value->SetString("snippet", page.snippet().text());
     }
     page_value->SetBoolean("starred",
-        dom_ui_->GetProfile()->GetBookmarkModel()->IsBookmarked(page.url()));
+        web_ui_->GetProfile()->GetBookmarkModel()->IsBookmarked(page.url()));
     results_value.Append(page_value);
   }
 
@@ -296,12 +296,12 @@ void BrowsingHistoryHandler2::QueryComplete(
   info_value.SetString("term", search_text_);
   info_value.SetBoolean("finished", results->reached_beginning());
 
-  dom_ui_->CallJavascriptFunction(L"historyResult", info_value, results_value);
+  web_ui_->CallJavascriptFunction(L"historyResult", info_value, results_value);
 }
 
 void BrowsingHistoryHandler2::RemoveComplete() {
   // Some Visits were deleted from history. Reload the list.
-  dom_ui_->CallJavascriptFunction(L"deleteComplete");
+  web_ui_->CallJavascriptFunction(L"deleteComplete");
 }
 
 void BrowsingHistoryHandler2::ExtractSearchHistoryArguments(
@@ -382,7 +382,7 @@ void BrowsingHistoryHandler2::Observe(NotificationType type,
   }
 
   // Some URLs were deleted from history. Reload the list.
-  dom_ui_->CallJavascriptFunction(L"historyDeleted");
+  web_ui_->CallJavascriptFunction(L"historyDeleted");
 }
 
 ////////////////////////////////////////////////////////////////////////////////

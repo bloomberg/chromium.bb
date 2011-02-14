@@ -469,66 +469,66 @@ void NetInternalsMessageHandler::OnLoadLogFile(const ListValue* list) {
   select_log_file_dialog_->SelectFile(
       SelectFileDialog::SELECT_OPEN_FILE, string16(), FilePath(), NULL, 0,
       FILE_PATH_LITERAL(""),
-      dom_ui_->tab_contents()->view()->GetTopLevelNativeWindow(), NULL);
+      web_ui_->tab_contents()->view()->GetTopLevelNativeWindow(), NULL);
 }
 
 void NetInternalsMessageHandler::RegisterMessages() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Only callback handled on UI thread.
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "loadLogFile",
       NewCallback(this, &NetInternalsMessageHandler::OnLoadLogFile));
 
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "notifyReady",
       proxy_->CreateCallback(&IOThreadImpl::OnRendererReady));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "getProxySettings",
       proxy_->CreateCallback(&IOThreadImpl::OnGetProxySettings));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "reloadProxySettings",
       proxy_->CreateCallback(&IOThreadImpl::OnReloadProxySettings));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "getBadProxies",
       proxy_->CreateCallback(&IOThreadImpl::OnGetBadProxies));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "clearBadProxies",
       proxy_->CreateCallback(&IOThreadImpl::OnClearBadProxies));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "getHostResolverInfo",
       proxy_->CreateCallback(&IOThreadImpl::OnGetHostResolverInfo));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "clearHostResolverCache",
       proxy_->CreateCallback(&IOThreadImpl::OnClearHostResolverCache));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "enableIPv6",
       proxy_->CreateCallback(&IOThreadImpl::OnEnableIPv6));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "startConnectionTests",
       proxy_->CreateCallback(&IOThreadImpl::OnStartConnectionTests));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "getHttpCacheInfo",
       proxy_->CreateCallback(&IOThreadImpl::OnGetHttpCacheInfo));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "getSocketPoolInfo",
       proxy_->CreateCallback(&IOThreadImpl::OnGetSocketPoolInfo));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "getSpdySessionInfo",
       proxy_->CreateCallback(&IOThreadImpl::OnGetSpdySessionInfo));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "getSpdyStatus",
       proxy_->CreateCallback(&IOThreadImpl::OnGetSpdyStatus));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "getSpdyAlternateProtocolMappings",
       proxy_->CreateCallback(
           &IOThreadImpl::OnGetSpdyAlternateProtocolMappings));
 #ifdef OS_WIN
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "getServiceProviders",
       proxy_->CreateCallback(&IOThreadImpl::OnGetServiceProviders));
 #endif
 
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "setLogLevel",
       proxy_->CreateCallback(&IOThreadImpl::OnSetLogLevel));
 }
@@ -538,9 +538,9 @@ void NetInternalsMessageHandler::CallJavascriptFunction(
     const Value* value) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (value) {
-    dom_ui_->CallJavascriptFunction(function_name, *value);
+    web_ui_->CallJavascriptFunction(function_name, *value);
   } else {
-    dom_ui_->CallJavascriptFunction(function_name);
+    web_ui_->CallJavascriptFunction(function_name);
   }
 }
 

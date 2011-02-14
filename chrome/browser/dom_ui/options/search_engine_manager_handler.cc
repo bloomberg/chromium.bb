@@ -37,7 +37,7 @@ SearchEngineManagerHandler::~SearchEngineManagerHandler() {
 }
 
 void SearchEngineManagerHandler::Initialize() {
-  list_controller_.reset(new KeywordEditorController(dom_ui_->GetProfile()));
+  list_controller_.reset(new KeywordEditorController(web_ui_->GetProfile()));
   if (list_controller_.get()) {
     list_controller_->table_model()->SetObserver(this);
     OnModelChanged();
@@ -77,23 +77,23 @@ void SearchEngineManagerHandler::GetLocalizedValues(
 }
 
 void SearchEngineManagerHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "managerSetDefaultSearchEngine",
       NewCallback(this, &SearchEngineManagerHandler::SetDefaultSearchEngine));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "removeSearchEngine",
       NewCallback(this, &SearchEngineManagerHandler::RemoveSearchEngine));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "editSearchEngine",
       NewCallback(this, &SearchEngineManagerHandler::EditSearchEngine));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "checkSearchEngineInfoValidity",
       NewCallback(this,
                   &SearchEngineManagerHandler::CheckSearchEngineInfoValidity));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "searchEngineEditCancelled",
       NewCallback(this, &SearchEngineManagerHandler::EditCancelled));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "searchEngineEditCompleted",
       NewCallback(this, &SearchEngineManagerHandler::EditCompleted));
 }
@@ -125,7 +125,7 @@ void SearchEngineManagerHandler::OnModelChanged() {
     others_list.Append(CreateDictionaryForEngine(i, i == default_index));
   }
 
-  dom_ui_->CallJavascriptFunction(L"SearchEngineManager.updateSearchEngineList",
+  web_ui_->CallJavascriptFunction(L"SearchEngineManager.updateSearchEngineList",
                                   defaults_list, others_list);
 }
 
@@ -207,7 +207,7 @@ void SearchEngineManagerHandler::EditSearchEngine(const ListValue* args) {
   if (index != -1)
     edit_url = list_controller_->GetTemplateURL(index);
   edit_controller_.reset(
-      new EditSearchEngineController(edit_url, this, dom_ui_->GetProfile()));
+      new EditSearchEngineController(edit_url, this, web_ui_->GetProfile()));
 }
 
 void SearchEngineManagerHandler::OnEditedKeyword(
@@ -245,7 +245,7 @@ void SearchEngineManagerHandler::CheckSearchEngineInfoValidity(
   validity.SetBoolean("keyword", edit_controller_->IsKeywordValid(keyword));
   validity.SetBoolean("url", edit_controller_->IsURLValid(url));
   StringValue indexValue(modelIndex);
-  dom_ui_->CallJavascriptFunction(
+  web_ui_->CallJavascriptFunction(
       L"SearchEngineManager.validityCheckCallback", validity, indexValue);
 }
 

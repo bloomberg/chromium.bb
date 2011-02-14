@@ -145,9 +145,9 @@ BrowserSigninHtml::BrowserSigninHtml(BrowserSignin* signin,
 }
 
 void BrowserSigninHtml::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "SubmitAuth", NewCallback(this, &BrowserSigninHtml::HandleSubmitAuth));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "SigninInit", NewCallback(this, &BrowserSigninHtml::HandleSigninInit));
 }
 
@@ -156,19 +156,19 @@ void BrowserSigninHtml::ReloadUI() {
 }
 
 void BrowserSigninHtml::ForceDialogClose() {
-  if (!closed_ && dom_ui_) {
+  if (!closed_ && web_ui_) {
     StringValue value("DialogClose");
     ListValue close_args;
     close_args.Append(new StringValue(""));
-    dom_ui_->CallJavascriptFunction(L"chrome.send", value, close_args);
+    web_ui_->CallJavascriptFunction(L"chrome.send", value, close_args);
   }
 }
 
 void BrowserSigninHtml::HandleSigninInit(const ListValue* args) {
-  if (!dom_ui_)
+  if (!web_ui_)
     return;
 
-  RenderViewHost* rvh = dom_ui_->tab_contents()->render_view_host();
+  RenderViewHost* rvh = web_ui_->tab_contents()->render_view_host();
   rvh->ExecuteJavascriptInWebFrame(ASCIIToUTF16("//iframe[@id='login']"),
                                    ASCIIToUTF16("hideBlurb();"));
 

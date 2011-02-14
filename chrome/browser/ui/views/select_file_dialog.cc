@@ -469,7 +469,7 @@ SelectFileDialogImpl::FileBrowseDelegateHandler::FileBrowseDelegateHandler(
 }
 
 void SelectFileDialogImpl::FileBrowseDelegateHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback("setDialogTitle",
+  web_ui_->RegisterMessageCallback("setDialogTitle",
       NewCallback(this, &FileBrowseDelegateHandler::HandleSetDialogTitle));
 }
 
@@ -486,7 +486,7 @@ void SelectFileDialogImpl::FileBrowseDelegateHandler::HandleSetDialogTitle(
     // its title.
     // TODO(xiyuan): Change this when the infrastructure is improved.
     HtmlDialogUIDelegate** delegate = HtmlDialogUI::GetPropertyAccessor().
-        GetProperty(dom_ui_->tab_contents()->property_bag());
+        GetProperty(web_ui_->tab_contents()->property_bag());
     HtmlDialogView* containing_view = static_cast<HtmlDialogView*>(*delegate);
     DCHECK(containing_view);
 

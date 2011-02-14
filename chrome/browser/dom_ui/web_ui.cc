@@ -158,14 +158,14 @@ void WebUI::ExecuteJavascript(const std::wstring& javascript) {
 
 ///////////////////////////////////////////////////////////////////////////////
 // WebUIMessageHandler
-WebUIMessageHandler::WebUIMessageHandler() : dom_ui_(NULL) {
+WebUIMessageHandler::WebUIMessageHandler() : web_ui_(NULL) {
 }
 
 WebUIMessageHandler::~WebUIMessageHandler() {
 }
 
-WebUIMessageHandler* WebUIMessageHandler::Attach(WebUI* dom_ui) {
-  dom_ui_ = dom_ui;
+WebUIMessageHandler* WebUIMessageHandler::Attach(WebUI* web_ui) {
+  web_ui_ = web_ui;
   RegisterMessages();
   return this;
 }

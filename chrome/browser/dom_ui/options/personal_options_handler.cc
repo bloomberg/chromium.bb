@@ -48,7 +48,7 @@ PersonalOptionsHandler::PersonalOptionsHandler() {
 
 PersonalOptionsHandler::~PersonalOptionsHandler() {
   ProfileSyncService* sync_service =
-      dom_ui_->GetProfile()->GetProfileSyncService();
+      web_ui_->GetProfile()->GetProfileSyncService();
   if (sync_service)
     sync_service->RemoveObserver(this);
 }
@@ -166,28 +166,28 @@ void PersonalOptionsHandler::GetLocalizedValues(
 }
 
 void PersonalOptionsHandler::RegisterMessages() {
-  DCHECK(dom_ui_);
-  dom_ui_->RegisterMessageCallback(
+  DCHECK(web_ui_);
+  web_ui_->RegisterMessageCallback(
       "showSyncActionDialog",
       NewCallback(this, &PersonalOptionsHandler::ShowSyncActionDialog));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "showSyncLoginDialog",
       NewCallback(this, &PersonalOptionsHandler::ShowSyncLoginDialog));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "showCustomizeSyncDialog",
       NewCallback(this, &PersonalOptionsHandler::ShowCustomizeSyncDialog));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "themesReset",
       NewCallback(this, &PersonalOptionsHandler::ThemesReset));
 #if defined(TOOLKIT_GTK)
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "themesSetGTK",
       NewCallback(this, &PersonalOptionsHandler::ThemesSetGTK));
 #endif
-  dom_ui_->RegisterMessageCallback("updatePreferredDataTypes",
+  web_ui_->RegisterMessageCallback("updatePreferredDataTypes",
       NewCallback(this, &PersonalOptionsHandler::OnPreferredDataTypesUpdated));
 #if defined(OS_CHROMEOS)
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "loadAccountPicture",
       NewCallback(this, &PersonalOptionsHandler::LoadAccountPicture));
 #endif
@@ -205,7 +205,7 @@ void PersonalOptionsHandler::Observe(NotificationType type,
 void PersonalOptionsHandler::OnStateChanged() {
   string16 status_label;
   string16 link_label;
-  ProfileSyncService* service = dom_ui_->GetProfile()->GetProfileSyncService();
+  ProfileSyncService* service = web_ui_->GetProfile()->GetProfileSyncService();
   DCHECK(service);
   bool managed = service->IsManaged();
   bool sync_setup_completed = service->HasSyncSetupCompleted();
@@ -237,37 +237,37 @@ void PersonalOptionsHandler::OnStateChanged() {
   }
 
   scoped_ptr<Value> completed(Value::CreateBooleanValue(sync_setup_completed));
-  dom_ui_->CallJavascriptFunction(L"PersonalOptions.setSyncSetupCompleted",
+  web_ui_->CallJavascriptFunction(L"PersonalOptions.setSyncSetupCompleted",
                                   *completed);
 
   scoped_ptr<Value> label(Value::CreateStringValue(status_label));
-  dom_ui_->CallJavascriptFunction(L"PersonalOptions.setSyncStatus",
+  web_ui_->CallJavascriptFunction(L"PersonalOptions.setSyncStatus",
                                   *label);
 
   scoped_ptr<Value> enabled(
       Value::CreateBooleanValue(is_start_stop_button_enabled));
-  dom_ui_->CallJavascriptFunction(L"PersonalOptions.setStartStopButtonEnabled",
+  web_ui_->CallJavascriptFunction(L"PersonalOptions.setStartStopButtonEnabled",
                                   *enabled);
 
   scoped_ptr<Value> visible(
       Value::CreateBooleanValue(is_start_stop_button_visible));
-  dom_ui_->CallJavascriptFunction(L"PersonalOptions.setStartStopButtonVisible",
+  web_ui_->CallJavascriptFunction(L"PersonalOptions.setStartStopButtonVisible",
                                   *visible);
 
   label.reset(Value::CreateStringValue(start_stop_button_label));
-  dom_ui_->CallJavascriptFunction(L"PersonalOptions.setStartStopButtonLabel",
+  web_ui_->CallJavascriptFunction(L"PersonalOptions.setStartStopButtonLabel",
                                   *label);
 
   label.reset(Value::CreateStringValue(link_label));
-  dom_ui_->CallJavascriptFunction(L"PersonalOptions.setSyncActionLinkLabel",
+  web_ui_->CallJavascriptFunction(L"PersonalOptions.setSyncActionLinkLabel",
                                   *label);
 
   enabled.reset(Value::CreateBooleanValue(!managed));
-  dom_ui_->CallJavascriptFunction(L"PersonalOptions.setSyncActionLinkEnabled",
+  web_ui_->CallJavascriptFunction(L"PersonalOptions.setSyncActionLinkEnabled",
                                   *enabled);
 
   visible.reset(Value::CreateBooleanValue(status_has_error));
-  dom_ui_->CallJavascriptFunction(
+  web_ui_->CallJavascriptFunction(
     L"PersonalOptions.setSyncStatusErrorVisible", *visible);
 }
 
@@ -281,12 +281,12 @@ void PersonalOptionsHandler::OnLoginFailure(
 }
 
 void PersonalOptionsHandler::ObserveThemeChanged() {
-  Profile* profile = dom_ui_->GetProfile();
+  Profile* profile = web_ui_->GetProfile();
 #if defined(TOOLKIT_GTK)
   GtkThemeProvider* provider = GtkThemeProvider::GetFrom(profile);
   bool is_gtk_theme = provider->UseGtkTheme();
   FundamentalValue gtk_enabled(!is_gtk_theme);
-  dom_ui_->CallJavascriptFunction(
+  web_ui_->CallJavascriptFunction(
       L"options.PersonalOptions.setGtkThemeButtonEnabled", gtk_enabled);
 #else
   BrowserThemeProvider* provider =
@@ -296,13 +296,13 @@ void PersonalOptionsHandler::ObserveThemeChanged() {
 
   bool is_classic_theme = !is_gtk_theme && provider->GetThemeID().empty();
   FundamentalValue enabled(!is_classic_theme);
-  dom_ui_->CallJavascriptFunction(
+  web_ui_->CallJavascriptFunction(
       L"options.PersonalOptions.setThemesResetButtonEnabled", enabled);
 }
 
 void PersonalOptionsHandler::Initialize() {
   banner_handler_.reset(
-      new OptionsManagedBannerHandler(dom_ui_,
+      new OptionsManagedBannerHandler(web_ui_,
                                       ASCIIToUTF16("PersonalOptions"),
                                       OPTIONS_PAGE_CONTENT));
 
@@ -312,7 +312,7 @@ void PersonalOptionsHandler::Initialize() {
   ObserveThemeChanged();
 
   ProfileSyncService* sync_service =
-      dom_ui_->GetProfile()->GetProfileSyncService();
+      web_ui_->GetProfile()->GetProfileSyncService();
   if (sync_service) {
     sync_service->AddObserver(this);
     OnStateChanged();
@@ -320,15 +320,15 @@ void PersonalOptionsHandler::Initialize() {
     DictionaryValue args;
     SyncSetupFlow::GetArgsForConfigure(sync_service, &args);
 
-    dom_ui_->CallJavascriptFunction(
+    web_ui_->CallJavascriptFunction(
         L"PersonalOptions.setRegisteredDataTypes", args);
   } else {
-    dom_ui_->CallJavascriptFunction(L"options.PersonalOptions.hideSyncSection");
+    web_ui_->CallJavascriptFunction(L"options.PersonalOptions.hideSyncSection");
   }
 }
 
 void PersonalOptionsHandler::ShowSyncActionDialog(const ListValue* args) {
-  ProfileSyncService* service = dom_ui_->GetProfile()->GetProfileSyncService();
+  ProfileSyncService* service = web_ui_->GetProfile()->GetProfileSyncService();
   DCHECK(service);
   service->ShowErrorUI(NULL);
 }
@@ -339,10 +339,10 @@ void PersonalOptionsHandler::ShowSyncLoginDialog(const ListValue* args) {
   string16 message = l10n_util::GetStringFUTF16(
       IDS_SYNC_LOGIN_INTRODUCTION,
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
-  dom_ui_->GetProfile()->GetBrowserSignin()->RequestSignin(
-      dom_ui_->tab_contents(), UTF8ToUTF16(email), message, this);
+  web_ui_->GetProfile()->GetBrowserSignin()->RequestSignin(
+      web_ui_->tab_contents(), UTF8ToUTF16(email), message, this);
 #else
-  ProfileSyncService* service = dom_ui_->GetProfile()->GetProfileSyncService();
+  ProfileSyncService* service = web_ui_->GetProfile()->GetProfileSyncService();
   DCHECK(service);
   service->ShowLoginDialog(NULL);
   ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_OPTIONS);
@@ -350,20 +350,20 @@ void PersonalOptionsHandler::ShowSyncLoginDialog(const ListValue* args) {
 }
 
 void PersonalOptionsHandler::ShowCustomizeSyncDialog(const ListValue* args) {
-  ProfileSyncService* service = dom_ui_->GetProfile()->GetProfileSyncService();
+  ProfileSyncService* service = web_ui_->GetProfile()->GetProfileSyncService();
   DCHECK(service);
   service->ShowConfigure(NULL);
 }
 
 void PersonalOptionsHandler::ThemesReset(const ListValue* args) {
   UserMetricsRecordAction(UserMetricsAction("Options_ThemesReset"));
-  dom_ui_->GetProfile()->ClearTheme();
+  web_ui_->GetProfile()->ClearTheme();
 }
 
 #if defined(TOOLKIT_GTK)
 void PersonalOptionsHandler::ThemesSetGTK(const ListValue* args) {
   UserMetricsRecordAction(UserMetricsAction("Options_GtkThemeSet"));
-  dom_ui_->GetProfile()->SetNativeTheme();
+  web_ui_->GetProfile()->SetNativeTheme();
 }
 #endif
 
@@ -371,7 +371,7 @@ void PersonalOptionsHandler::OnPreferredDataTypesUpdated(
     const ListValue* args) {
   NotificationService::current()->Notify(
       NotificationType::SYNC_DATA_TYPES_UPDATED,
-      Source<Profile>(dom_ui_->GetProfile()),
+      Source<Profile>(web_ui_->GetProfile()),
       NotificationService::NoDetails());
 }
 
@@ -382,7 +382,7 @@ void PersonalOptionsHandler::LoadAccountPicture(const ListValue* args) {
 
   if (!account_picture.isNull()) {
     StringValue data_url(web_ui_util::GetImageDataUrl(account_picture));
-    dom_ui_->CallJavascriptFunction(L"PersonalOptions.setAccountPicture",
+    web_ui_->CallJavascriptFunction(L"PersonalOptions.setAccountPicture",
         data_url);
   }
 }

@@ -43,17 +43,17 @@ SyncConfiguration::SyncConfiguration()
 SyncConfiguration::~SyncConfiguration() {}
 
 void FlowHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback("SubmitAuth",
+  web_ui_->RegisterMessageCallback("SubmitAuth",
       NewCallback(this, &FlowHandler::HandleSubmitAuth));
-  dom_ui_->RegisterMessageCallback("Configure",
+  web_ui_->RegisterMessageCallback("Configure",
       NewCallback(this, &FlowHandler::HandleConfigure));
-  dom_ui_->RegisterMessageCallback("Passphrase",
+  web_ui_->RegisterMessageCallback("Passphrase",
       NewCallback(this, &FlowHandler::HandlePassphraseEntry));
-  dom_ui_->RegisterMessageCallback("PassphraseCancel",
+  web_ui_->RegisterMessageCallback("PassphraseCancel",
       NewCallback(this, &FlowHandler::HandlePassphraseCancel));
-  dom_ui_->RegisterMessageCallback("FirstPassphrase",
+  web_ui_->RegisterMessageCallback("FirstPassphrase",
       NewCallback(this, &FlowHandler::HandleFirstPassphrase));
-  dom_ui_->RegisterMessageCallback("GoToDashboard",
+  web_ui_->RegisterMessageCallback("GoToDashboard",
       NewCallback(this, &FlowHandler::HandleGoToDashboard));
 }
 
@@ -270,8 +270,8 @@ void FlowHandler::ShowGaiaLogin(const DictionaryValue& args) {
   // So if you ever made a wizard that involved a gaia login as not the first
   // frame, this call would be necessary to ensure that this method actually
   // shows the gaia login.
-  if (dom_ui_)
-    dom_ui_->CallJavascriptFunction(L"showGaiaLoginIframe");
+  if (web_ui_)
+    web_ui_->CallJavascriptFunction(L"showGaiaLoginIframe");
 
   std::string json;
   base::JSONWriter::Write(&args, false, &json);
@@ -294,8 +294,8 @@ void FlowHandler::ShowConfigure(const DictionaryValue& args) {
   // If you're starting the wizard at the configure screen (i.e. from
   // "Customize Sync"), this will be redundant.  However, if you're coming from
   // another wizard state, this will make sure Choose Data Types is on top.
-  if (dom_ui_)
-    dom_ui_->CallJavascriptFunction(L"showConfigure");
+  if (web_ui_)
+    web_ui_->CallJavascriptFunction(L"showConfigure");
 
   std::string json;
   base::JSONWriter::Write(&args, false, &json);
@@ -305,8 +305,8 @@ void FlowHandler::ShowConfigure(const DictionaryValue& args) {
 }
 
 void FlowHandler::ShowPassphraseEntry(const DictionaryValue& args) {
-  if (dom_ui_)
-    dom_ui_->CallJavascriptFunction(L"showPassphrase");
+  if (web_ui_)
+    web_ui_->CallJavascriptFunction(L"showPassphrase");
 
   std::string json;
   base::JSONWriter::Write(&args, false, &json);
@@ -316,8 +316,8 @@ void FlowHandler::ShowPassphraseEntry(const DictionaryValue& args) {
 }
 
 void FlowHandler::ShowFirstPassphrase(const DictionaryValue& args) {
-  if (dom_ui_)
-    dom_ui_->CallJavascriptFunction(L"showFirstPassphrase");
+  if (web_ui_)
+    web_ui_->CallJavascriptFunction(L"showFirstPassphrase");
 
   std::string json;
   base::JSONWriter::Write(&args, false, &json);
@@ -327,8 +327,8 @@ void FlowHandler::ShowFirstPassphrase(const DictionaryValue& args) {
 }
 
 void FlowHandler::ShowSettingUp() {
-  if (dom_ui_)
-    dom_ui_->CallJavascriptFunction(L"showSettingUp");
+  if (web_ui_)
+    web_ui_->CallJavascriptFunction(L"showSettingUp");
 }
 
 void FlowHandler::ShowSetupDone(const std::wstring& user) {
@@ -340,8 +340,8 @@ void FlowHandler::ShowSetupDone(const std::wstring& user) {
       L"(" + UTF8ToWide(json) + L");";
   ExecuteJavascriptInIFrame(kDoneIframeXPath, javascript);
 
-  if (dom_ui_)
-    dom_ui_->CallJavascriptFunction(L"showSetupDone", synced_to_string);
+  if (web_ui_)
+    web_ui_->CallJavascriptFunction(L"showSetupDone", synced_to_string);
 
   ExecuteJavascriptInIFrame(kDoneIframeXPath,
                             L"onPageShown();");
@@ -355,8 +355,8 @@ void FlowHandler::ShowFirstTimeDone(const std::wstring& user) {
 
 void FlowHandler::ExecuteJavascriptInIFrame(const std::wstring& iframe_xpath,
                                             const std::wstring& js) {
-  if (dom_ui_) {
-    RenderViewHost* rvh = dom_ui_->tab_contents()->render_view_host();
+  if (web_ui_) {
+    RenderViewHost* rvh = web_ui_->tab_contents()->render_view_host();
     rvh->ExecuteJavascriptInWebFrame(WideToUTF16Hack(iframe_xpath),
                                      WideToUTF16Hack(js));
   }

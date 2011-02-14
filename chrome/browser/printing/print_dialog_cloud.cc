@@ -230,7 +230,7 @@ CloudPrintFlowHandler::~CloudPrintFlowHandler() {
 
 void CloudPrintFlowHandler::SetDialogDelegate(
     CloudPrintHtmlDialogDelegate* delegate) {
-  // Even if setting a new dom_ui, it means any previous task needs
+  // Even if setting a new WebUI, it means any previous task needs
   // to be cancelled, it's now invalid.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CancelAnyRunningTask();
@@ -249,28 +249,28 @@ void CloudPrintFlowHandler::CancelAnyRunningTask() {
 }
 
 void CloudPrintFlowHandler::RegisterMessages() {
-  if (!dom_ui_)
+  if (!web_ui_)
     return;
 
   // TODO(scottbyer) - This is where we will register messages for the
   // UI JS to use.  Needed: Call to update page setup parameters.
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "ShowDebugger",
       NewCallback(this, &CloudPrintFlowHandler::HandleShowDebugger));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "SendPrintData",
       NewCallback(this, &CloudPrintFlowHandler::HandleSendPrintData));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "SetPageParameters",
       NewCallback(this, &CloudPrintFlowHandler::HandleSetPageParameters));
 
-  if (dom_ui_->tab_contents()) {
+  if (web_ui_->tab_contents()) {
     // Also, take the opportunity to set some (minimal) additional
     // script permissions required for the web UI.
 
     // TODO(scottbyer): learn how to make sure we're talking to the
     // right web site first.
-    RenderViewHost* rvh = dom_ui_->tab_contents()->render_view_host();
+    RenderViewHost* rvh = web_ui_->tab_contents()->render_view_host();
     if (rvh && rvh->delegate()) {
       WebPreferences webkit_prefs = rvh->delegate()->GetWebkitPrefs();
       webkit_prefs.allow_scripts_to_close_windows = true;
@@ -280,11 +280,11 @@ void CloudPrintFlowHandler::RegisterMessages() {
     // Register for appropriate notifications, and re-direct the URL
     // to the real server URL, now that we've gotten an HTML dialog
     // going.
-    NavigationController* controller = &dom_ui_->tab_contents()->controller();
+    NavigationController* controller = &web_ui_->tab_contents()->controller();
     NavigationEntry* pending_entry = controller->pending_entry();
     if (pending_entry)
       pending_entry->set_url(CloudPrintURL(
-          dom_ui_->GetProfile()).GetCloudPrintServiceDialogURL());
+          web_ui_->GetProfile()).GetCloudPrintServiceDialogURL());
     registrar_.Add(this, NotificationType::LOAD_STOP,
                    Source<NavigationController>(controller));
   }
@@ -309,8 +309,8 @@ void CloudPrintFlowHandler::HandleShowDebugger(const ListValue* args) {
 }
 
 void CloudPrintFlowHandler::ShowDebugger() {
-  if (dom_ui_) {
-    RenderViewHost* rvh = dom_ui_->tab_contents()->render_view_host();
+  if (web_ui_) {
+    RenderViewHost* rvh = web_ui_->tab_contents()->render_view_host();
     if (rvh)
       DevToolsManager::GetInstance()->OpenDevToolsWindow(rvh);
   }
@@ -318,8 +318,8 @@ void CloudPrintFlowHandler::ShowDebugger() {
 
 scoped_refptr<CloudPrintDataSender>
 CloudPrintFlowHandler::CreateCloudPrintDataSender() {
-  DCHECK(dom_ui_);
-  print_data_helper_.reset(new CloudPrintDataSenderHelper(dom_ui_));
+  DCHECK(web_ui_);
+  print_data_helper_.reset(new CloudPrintDataSenderHelper(web_ui_));
   return new CloudPrintDataSender(print_data_helper_.get(), print_job_title_);
 }
 
@@ -330,7 +330,7 @@ void CloudPrintFlowHandler::HandleSendPrintData(const ListValue* args) {
   // setup parameters becomes asynchronous and may be set while some
   // data is in flight).  Then we can clear out the print data.
   CancelAnyRunningTask();
-  if (dom_ui_) {
+  if (web_ui_) {
     print_data_sender_ = CreateCloudPrintDataSender();
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
                             NewRunnableMethod(
@@ -381,11 +381,11 @@ void CloudPrintFlowHandler::HandleSetPageParameters(const ListValue* args) {
 }
 
 void CloudPrintFlowHandler::StoreDialogClientSize() const {
-  if (dom_ui_ && dom_ui_->tab_contents() && dom_ui_->tab_contents()->view()) {
-    gfx::Size size = dom_ui_->tab_contents()->view()->GetContainerSize();
-    dom_ui_->GetProfile()->GetPrefs()->SetInteger(
+  if (web_ui_ && web_ui_->tab_contents() && web_ui_->tab_contents()->view()) {
+    gfx::Size size = web_ui_->tab_contents()->view()->GetContainerSize();
+    web_ui_->GetProfile()->GetPrefs()->SetInteger(
         prefs::kCloudPrintDialogWidth, size.width());
-    dom_ui_->GetProfile()->GetPrefs()->SetInteger(
+    web_ui_->GetProfile()->GetPrefs()->SetInteger(
         prefs::kCloudPrintDialogHeight, size.height());
   }
 }

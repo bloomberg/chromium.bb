@@ -194,7 +194,7 @@ void AdvancedOptionsHandler::GetLocalizedValues(
 }
 
 void AdvancedOptionsHandler::Initialize() {
-  DCHECK(dom_ui_);
+  DCHECK(web_ui_);
   SetupMetricsReportingCheckbox();
   SetupMetricsReportingSettingVisibility();
   SetupFontSizeLabel();
@@ -216,12 +216,12 @@ void AdvancedOptionsHandler::Initialize() {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableRemoting)) {
     RemoveRemotingSection();
   } else {
-    remoting_options_handler_.Init(dom_ui_);
+    remoting_options_handler_.Init(web_ui_);
   }
 #endif
 
   banner_handler_.reset(
-      new OptionsManagedBannerHandler(dom_ui_,
+      new OptionsManagedBannerHandler(web_ui_,
                                       ASCIIToUTF16("AdvancedOptions"),
                                       OPTIONS_PAGE_ADVANCED));
 }
@@ -232,8 +232,8 @@ WebUIMessageHandler* AdvancedOptionsHandler::Attach(WebUI* web_ui) {
 
   // Register for preferences that we need to observe manually.  These have
   // special behaviors that aren't handled by the standard prefs UI.
-  DCHECK(dom_ui_);
-  PrefService* prefs = dom_ui_->GetProfile()->GetPrefs();
+  DCHECK(web_ui_);
+  PrefService* prefs = web_ui_->GetProfile()->GetPrefs();
 #if !defined(OS_CHROMEOS)
   enable_metrics_recording_.Init(prefs::kMetricsReportingEnabled,
                                  g_browser_process->local_state(), this);
@@ -255,61 +255,61 @@ WebUIMessageHandler* AdvancedOptionsHandler::Attach(WebUI* web_ui) {
 
 void AdvancedOptionsHandler::RegisterMessages() {
   // Setup handlers specific to this panel.
-  DCHECK(dom_ui_);
-  dom_ui_->RegisterMessageCallback("selectDownloadLocation",
+  DCHECK(web_ui_);
+  web_ui_->RegisterMessageCallback("selectDownloadLocation",
       NewCallback(this,
                   &AdvancedOptionsHandler::HandleSelectDownloadLocation));
-  dom_ui_->RegisterMessageCallback("autoOpenFileTypesAction",
+  web_ui_->RegisterMessageCallback("autoOpenFileTypesAction",
       NewCallback(this,
                   &AdvancedOptionsHandler::HandleAutoOpenButton));
-  dom_ui_->RegisterMessageCallback("defaultFontSizeAction",
+  web_ui_->RegisterMessageCallback("defaultFontSizeAction",
       NewCallback(this, &AdvancedOptionsHandler::HandleDefaultFontSize));
 #if !defined(OS_CHROMEOS)
-  dom_ui_->RegisterMessageCallback("metricsReportingCheckboxAction",
+  web_ui_->RegisterMessageCallback("metricsReportingCheckboxAction",
       NewCallback(this,
                   &AdvancedOptionsHandler::HandleMetricsReportingCheckbox));
 #endif
 #if !defined(USE_NSS) && !defined(USE_OPENSSL)
-  dom_ui_->RegisterMessageCallback("showManageSSLCertificates",
+  web_ui_->RegisterMessageCallback("showManageSSLCertificates",
       NewCallback(this,
                   &AdvancedOptionsHandler::ShowManageSSLCertificates));
 #endif
 #if !defined(OS_CHROMEOS)
   if (cloud_print_proxy_ui_enabled_) {
-    dom_ui_->RegisterMessageCallback("showCloudPrintSetupDialog",
+    web_ui_->RegisterMessageCallback("showCloudPrintSetupDialog",
         NewCallback(this,
                     &AdvancedOptionsHandler::ShowCloudPrintSetupDialog));
-    dom_ui_->RegisterMessageCallback("disableCloudPrintProxy",
+    web_ui_->RegisterMessageCallback("disableCloudPrintProxy",
         NewCallback(this,
                     &AdvancedOptionsHandler::HandleDisableCloudPrintProxy));
-    dom_ui_->RegisterMessageCallback("showCloudPrintManagePage",
+    web_ui_->RegisterMessageCallback("showCloudPrintManagePage",
         NewCallback(this,
                     &AdvancedOptionsHandler::ShowCloudPrintManagePage));
   }
-  dom_ui_->RegisterMessageCallback("showNetworkProxySettings",
+  web_ui_->RegisterMessageCallback("showNetworkProxySettings",
       NewCallback(this,
                   &AdvancedOptionsHandler::ShowNetworkProxySettings));
 #endif
 #if defined(ENABLE_REMOTING) && !defined(OS_CHROMEOS)
-  dom_ui_->RegisterMessageCallback("showRemotingSetupDialog",
+  web_ui_->RegisterMessageCallback("showRemotingSetupDialog",
       NewCallback(this,
                   &AdvancedOptionsHandler::ShowRemotingSetupDialog));
-  dom_ui_->RegisterMessageCallback("disableRemoting",
+  web_ui_->RegisterMessageCallback("disableRemoting",
       NewCallback(this,
                   &AdvancedOptionsHandler::DisableRemoting));
 #endif
 #if defined(OS_WIN)
   // Setup Windows specific callbacks.
-  dom_ui_->RegisterMessageCallback("checkRevocationCheckboxAction",
+  web_ui_->RegisterMessageCallback("checkRevocationCheckboxAction",
       NewCallback(this,
                   &AdvancedOptionsHandler::HandleCheckRevocationCheckbox));
-  dom_ui_->RegisterMessageCallback("useSSL3CheckboxAction",
+  web_ui_->RegisterMessageCallback("useSSL3CheckboxAction",
       NewCallback(this,
                   &AdvancedOptionsHandler::HandleUseSSL3Checkbox));
-  dom_ui_->RegisterMessageCallback("useTLS1CheckboxAction",
+  web_ui_->RegisterMessageCallback("useTLS1CheckboxAction",
       NewCallback(this,
                   &AdvancedOptionsHandler::HandleUseTLS1Checkbox));
-  dom_ui_->RegisterMessageCallback("showGearsSettings",
+  web_ui_->RegisterMessageCallback("showGearsSettings",
       NewCallback(this,
                   &AdvancedOptionsHandler::HandleShowGearsSettings));
 #endif
@@ -341,14 +341,14 @@ void AdvancedOptionsHandler::Observe(NotificationType type,
 
 void AdvancedOptionsHandler::HandleSelectDownloadLocation(
     const ListValue* args) {
-  PrefService* pref_service = dom_ui_->GetProfile()->GetPrefs();
+  PrefService* pref_service = web_ui_->GetProfile()->GetPrefs();
   select_folder_dialog_ = SelectFileDialog::Create(this);
   select_folder_dialog_->SelectFile(
       SelectFileDialog::SELECT_FOLDER,
       l10n_util::GetStringUTF16(IDS_OPTIONS_DOWNLOADLOCATION_BROWSE_TITLE),
       pref_service->GetFilePath(prefs::kDownloadDefaultDirectory),
       NULL, 0, FILE_PATH_LITERAL(""),
-      dom_ui_->tab_contents()->view()->GetTopLevelNativeWindow(), NULL);
+      web_ui_->tab_contents()->view()->GetTopLevelNativeWindow(), NULL);
 }
 
 void AdvancedOptionsHandler::FileSelected(const FilePath& path, int index,
@@ -367,7 +367,7 @@ void AdvancedOptionsHandler::OnDialogClosed() {
 
 void AdvancedOptionsHandler::HandleAutoOpenButton(const ListValue* args) {
   UserMetricsRecordAction(UserMetricsAction("Options_ResetAutoOpenFiles"));
-  DownloadManager* manager = dom_ui_->GetProfile()->GetDownloadManager();
+  DownloadManager* manager = web_ui_->GetProfile()->GetDownloadManager();
   if (manager)
     manager->download_prefs()->ResetAutoOpen();
 }
@@ -431,21 +431,21 @@ void AdvancedOptionsHandler::HandleUseTLS1Checkbox(const ListValue* args) {
 void AdvancedOptionsHandler::HandleShowGearsSettings(const ListValue* args) {
   UserMetricsRecordAction(UserMetricsAction("Options_GearsSettings"));
   GearsSettingsPressed(
-      dom_ui_->tab_contents()->view()->GetTopLevelNativeWindow());
+      web_ui_->tab_contents()->view()->GetTopLevelNativeWindow());
 }
 #endif
 
 #if !defined(OS_CHROMEOS)
 void AdvancedOptionsHandler::ShowNetworkProxySettings(const ListValue* args) {
   UserMetricsRecordAction(UserMetricsAction("Options_ShowProxySettings"));
-  AdvancedOptionsUtilities::ShowNetworkProxySettings(dom_ui_->tab_contents());
+  AdvancedOptionsUtilities::ShowNetworkProxySettings(web_ui_->tab_contents());
 }
 #endif
 
 #if !defined(USE_NSS) && !defined(USE_OPENSSL)
 void AdvancedOptionsHandler::ShowManageSSLCertificates(const ListValue* args) {
   UserMetricsRecordAction(UserMetricsAction("Options_ManageSSLCertificates"));
-  AdvancedOptionsUtilities::ShowManageSSLCertificates(dom_ui_->tab_contents());
+  AdvancedOptionsUtilities::ShowManageSSLCertificates(web_ui_->tab_contents());
 }
 #endif
 
@@ -453,33 +453,33 @@ void AdvancedOptionsHandler::ShowManageSSLCertificates(const ListValue* args) {
 void AdvancedOptionsHandler::ShowCloudPrintSetupDialog(const ListValue* args) {
   UserMetricsRecordAction(UserMetricsAction("Options_EnableCloudPrintProxy"));
   CloudPrintSetupFlow::OpenDialog(
-      dom_ui_->GetProfile(), this,
-      dom_ui_->tab_contents()->GetMessageBoxRootWindow());
+      web_ui_->GetProfile(), this,
+      web_ui_->tab_contents()->GetMessageBoxRootWindow());
 }
 
 void AdvancedOptionsHandler::HandleDisableCloudPrintProxy(
     const ListValue* args) {
   UserMetricsRecordAction(UserMetricsAction("Options_DisableCloudPrintProxy"));
-  dom_ui_->GetProfile()->GetCloudPrintProxyService()->DisableForUser();
+  web_ui_->GetProfile()->GetCloudPrintProxyService()->DisableForUser();
 }
 
 void AdvancedOptionsHandler::ShowCloudPrintManagePage(const ListValue* args) {
   UserMetricsRecordAction(UserMetricsAction("Options_ManageCloudPrinters"));
   // Open a new tab in the current window for the management page.
-  dom_ui_->tab_contents()->OpenURL(
-      CloudPrintURL(dom_ui_->GetProfile()).GetCloudPrintServiceManageURL(),
+  web_ui_->tab_contents()->OpenURL(
+      CloudPrintURL(web_ui_->GetProfile()).GetCloudPrintServiceManageURL(),
       GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
 }
 
 void AdvancedOptionsHandler::RefreshCloudPrintStatusFromService() {
-  DCHECK(dom_ui_);
+  DCHECK(web_ui_);
   if (cloud_print_proxy_ui_enabled_)
-    dom_ui_->GetProfile()->GetCloudPrintProxyService()->
+    web_ui_->GetProfile()->GetCloudPrintProxyService()->
         RefreshStatusFromService();
 }
 
 void AdvancedOptionsHandler::SetupCloudPrintProxySection() {
-  if (NULL == dom_ui_->GetProfile()->GetCloudPrintProxyService()) {
+  if (NULL == web_ui_->GetProfile()->GetCloudPrintProxyService()) {
     cloud_print_proxy_ui_enabled_ = false;
     RemoveCloudPrintProxySection();
     return;
@@ -491,9 +491,9 @@ void AdvancedOptionsHandler::SetupCloudPrintProxySection() {
   FundamentalValue allowed(cloud_print_proxy_allowed);
 
   std::string email;
-  if (dom_ui_->GetProfile()->GetPrefs()->HasPrefPath(prefs::kCloudPrintEmail) &&
+  if (web_ui_->GetProfile()->GetPrefs()->HasPrefPath(prefs::kCloudPrintEmail) &&
       cloud_print_proxy_allowed) {
-    email = dom_ui_->GetProfile()->GetPrefs()->GetString(
+    email = web_ui_->GetProfile()->GetPrefs()->GetString(
         prefs::kCloudPrintEmail);
   }
   FundamentalValue disabled(email.empty());
@@ -508,13 +508,13 @@ void AdvancedOptionsHandler::SetupCloudPrintProxySection() {
   }
   StringValue label(label_str);
 
-  dom_ui_->CallJavascriptFunction(
+  web_ui_->CallJavascriptFunction(
       L"options.AdvancedOptions.SetupCloudPrintProxySection",
       disabled, label, allowed);
 }
 
 void AdvancedOptionsHandler::RemoveCloudPrintProxySection() {
-  dom_ui_->CallJavascriptFunction(
+  web_ui_->CallJavascriptFunction(
       L"options.AdvancedOptions.RemoveCloudPrintProxySection");
 }
 
@@ -522,18 +522,18 @@ void AdvancedOptionsHandler::RemoveCloudPrintProxySection() {
 
 #if defined(ENABLE_REMOTING) && !defined(OS_CHROMEOS)
 void AdvancedOptionsHandler::RemoveRemotingSection() {
-  dom_ui_->CallJavascriptFunction(
+  web_ui_->CallJavascriptFunction(
       L"options.AdvancedOptions.RemoveRemotingSection");
 }
 
 void AdvancedOptionsHandler::ShowRemotingSetupDialog(const ListValue* args) {
-  remoting::SetupFlow::OpenSetupDialog(dom_ui_->GetProfile());
+  remoting::SetupFlow::OpenSetupDialog(web_ui_->GetProfile());
 }
 
 void AdvancedOptionsHandler::DisableRemoting(const ListValue* args) {
   ServiceProcessControl* process_control =
       ServiceProcessControlManager::GetInstance()->GetProcessControl(
-          dom_ui_->GetProfile());
+          web_ui_->GetProfile());
   if (!process_control || !process_control->is_connected())
     return;
   process_control->DisableRemotingHost();
@@ -544,7 +544,7 @@ void AdvancedOptionsHandler::SetupMetricsReportingCheckbox() {
 #if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
   FundamentalValue checked(enable_metrics_recording_.GetValue());
   FundamentalValue disabled(enable_metrics_recording_.IsManaged());
-  dom_ui_->CallJavascriptFunction(
+  web_ui_->CallJavascriptFunction(
       L"options.AdvancedOptions.SetMetricsReportingCheckboxState", checked,
       disabled);
 #endif
@@ -555,7 +555,7 @@ void AdvancedOptionsHandler::SetupMetricsReportingSettingVisibility() {
   // Don't show the reporting setting if we are in the guest mode.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession)) {
     FundamentalValue visible(false);
-    dom_ui_->CallJavascriptFunction(
+    web_ui_->CallJavascriptFunction(
         L"options.AdvancedOptions.SetMetricsReportingSettingVisibility",
         visible);
   }
@@ -566,31 +566,31 @@ void AdvancedOptionsHandler::SetupFontSizeLabel() {
   // We're only interested in integer values, so convert to int.
   FundamentalValue fixed_font_size(default_fixed_font_size_.GetValue());
   FundamentalValue font_size(default_font_size_.GetValue());
-  dom_ui_->CallJavascriptFunction(
+  web_ui_->CallJavascriptFunction(
       L"options.AdvancedOptions.SetFontSize", fixed_font_size,
       font_size);
 }
 
 void AdvancedOptionsHandler::SetupDownloadLocationPath() {
   StringValue value(default_download_location_.GetValue().value());
-  dom_ui_->CallJavascriptFunction(
+  web_ui_->CallJavascriptFunction(
       L"options.AdvancedOptions.SetDownloadLocationPath", value);
 }
 
 void AdvancedOptionsHandler::SetupAutoOpenFileTypesDisabledAttribute() {
   // Set the enabled state for the AutoOpenFileTypesResetToDefault button.
   // We enable the button if the user has any auto-open file types registered.
-  DownloadManager* manager = dom_ui_->GetProfile()->GetDownloadManager();
+  DownloadManager* manager = web_ui_->GetProfile()->GetDownloadManager();
   bool disabled = !(manager && manager->download_prefs()->IsAutoOpenUsed());
   FundamentalValue value(disabled);
-  dom_ui_->CallJavascriptFunction(
+  web_ui_->CallJavascriptFunction(
       L"options.AdvancedOptions.SetAutoOpenFileTypesDisabledAttribute", value);
 }
 
 void AdvancedOptionsHandler::SetupProxySettingsSection() {
   // Disable the button if proxy settings are managed by a sysadmin or
   // overridden by an extension.
-  PrefService* pref_service = dom_ui_->GetProfile()->GetPrefs();
+  PrefService* pref_service = web_ui_->GetProfile()->GetPrefs();
   const PrefService::Preference* proxy_config =
       pref_service->FindPreference(prefs::kProxy);
   bool is_extension_controlled = (proxy_config &&
@@ -609,7 +609,7 @@ void AdvancedOptionsHandler::SetupProxySettingsSection() {
   }
   StringValue label(label_str);
 
-  dom_ui_->CallJavascriptFunction(
+  web_ui_->CallJavascriptFunction(
       L"options.AdvancedOptions.SetupProxySettingsSection", disabled, label);
 }
 
@@ -630,15 +630,15 @@ void AdvancedOptionsHandler::SetupSSLConfigSettings() {
   }
   FundamentalValue disabledValue(disabled);
   FundamentalValue checkRevocationValue(checkRevocationSetting);
-  dom_ui_->CallJavascriptFunction(
+  web_ui_->CallJavascriptFunction(
       L"options.AdvancedOptions.SetCheckRevocationCheckboxState",
       checkRevocationValue, disabledValue);
   FundamentalValue useSSL3Value(useSSL3Setting);
-  dom_ui_->CallJavascriptFunction(
+  web_ui_->CallJavascriptFunction(
       L"options.AdvancedOptions.SetUseSSL3CheckboxState",
       useSSL3Value, disabledValue);
   FundamentalValue useTLS1Value(useTLS1Setting);
-  dom_ui_->CallJavascriptFunction(
+  web_ui_->CallJavascriptFunction(
       L"options.AdvancedOptions.SetUseTLS1CheckboxState",
       useTLS1Value, disabledValue);
 }

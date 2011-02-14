@@ -267,8 +267,8 @@ WebUIMessageHandler* KeyboardOverlayHandler::Attach(WebUI* web_ui) {
 }
 
 void KeyboardOverlayHandler::RegisterMessages() {
-  DCHECK(dom_ui_);
-  dom_ui_->RegisterMessageCallback("getKeyboardOverlayId",
+  DCHECK(web_ui_);
+  web_ui_->RegisterMessageCallback("getKeyboardOverlayId",
       NewCallback(this, &KeyboardOverlayHandler::GetKeyboardOverlayId));
 }
 
@@ -280,7 +280,7 @@ void KeyboardOverlayHandler::GetKeyboardOverlayId(const ListValue* args) {
   const std::string keyboard_overlay_id =
       library->GetKeyboardOverlayId(descriptor.id);
   StringValue param(keyboard_overlay_id);
-  dom_ui_->CallJavascriptFunction(L"initKeyboardOverlayId", param);
+  web_ui_->CallJavascriptFunction(L"initKeyboardOverlayId", param);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

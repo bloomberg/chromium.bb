@@ -101,10 +101,10 @@ class RecentlyClosedTabsHandler : public WebUIMessageHandler,
 };
 
 void RecentlyClosedTabsHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback("getRecentlyClosedTabs",
+  web_ui_->RegisterMessageCallback("getRecentlyClosedTabs",
       NewCallback(this,
                   &RecentlyClosedTabsHandler::HandleGetRecentlyClosedTabs));
-  dom_ui_->RegisterMessageCallback("reopenTab",
+  web_ui_->RegisterMessageCallback("reopenTab",
       NewCallback(this, &RecentlyClosedTabsHandler::HandleReopenTab));
 }
 
@@ -115,7 +115,7 @@ RecentlyClosedTabsHandler::~RecentlyClosedTabsHandler() {
 
 void RecentlyClosedTabsHandler::HandleReopenTab(const ListValue* args) {
   Browser* browser = Browser::GetBrowserForController(
-      &dom_ui_->tab_contents()->controller(), NULL);
+      &web_ui_->tab_contents()->controller(), NULL);
   if (!browser)
     return;
 
@@ -129,7 +129,7 @@ void RecentlyClosedTabsHandler::HandleReopenTab(const ListValue* args) {
 void RecentlyClosedTabsHandler::HandleGetRecentlyClosedTabs(
     const ListValue* args) {
   if (!tab_restore_service_) {
-    tab_restore_service_ = dom_ui_->GetProfile()->GetTabRestoreService();
+    tab_restore_service_ = web_ui_->GetProfile()->GetTabRestoreService();
 
     // GetTabRestoreService() can return NULL (i.e., when in Off the
     // Record mode)
@@ -151,7 +151,7 @@ void RecentlyClosedTabsHandler::TabRestoreServiceChanged(
   ListValue list_value;
   NewTabUI::AddRecentlyClosedEntries(service->entries(), &list_value);
 
-  dom_ui_->CallJavascriptFunction(L"recentlyClosedTabs", list_value);
+  web_ui_->CallJavascriptFunction(L"recentlyClosedTabs", list_value);
 }
 
 void RecentlyClosedTabsHandler::TabRestoreServiceDestroyed(
@@ -188,21 +188,21 @@ class MetricsHandler : public WebUIMessageHandler {
 };
 
 void MetricsHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback("metrics",
+  web_ui_->RegisterMessageCallback("metrics",
       NewCallback(this, &MetricsHandler::HandleMetrics));
 
-  dom_ui_->RegisterMessageCallback("logEventTime",
+  web_ui_->RegisterMessageCallback("logEventTime",
       NewCallback(this, &MetricsHandler::HandleLogEventTime));
 }
 
 void MetricsHandler::HandleMetrics(const ListValue* args) {
   std::string string_action = WideToUTF8(ExtractStringValue(args));
-  UserMetrics::RecordComputedAction(string_action, dom_ui_->GetProfile());
+  UserMetrics::RecordComputedAction(string_action, web_ui_->GetProfile());
 }
 
 void MetricsHandler::HandleLogEventTime(const ListValue* args) {
   std::string event_name = WideToUTF8(ExtractStringValue(args));
-  dom_ui_->tab_contents()->LogNewTabTime(event_name);
+  web_ui_->tab_contents()->LogNewTabTime(event_name);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -227,20 +227,20 @@ class NewTabPageSetHomePageHandler : public WebUIMessageHandler {
 };
 
 void NewTabPageSetHomePageHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback("setHomePage", NewCallback(
+  web_ui_->RegisterMessageCallback("setHomePage", NewCallback(
       this, &NewTabPageSetHomePageHandler::HandleSetHomePage));
 }
 
 void NewTabPageSetHomePageHandler::HandleSetHomePage(
     const ListValue* args) {
-  dom_ui_->GetProfile()->GetPrefs()->SetBoolean(prefs::kHomePageIsNewTabPage,
+  web_ui_->GetProfile()->GetPrefs()->SetBoolean(prefs::kHomePageIsNewTabPage,
                                                 true);
   ListValue list_value;
   list_value.Append(new StringValue(
       l10n_util::GetStringUTF16(IDS_NEW_TAB_HOME_PAGE_SET_NOTIFICATION)));
   list_value.Append(new StringValue(
       l10n_util::GetStringUTF16(IDS_NEW_TAB_HOME_PAGE_HIDE_NOTIFICATION)));
-  dom_ui_->CallJavascriptFunction(L"onHomePageSet", list_value);
+  web_ui_->CallJavascriptFunction(L"onHomePageSet", list_value);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -265,13 +265,13 @@ class NewTabPageClosePromoHandler : public WebUIMessageHandler {
 };
 
 void NewTabPageClosePromoHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback("closePromo", NewCallback(
+  web_ui_->RegisterMessageCallback("closePromo", NewCallback(
       this, &NewTabPageClosePromoHandler::HandleClosePromo));
 }
 
 void NewTabPageClosePromoHandler::HandleClosePromo(
     const ListValue* args) {
-  dom_ui_->GetProfile()->GetPrefs()->SetBoolean(prefs::kNTPPromoClosed, true);
+  web_ui_->GetProfile()->GetPrefs()->SetBoolean(prefs::kNTPPromoClosed, true);
   NotificationService* service = NotificationService::current();
   service->Notify(NotificationType::WEB_RESOURCE_STATE_CHANGED,
                   Source<NewTabPageClosePromoHandler>(this),

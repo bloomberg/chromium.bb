@@ -42,7 +42,7 @@ void LanguageOptionsHandler::GetLocalizedValues(
 void LanguageOptionsHandler::RegisterMessages() {
   LanguageOptionsHandlerCommon::RegisterMessages();
 
-  dom_ui_->RegisterMessageCallback("uiLanguageRestart",
+  web_ui_->RegisterMessageCallback("uiLanguageRestart",
       NewCallback(this, &LanguageOptionsHandler::RestartCallback));
 }
 

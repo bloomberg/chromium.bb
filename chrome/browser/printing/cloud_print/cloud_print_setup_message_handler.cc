@@ -17,11 +17,11 @@ WebUIMessageHandler* CloudPrintSetupMessageHandler::Attach(WebUI* web_ui) {
 }
 
 void CloudPrintSetupMessageHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback("SubmitAuth",
+  web_ui_->RegisterMessageCallback("SubmitAuth",
       NewCallback(this, &CloudPrintSetupMessageHandler::HandleSubmitAuth));
-  dom_ui_->RegisterMessageCallback("PrintTestPage",
+  web_ui_->RegisterMessageCallback("PrintTestPage",
       NewCallback(this, &CloudPrintSetupMessageHandler::HandlePrintTestPage));
-  dom_ui_->RegisterMessageCallback("LearnMore",
+  web_ui_->RegisterMessageCallback("LearnMore",
       NewCallback(this, &CloudPrintSetupMessageHandler::HandleLearnMore));
 }
 

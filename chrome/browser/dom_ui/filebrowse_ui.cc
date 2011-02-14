@@ -469,41 +469,41 @@ void FilebrowseHandler::Init() {
 }
 
 void FilebrowseHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback("getRoots",
+  web_ui_->RegisterMessageCallback("getRoots",
       NewCallback(this, &FilebrowseHandler::HandleGetRoots));
-  dom_ui_->RegisterMessageCallback("getChildren",
+  web_ui_->RegisterMessageCallback("getChildren",
       NewCallback(this, &FilebrowseHandler::HandleGetChildren));
-  dom_ui_->RegisterMessageCallback("getMetadata",
+  web_ui_->RegisterMessageCallback("getMetadata",
       NewCallback(this, &FilebrowseHandler::HandleGetMetadata));
-  dom_ui_->RegisterMessageCallback("openNewPopupWindow",
+  web_ui_->RegisterMessageCallback("openNewPopupWindow",
       NewCallback(this, &FilebrowseHandler::OpenNewPopupWindow));
-  dom_ui_->RegisterMessageCallback("openNewFullWindow",
+  web_ui_->RegisterMessageCallback("openNewFullWindow",
       NewCallback(this, &FilebrowseHandler::OpenNewFullWindow));
-  dom_ui_->RegisterMessageCallback("uploadToPicasaweb",
+  web_ui_->RegisterMessageCallback("uploadToPicasaweb",
       NewCallback(this, &FilebrowseHandler::UploadToPicasaweb));
-  dom_ui_->RegisterMessageCallback("getDownloads",
+  web_ui_->RegisterMessageCallback("getDownloads",
       NewCallback(this, &FilebrowseHandler::HandleGetDownloads));
-  dom_ui_->RegisterMessageCallback("createNewFolder",
+  web_ui_->RegisterMessageCallback("createNewFolder",
       NewCallback(this, &FilebrowseHandler::HandleCreateNewFolder));
-  dom_ui_->RegisterMessageCallback("playMediaFile",
+  web_ui_->RegisterMessageCallback("playMediaFile",
       NewCallback(this, &FilebrowseHandler::PlayMediaFile));
-  dom_ui_->RegisterMessageCallback("enqueueMediaFile",
+  web_ui_->RegisterMessageCallback("enqueueMediaFile",
       NewCallback(this, &FilebrowseHandler::EnqueueMediaFile));
-  dom_ui_->RegisterMessageCallback("pauseToggleDownload",
+  web_ui_->RegisterMessageCallback("pauseToggleDownload",
       NewCallback(this, &FilebrowseHandler::HandlePauseToggleDownload));
-  dom_ui_->RegisterMessageCallback("deleteFile",
+  web_ui_->RegisterMessageCallback("deleteFile",
       NewCallback(this, &FilebrowseHandler::HandleDeleteFile));
-  dom_ui_->RegisterMessageCallback("copyFile",
+  web_ui_->RegisterMessageCallback("copyFile",
       NewCallback(this, &FilebrowseHandler::HandleCopyFile));
-  dom_ui_->RegisterMessageCallback("cancelDownload",
+  web_ui_->RegisterMessageCallback("cancelDownload",
       NewCallback(this, &FilebrowseHandler::HandleCancelDownload));
-  dom_ui_->RegisterMessageCallback("allowDownload",
+  web_ui_->RegisterMessageCallback("allowDownload",
       NewCallback(this, &FilebrowseHandler::HandleAllowDownload));
-  dom_ui_->RegisterMessageCallback("refreshDirectory",
+  web_ui_->RegisterMessageCallback("refreshDirectory",
       NewCallback(this, &FilebrowseHandler::HandleRefreshDirectory));
-  dom_ui_->RegisterMessageCallback("isAdvancedEnabled",
+  web_ui_->RegisterMessageCallback("isAdvancedEnabled",
       NewCallback(this, &FilebrowseHandler::HandleIsAdvancedEnabled));
-  dom_ui_->RegisterMessageCallback("validateSavePath",
+  web_ui_->RegisterMessageCallback("validateSavePath",
       NewCallback(this, &FilebrowseHandler::HandleValidateSavePath));
 }
 
@@ -545,7 +545,7 @@ void FilebrowseHandler::FireUploadComplete() {
   picture_url += kPicasawebDropBox;
   info_value.SetString("url", picture_url);
   info_value.SetInteger("status_code", upload_response_code_);
-  dom_ui_->CallJavascriptFunction(L"uploadComplete", info_value);
+  web_ui_->CallJavascriptFunction(L"uploadComplete", info_value);
 #endif
 }
 
@@ -555,7 +555,7 @@ void FilebrowseHandler::MountChanged(chromeos::MountLibrary* obj,
                                      const std::string& path) {
   if (evt == chromeos::DISK_REMOVED ||
       evt == chromeos::DISK_CHANGED) {
-    dom_ui_->CallJavascriptFunction(L"rootsChanged");
+    web_ui_->CallJavascriptFunction(L"rootsChanged");
   }
 }
 #endif
@@ -620,7 +620,7 @@ void FilebrowseHandler::HandleGetRoots(const ListValue* args) {
 
   info_value.SetString("functionCall", "getRoots");
   info_value.SetString(kPropertyPath, "");
-  dom_ui_->CallJavascriptFunction(L"browseFileResult",
+  web_ui_->CallJavascriptFunction(L"browseFileResult",
                                   info_value, results_value);
 }
 
@@ -676,7 +676,7 @@ void FilebrowseHandler::HandleIsAdvancedEnabled(const ListValue* args) {
   DictionaryValue info_value;
   info_value.SetBoolean("enabled", is_enabled);
   info_value.SetBoolean("mpEnabled", mp_enabled);
-  dom_ui_->CallJavascriptFunction(L"enabledResult",
+  web_ui_->CallJavascriptFunction(L"enabledResult",
                                   info_value);
 
 #endif
@@ -929,7 +929,7 @@ void FilebrowseHandler::OnListDone(int error) {
     info_value.SetString("functionCall", "getChildren");
   }
   info_value.SetString(kPropertyPath, currentpath_.value());
-  dom_ui_->CallJavascriptFunction(L"browseFileResult",
+  web_ui_->CallJavascriptFunction(L"browseFileResult",
                                   info_value, *(filelist_value_.get()));
 }
 
@@ -981,7 +981,7 @@ void FilebrowseHandler::UpdateDownloadList() {
 void FilebrowseHandler::SendNewDownload(DownloadItem* download) {
   ListValue results_value;
   results_value.Append(download_util::CreateDownloadItemValue(download, -1));
-  dom_ui_->CallJavascriptFunction(L"newDownload", results_value);
+  web_ui_->CallJavascriptFunction(L"newDownload", results_value);
 }
 
 void FilebrowseHandler::DeleteFile(const FilePath& path, TaskProxy* task) {
@@ -1129,7 +1129,7 @@ void FilebrowseHandler::FireOnValidatedSavePathOnUIThread(bool valid,
 
   FundamentalValue valid_value(valid);
   StringValue path_value(save_path.value());
-  dom_ui_->CallJavascriptFunction(L"onValidatedSavePath",
+  web_ui_->CallJavascriptFunction(L"onValidatedSavePath",
       valid_value, path_value);
 }
 
@@ -1143,7 +1143,7 @@ void FilebrowseHandler::OnDownloadUpdated(DownloadItem* download) {
 
   scoped_ptr<DictionaryValue> download_item(
       download_util::CreateDownloadItemValue(download, id));
-  dom_ui_->CallJavascriptFunction(L"downloadUpdated", *download_item.get());
+  web_ui_->CallJavascriptFunction(L"downloadUpdated", *download_item.get());
 }
 
 void FilebrowseHandler::ClearDownloadItems() {
@@ -1162,7 +1162,7 @@ void FilebrowseHandler::SendCurrentDownloads() {
     results_value.Append(download_util::CreateDownloadItemValue(*it, index));
   }
 
-  dom_ui_->CallJavascriptFunction(L"downloadsList", results_value);
+  web_ui_->CallJavascriptFunction(L"downloadsList", results_value);
 }
 
 void FilebrowseHandler::OnDownloadFileCompleted(DownloadItem* download) {

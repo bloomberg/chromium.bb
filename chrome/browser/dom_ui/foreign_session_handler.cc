@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,10 +33,10 @@ ForeignSessionHandler::ForeignSessionHandler() {
 }
 
 void ForeignSessionHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback("getForeignSessions",
+  web_ui_->RegisterMessageCallback("getForeignSessions",
       NewCallback(this,
       &ForeignSessionHandler::HandleGetForeignSessions));
-  dom_ui_->RegisterMessageCallback("openForeignSession",
+  web_ui_->RegisterMessageCallback("openForeignSession",
       NewCallback(this,
       &ForeignSessionHandler::HandleOpenForeignSession));
 }
@@ -62,7 +62,7 @@ void ForeignSessionHandler::Observe(NotificationType type,
     case NotificationType::FOREIGN_SESSION_DISABLED:
       // Calling foreignSessions with empty list will automatically hide
       // foreign session section.
-      dom_ui_->CallJavascriptFunction(L"foreignSessions", list_value);
+      web_ui_->CallJavascriptFunction(L"foreignSessions", list_value);
       break;
     default:
       NOTREACHED();
@@ -70,7 +70,7 @@ void ForeignSessionHandler::Observe(NotificationType type,
 }
 
 SessionModelAssociator* ForeignSessionHandler::GetModelAssociator() {
-  ProfileSyncService* service = dom_ui_->GetProfile()->GetProfileSyncService();
+  ProfileSyncService* service = web_ui_->GetProfile()->GetProfileSyncService();
   if (service == NULL)
     return NULL;
   // We only want to set the model associator if there is one, and it is done
@@ -81,7 +81,7 @@ SessionModelAssociator* ForeignSessionHandler::GetModelAssociator() {
       !service->ShouldPushChanges()) {
     return NULL;
   }
-  return dom_ui_->GetProfile()->GetProfileSyncService()->
+  return web_ui_->GetProfile()->GetProfileSyncService()->
       GetSessionModelAssociator();
 }
 
@@ -125,7 +125,7 @@ void ForeignSessionHandler::HandleGetForeignSessions(const ListValue* args) {
     // Give ownership to |session_list|
     session_list.Append(window_list.release());
   }
-  dom_ui_->CallJavascriptFunction(L"foreignSessions", session_list);
+  web_ui_->CallJavascriptFunction(L"foreignSessions", session_list);
 }
 
 void ForeignSessionHandler::HandleOpenForeignSession(
@@ -172,7 +172,7 @@ void ForeignSessionHandler::HandleOpenForeignSession(
       LOG(ERROR) << "Failed to load foreign tab.";
       return;
     }
-    SessionRestore::RestoreForeignSessionTab(dom_ui_->GetProfile(), *tab);
+    SessionRestore::RestoreForeignSessionTab(web_ui_->GetProfile(), *tab);
   } else {
     std::vector<SessionWindow*> windows;
     // Note: we don't own the ForeignSessions themselves.
@@ -187,7 +187,7 @@ void ForeignSessionHandler::HandleOpenForeignSession(
         ((window_num == kInvalidId) ?
         std::vector<SessionWindow*>::const_iterator(windows.end()) :
         iter_begin+1);
-    SessionRestore::RestoreForeignSessionWindows(dom_ui_->GetProfile(),
+    SessionRestore::RestoreForeignSessionWindows(web_ui_->GetProfile(),
                                                  iter_begin,
                                                  iter_end);
   }

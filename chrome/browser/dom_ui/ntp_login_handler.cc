@@ -30,7 +30,7 @@ WebUIMessageHandler* NTPLoginHandler::Attach(WebUI* web_ui) {
 }
 
 void NTPLoginHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback("initializeLogin",
+  web_ui_->RegisterMessageCallback("initializeLogin",
       NewCallback(this, &NTPLoginHandler::HandleInitializeLogin));
 }
 
@@ -48,8 +48,8 @@ void NTPLoginHandler::HandleInitializeLogin(const ListValue* args) {
 }
 
 void NTPLoginHandler::UpdateLogin() {
-  std::string username = dom_ui_->GetProfile()->GetPrefs()->GetString(
+  std::string username = web_ui_->GetProfile()->GetPrefs()->GetString(
       prefs::kGoogleServicesUsername);
   StringValue string_value(username);
-  dom_ui_->CallJavascriptFunction(L"updateLogin", string_value);
+  web_ui_->CallJavascriptFunction(L"updateLogin", string_value);
 }

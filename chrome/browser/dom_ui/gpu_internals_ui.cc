@@ -149,7 +149,7 @@ WebUIMessageHandler* GpuMessageHandler::Attach(WebUI* web_ui) {
 void GpuMessageHandler::RegisterMessages() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "callAsync",
       NewCallback(this, &GpuMessageHandler::OnCallAsync));
 }
@@ -193,12 +193,12 @@ void GpuMessageHandler::OnCallAsync(const ListValue* args) {
 
   // call BrowserBridge.onCallAsyncReply with result
   if (ret) {
-    dom_ui_->CallJavascriptFunction(L"browserBridge.onCallAsyncReply",
+    web_ui_->CallJavascriptFunction(L"browserBridge.onCallAsyncReply",
         *requestId,
         *ret);
     delete ret;
   } else {
-    dom_ui_->CallJavascriptFunction(L"browserBridge.onCallAsyncReply",
+    web_ui_->CallJavascriptFunction(L"browserBridge.onCallAsyncReply",
         *requestId);
   }
 }

@@ -126,7 +126,7 @@ bool OptionsPageUIHandler::IsEnabled() {
 
 void OptionsPageUIHandler::UserMetricsRecordAction(
     const UserMetricsAction& action) {
-  UserMetrics::RecordAction(action, dom_ui_->GetProfile());
+  UserMetrics::RecordAction(action, web_ui_->GetProfile());
 }
 
 // static

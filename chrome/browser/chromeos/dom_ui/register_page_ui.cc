@@ -210,9 +210,9 @@ void RegisterPageHandler::Init() {
 
 void RegisterPageHandler::RegisterMessages() {
 #if defined(OS_CHROMEOS)
-  dom_ui_->RegisterMessageCallback(kJsCallbackGetRegistrationUrl,
+  web_ui_->RegisterMessageCallback(kJsCallbackGetRegistrationUrl,
       NewCallback(this, &RegisterPageHandler::HandleGetRegistrationUrl));
-  dom_ui_->RegisterMessageCallback(kJsCallbackUserInfo,
+  web_ui_->RegisterMessageCallback(kJsCallbackUserInfo,
       NewCallback(this, &RegisterPageHandler::HandleGetUserInfo));
 #endif
 }
@@ -230,7 +230,7 @@ void RegisterPageHandler::HandleGetRegistrationUrl(const ListValue* args) {
       return;
     }
     StringValue url_value(url);
-    dom_ui_->CallJavascriptFunction(kJsApiSetRegistrationUrl, url_value);
+    web_ui_->CallJavascriptFunction(kJsApiSetRegistrationUrl, url_value);
   } else {
     SkipRegistration("Startup manifest not defined.");
   }
@@ -265,7 +265,7 @@ void RegisterPageHandler::SkipRegistration(const std::string& error_msg) {
   if (WizardController::default_controller())
     WizardController::default_controller()->SkipRegistration();
   else
-    dom_ui_->CallJavascriptFunction(kJsApiSkipRegistration);
+    web_ui_->CallJavascriptFunction(kJsApiSkipRegistration);
 #endif
 }
 
@@ -307,7 +307,7 @@ void RegisterPageHandler::SendUserInfo() {
   value.SetString("user_first_name", "");
   value.SetString("user_last_name", "");
 
-  dom_ui_->CallJavascriptFunction(kJsApiSetUserInfo, value);
+  web_ui_->CallJavascriptFunction(kJsApiSetUserInfo, value);
 #endif
 }
 

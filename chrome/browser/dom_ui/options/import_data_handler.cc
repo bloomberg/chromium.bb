@@ -63,7 +63,7 @@ void ImportDataHandler::Initialize() {
 }
 
 void ImportDataHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "importData", NewCallback(this, &ImportDataHandler::ImportData));
 }
 
@@ -98,7 +98,7 @@ void ImportDataHandler::ImportData(const ListValue* args) {
   uint16 import_services = (selected_items & supported_items);
   if (import_services) {
     FundamentalValue state(true);
-    dom_ui_->CallJavascriptFunction(
+    web_ui_->CallJavascriptFunction(
         L"ImportDataOverlay.setImportingState", state);
 
     // TODO(csilv): Out-of-process import has only been qualified on MacOS X,
@@ -111,7 +111,7 @@ void ImportDataHandler::ImportData(const ListValue* args) {
     importer_host_ = new ImporterHost;
 #endif
     importer_host_->SetObserver(this);
-    Profile* profile = dom_ui_->GetProfile();
+    Profile* profile = web_ui_->GetProfile();
     importer_host_->StartImportSettings(source_profile, profile,
                                         import_services,
                                         new ProfileWriter(profile), false);
@@ -136,7 +136,7 @@ void ImportDataHandler::ImportEnded() {
   importer_host_->SetObserver(NULL);
   importer_host_ = NULL;
 
-  dom_ui_->CallJavascriptFunction(L"ImportDataOverlay.dismiss");
+  web_ui_->CallJavascriptFunction(L"ImportDataOverlay.dismiss");
 }
 
 void ImportDataHandler::SourceProfilesLoaded() {
@@ -163,7 +163,7 @@ void ImportDataHandler::SourceProfilesLoaded() {
     browser_profiles.Append(browser_profile);
   }
 
-  dom_ui_->CallJavascriptFunction(
+  web_ui_->CallJavascriptFunction(
       L"options.ImportDataOverlay.updateSupportedBrowsers",
       browser_profiles);
 }

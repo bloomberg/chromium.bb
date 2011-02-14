@@ -478,9 +478,9 @@ void MobileSetupHandler::Init(TabContents* contents) {
 }
 
 void MobileSetupHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback(kJsApiStartActivation,
+  web_ui_->RegisterMessageCallback(kJsApiStartActivation,
       NewCallback(this, &MobileSetupHandler::HandleStartActivation));
-  dom_ui_->RegisterMessageCallback(kJsApiSetTransactionStatus,
+  web_ui_->RegisterMessageCallback(kJsApiSetTransactionStatus,
       NewCallback(this, &MobileSetupHandler::HandleSetTransactionStatus));
 }
 
@@ -711,7 +711,7 @@ bool MobileSetupHandler::ConnectionTimeout() {
 
 void MobileSetupHandler::EvaluateCellularNetwork(
     chromeos::CellularNetwork* network) {
-  if (!dom_ui_)
+  if (!web_ui_)
     return;
 
   PlanActivationState new_state = state_;
@@ -1060,7 +1060,7 @@ void MobileSetupHandler::UpdatePage(chromeos::CellularNetwork* network,
   device_dict.SetInteger("state", state_);
   if (error_description.length())
     device_dict.SetString("error", error_description);
-  dom_ui_->CallJavascriptFunction(
+  web_ui_->CallJavascriptFunction(
       kJsDeviceStatusChangedHandler, device_dict);
 }
 
@@ -1170,7 +1170,7 @@ void MobileSetupHandler::ReEnableOtherConnections() {
     lib->EnableWifiNetworkDevice(true);
   }
 
-  PrefService* prefs = dom_ui_->GetProfile()->GetPrefs();
+  PrefService* prefs = web_ui_->GetProfile()->GetPrefs();
   if (reenable_cert_check_) {
     prefs->SetBoolean(prefs::kCertRevocationCheckingEnabled,
                       true);
@@ -1185,7 +1185,7 @@ void MobileSetupHandler::SetupActivationProcess(
 
   // Disable SSL cert checks since we will be doing this in
   // restricted pool.
-  PrefService* prefs = dom_ui_->GetProfile()->GetPrefs();
+  PrefService* prefs = web_ui_->GetProfile()->GetPrefs();
   if (!reenable_cert_check_ &&
       prefs->GetBoolean(
           prefs::kCertRevocationCheckingEnabled)) {

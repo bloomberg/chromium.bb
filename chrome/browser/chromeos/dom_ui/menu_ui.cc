@@ -357,35 +357,35 @@ WebUIMessageHandler* MenuHandler::Attach(WebUI* web_ui) {
 }
 
 void MenuHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "activate",
       NewCallback(this,
                   &MenuHandler::HandleActivate));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "open_submenu",
       NewCallback(this,
                   &MenuHandler::HandleOpenSubmenu));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "close_submenu",
       NewCallback(this,
                   &MenuHandler::HandleCloseSubmenu));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "move_to_submenu",
       NewCallback(this,
                   &MenuHandler::HandleMoveInputToSubmenu));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "move_to_parent",
       NewCallback(this,
                   &MenuHandler::HandleMoveInputToParent));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "close_all",
       NewCallback(this,
                   &MenuHandler::HandleCloseAll));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "model_updated",
       NewCallback(this,
                   &MenuHandler::HandleModelUpdated));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "log",
       NewCallback(this,
                   &MenuHandler::HandleLog));
@@ -466,7 +466,7 @@ void MenuHandler::HandleCloseAll(const ListValue* values) {
 void MenuHandler::HandleModelUpdated(const ListValue* values) {
   ui::MenuModel* model = GetMenuModel();
   if (model)
-    static_cast<chromeos::MenuUI*>(dom_ui_)->ModelUpdated(model);
+    static_cast<chromeos::MenuUI*>(web_ui_)->ModelUpdated(model);
 }
 
 void MenuHandler::HandleLog(const ListValue* values) {
@@ -507,7 +507,7 @@ namespace chromeos {
 chromeos::WebUIMenuControl* MenuHandlerBase::GetMenuControl() {
   WebUIMenuWidget* widget =
       chromeos::WebUIMenuWidget::FindWebUIMenuWidget(
-          dom_ui_->tab_contents()->GetNativeView());
+          web_ui_->tab_contents()->GetNativeView());
   if (widget)
     return widget->webui_menu();  // NativeMenuWebUI implements WebUIMenuControl
   else

@@ -94,29 +94,29 @@ void AutoFillOptionsHandler::GetLocalizedValues(
 }
 
 void AutoFillOptionsHandler::Initialize() {
-  personal_data_ = dom_ui_->GetProfile()->GetPersonalDataManager();
+  personal_data_ = web_ui_->GetProfile()->GetPersonalDataManager();
   personal_data_->SetObserver(this);
 
   LoadAutoFillData();
 }
 
 void AutoFillOptionsHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "removeAddress",
       NewCallback(this, &AutoFillOptionsHandler::RemoveAddress));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "removeCreditCard",
       NewCallback(this, &AutoFillOptionsHandler::RemoveCreditCard));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "loadAddressEditor",
       NewCallback(this, &AutoFillOptionsHandler::LoadAddressEditor));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "loadCreditCardEditor",
       NewCallback(this, &AutoFillOptionsHandler::LoadCreditCardEditor));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "setAddress",
       NewCallback(this, &AutoFillOptionsHandler::SetAddress));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "setCreditCard",
       NewCallback(this, &AutoFillOptionsHandler::SetCreditCard));
 }
@@ -187,7 +187,7 @@ void AutoFillOptionsHandler::LoadAutoFillData() {
     addresses.Append(entry);
   }
 
-  dom_ui_->CallJavascriptFunction(L"AutoFillOptions.setAddressList",
+  web_ui_->CallJavascriptFunction(L"AutoFillOptions.setAddressList",
                                   addresses);
 
   ListValue credit_cards;
@@ -203,7 +203,7 @@ void AutoFillOptionsHandler::LoadAutoFillData() {
     credit_cards.Append(entry);
   }
 
-  dom_ui_->CallJavascriptFunction(L"AutoFillOptions.setCreditCardList",
+  web_ui_->CallJavascriptFunction(L"AutoFillOptions.setCreditCardList",
                                   credit_cards);
 }
 
@@ -281,7 +281,7 @@ void AutoFillOptionsHandler::LoadAddressEditor(const ListValue* args) {
                      profile->GetFieldText(AutoFillType(EMAIL_ADDRESS)));
   addressList.Append(address);
 
-  dom_ui_->CallJavascriptFunction(L"AutoFillOptions.editAddress",
+  web_ui_->CallJavascriptFunction(L"AutoFillOptions.editAddress",
                                   addressList);
 }
 
@@ -325,7 +325,7 @@ void AutoFillOptionsHandler::LoadCreditCardEditor(const ListValue* args) {
       credit_card->GetFieldText(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR)));
   credit_card_list.Append(credit_card_data);
 
-  dom_ui_->CallJavascriptFunction(L"AutoFillOptions.editCreditCard",
+  web_ui_->CallJavascriptFunction(L"AutoFillOptions.editCreditCard",
                                   credit_card_list);
 }
 

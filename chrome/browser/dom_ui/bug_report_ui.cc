@@ -519,19 +519,19 @@ base::StringPiece BugReportHandler::Init() {
 }
 
 void BugReportHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback("getDialogDefaults",
+  web_ui_->RegisterMessageCallback("getDialogDefaults",
       NewCallback(this, &BugReportHandler::HandleGetDialogDefaults));
-  dom_ui_->RegisterMessageCallback("refreshCurrentScreenshot",
+  web_ui_->RegisterMessageCallback("refreshCurrentScreenshot",
       NewCallback(this, &BugReportHandler::HandleRefreshCurrentScreenshot));
 #if defined(OS_CHROMEOS)
-  dom_ui_->RegisterMessageCallback("refreshSavedScreenshots",
+  web_ui_->RegisterMessageCallback("refreshSavedScreenshots",
       NewCallback(this, &BugReportHandler::HandleRefreshSavedScreenshots));
 #endif
-  dom_ui_->RegisterMessageCallback("sendReport",
+  web_ui_->RegisterMessageCallback("sendReport",
       NewCallback(this, &BugReportHandler::HandleSendReport));
-  dom_ui_->RegisterMessageCallback("cancel",
+  web_ui_->RegisterMessageCallback("cancel",
       NewCallback(this, &BugReportHandler::HandleCancel));
-  dom_ui_->RegisterMessageCallback("openSystemTab",
+  web_ui_->RegisterMessageCallback("openSystemTab",
       NewCallback(this, &BugReportHandler::HandleOpenSystemTab));
 }
 
@@ -562,13 +562,13 @@ void BugReportHandler::HandleGetDialogDefaults(const ListValue*) {
   dialog_defaults.Append(new StringValue(GetUserEmail()));
 #endif
 
-  dom_ui_->CallJavascriptFunction(L"setupDialogDefaults", dialog_defaults);
+  web_ui_->CallJavascriptFunction(L"setupDialogDefaults", dialog_defaults);
 }
 
 void BugReportHandler::HandleRefreshCurrentScreenshot(const ListValue*) {
   std::string current_screenshot(kCurrentScreenshotUrl);
   StringValue screenshot(current_screenshot);
-  dom_ui_->CallJavascriptFunction(L"setupCurrentScreenshot", screenshot);
+  web_ui_->CallJavascriptFunction(L"setupCurrentScreenshot", screenshot);
 }
 
 
@@ -580,7 +580,7 @@ void BugReportHandler::HandleRefreshSavedScreenshots(const ListValue*) {
   ListValue screenshots_list;
   for (size_t i = 0; i < saved_screenshots.size(); ++i)
     screenshots_list.Append(new StringValue(saved_screenshots[i]));
-  dom_ui_->CallJavascriptFunction(L"setupSavedScreenshots", screenshots_list);
+  web_ui_->CallJavascriptFunction(L"setupSavedScreenshots", screenshots_list);
 }
 #endif
 
@@ -662,7 +662,7 @@ void BugReportHandler::HandleSendReport(const ListValue* list_value) {
 #endif
 
   // Update the data in bug_report_ so it can be sent
-  bug_report_->UpdateData(dom_ui_->GetProfile()
+  bug_report_->UpdateData(web_ui_->GetProfile()
                           , target_tab_url_
                           , problem_type
                           , page_url

@@ -226,19 +226,19 @@ void MediaplayerHandler::Init(bool is_playlist, TabContents* contents) {
 }
 
 void MediaplayerHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback("currentOffsetChanged",
+  web_ui_->RegisterMessageCallback("currentOffsetChanged",
       NewCallback(this, &MediaplayerHandler::HandleCurrentOffsetChanged));
-  dom_ui_->RegisterMessageCallback("playbackError",
+  web_ui_->RegisterMessageCallback("playbackError",
       NewCallback(this, &MediaplayerHandler::HandlePlaybackError));
-  dom_ui_->RegisterMessageCallback("getCurrentPlaylist",
+  web_ui_->RegisterMessageCallback("getCurrentPlaylist",
       NewCallback(this, &MediaplayerHandler::HandleGetCurrentPlaylist));
-  dom_ui_->RegisterMessageCallback("togglePlaylist",
+  web_ui_->RegisterMessageCallback("togglePlaylist",
       NewCallback(this, &MediaplayerHandler::HandleTogglePlaylist));
-  dom_ui_->RegisterMessageCallback("setCurrentPlaylistOffset",
+  web_ui_->RegisterMessageCallback("setCurrentPlaylistOffset",
       NewCallback(this, &MediaplayerHandler::HandleSetCurrentPlaylistOffset));
-  dom_ui_->RegisterMessageCallback("toggleFullscreen",
+  web_ui_->RegisterMessageCallback("toggleFullscreen",
       NewCallback(this, &MediaplayerHandler::HandleToggleFullscreen));
-  dom_ui_->RegisterMessageCallback("showPlaylist",
+  web_ui_->RegisterMessageCallback("showPlaylist",
       NewCallback(this, &MediaplayerHandler::HandleShowPlaylist));
 }
 
@@ -285,7 +285,7 @@ void MediaplayerHandler::FirePlaylistChanged(const std::string& path,
   info_value.SetString(kPropertyPath, path);
   info_value.SetBoolean(kPropertyForce, force);
   info_value.SetInteger(kPropertyOffset, offset);
-  dom_ui_->CallJavascriptFunction(L"playlistChanged", info_value, urls);
+  web_ui_->CallJavascriptFunction(L"playlistChanged", info_value, urls);
 }
 
 void MediaplayerHandler::SetCurrentPlaylistOffset(int offset) {

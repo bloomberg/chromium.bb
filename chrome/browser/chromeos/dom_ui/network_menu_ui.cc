@@ -64,7 +64,7 @@ class NetworkMenuHandler : public chromeos::MenuHandlerBase,
 };
 
 void NetworkMenuHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "action",
       NewCallback(this,
                   &NetworkMenuHandler::HandleAction));
@@ -74,12 +74,12 @@ void NetworkMenuHandler::HandleAction(const ListValue* values) {
   ui::MenuModel* model = GetMenuModel();
   if (model) {
     chromeos::NetworkMenuUI* network_menu_ui =
-        static_cast<chromeos::NetworkMenuUI*>(dom_ui_);
+        static_cast<chromeos::NetworkMenuUI*>(web_ui_);
     bool close_menu = network_menu_ui->ModelAction(model, values);
     if (close_menu) {
       chromeos::WebUIMenuWidget* widget
           = chromeos::WebUIMenuWidget::FindWebUIMenuWidget(
-              dom_ui_->tab_contents()->GetNativeView());
+              web_ui_->tab_contents()->GetNativeView());
       if (widget) {
         chromeos::NativeMenuWebUI* webui_menu = widget->webui_menu();
         if (webui_menu)

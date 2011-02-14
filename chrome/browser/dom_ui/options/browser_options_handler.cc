@@ -103,31 +103,31 @@ void BrowserOptionsHandler::GetLocalizedValues(
 }
 
 void BrowserOptionsHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "setHomePage",
       NewCallback(this, &BrowserOptionsHandler::SetHomePage));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "becomeDefaultBrowser",
       NewCallback(this, &BrowserOptionsHandler::BecomeDefaultBrowser));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "setDefaultSearchEngine",
       NewCallback(this, &BrowserOptionsHandler::SetDefaultSearchEngine));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "removeStartupPages",
       NewCallback(this, &BrowserOptionsHandler::RemoveStartupPages));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "addStartupPage",
       NewCallback(this, &BrowserOptionsHandler::AddStartupPage));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "editStartupPage",
       NewCallback(this, &BrowserOptionsHandler::EditStartupPage));
-  dom_ui_->RegisterMessageCallback(
+  web_ui_->RegisterMessageCallback(
       "setStartupPagesToCurrentPages",
       NewCallback(this, &BrowserOptionsHandler::SetStartupPagesToCurrentPages));
 }
 
 void BrowserOptionsHandler::Initialize() {
-  Profile* profile = dom_ui_->GetProfile();
+  Profile* profile = web_ui_->GetProfile();
 
   // Create our favicon data source.
   profile->GetChromeURLDataManager()->AddDataSource(
@@ -141,7 +141,7 @@ void BrowserOptionsHandler::Initialize() {
   UpdateStartupPages();
   UpdateSearchEngines();
   banner_handler_.reset(
-      new OptionsManagedBannerHandler(dom_ui_,
+      new OptionsManagedBannerHandler(web_ui_,
                                       ASCIIToUTF16("BrowserOptions"),
                                       OPTIONS_PAGE_GENERAL));
 }
@@ -243,7 +243,7 @@ void BrowserOptionsHandler::SetDefaultBrowserUIString(int status_string_id) {
       (status_string_id == IDS_OPTIONS_DEFAULTBROWSER_DEFAULT ||
        status_string_id == IDS_OPTIONS_DEFAULTBROWSER_NOTDEFAULT)));
 
-  dom_ui_->CallJavascriptFunction(
+  web_ui_->CallJavascriptFunction(
       L"BrowserOptions.updateDefaultBrowserState",
       *(status_string.get()), *(is_default.get()), *(can_be_default.get()));
 }
@@ -273,7 +273,7 @@ void BrowserOptionsHandler::OnTemplateURLModelChanged() {
 
   scoped_ptr<Value> default_value(Value::CreateIntegerValue(default_index));
 
-  dom_ui_->CallJavascriptFunction(L"BrowserOptions.updateSearchEngines",
+  web_ui_->CallJavascriptFunction(L"BrowserOptions.updateSearchEngines",
                                   search_engines, *(default_value.get()));
 }
 
@@ -294,7 +294,7 @@ void BrowserOptionsHandler::SetDefaultSearchEngine(const ListValue* args) {
 }
 
 void BrowserOptionsHandler::UpdateSearchEngines() {
-  template_url_model_ = dom_ui_->GetProfile()->GetTemplateURLModel();
+  template_url_model_ = web_ui_->GetProfile()->GetTemplateURLModel();
   if (template_url_model_) {
     template_url_model_->Load();
     template_url_model_->AddObserver(this);
@@ -303,7 +303,7 @@ void BrowserOptionsHandler::UpdateSearchEngines() {
 }
 
 void BrowserOptionsHandler::UpdateStartupPages() {
-  Profile* profile = dom_ui_->GetProfile();
+  Profile* profile = web_ui_->GetProfile();
   startup_custom_pages_table_model_.reset(
       new CustomHomePagesTableModel(profile));
   startup_custom_pages_table_model_->SetObserver(this);
@@ -327,7 +327,7 @@ void BrowserOptionsHandler::OnModelChanged() {
     startup_pages.Append(entry);
   }
 
-  dom_ui_->CallJavascriptFunction(L"BrowserOptions.updateStartupPages",
+  web_ui_->CallJavascriptFunction(L"BrowserOptions.updateStartupPages",
                                   startup_pages);
 }
 
@@ -418,7 +418,7 @@ void BrowserOptionsHandler::EditStartupPage(const ListValue* args) {
 }
 
 void BrowserOptionsHandler::SaveStartupPagesPref() {
-  PrefService* prefs = dom_ui_->GetProfile()->GetPrefs();
+  PrefService* prefs = web_ui_->GetProfile()->GetPrefs();
 
   SessionStartupPref pref = SessionStartupPref::GetStartupPref(prefs);
   pref.urls = startup_custom_pages_table_model_->GetURLs();

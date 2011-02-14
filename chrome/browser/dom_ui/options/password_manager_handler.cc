@@ -57,31 +57,31 @@ void PasswordManagerHandler::GetLocalizedValues(
 }
 
 void PasswordManagerHandler::Initialize() {
-  // We should not cache dom_ui_->GetProfile(). See crosbug.com/6304.
+  // We should not cache web_ui_->GetProfile(). See crosbug.com/6304.
 }
 
 void PasswordManagerHandler::RegisterMessages() {
-  DCHECK(dom_ui_);
+  DCHECK(web_ui_);
 
-  dom_ui_->RegisterMessageCallback("updatePasswordLists",
+  web_ui_->RegisterMessageCallback("updatePasswordLists",
       NewCallback(this, &PasswordManagerHandler::UpdatePasswordLists));
-  dom_ui_->RegisterMessageCallback("removeSavedPassword",
+  web_ui_->RegisterMessageCallback("removeSavedPassword",
       NewCallback(this, &PasswordManagerHandler::RemoveSavedPassword));
-  dom_ui_->RegisterMessageCallback("removePasswordException",
+  web_ui_->RegisterMessageCallback("removePasswordException",
       NewCallback(this, &PasswordManagerHandler::RemovePasswordException));
-  dom_ui_->RegisterMessageCallback("removeAllSavedPasswords",
+  web_ui_->RegisterMessageCallback("removeAllSavedPasswords",
       NewCallback(this, &PasswordManagerHandler::RemoveAllSavedPasswords));
-  dom_ui_->RegisterMessageCallback("removeAllPasswordExceptions", NewCallback(
+  web_ui_->RegisterMessageCallback("removeAllPasswordExceptions", NewCallback(
       this, &PasswordManagerHandler::RemoveAllPasswordExceptions));
 }
 
 PasswordStore* PasswordManagerHandler::GetPasswordStore() {
-  return dom_ui_->GetProfile()->GetPasswordStore(Profile::EXPLICIT_ACCESS);
+  return web_ui_->GetProfile()->GetPasswordStore(Profile::EXPLICIT_ACCESS);
 }
 
 void PasswordManagerHandler::UpdatePasswordLists(const ListValue* args) {
   languages_ =
-      dom_ui_->GetProfile()->GetPrefs()->GetString(prefs::kAcceptLanguages);
+      web_ui_->GetProfile()->GetPrefs()->GetString(prefs::kAcceptLanguages);
   populater_.Populate();
   exception_populater_.Populate();
 }
@@ -138,7 +138,7 @@ void PasswordManagerHandler::SetPasswordList() {
     entries.Append(entry);
   }
 
-  dom_ui_->CallJavascriptFunction(
+  web_ui_->CallJavascriptFunction(
       L"PasswordManager.setSavedPasswordsList", entries);
 }
 
@@ -149,7 +149,7 @@ void PasswordManagerHandler::SetPasswordExceptionList() {
         net::FormatUrl(password_exception_list_[i]->origin, languages_)));
   }
 
-  dom_ui_->CallJavascriptFunction(
+  web_ui_->CallJavascriptFunction(
       L"PasswordManager.setPasswordExceptionsList", entries);
 }
 

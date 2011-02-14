@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,7 +72,7 @@ void CoreChromeOSOptionsHandler::Observe(NotificationType type,
 
 void CoreChromeOSOptionsHandler::NotifySettingsChanged(
     const std::string* setting_name) {
-  DCHECK(dom_ui_);
+  DCHECK(web_ui_);
   DCHECK(CrosSettings::Get()->IsCrosSettings(*setting_name));
   Value* value = NULL;
   if (!CrosSettings::Get()->Get(*setting_name, &value)) {
@@ -88,7 +88,7 @@ void CoreChromeOSOptionsHandler::NotifySettingsChanged(
     ListValue result_value;
     result_value.Append(Value::CreateStringValue(setting_name->c_str()));
     result_value.Append(value->DeepCopy());
-    dom_ui_->CallJavascriptFunction(callback_function, result_value);
+    web_ui_->CallJavascriptFunction(callback_function, result_value);
   }
   if (value)
     delete value;

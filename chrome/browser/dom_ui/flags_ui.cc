@@ -125,11 +125,11 @@ class FlagsDOMHandler : public WebUIMessageHandler {
 };
 
 void FlagsDOMHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback("requestFlagsExperiments",
+  web_ui_->RegisterMessageCallback("requestFlagsExperiments",
       NewCallback(this, &FlagsDOMHandler::HandleRequestFlagsExperiments));
-  dom_ui_->RegisterMessageCallback("enableFlagsExperiment",
+  web_ui_->RegisterMessageCallback("enableFlagsExperiment",
       NewCallback(this, &FlagsDOMHandler::HandleEnableFlagsExperimentMessage));
-  dom_ui_->RegisterMessageCallback("restartBrowser",
+  web_ui_->RegisterMessageCallback("restartBrowser",
       NewCallback(this, &FlagsDOMHandler::HandleRestartBrowser));
 }
 
@@ -140,7 +140,7 @@ void FlagsDOMHandler::HandleRequestFlagsExperiments(const ListValue* args) {
                   g_browser_process->local_state()));
   results.SetBoolean("needsRestart",
                      about_flags::IsRestartNeededToCommitChanges());
-  dom_ui_->CallJavascriptFunction(L"returnFlagsExperiments", results);
+  web_ui_->CallJavascriptFunction(L"returnFlagsExperiments", results);
 }
 
 void FlagsDOMHandler::HandleEnableFlagsExperimentMessage(

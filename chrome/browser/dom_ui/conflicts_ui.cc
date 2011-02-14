@@ -135,7 +135,7 @@ class ConflictsDOMHandler : public WebUIMessageHandler,
 };
 
 void ConflictsDOMHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback("requestModuleList",
+  web_ui_->RegisterMessageCallback("requestModuleList",
       NewCallback(this, &ConflictsDOMHandler::HandleRequestModuleList));
 }
 
@@ -169,7 +169,7 @@ void ConflictsDOMHandler::SendModuleList() {
   }
   results.SetString("modulesTableTitle", table_title);
 
-  dom_ui_->CallJavascriptFunction(L"returnModuleList", results);
+  web_ui_->CallJavascriptFunction(L"returnModuleList", results);
 }
 
 void ConflictsDOMHandler::Observe(NotificationType type,

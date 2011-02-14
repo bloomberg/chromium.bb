@@ -268,15 +268,15 @@ void AboutPageHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
 }
 
 void AboutPageHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback("PageReady",
+  web_ui_->RegisterMessageCallback("PageReady",
       NewCallback(this, &AboutPageHandler::PageReady));
-  dom_ui_->RegisterMessageCallback("SetReleaseTrack",
+  web_ui_->RegisterMessageCallback("SetReleaseTrack",
       NewCallback(this, &AboutPageHandler::SetReleaseTrack));
 
 #if defined(OS_CHROMEOS)
-  dom_ui_->RegisterMessageCallback("CheckNow",
+  web_ui_->RegisterMessageCallback("CheckNow",
       NewCallback(this, &AboutPageHandler::CheckNow));
-  dom_ui_->RegisterMessageCallback("RestartNow",
+  web_ui_->RegisterMessageCallback("RestartNow",
       NewCallback(this, &AboutPageHandler::RestartNow));
 #endif
 }
@@ -294,7 +294,7 @@ void AboutPageHandler::PageReady(const ListValue* args) {
   // Update the channel information.
   std::string channel = update_library->GetReleaseTrack();
   scoped_ptr<Value> channel_string(Value::CreateStringValue(channel));
-  dom_ui_->CallJavascriptFunction(L"AboutPage.updateSelectedOptionCallback",
+  web_ui_->CallJavascriptFunction(L"AboutPage.updateSelectedOptionCallback",
                                   *channel_string);
 
   update_observer_.reset(new UpdateObserver(this));
@@ -404,20 +404,20 @@ void AboutPageHandler::UpdateStatus(
     // can read it, hence insert delay for this.
     scoped_ptr<Value> insert_delay(Value::CreateBooleanValue(
         status.status == chromeos::UPDATE_STATUS_CHECKING_FOR_UPDATE));
-    dom_ui_->CallJavascriptFunction(L"AboutPage.updateStatusCallback",
+    web_ui_->CallJavascriptFunction(L"AboutPage.updateStatusCallback",
                                     *update_message, *insert_delay);
 
     scoped_ptr<Value> enabled_value(Value::CreateBooleanValue(enabled));
-    dom_ui_->CallJavascriptFunction(L"AboutPage.updateEnableCallback",
+    web_ui_->CallJavascriptFunction(L"AboutPage.updateEnableCallback",
                                     *enabled_value);
 
     scoped_ptr<Value> image_string(Value::CreateStringValue(image));
-    dom_ui_->CallJavascriptFunction(L"AboutPage.setUpdateImage",
+    web_ui_->CallJavascriptFunction(L"AboutPage.setUpdateImage",
                                     *image_string);
   }
   // We'll change the "Check For Update" button to "Restart" button.
   if (status.status == chromeos::UPDATE_STATUS_UPDATED_NEED_REBOOT) {
-    dom_ui_->CallJavascriptFunction(L"AboutPage.changeToRestartButton");
+    web_ui_->CallJavascriptFunction(L"AboutPage.changeToRestartButton");
   }
 }
 
@@ -425,7 +425,7 @@ void AboutPageHandler::OnOSVersion(chromeos::VersionLoader::Handle handle,
                                    std::string version) {
   if (version.size()) {
     scoped_ptr<Value> version_string(Value::CreateStringValue(version));
-    dom_ui_->CallJavascriptFunction(L"AboutPage.updateOSVersionCallback",
+    web_ui_->CallJavascriptFunction(L"AboutPage.updateOSVersionCallback",
                                     *version_string);
   }
 }

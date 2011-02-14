@@ -51,12 +51,12 @@ TextfieldsUIHTMLSource::~TextfieldsUIHTMLSource() {}
 TextfieldsDOMHandler::TextfieldsDOMHandler() : WebUIMessageHandler() {}
 
 void TextfieldsDOMHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback("textfieldValue",
+  web_ui_->RegisterMessageCallback("textfieldValue",
       NewCallback(this, &TextfieldsDOMHandler::HandleTextfieldValue));
 }
 
 void TextfieldsDOMHandler::HandleTextfieldValue(const ListValue* args) {
-  static_cast<TextfieldsUI*>(dom_ui_)->set_text(ExtractStringValue(args));
+  static_cast<TextfieldsUI*>(web_ui_)->set_text(ExtractStringValue(args));
 }
 
 /**
