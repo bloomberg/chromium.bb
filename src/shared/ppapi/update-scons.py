@@ -49,6 +49,7 @@ CLIENTDIR = os.path.dirname(NATIVE_CLIENT)
 PPAPI_GYP_DIR = os.path.join(CLIENTDIR, 'ppapi')
 BUILD_SCONS = os.path.join(NATIVE_CLIENT_SRC_SHARED_PPAPI, 'build.scons')
 NACL_SCONS = os.path.join(NATIVE_CLIENT_SRC_SHARED_PPAPI, 'nacl.scons')
+PPAPI_GYP = os.path.join(NATIVE_CLIENT_SRC_SHARED_PPAPI, 'ppapi.gyp')
 CPP_HEADER_TEST = os.path.join(
     NATIVE_CLIENT, 'tests', 'ppapi', 'cpp_header_test.cc')
 CPP_DEV_HEADER_TEST = os.path.join(
@@ -304,16 +305,21 @@ def main():
   # Make sure all of the files are accessible.
   CheckFileIsReadable(BUILD_SCONS)
   CheckFileIsReadable(NACL_SCONS)
+  CheckFileIsReadable(PPAPI_GYP)
   CheckFileIsReadable(CPP_HEADER_TEST)
   CheckFileIsReadable(CPP_DEV_HEADER_TEST)
   CheckFileIsWritable(BuildTmpFilename(BUILD_SCONS))
   CheckFileIsWritable(BuildTmpFilename(NACL_SCONS))
+  CheckFileIsWritable(BuildTmpFilename(PPAPI_GYP))
   CheckFileIsWritable(BuildTmpFilename(CPP_HEADER_TEST))
   CheckFileIsWritable(BuildTmpFilename(CPP_DEV_HEADER_TEST))
 
   # Update each of the .scons files into temporary files.
   UpdateSconsToTmp(BUILD_SCONS)
   UpdateSconsToTmp(NACL_SCONS)
+
+  # Update the .gyp file into temporary file.
+  UpdateSconsToTmp(PPAPI_GYP)
 
   # Update each of the .cc files into temporary files.
   UpdateCcToTmp(CPP_HEADER_TEST)
@@ -322,6 +328,7 @@ def main():
   # Copy the temporary files back to the real files.
   RenameTmpToFile(BUILD_SCONS)
   RenameTmpToFile(NACL_SCONS)
+  RenameTmpToFile(PPAPI_GYP)
   RenameTmpToFile(CPP_HEADER_TEST)
   RenameTmpToFile(CPP_DEV_HEADER_TEST)
 

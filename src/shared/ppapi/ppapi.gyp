@@ -9,7 +9,7 @@
   'variables': {
     'cpp_sources' : [
       # Updated automatically by update-scons.py.
-      # From ppapi.gyp:ppapi_cpp_objects:.*\.cc
+      # From ppapi_cpp.gypi:ppapi_cpp_objects:.*\.cc
       '<(DEPTH)/ppapi/cpp/audio.cc',
       '<(DEPTH)/ppapi/cpp/audio_config.cc',
       '<(DEPTH)/ppapi/cpp/core.cc',
@@ -26,6 +26,7 @@
       '<(DEPTH)/ppapi/cpp/url_response_info.cc',
       '<(DEPTH)/ppapi/cpp/var.cc',
       '<(DEPTH)/ppapi/cpp/dev/buffer_dev.cc',
+      '<(DEPTH)/ppapi/cpp/dev/context_3d_dev.cc',
       '<(DEPTH)/ppapi/cpp/dev/directory_entry_dev.cc',
       '<(DEPTH)/ppapi/cpp/dev/directory_reader_dev.cc',
       '<(DEPTH)/ppapi/cpp/dev/file_chooser_dev.cc',
@@ -40,6 +41,7 @@
       '<(DEPTH)/ppapi/cpp/dev/printing_dev.cc',
       '<(DEPTH)/ppapi/cpp/dev/scrollbar_dev.cc',
       '<(DEPTH)/ppapi/cpp/dev/selection_dev.cc',
+      '<(DEPTH)/ppapi/cpp/dev/surface_3d_dev.cc',
       '<(DEPTH)/ppapi/cpp/dev/transport_dev.cc',
       '<(DEPTH)/ppapi/cpp/dev/url_util_dev.cc',
       '<(DEPTH)/ppapi/cpp/dev/video_decoder_dev.cc',
@@ -47,11 +49,11 @@
       '<(DEPTH)/ppapi/cpp/dev/widget_dev.cc',
       '<(DEPTH)/ppapi/cpp/dev/zoom_dev.cc',
       '<(DEPTH)/ppapi/cpp/dev/scriptable_object_deprecated.cc',
-      # End ppapi.gyp
+      # End ppapi_cpp.gypi
       # Updated automatically by update-scons.py.
-      # From ppapi.gyp:ppapi_cpp:.*\.cc
+      # From ppapi_cpp.gypi:ppapi_cpp:.*\.cc
       '<(DEPTH)/ppapi/cpp/ppp_entrypoints.cc',
-      # End ppapi.gyp
+      # End ppapi_cpp.gypi
     ]
   },
   'targets': [
