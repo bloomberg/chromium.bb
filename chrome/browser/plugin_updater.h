@@ -82,10 +82,6 @@ class PluginUpdater : public NotificationObserver {
   // Needed to allow singleton instantiation using private constructor.
   friend struct DefaultSingletonTraits<PluginUpdater>;
 
-  // Note: if you change this to false from true, you must update
-  // kPluginsEnabledInternalPDF to be a new name (i.e. add 2, 3, 4...) at end.
-  bool enable_internal_pdf_;
-
   bool notify_pending_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginUpdater);

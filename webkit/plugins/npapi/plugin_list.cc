@@ -429,6 +429,15 @@ void PluginList::LoadPlugins(bool refresh) {
           group->DisablePlugin(gr_plugins[j].path);
       }
     }
+
+    // Check if the group was disabled previously by the user.
+    for (size_t j = 0; j < plugin_groups_.size(); ++j) {
+      if (plugin_groups_[j]->GetGroupName() == group_name &&
+          !plugin_groups_[j]->Enabled()) {
+        group->EnableGroup(false);
+      }
+    }
+
     if (group->IsEmpty()) {
       if (!group->Enabled())
         groups_to_disable_.insert(group->GetGroupName());
@@ -479,6 +488,7 @@ void PluginList::LoadPlugin(const FilePath& path,
     }
   }
 
+  base::AutoLock lock(lock_);
   AddToPluginGroups(plugin_info, plugin_groups);
 }
 

@@ -678,10 +678,6 @@ const char kForceAppsPromoVisible[]         = "force-apps-promo-visible";
 // current details.
 const char kForceFieldTestNameAndValue[]    = "force-fieldtest";
 
-// Forces the internal PDF plugin to be used for this run, even if it's disabled
-// by default.  Used for testing.
-const char kForceInternalPDFPlugin[]        = "force-internal-pdf";
-
 // Force renderer accessibility to be on instead of enabling it on demand when
 // a screen reader is detected. The disable-renderer-accessibility switch
 // overrides this if present.
