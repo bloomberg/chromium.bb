@@ -52,7 +52,7 @@ void ShowItemInFolder(const FilePath& full_path) {
     // the process.
     HMODULE shell32_base = GetModuleHandle(L"shell32.dll");
     if (!shell32_base) {
-      NOTREACHED();
+      NOTREACHED() << " " << __FUNCTION__ << "(): Can't open shell32.dll";
       return;
     }
     open_folder_and_select_itemsPtr =
@@ -60,7 +60,7 @@ void ShowItemInFolder(const FilePath& full_path) {
             (GetProcAddress(shell32_base, "SHOpenFolderAndSelectItems"));
   }
   if (!open_folder_and_select_itemsPtr) {
-    ShellExecute(NULL, _T("open"), dir.value().c_str(), NULL, NULL, SW_SHOW);
+    ShellExecute(NULL, L"open", dir.value().c_str(), NULL, NULL, SW_SHOW);
     return;
   }
 
@@ -86,8 +86,30 @@ void ShowItemInFolder(const FilePath& full_path) {
   const ITEMIDLIST* highlight[] = {
     {file_item},
   };
-  (*open_folder_and_select_itemsPtr)(dir_item, arraysize(highlight),
-                                     highlight, NULL);
+
+  hr = (*open_folder_and_select_itemsPtr)(dir_item, arraysize(highlight),
+                                          highlight, NULL);
+
+  if (FAILED(hr)) {
+    // On some systems, the above call mysteriously fails with "file not
+    // found" even though the file is there.  In these cases, ShellExecute()
+    // seems to work as a fallback (although it won't select the file).
+    if (hr == ERROR_FILE_NOT_FOUND) {
+      ShellExecute(NULL, L"open", dir.value().c_str(), NULL, NULL, SW_SHOW);
+    } else {
+      LPTSTR message = NULL;
+      DWORD message_length = FormatMessage(
+          FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+          0, hr, 0, reinterpret_cast<LPTSTR>(&message), 0, NULL);
+      LOG(WARNING) << " " << __FUNCTION__
+                   << "(): Can't open full_path = \""
+                   << full_path.value() << "\""
+                   << " hr = " << hr
+                   << " " << reinterpret_cast<LPTSTR>(&message);
+      if (message)
+        LocalFree(message);
+    }
+  }
 }
 
 void OpenItem(const FilePath& full_path) {
