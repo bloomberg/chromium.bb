@@ -17,6 +17,8 @@ cr.define('cr.ui', function() {
   Menu.prototype = {
     __proto__: HTMLMenuElement.prototype,
 
+    selectedIndex_: -1,
+
     /**
      * Initializes the menu element.
      */
@@ -61,25 +63,6 @@ cr.define('cr.ui', function() {
      */
     handleMouseOut_: function(e) {
       this.selectedItem = null;
-    },
-
-    /**
-     * The index of the selected item.
-     * @type {boolean}
-     */
-    // getter and default value is defined using cr.defineProperty.
-    set selectedIndex(selectedIndex) {
-      if (this.selectedIndex_ != selectedIndex) {
-        var oldSelectedItem = this.selectedItem;
-        this.selectedIndex_ = selectedIndex;
-        if (oldSelectedItem)
-          oldSelectedItem.selected = false;
-        var item = this.selectedItem;
-        if (item)
-          item.selected = true;
-
-        cr.dispatchSimpleEvent(this, 'change');
-      }
     },
 
     /**
@@ -144,11 +127,20 @@ cr.define('cr.ui', function() {
     }
   };
 
+  function selectedIndexChanged(selectedIndex, oldSelectedIndex) {
+    var oldSelectedItem = this.chidren[oldSelectedIndex];
+    if (oldSelectedItem)
+      oldSelectedItem.selected = false;
+    var item = this.selectedItem;
+    if (item)
+      item.selected = true;
+  }
   /**
    * The selected menu item.
    * @type {number}
    */
-  cr.defineProperty(Menu, 'selectedIndex', cr.PropertyKind.JS, -1);
+  cr.defineProperty(Menu, 'selectedIndex', cr.PropertyKind.JS,
+      selectedIndexChanged);
 
   // Export
   return {

@@ -130,11 +130,9 @@ const cr = (function() {
    * property.
    * @param {string} name
    * @param {cr.PropertyKind} kind
-   * @param {*} defaultValue The default value. This is only used for the ATTR
-   *    kind.
    * @return {function():*} The getter for the property.
    */
-  function getGetter(name, kind, defaultValue) {
+  function getGetter(name, kind) {
     switch (kind) {
       case PropertyKind.JS:
         var privateName = name + '_';
@@ -142,21 +140,10 @@ const cr = (function() {
           return this[privateName];
         };
       case PropertyKind.ATTR:
-        // For attr with default value we return the default value if the
-        // element is missing the attribute.
-        if (defaultValue == undefined) {
-          return function() {
-            return this.getAttribute(name);
-          };
-        } else {
-          return function() {
-            // WebKit uses null for non existant attributes.
-            var value = this.getAttribute(name);
-            return value !== null ? value : defaultValue;
-          };
-        }
+        return function() {
+          return this.getAttribute(name);
+        };
       case PropertyKind.BOOL_ATTR:
-        // Boolean attributes don't support default values.
         return function() {
           return this.hasAttribute(name);
         };
@@ -170,9 +157,11 @@ const cr = (function() {
    *     for.
    * @param {cr.PropertyKind} kind The kind of property we are getting the
    *     setter for.
+   * @param {function(*):void} opt_setHook A function to run after the property
+   *     is set, but before the propertyChange event is fired.
    * @return {function(*):void} The function to use as a setter.
    */
-  function getSetter(name, kind) {
+  function getSetter(name, kind, opt_setHook) {
     switch (kind) {
       case PropertyKind.JS:
         var privateName = name + '_';
@@ -180,6 +169,8 @@ const cr = (function() {
           var oldValue = this[privateName];
           if (value !== oldValue) {
             this[privateName] = value;
+            if (opt_setHook)
+              opt_setHook.call(this, value, oldValue);
             dispatchPropertyChange(this, name, value, oldValue);
           }
         };
@@ -189,6 +180,8 @@ const cr = (function() {
           var oldValue = this[name];
           if (value !== oldValue) {
             this.setAttribute(name, value);
+            if (opt_setHook)
+              opt_setHook.call(this, value, oldValue);
             dispatchPropertyChange(this, name, value, oldValue);
           }
         };
@@ -201,6 +194,8 @@ const cr = (function() {
               this.setAttribute(name, name);
             else
               this.removeAttribute(name);
+            if (opt_setHook)
+              opt_setHook.call(this, value, oldValue);
             dispatchPropertyChange(this, name, value, oldValue);
           }
         };
@@ -213,25 +208,21 @@ const cr = (function() {
    * @param {!Object} obj The object to define the property for.
    * @param {string} name The name of the property.
    * @param {cr.PropertyKind=} opt_kind What kind of underlying storage to use.
-   * @param {*} opt_default The default value.
+   * @param {function(*):void} opt_setHook A function to run after the
+   *     property is set, but before the propertyChange event is fired.
    */
-  function defineProperty(obj, name, opt_kind, opt_default) {
+  function defineProperty(obj, name, opt_kind, opt_setHook) {
     if (typeof obj == 'function')
       obj = obj.prototype;
 
     var kind = opt_kind || PropertyKind.JS;
 
     if (!obj.__lookupGetter__(name)) {
-      // For js properties we set the default value on the prototype.
-      if (kind == PropertyKind.JS && arguments.length > 3)  {
-        var privateName = name + '_';
-        obj[privateName] = opt_default;
-      }
-      obj.__defineGetter__(name, getGetter(name, kind, opt_default));
+      obj.__defineGetter__(name, getGetter(name, kind));
     }
 
     if (!obj.__lookupSetter__(name)) {
-      obj.__defineSetter__(name, getSetter(name, kind));
+      obj.__defineSetter__(name, getSetter(name, kind, opt_setHook));
     }
   }
 
