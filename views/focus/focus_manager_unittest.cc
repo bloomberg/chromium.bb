@@ -850,9 +850,18 @@ TEST_F(FocusManagerTest, FocusChangeListener) {
   TestFocusChangeListener listener;
   AddFocusChangeListener(&listener);
 
+  // Visual Studio 2010 has problems converting NULL to the null pointer for
+  // std::pair.  See http://connect.microsoft.com/VisualStudio/feedback/details/520043/error-converting-from-null-to-a-pointer-type-in-std-pair
+  // It will work if we pass nullptr.
+#if defined(_MSC_VER) && _MSC_VER >= 1600
+  views::View* null_view = nullptr;
+#else
+  views::View* null_view = NULL;
+#endif
+
   view1->RequestFocus();
   ASSERT_EQ(1, static_cast<int>(listener.focus_changes().size()));
-  EXPECT_TRUE(listener.focus_changes()[0] == ViewPair(NULL, view1));
+  EXPECT_TRUE(listener.focus_changes()[0] == ViewPair(null_view, view1));
   listener.ClearFocusChanges();
 
   view2->RequestFocus();
@@ -862,7 +871,7 @@ TEST_F(FocusManagerTest, FocusChangeListener) {
 
   GetFocusManager()->ClearFocus();
   ASSERT_EQ(1, static_cast<int>(listener.focus_changes().size()));
-  EXPECT_TRUE(listener.focus_changes()[0] == ViewPair(view2, NULL));
+  EXPECT_TRUE(listener.focus_changes()[0] == ViewPair(view2, null_view));
 }
 
 class TestNativeButton : public NativeButton {
@@ -987,19 +996,28 @@ TEST_F(FocusManagerTest, FocusStoreRestore) {
   message_loop()->RunAllPending();
   //  MessageLoopForUI::current()->Run(new AcceleratorHandler());
 
+  // Visual Studio 2010 has problems converting NULL to the null pointer for
+  // std::pair.  See http://connect.microsoft.com/VisualStudio/feedback/details/520043/error-converting-from-null-to-a-pointer-type-in-std-pair
+  // It will work if we pass nullptr.
+#if defined(_MSC_VER) && _MSC_VER >= 1600
+  views::View* null_view = nullptr;
+#else
+  views::View* null_view = NULL;
+#endif
+
   // Deacivate the window, it should store its focus.
   SimulateDeactivateWindow();
   EXPECT_EQ(NULL, GetFocusManager()->GetFocusedView());
   ASSERT_EQ(2, static_cast<int>(listener.focus_changes().size()));
-  EXPECT_TRUE(listener.focus_changes()[0] == ViewPair(NULL, view));
-  EXPECT_TRUE(listener.focus_changes()[1] == ViewPair(view, NULL));
+  EXPECT_TRUE(listener.focus_changes()[0] == ViewPair(null_view, view));
+  EXPECT_TRUE(listener.focus_changes()[1] == ViewPair(view, null_view));
   listener.ClearFocusChanges();
 
   // Reactivate, focus should come-back to the previously focused view.
   SimulateActivateWindow();
   EXPECT_EQ(view, GetFocusManager()->GetFocusedView());
   ASSERT_EQ(1, static_cast<int>(listener.focus_changes().size()));
-  EXPECT_TRUE(listener.focus_changes()[0] == ViewPair(NULL, view));
+  EXPECT_TRUE(listener.focus_changes()[0] == ViewPair(null_view, view));
   listener.ClearFocusChanges();
 
   // Same test with a NativeControl.
@@ -1008,13 +1026,13 @@ TEST_F(FocusManagerTest, FocusStoreRestore) {
   EXPECT_EQ(NULL, GetFocusManager()->GetFocusedView());
   ASSERT_EQ(2, static_cast<int>(listener.focus_changes().size()));
   EXPECT_TRUE(listener.focus_changes()[0] == ViewPair(view, button));
-  EXPECT_TRUE(listener.focus_changes()[1] == ViewPair(button, NULL));
+  EXPECT_TRUE(listener.focus_changes()[1] == ViewPair(button, null_view));
   listener.ClearFocusChanges();
 
   SimulateActivateWindow();
   EXPECT_EQ(button, GetFocusManager()->GetFocusedView());
   ASSERT_EQ(1, static_cast<int>(listener.focus_changes().size()));
-  EXPECT_TRUE(listener.focus_changes()[0] == ViewPair(NULL, button));
+  EXPECT_TRUE(listener.focus_changes()[0] == ViewPair(null_view, button));
   listener.ClearFocusChanges();
 
   /*
@@ -1028,8 +1046,8 @@ TEST_F(FocusManagerTest, FocusStoreRestore) {
 
   EXPECT_EQ(view, GetFocusManager()->GetFocusedView());
   ASSERT_EQ(2, static_cast<int>(listener.focus_changes().size()));
-  EXPECT_TRUE(listener.focus_changes()[0] == ViewPair(button, NULL));
-  EXPECT_TRUE(listener.focus_changes()[1] == ViewPair(NULL, view));
+  EXPECT_TRUE(listener.focus_changes()[0] == ViewPair(button, null_view));
+  EXPECT_TRUE(listener.focus_changes()[1] == ViewPair(null_view, view));
   */
 }
 

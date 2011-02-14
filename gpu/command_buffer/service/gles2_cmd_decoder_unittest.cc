@@ -237,8 +237,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawArraysInvalidCountFails) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
   // Try with stride > 8 (vec2 + vec2 byte)
-  GLfloat f;
-  DoVertexAttribPointer(1, 2, GL_FLOAT, sizeof(f) * 2 + sizeof(f), 0);
+  DoVertexAttribPointer(1, 2, GL_FLOAT, sizeof(GLfloat) * 3, 0);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
