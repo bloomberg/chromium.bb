@@ -29,7 +29,10 @@ FilePath::CharType kDefaultPluginLibraryName[] =
 // Some version ranges can be shared across operating systems. This should be
 // done where possible to avoid duplication.
 static const VersionRangeDefinition kFlashVersionRange[] = {
-    { "", "", "10.1.102", false }
+    { "", "", "10.2.152", false }
+};
+static const VersionRangeDefinition kShockwaveVersionRange[] = {
+    { "",  "", "11.5.9.620", true }
 };
 
 // Similarly, try and share the group definition for plug-ins that are
@@ -38,11 +41,15 @@ static const PluginGroupDefinition kFlashDefinition = {
     "adobe-flash-player", "Flash", "Shockwave Flash", kFlashVersionRange,
     arraysize(kFlashVersionRange), "http://get.adobe.com/flashplayer/" };
 
+static const PluginGroupDefinition kShockwaveDefinition = {
+    "shockwave", PluginGroup::kShockwaveGroupName, "Shockwave for Director",
+    kShockwaveVersionRange, arraysize(kShockwaveVersionRange),
+    "http://www.adobe.com/shockwave/download/" };
+
 #if defined(OS_MACOSX)
 // Plugin Groups for Mac.
 // Plugins are listed here as soon as vulnerabilities and solutions
 // (new versions) are published.
-// TODO(panayiotis): Get the Real Player version on Mac, somehow.
 static const VersionRangeDefinition kQuicktimeVersionRange[] = {
     { "", "", "7.6.6", true }
 };
@@ -56,10 +63,8 @@ static const VersionRangeDefinition kSilverlightVersionRange[] = {
 static const VersionRangeDefinition kFlip4MacVersionRange[] = {
     { "", "", "2.2.1", false }
 };
-static const VersionRangeDefinition kShockwaveVersionRange[] = {
-    { "",  "", "11.5.9.615", true }
-};
-// TODO(cevans) - I don't see Adobe Reader in here for Mac.
+// Note: The Adobe Reader browser plug-in is not supported in Chrome.
+// Note: The Real Player plugin for mac doesn't expose a version at all.
 static const PluginGroupDefinition kGroupDefinitions[] = {
   kFlashDefinition,
   { "apple-quicktime", PluginGroup::kQuickTimeGroupName, "QuickTime Plug-in",
@@ -74,9 +79,7 @@ static const PluginGroupDefinition kGroupDefinitions[] = {
   { "flip4mac", "Flip4Mac", "Flip4Mac", kFlip4MacVersionRange,
     arraysize(kFlip4MacVersionRange),
     "http://www.telestream.net/flip4mac-wmv/overview.htm" },
-  { "shockwave", PluginGroup::kShockwaveGroupName, "Shockwave for Director",
-    kShockwaveVersionRange, arraysize(kShockwaveVersionRange),
-    "http://www.adobe.com/shockwave/download/" }
+  kShockwaveDefinition
 };
 
 #elif defined(OS_WIN)
@@ -89,19 +92,19 @@ static const VersionRangeDefinition kJavaVersionRange[] = {
     { "0", "7", "6.0.220", true }  // "220" is not a typo.
 };
 static const VersionRangeDefinition kAdobeReaderVersionRange[] = {
-    { "10", "11", "", false },
-    { "9", "10", "9.4.1", false },
-    { "0", "9", "8.2.5", false }
+    { "10", "11", "10.0.1", false },
+    { "9", "10", "9.4.2", false },
+    { "0", "9", "8.2.6", false }
 };
 static const VersionRangeDefinition kSilverlightVersionRange[] = {
     { "0", "4", "3.0.50106.0", false },
     { "4", "5", "", false }
 };
-static const VersionRangeDefinition kShockwaveVersionRange[] = {
-    { "", "", "11.5.9.615", true }
-};
 static const VersionRangeDefinition kDivXVersionRange[] = {
     { "", "", "1.4.3.4", false }
+};
+static const VersionRangeDefinition kRealPlayerVersionRange[] = {
+    { "", "", "12.0.1.633", true }
 };
 static const PluginGroupDefinition kGroupDefinitions[] = {
   kFlashDefinition,
@@ -116,23 +119,19 @@ static const PluginGroupDefinition kGroupDefinitions[] = {
   { "silverlight", "Silverlight", "Silverlight", kSilverlightVersionRange,
     arraysize(kSilverlightVersionRange),
     "http://www.microsoft.com/getsilverlight/" },
-  { "shockwave", PluginGroup::kShockwaveGroupName, "Shockwave for Director",
-    kShockwaveVersionRange, arraysize(kShockwaveVersionRange),
-    "http://www.adobe.com/shockwave/download/" },
+  kShockwaveDefinition,
   { "divx-player", "DivX Player", "DivX Web Player", kDivXVersionRange,
     arraysize(kDivXVersionRange),
     "http://download.divx.com/divx/autoupdate/player/"
     "DivXWebPlayerInstaller.exe" },
+  { "realplayer", "RealPlayer", "RealPlayer",
+    kRealPlayerVersionRange, arraysize(kRealPlayerVersionRange),
+    "http://www.real.com/realplayer/downloads" },
   // These are here for grouping, no vulnerabilities known.
   { "windows-media-player", "Windows Media Player", "Windows Media Player",
     NULL, 0, "" },
   { "microsoft-office", "Microsoft Office", "Microsoft Office",
     NULL, 0, "" },
-  // TODO(panayiotis): The vulnerable versions are
-  //  (v >=  6.0.12.1040 && v <= 6.0.12.1663)
-  //  || v == 6.0.12.1698  || v == 6.0.12.1741
-  { "realplayer", "RealPlayer", "RealPlayer", NULL, 0,
-    "www.real.com/realplayer/downloads" },
 };
 
 #else
