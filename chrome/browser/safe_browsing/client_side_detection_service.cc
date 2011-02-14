@@ -32,7 +32,14 @@
 
 namespace safe_browsing {
 
-const int ClientSideDetectionService::kMaxReportsPerDay = 3;
+const int ClientSideDetectionService::kMaxReportsPerInterval = 3;
+
+const base::TimeDelta ClientSideDetectionService::kReportsInterval =
+    base::TimeDelta::FromDays(1);
+const base::TimeDelta ClientSideDetectionService::kNegativeCacheInterval =
+    base::TimeDelta::FromDays(1);
+const base::TimeDelta ClientSideDetectionService::kPositiveCacheInterval =
+    base::TimeDelta::FromMinutes(30);
 
 const char ClientSideDetectionService::kClientReportPhishingUrl[] =
     "https://sb-ssl.google.com/safebrowsing/clientreport/phishing";
@@ -43,6 +50,10 @@ struct ClientSideDetectionService::ClientReportInfo {
   scoped_ptr<ClientReportPhishingRequestCallback> callback;
   GURL phishing_url;
 };
+
+ClientSideDetectionService::CacheState::CacheState(bool phish, base::Time time)
+    : is_phishing(phish),
+      timestamp(time) {}
 
 // ShouldClassifyUrlRequest tracks the pre-classification checks for a
 // toplevel URL that has started loading into a renderer.  When these
@@ -330,9 +341,26 @@ void ClientSideDetectionService::StartClientReportPhishingRequest(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   scoped_ptr<ClientReportPhishingRequestCallback> cb(callback);
 
-  if (GetNumReportsPerDay() > kMaxReportsPerDay) {
-    LOG(WARNING) << "Too many report phishing requests sent in the last day, "
-                 << "not checking " << phishing_url;
+  bool is_phishing;
+  if (GetCachedResult(phishing_url, &is_phishing)) {
+    VLOG(1) << "Satisfying request for " << phishing_url << " from cache";
+    UMA_HISTOGRAM_COUNTS("SBClientPhishing.RequestSatisfiedFromCache", 1);
+    cb->Run(phishing_url, is_phishing);
+    return;
+  }
+
+  // We limit the number of distinct pings to kMaxReports, but we don't count
+  // urls already in the cache against this number. We don't want to start
+  // classifying too many pages as phishing, but for those that we already
+  // think are phishing we want to give ourselves a chance to fix false
+  // positives.
+  if (cache_.find(phishing_url) != cache_.end()) {
+    VLOG(1) << "Refreshing cache for " << phishing_url;
+    UMA_HISTOGRAM_COUNTS("SBClientPhishing.CacheRefresh", 1);
+  } else if (GetNumReports() > kMaxReportsPerInterval) {
+    VLOG(1) << "Too many report phishing requests sent in the last "
+            << kReportsInterval.InHours() << " hours, not checking "
+            << phishing_url;
     UMA_HISTOGRAM_COUNTS("SBClientPhishing.RequestNotSent", 1);
     cb->Run(phishing_url, false);
     return;
@@ -343,9 +371,8 @@ void ClientSideDetectionService::StartClientReportPhishingRequest(
   request.set_client_score(static_cast<float>(score));
   std::string request_data;
   if (!request.SerializeToString(&request_data)) {
-    // For consistency, we always call the callback asynchronously, rather than
-    // directly from this method.
-    LOG(ERROR) << "Unable to serialize the CSD request. Proto file changed?";
+    UMA_HISTOGRAM_COUNTS("SBClientPhishing.RequestNotSerialized", 1);
+    VLOG(1) << "Unable to serialize the CSD request. Proto file changed?";
     cb->Run(phishing_url, false);
     return;
   }
@@ -410,8 +437,11 @@ void ClientSideDetectionService::HandlePhishingVerdict(
     const std::string& data) {
   ClientPhishingResponse response;
   scoped_ptr<ClientReportInfo> info(client_phishing_reports_[source]);
-  if (status.is_success() && RC_REQUEST_OK == response_code  &&
+  if (status.is_success() && RC_REQUEST_OK == response_code &&
       response.ParseFromString(data)) {
+    // Cache response, possibly flushing an old one.
+    cache_[info->phishing_url] =
+        make_linked_ptr(new CacheState(response.phishy(), base::Time::Now()));
     info->callback->Run(info->phishing_url, response.phishy());
   } else {
     DLOG(ERROR) << "Unable to get the server verdict for URL: "
@@ -422,11 +452,53 @@ void ClientSideDetectionService::HandlePhishingVerdict(
   delete source;
 }
 
-int ClientSideDetectionService::GetNumReportsPerDay() {
-  base::Time cutoff = base::Time::Now() - base::TimeDelta::FromDays(1);
+bool ClientSideDetectionService::GetCachedResult(const GURL& url,
+                                                 bool* is_phishing) {
+  UpdateCache();
 
-  // Erase elements older than a day because we will never care about them
-  // again.
+  PhishingCache::iterator it = cache_.find(url);
+  if (it == cache_.end()) {
+    return false;
+  }
+
+  // We still need to check if the result is valid.
+  const CacheState& cache_state = *it->second;
+  if (cache_state.is_phishing ?
+      cache_state.timestamp > base::Time::Now() - kPositiveCacheInterval :
+      cache_state.timestamp > base::Time::Now() - kNegativeCacheInterval) {
+    *is_phishing = cache_state.is_phishing;
+    return true;
+  }
+  return false;
+}
+
+void ClientSideDetectionService::UpdateCache() {
+  // Since we limit the number of requests but allow pass-through for cache
+  // refreshes, we don't want to remove elements from the cache if they
+  // could be used for this purpose even if we will not use the entry to
+  // satisfy the request from the cache.
+  base::TimeDelta positive_cache_interval =
+      std::max(kPositiveCacheInterval, kReportsInterval);
+  base::TimeDelta negative_cache_interval =
+      std::max(kNegativeCacheInterval, kReportsInterval);
+
+  // Remove elements from the cache that will no longer be used.
+  for (PhishingCache::iterator it = cache_.begin(); it != cache_.end();) {
+    const CacheState& cache_state = *it->second;
+    if (cache_state.is_phishing ?
+        cache_state.timestamp > base::Time::Now() - positive_cache_interval :
+        cache_state.timestamp > base::Time::Now() - negative_cache_interval) {
+      ++it;
+    } else {
+      cache_.erase(it++);
+    }
+  }
+}
+
+int ClientSideDetectionService::GetNumReports() {
+  base::Time cutoff = base::Time::Now() - kReportsInterval;
+
+  // Erase items older than cutoff because we will never care about them again.
   while (!phishing_report_times_.empty() &&
          phishing_report_times_.front() < cutoff) {
     phishing_report_times_.pop();

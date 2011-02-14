@@ -25,6 +25,7 @@
 #include "base/callback.h"
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "base/linked_ptr.h"
 #include "base/platform_file.h"
 #include "base/ref_counted.h"
 #include "base/scoped_callback_factory.h"
@@ -109,9 +110,22 @@ class ClientSideDetectionService : public URLFetcher::Delegate,
     ERROR_STATUS,
   };
 
+  // CacheState holds all information necessary to respond to a caller without
+  // actually making a HTTP request.
+  struct CacheState {
+    bool is_phishing;
+    base::Time timestamp;
+
+    CacheState(bool phish, base::Time time);
+  };
+  typedef std::map<GURL, linked_ptr<CacheState> > PhishingCache;
+
   static const char kClientReportPhishingUrl[];
   static const char kClientModelUrl[];
-  static const int kMaxReportsPerDay;
+  static const int kMaxReportsPerInterval;
+  static const base::TimeDelta kReportsInterval;
+  static const base::TimeDelta kNegativeCacheInterval;
+  static const base::TimeDelta kPositiveCacheInterval;
 
   // Use Create() method to create an instance of this object.
   ClientSideDetectionService(const FilePath& model_path,
@@ -175,9 +189,14 @@ class ClientSideDetectionService : public URLFetcher::Delegate,
                              const ResponseCookies& cookies,
                              const std::string& data);
 
-  // Get the number of phishing reports that we have sent over the last 24
-  // hours.
-  int GetNumReportsPerDay();
+  // Returns true and sets is_phishing if url is in the cache and valid.
+  bool GetCachedResult(const GURL& url, bool* is_phishing);
+
+  // Invalidate cache results which are no longer useful.
+  void UpdateCache();
+
+  // Get the number of phishing reports that we have sent over kReportsInterval
+  int GetNumReports();
 
   FilePath model_path_;
   ModelStatus model_status_;
@@ -190,6 +209,14 @@ class ClientSideDetectionService : public URLFetcher::Delegate,
   // has to be invoked when the request is done.
   struct ClientReportInfo;
   std::map<const URLFetcher*, ClientReportInfo*> client_phishing_reports_;
+
+  // Cache of completed requests. Used to satisfy requests for the same urls
+  // as long as the next request falls within our caching window (which is
+  // determined by kNegativeCacheInterval and kPositiveCacheInterval). The
+  // size of this cache is limited by kMaxReportsPerDay *
+  // ceil(InDays(max(kNegativeCacheInterval, kPositiveCacheInterval))).
+  // TODO(gcasto): Serialize this so that it doesn't reset on browser restart.
+  PhishingCache cache_;
 
   // Timestamp of when we sent a phishing request. Used to limit the number
   // of phishing requests that we send in a day.

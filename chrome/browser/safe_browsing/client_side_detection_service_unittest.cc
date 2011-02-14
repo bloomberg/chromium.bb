@@ -90,12 +90,64 @@ class ClientSideDetectionServiceTest : public testing::Test {
         response_data, success);
   }
 
-  int GetNumReportsPerDay() {
-    return csd_service_->GetNumReportsPerDay();
+  int GetNumReports() {
+    return csd_service_->GetNumReports();
   }
 
   std::queue<base::Time>& GetPhishingReportTimes() {
     return csd_service_->phishing_report_times_;
+  }
+
+  void SetCache(const GURL& gurl, bool is_phishing, base::Time time) {
+    csd_service_->cache_[gurl] =
+        make_linked_ptr(new ClientSideDetectionService::CacheState(is_phishing,
+                                                                   time));
+  }
+
+  void TestCache() {
+    ClientSideDetectionService::PhishingCache& cache = csd_service_->cache_;
+    base::Time now = base::Time::Now();
+    base::Time time = now - ClientSideDetectionService::kNegativeCacheInterval +
+        base::TimeDelta::FromMinutes(5);
+    cache[GURL("http://first.url.com/")] =
+        make_linked_ptr(new ClientSideDetectionService::CacheState(false,
+                                                                   time));
+
+    time = now - ClientSideDetectionService::kNegativeCacheInterval -
+        base::TimeDelta::FromHours(1);
+    cache[GURL("http://second.url.com/")] =
+        make_linked_ptr(new ClientSideDetectionService::CacheState(false,
+                                                                   time));
+
+    time = now - ClientSideDetectionService::kPositiveCacheInterval -
+        base::TimeDelta::FromMinutes(5);
+    cache[GURL("http://third.url.com/")] =
+        make_linked_ptr(new ClientSideDetectionService::CacheState(true, time));
+
+    time = now - ClientSideDetectionService::kPositiveCacheInterval +
+        base::TimeDelta::FromMinutes(5);
+    cache[GURL("http://fourth.url.com/")] =
+        make_linked_ptr(new ClientSideDetectionService::CacheState(true, time));
+
+    csd_service_->UpdateCache();
+
+    // 3 elements should be in the cache, the first, third, and fourth.
+    EXPECT_EQ(3U, cache.size());
+    EXPECT_TRUE(cache.find(GURL("http://first.url.com/")) != cache.end());
+    EXPECT_TRUE(cache.find(GURL("http://third.url.com/")) != cache.end());
+    EXPECT_TRUE(cache.find(GURL("http://fourth.url.com/")) != cache.end());
+
+    // While 3 elements remain, only the first and the fourth are actually
+    // valid.
+    bool is_phishing;
+    EXPECT_TRUE(csd_service_->GetCachedResult(GURL("http://first.url.com"),
+                                              &is_phishing));
+    EXPECT_FALSE(is_phishing);
+    EXPECT_FALSE(csd_service_->GetCachedResult(GURL("http://third.url.com"),
+                                               &is_phishing));
+    EXPECT_TRUE(csd_service_->GetCachedResult(GURL("http://fourth.url.com"),
+                                              &is_phishing));
+    EXPECT_TRUE(is_phishing);
   }
 
  protected:
@@ -192,16 +244,57 @@ TEST_F(ClientSideDetectionServiceTest, SendClientReportPhishingRequest) {
   SetClientReportPhishingResponse(response.SerializeAsString(),
                                   true /* success */);
   EXPECT_TRUE(SendClientReportPhishingRequest(url, score));
+
+  // Caching causes this to still count as phishy.
   response.set_phishy(false);
   SetClientReportPhishingResponse(response.SerializeAsString(),
                                   true /* success */);
-  EXPECT_FALSE(SendClientReportPhishingRequest(url, score));
+  EXPECT_TRUE(SendClientReportPhishingRequest(url, score));
+
+  // This request will fail and should not be cached.
+  GURL second_url("http://b.com/");
+  response.set_phishy(false);
+  SetClientReportPhishingResponse(response.SerializeAsString(),
+                                  false /* success*/);
+  EXPECT_FALSE(SendClientReportPhishingRequest(second_url, score));
+
+  // Verify that the previous request was not cached.
+  response.set_phishy(true);
+  SetClientReportPhishingResponse(response.SerializeAsString(),
+                                  true /* success */);
+  EXPECT_TRUE(SendClientReportPhishingRequest(second_url, score));
+
+  // This request is blocked because it's not in the cache and we have more
+  // than 3 requests.
+  GURL third_url("http://c.com");
+  response.set_phishy(true);
+  SetClientReportPhishingResponse(response.SerializeAsString(),
+                                  true /* success */);
+  EXPECT_FALSE(SendClientReportPhishingRequest(third_url, score));
+
+  // Verify that caching still works even when new requests are blocked.
+  response.set_phishy(true);
+  SetClientReportPhishingResponse(response.SerializeAsString(),
+                                  true /* success */);
+  EXPECT_TRUE(SendClientReportPhishingRequest(url, score));
+
+  // Verify that we allow cache refreshing even when requests are blocked.
+  base::Time cache_time = base::Time::Now() - base::TimeDelta::FromHours(1);
+  SetCache(second_url, true, cache_time);
+
+  // Even though this element is in the cache, it's not currently valid so
+  // we make request and return that value instead.
+  response.set_phishy(false);
+  SetClientReportPhishingResponse(response.SerializeAsString(),
+                                  true /* success */);
+  EXPECT_FALSE(SendClientReportPhishingRequest(second_url, score));
 
   base::Time after = base::Time::Now();
 
-  // Check that we have recorded 3 requests, all within the correct time range.
+  // Check that we have recorded 5 requests, all within the correct time range.
+  // The blocked request and the cached requests should not be present.
   std::queue<base::Time>& report_times = GetPhishingReportTimes();
-  EXPECT_EQ(3U, report_times.size());
+  EXPECT_EQ(5U, report_times.size());
   while (!report_times.empty()) {
     base::Time time = report_times.back();
     report_times.pop();
@@ -225,7 +318,17 @@ TEST_F(ClientSideDetectionServiceTest, GetNumReportTest) {
   report_times.push(now);
   report_times.push(now);
 
-  EXPECT_EQ(2, GetNumReportsPerDay());
+  EXPECT_EQ(2, GetNumReports());
+}
+
+TEST_F(ClientSideDetectionServiceTest, CacheTest) {
+  SetModelFetchResponse("bogus model", true /* success */);
+  ScopedTempDir tmp_dir;
+  ASSERT_TRUE(tmp_dir.CreateUniqueTempDir());
+  csd_service_.reset(ClientSideDetectionService::Create(
+      tmp_dir.path().AppendASCII("model"), NULL));
+
+  TestCache();
 }
 
 // We use a separate test fixture for testing the ClientSideDetectionService's
