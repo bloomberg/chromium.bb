@@ -102,6 +102,7 @@ class BlockedPluginInfoBarDelegate : public PluginInfoBarDelegate {
   virtual bool Accept();
   virtual bool Cancel();
   virtual void InfoBarClosed();
+  virtual void InfoBarDismissed();
   virtual bool LinkClicked(WindowOpenDisposition disposition);
 
   DISALLOW_COPY_AND_ASSIGN(BlockedPluginInfoBarDelegate);
@@ -143,6 +144,11 @@ bool BlockedPluginInfoBarDelegate::Cancel() {
   return PluginInfoBarDelegate::Cancel();
 }
 
+void BlockedPluginInfoBarDelegate::InfoBarDismissed() {
+  UserMetrics::RecordAction(
+      UserMetricsAction("BlockedPluginInfobar.Dismissed"));
+}
+
 void BlockedPluginInfoBarDelegate::InfoBarClosed() {
   UserMetrics::RecordAction(UserMetricsAction("BlockedPluginInfobar.Closed"));
   PluginInfoBarDelegate::InfoBarClosed();
@@ -172,6 +178,7 @@ class OutdatedPluginInfoBarDelegate : public PluginInfoBarDelegate {
   virtual bool Accept();
   virtual bool Cancel();
   virtual void InfoBarClosed();
+  virtual void InfoBarDismissed();
   virtual bool LinkClicked(WindowOpenDisposition disposition);
 
   GURL update_url_;
@@ -212,6 +219,11 @@ bool OutdatedPluginInfoBarDelegate::Cancel() {
   UserMetrics::RecordAction(
       UserMetricsAction("OutdatedPluginInfobar.AllowThisTime"));
   return PluginInfoBarDelegate::Cancel();
+}
+
+void OutdatedPluginInfoBarDelegate::InfoBarDismissed() {
+  UserMetrics::RecordAction(
+      UserMetricsAction("OutdatedPluginInfobar.Dismissed"));
 }
 
 void OutdatedPluginInfoBarDelegate::InfoBarClosed() {

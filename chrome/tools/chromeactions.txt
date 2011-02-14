@@ -117,6 +117,7 @@
 0xe0daa169d443430e	BlockedPluginInfobar.AllowThisTime
 0xbc5f7815d41f0a0a	BlockedPluginInfobar.AlwaysAllow
 0xa6092c47f7cd698b	BlockedPluginInfobar.Closed
+0xf73bbd9fdcaeb1f9	BlockedPluginInfobar.Dismissed
 0x4937bd47014fb3e0	BlockedPluginInfobar.LearnMore
 0x127e30ad4cde6b00	BlockedPluginInfobar.Shown
 0x114c3050111d8b8d	Bold
@@ -938,6 +939,7 @@
 0x8d45d4c781319d53	Options_VertEdgeScrollCheckbox_Enable
 0x40a2640625760310	OutdatedPluginInfobar.AllowThisTime
 0xa0361f9250c19197	OutdatedPluginInfobar.Closed
+0xb4be73d2951aab5b	OutdatedPluginInfobar.Dismissed
 0x883c4259bb3beddd	OutdatedPluginInfobar.LearnMore
 0xaf62158873b29888	OutdatedPluginInfobar.Shown
 0x7e7073691a152241	OutdatedPluginInfobar.Update
