@@ -63,6 +63,44 @@ std::string StringSubRange(const std::string& text, size_t start,
   return text.substr(start, end - start);
 }
 
+struct LocalizeEntry {
+  const char* identifier;
+  int resource;
+};
+
+const LocalizeEntry localize_table[] = {
+#if defined (OS_CHROMEOS)
+    { "product", IDS_PRODUCT_OS_NAME },
+    { "os", IDS_PRODUCT_OS_NAME },
+    { "loading", IDS_ABOUT_PAGE_LOADING },
+    { "check_now", IDS_ABOUT_PAGE_CHECK_NOW },
+    { "update_status", IDS_UPGRADE_CHECK_STARTED },
+    { "restart_now", IDS_RELAUNCH_AND_UPDATE },
+#else
+    { "product", IDS_PRODUCT_NAME },
+    { "check_now", IDS_ABOUT_CHROME_UPDATE_CHECK },
+#endif
+    { "browser", IDS_PRODUCT_NAME },
+    { "more_info", IDS_ABOUT_PAGE_MORE_INFO },
+    { "copyright", IDS_ABOUT_VERSION_COPYRIGHT },
+    { "channel", IDS_ABOUT_PAGE_CHANNEL },
+    { "release", IDS_ABOUT_PAGE_CHANNEL_RELEASE },
+    { "beta", IDS_ABOUT_PAGE_CHANNEL_BETA },
+    { "development", IDS_ABOUT_PAGE_CHANNEL_DEVELOPMENT },
+    { "canary", IDS_ABOUT_PAGE_CHANNEL_CANARY },
+    { "channel_warning_header", IDS_ABOUT_PAGE_CHANNEL_WARNING_HEADER },
+    { "channel_warning_text", IDS_ABOUT_PAGE_CHANNEL_WARNING_TEXT },
+    { "user_agent", IDS_ABOUT_VERSION_USER_AGENT },
+    { "command_line", IDS_ABOUT_VERSION_COMMAND_LINE },
+};
+
+void LocalizedStrings(DictionaryValue* localized_strings) {
+  for (size_t n = 0; n != arraysize(localize_table); ++n) {
+    localized_strings->SetString(localize_table[n].identifier,
+        l10n_util::GetStringUTF16(localize_table[n].resource));
+  }
+}
+
 }  // namespace
 
 #if defined(OS_CHROMEOS)
@@ -105,33 +143,8 @@ AboutPageHandler::~AboutPageHandler() {
 void AboutPageHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
-  static OptionsStringResource resources[] = {
-#if defined (OS_CHROMEOS)
-    { "product", IDS_PRODUCT_OS_NAME },
-    { "os", IDS_PRODUCT_OS_NAME },
-    { "loading", IDS_ABOUT_PAGE_LOADING },
-    { "check_now", IDS_ABOUT_PAGE_CHECK_NOW },
-    { "update_status", IDS_UPGRADE_CHECK_STARTED },
-    { "restart_now", IDS_RELAUNCH_AND_UPDATE },
-#else
-    { "product", IDS_PRODUCT_NAME },
-    { "check_now", IDS_ABOUT_CHROME_UPDATE_CHECK },
-#endif
-    { "browser", IDS_PRODUCT_NAME },
-    { "more_info", IDS_ABOUT_PAGE_MORE_INFO },
-    { "copyright", IDS_ABOUT_VERSION_COPYRIGHT },
-    { "channel", IDS_ABOUT_PAGE_CHANNEL },
-    { "release", IDS_ABOUT_PAGE_CHANNEL_RELEASE },
-    { "beta", IDS_ABOUT_PAGE_CHANNEL_BETA },
-    { "development", IDS_ABOUT_PAGE_CHANNEL_DEVELOPMENT },
-    { "canary", IDS_ABOUT_PAGE_CHANNEL_CANARY },
-    { "channel_warning_header", IDS_ABOUT_PAGE_CHANNEL_WARNING_HEADER },
-    { "channel_warning_text", IDS_ABOUT_PAGE_CHANNEL_WARNING_TEXT },
-    { "user_agent", IDS_ABOUT_VERSION_USER_AGENT },
-    { "command_line", IDS_ABOUT_VERSION_COMMAND_LINE },
-  };
+  LocalizedStrings(localized_strings);
 
-  RegisterStrings(localized_strings, resources, arraysize(resources));
   RegisterTitle(localized_strings, "aboutPage", IDS_ABOUT_TAB_TITLE);
 
   // browser version

@@ -57,7 +57,6 @@ AdvancedOptionsHandler::AdvancedOptionsHandler() {
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableCloudPrintProxy);
 #endif
-  cloud_print_proxy_ui_enabled_ = true;
 }
 
 AdvancedOptionsHandler::~AdvancedOptionsHandler() {
@@ -67,7 +66,7 @@ void AdvancedOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
-  static OptionsStringResource resources[] = {
+  OptionsStringResource resources[] = {
     { "downloadLocationGroupName",
       IDS_OPTIONS_DOWNLOADLOCATION_GROUP_NAME },
     { "downloadLocationChangeButton",
@@ -135,17 +134,17 @@ void AdvancedOptionsHandler::GetLocalizedValues(
     { "fontSettingsCustomizeFontsButton",
       IDS_OPTIONS_FONTSETTINGS_CUSTOMIZE_FONTS_BUTTON },
     { "languageAndSpellCheckSettingsButton",
-      IDS_OPTIONS_LANGUAGE_AND_SPELLCHECK_BUTTON },
+      IDS_OPTIONS_LANGUAGE_AND_SPELLCHECK_BUTTON, true },
     { "advancedSectionTitlePrivacy",
-      IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY },
+      IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY, true },
     { "advancedSectionTitleContent",
-      IDS_OPTIONS_ADVANCED_SECTION_TITLE_CONTENT },
+      IDS_OPTIONS_ADVANCED_SECTION_TITLE_CONTENT, true },
     { "advancedSectionTitleSecurity",
-      IDS_OPTIONS_ADVANCED_SECTION_TITLE_SECURITY },
+      IDS_OPTIONS_ADVANCED_SECTION_TITLE_SECURITY, true },
     { "advancedSectionTitleNetwork",
-      IDS_OPTIONS_ADVANCED_SECTION_TITLE_NETWORK },
+      IDS_OPTIONS_ADVANCED_SECTION_TITLE_NETWORK, true },
     { "advancedSectionTitleTranslate",
-      IDS_OPTIONS_ADVANCED_SECTION_TITLE_TRANSLATE },
+      IDS_OPTIONS_ADVANCED_SECTION_TITLE_TRANSLATE, true },
     { "translateEnableTranslate",
       IDS_OPTIONS_TRANSLATE_ENABLE_TRANSLATE },
     { "enableLogging",
@@ -188,8 +187,9 @@ void AdvancedOptionsHandler::GetLocalizedValues(
 #if !defined(OS_CHROMEOS)
   // Add the cloud print proxy management ui section if it's been runtime
   // enabled.
-  localized_strings->SetBoolean("enable-cloud-print-proxy",
-                                cloud_print_proxy_ui_enabled_);
+  localized_strings->SetString(
+      "enable-cloud-print-proxy",
+      cloud_print_proxy_ui_enabled_ ? "true" : "false" );
 #endif
 }
 
@@ -376,7 +376,7 @@ void AdvancedOptionsHandler::HandleMetricsReportingCheckbox(
     const ListValue* args) {
 #if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
   std::string checked_str = WideToUTF8(ExtractStringValue(args));
-  bool enabled = checked_str == "true";
+  bool enabled = (checked_str == "true");
   UserMetricsRecordAction(
       enabled ?
           UserMetricsAction("Options_MetricsReportingCheckbox_Enable") :
@@ -402,7 +402,7 @@ void AdvancedOptionsHandler::HandleDefaultFontSize(const ListValue* args) {
 void AdvancedOptionsHandler::HandleCheckRevocationCheckbox(
     const ListValue* args) {
   std::string checked_str = WideToUTF8(ExtractStringValue(args));
-  bool enabled = checked_str == "true";
+  bool enabled = (checked_str == "true");
   std::string metric =
       (enabled ? "Options_CheckCertRevocation_Enable"
                : "Options_CheckCertRevocation_Disable");
@@ -412,7 +412,7 @@ void AdvancedOptionsHandler::HandleCheckRevocationCheckbox(
 
 void AdvancedOptionsHandler::HandleUseSSL3Checkbox(const ListValue* args) {
   std::string checked_str = WideToUTF8(ExtractStringValue(args));
-  bool enabled = checked_str == "true";
+  bool enabled = (checked_str == "true");
   std::string metric =
       (enabled ? "Options_SSL3_Enable" : "Options_SSL3_Disable");
   UserMetricsRecordAction(UserMetricsAction(metric.c_str()));
@@ -421,7 +421,7 @@ void AdvancedOptionsHandler::HandleUseSSL3Checkbox(const ListValue* args) {
 
 void AdvancedOptionsHandler::HandleUseTLS1Checkbox(const ListValue* args) {
   std::string checked_str = WideToUTF8(ExtractStringValue(args));
-  bool enabled = checked_str == "true";
+  bool enabled = (checked_str == "true");
   std::string metric =
       (enabled ? "Options_TLS1_Enable" : "Options_TLS1_Disable");
   UserMetricsRecordAction(UserMetricsAction(metric.c_str()));
