@@ -52,7 +52,7 @@ bool StringToProxyMode(const std::string& in_value, ProxyMode* out_value) {
   return false;
 }
 
-const char* GetProxyModeName(ProxyMode mode) {
+const char* ProxyModeToString(ProxyMode mode) {
   return kProxyModeNames[mode];
 }
 

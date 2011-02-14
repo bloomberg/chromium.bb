@@ -10,8 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/pref_names.h"
-#include "net/base/host_port_pair.h"
-#include "net/proxy/proxy_server.h"
+#include "net/proxy/proxy_config.h"
 
 namespace {
 
@@ -43,6 +42,15 @@ const char* scheme_name[] = { "*error*",
                               "ftp",
                               "socks" };
 
+// String literals in dictionaries used to communicate with extension.
+const char kProxyCfgMode[] = "mode";
+const char kProxyCfgPacScript[] = "pacScript";
+const char kProxyCfgPacScriptUrl[] = "url";
+const char kProxyCfgRules[] = "rules";
+const char kProxyCfgRuleHost[] = "host";
+const char kProxyCfgRulePort[] = "port";
+const char kProxyCfgScheme[] = "scheme";
+
 COMPILE_ASSERT(SCHEME_MAX == SCHEME_SOCKS, SCHEME_MAX_must_equal_SCHEME_SOCKS);
 COMPILE_ASSERT(arraysize(field_name) == SCHEME_MAX + 1,
                field_name_array_is_wrong_size);
@@ -57,7 +65,7 @@ bool GetProxyServer(const DictionaryValue* dict,
                     net::ProxyServer::Scheme default_scheme,
                     net::ProxyServer* proxy_server) {
   std::string scheme_string;  // optional.
-  dict->GetString("scheme", &scheme_string);
+  dict->GetString(kProxyCfgScheme, &scheme_string);
 
   net::ProxyServer::Scheme scheme =
       net::ProxyServer::GetSchemeFromURI(scheme_string);
@@ -65,11 +73,11 @@ bool GetProxyServer(const DictionaryValue* dict,
     scheme = default_scheme;
 
   std::string host;
-  if (!dict->GetString("host", &host))
+  if (!dict->GetString(kProxyCfgRuleHost, &host))
     return false;
 
   int port;  // optional.
-  if (!dict->GetInteger("port", &port))
+  if (!dict->GetInteger(kProxyCfgRulePort, &port))
     port = net::ProxyServer::GetDefaultPortForScheme(scheme);
 
   *proxy_server = net::ProxyServer(scheme, net::HostPortPair(host, port));
@@ -143,14 +151,22 @@ bool GetProxyRules(DictionaryValue* proxy_rules, std::string* out) {
 void ProxySettingsFunction::ApplyPreference(const char* pref_path,
                                             Value* pref_value,
                                             bool incognito) {
-  profile()->GetExtensionService()->extension_prefs()->
+  Profile* use_profile = profile();
+  if (use_profile->IsOffTheRecord())
+    use_profile = use_profile->GetOriginalProfile();
+
+  use_profile->GetExtensionService()->extension_prefs()->
       SetExtensionControlledPref(extension_id(), pref_path, incognito,
                                  pref_value);
 }
 
 void ProxySettingsFunction::RemovePreference(const char* pref_path,
                                              bool incognito) {
-  profile()->GetExtensionService()->extension_prefs()->
+  Profile* use_profile = profile();
+  if (use_profile->IsOffTheRecord())
+    use_profile = use_profile->GetOriginalProfile();
+
+  use_profile->GetExtensionService()->extension_prefs()->
       RemoveExtensionControlledPref(extension_id(), pref_path, incognito);
 }
 
@@ -164,7 +180,7 @@ bool UseCustomProxySettingsFunction::RunImpl() {
   }
 
   std::string proxy_mode;
-  proxy_config->GetString("mode", &proxy_mode);
+  proxy_config->GetString(kProxyCfgMode, &proxy_mode);
   ProxyPrefs::ProxyMode mode_enum;
   if (!ProxyPrefs::StringToProxyMode(proxy_mode, &mode_enum)) {
     LOG(ERROR) << "Invalid mode for proxy settings: " << proxy_mode << ". "
@@ -173,16 +189,16 @@ bool UseCustomProxySettingsFunction::RunImpl() {
   }
 
   DictionaryValue* pac_dict = NULL;
-  proxy_config->GetDictionary("pacScript", &pac_dict);
+  proxy_config->GetDictionary(kProxyCfgPacScript, &pac_dict);
   std::string pac_url;
-  if (pac_dict && !pac_dict->GetString("url", &pac_url)) {
+  if (pac_dict && !pac_dict->GetString(kProxyCfgPacScriptUrl, &pac_url)) {
     LOG(ERROR) << "'pacScript' requires a 'url' field. "
                << "Setting custom proxy settings failed.";
     return false;
   }
 
   DictionaryValue* proxy_rules = NULL;
-  proxy_config->GetDictionary("rules", &proxy_rules);
+  proxy_config->GetDictionary(kProxyCfgRules, &proxy_rules);
   std::string proxy_rules_string;
   if (proxy_rules && !GetProxyRules(proxy_rules, &proxy_rules_string)) {
     LOG(ERROR) << "Invalid 'rules' specified. "
@@ -241,4 +257,142 @@ bool RemoveCustomProxySettingsFunction::RunImpl() {
 
   RemovePreference(prefs::kProxy, incognito);
   return true;
+}
+
+bool GetCurrentProxySettingsFunction::RunImpl() {
+  bool incognito = false;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(0, &incognito));
+
+  // This is how it is stored in the PrefStores:
+  const DictionaryValue* proxy_prefs;
+
+  Profile* use_profile = profile();
+  if (use_profile->IsOffTheRecord())
+    use_profile = use_profile->GetOriginalProfile();
+
+  PrefService* prefs = incognito ? use_profile->GetOffTheRecordPrefs()
+                                 : use_profile->GetPrefs();
+  proxy_prefs = prefs->GetDictionary(prefs::kProxy);
+
+  // This is how it is presented to the API caller:
+  scoped_ptr<DictionaryValue> out(new DictionaryValue);
+
+  if (!ConvertToApiFormat(proxy_prefs, out.get()))
+    return false;
+
+  result_.reset(out.release());
+  return true;
+}
+
+bool GetCurrentProxySettingsFunction::ConvertToApiFormat(
+    const DictionaryValue* proxy_prefs,
+    DictionaryValue* api_proxy_config) const {
+  ProxyConfigDictionary dict(proxy_prefs);
+
+  ProxyPrefs::ProxyMode mode;
+  if (!dict.GetMode(&mode)) {
+    LOG(ERROR) << "Cannot determine proxy mode.";
+    return false;
+  }
+  api_proxy_config->SetString(kProxyCfgMode,
+                              ProxyPrefs::ProxyModeToString(mode));
+
+  switch (mode) {
+    case ProxyPrefs::MODE_DIRECT:
+    case ProxyPrefs::MODE_AUTO_DETECT:
+    case ProxyPrefs::MODE_SYSTEM:
+      // These modes have no further parameters.
+      break;
+    case ProxyPrefs::MODE_PAC_SCRIPT: {
+      std::string pac_url;
+      if (!dict.GetPacUrl(&pac_url)) {
+        LOG(ERROR) << "Missing pac url";
+        return false;
+      }
+      DictionaryValue* pac_dict = new DictionaryValue;
+      pac_dict->SetString(kProxyCfgPacScriptUrl, pac_url);
+      api_proxy_config->Set(kProxyCfgPacScript, pac_dict);
+      break;
+    }
+    case ProxyPrefs::MODE_FIXED_SERVERS: {
+      // TODO(battre): Handle bypass list.
+      std::string proxy_servers;
+      if (!dict.GetProxyServer(&proxy_servers)) {
+        LOG(ERROR) << "Missing proxy servers";
+        return false;
+      }
+      DictionaryValue* rules_dict = new DictionaryValue;
+      if (!ParseRules(proxy_servers, rules_dict)) {
+        LOG(ERROR) << "Could not parse proxy rules";
+        return false;
+      }
+      api_proxy_config->Set(kProxyCfgRules, rules_dict);
+      break;
+    }
+    case ProxyPrefs::kModeCount:
+      NOTREACHED();
+  }
+  return true;
+}
+
+bool GetCurrentProxySettingsFunction::ParseRules(const std::string& rules,
+                                                 DictionaryValue* out) const {
+  net::ProxyConfig::ProxyRules config;
+  config.ParseFromString(rules);
+  switch (config.type) {
+    case net::ProxyConfig::ProxyRules::TYPE_NO_RULES:
+      return false;
+    case net::ProxyConfig::ProxyRules::TYPE_SINGLE_PROXY:
+      if (config.single_proxy.is_valid()) {
+        out->Set(field_name[SCHEME_ALL],
+                 ConvertToDictionary(config.single_proxy));
+      }
+      break;
+    case net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME:
+      if (config.proxy_for_http.is_valid()) {
+        out->Set(field_name[SCHEME_HTTP],
+                 ConvertToDictionary(config.proxy_for_http));
+      }
+      if (config.proxy_for_https.is_valid()) {
+        out->Set(field_name[SCHEME_HTTPS],
+                 ConvertToDictionary(config.proxy_for_https));
+      }
+      if (config.proxy_for_ftp.is_valid()) {
+        out->Set(field_name[SCHEME_FTP],
+                 ConvertToDictionary(config.proxy_for_ftp));
+      }
+      if (config.fallback_proxy.is_valid()) {
+        out->Set(field_name[SCHEME_SOCKS],
+                 ConvertToDictionary(config.fallback_proxy));
+      }
+      COMPILE_ASSERT(SCHEME_MAX == 4, SCHEME_FORGOTTEN);
+      break;
+  }
+  return true;
+}
+
+DictionaryValue* GetCurrentProxySettingsFunction::ConvertToDictionary(
+    const net::ProxyServer& proxy) const {
+  DictionaryValue* out = new DictionaryValue;
+  switch (proxy.scheme()) {
+    case net::ProxyServer::SCHEME_HTTP:
+      out->SetString(kProxyCfgScheme, "http");
+      break;
+    case net::ProxyServer::SCHEME_HTTPS:
+      out->SetString(kProxyCfgScheme, "https");
+      break;
+    case net::ProxyServer::SCHEME_SOCKS4:
+      out->SetString(kProxyCfgScheme, "socks4");
+      break;
+    case net::ProxyServer::SCHEME_SOCKS5:
+      out->SetString(kProxyCfgScheme, "socks5");
+      break;
+    case net::ProxyServer::SCHEME_DIRECT:
+    case net::ProxyServer::SCHEME_INVALID:
+      NOTREACHED();
+      return out;
+  }
+  out->SetString(kProxyCfgRuleHost, proxy.host_port_pair().host());
+  out->SetInteger(kProxyCfgRulePort, proxy.host_port_pair().port());
+  return out;
 }

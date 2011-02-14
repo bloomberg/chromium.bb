@@ -89,7 +89,7 @@ DictionaryValue* ProxyConfigDictionary::CreateDictionary(
     const std::string& proxy_server,
     const std::string& bypass_list) {
   DictionaryValue* dict = new DictionaryValue();
-  dict->SetString(kProxyMode, GetProxyModeName(mode));
+  dict->SetString(kProxyMode, ProxyModeToString(mode));
   if (!pac_url.empty())
     dict->SetString(kProxyPacUrl, pac_url);
   if (!proxy_server.empty())

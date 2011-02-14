@@ -9,6 +9,10 @@
 
 #include "chrome/browser/extensions/extension_function.h"
 
+namespace net {
+class ProxyServer;
+}
+
 class DictionaryValue;
 
 class ProxySettingsFunction : public SyncExtensionFunction {
@@ -37,6 +41,23 @@ class RemoveCustomProxySettingsFunction : public ProxySettingsFunction {
 
   DECLARE_EXTENSION_FUNCTION_NAME(
       "experimental.proxy.removeCustomProxySettings")
+};
+
+class GetCurrentProxySettingsFunction : public ProxySettingsFunction {
+ public:
+  virtual ~GetCurrentProxySettingsFunction() {}
+  virtual bool RunImpl();
+
+  DECLARE_EXTENSION_FUNCTION_NAME(
+      "experimental.proxy.getCurrentProxySettings")
+ private:
+  // Convert the representation of a proxy configuration from the format
+  // that is stored in the pref stores to the format that is used by the API.
+  // See ProxyServer type defined in |experimental.proxy|.
+  bool ConvertToApiFormat(const DictionaryValue* proxy_prefs,
+                          DictionaryValue* api_proxy_config) const;
+  bool ParseRules(const std::string& rules, DictionaryValue* out) const;
+  DictionaryValue* ConvertToDictionary(const net::ProxyServer& proxy) const;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_PROXY_API_H_

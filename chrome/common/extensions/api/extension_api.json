@@ -3743,7 +3743,7 @@
         "type": "object",
         "description": "An object encapsulating a single proxy server's specification.",
         "properties": {
-          "scheme": {"type": "string", "optional": true, "enum": ["http", "socks", "socks4", "socks5"], "description": "The scheme (protocol) of the proxy server itself."},
+          "scheme": {"type": "string", "optional": true, "enum": ["http", "https", "socks", "socks4", "socks5"], "description": "The scheme (protocol) of the proxy server itself."},
           "host": {"type": "string", "description": "The URI of the proxy server."},
           "port": {"type": "integer", "optional": true, "description": "The port of the proxy server."}
         }
@@ -3811,6 +3811,29 @@
             "type": "boolean",
             "description": "See incognito parameter of useCustomProxySettings.",
             "optional": true
+          }
+        ]
+      },
+      {
+        "name": "getCurrentProxySettings",
+        "type": "function",
+        "description": "Returns the currently effective proxy settings. These can originate from default values, command line options, the extension settings API, policies and possibly other sources in the future.",
+        "parameters": [
+          {
+            "name": "incognito",
+            "type": "boolean",
+            "description": "See incognito parameter of useCustomProxySettings."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "config",
+                "$ref": "ProxyConfig",
+                "description": "Configuration, not necessarily a literal copy of the configuration passed to useCustomProxySettings."
+              }
+            ]
           }
         ]
       }
