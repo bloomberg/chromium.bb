@@ -330,6 +330,20 @@ void PersonalOptionsHandler::Initialize() {
 void PersonalOptionsHandler::ShowSyncActionDialog(const ListValue* args) {
   ProfileSyncService* service = web_ui_->GetProfile()->GetProfileSyncService();
   DCHECK(service);
+#if defined(OS_CHROMEOS)
+  // ProfileSyncService calls ProfileSyncService::ShowLoginDialog()
+  // for these errors, which currently does not work on ChromeOS.
+  // TODO(stevenjb + jhawkins): This code path should go away for R11 when
+  // we switch to DOM based sync setup UI.
+  const GoogleServiceAuthError& error = service->GetAuthError();
+  if (error.state() == GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS ||
+      error.state() == GoogleServiceAuthError::CAPTCHA_REQUIRED ||
+      error.state() == GoogleServiceAuthError::ACCOUNT_DELETED ||
+      error.state() == GoogleServiceAuthError::ACCOUNT_DISABLED ||
+      error.state() == GoogleServiceAuthError::SERVICE_UNAVAILABLE) {
+    ShowSyncLoginDialog(args);
+  }
+#endif
   service->ShowErrorUI(NULL);
 }
 
