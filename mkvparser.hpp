@@ -545,7 +545,7 @@ public:
         Segment*,
         long,
         long long off,
-        long long element_start,
+        //long long element_start,
         long long element_size);
 
     Cluster();  //EndOfStream
@@ -567,12 +567,20 @@ public:
         const CuePoint::TrackPosition&) const;
     const BlockEntry* GetMaxKey(const VideoTrack*) const;
 
-    static bool HasBlockEntries(const Segment*, long long);
+//    static bool HasBlockEntries(const Segment*, long long);
+
+    static long HasBlockEntries(
+            const Segment*,
+            long long idoff,
+            long long& pos,
+            long& size);
+
     long GetEntryCount() const;
 
     void Load() const;
+    long Load(long long& pos, long& size) const;
+
     void LoadBlockEntries() const;
-    long LoadBlockEntries(long long& pos, long& size) const;
 
 protected:
     Cluster(
@@ -588,7 +596,7 @@ public:
     mutable long long m_pos;
     mutable long long m_size;
     const long long m_element_start;
-    const long long m_element_size;
+    mutable long long m_element_size;
 
 private:
     mutable long long m_timecode;
@@ -637,10 +645,12 @@ public:
             long long& pos,
             long& size);
 
+#if 0
     //This pair parses one cluster, but only changes the state of the
     //segment object when the cluster is actually added to the index.
     long ParseCluster(long long& cluster_pos, long long& new_pos) const;
     bool AddCluster(long long cluster_pos, long long new_pos);
+#endif
 
     const SeekHead* GetSeekHead() const;
     const Tracks* GetTracks() const;
