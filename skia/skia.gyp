@@ -11,6 +11,8 @@
       'sources': [
         '../third_party/skia/gpu/src/GrAllocPool.cpp',
         '../third_party/skia/gpu/src/GrAtlas.cpp',
+        '../third_party/skia/gpu/src/GrBufferAllocPool.cpp',
+        '../third_party/skia/gpu/src/GrBufferAllocPool.h',
         '../third_party/skia/gpu/src/GrClip.cpp',
         '../third_party/skia/gpu/src/GrContext.cpp',
         '../third_party/skia/gpu/src/GrDrawTarget.cpp',
@@ -34,7 +36,6 @@
         '../third_party/skia/gpu/src/GrTextContext.cpp',
         '../third_party/skia/gpu/src/GrTextStrike.cpp',
         '../third_party/skia/gpu/src/GrTextStrike_impl.h',
-        '../third_party/skia/gpu/src/GrVertexBufferAllocPool.cpp',
 
         '../third_party/skia/gpu/include/GrAllocPool.h',
         '../third_party/skia/gpu/include/GrAllocator.h',
@@ -47,6 +48,7 @@
         '../third_party/skia/gpu/include/GrContext_impl.h',
         '../third_party/skia/gpu/include/GrDrawTarget.h',
         '../third_party/skia/gpu/include/GrFontScaler.h',
+        '../third_party/skia/gpu/include/GrGeometryBuffer.h',
         '../third_party/skia/gpu/include/GrGLConfig.h',
         '../third_party/skia/gpu/include/GrGLConfig_chrome.h',
         '../third_party/skia/gpu/include/GrGLIndexBuffer.h',
@@ -89,7 +91,6 @@
         '../third_party/skia/gpu/include/GrTypes.h',
         '../third_party/skia/gpu/include/GrUserConfig.h',
         '../third_party/skia/gpu/include/GrVertexBuffer.h',
-        '../third_party/skia/gpu/include/GrVertexBufferAllocPool.h',
 
         #'../third_party/skia/src/animator/SkAnimate.h',
         #'../third_party/skia/src/animator/SkAnimateActive.cpp',
@@ -664,6 +665,8 @@
       'defines': [
         'SK_BUILD_NO_IMAGE_ENCODE',
         'GR_GL_CUSTOM_SETUP_HEADER="GrGLConfig_chrome.h"',
+        'GR_AGGRESSIVE_SHADER_OPTS=1',
+        'GR_STATIC_RECT_VB=1',
         'GR_SKIP_2POINTRADIAL_PROGRAMS',
       ],
       'sources!': [
