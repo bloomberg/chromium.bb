@@ -48,52 +48,34 @@ void BrowserOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
+  static OptionsStringResource resources[] = {
+    { "startupGroupName", IDS_OPTIONS_STARTUP_GROUP_NAME, true },
+    { "startupShowDefaultAndNewTab",
+      IDS_OPTIONS_STARTUP_SHOW_DEFAULT_AND_NEWTAB},
+    { "startupShowLastSession", IDS_OPTIONS_STARTUP_SHOW_LAST_SESSION },
+    { "startupShowPages", IDS_OPTIONS_STARTUP_SHOW_PAGES },
+    { "startupAddButton", IDS_OPTIONS_STARTUP_ADD_BUTTON },
+    { "startupUseCurrent", IDS_OPTIONS_STARTUP_USE_CURRENT },
+    { "homepageGroupName", IDS_OPTIONS_HOMEPAGE_GROUP_NAME },
+    { "homepageUseNewTab", IDS_OPTIONS_HOMEPAGE_USE_NEWTAB },
+    { "homepageUseURL", IDS_OPTIONS_HOMEPAGE_USE_URL },
+    { "toolbarGroupName", IDS_OPTIONS_TOOLBAR_GROUP_NAME, true },
+    { "toolbarShowHomeButton", IDS_OPTIONS_TOOLBAR_SHOW_HOME_BUTTON },
+    { "defaultSearchGroupName", IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME, true },
+    { "defaultSearchManageEngines", IDS_OPTIONS_DEFAULTSEARCH_MANAGE_ENGINES },
+    { "instantName", IDS_INSTANT_PREF },
+    { "instantWarningText", IDS_INSTANT_PREF_WARNING },
+    { "instantConfirmTitle", IDS_INSTANT_OPT_IN_TITLE },
+    { "instantConfirmMessage", IDS_INSTANT_OPT_IN_MESSAGE },
+    { "defaultBrowserGroupName", IDS_OPTIONS_DEFAULTBROWSER_GROUP_NAME, true },
+  };
+
+  RegisterStrings(localized_strings, resources, arraysize(resources));
   RegisterTitle(localized_strings, "browserPage",
                 IDS_OPTIONS_GENERAL_TAB_LABEL);
 
-  localized_strings->SetString("startupGroupName",
-      dom_options_util::StripColon(
-          l10n_util::GetStringUTF16(IDS_OPTIONS_STARTUP_GROUP_NAME)));
-  localized_strings->SetString("startupShowDefaultAndNewTab",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_STARTUP_SHOW_DEFAULT_AND_NEWTAB));
-  localized_strings->SetString("startupShowLastSession",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_STARTUP_SHOW_LAST_SESSION));
-  localized_strings->SetString("startupShowPages",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_STARTUP_SHOW_PAGES));
-  localized_strings->SetString("startupAddButton",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_STARTUP_ADD_BUTTON));
-  localized_strings->SetString("startupUseCurrent",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_STARTUP_USE_CURRENT));
-  localized_strings->SetString("homepageGroupName",
-      dom_options_util::StripColon(
-          l10n_util::GetStringUTF16(IDS_OPTIONS_HOMEPAGE_GROUP_NAME)));
-  localized_strings->SetString("homepageUseNewTab",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_HOMEPAGE_USE_NEWTAB));
-  localized_strings->SetString("homepageUseURL",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_HOMEPAGE_USE_URL));
-  localized_strings->SetString("toolbarGroupName",
-      dom_options_util::StripColon(
-          l10n_util::GetStringUTF16(IDS_OPTIONS_TOOLBAR_GROUP_NAME)));
-  localized_strings->SetString("toolbarShowHomeButton",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_TOOLBAR_SHOW_HOME_BUTTON));
-  localized_strings->SetString("defaultSearchGroupName",
-      dom_options_util::StripColon(
-          l10n_util::GetStringUTF16(IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME)));
-  localized_strings->SetString("defaultSearchManageEngines",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_DEFAULTSEARCH_MANAGE_ENGINES));
-  localized_strings->SetString("instantName",
-      l10n_util::GetStringUTF16(IDS_INSTANT_PREF));
-  localized_strings->SetString("instantWarningText",
-      l10n_util::GetStringUTF16(IDS_INSTANT_PREF_WARNING));
   localized_strings->SetString("instantLearnMoreLink",
       ASCIIToUTF16(browser::InstantLearnMoreURL().spec()));
-  localized_strings->SetString("instantConfirmTitle",
-      l10n_util::GetStringUTF16(IDS_INSTANT_OPT_IN_TITLE));
-  localized_strings->SetString("instantConfirmMessage",
-      l10n_util::GetStringUTF16(IDS_INSTANT_OPT_IN_MESSAGE));
-  localized_strings->SetString("defaultBrowserGroupName",
-      dom_options_util::StripColon(
-          l10n_util::GetStringUTF16(IDS_OPTIONS_DEFAULTBROWSER_GROUP_NAME)));
   localized_strings->SetString("defaultBrowserUnknown",
       l10n_util::GetStringFUTF16(IDS_OPTIONS_DEFAULTBROWSER_UNKNOWN,
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));

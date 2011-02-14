@@ -6769,6 +6769,7 @@ This web page was killed, either because Chrome ran out of memory, or you chose 
       </message>
       <!-- Windows and Linux put this checkbox in the "home page" section of the prefs, Mac puts -->
       <!-- it in a 'toolbar' section, so it does not need to say toolbar. -->
+      <!-- TODO(estade): remove this string -->
       <if expr="os != 'darwin'">
         <message name="IDS_OPTIONS_HOMEPAGE_SHOW_BUTTON" desc="The label of the 'Show Home button on the toolbar' checkbox">
           Show Home button on the toolbar

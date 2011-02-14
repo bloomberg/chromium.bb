@@ -97,8 +97,8 @@ void LanguageOptionsHandlerCommon::GetLocalizedValues(
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   bool experimental_spell_check_features =
       command_line.HasSwitch(switches::kExperimentalSpellcheckerFeatures);
-  localized_strings->SetString("experimentalSpellCheckFeatures",
-      experimental_spell_check_features ? "true" : "false");
+  localized_strings->SetBoolean("experimentalSpellCheckFeatures",
+                                experimental_spell_check_features);
 }
 
 void LanguageOptionsHandlerCommon::RegisterMessages() {
