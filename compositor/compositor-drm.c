@@ -65,6 +65,7 @@ drm_compositor_present(struct wlsc_compositor *ec)
 					  GL_COLOR_ATTACHMENT0,
 					  GL_RENDERBUFFER,
 					  output->rbo[output->current]);
+		glFlush();
 
 		drmModePageFlip(c->base.drm.fd, output->crtc_id,
 				output->fb_id[output->current ^ 1],
