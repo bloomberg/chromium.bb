@@ -33,7 +33,9 @@ SetupFlowStep::SetupFlowStep() { }
 SetupFlowStep::~SetupFlowStep() { }
 
 SetupFlowStepBase::SetupFlowStepBase()
-    : flow_(NULL) {
+    : flow_(NULL),
+      done_(false),
+      next_step_(NULL) {
 }
 
 SetupFlowStepBase::~SetupFlowStepBase() { }
