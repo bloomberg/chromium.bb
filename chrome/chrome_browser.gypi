@@ -853,6 +853,8 @@
         'browser/diagnostics/recon_diagnostics.h',
         'browser/diagnostics/sqlite_diagnostics.cc',
         'browser/diagnostics/sqlite_diagnostics.h',
+        'browser/disposition_utils.cc',
+        'browser/disposition_utils.h',
         'browser/dom_operation_notification_details.h',
         'browser/dom_ui/app_launcher_handler.cc',
         'browser/dom_ui/app_launcher_handler.h',

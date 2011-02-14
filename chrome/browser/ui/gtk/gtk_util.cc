@@ -23,6 +23,7 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/disposition_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -150,14 +151,12 @@ GtkWidget* GetBrowserWindowFocusedWidget(BrowserWindow* window) {
 namespace event_utils {
 
 WindowOpenDisposition DispositionFromEventFlags(guint event_flags) {
-  if ((event_flags & GDK_BUTTON2_MASK) || (event_flags & GDK_CONTROL_MASK)) {
-    return (event_flags & GDK_SHIFT_MASK) ?
-        NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB;
-  }
-
-  if (event_flags & GDK_SHIFT_MASK)
-    return NEW_WINDOW;
-  return false /*event.IsAltDown()*/ ? SAVE_TO_DISK : CURRENT_TAB;
+  return disposition_utils::DispositionFromClick(
+      event_flags & GDK_BUTTON2_MASK,
+      event_flags & GDK_MOD1_MASK,
+      event_flags & GDK_CONTROL_MASK,
+      event_flags & GDK_META_MASK,
+      event_flags & GDK_SHIFT_MASK);
 }
 
 }  // namespace event_utils

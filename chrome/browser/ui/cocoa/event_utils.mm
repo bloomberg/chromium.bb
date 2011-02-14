@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/event_utils.h"
 
+#include "chrome/browser/disposition_utils.h"
+
 namespace event_utils {
 
 WindowOpenDisposition WindowOpenDispositionFromNSEvent(NSEvent* event) {
@@ -13,9 +15,12 @@ WindowOpenDisposition WindowOpenDispositionFromNSEvent(NSEvent* event) {
 
 WindowOpenDisposition WindowOpenDispositionFromNSEventWithFlags(
     NSEvent* event, NSUInteger flags) {
-  if ([event buttonNumber] == 2 || flags & NSCommandKeyMask)
-    return flags & NSShiftKeyMask ? NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB;
-  return flags & NSShiftKeyMask ? NEW_WINDOW : CURRENT_TAB;
+  return disposition_utils::DispositionFromClick(
+      [event buttonNumber] == 2,
+      flags & NSAlternateKeyMask,
+      flags & NSControlKeyMask,
+      flags & NSCommandKeyMask,
+      flags & NSShiftKeyMask);
 }
 
 }  // namespace event_utils

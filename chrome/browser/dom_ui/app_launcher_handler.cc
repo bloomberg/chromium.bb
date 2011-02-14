@@ -13,6 +13,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/disposition_utils.h"
 #include "chrome/browser/dom_ui/shown_sections_handler.h"
 #include "chrome/browser/extensions/default_apps.h"
 #include "chrome/browser/extensions/extension_prefs.h"
@@ -34,6 +35,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/animation/animation.h"
 #include "ui/gfx/rect.h"
+#include "webkit/glue/window_open_disposition.h"
 
 namespace {
 
@@ -41,18 +43,6 @@ namespace {
 // has launched. These are used for histogram purposes.
 const char* kLaunchAppPingURL = "record-app-launch";
 const char* kLaunchWebStorePingURL = "record-webstore-launch";
-
-// This extracts an int from a ListValue at the given |index|.
-bool ExtractInt(const ListValue* list, size_t index, int* out_int) {
-  std::string string_value;
-
-  if (list->GetString(index, &string_value)) {
-    base::StringToInt(string_value, out_int);
-    return true;
-  }
-
-  return false;
-}
 
 std::string GetIconURL(const Extension* extension, Extension::Icons icon,
                        const std::string& default_val) {
@@ -271,23 +261,31 @@ void AppLauncherHandler::HandleGetApps(const ListValue* args) {
 
 void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
   std::string extension_id;
-  int left = 0;
-  int top = 0;
-  int width = 0;
-  int height = 0;
+  double left;
+  double top;
+  double width;
+  double height;
+  bool alt_key;
+  bool ctrl_key;
+  bool meta_key;
+  bool shift_key;
+  double button;
 
-  if (!args->GetString(0, &extension_id) ||
-      !ExtractInt(args, 1, &left) ||
-      !ExtractInt(args, 2, &top) ||
-      !ExtractInt(args, 3, &width) ||
-      !ExtractInt(args, 4, &height)) {
-    NOTREACHED();
-    return;
-  }
+  CHECK(args->GetString(0, &extension_id));
+  CHECK(args->GetDouble(1, &left));
+  CHECK(args->GetDouble(2, &top));
+  CHECK(args->GetDouble(3, &width));
+  CHECK(args->GetDouble(4, &height));
+  CHECK(args->GetBoolean(5, &alt_key));
+  CHECK(args->GetBoolean(6, &ctrl_key));
+  CHECK(args->GetBoolean(7, &meta_key));
+  CHECK(args->GetBoolean(8, &shift_key));
+  CHECK(args->GetDouble(9, &button));
 
   // The rect we get from the client is relative to the browser client viewport.
   // Offset the rect by the tab contents bounds.
-  gfx::Rect rect(left, top, width, height);
+  gfx::Rect rect(static_cast<int>(left), static_cast<int>(top),
+                 static_cast<int>(width), static_cast<int>(height));
   gfx::Rect tab_contents_bounds;
   web_ui_->tab_contents()->GetContainerBounds(&tab_contents_bounds);
   rect.Offset(tab_contents_bounds.origin());
@@ -297,24 +295,40 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
   DCHECK(extension);
   Profile* profile = extensions_service_->profile();
 
-  // To give a more "launchy" experience when using the NTP launcher, we close
-  // it automatically.
-  Browser* browser = BrowserList::GetLastActive();
-  TabContents* old_contents = NULL;
-  if (browser)
-    old_contents = browser->GetSelectedTabContents();
+  // If the user pressed special keys when clicking, override the saved
+  // preference for launch container.
+  bool middle_button = (button == 1.0);
+  WindowOpenDisposition disposition =
+        disposition_utils::DispositionFromClick(middle_button, alt_key,
+                                                ctrl_key, meta_key, shift_key);
+  if (disposition == NEW_FOREGROUND_TAB || disposition == NEW_BACKGROUND_TAB) {
+    // TODO(jamescook): Proper support for background tabs.
+    Browser::OpenApplication(
+        profile, extension, extension_misc::LAUNCH_TAB, NULL);
+  } else if (disposition == NEW_WINDOW) {
+    // Force a new window open.
+    Browser::OpenApplication(
+            profile, extension, extension_misc::LAUNCH_WINDOW, NULL);
+  } else {
+    // Look at preference to find the right launch container.  If no preference
+    // is set, launch as a regular tab.
+    extension_misc::LaunchContainer launch_container =
+        extensions_service_->extension_prefs()->GetLaunchContainer(
+            extension, ExtensionPrefs::LAUNCH_REGULAR);
 
-  // Look at preference to find the right launch container.  If no preference
-  // is set, launch as a regular tab.
-  extension_misc::LaunchContainer launch_container =
-      extensions_service_->extension_prefs()->GetLaunchContainer(
-          extension, ExtensionPrefs::LAUNCH_DEFAULT);
+    // To give a more "launchy" experience when using the NTP launcher, we close
+    // it automatically.
+    Browser* browser = BrowserList::GetLastActive();
+    TabContents* old_contents = NULL;
+    if (browser)
+      old_contents = browser->GetSelectedTabContents();
 
-  TabContents* new_contents = Browser::OpenApplication(
-      profile, extension, launch_container, old_contents);
+    TabContents* new_contents = Browser::OpenApplication(
+        profile, extension, launch_container, old_contents);
 
-  if (new_contents != old_contents && browser->tab_count() > 1)
-    browser->CloseTabContents(old_contents);
+    if (new_contents != old_contents && browser->tab_count() > 1)
+      browser->CloseTabContents(old_contents);
+  }
 
   if (extension_id != extension_misc::kWebStoreAppId) {
     RecordAppLaunch(promo_active_);
@@ -324,12 +338,9 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
 
 void AppLauncherHandler::HandleSetLaunchType(const ListValue* args) {
   std::string extension_id;
-  int launch_type;
-  if (!args->GetString(0, &extension_id) ||
-      !ExtractInt(args, 1, &launch_type)) {
-    NOTREACHED();
-    return;
-  }
+  double launch_type;
+  CHECK(args->GetString(0, &extension_id));
+  CHECK(args->GetDouble(1, &launch_type));
 
   const Extension* extension =
       extensions_service_->GetExtensionById(extension_id, false);
@@ -337,7 +348,8 @@ void AppLauncherHandler::HandleSetLaunchType(const ListValue* args) {
 
   extensions_service_->extension_prefs()->SetLaunchType(
       extension_id,
-      static_cast<ExtensionPrefs::LaunchType>(launch_type));
+      static_cast<ExtensionPrefs::LaunchType>(
+          static_cast<int>(launch_type)));
 }
 
 void AppLauncherHandler::HandleUninstallApp(const ListValue* args) {

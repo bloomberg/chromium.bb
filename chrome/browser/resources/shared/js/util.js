@@ -129,8 +129,7 @@ function handleLinkClickOrMouseUp(e) {
         ((e.button == 0 && e.type == 'click') ||
         (e.button == 1 && e.type == 'mouseup'))) {
       chrome.send('navigateToUrl',
-          [el.href, String(e.button), String(e.ctrlKey), String(e.shiftKey),
-           String(e.altKey)]);
+          [el.href, e.button, e.altKey, e.ctrlKey, e.metaKey, e.shiftKey]);
       e.preventDefault();
     }
   }

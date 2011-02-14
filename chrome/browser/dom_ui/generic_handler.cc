@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/values.h"
+#include "chrome/browser/disposition_utils.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "googleurl/src/gurl.h"
 
@@ -22,28 +23,25 @@ void GenericHandler::RegisterMessages() {
 
 void GenericHandler::HandleNavigateToUrl(const ListValue* args) {
   std::string url_string;
-  CHECK(args->GetString(0, &url_string));
-  std::string button_string;
-  CHECK(args->GetString(1, &button_string));
-  CHECK(button_string == "0" || button_string == "1");
-  std::string ctrl_string;
-  CHECK(args->GetString(2, &ctrl_string));
-  std::string shift_string;
-  CHECK(args->GetString(3, &shift_string));
-  std::string alt_string;
-  CHECK(args->GetString(4, &alt_string));
+  double button;
+  bool alt_key;
+  bool ctrl_key;
+  bool meta_key;
+  bool shift_key;
 
-  // TODO(estade): This logic is replicated in 4 places throughout chrome.
-  // It would be nice to centralize it.
-  WindowOpenDisposition disposition;
-  if (button_string == "1" || ctrl_string == "true") {
-    disposition = shift_string == "true" ?
-        NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB;
-  } else if (shift_string == "true") {
-    disposition = NEW_WINDOW;
-  } else {
-    disposition = alt_string == "true" ? SAVE_TO_DISK : CURRENT_TAB;
-  }
+  CHECK(args->GetString(0, &url_string));
+  CHECK(args->GetDouble(1, &button));
+  CHECK(args->GetBoolean(2, &alt_key));
+  CHECK(args->GetBoolean(3, &ctrl_key));
+  CHECK(args->GetBoolean(4, &meta_key));
+  CHECK(args->GetBoolean(5, &shift_key));
+
+  CHECK(button == 0.0 || button == 1.0);
+  bool middle_button = (button == 1.0);
+
+  WindowOpenDisposition disposition =
+      disposition_utils::DispositionFromClick(middle_button, alt_key, ctrl_key,
+                                              meta_key, shift_key);
 
   web_ui_->tab_contents()->OpenURL(
       GURL(url_string), GURL(), disposition, PageTransition::LINK);

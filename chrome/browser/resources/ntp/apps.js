@@ -132,7 +132,14 @@ var apps = (function() {
     return div;
   }
 
-  function launchApp(appId) {
+  /**
+   * Launches an application.
+   * @param {string} appId Application to launch.
+   * @param {MouseEvent} opt_mouseEvent Mouse event from the click that
+   *     triggered the launch, used to detect modifier keys that change
+   *     the tab's disposition.
+   */
+  function launchApp(appId, opt_mouseEvent) {
     var appsSection = $('apps');
     var expanded = !appsSection.classList.contains('collapsed');
     var element = document.querySelector(
@@ -162,9 +169,19 @@ var apps = (function() {
         left = rect.left;
     }
 
-    chrome.send('launchApp', [appId,
-                              String(left), String(top),
-                              String(width), String(height)]);
+    if (opt_mouseEvent) {
+      // Launch came from a click.
+      chrome.send('launchApp', [appId, left, top, width, height,
+                                opt_mouseEvent.altKey, opt_mouseEvent.ctrlKey,
+                                opt_mouseEvent.metaKey, opt_mouseEvent.shiftKey,
+                                opt_mouseEvent.button]);
+    } else {
+      // Launch came from 'command' event from elsewhere in UI.
+      chrome.send('launchApp', [appId, left, top, width, height,
+                                false /* altKey */, false /* ctrlKey */,
+                                false /* metaKey */, false /* shiftKey */,
+                                0 /* button */]);
+    }
   }
 
   /**
@@ -173,7 +190,7 @@ var apps = (function() {
   function handleClick(e) {
     var appId = e.currentTarget.getAttribute('app-id');
     if (!appDragAndDrop.isDragging())
-      launchApp(appId);
+      launchApp(appId, e);
     return false;
   }
 
@@ -258,7 +275,8 @@ var apps = (function() {
       case 'apps-launch-type-fullscreen':
       case 'apps-launch-type-window':
         chrome.send('setLaunchType',
-            [currentApp['id'], e.command.getAttribute('launch-type')]);
+            [currentApp['id'],
+             Number(e.command.getAttribute('launch-type'))]);
         break;
     }
   });
