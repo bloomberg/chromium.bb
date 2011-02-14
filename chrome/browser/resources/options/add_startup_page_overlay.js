@@ -111,6 +111,12 @@ cr.define('options', function() {
       $('addStartupPageURL').value = url;
       this.updateAddButtonState_();
     },
+
+    /** @inheritDoc */
+    canShowPage: function() {
+      return BrowserOptions.getInstance().
+          shouldEnableCustomStartupPageControls();
+    },
   };
 
   AddStartupPageOverlay.updateRecentPageList = function(pages) {

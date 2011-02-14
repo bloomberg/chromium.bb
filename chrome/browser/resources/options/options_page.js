@@ -43,10 +43,17 @@ cr.define('options', function() {
   OptionsPage.initialized_ = false;
 
   /**
+   * Gets the default page (to be shown on initial load).
+   */
+  OptionsPage.getDefaultPage = function() {
+    return BrowserOptions.getInstance();
+  };
+
+  /**
    * Shows the default page.
    */
   OptionsPage.showDefaultPage = function() {
-    this.navigateToPage(BrowserOptions.getInstance().name);
+    this.navigateToPage(this.getDefaultPage().name);
   };
 
   /**
@@ -67,12 +74,18 @@ cr.define('options', function() {
    */
   OptionsPage.showPageByName = function(pageName, updateHistory) {
     var targetPage = this.registeredPages[pageName];
-    if (!targetPage) {
-      this.showOverlay_(pageName);
-      if (updateHistory)
-        this.updateHistoryState_();
-      return;
+    if (!targetPage || !targetPage.canShowPage()) {
+      // If it's not a page, try it as an overlay.
+      if (!targetPage && this.showOverlay_(pageName)) {
+        if (updateHistory)
+          this.updateHistoryState_();
+        return;
+      } else {
+        targetPage = this.getDefaultPage();
+      }
     }
+
+    pageName = targetPage.name;
 
     // Determine if the root page is 'sticky', meaning that it
     // shouldn't change when showing a sub-page.  This can happen for special
@@ -151,27 +164,20 @@ cr.define('options', function() {
   };
 
   /**
-   * Called on load. Dispatch the URL hash to the given page's handleHash
-   * function.
-   * @param {string} pageName The string name of the (registered) options page.
-   * @param {string} hash The value of the hash component of the URL.
-   */
-  OptionsPage.handleHashForPage = function(pageName, hash) {
-    var page = this.registeredPages[pageName];
-    page.handleHash(hash);
-  };
-
-  /**
    * Shows a registered Overlay page. Does not update history.
    * @param {string} overlayName Page name.
+   * @return {boolean} whether we showed an overlay.
    */
   OptionsPage.showOverlay_ = function(overlayName) {
     var overlay = this.registeredOverlayPages[overlayName];
+    if (!overlay || !overlay.canShowPage())
+      return false;
 
     if (overlay.parentPage)
       this.showPageByName(overlay.parentPage.name, false);
 
     this.registeredOverlayPages[overlayName].visible = true;
+    return true;
   };
 
   /**
@@ -728,11 +734,11 @@ cr.define('options', function() {
     },
 
     /**
-     * Handles a hash value in the URL (such as bar in
-     * chrome://options/foo#bar). Called on page load.
-     * @param {string} hash The hash value.
+     * Whether it should be possible to show the page.
+     * @return {boolean} True if the page should be shown
      */
-    handleHash: function(hash) {
+    canShowPage: function() {
+      return true;
     },
   };
 

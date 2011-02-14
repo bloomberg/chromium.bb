@@ -50,6 +50,11 @@ cr.define('options', function() {
     },
 
     /** @inheritDoc */
+    canShowPage: function() {
+      return !PersonalOptions.disablePasswordManagement();
+    },
+
+    /** @inheritDoc */
     didShowPage: function() {
       // Updating the password lists may cause a blocking platform dialog pop up
       // (Mac, Linux), so we delay this operation until the page is shown.

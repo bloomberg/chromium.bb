@@ -80,8 +80,9 @@ cr.define('options', function() {
       if (cr.commandLine.options['--bwsi']) {
         // Disable the screen lock checkbox for the guest mode.
         $('enable-screen-lock').disabled = true;
+      }
 
-        // Disable passwords management settings for the guest mode.
+      if (PersonalOptions.disablePasswordManagement()) {
         $('passwords-offersave').disabled = true;
         $('passwords-neversave').disabled = true;
         $('passwords-offersave').value = false;
@@ -182,6 +183,15 @@ cr.define('options', function() {
         }
       }
     },
+  };
+
+  /**
+   * Returns whether the user should be able to manage (view and edit) their
+   * stored passwords. Password management is disabled in guest mode.
+   * @return {boolean} True if password management should be disabled.
+   */
+  PersonalOptions.disablePasswordManagement = function() {
+    return cr.commandLine.options['--bwsi'];
   };
 
   // Forward public APIs to private implementations.

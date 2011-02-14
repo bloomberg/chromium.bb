@@ -160,11 +160,10 @@ cr.define('options', function() {
     /**
      * Returns true if the custom startup page control block should
      * be enabled.
-     * @private
      * @returns {boolean} Whether the startup page controls should be
      *     enabled.
      */
-    shouldEnableCustomStartupPageControls_: function(pages) {
+    shouldEnableCustomStartupPageControls: function(pages) {
       return $('startupShowPagesButton').checked;
     },
 
@@ -336,7 +335,7 @@ cr.define('options', function() {
      * @private
      */
     updateCustomStartupPageControlStates_: function() {
-      var disable = !this.shouldEnableCustomStartupPageControls_();
+      var disable = !this.shouldEnableCustomStartupPageControls();
       $('startupPagesList').disabled = disable;
       $('startupUseCurrentButton').disabled = disable;
       $('startupAddButton').disabled = disable;
