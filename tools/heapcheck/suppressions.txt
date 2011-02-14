@@ -1164,6 +1164,7 @@
 {
    bug_70115
    Heapcheck:Leak
+   ...
    fun:FilePathWatcher
    fun:PluginService
    fun:DefaultSingletonTraits::New
