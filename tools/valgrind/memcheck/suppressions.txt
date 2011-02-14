@@ -3692,31 +3692,6 @@
    fun:_ZN11MessageLoop10RunHandlerEv
 }
 {
-   bug_72399a
-   Memcheck:Addr8
-   ...
-   fun:jsimd_ycc_rgb_convert
-   fun:sep_upsample
-   fun:process_data_simple_main
-   fun:chromium_jpeg_read_scanlines
-   fun:_ZN3gfx9JPEGCodec6DecodeEPK*NS0_11ColorFormatEPSt6vectorIhSaIhEEPiS8_
-   fun:_ZN3gfx9JPEGCodec6DecodeEPK*
-   fun:*ExtractThumbnailERK15RefCountedBytes
-   fun:_ZN7history12TopSitesTest12GetThumbnailERK4GURL
-   fun:_ZN7history21TopSitesMigrationTest19MigrationAssertionsEv
-   fun:_ZN7history34TopSitesMigrationTest_Migrate_Test8TestBodyEv
-}
-{
-   bug_72399b
-   Memcheck:Addr8
-   fun:jsimd_ycc_rgb_convert_sse2
-}
-{
-   bug_72399c
-   Memcheck:Addr8
-   obj:*/unit_tests
-}
-{
    bug_72538
    Memcheck:Cond
    fun:_ZN2v88internal11StackTracer5TraceEPNS0_10TickSampleE
