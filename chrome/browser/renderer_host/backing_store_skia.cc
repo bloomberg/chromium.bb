@@ -68,8 +68,11 @@ void BackingStoreSkia::PaintToBackingStore(
     int y = copy_rect.y() - bitmap_rect.y();
     int w = copy_rect.width();
     int h = copy_rect.height();
-    SkIRect srcrect = SkIRect::MakeXYWH(x, y, w, h);
-    SkRect dstrect = SkRect::MakeXYWH(copy_rect.x(), copy_rect.y(), w, h);
+    SkIRect srcrect = SkIRect::MakeXYWH(
+        SkIntToScalar(x), SkIntToScalar(y), SkIntToScalar(w), SkIntToScalar(h));
+    SkRect dstrect = SkRect::MakeXYWH(
+        SkIntToScalar(copy_rect.x()), SkIntToScalar(copy_rect.y()),
+        SkIntToScalar(w), SkIntToScalar(h));
     SkBitmap b = p_canvas->getTopPlatformDevice().accessBitmap(false);
     canvas_.get()->drawBitmapRect(b, &srcrect, dstrect);
   }
