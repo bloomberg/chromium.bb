@@ -33,7 +33,7 @@ vm_tests -- Runs the smoke suite and au test harness in a qemu-based VM
 usepkg -- Use binary packages to bootstrap, when possible. (emerge --usepkg)
 chroot_replace -- wipe and replace chroot, but not source.
 
-archive_build -- Do we run archive_build.sh
+archive_build_prebuilts -- Do we run archive_build.sh with --prebuild_upload
 test_mod -- Create a test mod image for archival.
 factory_install_mod -- Create a factory install image for archival.
 factory_test_mod -- Create a factory test image for archival.
@@ -59,10 +59,11 @@ default = {
   'usepkg' : True,
   'chroot_replace' : False,
 
-  'archive_build' : False,
-  'test_mod' : True,
-  'factory_install_mod' : True,
-  'factory_test_mod' : True,
+  'archive_build_prebuilts' : False,
+  'archive_build_debug' : False,
+  'test_mod' : False,
+  'factory_install_mod' : False,
+  'factory_test_mod' : False,
 }
 
 arm = {
@@ -81,7 +82,11 @@ full = {
   'usepkg' : False,
   'chroot_replace' : True,
 
-  'archive_build' : True
+  'archive_build_prebuilts' : True,
+  'archive_build_debug' : True,
+  'test_mod' : True,
+  'factory_install_mod' : True,
+  'factory_test_mod' : True,
 }
 
 

@@ -500,77 +500,62 @@ def _UprevPush(buildroot, tracking_branch, board, overlays, dryrun):
 
 
 def _LegacyArchiveBuild(buildroot, bot_id, buildconfig, buildnumber,
-                        debug=False):
+                        test_tarball, debug=False):
   """Adds a step to the factory to archive a build."""
 
   # Fixed properties
   keep_max = 3
   gsutil_archive = 'gs://chromeos-archive/' + bot_id
   cwd = os.path.join(buildroot, 'src', 'scripts')
-
   cmd = ['./archive_build.sh',
          '--build_number', str(buildnumber),
          '--to', '/var/www/archive/' + bot_id,
          '--keep_max', str(keep_max),
-         '--prebuilt_upload',
          '--board', buildconfig['board'],
-
          '--acl', '/home/chrome-bot/slave_archive_acl',
          '--gsutil_archive', gsutil_archive,
          '--gsd_gen_index',
            '/b/scripts/gsd_generate_index/gsd_generate_index.py',
          '--gsutil', '/b/scripts/slave/gsutil',
-         '--test_mod'
   ]
-
-  if buildconfig.get('test_mod', True):
-    cmd.append('--test_mod')
-
+  # Give the right args to archive_build.
+  if buildconfig['archive_build_prebuilts']: cmd.extend('--prebuilt_upload')
+  if buildconfig.get('test_mod', True): cmd.append('--test_mod')
+  if buildconfig.get('factory_test_mod', True): cmd.append('--factory_test_mod')
+  if not buildconfig['archive_build_debug']: cmd.append('--noarchive_debug')
+  if test_tarball: cmd.append('--test_tarball', test_tarball)
+  if debug: cmd.append('--debug')
   if buildconfig.get('factory_install_mod', True):
     cmd.append('--factory_install_mod')
 
-  if buildconfig.get('factory_test_mod', True):
-    cmd.append('--factory_test_mod')
+  OldRunCommand(cmd, cwd=cwd)
 
-  if debug:
-    Warning('***** ***** LegacyArchiveBuild CMD: ' + ' '.join(cmd))
-  else:
-    OldRunCommand(cmd, cwd=cwd)
 
-def _ArchiveTestResults(buildroot, board, test_results_dir,
-                        gsutil, archive_dir, acl):
-  """Archives the test results into Google Storage
-
-  Takes the results from the test_results_dir and the last qemu image and
-  uploads them to Google Storage.
+def _ArchiveTestResults(buildroot, test_results_dir):
+  """Archives the test results into a tarball and returns a path to it.
 
   Arguments:
     buildroot: Root directory where build occurs
-    board: Board to find the qemu image.
     test_results_dir: Path from buildroot/chroot to find test results.
       This must a subdir of /tmp.
-    gsutil: Location of gsutil
-    archive_dir: Google Storage path to store the archive
-    acl: ACL to set on archive in Google Storage
+  Returns:
+    Path to the newly archived test results.
   """
-  num_gsutil_retries = 5
-  test_results_dir = test_results_dir.lstrip('/')
-  results_path = os.path.join(buildroot, 'chroot', test_results_dir)
-  OldRunCommand(['sudo', 'chmod', '-R', '+r', results_path])
   try:
-    # gsutil has the ability to resume an upload when the command is retried
-    OldRunCommand([gsutil, 'cp', '-R', results_path, archive_dir],
-               num_retries=num_gsutil_retries)
-    OldRunCommand([gsutil, 'setacl', acl, archive_dir])
+    test_results_dir = test_results_dir.lstrip('/')
+    results_path = os.path.join(buildroot, 'chroot', test_results_dir)
+    RunCommand(['sudo', 'chmod', '-R', 'a+rw', results_path])
 
-    image_name = 'chromiumos_qemu_image.bin'
-    image_path = os.path.join(buildroot, 'src', 'build', 'images', board,
-                              'latest', image_name)
-    OldRunCommand(['gzip', '-f', '--fast', image_path])
-    OldRunCommand([gsutil, 'cp', image_path + '.gz', archive_dir],
-               num_retries=num_gsutil_retries)
-  except Exception, e:
-    Warning('Could not archive test results (error=%s)' % str(e))
+    archive_tarball = os.path.join(buildroot, 'test_results.tgz')
+    if os.path.exists(archive_tarball): os.remove(archive_tarball)
+    RunCommand(['tar', 'cf', archive_tarball, results_path])
+    shutil.rmtree(results_path)
+    return archive_tarball
+  except:
+    Warning('=================================================================')
+    Warning('------>       We failed to archive test results. <---------------')
+    Warning('=================================================================')
+    return None
 
 
 def _GetConfig(config_name):
@@ -779,16 +764,10 @@ def main():
         _RunSmokeSuite(buildroot, test_results_dir)
         _RunAUTest(buildroot, buildconfig['board'])
       finally:
-        pass
-        # TODO(sosa): Re-enable with crosbug.com/8364.
-        #if not options.debug:
-          #archive_full_path = os.path.join(options.gsutil_archive,
-          #                                 str(options.buildnumber))
-          #_ArchiveTestResults(buildroot, buildconfig['board'],
-          #                    test_results_dir=test_results_dir,
-          #                    gsutil=options.gsutil,
-          #                    archive_dir=archive_full_path,
-          #                    acl=options.acl)
+        test_tarball = _ArchiveTestResults(buildroot,
+                                           test_results_dir=test_results_dir)
+        _LegacyArchiveBuild(buildroot, bot_id, buildconfig, options.buildnumber,
+                            test_tarball, options.debug)
 
     # Don't push changes for developers.
     if buildconfig['master']:
@@ -807,12 +786,6 @@ def main():
       if buildconfig['important'] and not options.debug:
         cbuildbot_comm.PublishStatus(cbuildbot_comm.STATUS_BUILD_COMPLETE)
 
-    if buildconfig['archive_build']:
-      _LegacyArchiveBuild(buildroot,
-                          bot_id,
-                          buildconfig,
-                          options.buildnumber,
-                          options.debug)
   except:
     # Send failure to master bot.
     if not buildconfig['master'] and buildconfig['important']:
