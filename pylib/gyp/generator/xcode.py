@@ -77,6 +77,8 @@ generator_extra_sources_for_rules = [
 
 def CreateXCConfigurationList(configuration_names):
   xccl = gyp.xcodeproj_file.XCConfigurationList({'buildConfigurations': []})
+  if len(configuration_names) == 0:
+    configuration_names = ['Default']
   for configuration_name in configuration_names:
     xcbc = gyp.xcodeproj_file.XCBuildConfiguration({
         'name': configuration_name})
