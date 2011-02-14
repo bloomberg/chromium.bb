@@ -15,13 +15,10 @@
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
 #include "webkit/glue/form_data.h"
 
 namespace {
-
-// TODO(isherman): Pull in the equivalent named constant from WebKit, without
-// breaking the shared-lib build.
-const int kDefaultMaxLength = 0x80000;
 
 const FilePath::CharType kTestName[] = FILE_PATH_LITERAL("merge");
 const FilePath::CharType kFileNamePattern[] = FILE_PATH_LITERAL("*.in");
@@ -184,7 +181,7 @@ void AutoFillMergeTest::MergeProfiles(const std::string& profiles,
                                    field_type,
                                    value,
                                    ASCIIToUTF16("text"),
-                                   kDefaultMaxLength,
+                                   WebKit::WebInputElement::defaultMaxLength(),
                                    false);
       form.fields.push_back(field);
     }
