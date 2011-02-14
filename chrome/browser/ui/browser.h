@@ -938,24 +938,6 @@ class Browser : public TabHandlerDelegate,
 
   // Assorted utility functions ///////////////////////////////////////////////
 
-  // Checks whether |source| is about to navigate across extension extents, and
-  // if so, navigates in the correct window. For example if this is a normal
-  // browser and we're about to navigate into an extent, this method will
-  // navigate the app's window instead. If we're in an app window and
-  // navigating out of the app, this method will find and navigate a normal
-  // browser instead.
-  //
-  // Returns true if the navigation was handled, eg, it was opened in some other
-  // browser.
-  //
-  // Returns false if it was not handled. In this case, the method may also
-  // modify |disposition| to a more suitable value.
-  bool HandleCrossAppNavigation(TabContents* source,
-                                const GURL& url,
-                                const GURL& referrer,
-                                WindowOpenDisposition *disposition,
-                                PageTransition::Type transition);
-
   // Shows the Find Bar, optionally selecting the next entry that matches the
   // existing search string for that Tab. |forward_direction| controls the
   // search direction.
