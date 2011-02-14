@@ -29,6 +29,7 @@ SafeBrowsingResourceHandler::SafeBrowsingResourceHandler(
     ResourceDispatcherHost* resource_dispatcher_host)
     : state_(STATE_NONE),
       defer_state_(DEFERRED_NONE),
+      safe_browsing_result_(SafeBrowsingService::URL_SAFE),
       deferred_request_id_(-1),
       next_handler_(handler),
       render_process_host_id_(render_process_host_id),
