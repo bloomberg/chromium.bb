@@ -38,12 +38,16 @@ TEST_F(AccessVerifierTest, VerifyPermissions) {
   InitConfig();
   ASSERT_TRUE(target.Init(config_));
   EXPECT_TRUE(target.VerifyPermissions("host@domain.com/123123", ""));
+  EXPECT_TRUE(target.VerifyPermissions("hOsT@domain.com/123123", ""));
   EXPECT_FALSE(target.VerifyPermissions("host@domain.com", ""));
   EXPECT_FALSE(target.VerifyPermissions("otherhost@domain.com/123123", ""));
   EXPECT_FALSE(target.VerifyPermissions("host@otherdomain.com/123123", ""));
   EXPECT_FALSE(target.VerifyPermissions("", ""));
   EXPECT_FALSE(target.VerifyPermissions("host@domain.co/saf", ""));
   EXPECT_FALSE(target.VerifyPermissions("host@domain.com.other/blah", ""));
+
+  // Non ASCII string.
+  EXPECT_FALSE(target.VerifyPermissions("абв@domain.com/saf", ""));
 }
 
 }  // namespace remoting

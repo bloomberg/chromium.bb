@@ -34,9 +34,18 @@ bool AccessVerifier::VerifyPermissions(
     const std::string& client_jid,
     const std::string& encoded_access_token) {
   CHECK(initialized_);
+
+  // Reject incoming connection if the client's jid is not an ASCII string.
+  if (!IsStringASCII(client_jid)) {
+    LOG(ERROR) << "Rejecting incoming connection from " << client_jid;
+    return false;
+  }
+
   // Check that the client has the same bare jid as the host, i.e.
-  // client's full jid starts with host's bare jid.
-  if (!StartsWithASCII(client_jid, host_jid_prefix_, true)) {
+  // client's full JID starts with host's bare jid. Comparison is case
+  // insensitive.
+  if (!StartsWithASCII(client_jid, host_jid_prefix_, false)) {
+    LOG(ERROR) << "Rejecting incoming connection from " << client_jid;
     return false;
   }
 
