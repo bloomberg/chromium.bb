@@ -119,7 +119,7 @@ def ExtractSvnInfo(local_filename):
 
   return [root, path, rev]
 
-def UpdatePDB(pdb_filename):
+def UpdatePDB(pdb_filename, verbose=False):
   """Update a pdb file with source information."""
   dir_blacklist = { }
   # TODO(deanm) look into "compressing" our output, by making use of vars
@@ -145,11 +145,13 @@ def UpdatePDB(pdb_filename):
   for filename in filelist:
     filedir = os.path.dirname(filename)
 
-    print "Processing: %s" % filename
+    if verbose:
+      print "Processing: %s" % filename
     # This directory is blacklisted, either because it's not part of the SVN
     # repository, or from one we're not interested in indexing.
     if dir_blacklist.get(filedir, False):
-      print "  skipping, directory is blacklisted."
+      if verbose:
+        print "  skipping, directory is blacklisted."
       continue
 
     info = ExtractSvnInfo(filename)
@@ -160,7 +162,8 @@ def UpdatePDB(pdb_filename):
     if not info:
       if not ExtractSvnInfo(filedir):
         dir_blacklist[filedir] = True
-      print "  skipping, file is not in an SVN repository"
+      if verbose:
+        print "  skipping, file is not in an SVN repository"
       continue
 
     root = info[0]
@@ -170,7 +173,8 @@ def UpdatePDB(pdb_filename):
     # Check if file was from a svn repository we don't know about, or don't
     # want to index.  Blacklist the entire directory.
     if not REPO_MAP.has_key(info[0]):
-      print "  skipping, file is from an unknown SVN repository %s" % root
+      if verbose:
+        print "  skipping, file is from an unknown SVN repository %s" % root
       dir_blacklist[filedir] = True
       continue
 
@@ -179,15 +183,20 @@ def UpdatePDB(pdb_filename):
       root = REPO_MAP[root]
 
     lines.append('%s*%s*%s*%s' % (filename, root, path, rev))
-    print "  indexed file."
+    if verbose:
+      print "  indexed file."
 
   lines.append('SRCSRV: end ------------------------------------------------')
 
   WriteSourceStream(pdb_filename, '\r\n'.join(lines))
 
 if __name__ == '__main__':
-  if len(sys.argv) != 2:
-    print "usage: file.pdb"
+  if len(sys.argv) < 2 or len(sys.argv) > 3:
+    print "usage: file.pdb [-v]"
     sys.exit(1)
 
-  UpdatePDB(sys.argv[1])
+  verbose = False
+  if len(sys.argv) == 3:
+    verbose = (sys.argv[2] == '-v')
+
+  UpdatePDB(sys.argv[1], verbose=verbose)
