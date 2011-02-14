@@ -42,34 +42,6 @@ int main() {
                          stdout=open(os.devnull, "w"))
     self.assertEquals(rc, 1)
 
-  def test_computed_gotos(self):
-    # Test for toolchain bug.
-    # Bug 1:  gcc outputs "jmp *%eax", fails to validate.
-    # Bug 2:  gcc outputs "nacljmp *%eax", fails to assemble.
-    # Correct assembly output is "nacljmp %eax".
-    code = """
-int foo(int i) {
-  void *addr[] = { &&label1, &&label2 };
-  goto *addr[i];
- label1:
-  return 1234;
- label2:
-  return 4568;
-}
-
-int main() {
-  return 0;
-}
-"""
-    temp_dir = self.make_temp_dir()
-    write_file(os.path.join(temp_dir, "code.c"), code)
-    # ncval doesn't seem to accept .o files any more.
-    # TODO: fix ncval.
-    testutils.check_call(["nacl-gcc", # "-c",
-                          os.path.join(temp_dir, "code.c"),
-                          "-o", os.path.join(temp_dir, "prog")])
-    run_ncval(os.path.join(temp_dir, "prog"))
-
   def test_custom_linker_scripts_via_search_path(self):
     # Check that the linker will pick up linker scripts from the
     # "ldscripts" directory in the library search path (which is

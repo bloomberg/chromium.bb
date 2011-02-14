@@ -1,0 +1,17 @@
+# -*- python -*-
+# Copyright 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+Import('env')
+
+# We are testing a GNU C extension which is disallowed by "-pedantic" mode.
+env.FilterOut(CCFLAGS=['-pedantic'])
+
+prog = env.ComponentProgram('computed_goto.nexe', 'computed_goto.c')
+node = env.CommandSelLdrTestNacl('computed_goto_test.out', command=[prog])
+# TODO(mseaborn): Enable this for PNaCl when PNaCl is fixed to
+# generate correct code for this program.
+# See http://code.google.com/p/nativeclient/issues/detail?id=1423
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_computed_goto_test',
+                       is_broken=env.Bit('bitcode'))
