@@ -14,7 +14,7 @@ import pyauto
 class PluginsCheck(pyauto.PyUITest):
   """TestCase for Plugins."""
 
-  def _ReadPluginsList(self):
+  def _ReadPluginsList(self, plugins_list_file):
     """Read test plugins list from a file based on the test platform
 
     File contains list of plugins like,
@@ -24,24 +24,25 @@ class PluginsCheck(pyauto.PyUITest):
     ...
     ]
     """
-    file_path = os.path.join(self.DataDir(), 'plugins_list.txt')
+    file_path = os.path.join(self.DataDir(), plugins_list_file)
     return self.EvalDataFrom(file_path)
 
   def testPluginsStates(self):
     """Verify plugins' versions and states."""
-    if self.IsLinux():
+    if self.IsWin():
+      plugins_list = self._ReadPluginsList('win_plugins_list.txt')
+    elif self.IsMac():
+      plugins_list = self._ReadPluginsList('mac_plugins_list.txt')
+    elif self.IsLinux():
       # TODO(rohitbm)
       # Add plugins_check support for Linux
       logging.debug('Not performing plugins check on linux')
       return
+
     browser_plugins_list = self.GetPluginsInfo().Plugins()
-    version_sep = '.'
-    if self.IsWin():
-      # Windows flash plugin version uses |,| instead of |.|
-      version_sep = ','
-    for plugin in self._ReadPluginsList(): 
+    for plugin in plugins_list: 
       test_plugin = [x['name'] for x in browser_plugins_list \
-          if x['version'] == plugin['version'].replace('.', version_sep) and \
+          if x['version'] == plugin['version'] and \
              str(x['enabled']) == plugin['enabled'] and \
              x['name'] == plugin['name']]
       plugin_info = '[ NAME : %s, VERSION: %s, ENABLED: %s]' % \
