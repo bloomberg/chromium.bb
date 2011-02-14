@@ -28,7 +28,7 @@
 #include "net/base/cookie_policy.h"
 #include "net/url_request/url_request_context.h"
 #include "webkit/database/database_tracker.h"
-#include "webkit/fileapi/sandboxed_file_system_context.h"
+#include "webkit/fileapi/file_system_context.h"
 
 class CommandLine;
 class PrefService;
@@ -75,7 +75,7 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   }
 
   // Gets the file system host context with this context's profile.
-  fileapi::SandboxedFileSystemContext* file_system_context() const {
+  fileapi::FileSystemContext* file_system_context() const {
     return file_system_context_.get();
   }
 
@@ -159,7 +159,7 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   void set_blob_storage_context(ChromeBlobStorageContext* context) {
     blob_storage_context_ = context;
   }
-  void set_file_system_context(fileapi::SandboxedFileSystemContext* context) {
+  void set_file_system_context(fileapi::FileSystemContext* context) {
     file_system_context_ = context;
   }
   void set_extension_info_map(ExtensionInfoMap* map) {
@@ -189,7 +189,7 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
   scoped_refptr<HostZoomMap> host_zoom_map_;
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
-  scoped_refptr<fileapi::SandboxedFileSystemContext> file_system_context_;
+  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
   // TODO(aa): This should use chrome/common/extensions/extension_set.h.
   scoped_refptr<ExtensionInfoMap> extension_info_map_;
   scoped_refptr<ExtensionIOEventRouter> extension_io_event_router_;
@@ -354,7 +354,7 @@ class ChromeURLRequestContextFactory {
   scoped_refptr<net::SSLConfigService> ssl_config_service_;
   scoped_refptr<net::CookieMonster::Delegate> cookie_monster_delegate_;
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
-  scoped_refptr<fileapi::SandboxedFileSystemContext> file_system_context_;
+  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
   scoped_refptr<ExtensionInfoMap> extension_info_map_;
   scoped_refptr<ExtensionIOEventRouter> extension_io_event_router_;
   scoped_refptr<PrerenderManager> prerender_manager_;

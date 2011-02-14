@@ -531,7 +531,7 @@ PersonalDataManager* TestingProfile::GetPersonalDataManager() {
   return NULL;
 }
 
-fileapi::SandboxedFileSystemContext* TestingProfile::GetFileSystemContext() {
+fileapi::FileSystemContext* TestingProfile::GetFileSystemContext() {
   return NULL;
 }
 

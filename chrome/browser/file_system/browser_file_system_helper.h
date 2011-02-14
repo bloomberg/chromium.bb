@@ -7,11 +7,11 @@
 
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "webkit/fileapi/sandboxed_file_system_context.h"
+#include "webkit/fileapi/file_system_context.h"
 
-// Convenient method that returns SandboxedFileSystemContext
-// constructed for the browser process.
-scoped_refptr<fileapi::SandboxedFileSystemContext> CreateFileSystemContext(
+// Helper method that returns FileSystemContext constructed for
+// the browser process.
+scoped_refptr<fileapi::FileSystemContext> CreateFileSystemContext(
         const FilePath& profile_path, bool is_incognito);
 
 #endif  // CHROME_BROWSER_FILE_SYSTEM_BROWSER_FILE_SYSTEM_HELPER_H_

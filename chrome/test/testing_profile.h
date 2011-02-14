@@ -175,7 +175,7 @@ class TestingProfile : public Profile {
   virtual history::TopSites* GetTopSitesWithoutCreating();
   virtual DownloadManager* GetDownloadManager();
   virtual PersonalDataManager* GetPersonalDataManager();
-  virtual fileapi::SandboxedFileSystemContext* GetFileSystemContext();
+  virtual fileapi::FileSystemContext* GetFileSystemContext();
   virtual BrowserSignin* GetBrowserSignin();
   virtual bool HasCreatedDownloadManager() const;
   virtual void InitThemes();

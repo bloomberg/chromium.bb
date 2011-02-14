@@ -9,9 +9,9 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/common/chrome_switches.h"
 
-scoped_refptr<fileapi::SandboxedFileSystemContext> CreateFileSystemContext(
+scoped_refptr<fileapi::FileSystemContext> CreateFileSystemContext(
         const FilePath& profile_path, bool is_incognito) {
-  return new fileapi::SandboxedFileSystemContext(
+  return new fileapi::FileSystemContext(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
       profile_path,

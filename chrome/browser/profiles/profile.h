@@ -40,7 +40,7 @@ class DatabaseTracker;
 }
 
 namespace fileapi {
-class SandboxedFileSystemContext;
+class FileSystemContext;
 }
 
 class AutocompleteClassifier;
@@ -313,7 +313,7 @@ class Profile {
   // Returns the FileSystemContext associated to this profile.  The context
   // is lazily created the first time this method is called.  This is owned
   // by the profile.
-  virtual fileapi::SandboxedFileSystemContext* GetFileSystemContext() = 0;
+  virtual fileapi::FileSystemContext* GetFileSystemContext() = 0;
 
   // Returns the BrowserSignin object assigned to this profile.
   virtual BrowserSignin* GetBrowserSignin() = 0;

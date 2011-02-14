@@ -350,7 +350,7 @@ class ExtensionTestingProfile : public TestingProfile {
     return appcache_service_;
   }
 
-  virtual fileapi::SandboxedFileSystemContext* GetFileSystemContext() {
+  virtual fileapi::FileSystemContext* GetFileSystemContext() {
     if (!file_system_context_)
       file_system_context_ = CreateFileSystemContext(
           GetPath(), IsOffTheRecord());
@@ -360,7 +360,7 @@ class ExtensionTestingProfile : public TestingProfile {
  private:
   ExtensionService* service_;
   scoped_refptr<ChromeAppCacheService> appcache_service_;
-  scoped_refptr<fileapi::SandboxedFileSystemContext> file_system_context_;
+  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
 };
 
 // Our message loop may be used in tests which require it to be an IO loop.

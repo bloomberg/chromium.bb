@@ -30,8 +30,8 @@ class URLRequestContext;
 }  // namespace net
 
 namespace fileapi {
-class SandboxedFileSystemContext;
-class SandboxedFileSystemOperation;
+class FileSystemContext;
+class FileSystemOperation;
 }
 
 class FileSystemDispatcherHost : public BrowserMessageFilter {
@@ -81,16 +81,16 @@ class FileSystemDispatcherHost : public BrowserMessageFilter {
   void UnregisterOperation(int request_id);
 
  private:
-  // Creates a new SandboxedFileSystemOperation.
-  fileapi::SandboxedFileSystemOperation* GetNewOperation(int request_id);
+  // Creates a new FileSystemOperation.
+  fileapi::FileSystemOperation* GetNewOperation(int request_id);
 
-  scoped_refptr<fileapi::SandboxedFileSystemContext> context_;
+  scoped_refptr<fileapi::FileSystemContext> context_;
 
   // Used to look up permissions.
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
 
   // Keeps ongoing file system operations.
-  typedef IDMap<fileapi::SandboxedFileSystemOperation> OperationsMap;
+  typedef IDMap<fileapi::FileSystemOperation> OperationsMap;
   OperationsMap operations_;
 
   // This holds the URLRequestContextGetter until Init() can be called from the

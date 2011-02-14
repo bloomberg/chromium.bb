@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_SANDBOXED_FILE_SYSTEM_CONTEXT_H_
-#define WEBKIT_FILEAPI_SANDBOXED_FILE_SYSTEM_CONTEXT_H_
+#ifndef WEBKIT_FILEAPI_FILE_SYSTEM_CONTEXT_H_
+#define WEBKIT_FILEAPI_FILE_SYSTEM_CONTEXT_H_
 
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
@@ -20,23 +20,23 @@ namespace fileapi {
 class FileSystemPathManager;
 class FileSystemQuotaManager;
 class FileSystemUsageTracker;
-class SandboxedFileSystemContext;
+class FileSystemContext;
 
 struct DefaultContextDeleter;
 
-// This class keeps and provides a sandboxed file system context.
-class SandboxedFileSystemContext
-    : public base::RefCountedThreadSafe<SandboxedFileSystemContext,
+// This class keeps and provides a file system context for FileSystem API.
+class FileSystemContext
+    : public base::RefCountedThreadSafe<FileSystemContext,
                                         DefaultContextDeleter> {
  public:
-  SandboxedFileSystemContext(
+  FileSystemContext(
       scoped_refptr<base::MessageLoopProxy> file_message_loop,
       scoped_refptr<base::MessageLoopProxy> io_message_loop,
       const FilePath& profile_path,
       bool is_incognito,
       bool allow_file_access_from_files,
       bool unlimited_quota);
-  ~SandboxedFileSystemContext();
+  ~FileSystemContext();
 
   void DeleteDataForOriginOnFileThread(const GURL& origin_url);
 
@@ -58,15 +58,15 @@ class SandboxedFileSystemContext
   scoped_ptr<FileSystemQuotaManager> quota_manager_;
   scoped_ptr<FileSystemUsageTracker> usage_tracker_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(SandboxedFileSystemContext);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(FileSystemContext);
 };
 
 struct DefaultContextDeleter {
-  static void Destruct(const SandboxedFileSystemContext* context) {
+  static void Destruct(const FileSystemContext* context) {
     context->DeleteOnCorrectThread();
   }
 };
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_FILEAPI_SANDBOXED_FILE_SYSTEM_CONTEXT_H_
+#endif  // WEBKIT_FILEAPI_FILE_SYSTEM_CONTEXT_H_

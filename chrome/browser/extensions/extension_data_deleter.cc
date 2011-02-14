@@ -10,9 +10,9 @@
 #include "chrome/common/net/url_request_context_getter.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/net_errors.h"
-#include "webkit/database/database_util.h"
 #include "webkit/database/database_tracker.h"
-#include "webkit/fileapi/sandboxed_file_system_context.h"
+#include "webkit/database/database_util.h"
+#include "webkit/fileapi/file_system_context.h"
 
 ExtensionDataDeleter::ExtensionDataDeleter(Profile* profile,
                                            const GURL& extension_url) {

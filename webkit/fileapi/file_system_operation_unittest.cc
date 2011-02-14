@@ -23,6 +23,12 @@ static bool FileExists(FilePath path) {
 
 class MockDispatcher;
 
+// Test class for FileSystemOperation.  Note that this just tests low-level
+// operations but doesn't test OpenFileSystem or any additional checks
+// that require FileSystemContext (e.g. sandboxed paths, unlimited_storage
+// quota handling etc).
+// See SimpleFileSystem for more complete test environment for sandboxed
+// FileSystem.
 class FileSystemOperationTest : public testing::Test {
  public:
   FileSystemOperationTest()
@@ -93,7 +99,8 @@ class MockDispatcher : public FileSystemCallbackDispatcher {
 FileSystemOperation* FileSystemOperationTest::operation() {
   return new FileSystemOperation(
       new MockDispatcher(this),
-      base::MessageLoopProxy::CreateForCurrentThread());
+      base::MessageLoopProxy::CreateForCurrentThread(),
+      NULL);
 }
 
 TEST_F(FileSystemOperationTest, TestMoveFailureSrcDoesntExist) {

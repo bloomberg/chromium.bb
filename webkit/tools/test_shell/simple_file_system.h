@@ -19,8 +19,8 @@ class WebFrame;
 }
 
 namespace fileapi {
-class SandboxedFileSystemContext;
-class SandboxedFileSystemOperation;
+class FileSystemContext;
+class FileSystemOperation;
 }
 
 class SimpleFileSystem
@@ -66,13 +66,13 @@ class SimpleFileSystem
 
  private:
   // Helpers.
-  fileapi::SandboxedFileSystemOperation* GetNewOperation(
+  fileapi::FileSystemOperation* GetNewOperation(
       WebKit::WebFileSystemCallbacks* callbacks);
 
   // A temporary directory for FileSystem API.
   ScopedTempDir file_system_dir_;
 
-  scoped_refptr<fileapi::SandboxedFileSystemContext> sandboxed_context_;
+  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleFileSystem);
 };

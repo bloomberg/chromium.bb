@@ -16,7 +16,7 @@ class DatabaseTracker;
 }
 
 namespace fileapi {
-class SandboxedFileSystemContext;
+class FileSystemContext;
 }
 
 class Profile;
@@ -75,7 +75,7 @@ class ExtensionDataDeleter
   // Webkit context for accessing the DOM storage helper.
   scoped_refptr<WebKitContext> webkit_context_;
 
-  scoped_refptr<fileapi::SandboxedFileSystemContext> file_system_context_;
+  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionDataDeleter);
 };

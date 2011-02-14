@@ -20,15 +20,15 @@
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_context.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
+#include "webkit/fileapi/file_system_context.h"
+#include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/file_system_quota_manager.h"
-#include "webkit/fileapi/sandboxed_file_system_context.h"
-#include "webkit/fileapi/sandboxed_file_system_operation.h"
 
 using fileapi::FileSystemCallbackDispatcher;
+using fileapi::FileSystemOperation;
 using fileapi::FileSystemQuotaManager;
-using fileapi::SandboxedFileSystemOperation;
 
 class BrowserFileSystemCallbackDispatcher
     : public FileSystemCallbackDispatcher {
@@ -219,7 +219,7 @@ void FileSystemDispatcherHost::OnTouchFile(
 void FileSystemDispatcherHost::OnCancel(
     int request_id,
     int request_id_to_cancel) {
-  SandboxedFileSystemOperation* write = operations_.Lookup(
+  FileSystemOperation* write = operations_.Lookup(
       request_id_to_cancel);
   if (write) {
     // The cancel will eventually send both the write failure and the cancel
@@ -232,11 +232,11 @@ void FileSystemDispatcherHost::OnCancel(
   }
 }
 
-SandboxedFileSystemOperation* FileSystemDispatcherHost::GetNewOperation(
+FileSystemOperation* FileSystemDispatcherHost::GetNewOperation(
     int request_id) {
   BrowserFileSystemCallbackDispatcher* dispatcher =
       new BrowserFileSystemCallbackDispatcher(this, request_id);
-  SandboxedFileSystemOperation* operation = new SandboxedFileSystemOperation(
+  FileSystemOperation* operation = new FileSystemOperation(
       dispatcher,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
       context_);

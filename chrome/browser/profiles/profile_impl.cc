@@ -1052,7 +1052,7 @@ PersonalDataManager* ProfileImpl::GetPersonalDataManager() {
   return personal_data_manager_.get();
 }
 
-fileapi::SandboxedFileSystemContext* ProfileImpl::GetFileSystemContext() {
+fileapi::FileSystemContext* ProfileImpl::GetFileSystemContext() {
   if (!file_system_context_.get())
     file_system_context_ = CreateFileSystemContext(
         GetPath(), IsOffTheRecord());

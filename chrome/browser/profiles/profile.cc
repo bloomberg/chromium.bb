@@ -373,7 +373,7 @@ class OffTheRecordProfileImpl : public Profile,
     return NULL;
   }
 
-  virtual fileapi::SandboxedFileSystemContext* GetFileSystemContext() {
+  virtual fileapi::FileSystemContext* GetFileSystemContext() {
     if (!file_system_context_)
       file_system_context_ = CreateFileSystemContext(
           GetPath(), IsOffTheRecord());
@@ -722,7 +722,7 @@ class OffTheRecordProfileImpl : public Profile,
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
 
   // The file_system context for this profile.
-  scoped_refptr<fileapi::SandboxedFileSystemContext> file_system_context_;
+  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
 
   scoped_refptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
 
