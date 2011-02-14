@@ -250,39 +250,34 @@ void AutoFillOptionsHandler::LoadAddressEditor(const ListValue* args) {
     return;
   }
 
-  // TODO(jhawkins): This is hacky because we can't send DictionaryValue
-  // directly to CallJavascriptFunction().
-  ListValue addressList;
-  DictionaryValue* address = new DictionaryValue();
-  address->SetString("guid", profile->guid());
-  address->SetString("fullName",
-                     profile->GetFieldText(AutoFillType(NAME_FULL)));
-  address->SetString("companyName",
-                     profile->GetFieldText(AutoFillType(COMPANY_NAME)));
-  address->SetString("addrLine1",
-                     profile->GetFieldText(AutoFillType(ADDRESS_HOME_LINE1)));
-  address->SetString("addrLine2",
-                     profile->GetFieldText(AutoFillType(ADDRESS_HOME_LINE2)));
-  address->SetString("city",
-                     profile->GetFieldText(AutoFillType(ADDRESS_HOME_CITY)));
-  address->SetString("state",
-                     profile->GetFieldText(AutoFillType(ADDRESS_HOME_STATE)));
-  address->SetString("zipCode",
-                     profile->GetFieldText(AutoFillType(ADDRESS_HOME_ZIP)));
-  address->SetString("country",
+  DictionaryValue address;
+  address.SetString("guid", profile->guid());
+  address.SetString("fullName",
+                    profile->GetFieldText(AutoFillType(NAME_FULL)));
+  address.SetString("companyName",
+                    profile->GetFieldText(AutoFillType(COMPANY_NAME)));
+  address.SetString("addrLine1",
+                    profile->GetFieldText(AutoFillType(ADDRESS_HOME_LINE1)));
+  address.SetString("addrLine2",
+                    profile->GetFieldText(AutoFillType(ADDRESS_HOME_LINE2)));
+  address.SetString("city",
+                    profile->GetFieldText(AutoFillType(ADDRESS_HOME_CITY)));
+  address.SetString("state",
+                    profile->GetFieldText(AutoFillType(ADDRESS_HOME_STATE)));
+  address.SetString("zipCode",
+                    profile->GetFieldText(AutoFillType(ADDRESS_HOME_ZIP)));
+  address.SetString("country",
                      profile->GetFieldText(AutoFillType(ADDRESS_HOME_COUNTRY)));
-  address->SetString(
+  address.SetString(
       "phone",
       profile->GetFieldText(AutoFillType(PHONE_HOME_WHOLE_NUMBER)));
-  address->SetString(
+  address.SetString(
       "fax",
       profile->GetFieldText(AutoFillType(PHONE_FAX_WHOLE_NUMBER)));
-  address->SetString("email",
+  address.SetString("email",
                      profile->GetFieldText(AutoFillType(EMAIL_ADDRESS)));
-  addressList.Append(address);
 
-  web_ui_->CallJavascriptFunction(L"AutoFillOptions.editAddress",
-                                  addressList);
+  web_ui_->CallJavascriptFunction(L"AutoFillOptions.editAddress", address);
 }
 
 void AutoFillOptionsHandler::LoadCreditCardEditor(const ListValue* args) {
@@ -304,29 +299,25 @@ void AutoFillOptionsHandler::LoadCreditCardEditor(const ListValue* args) {
     return;
   }
 
-  // TODO(jhawkins): This is hacky because we can't send DictionaryValue
-  // directly to CallJavascriptFunction().
-  ListValue credit_card_list;
-  DictionaryValue* credit_card_data = new DictionaryValue();
-  credit_card_data->SetString("guid", credit_card->guid());
-  credit_card_data->SetString(
+  DictionaryValue credit_card_data;
+  credit_card_data.SetString("guid", credit_card->guid());
+  credit_card_data.SetString(
       "nameOnCard",
       credit_card->GetFieldText(AutoFillType(CREDIT_CARD_NAME)));
-  credit_card_data->SetString(
+  credit_card_data.SetString(
       "creditCardNumber",
       credit_card->GetFieldText(AutoFillType(CREDIT_CARD_NUMBER)));
-  credit_card_data->SetString("obfuscatedCardNumber",
-                              credit_card->ObfuscatedNumber());
-  credit_card_data->SetString(
+  credit_card_data.SetString("obfuscatedCardNumber",
+                             credit_card->ObfuscatedNumber());
+  credit_card_data.SetString(
       "expirationMonth",
       credit_card->GetFieldText(AutoFillType(CREDIT_CARD_EXP_MONTH)));
-  credit_card_data->SetString(
+  credit_card_data.SetString(
       "expirationYear",
       credit_card->GetFieldText(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR)));
-  credit_card_list.Append(credit_card_data);
 
   web_ui_->CallJavascriptFunction(L"AutoFillOptions.editCreditCard",
-                                  credit_card_list);
+                                  credit_card_data);
 }
 
 void AutoFillOptionsHandler::SetAddress(const ListValue* args) {

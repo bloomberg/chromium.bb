@@ -171,7 +171,7 @@ cr.define('options', function() {
     showEditAddressOverlay_: function(address) {
       var title = localStrings.getString('editAddressTitle');
       AutoFillEditAddressOverlay.setTitle(title);
-      AutoFillEditAddressOverlay.loadAddress(address[0]);
+      AutoFillEditAddressOverlay.loadAddress(address);
       OptionsPage.navigateToPage('autoFillEditAddressOverlay');
     },
 
@@ -184,7 +184,7 @@ cr.define('options', function() {
     showEditCreditCardOverlay_: function(creditCard) {
       var title = localStrings.getString('editCreditCardTitle');
       AutoFillEditCreditCardOverlay.setTitle(title);
-      AutoFillEditCreditCardOverlay.loadCreditCard(creditCard[0]);
+      AutoFillEditCreditCardOverlay.loadCreditCard(creditCard);
       OptionsPage.navigateToPage('autoFillEditCreditCardOverlay');
     },
   };
