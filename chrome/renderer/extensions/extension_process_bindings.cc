@@ -130,20 +130,9 @@ class ExtensionViewAccumulator : public RenderViewVisitor {
     if (extension_id != extension_id_)
       return true;
 
-    // If we are searching for a pop-up, it may be the case that the pop-up
-    // is not attached to a browser window instance.  (It is hosted in a
-    // ExternalTabContainer.)  If so, then bypass validation of
-    // same-browser-window origin.
-    // TODO(twiz):  The browser window id of the views visited should always
-    // match that of the arguments to the accumulator.
-    // See bug:  http://crbug.com/29646
-    if (!(view_type_ == ViewType::EXTENSION_POPUP &&
-          render_view->browser_window_id() ==
-               extension_misc::kUnknownWindowId)) {
-      if (browser_window_id_ != extension_misc::kUnknownWindowId &&
-          render_view->browser_window_id() != browser_window_id_) {
-        return true;
-      }
+    if (browser_window_id_ != extension_misc::kUnknownWindowId &&
+        render_view->browser_window_id() != browser_window_id_) {
+      return true;
     }
 
     v8::Local<v8::Context> context =
@@ -236,10 +225,6 @@ class ExtensionImpl : public ExtensionBase {
       return v8::FunctionTemplate::New(StartRequest);
     } else if (name->Equals(v8::String::New("GetRenderViewId"))) {
       return v8::FunctionTemplate::New(GetRenderViewId);
-    } else if (name->Equals(v8::String::New("GetPopupView"))) {
-      return v8::FunctionTemplate::New(GetPopupView);
-    } else if (name->Equals(v8::String::New("GetPopupParentWindow"))) {
-      return v8::FunctionTemplate::New(GetPopupParentWindow);
     } else if (name->Equals(v8::String::New("SetIconCommon"))) {
       return v8::FunctionTemplate::New(SetIconCommon);
     } else if (name->Equals(v8::String::New("IsExtensionProcess"))) {
@@ -255,62 +240,6 @@ class ExtensionImpl : public ExtensionBase {
   static v8::Handle<v8::Value> GetExtensionAPIDefinition(
       const v8::Arguments& args) {
     return v8::String::New(GetStringResource(IDR_EXTENSION_API_JSON));
-  }
-
-  static v8::Handle<v8::Value> PopupViewFinder(
-      const v8::Arguments& args,
-      ViewType::Type viewtype_to_find) {
-    // TODO(twiz)  Correct the logic that ties the ownership of the pop-up view
-    // to the hosting view.  At the moment we assume that there may only be
-    // a single pop-up view for a given extension.  By doing so, we can find
-    // the pop-up view by simply searching for the only pop-up view present.
-    // We also assume that if the current view is a pop-up, we can find the
-    // hosting view by searching for a tab contents view.
-    if (args.Length() != 0)
-      return v8::Undefined();
-
-    if (viewtype_to_find != ViewType::EXTENSION_POPUP &&
-        viewtype_to_find != ViewType::EXTENSION_INFOBAR &&
-        viewtype_to_find != ViewType::TAB_CONTENTS) {
-      NOTREACHED() << "Requesting invalid view type.";
-    }
-
-    // Disallow searching for the same view type as the current view:
-    // Popups can only look for hosts, and hosts can only look for popups.
-    RenderView* render_view = bindings_utils::GetRenderViewForCurrentContext();
-    if (!render_view ||
-        render_view->view_type() == viewtype_to_find) {
-      return v8::Undefined();
-    }
-
-    int browser_window_id = render_view->browser_window_id();
-    std::string extension_id = ExtensionIdForCurrentContext();
-    if (extension_id.empty())
-      return v8::Undefined();
-
-    ExtensionViewAccumulator  popup_matcher(extension_id,
-                                            browser_window_id,
-                                            viewtype_to_find);
-    RenderView::ForEach(&popup_matcher);
-
-    if (0 == popup_matcher.views()->Length())
-      return v8::Undefined();
-    DCHECK(1 == popup_matcher.views()->Length());
-
-    // Return the first view found.
-    return popup_matcher.views()->Get(v8::Integer::New(0));
-  }
-
-  static v8::Handle<v8::Value> GetPopupView(const v8::Arguments& args) {
-    return PopupViewFinder(args, ViewType::EXTENSION_POPUP);
-  }
-
-  static v8::Handle<v8::Value> GetPopupParentWindow(const v8::Arguments& args) {
-    v8::Handle<v8::Value> view = PopupViewFinder(args, ViewType::TAB_CONTENTS);
-    if (view == v8::Undefined()) {
-      view = PopupViewFinder(args, ViewType::EXTENSION_INFOBAR);
-    }
-    return view;
   }
 
   static v8::Handle<v8::Value> GetExtensionViews(const v8::Arguments& args) {

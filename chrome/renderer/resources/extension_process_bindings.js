@@ -15,8 +15,6 @@ var chrome = chrome || {};
   native function GetNextRequestId();
   native function OpenChannelToTab();
   native function GetRenderViewId();
-  native function GetPopupParentWindow();
-  native function GetPopupView();
   native function SetIconCommon();
   native function IsExtensionProcess();
   native function IsIncognitoProcess();
@@ -254,12 +252,6 @@ var chrome = chrome || {};
         new chrome.Event("toolstrip.onExpanded." + renderViewId);
     chrome.toolstrip.onCollapsed =
         new chrome.Event("toolstrip.onCollapsed." + renderViewId);
-  }
-
-  function setupPopupEvents(renderViewId) {
-    chrome.experimental.popup = chrome.experimental.popup || {};
-    chrome.experimental.popup.onClosed =
-      new chrome.Event("experimental.popup.onClosed." + renderViewId);
   }
 
   function setupHiddenContextMenuEvent(extensionId) {
@@ -553,71 +545,6 @@ var chrome = chrome || {};
       return tabIdProxy;
     };
 
-    apiFunctions["experimental.popup.show"].handleRequest =
-        function(url, showDetails, callback) {
-      // Second argument is a transform from HTMLElement to Rect.
-      var internalSchema = [
-        this.definition.parameters[0],
-        {
-          type: "object",
-          name: "showDetails",
-          properties: {
-            domAnchor: {
-              type: "object",
-              properties: {
-                top: { type: "integer", minimum: 0 },
-                left: { type: "integer", minimum: 0 },
-                width: { type: "integer", minimum: 0 },
-                height: { type: "integer", minimum: 0 }
-              }
-            },
-            giveFocus: {
-              type: "boolean",
-              optional: true
-            },
-            borderStyle: {
-              type: "string",
-              optional: true,
-              enum: ["bubble", "rectangle"]
-            },
-            maxSize: {
-              type: "object",
-              optional: true,
-              properties: {
-                width: {
-                  type: "integer", optional: true, minimum: 32
-                },
-                height: {
-                  type: "integer", optional: true, minimum: 32
-                }
-              }
-            }
-          }
-        },
-        this.definition.parameters[2]
-      ];
-      return sendRequest(this.name,
-                         [url,
-                          {
-                            domAnchor: getAbsoluteRect(showDetails.relativeTo),
-                            giveFocus: showDetails.giveFocus,
-                            borderStyle: showDetails.borderStyle,
-                            maxSize: showDetails.maxSize
-                          },
-                          callback],
-                         internalSchema);
-    };
-
-    apiFunctions["experimental.extension.getPopupView"].handleRequest =
-        function() {
-      return GetPopupView();
-    };
-
-    apiFunctions["experimental.popup.getParentWindow"].handleRequest =
-        function() {
-      return GetPopupParentWindow();
-    };
-
     var canvas;
     function setIconCommon(details, name, parameters, actionType, iconSize,
                            nativeFunction) {
@@ -794,7 +721,6 @@ var chrome = chrome || {};
 
     setupPageActionEvents(extensionId);
     setupToolstripEvents(GetRenderViewId());
-    setupPopupEvents(GetRenderViewId());
     setupHiddenContextMenuEvent(extensionId);
     setupOmniboxEvents();
     setupTtsEvents();

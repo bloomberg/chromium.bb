@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,10 +40,9 @@ class BrowserBubble {
   // Note that the bubble will size itself to the preferred size of |view|.
   // |view| is the embedded view, |frame| is widget that the bubble is being
   // positioned relative to, |origin| is the location that the bubble will
-  // be positioned relative to |frame|.  Pass true through |drop_shadow| to
-  // surround the bubble widget with a drop-shadow.
+  // be positioned relative to |frame|.
   BrowserBubble(views::View* view, views::Widget* frame,
-                const gfx::Point& origin, bool drop_shadow);
+                const gfx::Point& origin);
   virtual ~BrowserBubble();
 
   // Call manually if you need to detach the bubble from tracking the browser's
@@ -118,9 +117,6 @@ class BrowserBubble {
 
   // Is the bubble attached to a Browser window.
   bool attached_;
-
-  // Does the bubble have a drop-shadow.
-  bool drop_shadow_enabled_;
 
   // Non-owning pointer to the host of this bubble.
   BrowserBubbleHost* bubble_host_;

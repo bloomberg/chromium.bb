@@ -54,7 +54,7 @@ void FocusManager::WidgetFocusManager::OnWidgetFocusEvent(
   if (!enabled_)
     return;
 
-  // Perform a safe iteration over the focus listeners, as the array of
+  // Perform a safe iteration over the focus listeners, as the array
   // may change during notification.
   WidgetFocusChangeListenerList local_listeners(focus_change_listeners_);
   WidgetFocusChangeListenerList::iterator iter(local_listeners.begin());

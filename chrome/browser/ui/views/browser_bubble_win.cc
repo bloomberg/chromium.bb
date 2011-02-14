@@ -98,10 +98,6 @@ void BrowserBubble::InitPopup() {
   // then we'll assign it into popup_.
   views::NativeWidgetWin* pop = new BubbleWidget(this);
 
-  // Enable the drop-shadow through the native windows drop-shadow support.
-  if (drop_shadow_enabled_)
-    pop->set_initial_class_style(CS_DROPSHADOW | pop->initial_class_style());
-
   pop->Init(frame_->GetNativeView(), bounds_);
   pop->SetContentsView(view_);
 

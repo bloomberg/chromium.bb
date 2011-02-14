@@ -40,13 +40,6 @@ class ExtensionFunctionDispatcher {
     // if the view is not visible.
     virtual gfx::NativeView GetNativeViewOfHost() = 0;
 
-    // Typically, the window is assumed to be the window associated with the
-    // result of GetBrowser(). Implementations may override this behavior with
-    // this method.
-    virtual gfx::NativeWindow GetCustomFrameNativeWindow() {
-      return NULL;
-    }
-
     // Asks the delegate for any relevant TabContents associated with this
     // context. For example, the TabContents in which an infobar or
     // chrome-extension://<id> URL are being shown. Callers must check for a

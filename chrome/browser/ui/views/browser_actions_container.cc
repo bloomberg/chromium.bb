@@ -511,13 +511,12 @@ void BrowserActionsContainer::OnBrowserActionExecuted(
   gfx::Rect rect = reference_view->bounds();
   rect.set_origin(origin);
 
-  gfx::NativeWindow frame_window = browser_->window()->GetNativeHandle();
   BubbleBorder::ArrowLocation arrow_location = base::i18n::IsRTL() ?
       BubbleBorder::TOP_LEFT : BubbleBorder::TOP_RIGHT;
 
-  popup_ = ExtensionPopup::Show(button->GetPopupUrl(), browser_,
-      browser_->profile(), frame_window, rect, arrow_location, true,
-      inspect_with_devtools, ExtensionPopup::BUBBLE_CHROME, this);
+  popup_ = ExtensionPopup::Show(button->GetPopupUrl(), browser_, rect,
+                                arrow_location, inspect_with_devtools,
+                                this);
   popup_button_ = button;
   popup_button_->SetButtonPushed();
 }

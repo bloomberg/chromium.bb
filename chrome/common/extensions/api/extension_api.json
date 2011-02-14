@@ -472,27 +472,6 @@
     ]
   },
   {
-    "namespace": "experimental.extension",
-    "nodoc": true,
-    "types": [],
-    "functions": [
-      {
-        "name": "getPopupView",
-        "type": "function",
-        "description": "Returns a reference to the JavaScript 'window' object of the popup view.  Returns undefined if no popup presently shown.",
-        "parameters": [],
-        "returns": {
-          "type": "object",
-          "isInstanceOf": "DOMWindow",
-          "properties": {},
-          "additionalProperties": { "type": "any" },
-          "optional": true
-        }
-      }
-    ],
-    "events": []
-  },
-  {
     "namespace": "experimental.tts",
     "functions": [
       {
@@ -2403,94 +2382,6 @@
       }
     ],
     "events": []
-  },
-  {
-    "namespace": "experimental.popup",
-    "nodoc": true,
-    "types": [],
-    "functions": [
-      {
-        "name": "show",
-        "type": "function",
-        "description": "Displays a pop-up window hosting an extension view.",
-        "parameters": [
-          {
-            "type": "string",
-            "name": "url",
-            "description": "The URL of the contents to which the pop-up will be navigated."
-          },
-          {
-            "type": "object",
-            "name": "showDetails",
-            "properties": {
-              "relativeTo": {
-                "type": "object",
-                "properties": {},
-                "additionalProperties": { "type": "any" },
-                "isInstanceOf": "HTMLElement",
-                "description": "A HTML DOM object to which the pop-up's position will be made relative."
-              },
-              "giveFocus": {
-                "type": "boolean",
-                "description": "Pass true to give the focus to the popup window.  The default behaviour is true.",
-                "optional": true
-              },
-              "borderStyle": {
-                "type": "string",
-                "description": "Pass 'bubble' to give the pop-up window a bubble-chrome border, including an arrow pointing at the relative-to point.  Pass 'rectangle' to give the pop-up a rectangular black border with drop-shadow.  Default behaviour is to pass 'bubble'.",
-                "optional": true,
-                "enum": ["bubble", "rectangle"]
-              },
-              "maxSize": {
-                "type": "object",
-                "optional": true,
-                "properties": {
-                  "width": {
-                    "type": "integer",
-                    "description": "The maximal width to which the popup will resize.  If not present, the popup will be no wider than 800 pixels.  The popup will widen to no larger than the minimum of the width parameter and the width of the screen.",
-                    "optional": true,
-                    "minimum": 32
-                  },
-                  "height": {
-                    "type": "integer",
-                    "description": "The maximal height to which the popup will resize.  If not present, the popup will be no taller than 600 pixels.  The popup will grow to no taller than than the minimum of the height parameter and the width of the screen.",
-                    "optional": true,
-                    "minimum": 32
-                  }
-                }
-              }
-            }
-          },
-          {
-            "type": "function",
-            "name": "callback",
-            "optional": true,
-            "parameters": []
-          }
-        ]
-      },
-      {
-        "name": "getParentWindow",
-        "type": "function",
-        "description": "Returns a reference to the JavaScript 'window' object of the extension view that launched the popup.  Returns undefined if called outside of a popup window.",
-        "parameters": [],
-        "returns": {
-          "type": "object",
-          "isInstanceOf": "DOMWindow",
-          "properties": {},
-          "additionalProperties": { "type": "any" },
-          "optional": true
-        }
-      }
-    ],
-    "events": [
-      {
-        "name": "onClosed",
-        "type": "function",
-        "description": "Fired when the popup view is closed.",
-        "parameters": []
-      }
-    ]
   },
   {
     "namespace": "experimental.bookmarkManager",

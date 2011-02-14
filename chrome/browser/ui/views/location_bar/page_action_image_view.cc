@@ -89,13 +89,9 @@ void PageActionImageView::ExecuteAction(int button,
     popup_ = ExtensionPopup::Show(
         page_action_->GetPopupUrl(current_tab_id_),
         browser,
-        browser->profile(),
-        browser->window()->GetNativeHandle(),
         screen_bounds,
         arrow_location,
-        true,  // Activate the popup window.
         inspect_with_devtools,
-        ExtensionPopup::BUBBLE_CHROME,
         this);  // ExtensionPopup::Observer
   } else {
     ExtensionService* service = profile_->GetExtensionService();

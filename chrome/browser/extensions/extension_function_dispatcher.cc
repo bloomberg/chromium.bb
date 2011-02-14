@@ -35,7 +35,6 @@
 #include "chrome/browser/extensions/extension_module.h"
 #include "chrome/browser/extensions/extension_omnibox_api.h"
 #include "chrome/browser/extensions/extension_page_actions_module.h"
-#include "chrome/browser/extensions/extension_popup_api.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_processes_api.h"
 #include "chrome/browser/extensions/extension_proxy_api.h"
@@ -191,9 +190,6 @@ void FactoryRegistry::ResetFunctions() {
 
   // I18N.
   RegisterFunction<GetAcceptLanguagesFunction>();
-
-  // Popup API.
-  RegisterFunction<PopupShowFunction>();
 
   // Processes.
   RegisterFunction<GetProcessIdForTabFunction>();

@@ -24,28 +24,19 @@ BrowserBubbleHost* GetBubbleHostFromFrame(views::Widget* frame) {
         window->GetNativeWindow());
     DCHECK(bubble_host);
   }
-#if defined(OS_WIN)
-  // The frame may also be an ExternalTabContainer, which is also capable of
-  // hosting BrowserBubbles.
-  gfx::NativeView native_view = frame->GetNativeView();
-  if (!bubble_host) {
-    bubble_host =
-        ExternalTabContainer::GetExternalContainerFromNativeWindow(native_view);
-  }
-#endif
+
   return bubble_host;
 }
 
 }  // namespace
 
 BrowserBubble::BrowserBubble(views::View* view, views::Widget* frame,
-                             const gfx::Point& origin, bool drop_shadow)
+                             const gfx::Point& origin)
     : frame_(frame),
       view_(view),
       visible_(false),
       delegate_(NULL),
       attached_(false),
-      drop_shadow_enabled_(drop_shadow),
       bubble_host_(GetBubbleHostFromFrame(frame)) {
   gfx::Size size = view->GetPreferredSize();
   bounds_.SetRect(origin.x(), origin.y(), size.width(), size.height());

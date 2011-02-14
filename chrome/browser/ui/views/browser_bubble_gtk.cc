@@ -84,9 +84,6 @@ class BubbleWidget : public views::WidgetGtk {
 
 void BrowserBubble::InitPopup() {
   // TODO(port)
-  DCHECK(!drop_shadow_enabled_) <<
-    "Drop shadows not supported on GTK browser bubbles.";
-
   views::WidgetGtk* pop = new BubbleWidget(this);
   pop->SetOpacity(0xFF);
   pop->make_transient_to_parent();
