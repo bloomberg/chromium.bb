@@ -712,8 +712,8 @@ void RenderWidgetHostViewViews::DidGainFocus() {
 void RenderWidgetHostViewViews::WillLoseFocus() {
   // If we are showing a context menu, maintain the illusion that webkit has
   // focus.
-  if (!is_showing_context_menu_ && !is_hidden_)
-    GetRenderWidgetHost()->Blur();
+  if (!is_showing_context_menu_ && !is_hidden_ && host_)
+    host_->Blur();
   ime_context_->Blur();
 }
 
