@@ -181,8 +181,8 @@ class MockURLRequestContext : public URLRequestContext {
  public:
   MockURLRequestContext(CookieStore* cookie_store,
                         CookiePolicy* cookie_policy) {
-    cookie_store_ = cookie_store;
-    cookie_policy_ = cookie_policy;
+    set_cookie_store(cookie_store);
+    set_cookie_policy(cookie_policy);
   }
 
  private:
