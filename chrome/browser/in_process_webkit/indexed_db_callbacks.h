@@ -45,6 +45,7 @@ class IndexedDBCallbacksBase : public WebKit::WebIDBCallbacks {
   virtual ~IndexedDBCallbacksBase();
 
   virtual void onError(const WebKit::WebIDBDatabaseError& error);
+  virtual void onBlocked();
 
  protected:
   IndexedDBDispatcherHost* dispatcher_host() const {
