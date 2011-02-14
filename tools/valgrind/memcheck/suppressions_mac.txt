@@ -1340,16 +1340,3 @@
    fun:_ZN12_GLOBAL__N_131MenuButtonTest_OpenOnClick_Test8TestBodyEv
    fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
 }
-{
-   bug_72833
-   Memcheck:Leak
-   fun:malloc_zone_malloc
-   fun:_CFRuntimeCreateInstance
-   fun:__CFStringCreateImmutableFunnel3
-   fun:CFStringCreateWithBytes
-   fun:_ZN4base12_GLOBAL__N_1L33STLStringToCFStringWithEncodingsTISsEEPK10__CFStringRKT_m
-   fun:_ZN4base20SysUTF8ToCFStringRefERKSs
-   fun:_Z22CheckUserDataDirPolicyP8FilePath
-   fun:ChromeMain
-   fun:main
-}

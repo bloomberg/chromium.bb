@@ -61,7 +61,7 @@ std::string TranslateMacVariablesInPolicy(
   }
   position = result.find(kMachineNamePolicyVarName);
   if (position != std::string::npos) {
-    NSString *machinename = [[NSHost currentHost] name];
+    NSString* machinename = [[NSHost currentHost] name];
     if (machinename) {
       result.replace(position, strlen(kMachineNamePolicyVarName),
                      base::SysNSStringToUTF8(machinename));
@@ -79,17 +79,13 @@ std::string TranslateMacVariablesInPolicy(
 void CheckUserDataDirPolicy(FilePath* user_data_dir) {
   // Since the configuration management infrastructure is not initialized when
   // this code runs, read the policy preference directly.
-  CFStringRef key = base::SysUTF8ToCFStringRef(policy::key::kUserDataDir);
-  CFPropertyListRef value =
-      CFPreferencesCopyAppValue(key, kCFPreferencesCurrentApplication);
-  if (value &&
-      CFPreferencesAppValueIsForced(key, kCFPreferencesCurrentApplication)) {
-    if (CFGetTypeID(value) == CFStringGetTypeID()) {
-      std::string string_value =
-          base::SysCFStringRefToUTF8((CFStringRef)value);
-      // Now replace any vars the user might have used.
-      string_value = TranslateMacVariablesInPolicy(string_value);
-      *user_data_dir = FilePath(string_value);
-    }
+  NSString* key = base::SysUTF8ToNSString(policy::key::kUserDataDir);
+  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+  NSString* value = [defaults stringForKey:key];
+  if (value && [defaults objectIsForcedForKey:key]) {
+    std::string string_value = base::SysNSStringToUTF8(value);
+    // Now replace any vars the user might have used.
+    string_value = TranslateMacVariablesInPolicy(string_value);
+    *user_data_dir = FilePath(string_value);
   }
 }
