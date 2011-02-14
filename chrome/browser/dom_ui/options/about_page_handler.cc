@@ -75,7 +75,7 @@ const LocalizeEntry localize_table[] = {
     { "loading", IDS_ABOUT_PAGE_LOADING },
     { "check_now", IDS_ABOUT_PAGE_CHECK_NOW },
     { "update_status", IDS_UPGRADE_CHECK_STARTED },
-    { "restart_now", IDS_RESTART_AND_UPDATE },
+    { "restart_now", IDS_RELAUNCH_AND_UPDATE },
 #else
     { "product", IDS_PRODUCT_NAME },
     { "check_now", IDS_ABOUT_CHROME_UPDATE_CHECK },

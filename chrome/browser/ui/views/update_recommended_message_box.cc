@@ -56,7 +56,7 @@ std::wstring UpdateRecommendedMessageBox::GetDialogButtonLabel(
   DCHECK(button == ui::MessageBoxFlags::DIALOGBUTTON_OK ||
          button == ui::MessageBoxFlags::DIALOGBUTTON_CANCEL);
   return button == ui::MessageBoxFlags::DIALOGBUTTON_OK ?
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_RESTART_AND_UPDATE)) :
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_RELAUNCH_AND_UPDATE)) :
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_NOT_NOW));
 }
 

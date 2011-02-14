@@ -563,7 +563,7 @@ void AboutChromeView::ViewHierarchyChanged(bool is_add,
 std::wstring AboutChromeView::GetDialogButtonLabel(
     MessageBoxFlags::DialogButton button) const {
   if (button == MessageBoxFlags::DIALOGBUTTON_OK) {
-    return UTF16ToWide(l10n_util::GetStringUTF16(IDS_RESTART_AND_UPDATE));
+    return UTF16ToWide(l10n_util::GetStringUTF16(IDS_RELAUNCH_AND_UPDATE));
   } else if (button == MessageBoxFlags::DIALOGBUTTON_CANCEL) {
     if (restart_button_visible_)
       return UTF16ToWide(l10n_util::GetStringUTF16(IDS_NOT_NOW));
@@ -796,7 +796,7 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
       restart_button_visible_ = true;
       const std::wstring& update_string =
           UTF16ToWide(l10n_util::GetStringFUTF16(
-              IDS_UPGRADE_SUCCESSFUL_RESTART,
+              IDS_UPGRADE_SUCCESSFUL_RELAUNCH,
               l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
       update_label_.SetText(update_string);
       show_success_indicator = true;

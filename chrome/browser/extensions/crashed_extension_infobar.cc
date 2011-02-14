@@ -61,7 +61,7 @@ string16 CrashedExtensionInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   DCHECK_EQ(BUTTON_OK, button);
   return l10n_util::GetStringUTF16(
-      IDS_EXTENSION_CRASHED_INFOBAR_RESTART_BUTTON);
+      IDS_EXTENSION_CRASHED_INFOBAR_RELOAD_BUTTON);
 }
 
 bool CrashedExtensionInfoBarDelegate::Accept() {

@@ -74,7 +74,7 @@ void LanguageOptionsHandlerCommon::GetLocalizedValues(
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_IS_USED_FOR_SPELL_CHECKING));
   localized_strings->SetString("restart_required",
-          l10n_util::GetStringUTF16(IDS_OPTIONS_RESTART_REQUIRED));
+          l10n_util::GetStringUTF16(IDS_OPTIONS_RELAUNCH_REQUIRED));
   localized_strings->SetString("enable_spell_check",
           l10n_util::GetStringUTF16(IDS_OPTIONS_ENABLE_SPELLCHECK));
   localized_strings->SetString("enable_auto_spell_correction",
@@ -85,7 +85,7 @@ void LanguageOptionsHandlerCommon::GetLocalizedValues(
           l10n_util::GetStringUTF16(IDS_OPTIONS_LANGUAGES_ADD_SELECT_LABEL));
   localized_strings->SetString("restart_button",
       l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_LANGUAGES_RESTART_BUTTON));
+          IDS_OPTIONS_SETTINGS_LANGUAGES_RELAUNCH_BUTTON));
 
   // The following are resources, rather than local strings.
   localized_strings->SetString("currentUiLanguageCode",

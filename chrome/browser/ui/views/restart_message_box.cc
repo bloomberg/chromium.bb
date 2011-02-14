@@ -57,7 +57,7 @@ RestartMessageBox::RestartMessageBox(gfx::NativeWindow parent_window) {
       ui::MessageBoxFlags::kFlagHasMessage |
           ui::MessageBoxFlags::kFlagHasOKButton,
       UTF16ToWide(
-          l10n_util::GetStringUTF16(IDS_OPTIONS_RESTART_REQUIRED)).c_str(),
+          l10n_util::GetStringUTF16(IDS_OPTIONS_RELAUNCH_REQUIRED)).c_str(),
       std::wstring(),
       kDialogWidth);
   views::Window::CreateChromeWindow(parent_window, gfx::Rect(), this)->Show();

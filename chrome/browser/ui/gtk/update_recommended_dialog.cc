@@ -29,7 +29,7 @@ UpdateRecommendedDialog::UpdateRecommendedDialog(GtkWindow* parent) {
       static_cast<GtkDialogFlags>(GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR),
       l10n_util::GetStringUTF8(IDS_NOT_NOW).c_str(),
       GTK_RESPONSE_REJECT,
-      l10n_util::GetStringUTF8(IDS_RESTART_AND_UPDATE).c_str(),
+      l10n_util::GetStringUTF8(IDS_RELAUNCH_AND_UPDATE).c_str(),
       GTK_RESPONSE_ACCEPT,
       NULL);
 

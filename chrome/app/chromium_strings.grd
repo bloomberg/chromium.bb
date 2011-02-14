@@ -189,7 +189,7 @@ be available for now. -->
           Chromium Frame Update.
         </message>
         <message name="IDS_VERSIONMISMATCH">
-          Chromium Frame has been updated. Please restart your browser. Chrome version: <ph name="TODO_0001">%ls<ex>TODO</ex></ph>, Chromium Frame version: <ph name="TODO_0002">%ls<ex>TODO</ex></ph>
+          Chromium Frame has been updated. Please relaunch your browser. Chrome version: <ph name="TODO_0001">%ls<ex>TODO</ex></ph>, Chromium Frame version: <ph name="TODO_0002">%ls<ex>TODO</ex></ph>
         </message>
         <message name="IDS_VERSIONUNKNOWN">
           Unknown version.
@@ -263,7 +263,7 @@ be available for now. -->
       </message>
       <!-- Hung Browser Detector -->
       <message name="IDS_BROWSER_HUNGBROWSER_MESSAGE" desc="Content of the dialog box shown when the browser is hung">
-        Chromium is unresponsive. Restart now?
+        Chromium is unresponsive. Relaunch now?
       </message>
       <message name="IDS_IMPORT_PROGRESS_INFO" desc="Explanatory text for the importing progress dialog">
         Chromium is now importing the following items from <ph name="BROWSER_COMPONENT">$1<ex>History</ex></ph>:
@@ -331,12 +331,12 @@ be available for now. -->
         Chromium language:
       </message>
       <if expr="not pp_ifdef('chromeos')">
-        <message name="IDS_OPTIONS_RESTART_REQUIRED" desc="The message displayed for an option that requires a restart to take effect. This appears in a message box if an option is changed that requires a restart.">
-          Please close all Chromium windows and restart Chromium for this change to take effect.
+        <message name="IDS_OPTIONS_RELAUNCH_REQUIRED" desc="The message displayed for an option that requires a relaunch to take effect. This appears in a message box if an option is changed that requires a relaunch.">
+          Please close all Chromium windows and relaunch Chromium for this change to take effect.
         </message>
       </if>
       <if expr="pp_ifdef('chromeos')">
-        <message name="IDS_OPTIONS_RESTART_REQUIRED" desc="The message displayed for an option that requires a restart to take effect. This appears in a message box if an option is changed that requires a restart.">
+        <message name="IDS_OPTIONS_RELAUNCH_REQUIRED" desc="The message displayed for an option that requires a relaunch to take effect. This appears in a message box if an option is changed that requires a relaunch.">
           Please sign out of Chromium OS and sign in again for this change to take effect.
         </message>
       </if>
@@ -365,7 +365,7 @@ be available for now. -->
         Chromium
       </message>
       <message name="IDS_CRASH_RECOVERY_CONTENT" desc="Text content telling the user the browser has crashed.">
-        Whoa! Chromium has crashed. Restart now?
+        Whoa! Chromium has crashed. Relaunch now?
       </message>
       <message name="IDS_PASSWORD_MANAGER_SAVE_PASSWORD_PROMPT" desc="Info bar message to save a password">
         Do you want Chromium to save your password?

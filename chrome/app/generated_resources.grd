@@ -3490,7 +3490,7 @@ each locale. -->
       </message>
 
       <!-- Extension Crashed Info Bar-->
-      <message name="IDS_EXTENSION_CRASHED_INFOBAR_RESTART_BUTTON" desc="Title of the reload button in the extension crashed infobar. After the button is clicked, the extension will be reloaded.">
+      <message name="IDS_EXTENSION_CRASHED_INFOBAR_RELOAD_BUTTON" desc="Title of the reload button in the extension crashed infobar. After the button is clicked, the extension will be reloaded.">
         Reload
       </message>
       <message name="IDS_EXTENSION_CRASHED_INFOBAR_MESSAGE" desc="Message displayed on the extension crashed infobar.">
@@ -3936,11 +3936,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_NO_EXPERIMENTS_AVAILABLE" desc="Shown if no experiments are available">
         Aww, it looks like there are currently no experiments available.
       </message>
-      <message name="IDS_FLAGS_RESTART_NOTICE" desc="Notifies the user that he needs to restart chrome. Shown next to a button that says 'Restart Now'.">
-        Your changes will take effect the next time you restart <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+      <message name="IDS_FLAGS_RELAUNCH_NOTICE" desc="Notifies the user that he needs to relaunch chrome. Shown next to a button that says 'Relaunch Now'.">
+        Your changes will take effect the next time you relaunch <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
       </message>
-      <message name="IDS_FLAGS_RESTART_BUTTON" desc="Text on a button that restarts chrome when clicked. ">
-        Restart Now
+      <message name="IDS_FLAGS_RELAUNCH_BUTTON" desc="Text on a button that relaunchs chrome when clicked. ">
+        Relaunch Now
       </message>
       <message name="IDS_FLAGS_DISABLE" desc="The link for disabling a labs experiment.">
         Disable
@@ -5340,8 +5340,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_UPGRADE_SUCCESSFUL_NOVERSION" desc="Status label: Successfully upgraded">
         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> has been updated
       </message>
-      <message name="IDS_UPGRADE_SUCCESSFUL_RESTART" desc="Status label: Successfully updated">
-        Restart <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to finish updating
+      <message name="IDS_UPGRADE_SUCCESSFUL_RELAUNCH" desc="Status label: Successfully updated">
+        Relaunch <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to finish updating
       </message>
       <if expr="pp_ifdef('chromeos')">
       <message name="IDS_UPGRADE_ALREADY_UP_TO_DATE" desc="Status label: Already up to date">
@@ -6178,7 +6178,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ERRORPAGES_SUMMARY_TEMPORARILY_THROTTLED" desc="Summary in the error page when we temporarily stop sending requests to a server in order to avoid DDoS.">
         It is likely that the server hosting the webpage has been overloaded or encountered an error. In order to avoid causing too much traffic and making the situation worse, <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph> has temporarily stopped allowing requests to the server.
         <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph>
-        If you think this behavior is undesirable, for example, you are debugging your own website, you could disable it by restarting <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph> with the command line flag <ph name="COMMAND_LINE_FLAG">&lt;strong&gt;--disable-enforced-throttling&lt;/strong&gt;</ph>.
+        If you think this behavior is undesirable, for example, you are debugging your own website, you could disable it by relaunching <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph> with the command line flag <ph name="COMMAND_LINE_FLAG">&lt;strong&gt;--disable-enforced-throttling&lt;/strong&gt;</ph>.
       </message>
       <message name="IDS_ERRORPAGES_DETAILS_TEMPORARILY_THROTTLED" desc="The error message displayed when we temporarily stop sending requests to a server in order to avoid DDoS.">
         Requests to the server have been temporarily throttled.
@@ -6475,9 +6475,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="The label for a language that is currently used for spell checking">
         This language is used for spell checking
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_RESTART_BUTTON"
-               desc="The label for the restart button for changing UI language">
-        Restart
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_RELAUNCH_BUTTON"
+               desc="The label for the relaunch button for changing UI language">
+        Relaunch
       </message>
       <message name="IDS_OPTIONS_LANGUAGES_ADD_TITLE" desc="The title for the add language dialog.">
         Add language:
@@ -9057,7 +9057,7 @@ This web page was killed, either because Chrome ran out of memory, or you chose 
 
     <!-- ProcessSingleton -->
     <message name="IDS_PROFILE_IN_USE_LINUX" desc="Message shown when the browser cannot start because the profile is in use on a different host.">
-      The profile appears to be in use by process <ph name="PROCESS_ID">$1<ex>12345</ex></ph> on host <ph name="HOST_NAME">$2<ex>example.com</ex></ph>.  If you are sure no other processes are using this profile, delete the file <ph name="LOCK_FILE">$3<ex>/home/user/.config/google-chrome/SingletonLock</ex></ph> and restart <ph name="PRODUCT_NAME">$4<ex>Google Chrome</ex></ph>.
+      The profile appears to be in use by process <ph name="PROCESS_ID">$1<ex>12345</ex></ph> on host <ph name="HOST_NAME">$2<ex>example.com</ex></ph>.  If you are sure no other processes are using this profile, delete the file <ph name="LOCK_FILE">$3<ex>/home/user/.config/google-chrome/SingletonLock</ex></ph> and relaunch <ph name="PRODUCT_NAME">$4<ex>Google Chrome</ex></ph>.
     </message>
 
     <!-- Theme UI -->
@@ -9068,32 +9068,32 @@ This web page was killed, either because Chrome ran out of memory, or you chose 
     <!-- Update Recommended dialog -->
     <if expr="not pp_ifdef('chromeos')">
       <message name="IDS_UPDATE_RECOMMENDED" desc="The main text of the Update Recommended dialog.">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is out of date because it hasn't been restarted in a while. An update is available and will be applied as soon as you restart.
+        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is out of date because it hasn't been relaunched in a while. An update is available and will be applied as soon as you relaunch.
       </message>
     </if>
     <if expr="pp_ifdef('chromeos')">
       <message name="IDS_UPDATE_RECOMMENDED" desc="The main text of the Update Recommended dialog.">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome OS</ex></ph> needs to be restarted to apply the update.
+        <ph name="PRODUCT_NAME">$1<ex>Google Chrome OS</ex></ph> needs to be relaunched to apply the update.
       </message>
     </if>
-    <message name="IDS_RESTART_AND_UPDATE" desc="The button label for restarting and updating Chrome.">
-      Restart
+    <message name="IDS_RELAUNCH_AND_UPDATE" desc="The button label for relaunching and updating Chrome.">
+      Relaunch
     </message>
     <if expr="not pp_ifdef('use_titlecase')">
-      <message name="IDS_NOT_NOW" desc="The button label for delaying the restart and updating Chrome.">
+      <message name="IDS_NOT_NOW" desc="The button label for delaying the relaunch and updating Chrome.">
         Not now
       </message>
     </if>
     <if expr="pp_ifdef('use_titlecase')">
-      <message name="IDS_NOT_NOW" desc="In Tile Case: The button label for delaying the restart and updating Chrome.">
+      <message name="IDS_NOT_NOW" desc="In Tile Case: The button label for delaying the relaunch and updating Chrome.">
         Not Now
       </message>
     </if>
 
     <!-- Extra Mac UI Strings -->
     <if expr="os == 'darwin'">
-      <message name="IDS_PLEASE_RESTART_BROWSER" desc="Title of the alert when Chrome needs to be restart for a change/update to take effect.">
-        Please Restart <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
+      <message name="IDS_PLEASE_RELAUNCH_BROWSER" desc="Title of the alert when Chrome needs to be relaunched for a change/update to take effect.">
+        Please Relaunch <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
       </message>
       <message name="IDS_SAVE_PAGE_FILE_FORMAT_PROMPT_MAC" desc="The title of the File Format label for saving a page.">
         Format:

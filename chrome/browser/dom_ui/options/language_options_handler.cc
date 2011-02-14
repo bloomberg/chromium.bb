@@ -35,7 +35,7 @@ void LanguageOptionsHandler::GetLocalizedValues(
 
   localized_strings->SetString("restart_button",
       l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_LANGUAGES_RESTART_BUTTON));
+          IDS_OPTIONS_SETTINGS_LANGUAGES_RELAUNCH_BUTTON));
   localized_strings->Set("languageList", GetLanguageList());
 }
 

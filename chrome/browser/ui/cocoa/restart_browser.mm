@@ -59,14 +59,14 @@ namespace restart_browser {
 
 void RequestRestart(NSWindow* parent) {
   NSString* title =
-      l10n_util::GetNSStringFWithFixup(IDS_PLEASE_RESTART_BROWSER,
+      l10n_util::GetNSStringFWithFixup(IDS_PLEASE_RELAUNCH_BROWSER,
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
   NSString* text =
       l10n_util::GetNSStringFWithFixup(IDS_UPDATE_RECOMMENDED,
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
   NSString* notNowButtin = l10n_util::GetNSStringWithFixup(IDS_NOT_NOW);
   NSString* restartButton =
-      l10n_util::GetNSStringWithFixup(IDS_RESTART_AND_UPDATE);
+      l10n_util::GetNSStringWithFixup(IDS_RELAUNCH_AND_UPDATE);
 
   RestartHelper* helper = [[RestartHelper alloc] init];
 
