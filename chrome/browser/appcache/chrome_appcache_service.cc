@@ -31,7 +31,8 @@ void DeleteLocalStateOnIOThread(FilePath cache_path) {
 
 // ----------------------------------------------------------------------------
 
-ChromeAppCacheService::ChromeAppCacheService() {
+ChromeAppCacheService::ChromeAppCacheService()
+    : clear_local_state_on_exit_(false) {
 }
 
 void ChromeAppCacheService::InitializeOnIOThread(
