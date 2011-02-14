@@ -11369,6 +11369,9 @@ This web page was killed, either because Chrome ran out of memory, or you chose 
     <message name="IDS_READER_OUT_OF_DATE_BLOCKING_PAGE_CANCEL" desc="Cancel button text of the Adobe Reader out of date blocking page.">
       Cancel
     </message>
+    <message name="EXPORT_BOOKMARKS_DEFAULT_FILENAME" desc="Filename that pre-populates the filename field when user clicks attempts to export his bookmarks.">
+      bookmarks_<ph name="DATESTAMP">$1<ex>02_11_11</ex></ph>.html
+    </message>
 
     </messages>
     <includes>
