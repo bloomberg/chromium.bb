@@ -135,8 +135,7 @@ const AccelerometerMac::SensorDescriptor
   { "MacBookPro3,1", { { 0, false }, { 2, true  }, { 4, true  } } },
 
   // Tested by leandrogracia on a 15" MacBook Pro.
-  // TODO(avi): this model name was also used for the 17" version; verify that
-  // these parameters are also valid for that model.
+  // Tested by Eric Shapiro (via avi) on a 17" MacBook Pro.
   { "MacBookPro4,1", { { 0, true  }, { 2, true  }, { 4, false } } },
 
   // Tested by leandrogracia on a 15" MacBook Pro.
@@ -176,7 +175,6 @@ const AccelerometerMac::SensorDescriptor
   //  MacBookPro1,1
   //  MacBookPro1,2
   //  MacBookPro3,1 (17" to compare to 15")
-  //  MacBookPro4,1 (17" to compare to 15")
   { "", { { 0, true  }, { 2, true  }, { 4, false } } }
 };
 
