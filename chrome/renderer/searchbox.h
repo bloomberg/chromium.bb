@@ -6,20 +6,49 @@
 #define CHROME_RENDERER_SEARCHBOX_H_
 #pragma once
 
-#include "base/string16.h"
+#include <vector>
 
-struct SearchBox {
-  SearchBox();
+#include "base/string16.h"
+#include "chrome/renderer/render_view_observer.h"
+#include "ui/gfx/rect.h"
+
+class SearchBox : public RenderViewObserver {
+ public:
+  explicit SearchBox(RenderView* render_view);
   ~SearchBox();
 
-  string16 value;
-  bool verbatim;
-  uint32 selection_start;
-  uint32 selection_end;
-  uint32 x;
-  uint32 y;
-  uint32 width;
-  uint32 height;
+  // Sends ViewHostMsg_SetSuggestions to the browser.
+  void SetSuggestions(const std::vector<std::string>& suggestions);
+
+  const string16& value() { return value_; }
+  bool verbatim() { return verbatim_; }
+  uint32 selection_start() { return selection_start_; }
+  uint32 selection_end() { return selection_end_; }
+  const gfx::Rect& rect() { return rect_; }
+
+ private:
+  // RenderViewObserver implementation.
+  virtual bool OnMessageReceived(const IPC::Message& message);
+
+  void OnChange(const string16& value,
+                bool verbatim,
+                int selection_start,
+                int selection_end);
+  void OnSubmit(const string16& value, bool verbatim);
+  void OnCancel();
+  void OnResize(const gfx::Rect& bounds);
+  void OnDetermineIfPageSupportsInstant(const string16& value,
+                                        bool verbatim,
+                                        int selection_start,
+                                        int selection_end);
+
+  string16 value_;
+  bool verbatim_;
+  uint32 selection_start_;
+  uint32 selection_end_;
+  gfx::Rect rect_;
+
+  DISALLOW_COPY_AND_ASSIGN(SearchBox);
 };
 
 #endif  // CHROME_RENDERER_SEARCHBOX_H_

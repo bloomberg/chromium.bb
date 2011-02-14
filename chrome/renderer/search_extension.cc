@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "chrome/common/render_messages_params.h"
 #include "chrome/renderer/render_view.h"
+#include "chrome/renderer/searchbox.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "v8/include/v8.h"
 
@@ -82,7 +83,7 @@ v8::Handle<v8::Value> SearchExtensionWrapper::SetSuggestResult(
 
   std::vector<std::string> suggestions;
   suggestions.push_back(std::string(*v8::String::Utf8Value(args[0])));
-  render_view->SetSuggestions(suggestions);
+  render_view->searchbox()->SetSuggestions(suggestions);
   return v8::Undefined();
 }
 

@@ -32,7 +32,6 @@
 #include "chrome/renderer/pepper_plugin_delegate_impl.h"
 #include "chrome/renderer/render_widget.h"
 #include "chrome/renderer/renderer_webcookiejar_impl.h"
-#include "chrome/renderer/searchbox.h"
 #include "ipc/ipc_platform_file.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityNotification.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
@@ -75,6 +74,7 @@ class PepperDeviceTest;
 class PrintWebViewHelper;
 class RenderViewObserver;
 class RenderViewVisitor;
+class SearchBox;
 class SkBitmap;
 class SpeechInputDispatcher;
 class WebPluginDelegatePepper;
@@ -242,9 +242,7 @@ class RenderView : public RenderWidget,
              disable_scrollbars_size_limit_.height() <= height));
   }
 
-  const SearchBox& searchbox() const {
-    return search_box_;
-  }
+  SearchBox* searchbox() const { return searchbox_; }
 
   const WebKit::WebNode& context_menu_node() { return context_menu_node_; }
 
@@ -261,9 +259,6 @@ class RenderView : public RenderWidget,
   ViewHostMsg_GetSearchProviderInstallState_Params
       GetSearchProviderInstallState(WebKit::WebFrame* frame,
                                     const std::string& url);
-
-  // Sends ViewHostMsg_SetSuggestions to the browser.
-  void SetSuggestions(const std::vector<std::string>& suggestions);
 
   // Evaluates a string of JavaScript in a particular frame.
   void EvaluateScript(const string16& frame_xpath,
@@ -849,17 +844,6 @@ class RenderView : public RenderWidget,
                             const gfx::Point& screen_pt,
                             WebKit::WebDragOperationsMask operations_allowed);
   void OnEnablePreferredSizeChangedMode(int flags);
-  void OnSearchBoxChange(const string16& value,
-                         bool verbatim,
-                         int selection_start,
-                         int selection_end);
-  void OnSearchBoxSubmit(const string16& value, bool verbatim);
-  void OnSearchBoxCancel();
-  void OnSearchBoxResize(const gfx::Rect& bounds);
-  void OnDetermineIfPageSupportsInstant(const string16& value,
-                                        bool verbatim,
-                                        int selection_start,
-                                        int selection_end);
   void OnEnableViewSourceMode();
   void OnExecuteCode(const ViewMsg_ExecuteCode_Params& params);
   void OnExecuteEditCommand(const std::string& name, const std::string& value);
@@ -1264,8 +1248,6 @@ class RenderView : public RenderWidget,
   // The text selection the last time DidChangeSelection got called.
   std::string last_selection_;
 
-  SearchBox search_box_;
-
   // View ----------------------------------------------------------------------
 
   // Type of view attached with RenderView.  See view_types.h
@@ -1341,6 +1323,9 @@ class RenderView : public RenderWidget,
   // PrintWebViewHelper handles printing.  Weak pointer since it implements
   // RenderViewObserver interface.
   PrintWebViewHelper* print_helper_;
+
+  // Weak pointer since it implements RenderViewObserver interface.
+  SearchBox* searchbox_;
 
   scoped_refptr<AudioMessageFilter> audio_message_filter_;
 

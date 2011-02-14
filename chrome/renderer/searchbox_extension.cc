@@ -12,6 +12,7 @@
 #include "base/stringprintf.h"
 #include "chrome/common/render_messages_params.h"
 #include "chrome/renderer/render_view.h"
+#include "chrome/renderer/searchbox.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
@@ -215,8 +216,9 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetValue(
   RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
   return v8::String::New(
-      reinterpret_cast<const uint16_t*>(render_view->searchbox().value.c_str()),
-      render_view->searchbox().value.length());
+      reinterpret_cast<const uint16_t*>(
+          render_view->searchbox()->value().c_str()),
+      render_view->searchbox()->value().length());
 }
 
 // static
@@ -224,7 +226,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetVerbatim(
     const v8::Arguments& args) {
   RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
-  return v8::Boolean::New(render_view->searchbox().verbatim);
+  return v8::Boolean::New(render_view->searchbox()->verbatim());
 }
 
 // static
@@ -232,7 +234,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetSelectionStart(
     const v8::Arguments& args) {
   RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
-  return v8::Int32::New(render_view->searchbox().selection_start);
+  return v8::Int32::New(render_view->searchbox()->selection_start());
 }
 
 // static
@@ -240,7 +242,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetSelectionEnd(
     const v8::Arguments& args) {
   RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
-  return v8::Int32::New(render_view->searchbox().selection_end);
+  return v8::Int32::New(render_view->searchbox()->selection_end());
 }
 
 // static
@@ -248,7 +250,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetX(
     const v8::Arguments& args) {
   RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
-  return v8::Int32::New(render_view->searchbox().x);
+  return v8::Int32::New(render_view->searchbox()->rect().x());
 }
 
 // static
@@ -256,7 +258,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetY(
     const v8::Arguments& args) {
   RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
-  return v8::Int32::New(render_view->searchbox().y);
+  return v8::Int32::New(render_view->searchbox()->rect().y());
 }
 
 // static
@@ -264,7 +266,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetWidth(
     const v8::Arguments& args) {
   RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
-  return v8::Int32::New(render_view->searchbox().width);
+  return v8::Int32::New(render_view->searchbox()->rect().width());
 }
 
 // static
@@ -272,7 +274,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetHeight(
     const v8::Arguments& args) {
   RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
-  return v8::Int32::New(render_view->searchbox().height);
+  return v8::Int32::New(render_view->searchbox()->rect().height());
 }
 
 // Accepts a single argument in form:
@@ -330,7 +332,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::SetSuggestions(
   }
 
   if (RenderView* render_view = GetRenderView())
-    render_view->SetSuggestions(suggestions);
+    render_view->searchbox()->SetSuggestions(suggestions);
   return v8::Undefined();
 }
 
