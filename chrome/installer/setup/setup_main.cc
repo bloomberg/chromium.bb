@@ -41,6 +41,7 @@
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/html_dialog.h"
 #include "chrome/installer/util/install_util.h"
+#include "chrome/installer/util/installation_validator.h"
 #include "chrome/installer/util/installer_state.h"
 #include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/l10n_string_util.h"
@@ -55,6 +56,7 @@
 
 using installer::InstallerState;
 using installer::InstallationState;
+using installer::InstallationValidator;
 using installer::Product;
 using installer::ProductState;
 using installer::Products;
@@ -1119,6 +1121,15 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
     install_status = InstallProducts(original_state, cmd_line, prefs,
         &installer_state);
   }
+
+  // Validate that the machine is now in a good state following the operation.
+  // TODO(grt): change this to log at DFATAL once we're convinced that the
+  // validator handles all cases properly.
+  InstallationValidator::InstallationType installation_type =
+      InstallationValidator::NO_PRODUCTS;
+  LOG_IF(ERROR,
+         !InstallationValidator::ValidateInstallationType(system_install,
+                                                          &installation_type));
 
   const Product* cf_install =
       installer_state.FindProduct(BrowserDistribution::CHROME_FRAME);

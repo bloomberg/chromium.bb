@@ -1618,6 +1618,7 @@
           'type': 'none',
           'dependencies': [
             'installer/mini_installer.gyp:*',
+            'installer/installer_tools.gyp:*',
             'installer/upgrade_test.gyp:*',
             '../app/app.gyp:*',
             '../base/base.gyp:*',

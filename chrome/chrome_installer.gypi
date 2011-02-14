@@ -68,6 +68,7 @@
             '<(DEPTH)/base/base.gyp:base_i18n',
             '<(DEPTH)/base/base.gyp:test_support_base',
             '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
+            '<(DEPTH)/testing/gmock.gyp:gmock',
             '<(DEPTH)/testing/gtest.gyp:gtest',
           ],
           'include_dirs': [
@@ -87,6 +88,7 @@
             'installer/util/google_chrome_distribution_unittest.cc',
             'installer/util/google_update_settings_unittest.cc',
             'installer/util/install_util_unittest.cc',
+            'installer/util/installation_validator_unittest.cc',
             'installer/util/installer_state_unittest.cc',
             'installer/util/installer_util_unittests.rc',
             'installer/util/installer_util_unittests_resource.h',

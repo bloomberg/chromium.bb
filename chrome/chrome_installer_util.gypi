@@ -113,6 +113,8 @@
             'installer/util/google_chrome_distribution.h',
             'installer/util/html_dialog.h',
             'installer/util/html_dialog_impl.cc',
+            'installer/util/installation_validator.cc',
+            'installer/util/installation_validator.h',
             'installer/util/logging_installer.cc',
             'installer/util/logging_installer.h',
             'installer/util/lzma_util.cc',
