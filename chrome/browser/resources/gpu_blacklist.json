@@ -38,7 +38,7 @@
 {
   "name": "gpu blacklist",
   // Please update the version number whenever you change this file.
-  "version": "0.7",
+  "version": "0.8",
   "entries": [
     { // ATI Radeon X1900 on Mac, BUGWEBKIT=47028
       "id": "1",
@@ -122,6 +122,18 @@
       },
       "vendor_id": "0x1002",
       "device_id": "0x94c8",
+      "blacklist": [
+        "webgl",
+        "accelerated_compositing"
+      ]
+    },
+    { // NVIDIA GeForce FX Go5200, BUG=72938
+      "id": "8",
+      "os": {
+        "type": "any"
+      },
+      "vendor_id": "0x10de",
+      "device_id": "0x0324",
       "blacklist": [
         "webgl",
         "accelerated_compositing"
