@@ -20,7 +20,7 @@ from chromite.lib.binpkg import PackageIndex
 
 PUBLIC_PACKAGES = [{'CPV': 'gtk+/public1', 'SHA1': '1'},
                    {'CPV': 'gtk+/public2', 'SHA1': '2',
-                    'PATH': 'gtk%2B/foo.tgz'}]
+                    'PATH': 'gtk+/foo.tgz'}]
 PRIVATE_PACKAGES = [{'CPV': 'private', 'SHA1': '3'}]
 
 
@@ -290,8 +290,8 @@ class TestPopulateDuplicateDB(unittest.TestCase):
     db = {}
     pkgindex._PopulateDuplicateDB(db)
     self.assertEqual(len(db), 3)
-    self.assertEqual(db['1'], 'http://www.example.com/gtk%2B/public1.tbz2')
-    self.assertEqual(db['2'], 'http://www.example.com/gtk%2B/foo.tgz')
+    self.assertEqual(db['1'], 'http://www.example.com/gtk+/public1.tbz2')
+    self.assertEqual(db['2'], 'http://www.example.com/gtk+/foo.tgz')
     self.assertEqual(db['3'], 'http://www.example.com/private.tbz2')
 
   def testMissingSHA1(self):
@@ -300,7 +300,7 @@ class TestPopulateDuplicateDB(unittest.TestCase):
     del pkgindex.packages[0]['SHA1']
     pkgindex._PopulateDuplicateDB(db)
     self.assertEqual(len(db), 2)
-    self.assertEqual(db['2'], 'http://www.example.com/gtk%2B/foo.tgz')
+    self.assertEqual(db['2'], 'http://www.example.com/gtk+/foo.tgz')
     self.assertEqual(db['3'], 'http://www.example.com/private.tbz2')
 
   def testFailedPopulate(self):
@@ -336,7 +336,7 @@ class TestResolveDuplicateUploads(unittest.TestCase):
     dup_pkgindex = SimplePackageIndex()
     expected_pkgindex = SimplePackageIndex()
     for pkg in expected_pkgindex.packages:
-      pkg.setdefault('PATH', urllib.quote(pkg['CPV'] + '.tbz2'))
+      pkg.setdefault('PATH', pkg['CPV'] + '.tbz2')
     uploads = pkgindex.ResolveDuplicateUploads([dup_pkgindex])
     self.assertEqual(pkgindex.packages, expected_pkgindex.packages)
 
