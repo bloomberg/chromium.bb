@@ -567,13 +567,13 @@ class ExtensionPrefsPreferencesBase : public ExtensionPrefsTest {
     simple_dict.SetString(keys::kName, "unused");
 
     ext1_scoped_ = Extension::Create(
-        prefs_.temp_dir().AppendASCII("ext1_"), Extension::INVALID,
+        prefs_.temp_dir().AppendASCII("ext1_"), Extension::EXTERNAL_PREF,
         simple_dict, false, &error);
     ext2_scoped_ = Extension::Create(
-        prefs_.temp_dir().AppendASCII("ext2_"), Extension::INVALID,
+        prefs_.temp_dir().AppendASCII("ext2_"), Extension::EXTERNAL_PREF,
         simple_dict, false, &error);
     ext3_scoped_ = Extension::Create(
-        prefs_.temp_dir().AppendASCII("ext3_"), Extension::INVALID,
+        prefs_.temp_dir().AppendASCII("ext3_"), Extension::EXTERNAL_PREF,
         simple_dict, false, &error);
 
     ext1_ = ext1_scoped_.get();

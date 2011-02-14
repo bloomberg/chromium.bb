@@ -109,7 +109,7 @@ class ExtensionPrefs {
   void SetExtensionState(const Extension* extension, Extension::State);
 
   // Returns all installed extensions
-  void GetExtensions(ExtensionIdSet* out) const;
+  void GetExtensions(ExtensionIdSet* out);
 
   // Getter and setter for browser action visibility.
   bool GetBrowserActionVisibility(const Extension* extension);

@@ -1168,14 +1168,14 @@ base::Time ExtensionPrefs::GetInstallTime(
   return base::Time::FromInternalValue(install_time_i64);
 }
 
-void ExtensionPrefs::GetExtensions(ExtensionIdSet* out) const {
+void ExtensionPrefs::GetExtensions(ExtensionIdSet* out) {
   CHECK(out);
-  const DictionaryValue* extensions =
-      pref_service()->GetDictionary(kExtensionsPref);
 
-  for (DictionaryValue::key_iterator ext_id = extensions->begin_keys();
-       ext_id != extensions->end_keys(); ++ext_id) {
-    out->push_back(*ext_id);
+  scoped_ptr<ExtensionsInfo> extensions_info(GetInstalledExtensionsInfo());
+
+  for (size_t i = 0; i < extensions_info->size(); ++i) {
+    ExtensionInfo* info = extensions_info->at(i).get();
+    out->push_back(info->extension_id);
   }
 }
 
