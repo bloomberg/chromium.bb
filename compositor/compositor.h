@@ -112,6 +112,7 @@ struct wlsc_compositor {
 	int repaint_on_timeout;
 	struct timespec previous_swap;
 	pixman_region32_t damage_region;
+	struct wl_array vertices, indices;
 
 	struct wlsc_switcher *switcher;
 	uint32_t focus;

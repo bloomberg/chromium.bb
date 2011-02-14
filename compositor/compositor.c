@@ -360,10 +360,21 @@ background_create(struct wlsc_output *output, const char *filename)
 }
 
 static void
-wlsc_surface_draw(struct wlsc_surface *es, struct wlsc_output *output)
+wlsc_surface_draw(struct wlsc_surface *es,
+		  struct wlsc_output *output, pixman_region32_t *clip)
 {
 	struct wlsc_compositor *ec = es->compositor;
-	GLfloat vertices[4 * 4];
+	GLfloat *v, inv_width, inv_height;
+	unsigned int *p;
+	pixman_region32_t repaint;
+	pixman_box32_t *rectangles;
+	int i, n;
+
+	pixman_region32_init_rect(&repaint,
+				  es->x, es->y, es->width, es->height);
+	pixman_region32_intersect(&repaint, &repaint, clip);
+	if (!pixman_region32_not_empty(&repaint))
+		return;
 
 	if (es->visual == &ec->compositor.argb_visual) {
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -375,34 +386,51 @@ wlsc_surface_draw(struct wlsc_surface *es, struct wlsc_output *output)
 		glDisable(GL_BLEND);
 	}
 
-	vertices[ 0] = es->x;
-	vertices[ 1] = es->y;
-	vertices[ 2] = 0.0;
-	vertices[ 3] = 0.0;
+	rectangles = pixman_region32_rectangles(&repaint, &n);
+	v = wl_array_add(&ec->vertices, n * 16 * sizeof *v);
+	p = wl_array_add(&ec->indices, n * 6 * sizeof *p);
+	inv_width = 1.0 / es->width;
+	inv_height = 1.0 / es->height;
+	for (i = 0; i < n; i++, v += 16, p += 6) {
+		v[ 0] = rectangles[i].x1;
+		v[ 1] = rectangles[i].y1;
+		v[ 2] = (GLfloat) (rectangles[i].x1 - es->x) * inv_width;
+		v[ 3] = (GLfloat) (rectangles[i].y1 - es->y) * inv_height;
 
-	vertices[ 4] = es->x;
-	vertices[ 5] = es->y + es->height;
-	vertices[ 6] = 0.0;
-	vertices[ 7] = 1.0;
+		v[ 4] = rectangles[i].x1;
+		v[ 5] = rectangles[i].y2;
+		v[ 6] = v[ 2];
+		v[ 7] = (GLfloat) (rectangles[i].y2 - es->y) * inv_height;
 
-	vertices[ 8] = es->x + es->width;
-	vertices[ 9] = es->y;
-	vertices[10] = 1.0;
-	vertices[11] = 0.0;
+		v[ 8] = rectangles[i].x2;
+		v[ 9] = rectangles[i].y1;
+		v[10] = (GLfloat) (rectangles[i].x2 - es->x) * inv_width;
+		v[11] = v[ 3];
 
-	vertices[12] = es->x + es->width;
-	vertices[13] = es->y + es->height;
-	vertices[14] = 1.0;
-	vertices[15] = 1.0;
+		v[12] = rectangles[i].x2;
+		v[13] = rectangles[i].y2;
+		v[14] = v[10];
+		v[15] = v[ 7];
+
+		p[0] = i * 4 + 0;
+		p[1] = i * 4 + 1;
+		p[2] = i * 4 + 2;
+		p[3] = i * 4 + 2;
+		p[4] = i * 4 + 1;
+		p[5] = i * 4 + 3;
+	}
 
 	glBindTexture(GL_TEXTURE_2D, es->texture);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE,
-			      4 * sizeof(GLfloat), vertices);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE,
-			      4 * sizeof(GLfloat), &vertices[2]);
+	v = ec->vertices.data;
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof *v, &v[0]);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof *v, &v[2]);
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glDrawElements(GL_TRIANGLES, n * 6, GL_UNSIGNED_INT, ec->indices.data);
+
+	ec->vertices.size = 0;
+	ec->indices.size = 0;
+	pixman_region32_fini(&repaint);
 }
 
 static void
@@ -442,7 +470,6 @@ wlsc_output_repaint(struct wlsc_output *output)
 	struct wlsc_surface *es;
 	struct wlsc_input_device *eid;
 	pixman_region32_t new_damage, total_damage;
-	pixman_box32_t *extents;
 
 	glViewport(0, 0, output->width, output->height);
 
@@ -461,20 +488,16 @@ wlsc_output_repaint(struct wlsc_output *output)
 			      &output->previous_damage_region);
 	pixman_region32_copy(&output->previous_damage_region, &new_damage);
 
-	extents = pixman_region32_extents(&total_damage);
-	glEnable(GL_SCISSOR_TEST);
-	glScissor(extents->x1, extents->y1,
-		  extents->x2 - extents->x1, extents->y2 - extents->y1);
-
 	es = container_of(ec->surface_list.next, struct wlsc_surface, link);
 	if (es->map_type == WLSC_SURFACE_MAP_FULLSCREEN &&
 	    es->fullscreen_output == output) {
 		if (es->width < output->width || es->height < output->height)
 			glClear(GL_COLOR_BUFFER_BIT);
-		wlsc_surface_draw(es, output);
+		wlsc_surface_draw(es, output, &total_damage);
 	} else {
 		if (output->background)
-			wlsc_surface_draw(output->background, output);
+			wlsc_surface_draw(output->background,
+					  output, &total_damage);
 		else
 			glClear(GL_COLOR_BUFFER_BIT);
 
@@ -483,16 +506,17 @@ wlsc_output_repaint(struct wlsc_output *output)
 			    ec->switcher->current == es)
 				continue;
 
-			wlsc_surface_draw(es, output);
+			wlsc_surface_draw(es, output, &total_damage);
 		}
 	}
 
 	if (ec->switcher)
-		wlsc_surface_draw(ec->switcher->current, output);
+		wlsc_surface_draw(ec->switcher->current,
+				  output, &total_damage);
 
 	if (ec->focus)
 		wl_list_for_each(eid, &ec->input_device_list, link)
-			wlsc_surface_draw(eid->sprite, output);
+			wlsc_surface_draw(eid->sprite, output, &total_damage);
 }
 
 static void
