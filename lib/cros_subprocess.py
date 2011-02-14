@@ -98,10 +98,6 @@ class Popen(subprocess.Popen):
     This method runs until end-of-file is reached, then waits for the
     subprocess to terminate.
 
-    CommunicateFilter() returns a tuple (stdout, stderr, combined) which
-    is the data received on stdout, stderr and the combined data
-    (interleaved stdout and stderr).
-
     The operation object is send all output from the subprocess through its
     Output() method which must be defined like this:
 
@@ -111,11 +107,15 @@ class Popen(subprocess.Popen):
             sys.stdout or sys.stderr.
         data: a string containing the data
 
+    Note: The data read is buffered in memory, so do not use this
+    method if the data size is large or unlimited.
+
     Args:
       operation: Operation to use for this subprocess.
 
-    Note: The data read is buffered in memory, so do not use this
-    method if the data size is large or unlimited.
+    Returns:
+      A tuple (stdout, stderr, combined) which is the data received on
+      stdout, stderr and the combined data (interleaved stdout and stderr).
     """
 
     read_set = []

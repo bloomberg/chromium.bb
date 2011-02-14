@@ -71,8 +71,7 @@ class Operation:
     self._error_count = 0   # number of error lines we have reported
 
   def __del__(self):
-    """Object is about to be destroyed, so finish out output cleanly.
-    """
+    """Object is about to be destroyed, so finish out output cleanly."""
     self.FinishOutput()
 
   def FinishOutput(self):
@@ -129,7 +128,7 @@ class Operation:
     """Filter a line of output to look for and display errors.
 
     This uses a few regular expression searches to spot common error reports
-    from subprocesses. A coumt of these is kept so we know how many occurred.
+    from subprocesses. A count of these is kept so we know how many occurred.
     Optionally they are displayed in red on the terminal.
 
     Args:
@@ -168,7 +167,7 @@ class Operation:
     """
     if total > 0:
       update_str = '%s...%d%% (%d of %d)' % (self._name,
-          upto * 100 / total, upto, total)
+          upto * 100 // total, upto, total)
       if self._progress:
         # Finish the current line, print progress, and remember its length.
         self._FinishLine(self._verbose)
@@ -190,10 +189,10 @@ class Operation:
     using a carriage return character, following by spaces.
 
     Args:
-      display   True to display output, False to supress it
-      final     True if this is the final output before we exit, in which case
-                we must clean up any remaining progress message by overwriting
-                it with spaces, then carriage return
+      display: True to display output, False to suppress it
+      final: True if this is the final output before we exit, in which case
+          we must clean up any remaining progress message by overwriting
+          it with spaces, then carriage return
     """
     if display:
       if self._pending_nl != -1:
@@ -216,14 +215,16 @@ class Operation:
     self._pending_nl = -1
 
   def _CheckStreamAndColor(self, stream, display):
-    """
-    Check that we are still writing to the same stream - if not, start a new
-    line.
+    """Check that we're writing to the same stream as last call.  No?  New line.
 
     If starting a new line, set the color correctly:
       stdout  Magenta
       stderr  Red
       other   White / no colors
+
+    Args:
+      stream: The stream we're going to write to.
+      display: True to display it on terms, False to suppress it.
     """
     if self._column > 0 and stream != self._cur_stream:
       self._FinishLine(display)
@@ -323,7 +324,7 @@ class Operation:
 
     # If we have a partial line at the end, output what we have.
     # We will continue it later.
-    if len(lines[-1]):
+    if lines[-1]:
       self._Out(stream, lines[-1], display=self._verbose)
 
     # Flush so that the terminal will receive partial line output (now!)
@@ -337,7 +338,7 @@ class Operation:
     any.
 
     Args:
-      lines: text to output (without \n on the end)
+      line: text to output (without \n on the end)
     """
     self._Out(None, line, display=True, newline=True)
     self._FinishLine(display=True)
