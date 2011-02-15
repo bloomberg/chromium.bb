@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -361,7 +361,7 @@ void AutofillChangeProcessor::ApplySyncAutofillProfileChange(
         return;
       }
       AutoFillProfile *temp_ptr;
-      if (!web_database_->GetAutoFillProfileForGUID(*guid, &temp_ptr)) {
+      if (!web_database_->GetAutoFillProfile(*guid, &temp_ptr)) {
         LOG(ERROR) << "Autofill profile not found for " << *guid;
         return;
       }

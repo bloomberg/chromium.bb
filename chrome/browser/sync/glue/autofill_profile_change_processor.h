@@ -75,7 +75,7 @@ class AutofillProfileChangeProcessor : public ChangeProcessor,
       sync_api::BaseNode& autofill_profile_root,
       const AutoFillProfile& profile);
 
-  void ActOnChange(AutofillProfileChangeGUID* change,
+  void ActOnChange(AutofillProfileChange* change,
       sync_api::WriteTransaction* trans,
       sync_api::ReadNode& autofill_root);
 

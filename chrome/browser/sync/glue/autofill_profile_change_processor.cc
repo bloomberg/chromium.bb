@@ -103,7 +103,7 @@ void AutofillProfileChangeProcessor::ApplyChangesFromSyncModel(
 void AutofillProfileChangeProcessor::Observe(NotificationType type,
     const NotificationSource& source,
     const NotificationDetails& details) {
-  DCHECK_EQ(type.value, NotificationType::AUTOFILL_PROFILE_CHANGED_GUID);
+  DCHECK_EQ(type.value, NotificationType::AUTOFILL_PROFILE_CHANGED);
   WebDataService* wds = Source<WebDataService>(source).ptr();
 
   if (!wds || wds->GetDatabase() != web_database_)
@@ -117,24 +117,22 @@ void AutofillProfileChangeProcessor::Observe(NotificationType type,
     return;
   }
 
-  AutofillProfileChangeGUID* change =
-      Details<AutofillProfileChangeGUID>(details).ptr();
+  AutofillProfileChange* change = Details<AutofillProfileChange>(details).ptr();
 
   ActOnChange(change, &trans, autofill_root);
 }
 
 void AutofillProfileChangeProcessor::ActOnChange(
-     AutofillProfileChangeGUID* change,
+     AutofillProfileChange* change,
      sync_api::WriteTransaction* trans,
      sync_api::ReadNode& autofill_root) {
-  DCHECK(change->type() == AutofillProfileChangeGUID::REMOVE ||
-         change->profile());
+  DCHECK(change->type() == AutofillProfileChange::REMOVE || change->profile());
   switch (change->type()) {
-    case AutofillProfileChangeGUID::ADD: {
+    case AutofillProfileChange::ADD: {
       AddAutofillProfileSyncNode(trans, autofill_root, *(change->profile()));
       break;
     }
-    case AutofillProfileChangeGUID::UPDATE: {
+    case AutofillProfileChange::UPDATE: {
       int64 sync_id = model_associator_->GetSyncIdFromChromeId(change->key());
       if (sync_api::kInvalidId == sync_id) {
         LOG(ERROR) << "Sync id is not found for " << change->key();
@@ -149,7 +147,7 @@ void AutofillProfileChangeProcessor::ActOnChange(
       WriteAutofillProfile(*(change->profile()), &node);
       break;
     }
-    case AutofillProfileChangeGUID::REMOVE: {
+    case AutofillProfileChange::REMOVE: {
       int64 sync_id = model_associator_->GetSyncIdFromChromeId(change->key());
       if (sync_api::kInvalidId == sync_id) {
         LOG(ERROR) << "Sync id is not found for " << change->key();
@@ -229,10 +227,9 @@ void AutofillProfileChangeProcessor::ApplyAutofillProfileChange(
     }
     case sync_api::SyncManager::ChangeRecord::ACTION_UPDATE: {
       AutoFillProfile *p;
-      if (!web_database_->GetAutoFillProfileForGUID(
-          profile_specifics.guid(), &p)) {
+      if (!web_database_->GetAutoFillProfile(profile_specifics.guid(), &p)) {
         LOG(ERROR) << "Could not find the autofill profile to update for " <<
-          profile_specifics.guid();
+            profile_specifics.guid();
         break;
       }
       scoped_ptr<AutoFillProfile> autofill_pointer(p);
@@ -295,7 +292,7 @@ void AutofillProfileChangeProcessor::AddAutofillProfileSyncNode(
 void AutofillProfileChangeProcessor::StartObserving() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   notification_registrar_.Add(this,
-      NotificationType::AUTOFILL_PROFILE_CHANGED_GUID,
+      NotificationType::AUTOFILL_PROFILE_CHANGED,
       NotificationService::AllSources());
 }
 

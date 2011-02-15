@@ -79,7 +79,7 @@ class AutoFillTest : public InProcessBrowserTest {
 
     AutoFillProfile profile;
     autofill_test::SetProfileInfo(
-        &profile, "Office Space", "Milton", "C.", "Waddams",
+        &profile, "Milton", "C.", "Waddams",
         "red.swingline@initech.com", "Initech", "4120 Freidrich Lane",
         "Basement", "Austin", "Texas", "78744", "United States", "5125551234",
         "5125550000");

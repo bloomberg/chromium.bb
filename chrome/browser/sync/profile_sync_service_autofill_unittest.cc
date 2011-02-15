@@ -886,12 +886,12 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeAddProfile) {
       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
       "32801", "US", "19482937549", "13502849239");
 
-  AutofillProfileChangeGUID change(AutofillProfileChangeGUID::ADD,
+  AutofillProfileChange change(AutofillProfileChange::ADD,
       added_profile.guid(), &added_profile);
   scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&db_thread_));
-  notifier->Notify(NotificationType::AUTOFILL_PROFILE_CHANGED_GUID,
+  notifier->Notify(NotificationType::AUTOFILL_PROFILE_CHANGED,
                    Source<WebDataService>(web_data_service_.get()),
-                   Details<AutofillProfileChangeGUID>(&change));
+                   Details<AutofillProfileChange>(&change));
 
   std::vector<AutoFillProfile> new_sync_profiles;
   ASSERT_TRUE(GetAutofillProfilesFromSyncDBUnderProfileNode(
@@ -988,12 +988,12 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeRemoveProfile) {
   StartSyncService(&task, false, syncable::AUTOFILL_PROFILE);
   ASSERT_TRUE(task.success());
 
-  AutofillProfileChangeGUID change(AutofillProfileChangeGUID::REMOVE,
+  AutofillProfileChange change(AutofillProfileChange::REMOVE,
                                sync_profile.guid(), NULL);
   scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&db_thread_));
-  notifier->Notify(NotificationType::AUTOFILL_PROFILE_CHANGED_GUID,
+  notifier->Notify(NotificationType::AUTOFILL_PROFILE_CHANGED,
                    Source<WebDataService>(web_data_service_.get()),
-                   Details<AutofillProfileChangeGUID>(&change));
+                   Details<AutofillProfileChange>(&change));
 
   std::vector<AutoFillProfile> new_sync_profiles;
   ASSERT_TRUE(GetAutofillProfilesFromSyncDBUnderProfileNode(

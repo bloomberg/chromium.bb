@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,13 +62,7 @@ class AutofillDBThreadObserverHelper : public DBThreadObserverHelper {
                    NotificationType::AUTOFILL_PROFILE_CHANGED,
                    NotificationService::AllSources());
     registrar_.Add(&observer_,
-                   NotificationType::AUTOFILL_PROFILE_CHANGED_GUID,
-                   NotificationService::AllSources());
-    registrar_.Add(&observer_,
                    NotificationType::AUTOFILL_CREDIT_CARD_CHANGED,
-                   NotificationService::AllSources());
-    registrar_.Add(&observer_,
-                   NotificationType::AUTOFILL_CREDIT_CARD_CHANGED_GUID,
                    NotificationService::AllSources());
   }
 };
@@ -257,35 +251,21 @@ TEST_F(WebDataServiceAutofillTest, FormFillRemoveMany) {
   done_event_.TimedWait(test_timeout_);
 }
 
-TEST_F(WebDataServiceAutofillTest, ProfileAddGUID) {
+TEST_F(WebDataServiceAutofillTest, ProfileAdd) {
   AutoFillProfile profile;
 
-  // TODO(dhollowa): Remove this notification.  http://crbug.com/58813
-  // Old Label-based notifications will be sent out until Sync can switch over
-  // to GUID-based notifications.
-  profile.set_label(name1_);
-  const AutofillProfileChange deprecated_expected_change(
-      AutofillProfileChange::ADD, name1_, &profile, string16());
+  // Check that GUID-based notification was sent.
+  const AutofillProfileChange expected_change(
+      AutofillProfileChange::ADD, profile.guid(), &profile);
   EXPECT_CALL(
       *observer_helper_->observer(),
       Observe(NotificationType(NotificationType::AUTOFILL_PROFILE_CHANGED),
               Source<WebDataService>(wds_.get()),
               Property(&Details<const AutofillProfileChange>::ptr,
-                       Pointee(deprecated_expected_change)))).
-      WillOnce(SignalEvent(&done_event_));
-
-  // Check that GUID-based notification was sent.
-  const AutofillProfileChangeGUID expected_change(
-      AutofillProfileChangeGUID::ADD, profile.guid(), &profile);
-  EXPECT_CALL(
-      *observer_helper_->observer(),
-      Observe(NotificationType(NotificationType::AUTOFILL_PROFILE_CHANGED_GUID),
-              Source<WebDataService>(wds_.get()),
-              Property(&Details<const AutofillProfileChangeGUID>::ptr,
                        Pointee(expected_change)))).
       WillOnce(DoDefault());
 
-  wds_->AddAutoFillProfileGUID(profile);
+  wds_->AddAutoFillProfile(profile);
   done_event_.TimedWait(test_timeout_);
 
   // Check that it was added.
@@ -298,16 +278,14 @@ TEST_F(WebDataServiceAutofillTest, ProfileAddGUID) {
   STLDeleteElements(&consumer.result());
 }
 
-TEST_F(WebDataServiceAutofillTest, ProfileRemoveGUID) {
+TEST_F(WebDataServiceAutofillTest, ProfileRemove) {
   AutoFillProfile profile;
-  profile.set_label(name1_);
 
   // Add a profile.
   EXPECT_CALL(*observer_helper_->observer(), Observe(_, _, _)).
-      Times(2).
-      WillOnce(DoDefault()).
+      Times(1).
       WillOnce(SignalEvent(&done_event_));
-  wds_->AddAutoFillProfileGUID(profile);
+  wds_->AddAutoFillProfile(profile);
   done_event_.TimedWait(test_timeout_);
 
   // Check that it was added.
@@ -319,32 +297,19 @@ TEST_F(WebDataServiceAutofillTest, ProfileRemoveGUID) {
   EXPECT_EQ(profile, *consumer.result()[0]);
   STLDeleteElements(&consumer.result());
 
-  // TODO(dhollowa): Remove this notification.  http://crbug.com/58813
-  // Old Label-based notifications will be sent out until Sync can switch over
-  // to GUID-based notifications.
-  const AutofillProfileChange deprecated_expected_change(
-      AutofillProfileChange::REMOVE, name1_, NULL, string16());
+  // Check that GUID-based notification was sent.
+  const AutofillProfileChange expected_change(
+      AutofillProfileChange::REMOVE, profile.guid(), NULL);
   EXPECT_CALL(
       *observer_helper_->observer(),
       Observe(NotificationType(NotificationType::AUTOFILL_PROFILE_CHANGED),
               Source<WebDataService>(wds_.get()),
               Property(&Details<const AutofillProfileChange>::ptr,
-                       Pointee(deprecated_expected_change)))).
-      WillOnce(SignalEvent(&done_event_));
-
-  // Check that GUID-based notification was sent.
-  const AutofillProfileChangeGUID expected_change(
-      AutofillProfileChangeGUID::REMOVE, profile.guid(), NULL);
-  EXPECT_CALL(
-      *observer_helper_->observer(),
-      Observe(NotificationType(NotificationType::AUTOFILL_PROFILE_CHANGED_GUID),
-              Source<WebDataService>(wds_.get()),
-              Property(&Details<const AutofillProfileChangeGUID>::ptr,
                        Pointee(expected_change)))).
       WillOnce(DoDefault());
 
   // Remove the profile.
-  wds_->RemoveAutoFillProfileGUID(profile.guid());
+  wds_->RemoveAutoFillProfile(profile.guid());
   done_event_.TimedWait(test_timeout_);
 
   // Check that it was removed.
@@ -355,7 +320,7 @@ TEST_F(WebDataServiceAutofillTest, ProfileRemoveGUID) {
   ASSERT_EQ(0U, consumer2.result().size());
 }
 
-TEST_F(WebDataServiceAutofillTest, ProfileUpdateGUID) {
+TEST_F(WebDataServiceAutofillTest, ProfileUpdate) {
   AutoFillProfile profile1;
   profile1.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Abe"));
   AutoFillProfile profile2;
@@ -363,11 +328,9 @@ TEST_F(WebDataServiceAutofillTest, ProfileUpdateGUID) {
 
   EXPECT_CALL(*observer_helper_->observer(), Observe(_, _, _)).
       WillOnce(DoDefault()).
-      WillOnce(DoDefault()).
-      WillOnce(DoDefault()).
       WillOnce(SignalEvent(&done_event_));
-  wds_->AddAutoFillProfileGUID(profile1);
-  wds_->AddAutoFillProfileGUID(profile2);
+  wds_->AddAutoFillProfile(profile1);
+  wds_->AddAutoFillProfile(profile2);
   done_event_.TimedWait(test_timeout_);
 
   // Check that they were added.
@@ -380,38 +343,21 @@ TEST_F(WebDataServiceAutofillTest, ProfileUpdateGUID) {
   EXPECT_EQ(profile2, *consumer.result()[1]);
   STLDeleteElements(&consumer.result());
 
-  // TODO(dhollowa): Remove this notification.  http://crbug.com/58813
-  // Old Label-based notifications will be sent out until Sync can switch over
-  // to GUID-based notifications.
-  AutoFillProfile deprecated_profile1_changed(profile1);
-  deprecated_profile1_changed.SetInfo(AutoFillType(NAME_FIRST),
-                                      ASCIIToUTF16("Bill"));
-  const AutofillProfileChangeGUID deprecated_expected_change(
-      AutofillProfileChangeGUID::UPDATE, profile1.guid(),
-      &deprecated_profile1_changed);
+  AutoFillProfile profile1_changed(profile1);
+  profile1_changed.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Bill"));
+  const AutofillProfileChange expected_change(
+      AutofillProfileChange::UPDATE, profile1.guid(), &profile1_changed);
+
   EXPECT_CALL(
       *observer_helper_->observer(),
       Observe(NotificationType(NotificationType::AUTOFILL_PROFILE_CHANGED),
               Source<WebDataService>(wds_.get()),
-              Property(&Details<const AutofillProfileChangeGUID>::ptr,
-                       Pointee(deprecated_expected_change)))).
-      WillOnce(SignalEvent(&done_event_));
-
-  AutoFillProfile profile1_changed(profile1);
-  profile1_changed.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Bill"));
-  const AutofillProfileChangeGUID expected_change(
-      AutofillProfileChangeGUID::UPDATE, profile1.guid(), &profile1_changed);
-
-  EXPECT_CALL(
-      *observer_helper_->observer(),
-      Observe(NotificationType(NotificationType::AUTOFILL_PROFILE_CHANGED_GUID),
-              Source<WebDataService>(wds_.get()),
-              Property(&Details<const AutofillProfileChangeGUID>::ptr,
+              Property(&Details<const AutofillProfileChange>::ptr,
                        Pointee(expected_change)))).
       WillOnce(DoDefault());
 
   // Update the profile.
-  wds_->UpdateAutoFillProfileGUID(profile1_changed);
+  wds_->UpdateAutoFillProfile(profile1_changed);
   done_event_.TimedWait(test_timeout_);
 
   // Check that the updates were made.
@@ -426,21 +372,21 @@ TEST_F(WebDataServiceAutofillTest, ProfileUpdateGUID) {
   STLDeleteElements(&consumer2.result());
 }
 
-TEST_F(WebDataServiceAutofillTest, CreditAddGUID) {
+TEST_F(WebDataServiceAutofillTest, CreditAdd) {
   CreditCard card;
-  const AutofillCreditCardChangeGUID expected_change(
-      AutofillCreditCardChangeGUID::ADD, card.guid(), &card);
+  const AutofillCreditCardChange expected_change(
+      AutofillCreditCardChange::ADD, card.guid(), &card);
 
   EXPECT_CALL(
       *observer_helper_->observer(),
       Observe(
-          NotificationType(NotificationType::AUTOFILL_CREDIT_CARD_CHANGED_GUID),
+          NotificationType(NotificationType::AUTOFILL_CREDIT_CARD_CHANGED),
               Source<WebDataService>(wds_.get()),
-              Property(&Details<const AutofillCreditCardChangeGUID>::ptr,
+              Property(&Details<const AutofillCreditCardChange>::ptr,
                        Pointee(expected_change)))).
       WillOnce(SignalEvent(&done_event_));
 
-  wds_->AddCreditCardGUID(card);
+  wds_->AddCreditCard(card);
   done_event_.TimedWait(test_timeout_);
 
   // Check that it was added.
@@ -453,13 +399,13 @@ TEST_F(WebDataServiceAutofillTest, CreditAddGUID) {
   STLDeleteElements(&consumer.result());
 }
 
-TEST_F(WebDataServiceAutofillTest, CreditCardRemoveGUID) {
+TEST_F(WebDataServiceAutofillTest, CreditCardRemove) {
   CreditCard credit_card;
 
   // Add a credit card.
   EXPECT_CALL(*observer_helper_->observer(), Observe(_, _, _)).
       WillOnce(SignalEvent(&done_event_));
-  wds_->AddCreditCardGUID(credit_card);
+  wds_->AddCreditCard(credit_card);
   done_event_.TimedWait(test_timeout_);
 
   // Check that it was added.
@@ -472,17 +418,17 @@ TEST_F(WebDataServiceAutofillTest, CreditCardRemoveGUID) {
   STLDeleteElements(&consumer.result());
 
   // Remove the credit card.
-  const AutofillCreditCardChangeGUID expected_change(
-      AutofillCreditCardChangeGUID::REMOVE, credit_card.guid(), NULL);
+  const AutofillCreditCardChange expected_change(
+      AutofillCreditCardChange::REMOVE, credit_card.guid(), NULL);
   EXPECT_CALL(
       *observer_helper_->observer(),
       Observe(
-          NotificationType(NotificationType::AUTOFILL_CREDIT_CARD_CHANGED_GUID),
+          NotificationType(NotificationType::AUTOFILL_CREDIT_CARD_CHANGED),
               Source<WebDataService>(wds_.get()),
-              Property(&Details<const AutofillCreditCardChangeGUID>::ptr,
+              Property(&Details<const AutofillCreditCardChange>::ptr,
                        Pointee(expected_change)))).
       WillOnce(SignalEvent(&done_event_));
-  wds_->RemoveCreditCardGUID(credit_card.guid());
+  wds_->RemoveCreditCard(credit_card.guid());
   done_event_.TimedWait(test_timeout_);
 
   // Check that it was removed.
@@ -493,7 +439,7 @@ TEST_F(WebDataServiceAutofillTest, CreditCardRemoveGUID) {
   ASSERT_EQ(0U, consumer2.result().size());
 }
 
-TEST_F(WebDataServiceAutofillTest, CreditUpdateGUID) {
+TEST_F(WebDataServiceAutofillTest, CreditUpdate) {
   CreditCard card1;
   card1.SetInfo(AutoFillType(CREDIT_CARD_NAME), ASCIIToUTF16("Abe"));
   CreditCard card2;
@@ -503,8 +449,8 @@ TEST_F(WebDataServiceAutofillTest, CreditUpdateGUID) {
       Times(2).
       WillOnce(DoDefault()).
       WillOnce(SignalEvent(&done_event_));
-  wds_->AddCreditCardGUID(card1);
-  wds_->AddCreditCardGUID(card2);
+  wds_->AddCreditCard(card1);
+  wds_->AddCreditCard(card2);
   done_event_.TimedWait(test_timeout_);
 
   // Check that they got added.
@@ -519,19 +465,19 @@ TEST_F(WebDataServiceAutofillTest, CreditUpdateGUID) {
 
   CreditCard card1_changed(card1);
   card1_changed.SetInfo(AutoFillType(CREDIT_CARD_NAME), ASCIIToUTF16("Bill"));
-  const AutofillCreditCardChangeGUID expected_change(
-      AutofillCreditCardChangeGUID::UPDATE, card1.guid(), &card1_changed);
+  const AutofillCreditCardChange expected_change(
+      AutofillCreditCardChange::UPDATE, card1.guid(), &card1_changed);
 
   EXPECT_CALL(
       *observer_helper_->observer(),
       Observe(
-          NotificationType(NotificationType::AUTOFILL_CREDIT_CARD_CHANGED_GUID),
+          NotificationType(NotificationType::AUTOFILL_CREDIT_CARD_CHANGED),
               Source<WebDataService>(wds_.get()),
-              Property(&Details<const AutofillCreditCardChangeGUID>::ptr,
+              Property(&Details<const AutofillCreditCardChange>::ptr,
                        Pointee(expected_change)))).
       WillOnce(SignalEvent(&done_event_));
 
-  wds_->UpdateCreditCardGUID(card1_changed);
+  wds_->UpdateCreditCard(card1_changed);
   done_event_.TimedWait(test_timeout_);
 
   // Check that the updates were made.

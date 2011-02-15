@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -102,7 +102,6 @@ class AutoFillProfile : public FormGroup {
   // http://crbug.com/58813
   bool operator==(const AutoFillProfile& profile) const;
   virtual bool operator!=(const AutoFillProfile& profile) const;
-  void set_label(const string16& label) { label_ = label; }
 
   // Returns concatenation of full name and address line 1.  This acts as the
   // basis of comparison for new values that are submitted through forms to
@@ -128,6 +127,8 @@ class AutoFillProfile : public FormGroup {
       const std::vector<AutoFillFieldType>& fields,
       size_t num_fields_to_include,
       std::vector<string16>* created_labels);
+
+  void set_label(const string16& label) { label_ = label; }
 
   // The label presented to the user when selecting a profile.
   string16 label_;

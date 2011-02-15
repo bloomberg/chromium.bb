@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -231,15 +231,8 @@ class WebDatabase {
   // of the profile to remove.
   virtual bool RemoveAutoFillProfile(const std::string& guid);
 
-  // Retrieves a profile with label |label|.  The caller owns |profile|.
-  // DEPRECATED: In favor of |GetAutoFillProfileForGUID(...)|.
-  // TODO(dhollowa): Remove labels.  http://crbug.com/58813
-  bool GetAutoFillProfileForLabel(const string16& label,
-                                  AutoFillProfile** profile);
-
   // Retrieves a profile with guid |guid|.  The caller owns |profile|.
-  bool GetAutoFillProfileForGUID(const std::string& guid,
-                                 AutoFillProfile** profile);
+  bool GetAutoFillProfile(const std::string& guid, AutoFillProfile** profile);
 
   // Retrieves all profiles in the database.  Caller owns the returned profiles.
   virtual bool GetAutoFillProfiles(std::vector<AutoFillProfile*>* profiles);
@@ -254,16 +247,9 @@ class WebDatabase {
   // credit card to remove.
   bool RemoveCreditCard(const std::string& guid);
 
-  // Retrieves a credit card with label |label|.  The caller owns
-  // |credit_card_id|.
-  // DEPRECATED: In favor of |GetCreditCardForGUID()|.
-  // TODO(dhollowa): Remove labels.  http://crbug.com/58813
-  bool GetCreditCardForLabel(const string16& label,
-                             CreditCard** credit_card);
-
   // Retrieves a credit card with guid |guid|.  The caller owns
   // |credit_card_id|.
-  bool GetCreditCardForGUID(const std::string& guid, CreditCard** credit_card);
+  bool GetCreditCard(const std::string& guid, CreditCard** credit_card);
 
   // Retrieves all credit cards in the database.  Caller owns the returned
   // credit cards.

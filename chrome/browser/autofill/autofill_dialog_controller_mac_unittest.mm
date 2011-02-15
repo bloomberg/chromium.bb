@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -612,8 +612,6 @@ TEST_F(AutoFillDialogControllerTest, WaitForDataToLoad) {
   size_t count = profiles().size();
   for (i = 0; i < count; i++) {
     // Do not compare labels.  Label is a derived field.
-    [controller_ profiles][i].set_label(string16());
-    profiles()[i]->set_label(string16());
     ASSERT_EQ([controller_ profiles][i], *profiles()[i]);
   }
   count = credit_cards().size();

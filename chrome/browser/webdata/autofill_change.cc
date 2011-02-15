@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,45 +14,7 @@ AutofillChange::AutofillChange(Type type, const AutofillKey& key)
 AutofillChange::~AutofillChange() {
 }
 
-AutofillProfileChange::AutofillProfileChange(Type type,
-                                             string16 key,
-                                             const AutoFillProfile* profile,
-                                             const string16& pre_update_label)
-    : GenericAutofillChange<string16>(type, key),
-      profile_(profile),
-      pre_update_label_(pre_update_label) {
-}
-
-AutofillProfileChange::~AutofillProfileChange() {
-}
-
-bool AutofillProfileChange::operator==(
-    const AutofillProfileChange& change) const {
-  if (type() != change.type() || key() != change.key())
-    return false;
-  if (type() == REMOVE)
-    return true;
-  if (*profile() != *change.profile())
-    return false;
-  return type() == ADD || pre_update_label_ == change.pre_update_label();
-}
-
-AutofillCreditCardChange::AutofillCreditCardChange(
-  Type type, string16 key, const CreditCard* credit_card)
-    : GenericAutofillChange<string16>(type, key), credit_card_(credit_card) {
-}
-
-AutofillCreditCardChange::~AutofillCreditCardChange() {
-}
-
-bool AutofillCreditCardChange::operator==(
-    const AutofillCreditCardChange& change) const {
-  return type() == change.type() &&
-         key() == change.key() &&
-         (type() != REMOVE) ? *credit_card() == *change.credit_card() : true;
-}
-
-AutofillProfileChangeGUID::AutofillProfileChangeGUID(
+AutofillProfileChange::AutofillProfileChange(
   Type type, std::string key, const AutoFillProfile* profile)
     : GenericAutofillChange<std::string>(type, key),
       profile_(profile) {
@@ -61,17 +23,17 @@ AutofillProfileChangeGUID::AutofillProfileChangeGUID(
   DCHECK(type == REMOVE ? !profile : true);
 }
 
-AutofillProfileChangeGUID::~AutofillProfileChangeGUID() {
+AutofillProfileChange::~AutofillProfileChange() {
 }
 
-bool AutofillProfileChangeGUID::operator==(
-    const AutofillProfileChangeGUID& change) const {
+bool AutofillProfileChange::operator==(
+    const AutofillProfileChange& change) const {
   return type() == change.type() &&
          key() == change.key() &&
          (type() != REMOVE) ? *profile() == *change.profile() : true;
 }
 
-AutofillCreditCardChangeGUID::AutofillCreditCardChangeGUID(
+AutofillCreditCardChange::AutofillCreditCardChange(
   Type type, std::string key, const CreditCard* credit_card)
     : GenericAutofillChange<std::string>(type, key), credit_card_(credit_card) {
   DCHECK(type == ADD ? (credit_card && credit_card->guid() == key) : true);
@@ -79,11 +41,11 @@ AutofillCreditCardChangeGUID::AutofillCreditCardChangeGUID(
   DCHECK(type == REMOVE ? !credit_card : true);
 }
 
-AutofillCreditCardChangeGUID::~AutofillCreditCardChangeGUID() {
+AutofillCreditCardChange::~AutofillCreditCardChange() {
 }
 
-bool AutofillCreditCardChangeGUID::operator==(
-    const AutofillCreditCardChangeGUID& change) const {
+bool AutofillCreditCardChange::operator==(
+    const AutofillCreditCardChange& change) const {
   return type() == change.type() &&
          key() == change.key() &&
          (type() != REMOVE) ? *credit_card() == *change.credit_card() : true;

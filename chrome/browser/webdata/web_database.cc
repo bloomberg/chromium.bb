@@ -292,7 +292,8 @@ AutoFillProfile* AutoFillProfileFromStatement(const sql::Statement& s) {
   AutoFillProfile* profile = new AutoFillProfile;
   profile->set_guid(s.ColumnString(0));
   DCHECK(guid::IsValidGUID(profile->guid()));
-  profile->set_label(s.ColumnString16(1));
+  // TODO(dhollowa): remove label from |autofill_profiles| table.
+  // Column 1 is label.
 
   profile->SetInfo(AutoFillType(NAME_FIRST),
                    s.ColumnString16(2));
@@ -350,7 +351,8 @@ CreditCard* CreditCardFromStatement(const sql::Statement& s) {
 
   credit_card->set_guid(s.ColumnString(0));
   DCHECK(guid::IsValidGUID(credit_card->guid()));
-  credit_card->set_label(s.ColumnString16(1));
+  // TODO(dhollowa): remove label from |credit_cards| table.
+  // Column 1 is label.
 
   credit_card->SetInfo(AutoFillType(CREDIT_CARD_NAME),
                        s.ColumnString16(2));
@@ -1624,31 +1626,8 @@ bool WebDatabase::AddAutoFillProfile(const AutoFillProfile& profile) {
   return s.Succeeded();
 }
 
-bool WebDatabase::GetAutoFillProfileForLabel(const string16& label,
-                                             AutoFillProfile** profile) {
-  DCHECK(profile);
-  sql::Statement s(db_.GetUniqueStatement(
-      "SELECT guid, label, first_name, middle_name, last_name, email, "
-      "company_name, address_line_1, address_line_2, city, state, zipcode, "
-      "country, phone, fax, date_modified "
-      "FROM autofill_profiles "
-      "WHERE label = ?"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-
-  s.BindString16(0, label);
-  if (!s.Step())
-    return false;
-
-  *profile = AutoFillProfileFromStatement(s);
-
-  return s.Succeeded();
-}
-
-bool WebDatabase::GetAutoFillProfileForGUID(const std::string& guid,
-                                            AutoFillProfile** profile) {
+bool WebDatabase::GetAutoFillProfile(const std::string& guid,
+                                     AutoFillProfile** profile) {
   DCHECK(guid::IsValidGUID(guid));
   DCHECK(profile);
   sql::Statement s(db_.GetUniqueStatement(
@@ -1696,7 +1675,7 @@ bool WebDatabase::UpdateAutoFillProfile(const AutoFillProfile& profile) {
   DCHECK(guid::IsValidGUID(profile.guid()));
 
   AutoFillProfile* tmp_profile = NULL;
-  if (!GetAutoFillProfileForGUID(profile.guid(), &tmp_profile))
+  if (!GetAutoFillProfile(profile.guid(), &tmp_profile))
     return false;
 
   // Preserve appropriate modification dates by not updating unchanged profiles.
@@ -1758,29 +1737,7 @@ bool WebDatabase::AddCreditCard(const CreditCard& credit_card) {
   return s.Succeeded();
 }
 
-bool WebDatabase::GetCreditCardForLabel(const string16& label,
-                                        CreditCard** credit_card) {
-  DCHECK(credit_card);
-  sql::Statement s(db_.GetUniqueStatement(
-      "SELECT guid, label, name_on_card, expiration_month, expiration_year, "
-      "card_number_encrypted, date_modified "
-      "FROM credit_cards "
-      "WHERE label = ?"));
-  if (!s) {
-    NOTREACHED() << "Statement prepare failed";
-    return false;
-  }
-
-  s.BindString16(0, label);
-  if (!s.Step())
-    return false;
-
-  *credit_card = CreditCardFromStatement(s);
-
-  return s.Succeeded();
-}
-
-bool WebDatabase::GetCreditCardForGUID(const std::string& guid,
+bool WebDatabase::GetCreditCard(const std::string& guid,
                                        CreditCard** credit_card) {
   DCHECK(guid::IsValidGUID(guid));
   sql::Statement s(db_.GetUniqueStatement(
@@ -1826,7 +1783,7 @@ bool WebDatabase::UpdateCreditCard(const CreditCard& credit_card) {
   DCHECK(guid::IsValidGUID(credit_card.guid()));
 
   CreditCard* tmp_credit_card = NULL;
-  if (!GetCreditCardForGUID(credit_card.guid(), &tmp_credit_card))
+  if (!GetCreditCard(credit_card.guid(), &tmp_credit_card))
     return false;
 
   // Preserve appropriate modification dates by not updating unchanged cards.

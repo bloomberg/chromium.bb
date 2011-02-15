@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -325,14 +325,14 @@ void PersonalDataManager::SetProfiles(std::vector<AutoFillProfile>* profiles) {
            web_profiles_.begin();
        iter != web_profiles_.end(); ++iter) {
     if (!FindByGUID<AutoFillProfile>(*profiles, (*iter)->guid()))
-      wds->RemoveAutoFillProfileGUID((*iter)->guid());
+      wds->RemoveAutoFillProfile((*iter)->guid());
   }
 
   // Update the web database with the existing profiles.
   for (std::vector<AutoFillProfile>::iterator iter = profiles->begin();
        iter != profiles->end(); ++iter) {
     if (FindByGUID<AutoFillProfile>(web_profiles_, iter->guid()))
-      wds->UpdateAutoFillProfileGUID(*iter);
+      wds->UpdateAutoFillProfile(*iter);
   }
 
   // Add the new profiles to the web database.  Don't add a duplicate.
@@ -340,7 +340,7 @@ void PersonalDataManager::SetProfiles(std::vector<AutoFillProfile>* profiles) {
        iter != profiles->end(); ++iter) {
     if (!FindByGUID<AutoFillProfile>(web_profiles_, iter->guid()) &&
         !FindByContents(web_profiles_, *iter))
-      wds->AddAutoFillProfileGUID(*iter);
+      wds->AddAutoFillProfile(*iter);
   }
 
   // Copy in the new profiles.
@@ -368,8 +368,6 @@ void PersonalDataManager::SetCreditCards(
           std::mem_fun_ref(&CreditCard::IsEmpty)),
       credit_cards->end());
 
-  SetUniqueCreditCardLabels(credit_cards);
-
   WebDataService* wds = profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
   if (!wds)
     return;
@@ -379,14 +377,14 @@ void PersonalDataManager::SetCreditCards(
   for (std::vector<CreditCard*>::const_iterator iter = credit_cards_.begin();
        iter != credit_cards_.end(); ++iter) {
     if (!FindByGUID<CreditCard>(*credit_cards, (*iter)->guid()))
-      wds->RemoveCreditCardGUID((*iter)->guid());
+      wds->RemoveCreditCard((*iter)->guid());
   }
 
   // Update the web database with the existing credit cards.
   for (std::vector<CreditCard>::iterator iter = credit_cards->begin();
        iter != credit_cards->end(); ++iter) {
     if (FindByGUID<CreditCard>(credit_cards_, iter->guid()))
-      wds->UpdateCreditCardGUID(*iter);
+      wds->UpdateCreditCard(*iter);
   }
 
   // Add the new credit cards to the web database.  Don't add a duplicate.
@@ -394,7 +392,7 @@ void PersonalDataManager::SetCreditCards(
        iter != credit_cards->end(); ++iter) {
     if (!FindByGUID<CreditCard>(credit_cards_, iter->guid()) &&
         !FindByContents(credit_cards_, *iter))
-      wds->AddCreditCardGUID(*iter);
+      wds->AddCreditCard(*iter);
   }
 
   // Copy in the new credit cards.
@@ -444,7 +442,7 @@ void PersonalDataManager::UpdateProfile(const AutoFillProfile& profile) {
   // Ensure that profile labels are up to date.
   AutoFillProfile::AdjustInferredLabels(&web_profiles_.get());
 
-  wds->UpdateAutoFillProfileGUID(profile);
+  wds->UpdateAutoFillProfile(profile);
   FOR_EACH_OBSERVER(Observer, observers_, OnPersonalDataChanged());
 }
 
@@ -500,7 +498,7 @@ void PersonalDataManager::UpdateCreditCard(const CreditCard& credit_card) {
     }
   }
 
-  wds->UpdateCreditCardGUID(credit_card);
+  wds->UpdateCreditCard(credit_card);
   FOR_EACH_OBSERVER(Observer, observers_, OnPersonalDataChanged());
 }
 
@@ -602,15 +600,6 @@ const std::vector<CreditCard*>& PersonalDataManager::credit_cards() {
   return credit_cards_.get();
 }
 
-AutoFillProfile* PersonalDataManager::CreateNewEmptyAutoFillProfileForDBThread(
-    const string16& label) {
-  // See comment in header for thread details.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-  AutoFillProfile* p = new AutoFillProfile;
-  p->set_label(label);
-  return p;
-}
-
 void PersonalDataManager::Refresh() {
   LoadProfiles();
   LoadCreditCards();
@@ -707,28 +696,6 @@ void PersonalDataManager::CancelPendingQuery(WebDataService::Handle* handle) {
     web_data_service->CancelRequest(*handle);
   }
   *handle = 0;
-}
-
-void PersonalDataManager::SetUniqueCreditCardLabels(
-    std::vector<CreditCard>* credit_cards) {
-  std::map<string16, std::vector<CreditCard*> > label_map;
-  for (std::vector<CreditCard>::iterator iter = credit_cards->begin();
-       iter != credit_cards->end(); ++iter) {
-    label_map[iter->Label()].push_back(&(*iter));
-  }
-
-  for (std::map<string16, std::vector<CreditCard*> >::iterator iter =
-           label_map.begin();
-       iter != label_map.end(); ++iter) {
-    // Start at the second element because the first label should not be
-    // renamed.  The appended label number starts at 2, because the first label
-    // has an implicit index of 1.
-    for (size_t i = 1; i < iter->second.size(); ++i) {
-      string16 newlabel = iter->second[i]->Label() +
-          base::UintToString16(static_cast<unsigned int>(i + 1));
-      iter->second[i]->set_label(newlabel);
-    }
-  }
 }
 
 void PersonalDataManager::SaveImportedProfile(

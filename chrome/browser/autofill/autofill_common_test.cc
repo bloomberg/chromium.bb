@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,14 +32,11 @@ inline void check_and_set(
 }
 
 void SetProfileInfo(AutoFillProfile* profile,
-    const char* label, const char* first_name, const char* middle_name,
+    const char* first_name, const char* middle_name,
     const char* last_name, const char* email, const char* company,
     const char* address1, const char* address2, const char* city,
     const char* state, const char* zipcode, const char* country,
     const char* phone, const char* fax) {
-  // TODO(jhawkins): Remove |label|.
-  if (label)
-    profile->set_label(ASCIIToUTF16(label));
   check_and_set(profile, NAME_FIRST, first_name);
   check_and_set(profile, NAME_MIDDLE, middle_name);
   check_and_set(profile, NAME_LAST, last_name);
@@ -63,15 +60,14 @@ void SetProfileInfoWithGuid(AutoFillProfile* profile,
     const char* phone, const char* fax) {
   if (guid)
     profile->set_guid(guid);
-  SetProfileInfo(profile, NULL, first_name, middle_name, last_name, email,
+  SetProfileInfo(profile, first_name, middle_name, last_name, email,
                  company, address1, address2, city, state, zipcode, country,
                  phone, fax);
 }
 
 void SetCreditCardInfo(CreditCard* credit_card,
-    const char* label, const char* name_on_card, const char* card_number,
+    const char* name_on_card, const char* card_number,
     const char* expiration_month, const char* expiration_year) {
-  credit_card->set_label(ASCIIToUTF16(label));
   check_and_set(credit_card, CREDIT_CARD_NAME, name_on_card);
   check_and_set(credit_card, CREDIT_CARD_NUMBER, card_number);
   check_and_set(credit_card, CREDIT_CARD_EXP_MONTH, expiration_month);

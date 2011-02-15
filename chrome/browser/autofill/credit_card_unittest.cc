@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,7 @@ TEST(CreditCardTest, PreviewSummaryAndObfuscatedNumberStrings) {
 
   // Case 00: Empty credit card with empty strings.
   CreditCard credit_card00;
-  autofill_test::SetCreditCardInfo(&credit_card00, "Corporate",
+  autofill_test::SetCreditCardInfo(&credit_card00,
       "John Dillinger", "", "", "");
   string16 summary00 = credit_card00.PreviewSummary();
   EXPECT_EQ(string16(), summary00);
@@ -32,7 +32,7 @@ TEST(CreditCardTest, PreviewSummaryAndObfuscatedNumberStrings) {
 
   // Case 1: No credit card number.
   CreditCard credit_card1;
-  autofill_test::SetCreditCardInfo(&credit_card1, "Corporate",
+  autofill_test::SetCreditCardInfo(&credit_card1,
       "John Dillinger", "", "01", "2010");
   string16 summary1 = credit_card1.PreviewSummary();
   EXPECT_EQ(string16(), summary1);
@@ -41,7 +41,7 @@ TEST(CreditCardTest, PreviewSummaryAndObfuscatedNumberStrings) {
 
   // Case 2: No month.
   CreditCard credit_card2;
-  autofill_test::SetCreditCardInfo(&credit_card2, "Corporate",
+  autofill_test::SetCreditCardInfo(&credit_card2,
       "John Dillinger", "123456789012", "", "2010");
   string16 summary2 = credit_card2.PreviewSummary();
   EXPECT_EQ(string16(ASCIIToUTF16("************9012")), summary2);
@@ -50,7 +50,7 @@ TEST(CreditCardTest, PreviewSummaryAndObfuscatedNumberStrings) {
 
   // Case 3: No year.
   CreditCard credit_card3;
-  autofill_test::SetCreditCardInfo(&credit_card3, "Corporate",
+  autofill_test::SetCreditCardInfo(&credit_card3,
       "John Dillinger", "123456789012", "01", "");
   string16 summary3 = credit_card3.PreviewSummary();
   EXPECT_EQ(string16(ASCIIToUTF16("************9012")), summary3);
@@ -59,7 +59,7 @@ TEST(CreditCardTest, PreviewSummaryAndObfuscatedNumberStrings) {
 
   // Case 4: Have everything.
   CreditCard credit_card4;
-  autofill_test::SetCreditCardInfo(&credit_card4, "Corporate",
+  autofill_test::SetCreditCardInfo(&credit_card4,
       "John Dillinger", "123456789012", "01", "2010");
   string16 summary4 = credit_card4.PreviewSummary();
   EXPECT_EQ(string16(ASCIIToUTF16("************9012, Exp: 01/2010")), summary4);
@@ -71,7 +71,7 @@ TEST(CreditCardTest, AssignmentOperator){
   CreditCard a, b;
 
   // Result of assignment should be logically equal to the original profile.
-  autofill_test::SetCreditCardInfo(&a, "Corporate", "John Dillinger",
+  autofill_test::SetCreditCardInfo(&a, "John Dillinger",
                                    "123456789012", "01", "2010");
   b = a;
   EXPECT_TRUE(a == b);

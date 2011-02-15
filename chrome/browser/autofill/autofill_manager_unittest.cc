@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,19 +61,10 @@ class TestPersonalDataManager : public PersonalDataManager {
   virtual void SaveImportedFormData() {}
   virtual bool IsDataLoaded() const { return true; }
 
-  AutoFillProfile* GetLabeledProfile(const char* label) {
+  AutoFillProfile* GetProfileWithGUID(const char* guid) {
     for (std::vector<AutoFillProfile *>::iterator it = web_profiles_.begin();
          it != web_profiles_.end(); ++it) {
-      if (!(*it)->Label().compare(ASCIIToUTF16(label)))
-        return *it;
-    }
-    return NULL;
-  }
-
-  CreditCard* GetLabeledCreditCard(const char* label) {
-    for (std::vector<CreditCard *>::iterator it = credit_cards_.begin();
-         it != credit_cards_.end(); ++it) {
-      if (!(*it)->Label().compare(ASCIIToUTF16(label)))
+      if (!(*it)->guid().compare(guid))
         return *it;
     }
     return NULL;
@@ -94,7 +85,7 @@ class TestPersonalDataManager : public PersonalDataManager {
   void CreateTestCreditCardsYearAndMonth(const char* year, const char* month) {
     ClearCreditCards();
     CreditCard* credit_card = new CreditCard;
-    autofill_test::SetCreditCardInfo(credit_card, "Miku", "Miku Hatsune",
+    autofill_test::SetCreditCardInfo(credit_card, "Miku Hatsune",
                                      "4234567890654321", // Visa
                                      month, year);
     credit_card->set_guid("00000000-0000-0000-0000-000000000007");
@@ -104,7 +95,7 @@ class TestPersonalDataManager : public PersonalDataManager {
  private:
   void CreateTestAutoFillProfiles(ScopedVector<AutoFillProfile>* profiles) {
     AutoFillProfile* profile = new AutoFillProfile;
-    autofill_test::SetProfileInfo(profile, "Home", "Elvis", "Aaron",
+    autofill_test::SetProfileInfo(profile, "Elvis", "Aaron",
                                   "Presley", "theking@gmail.com", "RCA",
                                   "3734 Elvis Presley Blvd.", "Apt. 10",
                                   "Memphis", "Tennessee", "38116", "USA",
@@ -112,7 +103,7 @@ class TestPersonalDataManager : public PersonalDataManager {
     profile->set_guid("00000000-0000-0000-0000-000000000001");
     profiles->push_back(profile);
     profile = new AutoFillProfile;
-    autofill_test::SetProfileInfo(profile, "Work", "Charles", "Hardin",
+    autofill_test::SetProfileInfo(profile, "Charles", "Hardin",
                                   "Holley", "buddy@gmail.com", "Decca",
                                   "123 Apple St.", "unit 6", "Lubbock",
                                   "Texas", "79401", "USA", "23456789012",
@@ -120,7 +111,7 @@ class TestPersonalDataManager : public PersonalDataManager {
     profile->set_guid("00000000-0000-0000-0000-000000000002");
     profiles->push_back(profile);
     profile = new AutoFillProfile;
-    autofill_test::SetProfileInfo(profile, "Empty", "", "", "", "", "", "", "",
+    autofill_test::SetProfileInfo(profile, "", "", "", "", "", "", "",
                                   "", "", "", "", "", "");
     profile->set_guid("00000000-0000-0000-0000-000000000003");
     profiles->push_back(profile);
@@ -128,19 +119,21 @@ class TestPersonalDataManager : public PersonalDataManager {
 
   void CreateTestCreditCards(ScopedVector<CreditCard>* credit_cards) {
     CreditCard* credit_card = new CreditCard;
-    autofill_test::SetCreditCardInfo(credit_card, "First", "Elvis Presley",
+    autofill_test::SetCreditCardInfo(credit_card, "Elvis Presley",
                                      "4234567890123456",  // Visa
                                      "04", "2012");
     credit_card->set_guid("00000000-0000-0000-0000-000000000004");
     credit_cards->push_back(credit_card);
+
     credit_card = new CreditCard;
-    autofill_test::SetCreditCardInfo(credit_card, "Second", "Buddy Holly",
+    autofill_test::SetCreditCardInfo(credit_card, "Buddy Holly",
                                      "5187654321098765",  // Mastercard
                                      "10", "2014");
     credit_card->set_guid("00000000-0000-0000-0000-000000000005");
     credit_cards->push_back(credit_card);
+
     credit_card = new CreditCard;
-    autofill_test::SetCreditCardInfo(credit_card, "Empty", "", "", "", "");
+    autofill_test::SetCreditCardInfo(credit_card, "", "", "", "");
     credit_card->set_guid("00000000-0000-0000-0000-000000000006");
     credit_cards->push_back(credit_card);
   }
@@ -425,12 +418,8 @@ class TestAutoFillManager : public AutoFillManager {
     autofill_enabled_ = autofill_enabled;
   }
 
-  AutoFillProfile* GetLabeledProfile(const char* label) {
-    return test_personal_data_->GetLabeledProfile(label);
-  }
-
-  CreditCard* GetLabeledCreditCard(const char* label) {
-    return test_personal_data_->GetLabeledCreditCard(label);
+  AutoFillProfile* GetProfileWithGUID(const char* guid) {
+    return test_personal_data_->GetProfileWithGUID(guid);
   }
 
   void AddProfile(AutoFillProfile* profile) {
@@ -686,7 +675,8 @@ TEST_F(AutoFillManagerTest, GetProfileSuggestionsWithDuplicates) {
 
   // Add a duplicate profile.
   AutoFillProfile* duplicate_profile = static_cast<AutoFillProfile*>(
-      autofill_manager_->GetLabeledProfile("Home")->Clone());
+      autofill_manager_->GetProfileWithGUID(
+          "00000000-0000-0000-0000-000000000001")->Clone());
   autofill_manager_->AddProfile(duplicate_profile);
 
   const FormField& field = form.fields[0];
@@ -1272,7 +1262,7 @@ TEST_F(AutoFillManagerTest, GetFieldSuggestionsWithDuplicateValues) {
 
   // |profile| will be owned by the mock PersonalDataManager.
   AutoFillProfile* profile = new AutoFillProfile;
-  autofill_test::SetProfileInfo(profile, "Duplicate", "Elvis", "", "", "", "",
+  autofill_test::SetProfileInfo(profile, "Elvis", "", "", "", "",
                                 "", "", "", "", "", "", "", "");
   profile->set_guid("00000000-0000-0000-0000-000000000101");
   autofill_manager_->AddProfile(profile);
@@ -1314,7 +1304,7 @@ TEST_F(AutoFillManagerTest, FillAddressForm) {
   std::vector<FormData> forms(1, form);
   FormsSeen(forms);
 
-  std::string guid = autofill_manager_->GetLabeledProfile("Home")->guid();
+  std::string guid = "00000000-0000-0000-0000-000000000001";
   FillAutoFillFormData(
       kDefaultPageID, form, form.fields[0],
       autofill_manager_->PackGUIDs(std::string(), guid));
@@ -1333,7 +1323,7 @@ TEST_F(AutoFillManagerTest, FillCreditCardForm) {
   std::vector<FormData> forms(1, form);
   FormsSeen(forms);
 
-  std::string guid = autofill_manager_->GetLabeledCreditCard("First")->guid();
+  std::string guid = "00000000-0000-0000-0000-000000000004";
   FillAutoFillFormData(
       kDefaultPageID, form, *form.fields.begin(),
       autofill_manager_->PackGUIDs(guid, std::string()));
@@ -1356,7 +1346,7 @@ TEST_F(AutoFillManagerTest, FillCreditCardFormNoYearNoMonth) {
   std::vector<FormData> forms(1, form);
   FormsSeen(forms);
 
-  std::string guid = autofill_manager_->GetLabeledCreditCard("Miku")->guid();
+  std::string guid = "00000000-0000-0000-0000-000000000007";
   FillAutoFillFormData(
       kDefaultPageID, form, *form.fields.begin(),
       autofill_manager_->PackGUIDs(guid, std::string()));
@@ -1381,7 +1371,7 @@ TEST_F(AutoFillManagerTest, FillCreditCardFormNoYearMonth) {
   std::vector<FormData> forms(1, form);
   FormsSeen(forms);
 
-  std::string guid = autofill_manager_->GetLabeledCreditCard("Miku")->guid();
+  std::string guid = "00000000-0000-0000-0000-000000000007";
   FillAutoFillFormData(
       kDefaultPageID, form, *form.fields.begin(),
       autofill_manager_->PackGUIDs(guid, std::string()));
@@ -1405,7 +1395,7 @@ TEST_F(AutoFillManagerTest, FillCreditCardFormYearNoMonth) {
   std::vector<FormData> forms(1, form);
   FormsSeen(forms);
 
-  std::string guid = autofill_manager_->GetLabeledCreditCard("Miku")->guid();
+  std::string guid = "00000000-0000-0000-0000-000000000007";
   FillAutoFillFormData(
       kDefaultPageID, form, *form.fields.begin(),
       autofill_manager_->PackGUIDs(guid, std::string()));
@@ -1430,7 +1420,7 @@ TEST_F(AutoFillManagerTest, FillCreditCardFormYearMonth) {
   std::vector<FormData> forms(1, form);
   FormsSeen(forms);
 
-  std::string guid = autofill_manager_->GetLabeledCreditCard("Miku")->guid();
+  std::string guid = "00000000-0000-0000-0000-000000000007";
   FillAutoFillFormData(
       kDefaultPageID, form, *form.fields.begin(),
       autofill_manager_->PackGUIDs(guid, std::string()));
@@ -1452,7 +1442,7 @@ TEST_F(AutoFillManagerTest, FillAddressAndCreditCardForm) {
   FormsSeen(forms);
 
   // First fill the address data.
-  std::string guid = autofill_manager_->GetLabeledProfile("Home")->guid();
+  std::string guid = "00000000-0000-0000-0000-000000000001";
   FillAutoFillFormData(kDefaultPageID, form, form.fields[0],
                        autofill_manager_->PackGUIDs(std::string(), guid));
 
@@ -1466,7 +1456,7 @@ TEST_F(AutoFillManagerTest, FillAddressAndCreditCardForm) {
 
   // Now fill the credit card data.
   const int kPageID2 = 2;
-  guid = autofill_manager_->GetLabeledCreditCard("First")->guid();
+  guid = "00000000-0000-0000-0000-000000000004";
   FillAutoFillFormData(
       kPageID2, form, form.fields.back(),
       autofill_manager_->PackGUIDs(guid, std::string()));
@@ -1495,7 +1485,7 @@ TEST_F(AutoFillManagerTest, FillFormWithMultipleSections) {
   FormsSeen(forms);
 
   // Fill the first section.
-  std::string guid = autofill_manager_->GetLabeledProfile("Home")->guid();
+  std::string guid = "00000000-0000-0000-0000-000000000001";
   FillAutoFillFormData(kDefaultPageID, form, form.fields[0],
                        autofill_manager_->PackGUIDs(std::string(), guid));
 
@@ -1519,7 +1509,7 @@ TEST_F(AutoFillManagerTest, FillFormWithMultipleSections) {
   // Fill the second section, with the initiating field somewhere in the middle
   // of the section.
   const int kPageID2 = 2;
-  guid = autofill_manager_->GetLabeledProfile("Home")->guid();
+  guid = "00000000-0000-0000-0000-000000000001";
   ASSERT_LT(9U, kAddressFormSize);
   FillAutoFillFormData(kPageID2, form, form.fields[kAddressFormSize + 9],
                        autofill_manager_->PackGUIDs(std::string(), guid));
@@ -1562,7 +1552,7 @@ TEST_F(AutoFillManagerTest, FillAutoFilledForm) {
   FormsSeen(forms);
 
   // First fill the address data.
-  std::string guid = autofill_manager_->GetLabeledProfile("Home")->guid();
+  std::string guid = "00000000-0000-0000-0000-000000000001";
   FillAutoFillFormData(
       kDefaultPageID, form, *form.fields.begin(),
       autofill_manager_->PackGUIDs(std::string(), guid));
@@ -1579,7 +1569,7 @@ TEST_F(AutoFillManagerTest, FillAutoFilledForm) {
 
   // Now fill the credit card data.
   const int kPageID2 = 2;
-  guid = autofill_manager_->GetLabeledCreditCard("First")->guid();
+  guid = "00000000-0000-0000-0000-000000000004";
   FillAutoFillFormData(
       kPageID2, form, form.fields.back(),
       autofill_manager_->PackGUIDs(guid, std::string()));
@@ -1649,7 +1639,8 @@ TEST_F(AutoFillManagerTest, FillPhoneNumber) {
   std::vector<FormData> forms(1, form);
   FormsSeen(forms);
 
-  AutoFillProfile *work_profile = autofill_manager_->GetLabeledProfile("Work");
+  AutoFillProfile *work_profile = autofill_manager_->GetProfileWithGUID(
+      "00000000-0000-0000-0000-000000000002");
   ASSERT_TRUE(work_profile != NULL);
   const AutoFillType phone_type(PHONE_HOME_NUMBER);
   string16 saved_phone = work_profile->GetFieldText(phone_type);
@@ -1698,7 +1689,7 @@ TEST_F(AutoFillManagerTest, FormChangesRemoveField) {
   // Now, after the call to |FormsSeen|, we remove the field before filling.
   form.fields.erase(form.fields.begin() + 3);
 
-  std::string guid = autofill_manager_->GetLabeledProfile("Home")->guid();
+  std::string guid = "00000000-0000-0000-0000-000000000001";
   FillAutoFillFormData(
       kDefaultPageID, form, form.fields[0],
       autofill_manager_->PackGUIDs(std::string(), guid));
@@ -1729,7 +1720,7 @@ TEST_F(AutoFillManagerTest, FormChangesAddField) {
   // Now, after the call to |FormsSeen|, we restore the field before filling.
   form.fields.insert(pos, field);
 
-  std::string guid = autofill_manager_->GetLabeledProfile("Home")->guid();
+  std::string guid = "00000000-0000-0000-0000-000000000001";
   FillAutoFillFormData(
       kDefaultPageID, form, form.fields[0],
       autofill_manager_->PackGUIDs(std::string(), guid));

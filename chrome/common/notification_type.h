@@ -1011,27 +1011,13 @@ class NotificationType {
     // key of the entry that was affected.
     AUTOFILL_ENTRIES_CHANGED,
 
-    // DEPRECATED
-    // TODO(dhollowa): Remove this once Sync has migrated to GUID-based
-    // notifications.  http://crbug.com/58813
     // Sent when an AutoFillProfile has been added/removed/updated in the
     // WebDatabase.  The detail is an AutofillProfileChange.
     AUTOFILL_PROFILE_CHANGED,
 
-    // Sent when an AutoFillProfile has been added/removed/updated in the
-    // WebDatabase.  The detail is an AutofillProfileChangeGUID.
-    AUTOFILL_PROFILE_CHANGED_GUID,
-
-    // DEPRECATED
-    // TODO(dhollowa): Remove this once Sync has migrated to GUID-based
-    // notifications.  http://crbug.com/58813
     // Sent when an Autofill CreditCard has been added/removed/updated in the
     // WebDatabase.  The detail is an AutofillCreditCardChange.
     AUTOFILL_CREDIT_CARD_CHANGED,
-
-    // Sent when an Autofill CreditCard has been added/removed/updated in the
-    // WebDatabase.  The detail is an AutofillCreditCardChangeGUID.
-    AUTOFILL_CREDIT_CARD_CHANGED_GUID,
 
     // This notification is sent whenever the web database service has finished
     // loading the web database.  No details are expected.

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,7 @@ TEST(AutoFillCreditCardModelTest, Basic) {
 
 TEST(AutoFillCreditCardModelTest, InitializationFromCreditCard) {
   CreditCard credit_card;
-  autofill_test::SetCreditCardInfo(&credit_card, "Corporate",
+  autofill_test::SetCreditCardInfo(&credit_card,
       "John Dillinger", "123456789012", "01", "2010");
   scoped_nsobject<AutoFillCreditCardModel> model(
       [[AutoFillCreditCardModel alloc] initWithCreditCard:credit_card]);
@@ -40,7 +40,7 @@ TEST(AutoFillCreditCardModelTest, InitializationFromCreditCard) {
 
 TEST(AutoFillCreditCardModelTest, CopyModelToCreditCard) {
   CreditCard credit_card;
-  autofill_test::SetCreditCardInfo(&credit_card, "Corporate",
+  autofill_test::SetCreditCardInfo(&credit_card,
       "John Dillinger", "123456789012", "01", "2010");
   scoped_nsobject<AutoFillCreditCardModel> model(
       [[AutoFillCreditCardModel alloc] initWithCreditCard:credit_card]);

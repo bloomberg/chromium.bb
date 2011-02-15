@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,7 +40,7 @@ class TestPersonalDataManager : public PersonalDataManager {
  private:
   void CreateTestAutoFillProfiles(ScopedVector<AutoFillProfile>* profiles) {
     AutoFillProfile* profile = new AutoFillProfile;
-    autofill_test::SetProfileInfo(profile, "Home", "Elvis", "Aaron",
+    autofill_test::SetProfileInfo(profile, "Elvis", "Aaron",
                                   "Presley", "theking@gmail.com", "RCA",
                                   "3734 Elvis Presley Blvd.", "Apt. 10",
                                   "Memphis", "Tennessee", "38116", "USA",
@@ -48,7 +48,7 @@ class TestPersonalDataManager : public PersonalDataManager {
     profile->set_guid("00000000-0000-0000-0000-000000000001");
     profiles->push_back(profile);
     profile = new AutoFillProfile;
-    autofill_test::SetProfileInfo(profile, "Work", "Charles", "Hardin",
+    autofill_test::SetProfileInfo(profile, "Charles", "Hardin",
                                   "Holley", "buddy@gmail.com", "Decca",
                                   "123 Apple St.", "unit 6", "Lubbock",
                                   "Texas", "79401", "USA", "23456789012",
@@ -56,7 +56,7 @@ class TestPersonalDataManager : public PersonalDataManager {
     profile->set_guid("00000000-0000-0000-0000-000000000002");
     profiles->push_back(profile);
     profile = new AutoFillProfile;
-    autofill_test::SetProfileInfo(profile, "Empty", "", "", "", "", "", "", "",
+    autofill_test::SetProfileInfo(profile, "", "", "", "", "", "", "",
                                   "", "", "", "", "", "");
     profile->set_guid("00000000-0000-0000-0000-000000000003");
     profiles->push_back(profile);
@@ -64,19 +64,19 @@ class TestPersonalDataManager : public PersonalDataManager {
 
   void CreateTestCreditCards(ScopedVector<CreditCard>* credit_cards) {
     CreditCard* credit_card = new CreditCard;
-    autofill_test::SetCreditCardInfo(credit_card, "First", "Elvis Presley",
+    autofill_test::SetCreditCardInfo(credit_card, "Elvis Presley",
                                      "4234567890123456", // Visa
                                      "04", "2012");
     credit_card->set_guid("00000000-0000-0000-0000-000000000004");
     credit_cards->push_back(credit_card);
     credit_card = new CreditCard;
-    autofill_test::SetCreditCardInfo(credit_card, "Second", "Buddy Holly",
+    autofill_test::SetCreditCardInfo(credit_card, "Buddy Holly",
                                      "5187654321098765", // Mastercard
                                      "10", "2014");
     credit_card->set_guid("00000000-0000-0000-0000-000000000005");
     credit_cards->push_back(credit_card);
     credit_card = new CreditCard;
-    autofill_test::SetCreditCardInfo(credit_card, "Empty", "", "", "", "");
+    autofill_test::SetCreditCardInfo(credit_card, "", "", "", "");
     credit_card->set_guid("00000000-0000-0000-0000-000000000006");
     credit_cards->push_back(credit_card);
   }

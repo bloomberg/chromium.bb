@@ -1394,7 +1394,6 @@ TEST_F(WebDatabaseTest, AutoFillProfile) {
 
   // Add a 'Home' profile.
   AutoFillProfile home_profile;
-  home_profile.set_label(ASCIIToUTF16("Home"));
   home_profile.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("John"));
   home_profile.SetInfo(AutoFillType(NAME_MIDDLE), ASCIIToUTF16("Q."));
   home_profile.SetInfo(AutoFillType(NAME_LAST), ASCIIToUTF16("Smith"));
@@ -1421,11 +1420,12 @@ TEST_F(WebDatabaseTest, AutoFillProfile) {
 
   // Get the 'Home' profile.
   AutoFillProfile* db_profile;
-  ASSERT_TRUE(db.GetAutoFillProfileForLabel(ASCIIToUTF16("Home"), &db_profile));
+  ASSERT_TRUE(db.GetAutoFillProfile(home_profile.guid(), &db_profile));
   EXPECT_EQ(home_profile, *db_profile);
   sql::Statement s_home(db.db_.GetUniqueStatement(
       "SELECT date_modified "
-      "FROM autofill_profiles WHERE label='Home'"));
+      "FROM autofill_profiles WHERE guid=?"));
+  s_home.BindString(0, home_profile.guid());
   ASSERT_TRUE(s_home);
   ASSERT_TRUE(s_home.Step());
   EXPECT_GE(s_home.ColumnInt64(0), pre_creation_time.ToTimeT());
@@ -1435,23 +1435,22 @@ TEST_F(WebDatabaseTest, AutoFillProfile) {
 
   // Add a 'Billing' profile.
   AutoFillProfile billing_profile = home_profile;
-  billing_profile.set_label(ASCIIToUTF16("Billing"));
+  billing_profile.set_guid(guid::GenerateGUID());
   billing_profile.SetInfo(AutoFillType(ADDRESS_HOME_LINE1),
                           ASCIIToUTF16("5678 Bottom Street"));
   billing_profile.SetInfo(AutoFillType(ADDRESS_HOME_LINE2),
                           ASCIIToUTF16("suite 3"));
-  billing_profile.set_guid(guid::GenerateGUID());
 
   pre_creation_time = Time::Now();
   EXPECT_TRUE(db.AddAutoFillProfile(billing_profile));
   post_creation_time = Time::Now();
 
   // Get the 'Billing' profile.
-  ASSERT_TRUE(db.GetAutoFillProfileForLabel(ASCIIToUTF16("Billing"),
-                                            &db_profile));
+  ASSERT_TRUE(db.GetAutoFillProfile(billing_profile.guid(), &db_profile));
   EXPECT_EQ(billing_profile, *db_profile);
   sql::Statement s_billing(db.db_.GetUniqueStatement(
-      "SELECT date_modified FROM autofill_profiles WHERE label='Billing'"));
+      "SELECT date_modified FROM autofill_profiles WHERE guid=?"));
+  s_billing.BindString(0, billing_profile.guid());
   ASSERT_TRUE(s_billing);
   ASSERT_TRUE(s_billing.Step());
   EXPECT_GE(s_billing.ColumnInt64(0), pre_creation_time.ToTimeT());
@@ -1464,11 +1463,11 @@ TEST_F(WebDatabaseTest, AutoFillProfile) {
   Time pre_modification_time = Time::Now();
   EXPECT_TRUE(db.UpdateAutoFillProfile(billing_profile));
   Time post_modification_time = Time::Now();
-  ASSERT_TRUE(db.GetAutoFillProfileForLabel(ASCIIToUTF16("Billing"),
-                                            &db_profile));
+  ASSERT_TRUE(db.GetAutoFillProfile(billing_profile.guid(), &db_profile));
   EXPECT_EQ(billing_profile, *db_profile);
   sql::Statement s_billing_updated(db.db_.GetUniqueStatement(
-      "SELECT date_modified FROM autofill_profiles WHERE label='Billing'"));
+      "SELECT date_modified FROM autofill_profiles WHERE guid=?"));
+  s_billing_updated.BindString(0, billing_profile.guid());
   ASSERT_TRUE(s_billing_updated);
   ASSERT_TRUE(s_billing_updated.Step());
   EXPECT_GE(s_billing_updated.ColumnInt64(0),
@@ -1480,36 +1479,7 @@ TEST_F(WebDatabaseTest, AutoFillProfile) {
 
   // Remove the 'Billing' profile.
   EXPECT_TRUE(db.RemoveAutoFillProfile(billing_profile.guid()));
-  EXPECT_FALSE(db.GetAutoFillProfileForLabel(ASCIIToUTF16("Billing"),
-                                             &db_profile));
-
-  // Add a 'GUID' profile.
-  AutoFillProfile guid_profile = home_profile;
-  guid_profile.set_label(ASCIIToUTF16("GUID"));
-  guid_profile.SetInfo(AutoFillType(ADDRESS_HOME_LINE1),
-                       ASCIIToUTF16("5678 Top Street"));
-  guid_profile.SetInfo(AutoFillType(ADDRESS_HOME_LINE2),
-                       ASCIIToUTF16("suite 4"));
-  guid_profile.set_guid(guid::GenerateGUID());
-
-  EXPECT_TRUE(db.AddAutoFillProfile(guid_profile));
-  ASSERT_TRUE(db.GetAutoFillProfileForGUID(guid_profile.guid(),
-                                           &db_profile));
-  EXPECT_EQ(guid_profile, *db_profile);
-  delete db_profile;
-
-  // Update the 'GUID' profile.
-  guid_profile.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Jimmy"));
-  EXPECT_TRUE(db.UpdateAutoFillProfile(guid_profile));
-  ASSERT_TRUE(db.GetAutoFillProfileForGUID(guid_profile.guid(),
-                                           &db_profile));
-  EXPECT_EQ(guid_profile, *db_profile);
-  delete db_profile;
-
-  // Remove the 'GUID' profile.
-  EXPECT_TRUE(db.RemoveAutoFillProfile(guid_profile.guid()));
-  EXPECT_FALSE(db.GetAutoFillProfileForGUID(guid_profile.guid(),
-                                            &db_profile));
+  EXPECT_FALSE(db.GetAutoFillProfile(billing_profile.guid(), &db_profile));
 }
 
 TEST_F(WebDatabaseTest, CreditCard) {
@@ -1519,7 +1489,6 @@ TEST_F(WebDatabaseTest, CreditCard) {
 
   // Add a 'Work' credit card.
   CreditCard work_creditcard;
-  work_creditcard.set_label(ASCIIToUTF16("Work"));
   work_creditcard.SetInfo(AutoFillType(CREDIT_CARD_NAME),
                           ASCIIToUTF16("Jack Torrance"));
   work_creditcard.SetInfo(AutoFillType(CREDIT_CARD_NUMBER),
@@ -1535,12 +1504,13 @@ TEST_F(WebDatabaseTest, CreditCard) {
 
   // Get the 'Work' credit card.
   CreditCard* db_creditcard;
-  ASSERT_TRUE(db.GetCreditCardForLabel(ASCIIToUTF16("Work"), &db_creditcard));
+  ASSERT_TRUE(db.GetCreditCard(work_creditcard.guid(), &db_creditcard));
   EXPECT_EQ(work_creditcard, *db_creditcard);
   sql::Statement s_work(db.db_.GetUniqueStatement(
       "SELECT guid, label, name_on_card, expiration_month, expiration_year, "
       "card_number_encrypted, date_modified "
-      "FROM credit_cards WHERE label='Work'"));
+      "FROM credit_cards WHERE guid=?"));
+  s_work.BindString(0, work_creditcard.guid());
   ASSERT_TRUE(s_work);
   ASSERT_TRUE(s_work.Step());
   EXPECT_GE(s_work.ColumnInt64(6), pre_creation_time.ToTimeT());
@@ -1550,7 +1520,6 @@ TEST_F(WebDatabaseTest, CreditCard) {
 
   // Add a 'Target' credit card.
   CreditCard target_creditcard;
-  target_creditcard.set_label(ASCIIToUTF16("Target"));
   target_creditcard.SetInfo(AutoFillType(CREDIT_CARD_NAME),
                             ASCIIToUTF16("Jack Torrance"));
   target_creditcard.SetInfo(AutoFillType(CREDIT_CARD_NUMBER),
@@ -1563,13 +1532,13 @@ TEST_F(WebDatabaseTest, CreditCard) {
   pre_creation_time = Time::Now();
   EXPECT_TRUE(db.AddCreditCard(target_creditcard));
   post_creation_time = Time::Now();
-  ASSERT_TRUE(db.GetCreditCardForLabel(ASCIIToUTF16("Target"),
-                                       &db_creditcard));
+  ASSERT_TRUE(db.GetCreditCard(target_creditcard.guid(), &db_creditcard));
   EXPECT_EQ(target_creditcard, *db_creditcard);
   sql::Statement s_target(db.db_.GetUniqueStatement(
       "SELECT guid, label, name_on_card, expiration_month, expiration_year, "
       "card_number_encrypted, date_modified "
-      "FROM credit_cards WHERE label='Target'"));
+      "FROM credit_cards WHERE guid=?"));
+  s_target.BindString(0, target_creditcard.guid());
   ASSERT_TRUE(s_target);
   ASSERT_TRUE(s_target.Step());
   EXPECT_GE(s_target.ColumnInt64(6), pre_creation_time.ToTimeT());
@@ -1583,12 +1552,13 @@ TEST_F(WebDatabaseTest, CreditCard) {
   Time pre_modification_time = Time::Now();
   EXPECT_TRUE(db.UpdateCreditCard(target_creditcard));
   Time post_modification_time = Time::Now();
-  ASSERT_TRUE(db.GetCreditCardForLabel(ASCIIToUTF16("Target"), &db_creditcard));
+  ASSERT_TRUE(db.GetCreditCard(target_creditcard.guid(), &db_creditcard));
   EXPECT_EQ(target_creditcard, *db_creditcard);
   sql::Statement s_target_updated(db.db_.GetUniqueStatement(
       "SELECT guid, label, name_on_card, expiration_month, expiration_year, "
       "card_number_encrypted, date_modified "
-      "FROM credit_cards WHERE label='Target'"));
+      "FROM credit_cards WHERE guid=?"));
+  s_target_updated.BindString(0, target_creditcard.guid());
   ASSERT_TRUE(s_target_updated);
   ASSERT_TRUE(s_target_updated.Step());
   EXPECT_GE(s_target_updated.ColumnInt64(6),
@@ -1600,39 +1570,7 @@ TEST_F(WebDatabaseTest, CreditCard) {
 
   // Remove the 'Target' credit card.
   EXPECT_TRUE(db.RemoveCreditCard(target_creditcard.guid()));
-  EXPECT_FALSE(db.GetCreditCardForLabel(ASCIIToUTF16("Target"),
-                                        &db_creditcard));
-
-  // Add a 'GUID' profile.
-  CreditCard guid_creditcard;
-  guid_creditcard.set_label(ASCIIToUTF16("GUID"));
-  guid_creditcard.SetInfo(AutoFillType(CREDIT_CARD_NAME),
-                          ASCIIToUTF16("Jimmy Jones"));
-  guid_creditcard.SetInfo(AutoFillType(CREDIT_CARD_NUMBER),
-                          ASCIIToUTF16("9999222233334444"));
-  guid_creditcard.SetInfo(AutoFillType(CREDIT_CARD_EXP_MONTH),
-                          ASCIIToUTF16("07"));
-  guid_creditcard.SetInfo(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
-                          ASCIIToUTF16("2013"));
-
-  EXPECT_TRUE(db.AddCreditCard(guid_creditcard));
-  ASSERT_TRUE(db.GetCreditCardForGUID(guid_creditcard.guid(),
-                                      &db_creditcard));
-  EXPECT_EQ(guid_creditcard, *db_creditcard);
-  delete db_creditcard;
-
-  // Update the 'GUID' profile.
-  guid_creditcard.SetInfo(AutoFillType(CREDIT_CARD_NAME),
-                            ASCIIToUTF16("Jimmy Grady"));
-  EXPECT_TRUE(db.UpdateCreditCard(guid_creditcard));
-  ASSERT_TRUE(db.GetCreditCardForGUID(guid_creditcard.guid(), &db_creditcard));
-  EXPECT_EQ(guid_creditcard, *db_creditcard);
-  delete db_creditcard;
-
-  // Remove the 'GUID' profile.
-  EXPECT_TRUE(db.RemoveCreditCard(guid_creditcard.guid()));
-  EXPECT_FALSE(db.GetCreditCardForGUID(guid_creditcard.guid(),
-                                       &db_creditcard));
+  EXPECT_FALSE(db.GetCreditCard(target_creditcard.guid(), &db_creditcard));
 }
 
 TEST_F(WebDatabaseTest, UpdateAutoFillProfile) {
@@ -1641,7 +1579,6 @@ TEST_F(WebDatabaseTest, UpdateAutoFillProfile) {
 
   // Add a profile to the db.
   AutoFillProfile profile;
-  profile.set_label(ASCIIToUTF16("Test Profile"));
   profile.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("John"));
   profile.SetInfo(AutoFillType(NAME_MIDDLE), ASCIIToUTF16("Q."));
   profile.SetInfo(AutoFillType(NAME_LAST), ASCIIToUTF16("Smith"));
@@ -1670,7 +1607,7 @@ TEST_F(WebDatabaseTest, UpdateAutoFillProfile) {
 
   // Get the profile.
   AutoFillProfile* tmp_profile;
-  ASSERT_TRUE(db.GetAutoFillProfileForGUID(profile.guid(), &tmp_profile));
+  ASSERT_TRUE(db.GetAutoFillProfile(profile.guid(), &tmp_profile));
   scoped_ptr<AutoFillProfile> db_profile(tmp_profile);
   EXPECT_EQ(profile, *db_profile);
   sql::Statement s_original(db.db_.GetUniqueStatement(
@@ -1686,7 +1623,7 @@ TEST_F(WebDatabaseTest, UpdateAutoFillProfile) {
   db.UpdateAutoFillProfile(profile);
 
   // Get the profile.
-  ASSERT_TRUE(db.GetAutoFillProfileForGUID(profile.guid(), &tmp_profile));
+  ASSERT_TRUE(db.GetAutoFillProfile(profile.guid(), &tmp_profile));
   db_profile.reset(tmp_profile);
   EXPECT_EQ(profile, *db_profile);
   sql::Statement s_updated(db.db_.GetUniqueStatement(
@@ -1709,7 +1646,7 @@ TEST_F(WebDatabaseTest, UpdateAutoFillProfile) {
   db.UpdateAutoFillProfile(profile);
 
   // Get the profile.
-  ASSERT_TRUE(db.GetAutoFillProfileForGUID(profile.guid(), &tmp_profile));
+  ASSERT_TRUE(db.GetAutoFillProfile(profile.guid(), &tmp_profile));
   db_profile.reset(tmp_profile);
   EXPECT_EQ(profile, *db_profile);
   sql::Statement s_unchanged(db.db_.GetUniqueStatement(
@@ -1726,7 +1663,6 @@ TEST_F(WebDatabaseTest, UpdateCreditCard) {
 
   // Add a credit card to the db.
   CreditCard credit_card;
-  credit_card.set_label(ASCIIToUTF16("Test Credit Card"));
   credit_card.SetInfo(AutoFillType(CREDIT_CARD_NAME),
                       ASCIIToUTF16("Jack Torrance"));
   credit_card.SetInfo(AutoFillType(CREDIT_CARD_NUMBER),
@@ -1747,7 +1683,7 @@ TEST_F(WebDatabaseTest, UpdateCreditCard) {
 
   // Get the credit card.
   CreditCard* tmp_credit_card;
-  ASSERT_TRUE(db.GetCreditCardForGUID(credit_card.guid(), &tmp_credit_card));
+  ASSERT_TRUE(db.GetCreditCard(credit_card.guid(), &tmp_credit_card));
   scoped_ptr<CreditCard> db_credit_card(tmp_credit_card);
   EXPECT_EQ(credit_card, *db_credit_card);
   sql::Statement s_original(db.db_.GetUniqueStatement(
@@ -1763,7 +1699,7 @@ TEST_F(WebDatabaseTest, UpdateCreditCard) {
   db.UpdateCreditCard(credit_card);
 
   // Get the credit card.
-  ASSERT_TRUE(db.GetCreditCardForGUID(credit_card.guid(), &tmp_credit_card));
+  ASSERT_TRUE(db.GetCreditCard(credit_card.guid(), &tmp_credit_card));
   db_credit_card.reset(tmp_credit_card);
   EXPECT_EQ(credit_card, *db_credit_card);
   sql::Statement s_updated(db.db_.GetUniqueStatement(
@@ -1786,7 +1722,7 @@ TEST_F(WebDatabaseTest, UpdateCreditCard) {
   db.UpdateCreditCard(credit_card);
 
   // Get the profile.
-  ASSERT_TRUE(db.GetCreditCardForGUID(credit_card.guid(), &tmp_credit_card));
+  ASSERT_TRUE(db.GetCreditCard(credit_card.guid(), &tmp_credit_card));
   db_credit_card.reset(tmp_credit_card);
   EXPECT_EQ(credit_card, *db_credit_card);
   sql::Statement s_unchanged(db.db_.GetUniqueStatement(

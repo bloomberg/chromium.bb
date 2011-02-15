@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -136,13 +136,6 @@ class PersonalDataManager
   virtual const std::vector<AutoFillProfile*>& web_profiles();
   virtual const std::vector<CreditCard*>& credit_cards();
 
-  // Creates a profile labeled |label|.
-  // This must be called on the DB thread with the expectation that the
-  // returned form will be synchronously persisted to the WebDatabase.  See
-  // Refresh and SetProfiles for details.
-  AutoFillProfile* CreateNewEmptyAutoFillProfileForDBThread(
-      const string16& label);
-
   // Re-loads profiles and credit cards from the WebDatabase asynchronously.
   // In the general case, this is a no-op and will re-create the same
   // in-memory model as existed prior to the call.  If any change occurred to
@@ -193,12 +186,6 @@ class PersonalDataManager
   // Cancels a pending query to the web database.  |handle| is a pointer to the
   // query handle.
   void CancelPendingQuery(WebDataService::Handle* handle);
-
-  // Ensures that all profile labels are unique by appending an increasing digit
-  // to the end of non-unique labels.
-  // TODO(jhawkins): Create a new interface for labeled entities and turn these
-  // two methods into one.
-  void SetUniqueCreditCardLabels(std::vector<CreditCard>* credit_cards);
 
   // Saves |imported_profile| to the WebDB if it exists.
   virtual void SaveImportedProfile(const AutoFillProfile& imported_profile);
