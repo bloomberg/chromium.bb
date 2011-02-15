@@ -489,8 +489,8 @@ IN_PROC_BROWSER_TEST_F(InstantTest, NonSearchToSearch) {
 
 // Makes sure that if the server doesn't support the instant API we don't show
 // anything.
-#if defined(OS_MACOSX)
-// Showing as flaky on Mac
+#if defined(OS_MACOSX) || defined(OS_LINUX)
+// Showing as flaky on Mac and Linux.
 // http://crbug.com/70860
 #define MAYBE_SearchServerDoesntSupportInstant \
     DISABLED_SearchServerDoesntSupportInstant
