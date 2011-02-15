@@ -33,7 +33,6 @@ class VectorCanvas;
 struct ViewMsg_Print_Params;
 struct ViewMsg_PrintPage_Params;
 struct ViewMsg_PrintPages_Params;
-struct ViewHostMsg_DidPreviewDocument_Params;
 
 // Class that calls the Begin and End print functions on the frame and changes
 // the size of the view temporarily to support full page printing..

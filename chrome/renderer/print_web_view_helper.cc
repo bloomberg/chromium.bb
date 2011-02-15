@@ -41,6 +41,20 @@ using WebKit::WebString;
 using WebKit::WebURLRequest;
 using WebKit::WebView;
 
+namespace {
+
+int GetDPI(const ViewMsg_Print_Params* print_params) {
+#if defined(OS_MACOSX)
+  // On the Mac, the printable area is in points, don't do any scaling based
+  // on dpi.
+  return printing::kPointsPerInch;
+#else
+  return static_cast<int>(print_params->dpi);
+#endif  // defined(OS_MACOSX)
+}
+
+}  // namespace
+
 PrepareFrameAndViewForPrint::PrepareFrameAndViewForPrint(
     const ViewMsg_Print_Params& print_params,
     WebFrame* frame,
@@ -48,12 +62,7 @@ PrepareFrameAndViewForPrint::PrepareFrameAndViewForPrint(
     WebView* web_view)
         : frame_(frame), web_view_(web_view), expected_pages_count_(0),
           use_browser_overlays_(true) {
-  int dpi = static_cast<int>(print_params.dpi);
-#if defined(OS_MACOSX)
-  // On the Mac, the printable area is in points, don't do any scaling based
-  // on dpi.
-  dpi = printing::kPointsPerInch;
-#endif  // defined(OS_MACOSX)
+  int dpi = GetDPI(&print_params);
   print_canvas_size_.set_width(
       ConvertUnit(print_params.printable_size.width(), dpi,
                   print_params.desired_dpi));
@@ -347,12 +356,7 @@ void PrintWebViewHelper::GetPageSizeAndMarginsInPoints(
     double* margin_right_in_points,
     double* margin_bottom_in_points,
     double* margin_left_in_points) {
-  int dpi = static_cast<int>(default_params.dpi);
-#if defined(OS_MACOSX)
-  // On the Mac, the printable area is in points, don't do any scaling based
-  // on dpi.
-  dpi = printing::kPointsPerInch;
-#endif
+  int dpi = GetDPI(&default_params);
 
   WebSize page_size_in_pixels(
       ConvertUnit(default_params.page_size.width(),
@@ -433,13 +437,7 @@ void PrintWebViewHelper::UpdatePrintableSizeInPrintParameters(
       &content_width_in_points, &content_height_in_points,
       &margin_top_in_points, &margin_right_in_points,
       &margin_bottom_in_points, &margin_left_in_points);
-#if defined(OS_MACOSX)
-  // On the Mac, the printable area is in points, don't do any scaling based
-  // on dpi.
-  int dpi = printing::kPointsPerInch;
-#else
-  int dpi = static_cast<int>(params->dpi);
-#endif  // defined(OS_MACOSX)
+  int dpi = GetDPI(params);
   params->printable_size = gfx::Size(
       static_cast<int>(ConvertUnitDouble(content_width_in_points,
           printing::kPointsPerInch, dpi)),
