@@ -520,9 +520,9 @@ def _LegacyArchiveBuild(buildroot, bot_id, buildconfig, buildnumber,
   ]
   # Give the right args to archive_build.
   if buildconfig['archive_build_prebuilts']: cmd.extend('--prebuilt_upload')
-  if buildconfig.get('test_mod', True): cmd.append('--test_mod')
   if buildconfig.get('factory_test_mod', True): cmd.append('--factory_test_mod')
   if not buildconfig['archive_build_debug']: cmd.append('--noarchive_debug')
+  if buildconfig.get('test_mod', False): cmd.append('--notest_mod')
   if test_tarball: cmd.append('--test_tarball', test_tarball)
   if debug: cmd.append('--debug')
   if buildconfig.get('factory_install_mod', True):
