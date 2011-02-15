@@ -209,7 +209,7 @@ static int asm_HasCPUID() {
    */
   return 1;
 /* TODO(bradchen): split into separate Windows, etc., files */
-#elif (NACL_LINUX || NACL_OSX)
+#elif defined(__GNUC__)
   __asm__ volatile("pushfl                \n\t" /* save EFLAGS to eax */
                    "pop %%eax             \n\t"
                    "movl %%eax, %0        \n\t" /* remember EFLAGS in %0 */
@@ -231,14 +231,14 @@ static int asm_HasCPUID() {
     pop after
   }
 #else
-# error Please specify platform as NACL_LINUX, NACL_OSX or NACL_WINDOWS
+# error Unsupported platform
 #endif
   result = (before ^ after) & 0x0200000;
   return result;
 }
 
 static void asm_CPUID(uint32_t op, volatile uint32_t reg[4]) {
-#if (NACL_LINUX || NACL_OSX)
+#if defined(__GNUC__)
 #if NACL_BUILD_SUBARCH == 64
  __asm__ volatile("push %%rbx       \n\t" /* save %ebx */
 #else
@@ -255,9 +255,10 @@ static void asm_CPUID(uint32_t op, volatile uint32_t reg[4]) {
                    : "=a"(reg[0]), "=S"(reg[1]), "=c"(reg[2]), "=d"(reg[3])
                    : "a"(op)
                    : "cc");
-#endif
-#if NACL_WINDOWS
+#elif NACL_WINDOWS
   __cpuid((uint32_t*)reg, op);
+#else
+# error Unsupported platform
 #endif
 }
 

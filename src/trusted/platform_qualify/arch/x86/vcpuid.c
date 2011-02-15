@@ -39,7 +39,7 @@ static int asm_HasCPUID() {
 #if NACL_BUILD_SUBARCH == 64
   return 1;
 #endif
-#if (NACL_LINUX || NACL_OSX)
+#if defined(__GNUC__)
   __asm__ volatile("pushfl                \n\t" /* save EFLAGS to eax */
                    "pop %%eax             \n\t"
                    "movl %%eax, %0        \n\t" /* remember EFLAGS in %0 */
@@ -52,9 +52,6 @@ static int asm_HasCPUID() {
                    :
                    : "%eax" );
 #elif NACL_WINDOWS
-#if defined(__GNUC__)
-# error Building with GCC on Windows is not supported.
-#endif
   __asm {
     pushfd
     pop eax
@@ -66,7 +63,7 @@ static int asm_HasCPUID() {
     pop after
   }
 #else
-# error Please specify platform as NACL_LINUX, NACL_OSX or NACL_WINDOWS
+# error Unsupported platform
 #endif
   result = (before ^ after) & 0x0200000;
   return result;
@@ -75,7 +72,7 @@ static int asm_HasCPUID() {
 static int asm_HasMMX() {
   volatile int before, after;
   before = kMagicConst;
-#if (NACL_LINUX || NACL_OSX)
+#if defined(__GNUC__)
   __asm__ volatile("mov %1, %%eax         \n\t"
                    "xor %%ecx, %%ecx      \n\t"
                    "movd %%eax, %%mm0     \n\t" /* copy eax into mm0 (MMX) */
@@ -93,7 +90,7 @@ static int asm_HasMMX() {
       mov after, ecx
   }
 #else
-# error Please specify platform as NACL_LINUX, NACL_OSX or NACL_WINDOWS
+# error Unsupported platform
 #endif
   return (after == kMagicConst);
 }
@@ -102,7 +99,7 @@ static int asm_HasMMX() {
 static int asm_Has3DNow() {
   volatile int before, after;
   before = kMagicConst;
-#if (NACL_LINUX || NACL_OSX)
+#if defined(__GNUC__)
   __asm__ volatile("mov %1, %%eax         \n\t"
                    "movd %%eax, %%mm0     \n\t" /* copy eax into mm0 (MMX) */
                    "pfadd %%mm0, %%mm0    \n\t" /* 3DNow! */
@@ -122,7 +119,7 @@ static int asm_Has3DNow() {
       emms
   }
 #else
-# error Please specify platform as NACL_LINUX, NACL_OSX or NACL_WINDOWS
+# error Unsupported platform
 #endif
   return (after == kMagicConst + 0x800000);
 }
@@ -132,7 +129,7 @@ static int asm_HasSSE() {
   volatile int before, after;
   before = kMagicConst;
   after = 0;
-#if (NACL_LINUX || NACL_OSX)
+#if defined(__GNUC__)
   __asm__ volatile("movss  %1, %%xmm0     \n\t"
                    /* copy before into xmm0 (SSE2) */
                    "movss %%xmm0, %0      \n\t" /* copy xmm0 into after (SSE) */
@@ -145,7 +142,7 @@ static int asm_HasSSE() {
     movss after, xmm0
   }
 #else
-# error Please specify platform as NACL_LINUX, NACL_OSX or NACL_WINDOWS
+# error Unsupported platform
 #endif
   return (after == kMagicConst);
 }
@@ -153,7 +150,7 @@ static int asm_HasSSE() {
 static int asm_HasSSE2() {
   volatile int before, after;
   before = kMagicConst;
-#if (NACL_LINUX || NACL_OSX)
+#if defined(__GNUC__)
   __asm__ volatile("mov %1, %%eax         \n\t"
                    "xor %%ecx, %%ecx      \n\t"
                    "movd %%eax, %%xmm0    \n\t" /* copy eax into xmm0 (SSE2) */
@@ -171,7 +168,7 @@ static int asm_HasSSE2() {
     mov after, ecx
   }
 #else
-# error Please specify platform as NACL_LINUX, NACL_OSX or NACL_WINDOWS
+# error Unsupported platform
 #endif
   return (after == kMagicConst);
 }
@@ -180,7 +177,7 @@ static int asm_HasSSE3() {
   volatile int before, after;
   after = 0;
   before = kMagicConst;
-#if (NACL_LINUX || NACL_OSX)
+#if defined(__GNUC__)
   __asm__ volatile("mov %1, %%eax             \n\t"
                    "movd %%eax, %%xmm0        \n\t"
                    "movddup %%xmm0, %%xmm1    \n\t"
@@ -198,14 +195,14 @@ static int asm_HasSSE3() {
     mov after, ecx
   }
 #else
-# error Please specify platform as NACL_LINUX, NACL_OSX or NACL_WINDOWS
+# error Unsupported platform
 #endif
   return (after == kMagicConst);
 }
 
 static int asm_HasSSSE3() {
   volatile int after;
-#if (NACL_LINUX || NACL_OSX)
+#if defined(__GNUC__)
   __asm__ volatile("mov $0x0000ffff, %%eax  \n\t"
                    "xor %%ecx, %%ecx        \n\t"
                    "movd %%eax, %%mm0       \n\t" /* copy eax into mm0 (MMX) */
@@ -228,7 +225,7 @@ static int asm_HasSSSE3() {
     emms
   }
 #else
-# error Please specify platform as NACL_LINUX, NACL_OSX or NACL_WINDOWS
+# error Unsupported platform
 #endif
   return (after == 1);
 }
@@ -236,7 +233,7 @@ static int asm_HasSSSE3() {
 static int asm_HasSSE41() {
   volatile int before, after;
   before = kMagicConst;
-#if (NACL_LINUX || NACL_OSX)
+#if defined(__GNUC__)
   __asm__ volatile("mov %1, %%eax              \n\t"
                    "movd %%eax, %%xmm0         \n\t"
                    "roundss $0, %%xmm0, %%xmm0 \n\t"
@@ -263,14 +260,14 @@ static int asm_HasSSE41() {
     mov after, ecx
   }
 #else
-# error Please specify platform as NACL_LINUX, NACL_OSX or NACL_WINDOWS
+# error Unsupported platform
 #endif
   return (after == kMagicConst_ROUNDSS);
 }
 
 static int asm_HasSSE42() {
   volatile int after;
-#if (NACL_LINUX || NACL_OSX)
+#if defined(__GNUC__)
   __asm__ volatile("mov $0x0000ffff, %%eax  \n\t"
                    "xor %%ecx, %%ecx        \n\t"
                    "crc32 %%eax, %%ecx      \n\t"
@@ -294,7 +291,7 @@ static int asm_HasSSE42() {
     mov after, ecx
   }
 #else
-# error Please specify platform as NACL_LINUX, NACL_OSX or NACL_WINDOWS
+# error Unsupported platform
 #endif
   return (after == kMagicConst_CRC32);
 }
@@ -302,7 +299,7 @@ static int asm_HasSSE42() {
 static int asm_HasPOPCNT() {
   volatile int before, after;
   before = kMagicConst;
-#if (NACL_LINUX || NACL_OSX)
+#if defined(__GNUC__)
   __asm__ volatile("mov %1, %%eax         \n\t"
                    "xor %%ecx, %%ecx      \n\t"
                    "popcnt %%eax, %%ecx   \n\t"
@@ -325,7 +322,7 @@ static int asm_HasPOPCNT() {
     mov after, ecx
   }
 #else
-# error Please specify platform as NACL_LINUX, NACL_OSX or NACL_WINDOWS
+# error Unsupported platform
 #endif
   return (after == kMagicConst_POPCNT);
 }
@@ -333,7 +330,7 @@ static int asm_HasPOPCNT() {
 static int asm_HasCMOV() {
   volatile int before, after;
   before = kMagicConst;
-#if (NACL_LINUX || NACL_OSX)
+#if defined(__GNUC__)
   __asm__ volatile("mov %1, %%eax          \n\t"
                    "xor %%ecx, %%ecx       \n\t"
                    "add $0, %%eax          \n\t"  /* to set condition code */
@@ -351,7 +348,7 @@ static int asm_HasCMOV() {
     mov after, ecx
   }
 #else
-# error Please specify platform as NACL_LINUX, NACL_OSX or NACL_WINDOWS
+# error Unsupported platform
 #endif
   return (after == kMagicConst);
 }
@@ -361,7 +358,7 @@ static int asm_HasTSC() {
   _eax = 0;
   _edx = 0;
 
-#if (NACL_LINUX || NACL_OSX)
+#if defined(__GNUC__)
   __asm__ volatile("rdtsc"
                    : "=a" (_eax), "=d" (_edx)
                    );
@@ -372,13 +369,13 @@ static int asm_HasTSC() {
     mov _edx, ecx
   }
 #else
-# error Please specify platform as NACL_LINUX, NACL_OSX or NACL_WINDOWS
+# error Unsupported platform
 #endif
   return ((_eax | _edx) != 0);
 }
 
 static int asm_HasX87() {
-#if (NACL_LINUX || NACL_OSX)
+#if defined(__GNUC__)
   __asm__ volatile("fld1          \n\t"
                    "fstp %st(0)    \n\t");
   return 1;
@@ -389,7 +386,7 @@ static int asm_HasX87() {
   }
   return 1;
 #else
-# error Please specify platform as NACL_LINUX, NACL_OSX or NACL_WINDOWS
+# error Unsupported platform
 #endif
 }
 
@@ -403,7 +400,7 @@ static int asm_HasCX8() {
   _ebx = 0;
   _ecx = kMagicConst;
 
-#if (NACL_LINUX || NACL_OSX)
+#if defined(__GNUC__)
   __asm__ volatile("cmpxchg8b %0   \n\t"
                    : "=g" (foo64), "=b" (_ebx), "=c" (_ecx)
                    : "a" (_eax), "d" (_edx) );
@@ -411,7 +408,7 @@ static int asm_HasCX8() {
   __asm {
   }
 #else
-# error Please specify platform as NACL_LINUX, NACL_OSX or NACL_WINDOWS
+# error Unsupported platform
 #endif
   printf("ebx == %x  ecx == %x\n", _ebx, _ecx);
   return (foo64 == (uint64_t)kMagicConst);
