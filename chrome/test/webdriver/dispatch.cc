@@ -14,6 +14,7 @@
 #include "base/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "chrome/test/webdriver/http_response.h"
 #include "chrome/test/webdriver/commands/command.h"
 #include "chrome/test/webdriver/session_manager.h"
 #include "chrome/test/webdriver/utility_functions.h"
@@ -22,119 +23,12 @@ namespace webdriver {
 
 namespace {
 
-// The standard HTTP Status codes are implemented below.  Chrome uses
-// OK, See Other, Not Found, Method Not Allowed, and Internal Error.
-// Internal Error, HTTP 500, is used as a catch all for any issue
-// not covered in the JSON protocol.
-void SendHttpOk(struct mg_connection* const connection,
-                const struct mg_request_info* const request_info,
-                const Response& response) {
-  const std::string json = response.ToJSON();
-  std::ostringstream out;
-  out << "HTTP/1.1 200 OK\r\n"
-      << "Content-Length: " << strlen(json.c_str()) << "\r\n"
-      << "Content-Type: application/json; charset=UTF-8\r\n"
-      << "Vary: Accept-Charset, Accept-Encoding, Accept-Language, Accept\r\n"
-      << "Accept-Ranges: bytes\r\n"
-      << "Connection: close\r\n\r\n";
-  if (strcmp(request_info->request_method, "HEAD") != 0)
-    out << json << "\r\n";
-  VLOG(1) << out.str();
-  mg_printf(connection, "%s", out.str().c_str());
-}
-
-void SendHttpSeeOther(struct mg_connection* const connection,
-                      const struct mg_request_info* const request_info,
-                      const Response& response) {
-  const Value* value = response.value();
-  CheckValueType(Value::TYPE_STRING, value);
-  std::string location;
-  if (!value->GetAsString(&location)) {
-    NOTREACHED();
-  }
-
-  std::ostringstream out;
-  out << "HTTP/1.1 303 See Other\r\n"
-      << "Location: " << location << "\r\n"
-      << "Content-Type: text/html\r\n"
-      << "Content-Length: 0\r\n\r\n";
-  VLOG(1) << out.str();
-  mg_printf(connection, "%s", out.str().c_str());
-}
-
-void SendHttpBadRequest(struct mg_connection* const connection,
-                        const struct mg_request_info* const request_info,
-                        const Response& response) {
-  const std::string json = response.ToJSON();
-  std::ostringstream out;
-  out << "HTTP/1.1 400 Bad Request\r\n"
-      << "Content-Length: " << strlen(json.c_str()) << "\r\n"
-      << "Content-Type: application/json; charset=UTF-8\r\n"
-      << "Vary: Accept-Charset, Accept-Encoding, Accept-Language, Accept\r\n"
-      << "Accept-Ranges: bytes\r\n"
-      << "Connection: close\r\n\r\n";
-  if (strcmp(request_info->request_method, "HEAD") != 0)
-    out << json << "\r\n";
-  VLOG(1) << out.str();
-  mg_printf(connection, "%s", out.str().c_str());
-}
-
-void SendHttpNotFound(struct mg_connection* const connection,
-                      const struct mg_request_info* const request_info,
-                      const Response& response) {
-  const std::string json = response.ToJSON();
-  std::ostringstream out;
-  out << "HTTP/1.1 404 Not Found\r\n"
-      << "Content-Length: " << strlen(json.c_str()) << "\r\n"
-      << "Content-Type: application/json; charset=UTF-8\r\n"
-      << "Vary: Accept-Charset, Accept-Encoding, Accept-Language, Accept\r\n"
-      << "Accept-Ranges: bytes\r\n"
-      << "Connection: close\r\n\r\n";
-  if (strcmp(request_info->request_method, "HEAD") != 0)
-    out << json << "\r\n";
-  VLOG(1) << out.str();
-  mg_printf(connection, "%s", out.str().c_str());
-}
-
-void SendHttpMethodNotAllowed(struct mg_connection* const connection,
-                              const struct mg_request_info* const request_info,
-                              const Response& response) {
-  const Value* value = response.value();
-  CheckValueType(Value::TYPE_LIST, value);
-
-  std::vector<std::string> allowed_methods;
-  const ListValue* list_value = static_cast<const ListValue*>(value);
-  for (size_t i = 0; i < list_value->GetSize(); ++i) {
-    std::string method;
-    LOG_IF(WARNING, list_value->GetString(i, &method))
-        << "Ignoring non-string value at index " << i;
-    allowed_methods.push_back(method);
-  }
-
-  std::ostringstream out;
-  out << "HTTP/1.1 405 Method Not Allowed\r\n"
-      << "Content-Type: text/html\r\n"
-      << "Content-Length: 0\r\n"
-      << "Allow: " << JoinString(allowed_methods, ',') << "\r\n\r\n";
-  VLOG(1) << out.str();
-  mg_printf(connection, "%s", out.str().c_str());
-}
-
-void SendHttpInternalError(struct mg_connection* const connection,
-                           const struct mg_request_info* const request_info,
-                           const Response& response) {
-  const std::string json = response.ToJSON();
-  std::ostringstream out;
-  out << "HTTP/1.1 500 Internal Server Error\r\n"
-      << "Content-Length: " << strlen(json.c_str()) << "\r\n"
-      << "Content-Type: application/json; charset=UTF-8\r\n"
-      << "Vary: Accept-Charset, Accept-Encoding, Accept-Language, Accept\r\n"
-      << "Accept-Ranges: bytes\r\n"
-      << "Connection: close\r\n\r\n";
-  if (strcmp(request_info->request_method, "HEAD") != 0)
-    out << json << "\r\n";
-  VLOG(1) << out.str();
-  mg_printf(connection, "%s", out.str().c_str());
+bool ForbidsMessageBody(const std::string& request_method,
+                        const HttpResponse& response) {
+  return request_method == "HEAD" ||
+         response.status() == HttpResponse::kNoContent ||
+         response.status() == HttpResponse::kNotModified ||
+         (response.status() >= 100 && response.status() < 200);
 }
 
 void DispatchCommand(Command* const command,
@@ -158,37 +52,102 @@ void DispatchCommand(Command* const command,
 
 namespace internal {
 
-void SendResponse(struct mg_connection* const connection,
-                  const struct mg_request_info* const request_info,
-                  const Response& response) {
-  switch (response.status()) {
+void PrepareHttpResponse(const Response& command_response,
+                         HttpResponse* const http_response) {
+  switch (command_response.status()) {
     case kSuccess:
-      SendHttpOk(connection, request_info, response);
+      http_response->set_status(HttpResponse::kOk);
       break;
 
-    case kSeeOther:
-      SendHttpSeeOther(connection, request_info, response);
+    // TODO(jleyba): kSeeOther, kBadRequest, kSessionNotFound,
+    // and kMethodNotAllowed should be detected before creating
+    // a command_response, and should thus not need conversion.
+    case kSeeOther: {
+      const Value* const value = command_response.value();
+      std::string location;
+      if (!value->GetAsString(&location)) {
+        // This should never happen.
+        http_response->set_status(HttpResponse::kInternalServerError);
+        http_response->SetBody("Unable to set 'Location' header: response "
+                               "value is not a string: " +
+                               command_response.ToJSON());
+        return;
+      }
+      http_response->AddHeader("Location", location);
+      http_response->set_status(HttpResponse::kSeeOther);
       break;
+    }
 
     case kBadRequest:
-      SendHttpBadRequest(connection, request_info, response);
-      break;
-
     case kSessionNotFound:
-      SendHttpNotFound(connection, request_info, response);
+      http_response->set_status(command_response.status());
       break;
 
-    case kMethodNotAllowed:
-      SendHttpMethodNotAllowed(connection, request_info, response);
-      break;
+    case kMethodNotAllowed: {
+      const Value* const value = command_response.value();
+      if (!value->IsType(Value::TYPE_LIST)) {
+        // This should never happen.
+        http_response->set_status(HttpResponse::kInternalServerError);
+        http_response->SetBody(
+            "Unable to set 'Allow' header: response value was "
+            "not a list of strings: " + command_response.ToJSON());
+        return;
+      }
 
-    // All other errors should be treated as generic 500s. The client will be
-    // responsible for inspecting the message body for details.
-  case kInternalServerError:
-  default:
-      SendHttpInternalError(connection, request_info, response);
+      const ListValue* const list_value =
+          static_cast<const ListValue* const>(value);
+      std::vector<std::string> allowed_methods;
+      for (size_t i = 0; i < list_value->GetSize(); ++i) {
+        std::string method;
+        if (list_value->GetString(i, &method)) {
+          allowed_methods.push_back(method);
+        } else {
+          // This should never happen.
+          http_response->set_status(HttpResponse::kInternalServerError);
+          http_response->SetBody(
+              "Unable to set 'Allow' header: response value was "
+              "not a list of strings: " + command_response.ToJSON());
+          return;
+        }
+      }
+      http_response->AddHeader("Allow", JoinString(allowed_methods, ','));
+      http_response->set_status(HttpResponse::kMethodNotAllowed);
+      break;
+    }
+
+    // All other errors should be treated as generic 500s. The client
+    // will be responsible for inspecting the message body for details.
+    case kInternalServerError:
+    default:
+      http_response->set_status(HttpResponse::kInternalServerError);
       break;
   }
+
+  http_response->SetMimeType("application/json; charset=utf-8");
+  http_response->SetBody(command_response.ToJSON());
+}
+
+void SendResponse(struct mg_connection* const connection,
+                  const std::string& request_method,
+                  const Response& response) {
+  HttpResponse http_response;
+  PrepareHttpResponse(response, &http_response);
+
+  std::string message_header = base::StringPrintf("HTTP/1.1 %d %s\r\n",
+      http_response.status(), http_response.GetReasonPhrase().c_str());
+
+  typedef HttpResponse::HeaderMap::const_iterator HeaderIter;
+  for (HeaderIter header = http_response.headers()->begin();
+       header != http_response.headers()->end();
+       ++header) {
+    message_header.append(base::StringPrintf("%s:%s\r\n",
+        header->first.c_str(), header->second.c_str()));
+  }
+  message_header.append("\r\n");
+
+  mg_write(connection, message_header.data(), message_header.length());
+  if (!ForbidsMessageBody(request_method, http_response))
+    mg_write(connection, http_response.data(), http_response.length());
 }
 
 bool ParseRequestInfo(const struct mg_request_info* const request_info,

@@ -733,6 +733,8 @@
         'test/webdriver/dispatch.h',
         'test/webdriver/dispatch.cc',
         'test/webdriver/error_codes.h',
+        'test/webdriver/http_response.h',
+        'test/webdriver/http_response.cc',
         'test/webdriver/keymap.h',
         'test/webdriver/keymap.cc',
         'test/webdriver/session.h',
@@ -851,6 +853,8 @@
       ],
       'sources': [
         '../base/test/run_all_unittests.cc',
+        'test/webdriver/dispatch_unittest.cc',
+        'test/webdriver/http_response_unittest.cc',
         'test/webdriver/utility_functions_unittest.cc',
         'test/webdriver/webdriver_key_converter_unittest.cc',
       ],

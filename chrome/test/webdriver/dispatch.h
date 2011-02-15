@@ -16,14 +16,20 @@ class DictionaryValue;
 namespace webdriver {
 
 class Command;
+class HttpResponse;
 
 namespace internal {
+
+// Converts a |Response| into a |HttpResponse| to be returned to the client.
+// This function is exposed for testing.
+void PrepareHttpResponse(const Response& command_response,
+                         HttpResponse* const http_response);
 
 // Sends a |response| to a WebDriver command back to the client.
 // |connection| is the communication pipe to the HTTP server and
 // |request_info| contains any data sent by the user.
 void SendResponse(struct mg_connection* const connection,
-                  const struct mg_request_info* const request_info,
+                  const std::string& request_method,
                   const Response& response);
 
 // Parses the request info and returns whether parsing was successful. If not,
@@ -62,7 +68,10 @@ void Dispatch(struct mg_connection* connection,
         method,
         &response);
   }
-  internal::SendResponse(connection, request_info, response);
+
+  internal::SendResponse(connection,
+                         request_info->request_method,
+                         response);
 }
 
 }  // namespace webdriver
