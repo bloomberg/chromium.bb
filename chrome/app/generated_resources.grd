@@ -11351,10 +11351,17 @@ This web page was killed, either because Chrome ran out of memory, or you chose 
     </message>
 
     <message name="IDS_PDF_INFOBAR_QUESTION_ALWAYS_USE_READER" desc="Question asked on the info bar when a user opens a PDF with Reader and we want to ask them if they always want to use it for viewing PDF files.">
-      Always use Adobe Reader to open PDF files?
+      Use Adobe Reader as your default PDF viewer?
     </message>
 
-      <!-- Adobe Reader is out of date Blocking Page -->
+    <message name="IDS_PDF_INFOBAR_ALWAYS_USE_READER_BUTTON" desc="The label of the 'always' button on the infobar that asks the user if they want to set Adobe Reader as default.">
+      Always
+    </message>
+    <message name="IDS_PDF_INFOBAR_NEVER_USE_READER_BUTTON" desc="The label of the 'never' button on the infobar that asks the user if they want to set Adobe Reader as default">
+      Never
+    </message>
+
+    <!-- Adobe Reader is out of date Blocking Page -->
     <message name="IDS_READER_OUT_OF_DATE_BLOCKING_PAGE_TITLE" desc="The title of the Adobe Reader out of date blocking page.">
       Adobe Reader Out Of Date
     </message>

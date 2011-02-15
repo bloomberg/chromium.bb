@@ -81,10 +81,10 @@ class PDFEnableAdobeReaderConfirmInfoBarDelegate
     switch (button) {
       case BUTTON_OK:
         return l10n_util::GetStringUTF16(
-            IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL);
+            IDS_PDF_INFOBAR_NEVER_USE_READER_BUTTON);
       case BUTTON_CANCEL:
         return l10n_util::GetStringUTF16(
-            IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL);
+            IDS_PDF_INFOBAR_ALWAYS_USE_READER_BUTTON);
       default:
         // All buttons are labeled above.
         NOTREACHED() << "Bad button id " << button;
