@@ -5,9 +5,19 @@
 #include "chrome/browser/content_settings/content_settings_pattern.h"
 
 #include "base/string_util.h"
+#include "chrome/common/url_constants.h"
 #include "net/base/net_util.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_canon.h"
+
+namespace {
+bool IsValidHostlessPattern(const std::string& pattern) {
+  std::string file_scheme_plus_separator(chrome::kFileScheme);
+  file_scheme_plus_separator += chrome::kStandardSchemeSeparator;
+
+  return StartsWithASCII(pattern, file_scheme_plus_separator, false);
+}
+}  // namespace
 
 // The version of the pattern format implemented. Version 1 includes the
 // following patterns:
@@ -40,6 +50,9 @@ bool ContentSettingsPattern::IsValid() const {
   if (pattern_.empty())
     return false;
 
+  if (IsValidHostlessPattern(pattern_))
+    return true;
+
   const std::string host(pattern_.length() > kDomainWildcardLength &&
                          StartsWithASCII(pattern_, kDomainWildcard, false) ?
                          pattern_.substr(kDomainWildcardLength) :
@@ -67,9 +80,11 @@ bool ContentSettingsPattern::Matches(const GURL& url) const {
 }
 
 std::string ContentSettingsPattern::CanonicalizePattern() const {
-  if (!IsValid()) {
+  if (!IsValid())
     return "";
-  }
+
+  if (IsValidHostlessPattern(pattern_))
+    return GURL(pattern_).spec();
 
   bool starts_with_wildcard = pattern_.length() > kDomainWildcardLength &&
       StartsWithASCII(pattern_, kDomainWildcard, false);

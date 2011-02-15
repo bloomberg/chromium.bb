@@ -14,6 +14,7 @@ TEST(ContentSettingsPatternTest, PatternSupport) {
   EXPECT_TRUE(ContentSettingsPattern("example.com").IsValid());
   EXPECT_TRUE(ContentSettingsPattern("192.168.0.1").IsValid());
   EXPECT_TRUE(ContentSettingsPattern("[::1]").IsValid());
+  EXPECT_TRUE(ContentSettingsPattern("file:///tmp/test.html").IsValid());
   EXPECT_FALSE(ContentSettingsPattern("*example.com").IsValid());
   EXPECT_FALSE(ContentSettingsPattern("example.*").IsValid());
   EXPECT_FALSE(ContentSettingsPattern("http://example.com").IsValid());
@@ -24,11 +25,17 @@ TEST(ContentSettingsPatternTest, PatternSupport) {
               GURL("http://www.example.com/")));
   EXPECT_TRUE(ContentSettingsPattern("www.example.com").Matches(
               GURL("http://www.example.com/")));
+  EXPECT_TRUE(ContentSettingsPattern("file:///tmp/test.html").Matches(
+              GURL("file:///tmp/test.html")));
   EXPECT_FALSE(ContentSettingsPattern("").Matches(
                GURL("http://www.example.com/")));
   EXPECT_FALSE(ContentSettingsPattern("[*.]example.com").Matches(
                GURL("http://example.org/")));
   EXPECT_FALSE(ContentSettingsPattern("example.com").Matches(
+               GURL("http://example.org/")));
+  EXPECT_FALSE(ContentSettingsPattern("file:///tmp/test.html").Matches(
+               GURL("file:///tmp/other.html")));
+  EXPECT_FALSE(ContentSettingsPattern("file:///tmp/test.html").Matches(
                GURL("http://example.org/")));
 }
 
@@ -42,18 +49,20 @@ TEST(ContentSettingsPatternTest, CanonicalizePattern) {
       .CanonicalizePattern().c_str());
   EXPECT_STREQ("[::1]", ContentSettingsPattern("[::1]")
       .CanonicalizePattern().c_str());
-  // IsValid returns false for file:/// patterns.
-  EXPECT_STREQ("", ContentSettingsPattern(
-      "file:///temp/file.html").CanonicalizePattern().c_str());
+  EXPECT_STREQ("file:///tmp/file.html", ContentSettingsPattern(
+      "file:///tmp/file.html").CanonicalizePattern().c_str());
 
   // UTF-8 patterns.
   EXPECT_STREQ("[*.]xn--ira-ppa.com", ContentSettingsPattern(
       "[*.]\xC4\x87ira.com").CanonicalizePattern().c_str());
   EXPECT_STREQ("xn--ira-ppa.com", ContentSettingsPattern(
       "\xC4\x87ira.com").CanonicalizePattern().c_str());
-  // IsValid returns false for file:/// patterns.
-  EXPECT_STREQ("", ContentSettingsPattern(
+  EXPECT_STREQ("file:///%C4%87ira.html", ContentSettingsPattern(
       "file:///\xC4\x87ira.html").CanonicalizePattern().c_str());
+
+  // file:/// normalization.
+  EXPECT_STREQ("file:///tmp/test.html", ContentSettingsPattern(
+        "file:///tmp/bar/../test.html").CanonicalizePattern().c_str());
 
   // Invalid patterns.
   EXPECT_STREQ("", ContentSettingsPattern(

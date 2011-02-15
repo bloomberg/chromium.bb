@@ -175,8 +175,10 @@ TEST_F(PrefProviderTest, Patterns) {
   GURL host1("http://example.com/");
   GURL host2("http://www.example.com/");
   GURL host3("http://example.org/");
+  GURL host4("file:///tmp/test.html");
   ContentSettingsPattern pattern1("[*.]example.com");
   ContentSettingsPattern pattern2("example.org");
+  ContentSettingsPattern pattern3("file:///tmp/test.html");
 
   EXPECT_EQ(CONTENT_SETTING_DEFAULT,
             pref_content_settings_provider.GetContentSetting(
@@ -206,6 +208,19 @@ TEST_F(PrefProviderTest, Patterns) {
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             pref_content_settings_provider.GetContentSetting(
                 host3, host3, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+
+  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
+            pref_content_settings_provider.GetContentSetting(
+                host4, host4, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+  pref_content_settings_provider.SetContentSetting(
+      pattern3,
+      pattern3,
+      CONTENT_SETTINGS_TYPE_IMAGES,
+      "",
+      CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            pref_content_settings_provider.GetContentSetting(
+                host4, host4, CONTENT_SETTINGS_TYPE_IMAGES, ""));
 }
 
 TEST_F(PrefProviderTest, ResourceIdentifier) {
