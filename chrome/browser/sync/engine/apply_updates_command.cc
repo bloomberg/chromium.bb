@@ -36,6 +36,27 @@ void ApplyUpdatesCommand::ModelChangingExecuteImpl(SyncSession* session) {
   applicator.SaveProgressIntoSessionState(
       session->status_controller()->mutable_conflict_progress(),
       session->status_controller()->mutable_update_progress());
+
+  // This might be the first time we've fully completed a sync cycle, for
+  // some subset of the currently synced datatypes.
+  sessions::StatusController* status(session->status_controller());
+  if (status->ServerSaysNothingMoreToDownload()) {
+    syncable::ScopedDirLookup dir(session->context()->directory_manager(),
+                                  session->context()->account_name());
+    if (!dir.good()) {
+      LOG(ERROR) << "Scoped dir lookup failed!";
+      return;
+    }
+
+    for (int i = syncable::FIRST_REAL_MODEL_TYPE;
+         i < syncable::MODEL_TYPE_COUNT; ++i) {
+      syncable::ModelType model_type = syncable::ModelTypeFromInt(i);
+      if (status->updates_request_types()[i]) {
+        // This gets persisted to the directory's backing store.
+        dir->set_initial_sync_ended_for_type(model_type, true);
+      }
+    }
+  }
 }
 
 }  // namespace browser_sync

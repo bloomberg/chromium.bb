@@ -268,13 +268,13 @@ void Syncer::SyncShare(sessions::SyncSession* session,
         ClearDataCommand clear_data_command;
         clear_data_command.Execute(session);
         next_step = SYNCER_END;
+        break;
       }
       case SYNCER_END: {
         VLOG(1) << "Syncer End";
         SyncerEndCommand syncer_end_command;
-        // This will set "syncing" to false, and send out a notification.
         syncer_end_command.Execute(session);
-        goto post_while;
+        break;
       }
       default:
         LOG(ERROR) << "Unknown command: " << current_step;
@@ -283,7 +283,12 @@ void Syncer::SyncShare(sessions::SyncSession* session,
       break;
     current_step = next_step;
   }
- post_while:
+
+  // Always send out a cycle ended notification, regardless of end-state.
+  SyncEngineEvent event(SyncEngineEvent::SYNC_CYCLE_ENDED);
+  sessions::SyncSessionSnapshot snapshot(session->TakeSnapshot());
+  event.snapshot = &snapshot;
+  session->context()->NotifyListeners(event);
   return;
 }
 

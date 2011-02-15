@@ -20,31 +20,6 @@ void SyncerEndCommand::ExecuteImpl(sessions::SyncSession* session) {
   session->context()->set_previous_session_routing_info(
       session->routing_info());
   session->context()->set_last_snapshot(session->TakeSnapshot());
-
-  // This might be the first time we've fully completed a sync cycle, for
-  // some subset of the currently synced datatypes.
-  if (!session->HasMoreToSync() &&
-      status->ServerSaysNothingMoreToDownload()) {
-    syncable::ScopedDirLookup dir(session->context()->directory_manager(),
-                                  session->context()->account_name());
-    if (!dir.good()) {
-      LOG(ERROR) << "Scoped dir lookup failed!";
-      return;
-    }
-
-    for (int i = 0; i < syncable::MODEL_TYPE_COUNT; ++i) {
-      syncable::ModelType model_type = syncable::ModelTypeFromInt(i);
-      if (status->updates_request_types()[i]) {
-        // This gets persisted to the directory's backing store.
-        dir->set_initial_sync_ended_for_type(model_type, true);
-      }
-    }
-  }
-
-  SyncEngineEvent event(SyncEngineEvent::SYNC_CYCLE_ENDED);
-  sessions::SyncSessionSnapshot snapshot(session->TakeSnapshot());
-  event.snapshot = &snapshot;
-  session->context()->NotifyListeners(event);
 }
 
 }  // namespace browser_sync

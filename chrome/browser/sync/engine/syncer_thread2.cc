@@ -108,8 +108,6 @@ bool SyncerThread::ShouldRunJob(SyncSessionJobPurpose purpose,
       return false;
 
     DCHECK_EQ(wait_interval_->mode, WaitInterval::EXPONENTIAL_BACKOFF);
-    DCHECK(purpose == POLL ||
-           purpose == NUDGE);
     if ((purpose != NUDGE) || wait_interval_->had_nudge)
       return false;
   }
@@ -289,8 +287,7 @@ void GetModelSafeParamsForTypes(const ModelTypeBitSet& types,
     NOTREACHED();
 }
 
-void SyncerThread::ScheduleConfig(const TimeDelta& delay,
-    const ModelTypeBitSet& types) {
+void SyncerThread::ScheduleConfig(const ModelTypeBitSet& types) {
   if (!thread_.IsRunning()) {
     NOTREACHED();
     return;
@@ -302,14 +299,20 @@ void SyncerThread::ScheduleConfig(const TimeDelta& delay,
                              &routes, &workers);
 
   thread_.message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &SyncerThread::ScheduleConfigImpl, delay, routes, workers));
+      this, &SyncerThread::ScheduleConfigImpl, routes, workers));
 }
 
-void SyncerThread::ScheduleConfigImpl(const TimeDelta& delay,
-    const ModelSafeRoutingInfo& routing_info,
+void SyncerThread::ScheduleConfigImpl(const ModelSafeRoutingInfo& routing_info,
     const std::vector<ModelSafeWorker*>& workers) {
   DCHECK_EQ(MessageLoop::current(), thread_.message_loop());
-  NOTIMPLEMENTED() << "TODO(tim)";
+
+  // TODO(tim): config-specific GetUpdatesCallerInfo value?
+  SyncSession* session = new SyncSession(session_context_.get(), this,
+      SyncSourceInfo(GetUpdatesCallerInfo::FIRST_UPDATE,
+          sessions::MakeTypePayloadMapFromRoutingInfo(
+              routing_info, std::string())),
+      routing_info, workers);
+  ScheduleSyncSessionJob(TimeDelta::FromSeconds(0), CONFIGURATION, session);
 }
 
 void SyncerThread::ScheduleSyncSessionJob(const base::TimeDelta& delay,

@@ -392,10 +392,11 @@ void SyncBackendHost::ConfigureDataTypes(
   // downloading updates for newly added data types.  Once this is
   // complete, the configure_ready_task_ is run via an
   // OnInitializationComplete notification.
-  if (deleted_type || !core_->syncapi()->InitialSyncEndedForAllEnabledTypes())
+  if (deleted_type || !core_->syncapi()->InitialSyncEndedForAllEnabledTypes()) {
     // We can only nudge when we've either deleted a dataype or added one, else
     // we break all the profile sync unit tests.
     RequestNudge();
+  }
 }
 
 void SyncBackendHost::RequestNudge() {

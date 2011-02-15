@@ -424,7 +424,7 @@ TEST_F(SyncerThread2Test, ThrottlingDoesThrottle) {
   FlushLastTask(&done);
 
   syncer_thread()->Start(SyncerThread::CONFIGURATION_MODE);
-  syncer_thread()->ScheduleConfig(zero(), types);
+  syncer_thread()->ScheduleConfig(types);
   FlushLastTask(&done);
 }
 
@@ -455,9 +455,13 @@ TEST_F(SyncerThread2Test, ThrottlingExpires) {
 // Test nudges / polls don't run in config mode and config tasks do.
 TEST_F(SyncerThread2Test, ConfigurationMode) {
   TimeDelta poll(TimeDelta::FromMilliseconds(15));
+  SyncShareRecords records;
   base::WaitableEvent done(false, false);
+  base::WaitableEvent* dummy = NULL;
   syncer_thread()->OnReceivedLongPollIntervalUpdate(poll);
-  EXPECT_CALL(*syncer(), SyncShare(_,_,_)).Times(0);
+  EXPECT_CALL(*syncer(), SyncShare(_,_,_))
+      .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
+           WithArg<0>(RecordSyncShare(&records, 1U, dummy))));
   syncer_thread()->Start(SyncerThread::CONFIGURATION_MODE);
   syncable::ModelTypeBitSet nudge_types;
   nudge_types[syncable::AUTOFILL] = true;
@@ -468,8 +472,13 @@ TEST_F(SyncerThread2Test, ConfigurationMode) {
   config_types[syncable::BOOKMARKS] = true;
   // TODO(tim): This will fail once CONFIGURATION tasks are implemented. Update
   // the EXPECT when that happens.
-  syncer_thread()->ScheduleConfig(zero(), config_types);
+  syncer_thread()->ScheduleConfig(config_types);
   FlushLastTask(&done);
+  syncer_thread()->Stop();
+
+  EXPECT_EQ(1U, records.snapshots.size());
+  EXPECT_TRUE(CompareModelTypeBitSetToTypePayloadMap(config_types,
+      records.snapshots[0]->source.types));
 }
 
 // Test that exponential backoff is properly triggered.
@@ -560,7 +569,7 @@ TEST_F(SyncerThread2Test, BackoffDropsJobs) {
   EXPECT_CALL(*delay(), GetDelay(_)).Times(0);
 
   syncer_thread()->Start(SyncerThread::CONFIGURATION_MODE);
-  syncer_thread()->ScheduleConfig(zero(), types);
+  syncer_thread()->ScheduleConfig(types);
   FlushLastTask(&done);
 
   syncer_thread()->Start(SyncerThread::NORMAL_MODE);
@@ -673,6 +682,14 @@ TEST_F(SyncerThread2Test, SyncerSteps) {
       .Times(1);
   syncer_thread()->Start(SyncerThread::NORMAL_MODE);
   syncer_thread()->ScheduleClearUserData();
+  FlushLastTask(&done);
+  syncer_thread()->Stop();
+  Mock::VerifyAndClearExpectations(syncer());
+
+  // Configuration.
+  EXPECT_CALL(*syncer(), SyncShare(_, DOWNLOAD_UPDATES, APPLY_UPDATES));
+  syncer_thread()->Start(SyncerThread::CONFIGURATION_MODE);
+  syncer_thread()->ScheduleConfig(ModelTypeBitSet());
   FlushLastTask(&done);
   syncer_thread()->Stop();
   Mock::VerifyAndClearExpectations(syncer());

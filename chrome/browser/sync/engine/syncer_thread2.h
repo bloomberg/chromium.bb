@@ -63,8 +63,7 @@ class SyncerThread : public sessions::SyncSession::Delegate {
   void ScheduleNudgeWithPayloads(
       const base::TimeDelta& delay, NudgeSource source,
       const sessions::TypePayloadMap& types_with_payloads);
-  void ScheduleConfig(const base::TimeDelta& delay,
-                      const syncable::ModelTypeBitSet& types);
+  void ScheduleConfig(const syncable::ModelTypeBitSet& types);
   void ScheduleClearUserData();
 
   // Change status of notifications in the SyncSessionContext.
@@ -154,8 +153,7 @@ class SyncerThread : public sessions::SyncSession::Delegate {
   void ScheduleNudgeImpl(const base::TimeDelta& delay,
                          NudgeSource source,
                          const sessions::TypePayloadMap& types_with_payloads);
-  void ScheduleConfigImpl(const base::TimeDelta& delay,
-                          const ModelSafeRoutingInfo& routing_info,
+  void ScheduleConfigImpl(const ModelSafeRoutingInfo& routing_info,
                           const std::vector<ModelSafeWorker*>& workers);
   void ScheduleClearUserDataImpl();
 

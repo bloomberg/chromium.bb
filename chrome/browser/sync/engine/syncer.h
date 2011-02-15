@@ -98,7 +98,7 @@ class Syncer {
 
  private:
   // Implements the PROCESS_CLIENT_COMMAND syncer step.
-  void ProcessClientCommand(sessions::SyncSession *session);
+  void ProcessClientCommand(sessions::SyncSession* session);
 
   bool early_exit_requested_;
   base::Lock early_exit_requested_lock_;
