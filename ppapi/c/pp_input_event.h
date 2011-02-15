@@ -200,11 +200,55 @@ struct PP_InputEvent_Wheel {
   /** A combination of the EVENT_MODIFIER flags. */
   uint32_t modifier;
 
+  /**
+   * Indicates the amount vertically and horizontally the user has requested
+   * to scroll by with their mouse wheel. A scroll down or to the right (where
+   * the content moves up or left) is represented as positive values, and
+   * a scroll up or to the left (where the content moves down or right) is
+   * represented as negative values.
+   *
+   * The units are either in pixels (when scroll_by_page is false) or pages
+   * (when scroll_by_page is true). For example, delta_y = -3 means scroll up 3
+   * pixels when scroll_by_page is false, and scroll up 3 pages when
+   * scroll_by_page is true.
+   *
+   * This amount is system dependent and will take into account the user's
+   * preferred scroll sensitivity and potentially also nonlinear acceleration
+   * based on the speed of the scrolling.
+   *
+   * Devices will be of varying resolution. Some mice with large detents will
+   * only generate integer scroll amounts. But fractional values are also
+   * possible, for example, on some trackpads and newer mice that don't have
+   * "clicks".
+   */
   float delta_x;
   float delta_y;
+
+  /**
+   * The number of "clicks" of the scroll wheel that have produced the
+   * event. The value may have system-specific acceleration applied to it,
+   * depending on the device. The positive and negative meanings are the same
+   * as for |delta|.
+   *
+   * If you are scrolling, you probably want to use the delta values above.
+   * These tick events can be useful if you aren't doing actual scrolling and
+   * don't want or pixel values. An example may be cycling between different
+   * items in a game.
+   *
+   * You may receive fractional values for the wheel ticks if the mouse wheel
+   * is high resolution or doesn't have "clicks". If your program wants
+   * discrete events (as in the "picking items" example) you should accumulate
+   * fractional click values from multiple messages until the total value
+   * reaches positive or negative one. This should represent a similar amount
+   * of scrolling as for a mouse that has a discrete mouse wheel.
+   */
   float wheel_ticks_x;
   float wheel_ticks_y;
 
+  /**
+   * Indicates if the scroll delta_x/delta_y indicates pages or lines to
+   * scroll by. When true, the user is requesting to scroll by pages.
+   */
   PP_Bool scroll_by_page;
 };
 PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_InputEvent_Wheel, 24);
