@@ -45,11 +45,11 @@ PrerenderContents::PrerenderContents(PrerenderManager* prerender_manager,
       has_stopped_loading_(false),
       final_status_(FINAL_STATUS_MAX) {
   DCHECK(prerender_manager != NULL);
-  DCHECK(AddAliasURL(prerender_url_));
+  AddAliasURL(prerender_url_);
   for (std::vector<GURL>::const_iterator it = alias_urls.begin();
        it != alias_urls.end();
        ++it) {
-    DCHECK(AddAliasURL(*it));
+    AddAliasURL(*it);
   }
 }
 
@@ -142,12 +142,9 @@ void PrerenderContents::DidNavigate(
   *p = params;
   navigate_params_.reset(p);
 
-  if (!AddAliasURL(params.url)) {
-    Destroy(FINAL_STATUS_HTTPS);
-    return;
-  }
-
   url_ = params.url;
+
+  AddAliasURL(url_);
 }
 
 void PrerenderContents::UpdateTitle(RenderViewHost* render_view_host,
@@ -316,19 +313,14 @@ bool PrerenderContents::OnMessageReceived(const IPC::Message& message) {
 void PrerenderContents::OnDidStartProvisionalLoadForFrame(int64 frame_id,
                                                           bool is_main_frame,
                                                           const GURL& url) {
-  if (is_main_frame) {
-    if (!AddAliasURL(url)) {
-      Destroy(FINAL_STATUS_HTTPS);
-      return;
-    }
-  }
+  if (is_main_frame)
+    AddAliasURL(url);
 }
 
 void PrerenderContents::OnDidRedirectProvisionalLoad(int32 page_id,
                                                      const GURL& source_url,
                                                      const GURL& target_url) {
-  if (!AddAliasURL(target_url))
-    Destroy(FINAL_STATUS_HTTPS);
+  AddAliasURL(target_url);
 }
 
 void PrerenderContents::OnUpdateFavIconURL(int32 page_id,
@@ -336,11 +328,8 @@ void PrerenderContents::OnUpdateFavIconURL(int32 page_id,
   icon_url_ = icon_url;
 }
 
-bool PrerenderContents::AddAliasURL(const GURL& url) {
-  if (!url.SchemeIs("http"))
-    return false;
+void PrerenderContents::AddAliasURL(const GURL& url) {
   alias_urls_.push_back(url);
-  return true;
 }
 
 bool PrerenderContents::MatchesURL(const GURL& url) const {
