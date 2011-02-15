@@ -9,13 +9,7 @@ import tempfile
 import unittest
 
 import naclimc
-
-
-# Descriptor for a bound socket that the NaCl browser plugin sets up
-NACL_PLUGIN_BOUND_SOCK = 3
-
-# Descriptor for a connected socket that the NaCl browser plugin sets up
-NACL_PLUGIN_ASYNC_SEND_FD = 7
+import nacl_launcher
 
 
 def MakeFileHandlePair():
@@ -30,67 +24,40 @@ def MakeFileHandlePair():
   return write_fh, read_fh
 
 
-def PackStringList(strings):
-  return "".join(arg + "\0" for arg in strings)
-
-
-def PackArgsMessage(argv, envv):
-  return (struct.pack("4sII", "ARGS", len(argv), len(envv))
-          + PackStringList(argv)
-          + PackStringList(envv))
-
-
 class TestStartupMessage(unittest.TestCase):
 
   def assertIn(self, x, y):
     if x not in y:
       raise AssertionError("%r not in %r" % (x, y))
 
-  def _SpawnSelLdrWithSockets(self, args, fd_slots, **kwargs):
-    sockets = [(fd_slot, naclimc.os_socketpair())
-               for fd_slot in fd_slots]
-    extra_args = []
-    for fd_slot, (child_fd, parent_fd) in sockets:
-      extra_args.extend(["-i", "%i:%i" % (fd_slot, child_fd)])
-
-    def PreExec():
-      for fd_slot, (child_fd, parent_fd) in sockets:
-        os.close(parent_fd)
-
-    cmd = [os.environ["NACL_SEL_LDR"]] + extra_args + args
-    proc = subprocess.Popen(cmd, preexec_fn=PreExec, **kwargs)
-    for fd_slot, (child_fd, parent_fd) in sockets:
-      os.close(child_fd)
-    result_sockets = [naclimc.from_os_socket(parent_fd)
-                      for fd_slot, (child_fd, parent_fd) in sockets]
-    return proc, result_sockets
-
   def test_args_message(self):
     lib_dir = os.environ["NACL_LIBRARY_DIR"]
     write_fh, read_fh = MakeFileHandlePair()
-    proc, [fd1, fd2] = self._SpawnSelLdrWithSockets(
+    proc, [fd1, fd2] = nacl_launcher.SpawnSelLdrWithSockets(
         ["-s", "-a",
          "--", os.path.join(lib_dir, "runnable-ld.so"),
          # The remaining arguments are not used, because they are
          # overridden by the message we send:
          "this-arg-is-not-used"],
-        [NACL_PLUGIN_BOUND_SOCK, NACL_PLUGIN_ASYNC_SEND_FD],
+        [nacl_launcher.NACL_PLUGIN_BOUND_SOCK,
+         nacl_launcher.NACL_PLUGIN_ASYNC_TO_CHILD_FD],
         stdout=write_fh)
     argv = ["unused-argv0", "--library-path", lib_dir,
             os.environ["HELLO_WORLD_PROG"]]
     envv = []
-    fd2.imc_sendmsg(PackArgsMessage(argv, envv), tuple([]))
+    fd2.imc_sendmsg(nacl_launcher.PackArgsMessage(argv, envv), tuple([]))
     self.assertEquals(proc.wait(), 0)
     self.assertEquals(read_fh.read(), "Hello, World!\n")
 
   def _TryStartupMessage(self, message, expected_line):
     lib_dir = os.environ["NACL_LIBRARY_DIR"]
     write_fh, read_fh = MakeFileHandlePair()
-    proc, [fd1, fd2] = self._SpawnSelLdrWithSockets(
+    proc, [fd1, fd2] = nacl_launcher.SpawnSelLdrWithSockets(
         ["-s", "-a",
          "--", os.path.join(lib_dir, "runnable-ld.so"),
          "this-arg-is-not-used"],
-        [NACL_PLUGIN_BOUND_SOCK, NACL_PLUGIN_ASYNC_SEND_FD],
+        [nacl_launcher.NACL_PLUGIN_BOUND_SOCK,
+         nacl_launcher.NACL_PLUGIN_ASYNC_TO_CHILD_FD],
         stderr=write_fh)
     if message is not None:
       fd2.imc_sendmsg(message, tuple([]))
@@ -110,15 +77,15 @@ class TestStartupMessage(unittest.TestCase):
     self._TryStartupMessage("ARGS", "Startup message too small")
 
   def test_error_on_truncated_body(self):
-    data = PackArgsMessage(["a", "b", "c"], [])
+    data = nacl_launcher.PackArgsMessage(["a", "b", "c"], [])
     self._TryStartupMessage(
         data[:-1], "Missing null terminator in argv list")
-    data = PackArgsMessage(["a", "b", "c"], ["e", "f"])
+    data = nacl_launcher.PackArgsMessage(["a", "b", "c"], ["e", "f"])
     self._TryStartupMessage(
         data[:-1], "Missing null terminator in env list")
 
   def test_error_on_excess_data(self):
-    data = PackArgsMessage(["a", "b"], ["c", "d"])
+    data = nacl_launcher.PackArgsMessage(["a", "b"], ["c", "d"])
     self._TryStartupMessage(
         data + "x", "Excess data in message body")
 

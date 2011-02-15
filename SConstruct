@@ -2010,6 +2010,7 @@ environment_list.append(nacl_env)
 nacl_env.Append(
     BUILD_SCONSCRIPTS = [
     ####  ALPHABETICALLY SORTED ####
+    'src/tools/posix_over_imc/nacl.scons',
     'src/trusted/service_runtime/nacl.scons',
     'tests/app_lib/nacl.scons',
     'tests/autoloader/nacl.scons',
