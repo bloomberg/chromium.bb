@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,8 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/environment.h"
+#include "base/i18n/rtl.h"
 #include "base/path_service.h"
 #include "base/singleton.h"
 #include "base/string16.h"
@@ -16,13 +18,17 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/env_vars.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/service_process_util.h"
 #include "chrome/service/cloud_print/cloud_print_proxy.h"
 #include "chrome/service/service_ipc_server.h"
 #include "chrome/service/service_process_prefs.h"
+#include "grit/chromium_strings.h"
+#include "grit/generated_resources.h"
 #include "net/base/network_change_notifier.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
 
@@ -61,6 +67,41 @@ ServiceIOThread::~ServiceIOThread() {
 
 void ServiceIOThread::CleanUp() {
   URLFetcher::CancelAll();
+}
+
+// Prepares the localized strings that are going to be displayed to
+// the user if the service process dies. These strings are stored in the
+// environment block so they are accessible in the early stages of the
+// chrome executable's lifetime.
+void PrepareRestartOnCrashEnviroment(
+    const CommandLine &parsed_command_line) {
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  // Clear this var so child processes don't show the dialog by default.
+  env->UnSetVar(env_vars::kShowRestart);
+
+  // For non-interactive tests we don't restart on crash.
+  if (env->HasVar(env_vars::kHeadless))
+    return;
+
+  // If the known command-line test options are used we don't create the
+  // environment block which means we don't get the restart dialog.
+  if (parsed_command_line.HasSwitch(switches::kNoErrorDialogs))
+    return;
+
+  // The encoding we use for the info is "title|context|direction" where
+  // direction is either env_vars::kRtlLocale or env_vars::kLtrLocale depending
+  // on the current locale.
+  string16 dlg_strings(l10n_util::GetStringUTF16(IDS_CRASH_RECOVERY_TITLE));
+  dlg_strings.push_back('|');
+  string16 adjusted_string(
+      l10n_util::GetStringUTF16(IDS_SERVICE_CRASH_RECOVERY_CONTENT));
+  base::i18n::AdjustStringForLocaleDirection(&adjusted_string);
+  dlg_strings.append(adjusted_string);
+  dlg_strings.push_back('|');
+  dlg_strings.append(ASCIIToUTF16(
+      base::i18n::IsRTL() ? env_vars::kRtlLocale : env_vars::kLtrLocale));
+
+  env->SetVar(env_vars::kRestartInfo, UTF16ToUTF8(dlg_strings));
 }
 
 }  // namespace
@@ -115,6 +156,8 @@ bool ServiceProcess::Initialize(MessageLoop* message_loop,
       locale = kDefaultServiceProcessLocale;
   }
   ResourceBundle::InitSharedInstance(locale);
+
+  PrepareRestartOnCrashEnviroment(command_line);
 
 #if defined(ENABLE_REMOTING)
   // Initialize chromoting host manager.

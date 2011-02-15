@@ -5413,7 +5413,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_CLOUD_PRINT_ENUM_FAILED" desc="Status message to be sent to the Cloud Print server when enumerating printers failed.">
         There was a problem listing printers. Some of your printers may not have registered successfully with <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>.
-    </message>
+      </message>
+      <message name="IDS_SERVICE_CRASH_RECOVERY_CONTENT" desc="Text content telling the user the service process has crashed.">
+        The <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> connector process has crashed. Restart?
+      </message>
 
       <!-- Print Preview -->
       <message name="IDS_PRINT_PREVIEW_TITLE" desc="Title for print preview page ">
