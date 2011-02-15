@@ -8,14 +8,14 @@ function getByDateSuccess()
 {
   debug('Data retrieved by date key');
 
-  shouldBe("event.result", "'foo'");
+  shouldBe("event.target.result", "'foo'");
   done();
 }
 
 function recordNotFound()
 {
   debug('Removed data can no longer be found');
-  shouldBe("event.result", "undefined");
+  shouldBe("event.target.result", "undefined");
 
   debug('Retrieving an index');
   shouldBe("objectStore.index('fname_index').name", "'fname_index'");
@@ -27,50 +27,51 @@ function recordNotFound()
     fail(e);
   }
 
-  var result = transaction.objectStore('stuff').get(testDate);
-  result.onsuccess = getByDateSuccess;
-  result.onerror = unexpectedErrorCallback;
+  var request = transaction.objectStore('stuff').get(testDate);
+  request.onsuccess = getByDateSuccess;
+  request.onerror = unexpectedErrorCallback;
 }
 
 function removeSuccess()
 {
   debug('Data removed');
 
-  var result = objectStore.get(1);
-  result.onsuccess = recordNotFound;
-  result.onerror = unexpectedSuccessCallback;
+  var request = objectStore.get(1);
+  request.onsuccess = recordNotFound;
+  request.onerror = unexpectedSuccessCallback;
 }
 
 function getSuccess()
 {
   debug('Data retrieved');
 
-  shouldBe("event.result.fname", "'John'");
-  shouldBe("event.result.lname", "'Doe'");
-  shouldBe("event.result.id", "1");
+  shouldBe("event.target.result.fname", "'John'");
+  shouldBe("event.target.result.lname", "'Doe'");
+  shouldBe("event.target.result.id", "1");
 
-  var result = objectStore.delete(1);
-  result.onsuccess = removeSuccess;
-  result.onerror = unexpectedErrorCallback;
+  var request = objectStore.delete(1);
+  request.onsuccess = removeSuccess;
+  request.onerror = unexpectedErrorCallback;
 }
 
 function moreDataAddedSuccess()
 {
   debug('More data added');
 
-  var result = objectStore.get(1);
-  result.onsuccess = getSuccess;
-  result.onerror = unexpectedErrorCallback;
+  var request = objectStore.get(1);
+  request.onsuccess = getSuccess;
+  request.onerror = unexpectedErrorCallback;
 }
 
 function addWithSameKeyFailed()
 {
   debug('Adding a record with same key failed');
-  shouldBe("event.code", "webkitIDBDatabaseException.CONSTRAINT_ERR");
+  shouldBe("event.target.errorCode", "webkitIDBDatabaseException.CONSTRAINT_ERR");
+  event.preventDefault();
 
-  var result = transaction.objectStore('stuff').add('foo', testDate);
-  result.onsuccess = moreDataAddedSuccess;
-  result.onerror = unexpectedErrorCallback;
+  var request = transaction.objectStore('stuff').add('foo', testDate);
+  request.onsuccess = moreDataAddedSuccess;
+  request.onerror = unexpectedErrorCallback;
 }
 
 function dataAddedSuccess()
@@ -78,14 +79,15 @@ function dataAddedSuccess()
   debug('Data added');
 
   debug('Try to add employee with same id');
-  var result = objectStore.add({fname: "Tom", lname: "Jones", id: 1});
-  result.onsuccess = unexpectedSuccessCallback;
-  result.onerror = addWithSameKeyFailed;
+  var request = objectStore.add({fname: "Tom", lname: "Jones", id: 1});
+  request.onsuccess = unexpectedSuccessCallback;
+  request.onerror = addWithSameKeyFailed;
 }
 
 function populateObjectStore()
 {
-  window.transaction = event.result;
+  window.transaction = event.target.result;
+  transaction.onabort = unexpectedAbortCallback;
   debug('Populating object store');
   deleteAllObjectStores(db);
   db.createObjectStore('stuff');
@@ -99,24 +101,24 @@ function populateObjectStore()
   shouldBe("objectStore.indexNames[0]", "'fname_index'");
   shouldBe("objectStore.indexNames[1]", "'lname_index'");
 
-  var result = objectStore.add({fname: "John", lname: "Doe", id: 1});
-  result.onsuccess = dataAddedSuccess;
-  result.onerror = unexpectedErrorCallback;
+  var request = objectStore.add({fname: "John", lname: "Doe", id: 1});
+  request.onsuccess = dataAddedSuccess;
+  request.onerror = unexpectedErrorCallback;
 }
 
 function setVersion()
 {
   debug('setVersion');
-  window.db = event.result;
-  var result = db.setVersion('1.0');
-  result.onsuccess = populateObjectStore;
-  result.onerror = unexpectedErrorCallback;
+  window.db = event.target.result;
+  var request = db.setVersion('1.0');
+  request.onsuccess = populateObjectStore;
+  request.onerror = unexpectedErrorCallback;
 }
 
 function test()
 {
   debug('Connecting to indexedDB');
-  var result = webkitIndexedDB.open('name');
-  result.onsuccess = setVersion;
-  result.onerror = unexpectedErrorCallback;
+  var request = webkitIndexedDB.open('name');
+  request.onsuccess = setVersion;
+  request.onerror = unexpectedErrorCallback;
 }

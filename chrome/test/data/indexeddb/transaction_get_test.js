@@ -16,13 +16,13 @@ function afterCommit()
 
 function nonExistingKey()
 {
-    shouldBe("event.result", "undefined");
+    shouldBe("event.target.result", "undefined");
     window.setTimeout('afterCommit()', 0);
 }
 
 function gotValue()
 {
-    value = event.result;
+    value = event.target.result;
     shouldBeEqualToString('value', 'myValue');
 }
 
@@ -33,35 +33,35 @@ function startTransaction()
     //transaction.onabort = unexpectedErrorCallback;
     store = transaction.objectStore('storeName');
     shouldBeEqualToString("store.name", "storeName");
-    result = store.get('myKey');
-    result.onsuccess = gotValue;
-    result.onerror = unexpectedErrorCallback;
+    request = store.get('myKey');
+    request.onsuccess = gotValue;
+    request.onerror = unexpectedErrorCallback;
 
-    var emptyResult = store.get('nonExistingKey');
-    emptyResult.onsuccess = nonExistingKey;
-    emptyResult.onerror = unexpectedErrorCallback;
+    var emptyRequest = store.get('nonExistingKey');
+    emptyRequest.onsuccess = nonExistingKey;
+    emptyRequest.onerror = unexpectedErrorCallback;
 }
 
 function populateObjectStore()
 {
     deleteAllObjectStores(db);
     window.objectStore = db.createObjectStore('storeName');
-    var result = objectStore.add('myValue', 'myKey');
-    result.onsuccess = startTransaction;
-    result.onerror = unexpectedErrorCallback;
+    var request = objectStore.add('myValue', 'myKey');
+    request.onsuccess = startTransaction;
+    request.onerror = unexpectedErrorCallback;
 }
 
 function setVersion()
 {
-    window.db = event.result;
-    var result = db.setVersion('new version');
-    result.onsuccess = populateObjectStore;
-    result.onerror = unexpectedErrorCallback;
+    window.db = event.target.result;
+    var request = db.setVersion('new version');
+    request.onsuccess = populateObjectStore;
+    request.onerror = unexpectedErrorCallback;
 }
 
 function test()
 {
-    result = webkitIndexedDB.open('name');
-    result.onsuccess = setVersion;
-    result.onerror = unexpectedErrorCallback;
+    request = webkitIndexedDB.open('name');
+    request.onsuccess = setVersion;
+    request.onerror = unexpectedErrorCallback;
 }

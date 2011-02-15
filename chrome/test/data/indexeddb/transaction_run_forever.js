@@ -46,7 +46,7 @@ function onSetVersionComplete()
 function onSetVersion()
 {
   // We are now in a set version transaction.
-  var setVersionTransaction = event.result;
+  var setVersionTransaction = event.target.result;
   setVersionTransaction.oncomplete = onSetVersionComplete;
   setVersionTransaction.onerror = unexpectedErrorCallback;
 
@@ -57,10 +57,10 @@ function onSetVersion()
 
 function setVersion()
 {
-  window.db = event.result;
-  var result = db.setVersion('1.0');
-  result.onsuccess = onSetVersion;
-  result.onerror = unexpectedErrorCallback;
+  window.db = event.target.result;
+  var request = db.setVersion('1.0');
+  request.onsuccess = onSetVersion;
+  request.onerror = unexpectedErrorCallback;
 }
 
 function test()
@@ -73,7 +73,7 @@ function test()
   }
 
   debug('Connecting to indexedDB.');
-  var result = indexedDB.open('name');
-  result.onsuccess = setVersion;
-  result.onerror = unexpectedErrorCallback;
+  var request = indexedDB.open('name');
+  request.onsuccess = setVersion;
+  request.onerror = unexpectedErrorCallback;
 }
