@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,7 +47,7 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
 
   // Get the size of the compiled metafile.
   ViewHostMsg_DidPrintPage_Params page_params;
-  page_params.data_size = 0;
+  page_params.data_size = metafile.GetDataSize();
   page_params.page_number = page_number;
   page_params.document_cookie = params.params.document_cookie;
   page_params.actual_shrink = scale_factor;
@@ -57,12 +57,10 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
 
   // Ask the browser to create the shared memory for us.
   if (!CopyMetafileDataToSharedMem(&metafile,
-          &(page_params.metafile_data_handle))) {
-    NOTREACHED();
-    return;
+                                   &(page_params.metafile_data_handle))) {
+    page_params.data_size = 0;
   }
 
-  page_params.data_size = metafile.GetDataSize();
   Send(new ViewHostMsg_DidPrintPage(routing_id(), page_params));
 }
 
@@ -111,7 +109,6 @@ void PrintWebViewHelper::CreatePreviewDocument(
   if (!CopyMetafileDataToSharedMem(&metafile,
           &(preview_params.metafile_data_handle))) {
     preview_params.data_size = 0;
-    NOTREACHED();
   }
   Send(new ViewHostMsg_PagesReadyForPreview(routing_id(), preview_params));
 }

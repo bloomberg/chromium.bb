@@ -91,7 +91,7 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
   DCHECK_GT(buf_size, 128u);
 
   ViewHostMsg_DidPrintPage_Params page_params;
-  page_params.data_size = 0;
+  page_params.data_size = buf_size;
   page_params.metafile_data_handle = NULL;
   page_params.page_number = page_number;
   page_params.document_cookie = params.params.document_cookie;
@@ -102,17 +102,18 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
       params.params.printable_size.height());
   page_params.has_visible_overlays = frame->isPageBoxVisible(page_number);
 
-  if (CopyMetafileDataToSharedMem(metafile.get(),
-          &(page_params.metafile_data_handle))) {
-    page_params.data_size = buf_size;
+  if (!CopyMetafileDataToSharedMem(metafile.get(),
+                                   &(page_params.metafile_data_handle))) {
+    page_params.data_size = 0;
   }
   metafile->CloseEmf();
-  if (Send(new ViewHostMsg_DuplicateSection(
+  if (!Send(new ViewHostMsg_DuplicateSection(
           routing_id(),
           page_params.metafile_data_handle,
           &page_params.metafile_data_handle))) {
-    Send(new ViewHostMsg_DidPrintPage(routing_id(), page_params));
+    NOTREACHED() << "Send message failed.";
   }
+  Send(new ViewHostMsg_DidPrintPage(routing_id(), page_params));
 }
 
 void PrintWebViewHelper::CreatePreviewDocument(
@@ -167,12 +168,12 @@ void PrintWebViewHelper::CreatePreviewDocument(
 
   ViewHostMsg_DidPreviewDocument_Params preview_params;
   preview_params.document_cookie = params.params.document_cookie;
-  preview_params.data_size = 0;
+  preview_params.data_size = buf_size;
   preview_params.metafile_data_handle = NULL;
 
-  if (CopyMetafileDataToSharedMem(metafile.get(),
-          &(preview_params.metafile_data_handle))) {
-    preview_params.data_size = buf_size;
+  if (!CopyMetafileDataToSharedMem(metafile.get(),
+                                   &(preview_params.metafile_data_handle))) {
+    preview_params.data_size = 0;
   }
   metafile->CloseEmf();
   if (!Send(new ViewHostMsg_DuplicateSection(
