@@ -117,6 +117,9 @@ const AccelerometerMac::SensorDescriptor
   // Tested by avi on a 13" MacBook.
   { "MacBook7,1",    { { 0, true  }, { 2, true  }, { 4, false } } },
 
+  // Tested by crc on a 13" MacBook Air.
+  { "MacBookAir1,1", { { 0, true  }, { 2, true  }, { 4, false } } }
+
   // Tested by sfiera, pjw on a 13" MacBook Air.
   { "MacBookAir2,1", { { 0, true  }, { 2, true  }, { 4, false } } },
 
@@ -171,7 +174,6 @@ const AccelerometerMac::SensorDescriptor
   //  MacBook5,1
   //  MacBook5,2
   //  MacBook6,1
-  //  MacBookAir1,1
   //  MacBookPro1,1
   //  MacBookPro1,2
   //  MacBookPro3,1 (17" to compare to 15")
