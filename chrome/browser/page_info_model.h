@@ -35,6 +35,8 @@ class PageInfoModel {
     SECTION_INFO_FIRST_VISIT,
   };
 
+  // NOTE: ICON_STATE_OK ... ICON_STATE_ERROR must be listed in increasing
+  // order of severity.  Code may depend on this order.
   enum SectionStateIcon {
     // No icon.
     ICON_NONE = -1,

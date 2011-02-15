@@ -248,7 +248,8 @@ PageInfoModel::PageInfoModel(Profile* profile,
 
     if (did_fallback) {
       // For now, only SSLv3 fallback will trigger a warning icon.
-      icon_id = ICON_STATE_ERROR;
+      if (icon_id < ICON_STATE_WARNING_MINOR)
+        icon_id = ICON_STATE_WARNING_MINOR;
       description += ASCIIToUTF16("\n\n");
       description += l10n_util::GetStringUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_FALLBACK_MESSAGE);
