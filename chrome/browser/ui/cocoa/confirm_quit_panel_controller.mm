@@ -8,11 +8,15 @@
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/scoped_nsobject.h"
+#include "base/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/confirm_quit_panel_controller.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 @interface ConfirmQuitPanelController (Private)
 - (id)initInternal;
 - (void)animateFadeOut;
+- (NSString*)keyCommandString;
 @end
 
 ConfirmQuitPanelController* g_confirmQuitPanelController = nil;
@@ -39,6 +43,9 @@ ConfirmQuitPanelController* g_confirmQuitPanelController = nil;
 - (void)awakeFromNib {
   DCHECK([self window]);
   DCHECK_EQ(self, [[self window] delegate]);
+  NSString* message = l10n_util::GetNSStringF(IDS_CONFIRM_TO_QUIT_DESCRIPTION,
+      base::SysNSStringToUTF16([self keyCommandString]));
+  [message_ setStringValue:message];
 }
 
 - (void)windowWillClose:(NSNotification*)notif {
@@ -80,6 +87,41 @@ ConfirmQuitPanelController* g_confirmQuitPanelController = nil;
 
 - (void)animationDidStop:(CAAnimation*)theAnimation finished:(BOOL)finished {
   [self close];
+}
+
+// This looks at the Main Menu and determines what the user has set as the
+// key combination for quit. It then gets the modifiers and builds a string
+// to display them.
+- (NSString*)keyCommandString {
+  NSMenu* mainMenu = [NSApp mainMenu];
+  // Get the application menu (i.e. Chromium).
+  NSMenu* appMenu = [[mainMenu itemAtIndex:0] submenu];
+  for (NSMenuItem* item in [appMenu itemArray]) {
+    // Find the Quit item.
+    if ([item action] == @selector(terminate:)) {
+      return [self keyCombinationForMenuItem:item];
+    }
+  }
+  // Default to Cmd+Q.
+  return @"\u2318Q";
+}
+
+- (NSString*)keyCombinationForMenuItem:(NSMenuItem*)item {
+  NSMutableString* string = [NSMutableString string];
+  NSUInteger modifiers = [item keyEquivalentModifierMask];
+
+  if (modifiers & NSCommandKeyMask)
+    [string appendString:@"\u2318"];
+  if (modifiers & NSControlKeyMask)
+    [string appendString:@"\u2303"];
+  if (modifiers & NSAlternateKeyMask)
+    [string appendString:@"\u2325"];
+  if (modifiers & NSShiftKeyMask)
+    [string appendString:@"\u21E7"];
+
+  [string appendString:[[item keyEquivalent] uppercaseString]];
+
+  return string;
 }
 
 @end
