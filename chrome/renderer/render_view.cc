@@ -5130,9 +5130,9 @@ webkit::ppapi::PluginInstance* RenderView::GetBitmapForOptimizedPluginPaint(
       paint_bounds, dib, location, clip);
 }
 
-gfx::Size RenderView::GetScrollOffset() {
+gfx::Point RenderView::GetScrollOffset() {
   WebKit::WebSize scroll_offset = webview()->mainFrame()->scrollOffset();
-  return gfx::Size(scroll_offset.width, scroll_offset.height);
+  return gfx::Point(scroll_offset.width, scroll_offset.height);
 }
 
 void RenderView::OnClearFocusedNode() {

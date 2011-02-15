@@ -988,9 +988,9 @@ webkit::ppapi::PluginInstance* RenderWidget::GetBitmapForOptimizedPluginPaint(
   return NULL;
 }
 
-gfx::Size RenderWidget::GetScrollOffset() {
+gfx::Point RenderWidget::GetScrollOffset() {
   // Bare RenderWidgets don't support scroll offset.
-  return gfx::Size(0, 0);
+  return gfx::Point(0, 0);
 }
 
 void RenderWidget::SetHidden(bool hidden) {

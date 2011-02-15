@@ -648,7 +648,7 @@ class RenderView : public RenderWidget,
       TransportDIB** dib,
       gfx::Rect* location,
       gfx::Rect* clip);
-  virtual gfx::Size GetScrollOffset();
+  virtual gfx::Point GetScrollOffset();
   virtual void DidHandleKeyEvent();
   virtual void DidHandleMouseEvent(const WebKit::WebMouseEvent& event);
   virtual void OnSetFocus(bool enable);
