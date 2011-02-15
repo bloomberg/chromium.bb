@@ -1340,3 +1340,29 @@
    fun:_ZN12_GLOBAL__N_131MenuButtonTest_OpenOnClick_Test8TestBodyEv
    fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
 }
+{
+   bug_73036
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   fun:_internal_class_createInstanceFromZone
+   fun:NSAllocateObject
+   fun:+[NSHashTable alloc]
+   fun:+[NSTrackingArea initialize]
+   fun:_class_initialize
+   fun:_class_lookupMethodAndLoadCache
+   fun:objc_msgSend
+   fun:-[NSView addTrackingRect:owner:userData:assumeInside:]
+   fun:-[NSThemeFrame _updateMouseTracking]
+   fun:-[NSThemeFrame _tileTitlebarAndRedisplay:]
+   fun:-[NSThemeFrame _updateButtons]
+   fun:-[NSThemeFrame initWithFrame:styleMask:owner:]
+   fun:-[NSGrayFrame initWithFrame:styleMask:owner:]
+   fun:-[NSWindow _commonInitFrame:styleMask:backing:defer:]
+   fun:-[NSWindow _initContent:styleMask:backing:defer:contentView:]
+   fun:-[NSWindow initWithContentRect:styleMask:backing:defer:]
+   fun:-[FramedBrowserWindow initWithContentRect:styleMask:backing:defer:]
+   fun:-[NSWindowTemplate nibInstantiate]
+   fun:-[NSIBObjectData instantiateObject:]
+   fun:-[NSIBObjectData nibInstantiateWithOwner:topLevelObjects:]
+   fun:loadNib
+}
