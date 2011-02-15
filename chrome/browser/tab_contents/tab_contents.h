@@ -83,6 +83,7 @@ struct RendererPreferences;
 struct ThumbnailScore;
 struct ViewHostMsg_DomMessage_Params;
 struct ViewHostMsg_FrameNavigate_Params;
+struct ViewHostMsg_RunFileChooser_Params;
 struct WebPreferences;
 
 // Describes what goes in the main content area of a tab. TabContents is

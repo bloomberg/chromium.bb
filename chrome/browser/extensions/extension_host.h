@@ -25,13 +25,14 @@
 #include "chrome/common/notification_registrar.h"
 
 class Browser;
+class DesktopNotificationHandler;
 class Extension;
 class FileSelectHelper;
 class RenderProcessHost;
 class RenderWidgetHostView;
 class TabContents;
+struct ViewHostMsg_RunFileChooser_Params;
 struct WebPreferences;
-class DesktopNotificationHandler;
 
 // This class is the browser component of an extension component's RenderView.
 // It handles setting up the renderer process, if needed, with special
