@@ -2,5 +2,5 @@
   "name": "chrome.tabs.captureVisibleTab test: jpeg",
   "version": "0.1",
   "description": "end-to-end browser test for chrome.tabs.captureVisibleTab",
-  "permissions": ["tabs"]
+  "permissions": ["tabs", "http://a.com/"]
 }

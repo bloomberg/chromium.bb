@@ -2,6 +2,7 @@
 // browser_tests.exe --gtest_filter=ExtensionApiTest.CaptureVisibleTabPng
 
 var pass = chrome.test.callbackPass;
+var fail = chrome.test.callbackFail;
 var assertEq = chrome.test.assertEq;
 var assertTrue = chrome.test.assertTrue;
 
@@ -10,73 +11,100 @@ var kWindowRect = {
   'height': 400
 };
 
+var kTestDir = '/files/extensions/api_test/tabs/capture_visible_tab/common/';
+var kURLBaseA = 'http://a.com:PORT' + kTestDir;
+var kURLBaseB = 'http://b.com:PORT' + kTestDir;
+
 var whiteImageUrl;
 var textImageUrl;
 
-chrome.test.runTests([
-  // Open a window with one tab, take a snapshot.
-  function captureVisibleTabWhiteImage() {
-    // Keep the resulting image small by making the window small.
-    createWindow([pageUrl('white')],
-                 kWindowRect,
-                 pass(function(winId, tabIds) {
-      waitForAllTabs(pass(function() {
-        chrome.tabs.getSelected(winId, pass(function(tab) {
-          assertEq('complete', tab.status);  // waitForAllTabs ensures this.
-          chrome.tabs.captureVisibleTab(winId,
-                                        {'format': 'png'},
-                                        pass(function(imgDataUrl) {
-            // The URL should be a data URL with has a PNG mime type.
-            assertEq('string', typeof(imgDataUrl));
-            assertEq('data:image/png;base64,', imgDataUrl.substr(0,22));
-            whiteImageUrl = imgDataUrl;
+chrome.test.getConfig(function(config) {
+  var fixPort = function(url) {
+    return url.replace(/PORT/, config.testServer.port);
+  };
 
-            testPixelsAreExpectedColor(whiteImageUrl,
-                                       kWindowRect,
-                                       '255,255,255,255');  // White.
+  chrome.test.runTests([
+    // Open a window with one tab, take a snapshot.
+    function captureVisibleTabWhiteImage() {
+      // Keep the resulting image small by making the window small.
+      createWindow([fixPort(kURLBaseA + 'white.html')],
+                   kWindowRect,
+                   pass(function(winId, tabIds) {
+        waitForAllTabs(pass(function() {
+          chrome.tabs.getSelected(winId, pass(function(tab) {
+            assertEq('complete', tab.status);  // waitForAllTabs ensures this.
+            chrome.tabs.captureVisibleTab(winId,
+                                          {'format': 'png'},
+                                          pass(function(imgDataUrl) {
+              // The URL should be a data URL with has a PNG mime type.
+              assertEq('string', typeof(imgDataUrl));
+              assertEq('data:image/png;base64,', imgDataUrl.substr(0,22));
+              whiteImageUrl = imgDataUrl;
+
+              testPixelsAreExpectedColor(whiteImageUrl,
+                                         kWindowRect,
+                                         '255,255,255,255');  // White.
+            }));
           }));
         }));
       }));
-    }));
-  },
+    },
 
-  function captureVisibleTabText() {
-    // Keep the resulting image small by making the window small.
-    createWindow([pageUrl('text')],
-                 kWindowRect,
-                 pass(function(winId, tabIds) {
-      waitForAllTabs(pass(function() {
-        chrome.tabs.getSelected(winId, pass(function(tab) {
-          assertEq('complete', tab.status);  // waitForAllTabs ensures this.
-          chrome.tabs.captureVisibleTab(winId,
-                                        {'format': 'png'},
-                                        pass(function(imgDataUrl) {
-            // The URL should be a data URL with has a PNG mime type.
-            assertEq('string', typeof(imgDataUrl));
-            assertEq('data:image/png;base64,', imgDataUrl.substr(0,22));
-            textImageUrl = imgDataUrl;
-            assertTrue(whiteImageUrl != textImageUrl);
+    function captureVisibleTabText() {
+      // Keep the resulting image small by making the window small.
+      createWindow([fixPort(kURLBaseA + 'text.html')],
+                   kWindowRect,
+                   pass(function(winId, tabIds) {
+        waitForAllTabs(pass(function() {
+          chrome.tabs.getSelected(winId, pass(function(tab) {
+            assertEq('complete', tab.status);  // waitForAllTabs ensures this.
+            chrome.tabs.captureVisibleTab(winId,
+                                          {'format': 'png'},
+                                          pass(function(imgDataUrl) {
+              // The URL should be a data URL with has a PNG mime type.
+              assertEq('string', typeof(imgDataUrl));
+              assertEq('data:image/png;base64,', imgDataUrl.substr(0,22));
+              textImageUrl = imgDataUrl;
+              assertTrue(whiteImageUrl != textImageUrl);
 
-            countPixelsWithColors(
-                imgDataUrl,
-                kWindowRect,
-                ['255,255,255,255'],
-                pass(function(colorCounts, totalPixelsChecked) {
-                  // Some pixels should not be white, because the text
-                  // is not white.  Can't test for black because
-                  // antialiasing makes the pixels slightly different
-                  // on each display setting.  Test that all pixels are
-                  // not the same color.
-                  assertTrue(totalPixelsChecked > colorCounts[0],
-                             JSON.stringify({
-                               message: 'Some pixels should not be white.',
-                               totalPixelsChecked: totalPixelsChecked,
-                               numWhitePixels: colorCounts[0]
-                             }, null, 2));
-                }));
-            }));
+              countPixelsWithColors(
+                  imgDataUrl,
+                  kWindowRect,
+                  ['255,255,255,255'],
+                  pass(function(colorCounts, totalPixelsChecked) {
+                    // Some pixels should not be white, because the text
+                    // is not white.  Can't test for black because
+                    // antialiasing makes the pixels slightly different
+                    // on each display setting.  Test that all pixels are
+                    // not the same color.
+                    assertTrue(totalPixelsChecked > colorCounts[0],
+                               JSON.stringify({
+                                 message: 'Some pixels should not be white.',
+                                 totalPixelsChecked: totalPixelsChecked,
+                                 numWhitePixels: colorCounts[0]
+                               }, null, 2));
+                  }));
+              }));
+          }));
         }));
       }));
-    }));
-  }
-]);
+    },
+
+    function captureVisibleTabNoPermissions() {
+      var fail_url = fixPort(kURLBaseB + 'text.html');
+      createWindow([fail_url], kWindowRect, pass(function(winId, tabIds) {
+        waitForAllTabs(pass(function() {
+          chrome.tabs.getSelected(winId, pass(function(tab) {
+            assertEq('complete', tab.status);  // waitForAllTabs ensures this.
+            chrome.tabs.captureVisibleTab(winId, {'format': 'png'}, fail(
+              'Cannot access contents of url "' + fail_url +
+              '". Extension manifest must request permission ' +
+              'to access this host.'));
+          }));
+        }));
+      }));
+    }
+
+  ]);
+});
+

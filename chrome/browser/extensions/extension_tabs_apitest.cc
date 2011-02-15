@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
+#include "net/base/mock_host_resolver.h"
 
 // Possible race in ChromeURLDataManager. http://crbug.com/59198
 #if defined(OS_MACOSX) || defined(OS_LINUX)
@@ -85,12 +86,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_TabOnRemoved) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CaptureVisibleTabJpeg) {
+  host_resolver()->AddRule("a.com", "127.0.0.1");
+  host_resolver()->AddRule("b.com", "127.0.0.1");
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionSubtest("tabs/capture_visible_tab",
                                   "test_jpeg.html")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CaptureVisibleTabPng) {
+  host_resolver()->AddRule("a.com", "127.0.0.1");
+  host_resolver()->AddRule("b.com", "127.0.0.1");
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionSubtest("tabs/capture_visible_tab",
                                   "test_png.html")) << message_;

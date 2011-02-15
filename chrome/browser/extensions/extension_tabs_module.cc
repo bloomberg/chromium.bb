@@ -1014,6 +1014,15 @@ bool CaptureVisibleTabFunction::RunImpl() {
     error_ = keys::kInternalVisibleTabCaptureError;
     return false;
   }
+
+  // captureVisibleTab() can access some of the same information as
+  // JavaScript running on the page.  Ensure the extension has host
+  // permissions.
+  if (!GetExtension()->CanExecuteScriptOnPage(
+          tab_contents->GetURL(), NULL, &error_)) {
+    return false;
+  }
+
   RenderViewHost* render_view_host = tab_contents->render_view_host();
 
   // If a backing store is cached for the tab we want to capture,
