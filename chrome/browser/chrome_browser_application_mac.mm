@@ -69,6 +69,11 @@ static IMP gOriginalInitIMP = NULL;
       if ([aReason isEqualToString:kNSMenuItemArrayBoundsCheck]) {
         fatal = YES;
       }
+
+      NSString* const kNoWindowCheck = @"View is not in any window";
+      if ([aReason isEqualToString:kNoWindowCheck]) {
+        fatal = YES;
+      }
     }
 
     // Dear reader: Something you just did provoked an NSException.
