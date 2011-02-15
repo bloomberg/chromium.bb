@@ -630,7 +630,7 @@
           'features': {'dynamic_refresh': 1},
           'example_value': ['extension_id1', 'extension_id2'],
           'caption': '''Configure extension installation blacklist''',
-          'desc': '''Allows you to specify which extensions the users can NOT install.
+          'desc': '''Allows you to specify which extensions the users can NOT install. Extensions already installed will be removed if blacklisted.
 
           A blacklist value of * means all extensions are blacklisted unless they are explicitly listed in the whitelist.''',
           'label': '''Extension IDs the user should be prevented from installing (or * for all)''',
