@@ -276,10 +276,10 @@
                       </li>
                     </ol>
                   </li>
-                  <li>
-                    <a href="#global-methods">Methods</a>
+                  <li style="display: none; ">
+                    <a>Methods</a>
                     <ol>
-                      <li style="display: none; ">
+                      <li>
                         <a href="#method-anchor">methodName</a>
                       </li>
                     </ol>
@@ -302,11 +302,11 @@
                       </li>
                     </ol>
                   </li>
-                  <li>
+                  <li style="display: none; ">
                     <a href="#types">Types</a>
                     <ol>
                       <li>
-                        <a href="#type-RequestFilter">RequestFilter</a>
+                        <a href="#id-anchor">id</a>
                       </li>
                     </ol>
                   </li>
@@ -348,12 +348,12 @@
           </div> <!-- /apiGroup -->
 
           <!-- METHODS -->
-          <div id="methodsTemplate" class="apiGroup">
-            <a name="global-methods"></a>
+          <div id="methodsTemplate" class="apiGroup" style="display: none; ">
+            <a></a>
             <h3>Methods</h3>
 
             <!-- iterates over all functions -->
-            <div class="apiItem" style="display: none; ">
+            <div class="apiItem">
               <a></a> <!-- method-anchor -->
               <h4>method name</h4>
 
@@ -2809,377 +2809,17 @@
           </div> <!-- /apiGroup -->
 
           <!-- TYPES -->
-          <div class="apiGroup">
+          <div class="apiGroup" style="display: none; ">
             <a name="types"></a>
             <h3 id="types">Types</h3>
 
             <!-- iterates over all types -->
             <div class="apiItem">
-              <a name="type-RequestFilter"></a>
-              <h4>RequestFilter</h4>
+              <a></a>
+              <h4>type name</h4>
 
               <div>
-          <dt>
-            <var style="display: none; ">paramName</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>object</span>
-                        <span style="display: none; "></span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
-          <dd>An object describing filters to apply to webRequest events.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd>
-            <dl>
-              <div>
-                <div>
-          <dt>
-            <var>urls</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span>
-                          array of <span><span>
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>string</span>
-                        <span style="display: none; "></span>
-                      </span>
-                    </span></span>
-                        </span>
-                        <span style="display: none; ">paramType</span>
-                        <span style="display: none; "></span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
-          <dd>A list of URLs or URL patterns. Requests that cannot match any of the URLs will be filtered out.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
               </div>
-            </dl>
-          </dd>
-
-          <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>types</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span>
-                          array of <span><span>
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>string</span>
-                        <span>["main_frame", "sub_frame", "stylesheet", "script", "image", "object", "other"]</span>
-                      </span>
-                    </span></span>
-                        </span>
-                        <span style="display: none; ">paramType</span>
-                        <span style="display: none; "></span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
-          <dd>A list of request types. Requests that cannot match any of the types will be filtered out.</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
-          <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>tabId</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>integer</span>
-                        <span style="display: none; "></span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
-          <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>windowId</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>integer</span>
-                        <span style="display: none; "></span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
-          <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-        </div>
-              </div>
-            </dl>
-          </dd>
-
-          <!-- OBJECT METHODS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- OBJECT EVENT FIELDS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-          <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-        </div>
 
             </div> <!-- /apiItem -->
 

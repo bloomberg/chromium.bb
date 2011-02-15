@@ -25,16 +25,14 @@ class ExtensionIOEventRouter
   void DestroyingProfile() { profile_ = NULL; }
 
   // Dispatch the named event to every extension listening to that event.
-  void DispatchEventToExtension(const std::string& extension_id,
-                                const std::string& event_name,
-                                const std::string& event_args) const;
+  void DispatchEvent(const std::string& event_name,
+                     const std::string& event_args) const;
 
  private:
-  void DispatchEventOnUIThread(const std::string& extension_id,
-                               const std::string& event_name,
-                               const std::string& event_args) const;
-
   Profile* profile_;
+
+  void DispatchEventOnUIThread(const std::string& event_name,
+                               const std::string& event_args) const;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionIOEventRouter);
 };

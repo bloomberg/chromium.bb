@@ -59,8 +59,6 @@ typedef std::map<std::string, int> EventListenerCounts;
 struct SingletonData {
   // A map of extension IDs to listener counts for that extension.
   std::map<std::string, EventListenerCounts> listener_counts_;
-  // A counter for keeping sub-event names unique (see GetUniqueSubEventName).
-  int unique_event_counter_;
 };
 
 static base::LazyInstance<SingletonData> g_singleton_data(
@@ -68,13 +66,6 @@ static base::LazyInstance<SingletonData> g_singleton_data(
 
 static EventListenerCounts& GetListenerCounts(const std::string& extension_id) {
   return g_singleton_data.Get().listener_counts_[extension_id];
-}
-
-static v8::Handle<v8::Value> ThrowInvalidArgumentException(int arg_index) {
-  static const char kMessage[] = "Invalid value for argument %d.";
-  std::string error_msg = StringPrintf(kMessage, arg_index);
-  return v8::ThrowException(v8::Exception::Error(
-    v8::String::New(error_msg.c_str())));
 }
 
 class ExtensionImpl : public ExtensionBase {
@@ -123,6 +114,7 @@ class ExtensionImpl : public ExtensionBase {
 
       if (++context_info->num_connected_events == 1)
         context_info->context.ClearWeak();
+
     }
 
     return v8::Undefined();

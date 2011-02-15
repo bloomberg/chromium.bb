@@ -18,7 +18,6 @@ var chrome = chrome || {};
   native function SetIconCommon();
   native function IsExtensionProcess();
   native function IsIncognitoProcess();
-  native function GetUniqueSubEventName(eventName);
 
   var chromeHidden = GetChromeHidden();
 
@@ -235,63 +234,6 @@ var chrome = chrome || {};
 
   // --- Setup additional api's not currently handled in common/extensions/api
 
-  // WebRequestEvent object. This is used for special webRequest events with
-  // extra parameters. Each invocation of addListener creates a new named
-  // sub-event. That sub-event is associated with the extra parameters in the
-  // browser process, so that only it is dispatched when the main event occurs
-  // matching the extra parameters.
-  //
-  // Example:
-  //   chrome.webRequest.onBeforeRequest.addListener(
-  //       callback, {urls: "http://*.google.com/*"});
-  //   ^ callback will only be called for onBeforeRequests matching the filter.
-  chrome.WebRequestEvent = function(eventName, opt_argSchemas) {
-    if (typeof eventName != "string")
-      throw new Error("chrome.WebRequestEvent requires an event name.");
-
-    this.eventName_ = eventName;
-    this.argSchemas_ = opt_argSchemas;
-    this.subEvents_ = [];
-  };
-
-  // Registers a callback to be called when this event is dispatched. If
-  // opt_filter is specified, then the callback is only called for events that
-  // match the given filters. If opt_extraInfo is specified, the given optional
-  // info is sent to the callback.
-  chrome.WebRequestEvent.prototype.addListener =
-      function(cb, opt_filter, opt_extraInfo) {
-    var subEventName = GetUniqueSubEventName(this.eventName_);
-    // Note: this could fail to validate, in which case we would not add the
-    // subEvent listener.
-    chrome.experimental.webRequest.addEventListener(
-        cb, opt_filter, opt_extraInfo, this.eventName_, subEventName);
-
-    var subEvent = new chrome.Event(subEventName, this.argSchemas_);
-    this.subEvents_.push(subEvent);
-    subEvent.addListener(cb);
-  };
-
-  // Unregisters a callback.
-  chrome.WebRequestEvent.prototype.removeListener = function(cb) {
-    var idx = this.findListener_(cb);
-    if (idx >= -1) {
-      return;
-    }
-
-    this.subEvents_[idx].removeListener(cb);
-    if (!this.subEvents_[idx].hasListeners())
-      this.subEvents_.splice(idx, 1);
-  };
-
-  chrome.WebRequestEvent.prototype.findListener_ = function(cb) {
-    for (var i = 0; i < this.subEvents_.length; i++) {
-      if (this.subEvents_[i].findListener_(cb) > -1)
-        return i;
-    }
-
-    return -1;
-  };
-
   // Page action events send (pageActionId, {tabId, tabUrl}).
   function setupPageActionEvents(extensionId) {
     var pageActions = GetCurrentPageActions(extensionId);
@@ -500,14 +442,8 @@ var chrome = chrome || {};
             return;
 
           var eventName = apiDef.namespace + "." + eventDef.name;
-          if (apiDef.namespace == "experimental.webRequest") {
-            // WebRequest events have a special structure.
-            module[eventDef.name] = new chrome.WebRequestEvent(eventName,
-                eventDef.parameters);
-          } else {
-            module[eventDef.name] = new chrome.Event(eventName,
-                eventDef.parameters);
-          }
+          module[eventDef.name] = new chrome.Event(eventName,
+              eventDef.parameters);
         });
       }
 

@@ -9,9 +9,8 @@
 #include "chrome/browser/extensions/extension_devtools_manager.h"
 #include "chrome/browser/extensions/extension_processes_api.h"
 #include "chrome/browser/extensions/extension_processes_api_constants.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
-#include "chrome/browser/extensions/extension_webrequest_api.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/common/extensions/extension.h"
@@ -109,8 +108,6 @@ void ExtensionEventRouter::RemoveEventListener(
       " PID=" << process->id() << " extension=" << extension_id <<
       " event=" << event_name;
   listeners_[event_name].erase(listener);
-  // Note: extension_id may point to data in the now-deleted listeners_ object.
-  // Do not use.
 
   if (extension_devtools_manager_.get())
     extension_devtools_manager_->RemoveEventListener(event_name, process->id());
@@ -119,9 +116,6 @@ void ExtensionEventRouter::RemoveEventListener(
   // exits), then we let the TaskManager know that it has one fewer listener.
   if (event_name.compare(extension_processes_api_constants::kOnUpdated) == 0)
     ExtensionProcessesEventRouter::GetInstance()->ListenerRemoved();
-
-  ExtensionWebRequestEventRouter::RemoveEventListenerOnUIThread(
-      listener.extension_id, event_name);
 }
 
 bool ExtensionEventRouter::HasEventListener(const std::string& event_name) {
