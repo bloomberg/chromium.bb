@@ -280,7 +280,7 @@ class BrowserView : public BrowserBubbleHost,
   virtual bool IsToolbarVisible() const;
   virtual void DisableInactiveFrame();
   virtual void ConfirmSetDefaultSearchProvider(
-      TabContents* tab_contents,
+      TabContentsWrapper* tab_contents,
       TemplateURL* template_url,
       TemplateURLModel* template_url_model);
   virtual void ConfirmAddSearchProvider(const TemplateURL* template_url,

@@ -43,7 +43,6 @@ struct ThumbnailScore;
 struct ViewHostMsg_AccessibilityNotification_Params;
 struct ViewHostMsg_CreateWindow_Params;
 struct ViewHostMsg_DomMessage_Params;
-struct ViewHostMsg_PageHasOSDD_Type;
 struct ViewHostMsg_ShowPopup_Params;
 struct ViewMsg_Navigate_Params;
 struct WebApplicationInfo;
@@ -606,9 +605,6 @@ class RenderViewHost : public RenderWidgetHost {
                           const gfx::Point& image_offset);
   void OnUpdateDragCursor(WebKit::WebDragOperation drag_operation);
   void OnTakeFocus(bool reverse);
-  void OnMsgPageHasOSDD(int32 page_id,
-                        const GURL& doc_url,
-                        const ViewHostMsg_PageHasOSDD_Type& provider_type);
   void OnAddMessageToConsole(const std::wstring& message,
                              int32 line_no,
                              const std::wstring& source_id);

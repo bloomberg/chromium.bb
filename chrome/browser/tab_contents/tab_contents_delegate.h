@@ -36,8 +36,6 @@ struct NativeWebKeyboardEvent;
 class Profile;
 class RenderViewHost;
 class TabContents;
-class TemplateURL;
-class TemplateURLModel;
 struct WebApplicationInfo;
 
 // Objects implement this interface to get notified about changes in the
@@ -231,18 +229,6 @@ class TabContentsDelegate : public AutomationResourceRoutingDelegate {
 
   // Returns true if the context menu command was handled
   virtual bool ExecuteContextMenuCommand(int command);
-
-  // Shows a confirmation dialog box for setting the default search engine
-  // described by |template_url|. Takes ownership of |template_url|.
-  virtual void ConfirmSetDefaultSearchProvider(
-      TabContents* tab_contents,
-      TemplateURL* template_url,
-      TemplateURLModel* template_url_model);
-
-  // Shows a confirmation dialog box for adding a search engine described by
-  // |template_url|. Takes ownership of |template_url|.
-  virtual void ConfirmAddSearchProvider(const TemplateURL* template_url,
-                                        Profile* profile);
 
   // Shows the page info using the specified information.
   // |url| is the url of the page/frame the info applies to, |ssl| is the SSL

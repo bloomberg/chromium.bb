@@ -883,10 +883,6 @@ class TabContents : public PageNavigator,
   void NotifyConnected();
   void NotifyDisconnected();
 
-  // If params has a searchable form, this tries to create a new keyword.
-  void GenerateKeywordIfNecessary(
-      const ViewHostMsg_FrameNavigate_Params& params);
-
   // TabSpecificContentSettings::Delegate implementation.
   virtual void OnContentSettingsAccessed(bool content_was_blocked);
 
@@ -953,10 +949,6 @@ class TabContents : public PageNavigator,
   virtual void ShowModalHTMLDialog(const GURL& url, int width, int height,
                                    const std::string& json_arguments,
                                    IPC::Message* reply_msg);
-  virtual void PageHasOSDD(RenderViewHost* render_view_host,
-                           int32 page_id,
-                           const GURL& url,
-                           const ViewHostMsg_PageHasOSDD_Type& provider_type);
   virtual GURL GetAlternateErrorPageURL() const;
   virtual RendererPreferences GetRendererPrefs(Profile* profile) const;
   virtual WebPreferences GetWebkitPrefs();

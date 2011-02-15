@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/find_bar/find_manager.h"
+#include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper_delegate.h"
 #include "chrome/common/notification_service.h"
 
@@ -32,6 +33,10 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   // Needed so that we initialize the password manager on first navigation.
   tab_contents()->AddObserver(this);
 
+  // Create the tab helpers.
+  search_engine_tab_helper_.reset(new SearchEngineTabHelper(this));
+  tab_contents()->AddObserver(search_engine_tab_helper_.get());
+
   // Register for notifications about URL starredness changing on any profile.
   registrar_.Add(this, NotificationType::URLS_STARRED,
                  NotificationService::AllSources());
@@ -47,6 +52,9 @@ TabContentsWrapper::~TabContentsWrapper() {
   tab_contents()->RemoveObserver(this);
   if (password_manager_.get())
     tab_contents()->RemoveObserver(password_manager_.get());
+  if (find_manager_.get())
+    tab_contents()->RemoveObserver(find_manager_.get());
+  tab_contents()->RemoveObserver(search_engine_tab_helper_.get());
 }
 
 PropertyAccessor<TabContentsWrapper*>* TabContentsWrapper::property_accessor() {

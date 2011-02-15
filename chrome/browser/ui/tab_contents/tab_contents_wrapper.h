@@ -18,6 +18,7 @@ class FindManager;
 class NavigationController;
 class PasswordManager;
 class PasswordManagerDelegate;
+class SearchEngineTabHelper;
 class TabContentsWrapperDelegate;
 
 // Wraps TabContents and all of its supporting objects in order to control
@@ -71,11 +72,13 @@ class TabContentsWrapper : public NotificationObserver,
 
   bool is_starred() const { return is_starred_; }
 
-  // Returns the PasswordManager, creating it if necessary.
   PasswordManager* GetPasswordManager();
 
-  // Returns the FindManager, creating it if necessary.
   FindManager* GetFindManager();
+
+  SearchEngineTabHelper* search_engine_tab_helper() {
+    return search_engine_tab_helper_.get();
+  };
 
   // Overrides -----------------------------------------------------------------
 
@@ -119,6 +122,8 @@ class TabContentsWrapper : public NotificationObserver,
 
   // FindManager, lazily created.
   scoped_ptr<FindManager> find_manager_;
+
+  scoped_ptr<SearchEngineTabHelper> search_engine_tab_helper_;
 
   // TabContents (MUST BE LAST) ------------------------------------------------
 

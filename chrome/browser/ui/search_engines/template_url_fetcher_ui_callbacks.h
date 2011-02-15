@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_FETCHER_UI_CALLBACKS_H_
-#define CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_FETCHER_UI_CALLBACKS_H_
+#ifndef CHROME_BROWSER_UI_SEARCH_ENGINES_TEMPLATE_URL_FETCHER_UI_CALLBACKS_H_
+#define CHROME_BROWSER_UI_SEARCH_ENGINES_TEMPLATE_URL_FETCHER_UI_CALLBACKS_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -11,13 +11,15 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
-class TabContents;
+class SearchEngineTabHelper;
+class TabContentsWrapper;
 
 // Callbacks which display UI for the TemplateURLFetcher.
 class TemplateURLFetcherUICallbacks : public TemplateURLFetcherCallbacks,
                                       public NotificationObserver {
  public:
-  explicit TemplateURLFetcherUICallbacks(TabContents* source);
+  explicit TemplateURLFetcherUICallbacks(SearchEngineTabHelper* tab_helper,
+                                         TabContentsWrapper* tab_contents);
   virtual ~TemplateURLFetcherUICallbacks();
 
   // TemplateURLFetcherCallback implementation.
@@ -34,9 +36,12 @@ class TemplateURLFetcherUICallbacks : public TemplateURLFetcherCallbacks,
                        const NotificationDetails& details);
 
  private:
-  // The TabContents where this request originated. Can be NULL if the
+  // The SearchEngineTabHelper where this request originated. Can be NULL if the
   // originating tab is closed. If NULL, the engine is not added.
-  TabContents* source_;
+  SearchEngineTabHelper* source_;
+
+  // The TabContentsWrapper where this request originated.
+  TabContentsWrapper* tab_contents_;
 
   // Handles registering for our notifications.
   NotificationRegistrar registrar_;
@@ -44,4 +49,4 @@ class TemplateURLFetcherUICallbacks : public TemplateURLFetcherCallbacks,
   DISALLOW_COPY_AND_ASSIGN(TemplateURLFetcherUICallbacks);
 };
 
-#endif  // CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_FETCHER_UI_CALLBACKS_H_
+#endif  // CHROME_BROWSER_UI_SEARCH_ENGINES_TEMPLATE_URL_FETCHER_UI_CALLBACKS_H_

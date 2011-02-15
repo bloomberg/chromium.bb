@@ -777,7 +777,6 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_StartDragging, OnMsgStartDragging)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateDragCursor, OnUpdateDragCursor)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TakeFocus, OnTakeFocus)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_PageHasOSDD, OnMsgPageHasOSDD)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AddMessageToConsole, OnAddMessageToConsole)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ForwardToDevToolsAgent,
                         OnForwardToDevToolsAgent)
@@ -1284,13 +1283,6 @@ void RenderViewHost::OnTakeFocus(bool reverse) {
   RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
   if (view)
     view->TakeFocus(reverse);
-}
-
-void RenderViewHost::OnMsgPageHasOSDD(
-    int32 page_id,
-    const GURL& doc_url,
-    const ViewHostMsg_PageHasOSDD_Type& provider_type) {
-  delegate_->PageHasOSDD(this, page_id, doc_url, provider_type);
 }
 
 void RenderViewHost::OnAddMessageToConsole(const std::wstring& message,

@@ -1046,14 +1046,15 @@ void BrowserView::DisableInactiveFrame() {
 }
 
 void BrowserView::ConfirmSetDefaultSearchProvider(
-    TabContents* tab_contents,
+    TabContentsWrapper* tab_contents,
     TemplateURL* template_url,
     TemplateURLModel* template_url_model) {
 #if defined(OS_WIN)
-  DefaultSearchView::Show(tab_contents, template_url, template_url_model);
+  DefaultSearchView::Show(tab_contents->tab_contents(), template_url,
+                          template_url_model);
 #else
   // TODO(levin): Implement for other platforms. Right now this is behind
-  // a command line flag which is off.
+  // a command line flag which is off. http://crbug.com/38475
 #endif
 }
 

@@ -188,10 +188,11 @@ class BrowserWindow {
   // Shows a confirmation dialog box for setting the default search engine
   // described by |template_url|. Takes ownership of |template_url|.
   virtual void ConfirmSetDefaultSearchProvider(
-      TabContents* tab_contents,
+      TabContentsWrapper* tab_contents,
       TemplateURL* template_url,
       TemplateURLModel* template_url_model) {
     // TODO(levin): Implement this for non-Windows platforms and make it pure.
+    // http://crbug.com/38475
   }
 
   // Shows a confirmation dialog box for adding a search engine described by

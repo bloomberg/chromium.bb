@@ -1,23 +1,26 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/search_engines/template_url_fetcher_ui_callbacks.h"
+#include "chrome/browser/ui/search_engines/template_url_fetcher_ui_callbacks.h"
 
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/tab_contents/tab_contents_delegate.h"
+#include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
+#include "chrome/browser/ui/search_engines/search_engine_tab_helper_delegate.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 
 TemplateURLFetcherUICallbacks::TemplateURLFetcherUICallbacks(
-    TabContents* source)
-    : source_(source) {
+    SearchEngineTabHelper* tab_helper,
+    TabContentsWrapper* tab_contents)
+    : source_(tab_helper),
+      tab_contents_(tab_contents) {
   registrar_.Add(this,
                  NotificationType::TAB_CONTENTS_DESTROYED,
-                 Source<TabContents>(source_));
+                 Source<TabContents>(tab_contents_->tab_contents()));
 }
 
 TemplateURLFetcherUICallbacks::~TemplateURLFetcherUICallbacks() {
@@ -27,14 +30,15 @@ void TemplateURLFetcherUICallbacks::ConfirmSetDefaultSearchProvider(
     TemplateURL* template_url,
     TemplateURLModel* template_url_model) {
   scoped_ptr<TemplateURL> owned_template_url(template_url);
-  if (!source_ || !source_->delegate())
+  if (!source_ || !source_->delegate() || !tab_contents_)
       return;
 
   source_->delegate()->ConfirmSetDefaultSearchProvider(
-      source_,
+      tab_contents_,
       owned_template_url.release(),
       template_url_model);
 }
+
 void TemplateURLFetcherUICallbacks::ConfirmAddSearchProvider(
     TemplateURL* template_url,
     Profile* profile) {
@@ -51,6 +55,7 @@ void TemplateURLFetcherUICallbacks::Observe(
     const NotificationSource& source,
     const NotificationDetails& details) {
   DCHECK(type == NotificationType::TAB_CONTENTS_DESTROYED);
-  DCHECK(source == Source<TabContents>(source_));
+  DCHECK(source == Source<TabContents>(tab_contents_->tab_contents()));
   source_ = NULL;
+  tab_contents_ = NULL;
 }

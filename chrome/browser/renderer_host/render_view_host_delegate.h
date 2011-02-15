@@ -49,7 +49,6 @@ struct ThumbnailScore;
 struct ViewHostMsg_CreateWindow_Params;
 struct ViewHostMsg_DomMessage_Params;
 struct ViewHostMsg_FrameNavigate_Params;
-struct ViewHostMsg_PageHasOSDD_Type;
 struct WebApplicationInfo;
 struct WebDropData;
 struct WebMenuItem;
@@ -522,11 +521,6 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
   virtual void ShowModalHTMLDialog(const GURL& url, int width, int height,
                                    const std::string& json_arguments,
                                    IPC::Message* reply_msg) {}
-
-  // Notification that the page has an OpenSearch description document.
-  virtual void PageHasOSDD(RenderViewHost* render_view_host,
-                           int32 page_id, const GURL& doc_url,
-                           const ViewHostMsg_PageHasOSDD_Type& provider_type) {}
 
   // |url| is assigned to a server that can provide alternate error pages.  If
   // the returned URL is empty, the default error page built into WebKit will

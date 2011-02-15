@@ -83,6 +83,7 @@
 #include "chrome/browser/ui/find_bar/find_manager.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/options/options_window.h"
+#include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 #include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tabs/dock_info.h"
@@ -2662,8 +2663,7 @@ bool Browser::LargeIconsPermitted() const {
 void Browser::TabInsertedAt(TabContentsWrapper* contents,
                             int index,
                             bool foreground) {
-  contents->set_delegate(this);
-  contents->tab_contents()->set_delegate(this);
+  SetAsDelegate(contents, this);
   contents->controller().SetWindowID(session_id());
 
   SyncHistoryWithTabs(index);
@@ -2687,8 +2687,7 @@ void Browser::TabClosingAt(TabStripModel* tab_strip_model,
       NotificationService::NoDetails());
 
   // Sever the TabContents' connection back to us.
-  contents->set_delegate(NULL);
-  contents->tab_contents()->set_delegate(NULL);
+  SetAsDelegate(contents, NULL);
 }
 
 void Browser::TabDetachedAt(TabContentsWrapper* contents, int index) {
@@ -3167,18 +3166,6 @@ void Browser::OnStartDownload(DownloadItem* download, TabContents* tab) {
   }
 }
 
-void Browser::ConfirmSetDefaultSearchProvider(
-    TabContents* tab_contents,
-    TemplateURL* template_url,
-    TemplateURLModel* template_url_model) {
-  window()->ConfirmSetDefaultSearchProvider(tab_contents, template_url,
-                                            template_url_model);
-}
-void Browser::ConfirmAddSearchProvider(const TemplateURL* template_url,
-                                       Profile* profile) {
-  window()->ConfirmAddSearchProvider(template_url, profile);
-}
-
 void Browser::ShowPageInfo(Profile* profile,
                            const GURL& url,
                            const NavigationEntry::SSLStatus& ssl,
@@ -3279,6 +3266,19 @@ void Browser::ContentRestrictionsChanged(TabContents* source) {
 void Browser::URLStarredChanged(TabContentsWrapper* source, bool starred) {
   if (source == GetSelectedTabContentsWrapper())
     window_->SetStarredState(starred);
+}
+
+void Browser::ConfirmSetDefaultSearchProvider(
+    TabContentsWrapper* tab_contents,
+    TemplateURL* template_url,
+    TemplateURLModel* template_url_model) {
+  window()->ConfirmSetDefaultSearchProvider(tab_contents, template_url,
+                                            template_url_model);
+}
+
+void Browser::ConfirmAddSearchProvider(const TemplateURL* template_url,
+                                       Profile* profile) {
+  window()->ConfirmAddSearchProvider(template_url, profile);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4158,6 +4158,12 @@ Browser* Browser::GetOrCreateTabbedBrowser(Profile* profile) {
   return browser;
 }
 
+void Browser::SetAsDelegate(TabContentsWrapper* tab, Browser* delegate) {
+  tab->tab_contents()->set_delegate(delegate);
+  tab->set_delegate(delegate);
+  tab->search_engine_tab_helper()->set_delegate(delegate);
+}
+
 void Browser::FindInPage(bool find_next, bool forward_direction) {
   ShowFindBar();
   if (find_next) {
@@ -4191,8 +4197,7 @@ void Browser::TabDetachedAtImpl(TabContentsWrapper* contents, int index,
       SyncHistoryWithTabs(0);
   }
 
-  contents->set_delegate(NULL);
-  contents->tab_contents()->set_delegate(NULL);
+  SetAsDelegate(contents, NULL);
   RemoveScheduledUpdatesFor(contents->tab_contents());
 
   if (find_bar_controller_.get() &&
