@@ -70,6 +70,23 @@ class TabCloseButton : public views::ImageButton {
   DISALLOW_COPY_AND_ASSIGN(TabCloseButton);
 };
 
+// Draws the icon image at the center of |bounds|.
+void DrawIconCenter(gfx::Canvas* canvas,
+                    const SkBitmap& image,
+                    int image_offset,
+                    int icon_width,
+                    int icon_height,
+                    const gfx::Rect& bounds,
+                    bool filter) {
+  // Center the image within bounds.
+  int dst_x = bounds.x() - (icon_width - bounds.width()) / 2;
+  int dst_y = bounds.y() - (icon_height - bounds.height()) / 2;
+  canvas->DrawBitmapInt(image,
+                        image_offset, 0, icon_width, icon_height,
+                        dst_x, dst_y, icon_width, icon_height,
+                        filter);
+}
+
 }  // namespace
 
 // static
@@ -315,7 +332,7 @@ bool BaseTab::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
     return false;
 
   // Only show the tooltip if the title is truncated.
-  if (font_->GetStringWidth(data_.title) > title_bounds().width()) {
+  if (font_->GetStringWidth(data_.title) > GetTitleBounds().width()) {
     *tooltip = UTF16ToWide(data_.title);
     return true;
   }
@@ -366,50 +383,48 @@ void BaseTab::AdvanceLoadingAnimation(TabRendererData::NetworkState old_state,
   } else {
     loading_animation_frame_ = 0;
   }
-  SchedulePaint();
+  ScheduleIconPaint();
 }
 
-void BaseTab::PaintIcon(gfx::Canvas* canvas, int x, int y) {
-  if (base::i18n::IsRTL()) {
-    x = width() - x -
-        (data().favicon.isNull() ? kFavIconSize : data().favicon.width());
-  }
+void BaseTab::PaintIcon(gfx::Canvas* canvas) {
+  gfx::Rect bounds = GetIconBounds();
+  if (bounds.IsEmpty())
+    return;
 
-  int favicon_x = x;
-  if (!data().favicon.isNull() && data().favicon.width() != kFavIconSize)
-    favicon_x += (data().favicon.width() - kFavIconSize) / 2;
+  // The size of bounds has to be kFavIconSize x kFavIconSize.
+  DCHECK_EQ(kFavIconSize, bounds.width());
+  DCHECK_EQ(kFavIconSize, bounds.height());
+
+  bounds.set_x(GetMirroredXForRect(bounds));
 
   if (data().network_state != TabRendererData::NETWORK_STATE_NONE) {
     ui::ThemeProvider* tp = GetThemeProvider();
     SkBitmap frames(*tp->GetBitmapNamed(
         (data().network_state == TabRendererData::NETWORK_STATE_WAITING) ?
         IDR_THROBBER_WAITING : IDR_THROBBER));
-    int image_size = frames.height();
-    int image_offset = loading_animation_frame_ * image_size;
-    int dst_y = (height() - image_size) / 2;
-    canvas->DrawBitmapInt(frames, image_offset, 0, image_size,
-                          image_size, favicon_x, dst_y, image_size, image_size,
-                          false);
+
+    int icon_size = frames.height();
+    int image_offset = loading_animation_frame_ * icon_size;
+    DrawIconCenter(canvas, frames, image_offset,
+                   icon_size, icon_size, bounds, false);
   } else {
     canvas->Save();
     canvas->ClipRectInt(0, 0, width(), height());
     if (should_display_crashed_favicon_) {
       ResourceBundle& rb = ResourceBundle::GetSharedInstance();
       SkBitmap crashed_fav_icon(*rb.GetBitmapNamed(IDR_SAD_FAVICON));
-      canvas->DrawBitmapInt(crashed_fav_icon, 0, 0, crashed_fav_icon.width(),
-          crashed_fav_icon.height(), favicon_x,
-          (height() - crashed_fav_icon.height()) / 2 + fav_icon_hiding_offset_,
-          kFavIconSize, kFavIconSize, true);
+      bounds.set_y(bounds.y() + fav_icon_hiding_offset_);
+      DrawIconCenter(canvas, crashed_fav_icon, 0,
+                     crashed_fav_icon.width(),
+                     crashed_fav_icon.height(), bounds, true);
     } else {
       if (!data().favicon.isNull()) {
         // TODO(pkasting): Use code in tab_icon_view.cc:PaintIcon() (or switch
         // to using that class to render the favicon).
-        int size = data().favicon.width();
-        canvas->DrawBitmapInt(data().favicon, 0, 0,
-                              data().favicon.width(),
-                              data().favicon.height(),
-                              x, y + fav_icon_hiding_offset_, size, size,
-                              true);
+        DrawIconCenter(canvas, data().favicon, 0,
+                       data().favicon.width(),
+                       data().favicon.height(),
+                       bounds, true);
       }
     }
     canvas->Restore();
@@ -426,22 +441,22 @@ void BaseTab::PaintTitle(gfx::Canvas* canvas, SkColor title_color) {
   } else {
     Browser::FormatTitleForDisplay(&title);
   }
-
+  const gfx::Rect& title_bounds = GetTitleBounds();
   canvas->DrawStringInt(title, *font_, title_color,
-                        title_bounds().x(), title_bounds().y(),
-                        title_bounds().width(), title_bounds().height());
+                        title_bounds.x(), title_bounds.y(),
+                        title_bounds.width(), title_bounds.height());
 }
 
 void BaseTab::AnimationProgressed(const ui::Animation* animation) {
-  SchedulePaint();
+  ScheduleIconPaint();
 }
 
 void BaseTab::AnimationCanceled(const ui::Animation* animation) {
-  SchedulePaint();
+  ScheduleIconPaint();
 }
 
 void BaseTab::AnimationEnded(const ui::Animation* animation) {
-  SchedulePaint();
+  ScheduleIconPaint();
 }
 
 void BaseTab::ButtonPressed(views::Button* sender, const views::Event& event) {
@@ -458,7 +473,7 @@ void BaseTab::ShowContextMenu(views::View* source,
 
 void BaseTab::SetFavIconHidingOffset(int offset) {
   fav_icon_hiding_offset_ = offset;
-  SchedulePaint();
+  ScheduleIconPaint();
 }
 
 void BaseTab::DisplayCrashedFavIcon() {
@@ -484,6 +499,19 @@ void BaseTab::StopCrashAnimation() {
 
 bool BaseTab::IsPerformingCrashAnimation() const {
   return crash_animation_.get() && crash_animation_->is_animating();
+}
+
+void BaseTab::ScheduleIconPaint() {
+  gfx::Rect bounds = GetIconBounds();
+  if (bounds.IsEmpty())
+    return;
+
+  // Extends the area to the bottom when sad_favicon is
+  // animating.
+  if (IsPerformingCrashAnimation())
+    bounds.set_height(height() - bounds.y());
+  bounds.set_x(GetMirroredXForRect(bounds));
+  SchedulePaint(bounds, false);
 }
 
 // static

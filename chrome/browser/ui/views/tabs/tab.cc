@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -163,6 +163,14 @@ int Tab::GetMiniWidth() {
 ////////////////////////////////////////////////////////////////////////////////
 // Tab, protected:
 
+const gfx::Rect& Tab::GetTitleBounds() const {
+  return title_bounds_;
+}
+
+const gfx::Rect& Tab::GetIconBounds() const {
+  return favicon_bounds_;
+}
+
 void Tab::DataChanged(const TabRendererData& old) {
   if (data().blocked == old.blocked)
     return;
@@ -227,23 +235,17 @@ void Tab::Layout() {
   showing_icon_ = ShouldShowIcon();
   if (showing_icon_) {
     // Use the size of the favicon as apps use a bigger favicon size.
-    int favicon_size =
-        !data().favicon.empty() ? data().favicon.width() : kFavIconSize;
-    int favicon_top = kTopPadding + content_height / 2 - favicon_size / 2;
+    int favicon_top = kTopPadding + content_height / 2 - kFavIconSize / 2;
     int favicon_left = lb.x();
-    if (favicon_size != kFavIconSize) {
-      favicon_left -= (favicon_size - kFavIconSize) / 2;
-      favicon_top -= kAppTapFaviconVerticalAdjustment;
-    }
     favicon_bounds_.SetRect(favicon_left, favicon_top,
-                            favicon_size, favicon_size);
+                            kFavIconSize, kFavIconSize);
     if (data().mini && width() < kMiniTabRendererAsNormalTabWidth) {
       // Adjust the location of the favicon when transitioning from a normal
       // tab to a mini-tab.
       int mini_delta = kMiniTabRendererAsNormalTabWidth - GetMiniWidth();
       int ideal_delta = width() - GetMiniWidth();
       if (ideal_delta < mini_delta) {
-        int ideal_x = (GetMiniWidth() - favicon_size) / 2;
+        int ideal_x = (GetMiniWidth() - kFavIconSize) / 2;
         int x = favicon_bounds_.x() + static_cast<int>(
             (1 - static_cast<float>(ideal_delta) /
              static_cast<float>(mini_delta)) *
@@ -339,7 +341,7 @@ void Tab::GetHitTestMask(gfx::Path* path) const {
 }
 
 bool Tab::GetTooltipTextOrigin(const gfx::Point& p, gfx::Point* origin) {
-  origin->set_x(title_bounds().x() + 10);
+  origin->set_x(title_bounds_.x() + 10);
   origin->set_y(-views::TooltipManager::GetTooltipHeight() - 4);
   return true;
 }
@@ -353,10 +355,6 @@ void Tab::OnMouseMoved(const views::MouseEvent& e) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Tab, private
-
-void Tab::PaintIcon(gfx::Canvas* canvas) {
-  BaseTab::PaintIcon(canvas, favicon_bounds_.x(), favicon_bounds_.y());
-}
 
 void Tab::PaintTabBackground(gfx::Canvas* canvas) {
   if (IsSelected()) {

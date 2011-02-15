@@ -52,15 +52,8 @@ int SideTab::GetPreferredHeight() {
 
 void SideTab::Layout() {
   if (ShouldShowIcon()) {
-    int icon_x = kIconLeftPadding;
     int icon_y = (height() - kFavIconSize) / 2;
-    int icon_size =
-        !data().favicon.empty() ? data().favicon.width() : kFavIconSize;
-    if (icon_size != kFavIconSize) {
-      icon_x -= (icon_size - kFavIconSize) / 2;
-      icon_y -= (icon_size - kFavIconSize) / 2;
-    }
-    icon_bounds_.SetRect(icon_x, icon_y, icon_size, icon_size);
+    icon_bounds_.SetRect(kIconLeftPadding, icon_y, kFavIconSize, kFavIconSize);
   } else {
     icon_bounds_ = gfx::Rect();
   }
@@ -96,13 +89,21 @@ void SideTab::Paint(gfx::Canvas* canvas) {
   }
 
   if (ShouldShowIcon())
-    PaintIcon(canvas, icon_bounds_.x(), icon_bounds_.y());
+    PaintIcon(canvas);
 
   PaintTitle(canvas, kTextColor);
 }
 
 gfx::Size SideTab::GetPreferredSize() {
   return gfx::Size(0, GetPreferredHeight());
+}
+
+const gfx::Rect& SideTab::GetTitleBounds() const {
+  return title_bounds_;
+}
+
+const gfx::Rect& SideTab::GetIconBounds() const {
+  return icon_bounds_;
 }
 
 bool SideTab::ShouldPaintHighlight() const {

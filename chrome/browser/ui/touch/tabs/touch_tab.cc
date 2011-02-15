@@ -44,6 +44,16 @@ gfx::Size TouchTab::GetMinimumUnselectedSize() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// TouchTab, protected:
+const gfx::Rect& TouchTab::GetTitleBounds() const {
+  return title_bounds_;
+}
+
+const gfx::Rect& TouchTab::GetIconBounds() const {
+  return favicon_bounds_;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // TouchTab, views::View overrides:
 
 void TouchTab::Paint(gfx::Canvas* canvas) {

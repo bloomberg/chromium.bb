@@ -56,9 +56,9 @@ class Tab : public BaseTab {
   static int GetMiniWidth();
 
  protected:
-  virtual const gfx::Rect& title_bounds() const { return title_bounds_; }
-
   // BaseTab overrides:
+  virtual const gfx::Rect& GetTitleBounds() const;
+  virtual const gfx::Rect& GetIconBounds() const;
   virtual void DataChanged(const TabRendererData& old);
 
  private:
@@ -77,7 +77,6 @@ class Tab : public BaseTab {
   void PaintInactiveTabBackgroundWithTitleChange(gfx::Canvas* canvas);
   void PaintInactiveTabBackground(gfx::Canvas* canvas);
   void PaintActiveTabBackground(gfx::Canvas* canvas);
-  void PaintIcon(gfx::Canvas* canvas);
   SkBitmap DrawHoverGlowBitmap(int width, int height);
 
   // Returns the number of favicon-size elements that can fit in the tab's
