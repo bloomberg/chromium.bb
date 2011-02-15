@@ -3755,3 +3755,14 @@
    fun:_ZN16ObserverListBaseI19TabContentsObserverE7CompactEv
    fun:_ZN16ObserverListBaseI19TabContentsObserverE8IteratorD1Ev
 }
+{
+   bug_73048
+   Memcheck:Cond
+   fun:_ZN8chromeos16PowerLibraryImplD0Ev
+   fun:_ZN8chromeos11CrosLibrary7LibraryINS_12PowerLibraryEED1Ev
+   fun:_ZN8chromeos11CrosLibraryD1Ev
+   fun:_ZN4base25DefaultLazyInstanceTraitsIN8chromeos11CrosLibraryEE6DeleteEPv
+   fun:_ZN4base12LazyInstanceIN8chromeos11CrosLibraryENS_25DefaultLazyInstanceTraitsIS2_EEE6OnExitEPv
+   fun:_ZN4base13AtExitManager19ProcessCallbacksNowEv
+   fun:_ZN4base13AtExitManagerD1Ev
+}
