@@ -511,7 +511,7 @@ void BaseTab::ScheduleIconPaint() {
   if (IsPerformingCrashAnimation())
     bounds.set_height(height() - bounds.y());
   bounds.set_x(GetMirroredXForRect(bounds));
-  SchedulePaint(bounds, false);
+  SchedulePaintInRect(bounds, false);
 }
 
 // static
