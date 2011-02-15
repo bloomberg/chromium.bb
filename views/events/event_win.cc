@@ -32,6 +32,7 @@ ui::EventType EventTypeFromNative(NativeEvent native_event) {
   switch (native_event.message) {
     case WM_KEYDOWN:
     case WM_SYSKEYDOWN:
+    case WM_CHAR:
       return ui::ET_KEY_PRESSED;
     case WM_KEYUP:
     case WM_SYSKEYUP:
