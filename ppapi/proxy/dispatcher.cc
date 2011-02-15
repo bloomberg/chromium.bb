@@ -151,8 +151,7 @@ InterfaceList* InterfaceList::GetInstance() {
 
 Dispatcher::Dispatcher(base::ProcessHandle remote_process_handle,
                        GetInterfaceFunc local_get_interface)
-    : pp_module_(0),
-      remote_process_handle_(remote_process_handle),
+    : remote_process_handle_(remote_process_handle),
       test_sink_(NULL),
       disallow_trusted_interfaces_(false),  // TODO(brettw) make this settable.
       local_get_interface_(local_get_interface),
@@ -190,6 +189,10 @@ bool Dispatcher::OnMessageReceived(const IPC::Message& msg) {
     return handled;
   }
   return false;
+}
+
+void Dispatcher::OnChannelError() {
+  channel_.reset();
 }
 
 // static
@@ -242,7 +245,12 @@ const void* Dispatcher::GetLocalInterface(const char* interface) {
 bool Dispatcher::Send(IPC::Message* msg) {
   if (test_sink_)
     return test_sink_->Send(msg);
-  return channel_->Send(msg);
+  if (channel_.get())
+    return channel_->Send(msg);
+
+  // Remote side crashed, drop this message.
+  delete msg;
+  return false;
 }
 
 }  // namespace proxy

@@ -59,7 +59,7 @@ class Dispatcher : public IPC::Channel::Listener,
   typedef int32_t (*InitModuleFunc)(PP_Module, GetInterfaceFunc);
   typedef void (*ShutdownModuleFunc)();
 
-  ~Dispatcher();
+  virtual ~Dispatcher();
 
   // You must call this function before anything else. Returns true on success.
   bool InitWithChannel(MessageLoop* ipc_message_loop,
@@ -78,9 +78,6 @@ class Dispatcher : public IPC::Channel::Listener,
 
   VarSerializationRules* serialization_rules() const {
     return serialization_rules_.get();
-  }
-  PP_Module pp_module() const {
-    return pp_module_;
   }
 
   // Wrapper for calling the local GetInterface function.
@@ -103,8 +100,9 @@ class Dispatcher : public IPC::Channel::Listener,
 
   // IPC::Channel::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
+  virtual void OnChannelError();
 
-  // Will be NULL in some unit tests.
+  // Will be NULL in some unit tests and if the remote side has crashed.
   IPC::SyncChannel* channel() const {
     return channel_.get();
   }
@@ -132,19 +130,11 @@ class Dispatcher : public IPC::Channel::Listener,
   // Takes ownership of the given pointer, which must be on the heap.
   void SetSerializationRules(VarSerializationRules* var_serialization_rules);
 
-  void set_pp_module(PP_Module module) {
-    pp_module_ = module;
-  }
-
   bool disallow_trusted_interfaces() const {
     return disallow_trusted_interfaces_;
   }
 
  private:
-  // Set by the derived classed to indicate the module ID corresponding to
-  // this dispatcher.
-  PP_Module pp_module_;
-
   base::ProcessHandle remote_process_handle_;  // See getter above.
 
   // When we're unit testing, this will indicate the sink for the messages to
@@ -152,7 +142,8 @@ class Dispatcher : public IPC::Channel::Listener,
   // indicates that the channel should not be used.
   IPC::TestSink* test_sink_;
 
-  // Will be null for some tests when there is a test_sink_.
+  // Will be null for some tests when there is a test_sink_, and if the
+  // remote side has crashed.
   scoped_ptr<IPC::SyncChannel> channel_;
 
   bool disallow_trusted_interfaces_;

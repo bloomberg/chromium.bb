@@ -9,11 +9,11 @@
 #include "base/process_util.h"
 #include "base/rand_util.h"
 #include "chrome/common/child_process.h"
+#include "chrome/ppapi_plugin/plugin_process_dispatcher.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppp.h"
-#include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
 
 PpapiThread::PpapiThread()
@@ -97,7 +97,7 @@ void PpapiThread::OnMsgCreateChannel(base::ProcessHandle host_process_handle,
 bool PpapiThread::SetupRendererChannel(base::ProcessHandle host_process_handle,
                                        int renderer_id,
                                        IPC::ChannelHandle* handle) {
-  pp::proxy::PluginDispatcher* dispatcher = new pp::proxy::PluginDispatcher(
+  PluginProcessDispatcher* dispatcher = new PluginProcessDispatcher(
       host_process_handle, get_plugin_interface_);
 
   IPC::ChannelHandle plugin_handle;

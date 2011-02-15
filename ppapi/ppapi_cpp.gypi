@@ -85,6 +85,7 @@
         'c/private/ppb_flash_menu.h',
         'c/private/ppb_nacl_private.h',
         'c/private/ppb_pdf.h',
+        'c/private/ppb_proxy_private.h',
 
         # Deprecated interfaces.
         'c/dev/deprecated_bool.h',

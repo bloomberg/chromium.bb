@@ -780,6 +780,8 @@
         '../ppapi/ppapi.gyp:ppapi_proxy',
       ],
       'sources': [
+        'ppapi_plugin/plugin_process_dispatcher.cc',
+        'ppapi_plugin/plugin_process_dispatcher.h',
         'ppapi_plugin/ppapi_plugin_main.cc',
         'ppapi_plugin/ppapi_process.cc',
         'ppapi_plugin/ppapi_process.h',

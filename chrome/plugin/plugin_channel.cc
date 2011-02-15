@@ -23,6 +23,8 @@
 #include "ipc/ipc_channel_posix.h"
 #endif
 
+namespace {
+
 class PluginReleaseTask : public Task {
  public:
   void Run() {
@@ -31,8 +33,9 @@ class PluginReleaseTask : public Task {
 };
 
 // How long we wait before releasing the plugin process.
-static const int kPluginReleaseTimeMS = 5 * 60 * 1000;  // 5 minutes
+const int kPluginReleaseTimeMs = 5 * 60 * 1000;  // 5 minutes
 
+}  // namespace
 
 // If a sync call to the renderer results in a modal dialog, we need to have a
 // way to know so that we can run a nested message loop to simulate what would
@@ -133,7 +136,6 @@ class PluginChannel::MessageFilter : public IPC::ChannelProxy::MessageFilter {
   IPC::Channel* channel_;
 };
 
-
 PluginChannel* PluginChannel::GetPluginChannel(int renderer_id,
                                                MessageLoop* ipc_message_loop) {
   // Map renderer ID to a (single) channel to that process.
@@ -176,7 +178,7 @@ PluginChannel::~PluginChannel() {
     base::CloseProcessHandle(renderer_handle_);
 
   MessageLoop::current()->PostDelayedTask(FROM_HERE, new PluginReleaseTask(),
-                                          kPluginReleaseTimeMS);
+                                          kPluginReleaseTimeMs);
 }
 
 bool PluginChannel::Send(IPC::Message* msg) {

@@ -314,6 +314,8 @@
         '../plugins/ppapi/ppb_opengles_impl.h',
         '../plugins/ppapi/ppb_pdf_impl.cc',
         '../plugins/ppapi/ppb_pdf_impl.h',
+        '../plugins/ppapi/ppb_proxy_impl.cc',
+        '../plugins/ppapi/ppb_proxy_impl.h',
         '../plugins/ppapi/ppb_scrollbar_impl.cc',
         '../plugins/ppapi/ppb_scrollbar_impl.h',
         '../plugins/ppapi/ppb_surface_3d_impl.cc',

@@ -129,6 +129,8 @@ bool PluginDispatcher::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void PluginDispatcher::OnChannelError() {
+  Dispatcher::OnChannelError();
+
   // The renderer has crashed. This channel and all instances associated with
   // it are no longer valid.
   ForceFreeAllInstances();
@@ -168,7 +170,7 @@ InstanceData* PluginDispatcher::GetInstanceData(PP_Instance instance) {
 
 #if defined(OS_POSIX)
 int PluginDispatcher::GetRendererFD() {
-  if (renderer_fd_ == -1)
+  if (renderer_fd_ == -1 && channel())
     renderer_fd_ = channel()->GetClientFileDescriptor();
   return renderer_fd_;
 }
@@ -183,7 +185,21 @@ void PluginDispatcher::CloseRendererFD() {
 #endif
 
 void PluginDispatcher::ForceFreeAllInstances() {
-  // TODO(brettw) implement freeing instances on crash.
+  if (!g_instance_to_dispatcher)
+    return;
+
+  // Iterating will remove each item from the map, so we need to make a copy
+  // to avoid things changing out from under is.
+  InstanceToDispatcherMap temp_map = *g_instance_to_dispatcher;
+  for (InstanceToDispatcherMap::iterator i = temp_map.begin();
+       i != temp_map.end(); ++i) {
+    if (i->second == this) {
+      // Synthesize an "instance destroyed" message, this will notify the
+      // plugin and also remove it from our list of tracked plugins.
+      OnMessageReceived(
+          PpapiMsg_PPPInstance_DidDestroy(INTERFACE_ID_PPP_INSTANCE, i->first));
+    }
+  }
 }
 
 void PluginDispatcher::OnMsgSupportsInterface(

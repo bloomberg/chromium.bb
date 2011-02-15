@@ -7,6 +7,7 @@
 #include <map>
 
 #include "base/logging.h"
+#include "ppapi/c/private/ppb_proxy_private.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/proxy/host_var_serialization_rules.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -24,8 +25,9 @@ InstanceToDispatcherMap* g_instance_to_dispatcher = NULL;
 HostDispatcher::HostDispatcher(base::ProcessHandle remote_process_handle,
                                PP_Module module,
                                GetInterfaceFunc local_get_interface)
-    : Dispatcher(remote_process_handle, local_get_interface) {
-  set_pp_module(module);
+    : Dispatcher(remote_process_handle, local_get_interface),
+      pp_module_(module),
+      ppb_proxy_(NULL) {
   const PPB_Var_Deprecated* var_interface =
       static_cast<const PPB_Var_Deprecated*>(
           local_get_interface(PPB_VAR_DEPRECATED_INTERFACE));
@@ -109,7 +111,10 @@ bool HostDispatcher::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void HostDispatcher::OnChannelError() {
-  // TODO(brettw) plugin has crashed, handle this.
+  Dispatcher::OnChannelError();  // Stop using the channel.
+
+  // Tell the host about the crash so it can clean up.
+  GetPPBProxy()->PluginCrashed(pp_module());
 }
 
 const void* HostDispatcher::GetProxiedInterface(const std::string& interface) {
@@ -135,6 +140,14 @@ const void* HostDispatcher::GetProxiedInterface(const std::string& interface) {
   if (supported)
     return info->interface;
   return NULL;
+}
+
+const PPB_Proxy_Private* HostDispatcher::GetPPBProxy() {
+  if (!ppb_proxy_) {
+    ppb_proxy_ = reinterpret_cast<const PPB_Proxy_Private*>(
+        GetLocalInterface(PPB_PROXY_PRIVATE_INTERFACE));
+  }
+  return ppb_proxy_;
 }
 
 }  // namespace proxy

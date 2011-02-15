@@ -417,6 +417,18 @@ void PluginInstance::CommitBackingTexture() {
     container_->commitBackingTexture();
 }
 
+void PluginInstance::InstanceCrashed() {
+  // Force free all resources and vars.
+  ResourceTracker::Get()->InstanceCrashed(pp_instance());
+
+  // Free any associated graphics.
+  SetFullscreen(false);
+  bound_graphics_ = NULL;
+  InvalidateRect(gfx::Rect());
+
+  // TODO(brettw) show a crashed plugin screen.
+}
+
 PP_Var PluginInstance::GetWindowObject() {
   if (!container_)
     return PP_MakeUndefined();

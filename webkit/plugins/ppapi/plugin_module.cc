@@ -52,6 +52,7 @@
 #include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/c/private/ppb_flash_menu.h"
 #include "ppapi/c/private/ppb_pdf.h"
+#include "ppapi/c/private/ppb_proxy_private.h"
 #include "ppapi/c/private/ppb_nacl_private.h"
 #include "ppapi/c/trusted/ppb_image_data_trusted.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
@@ -74,6 +75,7 @@
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 #include "webkit/plugins/ppapi/ppb_nacl_private_impl.h"
 #include "webkit/plugins/ppapi/ppb_pdf_impl.h"
+#include "webkit/plugins/ppapi/ppb_proxy_impl.h"
 #include "webkit/plugins/ppapi/ppb_scrollbar_impl.h"
 #include "webkit/plugins/ppapi/ppb_transport_impl.h"
 #include "webkit/plugins/ppapi/ppb_url_loader_impl.h"
@@ -260,6 +262,8 @@ const void* GetInterface(const char* name) {
     return PluginInstance::GetInterface();
   if (strcmp(name, PPB_PDF_INTERFACE) == 0)
     return PPB_PDF_Impl::GetInterface();
+  if (strcmp(name, PPB_PROXY_PRIVATE_INTERFACE) == 0)
+    return PPB_Proxy_Impl::GetInterface();
   if (strcmp(name, PPB_SCROLLBAR_DEV_INTERFACE) == 0)
     return PPB_Scrollbar_Impl::GetInterface();
   if (strcmp(name, PPB_TRANSPORT_DEV_INTERFACE) == 0)
@@ -470,6 +474,13 @@ void PluginModule::InstanceDeleted(PluginInstance* instance) {
 
 scoped_refptr<CallbackTracker> PluginModule::GetCallbackTracker() {
   return callback_tracker_;
+}
+
+void PluginModule::PluginCrashed() {
+  // Notify all instances that they crashed.
+  for (PluginInstanceSet::iterator i = instances_.begin();
+       i != instances_.end(); ++i)
+    (*i)->InstanceCrashed();
 }
 
 bool PluginModule::InitializeModule() {

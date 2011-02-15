@@ -15,6 +15,7 @@
 #include "ppapi/proxy/dispatcher.h"
 #include "ppapi/proxy/plugin_var_tracker.h"
 
+struct PPB_Proxy_Private;
 struct PPB_Var_Deprecated;
 
 namespace base {
@@ -48,6 +49,14 @@ class HostDispatcher : public Dispatcher {
                              HostDispatcher* dispatcher);
   static void RemoveForInstance(PP_Instance instance);
 
+  // Returns the host's notion of our PP_Module. This will be different than
+  // the plugin's notion of its PP_Module because the plugin process may be
+  // used by multiple renderer processes.
+  //
+  // Use this value instead of a value from the plugin whenever talking to the
+  // host.
+  PP_Module pp_module() const { return pp_module_; }
+
   // Dispatcher overrides.
   virtual bool IsPlugin() const;
 
@@ -61,8 +70,13 @@ class HostDispatcher : public Dispatcher {
   // given interface isn't supported by the plugin or the proxy.
   const void* GetProxiedInterface(const std::string& interface);
 
+  // Returns the proxy interface for talking to the implementation.
+  const PPB_Proxy_Private* GetPPBProxy();
+
  private:
   friend class HostDispatcherTest;
+
+  PP_Module pp_module_;
 
   enum PluginInterfaceSupport {
     INTERFACE_UNQUERIED = 0,  // Must be 0 so memset(0) will clear the list.
@@ -74,6 +88,9 @@ class HostDispatcher : public Dispatcher {
   // All target proxies currently created. These are ones that receive
   // messages. They are created on demand when we receive messages.
   scoped_ptr<InterfaceProxy> target_proxies_[INTERFACE_ID_COUNT];
+
+  // Lazily initialized, may be NULL. Use GetPPBProxy().
+  const PPB_Proxy_Private* ppb_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(HostDispatcher);
 };

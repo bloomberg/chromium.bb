@@ -122,6 +122,10 @@ class PluginModule : public base::RefCounted<PluginModule>,
 
   scoped_refptr<CallbackTracker> GetCallbackTracker();
 
+  // Called when running out of process and the plugin crashed. This will
+  // release relevant resources and update all affected instances.
+  void PluginCrashed();
+
  private:
   // Calls the InitializeModule entrypoint. The entrypoint must have been
   // set and the plugin must not be out of process (we don't maintain

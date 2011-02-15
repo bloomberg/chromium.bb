@@ -38,7 +38,7 @@ class PluginDispatcher : public Dispatcher {
   // You must call Dispatcher::InitWithChannel after the constructor.
   PluginDispatcher(base::ProcessHandle remote_process_handle,
                    GetInterfaceFunc get_interface);
-  ~PluginDispatcher();
+  virtual ~PluginDispatcher();
 
   // The plugin side maintains a mapping from PP_Instance to Dispatcher so
   // that we can send the messages to the right channel if there are multiple

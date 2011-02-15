@@ -122,6 +122,9 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   // rendering up to an offscreen SwapBuffers are visible.
   void CommitBackingTexture();
 
+  // Called when the out-of-process plugin implementing this instance crashed.
+  void InstanceCrashed();
+
   // PPB_Instance implementation.
   PP_Var GetWindowObject();
   PP_Var GetOwnerElementObject();
