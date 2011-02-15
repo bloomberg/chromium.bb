@@ -152,7 +152,7 @@
         'chrome_frame_helper_util.cc',
         'chrome_frame_helper_util.h',
         'chrome_frame_helper_version.rc',
-        'chrome_tab.h',
+        '<(SHARED_INTERMEDIATE_DIR)/chrome_tab.h',
         'chrome_tab.idl',
         'event_hooker.cc',
         'event_hooker.h',

@@ -276,7 +276,6 @@
         'proxy/ppapi_proxy_test.cc',
         'proxy/ppapi_proxy_test.h',
         'proxy/serialized_var_unittest.cc',
-        'proxy/serialized_var_unittest.h',
       ],
     },
   ],
