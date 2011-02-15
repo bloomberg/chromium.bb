@@ -15,7 +15,7 @@ import naclimc
 NACL_PLUGIN_BOUND_SOCK = 3
 
 # Descriptor for a connected socket that the NaCl browser plugin sets up
-NACL_PLUGIN_ASYNC_RECEIVE_FD = 6
+NACL_PLUGIN_ASYNC_SEND_FD = 7
 
 
 def MakeFileHandlePair():
@@ -74,7 +74,7 @@ class TestStartupMessage(unittest.TestCase):
          # The remaining arguments are not used, because they are
          # overridden by the message we send:
          "this-arg-is-not-used"],
-        [NACL_PLUGIN_BOUND_SOCK, NACL_PLUGIN_ASYNC_RECEIVE_FD],
+        [NACL_PLUGIN_BOUND_SOCK, NACL_PLUGIN_ASYNC_SEND_FD],
         stdout=write_fh)
     argv = ["unused-argv0", "--library-path", lib_dir,
             os.environ["HELLO_WORLD_PROG"]]
@@ -90,7 +90,7 @@ class TestStartupMessage(unittest.TestCase):
         ["-s", "-a",
          "--", os.path.join(lib_dir, "runnable-ld.so"),
          "this-arg-is-not-used"],
-        [NACL_PLUGIN_BOUND_SOCK, NACL_PLUGIN_ASYNC_RECEIVE_FD],
+        [NACL_PLUGIN_BOUND_SOCK, NACL_PLUGIN_ASYNC_SEND_FD],
         stderr=write_fh)
     if message is not None:
       fd2.imc_sendmsg(message, tuple([]))
