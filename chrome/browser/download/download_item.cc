@@ -442,8 +442,7 @@ void DownloadItem::OnSafeDownloadFinished(DownloadFileManager* file_manager) {
         BrowserThread::FILE, FROM_HERE,
         NewRunnableMethod(
             file_manager, &DownloadFileManager::OnFinalDownloadName,
-            id(), GetTargetFilePath(), false,
-            make_scoped_refptr(download_manager_)));
+            id(), GetTargetFilePath(), make_scoped_refptr(download_manager_)));
     return;
   }
 

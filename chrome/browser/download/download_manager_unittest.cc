@@ -144,7 +144,6 @@ const struct {
   FilePath::StringType suggested_path;
   bool is_dangerous;
   bool finish_before_rename;
-  bool will_delete_crdownload;
   int expected_rename_count;
 } kDownloadRenameCases[] = {
   // Safe download, download finishes BEFORE file name determined.
@@ -153,19 +152,16 @@ const struct {
   { FILE_PATH_LITERAL("foo.zip"),
     false,
     true,
-    false,
     2, },
   // Dangerous download, download finishes BEFORE file name determined.
   // Needs to be renamed only once.
   { FILE_PATH_LITERAL("Unconfirmed xxx.crdownload"),
     true,
     true,
-    false,
     1, },
   // Safe download, download finishes AFTER file name determined.
   // Needs to be renamed twice.
   { FILE_PATH_LITERAL("foo.zip"),
-    false,
     false,
     false,
     2, },
@@ -173,7 +169,6 @@ const struct {
   // Needs to be renamed only once.
   { FILE_PATH_LITERAL("Unconfirmed xxx.crdownload"),
     true,
-    false,
     false,
     1, },
 };
@@ -184,7 +179,6 @@ class MockDownloadFile : public DownloadFile {
       : DownloadFile(info, NULL), renamed_count_(0) { }
   virtual ~MockDownloadFile() { Destructed(); }
   MOCK_METHOD2(Rename, bool(const FilePath&, bool));
-  MOCK_METHOD0(DeleteCrDownload, bool());
   MOCK_METHOD0(Destructed, void());
 
   bool TestMultipleRename(
@@ -239,9 +233,6 @@ TEST_F(DownloadManagerTest, DownloadRenameTest) {
               download, &MockDownloadFile::TestMultipleRename,
               2, true, new_path))));
     }
-
-    if (kDownloadRenameCases[i].will_delete_crdownload)
-      EXPECT_CALL(*download, DeleteCrDownload()).Times(1);
 
     download_manager_->CreateDownloadItem(info);
 

@@ -305,19 +305,15 @@ void DownloadFileManager::OnIntermediateDownloadName(
 // The DownloadManager in the UI thread has provided a final name for the
 // download specified by 'id'. Rename the in progress download, and remove it
 // from our table if it has been completed or cancelled already.
-// |need_delete_crdownload| indicates if we explicitly delete an intermediate
-// .crdownload file or not.
 //
-// There are 3 possible rename cases where this method can be called:
-// 1. tmp -> foo            (need_delete_crdownload=T)
-// 2. foo.crdownload -> foo (need_delete_crdownload=F)
-// 3. tmp-> Unconfirmed.xxx.crdownload (need_delete_crdownload=F)
+// There are 2 possible rename cases where this method can be called:
+// 1. foo.crdownload -> foo
+// 2. tmp-> Unconfirmed.xxx.crdownload
+// We don't call this function before the download is complete.
 void DownloadFileManager::OnFinalDownloadName(
-    int id, const FilePath& full_path, bool need_delete_crdownload,
-    DownloadManager* download_manager) {
+    int id, const FilePath& full_path, DownloadManager* download_manager) {
   VLOG(20) << __FUNCTION__ << "()" << " id = " << id
-           << " full_path = \"" << full_path.value() << "\""
-           << " need_delete_crdownload = " << need_delete_crdownload;
+           << " full_path = \"" << full_path.value() << "\"";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   DownloadFile* download = GetDownloadFile(id);
@@ -340,9 +336,6 @@ void DownloadFileManager::OnFinalDownloadName(
     // this code runs, something happened that prevents us from renaming.
     CancelDownloadOnRename(id);
   }
-
-  if (need_delete_crdownload)
-    download->DeleteCrDownload();
 
   // If the download has completed before we got this final name, we remove it
   // from our in progress map.

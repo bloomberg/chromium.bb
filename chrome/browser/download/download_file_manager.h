@@ -93,10 +93,7 @@ class DownloadFileManager
 
   // The download manager has provided a final name for a download. Sent from
   // the UI thread and run on the download thread.
-  // |need_delete_crdownload| indicates if we explicitly delete the intermediate
-  // .crdownload file or not.
   void OnFinalDownloadName(int id, const FilePath& full_path,
-                           bool need_delete_crdownload,
                            DownloadManager* download_manager);
 
  private:

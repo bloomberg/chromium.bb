@@ -32,12 +32,6 @@ DownloadFile::~DownloadFile() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 }
 
-bool DownloadFile::DeleteCrDownload() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  FilePath crdownload = download_util::GetCrDownloadPath(full_path_);
-  return file_util::Delete(crdownload, false);
-}
-
 void DownloadFile::CancelDownloadRequest(ResourceDispatcherHost* rdh) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   BrowserThread::PostTask(

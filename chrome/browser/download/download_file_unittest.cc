@@ -259,37 +259,3 @@ TEST_F(DownloadFileTest, RenameFileNoFinal) {
 
   DestroyDownloadFile(&download_file_, 1);
 }
-
-// Test that DeleteCrDownload deletes the file specified in DonloadFile, but
-// with '.crdownload' appended to the name.
-TEST_F(DownloadFileTest, DeleteCrDownload) {
-  // Create and delete a temporary file, to use its file name.
-  FilePath primary_path;
-  EXPECT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(),
-                                                  &primary_path));
-  file_util::Delete(primary_path, false);
-  EXPECT_FALSE(file_util::PathExists(primary_path));
-
-  // Create a '.crdownload' version of the file.
-  FilePath crdownload_path(download_util::GetCrDownloadPath(primary_path));
-  FILE* f = file_util::OpenFile(crdownload_path, "w");
-  file_util::CloseFile(f);
-  EXPECT_TRUE(file_util::PathExists(crdownload_path));
-
-  // Create a DownloadFile with the temp file name.
-  scoped_ptr<DownloadFile> checked_file;
-  CreateDownloadFile(&checked_file, 3);
-
-  ASSERT_TRUE(checked_file->Initialize(false));
-  EXPECT_TRUE(checked_file->Rename(primary_path, false));
-  FilePath renamed_path(checked_file->full_path());
-  EXPECT_TRUE(file_util::PathExists(renamed_path));
-
-  // Delete the '.crdownload' version.
-  EXPECT_TRUE(checked_file->DeleteCrDownload());
-  EXPECT_FALSE(file_util::PathExists(crdownload_path));
-
-  checked_file->Finish();
-
-  DestroyDownloadFile(&checked_file, 3);
-}

@@ -474,8 +474,7 @@ void DownloadManager::AttachDownloadItem(DownloadCreateInfo* info,
         BrowserThread::FILE, FROM_HERE,
         NewRunnableMethod(
             file_manager_, &DownloadFileManager::OnFinalDownloadName,
-            download->id(), target_path, false,
-            make_scoped_refptr(this)));
+            download->id(), target_path, make_scoped_refptr(this)));
   } else {
     // The download is a safe download.  We need to
     // rename it to its intermediate '.crdownload' path.  The final
