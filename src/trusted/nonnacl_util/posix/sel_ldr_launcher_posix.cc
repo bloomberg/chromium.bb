@@ -30,7 +30,6 @@ namespace nacl {
 
 SelLdrLauncher::~SelLdrLauncher() {
   CloseHandlesAfterLaunch();
-  NaClDescSafeUnref(socket_address_);
   if (kInvalidHandle != child_process_) {
     int status;
     waitpid(child_process_, &status, 0);
@@ -38,7 +37,6 @@ SelLdrLauncher::~SelLdrLauncher() {
   if (kInvalidHandle != channel_) {
     Close(channel_);
   }
-  delete sel_ldr_locator_;
 }
 
 

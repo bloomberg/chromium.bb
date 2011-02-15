@@ -141,7 +141,7 @@ int main(int argc, char* argv[]) {
 
   NaClCommandLoop loop(channel.client,
                        &channel,
-                       launcher.socket_address());
+                       launcher.socket_address()->desc());
 
   //
   // Pepper sample commands

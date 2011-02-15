@@ -25,14 +25,12 @@ namespace nacl {
 
 SelLdrLauncher::~SelLdrLauncher() {
   CloseHandlesAfterLaunch();
-  NaClDescSafeUnref(socket_address_);
   if (kInvalidHandle != child_process_) {
     CloseHandle(child_process_);
   }
   if (kInvalidHandle != channel_) {
     Close(channel_);
   }
-  delete sel_ldr_locator_;
 }
 
 nacl::string SelLdrLauncher::GetSelLdrPathName() {

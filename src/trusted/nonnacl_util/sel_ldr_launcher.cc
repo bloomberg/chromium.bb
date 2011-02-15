@@ -80,68 +80,54 @@ static DescWrapper* GetSockAddr(DescWrapper* desc) {
 
 bool SelLdrLauncher::OpenSrpcChannels(NaClSrpcChannel* command,
                                       NaClSrpcChannel* untrusted) {
-  int start_result;
-  bool retval = false;
-  DescWrapper* channel_desc = NULL;
-  DescWrapper* sock_addr = NULL;
-  DescWrapper* command_desc = NULL;
-  DescWrapper* untrusted_desc = NULL;
-
   DescWrapperFactory factory;
-  channel_desc = factory.MakeImcSock(channel_);
-  if (NULL == channel_desc) {
-    goto done;
+  socket_address_.reset(factory.MakeImcSock(channel_));
+  if (socket_address_ == NULL) {
+    return false;
   }
+
   // channel_desc now has ownership of channel_, so we get rid of our
   // "reference" to it.
   channel_ = kInvalidHandle;
 
   // Get the socket address from the descriptor.
-  sock_addr = GetSockAddr(channel_desc);
-  if (NULL == sock_addr) {
+  scoped_ptr<DescWrapper> sock_addr(GetSockAddr(socket_address_.get()));
+  if (sock_addr == NULL) {
     NaClLog(4, "SelLdrLauncher::OpenSrpcChannels: GetSockAddr failed\n");
-    goto done;
+    return false;
   }
-  // Save the socket address for other uses.
-  socket_address_ = NaClDescRef(sock_addr->desc());
 
   // The first connection goes to the trusted command channel.
-  command_desc = sock_addr->Connect();
-  if (NULL == command_desc) {
+  scoped_ptr<DescWrapper> command_desc(sock_addr->Connect());
+  if (command_desc == NULL) {
     NaClLog(4, "SelLdrLauncher::OpenSrpcChannels: Connect failed\n");
-    goto done;
+    return false;
   }
   // Start the SRPC client to communicate with the trusted command channel.
   // SRPC client takes ownership of command_desc.
   if (!NaClSrpcClientCtor(command, command_desc->desc())) {
-    goto done;
+    return false;
   }
 
-  // Start untrusted code module.
+  // Start untrusted code module
+  int start_result;
   if (NACL_SRPC_RESULT_OK !=
       NaClSrpcInvokeBySignature(command, "start_module::i", &start_result)) {
-    goto done;
+    return false;
   }
 
   // The second connection goes to the service itself.
-  untrusted_desc = sock_addr->Connect();
-  if (NULL == untrusted_desc) {
-    goto done;
+  scoped_ptr<DescWrapper> untrusted_desc(sock_addr->Connect());
+  if (untrusted_desc ==  NULL) {
+    return false;
   }
   // Start the SRPC client to communicate with the untrusted service
   // SRPC client takes ownership of untrusted_desc.
   if (!NaClSrpcClientCtor(untrusted, untrusted_desc->desc())) {
-    goto done;
+    return false;
   }
-  retval = true;
 
- done:
-  delete command_desc;
-  delete untrusted_desc;
-  delete channel_desc;
-  delete sock_addr;
-
-  return retval;
+  return true;
 }
 
 

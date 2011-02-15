@@ -12,15 +12,16 @@
 
 #include <vector>
 
+#include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
+#include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 
 struct NaClSrpcChannel;
 struct NaClDesc;
 
 namespace nacl {
-
 // TODO(robertm): Move this to new header if it becomes more popular.
 template <class T> nacl::string ToString(const T& t) {
   nacl::stringstream ss;
@@ -126,7 +127,7 @@ struct SelLdrLauncher {
   nacl::string application_file() const { return application_file_; }
 
   // Returns the socket address used to connect to the sel_ldr.
-  struct NaClDesc* socket_address() const { return socket_address_; }
+  DescWrapper* socket_address() const { return socket_address_.get(); }
 
   /////////////////////////////////////////////////////////////////////////////
   // Browser-based start-up (Chrome only):
@@ -136,7 +137,8 @@ struct SelLdrLauncher {
   // RPC after start-up.
   /////////////////////////////////////////////////////////////////////////////
 
-  bool StartFromBrowser(const char* url, int socket_count,
+  bool StartFromBrowser(const char* url,
+                        int socket_count,
                         Handle* result_sockets);
 
  private:
@@ -157,9 +159,8 @@ struct SelLdrLauncher {
   std::vector<Handle> close_after_launch_;
 
   // The socket address returned from sel_ldr for connects.
-  struct NaClDesc* socket_address_;
-
-  SelLdrLocator* sel_ldr_locator_;
+  scoped_ptr<DescWrapper> socket_address_;
+  scoped_ptr<SelLdrLocator> sel_ldr_locator_;
 };
 
 }  // namespace nacl
