@@ -282,8 +282,8 @@ int32_t PPB_Audio_Proxy::GetAudioConnectedHandles(
       FALSE, DUPLICATE_CLOSE_SOURCE);
 #else
   // On Posix, the socket handle will be auto-duplicated when we send the
-  // FileDescriptor. Set AutoClose since we don't need the handle any more.
-  *foreign_socket_handle = base::FileDescriptor(socket_handle, true);
+  // FileDescriptor. Don't set AutoClose since this is not our handle.
+  *foreign_socket_handle = base::FileDescriptor(socket_handle, false);
 #endif
 
   // Get the shared memory for the buffer.
