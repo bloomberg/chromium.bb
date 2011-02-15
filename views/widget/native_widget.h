@@ -5,7 +5,7 @@
 #ifndef VIEWS_WIDGET_NATIVE_WIDGET_H_
 #define VIEWS_WIDGET_NATIVE_WIDGET_H_
 
-#include "ui/views/native_types.h"
+#include "views/native_types.h"
 
 namespace gfx{
 class Path;
@@ -17,7 +17,7 @@ namespace internal {
 class NativeWidgetListener;
 }
 class View;
-class Widget;
+class WidgetImpl;
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidget interface
@@ -44,7 +44,7 @@ class NativeWidget {
   // NativeView, or NULL if there is no NativeWidget that contains it.
   static NativeWidget* GetTopLevelNativeWidget(gfx::NativeView native_view);
 
-  // See Widget for documentation and notes.
+  // See WidgetImpl for documentation and notes.
   virtual void InitWithNativeViewParent(gfx::NativeView parent,
                                         const gfx::Rect& bounds) = 0;
   virtual void SetNativeWindowProperty(const char* name, void* value) = 0;
@@ -69,9 +69,11 @@ class NativeWidget {
   virtual void InvalidateRect(const gfx::Rect& invalid_rect) = 0;
   virtual void Paint() = 0;
   virtual void FocusNativeView(gfx::NativeView native_view) = 0;
-  virtual Widget* GetWidget() const = 0;
+  virtual WidgetImpl* GetWidgetImpl() = 0;
+  virtual const WidgetImpl* GetWidgetImpl() const = 0;
 };
 
 }  // namespace views
 
 #endif  // VIEWS_WIDGET_NATIVE_WIDGET_H_
+

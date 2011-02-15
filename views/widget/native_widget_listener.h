@@ -5,8 +5,6 @@
 #ifndef VIEWS_WIDGET_NATIVE_WIDGET_LISTENER_H_
 #define VIEWS_WIDGET_NATIVE_WIDGET_LISTENER_H_
 
-#include "ui/gfx/native_widget_types.h"
-
 namespace gfx {
 class Canvas;
 class Point;
@@ -53,7 +51,8 @@ class NativeWidgetListener {
 
   virtual void OnWorkAreaChanged() = 0;
 
-  virtual WidgetImpl* GetWidgetImpl() const = 0;
+  virtual WidgetImpl* GetWidgetImpl() = 0;
+  virtual const WidgetImpl* GetWidgetImpl() const = 0;
 };
 
 }  // namespace internal
