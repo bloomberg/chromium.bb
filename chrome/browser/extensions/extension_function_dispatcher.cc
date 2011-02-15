@@ -44,6 +44,7 @@
 #include "chrome/browser/extensions/extension_test_api.h"
 #include "chrome/browser/extensions/extension_tts_api.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
+#include "chrome/browser/extensions/extension_webrequest_api.h"
 #include "chrome/browser/extensions/extension_webstore_private_api.h"
 #include "chrome/browser/extensions/extensions_quota_service.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -294,6 +295,9 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<PromptBrowserLoginFunction>();
   RegisterFunction<BeginInstallFunction>();
   RegisterFunction<CompleteInstallFunction>();
+
+  // WebRequest.
+  RegisterFunction<WebRequestAddEventListener>();
 }
 
 void FactoryRegistry::GetAllNames(std::vector<std::string>* names) {

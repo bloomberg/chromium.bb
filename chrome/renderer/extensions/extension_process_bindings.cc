@@ -13,6 +13,7 @@
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
 #include "base/scoped_ptr.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -231,6 +232,8 @@ class ExtensionImpl : public ExtensionBase {
       return v8::FunctionTemplate::New(IsExtensionProcess);
     } else if (name->Equals(v8::String::New("IsIncognitoProcess"))) {
       return v8::FunctionTemplate::New(IsIncognitoProcess);
+    } else if (name->Equals(v8::String::New("GetUniqueSubEventName"))) {
+      return v8::FunctionTemplate::New(GetUniqueSubEventName);
     }
 
     return ExtensionBase::GetNativeFunction(name);
@@ -284,6 +287,18 @@ class ExtensionImpl : public ExtensionBase {
   static v8::Handle<v8::Value> GetNextRequestId(const v8::Arguments& args) {
     static int next_request_id = 0;
     return v8::Integer::New(next_request_id++);
+  }
+
+  // Attach an event name to an object.
+  static v8::Handle<v8::Value> GetUniqueSubEventName(
+      const v8::Arguments& args) {
+    static int next_event_id = 0;
+    DCHECK(args.Length() == 1);
+    DCHECK(args[0]->IsString());
+    std::string event_name(*v8::String::AsciiValue(args[0]));
+    std::string unique_event_name =
+        event_name + "/" + base::IntToString(++next_event_id);
+    return v8::String::New(unique_event_name.c_str());
   }
 
   // Creates a new messaging channel to the tab with the given ID.
