@@ -619,7 +619,7 @@ TabContentsWrapper* InstantLoader::ReleasePreviewContents(
           Source<NavigationController>(&preview_contents_->controller()));
 #endif
     }
-    preview_contents_->set_delegate(NULL);
+    preview_contents_->tab_contents()->set_delegate(NULL);
     preview_tab_contents_delegate_->Reset();
     ready_ = false;
   }
