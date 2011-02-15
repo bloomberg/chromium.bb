@@ -138,8 +138,9 @@ enum {
   kExtensionContextOptions = 2,
   kExtensionContextDisable = 3,
   kExtensionContextUninstall = 4,
-  kExtensionContextManage = 6,
-  kExtensionContextInspect = 7
+  kExtensionContextHide = 5,
+  kExtensionContextManage = 7,
+  kExtensionContextInspect = 8
 };
 
 int CurrentTabId() {
@@ -168,6 +169,7 @@ int CurrentTabId() {
         l10n_util::GetNSStringWithFixup(IDS_EXTENSIONS_OPTIONS),
         l10n_util::GetNSStringWithFixup(IDS_EXTENSIONS_DISABLE),
         l10n_util::GetNSStringWithFixup(IDS_EXTENSIONS_UNINSTALL),
+        l10n_util::GetNSStringWithFixup(IDS_EXTENSIONS_HIDE_BUTTON),
         [NSMenuItem separatorItem],
         l10n_util::GetNSStringWithFixup(IDS_MANAGE_EXTENSIONS),
         nil];
@@ -189,6 +191,16 @@ int CurrentTabId() {
           // Setting the target to nil will disable the item. For some reason
           // setEnabled:NO does not work.
           [itemObj setTarget:nil];
+        } else {
+          [itemObj setTarget:self];
+        }
+
+        // Only browser actions can have their button hidden. Page actions
+        // should never show the "Hide" menu item.
+        if ([itemObj tag] == kExtensionContextHide &&
+            !extension->browser_action()) {
+          [itemObj setTarget:nil];  // Item is disabled.
+          [itemObj setHidden:YES];  // Item is hidden.
         } else {
           [itemObj setTarget:self];
         }
@@ -256,6 +268,11 @@ int CurrentTabId() {
     }
     case kExtensionContextUninstall: {
       uninstaller_.reset(new AsyncUninstaller(extension_, profile_));
+      break;
+    }
+    case kExtensionContextHide: {
+      ExtensionService* extension_service = profile_->GetExtensionService();
+      extension_service->SetBrowserActionVisibility(extension_, false);
       break;
     }
     case kExtensionContextManage: {
