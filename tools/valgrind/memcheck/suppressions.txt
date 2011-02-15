@@ -2916,7 +2916,7 @@
    Memcheck:Value4
    fun:modp_b64_encode
    fun:_ZN4base12Base64EncodeERKSsPSs
-   fun:_ZN11dom_ui_util15GetImageDataUrlERK8SkBitmap
+   fun:_ZN11web_ui_util15GetImageDataUrlERK8SkBitmap
    ...
    fun:_ZN22InternetOptionsHandler18GetLocalizedValuesEP15DictionaryValue
    fun:_ZN9OptionsUI23AddOptionsPageUIHandlerEP15DictionaryValueP20OptionsPageUIHandler

@@ -2948,7 +2948,7 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
       request.httpMethod() == "GET" && !url.SchemeIs(chrome::kAboutScheme)) {
     bool send_referrer = false;
     bool should_fork =
-        BindingsPolicy::is_dom_ui_enabled(enabled_bindings_) ||
+        BindingsPolicy::is_web_ui_enabled(enabled_bindings_) ||
         frame->isViewSourceModeEnabled() ||
         url.SchemeIs(chrome::kViewSourceScheme);
 
@@ -3440,7 +3440,7 @@ void RenderView::didClearWindowObject(WebFrame* frame) {
   if (BindingsPolicy::is_dom_automation_enabled(enabled_bindings_))
     BindDOMAutomationController(frame);
   GURL frame_url = frame->url();
-  if (BindingsPolicy::is_dom_ui_enabled(enabled_bindings_) &&
+  if (BindingsPolicy::is_web_ui_enabled(enabled_bindings_) &&
       (frame_url.SchemeIs(chrome::kChromeUIScheme) ||
       frame_url.SchemeIs(chrome::kGearsScheme) ||
       frame_url.SchemeIs(chrome::kDataScheme))) {
@@ -4621,7 +4621,7 @@ void RenderView::OnAllowBindings(int enabled_bindings_flags) {
 
 void RenderView::OnSetWebUIProperty(const std::string& name,
                                     const std::string& value) {
-  DCHECK(BindingsPolicy::is_dom_ui_enabled(enabled_bindings_));
+  DCHECK(BindingsPolicy::is_web_ui_enabled(enabled_bindings_));
   GetWebUIBindings()->SetProperty(name, value);
 }
 

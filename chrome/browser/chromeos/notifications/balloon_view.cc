@@ -191,7 +191,7 @@ BalloonViewImpl::BalloonViewImpl(bool sticky, bool controls, bool dom_ui)
       sticky_(sticky),
       controls_(controls),
       closed_(false),
-      dom_ui_(dom_ui) {
+      web_ui_(dom_ui) {
   // This object is not to be deleted by the views hierarchy,
   // as it is owned by the balloon.
   set_parent_owned(false);
@@ -212,7 +212,7 @@ BalloonViewImpl::~BalloonViewImpl() {
 void BalloonViewImpl::Show(Balloon* balloon) {
   balloon_ = balloon;
   html_contents_ = new BalloonViewHost(balloon);
-  if (dom_ui_)
+  if (web_ui_)
     html_contents_->EnableWebUI();
   AddChildView(html_contents_->view());
   notification_registrar_.Add(this,

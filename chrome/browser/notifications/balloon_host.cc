@@ -27,7 +27,7 @@ BalloonHost::BalloonHost(Balloon* balloon)
       balloon_(balloon),
       initialized_(false),
       should_notify_on_disconnect_(false),
-      enable_dom_ui_(false) {
+      enable_web_ui_(false) {
   DCHECK(balloon_);
 
   // If the notification is for an extension URL, make sure to use the extension
@@ -70,7 +70,7 @@ const string16& BalloonHost::GetSource() const {
 WebPreferences BalloonHost::GetWebkitPrefs() {
   WebPreferences web_prefs =
       RenderViewHostDelegateHelper::GetWebkitPrefs(GetProfile(),
-                                                   enable_dom_ui_);
+                                                   enable_web_ui_);
   web_prefs.allow_scripts_to_close_windows = true;
   return web_prefs;
 }
@@ -201,8 +201,8 @@ void BalloonHost::Init() {
   if (extension_function_dispatcher_.get()) {
     rvh->AllowBindings(BindingsPolicy::EXTENSION);
     rvh->set_is_extension_process(true);
-  } else if (enable_dom_ui_) {
-    rvh->AllowBindings(BindingsPolicy::DOM_UI);
+  } else if (enable_web_ui_) {
+    rvh->AllowBindings(BindingsPolicy::WEB_UI);
   }
 
   // Do platform-specific initialization.
@@ -224,7 +224,7 @@ void BalloonHost::Init() {
 void BalloonHost::EnableWebUI() {
   DCHECK(render_view_host_ == NULL) <<
       "EnableWebUI has to be called before a renderer is created.";
-  enable_dom_ui_ = true;
+  enable_web_ui_ = true;
 }
 
 void BalloonHost::UpdateInspectorSetting(const std::string& key,

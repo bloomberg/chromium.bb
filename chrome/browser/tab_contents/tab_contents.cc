@@ -880,10 +880,10 @@ bool TabContents::NavigateToEntry(
   // For security, we should never send non-Web-UI URLs to a Web UI renderer.
   // Double check that here.
   int enabled_bindings = dest_render_view_host->enabled_bindings();
-  bool is_allowed_in_dom_ui_renderer =
+  bool is_allowed_in_web_ui_renderer =
       WebUIFactory::IsURLAcceptableForWebUI(profile(), entry.url());
-  CHECK(!BindingsPolicy::is_dom_ui_enabled(enabled_bindings) ||
-        is_allowed_in_dom_ui_renderer);
+  CHECK(!BindingsPolicy::is_web_ui_enabled(enabled_bindings) ||
+        is_allowed_in_web_ui_renderer);
 
   // Tell DevTools agent that it is attached prior to the navigation.
   DevToolsManager* devtools_manager = DevToolsManager::GetInstance();

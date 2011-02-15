@@ -69,7 +69,7 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
   tab_contents_ =
       Browser::TabContentsFactory(profile, NULL, MSG_ROUTING_NONE, NULL, NULL);
   tab_contents_->tab_contents()->
-      render_view_host()->AllowBindings(BindingsPolicy::DOM_UI);
+      render_view_host()->AllowBindings(BindingsPolicy::WEB_UI);
   tab_contents_->controller().LoadURL(
       GetDevToolsUrl(), GURL(), PageTransition::START_PAGE);
 

@@ -137,7 +137,7 @@ bool RenderViewHost::CreateRenderView(const string16& frame_name) {
   DCHECK(process()->HasConnection());
   DCHECK(process()->profile());
 
-  if (BindingsPolicy::is_dom_ui_enabled(enabled_bindings_)) {
+  if (BindingsPolicy::is_web_ui_enabled(enabled_bindings_)) {
     ChildProcessSecurityPolicy::GetInstance()->GrantWebUIBindings(
         process()->id());
   }
@@ -633,7 +633,7 @@ void RenderViewHost::AllowBindings(int bindings_flags) {
 
 void RenderViewHost::SetWebUIProperty(const std::string& name,
                                       const std::string& value) {
-  DCHECK(BindingsPolicy::is_dom_ui_enabled(enabled_bindings_));
+  DCHECK(BindingsPolicy::is_web_ui_enabled(enabled_bindings_));
   Send(new ViewMsg_SetWebUIProperty(routing_id(), name, value));
 }
 

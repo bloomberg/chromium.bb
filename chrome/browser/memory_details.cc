@@ -158,7 +158,7 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
         RenderViewHostDelegate* host_delegate = host->delegate();
         GURL url = host_delegate->GetURL();
         ViewType::Type type = host_delegate->GetRenderViewType();
-        if (host->enabled_bindings() & BindingsPolicy::DOM_UI) {
+        if (host->enabled_bindings() & BindingsPolicy::WEB_UI) {
           // TODO(erikkay) the type for devtools doesn't actually appear to
           // be set.
           if (type == ViewType::DEV_TOOLS_UI)

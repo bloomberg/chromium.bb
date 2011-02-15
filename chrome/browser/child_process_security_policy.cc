@@ -88,8 +88,8 @@ class ChildProcessSecurityPolicy::SecurityState {
     return false;
   }
 
-  bool has_dom_ui_bindings() const {
-    return BindingsPolicy::is_dom_ui_enabled(enabled_bindings_);
+  bool has_web_ui_bindings() const {
+    return BindingsPolicy::is_web_ui_enabled(enabled_bindings_);
   }
 
   bool has_extension_bindings() const {
@@ -280,7 +280,7 @@ void ChildProcessSecurityPolicy::GrantWebUIBindings(int child_id) {
   if (state == security_state_.end())
     return;
 
-  state->second->GrantBindings(BindingsPolicy::DOM_UI);
+  state->second->GrantBindings(BindingsPolicy::WEB_UI);
 
   // Web UI bindings need the ability to request chrome: URLs.
   state->second->GrantScheme(chrome::kChromeUIScheme);
@@ -389,7 +389,7 @@ bool ChildProcessSecurityPolicy::HasWebUIBindings(int child_id) {
   if (state == security_state_.end())
     return false;
 
-  return state->second->has_dom_ui_bindings();
+  return state->second->has_web_ui_bindings();
 }
 
 bool ChildProcessSecurityPolicy::HasExtensionBindings(int child_id) {

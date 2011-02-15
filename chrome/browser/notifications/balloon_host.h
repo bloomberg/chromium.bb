@@ -155,7 +155,7 @@ class BalloonHost : public RenderViewHostDelegate,
   scoped_ptr<ExtensionFunctionDispatcher> extension_function_dispatcher_;
 
   // A flag to enable Web UI.
-  bool enable_dom_ui_;
+  bool enable_web_ui_;
 
   NotificationRegistrar registrar_;
 };

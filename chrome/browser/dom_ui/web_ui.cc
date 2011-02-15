@@ -44,7 +44,7 @@ WebUI::WebUI(TabContents* contents)
       focus_location_bar_by_default_(false),
       should_hide_url_(false),
       link_transition_type_(PageTransition::LINK),
-      bindings_(BindingsPolicy::DOM_UI),
+      bindings_(BindingsPolicy::WEB_UI),
       register_callback_overwrites_(false),
       tab_contents_(contents) {
   GenericHandler* handler = new GenericHandler();

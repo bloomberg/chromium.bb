@@ -38,7 +38,7 @@ class LoginUIHandlerHarness : public LoginUIHandler {
     browser_operations_.reset(new MockBrowserOperationsInterface());
   }
 
-  WebUI* GetWebUI() const { return dom_ui_;}
+  WebUI* GetWebUI() const { return web_ui_;}
   MockAuthenticatorFacadeCros* GetMockFacade() const {
     return static_cast<MockAuthenticatorFacadeCros*>
         (facade_.get());

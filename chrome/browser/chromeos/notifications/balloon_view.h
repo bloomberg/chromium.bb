@@ -124,7 +124,7 @@ class BalloonViewImpl : public BalloonView,
   // True if the notification is being closed.
   bool closed_;
   // True to enable WebUI in the notification.
-  bool dom_ui_;
+  bool web_ui_;
 
   DISALLOW_COPY_AND_ASSIGN(BalloonViewImpl);
 };

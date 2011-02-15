@@ -53,7 +53,7 @@ void HtmlDialogUI::RenderViewCreated(RenderViewHost* render_view_host) {
     (*delegate)->GetWebUIMessageHandlers(&handlers);
   }
 
-  if (0 != (bindings_ & BindingsPolicy::DOM_UI))
+  if (0 != (bindings_ & BindingsPolicy::WEB_UI))
     render_view_host->SetWebUIProperty("dialogArguments", dialog_args);
   for (std::vector<WebUIMessageHandler*>::iterator it = handlers.begin();
        it != handlers.end(); ++it) {
@@ -77,7 +77,7 @@ ExternalHtmlDialogUI::ExternalHtmlDialogUI(TabContents* tab_contents)
   // for security reasons. The code hosting the dialog should provide
   // dialog specific functionality through other bindings and methods
   // that are scoped in duration to the dialogs existence.
-  bindings_ &= ~BindingsPolicy::DOM_UI;
+  bindings_ &= ~BindingsPolicy::WEB_UI;
 }
 
 ExternalHtmlDialogUI::~ExternalHtmlDialogUI() {

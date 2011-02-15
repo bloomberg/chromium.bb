@@ -161,7 +161,7 @@ class NetInternalsMessageHandler
   virtual void FileSelectionCanceled(void* params);
 
   // The only callback handled on the UI thread.  As it needs to access fields
-  // from |dom_ui_|, it can't be called on the IO thread.
+  // from |web_ui_|, it can't be called on the IO thread.
   void OnLoadLogFile(const ListValue* list);
 
  private:
