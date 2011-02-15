@@ -33,16 +33,18 @@ pkgconfig_DATA = wayland-client.pc wayland-server.pc
 AM_CPPFLAGS = $(FFI_CFLAGS)
 AM_CFLAGS = $(GCC_CFLAGS)
 
+protocoldir = $(top_srcdir)/protocol
+wayland_scanner = $(top_builddir)/wayland/wayland-scanner
 include $(top_srcdir)/wayland/scanner.mk
 
-noinst_PROGRAMS = scanner
+bin_PROGRAMS = wayland-scanner
 
-scanner_SOURCES =				\
+wayland_scanner_SOURCES =				\
 	scanner.c
 
-scanner_LDADD = $(EXPAT_LIBS) libwayland-util.la
+wayland_scanner_LDADD = $(EXPAT_LIBS) libwayland-util.la
 
-$(BUILT_SOURCES) : scanner
+$(BUILT_SOURCES) : wayland-scanner
 
 BUILT_SOURCES =					\
 	wayland-server-protocol.h		\
