@@ -473,9 +473,10 @@ class AutocompleteResult {
   // operator=() by another name.
   void CopyFrom(const AutocompleteResult& rhs);
 
-  // If there are fewer matches in this result set than in |old_matches|, copies
-  // enough matches from |old_matches| to make the counts equal.
-  void CopyOldMatches(const AutocompleteResult& old_matches);
+  // Copies matches from |old_matches| to provide a consistant result set. See
+  // comments in code for specifics.
+  void CopyOldMatches(const AutocompleteInput& input,
+                      const AutocompleteResult& old_matches);
 
   // Adds a single match. The match is inserted at the appropriate position
   // based on relevancy and display order. This is ONLY for use after
@@ -492,10 +493,6 @@ class AutocompleteResult {
 
   // Returns true if at least one match was copied from the last result.
   bool HasCopiedMatches() const;
-
-  // Removes any matches that were copied from the previous result. Returns true
-  // if at least one entry was removed.
-  bool RemoveCopiedMatches();
 
   // Vector-style accessors/operators.
   size_t size() const;
@@ -540,11 +537,9 @@ class AutocompleteResult {
                                     const ACMatchPtrs& matches);
 
   // Copies matches into this result. |old_matches| gives the matches from the
-  // last result, and |new_matches| the results from this result. |max_to_add|
-  // is decremented for each match copied.
+  // last result, and |new_matches| the results from this result.
   void MergeMatchesByProvider(const ACMatchPtrs& old_matches,
-                              const ACMatchPtrs& new_matches,
-                              size_t* max_to_add);
+                              const ACMatchPtrs& new_matches);
 
   ACMatches matches_;
 

@@ -106,7 +106,7 @@ void AutocompleteResultTest::RunCopyOldMatchesTest(
   AutocompleteResult current_result;
   current_result.AppendMatches(current_matches);
   current_result.SortAndCull(input);
-  current_result.CopyOldMatches(last_result);
+  current_result.CopyOldMatches(input, last_result);
 
   AssertResultMatches(current_result, expected, expected_size);
 }

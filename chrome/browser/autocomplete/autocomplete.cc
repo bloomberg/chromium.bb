@@ -580,9 +580,10 @@ void AutocompleteResult::CopyFrom(const AutocompleteResult& rhs) {
   alternate_nav_url_ = rhs.alternate_nav_url_;
 }
 
-void AutocompleteResult::CopyOldMatches(const AutocompleteResult& old_matches) {
-  if (size() >= old_matches.size())
-    return;  // We've got enough matches.
+void AutocompleteResult::CopyOldMatches(const AutocompleteInput& input,
+                                        const AutocompleteResult& old_matches) {
+  if (old_matches.empty())
+    return;
 
   if (empty()) {
     // If we've got no matches we can copy everything from the last result.
@@ -596,15 +597,27 @@ void AutocompleteResult::CopyOldMatches(const AutocompleteResult& old_matches) {
   // per provider consistent. Other schemes (such as blindly copying the most
   // relevant matches) typically result in many successive 'What You Typed'
   // results filling all the matches, which looks awful.
+  //
+  // Instead of starting with the current matches and then adding old matches
+  // until we hit our overall limit, we copy enough old matches so that each
+  // provider has at least as many as before, and then use SortAndCull() to
+  // clamp globally. This way, old high-relevance matches will starve new
+  // low-relevance matches, under the assumption that the new matches will
+  // ultimately be similar.  If the assumption holds, this prevents seeing the
+  // new low-relevance match appear and then quickly get pushed off the bottom;
+  // if it doesn't, then once the providers are done and we expire the old
+  // matches, the new ones will all become visible, so we won't have lost
+  // anything permanently.
   ProviderToMatchPtrs matches_per_provider, old_matches_per_provider;
   BuildProviderToMatchPtrs(&matches_per_provider);
   old_matches.BuildProviderToMatchPtrs(&old_matches_per_provider);
-  size_t delta = old_matches.size() - size();
   for (ProviderToMatchPtrs::const_iterator i =
            old_matches_per_provider.begin();
-       i != old_matches_per_provider.end() && delta > 0; ++i) {
-    MergeMatchesByProvider(i->second, matches_per_provider[i->first], &delta);
+       i != old_matches_per_provider.end(); ++i) {
+    MergeMatchesByProvider(i->second, matches_per_provider[i->first]);
   }
+
+  SortAndCull(input);
 }
 
 void AutocompleteResult::AppendMatches(const ACMatches& matches) {
@@ -658,19 +671,6 @@ bool AutocompleteResult::HasCopiedMatches() const {
       return true;
   }
   return false;
-}
-
-bool AutocompleteResult::RemoveCopiedMatches() {
-  bool removed = false;
-  for (ACMatches::iterator i = begin(); i != end(); ) {
-    if (i->from_previous) {
-      i = matches_.erase(i);
-      removed = true;
-    } else {
-      ++i;
-    }
-  }
-  return removed;
 }
 
 size_t AutocompleteResult::size() const {
@@ -742,9 +742,9 @@ bool AutocompleteResult::HasMatchByDestination(const AutocompleteMatch& match,
   return false;
 }
 
-void AutocompleteResult::MergeMatchesByProvider(const ACMatchPtrs& old_matches,
-                                                const ACMatchPtrs& new_matches,
-                                                size_t* max_to_add) {
+void AutocompleteResult::MergeMatchesByProvider(
+    const ACMatchPtrs& old_matches,
+    const ACMatchPtrs& new_matches) {
   if (new_matches.size() >= old_matches.size())
     return;
 
@@ -758,13 +758,12 @@ void AutocompleteResult::MergeMatchesByProvider(const ACMatchPtrs& old_matches,
   // "overwrite" the initial matches from that provider's previous results,
   // minimally disturbing the rest of the matches.
   for (ACMatchPtrs::const_reverse_iterator i = old_matches.rbegin();
-       i != old_matches.rend() && *max_to_add > 0 && delta > 0; ++i) {
+       i != old_matches.rend() && delta > 0; ++i) {
     if (!HasMatchByDestination(**i, new_matches)) {
       AutocompleteMatch match = **i;
       match.relevance = std::min(max_relevance, match.relevance);
       match.from_previous = true;
       AddMatch(match);
-      (*max_to_add)--;
       delta--;
     }
   }
@@ -889,8 +888,13 @@ void AutocompleteController::DeleteMatch(const AutocompleteMatch& match) {
 }
 
 void AutocompleteController::ExpireCopiedEntries() {
-  if (result_.RemoveCopiedMatches())
-    NotifyChanged(false);
+  // Clear out the results. This ensures no results from the previous result set
+  // are copied over.
+  result_.Reset();
+  // We allow matches from the previous result set to starve out matches from
+  // the new result set. This means in order to expire matches we have to query
+  // the providers again.
+  UpdateResult(false);
 }
 
 void AutocompleteController::OnProviderUpdate(bool updated_matches) {
@@ -921,7 +925,7 @@ void AutocompleteController::UpdateResult(bool is_synchronous_pass) {
   if (!done_) {
     // This conditional needs to match the conditional in Start that invokes
     // StartExpireTimer.
-    result_.CopyOldMatches(last_result);
+    result_.CopyOldMatches(input_, last_result);
   }
 
   bool notify_default_match = is_synchronous_pass;
