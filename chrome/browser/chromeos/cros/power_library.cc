@@ -16,6 +16,7 @@ class PowerLibraryImpl : public PowerLibrary {
  public:
   PowerLibraryImpl()
       : power_status_connection_(NULL),
+        resume_status_connection_(NULL),
         status_(chromeos::PowerStatus()) {
     if (CrosLibrary::Get()->EnsureLoaded()) {
       Init();
