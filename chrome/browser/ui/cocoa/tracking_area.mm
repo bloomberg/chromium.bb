@@ -69,7 +69,7 @@
 
 - (id)initWithRect:(NSRect)rect
            options:(NSTrackingAreaOptions)options
-             owner:(id)owner
+      proxiedOwner:(id)owner
           userInfo:(NSDictionary*)userInfo {
   scoped_nsobject<CrTrackingAreaOwnerProxy> ownerProxy(
       [[CrTrackingAreaOwnerProxy alloc] initWithOwner:owner]);
@@ -80,6 +80,15 @@
     ownerProxy_.swap(ownerProxy);
   }
   return self;
+}
+
+- (NSTrackingArea*)initWithRect:(NSRect)rect
+                        options:(NSTrackingAreaOptions)options
+                          owner:(id)owner
+                       userInfo:(NSDictionary*)userInfo {
+  [NSException raise:@"org.chromium.CrTrackingArea"
+      format:@"Cannot init a CrTrackingArea with NSTrackingArea's initializer"];
+  return nil;
 }
 
 - (void)dealloc {
