@@ -28,6 +28,9 @@ class ConstrainedHtmlDelegateGtk : public ConstrainedWindowGtkDelegate,
   virtual GtkWidget* GetWidgetRoot() {
     return tab_contents_container_.widget();
   }
+  virtual GtkWidget* GetFocusWidget() {
+    return tab_contents_.GetContentNativeView();
+  }
   virtual void DeleteDelegate() {
     html_delegate_->OnDialogClosed("");
     delete this;

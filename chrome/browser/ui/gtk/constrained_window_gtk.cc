@@ -7,6 +7,7 @@
 #include <gdk/gdkkeysyms.h>
 
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 
@@ -62,6 +63,8 @@ ConstrainedWindowGtk::ConstrainedWindowGtk(
   gtk_widget_add_events(widget(), GDK_KEY_PRESS_MASK);
   g_signal_connect(widget(), "key-press-event", G_CALLBACK(OnKeyPressThunk),
                    this);
+  g_signal_connect(widget(), "hierarchy-changed",
+                   G_CALLBACK(OnHierarchyChangedThunk), this);
 }
 
 ConstrainedWindowGtk::~ConstrainedWindowGtk() {
@@ -87,6 +90,27 @@ void ConstrainedWindowGtk::CloseConstrainedWindow() {
   delete this;
 }
 
+void ConstrainedWindowGtk::FocusConstrainedWindow() {
+  GtkWidget* focus_widget = delegate_->GetFocusWidget();
+  if (!focus_widget)
+    return;
+
+  // The user may have focused another tab. In this case do not grab focus
+  // until this tab is refocused.
+  if ((!owner_->delegate() ||
+          owner_->delegate()->ShouldFocusConstrainedWindow()) &&
+      gtk_util::IsWidgetAncestryVisible(focus_widget)) {
+    gtk_widget_grab_focus(focus_widget);
+  } else {
+  // TODO(estade): this define should not need to be here because this class
+  // should not be used on linux/views.
+#if defined(TOOLKIT_GTK)
+    static_cast<TabContentsViewGtk*>(owner_->view())->
+        SetFocusedWidget(focus_widget);
+#endif
+  }
+}
+
 ConstrainedWindowGtk::TabContentsViewType*
     ConstrainedWindowGtk::ContainingView() {
   return static_cast<TabContentsViewType*>(owner_->view());
@@ -104,6 +128,15 @@ gboolean ConstrainedWindowGtk::OnKeyPress(GtkWidget* sender,
   }
 
   return FALSE;
+}
+
+void ConstrainedWindowGtk::OnHierarchyChanged(GtkWidget* sender,
+                                              GtkWidget* previous_toplevel) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!GTK_WIDGET_TOPLEVEL(gtk_widget_get_toplevel(widget())))
+    return;
+
+  FocusConstrainedWindow();
 }
 
 // static

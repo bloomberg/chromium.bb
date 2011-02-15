@@ -249,11 +249,11 @@ void CollectedCookiesGtk::Init() {
   gtk_button_box_set_layout(GTK_BUTTON_BOX(button_box), GTK_BUTTONBOX_END);
   gtk_box_set_spacing(GTK_BOX(button_box), gtk_util::kControlSpacing);
   gtk_box_pack_end(GTK_BOX(dialog_), button_box, FALSE, TRUE, 0);
-  GtkWidget* close = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
-  gtk_button_set_label(GTK_BUTTON(close),
+  close_button_ = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
+  gtk_button_set_label(GTK_BUTTON(close_button_),
                        l10n_util::GetStringUTF8(IDS_CLOSE).c_str());
-  g_signal_connect(close, "clicked", G_CALLBACK(OnCloseThunk), this);
-  gtk_box_pack_end(GTK_BOX(button_box), close, FALSE, TRUE, 0);
+  g_signal_connect(close_button_, "clicked", G_CALLBACK(OnCloseThunk), this);
+  gtk_box_pack_end(GTK_BOX(button_box), close_button_, FALSE, TRUE, 0);
 
   // Show the dialog.
   allowed_cookies_tree_adapter_->Init();
@@ -268,6 +268,10 @@ CollectedCookiesGtk::~CollectedCookiesGtk() {
 
 GtkWidget* CollectedCookiesGtk::GetWidgetRoot() {
   return dialog_;
+}
+
+GtkWidget* CollectedCookiesGtk::GetFocusWidget() {
+  return close_button_;
 }
 
 void CollectedCookiesGtk::DeleteDelegate() {

@@ -54,14 +54,15 @@ RepostFormWarningGtk::RepostFormWarningGtk(GtkWindow* parent,
   g_signal_connect(ok_, "clicked", G_CALLBACK(OnRefreshThunk), this);
   gtk_box_pack_end(GTK_BOX(buttonBox), ok_, FALSE, TRUE, 0);
 
-  g_signal_connect(cancel_, "hierarchy-changed",
-                   G_CALLBACK(OnHierarchyChangedThunk), this);
-
   controller_->Show(this);
 }
 
 GtkWidget* RepostFormWarningGtk::GetWidgetRoot() {
   return dialog_;
+}
+
+GtkWidget* RepostFormWarningGtk::GetFocusWidget() {
+  return cancel_;
 }
 
 void RepostFormWarningGtk::DeleteDelegate() {
@@ -78,13 +79,4 @@ void RepostFormWarningGtk::OnRefresh(GtkWidget* widget) {
 
 void RepostFormWarningGtk::OnCancel(GtkWidget* widget) {
   controller_->Cancel();
-}
-
-void RepostFormWarningGtk::OnHierarchyChanged(GtkWidget* root,
-                                              GtkWidget* previous_toplevel) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!GTK_WIDGET_TOPLEVEL(gtk_widget_get_toplevel(cancel_))) {
-    return;
-  }
-  gtk_widget_grab_focus(cancel_);
 }

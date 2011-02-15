@@ -99,17 +99,8 @@ bool NativeTabContentsContainerGtk::IsFocusable() const {
 }
 
 void NativeTabContentsContainerGtk::Focus() {
-  if (container_->tab_contents()) {
-    // Set the native focus on the actual content of the tab, that is the
-    // interstitial if one is showing.
-    if (container_->tab_contents()->interstitial_page()) {
-      container_->tab_contents()->interstitial_page()->Focus();
-      return;
-    }
-    GtkWidget* widget = container_->tab_contents()->GetContentNativeView();
-    if (widget)
-      gtk_widget_grab_focus(widget);
-  }
+  if (container_->tab_contents())
+    container_->tab_contents()->Focus();
 }
 
 void NativeTabContentsContainerGtk::RequestFocus() {

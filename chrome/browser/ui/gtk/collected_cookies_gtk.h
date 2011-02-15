@@ -32,6 +32,7 @@ class CollectedCookiesGtk : public ConstrainedDialogDelegate,
 
   // ConstrainedDialogDelegate methods.
   virtual GtkWidget* GetWidgetRoot();
+  virtual GtkWidget* GetFocusWidget();
   virtual void DeleteDelegate();
 
  private:
@@ -81,6 +82,7 @@ class CollectedCookiesGtk : public ConstrainedDialogDelegate,
 
   GtkWidget* allow_blocked_cookie_button_;
   GtkWidget* for_session_blocked_cookie_button_;
+  GtkWidget* close_button_;
 
   // The table listing the cookies.
   GtkWidget* allowed_tree_;

@@ -27,6 +27,9 @@ class ConstrainedWindowGtkDelegate {
   // Returns the widget that will be put in the constrained window's container.
   virtual GtkWidget* GetWidgetRoot() = 0;
 
+  // Returns the widget that should get focus when ConstrainedWindow is focused.
+  virtual GtkWidget* GetFocusWidget() = 0;
+
   // Tells the delegate to either delete itself or set up a task to delete
   // itself later.
   virtual void DeleteDelegate() = 0;
@@ -53,6 +56,7 @@ class ConstrainedWindowGtk : public ConstrainedWindow {
   // Overridden from ConstrainedWindow:
   virtual void ShowConstrainedWindow();
   virtual void CloseConstrainedWindow();
+  virtual void FocusConstrainedWindow();
 
   // Returns the TabContents that constrains this Constrained Window.
   TabContents* owner() const { return owner_; }
@@ -69,9 +73,11 @@ class ConstrainedWindowGtk : public ConstrainedWindow {
   ConstrainedWindowGtk(TabContents* owner,
                        ConstrainedWindowGtkDelegate* delegate);
 
-  // Handler for Escape.
+  // Signal callbacks.
   CHROMEGTK_CALLBACK_1(ConstrainedWindowGtk, gboolean, OnKeyPress,
                        GdkEventKey*);
+  CHROMEGTK_CALLBACK_1(ConstrainedWindowGtk, void, OnHierarchyChanged,
+                       GtkWidget*);
 
   // The TabContents that owns and constrains this ConstrainedWindow.
   TabContents* owner_;

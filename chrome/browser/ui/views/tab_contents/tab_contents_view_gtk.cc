@@ -267,6 +267,11 @@ void TabContentsViewGtk::Focus() {
     return;
   }
 
+  if (constrained_windows_.size()) {
+    constrained_windows_.back()->FocusConstrainedWindow();
+    return;
+  }
+
   RenderWidgetHostView* rwhv = tab_contents()->GetRenderWidgetHostView();
   gtk_widget_grab_focus(rwhv ? rwhv->GetNativeView() : GetNativeView());
 }

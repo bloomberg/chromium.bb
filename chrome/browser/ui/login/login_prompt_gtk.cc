@@ -121,6 +121,10 @@ class LoginHandlerGtk : public LoginHandler,
     return root_.get();
   }
 
+  virtual GtkWidget* GetFocusWidget() {
+    return username_entry_;
+  }
+
   virtual void DeleteDelegate() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -172,23 +176,6 @@ void LoginHandlerGtk::OnPromptHierarchyChanged(GtkWidget* sender,
   // button the default action and mess with the focus.
   GTK_WIDGET_SET_FLAGS(ok_, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(ok_);
-
-  TabContents* contents = GetTabContentsForLogin();
-
-  // The user may have focused another tab. In this case do not grab focus
-  // until this tab is refocused.
-  if ((!contents->delegate() ||
-          contents->delegate()->ShouldFocusConstrainedWindow()) &&
-      gtk_util::IsWidgetAncestryVisible(username_entry_)) {
-    gtk_widget_grab_focus(username_entry_);
-  } else {
-  // TODO(estade): this define should not need to be here because this class
-  // should not be used on linux/views.
-#if defined(TOOLKIT_GTK)
-    static_cast<TabContentsViewGtk*>(contents->view())->
-        SetFocusedWidget(username_entry_);
-#endif
-  }
 }
 
 // static
