@@ -35,6 +35,8 @@ class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
      SetManageLink();
   }
 
+  virtual ~ContentSettingTitleAndLinkModel() {}
+
  private:
   void SetBlockedResources() {
     TabSpecificContentSettings* settings =
@@ -128,6 +130,8 @@ class ContentSettingTitleLinkAndCustomModel
     SetCustomLink();
   }
 
+  virtual ~ContentSettingTitleLinkAndCustomModel() {}
+
  private:
   void SetCustomLink() {
     static const int kCustomIDs[] = {
@@ -157,12 +161,31 @@ class ContentSettingSingleRadioGroup
                                  ContentSettingsType content_type)
       : ContentSettingTitleLinkAndCustomModel(tab_contents, profile,
                                               content_type),
-        block_setting_(CONTENT_SETTING_BLOCK) {
+        block_setting_(CONTENT_SETTING_BLOCK),
+        selected_item_(0) {
     SetRadioGroup();
+  }
+
+  virtual ~ContentSettingSingleRadioGroup() {
+    if (selected_item_ != bubble_content().radio_group.default_item) {
+      ContentSetting setting =
+          selected_item_ == 0 ? CONTENT_SETTING_ALLOW : block_setting_;
+      const std::set<std::string>& resources =
+          bubble_content().resource_identifiers;
+      if (resources.empty()) {
+        AddException(setting, std::string());
+      } else {
+        for (std::set<std::string>::const_iterator it = resources.begin();
+             it != resources.end(); ++it) {
+          AddException(setting, *it);
+        }
+      }
+    }
   }
 
  private:
   ContentSetting block_setting_;
+  int selected_item_;
 
   // Initialize the radio group by setting the appropriate labels for the
   // content type and setting the default value based on the content setting.
@@ -253,6 +276,7 @@ class ContentSettingSingleRadioGroup
       radio_group.default_item = 1;
       block_setting_ = mostRestrictiveSetting;
     }
+    selected_item_ = radio_group.default_item;
     set_radio_group(radio_group);
   }
 
@@ -264,18 +288,7 @@ class ContentSettingSingleRadioGroup
   }
 
   virtual void OnRadioClicked(int radio_index) {
-    ContentSetting setting =
-        radio_index == 0 ? CONTENT_SETTING_ALLOW : block_setting_;
-    const std::set<std::string>& resources =
-        bubble_content().resource_identifiers;
-    if (resources.empty()) {
-      AddException(setting, std::string());
-    } else {
-      for (std::set<std::string>::const_iterator it = resources.begin();
-           it != resources.end(); ++it) {
-        AddException(setting, *it);
-      }
-    }
+    selected_item_ = radio_index;
   }
 };
 
@@ -290,6 +303,8 @@ class ContentSettingCookiesBubbleModel
     DCHECK_EQ(CONTENT_SETTINGS_TYPE_COOKIES, content_type);
     set_custom_link_enabled(true);
   }
+
+  virtual ~ContentSettingCookiesBubbleModel() {}
 
  private:
   virtual void OnCustomLinkClicked() OVERRIDE {
@@ -315,6 +330,8 @@ class ContentSettingPluginBubbleModel : public ContentSettingSingleRadioGroup {
         GetTabSpecificContentSettings()->load_plugins_link_enabled());
   }
 
+  virtual ~ContentSettingPluginBubbleModel() {}
+
  private:
   virtual void OnCustomLinkClicked() OVERRIDE {
     UserMetrics::RecordAction(UserMetricsAction("ClickToPlay_LoadAll_Bubble"));
@@ -334,6 +351,8 @@ class ContentSettingPopupBubbleModel : public ContentSettingSingleRadioGroup {
       : ContentSettingSingleRadioGroup(tab_contents, profile, content_type) {
     SetPopups();
   }
+
+  virtual ~ContentSettingPopupBubbleModel() {}
 
  private:
   void SetPopups() {
@@ -377,6 +396,8 @@ class ContentSettingDomainListBubbleModel
         "SetDomains currently only supports geolocation content type";
     SetDomainsAndCustomLink();
   }
+
+  virtual ~ContentSettingDomainListBubbleModel() {}
 
  private:
   void MaybeAddDomainList(const std::set<std::string>& hosts, int title_id) {

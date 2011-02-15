@@ -132,23 +132,23 @@ TEST_F(ContentSettingBubbleModelTest, MultiplePlugins) {
   EXPECT_EQ(1, bubble_content.radio_group.default_item);
 
   content_setting_bubble_model->OnRadioClicked(0);
-  // Both plug-ins should be allowed now.
+  // Nothing should have changed.
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             map->GetContentSetting(url,
                                    CONTENT_SETTINGS_TYPE_PLUGINS,
                                    fooPlugin));
-  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+  EXPECT_EQ(CONTENT_SETTING_ASK,
             map->GetContentSetting(url,
                                    CONTENT_SETTINGS_TYPE_PLUGINS,
                                    barPlugin));
 
-  content_setting_bubble_model->OnRadioClicked(1);
+  content_setting_bubble_model.reset();
   // Both plug-ins should be click-to-play now.
-  EXPECT_EQ(CONTENT_SETTING_ASK,
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
             map->GetContentSetting(url,
                                    CONTENT_SETTINGS_TYPE_PLUGINS,
                                    fooPlugin));
-  EXPECT_EQ(CONTENT_SETTING_ASK,
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
             map->GetContentSetting(url,
                                    CONTENT_SETTINGS_TYPE_PLUGINS,
                                    barPlugin));
