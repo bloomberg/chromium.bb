@@ -144,15 +144,6 @@
   fun:browser_sync::*
 }
 
-{
-  bug_72927
-  ThreadSanitizer:Race
-  ...
-  fun:base::Time::FromExploded*
-  ...
-  fun:net::CookieMonster::ParseCookieTime*
-}
-
 ############################
 # Benign races
 {
@@ -483,6 +474,13 @@
   ThreadSanitizer:Race
   fun:new_do_write
   fun:vfprintf
+}
+
+{
+  fun:timegm
+  ThreadSanitizer:Race
+  ...
+  fun:timegm
 }
 
 # gethostbyname2_r is thread-safe, however ThreadSanitizer reports races inside it and

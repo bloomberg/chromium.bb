@@ -3732,3 +3732,26 @@
    ...
    fun:_ZNK13ProfileIOData14LazyInitializeEv
 }
+{
+   bug_73000
+   Memcheck:Cond
+   fun:clipboard_clipboard_buffer_received
+   ...
+   fun:gtk_text_view_key_press_event
+   fun:_ZN23AutocompleteEditViewGtk14HandleKeyPressEP10_GtkWidgetP12_GdkEventKey
+}
+{
+   bug_73001a
+   Memcheck:Addr4
+   ...
+   fun:_ZN16ObserverListBaseI19TabContentsObserverE8IteratorD1Ev
+   fun:_ZN11TabContents17OnMessageReceivedERKN3IPC7MessageE
+}
+{
+   bug_73001b
+   Memcheck:Addr1
+   fun:memmove
+   ...
+   fun:_ZN16ObserverListBaseI19TabContentsObserverE7CompactEv
+   fun:_ZN16ObserverListBaseI19TabContentsObserverE8IteratorD1Ev
+}

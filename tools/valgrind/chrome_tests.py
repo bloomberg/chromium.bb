@@ -289,7 +289,7 @@ class ChromeTests:
     return self.SimpleTest("chrome", "interactive_ui_tests",
                            valgrind_test_args=self.UI_VALGRIND_ARGS,
                            cmd_args=(self.UI_TEST_ARGS +
-                                     ["--test-terminate-timeout=240000"]))
+                                     ["--test-terminate-timeout=300000"]))
 
   def TestReliability(self):
     script_dir = path_utils.ScriptDir()
