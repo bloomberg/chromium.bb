@@ -8,6 +8,7 @@
 
 #include "base/scoped_ptr.h"
 #include "base/timer.h"
+#include "chrome/browser/chromeos/cros/power_library.h"
 #include "chrome/browser/chromeos/cros/system_library.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
 #include "unicode/calendar.h"
@@ -24,6 +25,7 @@ class StatusAreaHost;
 class ClockMenuButton : public StatusAreaButton,
                         public views::ViewMenuDelegate,
                         public ui::MenuModel,
+                        public PowerLibrary::Observer,
                         public SystemLibrary::Observer {
  public:
   explicit ClockMenuButton(StatusAreaHost* host);
@@ -49,6 +51,10 @@ class ClockMenuButton : public StatusAreaButton,
   virtual void HighlightChangedTo(int index) {}
   virtual void ActivatedAt(int index);
   virtual void MenuWillShow() {}
+
+  // Overridden from ResumeLibrary::Observer:
+  virtual void PowerChanged(PowerLibrary* obj) {}
+  virtual void SystemResumed();
 
   // Overridden from SystemLibrary::Observer:
   virtual void TimezoneChanged(const icu::TimeZone& timezone);

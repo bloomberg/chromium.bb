@@ -21,6 +21,7 @@ class PowerLibrary {
   class Observer {
    public:
     virtual void PowerChanged(PowerLibrary* obj) = 0;
+    virtual void SystemResumed() = 0;
   };
   virtual ~PowerLibrary() {}
   virtual void AddObserver(Observer* observer) = 0;

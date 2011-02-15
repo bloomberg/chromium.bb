@@ -8,6 +8,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "third_party/cros/chromeos_resume.h"
 
 namespace chromeos {
 
@@ -24,6 +25,11 @@ class PowerLibraryImpl : public PowerLibrary {
   ~PowerLibraryImpl() {
     if (power_status_connection_) {
       chromeos::DisconnectPowerStatus(power_status_connection_);
+      power_status_connection_ = NULL;
+    }
+    if (resume_status_connection_) {
+      chromeos::DisconnectResume(resume_status_connection_);
+      resume_status_connection_ = NULL;
     }
   }
 
@@ -94,9 +100,16 @@ class PowerLibraryImpl : public PowerLibrary {
     power->UpdatePowerStatus(status);
   }
 
+  static void SystemResumedHandler(void* object) {
+    PowerLibraryImpl* power = static_cast<PowerLibraryImpl*>(object);
+    power->SystemResumed();
+  }
+
   void Init() {
     power_status_connection_ = chromeos::MonitorPowerStatus(
         &PowerStatusChangedHandler, this);
+    resume_status_connection_ =
+        chromeos::MonitorResume(&SystemResumedHandler, this);
   }
 
   void UpdatePowerStatus(const chromeos::PowerStatus& status) {
@@ -118,11 +131,26 @@ class PowerLibraryImpl : public PowerLibrary {
     FOR_EACH_OBSERVER(Observer, observers_, PowerChanged(this));
   }
 
+  void SystemResumed() {
+    // Make sure we run on the UI thread.
+    if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          NewRunnableMethod(this, &PowerLibraryImpl::SystemResumed));
+      return;
+    }
+
+    FOR_EACH_OBSERVER(Observer, observers_, SystemResumed());
+  }
+
   ObserverList<Observer> observers_;
 
   // A reference to the battery power api, to allow callbacks when the battery
   // status changes.
   chromeos::PowerStatusConnection power_status_connection_;
+
+  // A reference to the resume alerts.
+  chromeos::ResumeConnection resume_status_connection_;
 
   // The latest power status.
   chromeos::PowerStatus status_;

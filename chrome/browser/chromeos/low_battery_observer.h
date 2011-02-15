@@ -25,6 +25,7 @@ class LowBatteryObserver : public PowerLibrary::Observer {
 
  private:
   virtual void PowerChanged(PowerLibrary* object);
+  virtual void SystemResumed() {}
 
   void Show(base::TimeDelta remaining, bool urgent);
   void Hide();
@@ -38,4 +39,3 @@ class LowBatteryObserver : public PowerLibrary::Observer {
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOW_BATTERY_OBSERVER_H_
-

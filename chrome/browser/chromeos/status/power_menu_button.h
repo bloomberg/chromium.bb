@@ -53,6 +53,7 @@ class PowerMenuButton : public StatusAreaButton,
 
   // PowerLibrary::Observer implementation.
   virtual void PowerChanged(PowerLibrary* obj);
+  virtual void SystemResumed() {}
 
   int icon_id() const { return icon_id_; }
 

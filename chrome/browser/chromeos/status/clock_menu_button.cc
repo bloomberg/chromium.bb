@@ -33,6 +33,7 @@ ClockMenuButton::ClockMenuButton(StatusAreaHost* host)
       host_(host) {
   // Add as SystemLibrary observer. We update the clock if timezone changes.
   CrosLibrary::Get()->GetSystemLibrary()->AddObserver(this);
+  CrosLibrary::Get()->GetPowerLibrary()->AddObserver(this);
 
   set_border(NULL);
   set_use_menu_button_paint(true);
@@ -45,6 +46,7 @@ ClockMenuButton::ClockMenuButton(StatusAreaHost* host)
 }
 
 ClockMenuButton::~ClockMenuButton() {
+  CrosLibrary::Get()->GetPowerLibrary()->RemoveObserver(this);
   CrosLibrary::Get()->GetSystemLibrary()->RemoveObserver(this);
 }
 
@@ -108,6 +110,13 @@ bool ClockMenuButton::IsEnabledAt(int index) const {
 
 void ClockMenuButton::ActivatedAt(int index) {
   host_->OpenButtonOptions(this);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// ClockMenuButton, PowerLibrary::Observer implementation:
+
+void ClockMenuButton::SystemResumed() {
+  UpdateText();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
