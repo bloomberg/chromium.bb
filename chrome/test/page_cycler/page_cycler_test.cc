@@ -525,11 +525,12 @@ TEST_F(PageCyclerDatabaseReferenceTest, FLAKY_Database##name##File) { \
 // This macro simplifies setting up regular and reference build tests
 // for HTML5 Indexed DB tests.
 // FLAKY http://crbug.com/67918
+// DISABLED http://crbug.com/73013
 #define PAGE_CYCLER_IDB_TESTS(test, name) \
-TEST_F(PageCyclerIndexedDatabaseTest, FLAKY_IndexedDB##name##File) { \
+TEST_F(PageCyclerIndexedDatabaseTest, DISABLED_IndexedDB##name##File) { \
   RunTest(test, test, false); \
 } \
-TEST_F(PageCyclerIndexedDatabaseReferenceTest, FLAKY_IndexedDB##name##File) { \
+TEST_F(PageCyclerIndexedDatabaseReferenceTest, DISABLED_IndexedDB##name##File) { \
   RunTest(test, test, false); \
 }
 
