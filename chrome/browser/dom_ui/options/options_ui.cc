@@ -54,18 +54,18 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/dom_ui/accounts_options_handler.h"
-#include "chrome/browser/chromeos/dom_ui/core_chromeos_options_handler.h"
-#include "chrome/browser/chromeos/dom_ui/cros_language_options_handler.h"
-#include "chrome/browser/chromeos/dom_ui/internet_options_handler.h"
-#include "chrome/browser/chromeos/dom_ui/language_chewing_options_handler.h"
-#include "chrome/browser/chromeos/dom_ui/language_customize_modifier_keys_handler.h"
-#include "chrome/browser/chromeos/dom_ui/language_hangul_options_handler.h"
-#include "chrome/browser/chromeos/dom_ui/language_mozc_options_handler.h"
-#include "chrome/browser/chromeos/dom_ui/language_pinyin_options_handler.h"
-#include "chrome/browser/chromeos/dom_ui/proxy_handler.h"
-#include "chrome/browser/chromeos/dom_ui/stats_options_handler.h"
-#include "chrome/browser/chromeos/dom_ui/system_options_handler.h"
+#include "chrome/browser/chromeos/webui/accounts_options_handler.h"
+#include "chrome/browser/chromeos/webui/core_chromeos_options_handler.h"
+#include "chrome/browser/chromeos/webui/cros_language_options_handler.h"
+#include "chrome/browser/chromeos/webui/internet_options_handler.h"
+#include "chrome/browser/chromeos/webui/language_chewing_options_handler.h"
+#include "chrome/browser/chromeos/webui/language_customize_modifier_keys_handler.h"
+#include "chrome/browser/chromeos/webui/language_hangul_options_handler.h"
+#include "chrome/browser/chromeos/webui/language_mozc_options_handler.h"
+#include "chrome/browser/chromeos/webui/language_pinyin_options_handler.h"
+#include "chrome/browser/chromeos/webui/proxy_handler.h"
+#include "chrome/browser/chromeos/webui/stats_options_handler.h"
+#include "chrome/browser/chromeos/webui/system_options_handler.h"
 #endif
 
 #if defined(USE_NSS)

@@ -40,7 +40,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/update_library.h"
-#include "chrome/browser/chromeos/dom_ui/wrench_menu_ui.h"
+#include "chrome/browser/chromeos/webui/wrench_menu_ui.h"
 #include "views/controls/menu/menu_2.h"
 #endif
 #include "chrome/browser/ui/views/wrench_menu.h"

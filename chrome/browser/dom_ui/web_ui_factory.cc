@@ -37,14 +37,14 @@
 #include "googleurl/src/gurl.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/dom_ui/imageburner_ui.h"
-#include "chrome/browser/chromeos/dom_ui/keyboard_overlay_ui.h"
-#include "chrome/browser/chromeos/dom_ui/menu_ui.h"
-#include "chrome/browser/chromeos/dom_ui/mobile_setup_ui.h"
-#include "chrome/browser/chromeos/dom_ui/register_page_ui.h"
-#include "chrome/browser/chromeos/dom_ui/system_info_ui.h"
-#include "chrome/browser/chromeos/dom_ui/wrench_menu_ui.h"
-#include "chrome/browser/chromeos/dom_ui/network_menu_ui.h"
+#include "chrome/browser/chromeos/webui/imageburner_ui.h"
+#include "chrome/browser/chromeos/webui/keyboard_overlay_ui.h"
+#include "chrome/browser/chromeos/webui/menu_ui.h"
+#include "chrome/browser/chromeos/webui/mobile_setup_ui.h"
+#include "chrome/browser/chromeos/webui/register_page_ui.h"
+#include "chrome/browser/chromeos/webui/system_info_ui.h"
+#include "chrome/browser/chromeos/webui/wrench_menu_ui.h"
+#include "chrome/browser/chromeos/webui/network_menu_ui.h"
 #include "chrome/browser/dom_ui/filebrowse_ui.h"
 #include "chrome/browser/dom_ui/mediaplayer_ui.h"
 #endif
@@ -54,7 +54,7 @@
 #endif
 
 #if defined(TOUCH_UI) && defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/dom_ui/login/login_ui.h"
+#include "chrome/browser/chromeos/webui/login/login_ui.h"
 #endif
 
 #if defined(OS_WIN)

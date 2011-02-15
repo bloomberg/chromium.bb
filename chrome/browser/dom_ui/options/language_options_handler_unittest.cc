@@ -13,7 +13,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/input_method_library.h"
-#include "chrome/browser/chromeos/dom_ui/cros_language_options_handler.h"
+#include "chrome/browser/chromeos/webui/cros_language_options_handler.h"
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_CHROMEOS)
