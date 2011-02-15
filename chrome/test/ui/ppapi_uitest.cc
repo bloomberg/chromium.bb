@@ -166,3 +166,7 @@ TEST_F(PPAPITest, FileRef) {
 TEST_F(PPAPITest, DISABLED_DirectoryReader) {
   RunTestViaHTTP("DirectoryReader");
 }
+
+TEST_F(PPAPITest, DISABLED_Transport) {
+  RunTest("Transport");
+}
