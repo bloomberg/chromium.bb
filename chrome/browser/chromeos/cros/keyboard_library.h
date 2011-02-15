@@ -18,13 +18,6 @@ class KeyboardLibrary {
  public:
   virtual ~KeyboardLibrary() {}
 
-  // Returns the current layout name as XKB layout like "us" and
-  // "us(dvorak)". On error, returns "". This function is very expensive
-  // as it calls a libcros function that gets the layout information from
-  // the X server. You should instead use
-  // InputMethodLibrary::current_input_method() for most cases.
-  virtual std::string GetCurrentKeyboardLayoutName() const = 0;
-
   // Sets the current keyboard layout to |layout_name|.  Returns true on
   // success. |layout_name| should look like XKB layout like "us" and
   // "us(dvorak)".

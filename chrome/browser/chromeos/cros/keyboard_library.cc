@@ -14,13 +14,6 @@ class KeyboardLibraryImpl : public KeyboardLibrary {
   KeyboardLibraryImpl() {}
   virtual ~KeyboardLibraryImpl() {}
 
-  std::string GetCurrentKeyboardLayoutName() const {
-    if (CrosLibrary::Get()->EnsureLoaded()) {
-      return chromeos::GetCurrentKeyboardLayoutName();
-    }
-    return "";
-  }
-
   bool SetCurrentKeyboardLayoutByName(const std::string& layout_name) {
     if (CrosLibrary::Get()->EnsureLoaded()) {
       return chromeos::SetCurrentKeyboardLayoutByName(layout_name);
@@ -71,10 +64,6 @@ class KeyboardLibraryStubImpl : public KeyboardLibrary {
  public:
   KeyboardLibraryStubImpl() {}
   virtual ~KeyboardLibraryStubImpl() {}
-
-  std::string GetCurrentKeyboardLayoutName() const {
-    return "";
-  }
 
   bool SetCurrentKeyboardLayoutByName(const std::string& layout_name) {
     return false;
