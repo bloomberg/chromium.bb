@@ -2691,7 +2691,7 @@
 {
    bug_52900
    Memcheck:Leak
-   fun:_Znw*
+   ...
    fun:_ZN32RenderViewHostDelegateViewHelper25CreateNewFullscreenWidgetEiP17RenderProcessHost
    fun:_ZN15TabContentsView33CreateNewFullscreenWidgetInternalEi
    fun:_ZN15TabContentsView25CreateNewFullscreenWidgetEi
