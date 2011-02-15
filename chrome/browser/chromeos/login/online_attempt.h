@@ -18,6 +18,7 @@
 class CancelableTask;
 class GaiaAuthFetcher;
 class Profile;
+class URLRequestContextGetter;
 
 namespace chromeos {
 class AuthAttemptState;
@@ -34,6 +35,7 @@ class OnlineAttempt
   // Initiate the online login attempt.  Status will be recorded in
   // |current_attempt|, and resolver_->Resolve() will be called on the
   // IO thread when useful state is available.
+  // Must be called on the UI thread.
   void Initiate(Profile* profile);
 
   // Callbacks from GaiaAuthFetcher

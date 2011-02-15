@@ -91,8 +91,7 @@ class OnlineAttemptTest : public ::testing::Test {
         BrowserThread::UI, FROM_HERE, new MessageLoop::QuitTask());
   }
 
-  static void RunThreadTest(OnlineAttempt* attempt, Profile* profile) {
-    attempt->Initiate(profile);
+  static void RunThreadTest() {
     MessageLoop::current()->RunAllPending();
   }
 
@@ -134,10 +133,10 @@ TEST_F(OnlineAttemptTest, LoginCancelRetry) {
   MockFactory<GotCanceledFetcher> factory;
   URLFetcher::set_factory(&factory);
 
+  attempt_->Initiate(&profile);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableFunction(&OnlineAttemptTest::RunThreadTest,
-                          attempt_, &profile));
+      NewRunnableFunction(&OnlineAttemptTest::RunThreadTest));
 
   MessageLoop::current()->Run();
 
@@ -161,10 +160,10 @@ TEST_F(OnlineAttemptTest, LoginTimeout) {
   MockFactory<ExpectCanceledFetcher> factory;
   URLFetcher::set_factory(&factory);
 
+  attempt_->Initiate(&profile);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableFunction(&OnlineAttemptTest::RunThreadTest,
-                          attempt_, &profile));
+      NewRunnableFunction(&OnlineAttemptTest::RunThreadTest));
 
   // Post a task to cancel the login attempt.
   CancelLogin(attempt_.get());
@@ -192,10 +191,10 @@ TEST_F(OnlineAttemptTest, HostedLoginRejected) {
 
   TestAttemptState local_state("", "", "", "", "", true);
   attempt_ = new OnlineAttempt(&local_state, resolver_.get());
+  attempt_->Initiate(&profile);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableFunction(&OnlineAttemptTest::RunThreadTest,
-                          attempt_, &profile));
+      NewRunnableFunction(&OnlineAttemptTest::RunThreadTest));
 
   MessageLoop::current()->Run();
 
@@ -218,10 +217,10 @@ TEST_F(OnlineAttemptTest, FullLogin) {
 
   TestAttemptState local_state("", "", "", "", "", true);
   attempt_ = new OnlineAttempt(&local_state, resolver_.get());
+  attempt_->Initiate(&profile);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableFunction(&OnlineAttemptTest::RunThreadTest,
-                          attempt_, &profile));
+      NewRunnableFunction(&OnlineAttemptTest::RunThreadTest));
 
   MessageLoop::current()->Run();
 

@@ -87,11 +87,7 @@ bool ParallelAuthenticator::AuthenticateToLogin(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(mounter_.get(), &CryptohomeOp::Initiate));
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(current_online_.get(),
-                        &OnlineAttempt::Initiate,
-                        profile));
+  current_online_->Initiate(profile);
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(this,
@@ -261,11 +257,7 @@ void ParallelAuthenticator::RetryAuth(Profile* profile,
                            login_captcha,
                            false /* not a new user */));
   current_online_ = new OnlineAttempt(reauth_state_.get(), this);
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(current_online_.get(),
-                        &OnlineAttempt::Initiate,
-                        profile));
+  current_online_->Initiate(profile);
 }
 
 void ParallelAuthenticator::Resolve() {
