@@ -519,11 +519,11 @@ def _LegacyArchiveBuild(buildroot, bot_id, buildconfig, buildnumber,
          '--gsutil', '/b/scripts/slave/gsutil',
   ]
   # Give the right args to archive_build.
-  if buildconfig['archive_build_prebuilts']: cmd.extend('--prebuilt_upload')
+  if buildconfig['archive_build_prebuilts']: cmd.append('--prebuilt_upload')
   if buildconfig.get('factory_test_mod', True): cmd.append('--factory_test_mod')
   if not buildconfig['archive_build_debug']: cmd.append('--noarchive_debug')
-  if buildconfig.get('test_mod', False): cmd.append('--notest_mod')
-  if test_tarball: cmd.append('--test_tarball', test_tarball)
+  if not buildconfig.get('test_mod'): cmd.append('--notest_mod')
+  if test_tarball: cmd.extend(['--test_tarball', test_tarball])
   if debug: cmd.append('--debug')
   if buildconfig.get('factory_install_mod', True):
     cmd.append('--factory_install_mod')
@@ -544,18 +544,18 @@ def _ArchiveTestResults(buildroot, test_results_dir):
   try:
     test_results_dir = test_results_dir.lstrip('/')
     results_path = os.path.join(buildroot, 'chroot', test_results_dir)
-    RunCommand(['sudo', 'chmod', '-R', 'a+rw', results_path])
+    OldRunCommand(['sudo', 'chmod', '-R', 'a+rw', results_path])
 
     archive_tarball = os.path.join(buildroot, 'test_results.tgz')
     if os.path.exists(archive_tarball): os.remove(archive_tarball)
-    RunCommand(['tar', 'cf', archive_tarball, results_path])
+    OldRunCommand(['tar', 'cf', archive_tarball, results_path])
     shutil.rmtree(results_path)
     return archive_tarball
-  except:
+  except Exception, e:
     Warning('=================================================================')
     Warning('------>       We failed to archive test results. <---------------')
+    Warning(str(e))
     Warning('=================================================================')
-    return None
 
 
 def _GetConfig(config_name):
