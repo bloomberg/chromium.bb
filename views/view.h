@@ -26,6 +26,8 @@
 
 using ui::OSExchangeData;
 
+// TODO(sad): Use platform independent wrapper for transform matrix.
+class SkMatrix;
 class ViewAccessibility;
 
 namespace gfx {
@@ -248,6 +250,10 @@ class View : public AcceleratorTarget {
   // Position is in the coordinate system of the view's parent.
   // Position is NOT flipped for RTL. See "RTL positioning" for RTL-sensitive
   // position accessors.
+  // Transformations are not applied on the size/position. For example, if
+  // bounds is (0, 0, 100, 100) and it is scaled by 0.5 along the X axis, the
+  // width will still be 100 (although when painted, it will be 50x50, painted
+  // at location (0, 0)).
 
   void SetBounds(int x, int y, int width, int height);
   void SetBoundsRect(const gfx::Rect& bounds);
@@ -259,6 +265,7 @@ class View : public AcceleratorTarget {
   // Override to be notified when the bounds of the view have changed.
   virtual void OnBoundsChanged();
 
+  // No transformation is applied on the size or the locations.
   const gfx::Rect& bounds() const { return bounds_; }
   int x() const { return bounds_.x(); }
   int y() const { return bounds_.y(); }
@@ -328,6 +335,33 @@ class View : public AcceleratorTarget {
 
   // Returns whether the view is enabled.
   virtual bool IsEnabled() const;
+
+  // Transformations -----------------------------------------------------------
+
+  // Methods for setting transformations for a view (e.g. rotation, scaling).
+
+  const SkMatrix* transform() { return transform_.get(); }
+
+  // Clipping parameters. Clipping happens from the right and/or bottom. The
+  // clipping amount is in parent's coordinate system, as in, if the view is
+  // rotated, then the clipping will be applied after the rotation (and other
+  // transformations, if any).
+  void set_clip_x(int x) { clip_x_ = x; }
+  void set_clip_y(int y) { clip_y_ = y; }
+  void set_clip(int x, int y) { clip_x_ = x; clip_y_ = y; }
+
+  void SetRotation(double degree);
+
+  void SetScaleX(double x);
+  void SetScaleY(double y);
+  void SetScale(double x, double y);
+
+  void SetTranslateX(int x);
+  void SetTranslateY(int y);
+  void SetTranslate(int x, int y);
+
+  // Reset the transformation matrix.
+  void ResetTransform();
 
   // RTL positioning -----------------------------------------------------------
 
@@ -472,13 +506,19 @@ class View : public AcceleratorTarget {
   // screen. This is useful for example when placing popup windows.
   static void ConvertPointToScreen(const View* src, gfx::Point* point);
 
+  // Applies transformation on the rectangle, which is in the view's coordinate
+  // system, to convert it into the parent's coordinate system.
+  gfx::Rect ConvertRectToParent(const gfx::Rect& rect) const;
+
   // Painting ------------------------------------------------------------------
 
   // Mark all or part of the View's bounds as dirty (needing repaint).
   // |r| is in the View's coordinates.
   // When |urgent| is true, the view will be repainted when the current event
   // processing is done. Otherwise, painting will take place as soon as
-  // possible.
+  // possible. Rectangle |r| should be in the view's coordinate system. The
+  // transformations are applied to it to convert it into the parent coordinate
+  // system before propagating SchedulePaint up the view hierarchy.
   virtual void SchedulePaint();
   virtual void SchedulePaintInRect(const gfx::Rect& r, bool urgent);
 
@@ -1212,6 +1252,11 @@ class View : public AcceleratorTarget {
   void AddDescendantToNotify(View* view);
   void RemoveDescendantToNotify(View* view);
 
+  // Transformations -----------------------------------------------------------
+
+  // Initialize the transform matrix when necessary.
+  void InitTransform();
+
   // Coordinate conersion ------------------------------------------------------
 
   // This is the actual implementation for ConvertPointToView()
@@ -1317,6 +1362,16 @@ class View : public AcceleratorTarget {
 
   // List of descendants wanting notification when their visible bounds change.
   scoped_ptr<ViewVector> descendants_to_notify_;
+
+  // Transformations -----------------------------------------------------------
+
+  // The transformation matrix (rotation, translate, scale).
+  scoped_ptr<SkMatrix> transform_;
+
+  // Clipping parameters. skia transformation matrix does not give us clipping.
+  // So we do it ourselves.
+  int clip_x_;
+  int clip_y_;
 
   // Layout --------------------------------------------------------------------
 

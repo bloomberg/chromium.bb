@@ -338,13 +338,14 @@ View* RootView::GetFocusTraversableParentView() {
 // RootView, View overrides:
 
 void RootView::SchedulePaintInRect(const gfx::Rect& r, bool urgent) {
+  gfx::Rect xrect = ConvertRectToParent(r);
   // If there is an existing invalid rect, add the union of the scheduled
   // rect with the invalid rect. This could be optimized further if
   // necessary.
   if (invalid_rect_.IsEmpty())
-    invalid_rect_ = r;
+    invalid_rect_ = xrect;
   else
-    invalid_rect_ = invalid_rect_.Union(r);
+    invalid_rect_ = invalid_rect_.Union(xrect);
 
   if (urgent || invalid_rect_urgent_) {
     invalid_rect_urgent_ = true;

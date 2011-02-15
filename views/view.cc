@@ -10,10 +10,12 @@
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
-#include "third_party/skia/include/core/SkShader.h"
+#include "third_party/skia/include/core/SkMatrix.h"
+#include "third_party/skia/include/core/SkRect.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/path.h"
+#include "ui/gfx/skia_util.h"
 #include "views/background.h"
 #include "views/layout/layout_manager.h"
 #include "views/views_delegate.h"
@@ -63,6 +65,8 @@ View::View()
       is_visible_(true),
       notify_when_visible_bounds_in_root_changes_(false),
       registered_for_visible_bounds_notification_(false),
+      clip_x_(0),
+      clip_y_(0),
       needs_layout_(true),
       flip_canvas_on_paint_for_rtl_ui_(false),
       accelerator_registration_delayed_(false),
@@ -364,6 +368,50 @@ bool View::IsEnabled() const {
   return enabled_;
 }
 
+// Transformations -------------------------------------------------------------
+
+void View::SetRotation(double degree) {
+  InitTransform();
+  transform_->setRotate(SkDoubleToScalar(degree),
+                        SkIntToScalar(0), SkIntToScalar(0));
+}
+
+void View::SetScaleX(double x) {
+  InitTransform();
+  transform_->setScaleX(SkDoubleToScalar(x));
+}
+
+void View::SetScaleY(double y) {
+  InitTransform();
+  transform_->setScaleY(SkDoubleToScalar(y));
+}
+
+void View::SetScale(double x, double y) {
+  InitTransform();
+  transform_->setScale(SkDoubleToScalar(x), SkDoubleToScalar(y));
+}
+
+void View::SetTranslateX(int x) {
+  InitTransform();
+  transform_->setTranslateX(SkIntToScalar(x));
+}
+
+void View::SetTranslateY(int y) {
+  InitTransform();
+  transform_->setTranslateY(SkIntToScalar(y));
+}
+
+void View::SetTranslate(int x, int y) {
+  InitTransform();
+  transform_->setTranslate(SkIntToScalar(x), SkIntToScalar(y));
+}
+
+void View::ResetTransform() {
+  transform_.reset(NULL);
+  clip_x_ = clip_y_ = 0;
+}
+
+
 // RTL positioning -------------------------------------------------------------
 
 gfx::Rect View::GetMirroredBounds() const {
@@ -549,6 +597,19 @@ void View::ConvertPointToScreen(const View* src, gfx::Point* p) {
   }
 }
 
+gfx::Rect View::ConvertRectToParent(const gfx::Rect& rect) const {
+  if (!transform_.get() || transform_->isIdentity())
+    return rect;
+  SkRect src = gfx::RectToSkRect(rect);
+  if (!transform_->mapRect(&src))
+    return rect;
+  gfx::Rect ret(static_cast<int>(SkScalarToDouble(src.fLeft)),
+                static_cast<int>(SkScalarToDouble(src.fTop)),
+                static_cast<int>(SkScalarToDouble(src.width())),
+                static_cast<int>(SkScalarToDouble(src.height())));
+  return ret;
+}
+
 // Painting --------------------------------------------------------------------
 
 void View::SchedulePaint() {
@@ -562,7 +623,7 @@ void View::SchedulePaintInRect(const gfx::Rect& r, bool urgent) {
   if (parent_) {
     // Translate the requested paint rect to the parent's coordinate system
     // then pass this notification up to the parent.
-    gfx::Rect paint_rect = r;
+    gfx::Rect paint_rect = ConvertRectToParent(r);
     paint_rect.Offset(GetMirroredPosition());
     parent_->SchedulePaintInRect(paint_rect, urgent);
   }
@@ -611,10 +672,14 @@ void View::ProcessPaint(gfx::Canvas* canvas) {
   // Note that the X (or left) position we pass to ClipRectInt takes into
   // consideration whether or not the view uses a right-to-left layout so that
   // we paint our view in its mirrored position if need be.
-  if (canvas->ClipRectInt(GetMirroredX(), y(), width(), height())) {
+  if (canvas->ClipRectInt(GetMirroredX(), y(),
+                          width() - clip_x_, height() - clip_y_)) {
     // Non-empty clip, translate the graphics such that 0,0 corresponds to
     // where this view is located (related to its parent).
     canvas->TranslateInt(GetMirroredX(), y());
+
+    if (transform_.get())
+      canvas->AsCanvasSkia()->concat(*transform_.get());
 
     // If the View we are about to paint requested the canvas to be flipped, we
     // should change the transform appropriately.
@@ -1261,6 +1326,15 @@ void View::RemoveDescendantToNotify(View* view) {
   descendants_to_notify_->erase(i);
   if (descendants_to_notify_->empty())
     descendants_to_notify_.reset();
+}
+
+// Transformations -------------------------------------------------------------
+
+void View::InitTransform() {
+  if (!transform_.get()) {
+    transform_.reset(new SkMatrix);
+    transform_->reset();
+  }
 }
 
 // Coordinate conversion -------------------------------------------------------

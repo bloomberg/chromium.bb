@@ -1514,3 +1514,46 @@ TEST_F(ViewTest, ChangeNativeViewHierarchyChangeHierarchy) {
   test.CheckChangingHierarhy();
 #endif
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// Transformations
+////////////////////////////////////////////////////////////////////////////////
+TEST_F(ViewTest, TransformPaint) {
+  TestView* v1 = new TestView();
+  v1->SetBounds(0, 0, 500, 300);
+
+  TestView* v2 = new TestView();
+  v2->SetBounds(100, 100, 200, 100);
+
+  Widget* widget = CreateWidget();
+#if defined(OS_WIN)
+  WidgetWin* window_win = static_cast<WidgetWin*>(widget);
+  window_win->set_window_style(WS_OVERLAPPEDWINDOW);
+  window_win->Init(NULL, gfx::Rect(50, 50, 650, 650));
+#endif
+  RootView* root = widget->GetRootView();
+
+  root->AddChildView(v1);
+  v1->AddChildView(v2);
+
+  // At this moment, |v2| occupies (100, 100) to (300, 200) in |root|.
+  root->ClearPaintRect();
+  v2->SchedulePaint();
+
+  gfx::Rect rect = root->GetScheduledPaintRect();
+  EXPECT_EQ(gfx::Rect(100, 100, 200, 100), rect);
+
+  // Rotate |v1| counter-clockwise.
+  v1->SetRotation(-90.0);
+  v1->SetTranslateY(500);
+
+  // |v2| now occupies (100, 200) to (200, 400) in |root|.
+
+  root->ClearPaintRect();
+  v2->SchedulePaint();
+
+  rect = root->GetScheduledPaintRect();
+  EXPECT_EQ(gfx::Rect(100, 200, 100, 200), rect);
+
+  widget->CloseNow();
+}
