@@ -14,15 +14,31 @@ namespace prerender {
 
 namespace {
 
-bool ShouldPrerender(const GURL& url, const ResourceResponse* response) {
+bool ShouldPrerenderURL(const GURL& url) {
+  if (!url.is_valid())
+    return false;
+  if (!url.SchemeIs("http")) {
+    RecordFinalStatus(FINAL_STATUS_HTTPS);
+    return false;
+  }
+  return true;
+}
+
+bool ValidateAliasURLs(const std::vector<GURL>& urls) {
+  for (std::vector<GURL>::const_iterator it = urls.begin();
+       it != urls.end();
+       ++it) {
+    if (!ShouldPrerenderURL(*it))
+      return false;
+  }
+  return true;
+}
+
+bool ShouldPrerender(const ResourceResponse* response) {
   if (!response)
     return false;
   const ResourceResponseHead& rrh = response->response_head;
-  if (!url.is_valid())
-    return false;
   if (!rrh.headers)
-    return false;
-  if (!(url.SchemeIs("http") || url.SchemeIs("https")))
     return false;
   if (rrh.mime_type != "text/html")
     return false;
@@ -40,6 +56,8 @@ PrerenderResourceHandler* PrerenderResourceHandler::MaybeCreate(
   if (!context || !context->prerender_manager())
     return NULL;
   if (!(request.load_flags() & net::LOAD_PREFETCH))
+    return NULL;
+  if (!ShouldPrerenderURL(request.url()))
     return NULL;
   if (request.method() != "GET")
     return NULL;
@@ -85,6 +103,8 @@ bool PrerenderResourceHandler::OnRequestRedirected(int request_id,
   bool will_redirect = next_handler_->OnRequestRedirected(
       request_id, url, response, defer);
   if (will_redirect) {
+    if (!ShouldPrerenderURL(url))
+      return false;
     alias_urls_.push_back(url);
     url_ = url;
   }
@@ -93,7 +113,8 @@ bool PrerenderResourceHandler::OnRequestRedirected(int request_id,
 
 bool PrerenderResourceHandler::OnResponseStarted(int request_id,
                                                  ResourceResponse* response) {
-  if (ShouldPrerender(url_, response)) {
+  if (ShouldPrerender(response)) {
+    DCHECK(ValidateAliasURLs(alias_urls_));
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
@@ -111,6 +132,8 @@ bool PrerenderResourceHandler::OnWillStart(int request_id,
                                            bool* defer) {
   bool will_start = next_handler_->OnWillStart(request_id, url, defer);
   if (will_start) {
+    if (!ShouldPrerenderURL(url))
+      return false;
     alias_urls_.push_back(url);
     url_ = url;
   }

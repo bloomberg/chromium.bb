@@ -111,14 +111,19 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
                         FinalStatus expected_final_status,
                         int total_navigations) {
     ASSERT_TRUE(test_server()->Start());
-
-    std::string src_path = "files/prerender/prerender_loader.html?";
-    src_path.append(html_file);
     std::string dest_path = "files/prerender/";
     dest_path.append(html_file);
-
-    GURL src_url = test_server()->GetURL(src_path);
     dest_url_ = test_server()->GetURL(dest_path);
+
+    std::vector<net::TestServer::StringPair> replacement_text;
+    replacement_text.push_back(
+        make_pair("REPLACE_WITH_PREFETCH_URL", dest_url_.spec()));
+    std::string replacement_path;
+    ASSERT_TRUE(net::TestServer::GetFilePathWithReplacements(
+        "files/prerender/prerender_loader.html",
+        replacement_text,
+        &replacement_path));
+    GURL src_url = test_server()->GetURL(replacement_path);
 
     Profile* profile = browser()->GetSelectedTabContents()->profile();
     PrerenderManager* prerender_manager = profile->GetPrerenderManager();
@@ -250,6 +255,25 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderRedirect) {
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPopup) {
   PrerenderTestURL("prerender_popup.html",
                    FINAL_STATUS_CREATE_NEW_WINDOW, 1);
+}
+
+// Test that page-based redirects to https will cancel prerenders.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderRedirectToHttps) {
+  net::TestServer https_server(net::TestServer::TYPE_HTTPS,
+                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server.Start());
+  GURL https_url = https_server.GetURL("files/prerender/prerender_page.html");
+  std::vector<net::TestServer::StringPair> replacement_text;
+  replacement_text.push_back(
+      make_pair("REPLACE_WITH_HTTPS_URL", https_url.spec()));
+  std::string redirect_path;
+  ASSERT_TRUE(net::TestServer::GetFilePathWithReplacements(
+      "prerender_redirect_to_https.html",
+      replacement_text,
+      &redirect_path));
+  PrerenderTestURL(redirect_path,
+                   FINAL_STATUS_HTTPS,
+                   2);
 }
 
 }  // namespace prerender
