@@ -35,6 +35,7 @@
   'variables': {
       'src_files': ['sel_universal.cc',
                     'rpc_universal.cc',
+                    'rpc_universal_system.cc',
                     'replay_handler.cc',
                     'pepper_handler.cc',
                     'parsing.cc',
@@ -60,7 +61,6 @@
               '-ldl',
             ],
           },
-          'sources': ['rpc_universal_linux.cc'],
         }],
       ],
     },

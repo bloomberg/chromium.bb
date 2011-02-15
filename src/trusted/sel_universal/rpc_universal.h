@@ -63,5 +63,8 @@ class NaClCommandLoop {
   bool upcall_installed_;
 };
 
-
+// possible platform dependent stuff
+bool HandlerSleep(NaClCommandLoop* ncl, const vector<string>& args);
+bool HandlerReadonlyFile(NaClCommandLoop* ncl, const vector<string>& args);
+bool HandlerShmem(NaClCommandLoop* ncl, const vector<string>& args);
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_SEL_UNIVERSAL_RPC_UNIVERSAL_H_ */

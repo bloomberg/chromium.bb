@@ -145,12 +145,12 @@ int main(int argc, char* argv[]) {
 
   //
   // Pepper sample commands
-  // initialize_pepper pepper_desc
+  // initialize_pepper pepper
   // add_pepper_rpcs
-  // install_upcalls service_string
+  // install_upcalls service
   // show_variables
   // show_descriptors
-  // rpc PPP_InitializeModule i(0) l(0) h(pepper_desc) s("${service_string}") * i(0) i(0)
+  // rpc PPP_InitializeModule i(0) l(0) h(pepper) s("${service}") * i(0) i(0)
 
   loop.AddHandler("initialize_pepper", HandlerPepperInit);
   loop.AddHandler("add_pepper_rpcs", HandlerAddPepperRpcs);
@@ -158,17 +158,10 @@ int main(int argc, char* argv[]) {
   loop.AddHandler("replay_activate", HandlerReplayActivate);
   loop.AddHandler("replay", HandlerReplay);
 
-#if NACL_LINUX
-  // TODO(robertm): rename rpc_universal_sysv.cc and a header file
-  extern bool HandlerSysv(NaClCommandLoop* ncl, const vector<string>& args);
-  loop.AddHandler("sysv", HandlerSysv);
-
-  extern bool HandlerReadonlyFile(NaClCommandLoop* ncl, const vector<string>& args);
+  // possible platform specific stuff
+  loop.AddHandler("sysv", HandlerShmem);
   loop.AddHandler("readonly_file", HandlerReadonlyFile);
-
-  extern bool HandlerSleep(NaClCommandLoop* ncl, const vector<string>& args);
   loop.AddHandler("sleep", HandlerSleep);
-#endif  /* NACL_LINUX */
 
   NaClLog(1, "populating initial vars\n");
   for (map<string, string>::iterator it = initial_vars.begin();
