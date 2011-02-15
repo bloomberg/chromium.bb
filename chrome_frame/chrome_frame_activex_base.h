@@ -1030,7 +1030,8 @@ END_MSG_MAP()
       RECT dummy_pos_rect = {0};
       RECT dummy_clip_rect = {0};
       OLEINPLACEFRAMEINFO dummy_frame_info = {0};
-      if (FAILED(m_spInPlaceSite->GetWindowContext(in_place_frame_.Receive(),
+      if (!m_spInPlaceSite ||
+          FAILED(m_spInPlaceSite->GetWindowContext(in_place_frame_.Receive(),
                                                    dummy_ui_window.Receive(),
                                                    &dummy_pos_rect,
                                                    &dummy_clip_rect,
