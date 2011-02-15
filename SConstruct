@@ -2055,6 +2055,7 @@ nacl_env.Append(
     'tests/ppapi_example_2d/nacl.scons',
     'tests/ppapi_example_audio/nacl.scons',
     'tests/ppapi_geturl/nacl.scons',
+    'tests/ppapi_gles_book/nacl.scons',
     'tests/ppapi_proxy/nacl.scons',
     # uncomment this test once issue
     # http://code.google.com/p/nativeclient/issues/detail?id=902 gets fixed

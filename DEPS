@@ -27,6 +27,8 @@ deps = {
     Var("native_client_trunk") + "/src/third_party/gcc@" + Var("tools_rev"),
   "third_party/gdb":
     Var("native_client_trunk") + "/src/third_party/gdb@" + Var("tools_rev"),
+  "third_party/gles2_book":
+    Var("chromium_trunk") + "/src/third_party/gles2_book@" + Var("chrome_rev"),
   "third_party/gmp":
     Var("native_client_trunk") + "/src/third_party/gmp@" + Var("tools_rev"),
   "third_party/qemu":
@@ -47,6 +49,8 @@ deps = {
      Var("chrome_rev")),
   "base":
     Var("chromium_trunk") + "/src/base@" + Var("chrome_rev"),
+  "gpu/demos":
+    Var("chromium_trunk") + "/src/gpu/demos@" + Var("chrome_rev"),
   "gpu/GLES2":
     Var("chromium_trunk") + "/src/gpu/GLES2@" + Var("chrome_rev"),
   "gpu/KHR":

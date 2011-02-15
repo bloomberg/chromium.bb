@@ -129,6 +129,7 @@ def NaClSourceSubset(input_tree):
       "native_client/tools/srpcgen.py",
       "native_client/tools/test_lib.py",
       "native_client/tools/tests",
+      "third_party/gles2_book",
       "third_party/npapi",
       "third_party/scons",
       # Pulled in from SVN repos via DEPS

@@ -1,0 +1,53 @@
+# -*- python -*-
+# Copyright 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+# OpenGL ES examples
+
+Import('env')
+
+env.Prepend(CPPDEFINES=['XP_UNIX'])
+
+# Underlay $SOURCE_ROOT/gpu in this directory.
+Dir('.').addRepository(Dir('#/../gpu'))
+
+# Underlay $SOURCE_ROOT/third_party/gles2_book in this directory.
+Dir('.').addRepository(Dir('#/../third_party/gles2_book'))
+
+# Remove the pedantic flag to accept long long.
+env.FilterOut(CCFLAGS=['-pedantic'])
+# ..and don't warn on pointer signedness issues
+env.Append(CFLAGS=['-Wno-pointer-sign'])
+
+# Add local path to find GPU sources.
+env.Append(CPPPATH=[
+    '$SOURCE_ROOT/gpu',
+    '$SOURCE_ROOT/third_party/gles2_book/Common/Include',
+    ])
+
+gles_demo_srcs = [
+    'Common/Source/esShader.c',
+    'Common/Source/esShapes.c',
+    'Common/Source/esTransform.c',
+    'Common/Source/esUtil.c',
+    'demos/framework/demo.cc',
+    'demos/framework/pepper.cc',
+    ]
+
+ppapi_hello_triangle_nexe = env.ComponentProgram('ppapi_hello_triangle.nexe',
+    [ 'demos/gles2_book/demo_hello_triangle.cc',
+      'Chapter_2/Hello_Triangle/Hello_Triangle.c' ] + gles_demo_srcs,
+    EXTRA_LIBS=['ppruntime',
+                'ppapi_cpp',
+                'ppapi_gles2',
+                'platform',
+                'gio',
+                'pthread',
+                'm',
+                'srpc'])
+
+# Note that the html is required to run this program.
+env.Publish('ppapi_hello_triangle.nexe', 'run',
+            ['ppapi_hello_triangle.html' ])
+
