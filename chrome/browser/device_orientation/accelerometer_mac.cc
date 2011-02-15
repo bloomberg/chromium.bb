@@ -118,7 +118,7 @@ const AccelerometerMac::SensorDescriptor
   { "MacBook7,1",    { { 0, true  }, { 2, true  }, { 4, false } } },
 
   // Tested by crc on a 13" MacBook Air.
-  { "MacBookAir1,1", { { 0, true  }, { 2, true  }, { 4, false } } }
+  { "MacBookAir1,1", { { 0, true  }, { 2, true  }, { 4, false } } },
 
   // Tested by sfiera, pjw on a 13" MacBook Air.
   { "MacBookAir2,1", { { 0, true  }, { 2, true  }, { 4, false } } },
