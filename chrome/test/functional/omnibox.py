@@ -253,8 +253,8 @@ class OmniboxTest(pyauto.PyUITest):
 
   def testAutoCompleteForSearch(self):
     """Verify omnibox autocomplete for search."""
-    search_string = 'barac'
-    verify_string = 'barack'
+    search_string = 'youtu'
+    verify_string = 'youtube'
     matches = self._GetOmniboxMatchesFor(search_string)
     # retrieve last contents element.
     matches_description = matches[-1]['contents'].split()
