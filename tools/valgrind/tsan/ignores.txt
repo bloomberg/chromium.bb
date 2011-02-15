@@ -15,7 +15,7 @@ obj:*/libnss*
 obj:*/nss/*
 
 # ignore pulseaudio - We don't have symbols there and it can be slow otherwise
-obj:*/libpulse.so*
+obj:*/libpulse*.so*
 
 # ignore this standard stuff
 fun:clone
@@ -26,6 +26,7 @@ fun_r:_pthread_free_pthread_onstack
 fun_r:random_r
 fun_r:random
 fun_r:rand
+fun_r:srand
 fun:__lll_mutex_unlock_wake
 fun:__cxa_atexit
 fun:__new_exitfn
@@ -87,6 +88,9 @@ fun_hist:*unibrow*
 # Histogram has tiny functions that can be called frequently
 fun_hist:*Histogram*
 
+# Debug-only, so we don't care (mostly) http://crbug/61179
+fun_r:*tracked_objects*
+
 # TODO(timurrrr): SKIA - needs separate testing?
 # SKIA unittest is single-threaded...
 # SKIA uses un-annotated atomic refcount and other sync stuff
@@ -125,6 +129,9 @@ fun_r:*remoting*CompressorZlib*Process*
 # X11 reads the _XErrorFunction callback in a racey way, see
 # http://crbug.com/65278
 fun:XSetErrorHandler
+
+fun:*IPC*Logging*Enable*
+fun:*IPC*Logging*Disable*
 
 # TSan doesn't support lockf and hence shared memory locks in this function;
 # http://crbug.com/45083
