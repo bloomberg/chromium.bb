@@ -1,15 +1,48 @@
 <script>
-chrome.experimental.webRequest.onBeforeRequest.addListener(
-    function(details) {});
-chrome.experimental.webRequest.onRequestSent.addListener(
-    function(details) {});
-chrome.experimental.webRequest.onHeadersReceived.addListener(
-    function(details) {});
-chrome.experimental.webRequest.onBeforeRedirect.addListener(
-    function(details) {});
-chrome.experimental.webRequest.onCompleted.addListener(
-    function(details) {});
-chrome.experimental.webRequest.onErrorOccurred.addListener(
-    function(details) {});
-chrome.test.notifyPass();
+chrome.test.runTests([
+  function addListeners() {
+    chrome.experimental.webRequest.onBeforeRequest.addListener(
+        function(details) {});
+    chrome.experimental.webRequest.onRequestSent.addListener(
+        function(details) {});
+    chrome.experimental.webRequest.onHeadersReceived.addListener(
+        function(details) {});
+    chrome.experimental.webRequest.onBeforeRedirect.addListener(
+        function(details) {});
+    chrome.experimental.webRequest.onCompleted.addListener(
+        function(details) {});
+    chrome.experimental.webRequest.onErrorOccurred.addListener(
+        function(details) {});
+    chrome.test.succeed();
+  },
+
+  // Tests that the extra parameters to addListener are checked for invalid
+  // values.
+  function specialEvents() {
+    var goodFilter = {urls: ["http://*.google.com/*"]};
+    var goodExtraInfo = ["requestLine", "requestHeaders"];
+    var badFilter = {broken: 42};
+    var badExtraInfo = ["garbage"];
+    chrome.experimental.webRequest.onBeforeRequest.addListener(
+      function(details) {},
+      goodFilter, goodExtraInfo);
+    try {
+      chrome.experimental.webRequest.onBeforeRequest.addListener(
+        function(details) {},
+        badFilter, goodExtraInfo);
+      chrome.test.fail();
+    } catch (e) {
+      chrome.test.assertTrue(e.message.search("Invalid value") >= 0);
+    }
+    try {
+      chrome.experimental.webRequest.onBeforeRequest.addListener(
+        function(details) {},
+        goodFilter, badExtraInfo);
+      chrome.test.fail();
+    } catch (e) {
+      chrome.test.assertTrue(e.message.search("Invalid value") >= 0);
+    }
+    chrome.test.succeed();
+  },
+]);
 </script>

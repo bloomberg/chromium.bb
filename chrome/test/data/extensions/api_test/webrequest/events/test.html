@@ -1,10 +1,13 @@
 <script>
+var getURL = chrome.extension.getURL;
 var expectedEventData;
 var capturedEventData;
+var captureFilteredEvents;
 
-function expect(data) {
+function expect(data, filtered) {
   expectedEventData = data;
   capturedEventData = [];
+  captureFilteredEvents = filtered;
 }
 
 function checkExpectations() {
@@ -17,13 +20,14 @@ function checkExpectations() {
   chrome.test.succeed();
 }
 
-function captureEvent(name, details) {
+function captureEvent(name, details, isFiltered) {
   // TODO(mpcomplete): implement the rest of the parameters.
   delete details.requestId;
   delete details.tabId;
   delete details.timeStamp;
   delete details.type;
-  capturedEventData.push([name, details]);
+  if (captureFilteredEvents == isFiltered)
+    capturedEventData.push([name, details]);
   checkExpectations();
 }
 
@@ -52,7 +56,14 @@ chrome.experimental.webRequest.onErrorOccurred.addListener(
   captureEvent("onErrorOccurred", details);
 });
 
-var getURL = chrome.extension.getURL;
+// For filter tests.
+chrome.experimental.webRequest.onBeforeRequest.addListener(
+    function(details) {
+  captureEvent("onBeforeRequest", details, true);
+},
+    {urls: [getURL("simpleLoad/*")]}
+);
+
 chrome.tabs.getSelected(null, function(tab) {
   var tabId = tab.id;
 
@@ -73,7 +84,7 @@ chrome.tabs.getSelected(null, function(tab) {
     // Navigates to a page with subresources.
     // TODO(mpcomplete): add multiple subresources; requires support for
     // recognizing partial ordering.
-    function simpleLoad() {
+    function complexLoad() {
       expect([
         [ "onBeforeRequest",
           {
@@ -95,6 +106,21 @@ chrome.tabs.getSelected(null, function(tab) {
         ],
       ]);
       chrome.tabs.update(tabId, { url: getURL("complexLoad/a.html") });
+    },
+
+    // Loads several resources, but should only see the simpleLoad
+    // due to the filter.
+    function simpleLoadFiltered() {
+      expect([
+        [ "onBeforeRequest",
+          {
+            method: "GET",
+            url: getURL("simpleLoad/a.html")
+          }
+        ],
+      ], true);
+      chrome.tabs.update(tabId, { url: getURL("complexLoad/a.html") });
+      chrome.tabs.update(tabId, { url: getURL("simpleLoad/a.html") });
     },
   ]);
 });
