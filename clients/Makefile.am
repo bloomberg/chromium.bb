@@ -11,7 +11,7 @@ noinst_PROGRAMS =				\
 	simple-client				\
 	eventdemo
 
-noinst_LTLIBRARIES = libtoytoolkit.la
+noinst_LIBRARIES = libtoytoolkit.a
 
 AM_CFLAGS = $(GCC_CFLAGS)
 AM_CPPFLAGS =					\
@@ -20,7 +20,7 @@ AM_CPPFLAGS =					\
 	-I$(top_srcdir)/wayland			\
 	$(CLIENT_CFLAGS)
 
-libtoytoolkit_la_SOURCES =			\
+libtoytoolkit_a_SOURCES =			\
 	window.c				\
 	window.h				\
 	wayland-glib.c				\
@@ -28,10 +28,9 @@ libtoytoolkit_la_SOURCES =			\
 	cairo-util.c				\
 	cairo-util.h
 
-toolkit_libs =						\
-	libtoytoolkit.la				\
-	$(top_builddir)/wayland/libwayland-client.la	\
-	$(CLIENT_LIBS) -lrt -lm -lwayland-egl
+toolkit_libs =					\
+	libtoytoolkit.a				\
+	$(CLIENT_LIBS) -lrt -lm
 
 gears_SOURCES = gears.c
 gears_LDADD = $(toolkit_libs)
@@ -58,10 +57,7 @@ resizor_SOURCES = resizor.c
 resizor_LDADD = $(toolkit_libs)
 
 simple_client_SOURCES = simple-client.c
-simple_client_LDADD =						\
-	$(top_builddir)/wayland/libwayland-client.la -lm	\
-	$(GLES2_LIBS)						\
-	-lwayland-egl
+simple_client_LDADD = $(SIMPLE_CLIENT_LIBS) -lm
 
 eventdemo_SOURCES = eventdemo.c
 eventdemo_LDADD = $(toolkit_libs)
@@ -72,7 +68,7 @@ BUILT_SOURCES =					\
 
 CLEANFILES = $(BUILT_SOURCES)
 
-include $(top_srcdir)/wayland/scanner.mk
+@wayland_scanner_rules@
 
 if HAVE_POPPLER
 poppler_programs = view

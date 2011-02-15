@@ -8,9 +8,7 @@ AM_CPPFLAGS =					\
 
 AM_CFLAGS = $(GCC_CFLAGS)
 
-compositor_LDADD =					\
-	$(top_builddir)/wayland/libwayland-server.la	\
-	$(top_builddir)/wayland/libwayland-client.la	\
+compositor_LDADD =				\
 	$(COMPOSITOR_LIBS)
 
 if ENABLE_DRM_COMPOSITOR
@@ -52,4 +50,4 @@ BUILT_SOURCES =					\
 
 CLEANFILES = $(BUILT_SOURCES)
 
-include $(top_srcdir)/wayland/scanner.mk
+@wayland_scanner_rules@
