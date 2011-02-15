@@ -325,13 +325,10 @@ class PDFUnsupportedFeatureConfirmInfoBarDelegate
     }
 
     InfoBarDelegate* bar = NULL;
-    // Don't show the enable Reader by default info bar for now.
-    /*
     if (tab_contents_->profile()->GetPrefs()->GetBoolean(
             prefs::kPluginsShowSetReaderDefaultInfobar)) {
       bar = new PDFEnableAdobeReaderConfirmInfoBarDelegate(tab_contents_);
     }
-    */
 
     if (bar) {
       OpenUsingReader(tab_contents_, reader_webplugininfo_, this, bar);
