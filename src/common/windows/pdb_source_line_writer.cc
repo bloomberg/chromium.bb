@@ -799,10 +799,8 @@ bool PDBSourceLineWriter::WriteMap(FILE *map_file) {
   output_ = map_file;
 
   bool ret = PrintPDBInfo();
-  // TODO(ted): This is currently disabled to allow Breakpad users to update
-  // processing infrastructure.
   // This is not a critical piece of the symbol file.
-  // PrintPEInfo();
+  PrintPEInfo();
   ret = ret &&
     PrintSourceFiles() && 
     PrintFunctions() &&
