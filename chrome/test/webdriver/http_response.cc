@@ -120,11 +120,11 @@ void HttpResponse::set_status(int status) {
   status_ = status;
 }
 
-const HttpResponse::HeaderMap* const HttpResponse::headers() const {
+const HttpResponse::HeaderMap* HttpResponse::headers() const {
   return &headers_;
 }
 
-const char* const HttpResponse::data() const {
+const char* HttpResponse::data() const {
   return data_.data();
 }
 

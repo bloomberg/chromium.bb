@@ -61,8 +61,8 @@ class HttpResponse {
 
   int status() const;
   void set_status(int status);
-  const HeaderMap* const headers() const;
-  const char* const data() const;
+  const HeaderMap* headers() const;
+  const char* data() const;
   size_t length() const;
 
  private:
