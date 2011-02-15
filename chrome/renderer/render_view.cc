@@ -3723,8 +3723,6 @@ void RenderView::didLoadResourceFromMemoryCache(
   Send(new ViewHostMsg_DidLoadResourceFromMemoryCache(
       routing_id_,
       request.url(),
-      frame->securityOrigin().toString().utf8(),
-      frame->top()->securityOrigin().toString().utf8(),
       response.securityInfo()));
 }
 

@@ -15,16 +15,12 @@
 
 SSLErrorHandler::SSLErrorHandler(ResourceDispatcherHost* rdh,
                                  net::URLRequest* request,
-                                 ResourceType::Type resource_type,
-                                 const std::string& frame_origin,
-                                 const std::string& main_frame_origin)
+                                 ResourceType::Type resource_type)
     : manager_(NULL),
       request_id_(0, 0),
       resource_dispatcher_host_(rdh),
       request_url_(request->url()),
       resource_type_(resource_type),
-      frame_origin_(frame_origin),
-      main_frame_origin_(main_frame_origin),
       request_has_been_notified_(false) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
 

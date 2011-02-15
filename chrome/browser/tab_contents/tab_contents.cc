@@ -1598,8 +1598,6 @@ void TabContents::OnDidFailProvisionalLoadWithError(
 
 void TabContents::OnDidLoadResourceFromMemoryCache(
     const GURL& url,
-    const std::string& frame_origin,
-    const std::string& main_frame_origin,
     const std::string& security_info) {
   static base::StatsCounter cache("WebKit.CacheHit");
   cache.Increment();
@@ -1610,9 +1608,8 @@ void TabContents::OnDidLoadResourceFromMemoryCache(
                                       &cert_id, &cert_status,
                                       &security_bits,
                                       &connection_status);
-  LoadFromMemoryCacheDetails details(url, frame_origin, main_frame_origin,
-                                     GetRenderProcessHost()->id(), cert_id,
-                                     cert_status);
+  LoadFromMemoryCacheDetails details(url, GetRenderProcessHost()->id(),
+                                     cert_id, cert_status);
 
   NotificationService::current()->Notify(
       NotificationType::LOAD_FROM_MEMORY_CACHE,

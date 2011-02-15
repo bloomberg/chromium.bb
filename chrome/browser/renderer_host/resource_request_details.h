@@ -31,8 +31,6 @@ class ResourceRequestDetails {
   const GURL& original_url() const { return original_url_; }
   const std::string& method() const { return method_; }
   const std::string& referrer() const { return referrer_; }
-  const std::string& frame_origin() const { return frame_origin_; }
-  const std::string& main_frame_origin() const { return main_frame_origin_; }
   bool has_upload() const { return has_upload_; }
   int load_flags() const { return load_flags_; }
   int origin_child_id() const { return origin_child_id_; }
@@ -46,8 +44,6 @@ class ResourceRequestDetails {
   GURL original_url_;
   std::string method_;
   std::string referrer_;
-  std::string frame_origin_;
-  std::string main_frame_origin_;
   bool has_upload_;
   int load_flags_;
   int origin_child_id_;

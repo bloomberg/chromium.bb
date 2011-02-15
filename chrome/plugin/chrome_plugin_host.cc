@@ -167,8 +167,6 @@ class PluginRequestHandlerProxy
     request_info.first_party_for_cookies =
         GURL(cprequest_->url); // TODO(jackson): policy url?
     request_info.referrer = GURL();  // TODO(mpcomplete): referrer?
-    request_info.frame_origin = "null";
-    request_info.main_frame_origin = "null";
     request_info.headers = extra_headers_;
     request_info.load_flags = load_flags_;
     request_info.requestor_pid = base::GetCurrentProcId();

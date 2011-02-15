@@ -42,8 +42,6 @@ void SSLManager::OnSSLCertificateError(ResourceDispatcherHost* rdh,
       NewRunnableMethod(new SSLCertErrorHandler(rdh,
                                                 request,
                                                 info->resource_type(),
-                                                info->frame_origin(),
-                                                info->main_frame_origin(),
                                                 cert_error,
                                                 cert),
                         &SSLCertErrorHandler::Dispatch));
@@ -214,8 +212,6 @@ void SSLManager::DidLoadFromMemoryCache(LoadFromMemoryCacheDetails* details) {
   scoped_refptr<SSLRequestInfo> info(new SSLRequestInfo(
       details->url(),
       ResourceType::SUB_RESOURCE,
-      details->frame_origin(),
-      details->main_frame_origin(),
       details->pid(),
       details->ssl_cert_id(),
       details->ssl_cert_status()));
@@ -228,8 +224,6 @@ void SSLManager::DidStartResourceResponse(ResourceRequestDetails* details) {
   scoped_refptr<SSLRequestInfo> info(new SSLRequestInfo(
       details->url(),
       details->resource_type(),
-      details->frame_origin(),
-      details->main_frame_origin(),
       details->origin_child_id(),
       details->ssl_cert_id(),
       details->ssl_cert_status()));

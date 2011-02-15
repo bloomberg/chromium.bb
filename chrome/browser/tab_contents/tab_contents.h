@@ -762,8 +762,6 @@ class TabContents : public PageNavigator,
                                          const GURL& url,
                                          bool showing_repost_interstitial);
   void OnDidLoadResourceFromMemoryCache(const GURL& url,
-                                        const std::string& frame_origin,
-                                        const std::string& main_frame_origin,
                                         const std::string& security_info);
   void OnDidDisplayInsecureContent();
   void OnDidRunInsecureContent(const std::string& security_origin,

@@ -920,8 +920,6 @@ void ParamTraits<ViewHostMsg_Resource_Request>::Write(Message* m,
   WriteParam(m, p.url);
   WriteParam(m, p.first_party_for_cookies);
   WriteParam(m, p.referrer);
-  WriteParam(m, p.frame_origin);
-  WriteParam(m, p.main_frame_origin);
   WriteParam(m, p.headers);
   WriteParam(m, p.load_flags);
   WriteParam(m, p.origin_pid);
@@ -943,8 +941,6 @@ bool ParamTraits<ViewHostMsg_Resource_Request>::Read(const Message* m,
       ReadParam(m, iter, &r->url) &&
       ReadParam(m, iter, &r->first_party_for_cookies) &&
       ReadParam(m, iter, &r->referrer) &&
-      ReadParam(m, iter, &r->frame_origin) &&
-      ReadParam(m, iter, &r->main_frame_origin) &&
       ReadParam(m, iter, &r->headers) &&
       ReadParam(m, iter, &r->load_flags) &&
       ReadParam(m, iter, &r->origin_pid) &&
@@ -966,10 +962,6 @@ void ParamTraits<ViewHostMsg_Resource_Request>::Log(const param_type& p,
   LogParam(p.url, l);
   l->append(", ");
   LogParam(p.referrer, l);
-  l->append(", ");
-  LogParam(p.frame_origin, l);
-  l->append(", ");
-  LogParam(p.main_frame_origin, l);
   l->append(", ");
   LogParam(p.load_flags, l);
   l->append(", ");

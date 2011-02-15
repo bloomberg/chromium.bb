@@ -442,14 +442,6 @@ struct ViewHostMsg_Resource_Request {
   // The referrer to use (may be empty).
   GURL referrer;
 
-  // The origin of the frame that is associated with this request.  This is used
-  // to update our insecure content state.
-  std::string frame_origin;
-
-  // The origin of the main frame (top-level frame) that is associated with this
-  // request.  This is used to update our insecure content state.
-  std::string main_frame_origin;
-
   // Additional HTTP request headers.
   std::string headers;
 

@@ -23,8 +23,6 @@ ResourceRequestDetails::ResourceRequestDetails(const net::URLRequest* request,
       ResourceDispatcherHost::InfoForRequest(request);
   DCHECK(info);
   resource_type_ = info->resource_type();
-  frame_origin_ = info->frame_origin();
-  main_frame_origin_ = info->main_frame_origin();
 
   // If request is from the worker process on behalf of a renderer, use
   // the renderer process id, since it consumes the notification response

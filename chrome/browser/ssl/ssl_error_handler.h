@@ -53,12 +53,6 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
   // Available on either thread.
   ResourceType::Type resource_type() const { return resource_type_; }
 
-  // Available on either thread.
-  const std::string& frame_origin() const { return frame_origin_; }
-
-  // Available on either thread.
-  const std::string& main_frame_origin() const { return main_frame_origin_; }
-
   // Returns the TabContents this object is associated with.  Should be
   // called from the UI thread.
   TabContents* GetTabContents();
@@ -92,9 +86,7 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
   // Construct on the IO thread.
   SSLErrorHandler(ResourceDispatcherHost* resource_dispatcher_host,
                   net::URLRequest* request,
-                  ResourceType::Type resource_type,
-                  const std::string& frame_origin,
-                  const std::string& main_frame_origin);
+                  ResourceType::Type resource_type);
 
   virtual ~SSLErrorHandler();
 
@@ -141,14 +133,6 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
   // that error.
   // This read-only member can be accessed on any thread.
   const ResourceType::Type resource_type_;
-
-  // The origin of the frame associated with this request.
-  // This read-only member can be accessed on any thread.
-  const std::string frame_origin_;
-
-  // The origin of the main frame associated with this request.
-  // This read-only member can be accessed on any thread.
-  const std::string main_frame_origin_;
 
   // A flag to make sure we notify the net::URLRequest exactly once.
   // Should only be accessed on the IO thread

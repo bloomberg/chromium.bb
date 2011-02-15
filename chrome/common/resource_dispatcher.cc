@@ -102,8 +102,6 @@ IPCResourceLoaderBridge::IPCResourceLoaderBridge(
   request_.url = request_info.url;
   request_.first_party_for_cookies = request_info.first_party_for_cookies;
   request_.referrer = request_info.referrer;
-  request_.frame_origin = request_info.frame_origin;
-  request_.main_frame_origin = request_info.main_frame_origin;
   request_.headers = request_info.headers;
   request_.load_flags = request_info.load_flags;
   request_.origin_pid = request_info.requestor_pid;

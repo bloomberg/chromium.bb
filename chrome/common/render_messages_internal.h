@@ -1211,10 +1211,8 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_DocumentOnLoadCompletedInMainFrame,
 // The security info is non empty if the resource was originally loaded over
 // a secure connection.
 // Note: May only be sent once per URL per frame per committed load.
-IPC_MESSAGE_ROUTED4(ViewHostMsg_DidLoadResourceFromMemoryCache,
+IPC_MESSAGE_ROUTED2(ViewHostMsg_DidLoadResourceFromMemoryCache,
                     GURL /* url */,
-                    std::string  /* frame_origin */,
-                    std::string  /* main_frame_origin */,
                     std::string  /* security info */)
 
 // Sent when the renderer displays insecure content in a secure page.

@@ -156,8 +156,6 @@ class ResourceDispatcherTest : public testing::Test,
     request_info.url = GURL(test_page_url);
     request_info.first_party_for_cookies = GURL(test_page_url);
     request_info.referrer = GURL();
-    request_info.frame_origin = "null";
-    request_info.main_frame_origin = "null";
     request_info.headers = std::string();
     request_info.load_flags = 0;
     request_info.requestor_pid = 0;

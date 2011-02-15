@@ -509,8 +509,6 @@ void ResourceDispatcherHost::BeginRequest(
           child_id,
           route_id,
           request_id,
-          request_data.frame_origin,
-          request_data.main_frame_origin,
           request_data.resource_type,
           upload_size,
           false,  // is download
@@ -642,8 +640,6 @@ ResourceDispatcherHost::CreateRequestInfoForBrowserRequest(
                                                child_id,
                                                route_id,
                                                request_id_,
-                                               "null",    // frame_origin
-                                               "null",    // main_frame_origin
                                                ResourceType::SUB_RESOURCE,
                                                0,         // upload_size
                                                download,  // is_download

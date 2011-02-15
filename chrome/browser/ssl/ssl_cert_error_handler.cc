@@ -13,12 +13,9 @@ SSLCertErrorHandler::SSLCertErrorHandler(
     ResourceDispatcherHost* rdh,
     net::URLRequest* request,
     ResourceType::Type resource_type,
-    const std::string& frame_origin,
-    const std::string& main_frame_origin,
     int cert_error,
     net::X509Certificate* cert)
-    : SSLErrorHandler(rdh, request, resource_type, frame_origin,
-                      main_frame_origin),
+    : SSLErrorHandler(rdh, request, resource_type),
       cert_error_(cert_error) {
   DCHECK(request == resource_dispatcher_host_->GetURLRequest(request_id_));
 

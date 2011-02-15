@@ -19,16 +19,12 @@ class SSLRequestInfo : public base::RefCounted<SSLRequestInfo> {
  public:
   SSLRequestInfo(const GURL& url,
                  ResourceType::Type resource_type,
-                 const std::string& frame_origin,
-                 const std::string& main_frame_origin,
                  int child_id,
                  int ssl_cert_id,
                  int ssl_cert_status);
 
   const GURL& url() const { return url_; }
   ResourceType::Type resource_type() const { return resource_type_; }
-  const std::string& frame_origin() const { return frame_origin_; }
-  const std::string& main_frame_origin() const { return main_frame_origin_; }
   int child_id() const { return child_id_; }
   int ssl_cert_id() const { return ssl_cert_id_; }
   int ssl_cert_status() const { return ssl_cert_status_; }
@@ -40,8 +36,6 @@ class SSLRequestInfo : public base::RefCounted<SSLRequestInfo> {
 
   GURL url_;
   ResourceType::Type resource_type_;
-  std::string frame_origin_;
-  std::string main_frame_origin_;
   int child_id_;
   int ssl_cert_id_;
   int ssl_cert_status_;

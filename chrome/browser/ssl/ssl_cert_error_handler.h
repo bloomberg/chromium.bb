@@ -24,8 +24,6 @@ class SSLCertErrorHandler : public SSLErrorHandler {
   SSLCertErrorHandler(ResourceDispatcherHost* rdh,
                       net::URLRequest* request,
                       ResourceType::Type resource_type,
-                      const std::string& frame_origin,
-                      const std::string& main_frame_origin,
                       int cert_error,
                       net::X509Certificate* cert);
 

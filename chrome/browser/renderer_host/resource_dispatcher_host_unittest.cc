@@ -69,9 +69,6 @@ static ViewHostMsg_Resource_Request CreateResourceRequest(
   request.method = std::string(method);
   request.url = url;
   request.first_party_for_cookies = url;  // bypass third-party cookie blocking
-  // init the rest to default values to prevent getting UMR.
-  request.frame_origin = "null";
-  request.main_frame_origin = "null";
   request.load_flags = 0;
   request.origin_pid = 0;
   request.resource_type = type;
@@ -996,7 +993,6 @@ class ApplyExtensionLocalizationFilterTest : public testing::Test {
   ResourceDispatcherHostRequestInfo* CreateNewResourceRequestInfo() {
     return new ResourceDispatcherHostRequestInfo(
         resource_handler_.get(), ChildProcessInfo::RENDER_PROCESS, 0, 0, 0,
-        "not important", "not important",
         ResourceType::STYLESHEET, 0U, false, false, false, -1, -1);
   }
 

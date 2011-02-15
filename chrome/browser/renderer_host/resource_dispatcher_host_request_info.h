@@ -36,8 +36,6 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
       int child_id,
       int route_id,
       int request_id,
-      const std::string& frame_origin,
-      const std::string& main_frame_origin,
       ResourceType::Type resource_type,
       uint64 upload_size,
       bool is_download,
@@ -105,13 +103,6 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
   // The number of clients that have called pause on this request.
   int pause_count() const { return pause_count_; }
   void set_pause_count(int count) { pause_count_ = count; }
-
-  // The security origin of the frame making this request.
-  const std::string& frame_origin() const { return frame_origin_; }
-
-  // The security origin of the main frame that contains the frame making
-  // this request.
-  const std::string& main_frame_origin() const { return main_frame_origin_; }
 
   // Identifies the type of resource, such as subframe, media, etc.
   ResourceType::Type resource_type() const { return resource_type_; }
@@ -219,8 +210,6 @@ class ResourceDispatcherHostRequestInfo : public net::URLRequest::UserData {
   bool allow_download_;
   bool has_user_gesture_;
   int pause_count_;
-  std::string frame_origin_;
-  std::string main_frame_origin_;
   ResourceType::Type resource_type_;
   bool replace_extension_localization_templates_;
   net::LoadState last_load_state_;
