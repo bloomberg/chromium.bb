@@ -487,6 +487,9 @@ class Memcheck(ValgrindTool):
     return "memcheck"
 
   def ExtendOptionParser(self, parser):
+    parser.add_option("--leak-check", "--leak_check", type="string",
+                      default="yes",  # --leak-check=yes is equivalent of =full
+                      help="perform leak checking at the end of the run")
     parser.add_option("", "--show_all_leaks", action="store_true",
                       default=False,
                       help="also show less blatant leaks")
@@ -495,7 +498,8 @@ class Memcheck(ValgrindTool):
                       help="Show whence uninitialized bytes came. 30% slower.")
 
   def ToolSpecificFlags(self):
-    ret = ["--leak-check=full", "--gen-suppressions=all", "--demangle=no"]
+    ret = ["--gen-suppressions=all", "--demangle=no"]
+    ret += ["--leak-check=%s" % self._options.leak_check]
 
     if self._options.show_all_leaks:
       ret += ["--show-reachable=yes"]
