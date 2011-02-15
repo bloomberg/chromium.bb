@@ -611,7 +611,9 @@ std::string GetHardwareInputMethodId() {
       g_browser_process->local_state()->GetString(
           prefs::kHardwareKeyboardLayout);
   if (input_method_id.empty()) {
-    LOG(ERROR) << "Hardware keyboard is not found (not yet stored?)";
+    // This is totally fine if it's empty. The hardware keyboard layout is
+    // not stored if startup_manifest.json (OEM customization data) is not
+    // present (ex. Cr48 doen't have that file).
     return GetFallbackInputMethodDescriptor().id;
   }
   return input_method_id;
