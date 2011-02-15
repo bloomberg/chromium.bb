@@ -15,6 +15,16 @@ const wchar_t* const kSource[] = {
     L"new XMLSerializer().serializeToString(document));",
 };
 
+SourceCommand::SourceCommand(const std::vector<std::string>& path_segments,
+                             const DictionaryValue* const parameters)
+    : WebDriverCommand(path_segments, parameters) {}
+
+SourceCommand::~SourceCommand() {}
+
+bool SourceCommand::DoesGet() {
+  return true;
+}
+
 void SourceCommand::ExecuteGet(Response* const response) {
   std::string jscript = build_atom(kSource, sizeof kSource);
   Value* result = NULL;
@@ -31,6 +41,10 @@ void SourceCommand::ExecuteGet(Response* const response) {
   }
   response->set_value(result);
   response->set_status(kSuccess);
+}
+
+bool SourceCommand::RequiresValidTab() {
+  return true;
 }
 
 }  // namespace webdriver

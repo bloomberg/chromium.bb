@@ -8,6 +8,16 @@
 
 namespace webdriver {
 
+TitleCommand::TitleCommand(const std::vector<std::string>& path_segments,
+                           const DictionaryValue* const parameters)
+    : WebDriverCommand(path_segments, parameters) {}
+
+TitleCommand::~TitleCommand() {}
+
+bool TitleCommand::DoesGet() {
+  return true;
+}
+
 void TitleCommand::ExecuteGet(Response* const response) {
   std::string title;
   if (!session_->GetTabTitle(&title)) {
@@ -17,6 +27,10 @@ void TitleCommand::ExecuteGet(Response* const response) {
 
   response->set_value(new StringValue(title));
   response->set_status(kSuccess);
+}
+
+bool TitleCommand::RequiresValidTab() {
+  return true;
 }
 
 }  // namespace webdriver

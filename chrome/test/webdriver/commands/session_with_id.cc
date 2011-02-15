@@ -13,6 +13,20 @@
 
 namespace webdriver {
 
+SessionWithID::SessionWithID(const std::vector<std::string>& path_segments,
+                             const DictionaryValue* const parameters)
+    : WebDriverCommand(path_segments, parameters) {}
+
+SessionWithID::~SessionWithID() {}
+
+bool SessionWithID::DoesGet() {
+  return true;
+}
+
+bool SessionWithID::DoesDelete() {
+  return true;
+}
+
 void SessionWithID::ExecuteGet(Response* const response) {
   DictionaryValue *temp_value = new DictionaryValue();
 
@@ -43,6 +57,10 @@ void SessionWithID::ExecuteDelete(Response* const response) {
   session_->Terminate();
   SessionManager::GetInstance()->Delete(session_->id());
   response->set_status(kSuccess);
+}
+
+bool SessionWithID::RequiresValidTab() {
+  return false;
 }
 
 }  // namespace webdriver

@@ -9,6 +9,14 @@
 
 namespace webdriver {
 
+SpeedCommand::SpeedCommand(const std::vector<std::string>& path_segments,
+                           const DictionaryValue* const parameters)
+    : WebDriverCommand(path_segments, parameters),
+      speed_(Session::kMedium) {
+}
+
+SpeedCommand::~SpeedCommand() {}
+
 bool SpeedCommand::Init(Response* const response) {
   std::string speed;
 
@@ -41,6 +49,14 @@ bool SpeedCommand::Init(Response* const response) {
     speed_ = Session::kUnknown;
   }
 
+  return true;
+}
+
+bool SpeedCommand::DoesGet() {
+  return true;
+}
+
+bool SpeedCommand::DoesPost() {
   return true;
 }
 
@@ -80,6 +96,10 @@ void SpeedCommand::ExecutePost(Response* const response) {
   session_->set_speed(speed_);
   response->set_value(new StringValue("success"));
   response->set_status(kSuccess);
+}
+
+bool SpeedCommand::RequiresValidTab() {
+  return true;
 }
 
 }  // namespace webdriver

@@ -24,6 +24,9 @@
 // are a reference on the stack.
 class TokenAvailableTracker : public TestNotificationTracker {
  public:
+  TokenAvailableTracker();
+  virtual ~TokenAvailableTracker();
+
   const TokenService::TokenAvailableDetails& details() {
     return details_;
   }
@@ -31,19 +34,16 @@ class TokenAvailableTracker : public TestNotificationTracker {
  private:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
-                       const NotificationDetails& details) {
-    TestNotificationTracker::Observe(type, source, details);
-    if (type == NotificationType::TOKEN_AVAILABLE) {
-      Details<const TokenService::TokenAvailableDetails> full = details;
-      details_ = *full.ptr();
-    }
-  }
+                       const NotificationDetails& details);
 
   TokenService::TokenAvailableDetails details_;
 };
 
 class TokenFailedTracker : public TestNotificationTracker {
  public:
+  TokenFailedTracker();
+  virtual ~TokenFailedTracker();
+
   const TokenService::TokenRequestFailedDetails& details() {
     return details_;
   }
@@ -51,13 +51,7 @@ class TokenFailedTracker : public TestNotificationTracker {
  private:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
-                       const NotificationDetails& details) {
-    TestNotificationTracker::Observe(type, source, details);
-    if (type == NotificationType::TOKEN_REQUEST_FAILED) {
-      Details<const TokenService::TokenRequestFailedDetails> full = details;
-      details_ = *full.ptr();
-    }
-  }
+                       const NotificationDetails& details);
 
   TokenService::TokenRequestFailedDetails details_;
 };

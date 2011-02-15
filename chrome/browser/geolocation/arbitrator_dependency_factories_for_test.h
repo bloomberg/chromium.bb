@@ -14,21 +14,16 @@ class GeolocationArbitratorDependencyFactoryWithLocationProvider
   typedef LocationProviderBase* (*LocationProviderFactoryFunction)(void);
 
   GeolocationArbitratorDependencyFactoryWithLocationProvider(
-      LocationProviderFactoryFunction factory_function)
-      : factory_function_(factory_function) {
-  }
+      LocationProviderFactoryFunction factory_function);
+  virtual ~GeolocationArbitratorDependencyFactoryWithLocationProvider();
 
   virtual LocationProviderBase* NewNetworkLocationProvider(
       AccessTokenStore* access_token_store,
       URLRequestContextGetter* context,
       const GURL& url,
-      const string16& access_token) {
-    return factory_function_();
-  }
+      const string16& access_token);
 
-  virtual LocationProviderBase* NewSystemLocationProvider() {
-    return NULL;
-  }
+  virtual LocationProviderBase* NewSystemLocationProvider();
 
  protected:
   LocationProviderFactoryFunction factory_function_;

@@ -6,6 +6,16 @@
 
 namespace webdriver {
 
+ForwardCommand::ForwardCommand(const std::vector<std::string>& path_segments,
+                 const DictionaryValue* const parameters)
+      : WebDriverCommand(path_segments, parameters) {}
+
+ForwardCommand::~ForwardCommand() {}
+
+bool ForwardCommand::DoesPost() {
+  return true;
+}
+
 void ForwardCommand::ExecutePost(Response* const response) {
   if (!session_->GoForward()) {
     SET_WEBDRIVER_ERROR(response, "GoForward failed", kInternalServerError);
@@ -14,6 +24,20 @@ void ForwardCommand::ExecutePost(Response* const response) {
 
   session_->set_current_frame_xpath("");
   response->set_status(kSuccess);
+}
+
+bool ForwardCommand::RequiresValidTab() {
+  return true;
+}
+
+BackCommand::BackCommand(const std::vector<std::string>& path_segments,
+              const DictionaryValue* const parameters)
+      : WebDriverCommand(path_segments, parameters) {}
+
+BackCommand::~BackCommand() {}
+
+bool BackCommand::DoesPost() {
+  return true;
 }
 
 void BackCommand::ExecutePost(Response* const response) {
@@ -26,6 +50,20 @@ void BackCommand::ExecutePost(Response* const response) {
   response->set_status(kSuccess);
 }
 
+bool BackCommand::RequiresValidTab() {
+  return true;
+}
+
+RefreshCommand::RefreshCommand(const std::vector<std::string>& path_segments,
+                               const DictionaryValue* const parameters)
+    : WebDriverCommand(path_segments, parameters) {}
+
+RefreshCommand::~RefreshCommand() {}
+
+bool RefreshCommand::DoesPost() {
+  return true;
+}
+
 void RefreshCommand::ExecutePost(Response* const response) {
   if (!session_->Reload()) {
     SET_WEBDRIVER_ERROR(response, "Reload failed", kInternalServerError);
@@ -34,6 +72,10 @@ void RefreshCommand::ExecutePost(Response* const response) {
 
   session_->set_current_frame_xpath("");
   response->set_status(kSuccess);
+}
+
+bool RefreshCommand::RequiresValidTab() {
+  return true;
 }
 
 }  // namespace webdriver

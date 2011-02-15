@@ -15,6 +15,14 @@
 
 namespace webdriver {
 
+WebElementCommand::WebElementCommand(
+    const std::vector<std::string>& path_segments,
+    const DictionaryValue* const parameters)
+    : WebDriverCommand(path_segments, parameters),
+      path_segments_(path_segments) {}
+
+WebElementCommand::~WebElementCommand() {}
+
 bool WebElementCommand::Init(Response* const response) {
   if (!WebDriverCommand::Init(response))
     return false;
@@ -84,6 +92,25 @@ bool WebElementCommand::GetElementSize(int* width, int* height) {
          dict->GetInteger("height", height);
 }
 
+bool WebElementCommand::RequiresValidTab() {
+  return true;
+}
+
+ElementValueCommand::ElementValueCommand(
+    const std::vector<std::string>& path_segments,
+    DictionaryValue* parameters)
+    : WebElementCommand(path_segments, parameters) {}
+
+ElementValueCommand::~ElementValueCommand() {}
+
+bool ElementValueCommand::DoesGet() {
+  return true;
+}
+
+bool ElementValueCommand::DoesPost() {
+  return true;
+}
+
 void ElementValueCommand::ExecuteGet(Response* const response) {
   Value* unscoped_result = NULL;
   ListValue args;
@@ -141,6 +168,17 @@ void ElementValueCommand::ExecutePost(Response* const response) {
     return;
   }
   response->set_status(kSuccess);
+}
+
+ElementTextCommand::ElementTextCommand(
+    const std::vector<std::string>& path_segments,
+    DictionaryValue* parameters)
+    : WebElementCommand(path_segments, parameters) {}
+
+ElementTextCommand::~ElementTextCommand() {}
+
+bool ElementTextCommand::DoesGet() {
+  return true;
 }
 
 void ElementTextCommand::ExecuteGet(Response* const response) {

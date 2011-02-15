@@ -36,8 +36,9 @@ class BrowserNavigatorTest : public InProcessBrowserTest,
 
   void RunSuppressTest(WindowOpenDisposition disposition);
 
-  void Observe(NotificationType type, const NotificationSource& source,
-               const NotificationDetails& details);
+  // NotificationObserver:
+  virtual void Observe(NotificationType type, const NotificationSource& source,
+                       const NotificationDetails& details);
 
   size_t created_tab_contents_count_;
 };

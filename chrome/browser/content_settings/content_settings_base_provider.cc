@@ -29,6 +29,22 @@ const bool kRequiresResourceIdentifier[CONTENT_SETTINGS_NUM_TYPES] = {
 
 namespace content_settings {
 
+ExtendedContentSettings::ExtendedContentSettings() {}
+
+ExtendedContentSettings::ExtendedContentSettings(
+    const ExtendedContentSettings& rhs)
+    : content_settings(rhs.content_settings),
+      content_settings_for_resources(rhs.content_settings_for_resources) {
+}
+
+ExtendedContentSettings::~ExtendedContentSettings() {}
+
+BaseProvider::BaseProvider(bool is_otr)
+    : is_off_the_record_(is_otr) {
+}
+
+BaseProvider::~BaseProvider() {}
+
 bool BaseProvider::RequiresResourceIdentifier(
     ContentSettingsType content_type) const {
   if (CommandLine::ForCurrentProcess()->HasSwitch(

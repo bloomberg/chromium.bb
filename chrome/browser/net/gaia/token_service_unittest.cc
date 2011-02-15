@@ -14,6 +14,34 @@
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/test_url_fetcher_factory.h"
 
+TokenAvailableTracker::TokenAvailableTracker() {}
+
+TokenAvailableTracker::~TokenAvailableTracker() {}
+
+void TokenAvailableTracker::Observe(NotificationType type,
+                                    const NotificationSource& source,
+                                    const NotificationDetails& details) {
+  TestNotificationTracker::Observe(type, source, details);
+  if (type == NotificationType::TOKEN_AVAILABLE) {
+    Details<const TokenService::TokenAvailableDetails> full = details;
+    details_ = *full.ptr();
+  }
+}
+
+TokenFailedTracker::TokenFailedTracker() {}
+
+TokenFailedTracker::~TokenFailedTracker() {}
+
+void TokenFailedTracker::Observe(NotificationType type,
+                                 const NotificationSource& source,
+                                 const NotificationDetails& details) {
+  TestNotificationTracker::Observe(type, source, details);
+  if (type == NotificationType::TOKEN_REQUEST_FAILED) {
+    Details<const TokenService::TokenRequestFailedDetails> full = details;
+    details_ = *full.ptr();
+  }
+}
+
 TokenServiceTestHarness::TokenServiceTestHarness()
     : ui_thread_(BrowserThread::UI, &message_loop_),
       db_thread_(BrowserThread::DB) {

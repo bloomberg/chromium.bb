@@ -120,7 +120,7 @@ class TestingBrowserProcess : public BrowserProcess {
 
   virtual bool have_inspector_files() const;
 
-  virtual ChromeNetLog* net_log() { return NULL; }
+  virtual ChromeNetLog* net_log();
 
 #if defined(IPC_MESSAGE_LOG_ENABLED)
   virtual void SetIPCLoggingEnabled(bool enable) {}

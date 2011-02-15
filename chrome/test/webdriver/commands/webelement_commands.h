@@ -20,11 +20,9 @@ class Response;
 // service.
 class WebElementCommand : public WebDriverCommand {
  public:
-  inline WebElementCommand(const std::vector<std::string>& path_segments,
-                           const DictionaryValue* const parameters)
-      : WebDriverCommand(path_segments, parameters),
-                         path_segments_(path_segments) {}
-  virtual ~WebElementCommand() {}
+  WebElementCommand(const std::vector<std::string>& path_segments,
+                    const DictionaryValue* const parameters);
+  virtual ~WebElementCommand();
 
   virtual bool Init(Response* const response);
 
@@ -36,7 +34,7 @@ class WebElementCommand : public WebDriverCommand {
   std::string element_id;
 
  private:
-  virtual bool RequiresValidTab() { return true; }
+  virtual bool RequiresValidTab();
 
   DISALLOW_COPY_AND_ASSIGN(WebElementCommand);
 };
@@ -47,12 +45,11 @@ class WebElementCommand : public WebDriverCommand {
 class ElementValueCommand : public WebElementCommand {
  public:
   ElementValueCommand(const std::vector<std::string>& path_segments,
-                      DictionaryValue* parameters)
-      : WebElementCommand(path_segments, parameters) {}
-  virtual ~ElementValueCommand() {}
+                      DictionaryValue* parameters);
+  virtual ~ElementValueCommand();
 
-  virtual bool DoesGet() { return true; }
-  virtual bool DoesPost() { return true; }
+  virtual bool DoesGet();
+  virtual bool DoesPost();
   virtual void ExecuteGet(Response* const response);
   virtual void ExecutePost(Response* const response);
 
@@ -65,11 +62,10 @@ class ElementValueCommand : public WebElementCommand {
 class ElementTextCommand : public WebElementCommand {
  public:
   ElementTextCommand(const std::vector<std::string>& path_segments,
-                     DictionaryValue* parameters)
-      : WebElementCommand(path_segments, parameters) {}
-  virtual ~ElementTextCommand() {}
+                     DictionaryValue* parameters);
+  virtual ~ElementTextCommand();
 
-  virtual bool DoesGet() { return true; }
+  virtual bool DoesGet();
   virtual void ExecuteGet(Response* const response);
 
  private:

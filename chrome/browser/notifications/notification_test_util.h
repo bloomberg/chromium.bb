@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,15 +16,15 @@
 // the notification events are not important.
 class MockNotificationDelegate : public NotificationDelegate {
  public:
-  explicit MockNotificationDelegate(const std::string& id) : id_(id) {}
-  virtual ~MockNotificationDelegate() {}
+  explicit MockNotificationDelegate(const std::string& id);
+  virtual ~MockNotificationDelegate();
 
   // NotificationDelegate interface.
   virtual void Display() {}
   virtual void Error() {}
   virtual void Close(bool by_user) {}
   virtual void Click() {}
-  virtual std::string id() const { return id_; }
+  virtual std::string id() const;
 
  private:
   std::string id_;
@@ -77,12 +77,14 @@ class MockBalloonView : public BalloonView {
  public:
   explicit MockBalloonView(Balloon * balloon) :
       balloon_(balloon) {}
-  void Show(Balloon* balloon) {}
-  void Update() {}
-  void RepositionToBalloon() {}
-  void Close(bool by_user) { balloon_->OnClose(by_user); }
-  gfx::Size GetSize() const { return balloon_->content_size(); }
-  BalloonHost* GetHost() const { return NULL; }
+
+  // BalloonView:
+  virtual void Show(Balloon* balloon) {}
+  virtual void Update() {}
+  virtual void RepositionToBalloon() {}
+  virtual void Close(bool by_user);
+  virtual gfx::Size GetSize() const;
+  virtual BalloonHost* GetHost() const;
 
  private:
   // Non-owned pointer.

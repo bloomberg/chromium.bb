@@ -20,20 +20,20 @@ namespace webdriver {
 class SpeedCommand : public WebDriverCommand {
  public:
   SpeedCommand(const std::vector<std::string>& path_segments,
-               const DictionaryValue* const parameters)
-      : WebDriverCommand(path_segments, parameters), speed_(Session::kMedium) {}
-  virtual ~SpeedCommand() {}
+               const DictionaryValue* const parameters);
+  virtual ~SpeedCommand();
 
   virtual bool Init(Response* const response);
 
-  virtual bool DoesGet() { return true; }
-  virtual bool DoesPost() { return true; }
+  virtual bool DoesGet();
+  virtual bool DoesPost();
   virtual void ExecuteGet(Response* const response);
   virtual void ExecutePost(Response* const response);
 
  private:
+  virtual bool RequiresValidTab();
+
   Session::Speed speed_;
-  virtual bool RequiresValidTab() { return true; }
 
   DISALLOW_COPY_AND_ASSIGN(SpeedCommand);
 };

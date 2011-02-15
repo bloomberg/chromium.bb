@@ -184,6 +184,10 @@ bool TestingBrowserProcess::have_inspector_files() const {
   return true;
 }
 
+ChromeNetLog* TestingBrowserProcess::net_log() {
+  return NULL;
+}
+
 void TestingBrowserProcess::SetPrefService(PrefService* pref_service) {
   pref_service_ = pref_service;
 }

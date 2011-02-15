@@ -21,6 +21,10 @@ typedef std::map<ContentSettingsTypeResourceIdentifierPair, ContentSetting>
     ResourceContentSettings;
 
 struct ExtendedContentSettings {
+  ExtendedContentSettings();
+  ExtendedContentSettings(const ExtendedContentSettings& rhs);
+  ~ExtendedContentSettings();
+
   ContentSettings content_settings;
   ResourceContentSettings content_settings_for_resources;
 };
@@ -37,10 +41,9 @@ class BaseProvider : public ProviderInterface {
   static ContentSetting ClickToPlayFixup(ContentSettingsType content_type,
                                          ContentSetting setting);
 
-  explicit BaseProvider(bool is_otr)
-      : is_off_the_record_(is_otr) {
-  }
-  virtual ~BaseProvider() {}
+  explicit BaseProvider(bool is_otr);
+  virtual ~BaseProvider();
+
 
   // Initializes the Provider.
   virtual void Init() = 0;

@@ -39,14 +39,12 @@ class MockBalloonCollection : public BalloonCollectionImpl {
   // BalloonCollectionImpl overrides
   virtual void Add(const Notification& notification,
                    Profile* profile);
-  virtual bool HasSpace() const { return count() < kMockBalloonSpace; }
+  virtual bool HasSpace() const;
   virtual Balloon* MakeBalloon(const Notification& notification,
                                Profile* profile);
   virtual void DisplayChanged() {}
   virtual void OnBalloonClosed(Balloon* source);
-  virtual const BalloonCollection::Balloons& GetActiveBalloons() {
-    return balloons_;
-  }
+  virtual const BalloonCollection::Balloons& GetActiveBalloons();
 
   // Number of balloons being shown.
   std::deque<Balloon*>& balloons() { return balloons_; }

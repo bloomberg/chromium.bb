@@ -30,41 +30,30 @@ class TestHttpBridge : public sync_api::HttpPostProviderInterface {
 
   // Returns true if the URL request succeeded. If the request failed,
   // os_error() may be non-zero and hence contain more information.
-  virtual bool MakeSynchronousPost(int* os_error_code, int* response_code) {
-    return false;
-  }
+  virtual bool MakeSynchronousPost(int* os_error_code, int* response_code);
 
   // Get the length of the content returned in the HTTP response.
   // This does not count the trailing null-terminating character returned
   // by GetResponseContent, so it is analogous to calling string.length.
-  virtual int GetResponseContentLength() const {
-    return 0;
-  }
+  virtual int GetResponseContentLength() const;
 
   // Get the content returned in the HTTP response.
   // This is a null terminated string of characters.
   // Value should be copied.
-  virtual const char* GetResponseContent() const {
-    return 0;
-  }
+  virtual const char* GetResponseContent() const;
 
-  virtual const std::string GetResponseHeaderValue(const std::string &) const {
-    return std::string();
-  }
+  virtual const std::string GetResponseHeaderValue(const std::string&) const;
 };
 
 class TestHttpBridgeFactory : public sync_api::HttpPostProviderFactory {
  public:
   // Override everything to do nothing.
-  TestHttpBridgeFactory() {}
-  ~TestHttpBridgeFactory() {}
+  TestHttpBridgeFactory();
+  virtual ~TestHttpBridgeFactory();
 
-  virtual sync_api::HttpPostProviderInterface* Create() {
-    return new TestHttpBridge();
-  }
-  virtual void Destroy(sync_api::HttpPostProviderInterface* http) {
-    delete http;
-  }
+  // sync_api::HttpPostProviderFactory:
+  virtual sync_api::HttpPostProviderInterface* Create();
+  virtual void Destroy(sync_api::HttpPostProviderInterface* http);
 };
 
 }  // namespace browser_sync

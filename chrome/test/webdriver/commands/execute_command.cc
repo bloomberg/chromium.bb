@@ -13,6 +13,13 @@ namespace webdriver {
 const char kArgs[] = "args";
 const char kScript[] = "script";
 
+ExecuteCommand::ExecuteCommand(const std::vector<std::string>& path_segments,
+                               const DictionaryValue* const parameters)
+    : WebDriverCommand(path_segments, parameters) {}
+
+ExecuteCommand::~ExecuteCommand() {}
+
+
 bool ExecuteCommand::Init(Response* const response) {
   if (!WebDriverCommand::Init(response)) {
     SET_WEBDRIVER_ERROR(response, "Failure on Init for execute command",
@@ -27,6 +34,10 @@ bool ExecuteCommand::Init(Response* const response) {
   }
 
   has_args_= GetStringASCIIParameter(kArgs, &args_);
+  return true;
+}
+
+bool ExecuteCommand::DoesPost() {
   return true;
 }
 
@@ -71,6 +82,10 @@ void ExecuteCommand::ExecutePost(Response* const response) {
 
   response->set_value(result);
   response->set_status(kSuccess);
+}
+
+bool ExecuteCommand::RequiresValidTab() {
+  return true;
 }
 
 }  // namspace webdriver

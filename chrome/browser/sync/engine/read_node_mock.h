@@ -13,8 +13,8 @@
 
 class ReadNodeMock : public sync_api::ReadNode {
  public:
-  ReadNodeMock() {}
-  virtual ~ReadNodeMock() {}
+  ReadNodeMock();
+  virtual ~ReadNodeMock();
 
   MOCK_METHOD2(InitByClientTagLookup,
                bool(syncable::ModelType model_type, const std::string& tag));

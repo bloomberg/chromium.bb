@@ -35,6 +35,10 @@ void MockBalloonCollection::Add(const Notification& notification,
   BalloonCollectionImpl::Add(test_notification, profile);
 }
 
+bool MockBalloonCollection::HasSpace() const {
+  return count() < kMockBalloonSpace;
+}
+
 Balloon* MockBalloonCollection::MakeBalloon(const Notification& notification,
                                             Profile* profile) {
   // Start with a normal balloon but mock out the view.
@@ -53,6 +57,10 @@ void MockBalloonCollection::OnBalloonClosed(Balloon* source) {
       break;
     }
   }
+}
+
+const BalloonCollection::Balloons& MockBalloonCollection::GetActiveBalloons() {
+  return balloons_;
 }
 
 int MockBalloonCollection::UppermostVerticalPosition() {

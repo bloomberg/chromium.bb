@@ -187,7 +187,6 @@
         'browser/autofill/autofill_type.h',
         'browser/autofill/autofill_xml_parser.cc',
         'browser/autofill/autofill_xml_parser.h',
-        'browser/autofill/billing_address.h',
         'browser/autofill/contact_info.cc',
         'browser/autofill/contact_info.h',
         'browser/autofill/credit_card.cc',

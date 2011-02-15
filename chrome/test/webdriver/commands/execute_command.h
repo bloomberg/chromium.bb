@@ -21,20 +21,20 @@ namespace webdriver {
 class ExecuteCommand : public WebDriverCommand {
  public:
   ExecuteCommand(const std::vector<std::string>& path_segments,
-                 const DictionaryValue* const parameters)
-      : WebDriverCommand(path_segments, parameters) {}
-  virtual ~ExecuteCommand() {}
+                 const DictionaryValue* const parameters);
+  virtual ~ExecuteCommand();
 
   virtual bool Init(Response* const response);
 
-  virtual bool DoesPost() { return true; }
+  virtual bool DoesPost();
   virtual void ExecutePost(Response* const response);
 
  private:
+  virtual bool RequiresValidTab();
+
   std::string script_;
   bool has_args_;
   std::string args_;
-  virtual bool RequiresValidTab() { return true; }
 
   DISALLOW_COPY_AND_ASSIGN(ExecuteCommand);
 };
