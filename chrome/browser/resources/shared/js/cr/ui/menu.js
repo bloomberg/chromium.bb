@@ -128,7 +128,7 @@ cr.define('cr.ui', function() {
   };
 
   function selectedIndexChanged(selectedIndex, oldSelectedIndex) {
-    var oldSelectedItem = this.chidren[oldSelectedIndex];
+    var oldSelectedItem = this.children[oldSelectedIndex];
     if (oldSelectedItem)
       oldSelectedItem.selected = false;
     var item = this.selectedItem;
