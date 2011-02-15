@@ -87,12 +87,9 @@ bool IsUndesirablePlugin(const WebPluginInfo& info) {
 // This is an ugly hack to blacklist Adobe Acrobat due to not supporting
 // its Xt-based mainloop.
 // http://code.google.com/p/chromium/issues/detail?id=38229
-// The gecko-mediaplayer plugins also crashes the entire browser sometimes.
-// http://code.google.com/p/chromium/issues/detail?id=24507
 bool IsBlacklistedPlugin(const FilePath& path) {
   const char* kBlackListedPlugins[] = {
     "nppdf.so",           // Adobe PDF
-    "gecko-mediaplayer",  // Gecko Media Player
   };
   std::string filename = path.BaseName().value();
   for (size_t i = 0; i < arraysize(kBlackListedPlugins); i++) {
