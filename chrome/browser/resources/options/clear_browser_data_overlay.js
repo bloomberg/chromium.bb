@@ -11,7 +11,7 @@ cr.define('options', function() {
    * @class
    */
   function ClearBrowserDataOverlay() {
-    OptionsPage.call(this, 'clearBrowserData',
+    OptionsPage.call(this, 'clearBrowserDataOverlay',
                      templateData.clearBrowserDataOverlayTabTitle,
                      'clearBrowserDataOverlay');
   }
