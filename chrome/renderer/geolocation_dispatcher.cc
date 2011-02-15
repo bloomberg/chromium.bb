@@ -120,7 +120,7 @@ void GeolocationDispatcher::OnGeolocationPositionUpdated(
   if (geoposition.IsValidFix()) {
     controller_->positionChanged(
         WebGeolocationPosition(
-            geoposition.timestamp.ToDoubleT() * 1000.0,
+            geoposition.timestamp.ToDoubleT(),
             geoposition.latitude, geoposition.longitude,
             geoposition.accuracy,
             geoposition.is_valid_altitude(), geoposition.altitude,
