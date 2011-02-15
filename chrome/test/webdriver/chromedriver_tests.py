@@ -116,6 +116,38 @@ class BasicTest(unittest.TestCase):
     launcher.Kill()
 
 
+class CookieTest(unittest.TestCase):
+  """Cookie test for the json webdriver protocol"""
+
+  SEARCH = "http://www.google.com/webhp?hl=en"
+
+  def setUp(self):
+    self._launcher = ChromeDriverLauncher()
+    self._driver = WebDriver(self._launcher.GetURL(), 'chrome', 'any')
+
+  def tearDown(self):
+    self._driver.quit()
+    self._launcher.Kill()
+
+  def testAddCookie(self):
+    self._driver.get(self.SEARCH)
+    cookie_dict = None
+    cookie_dict = self._driver.get_cookie("chromedriver_cookie_test")
+    cookie_dict = {}
+    cookie_dict["name"]= "chromedriver_cookie_test";
+    cookie_dict["value"] = "this is a test";
+    self._driver.add_cookie(cookie_dict)
+    cookie_dict = self._driver.get_cookie("chromedriver_cookie_test")
+    self.assertNotEqual(cookie_dict, None)
+    self.assertEqual(cookie_dict["value"], "this is a test");
+
+  def testDeleteCookie(self):
+    self.testAddCookie();
+    self._driver.delete_cookie("chromedriver_cookie_test")
+    cookie_dict = self._driver.get_cookie("chromedriver_cookie_test")
+    self.assertEqual(cookie_dict, None)
+
+
 class SessionTest(unittest.TestCase):
   """Tests dealing with WebDriver sessions."""
 

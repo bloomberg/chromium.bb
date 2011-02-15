@@ -9,6 +9,7 @@
 
 #include "base/string_number_conversions.h"
 #include "base/threading/platform_thread.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "third_party/webdriver/atoms.h"

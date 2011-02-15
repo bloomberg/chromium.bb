@@ -23,6 +23,7 @@
 #include "chrome/test/test_launcher_utils.h"
 #include "chrome/test/webdriver/utility_functions.h"
 #include "chrome/test/webdriver/webdriver_key_converter.h"
+#include "googleurl/src/gurl.h"
 #include "third_party/webdriver/atoms.h"
 
 namespace webdriver {
@@ -197,12 +198,69 @@ bool Session::GetURL(std::string* url) {
   return success;
 }
 
+bool Session::GetURL(GURL* gurl) {
+  bool success = false;
+  RunSessionTask(NewRunnableMethod(
+      automation_.get(),
+      &Automation::GetGURL,
+      gurl,
+      &success));
+  return success;
+}
+
 bool Session::GetTabTitle(std::string* tab_title) {
   bool success = false;
   RunSessionTask(NewRunnableMethod(
       automation_.get(),
       &Automation::GetTabTitle,
       tab_title,
+      &success));
+  return success;
+}
+
+bool Session::GetCookies(const GURL& url, std::string* cookies) {
+  bool success = false;
+  RunSessionTask(NewRunnableMethod(
+      automation_.get(),
+      &Automation::GetCookies,
+      url,
+      cookies,
+      &success));
+  return success;
+}
+
+bool Session::GetCookieByName(const GURL& url,
+                              const std::string& cookie_name,
+                              std::string* cookie) {
+  bool success = false;
+  RunSessionTask(NewRunnableMethod(
+      automation_.get(),
+      &Automation::GetCookieByName,
+      url,
+      cookie_name,
+      cookie,
+      &success));
+  return success;
+}
+
+bool Session::DeleteCookie(const GURL& url, const std::string& cookie_name) {
+  bool success = false;
+  RunSessionTask(NewRunnableMethod(
+      automation_.get(),
+      &Automation::DeleteCookie,
+      url,
+      cookie_name,
+      &success));
+  return success;
+}
+
+bool Session::SetCookie(const GURL& url, const std::string& cookie) {
+  bool success = false;
+  RunSessionTask(NewRunnableMethod(
+      automation_.get(),
+      &Automation::SetCookie,
+      url,
+      cookie,
       &success));
   return success;
 }

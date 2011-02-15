@@ -9,10 +9,10 @@
 
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
-#include "base/values.h"
 #include "chrome/test/webdriver/automation.h"
 #include "chrome/test/webdriver/error_codes.h"
 
+class GURL;
 class ListValue;
 class Value;
 
@@ -56,8 +56,14 @@ class Session {
   bool GoForward();
   bool GoBack();
   bool Reload();
+  bool GetURL(GURL* url);
   bool GetURL(std::string* url);
   bool GetTabTitle(std::string* tab_title);
+  bool GetCookies(const GURL& url, std::string* cookies);
+  bool GetCookieByName(const GURL& url, const std::string& cookie_name,
+             std::string* cookie);
+  bool DeleteCookie(const GURL& url, const std::string& cookie_name);
+  bool SetCookie(const GURL& url, const std::string& cookie);
 
   inline const std::string& id() const { return id_; }
 

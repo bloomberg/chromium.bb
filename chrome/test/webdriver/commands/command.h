@@ -54,27 +54,32 @@ class Command {
     return i < path_segments_.size() ? path_segments_.at(i) : "";
   }
 
-  // Returns the command parameter with the given |key| as a UTF-16 string.
+  // Provides the command parameter with the given |key| as a UTF-16 string.
   // Returns true on success.
   bool GetStringParameter(const std::string& key, string16* out) const;
 
-  // Returns the command parameter with the given |key| as a UTF-8 string.
+  // Provides the command parameter with the given |key| as a UTF-8 string.
   // Returns true on success.
   bool GetStringParameter(const std::string& key, std::string* out) const;
 
-  // Returns the command parameter with the given |key| as a ASCII string.
+  // Provides the command parameter with the given |key| as a ASCII string.
   // Returns true on success.
   bool GetStringASCIIParameter(const std::string& key, std::string* out) const;
 
-  // Returns the command parameter with the given |key| as a boolean. Returns
+  // Provides the command parameter with the given |key| as a boolean. Returns
   // false if there is no such parameter, or if it is not a boolean.
   bool GetBooleanParameter(const std::string& key, bool* out) const;
 
-  // Returns the command parameter with the given |key| as a int. Returns
+  // Provides the command parameter with the given |key| as a int. Returns
   // false if there is no such parameter, or if it is not a int.
   bool GetIntegerParameter(const std::string& key, int* out) const;
 
-  // Returns the command parameter with the given |key| as a list. Returns
+  // Provides the command parameter with the given |key| as a Dictionary.
+  // Returns false if there is no such parameter, or if it is not a Dictionary.
+  bool GetDictionaryParameter(const std::string& key,
+                              DictionaryValue** out) const;
+
+  // Provides the command parameter with the given |key| as a list. Returns
   // false if there is no such parameter, or if it is not a list.
   bool GetListParameter(const std::string& key, ListValue** out) const;
 

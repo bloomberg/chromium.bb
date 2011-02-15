@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/test/webdriver/session_manager.h"
 
 namespace webdriver {
 

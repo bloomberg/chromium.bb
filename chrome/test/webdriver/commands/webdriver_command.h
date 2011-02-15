@@ -8,10 +8,14 @@
 #include <string>
 #include <vector>
 
-#include "chrome/test/webdriver/session_manager.h"
 #include "chrome/test/webdriver/commands/command.h"
+#include "chrome/test/webdriver/session.h"
+
+class DictionaryValue;
 
 namespace webdriver {
+
+class Response;
 
 // All URLs that are found in the document:
 // http://code.google.com/p/selenium/wiki/JsonWireProtocol

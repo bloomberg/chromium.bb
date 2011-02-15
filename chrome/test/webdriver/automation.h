@@ -14,6 +14,8 @@
 #include "chrome/test/ui/ui_test.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
+class GURL;
+
 namespace webdriver {
 
 struct WebKeyEvent {
@@ -37,6 +39,8 @@ struct WebKeyEvent {
 
 // Creates and controls the Chrome instance.
 // This class should be created and accessed on a single thread.
+// Note: All member functions are void because they are invoked
+// by posting a task from NewRunnableMethod.
 // TODO(phajdan.jr):  Abstract UITestBase classes, see:
 // http://code.google.com/p/chromium/issues/detail?id=56865
 class Automation : private UITestBase {
@@ -67,7 +71,14 @@ class Automation : private UITestBase {
   void GoBack(bool* success);
   void Reload(bool* success);
   void GetURL(std::string* url, bool* success);
+  void GetGURL(GURL* gurl, bool* success);
   void GetTabTitle(std::string* tab_title, bool* success);
+  void GetCookies(const GURL& gurl, std::string* cookies, bool* success);
+  void GetCookieByName(const GURL& gurl, const std::string& cookie_name,
+                       std::string* cookie, bool* success);
+  void DeleteCookie(const GURL& gurl, const std::string& cookie_name,
+                    bool* success);
+  void SetCookie(const GURL& gurl, const std::string& cookie, bool* success);
 
  private:
   scoped_refptr<BrowserProxy> browser_;

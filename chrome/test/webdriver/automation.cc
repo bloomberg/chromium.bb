@@ -112,12 +112,42 @@ void Automation::GetURL(std::string* url,
     *url = gurl.possibly_invalid_spec();
 }
 
+void Automation::GetGURL(GURL* gurl,
+                         bool* success) {
+  *success = tab_->GetCurrentURL(gurl);
+}
+
 void Automation::GetTabTitle(std::string* tab_title,
                              bool* success) {
   std::wstring wide_title;
   *success = tab_->GetTabTitle(&wide_title);
   if (*success)
     *tab_title = WideToUTF8(wide_title);
+}
+
+void Automation::GetCookies(const GURL& gurl,
+                            std::string* cookies,
+                            bool* success) {
+  *success = tab_->GetCookies(gurl, cookies);
+}
+
+void Automation::GetCookieByName(const GURL& gurl,
+                                 const std::string& cookie_name,
+                                 std::string* cookie,
+                                 bool* success) {
+  *success = tab_->GetCookieByName(gurl, cookie_name, cookie);
+}
+
+void Automation::DeleteCookie(const GURL& gurl,
+                              const std::string& cookie_name,
+                              bool* success) {
+  *success = tab_->DeleteCookie(gurl, cookie_name);
+}
+
+void Automation::SetCookie(const GURL& gurl,
+                           const std::string& cookie,
+                           bool* success) {
+  *success = tab_->SetCookie(gurl, cookie);
 }
 
 }  // namespace webdriver

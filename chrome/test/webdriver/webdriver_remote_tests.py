@@ -96,9 +96,10 @@ class RemoteWebDriverTest(unittest.TestCase):
     search = string.lower(search)
     self.assertNotEqual(-1, string.find(text, search))
 
+
 class TestFindElement(RemoteWebDriverTest):
   def testFindByName(self):
-    navigate(SEARCH)
+    self.navigate(SEARCH)
     # Find the Google search button.
     q = self.driver.find_element_by_name("q")
     self.assertTrue(isinstance(q, WebElement))
@@ -119,7 +120,7 @@ class TestFindElement(RemoteWebDriverTest):
     self.assertTrue(isinstance(q, WebElement))
 
  def testFindElementById(self):
-    navigate(SEARCH)
+    self.navigate(SEARCH)
     # Find the padding for the logo near the search bar.
     elem = self.driver.find_element_by_id("logocont")
     self.assertTrue(isinstance(elem, WebElement))
@@ -129,12 +130,44 @@ class TestFindElement(RemoteWebDriverTest):
 
   def testFindElementById0WithTimeout(self):
     self.set_implicit_wait(0)
-    navigate(SEARCH)
+    self.navigate(SEARCH)
     # Find the padding for the logo near the search bar.
     elem = self.driver.find_element_by_id("logocont")
     self.assertTrue(isinstance(elem, WebElement))
     self.set_implicit_wait(5000)
-    navigate(SEARCH)
+    self.navigate(SEARCH)
+    # Look for an ID not there.
+    self.assertRaises(NoSuchElementException,
+                      self.driver.find_element_by_id, "logocont")
+
+
+class TestFindElement(RemoteWebDriverTest):
+  def testFindByName(self):
+    self.navigate(SEARCH)
+    # Find the Google search button.
+    q = self.driver.find_element_by_name("q")
+    self.assertTrue(isinstance(q, WebElement))
+    # Trying looking for an element not on the page.
+    self.assertRaises(NoSuchElementException,
+                      self.driver.find_elment_by_name, "q2")
+    # Try to find the Google search button using the multiple find method.
+    q = self.driver.find_elements_by_name("q")
+    self.assertTrue(isinstance(q, list))
+    self.assertTrue(len(q), 1)
+    self.assertTrue(isinstance(q[0], WebElement))
+    # Try finding something not on page, with multiple find an empty array
+    # should return and no exception thrown.
+    q = self.driver.find_elements_by_name("q2")
+    assertTrue(q == [])
+    # Find a hidden element on the page
+    q = self.driver.find_element_by_name("oq")
+    self.assertTrue(isinstance(q, WebElement))
+
+ def testFindElementById(self):
+    self.navigate(SEARCH)
+    # Find the padding for the logo near the search bar.
+    elem = self.driver.find_element_by_id("logocont")
+    self.assertTrue(isinstance(elem, WebElement))
     # Look for an ID not there.
     self.assertRaises(NoSuchElementException,
                       self.driver.find_element_by_id, "logocont")

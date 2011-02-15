@@ -29,6 +29,7 @@
 #include "chrome/test/webdriver/dispatch.h"
 #include "chrome/test/webdriver/session_manager.h"
 #include "chrome/test/webdriver/utility_functions.h"
+#include "chrome/test/webdriver/commands/cookie_commands.h"
 #include "chrome/test/webdriver/commands/create_session.h"
 #include "chrome/test/webdriver/commands/execute_command.h"
 #include "chrome/test/webdriver/commands/find_element_commands.h"
@@ -88,6 +89,10 @@ void InitCallbacks(struct mg_context* ctx,
   SetCallback<URLCommand>(ctx,          "/session/*/url");
   SetCallback<SpeedCommand>(ctx,        "/session/*/speed");
   SetCallback<ImplicitWaitCommand>(ctx, "/session/*/timeouts/implicit_wait");
+
+  // Cookie functions.
+  SetCallback<CookieCommand>(ctx,      "/session/*/cookie");
+  SetCallback<NamedCookieCommand>(ctx, "/session/*/cookie/*");
 
   // WebElement commands
   SetCallback<FindOneElementCommand>(ctx,   "/session/*/element");
