@@ -60,39 +60,9 @@ const char* kTypeNames[CONTENT_SETTINGS_NUM_TYPES] = {
   NULL,  // Not used for Notifications
 };
 
-// True if a given content settings type requires additional resource
-// identifiers.
-const bool kRequiresResourceIdentifier[CONTENT_SETTINGS_NUM_TYPES] = {
-  false,  // CONTENT_SETTINGS_TYPE_COOKIES
-  false,  // CONTENT_SETTINGS_TYPE_IMAGES
-  false,  // CONTET_SETTINGS_TYPE_JAVASCRIPT
-  true,   // CONTENT_SETTINGS_TYPE_PLUGINS
-  false,  // CONTENT_SETTINGS_TYPE_POPUPS
-  false,  // Not used for Geolocation
-  false,  // Not used for Notifications
-};
-
-// Map ASK for the plugins content type to BLOCK if click-to-play is
-// not enabled.
-ContentSetting ClickToPlayFixup(ContentSettingsType content_type,
-                                ContentSetting setting) {
-  if (setting == CONTENT_SETTING_ASK &&
-      content_type == CONTENT_SETTINGS_TYPE_PLUGINS &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableClickToPlay)) {
-    return CONTENT_SETTING_BLOCK;
-  }
-  return setting;
-}
-
 }  // namespace
 
 namespace content_settings {
-
-struct PrefProvider::ExtendedContentSettings {
-  ContentSettings content_settings;
-  ResourceContentSettings content_settings_for_resources;
-};
 
 PrefDefaultProvider::PrefDefaultProvider(Profile* profile)
     : profile_(profile),
@@ -273,8 +243,9 @@ void PrefDefaultProvider::GetSettingsFromDictionary(
     settings->settings[CONTENT_SETTINGS_TYPE_COOKIES] = CONTENT_SETTING_BLOCK;
 
   settings->settings[CONTENT_SETTINGS_TYPE_PLUGINS] =
-      ClickToPlayFixup(CONTENT_SETTINGS_TYPE_PLUGINS,
-                       settings->settings[CONTENT_SETTINGS_TYPE_PLUGINS]);
+      BaseProvider::ClickToPlayFixup(
+          CONTENT_SETTINGS_TYPE_PLUGINS,
+          settings->settings[CONTENT_SETTINGS_TYPE_PLUGINS]);
 }
 
 void PrefDefaultProvider::NotifyObservers(
@@ -288,14 +259,13 @@ void PrefDefaultProvider::NotifyObservers(
       Details<const ContentSettingsDetails>(&details));
 }
 
-
 // static
 void PrefDefaultProvider::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterDictionaryPref(prefs::kDefaultContentSettings);
 }
 
 // ////////////////////////////////////////////////////////////////////////////
-// PrefProvider::
+// PrefProvider:
 //
 
 // static
@@ -310,9 +280,13 @@ void PrefProvider::RegisterUserPrefs(PrefService* prefs) {
 }
 
 PrefProvider::PrefProvider(Profile* profile)
-  : profile_(profile),
-    is_off_the_record_(profile_->IsOffTheRecord()),
+  : BaseProvider(profile->IsOffTheRecord()),
+    profile_(profile),
     updating_preferences_(false) {
+  Init();
+}
+
+void PrefProvider::Init() {
   initializing_ = true;
   PrefService* prefs = profile_->GetPrefs();
 
@@ -347,81 +321,6 @@ bool PrefProvider::ContentSettingsTypeIsManaged(
   return false;
 }
 
-ContentSetting PrefProvider::GetContentSetting(
-    const GURL& requesting_url,
-    const GURL& embedding_url,
-    ContentSettingsType content_type,
-    const ResourceIdentifier& resource_identifier) const {
-  // Support for embedding_patterns is not implemented yet.
-  DCHECK(requesting_url == embedding_url);
-
-  if (!RequiresResourceIdentifier(content_type))
-    return GetNonDefaultContentSettings(requesting_url).settings[content_type];
-
-  if (RequiresResourceIdentifier(content_type) && resource_identifier.empty())
-    return CONTENT_SETTING_DEFAULT;
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableResourceContentSettings)) {
-    DCHECK(!resource_identifier.empty());
-  }
-
-  base::AutoLock auto_lock(lock_);
-
-  const std::string host(net::GetHostOrSpecFromURL(requesting_url));
-  ContentSettingsTypeResourceIdentifierPair
-      requested_setting(content_type, resource_identifier);
-
-  // Check for exact matches first.
-  HostContentSettings::const_iterator i(host_content_settings_.find(host));
-  if (i != host_content_settings_.end() &&
-      i->second.content_settings_for_resources.find(requested_setting) !=
-      i->second.content_settings_for_resources.end()) {
-    return i->second.content_settings_for_resources.find(
-        requested_setting)->second;
-  }
-
-  // If this map is not for an off-the-record profile, these searches will never
-  // match. The additional off-the-record exceptions always overwrite the
-  // regular ones.
-  i = off_the_record_settings_.find(host);
-  if (i != off_the_record_settings_.end() &&
-      i->second.content_settings_for_resources.find(requested_setting) !=
-      i->second.content_settings_for_resources.end()) {
-    return i->second.content_settings_for_resources.find(
-        requested_setting)->second;
-  }
-
-  // Match patterns starting with the most concrete pattern match.
-  for (std::string key =
-       std::string(ContentSettingsPattern::kDomainWildcard) + host; ; ) {
-    HostContentSettings::const_iterator i(off_the_record_settings_.find(key));
-    if (i != off_the_record_settings_.end() &&
-        i->second.content_settings_for_resources.find(requested_setting) !=
-        i->second.content_settings_for_resources.end()) {
-      return i->second.content_settings_for_resources.find(
-          requested_setting)->second;
-    }
-
-    i = host_content_settings_.find(key);
-    if (i != host_content_settings_.end() &&
-        i->second.content_settings_for_resources.find(requested_setting) !=
-        i->second.content_settings_for_resources.end()) {
-      return i->second.content_settings_for_resources.find(
-          requested_setting)->second;
-    }
-
-    const size_t next_dot =
-        key.find('.', ContentSettingsPattern::kDomainWildcardLength);
-    if (next_dot == std::string::npos)
-      break;
-    key.erase(ContentSettingsPattern::kDomainWildcardLength,
-              next_dot - ContentSettingsPattern::kDomainWildcardLength + 1);
-  }
-
-  return CONTENT_SETTING_DEFAULT;
-}
-
 void PrefProvider::SetContentSetting(
     const ContentSettingsPattern& requesting_pattern,
     const ContentSettingsPattern& embedding_pattern,
@@ -447,16 +346,20 @@ void PrefProvider::SetContentSetting(
   std::string pattern_str(pattern.AsString());
   PrefService* prefs = NULL;
   DictionaryValue* all_settings_dictionary = NULL;
-  HostContentSettings* map_to_modify = &off_the_record_settings_;
-  if (!is_off_the_record_) {
+
+  // Select content-settings-map to write to.
+  HostContentSettings* map_to_modify = off_the_record_settings();
+  if (!is_off_the_record()) {
     prefs = profile_->GetPrefs();
     all_settings_dictionary =
         prefs->GetMutableDictionary(prefs::kContentSettingsPatterns);
-    map_to_modify = &host_content_settings_;
+
+    map_to_modify = host_content_settings();
   }
 
+  // Update content-settings-map.
   {
-    base::AutoLock auto_lock(lock_);
+    base::AutoLock auto_lock(lock());
     if (!map_to_modify->count(pattern_str))
       (*map_to_modify)[pattern_str].content_settings = ContentSettings();
     HostContentSettings::iterator i(
@@ -482,11 +385,12 @@ void PrefProvider::SetContentSetting(
         all_settings_dictionary->RemoveWithoutPathExpansion(pattern_str, NULL);
 
       // We can't just return because |NotifyObservers()| needs to be called,
-      // without |lock_| being held.
+      // without lock() being held.
       early_exit = true;
     }
   }
 
+  // Update the content_settings preference.
   if (!early_exit && all_settings_dictionary) {
     DictionaryValue* host_settings_dictionary = NULL;
     bool found = all_settings_dictionary->GetDictionaryWithoutPathExpansion(
@@ -526,62 +430,23 @@ void PrefProvider::SetContentSetting(
   }
 
   updating_preferences_ = true;
-  if (!is_off_the_record_)
+  if (!is_off_the_record())
     ScopedPrefUpdate update(prefs, prefs::kContentSettingsPatterns);
   updating_preferences_ = false;
 
   NotifyObservers(ContentSettingsDetails(pattern, content_type, ""));
 }
 
-void PrefProvider::GetAllContentSettingsRules(
-    ContentSettingsType content_type,
-    const ResourceIdentifier& resource_identifier,
-    Rules* content_setting_rules) const {
-  DCHECK(RequiresResourceIdentifier(content_type) !=
-         resource_identifier.empty());
-  DCHECK(content_setting_rules);
-  content_setting_rules->clear();
-
-  const HostContentSettings* map_to_return =
-      is_off_the_record_ ? &off_the_record_settings_ : &host_content_settings_;
-  ContentSettingsTypeResourceIdentifierPair requested_setting(
-      content_type, resource_identifier);
-
-  base::AutoLock auto_lock(lock_);
-  for (HostContentSettings::const_iterator i(map_to_return->begin());
-       i != map_to_return->end(); ++i) {
-    ContentSetting setting;
-    if (RequiresResourceIdentifier(content_type)) {
-      if (i->second.content_settings_for_resources.find(requested_setting) !=
-          i->second.content_settings_for_resources.end()) {
-        setting = i->second.content_settings_for_resources.find(
-            requested_setting)->second;
-      } else {
-        setting = CONTENT_SETTING_DEFAULT;
-      }
-    } else {
-     setting = i->second.content_settings.settings[content_type];
-    }
-    if (setting != CONTENT_SETTING_DEFAULT) {
-      // Use of push_back() relies on the map iterator traversing in order of
-      // ascending keys.
-      content_setting_rules->push_back(Rule(ContentSettingsPattern(i->first),
-                                            ContentSettingsPattern(i->first),
-                                            setting));
-    }
-  }
-}
-
 void PrefProvider::ResetToDefaults() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   {
-    base::AutoLock auto_lock(lock_);
-    host_content_settings_.clear();
-    off_the_record_settings_.clear();
+    base::AutoLock auto_lock(lock());
+    host_content_settings()->clear();
+    off_the_record_settings()->clear();
   }
 
-  if (!is_off_the_record_) {
+  if (!is_off_the_record()) {
     PrefService* prefs = profile_->GetPrefs();
     updating_preferences_ = true;
     prefs->ClearPref(prefs::kContentSettingsPatterns);
@@ -595,22 +460,22 @@ void PrefProvider::ClearAllContentSettingsRules(
 
   PrefService* prefs = NULL;
   DictionaryValue* all_settings_dictionary = NULL;
-  HostContentSettings* map_to_modify = &off_the_record_settings_;
+  HostContentSettings* map_to_modify = off_the_record_settings();
 
-  if (!is_off_the_record_) {
+  if (!is_off_the_record()) {
     prefs = profile_->GetPrefs();
     all_settings_dictionary =
         prefs->GetMutableDictionary(prefs::kContentSettingsPatterns);
-    map_to_modify = &host_content_settings_;
+    map_to_modify = host_content_settings();
   }
 
   {
-    base::AutoLock auto_lock(lock_);
+    base::AutoLock auto_lock(lock());
     for (HostContentSettings::iterator i(map_to_modify->begin());
          i != map_to_modify->end(); ) {
       if (RequiresResourceIdentifier(content_type) ||
           i->second.content_settings.settings[content_type] !=
-          CONTENT_SETTING_DEFAULT) {
+              CONTENT_SETTING_DEFAULT) {
         if (RequiresResourceIdentifier(content_type))
           i->second.content_settings_for_resources.clear();
         i->second.content_settings.settings[content_type] =
@@ -637,7 +502,7 @@ void PrefProvider::ClearAllContentSettingsRules(
   }
 
   updating_preferences_ = true;
-  if (!is_off_the_record_)
+  if (!is_off_the_record())
     ScopedPrefUpdate update(prefs, prefs::kContentSettingsPatterns);
   updating_preferences_ = false;
 
@@ -664,7 +529,7 @@ void PrefProvider::Observe(
       return;
     }
 
-    if (!is_off_the_record_) {
+    if (!is_off_the_record()) {
       NotifyObservers(ContentSettingsDetails(ContentSettingsPattern(),
                                              CONTENT_SETTINGS_TYPE_DEFAULT,
                                              ""));
@@ -684,34 +549,15 @@ PrefProvider::~PrefProvider() {
 // ////////////////////////////////////////////////////////////////////////////
 // Private
 
-bool PrefProvider::RequiresResourceIdentifier(
-    ContentSettingsType content_type) const {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableResourceContentSettings)) {
-    return kRequiresResourceIdentifier[content_type];
-  } else {
-    return false;
-  }
-}
-
-bool PrefProvider::AllDefault(
-    const ExtendedContentSettings& settings) const {
-  for (size_t i = 0; i < arraysize(settings.content_settings.settings); ++i) {
-    if (settings.content_settings.settings[i] != CONTENT_SETTING_DEFAULT)
-      return false;
-  }
-  return settings.content_settings_for_resources.empty();
-}
-
 void PrefProvider::ReadExceptions(bool overwrite) {
-  base::AutoLock lock(lock_);
+  base::AutoLock auto_lock(lock());
 
   PrefService* prefs = profile_->GetPrefs();
   DictionaryValue* all_settings_dictionary =
       prefs->GetMutableDictionary(prefs::kContentSettingsPatterns);
 
   if (overwrite)
-    host_content_settings_.clear();
+    host_content_settings()->clear();
 
   // Careful: The returned value could be NULL if the pref has never been set.
   if (all_settings_dictionary != NULL) {
@@ -727,12 +573,15 @@ void PrefProvider::ReadExceptions(bool overwrite) {
       bool found = all_settings_dictionary->GetDictionaryWithoutPathExpansion(
           pattern, &pattern_settings_dictionary);
       DCHECK(found);
-      ContentSettings settings;
-      GetSettingsFromDictionary(pattern_settings_dictionary, &settings);
-      host_content_settings_[pattern].content_settings = settings;
+
+      ExtendedContentSettings extended_settings;
+      GetSettingsFromDictionary(pattern_settings_dictionary,
+                                &extended_settings.content_settings);
       GetResourceSettingsFromDictionary(
           pattern_settings_dictionary,
-          &host_content_settings_[pattern].content_settings_for_resources);
+          &extended_settings.content_settings_for_resources);
+
+      (*host_content_settings())[pattern] = extended_settings;
     }
   }
 }
@@ -909,62 +758,6 @@ void PrefProvider::MigrateObsoletePopupsPref(PrefService* prefs) {
     }
     prefs->ClearPref(prefs::kPopupWhitelistedHosts);
   }
-}
-
-// ////////////////////////////////////////////////////////////////////////////
-// LEGACY TBR
-//
-
-ContentSettings PrefProvider::GetNonDefaultContentSettings(
-    const GURL& url) const {
-  base::AutoLock auto_lock(lock_);
-
-  const std::string host(net::GetHostOrSpecFromURL(url));
-  ContentSettings output;
-  for (int j = 0; j < CONTENT_SETTINGS_NUM_TYPES; ++j)
-    output.settings[j] = CONTENT_SETTING_DEFAULT;
-
-  // Check for exact matches first.
-  HostContentSettings::const_iterator i(host_content_settings_.find(host));
-  if (i != host_content_settings_.end())
-    output = i->second.content_settings;
-
-  // If this map is not for an off-the-record profile, these searches will never
-  // match. The additional off-the-record exceptions always overwrite the
-  // regular ones.
-  i = off_the_record_settings_.find(host);
-  if (i != off_the_record_settings_.end()) {
-    for (int j = 0; j < CONTENT_SETTINGS_NUM_TYPES; ++j)
-      if (i->second.content_settings.settings[j] != CONTENT_SETTING_DEFAULT)
-        output.settings[j] = i->second.content_settings.settings[j];
-  }
-
-  // Match patterns starting with the most concrete pattern match.
-  for (std::string key =
-       std::string(ContentSettingsPattern::kDomainWildcard) + host; ; ) {
-    HostContentSettings::const_iterator i(off_the_record_settings_.find(key));
-    if (i != off_the_record_settings_.end()) {
-      for (int j = 0; j < CONTENT_SETTINGS_NUM_TYPES; ++j) {
-        if (output.settings[j] == CONTENT_SETTING_DEFAULT)
-          output.settings[j] = i->second.content_settings.settings[j];
-      }
-    }
-    i = host_content_settings_.find(key);
-    if (i != host_content_settings_.end()) {
-      for (int j = 0; j < CONTENT_SETTINGS_NUM_TYPES; ++j) {
-        if (output.settings[j] == CONTENT_SETTING_DEFAULT)
-          output.settings[j] = i->second.content_settings.settings[j];
-      }
-    }
-    const size_t next_dot =
-        key.find('.', ContentSettingsPattern::kDomainWildcardLength);
-    if (next_dot == std::string::npos)
-      break;
-    key.erase(ContentSettingsPattern::kDomainWildcardLength,
-              next_dot - ContentSettingsPattern::kDomainWildcardLength + 1);
-  }
-
-  return output;
 }
 
 }  // namespace content_settings

@@ -811,6 +811,8 @@
         'browser/content_setting_combo_model.h',
         'browser/content_setting_image_model.cc',
         'browser/content_setting_image_model.h',
+        'browser/content_settings/content_settings_base_provider.cc',
+        'browser/content_settings/content_settings_base_provider.h',
         'browser/content_settings/content_settings_details.h',
         'browser/content_settings/content_settings_pattern.cc',
         'browser/content_settings/content_settings_pattern.h',
