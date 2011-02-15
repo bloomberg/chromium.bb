@@ -254,6 +254,7 @@
 
         '../third_party/skia/src/core/ARGB32_Clamp_Bilinear_BitmapShader.h',
         '../third_party/skia/src/core/Sk64.cpp',
+        '../third_party/skia/src/core/SkAdvancedTypefaceMetrics.cpp',
         '../third_party/skia/src/core/SkAlphaRuns.cpp',
         '../third_party/skia/src/core/SkAntiRun.h',
         '../third_party/skia/src/core/SkBitmap.cpp',
