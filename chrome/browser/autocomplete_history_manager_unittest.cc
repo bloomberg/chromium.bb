@@ -10,6 +10,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete_history_manager.h"
 #include "chrome/browser/webdata/web_data_service.h"
+#include "chrome/test/testing_browser_process.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,7 +26,7 @@ class MockWebDataService : public WebDataService {
                void(const std::vector<webkit_glue::FormField>&));  // NOLINT
 };
 
-class AutocompleteHistoryManagerTest : public testing::Test {
+class AutocompleteHistoryManagerTest : public TestingBrowserProcessTest {
  protected:
   AutocompleteHistoryManagerTest()
       : ui_thread_(BrowserThread::UI, &message_loop_) {

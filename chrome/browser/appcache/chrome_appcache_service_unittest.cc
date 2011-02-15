@@ -9,13 +9,15 @@
 #include "chrome/browser/appcache/chrome_appcache_service.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/test/testing_browser_process.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/thread_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/appcache/appcache_storage_impl.h"
 
 namespace appcache {
 
-class ChromeAppCacheServiceTest : public testing::Test {
+class ChromeAppCacheServiceTest : public TestingBrowserProcessTest {
  public:
   ChromeAppCacheServiceTest()
       : message_loop_(MessageLoop::TYPE_IO),

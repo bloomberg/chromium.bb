@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/cocoa/browser_test_helper.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/testing_browser_process.h"
 #include "chrome/test/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -160,6 +161,8 @@ class AutoFillDialogControllerTest : public CocoaTest {
   std::vector<CreditCard*>& credit_cards() {
     return helper_.test_profile_->test_manager_->test_credit_cards_;
   }
+
+  ScopedTestingBrowserProcess browser_process_;
 
   BrowserMock helper_;
   AutoFillDialogObserverMock observer_;

@@ -21,6 +21,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
+#include "chrome/test/testing_browser_process.h"
 #include "chrome/test/testing_profile.h"
 #include "webkit/glue/form_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -74,6 +75,7 @@ class PersonalDataManagerTest : public testing::Test {
     personal_data_->SetObserver(&personal_data_observer_);
   }
 
+  ScopedTestingBrowserProcess browser_process_;
   MessageLoopForUI message_loop_;
   BrowserThread ui_thread_;
   BrowserThread db_thread_;

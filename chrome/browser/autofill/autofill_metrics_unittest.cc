@@ -14,6 +14,7 @@
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
 #include "chrome/browser/tab_contents/test_tab_contents.h"
+#include "chrome/test/testing_browser_process.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/form_data.h"
@@ -177,6 +178,7 @@ class AutoFillMetricsTest : public RenderViewHostTestHarness {
   }
 
  protected:
+  ScopedTestingBrowserProcess browser_process_;
   scoped_ptr<TestAutoFillManager> autofill_manager_;
   scoped_refptr<TestPersonalDataManager> test_personal_data_;
 

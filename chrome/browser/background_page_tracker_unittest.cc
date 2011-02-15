@@ -8,6 +8,8 @@
 #include "chrome/browser/background_page_tracker.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
+#include "chrome/test/testing_browser_process.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -25,13 +27,16 @@ class MockBackgroundPageTracker : public BackgroundPageTracker {
   TestingPrefService prefs_;
 };
 
-TEST(BackgroundPageTrackerTest, Create) {
+class BackgroundPageTrackerTest : public TestingBrowserProcessTest {
+};
+
+TEST_F(BackgroundPageTrackerTest, Create) {
   MockBackgroundPageTracker tracker;
   EXPECT_EQ(0, tracker.GetBackgroundPageCount());
   EXPECT_EQ(0, tracker.GetUnacknowledgedBackgroundPageCount());
 }
 
-TEST(BackgroundPageTrackerTest, OnBackgroundPageLoaded) {
+TEST_F(BackgroundPageTrackerTest, OnBackgroundPageLoaded) {
   MockBackgroundPageTracker tracker;
   EXPECT_EQ(0, tracker.GetBackgroundPageCount());
   EXPECT_EQ(0, tracker.GetUnacknowledgedBackgroundPageCount());
@@ -56,7 +61,7 @@ TEST(BackgroundPageTrackerTest, OnBackgroundPageLoaded) {
   EXPECT_EQ(0, tracker.GetUnacknowledgedBackgroundPageCount());
 }
 
-TEST(BackgroundPageTrackerTest, AcknowledgeBackgroundPages) {
+TEST_F(BackgroundPageTrackerTest, AcknowledgeBackgroundPages) {
   MockBackgroundPageTracker tracker;
   EXPECT_EQ(0, tracker.GetBackgroundPageCount());
   EXPECT_EQ(0, tracker.GetUnacknowledgedBackgroundPageCount());
@@ -95,7 +100,7 @@ class BadgeChangedNotificationCounter : public NotificationObserver {
   NotificationRegistrar registrar_;
 };
 
-TEST(BackgroundPageTrackerTest, TestTrackerChangedNotifications) {
+TEST_F(BackgroundPageTrackerTest, TestTrackerChangedNotifications) {
   MockBackgroundPageTracker tracker;
   BadgeChangedNotificationCounter counter;
   std::string app1 = "app_id_1";

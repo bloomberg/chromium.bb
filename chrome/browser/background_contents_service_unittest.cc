@@ -14,12 +14,13 @@
 #include "chrome/browser/tab_contents/background_contents.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_browser_process.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/testing_profile.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
-class BackgroundContentsServiceTest : public testing::Test {
+class BackgroundContentsServiceTest : public TestingBrowserProcessTest {
  public:
   BackgroundContentsServiceTest() {}
   ~BackgroundContentsServiceTest() {}

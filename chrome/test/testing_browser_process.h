@@ -145,4 +145,18 @@ class TestingBrowserProcess : public BrowserProcess {
   DISALLOW_COPY_AND_ASSIGN(TestingBrowserProcess);
 };
 
+// Scoper to put a TestingBrowserProcess in |g_browser_process|.
+class ScopedTestingBrowserProcess {
+ public:
+  ScopedTestingBrowserProcess();
+  ~ScopedTestingBrowserProcess();
+
+ private:
+  // TODO(phajdan.jr): Temporary, for http://crbug.com/61062.
+  // After the transition is over, we should just stack-allocate it.
+  scoped_ptr<TestingBrowserProcess> browser_process_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedTestingBrowserProcess);
+};
+
 #endif  // CHROME_TEST_TESTING_BROWSER_PROCESS_H_

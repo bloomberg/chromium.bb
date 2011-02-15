@@ -7,13 +7,15 @@
 #include "chrome/browser/background_mode_manager.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/test/testing_browser_process.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::InSequence;
 
-class BackgroundModeManagerTest : public testing::Test {
+class BackgroundModeManagerTest : public TestingBrowserProcessTest {
  public:
   BackgroundModeManagerTest() {}
   ~BackgroundModeManagerTest() {}

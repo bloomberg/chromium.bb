@@ -19,6 +19,8 @@
 #include "chrome/browser/history/url_database.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/testing_browser_process.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -64,7 +66,7 @@ struct TestURLInfo {
   {"http://xyzabcdefghijklmnopqrstuvw.com/a", "An XYZ", 1, 1, 0},
 };
 
-class HistoryQuickProviderTest : public testing::Test,
+class HistoryQuickProviderTest : public TestingBrowserProcessTest,
                                  public ACProviderListener {
  public:
   HistoryQuickProviderTest()

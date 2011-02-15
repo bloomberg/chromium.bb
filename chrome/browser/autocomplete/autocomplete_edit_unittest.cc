@@ -5,6 +5,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
+#include "chrome/test/testing_browser_process.h"
 #include "chrome/test/testing_profile.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -140,6 +141,7 @@ TEST(AutocompleteEditTest, AdjustTextForCopy) {
     // Tests that we don't get double http if the user manually inserts http.
     { "a.b/", 0, false, "http://a.b/", "http://a.b/", true, "http://a.b/" },
   };
+  ScopedTestingBrowserProcess browser_process;
   TestingAutocompleteEditView view;
   TestingAutocompleteEditController controller;
   TestingProfile profile;

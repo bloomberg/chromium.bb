@@ -192,3 +192,26 @@ void TestingBrowserProcess::SetGoogleURLTracker(
     GoogleURLTracker* google_url_tracker) {
   google_url_tracker_.reset(google_url_tracker);
 }
+
+ScopedTestingBrowserProcess::ScopedTestingBrowserProcess() {
+  // TODO(phajdan.jr): Temporary, for http://crbug.com/61062.
+  // ChromeTestSuite sets up a global TestingBrowserProcess
+  // for all tests. We need to get rid of it, because it contains
+  // a NotificationService, and there can be only one NotificationService
+  // per thread.
+  DCHECK(g_browser_process);
+  delete g_browser_process;
+
+  browser_process_.reset(new TestingBrowserProcess);
+  g_browser_process = browser_process_.get();
+}
+
+ScopedTestingBrowserProcess::~ScopedTestingBrowserProcess() {
+  DCHECK_EQ(browser_process_.get(), g_browser_process);
+
+  // TODO(phajdan.jr): Temporary, for http://crbug.com/61062.
+  // After the transition is over, we should just
+  // reset |g_browser_process| to NULL.
+  browser_process_.reset();
+  g_browser_process = new TestingBrowserProcess();
+}

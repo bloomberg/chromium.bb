@@ -158,6 +158,7 @@
         'test/test_url_request_context_getter.h',
         'test/testing_browser_process.cc',
         'test/testing_browser_process.h',
+        'test/testing_browser_process_test.h',
         'test/testing_device_token_fetcher.cc',
         'test/testing_device_token_fetcher.h',
         'test/testing_pref_service.cc',

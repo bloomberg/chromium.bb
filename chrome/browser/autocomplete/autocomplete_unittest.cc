@@ -16,6 +16,8 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/test/testing_browser_process.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -122,6 +124,8 @@ class AutocompleteProviderTest : public testing::Test,
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
+
+  ScopedTestingBrowserProcess browser_process_;
 
   MessageLoopForUI message_loop_;
   scoped_ptr<AutocompleteController> controller_;
@@ -261,7 +265,9 @@ TEST_F(AutocompleteProviderTest, AllowExactKeywordMatch) {
   RunExactKeymatchTest(false);
 }
 
-TEST(AutocompleteTest, InputType) {
+typedef TestingBrowserProcessTest AutocompleteTest;
+
+TEST_F(AutocompleteTest, InputType) {
   struct test_data {
     const string16 input;
     const AutocompleteInput::Type type;
@@ -358,7 +364,7 @@ TEST(AutocompleteTest, InputType) {
   }
 }
 
-TEST(AutocompleteTest, InputTypeWithDesiredTLD) {
+TEST_F(AutocompleteTest, InputTypeWithDesiredTLD) {
   struct test_data {
     const string16 input;
     const AutocompleteInput::Type type;
@@ -377,7 +383,7 @@ TEST(AutocompleteTest, InputTypeWithDesiredTLD) {
 
 // This tests for a regression where certain input in the omnibox caused us to
 // crash. As long as the test completes without crashing, we're fine.
-TEST(AutocompleteTest, InputCrash) {
+TEST_F(AutocompleteTest, InputCrash) {
   AutocompleteInput input(WideToUTF16(L"\uff65@s"), string16(), true, false,
                           true, false);
 }
@@ -439,6 +445,8 @@ TEST(AutocompleteInput, ParseForEmphasizeComponent) {
     { ASCIIToUTF16("view-source:view-source:http://example.com/"),
         Component(12, 11), kInvalidComponent }
   };
+
+  ScopedTestingBrowserProcess browser_process;
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(input_cases); ++i) {
     Component scheme, host;

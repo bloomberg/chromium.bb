@@ -8,10 +8,12 @@
 #include "chrome/browser/autocomplete/keyword_provider.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/test/testing_browser_process.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class KeywordProviderTest : public testing::Test {
+class KeywordProviderTest : public TestingBrowserProcessTest {
  protected:
   template<class ResultType>
   struct test_data {

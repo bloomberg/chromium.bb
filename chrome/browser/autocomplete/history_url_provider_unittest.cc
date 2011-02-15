@@ -11,6 +11,8 @@
 #include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/test/testing_browser_process.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -90,7 +92,7 @@ struct TestURLInfo {
   {"http://www.winky.com/", "Internet winky", 5, 0},
 };
 
-class HistoryURLProviderTest : public testing::Test,
+class HistoryURLProviderTest : public TestingBrowserProcessTest,
                                public ACProviderListener {
  public:
   HistoryURLProviderTest()

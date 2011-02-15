@@ -7,9 +7,12 @@
 #include "base/scoped_nsobject.h"
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/app_controller_mac.h"
+#include "chrome/test/testing_browser_process.h"
 #include "testing/platform_test.h"
 
 class AppControllerTest : public PlatformTest {
+ private:
+  ScopedTestingBrowserProcess browser_process_;
 };
 
 TEST_F(AppControllerTest, DockMenu) {

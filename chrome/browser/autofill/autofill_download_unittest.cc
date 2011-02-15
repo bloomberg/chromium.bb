@@ -10,6 +10,8 @@
 #include "chrome/browser/autofill/autofill_download.h"
 #include "chrome/browser/autofill/autofill_metrics.h"
 #include "chrome/common/net/test_url_fetcher_factory.h"
+#include "chrome/test/testing_browser_process.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/testing_profile.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -102,7 +104,9 @@ class AutoFillDownloadTestHelper : public AutoFillDownloadManager::Observer {
   AutoFillDownloadManager download_manager;
 };
 
-TEST(AutoFillDownloadTest, QueryAndUploadTest) {
+typedef TestingBrowserProcessTest AutoFillDownloadTest;
+
+TEST_F(AutoFillDownloadTest, QueryAndUploadTest) {
   MessageLoopForUI message_loop;
   // Create and register factory.
   AutoFillDownloadTestHelper helper;
@@ -341,7 +345,7 @@ TEST(AutoFillDownloadTest, QueryAndUploadTest) {
   URLFetcher::set_factory(NULL);
 }
 
-TEST(AutoFillDownloadTest, CacheQueryTest) {
+TEST_F(AutoFillDownloadTest, CacheQueryTest) {
   MessageLoopForUI message_loop;
   AutoFillDownloadTestHelper helper;
   // Create and register factory.
