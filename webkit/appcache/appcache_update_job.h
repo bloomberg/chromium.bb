@@ -16,6 +16,7 @@
 #include "base/task.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/completion_callback.h"
+#include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "webkit/appcache/appcache.h"
 #include "webkit/appcache/appcache_host.h"
@@ -25,12 +26,10 @@
 
 namespace appcache {
 
-class UpdateJobInfo;
 class HostNotifier;
 
 // Application cache Update algorithm and state.
-class AppCacheUpdateJob : public net::URLRequest::Delegate,
-                          public AppCacheStorage::Delegate,
+class AppCacheUpdateJob : public AppCacheStorage::Delegate,
                           public AppCacheHost::Observer {
  public:
   AppCacheUpdateJob(AppCacheService* service, AppCacheGroup* group);
@@ -43,13 +42,13 @@ class AppCacheUpdateJob : public net::URLRequest::Delegate,
  private:
   friend class ScopedRunnableMethodFactory<AppCacheUpdateJob>;
   friend class AppCacheUpdateJobTest;
-  friend class UpdateJobInfo;
+  class URLFetcher;
 
   // Master entries have multiple hosts, for example, the same page is opened
   // in different tabs.
   typedef std::vector<AppCacheHost*> PendingHosts;
   typedef std::map<GURL, PendingHosts> PendingMasters;
-  typedef std::map<GURL, net::URLRequest*> PendingUrlFetches;
+  typedef std::map<GURL, URLFetcher*> PendingUrlFetches;
   typedef std::map<int64, GURL> LoadingResponses;
 
   static const int kRerunDelayMs = 1000;
@@ -91,15 +90,62 @@ class AppCacheUpdateJob : public net::URLRequest::Delegate,
     scoped_refptr<AppCacheResponseInfo> existing_response_info;
   };
 
-  UpdateJobInfo* GetUpdateJobInfo(net::URLRequest* request);
+  class URLFetcher : public net::URLRequest::Delegate {
+   public:
+    enum FetchType {
+      MANIFEST_FETCH,
+      URL_FETCH,
+      MASTER_ENTRY_FETCH,
+      MANIFEST_REFETCH,
+    };
+    URLFetcher(const GURL& url,
+               FetchType fetch_type,
+               AppCacheUpdateJob* job);
+    ~URLFetcher();
+    void Start();
+    FetchType fetch_type() const { return fetch_type_; }
+    net::URLRequest* request() const { return request_.get(); }
+    const AppCacheEntry& existing_entry() const { return existing_entry_; }
+    const std::string& manifest_data() const { return manifest_data_; }
+    AppCacheResponseWriter* response_writer() const {
+      return response_writer_.get();
+    }
+    void set_existing_response_headers(net::HttpResponseHeaders* headers) {
+      existing_response_headers_ = headers;
+    }
+    void set_existing_entry(const AppCacheEntry& entry) {
+      existing_entry_ = entry;
+    }
 
-  // Overridden from net::URLRequest::Delegate:
-  virtual void OnResponseStarted(net::URLRequest* request);
-  virtual void OnReadCompleted(net::URLRequest* request, int bytes_read);
-  virtual void OnReceivedRedirect(net::URLRequest* request,
-                                  const GURL& new_url,
-                                  bool* defer_redirect);
-  // TODO(jennb): any other delegate callbacks to handle? certificate?
+   private:
+    // URLRequest::Delegate overrides
+    virtual void OnReceivedRedirect(net::URLRequest* request,
+                                    const GURL& new_url,
+                                    bool* defer_redirect);
+    virtual void OnResponseStarted(net::URLRequest* request);
+    virtual void OnReadCompleted(net::URLRequest* request, int bytes_read);
+
+    void AddConditionalHeaders(const net::HttpResponseHeaders* headers);
+    void OnWriteComplete(int result);
+    void ReadResponseData();
+    bool ConsumeResponseData(int bytes_read);
+    void OnResponseCompleted();
+    bool MaybeRetryRequest();
+
+    GURL url_;
+    AppCacheUpdateJob* job_;
+    FetchType fetch_type_;
+    int retry_503_attempts_;
+    scoped_refptr<net::IOBuffer> buffer_;
+    scoped_ptr<net::URLRequest> request_;
+    AppCacheEntry existing_entry_;
+    scoped_refptr<net::HttpResponseHeaders> existing_response_headers_;
+    std::string manifest_data_;
+    scoped_ptr<AppCacheResponseWriter> response_writer_;
+    net::CompletionCallbackImpl<URLFetcher> write_callback_;
+  };  // class URLFetcher
+
+  AppCacheResponseWriter* CreateResponseWriter();
 
   // Methods for AppCacheStorage::Delegate.
   virtual void OnResponseInfoLoaded(AppCacheResponseInfo* response_info,
@@ -120,36 +166,13 @@ class AppCacheUpdateJob : public net::URLRequest::Delegate,
   void HandleCacheFailure(const std::string& error_message);
 
   void FetchManifest(bool is_first_fetch);
-
-  // Add extra conditional HTTP headers to the request based on the
-  // currently cached response headers.
-  void AddConditionalHeaders(net::URLRequest* request,
-                             const net::HttpResponseInfo* info);
-
-  void OnResponseCompleted(net::URLRequest* request);
-
-  // Retries a 503 request with retry-after header of 0.
-  // Returns true if request should be retried and deletes original request.
-  bool RetryRequest(net::URLRequest* request);
-
-  void ReadResponseData(net::URLRequest* request);
-
-  // Returns false if response data is processed asynchronously, in which
-  // case ReadResponseData will be invoked when it is safe to continue
-  // reading more response data from the request.
-  bool ConsumeResponseData(net::URLRequest* request,
-                           UpdateJobInfo* info,
-                           int bytes_read);
-  void OnWriteResponseComplete(int result, net::URLRequest* request,
-                               UpdateJobInfo* info);
-
-  void HandleManifestFetchCompleted(net::URLRequest* request);
+  void HandleManifestFetchCompleted(URLFetcher* fetcher);
   void ContinueHandleManifestFetchCompleted(bool changed);
 
-  void HandleUrlFetchCompleted(net::URLRequest* request);
-  void HandleMasterEntryFetchCompleted(net::URLRequest* request);
+  void HandleUrlFetchCompleted(URLFetcher* fetcher);
+  void HandleMasterEntryFetchCompleted(URLFetcher* fetcher);
 
-  void HandleManifestRefetchCompleted(net::URLRequest* request);
+  void HandleManifestRefetchCompleted(URLFetcher* fetcher);
   void OnManifestInfoWriteComplete(int result);
   void OnManifestDataWriteComplete(int result);
 
@@ -254,12 +277,11 @@ class AppCacheUpdateJob : public net::URLRequest::Delegate,
   LoadingResponses loading_responses_;
 
   // Keep track of pending URL requests so we can cancel them if necessary.
-  net::URLRequest* manifest_url_request_;
+  URLFetcher* manifest_fetcher_;
   PendingUrlFetches pending_url_fetches_;
 
   // Temporary storage of manifest response data for parsing and comparison.
   std::string manifest_data_;
-  std::string manifest_refetch_data_;
   scoped_ptr<net::HttpResponseInfo> manifest_response_info_;
   scoped_ptr<AppCacheResponseWriter> manifest_response_writer_;
   scoped_refptr<net::IOBuffer> read_manifest_buffer_;

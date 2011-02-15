@@ -737,9 +737,9 @@ class AppCacheUpdateJobTest : public testing::Test,
     MockFrontend* frontend = MakeMockFrontend();
     AppCacheHost* host = MakeHost(1, frontend);
     update->StartUpdate(host, GURL());
-    EXPECT_TRUE(update->manifest_url_request_ != NULL);
+    EXPECT_TRUE(update->manifest_fetcher_ != NULL);
 
-    update->manifest_url_request_->SimulateError(-100);
+    update->manifest_fetcher_->request()->SimulateError(-100);
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -769,9 +769,9 @@ class AppCacheUpdateJobTest : public testing::Test,
     host2->AssociateCache(cache);
 
     update->StartUpdate(NULL, GURL());
-    EXPECT_TRUE(update->manifest_url_request_ != NULL);
+    EXPECT_TRUE(update->manifest_fetcher_ != NULL);
 
-    update->manifest_url_request_->SimulateError(-100);
+    update->manifest_fetcher_->request()->SimulateError(-100);
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -804,7 +804,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     MockFrontend* frontend = MakeMockFrontend();
     AppCacheHost* host = MakeHost(1, frontend);
     update->StartUpdate(host, GURL());
-    EXPECT_TRUE(update->manifest_url_request_ != NULL);
+    EXPECT_TRUE(update->manifest_fetcher_ != NULL);
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -829,7 +829,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     MockFrontend* frontend = MakeMockFrontend();
     AppCacheHost* host = MakeHost(1, frontend);
     update->StartUpdate(host, GURL());
-    EXPECT_TRUE(update->manifest_url_request_ != NULL);
+    EXPECT_TRUE(update->manifest_fetcher_ != NULL);
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -860,7 +860,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     host2->AssociateCache(cache);
 
     update->StartUpdate(NULL, GURL());
-    EXPECT_TRUE(update->manifest_url_request_ != NULL);
+    EXPECT_TRUE(update->manifest_fetcher_ != NULL);
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -890,7 +890,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     MockFrontend* frontend = MakeMockFrontend();
     AppCacheHost* host = MakeHost(1, frontend);
     update->StartUpdate(host, GURL());
-    EXPECT_TRUE(update->manifest_url_request_ != NULL);
+    EXPECT_TRUE(update->manifest_fetcher_ != NULL);
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -915,7 +915,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     MockFrontend* frontend = MakeMockFrontend();
     AppCacheHost* host = MakeHost(1, frontend);
     update->StartUpdate(host, GURL());
-    EXPECT_TRUE(update->manifest_url_request_ != NULL);
+    EXPECT_TRUE(update->manifest_fetcher_ != NULL);
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -946,7 +946,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     host2->AssociateCache(cache);
 
     update->StartUpdate(NULL, GURL());
-    EXPECT_TRUE(update->manifest_url_request_ != NULL);
+    EXPECT_TRUE(update->manifest_fetcher_ != NULL);
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -1017,7 +1017,7 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     AppCacheUpdateJob* update = group_->update_job_;
     update->StartUpdate(NULL, GURL());
-    EXPECT_TRUE(update->manifest_url_request_ != NULL);
+    EXPECT_TRUE(update->manifest_fetcher_ != NULL);
 
     WaitForUpdateToFinish();
   }
@@ -1314,7 +1314,7 @@ class AppCacheUpdateJobTest : public testing::Test,
                     AppCacheEntry(AppCacheEntry::MASTER, 111));
 
     update->StartUpdate(NULL, GURL());
-    EXPECT_TRUE(update->manifest_url_request_ != NULL);
+    EXPECT_TRUE(update->manifest_fetcher_ != NULL);
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -1353,7 +1353,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     MockFrontend* frontend = MakeMockFrontend();
     AppCacheHost* host = MakeHost(1, frontend);
     update->StartUpdate(host, GURL());
-    EXPECT_TRUE(update->manifest_url_request_ != NULL);
+    EXPECT_TRUE(update->manifest_fetcher_ != NULL);
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -1386,7 +1386,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     host2->AssociateCache(cache);
 
     update->StartUpdate(NULL, GURL());
-    EXPECT_TRUE(update->manifest_url_request_ != NULL);
+    EXPECT_TRUE(update->manifest_fetcher_ != NULL);
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -1453,7 +1453,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     MakeAppCacheResponseInfo(kManifestUrl, 555, kRawHeaders);
 
     update->StartUpdate(NULL, GURL());
-    EXPECT_TRUE(update->manifest_url_request_ != NULL);
+    EXPECT_TRUE(update->manifest_fetcher_ != NULL);
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -1521,7 +1521,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     frontend1->SetVerifyProgressEvents(true);
 
     update->StartUpdate(NULL, GURL());
-    EXPECT_TRUE(update->manifest_url_request_ != NULL);
+    EXPECT_TRUE(update->manifest_fetcher_ != NULL);
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -1560,7 +1560,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     frontend->SetVerifyProgressEvents(true);
 
     update->StartUpdate(host, GURL());
-    EXPECT_TRUE(update->manifest_url_request_ != NULL);
+    EXPECT_TRUE(update->manifest_fetcher_ != NULL);
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -1596,7 +1596,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     MockFrontend* frontend = MakeMockFrontend();
     AppCacheHost* host = MakeHost(1, frontend);
     update->StartUpdate(host, GURL());
-    EXPECT_TRUE(update->manifest_url_request_ != NULL);
+    EXPECT_TRUE(update->manifest_fetcher_ != NULL);
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -1627,7 +1627,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     MockFrontend* frontend = MakeMockFrontend();
     AppCacheHost* host = MakeHost(1, frontend);
     update->StartUpdate(host, GURL());
-    EXPECT_TRUE(update->manifest_url_request_ != NULL);
+    EXPECT_TRUE(update->manifest_fetcher_ != NULL);
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -1659,7 +1659,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     MockFrontend* frontend = MakeMockFrontend();
     AppCacheHost* host = MakeHost(1, frontend);
     update->StartUpdate(host, GURL());
-    EXPECT_TRUE(update->manifest_url_request_ != NULL);
+    EXPECT_TRUE(update->manifest_fetcher_ != NULL);
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -1690,7 +1690,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     MockFrontend* frontend = MakeMockFrontend();
     AppCacheHost* host = MakeHost(1, frontend);
     update->StartUpdate(host, GURL());
-    EXPECT_TRUE(update->manifest_url_request_ != NULL);
+    EXPECT_TRUE(update->manifest_fetcher_ != NULL);
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -1721,7 +1721,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     MockFrontend* frontend = MakeMockFrontend();
     AppCacheHost* host = MakeHost(1, frontend);
     update->StartUpdate(host, GURL());
-    EXPECT_TRUE(update->manifest_url_request_ != NULL);
+    EXPECT_TRUE(update->manifest_fetcher_ != NULL);
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -1878,7 +1878,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     host2->AssociateCache(cache);
 
     update->StartUpdate(NULL, GURL());
-    EXPECT_TRUE(update->manifest_url_request_ != NULL);
+    EXPECT_TRUE(update->manifest_fetcher_ != NULL);
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -1907,9 +1907,9 @@ class AppCacheUpdateJobTest : public testing::Test,
     AppCacheHost* host = MakeHost(1, frontend);
     host->new_master_entry_url_ = GURL("http://failme/blah");
     update->StartUpdate(host, host->new_master_entry_url_);
-    EXPECT_TRUE(update->manifest_url_request_ != NULL);
+    EXPECT_TRUE(update->manifest_fetcher_ != NULL);
 
-    update->manifest_url_request_->SimulateError(-100);
+    update->manifest_fetcher_->request()->SimulateError(-100);
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -1935,7 +1935,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     AppCacheHost* host = MakeHost(1, frontend);
     host->new_master_entry_url_ = MockHttpServer::GetMockUrl("files/blah");
     update->StartUpdate(host, host->new_master_entry_url_);
-    EXPECT_TRUE(update->manifest_url_request_ != NULL);
+    EXPECT_TRUE(update->manifest_fetcher_ != NULL);
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -1962,7 +1962,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     host->new_master_entry_url_ = MockHttpServer::GetMockUrl("files/blah");
 
     update->StartUpdate(host, host->new_master_entry_url_);
-    EXPECT_TRUE(update->manifest_url_request_ != NULL);
+    EXPECT_TRUE(update->manifest_fetcher_ != NULL);
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -1991,7 +1991,7 @@ class AppCacheUpdateJobTest : public testing::Test,
         MockHttpServer::GetMockUrl("files/explicit1");
 
     update->StartUpdate(host, host->new_master_entry_url_);
-    EXPECT_TRUE(update->manifest_url_request_ != NULL);
+    EXPECT_TRUE(update->manifest_fetcher_ != NULL);
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -2266,7 +2266,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     host1->new_master_entry_url_ =
         MockHttpServer::GetMockUrl("files/explicit2");
     update->StartUpdate(host1, host1->new_master_entry_url_);
-    EXPECT_TRUE(update->manifest_url_request_ != NULL);
+    EXPECT_TRUE(update->manifest_fetcher_ != NULL);
 
     // Set up additional updates to be started while update is in progress.
     MockFrontend* frontend2 = MakeMockFrontend();
@@ -2363,7 +2363,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     host2->new_master_entry_url_ =
         MockHttpServer::GetMockUrl("files/nosuchfile");
     update->StartUpdate(host2, host2->new_master_entry_url_);
-    EXPECT_TRUE(update->manifest_url_request_ != NULL);
+    EXPECT_TRUE(update->manifest_fetcher_ != NULL);
 
     // Set up additional updates to be started while update is in progress.
     MockFrontend* frontend3 = MakeMockFrontend();
