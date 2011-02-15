@@ -1341,7 +1341,7 @@
    fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
 }
 {
-   bug_73036
+   bug_73036a
    Memcheck:Leak
    fun:malloc_zone_calloc
    fun:_internal_class_createInstanceFromZone
@@ -1365,4 +1365,30 @@
    fun:-[NSIBObjectData instantiateObject:]
    fun:-[NSIBObjectData nibInstantiateWithOwner:topLevelObjects:]
    fun:loadNib
+}
+{
+   bug_73036b
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   fun:_internal_class_createInstanceFromZone
+   fun:NSAllocateObject
+   fun:+[NSHashTable alloc]
+   fun:+[NSTrackingArea initialize]
+   fun:_class_initialize
+   fun:_class_lookupMethodAndLoadCache
+   fun:objc_msgSend
+   fun:-[NSView addTrackingRect:owner:userData:assumeInside:]
+   fun:-[NSCell(NSPrivate_CellMouseTracking) _setMouseTrackingInRect:ofView:]
+   fun:-[NSButtonCell _setMouseTrackingInRect:ofView:]
+   fun:-[NSControl _setMouseTrackingForCell:]
+   fun:-[NSButton(NSButtonBorder) _setMouseTrackingForCell:]
+   fun:-[NSButtonCell setControlView:]
+   fun:-[NSControl initWithCoder:]
+   fun:-[NSButton initWithCoder:]
+   fun:_decodeObjectBinary
+   fun:-[NSKeyedUnarchiver _decodeArrayOfObjectsForKey:]
+   fun:-[NSArray(NSArray) initWithCoder:]
+   fun:_decodeObjectBinary
+   fun:_decodeObject
+   fun:-[NSView initWithCoder:]
 }
