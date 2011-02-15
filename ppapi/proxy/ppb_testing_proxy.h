@@ -37,8 +37,8 @@ class PPB_Testing_Proxy : public InterfaceProxy {
                           const HostResource& image,
                           const PP_Point& top_left,
                           PP_Bool* result);
-  void OnMsgRunMessageLoop(bool* dummy);
-  void OnMsgQuitMessageLoop();
+  void OnMsgRunMessageLoop(PP_Instance instance);
+  void OnMsgQuitMessageLoop(PP_Instance instance);
   void OnMsgGetLiveObjectsForInstance(PP_Instance instance, uint32_t* result);
 
   DISALLOW_COPY_AND_ASSIGN(PPB_Testing_Proxy);

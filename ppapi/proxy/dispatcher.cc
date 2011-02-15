@@ -37,6 +37,7 @@
 #include "ppapi/c/ppb_url_response_info.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/private/ppb_flash.h"
+#include "ppapi/c/private/ppb_flash_menu.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -48,6 +49,7 @@
 #include "ppapi/proxy/ppb_core_proxy.h"
 #include "ppapi/proxy/ppb_cursor_control_proxy.h"
 #include "ppapi/proxy/ppb_flash_proxy.h"
+#include "ppapi/proxy/ppb_flash_menu_proxy.h"
 #include "ppapi/proxy/ppb_font_proxy.h"
 #include "ppapi/proxy/ppb_fullscreen_proxy.h"
 #include "ppapi/proxy/ppb_gles_chromium_texture_mapping_proxy.h"
@@ -102,6 +104,7 @@ InterfaceList::InterfaceList() {
   AddPPB(PPB_Core_Proxy::GetInfo());
   AddPPB(PPB_CursorControl_Proxy::GetInfo());
   AddPPB(PPB_Flash_Proxy::GetInfo());
+  AddPPB(PPB_Flash_Menu_Proxy::GetInfo());
   AddPPB(PPB_Font_Proxy::GetInfo());
   AddPPB(PPB_Fullscreen_Proxy::GetInfo());
   AddPPB(PPB_GLESChromiumTextureMapping_Proxy::GetInfo());

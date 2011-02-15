@@ -40,7 +40,7 @@ void TestDirectoryReader::RunTest() {
 }
 
 std::string TestDirectoryReader::TestGetNextFile() {
-  TestCompletionCallback callback;
+  TestCompletionCallback callback(instance_->pp_instance());
   pp::FileSystem_Dev file_system(
       instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
   int32_t rv = file_system.Open(1024, callback);

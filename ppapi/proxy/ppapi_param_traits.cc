@@ -12,6 +12,7 @@
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_var.h"
+#include "ppapi/proxy/serialized_flash_menu.h"
 
 namespace IPC {
 
@@ -475,6 +476,26 @@ bool ParamTraits< std::vector<pp::proxy::SerializedVar> >::Read(
 void ParamTraits< std::vector<pp::proxy::SerializedVar> >::Log(
     const param_type& p,
     std::string* l) {
+}
+
+// SerializedFlashMenu ---------------------------------------------------------
+
+// static
+void ParamTraits<pp::proxy::SerializedFlashMenu>::Write(Message* m,
+                                                        const param_type& p) {
+  p.WriteToMessage(m);
+}
+
+// static
+bool ParamTraits<pp::proxy::SerializedFlashMenu>::Read(const Message* m,
+                                                       void** iter,
+                                                       param_type* r) {
+  return r->ReadFromMessage(m, iter);
+}
+
+// static
+void ParamTraits<pp::proxy::SerializedFlashMenu>::Log(const param_type& p,
+                                                      std::string* l) {
 }
 
 }  // namespace IPC

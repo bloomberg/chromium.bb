@@ -19,7 +19,7 @@
 
 // PPB_Flash -------------------------------------------------------------------
 
-#define PPB_FLASH_INTERFACE "PPB_Flash;5"
+#define PPB_FLASH_INTERFACE "PPB_Flash;6"
 
 #ifdef _WIN32
 typedef HANDLE PP_FileHandle;
@@ -122,11 +122,11 @@ struct PPB_Flash {
   // message loop (e.g., when displaying context menus), but Pepper provides
   // only an asynchronous call. After performing that asynchronous call, call
   // |RunMessageLoop()|. In the callback, call |QuitMessageLoop()|.
-  void (*RunMessageLoop)();
+  void (*RunMessageLoop)(PP_Instance instance);
 
   // Posts a quit message for the outermost nested message loop. Use this to
   // exit and return back to the caller after you call RunMessageLoop.
-  void (*QuitMessageLoop)();
+  void (*QuitMessageLoop)(PP_Instance instance);
 };
 
 // PPB_Flash_NetConnector ------------------------------------------------------

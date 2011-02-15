@@ -29,10 +29,11 @@ std::string ReportMismatch(const std::string& method_name,
       expected_result + "' expected.";
 }
 
-int32_t ReadEntireFile(pp::FileIO_Dev* file_io,
+int32_t ReadEntireFile(PP_Instance instance,
+                       pp::FileIO_Dev* file_io,
                        int32_t offset,
                        std::string* data) {
-  TestCompletionCallback callback;
+  TestCompletionCallback callback(instance);
   char buf[256];
   int32_t read_offset = offset;
 
@@ -51,10 +52,11 @@ int32_t ReadEntireFile(pp::FileIO_Dev* file_io,
   return PP_OK;
 }
 
-int32_t WriteEntireBuffer(pp::FileIO_Dev* file_io,
+int32_t WriteEntireBuffer(PP_Instance instance,
+                          pp::FileIO_Dev* file_io,
                           int32_t offset,
                           const std::string& data) {
-  TestCompletionCallback callback;
+  TestCompletionCallback callback(instance);
   int32_t write_offset = offset;
   const char* buf = data.c_str();
   int32_t size = data.size();
@@ -91,7 +93,7 @@ void TestFileIO::RunTest() {
 }
 
 std::string TestFileIO::TestOpen() {
-  TestCompletionCallback callback;
+  TestCompletionCallback callback(instance_->pp_instance());
 
   pp::FileSystem_Dev file_system(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
   pp::FileRef_Dev file_ref(file_system, "/file_open");
@@ -122,7 +124,7 @@ std::string TestFileIO::TestOpen() {
 }
 
 std::string TestFileIO::TestReadWriteSetLength() {
-  TestCompletionCallback callback;
+  TestCompletionCallback callback(instance_->pp_instance());
 
   pp::FileSystem_Dev file_system(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
   pp::FileRef_Dev file_ref(file_system, "/file_read_write_setlength");
@@ -144,13 +146,13 @@ std::string TestFileIO::TestReadWriteSetLength() {
     return ReportError("FileIO::Open", rv);
 
   // Write something to the file.
-  rv = WriteEntireBuffer(&file_io, 0, "test_test");
+  rv = WriteEntireBuffer(instance_->pp_instance(), &file_io, 0, "test_test");
   if (rv != PP_OK)
     return ReportError("FileIO::Write", rv);
 
   // Read the entire file.
   std::string read_buffer;
-  rv = ReadEntireFile(&file_io, 0, &read_buffer);
+  rv = ReadEntireFile(instance_->pp_instance(), &file_io, 0, &read_buffer);
   if (rv != PP_OK)
     return ReportError("FileIO::Read", rv);
   if (read_buffer != "test_test")
@@ -165,7 +167,7 @@ std::string TestFileIO::TestReadWriteSetLength() {
 
   // Check the file contents.
   read_buffer.clear();
-  rv = ReadEntireFile(&file_io, 0, &read_buffer);
+  rv = ReadEntireFile(instance_->pp_instance(), &file_io, 0, &read_buffer);
   if (rv != PP_OK)
     return ReportError("FileIO::Read", rv);
   if (read_buffer != "test")
@@ -173,20 +175,20 @@ std::string TestFileIO::TestReadWriteSetLength() {
 
   // Try to read past the end of the file.
   read_buffer.clear();
-  rv = ReadEntireFile(&file_io, 100, &read_buffer);
+  rv = ReadEntireFile(instance_->pp_instance(), &file_io, 100, &read_buffer);
   if (rv != PP_OK)
     return ReportError("FileIO::Read", rv);
   if (!read_buffer.empty())
     return ReportMismatch("FileIO::Read", read_buffer, "<empty string>");
 
   // Write past the end of the file. The file should be zero-padded.
-  rv = WriteEntireBuffer(&file_io, 8, "test");
+  rv = WriteEntireBuffer(instance_->pp_instance(), &file_io, 8, "test");
   if (rv != PP_OK)
     return ReportError("FileIO::Write", rv);
 
   // Check the contents of the file.
   read_buffer.clear();
-  rv = ReadEntireFile(&file_io, 0, &read_buffer);
+  rv = ReadEntireFile(instance_->pp_instance(), &file_io, 0, &read_buffer);
   if (rv != PP_OK)
     return ReportError("FileIO::Read", rv);
   if (read_buffer != std::string("test\0\0\0\0test", 12))
@@ -202,7 +204,7 @@ std::string TestFileIO::TestReadWriteSetLength() {
 
   // Check the contents of the file.
   read_buffer.clear();
-  rv = ReadEntireFile(&file_io, 0, &read_buffer);
+  rv = ReadEntireFile(instance_->pp_instance(), &file_io, 0, &read_buffer);
   if (rv != PP_OK)
     return ReportError("FileIO::Read", rv);
   if (read_buffer != std::string("test\0\0\0\0test\0\0\0\0", 16))
@@ -210,13 +212,13 @@ std::string TestFileIO::TestReadWriteSetLength() {
                           std::string("test\0\0\0\0test\0\0\0\0", 16));
 
   // Write in the middle of the file.
-  rv = WriteEntireBuffer(&file_io, 4, "test");
+  rv = WriteEntireBuffer(instance_->pp_instance(), &file_io, 4, "test");
   if (rv != PP_OK)
     return ReportError("FileIO::Write", rv);
 
   // Check the contents of the file.
   read_buffer.clear();
-  rv = ReadEntireFile(&file_io, 0, &read_buffer);
+  rv = ReadEntireFile(instance_->pp_instance(), &file_io, 0, &read_buffer);
   if (rv != PP_OK)
     return ReportError("FileIO::Read", rv);
   if (read_buffer != std::string("testtesttest\0\0\0\0", 16))
@@ -225,7 +227,7 @@ std::string TestFileIO::TestReadWriteSetLength() {
 
   // Read from the middle of the file.
   read_buffer.clear();
-  rv = ReadEntireFile(&file_io, 4, &read_buffer);
+  rv = ReadEntireFile(instance_->pp_instance(), &file_io, 4, &read_buffer);
   if (rv != PP_OK)
     return ReportError("FileIO::Read", rv);
   if (read_buffer != std::string("testtest\0\0\0\0", 12))
@@ -236,7 +238,7 @@ std::string TestFileIO::TestReadWriteSetLength() {
 }
 
 std::string TestFileIO::TestTouchQuery() {
-  TestCompletionCallback callback;
+  TestCompletionCallback callback(instance_->pp_instance());
 
   pp::FileSystem_Dev file_system(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
   int32_t rv = file_system.Open(1024, callback);
@@ -297,7 +299,7 @@ std::string TestFileIO::TestTouchQuery() {
 }
 
 std::string TestFileIO::TestAbortCalls() {
-  TestCompletionCallback callback;
+  TestCompletionCallback callback(instance_->pp_instance());
 
   pp::FileSystem_Dev file_system(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
   pp::FileRef_Dev file_ref(file_system, "/file_abort_calls");
@@ -319,7 +321,10 @@ std::string TestFileIO::TestAbortCalls() {
       return ReportError("FileIO::Open", rv);
 
     // N.B.: Should write at least 3 bytes.
-    rv = WriteEntireBuffer(&file_io, 0, "foobarbazquux");
+    rv = WriteEntireBuffer(instance_->pp_instance(),
+                           &file_io,
+                           0,
+                           "foobarbazquux");
     if (rv != PP_OK)
       return ReportError("FileIO::Write", rv);
   }

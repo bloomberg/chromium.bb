@@ -26,16 +26,17 @@ std::string ReportError(const char* method, int32_t error) {
   return result;
 }
 
-TestCompletionCallback::TestCompletionCallback()
+TestCompletionCallback::TestCompletionCallback(PP_Instance instance)
     : result_(PP_ERROR_WOULDBLOCK),
       post_quit_task_(false),
-      run_count_(0) {
+      run_count_(0),
+      instance_(instance) {
 }
 
 int32_t TestCompletionCallback::WaitForResult() {
   result_ = PP_ERROR_WOULDBLOCK;  // Reset
   post_quit_task_ = true;
-  GetTestingInterface()->RunMessageLoop();
+  GetTestingInterface()->RunMessageLoop(instance_);
   return result_;
 }
 
@@ -52,6 +53,6 @@ void TestCompletionCallback::Handler(void* user_data, int32_t result) {
   callback->run_count_++;
   if (callback->post_quit_task_) {
     callback->post_quit_task_ = false;
-    GetTestingInterface()->QuitMessageLoop();
+    GetTestingInterface()->QuitMessageLoop(callback->instance_);
   }
 }

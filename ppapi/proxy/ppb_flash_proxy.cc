@@ -5,6 +5,7 @@
 #include "ppapi/proxy/ppb_flash_proxy.h"
 
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "build/build_config.h"
 #include "ppapi/c/dev/pp_file_info_dev.h"
 #include "ppapi/c/dev/ppb_font_dev.h"
@@ -235,6 +236,24 @@ PP_Bool NavigateToURL(PP_Instance instance,
   return result;
 }
 
+void RunMessageLoop(PP_Instance instance) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return;
+  IPC::SyncMessage* msg = new PpapiHostMsg_PPBFlash_RunMessageLoop(
+        INTERFACE_ID_PPB_FLASH, instance);
+  msg->EnableMessagePumping();
+  dispatcher->Send(msg);
+}
+
+void QuitMessageLoop(PP_Instance instance) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return;
+  dispatcher->Send(new PpapiHostMsg_PPBFlash_QuitMessageLoop(
+        INTERFACE_ID_PPB_FLASH, instance));
+}
+
 const PPB_Flash flash_interface = {
   &SetInstanceAlwaysOnTop,
   &DrawGlyphs,
@@ -247,6 +266,8 @@ const PPB_Flash flash_interface = {
   &GetModuleLocalDirContents,
   &FreeModuleLocalDirContents,
   &NavigateToURL,
+  &RunMessageLoop,
+  &QuitMessageLoop,
 };
 
 InterfaceProxy* CreateFlashProxy(Dispatcher* dispatcher,
@@ -298,6 +319,10 @@ bool PPB_Flash_Proxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_GetModuleLocalDirContents,
                         OnMsgGetModuleLocalDirContents)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_NavigateToURL, OnMsgNavigateToURL)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_RunMessageLoop,
+                        OnMsgRunMessageLoop)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_QuitMessageLoop,
+                        OnMsgQuitMessageLoop)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   // TODO(brettw) handle bad messages!
@@ -412,6 +437,14 @@ void PPB_Flash_Proxy::OnMsgNavigateToURL(PP_Instance instance,
                                          PP_Bool* result) {
   *result = ppb_flash_target()->NavigateToURL(instance, url.c_str(),
                                               target.c_str());
+}
+
+void PPB_Flash_Proxy::OnMsgRunMessageLoop(PP_Instance instance) {
+  ppb_flash_target()->RunMessageLoop(instance);
+}
+
+void PPB_Flash_Proxy::OnMsgQuitMessageLoop(PP_Instance instance) {
+  ppb_flash_target()->QuitMessageLoop(instance);
 }
 
 }  // namespace proxy

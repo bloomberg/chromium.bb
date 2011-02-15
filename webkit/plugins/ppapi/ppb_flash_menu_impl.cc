@@ -72,13 +72,13 @@ bool ConvertMenuData(const PP_Flash_Menu* in_menu,
                      size_t depth,
                      PPB_Flash_Menu_Impl::MenuData* out_menu,
                      std::vector<int32_t>* menu_id_map) {
-  if (depth > kMaxMenuDepth)
+  if (depth > kMaxMenuDepth || !in_menu)
     return false;
 
   // Clear the output, just in case.
   out_menu->clear();
 
-  if (!in_menu || !in_menu->count)
+  if (!in_menu->count)
     return true;  // Nothing else to do.
 
   if (!in_menu->items || in_menu->count > kMaxMenuEntries)

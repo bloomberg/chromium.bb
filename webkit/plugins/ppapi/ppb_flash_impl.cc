@@ -218,14 +218,14 @@ PP_Bool NavigateToURL(PP_Instance pp_instance,
   return BoolToPPBool(instance->NavigateToURL(url, target));
 }
 
-void RunMessageLoop() {
+void RunMessageLoop(PP_Instance instance) {
   bool old_state = MessageLoop::current()->NestableTasksAllowed();
   MessageLoop::current()->SetNestableTasksAllowed(true);
   MessageLoop::current()->Run();
   MessageLoop::current()->SetNestableTasksAllowed(old_state);
 }
 
-void QuitMessageLoop() {
+void QuitMessageLoop(PP_Instance instance) {
   MessageLoop::current()->QuitNow();
 }
 

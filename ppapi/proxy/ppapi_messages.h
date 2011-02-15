@@ -21,6 +21,7 @@
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/proxy/ppapi_param_traits.h"
+#include "ppapi/proxy/serialized_flash_menu.h"
 #include "ppapi/proxy/serialized_structs.h"
 
 #include "ppapi/proxy/ppapi_messages_internal.h"

@@ -75,6 +75,8 @@ class PPB_Flash_Proxy : public InterfaceProxy {
                           const std::string& url,
                           const std::string& target,
                           PP_Bool* result);
+  void OnMsgRunMessageLoop(PP_Instance instance);
+  void OnMsgQuitMessageLoop(PP_Instance instance);
 };
 
 }  // namespace proxy

@@ -56,7 +56,7 @@ void TestURLLoader::RunTest() {
 
 std::string TestURLLoader::ReadEntireFile(pp::FileIO_Dev* file_io,
                                           std::string* data) {
-  TestCompletionCallback callback;
+  TestCompletionCallback callback(instance_->pp_instance());
   char buf[256];
   int64_t offset = 0;
 
@@ -77,7 +77,7 @@ std::string TestURLLoader::ReadEntireFile(pp::FileIO_Dev* file_io,
 
 std::string TestURLLoader::ReadEntireResponseBody(pp::URLLoader* loader,
                                                   std::string* body) {
-  TestCompletionCallback callback;
+  TestCompletionCallback callback(instance_->pp_instance());
   char buf[2];  // Small so that multiple reads are needed.
 
   for (;;) {
@@ -97,7 +97,7 @@ std::string TestURLLoader::ReadEntireResponseBody(pp::URLLoader* loader,
 std::string TestURLLoader::LoadAndCompareBody(
     const pp::URLRequestInfo& request,
     const std::string& expected_body) {
-  TestCompletionCallback callback;
+  TestCompletionCallback callback(instance_->pp_instance());
 
   pp::URLLoader loader(*instance_);
   int32_t rv = loader.Open(request, callback);
@@ -194,7 +194,7 @@ std::string TestURLLoader::TestStreamToFile() {
   request.SetURL("test_url_loader_data/hello.txt");
   request.SetStreamToFile(true);
 
-  TestCompletionCallback callback;
+  TestCompletionCallback callback(instance_->pp_instance());
 
   pp::URLLoader loader(*instance_);
   int32_t rv = loader.Open(request, callback);
@@ -251,7 +251,7 @@ std::string TestURLLoader::TestSameOriginRestriction() {
   pp::URLRequestInfo request;
   request.SetURL("http://www.google.com/");
 
-  TestCompletionCallback callback;
+  TestCompletionCallback callback(instance_->pp_instance());
 
   pp::URLLoader loader(*instance_);
   int32_t rv = loader.Open(request, callback);
@@ -278,7 +278,7 @@ std::string TestURLLoader::TestAuditURLRedirect() {
   request.SetURL("/server-redirect?www.google.com");
   request.SetFollowRedirects(false);
 
-  TestCompletionCallback callback;
+  TestCompletionCallback callback(instance_->pp_instance());
 
   pp::URLLoader loader(*instance_);
   int32_t rv = loader.Open(request, callback);
@@ -305,7 +305,7 @@ std::string TestURLLoader::TestAbortCalls() {
   pp::URLRequestInfo request;
   request.SetURL("test_url_loader_data/hello.txt");
 
-  TestCompletionCallback callback;
+  TestCompletionCallback callback(instance_->pp_instance());
   int32_t rv;
 
   // Abort |Open()|.

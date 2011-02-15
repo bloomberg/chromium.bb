@@ -14,16 +14,18 @@
 
 struct PP_FileInfo_Dev;
 struct PP_ObjectProperty;
+struct PP_Flash_Menu;
 
 namespace pp {
 namespace proxy {
 
+class HostResource;
 struct PPBFlash_DrawGlyphs_Params;
 struct PPBFont_DrawTextAt_Params;
 struct PPBURLLoader_UpdateProgress_Params;
 struct SerializedDirEntry;
 struct SerializedFontDescription;
-class HostResource;
+class SerializedFlashMenu;
 class SerializedVar;
 
 }  // namespace proxy
@@ -146,6 +148,14 @@ struct ParamTraits<pp::proxy::SerializedVar> {
 template<>
 struct ParamTraits< std::vector<pp::proxy::SerializedVar> > {
   typedef std::vector<pp::proxy::SerializedVar> param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template<>
+struct ParamTraits<pp::proxy::SerializedFlashMenu> {
+  typedef pp::proxy::SerializedFlashMenu param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);

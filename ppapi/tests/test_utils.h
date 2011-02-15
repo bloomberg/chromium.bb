@@ -8,6 +8,7 @@
 #include <string>
 
 #include "ppapi/c/dev/ppb_testing_dev.h"
+#include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/cpp/completion_callback.h"
 
@@ -16,7 +17,7 @@ std::string ReportError(const char* method, int32_t error);
 
 class TestCompletionCallback {
  public:
-  TestCompletionCallback();
+  TestCompletionCallback(PP_Instance instance);
 
   int32_t WaitForResult();
 
@@ -31,6 +32,7 @@ class TestCompletionCallback {
   int32_t result_;
   bool post_quit_task_;
   unsigned run_count_;
+  PP_Instance instance_;
 };
 
 #endif  // PPAPI_TESTS_TEST_UTILS_H_

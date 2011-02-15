@@ -72,7 +72,7 @@ std::string TestFileRef::TestGetFileSystemType() {
   request.SetURL("test_url_loader_data/hello.txt");
   request.SetStreamToFile(true);
 
-  TestCompletionCallback callback;
+  TestCompletionCallback callback(instance_->pp_instance());
 
   pp::URLLoader loader(instance_);
   int32_t rv = loader.Open(request, callback);
@@ -121,7 +121,7 @@ std::string TestFileRef::TestGetName() {
   request.SetURL("test_url_loader_data/hello.txt");
   request.SetStreamToFile(true);
 
-  TestCompletionCallback callback;
+  TestCompletionCallback callback(instance_->pp_instance());
 
   pp::URLLoader loader(instance_);
   int32_t rv = loader.Open(request, callback);
@@ -165,7 +165,7 @@ std::string TestFileRef::TestGetPath() {
   request.SetURL("test_url_loader_data/hello.txt");
   request.SetStreamToFile(true);
 
-  TestCompletionCallback callback;
+  TestCompletionCallback callback(instance_->pp_instance());
 
   pp::URLLoader loader(instance_);
   int32_t rv = loader.Open(request, callback);
@@ -220,7 +220,7 @@ std::string TestFileRef::TestGetParent() {
   request.SetURL("test_url_loader_data/hello.txt");
   request.SetStreamToFile(true);
 
-  TestCompletionCallback callback;
+  TestCompletionCallback callback(instance_->pp_instance());
 
   pp::URLLoader loader(instance_);
   int32_t rv = loader.Open(request, callback);
@@ -244,7 +244,7 @@ std::string TestFileRef::TestGetParent() {
 }
 
 std::string TestFileRef::TestMakeDirectory() {
-  TestCompletionCallback callback;
+  TestCompletionCallback callback(instance_->pp_instance());
 
   // Open.
   pp::FileSystem_Dev file_system(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
@@ -328,7 +328,7 @@ std::string TestFileRef::TestMakeDirectory() {
 }
 
 std::string TestFileRef::TestQueryAndTouchFile() {
-  TestCompletionCallback callback;
+  TestCompletionCallback callback(instance_->pp_instance());
   pp::FileSystem_Dev file_system(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
   int32_t rv = file_system.Open(1024, callback);
   if (rv == PP_ERROR_WOULDBLOCK)
@@ -412,7 +412,7 @@ std::string TestFileRef::TestQueryAndTouchFile() {
 }
 
 std::string TestFileRef::TestDeleteFileAndDirectory() {
-  TestCompletionCallback callback;
+  TestCompletionCallback callback(instance_->pp_instance());
   pp::FileSystem_Dev file_system(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
   int32_t rv = file_system.Open(1024, callback);
   if (rv == PP_ERROR_WOULDBLOCK)
@@ -496,7 +496,7 @@ std::string TestFileRef::TestDeleteFileAndDirectory() {
 }
 
 std::string TestFileRef::TestRenameFileAndDirectory() {
-  TestCompletionCallback callback;
+  TestCompletionCallback callback(instance_->pp_instance());
   pp::FileSystem_Dev file_system(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
   int32_t rv = file_system.Open(1024, callback);
   if (rv == PP_ERROR_WOULDBLOCK)

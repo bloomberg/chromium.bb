@@ -12,7 +12,7 @@
 
 struct PP_Point;
 
-#define PPB_TESTING_DEV_INTERFACE "PPB_Testing(Dev);0.5"
+#define PPB_TESTING_DEV_INTERFACE "PPB_Testing(Dev);0.6"
 
 // This interface contains functions used for unit testing. Do not use in
 // production code. They are not guaranteed to be available in normal plugin
@@ -57,11 +57,11 @@ struct PPB_Testing_Dev {
   // callback, you save the data and call QuitMessageLoop, which will then
   // pop back up and continue with the test. This avoids having to write a
   // complicated state machine for simple tests for asynchronous APIs.
-  void (*RunMessageLoop)();
+  void (*RunMessageLoop)(PP_Instance instance);
 
   // Posts a quit message for the outermost nested message loop. Use this to
   // exit and return back to the caller after you call RunMessageLoop.
-  void (*QuitMessageLoop)();
+  void (*QuitMessageLoop)(PP_Instance instance);
 
   // Returns the number of live objects (resources + strings + objects)
   // associated with this plugin instance. Used for detecting leaks. Returns

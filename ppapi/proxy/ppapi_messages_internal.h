@@ -325,6 +325,24 @@ IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBFlash_NavigateToURL,
                            std::string /* url */,
                            std::string /* target */,
                            PP_Bool /* result */)
+IPC_SYNC_MESSAGE_ROUTED1_0(PpapiHostMsg_PPBFlash_RunMessageLoop,
+                           PP_Instance /* instance */)
+IPC_SYNC_MESSAGE_ROUTED1_0(PpapiHostMsg_PPBFlash_QuitMessageLoop,
+                           PP_Instance /* instance */)
+
+// PPB_Flash_Menu
+IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFlashMenu_Create,
+                           PP_Instance /* instance */,
+                           pp::proxy::SerializedFlashMenu /* menu_data */,
+                           pp::proxy::HostResource /* result */)
+IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBFlashMenu_Show,
+                    pp::proxy::HostResource /* menu */,
+                    PP_Point /* location */)
+IPC_MESSAGE_ROUTED3(PpapiMsg_PPBFlashMenu_ShowACK,
+                    pp::proxy::HostResource /* menu */,
+                    int32_t /* selected_id */,
+                    int32_t /* result */)
+
 
 // PPB_Font.
 IPC_SYNC_MESSAGE_ROUTED2_3(
@@ -449,9 +467,10 @@ IPC_SYNC_MESSAGE_ROUTED3_1(
     pp::proxy::HostResource /* image */,
     PP_Point /* top_left */,
     PP_Bool /* result */)
-IPC_SYNC_MESSAGE_ROUTED0_1(PpapiHostMsg_PPBTesting_RunMessageLoop,
-                           bool /* dummy since there's no 0_0 variant */)
-IPC_MESSAGE_ROUTED0(PpapiHostMsg_PPBTesting_QuitMessageLoop)
+IPC_SYNC_MESSAGE_ROUTED1_0(PpapiHostMsg_PPBTesting_RunMessageLoop,
+                           PP_Instance /* instance */)
+IPC_SYNC_MESSAGE_ROUTED1_0(PpapiHostMsg_PPBTesting_QuitMessageLoop,
+                           PP_Instance /* instance */)
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBTesting_GetLiveObjectsForInstance,
                            PP_Instance /* instance */,
                            uint32 /* result */)

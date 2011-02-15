@@ -63,7 +63,7 @@ void TestGraphics2D::RunTest() {
 }
 
 void TestGraphics2D::QuitMessageLoop() {
-  testing_interface_->QuitMessageLoop();
+  testing_interface_->QuitMessageLoop(instance_->pp_instance());
 }
 
 bool TestGraphics2D::ReadImageData(const pp::Graphics2D& dc,
@@ -93,7 +93,7 @@ bool TestGraphics2D::FlushAndWaitForDone(pp::Graphics2D* context) {
     return true;
   if (rv != PP_ERROR_WOULDBLOCK)
     return false;
-  testing_interface_->RunMessageLoop();
+  testing_interface_->RunMessageLoop(instance_->pp_instance());
   return true;
 }
 
