@@ -1586,8 +1586,12 @@ void BookmarkBarView::UpdateColors() {
 
 void BookmarkBarView::UpdateOtherBookmarksVisibility() {
   bool has_other_children = model_->other_node()->GetChildCount() > 0;
+  if (has_other_children == other_bookmarked_button_->IsVisible())
+    return;
   other_bookmarked_button_->SetVisible(has_other_children);
   bookmarks_separator_view_->SetVisible(has_other_children);
+  Layout();
+  SchedulePaint();
 }
 
 gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
