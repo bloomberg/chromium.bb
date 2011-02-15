@@ -482,6 +482,14 @@ class NetworkLibrary {
     virtual void OnCellularDataPlanChanged(NetworkLibrary* obj) = 0;
   };
 
+  class UserActionObserver {
+   public:
+    // Called when user initiates a new connection.
+    // Network is NULL when we don't have an associated Network object.
+    virtual void OnConnectionInitiated(NetworkLibrary* cros,
+                                       const Network* network) = 0;
+  };
+
   virtual ~NetworkLibrary() {}
 
   virtual void AddNetworkManagerObserver(NetworkManagerObserver* observer) = 0;
@@ -511,6 +519,9 @@ class NetworkLibrary {
       CellularDataPlanObserver* observer) = 0;
   virtual void RemoveCellularDataPlanObserver(
       CellularDataPlanObserver* observer) = 0;
+
+  virtual void AddUserActionObserver(UserActionObserver* observer) = 0;
+  virtual void RemoveUserActionObserver(UserActionObserver* observer) = 0;
 
   // Return the active Ethernet network (or a default structure if inactive).
   virtual const EthernetNetwork* ethernet_network() const = 0;

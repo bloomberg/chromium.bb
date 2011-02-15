@@ -985,6 +985,15 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     data_plan_observers_.RemoveObserver(observer);
   }
 
+  virtual void AddUserActionObserver(UserActionObserver* observer) {
+    if (!user_action_observers_.HasObserver(observer))
+      user_action_observers_.AddObserver(observer);
+  }
+
+  virtual void RemoveUserActionObserver(UserActionObserver* observer) {
+    user_action_observers_.RemoveObserver(observer);
+  }
+
   virtual const EthernetNetwork* ethernet_network() const { return ethernet_; }
   virtual bool ethernet_connecting() const {
     return ethernet_ ? ethernet_->connecting() : false;
@@ -1107,6 +1116,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
         wifi_ = wifi;
       }
       NotifyNetworkManagerChanged();
+      NotifyUserConnectionInitated(network);
       return true;
     } else {
       // The only likely cause for an immediate failure is a badly formatted
@@ -1140,6 +1150,8 @@ class NetworkLibraryImpl : public NetworkLibrary  {
 
       // Clean up ServiceInfo object.
       FreeServiceInfo(service);
+      if (res)
+        NotifyUserConnectionInitated(NULL);
       return res;
     } else {
       LOG(WARNING) << "Cannot find hidden network: " << ssid;
@@ -1162,6 +1174,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
         cellular_ = cellular;
       }
       NotifyNetworkManagerChanged();
+      NotifyUserConnectionInitated(network);
       return true;
     } else {
       return false;  // Immediate failure.
@@ -1792,6 +1805,12 @@ class NetworkLibraryImpl : public NetworkLibrary  {
                       OnCellularDataPlanChanged(this));
   }
 
+  void NotifyUserConnectionInitated(const Network* network) {
+    FOR_EACH_OBSERVER(UserActionObserver,
+                      user_action_observers_,
+                      OnConnectionInitiated(this, network));
+  }
+
   void UpdateNetworkManagerStatus() {
     // Make sure we run on UI thread.
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -1911,6 +1930,9 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   // Cellular data plan observer list
   ObserverList<CellularDataPlanObserver> data_plan_observers_;
 
+  // User action observer list
+  ObserverList<UserActionObserver> user_action_observers_;
+
   // Network observer map
   NetworkObserverMap network_observers_;
 
@@ -1991,6 +2013,8 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
       CellularDataPlanObserver* observer) {}
   virtual void RemoveCellularDataPlanObserver(
       CellularDataPlanObserver* observer) {}
+  virtual void AddUserActionObserver(UserActionObserver* observer) {}
+  virtual void RemoveUserActionObserver(UserActionObserver* observer) {}
   virtual const EthernetNetwork* ethernet_network() const {
     return ethernet_;
   }

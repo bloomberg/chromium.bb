@@ -25,6 +25,8 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_METHOD1(RemoveObserverForAllNetworks, void(NetworkObserver*));
   MOCK_METHOD1(AddCellularDataPlanObserver, void(CellularDataPlanObserver*));
   MOCK_METHOD1(RemoveCellularDataPlanObserver, void(CellularDataPlanObserver*));
+  MOCK_METHOD1(AddUserActionObserver, void(UserActionObserver*));
+  MOCK_METHOD1(RemoveUserActionObserver, void(UserActionObserver*));
   MOCK_METHOD0(Lock, void(void));
   MOCK_METHOD0(Unlock, void(void));
   MOCK_METHOD0(IsLocked, bool(void));

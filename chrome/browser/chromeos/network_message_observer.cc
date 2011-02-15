@@ -50,14 +50,15 @@ NetworkMessageObserver::NetworkMessageObserver(Profile* profile)
           l10n_util::GetStringUTF16(IDS_NETWORK_OUT_OF_DATA_TITLE)) {
   NetworkLibrary* netlib = CrosLibrary::Get()->GetNetworkLibrary();
   OnNetworkManagerChanged(netlib);
-  // Note that this gets added as a NetworkManagerObserver and a
-  // CellularDataPlanObserver in browser_init.cc
+  // Note that this gets added as a NetworkManagerObserver,
+  // CellularDataPlanObserver, and UserActionObserver in browser_init.cc
 }
 
 NetworkMessageObserver::~NetworkMessageObserver() {
   NetworkLibrary* netlib = CrosLibrary::Get()->GetNetworkLibrary();
   netlib->RemoveNetworkManagerObserver(this);
   netlib->RemoveCellularDataPlanObserver(this);
+  netlib->RemoveUserActionObserver(this);
   notification_connection_error_.Hide();
   notification_low_data_.Hide();
   notification_no_data_.Hide();
@@ -179,11 +180,6 @@ void NetworkMessageObserver::OnNetworkManagerChanged(NetworkLibrary* obj) {
         break;
       }
     }
-
-    // If we find any network connecting, we hide the error notification.
-    if (wifi->connecting()) {
-      notification_connection_error_.Hide();
-    }
   }
 
   // Refresh stored networks.
@@ -277,6 +273,12 @@ void NetworkMessageObserver::OnCellularDataPlanChanged(NetworkLibrary* obj) {
 
   cellular_service_path_ = cellular->service_path();
   cellular_data_plan_unique_id_ = current_plan->GetUniqueIdentifier();
+}
+
+void NetworkMessageObserver::OnConnectionInitiated(NetworkLibrary* obj,
+                                                   const Network* network) {
+  // If user initiated any network connection, we hide the error notification.
+  notification_connection_error_.Hide();
 }
 
 }  // namespace chromeos

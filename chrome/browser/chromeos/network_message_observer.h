@@ -21,7 +21,8 @@ namespace chromeos {
 // messages.
 
 class NetworkMessageObserver : public NetworkLibrary::NetworkManagerObserver,
-                               public NetworkLibrary::CellularDataPlanObserver {
+                               public NetworkLibrary::CellularDataPlanObserver,
+                               public NetworkLibrary::UserActionObserver {
  public:
   explicit NetworkMessageObserver(Profile* profile);
   virtual ~NetworkMessageObserver();
@@ -42,6 +43,9 @@ class NetworkMessageObserver : public NetworkLibrary::NetworkManagerObserver,
   virtual void OnNetworkManagerChanged(NetworkLibrary* obj);
   // NetworkLibrary::CellularDataPlanObserver implementation.
   virtual void OnCellularDataPlanChanged(NetworkLibrary* obj);
+  // NetworkLibrary::UserActionObserver implementation.
+  virtual void OnConnectionInitiated(NetworkLibrary* obj,
+                                     const Network* network);
 
   // Wifi networks by service path.
   ServicePathWifiMap wifi_networks_;
