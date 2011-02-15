@@ -104,7 +104,7 @@ void ExtensionView::CreateWidgetHostView() {
   RenderWidgetHostViewViews* view_views =
       static_cast<RenderWidgetHostViewViews*>(view);
   view_views->InitAsChild();
-  Attach(view_views->GetNativeView());
+  AttachToView(view_views);
 #elif defined(OS_LINUX)
   RenderWidgetHostViewGtk* view_gtk =
       static_cast<RenderWidgetHostViewGtk*>(view);

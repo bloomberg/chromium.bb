@@ -686,7 +686,7 @@ void ExtensionHost::UpdateDragCursor(WebDragOperation operation) {
 }
 
 void ExtensionHost::GotFocus() {
-#if defined(TOOLKIT_VIEWS)
+#if defined(TOOLKIT_VIEWS) && !defined(TOUCH_UI)
   // Request focus so that the FocusManager has a focused view and can perform
   // normally its key event processing (so that it lets tab key events go to the
   // renderer).
