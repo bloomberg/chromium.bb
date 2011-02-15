@@ -166,8 +166,6 @@
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
         '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
-        '<(DEPTH)/third_party/libjingle/libjingle.gyp:libjingle',
-        '<(DEPTH)/third_party/libjingle/libjingle.gyp:libjingle_p2p',
         '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
         '<(DEPTH)/ppapi/ppapi.gyp:ppapi_c',
         'webkit_resources',

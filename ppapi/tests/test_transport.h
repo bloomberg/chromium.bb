@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_TESTS_TEST_TRANSPORT_H_
-#define PPAPI_TESTS_TEST_TRANSPORT_H_
+#ifndef PAPPI_TESTS_TEST_TRANSPORT_H_
+#define PAPPI_TESTS_TEST_TRANSPORT_H_
 
 #include <string>
 
@@ -24,10 +24,10 @@ class TestTransport : public TestCase {
   virtual void RunTest();
 
  private:
-  std::string TestBasics();
+  std::string TestFirstTransport();
 
   // Used by the tests that access the C API directly.
   const PPB_Transport_Dev* transport_interface_;
 };
 
-#endif  // PPAPI_TESTS_TEST_TRANSPORT_H_
+#endif  // PAPPI_TESTS_TEST_TRANSPORT_H_
