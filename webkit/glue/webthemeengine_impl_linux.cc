@@ -105,6 +105,8 @@ static void GetNativeThemeExtraParams(
     case WebKit::WebThemeEngine::PartButton:
       native_theme_extra_params->button.is_default =
           extra_params->button.isDefault;
+      native_theme_extra_params->button.has_border =
+          extra_params->button.hasBorder;
       native_theme_extra_params->button.background_color =
           extra_params->button.backgroundColor;
       break;
@@ -117,6 +119,10 @@ static void GetNativeThemeExtraParams(
           extra_params->textField.backgroundColor;
       break;
     case WebKit::WebThemeEngine::PartMenuList:
+      native_theme_extra_params->menu_list.has_border =
+          extra_params->menuList.hasBorder;
+      native_theme_extra_params->menu_list.has_border_radius =
+          extra_params->menuList.hasBorderRadius;
       native_theme_extra_params->menu_list.arrow_x =
           extra_params->menuList.arrowX;
       native_theme_extra_params->menu_list.arrow_y =

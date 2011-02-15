@@ -60,6 +60,7 @@ class NativeThemeLinux {
     bool checked;
     bool indeterminate;  // Whether the button state is indeterminate.
     bool is_default;     // Whether the button is default button.
+    bool has_border;
     SkColor background_color;
   };
 
@@ -70,6 +71,8 @@ class NativeThemeLinux {
   };
 
   struct MenuListExtraParams {
+    bool has_border;
+    bool has_border_radius;
     int arrow_x;
     int arrow_y;
     SkColor background_color;

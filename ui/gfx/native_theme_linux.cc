@@ -475,12 +475,14 @@ void NativeThemeLinux::PaintButton(skia::PlatformCanvas* canvas,
     return;
   }
 
-  const int kBorderAlpha = state == kHovered ? 0x80 : 0x55;
-  paint.setARGB(kBorderAlpha, 0, 0, 0);
-  canvas->drawLine(rect.x() + 1, rect.y(), kRight - 1, rect.y(), paint);
-  canvas->drawLine(kRight - 1, rect.y() + 1, kRight - 1, kBottom - 1, paint);
-  canvas->drawLine(rect.x() + 1, kBottom - 1, kRight - 1, kBottom - 1, paint);
-  canvas->drawLine(rect.x(), rect.y() + 1, rect.x(), kBottom - 1, paint);
+  if (button.has_border) {
+    const int kBorderAlpha = state == kHovered ? 0x80 : 0x55;
+    paint.setARGB(kBorderAlpha, 0, 0, 0);
+    canvas->drawLine(rect.x() + 1, rect.y(), kRight - 1, rect.y(), paint);
+    canvas->drawLine(kRight - 1, rect.y() + 1, kRight - 1, kBottom - 1, paint);
+    canvas->drawLine(rect.x() + 1, kBottom - 1, kRight - 1, kBottom - 1, paint);
+    canvas->drawLine(rect.x(), rect.y() + 1, rect.x(), kBottom - 1, paint);
+  }
 
   paint.setColor(SK_ColorBLACK);
   const int kLightEnd = state == kPressed ? 1 : 0;
@@ -500,15 +502,21 @@ void NativeThemeLinux::PaintButton(skia::PlatformCanvas* canvas,
   paint.setShader(shader);
   shader->unref();
 
-  skrect.set(rect.x() + 1, rect.y() + 1, kRight - 1, kBottom - 1);
+  if (button.has_border) {
+    skrect.set(rect.x() + 1, rect.y() + 1, kRight - 1, kBottom - 1);
+  } else {
+    skrect.set(rect.x(), rect.y(), kRight, kBottom);
+  }
   canvas->drawRect(skrect, paint);
-
   paint.setShader(NULL);
-  paint.setColor(BrightenColor(base_hsl, SkColorGetA(base_color), -0.0588));
-  canvas->drawPoint(rect.x() + 1, rect.y() + 1, paint);
-  canvas->drawPoint(kRight - 2, rect.y() + 1, paint);
-  canvas->drawPoint(rect.x() + 1, kBottom - 2, paint);
-  canvas->drawPoint(kRight - 2, kBottom - 2, paint);
+
+  if (button.has_border) {
+    paint.setColor(BrightenColor(base_hsl, SkColorGetA(base_color), -0.0588));
+    canvas->drawPoint(rect.x() + 1, rect.y() + 1, paint);
+    canvas->drawPoint(kRight - 2, rect.y() + 1, paint);
+    canvas->drawPoint(rect.x() + 1, kBottom - 2, paint);
+    canvas->drawPoint(kRight - 2, kBottom - 2, paint);
+  }
 }
 
 void NativeThemeLinux::PaintTextField(skia::PlatformCanvas* canvas,
@@ -605,9 +613,14 @@ void NativeThemeLinux::PaintMenuList(skia::PlatformCanvas* canvas,
                                      State state,
                                      const gfx::Rect& rect,
                                      const MenuListExtraParams& menu_list) {
-  ButtonExtraParams button = { 0 };
-  button.background_color = menu_list.background_color;
-  PaintButton(canvas, state, rect, button);
+  // If a border radius is specified, we let the WebCore paint the background
+  // and the border of the control.
+  if (!menu_list.has_border_radius) {
+    ButtonExtraParams button = { 0 };
+    button.background_color = menu_list.background_color;
+    button.has_border = menu_list.has_border;
+    PaintButton(canvas, state, rect, button);
+  }
 
   SkPaint paint;
   paint.setColor(SK_ColorBLACK);
