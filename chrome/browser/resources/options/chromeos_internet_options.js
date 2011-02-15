@@ -49,7 +49,7 @@ cr.define('options', function() {
       $('rememberedSection').hidden = (templateData.rememberedList.length == 0);
       InternetOptions.setupAttributes(templateData);
       $('detailsInternetDismiss').addEventListener('click', function(event) {
-        OptionsPage.clsoeOverlay(true);
+        OptionsPage.closeOverlay();
       });
       $('detailsInternetLogin').addEventListener('click', function(event) {
         InternetOptions.loginFromDetails();
