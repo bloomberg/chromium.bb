@@ -768,9 +768,9 @@ void RenderThread::SetCacheMode(bool enabled) {
   Send(new ViewHostMsg_SetCacheMode(enabled));
 }
 
-void RenderThread::ClearCache() {
+void RenderThread::ClearCache(bool preserve_ssl_host_info) {
   int rv;
-  Send(new ViewHostMsg_ClearCache(&rv));
+  Send(new ViewHostMsg_ClearCache(preserve_ssl_host_info, &rv));
 }
 
 void RenderThread::EnableSpdy(bool enable) {

@@ -265,7 +265,9 @@ void CloseCurrentConnections();
 void SetCacheMode(bool enabled);
 
 // Clear the disk cache.  Used for debugging.
-void ClearCache();
+// |preserve_ssl_host_info| indicates whether disk cache entries related to
+// SSL information should be purged.
+void ClearCache(bool preserve_ssl_host_info);
 
 // Returns the product version.  E.g., Chrome/4.1.333.0
 std::string GetProductVersion();

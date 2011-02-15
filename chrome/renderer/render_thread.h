@@ -215,7 +215,9 @@ class RenderThread : public RenderThreadBase,
   void SetCacheMode(bool enabled);
 
   // Sends a message to the browser to clear the disk cache.
-  void ClearCache();
+  // |preserve_ssl_host_info| is a flag indicating if the cache should purge
+  // entries related to cached SSL information.
+  void ClearCache(bool preserve_ssl_host_info);
 
   // Sends a message to the browser to enable/disable spdy.
   void EnableSpdy(bool enable);

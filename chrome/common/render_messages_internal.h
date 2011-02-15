@@ -108,7 +108,7 @@ IPC_MESSAGE_CONTROL3(ViewMsg_SetCacheCapacities,
                      size_t /* max_dead_capacity */,
                      size_t /* capacity */)
 
-// Tells the renderer to cleat the cache.
+// Tells the renderer to clear the cache.
 IPC_MESSAGE_CONTROL0(ViewMsg_ClearCache)
 
 // Reply in response to ViewHostMsg_ShowView or ViewHostMsg_ShowWidget.
@@ -2241,8 +2241,12 @@ IPC_MESSAGE_CONTROL1(ViewHostMsg_SetCacheMode,
 
 // Message sent from the renderer to the browser to request that the browser
 // clear the cache.  Used for debugging/testing.
-IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_ClearCache,
-                            int /* result */)
+// |preserve_ssl_host_info| controls whether clearing the cache will preserve
+// persisted SSL information stored in the cache.
+// |result| is the returned status from the operation.
+IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_ClearCache,
+                            bool /* preserve_ssl_host_info */,
+                            int  /* result */)
 
 // Message sent from the renderer to the browser to request that the browser
 // enable or disable spdy.  Used for debugging/testing/benchmarking.

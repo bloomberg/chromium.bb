@@ -256,8 +256,8 @@ void SetCacheMode(bool enabled) {
   RenderThread::current()->SetCacheMode(enabled);
 }
 
-void ClearCache() {
-  RenderThread::current()->ClearCache();
+void ClearCache(bool preserve_ssl_host_info) {
+  RenderThread::current()->ClearCache(preserve_ssl_host_info);
 }
 
 std::string GetProductVersion() {

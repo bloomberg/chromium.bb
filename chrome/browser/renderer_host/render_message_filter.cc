@@ -269,6 +269,55 @@ class OpenChannelToPpapiPluginCallback : public RenderMessageCompletionCallback,
   }
 };
 
+// Class to assist with clearing out the cache when we want to preserve
+// the sslhostinfo entries.  It's not very efficient, but its just for debug.
+class DoomEntriesHelper {
+ public:
+  explicit DoomEntriesHelper(disk_cache::Backend* backend)
+      : backend_(backend),
+        entry_(NULL),
+        iter_(NULL),
+        ALLOW_THIS_IN_INITIALIZER_LIST(callback_(this,
+            &DoomEntriesHelper::CacheCallback)),
+        user_callback_(NULL) {
+  }
+
+  void ClearCache(ClearCacheCompletion* callback) {
+    user_callback_ = callback;
+    return CacheCallback(net::OK);  // Start clearing the cache.
+  }
+
+ private:
+  void CacheCallback(int result) {
+    do {
+      if (result != net::OK) {
+        user_callback_->RunWithParams(Tuple1<int>(result));
+        delete this;
+        return;
+      }
+
+      if (entry_) {
+        // Doom all entries except those with snapstart information.
+        std::string key = entry_->GetKey();
+        if (key.find("sslhostinfo:") != 0) {
+          entry_->Doom();
+          backend_->EndEnumeration(&iter_);
+          iter_ = NULL;  // We invalidated our iterator - start from the top!
+        }
+        entry_->Close();
+        entry_ = NULL;
+      }
+      result = backend_->OpenNextEntry(&iter_, &entry_, &callback_);
+    } while (result != net::ERR_IO_PENDING);
+  }
+
+  disk_cache::Backend* backend_;
+  disk_cache::Entry* entry_;
+  void* iter_;
+  net::CompletionCallbackImpl<DoomEntriesHelper> callback_;
+  ClearCacheCompletion* user_callback_;
+};
+
 }  // namespace
 
 RenderMessageFilter::RenderMessageFilter(
@@ -1324,7 +1373,8 @@ void RenderMessageFilter::OnSetCacheMode(bool enabled) {
   http_cache->set_mode(mode);
 }
 
-void RenderMessageFilter::OnClearCache(IPC::Message* reply_msg) {
+void RenderMessageFilter::OnClearCache(bool preserve_ssl_host_info,
+                                       IPC::Message* reply_msg) {
   // This function is disabled unless the user has enabled
   // benchmarking extensions.
   int rv = -1;
@@ -1334,13 +1384,19 @@ void RenderMessageFilter::OnClearCache(IPC::Message* reply_msg) {
     if (backend) {
       ClearCacheCompletion* callback =
           new ClearCacheCompletion(this, reply_msg);
-      rv = backend->DoomAllEntries(callback);
-      if (rv == net::ERR_IO_PENDING) {
-        // The callback will send the reply.
+      if (preserve_ssl_host_info) {
+        DoomEntriesHelper* helper = new DoomEntriesHelper(backend);
+        helper->ClearCache(callback);  // Will self clean.
         return;
+      } else {
+        rv = backend->DoomAllEntries(callback);
+        if (rv == net::ERR_IO_PENDING) {
+          // The callback will send the reply.
+          return;
+        }
+        // Completed synchronously, no need for the callback.
+        delete callback;
       }
-      // Completed synchronously, no need for the callback.
-      delete callback;
     }
   }
   ViewHostMsg_ClearCache::WriteReplyParams(reply_msg, rv);
