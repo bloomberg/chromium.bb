@@ -27,57 +27,50 @@ function url(s) {
 }
 
 function gaia_setFocus() {
-  var f = null;
-  if (document.getElementById) {
-    f = document.getElementById("gaia_loginform");
-  } else if (window.gaia_loginform) {
-    f = window.gaia_loginform;
-  }
-  if (f) {
-    if (f.Email && (f.Email.value == null || f.Email.value == "")) {
-      f.Email.focus();
-    } else if (f.Passwd) {
-      f.Passwd.focus();
-    }
+  var form = document.getElementById("gaia-login-form");
+  if (form.email && (form.email.value == null || form.email.value == "")) {
+    form.email.focus();
+  } else if (form.passwd) {
+    form.passwd.focus();
   }
 }
 
 function showGaiaLogin(args) {
-  document.getElementById('logging_in_throbber').style.display = "none";
+  document.getElementById('logging-in-throbber').style.display = "none";
 
-  document.getElementById('Email').disabled = false;
-  document.getElementById('Passwd').disabled = false;
+  document.getElementById('email').disabled = false;
+  document.getElementById('passwd').disabled = false;
 
-  var f = document.getElementById("gaia_loginform");
+  var f = document.getElementById("gaia-login-form");
   if (f) {
     if (args.user != undefined) {
-      if (f.Email.value != args.user)
-        f.Passwd.value = ""; // Reset the password field
-      f.Email.value = args.user;
+      if (f.email.value != args.user)
+        f.passwd.value = ""; // Reset the password field
+      f.email.value = args.user;
     }
 
     if (!args.editable_user) {
-      f.Email.style.display = 'none';
-      var span = document.getElementById('email_readonly');
-      span.appendChild(document.createTextNode(f.Email.value));
+      f.email.style.display = 'none';
+      var span = document.getElementById('email-readonly');
+      span.appendChild(document.createTextNode(f.email.value));
       span.style.display = 'inline';
-      setElementDisplay("createaccountdiv", "none");
+      setElementDisplay("create-account-div", "none");
     }
 
-    f.AccessCode.disabled = true;
+    f.accessCode.disabled = true;
   }
 
   if (1 == args.error) {
-    var access_code = document.getElementById('AccessCode');
+    var access_code = document.getElementById('access-code');
     if (access_code.value && access_code.value != "") {
-      setElementDisplay("errormsg_0_AccessCode", 'block');
+      setElementDisplay("errormsg-0-access-code", 'block');
       showAccessCodeRequired();
     } else {
-      setElementDisplay("errormsg_1_Password", 'table-row');
+      setElementDisplay("errormsg-1-password", 'table-row');
     }
     setBlurbError(args.error_message);
   } else if (3 == args.error) {
-    setElementDisplay("errormsg_0_Connection", 'table-row');
+    setElementDisplay("errormsg-0-connection", 'table-row');
     setBlurbError(args.error_message);
   } else if (4 == args.error) {
     showCaptcha(args);
@@ -87,8 +80,8 @@ function showGaiaLogin(args) {
     setBlurbError(args.error_message);
   }
 
-  document.getElementById("signIn").disabled = false;
-  document.getElementById("signIn").value = templateData['signin'];
+  document.getElementById("sign-in").disabled = false;
+  document.getElementById("sign-in").value = templateData['signin'];
   gaia_setFocus();
 }
 
@@ -96,33 +89,30 @@ function showCaptcha(args) {
   g_is_captcha_challenge_active = true;
 
   // The captcha takes up lots of space, so make room.
-  setElementDisplay("top_blurb", "none");
-  setElementDisplay("top_blurb_error", "none");
-  setElementDisplay("createaccountdiv", "none");
-  var gaiaTable = document.getElementById('gaia_table');
-  gaiaTable.cellPadding = 0;
-  gaiaTable.cellSpacing = 1;
-  document.getElementById('createaccountcell').height = 0;
+  setElementDisplay("top-blurb", "none");
+  setElementDisplay("top-blurb-error", "none");
+  setElementDisplay("create-account-div", "none");
+  document.getElementById('create-account-cell').height = 0;
 
   // It's showtime for the captcha now.
-  setElementDisplay("captchadiv", "block");
-  document.getElementById('Email').disabled = true;
-  document.getElementById('Passwd').disabled = false;
-  document.getElementById('CaptchaValue').disabled = false;
-  document.getElementById('captcha_wrapper').style.backgroundImage =
+  setElementDisplay("captcha-div", "block");
+  document.getElementById('email').disabled = true;
+  document.getElementById('passwd').disabled = false;
+  document.getElementById('captcha-value').disabled = false;
+  document.getElementById('captcha-wrapper').style.backgroundImage =
       url(args.captchaUrl);
 }
 
 function showAccessCodeRequired() {
-  setElementDisplay("password_row", "none");
-  setElementDisplay("email_row", "none");
-  document.getElementById("createaccountcell").style.visibility =
+  setElementDisplay("password-row", "none");
+  setElementDisplay("email-row", "none");
+  document.getElementById("create-account-cell").style.visibility =
       "hidden";
 
-  setElementDisplay("access_code_label_row", "table-row");
-  setElementDisplay("access_code_input_row", "table-row");
-  setElementDisplay("access_code_help_row", "table-row");
-  document.getElementById('AccessCode').disabled = false;
+  setElementDisplay("access-code-label-row", "table-row");
+  setElementDisplay("access-code-input-row", "table-row");
+  setElementDisplay("access-code-help-row", "table-row");
+  document.getElementById('access-code').disabled = false;
 }
 
 function CloseDialog() {
@@ -130,19 +120,19 @@ function CloseDialog() {
 }
 
 function showGaiaSuccessAndClose() {
-  document.getElementById("signIn").value = templateData['success'];
+  document.getElementById("sign-in").value = templateData['success'];
   setTimeout(CloseDialog, 1600);
 }
 
 function showGaiaSuccessAndSettingUp() {
-  document.getElementById("signIn").value = templateData['settingup'];
+  document.getElementById("sign-in").value = templateData['settingup'];
 }
 
 /**
  * DOMContentLoaded handler, sets up the page.
  */
 function load() {
-  var acct_text = document.getElementById("gaia_account_text");
+  var acct_text = document.getElementById("gaia-account-text");
   var translated_text = acct_text.textContent;
   var posGoogle = translated_text.indexOf('Google');
   if (posGoogle != -1) {
@@ -151,13 +141,13 @@ function load() {
     if (googleIsAtEndOfSentence == ltr) {
       // We're in ltr and in the translation the word 'Google' is AFTER the
       // word 'Account' OR we're in rtl and 'Google' is BEFORE 'Account'.
-      var logo_td = document.getElementById('gaia_logo');
+      var logo_td = document.getElementById('gaia-logo');
       logo_td.parentNode.appendChild(logo_td);
     }
     acct_text.textContent = translated_text.replace('Google','');
   }
 
-  var loginForm = document.getElementById("gaia_loginform");
+  var loginForm = document.getElementById("gaia-login-form");
   loginForm.onsubmit = function() {
     sendCredentialsAndClose();
     return false;
@@ -176,19 +166,19 @@ function sendCredentialsAndClose() {
   if (!setErrorVisibility())
     return false;
 
-  document.getElementById('Email').disabled = true;
-  document.getElementById('Passwd').disabled = true;
-  document.getElementById('CaptchaValue').disabled = true;
-  document.getElementById('AccessCode').disabled = true;
+  document.getElementById('email').disabled = true;
+  document.getElementById('passwd').disabled = true;
+  document.getElementById('captcha-value').disabled = true;
+  document.getElementById('access-code').disabled = true;
 
-  document.getElementById('logging_in_throbber').style.display = "block";
+  document.getElementById('logging-in-throbber').style.display = "block";
 
-  var f = document.getElementById("gaia_loginform");
-  var result = JSON.stringify({"user" : f.Email.value,
-                               "pass" : f.Passwd.value,
-                               "captcha" : f.CaptchaValue.value,
-                               "access_code" : f.AccessCode.value});
-  document.getElementById("signIn").disabled = true;
+  var f = document.getElementById("gaia-login-form");
+  var result = JSON.stringify({"user" : f.email.value,
+                               "pass" : f.passwd.value,
+                               "captcha" : f.captchaValue.value,
+                               "access_code" : f.accessCode.value});
+  document.getElementById("sign-in").disabled = true;
   chrome.send("SubmitAuth", [result]);
 }
 
@@ -199,49 +189,49 @@ function setElementDisplay(id, display) {
 }
 
 function hideBlurb() {
-  setElementDisplay('top_blurb', 'none');
+  setElementDisplay('top-blurb', 'none');
 }
 
 function setBlurbError(error_message) {
   if (g_is_captcha_challenge_active)
     return;  // No blurb in captcha challenge mode.
   if (error_message) {
-    document.getElementById('error_signing_in').style.display = 'none';
-    document.getElementById('error_custom').style.display = 'inline';
-    document.getElementById('error_custom').textContent = error_message;
+    document.getElementById('error-signing-in').style.display = 'none';
+    document.getElementById('error-custom').style.display = 'inline';
+    document.getElementById('error-custom').textContent = error_message;
   } else {
-    document.getElementById('error_signing_in').style.display = 'inline';
-    document.getElementById('error_custom').style.display = 'none';
+    document.getElementById('error-signing-in').style.display = 'inline';
+    document.getElementById('error-custom').style.display = 'none';
   }
-  document.getElementById("top_blurb_error").style.visibility = "visible";
-  document.getElementById('Email').disabled = false;
-  document.getElementById('Passwd').disabled = false;
+  document.getElementById("top-blurb-error").style.visibility = "visible";
+  document.getElementById('email').disabled = false;
+  document.getElementById('passwd').disabled = false;
 }
 
 function resetErrorVisibility() {
-  setElementDisplay("errormsg_0_Email", 'none');
-  setElementDisplay("errormsg_0_Password", 'none');
-  setElementDisplay("errormsg_1_Password", 'none');
-  setElementDisplay("errormsg_0_Connection", 'none');
-  setElementDisplay("errormsg_0_AccessCode", 'none');
+  setElementDisplay("errormsg-0-email", 'none');
+  setElementDisplay("errormsg-0-password", 'none');
+  setElementDisplay("errormsg-1-password", 'none');
+  setElementDisplay("errormsg-0-connection", 'none');
+  setElementDisplay("errormsg-0-access-code", 'none');
 }
 
 function setErrorVisibility() {
   resetErrorVisibility();
-  var f = document.getElementById("gaia_loginform");
-  if (null == f.Email.value || "" == f.Email.value) {
-    setElementDisplay("errormsg_0_Email", 'table-row');
+  var f = document.getElementById("gaia-login-form");
+  if (null == f.email.value || "" == f.email.value) {
+    setElementDisplay("errormsg-0-email", 'table-row');
     setBlurbError();
     return false;
   }
-  if (null == f.Passwd.value || "" == f.Passwd.value) {
-    setElementDisplay("errormsg_0_Password", 'table-row');
+  if (null == f.passwd.value || "" == f.passwd.value) {
+    setElementDisplay("errormsg-0-password", 'table-row');
     setBlurbError();
     return false;
   }
-  if (!f.AccessCode.disabled && (null == f.AccessCode.value ||
-      "" == f.AccessCode.value)) {
-    setElementDisplay("errormsg_0_Password", 'table-row');
+  if (!f.accessCode.disabled && (null == f.accessCode.value ||
+      "" == f.accessCode.value)) {
+    setElementDisplay("errormsg-0-password", 'table-row');
     return false;
   }
   return true;

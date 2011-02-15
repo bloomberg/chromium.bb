@@ -41,11 +41,11 @@ input[type='submit'] {
   text-align: end;
 }
 
-#gaia_account_text {
+#gaia-account-text {
   font-weight: bold;
 }
 
-#email_readonly {
+#email-readonly {
   display: none;
   font-size: 10pt;
   font-weight: bold;
@@ -70,11 +70,11 @@ font.errormsgspacer {
   font-size: smaller;
 }
 
-#gaia_loginform {
+#gaia-login-form {
   margin-bottom: 0;
 }
 
-#captcha_wrapper {
+#captcha-wrapper {
   background: no-repeat;
   background-color: #e8eefa;
   background-position: center;
@@ -88,7 +88,7 @@ font.errormsgspacer {
   width: 200px;
 }
 
-#logging_in_throbber {
+#logging-in-throbber {
   margin: 0 10px;
 }
 
@@ -113,12 +113,12 @@ font.errormsgspacer {
   height: 5px;
 }
 
-#top_blurb {
+#top-blurb {
   font-size: 11pt;
   line-height: 1.5em;
 }
 
-#top_blurb_error {
+#top-blurb-error {
   background-color: #eeb939;
   border-radius: 4px;
   display: block;
@@ -133,7 +133,7 @@ font.errormsgspacer {
   width: 70%;
 }
 
-#content_table {
+#content-table {
  padding: 2px;
 }
 
@@ -146,7 +146,7 @@ font.errormsgspacer {
   text-align: center;
 }
 
-#access_code_label_row > td {
+#access-code-label-row > td {
   padding-top: 6px;
 }
 
@@ -171,15 +171,15 @@ font.errormsgspacer {
   font-size: 70%;
 }
 
-#error_custom {
+#error-custom {
   display: none;
 }
 
-#captchadiv {
+#captcha-div {
   display: none;
 }
 
-#password_row {
+#password-row {
   margin-top: 2px;
 }
 
