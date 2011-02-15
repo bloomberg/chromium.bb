@@ -90,6 +90,8 @@
     'win': [
       # testBookmarkBarVisible fails on windows. crbug.com/42823
       '-bookmark_bar.BookmarkBarTest.testBookmarkBarVisible',
+      # testPopupSharesProcess fails on Windows Vista. crbug.com/70659
+      '-browser.BrowserTest.testPopupSharesProcess',
       # crbug.com/64664
       '-databases.DatabasesTest.testReloadActiveTab',
       '-databases.DatabasesTest.testModificationsPersistAfterRendererCrash',
