@@ -124,7 +124,7 @@
 					<object class="NSButton" id="1071220197">
 						<reference key="NSNextResponder" ref="620641226"/>
 						<int key="NSvFlags">277</int>
-						<string key="NSFrame">{{586, 2}, {14, 28}}</string>
+						<string key="NSFrame">{{586, 2}, {20, 28}}</string>
 						<reference key="NSSuperview" ref="620641226"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="1055451269">
@@ -132,8 +132,8 @@
 							<int key="NSCellFlags2">134217728</int>
 							<string key="NSContents"/>
 							<reference key="NSControlView" ref="1071220197"/>
-							<int key="NSButtonFlags">-2041822977</int>
-							<int key="NSButtonFlags2">134</int>
+							<int key="NSButtonFlags">-2033434369</int>
+							<int key="NSButtonFlags2">70</int>
 							<object class="NSCustomResource" key="NSNormalImage">
 								<string key="NSClassName">NSImage</string>
 								<string key="NSResourceName">chevron</string>
