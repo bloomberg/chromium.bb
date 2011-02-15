@@ -10,6 +10,8 @@
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 
+namespace prerender {
+
 namespace {
 
 bool ShouldPrerender(const GURL& url, const ResourceResponse* response) {
@@ -151,3 +153,5 @@ void PrerenderResourceHandler::StartPrerender(const GURL& url,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   prerender_manager_->AddPreload(url, alias_urls);
 }
+
+}  // namespace prerender

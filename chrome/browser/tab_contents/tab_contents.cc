@@ -368,7 +368,7 @@ TabContents::TabContents(Profile* profile,
   AddObserver(autofill_manager_.get());
   autocomplete_history_manager_.reset(new AutocompleteHistoryManager(this));
   AddObserver(autocomplete_history_manager_.get());
-  prerender_plt_recorder_.reset(new PrerenderPLTRecorder(this));
+  prerender_plt_recorder_.reset(new prerender::PrerenderPLTRecorder(this));
   AddObserver(prerender_plt_recorder_.get());
   AddObserver(&fav_icon_helper_);
   AddObserver(printing_.get());
@@ -3130,7 +3130,7 @@ void TabContents::CreateViewAndSetSizeForRVH(RenderViewHost* rvh) {
 }
 
 bool TabContents::MaybeUsePreloadedPage(const GURL& url) {
-  PrerenderManager* pm = profile()->GetPrerenderManager();
+  prerender::PrerenderManager* pm = profile()->GetPrerenderManager();
   if (pm != NULL) {
     if (pm->MaybeUsePreloadedPage(this, url))
       return true;

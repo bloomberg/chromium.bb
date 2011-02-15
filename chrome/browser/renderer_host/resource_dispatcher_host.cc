@@ -129,7 +129,7 @@ bool ShouldServiceRequest(ChildProcessInfo::ProcessType process_type,
     return true;
 
   if (request_data.resource_type == ResourceType::PREFETCH) {
-    PrerenderManager::RecordPrefetchTagObserved();
+    prerender::PrerenderManager::RecordPrefetchTagObserved();
     if (!ResourceDispatcherHost::is_prefetch_enabled())
       return false;
   }
@@ -463,8 +463,10 @@ void ResourceDispatcherHost::BeginRequest(
   // be prerendered. This should be in front of the [a]syncResourceHandler,
   // but after the BufferedResourceHandler since it depends on the MIME
   // sniffing capabilities in the BufferedResourceHandler.
-  PrerenderResourceHandler* pre_handler = PrerenderResourceHandler::MaybeCreate(
-      *request, context, handler);
+  prerender::PrerenderResourceHandler* pre_handler =
+      prerender::PrerenderResourceHandler::MaybeCreate(*request,
+                                                       context,
+                                                       handler);
   if (pre_handler)
     handler = pre_handler;
 

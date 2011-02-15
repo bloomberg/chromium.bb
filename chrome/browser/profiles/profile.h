@@ -22,6 +22,11 @@ class ProxyConfigServiceImpl;
 }
 #endif
 
+namespace fileapi {
+class FileSystemContext;
+class SandboxedFileSystemContext;
+}
+
 namespace history {
 class TopSites;
 }
@@ -35,12 +40,12 @@ namespace policy {
 class ProfilePolicyContext;
 }
 
-namespace webkit_database {
-class DatabaseTracker;
+namespace prerender {
+class PrerenderManager;
 }
 
-namespace fileapi {
-class FileSystemContext;
+namespace webkit_database {
+class DatabaseTracker;
 }
 
 class AutocompleteClassifier;
@@ -78,7 +83,6 @@ class PersonalDataManager;
 class PinnedTabService;
 class PrefProxyConfigTracker;
 class PrefService;
-class PrerenderManager;
 class ProfileSyncFactory;
 class ProfileSyncService;
 class ProfileSyncService;
@@ -531,7 +535,7 @@ class Profile {
 
   // Returns the PrerenderManager used to prerender entire webpages for this
   // profile.
-  virtual PrerenderManager* GetPrerenderManager() = 0;
+  virtual prerender::PrerenderManager* GetPrerenderManager() = 0;
 
   // Returns whether it is a guest session.
   static bool IsGuestSession();

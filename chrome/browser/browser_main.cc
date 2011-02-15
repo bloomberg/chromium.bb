@@ -479,27 +479,32 @@ void BrowserMainParts::PrefetchAndPrerenderFieldTrial() {
           trial_grp == yes_prefetch_grp);
 
       // There is currently no prerendering field trial.
-      PrerenderManager::SetMode(PrerenderManager::PRERENDER_MODE_DISABLED);
+      prerender::PrerenderManager::SetMode(
+          prerender::PrerenderManager::PRERENDER_MODE_DISABLED);
       break;
     }
     case PRERENDER_OPTION_DISABLED:
       ResourceDispatcherHost::set_is_prefetch_enabled(false);
-      PrerenderManager::SetMode(PrerenderManager::PRERENDER_MODE_DISABLED);
+      prerender::PrerenderManager::SetMode(
+          prerender::PrerenderManager::PRERENDER_MODE_DISABLED);
       break;
     case PRERENDER_OPTION_ENABLED:
       ResourceDispatcherHost::set_is_prefetch_enabled(true);
-      PrerenderManager::SetMode(PrerenderManager::PRERENDER_MODE_ENABLED);
+      prerender::PrerenderManager::SetMode(
+          prerender::PrerenderManager::PRERENDER_MODE_ENABLED);
       break;
     case PRERENDER_OPTION_PREFETCH_ONLY:
       ResourceDispatcherHost::set_is_prefetch_enabled(true);
-      PrerenderManager::SetMode(PrerenderManager::PRERENDER_MODE_DISABLED);
+      prerender::PrerenderManager::SetMode(
+          prerender::PrerenderManager::PRERENDER_MODE_DISABLED);
       break;
     default:
       NOTREACHED();
   }
 
-  UMA_HISTOGRAM_ENUMERATION("Prerender.Sessions", PrerenderManager::GetMode(),
-                            PrerenderManager::PRERENDER_MODE_MAX);
+  UMA_HISTOGRAM_ENUMERATION("Prerender.Sessions",
+                            prerender::PrerenderManager::GetMode(),
+                            prerender::PrerenderManager::PRERENDER_MODE_MAX);
 }
 
 // If neither --enable-connect-backup-jobs or --disable-connect-backup-jobs is

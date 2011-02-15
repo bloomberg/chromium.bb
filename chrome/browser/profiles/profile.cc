@@ -653,7 +653,7 @@ class OffTheRecordProfileImpl : public Profile,
     return pref_proxy_config_tracker_;
   }
 
-  virtual PrerenderManager* GetPrerenderManager() {
+  virtual prerender::PrerenderManager* GetPrerenderManager() {
     // We do not allow prerendering in OTR profiles at this point.
     // TODO(tburkard): Figure out if we want to support this, and how, at some
     // point in the future.

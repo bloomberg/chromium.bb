@@ -4,10 +4,10 @@
 
 #include "chrome/browser/prerender/prerender_contents.h"
 
-#include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/background_contents_service.h"
 #include "chrome/browser/browsing_instance.h"
+#include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -21,6 +21,8 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "ui/gfx/rect.h"
+
+namespace prerender {
 
 class PrerenderContentsFactoryImpl : public PrerenderContents::Factory {
  public:
@@ -98,15 +100,13 @@ void PrerenderContents::set_final_status(FinalStatus final_status) {
   final_status_ = final_status;
 }
 
-PrerenderContents::FinalStatus PrerenderContents::final_status() const {
+FinalStatus PrerenderContents::final_status() const {
   return final_status_;
 }
 
 PrerenderContents::~PrerenderContents() {
   DCHECK(final_status_ != FINAL_STATUS_MAX);
-  UMA_HISTOGRAM_ENUMERATION("Prerender.FinalStatus",
-                            final_status_,
-                            FINAL_STATUS_MAX);
+  RecordFinalStatus(final_status_);
 
   if (!render_view_host_)   // Will be null for unit tests.
     return;
@@ -346,3 +346,5 @@ void PrerenderContents::Destroy(FinalStatus final_status) {
   set_final_status(final_status);
   delete this;
 }
+
+}  // namespace prerender

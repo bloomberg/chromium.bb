@@ -767,7 +767,7 @@ ChromeURLDataManager* TestingProfile::GetChromeURLDataManager() {
   return chrome_url_data_manager_.get();
 }
 
-PrerenderManager* TestingProfile::GetPrerenderManager() {
+prerender::PrerenderManager* TestingProfile::GetPrerenderManager() {
   return NULL;
 }
 

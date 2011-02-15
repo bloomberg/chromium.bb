@@ -18,6 +18,8 @@ class PrerenderContents;
 class Profile;
 class TabContents;
 
+namespace prerender {
+
 // PrerenderPLTRecorder is responsible for recording perceived pageload times
 // to compare PLT's with prerendering enabled and disabled.
 class PrerenderPLTRecorder : public TabContentsObserver {
@@ -44,5 +46,7 @@ class PrerenderPLTRecorder : public TabContentsObserver {
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderPLTRecorder);
 };
+
+}  // prerender
 
 #endif  // CHROME_BROWSER_PRERENDER_PRERENDER_PLT_RECORDER_H_

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/time.h"
+#include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
@@ -19,13 +20,16 @@
 #include "webkit/glue/window_open_disposition.h"
 
 class TabContents;
-class PrerenderManager;
 struct WebPreferences;
 struct ViewHostMsg_FrameNavigate_Params;
 
 namespace gfx {
 class Rect;
 }
+
+namespace prerender {
+
+class PrerenderManager;
 
 // This class is a peer of TabContents. It can host a renderer, but does not
 // have any visible display. Its navigation is not managed by a
@@ -37,22 +41,6 @@ class PrerenderContents : public RenderViewHostDelegate,
                           public NotificationObserver,
                           public JavaScriptAppModalDialogDelegate {
  public:
-  // FinalStatus indicates whether |this| was used, or why it was cancelled.
-  // NOTE: New values need to be appended, since they are used in histograms.
-  enum FinalStatus {
-    FINAL_STATUS_USED,
-    FINAL_STATUS_TIMED_OUT,
-    FINAL_STATUS_EVICTED,
-    FINAL_STATUS_MANAGER_SHUTDOWN,
-    FINAL_STATUS_CLOSED,
-    FINAL_STATUS_CREATE_NEW_WINDOW,
-    FINAL_STATUS_PROFILE_DESTROYED,
-    FINAL_STATUS_APP_TERMINATING,
-    FINAL_STATUS_JAVASCRIPT_ALERT,
-    FINAL_STATUS_AUTH_NEEDED,
-    FINAL_STATUS_MAX,
-  };
-
   // PrerenderContents::Create uses the currently registered Factory to create
   // the PrerenderContents. Factory is intended for testing.
   class Factory {
@@ -251,5 +239,7 @@ class PrerenderContents : public RenderViewHostDelegate,
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderContents);
 };
+
+}  // prerender
 
 #endif  // CHROME_BROWSER_PRERENDER_PRERENDER_CONTENTS_H_

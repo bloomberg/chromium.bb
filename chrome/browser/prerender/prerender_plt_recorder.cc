@@ -10,6 +10,8 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/render_messages.h"
 
+namespace prerender {
+
 PrerenderPLTRecorder::PrerenderPLTRecorder(TabContents* tab_contents)
     : tab_contents_(tab_contents),
       pplt_load_start_() {
@@ -45,3 +47,5 @@ void PrerenderPLTRecorder::DidStopLoading() {
   // Reset the PPLT metric.
   pplt_load_start_ = base::TimeTicks();
 }
+
+}  // namespace prerender

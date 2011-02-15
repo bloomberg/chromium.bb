@@ -11,10 +11,13 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/fav_icon_helper.h"
 #include "chrome/browser/prerender/prerender_contents.h"
+#include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/render_view_host_manager.h"
 #include "chrome/common/render_messages.h"
+
+namespace prerender {
 
 // static
 base::TimeTicks PrerenderManager::last_prefetch_seen_time_;
@@ -65,8 +68,7 @@ PrerenderManager::~PrerenderManager() {
   while (prerender_list_.size() > 0) {
     PrerenderContentsData data = prerender_list_.front();
     prerender_list_.pop_front();
-    data.contents_->set_final_status(
-        PrerenderContents::FINAL_STATUS_MANAGER_SHUTDOWN);
+    data.contents_->set_final_status(FINAL_STATUS_MANAGER_SHUTDOWN);
     delete data.contents_;
   }
 }
@@ -94,7 +96,7 @@ void PrerenderManager::AddPreload(const GURL& url,
   while (prerender_list_.size() > max_elements_) {
     data = prerender_list_.front();
     prerender_list_.pop_front();
-    data.contents_->set_final_status(PrerenderContents::FINAL_STATUS_EVICTED);
+    data.contents_->set_final_status(FINAL_STATUS_EVICTED);
     delete data.contents_;
   }
 }
@@ -105,7 +107,7 @@ void PrerenderManager::DeleteOldEntries() {
     if (IsPrerenderElementFresh(data.start_time_))
       return;
     prerender_list_.pop_front();
-    data.contents_->set_final_status(PrerenderContents::FINAL_STATUS_TIMED_OUT);
+    data.contents_->set_final_status(FINAL_STATUS_TIMED_OUT);
     delete data.contents_;
   }
 }
@@ -134,7 +136,7 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tc, const GURL& url) {
 
   if (!pc->load_start_time().is_null())
     RecordTimeUntilUsed(base::TimeTicks::Now() - pc->load_start_time());
-  pc->set_final_status(PrerenderContents::FINAL_STATUS_USED);
+  pc->set_final_status(FINAL_STATUS_USED);
 
   RenderViewHost* rvh = pc->render_view_host();
   pc->set_render_view_host(NULL);
@@ -259,3 +261,5 @@ bool PrerenderManager::ShouldRecordWindowedPPLT() const {
       base::TimeTicks::Now() - last_prefetch_seen_time_;
   return elapsed_time <= base::TimeDelta::FromSeconds(kWindowedPPLTSeconds);
 }
+
+}  // namespace prerender

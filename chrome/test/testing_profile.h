@@ -274,7 +274,7 @@ class TestingProfile : public Profile {
   virtual PromoCounter* GetInstantPromoCounter();
   virtual policy::ProfilePolicyContext* GetPolicyContext();
   virtual ChromeURLDataManager* GetChromeURLDataManager();
-  virtual PrerenderManager* GetPrerenderManager();
+  virtual prerender::PrerenderManager* GetPrerenderManager();
   virtual PrefService* GetOffTheRecordPrefs();
 
  protected:

@@ -18,6 +18,8 @@
 class Profile;
 class TabContents;
 
+namespace prerender {
+
 // PrerenderManager is responsible for initiating and keeping prerendered
 // views of webpages.
 class PrerenderManager : public base::RefCounted<PrerenderManager> {
@@ -131,5 +133,7 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderManager);
 };
+
+}  // prerender
 
 #endif  // CHROME_BROWSER_PRERENDER_PRERENDER_MANAGER_H_

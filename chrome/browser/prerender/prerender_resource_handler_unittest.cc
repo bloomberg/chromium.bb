@@ -7,6 +7,8 @@
 #include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace prerender {
+
 namespace {
 
 class MockResourceHandler : public ResourceHandler {
@@ -180,4 +182,6 @@ TEST_F(PrerenderResourceHandlerTest, PrerenderRedirect) {
   EXPECT_EQ(2, static_cast<int>(alias_urls_.size()));
 }
 
-}
+}  // namespace
+
+}  // namespace prerender

@@ -99,7 +99,7 @@ class ChromeURLRequestContext : public net::URLRequestContext {
     return extension_io_event_router_;
   }
 
-  PrerenderManager* prerender_manager() {
+  prerender::PrerenderManager* prerender_manager() {
     return prerender_manager_.get();
   }
 
@@ -168,7 +168,7 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   void set_extension_io_event_router(ExtensionIOEventRouter* router) {
     extension_io_event_router_ = router;
   }
-  void set_prerender_manager(PrerenderManager* prerender_manager) {
+  void set_prerender_manager(prerender::PrerenderManager* prerender_manager) {
     prerender_manager_ = prerender_manager;
   }
 
@@ -193,7 +193,7 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   // TODO(aa): This should use chrome/common/extensions/extension_set.h.
   scoped_refptr<ExtensionInfoMap> extension_info_map_;
   scoped_refptr<ExtensionIOEventRouter> extension_io_event_router_;
-  scoped_refptr<PrerenderManager> prerender_manager_;
+  scoped_refptr<prerender::PrerenderManager> prerender_manager_;
   scoped_ptr<ChromeURLDataManagerBackend> chrome_url_data_manager_backend_;
 
   bool is_off_the_record_;
@@ -356,7 +356,7 @@ class ChromeURLRequestContextFactory {
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;
   scoped_refptr<ExtensionInfoMap> extension_info_map_;
   scoped_refptr<ExtensionIOEventRouter> extension_io_event_router_;
-  scoped_refptr<PrerenderManager> prerender_manager_;
+  scoped_refptr<prerender::PrerenderManager> prerender_manager_;
 
   FilePath profile_dir_path_;
 

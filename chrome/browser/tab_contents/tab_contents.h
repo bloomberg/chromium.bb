@@ -49,6 +49,11 @@ namespace history {
 class HistoryAddPageArgs;
 }
 
+namespace prerender {
+class PrerenderManager;
+class PrerenderPLTRecorder;
+}
+
 namespace printing {
 class PrintPreviewMessageHandler;
 class PrintViewManager;
@@ -67,8 +72,6 @@ class LoadNotificationDetails;
 class OmniboxSearchHint;
 class PluginObserver;
 class Profile;
-class PrerenderManager;
-class PrerenderPLTRecorder;
 class RenderViewHost;
 class SessionStorageNamespace;
 class SiteInstance;
@@ -747,7 +750,7 @@ class TabContents : public PageNavigator,
   friend class ExternalTabContainer;
 
   // Used to access RVH Delegates.
-  friend class PrerenderManager;
+  friend class prerender::PrerenderManager;
 
   // Message handlers.
   void OnDidStartProvisionalLoadForFrame(int64 frame_id,
@@ -1072,7 +1075,7 @@ class TabContents : public PageNavigator,
   scoped_ptr<PluginObserver> plugin_observer_;
 
   // Prerender PageLoadTime Recorder.
-  scoped_ptr<PrerenderPLTRecorder> prerender_plt_recorder_;
+  scoped_ptr<prerender::PrerenderPLTRecorder> prerender_plt_recorder_;
 
   // TabContentsSSLHelper, lazily created.
   scoped_ptr<TabContentsSSLHelper> ssl_helper_;

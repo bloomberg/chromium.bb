@@ -1499,10 +1499,10 @@ PrefProxyConfigTracker* ProfileImpl::GetProxyConfigTracker() {
   return pref_proxy_config_tracker_;
 }
 
-PrerenderManager* ProfileImpl::GetPrerenderManager() {
-  if (!PrerenderManager::IsPrerenderingEnabled())
+prerender::PrerenderManager* ProfileImpl::GetPrerenderManager() {
+  if (!prerender::PrerenderManager::IsPrerenderingEnabled())
     return NULL;
   if (!prerender_manager_)
-    prerender_manager_ = new PrerenderManager(this);
+    prerender_manager_ = new prerender::PrerenderManager(this);
   return prerender_manager_;
 }

@@ -17,6 +17,8 @@ namespace net {
 class URLRequest;
 }
 
+namespace prerender {
+
 // The PrerenderResourceHandler initiates prerendering of web pages
 // under the following conditions:
 //   - The profile which initiated the request allows prerendering.
@@ -91,5 +93,7 @@ class PrerenderResourceHandler : public ResourceHandler {
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderResourceHandler);
 };
+
+}  // namespace prerender
 
 #endif  // CHROME_BROWSER_PRERENDER_PRERENDER_RESOURCE_HANDLER_H_
