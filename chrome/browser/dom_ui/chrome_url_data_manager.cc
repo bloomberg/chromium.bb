@@ -48,11 +48,16 @@ ChromeURLDataManager::~ChromeURLDataManager() {
 
 void ChromeURLDataManager::AddDataSource(DataSource* source) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  registered_source_names_.insert(source->source_name());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableFunction(AddDataSourceOnIOThread,
                           make_scoped_refptr(profile_->GetRequestContext()),
                           make_scoped_refptr(source)));
+}
+
+bool ChromeURLDataManager::IsRegistered(const std::string& name) {
+  return registered_source_names_.find(name) != registered_source_names_.end();
 }
 
 // static

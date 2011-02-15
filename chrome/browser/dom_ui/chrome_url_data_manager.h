@@ -7,6 +7,7 @@
 #pragma once
 
 #include <map>
+#include <set>
 #include <string>
 
 #include "base/task.h"
@@ -143,6 +144,9 @@ class ChromeURLDataManager {
   // destructed in the same thread as they are constructed (the UI thread).
   void AddDataSource(DataSource* source);
 
+  // Returns true if a DataSource has been added with the given name.
+  bool IsRegistered(const std::string& name);
+
   // Deletes any data sources no longer referenced. This is normally invoked
   // for you, but can be invoked to force deletion (such as during shutdown).
   static void DeleteDataSources();
@@ -160,6 +164,12 @@ class ChromeURLDataManager {
   static bool IsScheduledForDeletion(const DataSource* data_source);
 
   Profile* profile_;
+
+  // Names of the DataSources that have been registered.
+  // By caching this rather than accessing ChromeURLDataManagerBackend we avoid
+  // a delay between when AddDataSource is invoked and when the IO thread
+  // processes it.
+  std::set<std::string> registered_source_names_;
 
   // Lock used when accessing |data_sources_|.
   static base::Lock delete_lock_;
