@@ -263,9 +263,29 @@ env.Requires('ppapi_cpp', [c_header_install,
                            cpp_header_install,
                            cpp_dev_header_install])
 
-gles2_header_install = env.AddHeaderToSdk(
+# GLES2 headers go into the GLES2 subdir, Khronos headers into the KHR subdir,
+# EGL header go in the EGL subdir.
+egl_header_install = env.AddHeaderToSdk([
+    'lib/gl/include/EGL/egl.h',
+    'lib/gl/include/EGL/eglext.h',
+    'lib/gl/include/EGL/eglplatform.h',
+    ], 'EGL')
+gles2_header_install = env.AddHeaderToSdk([
+    'lib/gl/include/GLES2/gl2.h',
+    'lib/gl/include/GLES2/gl2ext.h',
+    'lib/gl/include/GLES2/gl2platform.h',
+    ], 'GLES2')
+khr_header_install = env.AddHeaderToSdk([
+    'lib/gl/include/KHR/khrplatform.h',
+    ], 'KHR')
+ppapi_gles2_header_install = env.AddHeaderToSdk(
   ['$SOURCE_ROOT/ppapi/' + h for h in gles2_headers],
   os.path.join('ppapi', 'gles2'))
 env.AddLibraryToSdk(['ppapi_gles2'])
-env.Requires('ppapi_gles1', [gles2_header_install])
+env.Requires('ppapi_gles2', [
+    egl_header_install,
+    gles2_header_install,
+    khr_header_install,
+    ppapi_gles2_header_install,
+])
 
