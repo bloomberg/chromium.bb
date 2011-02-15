@@ -136,7 +136,7 @@ void RootView::SetContentsView(View* contents_view) {
 //
 /////////////////////////////////////////////////////////////////////////////
 
-void RootView::SchedulePaint(const gfx::Rect& r, bool urgent) {
+void RootView::SchedulePaintInRect(const gfx::Rect& r, bool urgent) {
   // If there is an existing invalid rect, add the union of the scheduled
   // rect with the invalid rect. This could be optimized further if
   // necessary.

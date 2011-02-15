@@ -442,7 +442,7 @@ void RenderWidgetHostViewViews::DidUpdateBackingStore(
   if (about_to_validate_and_paint_)
     invalid_rect_ = invalid_rect_.Union(scroll_rect);
   else
-    SchedulePaint(scroll_rect, false);
+    SchedulePaintInRect(scroll_rect, false);
 
   for (size_t i = 0; i < copy_rects.size(); ++i) {
     // Avoid double painting.  NOTE: This is only relevant given the call to
@@ -454,7 +454,7 @@ void RenderWidgetHostViewViews::DidUpdateBackingStore(
     if (about_to_validate_and_paint_)
       invalid_rect_ = invalid_rect_.Union(rect);
     else
-      SchedulePaint(rect, false);
+      SchedulePaintInRect(rect, false);
   }
   invalid_rect_ = invalid_rect_.Intersect(bounds());
 }

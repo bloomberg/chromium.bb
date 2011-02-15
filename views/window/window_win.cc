@@ -1072,7 +1072,7 @@ void WindowWin::OnNCPaint(HRGN rgn) {
     UnionRect(&dirty_region, &tmp, &old_paint_region_crect);
   }
 
-  root_view->SchedulePaint(gfx::Rect(dirty_region), false);
+  root_view->SchedulePaintInRect(gfx::Rect(dirty_region), false);
 
   // gfx::CanvasSkiaPaint's destructor does the actual painting. As such, wrap
   // the following in a block to force paint to occur so that we can release

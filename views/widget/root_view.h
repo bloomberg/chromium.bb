@@ -54,7 +54,7 @@ class RootView : public View,
   // Layout and Painting functions
 
   // Overridden from View to implement paint scheduling.
-  virtual void SchedulePaint(const gfx::Rect& r, bool urgent);
+  virtual void SchedulePaintInRect(const gfx::Rect& r, bool urgent);
 
   // Convenience to schedule the whole view
   virtual void SchedulePaint();

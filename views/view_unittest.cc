@@ -605,7 +605,7 @@ TEST_F(ViewTest, DISABLED_Painting) {
   v2->Reset();
   v3->Reset();
   v4->Reset();
-  v3->SchedulePaint(gfx::Rect(10, 10, 10, 10), false);
+  v3->SchedulePaintInRect(gfx::Rect(10, 10, 10, 10), false);
   PaintRootView(root, empty_paint);
 
   SkRect tmp_rect;

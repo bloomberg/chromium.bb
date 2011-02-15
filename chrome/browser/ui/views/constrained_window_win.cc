@@ -278,7 +278,7 @@ ConstrainedWindowFrameView::~ConstrainedWindowFrameView() {
 }
 
 void ConstrainedWindowFrameView::UpdateWindowTitle() {
-  SchedulePaint(title_bounds_, false);
+  SchedulePaintInRect(title_bounds_, false);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

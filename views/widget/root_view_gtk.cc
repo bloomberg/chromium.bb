@@ -40,7 +40,7 @@ void RootView::OnPaint(GdkEventExpose* event) {
   bool invoked_process_paint = false;
   if (!canvas.is_empty()) {
     canvas.set_composite_alpha(widget->is_transparent());
-    SchedulePaint(gfx::Rect(canvas.rectangle()), false);
+    SchedulePaintInRect(gfx::Rect(canvas.rectangle()), false);
     if (NeedsPainting(false)) {
       ProcessPaint(&canvas);
       invoked_process_paint = true;
@@ -62,7 +62,7 @@ void RootView::OnPaint(GdkEventExpose* event) {
     // scheduled_dirty_rect as that results in us drawing on top of any GTK
     // widgets that don't have a window. We have to schedule the paint through
     // GTK so that such widgets are painted.
-    SchedulePaint(scheduled_dirty_rect, false);
+    SchedulePaintInRect(scheduled_dirty_rect, false);
   }
 }
 

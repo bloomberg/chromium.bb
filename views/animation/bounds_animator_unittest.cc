@@ -75,7 +75,7 @@ bool OwnedDelegate::canceled_ = false;
 class TestView : public views::View {
  public:
   TestView() {}
-  virtual void SchedulePaint(const gfx::Rect& r, bool urgent) {
+  virtual void SchedulePaintInRect(const gfx::Rect& r, bool urgent) {
     if (dirty_rect_.IsEmpty())
       dirty_rect_ = r;
     else

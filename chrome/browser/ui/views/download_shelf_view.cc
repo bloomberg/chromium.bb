@@ -426,7 +426,7 @@ void DownloadShelfView::SchedulePaintForDownloadItem(views::View* view) {
   // Invalidate it
   gfx::Rect invalid_rect =
       GetFocusRectBounds(static_cast<DownloadItemView*>(view));
-  SchedulePaint(invalid_rect, false);
+  SchedulePaintInRect(invalid_rect, false);
 }
 
 gfx::Rect DownloadShelfView::GetFocusRectBounds(

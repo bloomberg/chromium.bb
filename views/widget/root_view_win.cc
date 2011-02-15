@@ -29,7 +29,7 @@ void RootView::OnPaint(HWND hwnd) {
   scoped_ptr<gfx::CanvasPaint> canvas(
       gfx::CanvasPaint::CreateCanvasPaint(hwnd));
   if (!canvas->IsValid()) {
-    SchedulePaint(canvas->GetInvalidRect(), false);
+    SchedulePaintInRect(canvas->GetInvalidRect(), false);
     if (NeedsPainting(false))
       ProcessPaint(canvas->AsCanvas());
   }

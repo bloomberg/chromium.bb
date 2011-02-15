@@ -551,7 +551,11 @@ void View::ConvertPointToScreen(const View* src, gfx::Point* p) {
 
 // Painting --------------------------------------------------------------------
 
-void View::SchedulePaint(const gfx::Rect& r, bool urgent) {
+void View::SchedulePaint() {
+  SchedulePaintInRect(GetLocalBounds(), false);
+}
+
+void View::SchedulePaintInRect(const gfx::Rect& r, bool urgent) {
   if (!IsVisible())
     return;
 
@@ -560,12 +564,8 @@ void View::SchedulePaint(const gfx::Rect& r, bool urgent) {
     // then pass this notification up to the parent.
     gfx::Rect paint_rect = r;
     paint_rect.Offset(GetMirroredPosition());
-    parent_->SchedulePaint(paint_rect, urgent);
+    parent_->SchedulePaintInRect(paint_rect, urgent);
   }
-}
-
-void View::SchedulePaint() {
-  SchedulePaint(GetLocalBounds(), false);
 }
 
 void View::Paint(gfx::Canvas* canvas) {

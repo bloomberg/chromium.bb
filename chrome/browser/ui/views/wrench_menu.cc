@@ -231,12 +231,12 @@ class ScheduleAllView : public views::View {
  public:
   ScheduleAllView() {}
 
-  virtual void SchedulePaint(const gfx::Rect& r, bool urgent) {
+  virtual void SchedulePaintInRect(const gfx::Rect& r, bool urgent) {
     if (!IsVisible())
       return;
 
     if (parent())
-      parent()->SchedulePaint(GetMirroredBounds(), urgent);
+      parent()->SchedulePaintInRect(GetMirroredBounds(), urgent);
   }
 
  private:

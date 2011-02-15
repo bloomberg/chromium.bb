@@ -474,14 +474,13 @@ class View : public AcceleratorTarget {
 
   // Painting ------------------------------------------------------------------
 
-  // Mark the specified rectangle as dirty (needing repaint). If |urgent| is
-  // true, the view will be repainted when the current event processing is
-  // done. Otherwise, painting will take place as soon as possible.
-  virtual void SchedulePaint(const gfx::Rect& r, bool urgent);
-
-  // Mark the entire View's bounds as dirty. Painting will occur as soon as
+  // Mark all or part of the View's bounds as dirty (needing repaint).
+  // |r| is in the View's coordinates.
+  // When |urgent| is true, the view will be repainted when the current event
+  // processing is done. Otherwise, painting will take place as soon as
   // possible.
   virtual void SchedulePaint();
+  virtual void SchedulePaintInRect(const gfx::Rect& r, bool urgent);
 
   // Paint the receiving view. g is prepared such as it is in
   // receiver's coordinate system. g's state is restored after this
