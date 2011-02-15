@@ -1696,6 +1696,7 @@
         'browser/ui/cocoa/toolbar/reload_button_unittest.mm',
         'browser/ui/cocoa/toolbar/toolbar_controller_unittest.mm',
         'browser/ui/cocoa/toolbar/toolbar_view_unittest.mm',
+        'browser/ui/cocoa/tracking_area_unittest.mm',
         'browser/ui/cocoa/translate/translate_infobar_unittest.mm',
         'browser/ui/cocoa/vertical_gradient_view_unittest.mm',
         'browser/ui/cocoa/view_resizer_pong.h',

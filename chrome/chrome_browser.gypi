@@ -2834,6 +2834,8 @@
         'browser/ui/cocoa/toolbar/toolbar_controller.mm',
         'browser/ui/cocoa/toolbar/toolbar_view.h',
         'browser/ui/cocoa/toolbar/toolbar_view.mm',
+        'browser/ui/cocoa/tracking_area.h',
+        'browser/ui/cocoa/tracking_area.mm',
         'browser/ui/cocoa/translate/after_translate_infobar_controller.h',
         'browser/ui/cocoa/translate/after_translate_infobar_controller.mm',
         'browser/ui/cocoa/translate/before_translate_infobar_controller.h',

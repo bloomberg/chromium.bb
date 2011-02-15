@@ -38,6 +38,7 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
 #import "chrome/browser/ui/cocoa/tabs/throbber_view.h"
+#import "chrome/browser/ui/cocoa/tracking_area.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -122,7 +123,6 @@ private:
 }  // namespace
 
 @interface TabStripController (Private)
-- (void)installTrackingArea;
 - (void)addSubviewToPermanentList:(NSView*)aView;
 - (void)regenerateSubviewList;
 - (NSInteger)indexForContentsView:(NSView*)view;
@@ -296,6 +296,7 @@ private:
     bridge_.reset(new TabStripModelObserverBridge(tabStripModel_, self));
     tabContentsArray_.reset([[NSMutableArray alloc] init]);
     tabArray_.reset([[NSMutableArray alloc] init]);
+    NSWindow* browserWindow = [view window];
 
     // Important note: any non-tab subviews not added to |permanentSubviews_|
     // (see |-addSubviewToPermanentList:|) will be wiped out.
@@ -321,11 +322,13 @@ private:
         app::mac::GetCachedImageWithName(kNewTabPressedImage)];
     newTabButtonShowingHoverImage_ = NO;
     newTabTrackingArea_.reset(
-        [[NSTrackingArea alloc] initWithRect:[newTabButton_ bounds]
+        [[CrTrackingArea alloc] initWithRect:[newTabButton_ bounds]
                                      options:(NSTrackingMouseEnteredAndExited |
                                               NSTrackingActiveAlways)
                                        owner:self
                                     userInfo:nil]);
+    if (browserWindow)  // Nil for Browsers without a tab strip (e.g. popups).
+      [newTabTrackingArea_ clearOwnerWhenWindowWillClose:browserWindow];
     [newTabButton_ addTrackingArea:newTabTrackingArea_.get()];
     targetFrames_.reset([[NSMutableDictionary alloc] init]);
 
@@ -350,7 +353,7 @@ private:
                name:NSViewFrameDidChangeNotification
              object:tabStripView_];
 
-    trackingArea_.reset([[NSTrackingArea alloc]
+    trackingArea_.reset([[CrTrackingArea alloc]
         initWithRect:NSZeroRect  // Ignored by NSTrackingInVisibleRect
              options:NSTrackingMouseEnteredAndExited |
                      NSTrackingMouseMoved |
@@ -358,6 +361,8 @@ private:
                      NSTrackingInVisibleRect
                owner:self
             userInfo:nil]);
+    if (browserWindow)  // Nil for Browsers without a tab strip (e.g. popups).
+      [trackingArea_ clearOwnerWhenWindowWillClose:browserWindow];
     [tabStripView_ addTrackingArea:trackingArea_.get()];
 
     // Check to see if the mouse is currently in our bounds so we can
