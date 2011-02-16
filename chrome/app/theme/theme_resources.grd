@@ -11,6 +11,9 @@
   </outputs>
   <release seq="1">
     <includes>
+      <!-- KEEP THESE IN ALPHABETICAL ORDER!  DO NOT ADD TO RANDOM PLACES JUST
+           BECAUSE YOUR RESOURCES ARE FUNCTIONALLY RELATED OR FALL UNDER THE
+           SAME CONDITIONALS. -->
       <if expr="pp_ifdef('_google_chrome')">
         <include name="IDR_ABOUT_BACKGROUND" file="google_chrome/about_background.png" type="BINDATA" />
         <include name="IDR_ABOUT_BACKGROUND_COLOR" file="google_chrome/about_background_color.png" type="BINDATA" />
@@ -46,7 +49,6 @@
       </if>
       <if expr="os == 'darwin'">
         <include name="IDR_BOOKMARK_BAR_FOLDER" file="bookmark_bar_folder_mac.png" type="BINDATA" />
-        <include name="IDR_TABPOSE_CLOSE" file="tabpose_close.png" type="BINDATA" />
       </if>
       <include name="IDR_BROWSER_ACTION" file="browser_action.png" type="BINDATA" />
       <include name="IDR_BROWSER_ACTION_H" file="browser_action_h.png" type="BINDATA" />
@@ -98,6 +100,12 @@
       <include name="IDR_CONTENT_TOP_RIGHT_CORNER_MASK" file="content_top_right_corner_mask.png" type="BINDATA" />
       <include name="IDR_COOKIE_ICON" file="cookie.png" type="BINDATA" />
       <include name="IDR_COOKIE_STORAGE_ICON" file="cookie_storage.png" type="BINDATA" />
+      <if expr="pp_ifdef('_google_chrome')">
+        <include name="IDR_CUSTOM_PRODUCT_LOGO" file="google_chrome/alt_logo.gif" type="BINDATA" />
+      </if>
+      <if expr="not pp_ifdef('_google_chrome')">
+        <include name="IDR_CUSTOM_PRODUCT_LOGO" file="chromium/product_logo.png" type="BINDATA" />
+      </if>
       <include name="IDR_DEFAULT_THUMBNAIL" file="default_thumbnail.png" type="BINDATA" />
       <include name="IDR_DOCK_HIGH" file="dock_tab_high.png" type="BINDATA" />
       <include name="IDR_DOCK_MAX" file="dock_tab_max.png" type="BINDATA" />
@@ -149,6 +157,9 @@
       <include name="IDR_DOWNLOAD_PROGRESS_FOREGROUND_32" file="download_progress_foreground32.png" type="BINDATA" />
       <include name="IDR_EXTENSION_DEFAULT_ICON" file="extension_default_icon.png" type="BINDATA" />
       <include name="IDR_EXTENSIONS_SECTION" file="extensions_section.png" type="BINDATA" />
+      <include name="IDR_FEEDBACK" file="feedback.png" type="BINDATA" />
+      <include name="IDR_FEEDBACK_H" file="feedback_h.png" type="BINDATA" />
+      <include name="IDR_FEEDBACK_P" file="feedback_p.png" type="BINDATA" />
       <include name="IDR_FINDINPAGE_NEXT" file="find_next.png" type="BINDATA" />
       <include name="IDR_FINDINPAGE_NEXT_H" file="find_next_h.png" type="BINDATA" />
       <include name="IDR_FINDINPAGE_NEXT_P" file="find_next_d.png" type="BINDATA" />
@@ -163,6 +174,7 @@
       <include name="IDR_FIND_DLG_LEFT_BACKGROUND" file="find_dlg_left_bg.png" type="BINDATA" />
       <include name="IDR_FIND_DLG_MIDDLE_BACKGROUND" file="find_dlg_middle_bg.png" type="BINDATA" />
       <include name="IDR_FIND_DLG_RIGHT_BACKGROUND" file="find_dlg_right_bg.png" type="BINDATA" />
+      <include name="IDR_FLAGS" file="flags.png" type="BINDATA" />
       <include name="IDR_FORWARD" file="forward.png" type="BINDATA" />
       <include name="IDR_FORWARD_D" file="forward_d.png" type="BINDATA" />
       <include name="IDR_FORWARD_H" file="forward_h.png" type="BINDATA" />
@@ -180,6 +192,7 @@
         <include name="IDR_INCOMPATIBILITY_DOT_ACTIVE" file="incompatibility_dot_active.png" type="BINDATA" />
         <include name="IDR_INCOMPATIBILITY_DOT_INACTIVE" file="incompatibility_dot_inactive.png" type="BINDATA" />
       </if>
+      <include name="IDR_INFO" file="info_small.png" type="BINDATA" />
       <include name="IDR_INFOBAR_ALT_NAV_URL" file="infobar_didyoumean.png" type="BINDATA" />
       <include name="IDR_INFOBAR_AUTOFILL" file="infobar_autofill.png" type="BINDATA" />
       <include name="IDR_INFOBAR_MULTIPLE_DOWNLOADS" file="infobar_multiple_downloads.png" type="BINDATA" />
@@ -199,7 +212,7 @@
       <include name="IDR_INFO_BUBBLE_CLOSE" file="bubble_close.png" type="BINDATA" />
       <include name="IDR_INPUT_ALERT" file="input_alert.png" type="BINDATA" />
       <include name="IDR_KEYWORD_SEARCH_MAGNIFIER" file="keyword_search_magnifier.png" type="BINDATA" />
-      <include name="IDR_FLAGS" file="flags.png" type="BINDATA" />
+      <include name="IDR_KILLED_TAB" file="killtab.png" type="BINDATA" />
       <include name="IDR_LOCATIONBG_C" file="omnibox_c.png" type="BINDATA" />
       <include name="IDR_LOCATIONBG_L" file="omnibox_l.png" type="BINDATA" />
       <include name="IDR_LOCATIONBG_POPUPMODE_CENTER" file="omnibox_popup_c.png" type="BINDATA" />
@@ -262,16 +275,12 @@
         <include name="IDR_PRODUCT_LOGO" file="google_chrome/product_logo.png" type="BINDATA" />
         <include name="IDR_PRODUCT_LOGO_16" file="google_chrome/product_logo_16.png" type="BINDATA" />
         <include name="IDR_PRODUCT_LOGO_WHITE" file="google_chrome/product_logo_white.png" type="BINDATA" />
-        <include name="IDR_CUSTOM_PRODUCT_LOGO" file="google_chrome/alt_logo.gif" type="BINDATA" />
-        <include name="IDR_WEBSTORE_ICON" file="google_chrome/webstore_icon.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('_google_chrome')">
         <include name="IDR_PRODUCT_ICON_32" file="chromium/chromium_icon_32.png" type="BINDATA" />
         <include name="IDR_PRODUCT_LOGO" file="chromium/product_logo.png" type="BINDATA" />
         <include name="IDR_PRODUCT_LOGO_WHITE" file="chromium/product_logo_white.png" type="BINDATA" />
         <include name="IDR_PRODUCT_LOGO_16" file="chromium/product_logo_16.png" type="BINDATA" />
-        <include name="IDR_CUSTOM_PRODUCT_LOGO" file="chromium/product_logo.png" type="BINDATA" />
-        <include name="IDR_WEBSTORE_ICON" file="chromium/webstore_icon.png" type="BINDATA" />
       </if>
       <!-- NOTE: product_logo_*.* files beyond what's listed above are
            referenced by installer code; don't remove them unless you know what
@@ -279,13 +288,9 @@
       <include name="IDR_RELOAD" file="reload.png" type="BINDATA" />
       <include name="IDR_RELOAD_H" file="reload_h.png" type="BINDATA" />
       <include name="IDR_RELOAD_P" file="reload_p.png" type="BINDATA" />
-      <include name="IDR_FEEDBACK" file="feedback.png" type="BINDATA" />
-      <include name="IDR_FEEDBACK_H" file="feedback_h.png" type="BINDATA" />
-      <include name="IDR_FEEDBACK_P" file="feedback_p.png" type="BINDATA" />
       <include name="IDR_RESTORE_BUTTON_MASK" file="restore_button_mask.png" type="BINDATA" />
       <include name="IDR_SAD_FAVICON" file="sadfavicon.png" type="BINDATA" />
       <include name="IDR_SAD_TAB" file="sadtab.png" type="BINDATA" />
-      <include name="IDR_KILLED_TAB" file="killtab.png" type="BINDATA" />
       <include name="IDR_SEARCH_ENGINE_DIALOG_TOP" file="search_engine_top.png" type="BINDATA" />
       <if expr="pp_ifdef('_google_chrome')">
         <include name="IDR_SEARCH_ENGINE_LOGO_ABCSOK" file="google_chrome/search_abcsok.png" type="BINDATA" />
@@ -358,6 +363,10 @@
       </if>
       <include name="IDR_SETTINGS_FAVICON" file="settings_favicon.png" type="BINDATA" />
       <include name="IDR_SIDETABS_NEW_TAB" file="sidetabs_new_tab.png" type="BINDATA" />
+      <include name="IDR_SPEECH_INPUT_MIC_EMPTY" file="speech_input_mic_empty.png" type="BINDATA" />
+      <include name="IDR_SPEECH_INPUT_MIC_FULL" file="speech_input_mic_full.png" type="BINDATA" />
+      <include name="IDR_SPEECH_INPUT_MIC_MASK" file="speech_input_mic_mask.png" type="BINDATA" />
+      <include name="IDR_SPEECH_INPUT_SPINNER" file="speech_input_spinner.png" type="BINDATA" />
       <include name="IDR_STAR" file="star.png" type="BINDATA" />
       <include name="IDR_STAR_LIT" file="star_lit.png" type="BINDATA" />
       <if expr="pp_ifdef('_google_chrome') and (os == 'darwin')">
@@ -380,6 +389,9 @@
       <include name="IDR_STOP_D" file="stop_d.png" type="BINDATA" />
       <include name="IDR_STOP_H" file="stop_h.png" type="BINDATA" />
       <include name="IDR_STOP_P" file="stop_p.png" type="BINDATA" />
+      <if expr="os == 'darwin'">
+        <include name="IDR_TABPOSE_CLOSE" file="tabpose_close.png" type="BINDATA" />
+      </if>
       <include name="IDR_TAB_ACTIVE_CENTER" file="tab_active_center.png" type="BINDATA" />
       <include name="IDR_TAB_ACTIVE_LEFT" file="tab_active_left.png" type="BINDATA" />
       <include name="IDR_TAB_ACTIVE_RIGHT" file="tab_active_right.png" type="BINDATA" />
@@ -437,12 +449,13 @@
       <include name="IDR_UPDATE_FAIL" file="update_fail.png" type="BINDATA" />
       <include name="IDR_UPDATE_MENU" file="update_menu.png" type="BINDATA" />
       <include name="IDR_UPDATE_UPTODATE" file="update_uptodate.png" type="BINDATA" />
-      <include name="IDR_INFO" file="info_small.png" type="BINDATA" />
       <include name="IDR_WARNING" file="alert_small.png" type="BINDATA" />
-      <include name="IDR_SPEECH_INPUT_MIC_EMPTY" file="speech_input_mic_empty.png" type="BINDATA" />
-      <include name="IDR_SPEECH_INPUT_MIC_FULL" file="speech_input_mic_full.png" type="BINDATA" />
-      <include name="IDR_SPEECH_INPUT_MIC_MASK" file="speech_input_mic_mask.png" type="BINDATA" />
-      <include name="IDR_SPEECH_INPUT_SPINNER" file="speech_input_spinner.png" type="BINDATA" />
+      <if expr="pp_ifdef('_google_chrome')">
+        <include name="IDR_WEBSTORE_ICON" file="google_chrome/webstore_icon.png" type="BINDATA" />
+      </if>
+      <if expr="not pp_ifdef('_google_chrome')">
+        <include name="IDR_WEBSTORE_ICON" file="chromium/webstore_icon.png" type="BINDATA" />
+      </if>
       <if expr="pp_ifdef('_google_chrome')">
         <include name="IDR_WIZARD_ICON" file="google_chrome/wizard_icon.png" type="BINDATA" />
         <include name="IDR_WIZARD_ICON_RTL" file="google_chrome/wizard_icon_rtl.png" type="BINDATA" />
@@ -486,9 +499,28 @@
 
       <!-- Images only used by ChromeOS. -->
       <if expr="pp_ifdef('chromeos')">
+        <include name="IDR_BRIGHTNESS_BUBBLE_ICON" file="brightness_icon.png" type="BINDATA" />
         <include name="IDR_COMPACTNAV_BACK" file="compactnav_back.png" type="BINDATA" />
         <include name="IDR_COMPACTNAV_FORWARD" file="compactnav_forward.png" type="BINDATA" />
         <include name="IDR_COMPACTNAV_SEPARATOR" file="compactnav_separator.png" type="BINDATA" />
+        <include name="IDR_DROPDOWN_BOTTOM_H" file="textbutton_dropdown_b_h.png" type="BINDATA" />
+        <include name="IDR_DROPDOWN_BOTTOM_LEFT_H" file="textbutton_dropdown_bl_h.png" type="BINDATA" />
+        <include name="IDR_DROPDOWN_BOTTOM_LEFT_P" file="textbutton_dropdown_bl_p.png" type="BINDATA" />
+        <include name="IDR_DROPDOWN_BOTTOM_P" file="textbutton_dropdown_b_p.png" type="BINDATA" />
+        <include name="IDR_DROPDOWN_BOTTOM_RIGHT_H" file="textbutton_dropdown_br_h.png" type="BINDATA" />
+        <include name="IDR_DROPDOWN_BOTTOM_RIGHT_P" file="textbutton_dropdown_br_p.png" type="BINDATA" />
+        <include name="IDR_DROPDOWN_CENTER_H" file="textbutton_dropdown_c_h.png" type="BINDATA" />
+        <include name="IDR_DROPDOWN_CENTER_P" file="textbutton_dropdown_c_p.png" type="BINDATA" />
+        <include name="IDR_DROPDOWN_LEFT_H" file="textbutton_dropdown_l_h.png" type="BINDATA" />
+        <include name="IDR_DROPDOWN_LEFT_P" file="textbutton_dropdown_l_p.png" type="BINDATA" />
+        <include name="IDR_DROPDOWN_RIGHT_H" file="textbutton_dropdown_r_h.png" type="BINDATA" />
+        <include name="IDR_DROPDOWN_RIGHT_P" file="textbutton_dropdown_r_p.png" type="BINDATA" />
+        <include name="IDR_DROPDOWN_TOP_H" file="textbutton_dropdown_t_h.png" type="BINDATA" />
+        <include name="IDR_DROPDOWN_TOP_LEFT_H" file="textbutton_dropdown_tl_h.png" type="BINDATA" />
+        <include name="IDR_DROPDOWN_TOP_LEFT_P" file="textbutton_dropdown_tl_p.png" type="BINDATA" />
+        <include name="IDR_DROPDOWN_TOP_P" file="textbutton_dropdown_t_p.png" type="BINDATA" />
+        <include name="IDR_DROPDOWN_TOP_RIGHT_H" file="textbutton_dropdown_tr_h.png" type="BINDATA" />
+        <include name="IDR_DROPDOWN_TOP_RIGHT_P" file="textbutton_dropdown_tr_p.png" type="BINDATA" />
         <include name="IDR_INCOGNITO_GUY" file="incognito_guy.png" type="BINDATA" />
         <include name="IDR_LOGIN_DEFAULT_USER" file="login_default.png" type="BINDATA" />
         <include name="IDR_LOGIN_DEFAULT_USER_1" file="login_default_green.png" type="BINDATA" />
@@ -510,6 +542,19 @@
         <include name="IDR_OOBE_PROGRESS_LINE" file="oobe_progress_line.png" type="BINDATA" />
         <include name="IDR_OOBE_PROGRESS_LINE_LEFT" file="oobe_progress_line_left.png" type="BINDATA" />
         <include name="IDR_OOBE_PROGRESS_LINE_RIGHT" file="oobe_progress_line_right.png" type="BINDATA" />
+        <include name="IDR_SCROLL_ARROW_DOWN" file="chromeos_scroll_arrow_down.png" type="BINDATA" />
+        <include name="IDR_SCROLL_ARROW_DOWN_H" file="chromeos_scroll_arrow_down_h.png" type="BINDATA" />
+        <include name="IDR_SCROLL_ARROW_DOWN_P" file="chromeos_scroll_arrow_down_p.png" type="BINDATA" />
+        <include name="IDR_SCROLL_ARROW_UP" file="chromeos_scroll_arrow_up.png" type="BINDATA" />
+        <include name="IDR_SCROLL_ARROW_UP_H" file="chromeos_scroll_arrow_up_h.png" type="BINDATA" />
+        <include name="IDR_SCROLL_ARROW_UP_P" file="chromeos_scroll_arrow_up_p.png" type="BINDATA" />
+        <include name="IDR_SCROLL_BACKGROUND" file="chromeos_scroll_background.png" type="BINDATA" />
+        <include name="IDR_SCROLL_BACKGROUND_BORDER_UP" file="chromeos_scroll_background_border_up.png" type="BINDATA" />
+        <include name="IDR_SCROLL_BACKGROUND_BORDER_DOWN" file="chromeos_scroll_background_border_down.png" type="BINDATA" />
+        <include name="IDR_SCROLL_THUMB" file="chromeos_scroll_thumb.png" type="BINDATA" />
+        <include name="IDR_SCROLL_THUMB_H" file="chromeos_scroll_thumb_h.png" type="BINDATA" />
+        <include name="IDR_SCROLL_THUMB_P" file="chromeos_scroll_thumb_p.png" type="BINDATA" />
+        <include name="IDR_SHUTDOWN_ICON" file="shutdown_icon.png" type="BINDATA" />
         <include name="IDR_SPINNER" file="spinner.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_BATTERY_CHARGED" file="statusbar_battery_charged.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_BATTERY_CHARGING_1" file="statusbar_battery1c.png" type="BINDATA" />
@@ -594,38 +639,6 @@
         <include name="IDR_VOLUME_BUBBLE_UP_ICON" file="volume_up_icon.png" type="BINDATA" />
         <include name="IDR_VOLUME_BUBBLE_DOWN_ICON" file="volume_down_icon.png" type="BINDATA" />
         <include name="IDR_VOLUME_BUBBLE_MUTE_ICON" file="volume_mute_icon.png" type="BINDATA" />
-        <include name="IDR_BRIGHTNESS_BUBBLE_ICON" file="brightness_icon.png" type="BINDATA" />
-        <include name="IDR_SCROLL_BACKGROUND" file="chromeos_scroll_background.png" type="BINDATA" />
-        <include name="IDR_SCROLL_BACKGROUND_BORDER_UP" file="chromeos_scroll_background_border_up.png" type="BINDATA" />
-        <include name="IDR_SCROLL_BACKGROUND_BORDER_DOWN" file="chromeos_scroll_background_border_down.png" type="BINDATA" />
-        <include name="IDR_SCROLL_ARROW_DOWN" file="chromeos_scroll_arrow_down.png" type="BINDATA" />
-        <include name="IDR_SCROLL_ARROW_DOWN_H" file="chromeos_scroll_arrow_down_h.png" type="BINDATA" />
-        <include name="IDR_SCROLL_ARROW_DOWN_P" file="chromeos_scroll_arrow_down_p.png" type="BINDATA" />
-        <include name="IDR_SCROLL_ARROW_UP" file="chromeos_scroll_arrow_up.png" type="BINDATA" />
-        <include name="IDR_SCROLL_ARROW_UP_H" file="chromeos_scroll_arrow_up_h.png" type="BINDATA" />
-        <include name="IDR_SCROLL_ARROW_UP_P" file="chromeos_scroll_arrow_up_p.png" type="BINDATA" />
-        <include name="IDR_SCROLL_THUMB" file="chromeos_scroll_thumb.png" type="BINDATA" />
-        <include name="IDR_SCROLL_THUMB_H" file="chromeos_scroll_thumb_h.png" type="BINDATA" />
-        <include name="IDR_SCROLL_THUMB_P" file="chromeos_scroll_thumb_p.png" type="BINDATA" />
-        <include name="IDR_SHUTDOWN_ICON" file="shutdown_icon.png" type="BINDATA" />
-	<include name="IDR_DROPDOWN_BOTTOM_H" file="textbutton_dropdown_b_h.png" type="BINDATA" />
-	<include name="IDR_DROPDOWN_BOTTOM_LEFT_H" file="textbutton_dropdown_bl_h.png" type="BINDATA" />
-	<include name="IDR_DROPDOWN_BOTTOM_LEFT_P" file="textbutton_dropdown_bl_p.png" type="BINDATA" />
-	<include name="IDR_DROPDOWN_BOTTOM_P" file="textbutton_dropdown_b_p.png" type="BINDATA" />
-	<include name="IDR_DROPDOWN_BOTTOM_RIGHT_H" file="textbutton_dropdown_br_h.png" type="BINDATA" />
-	<include name="IDR_DROPDOWN_BOTTOM_RIGHT_P" file="textbutton_dropdown_br_p.png" type="BINDATA" />
-	<include name="IDR_DROPDOWN_CENTER_H" file="textbutton_dropdown_c_h.png" type="BINDATA" />
-	<include name="IDR_DROPDOWN_CENTER_P" file="textbutton_dropdown_c_p.png" type="BINDATA" />
-	<include name="IDR_DROPDOWN_LEFT_H" file="textbutton_dropdown_l_h.png" type="BINDATA" />
-	<include name="IDR_DROPDOWN_LEFT_P" file="textbutton_dropdown_l_p.png" type="BINDATA" />
-	<include name="IDR_DROPDOWN_RIGHT_H" file="textbutton_dropdown_r_h.png" type="BINDATA" />
-	<include name="IDR_DROPDOWN_RIGHT_P" file="textbutton_dropdown_r_p.png" type="BINDATA" />
-	<include name="IDR_DROPDOWN_TOP_H" file="textbutton_dropdown_t_h.png" type="BINDATA" />
-	<include name="IDR_DROPDOWN_TOP_LEFT_H" file="textbutton_dropdown_tl_h.png" type="BINDATA" />
-	<include name="IDR_DROPDOWN_TOP_LEFT_P" file="textbutton_dropdown_tl_p.png" type="BINDATA" />
-	<include name="IDR_DROPDOWN_TOP_P" file="textbutton_dropdown_t_p.png" type="BINDATA" />
-	<include name="IDR_DROPDOWN_TOP_RIGHT_H" file="textbutton_dropdown_tr_h.png" type="BINDATA" />
-	<include name="IDR_DROPDOWN_TOP_RIGHT_P" file="textbutton_dropdown_tr_p.png" type="BINDATA" />
       </if>
     </includes>
   </release>
