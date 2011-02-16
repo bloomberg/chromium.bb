@@ -73,12 +73,12 @@ HttpBridge::RequestContext::RequestContext(
     : baseline_context_(baseline_context) {
 
   // Create empty, in-memory cookie store.
-  cookie_store_ = new net::CookieMonster(NULL, NULL);
+  set_cookie_store(new net::CookieMonster(NULL, NULL));
 
   // We don't use a cache for bridged loads, but we do want to share proxy info.
-  host_resolver_ = baseline_context->host_resolver();
-  proxy_service_ = baseline_context->proxy_service();
-  ssl_config_service_ = baseline_context->ssl_config_service();
+  set_host_resolver(baseline_context->host_resolver());
+  set_proxy_service(baseline_context->proxy_service());
+  set_ssl_config_service(baseline_context->ssl_config_service());
 
   // We want to share the HTTP session data with the network layer factory,
   // which includes auth_cache for proxies.
@@ -87,7 +87,7 @@ HttpBridge::RequestContext::RequestContext(
   net::HttpNetworkSession* session =
       baseline_context->http_transaction_factory()->GetSession();
   DCHECK(session);
-  http_transaction_factory_ = new net::HttpNetworkLayer(session);
+  set_http_transaction_factory(new net::HttpNetworkLayer(session));
 
   // TODO(timsteele): We don't currently listen for pref changes of these
   // fields or CookiePolicy; I'm not sure we want to strictly follow the
@@ -96,19 +96,19 @@ HttpBridge::RequestContext::RequestContext(
   // should be tied to whatever the sync servers expect (if anything). These
   // fields should probably just be settable by sync backend; though we should
   // figure out if we need to give the user explicit control over policies etc.
-  accept_language_ = baseline_context->accept_language();
-  accept_charset_ = baseline_context->accept_charset();
+  set_accept_language(baseline_context->accept_language());
+  set_accept_charset(baseline_context->accept_charset());
 
   // We default to the browser's user agent. This can (and should) be overridden
   // with set_user_agent.
-  user_agent_ = webkit_glue::GetUserAgent(GURL());
+  set_user_agent(webkit_glue::GetUserAgent(GURL()));
 
-  net_log_ = baseline_context->net_log();
+  set_net_log(baseline_context->net_log());
 }
 
 HttpBridge::RequestContext::~RequestContext() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  delete http_transaction_factory_;
+  delete http_transaction_factory();
 }
 
 HttpBridge::HttpBridge(HttpBridge::RequestContextGetter* context_getter)

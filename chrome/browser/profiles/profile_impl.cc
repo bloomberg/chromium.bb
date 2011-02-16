@@ -5,6 +5,7 @@
 #include "chrome/browser/profiles/profile_impl.h"
 
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "base/environment.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -245,6 +246,7 @@ ProfileImpl::ProfileImpl(const FilePath& path)
     : path_(path),
       visited_link_event_listener_(new VisitedLinkEventListener()),
       extension_devtools_manager_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(io_data_(this)),
       host_content_settings_map_(NULL),
       host_zoom_map_(NULL),
       history_service_created_(false),
@@ -279,26 +281,6 @@ ProfileImpl::ProfileImpl(const FilePath& path)
   chrome::GetUserCacheDirectory(path_, &base_cache_path_);
   file_util::CreateDirectory(base_cache_path_);
 
-  FilePath cookie_path = GetPath();
-  cookie_path = cookie_path.Append(chrome::kCookieFilename);
-  FilePath cache_path = base_cache_path_;
-  int cache_max_size;
-  GetCacheParameters(kNormalContext, &cache_path, &cache_max_size);
-  cache_path = GetCachePath(cache_path);
-
-  FilePath media_cache_path = base_cache_path_;
-  int media_cache_max_size;
-  GetCacheParameters(kMediaContext, &media_cache_path, &media_cache_max_size);
-  media_cache_path = GetMediaCachePath(media_cache_path);
-
-  FilePath extensions_cookie_path = GetPath();
-  extensions_cookie_path =
-      extensions_cookie_path.Append(chrome::kExtensionsCookieFilename);
-
-  io_data_.Init(cookie_path, cache_path, cache_max_size,
-                media_cache_path, media_cache_max_size, extensions_cookie_path,
-                this);
-
   // Listen for theme installations from our original profile.
   registrar_.Add(this, NotificationType::THEME_INSTALLED,
                  Source<Profile>(GetOriginalProfile()));
@@ -331,8 +313,6 @@ ProfileImpl::ProfileImpl(const FilePath& path)
   extension_io_event_router_ = new ExtensionIOEventRouter(this);
   extension_info_map_ = new ExtensionInfoMap();
 
-  GetPolicyContext()->Initialize();
-
   clear_local_state_on_exit_ = prefs->GetBoolean(prefs::kClearSiteDataOnExit);
 
   // Log the profile size after a reasonable startup delay.
@@ -340,6 +320,31 @@ ProfileImpl::ProfileImpl(const FilePath& path)
                                  new ProfileSizeTask(path_), 112000);
 
   InstantController::RecordMetrics(this);
+
+  FilePath cookie_path = GetPath();
+  cookie_path = cookie_path.Append(chrome::kCookieFilename);
+  FilePath cache_path = base_cache_path_;
+  int cache_max_size;
+  GetCacheParameters(kNormalContext, &cache_path, &cache_max_size);
+  cache_path = GetCachePath(cache_path);
+
+  FilePath media_cache_path = base_cache_path_;
+  int media_cache_max_size;
+  GetCacheParameters(kMediaContext, &media_cache_path, &media_cache_max_size);
+  media_cache_path = GetMediaCachePath(media_cache_path);
+
+  FilePath extensions_cookie_path = GetPath();
+  extensions_cookie_path =
+      extensions_cookie_path.Append(chrome::kExtensionsCookieFilename);
+
+  // Make sure we initialize the ProfileIOData after everything else has been
+  // initialized that we might be reading from the IO thread.
+  io_data_.Init(cookie_path, cache_path, cache_max_size,
+                media_cache_path, media_cache_max_size, extensions_cookie_path);
+
+  // Initialize the ProfilePolicyContext after |io_data_| since it requires
+  // the URLRequestContextGetter to be initialized.
+  GetPolicyContext()->Initialize();
 }
 
 void ProfileImpl::InitExtensions() {

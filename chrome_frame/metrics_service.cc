@@ -142,10 +142,10 @@ class ChromeFrameUploadRequestContext : public net::URLRequestContext {
 
   ~ChromeFrameUploadRequestContext() {
     DVLOG(1) << __FUNCTION__;
-    delete http_transaction_factory_;
-    delete http_auth_handler_factory_;
-    delete cert_verifier_;
-    delete host_resolver_;
+    delete http_transaction_factory();
+    delete http_auth_handler_factory();
+    delete cert_verifier();
+    delete host_resolver();
   }
 
   void Initialize() {
@@ -153,19 +153,19 @@ class ChromeFrameUploadRequestContext : public net::URLRequestContext {
     user_agent_ = http_utils::AddChromeFrameToUserAgentValue(
       user_agent_);
 
-    host_resolver_ =
+    set_host_resolver(
         net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
-                                      NULL, NULL);
-    cert_verifier_ = new net::CertVerifier;
+                                      NULL, NULL));
+    set_cert_verifier(new net::CertVerifier);
     net::ProxyConfigService* proxy_config_service =
         net::ProxyService::CreateSystemProxyConfigService(NULL, NULL);
     DCHECK(proxy_config_service);
 
-    proxy_service_ = net::ProxyService::CreateUsingSystemProxyResolver(
-        proxy_config_service, 0, NULL);
-    DCHECK(proxy_service_);
+    set_proxy_service(net::ProxyService::CreateUsingSystemProxyResolver(
+        proxy_config_service, 0, NULL));
+    DCHECK(proxy_service());
 
-    ssl_config_service_ = new net::SSLConfigServiceDefaults;
+    set_ssl_config_service(new net::SSLConfigServiceDefaults);
 
     url_security_manager_.reset(
         net::URLSecurityManager::Create(NULL, NULL));
@@ -174,23 +174,23 @@ class ChromeFrameUploadRequestContext : public net::URLRequestContext {
     std::vector<std::string> supported_schemes;
     base::SplitString(csv_auth_schemes, ',', &supported_schemes);
 
-    http_auth_handler_factory_ = net::HttpAuthHandlerRegistryFactory::Create(
-        supported_schemes, url_security_manager_.get(), host_resolver_,
-        std::string(), false, false);
+    set_http_auth_handler_factory(net::HttpAuthHandlerRegistryFactory::Create(
+        supported_schemes, url_security_manager_.get(), host_resolver(),
+        std::string(), false, false));
 
     net::HttpNetworkSession::Params session_params;
-    session_params.host_resolver = host_resolver_;
-    session_params.cert_verifier = cert_verifier_;
-    session_params.proxy_service = proxy_service_;
+    session_params.host_resolver = host_resolver();
+    session_params.cert_verifier = cert_verifier();
+    session_params.proxy_service = proxy_service();
     session_params.http_auth_handler_factory =
-        http_auth_handler_factory_;
-    session_params.ssl_config_service = ssl_config_service_;
+        http_auth_handler_factory();
+    session_params.ssl_config_service = ssl_config_service();
     scoped_refptr<net::HttpNetworkSession> network_session =
         new net::HttpNetworkSession(session_params);
 
-    http_transaction_factory_ = new net::HttpCache(
+    set_http_transaction_factory(new net::HttpCache(
         network_session,
-        net::HttpCache::DefaultBackend::InMemory(0));
+        net::HttpCache::DefaultBackend::InMemory(0)));
   }
 
   virtual const std::string& GetUserAgent(const GURL& url) const {
