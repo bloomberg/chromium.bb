@@ -15,8 +15,8 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
-#include "chrome/browser/ui/find_bar/find_manager.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
+#include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
@@ -246,7 +246,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageEndState) {
 
   // End the find session, which should set focus to the link.
   tab_contents->
-      GetFindManager()->StopFinding(FindBarController::kKeepSelection);
+      find_tab_helper()->StopFinding(FindBarController::kKeepSelection);
 
   // Verify that the link is focused.
   ASSERT_TRUE(FocusedOnPage(tab_contents->tab_contents(), &result));
@@ -266,7 +266,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageEndState) {
 
   // End the find session.
   tab_contents->
-      GetFindManager()->StopFinding(FindBarController::kKeepSelection);
+      find_tab_helper()->StopFinding(FindBarController::kKeepSelection);
 
   // Verify that link2 is not focused.
   ASSERT_TRUE(FocusedOnPage(tab_contents->tab_contents(), &result));
@@ -346,7 +346,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   EXPECT_EQ(3, ordinal);
 
   // End the find session.
-  tab->GetFindManager()->StopFinding(FindBarController::kKeepSelection);
+  tab->find_tab_helper()->StopFinding(FindBarController::kKeepSelection);
 }
 
 // This test loads a page with frames and makes sure the ordinal returned makes
@@ -797,14 +797,14 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, StayActive) {
   // simulating keypresses here for searching for something and pressing
   // backspace, but that's been proven flaky in the past, so we go straight to
   // tab_contents.
-  FindManager* find_manager =
-      browser()->GetSelectedTabContentsWrapper()->GetFindManager();
+  FindTabHelper* find_tab_helper =
+      browser()->GetSelectedTabContentsWrapper()->find_tab_helper();
   // Stop the (non-existing) find operation, and clear the selection (which
   // signals the UI is still active).
-  find_manager->StopFinding(FindBarController::kClearSelection);
+  find_tab_helper->StopFinding(FindBarController::kClearSelection);
   // Make sure the Find UI flag hasn't been cleared, it must be so that the UI
   // still responds to browser window resizing.
-  ASSERT_TRUE(find_manager->find_ui_active());
+  ASSERT_TRUE(find_tab_helper->find_ui_active());
 }
 
 // Make sure F3 works after you FindNext a couple of times and end the Find
@@ -873,7 +873,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PreferPreviousSearch) {
       FindBarController::kKeepSelection);
   // Simulate F3.
   ui_test_utils::FindInPage(tab1, string16(), kFwd, kIgnoreCase, &ordinal);
-  EXPECT_EQ(tab1->GetFindManager()->find_text(), WideToUTF16(L"Default"));
+  EXPECT_EQ(tab1->find_tab_helper()->find_text(), WideToUTF16(L"Default"));
 }
 
 // This tests that whenever you close and reopen the Find bar, it should show
@@ -1100,6 +1100,6 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, ActivateLinkNavigatesPage) {
   EXPECT_EQ(ordinal, 1);
 
   // End the find session, click on the link.
-  tab->GetFindManager()->StopFinding(FindBarController::kActivateSelection);
+  tab->find_tab_helper()->StopFinding(FindBarController::kActivateSelection);
   EXPECT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));
 }

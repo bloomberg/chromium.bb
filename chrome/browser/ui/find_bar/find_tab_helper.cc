@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/find_bar/find_manager.h"
+#include "chrome/browser/ui/find_bar/find_tab_helper.h"
 
 #include <vector>
 
@@ -14,9 +14,9 @@
 #include "chrome/common/render_messages.h"
 
 // static
-int FindManager::find_request_id_counter_ = -1;
+int FindTabHelper::find_request_id_counter_ = -1;
 
-FindManager::FindManager(TabContentsWrapper* tab_contents)
+FindTabHelper::FindTabHelper(TabContentsWrapper* tab_contents)
     : tab_contents_(tab_contents),
       find_ui_active_(false),
       find_op_aborted_(false),
@@ -26,12 +26,12 @@ FindManager::FindManager(TabContentsWrapper* tab_contents)
   DCHECK(tab_contents_);
 }
 
-FindManager::~FindManager() {
+FindTabHelper::~FindTabHelper() {
 }
 
-void FindManager::StartFinding(string16 search_string,
-                               bool forward_direction,
-                               bool case_sensitive) {
+void FindTabHelper::StartFinding(string16 search_string,
+                                 bool forward_direction,
+                                 bool case_sensitive) {
   // If search_string is empty, it means FindNext was pressed with a keyboard
   // shortcut so unless we have something to search for we return early.
   if (search_string.empty() && find_text_.empty()) {
@@ -79,7 +79,7 @@ void FindManager::StartFinding(string16 search_string,
                                                   find_next);
 }
 
-void FindManager::StopFinding(
+void FindTabHelper::StopFinding(
     FindBarController::SelectionAction selection_action) {
   if (selection_action == FindBarController::kClearSelection) {
     // kClearSelection means the find string has been cleared by the user, but
@@ -97,20 +97,20 @@ void FindManager::StopFinding(
   tab_contents_->render_view_host()->StopFinding(selection_action);
 }
 
-bool FindManager::OnMessageReceived(const IPC::Message& message) {
+bool FindTabHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(FindManager, message)
+  IPC_BEGIN_MESSAGE_MAP(FindTabHelper, message)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Find_Reply, OnFindReply)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }
 
-void FindManager::OnFindReply(int request_id,
-                              int number_of_matches,
-                              const gfx::Rect& selection_rect,
-                              int active_match_ordinal,
-                              bool final_update) {
+void FindTabHelper::OnFindReply(int request_id,
+                                int number_of_matches,
+                                const gfx::Rect& selection_rect,
+                                int active_match_ordinal,
+                                bool final_update) {
   // Ignore responses for requests that have been aborted.
   // Ignore responses for requests other than the one we have most recently
   // issued. That way we won't act on stale results when the user has

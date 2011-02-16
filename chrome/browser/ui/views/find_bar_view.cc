@@ -14,7 +14,7 @@
 #include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
-#include "chrome/browser/ui/find_bar/find_manager.h"
+#include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/find_bar_host.h"
@@ -441,9 +441,9 @@ void FindBarView::ButtonPressed(
     case FIND_NEXT_TAG:
       if (!find_text_->text().empty()) {
         find_bar_host()->GetFindBarController()->tab_contents()->
-            GetFindManager()->StartFinding(find_text_->text(),
-                                           sender->tag() == FIND_NEXT_TAG,
-                                           false);  // Not case sensitive.
+            find_tab_helper()->StartFinding(find_text_->text(),
+                                            sender->tag() == FIND_NEXT_TAG,
+                                            false);  // Not case sensitive.
       }
       if (event.IsMouseEvent()) {
         // If mouse event, we move the focus back to the text-field, so that the
@@ -482,17 +482,18 @@ void FindBarView::ContentsChanged(views::Textfield* sender,
   // can lead to crashes, as exposed by automation testing in issue 8048.
   if (!controller->tab_contents())
     return;
-  FindManager* find_manager = controller->tab_contents()->GetFindManager();
+  FindTabHelper* find_tab_helper =
+      controller->tab_contents()->find_tab_helper();
 
   // When the user changes something in the text box we check the contents and
   // if the textbox contains something we set it as the new search string and
   // initiate search (even though old searches might be in progress).
   if (!new_contents.empty()) {
     // The last two params here are forward (true) and case sensitive (false).
-    find_manager->StartFinding(new_contents, true, false);
+    find_tab_helper->StartFinding(new_contents, true, false);
   } else {
-    find_manager->StopFinding(FindBarController::kClearSelection);
-    UpdateForResult(find_manager->find_result(), string16());
+    find_tab_helper->StopFinding(FindBarController::kClearSelection);
+    UpdateForResult(find_tab_helper->find_result(), string16());
 
     // Clearing the text box should clear the prepopulate state so that when
     // we close and reopen the Find box it doesn't show the search we just
@@ -519,11 +520,12 @@ bool FindBarView::HandleKeyEvent(views::Textfield* sender,
     string16 find_string = find_text_->text();
     if (!find_string.empty()) {
       FindBarController* controller = find_bar_host()->GetFindBarController();
-      FindManager* find_manager = controller->tab_contents()->GetFindManager();
+      FindTabHelper* find_tab_helper =
+          controller->tab_contents()->find_tab_helper();
       // Search forwards for enter, backwards for shift-enter.
-      find_manager->StartFinding(find_string,
-                                 !key_event.IsShiftDown(),
-                                 false);  // Not case sensitive.
+      find_tab_helper->StartFinding(find_string,
+                                    !key_event.IsShiftDown(),
+                                    false);  // Not case sensitive.
     }
   }
 

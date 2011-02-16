@@ -10,7 +10,7 @@
 #include "chrome/browser/password_manager_delegate_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/ui/find_bar/find_manager.h"
+#include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper_delegate.h"
 #include "chrome/common/notification_service.h"
@@ -30,10 +30,15 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   // go to a Browser.
   property_accessor()->SetProperty(contents->property_bag(), this);
 
-  // Needed so that we initialize the password manager on first navigation.
   tab_contents()->AddObserver(this);
 
   // Create the tab helpers.
+  find_tab_helper_.reset(new FindTabHelper(this));
+  tab_contents()->AddObserver(find_tab_helper_.get());
+  password_manager_delegate_.reset(new PasswordManagerDelegateImpl(contents));
+  password_manager_.reset(
+      new PasswordManager(password_manager_delegate_.get()));
+  tab_contents()->AddObserver(password_manager_.get());
   search_engine_tab_helper_.reset(new SearchEngineTabHelper(this));
   tab_contents()->AddObserver(search_engine_tab_helper_.get());
 
@@ -50,10 +55,8 @@ TabContentsWrapper::~TabContentsWrapper() {
 
   // Unregister observers.
   tab_contents()->RemoveObserver(this);
-  if (password_manager_.get())
-    tab_contents()->RemoveObserver(password_manager_.get());
-  if (find_manager_.get())
-    tab_contents()->RemoveObserver(find_manager_.get());
+  tab_contents()->RemoveObserver(find_tab_helper_.get());
+  tab_contents()->RemoveObserver(password_manager_.get());
   tab_contents()->RemoveObserver(search_engine_tab_helper_.get());
 }
 
@@ -64,9 +67,6 @@ PropertyAccessor<TabContentsWrapper*>* TabContentsWrapper::property_accessor() {
 TabContentsWrapper* TabContentsWrapper::Clone() {
   TabContents* new_contents = tab_contents()->Clone();
   TabContentsWrapper* new_wrapper = new TabContentsWrapper(new_contents);
-  // Instantiate the password manager if it has been instantiated here.
-  if (password_manager_.get())
-    new_wrapper->GetPasswordManager();
   return new_wrapper;
 }
 
@@ -78,36 +78,8 @@ TabContentsWrapper* TabContentsWrapper::GetCurrentWrapperForContents(
   return wrapper ? *wrapper : NULL;
 }
 
-PasswordManager* TabContentsWrapper::GetPasswordManager() {
-  if (!password_manager_.get()) {
-    // Create the delegate then create the manager.
-    password_manager_delegate_.reset(
-        new PasswordManagerDelegateImpl(tab_contents()));
-    password_manager_.reset(
-        new PasswordManager(password_manager_delegate_.get()));
-    // Register the manager to receive navigation notifications.
-    tab_contents()->AddObserver(password_manager_.get());
-  }
-  return password_manager_.get();
-}
-
-FindManager* TabContentsWrapper::GetFindManager() {
-  if (!find_manager_.get()) {
-    find_manager_.reset(new FindManager(this));
-    // Register the manager to receive navigation notifications.
-    tab_contents()->AddObserver(find_manager_.get());
-  }
-  return find_manager_.get();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // TabContentsWrapper, TabContentsObserver implementation:
-
-void TabContentsWrapper::NavigateToPendingEntry() {
-  // If any page loads, ensure that the password manager is loaded so that forms
-  // get filled out.
-  GetPasswordManager();
-}
 
 void TabContentsWrapper::DidNavigateMainFramePostCommit(
     const NavigationController::LoadCommittedDetails& /*details*/,

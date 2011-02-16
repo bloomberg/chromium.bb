@@ -14,7 +14,7 @@
 #include "chrome/common/notification_registrar.h"
 
 class Extension;
-class FindManager;
+class FindTabHelper;
 class NavigationController;
 class PasswordManager;
 class PasswordManagerDelegate;
@@ -72,18 +72,19 @@ class TabContentsWrapper : public NotificationObserver,
 
   bool is_starred() const { return is_starred_; }
 
-  PasswordManager* GetPasswordManager();
+  // Tab Helpers ---------------------------------------------------------------
 
-  FindManager* GetFindManager();
+  FindTabHelper* find_tab_helper() { return find_tab_helper_.get(); }
+
+  PasswordManager* password_manager() { return password_manager_.get(); }
 
   SearchEngineTabHelper* search_engine_tab_helper() {
     return search_engine_tab_helper_.get();
-  };
+  }
 
   // Overrides -----------------------------------------------------------------
 
   // TabContentsObserver overrides:
-  virtual void NavigateToPendingEntry() OVERRIDE;
   virtual void DidNavigateMainFramePostCommit(
       const NavigationController::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
@@ -113,15 +114,14 @@ class TabContentsWrapper : public NotificationObserver,
   // Whether the current URL is starred.
   bool is_starred_;
 
-  // Supporting objects --------------------------------------------------------
+  // Tab Helpers ---------------------------------------------------------------
 
-  // PasswordManager and its delegate, lazily created. The delegate must
-  // outlive the manager, per documentation in password_manager.h.
+  scoped_ptr<FindTabHelper> find_tab_helper_;
+
+  // PasswordManager and its delegate. The delegate must outlive the manager,
+  // per documentation in password_manager.h.
   scoped_ptr<PasswordManagerDelegate> password_manager_delegate_;
   scoped_ptr<PasswordManager> password_manager_;
-
-  // FindManager, lazily created.
-  scoped_ptr<FindManager> find_manager_;
 
   scoped_ptr<SearchEngineTabHelper> search_engine_tab_helper_;
 

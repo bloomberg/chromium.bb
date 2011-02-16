@@ -80,7 +80,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
-#include "chrome/browser/ui/find_bar/find_manager.h"
+#include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/options/options_window.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
@@ -3275,6 +3275,9 @@ void Browser::URLStarredChanged(TabContentsWrapper* source, bool starred) {
     window_->SetStarredState(starred);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// Browser, SearchEngineTabHelperDelegate implementation:
+
 void Browser::ConfirmSetDefaultSearchProvider(
     TabContentsWrapper* tab_contents,
     TemplateURL* template_url,
@@ -4187,9 +4190,9 @@ void Browser::FindInPage(bool find_next, bool forward_direction) {
     find_text = GetFindPboardText();
 #endif
     GetSelectedTabContentsWrapper()->
-        GetFindManager()->StartFinding(find_text,
-                                       forward_direction,
-                                       false);  // Not case sensitive.
+        find_tab_helper()->StartFinding(find_text,
+                                        forward_direction,
+                                        false);  // Not case sensitive.
   }
 }
 

@@ -11,7 +11,7 @@
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
-#include "chrome/browser/ui/find_bar/find_manager.h"
+#include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_source.h"
@@ -31,14 +31,14 @@ FindBarController::~FindBarController() {
 }
 
 void FindBarController::Show() {
-  FindManager* find_manager = tab_contents_->GetFindManager();
+  FindTabHelper* find_tab_helper = tab_contents_->find_tab_helper();
 
   // Only show the animation if we're not already showing a find bar for the
   // selected TabContents.
-  if (!find_manager->find_ui_active()) {
+  if (!find_tab_helper->find_ui_active()) {
     MaybeSetPrepopulateText();
 
-    find_manager->set_find_ui_active(true);
+    find_tab_helper->set_find_ui_active(true);
     find_bar_->Show(true);
   }
   find_bar_->SetFocusAndSelection();
@@ -50,15 +50,15 @@ void FindBarController::EndFindSession(SelectionAction action) {
   // |tab_contents_| can be NULL for a number of reasons, for example when the
   // tab is closing. We must guard against that case. See issue 8030.
   if (tab_contents_) {
-    FindManager* find_manager = tab_contents_->GetFindManager();
+    FindTabHelper* find_tab_helper = tab_contents_->find_tab_helper();
 
     // When we hide the window, we need to notify the renderer that we are done
     // for now, so that we can abort the scoping effort and clear all the
     // tickmarks and highlighting.
-    find_manager->StopFinding(action);
+    find_tab_helper->StopFinding(action);
 
     if (action != kKeepSelection)
-      find_bar_->ClearResults(find_manager->find_result());
+      find_bar_->ClearResults(find_tab_helper->find_result());
 
     // When we get dismissed we restore the focus to where it belongs.
     find_bar_->RestoreSavedFocus();
@@ -76,7 +76,7 @@ void FindBarController::ChangeTabContents(TabContentsWrapper* contents) {
   // Hide any visible find window from the previous tab if NULL |tab_contents|
   // is passed in or if the find UI is not active in the new tab.
   if (find_bar_->IsFindBarVisible() &&
-      (!tab_contents_ || !tab_contents_->GetFindManager()->find_ui_active())) {
+      (!tab_contents_ || !tab_contents_->find_tab_helper()->find_ui_active())) {
     find_bar_->Hide(false);
   }
 
@@ -90,7 +90,7 @@ void FindBarController::ChangeTabContents(TabContentsWrapper* contents) {
 
   MaybeSetPrepopulateText();
 
-  if (tab_contents_->GetFindManager()->find_ui_active()) {
+  if (tab_contents_->find_tab_helper()->find_ui_active()) {
     // A tab with a visible find bar just got selected and we need to show the
     // find bar but without animation since it was already animated into its
     // visible state. We also want to reset the window location so that
@@ -108,16 +108,16 @@ void FindBarController::ChangeTabContents(TabContentsWrapper* contents) {
 void FindBarController::Observe(NotificationType type,
                                 const NotificationSource& source,
                                 const NotificationDetails& details) {
-  FindManager* find_manager = tab_contents_->GetFindManager();
+  FindTabHelper* find_tab_helper = tab_contents_->find_tab_helper();
   if (type == NotificationType::FIND_RESULT_AVAILABLE) {
     // Don't update for notifications from TabContentses other than the one we
     // are actively tracking.
     if (Source<TabContents>(source).ptr() == tab_contents_->tab_contents()) {
       UpdateFindBarForCurrentResult();
-      if (find_manager->find_result().final_update() &&
-          find_manager->find_result().number_of_matches() == 0) {
-        const string16& last_search = find_manager->previous_find_text();
-        const string16& current_search = find_manager->find_text();
+      if (find_tab_helper->find_result().final_update() &&
+          find_tab_helper->find_result().number_of_matches() == 0) {
+        const string16& last_search = find_tab_helper->previous_find_text();
+        const string16& current_search = find_tab_helper->find_text();
         if (last_search.find(current_search) != 0)
           find_bar_->AudibleAlert();
       }
@@ -139,7 +139,7 @@ void FindBarController::Observe(NotificationType type,
         } else {
           // On Reload we want to make sure FindNext is converted to a full Find
           // to make sure highlights for inactive matches are repainted.
-          find_manager->set_find_op_aborted(true);
+          find_tab_helper->set_find_op_aborted(true);
         }
       }
     }
@@ -187,8 +187,8 @@ gfx::Rect FindBarController::GetLocationForFindbarView(
 }
 
 void FindBarController::UpdateFindBarForCurrentResult() {
-  FindManager* find_manager = tab_contents_->GetFindManager();
-  const FindNotificationDetails& find_result = find_manager->find_result();
+  FindTabHelper* find_tab_helper = tab_contents_->find_tab_helper();
+  const FindNotificationDetails& find_result = find_tab_helper->find_result();
 
   // Avoid bug 894389: When a new search starts (and finds something) it reports
   // an interim match count result of 1 before the scoping effort starts. This
@@ -205,7 +205,7 @@ void FindBarController::UpdateFindBarForCurrentResult() {
     last_reported_matchcount_ = find_result.number_of_matches();
   }
 
-  find_bar_->UpdateUIForFindResult(find_result, find_manager->find_text());
+  find_bar_->UpdateUIForFindResult(find_result, find_tab_helper->find_text());
 }
 
 void FindBarController::MaybeSetPrepopulateText() {
@@ -213,10 +213,10 @@ void FindBarController::MaybeSetPrepopulateText() {
   // Find out what we should show in the find text box. Usually, this will be
   // the last search in this tab, but if no search has been issued in this tab
   // we use the last search string (from any tab).
-  FindManager* find_manager = tab_contents_->GetFindManager();
-  string16 find_string = find_manager->find_text();
+  FindTabHelper* find_tab_helper = tab_contents_->find_tab_helper();
+  string16 find_string = find_tab_helper->find_text();
   if (find_string.empty())
-    find_string = find_manager->previous_find_text();
+    find_string = find_tab_helper->previous_find_text();
   if (find_string.empty()) {
     find_string =
         FindBarState::GetLastPrepopulateText(tab_contents_->profile());

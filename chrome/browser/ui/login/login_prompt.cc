@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -407,7 +407,7 @@ class LoginDialogTask : public Task {
         TabContentsWrapper::GetCurrentWrapperForContents(parent_contents);
     if (!wrapper)
       return;
-    PasswordManager* password_manager = wrapper->GetPasswordManager();
+    PasswordManager* password_manager = wrapper->password_manager();
     std::vector<PasswordForm> v;
     MakeInputForPasswordManager(&v);
     password_manager->OnPasswordFormsFound(v);

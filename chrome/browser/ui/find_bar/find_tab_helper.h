@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_FIND_BAR_FIND_MANAGER_H_
-#define CHROME_BROWSER_UI_FIND_BAR_FIND_MANAGER_H_
+#ifndef CHROME_BROWSER_UI_FIND_BAR_FIND_TAB_HELPER_H_
+#define CHROME_BROWSER_UI_FIND_BAR_FIND_TAB_HELPER_H_
 #pragma once
 
 #include "chrome/browser/tab_contents/tab_contents_observer.h"
@@ -13,10 +13,10 @@
 class TabContentsWrapper;
 
 // Per-tab find manager. Handles dealing with the life cycle of find sessions.
-class FindManager : public TabContentsObserver {
+class FindTabHelper : public TabContentsObserver {
  public:
-  explicit FindManager(TabContentsWrapper* tab_contents);
-  virtual ~FindManager();
+  explicit FindTabHelper(TabContentsWrapper* tab_contents);
+  virtual ~FindTabHelper();
 
   // Starts the Find operation by calling StartFinding on the Tab. This function
   // can be called from the outside as a result of hot-keys, so it uses the
@@ -63,13 +63,13 @@ class FindManager : public TabContentsObserver {
   // TabContentsObserver overrides.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
+ private:
   void OnFindReply(int request_id,
                    int number_of_matches,
                    const gfx::Rect& selection_rect,
                    int active_match_ordinal,
                    bool final_update);
 
- private:
   TabContentsWrapper* tab_contents_;
 
   // Each time a search request comes in we assign it an id before passing it
@@ -107,7 +107,7 @@ class FindManager : public TabContentsObserver {
   // information to build its presentation.
   FindNotificationDetails last_search_result_;
 
-  DISALLOW_COPY_AND_ASSIGN(FindManager);
+  DISALLOW_COPY_AND_ASSIGN(FindTabHelper);
 };
 
-#endif  // CHROME_BROWSER_UI_FIND_BAR_FIND_MANAGER_H_
+#endif  // CHROME_BROWSER_UI_FIND_BAR_FIND_TAB_HELPER_H_

@@ -31,8 +31,8 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/find_bar/find_manager.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
+#include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_action.h"
@@ -231,7 +231,7 @@ class FindInPageNotificationObserver : public NotificationObserver {
         active_match_ordinal_(-1),
         number_of_matches_(0) {
     current_find_request_id_ =
-        parent_tab->GetFindManager()->current_find_request_id();
+        parent_tab->find_tab_helper()->current_find_request_id();
     registrar_.Add(this, NotificationType::FIND_RESULT_AVAILABLE,
                    Source<TabContents>(parent_tab_->tab_contents()));
     ui_test_utils::RunMessageLoop();
@@ -633,7 +633,7 @@ void WaitForFocusInBrowser(Browser* browser) {
 int FindInPage(TabContentsWrapper* tab_contents, const string16& search_string,
                bool forward, bool match_case, int* ordinal) {
   tab_contents->
-      GetFindManager()->StartFinding(search_string, forward, match_case);
+      find_tab_helper()->StartFinding(search_string, forward, match_case);
   FindInPageNotificationObserver observer(tab_contents);
   if (ordinal)
     *ordinal = observer.active_match_ordinal();
