@@ -7,7 +7,7 @@
 
 /**
  * @file
- * Defines the API ...
+ * This file defines the API used to handle mouse and keyboard input events.
  */
 
 #include "ppapi/c/pp_bool.h"
@@ -19,6 +19,10 @@
  *
  * @addtogroup Enums
  * @{
+ */
+
+/**
+ * This enumeration contains constants representing each mouse button.
  */
 typedef enum {
   PP_INPUTEVENT_MOUSEBUTTON_NONE   = -1,
@@ -32,9 +36,12 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_InputEvent_MouseButton, 4);
  */
 
 /**
- *
  * @addtogroup Enums
  * @{
+ */
+
+/**
+ * This enumeration contains mouse and keyboard event constants.
  */
 typedef enum {
   PP_INPUTEVENT_TYPE_UNDEFINED   = -1,
@@ -56,9 +63,12 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_InputEvent_Type, 4);
  */
 
 /**
- *
  * @addtogroup Enums
  * @{
+ */
+
+/**
+ * This enumeration contains event modifier constants.
  */
 typedef enum {
   PP_INPUTEVENT_MODIFIER_SHIFTKEY         = 1 << 0,
@@ -84,22 +94,23 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_InputEvent_Modifier, 4);
  */
 
 /**
- * An event representing a key up or down event.
+ * The PP_InputEvent_Key struct represents a key up or key down event.
  *
- * Key up and down events correspond to physical keys on the keyboard. The
+ * Key up and key down events correspond to physical keys on the keyboard. The
  * actual character that the user typed (if any) will be delivered in a
  * "character" event.
  *
- * If the user kills focus on the plugin while a key is down, you may not get
- * a key up event. For example, if the plugin has focus and the user presses
- * and holds shift, the plugin will see a "shift down" message. Then if they
- * click elsewhere on the web page, the plugin focus will be lost and no more
- * input events will be delivered. If you depend on getting key up events, you
- * will also want to handle "lost focus" as the equivalent of "all keys up."
+ * If the user loses focus on the module while a key is down, a key up
+ * event might not occur. For example, if the module has focus and the user
+ * presses and holds the shift key, the module will see a "shift down" message.
+ * Then if the user clicks elsewhere on the web page, the module's focus will
+ * be lost and no more input events will be delivered.
  *
+ * If your module depends on receiving key up events, it should also handle
+ * "lost focus" as the equivalent of "all keys up."
  */
 struct PP_InputEvent_Key {
-  /** A combination of the EVENT_MODIFIER flags. */
+  /** This value is a bit field combination of the EVENT_MODIFIER flags. */
   uint32_t modifier;
 
   /**
@@ -120,7 +131,7 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_InputEvent_Key, 8);
  */
 
 /**
- * An event representing a typed character.
+ * The PP_InputEvent_Character struct represents a typed character event.
  *
  * Normally, the program will receive a key down event, followed by a character
  * event, followed by a key up event. The character event will have any
@@ -128,7 +139,7 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_InputEvent_Key, 8);
  * a '%'. The key down and up events will give you the scan code for the "5"
  * key, and the character event will give you the '%' character.
  *
- * You may not get a character event for all key down if the key doesn't
+ * You may not get a character event for all key down events if the key doesn't
  * generate a character. Likewise, you may actually get multiple character
  * events in a row. For example, some locales have an accent key that modifies
  * the next character typed. You might get this stream of events: accent down,
@@ -136,19 +147,18 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_InputEvent_Key, 8);
  * accent character event (it was modified by the previous accent key), letter
  * key up.  If the letter can't be combined with the accent, like an umlaut and
  * an 'R', the system might send unlaut down, umlaut up, 'R' key down, umlaut
- * character ("whoops, I can't combine it with 'R', I better just send the raw
- * unlaut so it isn't lost"), 'R' character event, 'R' key up.
- *
+ * character (can't combine it with 'R', so just send the raw unlaut so it
+ * isn't lost"), 'R' character event, 'R' key up.
  */
 struct PP_InputEvent_Character {
   /** A combination of the EVENT_MODIFIER flags. */
   uint32_t modifier;
 
   /**
-   * The character the user typed, as a single null-terminated UTF-8 character.
-   * Any unused bytes will be filled with null bytes. Since the maximum UTF-8
-   * character is 4 bytes, there will always be at least one null at the end
-   * so you can treat this as a null-termianted UTF-8 string.
+   * This value represents the typed character as a single null-terminated UTF-8
+   * character. Any unused bytes will be filled with null bytes. Since the
+   * maximum UTF-8 character is 4 bytes, there will always be at least one null
+   * at the end so you can treat this as a null-termianted UTF-8 string.
    */
   char text[5];
 };
@@ -162,26 +172,40 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_InputEvent_Character, 12);
  * @{
  */
 
-/** Represents a mouse event for everything other than the mouse wheel. */
+/**
+ * The PP_InputEvent_Mouse struct represents all mouse events except
+ * mouse wheel events.
+ */
 struct PP_InputEvent_Mouse {
-  /** A combination of the EVENT_MODIFIER flags. */
+  /** This value is a bit field combination of the EVENT_MODIFIER flags. */
   uint32_t modifier;
 
   /**
-   * Which button changed in the case of mouse down or up events. For mouse
-   * move, enter, and leave events, this will be PP_EVENT_MOUSEBUTTON_NONE.
+   * This value represents the button that changed for mouse down or up events.
+   * This value will be PP_EVENT_MOUSEBUTTON_NONE for mouse move, enter, and
+   * leave events.
    */
   PP_InputEvent_MouseButton button;
 
   /**
-   * The coordinates of the mouse when the event occurred.
+   * This values represents the x coordinate of the mouse when the event
+   * occurred.
    *
-   * In most cases these coordinates will just be integers, but they may not
-   * be in some cases. For example, the plugin element might be arbitrarily
-   * scaled or transformed in the DOM, and translating a mouse event into the
-   * coordinate space of the plugin will give non-integer values.
+   * In most, but not all, cases these coordinates will just be integers.
+   * For example, the plugin element might be arbitrarily scaled or transformed
+   * in the DOM, and translating a mouse event into the coordinate space of the
+   * plugin will give non-integer values.
    */
   float x;
+  /**
+   * This values represents the y coordinate of the mouse when the event
+   * occurred.
+   *
+   * In most, but not all, cases these coordinates will just be integers.
+   * For example, the plugin element might be arbitrarily scaled or transformed
+   * in the DOM, and translating a mouse event into the coordinate space of the
+   * plugin will give non-integer values.
+   */
   float y;
 
   /** TODO(brettw) figure out exactly what this means. */
@@ -196,8 +220,12 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_InputEvent_Mouse, 20);
  * @addtogroup Structs
  * @{
  */
+
+/**
+ * The PP_InputEvent_Wheel struct represents all mouse wheel events.
+ */
 struct PP_InputEvent_Wheel {
-  /** A combination of the EVENT_MODIFIER flags. */
+  /** This value represents a combination of the EVENT_MODIFIER flags. */
   uint32_t modifier;
 
   /**
@@ -222,6 +250,8 @@ struct PP_InputEvent_Wheel {
    * "clicks".
    */
   float delta_x;
+
+  /** This value represents */
   float delta_y;
 
   /**
@@ -243,6 +273,8 @@ struct PP_InputEvent_Wheel {
    * of scrolling as for a mouse that has a discrete mouse wheel.
    */
   float wheel_ticks_x;
+
+  /** This value represents */
   float wheel_ticks_y;
 
   /**
@@ -261,22 +293,28 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_InputEvent_Wheel, 24);
  * @addtogroup Structs
  * @{
  */
+
+/**
+ * The PP_InputEvent struct represents all input events.
+ */
 struct PP_InputEvent {
-  /** Identifies the type of the event. */
+  /** This value represents the type of the event. */
   PP_InputEvent_Type type;
 
-  /* Ensure the time_stamp is aligned on an 8-byte boundary relative to the
-     start of the struct. Some compilers align doubles on 8-byte boundaries
-     for 32-bit x86, and some align on 4-byte boundaries. */
+  /** This value ensure the time_stamp is aligned on an 8-byte boundary
+   * relative to the start of the struct. Some compilers align doubles
+   * on 8-byte boundaries for 32-bit x86, and some align on 4-byte boundaries.
+   */
   int32_t padding;
 
   /**
-   * When this event was generated. This is not relative to any particular
-   * epoch, the most you can do is compare time stamps.
+   * This value represents the time that this event was generated. This value
+   * is not relative to any particular epoch; the most you can do is compare
+   * time stamps.
    */
   PP_TimeTicks time_stamp;
 
-  /** Event-specific data. */
+  /** This value represents the event type and its specific data. */
   union {
     struct PP_InputEvent_Key key;
     struct PP_InputEvent_Character character;
@@ -284,8 +322,8 @@ struct PP_InputEvent {
     struct PP_InputEvent_Wheel wheel;
 
     /**
-     * Allows new events to be added without changing the size of this
-     * struct.
+     * This value allows new events to be added without changing the size of
+     * this struct.
      */
     char padding[64];
   } u;
