@@ -618,4 +618,11 @@ std::wstring GetCurrentModuleVersion();
 // Returns true if ChromeFrame is the currently loaded document.
 bool IsChromeFrameDocument(IWebBrowser2* web_browser);
 
+// Increases the wininet connection limit for HTTP 1.0/1.1 connections to the
+// value passed in. This is only done if the existing connection limit is
+// lesser than the connection limit passed in. This function attempts to
+// increase the connection count once per process.
+// Returns true on success.
+bool IncreaseWinInetConnections(DWORD connections);
+
 #endif  // CHROME_FRAME_UTILS_H_

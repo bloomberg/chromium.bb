@@ -25,6 +25,7 @@
 #include "chrome_frame/vtable_patch_manager.h"
 
 static const int kIBrowserServiceOnHttpEquivIndex = 30;
+static const DWORD kMaxHttpConnections = 6;
 
 PatchHelper g_patch_helper;
 
@@ -136,6 +137,11 @@ STDMETHODIMP Bho::SetSite(IUnknown* site) {
     AddRef();
     RegisterThreadInstance();
     MetricsService::Start();
+
+    if (!IncreaseWinInetConnections(kMaxHttpConnections)) {
+      DLOG(WARNING) << "Failed to bump up HTTP connections. Error:"
+                    << ::GetLastError();
+    }
   } else {
     UnregisterThreadInstance();
     buggy_bho::BuggyBhoTls::DestroyInstance();

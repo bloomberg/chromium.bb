@@ -1603,3 +1603,36 @@ bool IsChromeFrameDocument(IWebBrowser2* web_browser) {
   return false;
 }
 
+bool IncreaseWinInetConnections(DWORD connections) {
+  static bool wininet_connection_count_updated = false;
+  if (wininet_connection_count_updated) {
+    return true;
+  }
+
+  static int connection_options[] = {
+    INTERNET_OPTION_MAX_CONNS_PER_SERVER,
+    INTERNET_OPTION_MAX_CONNS_PER_1_0_SERVER,
+  };
+
+  BOOL ret = FALSE;
+
+  for (int option_index = 0; option_index < arraysize(connection_options);
+       ++option_index) {
+    DWORD connection_value_size = sizeof(DWORD);
+    DWORD current_connection_limit = 0;
+    InternetQueryOption(NULL, connection_options[option_index],
+                        &current_connection_limit, &connection_value_size);
+    if (current_connection_limit > connections) {
+      continue;
+    }
+
+    ret = InternetSetOption(NULL, connection_options[option_index],
+                            &connections, connection_value_size);
+    if (!ret) {
+      return false;
+    }
+  }
+  wininet_connection_count_updated = true;
+  return true;
+}
+
