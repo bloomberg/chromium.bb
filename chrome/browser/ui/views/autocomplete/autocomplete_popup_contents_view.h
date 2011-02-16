@@ -9,6 +9,7 @@
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_view.h"
+#include "chrome/browser/ui/views/autocomplete/autocomplete_result_view_model.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/gfx/font.h"
@@ -24,23 +25,13 @@
 class AutocompleteEditModel;
 class AutocompleteEditViewWin;
 struct AutocompleteMatch;
+class AutocompleteResultView;
 class BubbleBorder;
 class Profile;
 
-// An interface implemented by an object that provides data to populate
-// individual result views.
-class AutocompleteResultViewModel {
- public:
-  // Returns true if the index is selected.
-  virtual bool IsSelectedIndex(size_t index) const = 0;
-
-  // Returns true if the index is hovered.
-  virtual bool IsHoveredIndex(size_t index) const = 0;
-
-  // Returns the special-case icon we should use for the given index, or NULL
-  // if we should use the default icon.
-  virtual const SkBitmap* GetSpecialIcon(size_t index) const = 0;
-};
+namespace gfx {
+class Insets;
+}
 
 // A view representing the contents of the autocomplete popup.
 class AutocompletePopupContentsView : public views::View,
@@ -88,6 +79,15 @@ class AutocompletePopupContentsView : public views::View,
   virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled);
   virtual bool OnMouseDragged(const views::MouseEvent& event);
   virtual views::View* GetViewForPoint(const gfx::Point& point);
+
+ protected:
+  // Calculates the height needed to show all the results in the model.
+  virtual int CalculatePopupHeight();
+  virtual AutocompleteResultView* CreateResultView(
+      AutocompleteResultViewModel* model,
+      int model_index,
+      const gfx::Font& font,
+      const gfx::Font& bold_font);
 
  private:
 #if defined(OS_WIN)
