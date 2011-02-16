@@ -10,7 +10,6 @@ Import('env')
 # Build is done separately to ensure it continues to work.
 if env.Bit('windows'):
   env.Append(
-      CCFLAGS = ['/EHsc'],
       CPPDEFINES = ['XP_WIN', 'WIN32', '_WINDOWS'],
   )
   browser_lib_inputs = [

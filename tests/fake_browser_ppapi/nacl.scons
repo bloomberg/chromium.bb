@@ -45,7 +45,6 @@ if trusted_env.Bit('linux'):
 
 if trusted_env.Bit('windows'):
     trusted_env.Append(
-        CCFLAGS = ['/EHsc',],
         CPPDEFINES = ['WIN32', '_WINDOWS'],
     )
 

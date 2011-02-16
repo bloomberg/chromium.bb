@@ -185,6 +185,5 @@
 #    env.FilterOut(CCFLAGS=['-pedantic'])
 #if env.Bit('windows'):
 #    env.Append(
-#        CCFLAGS = ['/EHsc'],
 #        CPPDEFINES = ['XP_WIN', 'WIN32', '_WINDOWS'],
 #    )

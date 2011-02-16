@@ -27,7 +27,6 @@ if env.Bit('mac'):
 
 if env.Bit('windows'):
     env.Append(
-        CCFLAGS = ['/EHsc',],
         CPPDEFINES = ['WIN32', '_WINDOWS'],
     )
 
