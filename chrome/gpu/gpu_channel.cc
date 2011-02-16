@@ -171,7 +171,9 @@ void GpuChannel::OnDestroyCommandBuffer(int32 route_id) {
 
 void GpuChannel::OnCreateVideoDecoder(int32 context_route_id,
                                       int32 decoder_host_id) {
-#if defined(ENABLE_GPU)
+// TODO(cevans): do NOT re-enable this until GpuVideoService has been checked
+// for integer overflows, including the classic "width * height" overflow.
+#if 0
   VLOG(1) << "GpuChannel::OnCreateVideoDecoder";
   GpuVideoService* service = GpuVideoService::GetInstance();
   if (service == NULL) {
