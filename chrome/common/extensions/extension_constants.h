@@ -269,6 +269,63 @@ namespace extension_misc {
     PROMO_BUCKET_BOUNDARY
   };
 
+  // The name of the app launch histogram.
+  extern const char* kAppLaunchHistogram;
+
+  // The buckets used for app launches.
+  enum AppLaunchBucket {
+    // Launch from NTP apps section while maximized.
+    APP_LAUNCH_NTP_APPS_MAXIMIZED,
+
+    // Launch from NTP apps section while collapsed.
+    APP_LAUNCH_NTP_APPS_COLLAPSED,
+
+    // Launch from NTP apps section while in menu mode.
+    APP_LAUNCH_NTP_APPS_MENU,
+
+    // Launch from NTP most visited section in any mode.
+    APP_LAUNCH_NTP_MOST_VISITED,
+
+    // Launch from NTP recently closed section in any mode.
+    APP_LAUNCH_NTP_RECENTLY_CLOSED,
+
+    // App link clicked from bookmark bar.
+    APP_LAUNCH_BOOKMARK_BAR,
+
+    // Nvigated to an app from within a web page (like by clicking a link).
+    APP_LAUNCH_CONTENT_NAVIGATION,
+
+    // Launch from session restore.
+    APP_LAUNCH_SESSION_RESTORE,
+
+    // Autolaunched at startup, like for pinned tabs.
+    APP_LAUNCH_AUTOLAUNCH,
+
+    // Launched from omnibox app links (not implemented yet).
+    APP_LAUNCH_OMNIBOX_APP,
+
+    // App URL typed directly into the omnibox (w/ instant turned off).
+    APP_LAUNCH_OMNIBOX_LOCATION,
+
+    // Navigate to an app URL via instant.
+    APP_LAUNCH_OMNIBOX_INSTANT,
+
+    // Launch via chrome.management.launchApp.
+    APP_LAUNCH_EXTENSION_API,
+
+    // Launch using the --app or --app-id cmd line options.
+    APP_LAUNCH_CMD_LINE_APP,
+
+    // App launch by passing the URL on the cmd line (not using app switches).
+    APP_LAUNCH_CMD_LINE_URL,
+
+    // User clicked web store launcher on NTP.
+    APP_LAUNCH_NTP_WEBSTORE,
+
+    APP_LAUNCH_BUCKET_BOUNDARY,
+    APP_LAUNCH_BUCKET_INVALID
+  };
+
 #if defined(OS_CHROMEOS)
   // The directory path on a ChromeOS device where accessibility extensions are
   // stored.

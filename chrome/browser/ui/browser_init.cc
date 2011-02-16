@@ -54,6 +54,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/result_codes.h"
 #include "chrome/common/url_constants.h"
@@ -446,6 +447,35 @@ void UrlsToTabs(const std::vector<GURL>& urls,
   }
 }
 
+void RecordCmdLineAppHistogram() {
+  UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram,
+                            extension_misc::APP_LAUNCH_CMD_LINE_APP,
+                            extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
+}
+
+void RecordAppLaunches(
+    Profile* profile,
+    const std::vector<GURL>& cmd_line_urls,
+    const std::vector<BrowserInit::LaunchWithProfile::Tab>& autolaunch_tabs) {
+  ExtensionService* extension_service = profile->GetExtensionService();
+
+  for (size_t i = 0; i < cmd_line_urls.size(); ++i) {
+    if (extension_service->IsInstalledApp(cmd_line_urls.at(i))) {
+      UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram,
+                                extension_misc::APP_LAUNCH_CMD_LINE_URL,
+                                extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
+    }
+  }
+
+  for (size_t i = 0; i < autolaunch_tabs.size(); ++i) {
+    if (extension_service->IsInstalledApp(autolaunch_tabs.at(i).url)) {
+      UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram,
+                                extension_misc::APP_LAUNCH_AUTOLAUNCH,
+                                extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
+    }
+  }
+}
+
 }  // namespace
 
 
@@ -658,6 +688,8 @@ bool BrowserInit::LaunchWithProfile::Launch(
     if (IsAppLaunch(NULL, &app_id) && !app_id.empty()) {
       // TODO(erikkay): This could fail if |app_id| is invalid (the app was
       // uninstalled).  We may want to show some reasonable error here.
+
+      RecordCmdLineAppHistogram();
       Browser::OpenApplication(profile, app_id, NULL);
     }
 
@@ -748,6 +780,7 @@ bool BrowserInit::LaunchWithProfile::OpenApplicationWindow(Profile* profile) {
         extensions_service->extension_prefs()->GetLaunchContainer(
             extension, ExtensionPrefs::LAUNCH_WINDOW);
 
+    RecordCmdLineAppHistogram();
     TabContents* app_window = Browser::OpenApplication(
         profile, extension, launch_container, NULL);
     return (app_window != NULL);
@@ -767,6 +800,8 @@ bool BrowserInit::LaunchWithProfile::OpenApplicationWindow(Profile* profile) {
         ChildProcessSecurityPolicy::GetInstance();
     if (policy->IsWebSafeScheme(url.scheme()) ||
         url.SchemeIs(chrome::kFileScheme)) {
+
+      RecordCmdLineAppHistogram();
       TabContents* app_tab = Browser::OpenAppShortcutWindow(
           profile,
           url,
@@ -838,6 +873,8 @@ bool BrowserInit::LaunchWithProfile::ProcessStartupURLs(
   }
 
   std::vector<Tab> tabs = PinnedTabCodec::ReadPinnedTabs(profile_);
+
+  RecordAppLaunches(profile_, urls_to_open, tabs);
 
   if (!urls_to_open.empty()) {
     // If urls were specified on the command line, use them.

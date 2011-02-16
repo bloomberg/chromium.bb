@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/json/json_writer.h"
+#include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "chrome/browser/extensions/extension_event_names.h"
@@ -174,6 +175,9 @@ bool LaunchAppFunction::RunImpl() {
       service()->extension_prefs()->GetLaunchContainer(
           extension, ExtensionPrefs::LAUNCH_DEFAULT);
   Browser::OpenApplication(profile(), extension, launch_container, NULL);
+  UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram,
+                            extension_misc::APP_LAUNCH_EXTENSION_API,
+                            extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
 
   return true;
 }

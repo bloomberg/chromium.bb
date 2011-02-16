@@ -571,6 +571,8 @@ var MostVisited = (function() {
         t.tabIndex = 1;
 
         t.href = d.url;
+        t.setAttribute('ping',
+            getAppPingUrl('PING_BY_URL', d.url, 'NTP_MOST_VISITED'));
         t.querySelector('.pin').title = localStrings.getString(d.pinned ?
             'unpinthumbnailtooltip' : 'pinthumbnailtooltip');
         t.querySelector('.remove').title =
@@ -602,6 +604,8 @@ var MostVisited = (function() {
         var span = document.createElement('span');
         var a = span.appendChild(document.createElement('a'));
         a.href = item.url;
+        a.setAttribute('ping',
+            getAppPingUrl('PING_BY_URL', item.url, 'NTP_MOST_VISITED'));
         a.textContent = item.title;
         a.style.backgroundImage = url('chrome://favicon/' + item.url);
         a.className = 'item';
@@ -616,7 +620,8 @@ var MostVisited = (function() {
       for (var i = 0, item; item = data[i]; i++) {
         if (!item.filler) {
           addClosedMenuEntry(
-              this.menu, item.url, item.title, 'chrome://favicon/' + item.url);
+              this.menu, item.url, item.title, 'chrome://favicon/' + item.url,
+              getAppPingUrl('PING_BY_URL', item.url, 'NTP_MOST_VISITED'));
         }
       }
       addClosedMenuFooter(

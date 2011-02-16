@@ -31,6 +31,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/database_messages.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/file_system/file_system_dispatcher.h"
 #include "chrome/common/file_system/webfilesystem_callback_dispatcher.h"
@@ -2970,6 +2971,17 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
       // navigation test)
       should_fork = true;
       send_referrer = true;
+
+      if (is_content_initiated) {
+        const Extension* extension =
+            render_thread_->GetExtensions()->GetByURL(url);
+        if (extension && extension->is_app()) {
+          UMA_HISTOGRAM_ENUMERATION(
+              extension_misc::kAppLaunchHistogram,
+              extension_misc::APP_LAUNCH_CONTENT_NAVIGATION,
+              extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
+        }
+      }
     }
 
     if (should_fork) {

@@ -10,6 +10,7 @@
 #include "chrome/browser/dom_ui/web_ui.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
@@ -79,9 +80,16 @@ class AppLauncherHandler
   // specifies if the web store promotion was active.
   static void RecordWebStoreLaunch(bool promo_active);
 
-  // Records an app launch in the appropriate histograms. |promo_active|
-  // specifies if the web store promotion was active.
-  static void RecordAppLaunch(bool promo_active);
+  // Records an app launch in the corresponding |bucket| of the app launch
+  // histogram. |promo_active| specifies if the web store promotion was active.
+  static void RecordAppLaunchByID(bool promo_active,
+                                  extension_misc::AppLaunchBucket bucket);
+
+  // Records an app launch in the corresponding |bucket| of the app launch
+  // histogram if the |escaped_url| corresponds to an installed app.
+  static void RecordAppLaunchByURL(Profile* profile,
+                                   std::string escaped_url,
+                                   extension_misc::AppLaunchBucket bucket);
 
   // ExtensionInstallUI::Delegate implementation, used for receiving
   // notification about uninstall confirmation dialog selections.

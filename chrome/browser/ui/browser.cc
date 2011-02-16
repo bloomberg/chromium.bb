@@ -95,6 +95,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_restriction.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/common/pref_names.h"
@@ -1324,6 +1325,12 @@ void Browser::OpenCurrentURL() {
   params.tabstrip_add_types =
       TabStripModel::ADD_FORCE_INDEX | TabStripModel::ADD_INHERIT_OPENER;
   browser::Navigate(&params);
+
+  if (profile_->GetExtensionService()->IsInstalledApp(url)) {
+    UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram,
+                              extension_misc::APP_LAUNCH_OMNIBOX_LOCATION,
+                              extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
+  }
 }
 
 void Browser::Stop() {
@@ -3495,6 +3502,13 @@ void Browser::CommitInstant(TabContentsWrapper* preview_contents) {
           index, preview_contents);
   // InstantUnloadHandler takes ownership of old_contents.
   instant_unload_handler_->RunUnloadListenersOrDestroy(old_contents, index);
+
+  GURL url = preview_contents->tab_contents()->GetURL();
+  if (profile_->GetExtensionService()->IsInstalledApp(url)) {
+    UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram,
+                              extension_misc::APP_LAUNCH_OMNIBOX_INSTANT,
+                              extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
+  }
 }
 
 void Browser::SetSuggestedText(const string16& text) {

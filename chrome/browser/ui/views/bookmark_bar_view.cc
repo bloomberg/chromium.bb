@@ -10,11 +10,13 @@
 #include <vector>
 
 #include "base/i18n/rtl.h"
+#include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_shutdown.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -31,6 +33,7 @@
 #include "chrome/browser/ui/views/event_utils.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/common/pref_names.h"
@@ -230,6 +233,15 @@ class OverFlowButton : public views::MenuButton {
 
   DISALLOW_COPY_AND_ASSIGN(OverFlowButton);
 };
+
+void RecordAppLaunch(Profile* profile, GURL url) {
+  if (!profile->GetExtensionService()->IsInstalledApp(url))
+    return;
+
+  UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram,
+                            extension_misc::APP_LAUNCH_BOOKMARK_BAR,
+                            extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
+}
 
 }  // namespace
 
@@ -1182,6 +1194,7 @@ void BookmarkBarView::ButtonPressed(views::Button* sender,
       event_utils::DispositionFromEventFlags(sender->mouse_event_flags());
 
   if (node->is_url()) {
+    RecordAppLaunch(profile_, node->GetURL());
     page_navigator_->OpenURL(node->GetURL(), GURL(),
         disposition_from_event_flags, PageTransition::AUTO_BOOKMARK);
   } else {

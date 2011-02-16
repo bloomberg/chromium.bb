@@ -6,12 +6,6 @@ var MAX_APPS_PER_ROW = [];
 MAX_APPS_PER_ROW[LayoutMode.SMALL] = 4;
 MAX_APPS_PER_ROW[LayoutMode.NORMAL] = 6;
 
-// The URL prefix used in the app link 'ping' attributes.
-var PING_APP_LAUNCH_PREFIX = 'record-app-launch';
-
-// The URL prefix used in the webstore link 'ping' attributes.
-var PING_WEBSTORE_LAUNCH_PREFIX = 'record-webstore-launch';
-
 function getAppsCallback(data) {
   logEvent('received apps');
 
@@ -24,7 +18,7 @@ function getAppsCallback(data) {
   var appsSectionContent = $('apps-content');
   var appsMiniview = appsSection.getElementsByClassName('miniview')[0];
   var appsPromo = $('apps-promo');
-  var appsPromoPing = PING_WEBSTORE_LAUNCH_PREFIX + '+' + apps.showPromo;
+  var appsPromoPing = APP_LAUNCH_URL.PING_WEBSTORE + '+' + apps.showPromo;
   var webStoreEntry, webStoreMiniEntry;
 
   // Hide menu options that are not supported on the OS or windowing system.
@@ -171,17 +165,34 @@ var apps = (function() {
 
     if (opt_mouseEvent) {
       // Launch came from a click.
-      chrome.send('launchApp', [appId, left, top, width, height,
+      chrome.send('launchApp', [appId, String(getAppLaunchType()),
+                                left, top, width, height,
                                 opt_mouseEvent.altKey, opt_mouseEvent.ctrlKey,
                                 opt_mouseEvent.metaKey, opt_mouseEvent.shiftKey,
                                 opt_mouseEvent.button]);
     } else {
       // Launch came from 'command' event from elsewhere in UI.
-      chrome.send('launchApp', [appId, left, top, width, height,
+      chrome.send('launchApp', [appId, String(getAppLaunchType()),
+                                left, top, width, height,
                                 false /* altKey */, false /* ctrlKey */,
                                 false /* metaKey */, false /* shiftKey */,
                                 0 /* button */]);
     }
+  }
+
+  function isAppsMenu(node) {
+    return node.id == 'apps-menu';
+  }
+
+  function getAppLaunchType() {
+    // We determine if the apps section is maximized, collapsed or in menu mode
+    // based on the class of the apps section.
+    if ($('apps').classList.contains('menu'))
+      return APP_LAUNCH.NTP_APPS_MENU;
+    else if ($('apps').classList.contains('collapsed'))
+      return APP_LAUNCH.NTP_APPS_COLLAPSED;
+    else
+      return APP_LAUNCH.NTP_APPS_MAXIMIZED;
   }
 
   /**
@@ -604,7 +615,8 @@ var apps = (function() {
       var a = div.firstChild;
 
       a.onclick = handleClick;
-      a.setAttribute('ping', PING_APP_LAUNCH_PREFIX + '+' + this.showPromo);
+      a.setAttribute('ping',
+          getAppPingUrl('PING_BY_ID', this.showPromo, 'NTP_APPS_MAXIMIZED'));
       a.style.backgroundImage = url(app['icon_big']);
       if (hashParams['app-id'] == app['id']) {
         div.setAttribute('new', 'new');
@@ -644,7 +656,8 @@ var apps = (function() {
       a.textContent = app['name'];
       a.href = app['launch_url'];
       a.onclick = handleClick;
-      a.setAttribute('ping', PING_APP_LAUNCH_PREFIX + '+' + this.showPromo);
+      a.setAttribute('ping',
+          getAppPingUrl('PING_BY_ID', this.showPromo, 'NTP_APPS_COLLAPSED'));
       a.style.backgroundImage = url(app['icon_small']);
       a.className = 'item';
       span.appendChild(a);
@@ -660,7 +673,8 @@ var apps = (function() {
       a.textContent = app['name'];
       a.href = app['launch_url'];
       a.onclick = handleClick;
-      a.setAttribute('ping', PING_APP_LAUNCH_PREFIX + '+' + this.showPromo);
+      a.setAttribute('ping',
+          getAppPingUrl('PING_BY_ID', this.showPromo, 'NTP_APPS_MENU'));
       a.style.backgroundImage = url(app['icon_small']);
       a.className = 'item';
 

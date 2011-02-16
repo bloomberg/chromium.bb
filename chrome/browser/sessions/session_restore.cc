@@ -640,6 +640,15 @@ class SessionRestoreImpl : public NotificationObserver {
         0,
         std::min(selected_index,
                  static_cast<int>(tab.navigations.size() - 1)));
+
+    // Record an app launch, if applicable.
+    GURL url = tab.navigations.at(tab.current_navigation_index).virtual_url();
+    if (browser->profile()->GetExtensionService()->IsInstalledApp(url)) {
+      UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram,
+                                extension_misc::APP_LAUNCH_SESSION_RESTORE,
+                                extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
+    }
+
     TabContents* tab_contents =
         browser->AddRestoredTab(tab.navigations,
                                 tab_index,

@@ -6,11 +6,13 @@
 
 #include <vector>
 
+#include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_shutdown.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/ntp_background_util.h"
@@ -36,6 +38,7 @@
 #include "chrome/browser/ui/gtk/tabs/tab_strip_gtk.h"
 #include "chrome/browser/ui/gtk/tabstrip_origin_provider.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "grit/app_resources.h"
@@ -103,6 +106,15 @@ void SetToolBarStyle() {
       "  GtkToolbar::shadow-type = GTK_SHADOW_NONE\n"
       "}\n"
       "widget \"*chrome-bookmark-toolbar\" style \"chrome-bookmark-toolbar\"");
+}
+
+void RecordAppLaunch(Profile* profile, GURL url) {
+  if (!profile->GetExtensionService()->IsInstalledApp(url))
+    return;
+
+  UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram,
+                            extension_misc::APP_LAUNCH_BOOKMARK_BAR,
+                            extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
 }
 
 }  // namespace
@@ -1010,6 +1022,7 @@ void BookmarkBarGtk::OnClicked(GtkWidget* sender) {
   DCHECK(node->is_url());
   DCHECK(page_navigator_);
 
+  RecordAppLaunch(profile_, node->GetURL());
   page_navigator_->OpenURL(
       node->GetURL(), GURL(),
       gtk_util::DispositionForCurrentButtonPressEvent(),

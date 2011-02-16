@@ -12,6 +12,32 @@ var LAYOUT_SPACING_TOP = 25;
 // The visible height of the expanded maxiview.
 var maxiviewVisibleHeight = 0;
 
+var APP_LAUNCH = {
+  // The histogram buckets (keep in sync with extension_constants.h).
+  NTP_APPS_MAXIMIZED: 0,
+  NTP_APPS_COLLAPSED: 1,
+  NTP_APPS_MENU: 2,
+  NTP_MOST_VISITED: 3,
+  NTP_RECENTLY_CLOSED: 4
+};
+
+var APP_LAUNCH_URL = {
+  // The URL prefix for pings that record app launches by URL.
+  PING_BY_URL: 'record-app-launch-by-url',
+
+  // The URL prefix for pings that record app launches by ID.
+  PING_BY_ID: 'record-app-launch-by-id',
+
+  // The URL prefix used by the webstore link 'ping' attributes.
+  PING_WEBSTORE: 'record-webstore-launch'
+};
+
+function getAppPingUrl(prefix, data, bucket) {
+  return [APP_LAUNCH_URL[prefix],
+          encodeURIComponent(data),
+          APP_LAUNCH[bucket]].join('+');
+}
+
 function getSectionCloseButton(sectionId) {
   return document.querySelector('#' + sectionId + ' .section-close-button');
 }
@@ -54,11 +80,13 @@ function addClosedMenuEntryWithLink(menu, a) {
   menu.appendChild(span);
 }
 
-function addClosedMenuEntry(menu, url, title, imageUrl) {
+function addClosedMenuEntry(menu, url, title, imageUrl, opt_pingUrl) {
   var a = document.createElement('a');
   a.href = url;
   a.textContent = title;
   a.style.backgroundImage = 'url(' + imageUrl + ')';
+  if (opt_pingUrl)
+    a.setAttribute('ping', opt_pingUrl);
   addClosedMenuEntryWithLink(menu, a);
 }
 
@@ -256,6 +284,8 @@ function createRecentItem(data) {
     el = document.createElement('a');
     el.className = 'item';
     el.href = data.url;
+    el.setAttribute('ping',
+        getAppPingUrl('PING_BY_URL', data.url, 'NTP_RECENTLY_CLOSED'));
     el.style.backgroundImage = url('chrome://favicon/' + data.url);
     el.dir = data.direction;
     el.textContent = data.title;
@@ -277,6 +307,8 @@ function addRecentMenuItem(menu, data) {
     a.href = '';  // To make underline show up.
   } else {
     a.href = data.url;
+    a.setAttribute('ping',
+        getAppPingUrl('PING_BY_URL', data.url, 'NTP_RECENTLY_CLOSED'));
     a.style.backgroundImage = 'url(chrome://favicon/' + data.url + ')';
     a.textContent = data.title;
   }

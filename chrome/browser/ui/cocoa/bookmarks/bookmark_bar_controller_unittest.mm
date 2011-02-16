@@ -5,6 +5,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #include "base/scoped_nsobject.h"
 #include "base/string16.h"
 #include "base/string_util.h"
@@ -257,6 +258,9 @@ class BookmarkBarControllerTestBase : public CocoaTest {
   scoped_nsobject<ViewResizerPong> resizeDelegate_;
 
   BookmarkBarControllerTestBase() {
+    FilePath extension_dir;
+    helper_.profile()->CreateExtensionService(CommandLine::ForCurrentProcess(),
+                                              extension_dir);
     resizeDelegate_.reset([[ViewResizerPong alloc] init]);
     NSRect parent_frame = NSMakeRect(0, 0, 800, 50);
     parent_view_.reset([[NSView alloc] initWithFrame:parent_frame]);
