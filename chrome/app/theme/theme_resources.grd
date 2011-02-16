@@ -575,6 +575,11 @@
         <include name="IDR_STATUSBAR_NETWORK_BARS4_RED" file="statusbar_network_bars4r.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_DISCONNECTED" file="statusbar_network_disconnected.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_EDGE" file="statusbar_network_edge.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_NETWORK_GPRS" file="statusbar_network_gprs.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_NETWORK_HSPA" file="statusbar_network_hspa.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_NETWORK_HSPA_PLUS" file="statusbar_network_hspa_plus.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_NETWORK_LTE" file="statusbar_network_lte.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_NETWORK_LTE_ADVANCED" file="statusbar_network_lte_advanced.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_SECURE" file="statusbar_network_secure.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_WARNING" file="statusbar_network_warning.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_WIRED" file="statusbar_wired.png" type="BINDATA" />
