@@ -137,6 +137,7 @@ class ProfileImpl : public Profile,
   virtual void ChangeAppLocale(const std::string& locale, AppLocaleChangedVia);
   virtual chromeos::ProxyConfigServiceImpl* GetChromeOSProxyConfigServiceImpl();
   virtual void SetupChromeOSEnterpriseExtensionObserver();
+  virtual void InitChromeOSPreferences();
 #endif  // defined(OS_CHROMEOS)
 
   virtual PrefProxyConfigTracker* GetProxyConfigTracker();

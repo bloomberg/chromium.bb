@@ -502,6 +502,13 @@ bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
   }
 
 #if defined(OS_CHROMEOS)
+  // Initialize Chrome OS preferences like touch pad sensitivity. For the
+  // preferences to work in the guest mode, the initialization has to be
+  // done after |profile| is switched to the off-the-record profile (which
+  // is actually GuestSessionProfile in the guest mode). See the
+  // GetOffTheRecordProfile() call above.
+  profile->InitChromeOSPreferences();
+
   // Create the WmMessageListener so that it can listen for messages regardless
   // of what window has focus.
   chromeos::WmMessageListener::GetInstance();

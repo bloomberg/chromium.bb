@@ -313,11 +313,6 @@ ProfileImpl::ProfileImpl(const FilePath& path)
   ssl_config_service_manager_.reset(
       SSLConfigServiceManager::CreateDefaultManager(this));
 
-#if defined(OS_CHROMEOS)
-  chromeos_preferences_.reset(new chromeos::Preferences());
-  chromeos_preferences_->Init(prefs);
-#endif
-
   pinned_tab_service_.reset(new PinnedTabService(this));
 
   // Initialize the BackgroundModeManager - this has to be done here before
@@ -1489,6 +1484,11 @@ void ProfileImpl::SetupChromeOSEnterpriseExtensionObserver() {
   DCHECK(!chromeos_enterprise_extension_observer_.get());
   chromeos_enterprise_extension_observer_.reset(
       new chromeos::EnterpriseExtensionObserver(this));
+}
+
+void ProfileImpl::InitChromeOSPreferences() {
+  chromeos_preferences_.reset(new chromeos::Preferences());
+  chromeos_preferences_->Init(GetPrefs());
 }
 #endif  // defined(OS_CHROMEOS)
 

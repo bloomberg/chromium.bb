@@ -57,6 +57,8 @@
 #include "chrome/browser/password_manager/native_backend_gnome_x.h"
 #include "chrome/browser/password_manager/native_backend_kwallet_x.h"
 #include "chrome/browser/password_manager/password_store_x.h"
+#elif defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/preferences.h"
 #endif
 
 using base::Time;
@@ -591,6 +593,11 @@ class OffTheRecordProfileImpl : public Profile,
   virtual void SetupChromeOSEnterpriseExtensionObserver() {
     profile_->SetupChromeOSEnterpriseExtensionObserver();
   }
+
+  virtual void InitChromeOSPreferences() {
+    // The off-the-record profile shouldn't have Chrome OS's preferences.
+    // The preferences are associated with the regular user profile.
+  }
 #endif  // defined(OS_CHROMEOS)
 
   virtual void ExitedOffTheRecordMode() {
@@ -743,6 +750,15 @@ class GuestSessionProfile : public OffTheRecordProfileImpl {
   virtual PersonalDataManager* GetPersonalDataManager() {
     return GetOriginalProfile()->GetPersonalDataManager();
   }
+
+  virtual void InitChromeOSPreferences() {
+    chromeos_preferences_.reset(new chromeos::Preferences());
+    chromeos_preferences_->Init(GetPrefs());
+  }
+
+ private:
+  // The guest user should be able to customize Chrome OS preferences.
+  scoped_ptr<chromeos::Preferences> chromeos_preferences_;
 };
 #endif
 

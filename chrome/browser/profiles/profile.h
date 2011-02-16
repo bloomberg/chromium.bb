@@ -527,6 +527,9 @@ class Profile {
   // Creates ChromeOS's EnterpriseExtensionListener.
   virtual void SetupChromeOSEnterpriseExtensionObserver() = 0;
 
+  // Initializes Chrome OS's preferences.
+  virtual void InitChromeOSPreferences() = 0;
+
 #endif  // defined(OS_CHROMEOS)
 
   // Returns the helper object that provides the proxy configuration service
