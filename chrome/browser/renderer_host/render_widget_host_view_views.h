@@ -85,7 +85,7 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   // inner view. This can return NULL when it's not attached to a view.
   gfx::NativeView GetInnerNativeView() const;
 
-  virtual void Paint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas);
 
   // Overridden from views::View.
   virtual std::string GetClassName() const;

@@ -531,7 +531,7 @@ void RenderWidgetHostViewViews::SetBackground(const SkBitmap& background) {
   host_->Send(new ViewMsg_SetBackground(host_->routing_id(), background));
 }
 
-void RenderWidgetHostViewViews::Paint(gfx::Canvas* canvas) {
+void RenderWidgetHostViewViews::OnPaint(gfx::Canvas* canvas) {
   if (is_hidden_) {
     return;
   }
