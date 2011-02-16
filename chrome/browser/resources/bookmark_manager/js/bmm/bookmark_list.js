@@ -85,25 +85,6 @@ cr.define('bmm', function() {
     parentId_: '',
 
     /**
-     * The ID of the bookmark folder we are displaying.
-     * @type {string}
-     */
-    get parentId() {
-      return this.parentId_;
-    },
-    set parentId(parentId) {
-      if (this.parentId_ == parentId)
-        return;
-
-      var oldParentId = this.parentId_;
-      this.parentId_ = parentId;
-
-      this.reload();
-
-      cr.dispatchPropertyChange(this, 'parentId', parentId, oldParentId);
-    },
-
-    /**
      * Reloads the list from the bookmarks backend.
      */
     reload: function() {
@@ -347,6 +328,15 @@ cr.define('bmm', function() {
       }
     }
   };
+
+  /**
+   * The ID of the bookmark folder we are displaying.
+   * @type {string}
+   */
+  cr.defineProperty(BookmarkList, 'parentId', cr.PropertyKind.JS,
+                    function() {
+                      this.reload();
+                    });
 
   /**
    * The contextMenu property.
