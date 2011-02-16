@@ -31,7 +31,13 @@ class DOMAutomationTest : public InProcessBrowserTest {
 
 typedef DOMElementProxy::By By;
 
-IN_PROC_BROWSER_TEST_F(DOMAutomationTest, FindByXPath) {
+#if defined(OS_WIN)
+// See http://crbug.com/61636
+#define MAYBE_FindByXPath FLAKY_FindByXPath
+#else
+#define MAYBE_FindByXPath FindByXPath
+#endif
+IN_PROC_BROWSER_TEST_F(DOMAutomationTest, MAYBE_FindByXPath) {
   ASSERT_TRUE(test_server()->Start());
   ui_test_utils::NavigateToURL(browser(),
                                GetTestURL("find_elements/test.html"));
