@@ -69,6 +69,7 @@ SHELL=/bin/bash
 CROSSARCH=nacl64
 GITRW=ssh://git@gitrw.chromium.org:9222
 GITRO=http://git.chromium.org/git
+GIT_BASE_URL=http://git.chromium.org/git
 TOOLCHAINLOC?=/usr/local
 SDKLOC?=$(TOOLCHAINLOC)
 SDKNAME=nacl-sdk
@@ -165,12 +166,9 @@ DEFAULT_ALIGN_POW2=5
 ##################################################################
 #  The version numbers for the tools we will be building.
 ##################################################################
-BINUTILS_VERSION=2.20.1
-NEWLIB_VERSION=1.18.0
 GCC_VERSION=4.4.3
 GMP_VERSION=4.3.1
 MPFR_VERSION=2.4.1
-GDB_VERSION=6.8
 
 ##################################################################
 # Unpacking the sources, applying patches, etc.
@@ -214,23 +212,9 @@ fetch-git-rw-sources: ALWAYS
 
 # Unpack binutils, apply patches.
 SRC/binutils: | SRC
-	@echo "Unpacking binutils-$(BINUTILS_VERSION)"
-	rm -rf SRC/binutils-$(BINUTILS_VERSION)
-	cd SRC && tar xf $(SRCDIR)/binutils/binutils-$(BINUTILS_VERSION).tar.bz2
-	mv SRC/binutils-$(BINUTILS_VERSION) SRC/binutils
-	if ( [ ! -x /usr/bin/bison ] ) || ( [ ! -x /usr/bin/flex ] ) ; then \
-	  cd SRC/binutils && ( patch -p1 < ../../patches/binutils-$(BINUTILS_VERSION).ly.patch || true ) ; \
-	fi
-	printf -- "--- SRC/binutils/bfd/version.h\n\
-	+++ SRC/binutils/bfd/version.h\n\
-	@@ -3 +3 @@\n\
-	-#define BFD_VERSION_STRING  @bfd_version_package@ @bfd_version_string@\n\
-	+#define BFD_VERSION_STRING  @bfd_version_package@ @bfd_version_string@ \" `svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \(....\)-\(..\)-\(..\).*+\1\2\3+'` (Native Client r`svn info | grep 'Last Changed Rev' | sed -e s'+Last Changed Rev: ++'`)\"\n" |\
-	patch -p0
-	set -e; cd SRC && \
-	  for i in ../patches/binutils-$(BINUTILS_VERSION)/????-*.patch ; do \
-	    patch -p1 < "$$i" ; \
-	  done
+	@echo "Unpacking binutils"
+	git clone $(GIT_BASE_URL)/nacl-binutils SRC/binutils
+	cd src/binutils && git checkout "$(NACL_BINUTILS_COMMIT)"
 
 # Create binutils source directory, and mark that we've done that.
 SRC/stamp-binutils: | SRC
@@ -240,14 +224,9 @@ SRC/stamp-binutils: | SRC
 
 # Unpack newlib, apply patches.
 SRC/newlib: | SRC
-	@echo "Unpacking newlib-$(NEWLIB_VERSION)"
-	rm -rf SRC/newlib-$(NEWLIB_VERSION)
-	cd SRC && tar xf $(SRCDIR)/newlib/newlib-$(NEWLIB_VERSION).tar.gz
-	mv SRC/newlib-$(NEWLIB_VERSION) SRC/newlib
-	set -e; cd SRC && \
-	  for i in ../patches/newlib-$(NEWLIB_VERSION)/????-*.patch ; do \
-	    patch -p1 < "$$i" ; \
-	  done
+	@echo "Unpacking newlib"
+	git clone $(GIT_BASE_URL)/nacl-newlib SRC/newlib
+	cd SRC/newlib && git checkout "$(NACL_NEWLIB_COMMIT)"
 
 # Create newlib source directory, and mark that we've done that.
 SRC/stamp-newlib: | SRC
@@ -257,21 +236,10 @@ SRC/stamp-newlib: | SRC
 
 # Unpack gcc, apply patches.
 SRC/gcc: | SRC
-	@echo "Unpacking gcc-$(GCC_VERSION)"
-	rm -rf SRC/gcc-$(GCC_VERSION)
-	cd SRC && tar xf $(SRCDIR)/gcc/gcc-core-$(GCC_VERSION).tar.bz2
-	cd SRC && tar xf $(SRCDIR)/gcc/gcc-g++-$(GCC_VERSION).tar.bz2
-	cd SRC && tar xf $(SRCDIR)/gcc/gcc-fortran-$(GCC_VERSION).tar.bz2
-	cd SRC && tar xf $(SRCDIR)/gcc/gcc-objc-$(GCC_VERSION).tar.bz2
-	cd SRC && tar xf $(SRCDIR)/gcc/gcc-testsuite-$(GCC_VERSION).tar.bz2
-	mv SRC/gcc-$(GCC_VERSION) SRC/gcc
+	@echo "Unpacking gcc"
+	git clone $(GIT_BASE_URL)/nacl-gcc SRC/gcc
+	cd SRC/gcc && git checkout "$(NACL_GCC_COMMIT)"
 	$(MAKE) -f $(THISMAKEFILE) unpack-gcc-extras
-	printf -- "`svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \(....\)-\(..\)-\(..\).*+\1\2\3+'`" > SRC/gcc/gcc/DATESTAMP
-	printf -- "Native Client r`svn info | grep 'Last Changed Rev' | sed -e s'+Last Changed Rev: ++'`" > SRC/gcc/gcc/DEV-PHASE
-	set -e; cd SRC && \
-	  for i in ../patches/gcc-$(GCC_VERSION)/????-*.patch ; do \
-	    patch -p1 < "$$i" ; \
-	  done
 
 # Create gcc source directory, and mark that we've done that.
 SRC/stamp-gcc: | SRC
@@ -346,20 +314,9 @@ SRC/stamp-linux-headers: | SRC
 
 # Unpack gdb, apply patches.
 SRC/gdb: | SRC
-	@echo "Unpacking gdb-$(GDB_VERSION)"
-	rm -rf SRC/gdb-$(GDB_VERSION)
-	cd SRC && tar xf $(SRCDIR)/gdb/gdb-$(GDB_VERSION).tar.bz2
-	mv SRC/gdb-$(GDB_VERSION) SRC/gdb
-	printf -- "--- SRC/gdb/gdb/version.in\n\
-	+++ SRC/gdb/gdb/version.in\n\
-	@@ -1 +1 @@\n\
-	-$(GDB_VERSION)\n\
-	+$(GDB_VERSION) `svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \(....\)-\(..\)-\(..\).*+\1\2\3+'` (Native Client r`svn info | grep 'Last Changed Rev' | sed -e s'+Last Changed Rev: ++'`)\n" |\
-	patch -p0
-	set -e; cd SRC && \
-	  for i in ../patches/gdb-$(GDB_VERSION)/????-*.patch ; do \
-	    patch -p1 < "$$i" ; \
-	  done
+	@echo "Unpacking gdb"
+	git clone $(GIT_BASE_URL)/nacl-gdb SRC/gdb
+	cd SRC/gdb && git checkout "$(NACL_GDB_COMMIT)"
 
 # Create gdb source directory, and mark that we've done that.
 SRC/stamp-gdb: | SRC
@@ -928,7 +885,13 @@ build-with-glibc: ALWAYS
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-libs-glibc
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-stubout
 
-build: ALWAYS
+all-source: | \
+	SRC/stamp-binutils \
+	SRC/stamp-gcc \
+	SRC/stamp-newlib \
+	SRC/stamp-gdb
+
+build: ALWAYS all-source
 	$(MAKE) -f $(THISMAKEFILE) sdkdirs
 	cp -f ../../third_party/gcc/COPYING* $(DESTDIR)$(SDKROOT)
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-binutils
