@@ -7,6 +7,7 @@
 #include "media/base/data_buffer.h"
 #include "media/base/mock_ffmpeg.h"
 #include "media/base/mock_task.h"
+#include "media/base/pipeline.h"
 #include "media/video/ffmpeg_video_decode_engine.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -117,7 +118,7 @@ class FFmpegVideoDecodeEngineTest : public testing::Test,
 
     EXPECT_CALL(*this, ProduceVideoSample(_))
         .WillOnce(DemuxComplete(test_engine_.get(), buffer_));
-    EXPECT_CALL(*this, ConsumeVideoFrame(_))
+    EXPECT_CALL(*this, ConsumeVideoFrame(_, _))
         .WillOnce(DecodeComplete(this));
     test_engine_->ProduceVideoFrame(video_frame_);
   }
@@ -130,8 +131,9 @@ class FFmpegVideoDecodeEngineTest : public testing::Test,
   }
 
  public:
-  MOCK_METHOD1(ConsumeVideoFrame,
-               void(scoped_refptr<VideoFrame> video_frame));
+  MOCK_METHOD2(ConsumeVideoFrame,
+               void(scoped_refptr<VideoFrame> video_frame,
+                    const PipelineStatistics& statistics));
   MOCK_METHOD1(ProduceVideoSample,
                void(scoped_refptr<Buffer> buffer));
   MOCK_METHOD1(OnInitializeComplete,
@@ -262,7 +264,7 @@ TEST_F(FFmpegVideoDecodeEngineTest, DecodeFrame_0ByteFrame) {
   EXPECT_CALL(*this, ProduceVideoSample(_))
       .WillOnce(DemuxComplete(test_engine_.get(), buffer_))
       .WillOnce(DemuxComplete(test_engine_.get(), buffer_));
-  EXPECT_CALL(*this, ConsumeVideoFrame(_))
+  EXPECT_CALL(*this, ConsumeVideoFrame(_, _))
       .WillOnce(DecodeComplete(this));
   test_engine_->ProduceVideoFrame(video_frame_);
 
@@ -280,7 +282,7 @@ TEST_F(FFmpegVideoDecodeEngineTest, DecodeFrame_DecodeError) {
 
   EXPECT_CALL(*this, ProduceVideoSample(_))
       .WillOnce(DemuxComplete(test_engine_.get(), buffer_));
-  EXPECT_CALL(*this, ConsumeVideoFrame(_))
+  EXPECT_CALL(*this, ConsumeVideoFrame(_, _))
       .WillOnce(DecodeComplete(this));
   test_engine_->ProduceVideoFrame(video_frame_);
 

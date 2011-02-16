@@ -31,14 +31,15 @@ OmxVideoDecoder::~OmxVideoDecoder() {
 }
 
 void OmxVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
-                                 FilterCallback* callback) {
+                                 FilterCallback* callback,
+                                 StatisticsCallback* stats_callback) {
   if (MessageLoop::current() != message_loop_) {
     message_loop_->PostTask(
         FROM_HERE,
         NewRunnableMethod(this,
                           &OmxVideoDecoder::Initialize,
                           make_scoped_refptr(demuxer_stream),
-                          callback));
+                          callback, stats_callback));
     return;
   }
 
@@ -47,6 +48,7 @@ void OmxVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
   DCHECK(!initialize_callback_.get());
 
   initialize_callback_.reset(callback);
+  statistics_callback_.reset(stats_callback);
   demuxer_stream_ = demuxer_stream;
 
   // We require bit stream converter for openmax hardware decoder.
@@ -204,8 +206,10 @@ void OmxVideoDecoder::ProduceVideoSample(scoped_refptr<Buffer> buffer) {
   demuxer_stream_->Read(NewCallback(this, &OmxVideoDecoder::DemuxCompleteTask));
 }
 
-void OmxVideoDecoder::ConsumeVideoFrame(scoped_refptr<VideoFrame> frame) {
+void OmxVideoDecoder::ConsumeVideoFrame(scoped_refptr<VideoFrame> frame,
+                                        const PipelineStatistics& statistics) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
+  statistics_callback_->Run(statistics);
   VideoFrameReady(frame);
 }
 

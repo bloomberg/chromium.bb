@@ -38,6 +38,7 @@ using media::OmxConfigurator;
 using media::OmxDecoderConfigurator;
 using media::OmxEncoderConfigurator;
 using media::OmxVideoDecodeEngine;
+using media::PipelineStatistics;
 using media::VideoFrame;
 using media::YuvFileReader;
 
@@ -131,7 +132,8 @@ class TestApp : public base::RefCountedThreadSafe<TestApp>,
       FeedInputBuffer();
   }
 
-  virtual void ConsumeVideoFrame(scoped_refptr<VideoFrame> frame) {
+  virtual void ConsumeVideoFrame(scoped_refptr<VideoFrame> frame,
+                                 const PipelineStatistics& statistics) {
     // This callback is received when the decoder has completed a decoding
     // task and given us some output data. The frame is owned by the decoder.
     if (stopped_ || error_)

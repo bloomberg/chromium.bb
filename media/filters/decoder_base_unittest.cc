@@ -7,6 +7,7 @@
 #include "media/base/mock_callback.h"
 #include "media/base/mock_filters.h"
 #include "media/base/mock_task.h"
+#include "media/base/pipeline.h"
 #include "media/filters/decoder_base.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -103,7 +104,7 @@ ACTION(CompleteDemuxRequest) {
   delete arg0;
 }
 
-// Test the flow control of decoder base by the following sequnce of actions:
+// Test the flow control of decoder base by the following sequence of actions:
 // - Read() -> DecoderStream
 //   \ Read() -> DemuxerStream
 // - Read() -> DecoderBase
@@ -123,11 +124,14 @@ TEST(DecoderBaseTest, FlowControl) {
   decoder->set_consume_audio_samples_callback(
       NewCallback(&read_callback, &MockDecoderCallback::OnReadComplete));
   scoped_refptr<MockDemuxerStream> demuxer_stream(new MockDemuxerStream());
+  MockStatisticsCallback stats_callback_object;
 
-  // Initailize.
+  // Initialize.
   EXPECT_CALL(*decoder, DoInitialize(NotNull(), NotNull(), NotNull()))
       .WillOnce(Initialize());
-  decoder->Initialize(demuxer_stream.get(), NewExpectedCallback());
+  decoder->Initialize(demuxer_stream.get(), NewExpectedCallback(),
+                      NewCallback(&stats_callback_object,
+                                  &MockStatisticsCallback::OnStatistics));
   message_loop.RunAllPending();
 
   // Read.
@@ -145,9 +149,10 @@ TEST(DecoderBaseTest, FlowControl) {
 
   // Fulfill the decode request.
   EXPECT_CALL(read_callback, OnReadComplete(_)).Times(2);
+  PipelineStatistics statistics;
   for (size_t i = 0; i < decode_requests.size(); ++i) {
     decoder->EnqueueResult(new MockDecoderOutput());
-    decoder->OnDecodeComplete();
+    decoder->OnDecodeComplete(statistics);
   }
   decode_requests.clear();
   message_loop.RunAllPending();

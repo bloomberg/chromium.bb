@@ -6,6 +6,7 @@
 #include "chrome/common/gpu_messages.h"
 #include "chrome/common/message_router.h"
 #include "chrome/renderer/gpu_video_decoder_host.h"
+#include "media/base/pipeline.h"
 #include "media/video/video_mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -93,8 +94,9 @@ class GpuVideoDecoderHostTest : public testing::Test,
   // Mock methods for VideoDecodeEngine::EventHandler.
   MOCK_METHOD1(ProduceVideoSample,
                void(scoped_refptr<media::Buffer> buffer));
-  MOCK_METHOD1(ConsumeVideoFrame,
-               void(scoped_refptr<media::VideoFrame> frame));
+  MOCK_METHOD2(ConsumeVideoFrame,
+               void(scoped_refptr<media::VideoFrame> frame,
+                    const media::PipelineStatistics& statistics));
   MOCK_METHOD1(OnInitializeComplete,
                void(const media::VideoCodecInfo& info));
   MOCK_METHOD0(OnUninitializeComplete, void());
@@ -189,7 +191,7 @@ class GpuVideoDecoderHostTest : public testing::Test,
           .RetiresOnSaturation();
 
       // Expect that a reply is made when a video frame is ready.
-      EXPECT_CALL(*this, ConsumeVideoFrame(frames_[i]))
+      EXPECT_CALL(*this, ConsumeVideoFrame(frames_[i], _))
           .RetiresOnSaturation();
 
       // Use the allocated video frames to make a request.

@@ -41,8 +41,13 @@ class DemuxerStream;
 class Filter;
 class FilterHost;
 
+struct PipelineStatistics;
+
 // Used for completing asynchronous methods.
 typedef Callback0::Type FilterCallback;
+
+// Used for updating pipeline statistics.
+typedef Callback1<const PipelineStatistics&>::Type StatisticsCallback;
 
 class Filter : public base::RefCountedThreadSafe<Filter> {
  public:
@@ -193,7 +198,9 @@ class VideoDecoder : public Filter {
 
   // Initialize a VideoDecoder with the given DemuxerStream, executing the
   // callback upon completion.
-  virtual void Initialize(DemuxerStream* stream, FilterCallback* callback) = 0;
+  // stats_callback is used to update global pipeline statistics.
+  virtual void Initialize(DemuxerStream* stream, FilterCallback* callback,
+                          StatisticsCallback* stats_callback) = 0;
 
   // |set_fill_buffer_done_callback| install permanent callback from downstream
   // filter (i.e. Renderer). The callback is used to deliver video frames at
@@ -235,7 +242,9 @@ class AudioDecoder : public Filter {
 
   // Initialize a AudioDecoder with the given DemuxerStream, executing the
   // callback upon completion.
-  virtual void Initialize(DemuxerStream* stream, FilterCallback* callback) = 0;
+  // stats_callback is used to update global pipeline statistics.
+  virtual void Initialize(DemuxerStream* stream, FilterCallback* callback,
+                          StatisticsCallback* stats_callback) = 0;
 
   // |set_fill_buffer_done_callback| install permanent callback from downstream
   // filter (i.e. Renderer). The callback is used to deliver buffers at
@@ -272,7 +281,8 @@ class VideoRenderer : public Filter {
 
   // Initialize a VideoRenderer with the given VideoDecoder, executing the
   // callback upon completion.
-  virtual void Initialize(VideoDecoder* decoder, FilterCallback* callback) = 0;
+  virtual void Initialize(VideoDecoder* decoder, FilterCallback* callback,
+                          StatisticsCallback* stats_callback) = 0;
 
   // Returns true if this filter has received and processed an end-of-stream
   // buffer.

@@ -656,6 +656,38 @@ WebKit::WebMediaPlayer::MovieLoadType
   return WebKit::WebMediaPlayer::Unknown;
 }
 
+unsigned long WebMediaPlayerImpl::decodedFrames() const
+{
+  DCHECK(MessageLoop::current() == main_loop_);
+
+  media::PipelineStatistics stats = pipeline_->GetStatistics();
+  return stats.video_frames_decoded;
+}
+
+unsigned long WebMediaPlayerImpl::droppedFrames() const
+{
+  DCHECK(MessageLoop::current() == main_loop_);
+
+  media::PipelineStatistics stats = pipeline_->GetStatistics();
+  return stats.video_frames_dropped;
+}
+
+unsigned long WebMediaPlayerImpl::audioBytesDecoded() const
+{
+  DCHECK(MessageLoop::current() == main_loop_);
+
+  media::PipelineStatistics stats = pipeline_->GetStatistics();
+  return stats.audio_bytes_decoded;
+}
+
+unsigned long WebMediaPlayerImpl::videoBytesDecoded() const
+{
+  DCHECK(MessageLoop::current() == main_loop_);
+
+  media::PipelineStatistics stats = pipeline_->GetStatistics();
+  return stats.video_bytes_decoded;
+}
+
 WebKit::WebVideoFrame* WebMediaPlayerImpl::getCurrentFrame() {
   scoped_refptr<media::VideoFrame> video_frame;
   proxy_->GetCurrentFrame(&video_frame);

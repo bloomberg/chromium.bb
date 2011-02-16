@@ -15,6 +15,8 @@ namespace media {
 class Buffer;
 class VideoDecodeContext;
 
+struct PipelineStatistics;
+
 enum VideoCodec {
   kCodecH264,
   kCodecVC1,
@@ -109,7 +111,8 @@ class VideoDecodeEngine {
     // In the case of flushing and video frame is provided externally, this
     // method is called to return the video frame object to the owner.
     // The content of the video frame may be invalid.
-    virtual void ConsumeVideoFrame(scoped_refptr<VideoFrame> frame) = 0;
+    virtual void ConsumeVideoFrame(scoped_refptr<VideoFrame> frame,
+                                   const PipelineStatistics& statistics) = 0;
   };
 
   virtual ~VideoDecodeEngine() {}

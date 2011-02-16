@@ -16,6 +16,7 @@
 #include "base/time.h"
 #include "base/message_loop.h"
 #include "media/base/limits.h"
+#include "media/base/pipeline.h"
 #include "media/video/video_decode_context.h"
 
 #pragma comment(lib, "dxva2.lib")
@@ -240,8 +241,9 @@ void MftH264DecodeEngine::Seek() {
 
   // TODO(hclam): Seriously the logic in VideoRendererBase is flawed that we
   // have to perform the following hack to get playback going.
+  PipelineStatistics statistics;
   for (size_t i = 0; i < Limits::kMaxVideoFrames; ++i) {
-    event_handler_->ConsumeVideoFrame(output_frames_[0]);
+    event_handler_->ConsumeVideoFrame(output_frames_[0], statistics);
   }
 
   // Seek not implemented.
@@ -253,6 +255,7 @@ void MftH264DecodeEngine::ConsumeVideoSample(scoped_refptr<Buffer> buffer) {
     LOG(ERROR) << "ConsumeVideoSample: invalid state";
   }
   ScopedComPtr<IMFSample> sample;
+  PipelineStatistics statistics;
   if (!buffer->IsEndOfStream()) {
     sample.Attach(
         CreateInputSample(buffer->GetData(),
@@ -268,6 +271,8 @@ void MftH264DecodeEngine::ConsumeVideoSample(scoped_refptr<Buffer> buffer) {
         event_handler_->OnError();
       }
     }
+
+    statistics.video_bytes_decoded = buffer->GetDataSize();
   } else {
     if (state_ != MftH264DecodeEngine::kEosDrain) {
       // End of stream, send drain messages.
@@ -280,7 +285,7 @@ void MftH264DecodeEngine::ConsumeVideoSample(scoped_refptr<Buffer> buffer) {
       }
     }
   }
-  DoDecode();
+  DoDecode(statistics);
 }
 
 void MftH264DecodeEngine::ProduceVideoFrame(scoped_refptr<VideoFrame> frame) {
@@ -534,7 +539,7 @@ bool MftH264DecodeEngine::GetStreamsInfoAndBufferReqs() {
   return true;
 }
 
-bool MftH264DecodeEngine::DoDecode() {
+bool MftH264DecodeEngine::DoDecode(const PipelineStatistics& statistics) {
   if (state_ != kNormal && state_ != kEosDrain) {
     LOG(ERROR) << "DoDecode: not in normal or drain state";
     return false;
@@ -589,7 +594,7 @@ bool MftH264DecodeEngine::DoDecode() {
         // No more output from the decoder. Notify EOS and stop playback.
         scoped_refptr<VideoFrame> frame;
         VideoFrame::CreateEmptyFrame(&frame);
-        event_handler_->ConsumeVideoFrame(frame);
+        event_handler_->ConsumeVideoFrame(frame, statistics);
         state_ = MftH264DecodeEngine::kStopped;
         return false;
       }
@@ -653,7 +658,7 @@ bool MftH264DecodeEngine::DoDecode() {
     context_->ConvertToVideoFrame(
         surface.get(), output_frames_[0],
         NewRunnableMethod(this, &MftH264DecodeEngine::OnUploadVideoFrameDone,
-                          surface, output_frames_[0]));
+                          surface, output_frames_[0], statistics));
     return true;
   }
   // TODO(hclam): Remove this branch.
@@ -678,15 +683,16 @@ bool MftH264DecodeEngine::DoDecode() {
 
   memcpy(dst_y, src_y, current_length);
   CHECK(SUCCEEDED(output_buffer->Unlock()));
-  event_handler_->ConsumeVideoFrame(frame);
+  event_handler_->ConsumeVideoFrame(frame, statistics);
   return true;
 }
 
 void MftH264DecodeEngine::OnUploadVideoFrameDone(
     ScopedComPtr<IDirect3DSurface9, &IID_IDirect3DSurface9> surface,
-    scoped_refptr<media::VideoFrame> frame) {
+    scoped_refptr<media::VideoFrame> frame,
+    PipelineStatistics statistics) {
   // After this method is exited the reference to surface is released.
-  event_handler_->ConsumeVideoFrame(frame);
+  event_handler_->ConsumeVideoFrame(frame, statistics);
 }
 
 }  // namespace media

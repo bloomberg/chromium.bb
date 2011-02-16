@@ -32,7 +32,8 @@ class IpcVideoDecoder : public media::VideoDecoder,
 
   // media::VideoDecoder implementation.
   virtual void Initialize(media::DemuxerStream* demuxer_stream,
-                          media::FilterCallback* callback);
+                          media::FilterCallback* callback,
+                          media::StatisticsCallback* statsCallback);
   virtual const media::MediaFormat& media_format();
   virtual void ProduceVideoFrame(scoped_refptr<media::VideoFrame> video_frame);
 
@@ -49,7 +50,8 @@ class IpcVideoDecoder : public media::VideoDecoder,
   // TODO(hclam): Remove this method.
   virtual void OnFormatChange(media::VideoStreamInfo stream_info) {}
   virtual void ProduceVideoSample(scoped_refptr<media::Buffer> buffer);
-  virtual void ConsumeVideoFrame(scoped_refptr<media::VideoFrame> frame);
+  virtual void ConsumeVideoFrame(scoped_refptr<media::VideoFrame> frame,
+                                 const media::PipelineStatistics& statistics);
 
  private:
   void OnReadComplete(media::Buffer* buffer);
@@ -63,6 +65,7 @@ class IpcVideoDecoder : public media::VideoDecoder,
   scoped_ptr<media::FilterCallback> seek_callback_;
   scoped_ptr<media::FilterCallback> initialize_callback_;
   scoped_ptr<media::FilterCallback> stop_callback_;
+  scoped_ptr<media::StatisticsCallback> statistics_callback_;
 
   // Pointer to the demuxer stream that will feed us compressed buffers.
   scoped_refptr<media::DemuxerStream> demuxer_stream_;

@@ -121,7 +121,10 @@ void GpuVideoDecoder::ProduceVideoSample(scoped_refptr<Buffer> buffer) {
   SendEmptyBufferDone();
 }
 
-void GpuVideoDecoder::ConsumeVideoFrame(scoped_refptr<VideoFrame> frame) {
+void GpuVideoDecoder::ConsumeVideoFrame(scoped_refptr<VideoFrame> frame,
+                                        const PipelineStatistics& statistics) {
+  // TODO(sjl): Do something with the statistics...
+
   if (frame->IsEndOfStream()) {
     SendConsumeVideoFrame(kGpuVideoInvalidFrameId, 0, 0, kGpuVideoEndOfStream);
     return;

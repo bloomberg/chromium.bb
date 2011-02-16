@@ -18,11 +18,12 @@
 #include "media/video/video_decode_engine.h"
 #include "ipc/ipc_channel.h"
 
+using media::Buffer;
+using media::PipelineStatistics;
 using media::VideoCodecConfig;
 using media::VideoCodecInfo;
 using media::VideoStreamInfo;
 using media::VideoFrame;
-using media::Buffer;
 
 namespace gpu {
 namespace gles2 {
@@ -112,7 +113,8 @@ class GpuVideoDecoder
   virtual void OnError();
   virtual void OnFormatChange(VideoStreamInfo stream_info);
   virtual void ProduceVideoSample(scoped_refptr<Buffer> buffer);
-  virtual void ConsumeVideoFrame(scoped_refptr<VideoFrame> frame);
+  virtual void ConsumeVideoFrame(scoped_refptr<VideoFrame> frame,
+                                 const PipelineStatistics& statistics);
 
   // VideoDecodeContext implementation.
   virtual void* GetDevice();

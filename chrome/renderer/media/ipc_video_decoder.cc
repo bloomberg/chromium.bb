@@ -30,7 +30,8 @@ IpcVideoDecoder::~IpcVideoDecoder() {
 }
 
 void IpcVideoDecoder::Initialize(media::DemuxerStream* demuxer_stream,
-                                 media::FilterCallback* callback) {
+                                 media::FilterCallback* callback,
+                                 media::StatisticsCallback* statsCallback) {
   // It doesn't matter which thread we perform initialization because
   // all this method does is create objects and delegate the initialize
   // messsage.
@@ -38,6 +39,7 @@ void IpcVideoDecoder::Initialize(media::DemuxerStream* demuxer_stream,
   DCHECK(!demuxer_stream_);
   demuxer_stream_ = demuxer_stream;
   initialize_callback_.reset(callback);
+  statistics_callback_.reset(statsCallback);
 
   // We require bit stream converter for hardware decoder.
   demuxer_stream->EnableBitstreamConverter();
@@ -139,8 +141,8 @@ void IpcVideoDecoder::OnUninitializeComplete() {
       NewRunnableMethod(this, &IpcVideoDecoder::OnDestroyComplete));
 
   // We don't need to wait for destruction of decode context to complete because
-  // it can happen asynchronously. This object and decode context will live until
-  // the destruction task is called.
+  // it can happen asynchronously. This object and decode context will live
+  // until the destruction task is called.
   stop_callback_->Run();
   stop_callback_.reset();
 }
@@ -186,8 +188,11 @@ bool IpcVideoDecoder::ProvidesBuffer() {
 // This method is called by VideoDecodeEngine that a video frame is produced.
 // This is then passed to VideoRenderer.
 void IpcVideoDecoder::ConsumeVideoFrame(
-    scoped_refptr<media::VideoFrame> video_frame) {
+    scoped_refptr<media::VideoFrame> video_frame,
+    const media::PipelineStatistics& statistics) {
   DCHECK(video_frame);
+  statistics_callback_->Run(statistics);
+
   VideoFrameReady(video_frame);
 }
 

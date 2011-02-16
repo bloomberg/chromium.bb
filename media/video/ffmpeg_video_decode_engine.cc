@@ -11,6 +11,7 @@
 #include "media/base/callback.h"
 #include "media/base/limits.h"
 #include "media/base/media_switches.h"
+#include "media/base/pipeline.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 #include "media/ffmpeg/ffmpeg_util.h"
 #include "media/filters/ffmpeg_demuxer.h"
@@ -201,6 +202,9 @@ void FFmpegVideoDecodeEngine::DecodeFrame(scoped_refptr<Buffer> buffer) {
   packet.data = const_cast<uint8*>(buffer->GetData());
   packet.size = buffer->GetDataSize();
 
+  PipelineStatistics statistics;
+  statistics.video_bytes_decoded = buffer->GetDataSize();
+
   // Let FFmpeg handle presentation timestamp reordering.
   codec_context_->reordered_opaque = buffer->GetTimestamp().InMicroseconds();
 
@@ -221,7 +225,7 @@ void FFmpegVideoDecodeEngine::DecodeFrame(scoped_refptr<Buffer> buffer) {
             << buffer->GetDuration().InMicroseconds() << " us, packet size: "
             << buffer->GetDataSize() << " bytes";
     // TODO(jiesun): call event_handler_->OnError() instead.
-    event_handler_->ConsumeVideoFrame(video_frame);
+    event_handler_->ConsumeVideoFrame(video_frame, statistics);
     return;
   }
 
@@ -232,7 +236,7 @@ void FFmpegVideoDecodeEngine::DecodeFrame(scoped_refptr<Buffer> buffer) {
   // drained, we mark the flag. Otherwise we read from demuxer again.
   if (frame_decoded == 0) {
     if (buffer->IsEndOfStream()) {  // We had started flushing.
-      event_handler_->ConsumeVideoFrame(video_frame);
+      event_handler_->ConsumeVideoFrame(video_frame, statistics);
       output_eos_reached_ = true;
     } else {
       ReadInput();
@@ -247,7 +251,7 @@ void FFmpegVideoDecodeEngine::DecodeFrame(scoped_refptr<Buffer> buffer) {
       !av_frame_->data[VideoFrame::kUPlane] ||
       !av_frame_->data[VideoFrame::kVPlane]) {
     // TODO(jiesun): call event_handler_->OnError() instead.
-    event_handler_->ConsumeVideoFrame(video_frame);
+    event_handler_->ConsumeVideoFrame(video_frame, statistics);
     return;
   }
 
@@ -296,7 +300,7 @@ void FFmpegVideoDecodeEngine::DecodeFrame(scoped_refptr<Buffer> buffer) {
   video_frame->SetDuration(duration);
 
   pending_output_buffers_--;
-  event_handler_->ConsumeVideoFrame(video_frame);
+  event_handler_->ConsumeVideoFrame(video_frame, statistics);
 }
 
 void FFmpegVideoDecodeEngine::Uninitialize() {

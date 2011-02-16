@@ -6,6 +6,7 @@
 
 #include "chrome/common/gpu_messages.h"
 #include "chrome/common/message_router.h"
+#include "media/base/pipeline.h"
 #include "media/video/video_decode_context.h"
 
 GpuVideoDecoderHost::GpuVideoDecoderHost(MessageRouter* router,
@@ -281,7 +282,10 @@ void GpuVideoDecoderHost::OnConsumeVideoFrame(int32 frame_id, int64 timestamp,
     frame->SetTimestamp(base::TimeDelta::FromMicroseconds(timestamp));
   }
 
-  event_handler_->ConsumeVideoFrame(frame);
+  media::PipelineStatistics statistics;
+  // TODO(sjl): Fill in statistics.
+
+  event_handler_->ConsumeVideoFrame(frame, statistics);
 }
 
 void GpuVideoDecoderHost::OnAllocateVideoFrames(

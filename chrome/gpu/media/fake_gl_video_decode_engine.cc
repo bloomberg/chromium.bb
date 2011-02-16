@@ -75,7 +75,7 @@ void FakeGlVideoDecodeEngine::Seek() {
   // *push* decoded frames to downstream. The model used in VideoRendererBase
   // to wait for *push* is flawed.
   for (size_t i = 0; i < external_frames_.size(); ++i)
-    handler_->ConsumeVideoFrame(external_frames_[i]);
+    handler_->ConsumeVideoFrame(external_frames_[i], dummy_stats_);
   handler_->OnSeekComplete();
 }
 
@@ -126,7 +126,7 @@ void FakeGlVideoDecodeEngine::ProduceVideoFrame(
 void FakeGlVideoDecodeEngine::UploadCompleteTask(
     scoped_refptr<media::VideoFrame> frame) {
   // |frame| is the upload target. We can immediately send this frame out.
-  handler_->ConsumeVideoFrame(frame);
+  handler_->ConsumeVideoFrame(frame, dummy_stats_);
 }
 
 DISABLE_RUNNABLE_METHOD_REFCOUNT(FakeGlVideoDecodeEngine);

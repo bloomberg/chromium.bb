@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/scoped_ptr.h"
+#include "media/base/pipeline.h"
 #include "media/video/video_decode_engine.h"
 
 namespace media {
@@ -57,6 +58,9 @@ class FakeGlVideoDecodeEngine : public media::VideoDecodeEngine {
   // These are the video frames that are waiting for input buffer to generate
   // fake pattern in them.
   std::queue<scoped_refptr<media::VideoFrame> > pending_frames_;
+
+  // Dummy statistics.
+  media::PipelineStatistics dummy_stats_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeGlVideoDecodeEngine);
 };

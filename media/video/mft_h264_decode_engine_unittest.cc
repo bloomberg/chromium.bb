@@ -98,7 +98,8 @@ class SimpleMftH264DecodeEngineHandler
       decoder_->ConsumeVideoSample(input);
     }
   }
-  virtual void ConsumeVideoFrame(scoped_refptr<VideoFrame> frame) {
+  virtual void ConsumeVideoFrame(scoped_refptr<VideoFrame> frame,
+                                 const PipelineStatistics& statistics) {
     fill_buffer_callback_count_++;
     current_frame_ = frame;
   }

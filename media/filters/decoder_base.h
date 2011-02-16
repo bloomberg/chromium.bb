@@ -42,7 +42,9 @@ class DecoderBase : public Decoder {
 
   // Decoder implementation.
   virtual void Initialize(DemuxerStream* demuxer_stream,
-                          FilterCallback* callback) {
+                          FilterCallback* callback,
+                          StatisticsCallback* stats_callback) {
+    statistics_callback_.reset(stats_callback);
     message_loop_->PostTask(
         FROM_HERE,
         NewRunnableMethod(this,
@@ -118,7 +120,9 @@ class DecoderBase : public Decoder {
 
   MediaFormat media_format_;
 
-  void OnDecodeComplete() {
+  void OnDecodeComplete(const PipelineStatistics& statistics) {
+    statistics_callback_->Run(statistics);
+
     // Attempt to fulfill a pending read callback and schedule additional reads
     // if necessary.
     bool fulfilled = FulfillPendingRead();
@@ -192,7 +196,8 @@ class DecoderBase : public Decoder {
     }
   }
 
-  void InitializeTask(DemuxerStream* demuxer_stream, FilterCallback* callback) {
+  void InitializeTask(DemuxerStream* demuxer_stream,
+                      FilterCallback* callback) {
     DCHECK_EQ(MessageLoop::current(), message_loop_);
     CHECK(kUninitialized == state_);
     CHECK(!demuxer_stream_);
@@ -306,6 +311,9 @@ class DecoderBase : public Decoder {
     kStopped,
   };
   State state_;
+
+  // Callback to update pipeline statistics.
+  scoped_ptr<StatisticsCallback> statistics_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(DecoderBase);
 };

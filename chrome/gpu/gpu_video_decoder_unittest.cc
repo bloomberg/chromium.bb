@@ -8,6 +8,7 @@
 #include "chrome/gpu/gpu_video_decoder.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
 #include "ipc/ipc_message_utils.h"
+#include "media/base/pipeline.h"
 #include "media/video/video_mock_objects.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -62,7 +63,8 @@ ACTION_P(SendVideoFrameAllocated, handler) {
 }
 
 ACTION_P2(SendConsumeVideoFrame, handler, frame) {
-  handler->ConsumeVideoFrame(frame);
+  media::PipelineStatistics statistics;
+  handler->ConsumeVideoFrame(frame, statistics);
 }
 
 class GpuVideoDecoderTest : public testing::Test,

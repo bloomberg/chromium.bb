@@ -74,11 +74,11 @@ class MftH264DecodeEngine : public media::VideoDecodeEngine {
   bool SetDecodeEngineOutputMediaType(const GUID subtype);
   bool SendMFTMessage(MFT_MESSAGE_TYPE msg);
   bool GetStreamsInfoAndBufferReqs();
-  bool DoDecode();
+  bool DoDecode(const PipelineStatistics& statistics);
   void OnAllocFramesDone();
   void OnUploadVideoFrameDone(
       ScopedComPtr<IDirect3DSurface9, &IID_IDirect3DSurface9> surface,
-      scoped_refptr<media::VideoFrame> frame);
+      scoped_refptr<media::VideoFrame> frame, PipelineStatistics statistics);
 
   bool use_dxva_;
   ScopedComPtr<IMFTransform> decode_engine_;
