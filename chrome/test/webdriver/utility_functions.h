@@ -10,10 +10,6 @@
 #include "base/values.h"
 
 namespace webdriver {
-// Concatenates each element, from the atoms.h file, in the given |atom|
-// into a single string.
-std::string build_atom(const wchar_t* const atom[],
-                       const size_t& size);
 
 // Converts a value type to a string for logging.
 std::string print_valuetype(Value::ValueType e);

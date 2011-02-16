@@ -9,12 +9,12 @@
 
 #include "base/string_number_conversions.h"
 #include "base/threading/platform_thread.h"
+#include "base/stringprintf.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "third_party/webdriver/atoms.h"
 #include "chrome/test/webdriver/error_codes.h"
-#include "chrome/test/webdriver/utility_functions.h"
 
 namespace webdriver {
 
@@ -77,17 +77,19 @@ void FindElementCommand::ExecutePost(Response* const response) {
   args->Append(root_element_id_.size() == 0 ? Value::CreateNullValue() :
       WebDriverCommand::GetElementIdAsDictionaryValue(root_element_id_));
   if (find_one_element_) {
-    jscript = build_atom(FIND_ELEMENT, sizeof FIND_ELEMENT);
-    jscript.append("var result = findElement(arguments[0], arguments[1]);")
-           .append("if (!result) {")
-           .append("var e = Error('Unable to locate element');")
-           .append("e.code = ")
-           .append(base::IntToString(kNoSuchElement))
-           .append(";throw e;")
-           .append("} else { return result; }");
+    // TODO(jleyba): Write a Chrome-specific find element atom that will
+    // correctly throw an error if the element cannot be found.
+    jscript = base::StringPrintf(
+        "var result = (%s).apply(null, arguments);"
+        "if (!result) {"
+        "var e = new Error('Unable to locate element');"
+        "e.code = %d;"
+        "throw e;"
+        "} else { return result; }",
+        atoms::FIND_ELEMENT, kNoSuchElement);
   } else {
-    jscript = build_atom(FIND_ELEMENTS, sizeof FIND_ELEMENT);
-    jscript.append("return findElements(arguments[0], arguments[1]);");
+    jscript = base::StringPrintf("return (%s).apply(null, arguments);",
+                                 atoms::FIND_ELEMENTS);
   }
 
   // The element search needs to loop until at least one element is found or the
@@ -127,4 +129,3 @@ bool FindElementCommand::RequiresValidTab() {
 }
 
 }  // namespace webdriver
-

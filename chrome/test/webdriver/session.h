@@ -41,7 +41,7 @@ class Session {
 
   // Executes the given |script| in the context of the frame that is currently
   // the focus of this session. The |script| should be in the form of a
-  // function body (e.g. "return arguments[0]"), where \args| is the list of
+  // function body (e.g. "return arguments[0]"), where |args| is the list of
   // arguments to pass to the function. The caller is responsible for the
   // script result |value|.
   ErrorCode ExecuteScript(const std::string& script,

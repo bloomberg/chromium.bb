@@ -12,6 +12,7 @@
 #include "base/message_loop_proxy.h"
 #include "base/process.h"
 #include "base/process_util.h"
+#include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -66,13 +67,13 @@ ErrorCode Session::ExecuteScript(const std::string& script,
                           /*pretty_print=*/false,
                           &args_as_json);
 
-  std::string jscript = "window.domAutomationController.send((function(){" +
-      // Every injected script is fed through the executeScript atom. This atom
-      // will catch any errors that are thrown and convert them to the
-      // appropriate JSON structure.
-      build_atom(EXECUTE_SCRIPT, sizeof EXECUTE_SCRIPT) +
-      "var result = executeScript(function(){" + script + "}," +
-      args_as_json + ");return JSON.stringify(result);})());";
+  // Every injected script is fed through the executeScript atom. This atom
+  // will catch any errors that are thrown and convert them to the
+  // appropriate JSON structure.
+  std::string jscript = base::StringPrintf(
+      "window.domAutomationController.send((%s).apply(null,"
+      "[function(){%s\n},%s,true]));",
+      atoms::EXECUTE_SCRIPT, script.c_str(), args_as_json.c_str());
 
   // Should we also log the script that's being executed? It could be several KB
   // in size and will add lots of noise to the logs.

@@ -16,20 +16,8 @@
 #include "base/rand_util.h"
 #include "base/scoped_ptr.h"
 #include "base/stringprintf.h"
-#include "base/utf_string_conversions.h"
-#include "third_party/webdriver/atoms.h"
 
 namespace webdriver {
-
-std::string build_atom(const wchar_t* const atom[], const size_t& size) {
-  const size_t len = size / sizeof(atom[0]);
-  std::string ret = "";
-  for (size_t i = 0; i < len; ++i) {
-    if (atom[i] != NULL)
-      ret.append(WideToUTF8(atom[i]));
-  }
-  return ret;
-}
 
 std::string print_valuetype(Value::ValueType e) {
   switch (e) {

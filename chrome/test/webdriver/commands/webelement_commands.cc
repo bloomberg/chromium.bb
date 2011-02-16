@@ -5,12 +5,12 @@
 #include "chrome/test/webdriver/commands/webelement_commands.h"
 
 #include "base/scoped_ptr.h"
+#include "base/stringprintf.h"
 #include "base/third_party/icu/icu_utf.h"
 #include "base/values.h"
 #include "chrome/test/webdriver/commands/response.h"
 #include "chrome/test/webdriver/error_codes.h"
 #include "chrome/test/webdriver/session.h"
-#include "chrome/test/webdriver/utility_functions.h"
 #include "third_party/webdriver/atoms.h"
 
 namespace webdriver {
@@ -45,11 +45,10 @@ bool WebElementCommand::GetElementLocation(bool in_view, int* x, int* y) {
   scoped_ptr<ListValue> args(new ListValue());
   Value* result = NULL;
 
-  std::string jscript = build_atom(GET_LOCATION, sizeof GET_LOCATION);
-  if (in_view) {
-    jscript.append("arguments[0].scrollIntoView();");
-  }
-  jscript.append("return getLocation(arguments[0]);");
+  std::string jscript = base::StringPrintf(
+      "%sreturn (%s).apply(null, arguments);",
+      in_view ? "arguments[0].scrollIntoView();" : "",
+      atoms::GET_LOCATION);
 
   args->Append(GetElementIdAsDictionaryValue(element_id));
 
@@ -72,7 +71,8 @@ bool WebElementCommand::GetElementSize(int* width, int* height) {
   scoped_ptr<ListValue> args(new ListValue());
   Value* result = NULL;
 
-  std::string jscript = build_atom(GET_SIZE, sizeof GET_LOCATION);
+  std::string jscript = base::StringPrintf(
+      "return (%s).apply(null, arguments);", atoms::GET_SIZE);
   args->Append(GetElementIdAsDictionaryValue(element_id));
 
   ErrorCode error = session_->ExecuteScript(jscript, args.get(), &result);
@@ -184,22 +184,13 @@ bool ElementTextCommand::DoesGet() {
 void ElementTextCommand::ExecuteGet(Response* const response) {
   Value* unscoped_result = NULL;
   ListValue args;
-  // TODO(jleyba): Use a real javascript atom.
-  std::string script =
-      "function getText(element) {"
-      "  if (element instanceof Text) {"
-      "    return element.textContent.replace(/^\\s+|\\s+$/g, '');"
-      "  }"
-      "  var childrenText = '';"
-      "  for (var i = 0; i < element.childNodes.length; i++) {"
-      "    childrenText += getText(element.childNodes[i]);"
-      "  }"
-      "  return childrenText;"
-      "}"
-      "return getText(arguments[0]);";
   args.Append(GetElementIdAsDictionaryValue(element_id));
-  ErrorCode code =
-      session_->ExecuteScript(script, &args, &unscoped_result);
+
+  std::string script = base::StringPrintf(
+      "return (%s).apply(null, arguments);", atoms::GET_TEXT);
+
+  ErrorCode code = session_->ExecuteScript(script, &args,
+                                           &unscoped_result);
   scoped_ptr<Value> result(unscoped_result);
   if (code != kSuccess) {
     SET_WEBDRIVER_ERROR(response, "Failed to execute script", code);
