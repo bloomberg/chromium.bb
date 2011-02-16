@@ -33,9 +33,7 @@ node = env.SelUniversalTest(
     filter_inverse='true',
     )
 
-# we the sysv shm feature in sel_universal which is only available on linux
-is_broken = not env.Bit('host_linux')
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
                        'run_ppapi_example_2d_test',
-                       is_broken=is_broken)
+                        is_broken=env.Bit('host_windows'))

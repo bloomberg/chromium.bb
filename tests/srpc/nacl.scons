@@ -100,18 +100,16 @@ env.AddNodeToTestSuite(node,
                        ['sel_ldr_tests', 'small_tests'],
                        'run_srpc_basic_test')
 
-trusted_env = env.get('TRUSTED_ENV')
-# NOTE: sel_universal only supports shmem under linux
-if trusted_env and trusted_env.Bit('linux'):
-  node = env.SelUniversalTest(
-      'srpc_sysv_shm_test.out',
-      command=[env.File('srpc_shm.nexe')],
-      stdin=env.File('srpc_sysv_shm_test.stdin'),
-      stdout_golden=env.File('srpc_sysv_shm_test.stdout'),
-      )
-  env.AddNodeToTestSuite(node,
-                         ['sel_ldr_tests', 'small_tests'],
-                         'run_srpc_sysv_shm_test')
+node = env.SelUniversalTest(
+    'srpc_sysv_shm_test.out',
+    command=[env.File('srpc_shm.nexe')],
+    stdin=env.File('srpc_sysv_shm_test.stdin'),
+    stdout_golden=env.File('srpc_sysv_shm_test.stdout'),
+    )
+env.AddNodeToTestSuite(node,
+                       ['sel_ldr_tests', 'small_tests'],
+                       'run_srpc_sysv_shm_test',
+                       is_broken=env.Bit('host_windows'))
 
 node = env.SelUniversalTest(
     'srpc_bad_service.out',
@@ -199,18 +197,19 @@ node = env.BrowserTester(
 env.AddNodeToTestSuite(node, ['browser_tests'],
                        'run_srpc_url_as_nacl_desc_browser_test')
 
-# NOTE: sel_universal only supports read-only files under linux
-if trusted_env and trusted_env.Bit('linux'):
-  node = env.SelUniversalTest(
-      'srpc_rofile.out',
-      command=[env.File('cat.nexe')],
-      sel_universal_flags=['--var', 'myfile', env.File('dummy.txt')],
-      stdin=env.File('srpc_ro_file.stdin'),
-      stdout_golden=env.File('srpc_ro_file.stdout'),
-      filter_regex="'CatFile'",
-      filter_inverse='true',
-      )
-  env.AddNodeToTestSuite(node, ['small_tests'], 'run_srpc_ro_file_test')
+node = env.SelUniversalTest(
+    'srpc_rofile.out',
+    command=[env.File('cat.nexe')],
+    sel_universal_flags=['--var', 'myfile', env.File('dummy.txt')],
+    stdin=env.File('srpc_ro_file.stdin'),
+    stdout_golden=env.File('srpc_ro_file.stdout'),
+    filter_regex="'CatFile'",
+    filter_inverse='true',
+    )
+env.AddNodeToTestSuite(node,
+                       ['small_tests'],
+                       'run_srpc_ro_file_test',
+                       is_broken=env.Bit('host_windows'))
 
 ######################################################################
 ## PPAPI Browser Tests

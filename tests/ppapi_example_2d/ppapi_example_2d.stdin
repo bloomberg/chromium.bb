@@ -127,7 +127,7 @@ rpc PPP_Instance_DidCreate ${INSTANCE} i(5) ${TAGS} ${VALUES} * i(0)
 
 echo
 echo "*** SETTTING UP VIDEO MEMORY"
-sysv video_handle video_address 65536
+shmem video_handle video_address 65536
 memset ${video_address} 0  ${IMG_SIZE} 0
 checksum ${video_address} 0 ${IMG_SIZE}
 

@@ -159,7 +159,7 @@ int main(int argc, char* argv[]) {
   loop.AddHandler("replay", HandlerReplay);
 
   // possible platform specific stuff
-  loop.AddHandler("sysv", HandlerShmem);
+  loop.AddHandler("shmem", HandlerShmem);
   loop.AddHandler("readonly_file", HandlerReadonlyFile);
   loop.AddHandler("sleep", HandlerSleep);
 
