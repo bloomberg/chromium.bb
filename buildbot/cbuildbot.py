@@ -548,7 +548,7 @@ def _ArchiveTestResults(buildroot, test_results_dir):
 
     archive_tarball = os.path.join(buildroot, 'test_results.tgz')
     if os.path.exists(archive_tarball): os.remove(archive_tarball)
-    OldRunCommand(['tar', 'cf', archive_tarball, results_path])
+    OldRunCommand(['tar', 'czf', archive_tarball, results_path])
     shutil.rmtree(results_path)
     return archive_tarball
   except Exception, e:
