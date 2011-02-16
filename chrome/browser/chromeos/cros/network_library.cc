@@ -45,7 +45,7 @@ static const char* kSignalStrengthProperty = "Strength";
 static const char* kActivationStateProperty = "Cellular.ActivationState";
 static const char* kNetworkTechnologyProperty = "Cellular.NetworkTechnology";
 static const char* kPaymentURLProperty = "Cellular.OlpUrl";
-  static const char* kRoamingStateProperty = "Cellular.RoamingState";
+static const char* kRoamingStateProperty = "Cellular.RoamingState";
 
 // Connman state options.
 static const char* kStateIdle = "idle";
@@ -53,7 +53,7 @@ static const char* kStateCarrier = "carrier";
 static const char* kStateAssociation = "association";
 static const char* kStateConfiguration = "configuration";
 static const char* kStateReady = "ready";
-  static const char* kStateDisconnect = "disconnect";
+static const char* kStateDisconnect = "disconnect";
 static const char* kStateFailure = "failure";
 static const char* kStateActivationFailure = "activation-failure";
 
@@ -1327,23 +1327,6 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       return wifi_;
     if (cellular_ && cellular_->is_active())
       return cellular_;
-    // Due to bug chromium-os:9310, if no active network is found,
-    // use the first connected.
-    // TODO(chocobo): Remove when bug 9310 is fixed.
-    // START BUG 9310 WORKAROUND
-    if (ethernet_ && ethernet_->connected()) {
-      ethernet_->set_active(true);
-      return ethernet_;
-    }
-    if (wifi_ && wifi_->connected()) {
-      wifi_->set_active(true);
-      return wifi_;
-    }
-    if (cellular_ && cellular_->connected()) {
-      cellular_->set_active(true);
-      return cellular_;
-    }
-    // END BUG 9310 WORKAROUND
     return NULL;
   }
 

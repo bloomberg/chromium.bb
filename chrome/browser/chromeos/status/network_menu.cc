@@ -405,41 +405,70 @@ SkBitmap NetworkMenu::IconForNetworkConnecting(double animation_value,
 }
 
 // static
-// TODO(ers) update for GSM when we have the necessary images
 SkBitmap NetworkMenu::BadgeForNetworkTechnology(
     const CellularNetwork* cellular) {
   if (!cellular)
     return SkBitmap();
 
   int id = -1;
-  if (cellular->network_technology() == NETWORK_TECHNOLOGY_EVDO) {
-    switch (cellular->GetDataLeft()) {
-      case CellularNetwork::DATA_NONE:
-        id = IDR_STATUSBAR_NETWORK_3G_ERROR;
-        break;
-      case CellularNetwork::DATA_VERY_LOW:
-      case CellularNetwork::DATA_LOW:
-      case CellularNetwork::DATA_NORMAL:
-        id = IDR_STATUSBAR_NETWORK_3G;
-        break;
-      case CellularNetwork::DATA_UNKNOWN:
-        id = IDR_STATUSBAR_NETWORK_3G_UNKNOWN;
-        break;
-    }
-  } else if (cellular->network_technology() == NETWORK_TECHNOLOGY_1XRTT) {
-    switch (cellular->GetDataLeft()) {
-      case CellularNetwork::DATA_NONE:
-        id = IDR_STATUSBAR_NETWORK_1X_ERROR;
-        break;
-      case CellularNetwork::DATA_VERY_LOW:
-      case CellularNetwork::DATA_LOW:
-      case CellularNetwork::DATA_NORMAL:
-        id = IDR_STATUSBAR_NETWORK_1X;
-        break;
-      case CellularNetwork::DATA_UNKNOWN:
-        id = IDR_STATUSBAR_NETWORK_1X_UNKNOWN;
-        break;
-    }
+  switch (cellular->network_technology()) {
+    case NETWORK_TECHNOLOGY_EVDO:
+      switch (cellular->GetDataLeft()) {
+        case CellularNetwork::DATA_NONE:
+          id = IDR_STATUSBAR_NETWORK_3G_ERROR;
+          break;
+        case CellularNetwork::DATA_VERY_LOW:
+        case CellularNetwork::DATA_LOW:
+        case CellularNetwork::DATA_NORMAL:
+          id = IDR_STATUSBAR_NETWORK_3G;
+          break;
+        case CellularNetwork::DATA_UNKNOWN:
+          id = IDR_STATUSBAR_NETWORK_3G_UNKNOWN;
+          break;
+      }
+      break;
+    case NETWORK_TECHNOLOGY_1XRTT:
+      switch (cellular->GetDataLeft()) {
+        case CellularNetwork::DATA_NONE:
+          id = IDR_STATUSBAR_NETWORK_1X_ERROR;
+          break;
+        case CellularNetwork::DATA_VERY_LOW:
+        case CellularNetwork::DATA_LOW:
+        case CellularNetwork::DATA_NORMAL:
+          id = IDR_STATUSBAR_NETWORK_1X;
+          break;
+        case CellularNetwork::DATA_UNKNOWN:
+          id = IDR_STATUSBAR_NETWORK_1X_UNKNOWN;
+          break;
+      }
+      break;
+      // Note: we may not be able to obtain data usage info
+      // from GSM carriers, so there may not be a reason
+      // to create _ERROR or _UNKNOWN versions of the following
+      // icons.
+    case NETWORK_TECHNOLOGY_GPRS:
+      id = IDR_STATUSBAR_NETWORK_GPRS;
+      break;
+    case NETWORK_TECHNOLOGY_EDGE:
+      id = IDR_STATUSBAR_NETWORK_EDGE;
+      break;
+    case NETWORK_TECHNOLOGY_UMTS:
+      id = IDR_STATUSBAR_NETWORK_3G;
+      break;
+    case NETWORK_TECHNOLOGY_HSPA:
+      id = IDR_STATUSBAR_NETWORK_HSPA;
+      break;
+    case NETWORK_TECHNOLOGY_HSPA_PLUS:
+      id = IDR_STATUSBAR_NETWORK_HSPA_PLUS;
+      break;
+    case NETWORK_TECHNOLOGY_LTE:
+      id = IDR_STATUSBAR_NETWORK_LTE;
+      break;
+    case NETWORK_TECHNOLOGY_LTE_ADVANCED:
+      id = IDR_STATUSBAR_NETWORK_LTE_ADVANCED;
+      break;
+    case NETWORK_TECHNOLOGY_UNKNOWN:
+      break;
   }
   if (id == -1)
     return SkBitmap();

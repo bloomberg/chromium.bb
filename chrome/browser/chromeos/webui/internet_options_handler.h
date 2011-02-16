@@ -114,12 +114,10 @@ class InternetOptionsHandler
                        chromeos::NetworkLibrary* cros);
   // Refreshes the display of network information.
   void RefreshNetworkData(chromeos::NetworkLibrary* cros);
-  // Adds an observer for the active network, if any, so that we can dynamically
-  // display the correct icon for that network's signal strength.
-  void MonitorActiveNetwork(chromeos::NetworkLibrary* cros);
-
-  // If any network is currently active, this is its service path.
-  std::string active_network_;
+  // Adds observers for wireless networks, if any, so that we can dynamically
+  // display the correct icon for that network's signal strength and, in the
+  // case of cellular networks, network technology and roaming status.
+  void MonitorNetworks(chromeos::NetworkLibrary* cros);
 
   // A boolean flag of whether to use WebUI for connect UI. True to use WebUI
   // and false to use Views dialogs.

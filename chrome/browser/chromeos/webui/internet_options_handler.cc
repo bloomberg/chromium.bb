@@ -62,7 +62,7 @@ InternetOptionsHandler::InternetOptionsHandler()
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   netlib->AddNetworkManagerObserver(this);
   netlib->AddCellularDataPlanObserver(this);
-  MonitorActiveNetwork(netlib);
+  MonitorNetworks(netlib);
 }
 
 InternetOptionsHandler::~InternetOptionsHandler() {
@@ -381,7 +381,7 @@ void InternetOptionsHandler::OnNetworkManagerChanged(
     chromeos::NetworkLibrary* cros) {
   if (!web_ui_)
     return;
-  MonitorActiveNetwork(cros);
+  MonitorNetworks(cros);
   RefreshNetworkData(cros);
 }
 
@@ -392,24 +392,28 @@ void InternetOptionsHandler::OnNetworkChanged(
     RefreshNetworkData(cros);
 }
 
-// TODO(ers) Ideally, on this page we'd monitor all networks for
-// signal strength changes, not just the active network.
-void InternetOptionsHandler::MonitorActiveNetwork(
-    chromeos::NetworkLibrary* cros) {
-  const chromeos::Network* network = cros->active_network();
-  if (active_network_.empty() || network == NULL ||
-      active_network_ != network->service_path()) {
-    if (!active_network_.empty()) {
-      cros->RemoveNetworkObserver(active_network_, this);
-    }
-    if (network != NULL) {
-      cros->AddNetworkObserver(network->service_path(), this);
-    }
+// Monitor wireless networks for changes. It is only necessary
+// to set up individual observers for the cellular networks
+// (if any) and for the connected Wi-Fi network (if any). The
+// only change we are interested in for Wi-Fi networks is signal
+// strength. For non-connected Wi-Fi networks, all information is
+// reported via scan results, which trigger network manager
+// updates. Only the connected Wi-Fi network has changes reported
+// via service property updates.
+void InternetOptionsHandler::MonitorNetworks( chromeos::NetworkLibrary* cros) {
+  cros->RemoveObserverForAllNetworks(this);
+  const chromeos::WifiNetwork* wifi_network = cros->wifi_network();
+  if (wifi_network != NULL)
+    cros->AddNetworkObserver(wifi_network->service_path(), this);
+  // Always monitor the cellular networks, if any, so that changes
+  // in network technology, roaming status, and signal strength
+  // will be shown.
+  const chromeos::CellularNetworkVector& cell_networks =
+      cros->cellular_networks();
+  for (size_t i = 0; i < cell_networks.size(); ++i) {
+    chromeos::CellularNetwork* cell_network = cell_networks[i];
+    cros->AddNetworkObserver(cell_network->service_path(), this);
   }
-  if (network != NULL)
-    active_network_ = network->service_path();
-  else
-    active_network_ = "";
 }
 
 void InternetOptionsHandler::OnCellularDataPlanChanged(
