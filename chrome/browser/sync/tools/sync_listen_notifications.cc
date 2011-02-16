@@ -240,7 +240,7 @@ int main(int argc, char* argv[]) {
   std::string email = command_line.GetSwitchValueASCII("email");
   if (email.empty()) {
     printf("Usage: %s --email=foo@bar.com [--password=mypassword] "
-           "[--server=talk.google.com] [--port=5222] [--allow-plain] "
+           "[--server=xmpp.google.com] [--port=5222] [--allow-plain] "
            "[--disable-tls] [--use-ssl-tcp] [--server-notifier-state] "
            "[--use-legacy-notifier] "
            "[--legacy-notifier-send-initial-update]\n",
@@ -250,7 +250,7 @@ int main(int argc, char* argv[]) {
   std::string password = command_line.GetSwitchValueASCII("password");
   std::string server = command_line.GetSwitchValueASCII("server");
   if (server.empty()) {
-    server = "talk.google.com";
+    server = "xmpp.google.com";
   }
   std::string port_str = command_line.GetSwitchValueASCII("port");
   int port = 5222;

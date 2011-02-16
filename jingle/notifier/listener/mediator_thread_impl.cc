@@ -137,10 +137,10 @@ void MediatorThreadImpl::DoLogin(
     server_list_count = 1;
   } else {
     // The default servers know how to serve over port 443 (that's the magic).
-    server_list[0].server = net::HostPortPair("talk.google.com",
+    server_list[0].server = net::HostPortPair("xmpp.google.com",
                                               notifier::kDefaultXmppPort);
     server_list[0].special_port_magic = true;
-    server_list[1].server = net::HostPortPair("talkx.l.google.com",
+    server_list[1].server = net::HostPortPair("xmppx.l.google.com",
                                               notifier::kDefaultXmppPort);
     server_list[1].special_port_magic = true;
     server_list_count = 2;
