@@ -96,6 +96,7 @@ class ChromeTests(object):
       "ui": self.TestUI,                "ui_tests": self.TestUI,
       "unit": self.TestUnit,            "unit_tests": self.TestUnit,
       "app": self.TestApp,              "app_unittests": self.TestApp,
+      "gfx": self.TestGfx,              "gfx_unittests": self.TestGfx,
     }
 
     if test not in self._test_list:
@@ -291,6 +292,9 @@ class ChromeTests(object):
 
   def TestApp(self):
     return self.SimpleTest("chrome", "app_unittests")
+
+  def TestGfx(self):
+    return self.SimpleTest("chrome", "gfx_unittests")
 
   def TestUI(self):
     return self.SimpleTest("chrome", "ui_tests",
