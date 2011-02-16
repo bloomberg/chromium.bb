@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
+#include <string>
+
 #include "base/command_line.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/device_management_policy_provider.h"
@@ -20,7 +23,7 @@ namespace {
 const int64 kPolicyRefreshRateMinMs = 30 * 60 * 1000;  // 30 minutes
 const int64 kPolicyRefreshRateMaxMs = 24 * 60 * 60 * 1000;  // 1 day
 
-}
+}  // namespace
 
 namespace policy {
 

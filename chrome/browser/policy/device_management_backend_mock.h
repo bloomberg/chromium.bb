@@ -40,6 +40,7 @@ class DevicePolicyResponseDelegateMock
   virtual ~DevicePolicyResponseDelegateMock();
 
   MOCK_METHOD1(HandlePolicyResponse, void(const em::DevicePolicyResponse&));
+  MOCK_METHOD1(HandleCloudPolicyResponse, void(const em::CloudPolicyResponse&));
   MOCK_METHOD1(OnError, void(DeviceManagementBackend::ErrorCode error));
 };
 
