@@ -3788,3 +3788,16 @@
    fun:_ZNK3gfx15PlatformFontGtk13GetNativeFontEv
    fun:_ZNK3gfx4Font13GetNativeFontEv
 }
+{
+   bug_73185_a
+   Memcheck:Leak
+   ...
+   fun:*CloudPolicyCacheTest*
+}
+{
+   bug_73185_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN5Value18CreateBooleanValueEb
+   fun:_ZN6policy12DecodePolicyERKN21enterprise_management19CloudPolicySettingsEPSt3mapINS_23ConfigurationPolicyTypeEP5ValueSt4lessIS5_ESaISt4pairIKS5_S7_EEESF_
+}
