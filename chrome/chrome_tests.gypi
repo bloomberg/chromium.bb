@@ -2386,7 +2386,6 @@
             'app/chrome_dll.rc',
             'app/chrome_dll_resource.h',
             'app/chrome_dll_version.rc.version',
-            'browser/extensions/extension_popup_apitest.cc',
             'browser/extensions/extension_rlz_apitest.cc',
             # TODO(jam): http://crbug.com/15101 These tests fail on Linux and
             # Mac.
