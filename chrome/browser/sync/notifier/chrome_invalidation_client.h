@@ -69,7 +69,7 @@ class ChromeInvalidationClient
   // Register the sync types that we're interested in getting
   // notifications for.  Must only be called between calls to Start()
   // and Stop().
-  void RegisterTypes();
+  void RegisterTypes(const syncable::ModelTypeSet& types);
 
   // invalidation::InvalidationListener implementation.
   //

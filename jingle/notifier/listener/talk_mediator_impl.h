@@ -24,7 +24,10 @@ namespace notifier {
 class TalkMediatorImpl
     : public TalkMediator, public MediatorThread::Observer {
  public:
-  // Takes ownership of |mediator_thread|.
+  // Takes ownership of |mediator_thread|. It is guaranteed that
+  // |mediator_thread| is destroyed only when this object is destroyed.
+  // This means that you can store a pointer to mediator_thread separately
+  // and use it until this object is destroyed.
   TalkMediatorImpl(
       MediatorThread* mediator_thread, bool invalidate_xmpp_auth_token,
       bool allow_insecure_connection);

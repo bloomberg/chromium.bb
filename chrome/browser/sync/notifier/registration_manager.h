@@ -12,6 +12,7 @@
 #include <map>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "google/cacheinvalidation/invalidation-client.h"
@@ -19,6 +20,13 @@
 namespace sync_notifier {
 
 class RegistrationManager {
+
+  friend class RegistrationManagerTest;
+
+  FRIEND_TEST_ALL_PREFIXES(RegistrationManagerTest, RegisterType);
+  FRIEND_TEST_ALL_PREFIXES(RegistrationManagerTest, UnregisterType);
+  FRIEND_TEST_ALL_PREFIXES(RegistrationManagerTest, MarkRegistrationLost);
+  FRIEND_TEST_ALL_PREFIXES(RegistrationManagerTest, MarkAllRegistrationsLost);
  public:
   // Does not take ownership of |invalidation_client_|.
   explicit RegistrationManager(
@@ -26,15 +34,12 @@ class RegistrationManager {
 
   ~RegistrationManager();
 
-  // Registers the given |model_type|, which must be valid.
-  void RegisterType(syncable::ModelType model_type);
+  void SetRegisteredTypes(const syncable::ModelTypeSet& types);
 
   // Returns true iff |model_type| is currently registered.
   //
   // Currently only used by unit tests.
   bool IsRegistered(syncable::ModelType model_type) const;
-
-  // TODO(akalin): We will eventually need an UnregisterType().
 
   // Marks the registration for the |model_type| lost and re-registers
   // it.
@@ -46,6 +51,11 @@ class RegistrationManager {
  private:
   typedef std::map<syncable::ModelType, invalidation::RegistrationState>
       RegistrationStatusMap;
+
+  // Registers the given |model_type|, which must be valid.
+  void RegisterType(syncable::ModelType model_type);
+
+  void UnregisterType(syncable::ModelType model_type);
 
   // Calls invalidation_client_->Register() on |object_id|.  sets
   // it->second to UNREGISTERED -> PENDING.

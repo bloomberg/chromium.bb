@@ -131,6 +131,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   // Called from |frontend_loop| to update SyncCredentials.
   void UpdateCredentials(const sync_api::SyncCredentials& credentials);
 
+  virtual void UpdateEnabledTypes(const syncable::ModelTypeSet& types);
+
   // This starts the SyncerThread running a Syncer object to communicate with
   // sync servers.  Until this is called, no changes will leave or enter this
   // browser from the cloud / sync servers.
@@ -321,6 +323,10 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     // Called on our SyncBackendHost's core_thread_ to perform credential
     // update on behalf of SyncBackendHost::UpdateCredentials
     void DoUpdateCredentials(const sync_api::SyncCredentials& credentials);
+
+  // Update the set of enabled sync types. Usually called when the user disables
+  // or enables a sync type.
+    void DoUpdateEnabledTypes(const syncable::ModelTypeSet& types);
 
     // Called on the SyncBackendHost core_thread_ to tell the syncapi to start
     // syncing (generally after initialization and authentication).

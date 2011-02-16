@@ -208,6 +208,14 @@ void SyncBackendHost::UpdateCredentials(const SyncCredentials& credentials) {
                         credentials));
 }
 
+void SyncBackendHost::UpdateEnabledTypes(
+    const syncable::ModelTypeSet& types) {
+  core_thread_.message_loop()->PostTask(FROM_HERE,
+      NewRunnableMethod(core_.get(),
+                        &SyncBackendHost::Core::DoUpdateEnabledTypes,
+                        types));
+}
+
 void SyncBackendHost::StartSyncingWithServer() {
   core_thread_.message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoStartSyncing));
@@ -642,6 +650,12 @@ void SyncBackendHost::Core::DoUpdateCredentials(
     const SyncCredentials& credentials) {
   DCHECK(MessageLoop::current() == host_->core_thread_.message_loop());
   syncapi_->UpdateCredentials(credentials);
+}
+
+void SyncBackendHost::Core::DoUpdateEnabledTypes(
+    const syncable::ModelTypeSet& types) {
+  DCHECK(MessageLoop::current() == host_->core_thread_.message_loop());
+  syncapi_->UpdateEnabledTypes(types);
 }
 
 void SyncBackendHost::Core::DoStartSyncing() {

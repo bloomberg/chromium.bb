@@ -72,12 +72,16 @@ class ServerNotifierThread
   // StateWriter implementation.
   virtual void WriteState(const std::string& state);
 
+  virtual void UpdateEnabledTypes(const syncable::ModelTypeSet& types);
+
  private:
   // Posted to the worker thread by ListenForUpdates().
   void DoListenForUpdates();
 
   // Posted to the worker thread by SubscribeForUpdates().
-  void RegisterTypesAndSignalSubscribed();
+  void RegisterTypes();
+
+  void SignalSubscribed();
 
   // Posted to the worker thread by Logout().
   void StopInvalidationListener();
@@ -89,6 +93,10 @@ class ServerNotifierThread
   // |state_writers_|.
   StateWriter* state_writer_;
   scoped_ptr<ChromeInvalidationClient> chrome_invalidation_client_;
+
+  syncable::ModelTypeSet registered_types_;
+
+  void SetRegisteredTypes(syncable::ModelTypeSet types);
 };
 
 }  // namespace sync_notifier

@@ -1019,7 +1019,8 @@ class SyncManager::SyncInternal
         registrar_(NULL),
         notification_pending_(false),
         initialized_(false),
-        ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+        ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+        server_notifier_thread_(NULL) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   }
 
@@ -1048,6 +1049,10 @@ class SyncManager::SyncInternal
 
   // Update tokens that we're using in Sync. Email must stay the same.
   void UpdateCredentials(const SyncCredentials& credentials);
+
+  // Update the set of enabled sync types. Usually called when the user disables
+  // or enables a sync type.
+  void UpdateEnabledTypes(const syncable::ModelTypeSet& types);
 
   // Tell the sync engine to start the syncing process.
   void StartSyncing();
@@ -1387,7 +1392,11 @@ class SyncManager::SyncInternal
   // actually communicating with the server).
   bool setup_for_test_mode_;
 
+  syncable::ModelTypeSet enabled_types_;
+
   ScopedRunnableMethodFactory<SyncManager::SyncInternal> method_factory_;
+
+  sync_notifier::ServerNotifierThread* server_notifier_thread_;
 };
 const int SyncManager::SyncInternal::kDefaultNudgeDelayMilliseconds = 200;
 const int SyncManager::SyncInternal::kPreferencesNudgeDelayMilliseconds = 2000;
@@ -1427,6 +1436,10 @@ bool SyncManager::Init(const FilePath& database_location,
 
 void SyncManager::UpdateCredentials(const SyncCredentials& credentials) {
   data_->UpdateCredentials(credentials);
+}
+
+void SyncManager::UpdateEnabledTypes(const syncable::ModelTypeSet& types) {
+  data_->UpdateEnabledTypes(types);
 }
 
 
@@ -1624,7 +1637,7 @@ void SyncManager::SyncInternal::SendPendingXMPPNotification(
     VLOG(1) << "Not sending notification: no pending notification";
     return;
   }
-  if (!talk_mediator_.get()) {
+  if (!talk_mediator()) {
     VLOG(1) << "Not sending notification: shutting down (talk_mediator_ is "
                "NULL)";
     return;
@@ -1639,7 +1652,7 @@ void SyncManager::SyncInternal::SendPendingXMPPNotification(
   notification_data.service_specific_data =
       browser_sync::kSyncServiceSpecificData;
   notification_data.require_subscription = true;
-  bool success = talk_mediator_->SendNotification(notification_data);
+  bool success = talk_mediator()->SendNotification(notification_data);
   if (success) {
     notification_pending_ = false;
     VLOG(1) << "Sent XMPP notification";
@@ -1703,6 +1716,16 @@ void SyncManager::SyncInternal::UpdateCredentials(
   sync_manager_->RequestNudge();
 }
 
+void SyncManager::SyncInternal::UpdateEnabledTypes(
+  const syncable::ModelTypeSet& types) {
+  DCHECK_EQ(MessageLoop::current(), core_message_loop_);
+
+  enabled_types_ = types;
+  if (server_notifier_thread_ != NULL) {
+    server_notifier_thread_->UpdateEnabledTypes(types);
+  }
+}
+
 void SyncManager::SyncInternal::InitializeTalkMediator() {
   if (notifier_options_.notification_method ==
       notifier::NOTIFICATION_SERVER) {
@@ -1717,13 +1740,20 @@ void SyncManager::SyncInternal::InitializeTalkMediator() {
       base::Base64Encode(state, &encoded_state);
       VLOG(1) << "Read notification state: " << encoded_state;
     }
-    sync_notifier::ServerNotifierThread* server_notifier_thread =
-        new sync_notifier::ServerNotifierThread(
-            notifier_options_, state, this);
+
+    // |talk_mediator_| takes ownership of |sync_notifier_thread_|
+    // but it is. guaranteed that |sync_notifier_thread_| is destroyed only
+    // when |talk_mediator_| is (see the comments in talk_mediator.h).
+    server_notifier_thread_ = new sync_notifier::ServerNotifierThread(
+        notifier_options_, state, this);
     talk_mediator_.reset(
-        new TalkMediatorImpl(server_notifier_thread,
+        new TalkMediatorImpl(server_notifier_thread_,
                              notifier_options_.invalidate_xmpp_login,
                              notifier_options_.allow_insecure_connection));
+
+    // Since we may be initialized more than once, make sure that any
+    // newly created server notifier thread has the latest enabled types.
+    server_notifier_thread_->UpdateEnabledTypes(enabled_types_);
   } else {
     notifier::MediatorThread* mediator_thread =
         new notifier::MediatorThreadImpl(notifier_options_);
@@ -1732,8 +1762,9 @@ void SyncManager::SyncInternal::InitializeTalkMediator() {
                              notifier_options_.invalidate_xmpp_login,
                              notifier_options_.allow_insecure_connection));
     talk_mediator_->AddSubscribedServiceUrl(browser_sync::kSyncServiceUrl);
+    server_notifier_thread_ = NULL;
   }
-  talk_mediator_->SetDelegate(this);
+  talk_mediator()->SetDelegate(this);
 }
 
 void SyncManager::SyncInternal::RaiseAuthNeededEvent() {
@@ -1886,7 +1917,13 @@ void SyncManager::SyncInternal::Shutdown() {
     talk_mediator->Logout();
     VLOG(1) << "P2P: Mediator logout completed.";
     talk_mediator.reset();
+
+    // |server_notifier_thread_| is owned by |talk_mediator|. We NULL
+    // it out here so as to not have a dangling pointer.
+    server_notifier_thread_= NULL;
     VLOG(1) << "P2P: Mediator destroyed.";
+
+
   }
 
   // Pump any messages the auth watcher, syncer thread, or talk
@@ -2377,8 +2414,8 @@ void SyncManager::SyncInternal::TalkMediatorLogin(
   DCHECK(!email.empty());
   DCHECK(!token.empty());
   InitializeTalkMediator();
-  talk_mediator_->SetAuthToken(email, token, SYNC_SERVICE_NAME);
-  talk_mediator_->Login();
+  talk_mediator()->SetAuthToken(email, token, SYNC_SERVICE_NAME);
+  talk_mediator()->Login();
 }
 
 void SyncManager::SyncInternal::OnIncomingNotification(

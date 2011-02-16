@@ -45,7 +45,28 @@ void ServerNotifierThread::SubscribeForUpdates(
   worker_message_loop()->PostTask(
       FROM_HERE,
       NewRunnableMethod(
-          this, &ServerNotifierThread::RegisterTypesAndSignalSubscribed));
+          this, &ServerNotifierThread::RegisterTypes));
+
+  worker_message_loop()->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(
+          this, &ServerNotifierThread::SignalSubscribed));
+}
+
+void ServerNotifierThread::UpdateEnabledTypes(
+    const syncable::ModelTypeSet& types) {
+  DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
+  worker_message_loop()->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(
+          this,
+          &ServerNotifierThread::SetRegisteredTypes,
+          types));
+
+  worker_message_loop()->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(
+          this, &ServerNotifierThread::RegisterTypes));
 }
 
 void ServerNotifierThread::Logout() {
@@ -124,22 +145,30 @@ void ServerNotifierThread::DoListenForUpdates() {
     const std::string& client_info = webkit_glue::GetUserAgent(GURL());
     chrome_invalidation_client_->Start(
         kClientId, client_info, state_, this, this, base_task_);
+    RegisterTypes();
     state_.clear();
   }
 }
 
-void ServerNotifierThread::RegisterTypesAndSignalSubscribed() {
+void ServerNotifierThread::RegisterTypes() {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
   if (!chrome_invalidation_client_.get()) {
     return;
   }
-  chrome_invalidation_client_->RegisterTypes();
+  chrome_invalidation_client_->RegisterTypes(registered_types_);
+}
+
+void ServerNotifierThread::SignalSubscribed() {
   observers_->Notify(&Observer::OnSubscriptionStateChange, true);
 }
 
 void ServerNotifierThread::StopInvalidationListener() {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
   chrome_invalidation_client_.reset();
+}
+
+void ServerNotifierThread::SetRegisteredTypes(syncable::ModelTypeSet types) {
+  registered_types_ = types;
 }
 
 }  // namespace sync_notifier

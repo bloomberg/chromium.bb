@@ -191,7 +191,14 @@ class ServerNotifierDelegate
                                       server_notifier_state_,
                                       &chrome_invalidation_listener_,
                                       this, base_task);
-    chrome_invalidation_client_.RegisterTypes();
+    syncable::ModelTypeSet all_types;
+    for (int i = syncable::FIRST_REAL_MODEL_TYPE;
+         i < syncable::MODEL_TYPE_COUNT; ++i) {
+      syncable::ModelType model_type = syncable::ModelTypeFromInt(i);
+      all_types.insert(model_type);
+    }
+
+    chrome_invalidation_client_.RegisterTypes(all_types);
   }
 
   virtual void OnError() {

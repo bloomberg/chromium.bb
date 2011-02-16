@@ -20,7 +20,7 @@ namespace sync_notifier {
 
 class FakeServerNotifierThread : public ServerNotifierThread {
  public:
-  FakeServerNotifierThread()
+   FakeServerNotifierThread()
       : ServerNotifierThread(notifier::NotifierOptions(), "fake state",
                              ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
 
@@ -109,6 +109,18 @@ class ServerNotifierThreadTest : public testing::Test {
  protected:
   MessageLoop message_loop_;
 };
+
+syncable::ModelTypeSet GetTypeSetWithAllTypes() {
+  syncable::ModelTypeSet all_types;
+
+  for (int i = syncable::FIRST_REAL_MODEL_TYPE;
+       i < syncable::MODEL_TYPE_COUNT; ++i) {
+    syncable::ModelType model_type = syncable::ModelTypeFromInt(i);
+    all_types.insert(model_type);
+  }
+
+  return all_types;
+}
 
 TEST_F(ServerNotifierThreadTest, Basic) {
   FakeServerNotifierThread server_notifier_thread;

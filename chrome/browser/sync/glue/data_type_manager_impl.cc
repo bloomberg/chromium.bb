@@ -82,6 +82,8 @@ void DataTypeManagerImpl::Configure(const TypeSet& desired_types) {
     return;
   }
 
+  backend_->UpdateEnabledTypes(desired_types);
+
   last_requested_types_ = desired_types;
   // Add any data type controllers into the needs_start_ list that are
   // currently NOT_RUNNING or STOPPING.

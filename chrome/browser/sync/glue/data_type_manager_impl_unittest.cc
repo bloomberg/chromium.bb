@@ -134,6 +134,7 @@ class DataTypeManagerImplTest : public testing::Test {
   }
 
   void SetBackendExpectations(int times) {
+    EXPECT_CALL(backend_, UpdateEnabledTypes(_)).Times(times);
     EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _)).Times(times);
     EXPECT_CALL(backend_, StartSyncingWithServer()).Times(times);
     EXPECT_CALL(backend_, RequestPause()).Times(times);
@@ -153,6 +154,7 @@ TEST_F(DataTypeManagerImplTest, NoControllers) {
   DataTypeManagerImpl dtm(&backend_, controllers_);
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::OK);
+  EXPECT_CALL(backend_, UpdateEnabledTypes(_));
   dtm.Configure(types_);
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm.state());
   dtm.Stop();
@@ -248,6 +250,7 @@ TEST_F(DataTypeManagerImplTest, ConfigureOneThenAnother) {
   types_.insert(syncable::PREFERENCES);
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::OK);
+
   dtm.Configure(types_);
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm.state());
 

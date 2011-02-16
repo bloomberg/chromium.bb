@@ -21,20 +21,18 @@ RegistrationManager::~RegistrationManager() {
   DCHECK(non_thread_safe_.CalledOnValidThread());
 }
 
-void RegistrationManager::RegisterType(syncable::ModelType model_type) {
+void RegistrationManager::SetRegisteredTypes(
+    const syncable::ModelTypeSet& types) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
-  invalidation::ObjectId object_id;
-  if (!RealModelTypeToObjectId(model_type, &object_id)) {
-    LOG(DFATAL) << "Invalid model type: " << model_type;
-    return;
-  }
-  RegistrationStatusMap::iterator it =
-      registration_status_.insert(
-          std::make_pair(
-              model_type,
-              invalidation::RegistrationState_UNREGISTERED)).first;
-  if (it->second == invalidation::RegistrationState_UNREGISTERED) {
-    RegisterObject(object_id, it);
+
+  for (int i = syncable::FIRST_REAL_MODEL_TYPE; i < syncable::MODEL_TYPE_COUNT;
+       ++i) {
+    syncable::ModelType type = syncable::ModelTypeFromInt(i);
+    if (types.count(type) > 0) {
+      RegisterType(type);
+    } else {
+      UnregisterType(type);
+    }
   }
 }
 
@@ -82,6 +80,40 @@ void RegistrationManager::MarkAllRegistrationsLost() {
   }
 }
 
+void RegistrationManager::RegisterType(syncable::ModelType model_type) {
+  DCHECK(non_thread_safe_.CalledOnValidThread());
+  invalidation::ObjectId object_id;
+  if (!RealModelTypeToObjectId(model_type, &object_id)) {
+    LOG(DFATAL) << "Invalid model type: " << model_type;
+    return;
+  }
+  RegistrationStatusMap::iterator it =
+      registration_status_.insert(
+          std::make_pair(
+              model_type,
+              invalidation::RegistrationState_UNREGISTERED)).first;
+  if (it->second == invalidation::RegistrationState_UNREGISTERED) {
+    RegisterObject(object_id, it);
+  }
+}
+
+void RegistrationManager::UnregisterType(syncable::ModelType model_type) {
+  DCHECK(non_thread_safe_.CalledOnValidThread());
+  invalidation::ObjectId object_id;
+  if (!RealModelTypeToObjectId(model_type, &object_id)) {
+    LOG(DFATAL) << "Invalid model type: " << model_type;
+    return;
+  }
+  RegistrationStatusMap::iterator it = registration_status_.find(model_type);
+
+  if (it != registration_status_.end()) {
+    if (it->second == invalidation::RegistrationState_REGISTERED) {
+      invalidation_client_->Unregister(object_id);
+    }
+    registration_status_.erase(it);
+  }
+}
+
 void RegistrationManager::RegisterObject(
     const invalidation::ObjectId& object_id,
     RegistrationStatusMap::iterator it) {
@@ -89,5 +121,4 @@ void RegistrationManager::RegisterObject(
   invalidation_client_->Register(object_id);
   it->second = invalidation::RegistrationState_REGISTERED;
 }
-
 }  // namespace sync_notifier

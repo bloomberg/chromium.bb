@@ -75,7 +75,6 @@ void ChromeInvalidationClient::Start(
   ChangeBaseTask(base_task);
   registration_manager_.reset(
       new RegistrationManager(invalidation_client_.get()));
-  RegisterTypes();
 }
 
 void ChromeInvalidationClient::ChangeBaseTask(
@@ -103,15 +102,11 @@ void ChromeInvalidationClient::Stop() {
   listener_ = NULL;
 }
 
-void ChromeInvalidationClient::RegisterTypes() {
+void ChromeInvalidationClient::RegisterTypes(
+    const syncable::ModelTypeSet& types) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
 
-  // TODO(akalin): Make this configurable instead of listening to
-  // notifications for all possible types.
-  for (int i = syncable::FIRST_REAL_MODEL_TYPE;
-       i < syncable::MODEL_TYPE_COUNT; ++i) {
-    registration_manager_->RegisterType(syncable::ModelTypeFromInt(i));
-  }
+  registration_manager_->SetRegisteredTypes(types);
 }
 
 void ChromeInvalidationClient::Invalidate(
