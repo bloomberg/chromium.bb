@@ -13,7 +13,6 @@
         {
           'rule_name': 'make_sources',
           'extension': 'in',
-          'msvs_external_rule': 1,
           'inputs': [
             'make-sources.py',
           ],
