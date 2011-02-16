@@ -7,9 +7,9 @@
 #include "base/scoped_temp_dir.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/net/gaia/token_service.h"
-#include "chrome/browser/policy/cloud_policy_cache.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
+#include "chrome/browser/policy/device_management_policy_cache.h"
 #include "chrome/browser/policy/device_management_policy_provider.h"
 #include "chrome/browser/policy/mock_configuration_policy_store.h"
 #include "chrome/browser/policy/mock_device_management_backend.h"
@@ -113,8 +113,9 @@ class DeviceManagementPolicyProviderTest : public testing::Test {
     MockConfigurationPolicyStore store;
     EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).WillOnce(
         MockDeviceManagementBackendSucceedRegister());
-    EXPECT_CALL(*backend_, ProcessCloudPolicyRequest(_, _, _, _)).WillOnce(
-        MockDeviceManagementBackendSucceedSpdyCloudPolicy());
+    EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
+        MockDeviceManagementBackendSucceedBooleanPolicy(
+            key::kDisableSpdy, true));
     SimulateSuccessfulLoginAndRunPending();
     EXPECT_FALSE(waiting_for_initial_policies());
     EXPECT_CALL(store, Apply(kPolicyDisableSpdy, _)).Times(1);
@@ -137,7 +138,7 @@ class DeviceManagementPolicyProviderTest : public testing::Test {
   scoped_ptr<DeviceManagementPolicyProvider> provider_;
 
  protected:
-  CloudPolicyCache* cache(DeviceManagementPolicyProvider* provider) {
+  DeviceManagementPolicyCache* cache(DeviceManagementPolicyProvider* provider) {
     return provider->cache_.get();
   }
 
@@ -192,8 +193,9 @@ TEST_F(DeviceManagementPolicyProviderTest, SecondProvide) {
   // Simulate a app relaunch by constructing a new provider. Policy should be
   // refreshed (since that might be the purpose of the app relaunch).
   CreateNewProvider();
-  EXPECT_CALL(*backend_, ProcessCloudPolicyRequest(_, _, _, _)).WillOnce(
-      MockDeviceManagementBackendSucceedSpdyCloudPolicy());
+  EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
+      MockDeviceManagementBackendSucceedBooleanPolicy(
+          key::kDisableSpdy, true));
   loop_.RunAllPending();
   Mock::VerifyAndClearExpectations(backend_);
 
@@ -201,7 +203,7 @@ TEST_F(DeviceManagementPolicyProviderTest, SecondProvide) {
   // Cached policy should still be available.
   MockConfigurationPolicyStore store;
   CreateNewProvider();
-  EXPECT_CALL(*backend_, ProcessCloudPolicyRequest(_, _, _, _)).WillOnce(
+  EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
       MockDeviceManagementBackendFailPolicy(
           DeviceManagementBackend::kErrorRequestFailed));
   SimulateSuccessfulLoginAndRunPending();
@@ -229,14 +231,15 @@ TEST_F(DeviceManagementPolicyProviderTest, ErrorCausesNewRequest) {
             DeviceManagementBackend::kErrorRequestFailed));
     EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).WillOnce(
         MockDeviceManagementBackendSucceedRegister());
-    EXPECT_CALL(*backend_, ProcessCloudPolicyRequest(_, _, _, _)).WillOnce(
+    EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
         MockDeviceManagementBackendFailPolicy(
             DeviceManagementBackend::kErrorRequestFailed));
-    EXPECT_CALL(*backend_, ProcessCloudPolicyRequest(_, _, _, _)).WillOnce(
+    EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
         MockDeviceManagementBackendFailPolicy(
             DeviceManagementBackend::kErrorRequestFailed));
-    EXPECT_CALL(*backend_, ProcessCloudPolicyRequest(_, _, _, _)).WillOnce(
-        MockDeviceManagementBackendSucceedSpdyCloudPolicy());
+    EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
+        MockDeviceManagementBackendSucceedBooleanPolicy(key::kDisableSpdy,
+                                                        true));
   }
   SimulateSuccessfulLoginAndRunPending();
 }
@@ -247,13 +250,16 @@ TEST_F(DeviceManagementPolicyProviderTest, RefreshPolicies) {
     CreateNewProvider(0, 0, 0, 1000 * 1000, 1000, 0);
     EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).WillOnce(
         MockDeviceManagementBackendSucceedRegister());
-    EXPECT_CALL(*backend_, ProcessCloudPolicyRequest(_, _, _, _)).WillOnce(
-        MockDeviceManagementBackendSucceedSpdyCloudPolicy());
-    EXPECT_CALL(*backend_, ProcessCloudPolicyRequest(_, _, _, _)).WillOnce(
-        MockDeviceManagementBackendSucceedSpdyCloudPolicy());
-    EXPECT_CALL(*backend_, ProcessCloudPolicyRequest(_, _, _, _)).WillOnce(
-        MockDeviceManagementBackendSucceedSpdyCloudPolicy());
-    EXPECT_CALL(*backend_, ProcessCloudPolicyRequest(_, _, _, _)).WillOnce(
+    EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
+        MockDeviceManagementBackendSucceedBooleanPolicy(key::kDisableSpdy,
+                                                        true));
+    EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
+        MockDeviceManagementBackendSucceedBooleanPolicy(key::kDisableSpdy,
+                                                        true));
+    EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
+        MockDeviceManagementBackendSucceedBooleanPolicy(key::kDisableSpdy,
+                                                        true));
+    EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
         MockDeviceManagementBackendFailPolicy(
             DeviceManagementBackend::kErrorRequestFailed));
   }
@@ -267,13 +273,14 @@ TEST_F(DeviceManagementPolicyProviderTest, DeviceNotFound) {
     InSequence s;
     EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).WillOnce(
         MockDeviceManagementBackendSucceedRegister());
-    EXPECT_CALL(*backend_, ProcessCloudPolicyRequest(_, _, _, _)).WillOnce(
+    EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
         MockDeviceManagementBackendFailPolicy(
             DeviceManagementBackend::kErrorServiceDeviceNotFound));
     EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).WillOnce(
         MockDeviceManagementBackendSucceedRegister());
-    EXPECT_CALL(*backend_, ProcessCloudPolicyRequest(_, _, _, _)).WillOnce(
-        MockDeviceManagementBackendSucceedSpdyCloudPolicy());
+    EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
+        MockDeviceManagementBackendSucceedBooleanPolicy(key::kDisableSpdy,
+                                                        true));
   }
   SimulateSuccessfulLoginAndRunPending();
 }
@@ -285,13 +292,14 @@ TEST_F(DeviceManagementPolicyProviderTest, InvalidTokenOnPolicyRequest) {
     InSequence s;
     EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).WillOnce(
         MockDeviceManagementBackendSucceedRegister());
-    EXPECT_CALL(*backend_, ProcessCloudPolicyRequest(_, _, _, _)).WillOnce(
+    EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
         MockDeviceManagementBackendFailPolicy(
             DeviceManagementBackend::kErrorServiceManagementTokenInvalid));
     EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).WillOnce(
         MockDeviceManagementBackendSucceedRegister());
-    EXPECT_CALL(*backend_, ProcessCloudPolicyRequest(_, _, _, _)).WillOnce(
-        MockDeviceManagementBackendSucceedSpdyCloudPolicy());
+    EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
+        MockDeviceManagementBackendSucceedBooleanPolicy(key::kDisableSpdy,
+                                                        true));
   }
   SimulateSuccessfulLoginAndRunPending();
 }
@@ -304,11 +312,13 @@ TEST_F(DeviceManagementPolicyProviderTest, DeviceNoLongerManaged) {
     CreateNewProvider(0, 0, 0, 0, 0, 1000 * 1000);
     EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).WillOnce(
         MockDeviceManagementBackendSucceedRegister());
-    EXPECT_CALL(*backend_, ProcessCloudPolicyRequest(_, _, _, _)).WillOnce(
-        MockDeviceManagementBackendSucceedSpdyCloudPolicy());
-    EXPECT_CALL(*backend_, ProcessCloudPolicyRequest(_, _, _, _)).WillOnce(
-        MockDeviceManagementBackendSucceedSpdyCloudPolicy());
-    EXPECT_CALL(*backend_, ProcessCloudPolicyRequest(_, _, _, _)).WillOnce(
+    EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
+        MockDeviceManagementBackendSucceedBooleanPolicy(key::kDisableSpdy,
+                                                        true));
+    EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
+        MockDeviceManagementBackendSucceedBooleanPolicy(key::kDisableSpdy,
+                                                        true));
+    EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
         MockDeviceManagementBackendFailPolicy(
             DeviceManagementBackend::kErrorServiceManagementNotSupported));
     EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).WillOnce(
@@ -331,7 +341,7 @@ TEST_F(DeviceManagementPolicyProviderTest, UnmanagedDevice) {
   SimulateSuccessfulLoginAndRunPending();
   // (1) The provider's DMPolicyCache should know that the device is not
   // managed.
-  EXPECT_TRUE(cache(provider_.get())->is_unmanaged());
+  EXPECT_TRUE(cache(provider_.get())->is_device_unmanaged());
   // (2) On restart, the provider should detect that this is not the first
   // login.
   CreateNewProvider(1000 * 1000, 0, 0, 0, 0, 0);
@@ -340,43 +350,14 @@ TEST_F(DeviceManagementPolicyProviderTest, UnmanagedDevice) {
     InSequence s;
     EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).WillOnce(
         MockDeviceManagementBackendSucceedRegister());
-    EXPECT_CALL(*backend_, ProcessCloudPolicyRequest(_, _, _, _)).WillOnce(
-        MockDeviceManagementBackendSucceedSpdyCloudPolicy());
+    EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
+        MockDeviceManagementBackendSucceedBooleanPolicy(key::kDisableSpdy,
+                                                        true));
   }
   SimulateSuccessfulLoginAndRunPending();
   // (3) Since the backend call this time returned a device id, the "unmanaged"
   // marker should have been deleted.
-  EXPECT_FALSE(cache(provider_.get())->is_unmanaged());
-}
-
-TEST_F(DeviceManagementPolicyProviderTest, FallbackToOldProtocol) {
-  { // Scoping so SimulateSuccessfulLoginAndRunPending doesn't see the sequence.
-    InSequence s;
-    CreateNewProvider(0, 0, 0, 0, 0, 1000 * 1000);
-    EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).WillOnce(
-        MockDeviceManagementBackendSucceedRegister());
-    // If the CloudPolicyRequest fails with kErrorRequestInvalid...
-    EXPECT_CALL(*backend_, ProcessCloudPolicyRequest(_, _, _, _)).WillOnce(
-        MockDeviceManagementBackendFailPolicy(
-            DeviceManagementBackend::kErrorRequestInvalid));
-    // ...the client should fall back to a classic PolicyRequest...
-    EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
-        MockDeviceManagementBackendSucceedBooleanPolicy(
-            key::kDisableSpdy, true));
-    // ...and remember this fallback for any future request, ...
-    EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
-        MockDeviceManagementBackendFailPolicy(
-            DeviceManagementBackend::kErrorHttpStatus));
-    // ...both after successful fetches and after errors.
-    EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(
-        MockDeviceManagementBackendFailPolicy(
-            DeviceManagementBackend::kErrorServiceManagementNotSupported));
-    // Finally, we set the client to 'unmanaged' to stop its request stream.
-    EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).WillOnce(
-        MockDeviceManagementBackendFailRegister(
-            DeviceManagementBackend::kErrorServiceManagementNotSupported));
-  }
-  SimulateSuccessfulLoginAndRunPending();
+  EXPECT_FALSE(cache(provider_.get())->is_device_unmanaged());
 }
 
 }  // namespace policy

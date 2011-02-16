@@ -81,29 +81,7 @@ class PolicyTemplateChecker(object):
                   container_name, identifier, value)
     return value
 
-  def _AddPolicyID(self, id, policy_ids, policy):
-    '''
-    Adds |id| to |policy_ids|. Generates an error message if the
-    |id| exists already; |policy| is needed for this message.
-    '''
-    if id in policy_ids:
-      self._Error('Duplicate id', 'policy', policy.get('name'),
-                  id)
-    else:
-      policy_ids.add(id)
-
-  def _CheckPolicyIDs(self, policy_ids):
-    '''
-    Checks a set of policy_ids to make sure it contains a continuous range
-    of entries (i.e. no holes).
-    Holes would not be a technical problem, but we want to ensure that nobody
-    accidentally omits IDs.
-    '''
-    for i in range(len(policy_ids)):
-      if (i + 1) not in policy_ids:
-        self._Error('No policy with id: %s' % (i + 1))
-
-  def _CheckPolicy(self, policy, is_in_group, policy_ids):
+  def _CheckPolicy(self, policy, may_contain_groups):
     if not isinstance(policy, dict):
       self._Error('Each policy must be a dictionary.', 'policy', None, policy)
       return
@@ -112,7 +90,7 @@ class PolicyTemplateChecker(object):
     for key in policy:
       if key not in ('name', 'type', 'caption', 'desc', 'supported_on',
                      'label', 'policies', 'items', 'example_value', 'features',
-                     'deprecated', 'future', 'id'):
+                     'deprecated', 'future'):
         self.warning_count += 1
         print ('In policy %s: Warning: Unknown key: %s' %
                (policy.get('name'), key))
@@ -146,29 +124,18 @@ class PolicyTemplateChecker(object):
     if policy_type == 'group':
 
       # Groups must not be nested.
-      if is_in_group:
+      if not may_contain_groups:
         self._Error('Policy groups must not be nested.', 'policy', policy)
 
       # Each policy group must have a list of policies.
       policies = self._CheckContains(policy, 'policies', list)
-
-      # Check sub-policies.
       if policies is not None:
         for nested_policy in policies:
-          self._CheckPolicy(nested_policy, True, policy_ids)
-
-      # Groups must not have an |id|.
-      if 'id' in policy:
-        self._Error('Policies of type "group" must not have an "id" field.',
-                    'policy', policy)
+          self._CheckPolicy(nested_policy, False)
 
       # Statistics.
       self.num_groups += 1
     else:  # policy_type != group
-
-      # Each policy must have a protobuf ID.
-      id = self._CheckContains(policy, 'id', int)
-      self._AddPolicyID(id, policy_ids, policy)
 
       # Each policy must have a supported_on list.
       supported_on = self._CheckContains(policy, 'supported_on', list)
@@ -176,7 +143,7 @@ class PolicyTemplateChecker(object):
         for s in supported_on:
           if not isinstance(s, str):
             self._Error('Entries in "supported_on" must be strings.', 'policy',
-                        policy, supported_on)
+                              policy, supported_on)
 
       # Each policy must have a 'features' dict.
       self._CheckContains(policy, 'features', dict)
@@ -196,7 +163,7 @@ class PolicyTemplateChecker(object):
 
       # Statistics.
       self.num_policies += 1
-      if is_in_group:
+      if not may_contain_groups:
         self.num_policies_in_groups += 1
 
     if policy_type in ('int-enum', 'string-enum'):
@@ -369,10 +336,8 @@ class PolicyTemplateChecker(object):
                                              container_name='The root element',
                                              offending=None)
     if policy_definitions is not None:
-      policy_ids = set()
       for policy in policy_definitions:
-        self._CheckPolicy(policy, False, policy_ids)
-      self._CheckPolicyIDs(policy_ids)
+        self._CheckPolicy(policy, True)
 
     # Check (non-policy-specific) message definitions.
     messages = self._CheckContains(data, 'messages', dict,
@@ -396,8 +361,8 @@ class PolicyTemplateChecker(object):
     self._CheckFormat(filename)
 
     # Third part: summary and exit.
-    print ('Finished checking %s. %d errors, %d warnings.' %
-        (filename, self.error_count, self.warning_count))
+    print ('Finished. %d errors, %d warnings.' %
+        (self.error_count, self.warning_count))
     if self.options.stats:
       if self.num_groups > 0:
         print ('%d policies, %d of those in %d groups (containing on '

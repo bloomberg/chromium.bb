@@ -202,12 +202,12 @@
         # TODO(gregoryd): chrome_resources and chrome_strings could be
         #  shared with the 64-bit target, but it does not work due to a gyp
         # issue.
-        'app/policy/cloud_policy_codegen.gyp:policy',
         'chrome_resources',
         'chrome_strings',
         'common_constants',
         'common_net',
         'default_plugin/default_plugin.gyp:default_plugin',
+	'policy',
         'theme_resources',
         '../app/app.gyp:app_base',
         '../app/app.gyp:app_resources',
@@ -593,7 +593,7 @@
             'chrome_resources',
             'chrome_strings',
             'common_constants_win64',
-            'app/policy/cloud_policy_codegen.gyp:policy_win64',
+            'policy_win64',
             '../app/app.gyp:app_base_nacl_win64',
             '../app/app.gyp:app_resources',
             '../base/base.gyp:base_nacl_win64',
@@ -625,7 +625,6 @@
           ],
           'export_dependent_settings': [
             '../app/app.gyp:app_base_nacl_win64',
-            'app/policy/cloud_policy_codegen.gyp:policy_win64',
           ],
           # TODO(gregoryd): This could be shared with the 32-bit target, but
           # it does not work due to a gyp issue.

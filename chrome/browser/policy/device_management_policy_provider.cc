@@ -4,16 +4,14 @@
 
 #include "chrome/browser/policy/device_management_policy_provider.h"
 
-#include <algorithm>
-
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/task.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/policy/cloud_policy_cache.h"
 #include "chrome/browser/policy/device_management_backend.h"
+#include "chrome/browser/policy/device_management_policy_cache.h"
 #include "chrome/browser/policy/profile_policy_context.h"
 #include "chrome/browser/policy/proto/device_management_constants.h"
 #include "chrome/browser/profiles/profile.h"
@@ -88,13 +86,8 @@ DeviceManagementPolicyProvider::~DeviceManagementPolicyProvider() {
 
 bool DeviceManagementPolicyProvider::Provide(
     ConfigurationPolicyStoreInterface* policy_store) {
-  if (cache_->has_device_policy()) {
-    scoped_ptr<DictionaryValue> policies(cache_->GetDevicePolicy());
-    ApplyPolicyValueTree(policies.get(), policy_store);
-  } else {
-    ApplyPolicyMap(cache_->GetMandatoryPolicy(), policy_store);
-    // TODO(jkummerow, mnissler): provide recommended policy.
-  }
+  scoped_ptr<DictionaryValue> policies(cache_->GetPolicy());
+  DecodePolicyValueTree(policies.get(), policy_store);
   return true;
 }
 
@@ -105,19 +98,9 @@ bool DeviceManagementPolicyProvider::IsInitializationComplete() const {
 void DeviceManagementPolicyProvider::HandlePolicyResponse(
     const em::DevicePolicyResponse& response) {
   DCHECK(TokenAvailable());
-  if (cache_->SetDevicePolicy(response)) {
+  if (cache_->SetPolicy(response)) {
     initial_fetch_done_ = true;
     NotifyCloudPolicyUpdate();
-  }
-  SetState(STATE_POLICY_VALID);
-}
-
-void DeviceManagementPolicyProvider::HandleCloudPolicyResponse(
-    const em::CloudPolicyResponse& response) {
-  DCHECK(TokenAvailable());
-  if (cache_->SetPolicy(response)) {
-     initial_fetch_done_ = true;
-     NotifyCloudPolicyUpdate();
   }
   SetState(STATE_POLICY_VALID);
 }
@@ -134,12 +117,6 @@ void DeviceManagementPolicyProvider::OnError(
              DeviceManagementBackend::kErrorServiceManagementNotSupported) {
     VLOG(1) << "The device is no longer managed, resetting device token.";
     SetState(STATE_TOKEN_RESET);
-  } else if (!fallback_to_old_protocol_ &&
-             code == DeviceManagementBackend::kErrorRequestInvalid) {
-    LOG(WARNING) << "Device management server doesn't understand new protocol,"
-                 << " falling back to old request.";
-    fallback_to_old_protocol_ = true;
-    SetState(STATE_TOKEN_VALID);  // Triggers SendPolicyRequest() immediately.
   } else {
     LOG(WARNING) << "Could not provide policy from the device manager (error = "
                  << code << "), will retry in "
@@ -163,7 +140,7 @@ void DeviceManagementPolicyProvider::OnTokenError() {
 void DeviceManagementPolicyProvider::OnNotManaged() {
   DCHECK(!TokenAvailable());
   VLOG(1) << "This device is not managed.";
-  cache_->SetUnmanaged();
+  cache_->SetDeviceUnmanaged();
   SetState(STATE_UNMANAGED);
 }
 
@@ -209,7 +186,6 @@ void DeviceManagementPolicyProvider::Initialize(
   DCHECK(profile);
   backend_.reset(backend);
   profile_ = profile;
-  fallback_to_old_protocol_ = false;
   storage_dir_ = GetOrCreateDeviceManagementDir(profile_->GetPath());
   state_ = STATE_INITIALIZING;
   initial_fetch_done_ = false;
@@ -225,13 +201,13 @@ void DeviceManagementPolicyProvider::Initialize(
   unmanaged_device_refresh_rate_ms_ = unmanaged_device_refresh_rate_ms;
 
   const FilePath policy_path = storage_dir_.Append(kPolicyFilename);
-  cache_.reset(new CloudPolicyCache(policy_path));
+  cache_.reset(new DeviceManagementPolicyCache(policy_path));
   cache_->LoadPolicyFromFile();
 
   SetDeviceTokenFetcher(new DeviceTokenFetcher(backend_.get(), profile,
                                                GetTokenPath()));
 
-  if (cache_->is_unmanaged()) {
+  if (cache_->is_device_unmanaged()) {
     // This is a non-first login on an unmanaged device.
     SetState(STATE_UNMANAGED);
   } else {
@@ -250,23 +226,15 @@ void DeviceManagementPolicyProvider::RemoveObserver(
 }
 
 void DeviceManagementPolicyProvider::SendPolicyRequest() {
-  if (!fallback_to_old_protocol_) {
-    em::CloudPolicyRequest policy_request;
-    policy_request.set_policy_scope(kChromePolicyScope);
-    backend_->ProcessCloudPolicyRequest(token_fetcher_->GetDeviceToken(),
-                                        token_fetcher_->GetDeviceID(),
-                                        policy_request, this);
-  } else {
-    em::DevicePolicyRequest policy_request;
-    policy_request.set_policy_scope(kChromePolicyScope);
-    em::DevicePolicySettingRequest* setting =
-        policy_request.add_setting_request();
-    setting->set_key(kChromeDevicePolicySettingKey);
-    setting->set_watermark("");
-    backend_->ProcessPolicyRequest(token_fetcher_->GetDeviceToken(),
-                                   token_fetcher_->GetDeviceID(),
-                                   policy_request, this);
-  }
+  em::DevicePolicyRequest policy_request;
+  policy_request.set_policy_scope(kChromePolicyScope);
+  em::DevicePolicySettingRequest* setting =
+      policy_request.add_setting_request();
+  setting->set_key(kChromeDevicePolicySettingKey);
+  setting->set_watermark("");
+  backend_->ProcessPolicyRequest(token_fetcher_->GetDeviceToken(),
+                                 token_fetcher_->GetDeviceID(),
+                                 policy_request, this);
 }
 
 void DeviceManagementPolicyProvider::RefreshTaskExecute() {

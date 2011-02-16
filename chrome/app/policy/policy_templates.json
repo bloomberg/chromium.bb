@@ -86,13 +86,6 @@
 #   'example_value'. These are used in the generated documentation and example
 #   policy configuration files.
 #
-# IDs:
-#   Since a Protocol Buffer definition is generated from this file, unique and
-#   persistent IDs for all fields (but not for groups!) are needed. These are
-#   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
-#   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 63
-#
   'policy_definitions': [
     {
       'name': 'Homepage',
@@ -108,7 +101,6 @@
           'supported_on': ['chrome.*:8-'],
           'features': {'dynamic_refresh': 1},
           'example_value': 'http://chromium.org',
-          'id': 1,
           'caption': '''Configure the home page URL''',
           'desc': '''Configures the default home page URL in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing it.
 
@@ -125,7 +117,6 @@
           'supported_on': ['chrome.*:8-'],
           'features': {'dynamic_refresh': 1},
           'example_value': True,
-          'id': 2,
           'caption': '''Use New Tab Page as homepage''',
           'desc': '''Configures the type of the default home page in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing home page preferences. The home page can either be set to a URL you specify or set to the New Tab Page.
 
@@ -143,7 +134,6 @@
       'supported_on': ['chrome.*:11-'],
       'features': {'dynamic_refresh': 1},
       'example_value': True,
-      'id': 3,
       'caption': '''Set Chrome as Default Browser''',
       'desc': '''Configures the default browser checks in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing them.
 
@@ -160,7 +150,6 @@
       'supported_on': ['chrome.win:8-'],
       'features': {'dynamic_refresh': 0},
       'example_value': 'en',
-      'id': 4,
       'caption': '''Application locale''',
       'desc': '''Configures the application locale in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing the locale.
 
@@ -175,7 +164,6 @@
       'supported_on': ['chrome.*:8-'],
       'features': {'dynamic_refresh': 1},
       'example_value': True,
-      'id': 5,
       'caption': '''Enable alternate error pages''',
       'desc': '''Enables the use of alternate error pages that are built into <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> (such as 'page not found') and prevents users from changing this setting.
 
@@ -191,7 +179,6 @@
       'supported_on': ['chrome.*:8-'],
       'features': {'dynamic_refresh': 1},
       'example_value': True,
-      'id': 6,
       'caption': '''Enable search suggestions''',
       'desc': '''Enables search suggestions in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s Omnibox and prevents users from changing this setting.
 
@@ -207,7 +194,6 @@
       'supported_on': ['chrome.*:8-'],
       'features': {'dynamic_refresh': 1},
       'example_value': True,
-      'id': 7,
       'caption': '''Enable DNS prefetching''',
       'desc': '''Enables DNS prefetching in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
 
@@ -219,7 +205,6 @@
       'supported_on': ['chrome.*:8-'],
       'features': {'dynamic_refresh': 1},
       'example_value': True,
-      'id': 8,
       'caption': '''Disable SPDY protocol''',
       'desc': '''Disables use of the SPDY protocol in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
     },
@@ -229,7 +214,6 @@
       'supported_on': ['chrome.*:8-'],
       'features': {'dynamic_refresh': 0},
       'example_value': True,
-      'id': 9,
       'caption': '''Enable JavaScript''',
       'desc': '''Enables JavaScript in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
 
@@ -243,7 +227,6 @@
       'supported_on': ['chrome.*:11-'],
       'features': {'dynamic_refresh': 1},
       'example_value': False,
-      'id': 10,
       'caption': '''Enable Incognito mode''',
       'desc': '''Enables Incognito mode in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
@@ -257,7 +240,6 @@
       'supported_on': ['chrome.*:8-'],
       'features': {'dynamic_refresh': 1},
       'example_value': True,
-      'id': 11,
       'caption': '''Disable saving browser history''',
       'desc': '''Disables saving browser history in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
 
@@ -271,7 +253,6 @@
       'supported_on': ['chrome.*:8-'],
       'features': {'dynamic_refresh': 1},
       'example_value': True,
-      'id': 12,
       'caption': '''Enable printing''',
       'desc': '''Enables printing in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
 
@@ -286,7 +267,6 @@
       'features': {'dynamic_refresh': 1},
       'future': True,
       'example_value': True,
-      'id': 13,
       'caption': '''Enable <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> proxy''',
       'desc': '''      Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to act as a proxy between <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> and legacy printers connected to the machine.
 
@@ -300,7 +280,6 @@
       'supported_on': ['chrome.*:8-'],
       'features': {'dynamic_refresh': 0},
       'example_value': True,
-      'id': 14,
       'caption': '''Enable Safe Browsing''',
       'desc': '''Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s Safe Browsing feature and prevents users from changing this setting.
 
@@ -316,7 +295,6 @@
       'supported_on': ['chrome.*:8-'],
       'features': {'dynamic_refresh': 0},
       'example_value': True,
-      'id': 15,
       'caption': '''Enable reporting of usage and crash-related data''',
       'desc': '''Enables anonymous reporting of usage and crash-related data about <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to Google and prevents users from changing this setting.
 
@@ -338,7 +316,6 @@
           'supported_on': ['chrome.*:8-'],
           'features': {'dynamic_refresh': 1},
           'example_value': True,
-          'id': 16,
           'caption': '''Enable the password manager''',
           'desc': '''Enables saving passwords and using saved passwords in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
@@ -354,7 +331,6 @@
           'supported_on': ['chrome.*:8-'],
           'features': {'dynamic_refresh': 1},
           'example_value': False,
-          'id': 17,
           'caption': '''Allow users to show passwords in Password Manager''',
           'desc': '''Controls whether the user may show passwords in clear text in the password manager.
 
@@ -370,7 +346,6 @@
       'supported_on': ['chrome.*:8-'],
       'features': {'dynamic_refresh': 1},
       'example_value': False,
-      'id': 18,
       'caption': '''Enable AutoFill''',
       'desc': '''Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s AutoFill feature and allows users to auto complete web forms using previously stored information such as address or credit card information.
 
@@ -384,7 +359,6 @@
       'supported_on': ['chrome.*:8-'],
       'features': {'dynamic_refresh': 1},
       'example_value': ['Java', 'Shockwave Flash', 'Chrome PDF Viewer'],
-      'id': 19,
       'caption': '''Specify a list of disabled plugins''',
       'desc': '''Specifies a list of plugins that are disabled in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
 
@@ -399,7 +373,6 @@
       'supported_on': ['chrome.*:8-'],
       'features': {'dynamic_refresh': 1},
       'example_value': True,
-      'id': 20,
       'caption': '''Disable synchronization of data with Google''',
       'desc': '''Disables data synchronization in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> using Google-hosted synchronization services and prevents users from changing this setting.
 
@@ -411,7 +384,6 @@
       'supported_on': ['chrome.win:11-', 'chrome.mac:11-'],
       'features': {'dynamic_refresh': 0},
       'example_value': '${user_home}\Chrome',
-      'id': 63,
       'caption': '''Set user data directory''',
       'desc': '''Configures the directory that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use for storing user data.
 
@@ -466,7 +438,6 @@
           'supported_on': ['chrome.*:10-'],
           'features': {'dynamic_refresh': 1},
           'example_value': 'direct',
-          'id': 21,
           'caption': '''Choose how to specify proxy server settings''',
           'desc': '''Allows you to specify the proxy server used by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing proxy settings.
 
@@ -510,9 +481,7 @@
           ],
           'supported_on': ['chrome.*:8-'],
           'features': {'dynamic_refresh': 1},
-          'deprecated': True,
           'example_value': 2,
-          'id': 22,
           'caption': '''Choose how to specify proxy server settings''',
           'desc': '''This policy is deprecated, use ProxyMode instead.
 
@@ -535,7 +504,6 @@
           'supported_on': ['chrome.*:8-'],
           'features': {'dynamic_refresh': 1},
           'example_value': '123.123.123.123:8080',
-          'id': 23,
           'caption': '''Address or URL of proxy server''',
           'desc': '''You can specify the URL of the proxy server here.
 
@@ -550,7 +518,6 @@
           'supported_on': ['chrome.*:8-'],
           'features': {'dynamic_refresh': 1},
           'example_value': 'http://internal.site/example.pac',
-          'id': 24,
           'caption': '''URL to a proxy .pac file''',
           'desc': '''You can specify a URL to a proxy .pac file here.
 
@@ -565,7 +532,6 @@
           'supported_on': ['chrome.*:8-'],
           'features': {'dynamic_refresh': 1},
           'example_value': 'http://www.example1.com,http://www.example2.com,http://internalsite/',
-          'id': 25,
           'caption': '''Proxy bypass rules''',
           'desc': '''<ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will bypass any proxy for the list of hosts given here.
 
@@ -589,7 +555,6 @@
           'supported_on': ['chrome.*:9-'],
           'features': {'dynamic_refresh': 0},
           'example_value': 'basic,digest,ntlm,negotiate',
-          'id': 26,
           'caption': '''Supported authentication schemes''',
           'desc': '''Specifies which HTTP Authentication schemes are supported by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
@@ -601,7 +566,6 @@
           'supported_on': ['chrome.*:9-'],
           'features': {'dynamic_refresh': 0},
           'example_value': False,
-          'id': 27,
           'caption': '''Disable CNAME lookup when negotiating Kerberos authentication''',
           'desc': '''Specifies whether the generated Kerberos SPN is based on the canonical DNS name or the original name entered.
 
@@ -615,7 +579,6 @@
           'supported_on': ['chrome.*:9-'],
           'features': {'dynamic_refresh': 0},
           'example_value': False,
-          'id': 28,
           'caption': '''Include non-standard port in Kerberos SPN''',
           'desc': '''Specifies whether the generated Kerberos SPN should include a non-standard port.
 
@@ -629,7 +592,6 @@
           'supported_on': ['chrome.*:9-'],
           'features': {'dynamic_refresh': 0},
           'example_value': '*example.com,foobar.com,*baz',
-          'id': 29,
           'caption': '''Authentication server whitelist''',
           'desc': '''Specifies which servers should be whitelisted for integrated authentication. Integrated authentication is only enabled when <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> receives an authentication challenge from a proxy or from a server which is in this permitted list.
 
@@ -641,7 +603,6 @@
           'supported_on': ['chrome.*:9-'],
           'features': {'dynamic_refresh': 0},
           'example_value': 'foobar.example.com',
-          'id': 30,
           'caption': '''Kerberos delegation server whitelist''',
           'desc': '''Servers that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> may delegate to.''',
         },
@@ -651,7 +612,6 @@
           'supported_on': ['chrome.linux:9-', 'chrome.mac:9-'],
           'features': {'dynamic_refresh': 0},
           'example_value': 'libgssapi_krb5.so.2',
-          'id': 31,
           'caption': '''GSSAPI library name''',
           'desc': '''Specifies which GSSAPI library to use for HTTP Authentication. You can set either just a library name, or a full path. If no setting is provided, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will fall back to using a default library name.''',
         },
@@ -669,7 +629,6 @@
           'supported_on': ['chrome.*:8-'],
           'features': {'dynamic_refresh': 1},
           'example_value': ['extension_id1', 'extension_id2'],
-          'id': 32,
           'caption': '''Configure extension installation blacklist''',
           'desc': '''Allows you to specify which extensions the users can NOT install. Extensions already installed will be removed if blacklisted.
 
@@ -682,7 +641,6 @@
           'supported_on': ['chrome.*:8-'],
           'features': {'dynamic_refresh': 1},
           'example_value': ['extension_id1', 'extension_id2'],
-          'id': 33,
           'caption': '''Configure extension installation whitelist''',
           'desc': '''Allows you to specify which extensions are not subject to the blacklist.
 
@@ -697,7 +655,6 @@
           'supported_on': ['chrome.*:9-'],
           'features': {'dynamic_refresh': 1},
           'example_value': ['lcncmkcnkcdbbanbjakcencbaoegdjlp;https://clients2.google.com/service/update2/crx'],
-          'id': 34,
           'caption': '''Configure the list of force-installed extensions''',
           'desc': '''Allows you to specify a list of extensions that will be installed silently, without user interaction.
 
@@ -714,7 +671,6 @@
       'supported_on': ['chrome.*:8-'],
       'features': {'dynamic_refresh': 1},
       'example_value': True,
-      'id': 35,
       'caption': '''Show Home button on toolbar''',
       'desc': '''Shows the Home button on <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s toolbar.
 
@@ -730,7 +686,6 @@
       'supported_on': ['chrome.*:9-'],
       'features': {'dynamic_refresh': 1},
       'example_value': False,
-      'id': 36,
       'caption': '''Disable Developer Tools''',
       'desc': '''Disables the Developer Tools and the JavaScript console.
 
@@ -767,7 +722,6 @@
           'supported_on': ['chrome.*:8-'],
           'features': {'dynamic_refresh': 1},
           'example_value': 4,
-          'id': 37,
           'caption': '''Action on startup''',
           'desc': '''Allows you to specify the behavior on startup.
 
@@ -785,25 +739,10 @@
           'supported_on': ['chrome.*:8-'],
           'features': {'dynamic_refresh': 1},
           'example_value': ['http://example.com', 'http://chromium.org'],
-          'id': 38,
           'caption': '''URLs to open on startup''',
           'desc': '''If 'Open a list of URLs' is selected as the startup action, this allows you to specify the list of URLs that are opened.''',
         },
       ],
-    },
-    {
-      'name': 'BlockThirdPartyCookies',
-      'type': 'main',
-      'supported_on': ['chrome.*:10-'],
-      'features': {'dynamic_refresh': 1},
-      'example_value': False,
-      'id': 39,
-      'caption': '''Block third party cookies''',
-      'desc': '''Blocks third party cookies.
-
-      Enabling this setting prevents cookies from being set by web page elements that are not from the domain that is in the browser's address bar.
-
-      Disabling this setting allows cookies to be set by web page elements that are not from the domain that is in the browser's address bar and prevents users from changing this setting.''',
     },
     {
       'name': 'DefaultSearchProvider',
@@ -817,7 +756,6 @@
           'supported_on': ['chrome.*:8-'],
           'features': {'dynamic_refresh': 1},
           'example_value': True,
-          'id': 40,
           'caption': '''Enable the default search provider''',
           'desc': '''Enables the use of a default search provider.
 
@@ -832,12 +770,24 @@
           </ph>.''',
         },
         {
+          'name': 'BlockThirdPartyCookies',
+          'type': 'main',
+          'supported_on': ['chrome.*:10-'],
+          'features': {'dynamic_refresh': 1},
+          'example_value': False,
+          'caption': '''Block third party cookies''',
+          'desc': '''Blocks third party cookies.
+
+          Enabling this setting prevents cookies from being set by web page elements that are not from the domain that is in the browser's address bar.
+
+          Disabling this setting allows cookies to be set by web page elements that are not from the domain that is in the browser's address bar and prevents users from changing this setting.''',
+        },
+        {
           'name': 'DefaultSearchProviderName',
           'type': 'string',
           'supported_on': ['chrome.*:8-'],
           'features': {'dynamic_refresh': 1},
           'example_value': 'My Intranet Search',
-          'id': 41,
           'caption': '''Default search provider name''',
           'desc': '''Specifies the name of the default search provider. If left empty, the host name specified by the search URL will be used.''',
         },
@@ -847,7 +797,6 @@
           'supported_on': ['chrome.*:8-'],
           'features': {'dynamic_refresh': 1},
           'example_value': 'mis',
-          'id': 42,
           'caption': '''Default search provider keyword''',
           'desc': '''Specifies the keyword, which is the shortcut used in the omnibox to trigger the search for this provider. Optional.''',
         },
@@ -857,7 +806,6 @@
           'supported_on': ['chrome.*:8-'],
           'features': {'dynamic_refresh': 1},
           'example_value': 'http://search.my.company/search?q={searchTerms}',
-          'id': 43,
           'caption': '''Default search provider search URL''',
           'desc': '''Specifies the URL of the search engine used when doing a default search. The URL should contain the string '<ph name="SEARCH_TERM_MARKER">{searchTerms}</ph>', which will be replaced at query time by the terms the user is searching for.''',
         },
@@ -867,7 +815,6 @@
           'supported_on': ['chrome.*:8-'],
           'features': {'dynamic_refresh': 1},
           'example_value': 'http://search.my.company/suggest?q={searchTerms}',
-          'id': 44,
           'caption': '''Default search provider suggest URL''',
           'desc': '''Specifies the URL of the search engine used to provide search suggestions. The URL should contain the string '<ph name="SEARCH_TERM_MARKER">{searchTerms}</ph>', which will be replaced at query time by the text the user has entered so far. Optional.''',
         },
@@ -877,7 +824,6 @@
           'supported_on': ['chrome.*:10-'],
           'features': {'dynamic_refresh': 1},
           'example_value': 'http://search.my.company/suggest?q={searchTerms}',
-          'id': 45,
           'caption': '''Default search provider instant URL''',
           'desc': '''Specifies the URL of the search engine used to provide instant results. The URL should contain the string <ph name="SEARCH_TERM_MARKER">'{searchTerms}'</ph>, which will be replaced at query time by the text the user has entered so far. Optional.''',
         },
@@ -887,7 +833,6 @@
           'supported_on': ['chrome.*:8-'],
           'features': {'dynamic_refresh': 1},
           'example_value': 'http://search.my.company/favicon.ico',
-          'id': 46,
           'caption': '''Default search provider icon''',
           'desc': '''Specifies the favorite icon URL of the default search provider. Optional.''',
         },
@@ -897,7 +842,6 @@
           'supported_on': ['chrome.*:8-'],
           'features': {'dynamic_refresh': 1},
           'example_value': ['UTF-8', 'UTF-16', 'GB2312', 'ISO-8859-1'],
-          'id': 47,
           'caption': '''Default search provider encodings''',
           'desc': '''Specifies the character encodings supported by the search provider. Encodings are code page names like UTF-8, GB2312, and ISO-8859-1. They are tried in the order provided. The default is UTF-8.''',
         },
@@ -927,7 +871,6 @@
           'supported_on': ['chrome.*:10-'],
           'features': {'dynamic_refresh': 1},
           'example_value': 0,
-          'id': 48,
           'caption': '''Default cookies setting''',
           'desc': '''Allows you to set whether websites are allowed to set local data. Setting local data can be either allowed for all websites or denied for all websites.''',
         },
@@ -949,7 +892,6 @@
           'supported_on': ['chrome.*:10-'],
           'features': {'dynamic_refresh': 1},
           'example_value': 0,
-          'id': 49,
           'caption': '''Default images setting''',
           'desc': '''Allows you to set whether websites are allowed to display images. Displaying images can be either allowed for all websites or denied for all websites.''',
         },
@@ -971,7 +913,6 @@
           'supported_on': ['chrome.*:10-'],
           'features': {'dynamic_refresh': 1},
           'example_value': 0,
-          'id': 50,
           'caption': '''Default JavaScript setting''',
           'desc': '''Allows you to set whether websites are allowed to run JavaScript. Running JavaScript can be either allowed for all websites or denied for all websites.''',
         },
@@ -993,7 +934,6 @@
           'supported_on': ['chrome.*:10-'],
           'features': {'dynamic_refresh': 1},
           'example_value': 0,
-          'id': 51,
           'caption': '''Default plugins setting''',
           'desc': '''Allows you to set whether websites are allowed to automatically run plugins. Automatically running plugins can be either allowed for all websites or denied for all websites.''',
         },
@@ -1015,7 +955,6 @@
           'supported_on': ['chrome.*:10-'],
           'features': {'dynamic_refresh': 1},
           'example_value': 1,
-          'id': 52,
           'caption': '''Default popups setting''',
           'desc': '''Allows you to set whether websites are allowed to show pop-ups. Showing popups can be either allowed for all websites or denied for all websites.''',
         },
@@ -1042,7 +981,6 @@
           'supported_on': ['chrome.*:10-'],
           'features': {'dynamic_refresh': 1},
           'example_value': 2,
-          'id': 53,
           'caption': '''Default notification setting''',
           'desc': '''Allows you to set whether websites are allowed to display desktop notifications. Displaying desktop notifications can be allowed by default, denied by default or the user can be asked everytime a website wants to show desktop notifications.''',
         },
@@ -1069,7 +1007,6 @@
           'supported_on': ['chrome.*:10-'],
           'features': {'dynamic_refresh': 1},
           'example_value': 0,
-          'id': 54,
           'caption': '''Default geolocation setting''',
           'desc': '''Allows you to set whether websites are allowed to track the users' physical location. Tracking the users' physical location can be allowed by default, denied by default or the user can be asked everytime a website requests the pysical location.''',
         },
@@ -1081,7 +1018,6 @@
       'supported_on': ['chrome.*:9-'],
       'features': {'dynamic_refresh': 0},
       'example_value': False,
-      'id': 55,
       'caption': '''Disable support for 3D graphics APIs''',
       'desc': '''Disable support for 3D graphics APIs.
 
@@ -1095,7 +1031,6 @@
       'supported_on': ['chrome_os:1.0.0.0-'],
       'features': {'dynamic_refresh': 1},
       'example_value': 3600000,
-      'id': 56,
       'caption': '''Policy refresh rate''',
       'desc': '''Specifies the period in milliseconds at which the device management service is queried for policy information.
 
@@ -1129,7 +1064,6 @@
           'supported_on': ['chrome_frame:8-'],
           'features': {'dynamic_refresh': 0},
           'example_value': 1,
-          'id': 57,
           'caption': '''Default HTML renderer for <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph>''',
           'desc': '''Allows you to configure the default HTML renderer when <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex>
           </ph> is installed.
@@ -1143,7 +1077,6 @@
           'supported_on': ['chrome_frame:8-'],
           'features': {'dynamic_refresh': 0},
           'example_value': ['http://www.example.com', 'http://www.example.edu'],
-          'id': 58,
           'caption': '''Always render the following URL patterns in <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph>''',
           'desc': '''Customize the list of URL patterns that should always be rendered by <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph>.
 
@@ -1155,7 +1088,6 @@
           'supported_on': ['chrome_frame:8-'],
           'features': {'dynamic_refresh': 0},
           'example_value': ['http://www.example.com', 'http://www.example.edu'],
-          'id': 59,
           'caption': '''Always render the following URL patterns in the host browser''',
           'desc': '''Customize the list of URL patterns that should always be rendered by the host browser.
           For example patterns see http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.''',
@@ -1174,7 +1106,6 @@
           'supported_on': ['chrome_frame:8-'],
           'features': {'dynamic_refresh': 0},
           'example_value': ['text/xml', 'application/xml'],
-          'id': 60,
           'caption': '''Allow <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> to handle the following content types.''',
           'desc': '''Allow <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> to handle the following content types.''',
         },
@@ -1186,7 +1117,6 @@
       'supported_on': ['chrome_os:0.9.79.0-'],
       'features': {'dynamic_refresh': 1},
       'example_value': True,
-      'id': 61,
       'caption': '''Enable lock when ChromeOS devices become idle or suspended.''',
       'desc': '''Enable lock when ChromeOS devices become idle or suspended.
 
@@ -1202,7 +1132,6 @@
       'supported_on': ['chrome.*:11-'],
       'features': {'dynamic_refresh': 1},
       'example_value': True,
-      'id': 62,
       'caption': '''Enable Instant''',
       'desc': '''Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s Instant feature and prevents users from changing this setting.
 

@@ -69,7 +69,7 @@
           },
           'dependencies': [
             '<@(chromium_dependencies)',
-            'app/policy/cloud_policy_codegen.gyp:policy',
+            'policy'
           ],
           'conditions': [
             ['OS=="win"', {
