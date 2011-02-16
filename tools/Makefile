@@ -76,6 +76,7 @@ SDKNAME=nacl-sdk
 SDKROOT=$(SDKLOC)/$(SDKNAME)
 DESTDIR?=
 BUILDNCCDIR=$(SDKROOT)/$(CROSSARCH)
+include REVISIONS
 
 # Toplevel installation directory.
 # MUST be an absolute pathname, for configure --prefix=$(PREFIX)
@@ -214,7 +215,7 @@ fetch-git-rw-sources: ALWAYS
 SRC/binutils: | SRC
 	@echo "Unpacking binutils"
 	git clone $(GIT_BASE_URL)/nacl-binutils SRC/binutils
-	cd src/binutils && git checkout "$(NACL_BINUTILS_COMMIT)"
+	cd SRC/binutils && git checkout "$(NACL_BINUTILS_COMMIT)"
 
 # Create binutils source directory, and mark that we've done that.
 SRC/stamp-binutils: | SRC
