@@ -35,6 +35,7 @@
 #include "chrome/browser/history/download_create_info.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
@@ -687,7 +688,7 @@ void UpdateAppIconDownloadProgress(int download_count,
     else if (!progress_known)
       taskbar->SetProgressState(frame, TBPF_INDETERMINATE);
     else
-      taskbar->SetProgressValue(frame, (int)(progress * 100), 100);
+      taskbar->SetProgressValue(frame, static_cast<int>(progress * 100), 100);
   }
 #endif
 }
@@ -747,6 +748,18 @@ void CancelDownloadRequest(ResourceDispatcherHost* rdh,
                            int request_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   rdh->CancelRequest(render_process_id, request_id, false);
+}
+
+void NotifyDownloadInitiated(int render_process_id, int render_view_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  RenderViewHost* rvh = RenderViewHost::FromID(render_process_id,
+                                               render_view_id);
+  if (!rvh)
+    return;
+
+  NotificationService::current()->Notify(NotificationType::DOWNLOAD_INITIATED,
+                                         Source<RenderViewHost>(rvh),
+                                         NotificationService::NoDetails());
 }
 
 int GetUniquePathNumberWithCrDownload(const FilePath& path) {

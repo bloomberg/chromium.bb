@@ -114,7 +114,6 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
                         FinalStatus expected_final_status,
                         int total_navigations) {
     ASSERT_TRUE(test_server()->Start());
-
     std::string src_path = "files/prerender/prerender_loader.html?";
     src_path.append(html_file);
     std::string dest_path = "files/prerender/";
@@ -247,6 +246,28 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderRedirect) {
   PrerenderTestURL("prerender_redirect.html",
                    FINAL_STATUS_USED, 2);
   NavigateToDestURL();
+}
+
+// Prerenders a page that contains an automatic download triggered through an
+// iframe. This should not prerender successfully.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDownloadIFrame) {
+  PrerenderTestURL("prerender_download_iframe.html",
+                   FINAL_STATUS_DOWNLOAD, 1);
+}
+
+// Prerenders a page that contains an automatic download triggered through
+// Javascript changing the window.location. This should not prerender
+// successfully.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDownloadLocation) {
+  PrerenderTestURL("prerender_download_location.html",
+                   FINAL_STATUS_DOWNLOAD, 2);
+}
+
+// Prerenders a page that contains an automatic download triggered through a
+// <meta http-equiv="refresh"> tag. This should not prerender successfully.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDownloadRefresh) {
+  PrerenderTestURL("prerender_download_refresh.html",
+                   FINAL_STATUS_DOWNLOAD, 2);
 }
 
 // Checks that the referrer is set when prerendering.

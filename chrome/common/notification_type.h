@@ -1206,6 +1206,13 @@ class NotificationType {
     // The source is the corresponding RenderViewHost. There are not details.
     AUTOFILL_DID_FILL_FORM_DATA,
 
+    // Download Notifications --------------------------------------------------
+
+    // Sent when a download is initiated. It is possible that the download will
+    // not actually begin due to the DownloadRequestLimiter cancelling it
+    // prematurely.
+    // The source is the corresponding RenderViewHost. There are no details.
+    DOWNLOAD_INITIATED,
 
     // Misc --------------------------------------------------------------------
 

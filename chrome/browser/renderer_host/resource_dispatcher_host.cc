@@ -24,6 +24,7 @@
 #include "chrome/browser/download/download_file_manager.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_request_limiter.h"
+#include "chrome/browser/download/download_util.h"
 #include "chrome/browser/download/save_file_manager.h"
 #include "chrome/browser/extensions/user_script_listener.h"
 #include "chrome/browser/external_protocol_handler.h"
@@ -695,6 +696,11 @@ void ResourceDispatcherHost::BeginDownload(
             << url.possibly_invalid_spec();
     return;
   }
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableFunction(&download_util::NotifyDownloadInitiated,
+                          child_id, route_id));
 
   // Ensure the Chrome plugins are loaded, as they may intercept network
   // requests.  Does nothing if they are already loaded.

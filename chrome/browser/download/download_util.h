@@ -194,6 +194,10 @@ void CancelDownloadRequest(ResourceDispatcherHost* rdh,
                            int render_process_id,
                            int request_id);
 
+// Sends a notification on downloads being initiated
+// Must be called on the UI thread.
+void NotifyDownloadInitiated(int render_process_id, int render_view_id);
+
 // Same as GetUniquePathNumber, except that it also checks the existence
 // of its .crdownload intermediate path.
 // If |path| does not exist, 0 is returned.  If it fails to find such

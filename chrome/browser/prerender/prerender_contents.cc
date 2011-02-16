@@ -87,6 +87,10 @@ void PrerenderContents::StartPrerendering() {
   registrar_.Add(this, NotificationType::AUTH_CANCELLED,
                  NotificationService::AllSources());
 
+  // Register all responses to see if we should cancel.
+  registrar_.Add(this, NotificationType::DOWNLOAD_INITIATED,
+                 NotificationService::AllSources());
+
   DCHECK(load_start_time_.is_null());
   load_start_time_ = base::TimeTicks::Now();
 
@@ -101,6 +105,7 @@ void PrerenderContents::StartPrerendering() {
 void PrerenderContents::set_final_status(FinalStatus final_status) {
   DCHECK(final_status >= FINAL_STATUS_USED && final_status < FINAL_STATUS_MAX);
   DCHECK_EQ(FINAL_STATUS_MAX, final_status_);
+
   final_status_ = final_status;
 }
 
@@ -190,6 +195,7 @@ void PrerenderContents::Observe(NotificationType type,
     case NotificationType::PROFILE_DESTROYED:
       Destroy(FINAL_STATUS_PROFILE_DESTROYED);
       return;
+
     case NotificationType::APP_TERMINATING:
       Destroy(FINAL_STATUS_APP_TERMINATING);
       return;
@@ -205,8 +211,25 @@ void PrerenderContents::Observe(NotificationType type,
       LoginHandler* handler = details_ptr->handler();
       DCHECK(handler != NULL);
       RenderViewHostDelegate* delegate = handler->GetRenderViewHostDelegate();
-      if (controller == NULL && delegate == this)
+      if (controller == NULL && delegate == this) {
         Destroy(FINAL_STATUS_AUTH_NEEDED);
+        return;
+      }
+      break;
+    }
+
+    case NotificationType::DOWNLOAD_INITIATED: {
+      // If the download is started from a RenderViewHost that we are
+      // delegating, kill the prerender. This cancels any pending requests
+      // though the download never actually started thanks to the
+      // DownloadRequestLimiter.
+      DCHECK(NotificationService::NoDetails() == details);
+      RenderViewHost* rvh = Source<RenderViewHost>(source).ptr();
+      CHECK(rvh != NULL);
+      if (rvh->delegate() == this) {
+        Destroy(FINAL_STATUS_DOWNLOAD);
+        return;
+      }
       break;
     }
 
