@@ -448,15 +448,15 @@ void BaseTab::PaintTitle(gfx::Canvas* canvas, SkColor title_color) {
 }
 
 void BaseTab::AnimationProgressed(const ui::Animation* animation) {
-  ScheduleIconPaint();
+  SchedulePaint();
 }
 
 void BaseTab::AnimationCanceled(const ui::Animation* animation) {
-  ScheduleIconPaint();
+  SchedulePaint();
 }
 
 void BaseTab::AnimationEnded(const ui::Animation* animation) {
-  ScheduleIconPaint();
+  SchedulePaint();
 }
 
 void BaseTab::ButtonPressed(views::Button* sender, const views::Event& event) {
