@@ -149,6 +149,8 @@ ImportDialogGtk::ImportDialogGtk(GtkWindow* parent, Profile* profile,
 }
 
 ImportDialogGtk::~ImportDialogGtk() {
+  if (importer_list_)
+    importer_list_->SetObserver(NULL);
 }
 
 void ImportDialogGtk::SourceProfilesLoaded() {

@@ -52,6 +52,8 @@ ImporterView::ImporterView(Profile* profile, int initial_state)
 }
 
 ImporterView::~ImporterView() {
+  if (importer_list_)
+    importer_list_->SetObserver(NULL);
 }
 
 void ImporterView::SetupControl() {
