@@ -657,6 +657,10 @@ bool TabContents::ShouldDisplayURL() {
     return true;
   }
 
+  // We always display the URL for non-WebUI URLs to prevent spoofing.
+  if (entry && !WebUIFactory::HasWebUIScheme(entry->url()))
+    return true;
+
   WebUI* web_ui = GetWebUIForCurrentState();
   if (web_ui)
     return !web_ui->should_hide_url();
