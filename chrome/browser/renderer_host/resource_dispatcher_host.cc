@@ -62,7 +62,6 @@
 #include "chrome/common/url_constants.h"
 #include "net/base/auth.h"
 #include "net/base/cert_status_flags.h"
-#include "net/base/cookie_monster.h"
 #include "net/base/load_flags.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_errors.h"

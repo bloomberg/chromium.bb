@@ -7,32 +7,26 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
-#include "build/build_config.h"
-#include "chrome/browser/appcache/chrome_appcache_service.h"
 #include "chrome/browser/background_contents_service.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chrome_blob_storage_context.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
-#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/file_system/browser_file_system_helper.h"
-#include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
+#include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/pref_proxy_config_service.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
-#include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profiles/off_the_record_profile_io_data.h"
 #include "chrome/browser/ssl/ssl_host_state.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
@@ -75,6 +69,12 @@ using base::TimeDelta;
 URLRequestContextGetter* Profile::default_request_context_;
 
 namespace {
+
+// TODO(pathorn): Duplicated in profile_impl.cc
+void CleanupRequestContext(ChromeURLRequestContextGetter* context) {
+  if (context)
+    context->CleanupOnUIThread();
+}
 
 }  // namespace
 
@@ -157,10 +157,8 @@ class OffTheRecordProfileImpl : public Profile,
   explicit OffTheRecordProfileImpl(Profile* real_profile)
       : profile_(real_profile),
         prefs_(real_profile->GetOffTheRecordPrefs()),
-        ALLOW_THIS_IN_INITIALIZER_LIST(io_data_(this)),
-        start_time_(Time::Now()),
-        db_tracker_(new webkit_database::DatabaseTracker(
-            profile_->GetPath(), true)) {
+        start_time_(Time::Now()) {
+    request_context_ = ChromeURLRequestContextGetter::CreateOffTheRecord(this);
     extension_process_manager_.reset(ExtensionProcessManager::Create(this));
 
     BrowserList::AddObserver(this);
@@ -169,20 +167,15 @@ class OffTheRecordProfileImpl : public Profile,
         new BackgroundContentsService(this, CommandLine::ForCurrentProcess()));
 
     DCHECK(real_profile->GetPrefs()->GetBoolean(prefs::kIncognitoEnabled));
-
-    // TODO(oshima): Remove the need to eagerly initialize the request context
-    // getter. chromeos::OnlineAttempt is illegally trying to access this
-    // Profile member from a thread other than the UI thread, so we need to
-    // prevent a race.
-#if defined(OS_CHROMEOS)
-    GetRequestContext();
-#endif  // defined(OS_CHROMEOS)
   }
 
   virtual ~OffTheRecordProfileImpl() {
     NotificationService::current()->Notify(NotificationType::PROFILE_DESTROYED,
                                            Source<Profile>(this),
                                            NotificationService::NoDetails());
+    CleanupRequestContext(request_context_);
+    CleanupRequestContext(extensions_request_context_);
+
     // Clean up all DB files/directories
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
@@ -238,6 +231,10 @@ class OffTheRecordProfileImpl : public Profile,
   }
 
   virtual webkit_database::DatabaseTracker* GetDatabaseTracker() {
+    if (!db_tracker_) {
+      db_tracker_ = new webkit_database::DatabaseTracker(
+          GetPath(), IsOffTheRecord());
+    }
     return db_tracker_;
   }
 
@@ -411,16 +408,21 @@ class OffTheRecordProfileImpl : public Profile,
   }
 
   virtual URLRequestContextGetter* GetRequestContext() {
-    return io_data_.GetMainRequestContextGetter();
+    return request_context_;
   }
 
   virtual URLRequestContextGetter* GetRequestContextForMedia() {
     // In OTR mode, media request context is the same as the original one.
-    return io_data_.GetMainRequestContextGetter();
+    return request_context_;
   }
 
   URLRequestContextGetter* GetRequestContextForExtensions() {
-    return io_data_.GetExtensionsRequestContextGetter();
+    if (!extensions_request_context_) {
+      extensions_request_context_ =
+          ChromeURLRequestContextGetter::CreateOffTheRecordForExtensions(this);
+    }
+
+    return extensions_request_context_;
   }
 
   virtual net::SSLConfigService* GetSSLConfigService() {
@@ -676,7 +678,11 @@ class OffTheRecordProfileImpl : public Profile,
 
   scoped_ptr<ExtensionProcessManager> extension_process_manager_;
 
-  OffTheRecordProfileIOData::Handle io_data_;
+  // The context to use for requests made from this OTR session.
+  scoped_refptr<ChromeURLRequestContextGetter> request_context_;
+
+  // The context to use for requests made by an extension while in OTR mode.
+  scoped_refptr<ChromeURLRequestContextGetter> extensions_request_context_;
 
   // The download manager that only stores downloaded items in memory.
   scoped_refptr<DownloadManager> download_manager_;

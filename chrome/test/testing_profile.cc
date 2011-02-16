@@ -122,7 +122,7 @@ class TestExtensionURLRequestContext : public net::URLRequestContext {
     net::CookieMonster* cookie_monster = new net::CookieMonster(NULL, NULL);
     const char* schemes[] = {chrome::kExtensionScheme};
     cookie_monster->SetCookieableSchemes(schemes, 1);
-    set_cookie_store(cookie_monster);
+    cookie_store_ = cookie_monster;
   }
 };
 

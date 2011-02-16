@@ -49,56 +49,52 @@ class ExperimentURLRequestContext : public net::URLRequestContext {
     int rv;
 
     // Create a custom HostResolver for this experiment.
-    net::HostResolver* host_resolver_tmp = NULL;
     rv = CreateHostResolver(experiment.host_resolver_experiment,
-                            &host_resolver_tmp);
+                            &host_resolver_);
     if (rv != net::OK)
       return rv;  // Failure.
-    set_host_resolver(host_resolver_tmp);
 
     // Create a custom ProxyService for this this experiment.
-    scoped_refptr<net::ProxyService> proxy_service_tmp = NULL;
     rv = CreateProxyService(experiment.proxy_settings_experiment,
-                            &proxy_service_tmp);
+                            &proxy_service_);
     if (rv != net::OK)
       return rv;  // Failure.
-    set_proxy_service(proxy_service_tmp);
 
     // The rest of the dependencies are standard, and don't depend on the
     // experiment being run.
-    set_cert_verifier(new net::CertVerifier);
-    set_dnsrr_resolver(new net::DnsRRResolver);
-    set_ftp_transaction_factory(new net::FtpNetworkLayer(host_resolver_tmp));
-    set_ssl_config_service(new net::SSLConfigServiceDefaults);
-    set_http_auth_handler_factory(net::HttpAuthHandlerFactory::CreateDefault(
-        host_resolver_tmp));
+    cert_verifier_ = new net::CertVerifier;
+    dnsrr_resolver_ = new net::DnsRRResolver;
+    ftp_transaction_factory_ = new net::FtpNetworkLayer(host_resolver_);
+    ssl_config_service_ = new net::SSLConfigServiceDefaults;
+    http_auth_handler_factory_ = net::HttpAuthHandlerFactory::CreateDefault(
+        host_resolver_);
 
     net::HttpNetworkSession::Params session_params;
-    session_params.host_resolver = host_resolver_tmp;
-    session_params.dnsrr_resolver = dnsrr_resolver();
-    session_params.cert_verifier = cert_verifier();
-    session_params.proxy_service = proxy_service_tmp;
-    session_params.http_auth_handler_factory = http_auth_handler_factory();
-    session_params.ssl_config_service = ssl_config_service();
+    session_params.host_resolver = host_resolver_;
+    session_params.dnsrr_resolver = dnsrr_resolver_;
+    session_params.cert_verifier = cert_verifier_;
+    session_params.proxy_service = proxy_service_;
+    session_params.http_auth_handler_factory = http_auth_handler_factory_;
+    session_params.ssl_config_service = ssl_config_service_;
     scoped_refptr<net::HttpNetworkSession> network_session(
         new net::HttpNetworkSession(session_params));
-    set_http_transaction_factory(new net::HttpCache(
+    http_transaction_factory_ = new net::HttpCache(
         network_session,
-        net::HttpCache::DefaultBackend::InMemory(0)));
+        net::HttpCache::DefaultBackend::InMemory(0));
     // In-memory cookie store.
-    set_cookie_store(new net::CookieMonster(NULL, NULL));
+    cookie_store_ = new net::CookieMonster(NULL, NULL);
 
     return net::OK;
   }
 
  protected:
   virtual ~ExperimentURLRequestContext() {
-    delete ftp_transaction_factory();
-    delete http_transaction_factory();
-    delete http_auth_handler_factory();
-    delete dnsrr_resolver();
-    delete cert_verifier();
-    delete host_resolver();
+    delete ftp_transaction_factory_;
+    delete http_transaction_factory_;
+    delete http_auth_handler_factory_;
+    delete dnsrr_resolver_;
+    delete cert_verifier_;
+    delete host_resolver_;
   }
 
  private:
