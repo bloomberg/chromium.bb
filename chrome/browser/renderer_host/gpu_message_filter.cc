@@ -14,9 +14,10 @@ GpuMessageFilter::GpuMessageFilter(int render_process_id)
     : render_process_id_(render_process_id) {
 }
 
+// WeakPtrs to a GpuMessageFilter need to be Invalidated from
+// the same thread from which they were created.
 GpuMessageFilter::~GpuMessageFilter() {
-  // This function should be called on the IO thread.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 void GpuMessageFilter::OverrideThreadForMessage(
@@ -43,7 +44,7 @@ bool GpuMessageFilter::OnMessageReceived(
 }
 
 void GpuMessageFilter::OnDestruct() const {
-  BrowserThread::DeleteOnIOThread::Destruct(this);
+  BrowserThread::DeleteOnUIThread::Destruct(this);
 }
 
 // Callbacks used in this file.
@@ -54,7 +55,8 @@ class EstablishChannelCallback
                                    const GPUInfo&> > {
  public:
   explicit EstablishChannelCallback(GpuMessageFilter* filter):
-    filter_(filter->AsWeakPtr()) {
+      filter_(filter->AsWeakPtr()) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   }
 
   virtual void RunWithParams(const TupleType& params) {
@@ -82,8 +84,9 @@ class EstablishChannelCallback
 class SynchronizeCallback : public CallbackRunner<Tuple0> {
  public:
   SynchronizeCallback(GpuMessageFilter* filter, IPC::Message* reply):
-    filter_(filter->AsWeakPtr()),
-    reply_(reply) {
+      filter_(filter->AsWeakPtr()),
+      reply_(reply) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   }
 
   virtual void RunWithParams(const TupleType& params) {
@@ -105,8 +108,9 @@ class CreateCommandBufferCallback : public CallbackRunner<Tuple1<int32> > {
  public:
   CreateCommandBufferCallback(GpuMessageFilter* filter,
                               IPC::Message* reply) :
-    filter_(filter->AsWeakPtr()),
-    reply_(reply) {
+      filter_(filter->AsWeakPtr()),
+      reply_(reply) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   }
 
   virtual void RunWithParams(const TupleType& params) {

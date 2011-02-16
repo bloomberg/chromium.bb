@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_RENDERER_HOST_GPU_MESSAGE_FILTER_H_
 #pragma once
 
-#include <queue>
-
 #include "chrome/browser/browser_message_filter.h"
 
 struct GPUCreateCommandBufferConfig;
