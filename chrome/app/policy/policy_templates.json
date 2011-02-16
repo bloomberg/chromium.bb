@@ -74,7 +74,7 @@
 #     'chrome.win', 'chrome.linux', 'chrome.mac', 'chrome.*'
 #   For example if 'chrome.*:5-10' is specified for a policy, then it should
 #   be read as:
-#     'chrome.linux:5-10,chrome.mac:5-10,chrome.win:5-10'
+#     'chrome.linux:5-10', 'chrome.mac:5-10', 'chrome.win:5-10'
 #   The product name also affects in which templates will the policy be included.
 #     chrome.*, chrome.win, chrome_frame -> ADM,ADMX,ADML,doc
 #     chrome.*, chrome.linux -> JSON,doc
@@ -381,7 +381,7 @@
     {
       'name': 'UserDataDir',
       'type': 'string',
-      'supported_on': ['chrome.win:11-'],
+      'supported_on': ['chrome.win:11-', 'chrome.mac:11-'],
       'features': {'dynamic_refresh': 0},
       'example_value': '${user_home}\Chrome',
       'caption': '''Set user data directory''',
