@@ -48,21 +48,17 @@ class IndexedDBBrowserTest : public InProcessBrowserTest {
   }
 };
 
-// TODO(jorlow): As of Feb 14, 2011 I'm re-enabling these tests because we have
-//               fixed a couple known sources of flake and I'm hoping they
-//               were the cause of problems. If you see these turn red again,
-//               please don't hesitate to re-disable and mark them against bug
-//               http://code.google.com/p/chromium/issues/detail?id=70773
-
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CursorTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("cursor_test.html"))));
 }
 
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, IndexTest) {
+// Flaky: http://crbug.com/70773
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_IndexTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("index_test.html"))));
 }
 
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, KeyPathTest) {
+// Flaky: http://crbug.com/70773
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_KeyPathTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("key_path_test.html"))));
 }
 
@@ -70,7 +66,8 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, TransactionGetTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("transaction_get_test.html"))));
 }
 
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ObjectStoreTest) {
+// Flaky: http://crbug.com/70773
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_ObjectStoreTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("object_store_test.html"))));
 }
 
@@ -78,11 +75,13 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DatabaseTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("database_test.html"))));
 }
 
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, TransactionTest) {
+// Flaky: http://crbug.com/70773
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_TransactionTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("transaction_test.html"))));
 }
 
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DoesntHangTest) {
+// Flaky: http://crbug.com/70773
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_DoesntHangTest) {
   SimpleTest(testUrl(FilePath(
       FILE_PATH_LITERAL("transaction_run_forever.html"))));
   ui_test_utils::CrashTab(browser()->GetSelectedTabContents());
