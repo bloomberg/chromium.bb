@@ -143,6 +143,9 @@ html[dir='rtl'] .tree-row[selected] > .tree-label {
   font-weight: inherit;
   margin: -2px -8px -2px -3px;
   padding: 1px 7px 1px 1px;
+}
+
+html:not([os=mac]) .tree-item[editing] input {
   outline: none;
 }
 
