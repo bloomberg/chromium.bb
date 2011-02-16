@@ -27,6 +27,12 @@ cr.define('cr.ui', function() {
     },
 
     /**
+     * This item's index in the containing list.
+     * @type {number}
+     */
+    listIndex: -1,
+
+    /**
      * Called when an element is decorated as a list item.
      */
     decorate: function() {

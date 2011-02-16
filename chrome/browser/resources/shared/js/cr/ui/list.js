@@ -36,7 +36,8 @@ cr.define('cr.ui', function() {
    * @param {ListItem=} opt_item The list item to use to do the measuring. If
    *     this is not provided an item will be created based on the first value
    *     in the model.
-   * @return {number} The height of the item, taking margins into account.
+   * @return {{height: number, margin: number}} The height of the item, taking
+   *     margins into account, and the height of the margins themselves.
    */
   function measureItem(list, opt_item) {
     var dataModel = list.dataModel;
@@ -51,19 +52,21 @@ cr.define('cr.ui', function() {
     var mt = parseFloat(cs.marginTop);
     var mb = parseFloat(cs.marginBottom);
     var h = rect.height;
+    var m = 0;
 
     // Handle margin collapsing.
     if (mt < 0 && mb < 0) {
-      h += Math.min(mt, mb);
+      m = Math.min(mt, mb);
     } else if (mt >= 0 && mb >= 0) {
-      h += Math.max(mt, mb);
+      m = Math.max(mt, mb);
     } else {
-      h += mt + mb;
+      m = mt + mb;
     }
+    h += m;
 
     if (!opt_item)
       list.removeChild(item);
-    return Math.max(0, h);
+    return {height: Math.max(0, h), margin: m};
   }
 
   function getComputedStyle(el) {
@@ -83,11 +86,33 @@ cr.define('cr.ui', function() {
 
     /**
      * The height of list items. This is lazily calculated the first time it is
-     * needed.
+     * needed. Note that the lead item is allowed to have a different height, to
+     * accommodate lists where a single item at a time can be expanded to show
+     * more detail.
      * @type {number}
      * @private
      */
     itemHeight_: 0,
+
+    /**
+     * The height of list item margins, possibly negative. This is calculated
+     * along with {@code itemHeight_} and used to adjust {@code leadItemHeight_}
+     * without explicitly measuring the lead item's margins.
+     * @type {number}
+     * @private
+     */
+    itemMarginHeight_: 0,
+
+    /**
+     * The height of the lead item, which is allowed to have a different height
+     * than other list items to accommodate lists where a single item at a time
+     * can be expanded to show more detail. It is explicitly set by client code
+     * when the height of the lead item is changed with {@code set
+     * leadItemHeight}, and presumed equal to {@code itemHeight_} otherwise.
+     * @type {number}
+     * @private
+     */
+    leadItemHeight_: 0,
 
     /**
      * Whether or not the list is autoexpanding. If true, the list resizes
@@ -209,6 +234,24 @@ cr.define('cr.ui', function() {
     },
 
     /**
+     * The height of the lead item.
+     * If set to 0, resets to the same height as other items.
+     * @type {number}
+     */
+    get leadItemHeight() {
+      return this.leadItemHeight_ || this.getItemHeight_();
+    },
+    set leadItemHeight(height) {
+      if (height) {
+        // getItemHeight_() calculates itemMarginHeight_, which we need below.
+        this.getItemHeight_();
+        this.leadItemHeight_ = Math.max(0, height + this.itemMarginHeight_);
+      } else {
+        this.leadItemHeight_ = 0;
+      }
+    },
+
+    /**
      * Convenience alias for selectionModel.selectedItems
      * @type {!Array<cr.ui.ListItem>}
      */
@@ -288,8 +331,11 @@ cr.define('cr.ui', function() {
      * @private
      */
     getItemHeight_: function() {
-      if (!this.itemHeight_)
-        this.itemHeight_ = measureItem(this);
+      if (!this.itemHeight_) {
+        var measured = measureItem(this);
+        this.itemHeight_ = measured.height;
+        this.itemMarginHeight_ = measured.margin;
+      }
       return this.itemHeight_;
     },
 
@@ -434,9 +480,23 @@ cr.define('cr.ui', function() {
       }
 
       if (pe.newValue != -1) {
-        this.scrollIndexIntoView(pe.newValue);
         if ((element = this.getListItemByIndex(pe.newValue)))
           element.lead = true;
+        this.scrollIndexIntoView(pe.newValue);
+        // If the lead item has a different height than other items, then we
+        // may run into a problem that requires a second attempt to scroll
+        // it into view. The first scroll attempt will trigger a redraw,
+        // which will clear out the list and repopulate it with new items.
+        // During the redraw, the list may shrink temporarily, which if the
+        // lead item is the last item, will move the scrollTop up since it
+        // cannot extend beyond the end of the list. (Sadly, being scrolled to
+        // the bottom of the list is not "sticky.") So, we set a timeout to
+        // rescroll the list after this all gets sorted out. This is perhaps
+        // not the most elegant solution, but no others seem obvious.
+        var self = this;
+        window.setTimeout(function() {
+          self.scrollIndexIntoView(pe.newValue);
+        });
       }
     },
 
@@ -470,6 +530,13 @@ cr.define('cr.ui', function() {
       var itemHeight = this.getItemHeight_();
       var scrollTop = this.scrollTop;
       var top = index * itemHeight;
+      var leadIndex = this.selectionModel.leadIndex;
+
+      // Adjust for the lead item if it is above the given index.
+      if (leadIndex > -1 && leadIndex < index)
+        top += this.leadItemHeight - itemHeight;
+      else if (leadIndex == index)
+        itemHeight = this.leadItemHeight;
 
       if (top < scrollTop) {
         this.scrollTop = top;
@@ -535,11 +602,7 @@ cr.define('cr.ui', function() {
      * @return {number} The index of the list item, or -1 if not found.
      */
     getIndexOfListItem: function(item) {
-      var paddingTop = parseFloat(getComputedStyle(this).paddingTop);
-      var cs = getComputedStyle(item);
-      var top = item.offsetTop - parseFloat(cs.marginTop) - paddingTop;
-      var itemHeight = this.getItemHeight_();
-      var index = Math.floor((top + itemHeight / 2) / itemHeight);
+      var index = item.listIndex;
       var childIndex = index - this.firstIndex_ + 1;
       if (childIndex >= 0 && childIndex < this.children.length &&
           this.children[childIndex] == item) {
@@ -568,6 +631,66 @@ cr.define('cr.ui', function() {
     },
 
     /**
+     * Return the heights (in pixels) of the top of the given item index within
+     * the list, and the height of the given item itself, accounting for the
+     * possibility that the lead item may be a different height.
+     * @param {number} index The index to find the top height of.
+     * @return {{top: number, height: number}} The heights for the given index.
+     * @private
+     */
+    getHeightsForIndex_: function(index) {
+      var itemHeight = this.getItemHeight_();
+      var top = index * itemHeight;
+      if (this.selectionModel.leadIndex > -1 &&
+          this.selectionModel.leadIndex < index) {
+        top += this.leadItemHeight - itemHeight;
+      } else if (this.selectionModel.leadIndex == index) {
+        itemHeight = this.leadItemHeight;
+      }
+      return {top: top, height: itemHeight};
+    },
+
+    /**
+     * Find the index of the list item containing the given y offset (measured
+     * in pixels from the top) within the list.
+     * @param {number} offset The y offset in pixels to get the index of.
+     * @return {number} The index of the list item.
+     * @private
+     */
+    getIndexForListOffset_: function(offset) {
+      var itemHeight = this.getItemHeight_();
+      var leadIndex = this.selectionModel.leadIndex;
+      var leadItemHeight = this.leadItemHeight;
+      if (leadIndex < 0 || leadItemHeight == itemHeight) {
+        // Simple case: no lead item or lead item height is not different.
+        return Math.floor(offset / itemHeight);
+      }
+      var leadTop = itemHeight * leadIndex;
+      // If the given offset is above the lead item, it's also simple.
+      if (offset < leadTop)
+        return Math.floor(offset / itemHeight);
+      // If the lead item contains the given offset, we just return its index.
+      if (offset < leadTop + leadItemHeight)
+        return leadIndex;
+      // The given offset must be below the lead item. Adjust and recalculate.
+      offset -= leadItemHeight - itemHeight;
+      return Math.floor(offset / itemHeight);
+    },
+
+    /**
+     * Return the number of items that occupy the range of heights between the
+     * top of the start item and the end offset.
+     * @param {number} startIndex The index of the first visible item.
+     * @param {number} endOffset The y offset in pixels of the end of the list.
+     * @return {number} The number of list items visible.
+     * @private
+     */
+    countItemsInRange_: function(startIndex, endOffset) {
+      var endIndex = this.getIndexForListOffset_(endOffset);
+      return endIndex - startIndex + 1;
+    },
+
+    /**
      * Redraws the viewport.
      */
     redraw: function() {
@@ -590,22 +713,19 @@ cr.define('cr.ui', function() {
       var cachedItems = this.cachedItems_ || {};
       var newCachedItems = {};
 
-      var desiredScrollHeight = dataModel.length * itemHeight;
+      var desiredScrollHeight = this.getHeightsForIndex_(dataModel.length).top;
 
       var autoExpands = this.autoExpands_
-      var firstIndex = autoExpands ? 0 : Math.floor(scrollTop / itemHeight);
+      var firstIndex = autoExpands ? 0 : this.getIndexForListOffset_(scrollTop);
       var itemsInViewPort = autoExpands ? dataModel.length : Math.min(
           dataModel.length - firstIndex,
-          Math.ceil((scrollTop + clientHeight - firstIndex * itemHeight) /
-                    itemHeight));
+          this.countItemsInRange_(firstIndex, scrollTop + clientHeight));
       var lastIndex = firstIndex + itemsInViewPort;
 
       this.textContent = '';
 
-      var oldFirstIndex = this.firstIndex_ || 0;
-      var oldLastIndex = this.lastIndex_ || 0;
-
-      this.beforeFiller_.style.height = firstIndex * itemHeight + 'px';
+      this.beforeFiller_.style.height =
+          this.getHeightsForIndex_(firstIndex).top + 'px';
       this.appendChild(this.beforeFiller_);
 
       var sm = this.selectionModel;
@@ -615,26 +735,36 @@ cr.define('cr.ui', function() {
       for (var y = firstIndex; y < lastIndex; y++) {
         var dataItem = dataModel.item(y);
         listItem = cachedItems[y] || this.createItem(dataItem);
-        if (y == leadIndex) {
-          listItem.lead = true;
-        }
-        if (sm.getIndexSelected(y)) {
-          listItem.selected = true;
-        }
+        listItem.listIndex = y;
         this.appendChild(listItem);
         newCachedItems[y] = listItem;
       }
 
-      this.afterFiller_.style.height =
-          (dataModel.length - firstIndex - itemsInViewPort) * itemHeight + 'px';
+      var afterFillerHeight =
+          (dataModel.length - firstIndex - itemsInViewPort) * itemHeight;
+      if (leadIndex >= lastIndex)
+        afterFillerHeight += this.leadItemHeight - itemHeight;
+      this.afterFiller_.style.height = afterFillerHeight + 'px';
       this.appendChild(this.afterFiller_);
+
+      // We don't set the lead or selected properties until after adding all
+      // items, in case they force relayout in response to these events.
+      listItem = null;
+      if (newCachedItems[leadIndex])
+        newCachedItems[leadIndex].lead = true;
+      for (var y = firstIndex; y < lastIndex; y++) {
+        if (sm.getIndexSelected(y))
+          newCachedItems[y].selected = true;
+        else if (y != leadIndex)
+          listItem = newCachedItems[y];
+      }
 
       this.firstIndex_ = firstIndex;
       this.lastIndex_ = lastIndex;
 
       this.cachedItems_ = newCachedItems;
 
-      // Measure again in case the item height has change due to a page zoom.
+      // Measure again in case the item height has changed due to a page zoom.
       //
       // The measure above is only done the first time but this measure is done
       // after every redraw. It is done in a timeout so it will not trigger
@@ -644,8 +774,11 @@ cr.define('cr.ui', function() {
       if (listItem) {
         var list = this;
         window.setTimeout(function() {
-          if (listItem.parentNode == list)
-            list.itemHeight_ = measureItem(list, listItem);
+          if (listItem.parentNode == list) {
+            var measured = measureItem(list, listItem);
+            list.itemHeight_ = measured.height;
+            list.itemMarginHeight_ = measured.margin;
+          }
         });
       }
     },
