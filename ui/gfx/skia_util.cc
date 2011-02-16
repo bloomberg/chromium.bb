@@ -20,10 +20,10 @@ SkRect RectToSkRect(const gfx::Rect& rect) {
 }
 
 gfx::Rect SkRectToRect(const SkRect& rect) {
-  return gfx::Rect(SkScalarToFixed(rect.fLeft),
-                   SkScalarToFixed(rect.fTop),
-                   SkScalarToFixed(rect.width()),
-                   SkScalarToFixed(rect.height()));
+  return gfx::Rect(static_cast<int>(rect.fLeft),
+                   static_cast<int>(rect.fTop),
+                   static_cast<int>(rect.width()),
+                   static_cast<int>(rect.height()));
 }
 
 SkShader* CreateGradientShader(int start_point,

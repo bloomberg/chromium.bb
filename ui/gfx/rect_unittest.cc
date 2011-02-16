@@ -5,6 +5,7 @@
 #include "base/basictypes.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/skia_util.h"
 
 typedef testing::Test RectTest;
 
@@ -311,4 +312,10 @@ TEST(RectTest, SharesEdgeWith) {
   EXPECT_FALSE(r.SharesEdgeWith(just_below_no_edge));
   EXPECT_FALSE(r.SharesEdgeWith(just_left_no_edge));
   EXPECT_FALSE(r.SharesEdgeWith(just_right_no_edge));
+}
+
+TEST(RectTest, SkRectToRect) {
+  gfx::Rect src(10, 20, 30, 40);
+  SkRect skrect = gfx::RectToSkRect(src);
+  EXPECT_EQ(src, gfx::SkRectToRect(skrect));
 }

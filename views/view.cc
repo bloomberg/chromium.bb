@@ -603,11 +603,7 @@ gfx::Rect View::ConvertRectToParent(const gfx::Rect& rect) const {
   SkRect src = gfx::RectToSkRect(rect);
   if (!transform_->mapRect(&src))
     return rect;
-  gfx::Rect ret(static_cast<int>(SkScalarToDouble(src.fLeft)),
-                static_cast<int>(SkScalarToDouble(src.fTop)),
-                static_cast<int>(SkScalarToDouble(src.width())),
-                static_cast<int>(SkScalarToDouble(src.height())));
-  return ret;
+  return gfx::SkRectToRect(src);
 }
 
 // Painting --------------------------------------------------------------------
