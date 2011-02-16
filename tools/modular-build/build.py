@@ -231,7 +231,11 @@ def GetTargets():
       "binutils", "binutils", deps=[],
       configure_opts=[
           "--target=%s" % arch,
-          "CFLAGS=-DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5"])
+          "CFLAGS=-DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5",
+          # We'd like to build binutils with -Werror, but there are a
+          # number of warnings in the Mac version of GCC that prevent
+          # us from building with -Werror today.
+          "--disable-werror"])
   AddAutoconfModule(
       "pre-gcc", "gcc", deps=["binutils"] + gcc_libs,
       configure_opts=common_gcc_options + [
