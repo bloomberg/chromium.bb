@@ -238,7 +238,7 @@ html[hide-menu=true] #mainview {
 .subpage-sheet-container {
   -webkit-margin-start: 60px;
   box-sizing: border-box;
-  height: 100%;
+  min-height: 100%;
   padding: 8px;
   /* Must come after padding. */
   -webkit-padding-start: 0;
@@ -267,7 +267,7 @@ html[hide-menu=true] #mainview {
   border-radius: 2px;
   box-sizing: border-box;
   min-height: 100%;
-  padding: 0px 20px;
+  padding: 0px 20px 20px 20px;
   position: relative;
   width: 100%;
 }
