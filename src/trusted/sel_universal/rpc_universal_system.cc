@@ -5,7 +5,6 @@
  */
 
 #include <fcntl.h>
-#include <stdlib.h>
 #include <string.h>
 #if (NACL_LINUX)
 #include <sys/ipc.h>
@@ -22,6 +21,7 @@ using std::stringstream;
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
+#include "native_client/src/trusted/sel_universal/parsing.h"
 #include "native_client/src/trusted/sel_universal/rpc_universal.h"
 
 
@@ -61,24 +61,18 @@ uintptr_t Align(uintptr_t start, uintptr_t alignment) {
   return (start + alignment - 1) & ~(alignment - 1);
 }
 
-NaClDesc* SysvShmDesc(int size) {
-  nacl::DescWrapperFactory factory;
-  nacl::DescWrapper* desc = factory.MakeShm(size);
-  if (NULL == desc) {
-    NaClLog(LOG_ERROR, "cound not create shmem desc\n");
-    return kNaClSrpcInvalidImcDesc;
-  }
 
-  // now map it
+uintptr_t MapShmem(nacl::DescWrapper* desc) {
   void* addr;
   size_t dummy_size;
   int result = desc->Map(&addr, &dummy_size);
   if (0 > result) {
     NaClLog(LOG_ERROR, "error mapping shmem area\n");
+    return 0;
   }
 
   GlobalAddressMap.Add(desc->desc(), reinterpret_cast<uintptr_t>(addr));
-  return desc->desc();
+  return reinterpret_cast<uintptr_t>(addr);
 }
 
 }  // namespace
@@ -89,20 +83,28 @@ bool HandlerShmem(NaClCommandLoop* ncl, const vector<string>& args) {
     return false;
   }
 
-  const int size = strtol(args[3].c_str(), 0, 0);
-  NaClDesc* desc = SysvShmDesc(size);
-  if (kNaClSrpcInvalidImcDesc == desc) {
-    NaClLog(LOG_ERROR, "cound not create shm\n");
+  const int size = ExtractInt32(args[3]);
+  nacl::DescWrapperFactory factory;
+  nacl::DescWrapper* desc = factory.MakeShm(size);
+  if (desc == NULL) {
+    NaClLog(LOG_ERROR, "could not create shm\n");
     return false;
   }
-  ncl->AddDesc(desc, args[1]);
+
+  ncl->AddDesc(desc->desc(), args[1]);
+
+  uintptr_t addr = MapShmem(desc);
+  if (addr == 0) {
+    return false;
+  }
   stringstream str;
-  str << "0x" << std::hex << GlobalAddressMap.Get(desc);
+  str << "0x" << std::hex << addr;
   ncl->SetVariable(args[2], str.str());
   return true;
 }
 
 
+// create a descriptor representing a readonly file
 bool HandlerReadonlyFile(NaClCommandLoop* ncl, const vector<string>& args) {
   if (args.size() < 3) {
     NaClLog(LOG_ERROR, "not enough args\n");
@@ -119,14 +121,14 @@ bool HandlerReadonlyFile(NaClCommandLoop* ncl, const vector<string>& args) {
   return true;
 }
 
-
+// sleep for a given number of seconds
 bool HandlerSleep(NaClCommandLoop* ncl, const vector<string>& args) {
   UNREFERENCED_PARAMETER(ncl);
   if (args.size() < 2) {
     NaClLog(LOG_ERROR, "not enough args\n");
     return false;
   }
-  const int secs = strtol(args[1].c_str(), 0, 0);
+  const int secs = ExtractInt32(args[1]);
 #if (NACL_LINUX || NACL_OSX)
   sleep(secs);
 #elif NACL_WINDOWS
@@ -134,5 +136,66 @@ bool HandlerSleep(NaClCommandLoop* ncl, const vector<string>& args) {
 #else
 #error "Please specify platform as NACL_LINUX, NACL_OSX or NACL_WINDOWS"
 #endif
+  return true;
+}
+
+// save a memory region to a file
+bool HandlerSaveToFile(NaClCommandLoop* ncl, const vector<string>& args) {
+  UNREFERENCED_PARAMETER(ncl);
+  if (args.size() < 5) {
+    NaClLog(LOG_ERROR, "not enough args\n");
+    return false;
+  }
+
+  const char* filename = args[1].c_str();
+  const char* start = reinterpret_cast<char*>(ExtractInt64(args[2]));
+  const int offset = ExtractInt32(args[3]);
+  const int size = ExtractInt32(args[4]);
+
+  NaClLog(1, "opening %s\n", filename);
+  FILE* fp = fopen(filename, "wb");
+  if (fp == NULL) {
+     NaClLog(LOG_ERROR, "cannot open %s\n", filename);
+     return false;
+  }
+
+  NaClLog(1, "writing %d bytes from %p\n", (int) size, start + offset);
+  const size_t n = fwrite(start + offset, 1, size, fp);
+  if (static_cast<int>(n) != size) {
+    NaClLog(LOG_ERROR, "wrote %d bytes, expected %d\n",
+            static_cast<int>(n), size);
+    fclose(fp);
+    return false;
+  }
+  fclose(fp);
+  return true;
+}
+
+// map a shared mem descriptor into memory and save address into var
+bool HandlerMap(NaClCommandLoop* ncl, const vector<string>& args) {
+  UNREFERENCED_PARAMETER(ncl);
+  if (args.size() < 3) {
+    NaClLog(LOG_ERROR, "not enough args\n");
+    return false;
+  }
+
+  NaClDesc* raw_desc = ExtractDesc(args[1], ncl);
+  if (raw_desc == NULL) {
+    NaClLog(LOG_ERROR, "cannot find desciptor %s\n", args[1].c_str());
+    return false;
+  }
+
+  nacl::DescWrapperFactory factory;
+  nacl::DescWrapper* desc = factory.MakeGeneric(raw_desc);
+
+  uintptr_t addr = MapShmem(desc);
+  if (addr == 0) {
+    return false;
+  }
+
+  NaClLog(1, "region mapped at %p\n", reinterpret_cast<void*>(addr));
+  stringstream str;
+  str << "0x" << std::hex << addr;
+  ncl->SetVariable(args[2], str.str());
   return true;
 }

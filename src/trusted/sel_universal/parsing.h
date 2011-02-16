@@ -47,4 +47,16 @@ void FreeArrayArgs(NaClSrpcArg** args);
 
 // Substitute variables in string s.
 string SubstituteVars(string s, NaClCommandLoop* ncl);
+
+
+// remove typing markup, e.g. i(1234) -> 1234
+string GetPayload(string token);
+
+// convert strings 5 or i(5) to int32
+int32_t ExtractInt32(string token);
+
+// convert strings 5 or l(5) to int64
+int64_t ExtractInt64(string token);
+
+NaClDesc* ExtractDesc(string token, NaClCommandLoop* ncl);
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_SEL_UNIVERSAL_PARSING_H_ */

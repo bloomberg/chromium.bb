@@ -55,6 +55,35 @@ static double StringToDouble(string s, size_t pos = 0) {
   return strtod(s.c_str() + pos, 0);
 }
 
+// remove typing markup, e.g. i(1234) -> 1234
+string GetPayload(string token) {
+  return token.substr(2, token.size() - 3);
+}
+
+// convert strings 5 or i(5) to int32
+int32_t ExtractInt32(string token) {
+  if (token[0] == 'i' && token[1] == '(') {
+    return StringToInt32(token, 2);
+  }
+  return StringToInt32(token);
+}
+
+// convert strings 5 or l(5) to int64
+int64_t ExtractInt64(string token) {
+  if (token[0] == 'l' && token[1] == '(') {
+    return StringToInt64(token, 2);
+  }
+  return StringToInt64(token);
+}
+
+
+NaClDesc* ExtractDesc(string token, NaClCommandLoop* ncl) {
+  if (token[0] == 'h' && token[1] == '(') {
+    token = GetPayload(token);
+  }
+  return ncl->FindDescByName(token);
+}
+
 
 static int HandleEscapedOctal(const string s, size_t* pos) {
   if (*pos + 2 >= s.size()) {
@@ -459,7 +488,7 @@ static bool ParseArg(NaClSrpcArg* arg,
     case NACL_SRPC_ARG_TYPE_HANDLE:
       arg->tag = NACL_SRPC_ARG_TYPE_HANDLE;
       if (input) {
-        arg->u.hval = ncl->FindDescByName(token.substr(2, token.size() - 3));
+        arg->u.hval = ncl->FindDescByName(GetPayload(token));
       }
       break;
     case NACL_SRPC_ARG_TYPE_INT:
@@ -620,7 +649,9 @@ static string StringifyOneChar(unsigned char c) {
     case '\\':
       return "\\\\";
     default:
-      if (c < ' ' || 126 < c) {
+     // play it safe and escape spaces and closing parens
+     // which could cause problems when this string is read back in
+     if (c < ' ' || 126 < c) {
           stringstream result;
           result << "\\x" << std::hex << std::setw(2) <<
             std::setfill('0') << int(c);

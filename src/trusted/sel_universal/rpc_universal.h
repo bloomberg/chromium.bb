@@ -37,7 +37,7 @@ class NaClCommandLoop {
   NaClSrpcService* getService() const { return service_; }
   NaClSrpcChannel* getChannel() const { return channel_; }
 
-  void StartInteractiveLoop();
+  bool StartInteractiveLoop(bool script_mode);
 
  private:
   // Note, most handlers are not even class members, the ones below
@@ -67,4 +67,7 @@ class NaClCommandLoop {
 bool HandlerSleep(NaClCommandLoop* ncl, const vector<string>& args);
 bool HandlerReadonlyFile(NaClCommandLoop* ncl, const vector<string>& args);
 bool HandlerShmem(NaClCommandLoop* ncl, const vector<string>& args);
+bool HandlerMap(NaClCommandLoop* ncl, const vector<string>& args);
+bool HandlerSaveToFile(NaClCommandLoop* ncl, const vector<string>& args);
+
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_SEL_UNIVERSAL_RPC_UNIVERSAL_H_ */

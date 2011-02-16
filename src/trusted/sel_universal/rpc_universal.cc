@@ -437,7 +437,7 @@ NaClCommandLoop::NaClCommandLoop(NaClSrpcService* service,
   AddHandler("service", HandleService);
 }
 
-void NaClCommandLoop::StartInteractiveLoop() {
+bool NaClCommandLoop::StartInteractiveLoop(bool script_mode) {
   int command_count = 0;
   vector<string> tokens;
 
@@ -448,7 +448,9 @@ void NaClCommandLoop::StartInteractiveLoop() {
 
     char buffer[kMaxCommandLineLength];
 
-    fprintf(stderr, "%d> ", command_count);
+    if (!script_mode) {
+      fprintf(stderr, "%d> ", command_count);
+    }
     ++command_count;
 
     if (!fgets(buffer, sizeof(buffer), stdin))
@@ -474,11 +476,20 @@ void NaClCommandLoop::StartInteractiveLoop() {
     }
 
     if (handlers_.find(tokens[0])  == handlers_.end()) {
-      NaClLog(LOG_ERROR, "Unknown command `%s'.\n", tokens[0].c_str());
+      NaClLog(LOG_ERROR, "Unknown command [%s].\n", tokens[0].c_str());
+      if (script_mode) {
+        return false;
+      }
       continue;
     }
 
-    handlers_[tokens[0]](this, tokens);
+    if (!handlers_[tokens[0]](this, tokens)) {
+      NaClLog(LOG_ERROR, "Command [%s] failed.\n", tokens[0].c_str());
+      if (script_mode) {
+        return false;
+      }
+    }
   }
   NaClLog(1, "exiting print eval loop\n");
+  return true;
 }

@@ -53,6 +53,9 @@ static NaClSrpcChannel channel;
 // variables set via command line
 static map<string, string> initial_vars;
 
+// script_mode is the opposite of interactive mode, e.g. no prompt
+bool script_mode = false;
+
 // When given argc and argv this function (a) extracts the nacl_file argument,
 // (b) populates sel_ldr_argv with sel_ldr arguments, and (c) populates
 // app_argv with nexe module args. Also see kUsage above for details.
@@ -76,6 +79,8 @@ static nacl::string ProcessArguments(int argc,
       exit(0);
     } else if (flag == "--debug") {
       NaClLogSetVerbosity(1);
+    } else if (flag == "--script_mode") {
+      script_mode = true;
     } else if (flag == "--var") {
       if (i + 2 >= argc) {
         NaClLog(LOG_FATAL, "not enough args for --var option\n");
@@ -126,7 +131,6 @@ int main(int argc, char* argv[]) {
   sel_ldr_argv.push_back("-X");
   sel_ldr_argv.push_back("5");
 
-
   // Start sel_ldr with the given application and arguments.
   nacl::SelLdrLauncher launcher;
   if (!launcher.StartFromCommandLine(app_name, 5, sel_ldr_argv, app_argv)) {
@@ -162,6 +166,8 @@ int main(int argc, char* argv[]) {
   loop.AddHandler("shmem", HandlerShmem);
   loop.AddHandler("readonly_file", HandlerReadonlyFile);
   loop.AddHandler("sleep", HandlerSleep);
+  loop.AddHandler("map_shmem", HandlerMap);
+  loop.AddHandler("save_to_file", HandlerSaveToFile);
 
   NaClLog(1, "populating initial vars\n");
   for (map<string, string>::iterator it = initial_vars.begin();
@@ -171,7 +177,7 @@ int main(int argc, char* argv[]) {
   }
 
   NaClLog(1, "starting loop\n");
-  loop.StartInteractiveLoop();
+  bool success = loop.StartInteractiveLoop(script_mode);
 
   // Close the connections to sel_ldr.
   NaClSrpcDtor(&command_channel);
@@ -179,5 +185,5 @@ int main(int argc, char* argv[]) {
 
   NaClSrpcModuleFini();
   NaClNrdAllModulesFini();
-  return 0;
+  return success ? 0 : -1;
 }
