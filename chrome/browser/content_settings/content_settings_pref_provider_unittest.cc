@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/content_settings/pref_content_settings_provider.h"
+#include "chrome/browser/content_settings/content_settings_pref_provider.h"
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"

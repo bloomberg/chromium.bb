@@ -4,7 +4,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-#include "chrome/browser/content_settings/mock_content_settings_provider.h"
+#include "chrome/browser/content_settings/content_settings_mock_provider.h"
 #include "googleurl/src/gurl.h"
 
 namespace content_settings {
