@@ -43,7 +43,9 @@ bool DropdownBarHost::disable_animations_during_testing_ = false;
 
 DropdownBarHost::DropdownBarHost(BrowserView* browser_view)
     : browser_view_(browser_view),
+      view_(NULL),
       animation_offset_(0),
+      focus_manager_(NULL),
       esc_accel_target_registered_(false),
       is_visible_(false) {
 }
