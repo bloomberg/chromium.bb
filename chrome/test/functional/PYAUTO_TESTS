@@ -65,7 +65,8 @@
       'ntp',
       'omnibox',
       '-omnibox.OmniboxTest.testHistoryResult',  # crbug.com/71715
-      'passwords',
+      # crbug.com/73078
+      '-passwords',
       'pdf',
       'plugins',
       '-plugins.PluginsTest.testBlockPluginException',  # crbug.com/71617
