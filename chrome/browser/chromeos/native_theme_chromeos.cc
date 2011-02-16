@@ -404,7 +404,7 @@ void NativeThemeChromeos::PaintArrowButton(skia::PlatformCanvas* canvas,
 void NativeThemeChromeos::PaintCheckbox(skia::PlatformCanvas* canvas,
     State state, const gfx::Rect& rect,
     const ButtonExtraParams& button) {
-  PaintButtonLike(canvas, state, rect, button);
+  PaintButtonLike(canvas, state, rect, true);
 
   if (button.checked) {
     SkPaint indicator_paint;
@@ -459,7 +459,7 @@ void NativeThemeChromeos::PaintButton(skia::PlatformCanvas* canvas,
     State state,
     const gfx::Rect& rect,
     const ButtonExtraParams& button) {
-  PaintButtonLike(canvas, state, rect, button);
+  PaintButtonLike(canvas, state, rect, button.has_border);
 }
 
 void NativeThemeChromeos::PaintTextField(skia::PlatformCanvas* canvas,
@@ -549,8 +549,7 @@ void NativeThemeChromeos::PaintSliderThumb(skia::PlatformCanvas* canvas,
   if (state != kDisabled && slider.in_drag)
     state = kPressed;
 
-  ButtonExtraParams button = { 0 };
-  PaintButtonLike(canvas, state, rect, button);
+  PaintButtonLike(canvas, state, rect, true);
 }
 
 void NativeThemeChromeos::PaintInnerSpinButton(skia::PlatformCanvas* canvas,
@@ -692,8 +691,7 @@ SkBitmap* NativeThemeChromeos::GetHorizontalBitmapNamed(int resource_id) {
 }
 
 void NativeThemeChromeos::PaintButtonLike(skia::PlatformCanvas* canvas,
-    State state, const gfx::Rect& rect,
-    const ButtonExtraParams& button) {
+    State state, const gfx::Rect& rect, bool stroke_border) {
   SkPath border;
   GetRoundRectPath(rect, kBorderCornerRadius, &border);
 
@@ -701,7 +699,9 @@ void NativeThemeChromeos::PaintButtonLike(skia::PlatformCanvas* canvas,
   GetButtonGradientPaint(rect, state, &fill_paint);
   canvas->drawPath(border, fill_paint);
 
-  SkPaint stroke_paint;
-  GetStrokePaint(state, &stroke_paint);
-  canvas->drawPath(border, stroke_paint);
+  if (stroke_border) {
+    SkPaint stroke_paint;
+    GetStrokePaint(state, &stroke_paint);
+    canvas->drawPath(border, stroke_paint);
+  }
 }

@@ -79,8 +79,7 @@ class NativeThemeChromeos : public gfx::NativeThemeLinux {
 
   // Paint a button like rounded rect with gradient background and stroke.
   void PaintButtonLike(skia::PlatformCanvas* canvas,
-      State state, const gfx::Rect& rect,
-      const ButtonExtraParams& button);
+      State state, const gfx::Rect& rect, bool stroke_border);
 
   // Cached images. The ResourceBundle caches all retrieved bitmaps and keeps
   // ownership of the pointers.
