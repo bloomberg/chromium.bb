@@ -5,7 +5,6 @@
 cr.define('options', function() {
   const OptionsPage = options.OptionsPage;
   const ArrayDataModel = cr.ui.ArrayDataModel;
-  const ListSingleSelectionModel = cr.ui.ListSingleSelectionModel;
 
   /////////////////////////////////////////////////////////////////////////////
   // PasswordManager class:
@@ -68,7 +67,6 @@ cr.define('options', function() {
     createSavedPasswordsList_: function() {
       this.savedPasswordsList_ = $('saved-passwords-list');
       options.passwordManager.PasswordsList.decorate(this.savedPasswordsList_);
-      this.savedPasswordsList_.selectionModel = new ListSingleSelectionModel;
       this.savedPasswordsList_.autoExpands = true;
     },
 
@@ -80,8 +78,6 @@ cr.define('options', function() {
       this.passwordExceptionsList_ = $('password-exceptions-list');
       options.passwordManager.PasswordExceptionsList.decorate(
           this.passwordExceptionsList_);
-      this.passwordExceptionsList_.selectionModel =
-          new ListSingleSelectionModel;
       this.passwordExceptionsList_.autoExpands = true;
     },
 
