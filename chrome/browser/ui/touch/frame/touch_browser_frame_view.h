@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "chrome/browser/tabs/tab_strip_model_observer.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
+#include "ui/base/animation/animation_delegate.h"
 #include "views/focus/focus_manager.h"
 
 class BrowserFrame;
@@ -18,9 +19,14 @@ class KeyboardContainerView;
 class NotificationDetails;
 class NotificationSource;
 
+namespace ui {
+class SlideAnimation;
+}
+
 class TouchBrowserFrameView : public OpaqueBrowserFrameView,
                               public views::FocusChangeListener,
                               public TabStripModelObserver,
+                              public ui::AnimationDelegate,
                               public NotificationObserver {
  public:
   enum VirtualKeyboardType {
@@ -61,10 +67,16 @@ class TouchBrowserFrameView : public OpaqueBrowserFrameView,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
+  // Overridden from ui::AnimationDelegate:
+  virtual void AnimationProgressed(const ui::Animation* animation);
+  virtual void AnimationEnded(const ui::Animation* animation);
+
   bool keyboard_showing_;
   bool focus_listener_added_;
   KeyboardContainerView* keyboard_;
   NotificationRegistrar registrar_;
+
+  scoped_ptr<ui::SlideAnimation> animation_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchBrowserFrameView);
 };

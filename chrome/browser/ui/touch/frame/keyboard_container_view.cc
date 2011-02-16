@@ -49,4 +49,3 @@ void KeyboardContainerView::ViewHierarchyChanged(bool is_add,
   if (is_add)
     MakeViewHierarchyUnfocusable(child);
 }
-
