@@ -671,6 +671,8 @@ select {
   -webkit-appearance: button;
   -webkit-border-radius: 2px;
   -webkit-box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
+  -webkit-padding-end: 20px;
+  -webkit-padding-start: 2px;
   -webkit-user-select: none;
   background-image: url("select.png"), -webkit-linear-gradient(#fafafa, #f4f4f4 40%, #e5e5e5);
   background-position: center right;
@@ -680,7 +682,8 @@ select {
   font-size: inherit;
   margin: 0;
   overflow: hidden;
-  padding: 2px 20px 2px 5px;
+  padding-top: 2px;
+  padding-bottom: 2px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
