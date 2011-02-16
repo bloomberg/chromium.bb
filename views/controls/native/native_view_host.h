@@ -84,7 +84,8 @@ class NativeViewHost : public View {
   virtual bool ContainsNativeView(gfx::NativeView native_view) const;
 
  protected:
-  virtual void VisibleBoundsInRootChanged();
+  virtual bool NeedsNotificationWhenVisibleBoundsChange() const;
+  virtual void OnVisibleBoundsChanged();
   virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
   virtual std::string GetClassName() const;
 

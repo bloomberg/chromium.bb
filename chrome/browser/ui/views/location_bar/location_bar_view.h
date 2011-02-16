@@ -164,10 +164,6 @@ class LocationBarView : public LocationBar,
   // No focus border for the location bar, the caret is enough.
   virtual void OnPaintFocusBorder(gfx::Canvas* canvas) { }
 
-  // Called when any ancestor changes its size, asks the AutocompleteEditModel
-  // to close its popup.
-  virtual void VisibleBoundsInRootChanged();
-
   // Set if we should show a focus rect while the location entry field is
   // focused. Used when the toolbar is in full keyboard accessibility mode.
   // Repaints if necessary.

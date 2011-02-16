@@ -63,7 +63,6 @@ View::View()
       is_parent_owned_(true),
       parent_(NULL),
       is_visible_(true),
-      notify_when_visible_bounds_in_root_changes_(false),
       registered_for_visible_bounds_notification_(false),
       clip_x_(0),
       clip_y_(0),
@@ -129,9 +128,8 @@ void View::AddChildViewAt(View* view, int index) {
 
   view->PropagateAddNotifications(this, view);
   UpdateTooltip();
-  RootView* root = GetRootView();
-  if (root)
-    RegisterChildrenForVisibleBoundsNotification(root, view);
+  if (GetWidget())
+    RegisterChildrenForVisibleBoundsNotification(view);
 
   if (layout_manager_.get())
     layout_manager_->ViewAdded(this, view);
@@ -199,9 +197,6 @@ RootView* View::GetRootView() {
   return widget ? widget->GetRootView() : NULL;
 }
 
-#ifndef NDEBUG
-#endif
-
 // Size and disposition --------------------------------------------------------
 
 void View::SetBounds(int x, int y, int width, int height) {
@@ -222,13 +217,8 @@ void View::SetBoundsRect(const gfx::Rect& bounds) {
   bool size_changed = prev.size() != bounds_.size();
   bool position_changed = prev.origin() != bounds_.origin();
 
-  if (size_changed || position_changed) {
-    OnBoundsChanged();
-
-    RootView* root = GetRootView();
-    if (root)
-      root->ViewBoundsChanged(this, size_changed, position_changed);
-  }
+  if (size_changed || position_changed)
+    BoundsChanged();
 }
 
 void View::SetSize(const gfx::Size& size) {
@@ -1009,21 +999,11 @@ void View::PreferredSizeChanged() {
     parent_->ChildPreferredSizeChanged(this);
 }
 
-void View::SetNotifyWhenVisibleBoundsInRootChanges(bool value) {
-  if (notify_when_visible_bounds_in_root_changes_ == value)
-    return;
-  notify_when_visible_bounds_in_root_changes_ = value;
-  RootView* root = GetRootView();
-  if (root) {
-    if (value)
-      root->RegisterViewForVisibleBoundsNotification(this);
-    else
-      root->UnregisterViewForVisibleBoundsNotification(this);
-  }
+bool View::NeedsNotificationWhenVisibleBoundsChange() const {
+  return false;
 }
 
-bool View::GetNotifyWhenVisibleBoundsInRootChanges() {
-  return notify_when_visible_bounds_in_root_changes_;
+void View::OnVisibleBoundsChanged() {
 }
 
 // Tree operations -------------------------------------------------------------
@@ -1198,9 +1178,8 @@ void View::DoRemoveChildView(View* view,
         next_focusable->previous_focusable_view_ = prev_focusable;
     }
 
-    RootView* root = GetRootView();
-    if (root)
-      UnregisterChildrenForVisibleBoundsNotification(root, view);
+    if (GetWidget())
+      UnregisterChildrenForVisibleBoundsNotification(view);
     view->PropagateRemoveNotifications(this);
     view->SetParent(NULL);
 
@@ -1287,25 +1266,55 @@ void View::VisibilityChangedImpl(View* starting_from, bool is_visible) {
   VisibilityChanged(starting_from, is_visible);
 }
 
-// static
-void View::RegisterChildrenForVisibleBoundsNotification(
-    RootView* root, View* view) {
-  DCHECK(root && view);
-  if (view->GetNotifyWhenVisibleBoundsInRootChanges())
-    root->RegisterViewForVisibleBoundsNotification(view);
-  for (int i = 0; i < view->child_count(); ++i)
-    RegisterChildrenForVisibleBoundsNotification(root, view->GetChildViewAt(i));
+void View::BoundsChanged() {
+  OnBoundsChanged();
+
+  // Notify interested Views that visible bounds within the root view may have
+  // changed.
+  if (descendants_to_notify_.get()) {
+    for (std::vector<View*>::iterator i = descendants_to_notify_->begin();
+         i != descendants_to_notify_->end(); ++i) {
+      (*i)->OnVisibleBoundsChanged();
+    }
+  }
 }
 
 // static
-void View::UnregisterChildrenForVisibleBoundsNotification(
-    RootView* root, View* view) {
-  DCHECK(root && view);
-  if (view->GetNotifyWhenVisibleBoundsInRootChanges())
-    root->UnregisterViewForVisibleBoundsNotification(view);
+void View::RegisterChildrenForVisibleBoundsNotification(View* view) {
+  if (view->NeedsNotificationWhenVisibleBoundsChange())
+    view->RegisterForVisibleBoundsNotification();
   for (int i = 0; i < view->child_count(); ++i)
-    UnregisterChildrenForVisibleBoundsNotification(root,
-                                                   view->GetChildViewAt(i));
+    RegisterChildrenForVisibleBoundsNotification(view->GetChildViewAt(i));
+}
+
+// static
+void View::UnregisterChildrenForVisibleBoundsNotification(View* view) {
+  if (view->NeedsNotificationWhenVisibleBoundsChange())
+    view->UnregisterForVisibleBoundsNotification();
+  for (int i = 0; i < view->child_count(); ++i)
+    UnregisterChildrenForVisibleBoundsNotification(view->GetChildViewAt(i));
+}
+
+void View::RegisterForVisibleBoundsNotification() {
+  if (registered_for_visible_bounds_notification_)
+    return;
+  registered_for_visible_bounds_notification_ = true;
+  View* ancestor = parent();
+  while (ancestor) {
+    ancestor->AddDescendantToNotify(this);
+    ancestor = ancestor->parent();
+  }
+}
+
+void View::UnregisterForVisibleBoundsNotification() {
+  if (!registered_for_visible_bounds_notification_)
+    return;
+  registered_for_visible_bounds_notification_ = false;
+  View* ancestor = parent();
+  while (ancestor) {
+    ancestor->RemoveDescendantToNotify(this);
+    ancestor = ancestor->parent();
+  }
 }
 
 void View::AddDescendantToNotify(View* view) {

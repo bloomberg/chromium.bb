@@ -205,10 +205,6 @@ void LocationBarView::Init() {
     star_view_->SetVisible(true);
   }
 
-  // Notify us when any ancestor is resized.  In this case we want to tell the
-  // AutocompleteEditView to close its popup.
-  SetNotifyWhenVisibleBoundsInRootChanges(true);
-
   SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_LOCATION));
 
   // Initialize the location entry. We do this to avoid a black flash which is
@@ -680,10 +676,6 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
     canvas->DrawFocusRect(r.x() - 1, r.y(), r.width() + 2, r.height());
 #endif
   }
-}
-
-void LocationBarView::VisibleBoundsInRootChanged() {
-  location_entry_->ClosePopup();
 }
 
 void LocationBarView::SetShowFocusRect(bool show) {

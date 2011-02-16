@@ -1557,3 +1557,79 @@ TEST_F(ViewTest, TransformPaint) {
 
   widget->CloseNow();
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// OnVisibleBoundsChanged()
+
+class VisibleBoundsView : public View {
+ public:
+  VisibleBoundsView() : received_notification_(false) {}
+  virtual ~VisibleBoundsView() {}
+
+  bool received_notification() const { return received_notification_; }
+  void set_received_notification(bool received) {
+    received_notification_ = received;
+  }
+
+ private:
+  // Overridden from View:
+  virtual bool NeedsNotificationWhenVisibleBoundsChange() const {
+     return true;
+  }
+  virtual void OnVisibleBoundsChanged() {
+    received_notification_ = true;
+  }
+
+  bool received_notification_;
+
+  DISALLOW_COPY_AND_ASSIGN(VisibleBoundsView);
+};
+
+#if defined(OS_WIN)
+// TODO(beng): This can be cross platform when widget construction/init is.
+TEST_F(ViewTest, OnVisibleBoundsChanged) {
+  gfx::Rect viewport_bounds(0, 0, 100, 100);
+
+  scoped_ptr<Widget> widget(CreateWidget());
+  WidgetWin* widget_win = static_cast<WidgetWin*>(widget.get());
+  widget_win->set_delete_on_destroy(false);
+  widget_win->set_window_style(WS_OVERLAPPEDWINDOW);
+  widget_win->Init(NULL, viewport_bounds);
+  widget->GetRootView()->SetBoundsRect(viewport_bounds);
+
+  View* viewport = new View;
+  widget->GetRootView()->SetContentsView(viewport);
+  View* contents = new View;
+  viewport->AddChildView(contents);
+  viewport->SetBoundsRect(viewport_bounds);
+  contents->SetBounds(0, 0, 100, 200);
+
+  // Create a view that cares about visible bounds notifications, and position
+  // it just outside the visible bounds of the viewport.
+  VisibleBoundsView* child = new VisibleBoundsView;
+  contents->AddChildView(child);
+  child->SetBounds(10, 110, 50, 50);
+
+  // The child bound should be fully clipped.
+  EXPECT_TRUE(child->GetVisibleBounds().IsEmpty());
+
+  // Now scroll the contents, but not enough to make the child visible.
+  contents->SetY(contents->y() - 1);
+
+  // We should have received the notification since the visible bounds may have
+  // changed (even though they didn't).
+  EXPECT_TRUE(child->received_notification());
+  EXPECT_TRUE(child->GetVisibleBounds().IsEmpty());
+  child->set_received_notification(false);
+
+  // Now scroll the contents, this time by enough to make the child visible by
+  // one pixel.
+  contents->SetY(contents->y() - 10);
+  EXPECT_TRUE(child->received_notification());
+  EXPECT_EQ(1, child->GetVisibleBounds().height());
+  child->set_received_notification(false);
+
+  widget->CloseNow();
+}
+
+#endif

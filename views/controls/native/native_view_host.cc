@@ -33,10 +33,6 @@ NativeViewHost::NativeViewHost()
       views_view_(NULL),
       fast_resize_(false),
       focus_view_(NULL) {
-  // The native widget is placed relative to the root. As such, we need to
-  // know when the position of any ancestor changes, or our visibility relative
-  // to other views changed as it'll effect our position relative to the root.
-  SetNotifyWhenVisibleBoundsInRootChanges(true);
 }
 
 NativeViewHost::~NativeViewHost() {
@@ -156,7 +152,14 @@ void NativeViewHost::VisibilityChanged(View* starting_from, bool is_visible) {
   Layout();
 }
 
-void NativeViewHost::VisibleBoundsInRootChanged() {
+bool NativeViewHost::NeedsNotificationWhenVisibleBoundsChange() const {
+  // The native widget is placed relative to the root. As such, we need to
+  // know when the position of any ancestor changes, or our visibility relative
+  // to other views changed as it'll effect our position relative to the root.
+  return true;
+}
+
+void NativeViewHost::OnVisibleBoundsChanged() {
   Layout();
 }
 

@@ -205,17 +205,6 @@ class RootView : public View,
   friend class GestureManager;
 #endif
 
-  // Size and disposition ------------------------------------------------------
-
-  // Notification that size and/or position of a view has changed. This
-  // notifies the appropriate views.
-  void ViewBoundsChanged(View* view, bool size_changed, bool position_changed);
-
-  // Registers a view for notification when the visible bounds relative to the
-  // root of a view changes.
-  void RegisterViewForVisibleBoundsNotification(View* view);
-  void UnregisterViewForVisibleBoundsNotification(View* view);
-
   // Coordinate conversion -----------------------------------------------------
 
   // Convert a point to our current mouse handler. Returns false if the

@@ -423,8 +423,8 @@ class CandidateWindowView : public views::View {
   // Override View::VisibilityChanged()
   virtual void VisibilityChanged(View* starting_from, bool is_visible);
 
-  // Override View::VisibleBoundsInRootChanged()
-  virtual void VisibleBoundsInRootChanged();
+  // Override View::OnBoundsChanged()
+  virtual void OnBoundsChanged();
 
  private:
   // Initializes the candidate views if needed.
@@ -757,7 +757,6 @@ CandidateWindowView::CandidateWindowView(
       previous_candidate_column_width_(0),
       previous_annotation_column_width_(0),
       mouse_is_pressed_(false) {
-  SetNotifyWhenVisibleBoundsInRootChanges(true);
 }
 
 void CandidateWindowView::Init() {
@@ -1252,7 +1251,7 @@ void CandidateWindowView::VisibilityChanged(View* starting_from,
   }
 }
 
-void CandidateWindowView::VisibleBoundsInRootChanged() {
+void CandidateWindowView::OnBoundsChanged() {
   // If the bounds(size) of candidate window is changed,
   // we should move the frame to the right position.
   MoveParentFrame();

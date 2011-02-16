@@ -986,17 +986,15 @@ class View : public AcceleratorTarget {
   // overriding such that the layout is properly invalidated.
   virtual void PreferredSizeChanged();
 
-  // Sets whether this view wants notification when its visible bounds relative
-  // to the root view changes. If true, this view is notified any time the
-  // origin of one its ancestors changes, or the portion of the bounds not
-  // obscured by ancestors changes. The default is false.
-  void SetNotifyWhenVisibleBoundsInRootChanges(bool value);
-  bool GetNotifyWhenVisibleBoundsInRootChanges();
+  // Override returning true when the view needs to be notified when its visible
+  // bounds relative to the root view may have changed. Only used by
+  // NativeViewHost.
+  virtual bool NeedsNotificationWhenVisibleBoundsChange() const;
 
-  // Notification that this views visible bounds, relative to the RootView
-  // has changed. The visible bounds corresponds to the region of the
-  // view not obscured by other ancestors.
-  virtual void VisibleBoundsInRootChanged() {}
+  // Notification that this View's visible bounds relative to the root view may
+  // have changed. The visible bounds are the region of the View not clipped by
+  // its ancestors. This is used for clipping NativeViewHost.
+  virtual void OnVisibleBoundsChanged();
 
   // TODO(beng): eliminate in protected.
   // Whether this view is enabled.
@@ -1233,13 +1231,19 @@ class View : public AcceleratorTarget {
   // VisibilityChanged().
   void VisibilityChangedImpl(View* starting_from, bool is_visible);
 
-  // Recursively descends through all descendant views,
-  // registering/unregistering all views that want visible bounds in root
-  // view notification.
-  static void RegisterChildrenForVisibleBoundsNotification(RootView* root,
-                                                           View* view);
-  static void UnregisterChildrenForVisibleBoundsNotification(RootView* root,
-                                                             View* view);
+  // Responsible for propagating bounds change notifications to relevant
+  // views.
+  void BoundsChanged();
+
+  // Visible bounds notification registration.
+  // When a view is added to a hierarchy, it and all its children are asked if
+  // they need to be registered for "visible bounds within root" notifications
+  // (see comment on OnVisibleBoundsChanged()). If they do, they are registered
+  // with every ancestor between them and the root of the hierarchy.
+  static void RegisterChildrenForVisibleBoundsNotification(View* view);
+  static void UnregisterChildrenForVisibleBoundsNotification(View* view);
+  void RegisterForVisibleBoundsNotification();
+  void UnregisterForVisibleBoundsNotification();
 
   // Adds/removes view to the list of descendants that are notified any time
   // this views location and possibly size are changed.
@@ -1346,9 +1350,6 @@ class View : public AcceleratorTarget {
 
   // Visible state
   bool is_visible_;
-
-  // See SetNotifyWhenVisibleBoundsInRootChanges.
-  bool notify_when_visible_bounds_in_root_changes_;
 
   // Whether or not RegisterViewForVisibleBoundsNotification on the RootView
   // has been invoked.

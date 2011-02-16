@@ -702,44 +702,6 @@ void RootView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
 ////////////////////////////////////////////////////////////////////////////////
 // RootView, protected:
 
-// Size and disposition --------------------------------------------------------
-
-void RootView::ViewBoundsChanged(View* view, bool size_changed,
-                                 bool position_changed) {
-  DCHECK(view && (size_changed || position_changed));
-  if (!view->descendants_to_notify_.get())
-    return;
-
-  for (std::vector<View*>::iterator i = view->descendants_to_notify_->begin();
-       i != view->descendants_to_notify_->end(); ++i) {
-    (*i)->VisibleBoundsInRootChanged();
-  }
-}
-
-void RootView::RegisterViewForVisibleBoundsNotification(View* view) {
-  DCHECK(view);
-  if (view->registered_for_visible_bounds_notification_)
-    return;
-  view->registered_for_visible_bounds_notification_ = true;
-  View* ancestor = view->parent();
-  while (ancestor) {
-    ancestor->AddDescendantToNotify(view);
-    ancestor = ancestor->parent();
-  }
-}
-
-void RootView::UnregisterViewForVisibleBoundsNotification(View* view) {
-  DCHECK(view);
-  if (!view->registered_for_visible_bounds_notification_)
-    return;
-  view->registered_for_visible_bounds_notification_ = false;
-  View* ancestor = view->parent();
-  while (ancestor) {
-    ancestor->RemoveDescendantToNotify(view);
-    ancestor = ancestor->parent();
-  }
-}
-
 // Coordinate conversion -------------------------------------------------------
 
 bool RootView::ConvertPointToMouseHandler(const gfx::Point& l,
