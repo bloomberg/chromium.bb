@@ -260,7 +260,7 @@ int ComputeCandidateColumnWidth(
 
   // Compute the max width in candidate labels.
   // We'll create temporary candidate labels, and choose the largest width.
-  for (size_t i = 0; i < lookup_table.candidates.size(); ++i) {
+  for (size_t i = 0; i + start_from < lookup_table.candidates.size(); ++i) {
     const size_t index = start_from + i;
 
     candidate_label->SetText(
@@ -288,7 +288,7 @@ int ComputeAnnotationColumnWidth(
 
   // Compute max width in annotation labels.
   // We'll create temporary annotation labels, and choose the largest width.
-  for (size_t i = 0; i < lookup_table.annotations.size(); ++i) {
+  for (size_t i = 0; i + start_from < lookup_table.annotations.size(); ++i) {
     const size_t index = start_from + i;
 
     annotation_label->SetText(
