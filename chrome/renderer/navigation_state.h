@@ -320,7 +320,8 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
   std::string postponed_data_;
 
   // True if page is being prerendered.  False once prerendered page is
-  // displayed.  Preserved across redirects.
+  // displayed.  Preserved across redirects.  Only set for the main frame's
+  // data source.
   bool is_prerendering_;
 
   // True if a page load started as a prerender.  Preserved across redirects.

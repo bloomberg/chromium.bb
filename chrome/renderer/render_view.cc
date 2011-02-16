@@ -2720,9 +2720,10 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
   if (info.path.value() == webkit::npapi::kDefaultPluginLibraryName ||
       plugin_setting == CONTENT_SETTING_ALLOW ||
       host_setting == CONTENT_SETTING_ALLOW) {
-    // Delay loading plugins if prerendering.
-    WebDataSource* ds = frame->dataSource();
-    NavigationState* navigation_state = NavigationState::FromDataSource(ds);
+    // Delay loading plugins if prerendering main frame.
+    WebDataSource* main_frame_ds = webview()->mainFrame()->dataSource();
+    NavigationState* navigation_state =
+        NavigationState::FromDataSource(main_frame_ds);
     if (navigation_state->is_prerendering()) {
       return CreatePluginPlaceholder(frame,
                                      params,
