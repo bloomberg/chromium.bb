@@ -36,10 +36,7 @@ class DeviceManagementBackendImpl : public DeviceManagementBackend {
   // String constants for the device and app type we report to the server.
   static const char kValueRequestRegister[];
   static const char kValueRequestUnregister[];
-  // Deprecated in favor of kValueRequestCloudPolicy.
-  // See DevicePolicyResponseDelegate::HandlePolicyResponse.
   static const char kValueRequestPolicy[];
-  static const char kValueRequestCloudPolicy[];
   static const char kValueDeviceType[];
   static const char kValueAppType[];
 
@@ -66,18 +63,11 @@ class DeviceManagementBackendImpl : public DeviceManagementBackend {
       const std::string& device_id,
       const em::DeviceUnregisterRequest& request,
       DeviceUnregisterResponseDelegate* response_delegate);
-  // Deprecated in favor of ProcessCloudPolicyRequest.
-  // See DevicePolicyResponseDelegate::HandlePolicyResponse.
   virtual void ProcessPolicyRequest(
       const std::string& device_management_token,
       const std::string& device_id,
       const em::DevicePolicyRequest& request,
       DevicePolicyResponseDelegate* response_delegate);
-  virtual void ProcessCloudPolicyRequest(
-      const std::string& device_management_token,
-      const std::string& device_id,
-      const em::CloudPolicyRequest& request,
-      DevicePolicyResponseDelegate* delegate);
 
   // Keeps track of the jobs currently in flight.
   JobSet pending_jobs_;

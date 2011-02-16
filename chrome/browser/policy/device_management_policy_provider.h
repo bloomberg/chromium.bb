@@ -21,8 +21,8 @@ class TokenService;
 
 namespace policy {
 
-class CloudPolicyCache;
 class DeviceManagementBackend;
+class DeviceManagementPolicyCache;
 
 // Provides policy fetched from the device management server. With the exception
 // of the Provide method, which can be called on the FILE thread, all public
@@ -44,9 +44,7 @@ class DeviceManagementPolicyProvider
 
   // DevicePolicyResponseDelegate implementation:
   virtual void HandlePolicyResponse(
-      const em::DevicePolicyResponse& response);  // deprecated.
-  virtual void HandleCloudPolicyResponse(
-      const em::CloudPolicyResponse& response);
+      const em::DevicePolicyResponse& response);
   virtual void OnError(DeviceManagementBackend::ErrorCode code);
 
   // DeviceTokenFetcher::Observer implementation:
@@ -148,8 +146,7 @@ class DeviceManagementPolicyProvider
 
   scoped_ptr<DeviceManagementBackend> backend_;
   Profile* profile_;  // weak
-  scoped_ptr<CloudPolicyCache> cache_;
-  bool fallback_to_old_protocol_;
+  scoped_ptr<DeviceManagementPolicyCache> cache_;
   scoped_refptr<DeviceTokenFetcher> token_fetcher_;
   DeviceTokenFetcher::ObserverRegistrar registrar_;
   ObserverList<ConfigurationPolicyProvider::Observer, true> observer_list_;

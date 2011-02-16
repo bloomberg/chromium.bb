@@ -25,7 +25,7 @@ bool AsynchronousPolicyProvider::Provide(
     ConfigurationPolicyStoreInterface* store) {
   DCHECK(CalledOnValidThread());
   DCHECK(loader_->policy());
-  ApplyPolicyValueTree(loader_->policy(), store);
+  DecodePolicyValueTree(loader_->policy(), store);
   return true;
 }
 

@@ -9,7 +9,6 @@
 #include <map>
 #include <string>
 
-#include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/policy/device_management_backend.h"
 #include "chrome/browser/policy/proto/device_management_constants.h"
@@ -47,12 +46,6 @@ class MockDeviceManagementBackend : public DeviceManagementBackend {
       const em::DevicePolicyRequest& request,
       DevicePolicyResponseDelegate* delegate));
 
-  MOCK_METHOD4(ProcessCloudPolicyRequest, void(
-      const std::string& device_management_token,
-      const std::string& device_id,
-      const em::CloudPolicyRequest& request,
-      DevicePolicyResponseDelegate* delegate));
-
  private:
   DISALLOW_COPY_AND_ASSIGN(MockDeviceManagementBackend);
 };
@@ -78,24 +71,6 @@ ACTION_P2(MockDeviceManagementBackendSucceedBooleanPolicy, name, value) {
       em::GenericValue::VALUE_TYPE_BOOL);
   named_value->mutable_value()->set_bool_value(value);
   arg3->HandlePolicyResponse(response);
-}
-
-ACTION(MockDeviceManagementBackendSucceedSpdyCloudPolicy) {
-  em::SignedCloudPolicyResponse signed_response;
-  em::CloudPolicySettings* settings = signed_response.mutable_settings();
-  em::DisableSpdyProto* spdy_proto = settings->mutable_disablespdy();
-  spdy_proto->set_disablespdy(true);
-  spdy_proto->mutable_policy_options()->set_mode(em::PolicyOptions::MANDATORY);
-  signed_response.set_timestamp(base::Time::NowFromSystemTime().ToTimeT());
-  std::string serialized_signed_response;
-  EXPECT_TRUE(signed_response.SerializeToString(&serialized_signed_response));
-  em::CloudPolicyResponse response;
-  response.set_signed_response(serialized_signed_response);
-  // TODO(jkummerow): Set proper certificate_chain and signature (when
-  // implementing support for signature verification).
-  response.set_signature("TODO");
-  response.add_certificate_chain("TODO");
-  arg3->HandleCloudPolicyResponse(response);
 }
 
 ACTION_P(MockDeviceManagementBackendFailRegister, error) {
