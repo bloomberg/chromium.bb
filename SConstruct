@@ -1059,11 +1059,38 @@ def DownloadedChromeBinary(env):
     raise Exception('Unsupported OS')
 
   arch = env.ChromeBinaryArch()
-  path = os.path.join('${CHROME_DOWNLOAD_DIR}', '%s_%s' % (os_name, arch),
-                      binary)
-  return path
+  return env.File(os.path.join('${CHROME_DOWNLOAD_DIR}',
+                               '%s_%s' % (os_name, arch), binary))
 
 pre_base_env.AddMethod(DownloadedChromeBinary)
+
+
+def GetPPAPIPluginPath(env):
+  if env.Bit('mac'):
+    return env.File('${STAGING_DIR}/ppNaClPlugin')
+  else:
+    return env.File('${STAGING_DIR}/${SHLIBPREFIX}ppNaClPlugin${SHLIBSUFFIX}')
+
+
+def PPAPIBrowserTester(env, target, url, files, log_verbosity=2, args=[]):
+  if 'TRUSTED_ENV' not in env:
+    return []
+  command = [
+      '${PYTHON}', env.File('${SCONSTRUCT_DIR}/tools/browser_tester'
+                            '/browser_tester.py'),
+      '--browser_path', ARGUMENTS.get('chrome_browser_path',
+                                      env.DownloadedChromeBinary()),
+      '--url', url,
+      # Fail if there is no response for 20 seconds.
+      '--timeout', '20']
+  command.extend(['--ppapi_plugin', GetPPAPIPluginPath(env['TRUSTED_ENV'])])
+  command.extend(['--sel_ldr', GetSelLdr(env)])
+  for dep_file in files:
+    command.extend(['--file', dep_file])
+  command.extend(args)
+  return env.CommandTest(target, command)
+
+pre_base_env.AddMethod(PPAPIBrowserTester)
 
 
 # ----------------------------------------------------------

@@ -8,8 +8,13 @@ Import('env')
 # This command is placed in its own nacl.cons file because:
 #   1) It gives it access to the same environment as the tests
 #   2) Sicking it in an arbitrary test's .scons file would be cryptic
-node = env.Command(env.DownloadedChromeBinary(), ['#DEPS'],
+binary = env.DownloadedChromeBinary()
+node = env.Command(binary,
+                   [env.File('${SCONSTRUCT_DIR}/DEPS')],
                    '${PYTHON} build/download_chrome.py '
                    '--arch=%s --dst=${CHROME_DOWNLOAD_DIR}' %
                    env.ChromeBinaryArch())
+# This stops Scons from deleting the file before running the step above.
+env.NoClean(binary)
+env.Precious(binary)
 env.Alias('download_chrome', node)

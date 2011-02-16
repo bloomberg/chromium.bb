@@ -4,10 +4,10 @@ vars = {
   "o3d_trunk": "http://o3d.googlecode.com/svn/trunk",
   "x86_toolchain_version": "4309",
   "arm_toolchain_version": "4309",
-  "chrome_rev": "74697",
+  "chrome_rev": "74812",
   "gyp_rev": "856",
   "gtest_rev": "364",
-  "tools_rev": "4058",
+  "tools_rev": "4214",
   "python_26_rev": "53573",
   "wix_rev": "153",
   "lcov_rev": "54822",
@@ -37,6 +37,8 @@ deps = {
     Var("native_client_trunk") + "/src/third_party/mpfr@" + Var("tools_rev"),
   "third_party/newlib":
     Var("native_client_trunk") + "/src/third_party/newlib@" + Var("tools_rev"),
+  "third_party/pylib":
+    Var("native_client_trunk") + "/src/third_party/pylib@" + Var("tools_rev"),
   "third_party/scons":
     Var("native_client_trunk") + "/src/third_party/scons@" + Var("tools_rev"),
   "third_party/selenium":
