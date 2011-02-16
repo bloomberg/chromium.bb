@@ -167,7 +167,7 @@ void WorkerService::CancelCreateDedicatedWorker(
       if (instance->HasFilter(filter, route_id)) {
         // Fake a worker destroyed message so that WorkerProcessHost cleans up
         // properly.
-        WorkerHostMsg_WorkerContextDestroyed message(route_id);
+        WorkerMsg_TerminateWorkerContext message(route_id);
         ForwardToWorker(message, filter);
         return;
       }

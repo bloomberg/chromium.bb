@@ -91,14 +91,16 @@ class WorkerTest : public UILayoutTest {
 #endif
 
     int cur_process_count;
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < 100; ++i) {
       cur_process_count = 0;
       if (!GetBrowserProcessCount(&cur_process_count))
         return false;
       if (cur_process_count == number_of_processes)
         return true;
 
-      base::PlatformThread::Sleep(TestTimeouts::action_timeout_ms() / 10);
+      // Sometimes the worker processes can take a while to shut down on the
+      // bots, so use a longer timeout period to avoid spurious failures.
+      base::PlatformThread::Sleep(TestTimeouts::action_max_timeout_ms() / 100);
     }
 
     EXPECT_EQ(number_of_processes, cur_process_count);
@@ -202,6 +204,13 @@ TEST_F(WorkerTest, SingleSharedWorker) {
 
 TEST_F(WorkerTest, MultipleSharedWorkers) {
   RunTest(FilePath(FILE_PATH_LITERAL("multi_worker.html?shared=true")));
+}
+
+TEST_F(WorkerTest, TerminateQueuedWorkers) {
+  ASSERT_TRUE(WaitForProcessCountToBe(1, 0));
+  RunTest(FilePath(FILE_PATH_LITERAL("terminate_queued_workers.html")));
+  // Make sure all workers exit.
+  ASSERT_TRUE(WaitForProcessCountToBe(1, 0));
 }
 
 #if defined(OS_LINUX)
