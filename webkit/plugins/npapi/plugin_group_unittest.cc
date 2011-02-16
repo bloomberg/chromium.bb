@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,25 +49,25 @@ static const PluginGroupDefinition kPluginDefNotVulnerable = {
     "myplugin-latest", "MyPlugin", "MyPlugin", NULL, 0, "http://latest" };
 
 // name, path, version, desc.
-static WebPluginInfo kPluginNoVersion = WebPluginInfo(
+static const WebPluginInfo kPluginNoVersion = WebPluginInfo(
     ASCIIToUTF16("MyPlugin"), FilePath(FILE_PATH_LITERAL("myplugin.so.2.0.43")),
     ASCIIToUTF16(""), ASCIIToUTF16("MyPlugin version 2.0.43"));
-static WebPluginInfo kPlugin2043 = WebPluginInfo(
+static const WebPluginInfo kPlugin2043 = WebPluginInfo(
     ASCIIToUTF16("MyPlugin"), FilePath(FILE_PATH_LITERAL("myplugin.so.2.0.43")),
     ASCIIToUTF16("2.0.43"), ASCIIToUTF16("MyPlugin version 2.0.43"));
-static WebPluginInfo kPlugin3043 = WebPluginInfo(
+static const WebPluginInfo kPlugin3043 = WebPluginInfo(
     ASCIIToUTF16("MyPlugin"), FilePath(FILE_PATH_LITERAL("myplugin.so.3.0.43")),
     ASCIIToUTF16("3.0.43"), ASCIIToUTF16("MyPlugin version 3.0.43"));
-static WebPluginInfo kPlugin3044 = WebPluginInfo(
+static const WebPluginInfo kPlugin3044 = WebPluginInfo(
     ASCIIToUTF16("MyPlugin"), FilePath(FILE_PATH_LITERAL("myplugin.so.3.0.44")),
     ASCIIToUTF16("3.0.44"), ASCIIToUTF16("MyPlugin version 3.0.44"));
-static WebPluginInfo kPlugin3045 = WebPluginInfo(
+static const WebPluginInfo kPlugin3045 = WebPluginInfo(
     ASCIIToUTF16("MyPlugin"), FilePath(FILE_PATH_LITERAL("myplugin.so.3.0.45")),
      ASCIIToUTF16("3.0.45"), ASCIIToUTF16("MyPlugin version 3.0.45"));
-static WebPluginInfo kPlugin3045r = WebPluginInfo(
+static const WebPluginInfo kPlugin3045r = WebPluginInfo(
     ASCIIToUTF16("MyPlugin"), FilePath(FILE_PATH_LITERAL("myplugin.so.3.0.45")),
      ASCIIToUTF16("3.0r45"), ASCIIToUTF16("MyPlugin version 3.0r45"));
-static WebPluginInfo kPlugin4043 = WebPluginInfo(
+static const WebPluginInfo kPlugin4043 = WebPluginInfo(
     ASCIIToUTF16("MyPlugin"), FilePath(FILE_PATH_LITERAL("myplugin.so.4.0.43")),
      ASCIIToUTF16("4.0.43"), ASCIIToUTF16("MyPlugin version 4.0.43"));
 
@@ -264,6 +264,27 @@ TEST(PluginGroupTest, IsVulnerable) {
   group->AddPlugin(silverlight_plugin);
   EXPECT_FALSE(PluginGroup(*group).IsVulnerable());
   EXPECT_TRUE(PluginGroup(*group).RequiresAuthorization());
+}
+
+TEST(PluginGroupTest, MultipleVersions) {
+  scoped_ptr<PluginGroup> group(
+      PluginGroupTest::CreatePluginGroup(kPluginDef3));
+  group->AddPlugin(kPlugin3044);
+  group->AddPlugin(kPlugin3043);
+  EXPECT_EQ(kPlugin3044.desc, group->description());
+  EXPECT_FALSE(group->IsVulnerable());
+
+  group->DisablePlugin(kPlugin3044.path);
+  EXPECT_EQ(kPlugin3043.desc, group->description());
+  EXPECT_TRUE(group->IsVulnerable());
+
+  EXPECT_TRUE(group->EnableGroup(false));
+  EXPECT_EQ(kPlugin3044.desc, group->description());
+  EXPECT_FALSE(group->IsVulnerable());
+
+  EXPECT_TRUE(group->RemovePlugin(kPlugin3044.path));
+  EXPECT_EQ(kPlugin3043.desc, group->description());
+  EXPECT_TRUE(group->IsVulnerable());
 }
 
 }  // namespace npapi

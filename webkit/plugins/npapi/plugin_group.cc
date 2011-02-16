@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -239,52 +239,49 @@ void PluginGroup::AddPlugin(const WebPluginInfo& plugin) {
     }
   }
   web_plugin_infos_.push_back(plugin);
-  // If the group is disabled disable new plugins in it too. This should cover
-  // the case where a plugin has been upgraded that has been disabled and should
-  // stay disabled after the upgrade.
-  if (!enabled_)
-    DisablePlugin(web_plugin_infos_.back().path);
   UpdateActivePlugin(web_plugin_infos_.back());
-  RefreshEnabledState();
 }
 
 bool PluginGroup::RemovePlugin(const FilePath& filename) {
+  bool did_remove = false;
+  ResetGroupState();
   for (size_t i = 0; i < web_plugin_infos_.size(); ++i) {
     if (web_plugin_infos_[i].path == filename) {
       web_plugin_infos_.erase(web_plugin_infos_.begin() + i);
-      return true;
+      did_remove = true;
     }
+    UpdateActivePlugin(web_plugin_infos_[i]);
   }
-  return false;
+  return did_remove;
 }
 
 bool PluginGroup::EnablePlugin(const FilePath& filename) {
+  bool did_enable = false;
+  ResetGroupState();
   for (size_t i = 0; i < web_plugin_infos_.size(); ++i) {
-    if (web_plugin_infos_[i].path == filename) {
-      bool did_enable = Enable(&web_plugin_infos_[i],
-                               WebPluginInfo::USER_ENABLED);
-      RefreshEnabledState();
-      return did_enable;
-    }
+    if (web_plugin_infos_[i].path == filename)
+      did_enable = Enable(&web_plugin_infos_[i], WebPluginInfo::USER_ENABLED);
+    UpdateActivePlugin(web_plugin_infos_[i]);
   }
-  return false;
+  return did_enable;
 }
 
 bool PluginGroup::DisablePlugin(const FilePath& filename) {
+  bool did_disable = false;
+  ResetGroupState();
   for (size_t i = 0; i < web_plugin_infos_.size(); ++i) {
     if (web_plugin_infos_[i].path == filename) {
       // We are only called for user intervention however we should respect a
       // policy that might as well be active on this plugin.
-      bool did_disable = Disable(
+      did_disable = Disable(
           &web_plugin_infos_[i],
           IsPluginNameDisabledByPolicy(web_plugin_infos_[i].name) ?
               WebPluginInfo::USER_DISABLED_POLICY_DISABLED :
               WebPluginInfo::USER_DISABLED);
-      RefreshEnabledState();
-      return did_disable;
     }
+    UpdateActivePlugin(web_plugin_infos_[i]);
   }
-  return false;
+  return did_disable;
 }
 
 string16 PluginGroup::GetGroupName() const {
@@ -422,56 +419,49 @@ bool PluginGroup::IsEmpty() const {
 }
 
 void PluginGroup::DisableOutdatedPlugins() {
-  bool first_enabled = true;
-
+  ResetGroupState();
   for (size_t i = 0; i < web_plugin_infos_.size(); ++i) {
     scoped_ptr<Version> version(
         CreateVersionFromString(web_plugin_infos_[i].version));
     if (version.get()) {
-      bool plugin_is_outdated = false;
       for (size_t j = 0; j < version_ranges_.size(); ++j) {
         if (IsPluginOutdated(*version, version_ranges_[j])) {
           Disable(&web_plugin_infos_[i], WebPluginInfo::USER_DISABLED);
-          plugin_is_outdated = true;
           break;
         }
       }
-      if (!plugin_is_outdated && first_enabled) {
-        first_enabled = false;
-        UpdateDescriptionAndVersion(web_plugin_infos_[i]);
-      }
     }
+    UpdateActivePlugin(web_plugin_infos_[i]);
   }
 }
 
 bool PluginGroup::EnableGroup(bool enable) {
-  bool enabled_plugin_exists = false;
   bool group_disabled_by_policy = IsPluginNameDisabledByPolicy(group_name_);
   // We can't enable groups disabled by policy
   if (group_disabled_by_policy && enable)
     return false;
 
+  ResetGroupState();
   for (size_t i = 0; i < web_plugin_infos_.size(); ++i) {
     bool policy_disabled =
         IsPluginNameDisabledByPolicy(web_plugin_infos_[i].name);
     if (enable && !policy_disabled) {
       Enable(&web_plugin_infos_[i], WebPluginInfo::USER_ENABLED);
-      enabled_plugin_exists = true;
     } else {
       Disable(&web_plugin_infos_[i],
               policy_disabled || group_disabled_by_policy ?
                   WebPluginInfo::POLICY_DISABLED :
                   WebPluginInfo::USER_DISABLED);
     }
+    UpdateActivePlugin(web_plugin_infos_[i]);
   }
-  enabled_ = enabled_plugin_exists;
   return enabled_ == enable;
 }
 
 void PluginGroup::EnforceGroupPolicy() {
-  bool enabled_plugin_exists = false;
   bool group_disabled_by_policy = IsPluginNameDisabledByPolicy(group_name_);
 
+  ResetGroupState();
   for (size_t i = 0; i < web_plugin_infos_.size(); ++i) {
     bool policy_disabled =
         IsPluginNameDisabledByPolicy(web_plugin_infos_[i].name) |
@@ -483,22 +473,15 @@ void PluginGroup::EnforceGroupPolicy() {
     // ...here would a else if (policy_enabled) { ... } be then.
     } else {
       Enable(&web_plugin_infos_[i], WebPluginInfo::POLICY_UNMANAGED);
-      if (IsPluginEnabled(web_plugin_infos_[i]))
-        enabled_plugin_exists = true;
     }
+    UpdateActivePlugin(web_plugin_infos_[i]);
   }
-  enabled_ = enabled_plugin_exists;
 }
 
-void PluginGroup::RefreshEnabledState() {
-  bool enabled_plugin_exists = false;
-  for (size_t i = 0; i < web_plugin_infos_.size(); ++i) {
-    if (IsPluginEnabled(web_plugin_infos_[i])) {
-      enabled_plugin_exists = true;
-      break;
-    }
-  }
-  enabled_ = enabled_plugin_exists;
+void PluginGroup::ResetGroupState() {
+  enabled_ = false;
+  description_.clear();
+  version_.reset();
 }
 
 bool PluginGroup::Enable(WebPluginInfo* plugin,

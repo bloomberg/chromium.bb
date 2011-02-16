@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,6 +40,8 @@ class PluginListWithoutFileIO : public PluginList {
   }
 
   virtual const PluginGroupDefinition* GetPluginGroupDefinitions() OVERRIDE {
+    if (hardcoded_definitions_.empty())
+      return NULL;
     return &hardcoded_definitions_.front();
   }
   virtual size_t GetPluginGroupDefinitionsSize() OVERRIDE {
@@ -259,6 +261,29 @@ TEST_F(PluginListTest, HardcodedGroups) {
   EXPECT_EQ(1u, groups[1].web_plugins_info().size());
   EXPECT_TRUE(groups[1].ContainsPlugin(FilePath(kBarPath)));
   EXPECT_EQ("bar.plugin", groups[1].identifier());
+}
+
+TEST_F(PluginListTest, UpdatedPlugin) {
+  // Test that a disabled plugin stays disabled when it's updated between
+  // browser restarts, i.e. its path and version change, but it stays in the
+  // same plugin group.
+
+  // Create a pristine PluginList.
+  plugin_test_internal::PluginListWithoutFileIO plugin_list;
+
+  // The preferences will mark the "MyPlugin" group as disabled.
+  string16 myPluginName(ASCIIToUTF16("MyPlugin"));
+  EXPECT_TRUE(plugin_list.EnableGroup(false, myPluginName));
+
+  WebPluginInfo plugin_3045(myPluginName,
+                            FilePath(FILE_PATH_LITERAL("/myplugin.3.0.45")),
+                            ASCIIToUTF16("3.0.45"),
+                            ASCIIToUTF16("MyPlugin version 3.0.45"));
+  plugin_list.AddPluginToLoad(plugin_3045);
+  std::vector<WebPluginInfo> plugins;
+  plugin_list.GetPlugins(true, &plugins);
+  ASSERT_EQ(1u, plugins.size());
+  ASSERT_EQ(WebPluginInfo::USER_DISABLED_POLICY_UNMANAGED, plugins[0].enabled);
 }
 
 }  // namespace npapi
