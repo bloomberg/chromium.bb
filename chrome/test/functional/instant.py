@@ -155,14 +155,41 @@ class InstantTest(pyauto.PyUITest):
     self.SetOmniboxText(query)
     self.assertTrue(self.WaitUntil(self._DoneLoadingGoogleQuery, args=[query]))
 
+  def _BringUpInstant(self):
+    """Helper function to bring up instant."""
+    file_path = os.path.join(os.path.abspath(self.DataDir()),
+                             'google', 'google.html')
+    self.SetOmniboxText(self.GetFileURLForPath(file_path))
+    self.assertTrue(self.WaitUntil(self._DoneLoading))
+    self.assertTrue('google.html' in self.GetInstantInfo()['location'],
+                    msg='No google.html in %s' %
+                    self.GetInstantInfo()['location'])
+
   def testFindInCanDismissInstant(self):
     """Test that instant preview is dismissed by find-in-page."""
-    self.SetOmniboxText('google.com')
-    self.assertTrue(self.WaitUntil(self._DoneLoading))
-    location = self.GetInstantInfo()['location']
-    self.assertTrue('google.com' in location,
-                    msg='No google.com in %s' % location)
+    self._BringUpInstant()
     self.OpenFindInPage()
+    self.assertEqual(self.GetActiveTabTitle(), '')
+
+  def testNTPCanDismissInstant(self):
+    """Test that instant preview is dismissed by adding new tab page."""
+    self._BringUpInstant()
+    self.AppendTab(pyauto.GURL('chrome://newtab'))
+    self.GetBrowserWindow(0).GetTab(1).Close(True)
+    self.assertEqual(self.GetActiveTabTitle(), '')
+
+  def testExtnPageCanDismissInstant(self):
+    """Test that instant preview is dismissed by extension page."""
+    self._BringUpInstant()
+    self.AppendTab(pyauto.GURL('chrome://extensions'))
+    self.GetBrowserWindow(0).GetTab(1).Close(True)
+    self.assertEqual(self.GetActiveTabTitle(), '')
+
+  def testNewWindowCanDismissInstant(self):
+    """Test that instant preview is dismissed by New Window."""
+    self._BringUpInstant()
+    self.OpenNewBrowserWindow(True)
+    self.CloseBrowserWindow(1)
     self.assertEqual(self.GetActiveTabTitle(), '')
 
   def _AssertInstantDoesNotDownloadFile(self, path):
