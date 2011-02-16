@@ -309,21 +309,6 @@ class Thread : public IThread {
     uint32_t id = static_cast<uint32_t>(GetCurrentThreadId());
     Thread* thread = static_cast<Thread*>(Acquire(id));
 
-    // This 2 lineas are a fix for the bug:
-    // 366: Linux GDB doesn't work for Chrome
-    // http://code.google.com/p/nativeclient/issues/detail?id=366
-    // When debug stub thread opens socket to listen (for RSP debugger),
-    // it triggers some component to send DBG_PRINTEXCEPTION(with string
-    // "swi_lsp: non-browser app; disable"), then VEH handler goes into wait
-    // for debugger to resolve exception.
-    // But debugger is not connected, and debug thread is not listening on
-    // connection! It get stuck.
-    // Ignoring this exception - for now - helps debug stub start on chrome.
-    // Now it can listen on RSP connection and can get debugger connected etc.
-    if (DBG_PRINTEXCEPTION_C == ep->ExceptionRecord->ExceptionCode) {
-      return EXCEPTION_CONTINUE_EXECUTION;
-    }
-
     // If we are not tracking this thread, then ignore it
     if (NULL == thread) return EXCEPTION_CONTINUE_SEARCH;
 

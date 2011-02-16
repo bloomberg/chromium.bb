@@ -42,8 +42,7 @@ Target::Target(const Abi* abi)
     cur_signal_(-1),
     sig_thread_(0),
     run_thread_(-1),
-    reg_thread_(-1),
-    mem_base_(0) {
+    reg_thread_(-1) {
   if (NULL == abi_) abi_ = Abi::Get();
 }
 
@@ -122,7 +121,7 @@ bool Target::RemoveTemporaryBreakpoints() {
     BreakMap_t::iterator cur = breakMap_.begin();
     uint64_t addr = cur->first;
     uint8_t *data = cur->second;
-
+  
     // Then remove it from the map
     breakMap_.erase(cur);
 
@@ -438,9 +437,7 @@ bool Target::ProcessPacket(Packet* pktIn, Packet* pktOut) {
           err = BAD_FORMAT;
           break;
         }
-        if (addr < mem_base_) {
-          addr += mem_base_;
-        }
+
         if (!pktIn->GetNumberSep(&wlen, 0)) {
           err = BAD_FORMAT;
           break;
@@ -465,10 +462,6 @@ bool Target::ProcessPacket(Packet* pktIn, Packet* pktOut) {
           err = BAD_FORMAT;
           break;
         }
-        if (addr < mem_base_) {
-          addr += mem_base_;
-        }
-
         if (!pktIn->GetNumberSep(&wlen, 0)) {
           err = BAD_FORMAT;
           break;

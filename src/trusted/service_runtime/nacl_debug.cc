@@ -26,7 +26,7 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 /* To enable debuggging */
-// #define NACL_DEBUG_STUB 1
+/* #define NACL_DEBUG_STUB 1 */
 
 using port::IPlatform;
 using port::IThread;
@@ -176,7 +176,7 @@ void NaClExceptionCatcher(uint32_t id, int8_t sig, void *cookie) {
   Target* targ = static_cast<Target*>(cookie);
 
   /* Signal the target that we caught something */
-  IPlatform::LogWarning("<huh-b-4> Caught signal %d on thread %Xh.\n", sig, id);
+  IPlatform::LogWarning("Caught signal %d on thread %Xh.\n", sig, id);
   targ->Signal(id, sig, true);
 #else
   UNREFERENCED_PARAMETER(id);
@@ -240,7 +240,6 @@ void NaClDebugThreadPrepDebugging(struct NaClAppThread *natp) throw() {
     NaClDebugState *state = NaClDebugGetState();
     uint32_t id = IPlatform::GetCurrentThread();
     IThread* thread = IThread::Acquire(id, true);
-    state->target_->SetMemoryBase(natp->nap->mem_start);
     state->target_->TrackThread(thread);
 
     /*
@@ -280,9 +279,11 @@ int NaClDebugStart(void) throw() {
     if (NULL == thread) return false;
     NaClDebugState *state = NaClDebugGetState();
 
-    /* Add a temp breakpoint. */
-    struct NaClApp* app = state->app_;
-    state->target_->AddTemporaryBreakpoint(app->entry_pt + app->mem_start);
+    /* If break on start has been requested, add a temp breakpoint. */
+    if (state->break_) {
+      struct NaClApp* app = state->app_;
+      state->target_->AddTemporaryBreakpoint(app->entry_pt + app->mem_start);
+    }
 
     NaClLog(LOG_WARNING, "nacl_debug(%d) : Debugging started.\n", __LINE__);
     IThread::SetExceptionCatch(NaClExceptionCatcher, state->target_);
