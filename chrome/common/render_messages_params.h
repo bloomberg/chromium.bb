@@ -918,6 +918,30 @@ struct ViewHostMsg_AccessibilityNotification_Params {
   webkit_glue::WebAccessibility acc_obj;
 };
 
+// A node is essentially a frame.
+struct ViewHostMsg_MalwareDOMDetails_Node {
+  // URL of this resource. Can be empty.
+  GURL url;
+
+  // If this resource was in the "src" attribute of a tag, this is the tagname
+  // (eg "IFRAME"). Can be empty.
+  std::string tag_name;
+
+  // URL of the parent node. Can be empty.
+  GURL parent;
+
+  // children of this node. Can be emtpy.
+  std::vector<GURL> children;
+};
+
+// Parameters to describe interesting details from a rendered page that lead
+// to a malware warning.
+struct ViewHostMsg_MalwareDOMDetails_Params {
+  // All the nodes we extracted.
+  std::vector<ViewHostMsg_MalwareDOMDetails_Node> nodes;
+};
+
+
 namespace IPC {
 
 class Message;
@@ -1142,6 +1166,22 @@ struct ParamTraits<base::FileUtilProxy::Entry> {
 template <>
 struct ParamTraits<ViewHostMsg_AccessibilityNotification_Params> {
   typedef ViewHostMsg_AccessibilityNotification_Params param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct ParamTraits<ViewHostMsg_MalwareDOMDetails_Params> {
+  typedef ViewHostMsg_MalwareDOMDetails_Params param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct ParamTraits<ViewHostMsg_MalwareDOMDetails_Node> {
+  typedef ViewHostMsg_MalwareDOMDetails_Node param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);

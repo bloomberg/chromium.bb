@@ -1341,6 +1341,10 @@ void RenderViewHost::OnUserGesture() {
   delegate_->OnUserGesture();
 }
 
+void RenderViewHost::GetMalwareDOMDetails() {
+  Send(new ViewMsg_GetMalwareDOMDetails(routing_id()));
+}
+
 void RenderViewHost::GetAllSavableResourceLinksForCurrentPage(
     const GURL& page_url) {
   Send(new ViewMsg_GetAllSavableResourceLinksForCurrentPage(routing_id(),

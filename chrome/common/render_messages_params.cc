@@ -1641,4 +1641,59 @@ void ParamTraits<ViewHostMsg_AccessibilityNotification_Params>::Log(
   l->append(")");
 }
 
+void ParamTraits<ViewHostMsg_MalwareDOMDetails_Params>::Write(
+    Message* m,
+    const param_type& p) {
+  WriteParam(m, p.nodes);
+}
+
+bool ParamTraits<ViewHostMsg_MalwareDOMDetails_Params>::Read(
+    const Message* m,
+    void** iter,
+    param_type* p) {
+  return ReadParam(m, iter, &p->nodes);
+}
+
+void ParamTraits<ViewHostMsg_MalwareDOMDetails_Params>::Log(
+    const param_type& p,
+    std::string* l) {
+  l->append("(");
+  LogParam(p.nodes, l);
+  l->append(")");
+}
+
+void ParamTraits<ViewHostMsg_MalwareDOMDetails_Node>::Write(
+    Message* m,
+    const param_type& p) {
+  WriteParam(m, p.url);
+  WriteParam(m, p.tag_name);
+  WriteParam(m, p.parent);
+  WriteParam(m, p.children);
+}
+
+bool ParamTraits<ViewHostMsg_MalwareDOMDetails_Node>::Read(
+    const Message* m,
+    void** iter,
+    param_type* p) {
+  return
+      ReadParam(m, iter, &p->url) &&
+      ReadParam(m, iter, &p->tag_name) &&
+      ReadParam(m, iter, &p->parent) &&
+      ReadParam(m, iter, &p->children);
+}
+
+void ParamTraits<ViewHostMsg_MalwareDOMDetails_Node>::Log(
+    const param_type& p,
+    std::string* l) {
+  l->append("(");
+  LogParam(p.url, l);
+  l->append(", ");
+  LogParam(p.tag_name, l);
+  l->append(", ");
+  LogParam(p.parent, l);
+  l->append(", ");
+  LogParam(p.children, l);
+  l->append(")");
+}
+
 }  // namespace IPC

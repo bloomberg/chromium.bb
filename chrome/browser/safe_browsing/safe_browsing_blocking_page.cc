@@ -147,7 +147,9 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
       unsafe_resources[0].threat_type == SafeBrowsingService::URL_MALWARE &&
       malware_details_ == NULL &&
       CanShowMalwareDetailsOption()) {
-    malware_details_ = new MalwareDetails(tab(), unsafe_resources[0]);
+    malware_details_ = MalwareDetails::NewMalwareDetails(
+        tab(), unsafe_resources[0]);
+    tab_contents->AddObserver(malware_details_);
   }
 }
 
@@ -598,6 +600,10 @@ void SafeBrowsingBlockingPage::RecordUserAction(BlockingPageEvent event) {
 void SafeBrowsingBlockingPage::FinishMalwareDetails() {
   if (malware_details_ == NULL)
     return;  // Not all interstitials have malware details (eg phishing).
+
+  // Stop observing IPC messages from the tab. A subsequent warning page
+  // on the same tab will listen instead.
+  tab()->RemoveObserver(malware_details_);
 
   const PrefService::Preference* pref =
       tab()->profile()->GetPrefs()->FindPreference(

@@ -383,6 +383,10 @@ class RenderViewHost : public RenderWidgetHost {
   // Load all blocked plugins in the RenderView.
   void LoadBlockedPlugins();
 
+  // Get all script and frame urls from all frames in the current document.
+  // Called when a malware interstitial page is shown.
+  void GetMalwareDOMDetails();
+
   // Get all savable resource links from current webpage, include main
   // frame and sub-frame.
   void GetAllSavableResourceLinksForCurrentPage(const GURL& page_url);

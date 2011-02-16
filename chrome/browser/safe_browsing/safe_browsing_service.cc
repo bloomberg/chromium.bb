@@ -1094,9 +1094,8 @@ void SafeBrowsingService::ReportSafeBrowsingHit(
                                            threat_type);
 }
 
-// A MalwareDetails report is sent after the blocking page is going
-// away, at which point we see if the user had opted-in using the
-// checkbox on the blocking page.
+// If the user had opted-in to send MalwareDetails, this gets called
+// at the time that the blocking page is going away.
 void SafeBrowsingService::ReportMalwareDetails(
     scoped_refptr<MalwareDetails> details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));

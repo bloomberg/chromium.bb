@@ -2302,6 +2302,7 @@
         'renderer/render_view_browsertest_mac.mm',
         'renderer/render_widget_browsertest.cc',
         'renderer/render_widget_browsertest.h',
+        'renderer/safe_browsing/malware_dom_details_browsertest.cc',
         'renderer/safe_browsing/phishing_classifier_browsertest.cc',
         'renderer/safe_browsing/phishing_classifier_delegate_browsertest.cc',
         'renderer/safe_browsing/phishing_dom_feature_extractor_browsertest.cc',

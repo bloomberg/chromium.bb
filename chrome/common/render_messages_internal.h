@@ -1048,6 +1048,9 @@ IPC_MESSAGE_ROUTED3(ViewMsg_AsyncOpenFile_ACK,
 IPC_MESSAGE_CONTROL1(ViewMsg_SetPhishingModel,
                      IPC::PlatformFileForTransit /* model_file */)
 
+// Request a DOM tree when a malware interstitial is shown.
+IPC_MESSAGE_ROUTED0(ViewMsg_GetMalwareDOMDetails)
+
 // Tells the renderer to begin phishing detection for the given toplevel URL
 // which it has started loading.
 IPC_MESSAGE_ROUTED1(ViewMsg_StartPhishingDetection, GURL)
@@ -2229,6 +2232,10 @@ IPC_MESSAGE_CONTROL1(ViewHostMsg_ExtensionCloseChannel,
 IPC_MESSAGE_ROUTED1(
     ViewHostMsg_AccessibilityNotifications,
     std::vector<ViewHostMsg_AccessibilityNotification_Params>)
+
+// Send part of the DOM to the browser, to be used in a malware report.
+IPC_MESSAGE_ROUTED1(ViewHostMsg_MalwareDOMDetails,
+                    ViewHostMsg_MalwareDOMDetails_Params)
 
 // Message sent from the renderer to the browser to request that the browser
 // close all sockets.  Used for debugging/testing.

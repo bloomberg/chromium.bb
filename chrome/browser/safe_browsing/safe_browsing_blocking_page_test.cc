@@ -78,7 +78,6 @@ class FakeSafeBrowsingService :  public SafeBrowsingService {
 
   std::list<scoped_refptr<MalwareDetails> > details_;
 
-
  private:
   base::hash_map<std::string, UrlCheckResult> badurls;
 };
@@ -94,6 +93,77 @@ class TestSafeBrowsingServiceFactory : public SafeBrowsingServiceFactory {
   }
 };
 
+// A MalwareDetails class lets us intercept calls from the renderer.
+class FakeMalwareDetails : public MalwareDetails {
+ public:
+  FakeMalwareDetails(TabContents* tab_contents,
+                     const SafeBrowsingService::UnsafeResource& unsafe_resource)
+      : MalwareDetails(tab_contents, unsafe_resource) { }
+
+  virtual ~FakeMalwareDetails() {}
+
+  virtual void AddDOMDetails(
+      const ViewHostMsg_MalwareDOMDetails_Params& params) {
+    EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    MalwareDetails::AddDOMDetails(params);
+
+    // Notify the UI thread that we got the dom details.
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            NewRunnableMethod(this,
+                            &FakeMalwareDetails::OnDOMDetailsDone));
+  }
+
+  void OnDOMDetailsDone() {
+    got_dom_ = true;
+    if (waiting_) {
+      MessageLoopForUI::current()->Quit();
+    }
+  }
+
+  bool got_dom() const {
+    return got_dom_;
+  }
+
+  bool waiting() const {
+    return waiting_;
+  }
+
+  void set_got_dom(bool got_dom) {
+    got_dom_ = got_dom;
+  }
+
+  void set_waiting(bool waiting) {
+    waiting_ = waiting;
+  }
+
+ private:
+  // Some logic to figure out if we should wait for the dom details or not.
+  // These variables should only be accessed in the UI thread.
+  bool got_dom_;
+  bool waiting_;
+
+};
+
+class TestMalwareDetailsFactory : public MalwareDetailsFactory {
+ public:
+  TestMalwareDetailsFactory() { }
+  virtual ~TestMalwareDetailsFactory() { }
+
+  virtual MalwareDetails* CreateMalwareDetails(
+      TabContents* tab_contents,
+      const SafeBrowsingService::UnsafeResource& unsafe_resource) {
+    details_ = new FakeMalwareDetails(tab_contents, unsafe_resource);
+    return details_;
+  }
+
+  FakeMalwareDetails* get_details() {
+    return details_;
+  }
+
+ private:
+  FakeMalwareDetails* details_;
+};
+
 // Tests the safe browsing blocking page in a browser.
 class SafeBrowsingBlockingPageTest : public InProcessBrowserTest,
                                      public SafeBrowsingService::Client {
@@ -102,13 +172,15 @@ class SafeBrowsingBlockingPageTest : public InProcessBrowserTest,
   }
 
   virtual void SetUp() {
-    SafeBrowsingService::RegisterFactory(&factory);
+    SafeBrowsingService::RegisterFactory(&factory_);
+    MalwareDetails::RegisterFactory(&details_factory_);
     InProcessBrowserTest::SetUp();
   }
 
   virtual void TearDown() {
     InProcessBrowserTest::TearDown();
     SafeBrowsingService::RegisterFactory(NULL);
+    MalwareDetails::RegisterFactory(NULL);
   }
 
   virtual void SetUpInProcessBrowserTestFixture() {
@@ -136,30 +208,39 @@ class SafeBrowsingBlockingPageTest : public InProcessBrowserTest,
 
   void SendCommand(const std::string& command) {
     TabContents* contents = browser()->GetSelectedTabContents();
+    // We use InterstitialPage::GetInterstitialPage(tab) instead of
+    // tab->interstitial_page() because the tab doesn't have a pointer
+    // to its interstital page until it gets a command from the renderer
+    // that it has indeed displayed it -- and this sometimes happens after
+    // NavigateToURL returns.
     SafeBrowsingBlockingPage* interstitial_page =
         static_cast<SafeBrowsingBlockingPage*>(
-            contents->interstitial_page());
+            InterstitialPage::GetInterstitialPage(contents));
     ASSERT_TRUE(interstitial_page);
     interstitial_page->CommandReceived(command);
   }
 
   void DontProceedThroughInterstitial() {
     TabContents* contents = browser()->GetSelectedTabContents();
-    InterstitialPage* interstitial_page = contents->interstitial_page();
+    InterstitialPage* interstitial_page = InterstitialPage::GetInterstitialPage(
+        contents);
     ASSERT_TRUE(interstitial_page);
     interstitial_page->DontProceed();
   }
 
   void ProceedThroughInterstitial() {
     TabContents* contents = browser()->GetSelectedTabContents();
-    InterstitialPage* interstitial_page = contents->interstitial_page();
+    InterstitialPage* interstitial_page = InterstitialPage::GetInterstitialPage(
+        contents);
     ASSERT_TRUE(interstitial_page);
     interstitial_page->Proceed();
   }
 
   void AssertNoInterstitial() {
+    // ui_test_utils::RunAllPendingInMessageLoop();
     TabContents* contents = browser()->GetSelectedTabContents();
-    InterstitialPage* interstitial_page = contents->interstitial_page();
+    InterstitialPage* interstitial_page = InterstitialPage::GetInterstitialPage(
+        contents);
     ASSERT_FALSE(interstitial_page);
   }
 
@@ -180,8 +261,11 @@ class SafeBrowsingBlockingPageTest : public InProcessBrowserTest,
     ASSERT_EQ(1u, service->GetDetails()->size());
   }
 
+ protected:
+  TestMalwareDetailsFactory details_factory_;
+
  private:
-  TestSafeBrowsingServiceFactory factory;
+  TestSafeBrowsingServiceFactory factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPageTest);
 };
@@ -306,6 +390,17 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
   AddURLResult(iframe_url, SafeBrowsingService::URL_MALWARE);
 
   ui_test_utils::NavigateToURL(browser(), url);
+
+  // If the DOM details from renderer did not already return, wait for them.
+  if (!details_factory_.get_details()->got_dom()) {
+    // This condition might not trigger normally, but if you add a
+    // sleep(1) in malware_dom_details it triggers :).
+    details_factory_.get_details()->set_waiting(true);
+    LOG(INFO) << "Waiting for dom details.";
+    ui_test_utils::RunMessageLoop();
+  } else {
+    LOG(INFO) << "Already got the dom details.";
+  }
 
   SendCommand("\"doReport\"");  // Simulate the user checking the checkbox.
   EXPECT_TRUE(browser()->GetProfile()->GetPrefs()->GetBoolean(

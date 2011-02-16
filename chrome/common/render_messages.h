@@ -109,6 +109,7 @@ struct ViewMsg_ExtensionLoaded_Params;
 struct ViewMsg_DeviceOrientationUpdated_Params;
 struct ViewHostMsg_DomMessage_Params;
 struct ViewHostMsg_AccessibilityNotification_Params;
+struct ViewHostMsg_MalwareDOMDetails_Params;
 
 // Values that may be OR'd together to form the 'flags' parameter of the
 // ViewMsg_EnablePreferredSizeChangedMode message.

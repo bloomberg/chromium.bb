@@ -87,6 +87,7 @@
 #include "chrome/renderer/render_widget_fullscreen_pepper.h"
 #include "chrome/renderer/renderer_webapplicationcachehost_impl.h"
 #include "chrome/renderer/renderer_webstoragenamespace_impl.h"
+#include "chrome/renderer/safe_browsing/malware_dom_details.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
 #include "chrome/renderer/searchbox.h"
 #include "chrome/renderer/speech_input_dispatcher.h"
@@ -659,6 +660,9 @@ RenderView::RenderView(RenderThreadBase* render_thread,
           switches::kEnableClientSidePhishingDetection)) {
     new safe_browsing::PhishingClassifierDelegate(this, NULL);
   }
+
+  // Observer for Malware DOM details messages.
+  new safe_browsing::MalwareDOMDetails(this);
 }
 
 RenderView::~RenderView() {
