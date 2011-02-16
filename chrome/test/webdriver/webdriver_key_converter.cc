@@ -4,8 +4,16 @@
 
 #include "chrome/test/webdriver/webdriver_key_converter.h"
 
+#include <cctype>
+
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/automation_constants.h"
+
+#if defined(OS_LINUX)
+#include <gdk/gdk.h>
+#include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
+#endif
 
 namespace {
 
@@ -121,6 +129,22 @@ bool ConvertCharToKeyCode(
     *necessary_modifiers = HIBYTE(vkey_and_modifiers);
   }
   return translated;
+#elif defined(OS_LINUX)
+  guint gdk_key_code = gdk_unicode_to_keyval(key);
+  if (!gdk_key_code)
+    return false;
+
+  string16 key_string;
+  key_string.push_back(key);
+  const std::string kNeedsShiftSymbols= "!@#$%^&*()_+~{}|\":<>?";
+  bool is_special_symbol = IsStringASCII(key_string) &&
+      kNeedsShiftSymbols.find(static_cast<char>(gdk_key_code)) !=
+          std::string::npos;
+
+  if (is_special_symbol || key != std::towlower(key))
+    *necessary_modifiers = automation::kShiftKeyMask;
+  *key_code = ui::WindowsKeyCodeForGdkKeyCode(gdk_key_code);
+  return true;
 #else
   // TODO(kkania): Implement.
   return false;
@@ -145,6 +169,20 @@ std::string ConvertKeyCodeToText(ui::KeyboardCode key_code, int modifiers) {
     WideToUTF8(chars, code, &text);
     return text;
   }
+#elif defined(OS_LINUX)
+  // |gdk_keyval_to_upper| does not convert some keys like '1' to '!', so
+  // provide |ui::GdkKeyCodeForWindowsKeyCode| with our shift state as well,
+  // which will do basic conversions like it for us.
+  guint gdk_key_code = ui::GdkKeyCodeForWindowsKeyCode(
+      key_code, modifiers & automation::kShiftKeyMask);
+  if (modifiers & automation::kShiftKeyMask)
+    gdk_key_code = gdk_keyval_to_upper(gdk_key_code);
+  guint32 unicode_char = gdk_keyval_to_unicode(gdk_key_code);
+  if (!unicode_char)
+    return "";
+  string16 text;
+  text.push_back(unicode_char);
+  return UTF16ToUTF8(text);
 #else
   // TODO(kkania): Implement
   return "";

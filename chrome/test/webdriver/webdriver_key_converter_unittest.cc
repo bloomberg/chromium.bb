@@ -42,6 +42,14 @@ TEST(WebDriverKeyConverter, SingleChar) {
   CheckEvents("h", event_array, arraysize(event_array));
 }
 
+TEST(WebDriverKeyConverter, SingleNumber) {
+  WebKeyEvent event_array[] = {
+      CreateKeyDownEvent(ui::VKEY_1, 0),
+      CreateCharEvent("1", "1", 0),
+      CreateKeyUpEvent(ui::VKEY_1, 0)};
+  CheckEvents("1", event_array, arraysize(event_array));
+}
+
 TEST(WebDriverKeyConverter, MultipleChars) {
   WebKeyEvent event_array[] = {
       CreateKeyDownEvent(ui::VKEY_H, 0),
@@ -105,6 +113,16 @@ TEST(WebDriverKeyConverter, UppercaseCharDoesShift) {
       CreateKeyUpEvent(ui::VKEY_A, automation::kShiftKeyMask),
       CreateKeyUpEvent(ui::VKEY_SHIFT, 0)};
   CheckEvents("A", event_array, arraysize(event_array));
+}
+
+TEST(WebDriverKeyConverter, UppercaseSymbolCharDoesShift) {
+  WebKeyEvent event_array[] = {
+      CreateKeyDownEvent(ui::VKEY_SHIFT, 0),
+      CreateKeyDownEvent(ui::VKEY_1, automation::kShiftKeyMask),
+      CreateCharEvent("1", "!", automation::kShiftKeyMask),
+      CreateKeyUpEvent(ui::VKEY_1, automation::kShiftKeyMask),
+      CreateKeyUpEvent(ui::VKEY_SHIFT, 0)};
+  CheckEvents("!", event_array, arraysize(event_array));
 }
 
 TEST(WebDriverKeyConverter, UppercaseCharUsesShiftOnlyIfNecessary) {

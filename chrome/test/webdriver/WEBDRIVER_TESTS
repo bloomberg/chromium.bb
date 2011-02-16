@@ -89,6 +89,8 @@
   ],
 
   'linux': [
-
+    'typing_tests',
+    # needs clear command
+    '-typing_tests.TypingTests.testNumberpadAndFunctionKeys',
   ],
 }
