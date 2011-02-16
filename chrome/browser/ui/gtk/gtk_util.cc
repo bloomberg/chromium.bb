@@ -56,6 +56,12 @@ using WebKit::WebDragOperationMove;
 
 namespace {
 
+#if defined(GOOGLE_CHROME_BUILD)
+static const char* kIconName = "google-chrome";
+#else
+static const char* kIconName = "chromium-browser";
+#endif
+
 const char kBoldLabelMarkup[] = "<span weight='bold'>%s</span>";
 
 // Callback used in RemoveAllChildren.
@@ -609,10 +615,24 @@ void SetWindowIcon(GtkWindow* window) {
   g_list_free(icon_list);
 }
 
-void SetDefaultWindowIcon() {
-  GList* icon_list = GetIconList();
-  gtk_window_set_default_icon_list(icon_list);
-  g_list_free(icon_list);
+void SetDefaultWindowIcon(GtkWindow* window) {
+  GtkIconTheme* theme =
+      gtk_icon_theme_get_for_screen(gtk_widget_get_screen(GTK_WIDGET(window)));
+
+  if (gtk_icon_theme_has_icon(theme, kIconName)) {
+    gtk_window_set_default_icon_name(kIconName);
+    // Sometimes the WM fails to update the icon when we tell it to. The above
+    // line should be enough to update all existing windows, but it can fail,
+    // e.g. with Lucid/metacity. The following line seems to fix the common
+    // case where the first window created doesn't have an icon.
+    gtk_window_set_icon_name(window, kIconName);
+  } else {
+    GList* icon_list = GetIconList();
+    gtk_window_set_default_icon_list(icon_list);
+    // Same logic applies here.
+    gtk_window_set_icon_list(window, icon_list);
+    g_list_free(icon_list);
+  }
 }
 
 GtkWidget* AddButtonToDialog(GtkWidget* dialog, const gchar* text,

@@ -11,6 +11,8 @@
 #include "base/environment.h"
 #include "base/nix/xdg_util.h"
 #include "base/stl_util-inl.h"
+#include "chrome/browser/browser_list.h"
+#include "chrome/browser/browser_window.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -632,6 +634,9 @@ void GtkThemeProvider::NotifyThemeChanged(const Extension* extension) {
     gtk_chrome_button_set_use_gtk_rendering(
         GTK_CHROME_BUTTON(*it), use_gtk_);
   }
+
+  GtkWindow* window = BrowserList::GetLastActive()->window()->GetNativeHandle();
+  gtk_util::SetDefaultWindowIcon(window);
 }
 
 void GtkThemeProvider::FreePlatformCaches() {

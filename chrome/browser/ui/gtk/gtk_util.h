@@ -203,8 +203,10 @@ bool WidgetContainsCursor(GtkWidget* widget);
 // border or alt-tab list).
 void SetWindowIcon(GtkWindow* window);
 
-// Sets the default window icon for windows created in this app.
-void SetDefaultWindowIcon();
+// Sets the default window icon for all windows created in this app. |window|
+// is used to determine if a themed icon exists. If so, we use that icon,
+// otherwise we use the icon packaged with Chrome.
+void SetDefaultWindowIcon(GtkWindow* window);
 
 // Adds an action button with the given text to the dialog. Only useful when you
 // want a stock icon but not the stock text to go with it. Returns the button.

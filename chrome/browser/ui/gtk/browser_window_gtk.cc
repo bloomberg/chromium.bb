@@ -1644,6 +1644,14 @@ void BrowserWindowGtk::InitWidgets() {
   // proper control layout.
   UpdateCustomFrame();
 
+  // We have to call this after the first window is created, but after that only
+  // when the theme changes.
+  static bool default_icon_set = false;
+  if (!default_icon_set) {
+    gtk_util::SetDefaultWindowIcon(window_);
+    default_icon_set = true;
+  }
+
   gtk_container_add(GTK_CONTAINER(window_), window_container_);
   gtk_widget_show(window_container_);
   browser_->tabstrip_model()->AddObserver(this);
