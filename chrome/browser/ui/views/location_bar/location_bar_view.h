@@ -159,10 +159,10 @@ class LocationBarView : public LocationBar,
 
   // Layout and Painting functions
   virtual void Layout();
-  virtual void Paint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas);
 
   // No focus border for the location bar, the caret is enough.
-  virtual void PaintFocusBorder(gfx::Canvas* canvas) { }
+  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) { }
 
   // Called when any ancestor changes its size, asks the AutocompleteEditModel
   // to close its popup.

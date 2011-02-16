@@ -210,9 +210,9 @@ void NativeButton::Focus() {
                       // keyboard messages).
 }
 
-void NativeButton::PaintFocusBorder(gfx::Canvas* canvas) {
+void NativeButton::OnPaintFocusBorder(gfx::Canvas* canvas) {
   if (NativeViewHost::kRenderNativeControlFocus)
-    View::PaintFocusBorder(canvas);
+    View::OnPaintFocusBorder(canvas);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -88,7 +88,7 @@ void MenuButton::Paint(gfx::Canvas* canvas, bool for_drag) {
     gfx::Insets insets = GetInsets();
 
     // We can not use the views' mirroring infrastructure for mirroring a
-    // MenuButton control (see TextButton::Paint() for a detailed explanation
+    // MenuButton control (see TextButton::OnPaint() for a detailed explanation
     // regarding why we can not flip the canvas). Therefore, we need to
     // manually mirror the position of the down arrow.
     gfx::Rect arrow_bounds(width() - insets.right() -

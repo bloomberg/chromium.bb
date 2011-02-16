@@ -629,23 +629,23 @@ void View::SchedulePaintInRect(const gfx::Rect& r, bool urgent) {
   }
 }
 
-void View::Paint(gfx::Canvas* canvas) {
-  PaintBackground(canvas);
-  PaintFocusBorder(canvas);
-  PaintBorder(canvas);
+void View::OnPaint(gfx::Canvas* canvas) {
+  OnPaintBackground(canvas);
+  OnPaintFocusBorder(canvas);
+  OnPaintBorder(canvas);
 }
 
-void View::PaintBackground(gfx::Canvas* canvas) {
+void View::OnPaintBackground(gfx::Canvas* canvas) {
   if (background_.get())
     background_->Paint(canvas, this);
 }
 
-void View::PaintBorder(gfx::Canvas* canvas) {
+void View::OnPaintBorder(gfx::Canvas* canvas) {
   if (border_.get())
     border_->Paint(*this, canvas);
 }
 
-void View::PaintFocusBorder(gfx::Canvas* canvas) {
+void View::OnPaintFocusBorder(gfx::Canvas* canvas) {
   if (HasFocus() && (IsFocusable() || IsAccessibilityFocusableInRootView()))
     canvas->DrawFocusRect(0, 0, width(), height());
 }
@@ -689,7 +689,7 @@ void View::ProcessPaint(gfx::Canvas* canvas) {
       canvas->ScaleInt(-1, 1);
     }
 
-    Paint(canvas);
+    OnPaint(canvas);
 
     // We must undo the canvas mirroring once the View is done painting so that
     // we don't pass the canvas with the mirrored transform to Views that

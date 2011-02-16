@@ -22,7 +22,7 @@ class DropDownButton : public views::MenuButton {
                  bool show_menu_marker);
   virtual ~DropDownButton();
 
-  virtual void PaintFocusBorder(gfx::Canvas* canvas);
+  virtual void OnPaintFocusBorder(gfx::Canvas* canvas);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DropDownButton);

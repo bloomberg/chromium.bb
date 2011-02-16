@@ -56,7 +56,7 @@ const gfx::Rect& TouchTab::GetIconBounds() const {
 ////////////////////////////////////////////////////////////////////////////////
 // TouchTab, views::View overrides:
 
-void TouchTab::Paint(gfx::Canvas* canvas) {
+void TouchTab::OnPaint(gfx::Canvas* canvas) {
   // Don't paint if we're narrower than we can render correctly. (This should
   // only happen during animations).
   if (width() < GetMinimumUnselectedSize().width() && !data().mini)

@@ -243,7 +243,7 @@ class MenuItemView : public View {
   int GetCommand() const { return command_; }
 
   // Paints the menu item.
-  virtual void Paint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas);
 
   // Returns the preferred size of this item.
   virtual gfx::Size GetPreferredSize();

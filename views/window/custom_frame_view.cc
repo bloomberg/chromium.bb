@@ -206,7 +206,7 @@ void CustomFrameView::ResetWindowControls() {
 ///////////////////////////////////////////////////////////////////////////////
 // CustomFrameView, View overrides:
 
-void CustomFrameView::Paint(gfx::Canvas* canvas) {
+void CustomFrameView::OnPaint(gfx::Canvas* canvas) {
   if (frame_->IsMaximized())
     PaintMaximizedFrameBorder(canvas);
   else

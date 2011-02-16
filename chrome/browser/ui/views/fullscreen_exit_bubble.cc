@@ -39,7 +39,7 @@ class FullscreenExitBubble::FullscreenExitView : public views::View {
 
   // views::View
   virtual void Layout();
-  virtual void Paint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas);
 
   // Clickable hint text to show in the bubble.
   views::Link link_;
@@ -83,7 +83,7 @@ void FullscreenExitBubble::FullscreenExitView::Layout() {
                   link_preferred_size.width(), link_preferred_size.height());
 }
 
-void FullscreenExitBubble::FullscreenExitView::Paint(gfx::Canvas* canvas) {
+void FullscreenExitBubble::FullscreenExitView::OnPaint(gfx::Canvas* canvas) {
   // Create a round-bottomed rect to fill the whole View.
   SkRect rect;
   SkScalar padding = SkIntToScalar(kPaddingPixels);

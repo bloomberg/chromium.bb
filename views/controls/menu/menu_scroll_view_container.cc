@@ -178,9 +178,9 @@ MenuScrollViewContainer::MenuScrollViewContainer(SubmenuView* content_view) {
                  SubmenuView::kSubmenuBorderSize));
 }
 
-void MenuScrollViewContainer::PaintBackground(gfx::Canvas* canvas) {
+void MenuScrollViewContainer::OnPaintBackground(gfx::Canvas* canvas) {
   if (background()) {
-    View::PaintBackground(canvas);
+    View::OnPaintBackground(canvas);
     return;
   }
 

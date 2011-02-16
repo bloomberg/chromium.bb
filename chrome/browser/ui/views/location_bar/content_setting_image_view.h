@@ -45,8 +45,8 @@ class ContentSettingImageView : public views::ImageView,
   virtual bool OnMousePressed(const views::MouseEvent& event);
   virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled);
   virtual void VisibilityChanged(View* starting_from, bool is_visible);
-  virtual void Paint(gfx::Canvas* canvas);
-  virtual void PaintBackground(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas);
+  virtual void OnPaintBackground(gfx::Canvas* canvas);
 
   // InfoBubbleDelegate overrides:
   virtual void InfoBubbleClosing(InfoBubble* info_bubble,

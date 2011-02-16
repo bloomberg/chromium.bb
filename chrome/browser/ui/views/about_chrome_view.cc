@@ -429,8 +429,8 @@ void AboutChromeView::Layout() {
 }
 
 
-void AboutChromeView::Paint(gfx::Canvas* canvas) {
-  views::View::Paint(canvas);
+void AboutChromeView::OnPaint(gfx::Canvas* canvas) {
+  views::View::OnPaint(canvas);
 
   // Draw the background image color (and the separator) across the dialog.
   // This will become the background for the logo image at the top of the

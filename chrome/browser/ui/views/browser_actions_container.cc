@@ -575,7 +575,7 @@ void BrowserActionsContainer::Layout() {
   }
 }
 
-void BrowserActionsContainer::Paint(gfx::Canvas* canvas) {
+void BrowserActionsContainer::OnPaint(gfx::Canvas* canvas) {
   // TODO(sky/glen): Instead of using a drop indicator, animate the icons while
   // dragging (like we do for tab dragging).
   if (drop_indicator_position_ > -1) {

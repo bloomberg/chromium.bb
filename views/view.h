@@ -522,28 +522,22 @@ class View : public AcceleratorTarget {
   virtual void SchedulePaint();
   virtual void SchedulePaintInRect(const gfx::Rect& r, bool urgent);
 
-  // Paint the receiving view. g is prepared such as it is in
-  // receiver's coordinate system. g's state is restored after this
-  // call so your implementation can change the graphics configuration
-  //
-  // Default implementation paints the background if it is defined
-  //
-  // Override this method when implementing a new control.
-  virtual void Paint(gfx::Canvas* canvas);
+  // Override to provide rendering in any part of the View's bounds. Typically
+  // this is the "contents" of the view. If you override this method you will
+  // have to call the subsequent OnPaint*() methods manually.
+  virtual void OnPaint(gfx::Canvas* canvas);
 
-  // Paint the background if any. This method is called by Paint() and
-  // should rarely be invoked directly.
-  virtual void PaintBackground(gfx::Canvas* canvas);
+  // Override to paint a background before any content is drawn. Typically this
+  // is done if you are satisfied with a default OnPaint handler but wish to
+  // supply a different background.
+  virtual void OnPaintBackground(gfx::Canvas* canvas);
 
-  // Paint the border if any. This method is called by Paint() and
-  // should rarely be invoked directly.
-  virtual void PaintBorder(gfx::Canvas* canvas);
+  // Override to paint a border not specified by SetBorder().
+  virtual void OnPaintBorder(gfx::Canvas* canvas);
 
-  // Paints the focus border (only if the view has the focus).
-  // This method is called by Paint() and should rarely be invoked directly.
-  // The default implementation paints a gray border around the view. Override
-  // it for custom focus effects.
-  virtual void PaintFocusBorder(gfx::Canvas* canvas);
+  // Override to paint a focus border (usually a dotted rectangle) around
+  // relevant contents.
+  virtual void OnPaintFocusBorder(gfx::Canvas* canvas);
 
   // Paint this View immediately.
   virtual void PaintNow();

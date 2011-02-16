@@ -74,7 +74,7 @@ AccessibilityTypes::Role OptionsGroupView::GetAccessibleRole() {
   return AccessibilityTypes::ROLE_GROUPING;
 }
 
-void OptionsGroupView::Paint(gfx::Canvas* canvas) {
+void OptionsGroupView::OnPaint(gfx::Canvas* canvas) {
   if (highlighted_) {
     COLORREF infocolor = GetSysColor(COLOR_INFOBK);
     SkColor background_color = SkColorSetRGB(GetRValue(infocolor),

@@ -70,7 +70,7 @@ SadTabView::SadTabView(TabContents* tab_contents, Kind kind)
   }
 }
 
-void SadTabView::Paint(gfx::Canvas* canvas) {
+void SadTabView::OnPaint(gfx::Canvas* canvas) {
   SkPaint paint;
   SkSafeUnref(paint.setShader(
       gfx::CreateGradientShader(

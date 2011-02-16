@@ -64,7 +64,7 @@ const int kControlPaddingRow = 15;
 const int kSelectionBoxHeight = 29;
 
 // Menu button is drawn using our custom icons in resources. See
-// TextButtonBorder::Paint() for details. So this offset compensate
+// TextButtonBorder::OnPaint() for details. So this offset compensate
 // horizontal size, eaten by those icons.
 const int kMenuHorizontalOffset = -3;
 

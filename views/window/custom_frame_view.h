@@ -45,7 +45,7 @@ class CustomFrameView : public NonClientFrameView,
   virtual void ResetWindowControls();
 
   // View overrides:
-  virtual void Paint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas);
   virtual void Layout();
   virtual gfx::Size GetPreferredSize();
 

@@ -174,7 +174,7 @@ class TextButton : public CustomButton {
  protected:
   SkBitmap icon() const { return icon_; }
 
-  virtual void Paint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas);
 
   // Called when enabled or disabled state changes, or the colors for those
   // states change.

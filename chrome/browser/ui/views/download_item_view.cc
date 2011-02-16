@@ -452,7 +452,7 @@ void DownloadItemView::ButtonPressed(
 
 // Load an icon for the file type we're downloading, and animate any in progress
 // download state.
-void DownloadItemView::Paint(gfx::Canvas* canvas) {
+void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
   BodyImageSet* body_image_set = NULL;
   switch (body_state_) {
     case NORMAL:

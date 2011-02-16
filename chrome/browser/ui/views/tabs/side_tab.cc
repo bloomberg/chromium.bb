@@ -75,7 +75,7 @@ void SideTab::Layout() {
       font_height());
 }
 
-void SideTab::Paint(gfx::Canvas* canvas) {
+void SideTab::OnPaint(gfx::Canvas* canvas) {
   if (ShouldPaintHighlight()) {
     SkPaint paint;
     paint.setColor(kTabBackgroundColor);

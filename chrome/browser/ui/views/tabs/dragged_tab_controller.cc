@@ -80,7 +80,7 @@ class DockView : public views::View {
     return gfx::Size(DockInfo::popup_width(), DockInfo::popup_height());
   }
 
-  virtual void PaintBackground(gfx::Canvas* canvas) {
+  virtual void OnPaintBackground(gfx::Canvas* canvas) {
     SkRect outer_rect = { SkIntToScalar(0), SkIntToScalar(0),
                           SkIntToScalar(width()),
                           SkIntToScalar(height()) };

@@ -157,7 +157,7 @@ void ContentSettingImageView::VisibilityChanged(View* starting_from,
     info_bubble_->Close();
 }
 
-void ContentSettingImageView::Paint(gfx::Canvas* canvas) {
+void ContentSettingImageView::OnPaint(gfx::Canvas* canvas) {
   gfx::Insets current_insets;
   if (border())
     border()->GetInsets(&current_insets);
@@ -179,7 +179,7 @@ void ContentSettingImageView::Paint(gfx::Canvas* canvas) {
     set_border(empty_border);
   }
   // Paint an icon with possibly non-empty left border.
-  views::ImageView::Paint(canvas);
+  views::ImageView::OnPaint(canvas);
   if (animation_in_progress_) {
     // Paint text to the right of the icon.
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
@@ -191,9 +191,9 @@ void ContentSettingImageView::Paint(gfx::Canvas* canvas) {
   }
 }
 
-void ContentSettingImageView::PaintBackground(gfx::Canvas* canvas) {
+void ContentSettingImageView::OnPaintBackground(gfx::Canvas* canvas) {
   if (!animation_in_progress_) {
-    views::ImageView::PaintBackground(canvas);
+    views::ImageView::OnPaintBackground(canvas);
     return;
   }
   // Paint yellow gradient background if in animation mode.

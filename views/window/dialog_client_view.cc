@@ -300,7 +300,7 @@ int DialogClientView::NonClientHitTest(const gfx::Point& point) {
 ////////////////////////////////////////////////////////////////////////////////
 // DialogClientView, View overrides:
 
-void DialogClientView::Paint(gfx::Canvas* canvas) {
+void DialogClientView::OnPaint(gfx::Canvas* canvas) {
 #if defined(OS_WIN)
   FillViewWithSysColor(canvas, this, GetSysColor(COLOR_3DFACE));
 #else

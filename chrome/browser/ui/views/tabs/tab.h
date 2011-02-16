@@ -63,7 +63,7 @@ class Tab : public BaseTab {
 
  private:
   // Overridden from views::View:
-  virtual void Paint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas);
   virtual void Layout();
   virtual void OnThemeChanged();
   virtual std::string GetClassName() const { return kViewClassName; }

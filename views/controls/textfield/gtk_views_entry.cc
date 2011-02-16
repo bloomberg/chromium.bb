@@ -23,7 +23,7 @@ static gint gtk_views_entry_expose_event(GtkWidget *widget,
   if (event->window == widget->window) {
     gfx::CanvasSkiaPaint canvas(event);
     if (!canvas.is_empty() && host) {
-      host->textfield()->PaintBackground(&canvas);
+      host->textfield()->OnPaintBackground(&canvas);
     }
   }
 #endif

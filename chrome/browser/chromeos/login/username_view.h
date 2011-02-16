@@ -37,7 +37,7 @@ class UsernameView : public views::Label {
   UsernameView(const std::wstring& username, bool use_small_shape);
 
   // Overriden from views::Label.
-  virtual void Paint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas);
 
   // True indicates that this UsernameView is used for a user pod not
   // currently selected.

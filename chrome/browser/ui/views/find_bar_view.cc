@@ -268,7 +268,7 @@ void FindBarView::SetFocusAndSelection(bool select_all) {
 ///////////////////////////////////////////////////////////////////////////////
 // FindBarView, views::View overrides:
 
-void FindBarView::Paint(gfx::Canvas* canvas) {
+void FindBarView::OnPaint(gfx::Canvas* canvas) {
   SkPaint paint;
 
   // Determine the find bar size as well as the offset from which to tile the

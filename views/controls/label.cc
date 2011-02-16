@@ -77,8 +77,8 @@ void Label::OnBoundsChanged() {
   text_size_valid_ &= !is_multi_line_;
 }
 
-void Label::Paint(gfx::Canvas* canvas) {
-  PaintBackground(canvas);
+void Label::OnPaint(gfx::Canvas* canvas) {
+  OnPaintBackground(canvas);
 
   std::wstring paint_text;
   gfx::Rect text_bounds;
@@ -87,7 +87,7 @@ void Label::Paint(gfx::Canvas* canvas) {
   PaintText(canvas, paint_text, text_bounds, flags);
 }
 
-void Label::PaintBackground(gfx::Canvas* canvas) {
+void Label::OnPaintBackground(gfx::Canvas* canvas) {
   const Background* bg = contains_mouse_ ? GetMouseOverBackground() : NULL;
   if (!bg)
     bg = background();

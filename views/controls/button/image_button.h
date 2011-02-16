@@ -44,7 +44,7 @@ class ImageButton : public CustomButton {
 
   // Overridden from View:
   virtual gfx::Size GetPreferredSize();
-  virtual void Paint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas);
 
   // Sets preferred size, so it could be correctly positioned in layout even if
   // it is NULL.

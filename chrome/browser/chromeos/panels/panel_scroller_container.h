@@ -23,7 +23,7 @@ class PanelScrollerContainer : public views::View {
   // view::View overrides.
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();
-  virtual void Paint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas);
 
  private:
   // Non-owning pointer to our parent scroller object.

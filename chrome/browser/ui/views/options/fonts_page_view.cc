@@ -50,7 +50,7 @@ class FontDisplayView : public views::View {
   int font_size() { return font_size_; }
 
   // views::View overrides:
-  virtual void Paint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas);
   virtual void Layout();
   virtual gfx::Size GetPreferredSize();
 
@@ -94,7 +94,7 @@ void FontDisplayView::SetFontType(const std::wstring& font_name,
   font_text_label_->SetText(displayed_text);
 }
 
-void FontDisplayView::Paint(gfx::Canvas* canvas) {
+void FontDisplayView::OnPaint(gfx::Canvas* canvas) {
   HDC dc = canvas->BeginPlatformPaint();
   RECT rect = { 0, 0, width(), height() };
   gfx::NativeTheme::instance()->PaintTextField(

@@ -634,8 +634,8 @@ void LocationBarView::Layout() {
   location_entry_view_->SetBoundsRect(location_bounds);
 }
 
-void LocationBarView::Paint(gfx::Canvas* canvas) {
-  View::Paint(canvas);
+void LocationBarView::OnPaint(gfx::Canvas* canvas) {
+  View::OnPaint(canvas);
 
   if (painter_.get()) {
     painter_->Paint(width(), height(), canvas);
@@ -652,7 +652,7 @@ void LocationBarView::Paint(gfx::Canvas* canvas) {
   // TODO(pkasting): We need images that are transparent in the middle, so we
   // can draw the border images over the background color instead of the
   // reverse; this antialiases better (see comments in
-  // AutocompletePopupContentsView::Paint()).
+  // AutocompletePopupContentsView::OnPaint()).
   gfx::Rect bounds(GetContentsBounds());
   bounds.Inset(0, kVerticalEdgeThickness);
   SkColor color(GetColor(ToolbarModel::NONE, BACKGROUND));

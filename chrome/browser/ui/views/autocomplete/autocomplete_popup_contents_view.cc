@@ -233,7 +233,7 @@ class AutocompletePopupContentsView::InstantOptInView
     // WARNING: we've been deleted.
   }
 
-  virtual void Paint(gfx::Canvas* canvas) {
+  virtual void OnPaint(gfx::Canvas* canvas) {
     canvas->Save();
     canvas->TranslateInt(kOptInBackgroundHInset, kOptInBackgroundVInset);
     bg_painter_->Paint(width() - kOptInBackgroundHInset * 2,
@@ -281,7 +281,7 @@ class AutocompleteResultView : public views::View {
   void set_match(const AutocompleteMatch& match) { match_ = match; }
 
   // Overridden from views::View:
-  virtual void Paint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas);
   virtual void Layout();
   virtual gfx::Size GetPreferredSize();
 
@@ -436,7 +436,7 @@ AutocompleteResultView::AutocompleteResultView(
 AutocompleteResultView::~AutocompleteResultView() {
 }
 
-void AutocompleteResultView::Paint(gfx::Canvas* canvas) {
+void AutocompleteResultView::OnPaint(gfx::Canvas* canvas) {
   const ResultViewState state = GetState();
   if (state != NORMAL)
     canvas->AsCanvasSkia()->drawColor(GetColor(state, BACKGROUND));
@@ -945,7 +945,7 @@ void AutocompletePopupContentsView::AnimationProgressed(
 ////////////////////////////////////////////////////////////////////////////////
 // AutocompletePopupContentsView, views::View overrides:
 
-void AutocompletePopupContentsView::Paint(gfx::Canvas* canvas) {
+void AutocompletePopupContentsView::OnPaint(gfx::Canvas* canvas) {
   // We paint our children in an unconventional way.
   //
   // Because the border of this view creates an anti-aliased round-rect region
@@ -983,7 +983,7 @@ void AutocompletePopupContentsView::Paint(gfx::Canvas* canvas) {
   // Now we paint the border, so it will be alpha-blended atop the contents.
   // This looks slightly better in the corners than drawing the contents atop
   // the border.
-  PaintBorder(canvas);
+  OnPaintBorder(canvas);
 }
 
 void AutocompletePopupContentsView::Layout() {

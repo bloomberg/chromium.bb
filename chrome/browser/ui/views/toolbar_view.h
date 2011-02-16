@@ -118,7 +118,7 @@ class ToolbarView : public AccessiblePaneView,
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();
-  virtual void Paint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas);
   virtual void OnThemeChanged();
 
   // The apparent horizontal space between most items, and the vertical padding

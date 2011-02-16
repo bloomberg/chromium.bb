@@ -117,7 +117,7 @@ void Checkbox::SetEnabled(bool enabled) {
     label_->SetEnabled(enabled);
 }
 
-void Checkbox::PaintFocusBorder(gfx::Canvas* canvas) {
+void Checkbox::OnPaintFocusBorder(gfx::Canvas* canvas) {
   // Our focus border is rendered by the label, so we don't do anything here.
 }
 

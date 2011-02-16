@@ -25,6 +25,6 @@ gfx::Size PanelScrollerContainer::GetPreferredSize() {
 void PanelScrollerContainer::Layout() {
 }
 
-void PanelScrollerContainer::Paint(gfx::Canvas* canvas) {
+void PanelScrollerContainer::OnPaint(gfx::Canvas* canvas) {
   canvas->DrawLineInt(0xFF000080, 0, 0, size().width(), size().height());
 }

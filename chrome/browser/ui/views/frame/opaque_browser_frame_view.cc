@@ -349,7 +349,7 @@ void OpaqueBrowserFrameView::ResetWindowControls() {
 ///////////////////////////////////////////////////////////////////////////////
 // OpaqueBrowserFrameView, views::View overrides:
 
-void OpaqueBrowserFrameView::Paint(gfx::Canvas* canvas) {
+void OpaqueBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
   views::Window* window = frame_->GetWindow();
   if (window->IsFullscreen())
     return;  // Nothing is visible, so don't bother to paint.

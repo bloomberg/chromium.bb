@@ -126,9 +126,9 @@ void TabbedPane::Focus() {
                     // messages).
 }
 
-void TabbedPane::PaintFocusBorder(gfx::Canvas* canvas) {
+void TabbedPane::OnPaintFocusBorder(gfx::Canvas* canvas) {
   if (NativeViewHost::kRenderNativeControlFocus)
-    View::PaintFocusBorder(canvas);
+    View::OnPaintFocusBorder(canvas);
 }
 
 AccessibilityTypes::Role TabbedPane::GetAccessibleRole() {

@@ -151,7 +151,7 @@ class StatusBubbleViews::StatusView : public views::Label,
   void AnimateToState(double state);
   void AnimationEnded(const Animation* animation);
 
-  virtual void Paint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas);
 
   BubbleStage stage_;
   BubbleStyle style_;
@@ -335,7 +335,7 @@ void StatusBubbleViews::StatusView::SetStyle(BubbleStyle style) {
   }
 }
 
-void StatusBubbleViews::StatusView::Paint(gfx::Canvas* canvas) {
+void StatusBubbleViews::StatusView::OnPaint(gfx::Canvas* canvas) {
   SkPaint paint;
   paint.setStyle(SkPaint::kFill_Style);
   paint.setFlags(SkPaint::kAntiAlias_Flag);

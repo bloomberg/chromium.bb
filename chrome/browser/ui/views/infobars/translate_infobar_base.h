@@ -55,7 +55,7 @@ class TranslateInfoBarBase : public TranslateInfoBarView,
 
  private:
   // InfoBarView:
-  virtual void PaintBackground(gfx::Canvas* canvas);
+  virtual void OnPaintBackground(gfx::Canvas* canvas);
   virtual void AnimationProgressed(const ui::Animation* animation);
 
   // Returns the background that should be displayed when not animating.

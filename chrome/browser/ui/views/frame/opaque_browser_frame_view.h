@@ -56,7 +56,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   virtual void ResetWindowControls();
 
   // Overridden from views::View:
-  virtual void Paint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas);
   virtual void Layout();
   virtual bool HitTest(const gfx::Point& l) const;
   virtual AccessibilityTypes::Role GetAccessibleRole();

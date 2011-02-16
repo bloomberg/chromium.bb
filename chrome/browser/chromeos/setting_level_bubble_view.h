@@ -34,7 +34,7 @@ class SettingLevelBubbleView : public views::View {
   void Update(int level_percent);
 
   // views::View implementation:
-  virtual void Paint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas);
   virtual void Layout();
   virtual gfx::Size GetPreferredSize();
 

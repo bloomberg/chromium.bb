@@ -80,7 +80,7 @@ UsernameView::UsernameView(const std::wstring& username, bool use_small_shape)
       is_guest_(username.empty()) {
 }
 
-void UsernameView::Paint(gfx::Canvas* canvas) {
+void UsernameView::OnPaint(gfx::Canvas* canvas) {
   gfx::Rect bounds = GetContentsBounds();
   if (text_image_ == NULL)
     PaintUsername(bounds);

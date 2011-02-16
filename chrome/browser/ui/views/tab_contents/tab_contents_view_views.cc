@@ -230,7 +230,7 @@ void TabContentsViewViews::OnBoundsChanged() {
     WasSized(size());
 }
 
-void TabContentsViewViews::Paint(gfx::Canvas* canvas) {
+void TabContentsViewViews::OnPaint(gfx::Canvas* canvas) {
 }
 
 void TabContentsViewViews::UpdateDragCursor(WebDragOperation operation) {

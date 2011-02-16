@@ -132,7 +132,7 @@ void TabIconView::PaintIcon(gfx::Canvas* canvas,
                         dest_h, filter);
 }
 
-void TabIconView::Paint(gfx::Canvas* canvas) {
+void TabIconView::OnPaint(gfx::Canvas* canvas) {
   bool rendered = false;
 
   if (throbber_running_) {

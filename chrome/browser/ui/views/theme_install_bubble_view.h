@@ -56,7 +56,7 @@ class ThemeInstallBubbleView : public NotificationObserver,
   // Shut down the popup and remove our notifications.
   void Close();
 
-  virtual void Paint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas);
 
   // The content area at the start of the animation.
   gfx::Rect tab_contents_bounds_;

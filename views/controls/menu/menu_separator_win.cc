@@ -15,7 +15,7 @@
 
 namespace views {
 
-void MenuSeparator::Paint(gfx::Canvas* canvas) {
+void MenuSeparator::OnPaint(gfx::Canvas* canvas) {
   const MenuConfig& config = MenuConfig::instance();
   // The gutter is rendered before the background.
   int start_x = 0;

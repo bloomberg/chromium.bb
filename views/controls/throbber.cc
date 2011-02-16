@@ -70,7 +70,7 @@ gfx::Size Throbber::GetPreferredSize() {
   return gfx::Size(frames_->height(), frames_->height());
 }
 
-void Throbber::Paint(gfx::Canvas* canvas) {
+void Throbber::OnPaint(gfx::Canvas* canvas) {
   if (!running_ && !paint_while_stopped_)
     return;
 
@@ -146,10 +146,10 @@ void CheckmarkThrobber::SetChecked(bool checked) {
   }
 }
 
-void CheckmarkThrobber::Paint(gfx::Canvas* canvas) {
+void CheckmarkThrobber::OnPaint(gfx::Canvas* canvas) {
   if (running_) {
     // Let the throbber throb...
-    Throbber::Paint(canvas);
+    Throbber::OnPaint(canvas);
     return;
   }
   // Otherwise we paint our tick mark or nothing depending on our state.

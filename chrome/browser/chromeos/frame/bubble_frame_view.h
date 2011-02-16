@@ -46,7 +46,7 @@ class BubbleFrameView : public views::NonClientFrameView,
   virtual gfx::Insets GetInsets() const;
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();
-  virtual void Paint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas);
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,

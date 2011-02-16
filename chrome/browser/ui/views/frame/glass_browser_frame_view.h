@@ -37,7 +37,7 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView {
 
  protected:
   // Overridden from views::View:
-  virtual void Paint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas);
   virtual void Layout();
 
  private:

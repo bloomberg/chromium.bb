@@ -202,7 +202,7 @@ void BubbleFrameView::Layout() {
       std::max(0, height() - top_height - insets.bottom()));
 }
 
-void BubbleFrameView::Paint(gfx::Canvas* canvas) {
+void BubbleFrameView::OnPaint(gfx::Canvas* canvas) {
   // The border of this view creates an anti-aliased round-rect region for the
   // contents, which we need to fill with the background color.
   SkPaint paint;
@@ -218,7 +218,7 @@ void BubbleFrameView::Paint(gfx::Canvas* canvas) {
   path.addRoundRect(rect, radius, radius);
   canvas->AsCanvasSkia()->drawPath(path, paint);
 
-  PaintBorder(canvas);
+  OnPaintBorder(canvas);
 }
 
 void BubbleFrameView::ButtonPressed(views::Button* sender,

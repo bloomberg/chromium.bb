@@ -75,7 +75,7 @@ class DialogClientView : public ClientView,
 
  protected:
   // View overrides:
-  virtual void Paint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas);
   virtual void PaintChildren(gfx::Canvas* canvas);
   virtual void Layout();
   virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);

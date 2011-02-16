@@ -318,7 +318,7 @@ void NativeControl::SetEnabled(bool enabled) {
   }
 }
 
-void NativeControl::Paint(gfx::Canvas* canvas) {
+void NativeControl::OnPaint(gfx::Canvas* canvas) {
 }
 
 void NativeControl::VisibilityChanged(View* starting_from, bool is_visible) {

@@ -37,7 +37,7 @@ void SuggestedTextView::StopAnimation() {
   }
 }
 
-void SuggestedTextView::PaintBackground(gfx::Canvas* canvas) {
+void SuggestedTextView::OnPaintBackground(gfx::Canvas* canvas) {
   if (!animation_.get() || animation_->GetCurrentValue() == 0)
     return;
 

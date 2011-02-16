@@ -100,7 +100,7 @@ class BackgroundView : public views::View,
 
  protected:
   // Overridden from views::View:
-  virtual void Paint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas);
   virtual void Layout();
   virtual void ChildPreferredSizeChanged(View* child);
   virtual void OnLocaleChanged();

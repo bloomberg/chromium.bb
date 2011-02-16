@@ -96,7 +96,7 @@ class BitmapScrollBar : public ScrollBar,
 
   // View overrides:
   virtual gfx::Size GetPreferredSize();
-  virtual void Paint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas);
   virtual void Layout();
   virtual bool OnMousePressed(const MouseEvent& event);
   virtual void OnMouseReleased(const MouseEvent& event, bool canceled);

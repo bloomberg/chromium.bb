@@ -298,9 +298,9 @@ void TableView2::Layout() {
   }
 }
 
-void TableView2::PaintFocusBorder(gfx::Canvas* canvas) {
+void TableView2::OnPaintFocusBorder(gfx::Canvas* canvas) {
   if (NativeViewHost::kRenderNativeControlFocus)
-    View::PaintFocusBorder(canvas);
+    View::OnPaintFocusBorder(canvas);
 }
 
 size_t TableView2::GetVisibleColumnCount() {

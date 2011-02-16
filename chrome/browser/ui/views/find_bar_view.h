@@ -65,7 +65,7 @@ class FindBarView : public DropdownBarView,
   virtual void SetFocusAndSelection(bool select_all);
 
   // Overridden from views::View:
-  virtual void Paint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas);
   virtual void Layout();
   virtual gfx::Size GetPreferredSize();
   virtual void ViewHierarchyChanged(bool is_add,

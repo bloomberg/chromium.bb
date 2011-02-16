@@ -192,7 +192,7 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
 ///////////////////////////////////////////////////////////////////////////////
 // GlassBrowserFrameView, views::View overrides:
 
-void GlassBrowserFrameView::Paint(gfx::Canvas* canvas) {
+void GlassBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
   if (!browser_view_->IsTabStripVisible())
     return;  // Nothing is visible, so don't bother to paint.
 

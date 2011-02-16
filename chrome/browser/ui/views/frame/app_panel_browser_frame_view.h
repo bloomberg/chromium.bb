@@ -51,7 +51,7 @@ class AppPanelBrowserFrameView : public BrowserNonClientFrameView,
   virtual void ResetWindowControls();
 
   // Overridden from views::View:
-  virtual void Paint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas);
   virtual void Layout();
 
   // Overridden from views::ButtonListener:

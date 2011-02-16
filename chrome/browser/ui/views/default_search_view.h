@@ -49,7 +49,7 @@ class DefaultSearchView
  protected:
   // Overridden from views::View:
   // Draws the gray background at the top of the dialog.
-  virtual void Paint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas);
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);

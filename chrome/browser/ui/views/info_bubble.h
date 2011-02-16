@@ -84,7 +84,7 @@ class BorderContents : public views::View {
 
  private:
   // Overridden from View:
-  virtual void Paint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas);
 
   // Changes |arrow_location| to its mirrored version, vertically if |vertical|
   // is true, horizontally otherwise, if |window_bounds| don't fit in

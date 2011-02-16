@@ -248,8 +248,8 @@ bool BackgroundView::ScreenSaverEnabled() {
 ///////////////////////////////////////////////////////////////////////////////
 // BackgroundView protected:
 
-void BackgroundView::Paint(gfx::Canvas* canvas) {
-  views::View::Paint(canvas);
+void BackgroundView::OnPaint(gfx::Canvas* canvas) {
+  views::View::OnPaint(canvas);
   if (!did_paint_) {
     did_paint_ = true;
     UpdateWindowType();

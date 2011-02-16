@@ -33,7 +33,7 @@ class View;
 // Background can be subclassed to implement various effects.
 //
 // Any View can have a background. See View::SetBackground() and
-// View::PaintBackground()
+// View::OnPaintBackground()
 //
 /////////////////////////////////////////////////////////////////////////////
 class Background {

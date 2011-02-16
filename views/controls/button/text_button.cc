@@ -271,7 +271,7 @@ void TextButton::SetShowMultipleIconStates(bool show_multiple_icon_states) {
 
 void TextButton::Paint(gfx::Canvas* canvas, bool for_drag) {
   if (!for_drag) {
-    PaintBackground(canvas);
+    OnPaintBackground(canvas);
 
     if (show_multiple_icon_states_ && hover_animation_->is_animating()) {
       // Draw the hover bitmap into an offscreen buffer, then blend it
@@ -280,15 +280,15 @@ void TextButton::Paint(gfx::Canvas* canvas, bool for_drag) {
           static_cast<int>(hover_animation_->GetCurrentValue() * 255));
       canvas->AsCanvasSkia()->drawARGB(0, 255, 255, 255,
                                        SkXfermode::kClear_Mode);
-      PaintBorder(canvas);
+      OnPaintBorder(canvas);
       canvas->Restore();
     } else if ((show_multiple_icon_states_ &&
                 (state_ == BS_HOT || state_ == BS_PUSHED)) ||
                (state_ == BS_NORMAL && normal_has_border_)) {
-      PaintBorder(canvas);
+      OnPaintBorder(canvas);
     }
 
-    PaintFocusBorder(canvas);
+    OnPaintFocusBorder(canvas);
   }
 
   SkBitmap icon = icon_;
@@ -457,7 +457,7 @@ std::string TextButton::GetClassName() const {
   return kViewClassName;
 }
 
-void TextButton::Paint(gfx::Canvas* canvas) {
+void TextButton::OnPaint(gfx::Canvas* canvas) {
   Paint(canvas, false);
 }
 

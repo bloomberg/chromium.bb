@@ -112,7 +112,7 @@ void ThemeInstallBubbleView::Reposition() {
   popup_->SetBounds(gfx::Rect(x, y, size.width(), size.height()));
 }
 
-void ThemeInstallBubbleView::Paint(gfx::Canvas* canvas) {
+void ThemeInstallBubbleView::OnPaint(gfx::Canvas* canvas) {
   SkScalar rad[8];
   for (int i = 0; i < 8; ++i)
     rad[i] = SkIntToScalar(kBubbleCornerRadius);

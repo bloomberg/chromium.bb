@@ -213,7 +213,7 @@ void AppPanelBrowserFrameView::ResetWindowControls() {
 ///////////////////////////////////////////////////////////////////////////////
 // AppPanelBrowserFrameView, views::View overrides:
 
-void AppPanelBrowserFrameView::Paint(gfx::Canvas* canvas) {
+void AppPanelBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
   views::Window* window = frame_->GetWindow();
   if (window->IsMaximized())
     PaintMaximizedFrameBorder(canvas);

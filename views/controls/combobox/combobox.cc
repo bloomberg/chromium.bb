@@ -84,9 +84,9 @@ bool Combobox::SkipDefaultKeyEventProcessing(const KeyEvent& e) {
   return native_wrapper_ && native_wrapper_->IsDropdownOpen();
 }
 
-void Combobox::PaintFocusBorder(gfx::Canvas* canvas) {
+void Combobox::OnPaintFocusBorder(gfx::Canvas* canvas) {
   if (NativeViewHost::kRenderNativeControlFocus)
-    View::PaintFocusBorder(canvas);
+    View::OnPaintFocusBorder(canvas);
 }
 
 AccessibilityTypes::Role Combobox::GetAccessibleRole() {

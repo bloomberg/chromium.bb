@@ -24,7 +24,7 @@ class PanelScrollerHeader : public views::View {
   virtual bool OnMouseDragged(const views::MouseEvent& event);
   virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled);
   virtual gfx::Size GetPreferredSize();
-  virtual void Paint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas);
 
  private:
   // Non-owning pointer to our parent scroller object.

@@ -90,7 +90,7 @@ class FileDisplayArea : public views::View {
   void SetFile(const FilePath& file_path);
 
   // views::View overrides:
-  virtual void Paint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas);
   virtual void Layout();
   virtual gfx::Size GetPreferredSize();
 
@@ -140,7 +140,7 @@ void FileDisplayArea::SetFile(const FilePath& file_path) {
   }
 }
 
-void FileDisplayArea::Paint(gfx::Canvas* canvas) {
+void FileDisplayArea::OnPaint(gfx::Canvas* canvas) {
   HDC dc = canvas->BeginPlatformPaint();
   RECT rect = { 0, 0, width(), height() };
   gfx::NativeTheme::instance()->PaintTextField(

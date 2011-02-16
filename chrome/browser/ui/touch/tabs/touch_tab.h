@@ -43,7 +43,7 @@ class TouchTab : public BaseTab {
 
  private:
   // Overridden from views::View:
-  virtual void Paint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas);
   virtual void Layout();
   virtual bool HasHitTestMask() const;
   virtual void GetHitTestMask(gfx::Path* path) const;

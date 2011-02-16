@@ -346,7 +346,7 @@ void MenuItemView::SetIcon(const SkBitmap& icon) {
   SchedulePaint();
 }
 
-void MenuItemView::Paint(gfx::Canvas* canvas) {
+void MenuItemView::OnPaint(gfx::Canvas* canvas) {
   Paint(canvas, false);
 }
 

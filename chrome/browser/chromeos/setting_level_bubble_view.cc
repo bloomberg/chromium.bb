@@ -52,8 +52,8 @@ void SettingLevelBubbleView::Update(int level_percent) {
   progress_bar_->SetProgress(level_percent);
 }
 
-void SettingLevelBubbleView::Paint(gfx::Canvas* canvas) {
-  views::View::Paint(canvas);
+void SettingLevelBubbleView::OnPaint(gfx::Canvas* canvas) {
+  views::View::OnPaint(canvas);
   canvas->DrawBitmapInt(*icon_, kPadding, (height() - icon_->height()) / 2);
 }
 

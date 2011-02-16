@@ -22,7 +22,7 @@ class SideTab : public BaseTab {
 
   // views::View Overrides:
   virtual void Layout();
-  virtual void Paint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas);
   virtual gfx::Size GetPreferredSize();
 
  protected:

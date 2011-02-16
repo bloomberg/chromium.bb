@@ -509,7 +509,7 @@ void ToolbarView::Layout() {
   bool maximized = browser_->window() && browser_->window()->IsMaximized();
   if (!IsDisplayModeNormal()) {
     int edge_width = maximized ?
-        0 : kPopupBackgroundEdge->width();  // See Paint().
+        0 : kPopupBackgroundEdge->width();  // See OnPaint().
     location_bar_->SetBounds(edge_width, PopupTopSpacing(),
         width() - (edge_width * 2), location_bar_->GetPreferredSize().height());
     return;
@@ -590,8 +590,8 @@ void ToolbarView::Layout() {
 #endif
 }
 
-void ToolbarView::Paint(gfx::Canvas* canvas) {
-  View::Paint(canvas);
+void ToolbarView::OnPaint(gfx::Canvas* canvas) {
+  View::OnPaint(canvas);
 
   if (IsDisplayModeNormal())
     return;

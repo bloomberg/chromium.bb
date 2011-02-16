@@ -38,7 +38,7 @@ class IconLabelBubbleView : public views::View {
   void SetImage(const SkBitmap& bitmap);
   void SetItemPadding(int padding) { item_padding_ = padding; }
 
-  virtual void Paint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas);
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();
 

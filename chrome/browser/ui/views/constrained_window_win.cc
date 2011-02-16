@@ -158,7 +158,7 @@ class ConstrainedWindowFrameView
   virtual void ResetWindowControls() { }
 
   // Overridden from views::View:
-  virtual void Paint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas);
   virtual void Layout();
   virtual void OnThemeChanged();
 
@@ -344,7 +344,7 @@ void ConstrainedWindowFrameView::EnableClose(bool enable) {
 ////////////////////////////////////////////////////////////////////////////////
 // ConstrainedWindowFrameView, views::View implementation:
 
-void ConstrainedWindowFrameView::Paint(gfx::Canvas* canvas) {
+void ConstrainedWindowFrameView::OnPaint(gfx::Canvas* canvas) {
   PaintFrameBorder(canvas);
   PaintTitleBar(canvas);
   PaintClientEdge(canvas);

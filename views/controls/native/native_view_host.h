@@ -78,7 +78,7 @@ class NativeViewHost : public View {
   // Overridden from View:
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();
-  virtual void Paint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas);
   virtual void VisibilityChanged(View* starting_from, bool is_visible);
   virtual void Focus();
   virtual bool ContainsNativeView(gfx::NativeView native_view) const;

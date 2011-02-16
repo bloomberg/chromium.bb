@@ -103,7 +103,7 @@ gfx::Rect BorderContents::GetMonitorBounds(const gfx::Rect& rect) {
   return monitor_provider->GetMonitorWorkAreaMatching(rect);
 }
 
-void BorderContents::Paint(gfx::Canvas* canvas) {
+void BorderContents::OnPaint(gfx::Canvas* canvas) {
   // The border of this view creates an anti-aliased round-rect region for the
   // contents, which we need to fill with the background color.
   // NOTE: This doesn't handle an arrow location of "NONE", which has square top
@@ -124,7 +124,7 @@ void BorderContents::Paint(gfx::Canvas* canvas) {
   // Now we paint the border, so it will be alpha-blended atop the contents.
   // This looks slightly better in the corners than drawing the contents atop
   // the border.
-  PaintBorder(canvas);
+  OnPaintBorder(canvas);
 }
 
 void BorderContents::MirrorArrowIfOffScreen(

@@ -64,7 +64,7 @@ class DownloadItemView : public views::ButtonListener,
 
   // View overrides
   virtual void Layout();
-  virtual void Paint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas);
   virtual gfx::Size GetPreferredSize();
   virtual void OnMouseExited(const views::MouseEvent& event);
   virtual void OnMouseMoved(const views::MouseEvent& event);

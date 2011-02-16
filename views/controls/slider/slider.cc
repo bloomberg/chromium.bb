@@ -85,9 +85,9 @@ void Slider::Focus() {
   }
 }
 
-void Slider::PaintFocusBorder(gfx::Canvas* canvas) {
+void Slider::OnPaintFocusBorder(gfx::Canvas* canvas) {
   if (NativeViewHost::kRenderNativeControlFocus)
-    View::PaintFocusBorder(canvas);
+    View::OnPaintFocusBorder(canvas);
 }
 
 void Slider::ViewHierarchyChanged(bool is_add, View* parent, View* child) {

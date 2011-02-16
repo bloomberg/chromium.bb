@@ -409,7 +409,7 @@ gfx::Size BitmapScrollBar::GetPreferredSize() {
   return gfx::Size(button_prefsize.width(), button_prefsize.height() * 2);
 }
 
-void BitmapScrollBar::Paint(gfx::Canvas* canvas) {
+void BitmapScrollBar::OnPaint(gfx::Canvas* canvas) {
   // Paint the track.
   gfx::Rect track_bounds = GetTrackBounds();
   canvas->TileImageInt(*images_[THUMB_TRACK][thumb_track_state_],

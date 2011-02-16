@@ -30,7 +30,7 @@ class SuggestedTextView : public views::Label,
   void StopAnimation();
 
   // View overrides:
-  virtual void PaintBackground(gfx::Canvas* canvas);
+  virtual void OnPaintBackground(gfx::Canvas* canvas);
 
   // AnimationDelegate overrides:
   virtual void AnimationEnded(const ui::Animation* animation);

@@ -46,7 +46,7 @@ class Checkbox : public NativeButton {
   virtual int GetHeightForWidth(int w);
   virtual void Layout();
   virtual void SetEnabled(bool enabled);
-  virtual void PaintFocusBorder(gfx::Canvas* canvas);
+  virtual void OnPaintFocusBorder(gfx::Canvas* canvas);
   virtual View* GetViewForPoint(const gfx::Point& point);
   virtual View* GetViewForPoint(const gfx::Point& point,
                                 bool can_create_floating);

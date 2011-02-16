@@ -35,7 +35,7 @@ gfx::Size PanelScrollerHeader::GetPreferredSize() {
   return gfx::Size(size().width(), 18);
 }
 
-void PanelScrollerHeader::Paint(gfx::Canvas* canvas) {
+void PanelScrollerHeader::OnPaint(gfx::Canvas* canvas) {
   // TODO(brettw) fill this out with real styling.
   canvas->FillRectInt(0xFFFFFFFF, 0, 0, size().width(), size().height());
   canvas->DrawLineInt(0xFFE6E6E6, 0, size().height() - 1,

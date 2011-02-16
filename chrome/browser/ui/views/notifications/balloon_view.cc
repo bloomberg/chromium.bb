@@ -472,7 +472,7 @@ gfx::Rect BalloonViewImpl::GetContentsRectangle() const {
                    content_size.height());
 }
 
-void BalloonViewImpl::Paint(gfx::Canvas* canvas) {
+void BalloonViewImpl::OnPaint(gfx::Canvas* canvas) {
   DCHECK(canvas);
   // Paint the menu bar area white, with proper rounded corners.
   gfx::Path path;
@@ -490,8 +490,8 @@ void BalloonViewImpl::Paint(gfx::Canvas* canvas) {
   canvas->FillRectInt(kControlBarSeparatorLineColor,
       kLeftMargin, 1 + GetShelfHeight(), line_width, 1);
 
-  View::Paint(canvas);
-  PaintBorder(canvas);
+  View::OnPaint(canvas);
+  OnPaintBorder(canvas);
 }
 
 void BalloonViewImpl::Observe(NotificationType type,

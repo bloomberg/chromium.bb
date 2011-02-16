@@ -137,7 +137,7 @@ TranslateInfoBarDelegate* TranslateInfoBarBase::GetDelegate() {
   return delegate()->AsTranslateInfoBarDelegate();
 }
 
-void TranslateInfoBarBase::PaintBackground(gfx::Canvas* canvas) {
+void TranslateInfoBarBase::OnPaintBackground(gfx::Canvas* canvas) {
   // If we're not animating, simply paint the background for the current state.
   if (!background_color_animation_->is_animating()) {
     GetBackground().Paint(canvas, this);

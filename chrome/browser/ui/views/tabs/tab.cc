@@ -184,7 +184,7 @@ void Tab::DataChanged(const TabRendererData& old) {
 ////////////////////////////////////////////////////////////////////////////////
 // Tab, views::View overrides:
 
-void Tab::Paint(gfx::Canvas* canvas) {
+void Tab::OnPaint(gfx::Canvas* canvas) {
   // Don't paint if we're narrower than we can render correctly. (This should
   // only happen during animations).
   if (width() < GetMinimumUnselectedSize().width() && !data().mini)
@@ -298,8 +298,8 @@ void Tab::Layout() {
 
   // Certain UI elements within the Tab (the favicon, etc.) are not represented
   // as child Views (which is the preferred method).  Instead, these UI elements
-  // are drawn directly on the canvas from within Tab::Paint(). The Tab's child
-  // Views (for example, the Tab's close button which is a views::Button
+  // are drawn directly on the canvas from within Tab::OnPaint(). The Tab's
+  // child Views (for example, the Tab's close button which is a views::Button
   // instance) are automatically mirrored by the mirroring infrastructure in
   // views. The elements Tab draws directly on the canvas need to be manually
   // mirrored if the View's layout is right-to-left.

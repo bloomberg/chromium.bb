@@ -38,7 +38,7 @@ class ProgressBar : public View {
   virtual std::string GetClassName() const;
 
   // Overridden to paint
-  virtual void Paint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas);
 
   // Set and get the progress bar progress in range [0, kMaxProgress].
   virtual void SetProgress(int progress);

@@ -12,7 +12,7 @@ namespace views {
 
 static const SkColor kSeparatorColor = SkColorSetARGB(50, 00, 00, 00);
 
-void MenuSeparator::Paint(gfx::Canvas* canvas) {
+void MenuSeparator::OnPaint(gfx::Canvas* canvas) {
   canvas->DrawLineInt(kSeparatorColor, 0, height() / 2, width(), height() / 2);
 }
 

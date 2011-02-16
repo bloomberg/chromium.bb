@@ -114,12 +114,12 @@ bool NativeTextfieldViews::OnKeyReleased(const views::KeyEvent& e) {
   return false;
 }
 
-void NativeTextfieldViews::Paint(gfx::Canvas* canvas) {
+void NativeTextfieldViews::OnPaint(gfx::Canvas* canvas) {
   text_border_->set_has_focus(textfield_->HasFocus());
-  PaintBackground(canvas);
+  OnPaintBackground(canvas);
   PaintTextAndCursor(canvas);
   if (textfield_->draw_border())
-    PaintBorder(canvas);
+    OnPaintBorder(canvas);
 }
 
 void NativeTextfieldViews::OnBoundsChanged() {

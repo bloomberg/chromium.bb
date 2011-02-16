@@ -50,7 +50,7 @@ class AppInfoView : public views::View {
   void UpdateIcon(const SkBitmap& new_icon);
 
   // Overridden from views::View:
-  virtual void Paint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas);
 
  private:
   // Initializes the controls
@@ -155,7 +155,7 @@ void AppInfoView::UpdateIcon(const SkBitmap& new_icon) {
   icon_->SetImage(new_icon);
 }
 
-void AppInfoView::Paint(gfx::Canvas* canvas) {
+void AppInfoView::OnPaint(gfx::Canvas* canvas) {
   gfx::Rect bounds = GetLocalBounds();
 
   SkRect border_rect = {

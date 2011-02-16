@@ -121,7 +121,7 @@ void DraggedTabView::Update() {
 ///////////////////////////////////////////////////////////////////////////////
 // DraggedTabView, views::View overrides:
 
-void DraggedTabView::Paint(gfx::Canvas* canvas) {
+void DraggedTabView::OnPaint(gfx::Canvas* canvas) {
   if (show_contents_on_drag_)
     PaintDetachedView(canvas);
   else

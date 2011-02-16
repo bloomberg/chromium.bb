@@ -183,9 +183,9 @@ views::View* DownloadShelfView::GetDefaultFocusableChild() {
     return show_all_view_;
 }
 
-void DownloadShelfView::Paint(gfx::Canvas* canvas) {
-  PaintBackground(canvas);
-  PaintBorder(canvas);
+void DownloadShelfView::OnPaint(gfx::Canvas* canvas) {
+  OnPaintBackground(canvas);
+  OnPaintBorder(canvas);
 
   // Draw the focus rect here, since it's outside the bounds of the item.
   for (size_t i = 0; i < download_views_.size(); ++i) {
@@ -197,7 +197,7 @@ void DownloadShelfView::Paint(gfx::Canvas* canvas) {
   }
 }
 
-void DownloadShelfView::PaintBorder(gfx::Canvas* canvas) {
+void DownloadShelfView::OnPaintBorder(gfx::Canvas* canvas) {
   canvas->FillRectInt(kBorderColor, 0, 0, width(), 1);
 }
 

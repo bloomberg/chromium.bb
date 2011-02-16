@@ -34,7 +34,7 @@ class SadTabView : public views::View,
   virtual ~SadTabView() {}
 
   // Overridden from views::View:
-  virtual void Paint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas);
   virtual void Layout();
 
   // Overridden from views::LinkController:

@@ -324,9 +324,9 @@ bool Textfield::SkipDefaultKeyEventProcessing(const KeyEvent& e) {
   return false;
 }
 
-void Textfield::PaintFocusBorder(gfx::Canvas* canvas) {
+void Textfield::OnPaintFocusBorder(gfx::Canvas* canvas) {
   if (NativeViewHost::kRenderNativeControlFocus)
-    View::PaintFocusBorder(canvas);
+    View::OnPaintFocusBorder(canvas);
 }
 
 bool Textfield::OnKeyPressed(const views::KeyEvent& e) {

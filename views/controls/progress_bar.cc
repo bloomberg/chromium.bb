@@ -142,7 +142,7 @@ gfx::Size ProgressBar::GetPreferredSize() {
   return gfx::Size(100, 16);
 }
 
-void ProgressBar::Paint(gfx::Canvas* canvas) {
+void ProgressBar::OnPaint(gfx::Canvas* canvas) {
 #if defined(OS_CHROMEOS)
   const SkColor background_colors[] = {
     SkColorSetRGB(0xBB, 0xBB, 0xBB),

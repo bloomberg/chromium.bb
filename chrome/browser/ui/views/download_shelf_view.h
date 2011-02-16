@@ -49,7 +49,7 @@ class DownloadShelfView : public AccessiblePaneView,
   // Implementation of View.
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();
-  virtual void Paint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas);
 
   // Implementation of ui::AnimationDelegate.
   virtual void AnimationProgressed(const ui::Animation* animation);
@@ -96,7 +96,7 @@ class DownloadShelfView : public AccessiblePaneView,
   void AddDownloadView(DownloadItemView* view);
 
   // Paints the border.
-  void PaintBorder(gfx::Canvas* canvas);
+  void OnPaintBorder(gfx::Canvas* canvas);
 
   // Returns true if the shelf is wide enough to show the first download item.
   bool CanFitFirstDownloadItem();

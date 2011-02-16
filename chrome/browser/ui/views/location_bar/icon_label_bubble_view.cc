@@ -46,7 +46,7 @@ void IconLabelBubbleView::SetImage(const SkBitmap& bitmap) {
   image_->SetImage(bitmap);
 }
 
-void IconLabelBubbleView::Paint(gfx::Canvas* canvas) {
+void IconLabelBubbleView::OnPaint(gfx::Canvas* canvas) {
   background_painter_.Paint(width(), height(), canvas);
 }
 

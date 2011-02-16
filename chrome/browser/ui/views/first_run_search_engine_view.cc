@@ -155,7 +155,7 @@ void FirstRunSearchEngineView::ButtonPressed(views::Button* sender,
   MessageLoop::current()->Quit();
 }
 
-void FirstRunSearchEngineView::Paint(gfx::Canvas* canvas) {
+void FirstRunSearchEngineView::OnPaint(gfx::Canvas* canvas) {
   // Fill in behind the background image with the standard gray toolbar color.
   canvas->FillRectInt(SkColorSetRGB(237, 238, 237), 0, 0, width(),
                       background_image_->height());

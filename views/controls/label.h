@@ -72,11 +72,11 @@ class Label : public View {
   virtual std::string GetClassName() const { return kViewClassName; }
 
   // Overridden to paint
-  virtual void Paint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas);
 
   // If the mouse is over the label, and a mouse over background has been
   // specified, its used. Otherwise super's implementation is invoked.
-  virtual void PaintBackground(gfx::Canvas* canvas);
+  virtual void OnPaintBackground(gfx::Canvas* canvas);
 
   // Set the font.
   void SetFont(const gfx::Font& font);
