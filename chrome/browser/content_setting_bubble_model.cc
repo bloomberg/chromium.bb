@@ -197,6 +197,9 @@ class ContentSettingSingleRadioGroup
         &display_host_wide, NULL, NULL);
     std::string display_host(WideToUTF8(display_host_wide));
 
+    if (display_host.empty())
+      display_host = url.spec();
+
     const std::set<std::string>& resources =
         bubble_content().resource_identifiers;
 

@@ -185,3 +185,14 @@ TEST_F(ContentSettingBubbleModelTest, Geolocation) {
   setting_map->SetDefaultContentSetting(CONTENT_SETTING_BLOCK);
   CheckGeolocationBubble(2, true, false);
 }
+
+TEST_F(ContentSettingBubbleModelTest, FileURL) {
+  std::string file_url("file:///tmp/test.html");
+  NavigateAndCommit(GURL(file_url));
+  scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
+      ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+         contents(), profile_.get(), CONTENT_SETTINGS_TYPE_IMAGES));
+  std::string title =
+      content_setting_bubble_model->bubble_content().radio_group.radio_items[0];
+  ASSERT_NE(std::string::npos, title.find(file_url));
+}
