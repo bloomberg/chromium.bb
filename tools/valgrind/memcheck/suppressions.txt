@@ -3788,3 +3788,15 @@
    fun:_ZNK3gfx15PlatformFontGtk13GetNativeFontEv
    fun:_ZNK3gfx4Font13GetNativeFontEv
 }
+{
+   bug_73200
+   Memcheck:Addr4
+   fun:_ZN25TestingAutomationProvider33AutocompleteEditIsQueryInProgressEiPbS0_
+   fun:_Z16DispatchToMethodI25TestingAutomationProviderMS0_FviPbS1_EibbEvPT_T0_RK6Tuple1IT1_EP6Tuple2IT2_T3_E
+   fun:_ZN3IPC16MessageWithReplyI6Tuple1IiE6Tuple2IRbS4_EE8DispatchI25TestingAutomationProviderS8_MS8_FviPbS9_EEEbPKNS_7MessageEPT_PT0_T1_
+   fun:_ZN25TestingAutomationProvider17OnMessageReceivedERKN3IPC7MessageE
+   fun:_ZN3IPC12ChannelProxy7Context17OnDispatchMessageERKNS_7MessageE
+   fun:_ZN3IPC11SyncChannel20ReceivedSyncMsgQueue16DispatchMessagesEv
+   fun:_ZN3IPC11SyncChannel11SyncContext16DispatchMessagesEv
+   fun:_ZN3IPC11SyncChannel23OnWaitableEventSignaledEPN4base13WaitableEventE
+}
