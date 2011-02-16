@@ -95,7 +95,7 @@ class RequestHandler(object):
       unique.
     """
     if not self._params:
-      self._params = cgi.parse_qs(self._path[self._path.find('?')+1:])
+      self._params = cgi.parse_qs(self._path[self._path.find('?') + 1:])
 
     param_list = self._params.get(name, [])
     if len(param_list) == 1:
@@ -173,7 +173,6 @@ class RequestHandler(object):
     response = dm.DeviceManagementResponse()
     response.error = dm.DeviceManagementResponse.SUCCESS
     response.register_response.device_management_token = dmtoken
-    response.register_response.device_name = self.GetDeviceName()
 
     self.DumpMessage('Response', response)
 
@@ -498,7 +497,7 @@ class TestServer(object):
     dmtoken_chars = []
     while len(dmtoken_chars) < 32:
       dmtoken_chars.append(random.choice('0123456789abcdef'))
-    dmtoken= ''.join(dmtoken_chars)
+    dmtoken = ''.join(dmtoken_chars)
     self._registered_devices[dmtoken] = device_id
     return dmtoken
 

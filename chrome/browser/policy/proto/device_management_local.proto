@@ -10,14 +10,18 @@ package enterprise_management;
 
 import "device_management_backend.proto";
 
-// Wrapper around DevicePolicyResponse for caching on disk.
-message CachedDevicePolicyResponse {
+// Wrapper around CloudPolicyResponse/DevicePolicyResponse for caching on disk.
+message CachedCloudPolicyResponse {
   // The DevicePolicyResponse wrapped by this message.
-  optional DevicePolicyResponse policy = 1;
-  // Timestamp noting when this policy was cached.
+  optional DevicePolicyResponse device_policy = 1;
+  // Timestamp noting when the |unmanaged| flag was set. The data format is
+  // a unix timestamp. When caching (deprecated) DevicePolicyResponses, this
+  // timestamp also notes when the response was cached.
   optional uint64 timestamp = 2;
   // Flag that is set to true if this device is not managed.
   optional bool unmanaged = 3;
+  // The CloudPolicyResponse wrapped by this message.
+  optional CloudPolicyResponse cloud_policy = 4;
 }
 
 // Encapsulates a device ID and the associated device token.
