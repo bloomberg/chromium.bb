@@ -679,7 +679,7 @@ void SetCacheMode(bool enabled) {
   // Used in benchmarking,  Ignored for test_shell.
 }
 
-void ClearCache() {
+void ClearCache(bool preserve_ssl_entries) {
   // Used in benchmarking,  Ignored for test_shell.
 }
 

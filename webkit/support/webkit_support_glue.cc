@@ -72,7 +72,7 @@ void CloseCurrentConnections() {
 void SetCacheMode(bool enabled) {
 }
 
-void ClearCache() {
+void ClearCache(bool preserve_ssl_info) {
 }
 
 std::string GetProductVersion() {
