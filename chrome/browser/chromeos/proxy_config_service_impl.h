@@ -182,6 +182,13 @@ class ProxyConfigServiceImpl
   // Called from UI thread to retrieve proxy configuration in |config|.
   void UIGetProxyConfig(ProxyConfig* config);
 
+  // Called from UI thread to set flag to persist settings to device.
+  // Subsequent UISet* methods will use this flag, until UI calls it again with
+  // a different flag.
+  void UISetPersistToDevice(bool persist) {
+    persist_to_device_ = persist;
+  }
+
   // Called from UI thread to update proxy configuration for different modes.
   // Returns true if config is set properly and config service has proceeded to
   // start activating it on network stack and persisting it to device.
@@ -238,6 +245,9 @@ class ProxyConfigServiceImpl
 
   // True if config has been fetched from device or initialized properly.
   bool has_config_;
+
+  // True if settings are to be persisted to device.
+  bool persist_to_device_;
 
   // True if there's a pending operation to store proxy setting to device.
   bool persist_to_device_pending_;

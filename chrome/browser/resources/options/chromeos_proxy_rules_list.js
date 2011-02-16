@@ -18,7 +18,7 @@ cr.define('options.proxyexceptions', function() {
   ProxyExceptions.prototype = {
     __proto__: List.prototype,
 
-    pref: 'cros.proxy.ignorelist',
+    pref: 'cros.session.proxy.ignorelist',
 
     /** @inheritDoc */
     decorate: function() {

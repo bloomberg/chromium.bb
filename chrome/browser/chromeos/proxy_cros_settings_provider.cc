@@ -4,27 +4,29 @@
 
 #include "chrome/browser/chromeos/proxy_cros_settings_provider.h"
 
+#include "base/command_line.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_switches.h"
 
 namespace chromeos {
 
-static const char kProxyPacUrl[]         = "cros.proxy.pacurl";
-static const char kProxySingleHttp[]     = "cros.proxy.singlehttp";
-static const char kProxySingleHttpPort[] = "cros.proxy.singlehttpport";
-static const char kProxyHttpUrl[]        = "cros.proxy.httpurl";
-static const char kProxyHttpPort[]       = "cros.proxy.httpport";
-static const char kProxyHttpsUrl[]       = "cros.proxy.httpsurl";
-static const char kProxyHttpsPort[]      = "cros.proxy.httpsport";
-static const char kProxyType[]           = "cros.proxy.type";
-static const char kProxySingle[]         = "cros.proxy.single";
-static const char kProxyFtpUrl[]         = "cros.proxy.ftpurl";
-static const char kProxyFtpPort[]        = "cros.proxy.ftpport";
-static const char kProxySocks[]          = "cros.proxy.socks";
-static const char kProxySocksPort[]      = "cros.proxy.socksport";
-static const char kProxyIgnoreList[]     = "cros.proxy.ignorelist";
+static const char kProxyPacUrl[]         = "cros.session.proxy.pacurl";
+static const char kProxySingleHttp[]     = "cros.session.proxy.singlehttp";
+static const char kProxySingleHttpPort[] = "cros.session.proxy.singlehttpport";
+static const char kProxyHttpUrl[]        = "cros.session.proxy.httpurl";
+static const char kProxyHttpPort[]       = "cros.session.proxy.httpport";
+static const char kProxyHttpsUrl[]       = "cros.session.proxy.httpsurl";
+static const char kProxyHttpsPort[]      = "cros.session.proxy.httpsport";
+static const char kProxyType[]           = "cros.session.proxy.type";
+static const char kProxySingle[]         = "cros.session.proxy.single";
+static const char kProxyFtpUrl[]         = "cros.session.proxy.ftpurl";
+static const char kProxyFtpPort[]        = "cros.session.proxy.ftpport";
+static const char kProxySocks[]          = "cros.session.proxy.socks";
+static const char kProxySocksPort[]      = "cros.session.proxy.socksport";
+static const char kProxyIgnoreList[]     = "cros.session.proxy.ignorelist";
 
 //------------------ ProxyCrosSettingsProvider: public methods -----------------
 
@@ -40,6 +42,10 @@ void ProxyCrosSettingsProvider::DoSet(const std::string& path,
   SetCache(path, in_value);
 
   chromeos::ProxyConfigServiceImpl* config_service = GetConfigService();
+  // Don't persist settings to device for guest session.
+  config_service->UISetPersistToDevice(
+      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession));
+  // Retrieve proxy config.
   chromeos::ProxyConfigServiceImpl::ProxyConfig config;
   config_service->UIGetProxyConfig(&config);
 
@@ -279,7 +285,7 @@ bool ProxyCrosSettingsProvider::Get(const std::string& path,
 }
 
 bool ProxyCrosSettingsProvider::HandlesSetting(const std::string& path) {
-  return ::StartsWithASCII(path, "cros.proxy", true);
+  return ::StartsWithASCII(path, "cros.session.proxy", true);
 }
 
 //----------------- ProxyCrosSettingsProvider: private methods -----------------

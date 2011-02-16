@@ -5,27 +5,27 @@
     <div>
       <label class="radio">
         <input type="radio" id="directProxy" name="proxytype"
-          pref="cros.proxy.type" value="1">
+          pref="cros.session.proxy.type" value="1">
         <span i18n-content="proxyDirectInternetConnection"></span>
       </label>
       <label class="radio">
         <input type="radio" id="manualProxy" name="proxytype"
-            pref="cros.proxy.type" value="2">
+            pref="cros.session.proxy.type" value="2">
         <span i18n-content="proxyManual"></span>
       </label>
       <label class="checkbox">
-        <input id="proxyAllProtocols" type="checkbox" pref="cros.proxy.single">
+        <input id="proxyAllProtocols" type="checkbox" pref="cros.session.proxy.single">
         <span i18n-content="sameProxyProtocols"></span>
       </label>
       <div id="singleProxy">
         <table>
         <tr><td><span
             i18n-content="httpProxy"></span>
-          <input id="proxyHostSingleName" type="text" size="30" pref="cros.proxy.singlehttp" disabled>
+          <input id="proxyHostSingleName" type="text" size="30" pref="cros.session.proxy.singlehttp" disabled>
           </td><td>
           <span
             i18n-content="proxyPort"></span>
-          <input id="proxyHostSinglePort" type="text" size="5" pref="cros.proxy.singlehttpport" disabled>
+          <input id="proxyHostSinglePort" type="text" size="5" pref="cros.session.proxy.singlehttpport" disabled>
           </td></tr>
         </table>
       </div>
@@ -34,48 +34,48 @@
         <tr>
         <td><span
             i18n-content="httpProxy"></span></td><td>
-          <input id="proxyHostName" type="text" size="30" pref="cros.proxy.httpurl" disabled>
+          <input id="proxyHostName" type="text" size="30" pref="cros.session.proxy.httpurl" disabled>
         </td><td>
         <span
           i18n-content="proxyPort"></span></td><td>
-        <input id="proxyHostPort" type="text" size="5" pref="cros.proxy.httpport" disabled>
+        <input id="proxyHostPort" type="text" size="5" pref="cros.session.proxy.httpport" disabled>
         </td></tr>
         <tr>
         <td><span
           i18n-content="secureHttpProxy"></span></td><td>
-        <input id="secureProxyHostName" type="text" size="30" pref="cros.proxy.httpsurl" disabled>
+        <input id="secureProxyHostName" type="text" size="30" pref="cros.session.proxy.httpsurl" disabled>
         </td><td>
         <span
           i18n-content="proxyPort"></span></td><td>
-        <input id="secureProxyPort" type="text" size="5" pref="cros.proxy.httpsport" disabled>
+        <input id="secureProxyPort" type="text" size="5" pref="cros.session.proxy.httpsport" disabled>
         </td></tr>
         <tr>
         <td><span
             i18n-content="ftpProxy"></span></td><td>
-          <input id="ftpProxy" type="text" size="30" pref="cros.proxy.ftpurl" disabled>
+          <input id="ftpProxy" type="text" size="30" pref="cros.session.proxy.ftpurl" disabled>
           </td><td>
           <span
             i18n-content="proxyPort"></span></td><td>
-          <input id="ftpProxyPort" type="text" size="5" pref="cros.proxy.ftpport" disabled>
+          <input id="ftpProxyPort" type="text" size="5" pref="cros.session.proxy.ftpport" disabled>
         </td></tr>
         <tr>
         <td><span
             i18n-content="socksHost"></span></td><td>
-          <input id="socksHost" type="text" size="30" pref="cros.proxy.socks" disabled>
+          <input id="socksHost" type="text" size="30" pref="cros.session.proxy.socks" disabled>
           </td><td>
           <span
             i18n-content="proxyPort"></span></td><td>
-          <input id="socksPort" type="text" size="5" pref="cros.proxy.socksport" disabled>
+          <input id="socksPort" type="text" size="5" pref="cros.session.proxy.socksport" disabled>
         </td></tr>
         </table>
       </div>
       <label class="radio">
         <input type="radio" id="autoProxy" name="proxytype"
-            pref="cros.proxy.type" value="3">
+            pref="cros.session.proxy.type" value="3">
         <span i18n-content="proxyAutomatic"></span></label>
       <label><span
           i18n-content="proxyConfigUrl"></span>
-        <input id="proxyConfig" type="url" size="60" pref="cros.proxy.pacurl">
+        <input id="proxyConfig" type="url" size="60" pref="cros.session.proxy.pacurl">
       </label>
     </div>
   </section>

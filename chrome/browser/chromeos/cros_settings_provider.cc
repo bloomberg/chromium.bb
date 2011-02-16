@@ -6,14 +6,17 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/string_util.h"
 #include "chrome/common/chrome_switches.h"
 
 namespace chromeos {
 
 void CrosSettingsProvider::Set(const std::string& path, Value* value) {
-  // We don't allow changing any of the cros settings in the guest mode.
+  // We don't allow changing any of the cros settings without prefix
+  // "cros.session." in the guest mode.
   // It should not reach here from UI in the guest mode, but just in case.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession) &&
+      !::StartsWithASCII(path, "cros.session.", true)) {
     LOG(ERROR) << "Ignoring the guest request to change: " << path;
     return;
   }

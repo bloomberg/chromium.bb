@@ -392,6 +392,7 @@ bool ProxyConfigServiceImpl::ProxyConfig::DecodeManualProxy(
 ProxyConfigServiceImpl::ProxyConfigServiceImpl()
     : can_post_task_(false),
       has_config_(false),
+      persist_to_device_(true),
       persist_to_device_pending_(false) {
   // Start async fetch of proxy config from settings persisted on device.
   // TODO(kuan): retrieve config from policy and owner and merge them
@@ -415,6 +416,7 @@ ProxyConfigServiceImpl::ProxyConfigServiceImpl()
 ProxyConfigServiceImpl::ProxyConfigServiceImpl(const ProxyConfig& init_config)
     : can_post_task_(true),
       has_config_(true),
+      persist_to_device_(false),
       persist_to_device_pending_(false) {
   reference_config_ = init_config;
   // Update the IO-accessible copy in |cached_config_| as well.
@@ -435,7 +437,7 @@ bool ProxyConfigServiceImpl::UISetProxyConfigToDirect() {
   // Should be called from UI thread.
   CheckCurrentlyOnUIThread();
   reference_config_.mode = ProxyConfig::MODE_DIRECT;
-  OnUISetProxyConfig(true);
+  OnUISetProxyConfig(persist_to_device_);
   return true;
 }
 
@@ -443,7 +445,7 @@ bool ProxyConfigServiceImpl::UISetProxyConfigToAutoDetect() {
   // Should be called from UI thread.
   CheckCurrentlyOnUIThread();
   reference_config_.mode = ProxyConfig::MODE_AUTO_DETECT;
-  OnUISetProxyConfig(true);
+  OnUISetProxyConfig(persist_to_device_);
   return true;
 }
 
@@ -452,7 +454,7 @@ bool ProxyConfigServiceImpl::UISetProxyConfigToPACScript(const GURL& pac_url) {
   CheckCurrentlyOnUIThread();
   reference_config_.mode = ProxyConfig::MODE_PAC_SCRIPT;
   reference_config_.automatic_proxy.pac_url = pac_url;
-  OnUISetProxyConfig(true);
+  OnUISetProxyConfig(persist_to_device_);
   return true;
 }
 
@@ -462,7 +464,7 @@ bool ProxyConfigServiceImpl::UISetProxyConfigToSingleProxy(
   CheckCurrentlyOnUIThread();
   reference_config_.mode = ProxyConfig::MODE_SINGLE_PROXY;
   reference_config_.single_proxy.server = server;
-  OnUISetProxyConfig(true);
+  OnUISetProxyConfig(persist_to_device_);
   return true;
 }
 
@@ -477,7 +479,7 @@ bool ProxyConfigServiceImpl::UISetProxyConfigToProxyPerScheme(
   }
   reference_config_.mode = ProxyConfig::MODE_PROXY_PER_SCHEME;
   proxy->server = server;
-  OnUISetProxyConfig(true);
+  OnUISetProxyConfig(persist_to_device_);
   return true;
 }
 
@@ -494,7 +496,7 @@ bool ProxyConfigServiceImpl::UISetProxyConfigBypassRules(
     return false;
   }
   reference_config_.bypass_rules = bypass_rules;
-  OnUISetProxyConfig(true);
+  OnUISetProxyConfig(persist_to_device_);
   return true;
 }
 
