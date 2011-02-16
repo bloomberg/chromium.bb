@@ -90,8 +90,10 @@ std::wstring BookmarkMenuController::GetTooltipText(
   DCHECK(menu_id_to_node_map_.find(id) != menu_id_to_node_map_.end());
 
   const BookmarkNode* node = menu_id_to_node_map_[id];
-  return BookmarkBarView::CreateToolTipForURLAndTitle(
-      screen_loc, node->GetURL(), UTF16ToWide(node->GetTitle()), profile_);
+  if (node->type() == BookmarkNode::URL)
+    return BookmarkBarView::CreateToolTipForURLAndTitle(
+        screen_loc, node->GetURL(), UTF16ToWide(node->GetTitle()), profile_);
+  return std::wstring();
 }
 
 bool BookmarkMenuController::IsTriggerableEvent(const views::MouseEvent& e) {
