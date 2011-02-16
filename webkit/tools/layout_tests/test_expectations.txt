@@ -5,26 +5,3 @@
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
 
-// Registering the fonts for this test causes other processes (Adium, Firefox)
-// to spin and become unresponsive or crash.
-BUGWK50709 MAC : fast/css/font-weight-1.html = IMAGE+TEXT
-
-BUG_LOISLO MAC DEBUG : svg/text/font-size-below-point-five.svg = TEXT
-
-// can be removed after roll to r78031
-BUG_LOISLO MAC : canvas/philip/tests/2d.gradient.radial.cone.front.html = TEXT
-BUG_LOISLO MAC : canvas/philip/tests/2d.gradient.radial.inside2.html = TEXT
-BUG_LOISLO MAC : canvas/philip/tests/2d.gradient.radial.inside3.html = TEXT
-BUG_LOISLO MAC : canvas/philip/tests/2d.gradient.radial.outside1.html = TEXT
-BUG_LOISLO MAC : canvas/philip/tests/2d.line.cap.closed.html = TEXT
-BUG_LOISLO MAC : canvas/philip/tests/2d.line.join.parallel.html = TEXT
-BUG_LOISLO MAC : canvas/philip/tests/2d.line.miter.lineedge.html = TEXT
-BUG_LOISLO MAC : canvas/philip/tests/2d.path.rect.winding.html = TEXT
-BUG_LOISLO MAC : canvas/philip/tests/2d.shadow.enable.x.html = TEXT
-BUG_LOISLO MAC : canvas/philip/tests/2d.shadow.enable.y.html = TEXT
-BUG_LOISLO MAC : canvas/philip/tests/2d.strokeRect.zero.4.html = TEXT
-
-BUG_HAMAJI WIN LINUX : fast/gradients/css3-repeating-end-fill.html = TEXT
-
-BUGWK54387 : fast/js/kde/math.html = TEXT
-
