@@ -202,6 +202,10 @@ void ExistingUserController::CreateAccount() {
   LoginAsGuest();
 }
 
+string16 ExistingUserController::GetConnectedNetworkName() {
+  return GetCurrentNetworkName(CrosLibrary::Get()->GetNetworkLibrary());
+}
+
 void ExistingUserController::FixCaptivePortal() {
   guest_mode_url_ = GURL(kCaptivePortalLaunchURL);
   LoginAsGuest();
@@ -343,7 +347,10 @@ void ExistingUserController::OnLoginFailure(const LoginFailure& failure) {
       // 1. ClientLogin returns ServiceUnavailable code.
       // 2. Internet connectivity may be behind the captive portal.
       // Suggesting user to try sign in to a portal in Guest mode.
-      ShowError(IDS_LOGIN_ERROR_CAPTIVE_PORTAL, error);
+      if (UserCrosSettingsProvider::cached_allow_guest())
+        ShowError(IDS_LOGIN_ERROR_CAPTIVE_PORTAL, error);
+      else
+        ShowError(IDS_LOGIN_ERROR_CAPTIVE_PORTAL_NO_GUEST_MODE, error);
     } else {
       if (!UserManager::Get()->IsKnownUser(last_login_attempt_username_))
         ShowError(IDS_LOGIN_ERROR_AUTHENTICATING_NEW, error);

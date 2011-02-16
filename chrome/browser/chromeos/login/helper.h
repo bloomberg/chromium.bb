@@ -8,6 +8,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_HELPER_H_
 #pragma once
 
+#include "base/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "views/controls/button/native_button.h"
 #include "views/view.h"
@@ -31,6 +32,8 @@ class Widget;
 }  // namespace views
 
 namespace chromeos {
+
+class NetworkLibrary;
 
 // View that provides interface for start/stop throbber above the view.
 class ThrobberHostView : public views::View {
@@ -93,6 +96,13 @@ void CorrectTextfieldFontSize(views::Textfield* textfield);
 
 // Returns URL used for account recovery.
 GURL GetAccountRecoveryHelpUrl();
+
+// Returns name of the currently connected network.
+// If there are no connected networks, returns name of the network
+// that is in the "connecting" state. Otherwise empty string is returned.
+// If there are multiple connected networks, network priority:
+// Ethernet > WiFi > Cellular. Same for connecting network.
+string16 GetCurrentNetworkName(NetworkLibrary* network_library);
 
 // Define the constants in |login| namespace to avoid potential
 // conflict with other chromeos components.

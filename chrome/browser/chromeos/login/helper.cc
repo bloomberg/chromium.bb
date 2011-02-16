@@ -4,10 +4,13 @@
 
 #include "chrome/browser/chromeos/login/helper.h"
 
+#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/google/google_util.h"
 #include "googleurl/src/gurl.h"
+#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
 #include "views/controls/button/menu_button.h"
@@ -184,6 +187,27 @@ void CorrectTextfieldFontSize(views::Textfield* textfield) {
 
 GURL GetAccountRecoveryHelpUrl() {
   return google_util::AppendGoogleLocaleParam(GURL(kAccountRecoveryHelpUrl));
+}
+
+string16 GetCurrentNetworkName(NetworkLibrary* network_library) {
+  if (!network_library)
+    return string16();
+
+  if (network_library->ethernet_connected()) {
+    return l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
+  } else if (network_library->wifi_connected()) {
+    return ASCIIToUTF16(network_library->wifi_network()->name());
+  } else if (network_library->cellular_connected()) {
+    return ASCIIToUTF16(network_library->cellular_network()->name());
+  } else if (network_library->ethernet_connecting()) {
+    return l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
+  } else if (network_library->wifi_connecting()) {
+    return ASCIIToUTF16(network_library->wifi_network()->name());
+  } else if (network_library->cellular_connecting()) {
+    return ASCIIToUTF16(network_library->cellular_network()->name());
+  } else {
+    return string16();
+  }
 }
 
 namespace login {

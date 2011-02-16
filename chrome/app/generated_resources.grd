@@ -11232,10 +11232,13 @@ This web page was killed, either because Chrome ran out of memory, or you chose 
         Hit Shift-Alt to switch keyboard layout
       </message>
       <message name="IDS_LOGIN_ERROR_CAPTIVE_PORTAL" desc="An error message shown when we suggest that user may be behind the captive portal.">
-        There is a problem with your Internet connectivity. Please launch a guest session to fix this.
+        Before signing in, please start a Guest session to activate the network <ph name="NETWORK_ID">$1<ex>Public Wifi</ex></ph>
       </message>
       <message name="IDS_LOGIN_FIX_CAPTIVE_PORTAL" desc="An link text to fix Internet connection (captive portal) in guest mode.">
-        Launch guest session
+        Start a Guest session
+      </message>
+      <message name="IDS_LOGIN_ERROR_CAPTIVE_PORTAL_NO_GUEST_MODE" desc="An error message shown when we suggest that user may be behind the captive portal but Guest mode is disabled.">
+        Your password cannot be verified on this current network. Please select another network.
       </message>
       <message name="IDS_NOTIFICATION_PANEL_TITLE" desc="Text for the title of the notification panel.">
         Notifications

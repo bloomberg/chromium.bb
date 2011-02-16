@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/string16.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "ui/gfx/native_widget_types.h"
@@ -23,6 +24,9 @@ class LoginDisplay {
    public:
     // Create new Google account.
     virtual void CreateAccount() = 0;
+
+    // Returns name of the currently connected network.
+    virtual string16 GetConnectedNetworkName() = 0;
 
     // Users decides to sign in into captive portal.
     virtual void FixCaptivePortal() = 0;

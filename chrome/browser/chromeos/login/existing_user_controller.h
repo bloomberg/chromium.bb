@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/scoped_ptr.h"
+#include "base/string16.h"
 #include "base/task.h"
 #include "base/timer.h"
 #include "chrome/browser/chromeos/login/background_view.h"
@@ -59,6 +60,7 @@ class ExistingUserController : public LoginDisplay::Delegate,
 
   // LoginDisplay::Delegate: implementation
   virtual void CreateAccount();
+  virtual string16 GetConnectedNetworkName();
   virtual void FixCaptivePortal();
   virtual void Login(const std::string& username,
                      const std::string& password);
