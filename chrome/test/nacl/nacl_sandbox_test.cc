@@ -38,8 +38,7 @@ NaClSandboxTest::NaClSandboxTest() {
 NaClSandboxTest::~NaClSandboxTest() {
 }
 
-// Temporarily disabled, crbug/73172
-TEST_F(NaClSandboxTest, DISABLED_NaClOuterSBTest) {
+TEST_F(NaClSandboxTest, NaClOuterSBTest) {
   // Load a helloworld .nexe to trigger the nacl loader test.
   FilePath test_file(kANaClHtmlFile);
   RunTest(test_file, TestTimeouts::action_max_timeout_ms());
