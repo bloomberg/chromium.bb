@@ -68,8 +68,13 @@ const char* SyncResourcesSource::kInvalidPasswordHelpUrl =
     "http://www.google.com/support/accounts/bin/answer.py?ctx=ch&answer=27444";
 const char* SyncResourcesSource::kCanNotAccessAccountUrl =
     "http://www.google.com/support/accounts/bin/answer.py?answer=48598";
+#if defined(OS_CHROMEOS)
 const char* SyncResourcesSource::kEncryptionHelpUrl =
-    "http://www.google.com/support/chrome/bin/answer.py?answer=165139";
+    "http://www.google.com/support/chromeos/bin/answer.py?answer=1181035";
+#else
+const char* SyncResourcesSource::kEncryptionHelpUrl =
+    "http://www.google.com/support/chrome/bin/answer.py?answer=1181035";
+#endif
 const char* SyncResourcesSource::kCreateNewAccountUrl =
     "https://www.google.com/accounts/NewAccount?service=chromiumsync";
 
