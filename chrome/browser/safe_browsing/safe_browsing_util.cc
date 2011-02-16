@@ -162,11 +162,18 @@ void SBEntry::SetFullHashAt(int index, const SBFullHash& full_hash) {
 
 namespace safe_browsing_util {
 
+// Listnames that browser can process.
 const char kMalwareList[] = "goog-malware-shavar";
 const char kPhishingList[] = "goog-phish-shavar";
-
 const char kBinUrlList[] = "goog-badbinurl-shavar";
 const char kBinHashList[] = "goog-badbinhash-shavar";
+
+// Keywords to identify a list type from listname.
+// TODO(lzheng): check if this can be replaced by full listnames.
+const char kMalwareListKey[] = "-malware-";
+const char kPhishingListKey[] = "-phish-";
+const char kBinUrlListKey[] = "-badbinurl-";
+const char kBinHashListKey[] = "-badbinhash-";
 
 int GetListId(const std::string& name) {
   int id;
@@ -409,8 +416,17 @@ void GeneratePathsToCheck(const GURL& url, std::vector<std::string>* paths) {
     paths->push_back(path + "?" + query);
 }
 
-int CompareFullHashes(const GURL& url,
-                      const std::vector<SBFullHashResult>& full_hashes) {
+int GetHashIndex(const SBFullHash& hash,
+                 const std::vector<SBFullHashResult>& full_hashes) {
+  for (size_t i = 0; i < full_hashes.size(); ++i) {
+    if (hash == full_hashes[i].hash)
+      return static_cast<int>(i);
+  }
+  return -1;
+}
+
+int GetUrlHashIndex(const GURL& url,
+                    const std::vector<SBFullHashResult>& full_hashes) {
   if (full_hashes.empty())
     return -1;
 
@@ -424,11 +440,8 @@ int CompareFullHashes(const GURL& url,
       base::SHA256HashString(hosts[h] + paths[p],
                              key.full_hash,
                              sizeof(SBFullHash));
-
-      for (size_t i = 0; i < full_hashes.size(); ++i) {
-        if (key == full_hashes[i].hash)
-          return static_cast<int>(i);
-      }
+      int index = GetHashIndex(key, full_hashes);
+      if (index != -1) return index;
     }
   }
 
@@ -436,15 +449,19 @@ int CompareFullHashes(const GURL& url,
 }
 
 bool IsPhishingList(const std::string& list_name) {
-  return list_name.find("-phish-") != std::string::npos;
+  return list_name.find(kPhishingListKey) != std::string::npos;
 }
 
 bool IsMalwareList(const std::string& list_name) {
-  return list_name.find("-malware-") != std::string::npos;
+  return list_name.find(kMalwareListKey) != std::string::npos;
 }
 
 bool IsBadbinurlList(const std::string& list_name) {
-  return list_name.find("-badbinurl-") != std::string::npos;
+  return list_name.find(kBinUrlListKey) != std::string::npos;
+}
+
+bool IsBadbinhashList(const std::string& list_name) {
+  return list_name.find(kBinHashListKey) != std::string::npos;
 }
 
 static void DecodeWebSafe(std::string* decoded) {
@@ -501,6 +518,11 @@ GURL GeneratePhishingReportUrl(const std::string& report_page,
       StringPrintf(kReportParams, client_name.c_str(), continue_esc.c_str(),
                    current_esc.c_str()));
   return google_util::AppendGoogleLocaleParam(report_url);
+}
+
+void StringToSBFullHash(const std::string& hash_in, SBFullHash* hash_out) {
+  DCHECK_EQ(static_cast<size_t>(base::SHA256_LENGTH), hash_in.size());
+  memcpy(hash_out->full_hash, hash_in.data(), base::SHA256_LENGTH);
 }
 
 }  // namespace safe_browsing_util

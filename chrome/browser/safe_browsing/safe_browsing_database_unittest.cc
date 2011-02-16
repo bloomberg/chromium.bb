@@ -1131,32 +1131,27 @@ TEST_F(SafeBrowsingDatabaseTest, ContainsDownloadUrl) {
   database_->UpdateFinished(true);
 
   const Time now = Time::Now();
-  std::vector<SBPrefix> prefix_hits;
+  SBPrefix prefix_hit;
   std::string matching_list;
 
   EXPECT_TRUE(database_->ContainsDownloadUrl(
-      GURL(std::string("http://") + kEvil1Url1), &prefix_hits));
-  EXPECT_EQ(prefix_hits[0], Sha256Prefix(kEvil1Url1));
-  EXPECT_EQ(prefix_hits.size(), 1U);
+      GURL(std::string("http://") + kEvil1Url1), &prefix_hit));
+  EXPECT_EQ(prefix_hit, Sha256Prefix(kEvil1Url1));
 
   EXPECT_TRUE(database_->ContainsDownloadUrl(
-      GURL(std::string("http://") + kEvil1Url2), &prefix_hits));
-  EXPECT_EQ(prefix_hits[0], Sha256Prefix(kEvil1Url2));
-  EXPECT_EQ(prefix_hits.size(), 1U);
+      GURL(std::string("http://") + kEvil1Url2), &prefix_hit));
+  EXPECT_EQ(prefix_hit, Sha256Prefix(kEvil1Url2));
 
   EXPECT_TRUE(database_->ContainsDownloadUrl(
-      GURL(std::string("https://") + kEvil1Url2), &prefix_hits));
-  EXPECT_EQ(prefix_hits[0], Sha256Prefix(kEvil1Url2));
-  EXPECT_EQ(prefix_hits.size(), 1U);
+      GURL(std::string("https://") + kEvil1Url2), &prefix_hit));
+  EXPECT_EQ(prefix_hit, Sha256Prefix(kEvil1Url2));
 
   EXPECT_TRUE(database_->ContainsDownloadUrl(
-      GURL(std::string("ftp://") + kEvil1Url2), &prefix_hits));
-  EXPECT_EQ(prefix_hits[0], Sha256Prefix(kEvil1Url2));
-  EXPECT_EQ(prefix_hits.size(), 1U);
+      GURL(std::string("ftp://") + kEvil1Url2), &prefix_hit));
+  EXPECT_EQ(prefix_hit, Sha256Prefix(kEvil1Url2));
 
   EXPECT_FALSE(database_->ContainsDownloadUrl(GURL("http://www.randomevil.com"),
-                                              &prefix_hits));
-  EXPECT_EQ(prefix_hits.size(), 0U);
+                                              &prefix_hit));
   database_.reset();
 }
 
@@ -1259,7 +1254,10 @@ TEST_F(SafeBrowsingDatabaseTest, SameHostEntriesOkay) {
       &listname, &prefixes, &full_hashes, now));
 }
 
-TEST_F(SafeBrowsingDatabaseTest, BinHashEntries) {
+TEST_F(SafeBrowsingDatabaseTest, BinHashInsertLookup) {
+  const SBPrefix kPrefix1 = 0x31313131;
+  const SBPrefix kPrefix2 = 0x32323232;
+  const SBPrefix kPrefix3 = 0x33333333;
   database_.reset();
   MessageLoop loop(MessageLoop::TYPE_DEFAULT);
   SafeBrowsingStoreFile* browse_store = new SafeBrowsingStoreFile();
@@ -1270,9 +1268,9 @@ TEST_F(SafeBrowsingDatabaseTest, BinHashEntries) {
   SBChunkList chunks;
   SBChunk chunk;
   // Insert one host.
-  InsertAddChunkHostPrefixValue(&chunk, 1, 0, 0x31313131);
+  InsertAddChunkHostPrefixValue(&chunk, 1, 0, kPrefix1);
   // Insert a second host, which has the same host prefix as the first one.
-  InsertAddChunkHostPrefixValue(&chunk, 1, 0, 0x32323232);
+  InsertAddChunkHostPrefixValue(&chunk, 1, 0, kPrefix2);
   chunks.push_back(chunk);
 
   // Insert the testing chunks into database.
@@ -1287,8 +1285,9 @@ TEST_F(SafeBrowsingDatabaseTest, BinHashEntries) {
   EXPECT_EQ("1", lists[3].adds);
   EXPECT_TRUE(lists[3].subs.empty());
 
-  // TODO(lzheng): Query database and verifies the prefixes once that API
-  // database is available in database.
+  EXPECT_TRUE(database_->ContainsDownloadHashPrefix(kPrefix1));
+  EXPECT_TRUE(database_->ContainsDownloadHashPrefix(kPrefix2));
+  EXPECT_FALSE(database_->ContainsDownloadHashPrefix(kPrefix3));
   database_.reset();
 }
 

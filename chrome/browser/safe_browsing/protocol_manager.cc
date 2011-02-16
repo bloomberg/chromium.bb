@@ -126,9 +126,15 @@ SafeBrowsingProtocolManager::SafeBrowsingProtocolManager(
 }
 
 // static
-void SafeBrowsingProtocolManager::RecordGetHashResult(ResultType result_type) {
-  UMA_HISTOGRAM_ENUMERATION("SB2.GetHashResult", result_type,
-                            GET_HASH_RESULT_MAX);
+void SafeBrowsingProtocolManager::RecordGetHashResult(
+    bool is_download, ResultType result_type) {
+  if (is_download) {
+    UMA_HISTOGRAM_ENUMERATION("SB2.GetHashResultDownload", result_type,
+                              GET_HASH_RESULT_MAX);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("SB2.GetHashResult", result_type,
+                              GET_HASH_RESULT_MAX);
+  }
 }
 
 SafeBrowsingProtocolManager::~SafeBrowsingProtocolManager() {
@@ -231,9 +237,9 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
       // For tracking our GetHash false positive (204) rate, compared to real
       // (200) responses.
       if (response_code == 200)
-        RecordGetHashResult(GET_HASH_STATUS_200);
+        RecordGetHashResult(check->is_download, GET_HASH_STATUS_200);
       else
-        RecordGetHashResult(GET_HASH_STATUS_204);
+        RecordGetHashResult(check->is_download, GET_HASH_STATUS_204);
       can_cache = true;
       gethash_error_count_ = 0;
       gethash_back_off_mult_ = 1;

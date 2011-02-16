@@ -74,7 +74,7 @@ void DownloadResourceHandler::OnDownloadUrlCheckResult(
   UMA_HISTOGRAM_TIMES("SB2.DownloadUrlCheckDuration",
                       base::TimeTicks::Now() - download_start_time_);
 
-  if (result == SafeBrowsingService::BINARY_MALWARE) {
+  if (result == SafeBrowsingService::BINARY_MALWARE_URL) {
     // TODO(lzheng): More UI work to show warnings properly on download shelf.
     DLOG(WARNING) << "This url leads to a malware downloading: "
                   << url.spec();

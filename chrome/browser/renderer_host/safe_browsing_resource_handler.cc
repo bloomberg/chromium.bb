@@ -29,7 +29,7 @@ SafeBrowsingResourceHandler::SafeBrowsingResourceHandler(
     ResourceDispatcherHost* resource_dispatcher_host)
     : state_(STATE_NONE),
       defer_state_(DEFERRED_NONE),
-      safe_browsing_result_(SafeBrowsingService::URL_SAFE),
+      safe_browsing_result_(SafeBrowsingService::SAFE),
       deferred_request_id_(-1),
       next_handler_(handler),
       render_process_host_id_(render_process_host_id),
@@ -89,7 +89,7 @@ void SafeBrowsingResourceHandler::OnCheckUrlTimeout() {
   CHECK(state_ == STATE_CHECKING_URL);
   CHECK(defer_state_ != DEFERRED_NONE);
   safe_browsing_->CancelCheck(this);
-  OnBrowseUrlCheckResult(deferred_url_, SafeBrowsingService::URL_SAFE);
+  OnBrowseUrlCheckResult(deferred_url_, SafeBrowsingService::SAFE);
 }
 
 bool SafeBrowsingResourceHandler::OnWillStart(int request_id,
@@ -149,7 +149,7 @@ void SafeBrowsingResourceHandler::OnBrowseUrlCheckResult(
   safe_browsing_result_ = result;
   state_ = STATE_NONE;
 
-  if (result == SafeBrowsingService::URL_SAFE) {
+  if (result == SafeBrowsingService::SAFE) {
     // Log how much time the safe browsing check cost us.
     base::TimeDelta pause_delta;
     pause_delta = base::TimeTicks::Now() - url_check_start_time_;
@@ -195,7 +195,7 @@ void SafeBrowsingResourceHandler::OnBlockingPageComplete(bool proceed) {
   state_ = STATE_NONE;
 
   if (proceed) {
-    safe_browsing_result_ = SafeBrowsingService::URL_SAFE;
+    safe_browsing_result_ = SafeBrowsingService::SAFE;
     ResumeRequest();
   } else {
     rdh_->CancelRequest(render_process_host_id_, deferred_request_id_, false);
@@ -219,7 +219,7 @@ bool SafeBrowsingResourceHandler::CheckUrl(const GURL& url) {
   CHECK(state_ == STATE_NONE);
   bool succeeded_synchronously = safe_browsing_->CheckBrowseUrl(url, this);
   if (succeeded_synchronously) {
-    safe_browsing_result_ = SafeBrowsingService::URL_SAFE;
+    safe_browsing_result_ = SafeBrowsingService::SAFE;
     safe_browsing_->LogPauseDelay(base::TimeDelta());  // No delay.
     return true;
   }

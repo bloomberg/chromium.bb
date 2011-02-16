@@ -35,21 +35,24 @@ class FakeSafeBrowsingService :  public SafeBrowsingService {
   // can synchronously determine that the url is safe, CheckUrl returns true.
   // Otherwise it returns false, and "client" is called asynchronously with the
   // result when it is ready.
-  // Overrides SafeBrowsingService::CheckUrl.
+  // Overrides SafeBrowsingService::CheckBrowseUrl.
   virtual bool CheckBrowseUrl(const GURL& gurl, Client* client) {
-    const std::string& url = gurl.spec();
-    if (badurls[url] == URL_SAFE)
+    if (badurls[gurl.spec()] == SAFE)
       return true;
 
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(this, &FakeSafeBrowsingService::OnCheckDone,
-                          url, client));
+        NewRunnableMethod(this, &FakeSafeBrowsingService::OnCheckBrowseURLDone,
+                          gurl, client));
     return false;
   }
 
-  void OnCheckDone(std::string url, Client* client) {
-    client->OnSafeBrowsingResult(GURL(url), badurls[url]);
+  void OnCheckBrowseURLDone(const GURL& gurl, Client* client) {
+    SafeBrowsingService::SafeBrowsingCheck check;
+    check.url.reset(new GURL(gurl));
+    check.client = client;
+    check.result = badurls[gurl.spec()];
+    client->OnSafeBrowsingResult(check);
   }
 
   void AddURLResult(const GURL& url, UrlCheckResult checkresult) {
@@ -114,8 +117,9 @@ class SafeBrowsingBlockingPageTest : public InProcessBrowserTest,
 
   // SafeBrowsingService::Client implementation.
   virtual void OnSafeBrowsingResult(
-      const GURL& url, SafeBrowsingService::UrlCheckResult result) {
+      const SafeBrowsingService::SafeBrowsingCheck& check) {
   }
+
   virtual void OnBlockingPageComplete(bool proceed) {
   }
 

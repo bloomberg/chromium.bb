@@ -280,7 +280,7 @@ TEST(SafeBrowsingUtilTest, CanonicalizeUrl) {
   }
 }
 
-TEST(SafeBrowsingUtilTest, FullHashCompare) {
+TEST(SafeBrowsingUtilTest, GetUrlHashIndex) {
   GURL url("http://www.evil.com/phish.html");
   SBFullHashResult full_hash;
   base::SHA256HashString(url.host() + url.path(),
@@ -289,10 +289,10 @@ TEST(SafeBrowsingUtilTest, FullHashCompare) {
   std::vector<SBFullHashResult> full_hashes;
   full_hashes.push_back(full_hash);
 
-  EXPECT_EQ(safe_browsing_util::CompareFullHashes(url, full_hashes), 0);
+  EXPECT_EQ(safe_browsing_util::GetUrlHashIndex(url, full_hashes), 0);
 
   url = GURL("http://www.evil.com/okay_path.html");
-  EXPECT_EQ(safe_browsing_util::CompareFullHashes(url, full_hashes), -1);
+  EXPECT_EQ(safe_browsing_util::GetUrlHashIndex(url, full_hashes), -1);
 }
 
 TEST(SafeBrowsingUtilTest, ListIdListNameConversion) {
@@ -333,4 +333,13 @@ TEST(SafeBrowsingUtilTest, ListIdVerification) {
   EXPECT_EQ(1, safe_browsing_util::PHISH % 2);
   EXPECT_EQ(0, safe_browsing_util::BINURL %2);
   EXPECT_EQ(1, safe_browsing_util::BINHASH % 2);
+}
+
+TEST(SafeBrowsingUtilTest, StringToSBFullHash) {
+  // 31 chars plus the last \0 as full_hash.
+  const std::string hash_in = "12345678902234567890323456789012";
+  SBFullHash hash_out;
+  safe_browsing_util::StringToSBFullHash(hash_in, &hash_out);
+  EXPECT_EQ(0x34333231, hash_out.prefix);
+  EXPECT_EQ(0, memcmp(hash_in.data(), hash_out.full_hash, sizeof(SBFullHash)));
 }

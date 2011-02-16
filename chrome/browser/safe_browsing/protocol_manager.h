@@ -188,8 +188,10 @@ class SafeBrowsingProtocolManager : public URLFetcher::Delegate {
     GET_HASH_RESULT_MAX
   };
 
-  // Record a GetHash result.
-  static void RecordGetHashResult(ResultType result_type);
+  // Record a GetHash result. |is_download| indicates if the get
+  // hash is triggered by download related lookup.
+  static void RecordGetHashResult(bool is_download,
+                                  ResultType result_type);
 
  protected:
   // Constructs a SafeBrowsingProtocolManager for |sb_service| that issues

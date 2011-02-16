@@ -427,28 +427,47 @@ bool SafeBrowsingDatabaseNew::ContainsBrowseUrl(
   return true;
 }
 
-bool SafeBrowsingDatabaseNew::ContainsDownloadUrl(
-    const GURL& url, std::vector<SBPrefix>* prefix_hits) {
-  DCHECK_EQ(creation_loop_, MessageLoop::current());
-  prefix_hits->clear();
-
-  // Ignore this check when download checking is not enabled.
-  if (!download_store_.get()) return false;
-
-  SBPrefix prefix;
-  GetDownloadUrlPrefix(url, &prefix);
-
+bool SafeBrowsingDatabaseNew::MatchDownloadAddPrefixes(
+    int list_bit, const SBPrefix& prefix, SBPrefix* prefix_hit) {
   std::vector<SBAddPrefix> add_prefixes;
   download_store_->GetAddPrefixes(&add_prefixes);
   for (size_t i = 0; i < add_prefixes.size(); ++i) {
     if (prefix == add_prefixes[i].prefix &&
-        GetListIdBit(add_prefixes[i].chunk_id) ==
-        safe_browsing_util::BINURL % 2) {
-      prefix_hits->push_back(prefix);
+        GetListIdBit(add_prefixes[i].chunk_id) == list_bit) {
+      *prefix_hit = prefix;
       return true;
     }
   }
   return false;
+}
+
+bool SafeBrowsingDatabaseNew::ContainsDownloadUrl(const GURL& url,
+                                                  SBPrefix* prefix_hit) {
+  DCHECK_EQ(creation_loop_, MessageLoop::current());
+
+  // Ignore this check when download checking is not enabled.
+  if (!download_store_.get())
+    return false;
+
+  SBPrefix prefix;
+  GetDownloadUrlPrefix(url, &prefix);
+  return MatchDownloadAddPrefixes(safe_browsing_util::BINURL % 2,
+                                  prefix,
+                                  prefix_hit);
+}
+
+bool SafeBrowsingDatabaseNew::ContainsDownloadHashPrefix(
+    const SBPrefix& prefix) {
+  DCHECK_EQ(creation_loop_, MessageLoop::current());
+
+  // Ignore this check when download store is not available.
+  if (!download_store_.get())
+    return false;
+
+  SBPrefix prefix_hit;
+  return MatchDownloadAddPrefixes(safe_browsing_util::BINHASH % 2,
+                                  prefix,
+                                  &prefix_hit);
 }
 
 // Helper to insert entries for all of the prefixes or full hashes in

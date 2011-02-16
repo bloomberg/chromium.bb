@@ -289,15 +289,19 @@ void GenerateHostsToCheck(const GURL& url, std::vector<std::string>* hosts);
 // Given a URL, returns all the paths we need to check.
 void GeneratePathsToCheck(const GURL& url, std::vector<std::string>* paths);
 
+int GetHashIndex(const SBFullHash& hash,
+                 const std::vector<SBFullHashResult>& full_hashes);
+
 // Given a URL, compare all the possible host + path full hashes to the set of
 // provided full hashes.  Returns the index of the match if one is found, or -1
 // otherwise.
-int CompareFullHashes(const GURL& url,
-                      const std::vector<SBFullHashResult>& full_hashes);
+int GetUrlHashIndex(const GURL& url,
+                    const std::vector<SBFullHashResult>& full_hashes);
 
 bool IsPhishingList(const std::string& list_name);
 bool IsMalwareList(const std::string& list_name);
 bool IsBadbinurlList(const std::string& list_name);
+bool IsBadbinhashList(const std::string& list_name);
 
 // Returns 'true' if 'mac' can be verified using 'key' and 'data'.
 bool VerifyMAC(const std::string& key,
@@ -307,6 +311,8 @@ bool VerifyMAC(const std::string& key,
 
 GURL GeneratePhishingReportUrl(const std::string& report_page,
                                const std::string& url_to_report);
+
+void StringToSBFullHash(const std::string& hash_in, SBFullHash* hash_out);
 
 }  // namespace safe_browsing_util
 

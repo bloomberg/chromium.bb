@@ -38,42 +38,15 @@ class Thread;
 class SafeBrowsingService
     : public base::RefCountedThreadSafe<SafeBrowsingService> {
  public:
+  class Client;
   // Users of this service implement this interface to be notified
   // asynchronously of the result.
   enum UrlCheckResult {
-    URL_SAFE,
+    SAFE,
     URL_PHISHING,
     URL_MALWARE,
-    BINARY_MALWARE,  // This binary is a malware.
-  };
-
-  class Client {
-   public:
-    virtual ~Client() {}
-
-    void OnSafeBrowsingResult(const GURL& url, UrlCheckResult result) {
-      OnBrowseUrlCheckResult(url, result);
-      OnDownloadUrlCheckResult(url, result);
-      // TODO(lzheng): This is not implemented yet.
-      // OnDownloadHashCheckResult(url, result);
-    }
-
-    // Called when the user has made a decision about how to handle the
-    // SafeBrowsing interstitial page.
-    virtual void OnBlockingPageComplete(bool proceed) {}
-
-   protected:
-    // Called when the result of checking a browse URL is known.
-    virtual void OnBrowseUrlCheckResult(const GURL& url,
-                                        UrlCheckResult result) {}
-
-    // Called when the result of checking a download URL is known.
-    virtual void OnDownloadUrlCheckResult(const GURL& url,
-                                          UrlCheckResult result) {}
-
-    // Called when the result of checking a download binary hash is known.
-    virtual void OnDownloadHashCheckResult(const GURL& url,
-                                           UrlCheckResult result) {}
+    BINARY_MALWARE_URL,  // Binary url leads to a malware.
+    BINARY_MALWARE_HASH,  // Binary hash indicates this is a malware.
   };
 
   // Structure used to pass parameters between the IO and UI thread when
@@ -92,22 +65,51 @@ class SafeBrowsingService
     int render_view_id;
   };
 
-  // Bundle of SafeBrowsing state for one URL check.
+  // Bundle of SafeBrowsing state for one URL or hash prefix check.
   struct SafeBrowsingCheck {
     SafeBrowsingCheck();
     ~SafeBrowsingCheck();
 
-    GURL url;
+    // Either |url| or |prefix| is used to lookup database.
+    scoped_ptr<GURL> url;
+    scoped_ptr<SBFullHash> full_hash;
+
     Client* client;
     bool need_get_hash;
     base::Time start;  // Time that check was sent to SB service.
     UrlCheckResult result;
+    bool is_download;  // If this check for download url or hash.
     std::vector<SBPrefix> prefix_hits;
     std::vector<SBFullHashResult> full_hits;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(SafeBrowsingCheck);
   };
+
+  class Client {
+   public:
+    virtual ~Client() {}
+
+    void OnSafeBrowsingResult(const SafeBrowsingCheck& check);
+
+    // Called when the user has made a decision about how to handle the
+    // SafeBrowsing interstitial page.
+    virtual void OnBlockingPageComplete(bool proceed) {}
+
+   protected:
+    // Called when the result of checking a browse URL is known.
+    virtual void OnBrowseUrlCheckResult(const GURL& url,
+                                        UrlCheckResult result) {}
+
+    // Called when the result of checking a download URL is known.
+    virtual void OnDownloadUrlCheckResult(const GURL& url,
+                                          UrlCheckResult result) {}
+
+    // Called when the result of checking a download binary hash is known.
+    virtual void OnDownloadHashCheckResult(const SBFullHash& hash,
+                                           UrlCheckResult result) {}
+  };
+
 
   // Makes the passed |factory| the factory used to instanciate
   // a SafeBrowsingService. Useful for tests.
@@ -144,6 +146,10 @@ class SafeBrowsingService
   // Check if the prefix for |url| is in safebrowsing download add lists.
   // Result will be passed to callback in |client|.
   bool CheckDownloadUrl(const GURL& url, Client* client);
+
+  // Check if the prefix for |full_hash| is in safebrowsing binhash add lists.
+  // Result will be passed to callback in |client|.
+  virtual bool CheckDownloadHash(const std::string& full_hash, Client* client);
 
   // Called on the IO thread to cancel a pending check if the result is no
   // longer needed.
@@ -333,12 +339,18 @@ class SafeBrowsingService
                              bool is_subresource,
                              UrlCheckResult threat_type);
 
+  // Checks the download hash on safe_browsing_thread_.
+  void CheckDownloadHashOnSBThread(SafeBrowsingCheck* check);
+
   // Invoked by CheckDownloadUrl. It checks the download URL on
   // safe_browsing_thread_.
   void CheckDownloadUrlOnSBThread(SafeBrowsingCheck* check);
 
-  // Call the Client's callback in IO thread after CheckDownloadUrl finishes.
-  void CheckDownloadUrlDone(SafeBrowsingCheck* check, UrlCheckResult result);
+  // Calls the Client's callback on IO thread after CheckDownloadUrl finishes.
+  void CheckDownloadUrlDone(SafeBrowsingCheck* check);
+
+  // Calls the Client's callback on IO thread after CheckDownloadHash finishes.
+  void CheckDownloadHashDone(SafeBrowsingCheck* check);
 
   // The factory used to instanciate a SafeBrowsingService object.
   // Useful for tests, so they can provide their own implementation of

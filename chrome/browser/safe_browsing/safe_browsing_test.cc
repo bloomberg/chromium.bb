@@ -350,7 +350,7 @@ class SafeBrowsingServiceTestHelper
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     EXPECT_TRUE(safe_browsing_test_->is_checked_url_in_db());
     safe_browsing_test_->set_is_checked_url_safe(
-        result == SafeBrowsingService::URL_SAFE);
+        result == SafeBrowsingService::SAFE);
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             NewRunnableMethod(this,
                             &SafeBrowsingServiceTestHelper::OnCheckUrlDone));
