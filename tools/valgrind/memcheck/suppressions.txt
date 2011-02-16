@@ -2872,21 +2872,6 @@
    fun:_ZN14RunnableMethodIN8remoting18SessionManagerPairEMS1_FvPN7cricket14SessionManagerEPN4buzz10XmlElementEE6Tuple2IS4_S7_EE3RunEv
 }
 {
-   bug_57800
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN11TabContents22AddSavePasswordInfoBarEP19PasswordFormManager
-   fun:_ZN15PasswordManager14DidStopLoadingEv
-   fun:_ZN11TabContents14DidStopLoadingEv
-   fun:_ZN14RenderViewHost19OnMsgDidStopLoadingEv
-   fun:_ZN3IPC7Message8DispatchI14RenderViewHostEEbPKS0_PT_MS5_FvvE
-   fun:_ZN14RenderViewHost17OnMessageReceivedERKN3IPC7MessageE
-   fun:_ZN24BrowserRenderProcessHost17OnMessageReceivedERKN3IPC7MessageE
-   fun:_ZN3IPC12ChannelProxy7Context17OnDispatchMessageERKNS_7MessageE
-   fun:_Z16DispatchToMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEES3_EvPT_T0_RK6Tuple1IT1_E
-   fun:_ZN14RunnableMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEE6Tuple1IS3_EE3RunEv
-}
-{
    bug_57949
    Memcheck:Addr4
    fun:_ZNK22OpaqueBrowserFrameView24NonClientTopBorderHeightEbb
