@@ -66,7 +66,6 @@ class AutocompletePopupContentsView : public views::View,
   virtual gfx::Rect GetTargetBounds();
   virtual void PaintUpdatesNow();
   virtual void OnDragCanceled();
-  virtual AutocompletePopupModel* GetModel();
 
   // Overridden from AutocompleteResultViewModel:
   virtual bool IsSelectedIndex(size_t index) const;

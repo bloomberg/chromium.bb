@@ -426,10 +426,10 @@ void AutocompleteEditViewMac::UpdatePopup() {
 }
 
 void AutocompleteEditViewMac::ClosePopup() {
-  if (popup_view_->GetModel()->IsOpen())
+  if (model_->popup_model()->IsOpen())
     controller_->OnAutocompleteWillClosePopup();
 
-  popup_view_->GetModel()->StopAutocomplete();
+  model_->StopAutocomplete();
 }
 
 void AutocompleteEditViewMac::SetFocus() {
@@ -863,8 +863,8 @@ bool AutocompleteEditViewMac::OnDoCommandBySelector(SEL cmd) {
   if (cmd == @selector(deleteForward:)) {
     const NSUInteger modifiers = [[NSApp currentEvent] modifierFlags];
     if ((modifiers & NSShiftKeyMask) != 0) {
-      if (popup_view_->IsOpen()) {
-        popup_view_->GetModel()->TryDeletingCurrentItem();
+      if (model_->popup_model()->IsOpen()) {
+        model_->popup_model()->TryDeletingCurrentItem();
         return true;
       }
     }

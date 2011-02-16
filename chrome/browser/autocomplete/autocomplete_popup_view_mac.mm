@@ -293,7 +293,6 @@ AutocompletePopupViewMac::AutocompletePopupViewMac(
   DCHECK(edit_view);
   DCHECK(edit_model);
   DCHECK(profile);
-  edit_model->SetPopupModel(model_.get());
 }
 
 AutocompletePopupViewMac::~AutocompletePopupViewMac() {
@@ -526,10 +525,6 @@ void AutocompletePopupViewMac::SetSelectedLine(size_t line) {
 void AutocompletePopupViewMac::PaintUpdatesNow() {
   AutocompleteMatrix* matrix = GetAutocompleteMatrix();
   [matrix selectCellAtRow:model_->selected_line() column:0];
-}
-
-AutocompletePopupModel* AutocompletePopupViewMac::GetModel() {
-  return model_.get();
 }
 
 void AutocompletePopupViewMac::OpenURLForRow(int row, bool force_background) {

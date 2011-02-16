@@ -6,23 +6,23 @@
 #define CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_EDIT_H_
 #pragma once
 
+#include "base/scoped_ptr.h"
 #include "base/string16.h"
+#include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
 #include "chrome/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/window_open_disposition.h"
 
-class AutocompletePopupModel;
-class Profile;
-class SkBitmap;
-
+class AutocompleteController;
 class AutocompleteEditController;
 class AutocompleteEditModel;
 class AutocompleteEditView;
+class AutocompletePopupModel;
 class AutocompleteResult;
+class Profile;
+class SkBitmap;
 
 namespace gfx {
 class Rect;
@@ -102,7 +102,7 @@ class AutocompleteEditController {
   virtual ~AutocompleteEditController();
 };
 
-class AutocompleteEditModel : public NotificationObserver {
+class AutocompleteEditModel : public AutocompleteControllerDelegate {
  public:
   struct State {
     State(bool user_input_in_progress,
@@ -122,7 +122,13 @@ class AutocompleteEditModel : public NotificationObserver {
                         Profile* profile);
   ~AutocompleteEditModel();
 
-  void SetPopupModel(AutocompletePopupModel* popup_model);
+  AutocompleteController* autocomplete_controller() const {
+    return autocomplete_controller_.get();
+  }
+
+  void set_popup_model(AutocompletePopupModel* popup_model) {
+    popup_ = popup_model;
+  }
 
   // TODO: The edit and popup should be siblings owned by the LocationBarView,
   // making this accessor unnecessary.
@@ -207,6 +213,9 @@ class AutocompleteEditModel : public NotificationObserver {
   void StartAutocomplete(bool has_selected_text,
                          bool prevent_inline_autocomplete) const;
 
+  // Closes the popup and cancels any pending asynchronous queries.
+  void StopAutocomplete();
+
   // Determines whether the user can "paste and go", given the specified text.
   // This also updates the internal paste-and-go-related state variables as
   // appropriate so that the controller doesn't need to be repeatedly queried
@@ -255,12 +264,6 @@ class AutocompleteEditModel : public NotificationObserver {
   // Clears the current keyword.  |visible_text| is the (non-keyword) text
   // currently visible in the edit.
   void ClearKeyword(const string16& visible_text);
-
-  // Returns true if a query to an autocomplete provider is currently
-  // in progress.  This logic should in the future live in
-  // AutocompleteController but resides here for now.  This method is used by
-  // AutomationProvider::AutocompleteEditIsQueryInProgress.
-  bool query_in_progress() const;
 
   // Returns the current autocomplete result.  This logic should in the future
   // live in AutocompleteController but resides here for now.  This method is
@@ -350,10 +353,14 @@ class AutocompleteEditModel : public NotificationObserver {
                           // he intended to hit "ctrl-enter".
   };
 
-  // NotificationObserver
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+  // AutocompleteControllerDelegate:
+  virtual void OnResultChanged(bool default_match_changed);
+
+  // Returns true if a query to an autocomplete provider is currently
+  // in progress.  This logic should in the future live in
+  // AutocompleteController but resides here for now.  This method is used by
+  // AutomationProvider::AutocompleteEditIsQueryInProgress.
+  bool query_in_progress() const;
 
   // Called whenever user_text_ should change.
   void InternalSetUserText(const string16& text);
@@ -366,6 +373,19 @@ class AutocompleteEditModel : public NotificationObserver {
   // two are different if a keyword is selected.
   string16 DisplayTextFromUserText(const string16& text) const;
   string16 UserTextFromDisplayText(const string16& text) const;
+
+  // Copies the selected match into |match|.  If an update is in progress,
+  // "selected" means "default in the latest matches".  If there are no matches,
+  // does not update |match|.
+  //
+  // If |alternate_nav_url| is non-NULL, it will be set to the alternate
+  // navigation URL for |url| if one exists, or left unchanged otherwise.  See
+  // comments on AutocompleteResult::GetAlternateNavURL().
+  //
+  // TODO(pkasting): When manually_selected_match_ moves to the controller, this
+  // can move too.
+  void InfoForCurrentSelection(AutocompleteMatch* match,
+                               GURL* alternate_nav_url) const;
 
   // Returns the default match for the current text, as well as the alternate
   // nav URL, if |alternate_nav_url| is non-NULL and there is such a URL.
@@ -394,13 +414,13 @@ class AutocompleteEditModel : public NotificationObserver {
   // keyword.
   static bool IsSpaceCharForAcceptingKeyword(wchar_t c);
 
+  scoped_ptr<AutocompleteController> autocomplete_controller_;
+
   AutocompleteEditView* view_;
 
   AutocompletePopupModel* popup_;
 
   AutocompleteEditController* controller_;
-
-  NotificationRegistrar registrar_;
 
   // Whether the edit has focus.
   bool has_focus_;

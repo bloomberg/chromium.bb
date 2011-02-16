@@ -18,8 +18,6 @@ namespace gfx {
 class Rect;
 }
 
-class AutocompletePopupModel;
-
 class AutocompletePopupView {
  public:
   virtual ~AutocompletePopupView() {}
@@ -47,9 +45,6 @@ class AutocompletePopupView {
   // action (e.g. releasing mouse capture).  Note that this can be called when
   // no drag is in progress.
   virtual void OnDragCanceled() = 0;
-
-  // Returns the popup's model.
-  virtual AutocompletePopupModel* GetModel() = 0;
 };
 
 #endif  // CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_POPUP_VIEW_H_

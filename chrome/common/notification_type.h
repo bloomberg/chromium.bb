@@ -784,9 +784,9 @@ class NotificationType {
 
     // Autocomplete ------------------------------------------------------------
 
-    // Sent by the autocomplete controller each time the result set updates.
-    // The details is a boolean indicating if the default match has changed.
-    AUTOCOMPLETE_CONTROLLER_RESULT_UPDATED,
+    // Sent by the autocomplete controller when done.  The source is the
+    // AutocompleteController, the details not used.
+    AUTOCOMPLETE_CONTROLLER_RESULT_READY,
 
     // This is sent when an item of the Omnibox popup is selected. The source
     // is the profile.

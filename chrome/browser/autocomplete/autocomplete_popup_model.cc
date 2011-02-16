@@ -13,7 +13,6 @@
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_view.h"
-#include "chrome/browser/autocomplete/search_provider.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -29,38 +28,13 @@ AutocompletePopupModel::AutocompletePopupModel(
     Profile* profile)
     : view_(popup_view),
       edit_model_(edit_model),
-      controller_(new AutocompleteController(profile)),
       profile_(profile),
       hovered_line_(kNoMatch),
       selected_line_(kNoMatch) {
+  edit_model->set_popup_model(this);
 }
 
 AutocompletePopupModel::~AutocompletePopupModel() {
-}
-
-void AutocompletePopupModel::SetProfile(Profile* profile) {
-  DCHECK(profile);
-  profile_ = profile;
-  controller_->SetProfile(profile);
-}
-
-void AutocompletePopupModel::StartAutocomplete(
-    const string16& text,
-    const string16& desired_tld,
-    bool prevent_inline_autocomplete,
-    bool prefer_keyword,
-    bool allow_exact_keyword_match) {
-  // The user is interacting with the edit, so stop tracking hover.
-  SetHoveredLine(kNoMatch);
-
-  manually_selected_match_.Clear();
-
-  controller_->Start(text, desired_tld, prevent_inline_autocomplete,
-                     prefer_keyword, allow_exact_keyword_match, false);
-}
-
-void AutocompletePopupModel::StopAutocomplete() {
-  controller_->Stop(true);
 }
 
 bool AutocompletePopupModel::IsOpen() const {
@@ -69,7 +43,7 @@ bool AutocompletePopupModel::IsOpen() const {
 
 void AutocompletePopupModel::SetHoveredLine(size_t line) {
   const bool is_disabling = (line == kNoMatch);
-  DCHECK(is_disabling || (line < controller_->result().size()));
+  DCHECK(is_disabling || (line < result().size()));
 
   if (line == hovered_line_)
     return;  // Nothing to do
@@ -88,12 +62,12 @@ void AutocompletePopupModel::SetHoveredLine(size_t line) {
 void AutocompletePopupModel::SetSelectedLine(size_t line,
                                              bool reset_to_default,
                                              bool force) {
-  const AutocompleteResult& result = controller_->result();
+  const AutocompleteResult& result = this->result();
   if (result.empty())
     return;
 
   // Cancel the query so the matches don't change on the user.
-  controller_->Stop(false);
+  autocomplete_controller()->Stop(false);
 
   line = std::min(line, result.size() - 1);
   const AutocompleteMatch& match = result.match_at(line);
@@ -148,37 +122,10 @@ void AutocompletePopupModel::SetSelectedLine(size_t line,
 }
 
 void AutocompletePopupModel::ResetToDefaultMatch() {
-  const AutocompleteResult& result = controller_->result();
+  const AutocompleteResult& result = this->result();
   CHECK(!result.empty());
   SetSelectedLine(result.default_match() - result.begin(), true, false);
   view_->OnDragCanceled();
-}
-
-void AutocompletePopupModel::InfoForCurrentSelection(
-    AutocompleteMatch* match,
-    GURL* alternate_nav_url) const {
-  DCHECK(match != NULL);
-  const AutocompleteResult& result = controller_->result();
-  if (!controller_->done()) {
-    // It's technically possible for |result| to be empty if no provider returns
-    // a synchronous result but the query has not completed synchronously;
-    // pratically, however, that should never actually happen.
-    if (result.empty())
-      return;
-    // The user cannot have manually selected a match, or the query would have
-    // stopped.  So the default match must be the desired selection.
-    *match = *result.default_match();
-  } else {
-    CHECK(IsOpen());
-    // If there are no results, the popup should be closed (so we should have
-    // failed the CHECK above), and URLsForDefaultMatch() should have been
-    // called instead.
-    CHECK(!result.empty());
-    CHECK(selected_line_ < result.size());
-    *match = result.match_at(selected_line_);
-  }
-  if (alternate_nav_url && manually_selected_match_.empty())
-    *alternate_nav_url = result.alternate_nav_url();
 }
 
 bool AutocompletePopupModel::GetKeywordForMatch(const AutocompleteMatch& match,
@@ -221,22 +168,8 @@ bool AutocompletePopupModel::GetKeywordForMatch(const AutocompleteMatch& match,
   return true;
 }
 
-void AutocompletePopupModel::FinalizeInstantQuery(
-    const string16& input_text,
-    const string16& suggest_text) {
-  if (IsOpen()) {
-    SearchProvider* search_provider = controller_->search_provider();
-    search_provider->FinalizeInstantQuery(input_text, suggest_text);
-  }
-}
-
-AutocompleteLog* AutocompletePopupModel::GetAutocompleteLog() {
-  return new AutocompleteLog(controller_->input().text(),
-      controller_->input().type(), selected_line_, 0, controller_->result());
-}
-
 void AutocompletePopupModel::Move(int count) {
-  const AutocompleteResult& result = controller_->result();
+  const AutocompleteResult& result = this->result();
   if (result.empty())
     return;
 
@@ -258,18 +191,17 @@ void AutocompletePopupModel::TryDeletingCurrentItem() {
     return;
 
   // Cancel the query so the matches don't change on the user.
-  controller_->Stop(false);
+  autocomplete_controller()->Stop(false);
 
-  const AutocompleteMatch& match =
-      controller_->result().match_at(selected_line_);
+  const AutocompleteMatch& match = result().match_at(selected_line_);
   if (match.deletable) {
     const size_t selected_line = selected_line_;
     const bool was_temporary_text = !manually_selected_match_.empty();
 
     // This will synchronously notify both the edit and us that the results
     // have changed, causing both to revert to the default match.
-    controller_->DeleteMatch(match);
-    const AutocompleteResult& result = controller_->result();
+    autocomplete_controller()->DeleteMatch(match);
+    const AutocompleteResult& result = this->result();
     if (!result.empty() &&
         (was_temporary_text || selected_line != selected_line_)) {
       // Move the selection to the next choice after the deleted one.
@@ -293,7 +225,7 @@ const SkBitmap* AutocompletePopupModel::GetSpecialIconForMatch(
 }
 
 void AutocompletePopupModel::OnResultChanged() {
-  const AutocompleteResult& result = controller_->result();
+  const AutocompleteResult& result = this->result();
   selected_line_ = result.default_match() == result.end() ?
       kNoMatch : static_cast<size_t>(result.default_match() - result.begin());
   // There had better not be a nonempty result set with no default match.

@@ -119,7 +119,6 @@ AutocompleteEditViewViews::AutocompleteEditViewViews(
       security_level_(ToolbarModel::NONE),
       delete_was_pressed_(false),
       delete_at_end_pressed_(false) {
-  model_->SetPopupModel(popup_view_->GetModel());
   set_border(views::Border::CreateEmptyBorder(kAutocompleteVerticalMargin, 0,
                                               kAutocompleteVerticalMargin, 0));
 }
@@ -184,9 +183,8 @@ bool AutocompleteEditViewViews::HandleAfterKeyEvent(
     // If shift+del didn't change the text, we let this delete an entry from
     // the popup.  We can't check to see if the IME handled it because even if
     // nothing is selected, the IME or the TextView still report handling it.
-    AutocompletePopupModel* popup_model = popup_view_->GetModel();
-    if (popup_model->IsOpen())
-      popup_model->TryDeletingCurrentItem();
+    if (model_->popup_model()->IsOpen())
+      model_->popup_model()->TryDeletingCurrentItem();
   } else if (!handled && event.key_code() == ui::VKEY_UP) {
     model_->OnUpOrDownKeyPressed(-1);
     handled = true;
@@ -432,10 +430,10 @@ void AutocompleteEditViewViews::UpdatePopup() {
 }
 
 void AutocompleteEditViewViews::ClosePopup() {
-  if (popup_view_->GetModel()->IsOpen())
+  if (model_->popup_model()->IsOpen())
     controller_->OnAutocompleteWillClosePopup();
 
-  popup_view_->GetModel()->StopAutocomplete();
+  model_->StopAutocomplete();
 }
 
 void AutocompleteEditViewViews::SetFocus() {

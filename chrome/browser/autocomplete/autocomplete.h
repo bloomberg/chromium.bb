@@ -149,11 +149,12 @@
 // --: relevance score falls off over two days (discounted 99 points after two
 //     days).
 
+class AutocompleteController;
+class AutocompleteControllerDelegate;
 class AutocompleteInput;
 struct AutocompleteMatch;
 class AutocompleteProvider;
 class AutocompleteResult;
-class AutocompleteController;
 class HistoryContentsProvider;
 class Profile;
 class SearchProvider;
@@ -570,10 +571,12 @@ class AutocompleteController : public ACProviderListener {
   // second to set the providers to some known testing providers.  The default
   // providers will be overridden and the controller will take ownership of the
   // providers, Release()ing them on destruction.
-  explicit AutocompleteController(Profile* profile);
+  AutocompleteController(Profile* profile,
+                         AutocompleteControllerDelegate* delegate);
 #ifdef UNIT_TEST
   explicit AutocompleteController(const ACProviders& providers)
-      : providers_(providers),
+      : delegate_(NULL),
+        providers_(providers),
         search_provider_(NULL),
         done_(true),
         in_start_(false) {
@@ -610,10 +613,11 @@ class AutocompleteController : public ACProviderListener {
   // return matches which are synchronously available, which should mean that
   // all providers will be done immediately.
   //
-  // The controller will fire AUTOCOMPLETE_CONTROLLER_RESULT_UPDATED from
+  // The controller calls AutocompleteControllerDelegate::OnResultChanged() from
   // inside this call at least once. If matches are available later on that
-  // result in changing the result set AUTOCOMPLETE_CONTROLLER_RESULT_UPDATED
-  // is sent again.
+  // result in changing the result set the delegate is notified again. When the
+  // controller is done the notification AUTOCOMPLETE_CONTROLLER_RESULT_READY is
+  // sent.
   void Start(const string16& text,
              const string16& desired_tld,
              bool prevent_inline_autocomplete,
@@ -653,12 +657,8 @@ class AutocompleteController : public ACProviderListener {
   // Start() is calling this to get the synchronous result.
   void UpdateResult(bool is_synchronous_pass);
 
-  // Sends notifications that the results were updated. If
-  // |notify_default_match| is true,
-  // AUTOCOMPLETE_CONTROLLER_DEFAULT_MATCH_UPDATED is sent in addition to
-  // AUTOCOMPLETE_CONTROLLER_RESULT_UPDATED.
-  // TODO(pkasting): Don't hardcode assumptions about who listens to these
-  // notificiations.
+  // Calls AutocompleteControllerDelegate::OnResultChanged() and if done sends
+  // AUTOCOMPLETE_CONTROLLER_RESULT_READY.
   void NotifyChanged(bool notify_default_match);
 
   // Updates |done_| to be accurate with respect to current providers' statuses.
@@ -666,6 +666,8 @@ class AutocompleteController : public ACProviderListener {
 
   // Starts the expire timer.
   void StartExpireTimer();
+
+  AutocompleteControllerDelegate* delegate_;
 
   // A list of all providers.
   ACProviders providers_;

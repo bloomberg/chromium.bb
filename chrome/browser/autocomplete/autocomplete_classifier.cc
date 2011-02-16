@@ -9,7 +9,7 @@
 #include "googleurl/src/gurl.h"
 
 AutocompleteClassifier::AutocompleteClassifier(Profile* profile)
-    : controller_(new AutocompleteController(profile)) {
+    : controller_(new AutocompleteController(profile, NULL)) {
 }
 
 AutocompleteClassifier::~AutocompleteClassifier() {

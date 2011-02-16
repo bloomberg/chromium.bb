@@ -12,6 +12,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/history_quick_provider.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
@@ -779,8 +780,11 @@ const int AutocompleteController::kNoItemSelected = -1;
 // they initiate a query.
 static const int kExpireTimeMS = 500;
 
-AutocompleteController::AutocompleteController(Profile* profile)
-    : done_(true),
+AutocompleteController::AutocompleteController(
+    Profile* profile,
+    AutocompleteControllerDelegate* delegate)
+    : delegate_(delegate),
+      done_(true),
       in_start_(false) {
   search_provider_ = new SearchProvider(this, profile);
   providers_.push_back(search_provider_);
@@ -948,10 +952,14 @@ void AutocompleteController::UpdateResult(bool is_synchronous_pass) {
 }
 
 void AutocompleteController::NotifyChanged(bool notify_default_match) {
-  NotificationService::current()->Notify(
-      NotificationType::AUTOCOMPLETE_CONTROLLER_RESULT_UPDATED,
-      Source<AutocompleteController>(this),
-      Details<bool>(&notify_default_match));
+  if (delegate_)
+    delegate_->OnResultChanged(notify_default_match);
+  if (done_) {
+    NotificationService::current()->Notify(
+        NotificationType::AUTOCOMPLETE_CONTROLLER_RESULT_READY,
+        Source<AutocompleteController>(this),
+        NotificationService::NoDetails());
+  }
 }
 
 void AutocompleteController::CheckIfDone() {

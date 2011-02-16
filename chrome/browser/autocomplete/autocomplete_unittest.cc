@@ -158,7 +158,7 @@ void AutocompleteProviderTest::ResetControllerWithTestProviders(
 
   // The providers don't complete synchronously, so listen for "result updated"
   // notifications.
-  registrar_.Add(this, NotificationType::AUTOCOMPLETE_CONTROLLER_RESULT_UPDATED,
+  registrar_.Add(this, NotificationType::AUTOCOMPLETE_CONTROLLER_RESULT_READY,
                  NotificationService::AllSources());
 }
 

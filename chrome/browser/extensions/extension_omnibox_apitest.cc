@@ -70,7 +70,7 @@ class OmniboxApiTest : public ExtensionApiTest {
   void WaitForAutocompleteDone(AutocompleteController* controller) {
     while (!controller->done()) {
       ui_test_utils::WaitForNotification(
-          NotificationType::AUTOCOMPLETE_CONTROLLER_RESULT_UPDATED);
+          NotificationType::AUTOCOMPLETE_CONTROLLER_RESULT_READY);
     }
   }
 };

@@ -382,10 +382,6 @@ void AutocompletePopupViewGtk::OnDragCanceled() {
   ignore_mouse_drag_ = true;
 }
 
-AutocompletePopupModel* AutocompletePopupViewGtk::GetModel() {
-  return model_.get();
-}
-
 void AutocompletePopupViewGtk::Observe(NotificationType type,
                                        const NotificationSource& source,
                                        const NotificationDetails& details) {

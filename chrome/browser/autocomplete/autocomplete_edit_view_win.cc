@@ -435,8 +435,6 @@ AutocompleteEditViewWin::AutocompleteEditViewWin(
   // import dependency on the dll.
   CreateTextServices(NULL, NULL, NULL);
 
-  model_->SetPopupModel(popup_view_->GetModel());
-
   saved_selection_for_focus_change_.cpMin = -1;
 
   g_paint_patcher.Pointer()->RefPatch();
@@ -730,10 +728,10 @@ void AutocompleteEditViewWin::UpdatePopup() {
 }
 
 void AutocompleteEditViewWin::ClosePopup() {
-  if (popup_view_->GetModel()->IsOpen())
+  if (model_->popup_model()->IsOpen())
     controller_->OnAutocompleteWillClosePopup();
 
-  popup_view_->GetModel()->StopAutocomplete();
+  model_->StopAutocomplete();
 }
 
 void AutocompleteEditViewWin::SetFocus() {
@@ -1922,13 +1920,12 @@ bool AutocompleteEditViewWin::OnKeyDownOnlyWritable(TCHAR key,
           Cut();
           OnAfterPossibleChange();
         } else {
-          AutocompletePopupModel* popup_model = popup_view_->GetModel();
-          if (popup_model->IsOpen()) {
+          if (model_->popup_model()->IsOpen()) {
             // This is a bit overloaded, but we hijack Shift-Delete in this
             // case to delete the current item from the pop-up.  We prefer
             // cutting to this when possible since that's the behavior more
             // people expect from Shift-Delete, and it's more commonly useful.
-            popup_model->TryDeletingCurrentItem();
+            model_->popup_model()->TryDeletingCurrentItem();
           }
         }
       }

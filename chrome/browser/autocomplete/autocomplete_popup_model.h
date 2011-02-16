@@ -8,13 +8,12 @@
 
 #include "base/scoped_ptr.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
+#include "chrome/browser/autocomplete/autocomplete_edit.h"
 
-class AutocompleteEditModel;
 class AutocompleteEditView;
+class AutocompletePopupView;
 class Profile;
 class SkBitmap;
-
-class AutocompletePopupView;
 
 class AutocompletePopupModel {
  public:
@@ -24,18 +23,10 @@ class AutocompletePopupModel {
   ~AutocompletePopupModel();
 
   // Invoked when the profile has changed.
-  void SetProfile(Profile* profile);
+  void set_profile(Profile* profile) { profile_ = profile; }
 
-  // Starts a new query running.  These parameters are passed through to the
-  // autocomplete controller; see comments there.
-  void StartAutocomplete(const string16& text,
-                         const string16& desired_tld,
-                         bool prevent_inline_autocomplete,
-                         bool prefer_keyword,
-                         bool allow_exact_keyword_match);
-
-  // Closes the window and cancels any pending asynchronous queries.
-  void StopAutocomplete();
+  // TODO(sky): see about removing this.
+  Profile* profile() const { return profile_; }
 
   // Returns true if the popup is currently open.
   bool IsOpen() const;
@@ -44,11 +35,11 @@ class AutocompletePopupModel {
 
   // Returns the AutocompleteController used by this popup.
   AutocompleteController* autocomplete_controller() const {
-    return controller_.get();
+    return edit_model_->autocomplete_controller();
   }
 
   const AutocompleteResult& result() const {
-    return controller_->result();
+    return autocomplete_controller()->result();
   }
 
   size_t hovered_line() const {
@@ -79,19 +70,6 @@ class AutocompletePopupModel {
   // will change the selected line back to the default match and redraw.
   void ResetToDefaultMatch();
 
-  // Copies the selected match into |match|.  If an update is in progress,
-  // "selected" means "default in the latest matches".  If there are no matches,
-  // does not update |match|.
-  //
-  // If |alternate_nav_url| is non-NULL, it will be set to the alternate
-  // navigation URL for |url| if one exists, or left unchanged otherwise.  See
-  // comments on AutocompleteResult::GetAlternateNavURL().
-  //
-  // TODO(pkasting): When manually_selected_match_ moves to the controller, this
-  // can move too.
-  void InfoForCurrentSelection(AutocompleteMatch* match,
-                               GURL* alternate_nav_url) const;
-
   // Gets the selected keyword or keyword hint for the given match.  Returns
   // true if |keyword| represents a keyword hint, or false if |keyword|
   // represents a selected keyword.  (|keyword| will always be set [though
@@ -99,15 +77,6 @@ class AutocompletePopupModel {
   // and a keyword hint simultaneously.)
   bool GetKeywordForMatch(const AutocompleteMatch& match,
                           string16* keyword) const;
-
-  // Calls through to SearchProvider::FinalizeInstantQuery.
-  void FinalizeInstantQuery(const string16& input_text,
-                            const string16& suggest_text);
-
-  // Returns a pointer to a heap-allocated AutocompleteLog containing the
-  // current input text, selected match, and result set.  The caller is
-  // responsible for deleting the object.
-  AutocompleteLog* GetAutocompleteLog();
 
   // Immediately updates and opens the popup if necessary, then moves the
   // current selection down (|count| > 0) or up (|count| < 0), clamping to the
@@ -124,7 +93,10 @@ class AutocompletePopupModel {
   // use a standard style icon.
   const SkBitmap* GetSpecialIconForMatch(const AutocompleteMatch& match) const;
 
-  Profile* profile() const { return profile_; }
+  // The match the user has manually chosen, if any.
+  const AutocompleteResult::Selection& manually_selected_match() const {
+    return manually_selected_match_;
+  }
 
   // Invoked from the edit model any time the result set of the controller
   // changes.
@@ -138,7 +110,6 @@ class AutocompletePopupModel {
   AutocompletePopupView* view_;
 
   AutocompleteEditModel* edit_model_;
-  scoped_ptr<AutocompleteController> controller_;
 
   // Profile for current tab.
   Profile* profile_;

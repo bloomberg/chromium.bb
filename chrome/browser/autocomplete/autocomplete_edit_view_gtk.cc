@@ -196,8 +196,6 @@ AutocompleteEditViewGtk::AutocompleteEditViewGtk(
       new AutocompletePopupViewGtk
 #endif
           (GetFont(), this, model_.get(), profile, location_bar));
-
-  model_->SetPopupModel(popup_view_->GetModel());
 }
 
 AutocompleteEditViewGtk::~AutocompleteEditViewGtk() {
@@ -610,10 +608,10 @@ void AutocompleteEditViewGtk::UpdatePopup() {
 }
 
 void AutocompleteEditViewGtk::ClosePopup() {
-  if (popup_view_->GetModel()->IsOpen())
+  if (model_->popup_model()->IsOpen())
     controller_->OnAutocompleteWillClosePopup();
 
-  popup_view_->GetModel()->StopAutocomplete();
+  model_->StopAutocomplete();
 }
 
 void AutocompleteEditViewGtk::OnTemporaryTextMaybeChanged(
@@ -1183,9 +1181,8 @@ gboolean AutocompleteEditViewGtk::HandleKeyPress(GtkWidget* widget,
     // If shift+del didn't change the text, we let this delete an entry from
     // the popup.  We can't check to see if the IME handled it because even if
     // nothing is selected, the IME or the TextView still report handling it.
-    AutocompletePopupModel* popup_model = popup_view_->GetModel();
-    if (popup_model->IsOpen())
-      popup_model->TryDeletingCurrentItem();
+    if (model_->popup_model()->IsOpen())
+      model_->popup_model()->TryDeletingCurrentItem();
   }
 
   // Set |enter_was_pressed_| to false, to make sure OnAfterPossibleChange() can

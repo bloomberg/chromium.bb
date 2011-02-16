@@ -910,10 +910,6 @@ void AutocompletePopupContentsView::OnDragCanceled() {
   ignore_mouse_drag_ = true;
 }
 
-AutocompletePopupModel* AutocompletePopupContentsView::GetModel() {
-  return model_.get();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // AutocompletePopupContentsView, AutocompleteResultViewModel implementation:
 

@@ -222,7 +222,7 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
 
     NotificationRegistrar registrar;
     registrar.Add(this,
-                  NotificationType::AUTOCOMPLETE_CONTROLLER_RESULT_UPDATED,
+                  NotificationType::AUTOCOMPLETE_CONTROLLER_RESULT_READY,
                   Source<AutocompleteController>(controller));
 
     while (!HasFailure() && !controller->done())
@@ -325,7 +325,7 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
       case NotificationType::TAB_PARENTED:
       case NotificationType::TAB_CLOSED:
       case NotificationType::TEMPLATE_URL_MODEL_LOADED:
-      case NotificationType::AUTOCOMPLETE_CONTROLLER_RESULT_UPDATED:
+      case NotificationType::AUTOCOMPLETE_CONTROLLER_RESULT_READY:
       case NotificationType::HISTORY_LOADED:
       case NotificationType::BOOKMARK_MODEL_LOADED:
         break;

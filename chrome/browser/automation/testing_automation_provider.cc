@@ -1109,7 +1109,8 @@ void TestingAutomationProvider::AutocompleteEditIsQueryInProgress(
   *query_in_progress = false;
   if (autocomplete_edit_tracker_->ContainsHandle(autocomplete_edit_handle)) {
     *query_in_progress = autocomplete_edit_tracker_->
-        GetResource(autocomplete_edit_handle)->model()->query_in_progress();
+        GetResource(!autocomplete_edit_handle)->model()->
+        autocomplete_controller()->done();
     *success = true;
   }
 }
@@ -2903,7 +2904,8 @@ void TestingAutomationProvider::GetOmniboxInfo(Browser* browser,
   // Fill up other properties.
   DictionaryValue* properties = new DictionaryValue;  // owned by return_value
   properties->SetBoolean("has_focus", model->has_focus());
-  properties->SetBoolean("query_in_progress", model->query_in_progress());
+  properties->SetBoolean("query_in_progress",
+                         !model->autocomplete_controller()->done());
   properties->SetString("keyword", model->keyword());
   properties->SetString("text", edit_view->GetText());
   return_value->Set("properties", properties);

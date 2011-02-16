@@ -43,7 +43,6 @@ class AutocompletePopupViewGtk : public AutocompletePopupView,
   virtual gfx::Rect GetTargetBounds();
   virtual void PaintUpdatesNow();
   virtual void OnDragCanceled();
-  virtual AutocompletePopupModel* GetModel();
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,
