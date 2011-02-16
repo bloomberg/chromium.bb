@@ -9,171 +9,184 @@
       i18n-content="label_cookie_clear_search"></button>
 
   <table class="cookies-info-table">
-    <tr><td>
-      <tree id="cookiesTree"></tree>
-    </td></tr>
-    <tr><td>
-      <div class="cookies-details-pane" id="cookiesInfo">
-        <table>
-          <tr>
-            <td class="cookie-details-label"
-                i18n-content="label_cookie_name">
-            </td>
-            <td><span id="cookieName"></span></td>
-          </tr>
-          <tr>
-            <td class="cookie-details-label"
-                i18n-content="label_cookie_content">
-            </td>
-            <td><span id="cookieContent"></span></td>
-          </tr>
-          <tr>
-            <td class="cookie-details-label"
-                i18n-content="label_cookie_domain">
-            </td>
-            <td><span id="cookieDomain"></span></td>
-          </tr>
-          <tr>
-            <td class="cookie-details-label"
-                i18n-content="label_cookie_path">
-            </td>
-            <td><span id="cookiePath"></span></td>
-          </tr>
-          <tr>
-            <td class="cookie-details-label"
-                i18n-content="label_cookie_send_for">
-            </td>
-            <td><span id="cookieSendFor"></span></td>
-          </tr>
-          <tr>
-            <td class="cookie-details-label"
-                i18n-content="label_cookie_accessible_to_script">
-            </td>
-            <td><span id="cookieAccessibleToScript"></span></td>
-          </tr>
-          <tr>
-            <td class="cookie-details-label"
-                i18n-content="label_cookie_created">
-            </td>
-            <td><span id="cookieCreated"></span></td>
-          </tr>
-          <tr>
-            <td class="cookie-details-label"
-                i18n-content="label_cookie_expires">
-            </td>
-            <td><span id="cookieExpires"></span></td>
-          </tr>
-        </table>
-      </div>
-
-      <div class="cookies-details-pane hidden" id="appCacheInfo">
-        <table>
-          <tr>
-            <td class="cookie-details-label"
-                i18n-content="label_app_cache_manifest">
-            </td>
-            <td><span id="appCacheManifest"></span></td>
-          </tr>
-          <tr>
-            <td class="cookie-details-label"
-                i18n-content="label_local_storage_size">
-            </td>
-            <td><span id="appCacheSize"></span></td>
-          </tr>
-          <tr>
-            <td class="cookie-details-label"
-                i18n-content="label_cookie_created">
-            </td>
-            <td><span id="appCacheCreated"></span></td>
-          </tr>
-          <tr>
-            <td class="cookie-details-label"
-                i18n-content="label_cookie_last_accessed">
-            </td>
-            <td><span id="appCacheLastAccessed"></span></td>
-          </tr>
-        </table>
-      </div>
-
-      <div class="cookies-details-pane hidden" id="webDbInfo">
-        <table>
-          <tr>
-            <td class="cookie-details-label"
-                i18n-content="label_cookie_name">
-            </td>
-            <td><span id="webdbName"></span></td>
-          </tr>
-          <tr>
-            <td class="cookie-details-label"
-                i18n-content="label_webdb_desc">
-            </td>
-            <td><span id="webdbDesc"></span></td>
-          </tr>
-          <tr>
-            <td class="cookie-details-label"
-                i18n-content="label_local_storage_size">
-            </td>
-            <td><span id="webdbSize"></span></td>
-          </tr>
-          <tr>
-            <td class="cookie-details-label"
-                i18n-content="label_local_storage_last_modified">
-            </td>
-            <td><span id="webdbLastModified"></span></td>
-          </tr>
-        </table>
-      </div>
-
-      <div class="cookies-details-pane hidden" id="localStorageInfo">
-        <table>
-          <tr>
-            <td class="cookie-details-label"
-                i18n-content="label_local_storage_origin">
-            </td>
-            <td><span id="localStorageOrigin"></span></td>
-          </tr>
-          <tr>
-            <td class="cookie-details-label"
-                i18n-content="label_local_storage_size">
-            </td>
-            <td><span id="localStorageSize"></span></td>
-          </tr>
-          <tr>
-            <td class="cookie-details-label"
-                i18n-content="label_local_storage_last_modified">
-            </td>
-            <td><span id="localStorageLastModified"></span></td>
-          </tr>
-        </table>
-      </div>
-    </td></tr>
+    <tr>
+      <td>
+        <div id="cookiesTree"></div>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <div id="cookiesInfo" class="cookies-details-pane">
+          <table>
+            <tr>
+              <td class="cookie-details-label"
+                  i18n-content="label_cookie_name">
+              </td>
+              <td><span id="cookieName"></span></td>
+            </tr>
+            <tr>
+              <td class="cookie-details-label"
+                  i18n-content="label_cookie_content">
+              </td>
+              <td><span id="cookieContent"></span></td>
+            </tr>
+            <tr>
+              <td class="cookie-details-label"
+                  i18n-content="label_cookie_domain">
+              </td>
+              <td><span id="cookieDomain"></span></td>
+            </tr>
+            <tr>
+              <td class="cookie-details-label"
+                  i18n-content="label_cookie_path">
+              </td>
+              <td><span id="cookiePath"></span></td>
+            </tr>
+            <tr>
+              <td class="cookie-details-label"
+                  i18n-content="label_cookie_send_for">
+              </td>
+              <td><span id="cookieSendFor"></span></td>
+            </tr>
+            <tr>
+              <td class="cookie-details-label"
+                  i18n-content="label_cookie_accessible_to_script">
+              </td>
+              <td><span id="cookieAccessibleToScript"></span></td>
+            </tr>
+            <tr>
+              <td class="cookie-details-label"
+                  i18n-content="label_cookie_created">
+              </td>
+              <td><span id="cookieCreated"></span></td>
+            </tr>
+            <tr>
+              <td class="cookie-details-label"
+                  i18n-content="label_cookie_expires">
+              </td>
+              <td><span id="cookieExpires"></span></td>
+            </tr>
+          </table>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <div id="appCacheInfo" class="cookies-details-pane hidden">
+          <table>
+            <tr>
+              <td class="cookie-details-label"
+                  i18n-content="label_app_cache_manifest">
+              </td>
+              <td><span id="appCacheManifest"></span></td>
+            </tr>
+            <tr>
+              <td class="cookie-details-label"
+                  i18n-content="label_local_storage_size">
+              </td>
+              <td><span id="appCacheSize"></span></td>
+            </tr>
+            <tr>
+              <td class="cookie-details-label"
+                  i18n-content="label_cookie_created">
+              </td>
+              <td><span id="appCacheCreated"></span></td>
+            </tr>
+            <tr>
+              <td class="cookie-details-label"
+                  i18n-content="label_cookie_last_accessed">
+              </td>
+              <td><span id="appCacheLastAccessed"></span></td>
+            </tr>
+          </table>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <div id="webDbInfo" class="cookies-details-pane hidden">
+          <table>
+            <tr>
+              <td class="cookie-details-label"
+                  i18n-content="label_cookie_name">
+              </td>
+              <td><span id="webdbName"></span></td>
+            </tr>
+            <tr>
+              <td class="cookie-details-label"
+                  i18n-content="label_webdb_desc">
+              </td>
+              <td><span id="webdbDesc"></span></td>
+            </tr>
+            <tr>
+              <td class="cookie-details-label"
+                  i18n-content="label_local_storage_size">
+              </td>
+              <td><span id="webdbSize"></span></td>
+            </tr>
+            <tr>
+              <td class="cookie-details-label"
+                  i18n-content="label_local_storage_last_modified">
+              </td>
+              <td><span id="webdbLastModified"></span></td>
+            </tr>
+          </table>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <div id="localStorageInfo" class="cookies-details-pane hidden">
+          <table>
+            <tr>
+              <td class="cookie-details-label"
+                  i18n-content="label_local_storage_origin">
+              </td>
+              <td><span id="localStorageOrigin"></span></td>
+            </tr>
+            <tr>
+              <td class="cookie-details-label"
+                  i18n-content="label_local_storage_size">
+              </td>
+              <td><span id="localStorageSize"></span></td>
+            </tr>
+            <tr>
+              <td class="cookie-details-label"
+                  i18n-content="label_local_storage_last_modified">
+              </td>
+              <td><span id="localStorageLastModified"></span></td>
+            </tr>
+          </table>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <div id="indexedDBInfo" class="cookies-details-pane hidden">
+          <table>
+            <tr>
+              <td class="cookie-details-label"
+                  i18n-content="label_indexed_db_origin">
+              </td>
+              <td><span id="indexedDBOrigin"></span></td>
+            </tr>
+            <tr>
+              <td class="cookie-details-label"
+                  i18n-content="label_indexed_db_size">
+              </td>
+              <td><span id="indexedDBSize"></span></td>
+            </tr>
+            <tr>
+              <td class="cookie-details-label"
+                  i18n-content="label_indexed_db_last_modified">
+              </td>
+              <td><span id="indexedDBLastModified"></span></td>
+            </tr>
+          </table>
+        </div>
+      </td>
+    </tr>
   </table>
-
-      <div class="cookies-details-pane hidden" id="indexedDBInfo">
-        <table>
-          <tr>
-            <td class="cookie-details-label"
-                i18n-content="label_indexed_db_origin">
-            </td>
-            <td><span id="indexedDBOrigin"></span></td>
-          </tr>
-          <tr>
-            <td class="cookie-details-label"
-                i18n-content="label_indexed_db_size">
-            </td>
-            <td><span id="indexedDBSize"></span></td>
-          </tr>
-          <tr>
-            <td class="cookie-details-label"
-                i18n-content="label_indexed_db_last_modified">
-            </td>
-            <td><span id="indexedDBLastModified"></span></td>
-          </tr>
-        </table>
-      </div>
-    </td></tr>
-  </table>
-
   <button id="remove-cookie" i18n-content="remove_cookie"></button>
   <button id="remove-all-cookie" i18n-content="remove_all_cookie"></button>
 </div>
