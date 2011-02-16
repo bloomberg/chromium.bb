@@ -76,6 +76,7 @@
   bug_64075b
   ThreadSanitizer:Race
   fun:disk_cache::EntryImpl::UpdateSize*
+  ...
   fun:disk_cache::EntryImpl::WriteDataImpl*
 }
 
