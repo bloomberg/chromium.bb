@@ -76,12 +76,15 @@ class WebKitClientImpl : public WebKit::WebKitClient {
   void SuspendSharedTimer();
   void ResumeSharedTimer();
 
- private:
+  // Hack for http://crbug.com/71735.
+  // TODO(jamesr): move this back to the private section once
+  // http://crbug.com/72007 is fixed.
   void DoTimeout() {
     if (shared_timer_func_ && !shared_timer_suspended_)
       shared_timer_func_();
   }
 
+ private:
   MessageLoop* main_loop_;
   base::OneShotTimer<WebKitClientImpl> shared_timer_;
   void (*shared_timer_func_)();

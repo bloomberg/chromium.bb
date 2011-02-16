@@ -252,6 +252,12 @@ class RenderThread : public RenderThreadBase,
                             const GURL& url,
                             int extension_group);
 
+  // Hack for http://crbug.com/71735.
+  // TODO(jamesr): remove once http://crbug.com/72007 is fixed.
+  RendererWebKitClientImpl* GetWebKitClientImpl() const {
+    return webkit_client_.get();
+  }
+
  private:
   virtual bool OnControlMessageReceived(const IPC::Message& msg);
 
