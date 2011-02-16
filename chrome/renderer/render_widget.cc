@@ -78,7 +78,7 @@ RenderWidget::RenderWidget(RenderThreadBase* render_thread,
       suppress_next_char_events_(false),
       is_accelerated_compositing_active_(false),
       animation_update_pending_(false),
-      animation_waiting_for_paint_(false) {
+      animation_task_posted_(false) {
   RenderProcess::current()->AddRefProcess();
   DCHECK(render_thread_);
 }
@@ -481,26 +481,26 @@ void RenderWidget::PaintDebugBorder(const gfx::Rect& rect,
   canvas->drawIRect(irect, paint);
 }
 
-void RenderWidget::CallDoDeferredUpdate() {
-  DoDeferredUpdate();
-
-  if (pending_input_event_ack_.get())
-    Send(pending_input_event_ack_.release());
+void RenderWidget::AnimationCallback() {
+  animation_task_posted_ = false;
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Renderer4.AnimationDelayTime", 0, 0, 16, 17);
+  CallDoDeferredUpdate();
 }
 
-void RenderWidget::UpdateAnimationsIfNeeded() {
-  if (webwidget_ && !is_hidden() && animation_update_pending_ &&
-      !animation_waiting_for_paint_) {
+void RenderWidget::AnimateIfNeeded() {
+  if (animation_update_pending_) {
     base::Time now = base::Time::Now();
     if (now >= animation_floor_time_) {
-      UpdateAnimationsAndFloorTime();
-      // If updating the animation caused invalidations, make sure that we paint
-      // at least once before we call animate() again.
-      // Update layout first as that might cause further invalidations.
-      webwidget_->layout();
-      if (paint_aggregator_.HasPendingUpdate())
-        animation_waiting_for_paint_ = true;
-    } else {
+      animation_floor_time_ = now + base::TimeDelta::FromMilliseconds(16);
+      // Set a timer to call us back after 16ms (targetting 60FPS) before
+      // running animation callbacks so that if a callback requests another
+      // we'll be sure to run it at the proper time.
+      MessageLoop::current()->PostDelayedTask(FROM_HERE, NewRunnableMethod(
+          this, &RenderWidget::AnimationCallback), 16);
+      animation_task_posted_ = true;
+      animation_update_pending_ = false;
+      webwidget_->animate();
+    } else if (!animation_task_posted_) {
       // This code uses base::Time::Now() to calculate the floor and next fire
       // time because javascript's Date object uses base::Time::Now().  The
       // message loop uses base::TimeTicks, which on windows can have a
@@ -510,17 +510,20 @@ void RenderWidget::UpdateAnimationsIfNeeded() {
       // avoid exposing this delay to javascript, we keep posting delayed
       // tasks until base::Time::Now() has advanced far enough.
       int64 delay = (animation_floor_time_ - now).InMillisecondsRoundedUp();
+      UMA_HISTOGRAM_CUSTOM_COUNTS("Renderer4.AnimationDelayTime", delay,
+                                  0, 16, 17);
+      animation_task_posted_ = true;
       MessageLoop::current()->PostDelayedTask(FROM_HERE, NewRunnableMethod(
-          this, &RenderWidget::UpdateAnimationsIfNeeded), delay);
+          this, &RenderWidget::AnimationCallback), delay);
     }
   }
 }
 
-void RenderWidget::UpdateAnimationsAndFloorTime() {
-  animation_update_pending_ = false;
-  animation_floor_time_ =
-     base::Time::Now() + base::TimeDelta::FromMilliseconds(16);
-  webwidget_->animate();
+void RenderWidget::CallDoDeferredUpdate() {
+  DoDeferredUpdate();
+
+  if (pending_input_event_ack_.get())
+    Send(pending_input_event_ack_.release());
 }
 
 void RenderWidget::DoDeferredUpdate() {
@@ -534,21 +537,7 @@ void RenderWidget::DoDeferredUpdate() {
     return;
   }
 
-  if (animation_update_pending_) {
-    if (animation_waiting_for_paint_) {
-      // If we have pending animation updates but need to paint before updating
-      // them, post a task to UpdateAnimationsIfNeeded that will either update
-      // animations directly (if the animation floor time has passed by the time
-      // the function runs) or post a delayed task if the floor time is not yet
-      // reached.
-      MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-          this, &RenderWidget::UpdateAnimationsIfNeeded));
-    } else if (base::Time::Now() > animation_floor_time_) {
-      // Otherwise, if it's time to update the animations go ahead.
-      UpdateAnimationsAndFloorTime();
-    }
-  }
-  animation_waiting_for_paint_ = false;
+  AnimateIfNeeded();
 
   // Layout may generate more invalidation.  It may also enable the
   // GPU acceleration, so make sure to run layout before we send the
@@ -660,9 +649,6 @@ void RenderWidget::DoDeferredUpdate() {
 // WebWidgetClient
 
 void RenderWidget::didInvalidateRect(const WebRect& rect) {
-  DCHECK(!is_accelerated_compositing_active_ ||
-    (rect.x == 0 && rect.y == 0 && rect.width == 1 && rect.height == 1));
-
   // We only want one pending DoDeferredUpdate call at any time...
   bool update_pending = paint_aggregator_.HasPendingUpdate();
 
@@ -744,8 +730,11 @@ void RenderWidget::scheduleComposite() {
 void RenderWidget::scheduleAnimation() {
   if (!animation_update_pending_) {
     animation_update_pending_ = true;
-    MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &RenderWidget::UpdateAnimationsIfNeeded));
+    if (!animation_task_posted_) {
+      animation_task_posted_ = true;
+      MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
+          this, &RenderWidget::AnimationCallback));
+    }
   }
 }
 
