@@ -123,7 +123,7 @@ int32_t PluginSurface3D::SwapBuffers(PP_Resource surface_id,
   if (retval != NACL_SRPC_RESULT_OK)
     return PP_ERROR_FAILED;
 
-  if (PP_OK != pp_error)
+  if ((PP_ERROR_WOULDBLOCK != pp_error) && (PP_OK != pp_error))
     return pp_error;
 
   context->SwapBuffers();
