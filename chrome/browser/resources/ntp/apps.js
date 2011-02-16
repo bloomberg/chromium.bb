@@ -24,13 +24,12 @@ function getAppsCallback(data) {
   // Hide menu options that are not supported on the OS or windowing system.
 
   // The "Launch as Window" menu option.
-  $('apps-launch-type-window-menu-item').style.display =
-      (data.disableAppWindowLaunch ? 'none' : 'inline');
+  $('apps-launch-type-window-menu-item').hidden = data.disableAppWindowLaunch;
 
   // The "Create App Shortcut" menu option.
-  $('apps-create-shortcut-command-menu-item').style.display =
-      $('apps-create-shortcut-command-separator').style.display =
-      (data.disableCreateAppShortcut ? 'none' : '');
+  $('apps-create-shortcut-command-menu-item').hidden =
+      $('apps-create-shortcut-command-separator').hidden =
+          data.disableCreateAppShortcut;
 
   appsMiniview.textContent = '';
   appsSectionContent.textContent = '';
