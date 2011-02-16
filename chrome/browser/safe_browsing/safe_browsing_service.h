@@ -76,7 +76,7 @@ class SafeBrowsingService
 
     Client* client;
     bool need_get_hash;
-    base::Time start;  // Time that check was sent to SB service.
+    base::TimeTicks start;  // When check was sent to SB service.
     UrlCheckResult result;
     bool is_download;  // If this check for download url or hash.
     std::vector<SBPrefix> prefix_hits;
@@ -244,7 +244,7 @@ class SafeBrowsingService
   struct QueuedCheck {
     Client* client;
     GURL url;
-    base::Time start;
+    base::TimeTicks start;  // When check was queued.
   };
 
   friend class base::RefCountedThreadSafe<SafeBrowsingService>;

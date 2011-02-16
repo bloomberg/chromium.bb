@@ -34,9 +34,6 @@
 #include "chrome/installer/util/browser_distribution.h"
 #endif
 
-using base::Time;
-using base::TimeDelta;
-
 namespace {
 
 // The default URL prefix where browser fetches chunk updates, hashes,
@@ -321,10 +318,12 @@ bool SafeBrowsingService::CheckBrowseUrl(const GURL& url,
   if (!CanCheckUrl(url))
     return true;
 
+  const base::TimeTicks start = base::TimeTicks::Now();
   if (!MakeDatabaseAvailable()) {
     QueuedCheck check;
     check.client = client;
     check.url = url;
+    check.start = start;
     queued_checks_.push_back(check);
     return false;
   }
@@ -332,13 +331,12 @@ bool SafeBrowsingService::CheckBrowseUrl(const GURL& url,
   std::string list;
   std::vector<SBPrefix> prefix_hits;
   std::vector<SBFullHashResult> full_hits;
-  base::Time check_start = base::Time::Now();
   bool prefix_match =
       database_->ContainsBrowseUrl(url, &list, &prefix_hits,
                                    &full_hits,
                                    protocol_manager_->last_update());
 
-  UMA_HISTOGRAM_TIMES("SB2.FilterCheck", base::Time::Now() - check_start);
+  UMA_HISTOGRAM_TIMES("SB2.FilterCheck", base::TimeTicks::Now() - start);
 
   if (!prefix_match)
     return true;  // URL is okay.
@@ -439,7 +437,11 @@ void SafeBrowsingService::HandleGetHashResults(
 
   DCHECK(enabled_);
 
-  UMA_HISTOGRAM_LONG_TIMES("SB2.Network", Time::Now() - check->start);
+  // |start| is set before calling |GetFullHash()|, which should be
+  // the only path which gets to here.
+  DCHECK(!check->start.is_null());
+  UMA_HISTOGRAM_LONG_TIMES("SB2.Network",
+                           base::TimeTicks::Now() - check->start);
 
   std::vector<SBPrefix> prefixes = check->prefix_hits;
   OnHandleGetHashResults(check, full_hashes);  // 'check' is deleted here.
@@ -573,7 +575,7 @@ void SafeBrowsingService::ResetDatabase() {
       this, &SafeBrowsingService::OnResetDatabase));
 }
 
-void SafeBrowsingService::LogPauseDelay(TimeDelta time) {
+void SafeBrowsingService::LogPauseDelay(base::TimeDelta time) {
   UMA_HISTOGRAM_LONG_TIMES("SB2.Delay", time);
 }
 
@@ -720,7 +722,7 @@ SafeBrowsingDatabase* SafeBrowsingService::GetDatabase() {
   DCHECK(result);
   path = path.Append(chrome::kSafeBrowsingBaseFilename);
 
-  Time before = Time::Now();
+  const base::TimeTicks before = base::TimeTicks::Now();
 
   SafeBrowsingDatabase* database =
       SafeBrowsingDatabase::Create(enable_download_protection_);
@@ -737,7 +739,7 @@ SafeBrowsingDatabase* SafeBrowsingService::GetDatabase() {
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(this, &SafeBrowsingService::DatabaseLoadComplete));
 
-  UMA_HISTOGRAM_TIMES("SB2.DatabaseOpen", Time::Now() - before);
+  UMA_HISTOGRAM_TIMES("SB2.DatabaseOpen", base::TimeTicks::Now() - before);
   return database_;
 }
 
@@ -775,7 +777,7 @@ void SafeBrowsingService::OnCheckDone(SafeBrowsingCheck* check) {
 
     // Reset the start time so that we can measure the network time without the
     // database time.
-    check->start = Time::Now();
+    check->start = base::TimeTicks::Now();
     protocol_manager_->GetFullHash(check, check->prefix_hits);
   } else {
     // We may have cached results for previous GetHash queries.  Since
@@ -832,7 +834,8 @@ void SafeBrowsingService::DatabaseLoadComplete() {
   DCHECK(DatabaseAvailable());
   while (!queued_checks_.empty()) {
     QueuedCheck check = queued_checks_.front();
-    HISTOGRAM_TIMES("SB.QueueDelay", Time::Now() - check.start);
+    DCHECK(!check.start.is_null());
+    HISTOGRAM_TIMES("SB.QueueDelay", base::TimeTicks::Now() - check.start);
     // If CheckUrl() determines the URL is safe immediately, it doesn't call the
     // client's handler function (because normally it's being directly called by
     // the client).  Since we're not the client, we have to convey this result.
