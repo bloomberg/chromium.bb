@@ -944,9 +944,6 @@ build: ALWAYS
 	$(MAKE) -f $(THISMAKEFILE) nacl_libraries
 	$(MAKE) -f $(THISMAKEFILE) sdk_minimal_test
 	$(MAKE) -f $(THISMAKEFILE) redirector
-	# We delete posix_over_srpc library until it is good enough for binary
-	# distribution.
-	rm -f "$(DESTDIR)$(SDKROOT)/$(CROSSARCH)"/lib{,/32}/libposix_over_srpc.a
 
 ##################################################################
 # Run DejaGnu tests.
