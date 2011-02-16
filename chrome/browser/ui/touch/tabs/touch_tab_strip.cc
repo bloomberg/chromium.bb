@@ -157,7 +157,7 @@ void TouchTabStrip::PaintChildren(gfx::Canvas* canvas) {
     if (tab->dragging()) {
       dragging_tab = tab;
     } else if (!tab->IsSelected()) {
-      tab->ProcessPaint(canvas);
+      tab->Paint(canvas);
     } else {
       selected_tab = tab;
     }
@@ -176,11 +176,11 @@ void TouchTabStrip::PaintChildren(gfx::Canvas* canvas) {
 
   // Paint the selected tab last, so it overlaps all the others.
   if (selected_tab)
-    selected_tab->ProcessPaint(canvas);
+    selected_tab->Paint(canvas);
 
   // And the dragged tab.
   if (dragging_tab)
-    dragging_tab->ProcessPaint(canvas);
+    dragging_tab->Paint(canvas);
 }
 
 TouchTab* TouchTabStrip::GetTabAtTabDataIndex(int tab_data_index) const {

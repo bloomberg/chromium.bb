@@ -69,7 +69,7 @@ void PaintRootView(views::RootView* root, bool empty_paint) {
     gfx::CanvasSkia canvas(paint_rect.width(), paint_rect.height(), true);
     canvas.TranslateInt(-paint_rect.x(), -paint_rect.y());
     canvas.ClipRectInt(0, 0, paint_rect.width(), paint_rect.height());
-    root->ProcessPaint(&canvas);
+    root->Paint(&canvas);
   }
 }
 

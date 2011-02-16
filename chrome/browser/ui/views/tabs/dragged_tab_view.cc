@@ -167,7 +167,7 @@ void DraggedTabView::PaintDetachedView(gfx::Canvas* canvas) {
   photobooth_->PaintScreenshotIntoCanvas(
       &scale_canvas,
       gfx::Rect(image_x, image_y, image_w, image_h));
-  renderer_->ProcessPaint(&scale_canvas);
+  renderer_->Paint(&scale_canvas);
 
   SkIRect subset;
   subset.set(0, 0, ps.width(), ps.height());

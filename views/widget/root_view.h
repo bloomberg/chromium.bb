@@ -173,7 +173,7 @@ class RootView : public View,
 
   // Overridden from View:
   virtual void SchedulePaintInRect(const gfx::Rect& r, bool urgent);
-  virtual void ProcessPaint(gfx::Canvas* canvas);
+  virtual void Paint(gfx::Canvas* canvas);
   virtual void PaintNow();
   virtual const Widget* GetWidget() const;
   virtual Widget* GetWidget();

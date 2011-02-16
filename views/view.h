@@ -522,36 +522,14 @@ class View : public AcceleratorTarget {
   virtual void SchedulePaint();
   virtual void SchedulePaintInRect(const gfx::Rect& r, bool urgent);
 
-  // Override to provide rendering in any part of the View's bounds. Typically
-  // this is the "contents" of the view. If you override this method you will
-  // have to call the subsequent OnPaint*() methods manually.
-  virtual void OnPaint(gfx::Canvas* canvas);
-
-  // Override to paint a background before any content is drawn. Typically this
-  // is done if you are satisfied with a default OnPaint handler but wish to
-  // supply a different background.
-  virtual void OnPaintBackground(gfx::Canvas* canvas);
-
-  // Override to paint a border not specified by SetBorder().
-  virtual void OnPaintBorder(gfx::Canvas* canvas);
-
-  // Override to paint a focus border (usually a dotted rectangle) around
-  // relevant contents.
-  virtual void OnPaintFocusBorder(gfx::Canvas* canvas);
+  // Called by the framework to paint a View. Performs translation and clipping
+  // for View coordinates and language direction as required, allows the View
+  // to paint itself via the various OnPaint*() event handlers and then paints
+  // the hierarchy beneath it.
+  virtual void Paint(gfx::Canvas* canvas);
 
   // Paint this View immediately.
   virtual void PaintNow();
-
-  // This method is the main entry point to process paint for this
-  // view and its children. This method is called by the painting
-  // system. You should call this only if you want to draw a sub tree
-  // inside a custom graphics.
-  // To customize painting override either the Paint or PaintChildren method,
-  // not this one.
-  virtual void ProcessPaint(gfx::Canvas* canvas);
-
-  // Paint the View's child Views, in reverse order.
-  virtual void PaintChildren(gfx::Canvas* canvas);
 
   // The background object is owned by this object and may be NULL.
   void set_background(Background* b) { background_.reset(b); }
@@ -1072,6 +1050,28 @@ class View : public AcceleratorTarget {
                                           RootView* root_view);
 
   // Painting ------------------------------------------------------------------
+
+  // Responsible for calling Paint() on child Views. Override to control the
+  // order child Views are painted.
+  virtual void PaintChildren(gfx::Canvas* canvas);
+
+  // Override to provide rendering in any part of the View's bounds. Typically
+  // this is the "contents" of the view. If you override this method you will
+  // have to call the subsequent OnPaint*() methods manually.
+  virtual void OnPaint(gfx::Canvas* canvas);
+
+  // Override to paint a background before any content is drawn. Typically this
+  // is done if you are satisfied with a default OnPaint handler but wish to
+  // supply a different background.
+  virtual void OnPaintBackground(gfx::Canvas* canvas);
+
+  // Override to paint a border not specified by SetBorder().
+  virtual void OnPaintBorder(gfx::Canvas* canvas);
+
+  // Override to paint a focus border (usually a dotted rectangle) around
+  // relevant contents.
+  virtual void OnPaintFocusBorder(gfx::Canvas* canvas);
+
 #ifndef NDEBUG
   // Returns true if the View is currently processing a paint.
   virtual bool IsProcessingPaint() const;

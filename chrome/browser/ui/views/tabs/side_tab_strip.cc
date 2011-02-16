@@ -131,19 +131,19 @@ void SideTabStrip::PaintChildren(gfx::Canvas* canvas) {
 
   // Paint the new tab and separator first so that any tabs animating appear on
   // top.
-  separator_->ProcessPaint(canvas);
-  newtab_button_->ProcessPaint(canvas);
+  separator_->Paint(canvas);
+  newtab_button_->Paint(canvas);
 
   for (int i = tab_count() - 1; i >= 0; --i) {
     BaseTab* tab = base_tab_at_tab_index(i);
     if (tab->dragging())
       dragging_tab = tab;
     else
-      tab->ProcessPaint(canvas);
+      tab->Paint(canvas);
   }
 
   if (dragging_tab)
-    dragging_tab->ProcessPaint(canvas);
+    dragging_tab->Paint(canvas);
 }
 
 BaseTab* SideTabStrip::CreateTab() {

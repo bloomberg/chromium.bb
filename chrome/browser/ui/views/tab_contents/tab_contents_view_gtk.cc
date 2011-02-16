@@ -414,7 +414,7 @@ gboolean TabContentsViewGtk::OnPaint(GtkWidget* widget, GdkEventExpose* event) {
     GetBounds(&bounds, true);
     sad_tab_->SetBoundsRect(gfx::Rect(0, 0, bounds.width(), bounds.height()));
     gfx::CanvasSkiaPaint canvas(event);
-    sad_tab_->ProcessPaint(&canvas);
+    sad_tab_->Paint(&canvas);
   }
   return false;  // False indicates other widgets should get the event as well.
 }

@@ -1081,7 +1081,7 @@ void WindowWin::OnNCPaint(HRGN rgn) {
     gfx::CanvasSkiaPaint canvas(dc, opaque(), dirty_region.left,
                                 dirty_region.top, dirty_region.Width(),
                                 dirty_region.Height());
-    root_view->ProcessPaint(&canvas);
+    root_view->Paint(&canvas);
   }
 
   ReleaseDC(GetNativeView(), dc);

@@ -42,7 +42,7 @@ void RootView::OnPaint(GdkEventExpose* event) {
     canvas.set_composite_alpha(widget->is_transparent());
     SchedulePaintInRect(gfx::Rect(canvas.rectangle()), false);
     if (NeedsPainting(false)) {
-      ProcessPaint(&canvas);
+      Paint(&canvas);
       invoked_process_paint = true;
     }
   }
@@ -53,7 +53,7 @@ void RootView::OnPaint(GdkEventExpose* event) {
     // We're painting as the result of Gtk wanting us to paint (not from views)
     // and there was a region scheduled by views to be painted that is not
     // contained in the region gtk wants us to paint. As a result of the
-    // ProcessPaint call above views no longer thinks it needs to be painted.
+    // Paint() call above views no longer thinks it needs to be painted.
     // We have to invoke SchedulePaint here to be sure we end up painting the
     // region views wants to paint, otherwise we'll drop the views paint region
     // on the floor.

@@ -63,7 +63,7 @@ namespace {
 
 #ifndef NDEBUG
 // Sets the value of RootView's |is_processing_paint_| member to true as long
-// as ProcessPaint is being called. Sets it to |false| when it returns.
+// as Paint() is being called. Sets it to |false| when it returns.
 class ScopedProcessingPaint {
  public:
   explicit ScopedProcessingPaint(bool* is_processing_paint)
@@ -358,7 +358,7 @@ void RootView::SchedulePaintInRect(const gfx::Rect& r, bool urgent) {
   }
 }
 
-void RootView::ProcessPaint(gfx::Canvas* canvas) {
+void RootView::Paint(gfx::Canvas* canvas) {
 #ifndef NDEBUG
   ScopedProcessingPaint processing_paint(&is_processing_paint_);
 #endif
@@ -383,7 +383,7 @@ void RootView::ProcessPaint(gfx::Canvas* canvas) {
                       invalid_rect_.height());
 
   // Paint the tree
-  View::ProcessPaint(canvas);
+  View::Paint(canvas);
 
   // Restore the previous transform
   canvas->Restore();

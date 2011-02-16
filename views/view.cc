@@ -629,36 +629,7 @@ void View::SchedulePaintInRect(const gfx::Rect& r, bool urgent) {
   }
 }
 
-void View::OnPaint(gfx::Canvas* canvas) {
-  OnPaintBackground(canvas);
-  OnPaintFocusBorder(canvas);
-  OnPaintBorder(canvas);
-}
-
-void View::OnPaintBackground(gfx::Canvas* canvas) {
-  if (background_.get())
-    background_->Paint(canvas, this);
-}
-
-void View::OnPaintBorder(gfx::Canvas* canvas) {
-  if (border_.get())
-    border_->Paint(*this, canvas);
-}
-
-void View::OnPaintFocusBorder(gfx::Canvas* canvas) {
-  if (HasFocus() && (IsFocusable() || IsAccessibilityFocusableInRootView()))
-    canvas->DrawFocusRect(0, 0, width(), height());
-}
-
-void View::PaintNow() {
-  if (!IsVisible())
-    return;
-
-  if (parent())
-    parent()->PaintNow();
-}
-
-void View::ProcessPaint(gfx::Canvas* canvas) {
+void View::Paint(gfx::Canvas* canvas) {
   if (!IsVisible())
     return;
 
@@ -703,16 +674,15 @@ void View::ProcessPaint(gfx::Canvas* canvas) {
   canvas->Restore();
 }
 
-void View::PaintChildren(gfx::Canvas* canvas) {
-  for (int i = 0, count = child_count(); i < count; ++i) {
-    View* child = GetChildViewAt(i);
-    if (!child) {
-      NOTREACHED() << "Should not have a NULL child View for index in bounds";
-      continue;
-    }
-    child->ProcessPaint(canvas);
-  }
+void View::PaintNow() {
+  if (!IsVisible())
+    return;
+
+  if (parent())
+    parent()->PaintNow();
 }
+
+
 
 ThemeProvider* View::GetThemeProvider() const {
   const Widget* widget = GetWidget();
@@ -1087,6 +1057,38 @@ void View::NativeViewHierarchyChanged(bool attached,
 }
 
 // Painting --------------------------------------------------------------------
+
+void View::PaintChildren(gfx::Canvas* canvas) {
+  for (int i = 0, count = child_count(); i < count; ++i) {
+    View* child = GetChildViewAt(i);
+    if (!child) {
+      NOTREACHED() << "Should not have a NULL child View for index in bounds";
+      continue;
+    }
+    child->Paint(canvas);
+  }
+}
+
+void View::OnPaint(gfx::Canvas* canvas) {
+  OnPaintBackground(canvas);
+  OnPaintFocusBorder(canvas);
+  OnPaintBorder(canvas);
+}
+
+void View::OnPaintBackground(gfx::Canvas* canvas) {
+  if (background_.get())
+    background_->Paint(canvas, this);
+}
+
+void View::OnPaintBorder(gfx::Canvas* canvas) {
+  if (border_.get())
+    border_->Paint(*this, canvas);
+}
+
+void View::OnPaintFocusBorder(gfx::Canvas* canvas) {
+  if (HasFocus() && (IsFocusable() || IsAccessibilityFocusableInRootView()))
+    canvas->DrawFocusRect(0, 0, width(), height());
+}
 
 #ifndef NDEBUG
 bool View::IsProcessingPaint() const {

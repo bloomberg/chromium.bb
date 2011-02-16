@@ -276,7 +276,7 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
     if (tab->dragging()) {
       dragging_tab = tab;
     } else if (!tab->IsSelected()) {
-      tab->ProcessPaint(canvas);
+      tab->Paint(canvas);
     } else {
       selected_tab = tab;
     }
@@ -295,14 +295,14 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
 
   // Paint the selected tab last, so it overlaps all the others.
   if (selected_tab)
-    selected_tab->ProcessPaint(canvas);
+    selected_tab->Paint(canvas);
 
   // Paint the New Tab button.
-  newtab_button_->ProcessPaint(canvas);
+  newtab_button_->Paint(canvas);
 
   // And the dragged tab.
   if (dragging_tab)
-    dragging_tab->ProcessPaint(canvas);
+    dragging_tab->Paint(canvas);
 }
 
 // Overridden to support automation. See automation_proxy_uitest.cc.

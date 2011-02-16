@@ -324,6 +324,11 @@ bool Textfield::SkipDefaultKeyEventProcessing(const KeyEvent& e) {
   return false;
 }
 
+void Textfield::OnPaintBackground(gfx::Canvas* canvas) {
+  // Overridden to be public - gtk_views_entry.cc wants to call it.
+  View::OnPaintBackground(canvas);
+}
+
 void Textfield::OnPaintFocusBorder(gfx::Canvas* canvas) {
   if (NativeViewHost::kRenderNativeControlFocus)
     View::OnPaintFocusBorder(canvas);

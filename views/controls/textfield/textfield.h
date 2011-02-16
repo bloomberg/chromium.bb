@@ -263,6 +263,7 @@ class Textfield : public View {
   virtual void AboutToRequestFocusFromTabTraversal(bool reverse);
   virtual bool SkipDefaultKeyEventProcessing(const KeyEvent& e);
   virtual void SetEnabled(bool enabled);
+  virtual void OnPaintBackground(gfx::Canvas* canvas);
   virtual void OnPaintFocusBorder(gfx::Canvas* canvas);
   virtual bool OnKeyPressed(const views::KeyEvent& e);
   virtual bool OnKeyReleased(const views::KeyEvent& e);

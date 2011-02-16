@@ -383,8 +383,8 @@ void WidgetWin::PaintNow(const gfx::Rect& update_rect) {
     // As we were created with a style of WS_CLIPCHILDREN redraw requests may
     // result in an empty paint rect in WM_PAINT (this'll happen if a
     // child HWND completely contains the update _rect). In such a scenario
-    // RootView would never get a ProcessPaint and always think it needs to
-    // be painted (leading to a steady stream of RedrawWindow requests on every
+    // RootView would never get a Paint() and always think it needs to be
+    // painted (leading to a steady stream of RedrawWindow requests on every
     // event). For this reason we tell RootView it doesn't need to paint
     // here.
     root_view_->ClearPaintRect();
@@ -1158,7 +1158,7 @@ void WidgetWin::PaintLayeredWindow() {
   gfx::Rect dirty_rect = root_view_->GetScheduledPaintRect();
   contents_->ClipRectInt(dirty_rect.x(), dirty_rect.y(), dirty_rect.width(),
                          dirty_rect.height());
-  root_view_->ProcessPaint(contents_.get());
+  root_view_->Paint(contents_.get());
   contents_->restore();
 
   UpdateWindowFromContents(contents_->getTopPlatformDevice().getBitmapDC());
