@@ -4,6 +4,8 @@
 
 #include "chrome/browser/gpu_process_host_ui_shim.h"
 
+#include "app/app_switches.h"
+#include "app/gfx/gl/gl_implementation.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/browser_thread.h"
@@ -326,7 +328,9 @@ void GpuProcessHostUIShim::OnChannelEstablished(
     gpu_feature_flags_set_ = true;
 
     const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
-    if (!browser_command_line.HasSwitch(switches::kIgnoreGpuBlacklist)) {
+    if (!browser_command_line.HasSwitch(switches::kIgnoreGpuBlacklist) &&
+        browser_command_line.GetSwitchValueASCII(
+            switches::kUseGL) != gfx::kGLImplementationOSMesaName) {
       gpu_feature_flags_ = gpu_blacklist_->DetermineGpuFeatureFlags(
           GpuBlacklist::kOsAny, NULL, gpu_info);
 

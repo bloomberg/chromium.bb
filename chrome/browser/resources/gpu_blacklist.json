@@ -38,7 +38,7 @@
 {
   "name": "gpu blacklist",
   // Please update the version number whenever you change this file.
-  "version": "0.8",
+  "version": "0.9",
   "entries": [
     { // ATI Radeon X1900 on Mac, BUGWEBKIT=47028
       "id": "1",
@@ -134,6 +134,20 @@
       },
       "vendor_id": "0x10de",
       "device_id": "0x0324",
+      "blacklist": [
+        "webgl",
+        "accelerated_compositing"
+      ]
+    },
+    { // Windows XP, BUG=72975
+      "id": "9",
+      "os": {
+        "type": "win",
+        "version": {
+          "op": "=",
+          "number": "5"
+        }
+      },
       "blacklist": [
         "webgl",
         "accelerated_compositing"
