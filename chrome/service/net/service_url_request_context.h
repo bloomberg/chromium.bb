@@ -32,9 +32,6 @@ class MessageLoopProxy;
 class ServiceURLRequestContext : public net::URLRequestContext {
  public:
   explicit ServiceURLRequestContext(const std::string& user_agent);
-  void set_cookie_policy(net::CookiePolicy* policy) {
-    cookie_policy_ = policy;
-  }
 
   // Overridden from net::URLRequestContext:
   virtual const std::string& GetUserAgent(const GURL& url) const;
@@ -68,4 +65,3 @@ class ServiceURLRequestContextGetter : public URLRequestContextGetter {
 };
 
 #endif  // CHROME_SERVICE_NET_SERVICE_URL_REQUEST_CONTEXT_H_
-
