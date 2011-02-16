@@ -53,6 +53,7 @@
       '-find_in_page.FindMatchTests.testLocalizationAndCaseOrder',
       'execute_javascript',
       'history',
+      'https',
       'imports',
       'infobars',
       'instant',

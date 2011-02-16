@@ -9,7 +9,7 @@ import pyauto_functional  # Must be imported before pyauto
 import pyauto
 
 
-class SSLTest(pyauto.PyUITest):
+class HTTPSTest(pyauto.PyUITest):
   """TestCase for SSL."""
 
   def Debug(self):
