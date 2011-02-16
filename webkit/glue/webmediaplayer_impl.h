@@ -99,7 +99,7 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
     // Methods for Filter -> WebMediaPlayerImpl communication.
     void Repaint();
     void SetVideoRenderer(scoped_refptr<WebVideoRenderer> video_renderer);
-    void SetDataSource(scoped_refptr<WebDataSource> data_source);
+    void AddDataSource(scoped_refptr<WebDataSource> data_source);
 
     // Methods for WebMediaPlayerImpl -> Filter communication.
     void Paint(skia::PlatformCanvas* canvas, const gfx::Rect& dest_rect);
@@ -108,7 +108,7 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
     void GetCurrentFrame(scoped_refptr<media::VideoFrame>* frame_out);
     void PutCurrentFrame(scoped_refptr<media::VideoFrame> frame);
     bool HasSingleOrigin();
-    void AbortDataSource();
+    void AbortDataSources();
 
     // Methods for PipelineImpl -> WebMediaPlayerImpl communication.
     void PipelineInitializationCallback();
@@ -146,7 +146,11 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
     // The render message loop where WebKit lives.
     MessageLoop* render_loop_;
     WebMediaPlayerImpl* webmediaplayer_;
-    scoped_refptr<WebDataSource> data_source_;
+
+    base::Lock data_sources_lock_;
+    typedef std::list<scoped_refptr<WebDataSource> > DataSourceList;
+    DataSourceList data_sources_;
+
     scoped_refptr<WebVideoRenderer> video_renderer_;
 
     base::Lock lock_;

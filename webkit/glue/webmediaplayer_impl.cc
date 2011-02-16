@@ -113,9 +113,10 @@ void WebMediaPlayerImpl::Proxy::SetVideoRenderer(
   video_renderer_ = video_renderer;
 }
 
-void WebMediaPlayerImpl::Proxy::SetDataSource(
+void WebMediaPlayerImpl::Proxy::AddDataSource(
     scoped_refptr<WebDataSource> data_source) {
-  data_source_ = data_source;
+  base::AutoLock auto_lock(data_sources_lock_);
+  data_sources_.push_back(data_source);
 }
 
 void WebMediaPlayerImpl::Proxy::Paint(skia::PlatformCanvas* canvas,
@@ -135,16 +136,26 @@ void WebMediaPlayerImpl::Proxy::SetSize(const gfx::Rect& rect) {
 
 bool WebMediaPlayerImpl::Proxy::HasSingleOrigin() {
   DCHECK(MessageLoop::current() == render_loop_);
-  if (data_source_) {
-    return data_source_->HasSingleOrigin();
+
+  base::AutoLock auto_lock(data_sources_lock_);
+
+  for (DataSourceList::iterator itr = data_sources_.begin();
+       itr != data_sources_.end();
+       itr++) {
+    if (!(*itr)->HasSingleOrigin())
+      return false;
   }
   return true;
 }
 
-void WebMediaPlayerImpl::Proxy::AbortDataSource() {
+void WebMediaPlayerImpl::Proxy::AbortDataSources() {
   DCHECK(MessageLoop::current() == render_loop_);
-  if (data_source_) {
-    data_source_->Abort();
+  base::AutoLock auto_lock(data_sources_lock_);
+
+  for (DataSourceList::iterator itr = data_sources_.begin();
+       itr != data_sources_.end();
+       itr++) {
+    (*itr)->Abort();
   }
 }
 
@@ -152,7 +163,11 @@ void WebMediaPlayerImpl::Proxy::Detach() {
   DCHECK(MessageLoop::current() == render_loop_);
   webmediaplayer_ = NULL;
   video_renderer_ = NULL;
-  data_source_ = NULL;
+
+  {
+    base::AutoLock auto_lock(data_sources_lock_);
+    data_sources_.clear();
+  }
 }
 
 void WebMediaPlayerImpl::Proxy::PipelineInitializationCallback() {
@@ -300,7 +315,7 @@ bool WebMediaPlayerImpl::Initialize(
   // A sophisticated data source that does memory caching.
   scoped_refptr<BufferedDataSource> buffered_data_source(
       new BufferedDataSource(MessageLoop::current(), frame));
-  proxy_->SetDataSource(buffered_data_source);
+  proxy_->AddDataSource(buffered_data_source);
 
   if (use_simple_data_source) {
     filter_collection_->AddDataSource(simple_data_source);
@@ -839,7 +854,7 @@ void WebMediaPlayerImpl::Destroy() {
   // Tell the data source to abort any pending reads so that the pipeline is
   // not blocked when issuing stop commands to the other filters.
   if (proxy_)
-    proxy_->AbortDataSource();
+    proxy_->AbortDataSources();
 
   // Make sure to kill the pipeline so there's no more media threads running.
   // Note: stopping the pipeline might block for a long time.
