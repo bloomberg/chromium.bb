@@ -18,6 +18,7 @@ class NullableString16;
 class Profile;
 class SerializedScriptValue;
 struct IndexedDBHostMsg_DatabaseCreateObjectStore_Params;
+struct IndexedDBHostMsg_FactoryDeleteDatabase_Params;
 struct IndexedDBHostMsg_FactoryOpen_Params;
 struct IndexedDBHostMsg_IndexOpenCursor_Params;
 struct IndexedDBHostMsg_ObjectStoreCreateIndex_Params;
@@ -61,9 +62,19 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
  private:
   ~IndexedDBDispatcherHost();
 
+  // True if the given |origin| can use databases according to the content
+  // settings.
+  bool CheckContentSetting(const string16& origin,
+                           const string16& description,
+                           int routing_id,
+                           int response_id);
+
   // Message processing. Most of the work is delegated to the dispatcher hosts
   // below.
   void OnIDBFactoryOpen(const IndexedDBHostMsg_FactoryOpen_Params& p);
+
+  void OnIDBFactoryDeleteDatabase(
+      const IndexedDBHostMsg_FactoryDeleteDatabase_Params& p);
 
   // Helper templates.
   template <class ReturnType>

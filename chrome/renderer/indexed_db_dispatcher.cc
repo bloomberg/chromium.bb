@@ -125,6 +125,28 @@ void IndexedDBDispatcher::RequestIDBFactoryOpen(
   RenderThread::current()->Send(new IndexedDBHostMsg_FactoryOpen(params));
 }
 
+void IndexedDBDispatcher::RequestIDBFactoryDeleteDatabase(
+    const string16& name,
+    WebIDBCallbacks* callbacks_ptr,
+    const string16& origin,
+    WebFrame* web_frame) {
+  scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
+
+  if (!web_frame)
+    return; // We must be shutting down.
+  RenderView* render_view = RenderView::FromWebView(web_frame->view());
+  if (!render_view)
+    return; // We must be shutting down.
+
+  IndexedDBHostMsg_FactoryDeleteDatabase_Params params;
+  params.routing_id = render_view->routing_id();
+  params.response_id = pending_callbacks_.Add(callbacks.release());
+  params.origin = origin;
+  params.name = name;
+  RenderThread::current()->Send(
+      new IndexedDBHostMsg_FactoryDeleteDatabase(params));
+}
+
 void IndexedDBDispatcher::RequestIDBDatabaseSetVersion(
     const string16& version,
     WebIDBCallbacks* callbacks_ptr,

@@ -28,11 +28,26 @@ void RendererWebIDBFactoryImpl::open(
     WebIDBCallbacks* callbacks,
     const WebSecurityOrigin& origin,
     WebFrame* web_frame,
-    const WebString& dataDir,
+    const WebString& data_dir,
     unsigned long long maximum_size) {
-  // Don't send the dataDir. We know what we want on the Browser side of things.
+  // Don't send the data_dir. We know what we want on the Browser side of
+  // things.
   IndexedDBDispatcher* dispatcher =
       RenderThread::current()->indexed_db_dispatcher();
   dispatcher->RequestIDBFactoryOpen(
       name, callbacks, origin.databaseIdentifier(), web_frame, maximum_size);
+}
+
+void RendererWebIDBFactoryImpl::deleteDatabase(
+    const WebString& name,
+    WebIDBCallbacks* callbacks,
+    const WebSecurityOrigin& origin,
+    WebFrame* web_frame,
+    const WebString& data_dir) {
+  // Don't send the data_dir. We know what we want on the Browser side of
+  // things.
+  IndexedDBDispatcher* dispatcher =
+      RenderThread::current()->indexed_db_dispatcher();
+  dispatcher->RequestIDBFactoryDeleteDatabase(
+      name, callbacks, origin.databaseIdentifier(), web_frame);
 }

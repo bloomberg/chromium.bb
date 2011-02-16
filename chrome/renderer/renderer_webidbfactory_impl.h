@@ -29,8 +29,14 @@ class RendererWebIDBFactoryImpl : public WebKit::WebIDBFactory {
       WebKit::WebIDBCallbacks* callbacks,
       const WebKit::WebSecurityOrigin& origin,
       WebKit::WebFrame* web_frame,
-      const WebKit::WebString& dataDir,
+      const WebKit::WebString& data_dir,
       unsigned long long maximum_size);
+  virtual void deleteDatabase(
+      const WebKit::WebString& name,
+      WebKit::WebIDBCallbacks* callbacks,
+      const WebKit::WebSecurityOrigin& origin,
+      WebKit::WebFrame* web_frame,
+      const WebKit::WebString& data_dir);
 };
 
 #endif  // CHROME_RENDERER_RENDERER_WEBIDBFACTORY_IMPL_H_

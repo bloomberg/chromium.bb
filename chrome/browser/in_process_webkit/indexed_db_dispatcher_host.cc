@@ -123,6 +123,8 @@ bool IndexedDBDispatcherHost::OnMessageReceived(const IPC::Message& message,
     handled = true;
     IPC_BEGIN_MESSAGE_MAP_EX(IndexedDBDispatcherHost, message, *message_was_ok)
       IPC_MESSAGE_HANDLER(IndexedDBHostMsg_FactoryOpen, OnIDBFactoryOpen)
+      IPC_MESSAGE_HANDLER(IndexedDBHostMsg_FactoryDeleteDatabase,
+                          OnIDBFactoryDeleteDatabase)
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
   }
@@ -176,6 +178,35 @@ int32 IndexedDBDispatcherHost::Add(WebIDBTransaction* idb_transaction) {
   return id;
 }
 
+bool IndexedDBDispatcherHost::CheckContentSetting(const string16& origin,
+                                                  const string16& description,
+                                                  int routing_id,
+                                                  int response_id) {
+  GURL host(string16(WebSecurityOrigin::createFromDatabaseIdentifier(
+      origin).toString()));
+
+  ContentSetting content_setting =
+      host_content_settings_map_->GetContentSetting(
+          host, CONTENT_SETTINGS_TYPE_COOKIES, "");
+
+  CallRenderViewHostContentSettingsDelegate(
+      process_id_, routing_id,
+      &RenderViewHostDelegate::ContentSettings::OnIndexedDBAccessed,
+      host, description, content_setting == CONTENT_SETTING_BLOCK);
+
+  if (content_setting == CONTENT_SETTING_BLOCK) {
+    // TODO(jorlow): Change this to the proper error code once we figure out
+    // one.
+    int error_code = 0; // Defined by the IndexedDB spec.
+    static string16 error_message = ASCIIToUTF16(
+        "The user denied permission to access the database.");
+    Send(new IndexedDBMsg_CallbacksError(response_id, error_code,
+                                         error_message));
+    return false;
+  }
+  return true;
+}
+
 void IndexedDBDispatcherHost::OnIDBFactoryOpen(
     const IndexedDBHostMsg_FactoryOpen_Params& params) {
   FilePath base_path = webkit_context_->data_path();
@@ -186,26 +217,8 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
   }
 
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
-  GURL host(string16(WebSecurityOrigin::createFromDatabaseIdentifier(
-      params.origin).toString()));
-
-  ContentSetting content_setting =
-      host_content_settings_map_->GetContentSetting(
-          host, CONTENT_SETTINGS_TYPE_COOKIES, "");
-
-  CallRenderViewHostContentSettingsDelegate(
-      process_id_, params.routing_id,
-      &RenderViewHostDelegate::ContentSettings::OnIndexedDBAccessed,
-      host, params.name, content_setting == CONTENT_SETTING_BLOCK);
-
-  if (content_setting == CONTENT_SETTING_BLOCK) {
-    // TODO(jorlow): Change this to the proper error code once we figure out
-    // one.
-    int error_code = 0; // Defined by the IndexedDB spec.
-    static string16 error_message = ASCIIToUTF16(
-        "The user denied permission to open the database.");
-    Send(new IndexedDBMsg_CallbacksError(params.response_id, error_code,
-                                         error_message));
+  if (!CheckContentSetting(params.origin, params.name, params.routing_id,
+                           params.response_id)) {
     return;
   }
 
@@ -222,6 +235,28 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
       new IndexedDBCallbacks<WebIDBDatabase>(this, params.response_id),
       WebSecurityOrigin::createFromDatabaseIdentifier(params.origin), NULL,
       webkit_glue::FilePathToWebString(indexed_db_path), quota);
+}
+
+void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
+    const IndexedDBHostMsg_FactoryDeleteDatabase_Params& params) {
+  FilePath base_path = webkit_context_->data_path();
+  FilePath indexed_db_path;
+  if (!base_path.empty()) {
+    indexed_db_path = base_path.Append(
+        IndexedDBContext::kIndexedDBDirectory);
+  }
+
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
+  if (!CheckContentSetting(params.origin, params.name, params.routing_id,
+                           params.response_id)) {
+    return;
+  }
+
+  Context()->GetIDBFactory()->deleteDatabase(
+      params.name,
+      new IndexedDBCallbacks<WebIDBDatabase>(this, params.response_id),
+      WebSecurityOrigin::createFromDatabaseIdentifier(params.origin), NULL,
+      webkit_glue::FilePathToWebString(indexed_db_path));
 }
 
 //////////////////////////////////////////////////////////////////////

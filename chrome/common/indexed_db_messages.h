@@ -34,6 +34,18 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_FactoryOpen_Params)
   IPC_STRUCT_MEMBER(uint64, maximum_size)
 IPC_STRUCT_END()
 
+// Used to delete an indexed database.
+IPC_STRUCT_BEGIN(IndexedDBHostMsg_FactoryDeleteDatabase_Params)
+  // The routing ID of the view initiating the deletion.
+  IPC_STRUCT_MEMBER(int32, routing_id)
+  // The response should have this id.
+  IPC_STRUCT_MEMBER(int32, response_id)
+  // The origin doing the initiating.
+  IPC_STRUCT_MEMBER(string16, origin)
+  // The name of the database.
+  IPC_STRUCT_MEMBER(string16, name)
+IPC_STRUCT_END()
+
 // Used to create an object store.
 IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabaseCreateObjectStore_Params)
   // The name of the object store.
@@ -199,6 +211,10 @@ IPC_SYNC_MESSAGE_CONTROL2_1(IndexedDBHostMsg_CursorDelete,
 // WebIDBFactory::open() message.
 IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_FactoryOpen,
                      IndexedDBHostMsg_FactoryOpen_Params)
+
+// WebIDBFactory::deleteDatabase() message.
+IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_FactoryDeleteDatabase,
+                     IndexedDBHostMsg_FactoryDeleteDatabase_Params)
 
 // WebIDBDatabase::name() message.
 IPC_SYNC_MESSAGE_CONTROL1_1(IndexedDBHostMsg_DatabaseName,
