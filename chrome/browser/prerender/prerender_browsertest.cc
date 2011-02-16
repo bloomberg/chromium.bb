@@ -36,8 +36,10 @@ class TestPrerenderContents : public PrerenderContents {
   TestPrerenderContents(
       PrerenderManager* prerender_manager, Profile* profile, const GURL& url,
       const std::vector<GURL>& alias_urls,
+      const GURL& referrer,
       FinalStatus expected_final_status)
-      : PrerenderContents(prerender_manager, profile, url, alias_urls),
+      : PrerenderContents(prerender_manager, profile, url, alias_urls,
+                          referrer),
         did_finish_loading_(false),
         expected_final_status_(expected_final_status) {
   }
@@ -76,9 +78,10 @@ class WaitForLoadPrerenderContentsFactory : public PrerenderContents::Factory {
 
   virtual PrerenderContents* CreatePrerenderContents(
       PrerenderManager* prerender_manager, Profile* profile, const GURL& url,
-      const std::vector<GURL>& alias_urls) {
+      const std::vector<GURL>& alias_urls, const GURL& referrer) {
     return new TestPrerenderContents(prerender_manager, profile, url,
-                                     alias_urls, expected_final_status_);
+                                     alias_urls, referrer,
+                                     expected_final_status_);
   }
 
  private:
@@ -243,6 +246,13 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHttpAuthentication) {
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderRedirect) {
   PrerenderTestURL("prerender_redirect.html",
                    FINAL_STATUS_USED, 2);
+  NavigateToDestURL();
+}
+
+// Checks that the referrer is set when prerendering.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderReferrer) {
+  PrerenderTestURL("prerender_referrer.html",
+                   FINAL_STATUS_USED, 1);
   NavigateToDestURL();
 }
 

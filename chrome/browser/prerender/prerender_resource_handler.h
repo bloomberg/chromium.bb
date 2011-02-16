@@ -69,19 +69,27 @@ class PrerenderResourceHandler : public ResourceHandler {
 
  private:
   friend class PrerenderResourceHandlerTest;
-  typedef Callback2<const GURL&, const std::vector<GURL>&>::Type
-      PrerenderCallback;
+  typedef Callback3<const GURL&,
+                    const std::vector<GURL>&,
+                    const GURL&>::Type PrerenderCallback;
 
-  PrerenderResourceHandler(ResourceHandler* next_handler,
+  PrerenderResourceHandler(const net::URLRequest& request,
+                           ResourceHandler* next_handler,
                            PrerenderManager* prerender_manager);
-  PrerenderResourceHandler(ResourceHandler* next_handler,
+
+  // This constructor is only used from unit tests.
+  PrerenderResourceHandler(const net::URLRequest& request,
+                           ResourceHandler* next_handler,
                            PrerenderCallback* callback);
+
   virtual ~PrerenderResourceHandler();
 
   void RunCallbackFromUIThread(const GURL& url,
-                               const std::vector<GURL>& alias_urls);
+                               const std::vector<GURL>& alias_urls,
+                               const GURL& referrer);
   void StartPrerender(const GURL& url,
-                      const std::vector<GURL>& alias_urls);
+                      const std::vector<GURL>& alias_urls,
+                      const GURL& referrer);
 
   // The set of URLs that are aliases to the URL to be prerendered,
   // as a result of redirects.
@@ -90,6 +98,10 @@ class PrerenderResourceHandler : public ResourceHandler {
   scoped_refptr<ResourceHandler> next_handler_;
   scoped_refptr<PrerenderManager> prerender_manager_;
   scoped_ptr<PrerenderCallback> prerender_callback_;
+
+  // Used to obtain the referrer, but only after any redirections occur, as they
+  // can result in the referrer being cleared.
+  const net::URLRequest& request_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderResourceHandler);
 };

@@ -50,7 +50,7 @@ class PrerenderContents : public RenderViewHostDelegate,
 
     virtual PrerenderContents* CreatePrerenderContents(
         PrerenderManager* prerender_manager, Profile* profile, const GURL& url,
-        const std::vector<GURL>& alias_urls) = 0;
+        const std::vector<GURL>& alias_urls, const GURL& referrer) = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Factory);
@@ -169,7 +169,8 @@ class PrerenderContents : public RenderViewHostDelegate,
 
  protected:
   PrerenderContents(PrerenderManager* prerender_manager, Profile* profile,
-                    const GURL& url, const std::vector<GURL>& alias_urls);
+                    const GURL& url, const std::vector<GURL>& alias_urls,
+                    const GURL& referrer);
 
   // from RenderViewHostDelegate.
   virtual bool OnMessageReceived(const IPC::Message& message);
@@ -205,6 +206,9 @@ class PrerenderContents : public RenderViewHostDelegate,
 
   // The URL being prerendered.
   GURL prerender_url_;
+
+  // The referrer.
+  GURL referrer_;
 
   // The NavigationParameters of the finished navigation.
   scoped_ptr<ViewHostMsg_FrameNavigate_Params> navigate_params_;

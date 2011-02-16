@@ -5,6 +5,7 @@
 #include "chrome/browser/prerender/prerender_resource_handler.h"
 #include "chrome/common/resource_response.h"
 #include "net/http/http_response_headers.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace prerender {
@@ -84,14 +85,18 @@ net::HttpResponseHeaders* CreateResponseHeaders(
 class PrerenderResourceHandlerTest : public testing::Test {
  protected:
   PrerenderResourceHandlerTest()
-      : ALLOW_THIS_IN_INITIALIZER_LIST(
+      : loop_(MessageLoop::TYPE_IO),
+        ui_thread_(BrowserThread::UI, &loop_),
+        io_thread_(BrowserThread::IO, &loop_),
+        test_url_request_(GURL("http://www.referrer.com"),
+                          &test_url_request_delegate_),
+        ALLOW_THIS_IN_INITIALIZER_LIST(
             pre_handler_(new PrerenderResourceHandler(
+                test_url_request_,
                 new MockResourceHandler(),
                 NewCallback(
                     this,
                     &PrerenderResourceHandlerTest::SetLastHandledURL)))),
-        ui_thread_(BrowserThread::UI, &loop_),
-        io_thread_(BrowserThread::IO, &loop_),
         default_url_("http://www.prerender.com") {
   }
 
@@ -105,9 +110,11 @@ class PrerenderResourceHandlerTest : public testing::Test {
     loop_.RunAllPending();
   }
 
-  void SetLastHandledURL(const GURL& url, const std::vector<GURL>& alias_urls) {
+  void SetLastHandledURL(const GURL& url, const std::vector<GURL>& alias_urls,
+                         const GURL& referrer) {
     last_handled_url_ = url;
     alias_urls_ = alias_urls;
+    referrer_ = referrer;
   }
 
   // Common logic shared by many of the tests
@@ -134,13 +141,19 @@ class PrerenderResourceHandlerTest : public testing::Test {
         != alias_urls_.end();
   }
 
-  scoped_refptr<PrerenderResourceHandler> pre_handler_;
+  // Must be initialized before |test_url_request_|.
   MessageLoop loop_;
   BrowserThread ui_thread_;
   BrowserThread io_thread_;
+
+  TestDelegate test_url_request_delegate_;
+  TestURLRequest test_url_request_;
+
+  scoped_refptr<PrerenderResourceHandler> pre_handler_;
   GURL last_handled_url_;
   GURL default_url_;
   std::vector<GURL> alias_urls_;
+  GURL referrer_;
 };
 
 namespace {

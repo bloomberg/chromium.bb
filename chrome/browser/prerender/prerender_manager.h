@@ -39,7 +39,8 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
 
   // Preloads the URL supplied.  alias_urls indicates URLs that redirect
   // to the same URL to be preloaded.
-  void AddPreload(const GURL& url, const std::vector<GURL>& alias_urls);
+  void AddPreload(const GURL& url, const std::vector<GURL>& alias_urls,
+                  const GURL& referrer);
 
   // For a given TabContents that wants to navigate to the URL supplied,
   // determines whether a preloaded version of the URL can be used,
@@ -92,7 +93,8 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
   virtual base::Time GetCurrentTime() const;
   virtual PrerenderContents* CreatePrerenderContents(
       const GURL& url,
-      const std::vector<GURL>& alias_urls);
+      const std::vector<GURL>& alias_urls,
+      const GURL& referrer);
 
   // Finds the specified PrerenderContents and returns it, if it exists.
   // Returns NULL otherwise.  Unlike GetEntry, the PrerenderManager maintains

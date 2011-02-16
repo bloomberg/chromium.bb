@@ -28,18 +28,21 @@ class PrerenderContentsFactoryImpl : public PrerenderContents::Factory {
  public:
   virtual PrerenderContents* CreatePrerenderContents(
       PrerenderManager* prerender_manager, Profile* profile, const GURL& url,
-      const std::vector<GURL>& alias_urls) {
-    return new PrerenderContents(prerender_manager, profile, url, alias_urls);
+      const std::vector<GURL>& alias_urls, const GURL& referrer) {
+    return new PrerenderContents(prerender_manager, profile, url, alias_urls,
+                                 referrer);
   }
 };
 
 PrerenderContents::PrerenderContents(PrerenderManager* prerender_manager,
                                      Profile* profile,
                                      const GURL& url,
-                                     const std::vector<GURL>& alias_urls)
+                                     const std::vector<GURL>& alias_urls,
+                                     const GURL& referrer)
     : prerender_manager_(prerender_manager),
       render_view_host_(NULL),
       prerender_url_(url),
+      referrer_(referrer),
       profile_(profile),
       page_id_(0),
       has_stopped_loading_(false),
@@ -91,6 +94,7 @@ void PrerenderContents::StartPrerendering() {
   params.url = prerender_url_;
   params.transition = PageTransition::LINK;
   params.navigation_type = ViewMsg_Navigate_Params::PRERENDER;
+  params.referrer = referrer_;
   render_view_host_->Navigate(params);
 }
 

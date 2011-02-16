@@ -19,7 +19,7 @@ class DummyPrerenderContents : public PrerenderContents {
                          const GURL& url,
                          FinalStatus expected_final_status)
       : PrerenderContents(prerender_manager, NULL, url,
-                          std::vector<GURL>()),
+                          std::vector<GURL>(), GURL()),
         has_started_(false),
         expected_final_status_(expected_final_status) {
   }
@@ -28,7 +28,7 @@ class DummyPrerenderContents : public PrerenderContents {
                          const GURL& url,
                          const std::vector<GURL> alias_urls,
                          FinalStatus expected_final_status)
-      : PrerenderContents(prerender_manager, NULL, url, alias_urls),
+      : PrerenderContents(prerender_manager, NULL, url, alias_urls, GURL()),
         has_started_(false),
         expected_final_status_(expected_final_status) {
   }
@@ -66,7 +66,7 @@ class TestPrerenderManager : public PrerenderManager {
 
   // Shorthand to add a simple preload with no aliases.
   void AddSimplePreload(const GURL& url) {
-    AddPreload(url, std::vector<GURL>());
+    AddPreload(url, std::vector<GURL>(), GURL());
   }
 
   PrerenderContents* next_pc() { return next_pc_.get(); }
@@ -86,7 +86,8 @@ class TestPrerenderManager : public PrerenderManager {
 
   virtual PrerenderContents* CreatePrerenderContents(
       const GURL& url,
-      const std::vector<GURL>& alias_urls) {
+      const std::vector<GURL>& alias_urls,
+      const GURL& referrer) {
     return next_pc_.release();
   }
 

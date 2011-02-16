@@ -79,7 +79,8 @@ void PrerenderManager::SetPrerenderContentsFactory(
 }
 
 void PrerenderManager::AddPreload(const GURL& url,
-                                  const std::vector<GURL>& alias_urls) {
+                                  const std::vector<GURL>& alias_urls,
+                                  const GURL& referrer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DeleteOldEntries();
   // If the URL already exists in the set of preloaded URLs, don't do anything.
@@ -89,7 +90,7 @@ void PrerenderManager::AddPreload(const GURL& url,
     if (it->url_ == url)
       return;
   }
-  PrerenderContentsData data(CreatePrerenderContents(url, alias_urls),
+  PrerenderContentsData data(CreatePrerenderContents(url, alias_urls, referrer),
                              GetCurrentTime(), url);
   prerender_list_.push_back(data);
   data.contents_->StartPrerendering();
@@ -185,9 +186,10 @@ bool PrerenderManager::IsPrerenderElementFresh(const base::Time start) const {
 
 PrerenderContents* PrerenderManager::CreatePrerenderContents(
     const GURL& url,
-    const std::vector<GURL>& alias_urls) {
+    const std::vector<GURL>& alias_urls,
+    const GURL& referrer) {
   return prerender_contents_factory_->CreatePrerenderContents(
-      this, profile_, url, alias_urls);
+      this, profile_, url, alias_urls, referrer);
 }
 
 void PrerenderManager::RecordPerceivedPageLoadTime(base::TimeDelta pplt) {
