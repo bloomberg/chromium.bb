@@ -510,8 +510,8 @@ void RenderWidget::AnimateIfNeeded() {
       // avoid exposing this delay to javascript, we keep posting delayed
       // tasks until base::Time::Now() has advanced far enough.
       int64 delay = (animation_floor_time_ - now).InMillisecondsRoundedUp();
-      UMA_HISTOGRAM_CUSTOM_COUNTS("Renderer4.AnimationDelayTime", delay,
-                                  0, 16, 17);
+      UMA_HISTOGRAM_CUSTOM_COUNTS("Renderer4.AnimationDelayTime",
+                                  static_cast<int>(delay), 0, 16, 17);
       animation_task_posted_ = true;
       MessageLoop::current()->PostDelayedTask(FROM_HERE, NewRunnableMethod(
           this, &RenderWidget::AnimationCallback), delay);
