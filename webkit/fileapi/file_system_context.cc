@@ -37,10 +37,10 @@ void FileSystemContext::DeleteDataForOriginOnFileThread(
   DCHECK(path_manager_.get());
   DCHECK(file_message_loop_->BelongsToCurrentThread());
 
-  std::string storage_identifier =
-      FileSystemPathManager::GetStorageIdentifierFromURL(origin_url);
+  std::string origin_identifier =
+      FileSystemPathManager::GetOriginIdentifierFromURL(origin_url);
   FilePath path_for_origin = path_manager_->base_path().AppendASCII(
-      storage_identifier);
+      origin_identifier);
 
   file_util::Delete(path_for_origin, true /* recursive */);
 }

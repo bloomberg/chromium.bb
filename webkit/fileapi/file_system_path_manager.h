@@ -23,7 +23,7 @@ namespace fileapi {
 //
 //   <profile_dir>/FileSystem/<origin_identifier>/<type>/chrome-<unique>/...
 //
-// where <type> is either one of "Temporary" or "Persistent".
+// <type> is either one of "Temporary" or "Persistent".
 class FileSystemPathManager {
  public:
   FileSystemPathManager(scoped_refptr<base::MessageLoopProxy> file_message_loop,
@@ -51,18 +51,13 @@ class FileSystemPathManager {
                              GetRootPathCallback* callback);
 
   // Cracks the given |path|, retrieves the information embedded in the path
-  // and populates |origin_url| and |type|.  Also it populates |virtual_path|
-  // that is a sandboxed path in the file system, i.e. the relative path to
-  // the file system's root path for the given origin and type.
-  // It returns false if the path does not conform to the expected
-  // filesystem path format.
+  // and populates |origin_url|, |type| and |virtual_path|.  The |virtual_path|
+  // is a sandboxed path in the file system, i.e. the relative path to the
+  // filesystem root for the given domain and type.
   bool CrackFileSystemPath(const FilePath& path,
                            GURL* origin_url,
                            FileSystemType* type,
                            FilePath* virtual_path) const;
-
-  // Checks if a given |name| contains any restricted names/chars in it.
-  bool IsRestrictedFileName(const FilePath& filename) const;
 
   // Returns true if the given |url|'s scheme is allowed to access
   // filesystem.
@@ -78,15 +73,19 @@ class FileSystemPathManager {
     return base_path_;
   }
 
-  // Returns the filesystem name string for the given |origin_url| and |type|.
-  static std::string GetFileSystemName(const GURL& url,
-                                       fileapi::FileSystemType type);
+  // Checks if a given |name| contains any restricted names/chars in it.
+  static bool IsRestrictedFileName(const FilePath& filename);
 
-  // Returns the storage identifier string for the given |url|.
-  static std::string GetStorageIdentifierFromURL(const GURL& url);
+  // Returns the string for the given |type|.
+  // Returns an empty string if the |type| is invalid.
+  static std::string GetFileSystemTypeString(fileapi::FileSystemType type);
+
+  // Returns the origin identifier string, which is used as a part of the
+  // sandboxed path component, for the given |url|.
+  static std::string GetOriginIdentifierFromURL(const GURL& url);
 
   // Gets a base directory path of the sandboxed filesystem that is
-  // specified by |origin_url| and |type|.
+  // specified by |origin_identifier| and |type|.
   // |base_path| must be pointing the FileSystem's data directory
   // under the profile directory, i.e. <profile_dir>/kFileSystemDirectory.
   // Returns an empty path if any of the given parameters are invalid.
@@ -94,7 +93,7 @@ class FileSystemPathManager {
   // it is not an actural root path for the filesystem.
   static FilePath GetFileSystemBaseDirectoryForOriginAndType(
       const FilePath& base_path,
-      const GURL& origin_url,
+      const std::string& origin_identifier,
       fileapi::FileSystemType type);
 
  private:

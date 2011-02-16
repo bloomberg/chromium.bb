@@ -415,12 +415,11 @@ TEST_F(FileSystemPathManagerTest, CheckValidPath) {
 }
 
 TEST_F(FileSystemPathManagerTest, IsRestrictedName) {
-  scoped_ptr<FileSystemPathManager> manager(NewPathManager(false, false));
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kIsRestrictedNameTestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "IsRestrictedName #" << i << " "
                  << kIsRestrictedNameTestCases[i].name);
     FilePath name(kIsRestrictedNameTestCases[i].name);
     EXPECT_EQ(kIsRestrictedNameTestCases[i].expected_dangerous,
-              manager->IsRestrictedFileName(name));
+              FileSystemPathManager::IsRestrictedFileName(name));
   }
 }

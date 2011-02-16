@@ -19,7 +19,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "webkit/glue/webkit_glue.h"
 
-// We use some of WebKit types for conversions between storage identifiers
+// We use some of WebKit types for conversions between origin identifiers
 // and origin URLs.
 using WebKit::WebFileSystem;
 using WebKit::WebSecurityOrigin;
@@ -76,14 +76,6 @@ FilePath::StringType CreateUniqueDirectoryName(const GURL& origin_url) {
 }
 
 static const char kExtensionScheme[] = "chrome-extension";
-
-inline std::string GetFileSystemTypeString(fileapi::FileSystemType type) {
-  if (type == fileapi::kFileSystemTypeTemporary)
-    return fileapi::FileSystemPathManager::kTemporaryName;
-  else if (type == fileapi::kFileSystemTypePersistent)
-    return fileapi::FileSystemPathManager::kPersistentName;
-  return std::string();
-}
 
 }  // anonymous namespace
 
@@ -206,16 +198,20 @@ void FileSystemPathManager::GetFileSystemRootPath(
     return;
   }
 
+  std::string origin_identifier = GetOriginIdentifierFromURL(origin_url);
   FilePath origin_base_path = GetFileSystemBaseDirectoryForOriginAndType(
-      base_path(), origin_url, type);
+      base_path(), origin_identifier, type);
   if (origin_base_path.empty()) {
     callback->Run(false, FilePath(), std::string());
     return;
   }
 
+  std::string type_string = GetFileSystemTypeString(type);
+  DCHECK(!type_string.empty());
+
   scoped_refptr<GetFileSystemRootPathTask> task(
       new GetFileSystemRootPathTask(file_message_loop_,
-                                    GetFileSystemName(origin_url, type),
+                                    origin_identifier + ":" + type_string,
                                     callback.release()));
   task->Start(origin_url, origin_base_path, create);
 }
@@ -284,8 +280,16 @@ bool FileSystemPathManager::CrackFileSystemPath(
   return true;
 }
 
-bool FileSystemPathManager::IsRestrictedFileName(
-    const FilePath& filename) const {
+bool FileSystemPathManager::IsAllowedScheme(const GURL& url) const {
+  // Basically we only accept http or https. We allow file:// URLs
+  // only if --allow-file-access-from-files flag is given.
+  return url.SchemeIs("http") || url.SchemeIs("https") ||
+         url.SchemeIs(kExtensionScheme) ||
+         (url.SchemeIsFile() && allow_file_access_from_files_);
+}
+
+// static
+bool FileSystemPathManager::IsRestrictedFileName(const FilePath& filename) {
   if (filename.value().size() == 0)
     return false;
 
@@ -314,23 +318,18 @@ bool FileSystemPathManager::IsRestrictedFileName(
   return false;
 }
 
-bool FileSystemPathManager::IsAllowedScheme(const GURL& url) const {
-  // Basically we only accept http or https. We allow file:// URLs
-  // only if --allow-file-access-from-files flag is given.
-  return url.SchemeIs("http") || url.SchemeIs("https") ||
-         url.SchemeIs(kExtensionScheme) ||
-         (url.SchemeIsFile() && allow_file_access_from_files_);
+// static
+std::string FileSystemPathManager::GetFileSystemTypeString(
+    fileapi::FileSystemType type) {
+  if (type == fileapi::kFileSystemTypeTemporary)
+    return fileapi::FileSystemPathManager::kTemporaryName;
+  else if (type == fileapi::kFileSystemTypePersistent)
+    return fileapi::FileSystemPathManager::kPersistentName;
+  return std::string();
 }
 
 // static
-std::string FileSystemPathManager::GetFileSystemName(
-    const GURL& origin_url, fileapi::FileSystemType type) {
-  return GetStorageIdentifierFromURL(origin_url)
-      .append(":").append(GetFileSystemTypeString(type));
-}
-
-// static
-std::string FileSystemPathManager::GetStorageIdentifierFromURL(
+std::string FileSystemPathManager::GetOriginIdentifierFromURL(
     const GURL& url) {
   WebKit::WebSecurityOrigin web_security_origin =
       WebKit::WebSecurityOrigin::createFromString(UTF8ToUTF16(url.spec()));
@@ -339,16 +338,16 @@ std::string FileSystemPathManager::GetStorageIdentifierFromURL(
 
 // static
 FilePath FileSystemPathManager::GetFileSystemBaseDirectoryForOriginAndType(
-    const FilePath& base_path, const GURL& origin_url,
+    const FilePath& base_path, const std::string& origin_identifier,
     fileapi::FileSystemType type) {
-  if (!origin_url.is_valid())
+  if (origin_identifier.empty())
     return FilePath();
   std::string type_string = GetFileSystemTypeString(type);
   if (type_string.empty()) {
     LOG(WARNING) << "Unknown filesystem type is requested:" << type;
     return FilePath();
   }
-  return base_path.AppendASCII(GetStorageIdentifierFromURL(origin_url))
+  return base_path.AppendASCII(origin_identifier)
                   .AppendASCII(type_string);
 }
 

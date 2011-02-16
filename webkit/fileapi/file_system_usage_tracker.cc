@@ -23,13 +23,13 @@ class FileSystemUsageTracker::GetUsageTask
   GetUsageTask(
       FileSystemUsageTracker* tracker,
       scoped_refptr<base::MessageLoopProxy> file_message_loop,
-      std::string fs_name,
+      std::string fs_identifier,
       const FilePath& origin_base_path)
       : tracker_(tracker),
         file_message_loop_(file_message_loop),
         original_message_loop_(
             base::MessageLoopProxy::CreateForCurrentThread()),
-        fs_name_(fs_name),
+        fs_identifier_(fs_identifier),
         fs_usage_(0),
         origin_base_path_(origin_base_path) {
   }
@@ -62,14 +62,14 @@ class FileSystemUsageTracker::GetUsageTask
     DCHECK(original_message_loop_->BelongsToCurrentThread());
     if (tracker_) {
       tracker_->UnregisterUsageTask(this);
-      tracker_->DidGetOriginUsage(fs_name_, fs_usage_);
+      tracker_->DidGetOriginUsage(fs_identifier_, fs_usage_);
     }
   }
 
   FileSystemUsageTracker* tracker_;
   scoped_refptr<base::MessageLoopProxy> file_message_loop_;
   scoped_refptr<base::MessageLoopProxy> original_message_loop_;
-  std::string fs_name_;
+  std::string fs_identifier_;
   int64 fs_usage_;
   FilePath origin_base_path_;
 };
@@ -104,13 +104,17 @@ void FileSystemUsageTracker::GetOriginUsage(
     return;
   }
 
-  std::string fs_name = FileSystemPathManager::GetFileSystemName(
-      origin_url, type);
-  if (pending_usage_callbacks_.find(fs_name) !=
+  std::string origin_identifier =
+      FileSystemPathManager::GetOriginIdentifierFromURL(origin_url);
+  std::string type_string =
+      FileSystemPathManager::GetFileSystemTypeString(type);
+  std::string fs_identifier = origin_identifier + ":" + type_string;
+
+  if (pending_usage_callbacks_.find(fs_identifier) !=
       pending_usage_callbacks_.end()) {
     // Another get usage task is running.  Add the callback to
     // the pending queue and return.
-    pending_usage_callbacks_[fs_name].push_back(callback.release());
+    pending_usage_callbacks_[fs_identifier].push_back(callback.release());
     return;
   }
 
@@ -118,16 +122,17 @@ void FileSystemUsageTracker::GetOriginUsage(
   // without unique part).
   FilePath origin_base_path =
       FileSystemPathManager::GetFileSystemBaseDirectoryForOriginAndType(
-          base_path_, origin_url, type);
+          base_path_, origin_identifier, type);
   if (origin_base_path.empty()) {
     // The directory does not exist.
     callback->Run(0);
     return;
   }
 
-  pending_usage_callbacks_[fs_name].push_back(callback.release());
+  pending_usage_callbacks_[fs_identifier].push_back(callback.release());
   scoped_refptr<GetUsageTask> task(
-      new GetUsageTask(this, file_message_loop_, fs_name, origin_base_path));
+      new GetUsageTask(this, file_message_loop_, fs_identifier,
+                       origin_base_path));
   task->Start();
 }
 
@@ -141,9 +146,9 @@ void FileSystemUsageTracker::UnregisterUsageTask(GetUsageTask* task) {
 }
 
 void FileSystemUsageTracker::DidGetOriginUsage(
-    const std::string& fs_name, int64 usage) {
+    const std::string& fs_identifier, int64 usage) {
   PendingUsageCallbackMap::iterator cb_list_iter =
-      pending_usage_callbacks_.find(fs_name);
+      pending_usage_callbacks_.find(fs_identifier);
   DCHECK(cb_list_iter != pending_usage_callbacks_.end());
   PendingCallbackList cb_list = cb_list_iter->second;
   for (PendingCallbackList::iterator cb_iter = cb_list.begin();

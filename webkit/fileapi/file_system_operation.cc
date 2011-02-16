@@ -435,7 +435,7 @@ bool FileSystemOperation::VerifyFileSystemPathForWrite(
     dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_SECURITY);
     return false;
   }
-  if (create && file_system_context_->path_manager()->IsRestrictedFileName(
+  if (create && FileSystemPathManager::IsRestrictedFileName(
           path.BaseName())) {
     dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_SECURITY);
     return false;
