@@ -16,8 +16,7 @@ class FilePath;
 // This class has methods to install and uninstall Chrome mini installer.
 class ChromeMiniInstaller {
  public:
-  explicit ChromeMiniInstaller(const std::wstring& install_type,
-                               bool is_chrome_frame);
+  ChromeMiniInstaller(const std::wstring& install_type, bool is_chrome_frame);
 
   ~ChromeMiniInstaller() {}
 
@@ -112,6 +111,10 @@ class ChromeMiniInstaller {
 
   // This method verifies if Chrome/Chrome Frame installed correctly.
   void VerifyInstall(bool over_install);
+
+  // This method verifies installation of Chrome/Chrome Frame via machine
+  // introspection.
+  void VerifyMachineState();
 
   // This method will verify if ChromeFrame got successfully installed on the
   // machine.

@@ -15,6 +15,7 @@
 #include "base/win/registry.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
+#include "chrome/installer/util/installation_validation_helper.h"
 #include "chrome/test/mini_installer_test/mini_installer_test_constants.h"
 #include "chrome/test/mini_installer_test/mini_installer_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -597,6 +598,7 @@ void ChromeMiniInstaller::VerifyChromeLaunch(bool expected_status) {
 
 // Verifies Chrome/Chrome Frame install.
 void ChromeMiniInstaller::VerifyInstall(bool over_install) {
+  VerifyMachineState();
   if (is_chrome_frame_) {
     VerifyChromeFrameInstall();
   } else {
@@ -608,6 +610,22 @@ void ChromeMiniInstaller::VerifyInstall(bool over_install) {
     base::PlatformThread::Sleep(800);
     FindChromeShortcut();
     LaunchAndCloseChrome(over_install);
+  }
+}
+
+// This method verifies installation of Chrome/Chrome Frame via machine
+// introspection.
+void ChromeMiniInstaller::VerifyMachineState() {
+  using installer::InstallationValidator;
+
+  InstallationValidator::InstallationType type =
+      installer::ExpectValidInstallation(
+          install_type_ == mini_installer_constants::kSystemInstall);
+  if (is_chrome_frame_) {
+    EXPECT_NE(0,
+              type & InstallationValidator::ProductBits::CHROME_FRAME_SINGLE);
+  } else {
+    EXPECT_NE(0, type & InstallationValidator::ProductBits::CHROME_SINGLE);
   }
 }
 

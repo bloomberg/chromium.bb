@@ -16,13 +16,13 @@
 
 // Although the C++ style guide disallows use of namespace directive, use
 // here because this is not only a .cc file, but also a test.
-using namespace mini_installer_constants;
+using namespace mini_installer_constants;  // NOLINT
 
 namespace {
 
 class MiniInstallTest : public testing::Test {
  public:
-   MiniInstallTest() : chrome_frame_(false) {}
+  MiniInstallTest() : chrome_frame_(false) {}
 
   static void CleanTheSystem() {
     const CommandLine* cmd = CommandLine::ForCurrentProcess();

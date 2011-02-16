@@ -89,6 +89,8 @@
             'installer/util/google_update_settings_unittest.cc',
             'installer/util/install_util_unittest.cc',
             'installer/util/installation_validator_unittest.cc',
+            'installer/util/installation_validation_helper.cc',
+            'installer/util/installation_validation_helper.h',
             'installer/util/installer_state_unittest.cc',
             'installer/util/installer_util_unittests.rc',
             'installer/util/installer_util_unittests_resource.h',
@@ -151,6 +153,7 @@
           'msvs_guid': '4B6E199A-034A-49BD-AB93-458DD37E45B1',
           'dependencies': [
             'installer_util',
+            'installer_util_strings',
             '<(DEPTH)/base/base.gyp:base',
             '<(DEPTH)/base/base.gyp:base_i18n',
             '<(DEPTH)/base/base.gyp:test_support_base',
@@ -161,6 +164,9 @@
             '<(DEPTH)',
           ],
           'sources': [
+            '<(SHARED_INTERMEDIATE_DIR)/installer_util_strings/installer_util_strings.rc',
+            'installer/util/installation_validation_helper.cc',
+            'installer/util/installation_validation_helper.h',
             'test/mini_installer_test/run_all_unittests.cc',
             'test/mini_installer_test/chrome_mini_installer.cc',
             'test/mini_installer_test/chrome_mini_installer.h',
@@ -333,7 +339,6 @@
             'installer/setup/run_all_unittests.cc',
             'installer/setup/setup_constants.cc',   # Move to lib
             'installer/setup/setup_constants.h',    # Move to lib
-            'installer/setup/setup_unittests.rc',
             'installer/setup/setup_unittests.rc',
             'installer/setup/setup_unittests_resource.h',
             'installer/setup/setup_util.cc',
