@@ -20,6 +20,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDatabase.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRuntimeFeatures.h"
+#include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebRuntimeFeatures;
 
@@ -40,6 +41,9 @@ WorkerThread::WorkerThread() {
   channel()->AddFilter(db_message_filter_.get());
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
+  webkit_glue::EnableWebCoreLogChannels(
+      command_line.GetSwitchValueASCII(switches::kWebCoreLogChannels));
 
   WebKit::WebRuntimeFeatures::enableDatabase(
       !command_line.HasSwitch(switches::kDisableDatabases));

@@ -95,6 +95,7 @@
 #include "webkit/extensions/v8/benchmarking_extension.h"
 #include "webkit/extensions/v8/gears_extension.h"
 #include "webkit/extensions/v8/playback_extension.h"
+#include "webkit/glue/webkit_glue.h"
 #include "v8/include/v8.h"
 
 #if defined(OS_WIN)
@@ -864,6 +865,9 @@ void RenderThread::EnsureWebKitInitialized() {
   WebScriptController::enableV8SingleThreadMode();
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
+  webkit_glue::EnableWebCoreLogChannels(
+      command_line.GetSwitchValueASCII(switches::kWebCoreLogChannels));
 
   // chrome: pages should not be accessible by normal content, and should
   // also be unable to script anything but themselves (to help limit the damage

@@ -266,7 +266,7 @@ void TestShell::InitLogging(bool suppress_error_dialogs,
     // not running layout tests (because otherwise they'd corrupt the test
     // output).
     if (!layout_test_mode)
-      webkit_glue::EnableWebCoreNotImplementedLogging();
+      webkit_glue::EnableWebCoreLogChannels("NotYetImplemented");
 }
 
 // static

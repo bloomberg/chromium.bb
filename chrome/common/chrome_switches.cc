@@ -1233,6 +1233,10 @@ const char kVersion[]                       = "version";
 // kWaitForDebugger flag passed on or not.
 const char kWaitForDebuggerChildren[]       = "wait-for-debugger-children";
 
+// Choose which logging channels in WebCore to activate.  See
+// Logging.cpp in WebKit's WebCore for a list of available channels.
+const char kWebCoreLogChannels[]            = "webcore-log-channels";
+
 // Causes the worker process allocation to use as many processes as cores.
 const char kWebWorkerProcessPerCore[]       = "web-worker-process-per-core";
 

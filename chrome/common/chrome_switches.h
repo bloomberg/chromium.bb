@@ -343,6 +343,7 @@ extern const char kUtilityProcess[];
 extern const char kUtilityProcessAllowedDir[];
 extern const char kVersion[];
 extern const char kWaitForDebuggerChildren[];
+extern const char kWebCoreLogChannels[];
 extern const char kWebWorkerProcessPerCore[];
 extern const char kWebWorkerShareProcesses[];
 extern const char kWinHttpProxyResolver[];

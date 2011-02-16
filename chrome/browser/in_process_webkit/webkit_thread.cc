@@ -1,6 +1,6 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "chrome/browser/in_process_webkit/webkit_thread.h"
 
@@ -8,6 +8,7 @@
 #include "chrome/browser/in_process_webkit/browser_webkitclient_impl.h"
 #include "chrome/common/chrome_switches.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
+#include "webkit/glue/webkit_glue.h"
 
 WebKitThread::WebKitThread() {
 }
@@ -46,6 +47,10 @@ void WebKitThread::InternalWebKitThread::Init() {
   DCHECK(!webkit_client_.get());
   webkit_client_.reset(new BrowserWebKitClientImpl);
   WebKit::initialize(webkit_client_.get());
+  webkit_glue::EnableWebCoreLogChannels(
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kWebCoreLogChannels));
+
   // If possible, post initialization tasks to this thread (rather than doing
   // them now) so we don't block the UI thread any longer than we have to.
 }

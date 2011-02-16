@@ -51,8 +51,8 @@ namespace webkit_glue {
 
 void SetJavaScriptFlags(const std::string& flags);
 
-// Turn on the logging for notImplemented() calls from WebCore.
-void EnableWebCoreNotImplementedLogging();
+// Turn on logging for flags in the provided comma delimited list.
+void EnableWebCoreLogChannels(const std::string& channels);
 
 // Returns the text of the document element.
 string16 DumpDocumentText(WebKit::WebFrame* web_frame);
