@@ -3766,3 +3766,17 @@
    fun:_ZN4base13AtExitManager19ProcessCallbacksNowEv
    fun:_ZN4base13AtExitManagerD1Ev
 }
+{
+   bug_73129
+   Memcheck:Cond
+   fun:_ZNK10disk_cache11BackendImpl12GetSizeGroupEv
+   fun:_ZN10disk_cache11BackendImpl8SyncInitEv
+}
+{
+   bug_73132
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_Z11NewCallbackIN5media12PipelineImplERKNS0_18PipelineStatisticsEEPN9Callback1IT0_E4TypeEPT_MSA_FvS6_E
+   fun:_ZN5media12PipelineImpl2*Initialize*
+   fun:_ZN5media12PipelineImpl14InitializeTaskEv
+}
