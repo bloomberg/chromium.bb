@@ -23,33 +23,12 @@ class MockFetcher : public URLFetcher {
               const GURL& url,
               const std::string& results,
               URLFetcher::RequestType request_type,
-              URLFetcher::Delegate* d)
-      : URLFetcher(url, request_type, d),
-        success_(success),
-        url_(url),
-        results_(results) {}
+              URLFetcher::Delegate* d);
 
-  ~MockFetcher() {}
+  virtual ~MockFetcher();
 
-  void Start() {
-    net::URLRequestStatus::Status code;
-    int http_code;
-    if (success_) {
-      http_code = RC_REQUEST_OK;
-      code = net::URLRequestStatus::SUCCESS;
-    } else {
-      http_code = RC_FORBIDDEN;
-      code = net::URLRequestStatus::FAILED;
-    }
+  virtual void Start();
 
-    net::URLRequestStatus status(code, 0);
-    delegate()->OnURLFetchComplete(NULL,
-                                   url_,
-                                   status,
-                                   http_code,
-                                   ResponseCookies(),
-                                   results_);
-  }
  private:
   bool success_;
   GURL url_;

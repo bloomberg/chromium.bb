@@ -59,6 +59,12 @@ void RenderViewContextMenuMac::PlatformInit() {
   }
 }
 
+bool RenderViewContextMenuMac::GetAcceleratorForCommandId(
+    int command_id,
+    ui::Accelerator* accelerator) {
+  return false;
+}
+
 void RenderViewContextMenuMac::InitPlatformMenu() {
   bool has_selection = !params_.selection_text.empty();
 

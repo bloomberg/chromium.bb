@@ -355,13 +355,9 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
 // lifetime of the object, then NULL when it goes out of scope.
 class ScopedCurrentPluginEvent {
  public:
-  ScopedCurrentPluginEvent(PluginInstance* instance, NPCocoaEvent* event)
-      : instance_(instance) {
-    instance_->set_currently_handled_event(event);
-  }
-  ~ScopedCurrentPluginEvent() {
-    instance_->set_currently_handled_event(NULL);
-  }
+  ScopedCurrentPluginEvent(PluginInstance* instance, NPCocoaEvent* event);
+  ~ScopedCurrentPluginEvent();
+
  private:
   scoped_refptr<PluginInstance> instance_;
   DISALLOW_COPY_AND_ASSIGN(ScopedCurrentPluginEvent);

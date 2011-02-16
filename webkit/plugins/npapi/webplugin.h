@@ -166,7 +166,7 @@ class WebPlugin {
   virtual void BindFakePluginWindowHandle(bool opaque) {}
 
   // Returns the accelerated surface abstraction for accelerated plugins.
-  virtual WebPluginAcceleratedSurface* GetAcceleratedSurface() { return NULL; }
+  virtual WebPluginAcceleratedSurface* GetAcceleratedSurface();
 #endif
 
   // Gets the WebPluginDelegate that implements the interface.

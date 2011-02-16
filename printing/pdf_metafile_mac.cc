@@ -18,6 +18,8 @@ PdfMetafile::PdfMetafile()
     : page_is_open_(false) {
 }
 
+PdfMetafile::~PdfMetafile() {}
+
 CGContextRef PdfMetafile::Init() {
   // Ensure that Init hasn't already been called.
   DCHECK(!context_.get());

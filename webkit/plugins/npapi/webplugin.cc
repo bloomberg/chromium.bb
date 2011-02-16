@@ -25,6 +25,12 @@ bool WebPluginGeometry::Equals(const WebPluginGeometry& rhs) const {
          visible == rhs.visible;
 }
 
+#if defined(OS_MACOSX)
+WebPluginAcceleratedSurface* WebPlugin::GetAcceleratedSurface() {
+  return NULL;
+}
+#endif
+
 WebPluginDelegate* WebPlugin::delegate() {
   return NULL;
 }

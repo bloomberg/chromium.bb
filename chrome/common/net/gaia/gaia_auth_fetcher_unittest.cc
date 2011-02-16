@@ -25,6 +25,39 @@
 
 using ::testing::_;
 
+MockFetcher::MockFetcher(bool success,
+                         const GURL& url,
+                         const std::string& results,
+                         URLFetcher::RequestType request_type,
+                         URLFetcher::Delegate* d)
+    : URLFetcher(url, request_type, d),
+      success_(success),
+      url_(url),
+      results_(results) {}
+
+MockFetcher::~MockFetcher() {}
+
+void MockFetcher::Start() {
+  net::URLRequestStatus::Status code;
+  int http_code;
+  if (success_) {
+    http_code = RC_REQUEST_OK;
+    code = net::URLRequestStatus::SUCCESS;
+  } else {
+    http_code = RC_FORBIDDEN;
+    code = net::URLRequestStatus::FAILED;
+  }
+
+  net::URLRequestStatus status(code, 0);
+  delegate()->OnURLFetchComplete(NULL,
+                                 url_,
+                                 status,
+                                 http_code,
+                                 ResponseCookies(),
+                                 results_);
+}
+
+
 class GaiaAuthFetcherTest : public testing::Test {
  public:
   GaiaAuthFetcherTest()

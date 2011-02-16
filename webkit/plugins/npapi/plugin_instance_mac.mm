@@ -130,5 +130,15 @@ NPError PluginInstance::PopUpContextMenu(NPMenu* menu) {
   return return_val;
 }
 
+ScopedCurrentPluginEvent::ScopedCurrentPluginEvent(PluginInstance* instance,
+                                                   NPCocoaEvent* event)
+    : instance_(instance) {
+  instance_->set_currently_handled_event(event);
+}
+
+ScopedCurrentPluginEvent::~ScopedCurrentPluginEvent() {
+  instance_->set_currently_handled_event(NULL);
+}
+
 }  // namespace npapi
 }  // namespace webkit

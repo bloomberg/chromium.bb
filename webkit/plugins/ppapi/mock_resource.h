@@ -18,7 +18,7 @@ class MockResource : public Resource {
   MockResource(PluginInstance* instance) : Resource(instance) {}
   virtual ~MockResource() {}
 
-  virtual MockResource* AsMockResource() { return this; }
+  virtual MockResource* AsMockResource();
 };
 
 }  // namespace ppapi

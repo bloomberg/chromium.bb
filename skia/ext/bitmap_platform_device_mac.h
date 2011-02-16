@@ -58,9 +58,7 @@ class BitmapPlatformDevice : public PlatformDevice {
   BitmapPlatformDevice(const BitmapPlatformDevice& other);
   virtual ~BitmapPlatformDevice();
 
-  virtual SkDeviceFactory* getDeviceFactory() {
-    return SkNEW(BitmapPlatformDeviceFactory);
-  }
+  virtual SkDeviceFactory* getDeviceFactory();
 
   // See warning for copy constructor above.
   BitmapPlatformDevice& operator=(const BitmapPlatformDevice& other);
@@ -71,7 +69,7 @@ class BitmapPlatformDevice : public PlatformDevice {
   virtual void DrawToContext(CGContextRef context, int x, int y,
                              const CGRect* src_rect);
   virtual void makeOpaque(int x, int y, int width, int height);
-  virtual bool IsVectorial() { return false; }
+  virtual bool IsVectorial();
 
   // Returns the color value at the specified location. This does not
   // consider any transforms that may be set on the device.

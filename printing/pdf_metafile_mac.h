@@ -29,7 +29,7 @@ class PdfMetafile {
   // Init(const void*, uint32).
   PdfMetafile();
 
-  ~PdfMetafile() {}
+  ~PdfMetafile();
 
   // Initializes a new metafile, and returns a drawing context for rendering
   // into the PDF. Returns NULL on failure.
