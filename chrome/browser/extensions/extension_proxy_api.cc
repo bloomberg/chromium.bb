@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_proxy_api.h"
 
+#include "base/base64.h"
 #include "base/string_util.h"
 #include "base/string_tokenizer.h"
 #include "base/values.h"
@@ -47,11 +48,15 @@ const char* scheme_name[] = { "*error*",
 const char kProxyCfgMode[] = "mode";
 const char kProxyCfgPacScript[] = "pacScript";
 const char kProxyCfgPacScriptUrl[] = "url";
+const char kProxyCfgPacScriptData[] = "data";
 const char kProxyCfgRules[] = "rules";
 const char kProxyCfgRuleHost[] = "host";
 const char kProxyCfgRulePort[] = "port";
 const char kProxyCfgBypassList[] = "bypassList";
 const char kProxyCfgScheme[] = "scheme";
+
+const char kPACDataUrlPrefix[] =
+    "data:application/x-ns-proxy-autoconfig;base64,";
 
 COMPILE_ASSERT(SCHEME_MAX == SCHEME_FALLBACK,
                SCHEME_MAX_must_equal_SCHEME_FALLBACK);
@@ -88,6 +93,26 @@ bool JoinStringList(
   }
   *out = result;
   return true;
+}
+
+bool CreateDataURLFromPACScript(const std::string& pac_script,
+                                std::string* pac_script_url_base64_encoded) {
+  std::string pac_script_base64_encoded;
+  if (!base::Base64Encode(pac_script, &pac_script_base64_encoded))
+    return false;
+  *pac_script_url_base64_encoded =
+      std::string(kPACDataUrlPrefix) + pac_script_base64_encoded;
+  return true;
+}
+
+bool CreatePACScriptFromDataURL(
+    const std::string& pac_script_url_base64_encoded, std::string* pac_script) {
+  if (pac_script_url_base64_encoded.find(kPACDataUrlPrefix) != 0) {
+    return false;
+  }
+  std::string pac_script_base64_encoded =
+      pac_script_url_base64_encoded.substr(strlen(kPACDataUrlPrefix));
+  return base::Base64Decode(pac_script_base64_encoded, pac_script);
 }
 
 // Converts a proxy server description |dict| as passed by the API caller
@@ -144,9 +169,7 @@ bool GetProxyRules(DictionaryValue* proxy_rules, std::string* out) {
   for (size_t i = 0; i <= SCHEME_MAX; ++i) {
     has_proxy[i] = proxy_rules->GetDictionary(field_name[i], &proxy_dict[i]);
     if (has_proxy[i]) {
-      net::ProxyServer::Scheme default_scheme =
-          (i != SCHEME_FALLBACK) ? net::ProxyServer::SCHEME_HTTP
-                                 : net::ProxyServer::SCHEME_SOCKS5;
+      net::ProxyServer::Scheme default_scheme = net::ProxyServer::SCHEME_HTTP;
       if (!GetProxyServer(proxy_dict[i], default_scheme, &proxy_server[i]))
         return false;
     }
@@ -249,9 +272,12 @@ bool UseCustomProxySettingsFunction::RunImpl() {
 
   DictionaryValue* pac_dict = NULL;
   proxy_config->GetDictionary(kProxyCfgPacScript, &pac_dict);
+
   // TODO(battre): Handle UTF-8 URLs (http://crbug.com/72692)
   string16 pac_url16;
-  if (pac_dict && !pac_dict->GetString(kProxyCfgPacScriptUrl, &pac_url16)) {
+  if (pac_dict &&
+      pac_dict->HasKey(kProxyCfgPacScriptUrl) &&
+      !pac_dict->GetString(kProxyCfgPacScriptUrl, &pac_url16)) {
     LOG(ERROR) << "'pacScript' requires a 'url' field. "
                << "Setting custom proxy settings failed.";
     return false;
@@ -261,6 +287,19 @@ bool UseCustomProxySettingsFunction::RunImpl() {
     return false;
   }
   std::string pac_url = UTF16ToASCII(pac_url16);
+
+  string16 pac_data16;
+  if (pac_dict &&
+      pac_dict->HasKey(kProxyCfgPacScriptData) &&
+      !pac_dict->GetString(kProxyCfgPacScriptData, &pac_data16)) {
+    LOG(ERROR) << "'pacScript' could not parse 'data' field.";
+    return false;
+  }
+  if (!IsStringASCII(pac_data16)) {
+    LOG(ERROR) << "Only ASCII pac data are supported, yet";
+    return false;
+  }
+  std::string pac_data = UTF16ToASCII(pac_data16);
 
   DictionaryValue* proxy_rules = NULL;
   proxy_config->GetDictionary(kProxyCfgRules, &proxy_rules);
@@ -291,7 +330,21 @@ bool UseCustomProxySettingsFunction::RunImpl() {
                    << "Setting custom proxy settings failed.";
         return false;
       }
-      result_proxy_config = ProxyConfigDictionary::CreatePacScript(pac_url);
+      std::string url;
+      if (!pac_url.empty()) {
+        url = pac_url;
+      } else if (!pac_data.empty()) {
+        if (!CreateDataURLFromPACScript(pac_data, &url)) {
+          LOG(ERROR) << "Error at base64 encoding pac data.";
+          return false;
+        }
+      } else {
+        LOG(ERROR) << "Proxy mode 'pac_script' requires a 'pacScript' field "
+                   << "with either a 'url' field or a 'data' field. "
+                   << "Setting custom proxy settings failed.";
+        return false;
+      }
+      result_proxy_config = ProxyConfigDictionary::CreatePacScript(url);
       break;
     }
     case ProxyPrefs::MODE_FIXED_SERVERS: {
@@ -378,7 +431,16 @@ bool GetCurrentProxySettingsFunction::ConvertToApiFormat(
         return false;
       }
       DictionaryValue* pac_dict = new DictionaryValue;
-      pac_dict->SetString(kProxyCfgPacScriptUrl, pac_url);
+      if (pac_url.find("data") == 0) {
+        std::string pac_data;
+        if (!CreatePACScriptFromDataURL(pac_url, &pac_data)) {
+          LOG(ERROR) << "Cannot decode base64-encoded pac data url";
+          return false;
+        }
+        pac_dict->SetString(kProxyCfgPacScriptData, pac_data);
+      } else {
+        pac_dict->SetString(kProxyCfgPacScriptUrl, pac_url);
+      }
       api_proxy_config->Set(kProxyCfgPacScript, pac_dict);
       break;
     }

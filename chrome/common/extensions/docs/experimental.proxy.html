@@ -403,7 +403,9 @@ values:
 
   <dt><code>pac_script</code></dt>
   <dd>In <code>pac_script</code> mode the proxy configuration is determined by
-  a PAC script that is retrieved from the URL specified in the
+  a PAC script that is either retrieved from the URL specified in the
+  <a href="#type-PacScript"><code>PacScript</code></a> object or
+  taken literally from the <code>data</code> element specified in the
   <a href="#type-PacScript"><code>PacScript</code></a> object.
   Besides this, this mode allows no further parameters in the
   <code>ProxyConfig</code> object.</dd>
@@ -567,6 +569,24 @@ apply to regular and incognito windows.
 };
 var incognito = false;
 chrome.experimental.proxy.useCustomProxySettings(config, incognito);
+</pre>
+
+<p>
+The following code sets a custom pac script.
+</p>
+
+<pre>var config = {
+  mode: "pac_script",
+  pacScript: {
+    data: "function FindProxyForURL(url, host) {\n" +
+          "  if (host == 'foobar.com')\n" +
+          "    return 'PROXY blackhole:80';\n" +
+          "  return 'DIRECT';\n" +
+          "}"
+  }
+};
+var incognito = false;
+chrome.experimental.proxy.useCurrentProxySettings(config, incognito);
 </pre>
 
 <p>
@@ -2055,7 +2075,7 @@ a <code>rules.httpProxy.port</code> element.
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>An object holding proxy auto-config information. Only one of the fields should be non-empty.</dd>
+          <dd>An object holding proxy auto-config information. Exactly one of the fields should be non-empty.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -2101,6 +2121,74 @@ a <code>rules.httpProxy.port</code> element.
             Undocumented.
           </dd>
           <dd>URL of the PAC file to be used.</dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>data</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>string</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>A PAC script.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.

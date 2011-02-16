@@ -53,7 +53,9 @@ values:
 
   <dt><code>pac_script</code></dt>
   <dd>In <code>pac_script</code> mode the proxy configuration is determined by
-  a PAC script that is retrieved from the URL specified in the
+  a PAC script that is either retrieved from the URL specified in the
+  <a href="#type-PacScript"><code>PacScript</code></a> object or
+  taken literally from the <code>data</code> element specified in the
   <a href="#type-PacScript"><code>PacScript</code></a> object.
   Besides this, this mode allows no further parameters in the
   <code>ProxyConfig</code> object.</dd>
@@ -102,8 +104,7 @@ A proxy server is configured in a
 <a href="#type-ProxyServer"><code>ProxyServer</code></a> object. The connection
 to the proxy server (defined by the <code>host</code> attribute) uses the
 protocol defined in the <code>scheme</code> attribute. If no <code>scheme</code>
-is specified, the proxy connection usually defaults to <code>http</code>. Only
-the <code>fallbackProxy</code> defaults to <code>socks5</code>.
+is specified, the proxy connection defaults to <code>http</code>.
 </p>
 
 <p>
@@ -214,6 +215,25 @@ var config = {
       host: "1.2.3.4"
     },
     bypassList: ["foobar.com"]
+  }
+};
+var incognito = false;
+chrome.experimental.proxy.useCustomProxySettings(config, incognito);
+</pre>
+
+<p>
+The following code sets a custom pac script.
+</p>
+
+<pre>
+var config = {
+  mode: "pac_script",
+  pacScript: {
+    data: "function FindProxyForURL(url, host) {\n" +
+          "  if (host == 'foobar.com')\n" +
+          "    return 'PROXY blackhole:80';\n" +
+          "  return 'DIRECT';\n" +
+          "}"
   }
 };
 var incognito = false;

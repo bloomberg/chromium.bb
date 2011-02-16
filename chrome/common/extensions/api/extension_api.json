@@ -3705,9 +3705,10 @@
       {
         "id": "PacScript",
         "type": "object",
-        "description": "An object holding proxy auto-config information. Only one of the fields should be non-empty.",
+        "description": "An object holding proxy auto-config information. Exactly one of the fields should be non-empty.",
         "properties": {
-          "url": {"type": "string", "optional": true, "description": "URL of the PAC file to be used."}
+          "url": {"type": "string", "optional": true, "description": "URL of the PAC file to be used."},
+          "data": {"type": "string", "optional": true, "description": "A PAC script."}
         }
       },
       {
