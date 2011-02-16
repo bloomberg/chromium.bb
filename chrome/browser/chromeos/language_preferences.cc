@@ -18,10 +18,9 @@ const char kHotKeySectionName[] = "general/hotkey";
 const char kPreloadEnginesConfigName[] = "preload_engines";
 const char kNextEngineInMenuConfigName[] = "next_engine_in_menu";
 const char kPreviousEngineConfigName[] = "previous_engine";
-// ibus-daemon accepts up to 5 next-engine hot-keys.
 const char kHotkeyNextEngineInMenu[] =
     "Shift+Alt+Release+Shift_L,Shift+Alt+Release+Meta_L,Control+Shift+space,"
-    "Zenkaku_Hankaku,Hangul";
+    "Shift+Alt+Release+Shift_R,Shift+Alt+Release+Meta_R,Zenkaku_Hankaku,Hangul";
 const char kHotkeyPreviousEngine[] = "Control+space";
 
 // ---------------------------------------------------------------------------
