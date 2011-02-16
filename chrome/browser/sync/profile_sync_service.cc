@@ -41,6 +41,7 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/time_format.h"
+#include "chrome/common/url_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "jingle/notifier/communicator/const_communicator.h"
@@ -751,9 +752,11 @@ void ProfileSyncService::OnPassphraseAccepted() {
 }
 
 void ProfileSyncService::ShowLoginDialog(gfx::NativeWindow parent_window) {
-  // TODO(johnnyg): File a bug to make sure this doesn't happen.
   if (!cros_user_.empty()) {
-    LOG(WARNING) << "ShowLoginDialog called on Chrome OS.";
+    // For ChromeOS, any login UI needs to be handled by the settings page.
+    Browser* browser = BrowserList::GetLastActiveWithProfile(profile());
+    if (browser)
+      browser->ShowOptionsTab(chrome::kPersonalOptionsSubPage);
     return;
   }
 
