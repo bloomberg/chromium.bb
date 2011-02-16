@@ -1,0 +1,243 @@
+<div id="pageData-name" class="pageData">Proxy Settings</div>
+
+<!-- BEGIN AUTHORED CONTENT -->
+<p id="classSummary">
+Use the <code>chrome.experimental.proxysettings</code> module to manage Chrome's
+proxy settings. This module is still experimental. For information on how to use
+experimental APIs, see the <a href="experimental.html">chrome.experimental.*
+  APIs</a> page.
+</p>
+
+<h2 id="manifest">Manifest</h2>
+<p>You must declare the "proxy" permission
+in the <a href="manifest.html">extension manifest</a>
+to use the proxy settings API.
+For example:</p>
+<pre>{
+  "name": "My extension",
+  ...
+  <b>"permissions": [
+    "experimental", "proxy"
+  ]</b>,
+  ...
+}</pre>
+
+<h2 id="description">Objects and properties</h2>
+
+<p>
+Proxy settings are defined in a 
+<a href="#type-ProxyConfig"><code>ProxyConfig</code></a> object. Depending on
+Chrome's proxy settings, the settings may contain
+<a href="#type-ProxyRules"><code>ProxyRules</code></a> or a <a
+  href="#type-PacScript"><code>PacScript</code></a>.
+</p>
+
+<h3 id="proxy_modes">Proxy modes</h3>
+
+<p>
+A ProxyConfig object's <code>mode</code> attribute determines the overall
+behavior of Chrome with regards to proxy usage. It can take the following
+values:
+<dl>
+  <dt><code>direct</code></dt>
+  <dd>In <code>direct</code> mode all connections are created directly, without
+  any proxy involved. This mode allows no further parameters in the
+  <code>ProxyConfig</code> object.</dd>
+
+  <dt><code>auto_detect</code></dt>
+  <dd>In <code>auto_detect</code> mode the proxy configuration is determined by
+  a PAC script that can be downloaded at
+  <a href="http://wpad/wpad.dat">http://wpad/wpad.dat</a>.
+  This mode allows no further parameters in the <code>ProxyConfig</code>
+  object.</dd>
+
+  <dt><code>pac_script</code></dt>
+  <dd>In <code>pac_script</code> mode the proxy configuration is determined by
+  a PAC script that is retrieved from the URL specified in the
+  <a href="#type-PacScript"><code>PacScript</code></a> object.
+  Besides this, this mode allows no further parameters in the
+  <code>ProxyConfig</code> object.</dd>
+
+  <dt><code>fixed_servers</code></dt>
+  <dd>In <code>fixed_servers</code> mode the proxy configuration is codified in
+  a <a href="#type-ProxyRules><code>ProxyRules"><code>ProxyRules</code></a>
+  object. Its structure is described in <a href="#proxy_rules">Proxy rules</a>.
+  Besides this, the <code>fixed_servers</code> mode allows no further parameters
+  in the <code>ProxyConfig</code> object.</dd>
+
+  <dt><code>system</code></dt>
+  <dd>In <code>system</code> mode the proxy configuration is taken from the
+  operating system. This mode allows no further parameters in the
+  <code>ProxyConfig</code> object. Note that the <code>system</code> mode is
+  different from setting no proxy configuration. In the latter case, Chrome
+  falls back to the system settings only if no command-line options influence
+  the proxy configuration.</dd>
+</dl>
+</p>
+
+<h3 id="proxy_rules">Proxy rules</h3>
+
+<p>
+The <a href="#type-ProxyRules"><code>ProxyRules</code></a> object can contain
+either a <code>singleProxy</code> attribute or a subset of
+<code>proxyForHttp</code>, <code>proxyForHttps</code>, <code>proxyForFtp</code>,
+and <code>fallbackProxy</code>.
+</p>
+
+<p>
+In the first case, HTTP, HTTPS and FTP traffic is proxied through the specified
+proxy server. Other traffic is sent directly. In the latter case the behavior is
+slightly more subtle: If a proxy server is configured for the HTTP, HTTPS or FTP
+protocol, the respective traffic is proxied through the specified server. If no
+such proxy server is specified or traffic uses a different protocol than HTTP,
+HTTPS or FTP, the <code>fallbackProxy</code> is used. If no
+<code>fallbackProxy</code> is specified, traffic is sent directly without a
+proxy server.
+</p>
+
+<h3 id="proxy_server_objects">Proxy server objects</h3>
+
+<p>
+A proxy server is configured in a
+<a href="#type-ProxyServer"><code>ProxyServer</code></a> object. The connection
+to the proxy server (defined by the <code>host</code> attribute) uses the
+protocol defined in the <code>scheme</code> attribute. If no <code>scheme</code>
+is specified, the proxy connection usually defaults to <code>http</code>. Only
+the <code>fallbackProxy</code> defaults to <code>socks5</code>.
+</p>
+
+<p>
+If no <code>port</code> is defined in a
+<a href="#type-ProxyServer"><code>ProxyServer</code></a> object, the port is
+derived from the scheme. The default ports are:
+<table>
+  <tr><th>Scheme</th><th>Port</th></tr>
+  <tr><td>http</td><td>80</td></tr>
+  <tr><td>https</td><td>443</td></tr>
+  <tr><td>socks4</td><td>1080</td></tr>
+  <tr><td>socks5</td><td>1080</td></tr>
+</table>
+</p>
+
+<h3 id="bypass_list">Bypass list</h3>
+
+<p>
+Individual servers may be excluded from being proxied with the
+<code>bypassList</code>. This list may contain the following entries:
+<dl>
+  <dt><code>[<em>&lt;scheme&gt;</em>://]<em>&lt;host-pattern&gt;</em>[:<em>&lt;port&gt;</em>]</code></dt>
+  <dd>Match all hostnames that match the pattern <em>&lt;host-pattern&gt;</em>.<br>
+  Examples: <code>"foobar.com", "*foobar.com", "*.foobar.com", "*foobar.com:99",
+    "https://x.*.y.com:99"</code></dd>
+
+  <dt><code>[<em>&lt;scheme&gt;</em>://]<em>&lt;ip-literal&gt;</em>[:<em>&lt;port&gt;</em>]</code></dt>
+  <dd>Match URLs that are IP address literals.<br>
+  Conceptually this is the similar to the first case, but with special cases
+  to handle IP literal canonicalization. For example, matching
+  on "[0:0:0::1]" is the same as matching on "[::1]" because
+  the IPv6 canonicalization is done internally.<br>
+  Examples: <code>"127.0.1", "[0:0::1]", "[::1]", "http://[::1]:99"</code></dd>
+
+  <dt><code><em>&lt;ip-literal&gt;</em>/<em>&lt;prefix-length-in-bits&gt;</em></code></dt>
+  <dd>Match any URL containing an IP literal within the given range. The IP 
+  range is specified using CIDR notation.<br>
+  Examples: <code>"192.168.1.1/16", "fefe:13::abc/33"</code></dd>
+
+  <dt><code>&lt;local&gt;</code></dt>
+  <dd>Match local addresses. An address is local if the host is "127.0.0.1",
+  "::1", or "localhost".<br>
+  Example: <code>"&lt;local&gt;"</code></dd>
+</dl>
+
+
+<h2 id="precedence">Precedence</h2>
+
+<p>
+Chrome manages settings on different layers. The following list describes the
+layers that may influence the effective proxy settings, in increasing order of
+precedence.
+<ol>
+  <li>System settings provided by the operating system</li>
+  <li>Command line parameters</li>
+  <li>Preferences set by extensions</li>
+  <li>Policies</li>
+</ol>
+</p>
+
+<p>
+As the list implies, policies might overrule any changes that you specify with
+the proxy settings API.
+</p>
+
+<p>
+Chrome allows using different proxy settings for regular windows and incognito
+windows. The following example illustrates the behavior. Assume that no policy
+overrides the proxy settings and that an extension can set proxy settings for
+regular windows <b>(R)</b> and proxy settings for incognito windows <b>(I)</b>.
+</p>
+
+<p>
+<ul>
+  <li>If only <b>(R)</b> is set, these settings are effective for both regular
+  and incognito windows.</li>
+  <li>If only <b>(I)</b> is set, these settings are effective for only incognito
+  windows. Regular windows use the proxy settings determined by the lower layers
+  (command-line options and system settings).</li>
+  <li>If both <b>(R)</b> and <b>(I)</b> are set, the respective settings are
+  used for regular and incognito windows.</li>
+</ul>
+</p>
+
+<p>
+If two extensions want to set proxy settings, the extension installed last takes
+precedence over the other extensions. If the extension installed last sets only
+<b>(I)</b>, the settings of regular windows can be defined by more recently
+installed extensions.
+</p>
+
+
+
+<h2 id="overview-examples">Examples</h2>
+
+<p>
+The following code sets a SOCKS 5 proxy for HTTP connections to all servers but
+foobar.com and uses direct connections for all other protocols. The settings
+apply to regular and incognito windows.
+</p>
+
+<pre>
+var config = {
+  mode: "fixed_servers",
+  rules: {
+    httpProxy: {
+      scheme: "socks5",
+      host: "1.2.3.4"
+    },
+    bypassList: ["foobar.com"]
+  }
+};
+var incognito = false;
+chrome.experimental.proxy.useCustomProxySettings(config, incognito);
+</pre>
+
+<p>
+The next snippet queries the current proxy settings.
+</p>
+
+<pre>
+var incognito = false;
+chrome.experimental.proxy.getCurrentProxySettings(
+    incognito,
+    function (config) {console.log(JSON.stringify(config));}
+    );
+</pre>
+
+<p>
+Note that the <code>config</code> object passed to the callback function of
+<code>useCustomProxySettings()</code> is not identical to the <code>config</code>
+object passed to <code>getCurrentProxySettings()</code>. The latter will contain
+a <code>rules.httpProxy.port</code> element.
+</p>
+
+<!-- END AUTHORED CONTENT -->
+

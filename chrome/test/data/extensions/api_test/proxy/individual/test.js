@@ -38,24 +38,24 @@ chrome.test.runTests([
       host: "3.3.3.3",
       port: 9000
     };
-    var socksProxy = {
+    var fallbackProxy = {
       scheme: "socks4",
       host: "4.4.4.4",
       port: 9090
     };
-    var socksProxyExpected = socksProxy;
+    var fallbackProxyExpected = fallbackProxy;
 
     var rules = {
       proxyForHttp: httpProxy,
       proxyForHttps: httpsProxy,
       proxyForFtp: ftpProxy,
-      socksProxy: socksProxy,
+      fallbackProxy: fallbackProxy,
     };
     var rulesExpected = {
       proxyForHttp: httpProxyExpected,
       proxyForHttps: httpsProxyExpected,
       proxyForFtp: ftpProxyExpected,
-      socksProxy: socksProxyExpected,
+      fallbackProxy: fallbackProxyExpected,
     };
 
     var config = { rules: rules, mode: "fixed_servers" };

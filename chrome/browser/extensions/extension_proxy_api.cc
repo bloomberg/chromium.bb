@@ -22,8 +22,8 @@ enum {
   SCHEME_HTTP,
   SCHEME_HTTPS,
   SCHEME_FTP,
-  SCHEME_SOCKS,
-  SCHEME_MAX = SCHEME_SOCKS  // Keep this value up to date.
+  SCHEME_FALLBACK,
+  SCHEME_MAX = SCHEME_FALLBACK  // Keep this value up to date.
 };
 
 // The names of the JavaScript properties to extract from the proxy_rules.
@@ -32,7 +32,7 @@ const char* field_name[] = { "singleProxy",
                              "proxyForHttp",
                              "proxyForHttps",
                              "proxyForFtp",
-                             "socksProxy" };
+                             "fallbackProxy" };
 
 // The names of the schemes to be used to build the preference value string
 // for manual proxy settings.  These must be kept in sync with the SCHEME_*
@@ -53,7 +53,8 @@ const char kProxyCfgRulePort[] = "port";
 const char kProxyCfgBypassList[] = "bypassList";
 const char kProxyCfgScheme[] = "scheme";
 
-COMPILE_ASSERT(SCHEME_MAX == SCHEME_SOCKS, SCHEME_MAX_must_equal_SCHEME_SOCKS);
+COMPILE_ASSERT(SCHEME_MAX == SCHEME_FALLBACK,
+               SCHEME_MAX_must_equal_SCHEME_FALLBACK);
 COMPILE_ASSERT(arraysize(field_name) == SCHEME_MAX + 1,
                field_name_array_is_wrong_size);
 COMPILE_ASSERT(arraysize(scheme_name) == SCHEME_MAX + 1,
@@ -144,8 +145,8 @@ bool GetProxyRules(DictionaryValue* proxy_rules, std::string* out) {
     has_proxy[i] = proxy_rules->GetDictionary(field_name[i], &proxy_dict[i]);
     if (has_proxy[i]) {
       net::ProxyServer::Scheme default_scheme =
-          (i != SCHEME_SOCKS) ? net::ProxyServer::SCHEME_HTTP
-                              : net::ProxyServer::SCHEME_SOCKS5;
+          (i != SCHEME_FALLBACK) ? net::ProxyServer::SCHEME_HTTP
+                                 : net::ProxyServer::SCHEME_SOCKS5;
       if (!GetProxyServer(proxy_dict[i], default_scheme, &proxy_server[i]))
         return false;
     }
@@ -170,7 +171,7 @@ bool GetProxyRules(DictionaryValue* proxy_rules, std::string* out) {
   std::string proxy_pref;
   for (size_t i = 1; i <= SCHEME_MAX; ++i) {
     if (has_proxy[i]) {
-      // http=foopy:4010;ftp=socks://foopy2:80
+      // http=foopy:4010;ftp=socks5://foopy2:80
       if (!proxy_pref.empty())
         proxy_pref.append(";");
       proxy_pref.append(scheme_name[i]);
@@ -445,7 +446,7 @@ bool GetCurrentProxySettingsFunction::ParseRules(const std::string& rules,
                  ConvertToDictionary(config.proxy_for_ftp));
       }
       if (config.fallback_proxy.is_valid()) {
-        out->Set(field_name[SCHEME_SOCKS],
+        out->Set(field_name[SCHEME_FALLBACK],
                  ConvertToDictionary(config.fallback_proxy));
       }
       COMPILE_ASSERT(SCHEME_MAX == 4, SCHEME_FORGOTTEN);

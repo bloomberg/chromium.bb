@@ -3684,21 +3684,21 @@
         "type": "object",
         "description": "An object encapsulating a single proxy server's specification.",
         "properties": {
-          "scheme": {"type": "string", "optional": true, "enum": ["http", "https", "socks", "socks4", "socks5"], "description": "The scheme (protocol) of the proxy server itself."},
-          "host": {"type": "string", "description": "The URI of the proxy server."},
-          "port": {"type": "integer", "optional": true, "description": "The port of the proxy server."}
+          "scheme": {"type": "string", "optional": true, "enum": ["http", "https", "socks4", "socks5"], "description": "The scheme (protocol) of the proxy server itself. Defaults to 'http'."},
+          "host": {"type": "string", "description": "The URI of the proxy server. This must be an ASCII hostname (in Punycode format). IDNA is not supported, yet."},
+          "port": {"type": "integer", "optional": true, "description": "The port of the proxy server. Defaults to a port that depends on the scheme."}
         }
       },
       {
         "id": "ProxyRules",
         "type": "object",
-        "description": "An object encapsulating the set of proxy rules for all protocols. Use either 'singleProxy' or (a subset of) 'proxyForHttp', 'proxyForHttps', 'proxyForFtp' and 'socksProxy'.",
+        "description": "An object encapsulating the set of proxy rules for all protocols. Use either 'singleProxy' or (a subset of) 'proxyForHttp', 'proxyForHttps', 'proxyForFtp' and 'fallbackProxy'.",
         "properties": {
-          "singleProxy": {"$ref": "ProxyServer", "optional": true, "description": "The proxy server to be used for all per-URL requests (i.e., http, https, and ftp)."},
+          "singleProxy": {"$ref": "ProxyServer", "optional": true, "description": "The proxy server to be used for all per-URL requests (that is http, https, and ftp)."},
           "proxyForHttp": {"$ref": "ProxyServer", "optional": true, "description": "The proxy server to be used for HTTP requests."},
           "proxyForHttps": {"$ref": "ProxyServer", "optional": true, "description": "The proxy server to be used for HTTPS requests."},
           "proxyForFtp": {"$ref": "ProxyServer", "optional": true, "description": "The proxy server to be used for FTP requests."},
-          "socksProxy": {"$ref": "ProxyServer", "optional": true, "description": "The proxy server to be used for SOCKS requests."},
+          "fallbackProxy": {"$ref": "ProxyServer", "optional": true, "description": "The proxy server to be used for everthing else or if any of the specific proxyFor... is not specified."},
           "bypassList": {"type": "array", "items": {"type": "string"}, "optional": true, "description": "List of servers to connect to without a proxy server."}
         }
       },
@@ -3707,7 +3707,7 @@
         "type": "object",
         "description": "An object holding proxy auto-config information. Only one of the fields should be non-empty.",
         "properties": {
-          "url": {"type": "string", "optional": true, "description": "URL of he PAC file to be used."}
+          "url": {"type": "string", "optional": true, "description": "URL of the PAC file to be used."}
         }
       },
       {
@@ -3738,7 +3738,7 @@
           {
             "name": "incognito",
             "type": "boolean",
-            "description": "If true, the proxy settings apply only to incognito windows. Otherwise they apply to regular windows (and incognito windows if no specific settings are provided for incognito windows)",
+            "description": "If true, the proxy settings apply only to incognito windows. Otherwise they apply to regular windows (and incognito windows if no specific settings are provided for incognito windows.)",
             "optional": true
           }
         ]
@@ -3746,12 +3746,12 @@
       {
         "name": "removeCustomProxySettings",
         "type": "function",
-        "description": "Remove a custom proxy set by the current extension. This is the inverse of useCustomProxySettings.",
+        "description": "Remove a custom proxy set by the current extension. This is the inverse of useCustomProxySettings().",
         "parameters": [
           {
             "name": "incognito",
             "type": "boolean",
-            "description": "See incognito parameter of useCustomProxySettings.",
+            "description": "See incognito parameter of useCustomProxySettings().",
             "optional": true
           }
         ]
@@ -3759,12 +3759,12 @@
       {
         "name": "getCurrentProxySettings",
         "type": "function",
-        "description": "Returns the currently effective proxy settings. These can originate from default values, command line options, the extension settings API, policies and possibly other sources in the future.",
+        "description": "Returns the currently effective proxy settings. These can originate from default values, command-line options, the extension settings API, policies and possibly other sources in the future.",
         "parameters": [
           {
             "name": "incognito",
             "type": "boolean",
-            "description": "See incognito parameter of useCustomProxySettings."
+            "description": "See incognito parameter of useCustomProxySettings()."
           },
           {
             "name": "callback",
@@ -3773,7 +3773,7 @@
               {
                 "name": "config",
                 "$ref": "ProxyConfig",
-                "description": "Configuration, not necessarily a literal copy of the configuration passed to useCustomProxySettings."
+                "description": "Configuration, not necessarily a literal copy of the configuration passed to useCustomProxySettings()."
               }
             ]
           }

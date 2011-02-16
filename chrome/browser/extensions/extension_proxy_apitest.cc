@@ -189,7 +189,7 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest,
   pref_service = browser()->profile()->GetOffTheRecordProfile()->GetPrefs();
   ValidateSettings(ProxyPrefs::MODE_FIXED_SERVERS,
                    "http=1.1.1.1:80;"
-                       "https=socks5://2.2.2.2:1080;"  // socks5 equals socks.
+                       "https=socks5://2.2.2.2:1080;"
                        "ftp=3.3.3.3:9000;"
                        "socks=socks4://4.4.4.4:9090",
                    kNoBypass,

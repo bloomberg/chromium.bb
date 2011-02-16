@@ -11,14 +11,14 @@ chrome.test.runTests([
       host: "1.1.1.1"
     };
     var httpsProxy = {
-      scheme: "socks",
+      scheme: "socks5",
       host: "2.2.2.2"
     };
     var ftpProxy = {
       host: "3.3.3.3",
       port: 9000
     };
-    var socksProxy = {
+    var fallbackProxy = {
       scheme: "socks4",
       host: "4.4.4.4",
       port: 9090
@@ -28,7 +28,7 @@ chrome.test.runTests([
       proxyForHttp: httpProxy,
       proxyForHttps: httpsProxy,
       proxyForFtp: ftpProxy,
-      socksProxy: socksProxy,
+      fallbackProxy: fallbackProxy,
     };
 
     var config = { rules: rules, mode: "fixed_servers" };

@@ -11,14 +11,14 @@ function setIndividualProxiesRegular() {
     host: "1.1.1.1"
   };
   var httpsProxy = {
-    scheme: "socks",
+    scheme: "socks5",
     host: "2.2.2.2"
   };
   var ftpProxy = {
     host: "3.3.3.3",
     port: 9000
   };
-  var socksProxy = {
+  var fallbackProxy = {
     scheme: "socks4",
     host: "4.4.4.4",
     port: 9090
@@ -28,7 +28,7 @@ function setIndividualProxiesRegular() {
     proxyForHttp: httpProxy,
     proxyForHttps: httpsProxy,
     proxyForFtp: ftpProxy,
-    socksProxy: socksProxy,
+    fallbackProxy: fallbackProxy,
   };
 
   var config = { rules: rules, mode: "fixed_servers" };
@@ -40,14 +40,14 @@ function setIndividualProxiesIncognito() {
     host: "5.5.5.5"
   };
   var httpsProxy = {
-    scheme: "socks",
+    scheme: "socks5",
     host: "6.6.6.6"
   };
   var ftpProxy = {
     host: "7.7.7.7",
     port: 9000
   };
-  var socksProxy = {
+  var fallbackProxy = {
     scheme: "socks4",
     host: "8.8.8.8",
     port: 9090
@@ -57,7 +57,7 @@ function setIndividualProxiesIncognito() {
     proxyForHttp: httpProxy,
     proxyForHttps: httpsProxy,
     proxyForFtp: ftpProxy,
-    socksProxy: socksProxy,
+    fallbackProxy: fallbackProxy,
   };
 
   var config = { rules: rules, mode: "fixed_servers" };
