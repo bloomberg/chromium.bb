@@ -1045,7 +1045,7 @@
    fun:createBitmapContext
    fun:CGBitmapContextCreate
    fun:_ZN4skia12_GLOBAL__N_1L16CGContextForDataEPvii
-   fun:_ZN4skia20BitmapPlatformDevice14CreateWithDataEPhiib
+   fun:_ZN4skia20BitmapPlatformDevice*
 }
 {
    bug_61228_a
