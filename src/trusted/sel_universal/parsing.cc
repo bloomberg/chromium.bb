@@ -649,9 +649,9 @@ static string StringifyOneChar(unsigned char c) {
     case '\\':
       return "\\\\";
     default:
-     // play it safe and escape spaces and closing parens
-     // which could cause problems when this string is read back in
-     if (c < ' ' || 126 < c) {
+     // play it safe and escape closing parens which could
+     // cause problems when this string is read back
+     if (c < ' ' || 126 < c || c == ')') {
           stringstream result;
           result << "\\x" << std::hex << std::setw(2) <<
             std::setfill('0') << int(c);

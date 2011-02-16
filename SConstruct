@@ -1163,6 +1163,11 @@ def SelUniversalTest(env, name, command, sel_universal_flags=None, **kwargs):
   # option to ld.so to disable its argv-over-IPC feature.
   if env.Bit('nacl_glibc') and not env.Bit('nacl_static_link'):
     return []
+
+  if sel_universal_flags is None:
+    sel_universal_flags = []
+  sel_universal_flags.append('--script_mode')
+
   node = CommandSelLdrTestNacl(env,
                                name,
                                command,
