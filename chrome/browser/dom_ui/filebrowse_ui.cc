@@ -838,6 +838,9 @@ void FilebrowseHandler::UploadToPicasaweb(const ListValue* args) {
 
 void FilebrowseHandler::GetChildrenForPath(const FilePath& path,
                                            bool is_refresh) {
+  if (path.empty())
+    return;
+
   filelist_value_.reset(new ListValue());
   currentpath_ = path;
 
