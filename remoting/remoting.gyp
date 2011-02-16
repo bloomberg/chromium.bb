@@ -212,6 +212,7 @@
         'host/json_host_config.h',
         'host/in_memory_host_config.cc',
         'host/in_memory_host_config.h',
+        'host/user_authenticator.h',
       ],
       'conditions': [
         ['OS=="win"', {
@@ -228,12 +229,15 @@
             'host/capturer_linux.h',
             'host/event_executor_linux.cc',
             'host/event_executor_linux.h',
+            'host/user_authenticator_pam.cc',
+            'host/user_authenticator_pam.h',
           ],
           'link_settings': {
             'libraries': [
               '-lX11',
               '-lXdamage',
               '-lXtst',
+              '-lpam',
             ],
           },
         }],
