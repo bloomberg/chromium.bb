@@ -63,8 +63,7 @@ class TabContentsViewViews : public TabContentsView, public views::View {
 
   // views::View implementation
   virtual void OnBoundsChanged();
-
-  virtual void Paint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas);
 
   // Backend implementation of RenderViewHostDelegate::View.
   virtual void ShowContextMenu(const ContextMenuParams& params);
