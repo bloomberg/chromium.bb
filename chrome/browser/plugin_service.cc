@@ -553,6 +553,7 @@ void PluginService::RegisterPepperPlugins() {
         ppapi_plugins_[i].path.BaseName().LossyDisplayName() :
         ASCIIToUTF16(ppapi_plugins_[i].name);
     info.desc = ASCIIToUTF16(ppapi_plugins_[i].description);
+    info.version = ASCIIToUTF16(ppapi_plugins_[i].version);
     info.enabled = webkit::npapi::WebPluginInfo::USER_ENABLED_POLICY_UNMANAGED;
 
     // TODO(evan): Pepper shouldn't require us to parse strings to get

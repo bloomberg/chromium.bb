@@ -111,8 +111,10 @@ void ComputePluginsFromCommandLine(std::vector<PepperPluginInfo>* plugins) {
 
   // FORMAT:
   // command-line = <plugin-entry> + *( LWS + "," + LWS + <plugin-entry> )
-  // plugin-entry = <file-path> + ["#" + <name> + ["#" + <description>]] +
-  //                *1( LWS + ";" + LWS + <mime-type> )
+  // plugin-entry =
+  //    <file-path> +
+  //    ["#" + <name> + ["#" + <description> + ["#" + <version>]]] +
+  //    *1( LWS + ";" + LWS + <mime-type> )
 
   std::vector<std::string> modules;
   base::SplitString(value, ',', &modules);
@@ -143,6 +145,8 @@ void ComputePluginsFromCommandLine(std::vector<PepperPluginInfo>* plugins) {
       plugin.description = name_parts[2];
       plugin.type_descriptions = name_parts[2];
     }
+    if (name_parts.size() > 3)
+      plugin.version = name_parts[3];
     for (size_t j = 1; j < parts.size(); ++j)
       plugin.mime_types.push_back(parts[j]);
 

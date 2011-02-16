@@ -31,6 +31,7 @@ struct PepperPluginInfo {
   std::vector<std::string> mime_types;
   std::string name;
   std::string description;
+  std::string version;
   std::string file_extensions;
   std::string type_descriptions;
 
