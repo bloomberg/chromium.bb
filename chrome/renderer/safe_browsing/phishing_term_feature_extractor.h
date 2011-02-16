@@ -11,10 +11,6 @@
 // To make it harder for a phisher to enumerate all of the relevant terms in
 // the model, the terms are provided as SHA-256 hashes, rather than plain text.
 //
-// TODO(bryner): When we compute the score, all of the features in the
-// FeatureMap will be hashed so that they can be compared against the model.
-// When this is implemented, add a comment about it here.
-//
 // There is one PhishingTermFeatureExtractor per RenderView.
 
 #ifndef CHROME_RENDERER_SAFE_BROWSING_PHISHING_TERM_FEATURE_EXTRACTOR_H_

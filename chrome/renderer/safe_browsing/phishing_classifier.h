@@ -3,8 +3,17 @@
 // found in the LICENSE file.
 //
 // This class handles the process of extracting all of the features from a
-// page and computing a phishyness score.  For more details, see
-// phishing_*_feature_extractor.h, scorer.h, and client_model.proto.
+// page and computing a phishyness score.  The basic steps are:
+//  - Run each feature extractor over the page, building up a FeatureMap of
+//    feature -> value.
+//  - SHA-256 hash all of the feature names in the map so that they match the
+//    supplied model.
+//  - Hand the hashed map off to a Scorer, which computes the probability that
+//    the page is phishy.
+//  - If the page is phishy, run the supplied callback.
+//
+// For more details, see phishing_*_feature_extractor.h, scorer.h, and
+// client_model.proto.
 
 #ifndef CHROME_RENDERER_SAFE_BROWSING_PHISHING_CLASSIFIER_H_
 #define CHROME_RENDERER_SAFE_BROWSING_PHISHING_CLASSIFIER_H_
