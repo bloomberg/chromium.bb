@@ -68,6 +68,8 @@ class Target {
   // build the Target internal structures.
   bool Init();
 
+  void SetMemoryBase(uint64_t mem_base) { mem_base_ = mem_base; }
+
   // Add and remove temporary breakpoints.  These breakpoints
   // must be added just before we start running, and removed
   // just before we stop running to prevent the debugger from
@@ -150,6 +152,7 @@ class Target {
 
   uint32_t run_thread_;   // Which thread to issue step commands on
   uint32_t reg_thread_;   // Which thread to issue context (reg) commands on
+  uint64_t mem_base_;
 };
 
 
