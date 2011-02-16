@@ -3752,12 +3752,6 @@
    fun:_ZN4base13AtExitManagerD1Ev
 }
 {
-   bug_73129
-   Memcheck:Cond
-   fun:_ZNK10disk_cache11BackendImpl12GetSizeGroupEv
-   fun:_ZN10disk_cache11BackendImpl8SyncInitEv
-}
-{
    bug_73132
    Memcheck:Leak
    fun:_Znw*
