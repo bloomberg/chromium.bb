@@ -33,7 +33,7 @@ typedef DOMElementProxy::By By;
 
 #if defined(OS_WIN)
 // See http://crbug.com/61636
-#define MAYBE_FindByXPath FLAKY_FindByXPath
+#define MAYBE_FindByXPath DISABLED_FindByXPath
 #else
 #define MAYBE_FindByXPath FindByXPath
 #endif
