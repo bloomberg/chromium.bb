@@ -193,8 +193,8 @@ int printEncoder(int fd, drmModeResPtr res, drmModeEncoderPtr encoder, uint32_t 
 	printf("\tid     :%i\n", id);
 	printf("\tcrtc_id   :%d\n", encoder->crtc_id);
 	printf("\ttype   :%d\n", encoder->encoder_type);
-	printf("\tpossible_crtcs  :%d\n", encoder->possible_crtcs);
-	printf("\tpossible_clones :%d\n", encoder->possible_clones);
+	printf("\tpossible_crtcs  :0x%x\n", encoder->possible_crtcs);
+	printf("\tpossible_clones :0x%x\n", encoder->possible_clones);
 	return 0;
 }
 
