@@ -376,7 +376,7 @@ void URLRequestAutomationJob::Cleanup() {
   id_ = 0;
   tab_ = 0;
 
-  DCHECK(message_filter_ == NULL);
+  DCHECK(!message_filter_);
   DisconnectFromMessageFilter();
 
   pending_buf_ = NULL;

@@ -720,7 +720,7 @@ void TestingAutomationProvider::GetRedirectsFrom(int tab_handle,
     DCHECK(history_service) << "Tab " << tab_handle << "'s profile " <<
                                "has no history service";
     if (history_service) {
-      DCHECK(reply_message_ == NULL);
+      DCHECK(!reply_message_);
       reply_message_ = reply_message;
       // Schedule a history query for redirects. The response will be sent
       // asynchronously from the callback the history system uses to notify us
@@ -1139,7 +1139,7 @@ void TestingAutomationProvider::ExecuteJavascript(
                       "window.domAutomationController.setAutomationId(%d);",
                       reply_message->routing_id());
 
-  DCHECK(reply_message_ == NULL);
+  DCHECK(!reply_message_);
   reply_message_ = reply_message;
 
   tab_contents->render_view_host()->ExecuteJavascriptInWebFrame(
@@ -1163,7 +1163,7 @@ void TestingAutomationProvider::HandleInspectElementRequest(
     int handle, int x, int y, IPC::Message* reply_message) {
   TabContents* tab_contents = GetTabContentsForHandle(handle, NULL);
   if (tab_contents) {
-    DCHECK(reply_message_ == NULL);
+    DCHECK(!reply_message_);
     reply_message_ = reply_message;
 
     DevToolsManager::GetInstance()->InspectElement(
@@ -4642,7 +4642,7 @@ void TestingAutomationProvider::OnRedirectQueryComplete(
     GURL from_url,
     bool success,
     history::RedirectList* redirects) {
-  DCHECK(request_handle == redirect_query_);
+  DCHECK_EQ(request_handle, redirect_query_);
   DCHECK(reply_message_ != NULL);
 
   std::vector<GURL> redirects_gurl;

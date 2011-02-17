@@ -135,7 +135,7 @@ size_t HistoryProvider::TrimHttpPrefix(string16* url) {
     return 0;
   size_t scheme_pos =
       url->find(ASCIIToUTF16(chrome::kHttpScheme) + char16(':'));
-  DCHECK(scheme_pos != string16::npos);
+  DCHECK_NE(scheme_pos, string16::npos);
 
   // Erase scheme plus up to two slashes.
   size_t prefix_end = scheme_pos + strlen(chrome::kHttpScheme) + 1;

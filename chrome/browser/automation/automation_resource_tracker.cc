@@ -34,7 +34,7 @@ void AutomationResourceTrackerImpl::RemoveImpl(const void* resource) {
     return;
 
   int handle = resource_to_handle_[resource];
-  DCHECK(handle_to_resource_[handle] == resource);
+  DCHECK_EQ(handle_to_resource_[handle], resource);
 
   RemoveObserverTypeProxy(resource);
 

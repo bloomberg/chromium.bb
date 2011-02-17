@@ -177,7 +177,7 @@ NSMutableAttributedString* AutocompletePopupViewMac::ElideString(
   // The ellipses should be the last character, and everything before
   // that should match the original string.
   const size_t i(elided.size() - 1);
-  DCHECK(0 != elided.compare(0, i, originalString));
+  DCHECK_NE(0, elided.compare(0, i, originalString));
 
   // Replace the end of |aString| with the ellipses from |elided|.
   NSString* s = base::SysUTF16ToNSString(elided.substr(i));

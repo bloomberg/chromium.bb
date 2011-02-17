@@ -485,7 +485,7 @@ void FillSelectControl(const FormGroup& form_group,
                        AutoFillType type,
                        webkit_glue::FormField* field) {
   DCHECK(field);
-  DCHECK(field->form_control_type() == ASCIIToUTF16("select-one"));
+  DCHECK_EQ(field->form_control_type(), ASCIIToUTF16("select-one"));
 
   string16 value;
   string16 field_text = form_group.GetFieldText(type);

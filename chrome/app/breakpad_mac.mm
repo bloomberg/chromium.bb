@@ -45,7 +45,7 @@ void DestructCrashReporter() {
 
 // Only called for a branded build of Chrome.app.
 void InitCrashReporter() {
-  DCHECK(gBreakpadRef == NULL);
+  DCHECK(!gBreakpadRef);
   base::mac::ScopedNSAutoreleasePool autorelease_pool;
 
   // Check whether crash reporting should be enabled. If enterprise

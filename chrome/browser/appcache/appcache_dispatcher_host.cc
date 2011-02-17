@@ -217,21 +217,21 @@ void AppCacheDispatcherHost::OnSwapCache(int host_id,
 void AppCacheDispatcherHost::GetStatusCallback(
     appcache::Status status, void* param) {
   IPC::Message* reply_msg = reinterpret_cast<IPC::Message*>(param);
-  DCHECK(reply_msg == pending_reply_msg_.get());
+  DCHECK_EQ(reply_msg, pending_reply_msg_.get());
   AppCacheMsg_GetStatus::WriteReplyParams(reply_msg, status);
   Send(pending_reply_msg_.release());
 }
 
 void AppCacheDispatcherHost::StartUpdateCallback(bool result, void* param) {
   IPC::Message* reply_msg = reinterpret_cast<IPC::Message*>(param);
-  DCHECK(reply_msg == pending_reply_msg_.get());
+  DCHECK_EQ(reply_msg, pending_reply_msg_.get());
   AppCacheMsg_StartUpdate::WriteReplyParams(reply_msg, result);
   Send(pending_reply_msg_.release());
 }
 
 void AppCacheDispatcherHost::SwapCacheCallback(bool result, void* param) {
   IPC::Message* reply_msg = reinterpret_cast<IPC::Message*>(param);
-  DCHECK(reply_msg == pending_reply_msg_.get());
+  DCHECK_EQ(reply_msg, pending_reply_msg_.get());
   AppCacheMsg_SwapCache::WriteReplyParams(reply_msg, result);
   Send(pending_reply_msg_.release());
 }

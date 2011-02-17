@@ -838,7 +838,7 @@ void AutomationProvider::GetEnabledExtensions(
 
 void AutomationProvider::WaitForExtensionTestResult(
     IPC::Message* reply_message) {
-  DCHECK(reply_message_ == NULL);
+  DCHECK(!reply_message_);
   reply_message_ = reply_message;
   // Call MaybeSendResult, because the result might have come in before
   // we were waiting on it.

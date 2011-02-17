@@ -183,7 +183,7 @@ void AutocompleteHistoryManager::OnWebDataServiceRequestDone(
     return;
   }
 
-  DCHECK(result->GetType() == AUTOFILL_VALUE_RESULT);
+  DCHECK_EQ(result->GetType(), AUTOFILL_VALUE_RESULT);
   const WDResult<std::vector<string16> >* autofill_result =
       static_cast<const WDResult<std::vector<string16> >*>(result);
   std::vector<string16> suggestions = autofill_result->GetValue();

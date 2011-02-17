@@ -21,7 +21,7 @@ class ScopedOleInitializer {
  public:
   ScopedOleInitializer() {
     int ole_result = OleInitialize(NULL);
-    DCHECK(ole_result == S_OK);
+    DCHECK_EQ(ole_result, S_OK);
   }
   ~ScopedOleInitializer() {
     OleUninitialize();

@@ -121,7 +121,7 @@ AutomationResourceMessageFilter::~AutomationResourceMessageFilter() {
 
 // Called on the IPC thread:
 void AutomationResourceMessageFilter::OnFilterAdded(IPC::Channel* channel) {
-  DCHECK(channel_ == NULL);
+  DCHECK(!channel_);
   channel_ = channel;
 }
 

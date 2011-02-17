@@ -335,7 +335,7 @@ class PreferenceObserver : public NotificationObserver {
 - (void)addressAddDidEnd:(NSWindow*)sheet
               returnCode:(int)returnCode
              contextInfo:(void*)contextInfo {
-  DCHECK(contextInfo == NULL);
+  DCHECK(!contextInfo);
 
   if (returnCode) {
     // Create a new address and save it to the |profiles_| list.
@@ -359,10 +359,10 @@ class PreferenceObserver : public NotificationObserver {
 }
 
 // Add credit card sheet was dismissed.  Non-zero |returnCode| indicates a save.
-- (void)creditCardAddDidEnd:(NSWindow *)sheet
+- (void)creditCardAddDidEnd:(NSWindow*)sheet
                  returnCode:(int)returnCode
-                contextInfo:(void *)contextInfo {
-  DCHECK(contextInfo == NULL);
+                contextInfo:(void*)contextInfo {
+  DCHECK(!contextInfo);
 
   if (returnCode) {
     // Create a new credit card and save it to the |creditCards_| list.

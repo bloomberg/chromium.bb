@@ -93,7 +93,7 @@ void AlternateNavURLFetcher::OnURLFetchComplete(
     int response_code,
     const ResponseCookies& cookies,
     const std::string& data) {
-  DCHECK(fetcher_.get() == source);
+  DCHECK_EQ(fetcher_.get(), source);
   SetStatusFromURLFetch(url, status, response_code);
   ShowInfobarIfPossible();
 }
@@ -111,7 +111,7 @@ string16 AlternateNavURLFetcher::GetMessageTextWithOffset(
     size_t* link_offset) const {
   const string16 label = l10n_util::GetStringFUTF16(
       IDS_ALTERNATE_NAV_URL_VIEW_LABEL, string16(), link_offset);
-  DCHECK(*link_offset != string16::npos);
+  DCHECK_NE(*link_offset, string16::npos);
   return label;
 }
 

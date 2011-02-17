@@ -327,7 +327,7 @@ bool SendMouseEventsImpl(MouseButton type, int state, Task* task) {
 
 bool SendKeyPress(gfx::NativeWindow window, ui::KeyboardCode key,
                   bool control, bool shift, bool alt, bool command) {
-  DCHECK(command == false);  // No command key on Windows
+  DCHECK_EQ(command, false);  // No command key on Windows
   return SendKeyPressImpl(key, control, shift, alt, NULL);
 }
 
@@ -336,7 +336,7 @@ bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
                                 bool control, bool shift, bool alt,
                                 bool command,
                                 Task* task) {
-  DCHECK(command == false);  // No command key on Windows
+  DCHECK_EQ(command, false);  // No command key on Windows
   return SendKeyPressImpl(key, control, shift, alt, task);
 }
 

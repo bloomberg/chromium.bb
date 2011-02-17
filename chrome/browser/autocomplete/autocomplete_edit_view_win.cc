@@ -347,7 +347,7 @@ PropertyAccessor<AutocompleteEditState>* GetStateAccessor() {
 class PaintPatcher {
  public:
   PaintPatcher() : refcount_(0) { }
-  ~PaintPatcher() { DCHECK(refcount_ == 0); }
+  ~PaintPatcher() { DCHECK_EQ(refcount_, 0U); }
 
   void RefPatch() {
     if (refcount_ == 0) {
@@ -1089,7 +1089,7 @@ bool AutocompleteEditViewWin::IsItemForCommandIdDynamic(int command_id) const {
 
 string16 AutocompleteEditViewWin::GetLabelForCommandId(
     int command_id) const {
-  DCHECK(command_id == IDS_PASTE_AND_GO);
+  DCHECK_EQ(command_id, IDS_PASTE_AND_GO);
   return l10n_util::GetStringUTF16(model_->is_paste_and_search() ?
       IDS_PASTE_AND_SEARCH : IDS_PASTE_AND_GO);
 }
@@ -2068,7 +2068,7 @@ void AutocompleteEditViewWin::GetSelection(CHARRANGE& sel) const {
     return;
   ScopedComPtr<ITextSelection> selection;
   const HRESULT hr = text_object_model->GetSelection(selection.Receive());
-  DCHECK(hr == S_OK);
+  DCHECK_EQ(hr, S_OK);
   long flags;
   selection->GetFlags(&flags);
   if (flags & tomSelStartActive)
@@ -2098,7 +2098,7 @@ void AutocompleteEditViewWin::SetSelection(LONG start, LONG end) {
     return;
   ScopedComPtr<ITextSelection> selection;
   const HRESULT hr = text_object_model->GetSelection(selection.Receive());
-  DCHECK(hr == S_OK);
+  DCHECK_EQ(hr, S_OK);
   selection->SetFlags(tomSelStartActive);
 }
 
@@ -2334,7 +2334,7 @@ void AutocompleteEditViewWin::DrawSlashForInsecureScheme(
 
 void AutocompleteEditViewWin::DrawDropHighlight(
     HDC hdc, const CRect& client_rect, const CRect& paint_clip_rect) {
-  DCHECK(drop_highlight_position_ != -1);
+  DCHECK_NE(drop_highlight_position_, -1);
 
   const int highlight_y = client_rect.top + font_y_adjustment_;
   const int highlight_x = PosFromChar(drop_highlight_position_).x - 1;
