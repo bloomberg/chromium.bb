@@ -17,7 +17,6 @@ bool AddressField::GetFieldInfo(FieldTypeMap* field_type_map) const {
   AutoFillFieldType address_company;
   AutoFillFieldType address_line1;
   AutoFillFieldType address_line2;
-  AutoFillFieldType address_appt_num;
   AutoFillFieldType address_city;
   AutoFillFieldType address_state;
   AutoFillFieldType address_zip;
@@ -30,7 +29,6 @@ bool AddressField::GetFieldInfo(FieldTypeMap* field_type_map) const {
       address_company = COMPANY_NAME;
       address_line1 = ADDRESS_HOME_LINE1;
       address_line2 = ADDRESS_HOME_LINE2;
-      address_appt_num = ADDRESS_HOME_APT_NUM;
       address_city = ADDRESS_HOME_CITY;
       address_state = ADDRESS_HOME_STATE;
       address_zip = ADDRESS_HOME_ZIP;
@@ -41,7 +39,6 @@ bool AddressField::GetFieldInfo(FieldTypeMap* field_type_map) const {
       address_company = COMPANY_NAME;
       address_line1 = ADDRESS_BILLING_LINE1;
       address_line2 = ADDRESS_BILLING_LINE2;
-      address_appt_num = ADDRESS_BILLING_APT_NUM;
       address_city = ADDRESS_BILLING_CITY;
       address_state = ADDRESS_BILLING_STATE;
       address_zip = ADDRESS_BILLING_ZIP;

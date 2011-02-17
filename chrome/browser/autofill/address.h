@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,8 +17,8 @@ class Address : public FormGroup {
   Address();
   virtual ~Address();
 
-  // FormGroup implementation:
-  virtual FormGroup* Clone() const = 0;
+  // FormGroup:
+  virtual FormGroup* Clone() const;
   virtual void GetPossibleFieldTypes(const string16& text,
                                      FieldTypeSet* possible_types) const;
   virtual void GetAvailableFieldTypes(FieldTypeSet* available_types) const;
@@ -31,53 +31,25 @@ class Address : public FormGroup {
   // Sets all of the fields to the empty string.
   void Clear();
 
-  // Sets the values of this object to the values in |address|.
-  void Clone(const Address& address);
-
- protected:
-  explicit Address(const Address& address);
-
  private:
   // Vector of tokens in an address line.
   typedef std::vector<string16> LineTokens;
 
-  const string16& line1() const { return line1_; }
-  const string16& line2() const { return line2_; }
-  const string16& apt_num() const { return apt_num_; }
-  const string16& city() const { return city_; }
-  const string16& state() const { return state_; }
-  const string16& country() const { return country_; }
-  const string16& zip_code() const { return zip_code_; }
+  explicit Address(const Address& address);
+
+  void operator=(const Address& address);
 
   void set_line1(const string16& line1);
   void set_line2(const string16& line2);
-  void set_apt_num(const string16& apt_num) { apt_num_ = apt_num; }
-  void set_city(const string16& city) { city_ = city; }
-  void set_state(const string16& state) { state_ = state; }
-  void set_country(const string16& country) { country_ = country; }
-  void set_zip_code(const string16& zip_code) { zip_code_ = zip_code; }
-
-  void operator=(const Address& address);
 
   // The following functions match |text| against the various values of the
   // address, returning true on match.
   virtual bool IsLine1(const string16& text) const;
   virtual bool IsLine2(const string16& text) const;
-  virtual bool IsAptNum(const string16& text) const;
   virtual bool IsCity(const string16& text) const;
   virtual bool IsState(const string16& text) const;
   virtual bool IsCountry(const string16& text) const;
   virtual bool IsZipCode(const string16& text) const;
-
-  // The following functions should return the field type for each part of the
-  // address.  Currently, these are either home or billing address types.
-  virtual AutoFillFieldType GetLine1Type() const = 0;
-  virtual AutoFillFieldType GetLine2Type() const = 0;
-  virtual AutoFillFieldType GetAptNumType() const = 0;
-  virtual AutoFillFieldType GetCityType() const = 0;
-  virtual AutoFillFieldType GetStateType() const = 0;
-  virtual AutoFillFieldType GetZipCodeType() const = 0;
-  virtual AutoFillFieldType GetCountryType() const = 0;
 
   // A helper function for FindInfoMatches that only handles matching |info|
   // with the requested field subgroup.
@@ -99,7 +71,6 @@ class Address : public FormGroup {
   // The address.
   string16 line1_;
   string16 line2_;
-  string16 apt_num_;
   string16 city_;
   string16 state_;
   string16 country_;

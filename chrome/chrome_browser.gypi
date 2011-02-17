@@ -203,8 +203,6 @@
         'browser/autofill/form_group.h',
         'browser/autofill/form_structure.cc',
         'browser/autofill/form_structure.h',
-        'browser/autofill/home_address.cc',
-        'browser/autofill/home_address.h',
         'browser/autofill/home_phone_number.cc',
         'browser/autofill/home_phone_number.h',
         'browser/autofill/name_field.cc',

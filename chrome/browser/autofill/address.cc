@@ -16,7 +16,6 @@ const char16 kAddressSplitChars[] = {'-', ',', '#', '.', ' ', 0};
 const AutoFillType::FieldTypeSubGroup kAutoFillAddressTypes[] = {
   AutoFillType::ADDRESS_LINE1,
   AutoFillType::ADDRESS_LINE2,
-  AutoFillType::ADDRESS_APT_NUM,
   AutoFillType::ADDRESS_CITY,
   AutoFillType::ADDRESS_STATE,
   AutoFillType::ADDRESS_ZIP,
@@ -31,6 +30,10 @@ Address::Address() {}
 
 Address::~Address() {}
 
+FormGroup* Address::Clone() const {
+  return new Address(*this);
+}
+
 void Address::GetPossibleFieldTypes(const string16& text,
                                     FieldTypeSet* possible_types) const {
   DCHECK(possible_types);
@@ -41,50 +44,44 @@ void Address::GetPossibleFieldTypes(const string16& text,
     return;
 
   if (IsLine1(text))
-    possible_types->insert(GetLine1Type());
+    possible_types->insert(ADDRESS_HOME_LINE1);
 
   if (IsLine2(text))
-    possible_types->insert(GetLine2Type());
-
-  if (IsAptNum(text))
-    possible_types->insert(GetAptNumType());
+    possible_types->insert(ADDRESS_HOME_LINE2);
 
   if (IsCity(text))
-    possible_types->insert(GetCityType());
+    possible_types->insert(ADDRESS_HOME_CITY);
 
   if (IsState(text))
-    possible_types->insert(GetStateType());
+    possible_types->insert(ADDRESS_HOME_STATE);
 
   if (IsZipCode(text))
-    possible_types->insert(GetZipCodeType());
+    possible_types->insert(ADDRESS_HOME_ZIP);
 
   if (IsCountry(text))
-    possible_types->insert(GetCountryType());
+    possible_types->insert(ADDRESS_HOME_COUNTRY);
 }
 
 void Address::GetAvailableFieldTypes(FieldTypeSet* available_types) const {
   DCHECK(available_types);
 
-  if (!line1().empty())
-    available_types->insert(GetLine1Type());
+  if (!line1_.empty())
+    available_types->insert(ADDRESS_HOME_LINE1);
 
-  if (!line2().empty())
-    available_types->insert(GetLine2Type());
+  if (!line2_.empty())
+    available_types->insert(ADDRESS_HOME_LINE2);
 
-  if (!apt_num().empty())
-    available_types->insert(GetAptNumType());
+  if (!city_.empty())
+    available_types->insert(ADDRESS_HOME_CITY);
 
-  if (!city().empty())
-    available_types->insert(GetCityType());
+  if (!state_.empty())
+    available_types->insert(ADDRESS_HOME_STATE);
 
-  if (!state().empty())
-    available_types->insert(GetStateType());
+  if (!zip_code_.empty())
+    available_types->insert(ADDRESS_HOME_ZIP);
 
-  if (!zip_code().empty())
-    available_types->insert(GetZipCodeType());
-
-  if (!country().empty())
-    available_types->insert(GetCountryType());
+  if (!country_.empty())
+    available_types->insert(ADDRESS_HOME_COUNTRY);
 }
 
 void Address::FindInfoMatches(const AutoFillType& type,
@@ -106,26 +103,23 @@ void Address::FindInfoMatches(const AutoFillType& type,
 
 string16 Address::GetFieldText(const AutoFillType& type) const {
   AutoFillFieldType field_type = type.field_type();
-  if (field_type == GetLine1Type())
-    return line1();
+  if (field_type == ADDRESS_HOME_LINE1)
+    return line1_;
 
-  if (field_type == GetLine2Type())
-    return line2();
+  if (field_type == ADDRESS_HOME_LINE2)
+    return line2_;
 
-  if (field_type == GetAptNumType())
-    return apt_num();
+  if (field_type == ADDRESS_HOME_CITY)
+    return city_;
 
-  if (field_type == GetCityType())
-    return city();
+  if (field_type == ADDRESS_HOME_STATE)
+    return state_;
 
-  if (field_type == GetStateType())
-    return state();
+  if (field_type ==  ADDRESS_HOME_ZIP)
+    return zip_code_;
 
-  if (field_type ==  GetZipCodeType())
-    return zip_code();
-
-  if (field_type == GetCountryType())
-    return country();
+  if (field_type == ADDRESS_HOME_COUNTRY)
+    return country_;
 
   return string16();
 }
@@ -136,16 +130,14 @@ void Address::SetInfo(const AutoFillType& type, const string16& value) {
     set_line1(value);
   else if (subgroup == AutoFillType::ADDRESS_LINE2)
     set_line2(value);
-  else if (subgroup == AutoFillType::ADDRESS_APT_NUM)
-    set_apt_num(value);
   else if (subgroup == AutoFillType::ADDRESS_CITY)
-    set_city(value);
+    city_ = value;
   else if (subgroup == AutoFillType::ADDRESS_STATE)
-    set_state(value);
+    state_ = value;
   else if (subgroup == AutoFillType::ADDRESS_COUNTRY)
-    set_country(value);
+    country_ = value;
   else if (subgroup == AutoFillType::ADDRESS_ZIP)
-    set_zip_code(value);
+    zip_code_ = value;
   else
     NOTREACHED();
 }
@@ -155,21 +147,10 @@ void Address::Clear() {
   line1_.clear();
   line2_tokens_.clear();
   line2_.clear();
-  apt_num_.clear();
   city_.clear();
   state_.clear();
   country_.clear();
   zip_code_.clear();
-}
-
-void Address::Clone(const Address& address) {
-  set_line1(address.line1());
-  set_line2(address.line2());
-  set_apt_num(address.apt_num());
-  set_city(address.city());
-  set_state(address.state());
-  set_country(address.country());
-  set_zip_code(address.zip_code());
 }
 
 Address::Address(const Address& address)
@@ -178,7 +159,6 @@ Address::Address(const Address& address)
       line2_tokens_(address.line2_tokens_),
       line1_(address.line1_),
       line2_(address.line2_),
-      apt_num_(address.apt_num_),
       city_(address.city_),
       state_(address.state_),
       country_(address.country_),
@@ -211,10 +191,6 @@ bool Address::IsLine2(const string16& text) const {
   return IsLineMatch(text, line2_tokens_);
 }
 
-bool Address::IsAptNum(const string16& text) const {
-  return (StringToLowerASCII(apt_num_) == StringToLowerASCII(text));
-}
-
 bool Address::IsCity(const string16& text) const {
   return (StringToLowerASCII(city_) == StringToLowerASCII(text));
 }
@@ -238,26 +214,23 @@ bool Address::FindInfoMatchesHelper(const FieldTypeSubGroup& subgroup,
 
   match->clear();
   if (subgroup == AutoFillType::ADDRESS_LINE1 &&
-      StartsWith(line1(), info, false)) {
-    *match = line1();
+      StartsWith(line1_, info, false)) {
+    *match = line1_;
   } else if (subgroup == AutoFillType::ADDRESS_LINE2 &&
-             StartsWith(line2(), info, false)) {
-    *match = line2();
-  } else if (subgroup == AutoFillType::ADDRESS_APT_NUM &&
-             StartsWith(apt_num(), info, false)) {
-    *match = apt_num();
+             StartsWith(line2_, info, false)) {
+    *match = line2_;
   } else if (subgroup == AutoFillType::ADDRESS_CITY &&
-             StartsWith(city(), info, false)) {
-    *match = city();
+             StartsWith(city_, info, false)) {
+    *match = city_;
   } else if (subgroup == AutoFillType::ADDRESS_STATE &&
-             StartsWith(state(), info, false)) {
-    *match = state();
+             StartsWith(state_, info, false)) {
+    *match = state_;
   } else if (subgroup == AutoFillType::ADDRESS_COUNTRY &&
-             StartsWith(country(), info, false)) {
-    *match = country();
+             StartsWith(country_, info, false)) {
+    *match = country_;
   } else if (subgroup == AutoFillType::ADDRESS_ZIP &&
-             StartsWith(zip_code(), info, true)) {
-    *match = zip_code();
+             StartsWith(zip_code_, info, true)) {
+    *match = zip_code_;
   }
 
   return !match->empty();

@@ -14,7 +14,6 @@
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/contact_info.h"
 #include "chrome/browser/autofill/fax_number.h"
-#include "chrome/browser/autofill/home_address.h"
 #include "chrome/browser/autofill/home_phone_number.h"
 #include "chrome/common/guid.h"
 #include "grit/generated_resources.h"
@@ -26,7 +25,7 @@ void InitPersonalInfo(FormGroupMap* personal_info) {
   (*personal_info)[AutoFillType::CONTACT_INFO] = new ContactInfo();
   (*personal_info)[AutoFillType::PHONE_HOME] = new HomePhoneNumber();
   (*personal_info)[AutoFillType::PHONE_FAX] = new FaxNumber();
-  (*personal_info)[AutoFillType::ADDRESS_HOME] = new HomeAddress();
+  (*personal_info)[AutoFillType::ADDRESS_HOME] = new Address();
 }
 
 // Like |AutoFillType::GetEquivalentFieldType()|, but also returns |NAME_FULL|
