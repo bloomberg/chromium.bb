@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Because the unit tests for ui::gfx::Image are spread across multiple
+// Because the unit tests for gfx::Image are spread across multiple
 // implementation files, this header contains the reusable components.
 
 #ifndef UI_GFX_IMAGE_UNITTEST_H_
@@ -19,7 +19,6 @@
 #include "skia/ext/skia_utils_mac.h"
 #endif
 
-namespace ui {
 namespace gfx {
 namespace test {
 
@@ -54,6 +53,5 @@ PlatformImage CreatePlatformImage() {
 
 }  // namespace test
 }  // namespace gfx
-}  // namespace ui
 
 #endif  // UI_GFX_IMAGE_UNITTEST_H_

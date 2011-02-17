@@ -7,7 +7,6 @@
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
-namespace ui {
 namespace gfx {
 namespace internal {
 
@@ -17,4 +16,3 @@ const SkBitmap* NSImageToSkBitmap(NSImage* image) {
 
 }  // namespace internal
 }  // namespace gfx
-}  // namespace ui

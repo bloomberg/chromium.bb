@@ -18,7 +18,6 @@ namespace {
 class ImageTest;
 }
 
-namespace ui {
 namespace gfx {
 
 namespace internal {
@@ -89,6 +88,5 @@ class Image {
 };
 
 }  // namespace gfx
-}  // namespace ui
 
 #endif  // UI_GFX_IMAGE_H_

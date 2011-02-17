@@ -16,7 +16,6 @@
 #include "skia/ext/skia_utils_mac.h"
 #endif
 
-namespace ui {
 namespace gfx {
 
 namespace internal {
@@ -29,8 +28,8 @@ const SkBitmap* NSImageToSkBitmap(NSImage* image);
 
 #if defined(OS_LINUX)
 const SkBitmap* GdkPixbufToSkBitmap(GdkPixbuf* pixbuf) {
-  ::gfx::CanvasSkia canvas(gdk_pixbuf_get_width(pixbuf),
-                           gdk_pixbuf_get_height(pixbuf),
+  gfx::CanvasSkia canvas(gdk_pixbuf_get_width(pixbuf),
+                         gdk_pixbuf_get_height(pixbuf),
                            false);
   canvas.DrawGdkPixbuf(pixbuf, 0, 0);
   return new SkBitmap(canvas.ExtractBitmap());
@@ -252,12 +251,12 @@ internal::ImageRep* Image::GetRepresentation(RepresentationType rep_type) {
     internal::ImageRep* native_rep = NULL;
 #if defined(OS_LINUX)
     if (rep_type == Image::kGdkPixbufRep) {
-      GdkPixbuf* pixbuf = ::gfx::GdkPixbufFromSkBitmap(skia_rep->bitmap());
+      GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(skia_rep->bitmap());
       native_rep = new internal::GdkPixbufRep(pixbuf);
     }
 #elif defined(OS_MACOSX)
     if (rep_type == Image::kNSImageRep) {
-      NSImage* image = ::gfx::SkBitmapToNSImage(*(skia_rep->bitmap()));
+      NSImage* image = gfx::SkBitmapToNSImage(*(skia_rep->bitmap()));
       base::mac::NSObjectRetain(image);
       native_rep = new internal::NSImageRep(image);
     }
@@ -278,4 +277,3 @@ void Image::AddRepresentation(internal::ImageRep* rep) {
 }
 
 }  // namespace gfx
-}  // namespace ui

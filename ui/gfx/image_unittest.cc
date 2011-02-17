@@ -19,7 +19,7 @@
 
 namespace {
 
-using namespace ui::gfx::test;
+using namespace gfx::test;
 
 #if defined(TOOLKIT_VIEWS)
 const bool kUsesSkiaNatively = true;
@@ -29,13 +29,13 @@ const bool kUsesSkiaNatively = false;
 
 class ImageTest : public testing::Test {
  public:
-  size_t GetRepCount(const ui::gfx::Image& image) {
+  size_t GetRepCount(const gfx::Image& image) {
     return image.representations_.size();
   }
 };
 
 TEST_F(ImageTest, SkiaToSkia) {
-  ui::gfx::Image image(CreateBitmap());
+  gfx::Image image(CreateBitmap());
   const SkBitmap* bitmap = static_cast<const SkBitmap*>(image);
   EXPECT_TRUE(bitmap);
   EXPECT_FALSE(bitmap->isNull());
@@ -49,7 +49,7 @@ TEST_F(ImageTest, SkiaToSkia) {
 }
 
 TEST_F(ImageTest, SkiaToSkiaRef) {
-  ui::gfx::Image image(CreateBitmap());
+  gfx::Image image(CreateBitmap());
 
   const SkBitmap& bitmap = static_cast<const SkBitmap&>(image);
   EXPECT_FALSE(bitmap.isNull());
@@ -61,7 +61,7 @@ TEST_F(ImageTest, SkiaToSkiaRef) {
 }
 
 TEST_F(ImageTest, SkiaToPlatform) {
-  ui::gfx::Image image(CreateBitmap());
+  gfx::Image image(CreateBitmap());
   const size_t kRepCount = kUsesSkiaNatively ? 1U : 2U;
 
   EXPECT_TRUE(static_cast<PlatformImage>(image));
@@ -73,7 +73,7 @@ TEST_F(ImageTest, SkiaToPlatform) {
 }
 
 TEST_F(ImageTest, PlatformToSkia) {
-  ui::gfx::Image image(CreatePlatformImage());
+  gfx::Image image(CreatePlatformImage());
   const size_t kRepCount = kUsesSkiaNatively ? 1U : 2U;
 
   const SkBitmap* bitmap = static_cast<const SkBitmap*>(image);
@@ -86,7 +86,7 @@ TEST_F(ImageTest, PlatformToSkia) {
 }
 
 TEST_F(ImageTest, PlatformToPlatform) {
-  ui::gfx::Image image(CreatePlatformImage());
+  gfx::Image image(CreatePlatformImage());
   EXPECT_TRUE(static_cast<PlatformImage>(image));
   EXPECT_EQ(1U, GetRepCount(image));
 
@@ -96,7 +96,7 @@ TEST_F(ImageTest, PlatformToPlatform) {
 }
 
 TEST_F(ImageTest, CheckSkiaColor) {
-  ui::gfx::Image image(CreatePlatformImage());
+  gfx::Image image(CreatePlatformImage());
   const SkBitmap& bitmap(image);
 
   SkAutoLockPixels auto_lock(bitmap);
