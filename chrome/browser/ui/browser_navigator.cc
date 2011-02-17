@@ -1,8 +1,10 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/browser_navigator.h"
+
+#include <algorithm>
 
 #include "base/command_line.h"
 #include "chrome/browser/browser_list.h"
@@ -82,21 +84,28 @@ int GetIndexOfSingletonTab(browser::NavigateParams* params) {
                                            params->browser->profile(),
                                            &reverse_on_redirect);
 
-  for (int i = 0; i < params->browser->tab_count(); ++i) {
+  // If there are several matches: prefer currently selected tab. So we are
+  // starting our search at selected tab.
+  int start_index = std::max(0, params->browser->selected_index());
+  int tab_count = params->browser->tab_count();
+  for (int i = 0; i < tab_count; ++i) {
+    int tab_index = (start_index + i) % tab_count;
     TabContentsWrapper* tab =
-        params->browser->GetTabContentsWrapperAt(i);
+        params->browser->GetTabContentsWrapperAt(tab_index);
 
     url_canon::Replacements<char> replacements;
     replacements.ClearRef();
-    if (params->ignore_path)
+    if (params->ignore_path) {
       replacements.ClearPath();
+      replacements.ClearQuery();
+    }
 
     if (CompareURLsWithReplacements(tab->tab_contents()->GetURL(),
                                     params->url, replacements) ||
         CompareURLsWithReplacements(tab->tab_contents()->GetURL(),
                                     rewritten_url, replacements)) {
       params->target_contents = tab;
-      return i;
+      return tab_index;
     }
   }
 

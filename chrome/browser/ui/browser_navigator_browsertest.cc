@@ -555,7 +555,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, NullBrowser_NewWindow) {
 }
 
 // This test verifies that constructing params with disposition = SINGLETON_TAB
-// and |ignore_paths| = true opens a new tab navigated to the specified URL if
+// and |ignore_path| = true opens a new tab navigated to the specified URL if
 // no previous tab with that URL (minus the path) exists.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_SingletonTabNew_IgnorePath) {
@@ -585,7 +585,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 }
 
 // This test verifies that constructing params with disposition = SINGLETON_TAB
-// and |ignore_paths| = true opens an existing tab with the matching URL (minus
+// and |ignore_path| = true opens an existing tab with the matching URL (minus
 // the path) which is navigated to the specified URL.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_SingletonTabExisting_IgnorePath) {
@@ -617,7 +617,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 }
 
 // This test verifies that constructing params with disposition = SINGLETON_TAB
-// and |ignore_paths| = true opens an existing tab with the matching URL (minus
+// and |ignore_path| = true opens an existing tab with the matching URL (minus
 // the path) which is navigated to the specified URL.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_SingletonTabExistingSubPath_IgnorePath) {
@@ -649,7 +649,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 }
 
 // This test verifies that constructing params with disposition = SINGLETON_TAB
-// and |ignore_paths| = true will update the current tab's URL if the currently
+// and |ignore_path| = true will update the current tab's URL if the currently
 // selected tab is a match but has a different path.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_SingletonTabFocused_IgnorePath) {
@@ -677,6 +677,35 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(1, browser()->selected_index());
   EXPECT_EQ(singleton_url_target,
             browser()->GetSelectedTabContents()->GetURL());
+}
+
+// This test verifies that constructing params with disposition = SINGLETON_TAB
+// and |ignore_path| = true will open an existing matching tab
+// with a different query.
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
+                       Disposition_SingletonTabExisting_IgnoreQuery) {
+  int initial_tab_count = browser()->tab_count();
+  GURL singleton_url_current("chrome://settings/internet");
+  browser()->AddSelectedTabWithURL(singleton_url_current, PageTransition::LINK);
+
+  EXPECT_EQ(initial_tab_count + 1, browser()->tab_count());
+  EXPECT_EQ(initial_tab_count, browser()->selected_index());
+
+  // Navigate to a different settings path.
+  GURL singleton_url_target(
+      "chrome://settings/internet?"
+      "servicePath=/profile/ethernet_00aa00aa00aa&networkType=1");
+  browser::NavigateParams p(MakeNavigateParams());
+  p.disposition = SINGLETON_TAB;
+  p.url = singleton_url_target;
+  p.show_window = true;
+  p.ignore_path = true;
+  browser::Navigate(&p);
+
+  // Last tab should still be selected.
+  EXPECT_EQ(browser(), p.browser);
+  EXPECT_EQ(initial_tab_count + 1, browser()->tab_count());
+  EXPECT_EQ(initial_tab_count, browser()->selected_index());
 }
 
 // This test verifies that the settings page isn't opened in the incognito
