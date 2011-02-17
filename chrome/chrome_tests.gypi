@@ -2853,6 +2853,7 @@
         'browser/sync/sessions/test_util.h',
         'browser/sync/syncable/directory_backing_store_unittest.cc',
         'browser/sync/syncable/model_type_unittest.cc',
+        'browser/sync/syncable/nigori_util_unittest.cc',
         'browser/sync/syncable/syncable_id_unittest.cc',
         'browser/sync/syncable/syncable_unittest.cc',
         'browser/sync/util/channel_unittest.cc',

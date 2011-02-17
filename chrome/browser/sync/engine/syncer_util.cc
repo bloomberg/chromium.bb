@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/engine/syncer_util.h"
 
+#include <algorithm>
 #include <set>
 #include <string>
 #include <vector>
@@ -17,6 +18,7 @@
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
+#include "chrome/browser/sync/syncable/nigori_util.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/syncable/syncable_changes_version.h"
 
@@ -219,8 +221,8 @@ syncable::Id SyncerUtil::FindLocalIdToUpdate(
     if (local_entry.good() && !local_entry.Get(IS_DEL)) {
       int64 old_version = local_entry.Get(BASE_VERSION);
       int64 new_version = update.version();
-      DCHECK(old_version <= 0);
-      DCHECK(new_version > 0);
+      DCHECK_LE(old_version, 0);
+      DCHECK_GT(new_version, 0);
       // Otherwise setting the base version could cause a consistency failure.
       // An entry should never be version 0 and SYNCED.
       DCHECK(local_entry.Get(IS_UNSYNCED));
@@ -286,8 +288,9 @@ UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntry(
     }
   }
 
-  // We intercept updates to the Nigori node and update the Cryptographer here
-  // because there is no Nigori ChangeProcessor.
+  // We intercept updates to the Nigori node, update the Cryptographer and
+  // encrypt any unsynced changes here because there is no Nigori
+  // ChangeProcessor.
   const sync_pb::EntitySpecifics& specifics = entry->Get(SERVER_SPECIFICS);
   if (specifics.HasExtension(sync_pb::nigori)) {
     const sync_pb::NigoriSpecifics& nigori =
@@ -299,17 +302,49 @@ UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntry(
         cryptographer->SetPendingKeys(nigori.encrypted());
       }
     }
+
+    // Make sure any unsynced changes are properly encrypted as necessary.
+    syncable::ModelTypeSet encrypted_types =
+        syncable::GetEncryptedDataTypesFromNigori(nigori);
+    if (!VerifyUnsyncedChangesAreEncrypted(trans, encrypted_types) &&
+        (!cryptographer->is_ready() ||
+         !syncable::ProcessUnsyncedChangesForEncryption(trans, encrypted_types,
+                                                        cryptographer))) {
+      // We were unable to encrypt the changes, possibly due to a missing
+      // passphrase. We return conflict, even though the conflict is with the
+      // unsynced change and not the nigori node. We ensure foward progress
+      // because the cryptographer already has the pending keys set, so once
+      // the new passphrase is entered we should be able to encrypt properly.
+      // And, because this update will not be applied yet, next time around
+      // we will properly encrypt all appropriate unsynced data.
+      VLOG(1) << "Marking nigori node update as conflicting due to being unable"
+              << " to encrypt all necessary unsynced changes.";
+      return CONFLICT;
+    }
+
+    // Note that we don't bother to encrypt any synced data that now requires
+    // encryption. The machine that turned on encryption should encrypt
+    // everything itself. It's possible it could get interrupted during this
+    // process, but we currently reencrypt everything at startup as well,
+    // so as soon as a client is restarted with this datatype encrypted, all the
+    // data should be updated as necessary.
   }
 
   // Only apply updates that we can decrypt. Updates that can't be decrypted yet
   // will stay in conflict until the user provides a passphrase that lets the
   // Cryptographer decrypt them.
-  if (!entry->Get(SERVER_IS_DIR) && specifics.HasExtension(sync_pb::password)) {
-    const sync_pb::PasswordSpecifics& password =
-        specifics.GetExtension(sync_pb::password);
-    if (!cryptographer->CanDecrypt(password.encrypted())) {
+  if (!entry->Get(SERVER_IS_DIR)) {
+    if (specifics.has_encrypted() &&
+        !cryptographer->CanDecrypt(specifics.encrypted())) {
       // We can't decrypt this node yet.
       return CONFLICT;
+    } else if (specifics.HasExtension(sync_pb::password)) {
+      // Passwords use their own legacy encryption scheme.
+      const sync_pb::PasswordSpecifics& password =
+          specifics.GetExtension(sync_pb::password);
+      if (!cryptographer->CanDecrypt(password.encrypted())) {
+        return CONFLICT;
+      }
     }
   }
 

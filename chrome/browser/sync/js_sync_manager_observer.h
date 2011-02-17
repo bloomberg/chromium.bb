@@ -36,6 +36,8 @@ class JsSyncManagerObserver : public sync_api::SyncManager::Observer {
   virtual void OnUpdatedToken(const std::string& token);
   virtual void OnPassphraseRequired(bool for_decryption);
   virtual void OnPassphraseAccepted(const std::string& bootstrap_token);
+  virtual void OnEncryptionComplete(
+      const syncable::ModelTypeSet& encrypted_types);
   virtual void OnInitializationComplete();
   virtual void OnPaused();
   virtual void OnResumed();

@@ -4,9 +4,11 @@
 
 #include "chrome/browser/sync/engine/syncapi.h"
 
+#include <algorithm>
 #include <bitset>
 #include <iomanip>
 #include <list>
+#include <queue>
 #include <string>
 #include <vector>
 
@@ -52,6 +54,7 @@
 #include "chrome/browser/sync/sessions/sync_session_context.h"
 #include "chrome/browser/sync/syncable/autofill_migration.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
+#include "chrome/browser/sync/syncable/nigori_util.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/util/crypto_helpers.h"
 #include "chrome/common/deprecated/event_sys.h"
@@ -192,8 +195,11 @@ sync_pb::PasswordSpecificsData* DecryptPasswordSpecifics(
     const sync_pb::EntitySpecifics& specifics, Cryptographer* crypto) {
   if (!specifics.HasExtension(sync_pb::password))
     return NULL;
-  const sync_pb::EncryptedData& encrypted =
-      specifics.GetExtension(sync_pb::password).encrypted();
+  const sync_pb::PasswordSpecifics& password_specifics =
+      specifics.GetExtension(sync_pb::password);
+  if (!password_specifics.has_encrypted())
+    return NULL;
+  const sync_pb::EncryptedData& encrypted = password_specifics.encrypted();
   scoped_ptr<sync_pb::PasswordSpecificsData> data(
       new sync_pb::PasswordSpecificsData);
   if (!crypto->Decrypt(encrypted, data.get()))
@@ -202,17 +208,49 @@ sync_pb::PasswordSpecificsData* DecryptPasswordSpecifics(
 }
 
 bool BaseNode::DecryptIfNecessary(Entry* entry) {
-  if (GetIsFolder()) return true;  // Ignore the top-level password folder.
+  if (GetIsFolder()) return true;  // Ignore the top-level datatype folder.
   const sync_pb::EntitySpecifics& specifics =
       entry->Get(syncable::SPECIFICS);
   if (specifics.HasExtension(sync_pb::password)) {
+    // Passwords have their own legacy encryption structure.
     scoped_ptr<sync_pb::PasswordSpecificsData> data(DecryptPasswordSpecifics(
         specifics, GetTransaction()->GetCryptographer()));
     if (!data.get())
       return false;
     password_data_.swap(data);
+    return true;
+  }
+
+  // We assume any node with the encrypted field set has encrypted data.
+  if (!specifics.has_encrypted())
+    return true;
+
+  const sync_pb::EncryptedData& encrypted =
+      specifics.encrypted();
+  std::string plaintext_data = GetTransaction()->GetCryptographer()->
+      DecryptToString(encrypted);
+  if (plaintext_data.length() == 0)
+    return false;
+  if (!unencrypted_data_.ParseFromString(plaintext_data)) {
+    LOG(ERROR) << "Failed to decrypt encrypted node of type " <<
+      syncable::ModelTypeToString(entry->GetModelType()) << ".";
+    return false;
   }
   return true;
+}
+
+const sync_pb::EntitySpecifics& BaseNode::GetUnencryptedSpecifics(
+    const syncable::Entry* entry) const {
+  const sync_pb::EntitySpecifics& specifics = entry->Get(SPECIFICS);
+  if (specifics.has_encrypted()) {
+    DCHECK(syncable::GetModelTypeFromSpecifics(unencrypted_data_) !=
+           syncable::UNSPECIFIED);
+    return unencrypted_data_;
+  } else {
+    DCHECK(syncable::GetModelTypeFromSpecifics(unencrypted_data_) ==
+           syncable::UNSPECIFIED);
+    return specifics;
+  }
 }
 
 int64 BaseNode::GetParentId() const {
@@ -316,59 +354,79 @@ int64 BaseNode::GetExternalId() const {
 }
 
 const sync_pb::AppSpecifics& BaseNode::GetAppSpecifics() const {
-  DCHECK(GetModelType() == syncable::APPS);
-  return GetEntry()->Get(SPECIFICS).GetExtension(sync_pb::app);
+  DCHECK_EQ(syncable::APPS, GetModelType());
+  const sync_pb::EntitySpecifics& unencrypted =
+      GetUnencryptedSpecifics(GetEntry());
+  return unencrypted.GetExtension(sync_pb::app);
 }
 
 const sync_pb::AutofillSpecifics& BaseNode::GetAutofillSpecifics() const {
-  DCHECK(GetModelType() == syncable::AUTOFILL);
-  return GetEntry()->Get(SPECIFICS).GetExtension(sync_pb::autofill);
+  DCHECK_EQ(syncable::AUTOFILL, GetModelType());
+  const sync_pb::EntitySpecifics& unencrypted =
+      GetUnencryptedSpecifics(GetEntry());
+  return unencrypted.GetExtension(sync_pb::autofill);
 }
 
 const AutofillProfileSpecifics& BaseNode::GetAutofillProfileSpecifics() const {
   DCHECK_EQ(GetModelType(), syncable::AUTOFILL_PROFILE);
-  return GetEntry()->Get(SPECIFICS).GetExtension(sync_pb::autofill_profile);
+  const sync_pb::EntitySpecifics& unencrypted =
+      GetUnencryptedSpecifics(GetEntry());
+  return unencrypted.GetExtension(sync_pb::autofill_profile);
 }
 
 const sync_pb::BookmarkSpecifics& BaseNode::GetBookmarkSpecifics() const {
-  DCHECK(GetModelType() == syncable::BOOKMARKS);
-  return GetEntry()->Get(SPECIFICS).GetExtension(sync_pb::bookmark);
+  DCHECK_EQ(syncable::BOOKMARKS, GetModelType());
+  const sync_pb::EntitySpecifics& unencrypted =
+      GetUnencryptedSpecifics(GetEntry());
+  return unencrypted.GetExtension(sync_pb::bookmark);
 }
 
 const sync_pb::NigoriSpecifics& BaseNode::GetNigoriSpecifics() const {
-  DCHECK(GetModelType() == syncable::NIGORI);
-  return GetEntry()->Get(SPECIFICS).GetExtension(sync_pb::nigori);
+  DCHECK_EQ(syncable::NIGORI, GetModelType());
+  const sync_pb::EntitySpecifics& unencrypted =
+      GetUnencryptedSpecifics(GetEntry());
+  return unencrypted.GetExtension(sync_pb::nigori);
 }
 
 const sync_pb::PasswordSpecificsData& BaseNode::GetPasswordSpecifics() const {
-  DCHECK(GetModelType() == syncable::PASSWORDS);
+  DCHECK_EQ(syncable::PASSWORDS, GetModelType());
   DCHECK(password_data_.get());
   return *password_data_;
 }
 
 const sync_pb::PreferenceSpecifics& BaseNode::GetPreferenceSpecifics() const {
-  DCHECK(GetModelType() == syncable::PREFERENCES);
-  return GetEntry()->Get(SPECIFICS).GetExtension(sync_pb::preference);
+  DCHECK_EQ(syncable::PREFERENCES, GetModelType());
+  const sync_pb::EntitySpecifics& unencrypted =
+      GetUnencryptedSpecifics(GetEntry());
+  return unencrypted.GetExtension(sync_pb::preference);
 }
 
 const sync_pb::ThemeSpecifics& BaseNode::GetThemeSpecifics() const {
-  DCHECK(GetModelType() == syncable::THEMES);
-  return GetEntry()->Get(SPECIFICS).GetExtension(sync_pb::theme);
+  DCHECK_EQ(syncable::THEMES, GetModelType());
+  const sync_pb::EntitySpecifics& unencrypted =
+      GetUnencryptedSpecifics(GetEntry());
+  return unencrypted.GetExtension(sync_pb::theme);
 }
 
 const sync_pb::TypedUrlSpecifics& BaseNode::GetTypedUrlSpecifics() const {
-  DCHECK(GetModelType() == syncable::TYPED_URLS);
-  return GetEntry()->Get(SPECIFICS).GetExtension(sync_pb::typed_url);
+  DCHECK_EQ(syncable::TYPED_URLS, GetModelType());
+  const sync_pb::EntitySpecifics& unencrypted =
+      GetUnencryptedSpecifics(GetEntry());
+  return unencrypted.GetExtension(sync_pb::typed_url);
 }
 
 const sync_pb::ExtensionSpecifics& BaseNode::GetExtensionSpecifics() const {
-  DCHECK(GetModelType() == syncable::EXTENSIONS);
-  return GetEntry()->Get(SPECIFICS).GetExtension(sync_pb::extension);
+  DCHECK_EQ(syncable::EXTENSIONS, GetModelType());
+  const sync_pb::EntitySpecifics& unencrypted =
+      GetUnencryptedSpecifics(GetEntry());
+  return unencrypted.GetExtension(sync_pb::extension);
 }
 
 const sync_pb::SessionSpecifics& BaseNode::GetSessionSpecifics() const {
-  DCHECK(GetModelType() == syncable::SESSIONS);
-  return GetEntry()->Get(SPECIFICS).GetExtension(sync_pb::session);
+  DCHECK_EQ(syncable::SESSIONS, GetModelType());
+  const sync_pb::EntitySpecifics& unencrypted =
+      GetUnencryptedSpecifics(GetEntry());
+  return unencrypted.GetExtension(sync_pb::session);
 }
 
 syncable::ModelType BaseNode::GetModelType() const {
@@ -377,6 +435,40 @@ syncable::ModelType BaseNode::GetModelType() const {
 
 ////////////////////////////////////
 // WriteNode member definitions
+void WriteNode::EncryptIfNecessary(sync_pb::EntitySpecifics* unencrypted) {
+  syncable::ModelType type = syncable::GetModelTypeFromSpecifics(*unencrypted);
+  DCHECK_NE(type, syncable::UNSPECIFIED);
+  DCHECK_NE(type, syncable::PASSWORDS);  // Passwords use their own encryption.
+  DCHECK_NE(type, syncable::NIGORI);     // Nigori is encrypted separately.
+
+  syncable::ModelTypeSet encrypted_types =
+      GetEncryptedDataTypes(GetTransaction()->GetWrappedTrans());
+  if (encrypted_types.count(type) == 0) {
+    // This datatype does not require encryption.
+    return;
+  }
+
+  if (unencrypted->has_encrypted()) {
+    // This specifics is already encrypted, our work is done.
+    LOG(WARNING) << "Attempted to encrypt an already encrypted entity"
+      << " specifics of type " << syncable::ModelTypeToString(type)
+      << ". Dropping.";
+    return;
+  }
+  sync_pb::EntitySpecifics encrypted;
+  syncable::AddDefaultExtensionValue(type, &encrypted);
+  VLOG(2) << "Encrypted specifics of type " << syncable::ModelTypeToString(type)
+          << " with content: " << unencrypted->SerializeAsString() << "\n";
+  if (!GetTransaction()->GetCryptographer()->Encrypt(
+      *unencrypted,
+      encrypted.mutable_encrypted())) {
+    LOG(ERROR) << "Could not encrypt data for node of type " <<
+      syncable::ModelTypeToString(type);
+    NOTREACHED();
+  }
+  unencrypted->CopyFrom(encrypted);
+}
+
 void WriteNode::SetIsFolder(bool folder) {
   if (entry_->Get(syncable::IS_DIR) == folder)
     return;  // Skip redundant changes.
@@ -406,13 +498,13 @@ void WriteNode::SetURL(const GURL& url) {
 
 void WriteNode::SetAppSpecifics(
     const sync_pb::AppSpecifics& new_value) {
-  DCHECK(GetModelType() == syncable::APPS);
+  DCHECK_EQ(syncable::APPS, GetModelType());
   PutAppSpecificsAndMarkForSyncing(new_value);
 }
 
 void WriteNode::SetAutofillSpecifics(
     const sync_pb::AutofillSpecifics& new_value) {
-  DCHECK(GetModelType() == syncable::AUTOFILL);
+  DCHECK_EQ(syncable::AUTOFILL, GetModelType());
   PutAutofillSpecificsAndMarkForSyncing(new_value);
 }
 
@@ -420,6 +512,7 @@ void WriteNode::PutAutofillSpecificsAndMarkForSyncing(
     const sync_pb::AutofillSpecifics& new_value) {
   sync_pb::EntitySpecifics entity_specifics;
   entity_specifics.MutableExtension(sync_pb::autofill)->CopyFrom(new_value);
+  EncryptIfNecessary(&entity_specifics);
   PutSpecificsAndMarkForSyncing(entity_specifics);
 }
 
@@ -434,12 +527,13 @@ void WriteNode::PutAutofillProfileSpecificsAndMarkForSyncing(
   sync_pb::EntitySpecifics entity_specifics;
   entity_specifics.MutableExtension(sync_pb::autofill_profile)->CopyFrom(
       new_value);
+  EncryptIfNecessary(&entity_specifics);
   PutSpecificsAndMarkForSyncing(entity_specifics);
 }
 
 void WriteNode::SetBookmarkSpecifics(
     const sync_pb::BookmarkSpecifics& new_value) {
-  DCHECK(GetModelType() == syncable::BOOKMARKS);
+  DCHECK_EQ(syncable::BOOKMARKS, GetModelType());
   PutBookmarkSpecificsAndMarkForSyncing(new_value);
 }
 
@@ -447,12 +541,13 @@ void WriteNode::PutBookmarkSpecificsAndMarkForSyncing(
     const sync_pb::BookmarkSpecifics& new_value) {
   sync_pb::EntitySpecifics entity_specifics;
   entity_specifics.MutableExtension(sync_pb::bookmark)->CopyFrom(new_value);
+  EncryptIfNecessary(&entity_specifics);
   PutSpecificsAndMarkForSyncing(entity_specifics);
 }
 
 void WriteNode::SetNigoriSpecifics(
     const sync_pb::NigoriSpecifics& new_value) {
-  DCHECK(GetModelType() == syncable::NIGORI);
+  DCHECK_EQ(syncable::NIGORI, GetModelType());
   PutNigoriSpecificsAndMarkForSyncing(new_value);
 }
 
@@ -465,36 +560,40 @@ void WriteNode::PutNigoriSpecificsAndMarkForSyncing(
 
 void WriteNode::SetPasswordSpecifics(
     const sync_pb::PasswordSpecificsData& data) {
-  DCHECK(GetModelType() == syncable::PASSWORDS);
-
+  DCHECK_EQ(syncable::PASSWORDS, GetModelType());
   sync_pb::PasswordSpecifics new_value;
   if (!GetTransaction()->GetCryptographer()->Encrypt(
       data,
       new_value.mutable_encrypted())) {
     NOTREACHED();
   }
-
   PutPasswordSpecificsAndMarkForSyncing(new_value);
 }
 
 void WriteNode::SetPreferenceSpecifics(
     const sync_pb::PreferenceSpecifics& new_value) {
-  DCHECK(GetModelType() == syncable::PREFERENCES);
+  DCHECK_EQ(syncable::PREFERENCES, GetModelType());
   PutPreferenceSpecificsAndMarkForSyncing(new_value);
 }
 
 void WriteNode::SetThemeSpecifics(
     const sync_pb::ThemeSpecifics& new_value) {
-  DCHECK(GetModelType() == syncable::THEMES);
+  DCHECK_EQ(syncable::THEMES, GetModelType());
   PutThemeSpecificsAndMarkForSyncing(new_value);
 }
 
 void WriteNode::SetSessionSpecifics(
     const sync_pb::SessionSpecifics& new_value) {
-  DCHECK(GetModelType() == syncable::SESSIONS);
+  DCHECK_EQ(syncable::SESSIONS, GetModelType());
   PutSessionSpecificsAndMarkForSyncing(new_value);
 }
 
+void WriteNode::ResetFromSpecifics() {
+  sync_pb::EntitySpecifics new_data;
+  new_data.CopyFrom(GetUnencryptedSpecifics(GetEntry()));
+  EncryptIfNecessary(&new_data);
+  PutSpecificsAndMarkForSyncing(new_data);
+}
 
 void WriteNode::PutPasswordSpecificsAndMarkForSyncing(
     const sync_pb::PasswordSpecifics& new_value) {
@@ -507,18 +606,19 @@ void WriteNode::PutPreferenceSpecificsAndMarkForSyncing(
     const sync_pb::PreferenceSpecifics& new_value) {
   sync_pb::EntitySpecifics entity_specifics;
   entity_specifics.MutableExtension(sync_pb::preference)->CopyFrom(new_value);
+  EncryptIfNecessary(&entity_specifics);
   PutSpecificsAndMarkForSyncing(entity_specifics);
 }
 
 void WriteNode::SetTypedUrlSpecifics(
     const sync_pb::TypedUrlSpecifics& new_value) {
-  DCHECK(GetModelType() == syncable::TYPED_URLS);
+  DCHECK_EQ(syncable::TYPED_URLS, GetModelType());
   PutTypedUrlSpecificsAndMarkForSyncing(new_value);
 }
 
 void WriteNode::SetExtensionSpecifics(
     const sync_pb::ExtensionSpecifics& new_value) {
-  DCHECK(GetModelType() == syncable::EXTENSIONS);
+  DCHECK_EQ(syncable::EXTENSIONS, GetModelType());
   PutExtensionSpecificsAndMarkForSyncing(new_value);
 }
 
@@ -526,6 +626,7 @@ void WriteNode::PutAppSpecificsAndMarkForSyncing(
     const sync_pb::AppSpecifics& new_value) {
   sync_pb::EntitySpecifics entity_specifics;
   entity_specifics.MutableExtension(sync_pb::app)->CopyFrom(new_value);
+  EncryptIfNecessary(&entity_specifics);
   PutSpecificsAndMarkForSyncing(entity_specifics);
 }
 
@@ -533,6 +634,7 @@ void WriteNode::PutThemeSpecificsAndMarkForSyncing(
     const sync_pb::ThemeSpecifics& new_value) {
   sync_pb::EntitySpecifics entity_specifics;
   entity_specifics.MutableExtension(sync_pb::theme)->CopyFrom(new_value);
+  EncryptIfNecessary(&entity_specifics);
   PutSpecificsAndMarkForSyncing(entity_specifics);
 }
 
@@ -540,6 +642,7 @@ void WriteNode::PutTypedUrlSpecificsAndMarkForSyncing(
     const sync_pb::TypedUrlSpecifics& new_value) {
   sync_pb::EntitySpecifics entity_specifics;
   entity_specifics.MutableExtension(sync_pb::typed_url)->CopyFrom(new_value);
+  EncryptIfNecessary(&entity_specifics);
   PutSpecificsAndMarkForSyncing(entity_specifics);
 }
 
@@ -547,17 +650,17 @@ void WriteNode::PutExtensionSpecificsAndMarkForSyncing(
     const sync_pb::ExtensionSpecifics& new_value) {
   sync_pb::EntitySpecifics entity_specifics;
   entity_specifics.MutableExtension(sync_pb::extension)->CopyFrom(new_value);
+  EncryptIfNecessary(&entity_specifics);
   PutSpecificsAndMarkForSyncing(entity_specifics);
 }
-
 
 void WriteNode::PutSessionSpecificsAndMarkForSyncing(
     const sync_pb::SessionSpecifics& new_value) {
   sync_pb::EntitySpecifics entity_specifics;
   entity_specifics.MutableExtension(sync_pb::session)->CopyFrom(new_value);
+  EncryptIfNecessary(&entity_specifics);
   PutSpecificsAndMarkForSyncing(entity_specifics);
 }
-
 
 void WriteNode::PutSpecificsAndMarkForSyncing(
     const sync_pb::EntitySpecifics& specifics) {
@@ -623,7 +726,7 @@ bool WriteNode::InitByTagLookup(const std::string& tag) {
   if (entry_->Get(syncable::IS_DEL))
     return false;
   syncable::ModelType model_type = GetModelType();
-  DCHECK(model_type == syncable::NIGORI);
+  DCHECK_EQ(syncable::NIGORI, model_type);
   return true;
 }
 
@@ -636,7 +739,7 @@ void WriteNode::PutModelType(syncable::ModelType model_type) {
   sync_pb::EntitySpecifics specifics;
   syncable::AddDefaultExtensionValue(model_type, &specifics);
   PutSpecificsAndMarkForSyncing(specifics);
-  DCHECK(GetModelType() == model_type);
+  DCHECK_EQ(model_type, GetModelType());
 }
 
 // Create a new node with default properties, and bind this WriteNode to it.
@@ -934,8 +1037,6 @@ syncable::BaseTransaction* WriteTransaction::GetWrappedTrans() const {
   return transaction_;
 }
 
-SyncManager::ExtraChangeRecordData::~ExtraChangeRecordData() {}
-
 SyncManager::ChangeRecord::ChangeRecord()
     : id(kInvalidId), action(ACTION_ADD) {}
 
@@ -985,9 +1086,12 @@ DictionaryValue* SyncManager::ChangeRecord::ToValue(
   return value;
 }
 
+SyncManager::ExtraPasswordChangeRecordData::ExtraPasswordChangeRecordData() {}
+
 SyncManager::ExtraPasswordChangeRecordData::ExtraPasswordChangeRecordData(
     const sync_pb::PasswordSpecificsData& data)
-    : unencrypted_(data) {}
+    : unencrypted_(data) {
+}
 
 SyncManager::ExtraPasswordChangeRecordData::~ExtraPasswordChangeRecordData() {}
 
@@ -1059,6 +1163,9 @@ class SyncManager::SyncInternal
 
   // Whether or not the Nigori node is encrypted using an explicit passphrase.
   bool IsUsingExplicitPassphrase();
+
+  // Set the datatypes we want to encrypt and encrypt any nodes as necessary.
+  void EncryptDataTypes(const syncable::ModelTypeSet& encrypted_types);
 
   // Try to set the current passphrase to |passphrase|, and record whether
   // it is an explicit passphrase or implicitly using gaia in the Nigori
@@ -1135,6 +1242,9 @@ class SyncManager::SyncInternal
     return initialized_;
   }
 
+  // If this is a deletion for a password, sets the legacy
+  // ExtraPasswordChangeRecordData field of |buffer|. Otherwise sets
+  // |buffer|'s specifics field to contain the unencrypted data.
   void SetExtraChangeRecordData(int64 id,
                                 syncable::ModelType type,
                                 ChangeReorderBuffer* buffer,
@@ -1260,7 +1370,8 @@ class SyncManager::SyncInternal
   // differ between the versions of an entry stored in |a| and |b|. A return
   // value of false means that it should be OK to ignore this change.
   static bool VisiblePropertiesDiffer(const syncable::EntryKernel& a,
-                                      const syncable::Entry& b) {
+                                      const syncable::Entry& b,
+                                      Cryptographer* cryptographer) {
     syncable::ModelType model_type = b.GetModelType();
     // Suppress updates to items that aren't tracked by any browser model.
     if (model_type == syncable::UNSPECIFIED ||
@@ -1271,8 +1382,21 @@ class SyncManager::SyncInternal
       return true;
     if (a.ref(syncable::IS_DIR) != b.Get(syncable::IS_DIR))
       return true;
-    if (a.ref(SPECIFICS).SerializeAsString() !=
-        b.Get(SPECIFICS).SerializeAsString()) {
+    // Check if data has changed (account for encryption).
+    std::string a_str, b_str;
+    if (a.ref(SPECIFICS).has_encrypted()) {
+      const sync_pb::EncryptedData& encrypted = a.ref(SPECIFICS).encrypted();
+      a_str = cryptographer->DecryptToString(encrypted);
+    } else {
+      a_str = a.ref(SPECIFICS).SerializeAsString();
+    }
+    if (b.Get(SPECIFICS).has_encrypted()) {
+      const sync_pb::EncryptedData& encrypted = b.Get(SPECIFICS).encrypted();
+      b_str = cryptographer->DecryptToString(encrypted);
+    } else {
+      b_str = b.Get(SPECIFICS).SerializeAsString();
+    }
+    if (a_str != b_str) {
       return true;
     }
     if (VisiblePositionsDiffer(a, b))
@@ -1477,6 +1601,11 @@ void SyncManager::SetPassphrase(const std::string& passphrase,
   data_->SetPassphrase(passphrase, is_explicit);
 }
 
+void SyncManager::EncryptDataTypes(
+    const syncable::ModelTypeSet& encrypted_types) {
+  data_->EncryptDataTypes(encrypted_types);
+}
+
 bool SyncManager::IsUsingExplicitPassphrase() {
   return data_ && data_->IsUsingExplicitPassphrase();
 }
@@ -1582,23 +1711,33 @@ void SyncManager::SyncInternal::BootstrapEncryption(
   Cryptographer* cryptographer = share_.dir_manager->cryptographer();
   cryptographer->Bootstrap(restored_key_for_bootstrapping);
 
-  ReadTransaction trans(GetUserShare());
-  ReadNode node(&trans);
-  if (!node.InitByTagLookup(kNigoriTag)) {
-    NOTREACHED();
-    return;
-  }
+  sync_pb::NigoriSpecifics nigori;
+  {
+    ReadTransaction trans(GetUserShare());
+    ReadNode node(&trans);
+    if (!node.InitByTagLookup(kNigoriTag)) {
+      NOTREACHED();
+      return;
+    }
 
-  const sync_pb::NigoriSpecifics& nigori = node.GetNigoriSpecifics();
-  if (!nigori.encrypted().blob().empty()) {
-    if (cryptographer->CanDecrypt(nigori.encrypted())) {
-      cryptographer->SetKeys(nigori.encrypted());
-    } else {
-      cryptographer->SetPendingKeys(nigori.encrypted());
-      FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
-                        OnPassphraseRequired(true));
+    nigori.CopyFrom(node.GetNigoriSpecifics());
+    if (!nigori.encrypted().blob().empty()) {
+      if (cryptographer->CanDecrypt(nigori.encrypted())) {
+        cryptographer->SetKeys(nigori.encrypted());
+      } else {
+        cryptographer->SetPendingKeys(nigori.encrypted());
+        FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
+                          OnPassphraseRequired(true));
+      }
     }
   }
+
+  // Refresh list of encrypted datatypes.
+  syncable::ModelTypeSet encrypted_types =
+      syncable::GetEncryptedDataTypesFromNigori(nigori);
+
+  // Ensure any datatypes that need encryption are encrypted.
+  EncryptDataTypes(encrypted_types);
 }
 
 void SyncManager::SyncInternal::StartSyncing() {
@@ -1709,7 +1848,7 @@ bool SyncManager::SyncInternal::SignIn(const SyncCredentials& credentials) {
 void SyncManager::SyncInternal::UpdateCredentials(
     const SyncCredentials& credentials) {
   DCHECK_EQ(MessageLoop::current(), core_message_loop_);
-  DCHECK(share_.name == credentials.email);
+  DCHECK_EQ(credentials.email, share_.name);
   connection_manager()->set_auth_token(credentials.sync_token);
   TalkMediatorLogin(credentials.email, credentials.sync_token);
   CheckServerReachable();
@@ -1803,8 +1942,8 @@ void SyncManager::SyncInternal::SetPassphrase(
     if (is_explicit)
       SetUsingExplicitPassphrasePrefForMigration();
 
-    // Nudge the syncer so that passwords updates that were waiting for this
-    // passphrase get applied as soon as possible.
+    // Nudge the syncer so that encrypted datatype updates that were waiting for
+    // this passphrase get applied as soon as possible.
     sync_manager_->RequestNudge();
   } else {
     WriteTransaction trans(GetUserShare());
@@ -1826,7 +1965,8 @@ void SyncManager::SyncInternal::SetPassphrase(
     // messing with the Nigori node, because we can't call SetPassphrase until
     // download conditions are met vs Cryptographer init.  It seems like it's
     // safe to defer this work.
-    sync_pb::NigoriSpecifics specifics;
+    sync_pb::NigoriSpecifics specifics(node.GetNigoriSpecifics());
+    specifics.clear_encrypted();
     cryptographer->GetKeys(specifics.mutable_encrypted());
     specifics.set_using_explicit_passphrase(is_explicit);
     node.SetNigoriSpecifics(specifics);
@@ -1851,28 +1991,109 @@ bool SyncManager::SyncInternal::IsUsingExplicitPassphrase() {
   return node.GetNigoriSpecifics().using_explicit_passphrase();
 }
 
-void SyncManager::SyncInternal::ReEncryptEverything(WriteTransaction* trans) {
-  // TODO(tim): bug 59242.  We shouldn't lookup by data type and instead use
-  // a protocol flag or existence of an EncryptedData message, but for now,
-  // encryption is on if-and-only-if the type is passwords, and we haven't
-  // ironed out the protocol for generic encryption.
-  static const char* passwords_tag = "google_chrome_passwords";
-  ReadNode passwords_root(trans);
-  if (!passwords_root.InitByTagLookup(passwords_tag)) {
-    LOG(WARNING) << "No passwords to reencrypt.";
+void SyncManager::SyncInternal::EncryptDataTypes(
+    const syncable::ModelTypeSet& encrypted_types) {
+  // Verify the encrypted types are all enabled.
+  ModelSafeRoutingInfo routes;
+  registrar_->GetModelSafeRoutingInfo(&routes);
+  for (syncable::ModelTypeSet::const_iterator iter = encrypted_types.begin();
+       iter != encrypted_types.end(); ++iter) {
+    if (routes.count(*iter) == 0) {
+      LOG(WARNING) << "Attempted to encrypt non-enabled datatype "
+                 << syncable::ModelTypeToString(*iter) << ", dropping type.";
+      routes.erase(*iter);
+    }
+  }
+
+  WriteTransaction trans(GetUserShare());
+  WriteNode node(&trans);
+  if (!node.InitByTagLookup(kNigoriTag)) {
+    LOG(ERROR) << "Unable to set encrypted datatypes because Nigori node not "
+               << "found.";
+    NOTREACHED();
     return;
   }
 
-  int64 child_id = passwords_root.GetFirstChildId();
-  while (child_id != kInvalidId) {
-    WriteNode child(trans);
-    if (!child.InitByIdLookup(child_id)) {
+  // Update the Nigori node set of encrypted datatypes so other machines notice.
+  sync_pb::NigoriSpecifics nigori;
+  nigori.CopyFrom(node.GetNigoriSpecifics());
+  syncable::FillNigoriEncryptedTypes(encrypted_types, &nigori);
+  node.SetNigoriSpecifics(nigori);
+
+  // TODO(zea): only reencrypt this datatype? ReEncrypting everything is a
+  // safer approach, and should not impact anything that is already encrypted
+  // (redundant changes are ignored).
+  ReEncryptEverything(&trans);
+  return;
+}
+
+void SyncManager::SyncInternal::ReEncryptEverything(WriteTransaction* trans) {
+  syncable::ModelTypeSet encrypted_types =
+      GetEncryptedDataTypes(trans->GetWrappedTrans());
+  ModelSafeRoutingInfo routes;
+  registrar_->GetModelSafeRoutingInfo(&routes);
+  std::string tag;
+  for (syncable::ModelTypeSet::iterator iter = encrypted_types.begin();
+       iter != encrypted_types.end(); ++iter) {
+    if (*iter == syncable::PASSWORDS || routes.count(*iter) == 0)
+      continue;
+    ReadNode type_root(trans);
+    tag = syncable::ModelTypeToRootTag(*iter);
+    if (!type_root.InitByTagLookup(tag)) {
       NOTREACHED();
       return;
     }
-    child.SetPasswordSpecifics(child.GetPasswordSpecifics());
-    child_id = child.GetSuccessorId();
+
+    // Iterate through all children of this datatype.
+    std::queue<int64> to_visit;
+    int64 child_id = type_root.GetFirstChildId();
+    to_visit.push(child_id);
+    while (!to_visit.empty()) {
+      child_id = to_visit.front();
+      to_visit.pop();
+      if (child_id == kInvalidId)
+        continue;
+
+      WriteNode child(trans);
+      if (!child.InitByIdLookup(child_id)) {
+        NOTREACHED();
+        return;
+      }
+      if (child.GetIsFolder()) {
+        to_visit.push(child.GetFirstChildId());
+      } else {
+        // Rewrite the specifics of the node with encrypted data if necessary.
+        child.ResetFromSpecifics();
+      }
+      to_visit.push(child.GetSuccessorId());
+    }
   }
+
+  if (routes.count(syncable::PASSWORDS) > 0) {
+    // Passwords are encrypted with their own legacy scheme.
+    encrypted_types.insert(syncable::PASSWORDS);
+    ReadNode passwords_root(trans);
+    std::string passwords_tag =
+        syncable::ModelTypeToRootTag(syncable::PASSWORDS);
+    if (!passwords_root.InitByTagLookup(passwords_tag)) {
+      LOG(WARNING) << "No passwords to reencrypt.";
+      return;
+    }
+
+    int64 child_id = passwords_root.GetFirstChildId();
+    while (child_id != kInvalidId) {
+      WriteNode child(trans);
+      if (!child.InitByIdLookup(child_id)) {
+        NOTREACHED();
+        return;
+      }
+      child.SetPasswordSpecifics(child.GetPasswordSpecifics());
+      child_id = child.GetSuccessorId();
+    }
+  }
+
+  FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
+                    OnEncryptionComplete(encrypted_types));
 }
 
 SyncManager::~SyncManager() {
@@ -2120,20 +2341,29 @@ void SyncManager::SyncInternal::SetExtraChangeRecordData(int64 id,
     syncable::ModelType type, ChangeReorderBuffer* buffer,
     Cryptographer* cryptographer, const syncable::EntryKernel& original,
     bool existed_before, bool exists_now) {
-  // If this is a deletion, attach the entity specifics as extra data
-  // so that the delete can be processed.
+  // If this is a deletion and the datatype was encrypted, we need to decrypt it
+  // and attach it to the buffer.
   if (!exists_now && existed_before) {
-    buffer->SetSpecificsForId(id, original.ref(SPECIFICS));
+    sync_pb::EntitySpecifics original_specifics(original.ref(SPECIFICS));
     if (type == syncable::PASSWORDS) {
-      // Need to dig a bit deeper as passwords are encrypted.
+      // Passwords must use their own legacy ExtraPasswordChangeRecordData.
       scoped_ptr<sync_pb::PasswordSpecificsData> data(
-          DecryptPasswordSpecifics(original.ref(SPECIFICS), cryptographer));
+          DecryptPasswordSpecifics(original_specifics, cryptographer));
       if (!data.get()) {
         NOTREACHED();
         return;
       }
       buffer->SetExtraDataForId(id, new ExtraPasswordChangeRecordData(*data));
+    } else if (original_specifics.has_encrypted()) {
+      // All other datatypes can just create a new unencrypted specifics and
+      // attach it.
+      const sync_pb::EncryptedData& encrypted = original_specifics.encrypted();
+      if (!cryptographer->Decrypt(encrypted, &original_specifics)) {
+        NOTREACHED();
+        return;
+      }
     }
+    buffer->SetSpecificsForId(id, original_specifics);
   }
 }
 
@@ -2164,8 +2394,10 @@ void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncer(
       change_buffers_[type].PushAddedItem(id);
     else if (!exists_now && existed_before)
       change_buffers_[type].PushDeletedItem(id);
-    else if (exists_now && existed_before && VisiblePropertiesDiffer(*i, e))
+    else if (exists_now && existed_before &&
+             VisiblePropertiesDiffer(*i, e, dir_manager()->cryptographer())) {
       change_buffers_[type].PushUpdatedItem(id, VisiblePositionsDiffer(*i, e));
+    }
 
     SetExtraChangeRecordData(id, type, &change_buffers_[type],
                              dir_manager()->cryptographer(), *i,
@@ -2192,31 +2424,43 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
   if (event.what_happened == SyncEngineEvent::SYNC_CYCLE_ENDED) {
     ModelSafeRoutingInfo enabled_types;
     registrar_->GetModelSafeRoutingInfo(&enabled_types);
-    if (enabled_types.count(syncable::PASSWORDS) > 0) {
-      Cryptographer* cryptographer =
-          GetUserShare()->dir_manager->cryptographer();
-      if (!cryptographer->is_ready() && !cryptographer->has_pending_keys()) {
-        sync_api::ReadTransaction trans(GetUserShare());
-        sync_api::ReadNode node(&trans);
-        if (!node.InitByTagLookup(kNigoriTag)) {
-          DCHECK(!event.snapshot->is_share_usable);
-          return;
-        }
-        const sync_pb::NigoriSpecifics& nigori = node.GetNigoriSpecifics();
-        if (!nigori.encrypted().blob().empty()) {
-          DCHECK(!cryptographer->CanDecrypt(nigori.encrypted()));
-          cryptographer->SetPendingKeys(nigori.encrypted());
-        }
+    {
+      // Check to see if we need to notify the frontend that we have newly
+      // encrypted types or that we require a passphrase.
+      sync_api::ReadTransaction trans(GetUserShare());
+      sync_api::ReadNode node(&trans);
+      if (!node.InitByTagLookup(kNigoriTag)) {
+        DCHECK(!event.snapshot->is_share_usable);
+        return;
       }
+      const sync_pb::NigoriSpecifics& nigori = node.GetNigoriSpecifics();
+      syncable::ModelTypeSet encrypted_types =
+          syncable::GetEncryptedDataTypesFromNigori(nigori);
+      // If passwords are enabled, they're automatically considered encrypted.
+      if (enabled_types.count(syncable::PASSWORDS) > 0)
+        encrypted_types.insert(syncable::PASSWORDS);
+      if (encrypted_types.size() > 0) {
+        Cryptographer* cryptographer =
+            GetUserShare()->dir_manager->cryptographer();
+        if (!cryptographer->is_ready() && !cryptographer->has_pending_keys()) {
+          if (!nigori.encrypted().blob().empty()) {
+            DCHECK(!cryptographer->CanDecrypt(nigori.encrypted()));
+            cryptographer->SetPendingKeys(nigori.encrypted());
+          }
+        }
 
-      // If we've completed a sync cycle and the cryptographer isn't ready yet,
-      // prompt the user for a passphrase.
-      if (cryptographer->has_pending_keys()) {
-        FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
-                          OnPassphraseRequired(true));
-      } else if (!cryptographer->is_ready()) {
-        FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
-                          OnPassphraseRequired(false));
+        // If we've completed a sync cycle and the cryptographer isn't ready
+        // yet, prompt the user for a passphrase.
+        if (cryptographer->has_pending_keys()) {
+          FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
+                            OnPassphraseRequired(true));
+        } else if (!cryptographer->is_ready()) {
+          FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
+                            OnPassphraseRequired(false));
+        } else {
+          FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
+                            OnEncryptionComplete(encrypted_types));
+        }
       }
     }
 

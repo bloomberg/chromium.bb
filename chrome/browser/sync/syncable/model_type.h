@@ -118,6 +118,12 @@ bool ModelTypeBitSetFromString(
 // Caller takes ownership of returned list.
 ListValue* ModelTypeBitSetToValue(const ModelTypeBitSet& model_types);
 
+// Caller takes ownership of returned list.
+ListValue* ModelTypeSetToValue(const ModelTypeSet& model_types);
+
+// Returns a string corresponding to the syncable tag for this datatype.
+std::string ModelTypeToRootTag(ModelType type);
+
 // Posts timedeltas to histogram of datatypes. Allows tracking of the frequency
 // at which datatypes cause syncs.
 void PostTimeToTypeHistogram(ModelType model_type, base::TimeDelta time);

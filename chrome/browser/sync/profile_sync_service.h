@@ -190,6 +190,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   virtual void OnClearServerDataSucceeded();
   virtual void OnPassphraseRequired(bool for_decryption);
   virtual void OnPassphraseAccepted();
+  virtual void OnEncryptionComplete(
+      const syncable::ModelTypeSet& encrypted_types);
 
   // Called when a user enters credentials through UI.
   virtual void OnUserSubmittedAuth(const std::string& username,
@@ -434,6 +436,19 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
                              bool is_explicit,
                              bool is_creation);
 
+  // Changes the set of datatypes that require encryption. This affects all
+  // machines synced to this account and all data belonging to the specified
+  // types.
+  // Note that this is an asynchronous operation (the encryption of data is
+  // performed on SyncBackendHost's core thread) and may not have an immediate
+  // effect.
+  virtual void EncryptDataTypes(
+      const syncable::ModelTypeSet& encrypted_types);
+
+  // Get the currently encrypted data types.
+  virtual void GetEncryptedDataTypes(
+      syncable::ModelTypeSet* encrypted_types) const;
+
   // Returns whether processing changes is allowed.  Check this before doing
   // any model-modifying operations.
   bool ShouldPushChanges();
@@ -639,6 +654,10 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // syncer paused, etc.).  It can only be removed correctly when the framework
   // is reworked to allow one-shot commands like clearing server data.
   base::OneShotTimer<ProfileSyncService> clear_server_data_timer_;
+
+  // The set of encrypted types. This is updated whenever datatypes are
+  // encrypted through the OnEncryptionComplete callback of SyncFrontend.
+  syncable::ModelTypeSet encrypted_types_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncService);
 };
