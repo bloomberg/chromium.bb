@@ -110,6 +110,7 @@ using base::Time;
 AutomationProvider::AutomationProvider(Profile* profile)
     : profile_(profile),
       reply_message_(NULL),
+      reinitialize_on_channel_error_(false),
       is_connected_(false),
       initial_loads_complete_(false) {
   TRACE_EVENT_BEGIN("AutomationProvider::AutomationProvider", 0, "");
@@ -146,6 +147,7 @@ AutomationProvider::~AutomationProvider() {
 bool AutomationProvider::InitializeChannel(const std::string& channel_id) {
   TRACE_EVENT_BEGIN("AutomationProvider::InitializeChannel", 0, "");
 
+  channel_id_ = channel_id;
   std::string effective_channel_id = channel_id;
 
   // If the channel_id starts with kNamedInterfacePrefix, create a named IPC
@@ -157,6 +159,8 @@ bool AutomationProvider::InitializeChannel(const std::string& channel_id) {
         strlen(automation::kNamedInterfacePrefix));
     if (effective_channel_id.length() <= 0)
       return false;
+
+    reinitialize_on_channel_error_ = true;
   }
 
   if (!automation_resource_message_filter_.get()) {
@@ -432,7 +436,21 @@ void AutomationProvider::HandleUnused(const IPC::Message& message, int handle) {
   }
 }
 
+bool AutomationProvider::ReinitializeChannel() {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+
+  // Make sure any old channels are cleaned up before starting up a new one.
+  channel_.reset();
+  return InitializeChannel(channel_id_);
+}
+
 void AutomationProvider::OnChannelError() {
+  if (reinitialize_on_channel_error_) {
+    VLOG(1) << "AutomationProxy disconnected, resetting AutomationProvider.";
+    if (ReinitializeChannel())
+      return;
+    VLOG(1) << "Error reinitializing AutomationProvider channel.";
+  }
   VLOG(1) << "AutomationProxy went away, shutting down app.";
   AutomationProviderList::GetInstance()->RemoveProvider(this);
 }

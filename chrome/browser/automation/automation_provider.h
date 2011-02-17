@@ -211,8 +211,14 @@ class AutomationProvider
   scoped_refptr<AutomationResourceMessageFilter>
       automation_resource_message_filter_;
 
+  // True iff we should open a new automation IPC channel if it closes.
+  bool reinitialize_on_channel_error_;
+
  private:
   void OnUnhandledMessage();
+
+  // Clear and reinitialize the automation IPC channel.
+  bool ReinitializeChannel();
 
   // IPC Message callbacks.
   void WindowSimulateDrag(int handle,
@@ -395,6 +401,9 @@ class AutomationProvider
 
   // True iff browser finished loading initial set of tabs.
   bool initial_loads_complete_;
+
+  // ID of automation channel.
+  std::string channel_id_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationProvider);
 };

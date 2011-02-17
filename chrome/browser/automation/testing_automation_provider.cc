@@ -408,7 +408,8 @@ bool TestingAutomationProvider::OnMessageReceived(
 }
 
 void TestingAutomationProvider::OnChannelError() {
-  if (browser_shutdown::GetShutdownType() == browser_shutdown::NOT_VALID)
+  if (!reinitialize_on_channel_error_ &&
+      browser_shutdown::GetShutdownType() == browser_shutdown::NOT_VALID)
     BrowserList::CloseAllBrowsersAndExit();
   AutomationProvider::OnChannelError();
 }
