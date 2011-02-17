@@ -508,7 +508,7 @@
                   ],
                   'dependencies': [
                     '../breakpad/breakpad.gyp:breakpad',
-                    'policy',
+                    'app/policy/cloud_policy_codegen.gyp:policy',
                   ],
                 }, {  # else: mac_breakpad!=1
                   # No Breakpad, put in the stubs.
