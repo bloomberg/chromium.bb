@@ -89,6 +89,8 @@ Cookie::Cookie(const DictionaryValue& dict) {
   valid_ = true;
 }
 
+Cookie::~Cookie() {}
+
 // Convert's to webdriver's cookie spec, see:
 // http://code.google.com/p/selenium/wiki/JsonWireProtocol#/session/:sessionId/cookie
 DictionaryValue* Cookie::ToDictionary() {

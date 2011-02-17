@@ -920,6 +920,9 @@ struct ViewHostMsg_AccessibilityNotification_Params {
 
 // A node is essentially a frame.
 struct ViewHostMsg_MalwareDOMDetails_Node {
+  ViewHostMsg_MalwareDOMDetails_Node();
+  ~ViewHostMsg_MalwareDOMDetails_Node();
+
   // URL of this resource. Can be empty.
   GURL url;
 
@@ -937,6 +940,9 @@ struct ViewHostMsg_MalwareDOMDetails_Node {
 // Parameters to describe interesting details from a rendered page that lead
 // to a malware warning.
 struct ViewHostMsg_MalwareDOMDetails_Params {
+  ViewHostMsg_MalwareDOMDetails_Params();
+  ~ViewHostMsg_MalwareDOMDetails_Params();
+
   // All the nodes we extracted.
   std::vector<ViewHostMsg_MalwareDOMDetails_Node> nodes;
 };

@@ -17,6 +17,7 @@ class Cookie {
  public:
   explicit Cookie(const std::string& cookie);
   explicit Cookie(const DictionaryValue& dict);
+  ~Cookie();
 
   DictionaryValue* ToDictionary();
   // ToJSONString() returns a string form of a JSON object with the required

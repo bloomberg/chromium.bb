@@ -8,6 +8,8 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
 
+ExtensionSpecialStoragePolicy::ExtensionSpecialStoragePolicy() {}
+
 bool ExtensionSpecialStoragePolicy::IsStorageProtected(const GURL& origin) {
   if (origin.SchemeIs(chrome::kExtensionScheme))
     return true;
@@ -54,9 +56,15 @@ void ExtensionSpecialStoragePolicy::RevokeRightsForAllExtensions() {
   unlimited_extensions_.Clear();
 }
 
+ExtensionSpecialStoragePolicy::~ExtensionSpecialStoragePolicy() {}
+
 //-----------------------------------------------------------------------------
 // SpecialCollection helper class
 //-----------------------------------------------------------------------------
+
+ExtensionSpecialStoragePolicy::SpecialCollection::SpecialCollection() {}
+
+ExtensionSpecialStoragePolicy::SpecialCollection::~SpecialCollection() {}
 
 bool ExtensionSpecialStoragePolicy::SpecialCollection::Contains(
     const GURL& origin) {

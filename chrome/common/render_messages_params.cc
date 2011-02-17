@@ -272,6 +272,18 @@ ViewHostMsg_DomMessage_Params::ViewHostMsg_DomMessage_Params()
 ViewHostMsg_DomMessage_Params::~ViewHostMsg_DomMessage_Params() {
 }
 
+ViewHostMsg_MalwareDOMDetails_Node::ViewHostMsg_MalwareDOMDetails_Node() {
+}
+
+ViewHostMsg_MalwareDOMDetails_Node::~ViewHostMsg_MalwareDOMDetails_Node() {
+}
+
+ViewHostMsg_MalwareDOMDetails_Params::ViewHostMsg_MalwareDOMDetails_Params() {
+}
+
+ViewHostMsg_MalwareDOMDetails_Params::~ViewHostMsg_MalwareDOMDetails_Params() {
+}
+
 ViewMsg_ExtensionLoaded_Params::ViewMsg_ExtensionLoaded_Params() {
 }
 

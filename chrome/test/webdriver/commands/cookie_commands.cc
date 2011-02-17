@@ -17,6 +17,12 @@
 
 namespace webdriver {
 
+CookieCommand::CookieCommand(const std::vector<std::string>& path_segments,
+                             const DictionaryValue* const parameters)
+    : WebDriverCommand(path_segments, parameters) {}
+
+CookieCommand::~CookieCommand() {}
+
 bool CookieCommand::Init(Response* const response) {
   if (WebDriverCommand::Init(response)) {
     if (session_->GetURL(&current_url_)) {
@@ -28,6 +34,18 @@ bool CookieCommand::Init(Response* const response) {
   }
 
   return false;
+}
+
+bool CookieCommand::DoesDelete() {
+  return true;
+}
+
+bool CookieCommand::DoesGet() {
+  return true;
+}
+
+bool CookieCommand::DoesPost() {
+  return true;
 }
 
 void CookieCommand::ExecuteGet(Response* const response) {
@@ -125,6 +143,13 @@ void CookieCommand::ExecuteDelete(Response* const response) {
   response->set_status(kSuccess);
 }
 
+NamedCookieCommand::NamedCookieCommand(
+    const std::vector<std::string>& path_segments,
+    const DictionaryValue* const parameters)
+    : WebDriverCommand(path_segments, parameters) {}
+
+NamedCookieCommand::~NamedCookieCommand() {}
+
 bool NamedCookieCommand::Init(Response* const response) {
   if (WebDriverCommand::Init(response)) {
     if (!session_->GetURL(&current_url_)) {
@@ -146,6 +171,14 @@ bool NamedCookieCommand::Init(Response* const response) {
   }
 
   return false;
+}
+
+bool NamedCookieCommand::DoesDelete() {
+  return true;
+}
+
+bool NamedCookieCommand::DoesGet() {
+  return true;
 }
 
 void NamedCookieCommand::ExecuteGet(Response* const response) {

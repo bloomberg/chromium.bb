@@ -60,7 +60,8 @@ class AboutTcmallocOutputs {
   }
 
  private:
-  AboutTcmallocOutputs() {}
+  AboutTcmallocOutputs();
+  ~AboutTcmallocOutputs();
 
   AboutTcmallocOutputsType outputs_;
 

@@ -25,15 +25,14 @@ class Response;
 class CookieCommand : public WebDriverCommand {
  public:
   CookieCommand(const std::vector<std::string>& path_segments,
-                const DictionaryValue* const parameters)
-    : WebDriverCommand(path_segments, parameters) {}
-  virtual ~CookieCommand() {}
+                const DictionaryValue* const parameters);
+  virtual ~CookieCommand();
 
   virtual bool Init(Response* const response);
 
-  virtual bool DoesDelete() { return true; }
-  virtual bool DoesGet() { return true; }
-  virtual bool DoesPost() { return true; }
+  virtual bool DoesDelete();
+  virtual bool DoesGet();
+  virtual bool DoesPost();
 
   virtual void ExecuteDelete(Response* const response);
   virtual void ExecuteGet(Response* const response);
@@ -51,15 +50,14 @@ class CookieCommand : public WebDriverCommand {
 class NamedCookieCommand : public WebDriverCommand {
  public:
   NamedCookieCommand(const std::vector<std::string>& path_segments,
-                     const DictionaryValue* const parameters)
-    : WebDriverCommand(path_segments, parameters) {}
-  virtual ~NamedCookieCommand() {}
+                     const DictionaryValue* const parameters);
+  virtual ~NamedCookieCommand();
 
   virtual bool Init(Response* const response);
 
  protected:
-  virtual bool DoesDelete() { return true; }
-  virtual bool DoesGet() { return true; }
+  virtual bool DoesDelete();
+  virtual bool DoesGet();
 
   virtual void ExecuteDelete(Response* const response);
   virtual void ExecuteGet(Response* const response);

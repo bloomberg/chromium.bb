@@ -20,6 +20,8 @@ class Extension;
 // to determine which origins have these rights.
 class ExtensionSpecialStoragePolicy : public quota::SpecialStoragePolicy {
  public:
+  ExtensionSpecialStoragePolicy();
+
   // SpecialStoragePolicy methods used by storage subsystems and the browsing
   // data remover. These methods are safe to call on any thread.
   virtual bool IsStorageProtected(const GURL& origin);
@@ -31,8 +33,14 @@ class ExtensionSpecialStoragePolicy : public quota::SpecialStoragePolicy {
   void RevokeRightsForAllExtensions();
 
  private:
+  friend class base::RefCountedThreadSafe<SpecialStoragePolicy>;
+  virtual ~ExtensionSpecialStoragePolicy();
+
   class SpecialCollection {
    public:
+    SpecialCollection();
+    ~SpecialCollection();
+
     bool Contains(const GURL& origin);
     void Add(const Extension* extension);
     void Remove(const Extension* extension);
