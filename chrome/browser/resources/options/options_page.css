@@ -93,7 +93,7 @@ html[dir='rtl'] .close-subpage {
   left: 0;
 }
 
-html[hide-menu=true] .close-subpage {
+html.hide-menu .close-subpage {
   display: none
 }
 
@@ -151,7 +151,6 @@ html[toolkit=views] .button-strip {
   background: -webkit-linear-gradient(rgba(234, 238, 243, 0.2), #eaeef3),
               -webkit-linear-gradient(left, #eaeef3, #eaeef3 97%, #d3d7db);
   bottom: 0;
-  display: none;
   left: 0;
   top: 0;
   width: 266px;
@@ -166,8 +165,8 @@ html[dir='rtl'] #navbar-container {
   right: 0;
 }
 
-html[hide-menu=false] #navbar-container {
-  display: block;
+html.hide-menu #navbar-container {
+  display: none;
 }
 
 #navbar-container > ul {
@@ -212,7 +211,7 @@ html[hide-menu=false] #navbar-container {
   z-index: 1;
 }
 
-html[hide-menu=true] #mainview {
+html.hide-menu #mainview {
   -webkit-padding-start: 0;
 }
 

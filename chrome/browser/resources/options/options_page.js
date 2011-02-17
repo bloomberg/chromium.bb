@@ -117,7 +117,7 @@ cr.define('options', function() {
       if (!page.parentPage && isRootPageLocked)
         continue;
       page.visible = name == pageName ||
-          (document.documentElement.getAttribute('hide-menu') != 'true' &&
+          (!document.documentElement.classList.contains('hide-menu') &&
            page.isAncestorOfPage(targetPage));
     }
 
