@@ -244,7 +244,7 @@ bool OutdatedPluginInfoBarDelegate::LinkClicked(
 // PluginObserver -------------------------------------------------------------
 
 PluginObserver::PluginObserver(TabContents* tab_contents)
-    : tab_contents_(tab_contents) {
+    : TabContentsObserver(tab_contents) {
 }
 
 PluginObserver::~PluginObserver() {
@@ -264,7 +264,7 @@ bool PluginObserver::OnMessageReceived(const IPC::Message& message) {
 
 PluginInstallerInfoBarDelegate* PluginObserver::GetPluginInstaller() {
   if (plugin_installer_ == NULL)
-    plugin_installer_.reset(new PluginInstallerInfoBarDelegate(tab_contents_));
+    plugin_installer_.reset(new PluginInstallerInfoBarDelegate(tab_contents()));
   return plugin_installer_->AsPluginInstallerInfoBarDelegate();
 }
 
@@ -272,17 +272,17 @@ void PluginObserver::OnMissingPluginStatus(int status) {
   // TODO(PORT): pull in when plug-ins work
 #if defined(OS_WIN)
   if (status == webkit::npapi::default_plugin::MISSING_PLUGIN_AVAILABLE) {
-    tab_contents_->AddInfoBar(
-        new PluginInstallerInfoBarDelegate(tab_contents_));
+    tab_contents()->AddInfoBar(
+        new PluginInstallerInfoBarDelegate(tab_contents()));
     return;
   }
 
   DCHECK_EQ(webkit::npapi::default_plugin::MISSING_PLUGIN_USER_STARTED_DOWNLOAD,
             status);
-  for (size_t i = 0; i < tab_contents_->infobar_count(); ++i) {
-    InfoBarDelegate* delegate = tab_contents_->GetInfoBarDelegateAt(i);
+  for (size_t i = 0; i < tab_contents()->infobar_count(); ++i) {
+    InfoBarDelegate* delegate = tab_contents()->GetInfoBarDelegateAt(i);
     if (delegate->AsPluginInstallerInfoBarDelegate() != NULL) {
-      tab_contents_->RemoveInfoBar(delegate);
+      tab_contents()->RemoveInfoBar(delegate);
       return;
     }
   }
@@ -308,7 +308,7 @@ void PluginObserver::OnCrashedPlugin(const FilePath& plugin_path) {
   }
   SkBitmap* crash_icon = ResourceBundle::GetSharedInstance().GetBitmapNamed(
       IDR_INFOBAR_PLUGIN_CRASHED);
-  tab_contents_->AddInfoBar(new SimpleAlertInfoBarDelegate(tab_contents_,
+  tab_contents()->AddInfoBar(new SimpleAlertInfoBarDelegate(tab_contents(),
       crash_icon,
       l10n_util::GetStringFUTF16(IDS_PLUGIN_CRASHED_PROMPT, plugin_name),
       true));
@@ -316,9 +316,9 @@ void PluginObserver::OnCrashedPlugin(const FilePath& plugin_path) {
 
 void PluginObserver::OnBlockedOutdatedPlugin(const string16& name,
                                              const GURL& update_url) {
-  tab_contents_->AddInfoBar(update_url.is_empty() ?
+  tab_contents()->AddInfoBar(update_url.is_empty() ?
       static_cast<InfoBarDelegate*>(new BlockedPluginInfoBarDelegate(
-          tab_contents_, name)) :
-      new OutdatedPluginInfoBarDelegate(tab_contents_, name, update_url));
+          tab_contents(), name)) :
+      new OutdatedPluginInfoBarDelegate(tab_contents(), name, update_url));
 }
 

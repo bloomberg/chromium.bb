@@ -8,22 +8,21 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/render_messages.h"
 
 // static
 int FindTabHelper::find_request_id_counter_ = -1;
 
-FindTabHelper::FindTabHelper(TabContentsWrapper* tab_contents)
-    : tab_contents_(tab_contents),
+FindTabHelper::FindTabHelper(TabContents* tab_contents)
+    : TabContentsObserver(tab_contents),
       find_ui_active_(false),
       find_op_aborted_(false),
       current_find_request_id_(find_request_id_counter_++),
       last_search_case_sensitive_(false),
       last_search_result_() {
-  DCHECK(tab_contents_);
 }
 
 FindTabHelper::~FindTabHelper() {
@@ -36,7 +35,7 @@ void FindTabHelper::StartFinding(string16 search_string,
   // shortcut so unless we have something to search for we return early.
   if (search_string.empty() && find_text_.empty()) {
     string16 last_search_prepopulate_text =
-        FindBarState::GetLastPrepopulateText(tab_contents_->profile());
+        FindBarState::GetLastPrepopulateText(tab_contents()->profile());
 
     // Try the last thing we searched for on this tab, then the last thing
     // searched for on any tab.
@@ -70,13 +69,13 @@ void FindTabHelper::StartFinding(string16 search_string,
   find_op_aborted_ = false;
 
   // Keep track of what the last search was across the tabs.
-  FindBarState* find_bar_state = tab_contents_->profile()->GetFindBarState();
+  FindBarState* find_bar_state = tab_contents()->profile()->GetFindBarState();
   find_bar_state->set_last_prepopulate_text(find_text_);
-  tab_contents_->render_view_host()->StartFinding(current_find_request_id_,
-                                                  find_text_,
-                                                  forward_direction,
-                                                  case_sensitive,
-                                                  find_next);
+  tab_contents()->render_view_host()->StartFinding(current_find_request_id_,
+                                                   find_text_,
+                                                   forward_direction,
+                                                   case_sensitive,
+                                                   find_next);
 }
 
 void FindTabHelper::StopFinding(
@@ -94,7 +93,7 @@ void FindTabHelper::StopFinding(
   find_text_.clear();
   find_op_aborted_ = true;
   last_search_result_ = FindNotificationDetails();
-  tab_contents_->render_view_host()->StopFinding(selection_action);
+  tab_contents()->render_view_host()->StopFinding(selection_action);
 }
 
 bool FindTabHelper::OnMessageReceived(const IPC::Message& message) {
@@ -132,7 +131,7 @@ void FindTabHelper::OnFindReply(int request_id,
         final_update);
     NotificationService::current()->Notify(
         NotificationType::FIND_RESULT_AVAILABLE,
-        Source<TabContents>(tab_contents_->tab_contents()),
+        Source<TabContents>(tab_contents()),
         Details<FindNotificationDetails>(&last_search_result_));
   }
 
@@ -142,6 +141,5 @@ void FindTabHelper::OnFindReply(int request_id,
   // browser using IPC. In an effort to not spam the browser we have the
   // browser send an ACK for each FindReply message and have the renderer
   // queue up the latest status message while waiting for this ACK.
-  tab_contents_->render_view_host()->Send(new ViewMsg_FindReplyACK(
-      tab_contents_->render_view_host()->routing_id()));
+  Send(new ViewMsg_FindReplyACK(routing_id()));
 }

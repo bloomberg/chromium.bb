@@ -18,7 +18,7 @@ struct ViewHostMsg_PageHasOSDD_Type;
 // functionality.
 class SearchEngineTabHelper : public TabContentsObserver {
  public:
-  explicit SearchEngineTabHelper(TabContentsWrapper* tab_contents);
+  explicit SearchEngineTabHelper(TabContents* tab_contents);
   virtual ~SearchEngineTabHelper();
 
   SearchEngineTabHelperDelegate* delegate() const { return delegate_; }
@@ -39,8 +39,6 @@ class SearchEngineTabHelper : public TabContentsObserver {
   // If params has a searchable form, this tries to create a new keyword.
   void GenerateKeywordIfNecessary(
       const ViewHostMsg_FrameNavigate_Params& params);
-
-  TabContentsWrapper* tab_contents_;
 
   // Delegate for notifying our owner about stuff. Not owned by us.
   SearchEngineTabHelperDelegate* delegate_;

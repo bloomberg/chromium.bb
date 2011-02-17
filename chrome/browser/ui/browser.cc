@@ -3279,7 +3279,7 @@ void Browser::URLStarredChanged(TabContentsWrapper* source, bool starred) {
 // Browser, SearchEngineTabHelperDelegate implementation:
 
 void Browser::ConfirmSetDefaultSearchProvider(
-    TabContentsWrapper* tab_contents,
+    TabContents* tab_contents,
     TemplateURL* template_url,
     TemplateURLModel* template_url_model) {
   window()->ConfirmSetDefaultSearchProvider(tab_contents, template_url,

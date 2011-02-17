@@ -22,7 +22,8 @@ static base::LazyInstance<PropertyAccessor<TabContentsWrapper*> >
 // TabContentsWrapper, public:
 
 TabContentsWrapper::TabContentsWrapper(TabContents* contents)
-    : delegate_(NULL),
+    : TabContentsObserver(contents),
+      delegate_(NULL),
       is_starred_(false),
       tab_contents_(contents) {
   DCHECK(contents);
@@ -30,17 +31,12 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   // go to a Browser.
   property_accessor()->SetProperty(contents->property_bag(), this);
 
-  tab_contents()->AddObserver(this);
-
   // Create the tab helpers.
-  find_tab_helper_.reset(new FindTabHelper(this));
-  tab_contents()->AddObserver(find_tab_helper_.get());
+  find_tab_helper_.reset(new FindTabHelper(contents));
   password_manager_delegate_.reset(new PasswordManagerDelegateImpl(contents));
   password_manager_.reset(
-      new PasswordManager(password_manager_delegate_.get()));
-  tab_contents()->AddObserver(password_manager_.get());
-  search_engine_tab_helper_.reset(new SearchEngineTabHelper(this));
-  tab_contents()->AddObserver(search_engine_tab_helper_.get());
+      new PasswordManager(contents, password_manager_delegate_.get()));
+  search_engine_tab_helper_.reset(new SearchEngineTabHelper(contents));
 
   // Register for notifications about URL starredness changing on any profile.
   registrar_.Add(this, NotificationType::URLS_STARRED,
@@ -52,12 +48,6 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
 TabContentsWrapper::~TabContentsWrapper() {
   // We don't want any notifications while we're running our destructor.
   registrar_.RemoveAll();
-
-  // Unregister observers.
-  tab_contents()->RemoveObserver(this);
-  tab_contents()->RemoveObserver(find_tab_helper_.get());
-  tab_contents()->RemoveObserver(password_manager_.get());
-  tab_contents()->RemoveObserver(search_engine_tab_helper_.get());
 }
 
 PropertyAccessor<TabContentsWrapper*>* TabContentsWrapper::property_accessor() {

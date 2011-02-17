@@ -30,7 +30,6 @@ class PluginObserver : public TabContentsObserver {
   void OnCrashedPlugin(const FilePath& plugin_path);
   void OnBlockedOutdatedPlugin(const string16& name, const GURL& update_url);
 
-  TabContents* tab_contents_;  // Weak, owns us.
   scoped_ptr<InfoBarDelegate> plugin_installer_;  // Lazily created.
 
   DISALLOW_COPY_AND_ASSIGN(PluginObserver);

@@ -211,9 +211,9 @@ bool FormIsHTTPS(FormStructure* form) {
 }  // namespace
 
 AutoFillManager::AutoFillManager(TabContents* tab_contents)
-    : tab_contents_(tab_contents),
+    : TabContentsObserver(tab_contents),
       personal_data_(NULL),
-      download_manager_(tab_contents_->profile()),
+      download_manager_(tab_contents->profile()),
       disable_download_manager_requests_(false),
       metric_logger_(new AutoFillMetrics),
       cc_infobar_(NULL) {
@@ -221,7 +221,7 @@ AutoFillManager::AutoFillManager(TabContents* tab_contents)
 
   // |personal_data_| is NULL when using TestTabContents.
   personal_data_ =
-      tab_contents_->profile()->GetOriginalProfile()->GetPersonalDataManager();
+      tab_contents->profile()->GetOriginalProfile()->GetPersonalDataManager();
   download_manager_.SetObserver(this);
 }
 
@@ -277,12 +277,12 @@ bool AutoFillManager::OnMessageReceived(const IPC::Message& message) {
 
 void AutoFillManager::OnFormSubmitted(const FormData& form) {
   // Let AutoComplete know as well.
-  tab_contents_->autocomplete_history_manager()->OnFormSubmitted(form);
+  tab_contents()->autocomplete_history_manager()->OnFormSubmitted(form);
 
   if (!IsAutoFillEnabled())
     return;
 
-  if (tab_contents_->profile()->IsOffTheRecord())
+  if (tab_contents()->profile()->IsOffTheRecord())
     return;
 
   // Don't save data that was submitted through JavaScript.
@@ -381,7 +381,7 @@ void AutoFillManager::OnQueryFormFieldAutoFill(
   // Add the results from AutoComplete.  They come back asynchronously, so we
   // hand off what we generated and they will send the results back to the
   // renderer.
-  tab_contents_->autocomplete_history_manager()->OnGetAutocompleteSuggestions(
+  tab_contents()->autocomplete_history_manager()->OnGetAutocompleteSuggestions(
       query_id, field.name(), field.value(), values, labels, icons, unique_ids);
 }
 
@@ -518,22 +518,22 @@ void AutoFillManager::OnShowAutoFillDialog() {
     return;
   }
 
-  ShowAutoFillDialog(tab_contents_->GetContentNativeView(),
+  ShowAutoFillDialog(tab_contents()->GetContentNativeView(),
                      personal_data_,
-                     tab_contents_->profile()->GetOriginalProfile());
+                     tab_contents()->profile()->GetOriginalProfile());
 }
 
 void AutoFillManager::OnDidFillAutoFillFormData() {
   NotificationService::current()->Notify(
       NotificationType::AUTOFILL_DID_FILL_FORM_DATA,
-      Source<RenderViewHost>(tab_contents_->render_view_host()),
+      Source<RenderViewHost>(tab_contents()->render_view_host()),
       NotificationService::NoDetails());
 }
 
 void AutoFillManager::OnDidShowAutoFillSuggestions() {
   NotificationService::current()->Notify(
       NotificationType::AUTOFILL_DID_SHOW_SUGGESTIONS,
-      Source<RenderViewHost>(tab_contents_->render_view_host()),
+      Source<RenderViewHost>(tab_contents()->render_view_host()),
       NotificationService::NoDetails());
 }
 
@@ -558,7 +558,8 @@ void AutoFillManager::OnHeuristicsRequestError(
 }
 
 bool AutoFillManager::IsAutoFillEnabled() const {
-  PrefService* prefs = tab_contents_->profile()->GetPrefs();
+  PrefService* prefs =
+      const_cast<AutoFillManager*>(this)->tab_contents()->profile()->GetPrefs();
 
   // Migrate obsolete AutoFill pref.
   if (prefs->FindPreference(prefs::kFormAutofillEnabled)) {
@@ -675,10 +676,10 @@ void AutoFillManager::ImportFormData(const FormStructure& submitted_form) {
 
   // If credit card information was submitted, show an infobar to offer to save
   // it.
-  if (imported_credit_card && tab_contents_) {
+  if (imported_credit_card && tab_contents()) {
     imported_credit_card_.reset(imported_credit_card);
-    tab_contents_->AddInfoBar(new AutoFillCCInfoBarDelegate(tab_contents_,
-                                                            this));
+    tab_contents()->AddInfoBar(new AutoFillCCInfoBarDelegate(tab_contents(),
+                                                             this));
   }
 }
 
@@ -713,18 +714,9 @@ void AutoFillManager::OnInfoBarClosed(bool should_save) {
     personal_data_->SaveImportedCreditCard(*imported_credit_card_);
 }
 
-AutoFillManager::AutoFillManager()
-    : tab_contents_(NULL),
-      personal_data_(NULL),
-      download_manager_(NULL),
-      disable_download_manager_requests_(true),
-      metric_logger_(new AutoFillMetrics),
-      cc_infobar_(NULL) {
-}
-
 AutoFillManager::AutoFillManager(TabContents* tab_contents,
                                  PersonalDataManager* personal_data)
-    : tab_contents_(tab_contents),
+    : TabContentsObserver(tab_contents),
       personal_data_(personal_data),
       download_manager_(NULL),
       disable_download_manager_requests_(true),
@@ -748,7 +740,7 @@ bool AutoFillManager::GetHost(const std::vector<AutoFillProfile*>& profiles,
   if (profiles.empty() && credit_cards.empty())
     return false;
 
-  *host = tab_contents_->render_view_host();
+  *host = tab_contents()->render_view_host();
   if (!*host)
     return false;
 

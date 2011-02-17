@@ -29,7 +29,7 @@ class PrintViewManager : public NotificationObserver,
                          public PrintedPagesSource,
                          public TabContentsObserver {
  public:
-  explicit PrintViewManager(TabContents& owner);
+  explicit PrintViewManager(TabContents* tab_contents);
   virtual ~PrintViewManager();
 
   // Cancels the print job.
@@ -123,11 +123,6 @@ class PrintViewManager : public NotificationObserver,
   // we are _blocking_ until all the necessary pages have been rendered or the
   // print settings are being loaded.
   bool inside_inner_message_loop_;
-
-  // PrintViewManager is created as an extension of WebContent specialized for
-  // printing-related behavior. Still, access to the renderer is needed so a
-  // back reference is kept the the "parent object".
-  TabContents& owner_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintViewManager);
 };

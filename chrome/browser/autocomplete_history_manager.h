@@ -51,7 +51,9 @@ class AutocompleteHistoryManager : public TabContentsObserver,
   friend class AutoFillManagerTest;
 
   // For tests.
-  AutocompleteHistoryManager(Profile* profile, WebDataService* wds);
+  AutocompleteHistoryManager(TabContents* tab_contents,
+                             Profile* profile,
+                             WebDataService* wds);
 
   void SendSuggestions(const std::vector<string16>* suggestions);
   void CancelPendingQuery();
@@ -59,7 +61,6 @@ class AutocompleteHistoryManager : public TabContentsObserver,
  private:
   void OnRemoveAutocompleteEntry(const string16& name, const string16& value);
 
-  TabContents* tab_contents_;
   Profile* profile_;
   scoped_refptr<WebDataService> web_data_service_;
 

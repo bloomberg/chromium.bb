@@ -26,9 +26,6 @@ class TabContentsObserver : public IPC::Channel::Listener {
   virtual void DidStartLoading() { }
   virtual void DidStopLoading() { }
 
-  // IPC::Channel::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message);
-
 #if 0
   // For unifying with delegate...
 
@@ -43,6 +40,30 @@ class TabContentsObserver : public IPC::Channel::Listener {
   virtual void NavigationStateChanged(const TabContents* source,
                                       unsigned changed_flags) { }
 #endif
+
+ protected:
+  TabContentsObserver(TabContents* tab_contents);
+  virtual ~TabContentsObserver();
+
+  // IPC::Channel::Listener implementation.
+  virtual bool OnMessageReceived(const IPC::Message& message);
+
+  // IPC::Message::Sender implementation.
+  virtual bool Send(IPC::Message* message);
+
+  TabContents* tab_contents() { return tab_contents_; }
+  int routing_id() { return routing_id_; }
+
+ private:
+  friend class TabContents;
+
+  void set_tab_contents(TabContents* tc) { tab_contents_ = tc; }
+
+  TabContents* tab_contents_;
+  // The routing ID of the associated TabContents.
+  int routing_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(TabContentsObserver);
 };
 
 #endif  // CHROME_BROWSER_TAB_CONTENTS_TAB_CONTENTS_OBSERVER_H_

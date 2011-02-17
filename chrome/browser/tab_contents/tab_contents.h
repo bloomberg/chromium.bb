@@ -181,7 +181,7 @@ class TabContents : public PageNavigator,
 
   // Returns the FavIconHelper of this TabContents.
   FavIconHelper& fav_icon_helper() {
-    return fav_icon_helper_;
+    return *fav_icon_helper_.get();
   }
 
   // App extensions ------------------------------------------------------------
@@ -557,9 +557,6 @@ class TabContents : public PageNavigator,
   bool SavePage(const FilePath& main_file, const FilePath& dir_path,
                 SavePackage::SavePackageType save_type);
 
-  // Sets save_package_, taking care to register and unregister the observers.
-  void SetSavePackage(SavePackage* save_package);
-
   // Tells the user's email client to open a compose window containing the
   // current page's URL.
   void EmailPageLocation();
@@ -751,6 +748,9 @@ class TabContents : public PageNavigator,
 
   // Used to access RVH Delegates.
   friend class prerender::PrerenderManager;
+
+  // Add all the TabContentObservers.
+  void AddObservers();
 
   // Message handlers.
   void OnDidStartProvisionalLoadForFrame(int64 frame_id,
@@ -1079,7 +1079,7 @@ class TabContents : public PageNavigator,
   BookmarkDrag* bookmark_drag_;
 
   // Handles downloading favicons.
-  FavIconHelper fav_icon_helper_;
+  scoped_ptr<FavIconHelper> fav_icon_helper_;
 
   // Cached web app info data.
   WebApplicationInfo web_app_info_;

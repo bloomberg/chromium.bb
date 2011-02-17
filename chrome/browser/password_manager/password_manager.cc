@@ -50,8 +50,10 @@ static void ReportMetrics(bool password_manager_enabled) {
     UserMetrics::RecordAction(UserMetricsAction("PasswordManager_Disabled"));
 }
 
-PasswordManager::PasswordManager(PasswordManagerDelegate* delegate)
-    : login_managers_deleter_(&pending_login_managers_),
+PasswordManager::PasswordManager(TabContents* tab_contents,
+                                 PasswordManagerDelegate* delegate)
+    : TabContentsObserver(tab_contents),
+      login_managers_deleter_(&pending_login_managers_),
       delegate_(delegate),
       observer_(NULL) {
   DCHECK(delegate_);

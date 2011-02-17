@@ -10,12 +10,10 @@
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 
-class TabContentsWrapper;
-
 // Per-tab find manager. Handles dealing with the life cycle of find sessions.
 class FindTabHelper : public TabContentsObserver {
  public:
-  explicit FindTabHelper(TabContentsWrapper* tab_contents);
+  explicit FindTabHelper(TabContents* tab_contents);
   virtual ~FindTabHelper();
 
   // Starts the Find operation by calling StartFinding on the Tab. This function
@@ -69,8 +67,6 @@ class FindTabHelper : public TabContentsObserver {
                    const gfx::Rect& selection_rect,
                    int active_match_ordinal,
                    bool final_update);
-
-  TabContentsWrapper* tab_contents_;
 
   // Each time a search request comes in we assign it an id before passing it
   // over the IPC so that when the results come in we can evaluate whether we

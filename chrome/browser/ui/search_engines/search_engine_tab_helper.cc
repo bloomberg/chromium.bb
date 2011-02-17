@@ -9,7 +9,7 @@
 #include "chrome/browser/search_engines/template_url_fetcher.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/ui/search_engines/template_url_fetcher_ui_callbacks.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 
@@ -23,9 +23,9 @@ bool IsFormSubmit(const NavigationEntry* entry) {
 
 }  // namespace
 
-SearchEngineTabHelper::SearchEngineTabHelper(TabContentsWrapper* tab_contents)
-    : tab_contents_(tab_contents) {
-  DCHECK(tab_contents_);
+SearchEngineTabHelper::SearchEngineTabHelper(TabContents* tab_contents)
+    : TabContentsObserver(tab_contents) {
+  DCHECK(tab_contents);
 }
 
 SearchEngineTabHelper::~SearchEngineTabHelper() {
@@ -57,11 +57,11 @@ void SearchEngineTabHelper::OnPageHasOSDD(
 
   // Make sure page_id is the current page and other basic checks.
   DCHECK(doc_url.is_valid());
-  if (!tab_contents_->tab_contents()->IsActiveEntry(page_id))
+  if (!tab_contents()->IsActiveEntry(page_id))
     return;
-  if (!tab_contents_->profile()->GetTemplateURLFetcher())
+  if (!tab_contents()->profile()->GetTemplateURLFetcher())
     return;
-  if (tab_contents_->profile()->IsOffTheRecord())
+  if (tab_contents()->profile()->IsOffTheRecord())
     return;
 
   TemplateURLFetcher::ProviderType provider_type;
@@ -83,8 +83,7 @@ void SearchEngineTabHelper::OnPageHasOSDD(
       return;
   }
 
-  const NavigationController& controller =
-      tab_contents_->tab_contents()->controller();
+  const NavigationController& controller = tab_contents()->controller();
   const NavigationEntry* entry = controller.GetLastCommittedEntry();
   DCHECK(entry);
 
@@ -116,11 +115,11 @@ void SearchEngineTabHelper::OnPageHasOSDD(
 
   // Download the OpenSearch description document. If this is successful, a
   // new keyword will be created when done.
-  tab_contents_->profile()->GetTemplateURLFetcher()->ScheduleDownload(
+  tab_contents()->profile()->GetTemplateURLFetcher()->ScheduleDownload(
       keyword,
       doc_url,
       base_entry->favicon().url(),
-      new TemplateURLFetcherUICallbacks(this, tab_contents_),
+      new TemplateURLFetcherUICallbacks(this, tab_contents()),
       provider_type);
 }
 
@@ -129,11 +128,10 @@ void SearchEngineTabHelper::GenerateKeywordIfNecessary(
   if (!params.searchable_form_url.is_valid())
     return;
 
-  if (tab_contents_->profile()->IsOffTheRecord())
+  if (tab_contents()->profile()->IsOffTheRecord())
     return;
 
-  const NavigationController& controller =
-      tab_contents_->tab_contents()->controller();
+  const NavigationController& controller = tab_contents()->controller();
   int last_index = controller.last_committed_entry_index();
   // When there was no previous page, the last index will be 0. This is
   // normally due to a form submit that opened in a new tab.
@@ -157,7 +155,7 @@ void SearchEngineTabHelper::GenerateKeywordIfNecessary(
     return;
 
   TemplateURLModel* url_model =
-      tab_contents_->profile()->GetTemplateURLModel();
+      tab_contents()->profile()->GetTemplateURLModel();
   if (!url_model)
     return;
 

@@ -11,6 +11,8 @@
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager/password_manager_delegate.h"
 #include "chrome/browser/password_manager/password_store.h"
+#include "chrome/browser/renderer_host/test/test_render_view_host.h"
+#include "chrome/browser/tab_contents/test_tab_contents.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -73,18 +75,20 @@ ACTION_P(SaveToScopedPtr, scoped) {
   scoped->reset(arg0);
 }
 
-class PasswordManagerTest : public testing::Test {
+class PasswordManagerTest : public RenderViewHostTestHarness {
  public:
   PasswordManagerTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_) {}
+      : ui_thread_(BrowserThread::UI, MessageLoopForUI::current()) {}
  protected:
 
   virtual void SetUp() {
+    RenderViewHostTestHarness::SetUp();
+
     store_ = new MockPasswordStore();
     profile_.reset(new TestingProfileWithPasswordStore(store_));
     EXPECT_CALL(delegate_, GetProfileForPasswordManager())
         .WillRepeatedly(Return(profile_.get()));
-    manager_.reset(new PasswordManager(&delegate_));
+    manager_.reset(new PasswordManager(contents(), &delegate_));
     EXPECT_CALL(delegate_, DidLastPageLoadEncounterSSLErrors())
         .WillRepeatedly(Return(false));
   }
@@ -110,7 +114,6 @@ class PasswordManagerTest : public testing::Test {
   PasswordManager* manager() { return manager_.get(); }
 
   // We create a UI thread to satisfy PasswordStore.
-  MessageLoopForUI message_loop_;
   BrowserThread ui_thread_;
 
   scoped_ptr<Profile> profile_;

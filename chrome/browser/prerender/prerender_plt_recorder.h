@@ -38,8 +38,6 @@ class PrerenderPLTRecorder : public TabContentsObserver {
   virtual void DidStopLoading();
 
  private:
-  TabContents* tab_contents_;
-
   // System time at which the current load was started for the purpose of
   // the perceived page load time (PPLT).
   base::TimeTicks pplt_load_start_;

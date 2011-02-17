@@ -87,3 +87,9 @@ RenderProcessHost* DesktopNotificationHandler::GetRenderProcessHost() {
   return tab_ ? tab_->GetRenderProcessHost() : process_;
 }
 
+DesktopNotificationHandlerForTC::DesktopNotificationHandlerForTC(
+    TabContents* tab_contents,
+    RenderProcessHost* process)
+    : TabContentsObserver(tab_contents),
+      DesktopNotificationHandler(tab_contents, process) {
+}

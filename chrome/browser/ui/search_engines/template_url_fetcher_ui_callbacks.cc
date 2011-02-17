@@ -9,18 +9,18 @@
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 
 TemplateURLFetcherUICallbacks::TemplateURLFetcherUICallbacks(
     SearchEngineTabHelper* tab_helper,
-    TabContentsWrapper* tab_contents)
+    TabContents* tab_contents)
     : source_(tab_helper),
       tab_contents_(tab_contents) {
   registrar_.Add(this,
                  NotificationType::TAB_CONTENTS_DESTROYED,
-                 Source<TabContents>(tab_contents_->tab_contents()));
+                 Source<TabContents>(tab_contents_));
 }
 
 TemplateURLFetcherUICallbacks::~TemplateURLFetcherUICallbacks() {
@@ -55,7 +55,7 @@ void TemplateURLFetcherUICallbacks::Observe(
     const NotificationSource& source,
     const NotificationDetails& details) {
   DCHECK(type == NotificationType::TAB_CONTENTS_DESTROYED);
-  DCHECK(source == Source<TabContents>(tab_contents_->tab_contents()));
+  DCHECK(source == Source<TabContents>(tab_contents_));
   source_ = NULL;
   tab_contents_ = NULL;
 }

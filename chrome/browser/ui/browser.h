@@ -813,7 +813,7 @@ class Browser : public TabHandlerDelegate,
                                  bool starred) OVERRIDE;
   // Overridden from SearchEngineTabHelperDelegate:
   virtual void ConfirmSetDefaultSearchProvider(
-      TabContentsWrapper* tab_contents,
+      TabContents* tab_contents,
       TemplateURL* template_url,
       TemplateURLModel* template_url_model) OVERRIDE;
   virtual void ConfirmAddSearchProvider(const TemplateURL* template_url,

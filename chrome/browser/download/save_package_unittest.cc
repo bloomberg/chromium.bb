@@ -351,7 +351,7 @@ static const struct SuggestedSaveNameTestCase {
 TEST_F(SavePackageTest, TestSuggestedSaveNames) {
   for (size_t i = 0; i < arraysize(kSuggestedSaveNames); ++i) {
     scoped_refptr<SavePackage> save_package(
-        new SavePackage(NULL, FilePath(), FilePath()));
+        new SavePackage(contents(), FilePath(), FilePath()));
     save_package->page_url_ = GURL(kSuggestedSaveNames[i].page_url);
     save_package->title_ = kSuggestedSaveNames[i].page_title;
 

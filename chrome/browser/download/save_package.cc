@@ -157,8 +157,8 @@ SavePackage::SavePackage(TabContents* tab_contents,
                          SavePackageType save_type,
                          const FilePath& file_full_path,
                          const FilePath& directory_full_path)
-    : file_manager_(NULL),
-      tab_contents_(tab_contents),
+    : TabContentsObserver(tab_contents),
+      file_manager_(NULL),
       download_(NULL),
       page_url_(GetUrlToBeSaved()),
       saved_main_file_path_(file_full_path),
@@ -184,8 +184,8 @@ SavePackage::SavePackage(TabContents* tab_contents,
 }
 
 SavePackage::SavePackage(TabContents* tab_contents)
-    : file_manager_(NULL),
-      tab_contents_(tab_contents),
+    : TabContentsObserver(tab_contents),
+      file_manager_(NULL),
       download_(NULL),
       page_url_(GetUrlToBeSaved()),
       title_(tab_contents->GetTitle()),
@@ -208,8 +208,8 @@ SavePackage::SavePackage(TabContents* tab_contents)
 SavePackage::SavePackage(TabContents* tab_contents,
                          const FilePath& file_full_path,
                          const FilePath& directory_full_path)
-    : file_manager_(NULL),
-      tab_contents_(tab_contents),
+    : TabContentsObserver(tab_contents),
+      file_manager_(NULL),
       download_(NULL),
       saved_main_file_path_(file_full_path),
       saved_main_directory_path_(directory_full_path),
@@ -265,7 +265,7 @@ GURL SavePackage::GetUrlToBeSaved() {
   // rather than the displayed one (returned by GetURL) which may be
   // different (like having "view-source:" on the front).
   NavigationEntry* active_entry =
-      tab_contents_->controller().GetActiveEntry();
+      tab_contents()->controller().GetActiveEntry();
   return active_entry->url();
 }
 
@@ -305,7 +305,7 @@ bool SavePackage::Init() {
   wait_state_ = START_PROCESS;
 
   // Initialize the request context and resource dispatcher.
-  Profile* profile = tab_contents_->profile();
+  Profile* profile = tab_contents()->profile();
   if (!profile) {
     NOTREACHED();
     return false;
@@ -315,7 +315,7 @@ bool SavePackage::Init() {
 
   // Create the fake DownloadItem and display the view.
   DownloadManager* download_manager =
-      tab_contents_->profile()->GetDownloadManager();
+      tab_contents()->profile()->GetDownloadManager();
   download_ = new DownloadItem(download_manager,
                                saved_main_file_path_,
                                page_url_,
@@ -325,7 +325,7 @@ bool SavePackage::Init() {
   // to be alive as long as the Profile is alive.
   download_manager->SavePageAsDownloadStarted(download_);
 
-  tab_contents_->OnStartDownload(download_);
+  tab_contents()->OnStartDownload(download_);
 
   // Check save type and process the save page job.
   if (save_type_ == SAVE_AS_COMPLETE_HTML) {
@@ -715,8 +715,8 @@ void SavePackage::CheckFinish() {
                         &SaveFileManager::RenameAllFiles,
                         final_names,
                         dir,
-                        tab_contents_->GetRenderProcessHost()->id(),
-                        tab_contents_->render_view_host()->routing_id(),
+                        tab_contents()->GetRenderProcessHost()->id(),
+                        tab_contents()->render_view_host()->routing_id(),
                         id()));
 }
 
@@ -849,7 +849,7 @@ void SavePackage::SaveCanceled(SaveItem* save_item) {
 // the save source. Parameter process_all_remaining_items indicates whether
 // we need to save all remaining items.
 void SavePackage::SaveNextFile(bool process_all_remaining_items) {
-  DCHECK(tab_contents_);
+  DCHECK(tab_contents());
   DCHECK(waiting_item_queue_.size());
 
   do {
@@ -865,8 +865,8 @@ void SavePackage::SaveNextFile(bool process_all_remaining_items) {
     save_item->Start();
     file_manager_->SaveURL(save_item->url(),
                            save_item->referrer(),
-                           tab_contents_->GetRenderProcessHost()->id(),
-                           tab_contents_->render_view_host()->routing_id(),
+                           tab_contents()->GetRenderProcessHost()->id(),
+                           routing_id(),
                            save_item->save_source(),
                            save_item->full_path(),
                            request_context_getter_.get(),
@@ -996,7 +996,7 @@ void SavePackage::GetSerializedHtmlDataForCurrentPageWithLocalLinks() {
   // Get the relative directory name.
   FilePath relative_dir_name = saved_main_directory_path_.BaseName();
 
-  tab_contents_->render_view_host()->
+  tab_contents()->render_view_host()->
       GetSerializedHtmlDataForCurrentPageWithLocalLinks(
       saved_links, saved_file_paths, relative_dir_name);
 }
@@ -1071,7 +1071,7 @@ void SavePackage::GetAllSavableResourceLinksForCurrentPage() {
     return;
 
   wait_state_ = RESOURCES_LIST;
-  tab_contents_->render_view_host()->
+  tab_contents()->render_view_host()->
       GetAllSavableResourceLinksForCurrentPage(page_url_);
 }
 
@@ -1254,11 +1254,11 @@ FilePath SavePackage::GetSaveDirPreference(PrefService* prefs) {
 void SavePackage::GetSaveInfo() {
   // Can't use tab_contents_ in the file thread, so get the data that we need
   // before calling to it.
-  PrefService* prefs = tab_contents_->profile()->GetPrefs();
+  PrefService* prefs = tab_contents()->profile()->GetPrefs();
   FilePath website_save_dir = GetSaveDirPreference(prefs);
   FilePath download_save_dir = prefs->GetFilePath(
       prefs::kDownloadDefaultDirectory);
-  std::string mime_type = tab_contents_->contents_mime_type();
+  std::string mime_type = tab_contents()->contents_mime_type();
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
@@ -1311,7 +1311,7 @@ void SavePackage::CreateDirectoryOnFileThread(
 void SavePackage::ContinueGetSaveInfo(const FilePath& suggested_path,
                                       bool can_save_as_complete) {
   DownloadPrefs* download_prefs =
-      tab_contents_->profile()->GetDownloadManager()->download_prefs();
+      tab_contents()->profile()->GetDownloadManager()->download_prefs();
   int file_type_index =
       SavePackageTypeToIndex(
           static_cast<SavePackageType>(download_prefs->save_file_type()));
@@ -1382,7 +1382,7 @@ void SavePackage::ContinueGetSaveInfo(const FilePath& suggested_path,
                                     file_type_index,
                                     default_extension,
                                     platform_util::GetTopLevel(
-                                        tab_contents_->GetNativeView()),
+                                        tab_contents()->GetNativeView()),
                                     NULL);
   } else {
     // Just use 'suggested_path' instead of opening the dialog prompt.
@@ -1395,7 +1395,7 @@ void SavePackage::ContinueSave(const FilePath& final_name,
                                int index) {
   // Ensure the filename is safe.
   saved_main_file_path_ = final_name;
-  download_util::GenerateSafeFileName(tab_contents_->contents_mime_type(),
+  download_util::GenerateSafeFileName(tab_contents()->contents_mime_type(),
                                       &saved_main_file_path_);
 
   // The option index is not zero-based.
@@ -1404,7 +1404,7 @@ void SavePackage::ContinueSave(const FilePath& final_name,
 
   saved_main_directory_path_ = saved_main_file_path_.DirName();
 
-  PrefService* prefs = tab_contents_->profile()->GetPrefs();
+  PrefService* prefs = tab_contents()->profile()->GetPrefs();
   StringPrefMember save_file_path;
   save_file_path.Init(prefs::kSaveFileDefaultDirectory, prefs, NULL);
 #if defined(OS_POSIX)
@@ -1414,7 +1414,7 @@ void SavePackage::ContinueSave(const FilePath& final_name,
 #endif
   // If user change the default saving directory, we will remember it just
   // like IE and FireFox.
-  if (!tab_contents_->profile()->IsOffTheRecord() &&
+  if (!tab_contents()->profile()->IsOffTheRecord() &&
       save_file_path.GetValue() != path_string) {
     save_file_path.SetValue(path_string);
   }

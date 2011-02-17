@@ -254,48 +254,29 @@ TabContents::TabContents(Profile* profile,
       ALLOW_THIS_IN_INITIALIZER_LIST(view_(
           TabContentsView::Create(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(render_manager_(this, this)),
-      property_bag_(),
-      registrar_(),
-      ALLOW_THIS_IN_INITIALIZER_LIST(printing_(
-          new printing::PrintViewManager(*this))),
-      ALLOW_THIS_IN_INITIALIZER_LIST(print_preview_(
-          new printing::PrintPreviewMessageHandler(this))),
-      save_package_(),
-      autocomplete_history_manager_(),
-      autofill_manager_(),
-      prerender_plt_recorder_(),
       bookmark_drag_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(fav_icon_helper_(this)),
       is_loading_(false),
       crashed_status_(base::TERMINATION_STATUS_STILL_RUNNING),
       crashed_error_code_(0),
       waiting_for_response_(false),
       max_page_id_(-1),
-      current_load_start_(),
       load_state_(net::LOAD_STATE_IDLE),
-      load_state_host_(),
       upload_size_(0),
       upload_position_(0),
       received_page_title_(false),
-      contents_mime_type_(),
-      encoding_(),
       blocked_contents_(NULL),
       all_contents_blocked_(false),
       dont_notify_render_view_(false),
       displayed_insecure_content_(false),
-      infobar_delegates_(),
       extension_app_(NULL),
       capturing_contents_(false),
       is_being_destroyed_(false),
       notify_disconnection_(false),
-      history_requests_(),
 #if defined(OS_WIN)
       message_box_active_(CreateEvent(NULL, TRUE, FALSE, NULL)),
 #endif
-      last_javascript_message_dismissal_(),
       suppress_javascript_messages_(false),
       is_showing_before_unload_dialog_(false),
-      renderer_preferences_(),
       opener_web_ui_type_(WebUIFactory::kNoWebUI),
       language_state_(&controller_),
       closed_by_user_gesture_(false),
@@ -354,20 +335,10 @@ TabContents::TabContents(Profile* profile,
   if (OmniboxSearchHint::IsEnabled(profile))
     omnibox_search_hint_.reset(new OmniboxSearchHint(this));
 
-  autofill_manager_.reset(new AutoFillManager(this));
-  AddObserver(autofill_manager_.get());
-  autocomplete_history_manager_.reset(new AutocompleteHistoryManager(this));
-  AddObserver(autocomplete_history_manager_.get());
-  prerender_plt_recorder_.reset(new prerender::PrerenderPLTRecorder(this));
-  AddObserver(prerender_plt_recorder_.get());
-  AddObserver(&fav_icon_helper_);
-  AddObserver(printing_.get());
-  desktop_notification_handler_.reset(
-      new DesktopNotificationHandler(this, GetRenderProcessHost()));
-  AddObserver(desktop_notification_handler_.get());
-  plugin_observer_.reset(new PluginObserver(this));
-  AddObserver(plugin_observer_.get());
-  AddObserver(print_preview_.get());
+  // Can only add observers after render_manager_.Init() is called, since that's
+  // what sets up the render_view_host which TabContentObserver's constructor
+  // uses to get the routing_id.
+  AddObservers();
 }
 
 TabContents::~TabContents() {
@@ -427,6 +398,20 @@ TabContents::~TabContents() {
     UMA_HISTOGRAM_TIMES("Tab.Close",
         base::TimeTicks::Now() - tab_close_start_time_);
   }
+
+  FOR_EACH_OBSERVER(TabContentsObserver, observers_, set_tab_contents(NULL));
+}
+
+void TabContents::AddObservers() {
+  printing_.reset(new printing::PrintViewManager(this));
+  print_preview_.reset(new printing::PrintPreviewMessageHandler(this));
+  fav_icon_helper_.reset(new FavIconHelper(this));
+  autofill_manager_.reset(new AutoFillManager(this));
+  autocomplete_history_manager_.reset(new AutocompleteHistoryManager(this));
+  prerender_plt_recorder_.reset(new prerender::PrerenderPLTRecorder(this));
+  desktop_notification_handler_.reset(
+      new DesktopNotificationHandlerForTC(this, GetRenderProcessHost()));
+  plugin_observer_.reset(new PluginObserver(this));
 }
 
 // static
@@ -1276,7 +1261,7 @@ void TabContents::OnSavePage() {
   // Create the save package and possibly prompt the user for the name to save
   // the page as. The user prompt is an asynchronous operation that runs on
   // another thread.
-  SetSavePackage(new SavePackage(this));
+  save_package_ = new SavePackage(this);
   save_package_->GetSaveInfo();
 }
 
@@ -1288,15 +1273,8 @@ bool TabContents::SavePage(const FilePath& main_file, const FilePath& dir_path,
   // Stop the page from navigating.
   Stop();
 
-  SetSavePackage(new SavePackage(this, save_type, main_file, dir_path));
+  save_package_ = new SavePackage(this, save_type, main_file, dir_path);
   return save_package_->Init();
-}
-
-void TabContents::SetSavePackage(SavePackage* save_package) {
-  if (save_package_.get())
-    RemoveObserver(save_package_.get());
-  save_package_ = save_package;
-  AddObserver(save_package);
 }
 
 void TabContents::EmailPageLocation() {
@@ -1797,7 +1775,7 @@ void TabContents::DidNavigateMainFramePostCommit(
   received_page_title_ = false;
 
   // Get the favicon, either from history or request it from the net.
-  fav_icon_helper_.FetchFavIcon(details.entry->url());
+  fav_icon_helper_->FetchFavIcon(details.entry->url());
 
   // Clear all page actions, blocked content notifications and browser actions
   // for this tab, unless this is an in-page navigation.

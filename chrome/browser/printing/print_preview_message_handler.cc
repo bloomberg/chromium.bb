@@ -20,9 +20,10 @@
 
 namespace printing {
 
-PrintPreviewMessageHandler::PrintPreviewMessageHandler(TabContents* owner)
-    : owner_(owner) {
-  DCHECK(owner);
+PrintPreviewMessageHandler::PrintPreviewMessageHandler(
+    TabContents* tab_contents)
+    : TabContentsObserver(tab_contents) {
+  DCHECK(tab_contents);
 }
 
 PrintPreviewMessageHandler::~PrintPreviewMessageHandler() {
@@ -34,7 +35,7 @@ TabContents* PrintPreviewMessageHandler::GetPrintPreviewTab() {
       printing::PrintPreviewTabController::GetInstance();
   if (!tab_controller)
     return NULL;
-  return tab_controller->GetPrintPreviewForTab(owner_);
+  return tab_controller->GetPrintPreviewForTab(tab_contents());
 }
 
 void PrintPreviewMessageHandler::OnPagesReadyForPreview(
@@ -70,7 +71,7 @@ void PrintPreviewMessageHandler::OnPagesReadyForPreview(
                           &printing::PrinterQuery::StopWorker));
   }
 
-  RenderViewHost* rvh = owner_->render_view_host();
+  RenderViewHost* rvh = tab_contents()->render_view_host();
   rvh->Send(new ViewMsg_PrintingDone(rvh->routing_id(),
                                      params.document_cookie,
                                      true));

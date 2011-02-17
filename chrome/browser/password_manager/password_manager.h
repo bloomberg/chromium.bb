@@ -30,7 +30,8 @@ class PasswordManager : public LoginModel,
   static void RegisterUserPrefs(PrefService* prefs);
 
   // The delegate passed in is required to outlive the PasswordManager.
-  explicit PasswordManager(PasswordManagerDelegate* delegate);
+  PasswordManager(TabContents* tab_contents,
+                  PasswordManagerDelegate* delegate);
   virtual ~PasswordManager();
 
   // Called by a PasswordFormManager when it decides a form can be autofilled

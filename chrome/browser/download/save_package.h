@@ -269,8 +269,6 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
   // Non-owning pointer for handling file writing on the file thread.
   SaveFileManager* file_manager_;
 
-  TabContents* tab_contents_;
-
   // We use a fake DownloadItem here in order to reuse the DownloadItemView.
   // This class owns the pointer.
   DownloadItem* download_;

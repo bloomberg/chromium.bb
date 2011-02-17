@@ -7,7 +7,7 @@
 #pragma once
 
 class Profile;
-class TabContentsWrapper;
+class TabContents;
 class TemplateURL;
 class TemplateURLModel;
 
@@ -18,7 +18,7 @@ class SearchEngineTabHelperDelegate {
   // Shows a confirmation dialog box for setting the default search engine
   // described by |template_url|. Takes ownership of |template_url|.
   virtual void ConfirmSetDefaultSearchProvider(
-      TabContentsWrapper* tab_contents,
+      TabContents* tab_contents,
       TemplateURL* template_url,
       TemplateURLModel* template_url_model) = 0;
 

@@ -12,14 +12,14 @@
 #include "chrome/common/notification_registrar.h"
 
 class SearchEngineTabHelper;
-class TabContentsWrapper;
+class TabContents;
 
 // Callbacks which display UI for the TemplateURLFetcher.
 class TemplateURLFetcherUICallbacks : public TemplateURLFetcherCallbacks,
                                       public NotificationObserver {
  public:
   explicit TemplateURLFetcherUICallbacks(SearchEngineTabHelper* tab_helper,
-                                         TabContentsWrapper* tab_contents);
+                                         TabContents* tab_contents);
   virtual ~TemplateURLFetcherUICallbacks();
 
   // TemplateURLFetcherCallback implementation.
@@ -40,8 +40,8 @@ class TemplateURLFetcherUICallbacks : public TemplateURLFetcherCallbacks,
   // originating tab is closed. If NULL, the engine is not added.
   SearchEngineTabHelper* source_;
 
-  // The TabContentsWrapper where this request originated.
-  TabContentsWrapper* tab_contents_;
+  // The TabContents where this request originated.
+  TabContents* tab_contents_;
 
   // Handles registering for our notifications.
   NotificationRegistrar registrar_;

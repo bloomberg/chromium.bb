@@ -161,9 +161,6 @@ class FavIconHelper : public TabContentsObserver {
   // Returns true if the favicon should be saved.
   bool ShouldSaveFavicon(const GURL& url);
 
-  // Hosting TabContents. We callback into this when done.
-  TabContents* tab_contents_;
-
   // Used for history requests.
   CancelableRequestConsumer cancelable_consumer_;
 

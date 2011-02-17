@@ -26,12 +26,12 @@ using base::TimeDelta;
 
 namespace printing {
 
-PrintViewManager::PrintViewManager(TabContents& owner)
-    : number_pages_(0),
+PrintViewManager::PrintViewManager(TabContents* tab_contents)
+    : TabContentsObserver(tab_contents),
+      number_pages_(0),
       waiting_to_print_(false),
       printing_succeeded_(false),
-      inside_inner_message_loop_(false),
-      owner_(owner) {
+      inside_inner_message_loop_(false) {
 }
 
 PrintViewManager::~PrintViewManager() {
@@ -47,7 +47,7 @@ bool PrintViewManager::OnRenderViewGone(RenderViewHost* render_view_host) {
   if (!print_job_.get())
     return true;
 
-  if (render_view_host != owner_.render_view_host())
+  if (render_view_host != tab_contents()->render_view_host())
     return false;
 
   scoped_refptr<PrintedDocument> document(print_job_->document());
@@ -61,14 +61,14 @@ bool PrintViewManager::OnRenderViewGone(RenderViewHost* render_view_host) {
 }
 
 string16 PrintViewManager::RenderSourceName() {
-  string16 name(owner_.GetTitle());
+  string16 name(tab_contents()->GetTitle());
   if (name.empty())
     name = l10n_util::GetStringUTF16(IDS_DEFAULT_PRINT_DOCUMENT_TITLE);
   return name;
 }
 
 GURL PrintViewManager::RenderSourceUrl() {
-  NavigationEntry* entry = owner_.controller().GetActiveEntry();
+  NavigationEntry* entry = tab_contents()->controller().GetActiveEntry();
   if (entry)
     return entry->virtual_url();
   else
@@ -109,7 +109,7 @@ void PrintViewManager::OnDidPrintPage(
   if (params.data_size && params.data_size >= 350*1024*1024) {
     NOTREACHED() << "size:" << params.data_size;
     TerminatePrintJob(true);
-    owner_.Stop();
+    tab_contents()->Stop();
     return;
   }
 #endif
@@ -117,7 +117,7 @@ void PrintViewManager::OnDidPrintPage(
   base::SharedMemory shared_buf(params.metafile_data_handle, true);
   if (!shared_buf.Map(params.data_size)) {
     NOTREACHED() << "couldn't map";
-    owner_.Stop();
+    tab_contents()->Stop();
     return;
   }
 
@@ -127,7 +127,7 @@ void PrintViewManager::OnDidPrintPage(
   scoped_ptr<NativeMetafile> metafile(new NativeMetafile());
   if (!metafile->Init(shared_buf.memory(), params.data_size)) {
     NOTREACHED() << "Invalid metafile header";
-    owner_.Stop();
+    tab_contents()->Stop();
     return;
   }
 
@@ -217,8 +217,8 @@ bool PrintViewManager::RenderAllMissingPagesNow() {
   }
 
   // We can't print if there is no renderer.
-  if (!owner_.render_view_host() ||
-      !owner_.render_view_host()->IsRenderViewLive()) {
+  if (!tab_contents()->render_view_host() ||
+      !tab_contents()->render_view_host()->IsRenderViewLive()) {
     waiting_to_print_ = false;
     return false;
   }
@@ -275,8 +275,8 @@ bool PrintViewManager::CreateNewPrintJob(PrintJobWorkerOwner* job) {
   DisconnectFromCurrentPrintJob();
 
   // We can't print if there is no renderer.
-  if (!owner_.render_view_host() ||
-      !owner_.render_view_host()->IsRenderViewLive()) {
+  if (!tab_contents()->render_view_host() ||
+      !tab_contents()->render_view_host()->IsRenderViewLive()) {
     return false;
   }
 
@@ -315,7 +315,7 @@ void PrintViewManager::DisconnectFromCurrentPrintJob() {
 
 void PrintViewManager::PrintingDone(bool success) {
   if (print_job_.get()) {
-    owner_.PrintingDone(print_job_->cookie(), success);
+    tab_contents()->PrintingDone(print_job_->cookie(), success);
   }
 }
 

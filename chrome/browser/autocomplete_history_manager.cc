@@ -74,10 +74,10 @@ bool IsSSN(const string16& text) {
 
 AutocompleteHistoryManager::AutocompleteHistoryManager(
     TabContents* tab_contents)
-    : tab_contents_(tab_contents),
+    : TabContentsObserver(tab_contents),
       pending_query_handle_(0),
       query_id_(0) {
-  profile_ = tab_contents_->profile();
+  profile_ = tab_contents->profile();
   // May be NULL in unit tests.
   web_data_service_ = profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
   autofill_enabled_.Init(prefs::kAutoFillEnabled, profile_->GetPrefs(), NULL);
@@ -191,11 +191,14 @@ void AutocompleteHistoryManager::OnWebDataServiceRequestDone(
 }
 
 AutocompleteHistoryManager::AutocompleteHistoryManager(
-    Profile* profile, WebDataService* wds) : tab_contents_(NULL),
-                                             profile_(profile),
-                                             web_data_service_(wds),
-                                             pending_query_handle_(0),
-                                             query_id_(0) {
+    TabContents* tab_contents,
+    Profile* profile,
+    WebDataService* wds)
+    : TabContentsObserver(tab_contents),
+      profile_(profile),
+      web_data_service_(wds),
+      pending_query_handle_(0),
+      query_id_(0) {
   autofill_enabled_.Init(
       prefs::kAutoFillEnabled, profile_->GetPrefs(), NULL);
 }
@@ -232,15 +235,12 @@ void AutocompleteHistoryManager::SendSuggestions(
     }
   }
 
-  RenderViewHost* host = tab_contents_->render_view_host();
-  if (host) {
-    host->Send(new AutoFillMsg_SuggestionsReturned(host->routing_id(),
-                                                   query_id_,
-                                                   autofill_values_,
-                                                   autofill_labels_,
-                                                   autofill_icons_,
-                                                   autofill_unique_ids_));
-  }
+  Send(new AutoFillMsg_SuggestionsReturned(routing_id(),
+                                           query_id_,
+                                           autofill_values_,
+                                           autofill_labels_,
+                                           autofill_icons_,
+                                           autofill_unique_ids_));
 
   query_id_ = 0;
   autofill_values_.clear();

@@ -13,9 +13,8 @@
 namespace prerender {
 
 PrerenderPLTRecorder::PrerenderPLTRecorder(TabContents* tab_contents)
-    : tab_contents_(tab_contents),
+    : TabContentsObserver(tab_contents),
       pplt_load_start_() {
-
 }
 
 PrerenderPLTRecorder::~PrerenderPLTRecorder() {
@@ -40,7 +39,7 @@ void PrerenderPLTRecorder::OnDidStartProvisionalLoadForFrame(int64 frame_id,
 
 void PrerenderPLTRecorder::DidStopLoading() {
   // Compute the PPLT metric and report it in a histogram, if needed.
-  PrerenderManager* pm = tab_contents_->profile()->GetPrerenderManager();
+  PrerenderManager* pm = tab_contents()->profile()->GetPrerenderManager();
   if (pm != NULL && !pplt_load_start_.is_null())
     pm->RecordPerceivedPageLoadTime(base::TimeTicks::Now() - pplt_load_start_);
 

@@ -45,9 +45,6 @@ class AutoFillManager : public TabContentsObserver,
   // Registers our Enable/Disable AutoFill pref.
   static void RegisterUserPrefs(PrefService* prefs);
 
-  // Returns the TabContents hosting this AutoFillManager.
-  TabContents* tab_contents() const { return tab_contents_; }
-
   // TabContentsObserver implementation.
   virtual void DidNavigateMainFramePostCommit(
       const NavigationController::LoadCommittedDetails& details,
@@ -80,7 +77,6 @@ class AutoFillManager : public TabContentsObserver,
 
  protected:
   // For tests.
-  AutoFillManager();
   AutoFillManager(TabContents* tab_contents,
                   PersonalDataManager* personal_data);
 
@@ -186,11 +182,6 @@ class AutoFillManager : public TabContentsObserver,
 
   void LogMetricsAboutSubmittedForm(const webkit_glue::FormData& form,
                                     const FormStructure* submitted_form);
-
-  // The TabContents hosting this AutoFillManager.
-  // Weak reference.
-  // May not be NULL.
-  TabContents* tab_contents_;
 
   // The personal data manager, used to save and load personal data to/from the
   // web database.  This is overridden by the AutoFillManagerTest.
