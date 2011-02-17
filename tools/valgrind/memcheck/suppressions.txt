@@ -3767,4 +3767,11 @@
    fun:_ZNK3gfx15PlatformFontGtk13GetNativeFontEv
    fun:_ZNK3gfx4Font13GetNativeFontEv
 }
-
+{
+   bug_73268
+   Memcheck:Leak
+   ...
+   fun:_ZN29ExtensionSpecialStoragePolicy17SpecialCollection8ContainsERK4GURL
+   fun:_ZN29ExtensionSpecialStoragePolicy18IsStorage*ERK4GURL
+   fun:_ZN*ExtensionSpecialStoragePolicyTest_*_Test8TestBodyEv
+}
