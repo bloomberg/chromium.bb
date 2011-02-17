@@ -139,3 +139,8 @@ fun_r:*base*StatsTable*AddCounter*
 
 # TSan doesn't understand internal libc locks, see http://crbug.com/71435
 fun_r:mbsrtowcs
+
+# Suppress false reports below these memcpy and memset impls.
+# See http://code.google.com/p/data-race-test/issues/detail?id=62
+fun:__memset_sse2
+fun:__GI_memcpy
