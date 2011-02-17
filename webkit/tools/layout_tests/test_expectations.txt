@@ -4,7 +4,3 @@
 //
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
-
-// Started failing after WebKit roll 78748:78777. Will bisect to file a more specific bug.
-BUGMNAGANOV :  storage/indexeddb/set_version_blocked.html = CRASH
-BUGMNAGANOV :  storage/indexeddb/set_version_queue.html = CRASH
