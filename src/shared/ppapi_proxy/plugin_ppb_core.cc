@@ -105,7 +105,6 @@ void CallOnMainThread(int32_t delay_in_milliseconds,
                       PP_CompletionCallback callback,
                       int32_t result) {
   if (!IsMainThread()) {
-    NACL_UNTESTED();
     ppapi_proxy::PluginUpcallCoreCallOnMainThread(
         delay_in_milliseconds, callback, result);
     return;

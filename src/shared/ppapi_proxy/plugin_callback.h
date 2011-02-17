@@ -5,8 +5,8 @@
 #ifndef NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_CALLBACK_H_
 #define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_CALLBACK_H_
 
+#include <pthread.h>
 #include <map>
-
 #include "ppapi/c/pp_completion_callback.h"
 
 namespace ppapi_proxy {
@@ -15,9 +15,7 @@ namespace ppapi_proxy {
 // identifiers that can be used to retrieve the objects.
 class CompletionCallbackTable {
  public:
-  CompletionCallbackTable();
-  ~CompletionCallbackTable() {}
-
+  // Return a singleton instance.
   static CompletionCallbackTable* Get() {
     static CompletionCallbackTable table;
     return &table;
@@ -34,6 +32,10 @@ class CompletionCallbackTable {
   PP_CompletionCallback RemoveCallback(int32_t callback_id, char** read_buffer);
 
  private:
+  // Currently implemented as singleton, so use a private constructor.
+  CompletionCallbackTable() : next_id_(1) { }
+  ~CompletionCallbackTable() { }
+
   struct CallbackInfo {
     PP_CompletionCallback callback;
     char* read_buffer;  // To be used with callbacks invoked on byte reads.
@@ -42,6 +44,14 @@ class CompletionCallbackTable {
   typedef std::map<int32_t, CallbackInfo> CallbackTable;
   CallbackTable table_;
   int32_t next_id_;
+
+  // Single static mutex used as critical section for all callback tables.
+  static pthread_mutex_t mutex_;
+  class CallbackTableCriticalSection {
+   public:
+    CallbackTableCriticalSection() { pthread_mutex_lock(&mutex_); }
+    ~CallbackTableCriticalSection() { pthread_mutex_unlock(&mutex_); }
+  };
 };
 
 }  // namespace ppapi_proxy

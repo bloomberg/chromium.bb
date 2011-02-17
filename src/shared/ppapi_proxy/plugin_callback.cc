@@ -4,23 +4,26 @@
 
 #include "native_client/src/shared/ppapi_proxy/plugin_callback.h"
 #include <string.h>
+#include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "srpcgen/ppp_rpc.h"
 
 namespace ppapi_proxy {
 
-CompletionCallbackTable::CompletionCallbackTable()
-    : next_id_(1) {
-}
+// Initialize static mutex used as critical section for all callback tables.
+pthread_mutex_t CompletionCallbackTable::mutex_ = PTHREAD_MUTEX_INITIALIZER;
 
 int32_t CompletionCallbackTable::AddCallback(
     const PP_CompletionCallback& callback,
     char* read_buffer) {
-  if (callback.func == NULL)
+  CallbackTableCriticalSection guard;
+  if (callback.func == NULL) {
+    DebugPrintf("CompletionCallbackTable attempted to add NULL func!!\n");
     return 0;
+  }
   int32_t callback_id = next_id_;
   ++next_id_;
   CallbackInfo info = { callback, read_buffer };
-  table_[callback_id] = info;
+  table_.insert(std::pair<int32_t, CallbackInfo>(callback_id, info));
   return callback_id;
 }
 
@@ -31,7 +34,10 @@ int32_t CompletionCallbackTable::AddCallback(
 
 PP_CompletionCallback CompletionCallbackTable::RemoveCallback(
     int32_t callback_id, char** read_buffer) {
+  CallbackTableCriticalSection guard;
   CallbackTable::iterator it = table_.find(callback_id);
+  DebugPrintf("CompletionCallbackTable::RemoveCallback id: %"NACL_PRId32"\n",
+      callback_id);
   if (table_.end() != it) {
     CallbackInfo info = it->second;
     table_.erase(it);
@@ -61,8 +67,12 @@ void CompletionCallbackRpcServer::RunCompletionCallback(
   PP_CompletionCallback callback =
       ppapi_proxy::CompletionCallbackTable::Get()->RemoveCallback(
           callback_id, &user_buffer);
-  if (callback.func == NULL)
+  if (callback.func == NULL) {
+    ppapi_proxy::DebugPrintf(
+        "CompletionCallbackRpcServer: id of %"NACL_PRId32" is NULL callback!\n",
+        callback_id);
     return;
+  }
 
   if (user_buffer != NULL && read_buffer_size > 0)
     memcpy(user_buffer, read_buffer, read_buffer_size);
@@ -70,3 +80,4 @@ void CompletionCallbackRpcServer::RunCompletionCallback(
 
   rpc->result = NACL_SRPC_RESULT_OK;
 }
+
