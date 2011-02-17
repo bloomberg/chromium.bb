@@ -102,6 +102,8 @@ AutomationProxyTest2.GetActiveTabIndex
 AutomationProxyTest5.TestLifetimeOfDomAutomationController
 ErrorPageTest.IFrameDNSError_Basic
 IFrameTest.Crash
+MetricsServiceTest.CrashRenderers
+PPAPITest.Buffer
 PPAPITest.FileIO
 PreferenceServiceTest.PreservedWindowPlacementIsLoaded
 
