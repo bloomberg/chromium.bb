@@ -1392,3 +1392,23 @@
    fun:_decodeObject
    fun:-[NSView initWithCoder:]
 }
+{
+   bug_73275
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   fun:_internal_class_createInstanceFromZone
+   fun:NSAllocateObject
+   fun:+[NSHashTable alloc]
+   fun:+[NSTrackingArea initialize]
+   fun:_class_initialize
+   fun:_class_lookupMethodAndLoadCache
+   fun:objc_msgSend
+   fun:-[TabContentsViewCocoa initWithTabContentsViewMac:]
+   fun:_ZN18TabContentsViewMac10CreateViewERKN3gfx4SizeE
+   fun:_ZN11TabContentsC2EP7ProfileP12SiteInstanceiPKS_P23SessionStorageNamespace
+   fun:_ZN15TestTabContentsC2EP7ProfileP12SiteInstance
+   fun:_ZN15TestTabContentsC1EP7ProfileP12SiteInstance
+   fun:_ZN25RenderViewHostTestHarness21CreateTestTabContentsEv
+   fun:_ZN25RenderViewHostTestHarness5SetUpEv
+   fun:_ZN30AutocompleteHistoryManagerTest5SetUpEv
+}
