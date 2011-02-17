@@ -1,0 +1,93 @@
+Index: net/third_party/nss/ssl/snapstart.c
+===================================================================
+--- net/third_party/nss/ssl/snapstart.c	(revision 64952)
++++ net/third_party/nss/ssl/snapstart.c	(revision 64953)
+@@ -48,10 +48,6 @@
+ 
+ /* TODO(agl): Add support for snap starting with compression. */
+ 
+-/* TODO(agl): Free snapStartApplicationData as soon as the handshake has
+-** completed.
+-*/
+-
+ #include "pk11pub.h"
+ #include "ssl.h"
+ #include "sslimpl.h"
+@@ -821,6 +817,7 @@
+         rv = ssl3_AppendSnapStartApplicationData(
+                  ss, ss->ssl3.snapStartApplicationData.data,
+                  ss->ssl3.snapStartApplicationData.len);
++        SECITEM_FreeItem(&ss->ssl3.snapStartApplicationData, PR_FALSE);
+         if (rv != SECSuccess)
+             goto loser;
+     }
+@@ -1053,6 +1053,8 @@
+         ss->ssl3.hs.snapStartType = snap_start_resume_recovery;
+     }
+ 
++    ss->ssl3.nextProtoState = SSL_NEXT_PROTO_NO_SUPPORT;
++
+     ssl3_DestroyCipherSpec(ss->ssl3.pwSpec, PR_TRUE/*freeSrvName*/);
+ 
+     return SECSuccess;
+Index: net/third_party/nss/ssl/ssl3con.c
+===================================================================
+--- net/third_party/nss/ssl/ssl3con.c	(revision 65946)
++++ net/third_party/nss/ssl/ssl3con.c	(revision 65947)
+@@ -5023,21 +5023,21 @@
+ 	goto alert_loser;
+     }
+ 
+-    if (!ss->ssl3.serverHelloPredictionData.data) {
+-        /* If this allocation fails it will only stop the application from
+-	 * recording the ServerHello information and performing future Snap
+-	 * Starts. */
+-	if (SECITEM_AllocItem(NULL, &ss->ssl3.serverHelloPredictionData,
+-			      length))
+-	    memcpy(ss->ssl3.serverHelloPredictionData.data, b, length);
+-	/* ss->ssl3.serverHelloPredictionDataValid is still false at this
+-	 * point. We have to record the contents of the ServerHello here
+-	 * because we don't have a pointer to the whole message when handling
+-	 * the extensions. However, we wait until the Snap Start extenion
+-	 * handler to recognise that the server supports Snap Start and to set
+-	 * serverHelloPredictionDataValid. */
+-    }
++    if (ss->ssl3.serverHelloPredictionData.data)
++	SECITEM_FreeItem(&ss->ssl3.serverHelloPredictionData, PR_FALSE);
+ 
++    /* If this allocation fails it will only stop the application from
++     * recording the ServerHello information and performing future Snap
++     * Starts. */
++    if (SECITEM_AllocItem(NULL, &ss->ssl3.serverHelloPredictionData, length))
++	memcpy(ss->ssl3.serverHelloPredictionData.data, b, length);
++    /* ss->ssl3.serverHelloPredictionDataValid is still false at this
++     * point. We have to record the contents of the ServerHello here
++     * because we don't have a pointer to the whole message when handling
++     * the extensions. However, we wait until the Snap Start extension
++     * handler to recognise that the server supports Snap Start and to set
++     * serverHelloPredictionDataValid. */
++
+     temp = ssl3_ConsumeHandshakeNumber(ss, 2, &b, &length);
+     if (temp < 0) {
+     	goto loser; 	/* alert has been sent */
+@@ -8366,20 +8366,6 @@
+ 	}
+     }
+ 
+-    if ((ss->ssl3.hs.snapStartType == snap_start_recovery ||
+-         ss->ssl3.hs.snapStartType == snap_start_resume_recovery) &&
+-	ss->ssl3.snapStartApplicationData.data) {
+-	/* In the event that the server ignored the application data in our
+-	 * snap start extension, we need to retransmit it now. */
+-	PRInt32 sent = ssl3_SendRecord(ss, content_application_data,
+-                                       ss->ssl3.snapStartApplicationData.data,
+-                                       ss->ssl3.snapStartApplicationData.len,
+-                                       flags);
+-	SECITEM_FreeItem(&ss->ssl3.snapStartApplicationData, PR_FALSE);
+-	if (sent < 0)
+-	    return (SECStatus)sent;	/* error code set by ssl3_SendRecord */
+-    }
+-
+     return SECSuccess;
+ 
+ fail:
