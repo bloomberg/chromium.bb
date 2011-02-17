@@ -210,8 +210,16 @@ class SerializedVarSendInput : public SerializedVar {
 class ReceiveSerializedVarReturnValue : public SerializedVar {
  public:
   // Note that we can't set the dispatcher in the constructor because the
-  // data will be overridden when the return value is set.
+  // data will be overridden when the return value is set. This constructor is
+  // normally used in the pattern above (operator= will be implicitly invoked
+  // when the sync message writes the output values).
   ReceiveSerializedVarReturnValue();
+
+  // This constructor can be used when deserializing manually. This is useful
+  // when you're getting strings "returned" via a struct and need to manually
+  // get the PP_Vars out. In this case just do:
+  //   ReceiveSerializedVarReturnValue(serialized).Return(dispatcher);
+  explicit ReceiveSerializedVarReturnValue(const SerializedVar& serialized);
 
   PP_Var Return(Dispatcher* dispatcher);
 
@@ -354,6 +362,11 @@ class SerializedVarReturnValue {
   SerializedVarReturnValue(SerializedVar* serialized);
 
   void Return(Dispatcher* dispatcher, const PP_Var& var);
+
+  // Helper function for code that doesn't use the pattern above, but gets
+  // a return value from the remote side via a struct. You can pass in the
+  // SerializedVar and a PP_Var will be created with return value semantics.
+  static SerializedVar Convert(Dispatcher* dispatcher, const PP_Var& var);
 
  private:
   SerializedVar* serialized_;

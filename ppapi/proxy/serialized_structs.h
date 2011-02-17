@@ -70,6 +70,17 @@ struct SerializedDirEntry {
   bool is_dir;
 };
 
+// FileRefs are created in a number of places and they include a number of
+// return values. This struct encapsulates everything in one place.
+struct PPBFileRef_CreateInfo {
+  PPBFileRef_CreateInfo();  // Initializes to 0.
+
+  HostResource resource;
+  int file_system_type;  // One of PP_FileSystemType_Dev values.
+  SerializedVar path;
+  SerializedVar name;
+};
+
 // Since there are so many parameters, DrawTextAt requires this separate
 // structure. This includes everything but the font name. Because the font name
 // is a var, it's much more convenient to use the normal way of passing a

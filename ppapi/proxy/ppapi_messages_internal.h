@@ -46,6 +46,13 @@ IPC_MESSAGE_ROUTED5(PpapiMsg_PPBAudio_NotifyAudioStreamCreated,
                     base::SharedMemoryHandle /* handle */,
                     int32_t /* length */)
 
+// PPB_FileChooser.
+IPC_MESSAGE_ROUTED3(
+    PpapiMsg_PPBFileChooser_ChooseComplete,
+    pp::proxy::HostResource /* chooser */,
+    int32_t /* result_code (will be != PP_OK on failure */,
+    std::vector<pp::proxy::PPBFileRef_CreateInfo> /* chosen_files */)
+
 // PPB_Graphics2D.
 IPC_MESSAGE_ROUTED2(PpapiMsg_PPBGraphics2D_FlushACK,
                     pp::proxy::HostResource /* graphics_2d */,
@@ -275,6 +282,41 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBCursorControl_HasCursorLock,
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBCursorControl_CanLockCursor,
                            PP_Instance /* instance */,
                            PP_Bool /* result */)
+
+// PPB_FileChooser.
+IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBFileChooser_Create,
+                           PP_Instance /* instance */,
+                           int /* mode */,
+                           std::string /* accept_mime_types */,
+                           pp::proxy::HostResource /* result */)
+IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBFileChooser_Show,
+                    pp::proxy::HostResource /* file_chooser */)
+
+
+// PPB_FileRef.
+IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFileRef_Create,
+                           pp::proxy::HostResource /* file_system */,
+                           std::string /* path */,
+                           pp::proxy::PPBFileRef_CreateInfo /* result */)
+IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBFileRef_GetParent,
+                           pp::proxy::HostResource /* file_ref */,
+                           pp::proxy::PPBFileRef_CreateInfo /* result */)
+IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBFileRef_MakeDirectory,
+                    pp::proxy::HostResource /* file_ref */,
+                    PP_Bool /* make_ancestors */,
+                    uint32_t /* serialized_callback */);
+IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBFileRef_Touch,
+                    pp::proxy::HostResource /* file_ref */,
+                    PP_Time /* last_access */,
+                    PP_Time /* last_modified */,
+                    uint32_t /* serialized_callback */);
+IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBFileRef_Delete,
+                    pp::proxy::HostResource /* file_ref */,
+                    uint32_t /* serialized_callback */);
+IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBFileRef_Rename,
+                    pp::proxy::HostResource /* file_ref */,
+                    pp::proxy::HostResource /* new_file_ref */,
+                    uint32_t /* serialized_callback */);
 
 // PPB_Flash.
 IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBFlash_SetInstanceAlwaysOnTop,

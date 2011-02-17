@@ -69,6 +69,10 @@ URLLoader::URLLoader(const HostResource& resource)
 }
 
 URLLoader::~URLLoader() {
+  // Always need to fire completion callbacks to prevent a leak in the plugin.
+  if (current_read_callback_.func)
+    PP_RunCompletionCallback(&current_read_callback_, PP_ERROR_ABORTED);
+
   if (response_info_)
     PluginResourceTracker::GetInstance()->ReleaseResource(response_info_);
 }
@@ -365,6 +369,7 @@ void PPB_URLLoader_Proxy::OnMsgOpen(const HostResource& loader,
       loader.host_resource(), request_info.host_resource(), callback);
   if (result != PP_ERROR_WOULDBLOCK)
     PP_RunCompletionCallback(&callback, result);
+  // TODO(brettw) bug 73236 register for the status callbacks.
 }
 
 void PPB_URLLoader_Proxy::OnMsgFollowRedirect(

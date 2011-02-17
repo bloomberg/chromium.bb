@@ -380,7 +380,7 @@ std::string TestFileRef::TestQueryAndTouchFile() {
 
   // Query.
   PP_FileInfo_Dev info;
-  rv = file_ref.Query(&info, callback);
+  rv = file_io.Query(&info, callback);
   if (rv == PP_ERROR_WOULDBLOCK)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
@@ -397,15 +397,16 @@ std::string TestFileRef::TestQueryAndTouchFile() {
   // TODO(viettrungluu): this test causes a bunch of LOG(WARNING)s; investigate.
   callback.reset_run_count();
   // TODO(viettrungluu): check |info| for late writes.
-  rv = pp::FileRef_Dev(file_system, "/file_touch").Query(&info, callback);
+  rv = pp::FileRef_Dev(file_system, "/file_touch").Touch(
+      last_access_time, last_modified_time, callback);
   if (callback.run_count() > 0)
-    return "FileSystem::Query ran callback synchronously.";
+    return "FileSystem::Touch ran callback synchronously.";
   if (rv == PP_ERROR_WOULDBLOCK) {
     rv = callback.WaitForResult();
     if (rv != PP_ERROR_ABORTED)
-      return "FileSystem::Query not aborted.";
+      return "FileSystem::Touch not aborted.";
   } else if (rv != PP_OK) {
-    return ReportError("FileSystem::Query", rv);
+    return ReportError("FileSystem::Touch", rv);
   }
 
   PASS();

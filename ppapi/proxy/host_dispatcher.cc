@@ -94,17 +94,7 @@ bool HostDispatcher::OnMessageReceived(const IPC::Message& msg) {
     if (!info ||
         (info->is_trusted && disallow_trusted_interfaces()))
       return true;
-
-    const void* local_interface = GetLocalInterface(info->name);
-    if (!local_interface) {
-      // This should always succeed since the browser should support the stuff
-      // the proxy does. If this happens, something is out of sync.
-      NOTREACHED();
-      return true;
-    }
-
-    proxy = info->create_proxy(this, local_interface);
-    target_proxies_[info->id].reset(proxy);
+    proxy = CreatePPBInterfaceProxy(info);
   }
 
   return proxy->OnMessageReceived(msg);
@@ -142,12 +132,47 @@ const void* HostDispatcher::GetProxiedInterface(const std::string& interface) {
   return NULL;
 }
 
+InterfaceProxy* HostDispatcher::GetOrCreatePPBInterfaceProxy(
+    InterfaceID id) {
+  InterfaceProxy* proxy = target_proxies_[id].get();
+  if (!proxy) {
+    const InterfaceProxy::Info* info = GetPPBInterfaceInfo(id);
+    if (!info)
+      return NULL;
+
+    // Sanity check. This function won't normally be called for trusted
+    // interfaces, but in case somebody does this, we don't want to then give
+    // the plugin the ability to call that trusted interface (since the
+    // checking occurs at proxy-creation time).
+    if (info->is_trusted && disallow_trusted_interfaces())
+      return NULL;
+
+    proxy = CreatePPBInterfaceProxy(info);
+  }
+  return proxy;
+}
+
 const PPB_Proxy_Private* HostDispatcher::GetPPBProxy() {
   if (!ppb_proxy_) {
     ppb_proxy_ = reinterpret_cast<const PPB_Proxy_Private*>(
         GetLocalInterface(PPB_PROXY_PRIVATE_INTERFACE));
   }
   return ppb_proxy_;
+}
+
+InterfaceProxy* HostDispatcher::CreatePPBInterfaceProxy(
+    const InterfaceProxy::Info* info) {
+  const void* local_interface = GetLocalInterface(info->name);
+  if (!local_interface) {
+    // This should always succeed since the browser should support the stuff
+    // the proxy does. If this happens, something is out of sync.
+    NOTREACHED();
+    return NULL;
+  }
+
+  InterfaceProxy* proxy = info->create_proxy(this, local_interface);
+  target_proxies_[info->id].reset(proxy);
+  return proxy;
 }
 
 }  // namespace proxy

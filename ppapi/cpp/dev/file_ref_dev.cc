@@ -86,14 +86,6 @@ int32_t FileRef_Dev::MakeDirectoryIncludingAncestors(
       cc.pp_completion_callback());
 }
 
-int32_t FileRef_Dev::Query(PP_FileInfo_Dev* result_buf,
-                           const CompletionCallback& cc) {
-  if (!has_interface<PPB_FileRef_Dev>())
-    return PP_ERROR_NOINTERFACE;
-  return get_interface<PPB_FileRef_Dev>()->Query(
-      pp_resource(), result_buf, cc.pp_completion_callback());
-}
-
 int32_t FileRef_Dev::Touch(PP_Time last_access_time,
                            PP_Time last_modified_time,
                            const CompletionCallback& cc) {

@@ -134,29 +134,6 @@ int32_t MakeDirectory(PP_Resource directory_ref_id,
   return PP_ERROR_WOULDBLOCK;
 }
 
-int32_t Query(PP_Resource file_ref_id,
-              PP_FileInfo_Dev* info,
-              PP_CompletionCallback callback) {
-  scoped_refptr<PPB_FileRef_Impl> file_ref(
-      Resource::GetAs<PPB_FileRef_Impl>(file_ref_id));
-  if (!file_ref)
-    return PP_ERROR_BADRESOURCE;
-
-  scoped_refptr<PPB_FileSystem_Impl> file_system = file_ref->GetFileSystem();
-  if (!file_system || !file_system->opened() ||
-      (file_system->type() == PP_FILESYSTEMTYPE_EXTERNAL))
-    return PP_ERROR_NOACCESS;
-
-  PluginInstance* instance = file_system->instance();
-  if (!instance->delegate()->Query(
-          file_ref->GetSystemPath(),
-          new FileCallbacks(instance->module()->AsWeakPtr(), file_ref_id,
-                            callback, info, file_system, NULL)))
-    return PP_ERROR_FAILED;
-
-  return PP_ERROR_WOULDBLOCK;
-}
-
 int32_t Touch(PP_Resource file_ref_id,
               PP_Time last_access_time,
               PP_Time last_modified_time,
@@ -243,7 +220,6 @@ const PPB_FileRef_Dev ppb_fileref = {
   &GetPath,
   &GetParent,
   &MakeDirectory,
-  &Query,
   &Touch,
   &Delete,
   &Rename

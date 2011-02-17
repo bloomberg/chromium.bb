@@ -17,6 +17,8 @@
   F(AudioConfig) \
   F(Buffer) \
   F(Context3D) \
+  F(FileChooser) \
+  F(FileRef) \
   F(FlashMenu) \
   F(Font) \
   F(Graphics2D) \

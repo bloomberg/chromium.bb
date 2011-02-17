@@ -48,6 +48,8 @@
 #include "ppapi/proxy/ppb_context_3d_proxy.h"
 #include "ppapi/proxy/ppb_core_proxy.h"
 #include "ppapi/proxy/ppb_cursor_control_proxy.h"
+#include "ppapi/proxy/ppb_file_chooser_proxy.h"
+#include "ppapi/proxy/ppb_file_ref_proxy.h"
 #include "ppapi/proxy/ppb_flash_proxy.h"
 #include "ppapi/proxy/ppb_flash_menu_proxy.h"
 #include "ppapi/proxy/ppb_font_proxy.h"
@@ -103,6 +105,8 @@ InterfaceList::InterfaceList() {
   AddPPB(PPB_Context3D_Proxy::GetInfo());
   AddPPB(PPB_Core_Proxy::GetInfo());
   AddPPB(PPB_CursorControl_Proxy::GetInfo());
+  AddPPB(PPB_FileChooser_Proxy::GetInfo());
+  AddPPB(PPB_FileRef_Proxy::GetInfo());
   AddPPB(PPB_Flash_Proxy::GetInfo());
   AddPPB(PPB_Flash_Menu_Proxy::GetInfo());
   AddPPB(PPB_Font_Proxy::GetInfo());

@@ -241,6 +241,35 @@ void ParamTraits<pp::proxy::PPBFlash_DrawGlyphs_Params>::Log(
     std::string* l) {
 }
 
+// PPBFileRef_CreateInfo -------------------------------------------------------
+
+// static
+void ParamTraits<pp::proxy::PPBFileRef_CreateInfo>::Write(
+    Message* m,
+    const param_type& p) {
+  ParamTraits<pp::proxy::HostResource>::Write(m, p.resource);
+  ParamTraits<int>::Write(m, p.file_system_type);
+  ParamTraits<pp::proxy::SerializedVar>::Write(m, p.path);
+  ParamTraits<pp::proxy::SerializedVar>::Write(m, p.name);
+}
+
+// static
+bool ParamTraits<pp::proxy::PPBFileRef_CreateInfo>::Read(const Message* m,
+                                                         void** iter,
+                                                         param_type* r) {
+  return
+      ParamTraits<pp::proxy::HostResource>::Read(m, iter, &r->resource) &&
+      ParamTraits<int>::Read(m, iter, &r->file_system_type) &&
+      ParamTraits<pp::proxy::SerializedVar>::Read(m, iter, &r->path) &&
+      ParamTraits<pp::proxy::SerializedVar>::Read(m, iter, &r->name);
+}
+
+// static
+void ParamTraits<pp::proxy::PPBFileRef_CreateInfo>::Log(
+    const param_type& p,
+    std::string* l) {
+}
+
 // PPBFont_DrawTextAt_Params ---------------------------------------------------
 
 // static

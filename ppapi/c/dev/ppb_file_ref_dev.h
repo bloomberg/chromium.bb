@@ -5,13 +5,13 @@
 #ifndef PPAPI_C_DEV_PPB_FILE_REF_DEV_H_
 #define PPAPI_C_DEV_PPB_FILE_REF_DEV_H_
 
-#include "ppapi/c/pp_bool.h"
 #include "ppapi/c/dev/pp_file_info_dev.h"
+#include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_FILEREF_DEV_INTERFACE "PPB_FileRef(Dev);0.5"
+#define PPB_FILEREF_DEV_INTERFACE "PPB_FileRef(Dev);0.6"
 
 // A FileRef is a "weak pointer" to a file in a file system.  It contains a
 // PP_FileSystemType identifier and a file path string.
@@ -50,12 +50,6 @@ struct PPB_FileRef_Dev {
   int32_t (*MakeDirectory)(PP_Resource directory_ref,
                            PP_Bool make_ancestors,
                            struct PP_CompletionCallback callback);
-
-  // Queries info about the file.  You must have read access to this file if it
-  // exists in the external filesystem.
-  int32_t (*Query)(PP_Resource file_ref,
-                   struct PP_FileInfo_Dev* info,
-                   struct PP_CompletionCallback callback);
 
   // Updates timestamps for a file.  You must have write access to the file if
   // it exists in the external filesystem.

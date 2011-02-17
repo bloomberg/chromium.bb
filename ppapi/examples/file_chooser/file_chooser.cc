@@ -18,7 +18,7 @@ class MyInstance : public pp::Instance {
     callback_factory_.Initialize(this);
   }
 
-  virtual bool HandleEvent(const PP_InputEvent& event) {
+  virtual bool HandleInputEvent(const PP_InputEvent& event) {
     switch (event.type) {
       case PP_INPUTEVENT_TYPE_MOUSEDOWN: {
         const PP_InputEvent_Mouse& mouse_event = event.u.mouse;
@@ -58,7 +58,7 @@ class MyInstance : public pp::Instance {
 
     pp::FileRef_Dev file_ref = file_chooser->GetNextChosenFile();
     while (!file_ref.is_null()) {
-      Log(file_ref.GetPath());
+      Log(file_ref.GetName());
       file_ref = file_chooser->GetNextChosenFile();
     }
 

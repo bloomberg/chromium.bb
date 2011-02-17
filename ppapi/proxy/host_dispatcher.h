@@ -70,11 +70,23 @@ class HostDispatcher : public Dispatcher {
   // given interface isn't supported by the plugin or the proxy.
   const void* GetProxiedInterface(const std::string& interface);
 
+  // Returns the proxy object associated with the given interface ID, creating
+  // it if necessary. This is used in cases where a proxy needs to access code
+  // in the proxy for another interface. It's assumed that the interface always
+  // exists, so this is only used for browser proxies.
+  //
+  // Will return NULL if an interface isn't supported.
+  InterfaceProxy* GetOrCreatePPBInterfaceProxy(InterfaceID id);
+
   // Returns the proxy interface for talking to the implementation.
   const PPB_Proxy_Private* GetPPBProxy();
 
  private:
   friend class HostDispatcherTest;
+
+  // Makes an instance of the given PPB interface proxy, storing it in the
+  // target_proxies_ array. An proxy for this interface must not exist yet.
+  InterfaceProxy* CreatePPBInterfaceProxy(const InterfaceProxy::Info* info);
 
   PP_Module pp_module_;
 

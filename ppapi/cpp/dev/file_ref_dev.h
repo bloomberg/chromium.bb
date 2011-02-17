@@ -52,8 +52,6 @@ class FileRef_Dev : public Resource {
 
   int32_t MakeDirectoryIncludingAncestors(const CompletionCallback& cc);
 
-  int32_t Query(PP_FileInfo_Dev* result_buf, const CompletionCallback& cc);
-
   int32_t Touch(PP_Time last_access_time,
                 PP_Time last_modified_time,
                 const CompletionCallback& cc);

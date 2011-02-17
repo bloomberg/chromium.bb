@@ -266,6 +266,11 @@ void SerializedVarSendInput::ConvertVector(Dispatcher* dispatcher,
 ReceiveSerializedVarReturnValue::ReceiveSerializedVarReturnValue() {
 }
 
+ReceiveSerializedVarReturnValue::ReceiveSerializedVarReturnValue(
+    const SerializedVar& serialized)
+    : SerializedVar(serialized) {
+}
+
 PP_Var ReceiveSerializedVarReturnValue::Return(Dispatcher* dispatcher) {
   inner_->set_serialization_rules(dispatcher->serialization_rules());
   inner_->SetVar(inner_->serialization_rules()->ReceivePassRef(
@@ -419,6 +424,16 @@ void SerializedVarReturnValue::Return(Dispatcher* dispatcher,
       dispatcher->serialization_rules()->BeginSendPassRef(
           var,
           serialized_->inner_->GetStringPtr()));
+}
+
+// static
+SerializedVar SerializedVarReturnValue::Convert(Dispatcher* dispatcher,
+                                                const PP_Var& var) {
+  // Mimic what happens in the normal case.
+  SerializedVar result;
+  SerializedVarReturnValue retvalue(&result);
+  retvalue.Return(dispatcher, var);
+  return result;
 }
 
 // SerializedVarOutParam -------------------------------------------------------

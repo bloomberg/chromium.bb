@@ -6,6 +6,8 @@
 
 #include "ppapi/c/private/ppb_proxy_private.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/resource.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
 
 namespace webkit {
@@ -19,8 +21,16 @@ void PluginCrashed(PP_Module module) {
     plugin_module->PluginCrashed();
 }
 
+PP_Instance GetInstanceForResource(PP_Resource resource) {
+  scoped_refptr<Resource> obj(ResourceTracker::Get()->GetResource(resource));
+  if (!obj)
+    return 0;
+  return obj->instance()->pp_instance();
+}
+
 const PPB_Proxy_Private ppb_proxy = {
-  &PluginCrashed
+  &PluginCrashed,
+  &GetInstanceForResource
 };
 
 }  // namespace
