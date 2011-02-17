@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,16 +6,23 @@
 #define CHROME_BROWSER_CRASH_HANDLER_HOST_LINUX_H_
 #pragma once
 
+#include "base/message_loop.h"
+
+#if defined(USE_LINUX_BREAKPAD)
+#include <sys/types.h>
+
 #include <string>
 
-#include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 
-template <typename T> struct DefaultSingletonTraits;
+class BreakpadInfo;
 
 namespace base {
 class Thread;
 }
+#endif  // defined(USE_LINUX_BREAKPAD)
+
+template <typename T> struct DefaultSingletonTraits;
 
 // This is the base class for singleton objects which crash dump renderers and
 // plugins on Linux. We perform the crash dump from the browser because it
@@ -65,6 +72,15 @@ class CrashHandlerHostLinux : public MessageLoopForIO::Watcher,
 #if defined(USE_LINUX_BREAKPAD)
   // This is here on purpose to make CrashHandlerHostLinux abstract.
   virtual void SetProcessType() = 0;
+
+  // Do work on the FILE thread for OnFileCanReadWithoutBlocking().
+  void WriteDumpFile(BreakpadInfo* info,
+                     pid_t crashing_pid,
+                     char* crash_context,
+                     int signal_fd);
+
+  // Continue OnFileCanReadWithoutBlocking()'s work on the IO thread.
+  void QueueCrashDumpTask(BreakpadInfo* info, int signal_fd);
 #endif
 
   int process_socket_;
