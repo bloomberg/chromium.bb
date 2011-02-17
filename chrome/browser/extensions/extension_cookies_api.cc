@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -179,20 +179,10 @@ bool GetCookieFunction::RunImpl() {
 void GetCookieFunction::GetCookieOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   net::CookieStore* cookie_store = store_context_->GetCookieStore();
-  cookie_list_ =
+  net::CookieList cookie_list =
       extension_cookies_helpers::GetCookieListFromStore(cookie_store, url_);
-
-  bool rv = BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &GetCookieFunction::RespondOnUIThread));
-  DCHECK(rv);
-}
-
-void GetCookieFunction::RespondOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
   net::CookieList::iterator it;
-  for (it = cookie_list_.begin(); it != cookie_list_.end(); ++it) {
+  for (it = cookie_list.begin(); it != cookie_list.end(); ++it) {
     // Return the first matching cookie. Relies on the fact that the
     // CookieMonster returns them in canonical order (longest path, then
     // earliest creation time).
@@ -204,9 +194,17 @@ void GetCookieFunction::RespondOnUIThread() {
   }
 
   // The cookie doesn't exist; return null.
-  if (it == cookie_list_.end())
+  if (it == cookie_list.end())
     result_.reset(Value::CreateNullValue());
 
+  bool rv = BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(this, &GetCookieFunction::RespondOnUIThread));
+  DCHECK(rv);
+}
+
+void GetCookieFunction::RespondOnUIThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   SendResponse(true);
 }
 
@@ -241,9 +239,17 @@ bool GetAllCookiesFunction::RunImpl() {
 void GetAllCookiesFunction::GetAllCookiesOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   net::CookieStore* cookie_store = store_context_->GetCookieStore();
-  cookie_list_ =
+  net::CookieList cookie_list =
       extension_cookies_helpers::GetCookieListFromStore(cookie_store, url_);
 
+  const Extension* extension = GetExtension();
+  if (extension) {
+    ListValue* matching_list = new ListValue();
+    extension_cookies_helpers::AppendMatchingCookiesToList(
+        cookie_list, store_id_, url_, details_,
+        GetExtension(), matching_list);
+    result_.reset(matching_list);
+  }
   bool rv = BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this, &GetAllCookiesFunction::RespondOnUIThread));
@@ -252,15 +258,6 @@ void GetAllCookiesFunction::GetAllCookiesOnIOThread() {
 
 void GetAllCookiesFunction::RespondOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  const Extension* extension = GetExtension();
-  if (extension) {
-    ListValue* matching_list = new ListValue();
-    extension_cookies_helpers::AppendMatchingCookiesToList(
-        cookie_list_, store_id_, url_, details_,
-        GetExtension(), matching_list);
-    result_.reset(matching_list);
-  }
   SendResponse(true);
 }
 
@@ -343,6 +340,21 @@ void SetCookieFunction::SetCookieOnIOThread() {
       url_, name_, value_, domain_, path_, expiration_time_,
       secure_, http_only_);
 
+  // Pull the newly set cookie.
+  net::CookieList cookie_list =
+      extension_cookies_helpers::GetCookieListFromStore(cookie_monster, url_);
+  net::CookieList::iterator it;
+  for (it = cookie_list.begin(); it != cookie_list.end(); ++it) {
+    // Return the first matching cookie. Relies on the fact that the
+    // CookieMonster returns them in canonical order (longest path, then
+    // earliest creation time).
+    if (it->Name() == name_) {
+      result_.reset(
+          extension_cookies_helpers::CreateCookieValue(*it, store_id_));
+      break;
+    }
+  }
+
   bool rv = BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this, &SetCookieFunction::RespondOnUIThread));
@@ -400,7 +412,8 @@ bool RemoveCookieFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(details->GetString(keys::kNameKey, &name));
 
   URLRequestContextGetter* store_context = NULL;
-  if (!ParseStoreContext(details, &store_context, NULL))
+  std::string store_id;
+  if (!ParseStoreContext(details, &store_context, &store_id))
     return false;
   DCHECK(store_context);
 
@@ -411,6 +424,12 @@ bool RemoveCookieFunction::RunImpl() {
       BrowserThread::IO, FROM_HERE,
       new RemoveCookieTask(url, name, make_scoped_refptr(store_context)));
   DCHECK(rv);
+
+  DictionaryValue* resultDictionary = new DictionaryValue();
+  resultDictionary->SetString(keys::kNameKey, name);
+  resultDictionary->SetString(keys::kUrlKey, url.spec());
+  resultDictionary->SetString(keys::kStoreIdKey, store_id);
+  result_.reset(resultDictionary);
 
   return true;
 }

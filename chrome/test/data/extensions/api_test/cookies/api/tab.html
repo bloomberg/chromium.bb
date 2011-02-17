@@ -62,6 +62,10 @@ function expectNullCookie(cookie) {
   chrome.test.assertEq(null, cookie);
 }
 
+function expectUndefinedCookie(cookie) {
+  chrome.test.assertEq(undefined, cookie);
+}
+
 function removeTestCookies() {
   chrome.cookies.remove(
       {url: TEST_URL, name: TEST_BASIC_COOKIE.name});
@@ -207,6 +211,63 @@ chrome.test.runTests([
           chrome.test.assertEq(TEST_ODD_PATH, unescape(cookie.path));
         }));
   },
+  function setCookiesWithCallbacks() {
+    removeTestCookies();
+    // Basics.
+    chrome.cookies.set(
+        TEST_BASIC_COOKIE,
+        pass(function(cookie) {
+          expectValidCookie(cookie);
+          chrome.test.assertEq(TEST_BASIC_COOKIE.name, cookie.name);
+          chrome.test.assertEq(TEST_BASIC_COOKIE.value, cookie.value);
+          chrome.test.assertEq(TEST_HOST, cookie.domain);
+          chrome.test.assertEq(true, cookie.hostOnly);
+          chrome.test.assertEq('/', cookie.path);
+          chrome.test.assertEq(false, cookie.secure);
+          chrome.test.assertEq(false, cookie.httpOnly);
+          chrome.test.assertEq(true, cookie.session);
+          chrome.test.assertTrue(typeof cookie.expirationDate === 'undefined',
+              'Session cookie should not have expirationDate property.');
+          chrome.test.assertTrue(typeof cookie.storeId !== 'undefined',
+                                 'Cookie store ID not provided.');
+        }));
+    // Invalid values generate callback with no arguments, and error messages
+    chrome.cookies.set(
+        {url: TEST_UNPERMITTED_URL, name: 'abcd', domain: TEST_DOMAIN},
+        fail(
+            'No host permissions for cookies at url: "'
+                + TEST_UNPERMITTED_URL + '".',
+             expectUndefinedCookie));
+    chrome.cookies.set(
+        {url: TEST_URL, name: 'abcd=efg'},
+        fail('Failed to parse or set cookie named "abcd=efg".',
+             expectUndefinedCookie));
+    chrome.cookies.set(
+        {url: TEST_URL, name: 'abcd', value: 'HI;LO'},
+        fail('Failed to parse or set cookie named "abcd".',
+             expectUndefinedCookie));
+    chrome.cookies.set(
+        {url: TEST_URL, name: 'abcd', domain: 'cookies.com\r'},
+        fail('Failed to parse or set cookie named "abcd".',
+             expectUndefinedCookie));
+    chrome.cookies.set(
+        {url: TEST_URL, name: 'abcd', domain: 'somedomain.com'},
+        fail('Failed to parse or set cookie named "abcd".',
+            expectUndefinedCookie));
+    // Expired cookies generate callback with "null" cookie
+    chrome.cookies.set(TEST_BASIC_EXPIRED_COOKIE, pass(expectUndefinedCookie));
+    // Odd (but valid!) URLs get callbacks too!
+    chrome.cookies.set({
+      url: TEST_ODD_URL,
+      name: 'abcd',
+      domain: TEST_ODD_DOMAIN,
+      path: TEST_ODD_PATH
+    }, pass(function(cookie) {
+      expectValidCookie(cookie);
+      chrome.test.assertEq(TEST_ODD_DOMAIN, unescape(cookie.domain));
+      chrome.test.assertEq(TEST_ODD_PATH, unescape(cookie.path));
+    }));
+  },
   function removeCookie() {
     removeTestCookies();
     chrome.cookies.set(TEST_BASIC_COOKIE);
@@ -238,6 +299,31 @@ chrome.test.runTests([
     chrome.cookies.get(
         {url: TEST_URL2, name: TEST_DOMAIN_COOKIE.name},
         pass(expectValidCookie));
+  },
+  function removeCookiesWithCallbacks() {
+    removeTestCookies();
+    chrome.cookies.set(TEST_BASIC_COOKIE);
+    chrome.cookies.get(
+        {url: TEST_URL, name: TEST_BASIC_COOKIE.name},
+        pass(expectValidCookie));
+    // Removal with any domain-matching URL will trigger callback with the
+    // removed cookie's "url" and "name" fields.
+    chrome.cookies.remove(
+        {url: TEST_URL4, name: TEST_BASIC_COOKIE.name}, pass(function(data) {
+          chrome.test.assertEq(TEST_URL4, data.url);
+          chrome.test.assertEq(TEST_BASIC_COOKIE.name, data.name);
+          chrome.test.assertTrue(typeof data.storeId !== 'undefined',
+                                 'Cookie store ID not provided.');
+        }));
+    // Removal with a disallowed URL should trigger the callback with no
+    // arguments, and a set error message.
+    chrome.cookies.set(TEST_DOMAIN_COOKIE);
+    chrome.cookies.remove(
+        {url: TEST_UNPERMITTED_URL, name: TEST_DOMAIN_COOKIE.name},
+        fail(
+            'No host permissions for cookies at url: "'
+              + TEST_UNPERMITTED_URL + '".',
+            expectUndefinedCookie));
   },
   function getAllCookies() {
     removeTestCookies();

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -106,7 +106,6 @@ class GetCookieFunction : public CookiesFunction {
   GURL url_;
   std::string store_id_;
   scoped_refptr<URLRequestContextGetter> store_context_;
-  net::CookieList cookie_list_;
 };
 
 // Implements the cookies.getAll() extension function.
@@ -125,7 +124,6 @@ class GetAllCookiesFunction : public CookiesFunction {
   GURL url_;
   std::string store_id_;
   scoped_refptr<URLRequestContextGetter> store_context_;
-  net::CookieList cookie_list_;
 };
 
 // Implements the cookies.set() extension function.
@@ -149,6 +147,7 @@ class SetCookieFunction : public CookiesFunction {
   bool http_only_;
   base::Time expiration_time_;
   bool success_;
+  std::string store_id_;
   scoped_refptr<URLRequestContextGetter> store_context_;
 };
 
