@@ -22,9 +22,12 @@ class LocationIconView : public views::ImageView {
   explicit LocationIconView(const LocationBarView* location_bar);
   virtual ~LocationIconView();
 
-  // Overridden from view.
+  // Overridden from views::ImageView:
   virtual bool OnMousePressed(const views::MouseEvent& event);
   virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled);
+
+  // Whether we should show the tooltip for this icon or not.
+  void ShowTooltip(bool show);
 
  private:
   ClickHandler click_handler_;

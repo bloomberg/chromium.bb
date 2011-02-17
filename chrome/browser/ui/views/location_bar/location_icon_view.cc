@@ -27,3 +27,12 @@ void LocationIconView::OnMouseReleased(const views::MouseEvent& event,
                                        bool canceled) {
   click_handler_.OnMouseReleased(event, canceled);
 }
+
+void LocationIconView::ShowTooltip(bool show) {
+  if (show) {
+    SetTooltipText(UTF16ToWide(l10n_util::GetStringUTF16(
+            IDS_TOOLTIP_LOCATION_ICON)));
+  } else {
+    SetTooltipText(L"");
+  }
+}

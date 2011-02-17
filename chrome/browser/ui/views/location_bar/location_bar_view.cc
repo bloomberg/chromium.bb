@@ -828,6 +828,8 @@ void LocationBarView::OnChanged() {
   location_icon_view_->SetImage(
       ResourceBundle::GetSharedInstance().GetBitmapNamed(
           location_entry_->GetIcon()));
+  location_icon_view_->ShowTooltip(!location_entry()->IsEditingOrEmpty());
+
   Layout();
   SchedulePaint();
 
