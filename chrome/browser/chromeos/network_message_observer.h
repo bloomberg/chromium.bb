@@ -34,9 +34,9 @@ class NetworkMessageObserver : public NetworkLibrary::NetworkManagerObserver,
  private:
   virtual void OpenMobileSetupPage(const ListValue* args);
   virtual void OpenMoreInfoPage(const ListValue* args);
-  virtual void HideDataNotifications();
   virtual void InitNewPlan(const CellularDataPlan* plan);
-  virtual void ShowNoDataNotification(const CellularDataPlan* plan);
+  virtual void ShowNeedsPlanNotification(const CellularNetwork* cellular);
+  virtual void ShowNoDataNotification(CellularDataPlanType plan_type);
   virtual void ShowLowDataNotification(const CellularDataPlan* plan);
 
   // NetworkLibrary::NetworkManagerObserver implementation.
@@ -56,6 +56,8 @@ class NetworkMessageObserver : public NetworkLibrary::NetworkManagerObserver,
   std::string cellular_service_path_;
   // Last cellular data plan unique id.
   std::string cellular_data_plan_unique_id_;
+  // Last cellular data plan type.
+  CellularDataPlanType cellular_data_plan_type_;
 
   // Notification for connection errors
   SystemNotification notification_connection_error_;
