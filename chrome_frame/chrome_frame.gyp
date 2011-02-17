@@ -109,7 +109,7 @@
       'type': 'executable',
       'dependencies': [
         '../base/base.gyp:test_support_base',
-        '../chrome/chrome.gyp:policy',
+        '../chrome/app/policy/cloud_policy_codegen.gyp:policy',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         'chrome_frame_ie',
@@ -757,7 +757,7 @@
         'chrome_frame_utils',
         'chrome_tab_idl',
         '../chrome/chrome.gyp:common',
-        '../chrome/chrome.gyp:policy',
+        '../chrome/app/policy/cloud_policy_codegen.gyp:policy',
         '../chrome/chrome.gyp:utility',
         '../build/temp_gyp/googleurl.gyp:googleurl',
         '../third_party/libxml/libxml.gyp:libxml',

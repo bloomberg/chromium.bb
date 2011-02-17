@@ -88,29 +88,8 @@ message DevicePolicyResponse {
   repeated DevicePolicySetting setting = 1;
 }
 
-// Protocol buffers for the new protocol:
-// --------------------------------------
-
-// Request from device to server to query if the authenticated user is in a
-// managed domain.
-message ManagedCheckRequest {
-}
-
-// Response from server to device indicating if the authenticated user is in a 
-// managed domain.
-message ManagedCheckResponse {
-  enum Mode {
-    // The device must be enrolled for policies.
-    MANAGED = 1;
-    // The device is not automatically enrolled for policies, but the user
-    // may choose to try to enroll it.
-    UNMANAGED = 2;
-  }
-
-  optional Mode mode = 1; 
-}
-
-// Request from device to server to register device.
+// Request from device to server to register device. The response will include
+// a device token that can be used to query policies.
 message DeviceRegisterRequest {
   // reregister device without erasing server state.
   // it can be used to refresh dmtoken etc.
@@ -121,29 +100,82 @@ message DeviceRegisterRequest {
 message DeviceRegisterResponse {
   // device mangement toke for this registration.
   required string device_management_token = 1;
-
-  // The name of the device, assigned by the server.
-  optional string device_name = 2;
 }
 
-// Request from device to server to unregister device.
+// Protocol buffers for the new protocol:
+// --------------------------------------
+
+// Request from device to server to get policies for an unregistered user.
+// These are actually "meta-policies", that control the rules for the user
+// about enrolling for real policies.
+message InitialPolicyRequest {
+}
+
+message InitialPolicySettings {
+  enum EnrollmentRule {
+    // The user must enroll its device for policies.
+    MANAGED = 1;
+    // The users's device is not automatically enrolled for policies, but the
+    // user may choose to try to enroll it.
+    UNMANAGED = 2;
+  }
+
+  optional EnrollmentRule enrollment_rule = 1;
+}
+
+// Response from server to device containing the policies available before
+// registration.
+message InitialPolicyResponse {
+  optional InitialPolicySettings settings = 1;
+}
+
+// Request from device to server to unregister device management token.
 message DeviceUnregisterRequest {
 }
 
-// Response from server to device unregister request.
+// Response from server to unregister request.
 message DeviceUnregisterResponse {
+}
+
+// Request from device to server to register device. The response will include
+// a device token that can be used to query policies.
+message CloudRegisterRequest {
+  enum Type {
+    // Requesting token for user policies.
+    USER = 1;
+    // Requesting token for device policies.
+    DEVICE = 2;
+  }
+  optional Type type = 1;
+  // Unique identifier of the machine. Only set if type == DEVICE.
+  // This won't be sent in later requests, the machine can be identified
+  // by its device token.
+  optional string machine_id = 2;
+}
+
+// Response from server to device register request.
+message CloudRegisterResponse {
+  // Token for this registration.
+  required string device_management_token = 1;
+
+  // The name of the requesting device, assigned by the server.
+  optional string machine_name = 2;
 }
 
 message CloudPolicyRequest {
   // Identify request scope: chromeos/device for device policies, chromeos/user
-  // for user policies.
+  // for user policies. Only those policy scopes will be served, that are
+  // allowed by the type choice in CloudRegisterRequest.
   optional string policy_scope = 1;
-  // The device token of the owner of the device sending the request. In cases
-  // the request was sent by the device owner or device policies were
-  // requested, this is the same as the token used for authentication.
-  // Otherwise (if the user policy is requested for someone else than the device
-  // owner) this token is different from the token used for authentication.
-  optional string device_token = 2;
+
+  // The token used to query device policies on the device sending the request.
+  // Note, that the token used for actual authentication is sent in an HTTP
+  // header. These two tokens are the same if this request is for querying
+  // device policies and they differ if this request is for querying user
+  // policies. In the second case, the server can use device_policy_token to
+  // identify the device and determine if the user is allowed to get policies
+  // on the given device.
+  optional string device_policy_token = 2;
 }
 
 // Response from server to device for reading policies.
@@ -176,20 +208,20 @@ message SignedCloudPolicyResponse {
 //
 // Http Query parameters:
 // Query parameters contain the following information in each request:
-//   request: register/unregister/policy/cloud_policy/managed_check etc.
+//   request: register/unregister/policy/cloud_policy/cloud_register/
+//            initial_policy
 //   devicetype: CrOS/Android/Iphone etc.
 //   apptype: CrOS/AndroidDM etc.
-//   deviceid: unique id that identify the device.
 //   agent: identify agent on device.
 //
 // Authorization:
-// 1. If request is managed_check, client must pass in GoogleLogin auth 
-//    cookie in Authorization header:
+// 1. If request is initial_policy, client must pass in GoogleLogin
+//    auth  cookie in Authorization header:
 //      Authorization: GoogleLogin auth=<auth cookie>
-//    This is the only case when the deviceid query parameter is set to empty.
-//    The response will contain a flag indicating if the user is in a managed
-//    domain or not. (We don't want to expose device ids of users not in
-//    managed domains.)
+//    The response will contain settings that a user can get without
+//    registration. Currently the only such setting is a flag indicating if the
+//    user is in a managed domain or not. (We don't want to expose device ids of
+//    users not in managed domains.)
 // 2. If request is register_request, client must pass in GoogleLogin auth
 //    cookie in Authorization header:
 //      Authorization: GoogleLogin auth=<auth cookie>
@@ -200,7 +232,7 @@ message SignedCloudPolicyResponse {
 //    Authorization: GoogleDMToken token=<google dm token>
 //
 message DeviceManagementRequest {
-  // Register request.
+  // Register request (old protocol).
   optional DeviceRegisterRequest register_request = 1;
 
   // Unregister request.
@@ -212,8 +244,11 @@ message DeviceManagementRequest {
   // Data request (new protocol).
   optional CloudPolicyRequest cloud_policy_request = 4;
 
-  // Request to check if a user is managed or not.
-  optional ManagedCheckRequest managed_check_request = 5;
+  // Request for initial (before registration) policies.
+  optional InitialPolicyRequest initial_policy_request = 5;
+
+  // Register request (new protocol).
+  optional CloudRegisterRequest cloud_register_request = 6;
 }
 
 // Response from server to device.
@@ -241,7 +276,7 @@ message DeviceManagementResponse {
   // Error message.
   optional string error_message = 2;
 
-  // Register response
+  // Register response (old protocol).
   optional DeviceRegisterResponse register_response = 3;
 
   // Unregister response
@@ -253,6 +288,9 @@ message DeviceManagementResponse {
   // Policy response (new protocol).
   optional CloudPolicyResponse cloud_policy_response  = 6;
 
-  // Response to managed check request.
-  optional ManagedCheckResponse managed_check_response = 7;
+  // Response to initial (before registration) policy request.
+  optional InitialPolicyResponse initial_policy_response = 7;
+
+  // Register response (new protocol).
+  optional CloudRegisterResponse cloud_register_response = 8;
 }

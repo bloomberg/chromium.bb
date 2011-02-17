@@ -12,6 +12,7 @@
 #include "base/stl_util-inl.h"
 #include "base/values.h"
 #include "chrome/browser/policy/configuration_policy_store_interface.h"
+#include "chrome/browser/policy/policy_map.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace policy {
@@ -20,8 +21,6 @@ namespace policy {
 // settings as they get set.
 class MockConfigurationPolicyStore : public ConfigurationPolicyStoreInterface {
  public:
-  typedef std::map<ConfigurationPolicyType, Value*> PolicyMap;
-
   MockConfigurationPolicyStore();
   virtual ~MockConfigurationPolicyStore();
 

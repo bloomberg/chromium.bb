@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "chrome/browser/policy/configuration_policy_provider.h"
+#include "chrome/browser/policy/policy_map.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace policy {
@@ -35,8 +36,6 @@ class MockConfigurationPolicyProvider : public ConfigurationPolicyProvider {
   virtual void AddObserver(ConfigurationPolicyProvider::Observer* observer) {}
   virtual void RemoveObserver(
       ConfigurationPolicyProvider::Observer* observer) {}
-
-  typedef std::map<ConfigurationPolicyType, Value*> PolicyMap;
 
   PolicyMap policy_map_;
   bool initialization_complete_;

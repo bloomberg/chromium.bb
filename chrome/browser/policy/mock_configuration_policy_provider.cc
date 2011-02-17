@@ -15,23 +15,16 @@ MockConfigurationPolicyProvider::MockConfigurationPolicyProvider()
       initialization_complete_(false) {
 }
 
-MockConfigurationPolicyProvider::~MockConfigurationPolicyProvider() {
-  STLDeleteValues(&policy_map_);
-}
+MockConfigurationPolicyProvider::~MockConfigurationPolicyProvider() {}
 
 void MockConfigurationPolicyProvider::AddPolicy(ConfigurationPolicyType policy,
                                                 Value* value) {
-  std::swap(policy_map_[policy], value);
-  delete value;
+  policy_map_.Set(policy, value);
 }
 
 void MockConfigurationPolicyProvider::RemovePolicy(
     ConfigurationPolicyType policy) {
-  const PolicyMap::iterator entry = policy_map_.find(policy);
-  if (entry != policy_map_.end()) {
-    delete entry->second;
-    policy_map_.erase(entry);
-  }
+  policy_map_.Erase(policy);
 }
 
 void MockConfigurationPolicyProvider::SetInitializationComplete(
@@ -52,4 +45,4 @@ bool MockConfigurationPolicyProvider::IsInitializationComplete() const {
   return initialization_complete_;
 }
 
-}
+}  // namespace policy

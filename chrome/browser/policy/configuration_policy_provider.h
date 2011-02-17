@@ -6,14 +6,18 @@
 #define CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_PROVIDER_H_
 #pragma once
 
+#include <map>
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/policy/configuration_policy_store_interface.h"
+#include "policy/configuration_policy_type.h"
 
 namespace policy {
+
+class PolicyMap;
 
 // A mostly-abstract super class for platform-specific policy providers.
 // Platform-specific policy providers (Windows Group Policy, gconf,
@@ -59,8 +63,13 @@ class ConfigurationPolicyProvider {
 
  protected:
   // Decodes the value tree and writes the configuration to the given |store|.
-  void DecodePolicyValueTree(const DictionaryValue* policies,
+  void ApplyPolicyValueTree(const DictionaryValue* policies,
                              ConfigurationPolicyStoreInterface* store);
+
+  // Writes the configuration found in the already-decoded map |policies| to
+  // the given |store|.
+  void ApplyPolicyMap(const PolicyMap* policies,
+                      ConfigurationPolicyStoreInterface* store);
 
   const PolicyDefinitionList* policy_definition_list() const {
     return policy_definition_list_;

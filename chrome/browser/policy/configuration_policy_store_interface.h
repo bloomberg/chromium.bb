@@ -7,8 +7,6 @@
 #pragma once
 
 #include "base/basictypes.h"
-// configuration_policy_type.h is generated. See policy_template.json for
-// policy definitions.
 #include "policy/configuration_policy_type.h"
 
 class Value;
