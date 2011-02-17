@@ -32,12 +32,7 @@ input[type='submit'] {
   min-width: 87px;
 }
 
-.form-noindent {
-  background-color: #fff;
-  border: #c3d9ff 1px solid;
-}
-
-.endaligned {
+.end-aligned {
   text-align: end;
 }
 
@@ -82,8 +77,7 @@ font.errormsgspacer {
   display: block;
 }
 
-.captcha_image {
-  display: block;
+#captcha-image {
   height: 70px;
   width: 200px;
 }
@@ -92,25 +86,17 @@ font.errormsgspacer {
   margin: 0 10px;
 }
 
-.toppageverticalspace {
-  height: 15px;
-}
-
-.bottompaddedcell {
+.bottom-padded-cell {
   padding-bottom: 3px;
 }
 
-.noverticalpadding {
+.no-vertical-padding {
   padding-bottom: 0;
   padding-top: 0;
 }
 
-.cancelspacenocaptcha {
+#cancel-space-no-captcha {
   height: 22px;
-}
-
-.cancelspaceforcaptcha {
-  height: 5px;
 }
 
 #top-blurb {
@@ -134,14 +120,16 @@ font.errormsgspacer {
 }
 
 #content-table {
- padding: 2px;
+  background-color: #fff;
+  border: #c3d9ff 1px solid;
+  padding: 2px;
 }
 
-.access_code_row {
+.access-code-row {
   display: none;
 }
 
-.access_code_row > td {
+.access-code-row > td {
   padding-bottom: 1px;
   text-align: center;
 }
@@ -150,24 +138,20 @@ font.errormsgspacer {
   padding-top: 6px;
 }
 
-.centeredtext {
-  text-align: center;
-}
-
-.gaia.le.lbl,
-.gaia.le.val,
-.gaia.le.rem,
-.gaia.captchahtml.desc
-.gaia.captchahtml.cmt {
+.gaia-le-lbl,
+.gaia-le-val,
+.gaia-le-rem,
+.gaia-captchahtml-desc
+.gaia-captchahtml-cmt {
   font-size: smaller;
 }
 
-.gaia.captchahtml.cmt {
+.gaia-captchahtml-cmt {
   font-style: italic;
 }
 
-.gaia.le.fpwd,
-.gaia.le.chusr {
+.gaia-le-fpwd,
+.gaia-le-chusr {
   font-size: 70%;
 }
 
@@ -185,4 +169,8 @@ font.errormsgspacer {
 
 #action-area {
   margin-top: 2px;
+}
+
+#errormsg-0-access-code {
+  text-align: center;
 }
