@@ -244,6 +244,9 @@ fi
 
 AM_CONDITIONAL(HAVE_INTEL, [test "x$INTEL" != "xno"])
 AM_CONDITIONAL(HAVE_RADEON, [test "x$RADEON" != "xno"])
+if test "x$RADEON" = xyes; then
+	AC_DEFINE(HAVE_RADEON, 1, [Have radeon support])
+fi
 
 AC_ARG_WITH([kernel-source],
             [AS_HELP_STRING([--with-kernel-source],
