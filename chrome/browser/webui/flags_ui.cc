@@ -162,10 +162,17 @@ void FlagsDOMHandler::HandleEnableFlagsExperimentMessage(
 }
 
 void FlagsDOMHandler::HandleRestartBrowser(const ListValue* args) {
+#if !defined(OS_CHROMEOS)
   // Set the flag to restore state after the restart.
   PrefService* pref_service = g_browser_process->local_state();
   pref_service->SetBoolean(prefs::kRestartLastSessionOnShutdown, true);
   BrowserList::CloseAllBrowsersAndExit();
+#else
+  // For CrOS instead of browser restart (which is not supported) perform a full
+  // sign out. Session will be only restored is user has that setting set.
+  // Same session restore behavior happens in case of full restart after update.
+  BrowserList::GetLastActive()->Exit();
+#endif
 }
 
 }  // namespace
