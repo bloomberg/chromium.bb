@@ -15,10 +15,8 @@ class WorkonCmd(subcmd.WrappedChrootCmd):
   def __init__(self):
     """WorkonCmd constructor."""
     # Just call the WrappedChrootCmd superclass, which does most of the work.
-    # Note that host version uses "./", since it's in src/scripts and not in the
-    # path...
     super(WorkonCmd, self).__init__(
-        ['cros_workon-%s'], ['./cros_workon', '--host'],
+        ['cros_workon-%s'], ['cros_workon', '--host'],
         need_args=True
     )
 
