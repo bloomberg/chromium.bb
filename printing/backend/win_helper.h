@@ -9,6 +9,7 @@
 #include <objidl.h>
 #include <winspool.h>
 #include <prntvpt.h>
+#include <xpsprint.h>
 
 #include "base/string16.h"
 
@@ -68,6 +69,30 @@ class ScopedXPSInitializer {
 
  private:
   bool initialized_;
+};
+
+// Wrapper class to wrap the XPS Print APIs (these are different from the PTxxx
+// which deal with the XML Print Schema). This is needed because these
+// APIs are only available on Windows 7 and higher.
+class XPSPrintModule {
+ public:
+  // All the other methods can ONLY be called after a successful call to Init.
+  // Init can be called many times and by multiple threads.
+  static bool Init();
+  static HRESULT StartXpsPrintJob(
+      const LPCWSTR printer_name,
+      const LPCWSTR job_name,
+      const LPCWSTR output_file_name,
+      HANDLE progress_event,
+      HANDLE completion_event,
+      UINT8 *printable_pages_on,
+      UINT32 printable_pages_on_count,
+      IXpsPrintJob **xps_print_job,
+      IXpsPrintJobStream **document_stream,
+      IXpsPrintJobStream **print_ticket_stream);
+ private:
+  XPSPrintModule() { }
+  static bool InitImpl();
 };
 
 }  // namespace printing

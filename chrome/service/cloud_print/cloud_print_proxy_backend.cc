@@ -475,8 +475,11 @@ void CloudPrintProxyBackend::Core::GetRegisteredPrinters() {
   next_response_handler_ =
       &CloudPrintProxyBackend::Core::HandlePrinterListResponse;
   request_ = new CloudPrintURLFetcher;
-  request_->StartGetRequest(printer_list_url, this, auth_token_,
-                            kCloudPrintAPIMaxRetryCount);
+  request_->StartGetRequest(printer_list_url,
+                            this,
+                            auth_token_,
+                            kCloudPrintAPIMaxRetryCount,
+                            std::string());
 }
 
 void CloudPrintProxyBackend::Core::RegisterNextPrinter() {
@@ -565,9 +568,13 @@ void CloudPrintProxyBackend::Core::OnReceivePrinterCaps(
     std::string mime_type("multipart/form-data; boundary=");
     mime_type += mime_boundary;
     request_ = new CloudPrintURLFetcher;
-    request_->StartPostRequest(post_url, this, auth_token_,
-                               kCloudPrintAPIMaxRetryCount, mime_type,
-                               post_data);
+    request_->StartPostRequest(post_url,
+                               this,
+                               auth_token_,
+                               kCloudPrintAPIMaxRetryCount,
+                               mime_type,
+                               post_data,
+                               std::string());
   } else {
     LOG(ERROR) << "CP_PROXY: Failed to get printer info for: " <<
         printer_name;
@@ -774,9 +781,13 @@ void CloudPrintProxyBackend::Core::ReportUserMessage(
   std::string mime_type("multipart/form-data; boundary=");
   mime_type += mime_boundary;
   request_ = new CloudPrintURLFetcher;
-  request_->StartPostRequest(post_url, this, auth_token_,
-                             kCloudPrintAPIMaxRetryCount, mime_type,
-                             post_data);
+  request_->StartPostRequest(post_url,
+                             this,
+                             auth_token_,
+                             kCloudPrintAPIMaxRetryCount,
+                             mime_type,
+                             post_data,
+                             std::string());
 }
 
 CloudPrintURLFetcher::ResponseAction

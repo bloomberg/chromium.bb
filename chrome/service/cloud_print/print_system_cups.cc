@@ -95,6 +95,7 @@ class PrintSystemCUPS : public PrintSystem {
   virtual PrintSystem::PrinterWatcher* CreatePrinterWatcher(
       const std::string& printer_name);
   virtual PrintSystem::JobSpooler* CreateJobSpooler();
+  virtual std::string GetSupportedMimeTypes();
 
   // Helper functions.
   PlatformJobId SpoolPrintJob(const std::string& print_ticket,
@@ -642,6 +643,14 @@ PrintSystem::PrinterWatcher* PrintSystemCUPS::CreatePrinterWatcher(
 PrintSystem::JobSpooler* PrintSystemCUPS::CreateJobSpooler() {
   DCHECK(initialized_);
   return new JobSpoolerCUPS(this);
+}
+
+std::string PrintSystemCUPS::GetSupportedMimeTypes() {
+  // Since we hand off the document to the CUPS server directly, list some types
+  // that we know CUPS supports (http://www.cups.org/articles.php?L205+TFAQ+Q)
+  // TODO(sanjeevr): Determine this dynamically (http://crbug.com/73240).
+  return
+      "application/pdf,application/postscript,image/jpeg,image/png,image/gif";
 }
 
 std::string PrintSystem::GenerateProxyId() {

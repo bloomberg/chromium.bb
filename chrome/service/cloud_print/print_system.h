@@ -185,6 +185,11 @@ class PrintSystem : public base::RefCountedThreadSafe<PrintSystem> {
       const std::string& printer_name) = 0;
   virtual JobSpooler* CreateJobSpooler() = 0;
 
+  // Returns a comma separated list of mimetypes for print data that are
+  // supported by this print system. The format of this string is the same as
+  // that used for the HTTP Accept: header.
+  virtual std::string GetSupportedMimeTypes() = 0;
+
   // Generate unique for proxy.
   static std::string GenerateProxyId();
 

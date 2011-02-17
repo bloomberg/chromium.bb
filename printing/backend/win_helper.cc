@@ -37,6 +37,17 @@ typedef HRESULT (WINAPI *PTMergeAndValidatePrintTicketProc)(
     BSTR* error_message);
 typedef HRESULT (WINAPI *PTReleaseMemoryProc)(PVOID buffer);
 typedef HRESULT (WINAPI *PTCloseProviderProc)(HPTPROVIDER provider);
+typedef HRESULT (WINAPI *StartXpsPrintJobProc)(
+    const LPCWSTR printer_name,
+    const LPCWSTR job_name,
+    const LPCWSTR output_file_name,
+    HANDLE progress_event,
+    HANDLE completion_event,
+    UINT8 *printable_pages_on,
+    UINT32 printable_pages_on_count,
+    IXpsPrintJob **xps_print_job,
+    IXpsPrintJobStream **document_stream,
+    IXpsPrintJobStream **print_ticket_stream);
 
 PTOpenProviderProc g_open_provider_proc = NULL;
 PTGetPrintCapabilitiesProc g_get_print_capabilities_proc = NULL;
@@ -45,6 +56,7 @@ PTConvertPrintTicketToDevModeProc g_convert_print_ticket_to_devmode_proc = NULL;
 PTMergeAndValidatePrintTicketProc g_merge_and_validate_print_ticket_proc = NULL;
 PTReleaseMemoryProc g_release_memory_proc = NULL;
 PTCloseProviderProc g_close_provider_proc = NULL;
+StartXpsPrintJobProc g_start_xps_print_job_proc = NULL;
 }
 
 namespace printing {
@@ -205,6 +217,47 @@ ScopedXPSInitializer::~ScopedXPSInitializer() {
   if (initialized_)
     CoUninitialize();
   initialized_ = false;
+}
+
+bool XPSPrintModule::Init() {
+  static bool initialized = InitImpl();
+  return initialized;
+}
+
+bool XPSPrintModule::InitImpl() {
+  HMODULE xpsprint_module = LoadLibrary(L"xpsprint.dll");
+  if (xpsprint_module == NULL)
+    return false;
+  g_start_xps_print_job_proc = reinterpret_cast<StartXpsPrintJobProc>(
+      GetProcAddress(xpsprint_module, "StartXpsPrintJob"));
+  if (!g_start_xps_print_job_proc) {
+    NOTREACHED();
+    return false;
+  }
+  return true;
+}
+
+HRESULT XPSPrintModule::StartXpsPrintJob(
+    const LPCWSTR printer_name,
+    const LPCWSTR job_name,
+    const LPCWSTR output_file_name,
+    HANDLE progress_event,
+    HANDLE completion_event,
+    UINT8 *printable_pages_on,
+    UINT32 printable_pages_on_count,
+    IXpsPrintJob **xps_print_job,
+    IXpsPrintJobStream **document_stream,
+    IXpsPrintJobStream **print_ticket_stream) {
+  return g_start_xps_print_job_proc(printer_name,
+                                    job_name,
+                                    output_file_name,
+                                    progress_event,
+                                    completion_event,
+                                    printable_pages_on,
+                                    printable_pages_on_count,
+                                    xps_print_job,
+                                    document_stream,
+                                    print_ticket_stream);
 }
 
 }  // namespace printing

@@ -18,12 +18,14 @@ CloudPrintURLFetcher::CloudPrintURLFetcher()
       num_retries_(0) {
 }
 
-void CloudPrintURLFetcher::StartGetRequest(const GURL& url,
-                                           Delegate* delegate,
-                                           const std::string& auth_token,
-                                           int max_retries) {
+void CloudPrintURLFetcher::StartGetRequest(
+    const GURL& url,
+    Delegate* delegate,
+    const std::string& auth_token,
+    int max_retries,
+    const std::string& additional_headers) {
   StartRequestHelper(url, URLFetcher::GET, delegate, auth_token, max_retries,
-                     std::string(), std::string());
+                     std::string(), std::string(), additional_headers);
 }
 
 void CloudPrintURLFetcher::StartPostRequest(
@@ -32,9 +34,10 @@ void CloudPrintURLFetcher::StartPostRequest(
     const std::string& auth_token,
     int max_retries,
     const std::string& post_data_mime_type,
-    const std::string& post_data) {
+    const std::string& post_data,
+    const std::string& additional_headers) {
   StartRequestHelper(url, URLFetcher::POST, delegate, auth_token, max_retries,
-                     post_data_mime_type, post_data);
+                     post_data_mime_type, post_data, additional_headers);
 }
 
   // URLFetcher::Delegate implementation.
@@ -113,7 +116,8 @@ void CloudPrintURLFetcher::StartRequestHelper(
     const std::string& auth_token,
     int max_retries,
     const std::string& post_data_mime_type,
-    const std::string& post_data) {
+    const std::string& post_data,
+    const std::string& additional_headers) {
   DCHECK(delegate);
   request_.reset(new URLFetcher(url, request_type, this));
   request_->set_request_context(GetRequestContextGetter());
@@ -125,6 +129,10 @@ void CloudPrintURLFetcher::StartRequestHelper(
   headers += auth_token;
   headers += "\r\n";
   headers += kChromeCloudPrintProxyHeader;
+  if (!additional_headers.empty()) {
+    headers += "\r\n";
+    headers += additional_headers;
+  }
   request_->set_extra_request_headers(headers);
   if (request_type == URLFetcher::POST) {
     request_->set_upload_data(post_data_mime_type, post_data);
