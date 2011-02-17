@@ -19,9 +19,8 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { ui::VKEY_BACK,           false, false, false, IDC_BACK },
 #if defined(OS_CHROMEOS)
   { ui::VKEY_F1,             false, false, false, IDC_BACK },
-  // TODO(mazda): Change VKEY_1 to VKEY_OME_2 once the new version of the
-  // keyboard overlay is ready.
-  { ui::VKEY_1,              false, true,  true,  IDC_SHOW_KEYBOARD_OVERLAY },
+  { ui::VKEY_OEM_2,          false, true,  true,  IDC_SHOW_KEYBOARD_OVERLAY },
+  { ui::VKEY_OEM_2,          true,  true,  true,  IDC_SHOW_KEYBOARD_OVERLAY },
 #endif
   { ui::VKEY_D,              false, true,  false, IDC_BOOKMARK_PAGE },
   { ui::VKEY_D,              true,  true,  false, IDC_BOOKMARK_ALL_TABS },
