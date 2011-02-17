@@ -2214,6 +2214,8 @@
         'browser/sync/glue/data_type_manager.h',
         'browser/sync/glue/data_type_manager_impl.cc',
         'browser/sync/glue/data_type_manager_impl.h',
+        'browser/sync/glue/data_type_manager_impl2.cc',
+        'browser/sync/glue/data_type_manager_impl2.h',
         'browser/sync/glue/database_model_worker.cc',
         'browser/sync/glue/database_model_worker.h',
         'browser/sync/glue/do_optimistic_refresh_task.cc',

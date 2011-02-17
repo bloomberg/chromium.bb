@@ -1509,6 +1509,7 @@
         'browser/sync/glue/data_type_controller_mock.cc',
         'browser/sync/glue/data_type_controller_mock.h',
         'browser/sync/glue/data_type_manager_impl_unittest.cc',
+        'browser/sync/glue/data_type_manager_impl2_unittest.cc',
         'browser/sync/glue/data_type_manager_mock.cc',
         'browser/sync/glue/data_type_manager_mock.h',
         'browser/sync/glue/database_model_worker_unittest.cc',
