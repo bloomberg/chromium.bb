@@ -1,16 +1,16 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/download/download_shelf.h"
 
 #include "base/file_util.h"
-#include "chrome/browser/dom_ui/downloads_ui.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/metrics/user_metrics.h"
+#include "chrome/browser/webui/downloads_ui.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"

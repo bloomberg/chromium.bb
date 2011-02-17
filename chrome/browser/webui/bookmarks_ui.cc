@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/dom_ui/bookmarks_ui.h"
+#include "chrome/browser/webui/bookmarks_ui.h"
 
 #include "base/message_loop.h"
 #include "base/ref_counted_memory.h"
 #include "base/singleton.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/url_constants.h"
 #include "grit/theme_resources.h"

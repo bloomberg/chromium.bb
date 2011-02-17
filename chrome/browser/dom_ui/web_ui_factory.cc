@@ -6,22 +6,18 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/about_flags.h"
-#include "chrome/browser/dom_ui/bookmarks_ui.h"
 #include "chrome/browser/dom_ui/bug_report_ui.h"
 #include "chrome/browser/dom_ui/constrained_html_ui.h"
-#include "chrome/browser/dom_ui/downloads_ui.h"
-#include "chrome/browser/dom_ui/devtools_ui.h"
 #include "chrome/browser/dom_ui/gpu_internals_ui.h"
-#include "chrome/browser/dom_ui/history_ui.h"
 #include "chrome/browser/dom_ui/history2_ui.h"
+#include "chrome/browser/dom_ui/history_ui.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
-#include "chrome/browser/dom_ui/flags_ui.h"
 #include "chrome/browser/dom_ui/net_internals_ui.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"
+#include "chrome/browser/dom_ui/options/options_ui.h"
 #include "chrome/browser/dom_ui/plugins_ui.h"
 #include "chrome/browser/dom_ui/print_preview_ui.h"
 #include "chrome/browser/dom_ui/remoting_ui.h"
-#include "chrome/browser/dom_ui/options/options_ui.h"
 #include "chrome/browser/dom_ui/slideshow_ui.h"
 #include "chrome/browser/dom_ui/sync_internals_ui.h"
 #include "chrome/browser/dom_ui/textfields_ui.h"
@@ -31,6 +27,10 @@
 #include "chrome/browser/printing/print_dialog_cloud.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/webui/bookmarks_ui.h"
+#include "chrome/browser/webui/devtools_ui.h"
+#include "chrome/browser/webui/downloads_ui.h"
+#include "chrome/browser/webui/flags_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/url_constants.h"
@@ -41,10 +41,10 @@
 #include "chrome/browser/chromeos/webui/keyboard_overlay_ui.h"
 #include "chrome/browser/chromeos/webui/menu_ui.h"
 #include "chrome/browser/chromeos/webui/mobile_setup_ui.h"
+#include "chrome/browser/chromeos/webui/network_menu_ui.h"
 #include "chrome/browser/chromeos/webui/register_page_ui.h"
 #include "chrome/browser/chromeos/webui/system_info_ui.h"
 #include "chrome/browser/chromeos/webui/wrench_menu_ui.h"
-#include "chrome/browser/chromeos/webui/network_menu_ui.h"
 #include "chrome/browser/dom_ui/filebrowse_ui.h"
 #include "chrome/browser/dom_ui/mediaplayer_ui.h"
 #endif
@@ -58,7 +58,7 @@
 #endif
 
 #if defined(OS_WIN)
-#include "chrome/browser/dom_ui/conflicts_ui.h"
+#include "chrome/browser/webui/conflicts_ui.h"
 #endif
 
 const WebUITypeID WebUIFactory::kNoWebUI = NULL;

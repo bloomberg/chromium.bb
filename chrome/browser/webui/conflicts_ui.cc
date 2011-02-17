@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/dom_ui/conflicts_ui.h"
+#include "chrome/browser/webui/conflicts_ui.h"
 
 #if defined(OS_WIN)
 

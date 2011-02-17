@@ -13,7 +13,6 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/debugger/devtools_manager.h"
-#include "chrome/browser/dom_ui/flags_ui.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"
 #include "chrome/browser/dom_ui/plugins_ui.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -53,6 +52,7 @@
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/upgrade_detector.h"
+#include "chrome/browser/webui/flags_ui.h"
 #include "chrome/common/pref_names.h"
 
 #if defined(TOOLKIT_VIEWS)  // TODO(port): whittle this down as we port
