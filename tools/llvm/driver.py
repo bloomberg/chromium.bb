@@ -131,6 +131,9 @@ INITIAL_ENV = {
   'LLC_SRPC_X8632': '${BASE_SB_X8632}/srpc/bin/llc',
   'LLC_SRPC_X8664': '${BASE_SB_X8664}/srpc/bin/llc',
 
+  'LD_SRPC_X8632': '${BASE_SB_X8632}/srpc/bin/ld',
+  'LD_SRPC_X8664': '${BASE_SB_X8664}/srpc/bin/ld',
+
   'LLC_SB_X8632'  : '${SEL_LDR_X8632} -a -- ${BASE_SB_X8632}/nonsrpc/bin/llc',
   'AS_SB_X8632'   : '${SEL_LDR_X8632} -a -- ${BASE_SB_X8632}/nonsrpc/bin/as',
   'LD_SB_X8632'   : '${SEL_LDR_X8632} -a -- ${BASE_SB_X8632}/nonsrpc/bin/ld',
@@ -139,7 +142,10 @@ INITIAL_ENV = {
   'AS_SB_X8664'   : '${SEL_LDR_X8664} -a -- ${BASE_SB_X8664}/nonsrpc/bin/as',
   'LD_SB_X8664'   : '${SEL_LDR_X8664} -a -- ${BASE_SB_X8664}/nonsrpc/bin/ld',
 
-  'LD_SB_FLAGS'   : '-nostdlib -T ${BASE_SB_%arch%}/script/ld_script -static',
+  'LD_SCRIPT_X8632': '${BASE_SB_X8632}/script/ld_script',
+  'LD_SCRIPT_X8664': '${BASE_SB_X8664}/script/ld_script',
+
+  'LD_SB_FLAGS'   : '-nostdlib -T ${LD_SCRIPT_%arch%} -static',
 
   'LLVM_MC'       : '${BASE_ARM}/bin/llvm-mc',
   'LLVM_AS'       : '${BASE_ARM}/bin/llvm-as',
@@ -233,8 +239,8 @@ INITIAL_ENV = {
   'RUN_NATIVE_DIS'  : '${OBJDUMP_%arch%} -d "${input}"',
 
   # Multiple input actions
-  'RUN_LD' : '${LD} ${LD_FLAGS} ${STDLIB_NATIVE_PREFIX} ${inputs} ' +
-             '${STDLIB_NATIVE_SUFFIX} -o "${output}"',
+  'LD_INPUTS' : '${STDLIB_NATIVE_PREFIX} ${inputs} ${STDLIB_NATIVE_SUFFIX}',
+  'RUN_LD' : '${LD} ${LD_FLAGS} ${LD_INPUTS} -o "${output}"',
 
   'RUN_BCLD': '${BCLD} ${BCLD_FLAGS} ' +
               '${STDLIB_NATIVE_PREFIX} ${STDLIB_BC_PREFIX} ${inputs} ' +
@@ -379,8 +385,7 @@ def PrepareFlags():
   else:
     env.set('LD_FLAGS', '${LD_FLAGS_SHARED}')
 
-  if env.getbool('SANDBOXED'):
-    arch = GetArch(required = True)
+  if env.getbool('SANDBOXED') and arch:
     env.set('LLC', '${LLC_SB_%s}' % arch)
     env.set('AS', '${AS_SB_%s}' % arch)
     env.set('LD', '${LD_SB_%s}' % arch)
@@ -822,9 +827,17 @@ def OptimizeBC(input, output):
 # Final native linking step
 def LinkNative(arch, inputs, output):
   inputs = filter(lambda x: not FileType(x) == 'lib', inputs)
-  RunWithEnv('RUN_LD', arch = arch,
-             inputs = shell.join(inputs),
-             output = output)
+
+  env.push()
+  env.setmany(arch=arch, inputs=shell.join(inputs), output=output)
+
+  # TODO(pdox): Unify this into the chain compile
+  if env.getbool('SANDBOXED') and env.getbool('SRPC'):
+    RunLDSRPC()
+  else:
+    RunWithEnv('RUN_LD')
+
+  env.pop()
   return
 
 ######################################################################
@@ -1398,23 +1411,115 @@ def RunWithLog(args, stdin = None, silent = False):
                         'stderr        : %s\n',
                         StringifyCommand(args), buf_stdout, buf_stderr)
 
+def MakeSelUniversalScriptForLLC(infile, outfile):
+  script = []
+  script.append('readonly_file myfile %s' % infile)
+  script.append('rpc Translate h(myfile) * h() i()')
+  script.append('set_variable out_handle ${result0}')
+  script.append('set_variable out_size ${result1}')
+  script.append('map_shmem ${out_handle} addr')
+  script.append('save_to_file %s ${addr} 0 ${out_size}' % outfile)
+  script.append('')
+  return '\n'.join(script)
+
 def RunLLCSRPC():
   infile = env.get("input")
   outfile = env.get("output")
-
-  script = '''
-readonly_file myfile %s
-rpc Translate h(myfile) * h() i()
-set_variable out_handle ${result0}
-set_variable out_size ${result1}
-map_shmem ${out_handle} addr
-save_to_file %s ${addr} 0 ${out_size}
-''' % (infile, outfile)
+  script = MakeSelUniversalScriptForLLC(infile, outfile)
 
   RunWithLog('"${SEL_UNIVERSAL_%arch%}" --script_mode -- ' +
              '"${LLC_SRPC_%arch%}" ${LLC_FLAGS} ${LLC_FLAGS_%arch%} ' +
              '-mtriple=${TRIPLE_%arch%} -filetype=${filetype}',
              stdin=script, silent = True)
+
+
+def FindLib(name, searchdirs):
+  """Returns the full pathname for the library named 'name'.
+     For example, name might be "c" or "m".
+     Returns None if the library is not found.
+  """
+  fullname = 'lib' + name + '.a'
+  for curdir in searchdirs:
+    guess = curdir + '/' + fullname
+    if os.path.exists(guess):
+      return guess
+  return None
+
+# Given linker arguments (including -L, -l, and filenames),
+# returns the list of files which are pulled by the linker.
+def LinkerFiles(args):
+  searchdirs = []
+  for f in args:
+    if f.startswith('-L'):
+      searchdirs.append(f[2:])
+
+  ret = []
+  for f in args:
+    if f.startswith('-L'):
+      continue
+    elif f.startswith('-l'):
+      libpath = FindLib(f[2:], searchdirs)
+      if libpath is None:
+        Log.Fatal("Unable to find library '%s'", f)
+      ret.append(libpath)
+      continue
+    else:
+      if not os.path.exists(f):
+        Log.Fatal("Unable to open '%s'", f)
+      ret.append(f)
+  return ret
+
+def MakeSelUniversalScriptForLD(main_input, files, outfile):
+  script = []
+
+  # Provide every file that the linker will expect to open.
+  main_basename = os.path.basename(main_input)
+  for f in files:
+    basename = os.path.basename(f)
+    nicename = basename.replace('.','_').replace('-','_')
+
+    # The "main" input file is passed via a memory map
+    # instead of AddFile. Skip it here.
+    if basename == main_basename:
+      continue
+    script.append('echo "adding %s"' % (basename,))
+    script.append('readonly_file %s %s' % (nicename, f))
+    script.append('rpc AddFile s("%s") h(%s) *' % (basename, nicename))
+    script.append('')
+
+  ld_script = env.eval("${LD_SCRIPT_%arch%}")
+  script.append('echo "adding ld_script"')
+  script.append('readonly_file ld_script %s' % ld_script)
+  script.append('rpc AddFile s("ld_script") h(ld_script) *')
+  script.append('')
+
+  # Reload the temporary object file into a new shmem region
+  script.append('file_size %s in_size' % main_input)
+  script.append('shmem in_file in_addr ${in_size}')
+  script.append('load_from_file %s ${in_addr} 0 ${in_size}' % main_input)
+  script.append('')
+  script.append('rpc Link h(in_file) i(${in_size}) * h() i()')
+  script.append('set_variable out_file ${result0}')
+  script.append('set_variable out_size ${result1}')
+  script.append('map_shmem ${out_file} out_addr')
+  script.append('save_to_file %s ${out_addr} 0 ${out_size}' % outfile)
+  script.append('echo "ld complete"')
+  script.append('')
+  return '\n'.join(script)
+
+def RunLDSRPC():
+  # The "main" input file is the application's combined object file.
+  main_input = env.get("inputs")
+  all_inputs = env.get("LD_INPUTS")
+  outfile = env.get("output")
+
+  assert(len(shell.split(main_input)) == 1)
+  files = LinkerFiles(shell.split(all_inputs))
+
+  script = MakeSelUniversalScriptForLD(main_input, files, outfile)
+
+  RunWithLog('"${SEL_UNIVERSAL_%arch%}" --script_mode -- ' +
+             '"${LD_SRPC_%arch%}"', stdin=script, silent = True)
 
 
 ######################################################################
