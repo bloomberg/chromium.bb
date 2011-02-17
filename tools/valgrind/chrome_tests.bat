@@ -42,7 +42,7 @@ goto :EOF
 
 :DRMEMORY_BINARY_OK
 %DRMEMORY_SFX% -o%DRMEMORY_PATH%\unpacked -y
-set DRMEMORY_COMMAND=%DRMEMORY_PATH%\unpacked\exports32\bin\drmemory.exe -dr %DRMEMORY_PATH%\unpacked\exports
+set DRMEMORY_COMMAND=%DRMEMORY_PATH%\unpacked\bin\drmemory.exe
 :: }}}
 goto :RUN_TESTS
 
