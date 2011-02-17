@@ -50,10 +50,15 @@ function requestListener(request, sender, sendResponse) {
   plugin.connectionInfoUpdate = pluginCallback;
   plugin.loginChallenge = pluginLoginChallenge;
 
+  console.log('connect request received: ' + chromoting.hostname + ' by ' +
+              chromoting.username);
+
   // TODO(garykac): Clean exit if |connect| isn't a funtion.
   if (typeof plugin.connect === 'function') {
     plugin.connect(request.username, request.hostJid,
                    request.xmppAuth);
+  } else {
+    console.log('ERROR: chromoting plugin not loaded');
   }
 
   document.getElementById('title').innerText = request.hostName;
