@@ -4420,7 +4420,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Close
       </message>
       <message name="IDS_TOOLTIP_LOCATION_ICON" desc="The tooltip for location icon in the omnibox">
-        Click to view site information
+        View site information
       </message>
 
       <!--Accessible name/action strings-->
