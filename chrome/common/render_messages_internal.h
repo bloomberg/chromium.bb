@@ -129,6 +129,10 @@ IPC_MESSAGE_ROUTED2(ViewMsg_MediaPlayerActionAt,
 
 IPC_MESSAGE_ROUTED0(ViewMsg_PrintNodeUnderContextMenu)
 
+// Tells the renderer to print the print preview tab's PDF plugin without
+// showing the print dialog.
+IPC_MESSAGE_ROUTED0(ViewMsg_PrintForPrintPreview)
+
 // Tells the render view to close.
 IPC_MESSAGE_ROUTED0(ViewMsg_Close)
 

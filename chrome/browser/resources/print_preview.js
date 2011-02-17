@@ -9,6 +9,9 @@ var hasPDFPlugin = true;
  * Window onload handler, sets up the page.
  */
 function load() {
+  $('print-button').addEventListener('click', function(e) {
+    chrome.send('print');
+  });
   $('cancel-button').addEventListener('click', function(e) {
     window.close();
   });

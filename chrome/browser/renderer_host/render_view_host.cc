@@ -1261,6 +1261,10 @@ void RenderViewHost::PrintNodeUnderContextMenu() {
   Send(new ViewMsg_PrintNodeUnderContextMenu(routing_id()));
 }
 
+void RenderViewHost::PrintForPrintPreview() {
+  Send(new ViewMsg_PrintForPrintPreview(routing_id()));
+}
+
 void RenderViewHost::OnMsgStartDragging(
     const WebDropData& drop_data,
     WebDragOperationsMask drag_operations_mask,

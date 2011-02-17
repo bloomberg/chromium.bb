@@ -328,6 +328,9 @@ class RenderViewHost : public RenderWidgetHost {
   // Prints the node that's under the context menu.
   void PrintNodeUnderContextMenu();
 
+  // Triggers printing of the preview PDF.
+  void PrintForPrintPreview();
+
   // Copies the image at the specified point.
   void CopyImageAt(int x, int y);
 

@@ -5,6 +5,7 @@
 #include "chrome/browser/dom_ui/print_preview_handler.h"
 
 #include "base/values.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
 #include "printing/backend/print_backend.h"
 
 PrintPreviewHandler::PrintPreviewHandler()
@@ -17,6 +18,8 @@ PrintPreviewHandler::~PrintPreviewHandler() {
 void PrintPreviewHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("getPrinters",
       NewCallback(this, &PrintPreviewHandler::HandleGetPrinters));
+  web_ui_->RegisterMessageCallback("print",
+      NewCallback(this, &PrintPreviewHandler::HandlePrint));
 }
 
 void PrintPreviewHandler::HandleGetPrinters(const ListValue*) {
@@ -30,4 +33,8 @@ void PrintPreviewHandler::HandleGetPrinters(const ListValue*) {
   }
 
   web_ui_->CallJavascriptFunction(L"setPrinters", printers);
+}
+
+void PrintPreviewHandler::HandlePrint(const ListValue*) {
+  web_ui_->GetRenderViewHost()->PrintForPrintPreview();
 }

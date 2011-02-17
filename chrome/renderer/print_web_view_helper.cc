@@ -32,6 +32,8 @@ using printing::ConvertPixelsToPointDouble;
 using printing::ConvertUnit;
 using printing::ConvertUnitDouble;
 using WebKit::WebConsoleMessage;
+using WebKit::WebDocument;
+using WebKit::WebElement;
 using WebKit::WebFrame;
 using WebKit::WebNode;
 using WebKit::WebRect;
@@ -121,6 +123,8 @@ void PrintWebViewHelper::PrintNode(WebNode* node,
 bool PrintWebViewHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrintWebViewHelper, message)
+    IPC_MESSAGE_HANDLER(ViewMsg_PrintForPrintPreview,
+                        OnPrintForPrintPreview)
     IPC_MESSAGE_HANDLER(ViewMsg_PrintPages, OnPrintPages)
     IPC_MESSAGE_HANDLER(ViewMsg_PrintingDone, OnPrintingDone)
     IPC_MESSAGE_HANDLER(ViewMsg_PrintPreview, OnPrintPreview)
@@ -129,6 +133,25 @@ bool PrintWebViewHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void PrintWebViewHelper::OnPrintForPrintPreview() {
+  if (!render_view()->webview())
+    return;
+  WebFrame* main_frame = render_view()->webview()->mainFrame();
+  if (!main_frame)
+    return;
+
+  WebDocument document = main_frame->document();
+  // <object> with id="pdf-viewer" is created in
+  // chrome/browser/resources/print_preview.js
+  WebElement element = document.getElementById("pdf-viewer");
+  if (element.isNull()) {
+    NOTREACHED();
+    return;
+  }
+
+  PrintNode(&element, false, false);
 }
 
 void PrintWebViewHelper::OnPrint(bool is_preview) {

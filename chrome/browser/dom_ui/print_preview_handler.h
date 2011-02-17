@@ -28,6 +28,9 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   // Get the list of printers and send it to the Web UI. |args| is unused.
   void HandleGetPrinters(const ListValue* args);
 
+  // Print the preview PDF. |args| is unused.
+  void HandlePrint(const ListValue* args);
+
   // Pointer to current print system.
   scoped_refptr<printing::PrintBackend> print_backend_;
 

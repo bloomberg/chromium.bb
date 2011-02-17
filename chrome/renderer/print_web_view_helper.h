@@ -89,6 +89,7 @@ class PrintWebViewHelper : public RenderViewObserver ,
 
   // Message handlers.  Public for testing.
   void OnPrintingDone(int document_cookie, bool success);
+  void OnPrintForPrintPreview();
   void OnPrintPages();
   void OnPrintPreview();
   void OnPrintNodeUnderContextMenu();
