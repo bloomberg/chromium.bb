@@ -63,7 +63,7 @@ class AutocompleteHistoryManager;
 class AutoFillManager;
 class BlockedContentContainer;
 class WebUI;
-class DesktopNotificationHandler;
+class DesktopNotificationHandlerForTC;
 class DownloadItem;
 class Extension;
 class FileSelectHelper;
@@ -1091,7 +1091,7 @@ class TabContents : public PageNavigator,
   scoped_ptr<TabSpecificContentSettings> content_settings_delegate_;
 
   // Handles desktop notification IPCs.
-  scoped_ptr<DesktopNotificationHandler> desktop_notification_handler_;
+  scoped_ptr<DesktopNotificationHandlerForTC> desktop_notification_handler_;
 
 
   // Data for loading state ----------------------------------------------------

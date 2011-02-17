@@ -91,5 +91,10 @@ DesktopNotificationHandlerForTC::DesktopNotificationHandlerForTC(
     TabContents* tab_contents,
     RenderProcessHost* process)
     : TabContentsObserver(tab_contents),
-      DesktopNotificationHandler(tab_contents, process) {
+      handler_(tab_contents, process) {
+}
+
+bool DesktopNotificationHandlerForTC::OnMessageReceived(
+    const IPC::Message& message) {
+  return handler_.OnMessageReceived(message);
 }

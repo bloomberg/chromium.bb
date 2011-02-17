@@ -21,8 +21,7 @@ class DesktopNotificationHandler {
                              RenderProcessHost* process);
   virtual ~DesktopNotificationHandler() {}
 
-  // TabContentsObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  bool OnMessageReceived(const IPC::Message& message);
 
   RenderProcessHost* GetRenderProcessHost();
 
@@ -46,15 +45,19 @@ class DesktopNotificationHandler {
 
 // A wrapper around DesktopNotificationHandler that implements
 // TabContentsObserver.
-class DesktopNotificationHandlerForTC : public TabContentsObserver,
-                                        public DesktopNotificationHandler {
+class DesktopNotificationHandlerForTC : public TabContentsObserver {
  public:
   // tab_contents will be NULL when this object is used with non-tab contents,
   // i.e. ExtensionHost.
   DesktopNotificationHandlerForTC(TabContents* tab_contents,
-                                    RenderProcessHost* process);
-};
+                                  RenderProcessHost* process);
 
+  // TabContentsObserver implementation.
+  virtual bool OnMessageReceived(const IPC::Message& message);
+
+ private:
+  DesktopNotificationHandler handler_;
+};
 
 #endif  // CHROME_BROWSER_DESKTOP_NOTIFICATION_HANDLER_H_
 
