@@ -51,8 +51,7 @@
 
 #include "xf86drm.h"
 #include "xf86drmMode.h"
-#include "intel_bufmgr.h"
-#include "i915_drm.h"
+#include "libkms.h"
 
 #ifdef HAVE_CAIRO
 #include <math.h>
@@ -354,29 +353,49 @@ connector_find_mode(struct connector *c)
 		c->crtc = c->encoder->crtc_id;
 }
 
-static drm_intel_bo *
-allocate_buffer(drm_intel_bufmgr *bufmgr,
+static struct kms_bo *
+allocate_buffer(struct kms_driver *kms,
 		int width, int height, int *stride)
 {
-	int size;
+	struct kms_bo *bo;
+	unsigned bo_attribs[] = {
+		KMS_WIDTH,   0,
+		KMS_HEIGHT,  0,
+		KMS_BO_TYPE, KMS_BO_TYPE_SCANOUT_X8R8G8B8,
+		KMS_TERMINATE_PROP_LIST
+	};
+	int ret;
 
-	/* Scan-out has a 64 byte alignment restriction */
-	size = (width + 63) & -64;
-	*stride = size;
-	size *= height;
+	bo_attribs[1] = width;
+	bo_attribs[3] = height;
 
-	return drm_intel_bo_alloc(bufmgr, "frontbuffer", size, 0);
+	ret = kms_bo_create(kms, bo_attribs, &bo);
+	if (ret) {
+		fprintf(stderr, "failed to alloc buffer: %s\n",
+			strerror(-ret));
+		return NULL;
+	}
+
+	ret = kms_bo_get_prop(bo, KMS_PITCH, stride);
+	if (ret) {
+		fprintf(stderr, "failed to retreive buffer stride: %s\n",
+			strerror(-ret));
+		kms_bo_destroy(&bo);
+		return NULL;
+	}
+
+	return bo;
 }
 
 static void
-make_pwetty(drm_intel_bo *bo, int width, int height, int stride)
+make_pwetty(void *data, int width, int height, int stride)
 {
 #ifdef HAVE_CAIRO
 	cairo_surface_t *surface;
 	cairo_t *cr;
 	int x, y;
 
-	surface = cairo_image_surface_create_for_data(bo->virtual,
+	surface = cairo_image_surface_create_for_data(data,
 						      CAIRO_FORMAT_ARGB32,
 						      width, height,
 						      stride);
@@ -415,29 +434,29 @@ make_pwetty(drm_intel_bo *bo, int width, int height, int stride)
 }
 
 static int
-create_test_buffer(drm_intel_bufmgr *bufmgr,
-		   int width, int height, int *stride_out, drm_intel_bo **bo_out)
+create_test_buffer(struct kms_driver *kms,
+		   int width, int height, int *stride_out,
+		   struct kms_bo **bo_out)
 {
-	drm_intel_bo *bo;
+	struct kms_bo *bo;
 	int ret, i, j, stride;
+	void *virtual;
 
-	bo = allocate_buffer(bufmgr, width, height, &stride);
-	if (!bo) {
-		fprintf(stderr, "failed to alloc buffer: %s\n",
-			strerror(errno));
+	bo = allocate_buffer(kms, width, height, &stride);
+	if (!bo)
 		return -1;
-	}
 
-	ret = drm_intel_gem_bo_map_gtt(bo);
+	ret = kms_bo_map(bo, &virtual);
 	if (ret) {
-		fprintf(stderr, "failed to GTT map buffer: %s\n",
-			strerror(errno));
+		fprintf(stderr, "failed to map buffer: %s\n",
+			strerror(-ret));
+		kms_bo_destroy(&bo);
 		return -1;
 	}
 
 	/* paint the buffer with colored tiles */
 	for (j = 0; j < height; j++) {
-		uint32_t *fb_ptr = (uint32_t*)((char*)bo->virtual + j * stride);
+		uint32_t *fb_ptr = (uint32_t*)((char*)virtual + j * stride);
 		for (i = 0; i < width; i++) {
 			div_t d = div(i, width);
 			fb_ptr[i] =
@@ -446,9 +465,9 @@ create_test_buffer(drm_intel_bufmgr *bufmgr,
 		}
 	}
 
-	make_pwetty(bo, width, height, stride);
+	make_pwetty(virtual, width, height, stride);
 
-	drm_intel_gem_bo_unmap_gtt(bo);
+	kms_bo_unmap(bo);
 
 	*bo_out = bo;
 	*stride_out = stride;
@@ -456,32 +475,29 @@ create_test_buffer(drm_intel_bufmgr *bufmgr,
 }
 
 static int
-create_grey_buffer(drm_intel_bufmgr *bufmgr,
-		   int width, int height, int *stride_out, drm_intel_bo **bo_out)
+create_grey_buffer(struct kms_driver *kms,
+		   int width, int height, int *stride_out,
+		   struct kms_bo **bo_out)
 {
-	drm_intel_bo *bo;
+	struct kms_bo *bo;
 	int size, ret, stride;
+	void *virtual;
 
-	/* Mode size at 32 bpp */
-	stride = width * 4;
-	size = stride * height;
-
-	bo = drm_intel_bo_alloc(bufmgr, "frontbuffer", size, 4096);
-	if (!bo) {
-		fprintf(stderr, "failed to alloc buffer: %s\n",
-			strerror(errno));
+	bo = allocate_buffer(kms, width, height, &stride);
+	if (!bo)
 		return -1;
-	}
 
-	ret = drm_intel_gem_bo_map_gtt(bo);
+	ret = kms_bo_map(bo, &virtual);
 	if (ret) {
-		fprintf(stderr, "failed to GTT map buffer: %s\n",
-			strerror(errno));
+		fprintf(stderr, "failed to map buffer: %s\n",
+			strerror(-ret));
+		kms_bo_destroy(&bo);
 		return -1;
 	}
 
-	memset(bo->virtual, 0x77, size);
-	drm_intel_gem_bo_unmap_gtt(bo);
+	size = stride * height;
+	memset(virtual, 0x77, size);
+	kms_bo_unmap(bo);
 
 	*bo_out = bo;
 	*stride_out = stride;
@@ -521,10 +537,11 @@ page_flip_handler(int fd, unsigned int frame,
 static void
 set_mode(struct connector *c, int count, int page_flip)
 {
-	drm_intel_bufmgr *bufmgr;
-	drm_intel_bo *bo, *other_bo;
+	struct kms_driver *kms;
+	struct kms_bo *bo, *other_bo;
 	unsigned int fb_id, other_fb_id;
 	int i, ret, width, height, x, stride;
+	unsigned handle;
 	drmEventContext evctx;
 
 	width = 0;
@@ -538,17 +555,18 @@ set_mode(struct connector *c, int count, int page_flip)
 			height = c[i].mode->vdisplay;
 	}
 
-	bufmgr = drm_intel_bufmgr_gem_init(fd, 2<<20);
-	if (!bufmgr) {
-		fprintf(stderr, "failed to init bufmgr: %s\n", strerror(errno));
+	ret = kms_create(fd, &kms);
+	if (ret) {
+		fprintf(stderr, "failed to create kms driver: %s\n",
+			strerror(-ret));
 		return;
 	}
 
-	if (create_test_buffer(bufmgr, width, height, &stride, &bo))
+	if (create_test_buffer(kms, width, height, &stride, &bo))
 		return;
 
-	ret = drmModeAddFB(fd, width, height, 32, 32, stride, bo->handle,
-			   &fb_id);
+	kms_bo_get_prop(bo, KMS_HANDLE, &handle);
+	ret = drmModeAddFB(fd, width, height, 32, 32, stride, handle, &fb_id);
 	if (ret) {
 		fprintf(stderr, "failed to add fb: %s\n", strerror(errno));
 		return;
@@ -574,11 +592,12 @@ set_mode(struct connector *c, int count, int page_flip)
 
 	if (!page_flip)
 		return;
-
-	if (create_grey_buffer(bufmgr, width, height, &stride, &other_bo))
+	
+	if (create_grey_buffer(kms, width, height, &stride, &other_bo))
 		return;
 
-	ret = drmModeAddFB(fd, width, height, 32, 32, stride, other_bo->handle,
+	kms_bo_get_prop(other_bo, KMS_HANDLE, &handle);
+	ret = drmModeAddFB(fd, width, height, 32, 32, stride, handle,
 			   &other_fb_id);
 	if (ret) {
 		fprintf(stderr, "failed to add fb: %s\n", strerror(errno));
@@ -640,6 +659,10 @@ set_mode(struct connector *c, int count, int page_flip)
 
 		drmHandleEvent(fd, &evctx);
 	}
+
+	kms_bo_destroy(&bo);
+	kms_bo_destroy(&other_bo);
+	kms_destroy(&kms);
 }
 
 extern char *optarg;
@@ -665,6 +688,9 @@ void usage(char *name)
 
 static int page_flipping_supported(int fd)
 {
+	/*FIXME: generic ioctl needed? */
+	return 1;
+#if 0
 	int ret, value;
 	struct drm_i915_getparam gp;
 
@@ -678,6 +704,7 @@ static int page_flipping_supported(int fd)
 	}
 
 	return *gp.value;
+#endif
 }
 
 int main(int argc, char **argv)
