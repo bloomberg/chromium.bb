@@ -26,8 +26,8 @@ class SessionManager {
 
   std::string GetAddress();
 
-  Session* Create();
-  bool Delete(const std::string& id);
+  void Add(Session* session);
+  bool Remove(const std::string& id);
   bool Has(const std::string& id) const;
 
   Session* GetSession(const std::string& id) const;

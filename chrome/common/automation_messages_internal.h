@@ -1450,3 +1450,9 @@ IPC_MESSAGE_ROUTED3(AutomationMsg_JavaScriptStressTestControl,
 // the response is sent back. This is useful when you want to make sure all
 // changes to the number of processes have completed.
 IPC_SYNC_MESSAGE_CONTROL0_0(AutomationMsg_WaitForProcessLauncherThreadToGoIdle)
+
+// Gets a handle of the browser that owns the given tab.
+IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_GetParentBrowserOfTab,
+                            int /* tab handle */,
+                            int /* browser handle */,
+                            bool /* success */)

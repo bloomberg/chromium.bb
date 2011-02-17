@@ -38,6 +38,7 @@
 #include "chrome/test/webdriver/commands/session_with_id.h"
 #include "chrome/test/webdriver/commands/source_command.h"
 #include "chrome/test/webdriver/commands/speed_command.h"
+#include "chrome/test/webdriver/commands/target_locator_commands.h"
 #include "chrome/test/webdriver/commands/title_command.h"
 #include "chrome/test/webdriver/commands/url_command.h"
 #include "chrome/test/webdriver/commands/webelement_commands.h"
@@ -79,16 +80,20 @@ void InitCallbacks(struct mg_context* ctx,
                    base::WaitableEvent* shutdown_event) {
   mg_set_uri_callback(ctx, "/shutdown", &Shutdown, shutdown_event);
 
-  SetCallback<CreateSession>(ctx,       "/session");
-  SetCallback<BackCommand>(ctx,         "/session/*/back");
-  SetCallback<ExecuteCommand>(ctx,      "/session/*/execute");
-  SetCallback<ForwardCommand>(ctx,      "/session/*/forward");
-  SetCallback<RefreshCommand>(ctx,      "/session/*/refresh");
-  SetCallback<SourceCommand>(ctx,       "/session/*/source");
-  SetCallback<TitleCommand>(ctx,        "/session/*/title");
-  SetCallback<URLCommand>(ctx,          "/session/*/url");
-  SetCallback<SpeedCommand>(ctx,        "/session/*/speed");
-  SetCallback<ImplicitWaitCommand>(ctx, "/session/*/timeouts/implicit_wait");
+  SetCallback<CreateSession>(ctx,        "/session");
+  SetCallback<BackCommand>(ctx,          "/session/*/back");
+  SetCallback<ExecuteCommand>(ctx,       "/session/*/execute");
+  SetCallback<ForwardCommand>(ctx,       "/session/*/forward");
+  SetCallback<RefreshCommand>(ctx,       "/session/*/refresh");
+  SetCallback<SourceCommand>(ctx,        "/session/*/source");
+  SetCallback<TitleCommand>(ctx,         "/session/*/title");
+  SetCallback<URLCommand>(ctx,           "/session/*/url");
+  SetCallback<SpeedCommand>(ctx,         "/session/*/speed");
+  SetCallback<ImplicitWaitCommand>(ctx,  "/session/*/timeouts/implicit_wait");
+  SetCallback<WindowHandleCommand>(ctx,  "/session/*/window_handle");
+  SetCallback<WindowHandlesCommand>(ctx, "/session/*/window_handles");
+  SetCallback<WindowCommand>(ctx,        "/session/*/window");
+  SetCallback<SwitchFrameCommand>(ctx,   "/session/*/frame");
 
   // Cookie functions.
   SetCallback<CookieCommand>(ctx,      "/session/*/cookie");

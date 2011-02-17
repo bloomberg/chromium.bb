@@ -54,7 +54,11 @@ class Command {
     return i < path_segments_.size() ? path_segments_.at(i) : "";
   }
 
-  // Provides the command parameter with the given |key| as a UTF-16 string.
+  // Returns true if the command parameter with the given |key| exists and is
+  // a null value.
+  bool IsNullParameter(const std::string& key) const;
+
+  // Returns the command parameter with the given |key| as a UTF-16 string.
   // Returns true on success.
   bool GetStringParameter(const std::string& key, string16* out) const;
 
@@ -100,4 +104,3 @@ class Command {
 }  // namespace webdriver
 
 #endif  // CHROME_TEST_WEBDRIVER_COMMANDS_COMMAND_H_
-

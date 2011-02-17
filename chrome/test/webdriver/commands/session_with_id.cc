@@ -55,8 +55,8 @@ void SessionWithID::ExecuteGet(Response* const response) {
 }
 
 void SessionWithID::ExecuteDelete(Response* const response) {
+  // Session manages its own liftime, so do not call delete.
   session_->Terminate();
-  SessionManager::GetInstance()->Delete(session_->id());
   response->set_status(kSuccess);
 }
 

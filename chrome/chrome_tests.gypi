@@ -769,6 +769,8 @@
         'test/webdriver/commands/source_command.cc',
         'test/webdriver/commands/speed_command.h',
         'test/webdriver/commands/speed_command.cc',
+        'test/webdriver/commands/target_locator_commands.h',
+        'test/webdriver/commands/target_locator_commands.cc',
         'test/webdriver/commands/title_command.h',
         'test/webdriver/commands/title_command.cc',
         'test/webdriver/commands/url_command.h',

@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/test_launcher_utils.h"
@@ -37,16 +38,6 @@ void Automation::Init(bool* success) {
   launch_arguments_.AppendSwitchPath(switches::kUserDataDir,
                                      profile_dir_.path());
   UITestBase::SetUp();
-  browser_ = automation()->GetBrowserWindow(0);
-  if (!browser_.get()) {
-    Terminate();
-    return;
-  }
-  tab_ = browser_->GetActiveTab();
-  if (!tab_.get()) {
-    Terminate();
-    return;
-  }
   *success = true;
 }
 
@@ -54,21 +45,51 @@ void Automation::Terminate() {
   QuitBrowser();
 }
 
-void Automation::ExecuteScript(const std::string& frame_xpath,
+void Automation::ExecuteScript(int tab_id,
+                               const std::string& frame_xpath,
                                const std::string& script,
                                std::string* result,
                                bool* success) {
+  TabProxy* tab = GetTabById(tab_id);
+  if (!tab) {
+    *success = false;
+    return;
+  }
   std::wstring wide_xpath = UTF8ToWide(frame_xpath);
   std::wstring wide_script = UTF8ToWide(script);
   std::wstring wide_result;
-  *success = tab_->ExecuteAndExtractString(
+  *success = tab->ExecuteAndExtractString(
       wide_xpath, wide_script, &wide_result);
   if (*success)
     *result = WideToUTF8(wide_result);
 }
 
-void Automation::SendWebKeyEvent(const WebKeyEvent& key_event,
+void Automation::SendWebKeyEvent(int tab_id,
+                                 const WebKeyEvent& key_event,
                                  bool* success) {
+  TabProxy* tab = GetTabById(tab_id);
+  if (!tab) {
+    LOG(ERROR) << "No such tab";
+    *success = false;
+    return;
+  }
+  int tab_index = 0;
+  if (!tab->GetTabIndex(&tab_index)) {
+    LOG(ERROR) << "Could not get tab index";
+    *success = false;
+    return;
+  }
+  scoped_refptr<BrowserProxy> browser = tab->GetParentBrowser();
+  if (!browser.get()) {
+    LOG(ERROR) << "Could not get parent browser of tab";
+    *success = false;
+    return;
+  }
+  if (!browser->ActivateTab(tab_index)) {
+    LOG(ERROR) << "Could not activate tab to send keys";
+    *success = false;
+    return;
+  }
   scoped_ptr<DictionaryValue> dict(new DictionaryValue);
   dict->SetString("command", "SendKeyEventToActiveTab");
   dict->SetInteger("type", key_event.type);
@@ -81,73 +102,189 @@ void Automation::SendWebKeyEvent(const WebKeyEvent& key_event,
   std::string request;
   base::JSONWriter::Write(dict.get(), false, &request);
   std::string reply;
-  *success = browser_->SendJSONRequest(request, &reply);
+  *success = browser->SendJSONRequest(request, &reply);
   if (!*success) {
     LOG(ERROR) << "Could not send web key event. Reply: " << reply;
   }
 }
 
-void Automation::NavigateToURL(const std::string& url,
+void Automation::NavigateToURL(int tab_id,
+                               const std::string& url,
                                bool* success) {
-  *success = tab_->NavigateToURL(GURL(url));
+  TabProxy* tab = GetTabById(tab_id);
+  if (!tab) {
+    *success = false;
+    return;
+  }
+  *success = tab->NavigateToURL(GURL(url));
 }
 
-void Automation::GoForward(bool* success) {
-  *success = tab_->GoForward();
+void Automation::GoForward(int tab_id, bool* success) {
+  TabProxy* tab = GetTabById(tab_id);
+  if (!tab) {
+    *success = false;
+    return;
+  }
+  *success = tab->GoForward();
 }
 
-void Automation::GoBack(bool* success) {
-  *success = tab_->GoBack();
+void Automation::GoBack(int tab_id, bool* success) {
+  TabProxy* tab = GetTabById(tab_id);
+  if (!tab) {
+    *success = false;
+    return;
+  }
+  *success = tab->GoBack();
 }
 
-void Automation::Reload(bool* success) {
-  *success = tab_->Reload();
+void Automation::Reload(int tab_id, bool* success) {
+  TabProxy* tab = GetTabById(tab_id);
+  if (!tab) {
+    *success = false;
+    return;
+  }
+  *success = tab->Reload();
 }
 
-void Automation::GetURL(std::string* url,
+void Automation::GetURL(int tab_id,
+                        std::string* url,
                         bool* success) {
+  TabProxy* tab = GetTabById(tab_id);
+  if (!tab) {
+    *success = false;
+    return;
+  }
   GURL gurl;
-  *success = tab_->GetCurrentURL(&gurl);
+  *success = tab->GetCurrentURL(&gurl);
   if (*success)
     *url = gurl.possibly_invalid_spec();
 }
 
-void Automation::GetGURL(GURL* gurl,
+void Automation::GetGURL(int tab_id,
+                         GURL* gurl,
                          bool* success) {
-  *success = tab_->GetCurrentURL(gurl);
+  TabProxy* tab = GetTabById(tab_id);
+  if (!tab) {
+    *success = false;
+    return;
+  }
+  *success = tab->GetCurrentURL(gurl);
 }
 
-void Automation::GetTabTitle(std::string* tab_title,
+void Automation::GetTabTitle(int tab_id,
+                             std::string* tab_title,
                              bool* success) {
+  TabProxy* tab = GetTabById(tab_id);
+  if (!tab) {
+    *success = false;
+    return;
+  }
   std::wstring wide_title;
-  *success = tab_->GetTabTitle(&wide_title);
+  *success = tab->GetTabTitle(&wide_title);
   if (*success)
     *tab_title = WideToUTF8(wide_title);
 }
 
-void Automation::GetCookies(const GURL& gurl,
+void Automation::GetCookies(int tab_id,
+                            const GURL& gurl,
                             std::string* cookies,
                             bool* success) {
-  *success = tab_->GetCookies(gurl, cookies);
+  TabProxy* tab = GetTabById(tab_id);
+  if (!tab) {
+    *success = false;
+    return;
+  }
+  *success = tab->GetCookies(gurl, cookies);
 }
 
-void Automation::GetCookieByName(const GURL& gurl,
+void Automation::GetCookieByName(int tab_id,
+                                 const GURL& gurl,
                                  const std::string& cookie_name,
                                  std::string* cookie,
                                  bool* success) {
-  *success = tab_->GetCookieByName(gurl, cookie_name, cookie);
+  TabProxy* tab = GetTabById(tab_id);
+  if (!tab) {
+    *success = false;
+    return;
+  }
+  *success = tab->GetCookieByName(gurl, cookie_name, cookie);
 }
 
-void Automation::DeleteCookie(const GURL& gurl,
+void Automation::DeleteCookie(int tab_id,
+                              const GURL& gurl,
                               const std::string& cookie_name,
                               bool* success) {
-  *success = tab_->DeleteCookie(gurl, cookie_name);
+  TabProxy* tab = GetTabById(tab_id);
+  if (!tab) {
+    *success = false;
+    return;
+  }
+  *success = tab->DeleteCookie(gurl, cookie_name);
 }
 
-void Automation::SetCookie(const GURL& gurl,
+void Automation::SetCookie(int tab_id,
+                           const GURL& gurl,
                            const std::string& cookie,
                            bool* success) {
-  *success = tab_->SetCookie(gurl, cookie);
+  TabProxy* tab = GetTabById(tab_id);
+  if (!tab) {
+    *success = false;
+    return;
+  }
+  *success = tab->SetCookie(gurl, cookie);
+}
+
+void Automation::GetTabIds(std::vector<int>* tab_ids,
+                           bool* success) {
+  *success = false;
+  int browser_count = 0;
+  if (!automation()->GetBrowserWindowCount(&browser_count)) {
+    LOG(ERROR) << "Failed to get browser window count";
+    return;
+  }
+  TabIdMap tab_id_map;
+  for (int browser_index = 0; browser_index < browser_count; ++browser_index) {
+    scoped_refptr<BrowserProxy> browser =
+        automation()->GetBrowserWindow(browser_index);
+    if (!browser.get())
+      continue;
+    int tab_count = 0;
+    if (!browser->GetTabCount(&tab_count))
+      continue;
+
+    for (int tab_index = 0; tab_index < tab_count; ++tab_index) {
+      scoped_refptr<TabProxy> tab = browser->GetTab(tab_index);
+      if (!tab.get())
+        continue;
+      tab_ids->push_back(tab->handle());
+      tab_id_map.insert(std::make_pair(tab->handle(), tab));
+    }
+  }
+
+  tab_id_map_ = tab_id_map;
+  *success = true;
+}
+
+void Automation::DoesTabExist(int tab_id, bool* does_exist) {
+  TabProxy* tab = GetTabById(tab_id);
+  *does_exist = tab && tab->is_valid();
+}
+
+void Automation::CloseTab(int tab_id, bool* success) {
+  TabProxy* tab = GetTabById(tab_id);
+  if (!tab) {
+    *success = false;
+    return;
+  }
+  *success = tab->Close(true);
+}
+
+TabProxy* Automation::GetTabById(int tab_id) {
+  TabIdMap::const_iterator iter = tab_id_map_.find(tab_id);
+  if (iter != tab_id_map_.end()) {
+    return iter->second.get();
+  }
+  return NULL;
 }
 
 }  // namespace webdriver

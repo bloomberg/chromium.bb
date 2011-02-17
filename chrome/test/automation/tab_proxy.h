@@ -17,6 +17,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
+#include "base/ref_counted.h"
 #include "chrome/browser/download/save_package.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/page_type.h"
@@ -26,6 +27,7 @@
 #include "chrome/test/automation/javascript_execution_controller.h"
 #include "webkit/glue/window_open_disposition.h"
 
+class BrowserProxy;
 class GURL;
 class Value;
 namespace IPC {
@@ -61,6 +63,9 @@ class TabProxy : public AutomationResourceProxy,
   TabProxy(AutomationMessageSender* sender,
            AutomationHandleTracker* tracker,
            int handle);
+
+  // Gets the browser that holds this tab.
+  scoped_refptr<BrowserProxy> GetParentBrowser() const;
 
   // Gets the current url of the tab.
   bool GetCurrentURL(GURL* url) const WARN_UNUSED_RESULT;

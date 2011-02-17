@@ -40,6 +40,13 @@ bool Command::Init(Response* const response) {
   return true;
 }
 
+bool Command::IsNullParameter(const std::string& key) const {
+  Value* value;
+  return parameters_.get() &&
+         parameters_->Get(key, &value) &&
+         value->IsType(Value::TYPE_NULL);
+}
+
 bool Command::GetStringParameter(const std::string& key,
                                  string16* out) const {
   return parameters_.get() != NULL && parameters_->GetString(key, out);
@@ -76,4 +83,3 @@ bool Command::GetListParameter(const std::string& key,
 }
 
 }  // namespace webdriver
-

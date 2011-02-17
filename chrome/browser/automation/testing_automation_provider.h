@@ -800,6 +800,10 @@ class TestingAutomationProvider : public AutomationProvider,
 
   void WaitForProcessLauncherThreadToGoIdle(IPC::Message* reply_message);
 
+  // Gets the browser that contains the given tab.
+  void GetParentBrowserOfTab(
+      int tab_handle, int* browser_handle, bool* success);
+
   // Callback for history redirect queries.
   virtual void OnRedirectQueryComplete(
       HistoryService::Handle request_handle,

@@ -30,20 +30,9 @@ std::string SessionManager::GetAddress() {
   return hostname + ":" + port_;
 }
 
-Session* SessionManager::Create() {
-  std::string id = GenerateRandomID();
-  {
-    base::AutoLock lock(map_lock_);
-    if (map_.find(id) != map_.end()) {
-      LOG(ERROR) << "Failed to generate a unique session ID";
-      return NULL;
-    }
-  }
-
-  Session* session = new Session(id);
+void SessionManager::Add(Session* session) {
   base::AutoLock lock(map_lock_);
-  map_[id] = session;
-  return session;
+  map_[session->id()] = session;
 }
 
 bool SessionManager::Has(const std::string& id) const {
@@ -51,23 +40,17 @@ bool SessionManager::Has(const std::string& id) const {
   return map_.find(id) != map_.end();
 }
 
-bool SessionManager::Delete(const std::string& id) {
+bool SessionManager::Remove(const std::string& id) {
   std::map<std::string, Session*>::iterator it;
-
   Session* session;
-  {
-    base::AutoLock lock(map_lock_);
-    it = map_.find(id);
-    if (it == map_.end()) {
-      VLOG(1) << "No such session with ID " << id;
-      return false;
-    }
-    session = it->second;
-    map_.erase(it);
+  base::AutoLock lock(map_lock_);
+  it = map_.find(id);
+  if (it == map_.end()) {
+    VLOG(1) << "No such session with ID " << id;
+    return false;
   }
-
-  VLOG(1) << "Deleting session with ID " << id;
-  delete session;
+  session = it->second;
+  map_.erase(it);
   return true;
 }
 

@@ -24,28 +24,20 @@ CreateSession::~CreateSession() {}
 bool CreateSession::DoesPost() { return true; }
 
 void CreateSession::ExecutePost(Response* const response) {
-  SessionManager* session_manager = SessionManager::GetInstance();
-  Session* session = session_manager->Create();
-  if (!session) {
-    SET_WEBDRIVER_ERROR(response,
-                        "Failed to create session",
-                        kInternalServerError);
-    return;
-  }
-
-  std::string session_id = session->id();
+  // Session manages its own liftime, so do not call delete.
+  Session* session = new Session();
   if (!session->Init()) {
-    session_manager->Delete(session_id);
     SET_WEBDRIVER_ERROR(response,
                         "Failed to initialize session",
                         kInternalServerError);
     return;
   }
 
-  VLOG(1) << "Created session " << session_id;
+  SessionManager* session_manager = SessionManager::GetInstance();
+  VLOG(1) << "Created session " << session->id();
   std::ostringstream stream;
   stream << "http://" << session_manager->GetAddress() << "/session/"
-         << session_id;
+         << session->id();
   response->set_status(kSeeOther);
   response->set_value(Value::CreateStringValue(stream.str()));
 }

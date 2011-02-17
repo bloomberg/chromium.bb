@@ -13,6 +13,7 @@
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/test/automation/automation_proxy.h"
+#include "chrome/test/automation/browser_proxy.h"
 #include "googleurl/src/gurl.h"
 
 TabProxy::TabProxy(AutomationMessageSender* sender,
@@ -21,6 +22,29 @@ TabProxy::TabProxy(AutomationMessageSender* sender,
     : AutomationResourceProxy(tracker, sender, handle) {
 }
 
+scoped_refptr<BrowserProxy> TabProxy::GetParentBrowser() const {
+  if (!is_valid())
+    return NULL;
+
+  int browser_handle = 0;
+  bool success = false;
+  sender_->Send(new AutomationMsg_GetParentBrowserOfTab(
+      handle_, &browser_handle, &success));
+  if (!success)
+    return NULL;
+
+  BrowserProxy* browser = static_cast<BrowserProxy*>(
+      tracker_->GetResource(browser_handle));
+  if (!browser) {
+    browser = new BrowserProxy(sender_, tracker_, browser_handle);
+    browser->AddRef();
+  }
+
+  // Since there is no scoped_refptr::attach.
+  scoped_refptr<BrowserProxy> result;
+  result.swap(&browser);
+  return result;
+}
 
 bool TabProxy::GetTabTitle(std::wstring* title) const {
   if (!is_valid())

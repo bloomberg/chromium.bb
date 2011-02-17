@@ -5,7 +5,9 @@
 #ifndef CHROME_TEST_WEBDRIVER_AUTOMATION_H_
 #define CHROME_TEST_WEBDRIVER_AUTOMATION_H_
 
+#include <map>
 #include <string>
+#include <vector>
 
 #include "base/task.h"
 #include "base/ref_counted.h"
@@ -15,6 +17,7 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 
 class GURL;
+class TabProxy;
 
 namespace webdriver {
 
@@ -57,33 +60,53 @@ class Automation : private UITestBase {
 
   // Executes the given |script| in the specified frame of the current
   // tab. |result| will be set to the JSON result. Returns true on success.
-  void ExecuteScript(const std::string& frame_xpath,
+  void ExecuteScript(int tab_id,
+                     const std::string& frame_xpath,
                      const std::string& script,
                      std::string* result,
                      bool* success);
 
   // Sends a key event to the current browser. Waits until the key has
   // been processed by the web page.
-  void SendWebKeyEvent(const WebKeyEvent& key_event, bool* success);
+  void SendWebKeyEvent(int tab_id, const WebKeyEvent& key_event, bool* success);
 
-  void NavigateToURL(const std::string& url, bool* success);
-  void GoForward(bool* success);
-  void GoBack(bool* success);
-  void Reload(bool* success);
-  void GetURL(std::string* url, bool* success);
-  void GetGURL(GURL* gurl, bool* success);
-  void GetTabTitle(std::string* tab_title, bool* success);
-  void GetCookies(const GURL& gurl, std::string* cookies, bool* success);
-  void GetCookieByName(const GURL& gurl, const std::string& cookie_name,
-                       std::string* cookie, bool* success);
-  void DeleteCookie(const GURL& gurl, const std::string& cookie_name,
+  void NavigateToURL(int tab_id, const std::string& url, bool* success);
+  void GoForward(int tab_id, bool* success);
+  void GoBack(int tab_id, bool* success);
+  void Reload(int tab_id, bool* success);
+  void GetURL(int tab_id, std::string* url, bool* success);
+  void GetGURL(int tab_id, GURL* gurl, bool* success);
+  void GetTabTitle(int tab_id, std::string* tab_title, bool* success);
+  void GetCookies(
+      int tab_id, const GURL& gurl, std::string* cookies, bool* success);
+  void GetCookieByName(int tab_id,
+                       const GURL& gurl,
+                       const std::string& cookie_name,
+                       std::string* cookie,
+                       bool* success);
+  void DeleteCookie(int tab_id,
+                    const GURL& gurl,
+                    const std::string& cookie_name,
                     bool* success);
-  void SetCookie(const GURL& gurl, const std::string& cookie, bool* success);
+  void SetCookie(
+      int tab_id, const GURL& gurl, const std::string& cookie, bool* success);
+
+  // Get persistent IDs for all the tabs currently open. These IDs can be used
+  // to identify the tab as long as the tab exists.
+  void GetTabIds(std::vector<int>* tab_ids, bool* success);
+
+  // Check if the given tab exists currently.
+  void DoesTabExist(int tab_id, bool* does_exist);
+
+  void CloseTab(int tab_id, bool* success);
 
  private:
-  scoped_refptr<BrowserProxy> browser_;
-  scoped_refptr<TabProxy> tab_;
+  typedef std::map<int, scoped_refptr<TabProxy> > TabIdMap;
+  TabProxy* GetTabById(int tab_id);
 
+  // Map from tab ID to |TabProxy|. The tab ID is simply the |AutomationHandle|
+  // for the proxy.
+  TabIdMap tab_id_map_;
   ScopedTempDir profile_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(Automation);

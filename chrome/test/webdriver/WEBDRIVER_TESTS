@@ -51,7 +51,10 @@
     '-executing_javascript_test.ExecutingJavaScriptTests.testShouldBeAbleToPassAStringAnAsArgument',
     '-executing_javascript_test.ExecutingJavaScriptTests.testShouldBeAbleToPassInMoreThanOneArgument',
 #   'form_handling_tests',
-#   'frame_switching_tests',
+    'frame_switching_tests',
+    # Next two frame switching tests are disabled because they depend on toggle.
+    '-frame_switching_tests.FrameSwitchingTest.testThatWeCanSwitchFrameByName',
+    '-frame_switching_tests.FrameSwitchingTest.testThatWeCanSwitchToFrameByIndex',
 #   'implicit_waits_tests',
     'page_loading_tests',
     # testShouldReturnWhenGettingAUrlThatDoesNotResolve causes the test after
