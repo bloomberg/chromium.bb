@@ -45,8 +45,8 @@ Index: jpeglib.h
 Index: jpeglibmangler.h
 ===================================================================
 --- jpeglibmangler.h	(revision 0)
-+++ jpeglibmangler.h	(revision 0)
-@@ -0,0 +1,113 @@
++++ jpeglibmangler.h	(revision 73971)
+@@ -0,0 +1,115 @@
 +// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -158,33 +158,25 @@ Index: jpeglibmangler.h
 +#define jpeg_open_backing_store chromium_jpeg_open_backing_store
 +#define jpeg_mem_init chromium_jpeg_mem_init
 +#define jpeg_mem_term chromium_jpeg_mem_term
++#define jpeg_std_message_table chromium_jpeg_std_message_table
++#define jpeg_natural_order chromium_jpeg_natural_order
 +
 +#endif  // THIRD_PARTY_LIBJPEG_TURBO_JPEGLIBMANGLER_H_
-Index: simd/jimmxfst.asm
+Index: jdhuff.c
 ===================================================================
---- simd/jimmxfst.asm	(revision 73737)
-+++ simd/jimmxfst.asm	(working copy)
-@@ -59,7 +59,7 @@
- %define CONST_SHIFT     (16 - PRE_MULTIPLY_SCALE_BITS - CONST_BITS)
- 
- 	alignz	16
--	global	EXTN(jconst_idct_ifast_mmx)
-+	global	EXTN(jconst_idct_ifast_mmx) PRIVATE
- 
- EXTN(jconst_idct_ifast_mmx):
- 
-@@ -94,7 +94,7 @@
- 					; JCOEF workspace[DCTSIZE2]
- 
- 	align	16
--	global	EXTN(jsimd_idct_ifast_mmx)
-+	global	EXTN(jsimd_idct_ifast_mmx) PRIVATE
- 
- EXTN(jsimd_idct_ifast_mmx):
- 	push	ebp
+--- jdhuff.c	(revision 64575)
++++ jdhuff.c	(working copy)
+@@ -658,7 +658,7 @@
+       symbol |= GET_BITS(1); \
+       size++; \
+     } \
+-    symbol = htbl->pub->huffval[ (int) (symbol + htbl->valoffset[size]) ]; \
++    symbol = htbl->pub->huffval[ (int) (symbol + htbl->valoffset[size]) & 0xFF ]; \
+   } \
+ }
 Index: simd/jcqntmmx.asm
 ===================================================================
---- simd/jcqntmmx.asm	(revision 73737)
+--- simd/jcqntmmx.asm	(revision 64575)
 +++ simd/jcqntmmx.asm	(working copy)
 @@ -35,7 +35,7 @@
  %define workspace	ebp+16		; DCTELEM * workspace
@@ -204,9 +196,31 @@ Index: simd/jcqntmmx.asm
  
  EXTN(jsimd_quantize_mmx):
  	push	ebp
+Index: simd/jimmxfst.asm
+===================================================================
+--- simd/jimmxfst.asm	(revision 64575)
++++ simd/jimmxfst.asm	(working copy)
+@@ -59,7 +59,7 @@
+ %define CONST_SHIFT     (16 - PRE_MULTIPLY_SCALE_BITS - CONST_BITS)
+ 
+ 	alignz	16
+-	global	EXTN(jconst_idct_ifast_mmx)
++	global	EXTN(jconst_idct_ifast_mmx) PRIVATE
+ 
+ EXTN(jconst_idct_ifast_mmx):
+ 
+@@ -94,7 +94,7 @@
+ 					; JCOEF workspace[DCTSIZE2]
+ 
+ 	align	16
+-	global	EXTN(jsimd_idct_ifast_mmx)
++	global	EXTN(jsimd_idct_ifast_mmx) PRIVATE
+ 
+ EXTN(jsimd_idct_ifast_mmx):
+ 	push	ebp
 Index: simd/jfss2fst.asm
 ===================================================================
---- simd/jfss2fst.asm	(revision 73737)
+--- simd/jfss2fst.asm	(revision 64575)
 +++ simd/jfss2fst.asm	(working copy)
 @@ -52,7 +52,7 @@
  %define CONST_SHIFT     (16 - PRE_MULTIPLY_SCALE_BITS - CONST_BITS)
@@ -228,7 +242,7 @@ Index: simd/jfss2fst.asm
  	push	ebp
 Index: simd/jiss2fst.asm
 ===================================================================
---- simd/jiss2fst.asm	(revision 73737)
+--- simd/jiss2fst.asm	(revision 64575)
 +++ simd/jiss2fst.asm	(working copy)
 @@ -59,7 +59,7 @@
  %define CONST_SHIFT     (16 - PRE_MULTIPLY_SCALE_BITS - CONST_BITS)
@@ -248,9 +262,22 @@ Index: simd/jiss2fst.asm
  
  EXTN(jsimd_idct_ifast_sse2):
  	push	ebp
+Index: simd/jdcolss2-64.asm
+===================================================================
+--- simd/jdcolss2-64.asm	(revision 64575)
++++ simd/jdcolss2-64.asm	(working copy)
+@@ -35,7 +35,7 @@
+ 	SECTION	SEG_CONST
+ 
+ 	alignz	16
+-	global	EXTN(jconst_ycc_rgb_convert_sse2)
++	global	EXTN(jconst_ycc_rgb_convert_sse2) PRIVATE
+ 
+ EXTN(jconst_ycc_rgb_convert_sse2):
+ 
 Index: simd/jf3dnflt.asm
 ===================================================================
---- simd/jf3dnflt.asm	(revision 73737)
+--- simd/jf3dnflt.asm	(revision 64575)
 +++ simd/jf3dnflt.asm	(working copy)
 @@ -27,7 +27,7 @@
  	SECTION	SEG_CONST
@@ -270,22 +297,9 @@ Index: simd/jf3dnflt.asm
  
  EXTN(jsimd_fdct_float_3dnow):
  	push	ebp
-Index: simd/jdcolss2-64.asm
-===================================================================
---- simd/jdcolss2-64.asm	(revision 73737)
-+++ simd/jdcolss2-64.asm	(working copy)
-@@ -35,7 +35,7 @@
- 	SECTION	SEG_CONST
- 
- 	alignz	16
--	global	EXTN(jconst_ycc_rgb_convert_sse2)
-+	global	EXTN(jconst_ycc_rgb_convert_sse2) PRIVATE
- 
- EXTN(jconst_ycc_rgb_convert_sse2):
- 
 Index: simd/jcclrss2-64.asm
 ===================================================================
---- simd/jcclrss2-64.asm	(revision 73737)
+--- simd/jcclrss2-64.asm	(revision 64575)
 +++ simd/jcclrss2-64.asm	(working copy)
 @@ -39,7 +39,7 @@
  
@@ -298,7 +312,7 @@ Index: simd/jcclrss2-64.asm
  	push	rbp
 Index: simd/jiss2red-64.asm
 ===================================================================
---- simd/jiss2red-64.asm	(revision 73737)
+--- simd/jiss2red-64.asm	(revision 64575)
 +++ simd/jiss2red-64.asm	(working copy)
 @@ -73,7 +73,7 @@
  	SECTION	SEG_CONST
@@ -327,31 +341,9 @@ Index: simd/jiss2red-64.asm
  
  EXTN(jsimd_idct_2x2_sse2):
  	push	rbp
-Index: simd/ji3dnflt.asm
-===================================================================
---- simd/ji3dnflt.asm	(revision 73737)
-+++ simd/ji3dnflt.asm	(working copy)
-@@ -27,7 +27,7 @@
- 	SECTION	SEG_CONST
- 
- 	alignz	16
--	global	EXTN(jconst_idct_float_3dnow)
-+	global	EXTN(jconst_idct_float_3dnow) PRIVATE
- 
- EXTN(jconst_idct_float_3dnow):
- 
-@@ -63,7 +63,7 @@
- 					; FAST_FLOAT workspace[DCTSIZE2]
- 
- 	align	16
--	global	EXTN(jsimd_idct_float_3dnow)
-+	global	EXTN(jsimd_idct_float_3dnow) PRIVATE
- 
- EXTN(jsimd_idct_float_3dnow):
- 	push	ebp
 Index: simd/jdsamss2-64.asm
 ===================================================================
---- simd/jdsamss2-64.asm	(revision 73737)
+--- simd/jdsamss2-64.asm	(revision 64575)
 +++ simd/jdsamss2-64.asm	(working copy)
 @@ -23,7 +23,7 @@
  	SECTION	SEG_CONST
@@ -398,9 +390,31 @@ Index: simd/jdsamss2-64.asm
  
  EXTN(jsimd_h2v2_upsample_sse2):
  	push	rbp
+Index: simd/ji3dnflt.asm
+===================================================================
+--- simd/ji3dnflt.asm	(revision 64575)
++++ simd/ji3dnflt.asm	(working copy)
+@@ -27,7 +27,7 @@
+ 	SECTION	SEG_CONST
+ 
+ 	alignz	16
+-	global	EXTN(jconst_idct_float_3dnow)
++	global	EXTN(jconst_idct_float_3dnow) PRIVATE
+ 
+ EXTN(jconst_idct_float_3dnow):
+ 
+@@ -63,7 +63,7 @@
+ 					; FAST_FLOAT workspace[DCTSIZE2]
+ 
+ 	align	16
+-	global	EXTN(jsimd_idct_float_3dnow)
++	global	EXTN(jsimd_idct_float_3dnow) PRIVATE
+ 
+ EXTN(jsimd_idct_float_3dnow):
+ 	push	ebp
 Index: simd/jsimdcpu.asm
 ===================================================================
---- simd/jsimdcpu.asm	(revision 73737)
+--- simd/jsimdcpu.asm	(revision 64575)
 +++ simd/jsimdcpu.asm	(working copy)
 @@ -29,7 +29,7 @@
  ;
@@ -413,7 +427,7 @@ Index: simd/jsimdcpu.asm
  	push	ebx
 Index: simd/jcsammmx.asm
 ===================================================================
---- simd/jcsammmx.asm	(revision 73737)
+--- simd/jcsammmx.asm	(revision 64575)
 +++ simd/jcsammmx.asm	(working copy)
 @@ -40,7 +40,7 @@
  %define output_data(b)	(b)+28	; JSAMPARRAY output_data
@@ -435,7 +449,7 @@ Index: simd/jcsammmx.asm
  	push	ebp
 Index: simd/jdsammmx.asm
 ===================================================================
---- simd/jdsammmx.asm	(revision 73737)
+--- simd/jdsammmx.asm	(revision 64575)
 +++ simd/jdsammmx.asm	(working copy)
 @@ -22,7 +22,7 @@
  	SECTION	SEG_CONST
@@ -484,7 +498,7 @@ Index: simd/jdsammmx.asm
  	push	ebp
 Index: simd/jdmerss2-64.asm
 ===================================================================
---- simd/jdmerss2-64.asm	(revision 73737)
+--- simd/jdmerss2-64.asm	(revision 64575)
 +++ simd/jdmerss2-64.asm	(working copy)
 @@ -35,7 +35,7 @@
  	SECTION	SEG_CONST
@@ -497,7 +511,7 @@ Index: simd/jdmerss2-64.asm
  
 Index: simd/jcqnts2f-64.asm
 ===================================================================
---- simd/jcqnts2f-64.asm	(revision 73737)
+--- simd/jcqnts2f-64.asm	(revision 64575)
 +++ simd/jcqnts2f-64.asm	(working copy)
 @@ -36,7 +36,7 @@
  ; r12 = FAST_FLOAT * workspace
@@ -519,7 +533,7 @@ Index: simd/jcqnts2f-64.asm
  	push	rbp
 Index: simd/jcqnt3dn.asm
 ===================================================================
---- simd/jcqnt3dn.asm	(revision 73737)
+--- simd/jcqnt3dn.asm	(revision 64575)
 +++ simd/jcqnt3dn.asm	(working copy)
 @@ -35,7 +35,7 @@
  %define workspace	ebp+16		; FAST_FLOAT * workspace
@@ -541,7 +555,7 @@ Index: simd/jcqnt3dn.asm
  	push	ebp
 Index: simd/jcsamss2.asm
 ===================================================================
---- simd/jcsamss2.asm	(revision 73737)
+--- simd/jcsamss2.asm	(revision 64575)
 +++ simd/jcsamss2.asm	(working copy)
 @@ -40,7 +40,7 @@
  %define output_data(b)	(b)+28		; JSAMPARRAY output_data
@@ -563,7 +577,7 @@ Index: simd/jcsamss2.asm
  	push	ebp
 Index: simd/jdmrgmmx.asm
 ===================================================================
---- simd/jdmrgmmx.asm	(revision 73737)
+--- simd/jdmrgmmx.asm	(revision 64575)
 +++ simd/jdmrgmmx.asm	(working copy)
 @@ -42,7 +42,7 @@
  %define gotptr		wk(0)-SIZEOF_POINTER	; void * gotptr
@@ -585,7 +599,7 @@ Index: simd/jdmrgmmx.asm
  	push	ebp
 Index: simd/jdsamss2.asm
 ===================================================================
---- simd/jdsamss2.asm	(revision 73737)
+--- simd/jdsamss2.asm	(revision 64575)
 +++ simd/jdsamss2.asm	(working copy)
 @@ -22,7 +22,7 @@
  	SECTION	SEG_CONST
@@ -634,7 +648,7 @@ Index: simd/jdsamss2.asm
  	push	ebp
 Index: simd/jiss2flt-64.asm
 ===================================================================
---- simd/jiss2flt-64.asm	(revision 73737)
+--- simd/jiss2flt-64.asm	(revision 64575)
 +++ simd/jiss2flt-64.asm	(working copy)
 @@ -38,7 +38,7 @@
  	SECTION	SEG_CONST
@@ -656,7 +670,7 @@ Index: simd/jiss2flt-64.asm
  	push	rbp
 Index: simd/jfss2int-64.asm
 ===================================================================
---- simd/jfss2int-64.asm	(revision 73737)
+--- simd/jfss2int-64.asm	(revision 64575)
 +++ simd/jfss2int-64.asm	(working copy)
 @@ -67,7 +67,7 @@
  	SECTION	SEG_CONST
@@ -678,7 +692,7 @@ Index: simd/jfss2int-64.asm
  	push	rbp
 Index: simd/jcqnts2f.asm
 ===================================================================
---- simd/jcqnts2f.asm	(revision 73737)
+--- simd/jcqnts2f.asm	(revision 64575)
 +++ simd/jcqnts2f.asm	(working copy)
 @@ -35,7 +35,7 @@
  %define workspace	ebp+16		; FAST_FLOAT * workspace
@@ -700,7 +714,7 @@ Index: simd/jcqnts2f.asm
  	push	ebp
 Index: simd/jdmrgss2.asm
 ===================================================================
---- simd/jdmrgss2.asm	(revision 73737)
+--- simd/jdmrgss2.asm	(revision 64575)
 +++ simd/jdmrgss2.asm	(working copy)
 @@ -42,7 +42,7 @@
  %define gotptr		wk(0)-SIZEOF_POINTER	; void * gotptr
@@ -711,7 +725,88 @@ Index: simd/jdmrgss2.asm
  
  EXTN(jsimd_h2v1_merged_upsample_sse2):
  	push	ebp
-@@ -509,7 +509,7 @@
+@@ -309,6 +309,41 @@
+ 	movdqa	xmmA,xmmD
+ 	sub	ecx, byte SIZEOF_XMMWORD
+ .column_st15:
++%ifdef STRICT_MEMORY_ACCESS
++	; Store the lower 8 bytes of xmmA to the output when it has enough
++	; space.
++	cmp	ecx, byte SIZEOF_MMWORD
++	jb	short .column_st7
++	movq	MMWORD [edi], xmmA
++	add	edi, byte SIZEOF_MMWORD
++	sub	ecx, byte SIZEOF_MMWORD
++	psrldq	xmmA, SIZEOF_MMWORD
++.column_st7:
++	; Store the lower 4 bytes of xmmA to the output when it has enough
++	; space.
++	cmp	ecx, byte SIZEOF_DWORD
++	jb	short .column_st3
++	movd	DWORD [edi], xmmA
++	add	edi, byte SIZEOF_DWORD
++	sub	ecx, byte SIZEOF_DWORD
++	psrldq	xmmA, SIZEOF_DWORD
++.column_st3:
++	; Store the lower 2 bytes of eax to the output when it has enough
++	; space.
++	movd	eax, xmmA
++	cmp	ecx, byte SIZEOF_WORD
++	jb	short .column_st1
++	mov	WORD [edi], ax
++	add	edi, byte SIZEOF_WORD
++	sub	ecx, byte SIZEOF_WORD
++	shr	eax, 16
++.column_st1:
++	; Store the lower 1 byte of eax to the output when it has enough
++	; space.
++	test	ecx, ecx
++	jz	short .nextrow
++	mov	BYTE [edi], al
++%else
+ 	mov	eax,ecx
+ 	xor	ecx, byte 0x0F
+ 	shl	ecx, 2
+@@ -348,6 +383,7 @@
+ 	por	xmmE,xmmC
+ .adj0:	; ----------------
+ 	maskmovdqu xmmA,xmmE			; movntdqu XMMWORD [edi], xmmA
++%endif ; STRICT_MEMORY_ACCESS ; ---------------
+ 
+ %else ; RGB_PIXELSIZE == 4 ; -----------
+ 
+@@ -436,6 +472,22 @@
+ 	movdqa	xmmA,xmmD
+ 	sub	ecx, byte SIZEOF_XMMWORD/4
+ .column_st15:
++%ifdef STRICT_MEMORY_ACCESS
++	; Store two pixels (8 bytes) of xmmA to the output when it has enough
++	; space.
++	cmp	ecx, byte SIZEOF_XMMWORD/8
++	jb	short .column_st7
++	movq	MMWORD [edi], xmmA
++	add	edi, byte SIZEOF_XMMWORD/8*4
++	sub	ecx, byte SIZEOF_XMMWORD/8
++	psrldq	xmmA, SIZEOF_XMMWORD/8*4
++.column_st7:
++	; Store one pixel (4 bytes) of xmmA to the output when it has enough
++	; space.
++	test	ecx, ecx
++	jz	short .nextrow
++	movd	DWORD [edi], xmmA
++%else
+ 	cmp	ecx, byte SIZEOF_XMMWORD/16
+ 	jb	short .endcolumn
+ 	mov	eax,ecx
+@@ -475,6 +527,7 @@
+ 	por	xmmE,xmmG
+ .adj0:	; ----------------
+ 	maskmovdqu xmmA,xmmE			; movntdqu XMMWORD [edi], xmmA
++%endif ; STRICT_MEMORY_ACCESS ; ---------------
+ 
+ %endif ; RGB_PIXELSIZE ; ---------------
+ 
+@@ -509,7 +562,7 @@
  %define output_buf(b)		(b)+20		; JSAMPARRAY output_buf
  
  	align	16
@@ -722,7 +817,7 @@ Index: simd/jdmrgss2.asm
  	push	ebp
 Index: simd/jfmmxint.asm
 ===================================================================
---- simd/jfmmxint.asm	(revision 73737)
+--- simd/jfmmxint.asm	(revision 64575)
 +++ simd/jfmmxint.asm	(working copy)
 @@ -66,7 +66,7 @@
  	SECTION	SEG_CONST
@@ -744,7 +839,7 @@ Index: simd/jfmmxint.asm
  	push	ebp
 Index: simd/jcqnts2i.asm
 ===================================================================
---- simd/jcqnts2i.asm	(revision 73737)
+--- simd/jcqnts2i.asm	(revision 64575)
 +++ simd/jcqnts2i.asm	(working copy)
 @@ -35,7 +35,7 @@
  %define workspace	ebp+16		; DCTELEM * workspace
@@ -766,7 +861,7 @@ Index: simd/jcqnts2i.asm
  	push	ebp
 Index: simd/jiss2fst-64.asm
 ===================================================================
---- simd/jiss2fst-64.asm	(revision 73737)
+--- simd/jiss2fst-64.asm	(revision 64575)
 +++ simd/jiss2fst-64.asm	(working copy)
 @@ -60,7 +60,7 @@
  %define CONST_SHIFT     (16 - PRE_MULTIPLY_SCALE_BITS - CONST_BITS)
@@ -788,7 +883,7 @@ Index: simd/jiss2fst-64.asm
  	push	rbp
 Index: simd/jimmxint.asm
 ===================================================================
---- simd/jimmxint.asm	(revision 73737)
+--- simd/jimmxint.asm	(revision 64575)
 +++ simd/jimmxint.asm	(working copy)
 @@ -66,7 +66,7 @@
  	SECTION	SEG_CONST
@@ -810,7 +905,7 @@ Index: simd/jimmxint.asm
  	push	ebp
 Index: simd/jiss2flt.asm
 ===================================================================
---- simd/jiss2flt.asm	(revision 73737)
+--- simd/jiss2flt.asm	(revision 64575)
 +++ simd/jiss2flt.asm	(working copy)
 @@ -37,7 +37,7 @@
  	SECTION	SEG_CONST
@@ -832,7 +927,7 @@ Index: simd/jiss2flt.asm
  	push	ebp
 Index: simd/jfss2int.asm
 ===================================================================
---- simd/jfss2int.asm	(revision 73737)
+--- simd/jfss2int.asm	(revision 64575)
 +++ simd/jfss2int.asm	(working copy)
 @@ -66,7 +66,7 @@
  	SECTION	SEG_CONST
@@ -854,7 +949,7 @@ Index: simd/jfss2int.asm
  	push	ebp
 Index: simd/jiss2int.asm
 ===================================================================
---- simd/jiss2int.asm	(revision 73737)
+--- simd/jiss2int.asm	(revision 64575)
 +++ simd/jiss2int.asm	(working copy)
 @@ -66,7 +66,7 @@
  	SECTION	SEG_CONST
@@ -876,7 +971,7 @@ Index: simd/jiss2int.asm
  	push	ebp
 Index: simd/jfsseflt-64.asm
 ===================================================================
---- simd/jfsseflt-64.asm	(revision 73737)
+--- simd/jfsseflt-64.asm	(revision 64575)
 +++ simd/jfsseflt-64.asm	(working copy)
 @@ -38,7 +38,7 @@
  	SECTION	SEG_CONST
@@ -898,7 +993,7 @@ Index: simd/jfsseflt-64.asm
  	push	rbp
 Index: simd/jccolss2-64.asm
 ===================================================================
---- simd/jccolss2-64.asm	(revision 73737)
+--- simd/jccolss2-64.asm	(revision 64575)
 +++ simd/jccolss2-64.asm	(working copy)
 @@ -34,7 +34,7 @@
  	SECTION	SEG_CONST
@@ -911,7 +1006,7 @@ Index: simd/jccolss2-64.asm
  
 Index: simd/jccolmmx.asm
 ===================================================================
---- simd/jccolmmx.asm	(revision 73737)
+--- simd/jccolmmx.asm	(revision 64575)
 +++ simd/jccolmmx.asm	(working copy)
 @@ -37,7 +37,7 @@
  	SECTION	SEG_CONST
@@ -924,7 +1019,7 @@ Index: simd/jccolmmx.asm
  
 Index: simd/jcsamss2-64.asm
 ===================================================================
---- simd/jcsamss2-64.asm	(revision 73737)
+--- simd/jcsamss2-64.asm	(revision 64575)
 +++ simd/jcsamss2-64.asm	(working copy)
 @@ -41,7 +41,7 @@
  ; r15 = JSAMPARRAY output_data
@@ -946,7 +1041,7 @@ Index: simd/jcsamss2-64.asm
  	push	rbp
 Index: simd/jdcolmmx.asm
 ===================================================================
---- simd/jdcolmmx.asm	(revision 73737)
+--- simd/jdcolmmx.asm	(revision 64575)
 +++ simd/jdcolmmx.asm	(working copy)
 @@ -35,7 +35,7 @@
  	SECTION	SEG_CONST
@@ -959,7 +1054,7 @@ Index: simd/jdcolmmx.asm
  
 Index: simd/jdclrss2-64.asm
 ===================================================================
---- simd/jdclrss2-64.asm	(revision 73737)
+--- simd/jdclrss2-64.asm	(revision 64575)
 +++ simd/jdclrss2-64.asm	(working copy)
 @@ -41,7 +41,7 @@
  %define WK_NUM		2
@@ -970,9 +1065,103 @@ Index: simd/jdclrss2-64.asm
  
  EXTN(jsimd_ycc_rgb_convert_sse2):
  	push	rbp
+@@ -292,6 +292,41 @@
+ 	movdqa	xmmA,xmmD
+ 	sub	rcx, byte SIZEOF_XMMWORD
+ .column_st15:
++%ifdef STRICT_MEMORY_ACCESS
++	; Store the lower 8 bytes of xmmA to the output when it has enough
++	; space.
++	cmp	rcx, byte SIZEOF_MMWORD
++	jb	short .column_st7
++	movq	MMWORD [rdi], xmmA
++	add	rdi, byte SIZEOF_MMWORD
++	sub	rcx, byte SIZEOF_MMWORD
++	psrldq	xmmA, SIZEOF_MMWORD
++.column_st7:
++	; Store the lower 4 bytes of xmmA to the output when it has enough
++	; space.
++	cmp	rcx, byte SIZEOF_DWORD
++	jb	short .column_st3
++	movd	DWORD [rdi], xmmA
++	add	rdi, byte SIZEOF_DWORD
++	sub	rcx, byte SIZEOF_DWORD
++	psrldq	xmmA, SIZEOF_DWORD
++.column_st3:
++	; Store the lower 2 bytes of rax to the output when it has enough
++	; space.
++	movd	rax, xmmA
++	cmp	rcx, byte SIZEOF_WORD
++	jb	short .column_st1
++	mov	WORD [rdi], ax
++	add	rdi, byte SIZEOF_WORD
++	sub	rcx, byte SIZEOF_WORD
++	shr	rax, 16
++.column_st1:
++	; Store the lower 1 byte of rax to the output when it has enough
++	; space.
++	test	rcx, rcx
++	jz	short .nextrow
++	mov	BYTE [rdi], al
++%else
+ 	mov	rax,rcx
+ 	xor	rcx, byte 0x0F
+ 	shl	rcx, 2
+@@ -331,6 +366,7 @@
+ 	por	xmmE,xmmC
+ .adj0:	; ----------------
+ 	maskmovdqu xmmA,xmmE			; movntdqu XMMWORD [rdi], xmmA
++%endif ; STRICT_MEMORY_ACCESS ; ---------------
+ 
+ %else ; RGB_PIXELSIZE == 4 ; -----------
+ 
+@@ -415,6 +451,22 @@
+ 	movdqa	xmmA,xmmD
+ 	sub	rcx, byte SIZEOF_XMMWORD/4
+ .column_st15:
++%ifdef STRICT_MEMORY_ACCESS
++	; Store two pixels (8 bytes) of xmmA to the output when it has enough
++	; space.
++	cmp	rcx, byte SIZEOF_XMMWORD/8
++	jb	short .column_st7
++	movq	MMWORD [rdi], xmmA
++	add	rdi, byte SIZEOF_XMMWORD/8*4
++	sub	rcx, byte SIZEOF_XMMWORD/8
++	psrldq	xmmA, SIZEOF_XMMWORD/8*4
++.column_st7:
++	; Store one pixel (4 bytes) of xmmA to the output when it has enough
++	; space.
++	test	rcx, rcx
++	jz	short .nextrow
++	movd	DWORD [rdi], xmmA
++%else
+ 	cmp	rcx, byte SIZEOF_XMMWORD/16
+ 	jb	near .nextrow
+ 	mov	rax,rcx
+@@ -454,6 +506,7 @@
+ 	por	xmmE,xmmG
+ .adj0:	; ----------------
+ 	maskmovdqu xmmA,xmmE			; movntdqu XMMWORD [rdi], xmmA
++%endif ; STRICT_MEMORY_ACCESS ; ---------------
+ 
+ %endif ; RGB_PIXELSIZE ; ---------------
+ 
+Index: simd/jcclrmmx.asm
+===================================================================
+--- simd/jcclrmmx.asm	(revision 64575)
++++ simd/jcclrmmx.asm	(working copy)
+@@ -42,7 +42,7 @@
+ %define gotptr		wk(0)-SIZEOF_POINTER	; void * gotptr
+ 
+ 	align	16
+-	global	EXTN(jsimd_rgb_ycc_convert_mmx)
++	global	EXTN(jsimd_rgb_ycc_convert_mmx) PRIVATE
+ 
+ EXTN(jsimd_rgb_ycc_convert_mmx):
+ 	push	ebp
 Index: simd/jimmxred.asm
 ===================================================================
---- simd/jimmxred.asm	(revision 73737)
+--- simd/jimmxred.asm	(revision 64575)
 +++ simd/jimmxred.asm	(working copy)
 @@ -72,7 +72,7 @@
  	SECTION	SEG_CONST
@@ -1001,22 +1190,9 @@ Index: simd/jimmxred.asm
  
  EXTN(jsimd_idct_2x2_mmx):
  	push	ebp
-Index: simd/jcclrmmx.asm
-===================================================================
---- simd/jcclrmmx.asm	(revision 73737)
-+++ simd/jcclrmmx.asm	(working copy)
-@@ -42,7 +42,7 @@
- %define gotptr		wk(0)-SIZEOF_POINTER	; void * gotptr
- 
- 	align	16
--	global	EXTN(jsimd_rgb_ycc_convert_mmx)
-+	global	EXTN(jsimd_rgb_ycc_convert_mmx) PRIVATE
- 
- EXTN(jsimd_rgb_ycc_convert_mmx):
- 	push	ebp
 Index: simd/jdclrmmx.asm
 ===================================================================
---- simd/jdclrmmx.asm	(revision 73737)
+--- simd/jdclrmmx.asm	(revision 64575)
 +++ simd/jdclrmmx.asm	(working copy)
 @@ -42,7 +42,7 @@
  %define gotptr		wk(0)-SIZEOF_POINTER	; void * gotptr
@@ -1029,7 +1205,7 @@ Index: simd/jdclrmmx.asm
  	push	ebp
 Index: simd/jfsseflt.asm
 ===================================================================
---- simd/jfsseflt.asm	(revision 73737)
+--- simd/jfsseflt.asm	(revision 64575)
 +++ simd/jfsseflt.asm	(working copy)
 @@ -37,7 +37,7 @@
  	SECTION	SEG_CONST
@@ -1051,7 +1227,7 @@ Index: simd/jfsseflt.asm
  	push	ebp
 Index: simd/jsimdext.inc
 ===================================================================
---- simd/jsimdext.inc	(revision 73737)
+--- simd/jsimdext.inc	(revision 64575)
 +++ simd/jsimdext.inc	(working copy)
 @@ -369,4 +369,14 @@
  ;
@@ -1070,7 +1246,7 @@ Index: simd/jsimdext.inc
  ; --------------------------------------------------------------------------
 Index: simd/jdmrgss2-64.asm
 ===================================================================
---- simd/jdmrgss2-64.asm	(revision 73737)
+--- simd/jdmrgss2-64.asm	(revision 64575)
 +++ simd/jdmrgss2-64.asm	(working copy)
 @@ -41,7 +41,7 @@
  %define WK_NUM		3
@@ -1081,7 +1257,88 @@ Index: simd/jdmrgss2-64.asm
  
  EXTN(jsimd_h2v1_merged_upsample_sse2):
  	push	rbp
-@@ -492,7 +492,7 @@
+@@ -296,6 +296,41 @@
+ 	movdqa	xmmA,xmmD
+ 	sub	rcx, byte SIZEOF_XMMWORD
+ .column_st15:
++%ifdef STRICT_MEMORY_ACCESS
++	; Store the lower 8 bytes of xmmA to the output when it has enough
++	; space.
++	cmp	rcx, byte SIZEOF_MMWORD
++	jb	short .column_st7
++	movq	MMWORD [rdi], xmmA
++	add	rdi, byte SIZEOF_MMWORD
++	sub	rcx, byte SIZEOF_MMWORD
++	psrldq	xmmA, SIZEOF_MMWORD
++.column_st7:
++	; Store the lower 4 bytes of xmmA to the output when it has enough
++	; space.
++	cmp	rcx, byte SIZEOF_DWORD
++	jb	short .column_st3
++	movd	DWORD [rdi], xmmA
++	add	rdi, byte SIZEOF_DWORD
++	sub	rcx, byte SIZEOF_DWORD
++	psrldq	xmmA, SIZEOF_DWORD
++.column_st3:
++	; Store the lower 2 bytes of rax to the output when it has enough
++	; space.
++	movd	rax, xmmA
++	cmp	rcx, byte SIZEOF_WORD
++	jb	short .column_st1
++	mov	WORD [rdi], ax
++	add	rdi, byte SIZEOF_WORD
++	sub	rcx, byte SIZEOF_WORD
++	shr	rax, 16
++.column_st1:
++	; Store the lower 1 byte of rax to the output when it has enough
++	; space.
++	test	rcx, rcx
++	jz	short .nextrow
++	mov	BYTE [rdi], al
++%else
+ 	mov	rax,rcx
+ 	xor	rcx, byte 0x0F
+ 	shl	rcx, 2
+@@ -335,6 +370,7 @@
+ 	por	xmmE,xmmC
+ .adj0:	; ----------------
+ 	maskmovdqu xmmA,xmmE			; movntdqu XMMWORD [edi], xmmA
++%endif ; STRICT_MEMORY_ACCESS ; ---------------
+ 
+ %else ; RGB_PIXELSIZE == 4 ; -----------
+ 
+@@ -422,6 +458,22 @@
+ 	movdqa	xmmA,xmmD
+ 	sub	rcx, byte SIZEOF_XMMWORD/4
+ .column_st15:
++%ifdef STRICT_MEMORY_ACCESS
++	; Store two pixels (8 bytes) of xmmA to the output when it has enough
++	; space.
++	cmp	rcx, byte SIZEOF_XMMWORD/8
++	jb	short .column_st7
++	movq	MMWORD [rdi], xmmA
++	add	rdi, byte SIZEOF_XMMWORD/8*4
++	sub	rcx, byte SIZEOF_XMMWORD/8
++	psrldq	xmmA, SIZEOF_XMMWORD/8*4
++.column_st7:
++	; Store one pixel (4 bytes) of xmmA to the output when it has enough
++	; space.
++	test	rcx, rcx
++	jz	short .nextrow
++	movd	DWORD [rdi], xmmA
++%else
+ 	cmp	rcx, byte SIZEOF_XMMWORD/16
+ 	jb	near .endcolumn
+ 	mov	rax,rcx
+@@ -461,6 +513,7 @@
+ 	por	xmmE,xmmG
+ .adj0:	; ----------------
+ 	maskmovdqu xmmA,xmmE			; movntdqu XMMWORD [edi], xmmA
++%endif ; STRICT_MEMORY_ACCESS ; ---------------
+ 
+ %endif ; RGB_PIXELSIZE ; ---------------
+ 
+@@ -492,7 +545,7 @@
  ; r13 = JSAMPARRAY output_buf
  
  	align	16
@@ -1092,7 +1349,7 @@ Index: simd/jdmrgss2-64.asm
  	push	rbp
 Index: simd/jccolss2.asm
 ===================================================================
---- simd/jccolss2.asm	(revision 73737)
+--- simd/jccolss2.asm	(revision 64575)
 +++ simd/jccolss2.asm	(working copy)
 @@ -34,7 +34,7 @@
  	SECTION	SEG_CONST
@@ -1105,7 +1362,7 @@ Index: simd/jccolss2.asm
  
 Index: simd/jdmermmx.asm
 ===================================================================
---- simd/jdmermmx.asm	(revision 73737)
+--- simd/jdmermmx.asm	(revision 64575)
 +++ simd/jdmermmx.asm	(working copy)
 @@ -35,7 +35,7 @@
  	SECTION	SEG_CONST
@@ -1118,7 +1375,7 @@ Index: simd/jdmermmx.asm
  
 Index: simd/jdcolss2.asm
 ===================================================================
---- simd/jdcolss2.asm	(revision 73737)
+--- simd/jdcolss2.asm	(revision 64575)
 +++ simd/jdcolss2.asm	(working copy)
 @@ -35,7 +35,7 @@
  	SECTION	SEG_CONST
@@ -1131,7 +1388,7 @@ Index: simd/jdcolss2.asm
  
 Index: simd/jisseflt.asm
 ===================================================================
---- simd/jisseflt.asm	(revision 73737)
+--- simd/jisseflt.asm	(revision 64575)
 +++ simd/jisseflt.asm	(working copy)
 @@ -37,7 +37,7 @@
  	SECTION	SEG_CONST
@@ -1153,7 +1410,7 @@ Index: simd/jisseflt.asm
  	push	ebp
 Index: simd/jcqnts2i-64.asm
 ===================================================================
---- simd/jcqnts2i-64.asm	(revision 73737)
+--- simd/jcqnts2i-64.asm	(revision 64575)
 +++ simd/jcqnts2i-64.asm	(working copy)
 @@ -36,7 +36,7 @@
  ; r12 = DCTELEM * workspace
@@ -1173,9 +1430,22 @@ Index: simd/jcqnts2i-64.asm
  
  EXTN(jsimd_quantize_sse2):
  	push	rbp
+Index: simd/jcclrss2.asm
+===================================================================
+--- simd/jcclrss2.asm	(revision 64575)
++++ simd/jcclrss2.asm	(working copy)
+@@ -40,7 +40,7 @@
+ 
+ 	align	16
+ 
+-	global	EXTN(jsimd_rgb_ycc_convert_sse2)
++	global	EXTN(jsimd_rgb_ycc_convert_sse2) PRIVATE
+ 
+ EXTN(jsimd_rgb_ycc_convert_sse2):
+ 	push	ebp
 Index: simd/jiss2red.asm
 ===================================================================
---- simd/jiss2red.asm	(revision 73737)
+--- simd/jiss2red.asm	(revision 64575)
 +++ simd/jiss2red.asm	(working copy)
 @@ -72,7 +72,7 @@
  	SECTION	SEG_CONST
@@ -1204,22 +1474,9 @@ Index: simd/jiss2red.asm
  
  EXTN(jsimd_idct_2x2_sse2):
  	push	ebp
-Index: simd/jcclrss2.asm
-===================================================================
---- simd/jcclrss2.asm	(revision 73737)
-+++ simd/jcclrss2.asm	(working copy)
-@@ -40,7 +40,7 @@
- 
- 	align	16
- 
--	global	EXTN(jsimd_rgb_ycc_convert_sse2)
-+	global	EXTN(jsimd_rgb_ycc_convert_sse2) PRIVATE
- 
- EXTN(jsimd_rgb_ycc_convert_sse2):
- 	push	ebp
 Index: simd/jdclrss2.asm
 ===================================================================
---- simd/jdclrss2.asm	(revision 73737)
+--- simd/jdclrss2.asm	(revision 64575)
 +++ simd/jdclrss2.asm	(working copy)
 @@ -42,7 +42,7 @@
  %define gotptr		wk(0)-SIZEOF_POINTER	; void * gotptr
@@ -1230,9 +1487,90 @@ Index: simd/jdclrss2.asm
  
  EXTN(jsimd_ycc_rgb_convert_sse2):
  	push	ebp
+@@ -304,6 +304,41 @@
+ 	movdqa	xmmA,xmmD
+ 	sub	ecx, byte SIZEOF_XMMWORD
+ .column_st15:
++%ifdef STRICT_MEMORY_ACCESS
++	; Store the lower 8 bytes of xmmA to the output when it has enough
++	; space.
++	cmp	ecx, byte SIZEOF_MMWORD
++	jb	short .column_st7
++	movq	MMWORD [edi], xmmA
++	add	edi, byte SIZEOF_MMWORD
++	sub	ecx, byte SIZEOF_MMWORD
++	psrldq	xmmA, SIZEOF_MMWORD
++.column_st7:
++	; Store the lower 4 bytes of xmmA to the output when it has enough
++	; space.
++	cmp	ecx, byte SIZEOF_DWORD
++	jb	short .column_st3
++	movd	DWORD [edi], xmmA
++	add	edi, byte SIZEOF_DWORD
++	sub	ecx, byte SIZEOF_DWORD
++	psrldq	xmmA, SIZEOF_DWORD
++.column_st3:
++	; Store the lower 2 bytes of eax to the output when it has enough
++	; space.
++	movd	eax, xmmA
++	cmp	ecx, byte SIZEOF_WORD
++	jb	short .column_st1
++	mov	WORD [edi], ax
++	add	edi, byte SIZEOF_WORD
++	sub	ecx, byte SIZEOF_WORD
++	shr	eax, 16
++.column_st1:
++	; Store the lower 1 byte of eax to the output when it has enough
++	; space.
++	test	ecx, ecx
++	jz	short .nextrow
++	mov	BYTE [edi], al
++%else
+ 	mov	eax,ecx
+ 	xor	ecx, byte 0x0F
+ 	shl	ecx, 2
+@@ -343,6 +378,7 @@
+ 	por	xmmE,xmmC
+ .adj0:	; ----------------
+ 	maskmovdqu xmmA,xmmE			; movntdqu XMMWORD [edi], xmmA
++%endif ; STRICT_MEMORY_ACCESS ; ---------------
+ 
+ %else ; RGB_PIXELSIZE == 4 ; -----------
+ 
+@@ -428,6 +464,22 @@
+ 	movdqa	xmmA,xmmD
+ 	sub	ecx, byte SIZEOF_XMMWORD/4
+ .column_st15:
++%ifdef STRICT_MEMORY_ACCESS
++	; Store two pixels (8 bytes) of xmmA to the output when it has enough
++	; space.
++	cmp	ecx, byte SIZEOF_XMMWORD/8
++	jb	short .column_st7
++	movq	MMWORD [edi], xmmA
++	add	edi, byte SIZEOF_XMMWORD/8*4
++	sub	ecx, byte SIZEOF_XMMWORD/8
++	psrldq	xmmA, SIZEOF_XMMWORD/8*4
++.column_st7:
++	; Store one pixel (4 bytes) of xmmA to the output when it has enough
++	; space.
++	test	ecx, ecx
++	jz	short .nextrow
++	movd	DWORD [edi], xmmA
++%else
+ 	cmp	ecx, byte SIZEOF_XMMWORD/16
+ 	jb	short .nextrow
+ 	mov	eax,ecx
+@@ -467,6 +519,7 @@
+ 	por	xmmE,xmmG
+ .adj0:	; ----------------
+ 	maskmovdqu xmmA,xmmE			; movntdqu XMMWORD [edi], xmmA
++%endif ; STRICT_MEMORY_ACCESS ; ---------------
+ 
+ %endif ; RGB_PIXELSIZE ; ---------------
+ 
 Index: simd/jdmerss2.asm
 ===================================================================
---- simd/jdmerss2.asm	(revision 73737)
+--- simd/jdmerss2.asm	(revision 64575)
 +++ simd/jdmerss2.asm	(working copy)
 @@ -35,7 +35,7 @@
  	SECTION	SEG_CONST
@@ -1245,7 +1583,7 @@ Index: simd/jdmerss2.asm
  
 Index: simd/jcqntsse.asm
 ===================================================================
---- simd/jcqntsse.asm	(revision 73737)
+--- simd/jcqntsse.asm	(revision 64575)
 +++ simd/jcqntsse.asm	(working copy)
 @@ -35,7 +35,7 @@
  %define workspace	ebp+16		; FAST_FLOAT * workspace
@@ -1267,7 +1605,7 @@ Index: simd/jcqntsse.asm
  	push	ebp
 Index: simd/jfss2fst-64.asm
 ===================================================================
---- simd/jfss2fst-64.asm	(revision 73737)
+--- simd/jfss2fst-64.asm	(revision 64575)
 +++ simd/jfss2fst-64.asm	(working copy)
 @@ -53,7 +53,7 @@
  %define CONST_SHIFT     (16 - PRE_MULTIPLY_SCALE_BITS - CONST_BITS)
@@ -1289,7 +1627,7 @@ Index: simd/jfss2fst-64.asm
  	push	rbp
 Index: simd/jiss2int-64.asm
 ===================================================================
---- simd/jiss2int-64.asm	(revision 73737)
+--- simd/jiss2int-64.asm	(revision 64575)
 +++ simd/jiss2int-64.asm	(working copy)
 @@ -67,7 +67,7 @@
  	SECTION	SEG_CONST
@@ -1311,7 +1649,7 @@ Index: simd/jiss2int-64.asm
  	push	rbp
 Index: simd/jfmmxfst.asm
 ===================================================================
---- simd/jfmmxfst.asm	(revision 73737)
+--- simd/jfmmxfst.asm	(revision 64575)
 +++ simd/jfmmxfst.asm	(working copy)
 @@ -52,7 +52,7 @@
  %define CONST_SHIFT     (16 - PRE_MULTIPLY_SCALE_BITS - CONST_BITS)
