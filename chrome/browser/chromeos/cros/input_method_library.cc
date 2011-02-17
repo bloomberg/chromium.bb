@@ -365,9 +365,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
 
   // Flushes the input method config data. The config data is queued up in
   // |pending_config_requests_| until the config backend (ibus-memconf)
-  // starts. Since there is no good way to get notified when the config
-  // backend starts, we use a timer to periodically attempt to send the
-  // config data to the config backend.
+  // starts.
   void FlushImeConfig() {
     if (!initialized_successfully_)
       return;
@@ -405,15 +403,6 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
         should_change_input_method_ = false;
         active_input_methods_are_changed = true;
       }
-    }
-
-    if (pending_config_requests_.empty()) {
-      timer_.Stop();  // no-op if it's not running.
-    } else if (!timer_.IsRunning()) {
-      // Flush is not completed. Start a timer if it's not yet running.
-      static const int64 kTimerIntervalInMsec = 100;
-      timer_.Start(base::TimeDelta::FromMilliseconds(kTimerIntervalInMsec),
-                   this, &InputMethodLibraryImpl::FlushImeConfig);
     }
 
     // Notify the current input method and the number of active input methods to
@@ -498,7 +487,8 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     input_method_library->UpdateProperty(prop_list);
   }
 
-  // Called when connection to IBus is established or terminated.
+  // Called when 1) connection to ibus-daemon and ibus-memconf are established
+  // or 2) connection to ibus-daemon is terminated.
   static void ConnectionChangeHandler(void* object, bool connected) {
     // See comments in InputMethodChangedHandler.
     if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
@@ -516,9 +506,6 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
           input_method_library->current_config_values_.end());
       input_method_library->should_change_input_method_ = true;
       input_method_library->FlushImeConfig();
-    } else {
-      // Stop attempting to resend config data, since it will continue to fail.
-      input_method_library->timer_.Stop();  // no-op if it's not running.
     }
   }
 
@@ -741,10 +728,6 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   // Values that have been set via SetImeConfig().  We keep a copy available to
   // resend if the ime restarts and loses its state.
   InputMethodConfigRequests current_config_values_;
-
-  // A timer for retrying to send |pendning_config_commands_| to the input
-  // method config daemon.
-  base::OneShotTimer<InputMethodLibraryImpl> timer_;
 
   // This is used to register this object to APP_EXITING notification.
   NotificationRegistrar notification_registrar_;
