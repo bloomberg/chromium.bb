@@ -1244,13 +1244,6 @@
    fun:ExtensionUpdaterTest*
 }
 {
-   bug_73132
-   Heapcheck:Leak
-   fun:Callback1::Type* NewCallback
-   fun:media::PipelineImpl::Initialize*
-   fun:media::PipelineImpl::InitializeTask
-}
-{
    bug_73268a
    Heapcheck:Leak
    ...
