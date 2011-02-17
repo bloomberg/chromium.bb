@@ -17,6 +17,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_thread_nice.h"
 #include "native_client/src/trusted/service_runtime/nacl_tls.h"
 
+// #define NACL_DEBUG_STUB 1
 
 void  NaClAllModulesInit(void) {
 #ifdef NACL_DEBUG_STUB

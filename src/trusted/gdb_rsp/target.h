@@ -20,8 +20,8 @@
 // and that all threads are updated with thier modified contexts and
 // restarted when the target returns from Run.
 
-#ifndef NATIVE_CLIENT_GDB_RSP_TARGET_H_
-#define NATIVE_CLIENT_GDB_RSP_TARGET_H_ 1
+#ifndef SRC_TRUSTED_GDB_RSP_TARGET_H_
+#define SRC_TRUSTED_GDB_RSP_TARGET_H_ 1
 
 #include <map>
 #include <string>
@@ -67,6 +67,8 @@ class Target {
   // Init must be the first function called to correctlty
   // build the Target internal structures.
   bool Init();
+
+  void SetMemoryBase(uint64_t mem_base) { mem_base_ = mem_base; }
 
   // Add and remove temporary breakpoints.  These breakpoints
   // must be added just before we start running, and removed
@@ -150,10 +152,11 @@ class Target {
 
   uint32_t run_thread_;   // Which thread to issue step commands on
   uint32_t reg_thread_;   // Which thread to issue context (reg) commands on
+  uint64_t mem_base_;
 };
 
 
 }  // namespace gdb_rsp
 
-#endif  // NATIVE_CLIENT_GDB_RSP_TARGET_H_
+#endif  // SRC_TRUSTED_GDB_RSP_TARGET_H_
 
