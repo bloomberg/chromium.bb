@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -94,7 +94,7 @@ class Font {
   // Lifetime lore:
   // Windows: This handle is owned by the Font object, and should not be
   //          destroyed by the caller.
-  // Mac:     Caller must release this object.
+  // Mac:     The object is owned by the system and should not be released.
   // Gtk:     This handle is created on demand, and must be freed by calling
   //          pango_font_description_free() when the caller is done using it.
   NativeFont GetNativeFont() const;

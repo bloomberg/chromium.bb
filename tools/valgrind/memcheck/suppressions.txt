@@ -3760,14 +3760,6 @@
    fun:_ZN5media12PipelineImpl14InitializeTaskEv
 }
 {
-   bug_73148
-   Memcheck:Leak
-   ...
-   fun:pango_font_description_new
-   fun:_ZNK3gfx15PlatformFontGtk13GetNativeFontEv
-   fun:_ZNK3gfx4Font13GetNativeFontEv
-}
-{
    bug_73268
    Memcheck:Leak
    ...
