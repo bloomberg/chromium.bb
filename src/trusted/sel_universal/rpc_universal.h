@@ -69,5 +69,6 @@ bool HandlerReadonlyFile(NaClCommandLoop* ncl, const vector<string>& args);
 bool HandlerShmem(NaClCommandLoop* ncl, const vector<string>& args);
 bool HandlerMap(NaClCommandLoop* ncl, const vector<string>& args);
 bool HandlerSaveToFile(NaClCommandLoop* ncl, const vector<string>& args);
-
+bool HandlerLoadFromFile(NaClCommandLoop* ncl, const vector<string>& args);
+bool HandlerFileSize(NaClCommandLoop* ncl, const vector<string>& args);
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_SEL_UNIVERSAL_RPC_UNIVERSAL_H_ */

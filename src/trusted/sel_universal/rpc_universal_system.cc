@@ -199,3 +199,61 @@ bool HandlerMap(NaClCommandLoop* ncl, const vector<string>& args) {
   ncl->SetVariable(args[2], str.str());
   return true;
 }
+
+// load file into memory region
+bool HandlerLoadFromFile(NaClCommandLoop* ncl, const vector<string>& args) {
+  UNREFERENCED_PARAMETER(ncl);
+  if (args.size() < 5) {
+    NaClLog(LOG_ERROR, "not enough args\n");
+    return false;
+  }
+
+  const char* filename = args[1].c_str();
+  char* start = reinterpret_cast<char*>(ExtractInt64(args[2]));
+  const int offset = ExtractInt32(args[3]);
+  const int size = ExtractInt32(args[4]);
+
+  NaClLog(1, "opening %s\n", filename);
+  FILE* fp = fopen(filename, "rb");
+  if (fp == NULL) {
+     NaClLog(LOG_ERROR, "cannot open %s\n", filename);
+     return false;
+  }
+
+  NaClLog(1, "loading %d bytes to %p\n", (int) size, start + offset);
+  const size_t n = fread(start + offset, 1, size, fp);
+  if (static_cast<int>(n) != size) {
+    NaClLog(LOG_ERROR, "read %d bytes, expected %d\n",
+            static_cast<int>(n), size);
+    fclose(fp);
+    return false;
+  }
+  fclose(fp);
+  return true;
+}
+
+// Determine filesize and write it into a variable
+bool HandlerFileSize(NaClCommandLoop* ncl, const vector<string>& args) {
+  UNREFERENCED_PARAMETER(ncl);
+  if (args.size() < 3) {
+    NaClLog(LOG_ERROR, "not enough args\n");
+    return false;
+  }
+
+  const char* filename = args[1].c_str();
+  FILE* fp = fopen(filename, "rb");
+  if (fp == NULL) {
+     NaClLog(LOG_ERROR, "cannot open %s\n", filename);
+     return false;
+  }
+  fseek(fp, 0, SEEK_END);
+  int size = static_cast<int>(ftell(fp));
+  fclose(fp);
+
+  NaClLog(1, "filesize is %d\n", size);
+
+  stringstream str;
+  str << size;
+  ncl->SetVariable(args[2], str.str());
+  return true;
+}

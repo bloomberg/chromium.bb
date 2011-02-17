@@ -168,6 +168,8 @@ int main(int argc, char* argv[]) {
   loop.AddHandler("sleep", HandlerSleep);
   loop.AddHandler("map_shmem", HandlerMap);
   loop.AddHandler("save_to_file", HandlerSaveToFile);
+  loop.AddHandler("load_from_file", HandlerLoadFromFile);
+  loop.AddHandler("file_size", HandlerFileSize);
 
   NaClLog(1, "populating initial vars\n");
   for (map<string, string>::iterator it = initial_vars.begin();
