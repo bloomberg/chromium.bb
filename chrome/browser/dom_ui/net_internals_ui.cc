@@ -16,6 +16,7 @@
 #include "base/singleton.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -255,6 +256,9 @@ class NetInternalsMessageHandler::IOThreadImpl
   void OnClearHostResolverCache(const ListValue* list);
   void OnEnableIPv6(const ListValue* list);
   void OnStartConnectionTests(const ListValue* list);
+  void OnHSTSQuery(const ListValue* list);
+  void OnHSTSAdd(const ListValue* list);
+  void OnHSTSDelete(const ListValue* list);
   void OnGetHttpCacheInfo(const ListValue* list);
   void OnGetSocketPoolInfo(const ListValue* list);
   void OnGetSpdySessionInfo(const ListValue* list);
@@ -506,6 +510,15 @@ void NetInternalsMessageHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback(
       "startConnectionTests",
       proxy_->CreateCallback(&IOThreadImpl::OnStartConnectionTests));
+  web_ui_->RegisterMessageCallback(
+      "hstsQuery",
+      proxy_->CreateCallback(&IOThreadImpl::OnHSTSQuery));
+  web_ui_->RegisterMessageCallback(
+      "hstsAdd",
+      proxy_->CreateCallback(&IOThreadImpl::OnHSTSAdd));
+  web_ui_->RegisterMessageCallback(
+      "hstsDelete",
+      proxy_->CreateCallback(&IOThreadImpl::OnHSTSDelete));
   web_ui_->RegisterMessageCallback(
       "getHttpCacheInfo",
       proxy_->CreateCallback(&IOThreadImpl::OnGetHttpCacheInfo));
@@ -952,6 +965,80 @@ void NetInternalsMessageHandler::IOThreadImpl::OnStartConnectionTests(
   connection_tester_.reset(new ConnectionTester(
       this, io_thread_->globals()->proxy_script_fetcher_context.get()));
   connection_tester_->RunAllTests(url);
+}
+
+void NetInternalsMessageHandler::IOThreadImpl::OnHSTSQuery(
+    const ListValue* list) {
+  // |list| should be: [<domain to query>].
+  std::string domain;
+  CHECK(list->GetString(0, &domain));
+  DictionaryValue* result = new(DictionaryValue);
+
+  if (!IsStringASCII(domain)) {
+    result->SetString("error", "non-ASCII domain name");
+  } else {
+    net::TransportSecurityState* transport_security_state =
+        context_getter_->GetURLRequestContext()->transport_security_state();
+    if (!transport_security_state) {
+      result->SetString("error", "no TransportSecurityState active");
+    } else {
+      net::TransportSecurityState::DomainState state;
+      const bool found = transport_security_state->IsEnabledForHost(
+          &state, domain);
+
+      result->SetBoolean("result", found);
+      if (found) {
+        result->SetInteger("mode", static_cast<int>(state.mode));
+        result->SetBoolean("subdomains", state.include_subdomains);
+        result->SetBoolean("preloaded", state.preloaded);
+        result->SetString("domain", state.domain);
+      }
+    }
+  }
+
+  CallJavascriptFunction(L"g_browser.receivedHSTSResult", result);
+}
+
+void NetInternalsMessageHandler::IOThreadImpl::OnHSTSAdd(
+    const ListValue* list) {
+  // |list| should be: [<domain to query>, <include subdomains>].
+  std::string domain;
+  CHECK(list->GetString(0, &domain));
+  if (!IsStringASCII(domain)) {
+    // Silently fail. The user will get a helpful error if they query for the
+    // name.
+    return;
+  }
+  bool include_subdomains;
+  CHECK(list->GetBoolean(1, &include_subdomains));
+
+  net::TransportSecurityState* transport_security_state =
+      context_getter_->GetURLRequestContext()->transport_security_state();
+  if (!transport_security_state)
+    return;
+
+  net::TransportSecurityState::DomainState state;
+  state.expiry = state.created + base::TimeDelta::FromDays(1000);
+  state.include_subdomains = include_subdomains;
+
+  transport_security_state->EnableHost(domain, state);
+}
+
+void NetInternalsMessageHandler::IOThreadImpl::OnHSTSDelete(
+    const ListValue* list) {
+  // |list| should be: [<domain to query>].
+  std::string domain;
+  CHECK(list->GetString(0, &domain));
+  if (!IsStringASCII(domain)) {
+    // There cannot be a unicode entry in the HSTS set.
+    return;
+  }
+  net::TransportSecurityState* transport_security_state =
+      context_getter_->GetURLRequestContext()->transport_security_state();
+  if (!transport_security_state)
+    return;
+
+  transport_security_state->DeleteHost(domain);
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnGetHttpCacheInfo(

@@ -160,7 +160,8 @@ body {
 #socketsTabContent,
 #spdyTabContent,
 #serviceProvidersTabContent,
-#testTabContent {
+#testTabContent,
+#hstsTabContent {
   overflow: auto;
   padding: 10px;
 }

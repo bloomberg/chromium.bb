@@ -87,6 +87,13 @@ function onLoaded() {
   var testView = new TestView('testTabContent', 'testUrlInput',
                               'connectionTestsForm', 'testSummary');
 
+  // Create a view which allows the user to query and alter the HSTS database.
+  var hstsView = new HSTSView('hstsTabContent',
+                              'hstsQueryInput', 'hstsQueryForm',
+                              'hstsQueryOutput',
+                              'hstsAddInput', 'hstsAddForm', 'hstsCheckInput',
+                              'hstsDeleteInput', 'hstsDeleteForm');
+
   var httpCacheView = new HttpCacheView('httpCacheTabContent',
                                         'httpCacheStats');
 
@@ -128,6 +135,7 @@ function onLoaded() {
   if (g_browser.isPlatformWindows())
     categoryTabSwitcher.addTab('serviceProvidersTab', serviceView, false);
   categoryTabSwitcher.addTab('testTab', testView, false);
+  categoryTabSwitcher.addTab('hstsTab', hstsView, false);
 
   // Build a map from the anchor name of each tab handle to its "tab ID".
   // We will consider navigations to the #hash as a switch tab request.
@@ -169,6 +177,7 @@ function BrowserBridge() {
   // List of observers for various bits of browser state.
   this.logObservers_ = [];
   this.connectionTestsObservers_ = [];
+  this.hstsObservers_ = [];
 
   this.pollableDataHelpers_ = {};
   this.pollableDataHelpers_.proxySettings =
@@ -299,6 +308,18 @@ BrowserBridge.prototype.sendClearHostResolverCache = function() {
 
 BrowserBridge.prototype.sendStartConnectionTests = function(url) {
   chrome.send('startConnectionTests', [url]);
+};
+
+BrowserBridge.prototype.sendHSTSQuery = function(domain) {
+  chrome.send('hstsQuery', [domain]);
+};
+
+BrowserBridge.prototype.sendHSTSAdd = function(domain, include_subdomains) {
+  chrome.send('hstsAdd', [domain, include_subdomains]);
+};
+
+BrowserBridge.prototype.sendHSTSDelete = function(domain) {
+  chrome.send('hstsDelete', [domain]);
 };
 
 BrowserBridge.prototype.sendGetHttpCacheInfo = function() {
@@ -470,6 +491,11 @@ function(info) {
 BrowserBridge.prototype.receivedCompletedConnectionTestSuite = function() {
   for (var i = 0; i < this.connectionTestsObservers_.length; ++i)
     this.connectionTestsObservers_[i].onCompletedConnectionTestSuite();
+};
+
+BrowserBridge.prototype.receivedHSTSResult = function(info) {
+  for (var i = 0; i < this.hstsObservers_.length; ++i)
+    this.hstsObservers_[i].onHSTSQueryResult(info);
 };
 
 BrowserBridge.prototype.receivedHttpCacheInfo = function(info) {
@@ -691,6 +717,16 @@ BrowserBridge.prototype.addConnectionTestsObserver = function(observer) {
  */
 BrowserBridge.prototype.addHttpCacheInfoObserver = function(observer) {
   this.pollableDataHelpers_.httpCacheInfo.addObserver(observer);
+};
+
+/**
+ * Adds a listener for the results of HSTS (HTTPS Strict Transport Security)
+ * queries. The observer will be called back with:
+ *
+ *   observer.onHSTSQueryResult(result);
+ */
+BrowserBridge.prototype.addHSTSObserver = function(observer) {
+  this.hstsObservers_.push(observer);
 };
 
 /**

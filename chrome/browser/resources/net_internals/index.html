@@ -14,6 +14,7 @@ found in the LICENSE file.
     <script src="dataview.js"></script>
     <script src="httpcacheview.js"></script>
     <script src="testview.js"></script>
+    <script src="hstsview.js"></script>
     <script src="main.js"></script>
     <script src="dnsview.js"></script>
     <script src="eventsview.js"></script>
@@ -44,6 +45,7 @@ found in the LICENSE file.
         <!-- Tab is only shown on Windows -->
         <li><a href="#serviceProviders" id=serviceProvidersTab style="display: none;">SPIs</a></li>
         <li><a href="#tests" id=testTab>Tests</a></li>
+        <li><a href="#hsts" id=hstsTab>HSTS</a></li>
       </ul>
       <div style="clear: both;"></div>
     </div>
@@ -347,6 +349,49 @@ function displayHelpForBugDump() {
         <input type=submit value="Start tests" />
       </form>
       <div id=testSummary></div>
+    </div>
+
+    <!-- HSTS tab -->
+    <div id=hstsTabContent>
+      <p>
+        HSTS is HTTPS Strict Transport Security: a way for sites to elect to
+        always use HTTPS. See <a href="http://dev.chromium.org/sts">
+        http://dev.chromium.org/sts</a>.</p>
+
+        <!-- This UI allows a user to query and update the browser's list of
+             HSTS domains. -->
+
+      <h4>Add domain</h4>
+
+      <p>Input a domain name to add it to the HSTS set:</p>
+      <form id=hstsAddForm>
+        Domain: <input type=text id=hstsAddInput type="url"
+                 placeholder="example.com"/><br/>
+        Include subdomains: <input type="checkbox" id=hstsCheckInput />
+        <input type=submit value="Add" />
+      </form>
+
+      <h4>Delete domain</h4>
+
+      <p>
+        Input a domain name to delete it from the HSTS set
+        (<i>you cannot delete preloaded entries</i>):
+      </p>
+      <form id=hstsDeleteForm>
+        Domain: <input type=text id=hstsDeleteInput type="url"
+                 placeholder="example.com"/>
+        <input type=submit value="Delete" />
+      </form>
+
+      <h4>Query domain</h4>
+
+      <p>Input a domain name to query the current HSTS set:</p>
+      <form id=hstsQueryForm>
+        Domain: <input type=text id=hstsQueryInput type="url"
+                 placeholder="example.com"/>
+        <input type=submit value="Query" />
+      </form>
+      <div style="margin-top: 1em; margin-left: 2em;" id=hstsQueryOutput></div>
     </div>
 
     <!-- ================= Events view =================== -->
