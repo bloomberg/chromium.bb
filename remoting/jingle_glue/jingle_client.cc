@@ -69,7 +69,7 @@ void JingleClient::DoInitialize(const std::string& username,
   settings.set_use_tls(true);
   settings.set_token_service(auth_token_service);
   settings.set_auth_cookie(auth_token);
-  settings.set_server(talk_base::SocketAddress("xmpp.google.com", 5222));
+  settings.set_server(talk_base::SocketAddress("talk.google.com", 5222));
 
   client_ = new buzz::XmppClient(thread_->task_pump());
   client_->SignalStateChange.connect(
