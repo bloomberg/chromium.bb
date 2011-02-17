@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,14 @@
 #include "base/scoped_ptr.h"
 #include "base/nix/xdg_util.h"
 
+namespace {
+
+const char kDotConfigDir[] = ".config";
+const char kDownloadsDir[] = "Downloads";
+const char kXdgConfigHomeEnvVar[] = "XDG_CONFIG_HOME";
+
+}  // namespace
+
 namespace chrome {
 
 // See http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
@@ -19,8 +27,9 @@ namespace chrome {
 // (This also helps us sidestep issues with other apps grabbing ~/.chromium .)
 bool GetDefaultUserDataDirectory(FilePath* result) {
   scoped_ptr<base::Environment> env(base::Environment::Create());
-  FilePath config_dir(
-      base::nix::GetXDGDirectory(env.get(), "XDG_CONFIG_HOME", ".config"));
+  FilePath config_dir(base::nix::GetXDGDirectory(env.get(),
+                                                 kXdgConfigHomeEnvVar,
+                                                 kDotConfigDir));
 #if defined(GOOGLE_CHROME_BUILD)
   *result = config_dir.Append("google-chrome");
 #else
@@ -46,8 +55,9 @@ void GetUserCacheDirectory(const FilePath& profile_dir, FilePath* result) {
   FilePath cache_dir;
   if (!PathService::Get(base::DIR_CACHE, &cache_dir))
     return;
-  FilePath config_dir(
-      base::nix::GetXDGDirectory(env.get(), "XDG_CONFIG_HOME", ".config"));
+  FilePath config_dir(base::nix::GetXDGDirectory(env.get(),
+                                                 kXdgConfigHomeEnvVar,
+                                                 kDotConfigDir));
 
   if (!config_dir.AppendRelativePath(profile_dir, &cache_dir))
     return;
@@ -57,8 +67,9 @@ void GetUserCacheDirectory(const FilePath& profile_dir, FilePath* result) {
 
 bool GetChromeFrameUserDataDirectory(FilePath* result) {
   scoped_ptr<base::Environment> env(base::Environment::Create());
-  FilePath config_dir(
-      base::nix::GetXDGDirectory(env.get(), "XDG_CONFIG_HOME", ".config"));
+  FilePath config_dir(base::nix::GetXDGDirectory(env.get(),
+                                                 kXdgConfigHomeEnvVar,
+                                                 kDotConfigDir));
 #if defined(GOOGLE_CHROME_BUILD)
   *result = config_dir.Append("google-chrome-frame");
 #else
@@ -77,18 +88,19 @@ bool GetUserDocumentsDirectory(FilePath* result) {
 // ~ or their desktop directory, in which case we default to ~/Downloads.
 bool GetUserDownloadsDirectory(FilePath* result) {
   scoped_ptr<base::Environment> env(base::Environment::Create());
-  *result = base::nix::GetXDGUserDirectory(env.get(), "DOWNLOAD", "Downloads");
+  *result = base::nix::GetXDGUserDirectory(env.get(), "DOWNLOAD",
+                                           kDownloadsDir);
 
   FilePath home = file_util::GetHomeDir();
   if (*result == home) {
-    *result = home.Append("Downloads");
+    *result = home.Append(kDownloadsDir);
     return true;
   }
 
   FilePath desktop;
   GetUserDesktop(&desktop);
   if (*result == desktop) {
-    *result = home.Append("Downloads");
+    *result = home.Append(kDownloadsDir);
   }
 
   return true;

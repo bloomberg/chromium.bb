@@ -30,6 +30,27 @@ const FilePath::CharType kInternalFlashPluginFileName[] =
     FILE_PATH_LITERAL("libgcflashplayer.so");
 #endif
 
+// File name of the internal PDF plugin on different platforms.
+const FilePath::CharType kInternalPDFPluginFileName[] =
+#if defined(OS_WIN)
+    FILE_PATH_LITERAL("pdf.dll");
+#elif defined(OS_MACOSX)
+    FILE_PATH_LITERAL("PDF.plugin");
+#else  // Linux and Chrome OS
+    FILE_PATH_LITERAL("libpdf.so");
+#endif
+
+// File name of the internal NaCl plugin on different platforms.
+const FilePath::CharType kInternalNaClPluginFileName[] =
+#if defined(OS_WIN)
+    FILE_PATH_LITERAL("ppGoogleNaClPluginChrome.dll");
+#elif defined(OS_MACOSX)
+    // TODO(noelallen) Please verify this extention name is correct.
+    FILE_PATH_LITERAL("ppGoogleNaClPluginChrome.plugin");
+#else  // Linux and Chrome OS
+    FILE_PATH_LITERAL("libppGoogleNaClPluginChrome.so");
+#endif
+
 }  // namespace
 
 namespace chrome {
@@ -230,25 +251,12 @@ bool PathProvider(int key, FilePath* result) {
     case chrome::FILE_PDF_PLUGIN:
       if (!GetInternalPluginsDirectory(&cur))
         return false;
-#if defined(OS_WIN)
-      cur = cur.Append(FILE_PATH_LITERAL("pdf.dll"));
-#elif defined(OS_MACOSX)
-      cur = cur.Append(FILE_PATH_LITERAL("PDF.plugin"));
-#else  // Linux and Chrome OS
-      cur = cur.Append(FILE_PATH_LITERAL("libpdf.so"));
-#endif
+      cur = cur.Append(kInternalPDFPluginFileName);
       break;
     case chrome::FILE_NACL_PLUGIN:
       if (!GetInternalPluginsDirectory(&cur))
         return false;
-#if defined(OS_WIN)
-      cur = cur.Append(FILE_PATH_LITERAL("ppGoogleNaClPluginChrome.dll"));
-#elif defined(OS_MACOSX)
-      // TODO(noelallen) Please verify this extention name is correct.
-      cur = cur.Append(FILE_PATH_LITERAL("ppGoogleNaClPluginChrome.plugin"));
-#else  // Linux and Chrome OS
-      cur = cur.Append(FILE_PATH_LITERAL("libppGoogleNaClPluginChrome.so"));
-#endif
+      cur = cur.Append(kInternalNaClPluginFileName);
       break;
     case chrome::FILE_RESOURCES_PACK:
 #if defined(OS_MACOSX)
