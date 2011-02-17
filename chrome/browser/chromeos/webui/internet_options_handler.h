@@ -59,6 +59,9 @@ class InternetOptionsHandler
   // passed through CellularDataPlanChanged() callback method.
   // |args| will be [ service_path ]
   void RefreshCellularPlanCallback(const ListValue* args);
+  void SetActivationButtonVisibility(
+      const chromeos::CellularNetwork* cellular,
+      DictionaryValue* dictionary);
 
   void LoginCallback(const ListValue* args);
   void LoginCertCallback(const ListValue* args);
@@ -81,11 +84,10 @@ class InternetOptionsHandler
   // an overlay to be displayed in the UI.
   void PopulateDictionaryDetails(const chromeos::Network* net,
                                  chromeos::NetworkLibrary* cros);
-  void PopulateWifiDetails(DictionaryValue* dictionary,
-                           const chromeos::WifiNetwork* wifi);
-  void PopulateCellularDetails(DictionaryValue* dictionary,
-                               const chromeos::CellularNetwork*
-                               cellular);
+  void PopulateWifiDetails(const chromeos::WifiNetwork* wifi,
+                           DictionaryValue* dictionary);
+  void PopulateCellularDetails(const chromeos::CellularNetwork* cellular,
+                               DictionaryValue* dictionary);
 
   // Converts CellularDataPlan structure into dictionary for JS. Formats plan
   // settings into human readable texts.

@@ -53,7 +53,7 @@ cr.define('options', function() {
       });
       $('detailsInternetLogin').addEventListener('click', function(event) {
         InternetOptions.loginFromDetails();
-      });;
+      });
       $('activateDetails').addEventListener('click', function(event) {
         InternetOptions.activateFromDetails();
       });
@@ -213,16 +213,29 @@ cr.define('options', function() {
       page.setAttribute('nocellplan', true);
       page.removeAttribute('hascellplan');
     }
-    if (!data.needsPlan) {
+
+    if (!data.needsPlan)
       page.setAttribute('hasactiveplan', true);
-    } else {
+    else
       page.removeAttribute('hasactiveplan');
-    }
+
     if (data.activated) {
       page.setAttribute('activated', true);
     } else {
       page.removeAttribute('activated');
+      $('detailsInternetLogin').classList.add('hidden');
     }
+
+    // CSS selectors don't like me anymore, switching to classList
+    if (data.showBuyButton)
+      $('buyplanDetails').classList.remove('hidden');
+    else
+      $('buyplanDetails').classList.add('hidden');
+
+    if (data.showActivateButton)
+      $('activateDetails').classList.remove('hidden');
+    else
+      $('activateDetails').classList.add('hidden');
 
     // Nudge webkit so that it redraws the details overlay page.
     // See http://crosbug.com/9616 for details.
@@ -239,11 +252,9 @@ cr.define('options', function() {
 
   InternetOptions.showDetailedInfo = function (data) {
     var page = $('detailsInternetPage');
-    if (data.connected) {
-      $('inetTitle').textContent = localStrings.getString('inetStatus');
-    } else {
-      $('inetTitle').textContent = localStrings.getString('inetConnect');
-    }
+    $('buyplanDetails').classList.add('hidden');
+    $('activateDetails').classList.add('hidden');
+    $('detailsInternetLogin').classList.add('hidden');
     if (data.connecting) {
       page.setAttribute('connecting', data.connecting);
     } else {
@@ -251,8 +262,11 @@ cr.define('options', function() {
     }
     if (data.connected) {
       page.setAttribute('connected', data.connected);
+      $('inetTitle').textContent = localStrings.getString('inetStatus');
     } else {
       page.removeAttribute('connected');
+      $('inetTitle').textContent = localStrings.getString('inetConnect');
+      $('detailsInternetLogin').classList.remove('hidden');
     }
     $('connectionState').textContent = data.connectionState;
     var address = $('inetAddress');
@@ -339,6 +353,20 @@ cr.define('options', function() {
         $('imsi').textContent = data.imsi;
         page.setAttribute('gsm', true);
       }
+
+      // CSS selectors don't like me anymore, switching to classList
+      if (data.showBuyButton)
+        $('buyplanDetails').classList.remove('hidden');
+      else
+        $('buyplanDetails').classList.add('hidden');
+
+      if (data.showActivateButton) {
+        $('activateDetails').classList.remove('hidden')
+        $('detailsInternetLogin').classList.add('hidden');
+      } else {
+        $('activateDetails').classList.add('hidden');
+      }
+
       page.removeAttribute('hascellplan');
       if (data.connected) {
         page.removeAttribute('nocellplan');

@@ -400,7 +400,7 @@ void InternetOptionsHandler::OnNetworkChanged(
 // reported via scan results, which trigger network manager
 // updates. Only the connected Wi-Fi network has changes reported
 // via service property updates.
-void InternetOptionsHandler::MonitorNetworks( chromeos::NetworkLibrary* cros) {
+void InternetOptionsHandler::MonitorNetworks(chromeos::NetworkLibrary* cros) {
   cros->RemoveObserverForAllNetworks(this);
   const chromeos::WifiNetwork* wifi_network = cros->wifi_network();
   if (wifi_network != NULL)
@@ -436,6 +436,7 @@ void InternetOptionsHandler::OnCellularDataPlanChanged(
   connection_plans.SetBoolean("activated",
       cellular->activation_state() == chromeos::ACTIVATION_STATE_ACTIVATED);
   connection_plans.Set("plans", plan_list);
+  SetActivationButtonVisibility(cellular, &connection_plans);
   web_ui_->CallJavascriptFunction(
       L"options.InternetOptions.updateCellularPlans", connection_plans);
 }
@@ -560,7 +561,7 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
     if (!wifi) {
       LOG(WARNING) << "Cannot find network " << net->service_path();
     } else {
-      PopulateWifiDetails(&dictionary, wifi);
+      PopulateWifiDetails(wifi, &dictionary);
     }
   } else if (type == chromeos::TYPE_CELLULAR) {
     chromeos::CellularNetwork* cellular =
@@ -568,7 +569,7 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
     if (!cellular) {
       LOG(WARNING) << "Cannot find network " << net->service_path();
     } else {
-      PopulateCellularDetails(&dictionary, cellular);
+      PopulateCellularDetails(cellular, &dictionary);
     }
   }
 
@@ -577,8 +578,8 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
 }
 
 void InternetOptionsHandler::PopulateWifiDetails(
-    DictionaryValue* dictionary,
-    const chromeos::WifiNetwork* wifi) {
+    const chromeos::WifiNetwork* wifi,
+    DictionaryValue* dictionary) {
   dictionary->SetString("ssid", wifi->name());
   dictionary->SetBoolean("autoConnect", wifi->auto_connect());
   if (wifi->encrypted()) {
@@ -604,8 +605,8 @@ void InternetOptionsHandler::PopulateWifiDetails(
 }
 
 void InternetOptionsHandler::PopulateCellularDetails(
-    DictionaryValue* dictionary,
-    const chromeos::CellularNetwork* cellular) {
+    const chromeos::CellularNetwork* cellular,
+    DictionaryValue* dictionary) {
   // Cellular network / connection settings.
   dictionary->SetString("serviceName", cellular->service_name());
   dictionary->SetString("networkTechnology",
@@ -624,6 +625,7 @@ void InternetOptionsHandler::PopulateCellularDetails(
                             IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL));
   dictionary->SetString("errorState", cellular->GetErrorString());
   dictionary->SetString("supportUrl", cellular->payment_url());
+  dictionary->SetBoolean("needsPlan", cellular->needs_new_plan());
 
   // Device settings.
   dictionary->SetString("manufacturer", cellular->manufacturer());
@@ -641,6 +643,21 @@ void InternetOptionsHandler::PopulateCellularDetails(
   dictionary->SetString("min", cellular->min());
 
   dictionary->SetBoolean("gsm", cellular->is_gsm());
+
+  SetActivationButtonVisibility(cellular, dictionary);
+}
+
+void InternetOptionsHandler::SetActivationButtonVisibility(
+    const chromeos::CellularNetwork* cellular,
+    DictionaryValue* dictionary) {
+  if (cellular->needs_new_plan()) {
+    dictionary->SetBoolean("showBuyButton", true);
+  } else if (cellular->activation_state() !=
+                 chromeos::ACTIVATION_STATE_ACTIVATING &&
+             cellular->activation_state() !=
+                 chromeos::ACTIVATION_STATE_ACTIVATED) {
+    dictionary->SetBoolean("showActivateButton", true);
+  }
 }
 
 void InternetOptionsHandler::LoginCallback(const ListValue* args) {
