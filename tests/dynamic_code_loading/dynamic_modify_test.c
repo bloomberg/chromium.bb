@@ -213,6 +213,35 @@ void test_illegal_code_replacment() {
   }
 }
 
+void test_external_jump_target_replacement() {
+  uint8_t *load_area = allocate_code_space(1);
+  /* BUF_SIZE * 2 because this function necessarily has an extra bundle. */
+  uint8_t buf[BUF_SIZE * 2];
+  int rc;
+  int (*func)();
+  const int kNaClBundleSize = NACL_BUNDLE_SIZE;
+
+  copy_and_pad_fragment(buf, sizeof(buf),
+                        &template_func_external_jump_target,
+                        &template_func_external_jump_target_end);
+
+  rc = nacl_dyncode_create(load_area, buf, sizeof(buf));
+  assert(rc == 0);
+  func = (int (*)()) (uintptr_t) load_area;
+  rc = func();
+  assert(rc == 1234);
+
+  copy_and_pad_fragment(buf, sizeof(buf),
+                        &template_func_external_jump_target_replace,
+                        &template_func_external_jump_target_replace_end);
+  /* Only copy one bundle so we can test an unaligned external jump target */
+  rc = nacl_dyncode_modify(load_area, buf, kNaClBundleSize);
+  assert(rc == 0);
+  func = (int (*)()) (uintptr_t) load_area;
+  rc = func();
+  assert(rc == 4321);
+}
+
 /* Check that we can't dynamically rewrite code. */
 void test_replacing_code_disabled() {
   uint8_t *load_area = allocate_code_space(1);
@@ -308,6 +337,7 @@ int TestMain() {
     RUN_TEST(test_replacing_code_unaligned);
     RUN_TEST(test_deleting_code);
     RUN_TEST(test_illegal_code_replacment);
+    RUN_TEST(test_external_jump_target_replacement);
   } else {
     printf("Code replacement DISABLED\n");
     RUN_TEST(test_replacing_code_disabled);

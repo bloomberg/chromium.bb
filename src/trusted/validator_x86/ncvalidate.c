@@ -780,15 +780,25 @@ void ValidateIndirect5Replacement(const struct NCDecoderState *mstate_old,
  */
 void ValidateInstReplacement(const struct NCDecoderState *mstate_old,
                              const struct NCDecoderState *mstate_new) {
-  /* Call single instruction validator first, will call ValidateIndirect5() */
-  ValidateInst(mstate_new);
-
   /* Location/length must match */
   if (mstate_old->inst.bytes.length != mstate_new->inst.bytes.length
     || mstate_old->vpc != mstate_new->vpc) {
     BadInstructionError(mstate_new,
                         "New instruction does not match old instruction size");
     Stats_BadInstLength(mstate_new->vstate);
+  }
+
+  /* Only validate individual instructions that have changed. */
+  if (memcmp(mstate_old->inst.bytes.byte,
+             mstate_new->inst.bytes.byte,
+             mstate_new->inst.bytes.length)) {
+    /* Call single instruction validator first, will call ValidateIndirect5() */
+    ValidateInst(mstate_new);
+  } else {
+    /* Still need to record there is an intruction here for NCValidateFinish()
+     * to verify basic block alignment.
+     */
+    RememberIP(mstate_new->inst.vaddr, mstate_new->vstate);
   }
 
   if (mstate_old->opinfo->insttype == NACLi_INDIRECT

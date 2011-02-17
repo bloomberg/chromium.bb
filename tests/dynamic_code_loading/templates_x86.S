@@ -248,3 +248,60 @@ template_func_illegal_constant_replacement:
 # error "Unsupported architecture"
 #endif
 template_func_illegal_constant_replacement_end:
+
+        .global template_func_external_jump_target
+        .global template_func_external_jump_target_end
+        .p2align 5
+template_func_external_jump_target:
+#if defined(__i386__)
+        movl $1234, %eax
+        jmp external_jump_return
+        call template_func_external_jump_target
+        movl $9876, %eax
+external_jump_return:
+        popl %ecx
+        and  $0xffffffe0,%ecx
+        jmp  *%ecx
+#elif defined(__x86_64__)
+        movq $1234, %rax
+        jmp external_jump_return
+        call template_func_external_jump_target
+        movq $9876, %rax
+external_jump_return:
+        popq %r14
+        andl $0xffffffe0,%r14d
+        addq %r15,%r14
+        jmpq *%r14
+#else
+# error "Unsupported architecture"
+#endif
+template_func_external_jump_target_end:
+
+        .global template_func_external_jump_target_replace
+        .global template_func_external_jump_target_replace_end
+        .p2align 5
+template_func_external_jump_target_replace:
+#if defined(__i386__)
+        movl $4321, %eax
+        jmp external_jump_replace_return
+        call template_func_external_jump_target_replace
+        movl $9876, %eax
+external_jump_replace_return:
+        popl %ecx
+        and  $0xffffffe0,%ecx
+        jmp  *%ecx
+#elif defined(__x86_64__)
+        movq $4321, %rax
+        jmp external_jump_replace_return
+        call template_func_external_jump_target_replace
+        movq $9876, %rax
+external_jump_replace_return:
+        popq %r14
+        andl $0xffffffe0,%r14d
+        addq %r15,%r14
+        jmpq *%r14
+#else
+# error "Unsupported architecture"
+#endif
+template_func_external_jump_target_replace_end:
+

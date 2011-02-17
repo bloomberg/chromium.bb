@@ -52,6 +52,13 @@ void NaClJumpValidator(struct NaClValidatorState* state,
                        struct NaClInstIter* iter,
                        struct NaClJumpSets* jump_sets);
 
+/* Don't record anything but the instruction address, in order to validate
+ * basic block alignment at the end of validation.
+ */
+void NaClJumpValidatorRememberIpOnly(struct NaClValidatorState* state,
+                       struct NaClInstIter* iter,
+                       struct NaClJumpSets* jump_sets);
+
 /* Compares the collected actual jumps and the set of possible jump points,
  * and reports any descrepancies that don't follow NACL rules.
  */

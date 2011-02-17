@@ -30,6 +30,11 @@ extern char template_func_illegal_guard_replacement_end;
 extern char template_func_illegal_constant_replacement;
 extern char template_func_illegal_constant_replacement_end;
 
+extern char template_func_external_jump_target;
+extern char template_func_external_jump_target_end;
+extern char template_func_external_jump_target_replace;
+extern char template_func_external_jump_target_replace_end;
+
 /*
  * The end of the text segment, the dynamic code resion starts at the
  * next page.

@@ -18,6 +18,7 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_iter.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_state_internal.h"
+#include "native_client/src/trusted/validator_x86/nc_jumps.h"
 #include "native_client/src/trusted/validator_x86/nc_segment.h"
 #include "native_client/src/trusted/validator_x86/ncop_exps.h"
 #include "native_client/src/trusted/validator_x86/ncvalidate_iter_internal.h"
@@ -404,6 +405,16 @@ static void NaClApplyValidators(NaClValidatorState* state, NaClInstIter* iter) {
   }
 }
 
+static void NaClRememberIpOnly(NaClValidatorState* state, NaClInstIter* iter) {
+  void* local_memory;
+  DEBUG(NaClLog(LOG_INFO, "iter state:\n");
+        NaClInstStateInstPrint(NaClLogGetGio(), NaClInstIterGetState(iter)));
+  if (state->quit) return;
+  local_memory = NaClGetValidatorLocalMemory((NaClValidator) NaClJumpValidator,
+                                             state);
+  NaClJumpValidatorRememberIpOnly(state, iter, local_memory);
+}
+
 /* Given that we have just iterated through all instructions in a segment,
  * apply post validators rules (before we collect the iterator).
  */
@@ -490,13 +501,15 @@ void* NaClGetValidatorLocalMemory(NaClValidator validator,
  * If a validation error occurs, state->validates_ok will be set to false by
  * NaClValidatorInstMessage when it is given LOG_ERROR, see the end of this
  * function.
+ * Return value: TRUE if the instruction was changed, FALSE if it's identical.
  */
-static void NaClValidateInstReplacement(NaClInstIter* iter_old,
+static Bool NaClValidateInstReplacement(NaClInstIter* iter_old,
                                         NaClInstIter* iter_new,
                                         struct NaClValidatorState* state) {
   NaClInstState *istate_old, *istate_new;
   NaClExpVector *exp_old, *exp_new;
   uint32_t i;
+  Bool inst_changed = FALSE;
 
   istate_old = NaClInstIterGetState(iter_old);
   istate_new = NaClInstIterGetState(iter_new);
@@ -506,14 +519,17 @@ static void NaClValidateInstReplacement(NaClInstIter* iter_old,
       istate_new->length != istate_old->length) {
     NaClValidatorTwoInstMessage(LOG_ERROR, state, istate_old, istate_new,
           "Code modification: instructions length/addresses do not match");
-    return;
+    inst_changed = TRUE;
+    return inst_changed;
   }
 
 
   do {
     /* fast check if the replacement is identical */
     if (!memcmp(istate_old->mpc, istate_new->mpc, istate_old->length))
-      return;
+      return inst_changed;
+
+    inst_changed = TRUE;
 
     if (istate_old->num_prefix_bytes != istate_new->num_prefix_bytes)
       break;
@@ -598,7 +614,7 @@ static void NaClValidateInstReplacement(NaClInstIter* iter_old,
     }
 
     /* This return signifies there is no error in validation. */
-    return;
+    return inst_changed;
   } while (0);
 
 error_exit:
@@ -607,6 +623,7 @@ error_exit:
    */
   NaClValidatorTwoInstMessage(LOG_ERROR, state, istate_old, istate_new,
                       "Code modification: failed to modify instruction");
+  return inst_changed;
 }
 
 /*
@@ -629,11 +646,15 @@ void NaClValidateSegmentPair(uint8_t* mbase_old, uint8_t* mbase_new,
   iter_new = NaClInstIterCreateWithLookback(&segment_new, kLookbackSize);
   while (NaClInstIterHasNext(iter_old) &&
          NaClInstIterHasNext(iter_new)) {
+    Bool inst_changed;
     state->cur_inst_state = NaClInstIterGetState(iter_new);
     state->cur_inst = NaClInstStateInst(state->cur_inst_state);
     state->cur_inst_vector = NaClInstStateExpVector(state->cur_inst_state);
-    NaClApplyValidators(state, iter_new);
-    NaClValidateInstReplacement(iter_old, iter_new, state);
+    inst_changed = NaClValidateInstReplacement(iter_old, iter_new, state);
+    if (inst_changed)
+      NaClApplyValidators(state, iter_new);
+    else
+      NaClRememberIpOnly(state, iter_new);
     if (state->quit) break;
     NaClInstIterAdvance(iter_old);
     NaClInstIterAdvance(iter_new);

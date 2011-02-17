@@ -590,6 +590,14 @@ static void NaClRememberIp(NaClValidatorState* state,
   }
 }
 
+void NaClJumpValidatorRememberIpOnly(NaClValidatorState* state,
+                       NaClInstIter* iter,
+                       NaClJumpSets* jump_sets) {
+  NaClInstState* inst_state = state->cur_inst_state;
+  NaClPcAddress pc = NaClInstStateVpc(inst_state);
+  NaClRememberIp(state, pc, inst_state, jump_sets);
+}
+
 void NaClJumpValidator(NaClValidatorState* state,
                        NaClInstIter* iter,
                        NaClJumpSets* jump_sets) {
