@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,6 +50,7 @@ static const char kUploadURL[] =
 
 static bool is_crash_reporter_enabled = false;
 static uint64_t process_start_time = 0;
+static char* crash_log_path = NULL;
 
 // Writes the value |v| as 16 hex characters to the memory pointed at by
 // |output|.
@@ -541,11 +542,31 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
       const int len = HANDLE_EINTR(sys_read(fds[0], id_buf,
                                    sizeof(id_buf) - 1));
       if (len > 0) {
+        // Write crash dump id to stderr.
         id_buf[len] = 0;
         static const char msg[] = "\nCrash dump id: ";
         sys_write(2, msg, sizeof(msg) - 1);
         sys_write(2, id_buf, my_strlen(id_buf));
         sys_write(2, "\n", 1);
+
+        // Write crash dump id to crash log as: seconds_since_epoch,crash_id
+        struct kernel_timeval tv;
+        if (crash_log_path && !sys_gettimeofday(&tv, NULL)) {
+          uint64_t time = kernel_timeval_to_ms(&tv) / 1000;
+          char time_str[21];
+          const unsigned time_len = my_uint64_len(time);
+          my_uint64tos(time_str, time, time_len);
+
+          int log_fd = sys_open(crash_log_path, O_CREAT | O_WRONLY | O_APPEND,
+                                0600);
+          if (log_fd > 0) {
+            sys_write(log_fd, time_str, time_len);
+            sys_write(log_fd, ",", 1);
+            sys_write(log_fd, id_buf, my_strlen(id_buf));
+            sys_write(log_fd, "\n", 1);
+            IGNORE_RET(sys_close(log_fd));
+          }
+        }
       }
       IGNORE_RET(sys_unlink(info.filename));
       IGNORE_RET(sys_unlink(temp_file));
@@ -634,14 +655,26 @@ static bool CrashDoneUpload(const char* dump_path,
 
 void EnableCrashDumping(const bool unattended) {
   is_crash_reporter_enabled = true;
+
+  FilePath tmp_path("/tmp");
+  PathService::Get(base::DIR_TEMP, &tmp_path);
+
+  FilePath dumps_path(tmp_path);
+  if (PathService::Get(chrome::DIR_CRASH_DUMPS, &dumps_path)) {
+    FilePath logfile = dumps_path.AppendASCII("uploads.log");
+    std::string logfile_str = logfile.value();
+    const size_t crash_log_path_len = logfile_str.size() + 1;
+    crash_log_path = new char[crash_log_path_len];
+    strncpy(crash_log_path, logfile_str.c_str(), crash_log_path_len);
+  }
+
   if (unattended) {
-    FilePath dumps_path("/tmp");
-    PathService::Get(chrome::DIR_CRASH_DUMPS, &dumps_path);
     new google_breakpad::ExceptionHandler(dumps_path.value().c_str(), NULL,
                                           CrashDoneNoUpload, NULL,
                                           true /* install handlers */);
   } else {
-    new google_breakpad::ExceptionHandler("/tmp", NULL, CrashDoneUpload, NULL,
+    new google_breakpad::ExceptionHandler(tmp_path.value().c_str(), NULL,
+                                          CrashDoneUpload, NULL,
                                           true /* install handlers */);
   }
 }
