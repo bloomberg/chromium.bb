@@ -507,3 +507,17 @@
   ThreadSanitizer:Race
   fun:PR_EnterMonitor
 }
+
+############################
+# TSan false positives
+{
+  tsanbug_62a
+  ThreadSanitizer:Race
+  fun:__memset_sse2
+}
+
+{
+  tsanbug_62b
+  ThreadSanitizer:Race
+  fun:__GI_memcpy
+}
