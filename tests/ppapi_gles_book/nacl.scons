@@ -15,10 +15,10 @@ Dir('.').addRepository(Dir('#/../gpu'))
 # Underlay $SOURCE_ROOT/third_party/gles2_book in this directory.
 Dir('.').addRepository(Dir('#/../third_party/gles2_book'))
 
-# Remove the pedantic flag to accept long long.
-env.FilterOut(CCFLAGS=['-pedantic'])
-# ..and don't warn on pointer signedness issues
+# Don't warn on pointer signedness issues (third_party sources)
 env.Append(CFLAGS=['-Wno-pointer-sign'])
+# ..and don't warn about missing braces
+env.Append(CCFLAGS=['-Wno-missing-braces'])
 
 # Add local path to find GPU sources.
 env.Append(CPPPATH=[
@@ -34,19 +34,39 @@ gles_demo_srcs = [
     'demos/framework/pepper.cc',
     ]
 
-ppapi_hello_triangle_nexe = env.ComponentProgram('ppapi_hello_triangle.nexe',
-    [ 'demos/gles2_book/demo_hello_triangle.cc',
-      'Chapter_2/Hello_Triangle/Hello_Triangle.c' ] + gles_demo_srcs,
-    EXTRA_LIBS=['ppruntime',
-                'ppapi_cpp',
-                'ppapi_gles2',
-                'platform',
-                'gio',
-                'pthread',
-                'm',
-                'srpc'])
+env.ComponentLibrary('ppapi_gles_demo', gles_demo_srcs)
 
-# Note that the html is required to run this program.
-env.Publish('ppapi_hello_triangle.nexe', 'run',
-            ['ppapi_hello_triangle.html' ])
+gles_book_examples = {
+  'hello_triangle': [
+      'Chapter_2/Hello_Triangle/Hello_Triangle.c' ],
+  'mip_map_2d': [
+      'Chapter_9/MipMap2D/MipMap2D.c' ],
+  'simple_texture_2d': [
+      'Chapter_9/Simple_Texture2D/Simple_Texture2D.c' ],
+  'simple_texture_cubemap': [
+      'Chapter_9/Simple_TextureCubemap/Simple_TextureCubemap.c' ],
+  'simple_vertex_shader': [
+      'Chapter_8/Simple_VertexShader/Simple_VertexShader.c' ],
+  'stencil_test': [
+      'Chapter_11/Stencil_Test/Stencil_Test.c' ],
+  'texture_wrap': [
+      'Chapter_9/TextureWrap/TextureWrap.c' ],
+}
+
+for demo, sources in gles_book_examples.iteritems():
+    env.ComponentProgram(
+        'ppapi_' + demo + '.nexe',
+        [ 'demos/gles2_book/demo_' + demo + '.cc' ] + sources,
+        EXTRA_LIBS=['ppruntime',
+                    'ppapi_cpp',
+                    'ppapi_gles_demo',
+                    'ppapi_cpp',
+                    'ppapi_gles2',
+                    'platform',
+                    'gio',
+                    'pthread',
+                    'm',
+                    'srpc'])
+    env.Publish('ppapi_' + demo + '.nexe', 'run',
+       ['ppapi_gles_book.html?nexe=' + demo ])
 

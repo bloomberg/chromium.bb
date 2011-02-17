@@ -1,0 +1,39 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <!-- Copyright 2011 Google Inc.  All rights reserved. -->
+  <head>
+    <META HTTP-EQUIV="Pragma" CONTENT="no-cache" />
+    <META HTTP-EQUIV="Expires" CONTENT="-1" />
+    <script>
+      function ExtractSearchParameter(name) {
+        var nameIndex = location.search.indexOf(name + "=");
+        if (nameIndex != -1) {
+          var value = location.search.substring(nameIndex + name.length + 1);
+          var endIndex = value.indexOf("&");
+          if (endIndex != -1)
+            value = value.substring(0, endIndex);
+          return value;
+        }
+        return "";
+      }
+      onload = function() {
+        var nexe = ExtractSearchParameter("nexe");
+        document.title = 'Test ' + nexe;
+        var obj = document.createElement("EMBED")
+        if (obj) {
+          obj.setAttribute("src", nexe);
+          obj.setAttribute("width", "400");
+          obj.setAttribute("height", "400");
+          obj.setAttribute("type", "application/x-nacl");
+          document.getElementById("container").appendChild(obj);
+        }
+      }
+    </script>
+  </head>
+  <h1>Native Client PPAPI GL Example</h1>
+  <body style="background-image:url(http://www.google.com/intl/en_ALL/images/logo.gif);
+      background-repeat:repeat">
+    <div id="container"></div>
+  </body>
+</html>
