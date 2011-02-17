@@ -79,10 +79,10 @@ void LanguageSwitchMenu::SetFirstLevelMenuWidth(int width) {
 }
 
 // static
-void LanguageSwitchMenu::SwitchLanguage(const std::string& locale) {
+bool LanguageSwitchMenu::SwitchLanguage(const std::string& locale) {
   DCHECK(g_browser_process);
   if (g_browser_process->GetApplicationLocale() == locale) {
-    return;
+    return false;
   }
   // TODO(markusheintz): Change the if condition to prefs->IsUserModifiable()
   // once Mattias landed his pending patch.
@@ -98,17 +98,25 @@ void LanguageSwitchMenu::SwitchLanguage(const std::string& locale) {
     }
     CHECK(!loaded_locale.empty()) << "Locale could not be found for " << locale;
 
-    // Enable the keyboard layouts that are necessary for the new locale.
-    // Change the current input method to the hardware keyboard layout
-    // since the input method currently in use may not be supported by the
-    // new locale.
-    input_method::EnableInputMethods(
-        locale, input_method::kKeyboardLayoutsOnly,
-        input_method::GetHardwareInputMethodId());
-
     // The following line does not seem to affect locale anyhow. Maybe in
     // future..
     g_browser_process->SetApplicationLocale(locale);
+    return true;
+  }
+  return false;
+}
+
+// static
+void LanguageSwitchMenu::SwitchLanguageAndEnableKeyboardLayouts(
+    const std::string& locale) {
+  if (SwitchLanguage(locale)) {
+    // If we have switched the locale, enable the keyboard layouts that
+    // are necessary for the new locale.  Change the current input method
+    // to the hardware keyboard layout since the input method currently in
+    // use may not be supported by the new locale (3rd parameter).
+    input_method::EnableInputMethods(
+        locale, input_method::kKeyboardLayoutsOnly,
+        input_method::GetHardwareInputMethodId());
   }
 }
 
@@ -149,7 +157,9 @@ bool LanguageSwitchMenu::GetAcceleratorForCommandId(
 
 void LanguageSwitchMenu::ExecuteCommand(int command_id) {
   const std::string locale = language_list_->GetLocaleFromIndex(command_id);
-  SwitchLanguage(locale);
+  // Here, we should enable keyboard layouts associated with the locale so
+  // that users can use those keyboard layouts on the login screen.
+  SwitchLanguageAndEnableKeyboardLayouts(locale);
   g_browser_process->local_state()->SetString(
       prefs::kApplicationLocale, locale);
   g_browser_process->local_state()->ScheduleSavePersistentPrefs();

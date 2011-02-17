@@ -116,6 +116,8 @@ void ExistingUserController::Init(const UserVector& users) {
           !state->IsManagedPreference(prefs::kApplicationLocale)) {
         state->SetString(prefs::kApplicationLocale, owner_locale);
         state->ScheduleSavePersistentPrefs();
+        // Here we don't enable keyboard layouts, as keyboard layouts are
+        // handled in WizardController.
         LanguageSwitchMenu::SwitchLanguage(owner_locale);
       }
     }

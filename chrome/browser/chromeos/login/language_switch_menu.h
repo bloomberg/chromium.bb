@@ -42,7 +42,13 @@ class LanguageSwitchMenu : public views::ViewMenuDelegate,
   void SetFirstLevelMenuWidth(int width);
 
   // Switches the current locale, saves the new locale in preferences.
-  static void SwitchLanguage(const std::string& locale);
+  // Returns true if it has switched the current locale.
+  static bool SwitchLanguage(const std::string& locale);
+
+  // Switches the current locale, saves the new locale in preferences.
+  // Enables the keyboard layouts associated with th new locale.
+  static void SwitchLanguageAndEnableKeyboardLayouts(
+      const std::string& locale);
 
  private:
   // views::ViewMenuDelegate implementation.

@@ -374,6 +374,12 @@ void LoginUtilsImpl::RespectLocalePreference(Profile* profile) {
     pref_locale = g_browser_process->GetApplicationLocale();
   DCHECK(!pref_locale.empty());
   profile->ChangeAppLocale(pref_locale, Profile::APP_LOCALE_CHANGED_VIA_LOGIN);
+  // Here we don't enable keyboard layouts. Input methods are set up when
+  // the user first logs in. Then the user may customize the input methods.
+  // Hence changing input methods here, just because the user's UI language
+  // is different from the login screen UI language, is not desirable. Note
+  // that input method preferences are synced, so users can use their
+  // farovite input methods as soon as the preferences are synced.
   LanguageSwitchMenu::SwitchLanguage(pref_locale);
 }
 
