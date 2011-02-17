@@ -102,3 +102,22 @@ TEST_F(InstallUtilTest, MakeUninstallCommand) {
     }
   }
 }
+
+TEST_F(InstallUtilTest, GetCurrentDate) {
+  std::wstring date(InstallUtil::GetCurrentDate());
+  EXPECT_EQ(8, date.length());
+  if (date.length() == 8) {
+    // For an invalid date value, SystemTimeToFileTime will fail.
+    // We use this to validate that we have a correct date string.
+    SYSTEMTIME systime = {0};
+    FILETIME ft = {0};
+    // Just to make sure our assumption holds.
+    EXPECT_FALSE(SystemTimeToFileTime(&systime, &ft));
+    // Now fill in the values from our string.
+    systime.wYear = _wtoi(date.substr(0, 4).c_str());
+    systime.wMonth = _wtoi(date.substr(4, 2).c_str());
+    systime.wDay = _wtoi(date.substr(6, 2).c_str());
+    // Check if they make sense.
+    EXPECT_TRUE(SystemTimeToFileTime(&systime, &ft));
+  }
+}

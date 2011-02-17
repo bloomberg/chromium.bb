@@ -220,15 +220,10 @@ void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
                                          L"DisplayVersion",
                                          UTF8ToWide(new_version.GetString()),
                                          true);
-    time_t rawtime = time(NULL);
-    struct tm timeinfo = {0};
-    localtime_s(&timeinfo, &rawtime);
-    wchar_t buffer[9];
-    if (wcsftime(buffer, 9, L"%Y%m%d", &timeinfo) == 8) {
-      install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
-                                           L"InstallDate",
-                                           buffer, false);
-    }
+    install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
+                                         L"InstallDate",
+                                         InstallUtil::GetCurrentDate(),
+                                         false);
   }
 }
 

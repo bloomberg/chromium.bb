@@ -112,6 +112,9 @@ class InstallUtil {
                                    const std::wstring& arguments,
                                    CommandLine* command_line);
 
+  // Returns a string in the form YYYYMMDD of the current date.
+  static std::wstring GetCurrentDate();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(InstallUtil);
 };
