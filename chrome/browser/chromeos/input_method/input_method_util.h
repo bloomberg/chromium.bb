@@ -124,20 +124,19 @@ string16 GetLanguageNativeDisplayNameFromCode(const std::string& language_code);
 // using the unicode string comparator. Uses unstable sorting.
 void SortLanguageCodesByNames(std::vector<std::string>* language_codes);
 
-// Sorts the given input method ids by their corresponding language names,
-// using the unicode string comparator. Uses stable sorting.
-void SortInputMethodIdsByNames(std::vector<std::string>* input_method_ids);
-
+// Used for EnableInputMethods() etc.
 enum InputMethodType {
   kKeyboardLayoutsOnly,
   kAllInputMethods,
 };
 
-// Gets input method ids that belong to |language_code|.
+// Gets input method IDs that belong to |language_code|.
 // If |type| is |kKeyboardLayoutsOnly|, the function does not return input
 // methods that are not for keybord layout switching. Returns true on success.
-// Note that the function might return false if ibus-daemon is not running, or
-// |language_code| is unknown.
+// Note that the function might return false or |language_code| is unknown.
+//
+// The retured input method IDs are sorted per
+// chromeos/platform/assets/input_methods/whitelist.txt.
 bool GetInputMethodIdsFromLanguageCode(
     const std::string& language_code,
     InputMethodType type,
@@ -153,6 +152,10 @@ bool GetInputMethodIdsFromLanguageCode(
 // are enabled. If it's kKeyboardLayoutsOnly, only keyboard layouts are enabled.
 // For example, for Japanese, xkb:jp::jpn is enabled when kKeyboardLayoutsOnly,
 // and xkb:jp::jpn, mozc, mozc-jp, mozc-dv are enabled when kAllInputMethods.
+//
+// Note that this function does not save the input methods in the user's
+// preferences, as this function is designed for the login screen and the
+// screen locker, where we shouldn't change the user's preferences.
 void EnableInputMethods(const std::string& language_code, InputMethodType type,
                         const std::string& initial_input_method_id);
 
@@ -167,11 +170,6 @@ InputMethodDescriptor GetFallbackInputMethodDescriptor();
 // This function should be called when Chrome's application locale is
 // changed, so that the internal maps of this library is reloaded.
 void OnLocaleChanged();
-
-// DO NOT USE Functions below. These are only exported for unit tests.
-void SortInputMethodIdsByNamesInternal(
-    const std::map<std::string, std::string>& id_to_language_code_map,
-    std::vector<std::string>* input_method_ids);
 
 bool GetInputMethodIdsFromLanguageCodeInternal(
     const std::multimap<std::string, std::string>& language_code_to_ids,
