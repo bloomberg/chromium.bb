@@ -1412,3 +1412,29 @@
    fun:_ZN25RenderViewHostTestHarness5SetUpEv
    fun:_ZN30AutocompleteHistoryManagerTest5SetUpEv
 }
+{
+   bug_73299_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN24BrowserRenderProcessHost20CreateMessageFiltersEv
+   fun:_ZN24BrowserRenderProcessHost4InitEbb
+   fun:_ZN14RenderViewHost16CreateRenderViewERKSbItN4base20string16_char_traitsESaItEE
+   fun:_ZN13ExtensionHost19CreateRenderViewNowEv
+   fun:_ZN13ExtensionHost20ProcessCreationQueue14ProcessOneHostEv
+   fun:_Z16DispatchToMethodIN13ExtensionHost20ProcessCreationQueueEMS1_FvvEEvPT_T0_RK6Tuple0
+   fun:_ZN27ScopedRunnableMethodFactoryIN13ExtensionHost20ProcessCreationQueueEE14RunnableMethodIMS1_FvvE6Tuple0E3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
+   fun:_ZN11MessageLoop6DoWorkEv
+   fun:_ZN4base24MessagePumpCFRunLoopBase7RunWorkEv
+   fun:_ZN4base24MessagePumpCFRunLoopBase13RunWorkSourceEPv
+   fun:CFRunLoopRunSpecific
+   fun:CFRunLoopRunInMode
+   fun:RunCurrentEventLoopInMode
+   fun:ReceiveNextEventCommon
+   fun:BlockUntilNextEventMatchingListInMode
+   fun:_DPSNextEvent
+   fun:-[NSApplication nextEventMatchingMask:untilDate:inMode:dequeue:]
+   fun:-[NSApplication run]
+   fun:_ZN4base24MessagePumpNSApplication5DoRunEPNS_11MessagePump8DelegateE
+}
