@@ -20,7 +20,7 @@ namespace {
 // The number of characters in the first part of the language code.
 const unsigned int kShortLanguageCodeSize = 2;
 
-// A private utility function to convert hunspell language codes to os x
+// A private utility function to convert hunspell language codes to OS X
 // language codes.
 NSString* ConvertLanguageCodeToMac(const std::string& hunspell_lang_code) {
   NSString* whole_code = base::SysUTF8ToNSString(hunspell_lang_code);
@@ -32,7 +32,7 @@ NSString* ConvertLanguageCodeToMac(const std::string& hunspell_lang_code) {
     NSString* region_code = [whole_code
                              substringFromIndex:(kShortLanguageCodeSize + 1)];
 
-    // Check for the special case of en-US and pt-PT, since os x lists these
+    // Check for the special case of en-US and pt-PT, since OS X lists these
     // as just en and pt respectively.
     // TODO(pwicks): Find out if there are other special cases for languages
     // not installed on the system by default. Are there others like pt-PT?
@@ -45,12 +45,16 @@ NSString* ConvertLanguageCodeToMac(const std::string& hunspell_lang_code) {
 
     // Otherwise, just build a string that uses an underscore instead of a
     // dash between the language and the region code, since this is the
-    // format that os x uses.
+    // format that OS X uses.
     NSString* os_x_language =
         [NSString stringWithFormat:@"%@_%@", lang_code, region_code];
     return os_x_language;
   } else {
-    // This is just a language code with the same format as os x
+    // Special case for Polish.
+    if ([whole_code isEqualToString:@"pl"]) {
+      return @"pl_PL";
+    }
+    // This is just a language code with the same format as OS X
     // language code.
     return whole_code;
   }
@@ -61,6 +65,7 @@ std::string ConvertLanguageCodeFromMac(NSString* lang_code) {
   // Guards for strange cases.
   if ([lang_code isEqualToString:@"en"]) return std::string("en-US");
   if ([lang_code isEqualToString:@"pt"]) return std::string("pt-PT");
+  if ([lang_code isEqualToString:@"pl_PL"]) return std::string("pl");
 
   if ([lang_code length] > kShortLanguageCodeSize &&
       [lang_code characterAtIndex:kShortLanguageCodeSize] == '_') {
@@ -128,7 +133,7 @@ void Init() {
 }
 
 bool PlatformSupportsLanguage(const std::string& current_language) {
-  // First, convert Language to an osx lang code NSString.
+  // First, convert the language to an OS X language code.
   NSString* mac_lang_code = ConvertLanguageCodeToMac(current_language);
 
   // Then grab the languages available.
@@ -136,7 +141,7 @@ bool PlatformSupportsLanguage(const std::string& current_language) {
   availableLanguages = [[NSSpellChecker sharedSpellChecker]
                         availableLanguages];
 
-  // Return true if the given languange is supported by os x.
+  // Return true if the given language is supported by OS X.
   return [availableLanguages containsObject:mac_lang_code];
 }
 

@@ -6,8 +6,11 @@
 
 #include <fcntl.h>
 
+#include <set>
+
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/string_split.h"
 #include "base/threading/thread_restrictions.h"
@@ -39,6 +42,32 @@ FilePath GetFirstChoiceFilePath(const std::string& language) {
   }
   return SpellCheckCommon::GetVersionedFileName(language, dict_dir);
 }
+
+#if defined(OS_MACOSX)
+// Collect metrics on how often Hunspell is used on OS X vs the native
+// spellchecker.
+void RecordSpellCheckStats(bool native_spellchecker_used,
+                           const std::string& language) {
+  static std::set<std::string> languages_seen;
+
+  // Only count a language code once for each session..
+  if (languages_seen.find(language) != languages_seen.end()) {
+    return;
+  }
+  languages_seen.insert(language);
+
+  enum {
+    SPELLCHECK_OSX_NATIVE_SPELLCHECKER_USED = 0,
+    SPELLCHECK_HUNSPELL_USED = 1
+  };
+
+  bool engine_used = native_spellchecker_used ?
+                         SPELLCHECK_OSX_NATIVE_SPELLCHECKER_USED :
+                         SPELLCHECK_HUNSPELL_USED;
+
+  UMA_HISTOGRAM_COUNTS("SpellCheck.OSXEngineUsed", engine_used);
+}
+#endif
 
 #if defined(OS_WIN)
 FilePath GetFallbackFilePath(const FilePath& first_choice) {
@@ -79,6 +108,9 @@ SpellCheckHost::~SpellCheckHost() {
 void SpellCheckHost::Initialize() {
   if (SpellCheckerPlatform::SpellCheckerAvailable() &&
       SpellCheckerPlatform::PlatformSupportsLanguage(language_)) {
+#if defined(OS_MACOSX)
+    RecordSpellCheckStats(true, language_);
+#endif
     use_platform_spellchecker_ = true;
     SpellCheckerPlatform::SetLanguage(language_);
     MessageLoop::current()->PostTask(FROM_HERE,
@@ -86,6 +118,10 @@ void SpellCheckHost::Initialize() {
             &SpellCheckHost::InformObserverOfInitialization));
     return;
   }
+
+#if defined(OS_MACOSX)
+  RecordSpellCheckStats(false, language_);
+#endif
 
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(this, &SpellCheckHost::InitializeDictionaryLocation));
