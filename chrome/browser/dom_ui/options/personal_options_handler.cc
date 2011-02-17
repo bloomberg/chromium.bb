@@ -294,7 +294,7 @@ void PersonalOptionsHandler::ObserveThemeChanged() {
   bool is_gtk_theme = false;
 #endif
 
-  bool is_classic_theme = !is_gtk_theme && provider->GetThemeID().empty();
+  bool is_classic_theme = !is_gtk_theme && provider->UsingDefaultTheme();
   FundamentalValue enabled(!is_classic_theme);
   web_ui_->CallJavascriptFunction(
       L"options.PersonalOptions.setThemesResetButtonEnabled", enabled);

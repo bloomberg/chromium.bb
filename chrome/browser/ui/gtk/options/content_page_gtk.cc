@@ -201,7 +201,7 @@ void ContentPageGtk::ObserveThemeChanged() {
   bool is_gtk_theme = false;
 #endif
 
-  bool is_classic_theme = !is_gtk_theme && provider->GetThemeID().empty();
+  bool is_classic_theme = !is_gtk_theme && provider->UsingDefaultTheme();
   gtk_widget_set_sensitive(themes_reset_button_, !is_classic_theme);
 }
 
