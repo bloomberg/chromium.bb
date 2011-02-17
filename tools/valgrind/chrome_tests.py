@@ -307,6 +307,11 @@ class ChromeTests:
   def TestSync(self):
     return self.SimpleTest("chrome", "sync_unit_tests")
 
+  def TestSyncIntegration(self):
+    return self.SimpleTest("chrome", "sync_integration_tests",
+                           valgrind_test_args=self.UI_VALGRIND_ARGS,
+                           cmd_args=(["--test-terminate-timeout=900000"]))
+
   def TestLayoutChunk(self, chunk_num, chunk_size):
     # Run tests [chunk_num*chunk_size .. (chunk_num+1)*chunk_size) from the
     # list of tests.  Wrap around to beginning of list at end.
@@ -428,6 +433,8 @@ class ChromeTests:
     "safe_browsing": TestSafeBrowsing, "safe_browsing_tests": TestSafeBrowsing,
     "startup": TestStartup,      "startup_tests": TestStartup,
     "sync": TestSync,            "sync_unit_tests": TestSync,
+    "sync_integration_tests": TestSyncIntegration,
+    "sync_integration": TestSyncIntegration,
     "test_shell": TestTestShell, "test_shell_tests": TestTestShell,
     "ui": TestUI,                "ui_tests": TestUI,
     "unit": TestUnit,            "unit_tests": TestUnit,
