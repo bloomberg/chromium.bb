@@ -907,8 +907,8 @@ bool Extension::LoadExtent(const DictionaryValue* manifest,
       return false;
     }
 
-    // Do not allow authors to claim "<all_urls>". That would make no sense.
-    if (pattern.match_all_urls()) {
+    // Do not allow authors to claim "<all_urls>" or "*" for host.
+    if (pattern.match_all_urls() || pattern.host().empty()) {
       *error = ExtensionErrorUtils::FormatErrorMessage(value_error,
                                                        base::UintToString(i));
       return false;
@@ -921,7 +921,7 @@ bool Extension::LoadExtent(const DictionaryValue* manifest,
                                                        base::UintToString(i));
       return false;
     }
-    pattern.set_path(pattern.path() + '*');
+    pattern.SetPath(pattern.path() + '*');
 
     extent->AddPattern(pattern);
   }
@@ -983,7 +983,7 @@ bool Extension::LoadLaunchURL(const DictionaryValue* manifest,
       return false;
     }
     pattern.set_host(launch_url.host());
-    pattern.set_path("/*");
+    pattern.SetPath("/*");
     extent_.AddPattern(pattern);
   }
 
@@ -996,9 +996,9 @@ bool Extension::LoadLaunchURL(const DictionaryValue* manifest,
     if (gallery_url.is_valid()) {
       launch_web_url_ = gallery_url.spec();
 
-      URLPattern pattern(URLPattern::SCHEME_HTTP | URLPattern::SCHEME_HTTPS);
+      URLPattern pattern(kValidWebExtentSchemes);
       pattern.Parse(gallery_url.spec());
-      pattern.set_path(pattern.path() + '*');
+      pattern.SetPath(pattern.path() + '*');
       extent_.AddPattern(pattern);
     }
   }
@@ -1305,8 +1305,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
   manifest_value_.reset(source.DeepCopy());
 
   // Initialize the URL.
-  extension_url_ =
-      Extension::GetBaseURLFromExtensionId(id());
+  extension_url_ = Extension::GetBaseURLFromExtensionId(id());
 
   // Initialize version.
   std::string version_str;
@@ -1809,7 +1808,6 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
       URLPattern pattern = URLPattern(CanExecuteScriptEverywhere() ?
           URLPattern::SCHEME_ALL : kValidHostPermissionSchemes);
 
-
       if (URLPattern::PARSE_SUCCESS == pattern.Parse(permission_str)) {
         if (!CanSpecifyHostPermission(pattern)) {
           *error = ExtensionErrorUtils::FormatErrorMessage(
@@ -1819,7 +1817,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
 
         // The path component is not used for host permissions, so we force it
         // to match all paths.
-        pattern.set_path("/*");
+        pattern.SetPath("/*");
 
         host_permissions_.push_back(pattern);
       }
@@ -2358,6 +2356,26 @@ bool Extension::CanExecuteScriptEverywhere() const {
 bool Extension::UpdatesFromGallery() const {
   return update_url() == GalleryUpdateUrl(false) ||
          update_url() == GalleryUpdateUrl(true);
+}
+
+bool Extension::OverlapsWithOrigin(const GURL& origin) const {
+  if (url() == origin)
+    return true;
+
+  if (web_extent().is_empty())
+    return false;
+
+  // Note: patterns and extents ignore port numbers.
+  URLPattern origin_only_pattern(kValidWebExtentSchemes);
+  if (!origin_only_pattern.SetScheme(origin.scheme()))
+    return false;
+  origin_only_pattern.set_host(origin.host());
+  origin_only_pattern.SetPath("/*");
+
+  ExtensionExtent origin_only_pattern_list;
+  origin_only_pattern_list.AddPattern(origin_only_pattern);
+
+  return web_extent().OverlapsWith(origin_only_pattern_list);
 }
 
 ExtensionInfo::ExtensionInfo(const DictionaryValue* manifest,

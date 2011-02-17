@@ -1288,6 +1288,7 @@
         'browser/extensions/extension_omnibox_unittest.cc',
         'browser/extensions/extension_service_unittest.cc',
         'browser/extensions/extension_service_unittest.h',
+        'browser/extensions/extension_special_storage_policy_unittest.cc',
         'browser/extensions/extension_ui_unittest.cc',
         'browser/extensions/extension_updater_unittest.cc',
         'browser/extensions/extension_webnavigation_unittest.cc',

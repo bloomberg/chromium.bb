@@ -402,6 +402,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // gallery.
   bool UpdatesFromGallery() const;
 
+  // Returns true if this extension or app includes areas within |origin|.
+  bool OverlapsWithOrigin(const GURL& origin) const;
+
   // Accessors:
 
   const FilePath& path() const { return path_; }

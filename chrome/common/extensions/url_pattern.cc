@@ -72,7 +72,7 @@ URLPattern::ParseResult URLPattern::Parse(const std::string& pattern) {
     match_subdomains_ = true;
     scheme_ = "*";
     host_.clear();
-    path_ = "/*";
+    SetPath("/*");
     return PARSE_SUCCESS;
   }
 
@@ -140,7 +140,7 @@ URLPattern::ParseResult URLPattern::Parse(const std::string& pattern) {
     path_start_pos = host_end_pos;
   }
 
-  path_ = pattern.substr(path_start_pos);
+  SetPath(pattern.substr(path_start_pos));
 
   return PARSE_SUCCESS;
 }
@@ -165,6 +165,13 @@ bool URLPattern::IsValidScheme(const std::string& scheme) const {
   }
 
   return false;
+}
+
+void URLPattern::SetPath(const std::string& path) {
+  path_ = path;
+  path_escaped_ = path_;
+  ReplaceSubstringsAfterOffset(&path_escaped_, 0, "\\", "\\\\");
+  ReplaceSubstringsAfterOffset(&path_escaped_, 0, "?", "\\?");
 }
 
 bool URLPattern::MatchesUrl(const GURL &test) const {
@@ -230,12 +237,6 @@ bool URLPattern::MatchesHost(const GURL& test) const {
 }
 
 bool URLPattern::MatchesPath(const std::string& test) const {
-  if (path_escaped_.empty()) {
-    path_escaped_ = path_;
-    ReplaceSubstringsAfterOffset(&path_escaped_, 0, "\\", "\\\\");
-    ReplaceSubstringsAfterOffset(&path_escaped_, 0, "?", "\\?");
-  }
-
   if (!MatchPattern(test, path_escaped_))
     return false;
 

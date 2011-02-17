@@ -20,6 +20,7 @@ include_rules = [
   "+webkit/database",
   "+webkit/glue",  # Defines some types that are marshalled over IPC.
   "+webkit/plugins",  # Defines some types that are marshalled over IPC.
+  "+webkit/quota",
   "+xib_localizers", # For generated mac localization helpers
 
   # Other libraries.

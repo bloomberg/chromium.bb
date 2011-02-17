@@ -140,10 +140,7 @@ class URLPattern {
   // Gets the path the pattern matches with the leading slash. This can have
   // embedded asterisks which are interpreted using glob rules.
   const std::string& path() const { return path_; }
-  void set_path(const std::string& path) {
-    path_ = path;
-    path_escaped_ = "";
-  }
+  void SetPath(const std::string& path);
 
   // Returns true if this pattern matches all urls.
   bool match_all_urls() const { return match_all_urls_; }
@@ -241,9 +238,8 @@ class URLPattern {
   std::string path_;
 
   // The path with "?" and "\" characters escaped for use with the
-  // MatchPattern() function. This is populated lazily, the first time it is
-  // needed.
-  mutable std::string path_escaped_;
+  // MatchPattern() function.
+  std::string path_escaped_;
 };
 
 typedef std::vector<URLPattern> URLPatternList;

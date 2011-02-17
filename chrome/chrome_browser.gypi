@@ -1178,6 +1178,8 @@
         'browser/extensions/extension_service.h',
         'browser/extensions/extension_sidebar_api.cc',
         'browser/extensions/extension_sidebar_api.h',
+        'browser/extensions/extension_special_storage_policy.cc',
+        'browser/extensions/extension_special_storage_policy.h',
         'browser/extensions/extension_tabs_module.cc',
         'browser/extensions/extension_tabs_module.h',
         'browser/extensions/extension_tabs_module_constants.cc',
