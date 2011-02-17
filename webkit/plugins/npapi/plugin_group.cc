@@ -481,7 +481,7 @@ void PluginGroup::EnforceGroupPolicy() {
 void PluginGroup::ResetGroupState() {
   enabled_ = false;
   description_.clear();
-  version_.reset();
+  version_.reset(Version::GetVersionFromString("0"));
 }
 
 bool PluginGroup::Enable(WebPluginInfo* plugin,
