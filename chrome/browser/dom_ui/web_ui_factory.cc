@@ -6,11 +6,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/about_flags.h"
-#include "chrome/browser/dom_ui/bug_report_ui.h"
 #include "chrome/browser/dom_ui/constrained_html_ui.h"
-#include "chrome/browser/dom_ui/gpu_internals_ui.h"
-#include "chrome/browser/dom_ui/history2_ui.h"
-#include "chrome/browser/dom_ui/history_ui.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
 #include "chrome/browser/dom_ui/net_internals_ui.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"
@@ -28,9 +24,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/webui/bookmarks_ui.h"
+#include "chrome/browser/webui/bug_report_ui.h"
 #include "chrome/browser/webui/devtools_ui.h"
 #include "chrome/browser/webui/downloads_ui.h"
 #include "chrome/browser/webui/flags_ui.h"
+#include "chrome/browser/webui/gpu_internals_ui.h"
+#include "chrome/browser/webui/history2_ui.h"
+#include "chrome/browser/webui/history_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/url_constants.h"
@@ -50,7 +50,7 @@
 #endif
 
 #if defined(TOUCH_UI)
-#include "chrome/browser/dom_ui/keyboard_ui.h"
+#include "chrome/browser/webui/keyboard_ui.h"
 #endif
 
 #if defined(TOUCH_UI) && defined(OS_CHROMEOS)

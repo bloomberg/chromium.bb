@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/dom_ui/history2_ui.h"
+#include "chrome/browser/webui/history2_ui.h"
 
 #include <algorithm>
 #include <set>
@@ -14,15 +14,15 @@
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
-#include "base/utf_string_conversions.h"
 #include "base/threading/thread.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/dom_ui/web_ui_favicon_source.h"
-#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/history/history_types.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"

@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DOM_UI_HISTORY_UI_H_
-#define CHROME_BROWSER_DOM_UI_HISTORY_UI_H_
+#ifndef CHROME_BROWSER_WEBUI_HISTORY_UI_H_
+#define CHROME_BROWSER_WEBUI_HISTORY_UI_H_
 #pragma once
 
 #include <string>
 
 #include "base/string16.h"
+#include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/dom_ui/web_ui.h"
-#include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/common/notification_registrar.h"
 
@@ -105,4 +105,4 @@ class HistoryUI : public WebUI {
   DISALLOW_COPY_AND_ASSIGN(HistoryUI);
 };
 
-#endif  // CHROME_BROWSER_DOM_UI_HISTORY_UI_H_
+#endif  // CHROME_BROWSER_WEBUI_HISTORY_UI_H_
