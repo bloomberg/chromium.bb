@@ -6,6 +6,7 @@
 
 #include "app/mac/nsimage_cache.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/profiles/profile.h"
@@ -145,16 +146,18 @@ Profile* BookmarkMenuBridge::GetProfile() {
 
 void BookmarkMenuBridge::ClearBookmarkMenu(NSMenu* menu) {
   bookmark_nodes_.clear();
-  // Recursively delete all menus that look like a bookmark.  Assume
-  // all items with submenus contain only bookmarks.  Also delete all
-  // separator items since we explicirly add them back in. This should
-  // deletes everything except the first item ("Add Bookmark...").
+  // Recursively delete all menus that look like a bookmark. Also delete all
+  // separator items since we explicitly add them back in. This deletes
+  // everything except the first item ("Add Bookmark...").
   NSArray* items = [menu itemArray];
   for (NSMenuItem* item in items) {
     // Convention: items in the bookmark list which are bookmarks have
     // an action of openBookmarkMenuItem:.  Also, assume all items
     // with submenus are submenus of bookmarks.
     if (([item action] == @selector(openBookmarkMenuItem:)) ||
+        ([item action] == @selector(openAllBookmarks:)) ||
+        ([item action] == @selector(openAllBookmarksNewWindow:)) ||
+        ([item action] == @selector(openAllBookmarksIncognitoWindow:)) ||
         [item hasSubmenu] ||
         [item isSeparatorItem]) {
       // This will eventually [obj release] all its kids, if it has
@@ -207,6 +210,46 @@ void BookmarkMenuBridge::AddNodeToMenu(const BookmarkNode* node, NSMenu* menu) {
       ConfigureMenuItem(child, item, false);
     }
   }
+
+  // Add menus for 'Open All Bookmarks'.
+  [menu addItem:[NSMenuItem separatorItem]];
+  bool enabled = child_count != 0;
+  AddItemToMenu(IDC_BOOKMARK_BAR_OPEN_ALL,
+                IDS_BOOMARK_BAR_OPEN_ALL,
+                node, menu, enabled);
+  AddItemToMenu(IDC_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW,
+                IDS_BOOMARK_BAR_OPEN_ALL_NEW_WINDOW,
+                node, menu, enabled);
+  AddItemToMenu(IDC_BOOKMARK_BAR_OPEN_ALL_INCOGNITO,
+                IDS_BOOMARK_BAR_OPEN_INCOGNITO,
+                node, menu, enabled);
+}
+
+void BookmarkMenuBridge::AddItemToMenu(int command_id,
+                                       int message_id,
+                                       const BookmarkNode* node,
+                                       NSMenu* menu,
+                                       bool enabled) {
+  NSString* title = l10n_util::GetNSString(message_id);
+  SEL action;
+  if (!enabled) {
+    // A nil action makes a menu item appear disabled. NSMenuItem setEnabled
+    // will not reflect the disabled state until the item title is set again.
+    action = nil;
+  } else if (command_id == IDC_BOOKMARK_BAR_OPEN_ALL) {
+    action = @selector(openAllBookmarks:);
+  } else if (command_id == IDC_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW) {
+    action = @selector(openAllBookmarksNewWindow:);
+  } else {
+    action = @selector(openAllBookmarksIncognitoWindow:);
+  }
+  NSMenuItem* item = [[[NSMenuItem alloc] initWithTitle:title
+                                                 action:action
+                                          keyEquivalent:@""] autorelease];
+  [item setTarget:controller_];
+  [item setTag:node->id()];
+  [item setEnabled:enabled];
+  [menu addItem:item];
 }
 
 void BookmarkMenuBridge::ConfigureMenuItem(const BookmarkNode* node,

@@ -9,11 +9,12 @@
 #include "chrome/app/chrome_command_ids.h"  // IDC_BOOKMARK_MENU
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/ui/browser.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
 #include "chrome/browser/ui/cocoa/event_utils.h"
 #include "ui/base/text/text_elider.h"
-#include "webkit/glue/window_open_disposition.h"
 
 namespace {
 
@@ -81,6 +82,37 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
                    PageTransition::AUTO_BOOKMARK);
 }
 
+// Open sites under BookmarkNode with the specified disposition.
+- (void)openAll:(NSInteger)tag
+    withDisposition:(WindowOpenDisposition)disposition {
+  int identifier = tag;
+
+  const BookmarkNode* node = [self nodeForIdentifier:identifier];
+  DCHECK(node);
+
+  Browser* browser = Browser::GetTabbedBrowser(bridge_->GetProfile(), true);
+  if (!browser)
+    browser = Browser::Create(bridge_->GetProfile());
+  DCHECK(browser);
+
+  if (!node || !browser)
+    return; // shouldn't be reached
+
+  bookmark_utils::OpenAll(NULL, browser->profile(), browser, node,
+                          disposition);
+
+  const char* metrics_action = NULL;
+  if (disposition == NEW_FOREGROUND_TAB) {
+    metrics_action = "OpenAllBookmarks";
+  } else if (disposition == NEW_WINDOW) {
+    metrics_action = "OpenAllBookmarksNewWindow";
+  } else {
+    metrics_action = "OpenAllBookmarksIncognitoWindow";
+  }
+  UserMetrics::RecordAction(UserMetricsAction(metrics_action),
+                            browser->profile());
+}
+
 - (IBAction)openBookmarkMenuItem:(id)sender {
   NSInteger tag = [sender tag];
   int identifier = tag;
@@ -90,6 +122,18 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
     return;  // shouldn't be reached
 
   [self openURLForNode:node];
+}
+
+- (IBAction)openAllBookmarks:(id)sender {
+  [self openAll:[sender tag] withDisposition:NEW_FOREGROUND_TAB];
+}
+
+- (IBAction)openAllBookmarksNewWindow:(id)sender {
+  [self openAll:[sender tag] withDisposition:NEW_WINDOW];
+}
+
+- (IBAction)openAllBookmarksIncognitoWindow:(id)sender {
+  [self openAll:[sender tag] withDisposition:OFF_THE_RECORD];
 }
 
 @end  // BookmarkMenuCocoaController

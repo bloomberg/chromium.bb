@@ -12,9 +12,11 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
 #include "chrome/browser/ui/cocoa/browser_test_helper.h"
+#include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+#include "ui/base/l10n/l10n_util.h"
 
 class TestBookmarkMenuBridge : public BookmarkMenuBridge {
  public:
@@ -53,9 +55,19 @@ class BookmarkMenuBridgeTest : public PlatformTest {
   void InvalidateMenu()  { bridge_->InvalidateMenu(); }
   bool menu_is_valid()  { return bridge_->menuIsValid_; }
 
-  void AddNodeToMenu(BookmarkMenuBridge* bridge, const BookmarkNode* root,
+  void AddNodeToMenu(BookmarkMenuBridge* bridge,
+                     const BookmarkNode* root,
                      NSMenu* menu) {
     bridge->AddNodeToMenu(root, menu);
+  }
+
+  void AddItemToMenu(BookmarkMenuBridge* bridge,
+                     int command_id,
+                     int message_id,
+                     const BookmarkNode* node,
+                     NSMenu* menu,
+                     bool enable) {
+    bridge->AddItemToMenu(command_id, message_id, node, menu, enable);
   }
 
   NSMenuItem* MenuItemForNode(BookmarkMenuBridge* bridge,
@@ -63,7 +75,7 @@ class BookmarkMenuBridgeTest : public PlatformTest {
     return bridge->MenuItemForNode(node);
   }
 
-  NSMenuItem* AddItemToMenu(NSMenu *menu, NSString *title, SEL selector) {
+  NSMenuItem* AddTestMenuItem(NSMenu *menu, NSString *title, SEL selector) {
     NSMenuItem *item = [[[NSMenuItem alloc] initWithTitle:title action:NULL
                                             keyEquivalent:@""] autorelease];
     if (selector)
@@ -71,7 +83,6 @@ class BookmarkMenuBridgeTest : public PlatformTest {
     [menu addItem:item];
     return item;
   }
-
   BrowserTestHelper browser_test_helper_;
   scoped_ptr<TestBookmarkMenuBridge> bridge_;
 };
@@ -84,13 +95,14 @@ TEST_F(BookmarkMenuBridgeTest, TestBookmarkMenuAutoSeparator) {
   // The bare menu after loading has a separator and an "Other Bookmarks"
   // submenu.
   EXPECT_EQ(2, [menu numberOfItems]);
-  // Add a bookmark and reload and there should be 4 items: the previous
-  // menu contents plus a new separator and the new bookmark.
+  // Add a bookmark and reload and there should be 8 items: the previous
+  // menu contents plus two new separator, the new bookmark and three
+  // versions of 'Open All Bookmarks' menu items.
   const BookmarkNode* parent = model->GetBookmarkBarNode();
   const char* url = "http://www.zim-bop-a-dee.com/";
   model->AddURL(parent, 0, ASCIIToUTF16("Bookmark"), GURL(url));
   bridge_->UpdateMenu(menu);
-  EXPECT_EQ(4, [menu numberOfItems]);
+  EXPECT_EQ(8, [menu numberOfItems]);
   // Remove the new bookmark and reload and we should have 2 items again
   // because the separator should have been removed as well.
   model->Remove(parent, 0);
@@ -102,12 +114,12 @@ TEST_F(BookmarkMenuBridgeTest, TestBookmarkMenuAutoSeparator) {
 TEST_F(BookmarkMenuBridgeTest, TestClearBookmarkMenu) {
   NSMenu* menu = bridge_->menu_.get();
 
-  AddItemToMenu(menu, @"hi mom", nil);
-  AddItemToMenu(menu, @"not", @selector(openBookmarkMenuItem:));
-  NSMenuItem* item = AddItemToMenu(menu, @"hi mom", nil);
+  AddTestMenuItem(menu, @"hi mom", nil);
+  AddTestMenuItem(menu, @"not", @selector(openBookmarkMenuItem:));
+  NSMenuItem* item = AddTestMenuItem(menu, @"hi mom", nil);
   [item setSubmenu:[[[NSMenu alloc] initWithTitle:@"bar"] autorelease]];
-  AddItemToMenu(menu, @"not", @selector(openBookmarkMenuItem:));
-  AddItemToMenu(menu, @"zippy", @selector(length));
+  AddTestMenuItem(menu, @"not", @selector(openBookmarkMenuItem:));
+  AddTestMenuItem(menu, @"zippy", @selector(length));
   [menu addItem:[NSMenuItem separatorItem]];
 
   ClearBookmarkMenu(bridge_.get(), menu);
@@ -221,6 +233,74 @@ TEST_F(BookmarkMenuBridgeTest, TestAddNodeToMenu) {
   // icon or a favicon, if present).
   EXPECT_TRUE([short_item image]);
   EXPECT_TRUE([long_item image]);
+}
+
+// Test that AddItemToMenu() properly added versions of
+// 'Open All Bookmarks' as menu items.
+TEST_F(BookmarkMenuBridgeTest, TestAddItemToMenu) {
+  NSString* title;
+  NSMenuItem* item;
+  NSMenu* menu = bridge_->menu_.get();
+
+  BookmarkModel* model = bridge_->GetBookmarkModel();
+  const BookmarkNode* root = model->GetBookmarkBarNode();
+  EXPECT_TRUE(model && root);
+  EXPECT_EQ(0, [menu numberOfItems]);
+
+  AddItemToMenu(bridge_.get(), IDC_BOOKMARK_BAR_OPEN_ALL,
+                IDS_BOOMARK_BAR_OPEN_ALL, root, menu, true);
+  AddItemToMenu(bridge_.get(), IDC_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW,
+                IDS_BOOMARK_BAR_OPEN_ALL_NEW_WINDOW, root, menu, true);
+  AddItemToMenu(bridge_.get(), IDC_BOOKMARK_BAR_OPEN_ALL_INCOGNITO,
+                IDS_BOOMARK_BAR_OPEN_INCOGNITO, root, menu, true);
+  EXPECT_EQ(3, [menu numberOfItems]);
+
+  title = l10n_util::GetNSString(IDS_BOOMARK_BAR_OPEN_ALL);
+  item = [menu itemWithTitle:title];
+  EXPECT_TRUE(item);
+  EXPECT_EQ(@selector(openAllBookmarks:), [item action]);
+  EXPECT_TRUE([item isEnabled]);
+
+  title = l10n_util::GetNSString(IDS_BOOMARK_BAR_OPEN_ALL_NEW_WINDOW);
+  item = [menu itemWithTitle:title];
+  EXPECT_TRUE(item);
+  EXPECT_EQ(@selector(openAllBookmarksNewWindow:), [item action]);
+  EXPECT_TRUE([item isEnabled]);
+
+  title = l10n_util::GetNSString(IDS_BOOMARK_BAR_OPEN_INCOGNITO);
+  item = [menu itemWithTitle:title];
+  EXPECT_TRUE(item);
+  EXPECT_EQ(@selector(openAllBookmarksIncognitoWindow:), [item action]);
+  EXPECT_TRUE([item isEnabled]);
+
+  ClearBookmarkMenu(bridge_.get(), menu);
+  EXPECT_EQ(0, [menu numberOfItems]);
+
+  AddItemToMenu(bridge_.get(), IDC_BOOKMARK_BAR_OPEN_ALL,
+                IDS_BOOMARK_BAR_OPEN_ALL, root, menu, false);
+  AddItemToMenu(bridge_.get(), IDC_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW,
+                IDS_BOOMARK_BAR_OPEN_ALL_NEW_WINDOW, root, menu, false);
+  AddItemToMenu(bridge_.get(), IDC_BOOKMARK_BAR_OPEN_ALL_INCOGNITO,
+                IDS_BOOMARK_BAR_OPEN_INCOGNITO, root, menu, false);
+  EXPECT_EQ(3, [menu numberOfItems]);
+
+  title = l10n_util::GetNSString(IDS_BOOMARK_BAR_OPEN_ALL);
+  item = [menu itemWithTitle:title];
+  EXPECT_TRUE(item);
+  EXPECT_EQ(nil, [item action]);
+  EXPECT_FALSE([item isEnabled]);
+
+  title = l10n_util::GetNSString(IDS_BOOMARK_BAR_OPEN_ALL_NEW_WINDOW);
+  item = [menu itemWithTitle:title];
+  EXPECT_TRUE(item);
+  EXPECT_EQ(nil, [item action]);
+  EXPECT_FALSE([item isEnabled]);
+
+  title = l10n_util::GetNSString(IDS_BOOMARK_BAR_OPEN_INCOGNITO);
+  item = [menu itemWithTitle:title];
+  EXPECT_TRUE(item);
+  EXPECT_EQ(nil, [item action]);
+  EXPECT_FALSE([item isEnabled]);
 }
 
 // Makes sure our internal map of BookmarkNode to NSMenuItem works.

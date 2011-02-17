@@ -4,6 +4,7 @@
 
 #include "base/string16.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/cocoa/browser_test_helper.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_cocoa_controller.h"
 #include "chrome/browser/ui/browser.h"
@@ -14,6 +15,9 @@
   BrowserTestHelper* helper_;
   const BookmarkNode* nodes_[2];
   BOOL opened_[2];
+  BOOL opened_new_foreground_tab;
+  BOOL opened_new_window;
+  BOOL opened_off_the_record;
 }
 @end
 
@@ -50,6 +54,17 @@
     opened_[1] = YES;
 }
 
+- (void)openAll:(NSInteger)tag
+    withDisposition:(WindowOpenDisposition)disposition {
+  if (disposition == NEW_FOREGROUND_TAB) {
+    opened_new_foreground_tab = YES;
+  } else if (disposition == NEW_WINDOW) {
+    opened_new_window = YES;
+  } else if (disposition == OFF_THE_RECORD) {
+    opened_off_the_record = YES;
+  }
+}
+
 @end  // FakeBookmarkMenuController
 
 
@@ -62,5 +77,21 @@ TEST(BookmarkMenuCocoaControllerTest, TestOpenItem) {
     [c openBookmarkMenuItem:item];
     ASSERT_NE(c->opened_[i], NO);
   }
+
+  // Test three versions of 'Open All Bookmarks' item. tag id means nothing.
+  // I just reset the tag id to zero.
+  [item setTag:0];
+  EXPECT_EQ(c->opened_new_foreground_tab, NO);
+  [c openAllBookmarks:item];
+  EXPECT_NE(c->opened_new_foreground_tab, NO);
+
+  EXPECT_EQ(c->opened_new_window, NO);
+  [c openAllBookmarksNewWindow:item];
+  EXPECT_NE(c->opened_new_window, NO);
+
+  EXPECT_EQ(c->opened_off_the_record, NO);
+  [c openAllBookmarksIncognitoWindow:item];
+  EXPECT_NE(c->opened_off_the_record, NO);
+
   [c release];
 }

@@ -13,6 +13,7 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/mac/cocoa_protocols.h"
+#include "webkit/glue/window_open_disposition.h"
 
 class BookmarkNode;
 class BookmarkMenuBridge;
@@ -34,6 +35,9 @@ class BookmarkMenuBridge;
 // Called by any Bookmark menu item.
 // The menu item's tag is the bookmark ID.
 - (IBAction)openBookmarkMenuItem:(id)sender;
+- (IBAction)openAllBookmarks:(id)sender;
+- (IBAction)openAllBookmarksNewWindow:(id)sender;
+- (IBAction)openAllBookmarksIncognitoWindow:(id)sender;
 
 @end  // BookmarkMenuCocoaController
 
@@ -41,6 +45,8 @@ class BookmarkMenuBridge;
 @interface BookmarkMenuCocoaController (ExposedForUnitTests)
 - (const BookmarkNode*)nodeForIdentifier:(int)identifier;
 - (void)openURLForNode:(const BookmarkNode*)node;
+- (void)openAll:(NSInteger)tag
+    withDisposition:(WindowOpenDisposition)disposition;
 @end  // BookmarkMenuCocoaController (ExposedForUnitTests)
 
 #endif  // CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_MENU_COCOA_CONTROLLER_H_
