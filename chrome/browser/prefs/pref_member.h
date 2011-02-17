@@ -104,7 +104,7 @@ class PrefMember : public subtle::PrefMemberBase {
   // Check whether the pref is managed, i.e. controlled externally through
   // enterprise configuration management (e.g. windows group policy). Returns
   // false for unknown prefs.
-  bool IsManaged() {
+  bool IsManaged() const {
     return subtle::PrefMemberBase::IsManaged();
   }
 

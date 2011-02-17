@@ -78,6 +78,10 @@ void DownloadPrefs::RegisterUserPrefs(PrefService* prefs) {
   }
 }
 
+bool DownloadPrefs::PromptForDownload() const {
+  return *prompt_for_download_ && !download_path_.IsManaged();
+}
+
 bool DownloadPrefs::IsAutoOpenUsed() const {
   return !auto_open_.empty();
 }

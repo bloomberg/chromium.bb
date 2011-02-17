@@ -391,6 +391,18 @@
       'label': '''Set user data directory''',
     },
     {
+      'name': 'DownloadDirectory',
+      'type': 'string',
+      'supported_on': ['chrome.*:11-'],
+      'features': {'dynamic_refresh': 1},
+      'example_value': '${user_home}\Chrome',
+      'caption': '''Set download directory''',
+      'desc': '''Configures the directory that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use for downloading files.
+
+      If you set this policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the provided directory regardless whether the user has specified one or enabled the flag to be prompted for download location every time.''',
+      'label': '''Set download directory''',
+    },
+    {
       'name': 'Proxy',
       'type': 'group',
       'caption': '''Proxy server''',

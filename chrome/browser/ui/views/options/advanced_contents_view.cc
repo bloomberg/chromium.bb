@@ -1078,6 +1078,9 @@ class DownloadSection : public AdvancedSection,
   // the current value of the pref.
   void UpdateDownloadDirectoryDisplay();
 
+  // Helper function for reacting to managed prefs.
+  void DownloadSection::UpdateWidgetsForManagedPrefs();
+
   StringPrefMember auto_open_files_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadSection);
@@ -1227,11 +1230,19 @@ void DownloadSection::NotifyPrefChanged(const std::string* pref_name) {
     reset_file_handlers_label_->SetEnabled(enabled);
     reset_file_handlers_button_->SetEnabled(enabled);
   }
+  UpdateWidgetsForManagedPrefs();
 }
 
 void DownloadSection::UpdateDownloadDirectoryDisplay() {
   download_default_download_location_display_->SetFile(
       default_download_location_.GetValue());
+}
+
+void DownloadSection::UpdateWidgetsForManagedPrefs() {
+  const bool enabled = !default_download_location_.IsManaged();
+  download_default_download_location_display_->SetEnabled(enabled);
+  download_browse_button_->SetEnabled(enabled);
+  download_ask_for_save_location_checkbox_->SetEnabled(enabled);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

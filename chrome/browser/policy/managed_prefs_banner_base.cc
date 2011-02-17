@@ -89,6 +89,7 @@ void ManagedPrefsBannerBase::Init(PrefService* local_state,
 #endif
       AddUserPref(prefs::kProxy);
       AddUserPref(prefs::kCloudPrintProxyEnabled);
+      AddUserPref(prefs::kDownloadDefaultDirectory);
       break;
     default:
       NOTREACHED();

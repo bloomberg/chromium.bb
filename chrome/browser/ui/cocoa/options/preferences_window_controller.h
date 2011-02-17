@@ -143,6 +143,7 @@ class ProfileSyncService;
   BOOL dnsPrefetchEnabled_;
   BOOL safeBrowsingEnabled_;
   BOOL metricsReportingEnabled_;
+  BOOL downloadLocationEnabled_;
   BOOL proxiesConfigureButtonEnabled_;
 }
 
@@ -163,6 +164,7 @@ class ProfileSyncService;
 @property(nonatomic) BOOL dnsPrefetchEnabled;
 @property(nonatomic) BOOL safeBrowsingEnabled;
 @property(nonatomic) BOOL metricsReportingEnabled;
+@property(nonatomic) BOOL downloadLocationEnabled;
 @property(nonatomic) BOOL proxiesConfigureButtonEnabled;
 
 // Designated initializer. |profile| should not be NULL.

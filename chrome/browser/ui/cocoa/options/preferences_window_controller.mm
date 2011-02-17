@@ -483,6 +483,7 @@ class ManagedPrefsBannerState : public policy::ManagedPrefsBannerBase {
 @synthesize dnsPrefetchEnabled = dnsPrefetchEnabled_;
 @synthesize safeBrowsingEnabled = safeBrowsingEnabled_;
 @synthesize metricsReportingEnabled = metricsReportingEnabled_;
+@synthesize downloadLocationEnabled = downloadLocationEnabled_;
 @synthesize proxiesConfigureButtonEnabled = proxiesConfigureButtonEnabled_;
 
 - (id)initWithProfile:(Profile*)profile initialPage:(OptionsPage)initialPage {
@@ -570,6 +571,7 @@ class ManagedPrefsBannerState : public policy::ManagedPrefsBannerBase {
     [self setDnsPrefetchEnabled:!dnsPrefetch_.IsManaged()];
     [self setSafeBrowsingEnabled:!safeBrowsing_.IsManaged()];
     [self setMetricsReportingEnabled:!metricsReporting_.IsManaged()];
+    [self setDownloadLocationEnabled:!defaultDownloadLocation_.IsManaged()];
     proxyPrefs_.reset(
         PrefSetObserver::CreateProxyPrefSetObserver(prefs_, observer_.get()));
     [self setProxiesConfigureButtonEnabled:!proxyPrefs_->IsManaged()];
@@ -1504,6 +1506,7 @@ const int kDisabledIndex = 1;
     [self setMetricsReportingEnabled:!metricsReporting_.IsManaged()];
   }
   else if (*prefName == prefs::kDownloadDefaultDirectory) {
+    [self setDownloadLocationEnabled:!defaultDownloadLocation_.IsManaged()];
     // Poke KVO.
     [self willChangeValueForKey:@"defaultDownloadLocation"];
     [self didChangeValueForKey:@"defaultDownloadLocation"];

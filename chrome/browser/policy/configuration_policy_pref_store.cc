@@ -232,6 +232,8 @@ const ConfigurationPolicyPrefKeeper::PolicyToPreferenceMapEntry
     prefs::kDefaultBrowserSettingEnabled },
   { Value::TYPE_BOOLEAN, kPolicyCloudPrintProxyEnabled,
     prefs::kCloudPrintProxyEnabled },
+  { Value::TYPE_STRING, kPolicyDownloadDirectory,
+    prefs::kDownloadDefaultDirectory },
 
 #if defined(OS_CHROMEOS)
   { Value::TYPE_BOOLEAN, kPolicyChromeOsLockOnIdleSuspend,
@@ -866,6 +868,8 @@ ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList() {
       key::kDefaultBrowserSettingEnabled },
     { kPolicyCloudPrintProxyEnabled, Value::TYPE_BOOLEAN,
       key::kCloudPrintProxyEnabled },
+    { kPolicyDownloadDirectory, Value::TYPE_STRING,
+      key::kDownloadDirectory },
 
 #if defined(OS_CHROMEOS)
     { kPolicyChromeOsLockOnIdleSuspend, Value::TYPE_BOOLEAN,

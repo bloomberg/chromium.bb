@@ -198,6 +198,7 @@ void AdvancedOptionsHandler::Initialize() {
   SetupMetricsReportingSettingVisibility();
   SetupFontSizeLabel();
   SetupDownloadLocationPath();
+  SetupPromptForDownload();
   SetupAutoOpenFileTypesDisabledAttribute();
   SetupProxySettingsSection();
 #if defined(OS_WIN)
@@ -241,6 +242,7 @@ WebUIMessageHandler* AdvancedOptionsHandler::Attach(WebUI* web_ui) {
 #endif
   default_download_location_.Init(prefs::kDownloadDefaultDirectory,
                                   prefs, this);
+  ask_for_save_location_.Init(prefs::kPromptForDownload, prefs, this);
   auto_open_files_.Init(prefs::kDownloadExtensionsToOpen, prefs, this);
   default_font_size_.Init(prefs::kWebKitDefaultFontSize, prefs, this);
   default_fixed_font_size_.Init(prefs::kWebKitDefaultFixedFontSize, prefs,
@@ -258,6 +260,9 @@ void AdvancedOptionsHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("selectDownloadLocation",
       NewCallback(this,
                   &AdvancedOptionsHandler::HandleSelectDownloadLocation));
+  web_ui_->RegisterMessageCallback("promptForDownloadAction",
+      NewCallback(this,
+                  &AdvancedOptionsHandler::HandlePromptForDownload));
   web_ui_->RegisterMessageCallback("autoOpenFileTypesAction",
       NewCallback(this,
                   &AdvancedOptionsHandler::HandleAutoOpenButton));
@@ -319,8 +324,10 @@ void AdvancedOptionsHandler::Observe(NotificationType type,
                                      const NotificationDetails& details) {
   if (type == NotificationType::PREF_CHANGED) {
     std::string* pref_name = Details<std::string>(details).ptr();
-    if (*pref_name == prefs::kDownloadDefaultDirectory) {
+    if ((*pref_name == prefs::kDownloadDefaultDirectory) ||
+        (*pref_name == prefs::kPromptForDownload)) {
       SetupDownloadLocationPath();
+      SetupPromptForDownload();
     } else if (*pref_name == prefs::kDownloadExtensionsToOpen) {
       SetupAutoOpenFileTypesDisabledAttribute();
     } else if (proxy_prefs_->IsObserved(*pref_name)) {
@@ -348,6 +355,12 @@ void AdvancedOptionsHandler::HandleSelectDownloadLocation(
       pref_service->GetFilePath(prefs::kDownloadDefaultDirectory),
       NULL, 0, FILE_PATH_LITERAL(""),
       web_ui_->tab_contents()->view()->GetTopLevelNativeWindow(), NULL);
+}
+
+void AdvancedOptionsHandler::HandlePromptForDownload(
+    const ListValue* args) {
+  std::string checked_str = WideToUTF8(ExtractStringValue(args));
+  ask_for_save_location_.SetValue(checked_str == "true");
 }
 
 void AdvancedOptionsHandler::FileSelected(const FilePath& path, int index,
@@ -572,8 +585,16 @@ void AdvancedOptionsHandler::SetupFontSizeLabel() {
 
 void AdvancedOptionsHandler::SetupDownloadLocationPath() {
   StringValue value(default_download_location_.GetValue().value());
+  FundamentalValue disabled(default_download_location_.IsManaged());
   web_ui_->CallJavascriptFunction(
-      L"options.AdvancedOptions.SetDownloadLocationPath", value);
+      L"options.AdvancedOptions.SetDownloadLocationPath", value, disabled);
+}
+
+void AdvancedOptionsHandler::SetupPromptForDownload() {
+  FundamentalValue checked(ask_for_save_location_.GetValue());
+  FundamentalValue disabled(default_download_location_.IsManaged());
+  web_ui_->CallJavascriptFunction(
+      L"options.AdvancedOptions.SetPromptForDownload", checked, disabled);
 }
 
 void AdvancedOptionsHandler::SetupAutoOpenFileTypesDisabledAttribute() {

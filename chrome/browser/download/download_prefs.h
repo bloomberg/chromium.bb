@@ -21,9 +21,13 @@ class DownloadPrefs {
 
   static void RegisterUserPrefs(PrefService* prefs);
 
-  bool prompt_for_download() const { return *prompt_for_download_; }
   FilePath download_path() const { return *download_path_; }
   int save_file_type() const { return *save_file_type_; }
+
+  // Returns true if the prompt_for_download preference has been set and the
+  // download location is not managed (which means the user shouldn't be able
+  // to choose another download location).
+  bool PromptForDownload() const;
 
   // Returns true if there is at least one file extension registered
   // for auto-open.

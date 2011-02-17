@@ -263,7 +263,7 @@ void DownloadManager::StartDownload(DownloadCreateInfo* info) {
     // Freeze the user's preference for showing a Save As dialog.  We're going
     // to bounce around a bunch of threads and we don't want to worry about race
     // conditions where the user changes this pref out from under us.
-    if (download_prefs_->prompt_for_download()) {
+    if (download_prefs_->PromptForDownload()) {
       // But ignore the user's preference for the following scenarios:
       // 1) Extension installation. Note that we only care here about the case
       //    where an extension is installed, not when one is downloaded with

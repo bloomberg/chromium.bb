@@ -157,6 +157,9 @@ class DownloadSection : public OptionsPageBase {
   // Overridden from OptionsPageBase.
   virtual void NotifyPrefChanged(const std::string* pref_name);
 
+  // Helper function for reacting to managed prefs.
+  void UpdateWidgetsForManagedPrefs();
+
   // Callbacks for the widgets.
   static void OnDownloadLocationChanged(GtkFileChooser* widget,
                                         DownloadSection* section);
@@ -290,7 +293,14 @@ void DownloadSection::NotifyPrefChanged(const std::string* pref_name) {
     gtk_widget_set_sensitive(reset_file_handlers_label_, enabled);
     gtk_widget_set_sensitive(reset_file_handlers_button_, enabled);
   }
+  UpdateWidgetsForManagedPrefs();
   pref_changing_ = false;
+}
+
+void DownloadSection::UpdateWidgetsForManagedPrefs() {
+  const bool enabled = !default_download_location_.IsManaged();
+  gtk_widget_set_sensitive(download_location_button_, enabled);
+  gtk_widget_set_sensitive(download_ask_for_save_location_checkbox_, enabled);
 }
 
 // static

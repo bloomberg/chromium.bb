@@ -89,6 +89,10 @@ var OptionsPage = options.OptionsPage;
         $('downloadLocationChangeButton').onclick = function(event) {
           chrome.send('selectDownloadLocation');
         };
+        $('promptForDownload').onclick = function(event) {
+          chrome.send('promptForDownloadAction',
+              [String($('promptForDownload').checked)]);
+        };
 
         // Remove Windows-style accelerators from the Browse button label.
         // TODO(csilv): Remove this after the accelerator has been removed from
@@ -200,9 +204,20 @@ var OptionsPage = options.OptionsPage;
   };
 
   // Set the download path.
-  AdvancedOptions.SetDownloadLocationPath = function(path) {
+  AdvancedOptions.SetDownloadLocationPath = function(path, disabled) {
     if (!cr.isChromeOS)
       $('downloadLocationPath').value = path;
+      $('downloadLocationChangeButton').disabled = disabled;
+  };
+
+  // Set the prompt for download checkbox.
+  AdvancedOptions.SetPromptForDownload = function(checked, disabled) {
+    $('promptForDownload').checked = checked;
+    $('promptForDownload').disabled = disabled;
+    if (disabled)
+      $('promptForDownloadLabel').className = 'informational-text';
+    else
+      $('promptForDownloadLabel').className = '';
   };
 
   // Set the enabled state for the autoOpenFileTypesResetToDefault button.
