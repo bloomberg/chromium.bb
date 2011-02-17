@@ -3776,6 +3776,5 @@
    fun:_ZN25TestingAutomationProvider17OnMessageReceivedERKN3IPC7MessageE
    fun:_ZN3IPC12ChannelProxy7Context17OnDispatchMessageERKNS_7MessageE
    fun:_ZN3IPC11SyncChannel20ReceivedSyncMsgQueue16DispatchMessagesEv
-   fun:_ZN3IPC11SyncChannel11SyncContext16DispatchMessagesEv
-   fun:_ZN3IPC11SyncChannel23OnWaitableEventSignaledEPN4base13WaitableEventE
 }
+
