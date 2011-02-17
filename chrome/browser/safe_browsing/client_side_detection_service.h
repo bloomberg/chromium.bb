@@ -91,10 +91,15 @@ class ClientSideDetectionService : public URLFetcher::Delegate,
   // fetch.  If an error occurs the phishing verdict will always be false.  The
   // callback is always called after SendClientReportPhishingRequest() returns
   // and on the same thread as SendClientReportPhishingRequest() was called.
-  void SendClientReportPhishingRequest(
+  virtual void SendClientReportPhishingRequest(
       const GURL& phishing_url,
       double score,
       ClientReportPhishingRequestCallback* callback);
+
+ protected:
+  // Use Create() method to create an instance of this object.
+  ClientSideDetectionService(const FilePath& model_path,
+                             URLRequestContextGetter* request_context_getter);
 
  private:
   friend class ClientSideDetectionServiceTest;
@@ -126,10 +131,6 @@ class ClientSideDetectionService : public URLFetcher::Delegate,
   static const base::TimeDelta kReportsInterval;
   static const base::TimeDelta kNegativeCacheInterval;
   static const base::TimeDelta kPositiveCacheInterval;
-
-  // Use Create() method to create an instance of this object.
-  ClientSideDetectionService(const FilePath& model_path,
-                             URLRequestContextGetter* request_context_getter);
 
   // Sets the model status and invokes all the pending callbacks in
   // |open_callbacks_| with the current |model_file_| as parameter.

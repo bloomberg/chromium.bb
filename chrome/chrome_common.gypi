@@ -151,6 +151,8 @@
           'common/resource_response.cc',
           'common/resource_response.h',
           'common/result_codes.h',
+	  'common/safebrowsing_messages.cc',
+	  'common/safebrowsing_messages.h',
           'common/sandbox_init_wrapper.h',
           'common/sandbox_init_wrapper_linux.cc',
           'common/sandbox_init_wrapper_mac.cc',

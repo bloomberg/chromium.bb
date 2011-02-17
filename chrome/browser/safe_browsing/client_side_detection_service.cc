@@ -445,7 +445,8 @@ void ClientSideDetectionService::HandlePhishingVerdict(
     info->callback->Run(info->phishing_url, response.phishy());
   } else {
     DLOG(ERROR) << "Unable to get the server verdict for URL: "
-                << info->phishing_url;
+                << info->phishing_url << " status: " << status.status() << " "
+                << "response_code:" << response_code;
     info->callback->Run(info->phishing_url, false);
   }
   client_phishing_reports_.erase(source);

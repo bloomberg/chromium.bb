@@ -2044,6 +2044,8 @@
         'browser/safe_browsing/bloom_filter.h',
         'browser/safe_browsing/chunk_range.cc',
         'browser/safe_browsing/chunk_range.h',
+        'browser/safe_browsing/client_side_detection_host.cc',
+        'browser/safe_browsing/client_side_detection_host.h',
         'browser/safe_browsing/client_side_detection_service.cc',
         'browser/safe_browsing/client_side_detection_service.h',
         '<(protoc_out_dir)/chrome/browser/safe_browsing/csd.pb.cc',

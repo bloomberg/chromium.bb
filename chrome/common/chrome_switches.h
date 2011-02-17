@@ -137,6 +137,7 @@ extern const char kEnableAeroPeekTabs[];
 extern const char kEnableAuthNegotiatePort[];
 extern const char kEnableBenchmarking[];
 extern const char kEnableClientSidePhishingDetection[];
+extern const char kEnableClientSidePhishingInterstitial[];
 extern const char kEnableClearServerData[];
 extern const char kEnableClickToPlay[];
 extern const char kEnableCloudPrintProxy[];

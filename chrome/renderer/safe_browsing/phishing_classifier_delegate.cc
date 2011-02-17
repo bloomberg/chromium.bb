@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/scoped_callback_factory.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/safebrowsing_messages.h"
 #include "chrome/renderer/navigation_state.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view.h"
@@ -166,8 +167,8 @@ void PhishingClassifierDelegate::ClassificationDone(bool is_phishy,
     return;
   }
 
-  render_view()->Send(new ViewHostMsg_DetectedPhishingSite(
-      render_view()->routing_id(),
+  Send(new SafeBrowsingDetectionHostMsg_DetectedPhishingSite(
+      routing_id(),
       last_url_sent_to_classifier_,
       phishy_score));
 }

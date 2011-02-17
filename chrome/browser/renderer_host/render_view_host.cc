@@ -807,8 +807,6 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_WebDatabaseAccessed, OnWebDatabaseAccessed)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeChanged, OnMsgFocusedNodeChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateZoomLimits, OnUpdateZoomLimits)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DetectedPhishingSite,
-                        OnDetectedPhishingSite)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ScriptEvalResponse, OnScriptEvalResponse)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowPopup, OnMsgShowPopup)
@@ -1662,12 +1660,6 @@ void RenderViewHost::OnUpdateZoomLimits(int minimum_percent,
                                         int maximum_percent,
                                         bool remember) {
   delegate_->UpdateZoomLimits(minimum_percent, maximum_percent, remember);
-}
-
-void RenderViewHost::OnDetectedPhishingSite(const GURL& phishing_url,
-                                            double phishing_score) {
-  // TODO(noelutz): send an HTTP request to the client-side detection frontends
-  // to confirm that the URL is really phishing.
 }
 
 void RenderViewHost::OnScriptEvalResponse(int id, const ListValue& result) {

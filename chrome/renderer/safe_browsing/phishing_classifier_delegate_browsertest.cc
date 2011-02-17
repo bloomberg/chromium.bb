@@ -9,7 +9,7 @@
 
 #include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/safebrowsing_messages.h"
 #include "chrome/renderer/render_view.h"
 #include "chrome/renderer/safe_browsing/features.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier.h"
@@ -61,8 +61,8 @@ class PhishingClassifierDelegateTest : public RenderViewFakeResourcesTest {
   bool OnMessageReceived(const IPC::Message& message) {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(PhishingClassifierDelegateTest, message)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_DetectedPhishingSite,
-                          OnDetectedPhishingSite)
+        IPC_MESSAGE_HANDLER(SafeBrowsingDetectionHostMsg_DetectedPhishingSite,
+                            OnDetectedPhishingSite)
       IPC_MESSAGE_UNHANDLED(
           handled = RenderViewFakeResourcesTest::OnMessageReceived(message))
     IPC_END_MESSAGE_MAP()

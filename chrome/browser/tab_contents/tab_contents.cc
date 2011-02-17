@@ -64,6 +64,7 @@
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/renderer_preferences_util.h"
+#include "chrome/browser/safe_browsing/client_side_detection_host.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/interstitial_page.h"
@@ -412,6 +413,8 @@ void TabContents::AddObservers() {
   desktop_notification_handler_.reset(
       new DesktopNotificationHandlerForTC(this, GetRenderProcessHost()));
   plugin_observer_.reset(new PluginObserver(this));
+  safebrowsing_detection_host_.reset(new safe_browsing::ClientSideDetectionHost(
+      this));
 }
 
 // static

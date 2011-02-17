@@ -160,14 +160,14 @@ class SafeBrowsingService
   // If the request contained a chain of redirects, |url| is the last url
   // in the chain, and |original_url| is the first one (the root of the
   // chain). Otherwise, |original_url| = |url|.
-  void DisplayBlockingPage(const GURL& url,
-                           const GURL& original_url,
-                           const std::vector<GURL>& redirect_urls,
-                           ResourceType::Type resource_type,
-                           UrlCheckResult result,
-                           Client* client,
-                           int render_process_host_id,
-                           int render_view_id);
+  virtual void DisplayBlockingPage(const GURL& url,
+                                   const GURL& original_url,
+                                   const std::vector<GURL>& redirect_urls,
+                                   ResourceType::Type resource_type,
+                                   UrlCheckResult result,
+                                   Client* client,
+                                   int render_process_host_id,
+                                   int render_view_id);
 
   // Called on the IO thread when the SafeBrowsingProtocolManager has received
   // the full hash results for prefix hits detected in the database.

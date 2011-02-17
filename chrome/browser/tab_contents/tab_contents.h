@@ -59,6 +59,10 @@ class PrintPreviewMessageHandler;
 class PrintViewManager;
 }
 
+namespace safe_browsing {
+class ClientSideDetectionHost;
+}
+
 class AutocompleteHistoryManager;
 class AutoFillManager;
 class BlockedContentContainer;
@@ -710,6 +714,10 @@ class TabContents : public PageNavigator,
   }
   AutoFillManager* autofill_manager() { return autofill_manager_.get(); }
 
+  safe_browsing::ClientSideDetectionHost* safebrowsing_detection_host() {
+    return safebrowsing_detection_host_.get();
+  }
+
  protected:
   // from RenderViewHostDelegate.
   virtual bool OnMessageReceived(const IPC::Message& message);
@@ -1093,6 +1101,9 @@ class TabContents : public PageNavigator,
   // Handles desktop notification IPCs.
   scoped_ptr<DesktopNotificationHandlerForTC> desktop_notification_handler_;
 
+  // Handles IPCs related to SafeBrowsing client-side phishing detection.
+  scoped_ptr<safe_browsing::ClientSideDetectionHost>
+      safebrowsing_detection_host_;
 
   // Data for loading state ----------------------------------------------------
 

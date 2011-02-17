@@ -640,7 +640,6 @@ class RenderViewHost : public RenderWidgetHost {
   void OnUpdateZoomLimits(int minimum_percent,
                           int maximum_percent,
                           bool remember);
-  void OnDetectedPhishingSite(const GURL& phishing_url, double phishing_score);
   void OnScriptEvalResponse(int id, const ListValue& result);
   void OnCommandStateChanged(int command,
                              bool is_enabled,
