@@ -116,12 +116,12 @@ void FileSystemDirURLRequestJob::DidReadDirectory(
   }
 
 #if defined(OS_WIN)
-  const string16& title = absolute_dir_path_.value();
+  const string16& title = relative_dir_path_.value();
 #elif defined(OS_POSIX)
   const string16& title = WideToUTF16(
-      base::SysNativeMBToWide(absolute_dir_path_.value()));
+      base::SysNativeMBToWide(relative_dir_path_.value()));
 #endif
-  data_.append(net::GetDirectoryListingHeader(title));
+  data_.append(net::GetDirectoryListingHeader(ASCIIToUTF16("/") + title));
 
   typedef std::vector<base::FileUtilProxy::Entry>::const_iterator EntryIterator;
   for (EntryIterator it = entries.begin(); it != entries.end(); ++it) {
