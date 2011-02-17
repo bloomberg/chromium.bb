@@ -194,16 +194,7 @@ def GetTargets():
         MakeInstallPrefix(name, deps), scons_args, arch, **kwargs)
     AddModule(name, module)
 
-  if sys.platform == "darwin":
-    # libgmp's configure script has a special case which builds it
-    # with -m64 by default on Mac OS X.  (Maybe this was for PowerPC
-    # rather than x86?)  That will not work when everything else uses
-    # the host gcc's default of -m32 (except for mpfr, which gets its
-    # CFLAGS from gmp.h!).  So we need to override this.
-    gmp_opts = ["--build=i386-apple-darwin"]
-  else:
-    gmp_opts = []
-  AddAutoconfModule("gmp", "gmp", configure_opts=gmp_opts, deps=[])
+  AddAutoconfModule("gmp", "gmp", deps=[])
   AddAutoconfModule("mpfr", "mpfr", deps=["gmp"])
   # TODO(mseaborn): Add an automated mechanism for these libraries to
   # be pulled in whenever gcc is declared as a dependency.
