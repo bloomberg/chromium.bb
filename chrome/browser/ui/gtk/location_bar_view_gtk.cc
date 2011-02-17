@@ -945,6 +945,15 @@ void LocationBarViewGtk::UpdateSiteTypeArea() {
     gtk_widget_hide(GTK_WIDGET(security_info_label_));
   }
 
+  if (location_entry()->IsEditingOrEmpty()) {
+    // Do not show the tooltip if the user has been editing the location
+    // bar, or the location bar is at the NTP.
+    gtk_widget_set_tooltip_text(location_icon_image_, "");
+  } else {
+    gtk_widget_set_tooltip_text(location_icon_image_,
+        l10n_util::GetStringUTF8(IDS_TOOLTIP_LOCATION_ICON).c_str());
+  }
+
   gtk_widget_show(site_type_area());
 
   SetSiteTypeDragSource();
