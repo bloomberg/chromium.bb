@@ -1108,8 +1108,8 @@ void TestingAutomationProvider::AutocompleteEditIsQueryInProgress(
   *success = false;
   *query_in_progress = false;
   if (autocomplete_edit_tracker_->ContainsHandle(autocomplete_edit_handle)) {
-    *query_in_progress = autocomplete_edit_tracker_->
-        GetResource(!autocomplete_edit_handle)->model()->
+    *query_in_progress = !autocomplete_edit_tracker_->
+        GetResource(autocomplete_edit_handle)->model()->
         autocomplete_controller()->done();
     *success = true;
   }
