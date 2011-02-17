@@ -16,8 +16,6 @@
 #include "chrome/browser/sessions/base_session_service.h"
 #include "chrome/browser/sessions/session_service_test_helper.h"
 #include "chrome/browser/sessions/session_types.h"
-#include "chrome/browser/sync/profile_sync_service_harness.h"
-#include "chrome/browser/sync/syncable/nigori_util.h"
 #include "chrome/test/live_sync/live_sync_test.h"
 
 class GURL;
@@ -98,16 +96,6 @@ class LiveSessionsSyncTest : public LiveSyncTest {
 
   // Sets up the TestSessionService helper and the new browser windows.
   virtual bool SetupClients();
-
-  // Encrypt sessions datatype.
-  bool EnableEncryption(int index) {
-    return GetClient(index)->EnableEncryptionForType(syncable::SESSIONS);
-  }
-
-  // Check if Sessions are encrypted.
-  bool IsEncrypted(int index) {
-    return GetClient(index)->IsTypeEncrypted(syncable::SESSIONS);
-  }
 
   // Open a single tab and return the TabContents. TabContents must be checked
   // to ensure the tab opened successsfully.

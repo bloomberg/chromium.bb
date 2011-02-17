@@ -114,17 +114,6 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
   // Returns a snapshot of the current sync session.
   const SyncSessionSnapshot* GetLastSessionSnapshot() const;
 
-  // Encrypt the datatype |type|. This method will block while the sync backend
-  // host performs the encryption or a timeout is reached. Returns false if
-  // encryption failed, else true.
-  // Note: this method does not currently support tracking encryption status
-  // while other sync activities are being performed. Sync should be fully
-  // synced when this is called.
-  bool EnableEncryptionForType(syncable::ModelType type);
-
-  // Check if |type| is encrypted.
-  bool IsTypeEncrypted(syncable::ModelType type);
-
  private:
   friend class StateChangeTimeoutEvent;
 
@@ -149,9 +138,6 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
 
     // The sync client anticipates incoming updates leading to a new sync cycle.
     WAITING_FOR_UPDATES,
-
-    // The sync client anticipates encryption of new datatypes.
-    WAITING_FOR_ENCRYPTION,
 
     // The sync client cannot reach the server.
     SERVER_UNREACHABLE,
@@ -192,10 +178,6 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
   // Gets the current progress indicator of the current sync session
   // for a particular datatype.
   std::string GetUpdatedTimestamp(syncable::ModelType model_type);
-
-  // When in WAITING_FOR_ENCRYPTION state, we check to see if this type is now
-  // encrypted to determine if we're done.
-  syncable::ModelType waiting_for_encryption_type_;
 
   WaitState wait_state_;
 

@@ -71,10 +71,6 @@ class Cryptographer {
   bool Decrypt(const sync_pb::EncryptedData& encrypted,
                ::google::protobuf::MessageLite* message) const;
 
-  // Decrypts |encrypted| and returns plaintext decrypted data. If decryption
-  // fails, returns empty string.
-  std::string DecryptToString(const sync_pb::EncryptedData& encrypted) const;
-
   // Encrypts the set of currently known keys into |encrypted|. Returns true if
   // successful.
   bool GetKeys(sync_pb::EncryptedData* encrypted) const;

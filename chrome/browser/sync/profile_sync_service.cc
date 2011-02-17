@@ -433,7 +433,11 @@ void ProfileSyncService::CreateBackend() {
 }
 
 bool ProfileSyncService::IsEncryptedDatatypeEnabled() const {
-  return encrypted_types_.size() > 0;
+  // Currently on passwords are an encrypted datatype, so
+  // we check to see if it is enabled.
+  syncable::ModelTypeSet types;
+  GetPreferredDataTypes(&types);
+  return types.count(syncable::PASSWORDS) != 0;
 }
 
 void ProfileSyncService::StartUp() {
@@ -745,14 +749,6 @@ void ProfileSyncService::OnPassphraseAccepted() {
   tried_creating_explicit_passphrase_ = false;
 
   wizard_.Step(SyncSetupWizard::DONE);
-}
-
-void ProfileSyncService::OnEncryptionComplete(
-    const syncable::ModelTypeSet& encrypted_types) {
-  if (encrypted_types_ != encrypted_types) {
-    encrypted_types_ = encrypted_types;
-    NotifyObservers();
-  }
 }
 
 void ProfileSyncService::ShowLoginDialog(gfx::NativeWindow parent_window) {
@@ -1172,16 +1168,6 @@ void ProfileSyncService::SetPassphrase(const std::string& passphrase,
     tried_creating_explicit_passphrase_ = true;
   else if (is_explicit)
     tried_setting_explicit_passphrase_ = true;
-}
-
-void ProfileSyncService::EncryptDataTypes(
-    const syncable::ModelTypeSet& encrypted_types) {
-  backend_->EncryptDataTypes(encrypted_types);
-}
-
-void ProfileSyncService::GetEncryptedDataTypes(
-    syncable::ModelTypeSet* encrypted_types) const {
-  *encrypted_types = encrypted_types_;
 }
 
 void ProfileSyncService::Observe(NotificationType type,

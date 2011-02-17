@@ -39,7 +39,7 @@ namespace sync_api {
 class ChangeReorderBuffer {
  public:
   typedef SyncManager::ChangeRecord ChangeRecord;
-  typedef SyncManager::ExtraPasswordChangeRecordData ExtraChangeRecordData;
+  typedef SyncManager::ExtraChangeRecordData ExtraChangeRecordData;
 
   ChangeReorderBuffer();
   ~ChangeReorderBuffer();

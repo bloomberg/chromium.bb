@@ -2,21 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string>
-
-#include "base/format_macros.h"
-#include "base/string_util.h"
 #include "chrome/browser/sync/engine/apply_updates_command.h"
-#include "chrome/browser/sync/engine/syncer.h"
-#include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
-#include "chrome/browser/sync/syncable/nigori_util.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/syncable/syncable_id.h"
 #include "chrome/test/sync/engine/syncer_command_test.h"
-#include "chrome/test/sync/engine/test_id_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace browser_sync {
@@ -24,7 +16,6 @@ namespace browser_sync {
 using sessions::SyncSession;
 using std::string;
 using syncable::Entry;
-using syncable::GetEncryptedDataTypes;
 using syncable::Id;
 using syncable::MutableEntry;
 using syncable::ReadTransaction;
@@ -50,7 +41,7 @@ class ApplyUpdatesCommandTest : public SyncerCommandTest {
     SyncerCommandTest::SetUp();
   }
 
-  // Create a new unapplied bookmark node with a parent.
+  // Create a new unapplied update.
   void CreateUnappliedNewItemWithParent(const string& item_id,
                                         const string& parent_id) {
     ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
@@ -70,10 +61,8 @@ class ApplyUpdatesCommandTest : public SyncerCommandTest {
     entry.Put(syncable::SERVER_SPECIFICS, default_bookmark_specifics);
   }
 
-  // Create a new unapplied update without a parent.
   void CreateUnappliedNewItem(const string& item_id,
-                              const sync_pb::EntitySpecifics& specifics,
-                              bool is_unique) {
+                              const sync_pb::EntitySpecifics& specifics) {
     ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
     ASSERT_TRUE(dir.good());
     WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
@@ -82,53 +71,15 @@ class ApplyUpdatesCommandTest : public SyncerCommandTest {
     ASSERT_TRUE(entry.good());
     entry.Put(syncable::SERVER_VERSION, next_revision_++);
     entry.Put(syncable::IS_UNAPPLIED_UPDATE, true);
+
     entry.Put(syncable::SERVER_NON_UNIQUE_NAME, item_id);
     entry.Put(syncable::SERVER_PARENT_ID, syncable::kNullId);
     entry.Put(syncable::SERVER_IS_DIR, false);
     entry.Put(syncable::SERVER_SPECIFICS, specifics);
-    if (is_unique)  // For top-level nodes.
-      entry.Put(syncable::UNIQUE_SERVER_TAG, item_id);
-  }
-
-  // Create an unsynced item in the database.  If item_id is a local ID, it
-  // will be treated as a create-new.  Otherwise, if it's a server ID, we'll
-  // fake the server data so that it looks like it exists on the server.
-  // Returns the methandle of the created item in |metahandle_out| if not NULL.
-  void CreateUnsyncedItem(const Id& item_id,
-                          const Id& parent_id,
-                          const string& name,
-                          bool is_folder,
-                          syncable::ModelType model_type,
-                          int64* metahandle_out) {
-    ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
-    ASSERT_TRUE(dir.good());
-    WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
-    Id predecessor_id = dir->GetLastChildId(&trans, parent_id);
-    MutableEntry entry(&trans, syncable::CREATE, parent_id, name);
-    ASSERT_TRUE(entry.good());
-    entry.Put(syncable::ID, item_id);
-    entry.Put(syncable::BASE_VERSION,
-        item_id.ServerKnows() ? next_revision_++ : 0);
-    entry.Put(syncable::IS_UNSYNCED, true);
-    entry.Put(syncable::IS_DIR, is_folder);
-    entry.Put(syncable::IS_DEL, false);
-    entry.Put(syncable::PARENT_ID, parent_id);
-    entry.PutPredecessor(predecessor_id);
-    sync_pb::EntitySpecifics default_specifics;
-    syncable::AddDefaultExtensionValue(model_type, &default_specifics);
-    entry.Put(syncable::SPECIFICS, default_specifics);
-    if (item_id.ServerKnows()) {
-      entry.Put(syncable::SERVER_SPECIFICS, default_specifics);
-      entry.Put(syncable::SERVER_IS_DIR, is_folder);
-      entry.Put(syncable::SERVER_PARENT_ID, parent_id);
-      entry.Put(syncable::SERVER_IS_DEL, false);
-    }
-    if (metahandle_out)
-      *metahandle_out = entry.Get(syncable::META_HANDLE);
   }
 
   ApplyUpdatesCommand apply_updates_command_;
-  TestIdFactory id_factory_;
+
  private:
   int64 next_revision_;
   DISALLOW_COPY_AND_ASSIGN(ApplyUpdatesCommandTest);
@@ -227,7 +178,7 @@ TEST_F(ApplyUpdatesCommandTest, DecryptablePassword) {
 
   cryptographer->Encrypt(data,
       specifics.MutableExtension(sync_pb::password)->mutable_encrypted());
-  CreateUnappliedNewItem("item", specifics, false);
+  CreateUnappliedNewItem("item", specifics);
 
   apply_updates_command_.ExecuteImpl(session());
 
@@ -245,7 +196,7 @@ TEST_F(ApplyUpdatesCommandTest, UndecryptablePassword) {
   // Undecryptable password updates should not be applied.
   sync_pb::EntitySpecifics specifics;
   specifics.MutableExtension(sync_pb::password);
-  CreateUnappliedNewItem("item", specifics, false);
+  CreateUnappliedNewItem("item", specifics);
 
   apply_updates_command_.ExecuteImpl(session());
 
@@ -274,7 +225,7 @@ TEST_F(ApplyUpdatesCommandTest, SomeUndecryptablePassword) {
 
     cryptographer->Encrypt(data,
         specifics.MutableExtension(sync_pb::password)->mutable_encrypted());
-    CreateUnappliedNewItem("item1", specifics, false);
+    CreateUnappliedNewItem("item1", specifics);
   }
   {
     // Create a new cryptographer, independent of the one in the session.
@@ -288,7 +239,7 @@ TEST_F(ApplyUpdatesCommandTest, SomeUndecryptablePassword) {
 
     cryptographer.Encrypt(data,
         specifics.MutableExtension(sync_pb::password)->mutable_encrypted());
-    CreateUnappliedNewItem("item2", specifics, false);
+    CreateUnappliedNewItem("item2", specifics);
   }
 
   apply_updates_command_.ExecuteImpl(session());
@@ -304,27 +255,16 @@ TEST_F(ApplyUpdatesCommandTest, SomeUndecryptablePassword) {
 }
 
 TEST_F(ApplyUpdatesCommandTest, NigoriUpdate) {
-  syncable::ModelTypeSet encrypted_types;
-  {
-    ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
-    ASSERT_TRUE(dir.good());
-    ReadTransaction trans(dir, __FILE__, __LINE__);
-    EXPECT_EQ(encrypted_types, GetEncryptedDataTypes(&trans));
-  }
-
   // Nigori node updates should update the Cryptographer.
   Cryptographer other_cryptographer;
   KeyParams params = {"localhost", "dummy", "foobar"};
   other_cryptographer.AddKey(params);
 
   sync_pb::EntitySpecifics specifics;
-  sync_pb::NigoriSpecifics* nigori =
-      specifics.MutableExtension(sync_pb::nigori);
-  other_cryptographer.GetKeys(nigori->mutable_encrypted());
-  nigori->set_encrypt_bookmarks(true);
-  encrypted_types.insert(syncable::BOOKMARKS);
-  CreateUnappliedNewItem(syncable::ModelTypeToRootTag(syncable::NIGORI),
-                         specifics, true);
+  other_cryptographer.GetKeys(
+      specifics.MutableExtension(sync_pb::nigori)->mutable_encrypted());
+
+  CreateUnappliedNewItem("item", specifics);
 
   Cryptographer* cryptographer =
       session()->context()->directory_manager()->cryptographer();
@@ -343,191 +283,6 @@ TEST_F(ApplyUpdatesCommandTest, NigoriUpdate) {
 
   EXPECT_FALSE(cryptographer->is_ready());
   EXPECT_TRUE(cryptographer->has_pending_keys());
-}
-
-TEST_F(ApplyUpdatesCommandTest, EncryptUnsyncedChanges) {
-  syncable::ModelTypeSet encrypted_types;
-  {
-    ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
-    ASSERT_TRUE(dir.good());
-    ReadTransaction trans(dir, __FILE__, __LINE__);
-    EXPECT_EQ(encrypted_types, GetEncryptedDataTypes(&trans));
-
-    // With empty encrypted_types, this should be true.
-    EXPECT_TRUE(VerifyUnsyncedChangesAreEncrypted(&trans, encrypted_types));
-
-    Syncer::UnsyncedMetaHandles handles;
-    SyncerUtil::GetUnsyncedEntries(&trans, &handles);
-    EXPECT_TRUE(handles.empty());
-  }
-
-  // Create unsynced bookmarks without encryption.
-  // First item is a folder
-  Id folder_id = id_factory_.NewLocalId();
-  CreateUnsyncedItem(folder_id, id_factory_.root(), "folder",
-                     true, syncable::BOOKMARKS, NULL);
-  // Next five items are children of the folder
-  size_t i;
-  size_t batch_s = 5;
-  for (i = 0; i < batch_s; ++i) {
-    CreateUnsyncedItem(id_factory_.NewLocalId(), folder_id,
-                       StringPrintf("Item %"PRIuS"", i), false,
-                       syncable::BOOKMARKS, NULL);
-  }
-  // Next five items are children of the root.
-  for (; i < 2*batch_s; ++i) {
-    CreateUnsyncedItem(id_factory_.NewLocalId(), id_factory_.root(),
-                       StringPrintf("Item %"PRIuS"", i), false,
-                       syncable::BOOKMARKS, NULL);
-  }
-
-  Cryptographer* cryptographer =
-      session()->context()->directory_manager()->cryptographer();
-  KeyParams params = {"localhost", "dummy", "foobar"};
-  cryptographer->AddKey(params);
-  sync_pb::EntitySpecifics specifics;
-  sync_pb::NigoriSpecifics* nigori =
-      specifics.MutableExtension(sync_pb::nigori);
-  cryptographer->GetKeys(nigori->mutable_encrypted());
-  nigori->set_encrypt_bookmarks(true);
-  encrypted_types.insert(syncable::BOOKMARKS);
-  CreateUnappliedNewItem(syncable::ModelTypeToRootTag(syncable::NIGORI),
-                         specifics, true);
-  EXPECT_FALSE(cryptographer->has_pending_keys());
-  EXPECT_TRUE(cryptographer->is_ready());
-
-  {
-    // Ensure we have unsynced nodes that aren't properly encrypted.
-    ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
-    ASSERT_TRUE(dir.good());
-    ReadTransaction trans(dir, __FILE__, __LINE__);
-    EXPECT_FALSE(VerifyUnsyncedChangesAreEncrypted(&trans, encrypted_types));
-
-    Syncer::UnsyncedMetaHandles handles;
-    SyncerUtil::GetUnsyncedEntries(&trans, &handles);
-    EXPECT_EQ(2*batch_s+1, handles.size());
-  }
-
-  apply_updates_command_.ExecuteImpl(session());
-
-  sessions::StatusController* status = session()->status_controller();
-  sessions::ScopedModelSafeGroupRestriction r(status, GROUP_PASSIVE);
-  EXPECT_EQ(1, status->update_progress().AppliedUpdatesSize())
-      << "All updates should have been attempted";
-  EXPECT_EQ(0, status->conflict_progress().ConflictingItemsSize())
-      << "The nigori update shouldn't be in conflict";
-  EXPECT_EQ(1, status->update_progress().SuccessfullyAppliedUpdateCount())
-      << "The nigori update should be applied";
-  EXPECT_FALSE(cryptographer->has_pending_keys());
-  EXPECT_TRUE(cryptographer->is_ready());
-  {
-    ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
-    ASSERT_TRUE(dir.good());
-    ReadTransaction trans(dir, __FILE__, __LINE__);
-
-    // If ProcessUnsyncedChangesForEncryption worked, all our unsynced changes
-    // should be encrypted now.
-    EXPECT_EQ(encrypted_types, GetEncryptedDataTypes(&trans));
-    EXPECT_TRUE(VerifyUnsyncedChangesAreEncrypted(&trans, encrypted_types));
-
-    Syncer::UnsyncedMetaHandles handles;
-    SyncerUtil::GetUnsyncedEntries(&trans, &handles);
-    EXPECT_EQ(2*batch_s+1, handles.size());
-  }
-}
-
-TEST_F(ApplyUpdatesCommandTest, CannotEncryptUnsyncedChanges) {
-  syncable::ModelTypeSet encrypted_types;
-  {
-    ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
-    ASSERT_TRUE(dir.good());
-    ReadTransaction trans(dir, __FILE__, __LINE__);
-    EXPECT_EQ(encrypted_types, GetEncryptedDataTypes(&trans));
-
-    // With empty encrypted_types, this should be true.
-    EXPECT_TRUE(VerifyUnsyncedChangesAreEncrypted(&trans, encrypted_types));
-
-    Syncer::UnsyncedMetaHandles handles;
-    SyncerUtil::GetUnsyncedEntries(&trans, &handles);
-    EXPECT_TRUE(handles.empty());
-  }
-
-  // Create unsynced bookmarks without encryption.
-  // First item is a folder
-  Id folder_id = id_factory_.NewLocalId();
-  CreateUnsyncedItem(folder_id, id_factory_.root(), "folder", true,
-                     syncable::BOOKMARKS, NULL);
-  // Next five items are children of the folder
-  size_t i;
-  size_t batch_s = 5;
-  for (i = 0; i < batch_s; ++i) {
-    CreateUnsyncedItem(id_factory_.NewLocalId(), folder_id,
-                       StringPrintf("Item %"PRIuS"", i), false,
-                       syncable::BOOKMARKS, NULL);
-  }
-  // Next five items are children of the root.
-  for (; i < 2*batch_s; ++i) {
-    CreateUnsyncedItem(id_factory_.NewLocalId(), id_factory_.root(),
-                       StringPrintf("Item %"PRIuS"", i), false,
-                       syncable::BOOKMARKS, NULL);
-  }
-
-  // We encrypt with new keys, triggering the local cryptographer to be unready
-  // and unable to decrypt data (once updated).
-  Cryptographer other_cryptographer;
-  KeyParams params = {"localhost", "dummy", "foobar"};
-  other_cryptographer.AddKey(params);
-  sync_pb::EntitySpecifics specifics;
-  sync_pb::NigoriSpecifics* nigori =
-      specifics.MutableExtension(sync_pb::nigori);
-  other_cryptographer.GetKeys(nigori->mutable_encrypted());
-  nigori->set_encrypt_bookmarks(true);
-  encrypted_types.insert(syncable::BOOKMARKS);
-  CreateUnappliedNewItem(syncable::ModelTypeToRootTag(syncable::NIGORI),
-                         specifics, true);
-  Cryptographer* cryptographer =
-      session()->context()->directory_manager()->cryptographer();
-  EXPECT_FALSE(cryptographer->has_pending_keys());
-
-  {
-    // Ensure we have unsynced nodes that aren't properly encrypted.
-    ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
-    ASSERT_TRUE(dir.good());
-    ReadTransaction trans(dir, __FILE__, __LINE__);
-    EXPECT_FALSE(VerifyUnsyncedChangesAreEncrypted(&trans, encrypted_types));
-    Syncer::UnsyncedMetaHandles handles;
-    SyncerUtil::GetUnsyncedEntries(&trans, &handles);
-    EXPECT_EQ(2*batch_s+1, handles.size());
-  }
-
-  apply_updates_command_.ExecuteImpl(session());
-
-  sessions::StatusController* status = session()->status_controller();
-  sessions::ScopedModelSafeGroupRestriction r(status, GROUP_PASSIVE);
-  EXPECT_EQ(1, status->update_progress().AppliedUpdatesSize())
-      << "All updates should have been attempted";
-  EXPECT_EQ(1, status->conflict_progress().ConflictingItemsSize())
-      << "The unsynced chnages trigger a conflict with the nigori update.";
-  EXPECT_EQ(0, status->update_progress().SuccessfullyAppliedUpdateCount())
-      << "The nigori update should not be applied";
-  EXPECT_FALSE(cryptographer->is_ready());
-  EXPECT_TRUE(cryptographer->has_pending_keys());
-  {
-    // Ensure the unsynced nodes are still not encrypted.
-    ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
-    ASSERT_TRUE(dir.good());
-    ReadTransaction trans(dir, __FILE__, __LINE__);
-
-    // Since we're in conflict, the specifics don't reflect the unapplied
-    // changes.
-    EXPECT_FALSE(VerifyUnsyncedChangesAreEncrypted(&trans, encrypted_types));
-    encrypted_types.clear();
-    EXPECT_EQ(encrypted_types, GetEncryptedDataTypes(&trans));
-
-    Syncer::UnsyncedMetaHandles handles;
-    SyncerUtil::GetUnsyncedEntries(&trans, &handles);
-    EXPECT_EQ(2*batch_s+1, handles.size());
-  }
 }
 
 }  // namespace browser_sync

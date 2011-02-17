@@ -14,8 +14,6 @@ option retain_unknown_fields = true;
 
 package sync_pb;
 
-import "encryption.proto";
-
 // Used for inspecting how long we spent performing operations in different
 // backends. All times must be in millis.
 message ProfilingData {
@@ -28,13 +26,6 @@ message ProfilingData {
 }
 
 message EntitySpecifics {
-  // If a datatype is encrypted, this field will contain the encrypted
-  // original EntitySpecifics. The extension for the datatype will continue
-  // to exist, but contain only the default values.
-  // Note that currently passwords employ their own legacy encryption scheme and
-  // do not use this field.
-  optional EncryptedData encrypted = 1;
-
   // To add new datatype-specific fields to the protocol, extend
   // EntitySpecifics.  First, pick a non-colliding tag number by
   // picking a revision number of one of your past commits

@@ -150,7 +150,8 @@ void PasswordChangeProcessor::ApplyChangesFromSyncModel(
           << "Password specifics data not present on delete!";
       DCHECK(changes[i].extra.get());
       sync_api::SyncManager::ExtraPasswordChangeRecordData* extra =
-          changes[i].extra.get();
+          static_cast<sync_api::SyncManager::ExtraPasswordChangeRecordData*>(
+              changes[i].extra.get());
       const sync_pb::PasswordSpecificsData& password = extra->unencrypted();
       webkit_glue::PasswordForm form;
       PasswordModelAssociator::CopyPassword(password, &form);

@@ -34,18 +34,6 @@ message NigoriSpecifics {
   // True if |encrypted| is encrypted using a passphrase
   // explicitly set by the user.
   optional bool using_explicit_passphrase = 2;
-  
-  // Booleans corresponding to whether a datatype should be encrypted.
-  // Passwords are always encrypted, so we don't need a field here.
-  optional bool encrypt_bookmarks = 3;
-  optional bool encrypt_preferences = 4;
-  optional bool encrypt_autofill_profile = 5;
-  optional bool encrypt_autofill = 6;
-  optional bool encrypt_themes = 7;
-  optional bool encrypt_typed_urls = 8;
-  optional bool encrypt_extensions = 9;
-  optional bool encrypt_sessions = 10;
-  optional bool encrypt_apps = 11;
 }
 
 extend EntitySpecifics {

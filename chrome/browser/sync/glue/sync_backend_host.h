@@ -88,9 +88,6 @@ class SyncFrontend {
   // encrypted using the accepted passphrase.
   virtual void OnPassphraseAccepted() = 0;
 
-  virtual void OnEncryptionComplete(
-      const syncable::ModelTypeSet& encrypted_types) = 0;
-
  protected:
   // Don't delete through SyncFrontend interface.
   virtual ~SyncFrontend() {
@@ -162,13 +159,6 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
       const DataTypeController::TypeMap& data_type_controllers,
       const syncable::ModelTypeSet& types,
       CancelableTask* ready_task);
-
-  // Encrypts the specified datatypes and marks them as needing encryption on
-  // other machines. This affects all machines synced to this account and all
-  // data belonging to the specified types.
-  // Note: actual work is done on core_thread_'s message loop.
-  virtual void EncryptDataTypes(
-      const syncable::ModelTypeSet& encrypted_types);
 
   syncable::AutofillMigrationState
       GetAutofillMigrationState();
@@ -286,8 +276,6 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     virtual void OnUpdatedToken(const std::string& token);
     virtual void OnClearServerDataFailed();
     virtual void OnClearServerDataSucceeded();
-    virtual void OnEncryptionComplete(
-        const syncable::ModelTypeSet& encrypted_types);
 
     // JsBackend implementation.
     virtual void SetParentJsEventRouter(JsEventRouter* router);
@@ -355,10 +343,6 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     // on behalf of SyncBackendHost::SupplyPassphrase.
     void DoSetPassphrase(const std::string& passphrase, bool is_explicit);
 
-    // Called on SyncBackendHost's |core_thread_| to set the datatypes we need
-    // to encrypt as well as encrypt all local data of that type.
-    void DoEncryptDataTypes(const syncable::ModelTypeSet& encrypted_types);
-
     // The shutdown order is a bit complicated:
     // 1) From |core_thread_|, invoke the syncapi Shutdown call to do a final
     //    SaveChanges, close sqlite handles, and halt the syncer thread (which
@@ -396,6 +380,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     void DoInitializeForTest(const std::wstring& test_user,
                              sync_api::HttpPostProviderFactory* factory,
                              bool delete_sync_data_folder) {
+
       // Construct dummy credentials for test.
       sync_api::SyncCredentials credentials;
       credentials.email = WideToUTF8(test_user);
@@ -453,11 +438,6 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
 
     // Invoked when an updated token is available from the sync server.
     void NotifyUpdatedToken(const std::string& token);
-
-    // Invoked when sync finishes encrypting new datatypes or has become aware
-    // of new datatypes requiring encryption.
-    void NotifyEncryptionComplete(const syncable::ModelTypeSet&
-                                      encrypted_types);
 
     // Called from Core::OnSyncCycleCompleted to handle updating frontend
     // thread components.
@@ -527,6 +507,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   scoped_refptr<Core> core_;
 
  private:
+
   UIModelWorker* ui_worker();
 
   void ConfigureAutofillMigration();

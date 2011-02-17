@@ -261,52 +261,11 @@ ListValue* ModelTypeBitSetToValue(const ModelTypeBitSet& model_types) {
   for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
     if (model_types[i]) {
       value->Append(
-          Value::CreateStringValue(ModelTypeToString(ModelTypeFromInt(i))));
+          Value::CreateStringValue(
+              ModelTypeToString(ModelTypeFromInt(i))));
     }
   }
   return value;
-}
-
-ListValue* ModelTypeSetToValue(const ModelTypeSet& model_types) {
-  ListValue* value = new ListValue();
-  for (ModelTypeSet::const_iterator i = model_types.begin();
-       i != model_types.end(); ++i) {
-    value->Append(Value::CreateStringValue(ModelTypeToString(*i)));
-  }
-  return value;
-}
-
-// TODO(zea): remove all hardcoded tags in model associators and have them use
-// this instead.
-std::string ModelTypeToRootTag(ModelType type) {
-  switch (type) {
-    case BOOKMARKS:
-      return "google_chrome_bookmarks";
-    case PREFERENCES:
-      return "google_chrome_preferences";
-    case PASSWORDS:
-      return "google_chrome_passwords";
-    case AUTOFILL:
-      return "google_chrome_autofill";
-    case THEMES:
-      return "google_chrome_themes";
-    case TYPED_URLS:
-      return "google_chrome_typed_urls";
-    case EXTENSIONS:
-      return "google_chrome_extensions";
-    case NIGORI:
-      return "google_chrome_nigori";
-    case SESSIONS:
-      return "google_chrome_sessions";
-    case APPS:
-      return "google_chrome_apps";
-    case AUTOFILL_PROFILE:
-      return "google_chrome_autofill_profiles";
-    default:
-      break;
-  }
-  NOTREACHED() << "No known extension for model type.";
-  return "INVALID";
 }
 
 // For now, this just implements UMA_HISTOGRAM_LONG_TIMES. This can be adjusted

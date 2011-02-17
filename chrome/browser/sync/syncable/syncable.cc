@@ -38,6 +38,10 @@
 #include "base/time.h"
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/engine/syncer_util.h"
+#include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
+#include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
+#include "chrome/browser/sync/protocol/password_specifics.pb.h"
+#include "chrome/browser/sync/protocol/preference_specifics.pb.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
 #include "chrome/browser/sync/protocol/theme_specifics.pb.h"
 #include "chrome/browser/sync/protocol/typed_url_specifics.pb.h"
@@ -223,7 +227,7 @@ void Directory::Kernel::Release() {
 }
 
 Directory::Kernel::~Kernel() {
-  CHECK_EQ(0, refcount);
+  CHECK(0 == refcount);
   delete channel;
   changes_channel.Notify(kShutdownChangesEvent);
   delete unsynced_metahandles;
@@ -486,14 +490,14 @@ void Directory::Delete(EntryKernel* const entry) {
   entry->put(IS_DEL, true);
   entry->mark_dirty(kernel_->dirty_metahandles);
   ScopedKernelLock lock(this);
-  CHECK_EQ(1U, kernel_->parent_id_child_index->erase(entry));
+  CHECK(1 == kernel_->parent_id_child_index->erase(entry));
 }
 
 bool Directory::ReindexId(EntryKernel* const entry, const Id& new_id) {
   ScopedKernelLock lock(this);
   if (NULL != GetEntryById(new_id, &lock))
     return false;
-  CHECK_EQ(1U, kernel_->ids_index->erase(entry));
+  CHECK(1 == kernel_->ids_index->erase(entry));
   entry->put(ID, new_id);
   CHECK(kernel_->ids_index->insert(entry).second);
   return true;
@@ -501,6 +505,7 @@ bool Directory::ReindexId(EntryKernel* const entry, const Id& new_id) {
 
 void Directory::ReindexParentId(EntryKernel* const entry,
                                 const Id& new_parent_id) {
+
   ScopedKernelLock lock(this);
   if (entry->ref(IS_DEL)) {
     entry->put(PARENT_ID, new_parent_id);
@@ -511,7 +516,7 @@ void Directory::ReindexParentId(EntryKernel* const entry,
     return;
   }
 
-  CHECK_EQ(1U, kernel_->parent_id_child_index->erase(entry));
+  CHECK(1 == kernel_->parent_id_child_index->erase(entry));
   entry->put(PARENT_ID, new_parent_id);
   CHECK(kernel_->parent_id_child_index->insert(entry).second);
 }
@@ -528,7 +533,7 @@ bool Directory::SafeToPurgeFromMemory(const EntryKernel* const entry) const {
 
   if (safe) {
     int64 handle = entry->ref(META_HANDLE);
-    CHECK_EQ(kernel_->dirty_metahandles->count(handle), 0U);
+    CHECK(kernel_->dirty_metahandles->count(handle) == 0);
     // TODO(tim): Bug 49278.
     CHECK(!kernel_->unsynced_metahandles->count(handle));
     CHECK(!kernel_->unapplied_update_metahandles->count(handle));
@@ -996,7 +1001,7 @@ void Directory::CheckTreeInvariants(syncable::BaseTransaction* trans,
         CHECK(handles.end() != handles.find(parent.Get(META_HANDLE)))
             << e << parent;
         parentid = parent.Get(PARENT_ID);
-        CHECK_GE(--safety_count, 0) << e << parent;
+        CHECK(--safety_count >= 0) << e << parent;
       }
     }
     int64 base_version = e.Get(BASE_VERSION);
@@ -1025,7 +1030,7 @@ void Directory::CheckTreeInvariants(syncable::BaseTransaction* trans,
         // on the server, isn't waiting for application locally, but either
         // is an unsynced create or a sucessful delete in the local copy.
         // Either way, that's a mismatch.
-        CHECK_EQ(0, server_version) << e;
+        CHECK(0 == server_version) << e;
         // Items that aren't using the unique client tag should have a zero
         // base version only if they have a local ID.  Items with unique client
         // tags are allowed to use the zero base version for undeletion and
@@ -1265,7 +1270,7 @@ syncable::ModelType Entry::GetServerModelType() const {
   // It's possible we'll need to relax these checks in the future; they're
   // just here for now as a safety measure.
   DCHECK(Get(IS_UNSYNCED));
-  DCHECK_EQ(Get(SERVER_VERSION), 0);
+  DCHECK(Get(SERVER_VERSION) == 0);
   DCHECK(Get(SERVER_IS_DEL));
   // Note: can't enforce !Get(ID).ServerKnows() here because that could
   // actually happen if we hit AttemptReuniteLostCommitResponses.
@@ -1496,7 +1501,7 @@ bool MutableEntry::Put(IndexedBitField field, bool value) {
     if (value)
       CHECK(index->insert(kernel_->ref(META_HANDLE)).second);
     else
-      CHECK_EQ(1U, index->erase(kernel_->ref(META_HANDLE)));
+      CHECK(1 == index->erase(kernel_->ref(META_HANDLE)));
     kernel_->put(field, value);
     kernel_->mark_dirty(dir()->kernel_->dirty_metahandles);
   }

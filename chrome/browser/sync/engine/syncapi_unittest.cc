@@ -6,19 +6,14 @@
 // functionality is provided by the Syncable layer, which has its own
 // unit tests. We'll test SyncApi specific things in this harness.
 
-#include <map>
-
 #include "base/basictypes.h"
-#include "base/format_macros.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
-#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/js_arg_list.h"
 #include "chrome/browser/sync/js_backend.h"
@@ -27,30 +22,19 @@
 #include "chrome/browser/sync/js_test_util.h"
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"
 #include "chrome/browser/sync/protocol/proto_value_conversions.h"
-#include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
-#include "chrome/browser/sync/syncable/nigori_util.h"
 #include "chrome/browser/sync/syncable/syncable.h"
-#include "chrome/browser/sync/syncable/syncable_id.h"
-#include "chrome/browser/sync/util/cryptographer.h"
 #include "chrome/test/sync/engine/test_directory_setter_upper.h"
 #include "chrome/test/values_test_util.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using browser_sync::Cryptographer;
 using browser_sync::HasArgsAsList;
 using browser_sync::KeyParams;
 using browser_sync::JsArgList;
 using browser_sync::MockJsEventHandler;
 using browser_sync::MockJsEventRouter;
-using browser_sync::ModelSafeRoutingInfo;
-using browser_sync::ModelSafeWorker;
-using browser_sync::ModelSafeWorkerRegistrar;
-using browser_sync::sessions::SyncSessionSnapshot;
-using syncable::ModelType;
-using syncable::ModelTypeSet;
 using test::ExpectDictionaryValue;
 using test::ExpectStringValue;
 using testing::_;
@@ -74,7 +58,7 @@ void ExpectInt64Value(int64 expected_value,
 // Makes a non-folder child of the root node.  Returns the id of the
 // newly-created node.
 int64 MakeNode(UserShare* share,
-               ModelType model_type,
+               syncable::ModelType model_type,
                const std::string& client_tag) {
   WriteTransaction trans(share);
   ReadNode root_node(&trans);
@@ -83,80 +67,6 @@ int64 MakeNode(UserShare* share,
   EXPECT_TRUE(node.InitUniqueByCreation(model_type, root_node, client_tag));
   node.SetIsFolder(false);
   return node.GetId();
-}
-
-// Make a folder as a child of the root node. Returns the id of the
-// newly-created node.
-int64 MakeFolder(UserShare* share,
-                 syncable::ModelType model_type,
-                 const std::string& client_tag) {
-  WriteTransaction trans(share);
-  ReadNode root_node(&trans);
-  root_node.InitByRootLookup();
-  WriteNode node(&trans);
-  EXPECT_TRUE(node.InitUniqueByCreation(model_type, root_node, client_tag));
-  node.SetIsFolder(true);
-  return node.GetId();
-}
-
-// Makes a non-folder child of a non-root node. Returns the id of the
-// newly-created node.
-int64 MakeNodeWithParent(UserShare* share,
-                         ModelType model_type,
-                         const std::string& client_tag,
-                         int64 parent_id) {
-  WriteTransaction trans(share);
-  ReadNode parent_node(&trans);
-  parent_node.InitByIdLookup(parent_id);
-  WriteNode node(&trans);
-  EXPECT_TRUE(node.InitUniqueByCreation(model_type, parent_node, client_tag));
-  node.SetIsFolder(false);
-  return node.GetId();
-}
-
-// Makes a folder child of a non-root node. Returns the id of the
-// newly-created node.
-int64 MakeFolderWithParent(UserShare* share,
-                           ModelType model_type,
-                           int64 parent_id,
-                           BaseNode* predecessor) {
-  WriteTransaction trans(share);
-  ReadNode parent_node(&trans);
-  parent_node.InitByIdLookup(parent_id);
-  WriteNode node(&trans);
-  EXPECT_TRUE(node.InitByCreation(model_type, parent_node, predecessor));
-  node.SetIsFolder(true);
-  return node.GetId();
-}
-
-// Creates the "synced" root node for a particular datatype. We use the syncable
-// methods here so that the syncer treats these nodes as if they were already
-// received from the server.
-int64 MakeServerNodeForType(UserShare* share,
-                            ModelType model_type) {
-  sync_pb::EntitySpecifics specifics;
-  syncable::AddDefaultExtensionValue(model_type, &specifics);
-  syncable::ScopedDirLookup dir(share->dir_manager.get(), share->name);
-  EXPECT_TRUE(dir.good());
-  syncable::WriteTransaction trans(dir, syncable::UNITTEST, __FILE__, __LINE__);
-  // Attempt to lookup by nigori tag.
-  std::string type_tag = syncable::ModelTypeToRootTag(model_type);
-  syncable::Id node_id = syncable::Id::CreateFromServerId(type_tag);
-  syncable::MutableEntry entry(&trans, syncable::CREATE_NEW_UPDATE_ITEM,
-                               node_id);
-  EXPECT_TRUE(entry.good());
-  entry.Put(syncable::BASE_VERSION, 1);
-  entry.Put(syncable::SERVER_VERSION, 1);
-  entry.Put(syncable::IS_UNAPPLIED_UPDATE, false);
-  entry.Put(syncable::SERVER_PARENT_ID, syncable::kNullId);
-  entry.Put(syncable::SERVER_IS_DIR, true);
-  entry.Put(syncable::IS_DIR, true);
-  entry.Put(syncable::SERVER_SPECIFICS, specifics);
-  entry.Put(syncable::UNIQUE_SERVER_TAG, type_tag);
-  entry.Put(syncable::NON_UNIQUE_NAME, type_tag);
-  entry.Put(syncable::IS_DEL, false);
-  entry.Put(syncable::SPECIFICS, specifics);
-  return entry.Get(syncable::META_HANDLE);
 }
 
 }  // namespace
@@ -288,6 +198,7 @@ TEST_F(SyncApiTest, ReadMissingTagsFails) {
 // TODO(chron): Hook this all up to the server and write full integration tests
 //              for update->undelete behavior.
 TEST_F(SyncApiTest, TestDeleteBehavior) {
+
   int64 node_id;
   int64 folder_id;
   std::wstring test_title(L"test1");
@@ -405,11 +316,11 @@ void CheckNodeValue(const BaseNode& node, const DictionaryValue& value) {
   }
   ExpectStringValue(WideToUTF8(node.GetTitle()), value, "title");
   {
-    ModelType expected_model_type = node.GetModelType();
+    syncable::ModelType expected_model_type = node.GetModelType();
     std::string type_str;
     EXPECT_TRUE(value.GetString("type", &type_str));
     if (expected_model_type >= syncable::FIRST_REAL_MODEL_TYPE) {
-      ModelType model_type =
+      syncable::ModelType model_type =
           syncable::ModelTypeFromString(type_str);
       EXPECT_EQ(expected_model_type, model_type);
     } else if (expected_model_type == syncable::TOP_LEVEL_FOLDER) {
@@ -509,8 +420,7 @@ void CheckDeleteChangeRecordValue(const SyncManager::ChangeRecord& record,
   }
 }
 
-class MockExtraChangeRecordData
-    : public SyncManager::ExtraPasswordChangeRecordData {
+class MockExtraChangeRecordData : public SyncManager::ExtraChangeRecordData {
  public:
   MOCK_CONST_METHOD0(ToValue, DictionaryValue*());
 };
@@ -597,100 +507,20 @@ class TestHttpPostProviderFactory : public HttpPostProviderFactory {
   }
 };
 
-class SyncManagerObserverMock : public SyncManager::Observer {
- public:
-  MOCK_METHOD4(OnChangesApplied,
-               void(ModelType,
-                    const BaseTransaction*,
-                    const SyncManager::ChangeRecord*,
-                    int));  // NOLINT
-  MOCK_METHOD1(OnChangesComplete, void(ModelType));  // NOLINT
-  MOCK_METHOD1(OnSyncCycleCompleted,
-               void(const SyncSessionSnapshot*));  // NOLINT
-  MOCK_METHOD0(OnInitializationComplete, void());  // NOLINT
-  MOCK_METHOD1(OnAuthError, void(const GoogleServiceAuthError&));  // NOLINT
-  MOCK_METHOD1(OnPassphraseRequired, void(bool));  // NOLINT
-  MOCK_METHOD1(OnPassphraseAccepted, void(const std::string&));  // NOLINT
-  MOCK_METHOD0(OnPaused, void());  // NOLINT
-  MOCK_METHOD0(OnResumed, void());  // NOLINT
-  MOCK_METHOD0(OnStopSyncingPermanently, void());  // NOLINT
-  MOCK_METHOD1(OnUpdatedToken, void(const std::string&));  // NOLINT
-  MOCK_METHOD0(OnClearServerDataFailed, void());  // NOLINT
-  MOCK_METHOD0(OnClearServerDataSucceeded, void());  // NOLINT
-  MOCK_METHOD1(OnEncryptionComplete, void(const ModelTypeSet&));  // NOLINT
-};
-
-class SyncManagerTest : public testing::Test,
-                        public ModelSafeWorkerRegistrar {
+class SyncManagerTest : public testing::Test {
  protected:
   SyncManagerTest() : ui_thread_(BrowserThread::UI, &ui_loop_) {}
 
-  // Test implementation.
   void SetUp() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     sync_manager_.Init(temp_dir_.path(), "bogus", 0, false,
-                       new TestHttpPostProviderFactory(), this, "bogus",
+                       new TestHttpPostProviderFactory(), NULL, "bogus",
                        SyncCredentials(), notifier::NotifierOptions(),
                        "", true /* setup_for_test_mode */);
-    sync_manager_.AddObserver(&observer_);
-    ModelSafeRoutingInfo routes;
-    GetModelSafeRoutingInfo(&routes);
-    for (ModelSafeRoutingInfo::iterator i = routes.begin(); i != routes.end();
-         ++i) {
-      EXPECT_CALL(observer_, OnChangesApplied(i->first, _, _, 1))
-          .RetiresOnSaturation();
-      EXPECT_CALL(observer_, OnChangesComplete(i->first))
-          .RetiresOnSaturation();
-      type_roots_[i->first] = MakeServerNodeForType(
-          sync_manager_.GetUserShare(), i->first);
-    }
   }
 
   void TearDown() {
-    sync_manager_.RemoveObserver(&observer_);
     sync_manager_.Shutdown();
-  }
-
-  // ModelSafeWorkerRegistrar implementation.
-  virtual void GetWorkers(std::vector<ModelSafeWorker*>* out) {
-    NOTIMPLEMENTED();
-    out->clear();
-  }
-  virtual void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) {
-    (*out)[syncable::NIGORI] = browser_sync::GROUP_PASSIVE;
-    (*out)[syncable::BOOKMARKS] = browser_sync::GROUP_PASSIVE;
-    (*out)[syncable::THEMES] = browser_sync::GROUP_PASSIVE;
-    (*out)[syncable::SESSIONS] = browser_sync::GROUP_PASSIVE;
-    (*out)[syncable::PASSWORDS] = browser_sync::GROUP_PASSIVE;
-  }
-
-  // Helper methods.
-  bool SetUpEncryption() {
-    // We need to create the nigori node as if it were an applied server update.
-    UserShare* share = sync_manager_.GetUserShare();
-    int64 nigori_id = GetIdForDataType(syncable::NIGORI);
-    if (nigori_id == kInvalidId)
-      return false;
-
-    // Set the nigori cryptographer information.
-    Cryptographer* cryptographer = share->dir_manager->cryptographer();
-    if (!cryptographer)
-      return false;
-    KeyParams params = {"localhost", "dummy", "foobar"};
-    cryptographer->AddKey(params);
-    sync_pb::NigoriSpecifics nigori;
-    cryptographer->GetKeys(nigori.mutable_encrypted());
-    WriteTransaction trans(share);
-    WriteNode node(&trans);
-    node.InitByIdLookup(nigori_id);
-    node.SetNigoriSpecifics(nigori);
-    return cryptographer->is_ready();
-  }
-
-  int64 GetIdForDataType(ModelType type) {
-    if (type_roots_.count(type) == 0)
-      return 0;
-    return type_roots_[type];
   }
 
  private:
@@ -700,12 +530,9 @@ class SyncManagerTest : public testing::Test,
   BrowserThread ui_thread_;
   // Needed by |sync_manager_|.
   ScopedTempDir temp_dir_;
-  // Sync Id's for the roots of the enabled datatypes.
-  std::map<ModelType, int64> type_roots_;
 
  protected:
   SyncManager sync_manager_;
-  StrictMock<SyncManagerObserverMock> observer_;
 };
 
 TEST_F(SyncManagerTest, ParentJsEventRouter) {
@@ -974,88 +801,6 @@ TEST_F(SyncManagerTest, OnIncomingNotification) {
 
   sync_manager_.TriggerOnIncomingNotificationForTest(empty_model_types);
   sync_manager_.TriggerOnIncomingNotificationForTest(model_types);
-}
-
-TEST_F(SyncManagerTest, EncryptDataTypesWithNoData) {
-  EXPECT_TRUE(SetUpEncryption());
-  ModelTypeSet encrypted_types;
-  encrypted_types.insert(syncable::BOOKMARKS);
-  // Even though Passwords isn't marked for encryption, it's enabled, so it
-  // should automatically be added to the response of OnEncryptionComplete.
-  ModelTypeSet expected_types = encrypted_types;
-  expected_types.insert(syncable::PASSWORDS);
-  EXPECT_CALL(observer_, OnEncryptionComplete(expected_types));
-  sync_manager_.EncryptDataTypes(encrypted_types);
-  {
-    ReadTransaction trans(sync_manager_.GetUserShare());
-    EXPECT_EQ(encrypted_types,
-              GetEncryptedDataTypes(trans.GetWrappedTrans()));
-  }
-}
-
-TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
-  size_t batch_size = 5;
-  EXPECT_TRUE(SetUpEncryption());
-
-  // Create some unencrypted unsynced data.
-  int64 folder = MakeFolderWithParent(sync_manager_.GetUserShare(),
-                                      syncable::BOOKMARKS,
-                                      GetIdForDataType(syncable::BOOKMARKS),
-                                      NULL);
-  // First batch_size nodes are children of folder.
-  size_t i;
-  for (i = 0; i < batch_size; ++i) {
-    MakeNodeWithParent(sync_manager_.GetUserShare(), syncable::BOOKMARKS,
-                       StringPrintf("%"PRIuS"", i), folder);
-  }
-  // Next batch_size nodes are a different type and on their own.
-  for (; i < 2*batch_size; ++i) {
-    MakeNodeWithParent(sync_manager_.GetUserShare(), syncable::SESSIONS,
-                       StringPrintf("%"PRIuS"", i),
-                       GetIdForDataType(syncable::SESSIONS));
-  }
-  // Last batch_size nodes are a third type that will not need encryption.
-  for (; i < 3*batch_size; ++i) {
-    MakeNodeWithParent(sync_manager_.GetUserShare(), syncable::THEMES,
-                       StringPrintf("%"PRIuS"", i),
-                       GetIdForDataType(syncable::THEMES));
-  }
-
-  {
-    ReadTransaction trans(sync_manager_.GetUserShare());
-    EXPECT_TRUE(syncable::VerifyDataTypeEncryption(trans.GetWrappedTrans(),
-                                                   syncable::BOOKMARKS,
-                                                   false /* not encrypted */));
-    EXPECT_TRUE(syncable::VerifyDataTypeEncryption(trans.GetWrappedTrans(),
-                                                   syncable::SESSIONS,
-                                                   false /* not encrypted */));
-    EXPECT_TRUE(syncable::VerifyDataTypeEncryption(trans.GetWrappedTrans(),
-                                                   syncable::THEMES,
-                                                   false /* not encrypted */));
-  }
-
-  ModelTypeSet encrypted_types;
-  encrypted_types.insert(syncable::BOOKMARKS);
-  encrypted_types.insert(syncable::SESSIONS);
-  encrypted_types.insert(syncable::PASSWORDS);
-  EXPECT_CALL(observer_, OnEncryptionComplete(encrypted_types));
-  sync_manager_.EncryptDataTypes(encrypted_types);
-
-  {
-    ReadTransaction trans(sync_manager_.GetUserShare());
-    encrypted_types.erase(syncable::PASSWORDS);  // Not stored in nigori node.
-    EXPECT_EQ(encrypted_types,
-              GetEncryptedDataTypes(trans.GetWrappedTrans()));
-    EXPECT_TRUE(syncable::VerifyDataTypeEncryption(trans.GetWrappedTrans(),
-                                                   syncable::BOOKMARKS,
-                                                   true /* is encrypted */));
-    EXPECT_TRUE(syncable::VerifyDataTypeEncryption(trans.GetWrappedTrans(),
-                                                   syncable::SESSIONS,
-                                                   true /* is encrypted */));
-    EXPECT_TRUE(syncable::VerifyDataTypeEncryption(trans.GetWrappedTrans(),
-                                                   syncable::THEMES,
-                                                   false /* not encrypted */));
-  }
 }
 
 }  // namespace

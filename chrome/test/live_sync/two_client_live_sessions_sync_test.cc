@@ -6,7 +6,7 @@
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/test/live_sync/live_sessions_sync_test.h"
 
-// TODO(zea): Test each individual session command we care about separately.
+// @TODO(zea): Test each individual session command we care about separately.
 // (as well as multi-window). We're currently only checking basic single-window/
 // single-tab functionality.
 
@@ -29,56 +29,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest, SingleClientChanged) {
   // Verify client 1's foreign session matches client 0 current window.
   ASSERT_EQ(1U, sessions1.size());
   ASSERT_TRUE(WindowsMatch(sessions1[0]->windows, *client0_windows));
-}
-
-IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
-                       SingleClientEnabledEncryption) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-
-  ASSERT_TRUE(CheckInitialState(0));
-  ASSERT_TRUE(CheckInitialState(1));
-
-  ASSERT_TRUE(EnableEncryption(0));
-  GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1));
-  ASSERT_TRUE(IsEncrypted(0));
-  ASSERT_TRUE(IsEncrypted(1));
-}
-
-IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
-                       SingleClientEnabledEncryptionAndChanged) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-
-  ASSERT_TRUE(CheckInitialState(0));
-  ASSERT_TRUE(CheckInitialState(1));
-
-  std::vector<SessionWindow*>* client0_windows =
-      InitializeNewWindowWithTab(0, GURL("about:bubba"));
-  ASSERT_TRUE(client0_windows);
-  ASSERT_TRUE(EnableEncryption(0));
-  GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1));
-
-  // Get foreign session data from client 1.
-  ASSERT_TRUE(IsEncrypted(1));
-  std::vector<const ForeignSession*> sessions1;
-  ASSERT_TRUE(GetSessionData(1, &sessions1));
-
-  // Verify client 1's foreign session matches client 0 current window.
-  ASSERT_EQ(1U, sessions1.size());
-  ASSERT_TRUE(WindowsMatch(sessions1[0]->windows, *client0_windows));
-}
-
-IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest,
-                       BothClientsEnabledEncryption) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-
-  ASSERT_TRUE(CheckInitialState(0));
-  ASSERT_TRUE(CheckInitialState(1));
-
-  ASSERT_TRUE(EnableEncryption(0));
-  ASSERT_TRUE(EnableEncryption(1));
-  GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1));
-  ASSERT_TRUE(IsEncrypted(0));
-  ASSERT_TRUE(IsEncrypted(1));
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest, BothChanged) {

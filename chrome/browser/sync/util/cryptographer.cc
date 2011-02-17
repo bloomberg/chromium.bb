@@ -59,24 +59,19 @@ bool Cryptographer::Encrypt(const ::google::protobuf::MessageLite& message,
 bool Cryptographer::Decrypt(const sync_pb::EncryptedData& encrypted,
                             ::google::protobuf::MessageLite* message) const {
   DCHECK(message);
-  std::string plaintext = DecryptToString(encrypted);
-  return message->ParseFromString(plaintext);
-}
 
-std::string Cryptographer::DecryptToString(
-    const sync_pb::EncryptedData& encrypted) const {
   NigoriMap::const_iterator it = nigoris_.find(encrypted.key_name());
   if (nigoris_.end() == it) {
     NOTREACHED() << "Cannot decrypt message";
-    return std::string("");  // Caller should have called CanDecrypt(encrypt).
+    return false;  // Caller should have called CanDecrypt(encrypt).
   }
 
   std::string plaintext;
   if (!it->second->Decrypt(encrypted.blob(), &plaintext)) {
-    return std::string("");
+    return false;
   }
 
-  return plaintext;
+  return message->ParseFromString(plaintext);
 }
 
 bool Cryptographer::GetKeys(sync_pb::EncryptedData* encrypted) const {
@@ -209,7 +204,7 @@ Nigori* Cryptographer::UnpackBootstrapToken(const std::string& token) const {
     return NULL;
 
   std::string encrypted_data;
-  if (!base::Base64Decode(token, &encrypted_data)) {
+  if (!base::Base64Decode(token, &encrypted_data)){
     DLOG(WARNING) << "Could not decode token.";
     return NULL;
   }

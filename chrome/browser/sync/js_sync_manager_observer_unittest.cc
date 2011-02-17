@@ -149,26 +149,6 @@ TEST_F(JsSyncManagerObserverTest, SensitiveNotifiations) {
   sync_manager_observer_.OnPassphraseAccepted("sensitive_token");
 }
 
-TEST_F(JsSyncManagerObserverTest, OnEncryptionComplete) {
-  ListValue expected_args;
-  ListValue* encrypted_type_values = new ListValue();
-  syncable::ModelTypeSet encrypted_types;
-
-  expected_args.Append(encrypted_type_values);
-  for (int i = syncable::FIRST_REAL_MODEL_TYPE;
-       i < syncable::MODEL_TYPE_COUNT; ++i) {
-    syncable::ModelType type = syncable::ModelTypeFromInt(i);
-    encrypted_types.insert(type);
-    encrypted_type_values->Append(Value::CreateStringValue(
-        syncable::ModelTypeToString(type)));
-  }
-
-  EXPECT_CALL(mock_router_,
-              RouteJsEvent("onEncryptionComplete",
-                           HasArgsAsList(expected_args), NULL));
-
-  sync_manager_observer_.OnEncryptionComplete(encrypted_types);
-}
 namespace {
 
 // Makes a node of the given model type.  Returns the id of the
