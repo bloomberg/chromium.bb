@@ -52,6 +52,7 @@ INITIAL_ENV = {
   'CLEANUP'     : '0',   # Clean up temporary files
                          # TODO(pdox): Enable for SDK version
   'SANDBOXED'   : '0',   # Use sandboxed toolchain for this arch.
+  'SRPC'        : '0',   # Use SRPC sandboxed toolchain
 
   # Command-line options
   'GCC_MODE'    : '',     # '' (default), '-E', '-c', or '-S'
@@ -115,11 +116,20 @@ INITIAL_ENV = {
     '-isystem ${BASE}/arm-newlib/arm-none-linux-gnueabi/include',
 
   # Sandboxed tools
-  'SEL_LDR_X8632' : '${BASE_NACL}/scons-out/opt-linux-x86-32/staging/sel_ldr',
-  'SEL_LDR_X8664' : '${BASE_NACL}/scons-out/opt-linux-x86-64/staging/sel_ldr',
+  'SCONS_STAGING_X8632' : '${BASE_NACL}/scons-out/opt-linux-x86-32/staging',
+  'SCONS_STAGING_X8664' : '${BASE_NACL}/scons-out/opt-linux-x86-64/staging',
+
+  'SEL_UNIVERSAL_X8632' : '${SCONS_STAGING_X8632}/sel_universal',
+  'SEL_UNIVERSAL_X8664' : '${SCONS_STAGING_X8664}/sel_universal',
+
+  'SEL_LDR_X8632' : '${SCONS_STAGING_X8632}/sel_ldr',
+  'SEL_LDR_X8664' : '${SCONS_STAGING_X8664}/sel_ldr',
 
   'BASE_SB_X8632' : '${BASE}/tools-sb/x8632',
   'BASE_SB_X8664' : '${BASE}/tools-sb/x8664',
+
+  'LLC_SRPC_X8632': '${BASE_SB_X8632}/srpc/bin/llc',
+  'LLC_SRPC_X8664': '${BASE_SB_X8664}/srpc/bin/llc',
 
   'LLC_SB_X8632'  : '${SEL_LDR_X8632} -a -- ${BASE_SB_X8632}/nonsrpc/bin/llc',
   'AS_SB_X8632'   : '${SEL_LDR_X8632} -a -- ${BASE_SB_X8632}/nonsrpc/bin/as',
@@ -356,11 +366,13 @@ def PrepareFlags():
     env.clear('STDLIB_BC_PREFIX')
     env.clear('STDLIB_BC_SUFFIX')
 
-  # Disable MC for ARM until we have it working
+  # Disable MC and sandboxing for ARM until we have it working
   arch = GetArch()
   if arch and arch == 'ARM':
     env.set('USE_MC_ASM', '0')
     env.set('MC_DIRECT', '0')
+    env.set('SANDBOXED', '0')
+    env.set('SRPC', '0')
 
   if env.getbool('STATIC'):
     env.set('LD_FLAGS', '${LD_FLAGS_STATIC}')
@@ -409,45 +421,27 @@ def PrepareChainMap():
     'lib'
   ]
 
+  EmitLL = env.getbool('EMIT_LL')
+  MCDirect = env.getbool('MC_DIRECT')
+  UseMCAsm = env.getbool('USE_MC_ASM')
+  SrpcSB = env.getbool('SANDBOXED') and env.getbool('SRPC')
+
   ChainMapInit = [
-    # Inputs -> Out   , Function, ExtraArgs
-    ( 'src -> ll'     , 'RUN_GCC', {'mode': '-S'}),
-    ( 'src -> bc'     , 'RUN_GCC', {'mode': '-c'}),
-    ( 'src -> pp'     , 'RUN_PP', {}),
-    ( 'll -> bc'      , 'RUN_LLVM_AS', {} ),
-    ( 'bc|pexe -> o'  , 'RUN_LLC', { 'filetype': 'obj' }),
-    ( 'bc|pexe -> s'  , 'RUN_LLC', { 'filetype': 'asm' }),
-    ( 'S -> s'        , 'RUN_PP', {}),
-    ( 's -> o'        , 'RUN_LLVM_MC', {}),
-    ( 's -> o'        , 'RUN_NACL_AS', {}),
+    # Condition, Inputs -> Out , Function,                Environment
+    (EmitLL,   'src -> ll'   , 'RunWithEnv("RUN_GCC")', { 'mode': '-S' }),
+    (True,     'src -> bc'   , 'RunWithEnv("RUN_GCC")', { 'mode': '-c' }),
+    (True,     'src -> ll'   , 'RunWithEnv("RUN_GCC")', { 'mode': '-S' }),
+    (True,     'src -> pp'   , 'RunWithEnv("RUN_PP")', {}),
+    (True,     'll -> bc'    , 'RunWithEnv("RUN_LLVM_AS")', {}),
+    (SrpcSB,   'bc|pexe -> o', 'RunLLCSRPC()', { 'filetype': 'obj' }),
+    (MCDirect, 'bc|pexe -> o', 'RunWithEnv("RUN_LLC")', { 'filetype': 'obj' }),
+    (True,     'bc|pexe -> s', 'RunWithEnv("RUN_LLC")', { 'filetype': 'asm' }),
+    (True,     'S -> s'      , 'RunWithEnv("RUN_PP")', {}),
+    (UseMCAsm, 's -> o'      , 'RunWithEnv("RUN_LLVM_MC")', {}),
+    (True,     's -> o'      , 'RunWithEnv("RUN_NACL_AS")', {}),
   ]
 
-  # If we are told not to emit intermediate .ll files,
-  # then push the 'src -> ll' rule to the bottom
-  # so that the 'src -> bc' rule is used first instead.
-  if not env.getbool('EMIT_LL'):
-    assert(ChainMapInit[0][0] == 'src -> ll')
-    assert(ChainMapInit[1][0] == 'src -> bc')
-    ChainMapInit = [ChainMapInit[1],ChainMapInit[0]] + ChainMapInit[2:]
-
-  # If MC direct object emission is disabled, then
-  # delete the 'bc|pexe -> o' rule which causes it.
-  if not env.getbool('MC_DIRECT'):
-    priorlen = len(ChainMapInit)
-    ChainMapInit = [r for r in ChainMapInit
-                    if r[0] != 'bc|pexe -> o']
-    assert(len(ChainMapInit) == priorlen - 1)
-
-  # If MC ASM is disabled, remove the 's -> o' rule
-  # that uses RUN_LLVM_MC. This forces us to choose the
-  # rule that uses RUN_NACL_AS instead.
-  if not env.getbool('USE_MC_ASM'):
-    priorlen = len(ChainMapInit)
-    ChainMapInit = [ rule for rule in ChainMapInit
-                     if rule[1] != 'RUN_LLVM_MC' ]
-    assert(len(ChainMapInit) == priorlen - 1)
-
-  ChainMap.reset(ChainOrder, ChainMapInit)
+  ChainMap.init(ChainOrder, ChainMapInit)
 
 
 ######################################################################
@@ -673,17 +667,24 @@ def CompileOne(arch, outtype, infile, output = None):
   path = ChainMap.GetPath(intype, outtype)
   if path is None:
     Log.Fatal('Unable to find a compilation path!')
-  for (cur_type, next_type, cmd, extra) in path:
-    if next_type != outtype or output is None:
+  for entry in path:
+    if entry.output_type != outtype or output is None:
       # We are creating a temporary file
-      nextfile = TempNameForInput(infile, next_type)
+      nextfile = TempNameForInput(infile, entry.output_type)
     else:
       # We are emitting the final output
       nextfile = output
 
-    RunWithEnv(cmd, arch=arch, input=curfile, output=nextfile, **extra)
+    env.push()
+    env.setmany(arch=arch, input=curfile, output=nextfile, **entry.extra_env)
+    try:
+      exec(entry.cmd)
+    except Exception, err:
+      Log.Fatal('Chain action [%s] failed with: %s', entry.cmd, err)
+    env.pop()
+
     # <PIC HACK>
-    if next_type == 's' and env.getbool('PIC') and arch == "X8632":
+    if entry.output_type == 's' and env.getbool('PIC') and arch == "X8632":
       X8632TLSHack(nextfile)
     # </PIC HACK>
     curfile = nextfile
@@ -830,24 +831,33 @@ def LinkNative(arch, inputs, output):
 # Chain Logic
 ######################################################################
 
+class ChainEntry:
+  def __init__(self, input_type, output_type, cmd, extra_env):
+    self.input_type = input_type
+    self.output_type = output_type
+    self.cmd = cmd
+    self.extra_env = extra_env
+
 class ChainMap:
-  Order = []
-  Rules = []
-  OrderLookup = dict()
+  Order = []           # File type order
+  Rules = []           # List of ChainEntry's
+  OrderLookup = dict() # Inverse map of 'Order'
 
   @classmethod
-  def reset(cls, ChainOrder, ChainMapInit):
+  def init(cls, ChainOrder, ChainMapInit):
     cls.Order = ChainOrder
     cls.OrderLookup = dict([ (b,a) for (a,b) in enumerate(cls.Order) ])
 
     # Convert ChainMapInit into Rules
     cls.Rules = []
-    for (pat, cmd, extra) in ChainMapInit:
+    for (condition, pat, cmd, extra) in ChainMapInit:
+      if not condition:
+        continue
       pat = pat.replace(' ','')
       inputs, output = pat.split('->')
       inputs = inputs.split('|')
       for i in inputs:
-        cls.Rules.append((i, output, cmd, extra))
+        cls.Rules.append(ChainEntry(i, output, cmd, extra))
 
   # Find the next compilation step which will bring
   # intype closer to being outtype
@@ -859,28 +869,27 @@ class ChainMap:
 
     if innum >= outnum:
       return None
-    for (i, o, cmd, extra) in cls.Rules:
-      if i != intype:
+    for entry in cls.Rules:
+      if entry.input_type != intype:
         continue
-      if cls.OrderLookup[o] > outnum:
+      if cls.OrderLookup[entry.output_type] > outnum:
         continue
-      return (i, o, cmd, extra)
+      return entry
     return None
 
-  # Returns a list of tuples of the form:
-  # (in_type, out_type, cmd, extra)
-  # Which describes what actions to perform to move from
-  # input_type to output_type
+  # Returns a list of ChainEntry's which describe
+  # what actions to perform to move from input_type
+  # to output_type
   @classmethod
   def GetPath(cls, input_type, output_type):
     cur_type = input_type
     result = []
     while cur_type != output_type:
-      step = cls.NextStep(cur_type, output_type)
-      if step is None:
+      entry = cls.NextStep(cur_type, output_type)
+      if entry is None:
         return None
-      result.append(step)
-      cur_type = step[1]
+      result.append(entry)
+      cur_type = entry.output_type
     return result
 
   @classmethod
@@ -933,6 +942,12 @@ class env:
   def set(cls, varname, val):
     cls.data[varname] = val
 
+  # Set one or more variables using named arguments
+  @classmethod
+  def setmany(cls, **kwargs):
+    for k,v in kwargs.iteritems():
+      cls.data[k] = v
+
   @classmethod
   def clear(cls, varname):
     cls.data[varname] = ''
@@ -977,10 +992,7 @@ class env:
 # Run a command with extra environment settings
 def RunWithEnv(cmd, **kwargs):
   env.push()
-
-  for (k,v) in kwargs.iteritems():
-    env.set(k, v)
-
+  env.setmany(**kwargs)
   RunWithLog('${%s}' % cmd)
   env.pop()
 
@@ -1354,7 +1366,7 @@ def PrettyStringify(args):
     grouping -= 1
   return ret
 
-def RunWithLog(args):
+def RunWithLog(args, stdin = None, silent = False):
   "Run the commandline give by the list args system()-style"
 
   if isinstance(args, str):
@@ -1365,16 +1377,19 @@ def RunWithLog(args):
 
   Log.Info('\n' + StringifyCommand(args))
   try:
-    p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE )
-    buf_stdout, buf_stderr = p.communicate()
+    p = subprocess.Popen(args, stdin=subprocess.PIPE,
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE )
+    buf_stdout, buf_stderr = p.communicate(input = stdin)
     ret = p.returncode
   except Exception, e:
     buf_stdout = ''
     buf_stderr = ''
     Log.Fatal('failed (%s) to run: ' % str(e) + StringifyCommand(args))
 
-  sys.stdout.write(buf_stdout)
-  sys.stderr.write(buf_stderr)
+  if not silent:
+    sys.stdout.write(buf_stdout)
+    sys.stderr.write(buf_stderr)
 
   if ret:
     Log.FatalWithResult(ret,
@@ -1382,6 +1397,25 @@ def RunWithLog(args):
                         'stdout        : %s\n'
                         'stderr        : %s\n',
                         StringifyCommand(args), buf_stdout, buf_stderr)
+
+def RunLLCSRPC():
+  infile = env.get("input")
+  outfile = env.get("output")
+
+  script = '''
+readonly_file myfile %s
+rpc Translate h(myfile) * h() i()
+set_variable out_handle ${result0}
+set_variable out_size ${result1}
+map_shmem ${out_handle} addr
+save_to_file %s ${addr} 0 ${out_size}
+''' % (infile, outfile)
+
+  RunWithLog('"${SEL_UNIVERSAL_%arch%}" --script_mode -- ' +
+             '"${LLC_SRPC_%arch%}" ${LLC_FLAGS} ${LLC_FLAGS_%arch%} ' +
+             '-mtriple=${TRIPLE_%arch%} -filetype=${filetype}',
+             stdin=script, silent = True)
+
 
 ######################################################################
 # TLS Hack
