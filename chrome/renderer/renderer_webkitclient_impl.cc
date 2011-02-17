@@ -311,6 +311,15 @@ void RendererWebKitClientImpl::createIDBKeysFromSerializedValuesAndKeyPath(
   keys_out.swap(keys);
 }
 
+WebSerializedScriptValue
+RendererWebKitClientImpl::injectIDBKeyIntoSerializedValue(const WebIDBKey& key,
+    const WebSerializedScriptValue& value,
+    const WebString& keyPath) {
+  DCHECK(CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess));
+  return WebIDBKey::injectIDBKeyIntoSerializedValue(
+      key, value, WebIDBKeyPath::create(keyPath));
+}
+
 //------------------------------------------------------------------------------
 
 WebFileSystem* RendererWebKitClientImpl::fileSystem() {

@@ -63,6 +63,8 @@ bool UtilityThread::OnControlMessageReceived(const IPC::Message& msg) {
                         OnRenderPDFPagesToMetafile)
     IPC_MESSAGE_HANDLER(UtilityMsg_IDBKeysFromValuesAndKeyPath,
                         OnIDBKeysFromValuesAndKeyPath)
+    IPC_MESSAGE_HANDLER(UtilityMsg_InjectIDBKey,
+                        OnInjectIDBKey)
     IPC_MESSAGE_HANDLER(UtilityMsg_BatchMode_Started, OnBatchModeStarted)
     IPC_MESSAGE_HANDLER(UtilityMsg_BatchMode_Finished, OnBatchModeFinished)
     IPC_MESSAGE_HANDLER(UtilityMsg_GetPrinterCapsAndDefaults,
@@ -304,6 +306,15 @@ void UtilityThread::OnIDBKeysFromValuesAndKeyPath(
   ReleaseProcessIfNeeded();
 }
 
+void UtilityThread::OnInjectIDBKey(const IndexedDBKey& key,
+                                   const SerializedScriptValue& value,
+                                   const string16& key_path) {
+  SerializedScriptValue new_value(webkit_glue::InjectIDBKey(key, value,
+                                                              key_path));
+  Send(new UtilityHostMsg_InjectIDBKey_Finished(new_value));
+  ReleaseProcessIfNeeded();
+}
+
 void UtilityThread::OnBatchModeStarted() {
   batch_mode_ = true;
 }
@@ -330,4 +341,3 @@ void UtilityThread::ReleaseProcessIfNeeded() {
   if (!batch_mode_)
     ChildProcess::current()->ReleaseProcess();
 }
-

@@ -14,6 +14,7 @@
 #include "printing/native_metafile.h"
 
 class GURL;
+class IndexedDBKey;
 class SerializedScriptValue;
 class SkBitmap;
 
@@ -76,6 +77,11 @@ class UtilityThread : public ChildThread {
       int id,
       const std::vector<SerializedScriptValue>& serialized_script_values,
       const string16& idb_key_path);
+
+  // IPC for injecting an IndexedDB key into a SerializedScriptValue.
+  void OnInjectIDBKey(const IndexedDBKey& key,
+                      const SerializedScriptValue& value,
+                      const string16& key_path);
 
   // IPC to notify we'll be running in batch mode instead of quitting after
   // any of the IPCs above, we'll only quit during OnBatchModeFinished().

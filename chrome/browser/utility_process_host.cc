@@ -12,6 +12,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/indexed_db_key.h"
+#include "chrome/common/serialized_script_value.h"
 #include "chrome/common/utility_messages.h"
 #include "ipc/ipc_switches.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -73,6 +74,16 @@ bool UtilityProcessHost::StartIDBKeysFromValuesAndKeyPath(
 
   Send(new UtilityMsg_IDBKeysFromValuesAndKeyPath(
       id, serialized_values, key_path));
+  return true;
+}
+
+bool UtilityProcessHost::StartInjectIDBKey(
+    const IndexedDBKey& key, const SerializedScriptValue& value,
+    const string16& key_path) {
+  if (!StartProcess(FilePath()))
+    return false;
+
+  Send(new UtilityMsg_InjectIDBKey(key, value, key_path));
   return true;
 }
 
@@ -195,6 +206,8 @@ bool UtilityProcessHost::Client::OnMessageReceived(
                         Client::OnIDBKeysFromValuesAndKeyPathSucceeded)
     IPC_MESSAGE_HANDLER(UtilityHostMsg_IDBKeysFromValuesAndKeyPath_Failed,
                         Client::OnIDBKeysFromValuesAndKeyPathFailed)
+    IPC_MESSAGE_HANDLER(UtilityHostMsg_InjectIDBKey_Finished,
+                        Client::OnInjectIDBKeyFinished)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   return handled;

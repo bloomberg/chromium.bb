@@ -165,3 +165,11 @@ void BrowserWebKitClientImpl::createIDBKeysFromSerializedValuesAndKeyPath(
 
   keys = std_keys;
 }
+
+WebKit::WebSerializedScriptValue
+BrowserWebKitClientImpl::injectIDBKeyIntoSerializedValue(
+    const WebKit::WebIDBKey& key, const WebKit::WebSerializedScriptValue& value,
+    const WebKit::WebString& keyPath) {
+  return IndexedDBKeyUtilityClient::InjectIDBKeyIntoSerializedValue(
+      IndexedDBKey(key), SerializedScriptValue(value), keyPath);
+}

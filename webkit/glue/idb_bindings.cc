@@ -42,4 +42,13 @@ bool IDBKeysFromValuesAndKeyPath(
   return error;
 }
 
+WebSerializedScriptValue InjectIDBKey(
+    const WebIDBKey& key,
+    const WebSerializedScriptValue& value,
+    const string16& idb_key_path) {
+  v8::Locker lock;
+  return WebIDBKey::injectIDBKeyIntoSerializedValue(
+      key, value, WebIDBKeyPath::create(idb_key_path));
+}
+
 }  // namespace webkit_glue

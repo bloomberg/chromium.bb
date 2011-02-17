@@ -82,6 +82,12 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
       const WebKit::WebString& keyPath,
       WebKit::WebVector<WebKit::WebIDBKey>& keys_out);
 
+  virtual WebKit::WebSerializedScriptValue injectIDBKeyIntoSerializedValue(
+      const WebKit::WebIDBKey& key,
+      const WebKit::WebSerializedScriptValue& value,
+      const WebKit::WebString& keyPath);
+
+
 #if defined(OS_WIN)
   void SetThemeEngine(WebKit::WebThemeEngine* engine) {
     active_theme_engine_ = engine ? engine : WebKitClientImpl::themeEngine();

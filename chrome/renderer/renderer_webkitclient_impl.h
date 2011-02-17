@@ -66,6 +66,10 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
       const WebKit::WebVector<WebKit::WebSerializedScriptValue>& values,
       const WebKit::WebString& keyPath,
       WebKit::WebVector<WebKit::WebIDBKey>& keys);
+  virtual WebKit::WebSerializedScriptValue injectIDBKeyIntoSerializedValue(
+      const WebKit::WebIDBKey& key,
+      const WebKit::WebSerializedScriptValue& value,
+      const WebKit::WebString& keyPath);
   virtual WebKit::WebFileSystem* fileSystem();
 
   virtual WebKit::WebSharedWorkerRepository* sharedWorkerRepository();

@@ -31,6 +31,13 @@ class IndexedDBKeyUtilityClient {
       const string16& key_path,
       std::vector<IndexedDBKey>* keys);
 
+  // Synchronously inject |key| into |value| using |key_path|. Returns the new
+  // value.
+  static SerializedScriptValue InjectIDBKeyIntoSerializedValue(
+      const IndexedDBKey& key,
+      const SerializedScriptValue& value,
+      const string16& key_path);
+
   // Shut down the underlying implementation. Must be called on the IO thread.
   static void Shutdown();
 

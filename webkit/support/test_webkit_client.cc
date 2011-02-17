@@ -331,6 +331,14 @@ void TestWebKitClient::createIDBKeysFromSerializedValuesAndKeyPath(
   keys_out.swap(keys);
 }
 
+WebKit::WebSerializedScriptValue
+TestWebKitClient::injectIDBKeyIntoSerializedValue(const WebKit::WebIDBKey& key,
+    const WebKit::WebSerializedScriptValue& value,
+    const WebKit::WebString& keyPath) {
+  return WebKit::WebIDBKey::injectIDBKeyIntoSerializedValue(
+      key, value, WebKit::WebIDBKeyPath::create(keyPath));
+}
+
 #if defined(OS_WIN) || defined(OS_MACOSX)
 void TestWebKitClient::SetThemeEngine(WebKit::WebThemeEngine* engine) {
   active_theme_engine_ = engine ? engine : WebKitClientImpl::themeEngine();

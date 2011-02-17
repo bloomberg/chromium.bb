@@ -55,6 +55,11 @@ IPC_MESSAGE_CONTROL3(UtilityMsg_IDBKeysFromValuesAndKeyPath,
                      std::vector<SerializedScriptValue>,
                      string16) // IDBKeyPath
 
+IPC_MESSAGE_CONTROL3(UtilityMsg_InjectIDBKey,
+                     IndexedDBKey /* key */,
+                     SerializedScriptValue /* value */,
+                     string16 /* key path*/);
+
 // Tells the utility process that it's running in batch mode.
 IPC_MESSAGE_CONTROL0(UtilityMsg_BatchMode_Started)
 
@@ -137,6 +142,11 @@ IPC_MESSAGE_CONTROL2(UtilityHostMsg_IDBKeysFromValuesAndKeyPath_Succeeded,
 IPC_MESSAGE_CONTROL1(UtilityHostMsg_IDBKeysFromValuesAndKeyPath_Failed,
                      int /* id */)
 
+// Reply when the utility process has finished injecting an IDBKey into
+// a SerializedScriptValue.
+IPC_MESSAGE_CONTROL1(UtilityHostMsg_InjectIDBKey_Finished,
+                     SerializedScriptValue /* new value */)
+
 // Reply when the utility process has succeeded in obtaining the printer
 // capabilities and defaults.
 IPC_MESSAGE_CONTROL2(UtilityHostMsg_GetPrinterCapsAndDefaults_Succeeded,
@@ -147,4 +157,3 @@ IPC_MESSAGE_CONTROL2(UtilityHostMsg_GetPrinterCapsAndDefaults_Succeeded,
 // capabilities and defaults.
 IPC_MESSAGE_CONTROL1(UtilityHostMsg_GetPrinterCapsAndDefaults_Failed,
                      std::string /* printer name */)
-

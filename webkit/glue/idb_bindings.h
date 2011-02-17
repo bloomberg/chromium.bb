@@ -22,4 +22,9 @@ bool IDBKeysFromValuesAndKeyPath(
     const string16& idb_key_path,
     std::vector<WebKit::WebIDBKey>* values);
 
+WebKit::WebSerializedScriptValue InjectIDBKey(
+    const WebKit::WebIDBKey& key,
+    const WebKit::WebSerializedScriptValue& value,
+    const string16& idb_key_path);
+
 }  // namespace webkit_glue
