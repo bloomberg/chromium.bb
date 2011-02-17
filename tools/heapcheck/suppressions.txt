@@ -1251,10 +1251,19 @@
    fun:media::PipelineImpl::InitializeTask
 }
 {
-   bug_73268
+   bug_73268a
    Heapcheck:Leak
    ...
    fun:ExtensionSpecialStoragePolicy::SpecialCollection::Contains
    fun:ExtensionSpecialStoragePolicy::IsStorage*
    fun:ExtensionSpecialStoragePolicyTest_*_Test::TestBody
+}
+{
+   bug_73268b
+   Heapcheck:Leak
+   ...
+   fun:bool ::InitCanonical
+   fun:GURL
+   ...
+   fun:ExtensionSpecialStoragePolicyTest_*
 }
