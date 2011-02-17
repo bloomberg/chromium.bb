@@ -614,7 +614,7 @@ set_mode(struct connector *c, int count, int page_flip)
 		c[i].swap_count = 0;
 		c[i].fb_id[0] = fb_id;
 		c[i].fb_id[1] = other_fb_id;
-		c[i].current_fb_id = fb_id;
+		c[i].current_fb_id = other_fb_id;
 	}
 
 	memset(&evctx, 0, sizeof evctx);
