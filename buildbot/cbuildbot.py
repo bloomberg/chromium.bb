@@ -21,7 +21,7 @@ if __name__ == '__main__':
 import cbuildbot_comm
 from cbuildbot_config import config
 from chromite.lib.cros_build_lib import (Die, Info, ReinterpretPathForChroot,
-                                         OldRunCommand, Warning)
+                                         OldRunCommand, Warning, RunCommand)
 
 _DEFAULT_RETRIES = 3
 _PACKAGE_FILE = '%(buildroot)s/src/scripts/cbuildbot_package.list'
@@ -34,6 +34,7 @@ CHROME_KEYWORDS_FILE = ('/build/%(board)s/etc/portage/package.keywords/chrome')
 _FULL_BINHOST = 'PORTAGE_BINHOST'
 _PREFLIGHT_BINHOST = 'PREFLIGHT_BINHOST'
 _CHROME_BINHOST = 'CHROME_BINHOST'
+_CROS_ARCHIVE_URL = 'CROS_ARCHIVE_URL'
 
 # ======================== Utility functions ================================
 
@@ -501,7 +502,7 @@ def _UprevPush(buildroot, tracking_branch, board, overlays, dryrun):
 
 def _LegacyArchiveBuild(buildroot, bot_id, buildconfig, buildnumber,
                         test_tarball, debug=False):
-  """Adds a step to the factory to archive a build."""
+  """Archives build artifacts and returns URL to archived location."""
 
   # Fixed properties
   keep_max = 3
@@ -528,7 +529,22 @@ def _LegacyArchiveBuild(buildroot, bot_id, buildconfig, buildnumber,
   if buildconfig.get('factory_install_mod', True):
     cmd.append('--factory_install_mod')
 
-  OldRunCommand(cmd, cwd=cwd)
+  try:
+    result = RunCommand(cmd, cwd=cwd, redirect_stdout=True,
+                        redirect_stderr=True, combine_stdout_stderr=True)
+  except:
+    Warning(result.stdout)
+    raise
+
+  archive_url = None
+  key_re = re.compile('^%s=(.*)$' % _CROS_ARCHIVE_URL)
+  for line in result.output.splitlines():
+    line_match = key_re.match(line)
+    if line_match:
+      archive_url = line_match.group(1)
+
+  assert archive_url, 'Archive Build Failed to Provide Archive URL'
+  return archive_url
 
 
 def _ArchiveTestResults(buildroot, test_results_dir):
@@ -686,6 +702,7 @@ def main():
   revisionfile = options.revisionfile
   tracking_branch = options.tracking_branch
   chrome_atom_to_build = None
+  archive_url = None
 
   if len(args) >= 1:
     bot_id = args[-1]
@@ -766,8 +783,9 @@ def main():
       finally:
         test_tarball = _ArchiveTestResults(buildroot,
                                            test_results_dir=test_results_dir)
-        _LegacyArchiveBuild(buildroot, bot_id, buildconfig, options.buildnumber,
-                            test_tarball, options.debug)
+        archive_url = _LegacyArchiveBuild(buildroot, bot_id, buildconfig,
+                                          options.buildnumber, test_tarball,
+                                          options.debug)
 
     # Don't push changes for developers.
     if buildconfig['master']:
@@ -792,6 +810,11 @@ def main():
       cbuildbot_comm.PublishStatus(cbuildbot_comm.STATUS_BUILD_FAILED)
 
     raise
+
+  finally:
+    if archive_url:
+      Info('BUILD ARTIFACTS FOR THIS BUILD CAN BE FOUND AT:')
+      Info(archive_url)
 
 
 if __name__ == '__main__':

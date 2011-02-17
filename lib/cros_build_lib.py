@@ -34,7 +34,7 @@ class RunCommandError(Exception):
 def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
                exit_code=False, redirect_stdout=False, redirect_stderr=False,
                cwd=None, input=None, enter_chroot=False, shell=False,
-               env=None, ignore_sigint=False):
+               env=None, ignore_sigint=False, combine_stdout_stderr=False):
   """Runs a command.
 
   Args:
@@ -56,6 +56,7 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
       child.  This is the desired behavior if we know our child will handle
       Ctrl-C.  If we don't do this, I think we and the child will both get
       Ctrl-C at the same time, which means we'll forcefully kill the child.
+    combine_stdout_stderr: Combines stdout and stdin streams into stdout.
 
   Returns:
     A CommandResult object.
@@ -72,6 +73,7 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
   # Modify defaults based on parameters.
   if redirect_stdout: stdout = subprocess.PIPE
   if redirect_stderr: stderr = subprocess.PIPE
+  if combine_stdout_stderr: stderr = subprocess.STDOUT
   # TODO(sosa): gpylint complains about redefining built-in 'input'.
   #   Can we rename this variable?
   if input: stdin = subprocess.PIPE
