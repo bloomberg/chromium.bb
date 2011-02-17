@@ -139,6 +139,7 @@ class AutocompleteEditViewWin
   virtual bool IsImeComposing() const;
 
   virtual views::View* AddToView(views::View* parent);
+  virtual int OnPerformDrop(const views::DropTargetEvent& event);
 
   int GetPopupMaxYCoordinate();
 
@@ -243,6 +244,9 @@ class AutocompleteEditViewWin
 
     DISALLOW_COPY_AND_ASSIGN(ScopedFreeze);
   };
+
+  class EditDropTarget;
+  friend class EditDropTarget;
 
   // This object suspends placing any operations on the edit's undo stack until
   // the object is destroyed.  If we don't do this, some of the operations we
@@ -411,6 +415,9 @@ class AutocompleteEditViewWin
   // If |force_text_changed| is true, then the text_changed code will always be
   // triggerred no matter if the text is actually changed or not.
   bool OnAfterPossibleChangeInternal(bool force_text_changed);
+
+  // Common implementation for performing a drop on the edit view.
+  int OnPerformDropImpl(const views::DropTargetEvent& event, bool in_drag);
 
   scoped_ptr<AutocompleteEditModel> model_;
 

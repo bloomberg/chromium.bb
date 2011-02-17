@@ -19,6 +19,7 @@
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/font.h"
 #include "views/border.h"
@@ -557,6 +558,12 @@ views::View* AutocompleteEditViewViews::AddToView(views::View* parent) {
   parent->AddChildView(this);
   AddChildView(textfield_);
   return this;
+}
+
+int AutocompleteEditViewViews::OnPerformDrop(
+    const views::DropTargetEvent& event) {
+  NOTIMPLEMENTED();
+  return ui::DragDropTypes::DRAG_NONE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

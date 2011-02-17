@@ -26,6 +26,7 @@ class TabContents;
 
 #if defined(TOOLKIT_VIEWS)
 namespace views {
+class DropTargetEvent;
 class View;
 }  // namespace views
 #endif
@@ -175,6 +176,9 @@ class AutocompleteEditView {
   // Adds the autocomplete edit view to view hierarchy and
   // returns the views::View of the edit view.
   virtual views::View* AddToView(views::View* parent) = 0;
+
+  // Performs the drop of a drag and drop operation on the view.
+  virtual int OnPerformDrop(const views::DropTargetEvent& event) = 0;
 #endif
 
   virtual ~AutocompleteEditView() {}

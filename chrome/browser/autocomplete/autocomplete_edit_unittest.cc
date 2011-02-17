@@ -63,6 +63,7 @@ class TestingAutocompleteEditView : public AutocompleteEditView {
 
 #if defined(TOOLKIT_VIEWS)
   virtual views::View* AddToView(views::View* parent) { return NULL; }
+  virtual int OnPerformDrop(const views::DropTargetEvent& event) { return 0; }
 #endif
 
  private:

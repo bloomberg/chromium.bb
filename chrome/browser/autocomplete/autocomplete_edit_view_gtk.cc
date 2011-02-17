@@ -31,6 +31,7 @@
 #include "net/base/escape.h"
 #include "third_party/undoview/undo_view.h"
 #include "ui/base/animation/multi_animation.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_utils.h"
@@ -44,6 +45,7 @@
 #include "chrome/browser/ui/views/autocomplete/autocomplete_popup_contents_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "views/controls/textfield/native_textfield_views.h"
+#include "views/events/event.h"
 #else
 #include "chrome/browser/autocomplete/autocomplete_popup_view_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_theme_provider.h"
@@ -63,6 +65,16 @@ const double kStrikethroughStrokeWidth = 2.0;
 
 size_t GetUTF8Offset(const string16& text, size_t text_offset) {
   return UTF16ToUTF8(text.substr(0, text_offset)).size();
+}
+
+// A helper method for determining a valid drag operation given the allowed
+// operation.  We prefer copy over link.
+int CopyOrLinkDragOperation(int drag_operation) {
+  if (drag_operation & ui::DragDropTypes::DRAG_COPY)
+    return ui::DragDropTypes::DRAG_COPY;
+  if (drag_operation & ui::DragDropTypes::DRAG_LINK)
+    return ui::DragDropTypes::DRAG_LINK;
+  return ui::DragDropTypes::DRAG_NONE;
 }
 
 // Stores GTK+-specific state so it can be restored after switching tabs.
@@ -843,6 +855,27 @@ views::View* AutocompleteEditViewGtk::AddToView(views::View* parent) {
   return host;
 }
 
+int AutocompleteEditViewGtk::OnPerformDrop(
+    const views::DropTargetEvent& event) {
+  std::wstring text;
+  const ui::OSExchangeData& data = event.data();
+  if (data.HasURL()) {
+    GURL url;
+    std::wstring title;
+    if (data.GetURLAndTitle(&url, &title))
+      text = UTF8ToWide(url.spec());
+  } else {
+    std::wstring data_string;
+    if (data.GetString(&data_string))
+      text = CollapseWhitespace(data_string, true);
+  }
+
+  if (!text.empty() && OnPerformDropImpl(WideToUTF16(text)))
+    return CopyOrLinkDragOperation(event.source_operations());
+
+  return ui::DragDropTypes::DRAG_NONE;
+}
+
 void AutocompleteEditViewGtk::EnableAccessibility() {
   accessible_widget_helper_.reset(
       new AccessibleWidgetHelper(text_view(), model_->profile()));
@@ -1545,8 +1578,7 @@ void AutocompleteEditViewGtk::HandleDragDataReceived(
 
   string16 possible_url = UTF8ToUTF16(reinterpret_cast<char*>(text));
   g_free(text);
-  if (model_->CanPasteAndGo(CollapseWhitespace(possible_url, true))) {
-    model_->PasteAndGo();
+  if (OnPerformDropImpl(possible_url)) {
     gtk_drag_finish(context, TRUE, TRUE, time);
 
     static guint signal_id =
@@ -1735,6 +1767,15 @@ void AutocompleteEditViewGtk::HandleCopyOrCutClipboard(bool copy) {
   }
 
   OwnPrimarySelection(UTF16ToUTF8(text));
+}
+
+bool AutocompleteEditViewGtk::OnPerformDropImpl(const string16& text) {
+  if (model_->CanPasteAndGo(CollapseWhitespace(text, true))) {
+    model_->PasteAndGo();
+    return true;
+  }
+
+  return false;
 }
 
 gfx::Font AutocompleteEditViewGtk::GetFont() {

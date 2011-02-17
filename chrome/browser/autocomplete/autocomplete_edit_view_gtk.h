@@ -147,6 +147,7 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
 
 #if defined(TOOLKIT_VIEWS)
   virtual views::View* AddToView(views::View* parent);
+  virtual int OnPerformDrop(const views::DropTargetEvent& event);
 
   // Enables accessibility on AutocompleteEditView.
   void EnableAccessibility();
@@ -275,6 +276,9 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
                              guint info);
 
   void HandleCopyOrCutClipboard(bool copy);
+
+  // Common implementation for performing a drop on the edit view.
+  bool OnPerformDropImpl(const string16& text);
 
   // Returns the font used in |text_view_|.
   gfx::Font GetFont();

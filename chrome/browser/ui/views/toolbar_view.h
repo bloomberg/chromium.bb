@@ -119,6 +119,12 @@ class ToolbarView : public AccessiblePaneView,
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();
   virtual void OnPaint(gfx::Canvas* canvas);
+  virtual bool GetDropFormats(
+      int* formats,
+      std::set<OSExchangeData::CustomFormat>* custom_formats);
+  virtual bool CanDrop(const ui::OSExchangeData& data);
+  virtual int OnDragUpdated(const views::DropTargetEvent& event);
+  virtual int OnPerformDrop(const views::DropTargetEvent& event);
   virtual void OnThemeChanged();
 
   // The apparent horizontal space between most items, and the vertical padding
