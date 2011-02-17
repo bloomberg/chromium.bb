@@ -302,8 +302,8 @@ def SourceTargetGit(name, dest_dir, url, commit_id):
   def DoBuild(opts):
     # We do "git init+fetch+checkout" as a more incremental,
     # idempotent way of doing "git clone".
-    if not os.path.exists(dest_dir):
-      os.makedirs(dest_dir)
+    if not os.path.exists(os.path.join(dest_dir, ".git")):
+      ResetDir(dest_dir)
       subprocess.check_call(["git", "init"], cwd=dest_dir)
       subprocess.check_call(["git", "remote", "add", "origin", url],
                             cwd=dest_dir)

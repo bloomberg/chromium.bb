@@ -35,6 +35,15 @@ def GetExample(dir_name):
                                        "examples", dir_name))
 
 
+def GitGetHeadId(repo_dir):
+  proc = subprocess.Popen(["git", "rev-parse", "HEAD"],
+                          stdout=subprocess.PIPE, cwd=repo_dir)
+  stdout = proc.communicate()[0]
+  rc = proc.wait()
+  assert rc == 0, rc
+  return stdout.strip()
+
+
 class BuildTargetTests(TempDirTestCase):
 
   def DummyTarget(self, name, deps):
@@ -413,11 +422,7 @@ digraph {
         dirtree.ReadFile(os.path.join(install.dest_path, "built_file")),
         "Make was run\n")
 
-  @Quieten
-  def test_git_tree(self):
-    tempdir = self.MakeTempDir()
-    repo_dir = os.path.join(tempdir, "git-repo")
-    os.mkdir(repo_dir)
+  def MakeExampleGitRepo(self, repo_dir):
     dirtree.WriteFile(os.path.join(repo_dir, "myfile"), "File contents")
     subprocess.check_call(["git", "init", "-q"], cwd=repo_dir)
     # Set user name info in order to make this work on some of the Buildbots.
@@ -428,14 +433,14 @@ digraph {
     subprocess.check_call(["git", "commit", "-q", "-a", "-m", "initial"],
                           cwd=repo_dir)
 
-    def GetHeadId():
-      proc = subprocess.Popen(["git", "rev-parse", "HEAD"],
-                              stdout=subprocess.PIPE, cwd=repo_dir)
-      stdout = proc.communicate()[0]
-      self.assertEquals(proc.wait(), 0)
-      return stdout.strip()
+  @Quieten
+  def test_git_tree(self):
+    tempdir = self.MakeTempDir()
+    repo_dir = os.path.join(tempdir, "git-repo")
+    os.mkdir(repo_dir)
+    self.MakeExampleGitRepo(repo_dir)
 
-    commit1 = GetHeadId()
+    commit1 = GitGetHeadId(repo_dir)
     clone_dir = os.path.join(self.MakeTempDir(), "src")
     src = btarget.SourceTargetGit("src", clone_dir, repo_dir, commit1)
     src.DoBuild(btarget.BuildOptions())
@@ -447,7 +452,7 @@ digraph {
     dirtree.WriteFile(os.path.join(repo_dir, "myfile"), "Version 2")
     subprocess.check_call(["git", "commit", "-q", "-a", "-m", "second"],
                           cwd=repo_dir)
-    commit2 = GetHeadId()
+    commit2 = GitGetHeadId(repo_dir)
     # Also test that we can handle the Git repository URL changing.
     repo_dir2 = os.path.join(tempdir, "git-repo2")
     os.rename(repo_dir, repo_dir2)
@@ -468,6 +473,26 @@ digraph {
     src.DoBuild(btarget.BuildOptions())
     self.assertEquals(dirtree.ReadFile(os.path.join(clone_dir, "myfile")),
                       "File contents")
+
+  @Quieten
+  def test_switch_to_git_tree(self):
+    # If we switch a target from being a tarball to being a Git
+    # checkout, SourceTargetGit should be able to cope with that.  It
+    # should not assume that if the target directory already exists it
+    # is already a Git checkout.
+    repo_dir = self.MakeTempDir()
+    self.MakeExampleGitRepo(repo_dir)
+    commit_id = GitGetHeadId(repo_dir)
+
+    # Simulate a tarball target by removing the .git directory.
+    clone_dir = os.path.join(self.MakeTempDir(), "src")
+    src = btarget.SourceTargetGit("src", clone_dir, repo_dir, commit_id)
+    src.DoBuild(btarget.BuildOptions())
+    shutil.rmtree(os.path.join(clone_dir, ".git"))
+
+    src = btarget.SourceTargetGit("src", clone_dir, repo_dir, commit_id)
+    # This used to fail:
+    src.DoBuild(btarget.BuildOptions())
 
   @Quieten
   def test_not_overwriting_manual_changes(self):
