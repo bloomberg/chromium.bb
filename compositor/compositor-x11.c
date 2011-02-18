@@ -363,7 +363,7 @@ x11_compositor_create_output(struct x11_compositor *c, int width, int height)
 		return -1;
 
 	memset(output, 0, sizeof *output);
-	wlsc_output_init(&output->base, &c->base, 0, 0, width, height);
+	wlsc_output_init(&output->base, &c->base, 0, 0, width, height, 0);
 
 	values[1] = c->null_cursor;
 	output->window = xcb_generate_id(c->conn);

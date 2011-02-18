@@ -233,7 +233,7 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 		return -1;
 	memset(output, 0, sizeof *output);
 
-	wlsc_output_init(&output->base, &c->base, 0, 0, width, height);
+	wlsc_output_init(&output->base, &c->base, 0, 0, width, height, 0);
 	output->parent.surface =
 		wl_compositor_create_surface(c->parent.compositor);
 	wl_surface_set_user_data(output->parent.surface, output);

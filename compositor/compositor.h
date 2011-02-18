@@ -130,6 +130,10 @@ struct wlsc_compositor {
 #define MODIFIER_ALT	(1 << 9)
 #define MODIFIER_SUPER	(1 << 10)
 
+enum wlsc_output_flags {
+	WL_OUTPUT_FLIPPED = 0x01
+};
+
 struct wlsc_vector {
 	GLfloat f[4];
 };
@@ -215,7 +219,7 @@ int
 wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display);
 void
 wlsc_output_init(struct wlsc_output *output, struct wlsc_compositor *c,
-		 int x, int y, int width, int height);
+		 int x, int y, int width, int height, uint32_t flags);
 void
 wlsc_input_device_init(struct wlsc_input_device *device,
 		       struct wlsc_compositor *ec);

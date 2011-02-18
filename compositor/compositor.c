@@ -1288,8 +1288,10 @@ init_shaders(struct wlsc_compositor *ec)
 
 void
 wlsc_output_init(struct wlsc_output *output, struct wlsc_compositor *c,
-		 int x, int y, int width, int height)
+		 int x, int y, int width, int height, uint32_t flags)
 {
+	int flip;
+
 	output->compositor = c;
 	output->x = x;
 	output->y = y;
@@ -1305,8 +1307,11 @@ wlsc_output_init(struct wlsc_output *output, struct wlsc_compositor *c,
 	wlsc_matrix_translate(&output->matrix,
 			      -output->x - output->width / 2.0,
 			      -output->y - output->height / 2.0, 0);
+
+	flip = (flags & WL_OUTPUT_FLIPPED) ? -1 : 1;
 	wlsc_matrix_scale(&output->matrix,
-			  2.0 / output->width, 2.0 / output->height, 1);
+			  2.0 / output->width,
+			  flip * 2.0 / output->height, 1);
 
 	output->object.interface = &wl_output_interface;
 	wl_display_add_object(c->wl_display, &output->object);

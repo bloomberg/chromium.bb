@@ -208,7 +208,7 @@ create_output_for_connector(struct drm_compositor *ec,
 
 	memset(output, 0, sizeof *output);
 	wlsc_output_init(&output->base, &ec->base, 0, 0,
-			 mode->hdisplay, mode->vdisplay);
+			 mode->hdisplay, mode->vdisplay, 0);
 
 	output->crtc_id = resources->crtcs[i];
 	output->connector_id = connector->connector_id;
