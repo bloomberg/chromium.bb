@@ -182,6 +182,10 @@ enum {
     VKEY_F1 = ui::VKEY_F1,
 };
 
+// - Timers
+
+double GetForegroundTabTimerInterval();
+
 }  // namespace webkit_support
 
 #endif  // WEBKIT_SUPPORT_WEBIT_CLIENT_IMPL_H_

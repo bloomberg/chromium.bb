@@ -37,6 +37,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLError.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/glue/media/video_renderer_impl.h"
+#include "webkit/glue/webkit_constants.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webkitclient_impl.h"
 #include "webkit/glue/webmediaplayer_impl.h"
@@ -546,6 +547,11 @@ void OpenFileSystem(WebFrame* frame, WebFileSystem::Type type,
   SimpleFileSystem* fileSystem = static_cast<SimpleFileSystem*>(
       test_environment->webkit_client()->fileSystem());
   fileSystem->OpenFileSystem(frame, type, size, create, callbacks);
+}
+
+// Timers
+double GetForegroundTabTimerInterval() {
+  return webkit_glue::kForegroundTabTimerInterval;
 }
 
 }  // namespace webkit_support

@@ -652,10 +652,8 @@ class RenderView : public RenderWidget,
   virtual void DidHandleKeyEvent();
   virtual void DidHandleMouseEvent(const WebKit::WebMouseEvent& event);
   virtual void OnSetFocus(bool enable);
-#if OS_MACOSX
   virtual void OnWasHidden();
   virtual void OnWasRestored(bool needs_repainting);
-#endif
 
  private:
   // For unit tests.

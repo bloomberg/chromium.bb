@@ -185,6 +185,7 @@
 #include "webkit/glue/site_isolation_metrics.h"
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webdropdata.h"
+#include "webkit/glue/webkit_constants.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webmediaplayer_impl.h"
 #include "webkit/plugins/npapi/default_plugin_shared.h"
@@ -5370,29 +5371,41 @@ void RenderView::DidHandleMouseEvent(const WebKit::WebMouseEvent& event) {
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidHandleMouseEvent(event));
 }
 
-#if defined(OS_MACOSX)
 void RenderView::OnWasHidden() {
   RenderWidget::OnWasHidden();
 
+  if (webview()) {
+    webview()->settings()->setMinimumTimerInterval(
+        webkit_glue::kBackgroundTabTimerInterval);
+  }
+
+#if defined(OS_MACOSX)
   // Inform plugins that their container is no longer visible.
   std::set<WebPluginDelegateProxy*>::iterator plugin_it;
   for (plugin_it = plugin_delegates_.begin();
        plugin_it != plugin_delegates_.end(); ++plugin_it) {
     (*plugin_it)->SetContainerVisibility(false);
   }
+#endif  // OS_MACOSX
 }
 
 void RenderView::OnWasRestored(bool needs_repainting) {
   RenderWidget::OnWasRestored(needs_repainting);
 
+  if (webview()) {
+    webview()->settings()->setMinimumTimerInterval(
+        webkit_glue::kForegroundTabTimerInterval);
+  }
+
+#if defined(OS_MACOSX)
   // Inform plugins that their container is now visible.
   std::set<WebPluginDelegateProxy*>::iterator plugin_it;
   for (plugin_it = plugin_delegates_.begin();
        plugin_it != plugin_delegates_.end(); ++plugin_it) {
     (*plugin_it)->SetContainerVisibility(true);
   }
-}
 #endif  // OS_MACOSX
+}
 
 void RenderView::OnSetFocus(bool enable) {
   RenderWidget::OnSetFocus(enable);
