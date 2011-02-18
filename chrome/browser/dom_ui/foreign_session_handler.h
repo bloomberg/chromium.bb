@@ -8,9 +8,9 @@
 
 #include <vector>
 
-#include "chrome/browser/dom_ui/web_ui.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
+#include "chrome/browser/webui/web_ui.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 

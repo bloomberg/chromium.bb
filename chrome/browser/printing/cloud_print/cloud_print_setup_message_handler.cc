@@ -4,11 +4,11 @@
 
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_message_handler.h"
 
-#include "base/scoped_ptr.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "chrome/browser/dom_ui/web_ui_util.h"
+#include "base/scoped_ptr.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_flow.h"
+#include "chrome/browser/webui/web_ui_util.h"
 
 WebUIMessageHandler* CloudPrintSetupMessageHandler::Attach(WebUI* web_ui) {
   // Pass the WebUI object to the setup flow.

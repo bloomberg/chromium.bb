@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_DOM_UI_SHOWN_SECTIONS_HANDLER_H_
 #pragma once
 
-#include "chrome/browser/dom_ui/web_ui.h"
-#include "chrome/common/notification_observer.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
+#include "chrome/browser/webui/web_ui.h"
+#include "chrome/common/notification_observer.h"
 
 class Extension;
 class Value;

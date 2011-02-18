@@ -7,9 +7,9 @@
 #pragma once
 
 #include "base/scoped_ptr.h"
-#include "chrome/browser/dom_ui/web_ui.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
+#include "chrome/browser/webui/web_ui.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"

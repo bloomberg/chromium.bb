@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_WEBUI_SYSTEM_INFO_UI_H_
 #pragma once
 
-#include "chrome/browser/dom_ui/web_ui.h"
+#include "chrome/browser/webui/web_ui.h"
 
 class SystemInfoUI : public WebUI {
  public:

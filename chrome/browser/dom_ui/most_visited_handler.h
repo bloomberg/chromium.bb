@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "chrome/browser/cancelable_request.h"
-#include "chrome/browser/dom_ui/web_ui.h"
 #include "chrome/browser/history/history_types.h"
+#include "chrome/browser/webui/web_ui.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 

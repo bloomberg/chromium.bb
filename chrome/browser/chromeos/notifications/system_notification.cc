@@ -7,9 +7,9 @@
 #include "base/callback.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/notifications/system_notification_factory.h"
-#include "chrome/browser/dom_ui/web_ui_util.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/browser/webui/web_ui_util.h"
 
 namespace chromeos {
 

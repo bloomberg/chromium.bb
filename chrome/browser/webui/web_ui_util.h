@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DOM_UI_WEB_UI_UTIL_H_
-#define CHROME_BROWSER_DOM_UI_WEB_UI_UTIL_H_
+#ifndef CHROME_BROWSER_WEBUI_WEB_UI_UTIL_H_
+#define CHROME_BROWSER_WEBUI_WEB_UI_UTIL_H_
 #pragma once
 
 #include <string>
@@ -46,4 +46,4 @@ std::string GetImageDataUrlFromResource(int resource_id);
 
 }  // namespace web_ui_util
 
-#endif  // CHROME_BROWSER_DOM_UI_WEB_UI_UTIL_H_
+#endif  // CHROME_BROWSER_WEBUI_WEB_UI_UTIL_H_

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_DOM_UI_PLUGINS_UI_H_
 #pragma once
 
-#include "chrome/browser/dom_ui/web_ui.h"
+#include "chrome/browser/webui/web_ui.h"
 
 class PrefService;
 class RefCountedMemory;

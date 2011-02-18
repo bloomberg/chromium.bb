@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_WEBUI_MOBILE_SETUP_UI_H_
 #pragma once
 
-#include "chrome/browser/dom_ui/web_ui.h"
+#include "chrome/browser/webui/web_ui.h"
 
 // A custom WebUI that defines datasource for mobile setup registration page
 // that is used in Chrome OS activate modem and perform plan subscription tasks.

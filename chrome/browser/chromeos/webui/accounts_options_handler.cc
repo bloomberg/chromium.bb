@@ -10,7 +10,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
-#include "chrome/browser/dom_ui/web_ui_util.h"
+#include "chrome/browser/webui/web_ui_util.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 

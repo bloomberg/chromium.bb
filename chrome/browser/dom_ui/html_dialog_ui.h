@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "chrome/browser/dom_ui/web_ui.h"
+#include "chrome/browser/webui/web_ui.h"
 #include "chrome/common/property_bag.h"
 #include "googleurl/src/gurl.h"
 

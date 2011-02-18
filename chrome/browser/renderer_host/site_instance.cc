@@ -5,11 +5,11 @@
 #include "chrome/browser/renderer_host/site_instance.h"
 
 #include "chrome/browser/browsing_instance.h"
-#include "chrome/browser/dom_ui/web_ui_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
-#include "chrome/common/url_constants.h"
+#include "chrome/browser/webui/web_ui_factory.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/url_constants.h"
 #include "net/base/registry_controlled_domain.h"
 
 // We treat javascript:, about:crash, about:hang, and about:shorthang as the

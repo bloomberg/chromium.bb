@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DOM_UI_WEB_UI_FACTORY_H_
-#define CHROME_BROWSER_DOM_UI_WEB_UI_FACTORY_H_
+#ifndef CHROME_BROWSER_WEBUI_WEB_UI_FACTORY_H_
+#define CHROME_BROWSER_WEBUI_WEB_UI_FACTORY_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -64,4 +64,4 @@ class WebUIFactory {
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebUIFactory);
 };
 
-#endif  // CHROME_BROWSER_DOM_UI_WEB_UI_FACTORY_H_
+#endif  // CHROME_BROWSER_WEBUI_WEB_UI_FACTORY_H_

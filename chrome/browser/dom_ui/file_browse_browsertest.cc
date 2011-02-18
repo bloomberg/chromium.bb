@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/task.h"
 #include "base/path_service.h"
-#include "chrome/browser/dom_ui/web_ui.h"
+#include "base/task.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/views/html_dialog_view.h"
+#include "chrome/browser/webui/web_ui.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/url_constants.h"

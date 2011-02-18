@@ -7,14 +7,14 @@
 #include <string>
 
 #include "base/values.h"
-#include "chrome/browser/dom_ui/web_ui_util.h"
 #include "chrome/browser/prefs/pref_notifier.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_setup_flow.h"
-#include "chrome/common/pref_names.h"
+#include "chrome/browser/webui/web_ui_util.h"
 #include "chrome/common/notification_details.h"
+#include "chrome/common/pref_names.h"
 
 NTPLoginHandler::NTPLoginHandler() {
 }

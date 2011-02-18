@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "chrome/browser/dom_ui/web_ui.h"
 #include "chrome/browser/sync/js_event_handler.h"
+#include "chrome/browser/webui/web_ui.h"
 
 namespace browser_sync {
 class JsFrontend;

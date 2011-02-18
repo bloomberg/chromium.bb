@@ -8,9 +8,9 @@
 
 #include <string>
 
-#include "chrome/browser/dom_ui/web_ui.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_ui_util.h"
+#include "chrome/browser/webui/web_ui.h"
 
 class ListValue;
 

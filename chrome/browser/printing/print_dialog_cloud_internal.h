@@ -13,7 +13,7 @@
 #include "base/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
-#include "chrome/browser/dom_ui/web_ui.h"
+#include "chrome/browser/webui/web_ui.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 

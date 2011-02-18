@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_DOM_UI_NTP_LOGIN_HANDLER_H_
 #pragma once
 
-#include "chrome/browser/dom_ui/web_ui.h"
 #include "chrome/browser/prefs/pref_member.h"
+#include "chrome/browser/webui/web_ui.h"
 #include "chrome/common/notification_observer.h"
 
 // The NTP login handler currently simply displays the current logged in

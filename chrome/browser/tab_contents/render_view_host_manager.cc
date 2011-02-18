@@ -6,8 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "chrome/browser/dom_ui/web_ui.h"
-#include "chrome/browser/dom_ui/web_ui_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -18,6 +16,8 @@
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
+#include "chrome/browser/webui/web_ui.h"
+#include "chrome/browser/webui/web_ui_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"

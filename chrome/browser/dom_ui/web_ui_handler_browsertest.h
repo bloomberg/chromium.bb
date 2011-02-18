@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "chrome/browser/dom_ui/web_ui.h"
+#include "chrome/browser/webui/web_ui.h"
 
 // This class registers test framework specific handlers on WebUI objects.
 class WebUIHandlerBrowserTest : public WebUIMessageHandler {

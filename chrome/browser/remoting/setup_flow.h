@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
-#include "chrome/browser/dom_ui/web_ui.h"
+#include "chrome/browser/webui/web_ui.h"
 #include "chrome/common/remoting/chromoting_host_info.h"
 
 class ListValue;
