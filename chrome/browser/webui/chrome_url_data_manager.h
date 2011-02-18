@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DOM_UI_CHROME_URL_DATA_MANAGER_H_
-#define CHROME_BROWSER_DOM_UI_CHROME_URL_DATA_MANAGER_H_
+#ifndef CHROME_BROWSER_WEBUI_CHROME_URL_DATA_MANAGER_H_
+#define CHROME_BROWSER_WEBUI_CHROME_URL_DATA_MANAGER_H_
 #pragma once
 
 #include <map>
 #include <set>
 #include <string>
 
-#include "base/task.h"
 #include "base/ref_counted.h"
+#include "base/task.h"
 #include "chrome/browser/browser_thread.h"
 
 class ChromeURLDataManagerBackend;
@@ -180,4 +180,4 @@ class ChromeURLDataManager {
   DISALLOW_COPY_AND_ASSIGN(ChromeURLDataManager);
 };
 
-#endif  // CHROME_BROWSER_DOM_UI_CHROME_URL_DATA_MANAGER_H_
+#endif  // CHROME_BROWSER_WEBUI_CHROME_URL_DATA_MANAGER_H_

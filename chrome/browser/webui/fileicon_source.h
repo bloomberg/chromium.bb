@@ -1,15 +1,15 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DOM_UI_FILEICON_SOURCE_H_
-#define CHROME_BROWSER_DOM_UI_FILEICON_SOURCE_H_
+#ifndef CHROME_BROWSER_WEBUI_FILEICON_SOURCE_H_
+#define CHROME_BROWSER_WEBUI_FILEICON_SOURCE_H_
 #pragma once
 
 #include <string>
 
-#include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/icon_manager.h"
+#include "chrome/browser/webui/chrome_url_data_manager.h"
 
 class GURL;
 class RefCountedBytes;
@@ -44,4 +44,4 @@ class FileIconSource : public ChromeURLDataManager::DataSource {
 
   DISALLOW_COPY_AND_ASSIGN(FileIconSource);
 };
-#endif  // CHROME_BROWSER_DOM_UI_FILEICON_SOURCE_H_
+#endif  // CHROME_BROWSER_WEBUI_FILEICON_SOURCE_H_

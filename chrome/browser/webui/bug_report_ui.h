@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_WEBUI_BUG_REPORT_UI_H_
 #define CHROME_BROWSER_WEBUI_BUG_REPORT_UI_H_
 
-#include "chrome/browser/dom_ui/html_dialog_ui.h"
 #include "chrome/browser/ui/views/window.h"
+#include "chrome/browser/webui/html_dialog_ui.h"
 
 namespace gfx {
 class Rect;

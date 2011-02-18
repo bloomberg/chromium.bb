@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/dom_ui/constrained_html_ui.h"
+#include "chrome/browser/webui/constrained_html_ui.h"
 
 #include "base/scoped_nsobject.h"
-#include "chrome/browser/dom_ui/html_dialog_ui.h"
-#include "chrome/browser/dom_ui/html_dialog_tab_contents_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/cocoa/constrained_window_mac.h"
+#include "chrome/browser/webui/html_dialog_ui.h"
+#include "chrome/browser/webui/html_dialog_tab_contents_delegate.h"
 #import <Cocoa/Cocoa.h>
 #include "ipc/ipc_message.h"
 

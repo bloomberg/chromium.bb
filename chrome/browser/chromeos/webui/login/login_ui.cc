@@ -14,11 +14,11 @@
 #include "chrome/browser/chromeos/webui/login/authenticator_facade_cros.h"
 #include "chrome/browser/chromeos/webui/login/login_ui.h"
 #include "chrome/browser/chromeos/webui/login/login_ui_helpers.h"
-#include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/webui/chrome_url_data_manager.h"
 #include "chrome/common/url_constants.h"
 
 namespace chromeos {
