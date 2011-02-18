@@ -10,8 +10,9 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_resource/web_resource_service.h"
+#include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/web_resource/web_resource_unpacker.h"
 #include "chrome/common/url_constants.h"
@@ -22,7 +23,7 @@
 WebUIMessageHandler* TipsHandler::Attach(WebUI* web_ui) {
   web_ui_ = web_ui;
   tips_cache_ = web_ui_->GetProfile()->GetPrefs()->
-      GetMutableDictionary(prefs::kNTPWebResourceCache);
+      GetMutableDictionary(prefs::kNTPPromoResourceCache);
   return WebUIMessageHandler::Attach(web_ui);
 }
 
@@ -58,9 +59,9 @@ void TipsHandler::HandleGetTips(const ListValue* args) {
 
   if (tips_cache_ != NULL && !tips_cache_->empty()) {
     if (tips_cache_->GetInteger(
-        WebResourceService::kCurrentTipPrefName, &current_tip_index) &&
+        PromoResourceService::kCurrentTipPrefName, &current_tip_index) &&
         tips_cache_->GetList(
-        WebResourceService::kTipCachePrefName, &wr_list) &&
+        PromoResourceService::kTipCachePrefName, &wr_list) &&
         wr_list && wr_list->GetSize() > 0) {
       if (wr_list->GetSize() <= static_cast<size_t>(current_tip_index)) {
         // Check to see whether the home page is set to NTP; if not, add tip
@@ -91,7 +92,7 @@ void TipsHandler::SendTip(const std::string& tip, const std::string& tip_type,
   DictionaryValue* tip_dict = new DictionaryValue();
   tip_dict->SetString(tip_type, tip);
   list_value.Append(tip_dict);
-  tips_cache_->SetInteger(WebResourceService::kCurrentTipPrefName,
+  tips_cache_->SetInteger(PromoResourceService::kCurrentTipPrefName,
                           tip_index);
   // Send list of web resource items back out to the DOM.
   web_ui_->CallJavascriptFunction(L"tips", list_value);
@@ -99,9 +100,9 @@ void TipsHandler::SendTip(const std::string& tip, const std::string& tip_type,
 
 // static
 void TipsHandler::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterDictionaryPref(prefs::kNTPWebResourceCache);
-  prefs->RegisterStringPref(prefs::kNTPWebResourceServer,
-                            WebResourceService::kDefaultWebResourceServer);
+  prefs->RegisterDictionaryPref(prefs::kNTPPromoResourceCache);
+  prefs->RegisterStringPref(prefs::kNTPPromoResourceServer,
+                            PromoResourceService::kDefaultPromoResourceServer);
 }
 
 bool TipsHandler::IsValidURL(const std::wstring& url_string) {

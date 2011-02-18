@@ -1744,7 +1744,7 @@
         'browser/webdata/web_data_service_unittest.cc',
         'browser/webdata/web_database_unittest.cc',
         'browser/webui/web_ui_unittest.cc',
-        'browser/web_resource/web_resource_service_unittest.cc',
+        'browser/web_resource/promo_resource_service_unittest.cc',
         'common/bzip2_unittest.cc',
         'common/child_process_logging_mac_unittest.mm',
         'common/chrome_paths_unittest.cc',

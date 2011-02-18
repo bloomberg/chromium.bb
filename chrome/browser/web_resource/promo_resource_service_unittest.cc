@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,16 +7,16 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/web_resource/web_resource_service.h"
+#include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-typedef testing::Test WebResourceServiceTest;
+typedef testing::Test PromoResourceServiceTest;
 
 namespace {
 
-// From web_resource_service.cc
+// From promo_resource_service.cc
 enum BuildType {
   DEV_BUILD = 1,
   BETA_BUILD = 1 << 1,
@@ -27,11 +27,11 @@ enum BuildType {
 
 // Verifies that custom dates read from a web resource server are written to
 // the preferences file.
-TEST_F(WebResourceServiceTest, UnpackLogoSignal) {
-  // Set up a testing profile and create a web resource service.
+TEST_F(PromoResourceServiceTest, UnpackLogoSignal) {
+  // Set up a testing profile and create a promo resource service.
   TestingProfile profile;
-  scoped_refptr<WebResourceService> web_resource_service(
-      new WebResourceService(&profile));
+  scoped_refptr<PromoResourceService> web_resource_service(
+      new PromoResourceService(&profile));
 
   // Set up start and end dates in a Dictionary as if parsed from the service.
   std::string json = "{ "
@@ -109,11 +109,11 @@ TEST_F(WebResourceServiceTest, UnpackLogoSignal) {
   EXPECT_EQ(logo_end, 0);  // date value reset to 0;
 }
 
-TEST_F(WebResourceServiceTest, UnpackPromoSignal) {
-  // Set up a testing profile and create a web resource service.
+TEST_F(PromoResourceServiceTest, UnpackPromoSignal) {
+  // Set up a testing profile and create a promo resource service.
   TestingProfile profile;
-  scoped_refptr<WebResourceService> web_resource_service(
-      new WebResourceService(&profile));
+  scoped_refptr<PromoResourceService> web_resource_service(
+      new PromoResourceService(&profile));
 
   // Set up start and end dates and promo line in a Dictionary as if parsed
   // from the service.

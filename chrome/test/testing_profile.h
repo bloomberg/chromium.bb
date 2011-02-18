@@ -237,7 +237,7 @@ class TestingProfile : public Profile {
   virtual WebKitContext* GetOffTheRecordWebKitContext();
   virtual void MarkAsCleanShutdown() {}
   virtual void InitExtensions() {}
-  virtual void InitWebResources() {}
+  virtual void InitPromoResources() {}
   virtual NTPResourceCache* GetNTPResourceCache();
 
   virtual DesktopNotificationService* GetDesktopNotificationService();

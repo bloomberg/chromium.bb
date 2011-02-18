@@ -780,7 +780,7 @@ class NotificationType {
     // The state of a web resource has been changed. A resource may have been
     // added, removed, or altered. Source is WebResourceService, and the
     // details are NoDetails.
-    WEB_RESOURCE_STATE_CHANGED,
+    PROMO_RESOURCE_STATE_CHANGED,
 
     // Autocomplete ------------------------------------------------------------
 

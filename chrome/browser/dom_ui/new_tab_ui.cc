@@ -273,7 +273,7 @@ void NewTabPageClosePromoHandler::HandleClosePromo(
     const ListValue* args) {
   web_ui_->GetProfile()->GetPrefs()->SetBoolean(prefs::kNTPPromoClosed, true);
   NotificationService* service = NotificationService::current();
-  service->Notify(NotificationType::WEB_RESOURCE_STATE_CHANGED,
+  service->Notify(NotificationType::PROMO_RESOURCE_STATE_CHANGED,
                   Source<NewTabPageClosePromoHandler>(this),
                   NotificationService::NoDetails());
 }

@@ -3518,6 +3518,8 @@
         'browser/visitedlink/visitedlink_master.h',
         'browser/web_applications/web_app.cc',
         'browser/web_applications/web_app.h',
+        'browser/web_resource/promo_resource_service.cc',
+        'browser/web_resource/promo_resource_service.h',
         'browser/web_resource/web_resource_service.cc',
         'browser/web_resource/web_resource_service.h',
         'browser/webdata/autofill_change.cc',

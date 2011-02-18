@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,33 +8,24 @@
 
 #include <string>
 
-#include "base/file_path.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/utility_process_host.h"
-#include "chrome/common/web_resource/web_resource_unpacker.h"
+#include "chrome/common/notification_type.h"
 
+class PrefService;
 class Profile;
 
-namespace WebResourceServiceUtil {
-
-// Certain promotions should only be shown to certain classes of users. This
-// function will change to reflect each kind of promotion.
-bool CanShowPromo(Profile* profile);
-
-}  // namespace WebResourceService
-
-// A WebResourceService fetches data from a web resource server to be used to
-// dynamically change the appearance of the New Tab Page. For example, it has
-// been used to fetch "tips" to be displayed on the NTP, or to display
-// promotional messages to certain groups of Chrome users.
-//
-// TODO(mirandac): Arrange for a server to be set up specifically for promo
-// messages, which have until now been piggybacked onto the old tips server
-// structure. (see http://crbug.com/70634 for details.)
+// A WebResourceService fetches data from a web resource server and store
+// locally as user preference.
 class WebResourceService
     : public UtilityProcessHost::Client {
  public:
-  explicit WebResourceService(Profile* profile);
+  WebResourceService(Profile* profile,
+                     const char* web_resource_server,
+                     bool apply_locale_to_url_,
+                     NotificationType::Type notification_type,
+                     const char* last_update_time_pref_name,
+                     int start_fetch_delay,
+                     int cache_update_delay);
 
   // Sleep until cache needs to be updated, but always for at least 5 seconds
   // so we don't interfere with startup.  Then begin updating resources.
@@ -44,117 +35,25 @@ class WebResourceService
   // the process that will parse the JSON, and then update the cache.
   void UpdateResourceCache(const std::string& json_data);
 
-  // Unpack the web resource as a set of tips. Expects json in the form of:
-  // {
-  //   "lang": "en",
-  //   "topic": {
-  //     "topid_id": "24013",
-  //     "topics": [
-  //     ],
-  //     "answers": [
-  //       {
-  //         "answer_id": "18625",
-  //         "inproduct": "Text here will be shown as a tip",
-  //       },
-  //       ...
-  //     ]
-  //   }
-  // }
-  //
-  // Public for unit testing.
-  void UnpackTips(const DictionaryValue& parsed_json);
+ protected:
+  virtual ~WebResourceService();
 
-  // Unpack the web resource as a custom promo signal. Expects a start and end
-  // signal, with the promo to be shown in the tooltip of the start signal
-  // field. Delivery will be in json in the form of:
-  // {
-  //   "topic": {
-  //     "answers": [
-  //       {
-  //         "answer_id": "1067976",
-  //         "name": "promo_start",
-  //         "question": "1:24",
-  //         "tooltip":
-  //       "Click \u003ca href=http://www.google.com\u003ehere\u003c/a\u003e!",
-  //         "inproduct": "10/8/09 12:00",
-  //         "inproduct_target": null
-  //       },
-  //       {
-  //         "answer_id": "1067976",
-  //         "name": "promo_end",
-  //         "question": "",
-  //         "tooltip": "",
-  //         "inproduct": "10/8/11 12:00",
-  //         "inproduct_target": null
-  //       },
-  //       ...
-  //     ]
-  //   }
-  // }
-  //
-  // Because the promo signal data is piggybacked onto the tip server, the
-  // values don't exactly correspond with the field names:
-  //
-  // For "promo_start" or "promo_end", the date to start or stop showing the
-  // promotional line is given by the "inproduct" line.
-  // For "promo_start", the promotional line itself is given in the "tooltip"
-  // field. The "question" field gives the type of builds that should be shown
-  // this promo (see the BuildType enum in web_resource_service.cc) and the
-  // number of hours that each promo group should see it, separated by ":".
-  // For example, "7:24" would indicate that all builds should see the promo,
-  // and each group should see it for 24 hours.
-  //
-  // Public for unit testing.
-  void UnpackPromoSignal(const DictionaryValue& parsed_json);
+  virtual void Unpack(const DictionaryValue& parsed_json) = 0;
 
-  // Unpack the web resource as a custom logo signal. Expects a start and end
-  // signal. Delivery will be in json in the form of:
-  // {
-  //   "topic": {
-  //     "answers": [
-  //       {
-  //         "answer_id": "107366",
-  //         "name": "custom_logo_start",
-  //         "question": "",
-  //         "tooltip": "",
-  //         "inproduct": "10/8/09 12:00",
-  //         "inproduct_target": null
-  //       },
-  //       {
-  //         "answer_id": "107366",
-  //         "name": "custom_logo_end",
-  //         "question": "",
-  //         "tooltip": "",
-  //         "inproduct": "10/8/09 12:00",
-  //         "inproduct_target": null
-  //       },
-  //       ...
-  //     ]
-  //   }
-  // }
-  //
-  // Public for unit testing.
-  void UnpackLogoSignal(const DictionaryValue& parsed_json);
+  // If delay_ms is positive, schedule notification with the delay.
+  // If delay_ms is 0, notify immediately by calling WebResourceStateChange().
+  // If delay_ms is negative, do nothing.
+  void PostNotification(int64 delay_ms);
 
-  int cache_update_delay() const { return cache_update_delay_; }
-
-  Profile* profile() const { return profile_; }
-
-  static const char* kCurrentTipPrefName;
-  static const char* kTipCachePrefName;
-
-  // Default server of dynamically loaded NTP HTML elements (promotions, tips):
-  static const char* kDefaultWebResourceServer;
+  // We need to be able to load parsed resource data into preferences file,
+  // and get proper install directory.
+  PrefService* prefs_;
 
  private:
   class WebResourceFetcher;
   friend class WebResourceFetcher;
 
   class UnpackerClient;
-
-  ~WebResourceService();
-
-  void Init();
 
   // Set in_fetch_ to false, clean up temp directories (in the future).
   void EndFetch();
@@ -165,16 +64,6 @@ class WebResourceService
   // Notify listeners that the state of a web resource has changed.
   void WebResourceStateChange();
 
-  // Schedule a notification that a web resource is either going to become
-  // available or be no longer valid.
-  void ScheduleNotification(double ms_start_time, double ms_end_time);
-
-  // We need to be able to load parsed resource data into preferences file,
-  // and get proper install directory.
-  PrefService* prefs_;
-
-  // Display and fetch of promo lines depends on data associated with a user's
-  // profile.
   Profile* profile_;
 
   scoped_ptr<WebResourceFetcher> web_resource_fetcher_;
@@ -186,14 +75,25 @@ class WebResourceService
   // Page immediately when a new web resource should be shown or removed.
   ScopedRunnableMethodFactory<WebResourceService> service_factory_;
 
-  // Gets mutable dictionary attached to user's preferences, so that we
-  // can write resource data back to user's pref file.
-  DictionaryValue* web_resource_cache_;
-
   // True if we are currently mid-fetch.  If we are asked to start a fetch
   // when we are still fetching resource data, schedule another one in
   // kCacheUpdateDelay time, and silently exit.
   bool in_fetch_;
+
+  // URL that hosts the web resource.
+  const char* web_resource_server_;
+
+  // Indicates whether we should append locale to the web resource server URL.
+  bool apply_locale_to_url_;
+
+  // Notification type when an update is done.
+  NotificationType::Type notification_type_;
+
+  // Pref name to store the last update's time.
+  const char* last_update_time_pref_name_;
+
+  // Delay on first fetch so we don't interfere with startup.
+  int start_fetch_delay_;
 
   // Delay between calls to update the web resource cache. This delay may be
   // different for different builds of Chrome.

@@ -561,7 +561,7 @@ class OffTheRecordProfileImpl : public Profile,
     NOTREACHED();
   }
 
-  virtual void InitWebResources() {
+  virtual void InitPromoResources() {
     NOTREACHED();
   }
 

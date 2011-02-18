@@ -1033,15 +1033,15 @@ const char kNTPMostVisitedURLsBlacklist[] = "ntp.most_visited_blacklist";
 // Page.
 const char kNTPMostVisitedPinnedURLs[] = "ntp.pinned_urls";
 
-// Data downloaded from resource pages (JSON, RSS) to be used to dynamically
-// deliver data for the new tab page.
-const char kNTPWebResourceCache[] = "ntp.web_resource_cache";
+// Data downloaded from promo resource pages (JSON, RSS) to be used to
+// dynamically deliver data for the new tab page.
+const char kNTPPromoResourceCache[] = "ntp.promo_resource_cache";
 
-// Last time of update of web_resource_cache.
-const char kNTPWebResourceCacheUpdate[] = "ntp.web_resource_cache_update";
+// Last time of update of promo_resource_cache.
+const char kNTPPromoResourceCacheUpdate[] = "ntp.promo_resource_cache_update";
 
-// Serves resources for the NTP.
-const char kNTPWebResourceServer[] = "ntp.web_resource_server";
+// Serves promo resources for the NTP.
+const char kNTPPromoResourceServer[] = "ntp.web_resource_server";
 
 // Serves tips for the NTP.
 const char kNTPTipsResourceServer[] = "ntp.tips_resource_server";

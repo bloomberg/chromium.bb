@@ -82,7 +82,7 @@
 #include "chrome/browser/user_style_sheet_watcher.h"
 #include "chrome/browser/visitedlink/visitedlink_event_listener.h"
 #include "chrome/browser/visitedlink/visitedlink_master.h"
-#include "chrome/browser/web_resource/web_resource_service.h"
+#include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -481,12 +481,12 @@ void ProfileImpl::InstallDefaultApps() {
   }
 }
 
-void ProfileImpl::InitWebResources() {
-  if (web_resource_service_)
+void ProfileImpl::InitPromoResources() {
+  if (promo_resource_service_)
     return;
 
-  web_resource_service_ = new WebResourceService(this);
-  web_resource_service_->StartAfterDelay();
+  promo_resource_service_ = new PromoResourceService(this);
+  promo_resource_service_->StartAfterDelay();
 }
 
 NTPResourceCache* ProfileImpl::GetNTPResourceCache() {

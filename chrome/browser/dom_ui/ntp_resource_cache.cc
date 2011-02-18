@@ -22,7 +22,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
-#include "chrome/browser/web_resource/web_resource_service.h"
+#include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -149,7 +149,7 @@ bool InDateRange(double begin, double end) {
 NTPResourceCache::NTPResourceCache(Profile* profile) : profile_(profile) {
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::WEB_RESOURCE_STATE_CHANGED,
+  registrar_.Add(this, NotificationType::PROMO_RESOURCE_STATE_CHANGED,
                  NotificationService::AllSources());
 
   // Watch for pref changes that cause us to need to invalidate the HTML cache.
@@ -190,7 +190,7 @@ void NTPResourceCache::Observe(NotificationType type,
     const NotificationSource& source, const NotificationDetails& details) {
   // Invalidate the cache.
   if (NotificationType::BROWSER_THEME_CHANGED == type ||
-      NotificationType::WEB_RESOURCE_STATE_CHANGED == type) {
+      NotificationType::PROMO_RESOURCE_STATE_CHANGED == type) {
     new_tab_incognito_html_ = NULL;
     new_tab_html_ = NULL;
     new_tab_incognito_css_ = NULL;
@@ -380,7 +380,7 @@ void NTPResourceCache::CreateNewTabHTML() {
   if (profile_->GetPrefs()->FindPreference(prefs::kNTPPromoStart) &&
       profile_->GetPrefs()->FindPreference(prefs::kNTPPromoEnd) &&
       profile_->GetPrefs()->FindPreference(prefs::kNTPPromoLine) &&
-      WebResourceServiceUtil::CanShowPromo(profile_)) {
+      PromoResourceServiceUtil::CanShowPromo(profile_)) {
     localized_strings.SetString("serverpromo",
         InDateRange(profile_->GetPrefs()->GetDouble(prefs::kNTPPromoStart),
                     profile_->GetPrefs()->GetDouble(prefs::kNTPPromoEnd)) ?
