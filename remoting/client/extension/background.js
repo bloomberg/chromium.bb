@@ -63,11 +63,29 @@ function openChromotingTab(hostName, hostJid) {
               " hostName='" + request.hostName + "'" +
               " hostJid='" + request.hostJid + "'" +
               " auth_token='" + request.xmppAuth + "'");
-  navigate(newTabUrl, function(tab) {
-      console.log("We're trying now to send to " + tab.id);
-      chrome.tabs.sendRequest(
-          tab.id, request, function() {
-            console.log('Tab finished connect.');
-          });
-    });
+
+  var sendRequestFunc = function (tab) {
+    console.log("We're trying now to send to " + tab.id);
+    chrome.tabs.sendRequest(
+        tab.id, request, function() {
+          console.log('Tab finished connect.');
+        });
+  };
+
+  // This function will run when after the url for the tab is updated. If
+  // the tab is not yet loaded it will wait for another 500ms to inspect
+  // again.
+  var checkStatusFunc = function (tab) {
+    if (tab.status == "complete") {
+      sendRequestFunc(tab);
+      return;
+    }
+
+    // Wait for 500ms and then get the tab and check its status.
+    setTimeout(function() {
+        chrome.tabs.get(tab.id, checkStatusFunc);
+      }, 500);
+  }
+
+  navigate(newTabUrl, checkStatusFunc);
 }
