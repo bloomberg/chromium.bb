@@ -94,6 +94,7 @@ class Profile;
 @property(nonatomic) NSInteger notificationsSettingIndex;
 
 @property(nonatomic, readonly) BOOL blockThirdPartyCookiesManaged;
+@property(nonatomic, readonly) BOOL clearSiteDataOnExitManaged;
 @property(nonatomic, readonly) BOOL cookieSettingsManaged;
 @property(nonatomic, readonly) BOOL imagesSettingsManaged;
 @property(nonatomic, readonly) BOOL javaScriptSettingsManaged;

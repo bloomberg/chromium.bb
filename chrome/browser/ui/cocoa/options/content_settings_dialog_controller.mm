@@ -306,6 +306,10 @@ class PrefObserverDisabler {
   return settingsMap->IsBlockThirdPartyCookiesManaged();
 }
 
+- (BOOL)clearSiteDataOnExitManaged {
+  return clearSiteDataOnExit_.IsManaged();
+}
+
 - (BOOL)clearSiteDataOnExit {
   return clearSiteDataOnExit_.GetValue();
 }
@@ -590,6 +594,8 @@ class PrefObserverDisabler {
   if (prefName == prefs::kClearSiteDataOnExit) {
     [self willChangeValueForKey:@"clearSiteDataOnExit"];
     [self didChangeValueForKey:@"clearSiteDataOnExit"];
+    [self willChangeValueForKey:@"clearSiteDataOnExitManaged"];
+    [self didChangeValueForKey:@"clearSiteDataOnExitManaged"];
   }
   if (prefName == prefs::kBlockThirdPartyCookies) {
     [self willChangeValueForKey:@"blockThirdPartyCookies"];

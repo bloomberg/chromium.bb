@@ -91,7 +91,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 64
+#   For your editing convenience: highest ID currently used: 65
 #
   'policy_definitions': [
     {
@@ -430,6 +430,19 @@
 
       If you set this policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the provided directory regardless whether the user has specified one or enabled the flag to be prompted for download location every time.''',
       'label': '''Set download directory''',
+    },
+    {
+      'name': 'ClearSiteDataOnExit',
+      'type': 'main',
+      'supported_on': ['chrome.*:11-', 'chrome_os.*:1.0.0.0-'],
+      'features': {'dynamic_refresh': 1},
+      'example_value': True,
+      'id': 65,
+      'caption': '''Clear site date on browser shutdown''',
+      'desc': '''This policy is an override for the "Clear cookies and other site data when I close my browser" content settings option.
+
+      When set to true <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will delete all locally stored data from the browser when it is shut down.''',
+      'label': '''Clear site date on browser shutdown''',
     },
     {
       'name': 'Proxy',

@@ -148,7 +148,9 @@ void CookieFilterPageGtk::UpdateUiState() {
       GTK_TOGGLE_BUTTON(block_3rdparty_check_),
       block_third_party_cookies_.GetValue());
 
-  // Disable the UI if the default content setting is managed.
+  // Disable the UI if any of the settings is managed.
+  gtk_widget_set_sensitive(clear_on_close_check_,
+                           !clear_site_data_on_exit_.IsManaged());
   gtk_widget_set_sensitive(block_3rdparty_check_,
                            !block_third_party_cookies_.IsManaged());
   bool sensitive = true;
