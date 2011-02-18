@@ -61,6 +61,8 @@ void EventExecutorWin::HandleKey(const KeyEvent* event) {
   int scan_code = MapVirtualKeyEx(key, MAPVK_VK_TO_VSC_EX, hkl);
 
   INPUT input;
+  memset(&input, 0, sizeof(input));
+
   input.type = INPUT_KEYBOARD;
   input.ki.time = 0;
   input.ki.wVk = key;
