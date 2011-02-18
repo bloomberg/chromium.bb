@@ -513,6 +513,10 @@ Chrome supports. -->
       <message name="IDS_CONFLICTS_CHECK_WARNING_SUSPECTED" desc="Warning label on the compatibility page">
         A module with the same name has been known to conflict with Google Chrome.
       </message>
+      <!-- chrome://crashes strings -->
+      <message name="IDS_CRASHES_DISABLED_MESSAGE" desc="The explanatory message for chrome://crashes when crash reporting is disabled">
+        This page only shows information on your recent crashes if you <ph name="BEGIN_LINK">&lt;a href="http://google.com/support/chrome/bin/answer.py?answer=96817"&gt;</ph>enable crash reporting<ph name="END_LINK">&lt;/a&gt;</ph>.
+      </message>
 
       <if expr="os == 'darwin'">
         <message name="IDS_SHORT_PRODUCT_NAME" desc="The application's short name, used for the Mac's application menu, activity monitor, etc. This should be less than 16 characters. Example: Chrome, not Google Chrome.">

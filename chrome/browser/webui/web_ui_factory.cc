@@ -21,6 +21,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/webui/bookmarks_ui.h"
 #include "chrome/browser/webui/bug_report_ui.h"
+#include "chrome/browser/webui/crashes_ui.h"
 #include "chrome/browser/webui/devtools_ui.h"
 #include "chrome/browser/webui/downloads_ui.h"
 #include "chrome/browser/webui/flags_ui.h"
@@ -140,6 +141,8 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
     return &NewWebUI<BookmarksUI>;
   if (url.host() == chrome::kChromeUIBugReportHost)
     return &NewWebUI<BugReportUI>;
+  if (url.host() == chrome::kChromeUICrashesHost)
+    return &NewWebUI<CrashesUI>;
   if (url.host() == chrome::kChromeUIDevToolsHost)
     return &NewWebUI<DevToolsUI>;
 #if defined(OS_WIN)
@@ -314,6 +317,9 @@ RefCountedMemory* WebUIFactory::GetFaviconResourceBytes(Profile* profile,
   if (page_url.host() == chrome::kChromeUIConflictsHost)
     return ConflictsUI::GetFaviconResourceBytes();
 #endif
+
+  if (page_url.host() == chrome::kChromeUICrashesHost)
+    return CrashesUI::GetFaviconResourceBytes();
 
   if (page_url.host() == chrome::kChromeUIDownloadsHost)
     return DownloadsUI::GetFaviconResourceBytes();
