@@ -7,7 +7,6 @@ import logging
 import os
 import pickle
 
-import autofill_dataset_converter
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
 
