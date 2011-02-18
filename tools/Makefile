@@ -356,10 +356,6 @@ sdkdirs:
 BUILD/stamp-$(CROSSARCH)-binutils: SRC/stamp-binutils | BUILD
 	rm -rf BUILD/build-binutils-$(CROSSARCH)
 	mkdir BUILD/build-binutils-$(CROSSARCH)
-	if ( [ -x /usr/bin/bison ] ) && ( [ -x /usr/bin/flex ] ) ; then \
-	  touch SRC/binutils/ld/ldgram.y ; \
-	  touch SRC/binutils/ld/ldlex.l ; \
-	fi
 	# We'd like to build binutils with -Werror, but there are a
 	# number of warnings in the Mac version of GCC that prevent
 	# us from building with -Werror today.
