@@ -4,7 +4,6 @@
 # Use of this source code is governed by a BSD-style license that can
 # be found in the LICENSE file.
 
-import glob
 import os
 import sys
 
@@ -21,13 +20,8 @@ if not os.path.exists(nacl_src):
   nacl_src = os.path.normpath(os.path.join(script_dir, "..", "..", ".."))
 nacl_dir = os.path.join(nacl_src, "native_client")
 
-subdirs = [
-    "third_party/gmp",
-    "third_party/mpfr",
-    "third_party/gcc",
-    "third_party/binutils",
-    "third_party/newlib",
-    "native_client/tools/patches"]
+subdirs = ["third_party/gmp",
+           "third_party/mpfr"]
 search_path = [os.path.join(nacl_src, subdir) for subdir in subdirs]
 
 
@@ -37,14 +31,6 @@ def FindFile(name, sha1):
     if os.path.exists(filename):
       return dirtree.FileWithExpectedHash(filename, sha1)
   raise Exception("Couldn't find %r in %r" % (name, search_path))
-
-
-def PatchGlob(name):
-  path = os.path.join(nacl_dir, "tools/patches", name, "*.patch")
-  patches = sorted(glob.glob(path))
-  if len(patches) == 0:
-    raise AssertionError("No patches found matching %r" % path)
-  return [dirtree.FileWithLazyHash(patch_file) for patch_file in patches]
 
 
 def ParseKeyValueFile(filename):
