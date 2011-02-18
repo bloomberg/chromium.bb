@@ -15,7 +15,7 @@ namespace webkit_glue {
 const double kForegroundTabTimerInterval = 0.004;
 
 // Provides control over the minimum timer interval for background tabs.
-const double kBackgroundTabTimerInterval = 0.004;
+const double kBackgroundTabTimerInterval = 1.0;
 
 } // namespace webkit_glue
 
