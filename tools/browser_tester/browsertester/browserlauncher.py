@@ -218,9 +218,10 @@ class ChromeLauncher(BrowserLauncher):
             '--enable-logging',
             '--log-level=1',
             '--safebrowsing-disable-auto-update',
-            '--enable-nacl',
             '--user-data-dir=%s' % self.profile]
-    if self.ppapi_plugin is not None:
+    if self.ppapi_plugin is None:
+      cmd.append('--enable-nacl')
+    else:
       cmd.append('--register-pepper-plugins=%s;application/x-nacl'
                  % self.ppapi_plugin)
       cmd.append('--no-sandbox')
