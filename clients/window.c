@@ -870,7 +870,10 @@ window_draw_decorations(struct window *window)
 
 	cairo_destroy(cr);
 
+	/* FIXME: this breakes gears, fix cairo? */
+#if 0 
 	cairo_device_flush (window->display->device);
+#endif
 }
 
 void
@@ -1259,6 +1262,13 @@ handle_configure(void *data, struct wl_shell *shell,
 static const struct wl_shell_listener shell_listener = {
 	handle_configure,
 };
+
+void
+window_get_allocation(struct window *window,
+		      struct rectangle *allocation)
+{
+	*allocation = window->allocation;
+}
 
 void
 window_get_child_allocation(struct window *window,
@@ -1850,10 +1860,45 @@ display_get_egl_display(struct display *d)
 	return d->dpy;
 }
 
+EGLConfig
+display_get_egl_config(struct display *d)
+{
+	return d->conf;
+}
+
 struct wl_shell *
 display_get_shell(struct display *display)
 {
 	return display->shell;
+}
+
+void
+display_acquire_window_surface(struct display *display,
+			       struct window *window,
+			       EGLContext ctx)
+{
+	struct egl_window_surface_data *data;
+
+	if (!window->cairo_surface)
+		return;
+
+	if (!ctx)
+		ctx = display->ctx;
+
+	data = cairo_surface_get_user_data(window->cairo_surface,
+					   &surface_data_key);
+
+	cairo_device_acquire(display->device);
+	if (!eglMakeCurrent(display->dpy, data->surf, data->surf, ctx))
+		fprintf(stderr, "failed to make surface current\n");
+}
+
+void
+display_release(struct display *display)
+{
+	if (!eglMakeCurrent(display->dpy, NULL, NULL, display->ctx))
+		fprintf(stderr, "failed to make context current\n");
+	cairo_device_release(display->device);
 }
 
 void

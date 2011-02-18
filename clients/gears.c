@@ -30,11 +30,8 @@
 #include <unistd.h>
 #include <math.h>
 #include <time.h>
-#include <cairo.h>
 #include <glib.h>
 
-#define GL_GLEXT_PROTOTYPES
-#define EGL_EGLEXT_PROTOTYPES
 #include <GL/gl.h>
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
@@ -51,14 +48,11 @@ struct gears {
 	struct display *d;
 
 	EGLDisplay display;
+	EGLDisplay config;
 	EGLContext context;
 	GLfloat angle;
-	cairo_surface_t *cairo_surface;
 
 	GLint gear_list[3];
-	GLuint fbo, color_rbo[2], depth_rbo;
-	cairo_surface_t *surface[2];
-	int current;
 };
 
 struct gear_template {
@@ -203,55 +197,27 @@ make_gear(const struct gear_template *t)
 }
 
 static void
-allocate_buffer(struct gears *gears)
+draw_gears(struct gears *gears)
 {
-	EGLImageKHR image;
+	GLfloat view_rotx = 20.0, view_roty = 30.0, view_rotz = 0.0;
+	struct rectangle window_allocation;
 	struct rectangle allocation;
 
 	window_draw(gears->window);
 
-	gears->surface[gears->current] = window_get_surface(gears->window);
-#ifdef HAVE_CAIRO_EGL
-	image = display_get_image_for_egl_image_surface(gears->display,
-							gears->surface[gears->current]);
-#else /* XXX: hack to make Wayland compile, even if this example doesn't run */
-	die("gears cannot allocate buffer: it was compiled without cairo-gl\n");
-	return;
-#endif
-	if (!eglMakeCurrent(gears->display, NULL, NULL, gears->context))
-		die("faile to make context current\n");
-
-	glBindRenderbuffer(GL_RENDERBUFFER_EXT,
-			   gears->color_rbo[gears->current]);
-	glEGLImageTargetRenderbufferStorageOES(GL_RENDERBUFFER, image);
-
-	glBindRenderbuffer(GL_RENDERBUFFER_EXT, gears->depth_rbo);
 	window_get_child_allocation(gears->window, &allocation);
-	glRenderbufferStorage(GL_RENDERBUFFER_EXT,
-			      GL_DEPTH_COMPONENT,
-			      allocation.width + 20 + 32,
-			      allocation.height + 60 + 32);
-}
+	window_get_allocation(gears->window, &window_allocation);
 
-static void
-draw_gears(struct gears *gears)
-{
-	GLfloat view_rotx = 20.0, view_roty = 30.0, view_rotz = 0.0;
-	struct rectangle allocation;
-
-	if (gears->surface[gears->current] == NULL)
-		allocate_buffer(gears);
-
-	glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER_EXT,
-				  GL_COLOR_ATTACHMENT0_EXT,
-				  GL_RENDERBUFFER_EXT,
-				  gears->color_rbo[gears->current]);
-
-	window_get_child_allocation(gears->window, &allocation);
-	glViewport(allocation.x, allocation.y,
+	display_acquire_window_surface(gears->d,
+				       gears->window,
+				       gears->context);
+	
+	glViewport(allocation.x,
+		   window_allocation.height - allocation.height - allocation.x,
 		   allocation.width, allocation.height);
-	glScissor(allocation.x, allocation.y,
-		   allocation.width, allocation.height);
+	glScissor(allocation.x,
+		  window_allocation.height - allocation.height - allocation.y,
+		  allocation.width, allocation.height);
 
 	glEnable(GL_SCISSOR_TEST);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -286,7 +252,7 @@ draw_gears(struct gears *gears)
 
 	glFlush();
 
-	window_set_surface(gears->window, gears->surface[gears->current]);
+	display_release(gears->d);
 	window_flush(gears->window);
 }
 
@@ -295,11 +261,6 @@ resize_handler(struct window *window,
 	       int32_t width, int32_t height, void *data)
 {
 	struct gears *gears = data;
-
-	cairo_surface_destroy(gears->surface[0]);
-	gears->surface[0] = NULL;
-	cairo_surface_destroy(gears->surface[1]);
-	gears->surface[1] = NULL;
 
 	/* Constrain child size to be square and at least 300x300 */
 	if (width > height)
@@ -338,8 +299,6 @@ frame_callback(void *data, uint32_t time)
 {
 	struct gears *gears = data;
 
-	gears->current = 1 - gears->current;
-
 	gears->angle = (GLfloat) (time % 8192) * 360 / 8192.0;
 
 	window_schedule_redraw(gears->window);
@@ -359,7 +318,6 @@ gears_create(struct display *display)
 	gears->d = display;
 	gears->window = window_create(display, width, height);
 	window_set_title(gears->window, "Wayland Gears");
-	window_set_buffer_type(gears->window, WINDOW_BUFFER_TYPE_EGL_IMAGE);
 
 	gears->display = display_get_egl_display(gears->d);
 	if (gears->display == NULL)
@@ -367,24 +325,16 @@ gears_create(struct display *display)
 
 	eglBindAPI(EGL_OPENGL_API);
 
-	gears->context = eglCreateContext(gears->display,
-					  NULL, EGL_NO_CONTEXT, NULL);
+	gears->config = display_get_egl_config(gears->d);
+
+	gears->context = eglCreateContext(gears->display, gears->config,
+					  EGL_NO_CONTEXT, NULL);
 	if (gears->context == NULL)
 		die("failed to create context\n");
 
 	if (!eglMakeCurrent(gears->display, NULL, NULL, gears->context))
 		die("faile to make context current\n");
 
-	glGenFramebuffers(1, &gears->fbo);
-	glBindFramebuffer(GL_FRAMEBUFFER_EXT, gears->fbo);
-
-	glGenRenderbuffers(2, gears->color_rbo);
-	glGenRenderbuffers(1, &gears->depth_rbo);
-	glBindRenderbuffer(GL_RENDERBUFFER_EXT, gears->depth_rbo);
-	glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER_EXT,
-				  GL_DEPTH_ATTACHMENT_EXT,
-				  GL_RENDERBUFFER_EXT,
-				  gears->depth_rbo);
 	for (i = 0; i < 3; i++) {
 		gears->gear_list[i] = glGenLists(1);
 		glNewList(gears->gear_list[i], GL_COMPILE);

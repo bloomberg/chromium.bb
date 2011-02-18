@@ -26,6 +26,7 @@
 #include <X11/extensions/XKBcommon.h>
 #include <glib.h>
 #include <wayland-client.h>
+#include <cairo.h>
 
 struct window;
 
@@ -54,6 +55,16 @@ display_get_shell(struct display *display);
 #ifdef EGL_NO_DISPLAY
 EGLDisplay
 display_get_egl_display(struct display *d);
+
+EGLConfig
+display_get_egl_config(struct display *d);
+
+void
+display_acquire_window_surface(struct display *display,
+			       struct window *window,
+			       EGLContext ctx);
+void
+display_release(struct display *display);
 
 #ifdef HAVE_CAIRO_EGL
 EGLImageKHR
@@ -142,6 +153,11 @@ window_move(struct window *window, struct input *input, uint32_t time);
 
 void
 window_draw(struct window *window);
+
+void
+window_get_allocation(struct window *window,
+		      struct rectangle *allocation);
+
 void
 window_get_child_allocation(struct window *window,
 			    struct rectangle *allocation);
