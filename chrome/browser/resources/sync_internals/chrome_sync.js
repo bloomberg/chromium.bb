@@ -40,14 +40,20 @@ Event.prototype.findListener_ = function(listener) {
   return -1;
 };
 
-// Fires the event.  Called by the actual event callback.
+// Fires the event.  Called by the actual event callback.  Any
+// exceptions thrown by a listener are caught and logged.
 Event.prototype.dispatch_ = function() {
   var args = Array.prototype.slice.call(arguments);
   for (var i = 0; i < this.listeners_.length; i++) {
     try {
       this.listeners_[i].apply(null, args);
     } catch (e) {
-      console.error(e);
+      if (e instanceof Error) {
+        // Non-standard, but useful.
+        console.error(e.stack);
+      } else {
+        console.error(e);
+      }
     }
   }
 };
@@ -90,12 +96,10 @@ AsyncFunction.prototype.call = function() {
 // Handle a reply, assuming that messages are processed in FIFO order.
 AsyncFunction.prototype.handleReply = function() {
   var args = Array.prototype.slice.call(arguments);
+  // Remove the callback before we call it since the callback may
+  // throw.
   var callback = this.callbacks_.shift();
-  try {
-    callback.apply(null, args);
-  } catch (e) {
-    console.error(e);
-  }
+  callback.apply(null, args);
 }
 
 // Sync service functions.

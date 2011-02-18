@@ -17,75 +17,72 @@ function onLoad() {
 document.addEventListener("DOMContentLoaded", onLoad, false);
 })();
 </script>
+
+<style>
+div.column {
+  display: inline-block;
+  padding-right: 5em;
+  vertical-align: top;
+}
+
+div#aboutInfo h2 {
+  color: #4a8ee6;
+  font-size: 100%;
+}
+
+div#aboutInfo .err {
+  color: red;
+}
+
+table#aboutDetails tr:nth-child(odd) {
+  background: #eff3ff;
+}
+
+table#routingInfo tr:nth-child(odd) {
+  background: #ccffcc;
+}
+</style>
+
 <div id='aboutInfo'>
-  <div id='header'>
-    <h1>Sync Internals</h1>
-    <p>Sync engine diagnostic data</p>
-  </div>
-  <div id='content'>
-    <table width="100%">
-      <tr>
-        <td width="20%">
-          <span class="desc"><h2>Summary</h2></span>
-          <strong jscontent="summary"></strong>
-        </td>
-        <td>
-          <div class="desc" jsdisplay="unrecoverable_error_detected">
-            <span class="err">Unrecoverable Error Detected!</span>
-            <div jscontent="unrecoverable_error_message"></div>
-            <div jscontent="unrecoverable_error_location"></div>
-          </div>
-        </td>
-      </tr>
-      <tr>
-        <td colspan="2">
-          <span class="desc"><h2>Sync URL</h2></span>
-          <strong jscontent="service_url"></strong>
-        </td>
-      </tr>
-    </table>
-    <br /><br /><br />
-    <table>
-      <tr>
-        <td>
-        <div class="desc"><h2>Details</h2></div>
-        <table class='list' id='details'>
-          <tr>
-            <td class='name'>Authenticated</td>
-            <td class='number'>
-              <div jscontent="authenticated"></div>
-              <div jsdisplay="!authenticated"
-                   class="err"
-                   jscontent="auth_problem"></div>
-            </td>
-          </tr>
-          <tr>
-            <td class='name'>Last Synced</td>
-            <td class='number' jscontent="time_since_sync"></td>
-          </tr>
-          <tr jsselect="details">
-            <td class='name'>
-              <div jscontent="stat_name"></div>
-            </td>
-            <td class='number'>
-              <div jscontent="stat_value"></div>
-            </td>
-          </tr>
-        </table>
+<div class="column">
+  <h2>Summary</h2>
+  <p jscontent="summary"/>
+  <p jsdisplay="unrecoverable_error_detected">
+    <span class="err">Unrecoverable Error Detected!</span>
+    <span jscontent="unrecoverable_error_message"></span>
+    <span jscontent="unrecoverable_error_location"></span>
+  </p>
+
+  <h2>Sync URL</h2>
+  <p jscontent="service_url"/>
+
+  <h2>Details</h2>
+  <table id="aboutDetails">
+    <tr>
+      <td>Authenticated</td>
+      <td>
+        <span jscontent="authenticated"></span>
+        <span jsdisplay="!authenticated" class="err" jscontent="auth_problem"></span>
       </td>
-      <td valign="top">
-        <div class="desc"><h2>Routing Info</h2></div>
-        <table class='list' id='details2'>
-          <tr jsselect="routing_info">
-            <td class ='name'>
-              <div jscontent="model_type"></div>
-            </td>
-            <td class='number'>
-              <div jscontent="group"></div>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </table>
-  </div>
+    </tr>
+    <tr>
+      <td>Last Synced</td>
+      <td jscontent="time_since_sync"/>
+    </tr>
+    <tr jsselect="details">
+      <td jscontent="stat_name"/>
+      <td jscontent="stat_value"/>
+    </tr>
+  </table>
+</div>
+
+<div class="column">
+  <h2>Routing Info</h2>
+  <table id="routingInfo">
+    <tr jsselect="routing_info">
+      <td jscontent="model_type"/>
+      <td jscontent="group"/>
+    </tr>
+  </table>
+</div>
 </div>

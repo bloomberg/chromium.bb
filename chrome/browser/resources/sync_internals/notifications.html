@@ -38,19 +38,18 @@ document.addEventListener("DOMContentLoaded", onLoad, false);
 })();
 </script>
 
-<div class="desc"><h2> Notifications </h2></div>
+<style>
+table#notificationCountsInfo tr:nth-child(odd) {
+  background: #eff3ff;
+}
+</style>
+
 <p id='notificationsEnabledInfo'>
   Enabled: <span jscontent='notificationsEnabled'></span>
 </p>
-
-<table class='list' id='notificationCountsInfo'>
+<table id='notificationCountsInfo'>
   <tr jsselect='notificationCounts'>
-    <td class='name'>
-      <div jscontent='modelType'></div>
-    </td>
-    <td class='number'>
-      <div jscontent='notificationCount'></div>
-    </td>
+    <td jscontent='modelType'/>
+    <td jscontent='notificationCount'/>
   </tr>
 </table>
-

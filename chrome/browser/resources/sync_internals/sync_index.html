@@ -5,13 +5,37 @@
 chrome/test/functional/special_tabs.py. -->
 <title>Sync Internals</title>
 <script src="chrome_sync.js"></script>
-<!-- Used by about.html. -->
-<link rel="stylesheet" href="about.css" />
 </head>
 <body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
-<include src="about.html" />
-<include src="notifications.html" />
-<include src="sync_node_browser.html" />
+
+<style>
+div.topLevel {
+  display: inline-block;
+  padding-right: 5em;
+  vertical-align: top;
+}
+
+h1.topLevel {
+  font-size: 150%;
+}
+</style>
+
+<!-- TODO(akalin): Add tab-style navigation. -->
+
+<div class="topLevel" id="about">
+  <h1 class="topLevel">About</h1>
+  <include src="about.html" />
+</div>
+<div class="topLevel" id="notifications">
+  <h1 class="topLevel">Notifications</h1>
+  <include src="notifications.html" />
+</div>
+<div class="topLevel" id="syncNodeBrowser">
+  <h1 class="topLevel">Node Browser</h1>
+  <include src="sync_node_browser.html" />
+</div>
+
 <include src="sync_events.html" />
+
 </body>
 </html>
