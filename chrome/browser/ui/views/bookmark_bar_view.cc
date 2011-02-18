@@ -205,7 +205,7 @@ class BookmarkFolderButton : public views::MenuButton {
     return disposition != CURRENT_TAB;
   }
 
-  virtual void Paint(gfx::Canvas* canvas) {
+  virtual void OnPaint(gfx::Canvas* canvas) {
     views::MenuButton::Paint(canvas, false);
   }
 
@@ -299,7 +299,7 @@ class BookmarkBarView::ButtonSeparatorView : public views::View {
   ButtonSeparatorView() {}
   virtual ~ButtonSeparatorView() {}
 
-  virtual void Paint(gfx::Canvas* canvas) {
+  virtual void OnPaint(gfx::Canvas* canvas) {
     DetachableToolbarView::PaintVerticalDivider(
         canvas, kSeparatorStartX, height(), 1,
         DetachableToolbarView::kEdgeDividerColor,
