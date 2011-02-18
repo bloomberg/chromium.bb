@@ -52,9 +52,6 @@ class GeolocationDispatcher : public RenderViewObserver,
   // We have an updated geolocation position or error code.
   void OnGeolocationPositionUpdated(const Geoposition& geoposition);
 
-  // GeolocationDispatcher is owned by RenderView. Back pointer for IPC.
-  RenderView* render_view_;
-
   // The controller_ is valid for the lifetime of the underlying
   // WebCore::GeolocationController. geolocationDestroyed() is
   // invoked when the underlying object is destroyed.
