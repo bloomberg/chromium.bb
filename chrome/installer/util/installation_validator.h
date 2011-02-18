@@ -83,7 +83,7 @@ class InstallationValidator {
    public:
     virtual ~ProductRules() { }
     virtual BrowserDistribution::Type distribution_type() const = 0;
-    virtual void AddUninstallSwitchExpectations(
+    virtual void AddProductSwitchExpectations(
         const InstallationState& machine_state,
         bool system_install,
         const ProductState& product_state,
@@ -94,7 +94,7 @@ class InstallationValidator {
   class ChromeRules : public ProductRules {
    public:
     virtual BrowserDistribution::Type distribution_type() const OVERRIDE;
-    virtual void AddUninstallSwitchExpectations(
+    virtual void AddProductSwitchExpectations(
         const InstallationState& machine_state,
         bool system_install,
         const ProductState& product_state,
@@ -105,7 +105,7 @@ class InstallationValidator {
   class ChromeFrameRules : public ProductRules {
    public:
     virtual BrowserDistribution::Type distribution_type() const OVERRIDE;
-    virtual void AddUninstallSwitchExpectations(
+    virtual void AddProductSwitchExpectations(
         const InstallationState& machine_state,
         bool system_install,
         const ProductState& product_state,

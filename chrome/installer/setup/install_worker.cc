@@ -430,15 +430,12 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
         .Append(setup_path.BaseName()));
 
     CommandLine rename(installer_path);
-    rename.AppendSwitch(installer::switches::kRenameChromeExe);
+    rename.AppendSwitch(switches::kRenameChromeExe);
     if (installer_state.system_install())
-      rename.AppendSwitch(installer::switches::kSystemLevel);
+      rename.AppendSwitch(switches::kSystemLevel);
 
-    if (InstallUtil::IsChromeSxSProcess())
-      rename.AppendSwitch(installer::switches::kChromeSxS);
-
-    if (installer_state.is_multi_install())
-      rename.AppendSwitch(installer::switches::kMultiInstall);
+    if (installer_state.verbose_logging())
+      rename.AppendSwitch(switches::kVerboseLogging);
 
     std::wstring version_key;
     for (size_t i = 0; i < products.size(); ++i) {
@@ -456,11 +453,13 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
       // will check the key and run the command, so we add it for all.
       // After the first run, the subsequent runs should just be noops.
       // (see Upgrade::SwapNewChromeExeIfPresent).
+      CommandLine product_rename_cmd(rename);
+      products[i]->AppendProductFlags(&product_rename_cmd);
       in_use_update_work_items->AddSetRegValueWorkItem(
           root,
           version_key,
           google_update::kRegRenameCmdField,
-          rename.command_line_string(),
+          product_rename_cmd.command_line_string(),
           true);
     }
 

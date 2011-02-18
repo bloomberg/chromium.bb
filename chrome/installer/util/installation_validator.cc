@@ -21,7 +21,7 @@ BrowserDistribution::Type
   return BrowserDistribution::CHROME_BROWSER;
 }
 
-void InstallationValidator::ChromeRules::AddUninstallSwitchExpectations(
+void InstallationValidator::ChromeRules::AddProductSwitchExpectations(
     const InstallationState& machine_state,
     bool system_install,
     const ProductState& product_state,
@@ -50,7 +50,7 @@ BrowserDistribution::Type
   return BrowserDistribution::CHROME_FRAME;
 }
 
-void InstallationValidator::ChromeFrameRules::AddUninstallSwitchExpectations(
+void InstallationValidator::ChromeFrameRules::AddProductSwitchExpectations(
     const InstallationState& machine_state,
     bool system_install,
     const ProductState& product_state,
@@ -228,9 +228,9 @@ void InstallationValidator::ValidateUninstallCommand(const ProductContext& ctx,
                                     ctx.system_install));
   expected.push_back(std::make_pair(std::string(switches::kMultiInstall),
                                     is_multi_install));
-  ctx.rules.AddUninstallSwitchExpectations(ctx.machine_state,
-                                           ctx.system_install,
-                                           ctx.state, &expected);
+  ctx.rules.AddProductSwitchExpectations(ctx.machine_state,
+                                         ctx.system_install,
+                                         ctx.state, &expected);
 
   ValidateCommandExpectations(ctx, command, expected, source, is_valid);
 }
@@ -253,6 +253,9 @@ void InstallationValidator::ValidateRenameCommand(const ProductContext& ctx,
                                     ctx.system_install));
   expected.push_back(std::make_pair(std::string(switches::kMultiInstall),
                                     ctx.state.is_multi_install()));
+  ctx.rules.AddProductSwitchExpectations(ctx.machine_state,
+                                         ctx.system_install,
+                                         ctx.state, &expected);
 
   ValidateCommandExpectations(ctx, command, expected, "in-use renamer",
                               is_valid);
