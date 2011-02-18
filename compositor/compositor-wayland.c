@@ -28,10 +28,9 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#include "wayland-client.h"
+#include <wayland-client.h>
+#include <wayland-egl.h>
 
-#define GL_GLEXT_PROTOTYPES
-#define EGL_EGLEXT_PROTOTYPES
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #include <EGL/egl.h>
@@ -44,17 +43,14 @@ struct wayland_compositor {
 
 	struct {
 		struct wl_display *display;
+		struct wl_egl_display *egl_display;
 		struct wl_compositor *compositor;
 		struct wl_shell *shell;
-		struct wl_drm *drm;
 		struct wl_output *output;
 
 		struct {
 			int32_t x, y, width, height;
 		} screen_allocation;
-
-		char *device_name;
-		int authenticated;
 
 		struct wl_event_source *wl_source;
 		uint32_t event_mask;
@@ -68,12 +64,9 @@ struct wayland_output {
 
 	struct {
 		struct wl_surface	*surface;
-		struct wl_buffer	*buffer[2];
+		struct wl_egl_window	*egl_window;
 	} parent;
-	EGLImageKHR		image[2];
-	GLuint			rbo[2];
-	uint32_t		fb_id[2];
-	uint32_t		current;
+	EGLSurface egl_surface;
 };
 
 struct wayland_input {
@@ -103,33 +96,23 @@ static int
 wayland_compositor_init_egl(struct wayland_compositor *c)
 {
 	EGLint major, minor;
+	EGLint n;
 	const char *extensions;
-	drm_magic_t magic;
-	int fd;
+	EGLint config_attribs[] = {
+		EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+		EGL_RED_SIZE, 1,
+		EGL_GREEN_SIZE, 1,
+		EGL_BLUE_SIZE, 1,
+		EGL_DEPTH_SIZE, 1,
+		EGL_RENDERABLE_TYPE, EGL_OPENGL_ES_BIT,
+		EGL_NONE
+	};
 	static const EGLint context_attribs[] = {
 		EGL_CONTEXT_CLIENT_VERSION, 2,
 		EGL_NONE
 	};
 
-	fd = open(c->parent.device_name, O_RDWR);
-	if (fd < 0) {
-		fprintf(stderr, "drm open failed: %m\n");
-		return -1;
-	}
-
-	wlsc_drm_init(&c->base, fd, c->parent.device_name);
-
-	if (drmGetMagic(fd, &magic)) {
-		fprintf(stderr, "DRI2: failed to get drm magic");
-		return -1;
-	}
-
-	wl_drm_authenticate(c->parent.drm, magic);
-	wl_display_iterate(c->parent.display, WL_DISPLAY_WRITABLE);
-	while (!c->parent.authenticated)
-		wl_display_iterate(c->parent.display, WL_DISPLAY_READABLE);
-
-	c->base.display = eglGetDRMDisplayMESA(fd);
+	c->base.display = eglGetDisplay(c->parent.egl_display);
 	if (c->base.display == NULL) {
 		fprintf(stderr, "failed to create display\n");
 		return -1;
@@ -150,8 +133,13 @@ wayland_compositor_init_egl(struct wayland_compositor *c)
 		fprintf(stderr, "failed to bind EGL_OPENGL_ES_API\n");
 		return -1;
 	}
+   	if (!eglChooseConfig(c->base.display, config_attribs,
+			     &c->base.config, 1, &n) || n == 0) {
+		fprintf(stderr, "failed to choose config: %d\n", n);
+		return -1;
+	}
 
-	c->base.context = eglCreateContext(c->base.display, NULL,
+	c->base.context = eglCreateContext(c->base.display, c->base.config,
 					   EGL_NO_CONTEXT, context_attribs);
 	if (c->base.context == NULL) {
 		fprintf(stderr, "failed to create context\n");
@@ -181,36 +169,17 @@ wayland_compositor_present(struct wlsc_compositor *base)
 	struct wayland_compositor *c = (struct wayland_compositor *) base;
 	struct wayland_output *output;
 
-	glFlush();
 
 	wl_list_for_each(output, &base->output_list, base.link) {
-		output->current ^= 1;
-
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER,
-					  GL_COLOR_ATTACHMENT0,
-					  GL_RENDERBUFFER,
-					  output->rbo[output->current]);
-
-		wl_surface_attach(output->parent.surface,
-				  output->parent.buffer[output->current ^ 1],
-				  0, 0);
-		wl_surface_damage(output->parent.surface, 0, 0,
-			          output->base.width, output->base.height);
+		if (!eglMakeCurrent(c->base.display, output->egl_surface,
+				    output->egl_surface, c->base.context)) {
+			fprintf(stderr, "failed to make current\n");
+			continue;
+		}
+		eglSwapBuffers(c->base.display, output->egl_surface);
 	}
 
 	wl_display_frame_callback(c->parent.display, frame_callback, c);
-}
-
-static int
-wayland_authenticate(struct wlsc_compositor *ec, uint32_t id)
-{
-	struct wayland_compositor *c = (struct wayland_compositor *) ec;
-
-	wl_drm_authenticate(c->parent.drm, id);
-	/* FIXME: recv drm_authenticated event from parent? */
-	wl_display_iterate(c->parent.display, WL_DISPLAY_WRITABLE);
-
-	return 0;
 }
 
 static int
@@ -219,52 +188,44 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 {
 	struct wayland_output *output;
 	struct wl_visual *visual;
-	int i;
-	EGLint name, stride, attribs[] = {
-		EGL_WIDTH,	0,
-		EGL_HEIGHT,	0,
-		EGL_DRM_BUFFER_FORMAT_MESA, EGL_DRM_BUFFER_FORMAT_ARGB32_MESA,
-		EGL_DRM_BUFFER_USE_MESA,    EGL_DRM_BUFFER_USE_SCANOUT_MESA,
-		EGL_NONE
-	};
 
 	output = malloc(sizeof *output);
 	if (output == NULL)
 		return -1;
 	memset(output, 0, sizeof *output);
 
-	wlsc_output_init(&output->base, &c->base, 0, 0, width, height, 0);
+	wlsc_output_init(&output->base, &c->base, 0, 0, width, height,
+			 WL_OUTPUT_FLIPPED);
 	output->parent.surface =
 		wl_compositor_create_surface(c->parent.compositor);
 	wl_surface_set_user_data(output->parent.surface, output);
 
-	glGenRenderbuffers(2, output->rbo);
 	visual = wl_display_get_premultiplied_argb_visual(c->parent.display);
-	for (i = 0; i < 2; i++) {
-		glBindRenderbuffer(GL_RENDERBUFFER, output->rbo[i]);
 
-		attribs[1] = width;
-		attribs[3] = height;
-		output->image[i] =
-			eglCreateDRMImageMESA(c->base.display, attribs);
-		glEGLImageTargetRenderbufferStorageOES(GL_RENDERBUFFER,
-						       output->image[i]);
-		eglExportDRMImageMESA(c->base.display, output->image[i],
-				      &name, NULL, &stride);
-		output->parent.buffer[i] =
-			wl_drm_create_buffer(c->parent.drm, name,
-					     width, height,
-					     stride, visual);
+	output->parent.egl_window =
+		wl_egl_window_create(c->parent.egl_display,
+				     output->parent.surface,
+				     width, height, visual);
+	if (!output->parent.egl_window) {
+		fprintf(stderr, "failure to create wl_egl_window\n");
+		goto cleanup_output;
 	}
 
-	output->current = 0;
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER,
-				  GL_COLOR_ATTACHMENT0,
-				  GL_RENDERBUFFER,
-				  output->rbo[output->current]);
+	output->egl_surface =
+		eglCreateWindowSurface(c->base.display, c->base.config,
+				       output->parent.egl_window, NULL);
+	if (!output->egl_surface) {
+		fprintf(stderr, "failed to create window surface\n");
+		goto cleanup_window;
+	}
 
-	wl_surface_attach(output->parent.surface,
-			  output->parent.buffer[output->current], 0, 0);
+	if (!eglMakeCurrent(c->base.display, output->egl_surface,
+			    output->egl_surface, c->base.context)) {
+		fprintf(stderr, "failed to make surface current\n");
+		goto cleanup_surface;
+		return -1;
+	}
+
 	wl_surface_map_toplevel(output->parent.surface);
 
 	glClearColor(0, 0, 0, 0.5);
@@ -272,6 +233,16 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 	wl_list_insert(c->base.output_list.prev, &output->base.link);
 
 	return 0;
+
+cleanup_surface:
+	eglDestroySurface(c->base.display, output->egl_surface);
+cleanup_window:
+	wl_egl_window_destroy(output->parent.egl_window);
+cleanup_output:
+	/* FIXME: cleanup wlsc_output */
+	free(output);
+
+	return -1;
 }
 
 /* Events received from the wayland-server this compositor is client of: */
@@ -310,27 +281,6 @@ handle_configure(void *data, struct wl_shell *shell,
 
 static const struct wl_shell_listener shell_listener = {
 	handle_configure,
-};
-
-/* parent drm interface */
-static void
-drm_handle_device(void *data, struct wl_drm *drm, const char *device)
-{
-	struct wayland_compositor *c = data;
-
-	c->parent.device_name = strdup(device);
-}
-
-static void drm_handle_authenticated(void *data, struct wl_drm *drm)
-{
-	struct wayland_compositor *c = data;
-
-	c->parent.authenticated = 1;
-}
-
-static const struct wl_drm_listener drm_listener = {
-	drm_handle_device,
-	drm_handle_authenticated
 };
 
 /* parent input interface */
@@ -449,9 +399,6 @@ display_handle_global(struct wl_display *display, uint32_t id,
 	} else if (strcmp(interface, "shell") == 0) {
 		c->parent.shell = wl_shell_create(display, id);
 		wl_shell_add_listener(c->parent.shell, &shell_listener, c);
-	} else if (strcmp(interface, "drm") == 0) {
-		c->parent.drm = wl_drm_create(display, id);
-		wl_drm_add_listener(c->parent.drm, &drm_listener, c);
 	}
 }
 
@@ -505,6 +452,7 @@ wayland_compositor_create(struct wl_display *display, int width, int height)
 	}
 
 	wl_list_init(&c->input_list);
+	c->parent.egl_display = wl_egl_display_create(c->parent.display);
 	wl_display_add_global_listener(c->parent.display,
 				display_handle_global, c);
 
@@ -515,12 +463,8 @@ wayland_compositor_create(struct wl_display *display, int width, int height)
 		return NULL;
 
 	c->base.destroy = wayland_destroy;
-	c->base.authenticate = wayland_authenticate;
 	c->base.present = wayland_compositor_present;
 	c->base.create_buffer = wlsc_drm_buffer_create;
-
-	glGenFramebuffers(1, &c->base.fbo);
-	glBindFramebuffer(GL_FRAMEBUFFER, c->base.fbo);
 
 	/* Can't init base class until we have a current egl context */
 	if (wlsc_compositor_init(&c->base, display) < 0)
