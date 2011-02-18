@@ -40,6 +40,11 @@ void ChromotingHostManager::Initialize(
   }
 
   if (IsEnabled()) {
+    // TODO(wez): Need to callback the Observer so that ServiceProcess
+    // knows to stay alive to service Chromoting requests.
+    // This will go away once we have a more consistent model for the
+    // service process internals.
+    observer_->OnChromotingHostEnabled();
     Start();
   }
 }
