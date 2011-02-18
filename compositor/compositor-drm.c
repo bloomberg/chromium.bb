@@ -352,6 +352,9 @@ drm_compositor_create(struct wl_display *display, int connector)
 	ec->base.create_buffer = wlsc_drm_buffer_create;
 	ec->base.focus = 1;
 
+	glGenFramebuffers(1, &ec->base.fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, ec->base.fbo);
+
 	/* Can't init base class until we have a current egl context */
 	if (wlsc_compositor_init(&ec->base, display) < 0)
 		return NULL;

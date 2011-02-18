@@ -731,6 +731,9 @@ x11_compositor_create(struct wl_display *display, int width, int height)
 	c->base.present = x11_compositor_present;
 	c->base.create_buffer = wlsc_drm_buffer_create;
 
+	glGenFramebuffers(1, &c->base.fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, c->base.fbo);
+
 	/* Can't init base class until we have a current egl context */
 	if (wlsc_compositor_init(&c->base, display) < 0)
 		return NULL;

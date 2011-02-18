@@ -1353,8 +1353,6 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 		return -1;
 	}
 
-	glGenFramebuffers(1, &ec->fbo);
-	glBindFramebuffer(GL_FRAMEBUFFER, ec->fbo);
 	glActiveTexture(GL_TEXTURE0);
 	if (init_shaders(ec) < 0)
 		return -1;
