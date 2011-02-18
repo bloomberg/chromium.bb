@@ -92,7 +92,7 @@ class PrerenderResourceHandler : public ResourceHandler {
                       const GURL& referrer);
 
   // The set of URLs that are aliases to the URL to be prerendered,
-  // as a result of redirects, including the final URL.
+  // as a result of redirects.
   std::vector<GURL> alias_urls_;
   GURL url_;
   scoped_refptr<ResourceHandler> next_handler_;

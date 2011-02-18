@@ -189,9 +189,7 @@ class PrerenderContents : public RenderViewHostDelegate,
 
   void OnUpdateFavIconURL(int32 page_id, const GURL& icon_url);
 
-  // Adds an alias URL, for one of the many redirections. Returns whether
-  // the URL is valid.
-  bool AddAliasURL(const GURL& url);
+  void AddAliasURL(const GURL& url);
 
   // Remove |this| from the PrerenderManager, set a final status, and
   // delete |this|.

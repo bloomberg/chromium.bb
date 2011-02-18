@@ -169,16 +169,15 @@ TEST_F(PrerenderResourceHandlerTest, Prerender) {
   EXPECT_EQ(default_url_, last_handled_url_);
 }
 
-static const int kRequestId = 1;
-
 // Tests that the final request in a redirect chain will
 // get diverted to the PrerenderManager.
 TEST_F(PrerenderResourceHandlerTest, PrerenderRedirect) {
+  int request_id = 1;
   GURL url_redirect("http://www.redirect.com");
   bool defer = false;
-  EXPECT_TRUE(pre_handler_->OnWillStart(kRequestId, default_url_, &defer));
+  EXPECT_TRUE(pre_handler_->OnWillStart(request_id, default_url_, &defer));
   EXPECT_FALSE(defer);
-  EXPECT_TRUE(pre_handler_->OnRequestRedirected(kRequestId,
+  EXPECT_TRUE(pre_handler_->OnRequestRedirected(request_id,
                                                 url_redirect,
                                                 NULL,
                                                 &defer));
@@ -187,33 +186,13 @@ TEST_F(PrerenderResourceHandlerTest, PrerenderRedirect) {
   response->response_head.mime_type = "text/html";
   response->response_head.headers = CreateResponseHeaders(
       "HTTP/1.1 200 OK\n");
-  EXPECT_TRUE(pre_handler_->OnResponseStarted(kRequestId, response));
+  EXPECT_TRUE(pre_handler_->OnResponseStarted(request_id, response));
   EXPECT_TRUE(last_handled_url_.is_empty());
   loop_.RunAllPending();
   EXPECT_EQ(url_redirect, last_handled_url_);
   EXPECT_EQ(true, ContainsAliasURL(url_redirect));
   EXPECT_EQ(true, ContainsAliasURL(default_url_));
   EXPECT_EQ(2, static_cast<int>(alias_urls_.size()));
-}
-
-// Tests that https requests will not be prerendered.
-TEST_F(PrerenderResourceHandlerTest, PrerenderHttps) {
-  GURL url_https("https://www.google.com");
-  bool defer = false;
-  EXPECT_FALSE(pre_handler_->OnWillStart(kRequestId, url_https, &defer));
-  EXPECT_FALSE(defer);
-}
-
-TEST_F(PrerenderResourceHandlerTest, PrerenderRedirectToHttps) {
-  bool defer = false;
-  EXPECT_TRUE(pre_handler_->OnWillStart(kRequestId, default_url_, &defer));
-  EXPECT_FALSE(defer);
-  GURL url_https("https://www.google.com");
-  EXPECT_FALSE(pre_handler_->OnRequestRedirected(kRequestId,
-                                                 url_https,
-                                                 NULL,
-                                                 &defer));
-  EXPECT_FALSE(defer);
 }
 
 }  // namespace
