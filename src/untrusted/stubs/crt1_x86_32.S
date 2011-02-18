@@ -6,9 +6,6 @@
 
 /* Native Client crt0 startup code for x86-64 */
 
-    .data
-    .globl environ
-
     .text
     .p2align NACLENTRYALIGN,0xf4
 
@@ -74,12 +71,6 @@ _start:
     leal    4(%esp, %esi, 4), %ebx
 
     /*
-     * environ is initiallly set to point to the same location as envp.
-     * setenv, etc., may change this pointer later.
-     */
-    movl    %ebx, environ
-
-/*
      * Align the stack 0mod16, for SSE2
      */
     andl    $0xfffffff0, %esp

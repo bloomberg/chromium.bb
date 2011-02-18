@@ -39,12 +39,17 @@ volatile FUN_PTR HACK_TO_KEEP_SYMBOLS_ALIVE[] = {
   (FUN_PTR) free,
   (FUN_PTR) memcpy };
 
+extern char** environ;
 
 /*
  *  __nacl_startup is called from crt1XXX, it ultimately calls main().
  */
 void __nacl_startup(int argc, char *argv[], char *envp[]) {
   int result;
+  /*
+   * Remember envp for use by getenv, etc.
+   */
+  environ = envp;
   /*
    * Install the fini section for use at exit.  The C++ static object
    * destructors are invoked from here.
