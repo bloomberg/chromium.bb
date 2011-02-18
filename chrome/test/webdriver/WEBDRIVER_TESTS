@@ -39,17 +39,8 @@
 #   'element_attribute_tests',
 #   'executing_async_javascript_test',
     'executing_javascript_test',
-    '-executing_javascript_test.ExecutingJavaScriptTests.testShouldBeAbleToCallFunctionsDefinedOnThePage',
+    # This test needs the tagname command.
     '-executing_javascript_test.ExecutingJavaScriptTests.testShouldBeAbleToExecuteSimpleJavascriptAndReturnAWebElement',
-    '-executing_javascript_test.ExecutingJavaScriptTests.testShouldBeAbleToPassACollectionAsArgument',
-    '-executing_javascript_test.ExecutingJavaScriptTests.testShouldBeAbleToPassAWebElementAsArgument',
-    '-executing_javascript_test.ExecutingJavaScriptTests.testShouldBeAbleToPassAnArrayAsArgument',
-    '-executing_javascript_test.ExecutingJavaScriptTests.testPassingAndReturningADoubleShouldReturnADecimal',
-    '-executing_javascript_test.ExecutingJavaScriptTests.testPassingAndReturningALongShouldReturnAWholeNumber',
-    '-executing_javascript_test.ExecutingJavaScriptTests.testShouldBeAbleToPassABooleanAnAsArgument',
-    '-executing_javascript_test.ExecutingJavaScriptTests.testShouldBeAbleToPassANumberAnAsArgument',
-    '-executing_javascript_test.ExecutingJavaScriptTests.testShouldBeAbleToPassAStringAnAsArgument',
-    '-executing_javascript_test.ExecutingJavaScriptTests.testShouldBeAbleToPassInMoreThanOneArgument',
 #   'form_handling_tests',
     'frame_switching_tests',
     # Next two frame switching tests are disabled because they depend on toggle.

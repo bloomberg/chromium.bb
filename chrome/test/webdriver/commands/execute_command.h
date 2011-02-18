@@ -24,17 +24,11 @@ class ExecuteCommand : public WebDriverCommand {
                  const DictionaryValue* const parameters);
   virtual ~ExecuteCommand();
 
-  virtual bool Init(Response* const response);
-
   virtual bool DoesPost();
   virtual void ExecutePost(Response* const response);
 
  private:
   virtual bool RequiresValidTab();
-
-  std::string script_;
-  bool has_args_;
-  std::string args_;
 
   DISALLOW_COPY_AND_ASSIGN(ExecuteCommand);
 };
