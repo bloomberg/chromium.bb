@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,13 +9,13 @@
 #include "base/singleton.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/io_thread.h"
-#include "chrome/browser/webui/chrome_url_data_manager.h"
 #include "chrome/common/url_constants.h"
-#include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/shared_resources.h"
 #include "grit/shared_resources_map.h"
+#include "grit/app_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/mime_util.h"
 #include "ui/base/resource/resource_bundle.h"

@@ -1,12 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_REMOTING_REMOTING_RESOURCES_SOURCE_H_
-#define CHROME_BROWSER_REMOTING_REMOTING_RESOURCES_SOURCE_H_
-
 #include "base/message_loop.h"
-#include "chrome/browser/webui/chrome_url_data_manager.h"
+#include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/common/url_constants.h"
 
 class RemotingResourcesSource : public ChromeURLDataManager::DataSource {
@@ -32,5 +29,3 @@ class RemotingResourcesSource : public ChromeURLDataManager::DataSource {
 
   DISALLOW_COPY_AND_ASSIGN(RemotingResourcesSource);
 };
-
-#endif  // CHROME_BROWSER_REMOTING_REMOTING_RESOURCES_SOURCE_H_

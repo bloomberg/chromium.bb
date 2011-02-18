@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEBUI_HTML_DIALOG_UI_H_
-#define CHROME_BROWSER_WEBUI_HTML_DIALOG_UI_H_
+#ifndef CHROME_BROWSER_DOM_UI_HTML_DIALOG_UI_H_
+#define CHROME_BROWSER_DOM_UI_HTML_DIALOG_UI_H_
 #pragma once
 
 #include <string>
@@ -117,4 +117,4 @@ class ExternalHtmlDialogUI : public HtmlDialogUI {
   virtual ~ExternalHtmlDialogUI();
 };
 
-#endif  // CHROME_BROWSER_WEBUI_HTML_DIALOG_UI_H_
+#endif  // CHROME_BROWSER_DOM_UI_HTML_DIALOG_UI_H_

@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/time.h"
-#include "chrome/browser/webui/html_dialog_ui.h"
+#include "chrome/browser/dom_ui/html_dialog_ui.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 #include "grit/generated_resources.h"

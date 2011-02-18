@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/webui/chrome_url_data_manager_backend.h"
+#include "chrome/browser/dom_ui/chrome_url_data_manager_backend.h"
 
 #include "base/file_util.h"
 #include "base/message_loop.h"

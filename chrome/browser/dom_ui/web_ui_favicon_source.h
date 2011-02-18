@@ -10,8 +10,8 @@
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
+#include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/favicon_service.h"
-#include "chrome/browser/webui/chrome_url_data_manager.h"
 
 class GURL;
 class Profile;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEBUI_CONSTRAINED_HTML_UI_H_
-#define CHROME_BROWSER_WEBUI_CONSTRAINED_HTML_UI_H_
+#ifndef CHROME_BROWSER_DOM_UI_CONSTRAINED_HTML_UI_H_
+#define CHROME_BROWSER_DOM_UI_CONSTRAINED_HTML_UI_H_
 #pragma once
 
 #include <vector>
@@ -61,4 +61,4 @@ class ConstrainedHtmlUI : public WebUI {
   DISALLOW_COPY_AND_ASSIGN(ConstrainedHtmlUI);
 };
 
-#endif  // CHROME_BROWSER_WEBUI_CONSTRAINED_HTML_UI_H_
+#endif  // CHROME_BROWSER_DOM_UI_CONSTRAINED_HTML_UI_H_

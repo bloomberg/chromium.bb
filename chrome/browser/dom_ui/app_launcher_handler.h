@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEBUI_APP_LAUNCHER_HANDLER_H_
-#define CHROME_BROWSER_WEBUI_APP_LAUNCHER_HANDLER_H_
+#ifndef CHROME_BROWSER_DOM_UI_APP_LAUNCHER_HANDLER_H_
+#define CHROME_BROWSER_DOM_UI_APP_LAUNCHER_HANDLER_H_
 #pragma once
 
 #include "base/scoped_ptr.h"
@@ -130,4 +130,4 @@ class AppLauncherHandler
   DISALLOW_COPY_AND_ASSIGN(AppLauncherHandler);
 };
 
-#endif  // CHROME_BROWSER_WEBUI_APP_LAUNCHER_HANDLER_H_
+#endif  // CHROME_BROWSER_DOM_UI_APP_LAUNCHER_HANDLER_H_

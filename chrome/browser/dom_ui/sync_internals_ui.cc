@@ -12,13 +12,13 @@
 #include "base/tracked_objects.h"
 #include "base/values.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/dom_ui/sync_internals_html_source.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/js_arg_list.h"
 #include "chrome/browser/sync/js_frontend.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_ui_util.h"
-#include "chrome/browser/webui/chrome_url_data_manager.h"
 #include "chrome/common/render_messages_params.h"
 
 SyncInternalsUI::SyncInternalsUI(TabContents* contents)
