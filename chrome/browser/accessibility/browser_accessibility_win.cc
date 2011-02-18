@@ -1223,8 +1223,16 @@ LONG BrowserAccessibilityWin::FindBoundary(
     LONG start_offset,
     LONG direction) {
   LONG text_size = static_cast<LONG>(text.size());
-  DCHECK(start_offset >= 0 && start_offset <= text_size);
+  DCHECK((start_offset >= 0 && start_offset <= text_size) ||
+         start_offset == IA2_TEXT_OFFSET_LENGTH ||
+         start_offset == IA2_TEXT_OFFSET_CARET);
   DCHECK(direction == 1 || direction == -1);
+
+  if (start_offset == IA2_TEXT_OFFSET_LENGTH) {
+    start_offset = text_size;
+  } else if (start_offset == IA2_TEXT_OFFSET_CARET) {
+    get_caretOffset(&start_offset);
+  }
 
   if (boundary == IA2_TEXT_BOUNDARY_CHAR) {
     if (direction == 1 && start_offset < text_size)
