@@ -414,10 +414,8 @@ TEST_F(UnloadTest, BrowserCloseTwoSecondBeforeUnloadAlert) {
 #define MAYBE_BrowserCloseTabWhenOtherTabHasListener \
     DISABLED_BrowserCloseTabWhenOtherTabHasListener
 #else
-// Flaky on Linux under valgrind. http://crbug.com/46781
-// TODO(stuartmorgan): Switch to just disabling for valgrind.
 #define MAYBE_BrowserCloseTabWhenOtherTabHasListener \
-    FLAKY_BrowserCloseTabWhenOtherTabHasListener
+    BrowserCloseTabWhenOtherTabHasListener
 #endif
 
 // Tests that if there's a renderer process with two tabs, one of which has an
@@ -440,11 +438,9 @@ TEST_F(UnloadTest, MAYBE_BrowserCloseTabWhenOtherTabHasListener) {
                                       ui::EF_LEFT_BUTTON_DOWN));
   ASSERT_TRUE(browser->WaitForTabCountToBecome(2));
 
+  CheckTitle(L"popup");
   scoped_refptr<TabProxy> popup_tab(browser->GetActiveTab());
   ASSERT_TRUE(popup_tab.get());
-  std::wstring popup_title;
-  EXPECT_TRUE(popup_tab->GetTabTitle(&popup_title));
-  EXPECT_EQ(std::wstring(L"popup"), popup_title);
   EXPECT_TRUE(popup_tab->Close(true));
 
   ASSERT_TRUE(browser->WaitForTabCountToBecome(1));
