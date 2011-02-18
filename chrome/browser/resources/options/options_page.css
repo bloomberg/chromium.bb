@@ -597,14 +597,6 @@ html[enable-background-mode=false] #background-mode-section {
  display: none;
 }
 
-html[enable-cloud-print-proxy=false] #cloud-print-proxy-section {
- display: none;
-}
-
-html[enable-cloud-print-proxy=true] #cloudPrintProxyManageButton {
- display: none;
-}
-
 /* UI Controls */
 
 /* Currently we can't make custom focus outlines look right on the Mac, so

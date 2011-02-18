@@ -132,6 +132,12 @@ void CloudPrintSetupFlow::GetDialogSize(gfx::Size* size) const {
         IDS_CLOUD_PRINT_SETUP_WIZARD_HEIGHT_LINES,
         approximate_web_font);
   }
+
+#if !defined(OS_WIN)
+  float scale_hack = 96.f/72.f;
+  size->set_width(size->width() * scale_hack);
+  size->set_height(size->height() * scale_hack);
+#endif
 }
 
 // A callback to notify the delegate that the dialog closed.

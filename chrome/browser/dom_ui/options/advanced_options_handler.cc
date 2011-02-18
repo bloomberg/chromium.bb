@@ -184,12 +184,6 @@ void AdvancedOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("privacyLearnMoreURL",
       google_util::AppendGoogleLocaleParam(
           GURL(chrome::kPrivacyLearnMoreURL)).spec());
-#if !defined(OS_CHROMEOS)
-  // Add the cloud print proxy management ui section if it's been runtime
-  // enabled.
-  localized_strings->SetBoolean("enable-cloud-print-proxy",
-                                cloud_print_proxy_ui_enabled_);
-#endif
 }
 
 void AdvancedOptionsHandler::Initialize() {

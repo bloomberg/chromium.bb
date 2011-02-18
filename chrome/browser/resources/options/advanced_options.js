@@ -128,8 +128,7 @@ var OptionsPage = options.OptionsPage;
 
       // 'cloudPrintProxyEnabled' is true for Chrome branded builds on
       // certain platforms, or could be enabled by a lab.
-      if (!cr.isChromeOS &&
-          localStrings.getString('enable-cloud-print-proxy') == 'true') {
+      if (!cr.isChromeOS) {
         $('cloudPrintProxySetupButton').onclick = function(event) {
           if ($('cloudPrintProxyManageButton').style.display == 'none') {
             // Disable the button, set it's text to the intermediate state.
