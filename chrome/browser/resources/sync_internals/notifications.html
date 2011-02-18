@@ -1,0 +1,56 @@
+<script>
+(function () {
+function updateNotificationsEnabledInfo(notificationsEnabled) {
+  var notificationsEnabledInfo =
+    document.getElementById('notificationsEnabledInfo');
+  jstProcess(
+      new JsEvalContext({ 'notificationsEnabled': notificationsEnabled }),
+      notificationsEnabledInfo);
+}
+
+function onLoad() {
+  chrome.sync.getNotificationState(updateNotificationsEnabledInfo);
+  chrome.sync.onSyncNotificationStateChange.addListener(
+      updateNotificationsEnabledInfo);
+
+  var notificationCounts = {};
+  chrome.sync.onSyncIncomingNotification.addListener(function(changedTypes) {
+    for (var i = 0; i < changedTypes.length; ++i) {
+      var changedType = changedTypes[i];
+      notificationCounts[changedType] = notificationCounts[changedType] || 0;
+      ++notificationCounts[changedType];
+    }
+
+    var infos = [];
+    for (var k in notificationCounts) {
+      var info = { 'modelType': k, 'notificationCount': notificationCounts[k] };
+      infos.push(info);
+    }
+
+    var notificationCountsInfo =
+        document.getElementById('notificationCountsInfo');
+    jstProcess(new JsEvalContext({ 'notificationCounts': infos }),
+               notificationCountsInfo);
+  });
+}
+
+document.addEventListener("DOMContentLoaded", onLoad, false);
+})();
+</script>
+
+<div class="desc"><h2> Notifications </h2></div>
+<p id='notificationsEnabledInfo'>
+  Enabled: <span jscontent='notificationsEnabled'></span>
+</p>
+
+<table class='list' id='notificationCountsInfo'>
+  <tr jsselect='notificationCounts'>
+    <td class='name'>
+      <div jscontent='modelType'></div>
+    </td>
+    <td class='number'>
+      <div jscontent='notificationCount'></div>
+    </td>
+  </tr>
+</table>
+
