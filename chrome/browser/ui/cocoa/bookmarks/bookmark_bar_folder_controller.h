@@ -185,7 +185,8 @@
 @end
 
 @interface BookmarkBarFolderController(TestingAPI)
-- (NSPoint)windowTopLeftForWidth:(int)windowWidth;
+- (NSPoint)windowTopLeftForWidth:(int)windowWidth
+                          height:(int)windowHeight;
 - (NSArray*)buttons;
 - (BookmarkBarFolderController*)folderController;
 - (id)folderTarget;

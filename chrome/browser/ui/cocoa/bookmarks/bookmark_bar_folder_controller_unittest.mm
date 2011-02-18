@@ -256,7 +256,7 @@ TEST_F(BookmarkBarFolderControllerTest, BasicPosition) {
                    parentController:nil
                       barController:bar_]);
   [bbfc window];
-  NSPoint pt = [bbfc windowTopLeftForWidth:0];  // screen coords
+  NSPoint pt = [bbfc windowTopLeftForWidth:0 height:100];  // screen coords
   NSPoint buttonOriginInScreen =
       [[parentButton window]
         convertBaseToScreen:[parentButton
@@ -268,8 +268,8 @@ TEST_F(BookmarkBarFolderControllerTest, BasicPosition) {
             bookmarks::kBookmarkMenuOverlap+1);
 
   // Make sure we see the window shift left if it spills off the screen
-  pt = [bbfc windowTopLeftForWidth:0];
-  NSPoint shifted = [bbfc windowTopLeftForWidth:9999999];
+  pt = [bbfc windowTopLeftForWidth:0 height:100];
+  NSPoint shifted = [bbfc windowTopLeftForWidth:9999999 height:100];
   EXPECT_LT(shifted.x, pt.x);
 
   // If parent is a BookmarkBarFolderController, grow right.
@@ -279,7 +279,7 @@ TEST_F(BookmarkBarFolderControllerTest, BasicPosition) {
                     parentController:bbfc.get()
                        barController:bar_]);
   [bbfc2 window];
-  pt = [bbfc2 windowTopLeftForWidth:0];
+  pt = [bbfc2 windowTopLeftForWidth:0 height:100];
   // We're now overlapping the window a bit.
   EXPECT_EQ(pt.x, NSMaxX([[bbfc.get() window] frame]) -
             bookmarks::kBookmarkMenuOverlap);
