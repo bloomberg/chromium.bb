@@ -5,7 +5,6 @@
  */
 
 
-#include <signal.h>
 #include <string.h>
 #include "native_client/src/trusted/plugin/browser_interface.h"
 #include "native_client/src/trusted/plugin/connected_socket.h"

@@ -5,7 +5,6 @@
  */
 
 
-#include <signal.h>
 #include <string.h>
 
 #include "native_client/src/shared/platform/nacl_sync.h"
@@ -16,18 +15,6 @@
 #include "native_client/src/trusted/plugin/plugin.h"
 #include "native_client/src/trusted/plugin/srpc_client.h"
 #include "native_client/src/trusted/plugin/utility.h"
-
-namespace {
-
-PLUGIN_JMPBUF socket_env;
-
-void SignalHandler(int value) {
-  PLUGIN_PRINTF(("ConnectedSocket::SignalHandler ()\n"));
-
-  PLUGIN_LONGJMP(socket_env, value);
-}
-
-}  // namespace
 
 namespace plugin {
 

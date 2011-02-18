@@ -9,7 +9,6 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_CONNECTED_SOCKET_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_CONNECTED_SOCKET_H_
 
-#include <setjmp.h>
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/plugin/desc_based_handle.h"

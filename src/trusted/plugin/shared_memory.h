@@ -9,7 +9,6 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SHARED_MEMORY_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SHARED_MEMORY_H_
 
-#include <setjmp.h>
 #include <stdio.h>
 
 #include "native_client/src/include/nacl_macros.h"

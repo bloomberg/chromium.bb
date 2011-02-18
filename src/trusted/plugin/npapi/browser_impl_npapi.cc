@@ -9,7 +9,6 @@
 
 #include "native_client/src/trusted/plugin/npapi/browser_impl_npapi.h"
 
-#include <setjmp.h>
 #include <stdio.h>
 #include <string.h>
 

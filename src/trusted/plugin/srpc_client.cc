@@ -18,18 +18,6 @@
 #include "native_client/src/trusted/plugin/srpc_client.h"
 #include "native_client/src/trusted/plugin/utility.h"
 
-namespace {
-
-// TODO(sehr): again, not reentrant.  See bug 605.
-PLUGIN_JMPBUF srpc_env;
-
-void SignalHandler(int value) {
-  PLUGIN_PRINTF(("SrpcClient::SignalHandler()\n"));
-  PLUGIN_LONGJMP(srpc_env, value);
-}
-
-}  // namespace
-
 namespace plugin {
 
 SrpcClient::SrpcClient()
@@ -149,10 +137,6 @@ bool SrpcClient::Invoke(uintptr_t method_id,
     PLUGIN_PRINTF(("SrpcClient::Invoke (ident not in methods_)\n"));
     return false;
   }
-
-  // Catch signals from SRPC/IMC/etc.
-  ScopedCatchSignals sigcatcher(
-      (ScopedCatchSignals::SigHandlerType) SignalHandler);
 
   PLUGIN_PRINTF(("SrpcClient::Invoke (sending the rpc)\n"));
   // Call the method

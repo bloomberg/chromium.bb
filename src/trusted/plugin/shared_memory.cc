@@ -6,7 +6,6 @@
 
 
 #include <errno.h>
-#include <signal.h>
 #include <string.h>
 
 #include "native_client/src/include/checked_cast.h"
