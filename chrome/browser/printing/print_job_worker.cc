@@ -80,7 +80,10 @@ void PrintJobWorker::GetSettings(bool ask_user_for_settings,
 
   // Recursive task processing is needed for the dialog in case it needs to be
   // destroyed by a task.
-  MessageLoop::current()->SetNestableTasksAllowed(true);
+  // TODO(thestig): this code is wrong, SetNestableTasksAllowed(true) is needed
+  // on the thread where the PrintDlgEx is called, and definitely both calls
+  // should happen on the same thread. See http://crbug.com/73466
+  // MessageLoop::current()->SetNestableTasksAllowed(true);
   printing_context_->set_use_overlays(use_overlays);
 
   if (ask_user_for_settings) {
@@ -98,7 +101,10 @@ void PrintJobWorker::GetSettings(bool ask_user_for_settings,
 void PrintJobWorker::GetSettingsDone(PrintingContext::Result result) {
   // Most PrintingContext functions may start a message loop and process
   // message recursively, so disable recursive task processing.
-  MessageLoop::current()->SetNestableTasksAllowed(false);
+  // TODO(thestig): see above comment.  SetNestableTasksAllowed(false) needs to
+  // be called on the same thread as the previous call.  See
+  // http://crbug.com/73466
+  // MessageLoop::current()->SetNestableTasksAllowed(false);
 
   // We can't use OnFailure() here since owner_ may not support notifications.
 
