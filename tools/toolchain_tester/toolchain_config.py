@@ -96,7 +96,7 @@ GCC_CS_ARM = ('toolchain/linux_arm-trusted/arm-2009q3/' +
 
 COMMANDS_gcc_cs_arm = [
     ('compile',
-     '%(CC)s %(src)s %(CFLAGS)s -o %(tmp)s.exe',
+     '%(CC)s %(src)s %(CFLAGS)s -Wl,-Ttext-segment=20000  -o %(tmp)s.exe',
      ),
     ('emu',
      '%(EMU_SCRIPT)s run %(tmp)s.exe',
