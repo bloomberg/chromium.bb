@@ -14,7 +14,6 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"
-#include "chrome/browser/dom_ui/plugins_ui.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
@@ -53,6 +52,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/browser/webui/flags_ui.h"
+#include "chrome/browser/webui/plugins_ui.h"
 #include "chrome/common/pref_names.h"
 
 #if defined(TOOLKIT_VIEWS)  // TODO(port): whittle this down as we port

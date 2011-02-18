@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/dom_ui/net_internals_ui.h"
+#include "chrome/browser/webui/net_internals_ui.h"
 
 #include <algorithm>
 #include <string>
@@ -47,9 +47,9 @@
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_alternate_protocols.h"
 #include "net/http/http_cache.h"
-#include "net/http/http_stream_factory.h"
 #include "net/http/http_network_layer.h"
 #include "net/http/http_network_session.h"
+#include "net/http/http_stream_factory.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
 #include "ui/base/l10n/l10n_util.h"

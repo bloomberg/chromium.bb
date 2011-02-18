@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/dom_ui/plugins_ui.h"
+#include "chrome/browser/webui/plugins_ui.h"
 
 #include <algorithm>
 #include <string>

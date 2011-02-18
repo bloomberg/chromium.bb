@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/dom_ui/slideshow_ui.h"
+#include "chrome/browser/webui/slideshow_ui.h"
 
 #include "base/callback.h"
 #include "base/message_loop.h"
@@ -28,8 +28,8 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
-#include "net/base/escape.h"
 #include "net/base/directory_lister.h"
+#include "net/base/escape.h"
 #include "ui/base/resource/resource_bundle.h"
 
 static const char kPropertyPath[] = "path";

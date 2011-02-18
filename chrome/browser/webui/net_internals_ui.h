@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DOM_UI_NET_INTERNALS_UI_H_
-#define CHROME_BROWSER_DOM_UI_NET_INTERNALS_UI_H_
+#ifndef CHROME_BROWSER_WEBUI_NET_INTERNALS_UI_H_
+#define CHROME_BROWSER_WEBUI_NET_INTERNALS_UI_H_
 #pragma once
 
 #include "chrome/browser/webui/web_ui.h"
@@ -16,4 +16,4 @@ class NetInternalsUI : public WebUI {
   DISALLOW_COPY_AND_ASSIGN(NetInternalsUI);
 };
 
-#endif  // CHROME_BROWSER_DOM_UI_NET_INTERNALS_UI_H_
+#endif  // CHROME_BROWSER_WEBUI_NET_INTERNALS_UI_H_

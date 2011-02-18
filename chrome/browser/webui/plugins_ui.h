@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DOM_UI_REMOTING_UI_H_
-#define CHROME_BROWSER_DOM_UI_REMOTING_UI_H_
+#ifndef CHROME_BROWSER_WEBUI_PLUGINS_UI_H_
+#define CHROME_BROWSER_WEBUI_PLUGINS_UI_H_
 #pragma once
 
 #include "chrome/browser/webui/web_ui.h"
@@ -11,15 +11,15 @@
 class PrefService;
 class RefCountedMemory;
 
-class RemotingUI : public WebUI {
+class PluginsUI : public WebUI {
  public:
-  explicit RemotingUI(TabContents* contents);
+  explicit PluginsUI(TabContents* contents);
 
   static RefCountedMemory* GetFaviconResourceBytes();
   static void RegisterUserPrefs(PrefService* prefs);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(RemotingUI);
+  DISALLOW_COPY_AND_ASSIGN(PluginsUI);
 };
 
-#endif  // CHROME_BROWSER_DOM_UI_REMOTING_UI_H_
+#endif  // CHROME_BROWSER_WEBUI_PLUGINS_UI_H_

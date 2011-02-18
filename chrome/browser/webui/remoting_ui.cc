@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/dom_ui/remoting_ui.h"
+#include "chrome/browser/webui/remoting_ui.h"
 
 #include "base/singleton.h"
 #include "chrome/browser/browser_thread.h"
