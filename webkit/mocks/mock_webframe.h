@@ -71,6 +71,7 @@ class MockWebFrame : public WebKit::WebFrame {
   virtual WebString encoding() const;
   virtual void setCanHaveScrollbars(bool);
   virtual WebSize scrollOffset() const;
+  virtual void setScrollOffset(const WebSize&);
   virtual WebSize contentsSize() const;
   virtual int contentsPreferredWidth() const;
   virtual int documentElementScrollHeight() const;

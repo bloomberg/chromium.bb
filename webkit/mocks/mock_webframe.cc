@@ -44,6 +44,8 @@ WebSize MockWebFrame::scrollOffset() const {
   return WebSize(0,0);
 }
 
+void MockWebFrame::setScrollOffset(const WebSize&) {}
+
 WebSize MockWebFrame::contentsSize() const {
   return WebSize();
 }
