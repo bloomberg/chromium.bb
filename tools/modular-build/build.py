@@ -86,29 +86,15 @@ def GetSources(dest_dir):
             dirtree.TarballTree(
                 FindFile("mpfr-2.4.1.tar.bz2",
                          sha1="1f965793526cafefb30cda64cebf3712cb75b488")))
-  AddSource("binutils",
-            dirtree.PatchedTree(
-                dirtree.TarballTree(
-                    FindFile("binutils-2.20.1.tar.bz2",
-                             sha1="fd2ba806e6f3a55cee453cb25c86991b26a75dee")),
-                PatchGlob("binutils-2.20.1"), strip=2))
-  AddSource("gcc",
-            dirtree.PatchedTree(
-                dirtree.MultiTarballTree(
-                    [FindFile("gcc-core-4.4.3.tar.bz2",
-                              sha1="039f19e642d0967af7772b26d42fd0c25bf62edc"),
-                     FindFile("gcc-g++-4.4.3.tar.bz2",
-                              sha1="42c3600263f81dfd51c4849786ac1c23e3a84715"),
-                     FindFile("gcc-testsuite-4.4.3.tar.bz2",
-                              sha1="30b1183203506112fb42df2a30e49e7a32ce2754"),
-                     ]),
-                PatchGlob("gcc-4.4.3"), strip=2))
-  AddSource("newlib",
-            dirtree.PatchedTree(
-                dirtree.TarballTree(
-                    FindFile("newlib-1.18.0.tar.gz",
-                             sha1="a47d3b8a508304143334b36bdb5b33786a61ce94")),
-                PatchGlob("newlib-1.18.0"), strip=2))
+  AddGitSource("binutils",
+               "http://git.chromium.org/git/nacl-binutils.git",
+               commit_id=revisions["NACL_BINUTILS_COMMIT"])
+  AddGitSource("gcc",
+               "http://git.chromium.org/git/nacl-gcc.git",
+               commit_id=revisions["NACL_GCC_COMMIT"])
+  AddGitSource("newlib",
+               "http://git.chromium.org/git/nacl-newlib.git",
+               commit_id=revisions["NACL_NEWLIB_COMMIT"])
   # For a discussion of why nacl-glibc uses these headers, see
   # http://code.google.com/p/nativeclient/issues/detail?id=671
   AddGitSource("linux_headers",
