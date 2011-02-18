@@ -231,6 +231,7 @@ void BrowserMainParts::SetupFieldTrials() {
   PrefetchAndPrerenderFieldTrial();
   SpdyFieldTrial();
   ConnectBackupJobsFieldTrial();
+  SSLFalseStartFieldTrial();
 }
 
 // This is an A/B test for the maximum number of persistent connections per
@@ -427,6 +428,28 @@ void BrowserMainParts::SpdyFieldTrial() {
     if (value > 0)
       net::SpdySession::set_max_concurrent_streams(value);
   }
+}
+
+void BrowserMainParts::SSLFalseStartFieldTrial() {
+  if (parsed_command_line().HasSwitch(switches::kDisableSSLFalseStart)) {
+    net::SSLConfigService::DisableFalseStart();
+    return;
+  }
+
+  const base::FieldTrial::Probability kDivisor = 100;
+  base::FieldTrial::Probability falsestart_probability = 50;  // 50/50 trial
+
+  // After July 30, 2011 builds, it will always be in default group.
+  scoped_refptr<base::FieldTrial> trial(
+      new base::FieldTrial(
+          "SSLFalseStart", kDivisor, "FalseStart_enabled", 2011, 7, 30));
+
+  int disabled_group = trial->AppendGroup("FalseStart_disabled",
+                                          falsestart_probability);
+
+  int trial_grp = trial->group();
+  if (trial_grp == disabled_group)
+    net::SSLConfigService::DisableFalseStart();
 }
 
 // Parse the --prerender= command line switch, which controls both prerendering

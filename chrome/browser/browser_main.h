@@ -126,6 +126,9 @@ class BrowserMainParts {
   // specified timeout value is reached.
   void ConnectBackupJobsFieldTrial();
 
+  // A/B test for SSL False Start.
+  void SSLFalseStartFieldTrial();
+
   // Used to initialize NSPR where appropriate.
   virtual void InitializeSSL() = 0;
 
