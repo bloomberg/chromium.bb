@@ -1267,5 +1267,5 @@
    fun:ExtensionDataDeleter
    fun:ExtensionService::ClearExtensionData
    fun:ExtensionService::UninstallExtension
-   fun:BackgroundApplicationListModelTest_LoadExplicitExtensions_Test::TestBody
+   fun:BackgroundApplicationListModelTest_Load*Extension*_Test::TestBody
 }
