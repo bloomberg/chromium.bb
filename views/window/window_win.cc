@@ -854,18 +854,17 @@ void WindowWin::OnMouseLeave() {
 LRESULT WindowWin::OnNCActivate(BOOL active) {
   is_active_ = !!active;
 
-  // If we're not using the native frame, we need to force a synchronous repaint
-  // otherwise we'll be left in the wrong activation state until something else
-  // causes a repaint later.
-  if (!non_client_view_->UseNativeFrame()) {
-    // We can get WM_NCACTIVATE before we're actually visible. If we're not
-    // visible, no need to paint.
-    if (IsWindowVisible(GetNativeView())) {
-      non_client_view_->SchedulePaint();
-      // We need to force a paint now, as a user dragging a window will block
-      // painting operations while the move is in progress.
-      PaintNow(root_view_->GetScheduledPaintRect());
-    }
+  // We need to force a synchronous repaint, otherwise we'll be left in the
+  // wrong activation state until something else causes a repaint later.
+  // Both the native and non-native frames may render activation-state
+  // dependent UI.
+  // We can get WM_NCACTIVATE before we're actually visible. If we're not
+  // visible, no need to paint.
+  if (IsWindowVisible(GetNativeView())) {
+    non_client_view_->SchedulePaint();
+    // We need to force a paint now, as a user dragging a window will block
+    // painting operations while the move is in progress.
+    PaintNow(root_view_->GetScheduledPaintRect());
   }
 
   // If we're active again, we should be allowed to render as inactive, so
