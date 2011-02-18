@@ -119,8 +119,7 @@ RootView::RootView(Widget* widget)
       focus_on_mouse_pressed_(false),
       ignore_set_focus_calls_(false),
       focus_traversable_parent_(NULL),
-      focus_traversable_parent_view_(NULL),
-      drag_view_(NULL) {
+      focus_traversable_parent_view_(NULL) {
 }
 
 RootView::~RootView() {
@@ -214,7 +213,7 @@ void RootView::ProcessOnMouseExited() {
 bool RootView::ProcessKeyEvent(const KeyEvent& event) {
   bool consumed = false;
 
-  View* v = GetFocusedView();
+  View* v = GetFocusManager()->GetFocusedView();
   // Special case to handle right-click context menus triggered by the
   // keyboard.
   if (v && v->IsEnabled() && ((event.key_code() == ui::VKEY_APPS) ||
@@ -243,8 +242,9 @@ void RootView::SetDefaultKeyboardHandler(View* v) {
 bool RootView::ProcessMouseWheelEvent(const MouseWheelEvent& e) {
   View* v;
   bool consumed = false;
-  if (GetFocusedView()) {
-    for (v = GetFocusedView(); v && v != this && !consumed; v = v->parent())
+  View* focused_view = GetFocusManager()->GetFocusedView();
+  if (focused_view) {
+    for (v = focused_view; v && v != this && !consumed; v = v->parent())
       consumed = v->OnMouseWheel(e);
   }
 
@@ -255,46 +255,6 @@ bool RootView::ProcessMouseWheelEvent(const MouseWheelEvent& e) {
 }
 
 // Focus -----------------------------------------------------------------------
-
-void RootView::FocusView(View* view) {
-  if (view != GetFocusedView()) {
-    FocusManager* focus_manager = GetFocusManager();
-    // TODO(jcampan): This fails under WidgetGtk with TYPE_CHILD.
-    // (see http://crbug.com/21335) Reenable DCHECK and
-    // verify GetFocusManager works as expecte.
-#if defined(OS_WIN)
-    DCHECK(focus_manager) << "No Focus Manager for Window " <<
-        (GetWidget() ? GetWidget()->GetNativeView() : 0);
-#endif
-    if (!focus_manager)
-      return;
-    focus_manager->SetFocusedView(view);
-  }
-}
-
-View* RootView::GetFocusedView() {
-  FocusManager* focus_manager = GetFocusManager();
-  if (!focus_manager) {
-    // We may not have a FocusManager when the window that contains us is being
-    // deleted. Sadly we cannot wait for the window to be destroyed before we
-    // remove the FocusManager (see xp_frame.cc for more info).
-    return NULL;
-  }
-
-  // Make sure the focused view belongs to this RootView's view hierarchy.
-  View* view = focus_manager->GetFocusedView();
-  if (view && (view->GetRootView() == this))
-    return view;
-
-#if defined(OS_LINUX)
-  if (view && NativeTextfieldViews::IsTextfieldViewsEnabled()) {
-    // hack to deal with two root views.
-    // should be fixed by eliminating one of them
-    return view;
-  }
-#endif
-  return NULL;
-}
 
 void RootView::SetFocusOnMousePressed(bool f) {
   focus_on_mouse_pressed_ = f;
@@ -661,41 +621,19 @@ AccessibilityTypes::Role RootView::GetAccessibleRole() {
 }
 
 void RootView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
+  widget_->ViewHierarchyChanged(is_add, parent, child);
+
   if (!is_add) {
-    if (!explicit_mouse_handler_ && mouse_pressed_handler_ == child) {
+    if (!explicit_mouse_handler_ && mouse_pressed_handler_ == child)
       mouse_pressed_handler_ = NULL;
-    }
-
-    if (widget_)
-      widget_->ViewHierarchyChanged(is_add, parent, child);
-
-    if (mouse_move_handler_ == child) {
+    if (mouse_move_handler_ == child)
       mouse_move_handler_ = NULL;
-    }
-
-    if (GetFocusedView() == child) {
-      FocusView(NULL);
-    }
-
-    if (child == drag_view_)
-      drag_view_ = NULL;
-
-    if (default_keyboard_handler_ == child) {
+    if (default_keyboard_handler_ == child)
       default_keyboard_handler_ = NULL;
-    }
-
 #if defined(TOUCH_UI)
-    if (touch_pressed_handler_) {
+    if (touch_pressed_handler_)
       touch_pressed_handler_ = NULL;
-    }
 #endif
-
-    FocusManager* focus_manager = widget_->GetFocusManager();
-    // An unparanted RootView does not have a FocusManager.
-    if (focus_manager)
-      focus_manager->ViewRemoved(parent, child);
-
-    ViewStorage::GetInstance()->ViewRemoved(parent, child);
   }
 }
 
@@ -771,12 +709,6 @@ void RootView::SetMouseLocationAndFlags(const MouseEvent& e) {
   last_mouse_event_flags_ = e.flags();
   last_mouse_event_x_ = e.x();
   last_mouse_event_y_ = e.y();
-}
-
-// Drag and drop ---------------------------------------------------------------
-
-View* RootView::GetDragView() {
-  return drag_view_;
 }
 
 }  // namespace views

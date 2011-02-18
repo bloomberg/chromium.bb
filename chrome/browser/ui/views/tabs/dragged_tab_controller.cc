@@ -616,14 +616,14 @@ void DraggedTabController::SetDraggedContents(
 
 void DraggedTabController::SaveFocus() {
   if (!old_focused_view_) {
-    old_focused_view_ = source_tabstrip_->GetRootView()->GetFocusedView();
-    source_tabstrip_->GetRootView()->FocusView(source_tabstrip_);
+    old_focused_view_ = source_tabstrip_->GetFocusManager()->GetFocusedView();
+    source_tabstrip_->GetFocusManager()->SetFocusedView(source_tabstrip_);
   }
 }
 
 void DraggedTabController::RestoreFocus() {
   if (old_focused_view_ && attached_tabstrip_ == source_tabstrip_)
-    old_focused_view_->GetRootView()->FocusView(old_focused_view_);
+    old_focused_view_->GetFocusManager()->SetFocusedView(old_focused_view_);
   old_focused_view_ = NULL;
 }
 

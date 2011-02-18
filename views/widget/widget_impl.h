@@ -149,6 +149,10 @@ class WidgetImpl : public internal::NativeWidgetListener,
   virtual void ViewHierarchyChanged(bool is_add, View *parent,
                                     View *child);
   virtual bool ContainsNativeView(gfx::NativeView native_view);
+  virtual void StartDragForViewFromMouseEvent(View* view,
+                                              const OSExchangeData& data,
+                                              int operation);
+  virtual View* GetDraggedView();
 
   // Causes the Widget to be destroyed immediately.
   void CloseNow();
@@ -179,6 +183,10 @@ class WidgetImpl : public internal::NativeWidgetListener,
   bool delete_on_destroy_;
 
   scoped_ptr<FocusManager> focus_manager_;
+
+  // Valid for the lifetime of StartDragForViewFromMouseEvent, indicates the
+  // view the drag started from. NULL at all other times.
+  View* dragged_view_;
 
   DISALLOW_COPY_AND_ASSIGN(WidgetImpl);
 };

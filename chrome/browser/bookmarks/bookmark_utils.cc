@@ -331,14 +331,12 @@ void DragBookmarks(Profile* profile,
   BookmarkNodeData drag_data(nodes);
   drag_data.Write(profile, &data);
 
-  views::RootView* root_view =
-      views::Widget::GetWidgetFromNativeView(view)->GetRootView();
-
   // Allow nested message loop so we get DnD events as we drag this around.
   bool was_nested = MessageLoop::current()->IsNested();
   MessageLoop::current()->SetNestableTasksAllowed(true);
 
-  root_view->StartDragForViewFromMouseEvent(NULL, data,
+  views::Widget* widget = views::Widget::GetWidgetFromNativeView(view);
+  widget->StartDragForViewFromMouseEvent(NULL, data,
       ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_MOVE |
       ui::DragDropTypes::DRAG_LINK);
 

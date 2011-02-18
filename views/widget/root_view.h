@@ -122,14 +122,6 @@ class RootView : public View,
   // MouseWheel events are sent on the focus path.
   virtual bool ProcessMouseWheelEvent(const MouseWheelEvent& e);
 
-  // Starts a drag operation for the specified view. This blocks until done.
-  // If the view has not been deleted during the drag, OnDragDone is invoked
-  // on the view.
-  // NOTE: |view| may be null.
-  void StartDragForViewFromMouseEvent(View* view,
-                                      const OSExchangeData& data,
-                                      int operation);
-
 #if defined(TOUCH_UI) && defined(UNIT_TEST)
   // For unit testing purposes, we use this method to set a mock
   // GestureManager
@@ -137,13 +129,6 @@ class RootView : public View,
 #endif
 
   // Focus ---------------------------------------------------------------------
-
-  // Make the provided view focused. Also make sure that our Widget is focused.
-  void FocusView(View* view);
-
-  // Returns the View in this RootView hierarchy that has the focus, or NULL if
-  // no View currently has the focus.
-  View* GetFocusedView();
 
   // Set whether this root view should focus the corresponding hwnd
   // when an unprocessed mouse event occurs.
@@ -224,11 +209,6 @@ class RootView : public View,
 
   // Updates the last_mouse_* fields from e.
   void SetMouseLocationAndFlags(const MouseEvent& e);
-
-  // Drag and drop -------------------------------------------------------------
-
-  // If a view is dragging, this returns it. Otherwise returns NULL.
-  View* GetDragView();
 
   //////////////////////////////////////////////////////////////////////////////
 
@@ -324,10 +304,6 @@ class RootView : public View,
 
   // Tracks drag state for a view.
   View::DragInfo drag_info;
-
-  // Valid for the lifetime of StartDragForViewFromMouseEvent, indicates the
-  // view the drag started from.
-  View* drag_view_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(RootView);
 };

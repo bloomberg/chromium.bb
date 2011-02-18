@@ -885,6 +885,10 @@ class View : public AcceleratorTarget {
   // operation and the user release the mouse.
   virtual int OnPerformDrop(const DropTargetEvent& event);
 
+  // Invoked from DoDrag after the drag completes. This implementation does
+  // nothing, and is intended for subclasses to do cleanup.
+  virtual void OnDragDone();
+
   // Returns true if the mouse was dragged enough to start a drag operation.
   // delta_x and y are the distance the mouse was dragged.
   static bool ExceededDragThreshold(int delta_x, int delta_y);
@@ -1148,10 +1152,6 @@ class View : public AcceleratorTarget {
   // See DragController for a description of these methods.
   virtual int GetDragOperations(const gfx::Point& press_pt);
   virtual void WriteDragData(const gfx::Point& press_pt, OSExchangeData* data);
-
-  // Invoked from DoDrag after the drag completes. This implementation does
-  // nothing, and is intended for subclasses to do cleanup.
-  virtual void OnDragDone();
 
   // Returns whether we're in the middle of a drag session that was initiated
   // by us.

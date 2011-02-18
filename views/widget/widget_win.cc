@@ -8,6 +8,10 @@
 
 #include "base/string_util.h"
 #include "base/win/windows_version.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/dragdrop/drag_source.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/system_monitor/system_monitor.h"
@@ -21,6 +25,7 @@
 #include "views/controls/native_control_win.h"
 #include "views/focus/accelerator_handler.h"
 #include "views/focus/focus_util_win.h"
+#include "views/focus/view_storage.h"
 #include "views/views_delegate.h"
 #include "views/widget/aero_tooltip_manager.h"
 #include "views/widget/child_window_message_processor.h"
@@ -83,7 +88,8 @@ WidgetWin::WidgetWin()
       restore_focus_when_enabled_(false),
       delegate_(NULL),
       accessibility_view_events_index_(-1),
-      accessibility_view_events_(kMaxAccessibilityViewEvents) {
+      accessibility_view_events_(kMaxAccessibilityViewEvents),
+      dragged_view_(NULL) {
 }
 
 WidgetWin::~WidgetWin() {
@@ -488,15 +494,26 @@ FocusManager* WidgetWin::GetFocusManager() {
   return NULL;
 }
 
-void WidgetWin::ViewHierarchyChanged(bool is_add, View *parent,
-                                     View *child) {
+void WidgetWin::ViewHierarchyChanged(bool is_add, View* parent,
+                                     View* child) {
   if (drop_target_.get())
     drop_target_->ResetTargetViewIfEquals(child);
 
-  if (!is_add)
+  if (!is_add) {
     ClearAccessibilityViewEvent(child);
-}
 
+    if (child == dragged_view_)
+      dragged_view_ = NULL;
+
+    FocusManager* focus_manager = GetFocusManager();
+    if (focus_manager) {
+      if (focus_manager->GetFocusedView() == child)
+        focus_manager->SetFocusedView(NULL);
+      focus_manager->ViewRemoved(parent, child);
+    }
+    ViewStorage::GetInstance()->ViewRemoved(parent, child);
+  }
+}
 
 bool WidgetWin::ContainsNativeView(gfx::NativeView native_view) {
   if (hwnd() == native_view)
@@ -517,6 +534,28 @@ bool WidgetWin::ContainsNativeView(gfx::NativeView native_view) {
   // an ancestor of hwnd(), so traverse the views::View hierarchy looking for
   // such views.
   return GetRootView()->ContainsNativeView(native_view);
+}
+
+void WidgetWin::StartDragForViewFromMouseEvent(
+    View* view,
+    const ui::OSExchangeData& data,
+    int operation) {
+  // NOTE: view may be null.
+  dragged_view_ = view;
+  scoped_refptr<ui::DragSource> drag_source(new ui::DragSource);
+  DWORD effects;
+  DoDragDrop(ui::OSExchangeDataProviderWin::GetIDataObject(data), drag_source,
+             ui::DragDropTypes::DragOperationToDropEffect(operation), &effects);
+  // If the view is removed during the drag operation, dragged_view_ is set to
+  // NULL.
+  if (view && dragged_view_ == view) {
+    dragged_view_ = NULL;
+    view->OnDragDone();
+  }
+}
+
+View* WidgetWin::GetDraggedView() {
+  return dragged_view_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

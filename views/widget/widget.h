@@ -18,6 +18,7 @@ class Rect;
 
 namespace ui {
 class Accelerator;
+class OSExchangeData;
 class ThemeProvider;
 }
 using ui::ThemeProvider;
@@ -228,6 +229,17 @@ class Widget {
   // Returns true if the native view |native_view| is contained in the
   // views::View hierarchy rooted at this widget.
   virtual bool ContainsNativeView(gfx::NativeView native_view) = 0;
+
+  // Starts a drag operation for the specified view. This blocks until done.
+  // If the view has not been deleted during the drag, OnDragDone is invoked
+  // on the view.
+  // NOTE: |view| may be NULL.
+  virtual void StartDragForViewFromMouseEvent(View* view,
+                                              const ui::OSExchangeData& data,
+                                              int operation) = 0;
+
+  // If a view is dragging, this returns it. Otherwise returns NULL.
+  virtual View* GetDraggedView() = 0;
 };
 
 }  // namespace views

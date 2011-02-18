@@ -10,8 +10,6 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
 #include "views/focus/focus_manager.h"
-#include "views/widget/root_view.h"
-#include "views/widget/widget.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeTabContentsContainerGtk, public:
@@ -112,7 +110,9 @@ void NativeTabContentsContainerGtk::RequestFocus() {
   // TabContentsContainerView already has focus, Focus() would not be called and
   // the RenderView would not get notified it got focused.
   // By clearing the focused view before-hand, we ensure Focus() will be called.
-  GetRootView()->FocusView(NULL);
+  views::FocusManager* focus_manager = GetFocusManager();
+  if (focus_manager)
+    focus_manager->SetFocusedView(NULL);
   View::RequestFocus();
 }
 

@@ -198,6 +198,10 @@ class WidgetGtk
   virtual void ViewHierarchyChanged(bool is_add, View *parent,
                                     View *child);
   virtual bool ContainsNativeView(gfx::NativeView native_view);
+  virtual void StartDragForViewFromMouseEvent(View* view,
+                                              const OSExchangeData& data,
+                                              int operation);
+  virtual View* GetDraggedView();
 
   // Overridden from FocusTraversable:
   virtual FocusSearch* GetFocusSearch();
@@ -450,6 +454,10 @@ class WidgetGtk
 
   // Indicates if we should handle the upcoming Alt key release event.
   bool should_handle_menu_key_release_;
+
+  // Valid for the lifetime of StartDragForViewFromMouseEvent, indicates the
+  // view the drag started from.
+  View* dragged_view_;
 
   DISALLOW_COPY_AND_ASSIGN(WidgetGtk);
 };

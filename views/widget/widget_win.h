@@ -247,6 +247,10 @@ class WidgetWin : public ui::WindowImpl,
   virtual void ViewHierarchyChanged(bool is_add, View *parent,
                                     View *child);
   virtual bool ContainsNativeView(gfx::NativeView native_view);
+  virtual void StartDragForViewFromMouseEvent(View* view,
+                                              const OSExchangeData& data,
+                                              int operation);
+  virtual View* GetDraggedView();
 
   // Overridden from MessageLoop::Observer:
   void WillProcessMessage(const MSG& msg);
@@ -601,6 +605,10 @@ class WidgetWin : public ui::WindowImpl,
   // The current position of the view events vector.  When incrementing,
   // we always mod this value with the max view events above .
   int accessibility_view_events_index_;
+
+  // Valid for the lifetime of StartDragForViewFromMouseEvent, indicates the
+  // view the drag started from.
+  View* dragged_view_;
 
   ViewProps props_;
 

@@ -66,20 +66,4 @@ void RootView::OnPaint(GdkEventExpose* event) {
   }
 }
 
-void RootView::StartDragForViewFromMouseEvent(
-    View* view,
-    const OSExchangeData& data,
-    int operation) {
-  // NOTE: view may be null.
-  drag_view_ = view;
-  static_cast<WidgetGtk*>(GetWidget())->DoDrag(data, operation);
-  // If the view is removed during the drag operation, drag_view_ is set to
-  // NULL.
-  if (view && drag_view_ == view) {
-    View* drag_view = drag_view_;
-    drag_view_ = NULL;
-    drag_view->OnDragDone();
-  }
-}
-
 }

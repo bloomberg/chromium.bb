@@ -19,6 +19,7 @@
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_gtk.h"
 #include "ui/gfx/path.h"
+#include "views/focus/view_storage.h"
 #include "views/widget/default_theme_provider.h"
 #include "views/widget/drop_target_gtk.h"
 #include "views/widget/gtk_views_fixed.h"
@@ -251,7 +252,8 @@ WidgetGtk::WidgetGtk(Type type)
       delegate_(NULL),
       always_on_top_(false),
       is_double_buffered_(false),
-      should_handle_menu_key_release_(false) {
+      should_handle_menu_key_release_(false),
+      dragged_view_(NULL) {
   static bool installed_message_loop_observer = false;
   if (!installed_message_loop_observer) {
     installed_message_loop_observer = true;
@@ -836,16 +838,47 @@ FocusManager* WidgetGtk::GetFocusManager() {
   return NULL;
 }
 
-void WidgetGtk::ViewHierarchyChanged(bool is_add, View *parent,
-                                     View *child) {
+void WidgetGtk::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
   if (drop_target_.get())
     drop_target_->ResetTargetViewIfEquals(child);
+
+  if (!is_add) {
+    if (child == dragged_view_)
+      dragged_view_ = NULL;
+
+    FocusManager* focus_manager = GetFocusManager();
+    if (focus_manager) {
+      if (focus_manager->GetFocusedView() == child)
+        focus_manager->SetFocusedView(NULL);
+      focus_manager->ViewRemoved(parent, child);
+    }
+    ViewStorage::GetInstance()->ViewRemoved(parent, child);
+  }
 }
 
 bool WidgetGtk::ContainsNativeView(gfx::NativeView native_view) {
   // TODO(port)  See implementation in WidgetWin::ContainsNativeView.
   NOTREACHED() << "WidgetGtk::ContainsNativeView is not implemented.";
   return false;
+}
+
+void WidgetGtk::StartDragForViewFromMouseEvent(
+    View* view,
+    const OSExchangeData& data,
+    int operation) {
+  // NOTE: view may be null.
+  dragged_view_ = view;
+  DoDrag(data, operation);
+  // If the view is removed during the drag operation, dragged_view_ is set to
+  // NULL.
+  if (view && dragged_view_ == view) {
+    dragged_view_ = NULL;
+    view->OnDragDone();
+  }
+}
+
+View* WidgetGtk::GetDraggedView() {
+  return dragged_view_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

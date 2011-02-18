@@ -12,6 +12,10 @@ class Path;
 class Rect;
 }
 
+namespace ui {
+class OSExchangeData;
+}
+
 namespace views {
 namespace internal {
 class NativeWidgetListener;
@@ -69,6 +73,7 @@ class NativeWidget {
   virtual void InvalidateRect(const gfx::Rect& invalid_rect) = 0;
   virtual void Paint() = 0;
   virtual void FocusNativeView(gfx::NativeView native_view) = 0;
+  virtual void RunShellDrag(const ui::OSExchangeData& data, int operation) = 0;
   virtual WidgetImpl* GetWidgetImpl() = 0;
   virtual const WidgetImpl* GetWidgetImpl() const = 0;
 };

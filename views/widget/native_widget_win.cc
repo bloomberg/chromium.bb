@@ -5,6 +5,10 @@
 #include "views/widget/native_widget_win.h"
 
 #include "base/scoped_ptr.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/dragdrop/drag_source.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 #include "ui/base/system_monitor/system_monitor.h"
 #include "ui/base/view_prop.h"
 #include "ui/base/win/hwnd_util.h"
@@ -216,6 +220,14 @@ void NativeWidgetWin::FocusNativeView(gfx::NativeView native_view) {
     // key events.
     SetFocus(hwnd());
   }
+}
+
+void NativeWidgetWin::RunShellDrag(const ui::OSExchangeData& data,
+                                   int operation) {
+  scoped_refptr<ui::DragSource> drag_source(new ui::DragSource);
+  DWORD effects;
+  DoDragDrop(ui::OSExchangeDataProviderWin::GetIDataObject(data), drag_source,
+             ui::DragDropTypes::DragOperationToDropEffect(operation), &effects);
 }
 
 WidgetImpl* NativeWidgetWin::GetWidgetImpl() {

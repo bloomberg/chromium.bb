@@ -536,7 +536,7 @@ void View::GetViewsWithGroup(int group_id, std::vector<View*>* out) {
 
 View* View::GetSelectedViewForGroup(int group_id) {
   std::vector<View*> views;
-  GetRootView()->GetViewsWithGroup(group_id, &views);
+  GetWidget()->GetRootView()->GetViewsWithGroup(group_id, &views);
   if (views.size() > 0)
     return views[0];
   else
@@ -796,19 +796,10 @@ void View::RemoveAccelerator(const Accelerator& accelerator) {
   }
   --registered_accelerator_count_;
 
-  RootView* root_view = GetRootView();
-  if (!root_view) {
-    // We are not part of a view hierarchy, so there is nothing to do as we
-    // removed ourselves from accelerators_, we won't be registered when added
-    // to one.
-    return;
-  }
-
-  // If accelerator_focus_manager_ is NULL then we did not registered
-  // accelerators so there is nothing to unregister.
-  if (accelerator_focus_manager_) {
+  // Providing we are attached to a Widget and registered with a focus manager,
+  // we should de-register from that focus manager now.
+  if (GetWidget() && accelerator_focus_manager_)
     accelerator_focus_manager_->UnregisterAccelerator(accelerator, this);
-  }
 }
 
 void View::ResetAccelerators() {
@@ -861,9 +852,9 @@ FocusManager* View::GetFocusManager() {
 }
 
 void View::RequestFocus() {
-  RootView* rv = GetRootView();
-  if (rv && IsFocusableInRootView())
-    rv->FocusView(this);
+  FocusManager* focus_manager = GetFocusManager();
+  if (focus_manager && IsFocusableInRootView())
+    focus_manager->SetFocusedView(this);
 }
 
 void View::WillGainFocus() {
@@ -935,6 +926,9 @@ void View::OnDragExited() {
 
 int View::OnPerformDrop(const DropTargetEvent& event) {
   return ui::DragDropTypes::DRAG_NONE;
+}
+
+void View::OnDragDone() {
 }
 
 // static
@@ -1130,12 +1124,9 @@ void View::WriteDragData(const gfx::Point& press_pt, OSExchangeData* data) {
   drag_controller_->WriteDragData(this, press_pt, data);
 }
 
-void View::OnDragDone() {
-}
-
 bool View::InDrag() {
-  RootView* root_view = GetRootView();
-  return root_view ? (root_view->GetDragView() == this) : false;
+  Widget* widget = GetWidget();
+  return widget ? widget->GetDraggedView() == this : false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1461,10 +1452,8 @@ void View::RegisterPendingAccelerators() {
     return;
   }
 
-  RootView* root_view = GetRootView();
-  if (!root_view) {
-    // We are not yet part of a view hierarchy, we'll register ourselves once
-    // added to one.
+  if (!GetWidget()) {
+    // The view is not yet attached to a widget, defer registration until then.
     return;
   }
 
@@ -1497,8 +1486,7 @@ void View::UnregisterAccelerators(bool leave_data_intact) {
   if (!accelerators_.get())
     return;
 
-  RootView* root_view = GetRootView();
-  if (root_view) {
+  if (GetWidget()) {
     if (accelerator_focus_manager_) {
       // We may not have a FocusManager if the window containing us is being
       // closed, in which case the FocusManager is being deleted so there is
@@ -1593,8 +1581,7 @@ void View::DoDrag(const MouseEvent& e, const gfx::Point& press_pt) {
 
   // Message the RootView to do the drag and drop. That way if we're removed
   // the RootView can detect it and avoid calling us back.
-  RootView* root_view = GetRootView();
-  root_view->StartDragForViewFromMouseEvent(this, data, drag_operations);
+  GetWidget()->StartDragForViewFromMouseEvent(this, data, drag_operations);
 }
 
 }  // namespace views

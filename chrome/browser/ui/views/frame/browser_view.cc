@@ -965,7 +965,7 @@ void BrowserView::RotatePaneFocus(bool forwards) {
   int count = static_cast<int>(accessible_views.size());
 
   // Figure out which view (if any) currently has the focus.
-  views::View* focused_view = GetRootView()->GetFocusedView();
+  views::View* focused_view = GetFocusManager()->GetFocusedView();
   int index = -1;
   if (focused_view) {
     for (int i = 0; i < count; ++i) {
@@ -1007,7 +1007,7 @@ void BrowserView::SaveFocusedView() {
   views::ViewStorage* view_storage = views::ViewStorage::GetInstance();
   if (view_storage->RetrieveView(last_focused_view_storage_id_))
     view_storage->RemoveView(last_focused_view_storage_id_);
-  views::View* focused_view = GetRootView()->GetFocusedView();
+  views::View* focused_view = GetFocusManager()->GetFocusedView();
   if (focused_view)
     view_storage->StoreView(last_focused_view_storage_id_, focused_view);
 }

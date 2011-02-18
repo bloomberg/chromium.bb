@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "views/focus/focus_manager.h"
+#include "views/focus/view_storage.h"
 #include "views/view.h"
 #include "views/widget/native_widget.h"
 #include "views/widget/root_view.h"
@@ -53,7 +54,8 @@ WidgetImpl::WidgetImpl(View* contents_view)
       is_mouse_button_pressed_(false),
       last_mouse_event_was_move_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)),
-      delete_on_destroy_(true) {
+      delete_on_destroy_(true),
+      dragged_view_(NULL) {
 }
 
 WidgetImpl::~WidgetImpl() {
@@ -365,12 +367,42 @@ ThemeProvider* WidgetImpl::GetDefaultThemeProvider() const {
 }
 
 void WidgetImpl::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
-  NOTIMPLEMENTED();
+  if (!is_add) {
+    if (child == dragged_view_)
+      dragged_view_ = NULL;
+    FocusManager* focus_manager = GetFocusManager();
+    if (focus_manager) {
+      if (focus_manager->GetFocusedView() == child)
+        focus_manager->SetFocusedView(NULL);
+      focus_manager->ViewRemoved(parent, child);
+    }
+    ViewStorage::GetInstance()->ViewRemoved(parent, child);
+  }
 }
 
 bool WidgetImpl::ContainsNativeView(gfx::NativeView native_view) {
   NOTIMPLEMENTED();
   return false;
+}
+
+void WidgetImpl::StartDragForViewFromMouseEvent(
+    View* view,
+    const OSExchangeData& data,
+    int operation) {
+  // NOTE: view may be NULL.
+  dragged_view_ = view;
+  native_widget_->RunShellDrag(data, operation);
+
+  // If the view is removed during the drag operation, dragged_view_ is set to
+  // NULL.
+  if (view && dragged_view_ == view) {
+    dragged_view_ = NULL;
+    view->OnDragDone();
+  }
+}
+
+View* WidgetImpl::GetDraggedView() {
+  return dragged_view_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

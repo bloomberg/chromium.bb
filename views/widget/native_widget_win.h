@@ -84,6 +84,7 @@ class NativeWidgetWin : public NativeWidget,
   virtual void InvalidateRect(const gfx::Rect& invalid_rect);
   virtual void Paint();
   virtual void FocusNativeView(gfx::NativeView native_view);
+  virtual void RunShellDrag(const ui::OSExchangeData& data, int operation);
   virtual WidgetImpl* GetWidgetImpl();
   virtual const WidgetImpl* GetWidgetImpl() const;
 
