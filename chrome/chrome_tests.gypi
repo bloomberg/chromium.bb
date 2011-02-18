@@ -1175,6 +1175,7 @@
         'browser/autofill/phone_number_unittest.cc',
         'browser/autofill/select_control_handler_unittest.cc',
         'browser/automation/automation_provider_unittest.cc',
+        'browser/background_application_list_model_unittest.cc',
         'browser/background_contents_service_unittest.cc',
         'browser/background_mode_manager_unittest.cc',
         'browser/background_page_tracker_unittest.cc',
