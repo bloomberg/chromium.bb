@@ -79,8 +79,11 @@ void StatusAreaButton::SetText(const std::wstring& text) {
   // TextButtons normally remember the max text size, so the button's preferred
   // size will always be as large as the largest text ever put in it.
   // We clear that max text size, so we can adjust the size to fit the text.
-  ClearMaxTextSize();
+  // The order is important.  ClearMaxTextSize sets the size to that of the
+  // current text, so it must be called after SetText.
   views::MenuButton::SetText(text);
+  ClearMaxTextSize();
+  PreferredSizeChanged();
 }
 
 void StatusAreaButton::DrawIcon(gfx::Canvas* canvas) {
