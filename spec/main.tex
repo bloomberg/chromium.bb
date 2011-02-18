@@ -64,7 +64,7 @@ an object.  Events can be error conditions.  The event includes the
 object id and the event opcode, from which the client can determine
 the type of event.  Events are generated both in response to a request
 (in which case the request and the event constitutes a round trip) or
-spontanously when the server state changes.
+spontaneously when the server state changes.
 
 \begin{itemize}
 \item state is broadcast on connect, events sent out when state
@@ -83,8 +83,8 @@ clients and compositors.
 
 The protocol entry points are generated as inline functions which just
 wraps the \verb:wl_proxy_*: functions.  The inline functions aren't
-part of the library ABI and languange bindings should generate their
-own stubs for the protocl entry points from the xml.
+part of the library ABI and language bindings should generate their
+own stubs for the protocol entry points from the xml.
 
 \subsection{Wire format}
 
@@ -222,7 +222,7 @@ Talk about:
 A surface can change the pointer image when the surface is the pointer
 focus of the input device.  Wayland doesn't automatically change the
 pointer image when a pointer enters a surface, but expects the
-application to set the cursor it wants in response the the pointer
+application to set the cursor it wants in response the pointer
 focus and motion events.  The rationale is that a client has to manage
 changing pointer images for UI elements within the surface in response
 to motion events anyway, so we'll make that the only mechanism for
@@ -326,7 +326,7 @@ Issues:
 \item Should drag.send() destroy the object?  There's nothing to do
   after the data has been transferred.
 
-\item How do we marshall several mime-types?  We could make the drag
+\item How do we marshal several mime-types?  We could make the drag
   setup a multi-step operation: dnd.create, drag.offer(mime-type1),
   drag.offer(mime-type2), drag.activate().  The drag object could send
   multiple offer events on each motion event.  Or we could just
