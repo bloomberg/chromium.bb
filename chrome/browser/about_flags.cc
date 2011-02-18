@@ -148,13 +148,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableCrxlessWebApps)
   },
   {
-    "gpu-compositing",
-    IDS_FLAGS_ACCELERATED_COMPOSITING_NAME,
-    IDS_FLAGS_ACCELERATED_COMPOSITING_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableAcceleratedLayers)
-  },
-  {
     "composited-layer-borders",
     IDS_FLAGS_COMPOSITED_LAYER_BORDERS,
     IDS_FLAGS_COMPOSITED_LAYER_BORDERS_DESCRIPTION,

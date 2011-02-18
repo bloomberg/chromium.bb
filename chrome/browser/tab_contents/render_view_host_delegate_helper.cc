@@ -294,7 +294,7 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
         gpu_enabled() &&
         command_line.HasSwitch(switches::kEnableAccelerated2dCanvas);
     web_prefs.accelerated_layers_enabled =
-        command_line.HasSwitch(switches::kEnableAcceleratedLayers);
+        !command_line.HasSwitch(switches::kDisableAcceleratedLayers);
     web_prefs.accelerated_plugins_enabled =
         command_line.HasSwitch(switches::kEnableAcceleratedPlugins);
     web_prefs.accelerated_video_enabled =
