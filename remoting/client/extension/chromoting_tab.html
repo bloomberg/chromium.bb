@@ -13,12 +13,34 @@ found in the LICENSE file.
   </head>
   <body class="chromoting_body" onload="init();">
     <div id="status_msg" class="status_msg"></div>
-    <div id="login_panel" class="login_panel">
-      <table>
-        <tr><td>Username:</td><td><input type="text" id="username" value="demo"/></td></tr>
-        <tr><td>Password:</td><td><input type="password" id="password" value="none" /></td></tr>
-        <tr><td colspan="2"><input type="button" value="Login" onclick="submitLogin();" /></td></tr>
-      </table>
+    <div id="login_panel" class="local_login_panel">
+      <table><tr><td valign="top"
+          style="text-align:center" nowrap="nowrap" bgcolor="#e8eefa">
+        <table align="center" border="0" cellpadding="1" cellspacing="0">
+          <tr>
+            <td align="center" colspan="2">
+              Sign in to remote host
+            </td>
+          </tr><tr>
+            <td align="right" nowrap="nowrap">
+              <span class="gaia_font">Username:</span>
+            </td><td>
+              <input type="text" id="username" value="" class="gaia_font"/>
+            </td>
+          </tr><tr>
+            <td align="right" nowrap="nowrap">
+              <span class="gaia_font">Password:</span>
+            </td>
+            <td>
+              <input type="password" id="password" value="" class="gaia_font"/>
+            </td>
+          </tr><tr>
+            <td></td>
+            <td><input type="button" value="Sign in" class="gaia_font"
+                       onclick="submitLogin();"/></td>
+          </tr>
+        </table>
+      </tr></td></table>
     </div>
     <div id="plugin_scroll_panel" class="plugin-scroll-panel">
       <embed name="chromoting" id="chromoting"

@@ -15,6 +15,46 @@ found in the LICENSE file.
 
     <h1>Remote Access</h1>
 
+    <div id="login_panel" class="gaia_login_panel">
+      <table cellspacing="3" cellpadding="5" border="0"><tr><td valign="top"
+          style="text-align:center" nowrap="nowrap" bgcolor="#e8eefa">
+        <table align="center" border="0" cellpadding="1" cellspacing="0">
+          <tr>
+            <td align="center" colspan="2">
+              <font size="-1">Sign in with your</font>
+              <table><tr>
+                <td valign="top"><img src="https://www.google.com/accounts/google_transparent.gif"
+                                      alt="Google"></img></td>
+                <td valign="middle"><font size="+0"><b>Account</b></font></td>
+              </tr></table>
+            </td>
+          </tr><tr>
+            <td align="right" nowrap="nowrap">
+              <span class="gaia_font">Username:</span>
+            </td><td>
+              <input type="text" id="username" value="" class="gaia_font"/>
+            </td>
+          </tr><tr>
+            <td align="right" nowrap="nowrap">
+              <span class="gaia_font">Password:</span>
+            </td><td>
+              <input type="password" id="password" value=""
+                     class="gaia_font"/>
+            </td>
+          </tr><tr>
+            <td></td>
+            <td align="left">
+              <div class="error_msg" id="errormsg_div"></div>
+            </td>
+          </tr><tr>
+            <td></td>
+            <td><input type="button" value="Sign in" class="gaia_font"
+                       onclick="login();"/></td>
+          </tr>
+        </table>
+      </tr></td></table>
+    </div>
+
     <div id="login_div" class="login">
     </div>
 

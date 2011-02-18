@@ -115,18 +115,34 @@ a.hostentry { text-decoration: none; }
   font-weight: bold;
 }
 
-.login_panel {
+.error_msg {
+  color: red;
+}
+
+.gaia_login_panel {
   -webkit-user-select: none;
+  font-family: arial,sans-serif;
   position: absolute;
   display: none;
   z-index: 1;
   top: 50%;
   left: 45%;
-  border-style: solid;
-  border-color: #D3D3D3 #808080;
+  border: 2px solid #e8eefa;
   margin-left: auto;
   margin-right: auto;
-  width: 250px;
+}
+
+.local_login_panel {
+  -webkit-user-select: none;
+  font-family: arial,sans-serif;
+  position: absolute;
+  display: none;
+  z-index: 1;
+  top: 50%;
+  left: 45%;
+  border: 2px solid #e8eefa;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .plugin-scroll-panel {
@@ -134,4 +150,8 @@ a.hostentry { text-decoration: none; }
   overflow: auto;
   width: 100%;
   height: 100%;
+}
+
+.gaia_font {
+    font-family: Arial, Helvetica, sans-serif;
 }

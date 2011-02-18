@@ -49,9 +49,7 @@ function updateLoginStatus() {
 
   if (!username) {
     var signinLink = document.createElement('a');
-    signinLink.setAttribute('href',
-        "javascript:window.open('login.html', 'Sign In', " +
-        "'width=400,height=200,scrollbars=no'); return false;");
+    signinLink.setAttribute('href', 'javascript:showDirectoryLogin();');
     signinLink.appendChild(document.createTextNode('Sign In'));
     loginDiv.appendChild(signinLink);
   } else {
@@ -63,26 +61,37 @@ function updateLoginStatus() {
     loginDiv.appendChild(document.createTextNode(' | '));
 
     var signoutLink = document.createElement('a');
-    signoutLink.setAttribute('href', 'javascript:logout(this.form);');
+    signoutLink.setAttribute('href', 'javascript:logoutAndReload(this.form);');
     signoutLink.appendChild(document.createTextNode('Sign Out'));
     loginDiv.appendChild(signoutLink);
   }
 }
 
+// Sign out the current user and reload the host list.
+function logoutAndReload(form) {
+  logout();
+  populateHostList();
+}
+
 // Sign out the current user by erasing the auth cookies.
-function logout(form) {
+function logout() {
   setCookie('username', '', AUTH_EXPIRES);
   setCookie('chromoting_auth', '', AUTH_EXPIRES);
   setCookie('xmpp_auth', '', AUTH_EXPIRES);
 
   updateLoginStatus();
-  populateHostList();
 }
 
-function login(form) {
-  var status = document.getElementById('login_status');
-  clear(status);
-  doLogin(form.username.value, form.password.value, checkLogin);
+// Sign in to Chromoting Directory services.
+function showDirectoryLogin() {
+  document.getElementById("login_panel").style.display = "block";
+}
+
+function login() {
+  var username = document.getElementById("username").value;
+  var password = document.getElementById("password").value;
+
+  doLogin(username, password, checkLogin);
 }
 
 // Check to see if the login was successful.
@@ -92,14 +101,19 @@ function checkLogin() {
   var xauth = getCookie('xmpp_auth');
 
   // Verify login and show login status.
-  var status = document.getElementById('login_status');
   if (cauth == BAD_AUTH_TOKEN || xauth == BAD_AUTH_TOKEN) {
-    appendMessage(status, '', 'Sign in failed!');
-    if (username) {
-      setCookie('username', '', AUTH_EXPIRES);
-    }
+    // Erase the username cookie.
+    setCookie('username', '', AUTH_EXPIRES);
+    showLoginError("Sign in failed!");
   } else {
-    appendMessage(status, '', 'Successfully signed in as ' + username);
+    // Successful login - update status and update host list.
+    updateLoginStatus();
+    populateHostList();
+
+    // Hide login dialog and clear out values.
+    document.getElementById('login_panel').style.display = "none";
+    document.getElementById('username').value = "";
+    document.getElementById('password').value = "";
   }
 }
 
@@ -144,6 +158,23 @@ function doGaiaLogin(username, password, service, done) {
            encodeURIComponent(username) + '&Passwd=' +
            encodeURIComponent(password) + '&service=' +
            encodeURIComponent(service) + '&source=chromoclient');
+}
+
+function showLoginError() {
+  var errorDiv = document.getElementById('errormsg_div');
+  clear(errorDiv);
+
+  errorDiv.appendChild(document.createTextNode(
+    "The username or password you entered is incorrect ["));
+
+  var helpLink = document.createElement('a');
+  helpLink.setAttribute('href',
+      'http://www.google.com/support/accounts/bin/answer.py?answer=27444');
+  helpLink.setAttribute('target', '_blank');
+  helpLink.appendChild(document.createTextNode('?'));
+  errorDiv.appendChild(helpLink);
+
+  errorDiv.appendChild(document.createTextNode("]"));
 }
 
 function extractAuthToken(message) {
@@ -223,13 +254,25 @@ function populateHostList() {
       console.log('Error message ' + errorResponse.error.message);
 
       clear(hostlistDiv);
-      appendMessage(hostlistDiv, 'message',
-                    'Unable to load host list for ' + username + '. ' +
-                    'Please try again later.');
-      appendMessage(hostlistDiv, 'message',
-                    'Error code: ' + errorResponse.error.code);
-      appendMessage(hostlistDiv, 'message',
-                    'Message: ' + errorResponse.error.message);
+      if (errorResponse.error.message == "Token expired") {
+        appendMessage(hostlistDiv, 'message',
+                      'The authentication token for ' + username +
+                      ' has expired. Please sign in again.');
+        logout();
+      } else if (errorResponse.error.message == "Token invalid") {
+        appendMessage(hostlistDiv, 'message',
+                      'Invalid authentication token for ' + username + '. ' +
+                      'Please sign in again.');
+        logout();
+      } else {
+        appendMessage(hostlistDiv, 'message',
+                      'Unable to load host list for ' + username + '. ' +
+                      'Please try again later.');
+        appendMessage(hostlistDiv, 'message',
+                      'Error code: ' + errorResponse.error.code);
+        appendMessage(hostlistDiv, 'message',
+                      'Message: ' + errorResponse.error.message);
+      }
     }
   };
 
