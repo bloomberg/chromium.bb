@@ -1260,3 +1260,12 @@
    ...
    fun:ExtensionSpecialStoragePolicyTest_*
 }
+{
+   bug_73358
+   Heapcheck:Leak
+   fun:TestingProfile::GetRequestContextForExtensions
+   fun:ExtensionDataDeleter
+   fun:ExtensionService::ClearExtensionData
+   fun:ExtensionService::UninstallExtension
+   fun:BackgroundApplicationListModelTest_LoadExplicitExtensions_Test::TestBody
+}
