@@ -41,9 +41,6 @@ class LocationIconDecoration : public ImageDecoration {
   // The location bar view that owns us.
   LocationBarViewMac* owner_;
 
-  // The string to show for a tooltip.
-  scoped_nsobject<NSString> tooltip_;
-
   DISALLOW_COPY_AND_ASSIGN(LocationIconDecoration);
 };
 

@@ -19,8 +19,6 @@ const CGFloat kBubblePointYOffset = 2.0;
 
 LocationIconDecoration::LocationIconDecoration(LocationBarViewMac* owner)
     : owner_(owner) {
-  tooltip_.reset(
-      [l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_LOCATION_ICON) retain]);
 }
 
 LocationIconDecoration::~LocationIconDecoration() {
@@ -77,5 +75,8 @@ bool LocationIconDecoration::OnMousePressed(NSRect frame) {
 }
 
 NSString* LocationIconDecoration::GetToolTip() {
-  return tooltip_.get();
+  if (owner_->location_entry()->IsEditingOrEmpty())
+    return nil;
+  else
+    return l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_LOCATION_ICON);
 }
