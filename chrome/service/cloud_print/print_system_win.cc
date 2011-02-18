@@ -464,6 +464,8 @@ class PrintSystemWin : public PrintSystem {
       // base::win::ObjectWatcher::Delegate inplementation.
       virtual void OnObjectSignaled(HANDLE object) {
         DCHECK(xps_print_job_);
+        DCHECK(object == job_progress_event_.Get());
+        ResetEvent(job_progress_event_.Get());
         if (!delegate_)
           return;
         XPS_JOB_STATUS job_status = {0};
@@ -473,11 +475,14 @@ class PrintSystemWin : public PrintSystem {
             (job_status.completion == XPS_JOB_FAILED)) {
           delegate_->OnJobSpoolFailed();
           done = true;
-        } else if (job_status.jobId) {
+        } else if (job_status.jobId ||
+                   (job_status.completion == XPS_JOB_COMPLETED)) {
+          // Note: In the case of the XPS document being printed to the
+          // Microsoft XPS Document Writer, it seems to skip spooling the job
+          // and goes to the completed state without ever assigning a job id.
           delegate_->OnJobSpoolSucceeded(job_status.jobId);
           done = true;
         } else {
-          ResetEvent(job_progress_event_.Get());
           job_progress_watcher_.StopWatching();
           job_progress_watcher_.StartWatching(job_progress_event_.Get(), this);
         }
@@ -780,8 +785,8 @@ bool PrintSystemWin::ValidatePrintTicket(
 }
 
 bool PrintSystemWin::GetJobDetails(const std::string& printer_name,
-                                       PlatformJobId job_id,
-                                       PrintJobDetails *job_details) {
+                                   PlatformJobId job_id,
+                                   PrintJobDetails *job_details) {
   DCHECK(job_details);
   HANDLE printer_handle = NULL;
   std::wstring printer_name_wide = UTF8ToWide(printer_name);
