@@ -432,7 +432,6 @@ void SaveFileManager::SaveLocalFile(const GURL& original_file_url,
   SaveFile* save_file = LookupSaveFile(save_id);
   if (!save_file)
     return;
-  DCHECK(!save_file->path_renamed());
   // If it has finished, just return.
   if (!save_file->in_progress())
     return;
@@ -490,7 +489,7 @@ void SaveFileManager::RenameAllFiles(
     if (it != save_file_map_.end()) {
       SaveFile* save_file = it->second;
       DCHECK(!save_file->in_progress());
-      save_file->Rename(i->second, true);
+      save_file->Rename(i->second);
       delete save_file;
       save_file_map_.erase(it);
     }

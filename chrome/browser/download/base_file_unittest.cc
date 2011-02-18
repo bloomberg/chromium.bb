@@ -77,7 +77,6 @@ class BaseFileTest : public testing::Test {
 // in production, where we would at least Initialize it.
 TEST_F(BaseFileTest, CreateDestroy) {
   EXPECT_EQ(FilePath().value(), base_file_->full_path().value());
-  EXPECT_FALSE(base_file_->path_renamed());
 }
 
 // Cancel the download explicitly.
@@ -87,7 +86,6 @@ TEST_F(BaseFileTest, Cancel) {
   base_file_->Cancel();
   EXPECT_FALSE(file_util::PathExists(base_file_->full_path()));
   EXPECT_NE(FilePath().value(), base_file_->full_path().value());
-  EXPECT_FALSE(base_file_->path_renamed());
 }
 
 // Write data to the file once.
@@ -95,8 +93,6 @@ TEST_F(BaseFileTest, SingleWrite) {
   ASSERT_TRUE(base_file_->Initialize(false));
   AppendDataToFile(kTestData1);
   base_file_->Finish();
-
-  EXPECT_FALSE(base_file_->path_renamed());
 }
 
 // Write data to the file multiple times.
@@ -108,8 +104,6 @@ TEST_F(BaseFileTest, MultipleWrites) {
   std::string hash;
   EXPECT_FALSE(base_file_->GetSha256Hash(&hash));
   base_file_->Finish();
-
-  EXPECT_FALSE(base_file_->path_renamed());
 }
 
 // Write data to the file once and calculate its sha256 hash.
@@ -117,8 +111,6 @@ TEST_F(BaseFileTest, SingleWriteWithHash) {
   ASSERT_TRUE(base_file_->Initialize(true));
   AppendDataToFile(kTestData1);
   base_file_->Finish();
-
-  EXPECT_FALSE(base_file_->path_renamed());
 
   std::string hash;
   base_file_->GetSha256Hash(&hash);
@@ -138,7 +130,6 @@ TEST_F(BaseFileTest, MultipleWritesWithHash) {
   EXPECT_FALSE(base_file_->GetSha256Hash(&hash));
   base_file_->Finish();
 
-  EXPECT_FALSE(base_file_->path_renamed());
   EXPECT_TRUE(base_file_->GetSha256Hash(&hash));
   EXPECT_EQ("CBF68BF10F8003DB86B31343AFAC8C7175BD03FB5FC905650F8C80AF087443A8",
             base::HexEncode(hash.data(), hash.size()));
@@ -155,13 +146,11 @@ TEST_F(BaseFileTest, WriteThenRename) {
 
   AppendDataToFile(kTestData1);
 
-  EXPECT_TRUE(base_file_->Rename(new_path, true));
+  EXPECT_TRUE(base_file_->Rename(new_path));
   EXPECT_FALSE(file_util::PathExists(initial_path));
   EXPECT_TRUE(file_util::PathExists(new_path));
 
   base_file_->Finish();
-
-  EXPECT_TRUE(base_file_->path_renamed());
 }
 
 // Rename the file while the download is still in progress.
@@ -176,15 +165,13 @@ TEST_F(BaseFileTest, RenameWhileInProgress) {
   AppendDataToFile(kTestData1);
 
   EXPECT_TRUE(base_file_->in_progress());
-  EXPECT_TRUE(base_file_->Rename(new_path, true));
+  EXPECT_TRUE(base_file_->Rename(new_path));
   EXPECT_FALSE(file_util::PathExists(initial_path));
   EXPECT_TRUE(file_util::PathExists(new_path));
 
   AppendDataToFile(kTestData2);
 
   base_file_->Finish();
-
-  EXPECT_TRUE(base_file_->path_renamed());
 }
 
 }  // namespace

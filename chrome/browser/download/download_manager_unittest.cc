@@ -178,15 +178,14 @@ class MockDownloadFile : public DownloadFile {
   explicit MockDownloadFile(DownloadCreateInfo* info)
       : DownloadFile(info, NULL), renamed_count_(0) { }
   virtual ~MockDownloadFile() { Destructed(); }
-  MOCK_METHOD2(Rename, bool(const FilePath&, bool));
+  MOCK_METHOD1(Rename, bool(const FilePath&));
   MOCK_METHOD0(Destructed, void());
 
   bool TestMultipleRename(
-      int expected_count, bool expected_final, const FilePath& expected,
-      const FilePath& path, bool is_final_rename) {
+      int expected_count, const FilePath& expected,
+      const FilePath& path) {
     ++renamed_count_;
     EXPECT_EQ(expected_count, renamed_count_);
-    EXPECT_EQ(expected_final, is_final_rename);
     EXPECT_EQ(expected.value(), path.value());
     return true;
   }
@@ -221,19 +220,18 @@ TEST_F(DownloadManagerTest, DownloadRenameTest) {
     EXPECT_CALL(*download, Destructed()).Times(1);
 
     if (kDownloadRenameCases[i].expected_rename_count == 1) {
-      EXPECT_CALL(*download, Rename(new_path, true)).WillOnce(Return(true));
+      EXPECT_CALL(*download, Rename(new_path)).WillOnce(Return(true));
     } else {
       ASSERT_EQ(2, kDownloadRenameCases[i].expected_rename_count);
       FilePath crdownload(download_util::GetCrDownloadPath(new_path));
-      EXPECT_CALL(*download, Rename(_, _))
-          .WillOnce(testing::WithArgs<0, 1>(Invoke(CreateFunctor(
+      EXPECT_CALL(*download, Rename(_))
+          .WillOnce(testing::WithArgs<0>(Invoke(CreateFunctor(
               download, &MockDownloadFile::TestMultipleRename,
-              1, false, crdownload))))
-          .WillOnce(testing::WithArgs<0, 1>(Invoke(CreateFunctor(
+              1, crdownload))))
+          .WillOnce(testing::WithArgs<0>(Invoke(CreateFunctor(
               download, &MockDownloadFile::TestMultipleRename,
-              2, true, new_path))));
+              2, new_path))));
     }
-
     download_manager_->CreateDownloadItem(info);
 
     if (kDownloadRenameCases[i].finish_before_rename) {

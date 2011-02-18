@@ -25,7 +25,6 @@ BaseFile::BaseFile(const FilePath& full_path,
                    int64 received_bytes,
                    const linked_ptr<net::FileStream>& file_stream)
     : full_path_(full_path),
-      path_renamed_(false),
       source_url_(source_url),
       referrer_url_(referrer_url),
       file_stream_(file_stream),
@@ -79,7 +78,7 @@ bool BaseFile::AppendDataToFile(const char* data, size_t data_len) {
   return true;
 }
 
-bool BaseFile::Rename(const FilePath& new_path, bool is_final_rename) {
+bool BaseFile::Rename(const FilePath& new_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   // Save the information whether the download is in progress because
@@ -89,8 +88,6 @@ bool BaseFile::Rename(const FilePath& new_path, bool is_final_rename) {
   // If the new path is same as the old one, there is no need to perform the
   // following renaming logic.
   if (new_path == full_path_) {
-    path_renamed_ = is_final_rename;
-
     // Don't close the file if we're not done (finished or canceled).
     if (!saved_in_progress)
       Close();
@@ -131,7 +128,6 @@ bool BaseFile::Rename(const FilePath& new_path, bool is_final_rename) {
 #endif
 
   full_path_ = new_path;
-  path_renamed_ = is_final_rename;
 
   // We don't need to re-open the file if we're done (finished or canceled).
   if (!saved_in_progress)

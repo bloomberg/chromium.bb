@@ -125,7 +125,7 @@ const int DownloadFileTest::kDummyChildId = 3;
 const int DownloadFileTest::kDummyRequestId = 67;
 
 // Rename the file before any data is downloaded, after some has, after it all
-// has, and after it's closed.  File is marked as having the final rename.
+// has, and after it's closed.
 TEST_F(DownloadFileTest, RenameFileFinal) {
   CreateDownloadFile(&download_file_, 0);
   ASSERT_TRUE(download_file_->Initialize(true));
@@ -137,7 +137,7 @@ TEST_F(DownloadFileTest, RenameFileFinal) {
   FilePath path_4(initial_path.InsertBeforeExtensionASCII("_4"));
 
   // Rename the file before downloading any data.
-  EXPECT_TRUE(download_file_->Rename(path_1, true));
+  EXPECT_TRUE(download_file_->Rename(path_1));
   FilePath renamed_path = download_file_->full_path();
   EXPECT_EQ(path_1, renamed_path);
 
@@ -150,7 +150,7 @@ TEST_F(DownloadFileTest, RenameFileFinal) {
   AppendDataToFile(&download_file_, kTestData2);
 
   // Rename the file after downloading some data.
-  EXPECT_TRUE(download_file_->Rename(path_2, true));
+  EXPECT_TRUE(download_file_->Rename(path_2));
   renamed_path = download_file_->full_path();
   EXPECT_EQ(path_2, renamed_path);
 
@@ -161,7 +161,7 @@ TEST_F(DownloadFileTest, RenameFileFinal) {
   AppendDataToFile(&download_file_, kTestData3);
 
   // Rename the file after downloading all the data.
-  EXPECT_TRUE(download_file_->Rename(path_3, true));
+  EXPECT_TRUE(download_file_->Rename(path_3));
   renamed_path = download_file_->full_path();
   EXPECT_EQ(path_3, renamed_path);
 
@@ -176,7 +176,7 @@ TEST_F(DownloadFileTest, RenameFileFinal) {
   download_file_->Finish();
 
   // Rename the file after downloading all the data and closing the file.
-  EXPECT_TRUE(download_file_->Rename(path_4, true));
+  EXPECT_TRUE(download_file_->Rename(path_4));
   renamed_path = download_file_->full_path();
   EXPECT_EQ(path_4, renamed_path);
 
@@ -185,77 +185,8 @@ TEST_F(DownloadFileTest, RenameFileFinal) {
   EXPECT_TRUE(file_util::PathExists(path_4));
 
   // Check the hash.
-  EXPECT_TRUE(download_file_->path_renamed());
   EXPECT_TRUE(download_file_->GetSha256Hash(&hash));
   EXPECT_EQ(kDataHash, base::HexEncode(hash.data(), hash.size()));
 
   DestroyDownloadFile(&download_file_, 0);
-}
-
-// Rename the file before any data is downloaded, after some has, after it all
-// has, and after it's closed.  File is not marked as having the final rename.
-TEST_F(DownloadFileTest, RenameFileNoFinal) {
-  CreateDownloadFile(&download_file_, 1);
-  ASSERT_TRUE(download_file_->Initialize(true));
-  FilePath initial_path(download_file_->full_path());
-  EXPECT_TRUE(file_util::PathExists(initial_path));
-  FilePath path_1(initial_path.InsertBeforeExtensionASCII("_1"));
-  FilePath path_2(initial_path.InsertBeforeExtensionASCII("_2"));
-  FilePath path_3(initial_path.InsertBeforeExtensionASCII("_3"));
-  FilePath path_4(initial_path.InsertBeforeExtensionASCII("_4"));
-
-  // Rename the file before downloading any data.
-  EXPECT_TRUE(download_file_->Rename(path_1, false));
-  FilePath renamed_path = download_file_->full_path();
-  EXPECT_EQ(path_1, renamed_path);
-
-  // Check the files.
-  EXPECT_FALSE(file_util::PathExists(initial_path));
-  EXPECT_TRUE(file_util::PathExists(path_1));
-
-  // Download the data.
-  AppendDataToFile(&download_file_, kTestData1);
-  AppendDataToFile(&download_file_, kTestData2);
-
-  // Rename the file after downloading some data.
-  EXPECT_TRUE(download_file_->Rename(path_2, false));
-  renamed_path = download_file_->full_path();
-  EXPECT_EQ(path_2, renamed_path);
-
-  // Check the files.
-  EXPECT_FALSE(file_util::PathExists(path_1));
-  EXPECT_TRUE(file_util::PathExists(path_2));
-
-  AppendDataToFile(&download_file_, kTestData3);
-
-  // Rename the file after downloading all the data.
-  EXPECT_TRUE(download_file_->Rename(path_3, false));
-  renamed_path = download_file_->full_path();
-  EXPECT_EQ(path_3, renamed_path);
-
-  // Check the files.
-  EXPECT_FALSE(file_util::PathExists(path_2));
-  EXPECT_TRUE(file_util::PathExists(path_3));
-
-  // Should not be able to get the hash until the file is closed.
-  std::string hash;
-  EXPECT_FALSE(download_file_->GetSha256Hash(&hash));
-
-  download_file_->Finish();
-
-  // Rename the file after downloading all the data and closing the file.
-  EXPECT_TRUE(download_file_->Rename(path_4, false));
-  renamed_path = download_file_->full_path();
-  EXPECT_EQ(path_4, renamed_path);
-
-  // Check the files.
-  EXPECT_FALSE(file_util::PathExists(path_3));
-  EXPECT_TRUE(file_util::PathExists(path_4));
-
-  // Check the hash.
-  EXPECT_FALSE(download_file_->path_renamed());
-  EXPECT_TRUE(download_file_->GetSha256Hash(&hash));
-  EXPECT_EQ(kDataHash, base::HexEncode(hash.data(), hash.size()));
-
-  DestroyDownloadFile(&download_file_, 1);
 }

@@ -126,12 +126,21 @@ class DownloadFileManager
   // on the FILE thread.
   void CancelDownloadOnRename(int id);
 
+  // Erases the download file with the given the download |id| and removes
+  // it from the maps.
+  void EraseDownload(int id);
+
   // Unique ID for each DownloadFile.
   int next_id_;
 
-  // A map of all in progress downloads.
   typedef base::hash_map<int, DownloadFile*> DownloadFileMap;
+
+  // A map of all in progress downloads.  It owns the download files,
+  // although they may also show up in |downloads_with_final_name_|.
   DownloadFileMap downloads_;
+
+  // download files are owned by |downloads_|.
+  DownloadFileMap downloads_with_final_name_;
 
   // Schedule periodic updates of the download progress. This timer
   // is controlled from the FILE thread, and posts updates to the UI thread.

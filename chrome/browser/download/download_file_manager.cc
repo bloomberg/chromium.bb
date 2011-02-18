@@ -54,6 +54,7 @@ DownloadFileManager::DownloadFileManager(ResourceDispatcherHost* rdh)
 
 DownloadFileManager::~DownloadFileManager() {
   DCHECK(downloads_.empty());
+  DCHECK(downloads_with_final_name_.empty());
 }
 
 void DownloadFileManager::Shutdown() {
@@ -66,6 +67,7 @@ void DownloadFileManager::Shutdown() {
 void DownloadFileManager::OnShutdown() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   StopUpdateTimer();
+  downloads_with_final_name_.clear();
   STLDeleteValues(&downloads_);
 }
 
@@ -224,10 +226,8 @@ void DownloadFileManager::OnResponseCompleted(int id, DownloadBuffer* buffer) {
 
     // We need to keep the download around until the UI thread has finalized
     // the name.
-    if (download->path_renamed()) {
-      downloads_.erase(it);
-      delete download;
-    }
+    if (ContainsKey(downloads_with_final_name_, id))
+      EraseDownload(id);
   }
 
   if (downloads_.empty())
@@ -247,10 +247,8 @@ void DownloadFileManager::CancelDownload(int id) {
              << " download = " << download->DebugString();
     download->Cancel();
 
-    if (download->path_renamed()) {
-      downloads_.erase(it);
-      delete download;
-    }
+    if (ContainsKey(downloads_with_final_name_, id))
+      EraseDownload(id);
   }
 
   if (downloads_.empty())
@@ -269,6 +267,7 @@ void DownloadFileManager::OnDownloadManagerShutdown(DownloadManager* manager) {
     if (download_file->GetDownloadManager() == manager) {
       download_file->CancelDownloadRequest(resource_dispatcher_host_);
       to_remove.insert(download_file);
+      downloads_with_final_name_.erase(download_file->id());
     }
   }
 
@@ -292,10 +291,11 @@ void DownloadFileManager::OnIntermediateDownloadName(
   DownloadFileMap::iterator it = downloads_.find(id);
   if (it == downloads_.end())
     return;
+  DCHECK(!ContainsKey(downloads_with_final_name_, id));
 
   DownloadFile* download = it->second;
   VLOG(20) << __FUNCTION__ << "()" << " download = " << download->DebugString();
-  if (!download->Rename(full_path, false /* is_final_rename */)) {
+  if (!download->Rename(full_path)) {
     // Error. Between the time the UI thread generated 'full_path' to the time
     // this code runs, something happened that prevents us from renaming.
     CancelDownloadOnRename(id);
@@ -309,7 +309,8 @@ void DownloadFileManager::OnIntermediateDownloadName(
 // There are 2 possible rename cases where this method can be called:
 // 1. foo.crdownload -> foo
 // 2. tmp-> Unconfirmed.xxx.crdownload
-// We don't call this function before the download is complete.
+// We don't call this function before a safe temp file has been renamed (in
+// that case tmp -> foo.crdownload occurs in |OnIntermediateDownloadName|).
 void DownloadFileManager::OnFinalDownloadName(
     int id, const FilePath& full_path, DownloadManager* download_manager) {
   VLOG(20) << __FUNCTION__ << "()" << " id = " << id
@@ -320,7 +321,9 @@ void DownloadFileManager::OnFinalDownloadName(
   if (!download)
     return;
   VLOG(20) << __FUNCTION__ << "()" << " download = " << download->DebugString();
-  if (download->Rename(full_path, true /* is_final_rename */)) {
+  DCHECK(!ContainsKey(downloads_with_final_name_, id));
+  if (download->Rename(full_path)) {
+    downloads_with_final_name_[id] = download;
 #if defined(OS_MACOSX)
     // Done here because we only want to do this once; see
     // http://crbug.com/13120 for details.
@@ -339,10 +342,8 @@ void DownloadFileManager::OnFinalDownloadName(
 
   // If the download has completed before we got this final name, we remove it
   // from our in progress map.
-  if (!download->in_progress()) {
-    downloads_.erase(id);
-    delete download;
-  }
+  if (!download->in_progress())
+    EraseDownload(id);
 
   if (downloads_.empty())
     StopUpdateTimer();
@@ -367,4 +368,18 @@ void DownloadFileManager::CancelDownloadOnRename(int id) {
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(download_manager,
                         &DownloadManager::DownloadCancelled, id));
+}
+
+void DownloadFileManager::EraseDownload(int id) {
+  if (!ContainsKey(downloads_, id))
+    return;
+
+  DownloadFile* download_file = downloads_[id];
+
+  downloads_.erase(id);
+
+  if (ContainsKey(downloads_with_final_name_, id))
+    downloads_with_final_name_.erase(id);
+
+  delete download_file;
 }
