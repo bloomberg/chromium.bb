@@ -584,7 +584,7 @@ HRESULT ChromeActiveDocument::ActiveXDocActivate(LONG verb) {
         ::ShowWindow(m_hWnd, SW_SHOW);
         SetFocus();
       } else {
-        m_hWnd = Create(parent_window, position_rect, 0, 0, WS_EX_CLIENTEDGE);
+        m_hWnd = Create(parent_window, position_rect);
         if (!IsWindow()) {
           // This might happen if the automation server couldn't be
           // instantiated.  If so, a NOTREACHED() will have already been hit.
