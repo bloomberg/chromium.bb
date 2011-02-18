@@ -380,6 +380,12 @@ void WebAccessibility::Init(const WebKit::WebAccessibilityObject& src,
   // Add the source object to the cache and store its id.
   id = cache->addOrGetId(src);
 
+  if (role == WebAccessibility::ROLE_EDITABLE_TEXT ||
+      role == WebAccessibility::ROLE_TEXTAREA ||
+      role == WebAccessibility::ROLE_TEXT_FIELD) {
+    include_children = false;
+  }
+
   if (include_children) {
     // Recursively create children.
     int child_count = src.childCount();

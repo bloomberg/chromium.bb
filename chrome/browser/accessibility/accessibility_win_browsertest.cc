@@ -563,12 +563,10 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
       NotificationType::RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED);
 
   // Check the browser's copy of the renderer accessibility tree.
-  AccessibleChecker text_field_div_checker(L"", L"div", L"");
   AccessibleChecker text_field_checker(L"", ROLE_SYSTEM_TEXT, L"old value");
   text_field_checker.SetExpectedState(STATE_SYSTEM_FOCUSABLE);
   AccessibleChecker body_checker(L"", L"body", L"");
   AccessibleChecker document_checker(L"", ROLE_SYSTEM_DOCUMENT, L"");
-  text_field_checker.AppendExpectedChild(&text_field_div_checker);
   body_checker.AppendExpectedChild(&text_field_checker);
   document_checker.AppendExpectedChild(&body_checker);
   document_checker.CheckAccessible(GetRendererAccessible());
