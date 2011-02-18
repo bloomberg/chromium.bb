@@ -51,6 +51,7 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
                             const FilePath& new_chrome_exe,
                             const Version* current_version,
                             const Version& new_version,
+                            const FilePath& temp_path,
                             WorkItemList* post_install_task_list);
 
 // Builds the complete WorkItemList used to build the set of installation steps
@@ -62,14 +63,14 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
 //               to Chrome install folder after install is complete
 // src_path: the path that contains a complete and unpacked Chrome package
 //           to be installed.
-// temp_dir: the path of working directory used during installation. This path
-//           does not need to exist.
+// temp_path: the path of working directory used during installation. This path
+//            does not need to exist.
 void AddInstallWorkItems(const InstallationState& original_state,
                          const InstallerState& installer_state,
                          const FilePath& setup_path,
                          const FilePath& archive_path,
                          const FilePath& src_path,
-                         const FilePath& temp_dir,
+                         const FilePath& temp_path,
                          const Version& new_version,
                          scoped_ptr<Version>* current_version,
                          WorkItemList* install_list);

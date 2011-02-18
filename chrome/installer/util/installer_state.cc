@@ -388,7 +388,8 @@ FilePath InstallerState::GetInstallerDirectory(const Version& version) const {
 }
 
 void InstallerState::RemoveOldVersionDirectories(
-    const Version& latest_version) const {
+    const Version& latest_version,
+    const FilePath& temp_path) const {
   file_util::FileEnumerator version_enum(target_path(), false,
       file_util::FileEnumerator::DIRECTORIES);
   scoped_ptr<Version> version;
@@ -417,7 +418,8 @@ void InstallerState::RemoveOldVersionDirectories(
       VLOG(1) << "Deleting directory: " << next_version.value();
 
       scoped_ptr<WorkItem> item(
-          WorkItem::CreateDeleteTreeWorkItem(next_version, key_files));
+          WorkItem::CreateDeleteTreeWorkItem(next_version, temp_path,
+                                             key_files));
       if (!item->Do())
         item->Rollback();
     }

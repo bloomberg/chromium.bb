@@ -79,8 +79,8 @@ void AddRegisterComDllWorkItemsForPackage(const InstallerState& installer_state,
   // saved state instead of assuming it is the same as the registration list.
   if (!com_dll_list.empty()) {
     if (old_version) {
-      FilePath old_dll_path(installer_state.target_path().Append(
-          UTF8ToWide(old_version->GetString())));
+      FilePath old_dll_path(installer_state.target_path().AppendASCII(
+          old_version->GetString()));
 
       installer::AddRegisterComDllWorkItems(old_dll_path,
                                             com_dll_list,
@@ -90,8 +90,8 @@ void AddRegisterComDllWorkItemsForPackage(const InstallerState& installer_state,
                                             work_item_list);
     }
 
-    FilePath dll_path(installer_state.target_path().Append(
-        UTF8ToWide(new_version.GetString())));
+    FilePath dll_path(installer_state.target_path().AppendASCII(
+        new_version.GetString()));
     installer::AddRegisterComDllWorkItems(dll_path,
                                           com_dll_list,
                                           installer_state.system_install(),
@@ -358,6 +358,7 @@ void AddGoogleUpdateWorkItems(const InstallerState& installer_state,
 void AddDeleteUninstallShortcutsForMSIWorkItems(
     const InstallerState& installer_state,
     const Product& product,
+    const FilePath& temp_path,
     WorkItemList* work_item_list) {
   DCHECK(installer_state.is_msi())
       << "This must only be called for MSI installations!";
@@ -388,7 +389,7 @@ void AddDeleteUninstallShortcutsForMSIWorkItems(
     VLOG(1) << "Deleting old uninstall shortcut (if present): "
             << uninstall_link.value();
     WorkItem* delete_link = work_item_list->AddDeleteTreeWorkItem(
-        uninstall_link);
+        uninstall_link, temp_path);
     delete_link->set_ignore_failure(true);
     delete_link->set_log_message(
         "Failed to delete old uninstall shortcut.");
@@ -409,6 +410,7 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
                             const FilePath& new_chrome_exe,
                             const Version* current_version,
                             const Version& new_version,
+                            const FilePath& temp_path,
                             WorkItemList* post_install_task_list) {
   DCHECK(post_install_task_list);
 
@@ -514,6 +516,7 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
       // previous non-MSI installations for the same type of install (system or
       // per user).
       AddDeleteUninstallShortcutsForMSIWorkItems(installer_state, *product,
+                                                 temp_path,
                                                  post_install_task_list);
     }
     if (installer_state.is_multi_install()) {
@@ -531,7 +534,7 @@ void AddInstallWorkItems(const InstallationState& original_state,
                          const FilePath& setup_path,
                          const FilePath& archive_path,
                          const FilePath& src_path,
-                         const FilePath& temp_dir,
+                         const FilePath& temp_path,
                          const Version& new_version,
                          scoped_ptr<Version>* current_version,
                          WorkItemList* install_list) {
@@ -540,7 +543,7 @@ void AddInstallWorkItems(const InstallationState& original_state,
   const FilePath& target_path = installer_state.target_path();
 
   // A temp directory that work items need and the actual install directory.
-  install_list->AddCreateDirWorkItem(temp_dir);
+  install_list->AddCreateDirWorkItem(temp_path);
   install_list->AddCreateDirWorkItem(target_path);
 
   // Delete any new_chrome.exe if present (we will end up creating a new one
@@ -548,47 +551,47 @@ void AddInstallWorkItems(const InstallationState& original_state,
   FilePath new_chrome_exe(
       target_path.Append(installer::kChromeNewExe));
 
-  install_list->AddDeleteTreeWorkItem(new_chrome_exe);
+  install_list->AddDeleteTreeWorkItem(new_chrome_exe, temp_path);
   install_list->AddCopyTreeWorkItem(
       src_path.Append(installer::kChromeExe).value(),
       target_path.Append(installer::kChromeExe).value(),
-      temp_dir.value(), WorkItem::NEW_NAME_IF_IN_USE, new_chrome_exe.value());
+      temp_path.value(), WorkItem::NEW_NAME_IF_IN_USE, new_chrome_exe.value());
 
   // Extra executable for 64 bit systems.
   if (Is64bit()) {
     install_list->AddCopyTreeWorkItem(
         src_path.Append(installer::kWowHelperExe).value(),
         target_path.Append(installer::kWowHelperExe).value(),
-        temp_dir.value(), WorkItem::ALWAYS);
+        temp_path.value(), WorkItem::ALWAYS);
   }
 
   // If it is system level install copy the version folder (since we want to
   // take the permissions of %ProgramFiles% folder) otherwise just move it.
   if (installer_state.system_install()) {
     install_list->AddCopyTreeWorkItem(
-        src_path.Append(UTF8ToWide(new_version.GetString())).value(),
-        target_path.Append(UTF8ToWide(new_version.GetString())).value(),
-        temp_dir.value(), WorkItem::ALWAYS);
+        src_path.AppendASCII(new_version.GetString()).value(),
+        target_path.AppendASCII(new_version.GetString()).value(),
+        temp_path.value(), WorkItem::ALWAYS);
   } else {
     install_list->AddMoveTreeWorkItem(
-        src_path.Append(UTF8ToWide(new_version.GetString())).value(),
-        target_path.Append(UTF8ToWide(new_version.GetString())).value(),
-        temp_dir.value());
+        src_path.AppendASCII(new_version.GetString()).value(),
+        target_path.AppendASCII(new_version.GetString()).value(),
+        temp_path.value());
   }
 
   // Copy the default Dictionaries only if the folder doesn't exist already.
   install_list->AddCopyTreeWorkItem(
       src_path.Append(installer::kDictionaries).value(),
       target_path.Append(installer::kDictionaries).value(),
-      temp_dir.value(), WorkItem::IF_NOT_PRESENT);
+      temp_path.value(), WorkItem::IF_NOT_PRESENT);
 
   // Delete any old_chrome.exe if present.
   install_list->AddDeleteTreeWorkItem(
-      target_path.Append(installer::kChromeOldExe));
+      target_path.Append(installer::kChromeOldExe), temp_path);
 
   // Copy installer in install directory and
   // add shortcut in Control Panel->Add/Remove Programs.
-  AddInstallerCopyTasks(installer_state, setup_path, archive_path, temp_dir,
+  AddInstallerCopyTasks(installer_state, setup_path, archive_path, temp_path,
                         new_version, install_list);
 
   const HKEY root = installer_state.root_key();
@@ -623,6 +626,7 @@ void AddInstallWorkItems(const InstallationState& original_state,
                          new_chrome_exe,
                          current_version->get(),
                          new_version,
+                         temp_path,
                          install_list);
 }
 

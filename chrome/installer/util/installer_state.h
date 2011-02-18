@@ -145,7 +145,8 @@ class InstallerState {
 
   // Try to delete all directories whose versions are lower than
   // |latest_version|.
-  void RemoveOldVersionDirectories(const Version& latest_version) const;
+  void RemoveOldVersionDirectories(const Version& latest_version,
+                                   const FilePath& temp_path) const;
 
   // Adds to |com_dll_list| the list of COM DLLs that are to be registered
   // and/or unregistered. The list may be empty.

@@ -12,6 +12,7 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/scoped_ptr.h"
+#include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "chrome/installer/util/delete_tree_work_item.h"
 #include "chrome/installer/util/work_item.h"
@@ -85,9 +86,13 @@ TEST_F(DeleteTreeWorkItemTest, DeleteTreeNoKeyPath) {
   ASSERT_TRUE(file_util::PathExists(file_name_delete_2));
 
   // test Do()
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
   std::vector<FilePath> key_files;
   scoped_ptr<DeleteTreeWorkItem> work_item(
-      WorkItem::CreateDeleteTreeWorkItem(dir_name_delete, key_files));
+      WorkItem::CreateDeleteTreeWorkItem(dir_name_delete, temp_dir.path(),
+                                         key_files));
   EXPECT_TRUE(work_item->Do());
 
   // everything should be gone
@@ -133,9 +138,13 @@ TEST_F(DeleteTreeWorkItemTest, DeleteTree) {
   ASSERT_TRUE(file_util::PathExists(file_name_delete_2));
 
   // test Do()
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
   std::vector<FilePath> key_files(1, file_name_delete_1);
   scoped_ptr<DeleteTreeWorkItem> work_item(
-      WorkItem::CreateDeleteTreeWorkItem(dir_name_delete, key_files));
+      WorkItem::CreateDeleteTreeWorkItem(dir_name_delete, temp_dir.path(),
+                                         key_files));
   EXPECT_TRUE(work_item->Do());
 
   // everything should be gone
@@ -202,9 +211,13 @@ TEST_F(DeleteTreeWorkItemTest, DeleteTreeInUse) {
 
   // test Do().
   {
+    ScopedTempDir temp_dir;
+    ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
     std::vector<FilePath> key_paths(1, key_path);
     scoped_ptr<DeleteTreeWorkItem> work_item(
-        WorkItem::CreateDeleteTreeWorkItem(dir_name_delete, key_paths));
+        WorkItem::CreateDeleteTreeWorkItem(dir_name_delete, temp_dir.path(),
+                                           key_paths));
 
     // delete should fail as file in use.
     EXPECT_FALSE(work_item->Do());

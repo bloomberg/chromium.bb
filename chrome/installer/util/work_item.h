@@ -88,7 +88,9 @@ class WorkItem {
   // hierarchy at the given root path. A key file can be optionally specified
   // by key_path.
   static DeleteTreeWorkItem* CreateDeleteTreeWorkItem(
-      const FilePath& root_path, const std::vector<FilePath>& key_paths);
+      const FilePath& root_path,
+      const FilePath& temp_path,
+      const std::vector<FilePath>& key_paths);
 
   // Create a MoveTreeWorkItem that recursively moves a file system hierarchy
   // from source path to destination path.

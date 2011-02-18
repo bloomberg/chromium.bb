@@ -2,38 +2,47 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/installer/util/delete_tree_work_item.h"
+
+#include <algorithm>
+#include <limits>
+
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "chrome/installer/util/delete_tree_work_item.h"
+
+namespace {
+
+// Casts a value of an unsigned type to a signed type of the same size provided
+// that there is no overflow.
+template<typename L, typename R>
+bool SafeCast(L left, R* right) {
+  DCHECK(right);
+  COMPILE_ASSERT(sizeof(left) == sizeof(right),
+                 must_add_support_for_crazy_data_types);
+  if (left > static_cast<L>(std::numeric_limits<R>::max()))
+    return false;
+  *right = static_cast<L>(left);
+  return true;
+}
+
+}  // namespace
 
 DeleteTreeWorkItem::DeleteTreeWorkItem(
     const FilePath& root_path,
+    const FilePath& temp_path,
     const std::vector<FilePath>& key_paths)
-    : root_path_(root_path) {
-  // Populate our key_paths_ list with empty backup path values.
-  std::vector<FilePath>::const_iterator it(key_paths.begin());
-  for (; it != key_paths.end(); ++it) {
-    key_paths_.push_back(KeyFileList::value_type(*it, FilePath()));
+    : root_path_(root_path),
+      temp_path_(temp_path) {
+  if (!SafeCast(key_paths.size(), &num_key_files_)) {
+    NOTREACHED() << "Impossibly large key_paths collection";
+  } else if (num_key_files_ != 0) {
+    key_paths_.reset(new FilePath[num_key_files_]);
+    key_backup_paths_.reset(new ScopedTempDir[num_key_files_]);
+    std::copy(key_paths.begin(), key_paths.end(), &key_paths_[0]);
   }
 }
 
 DeleteTreeWorkItem::~DeleteTreeWorkItem() {
-  if (!backup_path_.empty()) {
-    FilePath tmp_dir = backup_path_.DirName();
-    if (file_util::PathExists(tmp_dir)) {
-      file_util::Delete(tmp_dir, true);
-    }
-  }
-
-  KeyFileList::const_iterator it(key_paths_.begin());
-  for (; it != key_paths_.end(); ++it) {
-    if (!it->second.empty()) {
-      FilePath tmp_dir = it->second.DirName();
-      if (file_util::PathExists(tmp_dir)) {
-        file_util::Delete(tmp_dir, true);
-      }
-    }
-  }
 }
 
 // We first try to move key_path_ to backup_path. If it succeeds, we go ahead
@@ -42,26 +51,31 @@ bool DeleteTreeWorkItem::Do() {
   // Go through all the key files and see if we can open them exclusively
   // with only the FILE_SHARE_DELETE flag.  Once we know we have all of them,
   // we can delete them.
-  KeyFileList::iterator it(key_paths_.begin());
   std::vector<HANDLE> opened_key_files;
+  opened_key_files.reserve(num_key_files_);
   bool abort = false;
-  for (; !abort && it != key_paths_.end(); ++it) {
-    if (!GetBackupPath(it->first, &it->second) ||
-        !file_util::CopyFile(it->first, it->second)) {
-      PLOG(ERROR) << "Could not back up: " << it->first.value();
+  for (ptrdiff_t i = 0; !abort && i != num_key_files_; ++i) {
+    FilePath& key_file = key_paths_[i];
+    ScopedTempDir& backup = key_backup_paths_[i];
+    if (!backup.CreateUniqueTempDirUnderPath(temp_path_)) {
+      PLOG(ERROR) << "Could not create temp dir in " << temp_path_.value();
+      abort = true;
+    } else if (!file_util::CopyFile(key_file,
+                   backup.path().Append(key_file.BaseName()))) {
+      PLOG(ERROR) << "Could not back up " << key_file.value()
+                  << " to directory " << backup.path().value();
       abort = true;
     } else {
-      HANDLE file = ::CreateFile(it->first.value().c_str(), FILE_ALL_ACCESS,
+      HANDLE file = ::CreateFile(key_file.value().c_str(), FILE_ALL_ACCESS,
                                  FILE_SHARE_DELETE, NULL, OPEN_EXISTING, 0,
                                  NULL);
       if (file != INVALID_HANDLE_VALUE) {
-        VLOG(1) << "Acquired exclusive lock for key file: "
-                << it->first.value();
+        VLOG(1) << "Acquired exclusive lock for key file: " << key_file.value();
         opened_key_files.push_back(file);
       } else {
         if (::GetLastError() != ERROR_FILE_NOT_FOUND)
           abort = true;
-        PLOG(INFO) << "Failed to open " << it->first.value();
+        PLOG(INFO) << "Failed to open " << key_file.value();
       }
     }
   }
@@ -70,21 +84,17 @@ bool DeleteTreeWorkItem::Do() {
     // We now hold exclusive locks with "share delete" permissions for each
     // of the key files and also have created backups of those files.
     // We can safely delete the key files now.
-    it = key_paths_.begin();
-    for (; !abort && it != key_paths_.end(); ++it) {
-      if (!file_util::Delete(it->first, true)) {
+    for (ptrdiff_t i = 0; !abort && i != num_key_files_; ++i) {
+      FilePath& key_file = key_paths_[i];
+      if (!file_util::Delete(key_file, true)) {
         // This should not really be possible because of the above.
-        NOTREACHED();
-        PLOG(ERROR) << "Unexpectedly could not delete " << it->first.value();
+        PLOG(DFATAL) << "Unexpectedly could not delete " << key_file.value();
         abort = true;
       }
     }
   }
 
-  std::vector<HANDLE>::const_iterator file_it(opened_key_files.begin());
-  for (; file_it != opened_key_files.end(); ++file_it)
-    ::CloseHandle(*file_it);
-
+  std::for_each(opened_key_files.begin(), opened_key_files.end(), CloseHandle);
   opened_key_files.clear();
 
   if (abort) {
@@ -94,12 +104,18 @@ bool DeleteTreeWorkItem::Do() {
 
   // Now that we've taken care of the key files, take care of the rest.
   if (!root_path_.empty() && file_util::PathExists(root_path_)) {
-    if (!GetBackupPath(root_path_, &backup_path_) ||
-        !file_util::CopyDirectory(root_path_, backup_path_, true) ||
-        !file_util::Delete(root_path_, true)) {
-      LOG(ERROR) << "can not delete " << root_path_.value()
-                 << " OR copy it to backup path " << backup_path_.value();
+    if (!backup_path_.CreateUniqueTempDirUnderPath(temp_path_)) {
+      PLOG(ERROR) << "Failed to get backup path in folder "
+                  << temp_path_.value();
       return false;
+    } else {
+      FilePath backup = backup_path_.path().Append(root_path_.BaseName());
+      if (!file_util::CopyDirectory(root_path_, backup, true) ||
+          !file_util::Delete(root_path_, true)) {
+        LOG(ERROR) << "can not delete " << root_path_.value()
+                   << " OR copy it to backup path " << backup.value();
+        return false;
+      }
     }
   }
 
@@ -108,30 +124,23 @@ bool DeleteTreeWorkItem::Do() {
 
 // If there are files in backup paths move them back.
 void DeleteTreeWorkItem::Rollback() {
-  if (!backup_path_.empty() && file_util::PathExists(backup_path_)) {
-    file_util::Move(backup_path_, root_path_);
+  if (!backup_path_.path().empty()) {
+    FilePath backup = backup_path_.path().Append(root_path_.BaseName());
+    if (file_util::PathExists(backup))
+      file_util::Move(backup, root_path_);
   }
 
-  KeyFileList::const_iterator it(key_paths_.begin());
-  for (; it != key_paths_.end(); ++it) {
-    if (!it->second.empty() && file_util::PathExists(it->second)) {
-      if (!file_util::Move(it->second, it->first)) {
+  for (ptrdiff_t i = 0; i != num_key_files_; ++i) {
+    ScopedTempDir& backup_dir = key_backup_paths_[i];
+    if (!backup_dir.path().empty()) {
+      FilePath& key_file = key_paths_[i];
+      FilePath backup_file = backup_dir.path().Append(key_file.BaseName());
+      if (file_util::PathExists(backup_file) &&
+          !file_util::Move(backup_file, key_file)) {
         // This could happen if we could not delete the key file to begin with.
         PLOG(WARNING) << "Rollback: Failed to move backup file back in place: "
-                      << it->second.value() << " to " << it->first.value();
+                      << backup_file.value() << " to " << key_file.value();
       }
     }
   }
-}
-
-bool DeleteTreeWorkItem::GetBackupPath(const FilePath& for_path,
-                                       FilePath* backup_path) {
-  if (!file_util::CreateNewTempDirectory(L"", backup_path)) {
-    // We assume that CreateNewTempDirectory() is doing its job well.
-    LOG(ERROR) << "Couldn't get backup path for delete.";
-    return false;
-  }
-
-  *backup_path = backup_path->Append(for_path.BaseName());
-  return true;
 }

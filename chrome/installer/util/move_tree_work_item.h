@@ -6,11 +6,8 @@
 #define CHROME_INSTALLER_UTIL_MOVE_TREE_WORK_ITEM_H_
 #pragma once
 
-#include <windows.h>
-
-#include <string>
-
 #include "base/file_path.h"
+#include "base/scoped_temp_dir.h"
 #include "chrome/installer/util/work_item.h"
 
 // A WorkItem subclass that recursively move a file system hierarchy from
@@ -49,9 +46,8 @@ class MoveTreeWorkItem : public WorkItem {
   // Temporary directory to backup dest_path_ (if it already exists).
   FilePath temp_dir_;
 
-  // The full path in temp_dir_ where the original dest_path_ has
-  // been moved to.
-  FilePath backup_path_;
+  // The temporary directory into which the original dest_path_ has been moved.
+  ScopedTempDir backup_path_;
 
   // Whether the source was moved to dest_path_
   bool moved_to_dest_path_;

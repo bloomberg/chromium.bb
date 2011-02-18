@@ -11,6 +11,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/version.h"
@@ -118,7 +119,12 @@ TEST_F(InstallerStateTest, Delete) {
   MockInstallerState installer_state;
   BuildSingleChromeState(chrome_dir, &installer_state);
   scoped_ptr<Version> latest_version(Version::GetVersionFromString("1.0.4.0"));
-  installer_state.RemoveOldVersionDirectories(*latest_version.get());
+  {
+    ScopedTempDir temp_dir;
+    ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+    installer_state.RemoveOldVersionDirectories(*latest_version.get(),
+                                                temp_dir.path());
+  }
 
   // old versions should be gone
   EXPECT_FALSE(file_util::PathExists(chrome_dir_1));
@@ -193,7 +199,12 @@ TEST_F(InstallerStateTest, DeleteInUsed) {
   MockInstallerState installer_state;
   BuildSingleChromeState(chrome_dir, &installer_state);
   scoped_ptr<Version> latest_version(Version::GetVersionFromString("1.0.4.0"));
-  installer_state.RemoveOldVersionDirectories(*latest_version.get());
+  {
+    ScopedTempDir temp_dir;
+    ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+    installer_state.RemoveOldVersionDirectories(*latest_version.get(),
+                                                temp_dir.path());
+  }
 
   // old versions not in used should be gone
   EXPECT_FALSE(file_util::PathExists(chrome_dir_1));
@@ -265,7 +276,12 @@ TEST_F(InstallerStateTest, Basic) {
   EXPECT_TRUE(file.IsValid());
   EXPECT_TRUE(file_util::PathExists(old_chrome_dll));
 
-  installer_state.RemoveOldVersionDirectories(*new_version.get());
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  installer_state.RemoveOldVersionDirectories(*new_version.get(),
+                                              temp_dir.path());
+
   // The old directory should still exist.
   EXPECT_TRUE(file_util::PathExists(old_version_dir));
   EXPECT_TRUE(file_util::PathExists(new_version_dir));
@@ -273,7 +289,8 @@ TEST_F(InstallerStateTest, Basic) {
   // Now close the file handle to make it possible to delete our key file.
   file.Close();
 
-  installer_state.RemoveOldVersionDirectories(*new_version.get());
+  installer_state.RemoveOldVersionDirectories(*new_version.get(),
+                                              temp_dir.path());
   // The new directory should still exist.
   EXPECT_TRUE(file_util::PathExists(new_version_dir));
 

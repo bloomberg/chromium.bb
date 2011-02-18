@@ -119,15 +119,18 @@ WorkItem* WorkItemList::AddDeleteRegValueWorkItem(
 
 WorkItem* WorkItemList::AddDeleteTreeWorkItem(
     const FilePath& root_path,
+    const FilePath& temp_path,
     const std::vector<FilePath>& key_paths) {
-  WorkItem* item = WorkItem::CreateDeleteTreeWorkItem(root_path, key_paths);
+  WorkItem* item = WorkItem::CreateDeleteTreeWorkItem(root_path, temp_path,
+                                                      key_paths);
   AddWorkItem(item);
   return item;
 }
 
-WorkItem* WorkItemList::AddDeleteTreeWorkItem(const FilePath& root_path) {
+WorkItem* WorkItemList::AddDeleteTreeWorkItem(const FilePath& root_path,
+                                              const FilePath& temp_path) {
   std::vector<FilePath> no_key_files;
-  return AddDeleteTreeWorkItem(root_path, no_key_files);
+  return AddDeleteTreeWorkItem(root_path, temp_path, no_key_files);
 }
 
 WorkItem* WorkItemList::AddMoveTreeWorkItem(const std::wstring& source_path,

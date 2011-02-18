@@ -11,9 +11,6 @@
 #include "chrome/installer/util/logging_installer.h"
 
 MoveTreeWorkItem::~MoveTreeWorkItem() {
-  if (file_util::PathExists(backup_path_)) {
-    file_util::Delete(backup_path_, true);
-  }
 }
 
 MoveTreeWorkItem::MoveTreeWorkItem(const FilePath& source_path,
@@ -35,19 +32,21 @@ bool MoveTreeWorkItem::Do() {
   // If dest_path_ exists, move destination to a backup path.
   if (file_util::PathExists(dest_path_)) {
     // Generate a backup path that can keep the original files under dest_path_.
-    if (!file_util::CreateTemporaryFileInDir(FilePath(temp_dir_),
-                                             &backup_path_)) {
-      LOG(ERROR) << "Failed to get backup path in folder " << temp_dir_.value();
+    if (!backup_path_.CreateUniqueTempDirUnderPath(temp_dir_)) {
+      PLOG(ERROR) << "Failed to get backup path in folder "
+                  << temp_dir_.value();
       return false;
     }
 
-    if (file_util::Move(dest_path_, backup_path_)) {
+    FilePath backup = backup_path_.path().Append(dest_path_.BaseName());
+
+    if (file_util::Move(dest_path_, backup)) {
       moved_to_backup_ = true;
       VLOG(1) << "Moved destination " << dest_path_.value()
-              << " to backup path " << backup_path_.value();
+              << " to backup path " << backup.value();
     } else {
       LOG(ERROR) << "failed moving " << dest_path_.value()
-                 << " to " << backup_path_.value();
+                 << " to " << backup.value();
       return false;
     }
   }
@@ -71,7 +70,11 @@ void MoveTreeWorkItem::Rollback() {
     LOG(ERROR) << "Can not move " << dest_path_.value()
                << " to " << source_path_.value();
 
-  if (moved_to_backup_ && !file_util::Move(backup_path_, dest_path_))
-    LOG(ERROR) << "failed move " << backup_path_.value()
-               << " to " << dest_path_.value();
+  if (moved_to_backup_) {
+    FilePath backup = backup_path_.path().Append(dest_path_.BaseName());
+    if (!file_util::Move(backup, dest_path_)) {
+      LOG(ERROR) << "failed move " << backup.value()
+                 << " to " << dest_path_.value();
+    }
+  }
 }

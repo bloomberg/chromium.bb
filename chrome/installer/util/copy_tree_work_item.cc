@@ -11,9 +11,6 @@
 #include "chrome/installer/util/logging_installer.h"
 
 CopyTreeWorkItem::~CopyTreeWorkItem() {
-  if (file_util::PathExists(backup_path_)) {
-    file_util::Delete(backup_path_, true);
-  }
 }
 
 CopyTreeWorkItem::CopyTreeWorkItem(const FilePath& source_path,
@@ -40,7 +37,7 @@ bool CopyTreeWorkItem::Do() {
   bool dest_exist = file_util::PathExists(dest_path_);
   // handle overwrite_option_ = IF_DIFFERENT case.
   if ((dest_exist) &&
-      (overwrite_option_ == WorkItem::IF_DIFFERENT) && // only for single file
+      (overwrite_option_ == WorkItem::IF_DIFFERENT) &&  // only for single file
       (!file_util::DirectoryExists(source_path_)) &&
       (!file_util::DirectoryExists(dest_path_)) &&
       (file_util::ContentsEqual(source_path_, dest_path_))) {
@@ -74,16 +71,20 @@ bool CopyTreeWorkItem::Do() {
 
   // In all cases that reach here, move dest to a backup path.
   if (dest_exist) {
-    if (!GetBackupPath())
+    if (!backup_path_.CreateUniqueTempDirUnderPath(temp_dir_)) {
+      PLOG(ERROR) << "Failed to get backup path in folder "
+                  << temp_dir_.value();
       return false;
+    }
 
-    if (file_util::Move(dest_path_, backup_path_)) {
+    FilePath backup = backup_path_.path().Append(dest_path_.BaseName());
+    if (file_util::Move(dest_path_, backup)) {
       moved_to_backup_ = true;
       VLOG(1) << "Moved destination " << dest_path_.value() <<
-                 " to backup path " << backup_path_.value();
+                 " to backup path " << backup.value();
     } else {
       LOG(ERROR) << "failed moving " << dest_path_.value()
-                 << " to " << backup_path_.value();
+                 << " to " << backup.value();
       return false;
     }
   }
@@ -104,16 +105,19 @@ bool CopyTreeWorkItem::Do() {
 
 void CopyTreeWorkItem::Rollback() {
   // Normally the delete operations below should not fail unless some
-  // programs like anti-virus are inpecting the files we just copied.
+  // programs like anti-virus are inspecting the files we just copied.
   // If this does happen sometimes, we may consider using Move instead of
   // Delete here. For now we just log the error and continue with the
   // rest of rollback operation.
   if (copied_to_dest_path_ && !file_util::Delete(dest_path_, true)) {
     LOG(ERROR) << "Can not delete " << dest_path_.value();
   }
-  if (moved_to_backup_ && !file_util::Move(backup_path_, dest_path_)) {
-    LOG(ERROR) << "failed move " << backup_path_.value()
-               << " to " << dest_path_.value();
+  if (moved_to_backup_) {
+    FilePath backup(backup_path_.path().Append(dest_path_.BaseName()));
+    if (!file_util::Move(backup, dest_path_)) {
+      LOG(ERROR) << "failed move " << backup.value()
+                 << " to " << dest_path_.value();
+    }
   }
   if (copied_to_alternate_path_ &&
       !file_util::Delete(alternative_path_, true)) {
@@ -132,19 +136,4 @@ bool CopyTreeWorkItem::IsFileInUse(const FilePath& path) {
 
   CloseHandle(handle);
   return false;
-}
-
-bool CopyTreeWorkItem::GetBackupPath() {
-  backup_path_ = temp_dir_.Append(dest_path_.BaseName());
-
-  if (file_util::PathExists(backup_path_)) {
-    // Ideally we should not fail immediately. Instead we could try some
-    // random paths under temp_dir_ until we reach certain limit.
-    // For now our caller always provides a good temporary directory so
-    // we don't bother.
-    LOG(ERROR) << "backup path " << backup_path_.value() << " already exists";
-    return false;
-  }
-
-  return true;
 }

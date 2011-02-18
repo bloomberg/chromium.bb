@@ -690,8 +690,8 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
     if (product_state != NULL) {
       std::vector<FilePath> com_dll_list;
       product.AddComDllList(&com_dll_list);
-      FilePath dll_folder = installer_state.target_path().Append(
-          UTF8ToWide(product_state->version().GetString()));
+      FilePath dll_folder = installer_state.target_path().AppendASCII(
+          product_state->version().GetString());
 
       scoped_ptr<WorkItemList> unreg_work_item_list(
           WorkItem::CreateWorkItemList());

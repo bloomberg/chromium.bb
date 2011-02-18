@@ -57,30 +57,6 @@ void AddChromeToMediaPlayerList() {
     LOG(ERROR) << "Could not add Chrome to media player inclusion list.";
 }
 
-void AddInstallerCopyTasks(const InstallerState& installer_state,
-                           const FilePath& setup_path,
-                           const FilePath& archive_path,
-                           const FilePath& temp_path,
-                           const Version& new_version,
-                           WorkItemList* install_list) {
-  DCHECK(install_list);
-  FilePath installer_dir(installer_state.GetInstallerDirectory(new_version));
-  install_list->AddCreateDirWorkItem(installer_dir);
-
-  FilePath exe_dst(installer_dir.Append(setup_path.BaseName()));
-  FilePath archive_dst(installer_dir.Append(archive_path.BaseName()));
-
-  install_list->AddCopyTreeWorkItem(setup_path.value(), exe_dst.value(),
-                                    temp_path.value(), WorkItem::ALWAYS);
-  if (installer_state.system_install()) {
-    install_list->AddCopyTreeWorkItem(archive_path.value(), archive_dst.value(),
-                                      temp_path.value(), WorkItem::ALWAYS);
-  } else {
-    install_list->AddMoveTreeWorkItem(archive_path.value(), archive_dst.value(),
-                                      temp_path.value());
-  }
-}
-
 // Copy master preferences file provided to installer, in the same folder
 // as chrome.exe so Chrome first run can find it. This function will be called
 // only on the first install of Chrome.
@@ -263,8 +239,8 @@ void RegisterChromeOnMachine(const InstallerState& installer_state,
 //               to Chrome install folder after install is complete
 // src_path: the path that contains a complete and unpacked Chrome package
 //           to be installed.
-// temp_dir: the path of working directory used during installation. This path
-//           does not need to exist.
+// temp_path: the path of working directory used during installation. This path
+//            does not need to exist.
 // new_version: new Chrome version that needs to be installed
 // current_version: returns the current active version (if any)
 //
@@ -281,7 +257,7 @@ installer::InstallStatus InstallNewVersion(
     const FilePath& setup_path,
     const FilePath& archive_path,
     const FilePath& src_path,
-    const FilePath& temp_dir,
+    const FilePath& temp_path,
     const Version& new_version,
     scoped_ptr<Version>* current_version) {
   DCHECK(current_version);
@@ -294,7 +270,7 @@ installer::InstallStatus InstallNewVersion(
                       setup_path,
                       archive_path,
                       src_path,
-                      temp_dir,
+                      temp_path,
                       new_version,
                       current_version,
                       install_list.get());
@@ -425,7 +401,7 @@ InstallStatus InstallOrUpdateProduct(
     }
 
     installer_state.RemoveOldVersionDirectories(existing_version.get() ?
-        *existing_version.get() : new_version);
+        *existing_version.get() : new_version, install_temp_path);
   }
 
   return result;

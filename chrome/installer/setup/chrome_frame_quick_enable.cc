@@ -7,6 +7,7 @@
 #include <windows.h>
 
 #include "base/logging.h"
+#include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "base/win/registry.h"
 #include "chrome/installer/setup/install_worker.h"
@@ -79,6 +80,11 @@ InstallStatus ChromeFrameQuickEnable(const InstallationState& machine_state,
       LOG(ERROR) << "AddProduct failed";
       status = INSTALL_FAILED;
     } else {
+      ScopedTempDir temp_path;
+      if (!temp_path.CreateUniqueTempDir()) {
+        PLOG(ERROR) << "Failed to create Temp directory";
+        return INSTALL_FAILED;
+      }
       scoped_ptr<WorkItemList> item_list(WorkItem::CreateWorkItemList());
       const ProductState* chrome_state =
           machine_state.GetProductState(installer_state->system_install(),
@@ -106,7 +112,7 @@ InstallStatus ChromeFrameQuickEnable(const InstallationState& machine_state,
 
       const Version* opv = chrome_state->old_version();
       AppendPostInstallTasks(*installer_state, setup_path, new_chrome_exe, opv,
-                             new_version, item_list.get());
+                             new_version, temp_path.path(), item_list.get());
 
       // Before updating the channel values, add Chrome back to the mix so that
       // all multi-installed products' channel values get updated.

@@ -217,10 +217,6 @@ TEST_F(CopyTreeWorkItemTest, CopyFileSameContent) {
   CreateTextFile(file_name_to.value(), text_content_1);
   ASSERT_TRUE(file_util::PathExists(file_name_to));
 
-  // Get the path of backup file
-  FilePath backup_file(temp_dir_);
-  backup_file = backup_file.AppendASCII("File_To.txt");
-
   // test Do() with always_overwrite being true.
   scoped_ptr<CopyTreeWorkItem> work_item(
       WorkItem::CreateCopyTreeWorkItem(file_name_from,
@@ -230,6 +226,11 @@ TEST_F(CopyTreeWorkItemTest, CopyFileSameContent) {
                                        FilePath()));
 
   EXPECT_TRUE(work_item->Do());
+
+  // Get the path of backup file
+  FilePath backup_file(work_item->backup_path_.path());
+  EXPECT_FALSE(backup_file.empty());
+  backup_file = backup_file.AppendASCII("File_To.txt");
 
   EXPECT_TRUE(file_util::PathExists(file_name_from));
   EXPECT_TRUE(file_util::PathExists(file_name_to));
@@ -297,9 +298,7 @@ TEST_F(CopyTreeWorkItemTest, CopyFileAndCleanup) {
   CreateTextFile(file_name_to.value(), text_content_2);
   ASSERT_TRUE(file_util::PathExists(file_name_to));
 
-  // Get the path of backup file
-  FilePath backup_file(temp_dir_);
-  backup_file = backup_file.AppendASCII("File_To.txt");
+  FilePath backup_file;
 
   {
     // test Do().
@@ -311,6 +310,11 @@ TEST_F(CopyTreeWorkItemTest, CopyFileAndCleanup) {
                                          FilePath()));
 
     EXPECT_TRUE(work_item->Do());
+
+    // Get the path of backup file
+    backup_file = work_item->backup_path_.path();
+    EXPECT_FALSE(backup_file.empty());
+    backup_file = backup_file.AppendASCII("File_To.txt");
 
     EXPECT_TRUE(file_util::PathExists(file_name_from));
     EXPECT_TRUE(file_util::PathExists(file_name_to));
@@ -361,10 +365,6 @@ TEST_F(CopyTreeWorkItemTest, CopyFileInUse) {
                        NULL, NULL, FALSE, CREATE_NO_WINDOW | CREATE_SUSPENDED,
                        NULL, NULL, &si, &pi));
 
-  // Get the path of backup file
-  FilePath backup_file(temp_dir_);
-  backup_file = backup_file.AppendASCII("File_To");
-
   // test Do().
   scoped_ptr<CopyTreeWorkItem> work_item(
       WorkItem::CreateCopyTreeWorkItem(file_name_from,
@@ -374,6 +374,11 @@ TEST_F(CopyTreeWorkItemTest, CopyFileInUse) {
                                        FilePath()));
 
   EXPECT_TRUE(work_item->Do());
+
+  // Get the path of backup file
+  FilePath backup_file(work_item->backup_path_.path());
+  EXPECT_FALSE(backup_file.empty());
+  backup_file = backup_file.AppendASCII("File_To");
 
   EXPECT_TRUE(file_util::PathExists(file_name_from));
   EXPECT_TRUE(file_util::PathExists(file_name_to));
@@ -440,10 +445,6 @@ TEST_F(CopyTreeWorkItemTest, NewNameAndCopyTest) {
                        NULL, NULL, FALSE, CREATE_NO_WINDOW | CREATE_SUSPENDED,
                        NULL, NULL, &si, &pi));
 
-  // Get the path of backup file
-  FilePath backup_file(temp_dir_);
-  backup_file = backup_file.AppendASCII("File_To");
-
   // test Do().
   scoped_ptr<CopyTreeWorkItem> work_item(
       WorkItem::CreateCopyTreeWorkItem(file_name_from,
@@ -459,7 +460,7 @@ TEST_F(CopyTreeWorkItemTest, NewNameAndCopyTest) {
   EXPECT_EQ(0, ReadTextFile(file_name_from.value()).compare(text_content_1));
   EXPECT_TRUE(file_util::ContentsEqual(exe_full_path, file_name_to));
   // verify that the backup path does not exist
-  EXPECT_FALSE(file_util::PathExists(backup_file));
+  EXPECT_TRUE(work_item->backup_path_.path().empty());
   EXPECT_TRUE(file_util::ContentsEqual(file_name_from, alternate_to));
 
   // test rollback()
@@ -469,7 +470,7 @@ TEST_F(CopyTreeWorkItemTest, NewNameAndCopyTest) {
   EXPECT_TRUE(file_util::PathExists(file_name_to));
   EXPECT_EQ(0, ReadTextFile(file_name_from.value()).compare(text_content_1));
   EXPECT_TRUE(file_util::ContentsEqual(exe_full_path, file_name_to));
-  EXPECT_FALSE(file_util::PathExists(backup_file));
+  EXPECT_TRUE(work_item->backup_path_.path().empty());
   // the alternate file should be gone after rollback
   EXPECT_FALSE(file_util::PathExists(alternate_to));
 
@@ -489,6 +490,11 @@ TEST_F(CopyTreeWorkItemTest, NewNameAndCopyTest) {
   // If file is still in use, the rest of the test will fail.
   ASSERT_FALSE(IsFileInUse(file_name_to));
   EXPECT_TRUE(work_item->Do());
+
+  // Get the path of backup file
+  FilePath backup_file(work_item->backup_path_.path());
+  EXPECT_FALSE(backup_file.empty());
+  backup_file = backup_file.AppendASCII("File_To");
 
   EXPECT_TRUE(file_util::PathExists(file_name_from));
   EXPECT_TRUE(file_util::PathExists(file_name_to));
@@ -631,9 +637,7 @@ TEST_F(CopyTreeWorkItemTest, FLAKY_CopyFileInUseAndCleanup) {
                        NULL, NULL, FALSE, CREATE_NO_WINDOW | CREATE_SUSPENDED,
                        NULL, NULL, &si, &pi));
 
-  // Get the path of backup file
-  FilePath backup_file(temp_dir_);
-  backup_file = backup_file.AppendASCII("File_To");
+  FilePath backup_file;
 
   // test Do().
   {
@@ -645,6 +649,11 @@ TEST_F(CopyTreeWorkItemTest, FLAKY_CopyFileInUseAndCleanup) {
                                          FilePath()));
 
     EXPECT_TRUE(work_item->Do());
+
+    // Get the path of backup file
+    backup_file = work_item->backup_path_.path();
+    EXPECT_FALSE(backup_file.empty());
+    backup_file = backup_file.AppendASCII("File_To");
 
     EXPECT_TRUE(file_util::PathExists(file_name_from));
     EXPECT_TRUE(file_util::PathExists(file_name_to));

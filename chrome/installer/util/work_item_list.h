@@ -69,10 +69,12 @@ class WorkItemList : public WorkItem {
   // by key_path.
   virtual WorkItem* AddDeleteTreeWorkItem(
       const FilePath& root_path,
+      const FilePath& temp_path,
       const std::vector<FilePath>& key_paths);
 
   // Same as above but without support for key files.
-  virtual WorkItem* AddDeleteTreeWorkItem(const FilePath& root_path);
+  virtual WorkItem* AddDeleteTreeWorkItem(const FilePath& root_path,
+                                          const FilePath& temp_path);
 
   // Add a MoveTreeWorkItem to the list of work items.
   virtual WorkItem* AddMoveTreeWorkItem(const std::wstring& source_path,
