@@ -370,7 +370,6 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 @interface BookmarkBarController(InternalOrTestingAPI)
 - (BookmarkBarView*)buttonView;
 - (NSMutableArray*)buttons;
-- (NSMenu*)offTheSideMenu;
 - (NSButton*)offTheSideButton;
 - (BOOL)offTheSideButtonIsHidden;
 - (BookmarkButton*)otherBookmarksButton;
