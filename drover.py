@@ -132,13 +132,12 @@ def getSVNVersionInfo():
                                  stderr=subprocess.PIPE).stdout.readlines()
   info = {}
   for line in svn_info:
-    match = re.search(r"svn, version ((\d+)\.(\d+)\.(\d+)) \(r(\d+)\)", line)
+    match = re.search(r"svn, version ((\d+)\.(\d+)\.(\d+))", line)
     if match:
       info['version'] = match.group(1)
       info['major'] = int(match.group(2))
       info['minor'] = int(match.group(3))
       info['patch'] = int(match.group(4))
-      info['revision'] = match.group(5)
       return info
 
   return None
