@@ -31,7 +31,7 @@ PUBLIC_OVERLAY = '%(buildroot)s/src/third_party/chromiumos-overlay'
 PRIVATE_OVERLAY = '%(buildroot)s/src/private-overlays/chromeos-overlay'
 CHROME_KEYWORDS_FILE = ('/build/%(board)s/etc/portage/package.keywords/chrome')
 
-_FULL_BINHOST = 'PORTAGE_BINHOST'
+_FULL_BINHOST = 'FULL_BINHOST'
 _PREFLIGHT_BINHOST = 'PREFLIGHT_BINHOST'
 _CHROME_BINHOST = 'CHROME_BINHOST'
 _CROS_ARCHIVE_URL = 'CROS_ARCHIVE_URL'
@@ -520,7 +520,6 @@ def _LegacyArchiveBuild(buildroot, bot_id, buildconfig, buildnumber,
          '--gsutil', '/b/scripts/slave/gsutil',
   ]
   # Give the right args to archive_build.
-  if buildconfig['archive_build_prebuilts']: cmd.append('--prebuilt_upload')
   if buildconfig.get('factory_test_mod', True): cmd.append('--factory_test_mod')
   if not buildconfig['archive_build_debug']: cmd.append('--noarchive_debug')
   if not buildconfig.get('test_mod'): cmd.append('--notest_mod')
@@ -614,7 +613,8 @@ def _ResolveOverlays(buildroot, overlays):
   return paths
 
 
-def _UploadPrebuilts(buildroot, board, overlay_config, binhosts, chrome_rev):
+def _UploadPrebuilts(buildroot, board, overlay_config, binhosts, category,
+                     chrome_rev):
   """Upload prebuilts.
 
   Args:
@@ -626,13 +626,14 @@ def _UploadPrebuilts(buildroot, board, overlay_config, binhosts, chrome_rev):
                     'both': Both the public and private overlays.
     binhosts: The URLs of the current binhosts. Binaries that are already
               present will not be uploaded twice. Empty URLs will be ignored.
+    category: Build type. Can be [preflight|full|chrome].
     chrome_rev: Chrome_rev of type [tot|latest_release|sticky_release].
   """
   cwd = os.path.dirname(__file__)
   cmd = ['./prebuilt.py',
-         '--sync-binhost-conf',
          '--build-path', buildroot,
-         '--board', board]
+         '--board', board,
+         '--prepend-version', category]
   for binhost in binhosts:
     if binhost:
       cmd.extend(['--previous-binhost-url', binhost])
@@ -642,13 +643,25 @@ def _UploadPrebuilts(buildroot, board, overlay_config, binhosts, chrome_rev):
     assert overlay_config in ('private', 'both')
     cmd.extend(['--upload', 'chromeos-images:/var/www/prebuilt/',
                 '--binhost-base-url', 'http://chromeos-prebuilt'])
-  if chrome_rev:
+  if category == 'chrome':
+    assert chrome_rev
     key = '%s_%s' % (chrome_rev, _CHROME_BINHOST)
-    cmd.extend(['--prepend-version', 'chrome',
+    cmd.extend(['--sync-binhost-conf',
                 '--key', key.upper()])
-  else:
-    cmd.extend(['--prepend-version', 'preflight',
+  elif category == 'preflight':
+    cmd.extend(['--sync-binhost-conf',
                 '--key', _PREFLIGHT_BINHOST])
+  else:
+    assert category == 'full'
+
+    # Commit new binhost directly to board overlay.
+    cmd.extend(['--git-sync',
+                '--key', _FULL_BINHOST])
+
+    # Only one bot should upload full host prebuilts. We've arbitrarily
+    # designated the x86-generic bot as the bot that does that.
+    if board == 'x86-generic':
+      cmd.append('--sync-host')
 
   OldRunCommand(cmd, cwd=cwd)
 
@@ -737,6 +750,9 @@ def main():
 
     new_binhost = _GetPortageEnvVar(buildroot, board, _FULL_BINHOST)
     emptytree = (old_binhost and old_binhost != new_binhost)
+    build_type = None
+    if options.prebuilts and not options.debug:
+      build_type = buildconfig['build_type']
 
     # Check that all overlays can be found.
     for path in rev_overlays:
@@ -769,6 +785,11 @@ def main():
              build_autotest=(buildconfig['vm_tests'] and options.tests),
              usepkg=buildconfig['usepkg'])
 
+      if build_type == 'full':
+         assert not buildconfig['uprev'] and not options.chrome_rev
+         _UploadPrebuilts(buildroot, board, buildconfig['rev_overlays'], [],
+                          build_type, False)
+
       if buildconfig['unittests'] and options.tests:
         _RunUnitTests(buildroot)
 
@@ -791,9 +812,10 @@ def main():
     if buildconfig['master']:
       # Master bot needs to check if the other slaves completed.
       if cbuildbot_comm.HaveSlavesCompleted(config):
-        if not options.debug and options.prebuilts:
+        if build_type in ('preflight', 'chrome'):
           _UploadPrebuilts(buildroot, board, buildconfig['rev_overlays'],
-                           [new_binhost], options.chrome_rev)
+                           [new_binhost], build_type,
+                           options.chrome_rev)
         _UprevPush(buildroot, tracking_branch, buildconfig['board'],
                    push_overlays, options.debug)
       else:

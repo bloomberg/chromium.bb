@@ -214,7 +214,7 @@ class CBuildBotTest(mox.MoxTestBase):
     cbuildbot.OldRunCommand(check, cwd=os.path.dirname(cbuildbot.__file__))
     self.mox.ReplayAll()
     cbuildbot._UploadPrebuilts(self._buildroot, self._test_board, 'public',
-                               binhosts, None)
+                               binhosts, 'preflight', None)
     self.mox.VerifyAll()
 
   def testUploadPrivatePrebuilts(self):
@@ -227,7 +227,7 @@ class CBuildBotTest(mox.MoxTestBase):
     cbuildbot.OldRunCommand(check, cwd=os.path.dirname(cbuildbot.__file__))
     self.mox.ReplayAll()
     cbuildbot._UploadPrebuilts(self._buildroot, self._test_board, 'private',
-                               binhosts, 'tot')
+                               binhosts, 'chrome', 'tot')
     self.mox.VerifyAll()
 
 

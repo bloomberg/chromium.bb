@@ -33,7 +33,8 @@ vm_tests -- Runs the smoke suite and au test harness in a qemu-based VM
 usepkg -- Use binary packages to bootstrap, when possible. (emerge --usepkg)
 chroot_replace -- wipe and replace chroot, but not source.
 
-archive_build_prebuilts -- Do we run archive_build.sh with --prebuild_upload
+build_type -- Upload prebuilts under the specified category. Can be any of
+              [preflight|full|chrome].
 test_mod -- Create a test mod image for archival.
 factory_install_mod -- Create a factory install image for archival.
 factory_test_mod -- Create a factory test image for archival.
@@ -59,7 +60,7 @@ default = {
   'usepkg' : True,
   'chroot_replace' : False,
 
-  'archive_build_prebuilts' : False,
+  'build_type' : False,
   'archive_build_debug' : False,
   'test_mod' : False,
   'factory_install_mod' : False,
@@ -82,7 +83,7 @@ full = {
   'usepkg' : False,
   'chroot_replace' : True,
 
-  'archive_build_prebuilts' : True,
+  'build_type': 'full',
   'archive_build_debug' : True,
   'test_mod' : True,
   'factory_install_mod' : True,
@@ -99,6 +100,7 @@ config['x86-generic-pre-flight-queue'].update({
   'hostname' : 'chromeosbuild2',
 
   'uprev' : True,
+  'build_type': 'preflight',
   'rev_overlays': 'public',
   'push_overlays': 'public',
 })
@@ -108,6 +110,7 @@ config['x86-generic-chrome-pre-flight-queue'].update({
   'board' : 'x86-generic',
   'master' : True,
 
+  'build_type': 'chrome',
   'uprev' : False,
   'rev_overlays': 'public',
   'push_overlays': 'public',
