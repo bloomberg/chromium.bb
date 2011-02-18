@@ -34,7 +34,7 @@ void JsSyncManagerObserver::OnChangesApplied(
   ListValue* change_values = new ListValue();
   return_args.Append(change_values);
   for (int i = 0; i < change_count; ++i) {
-    change_values->Append(changes->ToValue(trans));
+    change_values->Append(changes[i].ToValue(trans));
   }
   parent_router_->RouteJsEvent("onChangesApplied",
                                JsArgList(return_args), NULL);

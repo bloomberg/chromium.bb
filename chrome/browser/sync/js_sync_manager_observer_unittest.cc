@@ -179,9 +179,9 @@ TEST_F(JsSyncManagerObserverTest, OnChangesApplied) {
   // We don't test with passwords as that requires additional setup.
 
   // Build a list of example ChangeRecords.
-  sync_api::SyncManager::ChangeRecord changes[syncable::PASSWORDS];
-  for (int i = syncable::FIRST_REAL_MODEL_TYPE;
-       i < syncable::PASSWORDS; ++i) {
+  sync_api::SyncManager::ChangeRecord changes[syncable::MODEL_TYPE_COUNT];
+  for (int i = syncable::AUTOFILL_PROFILE;
+       i < syncable::MODEL_TYPE_COUNT; ++i) {
     changes[i].id = MakeNode(&share, syncable::ModelTypeFromInt(i));
     switch (i % 3) {
       case 0:
@@ -205,18 +205,22 @@ TEST_F(JsSyncManagerObserverTest, OnChangesApplied) {
     }
   }
 
+  // For each i, we call OnChangesApplied() with the first arg equal
+  // to i cast to ModelType and the second argument with the changes
+  // starting from changes[i].
+
   // Set expectations for each data type.
-  for (int i = syncable::FIRST_REAL_MODEL_TYPE;
-       i < syncable::PASSWORDS; ++i) {
+  for (int i = syncable::AUTOFILL_PROFILE;
+       i < syncable::MODEL_TYPE_COUNT; ++i) {
     const std::string& model_type_str =
         syncable::ModelTypeToString(syncable::ModelTypeFromInt(i));
     ListValue expected_args;
     expected_args.Append(Value::CreateStringValue(model_type_str));
     ListValue* expected_changes = new ListValue();
     expected_args.Append(expected_changes);
-    for (int j = i; j < syncable::PASSWORDS; ++j) {
+    for (int j = i; j < syncable::MODEL_TYPE_COUNT; ++j) {
       sync_api::ReadTransaction trans(&share);
-      expected_changes->Append(changes[i].ToValue(&trans));
+      expected_changes->Append(changes[j].ToValue(&trans));
     }
     EXPECT_CALL(mock_router_,
                 RouteJsEvent("onChangesApplied",
@@ -224,12 +228,12 @@ TEST_F(JsSyncManagerObserverTest, OnChangesApplied) {
   }
 
   // Fire OnChangesApplied() for each data type.
-  for (int i = syncable::FIRST_REAL_MODEL_TYPE;
-       i < syncable::PASSWORDS; ++i) {
+  for (int i = syncable::AUTOFILL_PROFILE;
+       i < syncable::MODEL_TYPE_COUNT; ++i) {
     sync_api::ReadTransaction trans(&share);
     sync_manager_observer_.OnChangesApplied(syncable::ModelTypeFromInt(i),
                                             &trans, &changes[i],
-                                            syncable::PASSWORDS - i);
+                                            syncable::MODEL_TYPE_COUNT - i);
   }
 
   // |share.dir_manager| does not actually own its value.
