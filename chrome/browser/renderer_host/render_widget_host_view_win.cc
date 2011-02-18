@@ -841,6 +841,12 @@ LRESULT RenderWidgetHostViewWin::OnCreate(CREATESTRUCT* create_struct) {
   props_.push_back(views::SetWindowSupportsRerouteMouseWheel(m_hWnd));
   props_.push_back(new ViewProp(m_hWnd, kRenderWidgetHostViewKey,
                                 static_cast<RenderWidgetHostView*>(this)));
+  // Save away our HWND in the parent window as a property so that the
+  // accessibility code can find it.
+  accessibility_prop_.reset(new ViewProp(GetParent(),
+                                         kViewsNativeHostPropForAccessibility,
+                                         m_hWnd));
+
   return 0;
 }
 
