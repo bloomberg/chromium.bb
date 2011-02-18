@@ -21,7 +21,7 @@ function RPCWrapper() {
 
   // Called if URL-encoded RPC gets a 404, can't find the server, etc. 
   function handleRPCFailure(name, message) {
-    this_.logLocalError('RPC failiure for ' + name + ': ' + message);
+    this_.logLocalError('RPC failure for ' + name + ': ' + message);
     this_.disableRPC();
   }
 
@@ -118,7 +118,9 @@ function RPCWrapper() {
   }
 
   this.log = function(test_name, message) {
-    message = toString(message);
+    if (typeof(message) != 'string') {
+      message = toString(message);
+    }
     this.logLocal('[' + test_name + ' LOG] ' + message);
     rpcCall('TestLog', {test_name: test_name, message: message});
   }
@@ -222,6 +224,9 @@ function isArray(obj) {
 
 
 function toString(obj) {
+  if (typeof(obj) == 'string') {
+    return '\'' + obj + '\'';
+  }
   try {
     return obj.toString();
   } catch (err) {
@@ -230,8 +235,12 @@ function toString(obj) {
       // NaCl gets array types wrong.  .toString will fail on these objects.
       return obj.join(',');
     } catch (err) {
-      // There is no way to create a textual representation of this object.
-      return '[UNPRINTABLE]';
+      if (obj == undefined) {
+        return 'undefined';
+      } else {
+        // There is no way to create a textual representation of this object.
+        return '[UNPRINTABLE]';
+      }
     }
   }
 }
@@ -240,7 +249,7 @@ function toString(obj) {
 function assertEqual(a, b, message) {
   if (isArray(a) && isArray(b)) {
     assertArraysEqual(a, b, message);
-  } else if (a != b) {
+  } else if (a !== b) {
     fail(message, toString(a) + ' != ' + toString(b));
   }
 }
@@ -314,7 +323,7 @@ function ends_with(s, suffix) {
 function is_nacl_embed(embed) {
   if (embed.type != undefined) {
     var type = embed.type.toLowerCase();
-    if (begins_with(type, 'application/') && type.indexOf('-nacl-') != -1) {
+    if (begins_with(type, 'application/') && type.indexOf('-nacl') != -1) {
       return true;
     }
   }
@@ -329,11 +338,11 @@ function is_nacl_embed(embed) {
   if (embed.nexes != undefined) {
     return true;
   }
+  return false;
 }
 
-// Intentionally phrased so broken modules are considered loaded
-function is_loaded(embed) {
-  return embed.__moduleReady != 0;
+function is_loading(embed) {
+  return embed.__moduleReady == 0;
 }
 
 function is_broken(embed) {
@@ -389,28 +398,38 @@ function Tester() {
   this.waitForPlugins = function() {
     var loaded = true;
     var waiting = [];
+    var loaded = [];
 
-    embeds = document.getElementsByTagName('embed');
+    var embeds = document.getElementsByTagName('embed');
     for (var i = 0; i < embeds.length; i++) {
       if (is_nacl_embed(embeds[i])) {
         if (is_broken(embeds[i])) {
           this.rpc.client_error('nacl embed is broken: ' +
                                 embed_name(embeds[i]));
-        } else if (!is_loaded(embeds[i])) {
+        } else if (is_loading(embeds[i])) {
           waiting.push(embeds[i]);
+        } else {
+          loaded.push(embeds[i]);
         }
       }
     }
 
+    function doStart() {
+      for (var i = 0; i < loaded.length; i++) {
+        log(embed_name(loaded[i]) + ' loaded');
+      }
+      this_.startTesting();
+    }
+
     if (waiting.length == 0) {
-      this.startTesting();
+      doStart();
     } else {
       this.retries -= 1;
       if (this.retries <= 0) {
         for (var j = 0; j < waiting.length; j++) {
           this.rpc.client_error(embed_name(waiting[j]) +
                                 ' took too long to load');
-          this.startTesting();
+          doStart();
         }
       } else {
         setTimeout(function() { this_.waitForPlugins(); }, this.retryWait);
@@ -528,13 +547,13 @@ function Tester() {
     this.currentTest = psedo_test;
 
     // Log messages that occurred before rpc was set up
-    for (i in backlog) {
+    for (var i = 0; i < backlog.length; i++) {
       this.log(backlog[i]);
     }
     backlog = [];
 
     // Exceptions that occurred outside of tests
-    for (var i in errors) {
+    for (var i = 0; i < errors.length; i++) {
       this.handleExternalError(errors[i]);
     }
     errors = [];

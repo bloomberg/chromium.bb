@@ -952,13 +952,15 @@ def CommandValidatorTestNacl(env, name, image,
 
 pre_base_env.AddMethod(CommandValidatorTestNacl)
 
+
 # ----------------------------------------------------------
-EXTRA_ENV = [('XAUTHORITY', None),
-             ('HOME', None),
-             ('DISPLAY', None),
-             ('SSH_TTY', None),
-             ('KRB5CCNAME', None),
-             ]
+EXTRA_ENV = ['XAUTHORITY', 'HOME', 'DISPLAY', 'SSH_TTY', 'KRB5CCNAME']
+
+def SetupBrowserEnv(env):
+  for var_name in EXTRA_ENV:
+    if var_name in os.environ:
+      env['ENV'][var_name] = os.environ[var_name]
+
 
 SELENIUM_TEST_SCRIPT = '${SCONSTRUCT_DIR}/tools/selenium_tester.py'
 
@@ -1015,10 +1017,7 @@ def BrowserTester(env,
   # env['ENV']['PYTHONPATH'] = ???
   # NOTE: since most of the demos use X11 we need to make sure
   #      some env vars are set for tag, val in extra_env:
-  for tag, val in EXTRA_ENV:
-    if val is None:
-      if os.getenv(tag) is not None:
-        env['ENV'][tag] = os.getenv(tag)
+  SetupBrowserEnv(env)
 
   # TODO(robertm): explain why this is necessary
   env['ENV']['NACL_DISABLE_SECURITY_FOR_SELENIUM_TEST'] = '1'
@@ -1075,6 +1074,10 @@ def GetPPAPIPluginPath(env):
 def PPAPIBrowserTester(env, target, url, files, log_verbosity=2, args=[]):
   if 'TRUSTED_ENV' not in env:
     return []
+  
+  env = env.Clone()
+  SetupBrowserEnv(env)
+
   command = [
       '${PYTHON}', env.File('${SCONSTRUCT_DIR}/tools/browser_tester'
                             '/browser_tester.py'),
@@ -1112,12 +1115,11 @@ def DemoSelLdrNacl(env,
 
   # NOTE: since most of the demos use X11 we need to make sure
   #      some env vars are set for tag, val in extra_env:
-  for tag, val in EXTRA_ENV:
-    if val is None:
-      if os.getenv(tag) is not None:
-        env['ENV'][tag] = os.getenv(tag)
-      else:
-        env['ENV'][tag] =  env.subst(val)
+  for tag in EXTRA_ENV:
+    if os.getenv(tag) is not None:
+      env['ENV'][tag] = os.getenv(tag)
+    else:
+      env['ENV'][tag] =  env.subst(None)
 
   node = env.Command(target, deps, ' '.join(command))
   return node
