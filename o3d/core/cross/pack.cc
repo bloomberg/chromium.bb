@@ -61,6 +61,8 @@ Pack::Pack(ServiceLocator* service_locator)
 }
 
 Pack::~Pack() {
+  DLOG(INFO) << owned_objects_.size()
+             << " objects still in Pack at time of deletion";
 }
 
 bool Pack::Destroy() {
