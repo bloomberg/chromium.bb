@@ -27,6 +27,7 @@
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/gtk_native_view_id_manager.h"
 #include "views/events/event.h"
 #include "views/ime/ime_context.h"
 #include "views/widget/widget.h"
@@ -784,6 +785,21 @@ void RenderWidgetHostViewViews::AcceleratedCompositingActivated(
   // TODO(anicolao): figure out if we need something here
   if (activated)
     NOTIMPLEMENTED();
+}
+
+gfx::PluginWindowHandle RenderWidgetHostViewViews::AcquireCompositingSurface() {
+  GtkNativeViewManager* manager = GtkNativeViewManager::GetInstance();
+  gfx::PluginWindowHandle surface = gfx::kNullPluginWindow;
+  gfx::NativeViewId view_id = gfx::IdFromNativeView(GetInnerNativeView());
+
+  if (!manager->GetXIDForId(&surface, view_id)) {
+    DLOG(ERROR) << "Can't find XID for view id " << view_id;
+  }
+  return surface;
+}
+
+void RenderWidgetHostViewViews::ReleaseCompositingSurface(
+    gfx::PluginWindowHandle surface) {
 }
 
 WebKit::WebMouseEvent RenderWidgetHostViewViews::WebMouseEventFromViewsEvent(

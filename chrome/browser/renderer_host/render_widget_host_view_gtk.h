@@ -90,7 +90,10 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView,
   virtual void DestroyPluginContainer(gfx::PluginWindowHandle id);
   virtual void SetVisuallyDeemphasized(const SkColor* color, bool animate);
   virtual bool ContainsNativeView(gfx::NativeView native_view) const;
+
   virtual void AcceleratedCompositingActivated(bool activated);
+  virtual gfx::PluginWindowHandle AcquireCompositingSurface();
+  virtual void ReleaseCompositingSurface(gfx::PluginWindowHandle surface);
 
   // ui::AnimationDelegate implementation.
   virtual void AnimationEnded(const ui::Animation* animation);
@@ -223,6 +226,8 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView,
   // monitor (if the widget is aligned with that edge). Negative values
   // indicate the top edge, positive the bottom.
   int dragged_at_vertical_edge_;
+
+  bool accelerated_surface_acquired_;
 
 #if defined(OS_CHROMEOS)
   // Custimized tooltip window.

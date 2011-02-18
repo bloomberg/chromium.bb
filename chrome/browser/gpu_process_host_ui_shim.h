@@ -11,6 +11,7 @@
 // portion of this class, the GpuProcessHost, is responsible for
 // shuttling messages between the browser and GPU processes.
 
+#include <map>
 #include <queue>
 
 #include "base/callback.h"
@@ -176,6 +177,15 @@ class GpuProcessHostUIShim : public IPC::Channel::Sender,
   // The pending create command buffer requests we need to reply to.
   std::queue<linked_ptr<CreateCommandBufferCallback> >
       create_command_buffer_requests_;
+
+  typedef std::pair<int32 /* renderer_id */,
+                    int32 /* render_view_id */> ViewID;
+
+  // Encapsulates surfaces that we acquire when creating view command buffers.
+  // We assume that a render view has at most 1 such surface associated
+  // with it.
+  class ViewSurface;
+  std::map<ViewID, linked_ptr<ViewSurface> > acquired_surfaces_;
 
   bool initialized_;
   bool initialized_successfully_;

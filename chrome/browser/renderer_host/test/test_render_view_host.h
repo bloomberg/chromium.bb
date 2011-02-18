@@ -128,7 +128,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
       uint64 swap_buffers_count);
   virtual void GpuRenderingStateDidChange();
 #elif defined(OS_WIN)
-  virtual gfx::PluginWindowHandle GetCompositorHostWindow();
   virtual void WillWmDestroy();
   virtual void ShowCompositorHostWindow(bool show);
 #endif
@@ -139,6 +138,11 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
   virtual void DestroyPluginContainer(gfx::PluginWindowHandle id) { }
   virtual void AcceleratedCompositingActivated(bool activated) { }
 #endif
+
+  virtual gfx::PluginWindowHandle AcquireCompositingSurface() {
+    return gfx::kNullPluginWindow;
+  }
+  virtual void ReleaseCompositingSurface(gfx::PluginWindowHandle surface) { }
 
   virtual bool ContainsNativeView(gfx::NativeView native_view) const;
 

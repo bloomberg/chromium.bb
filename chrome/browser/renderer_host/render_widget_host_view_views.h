@@ -79,6 +79,8 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   virtual void SetVisuallyDeemphasized(const SkColor* color, bool animate);
   virtual bool ContainsNativeView(gfx::NativeView native_view) const;
   virtual void AcceleratedCompositingActivated(bool activated);
+  virtual gfx::PluginWindowHandle AcquireCompositingSurface();
+  virtual void ReleaseCompositingSurface(gfx::PluginWindowHandle surface);
 
   // On some systems, there can be two native views, where an outer native view
   // contains the inner native view (e.g. when using GTK+). This returns the

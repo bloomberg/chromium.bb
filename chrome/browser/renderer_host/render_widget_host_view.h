@@ -261,10 +261,12 @@ class RenderWidgetHostView {
 #endif
 
 #if defined(OS_WIN)
-  virtual gfx::PluginWindowHandle GetCompositorHostWindow() = 0;
   virtual void WillWmDestroy() = 0;
   virtual void ShowCompositorHostWindow(bool show) = 0;
 #endif
+
+  virtual gfx::PluginWindowHandle AcquireCompositingSurface() = 0;
+  virtual void ReleaseCompositingSurface(gfx::PluginWindowHandle surface) = 0;
 
   // Toggles visual muting of the render view area. This is on when a
   // constrained window is showing, for example. |color| is the shade of

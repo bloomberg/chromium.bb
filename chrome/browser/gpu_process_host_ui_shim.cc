@@ -46,6 +46,53 @@ class SendOnIOThreadTask : public Task {
 
 }  // namespace
 
+class GpuProcessHostUIShim::ViewSurface {
+ public:
+  explicit ViewSurface(ViewID view_id);
+  ~ViewSurface();
+  gfx::PluginWindowHandle surface() { return surface_; }
+ private:
+  RenderWidgetHostView* GetRenderWidgetHostView();
+  ViewID view_id_;
+  gfx::PluginWindowHandle surface_;
+};
+
+GpuProcessHostUIShim::ViewSurface::ViewSurface(ViewID view_id)
+    : view_id_(view_id), surface_(gfx::kNullPluginWindow) {
+  RenderWidgetHostView* view = GetRenderWidgetHostView();
+  if (view)
+    surface_ = view->AcquireCompositingSurface();
+}
+
+GpuProcessHostUIShim::ViewSurface::~ViewSurface() {
+  if (!surface_)
+    return;
+
+  RenderWidgetHostView* view = GetRenderWidgetHostView();
+  if (view)
+    view->ReleaseCompositingSurface(surface_);
+}
+
+// We do separate lookups for the RenderWidgetHostView when acquiring
+// and releasing surfaces (rather than caching) because the
+// RenderWidgetHostView could die without warning. In such a case,
+// it's the RenderWidgetHostView's responsibility to cleanup.
+RenderWidgetHostView* GpuProcessHostUIShim::ViewSurface::
+    GetRenderWidgetHostView() {
+  RenderProcessHost* process = RenderProcessHost::FromID(view_id_.first);
+  RenderWidgetHost* host = NULL;
+  if (process) {
+    host = static_cast<RenderWidgetHost*>(
+        process->GetListenerByID(view_id_.second));
+  }
+
+  RenderWidgetHostView* view = NULL;
+  if (host)
+    view = host->view();
+
+  return view;
+}
+
 GpuProcessHostUIShim::GpuProcessHostUIShim()
     : last_routing_id_(1),
       initialized_(false),
@@ -213,44 +260,22 @@ void GpuProcessHostUIShim::CreateViewCommandBuffer(
     CreateCommandBufferCallback* callback) {
   DCHECK(CalledOnValidThread());
   linked_ptr<CreateCommandBufferCallback> wrapped_callback(callback);
+  ViewID view_id(renderer_id, render_view_id);
 
-  gfx::PluginWindowHandle window = gfx::kNullPluginWindow;
-  RenderProcessHost* process = RenderProcessHost::FromID(renderer_id);
-  RenderWidgetHost* host = NULL;
-  if (process) {
-    host = static_cast<RenderWidgetHost*>(
-        process->GetListenerByID(render_view_id));
+  // We assume that there can only be one such command buffer (for the
+  // compositor).
+  if (acquired_surfaces_.count(view_id) != 0) {
+    CreateCommandBufferError(wrapped_callback.release(), MSG_ROUTING_NONE);
+    return;
   }
 
-  RenderWidgetHostView* view = NULL;
-  if (host)
-    view = host->view();
+  linked_ptr<ViewSurface> view_surface(new ViewSurface(view_id));
 
-  if (view) {
-#if defined(OS_LINUX)
-    gfx::NativeViewId view_id = NULL;
-    view_id = gfx::IdFromNativeView(view->GetNativeView());
-
-    // Lock the window that we will draw into.
-    GtkNativeViewManager* manager = GtkNativeViewManager::GetInstance();
-    if (!manager->GetPermanentXIDForId(&window, view_id)) {
-      DLOG(ERROR) << "Can't find XID for view id " << view_id;
-    }
-#elif defined(OS_MACOSX)
-    // On Mac OS X we currently pass a (fake) PluginWindowHandle for the
-    // window that we draw to.
-    window = view->AllocateFakePluginWindowHandle(
-        /*opaque=*/true, /*root=*/true);
-#elif defined(OS_WIN)
-    // Create a window that we will overlay.
-    window = view->GetCompositorHostWindow();
-#endif
-  }
-
-  if (window != gfx::kNullPluginWindow &&
+  if (view_surface->surface() != gfx::kNullPluginWindow &&
       Send(new GpuMsg_CreateViewCommandBuffer(
-          window, render_view_id, renderer_id, init_params))) {
+          view_surface->surface(), render_view_id, renderer_id, init_params))) {
     create_command_buffer_requests_.push(wrapped_callback);
+    acquired_surfaces_[view_id] = view_surface;
   } else {
     CreateCommandBufferError(wrapped_callback.release(), MSG_ROUTING_NONE);
   }
@@ -280,7 +305,7 @@ const GPUInfo& GpuProcessHostUIShim::gpu_info() const {
 void GpuProcessHostUIShim::AddCustomLogMessage(int level,
     const std::string& header,
     const std::string& message) {
- OnLogMessage(level, header, message);
+  OnLogMessage(level, header, message);
 }
 
 bool GpuProcessHostUIShim::OnControlMessageReceived(
@@ -389,31 +414,8 @@ void GpuProcessHostUIShim::OnCommandBufferCreated(const int32 route_id) {
 void GpuProcessHostUIShim::OnDestroyCommandBuffer(
     gfx::PluginWindowHandle window, int32 renderer_id,
     int32 render_view_id) {
-  if (!window)
-    return;
-
-#if defined(OS_LINUX)
-  GtkNativeViewManager* manager = GtkNativeViewManager::GetInstance();
-  manager->ReleasePermanentXID(window);
-#elif defined(OS_MACOSX) || defined(OS_WIN)
-  RenderProcessHost* process = RenderProcessHost::FromID(renderer_id);
-  RenderWidgetHost* host = NULL;
-  if (process) {
-    host = static_cast<RenderWidgetHost*>(
-        process->GetListenerByID(render_view_id));
-  }
-  RenderWidgetHostView* view = NULL;
-  if (host)
-    view = host->view();
-
-  if (view) {
-#if defined(OS_MACOSX)
-    view->DestroyFakePluginWindowHandle(window);
-#elif defined(OS_WIN)
-    view->ShowCompositorHostWindow(false);
-#endif
-  }
-#endif  // defined(OS_MACOSX) || defined(OS_WIN)
+  ViewID view_id(renderer_id, render_view_id);
+  acquired_surfaces_.erase(view_id);
 }
 
 void GpuProcessHostUIShim::OnGraphicsInfoCollected(const GPUInfo& gpu_info) {
@@ -512,3 +514,4 @@ bool GpuProcessHostUIShim::LoadGpuBlacklist() {
   gpu_blacklist_.reset(NULL);
   return false;
 }
+

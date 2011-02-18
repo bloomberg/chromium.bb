@@ -262,6 +262,10 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
       int32 route_id,
       uint64 swap_buffers_count);
   virtual void GpuRenderingStateDidChange();
+
+  virtual gfx::PluginWindowHandle AcquireCompositingSurface();
+  virtual void ReleaseCompositingSurface(gfx::PluginWindowHandle surface);
+
   void DrawAcceleratedSurfaceInstance(
       CGLContextObj context,
       gfx::PluginWindowHandle plugin_handle,

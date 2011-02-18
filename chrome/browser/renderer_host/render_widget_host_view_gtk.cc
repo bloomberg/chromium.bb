@@ -38,6 +38,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/gtk_preserve_window.h"
+#include "ui/gfx/gtk_native_view_id_manager.h"
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webcursor_gtk_data.h"
 #include "webkit/plugins/npapi/webplugin.h"
@@ -495,7 +496,8 @@ RenderWidgetHostViewGtk::RenderWidgetHostViewGtk(RenderWidgetHost* widget_host)
       do_x_grab_(false),
       is_fullscreen_(false),
       dragged_at_horizontal_edge_(0),
-      dragged_at_vertical_edge_(0) {
+      dragged_at_vertical_edge_(0),
+      accelerated_surface_acquired_(false) {
   host_->set_view(this);
 }
 
@@ -732,6 +734,13 @@ void RenderWidgetHostViewGtk::RenderViewGone(base::TerminationStatus status,
 }
 
 void RenderWidgetHostViewGtk::Destroy() {
+  if (accelerated_surface_acquired_) {
+    GtkNativeViewManager* manager = GtkNativeViewManager::GetInstance();
+    gfx::NativeViewId view_id = gfx::IdFromNativeView(GetNativeView());
+    gfx::PluginWindowHandle surface = manager->GetXIDForId(&surface, view_id);
+    manager->ReleasePermanentXID(surface);
+  }
+
   if (do_x_grab_) {
     // Undo the X grab.
     GdkDisplay* display = gtk_widget_get_display(parent_);
@@ -1069,6 +1078,26 @@ void RenderWidgetHostViewGtk::AcceleratedCompositingActivated(bool activated) {
     reinterpret_cast<GtkPreserveWindow*>(view_.get());
 
   gtk_preserve_window_delegate_resize(widget, activated);
+}
+
+gfx::PluginWindowHandle RenderWidgetHostViewGtk::AcquireCompositingSurface() {
+  GtkNativeViewManager* manager = GtkNativeViewManager::GetInstance();
+  gfx::PluginWindowHandle surface = gfx::kNullPluginWindow;
+  gfx::NativeViewId view_id = gfx::IdFromNativeView(GetNativeView());
+
+  if (!manager->GetPermanentXIDForId(&surface, view_id)) {
+    DLOG(ERROR) << "Can't find XID for view id " << view_id;
+  } else {
+    accelerated_surface_acquired_ = true;
+  }
+  return surface;
+}
+
+void RenderWidgetHostViewGtk::ReleaseCompositingSurface(
+    gfx::PluginWindowHandle surface) {
+  GtkNativeViewManager* manager = GtkNativeViewManager::GetInstance();
+  manager->ReleasePermanentXID(surface);
+  accelerated_surface_acquired_ = false;
 }
 
 void RenderWidgetHostViewGtk::ForwardKeyboardEvent(

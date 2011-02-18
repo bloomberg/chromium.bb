@@ -1247,6 +1247,15 @@ void RenderWidgetHostViewMac::GpuRenderingStateDidChange() {
   }
 }
 
+gfx::PluginWindowHandle RenderWidgetHostViewMac::AcquireCompositingSurface() {
+  return AllocateFakePluginWindowHandle(/*opaque=*/true, /*root=*/true);
+}
+
+void RenderWidgetHostViewMac::ReleaseCompositingSurface(
+    gfx::PluginWindowHandle surface) {
+  DestroyFakePluginWindowHandle(surface);
+}
+
 void RenderWidgetHostViewMac::DrawAcceleratedSurfaceInstance(
       CGLContextObj context,
       gfx::PluginWindowHandle plugin_handle,
