@@ -310,10 +310,8 @@ void SelectFileDialogImpl::FileSelected(GtkWidget* dialog,
                                         const FilePath& path) {
   if (type_ == SELECT_SAVEAS_FILE)
     *last_saved_path_ = path.DirName();
-  else if (type_ == SELECT_OPEN_FILE)
+  else if (type_ == SELECT_OPEN_FILE || type_ == SELECT_FOLDER)
     *last_opened_path_ = path.DirName();
-  else if (type_ == SELECT_FOLDER)
-    *last_opened_path_ = path.DirName().DirName();
   else
     NOTREACHED();
 
