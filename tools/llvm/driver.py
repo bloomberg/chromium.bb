@@ -52,7 +52,7 @@ INITIAL_ENV = {
   'CLEANUP'     : '0',   # Clean up temporary files
                          # TODO(pdox): Enable for SDK version
   'SANDBOXED'   : '0',   # Use sandboxed toolchain for this arch.
-  'SRPC'        : '0',   # Use SRPC sandboxed toolchain
+  'SRPC'        : '1',   # Use SRPC sandboxed toolchain
 
   # Command-line options
   'GCC_MODE'    : '',     # '' (default), '-E', '-c', or '-S'
@@ -154,7 +154,7 @@ INITIAL_ENV = {
 
   'LLC'           : '${BASE_ARM}/bin/llc',
 
-  'LLC_FLAGS' : '',
+  'LLC_FLAGS_COMMON' : '',
   'LLC_FLAGS_ARM' :
     # The following options might come in hand and are left here as comments:
     # TODO(robertm): describe their purpose
@@ -218,9 +218,11 @@ INITIAL_ENV = {
   # Build actual command lines below
   'RUN_OPT': '${OPT} ${OPT_FLAGS} "${input}" -f -o "${output}"',
 
-  'RUN_LLC': '${LLC} ${LLC_FLAGS} ${LLC_FLAGS_%arch%} ' +
-             '-mtriple=${TRIPLE_%arch%} ' +
-             '-filetype=${filetype} ' +
+  'LLC_FLAGS': '${LLC_FLAGS_COMMON} ${LLC_FLAGS_%arch%} ' +
+               '-mtriple=${TRIPLE_%arch%} ' +
+               '-filetype=${filetype}',
+
+  'RUN_LLC': '${LLC} ${LLC_FLAGS} ' +
              '"${input}" -o "${output}"',
 
   'RUN_LLVM_AS'  : '${LLVM_AS} "${input}" -o "${output}"',
@@ -361,7 +363,7 @@ def FixArch(arch):
 
 def PrepareFlags():
   if env.getbool('PIC'):
-    env.append('LLC_FLAGS', '-relocation-model=pic')
+    env.append('LLC_FLAGS_COMMON', '-relocation-model=pic')
 
   if env.getbool('NOSTDINC'):
     env.clear('CC_STDINC')
@@ -1411,9 +1413,11 @@ def RunWithLog(args, stdin = None, silent = False):
                         'stderr        : %s\n',
                         StringifyCommand(args), buf_stdout, buf_stderr)
 
-def MakeSelUniversalScriptForLLC(infile, outfile):
+def MakeSelUniversalScriptForLLC(infile, outfile, flags):
   script = []
   script.append('readonly_file myfile %s' % infile)
+  for f in flags:
+    script.append('rpc AddArg s("%s") *' % f)
   script.append('rpc Translate h(myfile) * h() i()')
   script.append('set_variable out_handle ${result0}')
   script.append('set_variable out_size ${result1}')
@@ -1425,11 +1429,10 @@ def MakeSelUniversalScriptForLLC(infile, outfile):
 def RunLLCSRPC():
   infile = env.get("input")
   outfile = env.get("output")
-  script = MakeSelUniversalScriptForLLC(infile, outfile)
+  flags = shell.split(env.get("LLC_FLAGS"))
+  script = MakeSelUniversalScriptForLLC(infile, outfile, flags)
 
-  RunWithLog('"${SEL_UNIVERSAL_%arch%}" --script_mode -- ' +
-             '"${LLC_SRPC_%arch%}" ${LLC_FLAGS} ${LLC_FLAGS_%arch%} ' +
-             '-mtriple=${TRIPLE_%arch%} -filetype=${filetype}',
+  RunWithLog('"${SEL_UNIVERSAL_%arch%}" --script_mode -- "${LLC_SRPC_%arch%}"',
              stdin=script, silent = True)
 
 

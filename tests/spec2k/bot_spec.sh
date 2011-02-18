@@ -82,7 +82,7 @@ BuildAndRunSetups() {
 PrepareTrusted() {
   local arch=$1
   AnnotatedRun "scons-${arch}" \
-    "./scons" --mode=opt-linux sdl=none platform=${arch} sel_ldr
+    "./scons" --mode=opt-linux sdl=none platform=${arch} sel_ldr sel_universal
 }
 
 #######################################################################

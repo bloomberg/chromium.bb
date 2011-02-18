@@ -207,6 +207,7 @@ SetupPnaclX8664Opt() {
 #@ SetupPnaclTranslatorX8664
 #@    use pnacl x8664 translator (no lto)
 SetupPnaclTranslatorX8664() {
+  CheckSelUniversal "x86-64"
   SetupPnaclX8664Common
   SUFFIX=pnacl_translator.x8664
 }
@@ -215,6 +216,7 @@ SetupPnaclTranslatorX8664() {
 #@ SetupPnaclTranslatorX8664Opt
 #@    use pnacl x8664 translator (with lto)
 SetupPnaclTranslatorX8664Opt() {
+  CheckSelUniversal "x86-64"
   SetupPnaclX8664Common
   SUFFIX=pnacl_translator.opt.x8664
 }
@@ -245,6 +247,7 @@ SetupPnaclX8632Opt() {
 #@ SetupPnaclTranslatorX8632
 #@    use pnacl x8632 translator (no lto)
 SetupPnaclTranslatorX8632() {
+  CheckSelUniversal "x86-32"
   SetupPnaclX8632Common
   SUFFIX=pnacl_translator.x8632
 }
@@ -253,6 +256,7 @@ SetupPnaclTranslatorX8632() {
 #@ SetupPnaclTranslatorX8632Opt
 #@    use pnacl x8632 translator (with lto)
 SetupPnaclTranslatorX8632Opt() {
+  CheckSelUniversal "x86-32"
   SetupPnaclX8632Common
   SUFFIX=pnacl_translator.opt.x8632
 }
@@ -395,6 +399,11 @@ GetSelLdr() {
   echo "${SEL_LDR}"
 }
 
+CheckSelUniversal() {
+  local arch=$1
+  SEL_UNIV=../../scons-out/opt-linux-${arch}/staging/sel_universal
+  CheckFileBuilt "sel_universal" ${SEL_UNIV}
+}
 
 #@
 #@ CleanBenchmarks <benchmark>*

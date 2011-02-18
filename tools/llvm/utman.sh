@@ -673,8 +673,8 @@ untrusted_sdk() {
   clean
   everything
   prune
-  install-translators nonsrpc
-  prune-translator-install nonsrpc
+  install-translators srpc
+  prune-translator-install srpc
   tarball $1
 }
 
@@ -2513,9 +2513,14 @@ scons-determine-tests() {
   fi
 }
 
-scons-build-sel_ldr () {
+scons-build-sel_ldr() {
   local  platform=$1
   ./scons platform=${platform} ${SCONS_ARGS_SEL_LDR[@]} sel_ldr
+}
+
+scons-build-sel_universal() {
+  local  platform=$1
+  ./scons platform=${platform} ${SCONS_ARGS_SEL_LDR[@]} sel_universal
 }
 
 scons-clean-pnacl-build-dir () {
