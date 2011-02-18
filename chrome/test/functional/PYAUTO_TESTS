@@ -29,7 +29,10 @@
       'autofill',
       # Not part of the continous build.
       # Used for testing Autofill crowdsourcing.
-      '-autofill.AutoFillTest.testAutofillCrowdSourcing',
+      '-autofill.AutoFillTest.testAutofillCrowdsourcing',
+      # Not part of the continous build.
+      # Used for testing Autofill duplicate profile merging.
+      '-autofill.AutoFillTest.testMergeDuplicateProfilesInAutofill',
       'bookmark_bar',
       'bookmarks',
       'browser',
