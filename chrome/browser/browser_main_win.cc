@@ -114,7 +114,7 @@ int DoUninstallTasks(bool chrome_still_running) {
 // the user if the browser process dies. These strings are stored in the
 // environment block so they are accessible in the early stages of the
 // chrome executable's lifetime.
-void PrepareRestartOnCrashEnviroment(const CommandLine& parsed_command_line) {
+void PrepareRestartOnCrashEnviroment(const CommandLine &parsed_command_line) {
   // Clear this var so child processes don't show the dialog by default.
   scoped_ptr<base::Environment> env(base::Environment::Create());
   env->UnSetVar(env_vars::kShowRestart);
@@ -146,29 +146,11 @@ void PrepareRestartOnCrashEnviroment(const CommandLine& parsed_command_line) {
   env->SetVar(env_vars::kRestartInfo, UTF16ToUTF8(dlg_strings));
 }
 
-bool RegisterApplicationRestart(const CommandLine& parsed_command_line) {
-  // The Windows Restart Manager expects a string of command line flags only,
-  // without the program.
-  CommandLine command_line(CommandLine::NO_PROGRAM);
-  command_line.AppendSwitches(parsed_command_line);
-  command_line.AppendArgs(parsed_command_line);
-  // Ensure restore last session is set.
-  if (!command_line.HasSwitch(switches::kRestoreLastSession))
-    command_line.AppendSwitch(switches::kRestoreLastSession);
-  const wchar_t *command_string = command_line.command_line_string().c_str();
-  // Restart Chrome if the computer is restarted as the result of an update.
-  // This could be extended to handle crashes, hangs, and patches.
-  HRESULT hr = ::RegisterApplicationRestart(command_string,
-      RESTART_NO_CRASH | RESTART_NO_HANG | RESTART_NO_PATCH);
-  DCHECK(SUCCEEDED(hr)) << "RegisterApplicationRestart failed.";
-  return SUCCEEDED(hr);
-}
-
 // This method handles the --hide-icons and --show-icons command line options
 // for chrome that get triggered by Windows from registry entries
 // HideIconsCommand & ShowIconsCommand. Chrome doesn't support hide icons
 // functionality so we just ask the users if they want to uninstall Chrome.
-int HandleIconsCommands(const CommandLine& parsed_command_line) {
+int HandleIconsCommands(const CommandLine &parsed_command_line) {
   if (parsed_command_line.HasSwitch(switches::kHideIcons)) {
     string16 cp_applet;
     base::win::Version version = base::win::GetVersion();
