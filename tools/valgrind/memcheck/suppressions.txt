@@ -3793,3 +3793,13 @@
    fun:_Z11BrowserMainRK18MainFunctionParams
    fun:_ZN47_GLOBAL__N__Z22CheckUserDataDirPolicyP8FilePath23RunNamedProcessTypeMainERKSsRK18MainFunctionParams
 }
+{
+   bug_73358
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN14TestingProfile30GetRequestContextForExtensionsEv
+   fun:_ZN20ExtensionDataDeleterC1EP7ProfileRK4GURL
+   fun:_ZN16ExtensionService18ClearExtensionDataERK4GURL
+   fun:_ZN16ExtensionService18UninstallExtensionERKSsb
+   fun:*BackgroundApplicationListModelTest*
+}
