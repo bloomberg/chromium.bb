@@ -48,11 +48,11 @@ PrerenderContents::PrerenderContents(PrerenderManager* prerender_manager,
       has_stopped_loading_(false),
       final_status_(FINAL_STATUS_MAX) {
   DCHECK(prerender_manager != NULL);
-  AddAliasURL(prerender_url_);
+  DCHECK(AddAliasURL(prerender_url_));
   for (std::vector<GURL>::const_iterator it = alias_urls.begin();
        it != alias_urls.end();
        ++it) {
-    AddAliasURL(*it);
+    DCHECK(AddAliasURL(*it));
   }
 }
 
@@ -151,9 +151,12 @@ void PrerenderContents::DidNavigate(
   *p = params;
   navigate_params_.reset(p);
 
-  url_ = params.url;
+  if (!AddAliasURL(params.url)) {
+    Destroy(FINAL_STATUS_HTTPS);
+    return;
+  }
 
-  AddAliasURL(url_);
+  url_ = params.url;
 }
 
 void PrerenderContents::UpdateTitle(RenderViewHost* render_view_host,
@@ -340,14 +343,19 @@ bool PrerenderContents::OnMessageReceived(const IPC::Message& message) {
 void PrerenderContents::OnDidStartProvisionalLoadForFrame(int64 frame_id,
                                                           bool is_main_frame,
                                                           const GURL& url) {
-  if (is_main_frame)
-    AddAliasURL(url);
+  if (is_main_frame) {
+    if (!AddAliasURL(url)) {
+      Destroy(FINAL_STATUS_HTTPS);
+      return;
+    }
+  }
 }
 
 void PrerenderContents::OnDidRedirectProvisionalLoad(int32 page_id,
                                                      const GURL& source_url,
                                                      const GURL& target_url) {
-  AddAliasURL(target_url);
+  if (!AddAliasURL(target_url))
+    Destroy(FINAL_STATUS_HTTPS);
 }
 
 void PrerenderContents::OnUpdateFavIconURL(int32 page_id,
@@ -355,8 +363,11 @@ void PrerenderContents::OnUpdateFavIconURL(int32 page_id,
   icon_url_ = icon_url;
 }
 
-void PrerenderContents::AddAliasURL(const GURL& url) {
+bool PrerenderContents::AddAliasURL(const GURL& url) {
+  if (!url.SchemeIs("http"))
+    return false;
   alias_urls_.push_back(url);
+  return true;
 }
 
 bool PrerenderContents::MatchesURL(const GURL& url) const {
