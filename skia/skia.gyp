@@ -21,7 +21,7 @@
         '../third_party/skia/gpu/src/GrGLUtil.cpp',
         '../third_party/skia/gpu/src/GrGLVertexBuffer.cpp',
         '../third_party/skia/gpu/src/GrGpu.cpp',
-        '../third_party/skia/gpu/src/GrGpuGLShaders.h',
+        '../third_party/skia/gpu/src/GrGpuGLShaders2.h',
         '../third_party/skia/gpu/src/GrGpuFactory.cpp',
         '../third_party/skia/gpu/src/GrGpuGL.cpp',
         '../third_party/skia/gpu/src/GrGpuGL.h',
