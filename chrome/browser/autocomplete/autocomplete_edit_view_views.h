@@ -150,6 +150,9 @@ class AutocompleteEditViewViews : public views::View,
   // Selects the text given by |caret| and |end|.
   void SelectRange(size_t caret, size_t end);
 
+  AutocompletePopupView* CreatePopupView(Profile* profile,
+                                         const View* location_bar);
+
   views::Textfield* textfield_;
 
   scoped_ptr<AutocompleteEditModel> model_;

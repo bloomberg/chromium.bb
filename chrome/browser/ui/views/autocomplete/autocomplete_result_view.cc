@@ -34,9 +34,6 @@ const int kMinimumTextVerticalPadding = 3;
 ////////////////////////////////////////////////////////////////////////////////
 // AutocompleteResultView, public:
 
-// static
-int AutocompleteResultView::icon_size_ = 0;
-
 // This class is a utility class for calculations affected by whether the result
 // view is horizontally mirrored.  The drawing functions can be written as if
 // all drawing occurs left-to-right, and then use this class to get the actual
@@ -218,6 +215,9 @@ bool AutocompleteResultView::SortRunsVisually(const RunData& lhs,
                                               const RunData& rhs) {
   return lhs.visual_order < rhs.visual_order;
 }
+
+// static
+int AutocompleteResultView::icon_size_ = 0;
 
 AutocompleteResultView::ResultViewState
     AutocompleteResultView::GetState() const {

@@ -44,6 +44,10 @@ class AutocompleteResultView : public views::View {
   // the match so that we can continue to paint the last result even after the
   // model has changed.
   void set_match(const AutocompleteMatch& match) { match_ = match; }
+  const gfx::Font& normal_font() const { return normal_font_; }
+  const gfx::Font& bold_font() const { return bold_font_; }
+  const gfx::Rect& text_bounds() const { return text_bounds_; }
+  void set_text_bounds(const gfx::Rect& tb) { text_bounds_ = tb; }
 
   // Overridden from views::View:
   virtual void OnPaint(gfx::Canvas* canvas);
@@ -54,11 +58,23 @@ class AutocompleteResultView : public views::View {
   int GetPreferredHeight(const gfx::Font& font,
                          const gfx::Font& bold_font);
   static SkColor GetColor(ResultViewState state, ColorKind kind);
+  static int icon_size() { return icon_size_; }
 
  protected:
   virtual void PaintMatch(gfx::Canvas* canvas,
                           const AutocompleteMatch& match,
                           int x);
+
+  // Draws the specified |text| into the canvas, using highlighting provided by
+  // |classifications|. If |force_dim| is true, ACMatchClassification::DIM is
+  // added to all of the classifications. Returns the x position to the right
+  // of the string.
+  int DrawString(gfx::Canvas* canvas,
+                 const string16& text,
+                 const ACMatchClassifications& classifications,
+                 bool force_dim,
+                 int x,
+                 int y);
 
   int icon_vertical_padding_;
   int text_vertical_padding_;
@@ -92,20 +108,11 @@ class AutocompleteResultView : public views::View {
   static bool SortRunsLogically(const RunData& lhs, const RunData& rhs);
   static bool SortRunsVisually(const RunData& lhs, const RunData& rhs);
 
+  static int icon_size_;
+
   ResultViewState GetState() const;
 
   const SkBitmap* GetIcon() const;
-
-  // Draws the specified |text| into the canvas, using highlighting provided by
-  // |classifications|. If |force_dim| is true, ACMatchClassification::DIM is
-  // added to all of the classifications. Returns the x position to the right
-  // of the string.
-  int DrawString(gfx::Canvas* canvas,
-                 const string16& text,
-                 const ACMatchClassifications& classifications,
-                 bool force_dim,
-                 int x,
-                 int y);
 
   // Elides |runs| to fit in |remaining_width|.  The runs in |runs| should be in
   // logical order.
@@ -140,8 +147,6 @@ class AutocompleteResultView : public views::View {
   // Layout rects for various sub-components of the view.
   gfx::Rect icon_bounds_;
   gfx::Rect text_bounds_;
-
-  static int icon_size_;
 
   AutocompleteMatch match_;
 

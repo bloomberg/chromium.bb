@@ -30,6 +30,7 @@ class BubbleBorder;
 class Profile;
 
 namespace gfx {
+class CanvasSkia;
 class Insets;
 }
 
@@ -68,10 +69,9 @@ class AutocompletePopupContentsView : public views::View,
 
   // Overridden from views::View:
   virtual void OnPaint(gfx::Canvas* canvas);
-  virtual void PaintChildren(gfx::Canvas* canvas) {
-    // We paint our children inside OnPaint().
-  }
+  virtual void PaintChildren(gfx::CanvasSkia* canvas);
   virtual void Layout();
+  virtual void LayoutChildren();
   virtual void OnMouseEntered(const views::MouseEvent& event);
   virtual void OnMouseMoved(const views::MouseEvent& event);
   virtual void OnMouseExited(const views::MouseEvent& event);
@@ -88,6 +88,11 @@ class AutocompletePopupContentsView : public views::View,
       int model_index,
       const gfx::Font& font,
       const gfx::Font& bold_font);
+
+  scoped_ptr<AutocompletePopupModel> model_;
+
+  // The "Opt-in to Instant" promo view, if there is one.
+  views::View* opt_in_view_;
 
  private:
 #if defined(OS_WIN)
@@ -135,9 +140,6 @@ class AutocompletePopupContentsView : public views::View,
   // deleted, or without our knowledge.
   base::WeakPtr<AutocompletePopupClass> popup_;
 
-  // The provider of our result set.
-  scoped_ptr<AutocompletePopupModel> model_;
-
   // The edit view that invokes us.
   AutocompleteEditView* edit_view_;
 
@@ -167,9 +169,6 @@ class AutocompletePopupContentsView : public views::View,
   ui::SlideAnimation size_animation_;
   gfx::Rect start_bounds_;
   gfx::Rect target_bounds_;
-
-  // If non-NULL the instant opt-in-view is visible.
-  views::View* opt_in_view_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompletePopupContentsView);
 };

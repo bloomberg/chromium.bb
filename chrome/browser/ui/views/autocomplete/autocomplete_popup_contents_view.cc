@@ -207,13 +207,13 @@ AutocompletePopupContentsView::AutocompletePopupContentsView(
     Profile* profile,
     const views::View* location_bar)
     : model_(new AutocompletePopupModel(this, edit_model, profile)),
+      opt_in_view_(NULL),
       edit_view_(edit_view),
       location_bar_(location_bar),
       result_font_(font.DeriveFont(kEditFontAdjust)),
       result_bold_font_(result_font_.DeriveFont(0, gfx::Font::BOLD)),
       ignore_mouse_drag_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(size_animation_(this)),
-      opt_in_view_(NULL) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(size_animation_(this)) {
   // The following little dance is required because set_border() requires a
   // pointer to a non-const object.
   BubbleBorder* bubble_border = new BubbleBorder(BubbleBorder::NONE);
@@ -383,9 +383,8 @@ void AutocompletePopupContentsView::OnPaint(gfx::Canvas* canvas) {
   // shader to fill a path representing the round-rect clipping region. This
   // yields a nice anti-aliased edge.
   gfx::CanvasSkia contents_canvas(width(), height(), true);
-  contents_canvas.drawColor(AutocompleteResultView::GetColor(
-      AutocompleteResultView::NORMAL, AutocompleteResultView::BACKGROUND));
-  View::PaintChildren(&contents_canvas);
+  PaintChildren(&contents_canvas);
+
   // We want the contents background to be slightly transparent so we can see
   // the blurry glass effect on DWM systems behind. We do this _after_ we paint
   // the children since they paint text, and GDI will reset this alpha data if
@@ -413,10 +412,24 @@ void AutocompletePopupContentsView::OnPaint(gfx::Canvas* canvas) {
   OnPaintBorder(canvas);
 }
 
+void AutocompletePopupContentsView::PaintChildren(gfx::CanvasSkia* canvas) {
+  canvas->drawColor(AutocompleteResultView::GetColor(
+      AutocompleteResultView::NORMAL, AutocompleteResultView::BACKGROUND));
+  View::PaintChildren(canvas);
+}
+
 void AutocompletePopupContentsView::Layout() {
   UpdateBlurRegion();
 
   // Size our children to the available content area.
+  LayoutChildren();
+
+  // We need to manually schedule a paint here since we are a layered window and
+  // won't implicitly require painting until we ask for one.
+  SchedulePaint();
+}
+
+void AutocompletePopupContentsView::LayoutChildren() {
   gfx::Rect contents_rect = GetContentsBounds();
   int top = contents_rect.y();
   for (int i = 0; i < child_count(); ++i) {
@@ -427,12 +440,7 @@ void AutocompletePopupContentsView::Layout() {
       top = v->bounds().bottom();
     }
   }
-
-  // We need to manually schedule a paint here since we are a layered window and
-  // won't implicitly require painting until we ask for one.
-  SchedulePaint();
 }
-
 
 void AutocompletePopupContentsView::OnMouseEntered(
     const views::MouseEvent& event) {

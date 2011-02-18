@@ -14,6 +14,7 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/views/autocomplete/autocomplete_popup_contents_view.h"
+#include "chrome/browser/ui/views/autocomplete/touch_autocomplete_popup_contents_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/common/notification_service.h"
 #include "googleurl/src/gurl.h"
@@ -111,8 +112,7 @@ AutocompleteEditViewViews::AutocompleteEditViewViews(
     bool popup_window_mode,
     const views::View* location_bar)
     : model_(new AutocompleteEditModel(this, controller, profile)),
-      popup_view_(new AutocompletePopupContentsView(
-          gfx::Font(), this, model_.get(), profile, location_bar)),
+      popup_view_(CreatePopupView(profile, location_bar)),
       controller_(controller),
       toolbar_model_(toolbar_model),
       command_updater_(command_updater),
@@ -647,4 +647,15 @@ string16 AutocompleteEditViewViews::GetSelectedText() const {
 void AutocompleteEditViewViews::SelectRange(size_t caret, size_t end) {
   const views::TextRange range(caret, end);
   textfield_->SelectRange(range);
+}
+
+AutocompletePopupView* AutocompleteEditViewViews::CreatePopupView(
+    Profile* profile,
+    const View* location_bar) {
+#if defined(TOUCH_UI)
+  return new TouchAutocompletePopupContentsView(
+#else
+  return new AutocompletePopupContentsView(
+#endif
+      gfx::Font(), this, model_.get(), profile, location_bar);
 }
