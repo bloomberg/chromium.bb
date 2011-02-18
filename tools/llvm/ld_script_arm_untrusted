@@ -87,9 +87,6 @@ SECTIONS
   PROVIDE (_etext = .);
   PROVIDE (etext = .);
   /* @LOCALMOD-BEGIN */
-  /* NOTE: This is not needed at this point */
-  /* PROVIDE (__nacl_and_mask = DEFINED (__executable_start) ?
-                        NACL_MASK (. - __executable_start) : 0xffffffff); */
 
   /* nacl wants 64k alignment */
   .rodata ALIGN(0x10000) : { *(.rodata .rodata.* .gnu.linkonce.r.*) } :rodata

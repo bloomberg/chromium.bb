@@ -67,14 +67,6 @@ SECTIONS
   PROVIDE (__etext = .);
   PROVIDE (_etext = .);
   PROVIDE (etext = .);
-  /*
-  . = DEFINED (__executable_start) ?
-                     ALIGN(CEILP2(. - __executable_start)) : .;
-  PROVIDE (__nacl_and_mask =
-                          DEFINED (__executable_start) ?
-                            NACL_MASK (. - __executable_start) : 0xffffffff);
-  . = ALIGN(CONSTANT (MAXPAGESIZE));
-  */
   /* nacl wants page alignment */
   .rodata ALIGN(0x10000) : { *(.rodata .rodata.* .gnu.linkonce.r.*) } :rodata
   /* .rodata         : { *(.rodata .rodata.* .gnu.linkonce.r.*) } :rodata */
