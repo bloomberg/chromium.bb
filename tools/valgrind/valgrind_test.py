@@ -148,10 +148,6 @@ class BaseTool(object):
       "NSS_DISABLE_ARENA_FREE_LIST" : "1",
       "GTEST_DEATH_TEST_USE_FORK" : "1",
     }
-    if common.IsWine():
-      # TODO(timurrrr): Maybe we need it for TSan/Win too?
-      add_env["CHROME_ALLOCATOR"] = "winheap"
-
     for k,v in add_env.iteritems():
       logging.info("export %s=%s", k, v)
       os.putenv(k, v)
@@ -252,9 +248,7 @@ class ValgrindTool(BaseTool):
   def Setup(self, args):
     if not BaseTool.Setup(self, args):
       return False
-    if common.IsWine():
-      self.PrepareForTestWine()
-    elif common.IsMac():
+    if common.IsMac():
       self.PrepareForTestMac()
     return True
 
@@ -321,39 +315,6 @@ class ValgrindTool(BaseTool):
                      "not be shown.  Either tell xcode to generate .dSYM "
                      "file, or use --generate_dsym option to this tool.")
 
-  def PrepareForTestWine(self):
-    """Set up the Wine environment.
-
-    We need to run some sanity checks, set up a Wine prefix, and make sure
-    wineserver is running by starting a dummy win32 program.
-    """
-    if not os.path.exists('/usr/share/ca-certificates/root_ca_cert.crt'):
-      logging.warning('WARNING: SSL certificate missing! SSL tests will fail.')
-      logging.warning('You need to run:')
-      logging.warning('sudo cp src/net/data/ssl/certificates/root_ca_cert.crt '
-                      '/usr/share/ca-certificates/')
-      logging.warning('sudo vi /etc/ca-certificates.conf')
-      logging.warning('  (and add the line root_ca_cert.crt)')
-      logging.warning('sudo update-ca-certificates')
-
-    # Shutdown the Wine server in case the last run got interrupted.
-    common.RunSubprocess([os.environ.get('WINESERVER'), '-k'])
-
-    # Yes, this can be dangerous if $WINEPREFIX is set incorrectly.
-    shutil.rmtree(os.environ.get('WINEPREFIX'), ignore_errors=True)
-
-    winetricks = os.path.join(self._source_dir, 'tools', 'valgrind',
-                              'wine_memcheck', 'winetricks')
-    common.RunSubprocess(['sh', winetricks,
-                          'nocrashdialog', 'corefonts', 'gecko'])
-    time.sleep(1)
-
-    # Start a dummy program like winemine so Valgrind won't run memcheck on
-    # the wineserver startup routine when it launches the test binary, which
-    # is slow and not interesting to us.
-    common.RunSubprocessInBackground([os.environ.get('WINE'), 'winemine'])
-    return
-
   def ToolCommand(self):
     """Get the valgrind command to run."""
     # Note that self._args begins with the exe to be run.
@@ -399,11 +360,6 @@ class ValgrindTool(BaseTool):
   def ToolSpecificFlags(self):
     raise NotImplementedError, "This method should be implemented " \
                                "in the tool-specific subclass"
-
-  def Cleanup(self):
-    if common.IsWine():
-      # Shutdown the Wine server.
-      common.RunSubprocess([os.environ.get('WINESERVER'), '-k'])
 
   def CreateBrowserWrapper(self, command, logfiles):
     """The program being run invokes Python or something else
@@ -906,9 +862,7 @@ class RaceVerifier(object):
 
 class ToolFactory:
   def Create(self, tool_name):
-    if tool_name == "memcheck" and not common.IsWine():
-      return Memcheck()
-    if tool_name == "wine_memcheck" and common.IsWine():
+    if tool_name == "memcheck":
       return Memcheck()
     if tool_name == "tsan":
       if common.IsWindows():

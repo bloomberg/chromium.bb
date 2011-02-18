@@ -134,22 +134,11 @@ def IsWindows():
   return sys.platform == 'cygwin' or sys.platform.startswith('win')
 
 
-def IsWine():
-  """This needs to be set by the script that starts the buildbot, i.e.
-  /etc/init.d/buildbot, or manually on the command line."""
-  return (os.environ.get('WINE') and
-          os.environ.get('WINEPREFIX') and
-          os.environ.get('WINESERVER'))
-
-
 def PlatformNames():
   """Return an array of string to be used in paths for the platform
   (e.g. suppressions, gtest filters, ignore files etc.)
   The first element of the array describes the 'main' platform
   """
-  # This has to be before IsLinux()
-  if IsWine():
-    return ['wine', 'win32']
   if IsLinux():
     return ['linux']
   if IsMac():

@@ -93,19 +93,15 @@ class ChromeTests:
       exe = exe + '.exe'
 
     if not self._options.build_dir:
-      if common.IsWine():
-        self._options.build_dir = os.path.join(
-            self._source_dir, "chrome", "Debug")
+      dirs = [
+        os.path.join(self._source_dir, "xcodebuild", "Debug"),
+        os.path.join(self._source_dir, "out", "Debug"),
+        os.path.join(self._source_dir, "build", "Debug"),
+      ]
+      if exe:
+        self._options.build_dir = FindDirContainingNewestFile(dirs, exe)
       else:
-        dirs = [
-          os.path.join(self._source_dir, "xcodebuild", "Debug"),
-          os.path.join(self._source_dir, "out", "Debug"),
-          os.path.join(self._source_dir, "build", "Debug"),
-        ]
-        if exe:
-          self._options.build_dir = FindDirContainingNewestFile(dirs, exe)
-        else:
-          self._options.build_dir = FindNewestDir(dirs)
+        self._options.build_dir = FindNewestDir(dirs)
 
     cmd = list(self._command_preamble)
 
@@ -130,9 +126,6 @@ class ChromeTests:
       for arg in valgrind_test_args:
         cmd.append(arg)
     if exe:
-      if common.IsWine():
-        cmd.append(os.environ.get('WINE'))
-        exe = exe + '.exe'
       cmd.append(os.path.join(self._options.build_dir, exe))
       # Valgrind runs tests slowly, so slow tests hurt more; show elapased time
       # so we can find the slowpokes.
