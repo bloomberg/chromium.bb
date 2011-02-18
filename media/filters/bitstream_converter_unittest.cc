@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,6 +23,9 @@ namespace media {
 class BitstreamConverterTest : public testing::Test {
  protected:
   BitstreamConverterTest() {
+    // Initialize MockFFmpeg.
+    MockFFmpeg::set(&mock_ffmpeg_);
+
     memset(&test_stream_context_, 0, sizeof(test_stream_context_));
     memset(&test_filter_, 0, sizeof(test_filter_));
     memset(&test_packet_, 0, sizeof(test_packet_));
@@ -30,7 +33,10 @@ class BitstreamConverterTest : public testing::Test {
     test_packet_.size = kTestSize1;
   }
 
-  virtual ~BitstreamConverterTest() {}
+  virtual ~BitstreamConverterTest() {
+    // Reset MockFFmpeg.
+    MockFFmpeg::set(NULL);
+  }
 
   AVCodecContext test_stream_context_;
   AVBitStreamFilterContext test_filter_;

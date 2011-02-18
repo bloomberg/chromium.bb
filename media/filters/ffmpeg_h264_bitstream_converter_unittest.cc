@@ -270,6 +270,7 @@ class FFmpegH264BitstreamConverterTest : public testing::Test {
   FFmpegH264BitstreamConverterTest() {
     // Set up the ffmpeg mock and use our local fake functions to do the
     // actual implementation for packet allocation / freeing.
+    MockFFmpeg::set(&ffmpeg_mock_);
     ON_CALL(ffmpeg_mock_, AVInitPacket(_))
         .WillByDefault(Invoke(fake_av_init_packet));
     ON_CALL(ffmpeg_mock_, AVNewPacket(_, _))
