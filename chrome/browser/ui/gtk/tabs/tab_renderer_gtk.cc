@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/gtk/custom_button.h"
 #include "chrome/browser/ui/gtk/gtk_theme_provider.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/notification_service.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
@@ -808,7 +809,7 @@ void TabRendererGtk::PaintTitle(gfx::Canvas* canvas) {
   if (title.empty()) {
     title = data_.loading ?
         l10n_util::GetStringUTF16(IDS_TAB_LOADING_TITLE) :
-        TabContents::GetDefaultTitle();
+        TabContentsWrapper::GetDefaultTitle();
   } else {
     Browser::FormatTitleForDisplay(&title);
   }

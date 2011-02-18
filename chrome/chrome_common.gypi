@@ -216,6 +216,8 @@
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../build/temp_gyp/googleurl.gyp:googleurl',
+        # Don't include now since it's empty and so will cause a linker error.
+        #'../content/content.gyp:content_common',
         '../ipc/ipc.gyp:ipc',
         '../net/net.gyp:net',
         '../printing/printing.gyp:printing',

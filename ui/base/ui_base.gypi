@@ -51,6 +51,11 @@
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
       ],
+      # Export these dependencies since text_elider.h includes ICU headers.
+      'export_dependent_settings': [
+        '../third_party/icu/icu.gyp:icui18n',
+        '../third_party/icu/icu.gyp:icuuc',
+      ],
       'sources': [
         'animation/animation.cc',
         'animation/animation.h',

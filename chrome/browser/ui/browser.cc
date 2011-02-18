@@ -102,6 +102,7 @@
 #include "chrome/common/profiling.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/web_apps.h"
+#include "content/browser/tab_contents/infobar_delegate.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -825,7 +826,7 @@ string16 Browser::GetWindowTitleForCurrentTab() const {
     FormatTitleForDisplay(&title);
   }
   if (title.empty())
-    title = TabContents::GetDefaultTitle();
+    title = TabContentsWrapper::GetDefaultTitle();
 
 #if defined(OS_MACOSX) || defined(OS_CHROMEOS)
   // On Mac or ChromeOS, we don't want to suffix the page title with
@@ -2746,7 +2747,7 @@ void Browser::TabSelectedAt(TabContentsWrapper* old_contents,
     status_bubble->Hide();
 
     // Show the loading state (if any).
-    status_bubble->SetStatus(GetSelectedTabContents()->GetStatusText());
+    status_bubble->SetStatus(GetSelectedTabContentsWrapper()->GetStatusText());
   }
 
   if (HasFindBarController()) {
@@ -2917,7 +2918,8 @@ void Browser::LoadingStateChanged(TabContents* source) {
   if (source == selected_contents) {
     UpdateReloadStopState(source->is_loading(), false);
     if (GetStatusBubble()) {
-      GetStatusBubble()->SetStatus(GetSelectedTabContents()->GetStatusText());
+      GetStatusBubble()->SetStatus(
+          GetSelectedTabContentsWrapper()->GetStatusText());
     }
 
     if (!source->is_loading() &&
@@ -3265,6 +3267,14 @@ void Browser::OnInstallApplication(TabContents* source,
 
 void Browser::ContentRestrictionsChanged(TabContents* source) {
   UpdateCommandsForContentRestrictionState();
+}
+
+void Browser::WorkerCrashed() {
+  TabContents* tab_contents = GetSelectedTabContents();
+  if (!tab_contents)
+    return;
+  tab_contents->AddInfoBar(new SimpleAlertInfoBarDelegate(tab_contents, NULL,
+      l10n_util::GetStringUTF16(IDS_WEBWORKER_CRASHED_PROMPT), true));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3884,8 +3894,10 @@ void Browser::ProcessPendingUIUpdates() {
         window()->GetLocationBar()->UpdatePageActions();
 
       // Updating the URL happens synchronously in ScheduleUIUpdate.
-      if (flags & TabContents::INVALIDATE_LOAD && GetStatusBubble())
-        GetStatusBubble()->SetStatus(contents->GetStatusText());
+      if (flags & TabContents::INVALIDATE_LOAD && GetStatusBubble()) {
+        GetStatusBubble()->SetStatus(
+            GetSelectedTabContentsWrapper()->GetStatusText());
+      }
 
       if (flags & (TabContents::INVALIDATE_TAB |
                    TabContents::INVALIDATE_TITLE)) {

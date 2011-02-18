@@ -1,0 +1,23 @@
+# Do NOT add chrome to the list below.  We shouldn't be including files from
+# src/chrome in src/content.
+include_rules = [
+  "+app",
+
+  # TEMPORARY ONLY WHILE WE REDUCE THE DEPENDENCIES.
+  # When the src\content refactoring is complete, this will be unnecessary (and
+  # in fact, a layering violation).
+  "+chrome",
+
+  "+grit",
+  "+net",
+
+  # Don't allow inclusion of these other libs we shouldn't be calling directly.
+  "-v8",
+  "-tools",
+
+  # Allow inclusion of WebKit API files.
+  "+third_party/WebKit/Source/WebKit/chromium",
+
+  "+ui",
+  "+webkit",
+]

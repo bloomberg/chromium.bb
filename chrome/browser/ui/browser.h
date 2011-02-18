@@ -807,6 +807,7 @@ class Browser : public TabHandlerDelegate,
   virtual void OnInstallApplication(TabContents* tab_contents,
                                     const WebApplicationInfo& app_info);
   virtual void ContentRestrictionsChanged(TabContents* source);
+  virtual void WorkerCrashed();
 
   // Overridden from TabContentsWrapperDelegate:
   virtual void URLStarredChanged(TabContentsWrapper* source,

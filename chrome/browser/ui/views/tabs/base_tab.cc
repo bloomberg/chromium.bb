@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
@@ -437,7 +438,7 @@ void BaseTab::PaintTitle(gfx::Canvas* canvas, SkColor title_color) {
   if (title.empty()) {
     title = data().loading ?
         l10n_util::GetStringUTF16(IDS_TAB_LOADING_TITLE) :
-        TabContents::GetDefaultTitle();
+        TabContentsWrapper::GetDefaultTitle();
   } else {
     Browser::FormatTitleForDisplay(&title);
   }

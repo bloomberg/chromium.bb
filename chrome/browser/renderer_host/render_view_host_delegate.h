@@ -546,9 +546,6 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
   // refocus on the modal dialog, flash title etc).
   virtual void OnIgnoredUIEvent() {}
 
-  // Notification from the renderer that JS runs out of memory.
-  virtual void OnJSOutOfMemory() {}
-
   // Notification that the renderer has become unresponsive. The
   // delegate can use this notification to show a warning to the user.
   virtual void RendererUnresponsive(RenderViewHost* render_view_host,

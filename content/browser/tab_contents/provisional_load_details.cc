@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 
-#include "chrome/browser/tab_contents/provisional_load_details.h"
+#include "content/browser/tab_contents/provisional_load_details.h"
 
 #include "chrome/browser/ssl/ssl_manager.h"
 

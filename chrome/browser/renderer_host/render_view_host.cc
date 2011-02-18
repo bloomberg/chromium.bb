@@ -792,8 +792,6 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
                         OnRequestUndockDevToolsWindow)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DevToolsRuntimePropertyChanged,
                         OnDevToolsRuntimePropertyChanged)
-    IPC_MESSAGE_FORWARD(ViewHostMsg_JSOutOfMemory, delegate_,
-                        RenderViewHostDelegate::OnJSOutOfMemory)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShouldClose_ACK, OnMsgShouldCloseACK)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ExtensionRequest, OnExtensionRequest)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SelectionChanged, OnMsgSelectionChanged)

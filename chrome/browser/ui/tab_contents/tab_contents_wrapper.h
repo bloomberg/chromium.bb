@@ -39,6 +39,14 @@ class TabContentsWrapper : public NotificationObserver,
   // its property bag to avoid adding additional interfaces.
   static PropertyAccessor<TabContentsWrapper*>* property_accessor();
 
+  static void RegisterUserPrefs(PrefService* prefs);
+
+  // Initial title assigned to NavigationEntries from Navigate.
+  static string16 GetDefaultTitle();
+
+   // Returns a human-readable description the tab's loading state.
+  string16 GetStatusText() const;
+
   // Create a TabContentsWrapper with the same state as this one. The returned
   // heap-allocated pointer is owned by the caller.
   TabContentsWrapper* Clone();
@@ -88,6 +96,7 @@ class TabContentsWrapper : public NotificationObserver,
   virtual void DidNavigateMainFramePostCommit(
       const NavigationController::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // NotificationObserver overrides:
   virtual void Observe(NotificationType type,
@@ -96,6 +105,9 @@ class TabContentsWrapper : public NotificationObserver,
 
  private:
   // Internal helpers ----------------------------------------------------------
+
+  // Message handlers.
+  void OnJSOutOfMemory();
 
   // Updates the starred state from the bookmark bar model. If the state has
   // changed, the delegate is notified.

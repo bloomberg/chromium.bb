@@ -15,6 +15,7 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #import "chrome/browser/ui/cocoa/multi_key_equivalent_button.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/result_codes.h"
 #include "grit/chromium_strings.h"
@@ -139,7 +140,7 @@ HungRendererController* g_instance = NULL;
     if (it->GetRenderProcessHost() == hungContents_->GetRenderProcessHost()) {
       string16 title = (*it)->GetTitle();
       if (title.empty())
-        title = TabContents::GetDefaultTitle();
+        title = TabContentsWrapper::GetDefaultTitle();
       [titles addObject:base::SysUTF16ToNSString(title)];
 
       // TabContents can return a null SkBitmap if it has no favicon.  If this

@@ -1624,7 +1624,7 @@
             '../app/app.gyp:*',
             '../base/base.gyp:*',
             '../chrome_frame/chrome_frame.gyp:*',
-            '../ui/gfx/gfx.gyp:*',
+            '../content/content.gyp:*',
             '../ipc/ipc.gyp:*',
             '../media/media.gyp:*',
             '../net/net.gyp:*',
@@ -1649,6 +1649,7 @@
             '../third_party/qcms/qcms.gyp:*',
             '../third_party/sqlite/sqlite.gyp:*',
             '../third_party/zlib/zlib.gyp:*',
+            '../ui/gfx/gfx.gyp:*',
             '../webkit/support/webkit_support.gyp:*',
             '../webkit/webkit.gyp:*',
 

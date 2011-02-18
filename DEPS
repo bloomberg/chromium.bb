@@ -309,6 +309,7 @@ skip_child_includes = [
   "gears",
   "native_client",
   "o3d",
+  "pdf",
   "sdch",
   "skia",
   "testing",

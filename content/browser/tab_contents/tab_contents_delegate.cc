@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/tab_contents/tab_contents_delegate.h"
+#include "content/browser/tab_contents/tab_contents_delegate.h"
 
 #include "chrome/common/url_constants.h"
 #include "ui/gfx/rect.h"
@@ -218,6 +218,9 @@ void TabContentsDelegate::ContentRestrictionsChanged(TabContents* source) {
 
 bool TabContentsDelegate::ShouldShowHungRendererDialog() {
   return true;
+}
+
+void TabContentsDelegate::WorkerCrashed() {
 }
 
 TabContentsDelegate::~TabContentsDelegate() {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/tab_contents/tab_contents.h"
+#include "content/browser/tab_contents/tab_contents.h"
 
 #include <cmath>
 
@@ -49,7 +49,6 @@
 #include "chrome/browser/pdf_unsupported_feature.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugin_observer.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_plt_recorder.h"
 #include "chrome/browser/printing/print_preview_message_handler.h"
@@ -65,14 +64,7 @@
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/safe_browsing/client_side_detection_host.h"
 #include "chrome/browser/sessions/session_types.h"
-#include "chrome/browser/tab_contents/infobar_delegate.h"
-#include "chrome/browser/tab_contents/interstitial_page.h"
-#include "chrome/browser/tab_contents/navigation_entry.h"
-#include "chrome/browser/tab_contents/provisional_load_details.h"
-#include "chrome/browser/tab_contents/tab_contents_delegate.h"
-#include "chrome/browser/tab_contents/tab_contents_observer.h"
 #include "chrome/browser/tab_contents/tab_contents_ssl_helper.h"
-#include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/browser/translate/page_translated_details.h"
 #include "chrome/browser/ui/app_modal_dialogs/message_box_handler.h"
@@ -92,15 +84,16 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "chrome/common/url_constants.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
-#include "grit/locale_settings.h"
-#include "grit/platform_locale_settings.h"
-#include "grit/theme_resources.h"
+#include "content/browser/tab_contents/infobar_delegate.h"
+#include "content/browser/tab_contents/interstitial_page.h"
+#include "content/browser/tab_contents/navigation_entry.h"
+#include "content/browser/tab_contents/provisional_load_details.h"
+#include "content/browser/tab_contents/tab_contents_delegate.h"
+#include "content/browser/tab_contents/tab_contents_observer.h"
+#include "content/browser/tab_contents/tab_contents_view.h"
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domain.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "webkit/glue/password_form.h"
@@ -417,63 +410,6 @@ void TabContents::AddObservers() {
       this));
 }
 
-// static
-void TabContents::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterBooleanPref(prefs::kAlternateErrorPagesEnabled, true);
-
-  WebPreferences pref_defaults;
-  prefs->RegisterBooleanPref(prefs::kWebKitJavascriptEnabled,
-                             pref_defaults.javascript_enabled);
-  prefs->RegisterBooleanPref(prefs::kWebKitWebSecurityEnabled,
-                             pref_defaults.web_security_enabled);
-  prefs->RegisterBooleanPref(
-      prefs::kWebKitJavascriptCanOpenWindowsAutomatically, true);
-  prefs->RegisterBooleanPref(prefs::kWebKitLoadsImagesAutomatically,
-                             pref_defaults.loads_images_automatically);
-  prefs->RegisterBooleanPref(prefs::kWebKitPluginsEnabled,
-                             pref_defaults.plugins_enabled);
-  prefs->RegisterBooleanPref(prefs::kWebKitDomPasteEnabled,
-                             pref_defaults.dom_paste_enabled);
-  prefs->RegisterBooleanPref(prefs::kWebKitShrinksStandaloneImagesToFit,
-                             pref_defaults.shrinks_standalone_images_to_fit);
-  prefs->RegisterDictionaryPref(prefs::kWebKitInspectorSettings);
-  prefs->RegisterBooleanPref(prefs::kWebKitTextAreasAreResizable,
-                             pref_defaults.text_areas_are_resizable);
-  prefs->RegisterBooleanPref(prefs::kWebKitJavaEnabled,
-                             pref_defaults.java_enabled);
-  prefs->RegisterBooleanPref(prefs::kWebkitTabsToLinks,
-                             pref_defaults.tabs_to_links);
-
-  prefs->RegisterLocalizedStringPref(prefs::kAcceptLanguages,
-                                     IDS_ACCEPT_LANGUAGES);
-  prefs->RegisterLocalizedStringPref(prefs::kDefaultCharset,
-                                     IDS_DEFAULT_ENCODING);
-  prefs->RegisterLocalizedBooleanPref(prefs::kWebKitStandardFontIsSerif,
-                                      IDS_STANDARD_FONT_IS_SERIF);
-  prefs->RegisterLocalizedStringPref(prefs::kWebKitFixedFontFamily,
-                                     IDS_FIXED_FONT_FAMILY);
-  prefs->RegisterLocalizedStringPref(prefs::kWebKitSerifFontFamily,
-                                     IDS_SERIF_FONT_FAMILY);
-  prefs->RegisterLocalizedStringPref(prefs::kWebKitSansSerifFontFamily,
-                                     IDS_SANS_SERIF_FONT_FAMILY);
-  prefs->RegisterLocalizedStringPref(prefs::kWebKitCursiveFontFamily,
-                                     IDS_CURSIVE_FONT_FAMILY);
-  prefs->RegisterLocalizedStringPref(prefs::kWebKitFantasyFontFamily,
-                                     IDS_FANTASY_FONT_FAMILY);
-  prefs->RegisterLocalizedIntegerPref(prefs::kWebKitDefaultFontSize,
-                                      IDS_DEFAULT_FONT_SIZE);
-  prefs->RegisterLocalizedIntegerPref(prefs::kWebKitDefaultFixedFontSize,
-                                      IDS_DEFAULT_FIXED_FONT_SIZE);
-  prefs->RegisterLocalizedIntegerPref(prefs::kWebKitMinimumFontSize,
-                                      IDS_MINIMUM_FONT_SIZE);
-  prefs->RegisterLocalizedIntegerPref(prefs::kWebKitMinimumLogicalFontSize,
-                                      IDS_MINIMUM_LOGICAL_FONT_SIZE);
-  prefs->RegisterLocalizedBooleanPref(prefs::kWebKitUsesUniversalDetector,
-                                      IDS_USES_UNIVERSAL_DETECTOR);
-  prefs->RegisterLocalizedStringPref(prefs::kStaticEncodings,
-                                     IDS_STATIC_ENCODING_LIST);
-}
-
 bool TabContents::OnMessageReceived(const IPC::Message& message) {
   ObserverListBase<TabContentsObserver>::Iterator it(observers_);
   TabContentsObserver* observer;
@@ -612,11 +548,6 @@ const string16& TabContents::GetTitle() const {
   return EmptyString16();
 }
 
-// static
-string16 TabContents::GetDefaultTitle() {
-  return l10n_util::GetStringUTF16(IDS_DEFAULT_TAB_TITLE);
-}
-
 int32 TabContents::GetMaxPageID() {
   if (GetSiteInstance())
     return GetSiteInstance()->max_page_id();
@@ -689,43 +620,6 @@ bool TabContents::ShouldDisplayFavIcon() {
   if (web_ui)
     return !web_ui->hide_favicon();
   return true;
-}
-
-string16 TabContents::GetStatusText() const {
-  if (!is_loading() || load_state_ == net::LOAD_STATE_IDLE)
-    return string16();
-
-  switch (load_state_) {
-    case net::LOAD_STATE_WAITING_FOR_CACHE:
-      return l10n_util::GetStringUTF16(IDS_LOAD_STATE_WAITING_FOR_CACHE);
-    case net::LOAD_STATE_ESTABLISHING_PROXY_TUNNEL:
-      return
-          l10n_util::GetStringUTF16(IDS_LOAD_STATE_ESTABLISHING_PROXY_TUNNEL);
-    case net::LOAD_STATE_RESOLVING_PROXY_FOR_URL:
-      return l10n_util::GetStringUTF16(IDS_LOAD_STATE_RESOLVING_PROXY_FOR_URL);
-    case net::LOAD_STATE_RESOLVING_HOST:
-      return l10n_util::GetStringUTF16(IDS_LOAD_STATE_RESOLVING_HOST);
-    case net::LOAD_STATE_CONNECTING:
-      return l10n_util::GetStringUTF16(IDS_LOAD_STATE_CONNECTING);
-    case net::LOAD_STATE_SSL_HANDSHAKE:
-      return l10n_util::GetStringUTF16(IDS_LOAD_STATE_SSL_HANDSHAKE);
-    case net::LOAD_STATE_SENDING_REQUEST:
-      if (upload_size_)
-        return l10n_util::GetStringFUTF16Int(
-                    IDS_LOAD_STATE_SENDING_REQUEST_WITH_PROGRESS,
-                    static_cast<int>((100 * upload_position_) / upload_size_));
-      else
-        return l10n_util::GetStringUTF16(IDS_LOAD_STATE_SENDING_REQUEST);
-    case net::LOAD_STATE_WAITING_FOR_RESPONSE:
-      return l10n_util::GetStringFUTF16(IDS_LOAD_STATE_WAITING_FOR_RESPONSE,
-                                        load_state_host_);
-    // Ignore net::LOAD_STATE_READING_RESPONSE and net::LOAD_STATE_IDLE
-    case net::LOAD_STATE_IDLE:
-    case net::LOAD_STATE_READING_RESPONSE:
-      break;
-  }
-
-  return string16();
 }
 
 void TabContents::AddObserver(TabContentsObserver* observer) {
@@ -2641,11 +2535,6 @@ void TabContents::OnIgnoredUIEvent() {
   }
 }
 
-void TabContents::OnJSOutOfMemory() {
-  AddInfoBar(new SimpleAlertInfoBarDelegate(this, NULL,
-      l10n_util::GetStringUTF16(IDS_JS_OUT_OF_MEMORY_PROMPT), true));
-}
-
 void TabContents::OnCrossSiteResponse(int new_render_process_host_id,
                                       int new_request_id) {
   // Allows the TabContents to react when a cross-site response is ready to be
@@ -2728,8 +2617,8 @@ void TabContents::UpdateZoomLimits(int minimum_percent,
 }
 
 void TabContents::WorkerCrashed() {
-  AddInfoBar(new SimpleAlertInfoBarDelegate(this, NULL,
-      l10n_util::GetStringUTF16(IDS_WEBWORKER_CRASHED_PROMPT), true));
+  if (delegate())
+    delegate()->WorkerCrashed();
 }
 
 void TabContents::BeforeUnloadFiredFromRenderManager(

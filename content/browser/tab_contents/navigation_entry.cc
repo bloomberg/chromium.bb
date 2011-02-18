@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/tab_contents/navigation_entry.h"
+#include "content/browser/tab_contents/navigation_entry.h"
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/site_instance.h"
-#include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/tab_contents/navigation_controller.h"
 #include "grit/app_resources.h"
 #include "net/base/net_util.h"
 #include "ui/base/resource/resource_bundle.h"

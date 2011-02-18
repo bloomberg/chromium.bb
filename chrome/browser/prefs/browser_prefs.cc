@@ -46,11 +46,11 @@
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/ssl/ssl_manager.h"
 #include "chrome/browser/sync/signin_manager.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tabs/pinned_tab_codec.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/browser/webui/flags_ui.h"
 #include "chrome/common/pref_names.h"
@@ -124,7 +124,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   chrome_browser_net::RegisterUserPrefs(user_prefs);
   DownloadPrefs::RegisterUserPrefs(user_prefs);
   bookmark_utils::RegisterUserPrefs(user_prefs);
-  TabContents::RegisterUserPrefs(user_prefs);
+  TabContentsWrapper::RegisterUserPrefs(user_prefs);
   TemplateURLPrepopulateData::RegisterUserPrefs(user_prefs);
   ExtensionWebUI::RegisterUserPrefs(user_prefs);
   ExtensionsUI::RegisterUserPrefs(user_prefs);

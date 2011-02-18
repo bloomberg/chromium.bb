@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/tab_contents/render_view_host_manager.h"
+#include "content/browser/tab_contents/render_view_host_manager.h"
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -13,9 +13,6 @@
 #include "chrome/browser/renderer_host/render_view_host_factory.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/renderer_host/site_instance.h"
-#include "chrome/browser/tab_contents/navigation_controller.h"
-#include "chrome/browser/tab_contents/navigation_entry.h"
-#include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/webui/web_ui.h"
 #include "chrome/browser/webui/web_ui_factory.h"
 #include "chrome/common/chrome_switches.h"
@@ -24,6 +21,9 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/browser/tab_contents/navigation_entry.h"
+#include "content/browser/tab_contents/tab_contents_view.h"
 
 namespace base {
 class WaitableEvent;
