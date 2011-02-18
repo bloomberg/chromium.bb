@@ -156,6 +156,9 @@ class TabContents;
 // Return a weak pointer to the tab strip controller.
 - (TabStripController*)tabStripController;
 
+// Access the ObjC controller that contains the infobars.
+- (InfoBarContainerController*)infoBarContainerController;
+
 // Access the C++ bridge object representing the status bubble for the window.
 - (StatusBubbleMac*)statusBubble;
 

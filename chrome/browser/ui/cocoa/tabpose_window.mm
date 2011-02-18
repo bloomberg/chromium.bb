@@ -24,6 +24,7 @@
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
+#import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_model_observer_bridge.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -186,10 +187,17 @@ void ThumbnailLoader::LoadThumbnail() {
   int topOffset = 0;
 
   // Medium term, we want to show thumbs of the actual info bar views, which
-  // means I need to create InfoBarControllers here. At that point, we can get
-  // the height from that controller. Until then, hardcode. :-/
-  const int kInfoBarHeight = 31;
-  topOffset += contents_->infobar_count() * kInfoBarHeight;
+  // means I need to create InfoBarControllers here.
+  NSWindow* window = [contents_->GetNativeView() window];
+  NSWindowController* windowController = [window windowController];
+  DCHECK(windowController);
+  if ([windowController isKindOfClass:[BrowserWindowController class]]) {
+    BrowserWindowController* bwc =
+        static_cast<BrowserWindowController*>(windowController);
+    InfoBarContainerController* infoBarContainer =
+        [bwc infoBarContainerController];
+    topOffset += NSHeight([[infoBarContainer view] frame]);
+  }
 
   bool always_show_bookmark_bar =
       contents_->profile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
