@@ -19,6 +19,7 @@
 #include "chrome/browser/instant/instant_confirm_dialog.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/url_fixer_upper.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -186,6 +187,11 @@ void BrowserOptionsHandler::BecomeDefaultBrowser(const ListValue* args) {
   default_browser_worker_->StartSetAsDefaultBrowser();
   // Callback takes care of updating UI.
 #endif
+
+  // If the user attempted to make Chrome the default browser, then he/she
+  // arguably wants to be notified when that changes.
+  PrefService* prefs = web_ui_->GetProfile()->GetPrefs();
+  prefs->SetBoolean(prefs::kCheckDefaultBrowser, true);
 }
 
 int BrowserOptionsHandler::StatusStringIdForState(
