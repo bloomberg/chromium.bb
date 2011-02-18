@@ -46,14 +46,14 @@ bool AutofillProfileModelAssociator::TraverseAndAssociateChromeAutoFillProfiles(
     std::vector<AutoFillProfile*>* new_profiles,
     std::vector<std::string>* profiles_to_delete) {
 
-  if (VLOG_IS_ON(1)) {
-    VLOG(1) << "[AUTOFILL MIGRATION]"
+  if (VLOG_IS_ON(2)) {
+    VLOG(2) << "[AUTOFILL MIGRATION]"
             << "Printing profiles from web db";
 
     for (std::vector<AutoFillProfile*>::const_iterator ix =
         all_profiles_from_db.begin(); ix != all_profiles_from_db.end(); ++ix) {
       AutoFillProfile* p = *ix;
-      VLOG(1) << "[AUTOFILL MIGRATION]  "
+      VLOG(2) << "[AUTOFILL MIGRATION]  "
               << p->GetFieldText(AutoFillType(NAME_FIRST))
               << p->GetFieldText(AutoFillType(NAME_LAST))
               << p->guid();
@@ -77,7 +77,7 @@ bool AutofillProfileModelAssociator::TraverseAndAssociateChromeAutoFillProfiles(
         // the same profile duplicated.
         current_profiles->find(guid) == current_profiles->end()) {
 
-      VLOG(1) << "[AUTOFILL MIGRATION]"
+      VLOG(2) << "[AUTOFILL MIGRATION]"
               << " Found in sync db: "
               << (*ix)->GetFieldText(AutoFillType(NAME_FIRST))
               << (*ix)->GetFieldText(AutoFillType(NAME_LAST))
@@ -304,7 +304,7 @@ bool AutofillProfileModelAssociator::MakeNewAutofillProfileSyncNodeIfNeeded(
     std::string guid = autofill_specifics.guid();
     Associate(&guid, sync_node_id);
     current_profiles->insert(autofill_specifics.guid());
-    VLOG(1) << "[AUTOFILL MIGRATION]"
+    VLOG(2) << "[AUTOFILL MIGRATION]"
             << "Found in sync db but with a different guid: "
             << UTF16ToUTF8(profile.GetFieldText(AutoFillType(NAME_FIRST)))
             << UTF16ToUTF8(profile.GetFieldText(AutoFillType(NAME_LAST)))
@@ -319,7 +319,7 @@ bool AutofillProfileModelAssociator::MakeNewAutofillProfileSyncNodeIfNeeded(
       return false;
     }
     node.SetTitle(UTF8ToWide(profile.guid()));
-    VLOG(1) << "[AUTOFILL MIGRATION]"
+    VLOG(2) << "[AUTOFILL MIGRATION]"
             << "NOT Found in sync db  "
             << UTF16ToUTF8(profile.GetFieldText(AutoFillType(NAME_FIRST)))
             << UTF16ToUTF8(profile.GetFieldText(AutoFillType(NAME_LAST)))
@@ -367,7 +367,7 @@ void AutofillProfileModelAssociator::AddNativeProfileIfNeeded(
     const sync_api::ReadNode& node) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 
-  VLOG(1) << "[AUTOFILL MIGRATION] "
+  VLOG(2) << "[AUTOFILL MIGRATION] "
           << "Trying to lookup "
           << profile.name_first()
           << " "
@@ -383,10 +383,10 @@ void AutofillProfileModelAssociator::AddNativeProfileIfNeeded(
     AutoFillProfile* p = new AutoFillProfile(profile.guid());
     OverwriteProfileWithServerData(p, profile);
     bundle->new_profiles.push_back(p);
-    VLOG(1) << "[AUTOFILL MIGRATION] "
+    VLOG(2) << "[AUTOFILL MIGRATION] "
             << " Did not find one so creating it on web db";
   } else {
-    VLOG(1) << "[AUTOFILL MIGRATION] "
+    VLOG(2) << "[AUTOFILL MIGRATION] "
             << " Found it on web db. Moving on ";
   }
 }

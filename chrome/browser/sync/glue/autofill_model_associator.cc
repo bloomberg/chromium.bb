@@ -235,14 +235,14 @@ bool AutofillModelAssociator::TraverseAndAssociateAllSyncNodes(
 
   bool autofill_profile_not_migrated = HasNotMigratedYet(write_trans);
 
-  if (VLOG_IS_ON(1) && autofill_profile_not_migrated) {
-    VLOG(1) << "[AUTOFILL MIGRATION]"
+  if (VLOG_IS_ON(2) && autofill_profile_not_migrated) {
+    VLOG(2) << "[AUTOFILL MIGRATION]"
             << "Printing profiles from web db";
 
     for (std::vector<AutoFillProfile*>::const_iterator ix =
         all_profiles_from_db.begin(); ix != all_profiles_from_db.end(); ++ix) {
       AutoFillProfile* p = *ix;
-      VLOG(1) << "[AUTOFILL MIGRATION]  "
+      VLOG(2) << "[AUTOFILL MIGRATION]  "
               << p->GetFieldText(AutoFillType(NAME_FIRST))
               << p->GetFieldText(AutoFillType(NAME_LAST));
     }
@@ -268,7 +268,7 @@ bool AutofillModelAssociator::TraverseAndAssociateAllSyncNodes(
     } else if (autofill.has_profile()) {
       // Ignore autofill profiles if we are not upgrading.
       if (autofill_profile_not_migrated) {
-        VLOG(1) << "[AUTOFILL MIGRATION] Looking for "
+        VLOG(2) << "[AUTOFILL MIGRATION] Looking for "
                 << autofill.profile().name_first()
                 << autofill.profile().name_last();
         AddNativeProfileIfNeeded(

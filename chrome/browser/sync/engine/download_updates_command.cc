@@ -74,7 +74,7 @@ void DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
       &update_response,
       session);
 
-  VLOG(1) << SyncerProtoUtil::ClientToServerResponseDebugString(
+  VLOG(2) << SyncerProtoUtil::ClientToServerResponseDebugString(
       update_response);
 
   StatusController* status = session->status_controller();
