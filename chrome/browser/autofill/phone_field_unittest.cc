@@ -171,6 +171,11 @@ TEST_F(PhoneFieldTest, ParseTwoLinePhoneEcmlBillTo) {
 }
 
 TEST_F(PhoneFieldTest, ThreePartPhoneNumber) {
+  // Phone in format <field> - <field> - <field> could be either
+  // <area code> - <prefix> - <suffix>, or
+  // <country code> - <area code> - <phone>. The only distinguishing feature is
+  // size: <prefix> is no bigger than 3 characters, and <suffix> is no bigger
+  // than 4.
   list_.push_back(
       new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Phone:"),
                                                ASCIIToUTF16("dayphone1"),
@@ -184,7 +189,7 @@ TEST_F(PhoneFieldTest, ThreePartPhoneNumber) {
                                                ASCIIToUTF16("dayphone2"),
                                                string16(),
                                                ASCIIToUTF16("text"),
-                                               0,
+                                               3,
                                                false),
                         ASCIIToUTF16("prefix1")));
   list_.push_back(
@@ -192,7 +197,7 @@ TEST_F(PhoneFieldTest, ThreePartPhoneNumber) {
                                                ASCIIToUTF16("dayphone3"),
                                                string16(),
                                                ASCIIToUTF16("text"),
-                                               0,
+                                               4,
                                                false),
                         ASCIIToUTF16("suffix1")));
   list_.push_back(

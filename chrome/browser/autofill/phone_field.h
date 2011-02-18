@@ -33,7 +33,7 @@ class PhoneField : public FormField {
  private:
   PhoneField();
 
-  enum PHONE_TYPE {
+  enum PhoneType {
     PHONE_TYPE_FIRST = 0,
     HOME_PHONE = PHONE_TYPE_FIRST,
     FAX_PHONE,
@@ -43,11 +43,38 @@ class PhoneField : public FormField {
   };
 
   // Some field names are different for phone and fax.
+  string16 GetCountryRegex() const;
+  // This string includes all area code separators, including NoText.
   string16 GetAreaRegex() const;
+  // Separator of the area code in the case fields are formatted without
+  // any text indicating what fields are (e.g. field1 "(" field2 ")" field3 "-"
+  // field4 means Country Code, Area Code, Prefix, Suffix)
+  string16 GetAreaNoTextRegex() const;
   string16 GetPhoneRegex() const;
+  string16 GetPrefixSeparatorRegex() const;
   string16 GetPrefixRegex() const;
+  string16 GetSuffixSeparatorRegex() const;
   string16 GetSuffixRegex() const;
   string16 GetExtensionRegex() const;
+
+  // This is for easy description of the possible parsing paths of the phone
+  // fields.
+  enum RegexType {
+    REGEX_COUNTRY,
+    REGEX_AREA,
+    REGEX_AREA_NOTEXT,
+    REGEX_PHONE,
+    REGEX_PREFIX_SEPARATOR,
+    REGEX_PREFIX,
+    REGEX_SUFFIX_SEPARATOR,
+    REGEX_SUFFIX,
+    REGEX_EXTENSION,
+
+    // Separates regexps in grammar.
+    REGEX_SEPARATOR,
+  };
+
+  string16 GetRegExp(RegexType regex_id) const;
 
   // |field| - field to fill up on successful parsing.
   // |iter| - in/out. Form field iterator, points to the first field that is
@@ -59,19 +86,35 @@ class PhoneField : public FormField {
                             std::vector<AutoFillField*>::const_iterator* iter,
                             bool regular_phone);
 
-  void SetPhoneType(PHONE_TYPE phone_type);
+  void SetPhoneType(PhoneType phone_type);
 
   // Field types are different as well, so we create a temporary phone number,
   // to get relevant field types.
   scoped_ptr<PhoneNumber> number_;
-  PHONE_TYPE phone_type_;
+  PhoneType phone_type_;
 
-  // Always present; holds suffix if prefix is present.
-  AutoFillField* phone_;
 
-  AutoFillField* area_code_;  // optional
-  AutoFillField* prefix_;     // optional
-  AutoFillField* extension_;  // optional
+  // Parsed fields.
+  enum PhonePart {
+    FIELD_NONE = -1,
+    FIELD_COUNTRY_CODE,
+    FIELD_AREA_CODE,
+    FIELD_PHONE,
+    FIELD_SUFFIX,
+    FIELD_EXTENSION,
+
+    FIELD_MAX,
+  };
+
+  // FIELD_PHONE is always present; holds suffix if prefix is present.
+  // The rest could be NULL.
+  AutoFillField* parsed_phone_fields_[FIELD_MAX];
+
+  static struct Parser {
+    RegexType regex;       // Field matching reg-ex.
+    PhonePart phone_part;  // Index of the field.
+    int max_size;          // Max size of the field to match. 0 means any.
+  } phone_field_grammars_[];
 
   DISALLOW_COPY_AND_ASSIGN(PhoneField);
 };

@@ -1648,6 +1648,7 @@ TEST_F(AutoFillManagerTest, FillPhoneNumber) {
   char test_data[] = "1234567890123456";
   for (int i = arraysize(test_data) - 1; i >= 0; --i) {
     test_data[i] = 0;
+    SCOPED_TRACE(StringPrintf("Testing phone: %s", test_data));
     work_profile->SetInfo(phone_type, ASCIIToUTF16(test_data));
     // The page ID sent to the AutoFillManager from the RenderView, used to send
     // an IPC message back to the renderer.

@@ -1113,14 +1113,16 @@ TEST(FormStructureTest, ThreePartPhoneNumber) {
                              ASCIIToUTF16("dayphone2"),
                              string16(),
                              ASCIIToUTF16("text"),
-                             0,
+                             3,  // Size of prefix is 3.
                              false));
   form.fields.push_back(
       webkit_glue::FormField(ASCIIToUTF16("-"),
                              ASCIIToUTF16("dayphone3"),
                              string16(),
                              ASCIIToUTF16("text"),
-                             0,
+                             4,  // Size of suffix is 4. If unlimited size is
+                                 // passed, phone will be parsed as
+                                 // <country code> - <area code> - <phone>.
                              false));
   form.fields.push_back(
       webkit_glue::FormField(ASCIIToUTF16("ext.:"),
