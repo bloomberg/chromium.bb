@@ -44,16 +44,9 @@ struct wl_global_listener {
 	struct wl_list link;
 };
 
-struct wl_listener {
-	void (**implementation)(void);
-	void *data;
-	struct wl_list link;
-};
-
 struct wl_proxy {
 	struct wl_object object;
 	struct wl_display *display;
-	struct wl_list listener_list;
 	void *user_data;
 };
 
@@ -78,7 +71,6 @@ struct wl_display {
 	uint32_t id, id_count, next_range;
 	uint32_t mask;
 	struct wl_hash_table *objects;
-	struct wl_listener listener;
 	struct wl_list global_listener_list;
 
 	struct wl_visual *argb_visual;
@@ -147,9 +139,9 @@ wl_proxy_create_for_id(struct wl_display *display,
 		return NULL;
 
 	proxy->object.interface = interface;
+	proxy->object.implementation = NULL;
 	proxy->object.id = id;
 	proxy->display = display;
-	wl_list_init(&proxy->listener_list);
 	wl_hash_table_insert(display->objects, proxy->object.id, proxy);
 
 	return proxy;
@@ -166,11 +158,6 @@ wl_proxy_create(struct wl_proxy *factory,
 WL_EXPORT void
 wl_proxy_destroy(struct wl_proxy *proxy)
 {
-	struct wl_listener *listener, *next;
-
-	wl_list_for_each_safe(listener, next, &proxy->listener_list, link)
-		free(listener);
-
 	wl_hash_table_remove(proxy->display->objects, proxy->object.id);
 	free(proxy);
 }
@@ -179,15 +166,13 @@ WL_EXPORT int
 wl_proxy_add_listener(struct wl_proxy *proxy,
 		      void (**implementation)(void), void *data)
 {
-	struct wl_listener *listener;
-
-	listener = malloc(sizeof *listener);
-	if (listener == NULL)
+	if (proxy->object.implementation) {
+		fprintf(stderr, "proxy already has listener\n");
 		return -1;
+	}
 
-	listener->implementation = (void (**)(void)) implementation;
-	listener->data = data;
-	wl_list_insert(proxy->listener_list.prev, &listener->link);
+	proxy->object.implementation = implementation;
+	proxy->user_data = data;
 
 	return 0;
 }
@@ -393,13 +378,13 @@ wl_display_connect(const char *name)
 	display->proxy.object.interface = &wl_display_interface;
 	display->proxy.object.id = 1;
 	display->proxy.display = display;
-	wl_list_init(&display->proxy.listener_list);
 
 	wl_list_init(&display->sync_list);
 	wl_list_init(&display->frame_list);
 
-	display->listener.implementation = (void(**)(void)) &display_listener;
-	wl_list_insert(display->proxy.listener_list.prev, &display->listener.link);
+	display->proxy.object.implementation =
+		(void(**)(void)) &display_listener;
+	display->proxy.user_data = display;
 
 	display->connection = wl_connection_create(display->fd,
 						   connection_update,
@@ -473,7 +458,6 @@ handle_event(struct wl_display *display,
 	     uint32_t id, uint32_t opcode, uint32_t size)
 {
 	uint32_t p[32];
-	struct wl_listener *listener;
 	struct wl_proxy *proxy;
 	struct wl_closure *closure;
 	const struct wl_message *message;
@@ -484,7 +468,7 @@ handle_event(struct wl_display *display,
 	else
 		proxy = wl_hash_table_lookup(display->objects, id);
 
-	if (proxy == NULL) {
+	if (proxy == NULL || proxy->object.implementation == NULL) {
 		wl_connection_consume(display->connection, size);
 		return;
 	}
@@ -496,10 +480,9 @@ handle_event(struct wl_display *display,
 	if (wl_debug)
 		wl_closure_print(closure, &proxy->object);
 
-	wl_list_for_each(listener, &proxy->listener_list, link)
-		wl_closure_invoke(closure, &proxy->object,
-				  listener->implementation[opcode],
-				  listener->data);
+	wl_closure_invoke(closure, &proxy->object,
+			  proxy->object.implementation[opcode],
+			  proxy->user_data);
 
 	wl_closure_destroy(closure);
 }
