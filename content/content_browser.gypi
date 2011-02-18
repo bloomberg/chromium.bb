@@ -12,6 +12,7 @@
         #'content_common',
         '../app/app.gyp:app_resources',
         '../skia/skia.gyp:skia',
+        '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
         '../ui/ui.gyp:ui_base',
       ],
       'include_dirs': [
