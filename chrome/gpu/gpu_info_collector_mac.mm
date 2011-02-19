@@ -52,11 +52,20 @@ bool CollectGraphicsInfo(GPUInfo* gpu_info) {
   return CollectGraphicsInfoGL(gpu_info);
 }
 
-bool CollectVideoCardInfo(GPUInfo* gpu_info) {
+bool CollectPreliminaryGraphicsInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
-  if (gfx::GetGLImplementation() != gfx::kGLImplementationDesktopGL)
-    return false;
+  gpu_info->SetLevel(GPUInfo::kPartial);
+
+  bool rt = true;
+  if (!CollectVideoCardInfo(gpu_info))
+    rt = false;
+
+  return rt;
+}
+
+bool CollectVideoCardInfo(GPUInfo* gpu_info) {
+  DCHECK(gpu_info);
 
   UInt32 vendor_id = 0, device_id = 0;
   io_registry_entry_t dsp_port = CGDisplayIOServicePort(kCGDirectMainDisplay);

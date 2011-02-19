@@ -378,26 +378,26 @@ bool GpuBlacklist::GpuBlacklistEntry::SetBlacklistedFeatures(
 }
 
 bool GpuBlacklist::GpuBlacklistEntry::Contains(
-    OsType os_type, const Version& os_version,
-    uint32 vendor_id, uint32 device_id,
-    const std::string& driver_vendor,
-    const Version& driver_version,
-    const std::string& gl_renderer) const {
+    OsType os_type, const Version& os_version, const GPUInfo& gpu_info) const {
   DCHECK(os_type != kOsAny);
   if (os_info_.get() != NULL && !os_info_->Contains(os_type, os_version))
     return false;
-  if (vendor_id_ != 0 && vendor_id_ != vendor_id)
+  if (vendor_id_ != 0 && vendor_id_ != gpu_info.vendor_id())
     return false;
-  if (device_id_ != 0 && device_id_ != device_id)
+  if (device_id_ != 0 && device_id_ != gpu_info.device_id())
     return false;
   if (driver_vendor_info_.get() != NULL &&
-      !driver_vendor_info_->Contains(driver_vendor))
+      !driver_vendor_info_->Contains(gpu_info.driver_vendor()))
     return false;
-  if (driver_version_info_.get() != NULL &&
-      !driver_version_info_->Contains(driver_version))
-    return false;
+  if (driver_version_info_.get() != NULL) {
+    scoped_ptr<Version> driver_version(
+        Version::GetVersionFromString(gpu_info.driver_version()));
+    if (driver_version.get() == NULL ||
+        !driver_version_info_->Contains(*driver_version))
+      return false;
+  }
   if (gl_renderer_info_.get() != NULL &&
-      !gl_renderer_info_->Contains(gl_renderer))
+      !gl_renderer_info_->Contains(gpu_info.gl_renderer()))
     return false;
   return true;
 }
@@ -492,10 +492,6 @@ GpuFeatureFlags GpuBlacklist::DetermineGpuFeatureFlags(
   // No need to go through blacklist entries if GPUInfo isn't available.
   if (gpu_info.level() == GPUInfo::kUninitialized)
     return flags;
-  scoped_ptr<Version> driver_version(
-      Version::GetVersionFromString(gpu_info.driver_version()));
-  if (driver_version.get() == NULL)
-    return flags;
 
   if (os == kOsAny)
     os = GetOsType();
@@ -524,11 +520,7 @@ GpuFeatureFlags GpuBlacklist::DetermineGpuFeatureFlags(
   DCHECK(os_version != NULL);
 
   for (size_t i = 0; i < blacklist_.size(); ++i) {
-    if (blacklist_[i]->Contains(os, *os_version,
-                                gpu_info.vendor_id(), gpu_info.device_id(),
-                                gpu_info.driver_vendor(),
-                                *driver_version,
-                                gpu_info.gl_renderer())) {
+    if (blacklist_[i]->Contains(os, *os_version, gpu_info)) {
       flags.Combine(blacklist_[i]->GetGpuFeatureFlags());
       active_entries_.push_back(blacklist_[i]);
     }

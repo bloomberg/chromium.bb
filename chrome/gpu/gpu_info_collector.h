@@ -19,6 +19,11 @@ namespace gpu_info_collector {
 // Returns true on success.
 bool CollectGraphicsInfo(GPUInfo* gpu_info);
 
+// Similar to CollectGraphicsInfo, only this collects a subset of variables
+// without creating a GL/DirectX context (and without the danger of crashing).
+// The subset each platform collects may be different.
+bool CollectPreliminaryGraphicsInfo(GPUInfo* gpu_info);
+
 #if defined(OS_WIN)
 // Windows provides two ways of doing graphics so we need two ways of
 // collecting info based on what's on a user's machine.

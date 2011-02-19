@@ -53,6 +53,18 @@ bool CollectGraphicsInfo(GPUInfo* gpu_info) {
   return true;
 }
 
+bool CollectPreliminaryGraphicsInfo(GPUInfo* gpu_info) {
+  DCHECK(gpu_info);
+
+  gpu_info->SetLevel(GPUInfo::kPartial);
+
+  bool rt = true;
+  if (!CollectVideoCardInfo(gpu_info))
+    rt = false;
+
+  return rt;
+}
+
 bool CollectGraphicsInfoD3D(IDirect3D9* d3d, GPUInfo* gpu_info) {
   DCHECK(d3d);
   DCHECK(gpu_info);

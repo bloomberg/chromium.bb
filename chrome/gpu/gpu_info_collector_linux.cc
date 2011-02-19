@@ -137,6 +137,21 @@ bool CollectGraphicsInfo(GPUInfo* gpu_info) {
   return CollectGraphicsInfoGL(gpu_info);
 }
 
+bool CollectPreliminaryGraphicsInfo(GPUInfo* gpu_info) {
+  DCHECK(gpu_info);
+
+  gpu_info->SetLevel(GPUInfo::kPartial);
+
+  bool rt = true;
+  if (!CollectVideoCardInfo(gpu_info))
+    rt = false;
+
+  // TODO(zmo): if vendor is ATI, consider passing /etc/ati/amdpcsdb.default
+  // for driver information.
+
+  return rt;
+}
+
 bool CollectVideoCardInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 

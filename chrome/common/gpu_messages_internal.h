@@ -133,6 +133,12 @@ IPC_MESSAGE_CONTROL3(GpuHostMsg_DestroyCommandBuffer,
 IPC_MESSAGE_CONTROL1(GpuHostMsg_GraphicsInfoCollected,
                      GPUInfo /* GPU logging stats */)
 
+// Request from GPU to check if GPU is blacklisted based on preliminary GPU
+// info.
+IPC_SYNC_MESSAGE_CONTROL1_1(GpuHostMsg_PreliminaryGraphicsInfoCollected,
+                            GPUInfo, /* preliminary GPU logging stats */
+                            bool /* blacklisted or not */)
+
 // Message from GPU to add a GPU log message to the about:gpu page.
 IPC_MESSAGE_CONTROL3(GpuHostMsg_OnLogMessage,
                      int /*severity*/,

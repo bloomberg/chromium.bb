@@ -109,6 +109,21 @@ void GpuThread::OnInitialize() {
   if (!single_process)
     logging::SetLogMessageHandler(GpuProcessLogMessageHandler);
 
+  // Collect as much GPU info as possible without creating GL/D3D context.
+  gpu_info_collector::CollectPreliminaryGraphicsInfo(&gpu_info_);
+  LOG(INFO) << "gpu_info_collector::CollectPreliminaryGraphicsInfo complete";
+
+  // Go through GPU blacklist with partial GPU info; if GPU is already
+  // blacklisted, don't create GL/D3D context.
+  bool blacklisted;
+  Send(new GpuHostMsg_PreliminaryGraphicsInfoCollected(gpu_info_,
+                                                       &blacklisted));
+  if (blacklisted) {
+    LOG(INFO) << "GPU is blacklisted based on preliminary GPU info collection";
+    MessageLoop::current()->Quit();
+    return;
+  }
+
   // Load the GL implementation and locate the bindings before starting the GPU
   // watchdog because this can take a lot of time and the GPU watchdog might
   // terminate the GPU process.

@@ -154,11 +154,9 @@ class GpuBlacklist {
         DictionaryValue* value);
 
     // Determines if a given os/gc/driver is included in the Entry set.
-    bool Contains(OsType os_type, const Version& os_version,
-                  uint32 vendor_id, uint32 device_id,
-                  const std::string& driver_vendor,
-                  const Version& driver_version,
-                  const std::string& gl_renderer) const;
+    bool Contains(OsType os_type,
+                  const Version& os_version,
+                  const GPUInfo& gpu_info) const;
 
     // Returns the OsType.
     OsType GetOsType() const;

@@ -17,6 +17,7 @@
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/gpu_messages.h"
+#include "chrome/gpu/gpu_info_collector.h"
 #include "grit/browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -234,6 +235,13 @@ void GpuProcessHostUIShim::EstablishGpuChannel(
   DCHECK(CalledOnValidThread());
   linked_ptr<EstablishChannelCallback> wrapped_callback(callback);
 
+  // If GPU features are already blacklisted, no need to establish the channel.
+  if (EnsureInitialized() && gpu_feature_flags_.flags() != 0) {
+    EstablishChannelError(
+        wrapped_callback.release(), IPC::ChannelHandle(), GPUInfo());
+    return;
+  }
+
   if (Send(new GpuMsg_EstablishChannel(renderer_id))) {
     channel_requests_.push(wrapped_callback);
   } else {
@@ -284,6 +292,9 @@ void GpuProcessHostUIShim::CreateViewCommandBuffer(
 void GpuProcessHostUIShim::CollectGraphicsInfoAsynchronously(
     GPUInfo::Level level) {
   DCHECK(CalledOnValidThread());
+  // If GPU is already blacklisted, no more info will be collected.
+  if (gpu_feature_flags_.flags() != 0)
+    return;
   Send(new GpuMsg_CollectGraphicsInfo(level));
 }
 
@@ -321,6 +332,8 @@ bool GpuProcessHostUIShim::OnControlMessageReceived(
                         OnDestroyCommandBuffer)
     IPC_MESSAGE_HANDLER(GpuHostMsg_GraphicsInfoCollected,
                         OnGraphicsInfoCollected)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuHostMsg_PreliminaryGraphicsInfoCollected,
+                                    OnPreliminaryGraphicsInfoCollected)
     IPC_MESSAGE_HANDLER(GpuHostMsg_OnLogMessage,
                         OnLogMessage)
     IPC_MESSAGE_HANDLER(GpuHostMsg_SynchronizeReply,
@@ -420,11 +433,45 @@ void GpuProcessHostUIShim::OnDestroyCommandBuffer(
 
 void GpuProcessHostUIShim::OnGraphicsInfoCollected(const GPUInfo& gpu_info) {
   gpu_info_ = gpu_info;
-  child_process_logging::SetGpuInfo(gpu_info);
+  if (gpu_feature_flags_.flags() != 0)
+    gpu_info_.SetLevel(GPUInfo::kComplete);
+  child_process_logging::SetGpuInfo(gpu_info_);
 
   // Used only in testing.
   if (gpu_info_collected_callback_.get())
     gpu_info_collected_callback_->Run();
+}
+
+void GpuProcessHostUIShim::OnPreliminaryGraphicsInfoCollected(
+    const GPUInfo& gpu_info, IPC::Message* reply_msg) {
+  bool blacklisted = false;
+  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+  if (!browser_command_line.HasSwitch(switches::kIgnoreGpuBlacklist) &&
+      browser_command_line.GetSwitchValueASCII(
+          switches::kUseGL) != gfx::kGLImplementationOSMesaName) {
+    gpu_feature_flags_ = gpu_blacklist_->DetermineGpuFeatureFlags(
+        GpuBlacklist::kOsAny, NULL, gpu_info);
+    if (gpu_feature_flags_.flags() != 0) {
+      blacklisted = true;
+      gpu_feature_flags_set_ = true;
+      gpu_info_ = gpu_info;
+      gpu_info_.SetLevel(GPUInfo::kComplete);
+      child_process_logging::SetGpuInfo(gpu_info_);
+      uint32 max_entry_id = gpu_blacklist_->max_entry_id();
+      std::vector<uint32> flag_entries;
+      gpu_blacklist_->GetGpuFeatureFlagEntries(
+          GpuFeatureFlags::kGpuFeatureAll, flag_entries);
+      DCHECK_GT(flag_entries.size(), 0u);
+      for (size_t i = 0; i < flag_entries.size(); ++i) {
+        UMA_HISTOGRAM_ENUMERATION("GPU.BlacklistTestResultsPerEntry",
+            flag_entries[i], max_entry_id + 1);
+      }
+    }
+  }
+
+  GpuHostMsg_PreliminaryGraphicsInfoCollected::WriteReplyParams(
+      reply_msg, blacklisted);
+  Send(reply_msg);
 }
 
 void GpuProcessHostUIShim::OnLogMessage(int level,
