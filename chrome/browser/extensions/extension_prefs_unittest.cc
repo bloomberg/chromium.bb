@@ -550,6 +550,30 @@ class ExtensionPrefsAppLaunchIndex : public ExtensionPrefsTest {
 };
 TEST_F(ExtensionPrefsAppLaunchIndex, ExtensionPrefsAppLaunchIndex) {}
 
+class ExtensionPrefsAppDraggedByUser : public ExtensionPrefsTest {
+ public:
+  virtual void Initialize() {
+    extension_ = prefs_.AddExtension("on_extension_installed");
+    EXPECT_FALSE(prefs()->WasAppDraggedByUser(extension_->id()));
+    prefs()->OnExtensionInstalled(extension_.get(),
+        Extension::ENABLED, false);
+  }
+
+  virtual void Verify() {
+    // Set the flag and see if it persisted.
+    prefs()->SetAppDraggedByUser(extension_->id());
+    EXPECT_TRUE(prefs()->WasAppDraggedByUser(extension_->id()));
+
+    // Make sure it doesn't change on consecutive calls.
+    prefs()->SetAppDraggedByUser(extension_->id());
+    EXPECT_TRUE(prefs()->WasAppDraggedByUser(extension_->id()));
+  }
+
+ private:
+  scoped_refptr<Extension> extension_;
+};
+TEST_F(ExtensionPrefsAppDraggedByUser, ExtensionPrefsAppDraggedByUser) {}
+
 namespace keys = extension_manifest_keys;
 
 class ExtensionPrefsPreferencesBase : public ExtensionPrefsTest {

@@ -424,13 +424,21 @@ void AppLauncherHandler::HandleCreateAppShortcut(const ListValue* args) {
 }
 
 void AppLauncherHandler::HandleReorderApps(const ListValue* args) {
+  CHECK(args->GetSize() == 2);
+
+  std::string dragged_app_id;
+  ListValue* app_order;
+  CHECK(args->GetString(0, &dragged_app_id));
+  CHECK(args->GetList(1, &app_order));
+
   std::vector<std::string> extension_ids;
-  for (size_t i = 0; i < args->GetSize(); ++i) {
+  for (size_t i = 0; i < app_order->GetSize(); ++i) {
     std::string value;
-    if (args->GetString(i, &value))
+    if (app_order->GetString(i, &value))
       extension_ids.push_back(value);
   }
 
+  extensions_service_->extension_prefs()->SetAppDraggedByUser(dragged_app_id);
   extensions_service_->extension_prefs()->SetAppLauncherOrder(extension_ids);
 }
 

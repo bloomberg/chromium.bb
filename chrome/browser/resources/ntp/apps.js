@@ -524,10 +524,11 @@ var apps = (function() {
       this.scrollMouseXY_ = null;
     },
 
-    saveDrag: function() {
+    saveDrag: function(draggedItem) {
       this.invalidate_();
       this.layout();
 
+      var draggedAppId = draggedItem.querySelector('a').getAttribute('app-id');
       var appIds = this.data.filter(function(id) {
         return id != 'web-store-entry';
       });
@@ -535,7 +536,7 @@ var apps = (function() {
       // Wait until the transitions are complete before notifying the browser.
       // Otherwise, the apps will be re-rendered while still transitioning.
       setTimeout(function() {
-        chrome.send('reorderApps', appIds);
+        chrome.send('reorderApps', [draggedAppId, appIds]);
       }, this.transitionsDuration + 10);
     },
 

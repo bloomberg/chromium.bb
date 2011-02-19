@@ -260,6 +260,14 @@ class ExtensionPrefs {
   // Sets the order the apps should be displayed in the app launcher.
   void SetAppLauncherOrder(const std::vector<std::string>& extension_ids);
 
+  // Returns true if the user repositioned the app on the app launcher via drag
+  // and drop.
+  bool WasAppDraggedByUser(const std::string& extension_id);
+
+  // Sets a flag indicating that the user repositioned the app on the app
+  // launcher by drag and dropping it.
+  void SetAppDraggedByUser(const std::string& extension_id);
+
   // The extension's update URL data.  If not empty, the ExtensionUpdater
   // will append a ap= parameter to the URL when checking if a new version
   // of the extension is available.

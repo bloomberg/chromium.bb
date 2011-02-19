@@ -23,9 +23,10 @@
 //         tells the delegate that the dragged item is currently above
 //         the specified coordinates.
 //
-//   saveDrag() -->
+//   saveDrag(draggedItem) -->
 //         tells the delegate that the drag is done. move the item to the
-//         position last specified by setDragPlaceholder. (e.g., commit changes)
+//         position last specified by setDragPlaceholder (e.g., commit changes).
+//         draggedItem was the item being dragged.
 //
 
 // The distance, in px, that the mouse must move before initiating a drag.
@@ -162,7 +163,7 @@ DragAndDropController.prototype = {
       return;
 
     this.delegate_.dragItem = this.startItem_ = null;
-    this.delegate_.saveDrag();
+    this.delegate_.saveDrag(dragItem);
     dragItem.classList.remove('dragging');
 
     setTimeout(function() {
