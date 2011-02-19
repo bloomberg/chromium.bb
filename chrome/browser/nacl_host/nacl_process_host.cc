@@ -20,6 +20,7 @@
 #include "chrome/common/nacl_messages.h"
 #include "chrome/common/render_messages.h"
 #include "ipc/ipc_switches.h"
+#include "native_client/src/shared/imc/nacl_imc.h"
 
 #if defined(OS_POSIX)
 #include "ipc/ipc_channel_posix.h"
@@ -42,12 +43,18 @@ void SetCloseOnExec(nacl::Handle fd) {
 
 }  // namespace
 
+struct NaClProcessHost::NaClInternal {
+  std::vector<nacl::Handle> sockets_for_renderer;
+  std::vector<nacl::Handle> sockets_for_sel_ldr;
+};
+
 NaClProcessHost::NaClProcessHost(
     ResourceDispatcherHost *resource_dispatcher_host,
     const std::wstring& url)
     : BrowserChildProcessHost(NACL_LOADER_PROCESS, resource_dispatcher_host),
       resource_dispatcher_host_(resource_dispatcher_host),
       reply_msg_(NULL),
+      internal_(new NaClInternal()),
       running_on_wow64_(false) {
   set_name(url);
 #if defined(OS_WIN)
@@ -63,11 +70,11 @@ NaClProcessHost::~NaClProcessHost() {
   // defined, but we still compile a bunch of other code from this
   // file anyway.  TODO(mseaborn): Make this less messy.
 #ifndef DISABLE_NACL
-  for (size_t i = 0; i < sockets_for_renderer_.size(); i++) {
-    nacl::Close(sockets_for_renderer_[i]);
+  for (size_t i = 0; i < internal_->sockets_for_renderer.size(); i++) {
+    nacl::Close(internal_->sockets_for_renderer[i]);
   }
-  for (size_t i = 0; i < sockets_for_sel_ldr_.size(); i++) {
-    nacl::Close(sockets_for_sel_ldr_[i]);
+  for (size_t i = 0; i < internal_->sockets_for_sel_ldr.size(); i++) {
+    nacl::Close(internal_->sockets_for_sel_ldr[i]);
   }
 #endif
 
@@ -105,8 +112,8 @@ bool NaClProcessHost::Launch(RenderMessageFilter* render_message_filter,
     // Create a connected socket
     if (nacl::SocketPair(pair) == -1)
       return false;
-    sockets_for_renderer_.push_back(pair[0]);
-    sockets_for_sel_ldr_.push_back(pair[1]);
+    internal_->sockets_for_renderer.push_back(pair[0]);
+    internal_->sockets_for_sel_ldr.push_back(pair[1]);
     SetCloseOnExec(pair[0]);
     SetCloseOnExec(pair[1]);
   }
@@ -183,12 +190,13 @@ void NaClProcessHost::OnProcessLaunched() {
   std::vector<nacl::FileDescriptor> handles_for_renderer;
   base::ProcessHandle nacl_process_handle;
 
-  for (size_t i = 0; i < sockets_for_renderer_.size(); i++) {
+  for (size_t i = 0; i < internal_->sockets_for_renderer.size(); i++) {
 #if defined(OS_WIN)
     // Copy the handle into the renderer process.
     HANDLE handle_in_renderer;
     DuplicateHandle(base::GetCurrentProcessHandle(),
-                    reinterpret_cast<HANDLE>(sockets_for_renderer_[i]),
+                    reinterpret_cast<HANDLE>(
+                        internal_->sockets_for_renderer[i]),
                     render_message_filter_->peer_handle(),
                     &handle_in_renderer,
                     GENERIC_READ | GENERIC_WRITE,
@@ -200,7 +208,7 @@ void NaClProcessHost::OnProcessLaunched() {
     // No need to dup the imc_handle - we don't pass it anywhere else so
     // it cannot be closed.
     nacl::FileDescriptor imc_handle;
-    imc_handle.fd = sockets_for_renderer_[i];
+    imc_handle.fd = internal_->sockets_for_renderer[i];
     imc_handle.auto_close = true;
     handles_for_renderer.push_back(imc_handle);
 #endif
@@ -228,18 +236,19 @@ void NaClProcessHost::OnProcessLaunched() {
   render_message_filter_->Send(reply_msg_);
   render_message_filter_ = NULL;
   reply_msg_ = NULL;
-  sockets_for_renderer_.clear();
+  internal_->sockets_for_renderer.clear();
 
   SendStartMessage();
 }
 
 void NaClProcessHost::SendStartMessage() {
   std::vector<nacl::FileDescriptor> handles_for_sel_ldr;
-  for (size_t i = 0; i < sockets_for_sel_ldr_.size(); i++) {
+  for (size_t i = 0; i < internal_->sockets_for_sel_ldr.size(); i++) {
 #if defined(OS_WIN)
     HANDLE channel;
     if (!DuplicateHandle(GetCurrentProcess(),
-                         reinterpret_cast<HANDLE>(sockets_for_sel_ldr_[i]),
+                         reinterpret_cast<HANDLE>(
+                             internal_->sockets_for_sel_ldr[i]),
                          handle(),
                          &channel,
                          GENERIC_READ | GENERIC_WRITE,
@@ -250,7 +259,7 @@ void NaClProcessHost::SendStartMessage() {
         reinterpret_cast<nacl::FileDescriptor>(channel));
 #else
     nacl::FileDescriptor channel;
-    channel.fd = dup(sockets_for_sel_ldr_[i]);
+    channel.fd = dup(internal_->sockets_for_sel_ldr[i]);
     if (channel.fd < 0) {
       LOG(ERROR) << "Failed to dup() a file descriptor";
       return;
@@ -281,7 +290,7 @@ void NaClProcessHost::SendStartMessage() {
 #endif
 
   Send(new NaClProcessMsg_Start(handles_for_sel_ldr));
-  sockets_for_sel_ldr_.clear();
+  internal_->sockets_for_sel_ldr.clear();
 }
 
 bool NaClProcessHost::OnMessageReceived(const IPC::Message& msg) {

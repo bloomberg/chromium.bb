@@ -11,7 +11,6 @@
 #include "base/ref_counted.h"
 #include "chrome/browser/browser_child_process_host.h"
 #include "chrome/common/nacl_types.h"
-#include "native_client/src/shared/imc/nacl_imc.h"
 
 class RenderMessageFilter;
 
@@ -41,6 +40,12 @@ class NaClProcessHost : public BrowserChildProcessHost {
   virtual void OnChildDied();
 
  private:
+  // Internal class that holds the nacl::Handle objecs so that
+  // nacl_process_host.h doesn't include NaCl headers.  Needed since it's
+  // included by src\content, which can't depend on the NaCl gyp file because it
+  // depends on chrome.gyp (circular dependency).
+  struct NaClInternal;
+
   bool LaunchSelLdr();
 
   void SendStartMessage();
@@ -65,8 +70,7 @@ class NaClProcessHost : public BrowserChildProcessHost {
   IPC::Message* reply_msg_;
 
   // Socket pairs for the NaCl process and renderer.
-  std::vector<nacl::Handle> sockets_for_renderer_;
-  std::vector<nacl::Handle> sockets_for_sel_ldr_;
+  scoped_ptr<NaClInternal> internal_;
 
   // Windows platform flag
   bool running_on_wow64_;

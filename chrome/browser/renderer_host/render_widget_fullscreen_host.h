@@ -7,9 +7,7 @@
 
 #include "chrome/browser/renderer_host/render_widget_host.h"
 
-class RenderWidgetFullscreenHost : public RenderWidgetHost {
- public:
-  RenderWidgetFullscreenHost(RenderProcessHost* process, int routing_id);
-};
+// TODO(jam): remove this file when all files have been converted.
+#include "content/browser/renderer_host/render_widget_fullscreen_host.h"
 
 #endif  // CHROME_BROWSER_RENDERER_HOST_RENDER_WIDGET_FULLSCREEN_HOST_H_
