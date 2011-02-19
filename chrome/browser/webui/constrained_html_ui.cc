@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/dom_ui/constrained_html_ui.h"
+#include "chrome/browser/webui/constrained_html_ui.h"
 
 #include "base/lazy_instance.h"
-#include "chrome/browser/dom_ui/html_dialog_ui.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/webui/html_dialog_ui.h"
 #include "chrome/browser/webui/web_ui_util.h"
 #include "chrome/common/bindings_policy.h"
 

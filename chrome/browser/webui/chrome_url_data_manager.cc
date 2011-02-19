@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/dom_ui/chrome_url_data_manager.h"
+#include "chrome/browser/webui/chrome_url_data_manager.h"
 
 #include <vector>
 
@@ -13,9 +13,9 @@
 #include "base/synchronization/lock.h"
 #include "base/values.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/dom_ui/chrome_url_data_manager_backend.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/webui/chrome_url_data_manager_backend.h"
 #include "grit/platform_locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
 

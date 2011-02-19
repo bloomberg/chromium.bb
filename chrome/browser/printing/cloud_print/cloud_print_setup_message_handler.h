@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/values.h"
-#include "chrome/browser/dom_ui/html_dialog_ui.h"
+#include "chrome/browser/webui/html_dialog_ui.h"
 
 class CloudPrintSetupFlow;
 

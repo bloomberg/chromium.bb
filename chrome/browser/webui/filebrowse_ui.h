@@ -8,9 +8,9 @@
 
 #include <string>
 
-#include "chrome/browser/dom_ui/chrome_url_data_manager.h"
-#include "chrome/browser/dom_ui/html_dialog_ui.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/webui/chrome_url_data_manager.h"
+#include "chrome/browser/webui/html_dialog_ui.h"
 #include "net/base/directory_lister.h"
 
 class Browser;

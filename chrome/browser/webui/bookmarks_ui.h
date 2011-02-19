@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "chrome/browser/dom_ui/chrome_url_data_manager.h"
+#include "chrome/browser/webui/chrome_url_data_manager.h"
 #include "chrome/browser/webui/web_ui.h"
 
 class GURL;

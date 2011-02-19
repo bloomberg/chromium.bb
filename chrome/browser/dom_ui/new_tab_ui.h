@@ -10,8 +10,8 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/timer.h"
-#include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
+#include "chrome/browser/webui/chrome_url_data_manager.h"
 #include "chrome/browser/webui/web_ui.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
