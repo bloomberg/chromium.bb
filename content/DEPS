@@ -9,15 +9,22 @@ include_rules = [
   "+chrome",
 
   "+grit",
+  "+media",
   "+net",
+  "+ppapi",
+  "+printing",
+  "+skia",
 
   # Don't allow inclusion of these other libs we shouldn't be calling directly.
   "-v8",
   "-tools",
 
+  "+third_party/npapi/bindings",
+  "+third_party/sqlite",
   # Allow inclusion of WebKit API files.
   "+third_party/WebKit/Source/WebKit/chromium",
 
   "+ui",
+  "+views",
   "+webkit",
 ]

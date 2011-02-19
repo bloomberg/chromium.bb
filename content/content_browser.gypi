@@ -139,6 +139,8 @@
         }],
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
           'dependencies': [
+            # For FcLangSetAdd call in render_sandbox_host_linux.cc
+            '../build/linux/system.gyp:fontconfig',
             '../build/linux/system.gyp:gtk',
           ],
         }],
