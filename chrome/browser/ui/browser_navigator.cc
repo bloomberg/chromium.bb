@@ -23,9 +23,17 @@
 
 namespace {
 
-// Returns the SiteInstance for |source_contents| if it represents the same
-// website as |url|, or NULL otherwise. |source_contents| cannot be NULL.
-SiteInstance* GetSiteInstance(TabContents* source_contents, const GURL& url) {
+// Returns an appropriate SiteInstance for WebUI URLs, or the SiteInstance for
+// |source_contents| if it represents the same website as |url|.  Returns NULL
+// otherwise.
+SiteInstance* GetSiteInstance(TabContents* source_contents, Profile* profile,
+                              const GURL& url) {
+  // If url is a WebUI or extension, we need to be sure to use the right type
+  // of renderer process up front.  Otherwise, we create a normal SiteInstance
+  // as part of creating the tab.
+  if (WebUIFactory::UseWebUIForURL(profile, url))
+    return SiteInstance::CreateSiteInstanceForURL(profile, url);
+
   if (!source_contents)
     return NULL;
 
@@ -399,13 +407,15 @@ void Navigate(NavigateParams* params) {
   // If no target TabContents was specified, we need to construct one if we are
   // supposed to target a new tab; unless it's a singleton that already exists.
   if (!params->target_contents && singleton_index < 0) {
+    GURL url = params->url.is_empty() ? params->browser->GetHomePage()
+                                      : params->url;
     if (params->disposition != CURRENT_TAB) {
       TabContents* source_contents = params->source_contents ?
           params->source_contents->tab_contents() : NULL;
       params->target_contents =
           Browser::TabContentsFactory(
               params->browser->profile(),
-              GetSiteInstance(source_contents, params->url),
+              GetSiteInstance(source_contents, params->browser->profile(), url),
               MSG_ROUTING_NONE,
               source_contents,
               NULL);
@@ -434,8 +444,6 @@ void Navigate(NavigateParams* params) {
     }
 
     // Perform the actual navigation.
-    GURL url = params->url.is_empty() ? params->browser->GetHomePage()
-                                      : params->url;
     params->target_contents->controller().LoadURL(url, params->referrer,
                                                   params->transition);
   } else {

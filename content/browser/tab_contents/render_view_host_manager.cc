@@ -363,6 +363,8 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
     return curr_instance;
 
   const GURL& dest_url = entry.url();
+  NavigationController& controller = delegate_->GetControllerForRenderManager();
+  Profile* profile = controller.profile();
 
   // If we haven't used our SiteInstance (and thus RVH) yet, then we can use it
   // for this entry.  We won't commit the SiteInstance to this site until the
@@ -375,28 +377,28 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
     // to compare against the current URL and not the SiteInstance's site.  In
     // this case, there is no current URL, so comparing against the site is ok.
     // See additional comments below.)
-    if (curr_instance->HasRelatedSiteInstance(dest_url)) {
+    if (curr_instance->HasRelatedSiteInstance(dest_url))
       return curr_instance->GetRelatedSiteInstance(dest_url);
-    } else {
-      // Normally the "site" on the SiteInstance is set lazily when the load
-      // actually commits. This is to support better process sharing in case
-      // the site redirects to some other site: we want to use the destination
-      // site in the site instance.
-      //
-      // In the case of session restore, as it loads all the pages immediately
-      // we need to set the site first, otherwise after a restore none of the
-      // pages would share renderers.
-      //
-      // For Web UI (this mostly comes up for the new tab page), the
-      // SiteInstance has special meaning: we never want to reassign the
-      // process. If you navigate to another site before the Web UI commits,
-      // we still want to create a new process rather than re-using the
-      // existing Web UI process.
-      if (entry.restore_type() != NavigationEntry::RESTORE_NONE ||
-          WebUIFactory::HasWebUIScheme(dest_url))
-        curr_instance->SetSite(dest_url);
-      return curr_instance;
-    }
+
+    // For extensions and Web UI URLs (such as the new tab page), we do not
+    // want to use the curr_instance if it has no site, since it will have a
+    // RenderProcessHost of TYPE_NORMAL.  Create a new SiteInstance for this
+    // URL instead (with the correct process type).
+    if (WebUIFactory::UseWebUIForURL(profile, dest_url))
+      return SiteInstance::CreateSiteInstanceForURL(profile, dest_url);
+
+    // Normally the "site" on the SiteInstance is set lazily when the load
+    // actually commits. This is to support better process sharing in case
+    // the site redirects to some other site: we want to use the destination
+    // site in the site instance.
+    //
+    // In the case of session restore, as it loads all the pages immediately
+    // we need to set the site first, otherwise after a restore none of the
+    // pages would share renderers in process-per-site.
+    if (entry.restore_type() != NavigationEntry::RESTORE_NONE)
+      curr_instance->SetSite(dest_url);
+
+    return curr_instance;
   }
 
   // Otherwise, only create a new SiteInstance for cross-site navigation.
@@ -409,7 +411,6 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
   // For now, though, we're in a hybrid model where you only switch
   // SiteInstances if you type in a cross-site URL.  This means we have to
   // compare the entry's URL to the last committed entry's URL.
-  NavigationController& controller = delegate_->GetControllerForRenderManager();
   NavigationEntry* curr_entry = controller.GetLastCommittedEntry();
   if (interstitial_page_) {
     // The interstitial is currently the last committed entry, but we want to
@@ -428,7 +429,6 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
   // practice.)
   const GURL& current_url = (curr_entry) ? curr_entry->url() :
       curr_instance->site();
-  Profile* profile = controller.profile();
 
   if (SiteInstance::IsSameWebSite(profile, current_url, dest_url)) {
     return curr_instance;

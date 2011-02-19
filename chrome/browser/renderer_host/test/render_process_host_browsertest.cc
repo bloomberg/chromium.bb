@@ -183,9 +183,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, DevToolsOnSelfInOwnProcess) {
 // sharing behaves correctly.  In particular, this test is verifying that even
 // when we hit the max process limit, that renderers of each type will wind up
 // in a process of that type, even if that means creating a new process.
-// TODO(erikkay) crbug.com/43448 - disabled for now until we can get a
-// reasonable implementation in place.
-IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, DISABLED_ProcessOverflow) {
+IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ProcessOverflow) {
   // Set max renderers to 1 to force running out of processes.
   RenderProcessHost::SetMaxRendererProcessCount(1);
 
