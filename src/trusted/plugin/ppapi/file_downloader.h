@@ -52,9 +52,10 @@ class FileDownloader {
   // can be a relative URL.  Once the GET request has finished, and the contents
   // of the file represented by |url_| are available, |url_| is the full URL
   // including the scheme, host and full path.
-  const nacl::string& url() const {
-    return url_;
-  }
+  const nacl::string& url() const { return url_; }
+
+  // Returns the url passed to Open().
+  const nacl::string& url_to_open() const { return url_to_open_; }
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(FileDownloader);
@@ -69,6 +70,7 @@ class FileDownloader {
   void FileOpenNotify(int32_t pp_error);
 
   pp::Instance* instance_;
+  nacl::string url_to_open_;
   nacl::string url_;
   pp::CompletionCallback file_open_notify_callback_;
   pp::FileIO_Dev file_reader_;

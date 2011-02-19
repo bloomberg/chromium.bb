@@ -23,6 +23,37 @@
 
 namespace {
 
+static void StreamAsFileDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(outputs);
+  NaClFileRpcServer::StreamAsFile(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->arrays.str,
+      inputs[2]->u.ival
+  );
+}
+
+static void GetFileDescDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  NaClFileRpcServer::GetFileDesc(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->arrays.str,
+      &(outputs[0]->u.hval)
+  );
+}
+
 static void HasPropertyDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -1137,6 +1168,8 @@ static void PPB_URLResponseInfo_GetBodyAsFileRefDispatcher(
 }  // namespace
 
 NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
+  { "StreamAsFile:isi:", StreamAsFileDispatcher },
+  { "GetFileDesc:is:h", GetFileDescDispatcher },
   { "HasProperty:CCC:iC", HasPropertyDispatcher },
   { "HasMethod:CCC:iC", HasMethodDispatcher },
   { "GetProperty:CCC:CC", GetPropertyDispatcher },

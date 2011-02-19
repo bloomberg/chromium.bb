@@ -60,8 +60,8 @@ bool UrlAsNaClDesc(void* obj, plugin::SrpcParams* params) {
       static_cast<PluginPpapi*>(reinterpret_cast<Plugin*>(obj));
   const char* url = ins[0]->arrays.str;
   // TODO(sehr,polina): Ensure that origin checks are performed here.
-  return plugin->RequestUrl(url,
-                            *reinterpret_cast<pp::Var*>(ins[1]->arrays.oval));
+  return plugin->UrlAsNaClDesc(
+      url, *reinterpret_cast<pp::Var*>(ins[1]->arrays.oval));
 }
 
 }  // namespace
@@ -141,7 +141,7 @@ bool PluginPpapi::Init(uint32_t argc, const char* argn[], const char* argv[]) {
     }
   }
 
-  AddMethodCall(UrlAsNaClDesc, "__urlAsNaClDesc", "so", "");
+  AddMethodCall(plugin::UrlAsNaClDesc, "__urlAsNaClDesc", "so", "");
 
   PLUGIN_PRINTF(("PluginPpapi::Init (status=%d)\n", status));
   return status;
@@ -292,9 +292,7 @@ bool PluginPpapi::RequestNaClModule(const nacl::string& url) {
   PLUGIN_PRINTF(("PluginPpapi::RequestNaClModule (url='%s')\n", url.c_str()));
   pp::CompletionCallback open_callback =
       callback_factory_.NewCallback(&PluginPpapi::NexeFileDidOpen);
-  // If an error occurs during Open(), |open_callback| will be called with the
-  // appropriate error value.  If the URL loading started up OK, then
-  // |open_callback| will be called later on as the URL loading progresses.
+  // Will always call the callback on success or failure.
   return nexe_downloader_.Open(url, open_callback);
 }
 
@@ -312,7 +310,7 @@ void PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel) {
     return;
   }
   ppapi_proxy_ =
-      new(std::nothrow) ppapi_proxy::BrowserPpp(srpc_channel);
+      new(std::nothrow) ppapi_proxy::BrowserPpp(srpc_channel, this);
   PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution (ppapi_proxy=%p)\n",
                  reinterpret_cast<void*>(ppapi_proxy_)));
   if (ppapi_proxy_ == NULL) {
@@ -323,8 +321,7 @@ void PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel) {
   CHECK(module != NULL);  // We could not have gotten past init stage otherwise.
   int32_t pp_error =
       ppapi_proxy_->InitializeModule(module->pp_module(),
-                                     module->get_browser_interface(),
-                                     pp_instance());
+                                     module->get_browser_interface());
   if (pp_error != PP_OK) {
     Failure("NaCl module proxy failed: could not initialize module.");
     return;
@@ -441,9 +438,7 @@ bool PluginPpapi::RequestNaClManifest(const nacl::string& url) {
   PLUGIN_PRINTF(("PluginPpapi::RequestNaClManifest (url='%s')\n", url.c_str()));
   pp::CompletionCallback open_callback =
       callback_factory_.NewCallback(&PluginPpapi::NaClManifestFileDidOpen);
-  // If an error occurs during Open(), |open_callback| will be called with the
-  // appropriate error value.  If the URL loading started up OK, then
-  // |open_callback| will be called later on as the URL loading progresses.
+  // Will always call the callback on success or failure.
   return nexe_downloader_.Open(url, open_callback);
 }
 
@@ -486,12 +481,12 @@ bool PluginPpapi::SelectNexeURLFromManifest(
 }
 
 
-void PluginPpapi::UrlDidOpen(int32_t pp_error,
-                             FileDownloader*& url_downloader,
-                             pp::Var& js_callback) {
-  PLUGIN_PRINTF(("PluginPpapi::UrlDidOpen (pp_error=%"NACL_PRId32
-                 ", url_downloader=%p)\n", pp_error,
-                 reinterpret_cast<void*>(url_downloader)));
+void PluginPpapi::UrlDidOpenForUrlAsNaClDesc(int32_t pp_error,
+                                             FileDownloader*& url_downloader,
+                                             pp::Var& js_callback) {
+  PLUGIN_PRINTF(("PluginPpapi::UrlDidOpenForUrlAsNaClDesc "
+                 "(pp_error=%"NACL_PRId32", url_downloader=%p)\n",
+                 pp_error, reinterpret_cast<void*>(url_downloader)));
   url_downloaders_.erase(url_downloader);
   nacl::scoped_ptr<FileDownloader> scoped_url_downloader(url_downloader);
 
@@ -522,19 +517,63 @@ void PluginPpapi::UrlDidOpen(int32_t pp_error,
 }
 
 
-bool PluginPpapi::RequestUrl(const nacl::string& url,
-                             pp::Var js_callback) {
-  PLUGIN_PRINTF(("PluginPpapi::RequestUrl (url='%s')\n", url.c_str()));
+void PluginPpapi::UrlDidOpenForStreamAsFile(int32_t pp_error,
+                                            FileDownloader*& url_downloader,
+                                            PP_CompletionCallback callback) {
+  PLUGIN_PRINTF(("PluginPpapi::UrlDidOpen (pp_error=%"NACL_PRId32
+                 ", url_downloader=%p)\n", pp_error,
+                 reinterpret_cast<void*>(url_downloader)));
+  url_downloaders_.erase(url_downloader);
+  nacl::scoped_ptr<FileDownloader> scoped_url_downloader(url_downloader);
+  int32_t file_desc = scoped_url_downloader->GetPOSIXFileDescriptor();
+
+  if (pp_error != PP_OK) {
+    PP_RunCompletionCallback(&callback, pp_error);
+  } else if (file_desc > NACL_NO_FILE_DESC) {
+    url_fd_map_[url_downloader->url_to_open()] = file_desc;
+    PP_RunCompletionCallback(&callback, PP_OK);
+  } else {
+    PP_RunCompletionCallback(&callback, PP_ERROR_FAILED);
+  }
+}
+
+
+int32_t PluginPpapi::GetPOSIXFileDesc(const nacl::string& url) {
+  PLUGIN_PRINTF(("PluginPpapi::GetFileDesc (url=%s)\n", url.c_str()));
+  int32_t file_desc_ok_to_close = NACL_NO_FILE_DESC;
+  std::map<nacl::string, int32_t>::iterator it = url_fd_map_.find(url);
+  if (it != url_fd_map_.end())
+    file_desc_ok_to_close = DUP(it->second);
+  return file_desc_ok_to_close;
+}
+
+// TODO(polina): reduce code duplication between UrlAsNaClDesc and StreamAsFile.
+
+bool PluginPpapi::UrlAsNaClDesc(const nacl::string& url, pp::Var js_callback) {
+  PLUGIN_PRINTF(("PluginPpapi::UrlAsNaClDesc (url='%s')\n", url.c_str()));
   FileDownloader* downloader = new FileDownloader();
   downloader->Initialize(this);
   url_downloaders_.insert(downloader);
   pp::CompletionCallback open_callback =
-      callback_factory_.NewCallback(&PluginPpapi::UrlDidOpen,
+      callback_factory_.NewCallback(&PluginPpapi::UrlDidOpenForUrlAsNaClDesc,
                                     downloader,
                                     js_callback);
-  // If an error occurs during Open(), |open_callback| will be called with the
-  // appropriate error value.  If the URL loading started up OK, then
-  // |open_callback| will be called later on as the URL loading progresses.
+  // Will always call the callback on success or failure.
+  return downloader->Open(url, open_callback);
+}
+
+
+bool PluginPpapi::StreamAsFile(const nacl::string& url,
+                               PP_CompletionCallback callback) {
+  PLUGIN_PRINTF(("PluginPpapi::StreamAsFile (url='%s')\n", url.c_str()));
+  FileDownloader* downloader = new FileDownloader();
+  downloader->Initialize(this);
+  url_downloaders_.insert(downloader);
+  pp::CompletionCallback open_callback =
+      callback_factory_.NewCallback(&PluginPpapi::UrlDidOpenForStreamAsFile,
+                                    downloader,
+                                    callback);
+  // Will always call the callback on success or failure.
   return downloader->Open(url, open_callback);
 }
 

@@ -2297,6 +2297,7 @@ if not nacl_extra_sdk_env.Bit('nocpp'):
         'src/shared/platform/nacl.scons',
         'src/shared/ppapi/nacl.scons',
         'src/shared/ppapi_proxy/nacl.scons',
+        'src/untrusted/ppapi/nacl.scons',
         ####  ALPHABETICALLY SORTED ####
       ],
   )

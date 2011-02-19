@@ -21,6 +21,38 @@
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
 
+NaClSrpcError NaClFileRpcClient::StreamAsFile(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    char* url,
+    int32_t callback_id)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "StreamAsFile:isi:",
+      instance,
+      url,
+      callback_id
+  );
+  return retval;
+}
+
+NaClSrpcError NaClFileRpcClient::GetFileDesc(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    char* url,
+    NaClSrpcImcDescType* file_desc)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "GetFileDesc:is:h",
+      instance,
+      url,
+      file_desc
+  );
+  return retval;
+}
+
 NaClSrpcError ObjectStubRpcClient::HasProperty(
     NaClSrpcChannel* channel,
     nacl_abi_size_t capability_bytes, char* capability,

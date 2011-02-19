@@ -16,17 +16,21 @@
 #include "ppapi/c/ppp.h"
 #include "ppapi/c/ppp_instance.h"
 
+namespace plugin {
+class PluginPpapi;
+}
+
 namespace ppapi_proxy {
 
 class BrowserPpp {
  public:
-  explicit BrowserPpp(NaClSrpcChannel* main_channel)
-      : main_channel_(main_channel), plugin_pid_(0) {}
+  explicit BrowserPpp(NaClSrpcChannel* main_channel,
+                      plugin::PluginPpapi* plugin)
+      : main_channel_(main_channel), plugin_pid_(0), plugin_(plugin) {}
   ~BrowserPpp() {}
 
   int32_t InitializeModule(PP_Module module_id,
-                           PPB_GetInterface get_browser_interface,
-                           PP_Instance instance);
+                           PPB_GetInterface get_browser_interface);
   void ShutdownModule();
   // Returns an interface pointer or NULL.
   const void* GetPluginInterface(const char* interface_name);
@@ -41,12 +45,15 @@ class BrowserPpp {
 
   NaClSrpcChannel* main_channel() const { return main_channel_; }
   int plugin_pid() const { return plugin_pid_; }
+  plugin::PluginPpapi* plugin() { return plugin_; }
 
  private:
   // The "main" SRPC channel used to communicate with the plugin.
   NaClSrpcChannel* main_channel_;
   // The PID of the plugin.
   int plugin_pid_;
+  // Plugin that owns this proxy.
+  plugin::PluginPpapi* plugin_;
 
   // Set on module initialization.
   const PPP_Instance* ppp_instance_interface_;

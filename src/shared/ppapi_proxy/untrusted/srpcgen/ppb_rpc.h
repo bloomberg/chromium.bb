@@ -17,6 +17,25 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
+class NaClFileRpcClient {
+ public:
+  static NaClSrpcError StreamAsFile(
+      NaClSrpcChannel* channel,
+      PP_Instance instance,
+      char* url,
+      int32_t callback_id);
+  static NaClSrpcError GetFileDesc(
+      NaClSrpcChannel* channel,
+      PP_Instance instance,
+      char* url,
+      NaClSrpcImcDescType* file_desc);
+
+ private:
+  NaClFileRpcClient();
+  NaClFileRpcClient(const NaClFileRpcClient&);
+  void operator=(const NaClFileRpcClient);
+};  // class NaClFileRpcClient
+
 class ObjectStubRpcClient {
  public:
   static NaClSrpcError HasProperty(

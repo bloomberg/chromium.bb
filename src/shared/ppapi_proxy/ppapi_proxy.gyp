@@ -14,6 +14,7 @@
         'browser_callback.cc',
         'browser_globals.cc',
         'browser_graphics_3d.cc',
+        'browser_nacl_file_rpc_server.cc',
         'browser_ppb_audio_rpc_server.cc',
         'browser_ppb_audio_config_rpc_server.cc',
         'browser_ppb_core_rpc_server.cc',

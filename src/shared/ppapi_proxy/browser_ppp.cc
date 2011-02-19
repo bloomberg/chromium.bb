@@ -14,6 +14,7 @@
 #include "native_client/src/shared/ppapi_proxy/browser_upcall.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
+#include "native_client/src/trusted/plugin/ppapi/plugin_ppapi.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppp.h"
 #include "srpcgen/ppb_rpc.h"
@@ -27,11 +28,10 @@ namespace ppapi_proxy {
 
 int32_t BrowserPpp::InitializeModule(
     PP_Module module_id,
-    PPB_GetInterface get_browser_interface,
-    PP_Instance instance) {
+    PPB_GetInterface get_browser_interface) {
   DebugPrintf("PPP_InitializeModule: module=%"NACL_PRIu32"\n", module_id);
   SetPPBGetInterface(get_browser_interface);
-  SetBrowserPppForInstance(instance, this);
+  SetBrowserPppForInstance(plugin_->pp_instance(), this);
   nacl::scoped_ptr<nacl::DescWrapper> wrapper(
       BrowserUpcall::Start(&upcall_thread_, main_channel_));
   if (wrapper.get() == NULL) {

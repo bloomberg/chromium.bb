@@ -9,6 +9,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_PLUGIN_PPAPI_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_PLUGIN_PPAPI_H_
 
+#include <map>
 #include <set>
 #include <string>
 
@@ -29,6 +30,7 @@
 // </HACK>
 
 struct NaClSrpcChannel;
+struct NaClDesc;
 namespace ppapi_proxy {
 class BrowserPpp;
 }
@@ -80,8 +82,21 @@ class PluginPpapi : public pp::Instance, public Plugin {
   // Getter for PPAPI proxy interface.
   ppapi_proxy::BrowserPpp* ppapi_proxy() const { return ppapi_proxy_; }
 
-  // Request an URL for return by __urlAsNaClDesc.
-  bool RequestUrl(const nacl::string& url, pp::Var js_callback);
+  // ----- Methods unique to PluginPpapi:
+
+  // Requests a URL asynchronously resulting in a call to js_callback.onload
+  // with NaClDesc-wrapped file descriptor on success and js_callback.onfail
+  // with an error string on failure.
+  // This is used by JS-based __urlAsNaClDesc().
+  bool UrlAsNaClDesc(const nacl::string& url, pp::Var js_callback);
+  // Requests a URL asynchronously resulting in a call to pp_callback with
+  // a PP_Error indicating status. On success an open file descriptor
+  // corresponding to the url body is recorded for further lookup.
+  // This is used by SRPC-based StreamAsFile().
+  bool StreamAsFile(const nacl::string& url, PP_CompletionCallback pp_callback);
+  // Returns an open POSIX file descriptor retrieved by StreamAsFile()
+  // or NACL_NO_FILE_DESC. The caller must take ownership of the descriptor.
+  int32_t GetPOSIXFileDesc(const nacl::string& url);
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(PluginPpapi);
@@ -141,10 +156,14 @@ class PluginPpapi : public pp::Instance, public Plugin {
   bool SelectNexeURLFromManifest(const nacl::string& nexe_manifest_json,
                                  nacl::string* result);
 
-  // Callback used when getting the URL for an __urlAsNaClDesc invocation.
-  void UrlDidOpen(int32_t pp_error,
-                  FileDownloader*& url_downloader,
-                  pp::Var& js_callback);
+  // Callback used when loading a URL for JS-based __urlAsNaClDesc().
+  void UrlDidOpenForUrlAsNaClDesc(int32_t pp_error,
+                                  FileDownloader*& url_downloader,
+                                  pp::Var& js_callback);
+  // Callback used when loading a URL for SRPC-based StreamAsFile().
+  void UrlDidOpenForStreamAsFile(int32_t pp_error,
+                                 FileDownloader*& url_downloader,
+                                 PP_CompletionCallback pp_callback);
 
   // Shuts down the proxy for PPAPI nexes.
   void ShutdownProxy();
@@ -165,8 +184,11 @@ class PluginPpapi : public pp::Instance, public Plugin {
   pp::Rect replayDidChangeViewPosition;
   pp::Rect replayDidChangeViewClip;
 
-  // Keep track of the FileDownloaders created to fetch __urlAsNaClDescs.
+  // Keep track of the FileDownloaders created to fetch urls.
   std::set<FileDownloader*> url_downloaders_;
+  // Keep track of file descriptors opened by StreamAsFile().
+  // These are owned by the browser.
+  std::map<nacl::string, int32_t> url_fd_map_;
 
   // TODO(neb): Remove this hack.
   pp::Context3D_Dev context_;

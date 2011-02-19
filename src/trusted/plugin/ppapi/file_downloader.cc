@@ -34,8 +34,7 @@ void FileDownloader::Initialize(pp::Instance* instance) {
 bool FileDownloader::Open(const nacl::string& url,
                           const pp::CompletionCallback& callback) {
   CHECK(instance_ != NULL);
-  if (instance_ == NULL)
-    return false;  // Initialize() not called.
+  url_to_open_ = url;
   url_ = url;
   file_open_notify_callback_ = callback;
   // Reset the url loader and file reader.
@@ -58,7 +57,7 @@ bool FileDownloader::Open(const nacl::string& url,
       callback_factory_.NewCallback(&FileDownloader::URLLoadStartNotify);
   int32_t pp_error = url_loader_.Open(url_request, onload_callback);
   bool async_notify_ok = (pp_error == PP_ERROR_WOULDBLOCK);
-  PLUGIN_PRINTF(("FileDownloader::RequestNaClModule (async_notify_ok=%d)\n",
+  PLUGIN_PRINTF(("FileDownloader::Open (async_notify_ok=%d)\n",
                  async_notify_ok));
   if (!async_notify_ok) {
     // Call manually to free allocated memory and report errors.  This calls
