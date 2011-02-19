@@ -6,8 +6,6 @@
 #define CHROME_RENDERER_PRINT_WEB_VIEW_HELPER_H_
 #pragma once
 
-#include <vector>
-
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "chrome/renderer/render_view_observer.h"

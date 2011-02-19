@@ -9,19 +9,9 @@
 #include "base/logging.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
-#include "chrome/renderer/render_view.h"
-#include "grit/generated_resources.h"
-#include "printing/native_metafile.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCanvas.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
-#include "ui/base/l10n/l10n_util.h"
 
 using WebKit::WebFrame;
-using WebKit::WebCanvas;
-using WebKit::WebRect;
-using WebKit::WebSize;
 
 void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
                                    const gfx::Size& canvas_size,
@@ -31,29 +21,24 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
     return;
 
   float scale_factor = frame->getPrintPageShrink(params.page_number);
-  double width = params.params.printable_size.width();
-  double height = params.params.printable_size.height();
   int page_number = params.page_number;
 
   // Render page for printing.
   gfx::Point origin(0.0f, 0.0f);
   RenderPage(params.params.printable_size, origin, scale_factor, page_number,
       frame, &metafile);
-
   metafile.Close();
 
-  double margin_left = params.params.margin_left;
-  double margin_top = params.params.margin_top;
-
-  // Get the size of the compiled metafile.
   ViewHostMsg_DidPrintPage_Params page_params;
   page_params.data_size = metafile.GetDataSize();
   page_params.page_number = page_number;
   page_params.document_cookie = params.params.document_cookie;
   page_params.actual_shrink = scale_factor;
-
   page_params.page_size = params.params.page_size;
-  page_params.content_area = gfx::Rect(margin_left, margin_top, width, height);
+  page_params.content_area = gfx::Rect(params.params.margin_left,
+                                       params.params.margin_top,
+                                       params.params.printable_size.width(),
+                                       params.params.printable_size.height());
 
   // Ask the browser to create the shared memory for us.
   if (!CopyMetafileDataToSharedMem(&metafile,
@@ -76,16 +61,12 @@ void PrintWebViewHelper::CreatePreviewDocument(
   if (!page_count)
     return;
 
-  float scale_factor = frame->getPrintPageShrink(0);
-  double originX = printParams.margin_left;
-  double originY = printParams.margin_top;
-
   printing::NativeMetafile metafile;
   if (!metafile.Init())
     return;
 
-  gfx::Point origin(originX, originY);
-
+  float scale_factor = frame->getPrintPageShrink(0);
+  gfx::Point origin(printParams.margin_left, printParams.margin_top);
   if (params.pages.empty()) {
     for (int i = 0; i < page_count; ++i) {
       RenderPage(printParams.page_size, origin, scale_factor, i, frame,

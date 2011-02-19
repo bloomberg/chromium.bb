@@ -8,20 +8,17 @@
 #include "base/process_util.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
-#include "chrome/renderer/render_view.h"
-#include "grit/generated_resources.h"
-#include "printing/native_metafile.h"
 #include "printing/units.h"
 #include "skia/ext/vector_canvas.h"
 #include "skia/ext/vector_platform_device.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "ui/gfx/gdi_util.h"
-#include "ui/gfx/size.h"
 
 using printing::ConvertUnitDouble;
 using printing::kPointsPerInch;
 using WebKit::WebFrame;
-using WebKit::WebString;
+
+namespace {
 
 int CALLBACK EnhMetaFileProc(HDC dc,
                              HANDLETABLE* handle_table,
@@ -62,6 +59,8 @@ int CALLBACK EnhMetaFileProc(HDC dc,
   }
   return 1;  // Continue enumeration
 }
+
+}  // namespace
 
 void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
                                    const gfx::Size& canvas_size,
@@ -261,18 +260,16 @@ void PrintWebViewHelper::RenderPage(
     // Page used alpha blend, but printer doesn't support it.  Rewrite the
     // metafile and flatten out the transparency.
     HDC bitmap_dc = CreateCompatibleDC(GetDC(NULL));
-    if (!bitmap_dc) {
+    if (!bitmap_dc)
       NOTREACHED() << "Bitmap DC creation failed";
-    }
     SetGraphicsMode(bitmap_dc, GM_ADVANCED);
     void* bits = NULL;
     BITMAPINFO hdr;
     gfx::CreateBitmapHeader(width, height, &hdr.bmiHeader);
     HBITMAP hbitmap = CreateDIBSection(
         bitmap_dc, &hdr, DIB_RGB_COLORS, &bits, NULL, 0);
-    if (!hbitmap) {
+    if (!hbitmap)
       NOTREACHED() << "Raster bitmap creation for printing failed";
-    }
 
     HGDIOBJ old_bitmap = SelectObject(bitmap_dc, hbitmap);
     RECT rect = {0, 0, width, height };
