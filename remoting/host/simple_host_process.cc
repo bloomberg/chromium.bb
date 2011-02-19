@@ -36,6 +36,10 @@
 #include "remoting/host/json_host_config.h"
 #include "remoting/proto/video.pb.h"
 
+#if defined(TOOLKIT_USES_GTK)
+#include "ui/gfx/gtk_util.h"
+#endif
+
 using remoting::ChromotingHost;
 using remoting::protocol::CandidateSessionConfig;
 using remoting::protocol::ChannelConfig;
@@ -78,7 +82,11 @@ int main(int argc, char** argv) {
   base::EnsureNSPRInit();
 
   // Allocate a chromoting context and starts it.
-  remoting::ChromotingHostContext context;
+#if defined(TOOLKIT_USES_GTK)
+  gfx::GtkInitFromCommandLine(*cmd_line);
+#endif
+  MessageLoopForUI message_loop;
+  remoting::ChromotingHostContext context(&message_loop);
   context.Start();
 
 
@@ -120,7 +128,7 @@ int main(int argc, char** argv) {
     remoting::Capturer* capturer =
         new remoting::CapturerFake(context.main_message_loop());
     remoting::protocol::InputStub* input_stub =
-        CreateEventExecutor(context.main_message_loop(), capturer);
+        CreateEventExecutor(context.ui_message_loop(), capturer);
     host = ChromotingHost::Create(
         &context, config, capturer, input_stub);
   } else {
@@ -155,9 +163,8 @@ int main(int argc, char** argv) {
   }
 
   // Let the chromoting host run until the shutdown task is executed.
-  MessageLoop message_loop(MessageLoop::TYPE_UI);
   host->Start(NewRunnableFunction(&ShutdownTask, &message_loop));
-  message_loop.Run();
+  message_loop.MessageLoop::Run();
 
   // And then stop the chromoting context.
   context.Stop();

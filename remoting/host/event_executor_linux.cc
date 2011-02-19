@@ -13,33 +13,6 @@
 #include "base/task.h"
 #include "remoting/proto/internal.pb.h"
 
-// TODO(jamiewalch): Class to ensure that XFlush is called regardless of what
-// fields are set in the MouseEvent. It's not worth refactoring HandleMouse to
-// avoid the early returns because calling XFlush is not really the correct
-// way of flushing the XTest requests; instead we should dispatch the requests
-// to a suitable UI thread.
-namespace {
-class ScopedXFlusher {
- public:
-  explicit ScopedXFlusher(Display* display)
-      : display_(display), needs_flush_(false) {
-  }
-
-  ~ScopedXFlusher() {
-    if (needs_flush_)
-      XFlush(display_);
-  }
-
-  void SignalFlush() {
-    needs_flush_ = true;
-  }
-
- private:
-  Display* display_;
-  bool needs_flush_;
-};
-}
-
 namespace remoting {
 
 using protocol::MouseEvent;
@@ -229,7 +202,8 @@ static int ChromotocolKeycodeToX11Keysym(int32_t keycode) {
 
 class EventExecutorLinuxPimpl {
  public:
-  explicit EventExecutorLinuxPimpl(EventExecutorLinux* executor);
+  explicit EventExecutorLinuxPimpl(EventExecutorLinux* executor,
+                                   Display* display);
   ~EventExecutorLinuxPimpl();
 
   bool Init();  // TODO(ajwong): Do we really want this to be synchronous?
@@ -254,9 +228,10 @@ class EventExecutorLinuxPimpl {
   int test_error_base_;
 };
 
-EventExecutorLinuxPimpl::EventExecutorLinuxPimpl(EventExecutorLinux* executor)
+EventExecutorLinuxPimpl::EventExecutorLinuxPimpl(EventExecutorLinux* executor,
+                                                 Display* display)
     : executor_(executor),
-      display_(NULL),
+      display_(display),
       root_window_(BadValue),
       width_(0),
       height_(0) {
@@ -267,9 +242,6 @@ EventExecutorLinuxPimpl::~EventExecutorLinuxPimpl() {
 }
 
 bool EventExecutorLinuxPimpl::Init() {
-  // TODO(ajwong): We should specify the display string we are attaching to
-  // in the constructor.
-  display_ = XOpenDisplay(NULL);
   if (!display_) {
     LOG(ERROR) << "Unable to open display";
     return false;
@@ -329,13 +301,9 @@ void EventExecutorLinuxPimpl::HandleKey(const KeyEvent* key_event) {
           << " sending keysym: " << keysym
           << " to keycode: " << keycode;
   XTestFakeKeyEvent(display_, keycode, key_event->pressed(), CurrentTime);
-
-  // TODO(jamiewalch): Get rid of this once we're dispatching to the UI thread.
-  XFlush(display_);
 }
 
 void EventExecutorLinuxPimpl::HandleMouse(const MouseEvent* event) {
-  ScopedXFlusher flusher(display_);
   if (event->has_x() && event->has_y()) {
     if (event->x() < 0 || event->y() < 0 ||
         event->x() > width_ || event->y() > height_) {
@@ -347,7 +315,6 @@ void EventExecutorLinuxPimpl::HandleMouse(const MouseEvent* event) {
 
     VLOG(3) << "Moving mouse to " << event->x()
             << "," << event->y();
-    flusher.SignalFlush();
     XTestFakeMotionEvent(display_, DefaultScreen(display_),
                          event->x(), event->y(),
                          CurrentTime);
@@ -364,7 +331,6 @@ void EventExecutorLinuxPimpl::HandleMouse(const MouseEvent* event) {
 
     VLOG(3) << "Button " << event->button()
             << " received, sending down " << button_number;
-    flusher.SignalFlush();
     XTestFakeButtonEvent(display_, button_number, event->button_down(),
                          CurrentTime);
   }
@@ -385,10 +351,10 @@ void EventExecutorLinuxPimpl::DeinitXlib() {
 }
 
 EventExecutorLinux::EventExecutorLinux(
-    MessageLoop* message_loop, Capturer* capturer)
+    MessageLoopForUI* message_loop, Capturer* capturer)
     : message_loop_(message_loop),
       capturer_(capturer),
-      pimpl_(new EventExecutorLinuxPimpl(this)) {
+      pimpl_(new EventExecutorLinuxPimpl(this, message_loop->get_display())) {
   CHECK(pimpl_->Init());
 }
 
@@ -422,7 +388,7 @@ void EventExecutorLinux::InjectMouseEvent(const MouseEvent* event,
   delete done;
 }
 
-protocol::InputStub* CreateEventExecutor(MessageLoop* message_loop,
+protocol::InputStub* CreateEventExecutor(MessageLoopForUI* message_loop,
                                          Capturer* capturer) {
   return new EventExecutorLinux(message_loop, capturer);
 }

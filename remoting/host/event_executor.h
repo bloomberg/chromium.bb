@@ -5,7 +5,7 @@
 #ifndef REMOTING_HOST_EVENT_EXECUTOR_H_
 #define REMOTING_HOST_EVENT_EXECUTOR_H_
 
-class MessageLoop;
+class MessageLoopForUI;
 
 namespace remoting {
 
@@ -16,7 +16,7 @@ class InputStub;
 }  // namespace protocol
 
 // Creates default event executor for the current platform.
-protocol::InputStub* CreateEventExecutor(MessageLoop* message_loop,
+protocol::InputStub* CreateEventExecutor(MessageLoopForUI* message_loop,
                                          Capturer* capturer);
 
 }  // namespace remoting

@@ -41,7 +41,7 @@ class ChromotingHostManager
   // destroyed while this object exists.
   explicit ChromotingHostManager(Observer* observer);
 
-  void Initialize(MessageLoop* main_message_loop,
+  void Initialize(MessageLoopForUI* main_message_loop,
                   base::MessageLoopProxy* file_message_loop);
 
   // Shutdown ChromotingHostManager. |done_task| will be executed when done.
@@ -83,7 +83,7 @@ class ChromotingHostManager
   scoped_ptr<remoting::ChromotingHostContext> chromoting_context_;
   scoped_refptr<remoting::ChromotingHost> chromoting_host_;
 
-  MessageLoop* main_message_loop_;
+  MessageLoopForUI* main_message_loop_;
   scoped_ptr<Task> shutdown_task_;
 };
 

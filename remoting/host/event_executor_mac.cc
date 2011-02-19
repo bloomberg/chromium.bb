@@ -14,7 +14,7 @@ using protocol::MouseEvent;
 using protocol::KeyEvent;
 
 EventExecutorMac::EventExecutorMac(
-    MessageLoop* message_loop, Capturer* capturer)
+    MessageLoopForUI* message_loop, Capturer* capturer)
     : message_loop_(message_loop),
       capturer_(capturer) {
 }
@@ -32,7 +32,7 @@ void EventExecutorMac::InjectMouseEvent(const MouseEvent* event, Task* done) {
   delete done;
 }
 
-protocol::InputStub* CreateEventExecutor(MessageLoop* message_loop,
+protocol::InputStub* CreateEventExecutor(MessageLoopForUI* message_loop,
                                          Capturer* capturer) {
   return new EventExecutorMac(message_loop, capturer);
 }

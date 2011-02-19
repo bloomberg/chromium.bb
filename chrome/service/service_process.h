@@ -34,7 +34,8 @@ class ServiceProcess : public CloudPrintProxy::Client,
   ~ServiceProcess();
 
   // Initialize the ServiceProcess with the message loop that it should run on.
-  bool Initialize(MessageLoop* message_loop, const CommandLine& command_line);
+  bool Initialize(MessageLoopForUI* message_loop,
+                  const CommandLine& command_line);
   bool Teardown();
   // TODO(sanjeevr): Change various parts of the code such as
   // net::ProxyService::CreateSystemProxyConfigService to take in

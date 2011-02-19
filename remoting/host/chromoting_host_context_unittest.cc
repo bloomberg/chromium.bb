@@ -11,7 +11,7 @@ namespace remoting {
 // A simple test that starts and stop the context. This tests the context
 // operates properly and all threads and message loops are valid.
 TEST(ChromotingHostContextTest, StartAndStop) {
-  ChromotingHostContext context;
+  ChromotingHostContext context(NULL);
   context.Start();
   EXPECT_TRUE(context.jingle_thread());
   EXPECT_TRUE(context.main_message_loop());

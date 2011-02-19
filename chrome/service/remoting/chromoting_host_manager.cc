@@ -20,7 +20,7 @@ ChromotingHostManager::ChromotingHostManager(Observer* observer)
 }
 
 void ChromotingHostManager::Initialize(
-    MessageLoop* main_message_loop,
+    MessageLoopForUI* main_message_loop,
     base::MessageLoopProxy* file_message_loop) {
   FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
@@ -170,7 +170,8 @@ void ChromotingHostManager::Start() {
     return;
 
   // Start the chromoting context first.
-  chromoting_context_.reset(new remoting::ChromotingHostContext());
+  chromoting_context_.reset(
+      new remoting::ChromotingHostContext(main_message_loop_));
   chromoting_context_->Start();
 
   // Create a chromoting host object.

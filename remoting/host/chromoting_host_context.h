@@ -17,7 +17,10 @@ namespace remoting {
 // process.
 class ChromotingHostContext {
  public:
-  ChromotingHostContext();
+  // Create a context attached to the specified ui message loop. Since there
+  // can only be one such loop on UNIX platforms, it has to be passed into
+  // this object rather than being owned by it.
+  explicit ChromotingHostContext(MessageLoopForUI* ui_message_loop);
   virtual ~ChromotingHostContext();
 
   // TODO(ajwong): Move the Start/Stop methods out of this class. Then
@@ -32,6 +35,7 @@ class ChromotingHostContext {
   virtual MessageLoop* main_message_loop();
   virtual MessageLoop* encode_message_loop();
   virtual MessageLoop* network_message_loop();
+  MessageLoopForUI* ui_message_loop();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromotingHostContextTest, StartAndStop);
@@ -44,6 +48,9 @@ class ChromotingHostContext {
 
   // A thread that hosts all encode operations.
   base::Thread encode_thread_;
+
+  // The main message loop.
+  MessageLoopForUI* ui_message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingHostContext);
 };

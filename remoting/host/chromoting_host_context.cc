@@ -11,9 +11,10 @@
 
 namespace remoting {
 
-ChromotingHostContext::ChromotingHostContext()
+ChromotingHostContext::ChromotingHostContext(MessageLoopForUI* ui_message_loop)
     : main_thread_("ChromotingMainThread"),
-      encode_thread_("ChromotingEncodeThread") {
+      encode_thread_("ChromotingEncodeThread"),
+      ui_message_loop_(ui_message_loop) {
 }
 
 ChromotingHostContext::~ChromotingHostContext() {
@@ -47,6 +48,10 @@ MessageLoop* ChromotingHostContext::encode_message_loop() {
 
 MessageLoop* ChromotingHostContext::network_message_loop() {
   return jingle_thread_.message_loop();
+}
+
+MessageLoopForUI* ChromotingHostContext::ui_message_loop() {
+  return ui_message_loop_;
 }
 
 }  // namespace remoting

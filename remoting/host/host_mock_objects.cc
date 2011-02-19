@@ -10,7 +10,8 @@ MockCapturer::MockCapturer() : Capturer(NULL) {}
 
 MockCapturer::~MockCapturer() {}
 
-MockChromotingHostContext::MockChromotingHostContext() {}
+MockChromotingHostContext::MockChromotingHostContext()
+    : ChromotingHostContext(NULL) {}
 
 MockChromotingHostContext::~MockChromotingHostContext() {}
 

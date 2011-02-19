@@ -35,7 +35,7 @@ namespace remoting {
 ChromotingHost* ChromotingHost::Create(ChromotingHostContext* context,
                                        MutableHostConfig* config) {
   Capturer* capturer = Capturer::Create(context->main_message_loop());
-  InputStub* input_stub = CreateEventExecutor(context->main_message_loop(),
+  InputStub* input_stub = CreateEventExecutor(context->ui_message_loop(),
                                               capturer);
   return Create(context, config, capturer, input_stub);
 }

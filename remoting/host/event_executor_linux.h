@@ -20,7 +20,7 @@ class EventExecutorLinuxPimpl;
 // A class to generate events on Linux.
 class EventExecutorLinux : public protocol::InputStub {
  public:
-  EventExecutorLinux(MessageLoop* message_loop,
+  EventExecutorLinux(MessageLoopForUI* message_loop,
                      Capturer* capturer);
   virtual ~EventExecutorLinux();
 
@@ -28,7 +28,7 @@ class EventExecutorLinux : public protocol::InputStub {
   virtual void InjectMouseEvent(const protocol::MouseEvent* event, Task* done);
 
  private:
-  MessageLoop* message_loop_;
+  MessageLoopForUI* message_loop_;
   Capturer* capturer_;
   scoped_ptr<EventExecutorLinuxPimpl> pimpl_;
 

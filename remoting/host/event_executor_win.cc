@@ -18,7 +18,7 @@ using protocol::MouseEvent;
 using protocol::KeyEvent;
 
 EventExecutorWin::EventExecutorWin(
-    MessageLoop* message_loop, Capturer* capturer)
+    MessageLoopForUI* message_loop, Capturer* capturer)
     : message_loop_(message_loop),
       capturer_(capturer) {
 }
@@ -82,7 +82,7 @@ void EventExecutorWin::HandleKey(const KeyEvent* event) {
   SendInput(1, &input, sizeof(INPUT));
 }
 
-protocol::InputStub* CreateEventExecutor(MessageLoop* message_loop,
+protocol::InputStub* CreateEventExecutor(MessageLoopForUI* message_loop,
                                          Capturer* capturer) {
   return new EventExecutorWin(message_loop, capturer);
 }

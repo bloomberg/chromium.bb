@@ -20,7 +20,7 @@ class EventExecutorWinPimpl;
 // A class to generate events on Windows.
 class EventExecutorWin : public protocol::InputStub {
  public:
-  EventExecutorWin(MessageLoop* message_loop, Capturer* capturer);
+  EventExecutorWin(MessageLoopForUI* message_loop, Capturer* capturer);
   virtual ~EventExecutorWin();
 
   virtual void InjectKeyEvent(const protocol::KeyEvent* event, Task* done);
@@ -30,7 +30,7 @@ class EventExecutorWin : public protocol::InputStub {
   void HandleKey(const protocol::KeyEvent* event);
   void HandleMouse(const protocol::MouseEvent* event);
 
-  MessageLoop* message_loop_;
+  MessageLoopForUI* message_loop_;
   Capturer* capturer_;
 
   DISALLOW_COPY_AND_ASSIGN(EventExecutorWin);

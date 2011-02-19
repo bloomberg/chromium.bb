@@ -33,6 +33,10 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
 
+#if defined(TOOLKIT_USES_GTK)
+#include "ui/gfx/gtk_util.h"
+#endif
+
 #if defined(ENABLE_REMOTING)
 #include "chrome/service/remoting/chromoting_host_manager.h"
 #if defined(OS_MACOSX)
@@ -119,8 +123,11 @@ ServiceProcess::ServiceProcess()
   g_service_process = this;
 }
 
-bool ServiceProcess::Initialize(MessageLoop* message_loop,
+bool ServiceProcess::Initialize(MessageLoopForUI* message_loop,
                                 const CommandLine& command_line) {
+#if defined(TOOLKIT_USES_GTK)
+  gfx::GtkInitFromCommandLine(command_line);
+#endif
   main_message_loop_ = message_loop;
   network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
   base::Thread::Options options;
