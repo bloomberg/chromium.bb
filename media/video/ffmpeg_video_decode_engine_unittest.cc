@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -68,9 +68,6 @@ class FFmpegVideoDecodeEngineTest : public testing::Test,
 
     buffer_ = new DataBuffer(1);
 
-    // Initialize MockFFmpeg.
-    MockFFmpeg::set(&mock_ffmpeg_);
-
     test_engine_.reset(new FFmpegVideoDecodeEngine());
     test_engine_->SetCodecContextForTest(&codec_context_);
 
@@ -84,19 +81,18 @@ class FFmpegVideoDecodeEngineTest : public testing::Test,
 
   ~FFmpegVideoDecodeEngineTest() {
     test_engine_.reset();
-    MockFFmpeg::set(NULL);
   }
 
   void Initialize() {
-    EXPECT_CALL(*MockFFmpeg::get(), AVCodecFindDecoder(CODEC_ID_NONE))
+    EXPECT_CALL(mock_ffmpeg_, AVCodecFindDecoder(CODEC_ID_NONE))
         .WillOnce(Return(&codec_));
-    EXPECT_CALL(*MockFFmpeg::get(), AVCodecAllocFrame())
+    EXPECT_CALL(mock_ffmpeg_, AVCodecAllocFrame())
         .WillOnce(Return(&yuv_frame_));
-    EXPECT_CALL(*MockFFmpeg::get(), AVCodecThreadInit(&codec_context_, 2))
+    EXPECT_CALL(mock_ffmpeg_, AVCodecThreadInit(&codec_context_, 2))
         .WillOnce(Return(0));
-    EXPECT_CALL(*MockFFmpeg::get(), AVCodecOpen(&codec_context_, &codec_))
+    EXPECT_CALL(mock_ffmpeg_, AVCodecOpen(&codec_context_, &codec_))
         .WillOnce(Return(0));
-    EXPECT_CALL(*MockFFmpeg::get(), AVFree(&yuv_frame_))
+    EXPECT_CALL(mock_ffmpeg_, AVFree(&yuv_frame_))
         .Times(1);
 
     config_.codec = kCodecH264;
@@ -166,11 +162,11 @@ TEST_F(FFmpegVideoDecodeEngineTest, Initialize_Normal) {
 
 TEST_F(FFmpegVideoDecodeEngineTest, Initialize_FindDecoderFails) {
   // Test avcodec_find_decoder() returning NULL.
-  EXPECT_CALL(*MockFFmpeg::get(), AVCodecFindDecoder(CODEC_ID_NONE))
+  EXPECT_CALL(mock_ffmpeg_, AVCodecFindDecoder(CODEC_ID_NONE))
       .WillOnce(ReturnNull());
-  EXPECT_CALL(*MockFFmpeg::get(), AVCodecAllocFrame())
+  EXPECT_CALL(mock_ffmpeg_, AVCodecAllocFrame())
       .WillOnce(Return(&yuv_frame_));
-  EXPECT_CALL(*MockFFmpeg::get(), AVFree(&yuv_frame_))
+  EXPECT_CALL(mock_ffmpeg_, AVFree(&yuv_frame_))
       .Times(1);
 
   config_.codec = kCodecH264;
@@ -186,13 +182,13 @@ TEST_F(FFmpegVideoDecodeEngineTest, Initialize_FindDecoderFails) {
 // Note There are 2 threads for FFmpeg-mt.
 TEST_F(FFmpegVideoDecodeEngineTest, Initialize_InitThreadFails) {
   // Test avcodec_thread_init() failing.
-  EXPECT_CALL(*MockFFmpeg::get(), AVCodecFindDecoder(CODEC_ID_NONE))
+  EXPECT_CALL(mock_ffmpeg_, AVCodecFindDecoder(CODEC_ID_NONE))
       .WillOnce(Return(&codec_));
-  EXPECT_CALL(*MockFFmpeg::get(), AVCodecAllocFrame())
+  EXPECT_CALL(mock_ffmpeg_, AVCodecAllocFrame())
       .WillOnce(Return(&yuv_frame_));
-  EXPECT_CALL(*MockFFmpeg::get(), AVCodecThreadInit(&codec_context_, 2))
+  EXPECT_CALL(mock_ffmpeg_, AVCodecThreadInit(&codec_context_, 2))
       .WillOnce(Return(-1));
-  EXPECT_CALL(*MockFFmpeg::get(), AVFree(&yuv_frame_))
+  EXPECT_CALL(mock_ffmpeg_, AVFree(&yuv_frame_))
       .Times(1);
 
   config_.codec = kCodecH264;
@@ -207,15 +203,15 @@ TEST_F(FFmpegVideoDecodeEngineTest, Initialize_InitThreadFails) {
 
 TEST_F(FFmpegVideoDecodeEngineTest, Initialize_OpenDecoderFails) {
   // Test avcodec_open() failing.
-  EXPECT_CALL(*MockFFmpeg::get(), AVCodecFindDecoder(CODEC_ID_NONE))
+  EXPECT_CALL(mock_ffmpeg_, AVCodecFindDecoder(CODEC_ID_NONE))
       .WillOnce(Return(&codec_));
-  EXPECT_CALL(*MockFFmpeg::get(), AVCodecAllocFrame())
+  EXPECT_CALL(mock_ffmpeg_, AVCodecAllocFrame())
       .WillOnce(Return(&yuv_frame_));
-  EXPECT_CALL(*MockFFmpeg::get(), AVCodecThreadInit(&codec_context_, 2))
+  EXPECT_CALL(mock_ffmpeg_, AVCodecThreadInit(&codec_context_, 2))
       .WillOnce(Return(0));
-  EXPECT_CALL(*MockFFmpeg::get(), AVCodecOpen(&codec_context_, &codec_))
+  EXPECT_CALL(mock_ffmpeg_, AVCodecOpen(&codec_context_, &codec_))
       .WillOnce(Return(-1));
-  EXPECT_CALL(*MockFFmpeg::get(), AVFree(&yuv_frame_))
+  EXPECT_CALL(mock_ffmpeg_, AVFree(&yuv_frame_))
       .Times(1);
 
   config_.codec = kCodecH264;
