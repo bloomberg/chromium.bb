@@ -1,0 +1,11 @@
+Name: UDT Data Transfer Protocol (UDT)
+URL: http://sourceforge.net/projects/udt/
+
+This directory includes a copy of UDT from the CVS repo at:
+  -d:pserver:anonymous@udt.cvs.sourceforge.net:/cvsroot/udt -P UDT4
+
+The snapshot was updated to the CVS version: 1.12.13
+
+Patches:
+
+  None
