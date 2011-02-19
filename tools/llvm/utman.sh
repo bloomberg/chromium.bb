@@ -75,7 +75,6 @@ readonly MAKE_OPTS="-j${UTMAN_CONCURRENCY} VERBOSE=1"
 # Leave this blank, it will be filled during processing.
 SPECULATIVE_REBUILD_SET=""
 
-
 # The directory in which we we keep src dirs (from hg repos)
 # and objdirs. These should be ABSOLUTE paths.
 
