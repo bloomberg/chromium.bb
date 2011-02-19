@@ -12,6 +12,8 @@
 
 namespace webdriver {
 
+class Response;
+
 // Inject a snippet of javascript into the page and return its result.
 // WebElements that should be passed to the script as an argument should be
 // specified in the arguments array as WebElement JSON arguments. Likewise,

@@ -13,6 +13,8 @@
 
 namespace webdriver {
 
+class Response;
+
 // Controls how fast chrome should simulate user typing and mouse movements.
 // By default the speed is set to medium however webdriver has not defined
 // what this speed means accross browsers.  Currently speed is ignored.

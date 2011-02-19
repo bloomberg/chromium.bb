@@ -18,6 +18,7 @@
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
+#include "chrome/test/webdriver/commands/response.h"
 #include "chrome/test/webdriver/session_manager.h"
 #include "chrome/test/webdriver/utility_functions.h"
 
@@ -44,17 +45,15 @@ bool WebDriverCommand::Init(Response* const response) {
   // There should be at least 3 path segments to match "/session/$id".
   std::string session_id = GetPathVariable(2);
   if (session_id.length() == 0) {
-    response->set_value(Value::CreateStringValue("No session ID specified"));
-    response->set_status(kBadRequest);
+    SET_WEBDRIVER_ERROR(response, "No session ID specified", kBadRequest);
     return false;
   }
 
   VLOG(1) << "Fetching session: " << session_id;
   session_ = SessionManager::GetInstance()->GetSession(session_id);
   if (session_ == NULL) {
-    response->set_value(Value::CreateStringValue(
-        "Session not found: " + session_id));
-    response->set_status(kSessionNotFound);
+    SET_WEBDRIVER_ERROR(response, "Session not found: " + session_id,
+                        kSessionNotFound);
     return false;
   }
 

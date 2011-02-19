@@ -130,8 +130,8 @@ void ElementValueCommand::ExecuteGet(Response* const response) {
                         kInternalServerError);
     return;
   }
-  response->set_status(kSuccess);
-  response->set_value(result.release());
+  response->SetStatus(kSuccess);
+  response->SetValue(result.release());
 }
 
 void ElementValueCommand::ExecutePost(Response* const response) {
@@ -167,7 +167,7 @@ void ElementValueCommand::ExecutePost(Response* const response) {
                         code);
     return;
   }
-  response->set_status(kSuccess);
+  response->SetStatus(kSuccess);
 }
 
 ElementTextCommand::ElementTextCommand(
@@ -202,8 +202,8 @@ void ElementTextCommand::ExecuteGet(Response* const response) {
                         kInternalServerError);
     return;
   }
-  response->set_status(kSuccess);
-  response->set_value(result.release());
+  response->SetStatus(kSuccess);
+  response->SetValue(result.release());
 }
 
 }  // namespace webdriver

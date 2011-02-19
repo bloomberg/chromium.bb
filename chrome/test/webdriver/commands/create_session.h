@@ -13,6 +13,8 @@
 
 namespace webdriver {
 
+class Response;
+
 // Create a new session which is a new instance of the chrome browser with no
 // page loaded.  A new session ID is passed back to the user which is used for
 // all future commands that are sent to control this new instance.  The

@@ -14,6 +14,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "third_party/webdriver/atoms.h"
+#include "chrome/test/webdriver/commands/response.h"
 #include "chrome/test/webdriver/error_codes.h"
 
 namespace webdriver {
@@ -120,8 +121,8 @@ void FindElementCommand::ExecutePost(Response* const response) {
     base::PlatformThread::Sleep(50);  // Prevent a busy loop that eats the cpu.
   }
 
-  response->set_value(result);
-  response->set_status(error);
+  response->SetValue(result);
+  response->SetStatus(error);
 }
 
 bool FindElementCommand::RequiresValidTab() {

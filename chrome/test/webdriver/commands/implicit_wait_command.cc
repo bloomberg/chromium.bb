@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/test/webdriver/commands/implicit_wait_command.h"
+
 #include <string>
 
 #include "base/utf_string_conversions.h"
-#include "chrome/test/webdriver/commands/implicit_wait_command.h"
+#include "chrome/test/webdriver/commands/response.h"
 
 namespace webdriver {
 
@@ -49,8 +51,8 @@ void ImplicitWaitCommand::ExecutePost(Response* const response) {
   session_->set_implicit_wait(ms_to_wait_);
   LOG(INFO) << "Implicit wait set to: " << ms_to_wait_ << " ms";
 
-  response->set_value(new StringValue("success"));
-  response->set_status(kSuccess);
+  response->SetValue(new StringValue("success"));
+  response->SetStatus(kSuccess);
 }
 
 bool ImplicitWaitCommand::RequiresValidTab() {

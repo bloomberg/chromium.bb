@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/test/webdriver/commands/title_command.h"
+
 #include <string>
 
-#include "chrome/test/webdriver/commands/title_command.h"
+#include "chrome/test/webdriver/commands/response.h"
 
 namespace webdriver {
 
@@ -25,8 +27,8 @@ void TitleCommand::ExecuteGet(Response* const response) {
     return;
   }
 
-  response->set_value(new StringValue(title));
-  response->set_status(kSuccess);
+  response->SetValue(new StringValue(title));
+  response->SetStatus(kSuccess);
 }
 
 bool TitleCommand::RequiresValidTab() {

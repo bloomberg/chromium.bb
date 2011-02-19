@@ -54,7 +54,8 @@ namespace internal {
 
 void PrepareHttpResponse(const Response& command_response,
                          HttpResponse* const http_response) {
-  switch (command_response.status()) {
+  ErrorCode status = command_response.GetStatus();
+  switch (status) {
     case kSuccess:
       http_response->set_status(HttpResponse::kOk);
       break;
@@ -63,7 +64,7 @@ void PrepareHttpResponse(const Response& command_response,
     // and kMethodNotAllowed should be detected before creating
     // a command_response, and should thus not need conversion.
     case kSeeOther: {
-      const Value* const value = command_response.value();
+      const Value* const value = command_response.GetValue();
       std::string location;
       if (!value->GetAsString(&location)) {
         // This should never happen.
@@ -80,11 +81,11 @@ void PrepareHttpResponse(const Response& command_response,
 
     case kBadRequest:
     case kSessionNotFound:
-      http_response->set_status(command_response.status());
+      http_response->set_status(status);
       break;
 
     case kMethodNotAllowed: {
-      const Value* const value = command_response.value();
+      const Value* const value = command_response.GetValue();
       if (!value->IsType(Value::TYPE_LIST)) {
         // This should never happen.
         http_response->set_status(HttpResponse::kInternalServerError);
@@ -169,9 +170,9 @@ bool ParseRequestInfo(const struct mg_request_info* const request_info,
     std::string json(request_info->post_data, request_info->post_data_len);
     std::string error;
     if (!ParseJSONDictionary(json, parameters, &error)) {
-      response->set_value(Value::CreateStringValue(
-          "Failed to parse command data: " + error + "\n  Data: " + json));
-      response->set_status(kBadRequest);
+      SET_WEBDRIVER_ERROR(response,
+          "Failed to parse command data: " + error + "\n  Data: " + json,
+          kBadRequest);
       return false;
     }
   }
@@ -198,8 +199,8 @@ void DispatchHelper(Command* command_ptr,
     }
     if (command->DoesDelete())
       methods->Append(Value::CreateStringValue("DELETE"));
-    response->set_status(kMethodNotAllowed);
-    response->set_value(methods);
+    response->SetStatus(kMethodNotAllowed);
+    response->SetValue(methods);
     return;
   }
 

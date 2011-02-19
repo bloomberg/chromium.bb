@@ -13,6 +13,8 @@
 
 namespace webdriver {
 
+class Response;
+
 // Retrieve the capabilities of the specified session. If the HTTP Delete
 // method is used then all chrome instances linked to the session ID are
 // closed.  The session's capabilities will be returned in a JSON object

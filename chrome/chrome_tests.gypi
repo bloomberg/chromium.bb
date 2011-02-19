@@ -762,6 +762,7 @@
         'test/webdriver/commands/execute_command.cc',
         'test/webdriver/commands/navigate_commands.h',
         'test/webdriver/commands/navigate_commands.cc',
+        'test/webdriver/commands/response.cc',
         'test/webdriver/commands/response.h',
         'test/webdriver/commands/session_with_id.h',
         'test/webdriver/commands/session_with_id.cc',

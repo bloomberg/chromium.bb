@@ -12,6 +12,8 @@
 
 namespace webdriver {
 
+class Response;
+
 // Set the amount of time the driver should wait when searching for elements.
 // If this command is never sent, the driver will default to an implicit wait
 // of 0 ms. Until the webelement commands are checked in we do no use this

@@ -76,8 +76,8 @@ void CookieCommand::ExecuteGet(Response* const response) {
     }
   }
 
-  response->set_status(kSuccess);
-  response->set_value(cookie_list.release());
+  response->SetStatus(kSuccess);
+  response->SetValue(cookie_list.release());
 }
 
 void CookieCommand::ExecutePost(Response* const response) {
@@ -106,8 +106,8 @@ void CookieCommand::ExecutePost(Response* const response) {
     return;
   }
 
-  response->set_status(kSuccess);
-  response->set_value(new StringValue(cookie.ToString()));
+  response->SetStatus(kSuccess);
+  response->SetValue(new StringValue(cookie.ToString()));
 }
 
 void CookieCommand::ExecuteDelete(Response* const response) {
@@ -140,7 +140,7 @@ void CookieCommand::ExecuteDelete(Response* const response) {
     }
   }
 
-  response->set_status(kSuccess);
+  response->SetStatus(kSuccess);
 }
 
 NamedCookieCommand::NamedCookieCommand(
@@ -190,8 +190,8 @@ void NamedCookieCommand::ExecuteGet(Response* const response) {
     return;
   }
 
-  response->set_status(kSuccess);
-  response->set_value(new StringValue(cookie));
+  response->SetStatus(kSuccess);
+  response->SetValue(new StringValue(cookie));
 }
 
 void NamedCookieCommand::ExecuteDelete(Response* const response) {
@@ -201,7 +201,7 @@ void NamedCookieCommand::ExecuteDelete(Response* const response) {
     return;
   }
 
-  response->set_status(kSuccess);
+  response->SetStatus(kSuccess);
 }
 
 }  // namespace webdriver

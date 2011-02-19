@@ -12,6 +12,8 @@
 
 namespace webdriver {
 
+class Response;
+
 // Navigate forward in the browser history, if possible. See:
 // http://code.google.com/p/selenium/wiki/JsonWireProtocol#/session/:sessionId/forward
 class ForwardCommand : public WebDriverCommand {

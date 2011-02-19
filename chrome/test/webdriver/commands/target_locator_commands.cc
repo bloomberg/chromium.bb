@@ -24,8 +24,8 @@ bool WindowHandleCommand::DoesGet() {
 }
 
 void WindowHandleCommand::ExecuteGet(Response* const response) {
-  response->set_status(kSuccess);
-  response->set_value(new StringValue(
+  response->SetStatus(kSuccess);
+  response->SetValue(new StringValue(
       base::IntToString(session_->current_window_id())));
 }
 
@@ -50,8 +50,8 @@ void WindowHandlesCommand::ExecuteGet(Response* const response) {
   ListValue* id_list = new ListValue();
   for (size_t i = 0; i < window_ids.size(); ++i)
     id_list->Append(new StringValue(base::IntToString(window_ids[i])));
-  response->set_status(kSuccess);
-  response->set_value(id_list);
+  response->SetStatus(kSuccess);
+  response->SetValue(id_list);
 }
 
 WindowCommand::WindowCommand(
@@ -82,7 +82,7 @@ void WindowCommand::ExecutePost(Response* const response) {
     SET_WEBDRIVER_ERROR(response, "Could not switch window", code);
     return;
   }
-  response->set_status(kSuccess);
+  response->SetStatus(kSuccess);
 }
 
 void WindowCommand::ExecuteDelete(Response* const response) {
@@ -91,7 +91,7 @@ void WindowCommand::ExecuteDelete(Response* const response) {
         response, "Could not close window", kInternalServerError);
     return;
   }
-  response->set_status(kSuccess);
+  response->SetStatus(kSuccess);
 }
 
 SwitchFrameCommand::SwitchFrameCommand(
@@ -127,7 +127,7 @@ void SwitchFrameCommand::ExecutePost(Response* const response) {
         response, "Missing or invalid 'id' parameter", kBadRequest);
     return;
   }
-  response->set_status(kSuccess);
+  response->SetStatus(kSuccess);
 }
 
 }  // namespace webdriver

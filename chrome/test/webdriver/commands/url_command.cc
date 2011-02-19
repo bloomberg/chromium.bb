@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/test/webdriver/commands/url_command.h"
+
 #include <string>
 
-#include "chrome/test/webdriver/commands/url_command.h"
+#include "chrome/test/webdriver/commands/response.h"
 
 namespace webdriver {
 
@@ -29,8 +31,8 @@ void URLCommand::ExecuteGet(Response* const response) {
     return;
   }
 
-  response->set_value(new StringValue(url));
-  response->set_status(kSuccess);
+  response->SetValue(new StringValue(url));
+  response->SetStatus(kSuccess);
 }
 
 void URLCommand::ExecutePost(Response* const response) {
@@ -48,8 +50,8 @@ void URLCommand::ExecutePost(Response* const response) {
   }
 
   session_->set_current_frame_xpath("");
-  response->set_value(new StringValue(url));
-  response->set_status(kSuccess);
+  response->SetValue(new StringValue(url));
+  response->SetStatus(kSuccess);
 }
 
 bool URLCommand::RequiresValidTab() {

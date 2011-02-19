@@ -13,6 +13,8 @@
 
 namespace webdriver {
 
+class Response;
+
 // Base class for searching a page, this class can find either a single
 // webelement or return multiple matches.
 class FindElementCommand : public WebDriverCommand {

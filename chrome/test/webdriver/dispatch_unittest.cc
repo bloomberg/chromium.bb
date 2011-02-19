@@ -33,7 +33,7 @@ void ExpectHttpStatus(int expected_status,
 void ExpectInternalError(ErrorCode command_status,
                          Response* command_response,
                          HttpResponse* const http_response) {
-  command_response->set_status(command_status);
+  command_response->SetStatus(command_status);
   http_response->set_status(HttpResponse::kOk);  // Reset to detect changes.
   ExpectHttpStatus(HttpResponse::kInternalServerError,
                    *command_response, http_response);
@@ -45,29 +45,29 @@ TEST(DispatchTest, CorrectlyConvertsResponseCodesToHttpStatusCodes) {
   HttpResponse http_response;
 
   Response command_response;
-  command_response.set_value(Value::CreateStringValue("foobar"));
+  command_response.SetValue(Value::CreateStringValue("foobar"));
 
-  command_response.set_status(kSuccess);
+  command_response.SetStatus(kSuccess);
   ExpectHttpStatus(HttpResponse::kOk, command_response, &http_response);
 
-  command_response.set_status(kSeeOther);
+  command_response.SetStatus(kSeeOther);
   ExpectHttpStatus(HttpResponse::kSeeOther, command_response, &http_response);
   ExpectHeaderValue(http_response, "location", "foobar");
   http_response.ClearHeaders();
 
-  command_response.set_status(kBadRequest);
+  command_response.SetStatus(kBadRequest);
   ExpectHttpStatus(HttpResponse::kBadRequest, command_response,
                    &http_response);
 
-  command_response.set_status(kSessionNotFound);
+  command_response.SetStatus(kSessionNotFound);
   ExpectHttpStatus(HttpResponse::kNotFound, command_response,
                    &http_response);
 
   ListValue* methods = new ListValue;
   methods->Append(Value::CreateStringValue("POST"));
   methods->Append(Value::CreateStringValue("GET"));
-  command_response.set_value(methods);
-  command_response.set_status(kMethodNotAllowed);
+  command_response.SetValue(methods);
+  command_response.SetStatus(kMethodNotAllowed);
   ExpectHttpStatus(HttpResponse::kMethodNotAllowed, command_response,
                    &http_response);
   ExpectHeaderValue(http_response, "allow", "POST,GET");
@@ -99,8 +99,8 @@ TEST(DispatchTest,
   methods->Append(Value::CreateStringValue("DELETE"));
 
   Response command_response;
-  command_response.set_status(kMethodNotAllowed);
-  command_response.set_value(methods);
+  command_response.SetStatus(kMethodNotAllowed);
+  command_response.SetValue(methods);
 
   HttpResponse http_response;
   ExpectHttpStatus(HttpResponse::kInternalServerError, command_response,
@@ -111,8 +111,8 @@ TEST(DispatchTest, ReturnsCommandResponseAsJson) {
   const std::string kExpectedData = "{\"status\":0,\"value\":\"foobar\"}";
 
   Response command_response;
-  command_response.set_status(kSuccess);
-  command_response.set_value(Value::CreateStringValue("foobar"));
+  command_response.SetStatus(kSuccess);
+  command_response.SetValue(Value::CreateStringValue("foobar"));
 
   HttpResponse http_response;
   internal::PrepareHttpResponse(command_response, &http_response);

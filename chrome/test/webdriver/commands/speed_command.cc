@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/test/webdriver/commands/speed_command.h"
+
 #include <string>
 
 #include "base/utf_string_conversions.h"
-#include "chrome/test/webdriver/commands/speed_command.h"
+#include "chrome/test/webdriver/commands/response.h"
 
 namespace webdriver {
 
@@ -63,18 +65,18 @@ bool SpeedCommand::DoesPost() {
 void SpeedCommand::ExecuteGet(Response* const response) {
   switch (session_->speed()) {
     case Session::kSlow:
-      response->set_value(new StringValue("SLOW"));
-      response->set_status(kSuccess);
+      response->SetValue(new StringValue("SLOW"));
+      response->SetStatus(kSuccess);
       break;
 
     case Session::kMedium:
-      response->set_value(new StringValue("MEDIUM"));
-      response->set_status(kSuccess);
+      response->SetValue(new StringValue("MEDIUM"));
+      response->SetStatus(kSuccess);
       break;
 
     case Session::kFast:
-      response->set_value(new StringValue("FAST"));
-      response->set_status(kSuccess);
+      response->SetValue(new StringValue("FAST"));
+      response->SetStatus(kSuccess);
       break;
 
     default:
@@ -94,8 +96,8 @@ void SpeedCommand::ExecutePost(Response* const response) {
   }
 
   session_->set_speed(speed_);
-  response->set_value(new StringValue("success"));
-  response->set_status(kSuccess);
+  response->SetValue(new StringValue("success"));
+  response->SetStatus(kSuccess);
 }
 
 bool SpeedCommand::RequiresValidTab() {

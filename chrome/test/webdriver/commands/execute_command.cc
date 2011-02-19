@@ -43,8 +43,8 @@ void ExecuteCommand::ExecutePost(Response* const response) {
 
   Value* result = NULL;
   ErrorCode status = session_->ExecuteScript(script, args, &result);
-  response->set_status(status);
-  response->set_value(result);
+  response->SetStatus(status);
+  response->SetValue(result);
 }
 
 bool ExecuteCommand::RequiresValidTab() {

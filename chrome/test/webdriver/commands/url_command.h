@@ -12,6 +12,8 @@
 
 namespace webdriver {
 
+class Response;
+
 // Controls navigate to new web pages for the current tab.  A call with
 // and HTTP GET will return the URL of the tab. See:
 // http://code.google.com/p/selenium/wiki/JsonWireProtocol#/session/:sessionId/url

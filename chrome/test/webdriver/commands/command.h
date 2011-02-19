@@ -11,12 +11,11 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/values.h"
-#include "base/json/json_writer.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
-#include "chrome/test/webdriver/error_codes.h"
-#include "chrome/test/webdriver/commands/response.h"
 
 namespace webdriver {
+
+class Response;
 
 // Base class for a command mapped to a URL in the WebDriver REST API. Each
 // URL may respond to commands sent with a DELETE, GET/HEAD, or POST HTTP

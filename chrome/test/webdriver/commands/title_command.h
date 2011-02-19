@@ -12,6 +12,8 @@
 
 namespace webdriver {
 
+class Response;
+
 // A call with HTTP GET will return the title of the tab. See:
 // http://code.google.com/p/selenium/wiki/JsonWireProtocol#/session/:sessionId/title
 class TitleCommand : public WebDriverCommand {

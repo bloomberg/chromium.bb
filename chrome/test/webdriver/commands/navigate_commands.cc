@@ -4,6 +4,8 @@
 
 #include "chrome/test/webdriver/commands/navigate_commands.h"
 
+#include "chrome/test/webdriver/commands/response.h"
+
 namespace webdriver {
 
 ForwardCommand::ForwardCommand(const std::vector<std::string>& path_segments,
@@ -23,7 +25,7 @@ void ForwardCommand::ExecutePost(Response* const response) {
   }
 
   session_->set_current_frame_xpath("");
-  response->set_status(kSuccess);
+  response->SetStatus(kSuccess);
 }
 
 bool ForwardCommand::RequiresValidTab() {
@@ -47,7 +49,7 @@ void BackCommand::ExecutePost(Response* const response) {
   }
 
   session_->set_current_frame_xpath("");
-  response->set_status(kSuccess);
+  response->SetStatus(kSuccess);
 }
 
 bool BackCommand::RequiresValidTab() {
@@ -71,7 +73,7 @@ void RefreshCommand::ExecutePost(Response* const response) {
   }
 
   session_->set_current_frame_xpath("");
-  response->set_status(kSuccess);
+  response->SetStatus(kSuccess);
 }
 
 bool RefreshCommand::RequiresValidTab() {

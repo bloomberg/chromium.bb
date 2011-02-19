@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/test/webdriver/commands/response.h"
 #include "chrome/test/webdriver/session_manager.h"
 
 namespace webdriver {
@@ -50,14 +51,14 @@ void SessionWithID::ExecuteGet(Response* const response) {
 
   temp_value->SetBoolean(std::string("javascriptEnabled"), true);
 
-  response->set_status(kSuccess);
-  response->set_value(temp_value);
+  response->SetStatus(kSuccess);
+  response->SetValue(temp_value);
 }
 
 void SessionWithID::ExecuteDelete(Response* const response) {
   // Session manages its own liftime, so do not call delete.
   session_->Terminate();
-  response->set_status(kSuccess);
+  response->SetStatus(kSuccess);
 }
 
 bool SessionWithID::RequiresValidTab() {

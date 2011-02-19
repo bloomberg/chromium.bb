@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/test/webdriver/commands/response.h"
 #include "chrome/test/webdriver/session.h"
 #include "chrome/test/webdriver/session_manager.h"
 
@@ -38,8 +39,8 @@ void CreateSession::ExecutePost(Response* const response) {
   std::ostringstream stream;
   stream << "http://" << session_manager->GetAddress() << "/session/"
          << session->id();
-  response->set_status(kSeeOther);
-  response->set_value(Value::CreateStringValue(stream.str()));
+  response->SetStatus(kSeeOther);
+  response->SetValue(Value::CreateStringValue(stream.str()));
 }
 
 }  // namespace webdriver

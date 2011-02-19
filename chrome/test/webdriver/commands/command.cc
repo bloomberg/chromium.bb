@@ -6,17 +6,6 @@
 
 namespace webdriver {
 
-// Error message taken from:
-// http://code.google.com/p/selenium/wiki/JsonWireProtocol#Response_Status_Codes
-const char* const Response::kStatusKey = "status";
-const char* const Response::kValueKey = "value";
-const char* const Response::kMessageKey = "message";
-const char* const Response::kScreenKey = "screen";
-const char* const Response::kClassKey = "class";
-const char* const Response::kStackTrace = "stackTrace";
-const char* const Response::kFileName = "fileName";
-const char* const Response::kLineNumber = "lineNumber";
-
 Command::Command(const std::vector<std::string>& path_segments,
                  const DictionaryValue* const parameters)
     : path_segments_(path_segments),
