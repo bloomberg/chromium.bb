@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -109,10 +109,18 @@ bool PrintedDocument::IsComplete() const {
   PageNumber page(immutable_.settings_, mutable_.page_count_);
   if (page == PageNumber::npos())
     return false;
+
   for (; page != PageNumber::npos(); ++page) {
+    bool metafile_must_be_valid =
+#if defined(OS_WIN) || defined(OS_MAC)
+        true;
+#elif defined(OS_POSIX)
+        (page.ToInt() == 0);
+#endif
     PrintedPages::const_iterator itr = mutable_.pages_.find(page.ToInt());
-    if (itr == mutable_.pages_.end() || !itr->second.get() ||
-        !itr->second->native_metafile())
+    if (itr == mutable_.pages_.end() || !itr->second.get())
+      return false;
+    if (metafile_must_be_valid && !itr->second->native_metafile())
       return false;
   }
   return true;

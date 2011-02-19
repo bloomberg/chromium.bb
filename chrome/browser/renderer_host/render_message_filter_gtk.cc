@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,11 +11,6 @@
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
 #include "chrome/browser/browser_thread.h"
-#if defined(TOOLKIT_GTK)
-#include "chrome/browser/printing/print_dialog_gtk.h"
-#else
-#include "chrome/browser/printing/print_dialog_cloud.h"
-#endif
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/render_messages.h"
 #include "grit/generated_resources.h"
@@ -24,6 +19,10 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/gtk_native_view_id_manager.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/printing/print_dialog_cloud.h"
+#endif
 
 using WebKit::WebScreenInfo;
 using WebKit::WebScreenInfoFactory;
@@ -177,22 +176,16 @@ void RenderMessageFilter::DoOnClipboardReadFilenames(
   Send(reply_msg);
 }
 
+#if defined(OS_CHROMEOS)
 void RenderMessageFilter::DoOnAllocateTempFileForPrinting(
     IPC::Message* reply_msg) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   base::FileDescriptor temp_file_fd(-1, false);
-  bool allow_print =
-#if defined(TOOLKIT_GTK)
-    !PrintDialogGtk::DialogShowing();
-#else
-    true;
-#endif
-  FilePath path;
   SequenceToPathMap* map = &g_printing_file_descriptor_map.Get().map;
   const int sequence_number = g_printing_file_descriptor_map.Get().sequence++;
 
-  if (allow_print &&
-      file_util::CreateTemporaryFile(&path)) {
+  FilePath path;
+  if (file_util::CreateTemporaryFile(&path)) {
     int fd = open(path.value().c_str(), O_WRONLY);
     if (fd >= 0) {
       SequenceToPathMap::iterator it = map->find(sequence_number);
@@ -222,18 +215,15 @@ void RenderMessageFilter::DoOnTempFileForPrintingWritten(int sequence_number) {
     return;
   }
 
-#if defined(TOOLKIT_GTK)
-  PrintDialogGtk::CreatePrintDialogForPdf(it->second);
-#else
   if (cloud_print_enabled_)
     PrintDialogCloud::CreatePrintDialogForPdf(it->second, string16(), true);
   else
     NOTIMPLEMENTED();
-#endif
 
   // Erase the entry in the map.
   map->erase(it);
 }
+#endif  // defined(OS_CHROMEOS)
 
 void RenderMessageFilter::OnGetScreenInfo(gfx::NativeViewId view,
                                           IPC::Message* reply_msg) {
@@ -334,6 +324,7 @@ void RenderMessageFilter::OnClipboardReadFilenames(
           reply_msg));
 }
 
+#if defined(OS_CHROMEOS)
 void RenderMessageFilter::OnAllocateTempFileForPrinting(
     IPC::Message* reply_msg) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -352,3 +343,4 @@ void RenderMessageFilter::OnTempFileForPrintingWritten(int sequence_number) {
           this, &RenderMessageFilter::DoOnTempFileForPrintingWritten,
           sequence_number));
 }
+#endif  // defined(OS_CHROMEOS)

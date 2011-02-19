@@ -450,7 +450,7 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ViewHostMsg_AllocateSharedMemoryBuffer,
                         OnAllocateSharedMemoryBuffer)
 #endif
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_CHROMEOS)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_AllocateTempFileForPrinting,
                                     OnAllocateTempFileForPrinting)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TempFileForPrintingWritten,

@@ -114,21 +114,29 @@ void PrintViewManager::OnDidPrintPage(
   }
 #endif
 
+  const bool metafile_must_be_valid =
+#if defined(OS_WIN) || defined(OS_MACOSX)
+      true;
+#elif defined(OS_POSIX)
+      (params.page_number == 0);
+#endif
+
   base::SharedMemory shared_buf(params.metafile_data_handle, true);
-  if (!shared_buf.Map(params.data_size)) {
-    NOTREACHED() << "couldn't map";
-    tab_contents()->Stop();
-    return;
+  if (metafile_must_be_valid) {
+    if (!shared_buf.Map(params.data_size)) {
+      NOTREACHED() << "couldn't map";
+      tab_contents()->Stop();
+      return;
+    }
   }
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-  NOTIMPLEMENTED() << " this printing code doesn't quite work yet.";
-#else
   scoped_ptr<NativeMetafile> metafile(new NativeMetafile());
-  if (!metafile->Init(shared_buf.memory(), params.data_size)) {
-    NOTREACHED() << "Invalid metafile header";
-    tab_contents()->Stop();
-    return;
+  if (metafile_must_be_valid) {
+    if (!metafile->Init(shared_buf.memory(), params.data_size)) {
+      NOTREACHED() << "Invalid metafile header";
+      tab_contents()->Stop();
+      return;
+    }
   }
 
   // Update the rendered document. It will send notifications to the listener.
@@ -138,7 +146,7 @@ void PrintViewManager::OnDidPrintPage(
                     params.page_size,
                     params.content_area,
                     params.has_visible_overlays);
-#endif
+
   ShouldQuitFromInnerMessageLoop();
 }
 

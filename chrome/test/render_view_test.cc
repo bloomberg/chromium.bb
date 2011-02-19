@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -259,7 +259,11 @@ void RenderViewTest::SendNativeKeyEvent(
 }
 
 void RenderViewTest::VerifyPageCount(int count) {
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_CHROMEOS)
+  // The DidGetPrintedPagesCount message isn't sent on ChromeOS. Right now we
+  // always print all pages, and there are checks to that effect built into
+  // the print code.
+#else
   const IPC::Message* page_cnt_msg =
       render_thread_.sink().GetUniqueMessageMatching(
           ViewHostMsg_DidGetPrintedPagesCount::ID);
@@ -268,15 +272,16 @@ void RenderViewTest::VerifyPageCount(int count) {
   ViewHostMsg_DidGetPrintedPagesCount::Read(page_cnt_msg,
                                             &post_page_count_param);
   EXPECT_EQ(count, post_page_count_param.b);
-#elif defined(OS_LINUX)
-  // The DidGetPrintedPagesCount message isn't sent on Linux. Right now we
-  // always print all pages, and there are checks to that effect built into
-  // the print code.
-#endif
+#endif  // defined(OS_CHROMEOS)
 }
 
 void RenderViewTest::VerifyPagesPrinted() {
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_CHROMEOS)
+  const IPC::Message* did_print_msg =
+      render_thread_.sink().GetUniqueMessageMatching(
+          ViewHostMsg_TempFileForPrintingWritten::ID);
+  ASSERT_TRUE(did_print_msg);
+#else
   const IPC::Message* did_print_msg =
       render_thread_.sink().GetUniqueMessageMatching(
           ViewHostMsg_DidPrintPage::ID);
@@ -284,12 +289,7 @@ void RenderViewTest::VerifyPagesPrinted() {
   ViewHostMsg_DidPrintPage::Param post_did_print_page_param;
   ViewHostMsg_DidPrintPage::Read(did_print_msg, &post_did_print_page_param);
   EXPECT_EQ(0, post_did_print_page_param.a.page_number);
-#elif defined(OS_LINUX)
-  const IPC::Message* did_print_msg =
-      render_thread_.sink().GetUniqueMessageMatching(
-          ViewHostMsg_TempFileForPrintingWritten::ID);
-  ASSERT_TRUE(did_print_msg);
-#endif
+#endif  // defined(OS_CHROMEOS)
 }
 
 const char* const kGetCoordinatesScript =

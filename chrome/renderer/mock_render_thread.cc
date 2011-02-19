@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -120,7 +120,7 @@ bool MockRenderThread::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_AllocateSharedMemoryBuffer,
                         OnAllocateSharedMemoryBuffer)
 #endif
-#if defined(OS_LINUX)
+#if defined(OS_CHROMEOS)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AllocateTempFileForPrinting,
                         OnAllocateTempFileForPrinting)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TempFileForPrintingWritten,
@@ -169,7 +169,7 @@ void MockRenderThread::OnAllocateSharedMemoryBuffer(
 }
 #endif
 
-#if defined(OS_LINUX)
+#if defined(OS_CHROMEOS)
 void MockRenderThread::OnAllocateTempFileForPrinting(
     base::FileDescriptor* renderer_fd,
     int* browser_fd) {
@@ -187,7 +187,7 @@ void MockRenderThread::OnAllocateTempFileForPrinting(
 void MockRenderThread::OnTempFileForPrintingWritten(int browser_fd) {
   close(browser_fd);
 }
-#endif
+#endif  // defined(OS_CHROMEOS)
 
 void MockRenderThread::OnGetDefaultPrintSettings(ViewMsg_Print_Params* params) {
   if (printer_.get())

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -270,7 +270,11 @@ void PrintJobWorker::SpoolPage(PrintedPage& page) {
   }
 
   // Actual printing.
+#if defined(OS_WIN) || defined(OS_MACOSX)
   document_->RenderPrintedPage(page, printing_context_->context());
+#elif defined(OS_POSIX)
+  document_->RenderPrintedPage(page, printing_context_.get());
+#endif
 
   // Postprocess.
   if (printing_context_->PageDone() != PrintingContext::OK) {

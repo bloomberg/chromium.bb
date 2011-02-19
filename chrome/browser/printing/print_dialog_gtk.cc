@@ -4,117 +4,98 @@
 
 #include "chrome/browser/printing/print_dialog_gtk.h"
 
-#include <gtk/gtkprintjob.h>
-#include <gtk/gtkprintunixdialog.h>
+#include <fcntl.h>
 #include <gtk/gtkpagesetupunixdialog.h>
+#include <gtk/gtkprintjob.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include "base/file_util.h"
 #include "base/file_util_proxy.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/synchronization/lock.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/browser_window.h"
-#include "chrome/browser/tab_contents/infobar_delegate.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
-
-namespace {
-
-PrintDialogGtk* g_print_dialog = NULL;
-
-// Used to make accesses to the above thread safe.
-base::Lock& DialogLock() {
-  static base::LazyInstance<base::Lock> dialog_lock(base::LINKER_INITIALIZED);
-  return dialog_lock.Get();
-}
-
-// This is a temporary infobar designed to help gauge how many users are trying
-// to print to printers that don't support PDF.
-class PdfUnsupportedInfoBarDelegate : public LinkInfoBarDelegate {
- public:
-  explicit PdfUnsupportedInfoBarDelegate(Browser* browser)
-     : LinkInfoBarDelegate(NULL),
-       browser_(browser) {
-  }
-
-  virtual ~PdfUnsupportedInfoBarDelegate() {}
-
-  virtual string16 GetMessageTextWithOffset(size_t* link_offset) const {
-    string16 message = UTF8ToUTF16("Oops! Your printer does not support PDF. "
-                                   "Please report this to us.");
-    *link_offset = message.length() - 1;
-    return message;
-  }
-
-  virtual string16 GetLinkText() const {
-    return UTF8ToUTF16("here");
-  }
-
-  virtual Type GetInfoBarType() const { return WARNING_TYPE; }
-
-  virtual bool LinkClicked(WindowOpenDisposition disposition) {
-    browser_->OpenURL(
-        GURL("http://code.google.com/p/chromium/issues/detail?id=22027"),
-        GURL(), NEW_FOREGROUND_TAB, PageTransition::TYPED);
-    return true;
-  }
-
- private:
-  Browser* browser_;
-};
-
-}  // namespace
+#include "printing/print_settings_initializer_gtk.h"
 
 // static
-void PrintDialogGtk::CreatePrintDialogForPdf(const FilePath& path) {
+void* PrintDialogGtk::CreatePrintDialog(
+    PrintingContextCairo::PrintSettingsCallback* callback,
+    PrintingContextCairo* context) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  PrintDialogGtk* dialog = new PrintDialogGtk(callback, context);
+  return dialog;
+}
+
+// static
+void PrintDialogGtk::PrintDocument(void* print_dialog,
+                                   const NativeMetafile* metafile,
+                                   const string16& document_name) {
+  PrintDialogGtk* dialog = static_cast<PrintDialogGtk*>(print_dialog);
+
+  scoped_ptr<base::WaitableEvent> event(new base::WaitableEvent(false, false));
+  dialog->set_save_document_event(event.get());
   BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(&PrintDialogGtk::CreateDialogImpl, path));
+      BrowserThread::FILE, FROM_HERE,
+      NewRunnableMethod(dialog,
+                        &PrintDialogGtk::SaveDocumentToDisk,
+                        metafile,
+                        document_name));
+  // Wait for SaveDocumentToDisk() to finish.
+  event->Wait();
 }
 
-// static
-bool PrintDialogGtk::DialogShowing() {
-  base::AutoLock lock(DialogLock());
-  return !!g_print_dialog;
-}
+PrintDialogGtk::PrintDialogGtk(
+    PrintingContextCairo::PrintSettingsCallback* callback,
+    PrintingContextCairo* context)
+    : callback_(callback),
+      context_(context),
+      dialog_(NULL),
+      page_setup_(NULL),
+      printer_(NULL),
+      gtk_settings_(NULL),
+      save_document_event_(NULL) {
+  // Manual AddRef since PrintDialogGtk manages its own lifetime.
+  AddRef();
 
-// static
-void PrintDialogGtk::CreateDialogImpl(const FilePath& path) {
-  // Only show one print dialog at once. This is to prevent a page from
-  // locking up the system with
-  //
-  //   while(true){print();}
-  base::AutoLock lock(DialogLock());
-  if (g_print_dialog) {
-    // Clean up the temporary file.
-    base::FileUtilProxy::Delete(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
-        path, false, NULL);
-    return;
-  }
-
-  g_print_dialog = new PrintDialogGtk(path);
-}
-
-PrintDialogGtk::PrintDialogGtk(const FilePath& path_to_pdf)
-    : path_to_pdf_(path_to_pdf),
-      browser_(BrowserList::GetLastActive()) {
-  GtkWindow* parent = browser_->window()->GetNativeHandle();
+  GtkWindow* parent = BrowserList::GetLastActive()->window()->GetNativeHandle();
 
   // TODO(estade): We need a window title here.
   dialog_ = gtk_print_unix_dialog_new(NULL, parent);
+  // Set modal so user cannot focus the same tab and press print again.
+  gtk_window_set_modal(GTK_WINDOW(dialog_), TRUE);
+
+  // Since we only generate PDF, only show printers that support PDF.
+  // TODO(thestig) Add more capabilities to support?
+  GtkPrintCapabilities cap = static_cast<GtkPrintCapabilities>(
+      GTK_PRINT_CAPABILITY_GENERATE_PDF |
+      GTK_PRINT_CAPABILITY_PAGE_SET |
+      GTK_PRINT_CAPABILITY_COPIES |
+      GTK_PRINT_CAPABILITY_COLLATE |
+      GTK_PRINT_CAPABILITY_REVERSE);
+  gtk_print_unix_dialog_set_manual_capabilities(GTK_PRINT_UNIX_DIALOG(dialog_),
+                                                cap);
+#if GTK_CHECK_VERSION(2, 18, 0)
+  gtk_print_unix_dialog_set_embed_page_setup(GTK_PRINT_UNIX_DIALOG(dialog_),
+                                             TRUE);
+#endif
   g_signal_connect(dialog_, "response", G_CALLBACK(OnResponseThunk), this);
 
   gtk_widget_show(dialog_);
 }
 
 PrintDialogGtk::~PrintDialogGtk() {
-  base::AutoLock lock(DialogLock());
-  DCHECK_EQ(this, g_print_dialog);
-  g_print_dialog = NULL;
+  gtk_widget_destroy(dialog_);
+  dialog_ = NULL;
+  page_setup_ = NULL;
+  printer_ = NULL;
+  if (gtk_settings_) {
+    g_object_unref(gtk_settings_);
+    gtk_settings_ = NULL;
+  }
 }
 
 void PrintDialogGtk::OnResponse(GtkWidget* dialog, gint response_id) {
@@ -122,67 +103,119 @@ void PrintDialogGtk::OnResponse(GtkWidget* dialog, gint response_id) {
 
   switch (response_id) {
     case GTK_RESPONSE_OK: {
-      GtkPrinter* printer =
-          gtk_print_unix_dialog_get_selected_printer(
-              GTK_PRINT_UNIX_DIALOG(dialog_));
-      // Attempt to track down bug 70166.
-      CHECK(printer != NULL);
-      if (!gtk_printer_accepts_pdf(printer)) {
-        browser_->GetSelectedTabContents()->AddInfoBar(
-            new PdfUnsupportedInfoBarDelegate(browser_));
-        break;
+      // |gtk_settings_| is a new object.
+      gtk_settings_ = gtk_print_unix_dialog_get_settings(
+          GTK_PRINT_UNIX_DIALOG(dialog_));
+      // |printer_| and |page_setup_| are owned by |dialog_|.
+      page_setup_ = gtk_print_unix_dialog_get_page_setup(
+          GTK_PRINT_UNIX_DIALOG(dialog_));
+      printer_ = gtk_print_unix_dialog_get_selected_printer(
+          GTK_PRINT_UNIX_DIALOG(dialog_));
+
+      printing::PageRanges ranges_vector;
+      gint num_ranges;
+      GtkPageRange* gtk_range =
+          gtk_print_settings_get_page_ranges(gtk_settings_, &num_ranges);
+      if (gtk_range) {
+        for (int i = 0; i < num_ranges; ++i) {
+          printing::PageRange* range = new printing::PageRange;
+          range->from = gtk_range[i].start;
+          range->to = gtk_range[i].end;
+          ranges_vector.push_back(*range);
+        }
+        g_free(gtk_range);
       }
 
-      GtkPrintSettings* settings =
-          gtk_print_unix_dialog_get_settings(
-              GTK_PRINT_UNIX_DIALOG(dialog_));
-      GtkPageSetup* setup = gtk_print_unix_dialog_get_page_setup(
-              GTK_PRINT_UNIX_DIALOG(dialog_));
-
-      GtkPrintJob* job =
-          gtk_print_job_new(path_to_pdf_.value().c_str(), printer,
-                            settings, setup);
-      gtk_print_job_set_source_file(job, path_to_pdf_.value().c_str(), NULL);
-      gtk_print_job_send(job, OnJobCompletedThunk, this, NULL);
-      g_object_unref(settings);
-      // Success; return early.
+      printing::PrintSettings settings;
+      printing::PrintSettingsInitializerGtk::InitPrintSettings(
+          gtk_settings_, page_setup_, ranges_vector, false, &settings);
+      context_->InitWithSettings(settings);
+      callback_->Run(PrintingContextCairo::OK);
       return;
     }
     case GTK_RESPONSE_DELETE_EVENT:  // Fall through.
     case GTK_RESPONSE_CANCEL: {
-      break;
+      callback_->Run(PrintingContextCairo::CANCEL);
+      Release();
+      return;
     }
     case GTK_RESPONSE_APPLY:
     default: {
       NOTREACHED();
     }
   }
-
-  // Delete this dialog.
-  OnJobCompleted(NULL, NULL);
 }
 
+void PrintDialogGtk::SaveDocumentToDisk(const NativeMetafile* metafile,
+                                        const string16& document_name) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  bool error = false;
+  if (!file_util::CreateTemporaryFile(&path_to_pdf_)) {
+    LOG(ERROR) << "Creating temporary file failed";
+    error = true;
+  }
+
+  if (!error) {
+    base::FileDescriptor temp_file_fd;
+    temp_file_fd.fd = open(path_to_pdf_.value().c_str(), O_WRONLY);
+    temp_file_fd.auto_close = true;
+    if (!metafile->SaveTo(temp_file_fd)) {
+      LOG(ERROR) << "Saving metafile failed";
+      file_util::Delete(path_to_pdf_, false);
+      error = true;
+    }
+  }
+
+  // Done saving, let PrintDialogGtk::PrintDocument() continue.
+  save_document_event_->Signal();
+
+  if (error) {
+    Release();
+  } else {
+    // No errors, continue printing.
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        NewRunnableMethod(this,
+                          &PrintDialogGtk::SendDocumentToPrinter,
+                          document_name));
+  }
+}
+
+void PrintDialogGtk::SendDocumentToPrinter(const string16& document_name) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  GtkPrintJob* print_job = gtk_print_job_new(
+      UTF16ToUTF8(document_name).c_str(),
+      printer_,
+      gtk_settings_,
+      page_setup_);
+  gtk_print_job_set_source_file(print_job, path_to_pdf_.value().c_str(), NULL);
+  gtk_print_job_send(print_job, OnJobCompletedThunk, this, NULL);
+}
+
+// static
 void PrintDialogGtk::OnJobCompletedThunk(GtkPrintJob* print_job,
                                          gpointer user_data,
                                          GError* error) {
-  reinterpret_cast<PrintDialogGtk*>(user_data)->OnJobCompleted(print_job,
-                                                               error);
+  static_cast<PrintDialogGtk*>(user_data)->OnJobCompleted(print_job, error);
 }
 
-void PrintDialogGtk::OnJobCompleted(GtkPrintJob* job, GError* error) {
-  gtk_widget_destroy(dialog_);
-
+void PrintDialogGtk::OnJobCompleted(GtkPrintJob* print_job, GError* error) {
   if (error)
     LOG(ERROR) << "Printing failed: " << error->message;
-
-  if (job)
-    g_object_unref(job);
-
+  if (print_job)
+    g_object_unref(print_job);
   base::FileUtilProxy::Delete(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
       path_to_pdf_,
       false,
       NULL);
+  // Printing finished.
+  Release();
+}
 
-  delete this;
+void PrintDialogGtk::set_save_document_event(base::WaitableEvent* event) {
+  DCHECK(event);
+  DCHECK(!save_document_event_);
+  save_document_event_ = event;
 }

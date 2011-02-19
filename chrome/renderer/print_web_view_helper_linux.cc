@@ -13,6 +13,10 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
 
+#if !defined(OS_CHROMEOS)
+#include "base/process_util.h"
+#endif  // !defined(OS_CHROMEOS)
+
 using printing::NativeMetafile;
 using WebKit::WebFrame;
 using WebKit::WebNode;
@@ -39,10 +43,13 @@ void PrintWebViewHelper::PrintPages(const ViewMsg_PrintPages_Params& params,
                                                 node,
                                                 frame->view());
     page_count = prep_frame_view.GetExpectedPageCount();
+#if !defined(OS_CHROMEOS)
+    Send(new ViewHostMsg_DidGetPrintedPagesCount(routing_id(),
+                                                 printParams.document_cookie,
+                                                 page_count));
+#endif  // !defined(OS_CHROMEOS)
 
-    // TODO(myhuang): Send ViewHostMsg_DidGetPrintedPagesCount.
-
-    if (page_count == 0)
+    if (!page_count)
       return;
 
     metafile.Init();
@@ -68,11 +75,12 @@ void PrintWebViewHelper::PrintPages(const ViewMsg_PrintPages_Params& params,
   delete canvas;
   metafile.Close();
 
-  int sequence_number = -1;
   // Get the size of the resulting metafile.
   uint32 buf_size = metafile.GetDataSize();
   DCHECK_GT(buf_size, 0u);
 
+#if defined(OS_CHROMEOS)
+  int sequence_number = -1;
   base::FileDescriptor fd;
 
   // Ask the browser to open a file for us.
@@ -80,12 +88,57 @@ void PrintWebViewHelper::PrintPages(const ViewMsg_PrintPages_Params& params,
                                                         &sequence_number))) {
     return;
   }
-
   if (!metafile.SaveTo(fd))
     return;
 
   // Tell the browser we've finished writing the file.
   Send(new ViewHostMsg_TempFileForPrintingWritten(sequence_number));
+#else
+  ViewHostMsg_DidPrintPage_Params printed_page_params;
+  printed_page_params.data_size = 0;
+  printed_page_params.document_cookie = params.params.document_cookie;
+
+  base::SharedMemoryHandle shared_mem_handle;
+  if (!Send(new ViewHostMsg_AllocateSharedMemoryBuffer(buf_size,
+                                                       &shared_mem_handle))) {
+    NOTREACHED() << "AllocateSharedMemoryBuffer failed";
+    return;
+  }
+  if (!base::SharedMemory::IsHandleValid(shared_mem_handle)) {
+    NOTREACHED() << "AllocateSharedMemoryBuffer returned bad handle";
+    return;
+  }
+
+  {
+    base::SharedMemory shared_buf(shared_mem_handle, false);
+    if (!shared_buf.Map(buf_size)) {
+      NOTREACHED() << "Map failed";
+      return;
+    }
+    metafile.GetData(shared_buf.memory(), buf_size);
+    printed_page_params.data_size = buf_size;
+    shared_buf.GiveToProcess(base::GetCurrentProcessHandle(),
+                             &(printed_page_params.metafile_data_handle));
+  }
+
+  // Send the first page with a valid handle.
+  printed_page_params.page_number = 0;
+  Send(new ViewHostMsg_DidPrintPage(routing_id(), printed_page_params));
+
+  // Send the rest of the pages with an invalid metafile handle.
+  printed_page_params.metafile_data_handle.fd = -1;
+  if (params.pages.empty()) {
+    for (int i = 1; i < page_count; ++i) {
+      printed_page_params.page_number = i;
+      Send(new ViewHostMsg_DidPrintPage(routing_id(), printed_page_params));
+    }
+  } else {
+    for (size_t i = 1; i < params.pages.size(); ++i) {
+      printed_page_params.page_number = params.pages[i];
+      Send(new ViewHostMsg_DidPrintPage(routing_id(), printed_page_params));
+    }
+  }
+#endif  // defined(OS_CHROMEOS)
 }
 
 void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,

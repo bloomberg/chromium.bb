@@ -1,19 +1,18 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "printing/printed_document.h"
 
-#include "base/file_util.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
 #include "printing/page_number.h"
 #include "printing/printed_page.h"
+#include "printing/printing_context_cairo.h"
 
 namespace printing {
 
 void PrintedDocument::RenderPrintedPage(
-    const PrintedPage& page, gfx::NativeDrawingContext context) const {
+    const PrintedPage& page, PrintingContext* context) const {
 #ifndef NDEBUG
   {
     // Make sure the page is from our list.
@@ -24,7 +23,12 @@ void PrintedDocument::RenderPrintedPage(
 
   DCHECK(context);
 
-  NOTIMPLEMENTED();
+#if !defined(OS_CHROMEOS)
+  if (page.page_number() == 1) {
+    reinterpret_cast<PrintingContextCairo*>(context)->PrintDocument(
+        page.native_metafile());
+  }
+#endif  // !defined(OS_CHROMEOS)
 }
 
 void PrintedDocument::DrawHeaderFooter(gfx::NativeDrawingContext context,

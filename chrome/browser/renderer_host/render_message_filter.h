@@ -222,7 +222,7 @@ class RenderMessageFilter : public BrowserMessageFilter,
                           base::SharedMemoryHandle* browser_handle);
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_CHROMEOS)
   // Used to ask the browser allocate a temporary file for the renderer
   // to fill in resulting PDF in renderer.
   void OnAllocateTempFileForPrinting(IPC::Message* reply_msg);
