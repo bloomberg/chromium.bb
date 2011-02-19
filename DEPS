@@ -3,7 +3,7 @@ vars = {
   "native_client_trunk": "http://src.chromium.org/native_client/trunk",
   "o3d_trunk": "http://o3d.googlecode.com/svn/trunk",
   "x86_toolchain_version": "4331",
-  "arm_toolchain_version": "4331",
+  "arm_toolchain_version": "4357",
   "chrome_rev": "74812",
   "gyp_rev": "856",
   "gtest_rev": "364",
