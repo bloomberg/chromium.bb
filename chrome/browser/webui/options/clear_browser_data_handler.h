@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_WEBUI_OPTIONS_CLEAR_BROWSER_DATA_HANDLER_H_
 #pragma once
 
-#include "chrome/browser/dom_ui/options/options_ui.h"
 #include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/plugin_data_remover_helper.h"
+#include "chrome/browser/webui/options/options_ui.h"
 
 // Clear browser data handler page UI handler.
 class ClearBrowserDataHandler : public OptionsPageUIHandler,

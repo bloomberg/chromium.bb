@@ -7,7 +7,7 @@
 #pragma once
 
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
-#include "chrome/browser/dom_ui/options/language_options_handler.h"
+#include "chrome/browser/webui/options/language_options_handler.h"
 
 namespace chromeos {
 

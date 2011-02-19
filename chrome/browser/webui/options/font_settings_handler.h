@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_WEBUI_OPTIONS_FONT_SETTINGS_HANDLER_H_
 #pragma once
 
-#include "chrome/browser/dom_ui/options/options_ui.h"
 #include "chrome/browser/prefs/pref_member.h"
+#include "chrome/browser/webui/options/options_ui.h"
 
 // Font settings overlay page UI handler.
 class FontSettingsHandler : public OptionsPageUIHandler {

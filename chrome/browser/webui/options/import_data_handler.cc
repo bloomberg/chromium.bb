@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/dom_ui/options/import_data_handler.h"
+#include "chrome/browser/webui/options/import_data_handler.h"
 
 #include <string>
 
@@ -15,10 +15,10 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
-#include "chrome/browser/importer/importer_data_types.h"
 #include "ui/base/l10n/l10n_util.h"
 
 ImportDataHandler::ImportDataHandler() : importer_host_(NULL) {

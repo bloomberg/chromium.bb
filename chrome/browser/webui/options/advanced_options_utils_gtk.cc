@@ -4,13 +4,13 @@
 
 #if !defined(OS_CHROMEOS)
 
-#include "chrome/browser/dom_ui/options/advanced_options_utils.h"
+#include "chrome/browser/webui/options/advanced_options_utils.h"
 
-#include "base/file_util.h"
 #include "base/environment.h"
+#include "base/file_util.h"
+#include "base/nix/xdg_util.h"
 #include "base/process_util.h"
 #include "base/string_tokenizer.h"
-#include "base/nix/xdg_util.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/tab_contents/tab_contents.h"

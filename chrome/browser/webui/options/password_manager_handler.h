@@ -8,8 +8,8 @@
 #include <string>
 #include <vector>
 
-#include "chrome/browser/dom_ui/options/options_ui.h"
 #include "chrome/browser/password_manager/password_store.h"
+#include "chrome/browser/webui/options/options_ui.h"
 
 class PasswordManagerHandler : public OptionsPageUIHandler {
  public:

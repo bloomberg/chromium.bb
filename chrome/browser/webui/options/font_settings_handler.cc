@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/dom_ui/options/font_settings_handler.h"
+#include "chrome/browser/webui/options/font_settings_handler.h"
 
 #include <string>
 
@@ -11,10 +11,10 @@
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/character_encoding.h"
-#include "chrome/browser/dom_ui/options/dom_options_util.h"
-#include "chrome/browser/dom_ui/options/font_settings_utils.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/webui/options/dom_options_util.h"
+#include "chrome/browser/webui/options/font_settings_utils.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"

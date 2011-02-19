@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_WEBUI_OPTIONS_ADVANCED_OPTIONS_HANDLER_H_
 #pragma once
 
-#include "chrome/browser/dom_ui/options/options_ui.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_set_observer.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_flow.h"
 #include "chrome/browser/remoting/remoting_options_handler.h"
 #include "chrome/browser/ui/shell_dialogs.h"
+#include "chrome/browser/webui/options/options_ui.h"
 
 class OptionsManagedBannerHandler;
 

@@ -8,8 +8,8 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/browser_signin.h"
-#include "chrome/browser/dom_ui/options/options_ui.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/webui/options/options_ui.h"
 
 class OptionsManagedBannerHandler;
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/dom_ui/options/browser_options_handler.h"
+#include "chrome/browser/webui/options/browser_options_handler.h"
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
@@ -13,8 +13,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/custom_home_pages_table_model.h"
-#include "chrome/browser/dom_ui/options/dom_options_util.h"
-#include "chrome/browser/dom_ui/options/options_managed_banner_handler.h"
 #include "chrome/browser/dom_ui/web_ui_favicon_source.h"
 #include "chrome/browser/instant/instant_confirm_dialog.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -25,6 +23,8 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/ui/options/options_window.h"
+#include "chrome/browser/webui/options/dom_options_util.h"
+#include "chrome/browser/webui/options/options_managed_banner_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "grit/chromium_strings.h"

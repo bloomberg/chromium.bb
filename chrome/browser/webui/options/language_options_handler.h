@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_WEBUI_OPTIONS_LANGUAGE_OPTIONS_HANDLER_H_
 #pragma once
 
-#include "chrome/browser/dom_ui/options/language_options_handler_common.h"
+#include "chrome/browser/webui/options/language_options_handler_common.h"
 
 // Language options UI page handler for non-Chrome OS platforms.  For Chrome OS,
 // see chromeos::CrosLanguageOptionsHandler.

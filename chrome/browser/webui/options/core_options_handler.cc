@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/dom_ui/options/core_options_handler.h"
+#include "chrome/browser/webui/options/core_options_handler.h"
 
 #include "base/json/json_reader.h"
 #include "base/scoped_ptr.h"

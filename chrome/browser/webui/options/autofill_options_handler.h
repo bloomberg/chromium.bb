@@ -8,7 +8,7 @@
 #include <string>
 
 #include "chrome/browser/autofill/personal_data_manager.h"
-#include "chrome/browser/dom_ui/options/options_ui.h"
+#include "chrome/browser/webui/options/options_ui.h"
 
 class DictionaryValue;
 class ListValue;

@@ -1,10 +1,10 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import <Cocoa/Cocoa.h>
 
-#include "chrome/browser/dom_ui/options/advanced_options_utils.h"
+#include "chrome/browser/webui/options/advanced_options_utils.h"
 
 #include "base/logging.h"
 #include "base/mac/scoped_aedesc.h"

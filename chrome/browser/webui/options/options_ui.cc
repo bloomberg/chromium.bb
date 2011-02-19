@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/dom_ui/options/options_ui.h"
+#include "chrome/browser/webui/options/options_ui.h"
 
 #include <algorithm>
 #include <vector>
@@ -18,29 +18,29 @@
 #include "base/values.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/dom_ui/options/about_page_handler.h"
-#include "chrome/browser/dom_ui/options/add_startup_page_handler.h"
-#include "chrome/browser/dom_ui/options/advanced_options_handler.h"
-#include "chrome/browser/dom_ui/options/autofill_options_handler.h"
-#include "chrome/browser/dom_ui/options/browser_options_handler.h"
-#include "chrome/browser/dom_ui/options/clear_browser_data_handler.h"
-#include "chrome/browser/dom_ui/options/content_settings_handler.h"
-#include "chrome/browser/dom_ui/options/cookies_view_handler.h"
-#include "chrome/browser/dom_ui/options/core_options_handler.h"
-#include "chrome/browser/dom_ui/options/dom_options_util.h"
-#include "chrome/browser/dom_ui/options/font_settings_handler.h"
-#include "chrome/browser/dom_ui/options/import_data_handler.h"
-#include "chrome/browser/dom_ui/options/language_options_handler.h"
-#include "chrome/browser/dom_ui/options/password_manager_handler.h"
-#include "chrome/browser/dom_ui/options/personal_options_handler.h"
-#include "chrome/browser/dom_ui/options/search_engine_manager_handler.h"
-#include "chrome/browser/dom_ui/options/stop_syncing_handler.h"
 #include "chrome/browser/dom_ui/web_ui_theme_source.h"
 #include "chrome/browser/metrics/user_metrics.h"
-#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
+#include "chrome/browser/webui/options/about_page_handler.h"
+#include "chrome/browser/webui/options/add_startup_page_handler.h"
+#include "chrome/browser/webui/options/advanced_options_handler.h"
+#include "chrome/browser/webui/options/autofill_options_handler.h"
+#include "chrome/browser/webui/options/browser_options_handler.h"
+#include "chrome/browser/webui/options/clear_browser_data_handler.h"
+#include "chrome/browser/webui/options/content_settings_handler.h"
+#include "chrome/browser/webui/options/cookies_view_handler.h"
+#include "chrome/browser/webui/options/core_options_handler.h"
+#include "chrome/browser/webui/options/dom_options_util.h"
+#include "chrome/browser/webui/options/font_settings_handler.h"
+#include "chrome/browser/webui/options/import_data_handler.h"
+#include "chrome/browser/webui/options/language_options_handler.h"
+#include "chrome/browser/webui/options/password_manager_handler.h"
+#include "chrome/browser/webui/options/personal_options_handler.h"
+#include "chrome/browser/webui/options/search_engine_manager_handler.h"
+#include "chrome/browser/webui/options/stop_syncing_handler.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/time_format.h"
@@ -69,7 +69,7 @@
 #endif
 
 #if defined(USE_NSS)
-#include "chrome/browser/dom_ui/options/certificate_manager_handler.h"
+#include "chrome/browser/webui/options/certificate_manager_handler.h"
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////

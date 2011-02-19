@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/dom_ui/options/clear_browser_data_handler.h"
+#include "chrome/browser/webui/options/clear_browser_data_handler.h"
 
 #include "base/basictypes.h"
 #include "base/string16.h"

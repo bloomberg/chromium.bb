@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/dom_ui/options/certificate_manager_handler.h"
+#include "chrome/browser/webui/options/certificate_manager_handler.h"
 
 #include "base/file_util.h"  // for FileAccessProvider
 #include "base/safe_strerror_posix.h"

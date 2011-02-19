@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_WEBUI_OPTIONS_SEARCH_ENGINE_MANAGER_HANDLER_H_
 #define CHROME_BROWSER_WEBUI_OPTIONS_SEARCH_ENGINE_MANAGER_HANDLER_H_
 
-#include "chrome/browser/dom_ui/options/options_ui.h"
 #include "chrome/browser/search_engines/edit_search_engine_controller.h"
+#include "chrome/browser/webui/options/options_ui.h"
 #include "ui/base/models/table_model_observer.h"
 
 class KeywordEditorController;

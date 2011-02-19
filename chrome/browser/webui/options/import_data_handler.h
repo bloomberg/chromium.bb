@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_WEBUI_OPTIONS_IMPORT_DATA_HANDLER_H_
 
 #include "base/ref_counted.h"
-#include "chrome/browser/dom_ui/options/options_ui.h"
 #include "chrome/browser/importer/importer.h"
+#include "chrome/browser/webui/options/options_ui.h"
 
 // Chrome personal stuff import data overlay UI handler.
 class ImportDataHandler : public OptionsPageUIHandler,

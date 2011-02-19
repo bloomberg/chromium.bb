@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/dom_ui/web_ui_browsertest.h"
-#include "chrome/browser/dom_ui/options/core_options_handler.h"
+#include "chrome/browser/webui/options/core_options_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/ui_test_utils.h"
 #include "googleurl/src/gurl.h"

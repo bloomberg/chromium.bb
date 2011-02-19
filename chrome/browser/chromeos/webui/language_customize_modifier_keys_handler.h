@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_WEBUI_LANGUAGE_CUSTOMIZE_MODIFIER_KEYS_HANDLER_H_  // NOLINT
 #pragma once
 
-#include "chrome/browser/dom_ui/options/options_ui.h"
 #include "chrome/browser/prefs/pref_member.h"
+#include "chrome/browser/webui/options/options_ui.h"
 
 namespace chromeos {
 

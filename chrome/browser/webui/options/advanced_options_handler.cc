@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/dom_ui/options/advanced_options_handler.h"
+#include "chrome/browser/webui/options/advanced_options_handler.h"
 
 #include <string>
 
@@ -11,8 +11,6 @@
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/dom_ui/options/dom_options_util.h"
-#include "chrome/browser/dom_ui/options/options_managed_banner_handler.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/google/google_util.h"
@@ -29,6 +27,8 @@
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/ui/options/options_util.h"
 #include "chrome/browser/ui/options/options_window.h"
+#include "chrome/browser/webui/options/dom_options_util.h"
+#include "chrome/browser/webui/options/options_managed_banner_handler.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_type.h"
@@ -41,7 +41,7 @@
 
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/dom_ui/options/advanced_options_utils.h"
+#include "chrome/browser/webui/options/advanced_options_utils.h"
 #endif
 
 #if defined(OS_WIN)

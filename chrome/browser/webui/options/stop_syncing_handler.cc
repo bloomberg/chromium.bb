@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/dom_ui/options/stop_syncing_handler.h"
+#include "chrome/browser/webui/options/stop_syncing_handler.h"
 
 #include "base/basictypes.h"
-#include "base/values.h"
 #include "base/callback.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
-#include "chrome/browser/sync/profile_sync_service.h"
+#include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "grit/chromium_strings.h"
+#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 StopSyncingHandler::StopSyncingHandler() {

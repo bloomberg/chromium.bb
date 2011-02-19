@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_WEBUI_LANGUAGE_MOZC_OPTIONS_HANDLER_H_
 #pragma once
 
-#include "chrome/browser/dom_ui/options/options_ui.h"
+#include "chrome/browser/webui/options/options_ui.h"
 
 class DictionaryValue;
 

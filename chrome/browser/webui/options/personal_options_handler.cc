@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/dom_ui/options/personal_options_handler.h"
+#include "chrome/browser/webui/options/personal_options_handler.h"
 
 #include <string>
 
@@ -14,8 +14,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/dom_ui/options/dom_options_util.h"
-#include "chrome/browser/dom_ui/options/options_managed_banner_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -24,6 +22,8 @@
 #include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/browser/ui/options/options_page_base.h"
 #include "chrome/browser/ui/options/options_window.h"
+#include "chrome/browser/webui/options/dom_options_util.h"
+#include "chrome/browser/webui/options/options_managed_banner_handler.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/notification_service.h"

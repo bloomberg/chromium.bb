@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/dom_ui/options/password_manager_handler.h"
+#include "chrome/browser/webui/options/password_manager_handler.h"
 
 #include "base/callback.h"
 #include "base/stl_util-inl.h"

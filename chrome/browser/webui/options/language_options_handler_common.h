@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_WEBUI_OPTIONS_LANGUAGE_OPTIONS_HANDLER_COMMON_H_
 #pragma once
 
-#include "chrome/browser/dom_ui/options/options_ui.h"
+#include "chrome/browser/webui/options/options_ui.h"
 
 class DictionaryValue;
 class ListValue;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/dom_ui/options/cookies_view_handler.h"
+#include "chrome/browser/webui/options/cookies_view_handler.h"
 
 #include "base/i18n/time_formatting.h"
 #include "base/string_number_conversions.h"

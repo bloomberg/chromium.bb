@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/dom_ui/options/add_startup_page_handler.h"
+#include "chrome/browser/webui/options/add_startup_page_handler.h"
 
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"

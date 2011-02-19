@@ -10,8 +10,8 @@
 #include <string>
 
 #include "base/values.h"
-#include "chrome/browser/dom_ui/options/options_ui.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
+#include "chrome/browser/webui/options/options_ui.h"
 
 // Core options UI handler.
 // Handles resource and JS calls common to all options sub-pages.

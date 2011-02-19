@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_WEBUI_OPTIONS_BROWSER_OPTIONS_HANDLER_H_
 #pragma once
 
-#include "chrome/browser/dom_ui/options/options_ui.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/search_engines/template_url_model_observer.h"
 #include "chrome/browser/shell_integration.h"
+#include "chrome/browser/webui/options/options_ui.h"
 #include "ui/base/models/table_model_observer.h"
 
 class CustomHomePagesTableModel;

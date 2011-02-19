@@ -7,7 +7,7 @@
 #pragma once
 
 #include "chrome/browser/chromeos/cros_settings_provider.h"
-#include "chrome/browser/dom_ui/options/options_ui.h"
+#include "chrome/browser/webui/options/options_ui.h"
 
 namespace chromeos {
 

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_WEBUI_OPTIONS_STOP_SYNCING_HANDLER_H_
 #define CHROME_BROWSER_WEBUI_OPTIONS_STOP_SYNCING_HANDLER_H_
 
-#include "chrome/browser/dom_ui/options/options_ui.h"
+#include "chrome/browser/webui/options/options_ui.h"
 
 // Chrome personal stuff stop syncing overlay UI handler.
 class StopSyncingHandler : public OptionsPageUIHandler {
