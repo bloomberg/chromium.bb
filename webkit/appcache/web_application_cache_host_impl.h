@@ -75,6 +75,7 @@ class WebApplicationCacheHostImpl : public WebKit::WebApplicationCacheHost {
   IsNewMasterEntry is_new_master_entry_;
   appcache::AppCacheInfo cache_info_;
   GURL original_main_resource_url_;  // Used to detect redirection.
+  bool was_select_cache_called_;
 };
 
 }  // namespace

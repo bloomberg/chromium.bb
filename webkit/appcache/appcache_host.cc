@@ -65,30 +65,12 @@ void AppCacheHost::SelectCache(const GURL& document_url,
                                const GURL& manifest_url) {
   DCHECK(!pending_start_update_callback_ &&
          !pending_swap_cache_callback_ &&
-         !pending_get_status_callback_);
+         !pending_get_status_callback_ &&
+         !is_selection_pending());
 
   if (main_resource_blocked_)
     frontend_->OnContentBlocked(host_id_,
                                 blocked_manifest_url_);
-
-  // First we handle an unusual case of SelectCache being called a second
-  // time. Generally this shouldn't happen, but with bad content I think
-  // this can occur... <html manifest=foo> <html manifest=bar></html></html>
-  // We handle this by killing whatever loading we have initiated, and by
-  // unassociating any hosts we currently have associated... and starting
-  // anew with the inputs to this SelectCache call.
-  // TODO(michaeln): at some point determine what behavior the algorithms
-  // described in the HTML5 draft produce and have our impl produce those
-  // results (or suggest changes to the algorihtms described in the spec
-  // if the resulting behavior is just too insane).
-  if (is_selection_pending()) {
-    service_->storage()->CancelDelegateCallbacks(this);
-    pending_selected_manifest_url_ = GURL();
-    pending_selected_cache_id_ = kNoCacheId;
-  } else if (associated_cache()) {
-    AssociateCache(NULL);
-  }
-  new_master_entry_url_ = GURL();
 
   // 6.9.6 The application cache selection algorithm.
   // The algorithm is started here and continues in FinishCacheSelection,

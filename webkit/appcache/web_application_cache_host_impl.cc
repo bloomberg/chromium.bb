@@ -72,7 +72,8 @@ WebApplicationCacheHostImpl::WebApplicationCacheHostImpl(
       status_(UNCACHED),
       is_scheme_supported_(false),
       is_get_method_(false),
-      is_new_master_entry_(MAYBE) {
+      is_new_master_entry_(MAYBE),
+      was_select_cache_called_(false) {
   DCHECK(client && backend && (host_id_ != kNoHostId));
 
   backend_->RegisterHost(host_id_);
@@ -171,6 +172,10 @@ void WebApplicationCacheHostImpl::willStartSubResourceRequest(
 }
 
 void WebApplicationCacheHostImpl::selectCacheWithoutManifest() {
+  if (was_select_cache_called_)
+    return;
+  was_select_cache_called_ = true;
+
   status_ = (document_response_.appCacheID() == kNoCacheId) ?
       UNCACHED : CHECKING;
   is_new_master_entry_ = NO;
@@ -181,6 +186,10 @@ void WebApplicationCacheHostImpl::selectCacheWithoutManifest() {
 
 bool WebApplicationCacheHostImpl::selectCacheWithManifest(
     const WebURL& manifest_url) {
+  if (was_select_cache_called_)
+    return true;
+  was_select_cache_called_ = true;
+
   GURL manifest_gurl(ClearUrlRef(manifest_url));
 
   // 6.9.6 The application cache selection algorithm
