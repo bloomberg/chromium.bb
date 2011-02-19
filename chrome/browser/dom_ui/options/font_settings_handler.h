@@ -6,39 +6,7 @@
 #define CHROME_BROWSER_DOM_UI_OPTIONS_FONT_SETTINGS_HANDLER_H_
 #pragma once
 
-#include "chrome/browser/dom_ui/options/options_ui.h"
-#include "chrome/browser/prefs/pref_member.h"
-
-// Font settings overlay page UI handler.
-class FontSettingsHandler : public OptionsPageUIHandler {
- public:
-  FontSettingsHandler();
-  virtual ~FontSettingsHandler();
-
-  // OptionsUIHandler implementation.
-  virtual void GetLocalizedValues(DictionaryValue* localized_strings);
-  virtual void Initialize();
-
-  // WebUIMessageHandler implementation.
-  virtual WebUIMessageHandler* Attach(WebUI* web_ui);
-
-  // NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
-
- private:
-  void SetupSerifFontSample();
-  void SetupFixedFontSample();
-  void SetupMinimumFontSample();
-
-  StringPrefMember serif_font_;
-  StringPrefMember fixed_font_;
-  IntegerPrefMember default_font_size_;
-  IntegerPrefMember default_fixed_font_size_;
-  IntegerPrefMember minimum_font_size_;
-
-  DISALLOW_COPY_AND_ASSIGN(FontSettingsHandler);
-};
+#include "chrome/browser/webui/options/font_settings_handler.h"
+// TODO(tfarina): remove this file once all includes have been updated.
 
 #endif  // CHROME_BROWSER_DOM_UI_OPTIONS_FONT_SETTINGS_HANDLER_H_

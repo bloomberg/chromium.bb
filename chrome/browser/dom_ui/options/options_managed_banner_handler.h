@@ -6,34 +6,7 @@
 #define CHROME_BROWSER_DOM_UI_OPTIONS_OPTIONS_MANAGED_BANNER_HANDLER_H_
 #pragma once
 
-#include "base/string16.h"
-#include "chrome/browser/policy/managed_prefs_banner_base.h"
-#include "chrome/browser/ui/options/options_window.h"
-
-class WebUI;
-
-// Managed options banner handler.
-// Controls the display of a banner if an options panel contains options
-// that are under administator control.
-class OptionsManagedBannerHandler : public policy::ManagedPrefsBannerBase {
- public:
-  OptionsManagedBannerHandler(WebUI* web_ui, const string16& page_name,
-                              OptionsPage page);
-  virtual ~OptionsManagedBannerHandler();
-
- protected:
-  // ManagedPrefsBannerBase implementation.
-  virtual void OnUpdateVisibility();
-
- private:
-  // Set the managed options banner to be visible or invisible.
-  void SetupBannerVisibilty();
-
-  WebUI* web_ui_;  // weak reference to the WebUI.
-  string16 page_name_;  // current options page name.
-  OptionsPage page_;  // current options page value.
-
-  DISALLOW_COPY_AND_ASSIGN(OptionsManagedBannerHandler);
-};
+#include "chrome/browser/webui/options/options_managed_banner_handler.h"
+// TODO(tfarina): remove this file once all includes have been updated.
 
 #endif  // CHROME_BROWSER_DOM_UI_OPTIONS_OPTIONS_MANAGED_BANNER_HANDLER_H_
