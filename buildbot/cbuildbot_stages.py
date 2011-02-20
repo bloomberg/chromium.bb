@@ -43,7 +43,7 @@ class BuilderStage():
     # TODO(sosa): Create more general method of passing around configuration.
     self._build_root = os.path.abspath(self._options.buildroot)
     if self._options.prebuilts and not self._options.debug:
-      self._build_type = buildconfig['build_type']
+      self._build_type = self._build_config['build_type']
 
     if not BuilderStage.rev_overlays or not BuilderStage.push_overlays:
       rev_overlays = self._ResolveOverlays(self._build_config['rev_overlays'])
