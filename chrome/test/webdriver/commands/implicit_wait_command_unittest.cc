@@ -81,7 +81,7 @@ TEST(ImplicitWaitCommandTest, SettingImplicitWaits) {
 
   parameters->SetInteger("ms", 1);
   AssertTimeoutSet(test_session, 1, &command);
-  parameters->SetInteger("ms", 2.5);
+  parameters->SetDouble("ms", 2.5);
   AssertTimeoutSet(test_session, 2, &command);
   parameters->SetInteger("ms", 0);
   AssertTimeoutSet(test_session, 0, &command);
