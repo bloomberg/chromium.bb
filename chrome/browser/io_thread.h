@@ -95,14 +95,13 @@ class IOThread : public BrowserProcessSubThread {
   void UnregisterURLRequestContextGetter(
       ChromeURLRequestContextGetter* url_request_context_getter);
 
-  // Handles changing to On The Record mode.  Post a task for this onto the
-  // IOThread's message loop.
+  // Handles changing to On The Record mode, discarding confidential data.
   void ChangedToOnTheRecord();
 
-  // Clears the host cache.  Intended to be used to prevent exposing recently
-  // visited sites on about:net-internals/#dns and about:dns pages.  Must be
-  // called on the IO thread.
-  void ClearHostCache();
+  // Clear all network stack history, including the host cache, as well as
+  // speculative data about subresources of visited sites, and startup-time
+  // navigations.
+  void ClearNetworkingHistory();
 
  protected:
   virtual void Init();
@@ -124,6 +123,11 @@ class IOThread : public BrowserProcessSubThread {
       bool preconnect_enabled);
 
   void ChangedToOnTheRecordOnIOThread();
+
+  // Clears the host cache.  Intended to be used to prevent exposing recently
+  // visited sites on about:net-internals/#dns and about:dns pages.  Must be
+  // called on the IO thread.
+  void ClearHostCache();
 
   // The NetLog is owned by the browser process, to allow logging from other
   // threads during shutdown, but is used most frequently on the IOThread.

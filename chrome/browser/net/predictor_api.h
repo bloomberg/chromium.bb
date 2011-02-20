@@ -41,6 +41,7 @@ void FreePredictorResources();
 //------------------------------------------------------------------------------
 // Global APIs relating to predictions in browser.
 void EnablePredictor(bool enable);
+void DiscardInitialNavigationHistory();
 void RegisterUserPrefs(PrefService* user_prefs);
 
 // Renderer bundles up list and sends to this browser API via IPC.

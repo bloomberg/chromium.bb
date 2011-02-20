@@ -66,7 +66,7 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       media_context_getter_(profile->GetRequestContextForMedia()),
       waiting_for_clear_databases_(false),
       waiting_for_clear_history_(false),
-      waiting_for_clear_host_cache_(false),
+      waiting_for_clear_networking_history_(false),
       waiting_for_clear_cache_(false),
       waiting_for_clear_appcache_(false) {
   DCHECK(profile);
@@ -93,7 +93,7 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       media_context_getter_(profile->GetRequestContextForMedia()),
       waiting_for_clear_databases_(false),
       waiting_for_clear_history_(false),
-      waiting_for_clear_host_cache_(false),
+      waiting_for_clear_networking_history_(false),
       waiting_for_clear_cache_(false),
       waiting_for_clear_appcache_(false),
       waiting_for_clear_lso_data_(false) {
@@ -141,13 +141,14 @@ void BrowsingDataRemover::Remove(int remove_mask) {
           NewCallback(this, &BrowsingDataRemover::OnHistoryDeletionDone));
     }
 
-    // Need to clear the host cache, as it also reveals some history.
-    waiting_for_clear_host_cache_ = true;
+    // Need to clear the host cache and accumulated speculative data, as it also
+    // reveals some history.
+    waiting_for_clear_networking_history_ = true;
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(
             this,
-            &BrowsingDataRemover::ClearHostCacheOnIOThread,
+            &BrowsingDataRemover::ClearNetworkingHistory,
             g_browser_process->io_thread()));
 
     // As part of history deletion we also delete the auto-generated keywords.
@@ -356,16 +357,16 @@ void BrowsingDataRemover::NotifyAndDeleteIfDone() {
 }
 
 void BrowsingDataRemover::ClearedNetworkHistory() {
-  waiting_for_clear_host_cache_ = false;
+  waiting_for_clear_networking_history_ = false;
 
   NotifyAndDeleteIfDone();
 }
 
-void BrowsingDataRemover::ClearHostCacheOnIOThread(IOThread* io_thread) {
+void BrowsingDataRemover::ClearNetworkingHistory(IOThread* io_thread) {
   // This function should be called on the IO thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  io_thread->ClearHostCache();
+  io_thread->ClearNetworkingHistory();
 
   // Notify the UI thread that we are done.
   BrowserThread::PostTask(

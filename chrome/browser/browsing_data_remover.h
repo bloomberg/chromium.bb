@@ -121,9 +121,9 @@ class BrowsingDataRemover : public NotificationObserver,
   // NotifyAndDeleteIfDone.
   void ClearedNetworkHistory();
 
-  // Invoked on the IO thread to clear the HostCache, which exposes some
-  // network history.
-  void ClearHostCacheOnIOThread(IOThread* io_thread);
+  // Invoked on the IO thread to clear the HostCache, speculative data about
+  // subresources on visited sites, and initial navigation history.
+  void ClearNetworkingHistory(IOThread* io_thread);
 
   // Callback when the cache has been deleted. Invokes NotifyAndDeleteIfDone.
   void ClearedCache();
@@ -163,7 +163,8 @@ class BrowsingDataRemover : public NotificationObserver,
   // Returns true if we're all done.
   bool all_done() {
     return registrar_.IsEmpty() && !waiting_for_clear_cache_ &&
-           !waiting_for_clear_history_ && !waiting_for_clear_host_cache_ &&
+           !waiting_for_clear_history_ &&
+           !waiting_for_clear_networking_history_ &&
            !waiting_for_clear_databases_ && !waiting_for_clear_appcache_ &&
            !waiting_for_clear_lso_data_;
   }
@@ -210,7 +211,7 @@ class BrowsingDataRemover : public NotificationObserver,
   // True if we're waiting for various data to be deleted.
   bool waiting_for_clear_databases_;
   bool waiting_for_clear_history_;
-  bool waiting_for_clear_host_cache_;
+  bool waiting_for_clear_networking_history_;
   bool waiting_for_clear_cache_;
   bool waiting_for_clear_appcache_;
   bool waiting_for_clear_lso_data_;

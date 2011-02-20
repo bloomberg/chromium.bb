@@ -15,6 +15,7 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/gpu_process_host.h"
 #include "chrome/browser/in_process_webkit/indexed_db_key_utility_client.h"
@@ -295,6 +296,15 @@ void IOThread::ChangedToOnTheRecord() {
           &IOThread::ChangedToOnTheRecordOnIOThread));
 }
 
+void IOThread::ClearNetworkingHistory() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  ClearHostCache();
+  // Discard acrued data used to speculate in the future.
+  chrome_browser_net::DiscardInitialNavigationHistory();
+  if (predictor_)
+    predictor_->DiscardAllResults();
+}
+
 void IOThread::Init() {
   // Though this thread is called the "IO" thread, it actually just routes
   // messages around; it shouldn't be allowed to perform any blocking disk I/O.
@@ -496,6 +506,7 @@ void IOThread::ChangedToOnTheRecordOnIOThread() {
 
   if (predictor_) {
     // Destroy all evidence of our OTR session.
+    // Note: OTR mode never saves InitialNavigationHistory data.
     predictor_->Predictor::DiscardAllResults();
   }
 
