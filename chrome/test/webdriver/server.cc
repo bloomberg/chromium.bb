@@ -16,17 +16,20 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
+#include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/scoped_ptr.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/webdriver/dispatch.h"
+#include "chrome/test/webdriver/error_codes.h"
 #include "chrome/test/webdriver/session_manager.h"
 #include "chrome/test/webdriver/utility_functions.h"
 #include "chrome/test/webdriver/commands/cookie_commands.h"
@@ -71,9 +74,35 @@ void Shutdown(struct mg_connection* connection,
   shutdown_event->Signal();
 }
 
+void SendNotImplementedError(struct mg_connection* connection,
+                             const struct mg_request_info* request_info,
+                             void* user_data) {
+  // Send a well-formed WebDriver JSON error response to ensure clients
+  // handle it correctly.
+  std::string body = base::StringPrintf(
+      "{\"status\":%d,\"value\":{\"message\":"
+      "\"Command has not been implemented yet: %s %s\"}}",
+      kUnknownCommand, request_info->request_method, request_info->uri);
+
+  std::string header = base::StringPrintf(
+      "HTTP/1.1 501 Not Implemented\r\n"
+      "Content-Type:application/json\r\n"
+      "Content-Length:%" PRIuS "\r\n"
+      "\r\n", body.length());
+
+  LOG(ERROR) << header << body;
+  mg_write(connection, header.data(), header.length());
+  mg_write(connection, body.data(), body.length());
+}
+
+
 template <typename CommandType>
 void SetCallback(struct mg_context* ctx, const char* pattern) {
   mg_set_uri_callback(ctx, pattern, &Dispatch<CommandType>, NULL);
+}
+
+void SetNotImplemented(struct mg_context* ctx, const char* pattern) {
+  mg_set_uri_callback(ctx, pattern, &SendNotImplementedError, NULL);
 }
 
 void InitCallbacks(struct mg_context* ctx,
@@ -102,10 +131,35 @@ void InitCallbacks(struct mg_context* ctx,
   // WebElement commands
   SetCallback<FindOneElementCommand>(ctx,   "/session/*/element");
   SetCallback<FindManyElementsCommand>(ctx, "/session/*/elements");
+  SetCallback<ActiveElementCommand>(ctx,    "/session/*/element/active");
   SetCallback<FindOneElementCommand>(ctx,   "/session/*/element/*/element");
   SetCallback<FindManyElementsCommand>(ctx, "/session/*/elements/*/elements");
-  SetCallback<ElementValueCommand>(ctx,     "/session/*/element/*/value");
+  SetCallback<ElementAttributeCommand>(ctx,
+      "/session/*/element/*/attribute/*");
+  SetCallback<ElementCssCommand>(ctx,       "/session/*/element/*/css/*");
+  SetCallback<ElementClearCommand>(ctx,     "/session/*/element/*/clear");
+  SetCallback<ElementDisplayedCommand>(ctx, "/session/*/element/*/displayed");
+  SetCallback<ElementEnabledCommand>(ctx,   "/session/*/element/*/enabled");
+  SetCallback<ElementEqualsCommand>(ctx,    "/session/*/element/*/equals/*");
+  SetCallback<ElementLocationCommand>(ctx, "/session/*/element/*/location");
+  SetCallback<ElementLocationInViewCommand>(ctx,
+      "/session/*/element/*/location_in_view");
+  SetCallback<ElementNameCommand>(ctx,      "/session/*/element/*/name");
+  SetCallback<ElementSelectedCommand>(ctx,  "/session/*/element/*/selected");
+  SetCallback<ElementSizeCommand>(ctx,      "/session/*/element/*/size");
+  SetCallback<ElementSubmitCommand>(ctx,    "/session/*/element/*/submit");
   SetCallback<ElementTextCommand>(ctx,      "/session/*/element/*/text");
+  SetCallback<ElementToggleCommand>(ctx,    "/session/*/element/*/toggle");
+  SetCallback<ElementValueCommand>(ctx,     "/session/*/element/*/value");
+
+  // Commands that have not been implemented yet. We list these out explicitly
+  // so that tests that attempt to use them fail with a meaningful error.
+  SetNotImplemented(ctx, "/session/*/element/*/click");
+  SetNotImplemented(ctx, "/session/*/element/*/drag");
+  SetNotImplemented(ctx, "/session/*/element/*/hover");
+  SetNotImplemented(ctx, "/session/*/execute_async");
+  SetNotImplemented(ctx, "/session/*/timeouts/async_script");
+  SetNotImplemented(ctx, "/session/*/screenshot");
 
   // Since the /session/* is a wild card that would match the above URIs, this
   // line MUST be the last registered URI with the server.

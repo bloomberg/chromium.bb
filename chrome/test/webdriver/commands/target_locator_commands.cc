@@ -130,4 +130,24 @@ void SwitchFrameCommand::ExecutePost(Response* const response) {
   response->SetStatus(kSuccess);
 }
 
+ActiveElementCommand::ActiveElementCommand(
+    const std::vector<std::string>& path_segments,
+    DictionaryValue* parameters)
+    : WebDriverCommand(path_segments, parameters) {}
+
+ActiveElementCommand::~ActiveElementCommand() {}
+
+bool ActiveElementCommand::DoesPost() {
+  return true;
+}
+
+void ActiveElementCommand::ExecutePost(Response* const response) {
+  ListValue args;
+  Value* result = NULL;
+  ErrorCode status = session_->ExecuteScript(
+      "return document.activeElement || document.body", &args, &result);
+  response->SetStatus(status);
+  response->SetValue(result);
+}
+
 }  // namespace webdriver

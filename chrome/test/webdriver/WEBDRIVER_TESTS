@@ -24,29 +24,33 @@
 {
   'all': [
     'children_finding_tests',
-    '-children_finding_tests.ChildrenFindingTests.testShouldFindElementByClassName',
-    '-children_finding_tests.ChildrenFindingTests.testShouldFindElementById',
-    '-children_finding_tests.ChildrenFindingTests.testShouldFindElementByIdWhenMultipleMatchesExist',
-    '-children_finding_tests.ChildrenFindingTests.testShouldFindElementByLinkText',
-    '-children_finding_tests.ChildrenFindingTests.testShouldFindElementByName',
-    '-children_finding_tests.ChildrenFindingTests.testShouldFindElementByTagName',
-    '-children_finding_tests.ChildrenFindingTests.testShouldFindElementByXPath',
-    '-children_finding_tests.ChildrenFindingTests.testShouldFindElementsByTagName',
-    '-children_finding_tests.ChildrenFindingTests.testShouldFindElementsByXpath',
 #   'cookie_tests',
 #   'correct_event_firing_tests',
     'driver_element_finding_test',
-#   'element_attribute_tests',
+    'element_attribute_tests',
 #   'executing_async_javascript_test',
     'executing_javascript_test',
-    # This test needs the tagname command.
-    '-executing_javascript_test.ExecutingJavaScriptTests.testShouldBeAbleToExecuteSimpleJavascriptAndReturnAWebElement',
-#   'form_handling_tests',
+    'form_handling_tests',
+    # The following require the click command.
+    '-form_handling_tests.FormHandlingTests.testClickingOnUnclickableElementsDoesNothing',
+    '-form_handling_tests.FormHandlingTests.testShouldBeAbleToClickImageButtons',
+    '-form_handling_tests.FormHandlingTests.testShouldBeAbleToSelectARadioButtonByClickingOnIt',
+    '-form_handling_tests.FormHandlingTests.testShouldClickOnSubmitInputElements',
+    # The following are all suppressed because the submit command currently does
+    # not wait for post-submit navigation events to complete.
+    '-form_handling_tests.FormHandlingTests.testShouldBeAbleToSubmitForms',
+    '-form_handling_tests.FormHandlingTests.testShouldSubmitAFormWhenAnyElementWihinThatFormIsSubmitted',
+    '-form_handling_tests.FormHandlingTests.testShouldSubmitAFormWhenAnyInputElementWithinThatFormIsSubmitted',
+    # Test fails from a bug in the WebDriver python bindings. This bug has been
+    # fixed in the WebDriver tree:
+    # http://code.google.com/p/selenium/source/detail?r=11480
+    '-form_handling_tests.FormHandlingTests.testShouldThrowAnExceptionWhenSelectingAnUnselectableElement',
     'frame_switching_tests',
-    # Next two frame switching tests are disabled because they depend on toggle.
-    '-frame_switching_tests.FrameSwitchingTest.testThatWeCanSwitchFrameByName',
-    '-frame_switching_tests.FrameSwitchingTest.testThatWeCanSwitchToFrameByIndex',
-#   'implicit_waits_tests',
+    'implicit_waits_tests',
+    # Depends on click.
+    '-implicit_waits_tests.ImplicitWaitTest.testShouldImplicitlyWaitForASingleElement',
+    '-implicit_waits_tests.ImplicitWaitTest.testShouldImplicitlyWaitUntilAtLeastOneElementIsFoundWhenSearchingForMany',
+    '-implicit_waits_tests.ImplicitWaitTest.testShouldReturnAfterFirstAttemptToFindManyAfterDisablingImplicitWaits',
     'page_loading_tests',
     # testShouldReturnWhenGettingAUrlThatDoesNotResolve causes the test after
     # to fail when run in xvfb: crbug.com/72027.
@@ -56,12 +60,25 @@
     '-page_loading_tests.PageLoadingTests.testShouldBeAbleToNavigateForwardsInTheBrowserHistory',
     # This test is flaky.
     '-page_loading_tests.PageLoadingTests.testShouldWaitForDocumentToBeLoaded',
-#   'rendered_webelement_tests'
-#   'select_element_handling_tests',
-#   'stale_reference_tests',
+    'rendered_webelement_tests',
+    # Test is flaky. Sometimes can't find an element.
+    '-rendered_webelement_tests.RenderedWebElementTests.testShouldCorrectlyIdentifyThatAnElementHasWidth',
+    # Test expects a color keyword, but a rgba tuple is returned.
+    '-rendered_webelement_tests.RenderedWebElementTests.testShouldAllowInheritedStylesToBeUsed',
+    # Test expects hex color, but a rgb tuple is returned.
+    '-rendered_webelement_tests.RenderedWebElementTests.testShouldPickUpStyleOfAnElement',
+    'select_element_handling_tests',
+    'stale_reference_tests',
+    # Test requires click command.
+    '-stale_reference_tests.StaleReferenceTests.testOldPage',
 #   'text_handling_tests',
 #   'typing_tests',
-#   'visibility_tests',
+    'visibility_tests',
+    # Depends on click.
+    '-visibility_tests.VisibilityTests.testShouldModifyTheVisibilityOfAnElementDynamically',
+    '-visibility_tests.VisibilityTests.testShouldNotBeAbleToClickOnAnElementThatIsNotDisplayed',
+    # Bug in typing: element is not verified before typing.
+    '-visibility_tests.VisibilityTests.testShouldNotBeAbleToTypeAnElementThatIsNotDisplayed',
   ],
 
   'win': [

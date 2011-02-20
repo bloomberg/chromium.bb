@@ -79,6 +79,20 @@ class SwitchFrameCommand : public WebDriverCommand {
   DISALLOW_COPY_AND_ASSIGN(SwitchFrameCommand);
 };
 
+// Retrieves the active element on the current page.
+class ActiveElementCommand : public WebDriverCommand {
+ public:
+  ActiveElementCommand(const std::vector<std::string>& path_segments,
+                       DictionaryValue* parameters);
+  virtual ~ActiveElementCommand();
+
+  virtual bool DoesPost();
+  virtual void ExecutePost(Response* const response);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ActiveElementCommand);
+};
+
 }  // namespace webdriver
 
 #endif  // CHROME_TEST_WEBDRIVER_COMMANDS_TARGET_LOCATOR_COMMANDS_H_
