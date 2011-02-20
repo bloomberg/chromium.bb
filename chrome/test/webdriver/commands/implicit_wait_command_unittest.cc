@@ -20,7 +20,7 @@ namespace {
 void AssertIsAbleToInitialize(ImplicitWaitCommand* const command) {
   Response response;
   EXPECT_TRUE(command->Init(&response));
-  ASSERT_EQ(kSuccess, response.status()) << response.ToJSON();
+  ASSERT_EQ(kSuccess, response.GetStatus()) << response.ToJSON();
 }
 
 void AssertError(ErrorCode expected_status,
@@ -28,9 +28,9 @@ void AssertError(ErrorCode expected_status,
                  ImplicitWaitCommand* const command) {
   Response response;
   command->ExecutePost(&response);
-  ASSERT_EQ(expected_status,  response.status()) << response.ToJSON();
+  ASSERT_EQ(expected_status,  response.GetStatus()) << response.ToJSON();
 
-  const Value* value = response.value();
+  const Value* value = response.GetValue();
   ASSERT_TRUE(value->IsType(Value::TYPE_DICTIONARY));
 
   const DictionaryValue* dict = static_cast<const DictionaryValue*>(value);
@@ -43,7 +43,7 @@ void AssertTimeoutSet(const Session& test_session, int expected_timeout,
                       ImplicitWaitCommand* const command) {
   Response response;
   command->ExecutePost(&response);
-  ASSERT_EQ(kSuccess, response.status()) << response.ToJSON();
+  ASSERT_EQ(kSuccess, response.GetStatus()) << response.ToJSON();
   ASSERT_EQ(expected_timeout, test_session.implicit_wait());
 }
 
@@ -88,4 +88,3 @@ TEST(ImplicitWaitCommandTest, SettingImplicitWaits) {
 }
 
 }  // namespace webdriver
-
