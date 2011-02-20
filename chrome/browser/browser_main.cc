@@ -136,6 +136,7 @@
 #include <windows.h>
 
 #include "app/win/scoped_com_initializer.h"
+#include "base/win/windows_version.h"
 #include "chrome/browser/browser_trial.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/url_fixer_upper.h"
@@ -1583,6 +1584,16 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // testing against a bunch of special cases that are taken care early on.
   PrepareRestartOnCrashEnviroment(parsed_command_line);
 
+#if defined(OS_WIN)
+  // Registers Chrome with the Windows Restart Manager, which will restore the
+  // Chrome session when the computer is restarted after a system update.
+  // This could be run as late as WM_QUERYENDSESSION for system update reboots,
+  // but should run on startup if extended to handle crashes/hangs/patches.
+  // Also, better to run once here than once for each HWND's WM_QUERYENDSESSION.
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA)
+    DCHECK(RegisterApplicationRestart(parsed_command_line));
+#endif  // OS_WIN
+
   // Initialize and maintain network predictor module, which handles DNS
   // pre-resolution, as well as TCP/IP connection pre-warming.
   // This also registers an observer to discard data when closing incognito
@@ -1605,8 +1616,8 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // file thread to be run sometime later. If this is the first run we record
   // the installation event.
   RLZTracker::InitRlzDelayed(is_first_run, master_prefs.ping_delay);
-#endif
-#endif
+#endif  // GOOGLE_CHROME_BUILD
+#endif  // OS_WIN
 
   // Configure modules that need access to resources.
   net::NetModule::SetResourceProvider(chrome_common_net::NetResourceProvider);
@@ -1786,8 +1797,8 @@ int BrowserMain(const MainFunctionParams& parameters) {
     parameters.ui_task->Run();
     delete parameters.ui_task;
   } else {
-    // We are in regular browser boot sequence. Open initial stabs and enter
-    // the main message loop.
+    // We are in regular browser boot sequence. Open initial tabs and enter the
+    // main message loop.
     if (browser_init.Start(parsed_command_line, FilePath(), profile,
                            &result_code)) {
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
