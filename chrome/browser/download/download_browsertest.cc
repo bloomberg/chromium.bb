@@ -408,7 +408,7 @@ class DownloadTest : public InProcessBrowserTest {
     // TODO(ahendrickson): check download status text after downloading.
 
     // Make sure the download shelf is showing.
-    EXPECT_TRUE(browser->window()->IsDownloadShelfVisible());
+    EXPECT_TRUE(IsDownloadUIVisible(browser));
 
     FilePath filename;
     net::FileURLToFilePath(url, &filename);
@@ -425,6 +425,33 @@ class DownloadTest : public InProcessBrowserTest {
     EXPECT_FALSE(file_util::PathExists(download_path));
 
     return true;
+  }
+
+  // Figure out if the appropriate download visibility was done.  A
+  // utility function to support ChromeOS variations.  On ChromeOS
+  // a webui panel is used instead of the download shelf; the
+  // test for TYPE_APP_PANEL detects this type of panel.
+  static bool IsDownloadUIVisible(Browser* browser) {
+#if defined(OS_CHROMEOS)
+    for (BrowserList::const_iterator it = BrowserList::begin();
+         it != BrowserList::end(); ++it) {
+      if ((*it)->type() == Browser::TYPE_APP_PANEL) {
+        return true;
+      }
+    }
+    return false;
+#else
+    return browser->window()->IsDownloadShelfVisible();
+#endif
+  }
+
+  static void ExpectWindowCountAfterDownload(size_t expected) {
+#if defined(OS_CHROMEOS)
+    // On ChromeOS, a download panel is created to display
+    // download information, and this counts as a window.
+    expected++;
+#endif
+    EXPECT_EQ(expected, BrowserList::size());
   }
 
  private:
@@ -459,7 +486,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_DownloadMimeType) {
   // Check state.
   EXPECT_EQ(1, browser()->tab_count());
   CheckDownload(browser(), file, file);
-  EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
+  EXPECT_TRUE(IsDownloadUIVisible(browser()));
 }
 
 #if defined(OS_WIN)
@@ -478,7 +505,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_CheckInternetZone) {
   // Check state.
   EXPECT_EQ(1, browser()->tab_count());
   CheckDownload(browser(), file, file);
-  EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
+  EXPECT_TRUE(IsDownloadUIVisible(browser()));
 
   FilePath downloaded_file = GetDownloadDirectory(browser()).Append(file);
   if (file_util::VolumeSupportsADS(downloaded_file))
@@ -506,7 +533,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_DownloadMimeTypeSelect) {
   EXPECT_EQ(1, browser()->tab_count());
   // Since we exited while the Select File dialog was visible, there should not
   // be anything in the download shelf and so it should not be visible.
-  EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
+  EXPECT_FALSE(IsDownloadUIVisible(browser()));
 }
 
 // Access a file with a viewable mime-type, verify that a download
@@ -525,7 +552,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, NoDownload) {
 
   // Check state.
   EXPECT_EQ(1, browser()->tab_count());
-  EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
+  EXPECT_FALSE(IsDownloadUIVisible(browser()));
 }
 
 // Download a 0-size file with a content-disposition header, verify that the
@@ -551,9 +578,10 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_ContentDisposition) {
 
   // Check state.
   EXPECT_EQ(1, browser()->tab_count());
-  EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
+  EXPECT_TRUE(IsDownloadUIVisible(browser()));
 }
 
+#if !defined(OS_CHROMEOS)  // Download shelf is not per-window on ChromeOS.
 // Test that the download shelf is per-window by starting a download in one
 // tab, opening a second tab, closing the shelf, going back to the first tab,
 // and checking that the shelf is closed.
@@ -574,25 +602,26 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_PerWindowShelf) {
 
   // Check state.
   EXPECT_EQ(1, browser()->tab_count());
-  EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
+  EXPECT_TRUE(IsDownloadUIVisible(browser()));
 
   // Open a second tab and wait.
   EXPECT_NE(static_cast<TabContentsWrapper*>(NULL),
             browser()->AddSelectedTabWithURL(GURL(), PageTransition::TYPED));
   EXPECT_EQ(2, browser()->tab_count());
-  EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
+  EXPECT_TRUE(IsDownloadUIVisible(browser()));
 
   // Hide the download shelf.
   browser()->window()->GetDownloadShelf()->Close();
-  EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
+  EXPECT_FALSE(IsDownloadUIVisible(browser()));
 
   // Go to the first tab.
   browser()->SelectTabContentsAt(0, true);
   EXPECT_EQ(2, browser()->tab_count());
 
   // The download shelf should not be visible.
-  EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
+  EXPECT_FALSE(IsDownloadUIVisible(browser()));
 }
+#endif  // !OS_CHROMEOS
 
 // UnknownSize and KnownSize are tests which depend on
 // URLRequestSlowDownloadJob to serve content in a certain way. Data will be
@@ -666,11 +695,10 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_IncognitoDownload) {
   DownloadAndWait(incognito, url, EXPECT_NO_SELECT_DIALOG);
 
   // We should still have 2 windows.
-  window_count = BrowserList::size();
-  EXPECT_EQ(2, window_count);
+  ExpectWindowCountAfterDownload(2);
 
   // Verify that the download shelf is showing for the Incognito window.
-  bool is_shelf_visible = incognito->window()->IsDownloadShelfVisible();
+  bool is_shelf_visible = IsDownloadUIVisible(incognito);
   EXPECT_TRUE(is_shelf_visible);
 
   // Close the Incognito window and don't crash.
@@ -682,13 +710,19 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_IncognitoDownload) {
   ui_test_utils::WaitForNotificationFrom(NotificationType::BROWSER_CLOSED,
                                          Source<Browser>(incognito));
 
-  window_count = BrowserList::size();
-  EXPECT_EQ(1, window_count);
+  ExpectWindowCountAfterDownload(1);
 #endif
 
   // Verify that the regular window does not have a download shelf.
-  is_shelf_visible = browser()->window()->IsDownloadShelfVisible();
+  is_shelf_visible = IsDownloadUIVisible(browser());
+
+#if defined(OS_CHROMEOS)
+  // On ChromeOS it's a popup rather than a download shelf, and it sticks
+  // around.
+  EXPECT_TRUE(is_shelf_visible);
+#else
   EXPECT_FALSE(is_shelf_visible);
+#endif
 
   CheckDownload(browser(), file, file);
 }
@@ -711,7 +745,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DontCloseNewTab1) {
 
   // We should have two tabs now.
   EXPECT_EQ(2, browser()->tab_count());
-  EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
+  EXPECT_FALSE(IsDownloadUIVisible(browser()));
 }
 
 // Download a file in a background tab. Verify that the tab is closed
@@ -735,7 +769,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_CloseNewTab1) {
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   // When the download finishes, we should still have one tab.
-  EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
+  EXPECT_TRUE(IsDownloadUIVisible(browser()));
   EXPECT_EQ(1, browser()->tab_count());
 
   CheckDownload(browser(), file, file);
@@ -771,7 +805,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_DontCloseNewTab2) {
                                  ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
 
   // When the download finishes, we should have two tabs.
-  EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
+  EXPECT_TRUE(IsDownloadUIVisible(browser()));
   EXPECT_EQ(2, browser()->tab_count());
 
   CheckDownload(browser(), file, file);
@@ -817,7 +851,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_DontCloseNewTab3) {
                                  ui_test_utils::BROWSER_TEST_NONE);
 
   // When the download finishes, we should have two tabs.
-  EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
+  EXPECT_TRUE(IsDownloadUIVisible(browser()));
   EXPECT_EQ(2, browser()->tab_count());
 
   CheckDownload(browser(), file, file);
@@ -854,7 +888,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_CloseNewTab2) {
                                  ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
 
   // When the download finishes, we should still have one tab.
-  EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
+  EXPECT_TRUE(IsDownloadUIVisible(browser()));
   EXPECT_EQ(1, browser()->tab_count());
 
   CheckDownload(browser(), file, file);
@@ -893,7 +927,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_CloseNewTab3) {
       ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
 
   // When the download finishes, we should still have one tab.
-  EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
+  EXPECT_TRUE(IsDownloadUIVisible(browser()));
   EXPECT_EQ(1, browser()->tab_count());
 
   CheckDownload(browser(), file, file);
@@ -930,10 +964,14 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_NewWindow) {
 
   // When the download finishes, the download shelf SHOULD NOT be visible in
   // the first window.
-  int window_count = BrowserList::size();
-  EXPECT_EQ(2, window_count);
+  ExpectWindowCountAfterDownload(2);
   EXPECT_EQ(1, browser()->tab_count());
-  EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
+#if defined(OS_CHROMEOS)
+  // Except on chromeos the download UI isn't window-specific.
+  EXPECT_TRUE(IsDownloadUIVisible(browser()));
+#else
+  EXPECT_FALSE(IsDownloadUIVisible(browser()));
+#endif
 
   // The download shelf SHOULD be visible in the second window.
   std::set<Browser*> original_browsers;
@@ -943,7 +981,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_NewWindow) {
   ASSERT_TRUE(download_browser != NULL);
   EXPECT_NE(download_browser, browser());
   EXPECT_EQ(1, download_browser->tab_count());
-  EXPECT_TRUE(download_browser->window()->IsDownloadShelfVisible());
+  EXPECT_TRUE(IsDownloadUIVisible(download_browser));
 
   // Close the new window.
   download_browser->CloseWindow();
@@ -954,13 +992,18 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_NewWindow) {
   ui_test_utils::WaitForNotificationFrom(NotificationType::BROWSER_CLOSED,
                                          Source<Browser>(download_browser));
   EXPECT_EQ(first_browser, browser());
-  window_count = BrowserList::size();
-  EXPECT_EQ(1, window_count);
+  ExpectWindowCountAfterDownload(1);
 #endif
 
   EXPECT_EQ(1, browser()->tab_count());
-  // The download shelf should not be visible in the remaining window.
-  EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
+#if defined(OS_CHROMEOS)
+  // On ChromeOS the popup sticks around.
+  EXPECT_TRUE(IsDownloadUIVisible(browser()));
+#else
+  // Otherwise, the download shelf should not be visible in the
+  // remaining window.
+  EXPECT_FALSE(IsDownloadUIVisible(browser()));
+#endif
 
   CheckDownload(browser(), file, file);
 }
