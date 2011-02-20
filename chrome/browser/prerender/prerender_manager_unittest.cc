@@ -126,7 +126,7 @@ TEST_F(PrerenderManagerTest, FoundTest) {
   prerender_manager_->SetNextPrerenderContents(pc);
   prerender_manager_->AddSimplePreload(url);
   EXPECT_TRUE(pc->has_started());
-  EXPECT_EQ(pc, prerender_manager_->GetEntry(url));
+  ASSERT_EQ(pc, prerender_manager_->GetEntry(url));
   pc->set_final_status(FINAL_STATUS_USED);
   delete pc;
 }
@@ -151,7 +151,7 @@ TEST_F(PrerenderManagerTest, DropSecondRequestTest) {
   prerender_manager_->AddSimplePreload(url);
   EXPECT_EQ(pc1, prerender_manager_->next_pc());
   EXPECT_FALSE(pc1->has_started());
-  EXPECT_EQ(pc, prerender_manager_->GetEntry(url));
+  ASSERT_EQ(pc, prerender_manager_->GetEntry(url));
   pc->set_final_status(FINAL_STATUS_USED);
   delete pc;
 }
@@ -169,7 +169,7 @@ TEST_F(PrerenderManagerTest, ExpireTest) {
   EXPECT_TRUE(pc->has_started());
   prerender_manager_->AdvanceTime(prerender_manager_->max_prerender_age()
                                   + base::TimeDelta::FromSeconds(1));
-  EXPECT_EQ(null, prerender_manager_->GetEntry(url));
+  ASSERT_EQ(null, prerender_manager_->GetEntry(url));
 }
 
 // LRU Test.  Make sure that if we prerender more than one request, that
@@ -192,8 +192,8 @@ TEST_F(PrerenderManagerTest, DropOldestRequestTest) {
   prerender_manager_->AddSimplePreload(url1);
   EXPECT_EQ(null, prerender_manager_->next_pc());
   EXPECT_TRUE(pc1->has_started());
-  EXPECT_EQ(null, prerender_manager_->GetEntry(url));
-  EXPECT_EQ(pc1, prerender_manager_->GetEntry(url1));
+  ASSERT_EQ(null, prerender_manager_->GetEntry(url));
+  ASSERT_EQ(pc1, prerender_manager_->GetEntry(url1));
   pc1->set_final_status(FINAL_STATUS_USED);
   delete pc1;
 }
@@ -227,9 +227,9 @@ TEST_F(PrerenderManagerTest, TwoElementPrerenderTest) {
   prerender_manager_->AddSimplePreload(url2);
   EXPECT_EQ(null, prerender_manager_->next_pc());
   EXPECT_TRUE(pc2->has_started());
-  EXPECT_EQ(null, prerender_manager_->GetEntry(url));
-  EXPECT_EQ(pc1, prerender_manager_->GetEntry(url1));
-  EXPECT_EQ(pc2, prerender_manager_->GetEntry(url2));
+  ASSERT_EQ(null, prerender_manager_->GetEntry(url));
+  ASSERT_EQ(pc1, prerender_manager_->GetEntry(url1));
+  ASSERT_EQ(pc2, prerender_manager_->GetEntry(url2));
   pc1->set_final_status(FINAL_STATUS_USED);
   delete pc1;
   pc2->set_final_status(FINAL_STATUS_USED);
@@ -249,14 +249,14 @@ TEST_F(PrerenderManagerTest, AliasURLTest) {
                                  FINAL_STATUS_USED);
   prerender_manager_->SetNextPrerenderContents(pc);
   prerender_manager_->AddSimplePreload(url);
-  EXPECT_EQ(NULL, prerender_manager_->GetEntry(not_an_alias_url));
-  EXPECT_EQ(pc, prerender_manager_->GetEntry(alias_url1));
+  ASSERT_EQ(NULL, prerender_manager_->GetEntry(not_an_alias_url));
+  ASSERT_EQ(pc, prerender_manager_->GetEntry(alias_url1));
   prerender_manager_->SetNextPrerenderContents(pc);
   prerender_manager_->AddSimplePreload(url);
-  EXPECT_EQ(pc, prerender_manager_->GetEntry(alias_url2));
+  ASSERT_EQ(pc, prerender_manager_->GetEntry(alias_url2));
   prerender_manager_->SetNextPrerenderContents(pc);
   prerender_manager_->AddSimplePreload(url);
-  EXPECT_EQ(pc, prerender_manager_->GetEntry(url));
+  ASSERT_EQ(pc, prerender_manager_->GetEntry(url));
   pc->set_final_status(FINAL_STATUS_USED);
   delete pc;
 }
