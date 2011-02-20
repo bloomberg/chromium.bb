@@ -298,7 +298,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPopup) {
 }
 
 // Test that page-based redirects to https will cancel prerenders.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderRedirectToHttps) {
+// Flaky, http://crbug.com/73580
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, FLAKY_PrerenderRedirectToHttps) {
   net::TestServer https_server(net::TestServer::TYPE_HTTPS,
                                FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
