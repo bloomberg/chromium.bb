@@ -34,6 +34,9 @@
 #include <xcb/dri2.h>
 #include <xcb/xfixes.h>
 
+#include <X11/Xlib.h>
+#include <X11/Xlib-xcb.h>
+
 #define GL_GLEXT_PROTOTYPES
 #define EGL_EGLEXT_PROTOTYPES
 #include <GLES2/gl2.h>
@@ -48,6 +51,7 @@
 struct x11_compositor {
 	struct wlsc_compositor	 base;
 
+	Display			*dpy;
 	xcb_connection_t	*conn;
 	xcb_screen_t		*screen;
 	xcb_cursor_t		 null_cursor;
@@ -220,7 +224,6 @@ x11_compositor_init_egl(struct x11_compositor *c)
 {
 	EGLint major, minor;
 	const char *extensions;
-	drm_magic_t magic;
 	static const EGLint context_attribs[] = {
 		EGL_CONTEXT_CLIENT_VERSION, 2,
 		EGL_NONE
@@ -229,15 +232,7 @@ x11_compositor_init_egl(struct x11_compositor *c)
 	if (dri2_connect(c) < 0)
 		return -1;
 
-	if (drmGetMagic(c->base.drm.fd, &magic)) {
-		fprintf(stderr, "DRI2: failed to get drm magic\n");
-		return -1;
-	}
-
-	if (dri2_authenticate(c, magic) < 0)
-		return -1;
-
-	c->base.display = eglGetDRMDisplayMESA(c->base.drm.fd);
+	c->base.display = eglGetDisplay(c->dpy);
 	if (c->base.display == NULL) {
 		fprintf(stderr, "failed to create display\n");
 		return -1;
@@ -754,7 +749,9 @@ x11_compositor_create(struct wl_display *display, int width, int height)
 		return NULL;
 
 	memset(c, 0, sizeof *c);
-	c->conn = xcb_connect(0, 0);
+
+	c->dpy = XOpenDisplay(NULL);
+	c->conn = XGetXCBConnection(c->dpy);
 
 	if (xcb_connection_has_error(c->conn))
 		return NULL;

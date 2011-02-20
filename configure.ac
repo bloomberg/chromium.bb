@@ -18,7 +18,7 @@ AC_PROG_RANLIB
 PKG_PROG_PKG_CONFIG()
 
 PKG_CHECK_MODULES(COMPOSITOR,
-		  [wayland-server wayland-client egl >= 7.10 glesv2 gdk-pixbuf-2.0 libudev >= 136 libdrm >= 2.4.23] pixman-1 xcb-dri2 xcb-xfixes)
+		  [wayland-server wayland-client egl >= 7.10 glesv2 gdk-pixbuf-2.0 libudev >= 136 libdrm >= 2.4.23] pixman-1 x11 x11-xcb xcb xcb-dri2 xcb-xfixes)
 PKG_CHECK_MODULES(SIMPLE_CLIENT, [egl >= 7.10 glesv2 wayland-client wayland-egl])
 PKG_CHECK_MODULES(CLIENT, [wayland-client wayland-egl egl >= 7.10 gl cairo >= 1.10.0 gdk-pixbuf-2.0 glib-2.0 gobject-2.0 xkbcommon])
 PKG_CHECK_MODULES(POPPLER, [poppler-glib gdk-2.0 gio-2.0],
