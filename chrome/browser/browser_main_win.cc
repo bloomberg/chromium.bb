@@ -42,7 +42,7 @@
 #include "views/window/window.h"
 
 namespace {
-typedef DECLSPEC_IMPORT HRESULT (STDAPICALLTYPE* RAR)(
+typedef HRESULT (STDAPICALLTYPE* RegisterApplicationRestartProc)(
     const wchar_t* command_line,
     DWORD flags);
 }  // namespace
@@ -154,12 +154,12 @@ void PrepareRestartOnCrashEnviroment(const CommandLine& parsed_command_line) {
 }
 
 bool RegisterApplicationRestart(const CommandLine& parsed_command_line) {
-  // Define the type of RegisterApplicationRestart as RAR.
   DCHECK(base::win::GetVersion() >= base::win::VERSION_VISTA);
   base::ScopedNativeLibrary library(FilePath(L"kernel32.dll"));
   // Get the function pointer for RegisterApplicationRestart.
-  RAR register_application_restart = static_cast<RAR>(
-      library.GetFunctionPointer("RegisterApplicationRestart"));
+  RegisterApplicationRestartProc register_application_restart =
+      static_cast<RegisterApplicationRestartProc>(
+          library.GetFunctionPointer("RegisterApplicationRestart"));
   if (!register_application_restart)
     return false;
 
