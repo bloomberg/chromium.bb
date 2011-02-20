@@ -17,6 +17,7 @@ CHROME_KEYWORDS_FILE = ('/build/%(board)s/etc/portage/package.keywords/chrome')
 _PREFLIGHT_BINHOST = 'PREFLIGHT_BINHOST'
 _CHROME_BINHOST = 'CHROME_BINHOST'
 _CROS_ARCHIVE_URL = 'CROS_ARCHIVE_URL'
+_FULL_BINHOST = 'FULL_BINHOST'
 
 # =========================== Command Helpers =================================
 
