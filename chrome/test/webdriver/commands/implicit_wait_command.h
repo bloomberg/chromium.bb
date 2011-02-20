@@ -25,13 +25,10 @@ class ImplicitWaitCommand : public WebDriverCommand {
                       const DictionaryValue* const parameters);
   virtual ~ImplicitWaitCommand();
 
-  virtual bool Init(Response* const response);
-
   virtual bool DoesPost();
   virtual void ExecutePost(Response* const response);
 
  private:
-  int ms_to_wait_;
   virtual bool RequiresValidTab();
 
   DISALLOW_COPY_AND_ASSIGN(ImplicitWaitCommand);

@@ -53,6 +53,9 @@ class Command {
     return i < path_segments_.size() ? path_segments_.at(i) : "";
   }
 
+  // Returns whether the command has a parameter with the given |key|.
+  bool HasParameter(const std::string& key) const;
+
   // Returns true if the command parameter with the given |key| exists and is
   // a null value.
   bool IsNullParameter(const std::string& key) const;
@@ -76,6 +79,10 @@ class Command {
   // Provides the command parameter with the given |key| as a int. Returns
   // false if there is no such parameter, or if it is not a int.
   bool GetIntegerParameter(const std::string& key, int* out) const;
+
+  // Provides the command parameter with the given |key| as a double. Returns
+  // false if there is no such parameter, or if it is not a dobule.
+  bool GetDoubleParameter(const std::string& key, double* out) const;
 
   // Provides the command parameter with the given |key| as a Dictionary.
   // Returns false if there is no such parameter, or if it is not a Dictionary.

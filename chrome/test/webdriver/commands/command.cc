@@ -29,6 +29,10 @@ bool Command::Init(Response* const response) {
   return true;
 }
 
+bool Command::HasParameter(const std::string& key) const {
+  return parameters_.get() && parameters_->HasKey(key);
+}
+
 bool Command::IsNullParameter(const std::string& key) const {
   Value* value;
   return parameters_.get() &&
@@ -59,6 +63,10 @@ bool Command::GetBooleanParameter(const std::string& key,
 bool Command::GetIntegerParameter(const std::string& key,
                                   int* out) const {
   return parameters_.get() != NULL && parameters_->GetInteger(key, out);
+}
+
+bool Command::GetDoubleParameter(const std::string& key, double* out) const {
+  return parameters_.get() != NULL && parameters_->GetDouble(key, out);
 }
 
 bool Command::GetDictionaryParameter(const std::string& key,

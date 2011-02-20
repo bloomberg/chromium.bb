@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
@@ -98,7 +99,7 @@ class Session {
 
   inline const std::string& id() const { return id_; }
 
-  inline int implicit_wait() { return implicit_wait_; }
+  inline int implicit_wait() const { return implicit_wait_; }
   inline void set_implicit_wait(const int& timeout) {
     implicit_wait_ = timeout > 0 ? timeout : 0;
   }
