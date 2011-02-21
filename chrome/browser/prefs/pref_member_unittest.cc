@@ -246,10 +246,10 @@ TEST(PrefMemberTest, MoveToThread) {
   callback->Init(kBoolPref, &prefs);
 
   ASSERT_TRUE(callback->FetchValue());
-  EXPECT_EQ(false, callback->value());
+  EXPECT_FALSE(callback->value());
 
   prefs.SetBoolean(kBoolPref, true);
 
   ASSERT_TRUE(callback->FetchValue());
-  EXPECT_EQ(true, callback->value());
+  EXPECT_TRUE(callback->value());
 }
