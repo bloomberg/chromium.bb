@@ -3726,21 +3726,6 @@
    fun:_ZN23AutocompleteEditViewGtk14HandleKeyPressEP10_GtkWidgetP12_GdkEventKey
 }
 {
-   bug_73001a
-   Memcheck:Addr4
-   ...
-   fun:_ZN16ObserverListBaseI19TabContentsObserverE8IteratorD1Ev
-   fun:_ZN11TabContents17OnMessageReceivedERKN3IPC7MessageE
-}
-{
-   bug_73001b
-   Memcheck:Addr1
-   fun:memmove
-   ...
-   fun:_ZN16ObserverListBaseI19TabContentsObserverE7CompactEv
-   fun:_ZN16ObserverListBaseI19TabContentsObserverE8IteratorD1Ev
-}
-{
    bug_73048
    Memcheck:Cond
    fun:_ZN8chromeos16PowerLibraryImplD0Ev
