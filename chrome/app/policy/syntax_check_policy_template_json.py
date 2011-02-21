@@ -306,17 +306,20 @@ class PolicyTemplateChecker(object):
             self._LineWarning('Trailing whitespace.', line_number)
           else:
             self._LineError('Trailing whitespace.', line_number)
-        if len(line) == 0:
-          if self.options.fix:
+        if self.options.fix:
+          if len(line) == 0:
             fixed_lines += ['\n']
-          continue
-        if len(line) == len(trailing_whitespace):
-          continue
+            continue
+        else:
+          if line == trailing_whitespace:
+            # This also catches the case of an empty line.
+            continue
         # Check for correct amount of leading whitespace.
         leading_whitespace = self._LeadingWhitespace(line)
         if leading_whitespace.count('\t') > 0:
           if self.options.fix:
-            line = leading_whitespace.replace('\t', '  ') + line.lstrip()
+            leading_whitespace = leading_whitespace.replace('\t', '  ')
+            line = leading_whitespace + line.lstrip()
             self._LineWarning('Tab character found.', line_number)
           else:
             self._LineError('Tab character found.', line_number)
