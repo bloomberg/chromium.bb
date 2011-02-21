@@ -14,7 +14,6 @@
 
 class CustomHomePagesTableModel;
 class OptionsManagedBannerHandler;
-class StringPrefMember;
 class TemplateURLModel;
 
 // Chrome browser options page UI handler.

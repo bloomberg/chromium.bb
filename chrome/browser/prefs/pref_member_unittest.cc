@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/prefs/pref_member.h"
+
+#include "base/message_loop.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_source.h"
@@ -12,10 +15,10 @@
 
 namespace {
 
-static const char kBoolPref[] = "bool";
-static const char kIntPref[] = "int";
-static const char kDoublePref[] = "double";
-static const char kStringPref[] = "string";
+const char kBoolPref[] = "bool";
+const char kIntPref[] = "int";
+const char kDoublePref[] = "double";
+const char kStringPref[] = "string";
 
 void RegisterTestPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(kBoolPref, false);
@@ -23,6 +26,43 @@ void RegisterTestPrefs(PrefService* prefs) {
   prefs->RegisterDoublePref(kDoublePref, 0.0);
   prefs->RegisterStringPref(kStringPref, "default");
 }
+
+class GetPrefValueCallback
+    : public base::RefCountedThreadSafe<GetPrefValueCallback> {
+ public:
+  GetPrefValueCallback() : value_(false) {}
+
+  void Init(const char* pref_name, PrefService* prefs) {
+    pref_.Init(pref_name, prefs, NULL);
+    pref_.MoveToThread(BrowserThread::IO);
+  }
+
+  bool FetchValue() {
+    if (!BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        NewRunnableMethod(this,
+                          &GetPrefValueCallback::GetPrefValueOnIOThread))) {
+      return false;
+    }
+    MessageLoop::current()->Run();
+    return true;
+  }
+
+  bool value() { return value_; }
+
+ private:
+  friend class base::RefCountedThreadSafe<GetPrefValueCallback>;
+  ~GetPrefValueCallback() {}
+
+  void GetPrefValueOnIOThread() {
+    value_ = pref_.GetValue();
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            new MessageLoop::QuitTask());
+  }
+
+  BooleanPrefMember pref_;
+  bool value_;
+};
 
 class PrefMemberTestClass : public NotificationObserver {
  public:
@@ -192,4 +232,24 @@ TEST(PrefMemberTest, Observer) {
 TEST(PrefMemberTest, NoInit) {
   // Make sure not calling Init on a PrefMember doesn't cause problems.
   IntegerPrefMember pref;
+}
+
+TEST(PrefMemberTest, MoveToThread) {
+  MessageLoop message_loop;
+  BrowserThread ui_thread(BrowserThread::UI, &message_loop);
+  BrowserThread io_thread(BrowserThread::IO);
+  ASSERT_TRUE(io_thread.Start());
+  TestingPrefService prefs;
+  RegisterTestPrefs(&prefs);
+  scoped_refptr<GetPrefValueCallback> callback =
+      make_scoped_refptr(new GetPrefValueCallback());
+  callback->Init(kBoolPref, &prefs);
+
+  ASSERT_TRUE(callback->FetchValue());
+  EXPECT_EQ(false, callback->value());
+
+  prefs.SetBoolean(kBoolPref, true);
+
+  ASSERT_TRUE(callback->FetchValue());
+  EXPECT_EQ(true, callback->value());
 }

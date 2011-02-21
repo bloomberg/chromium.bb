@@ -5,6 +5,8 @@
 #include "chrome/browser/prefs/pref_member.h"
 
 #include "base/logging.h"
+#include "base/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/notification_type.h"
 
@@ -13,7 +15,6 @@ namespace subtle {
 PrefMemberBase::PrefMemberBase()
     : observer_(NULL),
       prefs_(NULL),
-      is_synced_(false),
       setting_value_(false) {
 }
 
@@ -33,7 +34,7 @@ void PrefMemberBase::Init(const char* pref_name, PrefService* prefs,
   pref_name_ = pref_name;
   DCHECK(!pref_name_.empty());
 
-  // Add ourself as a pref observer so we can keep our local value in sync.
+  // Add ourselves as a pref observer so we can keep our local value in sync.
   prefs_->AddPrefObserver(pref_name, this);
 }
 
@@ -45,19 +46,26 @@ void PrefMemberBase::Destroy() {
 }
 
 bool PrefMemberBase::IsManaged() const {
-  DCHECK(!pref_name_.empty());
+  VerifyValuePrefName();
   const PrefService::Preference* pref =
       prefs_->FindPreference(pref_name_.c_str());
   return pref && pref->IsManaged();
 }
 
+void PrefMemberBase::MoveToThread(BrowserThread::ID thread_id) {
+  VerifyValuePrefName();
+  // Load the value from preferences if it hasn't been loaded so far.
+  if (!internal())
+    UpdateValueFromPref();
+  internal()->MoveToThread(thread_id);
+}
+
 void PrefMemberBase::Observe(NotificationType type,
                              const NotificationSource& source,
                              const NotificationDetails& details) {
-  DCHECK(!pref_name_.empty());
+  VerifyValuePrefName();
   DCHECK(NotificationType::PREF_CHANGED == type);
   UpdateValueFromPref();
-  is_synced_ = true;
   if (!setting_value_ && observer_)
     observer_->Observe(type, source, details);
 }
@@ -66,74 +74,98 @@ void PrefMemberBase::VerifyValuePrefName() const {
   DCHECK(!pref_name_.empty());
 }
 
+void PrefMemberBase::UpdateValueFromPref() const {
+  VerifyValuePrefName();
+  const PrefService::Preference* pref =
+      prefs_->FindPreference(pref_name_.c_str());
+  DCHECK(pref);
+  if (!internal())
+    CreateInternal();
+  internal()->UpdateValue(pref->GetValue()->DeepCopy());
+}
+
+PrefMemberBase::Internal::Internal() : thread_id_(BrowserThread::UI) { }
+PrefMemberBase::Internal::~Internal() { }
+
+bool PrefMemberBase::Internal::IsOnCorrectThread() const {
+  // In unit tests, there may not be a UI thread.
+  return (BrowserThread::CurrentlyOn(thread_id_) ||
+          (thread_id_ == BrowserThread::UI &&
+           !BrowserThread::IsMessageLoopValid(BrowserThread::UI)));
+}
+
+void PrefMemberBase::Internal::UpdateValue(Value* v) const {
+  scoped_ptr<Value> value(v);
+  if (IsOnCorrectThread()) {
+    bool rv = UpdateValueInternal(*value);
+    DCHECK(rv);
+  } else {
+    bool rv = BrowserThread::PostTask(
+        thread_id_, FROM_HERE,
+        NewRunnableMethod(this,
+                          &PrefMemberBase::Internal::UpdateValue,
+                          value.release()));
+    DCHECK(rv);
+  }
+}
+
+void PrefMemberBase::Internal::MoveToThread(BrowserThread::ID thread_id) {
+  CheckOnCorrectThread();
+  thread_id_ = thread_id;
+}
+
 }  // namespace subtle
 
-BooleanPrefMember::BooleanPrefMember() : PrefMember<bool>() {
-}
-
-BooleanPrefMember::~BooleanPrefMember() {
-}
-
-void BooleanPrefMember::UpdateValueFromPref() const {
-  value_ = prefs()->GetBoolean(pref_name().c_str());
-}
-
-void BooleanPrefMember::UpdatePref(const bool& value) {
+template <>
+void PrefMember<bool>::UpdatePref(const bool& value) {
   prefs()->SetBoolean(pref_name().c_str(), value);
 }
 
-IntegerPrefMember::IntegerPrefMember() : PrefMember<int>() {
+template <>
+bool PrefMember<bool>::Internal::UpdateValueInternal(const Value& value) const {
+  return value.GetAsBoolean(&value_);
 }
 
-IntegerPrefMember::~IntegerPrefMember() {
-}
-
-void IntegerPrefMember::UpdateValueFromPref() const {
-  value_ = prefs()->GetInteger(pref_name().c_str());
-}
-
-void IntegerPrefMember::UpdatePref(const int& value) {
+template <>
+void PrefMember<int>::UpdatePref(const int& value) {
   prefs()->SetInteger(pref_name().c_str(), value);
 }
 
-DoublePrefMember::DoublePrefMember() : PrefMember<double>() {
+template <>
+bool PrefMember<int>::Internal::UpdateValueInternal(const Value& value) const {
+  return value.GetAsInteger(&value_);
 }
 
-DoublePrefMember::~DoublePrefMember() {
-}
-
-void DoublePrefMember::UpdateValueFromPref() const {
-  value_ = prefs()->GetDouble(pref_name().c_str());
-}
-
-void DoublePrefMember::UpdatePref(const double& value) {
+template <>
+void PrefMember<double>::UpdatePref(const double& value) {
   prefs()->SetDouble(pref_name().c_str(), value);
 }
 
-StringPrefMember::StringPrefMember() : PrefMember<std::string>() {
+template <>
+bool PrefMember<double>::Internal::UpdateValueInternal(const Value& value)
+    const {
+  return value.GetAsDouble(&value_);
 }
 
-StringPrefMember::~StringPrefMember() {
-}
-
-void StringPrefMember::UpdateValueFromPref() const {
-  value_ = prefs()->GetString(pref_name().c_str());
-}
-
-void StringPrefMember::UpdatePref(const std::string& value) {
+template <>
+void PrefMember<std::string>::UpdatePref(const std::string& value) {
   prefs()->SetString(pref_name().c_str(), value);
 }
 
-FilePathPrefMember::FilePathPrefMember() : PrefMember<FilePath>() {
+template <>
+bool PrefMember<std::string>::Internal::UpdateValueInternal(const Value& value)
+    const {
+  return value.GetAsString(&value_);
 }
 
-FilePathPrefMember::~FilePathPrefMember() {
-}
-
-void FilePathPrefMember::UpdateValueFromPref() const {
-  value_ = prefs()->GetFilePath(pref_name().c_str());
-}
-
-void FilePathPrefMember::UpdatePref(const FilePath& value) {
+template <>
+void PrefMember<FilePath>::UpdatePref(const FilePath& value) {
   prefs()->SetFilePath(pref_name().c_str(), value);
 }
+
+template <>
+bool PrefMember<FilePath>::Internal::UpdateValueInternal(const Value& value)
+    const {
+  return value.GetAsFilePath(&value_);
+}
+
