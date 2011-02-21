@@ -68,7 +68,7 @@ const char kDeviceRegistered[] = "DeviceRegistered";
 
 // Path to OEM partner startup customization manifest.
 const char kStartupCustomizationManifestPath[] =
-    "/mnt/partner_partition/etc/chromeos/startup_manifest.json";
+    "/opt/oem/etc/startup_manifest.json";
 
 // Path to flag file indicating that both parts of OOBE were completed.
 const char kOobeCompleteFlagFilePath[] = "/home/chronos/.oobe_completed";

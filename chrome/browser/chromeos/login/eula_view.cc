@@ -293,19 +293,11 @@ static GURL GetOemEulaPagePath() {
       WizardController::default_controller()->GetCustomization();
   if (customization) {
     std::string locale = g_browser_process->GetApplicationLocale();
-    FilePath eula_page_path = customization->GetEULAPagePath(locale);
-    if (eula_page_path.empty()) {
-      VLOG(1) << "No eula found for locale: " << locale;
-      locale = customization->initial_locale();
-      eula_page_path = customization->GetEULAPagePath(locale);
-    }
-    if (!eula_page_path.empty()) {
-      const std::string page_path = std::string(chrome::kFileScheme) +
-          chrome::kStandardSchemeSeparator + eula_page_path.value();
-      return GURL(page_path);
-    } else {
-      VLOG(1) << "No eula found for locale: " << locale;
-    }
+    std::string eula_page = customization->GetEULAPage(locale);
+    if (!eula_page.empty())
+      return GURL(eula_page);
+
+    VLOG(1) << "No eula found for locale: " << locale;
   } else {
     LOG(ERROR) << "No manifest found.";
   }

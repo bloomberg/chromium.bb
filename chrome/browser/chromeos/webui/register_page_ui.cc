@@ -273,16 +273,6 @@ void RegisterPageHandler::SendUserInfo() {
 #if defined(OS_CHROMEOS)
   DictionaryValue value;
 
-  std::string system_sku;
-  if (WizardController::default_controller() &&
-      WizardController::default_controller()->GetCustomization()) {
-    system_sku = WizardController::default_controller()->
-        GetCustomization()->product_sku();
-  } else {
-    SkipRegistration("Startup manifest not defined.");
-    return;
-  }
-
   chromeos::SystemLibrary* sys_lib =
       chromeos::CrosLibrary::Get()->GetSystemLibrary();
 
@@ -295,7 +285,6 @@ void RegisterPageHandler::SendUserInfo() {
     return;
   }
   value.SetString("system_hwqual", system_hwqual);
-  value.SetString("system_sku", system_sku);
   value.SetString("system_serial", serial_number);
   value.SetString("os_language", g_browser_process->GetApplicationLocale());
   value.SetString("os_name", kOSName);

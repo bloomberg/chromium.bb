@@ -22,7 +22,7 @@ namespace {
 
 // URL where to fetch OEM services customization manifest from.
 const char kServicesCustomizationManifestUrl[] =
-    "file:///mnt/partner_partition/etc/chromeos/services_manifest.json";
+    "file:///opt/oem/etc/services_manifest.json";
 
 // Name of local state option that tracks if services customization has been
 // applied.
@@ -152,13 +152,13 @@ void ApplyServicesCustomization::Apply(const std::string& manifest) {
   }
 
   VLOG(1) << "Partner services customizations manifest loaded successfully";
-  if (!customization.initial_start_page_url().empty()) {
+  std::string locale = g_browser_process->GetApplicationLocale();
+  std::string initial_start_page = customization.GetInitialStartPage(locale);
+  if (!initial_start_page.empty()) {
     // Append partner's start page url to command line so it gets opened
     // on browser startup.
-    CommandLine::ForCurrentProcess()->AppendArg(
-        customization.initial_start_page_url());
-    VLOG(1) << "initial_start_page_url: "
-            << customization.initial_start_page_url();
+    CommandLine::ForCurrentProcess()->AppendArg(initial_start_page);
+    VLOG(1) << "initial_start_page_url: " << initial_start_page;
   }
   // TODO(dpolukhin): apply customized apps, exts and support page.
 
