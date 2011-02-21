@@ -542,6 +542,7 @@ extern int drmOpenControl(int minor);
 extern int           drmClose(int fd);
 extern drmVersionPtr drmGetVersion(int fd);
 extern drmVersionPtr drmGetLibVersion(int fd);
+extern int           drmGetCap(int fd, uint64_t capability, uint64_t *value);
 extern void          drmFreeVersion(drmVersionPtr);
 extern int           drmGetMagic(int fd, drm_magic_t * magic);
 extern char          *drmGetBusid(int fd);
