@@ -13,6 +13,7 @@
 #include "app/gfx/gl/gl_context.h"
 #include "app/gfx/gl/gl_implementation.h"
 #include "base/logging.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
@@ -121,6 +122,8 @@ bool WebGraphicsContext3DInProcessImpl::initialize(
     }
   }
 
+  is_gles2_ = gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2;
+
   // This implementation always renders offscreen regardless of
   // whether render_directly_to_web_view is true. Both DumpRenderTree
   // and test_shell paint first to an intermediate offscreen buffer
@@ -128,8 +131,22 @@ bool WebGraphicsContext3DInProcessImpl::initialize(
   // correctly handles the case where the compositor is active but
   // the output needs to go to a WebCanvas.
   gl_context_.reset(gfx::GLContext::CreateOffscreenGLContext(share_context));
-  if (!gl_context_.get())
-    return false;
+  if (!gl_context_.get()) {
+    if (!is_gles2_)
+      return false;
+
+    // Embedded systems have smaller limit on number of GL contexts. Sometimes
+    // failure of GL context creation is because of existing GL contexts
+    // referenced by JavaScript garbages. Collect garbage and try again.
+    // TODO: Besides this solution, kbr@chromium.org suggested: upon receiving
+    // a page unload event, iterate down any live WebGraphicsContext3D instances
+    // and force them to drop their contexts, sending a context lost event if
+    // necessary.
+    webView->mainFrame()->collectGarbage();
+    gl_context_.reset(gfx::GLContext::CreateOffscreenGLContext(share_context));
+    if (!gl_context_.get())
+      return false;
+  }
 
   attributes_ = attributes;
 
@@ -144,7 +161,6 @@ bool WebGraphicsContext3DInProcessImpl::initialize(
   if (render_directly_to_web_view)
     attributes_.antialias = false;
 
-  is_gles2_ = gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2;
   const char* extensions =
       reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
   have_ext_framebuffer_object_ =
