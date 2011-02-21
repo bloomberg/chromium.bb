@@ -45,7 +45,7 @@
         'browser/renderer_host/blob_message_filter.cc',
         'browser/renderer_host/blob_message_filter.h',
         'browser/renderer_host/buffered_resource_handler.cc',
-        'browser/renderer_host/buffered_resource_handler.h',        
+        'browser/renderer_host/buffered_resource_handler.h',
         'browser/renderer_host/cross_site_resource_handler.cc',
         'browser/renderer_host/cross_site_resource_handler.h',
         'browser/renderer_host/database_message_filter.cc',
@@ -88,7 +88,7 @@
         'browser/renderer_host/resource_dispatcher_host.cc',
         'browser/renderer_host/resource_dispatcher_host.h',
         'browser/renderer_host/resource_dispatcher_host_request_info.cc',
-        'browser/renderer_host/resource_dispatcher_host_request_info.h',     
+        'browser/renderer_host/resource_dispatcher_host_request_info.h',
         'browser/renderer_host/resource_handler.h',
         'browser/renderer_host/resource_message_filter.cc',
         'browser/renderer_host/resource_message_filter.h',
@@ -142,6 +142,8 @@
             # For FcLangSetAdd call in render_sandbox_host_linux.cc
             '../build/linux/system.gyp:fontconfig',
             '../build/linux/system.gyp:gtk',
+            # For XShm* in backing_store_x.cc
+            '../build/linux/system.gyp:x11',
           ],
         }],
       ],
