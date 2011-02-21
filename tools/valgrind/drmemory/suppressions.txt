@@ -66,6 +66,10 @@ UNINITIALIZED READ
 ...
 *!CreateProcess*
 
+LEAK
+...
+*!CreateProcess*
+
 UNINITIALIZED READ
 ...
 *!base::LaunchApp*
@@ -277,6 +281,21 @@ LEAK
 *!_getptd_noexit
 *!_getptd
 
+# http://code.google.com/p/drmemory/issues/detail?id=304
+UNINITIALIZED READ
+...
+*!_malloc_dbg
+...
+*!_*putenv_s
+
+# http://code.google.com/p/drmemory/issues/detail?id=305
+LEAK
+*!free
+*!free
+*!operator new
+...
+*!MiniDumpWriteDump
+
 ############################
 # TODO(timurrrr): investigate these
 UNINITIALIZED READ
@@ -363,6 +382,10 @@ CRYPT32.dll!I_CertSyncStore
 
 ############################
 # Intentional errors in Chromium tests (ToolsSanityTests)
+LEAK
+base_unittests.exe!operator new
+base_unittests.exe!operator new[]
+base_unittests.exe!base::ToolsSanityTest_MemoryLeak_Test::TestBody
 
 UNADDRESSABLE ACCESS
 base_unittests.exe!*ReadValueOutOfArrayBoundsLeft
