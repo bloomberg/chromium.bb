@@ -20,13 +20,6 @@ deps = {
     Var("chromium_trunk") + "/src/build@" + Var("chrome_rev"),
   "testing/gtest":
     "http://googletest.googlecode.com/svn/trunk@" + Var("gtest_rev"),
-  "third_party/binutils":
-    (Var("native_client_trunk") + "/src/third_party/binutils@" +
-     Var("tools_rev")),
-  "third_party/gcc":
-    Var("native_client_trunk") + "/src/third_party/gcc@" + Var("tools_rev"),
-  "third_party/gdb":
-    Var("native_client_trunk") + "/src/third_party/gdb@" + Var("tools_rev"),
   "third_party/gles2_book":
     Var("chromium_trunk") + "/src/third_party/gles2_book@" + Var("chrome_rev"),
   "third_party/gmp":
@@ -35,8 +28,6 @@ deps = {
     Var("native_client_trunk") + "/src/third_party/qemu@" + Var("tools_rev"),
   "third_party/mpfr":
     Var("native_client_trunk") + "/src/third_party/mpfr@" + Var("tools_rev"),
-  "third_party/newlib":
-    Var("native_client_trunk") + "/src/third_party/newlib@" + Var("tools_rev"),
   "third_party/pylib":
     Var("native_client_trunk") + "/src/third_party/pylib@" + Var("tools_rev"),
   "third_party/scons":
