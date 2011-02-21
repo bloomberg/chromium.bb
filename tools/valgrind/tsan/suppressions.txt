@@ -491,17 +491,6 @@
   fun:timegm
 }
 
-# gethostbyname2_r is thread-safe, however ThreadSanitizer reports races inside it and
-# (sometimes) in __nss_* functions below it.
-# This may be related to
-# https://bugs.launchpad.net/ubuntu/+source/glibc/+bug/59449
-{
-  Race reports below thread-safe gethostbyname2_r
-  ThreadSanitizer:Race
-  ...
-  fun:gethostbyname2_r*
-}
-
 {
   Benign race in nss (PR_EnterMonitor)
   ThreadSanitizer:Race

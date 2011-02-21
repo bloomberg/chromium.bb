@@ -140,7 +140,12 @@ fun_r:*base*StatsTable*AddCounter*
 # TSan doesn't understand internal libc locks, see http://crbug.com/71435
 fun_r:mbsrtowcs
 
-# Suppress false reports below these memcpy and memset impls.
-# See http://code.google.com/p/data-race-test/issues/detail?id=62
-fun:__memset_sse2
-fun:__GI_memcpy
+# gethostbyname2_r is thread-safe, however ThreadSanitizer reports races inside it and
+# (sometimes) in __nss_* functions below it.
+# This may be related to
+# https://bugs.launchpad.net/ubuntu/+source/glibc/+bug/59449
+fun_r:gethostbyname2_r*
+
+# Strange reports below _IO_getline, every time in "Concurrent access".
+# Probably the reports are there since we're missing the libc internal locks
+fun_r:_IO_getline*
