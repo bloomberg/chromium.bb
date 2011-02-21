@@ -84,9 +84,22 @@ void TouchAutocompletePopupContentsView::UpdatePopupAppearance() {
   Layout();
 }
 
-void TouchAutocompletePopupContentsView::PaintChildren(
+void TouchAutocompletePopupContentsView::LayoutChildren() {
+  std::vector<View*> visible_children(GetVisibleChildren());
+  gfx::Rect bounds(GetContentsBounds());
+  double child_width =
+      static_cast<double>(bounds.width()) / visible_children.size();
+  int x = bounds.x();
+  for (size_t i = 0; i < visible_children.size(); ++i) {
+    int next_x = bounds.x() + static_cast<int>(((i + 1) * child_width) + 0.5);
+    visible_children[i]->SetBounds(x, bounds.y(), next_x - x, bounds.height());
+    x = next_x;
+  }
+}
+
+void TouchAutocompletePopupContentsView::PaintResultViews(
     gfx::CanvasSkia* canvas) {
-  AutocompletePopupContentsView::PaintChildren(canvas);
+  AutocompletePopupContentsView::PaintResultViews(canvas);
 
   // Draw divider lines.
   std::vector<View*> visible_children(GetVisibleChildren());
@@ -99,19 +112,6 @@ void TouchAutocompletePopupContentsView::PaintChildren(
        i != visible_children.end(); ++i) {
     canvas->DrawLineInt(color, (*i)->x(), bounds.y(), (*i)->x(),
                         bounds.bottom());
-  }
-}
-
-void TouchAutocompletePopupContentsView::LayoutChildren() {
-  std::vector<View*> visible_children(GetVisibleChildren());
-  gfx::Rect bounds(GetContentsBounds());
-  double child_width =
-      static_cast<double>(bounds.width()) / visible_children.size();
-  int x = bounds.x();
-  for (size_t i = 0; i < visible_children.size(); ++i) {
-    int next_x = bounds.x() + static_cast<int>(((i + 1) * child_width) + 0.5);
-    visible_children[i]->SetBounds(x, bounds.y(), next_x - x, bounds.height());
-    x = next_x;
   }
 }
 

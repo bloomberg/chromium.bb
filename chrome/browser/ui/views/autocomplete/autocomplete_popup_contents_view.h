@@ -69,7 +69,12 @@ class AutocompletePopupContentsView : public views::View,
 
   // Overridden from views::View:
   virtual void OnPaint(gfx::Canvas* canvas);
-  virtual void PaintChildren(gfx::CanvasSkia* canvas);
+
+  // This method should not be triggered directly as we paint our children
+  // in an un-conventional way inside OnPaint. We use a separate canvas to
+  // paint the children. Hence we override this method to a no-op so that
+  // the view hierarchy doesnot "accidentally" trigger this.
+  virtual void PaintChildren(gfx::Canvas* canvas);
   virtual void Layout();
   virtual void LayoutChildren();
   virtual void OnMouseEntered(const views::MouseEvent& event);
@@ -81,6 +86,8 @@ class AutocompletePopupContentsView : public views::View,
   virtual views::View* GetViewForPoint(const gfx::Point& point);
 
  protected:
+  virtual void PaintResultViews(gfx::CanvasSkia* canvas);
+
   // Calculates the height needed to show all the results in the model.
   virtual int CalculatePopupHeight();
   virtual AutocompleteResultView* CreateResultView(

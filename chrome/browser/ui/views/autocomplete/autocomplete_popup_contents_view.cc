@@ -383,7 +383,7 @@ void AutocompletePopupContentsView::OnPaint(gfx::Canvas* canvas) {
   // shader to fill a path representing the round-rect clipping region. This
   // yields a nice anti-aliased edge.
   gfx::CanvasSkia contents_canvas(width(), height(), true);
-  PaintChildren(&contents_canvas);
+  PaintResultViews(&contents_canvas);
 
   // We want the contents background to be slightly transparent so we can see
   // the blurry glass effect on DWM systems behind. We do this _after_ we paint
@@ -412,10 +412,8 @@ void AutocompletePopupContentsView::OnPaint(gfx::Canvas* canvas) {
   OnPaintBorder(canvas);
 }
 
-void AutocompletePopupContentsView::PaintChildren(gfx::CanvasSkia* canvas) {
-  canvas->drawColor(AutocompleteResultView::GetColor(
-      AutocompleteResultView::NORMAL, AutocompleteResultView::BACKGROUND));
-  View::PaintChildren(canvas);
+void AutocompletePopupContentsView::PaintChildren(gfx::Canvas* canvas) {
+  // We paint our children inside OnPaint().
 }
 
 void AutocompletePopupContentsView::Layout() {
@@ -511,6 +509,12 @@ views::View* AutocompletePopupContentsView::GetViewForPoint(
 
 ////////////////////////////////////////////////////////////////////////////////
 // AutocompletePopupContentsView, protected:
+
+void AutocompletePopupContentsView::PaintResultViews(gfx::CanvasSkia* canvas) {
+  canvas->drawColor(AutocompleteResultView::GetColor(
+      AutocompleteResultView::NORMAL, AutocompleteResultView::BACKGROUND));
+  View::PaintChildren(canvas);
+}
 
 int AutocompletePopupContentsView::CalculatePopupHeight() {
   DCHECK_GE(static_cast<size_t>(child_count()), model_->result().size());

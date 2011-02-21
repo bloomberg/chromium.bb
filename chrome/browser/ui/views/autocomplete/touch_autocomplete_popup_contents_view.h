@@ -56,11 +56,11 @@ class TouchAutocompletePopupContentsView
 
   // AutocompletePopupContentsView:
   virtual void UpdatePopupAppearance();
-  virtual void PaintChildren(gfx::CanvasSkia* canvas);
   virtual void LayoutChildren();
 
  protected:
   // AutocompletePopupContentsView:
+  virtual void PaintResultViews(gfx::CanvasSkia* canvas);
   virtual int CalculatePopupHeight();
   virtual AutocompleteResultView* CreateResultView(
       AutocompleteResultViewModel* model,
