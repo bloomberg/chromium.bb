@@ -7,4 +7,5 @@ JingleSessionTest.TestVideoChannel
 JingleSessionTest.TestVideoRtpChannel
 
 # This test fails on an assertion, see http://crbug.com/57266
+EncoderVp8Test.TestEncoder
 DecoderVp8Test.EncodeAndDecode
