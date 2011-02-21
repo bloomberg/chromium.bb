@@ -18,7 +18,6 @@ enum MigratedPreferences {
 };
 
 // Makes the PrefService objects aware of all the prefs.
-void RegisterAllPrefs(PrefService* user_prefs, PrefService* local_state);
 void RegisterLocalState(PrefService* local_state);
 void RegisterUserPrefs(PrefService* user_prefs);
 // Migrate prefs from local_state to user_prefs.

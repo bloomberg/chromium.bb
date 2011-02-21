@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
@@ -82,10 +83,10 @@ DesktopNotificationsTest::~DesktopNotificationsTest() {
 }
 
 void DesktopNotificationsTest::SetUp() {
+  browser::RegisterLocalState(&local_state_);
   profile_.reset(new TestingProfile());
   balloon_collection_ = new MockBalloonCollection();
-  ui_manager_.reset(
-      new NotificationUIManager(profile_->GetTestingPrefService()));
+  ui_manager_.reset(new NotificationUIManager(&local_state_));
   ui_manager_->Initialize(balloon_collection_);
   balloon_collection_->set_space_change_listener(ui_manager_.get());
   service_.reset(new DesktopNotificationService(profile(), ui_manager_.get()));
@@ -372,8 +373,8 @@ TEST_F(DesktopNotificationsTest, TestBoundingBox) {
 
 TEST_F(DesktopNotificationsTest, TestPositionPreference) {
   // Set position preference to lower right.
-  profile_->GetPrefs()->SetInteger(prefs::kDesktopNotificationPosition,
-                                   BalloonCollection::LOWER_RIGHT);
+  local_state_.SetInteger(prefs::kDesktopNotificationPosition,
+                          BalloonCollection::LOWER_RIGHT);
 
   // Create some notifications.
   ViewHostMsg_ShowNotification_Params params = StandardTestNotification();
@@ -411,8 +412,8 @@ TEST_F(DesktopNotificationsTest, TestPositionPreference) {
 
   // Now change the position to upper right.  This should cause an immediate
   // repositioning, and we check for the reverse ordering.
-  profile_->GetPrefs()->SetInteger(prefs::kDesktopNotificationPosition,
-                                   BalloonCollection::UPPER_RIGHT);
+  local_state_.SetInteger(prefs::kDesktopNotificationPosition,
+                          BalloonCollection::UPPER_RIGHT);
   last_x = -1;
   last_y = -1;
 
@@ -437,8 +438,8 @@ TEST_F(DesktopNotificationsTest, TestPositionPreference) {
 
   // Now change the position to upper left.  Confirm that the X value for the
   // balloons gets smaller.
-  profile_->GetPrefs()->SetInteger(prefs::kDesktopNotificationPosition,
-                                   BalloonCollection::UPPER_LEFT);
+  local_state_.SetInteger(prefs::kDesktopNotificationPosition,
+                          BalloonCollection::UPPER_LEFT);
 
   int current_x = (*balloons.begin())->GetPosition().x();
   EXPECT_LT(current_x, last_x);

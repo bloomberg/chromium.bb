@@ -834,12 +834,7 @@ class ManagedPrefsBannerState : public policy::ManagedPrefsBannerBase {
 - (void)registerPrefObservers {
   if (!prefs_) return;
 
-  // During unit tests, there is no local state object, so we fall back to
-  // the prefs object (where we've explicitly registered this pref so we
-  // know it's there).
   PrefService* local = g_browser_process->local_state();
-  if (!local)
-    local = prefs_;
 
   // Basics panel
   registrar_.Init(prefs_);
@@ -2066,15 +2061,9 @@ const int kDisabledIndex = 1;
 - (void)initBannerStateForPage:(OptionsPage)page {
   page = [self normalizePage:page];
 
-  // During unit tests, there is no local state object, so we fall back to
-  // the prefs object (where we've explicitly registered this pref so we
-  // know it's there).
-  PrefService* local = g_browser_process->local_state();
-  if (!local)
-    local = prefs_;
   bannerState_.reset(
       new PreferencesWindowControllerInternal::ManagedPrefsBannerState(
-          self, page, local, prefs_));
+          self, page, g_browser_process->local_state(), prefs_));
 }
 
 - (void)switchToPage:(OptionsPage)page animate:(BOOL)animate {

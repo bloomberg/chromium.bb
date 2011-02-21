@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,9 +7,10 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "chrome/browser/metrics/metrics_log.h"
+#include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/testing_profile.h"
+#include "chrome/test/testing_pref_service.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -198,29 +199,29 @@ TEST(MetricsLogTest, ChromeOSLoadEvent) {
 
 TEST(MetricsLogTest, ChromeOSStabilityData) {
   NoTimeMetricsLog log("bogus client ID", 0);
-  TestingProfile profile;
-  PrefService* pref = profile.GetPrefs();
+  TestingPrefService prefs;
+  browser::RegisterLocalState(&prefs);
 
-  pref->SetInteger(prefs::kStabilityChildProcessCrashCount, 10);
-  pref->SetInteger(prefs::kStabilityOtherUserCrashCount, 11);
-  pref->SetInteger(prefs::kStabilityKernelCrashCount, 12);
-  pref->SetInteger(prefs::kStabilitySystemUncleanShutdownCount, 13);
+  prefs.SetInteger(prefs::kStabilityChildProcessCrashCount, 10);
+  prefs.SetInteger(prefs::kStabilityOtherUserCrashCount, 11);
+  prefs.SetInteger(prefs::kStabilityKernelCrashCount, 12);
+  prefs.SetInteger(prefs::kStabilitySystemUncleanShutdownCount, 13);
   std::string expected_output = StringPrintf(
       "<log clientid=\"bogus client ID\" buildtime=\"123456789\" "
           "appversion=\"%s\">\n"
       "<stability stuff>\n", MetricsLog::GetVersionString().c_str());
   // Expect 3 warnings about not yet being able to send the
   // Chrome OS stability stats.
-  log.WriteStabilityElement(profile.GetPrefs());
+  log.WriteStabilityElement(&prefs);
   log.CloseLog();
 
   int size = log.GetEncodedLogSize();
   ASSERT_GT(size, 0);
 
-  EXPECT_EQ(0, pref->GetInteger(prefs::kStabilityChildProcessCrashCount));
-  EXPECT_EQ(0, pref->GetInteger(prefs::kStabilityOtherUserCrashCount));
-  EXPECT_EQ(0, pref->GetInteger(prefs::kStabilityKernelCrashCount));
-  EXPECT_EQ(0, pref->GetInteger(prefs::kStabilitySystemUncleanShutdownCount));
+  EXPECT_EQ(0, prefs.GetInteger(prefs::kStabilityChildProcessCrashCount));
+  EXPECT_EQ(0, prefs.GetInteger(prefs::kStabilityOtherUserCrashCount));
+  EXPECT_EQ(0, prefs.GetInteger(prefs::kStabilityKernelCrashCount));
+  EXPECT_EQ(0, prefs.GetInteger(prefs::kStabilitySystemUncleanShutdownCount));
 
   std::string encoded;
   // Leave room for the NUL terminator.

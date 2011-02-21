@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,9 @@
 
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/render_messages_params.h"
-#include "chrome/test/testing_pref_service.h"
 
 namespace chromeos {
 
@@ -76,10 +77,10 @@ DesktopNotificationsTest::~DesktopNotificationsTest() {
 }
 
 void DesktopNotificationsTest::SetUp() {
+  browser::RegisterLocalState(&local_state_);
   profile_.reset(new TestingProfile());
   balloon_collection_ = new MockBalloonCollection();
-  ui_manager_.reset(
-      new NotificationUIManager(profile_->GetTestingPrefService()));
+  ui_manager_.reset(new NotificationUIManager(&local_state_));
   ui_manager_->Initialize(balloon_collection_);
   balloon_collection_->set_space_change_listener(ui_manager_.get());
   service_.reset(new DesktopNotificationService(profile(), ui_manager_.get()));

@@ -8,11 +8,12 @@
 #include "base/message_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
+#include "chrome/common/net/test_url_fetcher_factory.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "chrome/common/net/url_request_context_getter.h"
-#include "chrome/common/net/test_url_fetcher_factory.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_browser_process.h"
@@ -135,6 +136,7 @@ class GoogleURLTrackerTest : public testing::Test {
   MessageLoop* message_loop_;
   BrowserThread* io_thread_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
+  TestingPrefService local_state_;
   scoped_ptr<TestingProfile> testing_profile_;
 
   TestURLFetcherFactory fetcher_factory_;
@@ -160,10 +162,10 @@ void GoogleURLTrackerTest::SetUp() {
   io_thread_ = new BrowserThread(BrowserThread::IO, message_loop_);
   network_change_notifier_.reset(net::NetworkChangeNotifier::CreateMock());
   testing_profile_.reset(new TestingProfile);
+  browser::RegisterLocalState(&local_state_);
   TestingBrowserProcess* testing_browser_process =
       static_cast<TestingBrowserProcess*>(g_browser_process);
-  PrefService* pref_service = testing_profile_->GetPrefs();
-  testing_browser_process->SetPrefService(pref_service);
+  testing_browser_process->SetPrefService(&local_state_);
   GoogleURLTracker* tracker = new GoogleURLTracker;
   tracker->queue_wakeup_task_ = false;
   MessageLoop::current()->RunAllPending();

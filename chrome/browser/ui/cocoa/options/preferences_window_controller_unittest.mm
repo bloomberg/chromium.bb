@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,11 +7,14 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/scoped_nsobject.h"
+#include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/ui/cocoa/browser_test_helper.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/options/custom_home_pages_model.h"
 #include "chrome/browser/ui/options/options_window.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/testing_browser_process.h"
+#include "chrome/test/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -37,11 +40,9 @@ class PrefsControllerTest : public CocoaTest {
  public:
   virtual void SetUp() {
     CocoaTest::SetUp();
-    // The metrics reporting pref is registerd on the local state object in
-    // real builds, but we don't have one of those for unit tests. Register
-    // it on prefs so we'll find it when we go looking.
-    PrefService* prefs = browser_helper_.profile()->GetPrefs();
-    prefs->RegisterBooleanPref(prefs::kMetricsReportingEnabled, false);
+    browser::RegisterLocalState(&local_state_);
+    local_state_.RegisterBooleanPref(prefs::kMetricsReportingEnabled, false);
+    browser_process_.get()->SetPrefService(&local_state_);
 
     pref_controller_ = [[PreferencesWindowController alloc]
                          initWithProfile:browser_helper_.profile()
@@ -54,6 +55,8 @@ class PrefsControllerTest : public CocoaTest {
     CocoaTest::TearDown();
   }
 
+  ScopedTestingBrowserProcess browser_process_;
+  TestingPrefService local_state_;
   BrowserTestHelper browser_helper_;
   PreferencesWindowController* pref_controller_;
 };

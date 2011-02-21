@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -69,7 +69,7 @@ class PrefProxyConfigServiceTestBase : public TESTBASE {
 
   virtual void Init(PrefService* pref_service) {
     ASSERT_TRUE(pref_service);
-    PrefProxyConfigService::RegisterUserPrefs(pref_service);
+    PrefProxyConfigService::RegisterPrefs(pref_service);
     fixed_config_.set_pac_url(GURL(kFixedPacUrl));
     delegate_service_ = new TestProxyConfigService(fixed_config_);
     proxy_config_tracker_ = new PrefProxyConfigTracker(pref_service);

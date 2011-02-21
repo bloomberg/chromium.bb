@@ -151,6 +151,10 @@ class ScopedTestingBrowserProcess {
   ScopedTestingBrowserProcess();
   ~ScopedTestingBrowserProcess();
 
+  TestingBrowserProcess* get() {
+    return browser_process_.get();
+  }
+
  private:
   // TODO(phajdan.jr): Temporary, for http://crbug.com/61062.
   // After the transition is over, we should just stack-allocate it.

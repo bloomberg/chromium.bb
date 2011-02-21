@@ -497,7 +497,7 @@ void TestingProfile::CreateTestingPrefService() {
   testing_prefs_ = new TestingPrefService();
   prefs_.reset(testing_prefs_);
   Profile::RegisterUserPrefs(prefs_.get());
-  browser::RegisterAllPrefs(prefs_.get(), prefs_.get());
+  browser::RegisterUserPrefs(prefs_.get());
 }
 
 PrefService* TestingProfile::GetPrefs() {

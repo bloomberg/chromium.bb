@@ -77,11 +77,6 @@
 
 namespace browser {
 
-void RegisterAllPrefs(PrefService* user_prefs, PrefService* local_state) {
-  RegisterLocalState(local_state);
-  RegisterUserPrefs(user_prefs);
-}
-
 void RegisterLocalState(PrefService* local_state) {
   // Prefs in Local State
   Browser::RegisterPrefs(local_state);
@@ -104,6 +99,7 @@ void RegisterLocalState(PrefService* local_state) {
   AutoFillManager::RegisterBrowserPrefs(local_state);
   BackgroundPageTracker::RegisterPrefs(local_state);
   NotificationUIManager::RegisterPrefs(local_state);
+  PrefProxyConfigService::RegisterPrefs(local_state);
 #if defined(OS_CHROMEOS)
   chromeos::AudioMixerAlsa::RegisterPrefs(local_state);
   chromeos::UserManager::RegisterPrefs(local_state);
@@ -139,7 +135,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   GeolocationContentSettingsMap::RegisterUserPrefs(user_prefs);
   TranslatePrefs::RegisterUserPrefs(user_prefs);
   DesktopNotificationService::RegisterUserPrefs(user_prefs);
-  PrefProxyConfigService::RegisterUserPrefs(user_prefs);
+  PrefProxyConfigService::RegisterPrefs(user_prefs);
 #if defined(TOOLKIT_VIEWS)
   BrowserActionsContainer::RegisterUserPrefs(user_prefs);
 #elif defined(TOOLKIT_GTK)
