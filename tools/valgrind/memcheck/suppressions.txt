@@ -3785,3 +3785,16 @@
    fun:_ZN6WebKit16ChromeClientImpl29postAccessibilityNotificationEPN7WebCore19AccessibilityObjectENS1_13AXObjectCache14AXNotificationE
    fun:_ZN7WebCore13AXObjectCache24postPlatformNotificationEPNS_19AccessibilityObjectENS0_14AXNotificationE
 }
+{
+   bug_73675
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN20LayoutTestController13waitUntilDoneERKN3WTF6VectorI10CppVariantLj0EEEPS2_
+   fun:_ZN13CppBoundClass14MemberCallbackI20LayoutTestControllerE3runERKN3WTF6VectorI10CppVariantLj0EEEPS5_
+   fun:_ZN13CppBoundClass6invokeEPvPK10_NPVariantjPS1_
+   fun:_ZN11CppNPObject6invokeEP8NPObjectPvPK10_NPVariantjPS3_
+   fun:_ZN7WebCore18npObjectInvokeImplERKN2v89ArgumentsENS_18InvokeFunctionTypeE
+   fun:_ZN7WebCore21npObjectMethodHandlerERKN2v89ArgumentsE
+   fun:_ZN2v88internal19HandleApiCallHelperILb0EEEPNS0_11MaybeObjectENS0_47_GLOBAL__N_v8_src_builtins.cc_00000000_67AD6F1016BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEE
+   obj:*
+}
