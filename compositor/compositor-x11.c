@@ -106,7 +106,6 @@ x11_input_create(struct x11_compositor *c)
 	return 0;
 }
 
-
 static int
 dri2_connect(struct x11_compositor *c)
 {
@@ -118,7 +117,6 @@ dri2_connect(struct x11_compositor *c)
 	xcb_dri2_connect_cookie_t connect_cookie;
 	xcb_generic_error_t *error;
 	char path[256];
-	int fd;
 
 	xcb_prefetch_extension_data (c->conn, &xcb_xfixes_id);
 	xcb_prefetch_extension_data (c->conn, &xcb_dri2_id);
@@ -185,37 +183,6 @@ dri2_connect(struct x11_compositor *c)
 		 xcb_dri2_connect_device_name (connect));
 #endif
 	free(connect);
-
-	fd = open(path, O_RDWR);
-	if (fd < 0) {
-		fprintf(stderr,
-			"DRI2: could not open %s (%s)\n", path, strerror(errno));
-		return -1;
-	}
-
-	return wlsc_drm_init(&c->base, fd, path);
-}
-
-static int
-dri2_authenticate(struct x11_compositor *c, uint32_t magic)
-{
-	xcb_dri2_authenticate_reply_t *authenticate;
-	xcb_dri2_authenticate_cookie_t authenticate_cookie;
-
-	authenticate_cookie =
-		xcb_dri2_authenticate_unchecked(c->conn,
-						c->screen->root, magic);
-	authenticate =
-		xcb_dri2_authenticate_reply(c->conn,
-					    authenticate_cookie, NULL);
-	if (authenticate == NULL || !authenticate->authenticated) {
-		fprintf(stderr, "DRI2: failed to authenticate\n");
-		free(authenticate);
-		return -1;
-	}
-
-	free(authenticate);
-
 	return 0;
 }
 
@@ -725,12 +692,6 @@ x11_compositor_get_resources(struct x11_compositor *c)
 	xcb_free_pixmap(c->conn, pixmap);
 }
 
-static int
-x11_authenticate(struct wlsc_compositor *c, uint32_t id)
-{
-	return dri2_authenticate((struct x11_compositor *) c, id);
-}
-
 static void
 x11_destroy(struct wlsc_compositor *ec)
 {
@@ -767,7 +728,6 @@ x11_compositor_create(struct wl_display *display, int width, int height)
 		return NULL;
 
 	c->base.destroy = x11_destroy;
-	c->base.authenticate = x11_authenticate;
 	c->base.present = x11_compositor_present;
 	c->base.create_buffer = wlsc_drm_buffer_create;
 

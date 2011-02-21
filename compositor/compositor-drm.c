@@ -116,8 +116,7 @@ init_egl(struct drm_compositor *ec, struct udev_device *device)
 		return -1;
 	}
 
-	wlsc_drm_init(&ec->base, fd, filename);
-
+	ec->base.drm.fd = fd;
 	ec->base.display = eglGetDRMDisplayMESA(ec->base.drm.fd);
 	if (ec->base.display == NULL) {
 		fprintf(stderr, "failed to create display\n");
@@ -294,14 +293,6 @@ create_outputs(struct drm_compositor *ec, int option_connector)
 	return 0;
 }
 
-static int
-drm_authenticate(struct wlsc_compositor *c, uint32_t id)
-{
-	struct drm_compositor *ec = (struct drm_compositor *) c;
-
-	return drmAuthMagic(ec->base.drm.fd, id);
-}
-
 static void
 drm_destroy(struct wlsc_compositor *ec)
 {
@@ -357,7 +348,6 @@ drm_compositor_create(struct wl_display *display, int connector)
 	}
 
 	ec->base.destroy = drm_destroy;
-	ec->base.authenticate = drm_authenticate;
 	ec->base.present = drm_compositor_present;
 	ec->base.create_buffer = wlsc_drm_buffer_create;
 	ec->base.focus = 1;

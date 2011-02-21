@@ -282,6 +282,27 @@ wlsc_load_image(const char *filename, int width, int height)
 	return (uint32_t *) argb_pixels;
 }
 
+static void
+wlsc_buffer_attach(struct wl_buffer *buffer, struct wl_surface *surface)
+{
+	struct wlsc_surface *es = (struct wlsc_surface *) surface;
+	struct wlsc_compositor *ec = es->compositor;
+	EGLImageKHR *image;
+
+	if (buffer->attach) {
+		buffer->attach(buffer, surface);
+	} else {
+		image = eglCreateImageKHR(ec->display, ec->context,
+					  EGL_WAYLAND_BUFFER_WL,
+					  buffer, NULL);
+
+		glBindTexture(GL_TEXTURE_2D, es->texture);
+		glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, image);
+		es->visual = buffer->visual;
+		eglDestroyImageKHR(ec->display, image);
+	}
+}
+
 static struct wl_buffer *
 create_buffer_from_png(struct wlsc_compositor *ec,
 		       const char *filename, int width, int height)
@@ -354,7 +375,8 @@ background_create(struct wlsc_output *output, const char *filename)
 		free(background);
 		return NULL;
 	}
-	buffer->attach(buffer, &background->surface);
+
+	wlsc_buffer_attach(buffer, &background->surface);
 
 	return background;
 }
@@ -569,7 +591,8 @@ surface_attach(struct wl_client *client,
 	 * damaged by the client. */
 	wlsc_surface_damage(es);
 
-	buffer->attach(buffer, surface);
+	wlsc_buffer_attach(buffer, surface);
+
 	es->buffer = buffer;
 	es->x += x;
 	es->y += y;
@@ -694,7 +717,7 @@ wlsc_input_device_attach(struct wlsc_input_device *device,
 {
 	wlsc_surface_damage(device->sprite);
 
-	buffer->attach(buffer, &device->sprite->surface);
+	wlsc_buffer_attach(buffer, &device->sprite->surface);
 	device->hotspot_x = x;
 	device->hotspot_y = y;
 
@@ -1306,6 +1329,7 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 	wl_compositor_init(&ec->compositor, &compositor_interface, display);
 
 	wlsc_shm_init(ec);
+	eglBindWaylandDisplayWL(ec->display, ec->wl_display);
 
 	wlsc_shell_init(ec);
 
@@ -1403,6 +1427,7 @@ int main(int argc, char *argv[])
 
 	wl_display_run(display);
 
+	eglUnbindWaylandDisplayWL(ec->display, display);
 	wl_display_destroy(display);
 
 	ec->destroy(ec);
