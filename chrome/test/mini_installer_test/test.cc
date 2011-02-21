@@ -97,20 +97,32 @@ TEST_F(MiniInstallTest, FullInstallerUser) {
 // Overinstall full installer.
 TEST_F(MiniInstallTest, FullOverPreviousFullUser) {
   if (!chrome_frame_)
-    user_inst_->OverInstallOnFullInstaller(kFullInstall);
+    user_inst_->OverInstallOnFullInstaller(kFullInstall, false);
 }
 TEST_F(MiniInstallTest, FullOverPreviousFullSys) {
-  sys_inst_->OverInstallOnFullInstaller(kFullInstall);
+  sys_inst_->OverInstallOnFullInstaller(kFullInstall, false);
+}
+
+// Overinstall full Chrome Frame installer while IE browser is running.
+TEST_F(MiniInstallTest, FullFrameOverPreviousFullIERunningSys) {
+  if (chrome_frame_)
+    sys_inst_->OverInstallOnFullInstaller(kFullInstall, true);
 }
 
 // Overinstall diff installer.
 TEST_F(MiniInstallTest, DiffOverPreviousFullUser) {
   if (!chrome_frame_)
-    user_inst_->OverInstallOnFullInstaller(kDiffInstall);
+    user_inst_->OverInstallOnFullInstaller(kDiffInstall, false);
 }
 
 TEST_F(MiniInstallTest, DiffOverPreviousFullSys) {
-  sys_inst_->OverInstallOnFullInstaller(kDiffInstall);
+  sys_inst_->OverInstallOnFullInstaller(kDiffInstall, false);
+}
+
+// Overinstall diff Chrome Frame installer while IE browser is running.
+TEST_F(MiniInstallTest, DiffFrameOverPreviousFullIERunningSys) {
+  if (chrome_frame_)
+    sys_inst_->OverInstallOnFullInstaller(kDiffInstall, true);
 }
 
 // Repair version folder.
@@ -130,6 +142,14 @@ TEST_F(MiniInstallTest, RepairRegistryOnFullUser) {
 }
 TEST_F(MiniInstallTest, RepairRegistryOnFullSys) {
   sys_inst_->Repair(ChromeMiniInstaller::REGISTRY);
+}
+
+// Run full Chrome Frame install then uninstall it while IE browser is running.
+TEST_F(MiniInstallTest, FullInstallAndUnInstallChromeFrameWithIERunning) {
+  if (chrome_frame_) {
+    sys_inst_->InstallFullInstaller(false);
+    sys_inst_->UnInstallChromeFrameWithIERunning();
+  }
 }
 
 // Install standalone.
