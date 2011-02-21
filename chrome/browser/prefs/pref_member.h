@@ -224,7 +224,7 @@ class PrefMember : public subtle::PrefMemberBase {
 
   mutable scoped_refptr<Internal> internal_;
 
-  DISALLOW_COPY_AND_ASSIGN(Internal);
+  DISALLOW_COPY_AND_ASSIGN(PrefMember);
 };
 
 typedef PrefMember<bool> BooleanPrefMember;
