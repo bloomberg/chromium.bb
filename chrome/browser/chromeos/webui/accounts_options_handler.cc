@@ -8,6 +8,7 @@
 #include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #include "chrome/browser/webui/web_ui_util.h"
@@ -74,7 +75,7 @@ void AccountsOptionsHandler::WhitelistUser(const ListValue* args) {
     return;
   }
 
-  users_settings()->WhitelistUser(email);
+  users_settings()->WhitelistUser(Authenticator::Canonicalize(email));
 }
 
 void AccountsOptionsHandler::UnwhitelistUser(const ListValue* args) {
@@ -83,7 +84,7 @@ void AccountsOptionsHandler::UnwhitelistUser(const ListValue* args) {
     return;
   }
 
-  users_settings()->UnwhitelistUser(email);
+  users_settings()->UnwhitelistUser(Authenticator::Canonicalize(email));
 }
 
 void AccountsOptionsHandler::FetchUserPictures(const ListValue* args) {
