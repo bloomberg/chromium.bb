@@ -1254,6 +1254,7 @@ void CandidateWindowView::VisibilityChanged(View* starting_from,
 void CandidateWindowView::OnBoundsChanged() {
   // If the bounds(size) of candidate window is changed,
   // we should move the frame to the right position.
+  View::OnBoundsChanged();
   MoveParentFrame();
 }
 
