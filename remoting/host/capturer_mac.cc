@@ -82,12 +82,6 @@ void CapturerMac::CalculateInvalidRects() {
 
 void CapturerMac::CaptureRects(const InvalidRects& rects,
                                CaptureCompletedCallback* callback) {
-  // TODO(dmaclach): something smarter here in the future.
-  gfx::Rect dirtyRect;
-  for (InvalidRects::const_iterator i = rects.begin(); i != rects.end(); ++i) {
-    dirtyRect = dirtyRect.Union(*i);
-  }
-
   CGLContextObj CGL_MACRO_CONTEXT = cgl_context_;
   glReadBuffer(GL_FRONT);
   glPushClientAttrib(GL_CLIENT_PIXEL_STORE_BIT);
@@ -110,8 +104,7 @@ void CapturerMac::CaptureRects(const InvalidRects& rects,
                                                   width(),
                                                   height(),
                                                   pixel_format()));
-  data->mutable_dirty_rects().clear();
-  data->mutable_dirty_rects().insert(dirtyRect);
+  data->mutable_dirty_rects() = rects;
   FinishCapture(data, callback);
 }
 
