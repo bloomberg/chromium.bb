@@ -52,15 +52,6 @@ int32_t MakeDirectory(PP_Resource directory_ref,
   return 0;
 }
 
-int32_t Query(PP_Resource file_ref,
-              struct PP_FileInfo_Dev* info,
-              struct PP_CompletionCallback callback) {
-  UNREFERENCED_PARAMETER(file_ref);
-  UNREFERENCED_PARAMETER(info);
-  UNREFERENCED_PARAMETER(callback);
-  return 0;
-}
-
 int32_t Touch(PP_Resource file_ref,
               PP_Time last_access_time,
               PP_Time last_modified_time,
@@ -98,7 +89,6 @@ const PPB_FileRef_Dev* PluginFileRef::GetInterface() {
     GetPath,
     GetParent,
     MakeDirectory,
-    Query,
     Touch,
     Delete,
     Rename

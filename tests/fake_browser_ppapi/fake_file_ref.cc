@@ -74,16 +74,6 @@ int32_t MakeDirectory(PP_Resource directory_ref_id,
   return PP_ERROR_BADRESOURCE;
 }
 
-int32_t Query(PP_Resource file_ref_id,
-              struct PP_FileInfo_Dev* info,
-              struct PP_CompletionCallback callback) {
-  DebugPrintf("FileRef::Query: file_ref_id=%"NACL_PRId32"\n", file_ref_id);
-  UNREFERENCED_PARAMETER(info);
-  UNREFERENCED_PARAMETER(callback);
-  NACL_UNIMPLEMENTED();
-  return 0;
-}
-
 int32_t Touch(PP_Resource file_ref_id,
               PP_Time last_access_time,
               PP_Time last_modified_time,
@@ -126,7 +116,6 @@ const PPB_FileRef_Dev* FileRef::GetInterface() {
     GetPath,
     GetParent,
     MakeDirectory,
-    Query,
     Touch,
     Delete,
     Rename
