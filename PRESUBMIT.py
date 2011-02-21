@@ -101,13 +101,13 @@ def _CheckSubversionConfig(input_api, output_api):
         not '*.pdf = svn:mime-type=application/pdf' in lines or
         not 'enable-auto-props = yes' in lines):
       return [
-          output_api.PresubmitError(
+          output_api.PresubmitNotifyResult(
               'It looks like you have not configured your subversion config '
               'file or it is not up-to-date.\n' + error_msg)
       ]
   except (OSError, IOError):
     return [
-        output_api.PresubmitError(
+        output_api.PresubmitNotifyResult(
             'Can\'t find your subversion config file.\n' + error_msg)
     ]
   return []
