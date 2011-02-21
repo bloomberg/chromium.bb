@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <signal.h>
 #include <sys/file.h>
+#include <sys/stat.h>
 
 #include <iostream>
 #include <string>
