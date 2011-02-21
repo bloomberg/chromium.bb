@@ -50,6 +50,7 @@
 #include "ppapi/proxy/ppb_cursor_control_proxy.h"
 #include "ppapi/proxy/ppb_file_chooser_proxy.h"
 #include "ppapi/proxy/ppb_file_ref_proxy.h"
+#include "ppapi/proxy/ppb_file_system_proxy.h"
 #include "ppapi/proxy/ppb_flash_proxy.h"
 #include "ppapi/proxy/ppb_flash_menu_proxy.h"
 #include "ppapi/proxy/ppb_font_proxy.h"
@@ -92,10 +93,8 @@ struct InterfaceList {
 };
 
 InterfaceList::InterfaceList() {
-  memset(id_to_plugin_info_, 0,
-         static_cast<int>(INTERFACE_ID_COUNT) * sizeof(InterfaceID));
-  memset(id_to_browser_info_, 0,
-         static_cast<int>(INTERFACE_ID_COUNT) * sizeof(InterfaceID));
+  memset(id_to_plugin_info_, 0, sizeof(id_to_plugin_info_));
+  memset(id_to_browser_info_, 0, sizeof(id_to_browser_info_));
 
   // PPB (browser) interfaces.
   AddPPB(PPB_AudioConfig_Proxy::GetInfo());
@@ -107,6 +106,7 @@ InterfaceList::InterfaceList() {
   AddPPB(PPB_CursorControl_Proxy::GetInfo());
   AddPPB(PPB_FileChooser_Proxy::GetInfo());
   AddPPB(PPB_FileRef_Proxy::GetInfo());
+  AddPPB(PPB_FileSystem_Proxy::GetInfo());
   AddPPB(PPB_Flash_Proxy::GetInfo());
   AddPPB(PPB_Flash_Menu_Proxy::GetInfo());
   AddPPB(PPB_Font_Proxy::GetInfo());

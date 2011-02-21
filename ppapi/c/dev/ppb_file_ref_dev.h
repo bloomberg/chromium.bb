@@ -24,7 +24,8 @@ struct PPB_FileRef_Dev {
   // resource is invalid or some type other than a FileRef.
   PP_Bool (*IsFileRef)(PP_Resource resource);
 
-  // Returns the file system identifier of this file.
+  // Returns the file system identifier of this file, or
+  // PP_FILESYSTEMTYPE_INVALID if the file ref is invalid.
   PP_FileSystemType_Dev (*GetFileSystemType)(PP_Resource file_ref);
 
   // Returns the name of the file. The value returned by this function does not

@@ -19,6 +19,7 @@
   F(Context3D) \
   F(FileChooser) \
   F(FileRef) \
+  F(FileSystem) \
   F(FlashMenu) \
   F(Font) \
   F(Graphics2D) \

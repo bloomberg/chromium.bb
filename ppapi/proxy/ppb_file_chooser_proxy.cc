@@ -45,8 +45,13 @@ FileChooser::FileChooser(const HostResource& resource)
 
 FileChooser::~FileChooser() {
   // Always need to fire completion callbacks to prevent a leak in the plugin.
-  if (current_show_callback_.func)
-    PP_RunCompletionCallback(&current_show_callback_, PP_ERROR_ABORTED);
+  if (current_show_callback_.func) {
+    // TODO(brettw) the callbacks at this level should be refactored with a
+    // more automatic tracking system like we have in the renderer.
+    MessageLoop::current()->PostTask(FROM_HERE, NewRunnableFunction(
+        current_show_callback_.func, current_show_callback_.user_data,
+        static_cast<int32_t>(PP_ERROR_ABORTED)));
+  }
 
   // Any existing files we haven't transferred ownership to the plugin need
   // to be freed.

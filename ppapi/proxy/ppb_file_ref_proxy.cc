@@ -297,8 +297,6 @@ void PPB_FileRef_Proxy::OnMsgGetParent(const HostResource& host_resource,
                                        PPBFileRef_CreateInfo* result) {
   PP_Resource resource = ppb_file_ref_target()->GetParent(
       host_resource.host_resource());
-  if (!resource)
-    return;  // CreateInfo default constructor initializes to 0.
   SerializeFileRef(resource, result);
 }
 

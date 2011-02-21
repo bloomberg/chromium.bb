@@ -68,7 +68,7 @@ PP_FileSystemType_Dev GetFileSystemType(PP_Resource file_ref_id) {
   scoped_refptr<PPB_FileRef_Impl> file_ref(
       Resource::GetAs<PPB_FileRef_Impl>(file_ref_id));
   if (!file_ref)
-    return PP_FILESYSTEMTYPE_EXTERNAL;
+    return PP_FILESYSTEMTYPE_INVALID;
   return file_ref->GetFileSystemType();
 }
 
@@ -307,6 +307,8 @@ scoped_refptr<PPB_FileSystem_Impl> PPB_FileRef_Impl::GetFileSystem() const {
 }
 
 PP_FileSystemType_Dev PPB_FileRef_Impl::GetFileSystemType() const {
+  // When the file ref exists but there's no explicit filesystem object
+  // associated with it, that means it's an "external" filesystem.
   if (!file_system_)
     return PP_FILESYSTEMTYPE_EXTERNAL;
 

@@ -53,6 +53,12 @@ IPC_MESSAGE_ROUTED3(
     int32_t /* result_code (will be != PP_OK on failure */,
     std::vector<pp::proxy::PPBFileRef_CreateInfo> /* chosen_files */)
 
+// PPB_FileSystem.
+IPC_MESSAGE_ROUTED2(
+    PpapiMsg_PPBFileSystem_OpenComplete,
+    pp::proxy::HostResource /* filesystem */,
+    int32_t /* result */)
+
 // PPB_Graphics2D.
 IPC_MESSAGE_ROUTED2(PpapiMsg_PPBGraphics2D_FlushACK,
                     pp::proxy::HostResource /* graphics_2d */,
@@ -318,6 +324,15 @@ IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBFileRef_Rename,
                     pp::proxy::HostResource /* new_file_ref */,
                     uint32_t /* serialized_callback */);
 
+// PPB_FileSystem.
+IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFileSystem_Create,
+                           PP_Instance /* instance */,
+                           int /* type */,
+                           pp::proxy::HostResource /* result */)
+IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBFileSystem_Open,
+                    pp::proxy::HostResource /* result */,
+                    int64_t /* expected_size */)
+
 // PPB_Flash.
 IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBFlash_SetInstanceAlwaysOnTop,
                     PP_Instance /* instance */,
@@ -570,7 +585,7 @@ IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBURLResponseInfo_GetProperty,
                            pp::proxy::SerializedVar /* result */)
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBURLResponseInfo_GetBodyAsFileRef,
                            pp::proxy::HostResource /* response */,
-                           pp::proxy::HostResource /* file_ref_result */)
+                           pp::proxy::PPBFileRef_CreateInfo /* result */)
 
 // PPB_Var.
 IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBVar_AddRefObject,

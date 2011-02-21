@@ -5,9 +5,11 @@
 #include "ppapi/proxy/ppb_url_response_info_proxy.h"
 
 #include "ppapi/c/ppb_url_response_info.h"
+#include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/proxy/ppb_file_ref_proxy.h"
 #include "ppapi/proxy/serialized_var.h"
 
 namespace pp {
@@ -51,13 +53,23 @@ PP_Var GetProperty(PP_Resource response, PP_URLResponseProperty property) {
 }
 
 PP_Resource GetBodyAsFileRef(PP_Resource response) {
-  /*
+  URLResponseInfo* object = PluginResource::GetAs<URLResponseInfo>(response);
+  if (!object)
+    return 0;
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(
+      object->instance());
+  if (!dispatcher)
+    return 0;
+
+  // This could be more efficient by having the host automatically send us the
+  // file ref when the request is streaming to a file and it's in the state
+  // where the file is ready. This will prevent us from having to do this sync
+  // IPC here.
+  PPBFileRef_CreateInfo create_info;
   dispatcher->Send(new PpapiHostMsg_PPBURLResponseInfo_GetBodyAsFileRef(
-      INTERFACE_ID_PPB_URL_RESPONSE_INFO, response, &result));
-  // TODO(brettw) when we have FileRef proxied, make an object from that
-  // ref so we can track it properly and then uncomment this.
-  */
-  return 0;
+      INTERFACE_ID_PPB_URL_RESPONSE_INFO,
+      object->host_resource(), &create_info));
+  return PPB_FileRef_Proxy::DeserializeFileRef(create_info);
 }
 
 const PPB_URLResponseInfo urlresponseinfo_interface = {
@@ -124,11 +136,16 @@ void PPB_URLResponseInfo_Proxy::OnMsgGetProperty(
 
 void PPB_URLResponseInfo_Proxy::OnMsgGetBodyAsFileRef(
     HostResource response,
-    HostResource* file_ref_result) {
-  file_ref_result->SetHostResource(
-      response.instance(),
-      ppb_url_response_info_target()->GetBodyAsFileRef(
-          response.host_resource()));
+    PPBFileRef_CreateInfo* result) {
+  PP_Resource file_ref = ppb_url_response_info_target()->GetBodyAsFileRef(
+          response.host_resource());
+
+  // Use the FileRef proxy to serialize.
+  DCHECK(!dispatcher()->IsPlugin());
+  HostDispatcher* host_disp = static_cast<HostDispatcher*>(dispatcher());
+  PPB_FileRef_Proxy* file_ref_proxy = static_cast<PPB_FileRef_Proxy*>(
+      host_disp->GetOrCreatePPBInterfaceProxy(INTERFACE_ID_PPB_FILE_REF));
+  file_ref_proxy->SerializeFileRef(file_ref, result);
 }
 
 }  // namespace proxy

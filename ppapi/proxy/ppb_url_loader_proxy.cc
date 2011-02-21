@@ -70,8 +70,13 @@ URLLoader::URLLoader(const HostResource& resource)
 
 URLLoader::~URLLoader() {
   // Always need to fire completion callbacks to prevent a leak in the plugin.
-  if (current_read_callback_.func)
-    PP_RunCompletionCallback(&current_read_callback_, PP_ERROR_ABORTED);
+  if (current_read_callback_.func) {
+    // TODO(brettw) the callbacks at this level should be refactored with a
+    // more automatic tracking system like we have in the renderer.
+    MessageLoop::current()->PostTask(FROM_HERE, NewRunnableFunction(
+        current_read_callback_.func, current_read_callback_.user_data,
+        static_cast<int32_t>(PP_ERROR_ABORTED)));
+  }
 
   if (response_info_)
     PluginResourceTracker::GetInstance()->ReleaseResource(response_info_);
