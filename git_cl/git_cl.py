@@ -751,7 +751,6 @@ def CMDupload(parser, args):
   upload_args.extend(['--server', cl.GetRietveldServer()])
   if options.reviewers:
     upload_args.extend(['--reviewers', options.reviewers])
-  upload_args.extend(['--cc', settings.GetCCList()])
   if options.emulate_svn_auto_props:
     upload_args.append('--emulate_svn_auto_props')
   if options.send_mail:
@@ -794,6 +793,7 @@ def CMDupload(parser, args):
       return 1
     upload_args.extend(['--message', subject])
     upload_args.extend(['--description', change_desc])
+    upload_args.extend(['--cc', settings.GetCCList()])
 
   # Include the upstream repo's URL in the change -- this is useful for
   # projects that have their source spread across multiple repos.
