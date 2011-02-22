@@ -474,13 +474,6 @@ WINSPOOL.DRV!OpenPrinterW
 *!printing::PrintingContextWin::AskUserForSettings
 *!PrintingContextTest_PrintAll_Test::TestBody
 
-# http://crbug.com/73740
-UNINITIALIZED READ
-ntdll.dll!wcslen
-KERNEL32.dll!lstrlenW
-*!base::debug::DebugOnStart::FindArgument
-*!base::debug::DebugOnStart::Init
-
 # http://crbug.com/73744
 LEAK
 *!operator new
