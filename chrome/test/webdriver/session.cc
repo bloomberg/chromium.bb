@@ -29,6 +29,7 @@
 #include "chrome/test/webdriver/webdriver_key_converter.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/webdriver/atoms.h"
+#include "ui/gfx/point.h"
 
 namespace webdriver {
 
@@ -245,6 +246,41 @@ bool Session::GetTabTitle(std::string* tab_title) {
       &Automation::GetTabTitle,
       current_window_id_,
       tab_title,
+      &success));
+  return success;
+}
+
+void Session::MouseClick(const gfx::Point& click, int flags) {
+  bool success = false;
+  RunSessionTask(NewRunnableMethod(
+      automation_.get(),
+      &Automation::MouseClick,
+      current_window_id_,
+      click,
+      flags,
+      &success));
+}
+
+bool Session::MouseMove(const gfx::Point& location) {
+  bool success = false;
+  RunSessionTask(NewRunnableMethod(
+      automation_.get(),
+      &Automation::MouseMove,
+      current_window_id_,
+      location,
+      &success));
+  return success;
+}
+
+bool Session::MouseDrag(const gfx::Point& start,
+                        const gfx::Point& end) {
+  bool success = false;
+  RunSessionTask(NewRunnableMethod(
+      automation_.get(),
+      &Automation::MouseDrag,
+      current_window_id_,
+      start,
+      end,
       &success));
   return success;
 }

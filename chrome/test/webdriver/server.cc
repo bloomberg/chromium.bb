@@ -38,6 +38,7 @@
 #include "chrome/test/webdriver/commands/find_element_commands.h"
 #include "chrome/test/webdriver/commands/implicit_wait_command.h"
 #include "chrome/test/webdriver/commands/navigate_commands.h"
+#include "chrome/test/webdriver/commands/mouse_commands.h"
 #include "chrome/test/webdriver/commands/session_with_id.h"
 #include "chrome/test/webdriver/commands/source_command.h"
 #include "chrome/test/webdriver/commands/speed_command.h"
@@ -113,16 +114,16 @@ void InitCallbacks(struct mg_context* ctx,
   SetCallback<BackCommand>(ctx,          "/session/*/back");
   SetCallback<ExecuteCommand>(ctx,       "/session/*/execute");
   SetCallback<ForwardCommand>(ctx,       "/session/*/forward");
+  SetCallback<SwitchFrameCommand>(ctx,   "/session/*/frame");
   SetCallback<RefreshCommand>(ctx,       "/session/*/refresh");
   SetCallback<SourceCommand>(ctx,        "/session/*/source");
+  SetCallback<SpeedCommand>(ctx,         "/session/*/speed");
   SetCallback<TitleCommand>(ctx,         "/session/*/title");
   SetCallback<URLCommand>(ctx,           "/session/*/url");
-  SetCallback<SpeedCommand>(ctx,         "/session/*/speed");
-  SetCallback<ImplicitWaitCommand>(ctx,  "/session/*/timeouts/implicit_wait");
+  SetCallback<WindowCommand>(ctx,        "/session/*/window");
   SetCallback<WindowHandleCommand>(ctx,  "/session/*/window_handle");
   SetCallback<WindowHandlesCommand>(ctx, "/session/*/window_handles");
-  SetCallback<WindowCommand>(ctx,        "/session/*/window");
-  SetCallback<SwitchFrameCommand>(ctx,   "/session/*/frame");
+  SetCallback<ImplicitWaitCommand>(ctx,  "/session/*/timeouts/implicit_wait");
 
   // Cookie functions.
   SetCallback<CookieCommand>(ctx,      "/session/*/cookie");
@@ -152,11 +153,13 @@ void InitCallbacks(struct mg_context* ctx,
   SetCallback<ElementToggleCommand>(ctx,    "/session/*/element/*/toggle");
   SetCallback<ElementValueCommand>(ctx,     "/session/*/element/*/value");
 
+  // Mouse Commands
+  SetCallback<ClickCommand>(ctx, "/session/*/element/*/click");
+  SetCallback<DragCommand>(ctx, "/session/*/element/*/drag");
+  SetCallback<HoverCommand>(ctx, "/session/*/element/*/hover");
+
   // Commands that have not been implemented yet. We list these out explicitly
   // so that tests that attempt to use them fail with a meaningful error.
-  SetNotImplemented(ctx, "/session/*/element/*/click");
-  SetNotImplemented(ctx, "/session/*/element/*/drag");
-  SetNotImplemented(ctx, "/session/*/element/*/hover");
   SetNotImplemented(ctx, "/session/*/execute_async");
   SetNotImplemented(ctx, "/session/*/timeouts/async_script");
   SetNotImplemented(ctx, "/session/*/screenshot");

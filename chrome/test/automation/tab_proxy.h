@@ -32,7 +32,7 @@ class GURL;
 class Value;
 namespace IPC {
 class Message;
-};
+}
 
 enum FindInPageDirection { BACK = 0, FWD = 1 };
 enum FindInPageCase { IGNORE_CASE = 0, CASE_SENSITIVE = 1 };

@@ -181,8 +181,8 @@ void TestingAutomationProvider::SourceProfilesLoaded() {
   }
   // If we made it to the end of the loop, then the input was bad.
   if (i == num_browsers) {
-    AutomationJSONReply(this, import_settings_data_.reply_message).SendError(
-        "Invalid browser name string found.");
+    AutomationJSONReply(this, import_settings_data_.reply_message)
+        .SendError("Invalid browser name string found.");
     return;
   }
 
@@ -890,6 +890,110 @@ void TestingAutomationProvider::WindowSimulateKeyPress(
                              ui::EF_ALT_DOWN),
                             ((flags & ui::EF_COMMAND_DOWN) ==
                              ui::EF_COMMAND_DOWN));
+}
+
+void TestingAutomationProvider::WebkitMouseClick(Browser* browser,
+                                                 DictionaryValue* args,
+                                                 IPC::Message* reply_message) {
+  WebKit::WebMouseEvent mouse_event;
+
+  if (!args->GetInteger("x", &mouse_event.x) ||
+      !args->GetInteger("y", &mouse_event.y)) {
+    AutomationJSONReply(this, reply_message)
+        .SendError("(X,Y) coordinates missing or invalid");
+    return;
+  }
+
+  int button_flags;
+  if (!args->GetInteger("button_flags", &button_flags)) {
+    AutomationJSONReply(this, reply_message)
+        .SendError("Mouse button missing or invalid");
+    return;
+  }
+
+  if (button_flags == ui::EF_LEFT_BUTTON_DOWN) {
+    mouse_event.button = WebKit::WebMouseEvent::ButtonLeft;
+  } else if (button_flags == ui::EF_RIGHT_BUTTON_DOWN) {
+    mouse_event.button = WebKit::WebMouseEvent::ButtonRight;
+  } else if (button_flags == ui::EF_MIDDLE_BUTTON_DOWN) {
+    mouse_event.button = WebKit::WebMouseEvent::ButtonMiddle;
+  } else {
+    AutomationJSONReply(this, reply_message)
+        .SendError("Invalid button press requested");
+    return;
+  }
+
+  TabContents* tab_contents = browser->GetSelectedTabContents();
+  mouse_event.type = WebKit::WebInputEvent::MouseDown;
+  mouse_event.clickCount = 1;
+
+  tab_contents->render_view_host()->ForwardMouseEvent(mouse_event);
+
+  mouse_event.type = WebKit::WebInputEvent::MouseUp;
+  new InputEventAckNotificationObserver(this, reply_message, mouse_event.type);
+  tab_contents->render_view_host()->ForwardMouseEvent(mouse_event);
+}
+
+void TestingAutomationProvider::WebkitMouseMove(Browser* browser,
+                                                DictionaryValue* args,
+                                                IPC::Message* reply_message) {
+  WebKit::WebMouseEvent mouse_event;
+
+  if (!args->GetInteger("x", &mouse_event.x) ||
+      !args->GetInteger("y", &mouse_event.y)) {
+    AutomationJSONReply(this, reply_message)
+        .SendError("(X,Y) coordinates missing or invalid");
+    return;
+  }
+
+  TabContents* tab_contents = browser->GetSelectedTabContents();
+  mouse_event.type = WebKit::WebInputEvent::MouseMove;
+  new InputEventAckNotificationObserver(this, reply_message, mouse_event.type);
+  tab_contents->render_view_host()->ForwardMouseEvent(mouse_event);
+}
+
+void TestingAutomationProvider::WebkitMouseDrag(Browser* browser,
+                                                DictionaryValue* args,
+                                                IPC::Message* reply_message) {
+  WebKit::WebMouseEvent mouse_event;
+  int start_x, start_y, end_x, end_y;
+
+  if (!args->GetInteger("start_x", &start_x) ||
+      !args->GetInteger("start_y", &start_y) ||
+      !args->GetInteger("end_x", &end_x) ||
+      !args->GetInteger("end_y", &end_y)) {
+    AutomationJSONReply(this, reply_message)
+        .SendError("Invalid start/end positions");
+    return;
+  }
+
+  mouse_event.type = WebKit::WebInputEvent::MouseMove;
+  TabContents* tab_contents = browser->GetSelectedTabContents();
+  // Step 1- Move the mouse to the start position.
+  mouse_event.x = start_x;
+  mouse_event.y = start_y;
+  tab_contents->render_view_host()->ForwardMouseEvent(mouse_event);
+
+  // Step 2- Left click mouse down, the mouse button is fixed.
+  mouse_event.type = WebKit::WebInputEvent::MouseDown;
+  mouse_event.button = WebKit::WebMouseEvent::ButtonLeft;
+  mouse_event.clickCount = 1;
+  tab_contents->render_view_host()->ForwardMouseEvent(mouse_event);
+
+  // Step 3 - Move the mouse to the end position.
+  // TODO(JMikhail): See if we should simulate the by not making such
+  // a drastic jump by placing incrmental stops along the way.
+  mouse_event.type = WebKit::WebInputEvent::MouseMove;
+  mouse_event.x = end_x;
+  mouse_event.y = end_y;
+  mouse_event.clickCount = 0;
+  tab_contents->render_view_host()->ForwardMouseEvent(mouse_event);
+
+  // Step 4 - Release the left mouse button.
+  mouse_event.type = WebKit::WebInputEvent::MouseUp;
+  mouse_event.clickCount = 1;
+  new InputEventAckNotificationObserver(this, reply_message, mouse_event.type);
+  tab_contents->render_view_host()->ForwardMouseEvent(mouse_event);
 }
 
 void TestingAutomationProvider::GetTabCount(int handle, int* tab_count) {
@@ -1979,8 +2083,8 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
   // Ownership remains with "values" variable.
   dict_value = static_cast<DictionaryValue*>(values.get());
   if (!dict_value->GetStringASCII(std::string("command"), &command)) {
-    AutomationJSONReply(this, reply_message).SendError(
-        "no command key in dict or not a string command");
+    AutomationJSONReply(this, reply_message)
+        .SendError("no command key in dict or not a string command");
     return;
   }
 
@@ -2130,6 +2234,13 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
 
   browser_handler_map["SendKeyEventToActiveTab"] =
       &TestingAutomationProvider::SendKeyEventToActiveTab;
+
+  browser_handler_map["WebkitMouseMove"] =
+      &TestingAutomationProvider::WebkitMouseMove;
+  browser_handler_map["WebkitMouseClick"] =
+      &TestingAutomationProvider::WebkitMouseClick;
+  browser_handler_map["WebkitMouseDrag"] =
+      &TestingAutomationProvider::WebkitMouseDrag;
 
   if (handler_map.find(std::string(command)) != handler_map.end()) {
     (this->*handler_map[command])(dict_value, reply_message);
@@ -2661,16 +2772,16 @@ void TestingAutomationProvider::PerformActionOnDownload(
     return;
   }
   if (!args->GetInteger("id", &id) || !args->GetString("action", &action)) {
-    AutomationJSONReply(this, reply_message).SendError(
-        "Must include int id and string action.");
+    AutomationJSONReply(this, reply_message)
+        .SendError("Must include int id and string action.");
     return;
   }
 
   DownloadManager* download_manager = browser->profile()->GetDownloadManager();
   DownloadItem* selected_item = GetDownloadItemFromId(id, download_manager);
   if (!selected_item) {
-    AutomationJSONReply(this, reply_message).SendError(
-        StringPrintf("No download with an id of %d\n", id));
+    AutomationJSONReply(this, reply_message)
+        .SendError(StringPrintf("No download with an id of %d\n", id));
     return;
   }
 
@@ -2708,8 +2819,8 @@ void TestingAutomationProvider::PerformActionOnDownload(
         this, reply_message, false));
     selected_item->Cancel(true);
   } else {
-    AutomationJSONReply(this, reply_message).SendError(
-        StringPrintf("Invalid action '%s' given.", action.c_str()));
+    AutomationJSONReply(this, reply_message)
+        .SendError(StringPrintf("Invalid action '%s' given.", action.c_str()));
   }
 }
 
@@ -2775,8 +2886,8 @@ void TestingAutomationProvider::AddOrEditSearchEngine(
   if (!args->GetString("new_title", &new_title) ||
       !args->GetString("new_keyword", &new_keyword) ||
       !args->GetString("new_url", &new_url)) {
-    AutomationJSONReply(this, reply_message).SendError(
-        "One or more inputs invalid");
+    AutomationJSONReply(this, reply_message)
+        .SendError("One or more inputs invalid");
     return;
   }
   std::string new_ref_url = TemplateURLRef::DisplayURLToURLRef(
@@ -2786,8 +2897,8 @@ void TestingAutomationProvider::AddOrEditSearchEngine(
   if (args->GetString("keyword", &keyword)) {
     template_url = url_model->GetTemplateURLForKeyword(UTF8ToUTF16(keyword));
     if (template_url == NULL) {
-      AutomationJSONReply(this, reply_message).SendError(
-          StringPrintf("No match for keyword: %s", keyword.c_str()));
+      AutomationJSONReply(this, reply_message)
+          .SendError(StringPrintf("No match for keyword: %s", keyword.c_str()));
       return;
     }
     url_model->AddObserver(new AutomationProviderSearchEngineObserver(
@@ -2819,8 +2930,8 @@ void TestingAutomationProvider::PerformActionOnSearchEngine(
   const TemplateURL* template_url(
       url_model->GetTemplateURLForKeyword(UTF8ToUTF16(keyword)));
   if (template_url == NULL) {
-    AutomationJSONReply(this, reply_message).SendError(
-        StringPrintf("No match for keyword: %s", keyword.c_str()));
+    AutomationJSONReply(this, reply_message)
+        .SendError(StringPrintf("No match for keyword: %s", keyword.c_str()));
     return;
   }
   if (action == "delete") {
@@ -2832,8 +2943,8 @@ void TestingAutomationProvider::PerformActionOnSearchEngine(
       this, reply_message));
     url_model->SetDefaultSearchProvider(template_url);
   } else {
-    AutomationJSONReply(this, reply_message).SendError(
-        StringPrintf("Invalid action: %s", action.c_str()));
+    AutomationJSONReply(this, reply_message)
+        .SendError(StringPrintf("Invalid action: %s", action.c_str()));
   }
 }
 
@@ -3114,14 +3225,13 @@ void TestingAutomationProvider::SaveTabContents(
 
   if (!args->GetInteger("tab_index", &tab_index) ||
       !args->GetString("filename", &filename)) {
-    AutomationJSONReply(this, reply_message).SendError(
-        "tab_index or filename param missing");
+    AutomationJSONReply(this, reply_message)
+        .SendError("tab_index or filename param missing");
     return;
   } else {
     tab_contents = browser->GetTabContentsAt(tab_index);
     if (!tab_contents) {
-      AutomationJSONReply(this, reply_message).SendError(
-          "no tab at tab_index");
+      AutomationJSONReply(this, reply_message).SendError("no tab at tab_index");
       return;
     }
   }
@@ -3159,8 +3269,8 @@ void TestingAutomationProvider::ImportSettings(Browser* browser,
   if (!args->GetString("import_from", &import_settings_data_.browser_name) ||
       !args->GetBoolean("first_run", &import_settings_data_.first_run) ||
       !args->GetList("import_items", &import_items_list)) {
-    AutomationJSONReply(this, reply_message).SendError(
-        "Incorrect type for one or more of the arguments.");
+    AutomationJSONReply(this, reply_message)
+        .SendError("Incorrect type for one or more of the arguments.");
     return;
   }
 
@@ -3171,8 +3281,8 @@ void TestingAutomationProvider::ImportSettings(Browser* browser,
     import_items_list->GetString(i, &item);
     // If the provided string is not part of the map, error out.
     if (!ContainsKey(string_to_import_item, item)) {
-      AutomationJSONReply(this, reply_message).SendError(
-          "Invalid item string found in import_items.");
+      AutomationJSONReply(this, reply_message)
+          .SendError("Invalid item string found in import_items.");
       return;
     }
     import_settings_data_.import_items |= string_to_import_item[item];
@@ -3365,8 +3475,8 @@ void TestingAutomationProvider::ClearBrowsingData(
   ListValue* to_remove;
   if (!args->GetString("time_period", &time_period) ||
       !args->GetList("to_remove", &to_remove)) {
-    AutomationJSONReply(this, reply_message).SendError(
-        "time_period must be a string and to_remove a list.");
+    AutomationJSONReply(this, reply_message)
+        .SendError("time_period must be a string and to_remove a list.");
     return;
   }
 
@@ -3377,16 +3487,16 @@ void TestingAutomationProvider::ClearBrowsingData(
     to_remove->GetString(i, &removal);
     // If the provided string is not part of the map, then error out.
     if (!ContainsKey(string_to_mask_value, removal)) {
-      AutomationJSONReply(this, reply_message).SendError(
-          "Invalid browsing data string found in to_remove.");
+      AutomationJSONReply(this, reply_message)
+          .SendError("Invalid browsing data string found in to_remove.");
       return;
     }
     remove_mask |= string_to_mask_value[removal];
   }
 
   if (!ContainsKey(string_to_time_period, time_period)) {
-    AutomationJSONReply(this, reply_message).SendError(
-        "Invalid string for time_period.");
+    AutomationJSONReply(this, reply_message)
+        .SendError("Invalid string for time_period.");
     return;
   }
 
@@ -3545,8 +3655,8 @@ void TestingAutomationProvider::SelectTranslateOption(
   } else if (option == "set_target_language") {
     string16 target_language;
     if (!args->GetString("target_language", &target_language)) {
-       AutomationJSONReply(this, reply_message).
-           SendError("Must include target_language string.");
+       AutomationJSONReply(this, reply_message)
+           .SendError("Must include target_language string.");
       return;
     }
     // Get the target language index based off of the language name.
@@ -4259,8 +4369,8 @@ void TestingAutomationProvider::CloseNotification(
     IPC::Message* reply_message) {
   int index;
   if (!args->GetInteger("index", &index)) {
-    AutomationJSONReply(this, reply_message).SendError(
-        "'index' missing or invalid.");
+    AutomationJSONReply(this, reply_message)
+        .SendError("'index' missing or invalid.");
     return;
   }
   NotificationUIManager* manager = g_browser_process->notification_ui_manager();
@@ -4268,8 +4378,8 @@ void TestingAutomationProvider::CloseNotification(
   const BalloonCollection::Balloons& balloons = collection->GetActiveBalloons();
   int balloon_count = static_cast<int>(balloons.size());
   if (index < 0 || index >= balloon_count) {
-    AutomationJSONReply(this, reply_message).SendError(
-        StringPrintf("No notification at index %d", index));
+    AutomationJSONReply(this, reply_message)
+        .SendError(StringPrintf("No notification at index %d", index));
     return;
   }
   // This will delete itself when finished.
@@ -4287,8 +4397,8 @@ void TestingAutomationProvider::WaitForNotificationCount(
     IPC::Message* reply_message) {
   int count;
   if (!args->GetInteger("count", &count)) {
-    AutomationJSONReply(this, reply_message).SendError(
-        "'count' missing or invalid.");
+    AutomationJSONReply(this, reply_message)
+        .SendError("'count' missing or invalid.");
     return;
   }
   NotificationUIManager* manager = g_browser_process->notification_ui_manager();
@@ -4405,8 +4515,8 @@ void TestingAutomationProvider::KillRendererProcess(
     IPC::Message* reply_message) {
   int pid;
   if (!args->GetInteger("pid", &pid)) {
-    AutomationJSONReply(this, reply_message).
-        SendError("'pid' key missing or invalid.");
+    AutomationJSONReply(this, reply_message)
+        .SendError("'pid' key missing or invalid.");
     return;
   }
   base::ProcessHandle process;

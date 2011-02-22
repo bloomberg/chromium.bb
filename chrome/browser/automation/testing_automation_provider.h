@@ -118,6 +118,17 @@ class TestingAutomationProvider : public AutomationProvider,
   void WindowSimulateMouseMove(const IPC::Message& message,
                                int handle,
                                const gfx::Point& location);
+  // The Webkit mouse functions below work on the currently selected
+  // tab.
+  void WebkitMouseClick(Browser* browser,
+                        DictionaryValue* args,
+                        IPC::Message* message);
+  void WebkitMouseMove(Browser* browser,
+                       DictionaryValue* args,
+                       IPC::Message* message);
+  void WebkitMouseDrag(Browser* browser,
+                       DictionaryValue* args,
+                       IPC::Message* message);
   void WindowSimulateKeyPress(const IPC::Message& message,
                               int handle,
                               int key,

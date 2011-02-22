@@ -19,6 +19,10 @@
 class GURL;
 class TabProxy;
 
+namespace gfx {
+class Point;
+}
+
 namespace webdriver {
 
 struct WebKeyEvent {
@@ -90,6 +94,12 @@ class Automation : private UITestBase {
                     bool* success);
   void SetCookie(
       int tab_id, const GURL& gurl, const std::string& cookie, bool* success);
+  void MouseMove(int tab_id, const gfx::Point& p, bool* success);
+  void MouseClick(int tab_id, const gfx::Point& p, int flag, bool* success);
+  void MouseDrag(int tab_id,
+                 const gfx::Point& start,
+                 const gfx::Point& end,
+                 bool* success);
 
   // Get persistent IDs for all the tabs currently open. These IDs can be used
   // to identify the tab as long as the tab exists.
@@ -108,6 +118,9 @@ class Automation : private UITestBase {
   // for the proxy.
   TabIdMap tab_id_map_;
   ScopedTempDir profile_dir_;
+
+  bool SendJSONRequest(
+      int tab_id, const DictionaryValue& dict, std::string* reply);
 
   DISALLOW_COPY_AND_ASSIGN(Automation);
 };

@@ -15,6 +15,7 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/test_launcher_utils.h"
 #include "googleurl/src/gurl.h"
+#include "ui/gfx/point.h"
 
 namespace webdriver {
 
@@ -64,45 +65,75 @@ void Automation::ExecuteScript(int tab_id,
     *result = WideToUTF8(wide_result);
 }
 
+void Automation::MouseMove(int tab_id,
+                           const gfx::Point& p,
+                           bool* success) {
+  std::string reply;
+  DictionaryValue dict;
+
+  dict.SetString("command", "WebkitMouseMove");
+  dict.SetInteger("x", p.x());
+  dict.SetInteger("y", p.y());
+
+  *success = SendJSONRequest(tab_id, dict, &reply);
+  if (!*success) {
+    LOG(ERROR) << "Could not send mouse event. Reply: " << reply;
+  }
+}
+
+void Automation::MouseClick(int tab_id,
+                            const gfx::Point& p,
+                            int flag,
+                            bool* success) {
+  std::string reply;
+  DictionaryValue dict;
+
+  dict.SetString("command", "WebkitMouseClick");
+  dict.SetInteger("button_flags", flag);
+  dict.SetInteger("x", p.x());
+  dict.SetInteger("y", p.y());
+
+  *success = SendJSONRequest(tab_id, dict, &reply);
+  if (!*success) {
+    LOG(ERROR) << "Could not send mouse event. Reply: " << reply;
+  }
+}
+
+void Automation::MouseDrag(int tab_id,
+                           const gfx::Point& start,
+                           const gfx::Point& end,
+                           bool* success) {
+  std::string reply;
+  DictionaryValue dict;
+
+  dict.SetString("command", "WebkitMouseDrag");
+  dict.SetInteger("start_x", start.x());
+  dict.SetInteger("start_y", start.y());
+  dict.SetInteger("end_x", end.x());
+  dict.SetInteger("end_y", end.y());
+
+  *success = SendJSONRequest(tab_id, dict, &reply);
+  if (!*success) {
+    LOG(ERROR) << "Could not send mouse event. Reply: " << reply;
+  }
+}
+
 void Automation::SendWebKeyEvent(int tab_id,
                                  const WebKeyEvent& key_event,
                                  bool* success) {
-  TabProxy* tab = GetTabById(tab_id);
-  if (!tab) {
-    LOG(ERROR) << "No such tab";
-    *success = false;
-    return;
-  }
-  int tab_index = 0;
-  if (!tab->GetTabIndex(&tab_index)) {
-    LOG(ERROR) << "Could not get tab index";
-    *success = false;
-    return;
-  }
-  scoped_refptr<BrowserProxy> browser = tab->GetParentBrowser();
-  if (!browser.get()) {
-    LOG(ERROR) << "Could not get parent browser of tab";
-    *success = false;
-    return;
-  }
-  if (!browser->ActivateTab(tab_index)) {
-    LOG(ERROR) << "Could not activate tab to send keys";
-    *success = false;
-    return;
-  }
-  scoped_ptr<DictionaryValue> dict(new DictionaryValue);
-  dict->SetString("command", "SendKeyEventToActiveTab");
-  dict->SetInteger("type", key_event.type);
-  dict->SetInteger("nativeKeyCode", key_event.key_code);
-  dict->SetInteger("windowsKeyCode", key_event.key_code);
-  dict->SetString("unmodifiedText", key_event.unmodified_text);
-  dict->SetString("text", key_event.modified_text);
-  dict->SetInteger("modifiers", key_event.modifiers);
-  dict->SetBoolean("isSystemKey", false);
-  std::string request;
-  base::JSONWriter::Write(dict.get(), false, &request);
   std::string reply;
-  *success = browser->SendJSONRequest(request, &reply);
+  DictionaryValue dict;
+
+  dict.SetString("command", "SendKeyEventToActiveTab");
+  dict.SetInteger("type", key_event.type);
+  dict.SetInteger("nativeKeyCode", key_event.key_code);
+  dict.SetInteger("windowsKeyCode", key_event.key_code);
+  dict.SetString("unmodifiedText", key_event.unmodified_text);
+  dict.SetString("text", key_event.modified_text);
+  dict.SetInteger("modifiers", key_event.modifiers);
+  dict.SetBoolean("isSystemKey", false);
+
+  *success = SendJSONRequest(tab_id, dict, &reply);
   if (!*success) {
     LOG(ERROR) << "Could not send web key event. Reply: " << reply;
   }
@@ -285,6 +316,38 @@ TabProxy* Automation::GetTabById(int tab_id) {
     return iter->second.get();
   }
   return NULL;
+}
+
+bool Automation::SendJSONRequest(int tab_id,
+                                 const DictionaryValue& dict,
+                                 std::string* reply) {
+  std::string request;
+
+  base::JSONWriter::Write(&dict, false, &request);
+  TabProxy* tab = GetTabById(tab_id);
+  if (!tab) {
+    LOG(ERROR) << "No such tab";
+    return false;
+  }
+
+  int tab_index = 0;
+  if (!tab->GetTabIndex(&tab_index)) {
+    LOG(ERROR) << "Could not get tab index";
+    return false;
+  }
+
+  scoped_refptr<BrowserProxy> browser = tab->GetParentBrowser();
+  if (!browser.get()) {
+    LOG(ERROR) << "Could not get parent browser of tab";
+    return false;
+  }
+
+  if (!browser->ActivateTab(tab_index)) {
+    LOG(ERROR) << "Could not activate tab";
+    return false;
+  }
+
+  return browser->SendJSONRequest(request, reply);
 }
 
 }  // namespace webdriver

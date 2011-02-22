@@ -22,6 +22,10 @@ namespace base {
 class WaitableEvent;
 }
 
+namespace gfx {
+class Point;
+}
+
 namespace webdriver {
 
 // Every connection made by WebDriver maps to a session object.
@@ -64,6 +68,13 @@ class Session {
   // Send the given keys to the given element dictionary. This function takes
   // ownership of |element|.
   ErrorCode SendKeys(DictionaryValue* element, const string16& keys);
+
+  // Click events with the mouse should use the values found in:
+  // views/events/event.h.  In the Webdriver JSON spec the MouseMove
+  // function directly maps to the hover command.
+  void MouseClick(const gfx::Point& click, int flags);
+  bool MouseMove(const gfx::Point& location);
+  bool MouseDrag(const gfx::Point& start, const gfx::Point& end);
 
   bool NavigateToURL(const std::string& url);
   bool GoForward();
