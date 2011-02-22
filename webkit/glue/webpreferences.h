@@ -72,6 +72,7 @@ struct WebPreferences {
   bool show_composited_layer_borders;
   bool asynchronous_spell_checking_enabled;
   bool accelerated_compositing_enabled;
+  bool composite_to_texture_enabled;
   bool accelerated_layers_enabled;
   bool accelerated_video_enabled;
   bool accelerated_2d_canvas_enabled;

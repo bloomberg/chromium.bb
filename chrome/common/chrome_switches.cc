@@ -478,6 +478,9 @@ const char kEnableCloudPrintProxy[]         = "enable-cloud-print-proxy";
 // Enables the Cloud Print dialog hosting code.
 const char kEnableCloudPrint[]              = "enable-cloud-print";
 
+// Enables compositing to texture instead of display.
+const char kEnableCompositeToTexture[]      = "enable-composite-to-texture";
+
 // Enable the Confirm to Quit experiment.
 const char kEnableConfirmToQuit[]           = "enable-confirm-to-quit";
 

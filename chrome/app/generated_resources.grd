@@ -4023,6 +4023,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_COMPOSITED_LAYER_BORDERS_DESCRIPTION" desc="Description of the 'Composited layer borders' lab.">
         Renders a border around composited Render Layers to help debug and study layer compositing.
       </message>
+      <message name="IDS_FLAGS_COMPOSITE_TO_TEXTURE_NAME" desc="Name of the 'Offscreen Compositing' lab.">
+        Composite to Texture
+      </message>
+      <message name="IDS_FLAGS_COMPOSITE_TO_TEXTURE_DESCRIPTION" desc="Description of the 'Offscreen Compositing' lab.">
+        Enables compositing to offscreen texture instead of directly to display.
+      </message>
       <message name="IDS_FLAGS_ACCELERATED_CANVAS_2D_NAME" desc="Name of the 'GPU Accelerated Canvas 2D' lab.">
         GPU Accelerated Canvas 2D
       </message>
