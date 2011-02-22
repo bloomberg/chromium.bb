@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/port.h"
 #include "base/scoped_ptr.h"
+#include "base/string_util.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/common/deprecated/event_sys-inl.h"
 
@@ -66,7 +67,8 @@ DirOpenResult DirectoryManager::OpenImpl(const std::string& name,
     base::AutoLock lock(lock_);
     // Check to see if it's already open.
     if (managed_directory_) {
-      DCHECK_EQ(ComparePathNames(name, managed_directory_->name()), 0)
+      DCHECK_EQ(base::strcasecmp(name.c_str(),
+                                 managed_directory_->name().c_str()), 0)
           << "Can't open more than one directory.";
       opened = *was_open = true;
     }
@@ -92,7 +94,8 @@ void DirectoryManager::Close(const std::string& name) {
   {
     base::AutoLock lock(lock_);
     if (!managed_directory_ ||
-        ComparePathNames(name, managed_directory_->name()) != 0) {
+        base::strcasecmp(name.c_str(),
+                         managed_directory_->name().c_str()) != 0) {
       // It wasn't open.
       return;
     }
@@ -124,7 +127,8 @@ void DirectoryManager::GetOpenDirectories(DirNames* result) {
 ScopedDirLookup::ScopedDirLookup(DirectoryManager* dirman,
                                  const std::string& name) : dirman_(dirman) {
   dir_ = dirman->managed_directory_ &&
-         (ComparePathNames(name, dirman->managed_directory_->name()) == 0) ?
+         (base::strcasecmp(name.c_str(),
+                           dirman->managed_directory_->name().c_str()) == 0) ?
          dirman->managed_directory_ : NULL;
   good_ = dir_ != NULL;
   good_checked_ = false;

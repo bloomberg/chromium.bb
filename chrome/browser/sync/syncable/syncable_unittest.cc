@@ -1621,36 +1621,6 @@ TEST(SyncableDirectory, StressTransactions) {
   file_util::Delete(dirman.GetSyncDataDatabasePath(), true);
 }
 
-TEST(Syncable, ComparePathNames) {
-  struct {
-    char a;
-    char b;
-    int expected_result;
-  } tests[] = {
-    { 'A', 'A', 0 },
-    { 'A', 'a', 0 },
-    { 'a', 'A', 0 },
-    { 'a', 'a', 0 },
-    { 'A', 'B', -1 },
-    { 'A', 'b', -1 },
-    { 'a', 'B', -1 },
-    { 'a', 'b', -1 },
-    { 'B', 'A', 1 },
-    { 'B', 'a', 1 },
-    { 'b', 'A', 1 },
-    { 'b', 'a', 1 } };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
-    std::string a(1, tests[i].a);
-    std::string b(1, tests[i].b);
-    const int result = ComparePathNames(a, b);
-    if (result != tests[i].expected_result) {
-      ADD_FAILURE() << "ComparePathNames(" << tests[i].a << ", " << tests[i].b
-       << ") returned " << result << "; expected "
-       << tests[i].expected_result;
-    }
-  }
-}
-
 class SyncableClientTagTest : public SyncableDirectoryTest {
  public:
   static const int kBaseVersion = 1;

@@ -25,7 +25,6 @@
 #include "chrome/browser/sync/syncable/blob.h"
 #include "chrome/browser/sync/syncable/dir_open_result.h"
 #include "chrome/browser/sync/syncable/directory_event.h"
-#include "chrome/browser/sync/syncable/path_name_cmp.h"
 #include "chrome/browser/sync/syncable/syncable_id.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/util/channel.h"
@@ -1117,11 +1116,6 @@ class WriteTransaction : public BaseTransaction {
 };
 
 bool IsLegalNewParent(BaseTransaction* trans, const Id& id, const Id& parentid);
-int ComparePathNames(const std::string& a, const std::string& b);
-
-// Exposed in header as this is used as a sqlite3 callback.
-int ComparePathNames16(void*, int a_bytes, const void* a, int b_bytes,
-                       const void* b);
 
 int64 Now();
 

@@ -26,7 +26,6 @@ using syncable::CHANGES_VERSION;
 using syncable::CREATE;
 using syncable::CREATE_NEW_UPDATE_ITEM;
 using syncable::CTIME;
-using syncable::ComparePathNames;
 using syncable::Directory;
 using syncable::Entry;
 using syncable::GET_BY_HANDLE;

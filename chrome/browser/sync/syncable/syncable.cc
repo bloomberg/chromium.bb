@@ -95,20 +95,6 @@ int64 Now() {
 ///////////////////////////////////////////////////////////////////////////
 // Compare functions and hashes for the indices.
 
-// Callback for sqlite3
-// TODO(chron): This should be somewhere else
-int ComparePathNames16(void*, int a_bytes, const void* a, int b_bytes,
-                       const void* b) {
-  int result = base::strncasecmp(reinterpret_cast<const char *>(a),
-                                 reinterpret_cast<const char *>(b),
-                                 std::min(a_bytes, b_bytes));
-  if (result != 0) {
-    return result;
-  } else {
-    return a_bytes > b_bytes ? 1 : b_bytes > a_bytes ? -1 : 0;
-  }
-}
-
 template <Int64Field field_index>
 class SameField {
  public:
@@ -127,13 +113,6 @@ class HashField {
   base::hash_set<int64> hasher_;
 };
 
-// TODO(chron): Remove this function.
-int ComparePathNames(const string& a, const string& b) {
-  const size_t val_size = sizeof(string::value_type);
-  return ComparePathNames16(NULL, a.size() * val_size, a.data(),
-                                  b.size() * val_size, b.data());
-}
-
 class LessParentIdAndHandle {
  public:
   bool operator() (const syncable::EntryKernel* a,
@@ -146,11 +125,6 @@ class LessParentIdAndHandle {
     return a->ref(META_HANDLE) < b->ref(META_HANDLE);
   }
 };
-
-// TODO(chron): Remove this function.
-bool LessPathNames::operator() (const string& a, const string& b) const {
-  return ComparePathNames(a, b) < 0;
-}
 
 ///////////////////////////////////////////////////////////////////////////
 // EntryKernel

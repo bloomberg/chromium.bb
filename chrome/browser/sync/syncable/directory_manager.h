@@ -20,7 +20,6 @@
 #include "base/file_path.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/sync/syncable/dir_open_result.h"
-#include "chrome/browser/sync/syncable/path_name_cmp.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/util/cryptographer.h"
 #include "chrome/common/deprecated/event_sys.h"
