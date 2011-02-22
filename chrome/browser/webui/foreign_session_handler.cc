@@ -11,7 +11,7 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/dom_ui/new_tab_ui.h"
+#include "chrome/browser/webui/new_tab_ui.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sync/engine/syncapi.h"

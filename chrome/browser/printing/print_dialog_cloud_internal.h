@@ -57,12 +57,12 @@ class CloudPrintDataSender
 
   // Calls to read in the PDF file (on the FILE thread) then send that
   // information to the dialog renderer (on the IO thread).  We know
-  // that the dom_ui pointer lifetime will outlast us, so we should be
+  // that the WebUI pointer lifetime will outlast us, so we should be
   // good.
   void ReadPrintDataFile(const FilePath& path_to_pdf);
   void SendPrintDataFile();
 
-  // Cancels any ramining part of the task by clearing out the dom_ui
+  // Cancels any ramining part of the task by clearing out the WebUI
   // helper_ ptr.
   void CancelPrintDataFile();
 

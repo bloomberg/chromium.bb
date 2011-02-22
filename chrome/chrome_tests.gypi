@@ -549,8 +549,6 @@
         'app/chrome_main_uitest.cc',
         'browser/appcache/appcache_ui_test.cc',
         'browser/browser_encoding_uitest.cc',
-        'browser/dom_ui/new_tab_ui_uitest.cc',
-        'browser/dom_ui/print_preview_ui_uitest.cc',
         'browser/download/download_uitest.cc',
         'browser/download/save_page_uitest.cc',
         'browser/errorpage_uitest.cc',
@@ -579,7 +577,9 @@
         'browser/ui/tests/browser_uitest.cc',
         'browser/ui/views/find_bar_host_uitest.cc',
         'browser/webui/bookmarks_ui_uitest.cc',
+        'browser/webui/new_tab_ui_uitest.cc',
         'browser/webui/options/options_ui_uitest.cc',
+        'browser/webui/print_preview_ui_uitest.cc',
         'common/logging_chrome_uitest.cc',
         'renderer/external_extension_uitest.cc',
         'test/automation/automation_proxy_uitest.cc',
@@ -692,7 +692,7 @@
         ['chromeos==1', {
           'sources!': [
               # TODO(thestig): Enable when print preview is ready for CrOS.
-             'browser/dom_ui/print_preview_ui_uitest.cc',
+             'browser/webui/print_preview_ui_uitest.cc',
           ],
         }],
       ],
@@ -1263,11 +1263,6 @@
         'browser/cookies_tree_model_unittest.cc',
         'browser/debugger/devtools_manager_unittest.cc',
         'browser/device_orientation/provider_unittest.cc',
-        'browser/dom_ui/html_dialog_tab_contents_delegate_unittest.cc',
-        'browser/dom_ui/print_preview_ui_html_source_unittest.cc',
-        'browser/dom_ui/shown_sections_handler_unittest.cc',
-        'browser/dom_ui/sync_internals_ui_unittest.cc',
-        'browser/dom_ui/web_ui_theme_source_unittest.cc',
         'browser/download/base_file_unittest.cc',
         'browser/download/download_file_unittest.cc',
         'browser/download/download_manager_unittest.cc',
@@ -1745,7 +1740,12 @@
         'browser/webdata/web_data_service_test_util.h',
         'browser/webdata/web_data_service_unittest.cc',
         'browser/webdata/web_database_unittest.cc',
+        'browser/webui/html_dialog_tab_contents_delegate_unittest.cc',
         'browser/webui/options/language_options_handler_unittest.cc',
+        'browser/webui/print_preview_ui_html_source_unittest.cc',
+        'browser/webui/shown_sections_handler_unittest.cc',
+        'browser/webui/sync_internals_ui_unittest.cc',
+        'browser/webui/web_ui_theme_source_unittest.cc',
         'browser/webui/web_ui_unittest.cc',
         'browser/web_resource/promo_resource_service_unittest.cc',
         'common/bzip2_unittest.cc',
@@ -1870,15 +1870,15 @@
           ],
         }, { # else: touchui == 0
           'sources/': [
-            ['exclude', '^browser/chromeos/dom_ui/login/'],
+            ['exclude', '^browser/chromeos/webui/login/'],
           ],
         }],
         ['chromeos==1', {
           'sources/': [
             # TODO(thestig) Enable PrintPreviewUIHTMLSource tests on CrOS when
             # print preview is enabled on CrOS.
-            ['exclude', 'browser/dom_ui/print_preview_ui_html_source_unittest.cc'],
             ['exclude', 'browser/notifications/desktop_notifications_unittest.cc'],
+            ['exclude', 'browser/webui/print_preview_ui_html_source_unittest.cc'],
           ],
         }, { # else: chromeos == 0
           'sources/': [
@@ -2171,13 +2171,6 @@
         'browser/chromeos/update_browsertest.cc',
         'browser/crash_recovery_browsertest.cc',
         'browser/device_orientation/device_orientation_browsertest.cc',
-        'browser/dom_ui/web_ui_browsertest.cc',
-        'browser/dom_ui/web_ui_browsertest.h',
-        'browser/dom_ui/web_ui_handler_browsertest.cc',
-        'browser/dom_ui/web_ui_handler_browsertest.h',
-        'browser/dom_ui/file_browse_browsertest.cc',
-        'browser/dom_ui/mediaplayer_browsertest.cc',
-        'browser/dom_ui/settings_browsertest.cc',
         'browser/download/download_browsertest.cc',
         'browser/download/save_page_browsertest.cc',
         'browser/extensions/alert_apitest.cc',
@@ -2302,6 +2295,13 @@
         'browser/ui/views/browser_actions_container_browsertest.cc',
         'browser/ui/views/dom_view_browsertest.cc',
         'browser/ui/views/html_dialog_view_browsertest.cc',
+        'browser/webui/web_ui_browsertest.cc',
+        'browser/webui/web_ui_browsertest.h',
+        'browser/webui/web_ui_handler_browsertest.cc',
+        'browser/webui/web_ui_handler_browsertest.h',
+        'browser/webui/file_browse_browsertest.cc',
+        'browser/webui/mediaplayer_browsertest.cc',
+        'browser/webui/settings_browsertest.cc',
         'renderer/autofill/form_autocomplete_browsertest.cc',
         'renderer/autofill/form_manager_browsertest.cc',
         'renderer/autofill/password_autofill_manager_unittest.cc',
@@ -2332,8 +2332,8 @@
             ['exclude', '^browser/chromeos'],
           ],
           'sources!': [
-            'browser/dom_ui/mediaplayer_browsertest.cc',
-            'browser/dom_ui/file_browse_browsertest.cc',
+            'browser/webui/file_browse_browsertest.cc',
+            'browser/webui/mediaplayer_browsertest.cc',
           ],
         }],
         ['toolkit_views==0', {
@@ -2413,7 +2413,7 @@
           ],
           'sources': [
             # TODO(estade): port to win/mac.
-            'browser/dom_ui/constrained_html_ui_browsertest.cc',
+            'browser/webui/constrained_html_ui_browsertest.cc',
           ],
         }],
         ['OS=="mac"', {
@@ -2458,7 +2458,7 @@
           ],
           'sources!': [
             # TODO(estade): port to linux/views.
-            'browser/dom_ui/constrained_html_ui_browsertest.cc',
+            'browser/webui/constrained_html_ui_browsertest.cc',
           ],
         }, { # else: toolkit_views == 0
           'sources!': [

@@ -6,8 +6,8 @@
 
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/dom_ui/textfields_ui.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/webui/textfields_ui.h"
 
 TextfieldViews::TextfieldViews() : DOMView() {}
 
