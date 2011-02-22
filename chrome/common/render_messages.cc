@@ -443,6 +443,7 @@ void ParamTraits<webkit_glue::ResourceResponseInfo>::Write(
   WriteParam(m, p.was_npn_negotiated);
   WriteParam(m, p.was_alternate_protocol_available);
   WriteParam(m, p.was_fetched_via_proxy);
+  WriteParam(m, p.socket_address);
 }
 
 bool ParamTraits<webkit_glue::ResourceResponseInfo>::Read(
@@ -465,7 +466,8 @@ bool ParamTraits<webkit_glue::ResourceResponseInfo>::Read(
       ReadParam(m, iter, &r->was_fetched_via_spdy) &&
       ReadParam(m, iter, &r->was_npn_negotiated) &&
       ReadParam(m, iter, &r->was_alternate_protocol_available) &&
-      ReadParam(m, iter, &r->was_fetched_via_proxy);
+      ReadParam(m, iter, &r->was_fetched_via_proxy) &&
+      ReadParam(m, iter, &r->socket_address);
 }
 
 void ParamTraits<webkit_glue::ResourceResponseInfo>::Log(
@@ -506,6 +508,8 @@ void ParamTraits<webkit_glue::ResourceResponseInfo>::Log(
   LogParam(p.was_alternate_protocol_available, l);
   l->append(", ");
   LogParam(p.was_fetched_via_proxy, l);
+  l->append(", ");
+  LogParam(p.socket_address, l);
   l->append(")");
 }
 

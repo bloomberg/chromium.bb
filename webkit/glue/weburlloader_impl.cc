@@ -187,6 +187,9 @@ void PopulateURLResponse(
   response->setWasAlternateProtocolAvailable(
       info.was_alternate_protocol_available);
   response->setWasFetchedViaProxy(info.was_fetched_via_proxy);
+  response->setRemoteIPAddress(
+      WebString::fromUTF8(info.socket_address.host()));
+  response->setRemotePort(info.socket_address.port());
   response->setConnectionID(info.connection_id);
   response->setConnectionReused(info.connection_reused);
   response->setDownloadFilePath(FilePathToWebString(info.download_file_path));

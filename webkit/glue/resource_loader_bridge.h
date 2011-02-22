@@ -31,6 +31,7 @@
 #include "base/time.h"
 #include "base/values.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/host_port_pair.h"
 #include "net/url_request/url_request_status.h"
 #include "webkit/glue/resource_type.h"
 
@@ -182,6 +183,9 @@ struct ResourceResponseInfo {
   // transparent proxy). The proxy could be any type of proxy, HTTP or SOCKS.
   // Note: we cannot tell if a transparent proxy may have been involved.
   bool was_fetched_via_proxy;
+
+  // Remote address of the socket which fetched this resource.
+  net::HostPortPair socket_address;
 };
 
 class ResourceLoaderBridge {

@@ -50,6 +50,7 @@ class Size;
 }  // namespace gfx
 
 namespace net {
+class HostPortPair;
 class UploadData;
 class URLRequestStatus;
 }
@@ -262,6 +263,15 @@ struct ParamTraits<TransportDIB::Id> {
   }
 };
 #endif
+
+// Traits for HostPortPair
+template<>
+struct ParamTraits<net::HostPortPair> {
+  typedef net::HostPortPair param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
 
 // Traits for URLRequestStatus
 template <>

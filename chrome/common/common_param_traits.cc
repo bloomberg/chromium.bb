@@ -11,6 +11,7 @@
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/web_apps.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/upload_data.h"
 #include "printing/backend/print_backend.h"
 #include "printing/native_metafile.h"
@@ -288,6 +289,27 @@ bool ParamTraits<WebApplicationInfo>::Read(
 void ParamTraits<WebApplicationInfo>::Log(const WebApplicationInfo& p,
                                           std::string* l) {
   l->append("<WebApplicationInfo>");
+}
+
+void ParamTraits<net::HostPortPair>::Write(Message* m, const param_type& p) {
+  WriteParam(m, p.host());
+  WriteParam(m, p.port());
+}
+
+bool ParamTraits<net::HostPortPair>::Read(const Message* m, void** iter,
+                                          param_type* r) {
+  std::string host;
+  uint16 port;
+  if (!ReadParam(m, iter, &host) || !ReadParam(m, iter, &port))
+    return false;
+
+  r->set_host(host);
+  r->set_port(port);
+  return true;
+}
+
+void ParamTraits<net::HostPortPair>::Log(const param_type& p, std::string* l) {
+  l->append(p.ToString());
 }
 
 void ParamTraits<net::URLRequestStatus>::Write(Message* m,

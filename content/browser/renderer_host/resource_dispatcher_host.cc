@@ -183,6 +183,7 @@ void PopulateResourceResponse(net::URLRequest* request,
       request->was_alternate_protocol_available();
   response->response_head.was_fetched_via_proxy =
       request->was_fetched_via_proxy();
+  response->response_head.socket_address = request->GetSocketAddress();
   appcache::AppCacheInterceptor::GetExtraResponseInfo(
       request,
       &response->response_head.appcache_id,

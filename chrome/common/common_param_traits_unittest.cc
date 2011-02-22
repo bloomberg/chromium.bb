@@ -12,6 +12,7 @@
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_utils.h"
+#include "net/base/host_port_pair.h"
 #include "printing/backend/print_backend.h"
 #include "printing/native_metafile.h"
 #include "printing/page_range.h"
@@ -286,3 +287,16 @@ TEST(IPCMessageTest, PrinterCapsAndDefaults) {
   EXPECT_TRUE(input.defaults_mime_type == output.defaults_mime_type);
 }
 
+// Tests net::HostPortPair serialization
+TEST(IPCMessageTest, HostPortPair) {
+  net::HostPortPair input("host.com", 12345);
+
+  IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
+  IPC::ParamTraits<net::HostPortPair>::Write(&msg, input);
+
+  net::HostPortPair output;
+  void* iter = NULL;
+  EXPECT_TRUE(IPC::ParamTraits<net::HostPortPair>::Read(&msg, &iter, &output));
+  EXPECT_EQ(input.host(), output.host());
+  EXPECT_EQ(input.port(), output.port());
+}

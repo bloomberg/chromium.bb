@@ -28,6 +28,7 @@
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_param_traits.h"
 #include "media/audio/audio_parameters.h"
+#include "net/base/host_port_pair.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
@@ -303,6 +304,9 @@ struct ViewHostMsg_FrameNavigate_Params {
 
   // The status code of the HTTP request.
   int http_status_code;
+
+  // Remote address of the socket which fetched this resource.
+  net::HostPortPair socket_address;
 };
 
 // Values that may be OR'd together to form the 'flags' parameter of a

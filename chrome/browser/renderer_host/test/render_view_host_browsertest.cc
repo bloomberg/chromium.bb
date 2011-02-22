@@ -9,10 +9,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents/tab_contents_observer.h"
 #include "chrome/browser/tab_contents/tab_specific_content_settings.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/render_messages_params.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
+#include "net/base/host_port_pair.h"
 #include "net/test/test_server.h"
 
 typedef std::pair<int, Value*> ExecuteDetailType;
@@ -222,4 +225,44 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostTest, RedirectLoopCookies) {
 
   EXPECT_TRUE(tab_contents->GetTabSpecificContentSettings()->IsContentBlocked(
       CONTENT_SETTINGS_TYPE_COOKIES));
+}
+
+class RenderViewHostTestTabContentsObserver : public TabContentsObserver {
+ public:
+  explicit RenderViewHostTestTabContentsObserver(TabContents* tab_contents)
+      : TabContentsObserver(tab_contents),
+        navigation_count_(0) {}
+  virtual ~RenderViewHostTestTabContentsObserver() {}
+
+  virtual void DidNavigateMainFramePostCommit(
+      const NavigationController::LoadCommittedDetails& details,
+      const ViewHostMsg_FrameNavigate_Params& params) {
+    observed_socket_address_ = params.socket_address;
+    ++navigation_count_;
+  }
+
+  const net::HostPortPair& observed_socket_address() const {
+    return observed_socket_address_;
+  }
+
+  int navigation_count() const { return navigation_count_; }
+
+ private:
+  net::HostPortPair observed_socket_address_;
+  int navigation_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderViewHostTestTabContentsObserver);
+};
+
+IN_PROC_BROWSER_TEST_F(RenderViewHostTest, FrameNavigateSocketAddress) {
+  ASSERT_TRUE(test_server()->Start());
+  RenderViewHostTestTabContentsObserver observer(
+      browser()->GetSelectedTabContents());
+
+  GURL test_url = test_server()->GetURL("files/simple.html");
+  ui_test_utils::NavigateToURL(browser(), test_url);
+
+  EXPECT_EQ(test_server()->host_port_pair().ToString(),
+            observer.observed_socket_address().ToString());
+  EXPECT_EQ(1, observer.navigation_count());
 }

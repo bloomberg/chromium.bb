@@ -98,6 +98,8 @@ void TestRenderViewHost::SendNavigateWithTransition(
   params.is_content_filtered = false;
   params.was_within_same_page = false;
   params.http_status_code = 0;
+  params.socket_address.set_host("2001:db8::1");
+  params.socket_address.set_port(80);
 
   ViewHostMsg_FrameNavigate msg(1, params);
   OnMsgNavigate(msg);

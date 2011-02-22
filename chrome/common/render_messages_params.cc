@@ -772,6 +772,7 @@ void ParamTraits<ViewHostMsg_FrameNavigate_Params>::Write(Message* m,
   WriteParam(m, p.is_content_filtered);
   WriteParam(m, p.was_within_same_page);
   WriteParam(m, p.http_status_code);
+  WriteParam(m, p.socket_address);
 }
 
 bool ParamTraits<ViewHostMsg_FrameNavigate_Params>::Read(const Message* m,
@@ -794,7 +795,8 @@ bool ParamTraits<ViewHostMsg_FrameNavigate_Params>::Read(const Message* m,
       ReadParam(m, iter, &p->is_post) &&
       ReadParam(m, iter, &p->is_content_filtered) &&
       ReadParam(m, iter, &p->was_within_same_page) &&
-      ReadParam(m, iter, &p->http_status_code);
+      ReadParam(m, iter, &p->http_status_code) &&
+      ReadParam(m, iter, &p->socket_address);
 }
 
 void ParamTraits<ViewHostMsg_FrameNavigate_Params>::Log(const param_type& p,
@@ -833,6 +835,8 @@ void ParamTraits<ViewHostMsg_FrameNavigate_Params>::Log(const param_type& p,
   LogParam(p.was_within_same_page, l);
   l->append(", ");
   LogParam(p.http_status_code, l);
+  l->append(", ");
+  LogParam(p.socket_address, l);
   l->append(")");
 }
 
