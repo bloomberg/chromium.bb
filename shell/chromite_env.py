@@ -20,11 +20,7 @@ class ChromiteError(Exception):
   meaningful errors to upper layers rather than just the OS 'File not
   found' low level message.
   """
-  def __init__(self, msg):
-    self.msg = msg
-
-  def __str__(self):
-    return self.msg
+  pass
 
 
 class ChromiteEnv:
