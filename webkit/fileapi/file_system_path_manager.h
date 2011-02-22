@@ -4,10 +4,11 @@
 
 #ifndef WEBKIT_FILEAPI_FILE_SYSTEM_PATH_MANAGER_H_
 #define WEBKIT_FILEAPI_FILE_SYSTEM_PATH_MANAGER_H_
+#pragma once
 
 #include "base/callback.h"
 #include "base/file_path.h"
-#include "base/scoped_ptr.h"
+#include "base/file_util.h"
 #include "webkit/fileapi/file_system_types.h"
 
 class GURL;
@@ -17,6 +18,9 @@ class MessageLoopProxy;
 }
 
 namespace fileapi {
+
+// TODO(kinuko): Probably this module must be called FileSystemPathUtil
+// or something similar.
 
 // An interface to construct or crack sandboxed filesystem paths.
 // Currently each sandboxed filesystem path looks like:
@@ -95,6 +99,25 @@ class FileSystemPathManager {
       const FilePath& base_path,
       const std::string& origin_identifier,
       fileapi::FileSystemType type);
+
+  // Enumerates origins under the given |base_path|.
+  // This must be used on the FILE thread.
+  class OriginEnumerator {
+   public:
+    OriginEnumerator(const FilePath& base_path);
+
+    // Returns the next origin identifier.  Returns empty if there are no
+    // more origins.
+    std::string Next();
+
+    bool HasTemporary();
+    bool HasPersistent();
+    const FilePath& path() { return current_; }
+
+    private:
+    file_util::FileEnumerator enumerator_;
+    FilePath current_;
+  };
 
  private:
   class GetFileSystemRootPathTask;

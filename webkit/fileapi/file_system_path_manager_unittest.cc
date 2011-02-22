@@ -4,6 +4,9 @@
 
 #include "webkit/fileapi/file_system_path_manager.h"
 
+#include <set>
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
@@ -164,8 +167,7 @@ class FileSystemPathManagerTest : public testing::Test {
   }
 
   void SetUp() {
-    data_dir_.reset(new ScopedTempDir);
-    ASSERT_TRUE(data_dir_->CreateUniqueTempDir());
+    ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     root_path_callback_status_ = false;
     root_path_.clear();
     file_system_name_.clear();
@@ -177,7 +179,7 @@ class FileSystemPathManagerTest : public testing::Test {
       bool allow_file_access) {
     return new FileSystemPathManager(
         base::MessageLoopProxy::CreateForCurrentThread(),
-        data_dir_->path(), incognito, allow_file_access);
+        data_dir_.path(), incognito, allow_file_access);
   }
 
   void OnGetRootPath(bool success,
@@ -207,14 +209,14 @@ class FileSystemPathManagerTest : public testing::Test {
     return manager->CrackFileSystemPath(path, NULL, NULL, NULL);
   }
 
-  FilePath data_path() { return data_dir_->path(); }
+  FilePath data_path() { return data_dir_.path(); }
   FilePath file_system_path() {
-    return data_dir_->path().Append(
+    return data_dir_.path().Append(
         FileSystemPathManager::kFileSystemDirectory);
   }
 
  private:
-  scoped_ptr<ScopedTempDir> data_dir_;
+  ScopedTempDir data_dir_;
   base::ScopedCallbackFactory<FileSystemPathManagerTest> callback_factory_;
 
   bool root_path_callback_status_;
@@ -422,4 +424,81 @@ TEST_F(FileSystemPathManagerTest, IsRestrictedName) {
     EXPECT_EQ(kIsRestrictedNameTestCases[i].expected_dangerous,
               FileSystemPathManager::IsRestrictedFileName(name));
   }
+}
+
+class FileSystemPathManagerOriginEnumeratorTest : public testing::Test {
+ public:
+  void SetUp() {
+    ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
+    enumerator_.reset(new FileSystemPathManager::OriginEnumerator(
+        data_dir_.path()));
+  }
+
+  FileSystemPathManager::OriginEnumerator* enumerator() const {
+    return enumerator_.get();
+  }
+
+ protected:
+  void CreateOriginTypeDirectory(const std::string& origin_identifier,
+                                 fileapi::FileSystemType type) {
+    std::string type_string =
+        FileSystemPathManager::GetFileSystemTypeString(type);
+    ASSERT_TRUE(!type_string.empty());
+    FilePath target = data_dir_.path().AppendASCII(origin_identifier)
+                                      .AppendASCII(type_string);
+    file_util::CreateDirectory(target);
+    ASSERT_TRUE(file_util::DirectoryExists(target));
+  }
+
+  ScopedTempDir data_dir_;
+  scoped_ptr<FileSystemPathManager::OriginEnumerator> enumerator_;
+};
+
+TEST_F(FileSystemPathManagerOriginEnumeratorTest, Empty) {
+  ASSERT_TRUE(enumerator()->Next().empty());
+}
+
+TEST_F(FileSystemPathManagerOriginEnumeratorTest, EnumerateOrigins) {
+  const char* temporary_origins[] = {
+    "http_www.bar.com_0",
+    "http_www.foo.com_0",
+    "http_www.foo.com_80",
+    "http_www.example.com_8080",
+    "http_www.google.com_80",
+  };
+  const char* persistent_origins[] = {
+    "http_www.bar.com_0",
+    "http_www.foo.com_8080",
+    "http_www.foo.com_80",
+  };
+  size_t temporary_size = ARRAYSIZE_UNSAFE(temporary_origins);
+  size_t persistent_size = ARRAYSIZE_UNSAFE(persistent_origins);
+  std::set<std::string> temporary_set, persistent_set;
+  for (size_t i = 0; i < temporary_size; ++i) {
+    CreateOriginTypeDirectory(temporary_origins[i],
+        fileapi::kFileSystemTypeTemporary);
+    temporary_set.insert(temporary_origins[i]);
+  }
+  for (size_t i = 0; i < persistent_size; ++i) {
+    CreateOriginTypeDirectory(persistent_origins[i], kFileSystemTypePersistent);
+    persistent_set.insert(persistent_origins[i]);
+  }
+
+  size_t temporary_actual_size = 0;
+  size_t persistent_actual_size = 0;
+  std::string current;
+  while (!(current = enumerator()->Next()).empty()) {
+    SCOPED_TRACE(testing::Message() << "EnumerateOrigin " << current);
+    if (enumerator()->HasTemporary()) {
+      ASSERT_TRUE(temporary_set.find(current) != temporary_set.end());
+      ++temporary_actual_size;
+    }
+    if (enumerator()->HasPersistent()) {
+      ASSERT_TRUE(persistent_set.find(current) != persistent_set.end());
+      ++persistent_actual_size;
+    }
+  }
+
+  ASSERT_EQ(temporary_size, temporary_actual_size);
+  ASSERT_EQ(persistent_size, persistent_actual_size);
 }

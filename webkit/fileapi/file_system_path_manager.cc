@@ -4,12 +4,12 @@
 
 #include "webkit/fileapi/file_system_path_manager.h"
 
-#include "base/file_util.h"
 #include "base/rand_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/scoped_callback_factory.h"
+#include "base/scoped_ptr.h"
 #include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -349,6 +349,27 @@ FilePath FileSystemPathManager::GetFileSystemBaseDirectoryForOriginAndType(
   }
   return base_path.AppendASCII(origin_identifier)
                   .AppendASCII(type_string);
+}
+
+FileSystemPathManager::OriginEnumerator::OriginEnumerator(
+    const FilePath& base_path)
+    : enumerator_(base_path, false /* recursive */,
+                  file_util::FileEnumerator::DIRECTORIES) {
+}
+
+std::string FileSystemPathManager::OriginEnumerator::Next() {
+  current_ = enumerator_.Next();
+  return FilePathStringToASCII(current_.BaseName().value());
+}
+
+bool FileSystemPathManager::OriginEnumerator::HasTemporary() {
+  return !current_.empty() && file_util::DirectoryExists(current_.AppendASCII(
+      FileSystemPathManager::kTemporaryName));
+}
+
+bool FileSystemPathManager::OriginEnumerator::HasPersistent() {
+  return !current_.empty() && file_util::DirectoryExists(current_.AppendASCII(
+      FileSystemPathManager::kPersistentName));
 }
 
 }  // namespace fileapi
