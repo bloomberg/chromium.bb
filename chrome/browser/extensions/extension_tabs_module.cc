@@ -1015,13 +1015,11 @@ bool CaptureVisibleTabFunction::RunImpl() {
     return false;
   }
 
-  // captureVisibleTab() can access some of the same information as
-  // JavaScript running on the page.  Ensure the extension has host
-  // permissions.
-  if (!GetExtension()->CanExecuteScriptOnPage(
-          tab_contents->GetURL(), NULL, &error_)) {
+  // captureVisibleTab() can return an image containing sensitive information
+  // that the browser would otherwise protect.  Ensure the extension has
+  // permission to do this.
+  if (!GetExtension()->CanCaptureVisiblePage(tab_contents->GetURL(), &error_))
     return false;
-  }
 
   RenderViewHost* render_view_host = tab_contents->render_view_host();
 

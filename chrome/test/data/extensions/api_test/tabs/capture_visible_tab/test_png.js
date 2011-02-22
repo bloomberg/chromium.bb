@@ -103,7 +103,29 @@ chrome.test.getConfig(function(config) {
           }));
         }));
       }));
-    }
+    },
+
+    function captureVisibleTabChromeExtensionScheme() {
+      var url = chrome.extension.getURL("/common/white.html");
+      createWindow([url], kWindowRect, pass(function(winId, tabIds) {
+        waitForAllTabs(pass(function() {
+          chrome.tabs.getSelected(winId, pass(function(tab) {
+            assertEq('complete', tab.status);  // waitForAllTabs ensures this.
+            chrome.tabs.captureVisibleTab(winId,
+                                          {'format': 'png'},
+                                          pass(function(imgDataUrl) {
+              // The URL should be a data URL with has a PNG mime type.
+              assertEq('string', typeof(imgDataUrl));
+              assertEq('data:image/png;base64,', imgDataUrl.substr(0,22));
+              testPixelsAreExpectedColor(imgDataUrl,
+                                         kWindowRect,
+                                         '255,255,255,255');  // White.
+            }));
+          }));
+        }));
+      }));
+    },
+
 
   ]);
 });

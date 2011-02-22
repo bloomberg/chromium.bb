@@ -398,6 +398,12 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // on the whitelist of extensions that can script all pages.
   bool CanExecuteScriptEverywhere() const;
 
+  // Returns true if this extension is allowed to obtain the contents of a
+  // page as an image.  Since a page may contain sensitive information, this
+  // is restricted to the extension's host permissions as well as the
+  // extension page itself.
+  bool CanCaptureVisiblePage(const GURL& page_url, std::string* error) const;
+
   // Returns true if this extension updates itself using the extension
   // gallery.
   bool UpdatesFromGallery() const;
