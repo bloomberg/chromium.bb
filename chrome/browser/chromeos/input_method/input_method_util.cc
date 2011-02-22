@@ -519,6 +519,75 @@ bool GetInputMethodIdsFromLanguageCodeInternal(
   return result;
 }
 
+void GetFirstLoginInputMethodIds(
+    const std::string& language_code,
+    const InputMethodDescriptor& current_input_method,
+    std::vector<std::string>* out_input_method_ids) {
+  out_input_method_ids->clear();
+
+  // First, add the current keyboard layout (one used on the login screen).
+  out_input_method_ids->push_back(current_input_method.id);
+
+  // Second, find the most popular input method associated with the
+  // current UI language. The input method IDs returned from
+  // GetInputMethodIdsFromLanguageCode() are sorted by popularity, hence
+  // our basic strategy is to pick the first one, but it's a bit more
+  // complicated as shown below.
+  std::string most_popular_id;
+  std::vector<std::string> input_method_ids;
+  // This returns the input methods sorted by popularity.
+  input_method::GetInputMethodIdsFromLanguageCode(
+      language_code, input_method::kAllInputMethods, &input_method_ids);
+  for (size_t i = 0; i < input_method_ids.size(); ++i) {
+    const std::string& input_method_id = input_method_ids[i];
+    // Pick the first one.
+    if (most_popular_id.empty())
+      most_popular_id = input_method_id;
+
+    // Check if there is one that matches the current keyboard layout, but
+    // not the current keyboard itself. This is useful if there are
+    // multiple keyboard layout choices for one input method. For
+    // instance, Mozc provides three choices: mozc (US keyboard), mozc-jp
+    // (JP keyboard), mozc-dv (Dvorak).
+    const InputMethodDescriptor* descriptor =
+        GetInputMethodDescriptorFromId(input_method_id);
+    if (descriptor &&
+        descriptor->id != current_input_method.id &&
+        descriptor->keyboard_layout == current_input_method.keyboard_layout) {
+      most_popular_id = input_method_id;
+      break;
+    }
+  }
+  // Add the most popular input method ID, if it's different from the
+  // current input method.
+  if (most_popular_id != current_input_method.id) {
+    out_input_method_ids->push_back(most_popular_id);
+  }
+}
+
+void GetLanguageCodesFromInputMethodIds(
+    const std::vector<std::string>& input_method_ids,
+    std::vector<std::string>* out_language_codes) {
+  out_language_codes->clear();
+
+  for (size_t i = 0; i < input_method_ids.size(); ++i) {
+    const std::string& input_method_id = input_method_ids[i];
+    const InputMethodDescriptor* input_method =
+        GetInputMethodDescriptorFromId(input_method_id);
+    if (!input_method) {
+      LOG(ERROR) << "Unknown input method ID: " << input_method_ids[i];
+      continue;
+    }
+    const std::string language_code =
+        GetLanguageCodeFromDescriptor(*input_method);
+    // Add it if it's not already present.
+    if (std::count(out_language_codes->begin(), out_language_codes->end(),
+                   language_code) == 0) {
+      out_language_codes->push_back(language_code);
+    }
+  }
+}
+
 void EnableInputMethods(const std::string& language_code, InputMethodType type,
                         const std::string& initial_input_method_id) {
   std::vector<std::string> candidates;

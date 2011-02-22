@@ -135,12 +135,29 @@ enum InputMethodType {
 // methods that are not for keybord layout switching. Returns true on success.
 // Note that the function might return false or |language_code| is unknown.
 //
-// The retured input method IDs are sorted per
-// chromeos/platform/assets/input_methods/whitelist.txt.
+// The retured input method IDs are sorted by populalirty per
+// chromeos/platform/assets/input_methods/whitelist.txt in production.
+// For testing with the stub libcros, the list in
+// GetInputMethodDescriptorsForTesting() in input_method_library.cc will
+// be used.
 bool GetInputMethodIdsFromLanguageCode(
     const std::string& language_code,
     InputMethodType type,
     std::vector<std::string>* out_input_method_ids);
+
+// Gets the input method IDs suitable for the first user login, based on
+// the given language code (UI language), and the descriptor of the
+// current input method.
+void GetFirstLoginInputMethodIds(
+    const std::string& language_code,
+    const InputMethodDescriptor& current_input_method,
+    std::vector<std::string>* out_input_method_ids);
+
+// Gets the language codes associated with the given input method IDs.
+// The returned language codes won't have duplicates.
+void GetLanguageCodesFromInputMethodIds(
+    const std::vector<std::string>& input_method_ids,
+    std::vector<std::string>* out_language_codes);
 
 // Enables input methods (e.g. Chinese, Japanese) and keyboard layouts (e.g.
 // US qwerty, US dvorak, French azerty) that are necessary for the language code
