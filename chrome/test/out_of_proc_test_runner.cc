@@ -404,7 +404,7 @@ int RunTest(const std::string& test_name, int default_timeout_ms) {
   return exit_code;
 }
 
-bool RunTests() {
+bool RunTests(bool should_shard, int total_shards, int shard_index) {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
 
   DCHECK(!command_line->HasSwitch(kGTestListTestsFlag));
@@ -427,10 +427,6 @@ bool RunTests() {
   int test_run_count = 0;
   int ignored_failure_count = 0;
   std::vector<std::string> failed_tests;
-
-  int32 total_shards;
-  int32 shard_index;
-  bool should_shard = ShouldShard(&total_shards, &shard_index);
 
   ResultsPrinter printer(*command_line);
   for (int i = 0; i < unit_test->total_test_case_count(); ++i) {
@@ -599,6 +595,10 @@ int main(int argc, char** argv) {
   }
 #endif
 
+  int32 total_shards;
+  int32 shard_index;
+  bool should_shard = ShouldShard(&total_shards, &shard_index);
+
   fprintf(stdout,
       "Starting tests...\n"
       "IMPORTANT DEBUGGING NOTE: each test is run inside its own process.\n"
@@ -622,7 +622,7 @@ int main(int argc, char** argv) {
 
   int exit_code = 0;
   while (cycles != 0) {
-    if (!RunTests()) {
+    if (!RunTests(should_shard, total_shards, shard_index)) {
       exit_code = 1;
       break;
     }
