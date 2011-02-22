@@ -110,6 +110,9 @@ class Automation : private UITestBase {
 
   void CloseTab(int tab_id, bool* success);
 
+  // Gets the version of the runing browser.
+  void GetVersion(std::string* version);
+
  private:
   typedef std::map<int, scoped_refptr<TabProxy> > TabIdMap;
   TabProxy* GetTabById(int tab_id);

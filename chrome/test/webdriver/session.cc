@@ -454,6 +454,15 @@ bool Session::CloseWindow() {
   return success;
 }
 
+std::string Session::GetVersion() {
+  std::string version;
+  RunSessionTask(NewRunnableMethod(
+      automation_.get(),
+      &Automation::GetVersion,
+      &version));
+  return version;
+}
+
 void Session::RunSessionTask(Task* task) {
   base::WaitableEvent done_event(false, false);
   thread_.message_loop_proxy()->PostTask(FROM_HERE, NewRunnableMethod(

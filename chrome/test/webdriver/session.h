@@ -108,6 +108,9 @@ class Session {
   // session.
   bool CloseWindow();
 
+  // Gets the version of the running browser.
+  std::string GetVersion();
+
   inline const std::string& id() const { return id_; }
 
   inline int implicit_wait() const { return implicit_wait_; }

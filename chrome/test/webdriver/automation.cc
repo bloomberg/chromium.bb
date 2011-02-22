@@ -310,6 +310,10 @@ void Automation::CloseTab(int tab_id, bool* success) {
   *success = tab->Close(true);
 }
 
+void Automation::GetVersion(std::string* version) {
+  *version = automation()->server_version();
+}
+
 TabProxy* Automation::GetTabById(int tab_id) {
   TabIdMap::const_iterator iter = tab_id_map_.find(tab_id);
   if (iter != tab_id_map_.end()) {
