@@ -421,8 +421,16 @@ void AutocompleteEditViewMac::UpdatePopup() {
   //   * The caret/selection isn't at the end of the text
   //   * The user has just pasted in something that replaced all the text
   //   * The user is trying to compose something in an IME
-  model_->StartAutocomplete(GetSelectedRange().length != 0,
-                            IsImeComposing() || !IsCaretAtEnd());
+  bool prevent_inline_autocomplete = IsImeComposing();
+  NSTextView* editor = (NSTextView*)[field_ currentEditor];
+  if (editor) {
+    if (NSMaxRange([editor selectedRange]) <
+        [[editor textStorage] length] - suggest_text_length_)
+      prevent_inline_autocomplete = true;
+  }
+
+  model_->StartAutocomplete([editor selectedRange].length != 0,
+                            prevent_inline_autocomplete);
 }
 
 void AutocompleteEditViewMac::ClosePopup() {

@@ -1021,6 +1021,30 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
     // Make sure we're still in keyword mode.
     ASSERT_EQ(kSearchKeyword, UTF16ToUTF8(edit_view->model()->keyword()));
   }
+
+  void CtrlKeyPressedWithInlineAutocompleteTest() {
+    AutocompleteEditView* edit_view = NULL;
+    ASSERT_NO_FATAL_FAILURE(GetAutocompleteEditView(&edit_view));
+    AutocompletePopupModel* popup_model = edit_view->model()->popup_model();
+    ASSERT_TRUE(popup_model);
+
+    // Input something to trigger inline autocomplete.
+    ASSERT_NO_FATAL_FAILURE(SendKeySequence(kInlineAutocompleteTextKeys));
+    ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
+    ASSERT_TRUE(popup_model->IsOpen());
+
+    string16 old_text = edit_view->GetText();
+
+    // Make sure inline autocomplete is triggerred.
+    EXPECT_GT(old_text.length(), arraysize(kInlineAutocompleteText) - 1);
+
+    // Press ctrl key.
+    edit_view->model()->OnControlKeyChanged(true);
+
+    // Inline autocomplete should still be there.
+    EXPECT_EQ(old_text, edit_view->GetText());
+  }
+
 };
 
 // Test if ctrl-* accelerators are workable in omnibox.
@@ -1089,6 +1113,11 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, TabMoveCursorToEnd) {
 IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest,
                        PersistKeywordModeOnTabSwitch) {
   PersistKeywordModeOnTabSwitch();
+}
+
+IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest,
+                       CtrlKeyPressedWithInlineAutocompleteTest) {
+  CtrlKeyPressedWithInlineAutocompleteTest();
 }
 
 #if defined(OS_LINUX)
@@ -1286,6 +1315,11 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewViewsTest,
 IN_PROC_BROWSER_TEST_F(AutocompleteEditViewViewsTest,
                        PersistKeywordModeOnTabSwitch) {
   PersistKeywordModeOnTabSwitch();
+}
+
+IN_PROC_BROWSER_TEST_F(AutocompleteEditViewViewsTest,
+                       CtrlKeyPressedWithInlineAutocompleteTest) {
+  CtrlKeyPressedWithInlineAutocompleteTest();
 }
 
 #endif
