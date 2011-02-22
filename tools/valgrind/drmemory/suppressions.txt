@@ -2,7 +2,7 @@
 # Known reports on the third party we have no control over.
 UNINITIALIZED READ
 ...
-*!deflate_slow
+*!deflate_*
 *!MOZ_Z_deflate
 
 ############################
@@ -284,9 +284,11 @@ LEAK
 # http://code.google.com/p/drmemory/issues/detail?id=304
 UNINITIALIZED READ
 ...
-*!_malloc_dbg
+*!_nh_malloc_dbg_impl
+
+UNADDRESSABLE ACCESS
 ...
-*!_*putenv_s
+*!_nh_malloc_dbg_impl
 
 # http://code.google.com/p/drmemory/issues/detail?id=305
 LEAK
@@ -458,13 +460,6 @@ UNINITIALIZED READ
 ...
 *!vp8_*
 
-# http://crbug.com/57910
-POSSIBLE LEAK
-...
-*!*inflateInit*
-*!remoting::DecompressorZlib::InitStream
-*!remoting::DecompressorZlib::Reset
-
 # http://crbug.com/70388
 LEAK
 *!operator new
@@ -478,6 +473,21 @@ WINSPOOL.DRV!OpenPrinterW
 *!PrintDlgExMock
 *!printing::PrintingContextWin::AskUserForSettings
 *!PrintingContextTest_PrintAll_Test::TestBody
+
+# http://crbug.com/73740
+UNINITIALIZED READ
+ntdll.dll!wcslen
+KERNEL32.dll!lstrlenW
+*!base::debug::DebugOnStart::FindArgument
+*!base::debug::DebugOnStart::Init
+
+# http://crbug.com/73744
+LEAK
+*!operator new
+*!remoting::TraceContext::Get
+*!remoting::TraceContext::tracer
+*!remoting::ScreenRecorder::DoCapture
+*!remoting::ScreenRecorder::DoStart
 
 # Empty line at EOF - workaround for
 # http://code.google.com/p/drmemory/issues/detail?id=41
