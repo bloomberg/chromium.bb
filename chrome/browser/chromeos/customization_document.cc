@@ -98,24 +98,41 @@ bool StartupCustomizationDocument::LoadManifestFromString(
   root_->GetString(kInitialTimezoneAttr, &initial_timezone_);
   root_->GetString(kRegistrationUrlAttr, &registration_url_);
 
-  std::string hwid;
-  FilePath hwid_file_path(kHWIDPath);
-  if (file_util::ReadFileToString(hwid_file_path, &hwid)) {
-    // If HWID for this machine exists in mapping, use HWID specific settings.
+  std::string hwid = GetHWID();
+  if (!hwid.empty()) {
     DictionaryValue* hwid_map = NULL;
     if (root_->GetDictionary(kHwidMapAttr, &hwid_map)) {
-      std::string result;
-      if (hwid_map->GetString(kInitialLocaleAttr, &result))
-        initial_locale_ = result;
+      DictionaryValue* hwid_dictionary = NULL;
+      if (hwid_map->GetDictionary(hwid, &hwid_dictionary)) {
+        // If HWID for this machine exists in the mapping, use HWID specific
+        // settings.
+        std::string result;
+        if (hwid_dictionary->GetString(kInitialLocaleAttr, &result))
+          initial_locale_ = result;
 
-      if (hwid_map->GetString(kInitialTimezoneAttr, &result))
-        initial_timezone_ = result;
-
-      // TODO(dpolukhin): read initial locale and timezone from VPD.
+        if (hwid_dictionary->GetString(kInitialTimezoneAttr, &result))
+          initial_timezone_ = result;
+      } else {
+        LOG(WARNING) << "HWDI '" << hwid
+                     << "' is missing in startup customization manifest";
+      }
     }
+  } else {
+    LOG(ERROR) << "Can't read HWID from " << kHWIDPath;
   }
 
+  // TODO(dpolukhin): read initial locale and timezone from VPD.
+  // http://crosbug.com/12355
+
   return true;
+}
+
+std::string StartupCustomizationDocument::GetHWID() const {
+  std::string hwid;
+  FilePath hwid_file_path(kHWIDPath);
+  if (!file_util::ReadFileToString(hwid_file_path, &hwid))
+    LOG(ERROR) << "Can't read HWID from " << kHWIDPath;
+  return hwid;
 }
 
 std::string StartupCustomizationDocument::GetHelpPage(

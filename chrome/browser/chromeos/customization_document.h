@@ -52,6 +52,9 @@ class StartupCustomizationDocument : public CustomizationDocument {
   std::string GetEULAPage(const std::string& locale) const;
 
  private:
+  // Returns HWID for the machine. Declared as virtual to override in tests.
+  virtual std::string GetHWID() const;
+
   std::string initial_locale_;
   std::string initial_timezone_;
   std::string registration_url_;

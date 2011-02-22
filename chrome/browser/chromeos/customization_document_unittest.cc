@@ -34,7 +34,7 @@ const char kGoodStartupManifest[] =
     "      \"initial_timezone\" : \"Europe/Moscow\","
     "    },"
     "    \"ZGA\" : {"
-    "      \"initial_locale\" : \"jp-JP\","
+    "      \"initial_locale\" : \"ja\","
     "      \"initial_timezone\" : \"Asia/Tokyo\","
     "    },"
     "  },"
@@ -61,26 +61,32 @@ const char kGoodServicesManifest[] =
     "  },"
     "}";
 
+class TestDocument : public chromeos::StartupCustomizationDocument {
+ private:
+  virtual std::string GetHWID() const {
+    return "Mario";
+  }
+};
+
 }  // anonymous namespace
 
 // StartupCustomizationDocumentTest implementation.
-
 class StartupCustomizationDocumentTest : public testing::Test {
  protected:
-  chromeos::StartupCustomizationDocument customization_;
+  TestDocument customization_;
 };
 
 TEST_F(StartupCustomizationDocumentTest, Basic) {
   EXPECT_TRUE(customization_.LoadManifestFromString(kGoodStartupManifest));
-  EXPECT_EQ(customization_.initial_locale(), "en-US");
-  EXPECT_EQ(customization_.initial_timezone(), "US/Pacific");
+  EXPECT_EQ(customization_.initial_locale(), "ru-RU");
+  EXPECT_EQ(customization_.initial_timezone(), "Europe/Moscow");
   EXPECT_EQ(customization_.registration_url(), "http://www.google.com");
 
   EXPECT_EQ(customization_.GetHelpPage("en-US"),
             "file:///opt/oem/help/en-US/help.html");
   EXPECT_EQ(customization_.GetHelpPage("ru-RU"),
             "file:///opt/oem/help/ru-RU/help.html");
-  EXPECT_EQ(customization_.GetHelpPage("jp-JP"),
+  EXPECT_EQ(customization_.GetHelpPage("ja"),
             "file:///opt/oem/help/en/help.html");
 
   EXPECT_EQ(customization_.GetEULAPage("en-US"),
