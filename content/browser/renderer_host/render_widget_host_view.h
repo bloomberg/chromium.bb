@@ -250,6 +250,7 @@ class RenderWidgetHostView {
       uint64 surface_id,
       int renderer_id,
       int32 route_id,
+      int gpu_host_id,
       uint64 swap_buffers_count) = 0;
   virtual void GpuRenderingStateDidChange() = 0;
 #endif

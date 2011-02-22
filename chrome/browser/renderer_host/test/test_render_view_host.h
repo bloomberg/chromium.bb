@@ -125,6 +125,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
       uint64 surface_id,
       int renderer_id,
       int32 route_id,
+      int gpu_host_id,
       uint64 swap_buffers_count);
   virtual void GpuRenderingStateDidChange();
 #elif defined(OS_WIN)

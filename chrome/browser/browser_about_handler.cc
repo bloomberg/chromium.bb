@@ -1078,13 +1078,16 @@ bool WillHandleBrowserAboutURL(GURL* url, Profile* profile) {
   }
 
   // Handle URLs to wreck the gpu process.
-  if (LowerCaseEqualsASCII(url->spec(), chrome::kAboutGpuCrashURL)) {
-    GpuProcessHostUIShim::GetInstance()->SendAboutGpuCrash();
-    return true;
-  }
-  if (LowerCaseEqualsASCII(url->spec(), chrome::kAboutGpuHangURL)) {
-    GpuProcessHostUIShim::GetInstance()->SendAboutGpuHang();
-    return true;
+  GpuProcessHostUIShim* gpu_ui_shim = GpuProcessHostUIShim::GetForRenderer(0);
+  if (gpu_ui_shim) {
+    if (LowerCaseEqualsASCII(url->spec(), chrome::kAboutGpuCrashURL)) {
+      gpu_ui_shim->SendAboutGpuCrash();
+      return true;
+    }
+    if (LowerCaseEqualsASCII(url->spec(), chrome::kAboutGpuHangURL)) {
+      gpu_ui_shim->SendAboutGpuHang();
+      return true;
+    }
   }
 
   // There are a few about: URLs that we hand over to the renderer. If the

@@ -22,6 +22,7 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/browser_trial.h"
 #include "chrome/browser/gpu_process_host.h"
+#include "chrome/browser/gpu_process_host_ui_shim.h"
 #include "chrome/browser/plugin_process_host.h"
 #include "chrome/browser/renderer_host/backing_store_mac.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
@@ -217,9 +218,10 @@ NSWindow* ApparentWindowForView(NSView* view) {
 
   // Auxiliary information needed to formulate an acknowledgment to
   // the GPU process. These are constant after the first message.
-  // These are both zero for updates coming from a plugin process.
+  // These are all zero for updates coming from a plugin process.
   volatile int rendererId_;
   volatile int32 routeId_;
+  volatile int gpuHostId_;
 
   // Cocoa methods can only be called on the main thread, so have a copy of the
   // view's size, since it's required on the displaylink thread.
@@ -250,7 +252,8 @@ NSWindow* ApparentWindowForView(NSView* view) {
 // or acknowledgment of the swap buffers are desired.
 - (void)updateSwapBuffersCount:(uint64)count
                   fromRenderer:(int)rendererId
-                       routeId:(int32)routeId;
+                       routeId:(int32)routeId
+                     gpuHostId:(int)gpuHostId;
 
 // NSViews autorelease subviews when they die. The RWHVMac gets destroyed when
 // RHWVCocoa gets dealloc'd, which means the AcceleratedPluginView child views
@@ -283,6 +286,7 @@ NSWindow* ApparentWindowForView(NSView* view) {
     renderWidgetHostView_->AcknowledgeSwapBuffers(
         rendererId_,
         routeId_,
+        gpuHostId_,
         acknowledgedSwapBuffersCount_);
   }
 
@@ -312,6 +316,7 @@ static CVReturn DrawOneAcceleratedPluginCallback(
     acknowledgedSwapBuffersCount_ = 0;
     rendererId_ = 0;
     routeId_ = 0;
+    gpuHostId_ = 0;
 
     [self setAutoresizingMask:NSViewMaxXMargin|NSViewMinYMargin];
 
@@ -377,7 +382,8 @@ static CVReturn DrawOneAcceleratedPluginCallback(
 
 - (void)updateSwapBuffersCount:(uint64)count
                   fromRenderer:(int)rendererId
-                       routeId:(int32)routeId {
+                       routeId:(int32)routeId
+                     gpuHostId:(int)gpuHostId {
   if (rendererId == 0 && routeId == 0) {
     // This notification is coming from a plugin process, for which we
     // don't have flow control implemented right now. Fake up a swap
@@ -386,6 +392,7 @@ static CVReturn DrawOneAcceleratedPluginCallback(
   } else {
     rendererId_ = rendererId;
     routeId_ = routeId;
+    gpuHostId_ = gpuHostId;
     swapBuffersCount_ = count;
   }
 }
@@ -1044,30 +1051,6 @@ void RenderWidgetHostViewMac::DestroyFakePluginWindowHandle(
   // taken if a plugin is removed, but the RWHVMac itself stays alive.
 }
 
-namespace {
-class DidDestroyAcceleratedSurfaceSender : public Task {
- public:
-  DidDestroyAcceleratedSurfaceSender(
-      int renderer_id,
-      int32 renderer_route_id)
-      : renderer_id_(renderer_id),
-        renderer_route_id_(renderer_route_id) {
-  }
-
-  void Run() {
-    GpuProcessHost::Get()->Send(
-        new GpuMsg_DidDestroyAcceleratedSurface(
-            renderer_id_, renderer_route_id_));
-  }
-
- private:
-  int renderer_id_;
-  int32 renderer_route_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(DidDestroyAcceleratedSurfaceSender);
-};
-}  // anonymous namespace
-
 // This is called by AcceleratedPluginView's -dealloc.
 void RenderWidgetHostViewMac::DeallocFakePluginWindowHandle(
     gfx::PluginWindowHandle window) {
@@ -1081,11 +1064,13 @@ void RenderWidgetHostViewMac::DeallocFakePluginWindowHandle(
   // acks.
   if (render_widget_host_ &&
       plugin_container_manager_.IsRootContainer(window)) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        new DidDestroyAcceleratedSurfaceSender(
-            render_widget_host_->process()->id(),
-            render_widget_host_->routing_id()));
+    GpuProcessHostUIShim* ui_shim = GpuProcessHostUIShim::GetForRenderer(
+        render_widget_host_->process()->id());
+    if (ui_shim) {
+      ui_shim->DidDestroyAcceleratedSurface(
+          render_widget_host_->process()->id(),
+          render_widget_host_->routing_id());
+    }
   }
 
   plugin_container_manager_.DestroyFakePluginWindowHandle(window);
@@ -1143,6 +1128,7 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
     uint64 surface_id,
     int renderer_id,
     int32 route_id,
+    int gpu_host_id,
     uint64 swap_buffers_count) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   AcceleratedPluginView* view = ViewForPluginWindowHandle(window);
@@ -1157,7 +1143,8 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
     [view setHidden:NO];
   [view updateSwapBuffersCount:swap_buffers_count
                   fromRenderer:renderer_id
-                       routeId:route_id];
+                       routeId:route_id
+                     gpuHostId:gpu_host_id];
 }
 
 void RenderWidgetHostViewMac::UpdateRootGpuViewVisibility(
@@ -1193,21 +1180,27 @@ namespace {
 class BuffersSwappedAcknowledger : public Task {
  public:
   BuffersSwappedAcknowledger(
+      int gpu_host_id,
       int renderer_id,
       int32 route_id,
       uint64 swap_buffers_count)
-      : renderer_id_(renderer_id),
+      : gpu_host_id_(gpu_host_id),
+        renderer_id_(renderer_id),
         route_id_(route_id),
         swap_buffers_count_(swap_buffers_count) {
   }
 
   void Run() {
-    GpuProcessHost::Get()->Send(
-        new GpuMsg_AcceleratedSurfaceBuffersSwappedACK(
-            renderer_id_, route_id_, swap_buffers_count_));
+    GpuProcessHost* host = GpuProcessHost::FromID(gpu_host_id_);
+    if (!host)
+      return;
+
+    host->Send(new GpuMsg_AcceleratedSurfaceBuffersSwappedACK(
+        renderer_id_, route_id_, swap_buffers_count_));
   }
 
  private:
+  int gpu_host_id_;
   int renderer_id_;
   int32 route_id_;
   uint64 swap_buffers_count_;
@@ -1219,6 +1212,7 @@ class BuffersSwappedAcknowledger : public Task {
 void RenderWidgetHostViewMac::AcknowledgeSwapBuffers(
     int renderer_id,
     int32 route_id,
+    int gpu_host_id,
     uint64 swap_buffers_count) {
   // Called on the display link thread. Hand actual work off to the IO thread,
   // because |GpuProcessHost::Get()| can only be called there.
@@ -1234,7 +1228,7 @@ void RenderWidgetHostViewMac::AcknowledgeSwapBuffers(
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       new BuffersSwappedAcknowledger(
-          renderer_id, route_id, swap_buffers_count));
+          gpu_host_id, renderer_id, route_id, swap_buffers_count));
 }
 
 void RenderWidgetHostViewMac::GpuRenderingStateDidChange() {

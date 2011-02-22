@@ -16,8 +16,14 @@ class Message;
 class GpuProcessHost : public BrowserChildProcessHost,
                        public base::NonThreadSafe {
  public:
-  // Getter for the singleton. This will return NULL on failure.
-  static GpuProcessHost* Get();
+
+  // Create a GpuProcessHost with the given ID. The object can be found using
+  // FromID with the same id.
+  static GpuProcessHost* Create(int host_id);
+
+  // Get the GPU process host for the GPU process with the given ID. Returns
+  // null if the process no longer exists.
+  static GpuProcessHost* FromID(int host_id);
 
   virtual bool Send(IPC::Message* msg);
 
@@ -25,11 +31,12 @@ class GpuProcessHost : public BrowserChildProcessHost,
   virtual bool OnMessageReceived(const IPC::Message& message);
 
  private:
-  GpuProcessHost();
+  explicit GpuProcessHost(int host_id);
   virtual ~GpuProcessHost();
-
-  bool EnsureInitialized();
   bool Init();
+
+  // Post an IPC message to the UI shim's message handler on the UI thread.
+  void RouteOnUIThread(const IPC::Message& message);
 
   virtual bool CanShutdown();
   virtual void OnChildDied();
@@ -38,8 +45,8 @@ class GpuProcessHost : public BrowserChildProcessHost,
   bool CanLaunchGpuProcess() const;
   bool LaunchGpuProcess();
 
-  bool initialized_;
-  bool initialized_successfully_;
+  // The serial number of the GpuProcessHost / GpuProcessHostUIShim pair.
+  int host_id_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuProcessHost);
 };

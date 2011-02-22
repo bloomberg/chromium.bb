@@ -7,6 +7,7 @@
 #include "app/app_switches.h"
 #include "app/gfx/gl/gl_implementation.h"
 #include "base/command_line.h"
+#include "base/id_map.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/gpu_blacklist.h"
@@ -33,15 +34,26 @@
 // Tasks used by this file
 namespace {
 
+int g_last_host_id = 0;
+IDMap<GpuProcessHostUIShim> g_hosts_by_id;
+
 class SendOnIOThreadTask : public Task {
  public:
-  explicit SendOnIOThreadTask(IPC::Message* msg) : msg_(msg) {
+  SendOnIOThreadTask(int host_id, IPC::Message* msg)
+      : host_id_(host_id),
+        msg_(msg) {
   }
 
  private:
   void Run() {
-    GpuProcessHost::Get()->Send(msg_);
+    GpuProcessHost* host = GpuProcessHost::FromID(host_id_);
+    if (host)
+      host->Send(msg_);
+    else
+      delete msg_;
   }
+
+  int host_id_;
   IPC::Message* msg_;
 };
 
@@ -95,41 +107,60 @@ RenderWidgetHostView* GpuProcessHostUIShim::ViewSurface::
 }
 
 GpuProcessHostUIShim::GpuProcessHostUIShim()
-    : last_routing_id_(1),
-      initialized_(false),
-      initialized_successfully_(false),
+    : host_id_(++g_last_host_id),
       gpu_feature_flags_set_(false) {
-}
-
-GpuProcessHostUIShim::~GpuProcessHostUIShim() {
-}
-
-bool GpuProcessHostUIShim::EnsureInitialized() {
-  if (!initialized_) {
-    initialized_ = true;
-    initialized_successfully_ = Init();
-  }
-  return initialized_successfully_;
-}
-
-bool GpuProcessHostUIShim::Init() {
-  return LoadGpuBlacklist();
+  g_hosts_by_id.AddWithID(this, host_id_);
 }
 
 // static
-GpuProcessHostUIShim* GpuProcessHostUIShim::GetInstance() {
+GpuProcessHostUIShim* GpuProcessHostUIShim::GetForRenderer(int renderer_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return Singleton<GpuProcessHostUIShim>::get();
+
+  // The current policy is to ignore the renderer ID and use a single GPU
+  // process for all renderers. Later this will be extended to allow the
+  // use of multiple GPU processes.
+  if (!g_hosts_by_id.IsEmpty()) {
+    IDMap<GpuProcessHostUIShim>::iterator it(&g_hosts_by_id);
+    return it.GetCurrentValue();
+  }
+
+  GpuProcessHostUIShim* ui_shim(new GpuProcessHostUIShim);
+  if (!ui_shim->Init()) {
+    delete ui_shim;
+    return NULL;
+  }
+
+  // If Init succeeds, post a task to create the corresponding GpuProcessHost.
+  // The GpuProcessHost will take ownership of the GpuProcessHostUIShim.
+  BrowserThread::PostTask(BrowserThread::IO,
+                          FROM_HERE,
+                          NewRunnableFunction(&GpuProcessHost::Create,
+                                              ui_shim->host_id_));
+
+  return ui_shim;
+}
+
+// static
+void GpuProcessHostUIShim::Destroy(int host_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  delete FromID(host_id);
+}
+
+// static
+GpuProcessHostUIShim* GpuProcessHostUIShim::FromID(int host_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (host_id == 0)
+    return NULL;
+
+  return g_hosts_by_id.Lookup(host_id);
 }
 
 bool GpuProcessHostUIShim::Send(IPC::Message* msg) {
   DCHECK(CalledOnValidThread());
-  if (!EnsureInitialized())
-    return false;
 
   BrowserThread::PostTask(BrowserThread::IO,
                           FROM_HERE,
-                          new SendOnIOThreadTask(msg));
+                          new SendOnIOThreadTask(host_id_, msg));
   return true;
 }
 
@@ -205,29 +236,13 @@ void GpuProcessHostUIShim::SendOutstandingReplies() {
   }
 }
 
-int32 GpuProcessHostUIShim::GetNextRoutingId() {
-  DCHECK(CalledOnValidThread());
-  return ++last_routing_id_;
-}
-
-void GpuProcessHostUIShim::AddRoute(int32 routing_id,
-                                    IPC::Channel::Listener* listener) {
-  DCHECK(CalledOnValidThread());
-  router_.AddRoute(routing_id, listener);
-}
-
-void GpuProcessHostUIShim::RemoveRoute(int32 routing_id) {
-  DCHECK(CalledOnValidThread());
-  router_.RemoveRoute(routing_id);
-}
-
 bool GpuProcessHostUIShim::OnMessageReceived(const IPC::Message& message) {
   DCHECK(CalledOnValidThread());
 
-  if (message.routing_id() == MSG_ROUTING_CONTROL)
-    return OnControlMessageReceived(message);
+  if (message.routing_id() != MSG_ROUTING_CONTROL)
+    return false;
 
-  return router_.RouteMessage(message);
+  return OnControlMessageReceived(message);
 }
 
 void GpuProcessHostUIShim::EstablishGpuChannel(
@@ -236,7 +251,7 @@ void GpuProcessHostUIShim::EstablishGpuChannel(
   linked_ptr<EstablishChannelCallback> wrapped_callback(callback);
 
   // If GPU features are already blacklisted, no need to establish the channel.
-  if (EnsureInitialized() && gpu_feature_flags_.flags() != 0) {
+  if (gpu_feature_flags_.flags() != 0) {
     EstablishChannelError(
         wrapped_callback.release(), IPC::ChannelHandle(), GPUInfo());
     return;
@@ -289,6 +304,15 @@ void GpuProcessHostUIShim::CreateViewCommandBuffer(
   }
 }
 
+#if defined(OS_MACOSX)
+
+void GpuProcessHostUIShim::DidDestroyAcceleratedSurface(int renderer_id,
+                                                        int renderer_route_id) {
+  Send(new GpuMsg_DidDestroyAcceleratedSurface(renderer_id, renderer_route_id));
+}
+
+#endif
+
 void GpuProcessHostUIShim::CollectGraphicsInfoAsynchronously(
     GPUInfo::Level level) {
   DCHECK(CalledOnValidThread());
@@ -311,6 +335,15 @@ void GpuProcessHostUIShim::SendAboutGpuHang() {
 const GPUInfo& GpuProcessHostUIShim::gpu_info() const {
   DCHECK(CalledOnValidThread());
   return gpu_info_;
+}
+
+GpuProcessHostUIShim::~GpuProcessHostUIShim() {
+  DCHECK(CalledOnValidThread());
+  g_hosts_by_id.Remove(host_id_);
+}
+
+bool GpuProcessHostUIShim::Init() {
+  return LoadGpuBlacklist();
 }
 
 void GpuProcessHostUIShim::AddCustomLogMessage(int level,
@@ -532,6 +565,7 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
       // Parameters needed to formulate an acknowledgment.
       params.renderer_id,
       params.route_id,
+      host_id_,
       params.swap_buffers_count);
 }
 

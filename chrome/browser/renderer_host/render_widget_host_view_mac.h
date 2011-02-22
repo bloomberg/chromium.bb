@@ -258,8 +258,9 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   virtual void AcceleratedSurfaceBuffersSwapped(
       gfx::PluginWindowHandle window,
       uint64 surface_id,
-      int32 renderer_id,
+      int renderer_id,
       int32 route_id,
+      int gpu_host_id,
       uint64 swap_buffers_count);
   virtual void GpuRenderingStateDidChange();
 
@@ -297,6 +298,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   // process a notion of how quickly the browser is able to keep up with it.
   void AcknowledgeSwapBuffers(int renderer_id,
                               int32 route_id,
+                              int gpu_host_id,
                               uint64 swap_buffers_count);
 
   // These member variables should be private, but the associated ObjC class

@@ -331,11 +331,15 @@ Value* GpuMessageHandler::OnRequestGpuInfo(const ListValue* list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Get GPU Info.
-  GPUInfo gpu_info = GpuProcessHostUIShim::GetInstance()->gpu_info();
+  GpuProcessHostUIShim* ui_shim = GpuProcessHostUIShim::GetForRenderer(0);
+  if (!ui_shim)
+    return NULL;
+
+  GPUInfo gpu_info = ui_shim->gpu_info();
 
   std::string html;
   if (gpu_info.level() != GPUInfo::kComplete) {
-    GpuProcessHostUIShim::GetInstance()->CollectGraphicsInfoAsynchronously(
+    ui_shim->CollectGraphicsInfoAsynchronously(
         GPUInfo::kComplete);
   }
 
@@ -348,7 +352,11 @@ Value* GpuMessageHandler::OnRequestGpuInfo(const ListValue* list) {
 
 Value* GpuMessageHandler::OnRequestLogMessages(const ListValue*) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return GpuProcessHostUIShim::GetInstance()->logMessages();
+  GpuProcessHostUIShim* ui_shim = GpuProcessHostUIShim::GetForRenderer(0);
+  if (!ui_shim)
+    return NULL;
+
+  return ui_shim->log_messages();
 }
 
 }  // namespace

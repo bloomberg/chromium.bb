@@ -41,14 +41,25 @@ struct ChannelHandle;
 class Message;
 }
 
-class GpuProcessHostUIShim : public IPC::Channel::Sender,
-                             public IPC::Channel::Listener,
-                             public base::NonThreadSafe {
+class GpuProcessHostUIShim
+    : public IPC::Channel::Listener,
+      public IPC::Channel::Sender,
+      public base::NonThreadSafe {
  public:
-  // Getter for the singleton. This will return NULL on failure.
-  static GpuProcessHostUIShim* GetInstance();
+  // Creates a new GpuProcessHostUIShim or gets one for a particular
+  // renderer process, resulting in the launching of a GPU process if required.
+  // Returns null on failure. It is not safe to store the pointer once control
+  // has returned to the message loop as it can be destroyed. Instead store the
+  // associated GPU host ID. A renderer ID of zero means the browser process.
+  static GpuProcessHostUIShim* GetForRenderer(int renderer_id);
 
-  int32 GetNextRoutingId();
+  // Destroy the GpuProcessHostUIShim with the given host ID. This can only
+  // be called on the UI thread. Only the GpuProcessHost should destroy the
+  // UI shim.
+  static void Destroy(int host_id);
+
+  static GpuProcessHostUIShim* FromID(int host_id);
+  int host_id() const { return host_id_; }
 
   // IPC::Channel::Sender implementation.
   virtual bool Send(IPC::Message* msg);
@@ -89,9 +100,10 @@ class GpuProcessHostUIShim : public IPC::Channel::Sender,
       const GPUCreateCommandBufferConfig& init_params,
       CreateCommandBufferCallback* callback);
 
-  // See documentation on MessageRouter for AddRoute and RemoveRoute
-  void AddRoute(int32 routing_id, IPC::Channel::Listener* listener);
-  void RemoveRoute(int32 routing_id);
+#if defined(OS_MACOSX)
+  // Notify the GPU process that an accelerated surface was destroyed.
+  void DidDestroyAcceleratedSurface(int renderer_id, int32 renderer_route_id);
+#endif
 
   // Sends a message to the browser process to collect the information from the
   // graphics card.
@@ -114,7 +126,7 @@ class GpuProcessHostUIShim : public IPC::Channel::Sender,
     gpu_info_collected_callback_.reset(callback);
   }
 
-  ListValue* logMessages() const { return log_messages_.DeepCopy(); }
+  ListValue* log_messages() const { return log_messages_.DeepCopy(); }
 
   // Can be called directly from the UI thread to log a message.
   void AddCustomLogMessage(int level, const std::string& header,
@@ -123,14 +135,8 @@ class GpuProcessHostUIShim : public IPC::Channel::Sender,
   bool LoadGpuBlacklist();
 
  private:
-  friend struct DefaultSingletonTraits<GpuProcessHostUIShim>;
-
   GpuProcessHostUIShim();
   virtual ~GpuProcessHostUIShim();
-
-  // TODO(apatrick): Following the pattern from GpuProcessHost. Talk to zmo
-  // and see if we can find a better mechanism.
-  bool EnsureInitialized();
   bool Init();
 
   // Message handlers.
@@ -158,12 +164,11 @@ class GpuProcessHostUIShim : public IPC::Channel::Sender,
   void OnScheduleComposite(int32 renderer_id, int32 render_view_id);
 #endif
 
-  int last_routing_id_;
+  // The serial number of the GpuProcessHost / GpuProcessHostUIShim pair.
+  int host_id_;
 
   GPUInfo gpu_info_;
   ListValue log_messages_;
-
-  MessageRouter router_;
 
   // Used only in testing. If set, the callback is invoked when the GPU info
   // has been collected.
@@ -188,9 +193,6 @@ class GpuProcessHostUIShim : public IPC::Channel::Sender,
   // with it.
   class ViewSurface;
   std::map<ViewID, linked_ptr<ViewSurface> > acquired_surfaces_;
-
-  bool initialized_;
-  bool initialized_successfully_;
 
   bool gpu_feature_flags_set_;
   scoped_ptr<GpuBlacklist> gpu_blacklist_;

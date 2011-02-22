@@ -57,7 +57,8 @@ class RenderWidgetHostViewMacTest : public RenderViewHostTestHarness {
 
     // The accelerated view isn't shown until it has a valid rect and has been
     // painted to.
-    rwhv_mac_->AcceleratedSurfaceBuffersSwapped(accelerated_handle, 0, 0, 0, 0);
+    rwhv_mac_->AcceleratedSurfaceBuffersSwapped(accelerated_handle,
+                                                0, 0, 0, 0, 0);
     webkit::npapi::WebPluginGeometry geom;
     gfx::Rect rect(0, 0, w, h);
     geom.window = accelerated_handle;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/render_widget_host.h"
+#include "chrome/browser/renderer_host/render_widget_host.h"
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
@@ -10,17 +10,17 @@
 #include "base/metrics/histogram.h"
 #include "chrome/browser/accessibility/browser_accessibility_state.h"
 #include "chrome/browser/metrics/user_metrics.h"
+#include "chrome/browser/renderer_host/backing_store.h"
+#include "chrome/browser/renderer_host/backing_store_manager.h"
+#include "chrome/browser/renderer_host/render_process_host.h"
+#include "chrome/browser/renderer_host/render_widget_helper.h"
+#include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/result_codes.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
-#include "content/browser/renderer_host/backing_store.h"
-#include "content/browser/renderer_host/backing_store_manager.h"
-#include "content/browser/renderer_host/render_process_host.h"
-#include "content/browser/renderer_host/render_widget_helper.h"
-#include "content/browser/renderer_host/render_widget_host_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "webkit/glue/webcursor.h"
@@ -1118,7 +1118,7 @@ void RenderWidgetHost::OnAcceleratedSurfaceBuffersSwapped(
     // updating of accelerated plugins as well. However, if we add support
     // for composited plugins then this is not necessary.
     view_->AcceleratedSurfaceBuffersSwapped(window, surface_id,
-                                            0, 0, 0);
+                                            0, 0, 0, 0);
   }
 }
 #elif defined(OS_POSIX)

@@ -112,7 +112,7 @@ class GPUInfoCollectedObserver {
 // will return false if we are running in a virtualized environment.
 bool CollectGPUInfo(GPUInfo* client_info) {
   CHECK(client_info);
-  GpuProcessHostUIShim* gpu_host_shim = GpuProcessHostUIShim::GetInstance();
+  GpuProcessHostUIShim* gpu_host_shim = GpuProcessHostUIShim::GetForRenderer(0);
   if (!gpu_host_shim)
     return false;
   GPUInfo info = gpu_host_shim->gpu_info();

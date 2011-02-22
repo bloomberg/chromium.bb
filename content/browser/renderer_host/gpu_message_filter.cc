@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/gpu_message_filter.h"
+#include "chrome/browser/renderer_host/gpu_message_filter.h"
 
 #include "base/callback.h"
+#include "chrome/browser/gpu_process_host.h"
 #include "chrome/browser/gpu_process_host_ui_shim.h"
 #include "chrome/common/gpu_create_command_buffer_config.h"
 #include "chrome/common/gpu_messages.h"
 #include "chrome/common/render_messages.h"
 
 GpuMessageFilter::GpuMessageFilter(int render_process_id)
-    : render_process_id_(render_process_id) {
+    : gpu_host_id_(0),
+      render_process_id_(render_process_id) {
 }
 
 // WeakPtrs to a GpuMessageFilter need to be Invalidated from
@@ -132,20 +134,62 @@ class CreateCommandBufferCallback : public CallbackRunner<Tuple1<int32> > {
 }  // namespace
 
 void GpuMessageFilter::OnEstablishGpuChannel() {
-  GpuProcessHostUIShim::GetInstance()->EstablishGpuChannel(
-      render_process_id_, new EstablishChannelCallback(this));
+  scoped_ptr<EstablishChannelCallback> callback(
+      new EstablishChannelCallback(this));
+
+  // TODO(apatrick): Eventually, this will return the route ID of a
+  // GpuProcessStub, from which the renderer process will create a
+  // GpuProcessProxy. The renderer will use the proxy for all subsequent
+  // communication with the GPU process. This means if the GPU process
+  // terminates, the renderer process will not find itself unknowingly sending
+  // IPCs to a newly launched GPU process. Also, I will rename this function
+  // to something like OnCreateGpuProcess.
+  GpuProcessHostUIShim* ui_shim = GpuProcessHostUIShim::FromID(gpu_host_id_);
+  if (!ui_shim) {
+    ui_shim = GpuProcessHostUIShim::GetForRenderer(render_process_id_);
+    if (!ui_shim) {
+      callback->Run(IPC::ChannelHandle(), GPUInfo());
+      return;
+    }
+
+    gpu_host_id_ = ui_shim->host_id();
+  }
+
+  ui_shim->EstablishGpuChannel(render_process_id_,
+                               callback.release());
 }
 
 void GpuMessageFilter::OnSynchronizeGpu(IPC::Message* reply) {
-  GpuProcessHostUIShim::GetInstance()->
-      Synchronize(new SynchronizeCallback(this, reply));
+  GpuProcessHostUIShim* ui_shim = GpuProcessHostUIShim::FromID(gpu_host_id_);
+  if (!ui_shim) {
+    // TODO(apatrick): Eventually, this IPC message will be routed to a
+    // GpuProcessStub with a particular routing ID. The error will be set if
+    // the GpuProcessStub with that routing ID is not in the MessageRouter.
+    reply->set_reply_error();
+    Send(reply);
+    return;
+  }
+
+  ui_shim->Synchronize(new SynchronizeCallback(this, reply));
 }
 
 void GpuMessageFilter::OnCreateViewCommandBuffer(
     int32 render_view_id,
     const GPUCreateCommandBufferConfig& init_params,
     IPC::Message* reply) {
-  GpuProcessHostUIShim::GetInstance()->CreateViewCommandBuffer(
-      render_view_id, render_process_id_, init_params,
+  GpuProcessHostUIShim* ui_shim = GpuProcessHostUIShim::FromID(gpu_host_id_);
+  if (!ui_shim) {
+    // TODO(apatrick): Eventually, this IPC message will be routed to a
+    // GpuProcessStub with a particular routing ID. The error will be set if
+    // the GpuProcessStub with that routing ID is not in the MessageRouter.
+    reply->set_reply_error();
+    Send(reply);
+    return;
+  }
+
+  ui_shim->CreateViewCommandBuffer(
+      render_view_id,
+      render_process_id_,
+      init_params,
       new CreateCommandBufferCallback(this, reply));
 }

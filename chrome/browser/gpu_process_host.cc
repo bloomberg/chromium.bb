@@ -39,41 +39,33 @@ enum GPUProcessLifetimeEvent {
   GPU_PROCESS_LIFETIME_EVENT_MAX
   };
 
-// Tasks used by this file
 class RouteOnUIThreadTask : public Task {
  public:
-  explicit RouteOnUIThreadTask(const IPC::Message& msg) : msg_(msg) {
+  RouteOnUIThreadTask(int host_id, const IPC::Message& msg)
+      : host_id_(host_id),
+        msg_(msg) {
   }
 
  private:
-  void Run() {
-    GpuProcessHostUIShim::GetInstance()->OnMessageReceived(msg_);
+  virtual void Run() {
+    GpuProcessHostUIShim* ui_shim = GpuProcessHostUIShim::FromID(host_id_);
+    if (ui_shim)
+      ui_shim->OnMessageReceived(msg_);
   }
+
+  int host_id_;
   IPC::Message msg_;
 };
 
-// Global GpuProcessHost instance.
-// We can not use Singleton<GpuProcessHost> because that gets
-// terminated on the wrong thread (main thread). We need the
-// GpuProcessHost to be terminated on the same thread on which it is
-// initialized, the IO thread.
-static GpuProcessHost* sole_instance_ = NULL;
+// A global map from GPU process host ID to GpuProcessHost.
+static IDMap<GpuProcessHost> g_hosts_by_id;
 
 // Number of times the gpu process has crashed in the current browser session.
 static int g_gpu_crash_count = 0;
+
 // Maximum number of times the gpu process is allowed to crash in a session.
 // Once this limit is reached, any request to launch the gpu process will fail.
 static const int kGpuMaxCrashCount = 3;
-
-void RouteOnUIThread(const IPC::Message& message) {
-  BrowserThread::PostTask(BrowserThread::UI,
-                          FROM_HERE,
-                          new RouteOnUIThreadTask(message));
-}
-
-bool SendDelayedMsg(IPC::Message* reply_msg) {
-  return GpuProcessHost::Get()->Send(reply_msg);
-}
 
 }  // anonymous namespace
 
@@ -106,27 +98,45 @@ class GpuMainThread : public base::Thread {
   DISALLOW_COPY_AND_ASSIGN(GpuMainThread);
 };
 
-GpuProcessHost::GpuProcessHost()
+// static
+GpuProcessHost* GpuProcessHost::Create(int host_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  GpuProcessHost* host = new GpuProcessHost(host_id);
+  if (!host->Init()) {
+    delete host;
+    return NULL;
+  }
+
+  return host;
+}
+
+// static
+GpuProcessHost* GpuProcessHost::FromID(int host_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  if (host_id == 0)
+    return NULL;
+
+  return g_hosts_by_id.Lookup(host_id);
+}
+
+GpuProcessHost::GpuProcessHost(int host_id)
     : BrowserChildProcessHost(GPU_PROCESS, NULL),
-      initialized_(false),
-      initialized_successfully_(false) {
-  DCHECK_EQ(sole_instance_, static_cast<GpuProcessHost*>(NULL));
+      host_id_(host_id) {
+  g_hosts_by_id.AddWithID(this, host_id_);
 }
 
 GpuProcessHost::~GpuProcessHost() {
-  DCHECK_EQ(sole_instance_, this);
-  sole_instance_ = NULL;
-}
 
-bool GpuProcessHost::EnsureInitialized() {
-  if (!initialized_) {
-    initialized_ = true;
-    initialized_successfully_ = Init();
-    if (initialized_successfully_) {
-      Send(new GpuMsg_Initialize());
-    }
-  }
-  return initialized_successfully_;
+  DCHECK(CalledOnValidThread());
+
+  g_hosts_by_id.Remove(host_id_);
+
+  BrowserThread::PostTask(BrowserThread::UI,
+                          FROM_HERE,
+                          NewRunnableFunction(GpuProcessHostUIShim::Destroy,
+                                              host_id_));
 }
 
 bool GpuProcessHost::Init() {
@@ -136,24 +146,20 @@ bool GpuProcessHost::Init() {
   if (!CanLaunchGpuProcess())
     return false;
 
-  return LaunchGpuProcess();
+  if (!LaunchGpuProcess())
+    return false;
+
+  return Send(new GpuMsg_Initialize());
 }
 
-// static
-GpuProcessHost* GpuProcessHost::Get() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  if (sole_instance_ == NULL)
-    sole_instance_ = new GpuProcessHost();
-  return sole_instance_;
+void GpuProcessHost::RouteOnUIThread(const IPC::Message& message) {
+  BrowserThread::PostTask(BrowserThread::UI,
+                          FROM_HERE,
+                          new RouteOnUIThreadTask(host_id_, message));
 }
 
 bool GpuProcessHost::Send(IPC::Message* msg) {
   DCHECK(CalledOnValidThread());
-
-  if (!EnsureInitialized())
-    return false;
-
   return BrowserChildProcessHost::Send(msg);
 }
 
@@ -169,20 +175,22 @@ bool GpuProcessHost::CanShutdown() {
 
 namespace {
 
-void SendOutstandingRepliesDispatcher() {
-  GpuProcessHostUIShim::GetInstance()->SendOutstandingReplies();
+void SendOutstandingRepliesDispatcher(int host_id) {
+  GpuProcessHostUIShim *ui_shim = GpuProcessHostUIShim::FromID(host_id);
+  DCHECK(ui_shim);
+  ui_shim->SendOutstandingReplies();
 }
 
-void SendOutstandingReplies() {
+void SendOutstandingReplies(int host_id) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableFunction(&SendOutstandingRepliesDispatcher));
+      NewRunnableFunction(&SendOutstandingRepliesDispatcher, host_id));
 }
 
 }  // namespace
 
 void GpuProcessHost::OnChildDied() {
-  SendOutstandingReplies();
+  SendOutstandingReplies(host_id_);
   // Located in OnChildDied because OnProcessCrashed suffers from a race
   // condition on Linux.
   UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessLifetimeEvents",
@@ -192,7 +200,7 @@ void GpuProcessHost::OnChildDied() {
 }
 
 void GpuProcessHost::OnProcessCrashed(int exit_code) {
-  SendOutstandingReplies();
+  SendOutstandingReplies(host_id_);
   if (++g_gpu_crash_count >= kGpuMaxCrashCount) {
     // The gpu process is too unstable to use. Disable it for current session.
     RenderViewHostDelegateHelper::set_gpu_enabled(false);
