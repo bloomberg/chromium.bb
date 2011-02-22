@@ -101,6 +101,7 @@ extern const char kChromeUIMobileSetupURL[];
 extern const char kChromeUIRegisterPageURL[];
 extern const char kChromeUISlideshowURL[];
 extern const char kChromeUISystemInfoURL[];
+extern const char kChromeUIUserImageURL[];
 #endif
 
 // chrome components of URLs. Should be kept in sync with the full URLs
@@ -148,6 +149,7 @@ extern const char kChromeUISystemInfoHost[];
 extern const char kChromeUIMenu[];
 extern const char kChromeUIWrenchMenu[];
 extern const char kChromeUINetworkMenu[];
+extern const char kChromeUIUserImageHost[];
 #endif
 
 // Special URL used to start a navigation to an error page.

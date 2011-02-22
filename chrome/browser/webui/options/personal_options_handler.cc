@@ -27,6 +27,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/url_constants.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -391,13 +392,11 @@ void PersonalOptionsHandler::OnPreferredDataTypesUpdated(
 
 #if defined(OS_CHROMEOS)
 void PersonalOptionsHandler::LoadAccountPicture(const ListValue* args) {
-  const SkBitmap& account_picture =
-      chromeos::UserManager::Get()->logged_in_user().image();
-
-  if (!account_picture.isNull()) {
-    StringValue data_url(web_ui_util::GetImageDataUrl(account_picture));
+  std::string email = chromeos::UserManager::Get()->logged_in_user().email();
+  if (!email.empty()) {
+    StringValue image_url(chrome::kChromeUIUserImageURL + email);
     web_ui_->CallJavascriptFunction(L"PersonalOptions.setAccountPicture",
-        data_url);
+        image_url);
   }
 }
 #endif

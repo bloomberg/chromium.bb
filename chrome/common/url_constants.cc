@@ -109,6 +109,7 @@ const char kChromeUIMobileSetupURL[] = "chrome://mobilesetup/";
 const char kChromeUIRegisterPageURL[] = "chrome://register/";
 const char kChromeUISlideshowURL[] = "chrome://slideshow/";
 const char kChromeUISystemInfoURL[] = "chrome://system/";
+const char kChromeUIUserImageURL[] = "chrome://userimage/";
 #endif
 
 // Keep this list sorted please.
@@ -156,6 +157,7 @@ const char kChromeUISystemInfoHost[] = "system";
 const char kChromeUIMenu[] = "menu";
 const char kChromeUIWrenchMenu[] = "wrench-menu";
 const char kChromeUINetworkMenu[] = "network-menu";
+const char kChromeUIUserImageHost[] = "userimage";
 #endif
 
 const char kUnreachableWebDataURL[] = "chrome://chromewebdata/";

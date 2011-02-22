@@ -774,6 +774,8 @@
         'browser/chromeos/webui/system_options_handler.h',
         'browser/chromeos/webui/system_settings_provider.cc',
         'browser/chromeos/webui/system_settings_provider.h',
+        'browser/chromeos/webui/user_image_source.cc',
+        'browser/chromeos/webui/user_image_source.h',
         'browser/chromeos/webui/wrench_menu_ui.cc',
         'browser/chromeos/webui/wrench_menu_ui.h',
         'browser/chromeos/wm_ipc.cc',

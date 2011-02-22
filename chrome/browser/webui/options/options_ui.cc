@@ -66,6 +66,7 @@
 #include "chrome/browser/chromeos/webui/proxy_handler.h"
 #include "chrome/browser/chromeos/webui/stats_options_handler.h"
 #include "chrome/browser/chromeos/webui/system_options_handler.h"
+#include "chrome/browser/chromeos/webui/user_image_source.h"
 #endif
 
 #if defined(USE_NSS)
@@ -223,6 +224,14 @@ OptionsUI::OptionsUI(TabContents* contents)
   // Set up the chrome://theme/ source.
   WebUIThemeSource* theme = new WebUIThemeSource(contents->profile());
   contents->profile()->GetChromeURLDataManager()->AddDataSource(theme);
+
+#if defined(OS_CHROMEOS)
+  // Set up the chrome://userimage/ source.
+  chromeos::UserImageSource* user_image_source =
+      new chromeos::UserImageSource();
+  contents->profile()->GetChromeURLDataManager()->AddDataSource(
+      user_image_source);
+#endif
 
   // Initialize the chrome://about/ source in case the user clicks the credits
   // link.

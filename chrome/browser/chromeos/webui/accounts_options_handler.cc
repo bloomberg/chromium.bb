@@ -11,7 +11,7 @@
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
-#include "chrome/browser/webui/web_ui_util.h"
+#include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -92,13 +92,11 @@ void AccountsOptionsHandler::FetchUserPictures(const ListValue* args) {
 
   UserVector users = UserManager::Get()->GetUsers();
   for (UserVector::const_iterator it = users.begin();
-       it < users.end(); ++it) {
-    if (!it->image().isNull()) {
-      StringValue* picture = new StringValue(
-          web_ui_util::GetImageDataUrl(it->image()));
-      // SetWithoutPathExpansion because email has "." in it.
-      user_pictures.SetWithoutPathExpansion(it->email(), picture);
-    }
+       it != users.end(); ++it) {
+    StringValue* image_url =
+        new StringValue(chrome::kChromeUIUserImageURL + it->email());
+    // SetWithoutPathExpansion because email has "." in it.
+    user_pictures.SetWithoutPathExpansion(it->email(), image_url);
   }
 
   web_ui_->CallJavascriptFunction(L"AccountsOptions.setUserPictures",
