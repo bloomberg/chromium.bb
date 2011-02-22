@@ -61,8 +61,7 @@
    Memcheck:Leak
    ...
    fun:FcFontRenderPrepare
-   obj:*
-   obj:*
+   ...
    fun:pango_itemize_with_base_dir
 }
 {
@@ -78,8 +77,16 @@
    Memcheck:Leak
    ...
    fun:FcFontRenderPrepare
-   obj:*
+   ...
    fun:pango_context_get_metrics
+}
+{
+   pango_font_leak_todo_6
+   Memcheck:Leak
+   ...
+   fun:FcDefaultSubstitute
+   ...
+   fun:pango_itemize_with_base_dir
 }
 {
    # Fontconfig leak, seen in shard 16 of 20 of ui_tests
@@ -594,6 +601,22 @@
    fun:STAN_ChangeCertTrust
    fun:CERT_ChangeCertTrust
 }
+{
+   bug_64930 [vector-under-hashtable false positive leaks on x64]
+   Memcheck:Leak
+   ...
+   fun:_ZNSt6vector*
+   fun:_ZNSt6vector*
+   fun:_ZN9__gnu_cxx9hashtable*
+   fun:_ZN9__gnu_cxx9hashtable*
+   fun:_ZN9__gnu_cxx8hash_map*
+}
+{
+   leaks in bash
+   Memcheck:Leak
+   ...
+   obj:/bin/bash
+}
 
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive
@@ -1033,7 +1056,7 @@
    fun:_ZN7WebCore9HTMLNames4initEv
 }
 {
-   bug_16583
+   bug_16583a
    Memcheck:Leak
    ...
    fun:malloc
@@ -1041,9 +1064,17 @@
    fun:g_slice_alloc
    fun:g_slice_alloc0
    fun:g_type_create_instance
-   fun:*
+   ...
    fun:g_object_newv
-   fun:g_object_new_valist
+   fun:g_object_new*
+}
+{
+   bug_16583b
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:g_hash_table_new_full
 }
 {
    bug_17291
@@ -3797,4 +3828,35 @@
    fun:_ZN7WebCore21npObjectMethodHandlerERKN2v89ArgumentsE
    fun:_ZN2v88internal19HandleApiCallHelperILb0EEEPNS0_11MaybeObjectENS0_47_GLOBAL__N_v8_src_builtins.cc_00000000_67AD6F1016BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEE
    obj:*
+}
+{
+   bug_73722a
+   Memcheck:Cond
+   fun:_ZN2v88internal10StackFrame11ComputeTypeEPNS1_5StateE
+}
+{
+   bug_73722b
+   Memcheck:Cond
+   fun:_ZN2v88internal18StackFrameIterator12SingletonForENS0_10StackFrame4TypeE
+}
+
+#-----------------------------------------------------------------------
+# These only occur on our Google workstations
+{
+   bug_todo_freeres
+   Memcheck:Free
+   fun:free
+   fun:__libc_freeres
+   fun:_vgnU_freeres
+   fun:_Exit
+   fun:exit
+}
+{
+   bug_todo_getdelim
+   Memcheck:Leak
+   fun:malloc
+   fun:getdelim
+   ...
+   fun:call_init
+   fun:_dl_init
 }
