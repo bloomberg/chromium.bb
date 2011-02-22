@@ -368,6 +368,7 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 
 // These APIs should only be used by unit tests (or used internally).
 @interface BookmarkBarController(InternalOrTestingAPI)
+- (void)openBookmarkFolder:(id)sender;
 - (BookmarkBarView*)buttonView;
 - (NSMutableArray*)buttons;
 - (NSButton*)offTheSideButton;

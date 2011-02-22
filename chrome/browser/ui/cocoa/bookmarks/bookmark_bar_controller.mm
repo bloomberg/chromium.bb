@@ -541,26 +541,30 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   [self openURL:node->GetURL() disposition:disposition];
 }
 
-// Redirect to our logic shared with BookmarkBarFolderController.
-- (IBAction)openBookmarkFolderFromButton:(id)sender {
-  if (sender != offTheSideButton_) {
-    // Toggle presentation of bar folder menus.
-    showFolderMenus_ = !showFolderMenus_;
-    [folderTarget_ openBookmarkFolderFromButton:sender];
-  } else {
-    // Off-the-side requires special handling.
-    [self openOffTheSideFolderFromButton:sender];
-  }
-}
-
-// The button that sends this one is special; the "off the side"
-// button (chevron) opens like a folder button but isn't exactly a
-// parent folder.
-- (IBAction)openOffTheSideFolderFromButton:(id)sender {
+// Common function to open a bookmark folder of any type.
+- (void)openBookmarkFolder:(id)sender {
   DCHECK([sender isKindOfClass:[BookmarkButton class]]);
   DCHECK([[sender cell] isKindOfClass:[BookmarkButtonCell class]]);
-  [[sender cell] setStartingChildIndex:displayedButtonCount_];
+
+  showFolderMenus_ = !showFolderMenus_;
+
+  if (sender == offTheSideButton_)
+    [[sender cell] setStartingChildIndex:displayedButtonCount_];
+
+  // Toggle presentation of bar folder menus.
   [folderTarget_ openBookmarkFolderFromButton:sender];
+}
+
+
+// Click on a bookmark folder button.
+- (IBAction)openBookmarkFolderFromButton:(id)sender {
+  [self openBookmarkFolder:sender];
+}
+
+// Click on the "off the side" button (chevron), which opens like a folder
+// button but isn't exactly a parent folder.
+- (IBAction)openOffTheSideFolderFromButton:(id)sender {
+  [self openBookmarkFolder:sender];
 }
 
 - (IBAction)openBookmarkInNewForegroundTab:(id)sender {
