@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -262,7 +262,9 @@ class ChromeTests:
   def TestGfx(self):
     return self.SimpleTest("chrome", "gfx_unittests")
 
-  UI_VALGRIND_ARGS = ["--timeout=180000", "--trace_children", "--indirect"]
+  # Valgrind timeouts are in seconds.
+  UI_VALGRIND_ARGS = ["--timeout=7200", "--trace_children", "--indirect"]
+  # UI test timeouts are in milliseconds.
   UI_TEST_ARGS = ["--ui-test-timeout=240000",
                   "--ui-test-action-timeout=120000",
                   "--ui-test-action-max-timeout=280000",
