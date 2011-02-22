@@ -97,6 +97,10 @@ def GetURL(base_url, os, arch, revision):
   revision = int(revision)
 
   directories = GetIndex(None, None, False, base_url=base_url)
+  if revision not in directories[base_dir]:
+    raise Exception('A Chromium binary cannot be found for %s at revision %d - '
+                    'run find_chrome_revisions.py to find a better revision'
+                    % (base_dir, revision))
   directory = directories[base_dir][revision]
   return '/'.join([base_url, directory, archive_name])
 
