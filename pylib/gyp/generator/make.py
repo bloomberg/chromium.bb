@@ -114,7 +114,7 @@ all_deps :=
 #   export LINK="$(CXX)"
 #
 # This will allow make to invoke N linker processes as specified in -jN.
-LINK ?= flock $(builddir)/linker.lock $(CXX)
+LINK ?= flock $(builddir)/linker.lock $(CXX) %(LINK_flags)s
 
 CC.target ?= $(CC)
 CFLAGS.target ?= $(CFLAGS)
@@ -1242,12 +1242,21 @@ def RunSystemTests():
   if gyp.system_test.TestArSupportsT(ar_command=ar_host, cc_command=cc_host):
     arflags_host = 'crsT'
 
+  link_flags = ''
+  if gyp.system_test.TestLinkerSupportsThreads(cc_command=cc_target):
+    # N.B. we don't test for cross-compilation; as currently written, we
+    # don't even use flock when linking in the cross-compile setup!
+    # TODO(evan): refactor cross-compilation such that this code can
+    # be reused.
+    link_flags = '-Wl,--threads --Wl,--thread-count=4'
+
   # TODO(evan): cache this output.  (But then we'll need to add extra
   # flags to gyp to flush the cache, yuk!  It's fast enough for now to
   # just run it every time.)
 
   return { 'ARFLAGS.target': arflags_target,
-           'ARFLAGS.host': arflags_host }
+           'ARFLAGS.host': arflags_host,
+           'LINK_flags': link_flags }
 
 
 def GenerateOutput(target_list, target_dicts, data, params):
@@ -1283,8 +1292,6 @@ def GenerateOutput(target_list, target_dicts, data, params):
       break
   if not default_configuration:
     default_configuration = 'Default'
-
-  system_settings = RunSystemTests()
 
   srcdir = '.'
   makefile_name = 'Makefile' + options.suffix

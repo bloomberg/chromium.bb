@@ -11,6 +11,7 @@ import subprocess
 
 def TestCommands(commands, files={}, env={}):
   """Run commands in a temporary directory, returning true if they all succeed.
+  Return false on failures or if any commands produce output.
 
   Arguments:
     commands: an array of shell-interpretable commands, e.g. ['ls -l', 'pwd']
@@ -27,11 +28,12 @@ def TestCommands(commands, files={}, env={}):
       f.write(contents)
       f.close()
     for command in commands:
-      code = subprocess.call(command % env, shell=True,
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.STDOUT,
-                             cwd=tempdir)
-      if code != 0:
+      proc = subprocess.Popen(command % env, shell=True,
+                              stdout=subprocess.PIPE,
+                              stderr=subprocess.STDOUT,
+                              cwd=tempdir)
+      output = proc.communicate()[0]
+      if proc.returncode != 0 or output:
         return False
     return True
   finally:
