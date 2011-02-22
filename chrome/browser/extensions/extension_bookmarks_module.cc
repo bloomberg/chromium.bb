@@ -8,6 +8,7 @@
 #include "base/i18n/file_util_icu.h"
 #include "base/i18n/time_formatting.h"
 #include "base/json/json_writer.h"
+#include "base/path_service.h"
 #include "base/sha1.h"
 #include "base/stl_util-inl.h"
 #include "base/string16.h"
@@ -27,6 +28,7 @@
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
@@ -44,9 +46,9 @@ typedef QuotaLimitHeuristic::BucketMapper BucketMapper;
 
 namespace {
 
-// Generates a default filename that will be used for pre-populating
-// the "Export Bookmarks" file chooser dialog box.
-FilePath::StringType GetDefaultFilenameForBookmarkExport() {
+// Generates a default path (including a default filename) that will be
+// used for pre-populating the "Export Bookmarks" file chooser dialog box.
+FilePath GetDefaultFilepathForBookmarkExport() {
   base::Time time = base::Time::Now();
 
   // Concatenate a date stamp to the filename.
@@ -61,7 +63,10 @@ FilePath::StringType GetDefaultFilenameForBookmarkExport() {
 #endif
 
   file_util::ReplaceIllegalCharactersInPath(&filename, '_');
-  return filename;
+
+  FilePath default_path;
+  PathService::Get(chrome::DIR_USER_DOCUMENTS, &default_path);
+  return default_path.Append(filename);
 }
 
 }  // namespace
@@ -809,7 +814,7 @@ void BookmarksIOFunction::SelectFile(SelectFileDialog::Type type) {
   // dialog. If not, there is no filename field in the dialog box.
   FilePath default_path;
   if (type == SelectFileDialog::SELECT_SAVEAS_FILE)
-    default_path = FilePath(GetDefaultFilenameForBookmarkExport());
+    default_path = GetDefaultFilepathForBookmarkExport();
   else
     DCHECK(type == SelectFileDialog::SELECT_OPEN_FILE);
 

@@ -20,6 +20,8 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
+class FilePath;
+
 // Observes BookmarkModel and then routes the notifications as events to
 // the extension system.
 class ExtensionBookmarkEventRouter : public BookmarkModelObserver {
