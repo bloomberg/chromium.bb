@@ -874,7 +874,7 @@ endif
 
 build-with-glibc: ALWAYS
 	$(MAKE) -f $(THISMAKEFILE) sdkdirs
-	cp -f ../../third_party/gcc/COPYING* $(DESTDIR)$(SDKROOT)
+	cp -f SRC/gcc/COPYING* $(DESTDIR)$(SDKROOT)
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-binutils
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-pregcc-standalone
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-glibc
@@ -890,7 +890,7 @@ all-source: | \
 
 build: ALWAYS all-source
 	$(MAKE) -f $(THISMAKEFILE) sdkdirs
-	cp -f ../../third_party/gcc/COPYING* $(DESTDIR)$(SDKROOT)
+	cp -f SRC/gcc/COPYING* $(DESTDIR)$(SDKROOT)
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-binutils
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-pregcc
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-newlib
