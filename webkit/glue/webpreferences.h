@@ -70,6 +70,7 @@ struct WebPreferences {
   bool experimental_webgl_enabled;
   bool gl_multisampling_enabled;
   bool show_composited_layer_borders;
+  bool asynchronous_spell_checking_enabled;
   bool accelerated_compositing_enabled;
   bool accelerated_layers_enabled;
   bool accelerated_video_enabled;

@@ -278,6 +278,10 @@ IPC_MESSAGE_ROUTED0(ViewMsg_ToggleSpellCheck)
 IPC_MESSAGE_ROUTED0(ViewMsg_Delete)
 IPC_MESSAGE_ROUTED0(ViewMsg_SelectAll)
 IPC_MESSAGE_ROUTED1(ViewMsg_ToggleSpellPanel, bool)
+IPC_MESSAGE_ROUTED3(ViewMsg_SpellChecker_RespondTextCheck,
+                    int        /* request identifier given by WebKit */,
+                    int        /* document tag */,
+                    std::vector<WebKit::WebTextCheckingResult>)
 
 // This message tells the renderer to advance to the next misspelling. It is
 // sent when the user clicks the "Find Next" button on the spelling panel.
@@ -2355,6 +2359,12 @@ IPC_SYNC_MESSAGE_CONTROL1_1(
     ViewHostMsg_SpellChecker_PlatformFillSuggestionList,
     string16 /* word */,
     std::vector<string16> /* suggestions */)
+
+IPC_MESSAGE_CONTROL4(ViewHostMsg_SpellChecker_PlatformRequestTextCheck,
+                     int /* route_id for response */,
+                     int /* request identifier given by WebKit */,
+                     int /* document tag */,
+                     string16 /* sentence */)
 
 //---------------------------------------------------------------------------
 // Geolocation services messages

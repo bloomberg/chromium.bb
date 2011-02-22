@@ -175,4 +175,45 @@ void ParamTraits<WebKit::WebCompositionUnderline>::Log(const param_type& p,
   l->append(")");
 }
 
+void ParamTraits<WebKit::WebTextCheckingResult>::Write(Message* m,
+                                                       const param_type& p) {
+  WriteParam(m, static_cast<int>(p.error()));
+  WriteParam(m, p.position());
+  WriteParam(m, p.length());
+}
+
+bool ParamTraits<WebKit::WebTextCheckingResult>::Read(const Message* m,
+                                                      void** iter,
+                                                      param_type* p) {
+  int error = 0;
+  if (!ReadParam(m, iter, &error))
+    return false;
+  if (error != WebKit::WebTextCheckingResult::ErrorSpelling &&
+      error != WebKit::WebTextCheckingResult::ErrorGrammar)
+    return false;
+  int position = 0;
+  if (!ReadParam(m, iter, &position))
+    return false;
+  int length = 0;
+  if (!ReadParam(m, iter, &length))
+    return false;
+
+  *p = WebKit::WebTextCheckingResult(
+      static_cast<WebKit::WebTextCheckingResult::Error>(error),
+      position,
+      length);
+  return true;
+}
+
+void ParamTraits<WebKit::WebTextCheckingResult>::Log(const param_type& p,
+                                                     std::string* l) {
+  l->append("(");
+  LogParam(static_cast<int>(p.error()), l);
+  l->append(", ");
+  LogParam(p.position(), l);
+  l->append(", ");
+  LogParam(p.length(), l);
+  l->append(")");
+}
+
 }  // namespace IPC

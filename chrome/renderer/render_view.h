@@ -16,6 +16,7 @@
 #include "app/surface/transport_dib.h"
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
+#include "base/id_map.h"
 #include "base/linked_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer.h"
@@ -77,6 +78,7 @@ class RenderViewVisitor;
 class SearchBox;
 class SkBitmap;
 class SpeechInputDispatcher;
+class SpellCheckProvider;
 class WebPluginDelegatePepper;
 class WebPluginDelegateProxy;
 struct ContextMenuMediaParams;
@@ -145,6 +147,7 @@ class WebPlugin;
 class WebSpeechInputController;
 class WebSpeechInputListener;
 class WebStorageNamespace;
+class WebTextCheckingCompletion;
 class WebURLRequest;
 class WebView;
 struct WebContextMenuData;
@@ -415,6 +418,9 @@ class RenderView : public RenderWidget,
   virtual void spellCheck(const WebKit::WebString& text,
                           int& offset,
                           int& length);
+  virtual void requestCheckingOfText(
+      const WebKit::WebString& text,
+      WebKit::WebTextCheckingCompletion* completion);
   virtual WebKit::WebString autoCorrectWord(
       const WebKit::WebString& misspelled_word);
   virtual void showSpellingUI(bool show);
@@ -1324,6 +1330,11 @@ class RenderView : public RenderWidget,
 
   // Weak pointer since it implements RenderViewObserver interface.
   SearchBox* searchbox_;
+
+  // spellcheck provider which is registered as a view observer.
+  // Note that RenderViewObserver subclasses like this will be deleted
+  // automatically during RenderView destruction.
+  SpellCheckProvider* spellcheck_provider_;
 
   scoped_refptr<AudioMessageFilter> audio_message_filter_;
 

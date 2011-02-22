@@ -91,6 +91,7 @@
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
 #include "chrome/renderer/searchbox.h"
 #include "chrome/renderer/speech_input_dispatcher.h"
+#include "chrome/renderer/spellchecker/spellcheck_provider.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "chrome/renderer/translate_helper.h"
 #include "chrome/renderer/user_script_idle_scheduler.h"
@@ -150,6 +151,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageNamespace.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingCompletion.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingResult.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLError.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
@@ -264,6 +267,7 @@ using WebKit::WebSize;
 using WebKit::WebStorageNamespace;
 using WebKit::WebString;
 using WebKit::WebTextAffinity;
+using WebKit::WebTextCheckingResult;
 using WebKit::WebTextDirection;
 using WebKit::WebURL;
 using WebKit::WebURLError;
@@ -582,6 +586,7 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       device_orientation_dispatcher_(NULL),
       print_helper_(NULL),
       searchbox_(NULL),
+      spellcheck_provider_(NULL),
       accessibility_ack_pending_(false),
       pending_app_icon_requests_(0),
       session_storage_namespace_id_(session_storage_namespace_id) {
@@ -656,6 +661,10 @@ RenderView::RenderView(RenderThreadBase* render_thread,
   new TranslateHelper(this);
   print_helper_ = new PrintWebViewHelper(this);
   searchbox_ = new SearchBox(this);
+
+  RenderThread* current_thread = RenderThread::current();
+  SpellCheck* spellcheck = current_thread ? current_thread->spellchecker() : 0;
+  spellcheck_provider_ = new SpellCheckProvider(this, spellcheck);
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableClientSidePhishingDetection)) {
@@ -2299,6 +2308,12 @@ void RenderView::spellCheck(const WebString& text,
         word.c_str(), word.size(), document_tag_,
         &misspelled_offset, &misspelled_length, NULL);
   }
+}
+
+void RenderView::requestCheckingOfText(
+    const WebString& text,
+    WebKit::WebTextCheckingCompletion* completion) {
+  spellcheck_provider_->RequestTextChecking(text, document_tag_, completion);
 }
 
 WebString RenderView::autoCorrectWord(const WebKit::WebString& word) {

@@ -12,7 +12,10 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/string16.h"
+
+class BrowserMessageFilter;
 
 namespace SpellCheckerPlatform {
 
@@ -80,6 +83,15 @@ void IgnoreWord(const string16& word);
 // closed. Generally, this means that any ignored words associated with that
 // document can now be forgotten.
 void CloseDocumentWithTag(int tag);
+
+// Requests an asyncronous spell and grammar checking.
+// The result is returned to an IPC message to |destination| thus it should
+// not be null.
+void RequestTextCheck(int route_id,
+                      int identifier,
+                      int document_tag,
+                      const string16& text,
+                      BrowserMessageFilter* destination);
 
 }  // namespace SpellCheckerPlatform
 

@@ -11,14 +11,83 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/task.h"
 #include "base/time.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/browser_thread.h"
+#include "chrome/browser/browser_message_filter.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/common/spellcheck_common.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingResult.h"
 
 using base::TimeTicks;
 namespace {
 // The number of characters in the first part of the language code.
 const unsigned int kShortLanguageCodeSize = 2;
+
+// TextCheckingTask is reserved for spell checking against large size
+// of text, which possible contains multiple paragrpahs.  Checking
+// that size of text might take time, and should be done as a task on
+// the FILE thread.
+//
+// The result of the check is returned back as a
+// ViewMsg_SpellChecker_RespondTextCheck message.
+class TextCheckingTask : public Task {
+ public:
+  TextCheckingTask(BrowserMessageFilter* destination,
+                   int route_id,
+                   int identifier,
+                   const string16& text,
+                   int document_tag)
+      : destination_(destination),
+        route_id_(route_id),
+        identifier_(identifier),
+        text_(text),
+        document_tag_(document_tag) {
+  }
+
+  virtual void Run() {
+    // TODO(morrita): Use [NSSpellChecker requestCheckingOfString]
+    // when the build target goes up to 10.6
+    std::vector<WebKit::WebTextCheckingResult> check_results;
+    NSString* text_to_check = base::SysUTF16ToNSString(text_);
+    size_t starting_at = 0;
+    while (starting_at < text_.size()) {
+      NSRange range = [[NSSpellChecker sharedSpellChecker]
+                         checkSpellingOfString:text_to_check
+                                    startingAt:starting_at
+                                      language:nil
+                                          wrap:NO
+                        inSpellDocumentWithTag:document_tag_
+                                     wordCount:NULL];
+      if (range.length == 0)
+        break;
+      check_results.push_back(WebKit::WebTextCheckingResult(
+          WebKit::WebTextCheckingResult::ErrorSpelling,
+          range.location,
+          range.length));
+      starting_at = range.location + range.length;
+    }
+
+    BrowserThread::PostTask(
+        BrowserThread::IO,
+        FROM_HERE,
+        NewRunnableMethod(
+            destination_.get(),
+            &BrowserMessageFilter::Send,
+            new ViewMsg_SpellChecker_RespondTextCheck(route_id_,
+                                                      identifier_,
+                                                      document_tag_,
+                                                      check_results)));
+  }
+
+ private:
+  scoped_refptr<BrowserMessageFilter> destination_;
+  int route_id_;
+  int identifier_;
+  string16 text_;
+  int document_tag_;
+};
 
 // A private utility function to convert hunspell language codes to OS X
 // language codes.
@@ -213,7 +282,17 @@ void IgnoreWord(const string16& word) {
 
 void CloseDocumentWithTag(int tag) {
   [[NSSpellChecker sharedSpellChecker]
-      closeSpellDocumentWithTag:static_cast<NSInteger>(tag)];
+    closeSpellDocumentWithTag:static_cast<NSInteger>(tag)];
+}
+
+void RequestTextCheck(int route_id,
+                      int identifier,
+                      int document_tag,
+                      const string16& text, BrowserMessageFilter* destination) {
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      new TextCheckingTask(
+          destination, route_id, identifier, text, document_tag));
 }
 
 }  // namespace SpellCheckerPlatform

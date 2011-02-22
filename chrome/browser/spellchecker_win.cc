@@ -57,4 +57,10 @@ void IgnoreWord(const string16& word) {}
 
 void CloseDocumentWithTag(int tag) {}
 
+void RequestTextCheck(int route_id,
+                      int identifier,
+                      int document_tag,
+                      const string16& text,
+                      BrowserMessageFilter* destination) {}
+
 }  // namespace SpellCheckerPlatform

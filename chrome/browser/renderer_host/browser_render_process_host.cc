@@ -69,6 +69,7 @@
 #include "chrome/browser/speech/speech_input_dispatcher_host.h"
 #include "chrome/browser/speech/speech_input_manager.h"
 #include "chrome/browser/spellcheck_host.h"
+#include "chrome/browser/spellcheck_message_filter.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/visitedlink/visitedlink_master.h"
 #include "chrome/browser/worker_host/worker_message_filter.h"
@@ -475,6 +476,7 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
       url_request_context_override);
   channel_->AddFilter(socket_stream_dispatcher_host);
 
+  channel_->AddFilter(new SpellCheckMessageFilter());
   channel_->AddFilter(new WorkerMessageFilter(
       id(),
       profile()->GetRequestContext(),

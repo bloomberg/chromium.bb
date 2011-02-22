@@ -65,6 +65,7 @@ WebPreferences::WebPreferences()
       experimental_webgl_enabled(false),
       gl_multisampling_enabled(true),
       show_composited_layer_borders(false),
+      asynchronous_spell_checking_enabled(true),
       accelerated_compositing_enabled(false),
       accelerated_layers_enabled(false),
       accelerated_video_enabled(false),
@@ -186,6 +187,9 @@ void WebPreferences::Apply(WebView* web_view) const {
 
   // Enable memory info reporting to page if requested on the command line.
   settings->setMemoryInfoEnabled(memory_info_enabled);
+
+  settings->setAsynchronousSpellCheckingEnabled(
+      asynchronous_spell_checking_enabled);
 
   for (WebInspectorPreferences::const_iterator it = inspector_settings.begin();
        it != inspector_settings.end(); ++it)

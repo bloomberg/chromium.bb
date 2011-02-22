@@ -1975,6 +1975,8 @@
         'browser/speech/speech_recognizer.h',
         'browser/spellcheck_host.cc',
         'browser/spellcheck_host.h',
+        'browser/spellcheck_message_filter.cc',
+        'browser/spellcheck_message_filter.h',
         'browser/spellchecker_linux.cc',
         'browser/spellchecker_mac.mm',
         'browser/spellchecker_platform_engine.h',

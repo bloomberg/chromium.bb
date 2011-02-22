@@ -22,6 +22,8 @@ namespace file_util {
 class MemoryMappedFile;
 }
 
+// TODO(morrita): Needs reorg with SpellCheckProvider.
+// See http://crbug.com/73699.
 class SpellCheck {
  public:
   SpellCheck();
@@ -64,6 +66,12 @@ class SpellCheck {
   // Add a word to the custom list. This may be called before or after
   // |hunspell_| has been initialized.
   void WordAdded(const std::string& word);
+
+  // Returns true if the spellchecker delegate checking to a system-provided
+  // checker on the browser process.
+  bool is_using_platform_spelling_engine() const {
+    return is_using_platform_spelling_engine_;
+  }
 
  private:
   // Initializes the Hunspell dictionary, or does nothing if |hunspell_| is

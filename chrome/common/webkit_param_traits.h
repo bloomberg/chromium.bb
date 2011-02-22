@@ -32,6 +32,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileError.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingResult.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextInputType.h"
 
@@ -271,6 +272,14 @@ struct ParamTraits<WebKit::WebTextInputType> {
 template <>
 struct SimilarTypeTraits<WebKit::WebFileError> {
   typedef int Type;
+};
+
+template <>
+struct ParamTraits<WebKit::WebTextCheckingResult> {
+  typedef WebKit::WebTextCheckingResult param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
 };
 
 }  // namespace IPC

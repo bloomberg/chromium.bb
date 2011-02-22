@@ -7,8 +7,11 @@
 #include "chrome/renderer/render_view.h"
 
 RenderViewObserver::RenderViewObserver(RenderView* render_view)
-    : render_view_(render_view), routing_id_(render_view->routing_id()) {
-  render_view_->AddObserver(this);
+    : render_view_(render_view),
+      routing_id_(render_view ? render_view->routing_id() : 0) {
+  // |render_view| can be NULL on unit testing.
+  if (render_view_)
+    render_view_->AddObserver(this);
 }
 
 RenderViewObserver::~RenderViewObserver() {
