@@ -88,8 +88,9 @@ class FancyPantsView : public ColorView {
 
   // Overridden from ui::View:
   virtual void Layout() {
-    c1_->SetBounds(20, 20, width() - 40, height() - 40);
-    c2_->SetBounds(50, 50, 50, 50);
+    c1_->SetBounds(gfx::Rect(20, 20, std::max(width() - 40, 0),
+                             std::max(height() - 40, 0)));
+    c2_->SetBounds(gfx::Rect(50, 50, 50, 50));
     Invalidate();
   }
   virtual bool OnMousePressed(const ui::MouseEvent& event) {
@@ -100,8 +101,8 @@ class FancyPantsView : public ColorView {
   }
   virtual bool OnMouseDragged(const ui::MouseEvent& event) {
     gfx::Rect old_bounds = bounds();
-    SetPosition(gfx::Point(event.x() - mouse_offset_.x(),
-                           event.y() - mouse_offset_.y()));
+    SetOrigin(gfx::Point(event.x() - mouse_offset_.x(),
+                         event.y() - mouse_offset_.y()));
     gfx::Rect new_bounds = bounds();
     parent()->InvalidateRect(old_bounds.Union(new_bounds));
     return true;
@@ -135,7 +136,7 @@ class ContentsView : public ColorView {
     set_parent_owned(false);
     AddChildView(c1_);
     AddChildView(c2_);
-    c3_->SetPosition(gfx::Point(200, 200));
+    c3_->SetOrigin(gfx::Point(200, 200));
     AddChildView(c3_);
   }
 
@@ -148,8 +149,9 @@ class ContentsView : public ColorView {
  private:
   // Overridden from ui::View:
   virtual void Layout() {
-    c1_->SetBounds(20, 20, width() - 40, height() - 40);
-    c2_->SetBounds(50, 50, 50, 50);
+    c1_->SetBounds(gfx::Rect(20, 20, std::max(width() - 40, 0),
+                             std::max(height() - 40, 0)));
+    c2_->SetBounds(gfx::Rect(50, 50, 50, 50));
     c3_->SetSize(gfx::Size(75, 75));
     Invalidate();
   }

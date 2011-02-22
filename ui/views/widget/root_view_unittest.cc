@@ -32,7 +32,7 @@ TEST_F(RootViewTest, FocusedViewResetOnViewRemoval) {
   EXPECT_TRUE(focus_manager != NULL);
   EXPECT_EQ(&v, focus_manager->focused_view());
 
-  v.parent()->RemoveChildView(&v);
+  v.parent()->RemoveChildView(&v, false);
 
   EXPECT_NE(&v, focus_manager->focused_view());
   EXPECT_EQ(NULL, focus_manager->focused_view());

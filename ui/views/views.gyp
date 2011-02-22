@@ -48,8 +48,8 @@
       'dependencies': [
         '<(DEPTH)/app/app.gyp:app_base',
         '<(DEPTH)/app/app.gyp:app_strings',
-        '<(DEPTH)/gfx/gfx.gyp:gfx',
         '<(DEPTH)/skia/skia.gyp:skia',
+        '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
       ],
       'sources': [
         'events/accelerator.cc',

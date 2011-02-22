@@ -19,30 +19,30 @@ namespace {
 int GetKeyStateFlags() {
   int flags = 0;
   if (GetKeyState(VK_MENU) & 0x80)
-    flags |= ui::EF_ALT_DOWN;
+    flags |= ui::Event::EF_ALT_DOWN;
   if (GetKeyState(VK_SHIFT) & 0x80)
-    flags |= ui::EF_SHIFT_DOWN;
+    flags |= ui::Event::EF_SHIFT_DOWN;
   if (GetKeyState(VK_CONTROL) & 0x80)
-    flags |= ui::EF_CONTROL_DOWN;
+    flags |= ui::Event::EF_CONTROL_DOWN;
   return flags;
 }
 
 // Convert windows message identifiers to Event types.
-ui::EventType EventTypeFromNative(NativeEvent native_event) {
+ui::Event::EventType EventTypeFromNative(NativeEvent native_event) {
   switch (native_event.message) {
     case WM_KEYDOWN:
     case WM_SYSKEYDOWN:
-      return ui::ET_KEY_PRESSED;
+      return ui::Event::ET_KEY_PRESSED;
     case WM_KEYUP:
     case WM_SYSKEYUP:
-      return ui::ET_KEY_RELEASED;
+      return ui::Event::ET_KEY_RELEASED;
     case WM_LBUTTONDOWN:
     case WM_MBUTTONDOWN:
     case WM_NCLBUTTONDOWN:
     case WM_NCMBUTTONDOWN:
     case WM_NCRBUTTONDOWN:
     case WM_RBUTTONDOWN:
-      return ui::ET_MOUSE_PRESSED;
+      return ui::Event::ET_MOUSE_PRESSED;
     case WM_LBUTTONDBLCLK:
     case WM_LBUTTONUP:
     case WM_MBUTTONDBLCLK:
@@ -55,19 +55,19 @@ ui::EventType EventTypeFromNative(NativeEvent native_event) {
     case WM_NCRBUTTONUP:
     case WM_RBUTTONDBLCLK:
     case WM_RBUTTONUP:
-      return ui::ET_MOUSE_RELEASED;
+      return ui::Event::ET_MOUSE_RELEASED;
     case WM_MOUSEMOVE:
     case WM_NCMOUSEMOVE:
-      return ui::ET_MOUSE_MOVED;
+      return ui::Event::ET_MOUSE_MOVED;
     case WM_MOUSEWHEEL:
-      return ui::ET_MOUSEWHEEL;
+      return ui::Event::ET_MOUSEWHEEL;
     case WM_MOUSELEAVE:
     case WM_NCMOUSELEAVE:
-      return ui::ET_MOUSE_EXITED;
+      return ui::Event::ET_MOUSE_EXITED;
     default:
       NOTREACHED();
   }
-  return ui::ET_UNKNOWN;
+  return ui::Event::ET_UNKNOWN;
 }
 
 bool IsClientMouseEvent(NativeEvent native_event) {
@@ -102,7 +102,7 @@ int MouseEventFlagsFromNative(NativeEvent native_event) {
 
   // Check if the event occurred in the non-client area.
   if (IsNonClientMouseEvent(native_event))
-    flags |= ui::EF_IS_NON_CLIENT;
+    flags |= ui::MouseEvent::EF_IS_NON_CLIENT;
 
   // Check for double click events.
   switch (native_event.message) {
@@ -112,28 +112,28 @@ int MouseEventFlagsFromNative(NativeEvent native_event) {
     case WM_LBUTTONDBLCLK:
     case WM_MBUTTONDBLCLK:
     case WM_RBUTTONDBLCLK:
-      flags |= ui::EF_IS_DOUBLE_CLICK;
+      flags |= ui::MouseEvent::EF_IS_DOUBLE_CLICK;
       break;
   }
 
   // Check for pressed buttons.
   if (IsClientMouseEvent(native_event)) {
     if (native_event.wParam & MK_LBUTTON)
-      flags |= ui::EF_LEFT_BUTTON_DOWN;
+      flags |= ui::MouseEvent::EF_LEFT_BUTTON_DOWN;
     if (native_event.wParam & MK_MBUTTON)
-      flags |= ui::EF_MIDDLE_BUTTON_DOWN;
+      flags |= ui::MouseEvent::EF_MIDDLE_BUTTON_DOWN;
     if (native_event.wParam & MK_RBUTTON)
-      flags |= ui::EF_RIGHT_BUTTON_DOWN;
+      flags |= ui::MouseEvent::EF_RIGHT_BUTTON_DOWN;
   } else if (IsNonClientMouseEvent(native_event)) {
     switch (native_event.message) {
       case WM_NCLBUTTONDOWN:
-        flags |= ui::EF_LEFT_BUTTON_DOWN;
+        flags |= ui::MouseEvent::EF_LEFT_BUTTON_DOWN;
         break;
       case WM_NCMBUTTONDOWN:
-        flags |= ui::EF_MIDDLE_BUTTON_DOWN;
+        flags |= ui::MouseEvent::EF_MIDDLE_BUTTON_DOWN;
         break;
       case WM_NCRBUTTONDOWN:
-        flags |= ui::EF_RIGHT_BUTTON_DOWN;
+        flags |= ui::MouseEvent::EF_RIGHT_BUTTON_DOWN;
         break;
     }
   }
@@ -146,17 +146,17 @@ int MouseWheelEventFlagsFromNative(NativeEvent native_event) {
   int native_flags = GET_KEYSTATE_WPARAM(native_event.wParam);
   int flags = 0;
   if (native_flags & MK_CONTROL)
-    flags |= ui::EF_CONTROL_DOWN;
+    flags |= ui::Event::EF_CONTROL_DOWN;
   if (native_flags & MK_SHIFT)
-    flags |= ui::EF_SHIFT_DOWN;
+    flags |= ui::Event::EF_SHIFT_DOWN;
   if (GetKeyState(VK_MENU) < 0)
-    flags |= ui::EF_ALT_DOWN;
+    flags |= ui::Event::EF_ALT_DOWN;
   if (native_flags & MK_LBUTTON)
-    flags |= ui::EF_LEFT_BUTTON_DOWN;
+    flags |= ui::Event::EF_LEFT_BUTTON_DOWN;
   if (native_flags & MK_MBUTTON)
-    flags |= ui::EF_MIDDLE_BUTTON_DOWN;
+    flags |= ui::Event::EF_MIDDLE_BUTTON_DOWN;
   if (native_flags & MK_RBUTTON)
-    flags |= ui::EF_RIGHT_BUTTON_DOWN;
+    flags |= ui::Event::EF_RIGHT_BUTTON_DOWN;
   return flags;
 }
 

@@ -53,7 +53,7 @@ class PaintableView : public View {
 TEST_F(BorderTest, Basic) {
   const int kViewSize = 100;
   PaintableView v;
-  v.SetBounds(10, 10, kViewSize, kViewSize);
+  v.SetBounds(gfx::Rect(10, 10, kViewSize, kViewSize));
 
   // With no border, the content size is the view size.
   EXPECT_EQ(gfx::Rect(0, 0, kViewSize, kViewSize), v.GetContentsBounds());

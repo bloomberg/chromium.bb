@@ -44,7 +44,7 @@ LocatedEvent::LocatedEvent(const LocatedEvent& other,
                            View* target)
     : Event(other.type(), other.flags()) {
   location_ = other.location();
-  View::ConvertPointToView(source, target, &location_);
+  View::ConvertPointToView(*source, *target, &location_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

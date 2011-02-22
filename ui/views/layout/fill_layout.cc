@@ -22,16 +22,16 @@ FillLayout::~FillLayout() {
 // FillLayout, LayoutManager implementation:
 
 void FillLayout::Layout(View* host) {
-  if (host->child_count() == 0)
+  if (host->children_empty())
     return;
 
-  View* child = host->GetChildViewAt(0);
-  child->SetBounds(0, 0, host->width(), host->height());
+  View* child = host->child_at(0);
+  child->SetBounds(gfx::Rect(gfx::Point(), host->size()));
 }
 
 gfx::Size FillLayout::GetPreferredSize(View* host) {
-  DCHECK(host->child_count() == 1);
-  return host->GetChildViewAt(0)->GetPreferredSize();
+  DCHECK_EQ(1U, host->children_size());
+  return host->child_at(0)->GetPreferredSize();
 }
 
 }  // namespace ui

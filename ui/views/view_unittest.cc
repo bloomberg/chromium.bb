@@ -25,7 +25,7 @@ TEST_F(ViewTest, SizeAndDisposition) {
   EXPECT_TRUE(v.bounds().IsEmpty());
   EXPECT_TRUE(v.visible());
 
-  v.SetBoundsRect(gfx::Rect(10, 10, 200, 200));
+  v.SetBounds(gfx::Rect(10, 10, 200, 200));
   EXPECT_EQ(200, v.width());
 
   EXPECT_TRUE(v.GetPreferredSize().IsEmpty());
@@ -34,24 +34,24 @@ TEST_F(ViewTest, SizeAndDisposition) {
 TEST_F(ViewTest, TreeOperations) {
   View v;
   EXPECT_EQ(NULL, v.GetWidget());
-  EXPECT_EQ(0, v.child_count());
+  EXPECT_TRUE(v.children_empty());
 
   View child1;
   v.AddChildView(&child1);
-  EXPECT_EQ(1, v.child_count());
+  EXPECT_EQ(1, v.children_size());
   EXPECT_EQ(&v, child1.parent());
 
   View child2;
   v.AddChildViewAt(&child2, 0);
-  EXPECT_EQ(2, v.child_count());
+  EXPECT_EQ(2, v.children_size());
   EXPECT_EQ(child1.parent(), child2.parent());
 
-  v.RemoveChildView(&child2);
-  EXPECT_EQ(1, v.child_count());
+  v.RemoveChildView(&child2, false);
+  EXPECT_EQ(1, v.children_size());
   EXPECT_EQ(NULL, child2.parent());
 
   //v.RemoveAllChildViews(false);
-  //EXPECT_EQ(0, v.child_count());
+  //EXPECT_TRUE(v.children_empty());
 }
 
 class ObserverView : public View {
@@ -159,38 +159,38 @@ TEST_F(ViewTest, HierarchyObserver) {
 }
 */
 
-TEST_F(ViewTest, Ids) {
-  const int kV1Id = 1;
-  const int kV2Id = 2;
-  const int kV3Id = 3;
-  const int kV4Id = 4;
-  const int kV5Id = 5;
-  const int kGroupId = 1;
+TEST_F(ViewTest, IDs) {
+  const int kV1ID = 1;
+  const int kV2ID = 2;
+  const int kV3ID = 3;
+  const int kV4ID = 4;
+  const int kV5ID = 5;
+  const int kGroupID = 1;
   View v1;
-  v1.set_id(kV1Id);
+  v1.set_id(kV1ID);
   View v2;
-  v2.set_id(kV2Id);
+  v2.set_id(kV2ID);
   View v3;
-  v3.set_id(kV3Id);
-  v3.set_group(kGroupId);
+  v3.set_id(kV3ID);
+  v3.set_group(kGroupID);
   View v4;
-  v4.set_id(kV4Id);
-  v4.set_group(kGroupId);
+  v4.set_id(kV4ID);
+  v4.set_group(kGroupID);
   v1.AddChildView(&v2);
   v2.AddChildView(&v3);
   v2.AddChildView(&v4);
 
-  EXPECT_EQ(&v4, v1.GetViewById(kV4Id));
-  EXPECT_EQ(&v1, v1.GetViewById(kV1Id));
-  EXPECT_EQ(NULL, v1.GetViewById(kV5Id)); // No V5 exists.
+  EXPECT_EQ(&v4, v1.GetViewByID(kV4ID));
+  EXPECT_EQ(&v1, v1.GetViewByID(kV1ID));
+  EXPECT_EQ(NULL, v1.GetViewByID(kV5ID)); // No V5 exists.
 
-  View::ViewVector vec;
-  v1.GetViewsWithGroup(kGroupId, &vec);
-  EXPECT_EQ(2, vec.size());
-  View::ViewVector::const_iterator it = find(vec.begin(), vec.end(), &v3);
-  EXPECT_NE(vec.end(), it);
-  it = find(vec.begin(), vec.end(), &v4);
-  EXPECT_NE(vec.end(), it);
+  View::Views views;
+  v1.GetViewsInGroup(kGroupID, &views);
+  EXPECT_EQ(2, views.size());
+  View::Views::const_iterator it = std::find(views.begin(), views.end(), &v3);
+  EXPECT_NE(views.end(), it);
+  it = std::find(views.begin(), views.end(), &v4);
+  EXPECT_NE(views.end(), it);
 }
 
 TEST_F(ViewTest, EventHandlers) {

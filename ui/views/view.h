@@ -39,7 +39,7 @@ class ThemeProvider;
 class Widget;
 
 ////////////////////////////////////////////////////////////////////////////////
-// View class
+// View
 //
 //  View encapsulates rendering, layout and event handling for rectangles within
 //  a view hierarchy.
@@ -54,9 +54,10 @@ class Widget;
 // TODO(beng): consider the visibility of many of these methods.
 //             consider making RootView a friend and making many private or
 //             protected.
+
 class View {
  public:
-  typedef std::vector<View*> ViewVector;
+  typedef std::vector<View*> Views;
 
   // Creation and lifetime -----------------------------------------------------
   View();
@@ -72,24 +73,28 @@ class View {
 
   // Size and disposition ------------------------------------------------------
 
-  void SetBounds(int x, int y, int width, int height);
-  void SetBoundsRect(const gfx::Rect& bounds);
-  void SetSize(const gfx::Size& size);
-  void SetPosition(const gfx::Point& position);
   gfx::Rect bounds() const { return bounds_; }
+  // Returns the portion of this view's bounds that are visible (i.e. not
+  // clipped) in the RootView.
   gfx::Rect GetVisibleBounds() const;
-  int x() const { return bounds_.x(); }
-  int y() const { return bounds_.y(); }
-  int width() const { return bounds_.width(); }
-  int height() const { return bounds_.height(); }
-
-  // Owned by the view.
-  void SetBorder(Border* border);
-  Border* border() { return border_.get(); }
-
   // Returns the bounds of the content area of the view, i.e. the rectangle
   // enclosed by the view's border.
   gfx::Rect GetContentsBounds() const;
+  void SetBounds(const gfx::Rect& bounds);
+
+  gfx::Point origin() const { return bounds().origin(); }
+  int x() const { return bounds().x(); }
+  int y() const { return bounds().y(); }
+  void SetOrigin(const gfx::Point& origin);
+
+  gfx::Size size() const { return bounds().size(); }
+  int width() const { return bounds().width(); }
+  int height() const { return bounds().height(); }
+  void SetSize(const gfx::Size& size);
+
+  // Owned by the view.
+  Border* border() { return border_.get(); }
+  void SetBorder(Border* border);
 
   // Override to be notified when the bounds of a view have changed.
   virtual void OnBoundsChanged();
@@ -118,11 +123,11 @@ class View {
 
   // Returns the View within this View's hierarchy whose id matches that
   // specified.
-  View* GetViewById(int id) const;
+  View* GetViewByID(int id);
 
-  // Populates a ViewVector with the Views within this View's hierarchy that
-  // match the specified group id.
-  void GetViewsWithGroup(int group, ViewVector* vec) const;
+  // Populates |vec| with the Views within this View's hierarchy that match the
+  // specified group id.
+  void GetViewsInGroup(int group, Views* vec);
 
   // TODO(beng): implementme
   virtual View* GetSelectedViewForGroup(int group_id);
@@ -130,46 +135,58 @@ class View {
   // Coordinate conversion -----------------------------------------------------
 
   // Converts a point from the coordinate system of |source| to |target|.
-  static void ConvertPointToView(View* source, View* target, gfx::Point* point);
+  static void ConvertPointToView(const View& source,
+                                 const View& target,
+                                 gfx::Point* point);
 
   // Converts a point from the coordinate system of |source| to the screen.
   // If |source| is not attached to a Widget that is in screen space, |point| is
   // not modified.
-  static void ConvertPointToScreen(View* source, gfx::Point* point);
+  static void ConvertPointToScreen(const View& source, gfx::Point* point);
 
   // Converts a point from the coordinate system of |source| to the Widget that
   // most closely contains it.
-  static void ConvertPointToWidget(View* source, gfx::Point* point);
+  static void ConvertPointToWidget(const View& source, gfx::Point* point);
 
   // Tree operations -----------------------------------------------------------
 
   // Returns the Widget that contains this View, or NULL if it is not contained
   // within a Widget.
-  virtual Widget* GetWidget() const;
+  Widget* GetWidget() {
+    return const_cast<Widget*>(static_cast<const View*>(this)->GetWidget());
+  }
+  virtual const Widget* GetWidget() const;
 
   // Adds a View as a child of this one, optionally at |index|.
   void AddChildView(View* view);
   void AddChildViewAt(View* view, size_t index);
 
-  // Removes a View as a child of this View. Does not delete the child.
-  View* RemoveChildView(View* view);
+  // If |view| is a child of this View, removes it and optionally deletes it.
+  void RemoveChildView(View* view, bool delete_child);
 
   // Removes all View children of this View. Deletes the children if
   // |delete_children| is true.
   void RemoveAllChildViews(bool delete_children);
 
-  // Returns the View at the specified |index|.
-  View* GetChildViewAt(size_t index);
-
-  // Returns the number of child views.
-  size_t child_count() const { return children_.size(); }
+  // STL-style accessors.
+  Views::const_iterator children_begin() { return children_.begin(); }
+  Views::const_iterator children_end() { return children_.end(); }
+  Views::const_reverse_iterator children_rbegin() { return children_.rbegin(); }
+  Views::const_reverse_iterator children_rend() { return children_.rend(); }
+  size_t children_size() const { return children_.size(); }
+  bool children_empty() const { return children_.empty(); }
+  View* child_at(size_t index) {
+    DCHECK_LT(index, children_size());
+    return children_[index];
+  }
 
   // Returns the parent View, or NULL if this View has no parent.
-  View* parent() const { return parent_; }
+  View* parent() { return parent_; }
+  const View* parent() const { return parent_; }
 
   // Returns true if |child| is contained within this View's hierarchy, even as
   // an indirect descendant. Will return true if child is also this View.
-  bool Contains(View* child);
+  bool Contains(const View& child) const;
 
   // Painting ------------------------------------------------------------------
 
@@ -195,16 +212,17 @@ class View {
   // Focus ---------------------------------------------------------------------
 
   // Manager.
-  FocusManager* GetFocusManager() const;
+  FocusManager* GetFocusManager();
+  const FocusManager* GetFocusManager() const;
 
   // Traversal.
-  virtual FocusTraversable* GetFocusTraversable() const;
-  View* GetNextFocusableView() const;
-  View* GetPreviousFocusableView() const;
+  virtual FocusTraversable* GetFocusTraversable();
+  View* GetNextFocusableView();
+  View* GetPreviousFocusableView();
 
   // Attributes.
-  void set_focusable(bool focusable) { focusable_ = focusable; }
   bool IsFocusable() const;
+  void set_focusable(bool focusable) { focusable_ = focusable; }
 
   bool HasFocus() const;
   void RequestFocus();
@@ -218,16 +236,18 @@ class View {
 
   // Resources -----------------------------------------------------------------
 
-  ThemeProvider* GetThemeProvider() const;
+  ThemeProvider* GetThemeProvider();
 
  protected:
   // Tree operations -----------------------------------------------------------
 
-  // Called on every view in the hierarchy when a view is added or removed.
-  virtual void OnViewAdded(View* parent, View* child);
-  virtual void OnViewRemoved(View* parent, View* child);
+  // Called on every view in |parent|'s and |child|'s hierarchies, as well as
+  // ancestors, when |child| is added to or removed from |parent|.
+  virtual void OnViewAdded(const View& parent, const View& child);
+  virtual void OnViewRemoved(const View& parent, const View& child);
 
-  // Called on a View when it is added or removed from a Widget.
+  // Called on a View when it is part of a hierarchy that has been added to or
+  // removed from a Widget.
   virtual void OnViewAddedToWidget();
   virtual void OnViewRemovedFromWidget();
 
@@ -262,9 +282,9 @@ class View {
   // locate views for event targeting. Override this function if you wish to
   // specify a view other than the one most closely enclosing |point| to receive
   // notifications for events within it.
-  virtual View* GetEventHandlerForPoint(const gfx::Point& point) const;
+  virtual View* GetEventHandlerForPoint(const gfx::Point& point);
 
-  virtual gfx::NativeCursor GetCursorForPoint(const gfx::Point& point);
+  virtual gfx::NativeCursor GetCursorForPoint(const gfx::Point& point) const;
 
   virtual bool OnKeyPressed(const KeyEvent& event);
   virtual bool OnKeyReleased(const KeyEvent& event);
@@ -290,7 +310,7 @@ class View {
   // TODO(beng): kill these, move to focus manager.
   virtual bool IsFocusableInRootView() const;
   virtual bool IsAccessibilityFocusableInRootView() const;
-  virtual FocusTraversable* GetPaneFocusTraversable() const;
+  virtual FocusTraversable* GetPaneFocusTraversable();
 
   virtual void OnFocus(const FocusEvent& event);
   virtual void OnBlur(const FocusEvent& event);
@@ -320,13 +340,21 @@ class View {
   };
 
   // Tree operations -----------------------------------------------------------
-  void NotifyHierarchyChanged(View* parent, View* child, bool is_add);
-  void NotifyHierarchyChangedUp(View* parent, View* child, bool is_add);
-  void NotifyHierarchyChangedDown(View* parent, View* child, bool is_add,
+
+  // Notifies all views in our and |child|'s hierarchies, as well as ancestors,
+  // that |child| was added to or removed from |this|.
+  void NotifyHierarchyChanged(View* child, bool is_add);
+
+  // Notifies all views in our hierarchy that |child| was added to or removed
+  // from |this|.  |has_widget| is true iff |this| is in a widget.
+  void NotifyHierarchyChangedDown(const View& child,
+                                  bool is_add,
                                   bool has_widget);
+
+  // Notifies |target| that |child| was added to or removed from |this|.
+  // |has_widget| is true iff |this| is in a widget.
   void CallViewNotification(View* target,
-                            View* parent,
-                            View* child,
+                            const View& child,
                             bool is_add,
                             bool has_widget);
 
@@ -338,7 +366,8 @@ class View {
   // the hierarchy beneath it.
   void Paint(gfx::Canvas* canvas);
 
-  // Input --------------------------------------------------------------
+  // Input ---------------------------------------------------------------------
+
   //  These methods are designed to be called by the RootView. The RootView
   //  should limit its interaction with the View to these methods and the public
   //  API.
@@ -354,6 +383,7 @@ class View {
   void InitFocusSiblings(View* child, size_t index);
 
   // Drag & Drop ---------------------------------------------------------------
+
   int GetDragOperations(const gfx::Point& point);
   void WriteDragData(const gfx::Point& point, OSExchangeData* data);
   void StartShellDrag(const MouseEvent& event, const gfx::Point& press_point);
@@ -399,7 +429,7 @@ class View {
   View* parent_;
 
   // The View's children.
-  ViewVector children_;
+  Views children_;
 
   // Focus ---------------------------------------------------------------------
 
