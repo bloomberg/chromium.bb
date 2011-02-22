@@ -286,17 +286,8 @@ void CapturerLinuxPimpl::CaptureRects(
   // TODO(ajwong): We should only repair the rects that were copied!
   XDamageSubtract(display_, damage_handle_, None, None);
 
-  // Flip the rectangles based on y axis.
-  InvalidRects inverted_rects;
-  for (InvalidRects::const_iterator it = rects.begin();
-       it != rects.end();
-       ++it) {
-    inverted_rects.insert(gfx::Rect(it->x(), capturer_->height() - it->bottom(),
-                                    it->width(), it->height()));
-  }
-
-  capture_data->mutable_dirty_rects() = inverted_rects;
-  last_invalid_rects_ = inverted_rects;
+  capture_data->mutable_dirty_rects() = rects;
+  last_invalid_rects_ = rects;
   last_buffer_ = buffer;
 
   // TODO(ajwong): These completion signals back to the upper class are very
@@ -326,14 +317,14 @@ void CapturerLinuxPimpl::FastBlit(XImage* image, int dest_x, int dest_y,
   const int dst_stride = planes.strides[0];
   const int src_stride = image->bytes_per_line;
 
-  // Produce an upside down image.
-  uint8* dst_pos = dst_buffer + dst_stride * (capturer_->height() - dest_y - 1);
+  uint8* dst_pos = dst_buffer + dst_stride * dest_y;
   dst_pos += dest_x * kBytesPerPixel;
+
   for (int y = 0; y < image->height; ++y) {
     memcpy(dst_pos, src_pos, image->width * kBytesPerPixel);
 
     src_pos += src_stride;
-    dst_pos -= dst_stride;
+    dst_pos += dst_stride;
   }
 }
 

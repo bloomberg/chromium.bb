@@ -31,9 +31,6 @@ class DecoderVp8 : public Decoder {
     kError,
   };
 
-  // True if we should decode the image upside down.
-  bool reverse_rows_;
-
   // The internal state of the decoder.
   State state_;
 

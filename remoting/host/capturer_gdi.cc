@@ -68,7 +68,7 @@ void CapturerGdi::ScreenConfigurationChanged() {
   // Create a device independant bitmap (DIB) that is the same size.
   BITMAPINFO bmi;
   memset(&bmi, 0, sizeof(bmi));
-  bmi.bmiHeader.biHeight = height_;
+  bmi.bmiHeader.biHeight = -height_;
   bmi.bmiHeader.biWidth = width_;
   bmi.bmiHeader.biPlanes = 1;
   bmi.bmiHeader.biBitCount = kBytesPerPixel * 8;

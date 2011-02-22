@@ -32,11 +32,7 @@ DecoderRowBased::DecoderRowBased(Decompressor* decompressor,
       decompressor_(decompressor),
       encoding_(encoding),
       row_pos_(0),
-      row_y_(0),
-      // TODO(hclam): We should use the information from the update stream
-      // to determine whether we should reverse the rows or not.
-      // But for simplicity we set to be always true.
-      reverse_rows_(true) {
+      row_y_(0) {
 }
 
 DecoderRowBased::~DecoderRowBased() {
@@ -91,14 +87,6 @@ Decoder::DecodeResult DecoderRowBased::DecodePacket(const VideoPacket* packet) {
   const int row_size = clip_.width() * kBytesPerPixel;
   int stride = frame_->stride(media::VideoFrame::kRGBPlane);
   uint8* rect_begin = frame_->data(media::VideoFrame::kRGBPlane);
-
-  if (reverse_rows_) {
-    // Advance the pointer to the last row.
-    rect_begin += (frame_->height() - 1) * stride;
-
-    // And then make the stride negative.
-    stride = -stride;
-  }
 
   uint8* out = rect_begin + stride * (clip_.y() + row_y_) +
       kBytesPerPixel * clip_.x();

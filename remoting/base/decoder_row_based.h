@@ -26,11 +26,6 @@ class DecoderRowBased : public Decoder {
   virtual void Reset();
   virtual VideoPacketFormat::Encoding Encoding();
 
-  // TODO(hclam): Should make this into the Decoder interface.
-  // TODO(ajwong): Before putting into the interface, we should decide if the
-  // Host should normalize the coordinate system.
-  void set_reverse_rows(bool reverse) { reverse_rows_ = reverse; }
-
  private:
   enum State {
     kUninitialized,
@@ -67,9 +62,6 @@ class DecoderRowBased : public Decoder {
 
   // The current row in the rect that we are updaing.
   int row_y_;
-
-  // True if we should decode the image upside down.
-  bool reverse_rows_;
 
   UpdatedRects updated_rects_;
 
