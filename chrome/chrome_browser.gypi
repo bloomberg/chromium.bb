@@ -3881,7 +3881,7 @@
           'conditions': [
             ['OS=="linux" and toolkit_views==1',{
               'dependencies': [
-                '../views/views.gyp:*',
+                '../views/views.gyp:views',
               ],
               'include_dirs': [
                 '<(INTERMEDIATE_DIR)',
