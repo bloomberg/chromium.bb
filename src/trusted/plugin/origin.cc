@@ -17,8 +17,6 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_string.h"
 
-#define NACL_SELENIUM_TEST "NACL_DISABLE_SECURITY_FOR_SELENIUM_TEST"
-
 #ifdef  ORIGIN_DEBUG
 # define dprintf(alist) do { printf alist; } while (0)
 #else
@@ -81,67 +79,16 @@ namespace nacl {
     return origin;
   }
 
-// For now, if NACL_STANDALONE is defined, we are just checking that
-// NaCl modules are local, or on code.google.com.  Beware NaCl modules
-// in the browser cache!  (NACL_STANDALONE is defined when being built
-// as a browser plugin.)
-//
-// Eventually, after sufficient security testing, we will switch over
-// to a more permissive security policy.
-//
-// When NACL_STANDALONE is not defined, we use a more permissive
-// security policy (which approximates that of the final policy for
-// the release version of NaCl): the "http" and "https" protocols are
-// white-listed, and that's it.  That is, any host is okay as long as
-// the content is served using http or https.  We must still disallow
-// "file" access due to cache poisoning attacks (see below), but
-// rather than having a black list, we use a whitelist of protocols,
-// in case that there are other, new protocols that exhibit a similar
-// property as "file" or "ftp".
+// We use a more permissive security policy (which approximates that
+// of the final policy for the release version of NaCl): the "http"
+// and "https" protocols are white-listed, and that's it.  That is,
+// any host is okay as long as the content is served using http or
+// https.  We must still disallow "file" access due to cache poisoning
+// attacks (see below), but rather than having a black list, we use a
+// whitelist of protocols, in case that there are other, new protocols
+// that exhibit a similar property as "file" or "ftp".
 
   bool OriginIsInWhitelist(nacl::string origin) {
-#if NACL_STANDALONE
-    static char const *allowed_origin[] = {
-      // do *NOT* add in file://localhost as a way to get old tests to
-      // work.  The file://localhost was only for early stage testing
-      // -- having it can be a security problem if an adversary can
-      // guess browser cache file names.
-
-      "http://localhost",
-      "http://localhost:80",
-      "http://localhost:5103",
-#if 0
-      "http://code.google.com",  // for demos hosted on project website
-#endif
-    };
-    dprintf(("OriginIsInWhitelist(%s)\n", origin.c_str()));
-    for (size_t i = 0; i < NACL_ARRAY_SIZE_UNSAFE(allowed_origin); ++i) {
-      if (origin == allowed_origin[i]) {
-        dprintf((" found at position %"NACL_PRIdS"\n", i));
-        return true;
-      }
-    }
-    // We disregard the origin whitelist when running Selenium tests.
-    // The code below is temporary since eventually we will drop the
-    // whitelist completely.
-#if NACL_WINDOWS
-    char buffer[2];
-    size_t required_buffer_size;
-    if (0 == getenv_s(&required_buffer_size, buffer, 2, NACL_SELENIUM_TEST)) {
-      dprintf((" selenium test!\n"));
-      return true;
-    }
-#else
-    if (NULL != getenv(NACL_SELENIUM_TEST)) {
-      dprintf((" selenium test!\n"));
-      return true;
-    }
-#endif
-
-    dprintf((" FAILED!\n"));
-    return false;
-#else  // NACL_STANDALONE
-
     // All hosts are allowed, but we whitelist protocols.  Some
     // protocols, such as "file" may be used in a cache-poisoning
     // attack -- or where the user is tricked into downloading a file
@@ -182,6 +129,5 @@ namespace nacl {
     }
 
     return false;
-#endif  // NACL_STANDALONE
   }
 }

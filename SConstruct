@@ -1019,9 +1019,6 @@ def BrowserTester(env,
   #      some env vars are set for tag, val in extra_env:
   SetupBrowserEnv(env)
 
-  # TODO(robertm): explain why this is necessary
-  env['ENV']['NACL_DISABLE_SECURITY_FOR_SELENIUM_TEST'] = '1'
-
   node = env.Command(target, deps, ' '.join(command))
   # If we are testing build output captured from elsewhere,
   # ignore build dependencies.
