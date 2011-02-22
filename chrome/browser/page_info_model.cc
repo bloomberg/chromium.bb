@@ -276,6 +276,8 @@ PageInfoModel::PageInfoModel(Profile* profile,
   }
 }
 
+PageInfoModel::~PageInfoModel() {}
+
 int PageInfoModel::GetSectionCount() {
   return sections_.size();
 }

@@ -229,6 +229,10 @@ void TestRenderWidgetHostView::ShowCompositorHostWindow(bool show) {
 }
 #endif
 
+gfx::PluginWindowHandle TestRenderWidgetHostView::AcquireCompositingSurface() {
+  return gfx::kNullPluginWindow;
+}
+
 bool TestRenderWidgetHostView::ContainsNativeView(
     gfx::NativeView native_view) const {
   return false;
