@@ -123,7 +123,7 @@ ViewMsg_PrintPages_Params::~ViewMsg_PrintPages_Params() {
 }
 
 ViewHostMsg_DidPreviewDocument_Params::ViewHostMsg_DidPreviewDocument_Params()
-    : data_size(0) {
+    : data_size(0), expected_pages_count(0) {
 #if defined(OS_WIN)
   // Initialize |metafile_data_handle| only on Windows because it maps
   // base::SharedMemoryHandle to HANDLE. We do not need to initialize this
@@ -1071,6 +1071,7 @@ void ParamTraits<ViewHostMsg_DidPreviewDocument_Params>::Write(Message* m,
   WriteParam(m, p.metafile_data_handle);
   WriteParam(m, p.data_size);
   WriteParam(m, p.document_cookie);
+  WriteParam(m, p.expected_pages_count);
 }
 
 bool ParamTraits<ViewHostMsg_DidPreviewDocument_Params>::Read(const Message* m,
@@ -1078,7 +1079,8 @@ bool ParamTraits<ViewHostMsg_DidPreviewDocument_Params>::Read(const Message* m,
                                                         param_type* p) {
   return ReadParam(m, iter, &p->metafile_data_handle) &&
       ReadParam(m, iter, &p->data_size) &&
-      ReadParam(m, iter, &p->document_cookie);
+      ReadParam(m, iter, &p->document_cookie) &&
+      ReadParam(m, iter, &p->expected_pages_count);
 }
 
 void ParamTraits<ViewHostMsg_DidPreviewDocument_Params>::Log(

@@ -85,11 +85,13 @@ void PrintWebViewHelper::CreatePreviewDocument(
   ViewHostMsg_DidPreviewDocument_Params preview_params;
   preview_params.data_size = metafile.GetDataSize();
   preview_params.document_cookie = params.params.document_cookie;
+  preview_params.expected_pages_count = page_count;
 
   // Ask the browser to create the shared memory for us.
   if (!CopyMetafileDataToSharedMem(&metafile,
           &(preview_params.metafile_data_handle))) {
     preview_params.data_size = 0;
+    preview_params.expected_pages_count = 0;
   }
   Send(new ViewHostMsg_PagesReadyForPreview(routing_id(), preview_params));
 }

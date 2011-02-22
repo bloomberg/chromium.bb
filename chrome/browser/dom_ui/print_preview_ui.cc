@@ -29,7 +29,8 @@ PrintPreviewUIHTMLSource* PrintPreviewUI::html_source() {
   return html_source_.get();
 }
 
-void PrintPreviewUI::PreviewDataIsAvailable() {
+void PrintPreviewUI::PreviewDataIsAvailable(int expected_pages_count) {
   StringValue dummy_url("chrome://print/print.pdf");
-  CallJavascriptFunction(L"createPDFPlugin", dummy_url);
+  FundamentalValue pages_count(expected_pages_count);
+  CallJavascriptFunction(L"createPDFPlugin", dummy_url, pages_count);
 }

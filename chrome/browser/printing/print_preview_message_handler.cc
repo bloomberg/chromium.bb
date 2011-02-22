@@ -58,7 +58,7 @@ void PrintPreviewMessageHandler::OnPagesReadyForPreview(
       static_cast<PrintPreviewUI*>(print_preview_tab->web_ui());
   print_preview_ui->html_source()->SetPrintPreviewData(
       std::make_pair(shared_buf, params.data_size));
-  print_preview_ui->PreviewDataIsAvailable();
+  print_preview_ui->PreviewDataIsAvailable(params.expected_pages_count);
 #endif
 
   scoped_refptr<printing::PrinterQuery> printer_query;

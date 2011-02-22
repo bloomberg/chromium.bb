@@ -169,10 +169,12 @@ void PrintWebViewHelper::CreatePreviewDocument(
   preview_params.document_cookie = params.params.document_cookie;
   preview_params.data_size = buf_size;
   preview_params.metafile_data_handle = NULL;
+  preview_params.expected_pages_count = page_count;
 
   if (!CopyMetafileDataToSharedMem(metafile.get(),
                                    &(preview_params.metafile_data_handle))) {
     preview_params.data_size = 0;
+    preview_params.expected_pages_count = 0;
   }
   metafile->CloseEmf();
   if (!Send(new ViewHostMsg_DuplicateSection(

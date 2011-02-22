@@ -19,7 +19,8 @@ class PrintPreviewUI : public WebUI {
   PrintPreviewUIHTMLSource* html_source();
 
   // Notify the Web UI renderer that preview data is available.
-  void PreviewDataIsAvailable();
+  // |expected_pages_count| specifies the total number of pages.
+  void PreviewDataIsAvailable(int expected_pages_count);
 
  private:
   scoped_refptr<PrintPreviewUIHTMLSource> html_source_;

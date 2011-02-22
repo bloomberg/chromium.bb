@@ -565,6 +565,9 @@ struct ViewHostMsg_DidPreviewDocument_Params {
 
   // Cookie for the document to ensure correctness.
   int document_cookie;
+
+  // Store the expected pages count.
+  int expected_pages_count;
 };
 
 // Parameters to describe a rendered page.

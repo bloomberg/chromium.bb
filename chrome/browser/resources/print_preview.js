@@ -4,6 +4,7 @@
 
 var localStrings = new LocalStrings();
 var hasPDFPlugin = true;
+var expectedPageCount = 0;
 
 /**
  * Window onload handler, sets up the page.
@@ -45,9 +46,15 @@ function onPDFLoad() {
 /**
  * Create the PDF plugin or reload the existing one.
  */
-function createPDFPlugin(url) {
+function createPDFPlugin(url, pagesCount) {
   if (!hasPDFPlugin) {
     return;
+  }
+  // Set the expected pages count.
+  if (expectedPageCount != pagesCount) {
+    expectedPageCount = pagesCount;
+    // Set the initial page range text.
+    $('pages').value = '1-' + expectedPageCount;
   }
 
   if ($('pdf-viewer')) {
