@@ -7,7 +7,13 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
+#include "base/synchronization/lock.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
+
+// We want to use NewRunnableMethod for non-static methods of this class but
+// need to disable reference counting since it is singleton.
+DISABLE_RUNNABLE_METHOD_REFCOUNT(chromeos::OwnershipService);
 
 namespace chromeos {
 
@@ -21,14 +27,53 @@ OwnershipService* OwnershipService::GetSharedInstance() {
 
 OwnershipService::OwnershipService()
     : manager_(new OwnerManager),
-      utils_(OwnerKeyUtils::Create()) {
+      utils_(OwnerKeyUtils::Create()),
+      ownership_status_(OWNERSHIP_UNKNOWN) {
+  notification_registrar_.Add(this,
+                              NotificationType::OWNERSHIP_TAKEN,
+                              NotificationService::AllSources());
+  if (g_ownership_service == this) {
+    // Start getting ownership status.
+    BrowserThread::PostTask(
+        BrowserThread::FILE,
+        FROM_HERE,
+        NewRunnableMethod(this, &OwnershipService::FetchStatus));
+  } else {
+    // This can happen only for particular test: OwnershipServiceTest. It uses
+    // mocks and for that uses OwnershipService not as a regular singleton but
+    // as a resurrecting object. This behaviour conflicts with
+    // DISABLE_RUNNABLE_METHOD_REFCOUNT.  So avoid posting task in those
+    // circumstances in order to avoid accessing already deleted object.
+  }
 }
 
 OwnershipService::~OwnershipService() {}
 
-
 bool OwnershipService::IsAlreadyOwned() {
   return file_util::PathExists(utils_->GetOwnerKeyFilePath());
+}
+
+OwnershipService::Status OwnershipService::GetStatus(bool blocking) {
+  Status status = OWNERSHIP_UNKNOWN;
+  bool is_owned = false;
+  if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    ownership_status_lock_.Acquire();
+    status = ownership_status_;
+    ownership_status_lock_.Release();
+    if (status != OWNERSHIP_UNKNOWN || !blocking)
+      return status;
+    // Under common usage there is very short lapse of time when ownership
+    // status is still unknown after constructing OwnershipService.
+    LOG(ERROR) << "Blocking on UI thread in OwnershipService::GetStatus";
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    is_owned = IsAlreadyOwned();
+  } else {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+    is_owned = IsAlreadyOwned();
+  }
+  status = is_owned ? OWNERSHIP_TAKEN : OWNERSHIP_NONE;
+  SetStatus(status);
+  return status;
 }
 
 void OwnershipService::StartLoadOwnerKeyAttempt() {
@@ -73,6 +118,17 @@ void OwnershipService::StartVerifyAttempt(const std::string& data,
                           signature,
                           d));
   return;
+}
+
+void OwnershipService::Observe(NotificationType type,
+                               const NotificationSource& source,
+                               const NotificationDetails& details) {
+  if (type.value == NotificationType::OWNERSHIP_TAKEN) {
+    SetStatus(OWNERSHIP_TAKEN);
+    notification_registrar_.RemoveAll();
+  } else {
+    NOTREACHED();
+  }
 }
 
 bool OwnershipService::CurrentUserIsOwner() {
@@ -139,4 +195,17 @@ void OwnershipService::FailAttempt(OwnerManager::Delegate* d) {
   d->OnKeyOpComplete(OwnerManager::KEY_UNAVAILABLE, std::vector<uint8>());
 }
 
+void OwnershipService::FetchStatus() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  Status status = IsAlreadyOwned() ? OWNERSHIP_TAKEN : OWNERSHIP_NONE;
+  SetStatus(status);
+}
+
+void OwnershipService::SetStatus(Status new_status) {
+  DCHECK(new_status == OWNERSHIP_TAKEN || new_status == OWNERSHIP_NONE);
+  base::AutoLock lk(ownership_status_lock_);
+  ownership_status_ = new_status;
+}
+
 }  // namespace chromeos
+

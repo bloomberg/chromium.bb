@@ -22,10 +22,6 @@
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
-#include "chrome/common/notification_service.h"
-#include "chrome/common/notification_type.h"
 
 namespace chromeos {
 
@@ -155,8 +151,7 @@ bool GetUserWhitelist(ListValue* user_list) {
   return true;
 }
 
-class UserCrosSettingsTrust : public SignedSettingsHelper::Callback,
-                              public NotificationObserver {
+class UserCrosSettingsTrust : public SignedSettingsHelper::Callback {
  public:
   static UserCrosSettingsTrust* GetInstance() {
     return Singleton<UserCrosSettingsTrust>::get();
@@ -164,12 +159,14 @@ class UserCrosSettingsTrust : public SignedSettingsHelper::Callback,
 
   // Working horse for UserCrosSettingsProvider::RequestTrusted* family.
   bool RequestTrustedEntity(const std::string& name) {
-    if (GetOwnershipStatus() == OWNERSHIP_NONE)
+    OwnershipService::Status ownership_status =
+        ownership_service_->GetStatus(false);
+    if (ownership_status == OwnershipService::OWNERSHIP_NONE)
       return true;
     PrefService* prefs = g_browser_process->local_state();
     if (prefs->IsManagedPreference(name.c_str()))
       return true;
-    if (GetOwnershipStatus() == OWNERSHIP_TAKEN) {
+    if (ownership_status == OwnershipService::OWNERSHIP_TAKEN) {
       DCHECK(g_browser_process);
       PrefService* prefs = g_browser_process->local_state();
       DCHECK(prefs);
@@ -223,32 +220,17 @@ class UserCrosSettingsTrust : public SignedSettingsHelper::Callback,
   }
 
  private:
-  // Listed in upgrade order.
-  enum OwnershipStatus {
-    OWNERSHIP_UNKNOWN = 0,
-    OWNERSHIP_NONE,
-    OWNERSHIP_TAKEN
-  };
-
-  // Used to discriminate different sources of ownership status info.
-  enum OwnershipSource {
-    SOURCE_FETCH,  // Info comes from FetchOwnershipStatus method.
-    SOURCE_OBSERVE // Info comes from Observe method.
-  };
-
   // upper bound for number of retries to fetch a signed setting.
   static const int kNumRetriesLimit = 9;
 
-  UserCrosSettingsTrust() : ownership_status_(OWNERSHIP_UNKNOWN),
-                            retries_left_(kNumRetriesLimit) {
-    notification_registrar_.Add(this,
-                                NotificationType::OWNERSHIP_TAKEN,
-                                NotificationService::AllSources());
-    // Start getting ownership status.
-    BrowserThread::PostTask(
-        BrowserThread::FILE,
-        FROM_HERE,
-        NewRunnableMethod(this, &UserCrosSettingsTrust::FetchOwnershipStatus));
+  UserCrosSettingsTrust()
+      : ownership_service_(OwnershipService::GetSharedInstance()),
+        retries_left_(kNumRetriesLimit) {
+    // Start prefetching Boolean and String preferences.
+    for (size_t i = 0; i < arraysize(kBooleanSettings); ++i)
+      StartFetchingSetting(kBooleanSettings[i]);
+    for (size_t i = 0; i < arraysize(kStringSettings); ++i)
+      StartFetchingSetting(kStringSettings[i]);
   }
 
   ~UserCrosSettingsTrust() {
@@ -257,43 +239,6 @@ class UserCrosSettingsTrust : public SignedSettingsHelper::Callback,
       // Cancels all pending callbacks from us.
       SignedSettingsHelper::Get()->CancelCallback(this);
     }
-  }
-
-  void FetchOwnershipStatus() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-    OwnershipStatus status =
-        OwnershipService::GetSharedInstance()->IsAlreadyOwned() ?
-        OWNERSHIP_TAKEN : OWNERSHIP_NONE;
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this, &UserCrosSettingsTrust::SetOwnershipStatus,
-            status, SOURCE_FETCH));
-  }
-
-  void SetOwnershipStatus(OwnershipStatus new_status,
-                          OwnershipSource source) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    DCHECK(new_status == OWNERSHIP_TAKEN || new_status == OWNERSHIP_NONE);
-    if (source == SOURCE_FETCH) {
-      DCHECK(ownership_status_ != OWNERSHIP_NONE);
-      if (ownership_status_ == OWNERSHIP_TAKEN) {
-        // OWNERSHIP_TAKEN notification was observed earlier.
-        return;
-      }
-    }
-    ownership_status_ = new_status;
-    if (source == SOURCE_FETCH) {
-      // Start prefetching Boolean and String preferences.
-      for (size_t i = 0; i < arraysize(kBooleanSettings); ++i)
-        StartFetchingSetting(kBooleanSettings[i]);
-      for (size_t i = 0; i < arraysize(kStringSettings); ++i)
-        StartFetchingSetting(kStringSettings[i]);
-    }
-  }
-
-  // Returns ownership status.
-  // Called on UI thread unlike OwnershipService::IsAlreadyOwned.
-  OwnershipStatus GetOwnershipStatus() {
-    return ownership_status_;
   }
 
   void StartFetchingSetting(const std::string& name) {
@@ -317,15 +262,16 @@ class UserCrosSettingsTrust : public SignedSettingsHelper::Callback,
       NOTREACHED();
       return;
     }
-    DCHECK(GetOwnershipStatus() != OWNERSHIP_UNKNOWN);
 
+    bool is_owned = ownership_service_->GetStatus(true) ==
+        OwnershipService::OWNERSHIP_TAKEN;
     PrefService* prefs = g_browser_process->local_state();
     switch (code) {
       case SignedSettings::SUCCESS:
       case SignedSettings::NOT_FOUND:
       case SignedSettings::KEY_UNAVAILABLE: {
-        bool fallback_to_default = (code == SignedSettings::NOT_FOUND) ||
-            (GetOwnershipStatus() == OWNERSHIP_NONE);
+        bool fallback_to_default = !is_owned
+            || (code == SignedSettings::NOT_FOUND);
         DCHECK(fallback_to_default || code == SignedSettings::SUCCESS);
         if (fallback_to_default)
           VLOG(1) << "Going default for cros setting " << name;
@@ -344,7 +290,7 @@ class UserCrosSettingsTrust : public SignedSettingsHelper::Callback,
       case SignedSettings::OPERATION_FAILED:
       default: {
         DCHECK(code == SignedSettings::OPERATION_FAILED);
-        DCHECK(GetOwnershipStatus() == OWNERSHIP_TAKEN);
+        DCHECK(is_owned);
         LOG(ERROR) << "On owned device: failed to retrieve cros "
                       "setting, name=" << name;
         if (retries_left_ > 0) {
@@ -366,7 +312,6 @@ class UserCrosSettingsTrust : public SignedSettingsHelper::Callback,
     }
     prefs->SetBoolean((name + kTrustedSuffix).c_str(), true);
     {
-      DCHECK(GetOwnershipStatus() != OWNERSHIP_UNKNOWN);
       std::vector<Task*>& callbacks_vector = callbacks_[name];
       for (size_t i = 0; i < callbacks_vector.size(); ++i)
         MessageLoop::current()->PostTask(FROM_HERE, callbacks_vector[i]);
@@ -408,23 +353,10 @@ class UserCrosSettingsTrust : public SignedSettingsHelper::Callback,
       CrosSettings::Get()->FireObservers(kAccountsPrefUsers);
   }
 
-  // NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
-    if (type.value == NotificationType::OWNERSHIP_TAKEN) {
-      SetOwnershipStatus(OWNERSHIP_TAKEN, SOURCE_OBSERVE);
-      notification_registrar_.RemoveAll();
-    } else {
-      NOTREACHED();
-    }
-  }
-
   // Pending callbacks that need to be invoked after settings verification.
   base::hash_map< std::string, std::vector< Task* > > callbacks_;
 
-  NotificationRegistrar notification_registrar_;
-  OwnershipStatus ownership_status_;
+  OwnershipService* ownership_service_;
 
   // In order to guard against occasional failure to fetch a property
   // we allow for some number of retries.

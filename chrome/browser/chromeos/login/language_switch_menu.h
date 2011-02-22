@@ -46,7 +46,7 @@ class LanguageSwitchMenu : public views::ViewMenuDelegate,
   static bool SwitchLanguage(const std::string& locale);
 
   // Switches the current locale, saves the new locale in preferences.
-  // Enables the keyboard layouts associated with th new locale.
+  // Enables the keyboard layouts associated with the new locale.
   static void SwitchLanguageAndEnableKeyboardLayouts(
       const std::string& locale);
 

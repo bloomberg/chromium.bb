@@ -172,6 +172,7 @@
 #include "chrome/browser/chromeos/external_metrics.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
+#include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/metrics_cros_settings_provider.h"
@@ -1374,6 +1375,9 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // Change the UI font if necessary. This has to be done after
   // InitSharedInstance() is called, as it depends on resource data.
   MaybeChangeUIFont();
+
+  // Trigger prefetching of ownership status.
+  chromeos::OwnershipService::GetSharedInstance();
 #endif
 
   // Record last shutdown time into a histogram.

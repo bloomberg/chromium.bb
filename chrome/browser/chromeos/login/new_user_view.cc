@@ -531,8 +531,9 @@ void NewUserView::ContentsChanged(views::Textfield* sender,
 }
 
 void NewUserView::EnableInputControls(bool enabled) {
-  languages_menubutton_->SetEnabled(g_browser_process->local_state()->
-      IsManagedPreference(prefs::kApplicationLocale) ? false : enabled);
+  languages_menubutton_->SetEnabled(enabled &&
+      !g_browser_process->local_state()->IsManagedPreference(
+          prefs::kApplicationLocale));
   username_field_->SetEnabled(enabled);
   password_field_->SetEnabled(enabled);
   sign_in_button_->SetEnabled(enabled);

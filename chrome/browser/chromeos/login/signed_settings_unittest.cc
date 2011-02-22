@@ -126,8 +126,8 @@ class SignedSettingsTest : public ::testing::Test {
     mock_service(s.get(), &m_);
     EXPECT_CALL(m_, StartSigningAttempt(to_sign, _))
         .Times(1);
-    EXPECT_CALL(m_, IsAlreadyOwned())
-        .WillOnce(Return(true));
+    EXPECT_CALL(m_, GetStatus(_))
+        .WillOnce(Return(OwnershipService::OWNERSHIP_TAKEN));
 
     s->Execute();
     s->OnKeyOpComplete(return_code, std::vector<uint8>());
@@ -144,8 +144,8 @@ class SignedSettingsTest : public ::testing::Test {
     mock_service(s.get(), &m_);
     EXPECT_CALL(m_, StartVerifyAttempt(to_verify, _, _))
         .Times(1);
-    EXPECT_CALL(m_, IsAlreadyOwned())
-        .WillOnce(Return(true));
+    EXPECT_CALL(m_, GetStatus(_))
+        .WillOnce(Return(OwnershipService::OWNERSHIP_TAKEN));
 
     s->Execute();
     s->OnKeyOpComplete(return_code, std::vector<uint8>());
@@ -285,8 +285,8 @@ TEST_F(SignedSettingsTest, StoreProperty) {
   mock_service(s.get(), &m_);
   EXPECT_CALL(m_, StartSigningAttempt(to_sign, _))
       .Times(1);
-  EXPECT_CALL(m_, IsAlreadyOwned())
-      .WillOnce(Return(true));
+  EXPECT_CALL(m_, GetStatus(_))
+      .WillOnce(Return(OwnershipService::OWNERSHIP_TAKEN));
 
   s->Execute();
   s->OnKeyOpComplete(OwnerManager::SUCCESS, std::vector<uint8>());
@@ -312,8 +312,8 @@ TEST_F(SignedSettingsTest, RetrieveProperty) {
   mock_service(s.get(), &m_);
   EXPECT_CALL(m_, StartVerifyAttempt(to_verify, _, _))
       .Times(1);
-  EXPECT_CALL(m_, IsAlreadyOwned())
-      .WillOnce(Return(true));
+  EXPECT_CALL(m_, GetStatus(_))
+      .WillOnce(Return(OwnershipService::OWNERSHIP_TAKEN));
 
   s->Execute();
   s->OnKeyOpComplete(OwnerManager::SUCCESS, std::vector<uint8>());

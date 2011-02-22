@@ -14,6 +14,7 @@
 
 using ::testing::_;
 using ::testing::InSequence;
+using ::testing::Return;
 
 namespace chromeos {
 
@@ -89,7 +90,9 @@ class SignedSettingsHelperTest : public ::testing::Test,
 TEST_F(SignedSettingsHelperTest, SerializedOps) {
   MockSignedSettingsHelperCallback cb;
 
-  EXPECT_CALL(m_, IsAlreadyOwned()).Times(2);
+  ON_CALL(m_, GetStatus(_))
+      .WillByDefault(Return(OwnershipService::OWNERSHIP_TAKEN));
+  EXPECT_CALL(m_, GetStatus(_)).Times(2);
   InSequence s;
   EXPECT_CALL(m_, StartVerifyAttempt(_, _, _)).Times(1);
   EXPECT_CALL(cb, OnCheckWhitelistCompleted(SignedSettings::SUCCESS, _))
@@ -121,7 +124,9 @@ TEST_F(SignedSettingsHelperTest, SerializedOps) {
 TEST_F(SignedSettingsHelperTest, CanceledOps) {
   MockSignedSettingsHelperCallback cb;
 
-  EXPECT_CALL(m_, IsAlreadyOwned()).Times(2);
+  ON_CALL(m_, GetStatus(_))
+      .WillByDefault(Return(OwnershipService::OWNERSHIP_TAKEN));
+  EXPECT_CALL(m_, GetStatus(_)).Times(2);
   InSequence s;
   EXPECT_CALL(m_, StartVerifyAttempt(_, _, _)).Times(1);
   EXPECT_CALL(cb, OnCheckWhitelistCompleted(SignedSettings::SUCCESS, _))

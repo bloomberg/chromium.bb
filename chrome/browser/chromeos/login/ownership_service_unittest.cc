@@ -86,12 +86,26 @@ TEST_F(OwnershipServiceTest, IsOwned) {
   EXPECT_TRUE(service_->IsAlreadyOwned());
 }
 
+TEST_F(OwnershipServiceTest, IsOwnershipTaken) {
+  EXPECT_CALL(*mock_, GetOwnerKeyFilePath())
+      .WillRepeatedly(Return(tmpfile_));
+  EXPECT_TRUE(service_->GetStatus(true) == OwnershipService::OWNERSHIP_TAKEN);
+}
+
 TEST_F(OwnershipServiceTest, IsUnowned) {
   StartUnowned();
 
   EXPECT_CALL(*mock_, GetOwnerKeyFilePath())
       .WillRepeatedly(Return(tmpfile_));
   EXPECT_FALSE(service_->IsAlreadyOwned());
+}
+
+TEST_F(OwnershipServiceTest, IsOwnershipNone) {
+  StartUnowned();
+
+  EXPECT_CALL(*mock_, GetOwnerKeyFilePath())
+      .WillRepeatedly(Return(tmpfile_));
+  EXPECT_TRUE(service_->GetStatus(true) == OwnershipService::OWNERSHIP_NONE);
 }
 
 TEST_F(OwnershipServiceTest, LoadOwnerKeyFail) {
