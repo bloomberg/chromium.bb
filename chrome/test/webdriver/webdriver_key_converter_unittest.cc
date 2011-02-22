@@ -34,6 +34,36 @@ void CheckEvents(const std::string& keys,
   CheckEvents(UTF8ToUTF16(keys), expected_events, expected_size);
 }
 
+void CheckNonShiftChar(ui::KeyboardCode key_code, char character) {
+  std::string char_string;
+  char_string.push_back(character);
+  std::vector<WebKeyEvent> events;
+  ConvertKeysToWebKeyEvents(ASCIIToUTF16(char_string), &events);
+  ASSERT_EQ(3u, events.size()) << "Char: " << character;
+  EXPECT_EQ(key_code, events[0].key_code) << "Char: " << character;
+  ASSERT_EQ(1u, events[1].modified_text.length()) << "Char: " << character;
+  ASSERT_EQ(1u, events[1].unmodified_text.length()) << "Char: " << character;
+  EXPECT_EQ(character, events[1].modified_text[0]) << "Char: " << character;
+  EXPECT_EQ(character, events[1].unmodified_text[0]) << "Char: " << character;
+  EXPECT_EQ(key_code, events[2].key_code) << "Char: " << character;
+}
+
+void CheckShiftChar(ui::KeyboardCode key_code, char character, char lower) {
+  std::string char_string;
+  char_string.push_back(character);
+  std::vector<WebKeyEvent> events;
+  ConvertKeysToWebKeyEvents(ASCIIToUTF16(char_string), &events);
+  ASSERT_EQ(5u, events.size()) << "Char: " << character;
+  EXPECT_EQ(ui::VKEY_SHIFT, events[0].key_code) << "Char: " << character;
+  EXPECT_EQ(key_code, events[1].key_code) << "Char: " << character;
+  ASSERT_EQ(1u, events[2].modified_text.length()) << "Char: " << character;
+  ASSERT_EQ(1u, events[2].unmodified_text.length()) << "Char: " << character;
+  EXPECT_EQ(character, events[2].modified_text[0]) << "Char: " << character;
+  EXPECT_EQ(lower, events[2].unmodified_text[0]) << "Char: " << character;
+  EXPECT_EQ(key_code, events[3].key_code) << "Char: " << character;
+  EXPECT_EQ(ui::VKEY_SHIFT, events[4].key_code) << "Char: " << character;
+}
+
 TEST(WebDriverKeyConverter, SingleChar) {
   WebKeyEvent event_array[] = {
       CreateKeyDownEvent(ui::VKEY_H, 0),
@@ -164,6 +194,75 @@ TEST(WebDriverKeyConverter, ToggleModifiers) {
   keys.push_back(static_cast<char16>(0xE03DU));
   keys.push_back(static_cast<char16>(0xE03DU));
   CheckEvents(keys, event_array, arraysize(event_array));
+}
+
+TEST(WebDriverKeyConverter, AllEnglishKeyboardSymbols) {
+  string16 keys;
+  const ui::KeyboardCode kSymbolKeyCodes[] = {
+      ui::VKEY_OEM_3,
+      ui::VKEY_OEM_MINUS,
+      ui::VKEY_OEM_PLUS,
+      ui::VKEY_OEM_4,
+      ui::VKEY_OEM_6,
+      ui::VKEY_OEM_5,
+      ui::VKEY_OEM_1,
+      ui::VKEY_OEM_7,
+      ui::VKEY_OEM_COMMA,
+      ui::VKEY_OEM_PERIOD,
+      ui::VKEY_OEM_2};
+  std::string kLowerSymbols = "`-=[]\\;',./";
+  std::string kUpperSymbols = "~_+{}|:\"<>?";
+  for (size_t i = 0; i < kLowerSymbols.length(); ++i)
+    CheckNonShiftChar(kSymbolKeyCodes[i], kLowerSymbols[i]);
+  for (size_t i = 0; i < kUpperSymbols.length(); ++i)
+    CheckShiftChar(kSymbolKeyCodes[i], kUpperSymbols[i], kLowerSymbols[i]);
+}
+
+TEST(WebDriverKeyConverter, AllEnglishKeyboardTextChars) {
+  std::string kLowerChars = "0123456789abcdefghijklmnopqrstuvwxyz";
+  std::string kUpperChars = ")!@#$%^&*(ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  for (size_t i = 0; i < kLowerChars.length(); ++i) {
+    int offset = 0;
+    if (i < 10)
+      offset = ui::VKEY_0;
+    else
+      offset = ui::VKEY_0 + 7;
+    ui::KeyboardCode expected_code = static_cast<ui::KeyboardCode>(offset + i);
+    CheckNonShiftChar(expected_code, kLowerChars[i]);
+  }
+  for (size_t i = 0; i < kUpperChars.length(); ++i) {
+    int offset = 0;
+    if (i < 10)
+      offset = ui::VKEY_0;
+    else
+      offset = ui::VKEY_0 + 7;
+    ui::KeyboardCode expected_code = static_cast<ui::KeyboardCode>(offset + i);
+    CheckShiftChar(expected_code, kUpperChars[i], kLowerChars[i]);
+  }
+}
+
+TEST(WebDriverKeyConverter, AllSpecialWebDriverKeysOnEnglishKeyboard) {
+  const char kTextKeys[] = {
+      ' ', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ';', '=', '0', '1', '2', '3', '4', '5',
+      '6', '7', '8', '9', '*', '+', ',', '-', '.', '/'};
+  for (size_t i = 0; i <= 0x3D; ++i) {
+    if (i > 0x29 && i < 0x31)
+      continue;
+    string16 keys;
+    keys.push_back(0xE000U + i);
+    std::vector<WebKeyEvent> events;
+    ConvertKeysToWebKeyEvents(keys, &events);
+    if (i == 0xD || (i >= 0x18 && i <= 0x29)) {
+      ASSERT_EQ(3u, events.size()) << "Index: " << i;
+      ASSERT_EQ(1u, events[1].unmodified_text.length()) << "Index: " << i;
+      EXPECT_EQ(kTextKeys[i - 0xD], events[1].unmodified_text[0])
+          << "Index: " << i;
+    } else if (i < 2) {
+      EXPECT_EQ(0u, events.size()) << "Index: " << i;
+    } else {
+      EXPECT_EQ(2u, events.size()) << "Index: " << i;
+    }
+  }
 }
 
 }  // namespace webdriver

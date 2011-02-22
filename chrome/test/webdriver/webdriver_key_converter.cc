@@ -4,16 +4,9 @@
 
 #include "chrome/test/webdriver/webdriver_key_converter.h"
 
-#include <cctype>
-
-#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/automation_constants.h"
-
-#if defined(OS_LINUX)
-#include <gdk/gdk.h>
-#include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
-#endif
+#include "chrome/test/webdriver/keycode_text_conversion.h"
 
 namespace {
 
@@ -113,80 +106,6 @@ bool KeyCodeFromSpecialWebDriverKey(char16 key, ui::KeyboardCode* key_code) {
   if (is_special_key)
     *key_code = kSpecialWebDriverKeys[index];
   return is_special_key;
-}
-
-// Converts a character to the key code and modifier set that would
-// produce the character using the given keyboard layout.
-bool ConvertCharToKeyCode(
-    char16 key, ui::KeyboardCode* key_code, int *necessary_modifiers) {
-#if defined(OS_WIN)
-  short vkey_and_modifiers = ::VkKeyScanW(key);
-  bool translated = vkey_and_modifiers != -1 &&
-                    LOBYTE(vkey_and_modifiers) != -1 &&
-                    HIBYTE(vkey_and_modifiers) != -1;
-  if (translated) {
-    *key_code = static_cast<ui::KeyboardCode>(LOBYTE(vkey_and_modifiers));
-    *necessary_modifiers = HIBYTE(vkey_and_modifiers);
-  }
-  return translated;
-#elif defined(OS_LINUX)
-  guint gdk_key_code = gdk_unicode_to_keyval(key);
-  if (!gdk_key_code)
-    return false;
-
-  string16 key_string;
-  key_string.push_back(key);
-  const std::string kNeedsShiftSymbols= "!@#$%^&*()_+~{}|\":<>?";
-  bool is_special_symbol = IsStringASCII(key_string) &&
-      kNeedsShiftSymbols.find(static_cast<char>(gdk_key_code)) !=
-          std::string::npos;
-
-  if (is_special_symbol || key != std::towlower(key))
-    *necessary_modifiers = automation::kShiftKeyMask;
-  *key_code = ui::WindowsKeyCodeForGdkKeyCode(gdk_key_code);
-  return true;
-#else
-  // TODO(kkania): Implement.
-  return false;
-#endif
-}
-
-// Returns the character that would be produced from the given key code and
-// modifier set, or "" if no character would be produced.
-std::string ConvertKeyCodeToText(ui::KeyboardCode key_code, int modifiers) {
-#if defined(OS_WIN)
-  UINT scan_code = ::MapVirtualKeyW(key_code, MAPVK_VK_TO_VSC);
-  BYTE keyboard_state[256];
-  ::GetKeyboardState(keyboard_state);
-  if (modifiers & automation::kShiftKeyMask)
-    keyboard_state[VK_SHIFT] |= 0x80;
-  wchar_t chars[5];
-  int code = ::ToUnicode(key_code, scan_code, keyboard_state, chars, 4, 0);
-  if (code <= 0) {
-    return "";
-  } else {
-    std::string text;
-    WideToUTF8(chars, code, &text);
-    return text;
-  }
-#elif defined(OS_LINUX)
-  // |gdk_keyval_to_upper| does not convert some keys like '1' to '!', so
-  // provide |ui::GdkKeyCodeForWindowsKeyCode| with our shift state as well,
-  // which will do basic conversions like it for us.
-  guint gdk_key_code = ui::GdkKeyCodeForWindowsKeyCode(
-      key_code, modifiers & automation::kShiftKeyMask);
-  if (modifiers & automation::kShiftKeyMask)
-    gdk_key_code = gdk_keyval_to_upper(gdk_key_code);
-  guint32 unicode_char = gdk_keyval_to_unicode(gdk_key_code);
-  if (!unicode_char)
-    return "";
-  string16 text;
-  text.push_back(unicode_char);
-  return UTF16ToUTF8(text);
-#else
-  // TODO(kkania): Implement
-  return "";
-#endif
 }
 
 }  // namespace

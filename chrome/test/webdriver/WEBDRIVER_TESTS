@@ -72,7 +72,7 @@
     # Test requires click command.
     '-stale_reference_tests.StaleReferenceTests.testOldPage',
 #   'text_handling_tests',
-#   'typing_tests',
+    'typing_tests',
     'visibility_tests',
     # Depends on click.
     '-visibility_tests.VisibilityTests.testShouldModifyTheVisibilityOfAnElementDynamically',
@@ -82,9 +82,7 @@
   ],
 
   'win': [
-    'typing_tests',
-    # needs clear command
-    '-typing_tests.TypingTests.testNumberpadAndFunctionKeys',
+
   ],
 
   'mac': [
@@ -92,8 +90,5 @@
   ],
 
   'linux': [
-    'typing_tests',
-    # needs clear command
-    '-typing_tests.TypingTests.testNumberpadAndFunctionKeys',
   ],
 }

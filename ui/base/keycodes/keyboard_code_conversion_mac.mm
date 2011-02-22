@@ -213,10 +213,8 @@ int MacKeyCodeForWindowsKeyCode(KeyboardCode keycode,
       kKeyCodesMap, kKeyCodesMap + arraysize(kKeyCodesMap), from);
 
   if (ptr >= kKeyCodesMap + arraysize(kKeyCodesMap) ||
-      ptr->keycode != keycode || ptr->macKeycode == -1) {
-    NOTREACHED() << "Unsupported keycode:" << keycode;
+      ptr->keycode != keycode || ptr->macKeycode == -1)
     return -1;
-  }
 
   int macKeycode = ptr->macKeycode;
   if (characterIgnoringModifiers)
