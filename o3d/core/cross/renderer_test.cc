@@ -89,9 +89,11 @@ TEST_F(RendererTest, InitAndDestroyRenderer) {
   RendererD3D9* d3d_renderer = down_cast<RendererD3D9*>(renderer.get());
   EXPECT_TRUE(d3d_renderer->d3d_device() != NULL);
 #elif defined(RENDERER_GL)
+#if !defined(FORCE_CAIRO)
   // test that the Cg Context was correctly created
   RendererGL* gl_renderer = down_cast<RendererGL*>(renderer.get());
   EXPECT_TRUE(gl_renderer->cg_context() != NULL);
+#endif
 #elif defined(RENDERER_GLES2)
   RendererGLES2* gles2_renderer = down_cast<RendererGLES2*>(renderer.get());
 #endif
@@ -102,8 +104,10 @@ TEST_F(RendererTest, InitAndDestroyRenderer) {
   // check that the renderer no longer had the D3D device.
   EXPECT_FALSE(d3d_renderer->d3d_device() != NULL);
 #elif defined(RENDERER_GL)
+#if !defined(FORCE_CAIRO)
   // check that the renderer no longer has a Cg Context.
   EXPECT_FALSE(gl_renderer->cg_context() != NULL);
+#endif
 #elif defined(RENDERER_GLES2)
 #if defined(GLES2_BACKEND_DESKTOP_GL)
 #if defined(OS_LINUX)

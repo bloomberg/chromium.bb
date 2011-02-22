@@ -77,8 +77,13 @@ class ClientInfo {
 
   // Whether render in 2d Mode
   bool render_2d() const {
-#if defined(RENDERER_CAIRO)
+#if defined(SUPPORT_CAIRO) && defined(FORCE_CAIRO)
+    // Force Cairo o2d mode for testing purposes
     return true;
+#elif defined(SUPPORT_CAIRO)
+    // Some day when we have fallback from o3d to o2d,
+    // this will have to support logic returning actual o2d vs. o3d mode.
+    return false;
 #else
     return false;
 #endif

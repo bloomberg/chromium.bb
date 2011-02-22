@@ -66,7 +66,7 @@
 #include "core/cross/transform.h"
 #include "core/cross/tree_traversal.h"
 #include "core/cross/viewport.h"
-#if defined(RENDERER_CAIRO)
+#if defined(SUPPORT_CAIRO)
 #include "core/cross/cairo/layer.h"
 #endif
 
@@ -183,7 +183,7 @@ ClassManager::ClassManager(ServiceLocator* service_locator)
   AddTypedClass<Viewport>();
 
   // Specific Objects for Cairo
-#if defined(RENDERER_CAIRO)
+#if defined(SUPPORT_CAIRO)
   AddTypedClass<o2d::Layer>();
 #endif
 }

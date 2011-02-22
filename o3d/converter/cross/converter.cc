@@ -279,12 +279,7 @@ bool Convert(const FilePath& in_filename,
   // Collect error messages.
   ErrorCollector error_collector(&service_locator);
 
-  scoped_ptr<Renderer> renderer(
-#if !defined(RENDERER_CAIRO)
-      Renderer::CreateDefaultRenderer(&service_locator));
-#else
-      RendererStub::CreateDefault(&service_locator));
-#endif
+  scoped_ptr<Renderer> renderer(RendererStub::CreateDefault(&service_locator));
   renderer->InitCommon();
 
   Pack::Ref pack(object_manager.CreatePack());
@@ -476,7 +471,7 @@ bool Verify(const FilePath& in_filename,
   ErrorCollector error_collector(&service_locator);
 
   scoped_ptr<Renderer> renderer(
-      Renderer::CreateDefaultRenderer(&service_locator));
+      RendererStub::CreateDefault(&service_locator));
   renderer->InitCommon();
 
   Pack::Ref pack(object_manager.CreatePack());

@@ -470,7 +470,7 @@
             ],
           },
         ],
-        ['renderer == "cairo"',
+        ['support_cairo == 1',
           {
             'sources': [
               'cross/cairo/install_check.cc',

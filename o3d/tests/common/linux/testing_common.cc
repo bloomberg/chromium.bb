@@ -55,14 +55,11 @@ o3d::DisplayWindow* g_display_window = NULL;
 Display *g_display = NULL;
 Window g_window = 0;
 
-#if !defined(RENDERER_CAIRO)
 static char kOffScreenRenderer[] = "O3D_D3D9_OFF_SCREEN";
-#endif
 
 extern int test_main(int argc, char **argv);
 
 int main(int argc, char *argv[]) {
-#if !defined(RENDERER_CAIRO)
   std::string error;
   if (!o3d::RendererInstallCheck(&error)) {
     return false;
@@ -171,7 +168,4 @@ int main(int argc, char *argv[]) {
   ::XCloseDisplay(g_display);
 
   return ret;
-#else
-  return 1;
-#endif
 }

@@ -67,14 +67,16 @@
 #error Platform not recognized.
 #endif
 
+#if defined(SUPPORT_CAIRO)
+#include "core/cross/cairo/renderer_cairo.h"
+#endif
+
 #if defined(RENDERER_D3D9) && defined(OS_WIN)
 #include "core/win/d3d9/renderer_d3d9.h"
 #elif defined(RENDERER_GL)
 #include "core/cross/gl/renderer_gl.h"
 #elif defined(RENDERER_GLES2)
 #include "core/cross/gles2/renderer_gles2.h"
-#elif defined(RENDERER_CAIRO)
-#include "core/cross/cairo/renderer_cairo.h"
 #else
 #error Renderer not recognized.
 #endif

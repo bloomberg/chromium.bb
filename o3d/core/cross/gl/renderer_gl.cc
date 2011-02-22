@@ -37,6 +37,9 @@
 
 #include "core/cross/gl/renderer_gl.h"
 
+#ifdef SUPPORT_CAIRO
+#include "core/cross/cairo/renderer_cairo.h"
+#endif
 #include "core/cross/error.h"
 #include "core/cross/gl/buffer_gl.h"
 #include "core/cross/gl/draw_element_gl.h"
@@ -1522,7 +1525,11 @@ const int* RendererGL::GetRGBAUByteNSwizzleTable() {
 // This is a factory function for creating Renderer objects.  Since
 // we're implementing GL, we only ever return a GL renderer.
 Renderer* Renderer::CreateDefaultRenderer(ServiceLocator* service_locator) {
+#ifdef FORCE_CAIRO
+  return o2d::RendererCairo::CreateDefault(service_locator);
+#else
   return RendererGL::CreateDefault(service_locator);
+#endif
 }
 
 #ifdef OS_MACOSX

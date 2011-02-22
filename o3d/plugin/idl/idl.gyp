@@ -14,7 +14,7 @@
       '<!@(python get_idl_files.py)',
     ],
     'conditions': [
-      ['renderer == "cairo"',
+      ['support_cairo == 1',
         {
           'idl_files': [
             'layer.idl',

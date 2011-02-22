@@ -29,6 +29,7 @@
       # If the DEPS file exists two levels up, then we're in a Chrome tree.
       'o3d_in_chrome%': '<!(python <(DEPTH)/o3d/build/file_exists.py <(DEPTH)/DEPS)',
       'gles2_backend%': 'desktop_gl',
+      'force_cairo%' : 0,
       'conditions' : [
         # These have to come first because GYP doesn't like it when
         # they're part of the same conditional as a conditions clause that
@@ -38,6 +39,7 @@
             'cgdir': 'third_party/cg/files/win',
             'renderer%': 'd3d9',
             'swiftshaderdir': 'o3d-internal/third_party/swiftshader/files',
+            'support_cairo%' : 0,
           },
         ],
         ['OS == "mac"',
@@ -45,6 +47,7 @@
             'cgdir': 'third_party/cg/files/mac',
             'renderer%': 'gl',
             'swiftshaderdir': '',
+            'support_cairo%' : 0,
           },
         ],
         ['OS == "linux"',
@@ -52,12 +55,15 @@
             'cgdir': 'third_party/cg/files/linux',
             'renderer%': 'gl',
             'swiftshaderdir': '',
+            'support_cairo%' : 1,
           },
         ],
       ],
     },
     'o3d_in_chrome%': '<(o3d_in_chrome)',
     'renderer%': '<(renderer)',
+    'support_cairo%': '<(support_cairo)',
+    'force_cairo%': '<(force_cairo)',
     'cgdir%': '<(cgdir)',
     'gles2_backend%': '<(gles2_backend)',
     'swiftshaderdir%': '<(swiftshaderdir)',
@@ -95,6 +101,20 @@
       }],
     ],
     'conditions' : [
+      ['support_cairo == 1',
+        {
+          'defines': [
+            'SUPPORT_CAIRO',
+          ],
+        },
+      ],
+      ['force_cairo == 1',
+        {
+          'defines': [
+            'FORCE_CAIRO',
+          ],
+        },
+      ],
       ['renderer == "d3d9"',
         {
           'defines': [
@@ -106,13 +126,6 @@
         {
           'defines': [
             'RENDERER_GL',
-          ],
-        },
-      ],
-      ['renderer == "cairo"',
-        {
-          'defines': [
-            'RENDERER_CAIRO',
           ],
         },
       ],

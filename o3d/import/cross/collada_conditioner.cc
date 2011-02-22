@@ -542,7 +542,6 @@ bool ColladaConditioner::CompileCg(const FilePath& filename,
                                    const String& shader_source,
                                    const String& vs_entry,
                                    const String& ps_entry) {
-#if !defined(RENDERER_CAIRO)
   bool retval = false;
   String shader_source_cg = shader_source;
   shader_source_cg +=
@@ -575,8 +574,5 @@ bool ColladaConditioner::CompileCg(const FilePath& filename,
   }
   cgDestroyContext(context);
   return retval;
-#else
-  return false;
-#endif
 }
 }  // namespace o3d

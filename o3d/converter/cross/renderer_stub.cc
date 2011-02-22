@@ -211,13 +211,4 @@ const int* RendererStub::GetRGBAUByteNSwizzleTable() {
   return swizzle_table;
 }
 
-// TODO(fransiskusx): This violates the One Definition Rule.
-#if !defined(RENDERER_CAIRO)
-// This is a factory function for creating Renderer objects.  Since
-// we're implementing a stub renderer, we only ever return a stub renderer.
-Renderer* Renderer::CreateDefaultRenderer(ServiceLocator* service_locator) {
-  return RendererStub::CreateDefault(service_locator);
-}
-#endif
-
 }  // namespace o3d

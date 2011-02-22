@@ -30,6 +30,7 @@
         '../../<(pngdir)/libpng.gyp:libpng',
         '../../<(zlibdir)/zlib.gyp:zlib',
         '../compiler/technique/technique.gyp:o3dTechnique',
+        '../build/libs.gyp:cg_libs',
       ],
       'sources': [
         'cross/collada_conditioner.cc',
@@ -48,17 +49,6 @@
         'cross/zip_archive.cc',
         'cross/zip_archive.h',
       ],
-
-      'conditions' :[
-         ['renderer != "cairo"',
-          {
-           'dependencies': [
-             '../build/libs.gyp:cg_libs',
-           ],
-          },
-        ],     
-      ],
-
       'conditions' : [
         ['OS == "win"',
           {

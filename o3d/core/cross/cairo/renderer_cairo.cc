@@ -41,10 +41,6 @@
 
 namespace o3d {
 
-Renderer* Renderer::CreateDefaultRenderer(ServiceLocator* service_locator) {
-  return o2d::RendererCairo::CreateDefault(service_locator);
-}
-
 namespace o2d {
 
 RendererCairo::RendererCairo(ServiceLocator* service_locator)
