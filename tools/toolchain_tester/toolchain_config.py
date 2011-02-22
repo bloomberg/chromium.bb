@@ -184,7 +184,7 @@ COMMANDS_llvm_pnacl_arm = [
      '%(LD)s %(tmp)s.bc -o %(tmp)s.nexe  -L%(LIB_DIR)s -lc -lnacl -lnosys',
      ),
     ('qemu-sel_ldr',
-     '%(EMU)s run %(SEL_LDR)s -Q -d %(tmp)s.nexe',
+     '%(EMU)s run %(SEL_LDR)s -Q %(tmp)s.nexe',
      )
   ]
 
