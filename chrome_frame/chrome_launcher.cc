@@ -143,9 +143,15 @@ bool SanitizeAndLaunchChrome(const wchar_t* command_line) {
     std::wstring chrome_path;
     if (GetChromeExecutablePath(&chrome_path)) {
       const wchar_t* args = PathGetArgs(command_line);
+
+      // Build the command line string with the quoted path to chrome.exe.
+      std::wstring command_line;
+      command_line.reserve(chrome_path.size() + 2);
+      command_line.append(1, L'\"').append(chrome_path).append(1, L'\"');
+
       if (args != NULL) {
-        chrome_path += L" ";
-        chrome_path += args;
+        command_line += L' ';
+        command_line += args;
       }
 
       STARTUPINFO startup_info = {0};
@@ -153,7 +159,7 @@ bool SanitizeAndLaunchChrome(const wchar_t* command_line) {
       startup_info.dwFlags = STARTF_USESHOWWINDOW;
       startup_info.wShowWindow = SW_SHOW;
       PROCESS_INFORMATION process_info = {0};
-      if (CreateProcess(NULL, &chrome_path[0],
+      if (CreateProcess(&chrome_path[0], &command_line[0],
                         NULL, NULL, FALSE, 0, NULL, NULL,
                         &startup_info, &process_info)) {
         // Close handles.
