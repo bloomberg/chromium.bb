@@ -15,6 +15,7 @@
 #include "grit/webkit_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image.h"
 #include "unicode/locid.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/npapi/default_plugin_shared.h"
@@ -28,7 +29,6 @@ PluginInstallerImpl::PluginInstallerImpl(int16 mode)
 }
 
 PluginInstallerImpl::~PluginInstallerImpl() {
-  [image_ release];
   [command_ release];
 }
 
@@ -51,7 +51,7 @@ bool PluginInstallerImpl::Initialize(void* module_handle, NPP instance,
       IDS_DEFAULT_PLUGIN_NO_PLUGIN_AVAILABLE_MSG)) retain];
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  image_ = [rb.GetNativeImageNamed(IDR_PLUGIN_ICON) retain];
+  image_ = rb.GetNativeImageNamed(IDR_PLUGIN_ICON);
 
   return true;
 }

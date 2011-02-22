@@ -58,15 +58,11 @@ FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale) {
   return GetResourcesPakFilePath(@"locale", mac_locale);
 }
 
-NSImage* ResourceBundle::GetNSImageNamed(int resource_id) {
-  // Currently this doesn't make a cache holding these as NSImages because
-  // GetBitmapNamed has a cache, and we don't want to double cache.
-  SkBitmap* bitmap = GetBitmapNamed(resource_id);
-  if (!bitmap)
-    return nil;
-
-  NSImage* nsimage = gfx::SkBitmapToNSImage(*bitmap);
-  return nsimage;
+gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id) {
+  // Currently this just returns the Skia-backed image, which will convert to
+  // NSImage and cache that result when necessary.
+  // TODO(rsesek): Load the raw bytes directly into an NSImage instead.
+  return GetImageNamed(resource_id);
 }
 
 }  // namespace ui

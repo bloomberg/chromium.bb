@@ -31,9 +31,6 @@ DataPack* LoadResourcesDataPak(FilePath resources_pak_path) {
 
 ResourceBundle::~ResourceBundle() {
   FreeImages();
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-  FreeGdkPixBufs();
-#endif
   UnloadLocaleResources();
   STLDeleteContainerPointers(data_packs_.begin(),
                              data_packs_.end());

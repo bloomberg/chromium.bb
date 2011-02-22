@@ -25,6 +25,7 @@
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/gfx/image.h"
 
 @interface PageInfoBubbleController (Private)
 - (PageInfoModel*)model;
@@ -402,7 +403,7 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
   scoped_nsobject<NSImageView> imageView(
       [[NSImageView alloc] initWithFrame:frame]);
   [imageView setImageFrameStyle:NSImageFrameNone];
-  [imageView setImage:model_->GetIconImage(info.icon_id)];
+  [imageView setImage:*model_->GetIconImage(info.icon_id)];
   [subviews addObject:imageView.get()];
 }
 

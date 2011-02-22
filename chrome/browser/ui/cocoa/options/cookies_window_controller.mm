@@ -20,6 +20,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image.h"
 
 // Key path used for notifying KVO.
 static NSString* const kCocoaTreeModel = @"cocoaTreeModel";

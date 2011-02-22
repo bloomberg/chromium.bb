@@ -9,6 +9,7 @@
 #include "grit/theme_resources.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image.h"
 
 // Offset above vertical middle of page where contents of page start.
 static const CGFloat kSadTabOffset = -64;

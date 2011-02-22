@@ -19,6 +19,7 @@
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image.h"
 
 BookmarkMenuBridge::BookmarkMenuBridge(Profile* profile)
     : menuIsValid_(false),

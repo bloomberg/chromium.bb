@@ -12,7 +12,8 @@
 #include "base/gtest_prod_util.h"
 #include "build/build_config.h"
 #include "ui/gfx/native_widget_types.h"  // Forward-declares GdkPixbuf and NSImage.
-#include "third_party/skia/include/core/SkBitmap.h"
+
+class SkBitmap;
 
 namespace {
 class ImageTest;
@@ -43,10 +44,10 @@ class Image {
   // ownership of the image.
   explicit Image(const SkBitmap* bitmap);
 #if defined(OS_LINUX)
-  // Does not increase |pixbuf|'s reference count.
+  // Does not increase |pixbuf|'s reference count; expects to take ownership.
   explicit Image(GdkPixbuf* pixbuf);
 #elif defined(OS_MACOSX)
-  // Does not retain |image|.
+  // Does not retain |image|; expects to take ownership.
   explicit Image(NSImage* image);
 #endif
 

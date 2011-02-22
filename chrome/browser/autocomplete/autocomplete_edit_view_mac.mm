@@ -24,6 +24,7 @@
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image.h"
 #include "ui/gfx/rect.h"
 
 // Focus-handling between |field_| and |model_| is a bit subtle.

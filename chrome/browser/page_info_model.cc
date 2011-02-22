@@ -23,10 +23,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
-#if defined(OS_MACOSX)
-#include "base/mac/mac_util.h"
-#endif
-
 PageInfoModel::PageInfoModel(Profile* profile,
                              const GURL& url,
                              const NavigationEntry::SSLStatus& ssl,
@@ -280,16 +276,6 @@ PageInfoModel::PageInfoModel(Profile* profile,
   }
 }
 
-PageInfoModel::~PageInfoModel() {
-#if defined(OS_MACOSX)
-  // Release the NSImages.
-  for (std::vector<gfx::NativeImage>::iterator it = icons_.begin();
-       it != icons_.end(); ++it) {
-    base::mac::NSObjectRelease(*it);
-  }
-#endif
-}
-
 int PageInfoModel::GetSectionCount() {
   return sections_.size();
 }
@@ -299,7 +285,7 @@ PageInfoModel::SectionInfo PageInfoModel::GetSectionInfo(int index) {
   return sections_[index];
 }
 
-gfx::NativeImage PageInfoModel::GetIconImage(SectionStateIcon icon_id) {
+gfx::Image* PageInfoModel::GetIconImage(SectionStateIcon icon_id) {
   if (icon_id == ICON_NONE)
     return NULL;
   // The bubble uses new, various icons.
@@ -350,20 +336,10 @@ PageInfoModel::PageInfoModel() : observer_(NULL) {
 void PageInfoModel::Init() {
   // Loads the icons into the vector. The order must match the SectionStateIcon
   // enum.
-  icons_.push_back(GetBitmapNamed(IDR_PAGEINFO_GOOD));
-  icons_.push_back(GetBitmapNamed(IDR_PAGEINFO_WARNING_MINOR));
-  icons_.push_back(GetBitmapNamed(IDR_PAGEINFO_WARNING_MAJOR));
-  icons_.push_back(GetBitmapNamed(IDR_PAGEINFO_BAD));
-  icons_.push_back(GetBitmapNamed(IDR_PAGEINFO_INFO));
-}
-
-gfx::NativeImage PageInfoModel::GetBitmapNamed(int resource_id) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  gfx::NativeImage image = rb.GetNativeImageNamed(resource_id);
-#if defined(OS_MACOSX)
-  // Unlike other platforms, the Mac ResourceBundle does not keep a shared image
-  // cache. These are released in the dtor.
-  base::mac::NSObjectRetain(image);
-#endif
-  return image;
+  icons_.push_back(&rb.GetNativeImageNamed(IDR_PAGEINFO_GOOD));
+  icons_.push_back(&rb.GetNativeImageNamed(IDR_PAGEINFO_WARNING_MINOR));
+  icons_.push_back(&rb.GetNativeImageNamed(IDR_PAGEINFO_WARNING_MAJOR));
+  icons_.push_back(&rb.GetNativeImageNamed(IDR_PAGEINFO_BAD));
+  icons_.push_back(&rb.GetNativeImageNamed(IDR_PAGEINFO_INFO));
 }

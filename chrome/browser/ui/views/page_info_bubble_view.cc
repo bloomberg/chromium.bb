@@ -16,6 +16,7 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/image.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/controls/separator.h"
@@ -142,7 +143,7 @@ void PageInfoBubbleView::LayoutSections() {
   for (int i = 0; i < count; ++i) {
     PageInfoModel::SectionInfo info = model_.GetSectionInfo(i);
     layout->StartRow(0, 0);
-    const SkBitmap* icon = model_.GetIconImage(info.icon_id);
+    const SkBitmap* icon = *model_.GetIconImage(info.icon_id);
     layout->AddView(new Section(this, info, icon, cert_id_ > 0));
 
     // Add separator after all sections.
@@ -168,7 +169,7 @@ gfx::Size PageInfoBubbleView::GetPreferredSize() {
   int count = model_.GetSectionCount();
   for (int i = 0; i < count; ++i) {
     PageInfoModel::SectionInfo info = model_.GetSectionInfo(i);
-    const SkBitmap* icon = model_.GetIconImage(info.icon_id);
+    const SkBitmap* icon = *model_.GetIconImage(info.icon_id);
     Section section(this, info, icon, cert_id_ > 0);
     size.Enlarge(0, section.GetHeightForWidth(size.width()));
   }

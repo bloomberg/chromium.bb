@@ -285,7 +285,7 @@ class PluginInstallerImpl {
   // Dimensions of the plugin
   uint32_t width_;
   uint32_t height_;
-  // Plugin icon
+  // Plugin icon, weak (owned by ResourceBundle).
   NSImage* image_;
   // Displayed text
   NSString* command_;

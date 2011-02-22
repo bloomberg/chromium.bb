@@ -57,6 +57,7 @@
 #include "ui/base/models/menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/image.h"
 
 namespace {
 

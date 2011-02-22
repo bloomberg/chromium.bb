@@ -33,6 +33,7 @@ class StringPiece;
 
 namespace gfx {
 class Font;
+class Image;
 }
 
 #if defined(OS_MACOSX)
@@ -98,7 +99,22 @@ class ResourceBundle {
   // Gets the bitmap with the specified resource_id from the current module
   // data. Returns a pointer to a shared instance of the SkBitmap. This shared
   // bitmap is owned by the resource bundle and should not be freed.
+  //
+  // !! THIS IS DEPRECATED. PLEASE USE THE METHOD BELOW. !!
   SkBitmap* GetBitmapNamed(int resource_id);
+
+  // Gets an image resource from the current module data. This will load the
+  // image in Skia format by default. The ResourceBundle owns this.
+  gfx::Image& GetImageNamed(int resource_id);
+
+  // Similar to GetImageNamed, but rather than loading the image in Skia format,
+  // it will load in the native platform type. This can avoid conversion from
+  // one image type to another. ResourceBundle owns the result.
+  //
+  // Note that if the same resource has already been loaded in GetImageNamed(),
+  // gfx::Image will perform a conversion, rather than using the native image
+  // loading code of ResourceBundle.
+  gfx::Image& GetNativeImageNamed(int resource_id);
 
   // Loads the raw bytes of a data resource into |bytes|,
   // without doing any processing or interpretation of
@@ -115,24 +131,12 @@ class ResourceBundle {
   // Returns the font for the specified style.
   const gfx::Font& GetFont(FontStyle style);
 
-  // Returns the gfx::NativeImage, the native platform type, named resource.
-  // Internally, this makes use of GetNSImageNamed(), GetPixbufNamed(), or
-  // GetBitmapNamed() depending on the platform (see gfx/native_widget_types.h).
-  // NOTE: On Mac the returned resource is autoreleased.
-  gfx::NativeImage GetNativeImageNamed(int resource_id);
-
 #if defined(OS_WIN)
   // Loads and returns an icon from the app module.
   HICON LoadThemeIcon(int icon_id);
 
   // Loads and returns a cursor from the app module.
   HCURSOR LoadCursor(int cursor_id);
-#elif defined(OS_MACOSX)
- private:
-  // Wrapper for GetBitmapNamed. Converts the bitmap to an autoreleased NSImage.
-  // TODO(rsesek): Move implementation into GetNativeImageNamed().
-  NSImage* GetNSImageNamed(int resource_id);
- public:
 #elif defined(USE_X11)
   // Gets the GdkPixbuf with the specified resource_id from the main data pak
   // file. Returns a pointer to a shared instance of the GdkPixbuf.  This
@@ -149,7 +153,7 @@ class ResourceBundle {
 
  private:
   // Shared implementation for the above two functions.
-  GdkPixbuf* GetPixbufImpl(int resource_id, bool rtl_enabled);
+  gfx::Image* GetPixbufImpl(int resource_id, bool rtl_enabled);
 
  public:
 #endif
@@ -200,11 +204,6 @@ class ResourceBundle {
   // Free skia_images_.
   void FreeImages();
 
-#if defined(USE_X11)
-  // Free gdkPixbufs_.
-  void FreeGdkPixBufs();
-#endif
-
   // Load the main resources.
   void LoadCommonResources();
 
@@ -241,8 +240,12 @@ class ResourceBundle {
   // done.
   static SkBitmap* LoadBitmap(DataHandle dll_inst, int resource_id);
 
+  // Returns an empty image for when a resource cannot be loaded. This is a
+  // bright red bitmap.
+  gfx::Image* GetEmptyImage();
+
   // Class level lock.  Used to protect internal data structures that may be
-  // accessed from other threads (e.g., skia_images_).
+  // accessed from other threads (e.g., images_).
   scoped_ptr<base::Lock> lock_;
 
   // Handles for data sources.
@@ -252,14 +255,10 @@ class ResourceBundle {
   // References to extra data packs loaded via AddDataPackToSharedInstance.
   std::vector<LoadedDataPack*> data_packs_;
 
-  // Cached images. The ResourceBundle caches all retrieved bitmaps and keeps
+  // Cached images. The ResourceBundle caches all retrieved images and keeps
   // ownership of the pointers.
-  typedef std::map<int, SkBitmap*> SkImageMap;
-  SkImageMap skia_images_;
-#if defined(USE_X11)
-  typedef std::map<int, GdkPixbuf*> GdkPixbufMap;
-  GdkPixbufMap gdk_pixbufs_;
-#endif
+  typedef std::map<int, gfx::Image*> ImageMap;
+  ImageMap images_;
 
   // The various fonts used. Cached to avoid repeated GDI creation/destruction.
   scoped_ptr<gfx::Font> base_font_;

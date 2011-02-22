@@ -5,6 +5,7 @@
 #include "ui/gfx/image.h"
 
 #include "base/logging.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 #if defined(OS_LINUX)
 #include <gdk-pixbuf/gdk-pixbuf.h>
