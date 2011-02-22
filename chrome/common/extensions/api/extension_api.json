@@ -3808,6 +3808,33 @@
           }
         ]
       }
+    ],
+    "events": [
+      {
+        "name": "onProxyError",
+        "type": "function",
+        "description": "Notifies about proxy errors.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "properties": {
+              "fatal": {
+                "type": "boolean",
+                "description": "If true, the error was fatal and the network transaction was aborted. Otherwise, a direct connection is used instead."
+              },
+              "error": {
+                "type": "string",
+                "description": "The error description."
+              },
+              "details": {
+                "type": "string",
+                "description": "Additional details about the error such as a JavaScript runtime error."
+              }
+            }
+          }
+        ]
+      }
     ]
   },
   {

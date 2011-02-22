@@ -7,10 +7,31 @@
 
 #include <string>
 
+#include "base/singleton.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "net/proxy/proxy_config.h"
 
 class DictionaryValue;
+class ExtensionIOEventRouter;
+
+// This class observes proxy error events and routes them to the appropriate
+// extensions listening to those events. All methods must be called on the IO
+// thread unless otherwise specified.
+class ExtensionProxyEventRouter {
+ public:
+  static ExtensionProxyEventRouter* GetInstance();
+
+  void OnProxyError(const ExtensionIOEventRouter* event_router,
+                    int error_code);
+
+ private:
+  friend struct DefaultSingletonTraits<ExtensionProxyEventRouter>;
+
+  ExtensionProxyEventRouter();
+  ~ExtensionProxyEventRouter();
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionProxyEventRouter);
+};
 
 class ProxySettingsFunction : public SyncExtensionFunction {
  public:

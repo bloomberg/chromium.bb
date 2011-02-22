@@ -27,6 +27,17 @@ void ExtensionIOEventRouter::DispatchEventToExtension(
                         extension_id, event_name, event_args));
 }
 
+void ExtensionIOEventRouter::DispatchEventToRenderers(
+    const std::string& event_name,
+    const std::string& event_args,
+    const GURL& event_url) const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(this,
+          &ExtensionIOEventRouter::DispatchEventToRenderersOnUIThread,
+          event_name, event_args, event_url));
+}
+
 void ExtensionIOEventRouter::DispatchEventOnUIThread(
     const std::string& extension_id,
     const std::string& event_name,
@@ -40,4 +51,19 @@ void ExtensionIOEventRouter::DispatchEventOnUIThread(
 
   profile_->GetExtensionEventRouter()->DispatchEventToExtension(
       extension_id, event_name, event_args, profile_, GURL());
+}
+
+void ExtensionIOEventRouter::DispatchEventToRenderersOnUIThread(
+    const std::string& event_name,
+    const std::string& event_args,
+    const GURL& event_url) const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // If the profile has gone away, we're shutting down. If there's no event
+  // router, the extension system hasn't been initialized.
+  if (!profile_ || !profile_->GetExtensionEventRouter())
+    return;
+
+  profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
+      event_name, event_args, profile_, event_url);
 }

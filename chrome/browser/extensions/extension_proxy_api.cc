@@ -5,15 +5,18 @@
 #include "chrome/browser/extensions/extension_proxy_api.h"
 
 #include "base/base64.h"
+#include "base/json/json_writer.h"
 #include "base/string_util.h"
 #include "base/string_tokenizer.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/extensions/extension_io_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/pref_names.h"
+#include "net/base/net_errors.h"
 #include "net/proxy/proxy_config.h"
 
 namespace {
@@ -56,6 +59,12 @@ const char kProxyCfgRuleHost[] = "host";
 const char kProxyCfgRulePort[] = "port";
 const char kProxyCfgBypassList[] = "bypassList";
 const char kProxyCfgScheme[] = "scheme";
+
+const char kProxyEventFatal[] = "fatal";
+const char kProxyEventError[] = "error";
+const char kProxyEventDetails[] = "details";
+const char kProxyEventOnProxyError[] = "experimental.proxy.onProxyError";
+
 
 const char kPACDataUrlPrefix[] =
     "data:application/x-ns-proxy-autoconfig;base64,";
@@ -100,6 +109,33 @@ bool CreatePACScriptFromDataURL(
 }
 
 }  // namespace
+
+// static
+ExtensionProxyEventRouter* ExtensionProxyEventRouter::GetInstance() {
+  return Singleton<ExtensionProxyEventRouter>::get();
+}
+
+ExtensionProxyEventRouter::ExtensionProxyEventRouter() {
+}
+
+ExtensionProxyEventRouter::~ExtensionProxyEventRouter() {
+}
+
+void ExtensionProxyEventRouter::OnProxyError(
+    const ExtensionIOEventRouter* event_router,
+    int error_code) {
+  ListValue args;
+  DictionaryValue* dict = new DictionaryValue();
+  dict->SetBoolean(kProxyEventFatal, true);
+  dict->SetString(kProxyEventError, net::ErrorToString(error_code));
+  dict->SetString(kProxyEventDetails, "");
+  args.Append(dict);
+
+  std::string json_args;
+  base::JSONWriter::Write(&args, false, &json_args);
+  event_router->DispatchEventToRenderers(
+      kProxyEventOnProxyError, json_args, GURL());
+}
 
 bool UseCustomProxySettingsFunction::GetProxyServer(
     const DictionaryValue* dict,

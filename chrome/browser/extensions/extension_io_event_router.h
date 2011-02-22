@@ -10,6 +10,7 @@
 
 #include "base/ref_counted.h"
 
+class GURL;
 class Profile;
 
 // For now, this just forwards events from the IO thread to the
@@ -29,10 +30,21 @@ class ExtensionIOEventRouter
                                 const std::string& event_name,
                                 const std::string& event_args) const;
 
+  // Same as above, except the event is sent to all extensions that have
+  // sufficient permissions.
+  void DispatchEventToRenderers(const std::string& event_name,
+                                const std::string& event_args,
+                                const GURL& event_url) const;
+
  private:
   void DispatchEventOnUIThread(const std::string& extension_id,
                                const std::string& event_name,
                                const std::string& event_args) const;
+
+  void DispatchEventToRenderersOnUIThread(
+      const std::string& event_name,
+      const std::string& event_args,
+      const GURL& event_url) const;
 
   Profile* profile_;
 
