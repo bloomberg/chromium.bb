@@ -61,6 +61,8 @@
       'https',
       'imports',
       'infobars',
+      # crbug.com/72664
+      '-infobars.InfobarTest.testPluginCrashForMultiTabs',
       'instant',
       'navigation',
       'notifications',
