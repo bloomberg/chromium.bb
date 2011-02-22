@@ -17,10 +17,10 @@ template_func:
         disp = template_func_end - 4
         xorl %r11d, %r11d
         movq disp(%r15,%r11,1), %rax
-        popq %r14
-        andl $0xffffffe0,%r14d
-        addq %r15,%r14
-        jmpq *%r14
+        popq %r11
+        andl $0xffffffe0,%r11d
+        addq %r15,%r11
+        jmpq *%r11
         call template_func
         test $0xffffffff,%r11d
         movq $1234, %rax
@@ -49,10 +49,10 @@ template_func_replacement:
         new_disp = template_func_replacement_end - 4
         xorl %r11d, %r11d
         movq new_disp(%r15,%r11,1), %rax       /* replaces displacement */
-        popq %r14
-        andl $0xffffffe0,%r14d
-        addq %r15,%r14
-        jmpq *%r14
+        popq %r11
+        andl $0xffffffe0,%r11d
+        addq %r15,%r11
+        jmpq *%r11
         call (template_func_replacement - 32)  /* replaces a call target, the
                                                 * new target is bundle aligned
                                                 * and target address outside
@@ -87,10 +87,10 @@ template_func_misaligned_replacement:
                                                 * it illegal */
         xorl %r11d, %r11d
         movq disp(%r15,%r11,1), %rax
-        popq %r14
-        andl $0xffffffe0,%r14d
-        addq %r15,%r14
-        jmpq *%r14
+        popq %r11
+        andl $0xffffffe0,%r11d
+        addq %r15,%r11
+        jmpq *%r11
         call template_func_misaligned_replacement
         test $0xffffffff,%r11d
         movq $1234, %rax
@@ -156,10 +156,10 @@ template_func_illegal_register_replacement:
 #elif defined(__x86_64__)
         xorl %r11d, %r11d
         movq disp(%r15,%r11,1), %rax
-        popq %r14
-        andl $0xffffffe0,%r14d
-        addq %r15,%r14
-        jmpq *%r14
+        popq %r11
+        andl $0xffffffe0,%r11d
+        addq %r15,%r11
+        jmpq *%r11
         call template_func_illegal_register_replacement
         test $0xffffffff,%r11d
         movq $1234, %rbx                       /* replaces register
@@ -183,10 +183,10 @@ template_func_illegal_guard_replacement:
 #elif defined(__x86_64__)
         xorl %r14d, %r14d                      /* modifies memory guard */
         movq disp(%r15,%r11,1), %rax
-        popq %r14
-        andl $0xffffffe0,%r14d
-        addq %r15,%r14
-        jmpq *%r14
+        popq %r11
+        andl $0xffffffe0,%r11d
+        addq %r15,%r11
+        jmpq *%r11
         call template_func_illegal_guard_replacement
         test $0xffffffff,%r11d
         movq $1234, %rax
@@ -212,10 +212,10 @@ template_func_illegal_call_target:
 #elif defined(__x86_64__)
         xorl %r11d, %r11d
         movq disp(%r15,%r11,1), %rax
-        popq %r14
-        andl $0xffffffe0,%r14d
-        addq %r15,%r14
-        jmpq *%r14
+        popq %r11
+        andl $0xffffffe0,%r11d
+        addq %r15,%r11
+        jmpq *%r11
         call (template_func_illegal_call_target - 31)  /* target of a call
                                                 * instruction is beyond
                                                 * replaced section, and it is
@@ -237,10 +237,10 @@ template_func_illegal_constant_replacement:
 #elif defined(__x86_64__)
         xorl %r11d, %r11d
         movq disp(%r15,%r11,1), %rax
-        popq %r14
-        andl $0xffffffe0,%r14d
-        addq %r15,%r14
-        jmpq *%r14
+        popq %r11
+        andl $0xffffffe0,%r11d
+        addq %r15,%r11
+        jmpq *%r11
         call (template_func_illegal_constant_replacement)
         test $0xf0f0f0f0,%r11d             /* can't change constant in test */
         movq $1234, %rax
@@ -268,10 +268,10 @@ external_jump_return:
         call template_func_external_jump_target
         movq $9876, %rax
 external_jump_return:
-        popq %r14
-        andl $0xffffffe0,%r14d
-        addq %r15,%r14
-        jmpq *%r14
+        popq %r11
+        andl $0xffffffe0,%r11d
+        addq %r15,%r11
+        jmpq *%r11
 #else
 # error "Unsupported architecture"
 #endif
@@ -296,10 +296,10 @@ external_jump_replace_return:
         call template_func_external_jump_target_replace
         movq $9876, %rax
 external_jump_replace_return:
-        popq %r14
-        andl $0xffffffe0,%r14d
-        addq %r15,%r14
-        jmpq *%r14
+        popq %r11
+        andl $0xffffffe0,%r11d
+        addq %r15,%r11
+        jmpq *%r11
 #else
 # error "Unsupported architecture"
 #endif
