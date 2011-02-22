@@ -34,23 +34,6 @@ def _PrintFile(path):
   sys.stderr.flush()
 
 
-def MakeDir(path, parents=False):
-  """Basic wrapper around os.mkdirs.
-
-  Keyword arguments:
-  path -- Path to create.
-  parents -- Follow mkdir -p logic.
-
-  """
-  try:
-    os.makedirs(path)
-  except OSError, e:
-    if e.errno == errno.EEXIST and parents:
-      pass
-    else:
-      raise
-
-
 def _GetConfig(config_name):
   """Gets the configuration for the build"""
   build_config = {}
@@ -89,6 +72,9 @@ def main():
   parser.add_option('--debug', action='store_true', dest='debug',
                     default=False,
                     help='Override some options to run as a developer.')
+  parser.add_option('--noarchive', action='store_false', dest='archive',
+                    default=True,
+                    help="Don't run archive stage.")
   parser.add_option('--nobuild', action='store_false', dest='build',
                     default=True,
                     help="Don't actually build (for cbuildbot dev")
@@ -147,9 +133,10 @@ def main():
     raise
 
   finally:
-    stages.ArchiveStage(bot_id, options, build_config).Run()
-    cros_lib.Info('BUILD ARTIFACTS FOR THIS BUILD CAN BE FOUND AT:')
-    cros_lib.Info(stages.BuilderStage.archive_url)
+    if options.archive:
+      stages.ArchiveStage(bot_id, options, build_config).Run()
+      cros_lib.Info('BUILD ARTIFACTS FOR THIS BUILD CAN BE FOUND AT:')
+      cros_lib.Info(stages.BuilderStage.archive_url)
 
 
 if __name__ == '__main__':

@@ -124,7 +124,7 @@ def FullCheckout(buildroot, tracking_branch,
                  url='http://git.chromium.org/git/manifest'):
   """Performs a full checkout and clobbers any previous checkouts."""
   cros_lib.OldRunCommand(['sudo', 'rm', '-rf', buildroot])
-  MakeDir(buildroot, parents=True)
+  os.makedirs(buildroot)
   branch = tracking_branch.split('/');
   cros_lib.OldRunCommand(['repo', 'init', '-u', url, '-b', '%s' % branch[-1]],
                          cwd=buildroot, input='\n\ny\n')

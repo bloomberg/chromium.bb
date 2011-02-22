@@ -54,9 +54,6 @@ class BuilderStage():
       assert set(push_overlays).issubset(set(rev_overlays))
       # Either has to be a master or not have any push overlays.
       assert self._build_config['master'] or not push_overlays
-      # Check that all overlays can be found.
-      for path in rev_overlays:
-        assert os.path.isdir(path), 'Missing overlay: %s' % path
 
       BuilderStage.rev_overlays = rev_overlays
       BuilderStage.push_overlays = push_overlays
@@ -143,6 +140,10 @@ class SyncStage(BuilderStage):
     else:
       BuilderStage.old_binhost = self._GetPortageEnvVar(_FULL_BINHOST)
       commands.IncrementalCheckout(self._build_root)
+
+    # Check that all overlays can be found.
+    for path in BuilderStage.rev_overlays:
+      assert os.path.isdir(path), 'Missing overlay: %s' % path
 
 
 class BuildBoardStage(BuilderStage):
