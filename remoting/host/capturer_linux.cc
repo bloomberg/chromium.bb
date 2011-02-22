@@ -37,10 +37,6 @@ static bool IsRgb32(XImage* image) {
          (IndexOfLowestBit(image->blue_mask) == 0);
 }
 
-static uint32_t* GetRowStart(uint8* buffer_start, int stride, int cur_row) {
-  return reinterpret_cast<uint32_t*>(buffer_start + (cur_row * stride));
-}
-
 // Private Implementation pattern to avoid leaking the X11 types into the header
 // file.
 class CapturerLinuxPimpl {
@@ -341,7 +337,6 @@ void CapturerLinuxPimpl::FastBlit(XImage* image, int dest_x, int dest_y,
   }
 }
 
-// TODO(hclam): SlowBlit() is incorrect.
 void CapturerLinuxPimpl::SlowBlit(XImage* image, int dest_x, int dest_y,
                                   CaptureData* capture_data) {
   DataPlanes planes = capture_data->data_planes();
@@ -356,11 +351,13 @@ void CapturerLinuxPimpl::SlowBlit(XImage* image, int dest_x, int dest_y,
   unsigned int max_blue = image->blue_mask >> blue_shift;
   unsigned int max_green = image->green_mask >> green_shift;
 
+  // Produce an upside-down image.
+  uint8* dst_pos = dst_buffer + dst_stride * (capturer_->height() - dest_y - 1);
+  dst_pos += dest_x * kBytesPerPixel;
+  // TODO(jamiewalch): Optimize, perhaps using MMX code or by converting to
+  // YUV directly
   for (int y = 0; y < image->height; y++) {
-    // Flip the coordinate system to match the client.
-    int dst_row = image->height - y - 1;
-    uint32_t* dst_pos = GetRowStart(dst_buffer, dst_stride, dst_row + dest_y);
-    dst_pos += dest_x;
+    uint32_t* dst_pos_32 = reinterpret_cast<uint32_t*>(dst_pos);
     for (int x = 0; x < image->width; x++) {
       unsigned long pixel = XGetPixel(image, x, y);
       uint32_t r = (((pixel & image->red_mask) >> red_shift) * max_red) / 255;
@@ -370,9 +367,9 @@ void CapturerLinuxPimpl::SlowBlit(XImage* image, int dest_x, int dest_y,
           (((pixel & image->blue_mask) >> blue_shift) * max_green) / 255;
 
       // Write as 32-bit RGB.
-      *dst_pos = r << 16 | g << 8 | b;
-      dst_pos++;
+      dst_pos_32[x] = r << 16 | g << 8 | b;
     }
+    dst_pos -= dst_stride;
   }
 }
 
