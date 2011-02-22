@@ -190,7 +190,7 @@ void PluginPpapi::DidChangeView(const pp::Rect& position,
   // TODO(neb): Remove this hack when it stops being required.
   // <HACK>
   static bool first_time = true;
-  if (first_time) {
+  if (first_time || ppapi_proxy_ == NULL) {
     PLUGIN_PRINTF(("HACKITYHACK: Binding fake 3D.\n"));
     pp::Surface3D_Dev surface;
     context_ = pp::Context3D_Dev(*this, 0, pp::Context3D_Dev(), NULL);
