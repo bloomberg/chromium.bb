@@ -1091,7 +1091,7 @@ def PPAPIBrowserTester(env, target, url, files, log_verbosity=2, args=[]):
   for dep_file in files:
     command.extend(['--file', dep_file])
   command.extend(args)
-  return env.CommandTest(target, command)
+  return env.AutoDepsCommand(target, command)
 
 pre_base_env.AddMethod(PPAPIBrowserTester)
 
@@ -1264,8 +1264,6 @@ TEST_TIME_THRESHOLD = {
     'huge': 1800,
     }
 
-TEST_SCRIPT = '${SCONSTRUCT_DIR}/tools/command_tester.py'
-
 # Valgrind handles SIGSEGV in a way our testing tools do not expect.
 UNSUPPORTED_VALGRIND_EXIT_STATUS = ['sigill' ,
                                     'segfault',
@@ -1310,20 +1308,6 @@ def CommandTest(env, name, command, size='small',
     script_flags.append('--run_under');
     script_flags.append(run_under);
 
-  deps = [TEST_SCRIPT]
-
-  # extract deps from command and rewrite
-  for n, c in enumerate(command):
-    if not isinstance(c, str):
-      if len(Flatten(c)) != 1:
-        # Do not allow this, because it would cause "deps" to get out
-        # of sync with the indexes in "command".
-        # See http://code.google.com/p/nativeclient/issues/detail?id=1086
-        raise AssertionError('Argument to CommandTest() actually contains '
-                             'multiple arguments: %r' % c)
-      deps.append(c)
-      command[n] = '${SOURCES[%d].abspath}' % (len(deps) - 1)
-
   emulator = GetEmulator(env)
   if emulator:
     if direct_emulation:
@@ -1333,22 +1317,40 @@ def CommandTest(env, name, command, size='small',
       extra['osenv'] = AddToStringifiedList(extra.get('osenv'),
                                             extra_env)
 
-  # extract deps from flags and rewrite
   for flag_name, flag_value in extra.iteritems():
     assert flag_name in TEST_EXTRA_ARGS
-    if not isinstance(flag_value, str):
-      deps.append(flag_value)
-      flag_value = '${SOURCES[%d].abspath}' % (len(deps) - 1)
     script_flags.append('--' + flag_name)
     script_flags.append(flag_value)
 
+  test_script = env.File('${SCONSTRUCT_DIR}/tools/command_tester.py')
+  command = ['${PYTHON}', test_script] + script_flags + command
+  return AutoDepsCommand(env, name, command, extra_deps=extra_deps)
 
-  # NOTE: "SOURCES[X]" references the scons object in deps[x]
-  command = ['${PYTHON}',
-             '${SOURCES[0].abspath}',
-             ' '.join(script_flags),
-             ' '.join(command),
-             ]
+pre_base_env.AddMethod(CommandTest)
+
+
+def AutoDepsCommand(env, name, command, extra_deps=[]):
+  """AutoDepsCommand() takes a command as an array of arguments.  Each
+  argument may either be:
+
+   * a string, or
+   * a Scons file object, e.g. one created with env.File() or as the
+     result of another build target.
+
+  In the second case, the file is automatically declared as a
+  dependency of this command.
+  """
+  deps = []
+  for index, arg in enumerate(command):
+    if not isinstance(arg, str):
+      if len(Flatten(arg)) != 1:
+        # Do not allow this, because it would cause "deps" to get out
+        # of sync with the indexes in "command".
+        # See http://code.google.com/p/nativeclient/issues/detail?id=1086
+        raise AssertionError('Argument to CommandTest() actually contains '
+                             'multiple arguments: %r' % c)
+      command[index] = '${SOURCES[%d].abspath}' % len(deps)
+      deps.append(arg)
 
   # If we are testing build output captured from elsewhere,
   # ignore build dependencies.
@@ -1359,7 +1361,8 @@ def CommandTest(env, name, command, size='small',
 
   return env.Command(name, deps, ' '.join(command))
 
-pre_base_env.AddMethod(CommandTest)
+pre_base_env.AddMethod(AutoDepsCommand)
+
 
 def AliasSrpc(env, alias, is_client, build_dir, srpc_files,
               name, h_file, cc_file, guard):
