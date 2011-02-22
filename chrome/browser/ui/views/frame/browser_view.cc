@@ -235,7 +235,7 @@ class ResizeCorner : public views::View {
     EnableCanvasFlippingForRTLUI(true);
   }
 
-  virtual void Paint(gfx::Canvas* canvas) {
+  virtual void OnPaint(gfx::Canvas* canvas) {
     views::Window* window = GetWindow();
     if (!window || (window->IsMaximized() || window->IsFullscreen()))
       return;
