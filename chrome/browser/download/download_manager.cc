@@ -274,6 +274,9 @@ void DownloadManager::StartDownload(DownloadCreateInfo* info) {
           !ShouldOpenFileBasedOnExtension(generated_name))
         info->prompt_user_for_save_location = true;
     }
+    if (download_prefs_->IsDownloadPathManaged()) {
+      info->prompt_user_for_save_location = false;
+    }
 
     // Determine the proper path for a download, by either one of the following:
     // 1) using the default download directory.

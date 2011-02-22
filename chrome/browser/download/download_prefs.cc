@@ -82,6 +82,10 @@ bool DownloadPrefs::PromptForDownload() const {
   return *prompt_for_download_ && !download_path_.IsManaged();
 }
 
+bool DownloadPrefs::IsDownloadPathManaged() const {
+  return download_path_.IsManaged();
+}
+
 bool DownloadPrefs::IsAutoOpenUsed() const {
   return !auto_open_.empty();
 }

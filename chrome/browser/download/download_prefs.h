@@ -29,6 +29,9 @@ class DownloadPrefs {
   // to choose another download location).
   bool PromptForDownload() const;
 
+  // Returns true if the download path preference is managed.
+  bool IsDownloadPathManaged() const;
+
   // Returns true if there is at least one file extension registered
   // for auto-open.
   bool IsAutoOpenUsed() const;
