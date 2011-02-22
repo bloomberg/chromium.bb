@@ -3764,14 +3764,6 @@
    fun:_ZN5media12PipelineImpl14InitializeTaskEv
 }
 {
-   bug_73268
-   Memcheck:Leak
-   ...
-   fun:_ZN29ExtensionSpecialStoragePolicy17SpecialCollection8ContainsERK4GURL
-   fun:_ZN29ExtensionSpecialStoragePolicy18IsStorage*ERK4GURL
-   fun:_ZN*ExtensionSpecialStoragePolicyTest_*_Test8TestBodyEv
-}
-{
    bug_73299_a
    Memcheck:Leak
    fun:_Znw*

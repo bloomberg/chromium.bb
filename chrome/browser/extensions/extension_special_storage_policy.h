@@ -33,9 +33,6 @@ class ExtensionSpecialStoragePolicy : public quota::SpecialStoragePolicy {
   void RevokeRightsForAllExtensions();
 
  private:
-  friend class base::RefCountedThreadSafe<SpecialStoragePolicy>;
-  virtual ~ExtensionSpecialStoragePolicy();
-
   class SpecialCollection {
    public:
     SpecialCollection();
@@ -52,6 +49,8 @@ class ExtensionSpecialStoragePolicy : public quota::SpecialStoragePolicy {
     Extensions extensions_;
     CachedResults cached_resuts_;
   };
+
+  virtual ~ExtensionSpecialStoragePolicy();
 
   base::Lock lock_;  // Synchronize all access to the collections.
   SpecialCollection protected_apps_;

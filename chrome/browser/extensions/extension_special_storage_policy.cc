@@ -10,6 +10,8 @@
 
 ExtensionSpecialStoragePolicy::ExtensionSpecialStoragePolicy() {}
 
+ExtensionSpecialStoragePolicy::~ExtensionSpecialStoragePolicy() {}
+
 bool ExtensionSpecialStoragePolicy::IsStorageProtected(const GURL& origin) {
   if (origin.SchemeIs(chrome::kExtensionScheme))
     return true;
@@ -55,8 +57,6 @@ void ExtensionSpecialStoragePolicy::RevokeRightsForAllExtensions() {
   protected_apps_.Clear();
   unlimited_extensions_.Clear();
 }
-
-ExtensionSpecialStoragePolicy::~ExtensionSpecialStoragePolicy() {}
 
 //-----------------------------------------------------------------------------
 // SpecialCollection helper class

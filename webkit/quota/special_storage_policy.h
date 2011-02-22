@@ -19,11 +19,17 @@ namespace quota {
 class SpecialStoragePolicy
     : public base::RefCountedThreadSafe<SpecialStoragePolicy> {
  public:
+  SpecialStoragePolicy();
+
   // Protected storage is not subject to removal by the browsing data remover.
   virtual bool IsStorageProtected(const GURL& origin) = 0;
 
   // Unlimited storage is not subject to 'quotas'.
   virtual bool IsStorageUnlimited(const GURL& origin) = 0;
+
+ protected:
+  friend class base::RefCountedThreadSafe<SpecialStoragePolicy>;
+  virtual ~SpecialStoragePolicy();
 };
 
 }  // namespace quota

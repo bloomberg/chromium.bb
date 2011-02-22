@@ -10,6 +10,7 @@
     '../database/webkit_database.gypi',
     '../glue/webkit_glue.gypi',
     '../gpu/webkit_gpu.gypi',
+    '../quota/webkit_quota.gypi',
     'webkit_support.gypi',
   ],
 }
