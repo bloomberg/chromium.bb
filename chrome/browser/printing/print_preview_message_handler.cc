@@ -40,7 +40,7 @@ TabContents* PrintPreviewMessageHandler::GetPrintPreviewTab() {
 
 void PrintPreviewMessageHandler::OnPagesReadyForPreview(
     const ViewHostMsg_DidPreviewDocument_Params& params) {
-#if defined(OS_MACOSX)
+#if defined(OS_POSIX)
   base::SharedMemory* shared_buf =
       new base::SharedMemory(params.metafile_data_handle, true);
   if (!shared_buf->Map(params.data_size)) {
@@ -53,7 +53,7 @@ void PrintPreviewMessageHandler::OnPagesReadyForPreview(
   TabContents* print_preview_tab = GetPrintPreviewTab();
   DCHECK(print_preview_tab);
 
-#if defined(OS_MACOSX)
+#if defined(OS_POSIX)
   PrintPreviewUI* print_preview_ui =
       static_cast<PrintPreviewUI*>(print_preview_tab->web_ui());
   print_preview_ui->html_source()->SetPrintPreviewData(

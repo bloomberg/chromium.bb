@@ -11,16 +11,38 @@
 #include "printing/native_metafile.h"
 #include "skia/ext/vector_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
 
 #if !defined(OS_CHROMEOS)
 #include "base/process_util.h"
 #endif  // !defined(OS_CHROMEOS)
 
-using printing::NativeMetafile;
 using WebKit::WebFrame;
 using WebKit::WebNode;
-using WebKit::WebSize;
+
+void PrintWebViewHelper::CreatePreviewDocument(
+    const ViewMsg_PrintPages_Params& params, WebFrame* frame) {
+  // We only can use PDF in the renderer because Cairo needs to create a
+  // temporary file for a PostScript surface.
+  printing::NativeMetafile metafile(printing::NativeMetafile::PDF);
+  int page_count = 0;
+
+  if (!RenderPages(params, frame, false, &page_count, &metafile))
+    return;
+
+  // Get the size of the resulting metafile.
+  uint32 buf_size = metafile.GetDataSize();
+  DCHECK_GT(buf_size, 0u);
+
+  ViewHostMsg_DidPreviewDocument_Params preview_params;
+  preview_params.data_size = buf_size;
+  preview_params.document_cookie = params.params.document_cookie;
+
+  if (!CopyMetafileDataToSharedMem(&metafile,
+                                   &(preview_params.metafile_data_handle))) {
+    preview_params.data_size = 0;
+  }
+  Send(new ViewHostMsg_PagesReadyForPreview(routing_id(), preview_params));
+}
 
 void PrintWebViewHelper::PrintPages(const ViewMsg_PrintPages_Params& params,
                                     WebFrame* frame,
@@ -28,52 +50,18 @@ void PrintWebViewHelper::PrintPages(const ViewMsg_PrintPages_Params& params,
   // We only can use PDF in the renderer because Cairo needs to create a
   // temporary file for a PostScript surface.
   printing::NativeMetafile metafile(printing::NativeMetafile::PDF);
-  int page_count;
-  skia::VectorCanvas* canvas = NULL;
+  int page_count = 0;
+  bool send_expected_page_count =
+#if defined(OS_CHROMEOS)
+      false;
+#else
+      true;
+#endif  // defined(OS_CHROMEOS)
 
-  {
-    // Hack - when |prep_frame_view| goes out of scope, PrintEnd() gets called.
-    // Doing this before closing |metafile| below ensures
-    // webkit::ppapi::PluginInstance::PrintEnd() has a valid canvas/metafile to
-    // save the final output to. See pepper_plugin_instance.cc for the whole
-    // story.
-    ViewMsg_Print_Params printParams = params.params;
-    PrepareFrameAndViewForPrint prep_frame_view(printParams,
-                                                frame,
-                                                node,
-                                                frame->view());
-    page_count = prep_frame_view.GetExpectedPageCount();
-#if !defined(OS_CHROMEOS)
-    Send(new ViewHostMsg_DidGetPrintedPagesCount(routing_id(),
-                                                 printParams.document_cookie,
-                                                 page_count));
-#endif  // !defined(OS_CHROMEOS)
-
-    if (!page_count)
-      return;
-
-    metafile.Init();
-
-    ViewMsg_PrintPage_Params page_params;
-    page_params.params = printParams;
-    const gfx::Size& canvas_size = prep_frame_view.GetPrintCanvasSize();
-    if (params.pages.empty()) {
-      for (int i = 0; i < page_count; ++i) {
-        page_params.page_number = i;
-        delete canvas;
-        PrintPage(page_params, canvas_size, frame, &metafile, &canvas);
-      }
-    } else {
-      for (size_t i = 0; i < params.pages.size(); ++i) {
-        page_params.page_number = params.pages[i];
-        delete canvas;
-        PrintPage(page_params, canvas_size, frame, &metafile, &canvas);
-      }
-    }
+  if (!RenderPages(params, frame, send_expected_page_count, &page_count,
+                   &metafile)) {
+    return;
   }
-
-  delete canvas;
-  metafile.Close();
 
   // Get the size of the resulting metafile.
   uint32 buf_size = metafile.GetDataSize();
@@ -139,6 +127,59 @@ void PrintWebViewHelper::PrintPages(const ViewMsg_PrintPages_Params& params,
     }
   }
 #endif  // defined(OS_CHROMEOS)
+}
+
+bool PrintWebViewHelper::RenderPages(const ViewMsg_PrintPages_Params& params,
+                                     WebFrame* frame,
+                                     bool send_expected_page_count,
+                                     int* page_count,
+                                     printing::NativeMetafile* metafile) {
+  ViewMsg_Print_Params printParams = params.params;
+  skia::VectorCanvas* canvas = NULL;
+
+  {
+    // Hack - when |prep_frame_view| goes out of scope, PrintEnd() gets called.
+    // Doing this before closing |metafile| below ensures
+    // webkit::ppapi::PluginInstance::PrintEnd() has a valid canvas/metafile to
+    // save the final output to. See pepper_plugin_instance.cc for the whole
+    // story.
+    PrepareFrameAndViewForPrint prep_frame_view(printParams,
+                                                frame,
+                                                NULL,
+                                                frame->view());
+    *page_count = prep_frame_view.GetExpectedPageCount();
+    if (send_expected_page_count) {
+      Send(new ViewHostMsg_DidGetPrintedPagesCount(routing_id(),
+                                                   printParams.document_cookie,
+                                                   *page_count));
+    }
+    if (!*page_count)
+      return false;
+
+    metafile->Init();
+
+    ViewMsg_PrintPage_Params page_params;
+    page_params.params = printParams;
+    const gfx::Size& canvas_size = prep_frame_view.GetPrintCanvasSize();
+    if (params.pages.empty()) {
+      for (int i = 0; i < *page_count; ++i) {
+        page_params.page_number = i;
+        delete canvas;
+        PrintPage(page_params, canvas_size, frame, metafile, &canvas);
+      }
+    } else {
+      for (size_t i = 0; i < params.pages.size(); ++i) {
+        page_params.page_number = params.pages[i];
+        delete canvas;
+        PrintPage(page_params, canvas_size, frame, metafile, &canvas);
+      }
+    }
+  }
+
+  delete canvas;
+  metafile->Close();
+
+  return true;
 }
 
 void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,

@@ -7,16 +7,13 @@
 #pragma once
 
 #include "base/scoped_ptr.h"
+#include "base/shared_memory.h"
 #include "base/time.h"
 #include "chrome/renderer/render_view_observer.h"
 #include "printing/native_metafile.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrameClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebViewClient.h"
 #include "ui/gfx/size.h"
-
-#if defined(OS_MACOSX) || defined(OS_WIN)
-#include "base/shared_memory.h"
-#endif  // defined(OS_MACOSX) || defined(OS_WIN)
 
 namespace gfx {
 class Size;
@@ -178,20 +175,26 @@ class PrintWebViewHelper : public RenderViewObserver ,
   // valid metafile data handle.
   void CreatePreviewDocument(const ViewMsg_PrintPages_Params& params,
       WebKit::WebFrame* frame);
-#if defined(OS_MACOSX)
-  void RenderPage(const gfx::Size& page_size, const gfx::Point& content_origin,
-                  const float& scale_factor, int page_number,
-                  WebKit::WebFrame* frame, printing::NativeMetafile* metafile);
-#elif defined(OS_WIN)
+
+  // Platform specific helper function for rendering page(s) to |metafile|.
+#if defined(OS_WIN)
   void RenderPage(const ViewMsg_Print_Params& params, float* scale_factor,
                   int page_number, WebKit::WebFrame* frame,
                   scoped_ptr<printing::NativeMetafile>* metafile);
-#endif
+#elif defined(OS_MACOSX)
+  void RenderPage(const gfx::Size& page_size, const gfx::Point& content_origin,
+                  const float& scale_factor, int page_number,
+                  WebKit::WebFrame* frame, printing::NativeMetafile* metafile);
+#elif defined(OS_POSIX)
+  bool RenderPages(const ViewMsg_PrintPages_Params& params,
+                   WebKit::WebFrame* frame,
+                   bool send_expected_page_count,
+                   int* page_count,
+                   printing::NativeMetafile* metafile);
+#endif  // defined(OS_WIN)
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
   bool CopyMetafileDataToSharedMem(printing::NativeMetafile* metafile,
-      base::SharedMemoryHandle* shared_mem_handle);
-#endif
+                                   base::SharedMemoryHandle* shared_mem_handle);
 
   WebKit::WebView* print_web_view_;
   scoped_ptr<ViewMsg_PrintPages_Params> print_pages_params_;

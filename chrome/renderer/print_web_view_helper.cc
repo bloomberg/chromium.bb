@@ -572,18 +572,7 @@ void PrintWebViewHelper::RenderPagesForPreview(WebFrame *frame) {
   CreatePreviewDocument(print_settings, frame);
 }
 
-#if defined(OS_LINUX)
-void PrintWebViewHelper::CreatePreviewDocument(
-    const ViewMsg_PrintPages_Params& params, WebFrame* frame) {
-  ViewHostMsg_DidPreviewDocument_Params preview_params;
-  // TODO(kmadhusu): Implement this function for linux.
-  preview_params.document_cookie = params.params.document_cookie;
-  render_view()->Send(new ViewHostMsg_PagesReadyForPreview(
-      render_view()->routing_id(), preview_params));
-}
-#endif
-
-#if defined(OS_MACOSX)
+#if defined(OS_POSIX)
 bool PrintWebViewHelper::CopyMetafileDataToSharedMem(
     printing::NativeMetafile* metafile,
     base::SharedMemoryHandle* shared_mem_handle) {
@@ -604,4 +593,4 @@ bool PrintWebViewHelper::CopyMetafileDataToSharedMem(
   NOTREACHED();
   return false;
 }
-#endif
+#endif  // defined(OS_POSIX)
