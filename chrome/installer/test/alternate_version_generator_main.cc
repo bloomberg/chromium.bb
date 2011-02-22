@@ -24,6 +24,7 @@ const wchar_t kDefaultOutPath[] = L"mini_installer_new.exe";
 
 namespace switches {
 
+const char kForce[] = "force";
 const char kHelp[] = "help";
 const char kMiniInstaller[] = "mini_installer";
 const char kOut[] = "out";
@@ -74,6 +75,7 @@ void DumpUsage(const CommandLine& cmd_line,
 L"Usage: %s [ OPTIONS ]\n"
 L" Where OPTIONS is one or more of:\n"
 L" --help                     Display this help message.\n"
+L" --force                    Overwrite any existing output files.\n"
 L" --mini_installer=SRC_PATH  Path to mini_installer.exe.  Default value is\n"
 L"                            \"mini_installer.exe\" in the same directory as\n"
 L"                            this program.\n"
@@ -146,7 +148,7 @@ int wmain(int argc, wchar_t *argv[]) {
 
   FilePath out;
   GetOutPath(*cmd_line, &out);
-  if (file_util::PathExists(out)) {
+  if (!cmd_line->HasSwitch(switches::kForce) && file_util::PathExists(out)) {
     DumpUsage(*cmd_line, errors::OUT_FILE_EXISTS, out.value());
     return EXIT_FAILURE;
   }
