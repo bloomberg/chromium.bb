@@ -156,7 +156,7 @@ class MockAbortExtensionInstallUI : public ExtensionInstallUI {
   virtual void ConfirmUninstall(Delegate* delegate,
                                 const Extension* extension) {}
 
-  virtual void OnInstallSuccess(const Extension* extension) {}
+  virtual void OnInstallSuccess(const Extension* extension, SkBitmap* icon) {}
 
   virtual void OnInstallFailure(const std::string& error) {}
 };

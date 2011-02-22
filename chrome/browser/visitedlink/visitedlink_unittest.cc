@@ -521,13 +521,14 @@ class VisitRelayingRenderProcessHost : public BrowserRenderProcessHost {
   virtual ~VisitRelayingRenderProcessHost() {
   }
 
-  virtual bool Init() { return true; }
+  virtual bool Init(bool is_accessibility_enabled, bool is_extension_process) {
+    return true;
+  }
 
   virtual void CancelResourceRequests(int render_widget_id) {
   }
 
-  virtual void CrossSiteClosePageACK(int new_render_process_host_id,
-                                     int new_request_id) {
+  virtual void CrossSiteClosePageACK(const ViewMsg_ClosePage_Params& params) {
   }
 
   virtual bool WaitForPaintMsg(int render_widget_id,

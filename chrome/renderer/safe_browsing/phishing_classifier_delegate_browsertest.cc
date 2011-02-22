@@ -49,7 +49,7 @@ class MockScorer : public Scorer {
   MockScorer() : Scorer() {}
   virtual ~MockScorer() {}
 
-  MOCK_METHOD1(ComputeScore, double(const FeatureMap&));
+  MOCK_CONST_METHOD1(ComputeScore, double(const FeatureMap&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockScorer);
