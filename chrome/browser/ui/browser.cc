@@ -1327,7 +1327,10 @@ void Browser::OpenCurrentURL() {
       TabStripModel::ADD_FORCE_INDEX | TabStripModel::ADD_INHERIT_OPENER;
   browser::Navigate(&params);
 
-  if (profile_->GetExtensionService()->IsInstalledApp(url)) {
+  // TODO: the ExtensionService should never be NULL, but in some cases it is,
+  // see bug 73768. After it is resolved, the explicit test can go away.
+  ExtensionService* service = profile_->GetExtensionService();
+  if (service && service->IsInstalledApp(url)) {
     UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram,
                               extension_misc::APP_LAUNCH_OMNIBOX_LOCATION,
                               extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
@@ -3517,7 +3520,10 @@ void Browser::CommitInstant(TabContentsWrapper* preview_contents) {
   instant_unload_handler_->RunUnloadListenersOrDestroy(old_contents, index);
 
   GURL url = preview_contents->tab_contents()->GetURL();
-  if (profile_->GetExtensionService()->IsInstalledApp(url)) {
+  // TODO: the ExtensionService should never be NULL, but in some cases it is,
+  // see bug 73768. After it is resolved, the explicit test can go away.
+  ExtensionService* service = profile_->GetExtensionService();
+  if (service && service->IsInstalledApp(url)) {
     UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram,
                               extension_misc::APP_LAUNCH_OMNIBOX_INSTANT,
                               extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);

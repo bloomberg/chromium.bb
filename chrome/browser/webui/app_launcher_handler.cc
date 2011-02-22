@@ -478,7 +478,10 @@ void AppLauncherHandler::RecordAppLaunchByURL(
   CHECK(bucket != extension_misc::APP_LAUNCH_BUCKET_INVALID);
 
   GURL url(UnescapeURLComponent(escaped_url, kUnescapeRules));
-  if (!profile->GetExtensionService()->IsInstalledApp(url))
+  // TODO: the ExtensionService should never be NULL, but in some cases it is,
+  // see bug 73768. After it is resolved, the explicit test can go away.
+  ExtensionService* service = profile->GetExtensionService();
+  if (!service || !service->IsInstalledApp(url))
     return;
 
   UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram, bucket,

@@ -652,7 +652,10 @@ class SessionRestoreImpl : public NotificationObserver {
 
     // Record an app launch, if applicable.
     GURL url = tab.navigations.at(tab.current_navigation_index).virtual_url();
-    if (browser->profile()->GetExtensionService()->IsInstalledApp(url)) {
+    // TODO: the ExtensionService should never be NULL, but in some cases it is,
+    // see bug 73768. After it is resolved, the explicit test can go away.
+    ExtensionService* service = browser->profile()->GetExtensionService();
+    if (service && service->IsInstalledApp(url)) {
       UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram,
                                 extension_misc::APP_LAUNCH_SESSION_RESTORE,
                                 extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
