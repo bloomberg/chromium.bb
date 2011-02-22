@@ -26,7 +26,6 @@
 #include "chrome/common/pref_names.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
-#include "grit/theme_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -1235,7 +1234,8 @@ AutoFillProfilesView::ContentListTableModel::ContentListTableModel(
     std::vector<EditableSetInfo>* profiles,
     std::vector<EditableSetInfo>* credit_cards)
     : profiles_(profiles),
-      credit_cards_(credit_cards) {
+      credit_cards_(credit_cards),
+      observer_(NULL) {
 }
 
 void AutoFillProfilesView::ContentListTableModel::Refresh() {

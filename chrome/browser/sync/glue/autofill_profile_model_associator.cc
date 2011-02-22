@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,7 +35,14 @@ AutofillProfileModelAssociator::~AutofillProfileModelAssociator() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 }
 
-AutofillProfileModelAssociator::AutofillProfileModelAssociator() {}
+AutofillProfileModelAssociator::AutofillProfileModelAssociator()
+    : sync_service_(NULL),
+      web_database_(NULL),
+      personal_data_(NULL),
+      autofill_node_id_(0),
+      abort_association_pending_(false),
+      number_of_profiles_created_(0) {
+}
 
 bool AutofillProfileModelAssociator::TraverseAndAssociateChromeAutoFillProfiles(
     sync_api::WriteTransaction* write_trans,
@@ -76,7 +83,6 @@ bool AutofillProfileModelAssociator::TraverseAndAssociateChromeAutoFillProfiles(
         // associated with another profile. That could happen if the user has
         // the same profile duplicated.
         current_profiles->find(guid) == current_profiles->end()) {
-
       VLOG(2) << "[AUTOFILL MIGRATION]"
               << " Found in sync db: "
               << (*ix)->GetFieldText(AutoFillType(NAME_FIRST))
@@ -331,7 +337,6 @@ bool AutofillProfileModelAssociator::MakeNewAutofillProfileSyncNodeIfNeeded(
     std::string guid = profile.guid();
     Associate(&guid, node.GetId());
     number_of_profiles_created_++;
-
   }
   return true;
 }
