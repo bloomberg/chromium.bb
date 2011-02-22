@@ -34,11 +34,18 @@ class EncoderVp8 : public Encoder {
   bool PrepareImage(scoped_refptr<CaptureData> capture_data,
                     std::vector<gfx::Rect>* updated_rects);
 
+  // Update the active map according to |updated_rects|. Active map is then
+  // given to the encoder to speed up encoding.
+  void PrepareActiveMap(const std::vector<gfx::Rect>& updated_rects);
+
   // True if the encoder is initialized.
   bool initialized_;
 
   scoped_ptr<vpx_codec_ctx_t> codec_;
   scoped_ptr<vpx_image_t> image_;
+  scoped_array<uint8> active_map_;
+  int active_map_width_;
+  int active_map_height_;
   int last_timestamp_;
 
   // Buffer for storing the yuv image.

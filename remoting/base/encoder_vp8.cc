@@ -18,12 +18,22 @@ extern "C" {
 #include "third_party/libvpx/source/libvpx/vpx/vp8cx.h"
 }
 
+namespace {
+
+// Defines the dimension of a macro block. This is used to compute the active
+// map for the encoder.
+const int kMacroBlockSize = 16;
+
+}  // namespace remoting
+
 namespace remoting {
 
 EncoderVp8::EncoderVp8()
     : initialized_(false),
       codec_(NULL),
       image_(NULL),
+      active_map_width_(0),
+      active_map_height_(0),
       last_timestamp_(0) {
 }
 
@@ -54,6 +64,11 @@ bool EncoderVp8::Init(int width, int height) {
   if (ret != VPX_CODEC_OK)
     return false;
 
+  // Initialize active map.
+  active_map_width_ = (width + kMacroBlockSize - 1) / kMacroBlockSize;
+  active_map_height_ = (height + kMacroBlockSize - 1) / kMacroBlockSize;
+  active_map_.reset(new uint8[active_map_width_ * active_map_height_]);
+
   // TODO(hclam): Tune the parameters to better suit the application.
   config.rc_target_bitrate = width * height * config.rc_target_bitrate
       / config.g_w / config.g_h;
@@ -61,11 +76,11 @@ bool EncoderVp8::Init(int width, int height) {
   config.g_h = height;
   config.g_pass = VPX_RC_ONE_PASS;
   config.g_profile = 1;
-  config.g_threads = 2;
+  config.g_threads = 1;
   config.rc_min_quantizer = 20;
   config.rc_max_quantizer = 30;
   config.g_timebase.num = 1;
-  config.g_timebase.den = 30;
+  config.g_timebase.den = 20;
 
   if (vpx_codec_enc_init(codec_.get(), algo, &config, 0))
     return false;
@@ -161,6 +176,32 @@ bool EncoderVp8::PrepareImage(scoped_refptr<CaptureData> capture_data,
   return true;
 }
 
+void EncoderVp8::PrepareActiveMap(
+    const std::vector<gfx::Rect>& updated_rects) {
+  // Clear active map first.
+  memset(active_map_.get(), 0, active_map_width_ * active_map_height_);
+
+  // Mark blocks at active.
+  for (size_t i = 0; i < updated_rects.size(); ++i) {
+    const gfx::Rect& r = updated_rects[i];
+    CHECK(r.width() && r.height());
+
+    int left = r.x() / kMacroBlockSize;
+    int right = (r.right() - 1) / kMacroBlockSize;
+    int top = r.y() / kMacroBlockSize;
+    int bottom = (r.bottom() - 1) / kMacroBlockSize;
+    CHECK(right < active_map_width_);
+    CHECK(bottom < active_map_height_);
+
+    uint8* map = active_map_.get() + top * active_map_width_;
+    for (int y = top; y <= bottom; ++y) {
+      for (int x = left; x <= right; ++x)
+        map[x] = 1;
+      map += active_map_width_;
+    }
+  }
+}
+
 void EncoderVp8::Encode(scoped_refptr<CaptureData> capture_data,
                         bool key_frame,
                         DataAvailableCallback* data_available_callback) {
@@ -176,6 +217,18 @@ void EncoderVp8::Encode(scoped_refptr<CaptureData> capture_data,
     NOTREACHED() << "Can't image data for encoding";
   }
 
+  // Update active map based on updated rectangles.
+  PrepareActiveMap(updated_rects);
+
+  // Apply active map to the encoder.
+  vpx_active_map_t act_map;
+  act_map.rows = active_map_height_;
+  act_map.cols = active_map_width_;
+  act_map.active_map = active_map_.get();
+  if(vpx_codec_control(codec_.get(), VP8E_SET_ACTIVEMAP, &act_map)) {
+    LOG(ERROR) << "Unable to apply active map";
+  }
+
   // Do the actual encoding.
   vpx_codec_err_t ret = vpx_codec_encode(codec_.get(), image_.get(),
                                          last_timestamp_,
@@ -185,8 +238,8 @@ void EncoderVp8::Encode(scoped_refptr<CaptureData> capture_data,
       << "Details: " << vpx_codec_error(codec_.get()) << "\n"
       << vpx_codec_error_detail(codec_.get());
 
-  // TODO(hclam): fix this.
-  last_timestamp_ += 100;
+  // TODO(hclam): Apply the proper timestamp here.
+  last_timestamp_ += 50;
 
   // Read the encoded data.
   vpx_codec_iter_t iter = NULL;

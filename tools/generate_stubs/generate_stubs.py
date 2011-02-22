@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -15,6 +15,19 @@ found via dlsym.
 This script takes a set of files, where each file is a list of C-style
 signatures (one signature per line).  The output is either a windows def file,
 or a header + implementation file of stubs suitable for use in a posix system.
+
+This script also handles varidiac functions, e.g.
+void printf(const char* s, ...);
+
+TODO(hclam): Fix the situation for varidiac functions.
+Stub for the above function will be generated and inside the stub function it
+is translated to:
+void printf(const char* s, ...) {
+  printf_ptr(s, (void*)arg1);
+}
+
+Only one argument from the varidiac arguments is used and it will be used as
+type void*.
 """
 
 __author__ = 'ajwong@chromium.org (Albert J. Wong)'
@@ -96,7 +109,7 @@ VARIADIC_STUB_FUNCTION_DEFINITION = (
 %(return_type)s %(name)s(%(params)s) {
   va_list args___;
   va_start(args___, %(last_named_arg)s);
-  %(return_type)s ret___ = %(name)s_ptr(%(arg_list)s, args___);
+  %(return_type)s ret___ = %(name)s_ptr(%(arg_list)s, va_arg(args___, void*));
   va_end(args___);
   return ret___;
 }""")
@@ -116,7 +129,7 @@ VOID_VARIADIC_STUB_FUNCTION_DEFINITION = (
 void %(name)s(%(params)s) {
   va_list args___;
   va_start(args___, %(last_named_arg)s);
-  %(name)s_ptr(%(arg_list)s, args___);
+  %(name)s_ptr(%(arg_list)s, va_arg(args___, void*));
   va_end(args___);
 }""")
 
