@@ -4,3 +4,6 @@
 //
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
+
+// Skip an overly restrictive cross-origin HTTPS test
+BUGCR69594 SKIP : http/tests/appcache/different-https-origin-resource-main.html = FAIL

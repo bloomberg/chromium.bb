@@ -328,7 +328,7 @@ TEST(ManifestParserTest, DifferentOriginUrlWithSecureScheme) {
   EXPECT_TRUE(manifest.online_whitelist_namespaces.empty());
 
   base::hash_set<std::string> urls = manifest.explicit_urls;
-  const size_t kExpected = 2;
+  const size_t kExpected = 3;
   ASSERT_EQ(kExpected, urls.size());
   EXPECT_TRUE(urls.find("https://www.foo.com/relative/secureschemesameorigin")
       != urls.end());
@@ -336,7 +336,7 @@ TEST(ManifestParserTest, DifferentOriginUrlWithSecureScheme) {
       urls.end());
   EXPECT_FALSE(urls.find("http://www.xyz.com/secureschemedifforigin") !=
       urls.end());
-  EXPECT_FALSE(urls.find("https://www.xyz.com/secureschemedifforigin") !=
+  EXPECT_TRUE(urls.find("https://www.xyz.com/secureschemedifforigin") !=
       urls.end());
 }
 

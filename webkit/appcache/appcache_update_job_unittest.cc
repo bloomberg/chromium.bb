@@ -41,9 +41,18 @@ class MockHttpServer {
     return GURL("http://mockhost/" + path);
   }
 
+  static GURL GetMockHttpsUrl(const std::string& path) {
+    return GURL("https://mockhost/" + path);
+  }
+
+  static GURL GetMockCrossOriginHttpsUrl(const std::string& path) {
+    return GURL("https://cross_origin_host/" + path);
+  }
+
   static net::URLRequestJob* JobFactory(net::URLRequest* request,
                                         const std::string& scheme) {
-    if (request->url().host() != "mockhost")
+    if (request->url().host() != "mockhost" &&
+        request->url().host() != "cross_origin_host")
       return new net::URLRequestErrorJob(request, -1);
 
     std::string headers, body;
@@ -73,6 +82,10 @@ class MockHttpServer {
         "\0";
     const char not_found_headers[] =
         "HTTP/1.1 404 NOT FOUND\0"
+        "\0";
+    const char no_store_headers[] =
+        "HTTP/1.1 200 OK\0"
+        "Cache-Control: no-store\0"
         "\0";
 
     if (path == "/files/wrong-mime-manifest") {
@@ -150,6 +163,17 @@ class MockHttpServer {
       (*headers) = std::string(error_headers,
                                arraysize(error_headers));
       (*body) = "error";
+    } else if (path == "/files/valid_cross_origin_https_manifest") {
+      (*headers) = std::string(manifest_headers, arraysize(manifest_headers));
+      (*body) = "CACHE MANIFEST\n"
+                "https://cross_origin_host/files/explicit1\n";
+    } else if (path == "/files/invalid_cross_origin_https_manifest") {
+      (*headers) = std::string(manifest_headers, arraysize(manifest_headers));
+      (*body) = "CACHE MANIFEST\n"
+                "https://cross_origin_host/files/no-store-headers\n";
+    } else if (path == "/files/no-store-headers") {
+      (*headers) = std::string(no_store_headers, arraysize(no_store_headers));
+      (*body) = "no-store";
     } else {
       (*headers) = std::string(not_found_headers,
                                arraysize(not_found_headers));
@@ -465,7 +489,7 @@ namespace {
 class IOThread : public base::Thread {
  public:
   explicit IOThread(const char* name)
-      : base::Thread(name), old_factory_(NULL) {
+      : base::Thread(name), old_factory_(NULL), old_factory_https_(NULL) {
   }
 
   ~IOThread() {
@@ -481,15 +505,19 @@ class IOThread : public base::Thread {
   virtual void Init() {
     old_factory_ = net::URLRequest::RegisterProtocolFactory(
         "http", MockHttpServer::JobFactory);
+    old_factory_https_ = net::URLRequest::RegisterProtocolFactory(
+        "https", MockHttpServer::JobFactory);
     request_context_ = new TestURLRequestContext();
   }
 
   virtual void CleanUp() {
     net::URLRequest::RegisterProtocolFactory("http", old_factory_);
+    net::URLRequest::RegisterProtocolFactory("https", old_factory_https_);
     request_context_ = NULL;
   }
 
   net::URLRequest::ProtocolFactory* old_factory_;
+  net::URLRequest::ProtocolFactory* old_factory_https_;
   scoped_refptr<net::URLRequestContext> request_context_;
 };
 
@@ -2796,6 +2824,64 @@ class AppCacheUpdateJobTest : public testing::Test,
     UpdateFinished();
   }
 
+  void CrossOriginHttpsSuccessTest() {
+    ASSERT_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
+
+    GURL manifest_url = MockHttpServer::GetMockHttpsUrl(
+        "files/valid_cross_origin_https_manifest");
+
+    MakeService();
+    group_ = new AppCacheGroup(
+        service_.get(), manifest_url,
+        service_->storage()->NewGroupId());
+    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    group_->update_job_ = update;
+
+    MockFrontend* frontend = MakeMockFrontend();
+    AppCacheHost* host = MakeHost(1, frontend);
+    update->StartUpdate(host, GURL());
+    EXPECT_EQ(manifest_url, policy_.requested_manifest_url_);
+
+    // Set up checks for when update job finishes.
+    do_checks_after_update_finished_ = true;
+    expect_group_obsolete_ = false;
+    expect_group_has_cache_ = true;
+    tested_manifest_ = NONE;
+    MockFrontend::HostIds host_ids(1, host->host_id());
+    frontend->AddExpectedEvent(host_ids, CHECKING_EVENT);
+
+    WaitForUpdateToFinish();
+  }
+
+  void CrossOriginHttpsDeniedTest() {
+    ASSERT_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
+
+    GURL manifest_url = MockHttpServer::GetMockHttpsUrl(
+        "files/invalid_cross_origin_https_manifest");
+
+    MakeService();
+    group_ = new AppCacheGroup(
+        service_.get(), manifest_url,
+        service_->storage()->NewGroupId());
+    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    group_->update_job_ = update;
+
+    MockFrontend* frontend = MakeMockFrontend();
+    AppCacheHost* host = MakeHost(1, frontend);
+    update->StartUpdate(host, GURL());
+    EXPECT_EQ(manifest_url, policy_.requested_manifest_url_);
+
+    // Set up checks for when update job finishes.
+    do_checks_after_update_finished_ = true;
+    expect_group_obsolete_ = false;
+    expect_group_has_cache_ = false;
+    tested_manifest_ = NONE;
+    MockFrontend::HostIds host_ids(1, host->host_id());
+    frontend->AddExpectedEvent(host_ids, CHECKING_EVENT);
+
+    WaitForUpdateToFinish();
+  }
+
   void WaitForUpdateToFinish() {
     if (group_->update_status() == AppCacheGroup::IDLE)
       UpdateFinished();
@@ -3456,6 +3542,14 @@ TEST_F(AppCacheUpdateJobTest, IfNoneMatchRefetch) {
 
 TEST_F(AppCacheUpdateJobTest, MultipleHeadersRefetch) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::MultipleHeadersRefetchTest);
+}
+
+TEST_F(AppCacheUpdateJobTest, CrossOriginHttpsSuccess) {
+  RunTestOnIOThread(&AppCacheUpdateJobTest::CrossOriginHttpsSuccessTest);
+}
+
+TEST_F(AppCacheUpdateJobTest, CrossOriginHttpsDenied) {
+  RunTestOnIOThread(&AppCacheUpdateJobTest::CrossOriginHttpsDeniedTest);
 }
 
 }  // namespace appcache

@@ -123,10 +123,27 @@ void AppCacheUpdateJob::URLFetcher::OnResponseStarted(
   DCHECK(request == request_);
   if (request->status().is_success() &&
       (request->GetResponseCode() / 100) == 2) {
+
+    // See http://code.google.com/p/chromium/issues/detail?id=69594
+    // We willfully violate the HTML5 spec at this point in order
+    // to support the appcaching of cross-origin HTTPS resources.
+    // We've opted for a milder constraint and allow caching unless
+    // the resource has a "no-store" header. A spec change has been
+    // requested on the whatwg list.
+    // TODO(michaeln): Consider doing this for cross-origin HTTP resources too.
+    if (url_.SchemeIsSecure() &&
+        url_.GetOrigin() != job_->manifest_url_.GetOrigin()) {
+      if (request->response_headers()->
+              HasHeaderValue("cache-control", "no-store")) {
+        request->Cancel();
+        OnResponseCompleted();
+        return;
+      }
+    }
+
     // Write response info to storage for URL fetches. Wait for async write
     // completion before reading any response data.
-    if (fetch_type_ == URL_FETCH ||
-        fetch_type_ == MASTER_ENTRY_FETCH) {
+    if (fetch_type_ == URL_FETCH || fetch_type_ == MASTER_ENTRY_FETCH) {
       response_writer_.reset(job_->CreateResponseWriter());
       scoped_refptr<HttpResponseInfoIOBuffer> io_buffer(
           new HttpResponseInfoIOBuffer(

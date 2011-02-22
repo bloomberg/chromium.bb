@@ -165,12 +165,13 @@ bool ParseManifest(const GURL& manifest_url, const char* data, int length,
         continue;
       }
 
-      // If the manifest's scheme is https:, then manifest URL must have same
-      // origin as resulting absolute URL.
-      if (mode == EXPLICIT && manifest_url.SchemeIsSecure() &&
-          manifest_url.GetOrigin() != url.GetOrigin()) {
-        continue;
-      }
+      // See http://code.google.com/p/chromium/issues/detail?id=69594
+      // We willfully violate the HTML5 spec at this point in order
+      // to support the appcaching of cross-origin HTTPS resources.
+      // Per the spec, EXPLICIT cross-origin HTTS resources should be
+      // ignored here. We've opted for a milder constraint and allow
+      // caching unless the resource has a "no-store" header. That
+      // condition is enforced in AppCacheUpdateJob.
 
       if (mode == EXPLICIT) {
         manifest.explicit_urls.insert(url.spec());
