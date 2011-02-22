@@ -32,14 +32,21 @@ class ContentSettingGeolocationImageModel : public ContentSettingImageModel {
  public:
   ContentSettingGeolocationImageModel();
 
-  virtual void UpdateFromTabContents(TabContents* tab_contents);
+  virtual void UpdateFromTabContents(TabContents* tab_contents) OVERRIDE;
 };
 
 class ContentSettingNotificationsImageModel : public ContentSettingImageModel {
  public:
   ContentSettingNotificationsImageModel();
 
-  virtual void UpdateFromTabContents(TabContents* tab_contents);
+  virtual void UpdateFromTabContents(TabContents* tab_contents) OVERRIDE;
+};
+
+class ContentSettingPrerenderImageModel : public ContentSettingImageModel {
+ public:
+  ContentSettingPrerenderImageModel();
+
+  virtual void UpdateFromTabContents(TabContents* tab_contents) OVERRIDE;
 };
 
 const int ContentSettingBlockedImageModel::kBlockedIconIDs[] = {
@@ -164,6 +171,23 @@ void ContentSettingNotificationsImageModel::UpdateFromTabContents(
   set_visible(false);
 }
 
+ContentSettingPrerenderImageModel::ContentSettingPrerenderImageModel()
+    : ContentSettingImageModel(CONTENT_SETTINGS_TYPE_PRERENDER) {
+  set_tooltip(l10n_util::GetStringUTF8(IDS_PRERENDER_SUCCEED_TOOLTIP));
+}
+
+void ContentSettingPrerenderImageModel::UpdateFromTabContents(
+    TabContents* tab_contents) {
+  bool visible = tab_contents && tab_contents->was_prerendered();
+  set_visible(visible);
+  // ContentSettingPrerenderImageView expects icon to transition from 0 to
+  // valid each time it wants to be displayed.
+  if (visible)
+    set_icon(IDR_PRERENDER_SUCCEED_ICON);
+  else
+    set_icon(0);
+}
+
 ContentSettingImageModel::ContentSettingImageModel(
     ContentSettingsType content_settings_type)
     : content_settings_type_(content_settings_type),
@@ -176,9 +200,14 @@ ContentSettingImageModel::ContentSettingImageModel(
 ContentSettingImageModel*
     ContentSettingImageModel::CreateContentSettingImageModel(
     ContentSettingsType content_settings_type) {
-  if (content_settings_type == CONTENT_SETTINGS_TYPE_GEOLOCATION)
-    return new ContentSettingGeolocationImageModel();
-  if (content_settings_type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
-    return new ContentSettingNotificationsImageModel();
-  return new ContentSettingBlockedImageModel(content_settings_type);
+  switch (content_settings_type) {
+    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
+      return new ContentSettingGeolocationImageModel();
+    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+      return new ContentSettingNotificationsImageModel();
+    case CONTENT_SETTINGS_TYPE_PRERENDER:
+      return new ContentSettingPrerenderImageModel();
+    default:
+      return new ContentSettingBlockedImageModel(content_settings_type);
+  }
 }

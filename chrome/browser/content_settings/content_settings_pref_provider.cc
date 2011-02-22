@@ -28,7 +28,7 @@ namespace {
 
 // The preference keys where resource identifiers are stored for
 // ContentSettingsType values that support resource identifiers.
-const char* kResourceTypeNames[CONTENT_SETTINGS_NUM_TYPES] = {
+const char* kResourceTypeNames[] = {
   NULL,
   NULL,
   NULL,
@@ -36,10 +36,13 @@ const char* kResourceTypeNames[CONTENT_SETTINGS_NUM_TYPES] = {
   NULL,
   NULL,  // Not used for Geolocation
   NULL,  // Not used for Notifications
+  NULL,  // Not used for Prerender.
 };
+COMPILE_ASSERT(arraysize(kResourceTypeNames) == CONTENT_SETTINGS_NUM_TYPES,
+               resource_type_names_incorrect_size);
 
 // The default setting for each content type.
-const ContentSetting kDefaultSettings[CONTENT_SETTINGS_NUM_TYPES] = {
+const ContentSetting kDefaultSettings[] = {
   CONTENT_SETTING_ALLOW,  // CONTENT_SETTINGS_TYPE_COOKIES
   CONTENT_SETTING_ALLOW,  // CONTENT_SETTINGS_TYPE_IMAGES
   CONTENT_SETTING_ALLOW,  // CONTENT_SETTINGS_TYPE_JAVASCRIPT
@@ -47,10 +50,13 @@ const ContentSetting kDefaultSettings[CONTENT_SETTINGS_NUM_TYPES] = {
   CONTENT_SETTING_BLOCK,  // CONTENT_SETTINGS_TYPE_POPUPS
   CONTENT_SETTING_ASK,    // Not used for Geolocation
   CONTENT_SETTING_ASK,    // Not used for Notifications
+  CONTENT_SETTING_ALLOW,  // CONTENT_SETTINGS_TYPE_PRERENDER
 };
+COMPILE_ASSERT(arraysize(kDefaultSettings) == CONTENT_SETTINGS_NUM_TYPES,
+               default_settings_incorrect_size);
 
 // The names of the ContentSettingsType values, for use with dictionary prefs.
-const char* kTypeNames[CONTENT_SETTINGS_NUM_TYPES] = {
+const char* kTypeNames[] = {
   "cookies",
   "images",
   "javascript",
@@ -58,7 +64,10 @@ const char* kTypeNames[CONTENT_SETTINGS_NUM_TYPES] = {
   "popups",
   NULL,  // Not used for Geolocation
   NULL,  // Not used for Notifications
+  NULL,  // Not used for Prerender
 };
+COMPILE_ASSERT(arraysize(kTypeNames) == CONTENT_SETTINGS_NUM_TYPES,
+               type_names_incorrect_size);
 
 }  // namespace
 

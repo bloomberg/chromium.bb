@@ -159,6 +159,8 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tc, const GURL& url) {
   if (pc->has_stopped_loading())
     tc->DidStopLoading();
 
+  tc->set_was_prerendered(true);
+
   return true;
 }
 

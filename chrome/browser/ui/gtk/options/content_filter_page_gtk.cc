@@ -43,6 +43,7 @@ ContentFilterPageGtk::ContentFilterPageGtk(Profile* profile,
     IDS_POPUP_SETTING_LABEL,
     IDS_GEOLOCATION_SETTING_LABEL,
     IDS_NOTIFICATIONS_SETTING_LABEL,
+    0,  // This dialog isn't used for prerender.
   };
   COMPILE_ASSERT(arraysize(kTitleIDs) == CONTENT_SETTINGS_NUM_TYPES,
                  kTitleIDs_IncorrectSize);
@@ -69,6 +70,7 @@ GtkWidget* ContentFilterPageGtk::InitGroup() {
     IDS_POPUP_ALLOW_RADIO,
     IDS_GEOLOCATION_ALLOW_RADIO,
     IDS_NOTIFICATIONS_ALLOW_RADIO,
+    0,  // This dialog isn't used for prerender.
   };
   COMPILE_ASSERT(arraysize(kAllowIDs) == CONTENT_SETTINGS_NUM_TYPES,
                  kAllowIDs_IncorrectSize);
@@ -84,6 +86,7 @@ GtkWidget* ContentFilterPageGtk::InitGroup() {
      0,
      IDS_GEOLOCATION_ASK_RADIO,
      IDS_NOTIFICATIONS_ASK_RADIO,
+     0,  // This dialog isn't used for prerender.
   };
   COMPILE_ASSERT(arraysize(kAskIDs) == CONTENT_SETTINGS_NUM_TYPES,
                  kAskIDs_IncorrectSize);
@@ -109,6 +112,7 @@ GtkWidget* ContentFilterPageGtk::InitGroup() {
     IDS_POPUP_BLOCK_RADIO,
     IDS_GEOLOCATION_BLOCK_RADIO,
     IDS_NOTIFICATIONS_BLOCK_RADIO,
+    0,  // This dialog isn't used for prerender.
   };
   COMPILE_ASSERT(arraysize(kBlockIDs) == CONTENT_SETTINGS_NUM_TYPES,
                  kBlockIDs_IncorrectSize);

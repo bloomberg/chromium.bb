@@ -33,21 +33,29 @@ const char* kSetting = "setting";
 const char* kOrigin = "origin";
 const char* kEmbeddingOrigin = "embeddingOrigin";
 
+const char* const kContentSettingsTypeGroupNames[] = {
+  "cookies",
+  "images",
+  "javascript",
+  "plugins",
+  "popups",
+  "location",
+  "notifications",
+  "prerender",
+};
+COMPILE_ASSERT(arraysize(kContentSettingsTypeGroupNames) ==
+               CONTENT_SETTINGS_NUM_TYPES,
+               invalid_content_settings_type_group_names_size);
+
+
 ContentSettingsType ContentSettingsTypeFromGroupName(const std::string& name) {
-  if (name == "cookies")
-    return CONTENT_SETTINGS_TYPE_COOKIES;
-  if (name == "images")
-    return CONTENT_SETTINGS_TYPE_IMAGES;
-  if (name == "javascript")
-    return CONTENT_SETTINGS_TYPE_JAVASCRIPT;
-  if (name == "plugins")
-    return CONTENT_SETTINGS_TYPE_PLUGINS;
-  if (name == "popups")
-    return CONTENT_SETTINGS_TYPE_POPUPS;
-  if (name == "location")
-    return CONTENT_SETTINGS_TYPE_GEOLOCATION;
-  if (name == "notifications")
-    return CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
+
+  for (int content_settings_type = CONTENT_SETTINGS_TYPE_COOKIES;
+       content_settings_type < CONTENT_SETTINGS_NUM_TYPES;
+       ++content_settings_type) {
+    if (name == kContentSettingsTypeGroupNames[content_settings_type])
+      return static_cast<ContentSettingsType>(content_settings_type);
+  }
 
   NOTREACHED() << name << " is not a recognized content settings type.";
   return CONTENT_SETTINGS_TYPE_DEFAULT;
@@ -693,26 +701,12 @@ void ContentSettingsHandler::CheckExceptionPatternValidity(
 // static
 std::string ContentSettingsHandler::ContentSettingsTypeToGroupName(
     ContentSettingsType type) {
-  switch (type) {
-    case CONTENT_SETTINGS_TYPE_COOKIES:
-      return "cookies";
-    case CONTENT_SETTINGS_TYPE_IMAGES:
-      return "images";
-    case CONTENT_SETTINGS_TYPE_JAVASCRIPT:
-      return "javascript";
-    case CONTENT_SETTINGS_TYPE_PLUGINS:
-      return "plugins";
-    case CONTENT_SETTINGS_TYPE_POPUPS:
-      return "popups";
-    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
-      return "location";
-    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
-      return "notifications";
-
-    default:
-      NOTREACHED();
-      return "";
+  if (type < CONTENT_SETTINGS_TYPE_COOKIES ||
+      type >= CONTENT_SETTINGS_NUM_TYPES) {
+    NOTREACHED();
+    return "";
   }
+  return kContentSettingsTypeGroupNames[type];
 }
 
 HostContentSettingsMap* ContentSettingsHandler::GetContentSettingsMap() {

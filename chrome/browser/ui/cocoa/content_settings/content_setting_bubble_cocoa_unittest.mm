@@ -34,6 +34,8 @@ TEST_F(ContentSettingBubbleControllerTest, Init) {
   for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
     if (i == CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
       continue;  // Notifications have no bubble.
+    if (i == CONTENT_SETTINGS_TYPE_PRERENDER)
+      continue;  // Prerender has no bubble.
 
     ContentSettingsType settingsType = static_cast<ContentSettingsType>(i);
 

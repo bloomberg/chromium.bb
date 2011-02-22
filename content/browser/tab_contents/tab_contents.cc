@@ -279,7 +279,8 @@ TabContents::TabContents(Profile* profile,
       maximum_zoom_percent_(
           static_cast<int>(WebKit::WebView::maxTextSizeMultiplier * 100)),
       temporary_zoom_settings_(false),
-      content_restrictions_(0) {
+      content_restrictions_(0),
+      was_prerendered_(false) {
   renderer_preferences_util::UpdateFromSystemSettings(
       &renderer_preferences_, profile);
 
@@ -1376,6 +1377,8 @@ void TabContents::OnDidStartProvisionalLoadForFrame(int64 frame_id,
     if (!is_error_page)
       content_settings_delegate_->ClearCookieSpecificContentSettings();
     content_settings_delegate_->ClearGeolocationContentSettings();
+    // TODO(cbentzel): Should error pages still show prerendered icon?
+    set_was_prerendered(false);
 
     // Check if the URL we are about to load has been prerendered by any chance,
     // and use it if possible.

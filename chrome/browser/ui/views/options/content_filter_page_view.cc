@@ -63,6 +63,7 @@ void ContentFilterPageView::InitControlLayout() {
     IDS_POPUP_SETTING_LABEL,
     IDS_GEOLOCATION_SETTING_LABEL,
     IDS_NOTIFICATIONS_SETTING_LABEL,
+    0,
   };
   COMPILE_ASSERT(arraysize(kTitleIDs) == CONTENT_SETTINGS_NUM_TYPES,
                  Need_a_setting_for_every_content_settings_type);
@@ -83,6 +84,7 @@ void ContentFilterPageView::InitControlLayout() {
     IDS_POPUP_ALLOW_RADIO,
     IDS_GEOLOCATION_ALLOW_RADIO,
     IDS_NOTIFICATIONS_ALLOW_RADIO,
+    0,
   };
   COMPILE_ASSERT(arraysize(kAllowIDs) == CONTENT_SETTINGS_NUM_TYPES,
                  Need_a_setting_for_every_content_settings_type);
@@ -104,6 +106,7 @@ void ContentFilterPageView::InitControlLayout() {
     0,
     IDS_GEOLOCATION_ASK_RADIO,
     IDS_NOTIFICATIONS_ASK_RADIO,
+    0,
   };
   COMPILE_ASSERT(arraysize(kAskIDs) == CONTENT_SETTINGS_NUM_TYPES,
                  Need_a_setting_for_every_content_settings_type);
@@ -133,6 +136,7 @@ void ContentFilterPageView::InitControlLayout() {
     IDS_POPUP_BLOCK_RADIO,
     IDS_GEOLOCATION_BLOCK_RADIO,
     IDS_NOTIFICATIONS_BLOCK_RADIO,
+    0,
   };
   COMPILE_ASSERT(arraysize(kBlockIDs) == CONTENT_SETTINGS_NUM_TYPES,
                  Need_a_setting_for_every_content_settings_type);

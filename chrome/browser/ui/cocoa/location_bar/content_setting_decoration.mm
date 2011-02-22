@@ -249,6 +249,12 @@ bool ContentSettingDecoration::OnMousePressed(NSRect frame) {
   if (!tabContents)
     return true;
 
+  // Prerender icon does not include a bubble.
+  ContentSettingsType content_settings_type =
+      content_setting_image_model_->get_content_settings_type();
+  if (content_settings_type == CONTENT_SETTINGS_TYPE_PRERENDER)
+    return true;
+
   GURL url = tabContents->GetURL();
   std::wstring displayHost;
   net::AppendFormattedHost(
@@ -269,8 +275,7 @@ bool ContentSettingDecoration::OnMousePressed(NSRect frame) {
   // Open bubble.
   ContentSettingBubbleModel* model =
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-          tabContents, profile_,
-          content_setting_image_model_->get_content_settings_type());
+          tabContents, profile_, content_settings_type);
   [ContentSettingBubbleController showForModel:model
                                    parentWindow:[field window]
                                      anchoredAt:anchor];

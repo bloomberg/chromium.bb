@@ -2434,6 +2434,9 @@ each locale. -->
       <message name="IDS_BLOCKED_PLUGINS_LOAD_ALL" desc="Button to load all blocked plugins on a page, displayed in bubble when a page tries to display plug-ins.">
         Run all plug-ins this time
       </message>
+      <message name="IDS_PRERENDER_SUCCEED_TOOLTIP" desc="Location bar icon tooltip text when the current page is prerendered.">
+        This page was prerendered.
+      </message>
 
       <!-- Certificate error strings -->
       <message name="IDS_CERT_ERROR_EXTRA_INFO_TITLE" desc="The title for the extra information section displayed when a page contains a certificate error">

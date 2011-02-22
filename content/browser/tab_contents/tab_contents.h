@@ -715,6 +715,9 @@ class TabContents : public PageNavigator,
     return safebrowsing_detection_host_.get();
   }
 
+  bool was_prerendered() const { return was_prerendered_; }
+  void set_was_prerendered(bool prerendered) { was_prerendered_ = prerendered; }
+
  protected:
   // from RenderViewHostDelegate.
   virtual bool OnMessageReceived(const IPC::Message& message);
@@ -1251,6 +1254,9 @@ class TabContents : public PageNavigator,
   // Content restrictions, used to disable print/copy etc based on content's
   // (full-page plugins for now only) permissions.
   int content_restrictions_;
+
+  // Were the contents of this tab previously prerendered?
+  bool was_prerendered_;
 
   DISALLOW_COPY_AND_ASSIGN(TabContents);
 };

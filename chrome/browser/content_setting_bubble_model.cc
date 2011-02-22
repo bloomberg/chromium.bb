@@ -58,6 +58,7 @@ class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
       IDS_BLOCKED_POPUPS_TITLE,
       0,  // Geolocation does not have an overall title.
       0,  // Notifications do not have a bubble.
+      0,  // Prerender does not have a bubble.
     };
     // Fields as for kBlockedTitleIDs, above.
     static const int kResourceSpecificBlockedTitleIDs[] = {
@@ -68,9 +69,11 @@ class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
       0,
       0,
       0,
+      0,
     };
     static const int kAccessedTitleIDs[] = {
       IDS_ACCESSED_COOKIES_TITLE,
+      0,
       0,
       0,
       0,
@@ -108,6 +111,7 @@ class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
       IDS_BLOCKED_POPUPS_LINK,
       IDS_GEOLOCATION_BUBBLE_MANAGE_LINK,
       0,  // Notifications do not have a bubble.
+      0,  // Prerender does not have a bubble.
     };
     COMPILE_ASSERT(arraysize(kLinkIDs) == CONTENT_SETTINGS_NUM_TYPES,
                    Need_a_setting_for_every_content_settings_type);
@@ -142,6 +146,7 @@ class ContentSettingTitleLinkAndCustomModel
       0,  // Popups do not have a custom link.
       0,  // Geolocation custom links are set within that class.
       0,  // Notifications do not have a bubble.
+      0,  // Prerender does not have a bubble.
     };
     COMPILE_ASSERT(arraysize(kCustomIDs) == CONTENT_SETTINGS_NUM_TYPES,
                    Need_a_setting_for_every_content_settings_type);
@@ -214,6 +219,7 @@ class ContentSettingSingleRadioGroup
       IDS_BLOCKED_POPUPS_UNBLOCK,
       0,  // We don't manage geolocation here.
       0,  // Notifications do not have a bubble.
+      0,  // Prerender does not have a bubble.
     };
     COMPILE_ASSERT(arraysize(kAllowIDs) == CONTENT_SETTINGS_NUM_TYPES,
                    Need_a_setting_for_every_content_settings_type);
@@ -226,6 +232,7 @@ class ContentSettingSingleRadioGroup
       0,
       0,
       0,
+      0,  // Prerender does not have a bubble.
     };
     COMPILE_ASSERT(
         arraysize(kResourceSpecificAllowIDs) == CONTENT_SETTINGS_NUM_TYPES,
@@ -244,6 +251,7 @@ class ContentSettingSingleRadioGroup
       IDS_BLOCKED_POPUPS_NO_ACTION,
       0,  // We don't manage geolocation here.
       0,  // Notifications do not have a bubble.
+      0,  // Prerender does not have a bubble.
     };
     COMPILE_ASSERT(arraysize(kBlockIDs) == CONTENT_SETTINGS_NUM_TYPES,
                    Need_a_setting_for_every_content_settings_type);

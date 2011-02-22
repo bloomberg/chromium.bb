@@ -129,6 +129,7 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
     @"ContentBlockedPopups",
     @"ContentBubbleGeolocation",
     @"",  // Notifications do not have a bubble.
+    @"",  // Prerender does not have a bubble.
   };
   COMPILE_ASSERT(arraysize(nibPaths) == CONTENT_SETTINGS_NUM_TYPES,
                  nibPaths_requires_an_entry_for_every_setting_type);
