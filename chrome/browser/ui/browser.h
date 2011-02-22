@@ -224,6 +224,14 @@ class Browser : public TabHandlerDelegate,
   // |profile|, that session is re-used.
   static void OpenURLOffTheRecord(Profile* profile, const GURL& url);
 
+  // Open an application specified by |app_id| in the appropriate launch
+  // container. |existing_tab| is reused if it is not NULL and the launch
+  // container is a tab. Returns NULL if the app_id is invalid or if
+  // ExtensionService isn't ready/available.
+  static TabContents* OpenApplication(Profile* profile,
+                                      const std::string& app_id,
+                                      TabContents* existing_tab);
+
   // Open |extension| in |container|, using |existing_tab| if not NULL and if
   // the correct container type.  Returns the TabContents* that was created or
   // NULL.
@@ -724,10 +732,6 @@ class Browser : public TabHandlerDelegate,
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, ConvertTabToAppShortcut);
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, OpenAppWindowLikeNtp);
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, AppIdSwitch);
-  FRIEND_TEST_ALL_PREFIXES(BrowserInitTest, OpenAppShortcutNoPref);
-  FRIEND_TEST_ALL_PREFIXES(BrowserInitTest, OpenAppShortcutWindowPref);
-  FRIEND_TEST_ALL_PREFIXES(BrowserInitTest, OpenAppShortcutTabPref);
-  FRIEND_TEST_ALL_PREFIXES(BrowserInitTest, OpenAppShortcutPanel);
 
   // Used to describe why a tab is being detached. This is used by
   // TabDetachedAtImpl.

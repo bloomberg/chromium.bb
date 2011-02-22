@@ -140,10 +140,6 @@ class BrowserInit {
     // returns false to specify default processing.
     bool OpenApplicationWindow(Profile* profile);
 
-    // If IsAppLaunch is true and the user set a pref indicating that the app
-    // should open in a tab, do so.
-    bool OpenApplicationTab(Profile* profile);
-
     // Invoked from OpenURLsInBrowser to handle processing of urls. This may
     // do any of the following:
     // . Invoke ProcessStartupURLs if |process_startup| is true.

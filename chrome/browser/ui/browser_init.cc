@@ -447,34 +447,6 @@ void UrlsToTabs(const std::vector<GURL>& urls,
   }
 }
 
-// Return true if the command line option --app-id is used.  Set
-// |out_extension| to the app to open, and |out_launch_container|
-// to the type of window into which the app should be open.
-bool GetAppLaunchContainer(
-    Profile* profile,
-    const std::string& app_id,
-    const Extension** out_extension,
-    extension_misc::LaunchContainer* out_launch_container) {
-
-  ExtensionService* extensions_service = profile->GetExtensionService();
-  const Extension* extension =
-      extensions_service->GetExtensionById(app_id, false);
-
-  // The extension with id |app_id| may have been uninstalled.
-  if (!extension)
-    return false;
-
-  // Look at preferences to find the right launch container.  If no
-  // preference is set, launch as a window.
-  extension_misc::LaunchContainer launch_container =
-      extensions_service->extension_prefs()->GetLaunchContainer(
-          extension, ExtensionPrefs::LAUNCH_WINDOW);
-
-  *out_extension = extension;
-  *out_launch_container = launch_container;
-  return true;
-}
-
 void RecordCmdLineAppHistogram() {
   UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram,
                             extension_misc::APP_LAUNCH_CMD_LINE_APP,
@@ -703,21 +675,23 @@ bool BrowserInit::LaunchWithProfile::Launch(
         switches::kUserAgent));
   }
 
-  // Open the required browser windows and tabs. First, see if
-  // we're being run as an application window. If so, the user
-  // opened an app shortcut.  Don't restore tabs or open initial
-  // URLs in that case. The user should see the window as an app,
-  // not as chrome.
-  if (OpenApplicationWindow(profile)) {
-    RecordLaunchModeHistogram(LM_AS_WEBAPP);
-  } else {
+  // Open the required browser windows and tabs.
+  // First, see if we're being run as an application window.
+  if (!OpenApplicationWindow(profile)) {
     RecordLaunchModeHistogram(urls_to_open.empty()?
                               LM_TO_BE_DECIDED : LM_WITH_URLS);
     ProcessLaunchURLs(process_startup, urls_to_open);
 
     // If this is an app launch, but we didn't open an app window, it may
     // be an app tab.
-    OpenApplicationTab(profile);
+    std::string app_id;
+    if (IsAppLaunch(NULL, &app_id) && !app_id.empty()) {
+      // TODO(erikkay): This could fail if |app_id| is invalid (the app was
+      // uninstalled).  We may want to show some reasonable error here.
+
+      RecordCmdLineAppHistogram();
+      Browser::OpenApplication(profile, app_id, NULL);
+    }
 
     if (process_startup) {
       if (browser_defaults::kOSSupportsOtherBrowsers &&
@@ -731,6 +705,8 @@ bool BrowserInit::LaunchWithProfile::Launch(
       KeystoneInfoBar::PromotionInfoBar(profile);
 #endif
     }
+  } else {
+    RecordLaunchModeHistogram(LM_AS_WEBAPP);
   }
 
 #if defined(OS_WIN)
@@ -780,30 +756,6 @@ bool BrowserInit::LaunchWithProfile::IsAppLaunch(std::string* app_url,
   return false;
 }
 
-bool BrowserInit::LaunchWithProfile::OpenApplicationTab(Profile* profile) {
-  std::string app_id;
-  // App shortcuts to URLs always open in an app window.  Because this
-  // function will open an app that should be in a tab, there is no need
-  // to look at the app URL.  OpenApplicationWindow() will open app url
-  // shortcuts.
-  if (!IsAppLaunch(NULL, &app_id) || app_id.empty())
-    return false;
-
-  extension_misc::LaunchContainer launch_container;
-  const Extension* extension;
-  if (!GetAppLaunchContainer(profile, app_id, &extension, &launch_container))
-    return false;
-
-  // If the user doesn't want to open a tab, fail.
-  if (launch_container != extension_misc::LAUNCH_TAB)
-    return false;
-
-  RecordCmdLineAppHistogram();
-
-  TabContents* app_tab = Browser::OpenApplicationTab(profile, extension, NULL);
-  return (app_tab != NULL);
-}
-
 bool BrowserInit::LaunchWithProfile::OpenApplicationWindow(Profile* profile) {
   std::string url_string, app_id;
   if (!IsAppLaunch(&url_string, &app_id))
@@ -814,22 +766,24 @@ bool BrowserInit::LaunchWithProfile::OpenApplicationWindow(Profile* profile) {
   // TODO(skerner): Do something reasonable here. Pop up a warning panel?
   // Open an URL to the gallery page of the extension id?
   if (!app_id.empty()) {
-    extension_misc::LaunchContainer launch_container;
-    const Extension* extension;
-    if (!GetAppLaunchContainer(profile, app_id, &extension, &launch_container))
+    ExtensionService* extensions_service = profile->GetExtensionService();
+    const Extension* extension =
+        extensions_service->GetExtensionById(app_id, false);
+
+    // The extension with id |app_id| may have been uninstalled.
+    if (!extension)
       return false;
 
-    // TODO(skerner): Could pass in |extension| and |launch_container|,
-    // and avoid calling GetAppLaunchContainer() both here and in
-    // OpenApplicationTab().
-
-    if (launch_container == extension_misc::LAUNCH_TAB)
-      return false;
+    // Look at preferences to find the right launch container.  If no
+    // preference is set, launch as a window.
+    extension_misc::LaunchContainer launch_container =
+        extensions_service->extension_prefs()->GetLaunchContainer(
+            extension, ExtensionPrefs::LAUNCH_WINDOW);
 
     RecordCmdLineAppHistogram();
-    TabContents* tab_in_app_window = Browser::OpenApplication(
+    TabContents* app_window = Browser::OpenApplication(
         profile, extension, launch_container, NULL);
-    return (tab_in_app_window != NULL);
+    return (app_window != NULL);
   }
 
   if (url_string.empty())
