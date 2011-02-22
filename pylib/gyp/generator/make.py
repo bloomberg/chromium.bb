@@ -25,7 +25,9 @@
 
 import gyp
 import gyp.common
+import gyp.system_test
 import os.path
+import os
 
 # Debugging-related imports -- remove me once we're solid.
 import code
@@ -114,24 +116,6 @@ all_deps :=
 # This will allow make to invoke N linker processes as specified in -jN.
 LINK ?= flock $(builddir)/linker.lock $(CXX)
 
-# We want to use GNU ar's T option if available because it's much faster.
-# We try to archive and link a file to see ar and ld support this feature.
-define detect_arflags
-$(shell \
-    mkdir -p $(obj).$(1)/arflags;
-    if echo 'int main(){}' > $(obj).$(1)/arflags/artest.c &&
-       $(CXX.$(1)) -c $(obj).$(1)/arflags/artest.c -o $(obj).$(1)/arflags/artest.o> /dev/null 2>&1 &&
-       $(AR.$(1)) crsT $(obj).$(1)/arflags/artest.a $(obj).$(1)/arflags/artest.o > /dev/null 2>&1 &&
-       $(LINK.$(1)) $(obj).$(1)/arflags/artest.a -o $(obj).$(1)/arflags/artest > /dev/null 2>&1 ; then
-      arflags=crsT;
-    else
-      arflags=crs;
-    fi;
-    echo ARFLAGS.$(1) := $$arflags > $(obj).$(1)/arflags/arflags.mk;
-    echo $$arflags;
- )
-endef
-
 CC.target ?= $(CC)
 CFLAGS.target ?= $(CFLAGS)
 CXX.target ?= $(CXX)
@@ -139,20 +123,12 @@ CXXFLAGS.target ?= $(CXXFLAGS)
 LINK.target ?= $(LINK)
 LDFLAGS.target ?= $(LDFLAGS)
 AR.target ?= $(AR)
-# We detect arflags at compile-time (see detect_arflags above), but we
-# don't want to run the detection multiple times. So, we
-# - use $(obj).target/arflags/arflags.target.mk as the cache of the detection,
-# - use := to avoid the right hand side multiple times, and
-# - use ifeq instead of ?= because ?= is like ifeq and =, not ifeq and := .
--include $(obj).target/arflags/arflags.mk
-# Temporarily disabling detect_arflags call due to a bug in gold with the
-# detected flag.
-# TODO(evan): reenable this once there is a release of gold > 2.20.1.
-ARFLAGS.target := crs
-ifeq ($(ARFLAGS.target),)
-  ARFLAGS.target := $(call detect_arflags,target)
-endif
+ARFLAGS.target ?= %(ARFLAGS.target)s
 
+# N.B.: the logic of which commands to run should match the computation done
+# in gyp's make.py where ARFLAGS.host etc. is computed.
+# TODO(evan): move all cross-compilation logic to gyp-time so we don't need
+# to replicate this environment fallback in make as well.
 CC.host ?= gcc
 CFLAGS.host ?=
 CXX.host ?= g++
@@ -160,13 +136,7 @@ CXXFLAGS.host ?=
 LINK.host ?= g++
 LDFLAGS.host ?=
 AR.host ?= ar
-# See the description for ARFLAGS.target.
--include $(obj).host/arflags/arflags.mk
-# Temporarily disabled -- see ARFLAGS.target.
-ARFLAGS.host := crs
-ifeq ($(ARFLAGS.host),)
-  ARFLAGS.host := $(call detect_arflags,host)
-endif
+ARFLAGS.host := %(ARFLAGS.host)s
 
 # Flags to make gcc output dependency info.  Note that you need to be
 # careful here to use the flags that ccache and distcc can understand.
@@ -1244,6 +1214,42 @@ def WriteAutoRegenerationRule(params, root_makefile, makefile_name,
                      build_files_args)})
 
 
+def RunSystemTests():
+  """Run tests against the system to compute default settings for commands.
+
+  Returns:
+    dictionary of settings matching the block of command-lines used in
+    SHARED_HEADER.  E.g. the dictionary will contain a ARFLAGS.target
+    key for the default ARFLAGS for the target ar command.
+  """
+  # Compute flags used for building static archives.
+  # N.B.: this fallback logic should match the logic in SHARED_HEADER.
+  # See comment there for more details.
+  ar_target = os.environ.get('AR.target', os.environ.get('AR', 'ar'))
+  cc_target = os.environ.get('CC.target', os.environ.get('CC', 'cc'))
+  arflags_target = 'crs'
+  if gyp.system_test.TestArSupportsT(ar_command=ar_target,
+                                     cc_command=cc_target):
+    arflags_target = 'crsT'
+
+  ar_host = os.environ.get('AR.host', 'ar')
+  cc_host = os.environ.get('CC.host', 'gcc')
+  arflags_host = 'crs'
+  # It feels redundant to compute this again given that most builds aren't
+  # cross-compiles, but due to quirks of history CC.host defaults to 'gcc'
+  # while CC.target defaults to 'cc', so the commands really are different
+  # even though they're nearly guaranteed to run the same code underneath.
+  if gyp.system_test.TestArSupportsT(ar_command=ar_host, cc_command=cc_host):
+    arflags_host = 'crsT'
+
+  # TODO(evan): cache this output.  (But then we'll need to add extra
+  # flags to gyp to flush the cache, yuk!  It's fast enough for now to
+  # just run it every time.)
+
+  return { 'ARFLAGS.target': arflags_target,
+           'ARFLAGS.host': arflags_host }
+
+
 def GenerateOutput(target_list, target_dicts, data, params):
   options = params['options']
   generator_flags = params.get('generator_flags', {})
@@ -1278,6 +1284,8 @@ def GenerateOutput(target_list, target_dicts, data, params):
   if not default_configuration:
     default_configuration = 'Default'
 
+  system_settings = RunSystemTests()
+
   srcdir = '.'
   makefile_name = 'Makefile' + options.suffix
   makefile_path = os.path.join(options.toplevel_dir, makefile_name)
@@ -1286,13 +1294,17 @@ def GenerateOutput(target_list, target_dicts, data, params):
     makefile_path = os.path.join(options.generator_output, makefile_path)
     srcdir = gyp.common.RelativePath(srcdir, options.generator_output)
     srcdir_prefix = '$(srcdir)/'
-  ensure_directory_exists(makefile_path)
-  root_makefile = open(makefile_path, 'w')
-  root_makefile.write(SHARED_HEADER % {
+
+  header_params = {
       'srcdir': srcdir,
       'builddir': builddir_name,
-      'default_configuration': default_configuration
-      })
+      'default_configuration': default_configuration,
+    }
+  header_params.update(RunSystemTests())
+
+  ensure_directory_exists(makefile_path)
+  root_makefile = open(makefile_path, 'w')
+  root_makefile.write(SHARED_HEADER % header_params)
   for toolset in toolsets:
     root_makefile.write('TOOLSET := %s\n' % toolset)
     root_makefile.write(ROOT_HEADER_SUFFIX_RULES)
