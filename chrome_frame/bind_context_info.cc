@@ -79,3 +79,10 @@ void BindContextInfo::SetToSwitch(IStream* cache) {
   }
 }
 
+std::wstring BindContextInfo::GetUrl() {
+  if (has_prot_data()) {
+    return prot_data_->url();
+  }
+  return std::wstring();
+}
+

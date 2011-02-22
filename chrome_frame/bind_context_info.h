@@ -65,21 +65,6 @@ class __declspec(uuid("00000000-0000-0000-0000-000000000000")) BindContextInfo
     return cache_;
   }
 
-  // Accept a const wchar_t* to ensure that we don't have a reference
-  // to someone else's buffer.
-  void set_url(const wchar_t* url) {
-    DCHECK(url);
-    if (url) {
-      url_ = url;
-    } else {
-      url_.clear();
-    }
-  }
-
-  const std::wstring& url() const {
-    return url_;
-  }
-
   void set_prot_data(ProtData* data) {
     prot_data_ = data;
   }
@@ -100,6 +85,10 @@ class __declspec(uuid("00000000-0000-0000-0000-000000000000")) BindContextInfo
     return protocol_.get();
   }
 
+  // Returns the url being navigated to. We retrieve the url from the ProtData
+  // instance which wraps the underlying protocol sink.
+  std::wstring GetUrl();
+
  protected:
   STDMETHOD(GetCppObject)(void** me) {
     DCHECK(me);
@@ -115,7 +104,6 @@ class __declspec(uuid("00000000-0000-0000-0000-000000000000")) BindContextInfo
   bool no_cache_;
   bool chrome_request_;
   bool is_switching_;
-  std::wstring url_;
   base::win::ScopedComPtr<IUnknown> ftm_;
   scoped_refptr<ProtData> prot_data_;
   ScopedComPtr<IInternetProtocol> protocol_;

@@ -289,7 +289,7 @@ STDMETHODIMP UrlmonUrlRequest::OnProgress(ULONG progress, ULONG max_progress,
       ScopedComPtr<BindContextInfo> info;
       BindContextInfo::FromBindContext(bind_context_, info.Receive());
       DCHECK(info);
-      GURL previously_redirected(info ? info->url() : std::wstring());
+      GURL previously_redirected(info ? info->GetUrl() : std::wstring());
       if (GURL(status_text) != previously_redirected) {
         DVLOG(1) << __FUNCTION__ << me() << "redirect from " << url()
                  << " to " << status_text;

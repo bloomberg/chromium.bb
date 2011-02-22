@@ -130,6 +130,10 @@ class ProtData : public base::RefCounted<ProtData> {
   // Removes the mapping between the protocol and the ProtData.
   void Invalidate();
 
+  const std::wstring& url() const {
+    return url_;
+  }
+
  private:
   typedef std::map<IInternetProtocol*, ProtData*> ProtocolDataMap;
   static ProtocolDataMap datamap_;

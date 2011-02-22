@@ -249,15 +249,10 @@ STDMETHODIMP BSCBStorageBind::OnProgress(ULONG progress, ULONG progress_max,
 
   HRESULT hr = S_OK;
 
-  // Remember the last redirected URL in case we get switched into
-  // chrome frame
-  if (status_code == BINDSTATUS_REDIRECTING) {
-    ScopedComPtr<BindContextInfo> info;
-    BindContextInfo::FromBindContext(bind_ctx_, info.Receive());
-    DCHECK(info);
-    if (info)
-      info->set_url(status_text);
-  }
+  // TODO(ananta)
+  // ChromeFrame will not be informed of any redirects which occur while we
+  // switch into Chrome. This will only break the moniker patch which is
+  // legacy and needs to be deleted.
 
   if (ShouldCacheProgress(status_code)) {
     saved_progress_.push_back(new Progress(progress, progress_max, status_code,

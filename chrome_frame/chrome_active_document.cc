@@ -248,8 +248,8 @@ STDMETHODIMP ChromeActiveDocument::Load(BOOL fully_avalable,
   ScopedComPtr<BindContextInfo> info;
   BindContextInfo::FromBindContext(bind_context, info.Receive());
   DCHECK(info);
-  if (info && !info->url().empty()) {
-    url = info->url();
+  if (info && !info->GetUrl().empty()) {
+    url = info->GetUrl();
   } else {
     // If the original URL contains an anchor, then the URL queried
     // from the moniker does not contain the anchor. To workaround
