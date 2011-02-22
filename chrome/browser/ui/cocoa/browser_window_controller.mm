@@ -1343,7 +1343,7 @@
   NSView *contentView = [[self window] contentView];
   [contentView addSubview:[findBarCocoaController_ view]
                positioned:NSWindowAbove
-               relativeTo:[toolbarController_ view]];
+               relativeTo:[infoBarContainerController_ view]];
 
   // Place the find bar immediately below the toolbar/attached bookmark bar. In
   // fullscreen mode, it hangs off the top of the screen when the bar is hidden.
