@@ -426,6 +426,16 @@ base_unittests.exe!*ReadValueOutOfArrayBoundsRight
 base_unittests.exe!*MakeSomeErrors
 base_unittests.exe!base::ToolsSanityTest_AccessesToNewMemory_Test::TestBody
 
+UNADDRESSABLE ACCESS
+base_unittests.exe!*WriteValueOutOfArrayBoundsLeft
+base_unittests.exe!*MakeSomeErrors
+base_unittests.exe!base::ToolsSanityTest_AccessesToNewMemory_Test::TestBody
+
+UNADDRESSABLE ACCESS
+base_unittests.exe!*WriteValueOutOfArrayBoundsRight
+base_unittests.exe!*MakeSomeErrors
+base_unittests.exe!base::ToolsSanityTest_AccessesToNewMemory_Test::TestBody
+
 UNINITIALIZED READ
 base_unittests.exe!*ReadUninitializedValue
 base_unittests.exe!*MakeSomeErrors
