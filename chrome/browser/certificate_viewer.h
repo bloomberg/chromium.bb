@@ -6,20 +6,7 @@
 #define CHROME_BROWSER_CERTIFICATE_VIEWER_H_
 #pragma once
 
-#include "ui/gfx/native_widget_types.h"
-
-namespace net {
-
-class X509Certificate;
-
-}  // namespace net
-
-// Opens a certificate viewer under |parent| to display the certificate from
-// the |CertStore| with id |cert_id|.
-void ShowCertificateViewerByID(gfx::NativeWindow parent, int cert_id);
-
-// Opens a certificate viewer under |parent| to display |cert|.
-void ShowCertificateViewer(gfx::NativeWindow parent,
-                           net::X509Certificate* cert);
+// TODO(jam): remove this file when all files have been converted.
+#include "content/browser/certificate_viewer.h"
 
 #endif  // CHROME_BROWSER_CERTIFICATE_VIEWER_H_

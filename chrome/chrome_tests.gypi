@@ -1199,12 +1199,10 @@
         'browser/bookmarks/bookmark_utils_unittest.cc',
         'browser/browser_about_handler_unittest.cc',
         'browser/browser_commands_unittest.cc',
-        'browser/browser_thread_unittest.cc',
         'browser/browsing_data_appcache_helper_unittest.cc',
         'browser/browsing_data_database_helper_unittest.cc',
         'browser/browsing_data_indexed_db_helper_unittest.cc',
         'browser/browsing_data_local_storage_helper_unittest.cc',
-        'browser/child_process_security_policy_unittest.cc',
         'browser/chrome_browser_application_mac_unittest.mm',
         'browser/chrome_plugin_unittest.cc',
         'browser/chromeos/customization_document_unittest.cc',
@@ -1851,6 +1849,8 @@
         'test/v8_unit_test.cc',
         'test/v8_unit_test.h',
         'tools/convert_dict/convert_dict_unittest.cc',
+        '../content/browser/browser_thread_unittest.cc',
+        '../content/browser/child_process_security_policy_unittest.cc',
         '../content/browser/renderer_host/audio_renderer_host_unittest.cc',
         '../content/browser/renderer_host/render_widget_host_unittest.cc',
         '../content/browser/renderer_host/resource_dispatcher_host_unittest.cc',
@@ -2135,7 +2135,6 @@
         'browser/browsing_data_helper_browsertest.h',
         'browser/browsing_data_indexed_db_helper_browsertest.cc',
         'browser/browsing_data_local_storage_helper_browsertest.cc',
-        'browser/child_process_security_policy_browsertest.cc',
         'browser/chromeos/cros/cros_in_process_browser_test.cc',
         'browser/chromeos/cros/cros_in_process_browser_test.h',
         'browser/chromeos/cros/cros_mock.cc',
@@ -2325,6 +2324,7 @@
         'test/out_of_proc_test_runner.cc',
         'test/render_view_test.cc',
         'test/render_view_test.h',
+        '../content/browser/child_process_security_policy_browsertest.cc',
       ],
       'conditions': [
         ['chromeos==0', {
@@ -2400,7 +2400,7 @@
             'browser/extensions/extension_rlz_apitest.cc',
             # TODO(jam): http://crbug.com/15101 These tests fail on Linux and
             # Mac.
-            'browser/child_process_security_policy_browsertest.cc',
+            '../content/browser/child_process_security_policy_browsertest.cc',
             'browser/renderer_host/test/web_cache_manager_browsertest.cc',
             'browser/renderer_host/test/render_view_host_manager_browsertest.cc',
           ],

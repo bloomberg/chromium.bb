@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/cert_store.h"
+#include "content/browser/cert_store.h"
 
 #include <algorithm>
 #include <functional>
 
 #include "base/stl_util-inl.h"
-#include "chrome/browser/renderer_host/render_process_host.h"
-#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/common/notification_service.h"
+#include "content/browser/renderer_host/render_process_host.h"
+#include "content/browser/renderer_host/render_view_host.h"
 
 template <typename T>
 struct MatchSecond {

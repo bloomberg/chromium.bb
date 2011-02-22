@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chrome_blob_storage_context.h"
+#include "content/browser/chrome_blob_storage_context.h"
 
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "webkit/blob/blob_storage_controller.h"

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/certificate_viewer.h"
+#include "content/browser/certificate_viewer.h"
 
-#include "chrome/browser/cert_store.h"
+#include "content/browser/cert_store.h"
 
 void ShowCertificateViewerByID(gfx::NativeWindow parent, int cert_id) {
   scoped_refptr<net::X509Certificate> cert;

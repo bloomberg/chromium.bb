@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browser_child_process_host.h"
+#include "content/browser/browser_child_process_host.h"
 
 #include "base/command_line.h"
 #include "base/file_path.h"
@@ -14,7 +14,6 @@
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "chrome/app/breakpad_mac.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
@@ -24,6 +23,7 @@
 #include "chrome/common/process_watcher.h"
 #include "chrome/common/result_codes.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "content/browser/browser_thread.h"
 
 #if defined(OS_LINUX)
 #include "base/linux_util.h"

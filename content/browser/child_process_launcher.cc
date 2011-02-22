@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/child_process_launcher.h"
+#include "content/browser/child_process_launcher.h"
 
 #include <utility>  // For std::pair.
 
@@ -11,11 +11,11 @@
 #include "base/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/common/chrome_descriptors.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/process_watcher.h"
 #include "chrome/common/result_codes.h"
+#include "content/browser/browser_thread.h"
 
 #if defined(OS_WIN)
 #include "base/file_path.h"
