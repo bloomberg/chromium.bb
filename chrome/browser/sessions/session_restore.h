@@ -52,7 +52,10 @@ class SessionRestore {
   // created, even if there is an error in restoring.
   //
   // If urls_to_open is non-empty, a tab is added for each of the URLs.
-  static void RestoreSessionSynchronously(
+  //
+  // Returns the last active Browser (which may have been created by the act of
+  // restoring).
+  static Browser* RestoreSessionSynchronously(
       Profile* profile,
       const std::vector<GURL>& urls_to_open);
 

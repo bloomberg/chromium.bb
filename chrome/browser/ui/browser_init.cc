@@ -843,7 +843,8 @@ void BrowserInit::LaunchWithProfile::ProcessLaunchURLs(
   else if (!command_line_.HasSwitch(switches::kOpenInNewWindow))
     browser = BrowserList::GetLastActiveWithProfile(profile_);
 
-  OpenURLsInBrowser(browser, process_startup, adjust_urls);
+  browser = OpenURLsInBrowser(browser, process_startup, adjust_urls);
+  AddInfoBarsIfNecessary(browser);
 }
 
 bool BrowserInit::LaunchWithProfile::ProcessStartupURLs(
@@ -868,7 +869,9 @@ bool BrowserInit::LaunchWithProfile::ProcessStartupURLs(
       // infobar.
       return false;
     }
-    SessionRestore::RestoreSessionSynchronously(profile_, urls_to_open);
+    Browser* browser =
+        SessionRestore::RestoreSessionSynchronously(profile_, urls_to_open);
+    AddInfoBarsIfNecessary(browser);
     return true;
   }
 
@@ -888,7 +891,8 @@ bool BrowserInit::LaunchWithProfile::ProcessStartupURLs(
   if (tabs.empty())
     return false;
 
-  OpenTabsInBrowser(NULL, true, tabs);
+  Browser* browser = OpenTabsInBrowser(NULL, true, tabs);
+  AddInfoBarsIfNecessary(browser);
   return true;
 }
 
@@ -953,11 +957,6 @@ Browser* BrowserInit::LaunchWithProfile::OpenTabsInBrowser(
     params.extension_app_id = tabs[i].app_id;
     browser::Navigate(&params);
 
-    if (profile_ && first_tab && process_startup) {
-      AddCrashedInfoBarIfNecessary(params.target_contents->tab_contents());
-      AddBadFlagsInfoBarIfNecessary(params.target_contents->tab_contents());
-    }
-
     first_tab = false;
   }
   browser->window()->Show();
@@ -966,6 +965,15 @@ Browser* BrowserInit::LaunchWithProfile::OpenTabsInBrowser(
   browser->GetSelectedTabContents()->view()->SetInitialFocus();
 
   return browser;
+}
+
+void BrowserInit::LaunchWithProfile::AddInfoBarsIfNecessary(Browser* browser) {
+  if (!browser || !profile_ || browser->tab_count() == 0)
+    return;
+
+  TabContents* tab_contents = browser->GetSelectedTabContents();
+  AddCrashedInfoBarIfNecessary(tab_contents);
+  AddBadFlagsInfoBarIfNecessary(tab_contents);
 }
 
 void BrowserInit::LaunchWithProfile::AddCrashedInfoBarIfNecessary(

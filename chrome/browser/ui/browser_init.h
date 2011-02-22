@@ -161,6 +161,9 @@ class BrowserInit {
     // new browser.
     bool ProcessStartupURLs(const std::vector<GURL>& urls_to_open);
 
+    // Adds any startup infobars to the selected tab of the given browser.
+    void AddInfoBarsIfNecessary(Browser* browser);
+
     // If the last session didn't exit cleanly and tab is a web contents tab,
     // an infobar is added allowing the user to restore the last session.
     void AddCrashedInfoBarIfNecessary(TabContents* tab);

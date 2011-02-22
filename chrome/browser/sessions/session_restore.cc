@@ -420,7 +420,7 @@ class SessionRestoreImpl : public NotificationObserver {
         restore_started_(base::TimeTicks::Now()) {
   }
 
-  void Restore() {
+  Browser* Restore() {
     SessionService* session_service = profile_->GetSessionService();
     DCHECK(session_service);
     SessionService::SessionCallback* callback =
@@ -432,15 +432,17 @@ class SessionRestoreImpl : public NotificationObserver {
       MessageLoop::current()->SetNestableTasksAllowed(true);
       MessageLoop::current()->Run();
       MessageLoop::current()->SetNestableTasksAllowed(old_state);
-      ProcessSessionWindows(&windows_);
+      Browser* browser = ProcessSessionWindows(&windows_);
       delete this;
-      return;
+      return browser;
     }
 
     if (browser_) {
       registrar_.Add(this, NotificationType::BROWSER_CLOSED,
                      Source<Browser>(browser_));
     }
+
+    return browser_;
   }
 
   // Restore window(s) from a foreign session.
@@ -514,9 +516,12 @@ class SessionRestoreImpl : public NotificationObserver {
   //
   // If successful, this begins loading tabs and deletes itself when all tabs
   // have been loaded.
-  void FinishedTabCreation(bool succeeded, bool created_tabbed_browser) {
+  //
+  // Returns the Browser that was created, if any.
+  Browser* FinishedTabCreation(bool succeeded, bool created_tabbed_browser) {
+    Browser* browser = NULL;
     if (!created_tabbed_browser && always_create_tabbed_browser_) {
-      Browser* browser = Browser::Create(profile_);
+      browser = Browser::Create(profile_);
       if (urls_to_open_.empty()) {
         // No tab browsers were created and no URLs were supplied on the command
         // line. Add an empty URL, which is treated as opening the users home
@@ -540,6 +545,8 @@ class SessionRestoreImpl : public NotificationObserver {
       // object it is notifying.
       MessageLoop::current()->DeleteSoon(FROM_HERE, this);
     }
+
+    return browser;
   }
 
   void OnGotSession(SessionService::Handle handle,
@@ -554,11 +561,10 @@ class SessionRestoreImpl : public NotificationObserver {
     ProcessSessionWindows(windows);
   }
 
-  void ProcessSessionWindows(std::vector<SessionWindow*>* windows) {
+  Browser* ProcessSessionWindows(std::vector<SessionWindow*>* windows) {
     if (windows->empty()) {
       // Restore was unsuccessful.
-      FinishedTabCreation(false, false);
-      return;
+      return FinishedTabCreation(false, false);
     }
 
     StartTabCreation();
@@ -613,7 +619,10 @@ class SessionRestoreImpl : public NotificationObserver {
     // If last_browser is NULL and urls_to_open_ is non-empty,
     // FinishedTabCreation will create a new TabbedBrowser and add the urls to
     // it.
-    FinishedTabCreation(true, has_tabbed_browser);
+    Browser* finished_browser = FinishedTabCreation(true, has_tabbed_browser);
+    if (finished_browser)
+      last_browser = finished_browser;
+    return last_browser;
   }
 
   void RestoreTabsToBrowser(const SessionWindow& window,
@@ -761,12 +770,12 @@ class SessionRestoreImpl : public NotificationObserver {
 
 // SessionRestore -------------------------------------------------------------
 
-static void Restore(Profile* profile,
-                    Browser* browser,
-                    bool synchronous,
-                    bool clobber_existing_window,
-                    bool always_create_tabbed_browser,
-                    const std::vector<GURL>& urls_to_open) {
+static Browser* Restore(Profile* profile,
+                        Browser* browser,
+                        bool synchronous,
+                        bool clobber_existing_window,
+                        bool always_create_tabbed_browser,
+                        const std::vector<GURL>& urls_to_open) {
 #if defined(OS_CHROMEOS)
   chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
       "SessionRestoreStarted", false);
@@ -777,7 +786,7 @@ static void Restore(Profile* profile,
   profile = profile->GetOriginalProfile();
   if (!profile->GetSessionService()) {
     NOTREACHED();
-    return;
+    return NULL;
   }
   restoring = true;
   profile->set_restored_last_session(true);
@@ -786,7 +795,7 @@ static void Restore(Profile* profile,
       new SessionRestoreImpl(profile, browser, synchronous,
                              clobber_existing_window,
                              always_create_tabbed_browser, urls_to_open);
-  restorer->Restore();
+  return restorer->Restore();
 }
 
 // static
@@ -822,10 +831,10 @@ void SessionRestore::RestoreForeignSessionTab(Profile* profile,
 }
 
 // static
-void SessionRestore::RestoreSessionSynchronously(
+Browser* SessionRestore::RestoreSessionSynchronously(
     Profile* profile,
     const std::vector<GURL>& urls_to_open) {
-  Restore(profile, NULL, true, false, true, urls_to_open);
+  return Restore(profile, NULL, true, false, true, urls_to_open);
 }
 
 // static
