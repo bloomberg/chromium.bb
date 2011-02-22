@@ -69,7 +69,7 @@ function getAppsCallback(data) {
   }
 
   if (!data.showLauncher)
-    appsSection.classList.add('disabled');
+    hideSection(Section.APPS);
   else
     appsSection.classList.remove('disabled');
 
