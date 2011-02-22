@@ -106,8 +106,6 @@
         'browser/renderer_host/x509_user_cert_resource_handler.h',
         'browser/site_instance.cc',
         'browser/site_instance.h',
-        'browser/tab_contents/background_contents.cc',
-        'browser/tab_contents/background_contents.h',
         'browser/tab_contents/constrained_window.h',
         'browser/tab_contents/infobar_delegate.cc',
         'browser/tab_contents/infobar_delegate.h',

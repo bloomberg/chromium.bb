@@ -2127,6 +2127,8 @@
         'browser/sync/token_migrator.h',
         'browser/tab_closeable_state_watcher.cc',
         'browser/tab_closeable_state_watcher.h',
+        'browser/tab_contents/background_contents.cc',
+        'browser/tab_contents/background_contents.h',
         'browser/tab_contents/infobar_delegate.cc',
         'browser/tab_contents/infobar_delegate.h',
         'browser/tab_contents/popup_menu_helper_mac.h',
