@@ -9,6 +9,7 @@
 #include "chrome/test/webdriver/session.h"
 #include "chrome/test/webdriver/commands/response.h"
 #include "ui/base/events.h"
+#include "ui/gfx/point.h"
 
 namespace webdriver {
 

@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "base/file_path.h"
 #include "base/singleton.h"
 #include "base/synchronization/lock.h"
 #include "chrome/test/webdriver/session.h"
@@ -32,7 +33,9 @@ class SessionManager {
 
   Session* GetSession(const std::string& id) const;
 
-  void set_port(const std::string& port) { port_ = port; }
+  void set_port(const std::string& port);
+  void set_chrome_dir(const FilePath& chrome_dir);
+  FilePath chrome_dir() const;
 
  private:
   SessionManager();
@@ -42,6 +45,7 @@ class SessionManager {
   std::map<std::string, Session*> map_;
   mutable base::Lock map_lock_;
   std::string port_;
+  FilePath chrome_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionManager);
 };

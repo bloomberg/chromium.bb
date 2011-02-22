@@ -65,6 +65,18 @@ Session* SessionManager::GetSession(const std::string& id) const {
   return it->second;
 }
 
+void SessionManager::set_port(const std::string& port) {
+  port_ = port;
+}
+
+void SessionManager::set_chrome_dir(const FilePath& chrome_dir) {
+  chrome_dir_ = chrome_dir;
+}
+
+FilePath SessionManager::chrome_dir() const {
+  return chrome_dir_;
+}
+
 SessionManager::SessionManager() : port_("") {}
 
 SessionManager::~SessionManager() {}

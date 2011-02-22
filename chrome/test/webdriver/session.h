@@ -11,9 +11,12 @@
 
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
+#include "base/threading/thread.h"
 #include "chrome/test/webdriver/automation.h"
 #include "chrome/test/webdriver/error_codes.h"
 
+class DictionaryValue;
+class FilePath;
 class GURL;
 class ListValue;
 class Value;
@@ -32,8 +35,6 @@ namespace webdriver {
 // This object creates the chrome instance and keeps track of the
 // state necessary to control the chrome browser created.
 // A session manages its own lifetime.
-// TODO(phajdan.jr):  Abstract UITestBase classes, see:
-// http://code.google.com/p/chromium/issues/detail?id=56865
 class Session {
  public:
   // Adds this |Session| to the |SessionManager|. The session manages its own
@@ -42,9 +43,11 @@ class Session {
   // Removes this |Session| from the |SessionManager|.
   ~Session();
 
-  // Starts the session thread and a new browser. Returns true on
-  // success. On failure, the session will delete itself and return false.
-  bool Init();
+  // Starts the session thread and a new browser, using the exe found in
+  // |browser_dir|. If |browser_dir| is empty, it will search in all the default
+  // locations. Returns true on success. On failure, the session will delete
+  // itself and return false.
+  bool Init(const FilePath& browser_dir);
 
   // Terminates this session and deletes itself.
   void Terminate();
@@ -139,7 +142,7 @@ class Session {
   void RunSessionTaskOnSessionThread(
       Task* task,
       base::WaitableEvent* done_event);
-  void InitOnSessionThread(bool* success);
+  void InitOnSessionThread(const FilePath& browser_dir, bool* success);
   void TerminateOnSessionThread();
   void SendKeysOnSessionThread(const string16& keys, bool* success);
   ErrorCode SwitchToFrameWithJavaScriptLocatedFrame(

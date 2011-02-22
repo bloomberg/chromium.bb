@@ -11,12 +11,14 @@
 
 #include "base/task.h"
 #include "base/ref_counted.h"
-#include "base/scoped_temp_dir.h"
+#include "base/scoped_ptr.h"
 #include "chrome/common/automation_constants.h"
-#include "chrome/test/ui/ui_test.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
+class DictionaryValue;
+class FilePath;
 class GURL;
+class ProxyLauncher;
 class TabProxy;
 
 namespace gfx {
@@ -30,12 +32,7 @@ struct WebKeyEvent {
               ui::KeyboardCode key_code,
               const std::string& unmodified_text,
               const std::string& modified_text,
-              int modifiers)
-      : type(type),
-        key_code(key_code),
-        unmodified_text(unmodified_text),
-        modified_text(modified_text),
-        modifiers(modifiers) {}
+              int modifiers);
 
   automation::KeyEventTypes type;
   ui::KeyboardCode key_code;
@@ -48,15 +45,14 @@ struct WebKeyEvent {
 // This class should be created and accessed on a single thread.
 // Note: All member functions are void because they are invoked
 // by posting a task from NewRunnableMethod.
-// TODO(phajdan.jr):  Abstract UITestBase classes, see:
-// http://code.google.com/p/chromium/issues/detail?id=56865
-class Automation : private UITestBase {
+class Automation {
  public:
   Automation();
   virtual ~Automation();
 
-  // Creates a browser.
-  void Init(bool* success);
+  // Creates a browser, using the exe found in |browser_dir|. If |browser_dir|
+  // is empty, it will search in all the default locations.
+  void Init(const FilePath& browser_dir, bool* success);
 
   // Terminates this session and disconnects its automation proxy. After
   // invoking this method, the Automation can safely be deleted.
@@ -117,10 +113,10 @@ class Automation : private UITestBase {
   typedef std::map<int, scoped_refptr<TabProxy> > TabIdMap;
   TabProxy* GetTabById(int tab_id);
 
+  scoped_ptr<ProxyLauncher> launcher_;
   // Map from tab ID to |TabProxy|. The tab ID is simply the |AutomationHandle|
   // for the proxy.
   TabIdMap tab_id_map_;
-  ScopedTempDir profile_dir_;
 
   bool SendJSONRequest(
       int tab_id, const DictionaryValue& dict, std::string* reply);

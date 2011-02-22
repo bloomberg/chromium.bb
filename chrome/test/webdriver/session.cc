@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
@@ -16,6 +17,7 @@
 #include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/test/test_timeouts.h"
@@ -46,12 +48,13 @@ Session::~Session() {
   SessionManager::GetInstance()->Remove(id_);
 }
 
-bool Session::Init() {
+bool Session::Init(const FilePath& browser_dir) {
   bool success = false;
   if (thread_.Start()) {
     RunSessionTask(NewRunnableMethod(
         this,
         &Session::InitOnSessionThread,
+        browser_dir,
         &success));
   } else {
     LOG(ERROR) << "Cannot start session thread";
@@ -480,9 +483,9 @@ void Session::RunSessionTaskOnSessionThread(Task* task,
   done_event->Signal();
 }
 
-void Session::InitOnSessionThread(bool* success) {
+void Session::InitOnSessionThread(const FilePath& browser_dir, bool* success) {
   automation_.reset(new Automation());
-  automation_->Init(success);
+  automation_->Init(browser_dir, success);
   if (!*success)
     return;
 

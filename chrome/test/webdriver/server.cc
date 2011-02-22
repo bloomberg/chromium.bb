@@ -4,18 +4,18 @@
 
 #include <signal.h>
 #include <stdlib.h>
-#ifndef _WIN32
-#include <sys/time.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#else
-#include <time.h>
+
+#if defined(OS_WIN)
+#include <windows.h>
 #endif
+
 #include <iostream>
 #include <fstream>
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
+#include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
@@ -47,6 +47,15 @@
 #include "chrome/test/webdriver/commands/url_command.h"
 #include "chrome/test/webdriver/commands/webelement_commands.h"
 #include "third_party/mongoose/mongoose.h"
+
+#if defined(OS_WIN)
+#include <time.h>
+#elif defined(OS_POSIX)
+#include <errno.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#endif
 
 // Make sure we have ho zombies from CGIs.
 static void
@@ -214,16 +223,30 @@ int main(int argc, char *argv[]) {
   // Parse command line flags.
   std::string port = "9515";
   std::string root;
+  FilePath chrome_dir;
   if (cmd_line->HasSwitch("port"))
     port = cmd_line->GetSwitchValueASCII("port");
   // By default, mongoose serves files from the current working directory. The
   // 'root' flag allows the user to specify a different location to serve from.
   if (cmd_line->HasSwitch("root"))
     root = cmd_line->GetSwitchValueASCII("root");
+  if (cmd_line->HasSwitch("chrome-dir"))
+    chrome_dir = cmd_line->GetSwitchValuePath("chrome-dir");
 
-  VLOG(1) << "Using port: " << port;
   webdriver::SessionManager* manager = webdriver::SessionManager::GetInstance();
   manager->set_port(port);
+  if (!chrome_dir.empty()) {
+    if (!file_util::DirectoryExists(chrome_dir)) {
+      std::cout << "Given Chrome directory is inaccessible or does not exist: "
+                << chrome_dir.value() << std::endl;
+#if defined(OS_WIN)
+      return ERROR_PATH_NOT_FOUND;
+#else
+      return ENOENT;
+#endif
+    }
+    manager->set_chrome_dir(chrome_dir);
+  }
 
   // Initialize SHTTPD context.
   // Listen on port 9515 or port specified on command line.
@@ -231,7 +254,11 @@ int main(int argc, char *argv[]) {
   ctx = mg_start();
   if (!SetMongooseOptions(ctx, port, root)) {
     mg_stop(ctx);
-    return 1;
+#if defined(OS_WIN)
+    return WSAEADDRINUSE;
+#else
+    return EADDRINUSE;
+#endif
   }
 
   webdriver::InitCallbacks(ctx, &shutdown_event);
@@ -243,6 +270,9 @@ int main(int argc, char *argv[]) {
 
   if (root.length()) {
     VLOG(1) << "Serving files from the current working directory";
+  }
+  if (!chrome_dir.empty()) {
+    VLOG(1) << "Using Chrome inside directory: " << chrome_dir.value();
   }
 
   // Run until we receive command to shutdown.

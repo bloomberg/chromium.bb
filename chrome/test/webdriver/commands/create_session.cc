@@ -7,6 +7,7 @@
 #include <sstream>
 #include <string>
 
+#include "base/file_path.h"
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/common/chrome_constants.h"
@@ -25,16 +26,17 @@ CreateSession::~CreateSession() {}
 bool CreateSession::DoesPost() { return true; }
 
 void CreateSession::ExecutePost(Response* const response) {
+  SessionManager* session_manager = SessionManager::GetInstance();
+
   // Session manages its own liftime, so do not call delete.
   Session* session = new Session();
-  if (!session->Init()) {
+  if (!session->Init(session_manager->chrome_dir())) {
     SET_WEBDRIVER_ERROR(response,
                         "Failed to initialize session",
                         kInternalServerError);
     return;
   }
 
-  SessionManager* session_manager = SessionManager::GetInstance();
   VLOG(1) << "Created session " << session->id();
   std::ostringstream stream;
   stream << "http://" << session_manager->GetAddress() << "/session/"
