@@ -68,6 +68,18 @@ bool IsPluginBuiltInFlash(const CommandLine& cmd_line) {
   return (path.BaseName() == FilePath(L"gcswf32.dll"));
 }
 
+// Before we lock down the flash sandbox, we need to activate
+// the IME machinery. After lock down it seems it is unable
+// to start. Note that we leak the IME context on purpose.
+int PreloadIMEForFlash() {
+  HIMC imc = ::ImmCreateContext();
+  if (!imc)
+    return 0;
+  if (::ImmGetOpenStatus(imc))
+    return 1;
+  return 2;
+}
+
 #endif
 
 // main() routine for running as the plugin process.
@@ -133,6 +145,8 @@ int PluginMain(const MainFunctionParams& parameters) {
       // start elevated and it will call DelayedLowerToken(0) when it's ready.
       if (IsPluginBuiltInFlash(parsed_command_line)) {
         DVLOG(1) << "Sandboxing flash";
+        if (!PreloadIMEForFlash())
+          DVLOG(1) << "IME preload failed";
         DelayedLowerToken(target_services);
       } else {
         target_services->LowerToken();
