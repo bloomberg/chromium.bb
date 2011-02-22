@@ -2301,6 +2301,7 @@
         'browser/ui/cocoa/bookmarks/bookmark_menu_bridge.mm',
         'browser/ui/cocoa/bookmarks/bookmark_menu_cocoa_controller.h',
         'browser/ui/cocoa/bookmarks/bookmark_menu_cocoa_controller.mm',
+        'browser/ui/cocoa/bookmarks/bookmark_model_observer_for_cocoa.mm',
         'browser/ui/cocoa/bookmarks/bookmark_model_observer_for_cocoa.h',
         'browser/ui/cocoa/bookmarks/bookmark_name_folder_controller.h',
         'browser/ui/cocoa/bookmarks/bookmark_name_folder_controller.mm',

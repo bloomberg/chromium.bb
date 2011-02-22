@@ -41,46 +41,22 @@ class BookmarkModelObserverForCocoa : public BookmarkModelObserver {
   BookmarkModelObserverForCocoa(const BookmarkNode* node,
                                 BookmarkModel* model,
                                 NSObject* object,
-                                SEL selector) {
-    DCHECK(model);
-    node_ = node;
-    model_ = model;
-    object_ = object;
-    selector_ = selector;
-    model_->AddObserver(this);
-  }
-  virtual ~BookmarkModelObserverForCocoa() {
-    model_->RemoveObserver(this);
-  }
+                                SEL selector);
+  virtual ~BookmarkModelObserverForCocoa();
 
-  virtual void BookmarkModelBeingDeleted(BookmarkModel* model) {
-    Notify();
-  }
+  virtual void BookmarkModelBeingDeleted(BookmarkModel* model);
   virtual void BookmarkNodeMoved(BookmarkModel* model,
                                  const BookmarkNode* old_parent,
                                  int old_index,
                                  const BookmarkNode* new_parent,
-                                 int new_index) {
-    // Editors often have a tree of parents, so movement of folders
-    // must cause a cancel.
-      Notify();
-  }
+                                 int new_index);
   virtual void BookmarkNodeRemoved(BookmarkModel* model,
                                    const BookmarkNode* parent,
                                    int old_index,
-                                   const BookmarkNode* node) {
-    // See comment in BookmarkNodeMoved.
-    Notify();
-  }
+                                   const BookmarkNode* node);
   virtual void BookmarkNodeChanged(BookmarkModel* model,
-                                   const BookmarkNode* node) {
-    if ((node_ == node) || (!node_))
-      Notify();
-  }
-  virtual void BookmarkImportBeginning(BookmarkModel* model) {
-    // Be conservative.
-    Notify();
-  }
+                                   const BookmarkNode* node);
+  virtual void BookmarkImportBeginning(BookmarkModel* model);
 
   // Some notifications we don't care about, but by being pure virtual
   // in the base class we must implement them.
@@ -106,9 +82,7 @@ class BookmarkModelObserverForCocoa : public BookmarkModelObserver {
   NSObject* object_; // Weak, like a delegate.
   SEL selector_;
 
-  void Notify() {
-    [object_ performSelector:selector_ withObject:nil];
-  }
+  void Notify();
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkModelObserverForCocoa);
 };

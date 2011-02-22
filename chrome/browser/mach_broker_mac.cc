@@ -128,6 +128,8 @@ MachBroker* MachBroker::GetInstance() {
 MachBroker::MachBroker() : listener_thread_started_(false) {
 }
 
+MachBroker::~MachBroker() {}
+
 void MachBroker::PrepareForFork() {
   if (!listener_thread_started_) {
     listener_thread_started_ = true;

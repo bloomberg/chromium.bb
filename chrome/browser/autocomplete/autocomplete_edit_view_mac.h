@@ -35,8 +35,8 @@ class AutocompleteEditViewMac : public AutocompleteEditView,
   virtual ~AutocompleteEditViewMac();
 
   // Implement the AutocompleteEditView interface.
-  virtual AutocompleteEditModel* model() { return model_.get(); }
-  virtual const AutocompleteEditModel* model() const { return model_.get(); }
+  virtual AutocompleteEditModel* model();
+  virtual const AutocompleteEditModel* model() const;
 
   virtual void SaveStateToTab(TabContents* tab);
   virtual void Update(const TabContents* tab_for_state_restoring);

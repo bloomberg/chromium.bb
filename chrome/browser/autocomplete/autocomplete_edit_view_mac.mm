@@ -207,6 +207,14 @@ AutocompleteEditViewMac::~AutocompleteEditViewMac() {
   [field_ setObserver:NULL];
 }
 
+AutocompleteEditModel* AutocompleteEditViewMac::model() {
+  return model_.get();
+}
+
+const AutocompleteEditModel* AutocompleteEditViewMac::model() const {
+  return model_.get();
+}
+
 void AutocompleteEditViewMac::SaveStateToTab(TabContents* tab) {
   DCHECK(tab);
 

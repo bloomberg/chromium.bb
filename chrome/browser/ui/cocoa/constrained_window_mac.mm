@@ -9,7 +9,18 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "third_party/GTM/AppKit/GTMWindowSheetController.h"
 
-ConstrainedWindowMacDelegate::~ConstrainedWindowMacDelegate() {}
+ConstrainedWindowMacDelegateSystemSheet::
+ConstrainedWindowMacDelegateSystemSheet(id delegate, SEL didEndSelector)
+    : systemSheet_(nil),
+      delegate_([delegate retain]),
+      didEndSelector_(didEndSelector) {}
+
+ConstrainedWindowMacDelegateSystemSheet::
+    ~ConstrainedWindowMacDelegateSystemSheet() {}
+
+void ConstrainedWindowMacDelegateSystemSheet::set_sheet(id sheet) {
+  systemSheet_.reset([sheet retain]);
+}
 
 NSArray* ConstrainedWindowMacDelegateSystemSheet::GetSheetParameters(
     id delegate,
@@ -29,6 +40,37 @@ void ConstrainedWindowMacDelegateSystemSheet::RunSheet(
   [sheetController beginSystemSheet:systemSheet_
                        modalForView:view
                      withParameters:params];
+}
+
+ConstrainedWindowMacDelegateCustomSheet::
+ConstrainedWindowMacDelegateCustomSheet()
+    : customSheet_(nil),
+      delegate_(nil),
+      didEndSelector_(NULL) {}
+
+ConstrainedWindowMacDelegateCustomSheet::
+ConstrainedWindowMacDelegateCustomSheet(id delegate, SEL didEndSelector)
+    : customSheet_(nil),
+      delegate_([delegate retain]),
+      didEndSelector_(didEndSelector) {}
+
+ConstrainedWindowMacDelegateCustomSheet::
+~ConstrainedWindowMacDelegateCustomSheet() {}
+
+void ConstrainedWindowMacDelegateCustomSheet::init(NSWindow* sheet,
+                                                   id delegate,
+                                                   SEL didEndSelector) {
+    DCHECK(!delegate_.get());
+    DCHECK(!didEndSelector_);
+    customSheet_.reset([sheet retain]);
+    delegate_.reset([delegate retain]);
+    didEndSelector_ = didEndSelector;
+    DCHECK(delegate_.get());
+    DCHECK(didEndSelector_);
+  }
+
+void ConstrainedWindowMacDelegateCustomSheet::set_sheet(NSWindow* sheet) {
+  customSheet_.reset([sheet retain]);
 }
 
 void ConstrainedWindowMacDelegateCustomSheet::RunSheet(

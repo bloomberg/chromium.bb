@@ -37,19 +37,19 @@ class PasswordStoreMac : public PasswordStore {
   virtual void ScheduleTask(Task* task);
 
  private:
-  void ReportMetricsImpl();
-  void AddLoginImpl(const webkit_glue::PasswordForm& form);
-  void UpdateLoginImpl(const webkit_glue::PasswordForm& form);
-  void RemoveLoginImpl(const webkit_glue::PasswordForm& form);
-  void RemoveLoginsCreatedBetweenImpl(const base::Time& delete_begin,
-                                      const base::Time& delete_end);
-  void GetLoginsImpl(GetLoginsRequest* request,
-                     const webkit_glue::PasswordForm& form);
-  void GetAutofillableLoginsImpl(GetLoginsRequest* request);
-  void GetBlacklistLoginsImpl(GetLoginsRequest* request);
-  bool FillAutofillableLogins(
+  virtual void ReportMetricsImpl();
+  virtual void AddLoginImpl(const webkit_glue::PasswordForm& form);
+  virtual void UpdateLoginImpl(const webkit_glue::PasswordForm& form);
+  virtual void RemoveLoginImpl(const webkit_glue::PasswordForm& form);
+  virtual void RemoveLoginsCreatedBetweenImpl(const base::Time& delete_begin,
+                                              const base::Time& delete_end);
+  virtual void GetLoginsImpl(GetLoginsRequest* request,
+                             const webkit_glue::PasswordForm& form);
+  virtual void GetAutofillableLoginsImpl(GetLoginsRequest* request);
+  virtual void GetBlacklistLoginsImpl(GetLoginsRequest* request);
+  virtual bool FillAutofillableLogins(
       std::vector<webkit_glue::PasswordForm*>* forms);
-  bool FillBlacklistLogins(
+  virtual bool FillBlacklistLogins(
       std::vector<webkit_glue::PasswordForm*>* forms);
 
   // Adds the given form to the Keychain if it's something we want to store

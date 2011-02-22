@@ -179,6 +179,8 @@ RWHVMEditCommandHelper::RWHVMEditCommandHelper() {
   }
 }
 
+RWHVMEditCommandHelper::~RWHVMEditCommandHelper() {}
+
 // Dynamically adds Selectors to the aformentioned class.
 void RWHVMEditCommandHelper::AddEditingSelectorsToClass(Class klass) {
   for (size_t i = 0; i < arraysize(kEditCommands); ++i) {

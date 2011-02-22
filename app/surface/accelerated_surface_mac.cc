@@ -19,6 +19,8 @@ AcceleratedSurface::AcceleratedSurface()
       depth_stencil_renderbuffer_(0) {
 }
 
+AcceleratedSurface::~AcceleratedSurface() {}
+
 bool AcceleratedSurface::Initialize(gfx::GLContext* share_context,
                                     bool allocate_fbo) {
   allocate_fbo_ = allocate_fbo;

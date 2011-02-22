@@ -32,6 +32,7 @@ class TableRowNSImageCache {
 
   // |model| must outlive the cache.
   explicit TableRowNSImageCache(Table* model);
+  ~TableRowNSImageCache();
 
   // Lazily converts the image at the given row and caches it in |icon_images_|.
   NSImage* GetImageForRow(int row);

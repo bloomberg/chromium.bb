@@ -34,7 +34,7 @@ class Rect;
 class AcceleratedSurface {
  public:
   AcceleratedSurface();
-  virtual ~AcceleratedSurface() { }
+  virtual ~AcceleratedSurface();
 
   // Set up internal buffers. |share_context|, if non-NULL, is a context
   // with which the internally created OpenGL context shares textures and

@@ -17,6 +17,8 @@ TableRowNSImageCache::TableRowNSImageCache(Table* model)
   [icon_images_ setCount:count];
 }
 
+TableRowNSImageCache::~TableRowNSImageCache() {}
+
 void TableRowNSImageCache::OnModelChanged() {
   int count = model_->RowCount();
   [icon_images_ setCount:0];

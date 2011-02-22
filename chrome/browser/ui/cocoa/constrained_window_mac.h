@@ -24,8 +24,8 @@ class TabContents;
 // directly.
 class ConstrainedWindowMacDelegate {
  public:
-  ConstrainedWindowMacDelegate() : is_sheet_open_(false) { }
-  virtual ~ConstrainedWindowMacDelegate();
+  ConstrainedWindowMacDelegate() : is_sheet_open_(false) {}
+  virtual ~ConstrainedWindowMacDelegate() {}
 
   // Tells the delegate to either delete itself or set up a task to delete
   // itself later. Note that you MUST close the sheet belonging to your delegate
@@ -51,13 +51,11 @@ class ConstrainedWindowMacDelegate {
 class ConstrainedWindowMacDelegateSystemSheet
     : public ConstrainedWindowMacDelegate {
  public:
-  ConstrainedWindowMacDelegateSystemSheet(id delegate, SEL didEndSelector)
-    : systemSheet_(nil),
-      delegate_([delegate retain]),
-      didEndSelector_(didEndSelector) { }
+  ConstrainedWindowMacDelegateSystemSheet(id delegate, SEL didEndSelector);
+  virtual ~ConstrainedWindowMacDelegateSystemSheet();
 
  protected:
-  void set_sheet(id sheet) { systemSheet_.reset([sheet retain]); }
+  void set_sheet(id sheet);
   id sheet() { return systemSheet_; }
 
   // Returns an NSArray to be passed as parameters to GTMWindowSheetController.
@@ -83,28 +81,14 @@ class ConstrainedWindowMacDelegateSystemSheet
 class ConstrainedWindowMacDelegateCustomSheet
     : public ConstrainedWindowMacDelegate {
  public:
-  ConstrainedWindowMacDelegateCustomSheet()
-    : customSheet_(nil),
-      delegate_(nil),
-      didEndSelector_(NULL) { }
-
-  ConstrainedWindowMacDelegateCustomSheet(id delegate, SEL didEndSelector)
-    : customSheet_(nil),
-      delegate_([delegate retain]),
-      didEndSelector_(didEndSelector) { }
+  ConstrainedWindowMacDelegateCustomSheet();
+  ConstrainedWindowMacDelegateCustomSheet(id delegate, SEL didEndSelector);
+  ~ConstrainedWindowMacDelegateCustomSheet();
 
  protected:
   // For when you need to delay initalization after the constructor call.
-  void init(NSWindow* sheet, id delegate, SEL didEndSelector) {
-    DCHECK(!delegate_.get());
-    DCHECK(!didEndSelector_);
-    customSheet_.reset([sheet retain]);
-    delegate_.reset([delegate retain]);
-    didEndSelector_ = didEndSelector;
-    DCHECK(delegate_.get());
-    DCHECK(didEndSelector_);
-  }
-  void set_sheet(NSWindow* sheet) { customSheet_.reset([sheet retain]); }
+  void init(NSWindow* sheet, id delegate, SEL didEndSelector);
+  void set_sheet(NSWindow* sheet);
   NSWindow* sheet() { return customSheet_; }
 
  private:
