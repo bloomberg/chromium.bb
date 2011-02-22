@@ -113,13 +113,24 @@ html[dir=rtl] #top {
   padding-right: 0;
 }
 
-.experiment-enabled > td {
-  padding-bottom: 4px;
-  padding-top: 5px;
+/* Disabled experiments display grey text on a grey background.  The title,
+   however, should remain completely legible. */
+.experiment-disabled > td {
+  background: #F0F0F0;
+  color: #A0A0A0;
+}
+
+.experiment-disabled .experiment-name {
+  color: #000;
 }
 
 .experiment {
   border-bottom: 1px solid #cdcdcd;
+}
+
+.experiment td {
+  padding-bottom: 4px;
+  padding-top: 5px;
 }
 
 /* Indent the text related to each experiment. */
@@ -293,7 +304,9 @@ document.addEventListener('DOMContentLoaded', requestFlagsExperimentsData);
       <div jsdisplay="flagsExperiments.length > 0">
       <div class="experiment" jsselect="flagsExperiments">
         <table width="100%" cellpadding="2" cellspacing="0">
-        <tr class="experiment-enabled">
+        <!-- TODO(mkwst): This doesn't work exactly as expected for multivalue
+                          experiments.  See http://crbug.com/73730 -->
+        <tr jsvalues="class:enabled ? 'experiment-enabled' : 'experiment-disabled'">
         <td valign="top">
           <div class="experiment-text">
             <div>
