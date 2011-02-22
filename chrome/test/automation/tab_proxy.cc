@@ -812,7 +812,7 @@ void TabProxy::JavaScriptStressTestControl(int cmd, int param) {
     return;
 
   sender_->Send(new AutomationMsg_JavaScriptStressTestControl(
-      0, handle_, cmd, param));
+      handle_, cmd, param));
 }
 
 void TabProxy::AddObserver(TabProxyDelegate* observer) {

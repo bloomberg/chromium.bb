@@ -153,6 +153,13 @@ class PageLoadTest : public UITest {
     show_window_ = true;
   }
 
+  void EnsureBrowserAndServer() {
+    if (!g_browser_existing) {
+      LaunchBrowserAndServer();
+      g_browser_existing = true;
+    }
+  }
+
   // Load a URL in a browser tab and perform a couple of page down events.
   //   url_string:      The URL to navigate to. Accept URL as std::string here
   //                    because the url may also act as a test id and needs to
@@ -202,10 +209,8 @@ class PageLoadTest : public UITest {
     test_log << "Test Start: ";
     test_log << base::TimeFormatFriendlyDateAndTime(time_now) << std::endl;
 
-    if (!g_browser_existing) {
-      LaunchBrowserAndServer();
-      g_browser_existing = true;
-    }
+    // Make sure the browser is running.
+    EnsureBrowserAndServer();
 
     // Log Browser Launched time.
     time_now = base::Time::Now();
@@ -470,6 +475,9 @@ class PageLoadTest : public UITest {
 
       if (g_start_index <= line_index) {
         if (g_stress_opt || g_stress_deopt) {
+          // Make sure the browser is running to communicate the stress
+          // setting.
+          EnsureBrowserAndServer();
           v8::Testing::StressType stress_type =
               g_stress_opt
                   ? v8::Testing::kStressTypeOpt
