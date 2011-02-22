@@ -461,7 +461,7 @@ string16 SortedDisplayURL::AfterHost() const {
   return display_url_.substr(slash_index + sort_host_.length());
 }
 
-bool ElideString(const std::wstring& input, int max_len, std::wstring* output) {
+bool ElideString(const string16& input, int max_len, string16* output) {
   DCHECK_GE(max_len, 0);
   if (static_cast<int>(input.length()) <= max_len) {
     output->assign(input);
@@ -479,17 +479,17 @@ bool ElideString(const std::wstring& input, int max_len, std::wstring* output) {
       output->assign(input.substr(0, 2));
       break;
     case 3:
-      output->assign(input.substr(0, 1) + L"." +
+      output->assign(input.substr(0, 1) + ASCIIToUTF16(".") +
                      input.substr(input.length() - 1));
       break;
     case 4:
-      output->assign(input.substr(0, 1) + L".." +
+      output->assign(input.substr(0, 1) + ASCIIToUTF16("..") +
                      input.substr(input.length() - 1));
       break;
     default: {
       int rstr_len = (max_len - 3) / 2;
       int lstr_len = rstr_len + ((max_len - 3) % 2);
-      output->assign(input.substr(0, lstr_len) + L"..." +
+      output->assign(input.substr(0, lstr_len) + ASCIIToUTF16("...") +
                      input.substr(input.length() - rstr_len));
       break;
     }

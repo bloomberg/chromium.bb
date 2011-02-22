@@ -123,11 +123,11 @@ ExternalProtocolDialog::ExternalProtocolDialog(TabContents* tab_contents,
       creation_time_(base::TimeTicks::Now()) {
   const int kMaxUrlWithoutSchemeSize = 256;
   const int kMaxCommandSize = 256;
-  std::wstring elided_url_without_scheme;
-  std::wstring elided_command;
-  ui::ElideString(ASCIIToWide(url.possibly_invalid_spec()),
+  string16 elided_url_without_scheme;
+  string16 elided_command;
+  ui::ElideString(ASCIIToUTF16(url.possibly_invalid_spec()),
                   kMaxUrlWithoutSchemeSize, &elided_url_without_scheme);
-  ui::ElideString(command, kMaxCommandSize, &elided_command);
+  ui::ElideString(WideToUTF16Hack(command), kMaxCommandSize, &elided_command);
 
   std::wstring message_text = UTF16ToWide(l10n_util::GetStringFUTF16(
       IDS_EXTERNAL_PROTOCOL_INFORMATION,

@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
 #include "chrome/common/notification_observer.h"
@@ -77,7 +78,9 @@ class JavaScriptAppModalDialog : public AppModalDialog,
   // Accessors
   int dialog_flags() const { return dialog_flags_; }
   std::wstring message_text() const { return message_text_; }
-  std::wstring default_prompt_text() const { return default_prompt_text_; }
+  std::wstring default_prompt_text() const {
+    return UTF16ToWideHack(default_prompt_text_);
+  }
   bool display_suppress_checkbox() const { return display_suppress_checkbox_; }
   bool is_before_unload_dialog() const { return is_before_unload_dialog_; }
 
@@ -109,7 +112,7 @@ class JavaScriptAppModalDialog : public AppModalDialog,
   // Information about the message box is held in the following variables.
   int dialog_flags_;
   std::wstring message_text_;
-  std::wstring default_prompt_text_;
+  string16 default_prompt_text_;
   bool display_suppress_checkbox_;
   bool is_before_unload_dialog_;
   IPC::Message* reply_msg_;

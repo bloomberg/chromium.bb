@@ -191,17 +191,17 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 
       // Elide giant extensions.
       if (extension.length() > kFileNameMaxLength / 2) {
-        std::wstring wide_extension;
-        ui::ElideString(UTF8ToWide(extension), kFileNameMaxLength / 2,
-                        &wide_extension);
-        extension = WideToUTF8(wide_extension);
+        string16 utf16_extension;
+        ui::ElideString(UTF8ToUTF16(extension), kFileNameMaxLength / 2,
+                        &utf16_extension);
+        extension = UTF16ToUTF8(utf16_extension);
       }
 
       // Rebuild the filename.extension.
-      std::wstring rootname = UTF8ToWide(filename.RemoveExtension().value());
+      string16 rootname = UTF8ToUTF16(filename.RemoveExtension().value());
       ui::ElideString(rootname, kFileNameMaxLength - extension.length(),
                       &rootname);
-      std::string new_filename = WideToUTF8(rootname);
+      std::string new_filename = UTF16ToUTF8(rootname);
       if (extension.length())
         new_filename += std::string(".") + extension;
 

@@ -46,7 +46,7 @@ JavaScriptAppModalDialog::JavaScriptAppModalDialog(
   ui::ElideRectangleString(WideToUTF16(message_text),
       kMessageTextMaxRows, kMessageTextMaxCols, &elided_text);
   message_text_ = UTF16ToWide(elided_text);
-  ui::ElideString(default_prompt_text, kDefaultPromptTextSize,
+  ui::ElideString(WideToUTF16Hack(default_prompt_text), kDefaultPromptTextSize,
                   &default_prompt_text_);
 
   DCHECK((tab_contents_ != NULL) != (extension_host_ != NULL));

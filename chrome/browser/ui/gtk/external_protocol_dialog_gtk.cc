@@ -61,21 +61,20 @@ ExternalProtocolDialogGtk::ExternalProtocolDialogGtk(const GURL& url)
   // Construct the message text.
   const int kMaxUrlWithoutSchemeSize = 256;
   const int kMaxCommandSize = 256;
-  std::wstring elided_url_without_scheme;
-  std::wstring elided_command;
-  ui::ElideString(ASCIIToWide(url.possibly_invalid_spec()),
+  string16 elided_url_without_scheme;
+  string16 elided_command;
+  ui::ElideString(ASCIIToUTF16(url.possibly_invalid_spec()),
       kMaxUrlWithoutSchemeSize, &elided_url_without_scheme);
-  ui::ElideString(ASCIIToWide(std::string("xdg-open ") + url.spec()),
+  ui::ElideString(ASCIIToUTF16(std::string("xdg-open ") + url.spec()),
       kMaxCommandSize, &elided_command);
 
   std::string message_text = l10n_util::GetStringFUTF8(
       IDS_EXTERNAL_PROTOCOL_INFORMATION,
       ASCIIToUTF16(url.scheme() + ":"),
-      WideToUTF16(elided_url_without_scheme)) + "\n\n";
+      elided_url_without_scheme) + "\n\n";
 
   message_text += l10n_util::GetStringFUTF8(
-      IDS_EXTERNAL_PROTOCOL_APPLICATION_TO_LAUNCH,
-      WideToUTF16(elided_command)) + "\n\n";
+      IDS_EXTERNAL_PROTOCOL_APPLICATION_TO_LAUNCH, elided_command) + "\n\n";
 
   message_text += l10n_util::GetStringUTF8(IDS_EXTERNAL_PROTOCOL_WARNING);
 

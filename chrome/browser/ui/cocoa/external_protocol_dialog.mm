@@ -61,14 +61,14 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
         IDS_EXTERNAL_PROTOCOL_CANCEL_BUTTON_TEXT)];
 
   const int kMaxUrlWithoutSchemeSize = 256;
-  std::wstring elided_url_without_scheme;
-  ui::ElideString(ASCIIToWide(url_.possibly_invalid_spec()),
+  string16 elided_url_without_scheme;
+  ui::ElideString(ASCIIToUTF16(url_.possibly_invalid_spec()),
                   kMaxUrlWithoutSchemeSize, &elided_url_without_scheme);
 
   NSString* urlString = l10n_util::GetNSStringFWithFixup(
       IDS_EXTERNAL_PROTOCOL_INFORMATION,
       ASCIIToUTF16(url_.scheme() + ":"),
-      WideToUTF16(elided_url_without_scheme));
+      elided_url_without_scheme);
   NSString* appString = l10n_util::GetNSStringFWithFixup(
       IDS_EXTERNAL_PROTOCOL_APPLICATION_TO_LAUNCH,
       appName);

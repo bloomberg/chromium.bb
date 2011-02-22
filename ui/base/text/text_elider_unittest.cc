@@ -16,16 +16,17 @@ namespace ui {
 
 namespace {
 
-const wchar_t kEllipsis[] = L"\x2026";
+// U+2026 in utf8
+const char kEllipsis[] = "\xe2\x80\xa6";
 
 struct Testcase {
   const std::string input;
-  const std::wstring output;
+  const std::string output;
 };
 
 struct FileTestcase {
   const FilePath::StringType input;
-  const std::wstring output;
+  const std::string output;
 };
 
 struct UTF16Testcase {
@@ -45,9 +46,9 @@ void RunTest(Testcase* testcases, size_t num_testcases) {
     const GURL url(testcases[i].input);
     // Should we test with non-empty language list?
     // That's kinda redundant with net_util_unittests.
-    EXPECT_EQ(WideToUTF16(testcases[i].output),
+    EXPECT_EQ(UTF8ToUTF16(testcases[i].output),
               ElideUrl(url, font,
-                       font.GetStringWidth(WideToUTF16(testcases[i].output)),
+                       font.GetStringWidth(UTF8ToUTF16(testcases[i].output)),
                        std::wstring()));
   }
 }
@@ -56,28 +57,28 @@ void RunTest(Testcase* testcases, size_t num_testcases) {
 
 // Test eliding of commonplace URLs.
 TEST(TextEliderTest, TestGeneralEliding) {
-  const std::wstring kEllipsisStr(kEllipsis);
+  const std::string kEllipsisStr(kEllipsis);
   Testcase testcases[] = {
     {"http://www.google.com/intl/en/ads/",
-     L"www.google.com/intl/en/ads/"},
-    {"http://www.google.com/intl/en/ads/", L"www.google.com/intl/en/ads/"},
+     "www.google.com/intl/en/ads/"},
+    {"http://www.google.com/intl/en/ads/", "www.google.com/intl/en/ads/"},
 // TODO(port): make this test case work on mac.
 #if !defined(OS_MACOSX)
     {"http://www.google.com/intl/en/ads/",
-     L"google.com/intl/" + kEllipsisStr + L"/ads/"},
+     "google.com/intl/" + kEllipsisStr + "/ads/"},
 #endif
     {"http://www.google.com/intl/en/ads/",
-     L"google.com/" + kEllipsisStr + L"/ads/"},
-    {"http://www.google.com/intl/en/ads/", L"google.com/" + kEllipsisStr},
-    {"http://www.google.com/intl/en/ads/", L"goog" + kEllipsisStr},
+     "google.com/" + kEllipsisStr + "/ads/"},
+    {"http://www.google.com/intl/en/ads/", "google.com/" + kEllipsisStr},
+    {"http://www.google.com/intl/en/ads/", "goog" + kEllipsisStr},
     {"https://subdomain.foo.com/bar/filename.html",
-     L"subdomain.foo.com/bar/filename.html"},
+     "subdomain.foo.com/bar/filename.html"},
     {"https://subdomain.foo.com/bar/filename.html",
-     L"subdomain.foo.com/" + kEllipsisStr + L"/filename.html"},
+     "subdomain.foo.com/" + kEllipsisStr + "/filename.html"},
     {"http://subdomain.foo.com/bar/filename.html",
-     kEllipsisStr + L"foo.com/" + kEllipsisStr + L"/filename.html"},
+     kEllipsisStr + "foo.com/" + kEllipsisStr + "/filename.html"},
     {"http://www.google.com/intl/en/ads/?aLongQueryWhichIsNotRequired",
-     L"www.google.com/intl/en/ads/?aLongQ" + kEllipsisStr},
+     "www.google.com/intl/en/ads/?aLongQ" + kEllipsisStr},
   };
 
   RunTest(testcases, arraysize(testcases));
@@ -85,37 +86,37 @@ TEST(TextEliderTest, TestGeneralEliding) {
 
 // Test eliding of empty strings, URLs with ports, passwords, queries, etc.
 TEST(TextEliderTest, TestMoreEliding) {
-  const std::wstring kEllipsisStr(kEllipsis);
+  const std::string kEllipsisStr(kEllipsis);
   Testcase testcases[] = {
-    {"http://www.google.com/foo?bar", L"www.google.com/foo?bar"},
-    {"http://xyz.google.com/foo?bar", L"xyz.google.com/foo?" + kEllipsisStr},
-    {"http://xyz.google.com/foo?bar", L"xyz.google.com/foo" + kEllipsisStr},
-    {"http://xyz.google.com/foo?bar", L"xyz.google.com/fo" + kEllipsisStr},
-    {"http://a.b.com/pathname/c?d", L"a.b.com/" + kEllipsisStr + L"/c?d"},
-    {"", L""},
+    {"http://www.google.com/foo?bar", "www.google.com/foo?bar"},
+    {"http://xyz.google.com/foo?bar", "xyz.google.com/foo?" + kEllipsisStr},
+    {"http://xyz.google.com/foo?bar", "xyz.google.com/foo" + kEllipsisStr},
+    {"http://xyz.google.com/foo?bar", "xyz.google.com/fo" + kEllipsisStr},
+    {"http://a.b.com/pathname/c?d", "a.b.com/" + kEllipsisStr + "/c?d"},
+    {"", ""},
     {"http://foo.bar..example.com...hello/test/filename.html",
-     L"foo.bar..example.com...hello/" + kEllipsisStr + L"/filename.html"},
-    {"http://foo.bar../", L"foo.bar.."},
-    {"http://xn--1lq90i.cn/foo", L"\x5317\x4eac.cn/foo"},
+     "foo.bar..example.com...hello/" + kEllipsisStr + "/filename.html"},
+    {"http://foo.bar../", "foo.bar.."},
+    {"http://xn--1lq90i.cn/foo", "\xe5\x8c\x97\xe4\xba\xac.cn/foo"},
     {"http://me:mypass@secrethost.com:99/foo?bar#baz",
-     L"secrethost.com:99/foo?bar#baz"},
-    {"http://me:mypass@ss%xxfdsf.com/foo", L"ss%25xxfdsf.com/foo"},
-    {"mailto:elgoato@elgoato.com", L"mailto:elgoato@elgoato.com"},
-    {"javascript:click(0)", L"javascript:click(0)"},
+     "secrethost.com:99/foo?bar#baz"},
+    {"http://me:mypass@ss%xxfdsf.com/foo", "ss%25xxfdsf.com/foo"},
+    {"mailto:elgoato@elgoato.com", "mailto:elgoato@elgoato.com"},
+    {"javascript:click(0)", "javascript:click(0)"},
     {"https://chess.eecs.berkeley.edu:4430/login/arbitfilename",
-     L"chess.eecs.berkeley.edu:4430/login/arbitfilename"},
+     "chess.eecs.berkeley.edu:4430/login/arbitfilename"},
     {"https://chess.eecs.berkeley.edu:4430/login/arbitfilename",
-     kEllipsisStr + L"berkeley.edu:4430/" + kEllipsisStr + L"/arbitfilename"},
+     kEllipsisStr + "berkeley.edu:4430/" + kEllipsisStr + "/arbitfilename"},
 
     // Unescaping.
     {"http://www/%E4%BD%A0%E5%A5%BD?q=%E4%BD%A0%E5%A5%BD#\xe4\xbd\xa0",
-     L"www/\x4f60\x597d?q=\x4f60\x597d#\x4f60"},
+     "www/\xe4\xbd\xa0\xe5\xa5\xbd?q=\xe4\xbd\xa0\xe5\xa5\xbd#\xe4\xbd\xa0"},
 
     // Invalid unescaping for path. The ref will always be valid UTF-8. We don't
     // bother to do too many edge cases, since these are handled by the escaper
     // unittest.
     {"http://www/%E4%A0%E5%A5%BD?q=%E4%BD%A0%E5%A5%BD#\xe4\xbd\xa0",
-     L"www/%E4%A0%E5%A5%BD?q=\x4f60\x597d#\x4f60"},
+     "www/%E4%A0%E5%A5%BD?q=\xe4\xbd\xa0\xe5\xa5\xbd#\xe4\xbd\xa0"},
   };
 
   RunTest(testcases, arraysize(testcases));
@@ -123,75 +124,75 @@ TEST(TextEliderTest, TestMoreEliding) {
 
 // Test eliding of file: URLs.
 TEST(TextEliderTest, TestFileURLEliding) {
-  const std::wstring kEllipsisStr(kEllipsis);
+  const std::string kEllipsisStr(kEllipsis);
   Testcase testcases[] = {
     {"file:///C:/path1/path2/path3/filename",
-     L"file:///C:/path1/path2/path3/filename"},
+     "file:///C:/path1/path2/path3/filename"},
     {"file:///C:/path1/path2/path3/filename",
-     L"C:/path1/path2/path3/filename"},
+     "C:/path1/path2/path3/filename"},
 // GURL parses "file:///C:path" differently on windows than it does on posix.
 #if defined(OS_WIN)
     {"file:///C:path1/path2/path3/filename",
-     L"C:/path1/path2/" + kEllipsisStr + L"/filename"},
+     "C:/path1/path2/" + kEllipsisStr + "/filename"},
     {"file:///C:path1/path2/path3/filename",
-     L"C:/path1/" + kEllipsisStr + L"/filename"},
+     "C:/path1/" + kEllipsisStr + "/filename"},
     {"file:///C:path1/path2/path3/filename",
-     L"C:/" + kEllipsisStr + L"/filename"},
+     "C:/" + kEllipsisStr + "/filename"},
 #endif
-    {"file://filer/foo/bar/file", L"filer/foo/bar/file"},
-    {"file://filer/foo/bar/file", L"filer/foo/" + kEllipsisStr + L"/file"},
-    {"file://filer/foo/bar/file", L"filer/" + kEllipsisStr + L"/file"},
+    {"file://filer/foo/bar/file", "filer/foo/bar/file"},
+    {"file://filer/foo/bar/file", "filer/foo/" + kEllipsisStr + "/file"},
+    {"file://filer/foo/bar/file", "filer/" + kEllipsisStr + "/file"},
   };
 
   RunTest(testcases, arraysize(testcases));
 }
 
 TEST(TextEliderTest, TestFilenameEliding) {
-  const std::wstring kEllipsisStr(kEllipsis);
+  const std::string kEllipsisStr(kEllipsis);
   const FilePath::StringType kPathSeparator =
       FilePath::StringType().append(1, FilePath::kSeparators[0]);
 
   FileTestcase testcases[] = {
-    {FILE_PATH_LITERAL(""), L""},
-    {FILE_PATH_LITERAL("."), L"."},
-    {FILE_PATH_LITERAL("filename.exe"), L"filename.exe"},
-    {FILE_PATH_LITERAL(".longext"), L".longext"},
-    {FILE_PATH_LITERAL("pie"), L"pie"},
+    {FILE_PATH_LITERAL(""), ""},
+    {FILE_PATH_LITERAL("."), "."},
+    {FILE_PATH_LITERAL("filename.exe"), "filename.exe"},
+    {FILE_PATH_LITERAL(".longext"), ".longext"},
+    {FILE_PATH_LITERAL("pie"), "pie"},
     {FILE_PATH_LITERAL("c:") + kPathSeparator + FILE_PATH_LITERAL("path") +
       kPathSeparator + FILE_PATH_LITERAL("filename.pie"),
-      L"filename.pie"},
+      "filename.pie"},
     {FILE_PATH_LITERAL("c:") + kPathSeparator + FILE_PATH_LITERAL("path") +
       kPathSeparator + FILE_PATH_LITERAL("longfilename.pie"),
-      L"long" + kEllipsisStr + L".pie"},
-    {FILE_PATH_LITERAL("http://path.com/filename.pie"), L"filename.pie"},
+      "long" + kEllipsisStr + ".pie"},
+    {FILE_PATH_LITERAL("http://path.com/filename.pie"), "filename.pie"},
     {FILE_PATH_LITERAL("http://path.com/longfilename.pie"),
-      L"long" + kEllipsisStr + L".pie"},
-    {FILE_PATH_LITERAL("piesmashingtacularpants"), L"pie" + kEllipsisStr},
-    {FILE_PATH_LITERAL(".piesmashingtacularpants"), L".pie" + kEllipsisStr},
-    {FILE_PATH_LITERAL("cheese."), L"cheese."},
+      "long" + kEllipsisStr + ".pie"},
+    {FILE_PATH_LITERAL("piesmashingtacularpants"), "pie" + kEllipsisStr},
+    {FILE_PATH_LITERAL(".piesmashingtacularpants"), ".pie" + kEllipsisStr},
+    {FILE_PATH_LITERAL("cheese."), "cheese."},
     {FILE_PATH_LITERAL("file name.longext"),
-      L"file" + kEllipsisStr + L".longext"},
+      "file" + kEllipsisStr + ".longext"},
     {FILE_PATH_LITERAL("fil ename.longext"),
-      L"fil " + kEllipsisStr + L".longext"},
+      "fil " + kEllipsisStr + ".longext"},
     {FILE_PATH_LITERAL("filename.longext"),
-      L"file" + kEllipsisStr + L".longext"},
+      "file" + kEllipsisStr + ".longext"},
     {FILE_PATH_LITERAL("filename.middleext.longext"),
-      L"filename.mid" + kEllipsisStr + L".longext"}
+      "filename.mid" + kEllipsisStr + ".longext"}
   };
 
   static const gfx::Font font;
   for (size_t i = 0; i < arraysize(testcases); ++i) {
     FilePath filepath(testcases[i].input);
-    string16 expected = WideToUTF16(testcases[i].output);
+    string16 expected = UTF8ToUTF16(testcases[i].output);
     expected = base::i18n::GetDisplayStringInLTRDirectionality(expected);
     EXPECT_EQ(expected, ElideFilename(filepath,
         font,
-        font.GetStringWidth(WideToUTF16(testcases[i].output))));
+        font.GetStringWidth(UTF8ToUTF16(testcases[i].output))));
   }
 }
 
 TEST(TextEliderTest, ElideTextLongStrings) {
-  const string16 kEllipsisStr(WideToUTF16(kEllipsis));
+  const string16 kEllipsisStr = UTF8ToUTF16(kEllipsis);
   string16 data_scheme(UTF8ToUTF16("data:text/plain,"));
   size_t data_scheme_length = data_scheme.length();
 
@@ -299,111 +300,112 @@ TEST(TextEliderTest, SortedDisplayURLCompare) {
 
 TEST(TextEliderTest, ElideString) {
   struct TestData {
-    const wchar_t* input;
+    const char* input;
     int max_len;
     bool result;
-    const wchar_t* output;
+    const char* output;
   } cases[] = {
-    { L"Hello", 0, true, L"" },
-    { L"", 0, false, L"" },
-    { L"Hello, my name is Tom", 1, true, L"H" },
-    { L"Hello, my name is Tom", 2, true, L"He" },
-    { L"Hello, my name is Tom", 3, true, L"H.m" },
-    { L"Hello, my name is Tom", 4, true, L"H..m" },
-    { L"Hello, my name is Tom", 5, true, L"H...m" },
-    { L"Hello, my name is Tom", 6, true, L"He...m" },
-    { L"Hello, my name is Tom", 7, true, L"He...om" },
-    { L"Hello, my name is Tom", 10, true, L"Hell...Tom" },
-    { L"Hello, my name is Tom", 100, false, L"Hello, my name is Tom" }
+    { "Hello", 0, true, "" },
+    { "", 0, false, "" },
+    { "Hello, my name is Tom", 1, true, "H" },
+    { "Hello, my name is Tom", 2, true, "He" },
+    { "Hello, my name is Tom", 3, true, "H.m" },
+    { "Hello, my name is Tom", 4, true, "H..m" },
+    { "Hello, my name is Tom", 5, true, "H...m" },
+    { "Hello, my name is Tom", 6, true, "He...m" },
+    { "Hello, my name is Tom", 7, true, "He...om" },
+    { "Hello, my name is Tom", 10, true, "Hell...Tom" },
+    { "Hello, my name is Tom", 100, false, "Hello, my name is Tom" }
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
-    std::wstring output;
+    string16 output;
     EXPECT_EQ(cases[i].result,
-              ui::ElideString(cases[i].input, cases[i].max_len, &output));
-    EXPECT_EQ(cases[i].output, output);
+              ui::ElideString(UTF8ToUTF16(cases[i].input),
+                              cases[i].max_len, &output));
+    EXPECT_EQ(cases[i].output, UTF16ToUTF8(output));
   }
 }
 
 TEST(TextEliderTest, ElideRectangleString) {
   struct TestData {
-    const wchar_t* input;
+    const char* input;
     int max_rows;
     int max_cols;
     bool result;
-    const wchar_t* output;
+    const char* output;
   } cases[] = {
-    { L"", 0, 0, false, L"" },
-    { L"", 1, 1, false, L"" },
-    { L"Hi, my name is\nTom", 0, 0,  true,  L"..." },
-    { L"Hi, my name is\nTom", 1, 0,  true,  L"\n..." },
-    { L"Hi, my name is\nTom", 0, 1,  true,  L"..." },
-    { L"Hi, my name is\nTom", 1, 1,  true,  L"H\n..." },
-    { L"Hi, my name is\nTom", 2, 1,  true,  L"H\ni\n..." },
-    { L"Hi, my name is\nTom", 3, 1,  true,  L"H\ni\n,\n..." },
-    { L"Hi, my name is\nTom", 4, 1,  true,  L"H\ni\n,\n \n..." },
-    { L"Hi, my name is\nTom", 5, 1,  true,  L"H\ni\n,\n \nm\n..." },
-    { L"Hi, my name is\nTom", 0, 2,  true,  L"..." },
-    { L"Hi, my name is\nTom", 1, 2,  true,  L"Hi\n..." },
-    { L"Hi, my name is\nTom", 2, 2,  true,  L"Hi\n, \n..." },
-    { L"Hi, my name is\nTom", 3, 2,  true,  L"Hi\n, \nmy\n..." },
-    { L"Hi, my name is\nTom", 4, 2,  true,  L"Hi\n, \nmy\n n\n..." },
-    { L"Hi, my name is\nTom", 5, 2,  true,  L"Hi\n, \nmy\n n\nam\n..." },
-    { L"Hi, my name is\nTom", 0, 3,  true,  L"..." },
-    { L"Hi, my name is\nTom", 1, 3,  true,  L"Hi,\n..." },
-    { L"Hi, my name is\nTom", 2, 3,  true,  L"Hi,\n my\n..." },
-    { L"Hi, my name is\nTom", 3, 3,  true,  L"Hi,\n my\n na\n..." },
-    { L"Hi, my name is\nTom", 4, 3,  true,  L"Hi,\n my\n na\nme \n..." },
-    { L"Hi, my name is\nTom", 5, 3,  true,  L"Hi,\n my\n na\nme \nis\n..." },
-    { L"Hi, my name is\nTom", 1, 4,  true,  L"Hi, \n..." },
-    { L"Hi, my name is\nTom", 2, 4,  true,  L"Hi, \nmy n\n..." },
-    { L"Hi, my name is\nTom", 3, 4,  true,  L"Hi, \nmy n\name \n..." },
-    { L"Hi, my name is\nTom", 4, 4,  true,  L"Hi, \nmy n\name \nis\n..." },
-    { L"Hi, my name is\nTom", 5, 4,  false, L"Hi, \nmy n\name \nis\nTom" },
-    { L"Hi, my name is\nTom", 1, 5,  true,  L"Hi, \n..." },
-    { L"Hi, my name is\nTom", 2, 5,  true,  L"Hi, \nmy na\n..." },
-    { L"Hi, my name is\nTom", 3, 5,  true,  L"Hi, \nmy na\nme \n..." },
-    { L"Hi, my name is\nTom", 4, 5,  true,  L"Hi, \nmy na\nme \nis\n..." },
-    { L"Hi, my name is\nTom", 5, 5,  false, L"Hi, \nmy na\nme \nis\nTom" },
-    { L"Hi, my name is\nTom", 1, 6,  true,  L"Hi, \n..." },
-    { L"Hi, my name is\nTom", 2, 6,  true,  L"Hi, \nmy \n..." },
-    { L"Hi, my name is\nTom", 3, 6,  true,  L"Hi, \nmy \nname \n..." },
-    { L"Hi, my name is\nTom", 4, 6,  true,  L"Hi, \nmy \nname \nis\n..." },
-    { L"Hi, my name is\nTom", 5, 6,  false, L"Hi, \nmy \nname \nis\nTom" },
-    { L"Hi, my name is\nTom", 1, 7,  true,  L"Hi, \n..." },
-    { L"Hi, my name is\nTom", 2, 7,  true,  L"Hi, \nmy \n..." },
-    { L"Hi, my name is\nTom", 3, 7,  true,  L"Hi, \nmy \nname \n..." },
-    { L"Hi, my name is\nTom", 4, 7,  true,  L"Hi, \nmy \nname \nis\n..." },
-    { L"Hi, my name is\nTom", 5, 7,  false, L"Hi, \nmy \nname \nis\nTom" },
-    { L"Hi, my name is\nTom", 1, 8,  true,  L"Hi, my \n..." },
-    { L"Hi, my name is\nTom", 2, 8,  true,  L"Hi, my \nname \n..." },
-    { L"Hi, my name is\nTom", 3, 8,  true,  L"Hi, my \nname \nis\n..." },
-    { L"Hi, my name is\nTom", 4, 8,  false, L"Hi, my \nname \nis\nTom" },
-    { L"Hi, my name is\nTom", 1, 9,  true,  L"Hi, my \n..." },
-    { L"Hi, my name is\nTom", 2, 9,  true,  L"Hi, my \nname is\n..." },
-    { L"Hi, my name is\nTom", 3, 9,  false, L"Hi, my \nname is\nTom" },
-    { L"Hi, my name is\nTom", 1, 10, true,  L"Hi, my \n..." },
-    { L"Hi, my name is\nTom", 2, 10, true,  L"Hi, my \nname is\n..." },
-    { L"Hi, my name is\nTom", 3, 10, false, L"Hi, my \nname is\nTom" },
-    { L"Hi, my name is\nTom", 1, 11, true,  L"Hi, my \n..." },
-    { L"Hi, my name is\nTom", 2, 11, true,  L"Hi, my \nname is\n..." },
-    { L"Hi, my name is\nTom", 3, 11, false, L"Hi, my \nname is\nTom" },
-    { L"Hi, my name is\nTom", 1, 12, true,  L"Hi, my \n..." },
-    { L"Hi, my name is\nTom", 2, 12, true,  L"Hi, my \nname is\n..." },
-    { L"Hi, my name is\nTom", 3, 12, false, L"Hi, my \nname is\nTom" },
-    { L"Hi, my name is\nTom", 1, 13, true,  L"Hi, my name \n..." },
-    { L"Hi, my name is\nTom", 2, 13, true,  L"Hi, my name \nis\n..." },
-    { L"Hi, my name is\nTom", 3, 13, false, L"Hi, my name \nis\nTom" },
-    { L"Hi, my name is\nTom", 1, 20, true,  L"Hi, my name is\n..." },
-    { L"Hi, my name is\nTom", 2, 20, false, L"Hi, my name is\nTom" },
-    { L"Hi, my name is Tom",  1, 40, false, L"Hi, my name is Tom" },
+    { "", 0, 0, false, "" },
+    { "", 1, 1, false, "" },
+    { "Hi, my name is\nTom", 0, 0,  true,  "..." },
+    { "Hi, my name is\nTom", 1, 0,  true,  "\n..." },
+    { "Hi, my name is\nTom", 0, 1,  true,  "..." },
+    { "Hi, my name is\nTom", 1, 1,  true,  "H\n..." },
+    { "Hi, my name is\nTom", 2, 1,  true,  "H\ni\n..." },
+    { "Hi, my name is\nTom", 3, 1,  true,  "H\ni\n,\n..." },
+    { "Hi, my name is\nTom", 4, 1,  true,  "H\ni\n,\n \n..." },
+    { "Hi, my name is\nTom", 5, 1,  true,  "H\ni\n,\n \nm\n..." },
+    { "Hi, my name is\nTom", 0, 2,  true,  "..." },
+    { "Hi, my name is\nTom", 1, 2,  true,  "Hi\n..." },
+    { "Hi, my name is\nTom", 2, 2,  true,  "Hi\n, \n..." },
+    { "Hi, my name is\nTom", 3, 2,  true,  "Hi\n, \nmy\n..." },
+    { "Hi, my name is\nTom", 4, 2,  true,  "Hi\n, \nmy\n n\n..." },
+    { "Hi, my name is\nTom", 5, 2,  true,  "Hi\n, \nmy\n n\nam\n..." },
+    { "Hi, my name is\nTom", 0, 3,  true,  "..." },
+    { "Hi, my name is\nTom", 1, 3,  true,  "Hi,\n..." },
+    { "Hi, my name is\nTom", 2, 3,  true,  "Hi,\n my\n..." },
+    { "Hi, my name is\nTom", 3, 3,  true,  "Hi,\n my\n na\n..." },
+    { "Hi, my name is\nTom", 4, 3,  true,  "Hi,\n my\n na\nme \n..." },
+    { "Hi, my name is\nTom", 5, 3,  true,  "Hi,\n my\n na\nme \nis\n..." },
+    { "Hi, my name is\nTom", 1, 4,  true,  "Hi, \n..." },
+    { "Hi, my name is\nTom", 2, 4,  true,  "Hi, \nmy n\n..." },
+    { "Hi, my name is\nTom", 3, 4,  true,  "Hi, \nmy n\name \n..." },
+    { "Hi, my name is\nTom", 4, 4,  true,  "Hi, \nmy n\name \nis\n..." },
+    { "Hi, my name is\nTom", 5, 4,  false, "Hi, \nmy n\name \nis\nTom" },
+    { "Hi, my name is\nTom", 1, 5,  true,  "Hi, \n..." },
+    { "Hi, my name is\nTom", 2, 5,  true,  "Hi, \nmy na\n..." },
+    { "Hi, my name is\nTom", 3, 5,  true,  "Hi, \nmy na\nme \n..." },
+    { "Hi, my name is\nTom", 4, 5,  true,  "Hi, \nmy na\nme \nis\n..." },
+    { "Hi, my name is\nTom", 5, 5,  false, "Hi, \nmy na\nme \nis\nTom" },
+    { "Hi, my name is\nTom", 1, 6,  true,  "Hi, \n..." },
+    { "Hi, my name is\nTom", 2, 6,  true,  "Hi, \nmy \n..." },
+    { "Hi, my name is\nTom", 3, 6,  true,  "Hi, \nmy \nname \n..." },
+    { "Hi, my name is\nTom", 4, 6,  true,  "Hi, \nmy \nname \nis\n..." },
+    { "Hi, my name is\nTom", 5, 6,  false, "Hi, \nmy \nname \nis\nTom" },
+    { "Hi, my name is\nTom", 1, 7,  true,  "Hi, \n..." },
+    { "Hi, my name is\nTom", 2, 7,  true,  "Hi, \nmy \n..." },
+    { "Hi, my name is\nTom", 3, 7,  true,  "Hi, \nmy \nname \n..." },
+    { "Hi, my name is\nTom", 4, 7,  true,  "Hi, \nmy \nname \nis\n..." },
+    { "Hi, my name is\nTom", 5, 7,  false, "Hi, \nmy \nname \nis\nTom" },
+    { "Hi, my name is\nTom", 1, 8,  true,  "Hi, my \n..." },
+    { "Hi, my name is\nTom", 2, 8,  true,  "Hi, my \nname \n..." },
+    { "Hi, my name is\nTom", 3, 8,  true,  "Hi, my \nname \nis\n..." },
+    { "Hi, my name is\nTom", 4, 8,  false, "Hi, my \nname \nis\nTom" },
+    { "Hi, my name is\nTom", 1, 9,  true,  "Hi, my \n..." },
+    { "Hi, my name is\nTom", 2, 9,  true,  "Hi, my \nname is\n..." },
+    { "Hi, my name is\nTom", 3, 9,  false, "Hi, my \nname is\nTom" },
+    { "Hi, my name is\nTom", 1, 10, true,  "Hi, my \n..." },
+    { "Hi, my name is\nTom", 2, 10, true,  "Hi, my \nname is\n..." },
+    { "Hi, my name is\nTom", 3, 10, false, "Hi, my \nname is\nTom" },
+    { "Hi, my name is\nTom", 1, 11, true,  "Hi, my \n..." },
+    { "Hi, my name is\nTom", 2, 11, true,  "Hi, my \nname is\n..." },
+    { "Hi, my name is\nTom", 3, 11, false, "Hi, my \nname is\nTom" },
+    { "Hi, my name is\nTom", 1, 12, true,  "Hi, my \n..." },
+    { "Hi, my name is\nTom", 2, 12, true,  "Hi, my \nname is\n..." },
+    { "Hi, my name is\nTom", 3, 12, false, "Hi, my \nname is\nTom" },
+    { "Hi, my name is\nTom", 1, 13, true,  "Hi, my name \n..." },
+    { "Hi, my name is\nTom", 2, 13, true,  "Hi, my name \nis\n..." },
+    { "Hi, my name is\nTom", 3, 13, false, "Hi, my name \nis\nTom" },
+    { "Hi, my name is\nTom", 1, 20, true,  "Hi, my name is\n..." },
+    { "Hi, my name is\nTom", 2, 20, false, "Hi, my name is\nTom" },
+    { "Hi, my name is Tom",  1, 40, false, "Hi, my name is Tom" },
   };
   string16 output;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
     EXPECT_EQ(cases[i].result,
-              ui::ElideRectangleString(WideToUTF16(cases[i].input),
+              ui::ElideRectangleString(UTF8ToUTF16(cases[i].input),
                                        cases[i].max_rows, cases[i].max_cols,
                                        &output));
-    EXPECT_EQ(cases[i].output, UTF16ToWide(output));
+    EXPECT_EQ(cases[i].output, UTF16ToUTF8(output));
   }
 }
 

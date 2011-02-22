@@ -16,7 +16,6 @@
 class FilePath;
 class GURL;
 
-// TODO(port): this file should deal in string16s rather than wstrings.
 namespace ui {
 
 // This function takes a GURL object and elides it. It returns a string
@@ -96,12 +95,12 @@ class SortedDisplayURL {
 // If the size of |input| is more than |max_len|, this function returns
 // true and |input| is shortened into |output| by removing chars in the
 // middle (they are replaced with up to 3 dots, as size permits).
-// Ex: ElideString(L"Hello", 10, &str) puts Hello in str and returns false.
-// ElideString(L"Hello my name is Tom", 10, &str) puts "Hell...Tom" in str
-// and returns true.
+// Ex: ElideString(ASCIIToUTF16("Hello"), 10, &str) puts Hello in str and
+// returns false.  ElideString(ASCIIToUTF16("Hello my name is Tom"), 10, &str)
+// puts "Hell...Tom" in str and returns true.
 // TODO(tsepez): Doesn't handle UTF-16 surrogate pairs properly.
-// TODO(tsepez): Doesn't handle bidi properly
-bool ElideString(const std::wstring& input, int max_len, std::wstring* output);
+// TODO(tsepez): Doesn't handle bidi properly.
+bool ElideString(const string16& input, int max_len, string16* output);
 
 // Reformat |input| into |output| so that it fits into a |max_rows| by
 // |max_cols| rectangle of characters.  Input newlines are respected, but

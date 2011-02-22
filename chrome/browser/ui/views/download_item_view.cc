@@ -262,19 +262,20 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
     // Extract the file extension (if any).
     FilePath filename(download->target_name());
 #if defined(OS_LINUX)
-    std::wstring extension = base::SysNativeMBToWide(filename.Extension());
+    string16 extension = WideToUTF16(base::SysNativeMBToWide(
+        filename.Extension()));
 #else
-    std::wstring extension = filename.Extension();
+    string16 extension = filename.Extension();
 #endif
 
     // Remove leading '.'
     if (extension.length() > 0)
       extension = extension.substr(1);
 #if defined(OS_LINUX)
-    std::wstring rootname =
-        base::SysNativeMBToWide(filename.RemoveExtension().value());
+    string16 rootname = WideToUTF16(base::SysNativeMBToWide(
+        filename.RemoveExtension().value()));
 #else
-    std::wstring rootname = filename.RemoveExtension().value();
+    string16 rootname = filename.RemoveExtension().value();
 #endif
 
     // Elide giant extensions (this shouldn't currently be hit, but might
@@ -290,12 +291,11 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
       ui::ElideString(rootname,
                       kFileNameMaxLength - extension.length(),
                       &rootname);
-      std::wstring filename = rootname + L"." + extension;
-      filename = UTF16ToWide(base::i18n::GetDisplayStringInLTRDirectionality(
-          WideToUTF16(filename)));
+      string16 filename = rootname + ASCIIToUTF16(".") + extension;
+      filename = base::i18n::GetDisplayStringInLTRDirectionality(filename);
       dangerous_download_label_ = new views::Label(UTF16ToWide(
           l10n_util::GetStringFUTF16(IDS_PROMPT_DANGEROUS_DOWNLOAD,
-                                     WideToUTF16(filename))));
+                                     filename)));
     }
     dangerous_download_label_->SetMultiLine(true);
     dangerous_download_label_->SetHorizontalAlignment(
