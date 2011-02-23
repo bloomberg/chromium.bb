@@ -183,8 +183,8 @@ void Predictor::AnticipateOmniboxUrl(const GURL& url, bool preconnectable) {
           return;  // We've done a preconnect recently.
         last_omnibox_preconnect_ = now;
         const int kConnectionsNeeded = 1;
-        Preconnect::PreconnectOnUIThread(CanonicalizeUrl(url), motivation,
-                                         kConnectionsNeeded);
+        PreconnectOnUIThread(CanonicalizeUrl(url), motivation,
+                             kConnectionsNeeded);
         return;  // Skip pre-resolution, since we'll open a connection.
       }
     } else {
@@ -217,8 +217,8 @@ void Predictor::PreconnectUrlAndSubresources(const GURL& url) {
     std::string host = url.HostNoBrackets();
     UrlInfo::ResolutionMotivation motivation(UrlInfo::EARLY_LOAD_MOTIVATED);
     const int kConnectionsNeeded = 1;
-    Preconnect::PreconnectOnUIThread(CanonicalizeUrl(url), motivation,
-                                     kConnectionsNeeded);
+    PreconnectOnUIThread(CanonicalizeUrl(url), motivation,
+                         kConnectionsNeeded);
     PredictFrameSubresources(url.GetWithEmptyPath());
   }
 }
@@ -259,7 +259,7 @@ void Predictor::PrepareFrameSubresources(const GURL& url) {
       int count = static_cast<int>(std::ceil(connection_expectation));
       if (url.host() == future_url->first.host())
         ++count;
-      Preconnect::PreconnectOnIOThread(future_url->first, motivation, count);
+      PreconnectOnIOThread(future_url->first, motivation, count);
     } else if (connection_expectation > kDNSPreresolutionWorthyExpectedValue) {
       evalution = PRERESOLUTION;
       future_url->second.preresolution_increment();
