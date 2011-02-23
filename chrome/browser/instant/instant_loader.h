@@ -67,9 +67,10 @@ class InstantLoader : public NotificationObserver {
   bool ShouldCommitInstantOnMouseUp();
   void CommitInstantLoader();
 
+  // NotificationObserver:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   // The preview TabContents; may be null.
   TabContentsWrapper* preview_contents() const {

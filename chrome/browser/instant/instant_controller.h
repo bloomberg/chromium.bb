@@ -169,14 +169,16 @@ class InstantController : public InstantLoaderDelegate {
   GURL GetCurrentURL();
 
   // InstantLoaderDelegate
-  virtual void ShowInstantLoader(InstantLoader* loader);
+  virtual void ShowInstantLoader(InstantLoader* loader) OVERRIDE;
   virtual void SetSuggestedTextFor(InstantLoader* loader,
-                                   const string16& text);
-  virtual gfx::Rect GetInstantBounds();
-  virtual bool ShouldCommitInstantOnMouseUp();
-  virtual void CommitInstantLoader(InstantLoader* loader);
-  virtual void InstantLoaderDoesntSupportInstant(InstantLoader* loader);
-  virtual void AddToBlacklist(InstantLoader* loader, const GURL& url);
+                                   const string16& text) OVERRIDE;
+  virtual gfx::Rect GetInstantBounds() OVERRIDE;
+  virtual bool ShouldCommitInstantOnMouseUp() OVERRIDE;
+  virtual void CommitInstantLoader(InstantLoader* loader) OVERRIDE;
+  virtual void InstantLoaderDoesntSupportInstant(
+      InstantLoader* loader) OVERRIDE;
+  virtual void AddToBlacklist(InstantLoader* loader,
+                              const GURL& url) OVERRIDE;
 
  private:
   friend class InstantTest;
