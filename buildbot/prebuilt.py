@@ -457,133 +457,145 @@ def _GrabAllRemotePackageIndexes(binhost_urls, subdirs):
   return pkg_indexes
 
 
-def UploadPrebuilt(package_path, upload_location, url_suffix, binhost_base_url,
-                   pkg_indexes):
-  """Upload host or board prebuilt files to Google Storage space.
 
-  Args:
-    package_path: The path to the packages dir.
-    upload_location: The upload location.
-    url_suffix: If set, upload the Packages file from the specified subdir of
-      the Packages directory. This subdirectory must be self-contained and have
-      its own Packages file.
-    pkg_indexes: Old uploaded prebuilts to compare against. Instead of
-      uploading duplicate files, we just link to the old files.
-  """
+class PrebuiltUploader(object):
+  """Synchronize host and board prebuilts."""
 
-  # Process Packages file, removing duplicates and filtered packages.
-  pkg_index = GrabLocalPackageIndex(package_path)
-  pkg_index.SetUploadLocation(binhost_base_url, url_suffix)
-  pkg_index.RemoveFilteredPackages(ShouldFilterPackage)
-  uploads = pkg_index.ResolveDuplicateUploads(pkg_indexes)
+  def __init__(self, upload_location, binhost_base_url, pkg_indexes):
+    """Constructor for prebuilt uploader object.
 
-  # Write Packages file.
-  tmp_packages_file = pkg_index.WriteToNamedTemporaryFile()
+    This object can upload host or prebuilt files to Google Storage.
 
-  remote_location = '%s/%s' % (upload_location.rstrip('/'), url_suffix)
-  if remote_location.startswith('gs://'):
-    # Build list of files to upload.
-    upload_files = GenerateUploadDict(package_path, remote_location, uploads)
-    remote_file = '%s/Packages' % remote_location.rstrip('/')
-    upload_files[tmp_packages_file.name] = remote_file
+    Args:
+      upload_location: The upload location.
+      binhost_base_url: The http:// URL used for downloading the prebuilts.
+      pkg_indexes: Old uploaded prebuilts to compare against. Instead of
+          uploading duplicate files, we just link to the old files.
+    """
+    self._upload_location = upload_location
+    self._binhost_base_url = binhost_base_url
+    self._pkg_indexes = pkg_indexes
 
-    failed_uploads = RemoteUpload(upload_files)
-    if len(failed_uploads) > 1 or (None not in failed_uploads):
-      error_msg = ['%s -> %s\n' % args for args in failed_uploads]
-      raise UploadFailed('Error uploading:\n%s' % error_msg)
-  else:
-    pkgs = ' '.join(p['CPV'] + '.tbz2' for p in uploads)
-    ssh_server, remote_path = remote_location.split(':', 1)
-    d = { 'pkg_index': tmp_packages_file.name,
-          'pkgs': pkgs,
-          'remote_packages': '%s/Packages' % remote_location.rstrip('/'),
-          'remote_path': remote_path.rstrip('/'),
-          'remote_location': remote_location.rstrip('/'),
-          'ssh_server': ssh_server }
-    cmds = ['ssh %(ssh_server)s mkdir -p %(remote_path)s' % d,
-            'rsync -av --chmod=a+r %(pkg_index)s %(remote_packages)s' % d]
-    if pkgs:
-      cmds.append('rsync -Rav %(pkgs)s %(remote_location)s/' % d)
-    for cmd in cmds:
-      if not _RetryRun(cmd, shell=True, cwd=package_path):
-        raise UploadFailed('Could not run %s' % cmd)
+  def _UploadPrebuilt(self, package_path, url_suffix):
+    """Upload host or board prebuilt files to Google Storage space.
 
+    Args:
+      package_path: The path to the packages dir.
+      url_suffix: If set, upload the Packages file from the specified subdir of
+          the Packages directory. This subdirectory must be self-contained and
+          have its own Packages file.
+    """
 
-def _SyncHostPrebuilts(build_path, upload_location, version, binhost_base_url,
-                       pkg_indexes, key, git_sync, sync_binhost_conf):
-  """Synchronize host prebuilt files.
+    # Process Packages file, removing duplicates and filtered packages.
+    pkg_index = GrabLocalPackageIndex(package_path)
+    pkg_index.SetUploadLocation(self._binhost_base_url, url_suffix)
+    pkg_index.RemoveFilteredPackages(ShouldFilterPackage)
+    uploads = pkg_index.ResolveDuplicateUploads(self._pkg_indexes)
 
-  This function will sync both the standard host packages, plus the host
-  packages associated with all targets that have been "setup" with the current
-  host's chroot. For instance, if this host has been used to build x86-generic,
-  it will sync the host packages associated with 'i686-pc-linux-gnu'. If this
-  host has also been used to build arm-generic, it will also sync the host
-  packages associated with 'armv7a-cros-linux-gnueabi'.
+    # Write Packages file.
+    tmp_packages_file = pkg_index.WriteToNamedTemporaryFile()
 
-  Args:
-    build_path: The path to the directory containing the chroot.
-    upload_location: The upload location.
-    pkg_indexes: Old uploaded prebuilts to compare against. Instead of
-      uploading duplicate files, we just link to the old files.
-    key: The variable key to update in the git file.
-    git_sync: If set, update make.conf of target to reference the latest
-      prebuilt packages generated here.
-    sync_binhost_conf: If set, update binhost config file in chromiumos-overlay
-      for the host.
-  """
-  # Upload prebuilts.
-  package_path = os.path.join(build_path, _HOST_PACKAGES_PATH)
-  url_suffix = _REL_HOST_PATH % {'version': version, 'target': _HOST_TARGET}
-  for subdir in _GetCrossCompilerSubdirectories(build_path):
-    cross_url_suffix = '%s/%s' % (url_suffix.rstrip('/'), subdir)
-    UploadPrebuilt(os.path.join(package_path, subdir), upload_location,
-                   cross_url_suffix, binhost_base_url, pkg_indexes)
-  UploadPrebuilt(package_path, upload_location, url_suffix, binhost_base_url,
-                 pkg_indexes)
+    remote_location = '%s/%s' % (self._upload_location.rstrip('/'), url_suffix)
+    if remote_location.startswith('gs://'):
+      # Build list of files to upload.
+      upload_files = GenerateUploadDict(package_path, remote_location, uploads)
+      remote_file = '%s/Packages' % remote_location.rstrip('/')
+      upload_files[tmp_packages_file.name] = remote_file
 
-  # Record URL where prebuilts were uploaded.
-  url_value = '%s/%s/' % (binhost_base_url.rstrip('/'), url_suffix.rstrip('/'))
-  if git_sync:
-    git_file = os.path.join(build_path, _PREBUILT_MAKE_CONF[_HOST_TARGET])
-    RevGitFile(git_file, url_value, key=key)
-  if sync_binhost_conf:
-    binhost_conf = os.path.join(build_path, _BINHOST_CONF_DIR, 'host',
-        '%s-%s.conf' % (_HOST_TARGET, key))
-    UpdateBinhostConfFile(binhost_conf, key, url_value)
+      failed_uploads = RemoteUpload(upload_files)
+      if len(failed_uploads) > 1 or (None not in failed_uploads):
+        error_msg = ['%s -> %s\n' % args for args in failed_uploads]
+        raise UploadFailed('Error uploading:\n%s' % error_msg)
+    else:
+      pkgs = ' '.join(p['CPV'] + '.tbz2' for p in uploads)
+      ssh_server, remote_path = remote_location.split(':', 1)
+      d = { 'pkg_index': tmp_packages_file.name,
+            'pkgs': pkgs,
+            'remote_packages': '%s/Packages' % remote_location.rstrip('/'),
+            'remote_path': remote_path.rstrip('/'),
+            'remote_location': remote_location.rstrip('/'),
+            'ssh_server': ssh_server }
+      cmds = ['ssh %(ssh_server)s mkdir -p %(remote_path)s' % d,
+              'rsync -av --chmod=a+r %(pkg_index)s %(remote_packages)s' % d]
+      if pkgs:
+        cmds.append('rsync -Rav %(pkgs)s %(remote_location)s/' % d)
+      for cmd in cmds:
+        if not _RetryRun(cmd, shell=True, cwd=package_path):
+          raise UploadFailed('Could not run %s' % cmd)
 
+  def _SyncHostPrebuilts(self, build_path, version, key, git_sync,
+                        sync_binhost_conf):
+    """Synchronize host prebuilt files.
 
-def _SyncBoardPrebuilts(build_path, upload_location, version, binhost_base_url,
-                        pkg_indexes, board, key, git_sync, sync_binhost_conf):
-  """Synchronize board prebuilt files.
+    This function will sync both the standard host packages, plus the host
+    packages associated with all targets that have been "setup" with the
+    current host's chroot. For instance, if this host has been used to build
+    x86-generic, it will sync the host packages associated with
+    'i686-pc-linux-gnu'. If this host has also been used to build arm-generic,
+    it will also sync the host packages associated with
+    'armv7a-cros-linux-gnueabi'.
 
-  Args:
-    build_path: The path to the directory containing the chroot.
-    upload_location: The upload location.
-    pkg_indexes: Old uploaded prebuilts to compare against. Instead of
-      uploading duplicate files, we just link to the old files.
-    board: The board to upload to Google Storage.
-    key: The variable key to update in the git file.
-    git_sync: If set, update make.conf of target to reference the latest
-      prebuilt packages generated here.
-    sync_binhost_conf: If set, update binhost config file in chromiumos-overlay
-      for the current board.
-  """
-  # Upload prebuilts.
-  board_path = os.path.join(build_path, _BOARD_PATH % {'board': board})
-  package_path = os.path.join(board_path, 'packages')
-  url_suffix = _REL_BOARD_PATH % {'board': board, 'version': version}
-  UploadPrebuilt(package_path, upload_location, url_suffix, binhost_base_url,
-                 pkg_indexes)
+    Args:
+      build_path: The path to the directory containing the chroot.
+      version: A unique string, intended to be included in the upload path,
+          which identifies the version number of the uploaded prebuilts.
+      key: The variable key to update in the git file.
+      git_sync: If set, update make.conf of target to reference the latest
+          prebuilt packages generated here.
+      sync_binhost_conf: If set, update binhost config file in
+          chromiumos-overlay for the host.
+    """
+    # Upload prebuilts.
+    package_path = os.path.join(build_path, _HOST_PACKAGES_PATH)
+    url_suffix = _REL_HOST_PATH % {'version': version, 'target': _HOST_TARGET}
+    for subdir in _GetCrossCompilerSubdirectories(build_path):
+      cross_package_path = os.path.join(package_path, subdir)
+      cross_url_suffix = '%s/%s' % (url_suffix.rstrip('/'), subdir)
+      self._UploadPrebuilt(cross_package_path, cross_url_suffix)
+    self._UploadPrebuilt(package_path, url_suffix)
 
-  # Record URL where prebuilts were uploaded.
-  url_value = '%s/%s/' % (binhost_base_url.rstrip('/'), url_suffix.rstrip('/'))
-  if git_sync:
-    git_file = DeterminePrebuiltConfFile(build_path, board)
-    RevGitFile(git_file, url_value, key=key)
-  if sync_binhost_conf:
-    binhost_conf = os.path.join(build_path, _BINHOST_CONF_DIR, 'target',
-        '%s-%s.conf' % (board, key))
-    UpdateBinhostConfFile(binhost_conf, key, url_value)
+    # Record URL where prebuilts were uploaded.
+    url_value = '%s/%s/' % (self._binhost_base_url.rstrip('/'),
+                            url_suffix.rstrip('/'))
+    if git_sync:
+      git_file = os.path.join(build_path, _PREBUILT_MAKE_CONF[_HOST_TARGET])
+      RevGitFile(git_file, url_value, key=key)
+    if sync_binhost_conf:
+      binhost_conf = os.path.join(build_path, _BINHOST_CONF_DIR, 'host',
+          '%s-%s.conf' % (_HOST_TARGET, key))
+      UpdateBinhostConfFile(binhost_conf, key, url_value)
+
+  def _SyncBoardPrebuilts(self, board, build_path, version, key, git_sync,
+                         sync_binhost_conf):
+    """Synchronize board prebuilt files.
+
+    Args:
+      board: The board to upload to Google Storage.
+      build_path: The path to the directory containing the chroot.
+      version: A unique string, intended to be included in the upload path,
+          which identifies the version number of the uploaded prebuilts.
+      key: The variable key to update in the git file.
+      git_sync: If set, update make.conf of target to reference the latest
+          prebuilt packages generated here.
+      sync_binhost_conf: If set, update binhost config file in
+          chromiumos-overlay for the current board.
+    """
+    # Upload prebuilts.
+    board_path = os.path.join(build_path, _BOARD_PATH % {'board': board})
+    package_path = os.path.join(board_path, 'packages')
+    url_suffix = _REL_BOARD_PATH % {'board': board, 'version': version}
+    self._UploadPrebuilt(package_path, url_suffix)
+
+    # Record URL where prebuilts were uploaded.
+    url_value = '%s/%s/' % (self._binhost_base_url.rstrip('/'),
+                            url_suffix.rstrip('/'))
+    if git_sync:
+      git_file = DeterminePrebuiltConfFile(build_path, board)
+      RevGitFile(git_file, url_value, key=key)
+    if sync_binhost_conf:
+      binhost_conf = os.path.join(build_path, _BINHOST_CONF_DIR, 'target',
+          '%s-%s.conf' % (board, key))
+      UpdateBinhostConfFile(binhost_conf, key, url_value)
 
 
 def usage(parser, msg):
@@ -592,8 +604,7 @@ def usage(parser, msg):
   parser.print_help()
   sys.exit(1)
 
-
-def main():
+def ParseOptions():
   parser = optparse.OptionParser()
   parser.add_option('-H', '--binhost-base-url', dest='binhost_base_url',
                     default=_BINHOST_BASE_URL,
@@ -628,20 +639,20 @@ def main():
                     help='Update binhost.conf')
 
   options, args = parser.parse_args()
-  # Setup boto environment for gsutil to use
-  os.environ['BOTO_CONFIG'] = _BOTO_CONFIG
   if not options.build_path:
     usage(parser, 'Error: you need provide a chroot path')
-
   if not options.upload:
     usage(parser, 'Error: you need to provide an upload location using -u')
+  return options
+
+def main():
+  options = ParseOptions()
+
+  # Setup boto environment for gsutil to use
+  os.environ['BOTO_CONFIG'] = _BOTO_CONFIG
 
   if options.filters:
     LoadPrivateFilters(options.build_path)
-
-  version = GetVersion()
-  if options.prepend_version:
-    version = '%s-%s' % (options.prepend_version, version)
 
   # Calculate a list of Packages index files to compare against. Whenever we
   # upload a package, we check to make sure it's not already stored in one of
@@ -651,16 +662,21 @@ def main():
   pkg_indexes = _GrabAllRemotePackageIndexes(options.previous_binhost_url,
                                              cross_subdirs)
 
+  version = GetVersion()
+  if options.prepend_version:
+    version = '%s-%s' % (options.prepend_version, version)
+
+  uploader = PrebuiltUploader(options.upload, options.binhost_base_url,
+                              pkg_indexes)
+
   if options.sync_host:
-    _SyncHostPrebuilts(options.build_path, options.upload, version,
-                       options.binhost_base_url, pkg_indexes, options.key,
-                       options.git_sync, options.sync_binhost_conf)
+    uploader._SyncHostPrebuilts(options.build_path, version, options.key,
+                                options.git_sync, options.sync_binhost_conf)
 
   if options.board:
-    _SyncBoardPrebuilts(options.build_path, options.upload, version,
-                        options.binhost_base_url, pkg_indexes, options.board,
-                        options.key, options.git_sync,
-                        options.sync_binhost_conf)
+    uploader._SyncBoardPrebuilts(options.board, options.build_path, version,
+                                 options.key, options.git_sync,
+                                 options.sync_binhost_conf)
 
 if __name__ == '__main__':
   main()

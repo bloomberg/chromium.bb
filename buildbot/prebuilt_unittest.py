@@ -402,8 +402,9 @@ class TestUploadPrebuilt(unittest.TestCase):
     for cmd in cmds:
       prebuilt._RetryRun(cmd, shell=True, cwd='/packages').AndReturn(True)
     self.mox.ReplayAll()
-    prebuilt.UploadPrebuilt('/packages', 'chromeos-prebuilt:/dir', suffix,
-      self.pkgindex.header['URI'], [])
+    uri = self.pkgindex.header['URI']
+    uploader = prebuilt.PrebuiltUploader('chromeos-prebuilt:/dir', uri, [])
+    uploader._UploadPrebuilt('/packages', suffix)
 
   def testSuccessfulGsUpload(self):
     uploads = {'/packages/private.tbz2': 'gs://foo/private.tbz2'}
@@ -414,8 +415,9 @@ class TestUploadPrebuilt(unittest.TestCase):
     uploads['fake'] = 'gs://foo/suffix/Packages'
     prebuilt.RemoteUpload(uploads).AndReturn([None])
     self.mox.ReplayAll()
-    prebuilt.UploadPrebuilt('/packages', 'gs://foo', 'suffix',
-                            self.pkgindex.header['URI'], [])
+    uri = self.pkgindex.header['URI']
+    uploader = prebuilt.PrebuiltUploader('gs://foo', uri, [])
+    uploader._UploadPrebuilt('/packages', 'suffix')
 
   def testSuccessfulRsyncUploadWithNoTrailingSlash(self):
     self.doRsyncUpload('suffix')
@@ -430,7 +432,6 @@ class TestSyncPrebuilts(unittest.TestCase):
     self.mox = mox.Mox()
     self.mox.StubOutWithMock(prebuilt, '_GetCrossCompilerSubdirectories')
     self.mox.StubOutWithMock(prebuilt, 'DeterminePrebuiltConfFile')
-    self.mox.StubOutWithMock(prebuilt, 'UploadPrebuilt')
     self.mox.StubOutWithMock(prebuilt, 'RevGitFile')
     self.mox.StubOutWithMock(prebuilt, 'UpdateBinhostConfFile')
     self.build_path = '/trunk'
@@ -438,6 +439,9 @@ class TestSyncPrebuilts(unittest.TestCase):
     self.version = '1'
     self.binhost = 'http://prebuilt/'
     self.key = 'PORTAGE_BINHOST'
+    self.uploader = prebuilt.PrebuiltUploader(self.upload_location,
+      self.binhost, [])
+    self.mox.StubOutWithMock(self.uploader, '_UploadPrebuilt')
 
   def tearDown(self):
     self.mox.UnsetStubs()
@@ -451,17 +455,16 @@ class TestSyncPrebuilts(unittest.TestCase):
     subdir = 'cross/x86'
     prebuilt._GetCrossCompilerSubdirectories(self.build_path).AndReturn(
         [subdir])
+    cross_package_path = os.path.join(package_path, subdir)
     cross_url_suffix = '%s/%s' % (url_suffix.rstrip('/'), subdir)
-    prebuilt.UploadPrebuilt(os.path.join(package_path, subdir),
-        self.upload_location, cross_url_suffix, self.binhost, [])
-    prebuilt.UploadPrebuilt(package_path, self.upload_location,
-        url_suffix, self.binhost, [])
+    self.uploader._UploadPrebuilt(cross_package_path, cross_url_suffix)
+    self.uploader._UploadPrebuilt(package_path, url_suffix)
     url_value = '%s/%s/' % (self.binhost.rstrip('/'), url_suffix.rstrip('/'))
     prebuilt.RevGitFile(mox.IgnoreArg(), url_value, key=self.key)
     prebuilt.UpdateBinhostConfFile(mox.IgnoreArg(), self.key, url_value)
     self.mox.ReplayAll()
-    prebuilt._SyncHostPrebuilts(self.build_path, self.upload_location,
-        self.version, self.binhost, [], self.key, True, True)
+    self.uploader._SyncHostPrebuilts(self.build_path, self.version, self.key,
+        True, True)
 
   def testSyncBoardPrebuilts(self):
     board = 'x86-generic'
@@ -470,16 +473,60 @@ class TestSyncPrebuilts(unittest.TestCase):
     package_path = os.path.join(board_path, 'packages')
     url_suffix = prebuilt._REL_BOARD_PATH % {'version': self.version,
         'board': board }
-    prebuilt.UploadPrebuilt(package_path, self.upload_location,
-        url_suffix, self.binhost, [])
+    self.uploader._UploadPrebuilt(package_path, url_suffix)
     url_value = '%s/%s/' % (self.binhost.rstrip('/'), url_suffix.rstrip('/'))
     prebuilt.DeterminePrebuiltConfFile(self.build_path, board).AndReturn('foo')
     prebuilt.RevGitFile('foo', url_value, key=self.key)
     prebuilt.UpdateBinhostConfFile(mox.IgnoreArg(), self.key, url_value)
     self.mox.ReplayAll()
-    prebuilt._SyncBoardPrebuilts(self.build_path, self.upload_location,
-        self.version, self.binhost, [], board, self.key, True, True)
+    self.uploader._SyncBoardPrebuilts(board, self.build_path, self.version,
+        self.key, True, True)
 
+
+class TestMain(unittest.TestCase):
+
+  def setUp(self):
+    self.mox = mox.Mox()
+
+  def tearDown(self):
+    self.mox.UnsetStubs()
+    self.mox.VerifyAll()
+
+  def testMain(self):
+    """Test that the main function works."""
+    options = mox.MockObject(object)
+    options.binhost_base_url = 'http://prebuilt/'
+    old_binhost = 'http://prebuilt/1'
+    options.previous_binhost_url = [old_binhost]
+    options.board = 'x86-generic'
+    options.build_path = '/trunk'
+    options.sync_host = True
+    options.git_sync = True
+    options.upload = 'gs://upload/'
+    options.prepend_version = True
+    options.filters = True
+    options.key = 'PORTAGE_BINHOST'
+    options.sync_binhost_conf = True
+    self.mox.StubOutWithMock(prebuilt, 'ParseOptions')
+    prebuilt.ParseOptions().AndReturn(options)
+    self.mox.StubOutWithMock(prebuilt, 'LoadPrivateFilters')
+    prebuilt.LoadPrivateFilters(options.build_path)
+    self.mox.StubOutWithMock(prebuilt, '_GetCrossCompilerSubdirectories')
+    prebuilt._GetCrossCompilerSubdirectories(
+        options.build_path).MultipleTimes(2).AndReturn(['subdir'])
+    self.mox.StubOutWithMock(prebuilt, 'GrabRemotePackageIndex')
+    prebuilt.GrabRemotePackageIndex(old_binhost).AndReturn(True)
+    prebuilt.GrabRemotePackageIndex(old_binhost + '/subdir').AndReturn(True)
+    self.mox.StubOutWithMock(prebuilt.PrebuiltUploader, '_SyncHostPrebuilts')
+    prebuilt.PrebuiltUploader._SyncHostPrebuilts(options.build_path,
+        mox.IgnoreArg(), options.key, options.git_sync,
+        options.sync_binhost_conf)
+    self.mox.StubOutWithMock(prebuilt.PrebuiltUploader, '_SyncBoardPrebuilts')
+    prebuilt.PrebuiltUploader._SyncBoardPrebuilts(options.board,
+        options.build_path, mox.IgnoreArg(), options.key, options.git_sync,
+        options.sync_binhost_conf)
+    self.mox.ReplayAll()
+    prebuilt.main()
 
 if __name__ == '__main__':
   unittest.main()
