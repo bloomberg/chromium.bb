@@ -346,7 +346,8 @@ void IOThread::Init() {
       globals_->proxy_script_fetcher_proxy_service.get();
   session_params.http_auth_handler_factory =
       globals_->http_auth_handler_factory.get();
-  session_params.network_delegate = &globals_->network_delegate;
+  // TODO(willchan): Enable for proxy script fetcher context.
+  session_params.network_delegate = NULL;
   session_params.net_log = net_log_;
   session_params.ssl_config_service = globals_->ssl_config_service;
   scoped_refptr<net::HttpNetworkSession> network_session(

@@ -14,11 +14,17 @@ class URLRequest;
 class HttpNetworkDelegate {
  public:
   // Called before a request is sent.
-  virtual void OnBeforeURLRequest(net::URLRequest* request) = 0;
+  virtual void OnBeforeURLRequest(URLRequest* request) = 0;
 
   // Called right before the HTTP headers are sent.  Allows the delegate to
   // read/write |headers| before they get sent out.
   virtual void OnSendHttpRequest(HttpRequestHeaders* headers) = 0;
+
+  // This corresponds to URLRequestDelegate::OnResponseStarted.
+  virtual void OnResponseStarted(URLRequest* request) = 0;
+
+  // This corresponds to URLRequestDelegate::OnReadCompleted.
+  virtual void OnReadCompleted(URLRequest* request, int bytes_read) = 0;
 
  protected:
   virtual ~HttpNetworkDelegate() {}

@@ -284,8 +284,8 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest,
                    pref_service);
 }
 
-// TODO(jochen): enable once network side has landed. Tests error events.
-IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, DISABLED_ProxyEvents) {
+// Tests error events.
+IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, ProxyEvents) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 

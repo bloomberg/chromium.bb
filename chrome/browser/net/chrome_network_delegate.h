@@ -19,6 +19,8 @@ class ChromeNetworkDelegate : public net::HttpNetworkDelegate {
   // net::HttpNetworkDelegate methods:
   virtual void OnBeforeURLRequest(net::URLRequest* request);
   virtual void OnSendHttpRequest(net::HttpRequestHeaders* headers);
+  virtual void OnResponseStarted(net::URLRequest* request);
+  virtual void OnReadCompleted(net::URLRequest* request, int bytes_read);
 
   // TODO(willchan): Add functions for consumers to register ways to
   // access/modify the request.
