@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_util.h"
+#include "base/logging.h"
 
 #include "courgette/crc.h"
 #include "courgette/image_info.h"
@@ -63,6 +64,7 @@ class EnsemblePatchApplication {
 
   uint32 source_checksum_;
   uint32 target_checksum_;
+  uint32 final_patch_input_size_prediction_;
 
   std::vector<TransformationPatcher*> patchers_;
 
@@ -73,7 +75,8 @@ class EnsemblePatchApplication {
 };
 
 EnsemblePatchApplication::EnsemblePatchApplication()
-    : source_checksum_(0), target_checksum_(0) {
+    : source_checksum_(0), target_checksum_(0),
+      final_patch_input_size_prediction_(0) {
 }
 
 EnsemblePatchApplication::~EnsemblePatchApplication() {
@@ -101,6 +104,9 @@ Status EnsemblePatchApplication::ReadHeader(SourceStream* header_stream) {
     return C_BAD_ENSEMBLE_HEADER;
 
   if (!header_stream->ReadVarint32(&target_checksum_))
+    return C_BAD_ENSEMBLE_HEADER;
+
+  if (!header_stream->ReadVarint32(&final_patch_input_size_prediction_))
     return C_BAD_ENSEMBLE_HEADER;
 
   return C_OK;
@@ -214,6 +220,8 @@ Status EnsemblePatchApplication::TransformDown(
     SinkStream* basic_elements) {
   // Construct blob of original input followed by reformed elements.
 
+  basic_elements->Reserve(final_patch_input_size_prediction_);
+
   // The original input:
   basic_elements->Write(base_region_.start(), base_region_.length());
 
@@ -231,6 +239,9 @@ Status EnsemblePatchApplication::TransformDown(
 
   if (!transformed_elements->Empty())
     return C_STREAM_NOT_CONSUMED;
+  // We have totally consumed transformed_elements, so can free the
+  // storage to which it referred.
+  corrected_elements_storage_.Retire();
 
   return C_OK;
 }
@@ -374,13 +385,21 @@ Status ApplyEnsemblePatch(const FilePath::CharType* old_file_name,
     return status;
 
   // Header smells good so read the whole patch file for real.
+  int64 patch_file_size = 0;
+  if (!file_util::GetFileSize(patch_file_path, &patch_file_size))
+    return C_READ_ERROR;
   std::string patch_file_buffer;
+  patch_file_buffer.reserve(static_cast<size_t>(patch_file_size));
   if (!file_util::ReadFileToString(patch_file_path, &patch_file_buffer))
     return C_READ_ERROR;
 
   // Read the old_file.
   FilePath old_file_path(old_file_name);
+  int64 old_file_size = 0;
+  if (!file_util::GetFileSize(old_file_path, &old_file_size))
+    return C_READ_ERROR;
   std::string old_file_buffer;
+  old_file_buffer.reserve(static_cast<size_t>(old_file_size));
   if (!file_util::ReadFileToString(old_file_path, &old_file_buffer))
     return C_READ_ERROR;
 

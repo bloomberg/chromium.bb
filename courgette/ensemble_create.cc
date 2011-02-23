@@ -351,6 +351,9 @@ Status GenerateEnsemblePatch(SourceStream* base,
   if (delta2_status != C_OK)
     return delta2_status;
 
+  // Last use, free storage.
+  linearized_predicted_transformed_elements.Retire();
+
   //
   // Generate sub-patch for whole enchilada.
   //
@@ -381,8 +384,12 @@ Status GenerateEnsemblePatch(SourceStream* base,
   if (!corrected_transformed_elements_source_set.Empty())
     return C_STREAM_NOT_CONSUMED;
 
+  // No more references to this stream's buffer.
+  linearized_corrected_transformed_elements.Retire();
+
   FreeGenerators(&generators);
 
+  size_t final_patch_input_size = predicted_ensemble.Length();
   SourceStream predicted_ensemble_source;
   predicted_ensemble_source.Init(predicted_ensemble);
   Status delta3_status = GenerateSimpleDelta(&predicted_ensemble_source,
@@ -401,6 +408,7 @@ Status GenerateEnsemblePatch(SourceStream* base,
       CalculateCrc(old_region.start(), old_region.length()));
   final_patch->WriteVarint32(
       CalculateCrc(new_region.start(), new_region.length()));
+  final_patch->WriteSizeVarint32(final_patch_input_size);
 
   if (!patch_streams.CopyTo(final_patch))
     return C_STREAM_ERROR;

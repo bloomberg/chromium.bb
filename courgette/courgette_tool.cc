@@ -52,7 +52,11 @@ std::string ReadOrFail(const std::wstring& file_name, const char* kind) {
 #else
   FilePath file_path(WideToASCII(file_name));
 #endif
+  int64 file_size = 0;
+  if (!file_util::GetFileSize(file_path, &file_size))
+    Problem("Can't read %s file.", kind);
   std::string buffer;
+  buffer.reserve(static_cast<size_t>(file_size));
   if (!file_util::ReadFileToString(file_path, &buffer))
     Problem("Can't read %s file.", kind);
   return buffer;
@@ -285,20 +289,48 @@ void GenerateEnsemblePatch(const std::wstring& old_file,
 void ApplyEnsemblePatch(const std::wstring& old_file,
                         const std::wstring& patch_file,
                         const std::wstring& new_file) {
-  std::string old_buffer = ReadOrFail(old_file, "'old' input");
-  std::string patch_buffer = ReadOrFail(patch_file, "'patch' input");
+  // We do things a little differently here in order to call the same Courgette
+  // entry point as the installer.  That entry point point takes file names and
+  // returns an status code but does not output any diagnostics.
+#if defined(OS_WIN)
+  FilePath old_path(old_file);
+  FilePath patch_path(patch_file);
+  FilePath new_path(new_file);
+#else
+  FilePath old_path(WideToASCII(old_file));
+  FilePath patch_path(WideToASCII(patch_file));
+  FilePath new_path(WideToASCII(new_file));
+#endif
 
-  courgette::SourceStream old_stream;
-  courgette::SourceStream patch_stream;
-  old_stream.Init(old_buffer);
-  patch_stream.Init(patch_buffer);
-  courgette::SinkStream new_stream;
   courgette::Status status =
-      courgette::ApplyEnsemblePatch(&old_stream, &patch_stream, &new_stream);
+    courgette::ApplyEnsemblePatch(old_path.value().c_str(),
+                                  patch_path.value().c_str(),
+                                  new_path.value().c_str());
 
-  if (status != courgette::C_OK) Problem("-apply failed.");
+  if (status == courgette::C_OK)
+    return;
 
-  WriteSinkToFile(&new_stream, new_file);
+  // Diagnose the error.
+  if (status == courgette::C_BAD_ENSEMBLE_MAGIC)
+    Problem("Not a courgette patch");
+  if (status == courgette::C_BAD_ENSEMBLE_VERSION)
+    Problem("Wrong version patch");
+  if (status == courgette::C_BAD_ENSEMBLE_HEADER)
+    Problem("Corrupt patch");
+  //  If we failed due to a missing input file, this will
+  // print the message.
+  std::string old_buffer = ReadOrFail(old_file, "'old' input");
+  old_buffer.clear();
+  std::string patch_buffer = ReadOrFail(patch_file, "'patch' input");
+  patch_buffer.clear();
+
+  // Non-input related errors:
+  if (status == courgette::C_WRITE_OPEN_ERROR)
+    Problem("Can't open output");
+  if (status == courgette::C_WRITE_ERROR)
+    Problem("Can't write output");
+
+  Problem("-apply failed.");
 }
 
 void GenerateBSDiffPatch(const std::wstring& old_file,

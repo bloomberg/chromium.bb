@@ -108,6 +108,7 @@ struct CourgettePatchFile {
   //    version
   //    source-checksum
   //    target-checksum
+  //    final-patch-input-size (an allocation hint)
   //  multiple-streams:
   //    stream 0:
   //      number-of-transformed-elements (N) - varint32
@@ -136,7 +137,7 @@ struct CourgettePatchFile {
 
   static const uint32 kMagic = 'C' | ('o' << 8) | ('u' << 16);
 
-  static const uint32 kVersion = 20090320;
+  static const uint32 kVersion = 20110216;
 
   // Transformation method IDs.
   enum TransformationMethodId {

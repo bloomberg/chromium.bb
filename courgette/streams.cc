@@ -211,8 +211,12 @@ void SinkStream::WriteSizeVarint32(size_t value) {
 
 void SinkStream::Append(SinkStream* other) {
   Write(other->buffer_.c_str(), other->buffer_.size());
-  other->buffer_.clear();
-  other->buffer_.reserve(0);  // Non-binding request to reduce storage.
+  other->Retire();
+}
+
+void SinkStream::Retire() {
+  buffer_.clear();
+  buffer_.reserve(0);  // Non-binding request to reduce storage.
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -335,6 +339,14 @@ void SinkStreamSet::CopyHeaderTo(SinkStream* header) {
 bool SinkStreamSet::CopyTo(SinkStream *combined_stream) {
   SinkStream header;
   CopyHeaderTo(&header);
+
+  // Reserve the correct amount of storage.
+  size_t length = header.Length();
+  for (size_t i = 0; i < count_; ++i) {
+    length += stream(i)->Length();
+  }
+  combined_stream->Reserve(length);
+
   combined_stream->Append(&header);
   for (size_t i = 0; i < count_; ++i) {
     combined_stream->Append(stream(i));
