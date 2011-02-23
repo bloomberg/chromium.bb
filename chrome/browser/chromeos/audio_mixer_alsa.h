@@ -77,6 +77,7 @@ class AudioMixerAlsa : public AudioMixer {
                                double rounding_bias);
 
   // In ALSA, the mixer element's 'switch' is turned off to mute.
+  // GetElementMuted_Locked() returns false on failure.
   bool GetElementMuted_Locked(_snd_mixer_elem* elem) const;
   void SetElementMuted_Locked(_snd_mixer_elem* elem, bool mute);
 

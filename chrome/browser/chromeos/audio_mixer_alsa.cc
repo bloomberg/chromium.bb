@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/audio_mixer_alsa.h"
 
+#include <cmath>
+
 #include <alsa/asoundlib.h>
 
 #include "base/logging.h"
@@ -125,8 +127,13 @@ void AudioMixerAlsa::SetVolumeDb(double vol_db) {
   base::AutoLock lock(mixer_state_lock_);
   if (mixer_state_ != READY)
     return;
-  if (vol_db < kSilenceDb)
+
+  if (vol_db < kSilenceDb || isnan(vol_db)) {
+    if (isnan(vol_db))
+      LOG(WARNING) << "Got request to set volume to NaN";
     vol_db = kSilenceDb;
+  }
+
   DoSetVolumeDb_Locked(vol_db);
   prefs_->SetDouble(prefs::kAudioVolume, vol_db);
 }
@@ -270,7 +277,14 @@ bool AudioMixerAlsa::InitializeAlsaMixer() {
   if (elem_master_) {
     alsa_long_t long_lo = static_cast<alsa_long_t>(kDefaultMinVolume * 100);
     alsa_long_t long_hi = static_cast<alsa_long_t>(kDefaultMaxVolume * 100);
-    snd_mixer_selem_get_playback_dB_range(elem_master_, &long_lo, &long_hi);
+    err = snd_mixer_selem_get_playback_dB_range(
+        elem_master_, &long_lo, &long_hi);
+    if (err != 0) {
+      LOG(WARNING) << "snd_mixer_selem_get_playback_dB_range() failed "
+                   << "for master: " << snd_strerror(err);
+      snd_mixer_close(handle);
+      return false;
+    }
     min_volume_ = static_cast<double>(long_lo) / 100.0;
     max_volume_ = static_cast<double>(long_hi) / 100.0;
   } else {
@@ -283,7 +297,13 @@ bool AudioMixerAlsa::InitializeAlsaMixer() {
   if (elem_pcm_) {
     alsa_long_t long_lo = static_cast<alsa_long_t>(kDefaultMinVolume * 100);
     alsa_long_t long_hi = static_cast<alsa_long_t>(kDefaultMaxVolume * 100);
-    snd_mixer_selem_get_playback_dB_range(elem_pcm_, &long_lo, &long_hi);
+    err = snd_mixer_selem_get_playback_dB_range(elem_pcm_, &long_lo, &long_hi);
+    if (err != 0) {
+      LOG(WARNING) << "snd_mixer_selem_get_playback_dB_range() failed for PCM: "
+                   << snd_strerror(err);
+      snd_mixer_close(handle);
+      return false;
+    }
     min_volume_ += static_cast<double>(long_lo) / 100.0;
     max_volume_ += static_cast<double>(long_hi) / 100.0;
   }
@@ -312,7 +332,7 @@ void AudioMixerAlsa::DoSetVolumeMute(double pref_volume, int pref_mute) {
   // If volume or mute are invalid, set them now to the current actual values.
   if (!PrefVolumeValid(pref_volume))
     pref_volume = DoGetVolumeDb_Locked();
-  bool mute;
+  bool mute = false;
   if (pref_mute == kPrefMuteInvalid)
     mute = GetElementMuted_Locked(elem_master_);
   else
@@ -348,10 +368,11 @@ void AudioMixerAlsa::RestoreVolumeMuteOnUIThread() {
 
 double AudioMixerAlsa::DoGetVolumeDb_Locked() const {
   double vol_total = 0.0;
-  GetElementVolume_Locked(elem_master_, &vol_total);
+  if (!GetElementVolume_Locked(elem_master_, &vol_total))
+    return 0.0;
 
   double vol_pcm = 0.0;
-  if (elem_pcm_ && (GetElementVolume_Locked(elem_pcm_, &vol_pcm)))
+  if (elem_pcm_ && GetElementVolume_Locked(elem_pcm_, &vol_pcm))
     vol_total += vol_pcm;
 
   return vol_total;
@@ -396,11 +417,15 @@ snd_mixer_elem_t* AudioMixerAlsa::FindElementWithName_Locked(
 bool AudioMixerAlsa::GetElementVolume_Locked(snd_mixer_elem_t* elem,
                                              double* current_vol) const {
   alsa_long_t long_vol = 0;
-  snd_mixer_selem_get_playback_dB(elem,
-                                  static_cast<snd_mixer_selem_channel_id_t>(0),
-                                  &long_vol);
-  *current_vol = static_cast<double>(long_vol) / 100.0;
+  int alsa_result = snd_mixer_selem_get_playback_dB(
+      elem, static_cast<snd_mixer_selem_channel_id_t>(0), &long_vol);
+  if (alsa_result != 0) {
+    LOG(WARNING) << "snd_mixer_selem_get_playback_dB() failed: "
+                 << snd_strerror(alsa_result);
+    return false;
+  }
 
+  *current_vol = static_cast<double>(long_vol) / 100.0;
   return true;
 }
 
@@ -410,14 +435,27 @@ bool AudioMixerAlsa::SetElementVolume_Locked(snd_mixer_elem_t* elem,
                                              double rounding_bias) {
   alsa_long_t vol_lo = 0;
   alsa_long_t vol_hi = 0;
-  snd_mixer_selem_get_playback_volume_range(elem, &vol_lo, &vol_hi);
+  int alsa_result =
+      snd_mixer_selem_get_playback_volume_range(elem, &vol_lo, &vol_hi);
+  if (alsa_result != 0) {
+    LOG(WARNING) << "snd_mixer_selem_get_playback_volume_range() failed: "
+                 << snd_strerror(alsa_result);
+    return false;
+  }
   alsa_long_t vol_range = vol_hi - vol_lo;
   if (vol_range <= 0)
     return false;
 
   alsa_long_t db_lo_int = 0;
   alsa_long_t db_hi_int = 0;
-  snd_mixer_selem_get_playback_dB_range(elem, &db_lo_int, &db_hi_int);
+  alsa_result =
+      snd_mixer_selem_get_playback_dB_range(elem, &db_lo_int, &db_hi_int);
+  if (alsa_result != 0) {
+    LOG(WARNING) << "snd_mixer_selem_get_playback_dB_range() failed: "
+                 << snd_strerror(alsa_result);
+    return false;
+  }
+
   double db_lo = static_cast<double>(db_lo_int) / 100.0;
   double db_hi = static_cast<double>(db_hi_int) / 100.0;
   double db_step = static_cast<double>(db_hi - db_lo) / vol_range;
@@ -429,7 +467,12 @@ bool AudioMixerAlsa::SetElementVolume_Locked(snd_mixer_elem_t* elem,
 
   alsa_long_t value = static_cast<alsa_long_t>(rounding_bias +
       (new_vol - db_lo) / db_step) + vol_lo;
-  snd_mixer_selem_set_playback_volume_all(elem, value);
+  alsa_result = snd_mixer_selem_set_playback_volume_all(elem, value);
+  if (alsa_result != 0) {
+    LOG(WARNING) << "snd_mixer_selem_set_playback_volume_all() failed: "
+                 << snd_strerror(alsa_result);
+    return false;
+  }
 
   VLOG(1) << "Set volume " << snd_mixer_selem_get_name(elem)
           << " to " << new_vol << " ==> " << (value - vol_lo) * db_step + db_lo
@@ -437,10 +480,13 @@ bool AudioMixerAlsa::SetElementVolume_Locked(snd_mixer_elem_t* elem,
 
   if (actual_vol) {
     alsa_long_t volume = vol_lo;
-    snd_mixer_selem_get_playback_volume(
-        elem,
-        static_cast<snd_mixer_selem_channel_id_t>(0),
-        &volume);
+    alsa_result = snd_mixer_selem_get_playback_volume(
+        elem, static_cast<snd_mixer_selem_channel_id_t>(0), &volume);
+    if (alsa_result != 0) {
+      LOG(WARNING) << "snd_mixer_selem_get_playback_volume() failed: "
+                   << snd_strerror(alsa_result);
+      return false;
+    }
     *actual_vol = db_lo + (volume - vol_lo) * db_step;
 
     VLOG(1) << "Actual volume " << snd_mixer_selem_get_name(elem)
@@ -451,19 +497,26 @@ bool AudioMixerAlsa::SetElementVolume_Locked(snd_mixer_elem_t* elem,
 
 bool AudioMixerAlsa::GetElementMuted_Locked(snd_mixer_elem_t* elem) const {
   int enabled = 0;
-  snd_mixer_selem_get_playback_switch(
-      elem,
-      static_cast<snd_mixer_selem_channel_id_t>(0),
-      &enabled);
+  int alsa_result = snd_mixer_selem_get_playback_switch(
+      elem, static_cast<snd_mixer_selem_channel_id_t>(0), &enabled);
+  if (alsa_result != 0) {
+    LOG(WARNING) << "snd_mixer_selem_get_playback_switch() failed: "
+                 << snd_strerror(alsa_result);
+    return false;
+  }
   return (enabled) ? false : true;
 }
 
 void AudioMixerAlsa::SetElementMuted_Locked(snd_mixer_elem_t* elem, bool mute) {
   int enabled = mute ? 0 : 1;
-  snd_mixer_selem_set_playback_switch_all(elem, enabled);
-
-  VLOG(1) << "Set playback switch " << snd_mixer_selem_get_name(elem)
-          << " to " << enabled;
+  int alsa_result = snd_mixer_selem_set_playback_switch_all(elem, enabled);
+  if (alsa_result != 0) {
+    LOG(WARNING) << "snd_mixer_selem_set_playback_switch_all() failed: "
+                 << snd_strerror(alsa_result);
+  } else {
+    VLOG(1) << "Set playback switch " << snd_mixer_selem_get_name(elem)
+            << " to " << enabled;
+  }
 }
 
 }  // namespace chromeos
