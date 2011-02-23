@@ -46,13 +46,9 @@ bool PrerenderManager::IsPrerenderingEnabled() {
 struct PrerenderManager::PrerenderContentsData {
   PrerenderContents* contents_;
   base::Time start_time_;
-  GURL url_;
-  PrerenderContentsData(PrerenderContents* contents,
-                        base::Time start_time,
-                        GURL url)
+  PrerenderContentsData(PrerenderContents* contents, base::Time start_time)
       : contents_(contents),
-        start_time_(start_time),
-        url_(url) {
+        start_time_(start_time) {
   }
 };
 
@@ -78,20 +74,16 @@ void PrerenderManager::SetPrerenderContentsFactory(
   prerender_contents_factory_.reset(prerender_contents_factory);
 }
 
-void PrerenderManager::AddPreload(const GURL& url,
+bool PrerenderManager::AddPreload(const GURL& url,
                                   const std::vector<GURL>& alias_urls,
                                   const GURL& referrer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DeleteOldEntries();
-  // If the URL already exists in the set of preloaded URLs, don't do anything.
-  for (std::list<PrerenderContentsData>::iterator it = prerender_list_.begin();
-       it != prerender_list_.end();
-       ++it) {
-    if (it->url_ == url)
-      return;
-  }
+  if (FindEntry(url))
+    return false;
+  // TODO(cbentzel): Move invalid checks here instead of PrerenderContents?
   PrerenderContentsData data(CreatePrerenderContents(url, alias_urls, referrer),
-                             GetCurrentTime(), url);
+                             GetCurrentTime());
   prerender_list_.push_back(data);
   data.contents_->StartPrerendering();
   while (prerender_list_.size() > max_elements_) {
@@ -100,6 +92,7 @@ void PrerenderManager::AddPreload(const GURL& url,
     data.contents_->set_final_status(FINAL_STATUS_EVICTED);
     delete data.contents_;
   }
+  return true;
 }
 
 void PrerenderManager::DeleteOldEntries() {

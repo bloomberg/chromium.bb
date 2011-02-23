@@ -38,8 +38,9 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
   explicit PrerenderManager(Profile* profile);
 
   // Preloads the URL supplied.  alias_urls indicates URLs that redirect
-  // to the same URL to be preloaded.
-  void AddPreload(const GURL& url, const std::vector<GURL>& alias_urls,
+  // to the same URL to be preloaded. Returns true if the URL was added,
+  // false if it was not.
+  bool AddPreload(const GURL& url, const std::vector<GURL>& alias_urls,
                   const GURL& referrer);
 
   // For a given TabContents that wants to navigate to the URL supplied,
