@@ -268,24 +268,27 @@ def _GsUpload(args):
   """Upload to GS bucket.
 
   Args:
-    args: a tuple of two arguments that contains local_file and remote_file.
+    args: a tuple of three arguments that contains local_file, remote_file, and
+          the acl used for uploading the file.
 
   Returns:
     Return the arg tuple of two if the upload failed
   """
-  (local_file, remote_file) = args
+  (local_file, remote_file, acl) = args
 
-  cmd = '%s cp -a public-read %s %s' % (_GSUTIL_BIN, local_file, remote_file)
+  cmd = '%s cp -a %s %s %s' % (_GSUTIL_BIN, acl, local_file, remote_file)
   if not _RetryRun(cmd, print_cmd=False, shell=True):
     return (local_file, remote_file)
 
-
-def RemoteUpload(files, pool=10):
+def RemoteUpload(acl, files, pool=10):
   """Upload to google storage.
 
   Create a pool of process and call _GsUpload with the proper arguments.
 
   Args:
+    acl: The canned acl used for uploading. acl can be one of: "public-read",
+         "public-read-write", "authenticated-read", "bucket-owner-read",
+         "bucket-owner-full-control", or "private".
     files: dictionary with keys to local files and values to remote path.
     pool: integer of maximum proesses to have at the same time.
 
@@ -297,7 +300,7 @@ def RemoteUpload(files, pool=10):
   pool = multiprocessing.Pool(processes=pool)
   workers = []
   for local_file, remote_path in files.iteritems():
-    workers.append((local_file, remote_path))
+    workers.append((local_file, remote_path, acl))
 
   result = pool.map_async(_GsUpload, workers, chunksize=1)
   while True:
@@ -461,18 +464,23 @@ def _GrabAllRemotePackageIndexes(binhost_urls, subdirs):
 class PrebuiltUploader(object):
   """Synchronize host and board prebuilts."""
 
-  def __init__(self, upload_location, binhost_base_url, pkg_indexes):
+  def __init__(self, upload_location, acl, binhost_base_url, pkg_indexes):
     """Constructor for prebuilt uploader object.
 
     This object can upload host or prebuilt files to Google Storage.
 
     Args:
       upload_location: The upload location.
-      binhost_base_url: The http:// URL used for downloading the prebuilts.
+      acl: The canned acl used for uploading to Google Storage. acl can be one
+           of: "public-read", "public-read-write", "authenticated-read",
+           "bucket-owner-read", "bucket-owner-full-control", or "private". If
+           we are not uploading to Google Storage, this parameter is unused.
+      binhost_base_url: The URL used for downloading the prebuilts.
       pkg_indexes: Old uploaded prebuilts to compare against. Instead of
           uploading duplicate files, we just link to the old files.
     """
     self._upload_location = upload_location
+    self._acl = acl
     self._binhost_base_url = binhost_base_url
     self._pkg_indexes = pkg_indexes
 
@@ -502,7 +510,7 @@ class PrebuiltUploader(object):
       remote_file = '%s/Packages' % remote_location.rstrip('/')
       upload_files[tmp_packages_file.name] = remote_file
 
-      failed_uploads = RemoteUpload(upload_files)
+      failed_uploads = RemoteUpload(self._acl, upload_files)
       if len(failed_uploads) > 1 or (None not in failed_uploads):
         error_msg = ['%s -> %s\n' % args for args in failed_uploads]
         raise UploadFailed('Error uploading:\n%s' % error_msg)
@@ -637,12 +645,18 @@ def ParseOptions():
   parser.add_option('', '--sync-binhost-conf', dest='sync_binhost_conf',
                     default=False, action='store_true',
                     help='Update binhost.conf')
+  parser.add_option('-P', '--private', dest='private', action='store_true',
+                    default=False, help='Mark gs:// uploads as private.')
 
   options, args = parser.parse_args()
   if not options.build_path:
     usage(parser, 'Error: you need provide a chroot path')
   if not options.upload:
     usage(parser, 'Error: you need to provide an upload location using -u')
+  if options.private and not (options.binhost_base_url.startswith('gs://') and
+                              options.upload.startswith('gs://')):
+    usage(parser, 'Error: --private is only valid for gs:// URLs.\n'
+                  'Both --binhost-base-url and --upload must be gs:// URLs.')
   return options
 
 def main():
@@ -653,6 +667,10 @@ def main():
 
   if options.filters:
     LoadPrivateFilters(options.build_path)
+
+  acl = 'public-read'
+  if options.private:
+    acl = 'private'
 
   # Calculate a list of Packages index files to compare against. Whenever we
   # upload a package, we check to make sure it's not already stored in one of
@@ -666,7 +684,7 @@ def main():
   if options.prepend_version:
     version = '%s-%s' % (options.prepend_version, version)
 
-  uploader = PrebuiltUploader(options.upload, options.binhost_base_url,
+  uploader = PrebuiltUploader(options.upload, acl, options.binhost_base_url,
                               pkg_indexes)
 
   if options.sync_host:

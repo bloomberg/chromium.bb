@@ -197,7 +197,8 @@ class TestPrebuilt(unittest.TestCase):
   def testFailonUploadFail(self):
     """Make sure we fail if one of the upload processes fail."""
     files = {'test': '/uasd'}
-    self.assertEqual(prebuilt.RemoteUpload(files), set([('test', '/uasd')]))
+    result = prebuilt.RemoteUpload('public-read', files)
+    self.assertEqual(result, set([('test', '/uasd')]))
 
   def testDeterminePrebuiltConfHost(self):
     """Test that the host prebuilt path comes back properly."""
@@ -403,7 +404,8 @@ class TestUploadPrebuilt(unittest.TestCase):
       prebuilt._RetryRun(cmd, shell=True, cwd='/packages').AndReturn(True)
     self.mox.ReplayAll()
     uri = self.pkgindex.header['URI']
-    uploader = prebuilt.PrebuiltUploader('chromeos-prebuilt:/dir', uri, [])
+    uploader = prebuilt.PrebuiltUploader('chromeos-prebuilt:/dir',
+        'public-read', uri, [])
     uploader._UploadPrebuilt('/packages', suffix)
 
   def testSuccessfulGsUpload(self):
@@ -413,10 +415,11 @@ class TestUploadPrebuilt(unittest.TestCase):
         PRIVATE_PACKAGES).AndReturn(uploads)
     uploads = uploads.copy()
     uploads['fake'] = 'gs://foo/suffix/Packages'
-    prebuilt.RemoteUpload(uploads).AndReturn([None])
+    acl = 'public-read'
+    prebuilt.RemoteUpload(acl, uploads).AndReturn([None])
     self.mox.ReplayAll()
     uri = self.pkgindex.header['URI']
-    uploader = prebuilt.PrebuiltUploader('gs://foo', uri, [])
+    uploader = prebuilt.PrebuiltUploader('gs://foo', acl, uri, [])
     uploader._UploadPrebuilt('/packages', 'suffix')
 
   def testSuccessfulRsyncUploadWithNoTrailingSlash(self):
@@ -440,7 +443,7 @@ class TestSyncPrebuilts(unittest.TestCase):
     self.binhost = 'http://prebuilt/'
     self.key = 'PORTAGE_BINHOST'
     self.uploader = prebuilt.PrebuiltUploader(self.upload_location,
-      self.binhost, [])
+        'public-read', self.binhost, [])
     self.mox.StubOutWithMock(self.uploader, '_UploadPrebuilt')
 
   def tearDown(self):
@@ -495,14 +498,15 @@ class TestMain(unittest.TestCase):
   def testMain(self):
     """Test that the main function works."""
     options = mox.MockObject(object)
-    options.binhost_base_url = 'http://prebuilt/'
     old_binhost = 'http://prebuilt/1'
     options.previous_binhost_url = [old_binhost]
     options.board = 'x86-generic'
     options.build_path = '/trunk'
+    options.private = True
     options.sync_host = True
     options.git_sync = True
     options.upload = 'gs://upload/'
+    options.binhost_base_url = options.upload
     options.prepend_version = True
     options.filters = True
     options.key = 'PORTAGE_BINHOST'
@@ -517,6 +521,9 @@ class TestMain(unittest.TestCase):
     self.mox.StubOutWithMock(prebuilt, 'GrabRemotePackageIndex')
     prebuilt.GrabRemotePackageIndex(old_binhost).AndReturn(True)
     prebuilt.GrabRemotePackageIndex(old_binhost + '/subdir').AndReturn(True)
+    self.mox.StubOutWithMock(prebuilt.PrebuiltUploader, '__init__')
+    prebuilt.PrebuiltUploader.__init__(options.upload, 'private',
+        options.binhost_base_url, mox.IgnoreArg())
     self.mox.StubOutWithMock(prebuilt.PrebuiltUploader, '_SyncHostPrebuilts')
     prebuilt.PrebuiltUploader._SyncHostPrebuilts(options.build_path,
         mox.IgnoreArg(), options.key, options.git_sync,
