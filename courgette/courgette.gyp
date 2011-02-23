@@ -63,6 +63,11 @@
         'courgette_lib',
         '../base/base.gyp:base',
       ],
+      'msvs_settings': {
+        'VCLinkerTool': {
+          'LargeAddressAware': 2,
+        },
+      },
     },
     {
       'target_name': 'courgette_minimal_tool',
