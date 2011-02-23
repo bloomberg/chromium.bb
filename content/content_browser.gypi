@@ -11,6 +11,8 @@
         # Don't include now since it's empty and so will cause a linker error.
         #'content_common',
         '../app/app.gyp:app_resources',
+        # Needed for dbg-shlib build.
+        '../ppapi/ppapi.gyp:ppapi_proxy',
         '../skia/skia.gyp:skia',
         # TabContents uses zoom constants and functions from WebKit::WebView.
         '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
