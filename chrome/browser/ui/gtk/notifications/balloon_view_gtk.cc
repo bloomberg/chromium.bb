@@ -459,9 +459,13 @@ void BalloonViewImpl::OnOptionsMenuButton(GtkWidget* widget,
 
 // Called when the menu stops showing.
 void BalloonViewImpl::StoppedShowing() {
-  if (pending_close_)
-    DelayedClose(false);
   menu_showing_ = false;
+  if (pending_close_) {
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        method_factory_.NewRunnableMethod(
+            &BalloonViewImpl::DelayedClose, false));
+  }
 }
 
 gboolean BalloonViewImpl::OnDestroy(GtkWidget* widget) {

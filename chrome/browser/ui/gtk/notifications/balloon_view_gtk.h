@@ -63,7 +63,9 @@ class BalloonViewImpl : public BalloonView,
   // ui::AnimationDelegate interface.
   virtual void AnimationProgressed(const ui::Animation* animation);
 
-  // Do the delayed close work.
+  // Do the delayed close work.  The balloon and all view components will be
+  // destroyed at this time, so it shouldn't be called while still processing
+  // an event that relies on them.
   void DelayedClose(bool by_user);
 
   // The height of the balloon's shelf.
