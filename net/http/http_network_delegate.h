@@ -13,6 +13,8 @@ class URLRequest;
 
 class HttpNetworkDelegate {
  public:
+  virtual ~HttpNetworkDelegate() {}
+
   // Called before a request is sent.
   virtual void OnBeforeURLRequest(URLRequest* request) = 0;
 
@@ -25,9 +27,6 @@ class HttpNetworkDelegate {
 
   // This corresponds to URLRequestDelegate::OnReadCompleted.
   virtual void OnReadCompleted(URLRequest* request, int bytes_read) = 0;
-
- protected:
-  virtual ~HttpNetworkDelegate() {}
 };
 
 }  // namespace net
