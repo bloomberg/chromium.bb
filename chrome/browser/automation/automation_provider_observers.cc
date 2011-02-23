@@ -52,6 +52,7 @@
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/webui/app_launcher_handler.h"
 #include "chrome/browser/webui/most_visited_handler.h"
 #include "chrome/browser/webui/new_tab_ui.h"
 #include "chrome/common/automation_messages.h"
@@ -1715,6 +1716,22 @@ NTPInfoObserver::NTPInfoObserver(
         .SendError("No TabRestoreService.");
     return;
   }
+
+  // Get information about the apps in the new tab page.
+  ExtensionService* ext_service = automation_->profile()->GetExtensionService();
+  const ExtensionList* extensions = ext_service->extensions();
+  ListValue* apps_list = new ListValue();
+  for (ExtensionList::const_iterator ext = extensions->begin();
+       ext != extensions->end(); ++ext) {
+    // Only return information about extensions that are actually apps.
+    if ((*ext)->is_app()) {
+      DictionaryValue* app_info = new DictionaryValue();
+      AppLauncherHandler::CreateAppInfo(*ext, ext_service->extension_prefs(),
+                                        app_info);
+      apps_list->Append(app_info);
+    }
+  }
+  ntp_info_->Set("apps", apps_list);
 
   // Get the info that would be displayed in the recently closed section.
   ListValue* recently_closed_list = new ListValue;

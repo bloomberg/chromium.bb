@@ -1976,25 +1976,67 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     """
     return self._GetNTPInfo()['recently_closed']
 
-  def _GetNTPInfo(self):
-    """Get info about the NTP. This does not retrieve the actual info shown
-    in a particular NTP, but the current data that would be used to display
-    a NTP.
-
-    This includes info about the most visited sites, the recently closed
-    tabs and windows, and the default NTP sites.
-
-    TODO(kkania): Add info about apps.
-
-    Returns:
-      a dictionary containing info about NTP info. See details about the
-      sections in their respective methods.
+  def GetNTPApps(self):
+    """Retrieves information about the apps listed on the NTP.
 
     SAMPLE:
-    { u'most_visited': [ ... ],
-      u'recently_closed': [ ... ]
+    [
+      {
+        u'description': u'Web Store',
+        u'options_url': u'',
+        u'app_launch_index': 2,
+        u'name': u'Chrome Web Store',
+        u'launch_url': u'https://chrome.google.com/webstore',
+        u'icon_small': u'chrome://favicon/https://chrome.google.com/webstore',
+        u'launch_container': 2,
+        u'icon_big': u'chrome://theme/IDR_APP_DEFAULT_ICON',
+        u'id': u'ahfgeienlihckogmohjhadlkjgocpleb',
+        u'launch_type': 1
+      },
+      {
+        u'description': u'A countdown app',
+        u'options_url': u'',
+        u'app_launch_index': 1,
+        u'name': u'Countdown',
+        u'launch_url': (u'chrome-extension://aeabikdlfbfeihglecobdkdflahfgcpd/'
+                        u'launchLocalPath.html'),
+        u'icon_small': (u'chrome://favicon/chrome-extension://'
+                        u'aeabikdlfbfeihglecobdkdflahfgcpd/'
+                        u'launchLocalPath.html'),
+        u'launch_container': 2,
+        u'icon_big': (u'chrome-extension://aeabikdlfbfeihglecobdkdflahfgcpd/'
+                      u'countdown128.png'),
+        u'id': u'aeabikdlfbfeihglecobdkdflahfgcpd',
+        u'launch_type': 1
+      }
+    ]
+
+    Returns:
+      A list of dictionaries in which each dictionary contains the information
+      for a single app that appears in the "Apps" section of the NTP.
+    """
+    return self._GetNTPInfo()['apps']
+
+  def _GetNTPInfo(self):
+    """Get info about the New Tab Page (NTP).
+
+    This does not retrieve the actual info displayed in a particular NTP; it
+    retrieves the current state of internal data that would be used to display
+    an NTP.  This includes info about the apps, the most visited sites,
+    the recently closed tabs and windows, and the default NTP sites.
+
+    SAMPLE:
+    {
+      u'apps': [ ... ],
+      u'most_visited': [ ... ],
+      u'recently_closed': [ ... ],
       u'default_sites': [ ... ]
     }
+
+    Returns:
+      A dictionary containing all the NTP info. See details about the different
+      sections in their respective methods: GetNTPApps(), GetNTPThumbnails(),
+      GetNTPRecentlyClosed(), and GetNTPDefaultSites().
 
     Raises:
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
@@ -2007,6 +2049,17 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
   def _CheckNTPThumbnailShown(self, thumbnail):
     if self.GetNTPThumbnailIndex(thumbnail) == -1:
       raise NTPThumbnailNotShownError()
+
+  def InstallApp(self, app_crx_file_path):
+    """Installs the specified app synchronously.
+
+    An app file is a file with a .crx suffix, just like an extension or theme.
+    This method will not return until the app is installed.
+
+    Returns:
+      True, on success.
+    """
+    return self.InstallExtension(app_crx_file_path, False)
 
   def KillRendererProcess(self, pid):
     """Kills the given renderer process.

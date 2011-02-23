@@ -293,6 +293,90 @@ class NTPTest(pyauto.PyUITest):
     self.CloseBrowserWindow(1)
     self.assertFalse(self.GetNTPRecentlyClosed())
 
+  def _VerifyAppInfo(self, actual_info, expected_info):
+    """Ensures that the actual app info contains the expected app info.
+
+    This method assumes that both the actual and expected information for each
+    app contains at least the 'name' attribute.  Both sets of info are
+    considered to match if the actual info contains at least the specified
+    expected info (if the actual info contains additional values that are not
+    specified in the expected info, that's ok).  This function will fail the
+    current test if both sets of info don't match.
+
+    Args:
+      actual_info: A list of dictionaries representing the information from
+                   all apps that would currently be displayed on the NTP.
+      expected_info: A corrresponding list of dictionaries representing the
+                     information that is expected.
+    """
+    # Ensure all app info dictionaries contain at least the 'name' attribute.
+    self.assertTrue(all(map(lambda app: 'name' in app, actual_info)) and
+                    all(map(lambda app: 'name' in app, expected_info)),
+                    msg='At least one app is missing the "name" attribute.')
+
+    # Sort both app lists by name to ensure they're in a known order.
+    actual_info = sorted(actual_info, key=lambda app: app['name'])
+    expected_info = sorted(expected_info, key=lambda app: app['name'])
+
+    # Ensure the expected info matches the actual info.
+    self.assertTrue(len(actual_info) == len(expected_info),
+                    msg='Expected %d app(s) on NTP, but got %d instead.' % (
+                        len(expected_info), len(actual_info)))
+    for i, expected_app in enumerate(expected_info):
+      for attribute in expected_app:
+        self.assertTrue(attribute in actual_info[i],
+                        msg='Expected attribute "%s" not found in app info.' % (
+                            attribute))
+        self.assertTrue(expected_app[attribute] == actual_info[i][attribute],
+                        msg='For attribute "%s", expected value "%s", but got '
+                            '"%s".' % (attribute, expected_app[attribute],
+                                       actual_info[i][attribute]))
+
+  def testGetAppsInNewProfile(self):
+    """Ensures that the only app in a new profile is the Web Store app."""
+    app_info = self.GetNTPApps()
+    expected_app_info = [
+      {
+        u'name': u'Chrome Web Store'
+      }
+    ]
+    self._VerifyAppInfo(app_info, expected_app_info)
+
+  def testGetAppsWhenInstallApp(self):
+    """Ensures that an installed app is reflected in the app info in the NTP."""
+    app_crx_file = pyauto.FilePath(
+        os.path.join(self.DataDir(), 'pyauto_private', 'apps', 'countdown.crx'))
+    self.assertTrue(self.InstallApp(app_crx_file), msg='App install failed.')
+    app_info = self.GetNTPApps()
+    expected_app_info = [
+      {
+        u'name': u'Chrome Web Store'
+      },
+      {
+        u'name': u'Countdown'
+      }
+    ]
+    self._VerifyAppInfo(app_info, expected_app_info)
+
+  def testGetAppsWhenInstallNonApps(self):
+    """Ensures installed non-apps are not reflected in the NTP app info."""
+    # Install a regular extension and a theme.
+    ext_crx_file = pyauto.FilePath(
+        os.path.join(self.DataDir(), 'extensions', 'page_action.crx'))
+    self.assertTrue(self.InstallExtension(ext_crx_file, False),
+                    msg='Extension install failed.')
+    theme_crx_file = pyauto.FilePath(
+        os.path.join(self.DataDir(), 'extensions', 'theme.crx'))
+    self.assertTrue(self.SetTheme(theme_crx_file), msg='Theme install failed.')
+    # Verify that no apps are listed on the NTP except for the Web Store.
+    app_info = self.GetNTPApps()
+    expected_app_info = [
+      {
+        u'name': u'Chrome Web Store'
+      }
+    ]
+    self._VerifyAppInfo(app_info, expected_app_info)
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()
