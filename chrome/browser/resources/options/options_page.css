@@ -371,16 +371,9 @@ section > div:only-of-type {
   margin-top: 0;
 }
 
-/* TODO(stuartmorgan): make this less specific once all pages
- * are converted to the non-table style.
- */
-section > div:only-of-type label {
+div.checkbox,
+div.radio {
   margin: 5px 0;
-}
-
-label.checkbox,
-label.radio {
-  display: block
 }
 
 .hidden {

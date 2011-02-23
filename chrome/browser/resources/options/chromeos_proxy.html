@@ -3,20 +3,27 @@
   <section>
     <h3 i18n-content="proxy_config_title"></h3>
     <div>
-      <label class="radio">
-        <input type="radio" id="directProxy" name="proxytype"
-          pref="cros.session.proxy.type" value="1">
-        <span i18n-content="proxyDirectInternetConnection"></span>
-      </label>
-      <label class="radio">
-        <input type="radio" id="manualProxy" name="proxytype"
-            pref="cros.session.proxy.type" value="2">
-        <span i18n-content="proxyManual"></span>
-      </label>
-      <label class="checkbox">
-        <input id="proxyAllProtocols" type="checkbox" pref="cros.session.proxy.single">
-        <span i18n-content="sameProxyProtocols"></span>
-      </label>
+      <div class="radio">
+        <label>
+          <input type="radio" id="directProxy" name="proxytype"
+              pref="cros.session.proxy.type" value="1">
+          <span i18n-content="proxyDirectInternetConnection"></span>
+        </label>
+      </div>
+      <div class="radio">
+        <label>
+          <input type="radio" id="manualProxy" name="proxytype"
+              pref="cros.session.proxy.type" value="2">
+          <span i18n-content="proxyManual"></span>
+        </label>
+      </div>
+      <div class="checkbox">
+        <label>
+          <input id="proxyAllProtocols" type="checkbox"
+              pref="cros.session.proxy.single">
+          <span i18n-content="sameProxyProtocols"></span>
+        </label>
+      </div>
       <div id="singleProxy">
         <table>
         <tr><td><span
@@ -69,20 +76,26 @@
         </td></tr>
         </table>
       </div>
-      <label class="radio">
-        <input type="radio" id="autoProxy" name="proxytype"
-            pref="cros.session.proxy.type" value="3">
-        <span i18n-content="proxyAutomatic"></span></label>
-      <label><span
-          i18n-content="proxyConfigUrl"></span>
-        <input id="proxyConfig" type="url" size="60" pref="cros.session.proxy.pacurl">
-      </label>
+      <div class="radio">
+        <label>
+          <input type="radio" id="autoProxy" name="proxytype"
+              pref="cros.session.proxy.type" value="3">
+          <span i18n-content="proxyAutomatic"></span>
+        <label>
+      </div>
+      <div>
+        <label>
+          <span i18n-content="proxyConfigUrl"></span>
+          <input id="proxyConfig" type="url" size="60"
+              pref="cros.session.proxy.pacurl">
+        </label>
+      </div>
     </div>
   </section>
   <section id="advancedConfig">
     <h3 i18n-content="advanced_proxy_config"></h3>
     <div class="option">
-       <label><span i18n-content="proxyBypass"></span></label>
+       <div i18n-content="proxyBypass"></div>
        <list id="ignoredHostList"></list>
        <input id="newHost" type="url" size="30">
        <button id="addHost"

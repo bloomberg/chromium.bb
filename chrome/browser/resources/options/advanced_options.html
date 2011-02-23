@@ -17,39 +17,51 @@
         <a target="_blank" i18n-content="learnMore"
             i18n-values="href:privacyLearnMoreURL"></a>
       </div>
-      <label class="checkbox">
-        <input id="alternateErrorPagesEnabled" pref="alternate_error_pages.enabled"
-            metric="Options_LinkDoctorCheckbox" type="checkbox">
-        <span i18n-content="linkDoctorPref"></span>
-      </label>
-      <label class="checkbox">
-        <input id="searchSuggestEnabled" pref="search.suggest_enabled"
-            metric="Options_UseSuggestCheckbox" type="checkbox">
-        <span i18n-content="suggestPref"></span>
-      </label>
-      <label class="checkbox">
-        <input id="dnsPrefetchingEnabled" pref="dns_prefetching.enabled"
-            metric="Options_DnsPrefetchCheckbox" type="checkbox">
-        <span i18n-content="networkDNSPrefetchEnabledDescription"></span>
-      </label>
-      <label class="checkbox">
-        <input id="safeBrowsingEnabled" pref="safebrowsing.enabled"
-            metric="Options_SafeBrowsingCheckbox" type="checkbox">
-        <span i18n-content="safeBrowsingEnableProtection"></span>
-      </label>
+      <div class="checkbox">
+        <label>
+          <input id="alternateErrorPagesEnabled" pref="alternate_error_pages.enabled"
+              metric="Options_LinkDoctorCheckbox" type="checkbox">
+          <span i18n-content="linkDoctorPref"></span>
+        </label>
+      </div>
+      <div class="checkbox">
+        <label>
+          <input id="searchSuggestEnabled" pref="search.suggest_enabled"
+              metric="Options_UseSuggestCheckbox" type="checkbox">
+          <span i18n-content="suggestPref"></span>
+        </label>
+      </div>
+      <div class="checkbox">
+        <label>
+          <input id="dnsPrefetchingEnabled" pref="dns_prefetching.enabled"
+              metric="Options_DnsPrefetchCheckbox" type="checkbox">
+          <span i18n-content="networkDNSPrefetchEnabledDescription"></span>
+        </label>
+      </div>
+      <div class="checkbox">
+        <label>
+          <input id="safeBrowsingEnabled" pref="safebrowsing.enabled"
+              metric="Options_SafeBrowsingCheckbox" type="checkbox">
+          <span i18n-content="safeBrowsingEnableProtection"></span>
+        </label>
+      </div>
 <if expr="pp_ifdef('_google_chrome') and pp_ifdef('chromeos')">
-      <label class="checkbox" id="metricsReportingSetting">
-        <input id="metricsReportingEnabled"
-            pref="cros.metrics.reportingEnabled" type="checkbox">
-        <span i18n-content="enableLogging" id="metricsReportingEnabledText">
-        </span>
-      </label>
+      <div class="checkbox" id="metricsReportingSetting">
+        <label>
+          <input id="metricsReportingEnabled"
+              pref="cros.metrics.reportingEnabled" type="checkbox">
+          <span i18n-content="enableLogging" id="metricsReportingEnabledText">
+          </span>
+        </label>
+      </div>
 </if>
 <if expr="pp_ifdef('_google_chrome') and not pp_ifdef('chromeos')">
-      <label class="checkbox" id="metricsReportingSetting">
-        <input id="metricsReportingEnabled" type="checkbox">
-        <span i18n-content="enableLogging"></span>
-      </label>
+      <div class="checkbox" id="metricsReportingSetting">
+        <label>
+          <input id="metricsReportingEnabled" type="checkbox">
+          <span i18n-content="enableLogging"></span>
+        </label>
+      </div>
 </if>
     </div>
   </section>
@@ -103,11 +115,13 @@
       </div>
 </if>
 <if expr="os == 'darwin'">
-      <label class="checkbox">
-        <input id="tabsToLinksPref" pref="webkit.webprefs.tabs_to_links"
-            metric="Options_TabsToLinks" type="checkbox">
-        <span i18n-content="tabsToLinksPref"></span>
-      </label>
+      <div class="checkbox">
+        <label>
+          <input id="tabsToLinksPref" pref="webkit.webprefs.tabs_to_links"
+              metric="Options_TabsToLinks" type="checkbox">
+          <span i18n-content="tabsToLinksPref"></span>
+        </label>
+      </div>
 </if>
     </div>
   </section>
@@ -123,8 +137,8 @@
   </section>
   <section>
     <h3 i18n-content="advancedSectionTitleTranslate"></h3>
-    <div>
-      <label class="checkbox">
+    <div class="checkbox">
+      <label>
         <input id="enableTranslate" pref="translate.enabled"
             metric="Options_Translate" type="checkbox">
         <span i18n-content="translateEnableTranslate"></span>
@@ -143,12 +157,14 @@
         <button id="downloadLocationChangeButton"
             i18n-content="downloadLocationChangeButton"></button>
       </div>
-      <label class="checkbox">
-        <input id="promptForDownload" metric="Options_AskForSaveLocation"
-            type="checkbox">
-        <span id="promptForDownloadLabel"
-            i18n-content="downloadLocationAskForSaveLocation"></span>
-      </label>
+      <div class="checkbox">
+        <label>
+          <input id="promptForDownload" metric="Options_AskForSaveLocation"
+              type="checkbox">
+          <span id="promptForDownloadLabel"
+              i18n-content="downloadLocationAskForSaveLocation"></span>
+        </label>
+      </div>
       <div id="auto-open-file-types-label"
           i18n-content="autoOpenFileTypesInfo"></div>
       <div class="section-group">
@@ -165,36 +181,48 @@
           i18n-content="certificatesManageButton"></button></div>
 <if expr="os == 'win32'">
       <!-- Configure these options for manual handling on windows -->
-      <label class="checkbox">
-        <input id="sslCheckRevocation" type="checkbox">
-        <span i18n-content="sslCheckRevocation"></span>
-      </label>
-      <label class="checkbox">
-        <input id="sslUseSSL3" type="checkbox">
-        <span i18n-content="sslUseSSL3"></span>
-      </label>
-      <label class="checkbox">
-        <input id="sslUseTLS1" type="checkbox">
-        <span i18n-content="sslUseTLS1"></span>
-      </label>
+      <div class="checkbox">
+        <label>
+          <input id="sslCheckRevocation" type="checkbox">
+          <span i18n-content="sslCheckRevocation"></span>
+        </label>
+      </div>
+      <div class="checkbox">
+        <label>
+          <input id="sslUseSSL3" type="checkbox">
+          <span i18n-content="sslUseSSL3"></span>
+        </label>
+      </div>
+      <div class="checkbox">
+        <label>
+          <input id="sslUseTLS1" type="checkbox">
+          <span i18n-content="sslUseTLS1"></span>
+        </label>
+      </div>
 </if>
 <if expr="os == 'linux2' or os.find('bsd') != -1">
       <!-- Configure these options for CrOS/Linux/BSD as preference keys -->
-      <label class="checkbox">
-        <input id="sslCheckRevocation" pref="ssl.rev_checking.enabled"
-            metric="Options_CheckCertRevocation" type="checkbox">
-        <span i18n-content="sslCheckRevocation"></span>
-      </label>
-      <label class="checkbox">
-        <input id="sslUseSSL3" pref="ssl.ssl3.enabled" metric="Options_SSL3"
-            type="checkbox">
-        <span i18n-content="sslUseSSL3"></span>
-      </label>
-      <label class="checkbox">
-        <input id="sslUseTLS1" pref="ssl.tls1.enabled" metric="Options_TLS1"
-            type="checkbox">
-        <span i18n-content="sslUseTLS1"></span>
-      </label>
+      <div class="checkbox">
+        <label>
+          <input id="sslCheckRevocation" pref="ssl.rev_checking.enabled"
+              metric="Options_CheckCertRevocation" type="checkbox">
+          <span i18n-content="sslCheckRevocation"></span>
+        </label>
+      </div>
+      <div class="checkbox">
+        <label>
+          <input id="sslUseSSL3" pref="ssl.ssl3.enabled" metric="Options_SSL3"
+              type="checkbox">
+          <span i18n-content="sslUseSSL3"></span>
+        </label>
+      </div>
+      <div class="checkbox">
+        <label>
+          <input id="sslUseTLS1" pref="ssl.tls1.enabled" metric="Options_TLS1"
+              type="checkbox">
+          <span i18n-content="sslUseTLS1"></span>
+        </label>
+      </div>
 </if>
     </div>
   </section>

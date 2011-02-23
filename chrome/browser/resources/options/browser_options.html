@@ -3,19 +3,29 @@
   <section id="startupSection">
     <h3 i18n-content="startupGroupName"></h3>
     <div>
-      <label class="radio"><input type="radio" name="startup"
-          pref="session.restore_on_startup" value="0"
-          metric="Options_Startup_Homepage">
-          <span i18n-content="startupShowDefaultAndNewTab"></span></label>
-      <label class="radio"><input type="radio" name="startup"
-          pref="session.restore_on_startup" value="1"
-          metric="Options_Startup_LastSession">
-          <span i18n-content="startupShowLastSession"></span></label>
-      <label class="radio"><input type="radio" name="startup" id="startupShowPagesButton"
-          pref="session.restore_on_startup" value="4"
-          metric="Options_Startup_Custom">
+      <div class="radio">
+        <label>
+          <input type="radio" name="startup" pref="session.restore_on_startup"
+              value="0" metric="Options_Startup_Homepage">
+          <span i18n-content="startupShowDefaultAndNewTab"></span>
+        </label>
+      </div>
+      <div class="radio">
+        <label>
+          <input type="radio" name="startup" pref="session.restore_on_startup"
+              value="1" metric="Options_Startup_LastSession">
+          <span i18n-content="startupShowLastSession"></span>
+        </label>
+      </div>
+      <div class="radio">
+        <label>
+          <input type="radio" name="startup" id="startupShowPagesButton"
+              pref="session.restore_on_startup" value="4"
+              metric="Options_Startup_Custom">
           <span id="startupShowPagesLabel"
-              i18n-content="startupShowPages"></span></label>
+              i18n-content="startupShowPages"></span>
+        </label>
+      </div>
       <div class="suboption">
         <div id="startupPageManagement" class="settings-list">
           <list id="startupPagesList"></list>
@@ -32,17 +42,21 @@
   <section>
     <h3 i18n-content="homepageGroupName"></h3>
     <div>
-      <label class="radio">
-        <input type="radio" name="homepage" id="homepageUseNTPButton"
-            value="true" metric="Options_Homepage_IsNewTabPage">
-        <span i18n-content="homepageUseNewTab"></span>
-      </label>
-      <div id="customHomePageGroup">
-        <label class="radio">
-          <input type="radio" name="homepage" id="homepageUseURLButton"
-              value="false" metric="Options_Homepage_IsNewTabPage">
-          <span i18n-content="homepageUseURL"></span>
+      <div class="radio">
+        <label>
+          <input type="radio" name="homepage" id="homepageUseNTPButton"
+              value="true" metric="Options_Homepage_IsNewTabPage">
+          <span i18n-content="homepageUseNewTab"></span>
         </label>
+      </div>
+      <div id="customHomePageGroup">
+        <div class="radio">
+          <label>
+            <input type="radio" name="homepage" id="homepageUseURLButton"
+                value="false" metric="Options_Homepage_IsNewTabPage">
+            <span i18n-content="homepageUseURL"></span>
+          </label>
+        </div>
         <div>
           <input id="homepageURL" class="favicon-cell" type="url">
         </div>
@@ -52,8 +66,8 @@
   <section>
     <h3 i18n-content="toolbarGroupName"></h3>
     <div>
-      <div class="option">
-        <label class="checkbox">
+      <div class="checkbox">
+        <label>
           <input id="toolbarShowHomeButton" pref="browser.show_home_button"
               metric="Options_Homepage_HomeButton" type="checkbox">
           <span i18n-content="toolbarShowHomeButton"></span>
@@ -69,16 +83,18 @@
           <button id="defaultSearchManageEnginesButton"
               i18n-content="defaultSearchManageEngines"></button>
         </div>
-        <label class="checkbox" id="instantOption">
-          <!-- TODO(estade): metric? -->
-          <input type="checkbox" id="instantEnableCheckbox"
-                 pref="instant.enabled">
-          <span i18n-content="instantName"></span>
-          <!-- This hidden checkbox allows us to get/set the state of the
-               confirm_dialog_shown pref -->
-          <input type="checkbox" class="hidden" id="instantDialogShown"
-                 pref="instant.confirm_dialog_shown">
-        </label>
+        <div class="checkbox" id="instantOption">
+          <label>
+            <!-- TODO(estade): metric? -->
+            <input type="checkbox" id="instantEnableCheckbox"
+                pref="instant.enabled">
+            <span i18n-content="instantName"></span>
+            <!-- This hidden checkbox allows us to get/set the state of the
+                 confirm_dialog_shown pref -->
+            <input type="checkbox" class="hidden" id="instantDialogShown"
+                pref="instant.confirm_dialog_shown">
+          </label>
+        </div>
         <div class="suboption informational-text">
           <span i18n-content="instantWarningText"></span>
           <a target="_blank" i18n-values="href:instantLearnMoreLink"

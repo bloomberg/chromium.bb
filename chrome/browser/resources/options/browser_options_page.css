@@ -21,7 +21,7 @@
   -webkit-box-orient: horizontal;
 }
 
-#customHomePageGroup > div {
+#customHomePageGroup > :last-child {
   -webkit-padding-start: 1ex;
   -webkit-box-flex: 1;
 }

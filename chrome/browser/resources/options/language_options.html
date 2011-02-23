@@ -51,15 +51,15 @@
     <div i18n-content="select_previous_input_method_hint"></div>
 </if>
 <if expr="not pp_ifdef('chromeos')">
-    <div id="spell-check-option">
-      <label class="checkbox">
+    <div id="spell-check-option" class="checkbox">
+      <label>
         <input id="enable-spell-check" pref="browser.enable_spellchecking"
             metric="Options_SpellCheck" type="checkbox">
         <span i18n-content="enable_spell_check"></span>
       </label>
     </div>
-    <div id="auto-spell-correction-option" class="hidden">
-      <label class="checkbox">
+    <div id="auto-spell-correction-option" class="hidden" class="checkbox">
+      <label>
         <input id="enable-auto-spell-correction"
             pref="browser.enable_autospellcorrect"
             metric="Options_AutoSpellCorrection" type="checkbox">

@@ -41,19 +41,23 @@
   <section>
     <h3 i18n-content="passwords"></h3>
     <div>
-      <label class="radio">
-        <input id="passwords-offersave"
-            pref="profile.password_manager_enabled"
-            type="radio" value="true" metric="Options_PasswordManager">
-        <span i18n-content="passwordsAskToSave"></span>
-      </label>
-      <label class="radio">
-        <input id="passwords-neversave"
-            name="passwords_radio"
-            pref="profile.password_manager_enabled"
-            type="radio" value="false" metric="Options_PasswordManager">
-        <span i18n-content="passwordsNeverSave"></span>
-      </label>
+      <div class="radio">
+        <label>
+          <input id="passwords-offersave"
+              pref="profile.password_manager_enabled"
+              type="radio" value="true" metric="Options_PasswordManager">
+          <span i18n-content="passwordsAskToSave"></span>
+        </label>
+      </div>
+      <div class="radio">
+        <label>
+          <input id="passwords-neversave"
+              name="passwords_radio"
+              pref="profile.password_manager_enabled"
+              type="radio" value="false" metric="Options_PasswordManager">
+          <span i18n-content="passwordsNeverSave"></span>
+        </label>
+      </div>
       <div><button id="manage-passwords"
           i18n-content="manage_passwords"></button></div>
     </div>
@@ -61,11 +65,13 @@
   <section>
     <h3 i18n-content="autofill"></h3>
     <div>
-      <label class="checkbox">
-        <input id="autoFillEnabled" pref="autofill.enabled"
-            metric="Options_FormAutofill" type="checkbox">
-        <span i18n-content="autoFillEnabled"></span>
-      </label>
+      <div class="checkbox">
+        <label>
+          <input id="autoFillEnabled" pref="autofill.enabled"
+              metric="Options_FormAutofill" type="checkbox">
+          <span i18n-content="autoFillEnabled"></span>
+        </label>
+      </div>
       <button id="autofill-settings"
           i18n-content="manageAutofillSettings"></button>
     </div>
@@ -92,18 +98,22 @@
         <a id="themes-gallery" i18n-content="themesGallery"
             i18n-values="href:themesGalleryURL" target="_blank"></a>
       </div>
-      <label class="radio">
-        <input name="decorations_radio"
-            pref="browser.custom_chrome_frame"
-            type="radio" value="false" metric="Options_CustomFrame">
-        <span i18n-content="showWindowDecorations"></span>
-      </label>
-      <label class="radio">
-        <input name="decorations_radio"
-            pref="browser.custom_chrome_frame"
-            type="radio" value="true" metric="Options_CustomFrame">
-        <span i18n-content="hideWindowDecorations"></span>
-      </label>
+      <div class="radio">
+        <label>
+          <input name="decorations_radio"
+              pref="browser.custom_chrome_frame"
+              type="radio" value="false" metric="Options_CustomFrame">
+          <span i18n-content="showWindowDecorations"></span>
+        </label>
+      </div>
+      <div class="radio">
+        <label>
+          <input name="decorations_radio"
+              pref="browser.custom_chrome_frame"
+              type="radio" value="true" metric="Options_CustomFrame">
+          <span i18n-content="hideWindowDecorations"></span>
+        </label>
+      </div>
     </div>
   </section>
 </if>

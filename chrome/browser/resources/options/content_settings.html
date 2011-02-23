@@ -4,25 +4,33 @@
   <section>
     <h3 i18n-content="cookies_tab_label"></h3>
     <div>
-      <label class="radio">
-        <input type="radio" name="cookies" value="allow">
-        <span i18n-content="cookies_allow"></span>
-      </label>
-      <label class="radio">
-        <input type="radio" name="cookies" value="block">
-         <span i18n-content="cookies_block"></span>
-      </label>
+      <div class="radio">
+        <label>
+          <input type="radio" name="cookies" value="allow">
+          <span i18n-content="cookies_allow"></span>
+        </label>
+      </div>
+      <div class="radio">
+        <label>
+          <input type="radio" name="cookies" value="block">
+          <span i18n-content="cookies_block"></span>
+        </label>
+      </div>
 
-      <label class="checkbox">
-        <input id="block-third-party-cookies"
-            pref="profile.block_third_party_cookies" type="checkbox">
-        <span i18n-content="cookies_block_3rd_party"></span>
-      </label>
-      <label class="checkbox">
-        <input id="clear-cookies-on-exit"
-            pref="profile.clear_site_data_on_exit" type="checkbox">
-        <span id="clear-cookies-on-exit-label"></span>
-      </label>
+      <div class="checkbox">
+        <label>
+          <input id="block-third-party-cookies"
+              pref="profile.block_third_party_cookies" type="checkbox">
+          <span i18n-content="cookies_block_3rd_party"></span>
+        </label>
+      </div>
+      <div class="checkbox">
+        <label>
+          <input id="clear-cookies-on-exit"
+              pref="profile.clear_site_data_on_exit" type="checkbox">
+          <span id="clear-cookies-on-exit-label"></span>
+        </label>
+      </div>
 
       <button class="exceptions-list-button" contentType="cookies"
           i18n-content="manage_exceptions"></button>
@@ -35,14 +43,18 @@
   <section>
     <h3 i18n-content="images_tab_label"></h3>
     <div>
-      <label class="radio">
-        <input type="radio" name="images" value="allow">
-        <span i18n-content="images_allow"></span>
-      </label>
-      <label class="radio">
-        <input type="radio" name="images" value="block">
-        <span i18n-content="images_block"></span>
-      </label>
+      <div class="radio">
+        <label>
+          <input type="radio" name="images" value="allow">
+          <span i18n-content="images_allow"></span>
+        </label>
+      </div>
+      <div class="radio">
+        <label>
+          <input type="radio" name="images" value="block">
+          <span i18n-content="images_block"></span>
+        </label>
+      </div>
 
       <button class="exceptions-list-button" contentType="images"
           i18n-content="manage_exceptions"></button>
@@ -53,14 +65,18 @@
   <section>
     <h3 i18n-content="javascript_tab_label"></h3>
     <div>
-      <label class="radio">
-        <input type="radio" name="javascript" value="allow">
-        <span i18n-content="javascript_allow"></span>
-      </label>
-      <label class="radio">
-        <input type="radio" name="javascript" value="block">
-        <span i18n-content="javascript_block"></span>
-      </label>
+      <div class="radio">
+        <label>
+          <input type="radio" name="javascript" value="allow">
+          <span i18n-content="javascript_allow"></span>
+        </label>
+      </div>
+      <div class="radio">
+        <label>
+          <input type="radio" name="javascript" value="block">
+          <span i18n-content="javascript_block"></span>
+        </label>
+      </div>
 
       <button class="exceptions-list-button" contentType="javascript"
           i18n-content="manage_exceptions"></button>
@@ -71,18 +87,24 @@
   <section>
     <h3 i18n-content="plugins_tab_label"></h3>
     <div>
-      <label class="radio">
-        <input type="radio" name="plugins" value="allow">
-        <span i18n-content="plugins_allow"></span>
-      </label>
-      <label class="radio" id="click_to_play">
-        <input type="radio" name="plugins" value="ask">
-        <span i18n-content="plugins_ask"></span>
-      </label>
-      <label class="radio">
-        <input type="radio" name="plugins" value="block">
-        <span i18n-content="plugins_block"></span>
-      </label>
+      <div class="radio">
+        <label>
+          <input type="radio" name="plugins" value="allow">
+          <span i18n-content="plugins_allow"></span>
+        </label>
+      </div>
+      <div class="radio" id="click_to_play">
+        <label>
+          <input type="radio" name="plugins" value="ask">
+          <span i18n-content="plugins_ask"></span>
+        </label>
+      </div>
+      <div class="radio">
+        <label>
+          <input type="radio" name="plugins" value="block">
+          <span i18n-content="plugins_block"></span>
+        </label>
+      </div>
 
       <button class="exceptions-list-button" contentType="plugins"
           i18n-content="manage_exceptions"></button>
@@ -96,14 +118,18 @@
   <section>
     <h3 i18n-content="popups_tab_label" class="content-settings-header"></h3>
     <div>
-      <label class="radio">
-        <input type="radio" name="popups" value="allow">
-         <span i18n-content="popups_allow"></span>
-      </label>
-      <label class="radio">
-        <input type="radio" name="popups" value="block">
-        <span i18n-content="popups_block"></span>
-      </label>
+      <div class="radio">
+        <label>
+          <input type="radio" name="popups" value="allow">
+          <span i18n-content="popups_allow"></span>
+        </label>
+      </div>
+      <div class="radio">
+        <label>
+          <input type="radio" name="popups" value="block">
+          <span i18n-content="popups_block"></span>
+        </label>
+      </div>
 
       <button class="exceptions-list-button" contentType="popups"
           i18n-content="manage_exceptions"></button>
@@ -114,18 +140,24 @@
   <section>
     <h3 i18n-content="location_tab_label"></h3>
     <div>
-      <label class="radio">
-        <input type="radio" name="location" value="allow">
-        <span i18n-content="location_allow"></span>
-      </label>
-      <label class="radio">
-        <input type="radio" name="location" value="ask">
-        <span i18n-content="location_ask"></span>
-      </label>
-      <label class="radio">
-        <input type="radio" name="location" value="block">
-        <span i18n-content="location_block"></span>
-      </label>
+      <div class="radio">
+        <label>
+          <input type="radio" name="location" value="allow">
+          <span i18n-content="location_allow"></span>
+        </label>
+      </div>
+      <div class="radio">
+        <label>
+          <input type="radio" name="location" value="ask">
+          <span i18n-content="location_ask"></span>
+        </label>
+      </div>
+      <div class="radio">
+        <label>
+          <input type="radio" name="location" value="block">
+          <span i18n-content="location_block"></span>
+        </label>
+      </div>
 
       <button class="exceptions-list-button" contentType="location"
           i18n-content="manage_exceptions"></button>
@@ -136,18 +168,24 @@
   <section>
     <h3 i18n-content="notifications_tab_label"></h3>
     <div>
-      <label class="radio">
-        <input type="radio" name="notifications" value="allow">
-        <span i18n-content="notifications_allow"></span>
-      </label>
-      <label class="radio">
-        <input type="radio" name="notifications" value="ask">
-        <span i18n-content="notifications_ask"></span>
-      </label>
-      <label class="radio">
-        <input type="radio" name="notifications" value="block">
-        <span i18n-content="notifications_block"></span>
-      </label>
+      <div class="radio">
+        <label>
+          <input type="radio" name="notifications" value="allow">
+          <span i18n-content="notifications_allow"></span>
+        </label>
+      </div>
+      <div class="radio">
+        <label>
+          <input type="radio" name="notifications" value="ask">
+          <span i18n-content="notifications_ask"></span>
+        </label>
+      </div>
+      <div class="radio">
+        <label>
+          <input type="radio" name="notifications" value="block">
+          <span i18n-content="notifications_block"></span>
+        </label>
+      </div>
 
       <button class="exceptions-list-button" contentType="notifications"
           i18n-content="manage_exceptions"></button>

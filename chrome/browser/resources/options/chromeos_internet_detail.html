@@ -41,10 +41,12 @@
         </tr>
         <tr>
           <td colspan="2">
-            <label class="checkbox">
-              <input id="autoConnectNetwork" type="checkbox">
-              <span i18n-content="inetAutoConnectNetwork"></span>
-            </label>
+            <div class="checkbox">
+              <label>
+                <input id="autoConnectNetwork" type="checkbox">
+                <span i18n-content="inetAutoConnectNetwork"></span>
+              </label>
+            </div>
           </td>
         </tr>
       </table>
@@ -100,8 +102,8 @@
       <div id="planList"></div>
     </section>
     <section class="plan-details-info">
-      <div>
-        <label class="checkbox">
+      <div class="checkbox">
+        <label>
           <input id="showPlanNotifications" type="checkbox"
                  pref="settings.internet.mobile.show_plan_notifications">
           <span i18n-content="showPlanNotifications"></span>
