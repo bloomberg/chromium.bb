@@ -626,6 +626,9 @@ RenderView::RenderView(RenderThreadBase* render_thread,
   webview()->initializeMainFrame(this);
   if (!frame_name.empty())
     webview()->mainFrame()->setName(frame_name);
+  webview()->settings()->setMinimumTimerInterval(
+      is_hidden() ? webkit_glue::kBackgroundTabTimerInterval :
+          webkit_glue::kForegroundTabTimerInterval);
 
   OnSetRendererPrefs(renderer_prefs);
 

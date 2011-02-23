@@ -12,7 +12,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
-#include "webkit/glue/webkit_constants.h"
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebRuntimeFeatures;
@@ -206,7 +205,4 @@ void WebPreferences::Apply(WebView* web_view) const {
 
   settings->setInteractiveFormValidationEnabled(
       interactive_form_validation_enabled);
-
-  // Tabs start out hidden and are made visible.
-  settings->setMinimumTimerInterval(webkit_glue::kBackgroundTabTimerInterval);
 }
