@@ -60,6 +60,7 @@ class PrepareFrameAndViewForPrint {
   WebKit::WebView* web_view_;
   gfx::Size print_canvas_size_;
   gfx::Size prev_view_size_;
+  gfx::Size prev_scroll_offset_;
   int expected_pages_count_;
   bool use_browser_overlays_;
 

@@ -82,6 +82,8 @@ PrepareFrameAndViewForPrint::PrepareFrameAndViewForPrint(
   print_layout_size.set_height(static_cast<int>(
       static_cast<double>(print_layout_size.height()) * 1.25));
 
+  if (WebFrame* web_frame = web_view_->mainFrame())
+    prev_scroll_offset_ = web_frame->scrollOffset();
   prev_view_size_ = web_view->size();
 
   web_view->resize(print_layout_size);
@@ -97,6 +99,8 @@ PrepareFrameAndViewForPrint::PrepareFrameAndViewForPrint(
 PrepareFrameAndViewForPrint::~PrepareFrameAndViewForPrint() {
   frame_->printEnd();
   web_view_->resize(prev_view_size_);
+  if (WebFrame* web_frame = web_view_->mainFrame())
+    web_frame->setScrollOffset(prev_scroll_offset_);
 }
 
 
