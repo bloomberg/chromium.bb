@@ -4716,6 +4716,9 @@ AudioTrack::AudioTrack(
         }
     }
 
+    if (m_channels <= 0)
+        m_channels = 1;  //Matroska spec says this is the default
+
     return;
 }
 
