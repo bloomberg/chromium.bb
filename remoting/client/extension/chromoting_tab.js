@@ -106,6 +106,7 @@ function showClientStateMessage(message, duration) {
   var msg = document.getElementById('status_msg');
   msg.innerText = message;
   msg.style.opacity = 1;
+  msg.style.display = '';
 
   if (duration) {
     // Set message duration.
@@ -155,6 +156,7 @@ function setClientStateMessage(message) {
   var msg = document.getElementById('status_msg');
   msg.innerText = message;
   msg.style.opacity = 1;
+  msg.style.display = '';
 }
 
 /**
@@ -205,6 +207,7 @@ function fade(name, id, val, delta, delay) {
     } else {
       // Completely hide the text and stop fading.
       e.style.opacity = 0;
+      e.style.display = 'none';
     }
   }
 }
