@@ -38,9 +38,11 @@
 #define O3D_CORE_CROSS_MESSAGE_QUEUE_H_
 
 #include <vector>
-#include "native_client/src/shared/imc/nacl_imc.h"
+
+#include "base/atomicops.h"
 #include "core/cross/types.h"
 #include "core/cross/message_commands.h"
+#include "native_client/src/shared/imc/nacl_imc.h"
 
 namespace o3d {
 
@@ -211,10 +213,9 @@ class MessageQueue {
   // created shared memory buffer.
   int32 next_shared_memory_id_;
 
-  // Stores the next available unique id for message queues.  This allows
-  // us to create multiple instances of the MessageQueue, each with a unique
-  // address.
-  static int next_message_queue_id_;
+  // Stores the last used unique id for message queues.  This allows us to
+  // create multiple instances of the MessageQueue, each with a unique address.
+  static volatile ::base::subtle::Atomic32 last_message_queue_id_;
 
   bool has_new_texture_;
 

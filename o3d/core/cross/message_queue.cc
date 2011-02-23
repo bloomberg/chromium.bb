@@ -53,7 +53,7 @@
 
 namespace o3d {
 
-int MessageQueue::next_message_queue_id_ = 0;
+volatile ::base::subtle::Atomic32 MessageQueue::last_message_queue_id_ = -1;
 
 // Prefix used to name all server socket addresses for O3D.
 const char kServerSocketAddressPrefix[] = "o3d";
@@ -143,6 +143,9 @@ MessageQueue::MessageQueue(ServiceLocator* service_locator)
   pid_t proc_id = getpid();
 #endif
 
+  int id = ::base::subtle::NoBarrier_AtomicIncrement(&last_message_queue_id_,
+                                                     1);
+
   // Create a unique name for the socket used by the message queue.
   // We use part of the process id to distinguish between different
   // browsers running o3d at the same time as well as a count to
@@ -150,10 +153,10 @@ MessageQueue::MessageQueue(ServiceLocator* service_locator)
   // browser.
   ::base::snprintf(server_socket_address_.path,
                    sizeof(server_socket_address_.path),
-                   "%s%d%d", kServerSocketAddressPrefix, (proc_id & 0xFFFF),
-                   next_message_queue_id_);
-
-  next_message_queue_id_++;
+                   "%s%u-%d",
+                   kServerSocketAddressPrefix,
+                   static_cast<unsigned int>(proc_id),
+                   id);
 }
 
 MessageQueue::~MessageQueue() {
