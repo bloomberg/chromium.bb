@@ -24,7 +24,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/main_function_params.h"
 #include "chrome/common/result_codes.h"
-#include "net/socket/ssl_client_socket_mac_factory.h"
+#include "net/socket/client_socket_factory.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -135,8 +135,7 @@ class BrowserMainPartsMac : public BrowserMainPartsPosix {
     // Use NSS for SSL by default.
     // The default client socket factory uses NSS for SSL by default on Mac.
     if (parsed_command_line().HasSwitch(switches::kUseSystemSSL)) {
-      net::ClientSocketFactory::SetSSLClientSocketFactory(
-          net::SSLClientSocketMacFactory);
+      net::ClientSocketFactory::UseSystemSSL();
     } else {
       // We want to be sure to init NSPR on the main thread.
       base::EnsureNSPRInit();

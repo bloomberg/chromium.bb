@@ -34,7 +34,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/winsock_init.h"
-#include "net/socket/ssl_client_socket_nss_factory.h"
+#include "net/socket/client_socket_factory.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/message_box_win.h"
@@ -270,12 +270,11 @@ class BrowserMainPartsWin : public BrowserMainParts {
  private:
   virtual void InitializeSSL() {
     // Use NSS for SSL by default.
-    // Because of a build system issue (http://crbug.com/43461), the default
-    // client socket factory uses SChannel (the system SSL library) for SSL by
-    // default on Windows.
-    if (!parsed_command_line().HasSwitch(switches::kUseSystemSSL)) {
-      net::ClientSocketFactory::SetSSLClientSocketFactory(
-          net::SSLClientSocketNSSFactory);
+    // The default client socket factory uses NSS for SSL by default on
+    // Windows.
+    if (parsed_command_line().HasSwitch(switches::kUseSystemSSL)) {
+      net::ClientSocketFactory::UseSystemSSL();
+    } else {
       // We want to be sure to init NSPR on the main thread.
       base::EnsureNSPRInit();
     }

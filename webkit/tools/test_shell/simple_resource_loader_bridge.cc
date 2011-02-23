@@ -57,9 +57,6 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/proxy/proxy_service.h"
-#if defined(OS_WIN)
-#include "net/socket/ssl_client_socket_nss_factory.h"
-#endif
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
 #include "webkit/appcache/appcache_interfaces.h"
@@ -885,12 +882,6 @@ bool SimpleResourceLoaderBridge::EnsureIOThread() {
   if (g_io_thread)
     return true;
 
-#if defined(OS_WIN)
-  // Use NSS for SSL on Windows.  TODO(wtc): this should eventually be hidden
-  // inside DefaultClientSocketFactory::CreateSSLClientSocket.
-  net::ClientSocketFactory::SetSSLClientSocketFactory(
-      net::SSLClientSocketNSSFactory);
-#endif
 #if defined(OS_MACOSX) || defined(OS_WIN)
   // We want to be sure to init NSPR on the main thread.
   base::EnsureNSPRInit();
