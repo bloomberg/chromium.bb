@@ -30,6 +30,7 @@ import optparse
 import os
 import shutil
 import signal
+import stat
 import subprocess
 import sys
 import tempfile
@@ -87,6 +88,7 @@ import plugins_info
 import prefs_info
 from pyauto_errors import JSONInterfaceError
 from pyauto_errors import NTPThumbnailNotShownError
+import pyauto_utils
 import simplejson as json  # found in third_party
 
 _HTTP_SERVER = None
@@ -145,11 +147,72 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
 
     Can be used to prevent launching the browser window by default in case a
     test wants to do some additional setup before firing browser.
+
+    When using the named interface, it connects to an existing browser
+    instance.
     """
+    named_channel_id = _OPTIONS.channel_id
+    if self.IsChromeOS():  # Enable testing interface on ChromeOS
+      if self.get_clear_profile():
+        self.CleanupBrowserProfileOnChromeOS()
+      if not named_channel_id:
+        named_channel_id = self.EnableChromeTestingOnChromeOS()
+    if named_channel_id:
+      self.UseNamedChannelID(named_channel_id)
     self.SetUp()     # Fire browser
 
   def tearDown(self):
     self.TearDown()  # Destroy browser
+
+  def EnableChromeTestingOnChromeOS(self):
+    """Enables the named automation interface on chromeos.
+
+    Restarts chrome so that you get a fresh instance.
+    Also sets some testing-friendly flags for chrome.
+
+    Expects suid python to be present in the same dir as pyautolib.py
+    """
+    def _IsRootSuid(path):
+      return os.path.isfile(path) and (os.stat(path).st_mode & stat.S_ISUID)
+    suid_python = os.path.normpath(os.path.join(
+        os.path.dirname(pyautolib.__file__), 'python'))
+    assert _IsRootSuid(suid_python), \
+        'Did not find suid-root python at %s' % suid_python
+    file_path = os.path.join(os.path.dirname(__file__), 'chromeos',
+                             'enable_testing.py')
+    args = [suid_python, file_path]
+    # Pass extra chrome flags for testing
+    for flag in self.ExtraChromeFlagsOnChromeOS():
+      args.append('--extra-chrome-flags=%s' % flag)
+    proc = subprocess.Popen(args, stdout=subprocess.PIPE)
+    automation_channel_path = proc.communicate()[0]
+    automation_channel_path = automation_channel_path.strip()
+    assert len(automation_channel_path), 'Could not enable testing interface'
+    return automation_channel_path
+
+  def ExtraChromeFlagsOnChromeOS(self):
+    """Return a list of extra chrome flags to use with chrome for testing.
+
+    These are flags needed to facilitate testing.
+    """
+    return [
+       '--homepage=about:blank',
+       '--allow-file-access',
+       '--enable-file-cookies',
+       '--dom-automation',
+    ]
+
+  @staticmethod
+  def CleanupBrowserProfileOnChromeOS():
+    """Cleanup browser profile dir on ChromeOS.
+
+    Browser should not be running, or else there will be locked files.
+    """
+    profile_dir = '/home/chronos/user'
+    for item in os.listdir(profile_dir):
+      if item != '.pki':  # Causes stateful partition to get erased
+        pyauto_utils.RemovePath(os.path.join(profile_dir, item))
+    # TODO(nirnimesh): Clean up other files in /home/chronos?
 
   def RestartBrowser(self, clear_profile=True):
     """Restart the browser.
@@ -381,6 +444,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
                     'text': text,
                   }
       windex: 0-based window index on which to work. Default: 0 (first window)
+              Use -ve windex if the automation command does not apply to a
+              browser window. example: chromeos login
 
     Returns:
       a dictionary for the output returned by the automation channel.
@@ -2080,6 +2145,27 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     return self._GetResultFromJSONRequest(cmd_dict)
 
 
+  ## ChromeOS section
+
+  def Login(self, username, password):
+    """Login to chromeos.
+
+    Waits until logged in.
+    Should be displaying the login screen to work.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+        'command': 'Login',
+        'username': username,
+        'password': password,
+    }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+
+  ## ChromeOS section -- end
+
+
 class PyUITestSuite(pyautolib.PyUITestSuiteBase, unittest.TestSuite):
   """Base TestSuite for PyAuto UI tests."""
 
@@ -2238,6 +2324,9 @@ class Main(object):
     parser.add_option(
         '', '--no-http-server', action='store_true', default=False,
         help='Do not start an http server to serve files in data dir.')
+    parser.add_option(
+        '', '--channel-id', type='string', default='',
+        help='Name of channel id, if using named interface.')
 
     self._options, self._args = parser.parse_args()
     global _OPTIONS

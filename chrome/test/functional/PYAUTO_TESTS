@@ -208,5 +208,26 @@
       '-translate.TranslateTest.testSessionRestore',
       '-translate.TranslateTest.testDownloadsNotTranslated',
     ],
-  }
+  },
+
+  # The PRIMARY_CHROME suite uses named automation interface to control
+  # primary chrome on ChromeOS.
+  'PRIMARY_CHROME': {
+    'all': [
+    ],
+
+    'win': [
+    ],
+
+    'mac': [
+    ],
+
+    'linux': [
+    ],
+
+    'chromeos': [
+      'chromeos_basic',
+    ],
+  },
+
 }

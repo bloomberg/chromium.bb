@@ -180,6 +180,8 @@ class PyUITestBase {
            "before launching the browser. For internal use.") Initialize;
   void Initialize(const FilePath& browser_dir);
 
+  void UseNamedChannelID(const std::string& named_channel_id);
+
   %feature("docstring",
            "Fires up the browser and opens a window.") SetUp;
   virtual void SetUp();
@@ -369,7 +371,7 @@ class PyUITestBase {
                         "Returns a JSON dict as a response.  "
                         "Internal method.")
       _SendJSONRequest;
-  std::string _SendJSONRequest(int window_index, std::string request);
+  std::string _SendJSONRequest(int window_index, const std::string& request);
 
   %feature("docstring", "Execute a string of javascript in the specified "
            "(window, tab, frame) and return a string.") ExecuteJavascript;

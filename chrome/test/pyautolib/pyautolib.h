@@ -50,6 +50,12 @@ class PyUITestBase : public UITestBase {
   // |browser_dir| is the path to dir containing chromium binaries.
   void Initialize(const FilePath& browser_dir);
 
+  void UseNamedChannelID(const std::string& named_channel_id) {
+    named_channel_id_ = named_channel_id;
+  }
+
+  virtual ProxyLauncher* CreateProxyLauncher();
+
   // SetUp,TearDown is redeclared as public to make it accessible from swig.
   virtual void SetUp();
   virtual void TearDown();
@@ -156,10 +162,12 @@ class PyUITestBase : public UITestBase {
   // Get a handle to browser window at the given index, or NULL on failure.
   scoped_refptr<BrowserProxy> GetBrowserWindow(int window_index);
 
-  // Meta-method.  Experimental pattern of passing args and response as
+  // Meta-methods.  Generic pattern of passing args and response as
   // JSON dict to avoid future use of the SWIG interface and
   // automation proxy additions.  Returns response as JSON dict.
-  std::string _SendJSONRequest(int window_index, std::string& request);
+  // Use -ve window_index for automation calls not targetted at a browser
+  // window.  Example: Login call for chromeos.
+  std::string _SendJSONRequest(int window_index, const std::string& request);
 
   // Execute javascript in a given tab, and return the response. This is
   // a low-level method intended for use mostly by GetDOMValue(). Note that
@@ -206,6 +214,9 @@ class PyUITestBase : public UITestBase {
   // TestCase at load time itself.
   static MessageLoop* GetSharedMessageLoop(MessageLoop::Type msg_loop_type);
   static MessageLoop* message_loop_;
+
+  // Path to named channel id.
+  std::string named_channel_id_;
 };
 
 #endif  // CHROME_TEST_PYAUTOLIB_PYAUTOLIB_H_
