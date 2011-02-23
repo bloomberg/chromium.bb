@@ -195,6 +195,7 @@ Version* PluginGroup::CreateVersionFromString(const string16& version_string) {
   // Replace any instances of 'r', ',' or '(' with a dot.
   std::wstring version = UTF16ToWide(version_string);
   RemoveChars(version, L") ", &version);
+  std::replace(version.begin(), version.end(), 'd', '.');
   std::replace(version.begin(), version.end(), 'r', '.');
   std::replace(version.begin(), version.end(), ',', '.');
   std::replace(version.begin(), version.end(), '(', '.');
