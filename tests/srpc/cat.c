@@ -37,7 +37,6 @@ void Cat(NaClSrpcRpc *rpc,
     do { printf(#field " = " fmt "\n", (int) stb.field); } while (0)
 
     P("0x%04x", st_mode);
-    P("0x%x", st_nlink);
     P("0x%x", st_size);
     P("%d", st_size);
 #undef P

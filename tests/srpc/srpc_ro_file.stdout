@@ -1,5 +1,4 @@
 st_mode = 0x8180
-st_nlink = 0x1
 st_size = 0x2d
 st_size = 45
 read loop, up to 200 chars
