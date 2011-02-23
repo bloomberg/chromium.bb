@@ -4,9 +4,11 @@
   be found in the LICENSE file.
 -->
 
+<script type="text/javascript" src="nacltest.js"></script>
+
 <div id="scratch_space"></div>
 
-<div id="results">
+<div id="load_warning">
 Javascript has failed to load.
 </div>
 
@@ -25,12 +27,11 @@ nacllib = {
   },
 };
 
+var rpc = new RPCWrapper();
+
 function log(message) {
   log_text += message + '\n';
-  var node = document.createElement('div');
-  node.appendChild(document.createTextNode(message));
-  var results = document.getElementById('results');
-  results.appendChild(node);
+  rpc.log('test_runner.html', message);
 }
 
 // Returns a unique identifier.
@@ -62,7 +63,11 @@ function startProcess(url, callback) {
   node.innerHTML = '<embed name=foo width=0 height=0 ' +
     'type="application/x-nacl" onload="'+onload_id+'()" />';
   var plugin = node.childNodes[0];
+  // Assigning to "src" works in the NPAPI plugin.
+  // Assigning to "__src" works in the PPAPI plugin.
+  // TODO(mseaborn): Sort out this incompatibility.
   plugin.src = url;
+  plugin.__src = url;
 }
 
 function runTest(url, callback) {
@@ -82,7 +87,7 @@ function runTest(url, callback) {
 
 function runAllTests() {
   // Remove the "failed to load" message.
-  document.getElementById('results').innerHTML = '';
+  document.getElementById('load_warning').innerHTML = '';
   log('Starting NaCl test runner...');
 
   var test_count = 0;
@@ -99,10 +104,13 @@ function runAllTests() {
       if (failed_count == 0) {
         log('PASSED');
         selenium_status = 'SUCCESS';
+        rpc.pass('test_runner.html');
       } else {
         log(failed_count + ' FAILURE(S)');
         selenium_status = 'FAILED';
+        rpc.fail('test_runner.html', 'Test suite failed');
       }
+      rpc.shutdown();
     }
   }
   function addTest(url) {
@@ -110,6 +118,7 @@ function runAllTests() {
     runTest(url, onCompletion);
   }
 
+  rpc.startup();
   addTest('dynamic_load_test.nexe');
   addTest('dynamic_modify_test.nexe');
   addTest('imc_shm_mmap_test.nexe');
