@@ -1316,7 +1316,11 @@ gboolean LocationBarViewGtk::ContentSettingImageViewGtk::OnButtonPressed(
     GtkWidget* sender, GdkEvent* event) {
   TabContents* tab_contents = parent_->GetTabContents();
   if (!tab_contents)
-    return true;
+    return TRUE;
+  const ContentSettingsType content_settings_type =
+      content_setting_image_model_->get_content_settings_type();
+  if (content_settings_type == CONTENT_SETTINGS_TYPE_PRERENDER)
+    return TRUE;
   GURL url = tab_contents->GetURL();
   std::wstring display_host;
   net::AppendFormattedHost(url,
@@ -1327,8 +1331,7 @@ gboolean LocationBarViewGtk::ContentSettingImageViewGtk::OnButtonPressed(
   info_bubble_ = new ContentSettingBubbleGtk(
       sender, this,
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-          tab_contents, profile_,
-          content_setting_image_model_->get_content_settings_type()),
+          tab_contents, profile_, content_settings_type),
       profile_, tab_contents);
   return TRUE;
 }
