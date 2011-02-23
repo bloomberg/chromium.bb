@@ -345,10 +345,10 @@ class PyUITestBase {
   bool SetCookie(const GURL& cookie_url, const std::string& value,
                  int window_index=0, int tab_index=0);
 
-  %feature("docstring", "Get the value of the cokie at cookie_url for the "
+  %feature("docstring", "Get the value of the cookie at cookie_url for the "
            "given window index and tab index. "
            "Returns empty string on error or if there is no value for the "
-           "cookie.") GetCookieVal;
+           "cookie.") GetCookie;
   std::string GetCookie(const GURL& cookie_url, int window_index=0,
                         int tab_index=0);
 
@@ -358,8 +358,9 @@ class PyUITestBase {
       IsBrowserRunning;
   bool IsBrowserRunning();
 
-  %feature("docstring", "Install an extension from the given file. Returns "
-           "True if successfully installed and loaded.") InstallExtension;
+  %feature("docstring", "Install an extension from the given file.  The file "
+           "must be specified with an absolute path. Returns True if "
+           "successfully installed and loaded.") InstallExtension;
   bool InstallExtension(const FilePath& crx_file, bool with_ui);
 
   %feature("docstring", "Get a proxy to the browser window at the given "

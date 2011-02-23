@@ -1575,9 +1575,9 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
   def SetTheme(self, crx_file_path):
     """Installs the given theme synchronously.
 
-    A theme file is file with .crx suffix, like an extension.
-    This method call waits until theme is installed and will trigger the
-    "theme installed" infobar.
+    A theme file is a file with a .crx suffix, like an extension.  The theme
+    file must be specified with an absolute path.  This method call waits until
+    the theme is installed and will trigger the "theme installed" infobar.
 
     Uses InstallExtension().
 
@@ -2118,8 +2118,9 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
   def InstallApp(self, app_crx_file_path):
     """Installs the specified app synchronously.
 
-    An app file is a file with a .crx suffix, just like an extension or theme.
-    This method will not return until the app is installed.
+    An app file is a file with a .crx suffix, like an extension or theme.  The
+    app file must be specified with an absolute path.  This method will not
+    return until the app is installed.
 
     Returns:
       True, on success.
