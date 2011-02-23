@@ -16,7 +16,7 @@ cr.define('options', function() {
   function AutoFillEditAddressOverlay() {
     OptionsPage.call(this, 'autoFillEditAddressOverlay',
                      templateData.autoFillEditAddressTitle,
-                     'autoFillEditAddressOverlay');
+                     'autofill-edit-address-overlay');
   }
 
   cr.addSingletonGetter(AutoFillEditAddressOverlay);
@@ -31,10 +31,10 @@ cr.define('options', function() {
       OptionsPage.prototype.initializePage.call(this);
 
       var self = this;
-      $('autoFillEditAddressCancelButton').onclick = function(event) {
+      $('autofill-edit-address-cancel-button').onclick = function(event) {
         self.dismissOverlay_();
       }
-      $('autoFillEditAddressApplyButton').onclick = function(event) {
+      $('autofill-edit-address-apply-button').onclick = function(event) {
         self.saveAddress_();
         self.dismissOverlay_();
       }
@@ -63,13 +63,13 @@ cr.define('options', function() {
     saveAddress_: function() {
       var address = new Array();
       address[0] = this.guid;
-      address[1] = $('fullName').value;
-      address[2] = $('companyName').value;
-      address[3] = $('addrLine1').value;
-      address[4] = $('addrLine2').value;
+      address[1] = $('full-name').value;
+      address[2] = $('company-name').value;
+      address[3] = $('addr-line-1').value;
+      address[4] = $('addr-line-2').value;
       address[5] = $('city').value;
       address[6] = $('state').value;
-      address[7] = $('zipCode').value;
+      address[7] = $('zip-code').value;
       address[8] = $('country').value;
       address[9] = $('phone').value;
       address[10] = $('fax').value;
@@ -86,9 +86,9 @@ cr.define('options', function() {
      */
     connectInputEvents_: function() {
       var self = this;
-      $('fullName').oninput = $('companyName').oninput =
-      $('addrLine1').oninput = $('addrLine2').oninput = $('city').oninput =
-      $('state').oninput = $('country').oninput = $('zipCode').oninput =
+      $('full-name').oninput = $('company-name').oninput =
+      $('addr-line-1').oninput = $('addr-line-2').oninput = $('city').oninput =
+      $('state').oninput = $('country').oninput = $('zip-code').oninput =
       $('phone').oninput = $('fax').oninput =
       $('email').oninput = function(event) {
         self.inputFieldChanged_();
@@ -102,11 +102,12 @@ cr.define('options', function() {
      */
     inputFieldChanged_: function() {
       var disabled =
-          !$('fullName').value && !$('companyName').value &&
-          !$('addrLine1').value && !$('addrLine2').value && !$('city').value &&
-          !$('state').value && !$('zipCode').value && !('country').value &&
-          !$('phone').value && !$('fax').value && !$('email').value;
-      $('autoFillEditAddressApplyButton').disabled = disabled;
+          !$('full-name').value && !$('company-name').value &&
+          !$('addr-line-1').value && !$('addr-line-2').value &&
+          !$('city').value && !$('state').value && !$('zip-code').value &&
+          !$('country').value && !$('phone').value && !$('fax').value &&
+          !$('email').value;
+      $('autofill-edit-address-apply-button').disabled = disabled;
     },
 
     /**
@@ -114,13 +115,13 @@ cr.define('options', function() {
      * @private
      */
     clearInputFields_: function() {
-      $('fullName').value = '';
-      $('companyName').value = '';
-      $('addrLine1').value = '';
-      $('addrLine2').value = '';
+      $('full-name').value = '';
+      $('company-name').value = '';
+      $('addr-line-1').value = '';
+      $('addr-line-2').value = '';
       $('city').value = '';
       $('state').value = '';
-      $('zipCode').value = '';
+      $('zip-code').value = '';
       $('country').value = '';
       $('phone').value = '';
       $('fax').value = '';
@@ -143,13 +144,13 @@ cr.define('options', function() {
      * @private
      */
     setInputFields_: function(address) {
-      $('fullName').value = address['fullName'];
-      $('companyName').value = address['companyName'];
-      $('addrLine1').value = address['addrLine1'];
-      $('addrLine2').value = address['addrLine2'];
+      $('full-name').value = address['fullName'];
+      $('company-name').value = address['companyName'];
+      $('addr-line-1').value = address['addrLine1'];
+      $('addr-line-2').value = address['addrLine2'];
       $('city').value = address['city'];
       $('state').value = address['state'];
-      $('zipCode').value = address['zipCode'];
+      $('zip-code').value = address['zipCode'];
       $('country').value = address['country'];
       $('phone').value = address['phone'];
       $('fax').value = address['fax'];
@@ -166,7 +167,7 @@ cr.define('options', function() {
   };
 
   AutoFillEditAddressOverlay.setTitle = function(title) {
-    $('autoFillAddressTitle').textContent = title;
+    $('autofill-address-title').textContent = title;
   };
 
   // Export
