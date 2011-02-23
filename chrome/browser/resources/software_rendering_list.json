@@ -1,5 +1,5 @@
 // Determines whether certain gpu-related features are blacklisted or not.
-// A valid gpu_blacklist.json file are in the format of
+// A valid software_rendering_list.json file are in the format of
 // {
 //   "version": "x.y",
 //   "entries": [
@@ -36,9 +36,9 @@
 // "contains", "beginwith", "endwith", "=".  "value" is a string.
 
 {
-  "name": "gpu blacklist",
+  "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "0.9",
+  "version": "1.0",
   "entries": [
     { // ATI Radeon X1900 on Mac, BUGWEBKIT=47028
       "id": "1",
