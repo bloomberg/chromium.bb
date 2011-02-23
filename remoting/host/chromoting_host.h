@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,10 +7,12 @@
 
 #include <string>
 
+#include "base/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "remoting/base/encoder.h"
 #include "remoting/host/access_verifier.h"
 #include "remoting/host/capturer.h"
+#include "remoting/host/desktop_environment.h"
 #include "remoting/host/heartbeat_sender.h"
 #include "remoting/jingle_glue/jingle_client.h"
 #include "remoting/jingle_glue/jingle_thread.h"
@@ -31,8 +33,8 @@ class CandidateSessionConfig;
 
 class Capturer;
 class ChromotingHostContext;
+class DesktopEnvironment;
 class Encoder;
-class HostStubFake;
 class MutableHostConfig;
 class ScreenRecorder;
 
@@ -61,6 +63,7 @@ class ScreenRecorder;
 //    incoming connection.
 class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
                        public protocol::ConnectionToClient::EventHandler,
+                       public DesktopEnvironment::EventHandler,
                        public JingleClient::Callback {
  public:
   // Factory methods that must be used to create ChromotingHost instances.
@@ -69,8 +72,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
                                 MutableHostConfig* config);
   static ChromotingHost* Create(ChromotingHostContext* context,
                                 MutableHostConfig* config,
-                                Capturer* capturer,
-                                protocol::InputStub* input_stub);
+                                DesktopEnvironment* environment);
 
   // Asynchronously start the host process.
   //
@@ -102,6 +104,10 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // JingleClient::Callback implementations
   virtual void OnStateChange(JingleClient* client, JingleClient::State state);
 
+  ////////////////////////////////////////////////////////////////////////////
+  // DesktopEnvironment::EventHandler implementations
+  virtual void LocalLoginSucceeded();
+
   // Callback for ChromotingServer.
   void OnNewClientSession(
       protocol::Session* session,
@@ -111,8 +117,8 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // |config| is transferred to the object. Must be called before Start().
   void set_protocol_config(protocol::CandidateSessionConfig* config);
 
-  // The getter for |host_stub_| is only used in unit test.
-  protocol::HostStub* host_stub() const { return host_stub_.get(); }
+  // This getter is only used in unit test.
+  protocol::HostStub* host_stub() const;
 
   // This setter is only used in unit test to simulate client connection.
   void set_connection(protocol::ConnectionToClient* conn) {
@@ -121,10 +127,9 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
 
  private:
   friend class base::RefCountedThreadSafe<ChromotingHost>;
-  friend class HostStubFake;
 
   ChromotingHost(ChromotingHostContext* context, MutableHostConfig* config,
-                 Capturer* capturer, protocol::InputStub* input_stub);
+                 DesktopEnvironment* environment);
   virtual ~ChromotingHost();
 
   enum State {
@@ -141,30 +146,12 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
 
   std::string GenerateHostAuthToken(const std::string& encoded_client_token);
 
-  // Called by HostStub to signal that local login has succeeded and
-  // ChromotingHost can proceed with the next step.
-  // This method is only called by HostStubFake.
-  void LocalLoginSucceeded();
-
-  // This method is only called by HostStubFake.
-  protocol::ConnectionToClient* connection_to_client() const {
-    return connection_;
-  }
-
   // The context that the chromoting host runs on.
   ChromotingHostContext* context_;
 
   scoped_refptr<MutableHostConfig> config_;
 
-  // Capturer to be used by ScreenRecorder. Once the ScreenRecorder is
-  // constructed this is set to NULL.
-  scoped_ptr<Capturer> capturer_;
-
-  // InputStub in the host executes input events received from the client.
-  scoped_ptr<protocol::InputStub> input_stub_;
-
-  // HostStub in the host executes control events received from the client.
-  scoped_ptr<protocol::HostStub> host_stub_;
+  scoped_ptr<DesktopEnvironment> desktop_environment_;
 
   // The libjingle client. This is used to connect to the talk network to
   // receive connection requests from chromoting client.

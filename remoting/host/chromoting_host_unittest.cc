@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #include "remoting/host/capturer_fake.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
+#include "remoting/host/desktop_environment.h"
 #include "remoting/host/host_mock_objects.h"
 #include "remoting/host/in_memory_host_config.h"
 #include "remoting/proto/video.pb.h"
@@ -79,7 +80,9 @@ class ChromotingHostTest : public testing::Test {
 
     Capturer* capturer = new CapturerFake(context_.main_message_loop());
     input_stub_ = new protocol::MockInputStub();
-    host_ = ChromotingHost::Create(&context_, config_, capturer, input_stub_);
+    DesktopEnvironment* desktop =
+        new DesktopEnvironment(capturer, input_stub_);
+    host_ = ChromotingHost::Create(&context_, config_, desktop);
     connection_ = new protocol::MockConnectionToClient();
     session_ = new protocol::MockSession();
     session_config_.reset(protocol::SessionConfig::CreateDefault());

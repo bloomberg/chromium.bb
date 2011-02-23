@@ -13,10 +13,10 @@
 #include "remoting/base/encoder_vp8.h"
 #include "remoting/host/capturer.h"
 #include "remoting/host/chromoting_host_context.h"
+#include "remoting/host/desktop_environment.h"
 #include "remoting/host/event_executor.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/host_key_pair.h"
-#include "remoting/host/host_stub_fake.h"
 #include "remoting/host/screen_recorder.h"
 #include "remoting/proto/auth.pb.h"
 #include "remoting/protocol/connection_to_client.h"
@@ -37,29 +37,27 @@ ChromotingHost* ChromotingHost::Create(ChromotingHostContext* context,
   Capturer* capturer = Capturer::Create(context->main_message_loop());
   InputStub* input_stub = CreateEventExecutor(context->ui_message_loop(),
                                               capturer);
-  return Create(context, config, capturer, input_stub);
+  return Create(context, config,
+                new DesktopEnvironment(capturer, input_stub));
 }
 
 // static
 ChromotingHost* ChromotingHost::Create(ChromotingHostContext* context,
                                        MutableHostConfig* config,
-                                       Capturer* capturer,
-                                       InputStub* input_stub) {
-  return new ChromotingHost(context, config, capturer, input_stub);
+                                       DesktopEnvironment* environment) {
+  return new ChromotingHost(context, config, environment);
 }
 
 ChromotingHost::ChromotingHost(ChromotingHostContext* context,
                                MutableHostConfig* config,
-                               Capturer* capturer,
-                               InputStub* input_stub)
+                               DesktopEnvironment* environment)
     : context_(context),
       config_(config),
-      capturer_(capturer),
-      input_stub_(input_stub),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          host_stub_(new HostStubFake(this))),
+      desktop_environment_(environment),
       state_(kInitial),
       protocol_config_(protocol::CandidateSessionConfig::CreateDefault()) {
+  DCHECK(desktop_environment_.get());
+  desktop_environment_->set_event_handler(this);
 }
 
 ChromotingHost::~ChromotingHost() {
@@ -168,14 +166,14 @@ void ChromotingHost::OnClientConnected(ConnectionToClient* connection) {
   if (!recorder_.get()) {
     // Then we create a ScreenRecorder passing the message loops that
     // it should run on.
-    DCHECK(capturer_.get());
+    DCHECK(desktop_environment_->capturer());
 
     Encoder* encoder = CreateEncoder(connection->session()->config());
 
     recorder_ = new ScreenRecorder(context_->main_message_loop(),
                                    context_->encode_message_loop(),
                                    context_->network_message_loop(),
-                                   capturer_.get(),
+                                   desktop_environment_->capturer(),
                                    encoder);
   }
 
@@ -292,7 +290,8 @@ void ChromotingHost::OnNewClientSession(
   }
 
   *protocol_config_->mutable_initial_resolution() =
-      protocol::ScreenResolution(capturer_->width(), capturer_->height());
+      protocol::ScreenResolution(desktop_environment_->capturer()->width(),
+                                 desktop_environment_->capturer()->height());
   // TODO(sergeyu): Respect resolution requested by the client if supported.
   protocol::SessionConfig* config = protocol_config_->Select(
       session->candidate_config(), true /* force_host_resolution */);
@@ -314,8 +313,9 @@ void ChromotingHost::OnNewClientSession(
 
   // If we accept the connected then create a connection object.
   connection_ = new ConnectionToClient(context_->network_message_loop(),
-                                       this, host_stub_.get(),
-                                       input_stub_.get());
+                                       this,
+                                       desktop_environment_.get(),
+                                       desktop_environment_->input_stub());
   connection_->Init(session);
 }
 
@@ -324,6 +324,10 @@ void ChromotingHost::set_protocol_config(
   DCHECK(config_.get());
   DCHECK_EQ(state_, kInitial);
   protocol_config_.reset(config);
+}
+
+protocol::HostStub* ChromotingHost::host_stub() const {
+  return desktop_environment_.get();
 }
 
 void ChromotingHost::OnServerClosed() {
@@ -363,7 +367,11 @@ void ChromotingHost::LocalLoginSucceeded() {
     return;
   }
 
-  // If local login has succeeded the recorder can start.
+  protocol::LocalLoginStatus* status = new protocol::LocalLoginStatus();
+  status->set_success(true);
+  connection_->client_stub()->BeginSessionResponse(
+      status, new DeleteTask<protocol::LocalLoginStatus>(status));
+
   recorder_->Start();
 }
 

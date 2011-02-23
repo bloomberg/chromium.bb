@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -32,6 +32,7 @@
 #include "remoting/host/capturer_fake.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
+#include "remoting/host/desktop_environment.h"
 #include "remoting/host/event_executor.h"
 #include "remoting/host/json_host_config.h"
 #include "remoting/proto/video.pb.h"
@@ -41,6 +42,7 @@
 #endif
 
 using remoting::ChromotingHost;
+using remoting::DesktopEnvironment;
 using remoting::protocol::CandidateSessionConfig;
 using remoting::protocol::ChannelConfig;
 using std::string;
@@ -130,7 +132,7 @@ int main(int argc, char** argv) {
     remoting::protocol::InputStub* input_stub =
         CreateEventExecutor(context.ui_message_loop(), capturer);
     host = ChromotingHost::Create(
-        &context, config, capturer, input_stub);
+        &context, config, new DesktopEnvironment(capturer, input_stub));
   } else {
     host = ChromotingHost::Create(&context, config);
   }
