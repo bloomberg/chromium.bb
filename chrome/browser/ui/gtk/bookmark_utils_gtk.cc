@@ -242,6 +242,9 @@ void ConfigureButtonForNode(const BookmarkNode* node, BookmarkModel* model,
 }
 
 std::string BuildTooltipFor(const BookmarkNode* node) {
+  if (node->is_folder())
+    return std::string();
+
   const std::string& url = node->GetURL().possibly_invalid_spec();
   const std::string& title = UTF16ToUTF8(node->GetTitle());
 
