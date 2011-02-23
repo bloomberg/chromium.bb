@@ -79,7 +79,7 @@ class MenuScrollButton : public View {
     return ui::DragDropTypes::DRAG_NONE;
   }
 
-  virtual void Paint(gfx::Canvas* canvas) {
+  virtual void OnPaint(gfx::Canvas* canvas) {
     const MenuConfig& config = MenuConfig::instance();
 
 #if defined(OS_WIN)
