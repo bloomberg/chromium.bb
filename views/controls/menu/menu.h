@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,11 +6,13 @@
 #define CONTROLS_MENU_VIEWS_MENU_H_
 #pragma once
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "ui/gfx/native_widget_types.h"
-#include "views/controls/menu/controller.h"
 
 class SkBitmap;
+
 namespace gfx {
 class Point;
 }
@@ -29,9 +31,9 @@ class Menu {
   //  item as it is created.
   //
   /////////////////////////////////////////////////////////////////////////////
-  class Delegate : public Controller {
+  class Delegate {
    public:
-    virtual ~Delegate() { }
+    virtual ~Delegate() {}
 
     // Whether or not an item should be shown as checked.
     virtual bool IsItemChecked(int id) const {
@@ -119,38 +121,6 @@ class Menu {
    protected:
     // Returns an empty icon.
     const SkBitmap& GetEmptyIcon() const;
-  };
-
-  // This class is a helper that simply wraps a controller and forwards all
-  // state and execution actions to it.  Use this when you're not defining your
-  // own custom delegate, but just hooking a context menu to some existing
-  // controller elsewhere.
-  class BaseControllerDelegate : public Delegate {
-   public:
-    explicit BaseControllerDelegate(Controller* wrapped)
-      : controller_(wrapped) {
-    }
-
-    // Overridden from Menu::Delegate
-    virtual bool SupportsCommand(int id) const {
-      return controller_->SupportsCommand(id);
-    }
-    virtual bool IsCommandEnabled(int id) const {
-      return controller_->IsCommandEnabled(id);
-    }
-    virtual void ExecuteCommand(int id) {
-      controller_->ExecuteCommand(id);
-    }
-    virtual bool GetContextualLabel(int id, std::wstring* out) const {
-      return controller_->GetContextualLabel(id, out);
-    }
-
-   private:
-    // The internal controller that we wrap to forward state and execution
-    // actions to.
-    Controller* controller_;
-
-    DISALLOW_COPY_AND_ASSIGN(BaseControllerDelegate);
   };
 
   // How this popup should align itself relative to the point it is run at.

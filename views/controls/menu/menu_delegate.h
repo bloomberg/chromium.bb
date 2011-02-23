@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
-#include "views/controls/menu/controller.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/events/event.h"
 
@@ -28,7 +27,7 @@ class MenuButton;
 // Delegate for a menu. This class is used as part of MenuItemView, see it
 // for details.
 // TODO(sky): merge this with ui::MenuModel.
-class MenuDelegate : Controller {
+class MenuDelegate {
  public:
   // Used during drag and drop to indicate where the drop indicator should
   // be rendered.

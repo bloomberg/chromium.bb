@@ -89,7 +89,7 @@ class ToolbarView : public AccessiblePaneView,
   virtual bool SetPaneFocus(int view_storage_id, View* initial_focus);
   virtual AccessibilityTypes::Role GetAccessibleRole();
 
-  // Overridden from Menu::BaseControllerDelegate:
+  // Overridden from Menu::Delegate:
   virtual bool GetAcceleratorInfo(int id, ui::Accelerator* accel);
 
   // Overridden from views::MenuDelegate:

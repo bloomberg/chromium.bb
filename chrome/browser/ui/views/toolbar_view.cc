@@ -316,7 +316,7 @@ AccessibilityTypes::Role ToolbarView::GetAccessibleRole() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ToolbarView, Menu::BaseControllerDelegate overrides:
+// ToolbarView, Menu::Delegate overrides:
 
 bool ToolbarView::GetAcceleratorInfo(int id, ui::Accelerator* accel) {
   return GetWidget()->GetAccelerator(id, accel);
