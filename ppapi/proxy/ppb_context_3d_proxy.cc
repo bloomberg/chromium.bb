@@ -133,8 +133,11 @@ const PPB_Context3D_Dev context_3d_interface = {
 
 base::SharedMemoryHandle SHMHandleFromInt(int shm_handle) {
 #if defined(OS_POSIX)
-  return base::FileDescriptor(shm_handle, true);
+  // The handle isn't ours to close, but we want to keep a reference to the
+  // handle until it is actually sent, so duplicate it, and mark auto-close.
+  return base::FileDescriptor(dup(shm_handle), true);
 #elif defined(OS_WIN)
+  // TODO(piman): DuplicateHandle to the plugin process.
   return reinterpret_cast<HANDLE>(shm_handle);
 #else
 #error "Platform not supported."
