@@ -1254,6 +1254,7 @@
 }
 {
    bug_73828
+   Heapcheck:Leak
    ...
    fun:GpuProcessHostUIShim::GetForRenderer
 }
