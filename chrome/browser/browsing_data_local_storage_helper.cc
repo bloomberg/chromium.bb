@@ -18,7 +18,10 @@
 
 using WebKit::WebSecurityOrigin;
 
-BrowsingDataLocalStorageHelper::LocalStorageInfo::LocalStorageInfo() {}
+BrowsingDataLocalStorageHelper::LocalStorageInfo::LocalStorageInfo()
+    : port(0),
+      size(0) {
+}
 
 BrowsingDataLocalStorageHelper::LocalStorageInfo::LocalStorageInfo(
     const std::string& protocol,

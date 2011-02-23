@@ -17,7 +17,9 @@
 
 using WebKit::WebSecurityOrigin;
 
-BrowsingDataDatabaseHelper::DatabaseInfo::DatabaseInfo() {}
+BrowsingDataDatabaseHelper::DatabaseInfo::DatabaseInfo()
+    : size(0) {
+}
 
 BrowsingDataDatabaseHelper::DatabaseInfo::DatabaseInfo(
     const std::string& host,
@@ -175,7 +177,7 @@ void CannedBrowsingDataDatabaseHelper::Reset() {
 
 bool CannedBrowsingDataDatabaseHelper::empty() const {
   base::AutoLock auto_lock(lock_);
- return database_info_.empty() && pending_database_info_.empty();
+  return database_info_.empty() && pending_database_info_.empty();
 }
 
 void CannedBrowsingDataDatabaseHelper::StartFetching(
