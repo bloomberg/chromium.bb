@@ -52,13 +52,7 @@ then
   cd - > /dev/null
 fi
 
-# Use the batch file as an entry point if on cygwin.
-if [ "${OSTYPE}" = "cygwin" -a "${TERM}" != "xterm" ]; then
-  ${base_dir}/bootstrap/update_depot_tools.bat
-  exit
-fi
-
-# We're on POSIX (not cygwin). We can now safely look for svn checkout.
+# We're on POSIX. We can now safely look for svn checkout.
 if [ "X$DEPOT_TOOLS_UPDATE" != "X0" -a -e "$base_dir/.svn" ]
 then
   # Update the bootstrap directory to stay up-to-date with the latest
