@@ -894,7 +894,8 @@ void WidgetGtk::SetCursor(gfx::NativeCursor cursor) {
   if (!TouchFactory::GetInstance()->is_cursor_visible())
     cursor = gfx::GetCursor(GDK_BLANK_CURSOR);
 #endif
-  gdk_window_set_cursor(widget_->window, cursor);
+  if (widget_)
+    gdk_window_set_cursor(widget_->window, cursor);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
