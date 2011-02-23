@@ -4,10 +4,6 @@
  * found in the LICENSE file.
  */
 
-#advancedPage .informational-text {
-  color: grey;
-}
-
 #advancedPage > section > div:only-of-type > label.checkbox {
   margin: 10px 0;
 }

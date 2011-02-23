@@ -730,3 +730,7 @@ html[os=mac] label > input[type=radio] {
 .suboption {
   -webkit-margin-start: 16px;
 }
+
+.informational-text {
+  color: grey;
+}
