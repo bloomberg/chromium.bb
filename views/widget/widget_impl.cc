@@ -117,6 +117,10 @@ void WidgetImpl::SchedulePaintInRect(const gfx::Rect& invalid_rect) {
   native_widget_->SchedulePaintInRect(invalid_rect);
 }
 
+void WidgetImpl::SetCursor(gfx::NativeCursor cursor) {
+  native_widget_->SetCursor(cursor);
+}
+
 ThemeProvider* WidgetImpl::GetThemeProvider() const {
   return NULL;
 }

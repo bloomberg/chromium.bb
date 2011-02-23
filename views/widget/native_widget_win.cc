@@ -38,7 +38,8 @@ const int kMSAAObjectID = 1;
 NativeWidgetWin::NativeWidgetWin(NativeWidgetListener* listener)
     : listener_(listener),
       active_mouse_tracking_flags_(0),
-      has_capture_(false) {
+      has_capture_(false),
+      previous_cursor_(NULL) {
 }
 
 NativeWidgetWin::~NativeWidgetWin() {
@@ -185,6 +186,15 @@ void NativeWidgetWin::RunShellDrag(const ui::OSExchangeData& data,
   DWORD effects;
   DoDragDrop(ui::OSExchangeDataProviderWin::GetIDataObject(data), drag_source,
              ui::DragDropTypes::DragOperationToDropEffect(operation), &effects);
+}
+
+void NativeWidgetWin::SetCursor(gfx::NativeCursor cursor) {
+  if (cursor) {
+    previous_cursor_ = ::SetCursor(cursor);
+  } else if (previous_cursor_) {
+    ::SetCursor(previous_cursor_);
+    previous_cursor_ = NULL;
+  }
 }
 
 WidgetImpl* NativeWidgetWin::GetWidgetImpl() {

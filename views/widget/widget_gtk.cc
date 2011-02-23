@@ -32,6 +32,15 @@
 #include "views/widget/widget_utils.h"
 #include "views/window/window_gtk.h"
 
+#if defined(TOUCH_UI)
+#if defined(HAVE_XINPUT2)
+#include <gdk/gdkx.h>
+
+#include "ui/gfx/gtk_util.h"
+#include "views/touchui/touch_factory.h"
+#endif
+#endif
+
 using ui::OSExchangeData;
 using ui::OSExchangeDataProviderGtk;
 using ui::ActiveWindowWatcherX;
@@ -878,6 +887,14 @@ void WidgetGtk::SchedulePaintInRect(const gfx::Rect& rect) {
     gtk_widget_queue_draw_area(widget_, rect.x(), rect.y(), rect.width(),
                                rect.height());
   }
+}
+
+void WidgetGtk::SetCursor(gfx::NativeCursor cursor) {
+#if defined(TOUCH_UI) && defined(HAVE_XINPUT2)
+  if (!TouchFactory::GetInstance()->is_cursor_visible())
+    cursor = gfx::GetCursor(GDK_BLANK_CURSOR);
+#endif
+  gdk_window_set_cursor(widget_->window, cursor);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

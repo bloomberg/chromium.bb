@@ -72,6 +72,7 @@ class NativeWidget {
   virtual void SchedulePaintInRect(const gfx::Rect& rect) = 0;
   virtual void FocusNativeView(gfx::NativeView native_view) = 0;
   virtual void RunShellDrag(const ui::OSExchangeData& data, int operation) = 0;
+  virtual void SetCursor(gfx::NativeCursor cursor) = 0;
   virtual WidgetImpl* GetWidgetImpl() = 0;
   virtual const WidgetImpl* GetWidgetImpl() const = 0;
 };

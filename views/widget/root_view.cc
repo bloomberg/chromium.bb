@@ -6,10 +6,6 @@
 
 #include <algorithm>
 
-#if defined(TOUCH_UI) && defined(HAVE_XINPUT2)
-#include <gdk/gdkx.h>
-#endif
-
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
@@ -22,16 +18,7 @@
 
 #if defined(TOUCH_UI)
 #include "views/touchui/gesture_manager.h"
-#if defined(HAVE_XINPUT2)
-#include "ui/gfx/gtk_util.h"
-#include "views/touchui/touch_factory.h"
 #endif
-#endif
-
-#if defined(OS_LINUX)
-#include "views/widget/widget_gtk.h"
-#include "views/controls/textfield/native_textfield_views.h"
-#endif  // defined(OS_LINUX)
 
 namespace views {
 
@@ -49,10 +36,6 @@ RootView::RootView(Widget* widget)
       mouse_move_handler_(NULL),
       last_click_handler_(NULL),
       explicit_mouse_handler_(false),
-#if defined(OS_WIN)
-      previous_cursor_(NULL),
-#endif
-      default_keyboard_handler_(NULL),
       last_mouse_event_flags_(0),
       last_mouse_event_x_(-1),
       last_mouse_event_y_(-1),
@@ -61,8 +44,6 @@ RootView::RootView(Widget* widget)
       touch_pressed_handler_(NULL),
 #endif
       ALLOW_THIS_IN_INITIALIZER_LIST(focus_search_(this, false, false)),
-      focus_on_mouse_pressed_(false),
-      ignore_set_focus_calls_(false),
       focus_traversable_parent_(NULL),
       focus_traversable_parent_view_(NULL) {
 }
@@ -132,18 +113,7 @@ bool RootView::ProcessKeyEvent(const KeyEvent& event) {
     consumed = (event.type() == ui::ET_KEY_PRESSED) ?
         v->OnKeyPressed(event) : v->OnKeyReleased(event);
   }
-
-  if (!consumed && default_keyboard_handler_) {
-    consumed = (event.type() == ui::ET_KEY_PRESSED) ?
-        default_keyboard_handler_->OnKeyPressed(event) :
-        default_keyboard_handler_->OnKeyReleased(event);
-  }
-
   return consumed;
-}
-
-void RootView::SetDefaultKeyboardHandler(View* v) {
-  default_keyboard_handler_ = v;
 }
 
 bool RootView::ProcessMouseWheelEvent(const MouseWheelEvent& e) {
@@ -154,18 +124,10 @@ bool RootView::ProcessMouseWheelEvent(const MouseWheelEvent& e) {
     for (v = focused_view; v && v != this && !consumed; v = v->parent())
       consumed = v->OnMouseWheel(e);
   }
-
-  if (!consumed && default_keyboard_handler_) {
-    consumed = default_keyboard_handler_->OnMouseWheel(e);
-  }
   return consumed;
 }
 
 // Focus -----------------------------------------------------------------------
-
-void RootView::SetFocusOnMousePressed(bool f) {
-  focus_on_mouse_pressed_ = f;
-}
 
 void RootView::SetFocusTraversableParent(FocusTraversable* focus_traversable) {
   DCHECK(focus_traversable != this);
@@ -292,18 +254,6 @@ bool RootView::OnMousePressed(const MouseEvent& e) {
   // Reset mouse_pressed_handler_ to indicate that no processing is occurring.
   mouse_pressed_handler_ = NULL;
 
-  if (focus_on_mouse_pressed_) {
-#if defined(OS_WIN)
-    HWND hwnd = GetWidget()->GetNativeView();
-    if (::GetFocus() != hwnd)
-      ::SetFocus(hwnd);
-#else
-    GtkWidget* widget = GetWidget()->GetNativeView();
-    if (!gtk_widget_is_focus(widget))
-      gtk_widget_grab_focus(widget);
-#endif
-  }
-
   // In the event that a double-click is not handled after traversing the
   // entire hierarchy (even as a single-click when sent to a different view),
   // it must be marked as handled to avoid anything happening from default
@@ -379,11 +329,11 @@ void RootView::OnMouseMoved(const MouseEvent& e) {
 
     gfx::NativeCursor cursor = mouse_move_handler_->GetCursorForPoint(
         moved_event.type(), moved_event.location());
-    SetActiveCursor(cursor);
+    widget_->SetCursor(cursor);
   } else if (mouse_move_handler_ != NULL) {
     MouseEvent exited_event(ui::ET_MOUSE_EXITED, 0, 0, 0);
     mouse_move_handler_->OnMouseExited(exited_event);
-    SetActiveCursor(NULL);
+    widget_->SetCursor(NULL);
   }
 }
 
@@ -480,8 +430,6 @@ void RootView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
       mouse_pressed_handler_ = NULL;
     if (mouse_move_handler_ == child)
       mouse_move_handler_ = NULL;
-    if (default_keyboard_handler_ == child)
-      default_keyboard_handler_ = NULL;
 #if defined(TOUCH_UI)
     if (touch_pressed_handler_)
       touch_pressed_handler_ = NULL;
@@ -530,31 +478,7 @@ void RootView::UpdateCursor(const MouseEvent& e) {
     View::ConvertPointToView(this, v, &l);
     cursor = v->GetCursorForPoint(e.type(), l);
   }
-  SetActiveCursor(cursor);
-}
-
-void RootView::SetActiveCursor(gfx::NativeCursor cursor) {
-#if defined(OS_WIN)
-  if (cursor) {
-    previous_cursor_ = ::SetCursor(cursor);
-  } else if (previous_cursor_) {
-    ::SetCursor(previous_cursor_);
-    previous_cursor_ = NULL;
-  }
-#elif defined(OS_LINUX)
-  gfx::NativeView native_view =
-      static_cast<WidgetGtk*>(GetWidget())->window_contents();
-  if (!native_view)
-    return;
-
-#if defined(TOUCH_UI) && defined(HAVE_XINPUT2)
-  if (!TouchFactory::GetInstance()->is_cursor_visible()) {
-    cursor = gfx::GetCursor(GDK_BLANK_CURSOR);
-  }
-#endif
-
-  gdk_window_set_cursor(native_view->window, cursor);
-#endif
+  widget_->SetCursor(cursor);
 }
 
 void RootView::SetMouseLocationAndFlags(const MouseEvent& e) {

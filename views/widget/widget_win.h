@@ -251,6 +251,7 @@ class WidgetWin : public ui::WindowImpl,
                                               int operation);
   virtual View* GetDraggedView();
   virtual void SchedulePaintInRect(const gfx::Rect& rect);
+  virtual void SetCursor(gfx::NativeCursor cursor);
 
   // Overridden from MessageLoop::Observer:
   void WillProcessMessage(const MSG& msg);
@@ -605,6 +606,10 @@ class WidgetWin : public ui::WindowImpl,
   // Valid for the lifetime of StartDragForViewFromMouseEvent, indicates the
   // view the drag started from.
   View* dragged_view_;
+
+  // The last cursor that was active before the current one was selected. Saved
+  // so that we can restore it.
+  gfx::NativeCursor previous_cursor_;
 
   ViewProps props_;
 

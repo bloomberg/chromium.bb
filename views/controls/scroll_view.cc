@@ -383,16 +383,6 @@ int ScrollView::GetScrollIncrement(ScrollBar* source, bool is_page,
   return is_horizontal ? viewport_->width() / 5 : viewport_->height() / 5;
 }
 
-void ScrollView::ViewHierarchyChanged(bool is_add, View *parent, View *child) {
-  if (is_add) {
-    RootView* rv = GetRootView();
-    if (rv) {
-      rv->SetDefaultKeyboardHandler(this);
-      rv->SetFocusOnMousePressed(true);
-    }
-  }
-}
-
 bool ScrollView::OnKeyPressed(const KeyEvent& event) {
   bool processed = false;
 

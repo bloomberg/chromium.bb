@@ -72,9 +72,6 @@ class ScrollView : public View,
                                  bool is_page,
                                  bool is_positive);
 
-  // Overridden to setup keyboard ui when the view hierarchy changes
-  virtual void ViewHierarchyChanged(bool is_add, View *parent, View *child);
-
   // Keyboard events
   virtual bool OnKeyPressed(const KeyEvent& event);
   virtual bool OnMouseWheel(const MouseWheelEvent& e);

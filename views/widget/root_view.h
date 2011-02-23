@@ -72,14 +72,6 @@ class RootView : public View,
   // it.  Returns whether anyone consumed the event.
   bool ProcessKeyEvent(const KeyEvent& event);
 
-  // Set the default keyboard handler. The default keyboard handler is
-  // a view that will get an opportunity to process key events when all
-  // views in the focus path did not process an event.
-  //
-  // Note: this is a single view at this point. We may want to make
-  // this a list if needed.
-  void SetDefaultKeyboardHandler(View* v);
-
   // Process a mousewheel event. Return true if the event was processed
   // and false otherwise.
   // MouseWheel events are sent on the focus path.
@@ -92,10 +84,6 @@ class RootView : public View,
 #endif
 
   // Focus ---------------------------------------------------------------------
-
-  // Set whether this root view should focus the corresponding hwnd
-  // when an unprocessed mouse event occurs.
-  void SetFocusOnMousePressed(bool f);
 
   // Used to set the FocusTraversable parent after the view has been created
   // (typically when the hierarchy changes and this RootView is added/removed).
@@ -115,30 +103,31 @@ class RootView : public View,
   void NotifyLocaleChanged();
 
   // Overridden from FocusTraversable:
-  virtual FocusSearch* GetFocusSearch();
-  virtual FocusTraversable* GetFocusTraversableParent();
-  virtual View* GetFocusTraversableParentView();
+  virtual FocusSearch* GetFocusSearch() OVERRIDE;
+  virtual FocusTraversable* GetFocusTraversableParent() OVERRIDE;
+  virtual View* GetFocusTraversableParentView() OVERRIDE;
 
   // Overridden from View:
-  virtual void SchedulePaintInRect(const gfx::Rect& rect);
-  virtual const Widget* GetWidget() const;
-  virtual Widget* GetWidget();
-  virtual bool OnMousePressed(const MouseEvent& e);
-  virtual bool OnMouseDragged(const MouseEvent& e);
-  virtual void OnMouseReleased(const MouseEvent& e, bool canceled);
-  virtual void OnMouseMoved(const MouseEvent& e);
-  virtual void SetMouseHandler(View* new_mouse_handler);
+  virtual void SchedulePaintInRect(const gfx::Rect& rect) OVERRIDE;
+  virtual const Widget* GetWidget() const OVERRIDE;
+  virtual Widget* GetWidget() OVERRIDE;
+  virtual bool OnMousePressed(const MouseEvent& e) OVERRIDE;
+  virtual bool OnMouseDragged(const MouseEvent& e) OVERRIDE;
+  virtual void OnMouseReleased(const MouseEvent& e, bool canceled) OVERRIDE;
+  virtual void OnMouseMoved(const MouseEvent& e) OVERRIDE;
+  virtual void SetMouseHandler(View* new_mouse_handler) OVERRIDE;
 #if defined(TOUCH_UI)
-  virtual TouchStatus OnTouchEvent(const TouchEvent& e);
+  virtual TouchStatus OnTouchEvent(const TouchEvent& e) OVERRIDE;
 #endif
-  virtual bool IsVisibleInRootView() const;
-  virtual std::string GetClassName() const;
-  virtual AccessibilityTypes::Role GetAccessibleRole();
+  virtual bool IsVisibleInRootView() const OVERRIDE;
+  virtual std::string GetClassName() const OVERRIDE;
+  virtual AccessibilityTypes::Role GetAccessibleRole() OVERRIDE;
 
  protected:
   // Overridden from View:
-  virtual void OnPaint(gfx::Canvas* canvas);
-  virtual void ViewHierarchyChanged(bool is_add, View *parent, View *child);
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void ViewHierarchyChanged(bool is_add, View* parent,
+                                    View* child) OVERRIDE;
 
  private:
   friend class View;
@@ -153,8 +142,8 @@ class RootView : public View,
 
   // Convert a point to our current mouse handler. Returns false if the
   // mouse handler is not connected to a Widget. In that case, the
-  // conversion cannot take place and *p is unchanged
-  bool ConvertPointToMouseHandler(const gfx::Point& l, gfx::Point *p);
+  // conversion cannot take place and |p| is unchanged
+  bool ConvertPointToMouseHandler(const gfx::Point& l, gfx::Point* p);
 
   // Input ---------------------------------------------------------------------
 
@@ -162,9 +151,6 @@ class RootView : public View,
   // event handlers to honor the cursor desired by views located under the
   // cursor during drag operations.
   void UpdateCursor(const MouseEvent& e);
-
-  // Sets the current cursor, or resets it to the last one if NULL is provided.
-  void SetActiveCursor(gfx::NativeCursor cursor);
 
   // Updates the last_mouse_* fields from e.
   void SetMouseLocationAndFlags(const MouseEvent& e);
@@ -191,12 +177,6 @@ class RootView : public View,
   // true if mouse_handler_ has been explicitly set
   bool explicit_mouse_handler_;
 
-  // Previous cursor
-  gfx::NativeCursor previous_cursor_;
-
-  // Default keyboard handler
-  View* default_keyboard_handler_;
-
   // Last position/flag of a mouse press/drag. Used if capture stops and we need
   // to synthesize a release.
   int last_mouse_event_flags_;
@@ -215,14 +195,6 @@ class RootView : public View,
 
   // The focus search algorithm.
   FocusSearch focus_search_;
-
-  // Whether this root view should make our hwnd focused
-  // when an unprocessed mouse press event occurs
-  bool focus_on_mouse_pressed_;
-
-  // Flag used to ignore focus events when we focus the native window associated
-  // with a view.
-  bool ignore_set_focus_calls_;
 
   // Whether this root view belongs to the current active window.
   // bool activated_;

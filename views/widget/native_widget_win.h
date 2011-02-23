@@ -83,6 +83,7 @@ class NativeWidgetWin : public NativeWidget,
   virtual void SchedulePaintInRect(const gfx::Rect& rect);
   virtual void FocusNativeView(gfx::NativeView native_view);
   virtual void RunShellDrag(const ui::OSExchangeData& data, int operation);
+  virtual void SetCursor(gfx::NativeCursor cursor);
   virtual WidgetImpl* GetWidgetImpl();
   virtual const WidgetImpl* GetWidgetImpl() const;
 
@@ -261,6 +262,10 @@ class NativeWidgetWin : public NativeWidget,
   // A canvas that contains the window contents in the case of a layered
   // window.
   scoped_ptr<gfx::CanvasSkia> window_contents_;
+
+  // The last cursor that was active before the current one was selected. Saved
+  // so that we can restore it.
+  gfx::NativeCursor previous_cursor_;
 
   // Properties associated with this NativeWidget implementation.
   // TODO(beng): move to WidgetImpl.

@@ -1124,7 +1124,12 @@ class SimpleWindowDelegate : public WindowDelegate {
 // under the mouse.
 // TODO(jcampan): http://crbug.com/10572 Disabled as it fails on the Vista build
 //                bot.
-TEST_F(ViewTest, FAILS_RerouteMouseWheelTest) {
+// Note that this fails for a variety of reasons:
+// - focused view is apparently reset across window activations and never
+//   properly restored
+// - this test depends on you not having any other window visible open under the
+//   area that it opens the test windows. --beng
+TEST_F(ViewTest, DISABLED_RerouteMouseWheelTest) {
   TestViewWithControls* view_with_controls = new TestViewWithControls();
   views::Window* window1 =
       views::Window::CreateChromeWindow(

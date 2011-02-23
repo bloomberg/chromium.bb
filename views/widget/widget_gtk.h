@@ -198,6 +198,7 @@ class WidgetGtk
                                               int operation);
   virtual View* GetDraggedView();
   virtual void SchedulePaintInRect(const gfx::Rect& rect);
+  virtual void SetCursor(gfx::NativeCursor cursor);
 
   // Overridden from FocusTraversable:
   virtual FocusSearch* GetFocusSearch();

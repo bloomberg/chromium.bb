@@ -239,6 +239,8 @@ class Widget {
   virtual View* GetDraggedView() = 0;
 
   virtual void SchedulePaintInRect(const gfx::Rect& rect) = 0;
+
+  virtual void SetCursor(gfx::NativeCursor cursor) = 0;
 };
 
 }  // namespace views

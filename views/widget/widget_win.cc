@@ -89,7 +89,8 @@ WidgetWin::WidgetWin()
       delegate_(NULL),
       accessibility_view_events_index_(-1),
       accessibility_view_events_(kMaxAccessibilityViewEvents),
-      dragged_view_(NULL) {
+      dragged_view_(NULL),
+      previous_cursor_(NULL) {
 }
 
 WidgetWin::~WidgetWin() {
@@ -507,6 +508,15 @@ void WidgetWin::SchedulePaintInRect(const gfx::Rect& rect) {
   // InvalidateRect() expects client coordinates.
   RECT r = rect.ToRECT();
   InvalidateRect(hwnd(), &r, FALSE);
+}
+
+void WidgetWin::SetCursor(gfx::NativeCursor cursor) {
+  if (cursor) {
+    previous_cursor_ = ::SetCursor(cursor);
+  } else if (previous_cursor_) {
+    ::SetCursor(previous_cursor_);
+    previous_cursor_ = NULL;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

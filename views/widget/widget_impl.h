@@ -87,6 +87,8 @@ class WidgetImpl : public internal::NativeWidgetListener,
   // WidgetImpl.
   void SchedulePaintInRect(const gfx::Rect& rect);
 
+  void SetCursor(gfx::NativeCursor cursor);
+
   // Returns a ThemeProvider that can be used to provide resources when
   // rendering Views associated with this WidgetImpl.
   ThemeProvider* GetThemeProvider() const;
