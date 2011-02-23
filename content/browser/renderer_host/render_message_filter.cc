@@ -1357,7 +1357,7 @@ void RenderMessageFilter::OnCloseCurrentConnections() {
   if (!CheckBenchmarkingEnabled())
     return;
   request_context_->GetURLRequestContext()->
-      http_transaction_factory()->GetCache()->CloseAllConnections();
+      http_transaction_factory()->GetCache()->CloseCurrentConnections();
 }
 
 void RenderMessageFilter::OnSetCacheMode(bool enabled) {
