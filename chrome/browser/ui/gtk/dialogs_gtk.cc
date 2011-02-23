@@ -283,6 +283,8 @@ void SelectFileDialogImpl::AddFilters(GtkFileChooser* chooser) {
       gtk_file_filter_set_name(filter, UTF16ToUTF8(
           file_types_.extension_description_overrides[i]).c_str());
     } else {
+      // Allow IO in the file dialog. http://crbug.com/72637
+      base::ThreadRestrictions::ScopedAllowIO allow_io;
       // There is no system default filter description so we use
       // the MIME type itself if the description is blank.
       std::string mime_type = mime_util::GetFileMimeType(
