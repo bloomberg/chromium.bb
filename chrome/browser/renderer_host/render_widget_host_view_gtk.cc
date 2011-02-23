@@ -826,13 +826,12 @@ void RenderWidgetHostViewGtk::DoSharedInit() {
 
 void RenderWidgetHostViewGtk::DoPopupOrFullscreenInit(GtkWindow* window,
                                                       const gfx::Rect& bounds) {
-  requested_size_ = bounds.size();
+  requested_size_.SetSize(std::min(bounds.width(), kMaxWindowWidth),
+                          std::min(bounds.height(), kMaxWindowHeight));
   host_->WasResized();
 
   gtk_widget_set_size_request(
-      view_.get(),
-      std::min(requested_size_.width(), kMaxWindowWidth),
-      std::min(requested_size_.height(), kMaxWindowHeight));
+      view_.get(), requested_size_.width(), requested_size_.height());
 
   // Don't allow the window to be resized. This also forces the window to
   // shrink down to the size of its child contents.
