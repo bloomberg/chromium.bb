@@ -57,6 +57,9 @@ function createPDFPlugin(url, pagesCount) {
     $('pages').value = '1-' + expectedPageCount;
   }
 
+  // Enable the print button.
+  $('print-button').disabled = false;
+
   if ($('pdf-viewer')) {
     $('pdf-viewer').reload();
     return;
