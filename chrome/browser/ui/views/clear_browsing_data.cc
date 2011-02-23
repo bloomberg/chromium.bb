@@ -148,11 +148,11 @@ void ClearBrowsingDataView::Init() {
   throbber_view_->SetLayoutManager(layout);
   views::ColumnSet* column_set = layout->AddColumnSet(0);
   // DialogClientView positions the extra view at kButtonHEdgeMargin, but we
-  // put all our controls at kPanelHorizMargin. Add a padding column so things
-  // line up nicely.
-  if (kPanelHorizMargin - views::kButtonHEdgeMargin > 0) {
+  // put all our controls at views::kPanelHorizMargin. Add a padding column so
+  // things line up nicely.
+  if (views::kPanelHorizMargin - views::kButtonHEdgeMargin > 0) {
     column_set->AddPaddingColumn(
-        0, kPanelHorizMargin - views::kButtonHEdgeMargin);
+        0, views::kPanelHorizMargin - views::kButtonHEdgeMargin);
   }
   column_set->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
@@ -178,47 +178,48 @@ void ClearBrowsingDataView::Layout() {
 
   // Delete All label goes to the top left corner.
   gfx::Size sz = delete_all_label_->GetPreferredSize();
-  delete_all_label_->SetBounds(kPanelHorizMargin, kPanelVertMargin,
-                               sz.width(), sz.height());
+  delete_all_label_->SetBounds(
+      views::kPanelHorizMargin, views::kPanelVertMargin,
+      sz.width(), sz.height());
 
   // Check-boxes go beneath it (with a little indentation).
   sz = del_history_checkbox_->GetPreferredSize();
-  del_history_checkbox_->SetBounds(2 * kPanelHorizMargin,
+  del_history_checkbox_->SetBounds(2 * views::kPanelHorizMargin,
                                    delete_all_label_->y() +
                                        delete_all_label_->height() +
                                        views::kRelatedControlVerticalSpacing,
                                    sz.width(), sz.height());
 
   sz = del_downloads_checkbox_->GetPreferredSize();
-  del_downloads_checkbox_->SetBounds(2 * kPanelHorizMargin,
+  del_downloads_checkbox_->SetBounds(2 * views::kPanelHorizMargin,
                                      del_history_checkbox_->y() +
                                          del_history_checkbox_->height() +
                                          views::kRelatedControlVerticalSpacing,
                                      sz.width(), sz.height());
 
   sz = del_cache_checkbox_->GetPreferredSize();
-  del_cache_checkbox_->SetBounds(2 * kPanelHorizMargin,
+  del_cache_checkbox_->SetBounds(2 * views::kPanelHorizMargin,
                                  del_downloads_checkbox_->y() +
                                      del_downloads_checkbox_->height() +
                                      views::kRelatedControlVerticalSpacing,
                                  sz.width(), sz.height());
 
   sz = del_cookies_checkbox_->GetPreferredSize();
-  del_cookies_checkbox_->SetBounds(2 * kPanelHorizMargin,
+  del_cookies_checkbox_->SetBounds(2 * views::kPanelHorizMargin,
                                    del_cache_checkbox_->y() +
                                        del_cache_checkbox_->height() +
                                        views::kRelatedControlVerticalSpacing,
                                    sz.width(), sz.height());
 
   sz = del_passwords_checkbox_->GetPreferredSize();
-  del_passwords_checkbox_->SetBounds(2 * kPanelHorizMargin,
+  del_passwords_checkbox_->SetBounds(2 * views::kPanelHorizMargin,
                                      del_cookies_checkbox_->y() +
                                          del_cookies_checkbox_->height() +
                                          views::kRelatedControlVerticalSpacing,
                                      sz.width(), sz.height());
 
   sz = del_form_data_checkbox_->GetPreferredSize();
-  del_form_data_checkbox_->SetBounds(2 * kPanelHorizMargin,
+  del_form_data_checkbox_->SetBounds(2 * views::kPanelHorizMargin,
                                      del_passwords_checkbox_->y() +
                                          del_passwords_checkbox_->height() +
                                          views::kRelatedControlVerticalSpacing,
@@ -226,7 +227,7 @@ void ClearBrowsingDataView::Layout() {
 
   // Time period label is next below the combo boxes.
   sz = time_period_label_->GetPreferredSize();
-  time_period_label_->SetBounds(kPanelHorizMargin,
+  time_period_label_->SetBounds(views::kPanelHorizMargin,
                                 del_form_data_checkbox_->y() +
                                     del_form_data_checkbox_->height() +
                                     views::kRelatedControlVerticalSpacing +
@@ -341,7 +342,7 @@ views::ClientView* ClearBrowsingDataView::CreateClientView(
   views::View* settings_view = new views::View();
   GridLayout* layout = new GridLayout(settings_view);
   layout->SetInsets(
-      gfx::Insets(0, kPanelHorizMargin, 0, views::kButtonHEdgeMargin));
+      gfx::Insets(0, views::kPanelHorizMargin, 0, views::kButtonHEdgeMargin));
   settings_view->SetLayoutManager(layout);
   views::ColumnSet* column_set = layout->AddColumnSet(0);
   column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,

@@ -95,8 +95,8 @@ bool ConfirmMessageBoxDialog::Cancel() {
 
 void ConfirmMessageBoxDialog::Layout() {
   gfx::Size sz = message_label_->GetPreferredSize();
-  message_label_->SetBounds(kPanelHorizMargin, kPanelVertMargin,
-                            width() - 2 * kPanelHorizMargin,
+  message_label_->SetBounds(views::kPanelHorizMargin, views::kPanelVertMargin,
+                            width() - 2 * views::kPanelHorizMargin,
                             sz.height());
 }
 

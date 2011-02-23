@@ -41,11 +41,11 @@ const int kRightColumnWidth = 285;
 // around the content view. We compensate by reducing our outer borders by this
 // amount + 4px.
 const int kOuterMarginInset = 10;
-const int kHorizOuterMargin = kPanelHorizMargin - kOuterMarginInset;
-const int kVertOuterMargin = kPanelVertMargin - kOuterMarginInset;
+const int kHorizOuterMargin = views::kPanelHorizMargin - kOuterMarginInset;
+const int kVertOuterMargin = views::kPanelVertMargin - kOuterMarginInset;
 
 // Interior vertical margin is 8px smaller than standard
-const int kVertInnerMargin = kPanelVertMargin - 8;
+const int kVertInnerMargin = views::kPanelVertMargin - 8;
 
 // The image we use for the close button has three pixels of whitespace padding.
 const int kCloseButtonPadding = 3;
@@ -161,9 +161,9 @@ class InstalledBubbleContent : public views::View,
   virtual gfx::Size GetPreferredSize() {
     int width = kHorizOuterMargin;
     width += kIconSize;
-    width += kPanelHorizMargin;
+    width += views::kPanelHorizMargin;
     width += kRightColumnWidth;
-    width += 2*kPanelHorizMargin;
+    width += 2 * views::kPanelHorizMargin;
     width += kHorizOuterMargin;
 
     int height = kVertOuterMargin;
@@ -186,7 +186,7 @@ class InstalledBubbleContent : public views::View,
 
     icon_->SetBounds(x, y, kIconSize, kIconSize);
     x += kIconSize;
-    x += kPanelHorizMargin;
+    x += views::kPanelHorizMargin;
 
     y += kRightcolumnVerticalShift;
     heading_->SizeToFit(kRightColumnWidth);
@@ -211,7 +211,7 @@ class InstalledBubbleContent : public views::View,
     y += kVertInnerMargin;
 
     gfx::Size sz;
-    x += kRightColumnWidth + 2 * kPanelHorizMargin + kHorizOuterMargin -
+    x += kRightColumnWidth + 2 * views::kPanelHorizMargin + kHorizOuterMargin -
         close_button_->GetPreferredSize().width();
     y = kVertOuterMargin;
     sz = close_button_->GetPreferredSize();

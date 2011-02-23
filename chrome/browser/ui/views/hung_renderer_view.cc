@@ -408,7 +408,7 @@ void HungRendererDialogView::CreateKillButtonView() {
   const int single_column_set_id = 0;
   ColumnSet* column_set = layout->AddColumnSet(single_column_set_id);
   column_set->AddPaddingColumn(0, frozen_icon_->width() +
-      kPanelHorizMargin + views::kUnrelatedControlHorizontalSpacing);
+      views::kPanelHorizMargin + views::kUnrelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
                         GridLayout::USE_PREF, 0, 0);
 

@@ -10,6 +10,8 @@
 // layout.
 // see: spec 21/4
 
+namespace views {
+
 // Left or right margin.
 const int kPanelHorizMargin = 13;
 
@@ -28,11 +30,6 @@ const int kPanelSubVerticalSpacing = 24;
 
 // Vertical spacing between a label and some control.
 const int kLabelToControlVerticalSpacing = 8;
-
-// TODO(tfarina): Move this namespace to the top of this file around of all
-// these constants. But this needs to be done in small steps, as it's
-// impossible to convert everything at the same time.
-namespace views {
 
 // Small horizontal spacing between controls that are logically related.
 const int kRelatedControlSmallHorizontalSpacing = 8;

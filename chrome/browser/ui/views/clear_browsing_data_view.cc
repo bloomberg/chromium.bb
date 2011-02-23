@@ -141,11 +141,11 @@ void ClearBrowsingDataView2::Init() {
   views::ColumnSet* column_set = layout->AddColumnSet(0);
 
   // DialogClientView positions the extra view at kButtonHEdgeMargin, but we
-  // put all our controls at kPanelHorizMargin. Add a padding column so things
-  // line up nicely.
-  if (kPanelHorizMargin - views::kButtonHEdgeMargin > 0) {
+  // put all our controls at views::kPanelHorizMargin. Add a padding column so
+  // things line up nicely.
+  if (views::kPanelHorizMargin - views::kButtonHEdgeMargin > 0) {
     column_set->AddPaddingColumn(
-        0, kPanelHorizMargin - views::kButtonHEdgeMargin);
+        0, views::kPanelHorizMargin - views::kButtonHEdgeMargin);
   }
   column_set->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);

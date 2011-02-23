@@ -139,7 +139,7 @@ gfx::Size ContentView::GetPreferredSize() {
   int height = cancel_->GetPreferredSize().height();
   if (message_->IsVisible()) {
     height += message_->GetHeightForWidth(width) +
-              kLabelToControlVerticalSpacing;
+              views::kLabelToControlVerticalSpacing;
   } else {
     height += heading_->GetPreferredSize().height() +
               icon_->GetImage().height();

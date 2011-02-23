@@ -143,7 +143,7 @@ void ClearServerDataView::InitControlLayout() {
 
   layout->StartRow(0, left_aligned_column_set_id);
   layout->AddView(flash_link_);
-  layout->AddPaddingRow(0, kPanelVertMargin);
+  layout->AddPaddingRow(0, views::kPanelVertMargin);
 
   AddWrappingLabelRow(layout, chrome_sync_title_label_,
                       centered_column_set_id, true);
@@ -157,7 +157,7 @@ void ClearServerDataView::InitControlLayout() {
                   GridLayout::LEADING, GridLayout::CENTER);
   layout->AddView(throbber_, 1, 1,
                   GridLayout::TRAILING, GridLayout::CENTER);
-  layout->AddPaddingRow(0, kPanelVertMargin);
+  layout->AddPaddingRow(0, views::kPanelVertMargin);
 
   AddWrappingLabelRow(layout, dashboard_label_, centered_column_set_id, true);
 

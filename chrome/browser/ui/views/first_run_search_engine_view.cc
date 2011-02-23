@@ -293,7 +293,7 @@ void FirstRunSearchEngineView::SetupControls() {
 
   AddChildView(background_image_);
 
-  int label_width = GetPreferredSize().width() - 2 * kPanelHorizMargin;
+  int label_width = GetPreferredSize().width() - 2 * views::kPanelHorizMargin;
 
   // Add title and text asking the user to choose a search engine:
   title_label_ = new Label(UTF16ToWide(l10n_util::GetStringUTF16(
@@ -330,18 +330,21 @@ void FirstRunSearchEngineView::Layout() {
   const double kUpperPaddingPercent = 0.4;
 
   int num_choices = search_engine_choices_.size();
-  int label_width = GetPreferredSize().width() - 2 * kPanelHorizMargin;
-  int label_height = GetPreferredSize().height() - 2 * kPanelVertMargin;
+  int label_width = GetPreferredSize().width() - 2 * views::kPanelHorizMargin;
+  int label_height = GetPreferredSize().height() - 2 * views::kPanelVertMargin;
 
   // Set title.
-  title_label_->SetBounds(kPanelHorizMargin,
+  title_label_->SetBounds(
+      views::kPanelHorizMargin,
       pref_size.height() / 2 - title_label_->GetPreferredSize().height() / 2,
-      label_width, title_label_->GetPreferredSize().height());
+      label_width,
+      title_label_->GetPreferredSize().height());
 
   int next_v_space = background_image_->height() + kVertSpacing * 2;
 
   // Set text describing search engine hooked into omnibox.
-  text_label_->SetBounds(kPanelHorizMargin, next_v_space,
+  text_label_->SetBounds(views::kPanelHorizMargin,
+                         next_v_space,
                          label_width,
                          text_label_->GetPreferredSize().height());
   next_v_space = text_label_->y() +
@@ -365,7 +368,7 @@ void FirstRunSearchEngineView::Layout() {
     int upper_logo_margin =
         static_cast<int>((label_height - logo_section_height -
             background_image_->height() - text_label_->height()
-            - kVertSpacing + kPanelVertMargin) * kUpperPaddingPercent);
+            - kVertSpacing + views::kPanelVertMargin) * kUpperPaddingPercent);
 
     next_v_space = text_label_->y() + text_label_->height() +
                    upper_logo_margin;
@@ -375,7 +378,7 @@ void FirstRunSearchEngineView::Layout() {
         (label_width - (num_choices * logo_width)) / (num_choices + 1);
 
     search_engine_choices_[0]->SetChoiceViewBounds(
-        kPanelHorizMargin + logo_padding, next_v_space, logo_width,
+        views::kPanelHorizMargin + logo_padding, next_v_space, logo_width,
         logo_height);
 
     int next_h_space = search_engine_choices_[0]->GetView()->x() +
@@ -403,9 +406,9 @@ void FirstRunSearchEngineView::Layout() {
     // The buttons for search engine selection:
     int button_padding = logo_padding + logo_width / 2 - button_width / 2;
 
-    search_engine_choices_[0]->SetBounds(kPanelHorizMargin + button_padding,
-                                         next_v_space, button_width,
-                                         button_height);
+    search_engine_choices_[0]->SetBounds(
+        views::kPanelHorizMargin + button_padding, next_v_space,
+        button_width, button_height);
 
     next_h_space = search_engine_choices_[0]->x() + logo_width + logo_padding;
     search_engine_choices_[1]->SetBounds(next_h_space, next_v_space,

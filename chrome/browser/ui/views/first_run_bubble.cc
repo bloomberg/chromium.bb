@@ -183,7 +183,7 @@ void FirstRunBubbleView::Layout() {
                      pref_size.height());
 
   next_v_space = label2_->y() + label2_->height() +
-                 kPanelSubVerticalSpacing;
+                 views::kPanelSubVerticalSpacing;
 
   pref_size = label3_->GetPreferredSize();
   label3_->SetBounds(kBubblePadding, next_v_space,

@@ -295,13 +295,13 @@ void AboutChromeView::Init() {
 
   // Add up the height of the various elements on the page.
   int height = about_background_logo->height() +
-               views::kRelatedControlVerticalSpacing +
-               // Copyright line.
-               font.GetHeight() +
-               // Main label.
-               dummy_text.GetHeightForWidth(
-                   dialog_dimensions_.width() - (2 * kPanelHorizMargin)) +
-               views::kRelatedControlVerticalSpacing;
+      views::kRelatedControlVerticalSpacing +
+      // Copyright line.
+      font.GetHeight() +
+      // Main label.
+      dummy_text.GetHeightForWidth(
+          dialog_dimensions_.width() - (2 * views::kPanelHorizMargin)) +
+          views::kRelatedControlVerticalSpacing;
 
 #if defined(GOOGLE_CHROME_BUILD)
   std::vector<size_t> url_offsets;
@@ -347,12 +347,13 @@ void AboutChromeView::Layout() {
 
   // First label goes to the top left corner.
   sz = about_title_label_->GetPreferredSize();
-  about_title_label_->SetBounds(kPanelHorizMargin, kPanelVertMargin,
-                                sz.width(), sz.height());
+  about_title_label_->SetBounds(
+      views::kPanelHorizMargin, views::kPanelVertMargin,
+      sz.width(), sz.height());
 
   // Then we have the version number right below it.
   sz = version_label_->GetPreferredSize();
-  version_label_->SetBounds(kPanelHorizMargin,
+  version_label_->SetBounds(views::kPanelHorizMargin,
                             about_title_label_->y() +
                                 about_title_label_->height() +
                                 views::kRelatedControlVerticalSpacing,
@@ -363,7 +364,7 @@ void AboutChromeView::Layout() {
   // Then we have the version number right below it.
   sz = os_version_label_->GetPreferredSize();
   os_version_label_->SetBounds(
-      kPanelHorizMargin,
+      views::kPanelHorizMargin,
       version_label_->y() +
           version_label_->height() +
           views::kRelatedControlVerticalSpacing,
@@ -374,16 +375,16 @@ void AboutChromeView::Layout() {
   // For the width of the main text label we want to use up the whole panel
   // width and remaining height, minus a little margin on each side.
   int y_pos = background_image_height + views::kRelatedControlVerticalSpacing;
-  sz.set_width(panel_size.width() - 2 * kPanelHorizMargin);
+  sz.set_width(panel_size.width() - 2 * views::kPanelHorizMargin);
 
   // Draw the text right below the background image.
-  copyright_label_->SetBounds(kPanelHorizMargin,
+  copyright_label_->SetBounds(views::kPanelHorizMargin,
                               y_pos,
                               sz.width(),
                               sz.height());
 
   // Then the main_text_label.
-  main_text_label_->SetBounds(kPanelHorizMargin,
+  main_text_label_->SetBounds(views::kPanelHorizMargin,
                               copyright_label_->y() +
                                   copyright_label_->height(),
                               sz.width(),
@@ -394,7 +395,7 @@ void AboutChromeView::Layout() {
   gfx::Rect parent_bounds = parent()->GetContentsBounds();
 
   sz = throbber_->GetPreferredSize();
-  int throbber_topleft_x = kPanelHorizMargin;
+  int throbber_topleft_x = views::kPanelHorizMargin;
   int throbber_topleft_y =
       parent_bounds.bottom() - sz.height() - views::kButtonVEdgeMargin - 3;
   throbber_->SetBounds(throbber_topleft_x, throbber_topleft_y,

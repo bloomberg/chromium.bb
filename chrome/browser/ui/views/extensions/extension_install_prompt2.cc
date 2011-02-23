@@ -214,12 +214,12 @@ views::View* InstallDialogContent2::GetContentsView() {
 }
 
 gfx::Size InstallDialogContent2::GetPreferredSize() {
-  int width = kPanelHorizMargin * 2;
+  int width = views::kPanelHorizMargin * 2;
   width += kIconSize;
-  width += kPanelHorizMargin;  // Gutter.
+  width += views::kPanelHorizMargin;  // Gutter.
   width += right_column_width_;
 
-  int height = kPanelVertMargin * 2;
+  int height = views::kPanelVertMargin * 2;
   height += heading_->GetHeightForWidth(right_column_width_);
 
   if (permission_box_) {
@@ -237,16 +237,17 @@ gfx::Size InstallDialogContent2::GetPreferredSize() {
     }
   }
 
-  return gfx::Size(width, std::max(height, kIconSize + kPanelVertMargin * 2));
+  return gfx::Size(width,
+                   std::max(height, kIconSize + views::kPanelVertMargin * 2));
 }
 
 void InstallDialogContent2::Layout() {
-  int x = kPanelHorizMargin;
-  int y = kPanelVertMargin;
+  int x = views::kPanelHorizMargin;
+  int y = views::kPanelVertMargin;
 
   icon_->SetBounds(x, y, kIconSize, kIconSize);
   x += kIconSize;
-  x += kPanelHorizMargin;
+  x += views::kPanelHorizMargin;
 
   heading_->SizeToFit(right_column_width_);
   heading_->SetX(x);
@@ -282,7 +283,7 @@ void InstallDialogContent2::Layout() {
   for (size_t i = 0; i < permissions_.size(); ++i) {
     if (i > 0) {
       label_y += views::kRelatedControlVerticalSpacing;
-      permission_box_height += kPanelVertMargin;
+      permission_box_height += views::kPanelVertMargin;
     }
 
     permissions_[i]->SizeToFit(kPermissionLabelWidth);

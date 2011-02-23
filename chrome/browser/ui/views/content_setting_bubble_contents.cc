@@ -283,7 +283,8 @@ void ContentSettingBubbleContents::InitControlLayout() {
   // Insert a column set to indent the domain list.
   views::ColumnSet* indented_single_column_set =
       layout->AddColumnSet(indented_single_column_set_id);
-  indented_single_column_set->AddPaddingColumn(0, kPanelHorizIndentation);
+  indented_single_column_set->AddPaddingColumn(
+      0, views::kPanelHorizIndentation);
   indented_single_column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL,
                                         1, GridLayout::USE_PREF, 0, 0);
   for (std::vector<ContentSettingBubbleModel::DomainList>::const_iterator i =

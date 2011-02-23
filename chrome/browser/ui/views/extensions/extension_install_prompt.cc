@@ -95,24 +95,25 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
   virtual gfx::Size GetPreferredSize() {
     int width = kRightColumnWidth;
     width += kIconSize;
-    width += kPanelHorizMargin * 3;
+    width += views::kPanelHorizMargin * 3;
 
-    int height = kPanelVertMargin * 2;
+    int height = views::kPanelVertMargin * 2;
     height += heading_->GetHeightForWidth(kRightColumnWidth);
 
-    return gfx::Size(width, std::max(height, kIconSize + kPanelVertMargin * 2));
+    return gfx::Size(width,
+                     std::max(height, kIconSize + views::kPanelVertMargin * 2));
   }
 
   virtual void Layout() {
-    int x = kPanelHorizMargin;
-    int y = kPanelVertMargin;
+    int x = views::kPanelHorizMargin;
+    int y = views::kPanelVertMargin;
 
     heading_->SizeToFit(kRightColumnWidth);
 
     if (heading_->height() <= kIconSize) {
       icon_->SetBounds(x, y, kIconSize, kIconSize);
       x += kIconSize;
-      x += kPanelHorizMargin;
+      x += views::kPanelHorizMargin;
 
       heading_->SetX(x);
       heading_->SetY(y + (kIconSize - heading_->height()) / 2);
@@ -122,7 +123,7 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
                        kIconSize,
                        kIconSize);
       x += kIconSize;
-      x += kPanelHorizMargin;
+      x += views::kPanelHorizMargin;
 
       heading_->SetX(x);
       heading_->SetY(y);

@@ -56,9 +56,11 @@ gfx::Size ImporterLockView::GetPreferredSize() {
 }
 
 void ImporterLockView::Layout() {
-  description_label_->SetBounds(kPanelHorizMargin, kPanelVertMargin,
-      width() - 2 * kPanelHorizMargin,
-      height() - 2 * kPanelVertMargin);
+  description_label_->SetBounds(
+      views::kPanelHorizMargin,
+      views::kPanelVertMargin,
+      width() - 2 * views::kPanelHorizMargin,
+      height() - 2 * views::kPanelVertMargin);
 }
 
 std::wstring ImporterLockView::GetDialogButtonLabel(

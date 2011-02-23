@@ -218,7 +218,7 @@ void DefaultSearchView::SetupControls(PrefService* prefs) {
 
   // Now set-up the dialog contents.
   GridLayout* layout = new views::GridLayout(this);
-  layout->SetInsets(0, 0, kPanelVertMargin, 0);
+  layout->SetInsets(0, 0, views::kPanelVertMargin, 0);
   SetLayoutManager(layout);
 
   // Add a column set that spans the whole dialog.
@@ -233,15 +233,15 @@ void DefaultSearchView::SetupControls(PrefService* prefs) {
   // Add a column set that spans the whole dialog but obeying padding.
   ColumnSet* padded_whole_dialog_column_set =
       layout->AddColumnSet(kPaddedWholeDialogViewSetId);
-  padded_whole_dialog_column_set->AddPaddingColumn(1, kPanelVertMargin);
+  padded_whole_dialog_column_set->AddPaddingColumn(1, views::kPanelVertMargin);
   padded_whole_dialog_column_set->AddColumn(
       GridLayout::LEADING, GridLayout::LEADING,
       1, GridLayout::USE_PREF, 0, 0);
-  padded_whole_dialog_column_set->AddPaddingColumn(1, kPanelVertMargin);
+  padded_whole_dialog_column_set->AddPaddingColumn(1, views::kPanelVertMargin);
 
   // Add a column set for the search engine choices.
   ColumnSet* choices_column_set = layout->AddColumnSet(kChoicesViewSetId);
-  choices_column_set->AddPaddingColumn(1, kPanelVertMargin);
+  choices_column_set->AddPaddingColumn(1, views::kPanelVertMargin);
   choices_column_set->AddColumn(GridLayout::CENTER, GridLayout::CENTER,
                                 1, GridLayout::USE_PREF, 0, 0);
   choices_column_set->AddPaddingColumn(
@@ -249,7 +249,7 @@ void DefaultSearchView::SetupControls(PrefService* prefs) {
   choices_column_set->AddColumn(GridLayout::CENTER, GridLayout::CENTER,
                                 1, GridLayout::USE_PREF, 0, 0);
   choices_column_set->LinkColumnSizes(0, 2, -1);
-  choices_column_set->AddPaddingColumn(1, kPanelVertMargin);
+  choices_column_set->AddPaddingColumn(1, views::kPanelVertMargin);
 
   // Add the "search box" image.
   layout->StartRow(0, kWholeDialogViewSetId);
@@ -264,7 +264,7 @@ void DefaultSearchView::SetupControls(PrefService* prefs) {
 
   // Add text informing the user about the requested default change.
   layout->StartRowWithPadding(0, kPaddedWholeDialogViewSetId,
-                              1, kLabelToControlVerticalSpacing);
+                              1, views::kLabelToControlVerticalSpacing);
   Label* summary_label = new Label(UTF16ToWide(l10n_util::GetStringFUTF16(
       IDS_DEFAULT_SEARCH_SUMMARY,
       WideToUTF16(proposed_short_name))));

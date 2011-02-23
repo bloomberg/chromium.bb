@@ -85,7 +85,7 @@ void ExceptionsView::Layout() {
   // The buttons are placed in the parent, but we need to lay them out.
   int max_y =
       parent()->GetContentsBounds().bottom() - views::kButtonVEdgeMargin;
-  int x = kPanelHorizMargin;
+  int x = views::kPanelHorizMargin;
 
   for (size_t i = 0; i < arraysize(buttons); ++i) {
     gfx::Size pref = buttons[i]->GetPreferredSize();

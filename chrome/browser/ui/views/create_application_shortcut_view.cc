@@ -280,11 +280,11 @@ void CreateApplicationShortcutView::InitControls() {
   layout->StartRow(0, kHeaderColumnSetId);
   layout->AddView(app_info_);
 
-  layout->AddPaddingRow(0, kPanelSubVerticalSpacing);
+  layout->AddPaddingRow(0, views::kPanelSubVerticalSpacing);
   layout->StartRow(0, kHeaderColumnSetId);
   layout->AddView(create_shortcuts_label_);
 
-  layout->AddPaddingRow(0, kLabelToControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kLabelToControlVerticalSpacing);
   layout->StartRow(0, kTableColumnSetId);
   layout->AddView(desktop_check_box_);
 

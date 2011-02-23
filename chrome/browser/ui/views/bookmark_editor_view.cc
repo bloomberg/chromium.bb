@@ -143,8 +143,8 @@ void BookmarkEditorView::Layout() {
   gfx::Size prefsize = new_group_button_->GetPreferredSize();
   int button_y =
       parent_bounds.bottom() - prefsize.height() - views::kButtonVEdgeMargin;
-  new_group_button_->SetBounds(kPanelHorizMargin, button_y, prefsize.width(),
-                              prefsize.height());
+  new_group_button_->SetBounds(
+      views::kPanelHorizMargin, button_y, prefsize.width(), prefsize.height());
 }
 
 gfx::Size BookmarkEditorView::GetPreferredSize() {

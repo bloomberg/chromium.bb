@@ -180,7 +180,7 @@ void CookiesView::Layout() {
   int y_buttons =
       parent_bounds.bottom() - ps.height() - views::kButtonVEdgeMargin;
 
-  remove_button_->SetBounds(kPanelHorizMargin, y_buttons, ps.width(),
+  remove_button_->SetBounds(views::kPanelHorizMargin, y_buttons, ps.width(),
                             ps.height());
 
   ps = remove_all_button_->GetPreferredSize();
