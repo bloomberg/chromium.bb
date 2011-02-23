@@ -14,7 +14,7 @@
 
 struct PP_CompletionCallback;
 
-#define PPB_FILESYSTEM_DEV_INTERFACE "PPB_FileSystem(Dev);0.4"
+#define PPB_FILESYSTEM_DEV_INTERFACE "PPB_FileSystem(Dev);0.5"
 
 struct PPB_FileSystem_Dev {
   /** Creates a filesystem object of the given type. */

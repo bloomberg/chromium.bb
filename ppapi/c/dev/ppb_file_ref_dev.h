@@ -1,4 +1,4 @@
-/* Copyright (c) 2010 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -11,7 +11,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_FILEREF_DEV_INTERFACE "PPB_FileRef(Dev);0.6"
+#define PPB_FILEREF_DEV_INTERFACE "PPB_FileRef(Dev);0.7"
 
 // A FileRef is a "weak pointer" to a file in a file system.  It contains a
 // PP_FileSystemType identifier and a file path string.
