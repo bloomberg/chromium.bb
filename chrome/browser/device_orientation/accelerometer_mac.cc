@@ -108,11 +108,20 @@ const AccelerometerMac::GenericMacbookSensor
 // All non-tested entries from SMSLib have been removed.
 const AccelerometerMac::SensorDescriptor
     AccelerometerMac::kSupportedSensors[] = {
+  // Tested by tommyw on a 13" MacBook.
+  { "MacBook1,1",    { { 0, true  }, { 2, true  }, { 4, false } } },
+
   // Tested by S.Selz. (via avi) on a 13" MacBook.
   { "MacBook2,1",    { { 0, true  }, { 2, false }, { 4, true  } } },
 
+  // Tested by verhees on a 13" MacBook.
+  { "MacBook3,1",    { { 0, true  }, { 2, true  }, { 4, false } } },
+
   // Tested by adlr on a 13" MacBook.
   { "MacBook4,1",    { { 0, true  }, { 2, true  }, { 4, false } } },
+
+  // Tested by tommyw on a 13" MacBook.
+  { "MacBook6,1",    { { 0, true  }, { 2, true  }, { 4, false } } },
 
   // Tested by avi on a 13" MacBook.
   { "MacBook7,1",    { { 0, true  }, { 2, true  }, { 4, false } } },
@@ -125,6 +134,9 @@ const AccelerometerMac::SensorDescriptor
 
   // Note: MacBookAir3,1 (11" MacBook Air) and MacBookAir3,2 (13" MacBook Air)
   // have no accelerometer sensors.
+
+  // Tested by crc on a 15" MacBook Pro.
+  { "MacBookPro1,1", { { 0, true  }, { 2, true  }, { 4, false } } },
 
   // Tested by L.V. (via avi) on a 17" MacBook Pro.
   { "MacBookPro2,1", { { 0, true  }, { 2, false }, { 4, true  } } },
@@ -169,12 +181,8 @@ const AccelerometerMac::SensorDescriptor
   // and past models for which there has been no testing. Note that this generic
   // configuration may well have problems with inverted axes.
   // TODO(avi): Find these past models and test on them; test on future models.
-  //  MacBook1,1
-  //  MacBook3,1
   //  MacBook5,1
   //  MacBook5,2
-  //  MacBook6,1
-  //  MacBookPro1,1
   //  MacBookPro1,2
   //  MacBookPro3,1 (17" to compare to 15")
   { "", { { 0, true  }, { 2, true  }, { 4, false } } }
