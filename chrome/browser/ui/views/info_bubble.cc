@@ -225,6 +225,7 @@ gfx::Rect BorderWidget::SizeAndGetBounds(
                                      false, contents_size, &contents_bounds,
                                      &window_bounds);
   SetBounds(window_bounds);
+  border_contents_->SchedulePaint();
 
   // Return |contents_bounds| in screen coordinates.
   contents_bounds.Offset(window_bounds.origin());

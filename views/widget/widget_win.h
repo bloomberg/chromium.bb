@@ -225,7 +225,6 @@ class WidgetWin : public ui::WindowImpl,
   virtual void Show();
   virtual void Hide();
   virtual gfx::NativeView GetNativeView() const;
-  virtual void PaintNow(const gfx::Rect& update_rect);
   virtual void SetOpacity(unsigned char opacity);
   virtual void SetAlwaysOnTop(bool on_top);
   virtual RootView* GetRootView();
@@ -251,6 +250,7 @@ class WidgetWin : public ui::WindowImpl,
                                               const OSExchangeData& data,
                                               int operation);
   virtual View* GetDraggedView();
+  virtual void SchedulePaintInRect(const gfx::Rect& rect);
 
   // Overridden from MessageLoop::Observer:
   void WillProcessMessage(const MSG& msg);
@@ -505,13 +505,6 @@ class WidgetWin : public ui::WindowImpl,
   // recreates the entire bitmap.
   void SizeContents(const gfx::Size& window_size);
 
-  // Paint into a DIB and then update the layered window with its contents.
-  void PaintLayeredWindow();
-
-  // In layered mode, update the layered window. |dib_dc| represents a handle
-  // to a device context that contains the contents of the window.
-  void UpdateWindowFromContents(HDC dib_dc);
-
   // Invoked from WM_DESTROY. Does appropriate cleanup and invokes OnDestroy
   // so that subclasses can do any cleanup they need to.
   // void OnDestroyImpl();
@@ -527,6 +520,9 @@ class WidgetWin : public ui::WindowImpl,
 
   // Fills out a MSG struct with the supplied values.
   void MakeMSG(MSG* msg, UINT message, WPARAM w_param, LPARAM l_param) const;
+
+  // Synchronously paints the invalid contents of the Widget.
+  void RedrawInvalidRect();
 
   // The following factory is used for calls to close the WidgetWin
   // instance.

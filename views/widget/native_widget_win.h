@@ -80,9 +80,7 @@ class NativeWidgetWin : public NativeWidget,
   virtual void ReleaseMouseCapture();
   virtual bool HasMouseCapture() const;
   virtual bool ShouldReleaseCaptureOnMouseReleased() const;
-  virtual void Invalidate();
-  virtual void InvalidateRect(const gfx::Rect& invalid_rect);
-  virtual void Paint();
+  virtual void SchedulePaintInRect(const gfx::Rect& rect);
   virtual void FocusNativeView(gfx::NativeView native_view);
   virtual void RunShellDrag(const ui::OSExchangeData& data, int operation);
   virtual WidgetImpl* GetWidgetImpl();
@@ -243,6 +241,9 @@ class NativeWidgetWin : public NativeWidget,
   void MakeMSG(MSG* msg, UINT message, WPARAM w_param, LPARAM l_param) const;
 
   void CloseNow();
+
+  void SchedulePaint();
+  void RedrawInvalidRect();
 
   bool IsLayeredWindow() const;
 

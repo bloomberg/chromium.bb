@@ -159,9 +159,6 @@ class Widget {
   // Returns the gfx::NativeView associated with this Widget.
   virtual gfx::NativeView GetNativeView() const = 0;
 
-  // Forces a paint of a specified rectangle immediately.
-  virtual void PaintNow(const gfx::Rect& update_rect) = 0;
-
   // Sets the opacity of the widget. This may allow widgets behind the widget
   // in the Z-order to become visible, depending on the capabilities of the
   // underlying windowing system. Note that the caller must then schedule a
@@ -240,6 +237,8 @@ class Widget {
 
   // If a view is dragging, this returns it. Otherwise returns NULL.
   virtual View* GetDraggedView() = 0;
+
+  virtual void SchedulePaintInRect(const gfx::Rect& rect) = 0;
 };
 
 }  // namespace views

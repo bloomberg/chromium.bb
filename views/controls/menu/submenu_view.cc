@@ -351,7 +351,7 @@ void SubmenuView::SchedulePaintForDropIndicator(
   if (position == MenuDelegate::DROP_ON) {
     item->SchedulePaint();
   } else if (position != MenuDelegate::DROP_NONE) {
-    SchedulePaintInRect(CalculateDropIndicatorBounds(item, position), false);
+    SchedulePaintInRect(CalculateDropIndicatorBounds(item, position));
   }
 }
 

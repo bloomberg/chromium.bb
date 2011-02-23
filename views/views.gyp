@@ -332,8 +332,6 @@
         'widget/gtk_views_window.h',
         'widget/root_view.cc',
         'widget/root_view.h',
-        'widget/root_view_gtk.cc',
-        'widget/root_view_win.cc',
         'widget/tooltip_manager_gtk.cc',
         'widget/tooltip_manager_gtk.h',
         'widget/tooltip_manager_win.cc',

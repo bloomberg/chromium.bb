@@ -13,13 +13,8 @@
 #include "views/focus/focus_search.h"
 #include "views/view.h"
 
-#if defined(OS_LINUX)
-typedef struct _GdkEventExpose GdkEventExpose;
-#endif
-
 namespace views {
 
-class PaintTask;
 class Widget;
 #if defined(TOUCH_UI)
 class GestureManager;
@@ -39,9 +34,6 @@ class GestureManager;
 //  initialized to attach the contents view to the RootView.
 //  TODO(beng): Enforce no other callers to AddChildView/tree functions by
 //              overriding those methods as private here.
-//  TODO(beng): Get rid of the scheduled paint rect tracking that this class
-//              does - it is superfluous to the underlying environment's invalid
-//              rect tracking.
 //  TODO(beng): Move to internal namespace and remove accessors from
 //              View/Widget.
 //  TODO(beng): Clean up API further, make WidgetImpl a friend.
@@ -64,35 +56,6 @@ class RootView : public View,
   // Called when parent of the host changed.
   void NotifyNativeViewHierarchyChanged(bool attached,
                                         gfx::NativeView native_view);
-
-  // Painting ------------------------------------------------------------------
-
-  // Whether or not this View needs repainting. If |urgent| is true, this method
-  // returns whether this root view needs to paint as soon as possible.
-  bool NeedsPainting(bool urgent);
-
-  // Invoked by the Widget to discover what rectangle should be painted.
-  const gfx::Rect& GetScheduledPaintRect();
-
-  // Returns the region scheduled to paint clipped to the RootViews bounds.
-  gfx::Rect GetScheduledPaintRectConstrainedToSize();
-
-  // Clears the region that is schedule to be painted. You nearly never need
-  // to invoke this. This is primarily intended for Widgets.
-  void ClearPaintRect();
-
-  // TODO(beng): These should be handled at the NativeWidget level. NativeWidget
-  //             should crack and create a gfx::Canvas which is passed to a
-  //             paint processing routine here.
-#if defined(OS_WIN)
-  // Invoked from the Widget to service a WM_PAINT call.
-  void OnPaint(HWND hwnd);
-#elif defined(OS_LINUX)
-  void OnPaint(GdkEventExpose* event);
-#endif
-
-  // Enables debug painting. See |debug_paint_enabled_| for details.
-  static void EnableDebugPaint();
 
   // Input ---------------------------------------------------------------------
 
@@ -157,9 +120,7 @@ class RootView : public View,
   virtual View* GetFocusTraversableParentView();
 
   // Overridden from View:
-  virtual void SchedulePaintInRect(const gfx::Rect& r, bool urgent);
-  virtual void Paint(gfx::Canvas* canvas);
-  virtual void PaintNow();
+  virtual void SchedulePaintInRect(const gfx::Rect& rect);
   virtual const Widget* GetWidget() const;
   virtual Widget* GetWidget();
   virtual bool OnMousePressed(const MouseEvent& e);
@@ -176,10 +137,8 @@ class RootView : public View,
 
  protected:
   // Overridden from View:
+  virtual void OnPaint(gfx::Canvas* canvas);
   virtual void ViewHierarchyChanged(bool is_add, View *parent, View *child);
-#ifndef NDEBUG
-  virtual bool IsProcessingPaint() const { return is_processing_paint_; }
-#endif
 
  private:
   friend class View;
@@ -216,31 +175,6 @@ class RootView : public View,
 
   // The host Widget
   Widget* widget_;
-
-  // Painting ------------------------------------------------------------------
-
-  // The rectangle that should be painted
-  gfx::Rect invalid_rect_;
-
-  // Whether the current invalid rect should be painted urgently.
-  bool invalid_rect_urgent_;
-
-  // The task that we are using to trigger some non urgent painting or NULL
-  // if no painting has been scheduled yet.
-  PaintTask* pending_paint_task_;
-
-  // Indicate if, when the pending_paint_task_ is run, actual painting is still
-  // required.
-  bool paint_task_needed_;
-
-#ifndef NDEBUG
-  // True if we're currently processing paint.
-  bool is_processing_paint_;
-#endif
-
-  // True to enable debug painting. Enabling causes the damaged
-  // region to be painted to flash in red.
-  static bool debug_paint_enabled_;
 
   // Input ---------------------------------------------------------------------
 

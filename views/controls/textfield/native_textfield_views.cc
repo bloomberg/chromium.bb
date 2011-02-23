@@ -437,7 +437,7 @@ void NativeTextfieldViews::UpdateCursor() {
 void NativeTextfieldViews::RepaintCursor() {
   gfx::Rect r = cursor_bounds_;
   r.Inset(-1, -1, -1, -1);
-  SchedulePaintInRect(r, false);
+  SchedulePaintInRect(r);
 }
 
 void NativeTextfieldViews::UpdateCursorBoundsAndTextOffset() {

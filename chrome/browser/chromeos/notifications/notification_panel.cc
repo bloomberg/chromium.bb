@@ -70,7 +70,7 @@ chromeos::BalloonViewImpl* GetBalloonViewOf(const Balloon* balloon) {
 // with gtk 2.18.6. See http://crbug.com/42235 for more details.
 class PanelWidget : public views::WidgetGtk {
  public:
-  PanelWidget() : WidgetGtk(TYPE_WINDOW), painting_(false) {
+  PanelWidget() : WidgetGtk(TYPE_WINDOW) {
   }
 
   virtual ~PanelWidget() {
@@ -79,19 +79,7 @@ class PanelWidget : public views::WidgetGtk {
     EnableDoubleBuffer(true);
   }
 
-  // views::WidgetGtk overrides.
-  virtual void PaintNow(const gfx::Rect& update_rect) {
-    if (!painting_) {
-      painting_ = true;
-      WidgetGtk::PaintNow(update_rect);
-      painting_ = false;
-    }
-  }
-
  private:
-  // True if the painting is in progress.
-  bool painting_;
-
   DISALLOW_COPY_AND_ASSIGN(PanelWidget);
 };
 

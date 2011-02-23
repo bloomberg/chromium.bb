@@ -514,13 +514,11 @@ class View : public AcceleratorTarget {
 
   // Mark all or part of the View's bounds as dirty (needing repaint).
   // |r| is in the View's coordinates.
-  // When |urgent| is true, the view will be repainted when the current event
-  // processing is done. Otherwise, painting will take place as soon as
-  // possible. Rectangle |r| should be in the view's coordinate system. The
+  // Rectangle |r| should be in the view's coordinate system. The
   // transformations are applied to it to convert it into the parent coordinate
   // system before propagating SchedulePaint up the view hierarchy.
   virtual void SchedulePaint();
-  virtual void SchedulePaintInRect(const gfx::Rect& r, bool urgent);
+  virtual void SchedulePaintInRect(const gfx::Rect& r);
 
   // Called by the framework to paint a View. Performs translation and clipping
   // for View coordinates and language direction as required, allows the View
@@ -1073,11 +1071,6 @@ class View : public AcceleratorTarget {
   // Override to paint a focus border (usually a dotted rectangle) around
   // relevant contents.
   virtual void OnPaintFocusBorder(gfx::Canvas* canvas);
-
-#ifndef NDEBUG
-  // Returns true if the View is currently processing a paint.
-  virtual bool IsProcessingPaint() const;
-#endif
 
   // Input ---------------------------------------------------------------------
 

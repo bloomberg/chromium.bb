@@ -23,23 +23,6 @@ namespace internal {
 
 namespace {
 
-// Called from NativeWidgetWin::Paint() to asynchronously redraw child windows.
-BOOL CALLBACK EnumChildProcForRedraw(HWND hwnd, LPARAM lparam) {
-  DWORD process_id;
-  GetWindowThreadProcessId(hwnd, &process_id);
-  gfx::Rect invalid_rect = *reinterpret_cast<gfx::Rect*>(lparam);
-
-  RECT window_rect;
-  GetWindowRect(hwnd, &window_rect);
-  invalid_rect.Offset(-window_rect.left, -window_rect.top);
-
-  int flags = RDW_INVALIDATE | RDW_NOCHILDREN | RDW_FRAME;
-  if (process_id == GetCurrentProcessId())
-    flags |= RDW_UPDATENOW;
-  RedrawWindow(hwnd, &invalid_rect.ToRECT(), NULL, flags);
-  return TRUE;
-}
-
 // Links the HWND to its Widget.
 const char* const kNativeWidgetKey = "__VIEWS_NATIVE_WIDGET__";
 
@@ -118,7 +101,7 @@ void NativeWidgetWin::Show() {
     ShowWindow(hwnd(), SW_SHOWNOACTIVATE);
   // TODO(beng): move to windowposchanging to trap visibility changes instead.
   if (IsLayeredWindow())
-    Invalidate();
+    SchedulePaint();
 }
 
 void NativeWidgetWin::Hide() {
@@ -177,38 +160,12 @@ bool NativeWidgetWin::ShouldReleaseCaptureOnMouseReleased() const {
   return true;
 }
 
-void NativeWidgetWin::Invalidate() {
-  ::InvalidateRect(hwnd(), NULL, FALSE);
-}
-
-void NativeWidgetWin::InvalidateRect(const gfx::Rect& invalid_rect) {
+void NativeWidgetWin::SchedulePaintInRect(const gfx::Rect& rect) {
   // InvalidateRect() expects client coordinates.
-  RECT r = invalid_rect.ToRECT();
+  RECT r = rect.ToRECT();
   ::InvalidateRect(hwnd(), &r, FALSE);
 }
 
-void NativeWidgetWin::Paint() {
-  RECT r;
-  GetUpdateRect(hwnd(), &r, FALSE);
-  if (!IsRectEmpty(&r)) {
-    // TODO(beng): WS_EX_TRANSPARENT windows (see WidgetWin::opaque_)
-    // Paint child windows that are in a different process asynchronously.
-    // This prevents a hang in other processes from blocking this process.
-
-    // Calculate the invalid rect in screen coordinates before the first
-    // RedrawWindow() call to the parent HWND, since that will empty update_rect
-    // (which comes from a member variable) in the OnPaint call.
-    gfx::Rect screen_rect = GetWindowScreenBounds();
-    gfx::Rect invalid_screen_rect(r);
-    invalid_screen_rect.Offset(screen_rect.x(), screen_rect.y());
-
-    RedrawWindow(hwnd(), &r, NULL,
-                 RDW_INVALIDATE | RDW_UPDATENOW | RDW_NOCHILDREN);
-
-    LPARAM lparam = reinterpret_cast<LPARAM>(&invalid_screen_rect);
-    EnumChildWindows(hwnd(), EnumChildProcForRedraw, lparam);
-  }
-}
 
 void NativeWidgetWin::FocusNativeView(gfx::NativeView native_view) {
   if (IsWindow(native_view)) {
@@ -245,11 +202,7 @@ void NativeWidgetWin::WillProcessMessage(const MSG& msg) {
 }
 
 void NativeWidgetWin::DidProcessMessage(const MSG& msg) {
-  // We need to add ourselves as a message loop observer so that we can repaint
-  // aggressively if the contents of our window become invalid. Unfortunately
-  // WM_PAINT messages are starved and we get flickery redrawing when resizing
-  // if we do not do this.
-  Paint();
+  RedrawInvalidRect();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -289,6 +242,10 @@ void NativeWidgetWin::OnCommand(UINT notification_code, int command_id,
 LRESULT NativeWidgetWin::OnCreate(CREATESTRUCT* create_struct) {
   SetNativeWindowProperty(kNativeWidgetKey, this);
   listener_->OnNativeWidgetCreated();
+  // We need to add ourselves as a message loop observer so that we can repaint
+  // aggressively if the contents of our window become invalid. Unfortunately
+  // WM_PAINT messages are starved and we get flickery redrawing when resizing
+  // if we do not do this.
   MessageLoopForUI::current()->AddObserver(this);
   return 0;
 }
@@ -632,6 +589,18 @@ void NativeWidgetWin::MakeMSG(MSG* msg, UINT message, WPARAM w_param,
 
 void NativeWidgetWin::CloseNow() {
   DestroyWindow(hwnd());
+}
+
+void NativeWidgetWin::SchedulePaint() {
+  ::InvalidateRect(hwnd(), NULL, FALSE);
+}
+
+void NativeWidgetWin::RedrawInvalidRect() {
+  RECT r;
+  if (GetUpdateRect(hwnd(), &r, FALSE)) {
+    RedrawWindow(hwnd(), &r, NULL,
+                 RDW_INVALIDATE | RDW_UPDATENOW | RDW_NOCHILDREN);
+  }
 }
 
 bool NativeWidgetWin::IsLayeredWindow() const {

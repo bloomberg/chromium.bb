@@ -108,14 +108,7 @@ void DraggedTabView::SetTabWidthAndUpdate(int width,
 }
 
 void DraggedTabView::Update() {
-#if defined(OS_WIN)
-  container_->set_can_update_layered_window(true);
   SchedulePaint();
-  container_->PaintNow(gfx::Rect());
-  container_->set_can_update_layered_window(false);
-#else
-  SchedulePaint();
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////

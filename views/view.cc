@@ -599,19 +599,19 @@ gfx::Rect View::ConvertRectToParent(const gfx::Rect& rect) const {
 // Painting --------------------------------------------------------------------
 
 void View::SchedulePaint() {
-  SchedulePaintInRect(GetLocalBounds(), false);
+  SchedulePaintInRect(GetLocalBounds());
 }
 
-void View::SchedulePaintInRect(const gfx::Rect& r, bool urgent) {
+void View::SchedulePaintInRect(const gfx::Rect& rect) {
   if (!IsVisible())
     return;
 
   if (parent_) {
     // Translate the requested paint rect to the parent's coordinate system
     // then pass this notification up to the parent.
-    gfx::Rect paint_rect = ConvertRectToParent(r);
+    gfx::Rect paint_rect = ConvertRectToParent(rect);
     paint_rect.Offset(GetMirroredPosition());
-    parent_->SchedulePaintInRect(paint_rect, urgent);
+    parent_->SchedulePaintInRect(paint_rect);
   }
 }
 
@@ -1060,12 +1060,6 @@ void View::OnPaintFocusBorder(gfx::Canvas* canvas) {
     canvas->DrawFocusRect(0, 0, width(), height());
 }
 
-#ifndef NDEBUG
-bool View::IsProcessingPaint() const {
-  return parent() && parent()->IsProcessingPaint();
-}
-#endif
-
 // Input -----------------------------------------------------------------------
 
 bool View::HasHitTestMask() const {
@@ -1150,11 +1144,6 @@ void View::DoRemoveChildView(View* view,
                              bool update_focus_cycle,
                              bool update_tool_tip,
                              bool delete_removed_view) {
-#ifndef NDEBUG
-  DCHECK(!IsProcessingPaint()) << "Should not be removing a child view " <<
-                                  "during a paint, this will seriously " <<
-                                  "mess things up!";
-#endif
   DCHECK(view);
   const ViewVector::iterator i = find(children_.begin(), children_.end(), view);
   scoped_ptr<View> view_to_be_deleted;

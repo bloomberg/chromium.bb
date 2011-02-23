@@ -58,6 +58,8 @@ class ViewTest : public ViewsTestBase {
   }
 };
 
+/*
+
 // Paints the RootView.
 void PaintRootView(views::RootView* root, bool empty_paint) {
   if (!empty_paint) {
@@ -73,7 +75,6 @@ void PaintRootView(views::RootView* root, bool empty_paint) {
   }
 }
 
-/*
 typedef CWinTraits<WS_VISIBLE|WS_CLIPCHILDREN|WS_CLIPSIBLINGS> CVTWTraits;
 
 // A trivial window implementation that tracks whether or not it has been
@@ -1518,8 +1519,32 @@ TEST_F(ViewTest, ChangeNativeViewHierarchyChangeHierarchy) {
 ////////////////////////////////////////////////////////////////////////////////
 // Transformations
 ////////////////////////////////////////////////////////////////////////////////
+
+class TransformPaintView : public TestView {
+ public:
+  TransformPaintView() {}
+  virtual ~TransformPaintView() {}
+
+  void ClearScheduledPaintRect() {
+    scheduled_paint_rect_ = gfx::Rect();
+  }
+
+  gfx::Rect scheduled_paint_rect() const { return scheduled_paint_rect_; }
+
+  // Overridden from View:
+  virtual void SchedulePaintInRect(const gfx::Rect& rect) {
+    gfx::Rect xrect = ConvertRectToParent(rect);
+    scheduled_paint_rect_ = scheduled_paint_rect_.Union(xrect);
+  }
+
+ private:
+  gfx::Rect scheduled_paint_rect_;
+
+  DISALLOW_COPY_AND_ASSIGN(TransformPaintView);
+};
+
 TEST_F(ViewTest, TransformPaint) {
-  TestView* v1 = new TestView();
+  TransformPaintView* v1 = new TransformPaintView();
   v1->SetBounds(0, 0, 500, 300);
 
   TestView* v2 = new TestView();
@@ -1531,17 +1556,17 @@ TEST_F(ViewTest, TransformPaint) {
   window_win->set_window_style(WS_OVERLAPPEDWINDOW);
   window_win->Init(NULL, gfx::Rect(50, 50, 650, 650));
 #endif
+  widget->Show();
   RootView* root = widget->GetRootView();
 
   root->AddChildView(v1);
   v1->AddChildView(v2);
 
   // At this moment, |v2| occupies (100, 100) to (300, 200) in |root|.
-  root->ClearPaintRect();
+  v1->ClearScheduledPaintRect();
   v2->SchedulePaint();
 
-  gfx::Rect rect = root->GetScheduledPaintRect();
-  EXPECT_EQ(gfx::Rect(100, 100, 200, 100), rect);
+  EXPECT_EQ(gfx::Rect(100, 100, 200, 100), v1->scheduled_paint_rect());
 
   // Rotate |v1| counter-clockwise.
   v1->SetRotation(-90.0);
@@ -1549,11 +1574,10 @@ TEST_F(ViewTest, TransformPaint) {
 
   // |v2| now occupies (100, 200) to (200, 400) in |root|.
 
-  root->ClearPaintRect();
+  v1->ClearScheduledPaintRect();
   v2->SchedulePaint();
 
-  rect = root->GetScheduledPaintRect();
-  EXPECT_EQ(gfx::Rect(100, 200, 100, 200), rect);
+  EXPECT_EQ(gfx::Rect(100, 200, 100, 200), v1->scheduled_paint_rect());
 
   widget->CloseNow();
 }

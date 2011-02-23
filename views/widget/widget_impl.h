@@ -85,7 +85,7 @@ class WidgetImpl : public internal::NativeWidgetListener,
 
   // Causes the specified rectangle to be added to the invalid rectangle for the
   // WidgetImpl.
-  void InvalidateRect(const gfx::Rect& invalid_rect);
+  void SchedulePaintInRect(const gfx::Rect& rect);
 
   // Returns a ThemeProvider that can be used to provide resources when
   // rendering Views associated with this WidgetImpl.
@@ -130,7 +130,6 @@ class WidgetImpl : public internal::NativeWidgetListener,
   virtual void MoveAbove(Widget* widget);
   virtual void SetShape(gfx::NativeRegion region);
   virtual gfx::NativeView GetNativeView() const;
-  virtual void PaintNow(const gfx::Rect& update_rect);
   virtual void SetOpacity(unsigned char opacity);
   virtual RootView* GetRootView();
   virtual Widget* GetRootWidget() const;

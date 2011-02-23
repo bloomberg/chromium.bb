@@ -113,8 +113,8 @@ void WidgetImpl::SetAlwaysOnTop(bool always_on_top) {
   NOTIMPLEMENTED();
 }
 
-void WidgetImpl::InvalidateRect(const gfx::Rect& invalid_rect) {
-  native_widget_->InvalidateRect(invalid_rect);
+void WidgetImpl::SchedulePaintInRect(const gfx::Rect& invalid_rect) {
+  native_widget_->SchedulePaintInRect(invalid_rect);
 }
 
 ThemeProvider* WidgetImpl::GetThemeProvider() const {
@@ -224,10 +224,7 @@ void WidgetImpl::OnNativeWidgetCreated() {
 }
 
 void WidgetImpl::OnPaint(gfx::Canvas* canvas) {
-  // TODO(beng): replace with root_view_->Paint(canvas);
-#if defined(OS_WIN)
-  root_view_->OnPaint(native_widget_->GetNativeView());
-#endif
+  root_view_->Paint(canvas);
 }
 
 void WidgetImpl::OnSizeChanged(const gfx::Size& size) {
@@ -297,10 +294,6 @@ void WidgetImpl::SetShape(gfx::NativeRegion region) {
 
 gfx::NativeView WidgetImpl::GetNativeView() const {
   return native_widget_->GetNativeView();
-}
-
-void WidgetImpl::PaintNow(const gfx::Rect& update_rect) {
-  NOTIMPLEMENTED();
 }
 
 void WidgetImpl::SetOpacity(unsigned char opacity) {

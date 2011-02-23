@@ -18,6 +18,8 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_gtk.h"
+#include "ui/base/x/x11_util.h"
+#include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/path.h"
 #include "views/focus/view_storage.h"
 #include "views/widget/default_theme_provider.h"
@@ -224,6 +226,7 @@ static GtkWidget* CreateDragIconWidget(GdkPixbuf* drag_image) {
 
 // static
 GtkWidget* WidgetGtk::null_parent_ = NULL;
+bool WidgetGtk::debug_paint_enabled_ = false;
 
 ////////////////////////////////////////////////////////////////////////////////
 // WidgetGtk, public:
@@ -244,7 +247,6 @@ WidgetGtk::WidgetGtk(Type type)
       ignore_drag_leave_(false),
       opacity_(255),
       drag_data_(NULL),
-      in_paint_now_(false),
       is_active_(false),
       transient_to_parent_(false),
       got_initial_focus_in_(false),
@@ -730,16 +732,6 @@ gfx::NativeView WidgetGtk::GetNativeView() const {
   return widget_;
 }
 
-void WidgetGtk::PaintNow(const gfx::Rect& update_rect) {
-  if (widget_ && GTK_WIDGET_DRAWABLE(widget_)) {
-    gtk_widget_queue_draw_area(widget_, update_rect.x(), update_rect.y(),
-                               update_rect.width(), update_rect.height());
-    // Force the paint to occur now.
-    AutoReset<bool> auto_reset_in_paint_now(&in_paint_now_, true);
-    gdk_window_process_updates(widget_->window, true);
-  }
-}
-
 void WidgetGtk::SetOpacity(unsigned char opacity) {
   opacity_ = opacity;
   if (widget_) {
@@ -881,6 +873,13 @@ View* WidgetGtk::GetDraggedView() {
   return dragged_view_;
 }
 
+void WidgetGtk::SchedulePaintInRect(const gfx::Rect& rect) {
+  if (widget_ && GTK_WIDGET_DRAWABLE(widget_)) {
+    gtk_widget_queue_draw_area(widget_, rect.x(), rect.y(), rect.width(),
+                               rect.height());
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WidgetGtk, FocusTraversable implementation:
 
@@ -966,6 +965,11 @@ int WidgetGtk::GetFlagsForEventButton(const GdkEventButton& event) {
   return flags;
 }
 
+// static
+void WidgetGtk::EnableDebugPaint() {
+  debug_paint_enabled_ = true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WidgetGtk, protected:
 
@@ -1005,7 +1009,26 @@ gboolean WidgetGtk::OnPaint(GtkWidget* widget, GdkEventExpose* event) {
       CompositePainter::SetComposited(widget_);
     }
   }
-  root_view_->OnPaint(event);
+
+  if (debug_paint_enabled_) {
+    // Using cairo directly because using skia didn't have immediate effect.
+    cairo_t* cr = gdk_cairo_create(event->window);
+    gdk_cairo_region(cr, event->region);
+    cairo_set_source_rgb(cr, 1, 0, 0);  // red
+    cairo_rectangle(cr,
+                    event->area.x, event->area.y,
+                    event->area.width, event->area.height);
+    cairo_fill(cr);
+    cairo_destroy(cr);
+    // Make sure that users see the red flash.
+    XSync(ui::GetXDisplay(), false /* don't discard events */);
+  }
+
+  gfx::CanvasSkiaPaint canvas(event);
+  if (!canvas.is_empty()) {
+    canvas.set_composite_alpha(is_transparent());
+    root_view_->Paint(&canvas);
+  }
   return false;  // False indicates other widgets should get the event as well.
 }
 

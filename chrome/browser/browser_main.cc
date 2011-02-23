@@ -163,7 +163,9 @@
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/chrome_views_delegate.h"
 #include "views/focus/accelerator_handler.h"
-#include "views/widget/root_view.h"
+#if defined(TOOLKIT_USES_GTK)
+#include "views/widget/widget_gtk.h"
+#endif
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -1019,8 +1021,11 @@ void InitializeToolkit(const MainFunctionParams& parameters) {
   if (!views::ViewsDelegate::views_delegate)
     views::ViewsDelegate::views_delegate = new ChromeViewsDelegate;
 
+#if defined(TOOLKIT_USES_GTK)
+  // TODO(beng): Move to WidgetImpl and implement on Windows too!
   if (parameters.command_line_.HasSwitch(switches::kDebugViewsPaint))
-    views::RootView::EnableDebugPaint();
+    views::WidgetGtk::EnableDebugPaint();
+#endif
 #endif
 
 #if defined(OS_WIN)

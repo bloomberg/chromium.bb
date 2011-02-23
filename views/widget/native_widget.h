@@ -69,9 +69,7 @@ class NativeWidget {
   virtual void ReleaseMouseCapture() = 0;
   virtual bool HasMouseCapture() const = 0;
   virtual bool ShouldReleaseCaptureOnMouseReleased() const = 0;
-  virtual void Invalidate() = 0;
-  virtual void InvalidateRect(const gfx::Rect& invalid_rect) = 0;
-  virtual void Paint() = 0;
+  virtual void SchedulePaintInRect(const gfx::Rect& rect) = 0;
   virtual void FocusNativeView(gfx::NativeView native_view) = 0;
   virtual void RunShellDrag(const ui::OSExchangeData& data, int operation) = 0;
   virtual WidgetImpl* GetWidgetImpl() = 0;

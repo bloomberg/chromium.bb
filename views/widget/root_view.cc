@@ -35,57 +35,8 @@
 
 namespace views {
 
-// Performs painting after a return to the message loop.
-// TODO(beng): CancelableTask, or delete in SchedulePaint rewrite.
-class PaintTask : public Task {
- public:
-  explicit PaintTask(RootView* target) : root_view_(target) {
-  }
-
-  ~PaintTask() {}
-
-  void Cancel() {
-    root_view_ = NULL;
-  }
-
-  void Run() {
-    if (root_view_)
-      root_view_->PaintNow();
-  }
- private:
-  // The target root view.
-  RootView* root_view_;
-
-  DISALLOW_COPY_AND_ASSIGN(PaintTask);
-};
-
-namespace {
-
-#ifndef NDEBUG
-// Sets the value of RootView's |is_processing_paint_| member to true as long
-// as Paint() is being called. Sets it to |false| when it returns.
-class ScopedProcessingPaint {
- public:
-  explicit ScopedProcessingPaint(bool* is_processing_paint)
-      : is_processing_paint_(is_processing_paint) {
-    *is_processing_paint_ = true;
-  }
-
-  ~ScopedProcessingPaint() {
-    *is_processing_paint_ = false;
-  }
- private:
-  bool* is_processing_paint_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedProcessingPaint);
-};
-#endif
-
-}  // namespace
-
 // static
 const char RootView::kViewClassName[] = "views/RootView";
-bool RootView::debug_paint_enabled_ = false;
 
 ////////////////////////////////////////////////////////////////////////////////
 // RootView, public:
@@ -94,12 +45,6 @@ bool RootView::debug_paint_enabled_ = false;
 
 RootView::RootView(Widget* widget)
     : widget_(widget),
-      invalid_rect_urgent_(false),
-      pending_paint_task_(NULL),
-      paint_task_needed_(false),
-#ifndef NDEBUG
-      is_processing_paint_(false),
-#endif
       mouse_pressed_handler_(NULL),
       mouse_move_handler_(NULL),
       last_click_handler_(NULL),
@@ -127,9 +72,6 @@ RootView::~RootView() {
   // notification is sent for each one of them.
   if (has_children())
     RemoveAllChildViews(true);
-
-  if (pending_paint_task_)
-    pending_paint_task_->Cancel();  // Ensure we're not called any more.
 }
 
 // Tree operations -------------------------------------------------------------
@@ -154,41 +96,6 @@ void RootView::SetContentsView(View* contents_view) {
 void RootView::NotifyNativeViewHierarchyChanged(bool attached,
                                                 gfx::NativeView native_view) {
   PropagateNativeViewHierarchyChanged(attached, native_view, this);
-}
-
-// Painting --------------------------------------------------------------------
-
-bool RootView::NeedsPainting(bool urgent) {
-  bool has_invalid_rect = !invalid_rect_.IsEmpty();
-  if (urgent)
-    return invalid_rect_urgent_ ? has_invalid_rect : false;
-  return has_invalid_rect;
-}
-
-const gfx::Rect& RootView::GetScheduledPaintRect() {
-  return invalid_rect_;
-}
-
-gfx::Rect RootView::GetScheduledPaintRectConstrainedToSize() {
-  if (invalid_rect_.IsEmpty())
-    return invalid_rect_;
-
-  return invalid_rect_.Intersect(GetLocalBounds());
-}
-
-void RootView::ClearPaintRect() {
-  invalid_rect_.SetRect(0, 0, 0, 0);
-
-  // This painting has been done. Reset the urgent flag.
-  invalid_rect_urgent_ = false;
-
-  // If a pending_paint_task_ does Run(), we don't need to do anything.
-  paint_task_needed_ = false;
-}
-
-// static
-void RootView::EnableDebugPaint() {
-  debug_paint_enabled_ = true;
 }
 
 // Input -----------------------------------------------------------------------
@@ -297,70 +204,11 @@ View* RootView::GetFocusTraversableParentView() {
 ////////////////////////////////////////////////////////////////////////////////
 // RootView, View overrides:
 
-void RootView::SchedulePaintInRect(const gfx::Rect& r, bool urgent) {
-  gfx::Rect xrect = ConvertRectToParent(r);
-  // If there is an existing invalid rect, add the union of the scheduled
-  // rect with the invalid rect. This could be optimized further if
-  // necessary.
-  if (invalid_rect_.IsEmpty())
-    invalid_rect_ = xrect;
-  else
-    invalid_rect_ = invalid_rect_.Union(xrect);
-
-  if (urgent || invalid_rect_urgent_) {
-    invalid_rect_urgent_ = true;
-  } else {
-    if (!pending_paint_task_) {
-      pending_paint_task_ = new PaintTask(this);
-      MessageLoop::current()->PostTask(FROM_HERE, pending_paint_task_);
-    }
-    paint_task_needed_ = true;
-  }
-}
-
-void RootView::Paint(gfx::Canvas* canvas) {
-#ifndef NDEBUG
-  ScopedProcessingPaint processing_paint(&is_processing_paint_);
-#endif
-
-  // Clip the invalid rect to our bounds. If a view is in a scrollview
-  // it could be a lot larger
-  invalid_rect_ = GetScheduledPaintRectConstrainedToSize();
-
-  if (invalid_rect_.IsEmpty())
-    return;
-
-  // Clear the background.
-  canvas->AsCanvasSkia()->drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
-
-  // Save the current transforms.
-  canvas->Save();
-
-  // Set the clip rect according to the invalid rect.
-  int clip_x = invalid_rect_.x() + x();
-  int clip_y = invalid_rect_.y() + y();
-  canvas->ClipRectInt(clip_x, clip_y, invalid_rect_.width(),
-                      invalid_rect_.height());
-
-  // Paint the tree
-  View::Paint(canvas);
-
-  // Restore the previous transform
-  canvas->Restore();
-
-  ClearPaintRect();
-}
-
-void RootView::PaintNow() {
-  if (pending_paint_task_) {
-    pending_paint_task_->Cancel();
-    pending_paint_task_ = NULL;
-  }
-  if (!paint_task_needed_)
-    return;
-  Widget* widget = GetWidget();
-  if (widget)
-    widget->PaintNow(invalid_rect_);
+void RootView::SchedulePaintInRect(const gfx::Rect& rect) {
+  gfx::Rect xrect = ConvertRectToParent(rect);
+  gfx::Rect invalid_rect = GetLocalBounds().Intersect(xrect);
+  if (!invalid_rect.IsEmpty())
+    widget_->SchedulePaintInRect(invalid_rect);
 }
 
 const Widget* RootView::GetWidget() const {
@@ -620,6 +468,10 @@ AccessibilityTypes::Role RootView::GetAccessibleRole() {
   return AccessibilityTypes::ROLE_APPLICATION;
 }
 
+void RootView::OnPaint(gfx::Canvas* canvas) {
+  canvas->AsCanvasSkia()->drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
+}
+
 void RootView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
   widget_->ViewHierarchyChanged(is_add, parent, child);
 
@@ -646,7 +498,7 @@ bool RootView::ConvertPointToMouseHandler(const gfx::Point& l,
                                           gfx::Point* p) {
   //
   // If the mouse_handler was set explicitly, we need to keep
-  // sending events even if it was reparented in a different
+  // sending events even if it was re-parented in a different
   // window. (a non explicit mouse handler is automatically
   // cleared when the control is removed from the hierarchy)
   if (explicit_mouse_handler_) {

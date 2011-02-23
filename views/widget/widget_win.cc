@@ -217,6 +217,10 @@ void WidgetWin::Init(gfx::NativeView parent, const gfx::Rect& bounds) {
   // Sets the RootView as a property, so the automation can introspect windows.
   SetNativeWindowProperty(kRootViewWindowProperty, root_view_.get());
 
+  // We need to add ourselves as a message loop observer so that we can repaint
+  // aggressively if the contents of our window become invalid. Unfortunately
+  // WM_PAINT messages are starved and we get flickery redrawing when resizing
+  // if we do not do this.
   MessageLoopForUI::current()->AddObserver(this);
 
   // Windows special DWM window frame requires a special tooltip manager so
@@ -336,65 +340,6 @@ void WidgetWin::Hide() {
 
 gfx::NativeView WidgetWin::GetNativeView() const {
   return WindowImpl::hwnd();
-}
-
-static BOOL CALLBACK EnumChildProcForRedraw(HWND hwnd, LPARAM lparam) {
-  DWORD process_id;
-  GetWindowThreadProcessId(hwnd, &process_id);
-  gfx::Rect invalid_rect = *reinterpret_cast<gfx::Rect*>(lparam);
-
-  RECT window_rect;
-  GetWindowRect(hwnd, &window_rect);
-  invalid_rect.Offset(-window_rect.left, -window_rect.top);
-
-  int flags = RDW_INVALIDATE | RDW_NOCHILDREN | RDW_FRAME;
-  if (process_id == GetCurrentProcessId())
-    flags |= RDW_UPDATENOW;
-  RedrawWindow(hwnd, &invalid_rect.ToRECT(), NULL, flags);
-  return TRUE;
-}
-
-void WidgetWin::PaintNow(const gfx::Rect& update_rect) {
-  if (use_layered_buffer_) {
-    PaintLayeredWindow();
-  } else if (root_view_->NeedsPainting(false) && IsWindow()) {
-    if (!opaque_ && GetParent()) {
-      // We're transparent. Need to force painting to occur from our parent.
-      CRect parent_update_rect = update_rect.ToRECT();
-      POINT location_in_parent = { 0, 0 };
-      ClientToScreen(hwnd(), &location_in_parent);
-      ScreenToClient(GetParent(), &location_in_parent);
-      parent_update_rect.OffsetRect(location_in_parent);
-      RedrawWindow(GetParent(), parent_update_rect, NULL,
-                     RDW_UPDATENOW | RDW_INVALIDATE | RDW_ALLCHILDREN);
-    } else {
-      // Paint child windows that are in a different process asynchronously.
-      // This prevents a hang in other processes from blocking this process.
-
-      // Calculate the invalid rect in screen coordinates before  the first
-      // RedrawWindow call to the parent HWND, since that will empty update_rect
-      // (which comes from a member variable) in the OnPaint call.
-      CRect screen_rect_temp;
-      GetWindowRect(&screen_rect_temp);
-      gfx::Rect screen_rect(screen_rect_temp);
-      gfx::Rect invalid_screen_rect = update_rect;
-      invalid_screen_rect.Offset(screen_rect.x(), screen_rect.y());
-
-      RedrawWindow(hwnd(), &update_rect.ToRECT(), NULL,
-                   RDW_INVALIDATE | RDW_UPDATENOW | RDW_NOCHILDREN);
-
-      LPARAM lparam = reinterpret_cast<LPARAM>(&invalid_screen_rect);
-      EnumChildWindows(hwnd(), EnumChildProcForRedraw, lparam);
-    }
-    // As we were created with a style of WS_CLIPCHILDREN redraw requests may
-    // result in an empty paint rect in WM_PAINT (this'll happen if a
-    // child HWND completely contains the update _rect). In such a scenario
-    // RootView would never get a Paint() and always think it needs to be
-    // painted (leading to a steady stream of RedrawWindow requests on every
-    // event). For this reason we tell RootView it doesn't need to paint
-    // here.
-    root_view_->ClearPaintRect();
-  }
 }
 
 void WidgetWin::SetOpacity(unsigned char opacity) {
@@ -558,6 +503,12 @@ View* WidgetWin::GetDraggedView() {
   return dragged_view_;
 }
 
+void WidgetWin::SchedulePaintInRect(const gfx::Rect& rect) {
+  // InvalidateRect() expects client coordinates.
+  RECT r = rect.ToRECT();
+  InvalidateRect(hwnd(), &r, FALSE);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // MessageLoop::Observer
 
@@ -565,8 +516,7 @@ void WidgetWin::WillProcessMessage(const MSG& msg) {
 }
 
 void WidgetWin::DidProcessMessage(const MSG& msg) {
-  if (root_view_->NeedsPainting(true))
-    PaintNow(root_view_->GetScheduledPaintRect());
+  RedrawInvalidRect();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -639,6 +589,7 @@ LRESULT WidgetWin::OnCreate(CREATESTRUCT* create_struct) {
   // Widget::GetWidgetFromNativeView expects the contents of this property
   // to be of type Widget, so the cast is necessary.
   SetNativeWindowProperty(kWidgetKey, static_cast<Widget*>(this));
+  LayoutRootView();
   return 0;
 }
 
@@ -931,7 +882,33 @@ LRESULT WidgetWin::OnNotify(int w_param, NMHDR* l_param) {
 }
 
 void WidgetWin::OnPaint(HDC dc) {
-  root_view_->OnPaint(hwnd());
+  if (use_layered_buffer_) {
+    RECT r;
+    if (!GetUpdateRect(hwnd(), &r, FALSE))
+      return;
+
+    // We need to clip to the dirty rect ourselves.
+    contents_->save(SkCanvas::kClip_SaveFlag);
+    contents_->ClipRectInt(r.left, r.top, r.right - r.left,
+                           r.bottom - r.top);
+    root_view_->Paint(contents_.get());
+    contents_->restore();
+
+    RECT wr;
+    GetWindowRect(&wr);
+    SIZE size = {wr.right - wr.left, wr.bottom - wr.top};
+    POINT position = {wr.left, wr.top};
+    HDC dib_dc = contents_->getTopPlatformDevice().getBitmapDC();
+    POINT zero = {0, 0};
+    BLENDFUNCTION blend = {AC_SRC_OVER, 0, layered_alpha_, AC_SRC_ALPHA};
+    UpdateLayeredWindow(hwnd(), NULL, &position, &size, dib_dc, &zero,
+                        RGB(0xFF, 0xFF, 0xFF), &blend, ULW_ALPHA);
+    ValidateRect(hwnd(), &r);
+  } else {
+    scoped_ptr<gfx::CanvasPaint> canvas(
+        gfx::CanvasPaint::CreateCanvasPaint(hwnd()));
+    root_view_->Paint(canvas->AsCanvas());
+  }
 }
 
 LRESULT WidgetWin::OnPowerBroadcast(DWORD power_event, DWORD data) {
@@ -1148,9 +1125,6 @@ void WidgetWin::LayoutRootView() {
   // complete relayout.
   root_view_->SetBounds(0, 0, size.width(), size.height());
   root_view_->SchedulePaint();
-
-  if (use_layered_buffer_)
-    PaintNow(gfx::Rect(0, 0, size.width(), size.height()));
 }
 
 void WidgetWin::OnScreenReaderDetected() {
@@ -1187,36 +1161,6 @@ void WidgetWin::SizeContents(const gfx::Size& window_size) {
   contents_.reset(new gfx::CanvasSkia(window_size.width(),
                                       window_size.height(),
                                       false));
-}
-
-void WidgetWin::PaintLayeredWindow() {
-  // Painting monkeys with our cliprect, so we need to save it so that the
-  // call to UpdateLayeredWindow updates the entire window, not just the
-  // cliprect.
-  contents_->save(SkCanvas::kClip_SaveFlag);
-  gfx::Rect dirty_rect = root_view_->GetScheduledPaintRect();
-  contents_->ClipRectInt(dirty_rect.x(), dirty_rect.y(), dirty_rect.width(),
-                         dirty_rect.height());
-  root_view_->Paint(contents_.get());
-  contents_->restore();
-
-  UpdateWindowFromContents(contents_->getTopPlatformDevice().getBitmapDC());
-}
-
-void WidgetWin::UpdateWindowFromContents(HDC dib_dc) {
-  DCHECK(use_layered_buffer_);
-  if (can_update_layered_window_) {
-    CRect wr;
-    GetWindowRect(&wr);
-    CSize size(wr.right - wr.left, wr.bottom - wr.top);
-    CPoint zero_origin(0, 0);
-    CPoint window_position = wr.TopLeft();
-
-    BLENDFUNCTION blend = {AC_SRC_OVER, 0, layered_alpha_, AC_SRC_ALPHA};
-    UpdateLayeredWindow(
-        hwnd(), NULL, &window_position, &size, dib_dc, &zero_origin,
-        RGB(0xFF, 0xFF, 0xFF), &blend, ULW_ALPHA);
-  }
 }
 
 RootView* WidgetWin::GetFocusedViewRootView() {
@@ -1347,6 +1291,14 @@ void WidgetWin::MakeMSG(MSG* msg, UINT message, WPARAM w_param,
   msg->lParam = l_param;
   msg->time = 0;
   msg->pt.x = msg->pt.y = 0;
+}
+
+void WidgetWin::RedrawInvalidRect() {
+  RECT r;
+  if (GetUpdateRect(hwnd(), &r, FALSE)) {
+    RedrawWindow(hwnd(), &r, NULL,
+                 RDW_INVALIDATE | RDW_UPDATENOW | RDW_NOCHILDREN);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

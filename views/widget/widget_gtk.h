@@ -127,10 +127,6 @@ class WidgetGtk
   // Starts a drag on this widget. This blocks until the drag is done.
   void DoDrag(const OSExchangeData& data, int operation);
 
-  // Are we in PaintNow? See use in root_view_gtk for details on what this is
-  // used for.
-  bool in_paint_now() const { return in_paint_now_; }
-
   // Sets the focus traversable parents.
   void SetFocusTraversableParent(FocusTraversable* parent);
   void SetFocusTraversableParentView(View* parent_view);
@@ -176,7 +172,6 @@ class WidgetGtk
   virtual void Show();
   virtual void Hide();
   virtual gfx::NativeView GetNativeView() const;
-  virtual void PaintNow(const gfx::Rect& update_rect);
   virtual void SetOpacity(unsigned char opacity);
   virtual void SetAlwaysOnTop(bool on_top);
   virtual RootView* GetRootView();
@@ -202,6 +197,7 @@ class WidgetGtk
                                               const OSExchangeData& data,
                                               int operation);
   virtual View* GetDraggedView();
+  virtual void SchedulePaintInRect(const gfx::Rect& rect);
 
   // Overridden from FocusTraversable:
   virtual FocusSearch* GetFocusSearch();
@@ -218,8 +214,11 @@ class WidgetGtk
   // Returns the view::Event::flags for a GdkEventButton.
   static int GetFlagsForEventButton(const GdkEventButton& event);
 
+  // Enables debug painting. See |debug_paint_enabled_| for details.
+  static void EnableDebugPaint();
+
  protected:
-  // If widget containes another widget, translates event coordinates to the
+  // If widget contains another widget, translates event coordinates to the
   // contained widget's coordinates, else returns original event coordinates.
   template<class Event> bool GetContainedWidgetEventCoordinates(Event* event,
                                                                 int* x,
@@ -409,8 +408,9 @@ class WidgetGtk
   // for the drag.
   const OSExchangeDataProviderGtk* drag_data_;
 
-  // See description above getter for details.
-  bool in_paint_now_;
+  // True to enable debug painting. Enabling causes the damaged
+  // region to be painted to flash in red.
+  static bool debug_paint_enabled_;
 
   // Are we active?
   bool is_active_;
