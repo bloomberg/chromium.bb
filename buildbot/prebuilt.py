@@ -168,7 +168,9 @@ def RevGitFile(filename, value, retries=5, key='PORTAGE_BINHOST'):
   old_cwd = os.getcwd()
   os.chdir(os.path.dirname(filename))
 
-  cros_build_lib.RunCommand('repo sync .', shell=True)
+  commit = cros_build_lib.RunCommand('git rev-parse HEAD', shell=True,
+                                     redirect_stdout=True).output
+  cros_build_lib.RunCommand('git remote update', shell=True)
   cros_build_lib.RunCommand('repo start %s .' % prebuilt_branch, shell=True)
   git_ssh_config_cmd = (
     'git config url.ssh://git@gitrw.chromium.org:9222.pushinsteadof '
@@ -183,6 +185,7 @@ def RevGitFile(filename, value, retries=5, key='PORTAGE_BINHOST'):
     RevGitPushWithRetry(retries)
   finally:
     cros_build_lib.RunCommand('repo abandon %s .' % prebuilt_branch, shell=True)
+    cros_build_lib.RunCommand('git checkout %s' % commit, shell=True)
     os.chdir(old_cwd)
 
 
