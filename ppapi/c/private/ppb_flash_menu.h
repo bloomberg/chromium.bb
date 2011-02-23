@@ -51,7 +51,7 @@ struct PPB_Flash_Menu {
   int32_t (*Show)(PP_Resource menu_id,
                   const struct PP_Point* location,
                   int32_t* selected_id,
-                  PP_CompletionCallback callback);
+                  struct PP_CompletionCallback callback);
 };
 
 #endif  // PPAPI_C_PRIVATE_PPB_FLASH_MENU_H_

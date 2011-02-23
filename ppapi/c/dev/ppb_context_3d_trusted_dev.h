@@ -13,7 +13,7 @@
 
 #define PPB_CONTEXT_3D_TRUSTED_DEV_INTERFACE "PPB_Context3DTrusted(Dev);0.2"
 
-enum PPB_Context3DTrustedError {
+typedef enum {
   kNoError,
   kInvalidSize,
   kOutOfBounds,
@@ -21,7 +21,7 @@ enum PPB_Context3DTrustedError {
   kInvalidArguments,
   kLostContext,
   kGenericError
-};
+} PPB_Context3DTrustedError;
 
 struct PP_Context3DTrustedState {
   // Size of the command buffer in command buffer entries.
@@ -63,7 +63,7 @@ struct PPB_Context3DTrusted_Dev {
                            uint32_t* shm_size);
 
   // Returns the current state.
-  PP_Context3DTrustedState (*GetState)(PP_Resource context);
+  struct PP_Context3DTrustedState (*GetState)(PP_Resource context);
 
   // The writer calls this to update its put offset.
   PP_Bool (*Flush)(PP_Resource context, int32_t put_offset);
@@ -72,8 +72,8 @@ struct PPB_Context3DTrusted_Dev {
   // The writer calls this to update its put offset. This function returns the
   // reader's most recent get offset. Does not return until after the put offset
   // change callback has been invoked.
-  PP_Context3DTrustedState (*FlushSync)(PP_Resource context,
-                                        int32_t put_offset);
+  struct PP_Context3DTrustedState (*FlushSync)(PP_Resource context,
+                                               int32_t put_offset);
 
   // Create a transfer buffer and return a handle that uniquely
   // identifies it or -1 on error.

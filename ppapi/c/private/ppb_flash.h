@@ -40,7 +40,7 @@ struct PP_DirEntry_Dev {
 
 struct PP_DirContents_Dev {
   int32_t count;
-  PP_DirEntry_Dev* entries;
+  struct PP_DirEntry_Dev* entries;
 };
 
 struct PPB_Flash {
@@ -51,18 +51,18 @@ struct PPB_Flash {
 
   PP_Bool (*DrawGlyphs)(PP_Instance instance,
                         PP_Resource pp_image_data,
-                        const PP_FontDescription_Dev* font_desc,
+                        const struct PP_FontDescription_Dev* font_desc,
                         uint32_t color,
-                        PP_Point position,
-                        PP_Rect clip,
+                        struct PP_Point position,
+                        struct PP_Rect clip,
                         const float transformation[3][3],
                         uint32_t glyph_count,
                         const uint16_t glyph_indices[],
-                        const PP_Point glyph_advances[]);
+                        const struct PP_Point glyph_advances[]);
 
   // Retrieves the proxy that will be used for the given URL. The result will
   // be a string in PAC format, or an undefined var on error.
-  PP_Var (*GetProxyForURL)(PP_Instance instance, const char* url);
+  struct PP_Var (*GetProxyForURL)(PP_Instance instance, const char* url);
 
   // Opens a module-local file, returning a file descriptor (posix) or a HANDLE
   // (win32) into file. Module-local file paths (here and below) are
@@ -96,7 +96,7 @@ struct PPB_Flash {
   // ppapi error, PP_OK if success, one of the PP_ERROR_* in case of failure.
   int32_t (*QueryModuleLocalFile)(PP_Instance instance,
                                   const char* path,
-                                  PP_FileInfo_Dev* info);
+                                  struct PP_FileInfo_Dev* info);
 
   // Gets the list of files contained in a module-local directory. The return
   // value is the ppapi error, PP_OK if success, one of the PP_ERROR_* in case
@@ -104,11 +104,11 @@ struct PPB_Flash {
   // FreeModuleLocalDirContents.
   int32_t (*GetModuleLocalDirContents)(PP_Instance instance,
                                        const char* path,
-                                       PP_DirContents_Dev** contents);
+                                       struct PP_DirContents_Dev** contents);
 
   // Frees the data allocated by GetModuleLocalDirContents.
   void (*FreeModuleLocalDirContents)(PP_Instance instance,
-                                     PP_DirContents_Dev* contents);
+                                     struct PP_DirContents_Dev* contents);
 
   // Navigate to URL. May open a new tab if target is not "_self". Return true
   // if success. This differs from javascript:window.open() in that it bypasses
@@ -152,7 +152,7 @@ struct PPB_Flash_NetConnector {
                         PP_FileHandle* socket_out,
                         struct PP_Flash_NetAddress* local_addr_out,
                         struct PP_Flash_NetAddress* remote_addr_out,
-                        PP_CompletionCallback callback);
+                        struct PP_CompletionCallback callback);
 
   // Same as |ConnectTcp()|, but connecting to the address given by |addr|. A
   // typical use-case would be for reconnections.
@@ -161,7 +161,7 @@ struct PPB_Flash_NetConnector {
                                PP_FileHandle* socket_out,
                                struct PP_Flash_NetAddress* local_addr_out,
                                struct PP_Flash_NetAddress* remote_addr_out,
-                               PP_CompletionCallback callback);
+                               struct PP_CompletionCallback callback);
 };
 
 #endif  // PPAPI_C_PRIVATE_PPB_FLASH_H_

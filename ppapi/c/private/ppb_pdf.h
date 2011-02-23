@@ -82,8 +82,8 @@ struct PP_PrivateFindResult {
 
 struct PPB_PDF {
   // Returns a localized string.
-  PP_Var (*GetLocalizedString)(PP_Instance instance,
-                               PP_ResourceString string_id);
+  struct PP_Var (*GetLocalizedString)(PP_Instance instance,
+                                      PP_ResourceString string_id);
 
   // Returns a resource image.
   PP_Resource (*GetResourceImage)(PP_Instance instance,
@@ -95,7 +95,7 @@ struct PPB_PDF {
   // Currently Linux-only.
   PP_Resource (*GetFontFileWithFallback)(
       PP_Instance instance,
-      const PP_FontDescription_Dev* description,
+      const struct PP_FontDescription_Dev* description,
       PP_PrivateFontCharset charset);
 
   // Given a resource previously returned by GetFontFileWithFallback, returns
@@ -112,7 +112,7 @@ struct PPB_PDF {
      const unsigned short* string,
      const unsigned short* term,
      bool case_sensitive,
-     PP_PrivateFindResult** results,
+     struct PP_PrivateFindResult** results,
      int* count);
 
   // Since WebFrame doesn't know about PPAPI requests, it'll think the page has
@@ -129,7 +129,7 @@ struct PPB_PDF {
   void (*HistogramPDFPageCount)(int count);
 
   // Notifies the browser that the given action has been performed.
-  void (*UserMetricsRecordAction)(PP_Var action);
+  void (*UserMetricsRecordAction)(struct PP_Var action);
 
   // Notifies the browser that the PDF has an unsupported feature.
   void (*HasUnsupportedFeature)(PP_Instance instance);
