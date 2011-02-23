@@ -475,7 +475,7 @@ class TabContents : public PageNavigator,
   // Infobars ------------------------------------------------------------------
 
   // Adds an InfoBar for the specified |delegate|.
-  virtual void AddInfoBar(InfoBarDelegate* delegate);
+  void AddInfoBar(InfoBarDelegate* delegate);
 
   // Removes the InfoBar for the specified |delegate|.
   void RemoveInfoBar(InfoBarDelegate* delegate);
