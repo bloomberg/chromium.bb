@@ -231,15 +231,13 @@ void Sandbox::SandboxWarmup(SandboxProcessType sandbox_type) {
     CGImageSourceGetStatus(img);
   }
 
+  {
+    // Allow access to /dev/urandom.
+    GetUrandomFD();
+  }
+
   // Process-type dependent warm-up.
   switch (sandbox_type) {
-    case SANDBOX_TYPE_NACL_LOADER:
-      {
-        // Native Client access to /dev/random.
-        GetUrandomFD();
-      }
-      break;
-
     case SANDBOX_TYPE_GPU:
       {  // GPU-related stuff is very slow without this, probably because
          // the sandbox prevents loading graphics drivers or some such.
@@ -255,11 +253,6 @@ void Sandbox::SandboxWarmup(SandboxProcessType sandbox_type) {
          // Preload either the desktop GL or the osmesa so, depending on the
          // --use-gl flag.
          gfx::GLContext::InitializeOneOff();
-      }
-
-      {
-        // Access to /dev/random is required for the field trial code.
-        GetUrandomFD();
       }
       break;
 
