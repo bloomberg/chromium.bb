@@ -104,6 +104,8 @@ net::URLRequestJob* ProtocolHandlerRegistry::Factory(net::URLRequest* request,
   return context->protocol_handler_registry()->CreateJob(request, scheme);
 }
 
+ProtocolHandlerRegistry::~ProtocolHandlerRegistry() {}
+
 Value* ProtocolHandlerRegistry::Encode() {
   ListValue* protocolHandlers = new ListValue();
 

@@ -21,6 +21,8 @@ BuiltinProvider::BuiltinProvider(ACProviderListener* listener,
     builtins_.push_back(ASCIIToUTF16("about:") + ASCIIToUTF16(*i));
 }
 
+BuiltinProvider::~BuiltinProvider() {}
+
 void BuiltinProvider::Start(const AutocompleteInput& input,
                             bool minimal_changes) {
   matches_.clear();

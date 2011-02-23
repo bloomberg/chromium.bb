@@ -21,6 +21,7 @@
 class BuiltinProvider : public AutocompleteProvider {
  public:
   BuiltinProvider(ACProviderListener* listener, Profile* profile);
+  virtual ~BuiltinProvider();
 
   // AutocompleteProvider:
   virtual void Start(const AutocompleteInput& input, bool minimal_changes);

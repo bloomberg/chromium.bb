@@ -31,16 +31,11 @@ class CloudPolicyIdentityStrategy {
     virtual void OnCredentialsChanged() = 0;
   };
 
-  CloudPolicyIdentityStrategy() {}
-  virtual ~CloudPolicyIdentityStrategy() {}
+  CloudPolicyIdentityStrategy();
+  virtual ~CloudPolicyIdentityStrategy();
 
-  void AddObserver(Observer* obs) {
-    observer_list_.AddObserver(obs);
-  }
-
-  void RemoveObserver(Observer* obs) {
-    observer_list_.RemoveObserver(obs);
-  }
+  void AddObserver(Observer* obs);
+  void RemoveObserver(Observer* obs);
 
   // Returns the device management token, if available. Returns the empty string
   // if the device token is currently unavailable.
@@ -63,14 +58,10 @@ class CloudPolicyIdentityStrategy {
 
  protected:
   // Notify observers that the effective token has changed.
-  void NotifyDeviceTokenChanged() {
-    FOR_EACH_OBSERVER(Observer, observer_list_, OnDeviceTokenChanged());
-  }
+  void NotifyDeviceTokenChanged();
 
   // Notify observers about authentication data change.
-  void NotifyAuthChanged() {
-    FOR_EACH_OBSERVER(Observer, observer_list_, OnCredentialsChanged());
-  }
+  void NotifyAuthChanged();
 
  private:
   ObserverList<Observer, true> observer_list_;

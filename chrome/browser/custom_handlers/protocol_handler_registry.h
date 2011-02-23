@@ -63,6 +63,9 @@ class ProtocolHandlerRegistry
  private:
   typedef std::map<std::string, ProtocolHandler*> ProtocolHandlerMap;
 
+  friend class base::RefCounted<ProtocolHandlerRegistry>;
+  ~ProtocolHandlerRegistry();
+
   // Returns a JSON dictionary of protocols to protocol handlers. The caller is
   // responsible for deleting this Value.
   Value* Encode();
@@ -83,9 +86,6 @@ class ProtocolHandlerRegistry
 
   // The Profile that owns this ProtocolHandlerRegistry.
   Profile* profile_;
-
-  friend class base::RefCounted<ProtocolHandlerRegistry>;
-  ~ProtocolHandlerRegistry() {}
 
   DISALLOW_COPY_AND_ASSIGN(ProtocolHandlerRegistry);
 };

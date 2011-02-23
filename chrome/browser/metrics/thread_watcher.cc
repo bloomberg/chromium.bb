@@ -29,6 +29,8 @@ ThreadWatcher::ThreadWatcher(const BrowserThread::ID thread_id,
   Initialize();
 }
 
+ThreadWatcher::~ThreadWatcher() {}
+
 // static
 void ThreadWatcher::StartWatching(const BrowserThread::ID thread_id,
                                   const std::string& thread_name,

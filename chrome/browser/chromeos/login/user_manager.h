@@ -31,7 +31,7 @@ class UserManager : public UserImageLoader::Delegate,
   class User {
    public:
     User();
-    ~User() {}
+    ~User();
 
     // The email the user used to log in.
     void set_email(const std::string& email) { email_ = email; }
@@ -78,9 +78,7 @@ class UserManager : public UserImageLoader::Delegate,
   virtual bool IsKnownUser(const std::string& email);
 
   // Returns the logged-in user.
-  virtual const User& logged_in_user() const {
-    return logged_in_user_;
-  }
+  virtual const User& logged_in_user() const;
 
   // Sets image for logged-in user and sends LOGIN_USER_IMAGE_CHANGED
   // notification about the image changed via NotificationService.
@@ -100,12 +98,8 @@ class UserManager : public UserImageLoader::Delegate,
                        const NotificationDetails& details);
 
   // Accessor for current_user_is_owner_
-  virtual bool current_user_is_owner() const {
-    return current_user_is_owner_;
-  }
-  virtual void set_current_user_is_owner(bool current_user_is_owner) {
-    current_user_is_owner_ = current_user_is_owner;
-  }
+  virtual bool current_user_is_owner() const;
+  virtual void set_current_user_is_owner(bool current_user_is_owner);
 
   // Accessor for current_user_is_new_.
   bool current_user_is_new() const {

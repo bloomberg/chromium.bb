@@ -160,6 +160,8 @@ UserManager::User::User() {
       IDR_LOGIN_DEFAULT_USER);
 }
 
+UserManager::User::~User() {}
+
 std::string UserManager::User::GetDisplayName() const {
   size_t i = email_.find('@');
   if (i == 0 || i == std::string::npos) {
@@ -343,6 +345,10 @@ bool UserManager::IsKnownUser(const std::string& email) {
   return false;
 }
 
+const UserManager::User& UserManager::logged_in_user() const {
+  return logged_in_user_;
+}
+
 void UserManager::SetLoggedInUserImage(const SkBitmap& image) {
   if (logged_in_user_.email().empty())
     return;
@@ -472,6 +478,14 @@ void UserManager::Observe(NotificationType type,
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
         NewRunnableFunction(&CheckOwnership));
   }
+}
+
+bool UserManager::current_user_is_owner() const {
+  return current_user_is_owner_;
+}
+
+void UserManager::set_current_user_is_owner(bool current_user_is_owner) {
+  current_user_is_owner_ = current_user_is_owner;
 }
 
 }  // namespace chromeos

@@ -1600,6 +1600,7 @@
         'browser/policy/cloud_policy_cache.h',
         'browser/policy/cloud_policy_controller.cc',
         'browser/policy/cloud_policy_controller.h',
+        'browser/policy/cloud_policy_identity_strategy.cc',
         'browser/policy/cloud_policy_identity_strategy.h',
         'browser/policy/cloud_policy_subsystem.cc',
         'browser/policy/cloud_policy_subsystem.h',

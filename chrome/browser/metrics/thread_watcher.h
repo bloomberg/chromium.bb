@@ -87,7 +87,7 @@ class ThreadWatcher {
                 const std::string& thread_name,
                 const base::TimeDelta& sleep_time,
                 const base::TimeDelta& unresponsive_time);
-  virtual ~ThreadWatcher() {}
+  virtual ~ThreadWatcher();
 
   // This method activates the thread watching which starts ping/pong messaging.
   virtual void ActivateThreadWatching();
