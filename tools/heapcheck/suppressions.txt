@@ -1252,3 +1252,8 @@
    fun:ExtensionService::UninstallExtension
    fun:BackgroundApplicationListModelTest_Load*Extension*_Test::TestBody
 }
+{
+   bug_73828
+   ...
+   fun:GpuProcessHostUIShim::GetForRenderer
+}
