@@ -232,18 +232,16 @@ class ArchiveStage(BuilderStage):
         self._options.buildnumber, BuilderStage.test_tarball,
         self._options.debug)
 
-    # TODO(davidjames):  Should all bots do this?
-    if self._build_config['master'] and self._build_type in ('preflight',
-                                                             'chrome'):
+
+class PushChangesStage(BuilderStage):
+  """Pushes pfq and prebuilt url changes to git."""
+  def _PerformStage(self):
+    if self._build_type in ('preflight', 'chrome'):
       commands.UploadPrebuilts(
           self._build_root, self._build_config['board'],
           self._build_config['rev_overlays'], [BuilderStage.new_binhost],
           self._build_type, self._options.chrome_rev)
 
-
-class PushChangesStage(BuilderStage):
-  """Pushes pfq and prebuilt url changes to git."""
-  def _PerformStage(self):
     commands.UprevPush(self._build_root, self._options.tracking_branch,
                        self._build_config['board'], BuilderStage.push_overlays,
                        self._options.debug)
