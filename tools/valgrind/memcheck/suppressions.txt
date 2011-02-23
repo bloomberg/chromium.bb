@@ -3837,6 +3837,12 @@
    ...
    fun:_ZN20GpuProcessHostUIShim14GetForRendererEi
 }
+{
+   bug_73830
+   Memcheck:Leak
+   ...
+   fun:_ZN20GpuProcessHostUIShim12OnLogMessageEiRKSsS1_
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
