@@ -130,7 +130,7 @@ readonly PNACL_AS_X8664="${INSTALL_BIN}/pnacl-as_x86_64"
 readonly LLVM_REV=31f979b87330
 readonly LLVM_GCC_REV=a24f3ae473c8
 readonly NEWLIB_REV=d0ac50acf303
-readonly BINUTILS_REV=f84e3951f26d
+readonly BINUTILS_REV=efe91085ec97
 
 # Repositories
 readonly REPO_LLVM_GCC="llvm-gcc.nacl-llvm-branches"
