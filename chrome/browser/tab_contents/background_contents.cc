@@ -206,7 +206,7 @@ WebPreferences BackgroundContents::GetWebkitPrefs() {
   // apps.
   Profile* profile = render_view_host_->process()->profile();
   return RenderViewHostDelegateHelper::GetWebkitPrefs(profile,
-                                                      false);  // is_dom_ui
+                                                      false);  // is_web_ui
 }
 
 void BackgroundContents::ProcessWebUIMessage(

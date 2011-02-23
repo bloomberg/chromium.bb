@@ -183,7 +183,7 @@ class NotificationControlView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(NotificationControlView);
 };
 
-BalloonViewImpl::BalloonViewImpl(bool sticky, bool controls, bool dom_ui)
+BalloonViewImpl::BalloonViewImpl(bool sticky, bool controls, bool web_ui)
     : balloon_(NULL),
       html_contents_(NULL),
       method_factory_(this),
@@ -191,7 +191,7 @@ BalloonViewImpl::BalloonViewImpl(bool sticky, bool controls, bool dom_ui)
       sticky_(sticky),
       controls_(controls),
       closed_(false),
-      web_ui_(dom_ui) {
+      web_ui_(web_ui) {
   // This object is not to be deleted by the views hierarchy,
   // as it is owned by the balloon.
   set_parent_owned(false);

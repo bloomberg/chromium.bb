@@ -42,7 +42,7 @@ class BalloonViewImpl : public BalloonView,
                         public views::View,
                         public NotificationObserver {
  public:
-  BalloonViewImpl(bool sticky, bool controls, bool dom_ui);
+  BalloonViewImpl(bool sticky, bool controls, bool web_ui);
   virtual ~BalloonViewImpl();
 
   // views::View interface.

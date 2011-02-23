@@ -193,7 +193,7 @@ bool RenderViewHostDelegateHelper::gpu_enabled_ = true;
 
 // static
 WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
-    Profile* profile, bool is_dom_ui) {
+    Profile* profile, bool is_web_ui) {
   PrefService* prefs = profile->GetPrefs();
   WebPreferences web_prefs;
 
@@ -332,7 +332,7 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
   }
   DCHECK(!web_prefs.default_encoding.empty());
 
-  if (is_dom_ui) {
+  if (is_web_ui) {
     web_prefs.loads_images_automatically = true;
     web_prefs.javascript_enabled = true;
   }

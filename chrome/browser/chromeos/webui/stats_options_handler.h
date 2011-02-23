@@ -15,7 +15,7 @@ class MetricsCrosSettingsProvider;
 // ChromeOS handler for "Stats/crash reporting to Google" option of the Advanced
 // settings page. This handler does only ChromeOS-specific actions while default
 // code is in Chrome's AdvancedOptionsHandler
-// (chrome/browser/dom_ui/advanced_options_handler.cc).
+// (chrome/browser/webui/advanced_options_handler.cc).
 class StatsOptionsHandler : public CrosOptionsPageUIHandler {
  public:
   StatsOptionsHandler();

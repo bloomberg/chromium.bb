@@ -285,7 +285,7 @@ RendererPreferences PrerenderContents::GetRendererPrefs(
 
 WebPreferences PrerenderContents::GetWebkitPrefs() {
   return RenderViewHostDelegateHelper::GetWebkitPrefs(profile_,
-                                                      false);  // is_dom_ui
+                                                      false);  // is_web_ui
 }
 
 void PrerenderContents::ProcessWebUIMessage(

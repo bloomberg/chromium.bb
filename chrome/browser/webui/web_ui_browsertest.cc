@@ -14,8 +14,7 @@
 
 static const FilePath::CharType* kWebUILibraryJS =
     FILE_PATH_LITERAL("test_api.js");
-static const FilePath::CharType* kWebUITestFolder =
-    FILE_PATH_LITERAL("dom_ui");
+static const FilePath::CharType* kWebUITestFolder = FILE_PATH_LITERAL("webui");
 
 WebUIBrowserTest::~WebUIBrowserTest() {}
 

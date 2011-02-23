@@ -19,7 +19,7 @@ Message/event flow
 ------------------
 
 chrome://sync-internals is represented by SyncInternalsUI
-(chrome/browser/dom_ui/sync_internals_ui.h).  SyncInternalsUI
+(chrome/browser/web_ui/sync_internals_ui.h).  SyncInternalsUI
 interacts with the sync service via a JsFrontend (js_frontend.h)
 object, which has a ProcessMessage() method.  The JsFrontend can
 handle some messages itself, but it can also delegate the rest to a

@@ -9,7 +9,7 @@ This script fetches data from the keyboard layout and hotkey data spreadsheet,
 and output the data depending on the option.
 
   --cc: Generates C++ code snippet to be inserted into
-      chrome/browser/chromeos/dom_ui/keyboard_overlay_ui.cc
+      chrome/browser/chromeos/webui/keyboard_overlay_ui.cc
 
   --grd: Generates grd message snippet to be inserted into
       chrome/app/generated_resources.grd

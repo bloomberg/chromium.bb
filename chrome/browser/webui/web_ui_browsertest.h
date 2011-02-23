@@ -15,10 +15,10 @@
 class WebUIMessageHandler;
 
 // The runner of WebUI javascript based tests.
-// See chrome/test/data/dom_ui/test_api.js for the javascript side test API's.
+// See chrome/test/data/webui/test_api.js for the javascript side test API's.
 //
 // These tests should follow the form given in:
-// chrome/test/data/dom_ui/sample_downloads.js.
+// chrome/test/data/webui/sample_downloads.js.
 // and the lone test within this class.
 class WebUIBrowserTest : public InProcessBrowserTest {
  public:
@@ -51,7 +51,7 @@ class WebUIBrowserTest : public InProcessBrowserTest {
   // Handles test framework messages.
   scoped_ptr<WebUIHandlerBrowserTest> test_handler_;
 
-  // Location of test data (currently test/data/dom_ui).
+  // Location of test data (currently test/data/webui).
   FilePath test_data_directory_;
 };
 

@@ -95,7 +95,7 @@ class RenderViewHostDelegateViewHelper {
 // RenderViewHostDelegate methods.
 class RenderViewHostDelegateHelper {
  public:
-  static WebPreferences GetWebkitPrefs(Profile* profile, bool is_dom_ui);
+  static WebPreferences GetWebkitPrefs(Profile* profile, bool is_web_ui);
 
   static void UpdateInspectorSetting(Profile* profile,
                                      const std::string& key,

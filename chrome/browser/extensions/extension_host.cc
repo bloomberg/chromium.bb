@@ -497,7 +497,7 @@ WebPreferences ExtensionHost::GetWebkitPrefs() {
   Profile* profile = render_view_host()->process()->profile();
   WebPreferences webkit_prefs =
       RenderViewHostDelegateHelper::GetWebkitPrefs(profile,
-                                                   false);  // is_dom_ui
+                                                   false);  // is_web_ui
   // Extensions are trusted so we override any user preferences for disabling
   // javascript or images.
   webkit_prefs.loads_images_automatically = true;
