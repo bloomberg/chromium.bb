@@ -52,7 +52,7 @@ class PrintPreviewTabController;
 }
 
 namespace policy {
-class ConfigurationPolicyProviderKeeper;
+class BrowserPolicyConnector;
 }
 
 namespace ui {
@@ -119,8 +119,7 @@ class BrowserProcess {
   // Returns the thread that is used for health check of all browser threads.
   virtual WatchDogThread* watchdog_thread() = 0;
 
-  virtual policy::ConfigurationPolicyProviderKeeper*
-      configuration_policy_provider_keeper() = 0;
+  virtual policy::BrowserPolicyConnector* browser_policy_connector() = 0;
 
   virtual IconManager* icon_manager() = 0;
 

@@ -4,52 +4,19 @@
 
 #include "chrome/browser/policy/device_token_fetcher.h"
 
-#include "base/file_util.h"
-#include "base/path_service.h"
-#include "base/singleton.h"
-#include "base/string_util.h"
-#include "chrome/browser/net/gaia/token_service.h"
-#include "chrome/browser/policy/proto/device_management_local.pb.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_paths.h"
-#include "chrome/common/guid.h"
-#include "chrome/common/net/gaia/gaia_constants.h"
-#include "chrome/common/notification_details.h"
-#include "chrome/common/notification_service.h"
-#include "chrome/common/notification_source.h"
-#include "chrome/common/notification_type.h"
+#include <algorithm>
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/user_manager.h"
-#else
-#include "chrome/browser/browser_signin.h"
-#endif
+#include "base/message_loop.h"
+#include "chrome/browser/policy/cloud_policy_cache.h"
+#include "chrome/browser/policy/device_management_service.h"
+#include "chrome/browser/policy/proto/device_management_local.pb.h"
 
 namespace {
 
-// Domain names that are known not to be managed.
-// We don't register the device when such a user logs in.
-const char* kNonManagedDomains[] = {
-  "@googlemail.com",
-  "@gmail.com"
-};
-
-// Checks the domain part of the given username against the list of known
-// non-managed domain names. Returns false if |username| is empty or its
-// in a domain known not to be managed.
-bool CanBeInManagedDomain(const std::string& username) {
-  if (username.empty()) {
-    // This means incognito user in case of ChromiumOS and
-    // no logged-in user in case of Chromium (SigninService).
-    return false;
-  }
-  for (size_t i = 0; i < arraysize(kNonManagedDomains); i++) {
-    if (EndsWith(username, kNonManagedDomains[i], true)) {
-      return false;
-    }
-  }
-  return true;
-}
+// Retry after 3 seconds (with exponential backoff) after token fetch errors.
+const int64 kTokenFetchErrorDelayMilliseconds = 3 * 1000;
+// For unmanaged devices, check once per day whether they're still unmanaged.
+const int64 kUnmanagedDeviceRefreshRateMilliseconds = 24 * 60 * 60 * 1000;
 
 }  // namespace
 
@@ -57,284 +24,155 @@ namespace policy {
 
 namespace em = enterprise_management;
 
-DeviceTokenFetcher::ObserverRegistrar::ObserverRegistrar() {}
-
-DeviceTokenFetcher::ObserverRegistrar::~ObserverRegistrar() {
-  RemoveAll();
-}
-
-void DeviceTokenFetcher::ObserverRegistrar::Init(
-    DeviceTokenFetcher* token_fetcher) {
-  RemoveAll();
-  token_fetcher_ = token_fetcher;
-}
-
-void DeviceTokenFetcher::ObserverRegistrar::AddObserver(
-    DeviceTokenFetcher::Observer* observer) {
-  observers_.push_back(observer);
-  token_fetcher_->AddObserver(observer);
-}
-
-void DeviceTokenFetcher::ObserverRegistrar::RemoveAll() {
-  for (std::vector<DeviceTokenFetcher::Observer*>::iterator it =
-           observers_.begin(); it != observers_.end(); ++it) {
-    token_fetcher_->RemoveObserver(*it);
-  }
-  observers_.clear();
+DeviceTokenFetcher::DeviceTokenFetcher(
+    DeviceManagementService* service,
+    CloudPolicyCache* cache)
+    : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+  Initialize(service,
+             cache,
+             kTokenFetchErrorDelayMilliseconds,
+             kUnmanagedDeviceRefreshRateMilliseconds);
 }
 
 DeviceTokenFetcher::DeviceTokenFetcher(
-    DeviceManagementBackend* backend,
-    Profile* profile,
-    const FilePath& token_path)
-    : profile_(profile),
-      token_path_(token_path),
-      backend_(backend),
-      state_(kStateNotStarted),
-      device_token_load_complete_event_(true, false) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  TokenService* token_service = profile_->GetTokenService();
-  auth_token_ = token_service->GetTokenForService(
-      GaiaConstants::kDeviceManagementService);
-
-  registrar_.Add(this,
-                 NotificationType::TOKEN_AVAILABLE,
-                 Source<TokenService>(token_service));
-  // Register for the event of user login. The device management token won't
-  // be fetched until we know the domain of the currently logged in user.
-#if defined(OS_CHROMEOS)
-  registrar_.Add(this,
-                 NotificationType::LOGIN_USER_CHANGED,
-                 NotificationService::AllSources());
-#else
-  registrar_.Add(this,
-                 NotificationType::GOOGLE_SIGNIN_SUCCESSFUL,
-                 Source<Profile>(profile_));
-#endif
+    DeviceManagementService* service,
+    CloudPolicyCache* cache,
+    int64 token_fetch_error_delay_ms,
+    int64 unmanaged_device_refresh_rate_ms)
+    : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+  Initialize(service,
+             cache,
+             token_fetch_error_delay_ms,
+             unmanaged_device_refresh_rate_ms);
 }
 
-DeviceTokenFetcher::~DeviceTokenFetcher() {}
-
-void DeviceTokenFetcher::Observe(NotificationType type,
-                                 const NotificationSource& source,
-                                 const NotificationDetails& details) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (type == NotificationType::TOKEN_AVAILABLE) {
-    if (Source<TokenService>(source).ptr() == profile_->GetTokenService()) {
-      const TokenService::TokenAvailableDetails* token_details =
-          Details<const TokenService::TokenAvailableDetails>(details).ptr();
-      if (token_details->service() == GaiaConstants::kDeviceManagementService) {
-        if (!HasAuthToken()) {
-          auth_token_ = token_details->token();
-          SendServerRequestIfPossible();
-        }
-      }
-    }
-#if defined(OS_CHROMEOS)
-  } else if (type == NotificationType::LOGIN_USER_CHANGED) {
-    SendServerRequestIfPossible();
-#else
-  } else if (type == NotificationType::GOOGLE_SIGNIN_SUCCESSFUL) {
-    if (profile_ == Source<Profile>(source).ptr()) {
-      SendServerRequestIfPossible();
-    }
-#endif
-  } else {
-    NOTREACHED();
-  }
+DeviceTokenFetcher::~DeviceTokenFetcher() {
+  CancelRetryTask();
 }
 
-std::string DeviceTokenFetcher::GetCurrentUser() {
-#if defined(OS_CHROMEOS)
-  return chromeos::UserManager::Get()->logged_in_user().email();
-#else
-  return profile_->GetBrowserSignin()->GetSignedInUsername();
-#endif
+void DeviceTokenFetcher::FetchToken(const std::string& auth_token,
+                                    const std::string& device_id) {
+  SetState(STATE_INACTIVE);
+  auth_token_ = auth_token;
+  device_id_ = device_id;
+  FetchTokenInternal();
+}
+
+void DeviceTokenFetcher::FetchTokenInternal() {
+  DCHECK(state_ != STATE_TOKEN_AVAILABLE);
+  DCHECK(!auth_token_.empty() && !device_id_.empty());
+  // Construct a new backend, which will discard any previous requests.
+  backend_.reset(service_->CreateBackend());
+  em::DeviceRegisterRequest request;
+  backend_->ProcessRegisterRequest(auth_token_, device_id_, request, this);
+}
+
+const std::string& DeviceTokenFetcher::GetDeviceToken() {
+  return device_token_;
+}
+
+void DeviceTokenFetcher::AddObserver(DeviceTokenFetcher::Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void DeviceTokenFetcher::RemoveObserver(
+    DeviceTokenFetcher::Observer* observer) {
+  observer_list_.RemoveObserver(observer);
 }
 
 void DeviceTokenFetcher::HandleRegisterResponse(
     const em::DeviceRegisterResponse& response) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(kStateRequestingDeviceTokenFromServer, state_);
   if (response.has_device_management_token()) {
     device_token_ = response.device_management_token();
-    BrowserThread::PostTask(
-        BrowserThread::FILE,
-        FROM_HERE,
-        NewRunnableFunction(&WriteDeviceTokenToDisk,
-                            token_path_,
-                            device_token_,
-                            device_id_));
-    SetState(kStateHasDeviceToken);
+    SetState(STATE_TOKEN_AVAILABLE);
   } else {
     NOTREACHED();
-    SetState(kStateFailure);
+    SetState(STATE_ERROR);
   }
 }
 
 void DeviceTokenFetcher::OnError(DeviceManagementBackend::ErrorCode code) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // For privacy reasons, delete all identifying data when this device is not
-  // managed.
   if (code == DeviceManagementBackend::kErrorServiceManagementNotSupported) {
-    device_token_ = std::string();
-    device_id_ = std::string();
-    BrowserThread::PostTask(
-        BrowserThread::FILE,
-        FROM_HERE,
-        // The Windows compiler needs explicit template instantiation.
-        NewRunnableFunction<bool(*)(const FilePath&, bool), FilePath, bool>(
-            &file_util::Delete, token_path_, false));
-    SetState(kStateNotManaged);
-    return;
+    cache_->SetUnmanaged();
+    SetState(STATE_UNMANAGED);
   }
-  SetState(kStateFailure);
+  SetState(STATE_ERROR);
 }
 
-void DeviceTokenFetcher::Restart() {
-  // Complain if there's currently an asynchronous operation going on.
-  DCHECK(state_ == kStateNotStarted ||
-         state_ == kStateHasDeviceToken ||
-         state_ == kStateFailure ||
-         state_ == kStateNotManaged);
-  device_token_.clear();
-  device_token_load_complete_event_.Reset();
-  MakeReadyToRequestDeviceToken();
-}
+void DeviceTokenFetcher::Initialize(DeviceManagementService* service,
+                                    CloudPolicyCache* cache,
+                                    int64 token_fetch_error_delay_ms,
+                                    int64 unmanaged_device_refresh_rate_ms) {
+  service_ = service;
+  cache_ = cache;
+  token_fetch_error_delay_ms_ = token_fetch_error_delay_ms;
+  effective_token_fetch_error_delay_ms_ = token_fetch_error_delay_ms;
+  unmanaged_device_refresh_rate_ms_ = unmanaged_device_refresh_rate_ms;
+  state_ = STATE_INACTIVE;
+  retry_task_ = NULL;
 
-void DeviceTokenFetcher::StartFetching() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (state_ == kStateNotStarted) {
-    SetState(kStateLoadDeviceTokenFromDisk);
-    // The file calls for loading the persisted token must be deferred to the
-    // FILE thread.
-    BrowserThread::PostTask(
-        BrowserThread::FILE,
-        FROM_HERE,
-        NewRunnableMethod(this,
-                          &DeviceTokenFetcher::AttemptTokenLoadFromDisk));
-  }
-}
-
-void DeviceTokenFetcher::AttemptTokenLoadFromDisk() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  if (file_util::PathExists(token_path_)) {
-    std::string data;
-    em::DeviceCredentials device_credentials;
-    if (file_util::ReadFileToString(token_path_, &data) &&
-        device_credentials.ParseFromArray(data.c_str(), data.size())) {
-      device_token_ = device_credentials.device_token();
-      device_id_ = device_credentials.device_id();
-      if (!device_token_.empty() && !device_id_.empty()) {
-        BrowserThread::PostTask(
-            BrowserThread::UI,
-            FROM_HERE,
-            NewRunnableMethod(this,
-                              &DeviceTokenFetcher::SetState,
-                              kStateHasDeviceToken));
-        return;
-      }
-    }
-  }
-
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      NewRunnableMethod(this,
-                        &DeviceTokenFetcher::MakeReadyToRequestDeviceToken));
-}
-
-void DeviceTokenFetcher::MakeReadyToRequestDeviceToken() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  SetState(kStateReadyToRequestDeviceTokenFromServer);
-  SendServerRequestIfPossible();
-}
-
-void DeviceTokenFetcher::SendServerRequestIfPossible() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  std::string username = GetCurrentUser();
-  if (state_ == kStateReadyToRequestDeviceTokenFromServer
-      && HasAuthToken()
-      && backend_
-      && !username.empty()) {
-    if (CanBeInManagedDomain(username)) {
-      em::DeviceRegisterRequest register_request;
-      SetState(kStateRequestingDeviceTokenFromServer);
-      backend_->ProcessRegisterRequest(auth_token_,
-                                       GetDeviceID(),
-                                       register_request,
-                                       this);
-    } else {
-      SetState(kStateNotManaged);
-    }
-  }
-}
-
-bool DeviceTokenFetcher::IsTokenPending() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return !device_token_load_complete_event_.IsSignaled();
-}
-
-std::string DeviceTokenFetcher::GetDeviceToken() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  device_token_load_complete_event_.Wait();
-  return device_token_;
-}
-
-std::string DeviceTokenFetcher::GetDeviceID() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // As long as access to this is only allowed from the UI thread, no explicit
-  // locking is necessary to prevent the ID from being generated twice.
-  if (device_id_.empty())
-    device_id_ = GenerateNewDeviceID();
-  return device_id_;
+  if (cache_->is_unmanaged())
+    SetState(STATE_UNMANAGED);
 }
 
 void DeviceTokenFetcher::SetState(FetcherState state) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (state_ == state)
-    return;
   state_ = state;
-  if (state == kStateFailure) {
-    device_token_load_complete_event_.Signal();
-    NotifyTokenError();
-  } else if (state == kStateNotManaged) {
-    device_token_load_complete_event_.Signal();
-    NotifyNotManaged();
-  } else if (state == kStateHasDeviceToken) {
-    device_token_load_complete_event_.Signal();
-    NotifyTokenSuccess();
+  if (state_ != STATE_ERROR)
+    effective_token_fetch_error_delay_ms_ = token_fetch_error_delay_ms_;
+
+  base::Time delayed_work_at;
+  switch (state_) {
+    case STATE_INACTIVE:
+      device_token_.clear();
+      auth_token_.clear();
+      device_id_.clear();
+      break;
+    case STATE_TOKEN_AVAILABLE:
+      FOR_EACH_OBSERVER(Observer, observer_list_, OnDeviceTokenAvailable());
+      break;
+    case STATE_UNMANAGED:
+      delayed_work_at = cache_->last_policy_refresh_time() +
+          base::TimeDelta::FromMilliseconds(unmanaged_device_refresh_rate_ms_);
+      break;
+    case STATE_ERROR:
+      delayed_work_at = base::Time::Now() +
+          base::TimeDelta::FromMilliseconds(
+              effective_token_fetch_error_delay_ms_);
+      effective_token_fetch_error_delay_ms_ *= 2;
+      break;
+  }
+
+  CancelRetryTask();
+  if (!delayed_work_at.is_null()) {
+    base::Time now(base::Time::Now());
+    int64 delay = std::max<int64>((delayed_work_at - now).InMilliseconds(), 0);
+    retry_task_ = method_factory_.NewRunnableMethod(
+            &DeviceTokenFetcher::ExecuteRetryTask);
+    MessageLoop::current()->PostDelayedTask(FROM_HERE, retry_task_,
+                                            delay);
   }
 }
 
-void DeviceTokenFetcher::GetDeviceTokenPath(FilePath* token_path) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  *token_path = token_path_;
+void DeviceTokenFetcher::ExecuteRetryTask() {
+  DCHECK(retry_task_);
+  retry_task_ = NULL;
+
+  switch (state_) {
+    case STATE_INACTIVE:
+    case STATE_TOKEN_AVAILABLE:
+      break;
+    case STATE_UNMANAGED:
+    case STATE_ERROR:
+      FetchTokenInternal();
+      break;
+  }
 }
 
-bool DeviceTokenFetcher::IsTokenValid() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return state_ == kStateHasDeviceToken;
-}
-
-// static
-void DeviceTokenFetcher::WriteDeviceTokenToDisk(
-    const FilePath& path,
-    const std::string& device_token,
-    const std::string& device_id) {
-  em::DeviceCredentials device_credentials;
-  device_credentials.set_device_token(device_token);
-  device_credentials.set_device_id(device_id);
-  std::string data;
-  bool no_error = device_credentials.SerializeToString(&data);
-  DCHECK(no_error);
-  file_util::WriteFile(path, data.c_str(), data.length());
-}
-
-// static
-std::string DeviceTokenFetcher::GenerateNewDeviceID() {
-  return guid::GenerateGUID();
+void DeviceTokenFetcher::CancelRetryTask() {
+  if (retry_task_) {
+    retry_task_->Cancel();
+    retry_task_ = NULL;
+  }
 }
 
 }  // namespace policy

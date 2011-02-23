@@ -9,6 +9,7 @@
 #pragma once
 
 #include "build/build_config.h"
+
 #include "base/base_switches.h"
 
 namespace switches {
@@ -54,6 +55,7 @@ extern const char kConflictingModulesCheck[];
 extern const char kCountry[];
 extern const char kDebugPrint[];
 extern const char kDeviceManagementUrl[];
+extern const char kDevicePolicyCacheDir[];
 extern const char kDiagnostics[];
 extern const char kDisable3DAPIs[];
 extern const char kDisableAcceleratedCompositing[];

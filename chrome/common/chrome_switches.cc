@@ -150,6 +150,10 @@ const char kDebugPrint[]                    = "debug-print";
 // device management backend.
 const char kDeviceManagementUrl[]           = "device-management-url";
 
+// Specifies the directory in which to store the shared device policy cache
+// file. If not specified, device policy will be disabled.
+const char kDevicePolicyCacheDir[]          = "device-policy-cache-dir";
+
 // Triggers a pletora of diagnostic modes.
 const char kDiagnostics[]                   = "diagnostics";
 

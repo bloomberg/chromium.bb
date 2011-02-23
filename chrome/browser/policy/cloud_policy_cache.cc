@@ -11,8 +11,8 @@
 #include "base/task.h"
 #include "base/values.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/proto/cloud_policy.pb.h"
-#include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/policy/proto/device_management_constants.h"
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
 
@@ -32,6 +32,51 @@ namespace policy {
 // in policy/cloud_policy_generated.cc.
 void DecodePolicy(const em::CloudPolicySettings& policy,
                   PolicyMap* mandatory, PolicyMap* recommended);
+
+// A thin ConfigurationPolicyProvider implementation sitting on top of
+// CloudPolicyCache for hooking up with ConfigurationPolicyPrefStore.
+class CloudPolicyCache::CloudPolicyProvider
+    : public ConfigurationPolicyProvider {
+ public:
+  CloudPolicyProvider(const PolicyDefinitionList* policy_list,
+                      CloudPolicyCache* cache,
+                      CloudPolicyCache::PolicyLevel level)
+      : ConfigurationPolicyProvider(policy_list),
+        cache_(cache),
+        level_(level) {}
+  virtual ~CloudPolicyProvider() {}
+
+  virtual bool Provide(ConfigurationPolicyStoreInterface* store) {
+    if (!cache_->has_device_policy()) {
+      if (level_ == POLICY_LEVEL_MANDATORY)
+        ApplyPolicyMap(&cache_->mandatory_policy_, store);
+      else if (level_ == POLICY_LEVEL_RECOMMENDED)
+        ApplyPolicyMap(&cache_->recommended_policy_, store);
+    } else {
+      ApplyPolicyValueTree(cache_->device_policy_.get(), store);
+    }
+    return true;
+  }
+
+  virtual bool IsInitializationComplete() const {
+    return cache_->initialization_complete_;
+  }
+
+  virtual void AddObserver(ConfigurationPolicyProvider::Observer* observer) {
+    cache_->observer_list_.AddObserver(observer);
+  }
+  virtual void RemoveObserver(ConfigurationPolicyProvider::Observer* observer) {
+    cache_->observer_list_.RemoveObserver(observer);
+  }
+
+ private:
+  // The underlying policy cache.
+  CloudPolicyCache* cache_;
+  // Policy level this provider will handle.
+  CloudPolicyCache::PolicyLevel level_;
+
+  DISALLOW_COPY_AND_ASSIGN(CloudPolicyProvider);
+};
 
 // Saves policy information to a file.
 class PersistPolicyTask : public Task {
@@ -85,17 +130,30 @@ CloudPolicyCache::CloudPolicyCache(
     const FilePath& backing_file_path)
     : backing_file_path_(backing_file_path),
       device_policy_(new DictionaryValue),
-      fresh_policy_(false),
+      initialization_complete_(false),
       is_unmanaged_(false),
       has_device_policy_(false) {
+  managed_policy_provider_.reset(
+      new CloudPolicyProvider(
+          ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList(),
+          this,
+          POLICY_LEVEL_MANDATORY));
+  recommended_policy_provider_.reset(
+      new CloudPolicyProvider(
+          ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList(),
+          this,
+          POLICY_LEVEL_RECOMMENDED));
 }
 
-CloudPolicyCache::~CloudPolicyCache() {}
+CloudPolicyCache::~CloudPolicyCache() {
+  FOR_EACH_OBSERVER(ConfigurationPolicyProvider::Observer,
+                    observer_list_, OnProviderGoingAway());
+}
 
-void CloudPolicyCache::LoadPolicyFromFile() {
+void CloudPolicyCache::LoadFromFile() {
   // TODO(jkummerow): This method is doing file IO during browser startup. In
   // the long run it would be better to delay this until the FILE thread exists.
-  if (!file_util::PathExists(backing_file_path_) || fresh_policy_) {
+  if (!file_util::PathExists(backing_file_path_) || initialization_complete_) {
     return;
   }
 
@@ -136,55 +194,47 @@ void CloudPolicyCache::LoadPolicyFromFile() {
     return;
   }
   // Swap in the new policy information.
-  if (is_unmanaged_) {
-    base::AutoLock lock(lock_);
-    last_policy_refresh_time_ = timestamp;
-    return;
-  } else if (cached_response.has_cloud_policy()) {
-    if (!fresh_policy_) {
-      base::AutoLock lock(lock_);
-      // The use of |Swap()| here makes sure that the old value in
-      // |mandatory_policy_| is deleted when |mandatory_policy| goes out of
-      // scope. (The same applies to |SetPolicy()| below.)
-      mandatory_policy_.Swap(&mandatory_policy);
-      recommended_policy_.Swap(&recommended_policy);
-      last_policy_refresh_time_ = timestamp;
-      has_device_policy_ = false;
-    }
+  if (cached_response.has_cloud_policy()) {
+    mandatory_policy_.Swap(&mandatory_policy);
+    recommended_policy_.Swap(&recommended_policy);
+    has_device_policy_ = false;
   } else if (cached_response.has_device_policy()) {
     scoped_ptr<DictionaryValue> value(
         DecodeDevicePolicy(cached_response.device_policy()));
-    if (!fresh_policy_) {
-      base::AutoLock lock(lock_);
-      device_policy_.reset(value.release());
-      last_policy_refresh_time_ = timestamp;
-      has_device_policy_ = true;
-    }
+    device_policy_.reset(value.release());
+    has_device_policy_ = true;
   }
+  last_policy_refresh_time_ = timestamp;
+  initialization_complete_ = true;
+
+  FOR_EACH_OBSERVER(ConfigurationPolicyProvider::Observer,
+                    observer_list_, OnUpdatePolicy());
 }
 
-bool CloudPolicyCache::SetPolicy(const em::CloudPolicyResponse& policy) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+void CloudPolicyCache::SetPolicy(const em::CloudPolicyResponse& policy) {
+  DCHECK(CalledOnValidThread());
+  bool initialization_was_not_complete = !initialization_complete_;
   is_unmanaged_ = false;
   base::Time timestamp;
   PolicyMap mandatory_policy;
   PolicyMap recommended_policy;
   bool ok = DecodePolicyResponse(policy, &mandatory_policy, &recommended_policy,
                                  &timestamp);
-  if (!ok) {
-    // TODO(jkummerow): Signal error to PolicyProvider.
-    return false;
-  }
+  if (!ok)
+    return;
+
   const bool new_policy_differs =
-      !mandatory_policy.Equals(mandatory_policy_) ||
-      !recommended_policy.Equals(recommended_policy_);
-  {
-    base::AutoLock lock(lock_);
-    mandatory_policy_.Swap(&mandatory_policy);
-    recommended_policy_.Swap(&recommended_policy);
-    fresh_policy_ = true;
-    last_policy_refresh_time_ = timestamp;
-    has_device_policy_ = false;
+      !mandatory_policy_.Equals(mandatory_policy) ||
+      !recommended_policy_.Equals(recommended_policy);
+  mandatory_policy_.Swap(&mandatory_policy);
+  recommended_policy_.Swap(&recommended_policy);
+  initialization_complete_ = true;
+  last_policy_refresh_time_ = timestamp;
+  has_device_policy_ = false;
+
+  if (new_policy_differs || initialization_was_not_complete) {
+    FOR_EACH_OBSERVER(ConfigurationPolicyProvider::Observer,
+                      observer_list_, OnUpdatePolicy());
   }
 
   if (timestamp > base::Time::NowFromSystemTime() +
@@ -199,21 +249,23 @@ bool CloudPolicyCache::SetPolicy(const em::CloudPolicyResponse& policy) {
         FROM_HERE,
         new PersistPolicyTask(backing_file_path_, policy_copy, NULL, false));
   }
-  return new_policy_differs;
 }
 
-bool CloudPolicyCache::SetDevicePolicy(const em::DevicePolicyResponse& policy) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+void CloudPolicyCache::SetDevicePolicy(const em::DevicePolicyResponse& policy) {
+  DCHECK(CalledOnValidThread());
+  bool initialization_was_not_complete = !initialization_complete_;
   is_unmanaged_ = false;
   DictionaryValue* value = DecodeDevicePolicy(policy);
   const bool new_policy_differs = !(value->Equals(device_policy_.get()));
   base::Time now(base::Time::NowFromSystemTime());
-  {
-    base::AutoLock lock(lock_);
-    device_policy_.reset(value);
-    fresh_policy_ = true;
-    last_policy_refresh_time_ = now;
-    has_device_policy_ = true;
+  device_policy_.reset(value);
+  initialization_complete_ = true;
+  last_policy_refresh_time_ = now;
+  has_device_policy_ = true;
+
+  if (new_policy_differs || initialization_was_not_complete) {
+    FOR_EACH_OBSERVER(ConfigurationPolicyProvider::Observer,
+                      observer_list_, OnUpdatePolicy());
   }
 
   em::DevicePolicyResponse* policy_copy = new em::DevicePolicyResponse;
@@ -222,35 +274,29 @@ bool CloudPolicyCache::SetDevicePolicy(const em::DevicePolicyResponse& policy) {
       BrowserThread::FILE,
       FROM_HERE,
       new PersistPolicyTask(backing_file_path_, NULL, policy_copy, false));
-  return new_policy_differs;
 }
 
-DictionaryValue* CloudPolicyCache::GetDevicePolicy() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  base::AutoLock lock(lock_);
-  return device_policy_->DeepCopy();
+ConfigurationPolicyProvider* CloudPolicyCache::GetManagedPolicyProvider() {
+  DCHECK(CalledOnValidThread());
+  return managed_policy_provider_.get();
 }
 
-const PolicyMap* CloudPolicyCache::GetMandatoryPolicy() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return &mandatory_policy_;
-}
-
-const PolicyMap* CloudPolicyCache::GetRecommendedPolicy() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return &recommended_policy_;
+ConfigurationPolicyProvider* CloudPolicyCache::GetRecommendedPolicyProvider() {
+  DCHECK(CalledOnValidThread());
+  return recommended_policy_provider_.get();
 }
 
 void CloudPolicyCache::SetUnmanaged() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(CalledOnValidThread());
   is_unmanaged_ = true;
-  {
-    base::AutoLock lock(lock_);
-    mandatory_policy_.Clear();
-    recommended_policy_.Clear();
-    device_policy_.reset(new DictionaryValue);
-    last_policy_refresh_time_ = base::Time::NowFromSystemTime();
-  }
+  mandatory_policy_.Clear();
+  recommended_policy_.Clear();
+  device_policy_.reset(new DictionaryValue);
+  last_policy_refresh_time_ = base::Time::NowFromSystemTime();
+
+  FOR_EACH_OBSERVER(ConfigurationPolicyProvider::Observer,
+                    observer_list_, OnUpdatePolicy());
+
   BrowserThread::PostTask(
       BrowserThread::FILE,
       FROM_HERE,

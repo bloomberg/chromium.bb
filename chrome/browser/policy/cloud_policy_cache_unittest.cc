@@ -12,11 +12,13 @@
 #include "base/scoped_temp_dir.h"
 #include "base/values.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/proto/cloud_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 // TODO(jkummerow): remove this import when removing old DMPC test cases.
 #include "chrome/browser/policy/proto/device_management_constants.h"
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
@@ -30,6 +32,15 @@ void DecodePolicy(const em::CloudPolicySettings& policy,
 // The implementations of these methods are in cloud_policy_generated.cc.
 Value* DecodeIntegerValue(google::protobuf::int64 value);
 ListValue* DecodeStringList(const em::StringList& string_list);
+
+class MockConfigurationPolicyProviderObserver
+    : public ConfigurationPolicyProvider::Observer {
+ public:
+  MockConfigurationPolicyProviderObserver() {}
+  virtual ~MockConfigurationPolicyProviderObserver() {}
+  MOCK_METHOD0(OnUpdatePolicy, void());
+  void OnProviderGoingAway() {}
+};
 
 // Tests the device management policy cache.
 class CloudPolicyCacheTest : public testing::Test {
@@ -85,11 +96,35 @@ class CloudPolicyCacheTest : public testing::Test {
     EXPECT_EQ(size, file_util::WriteFile(test_file(), data.c_str(), size));
   }
 
+  // Takes ownership of |policy_response|.
+  void SetPolicy(CloudPolicyCache* cache,
+                 em::CloudPolicyResponse* policy_response,
+                 bool expect_changed_policy) {
+    scoped_ptr<em::CloudPolicyResponse> policy(policy_response);
+    ConfigurationPolicyObserverRegistrar registrar;
+    registrar.Init(cache->GetManagedPolicyProvider(), &observer);
+    if (expect_changed_policy)
+      EXPECT_CALL(observer, OnUpdatePolicy()).Times(1);
+    else
+      EXPECT_CALL(observer, OnUpdatePolicy()).Times(0);
+    cache->SetPolicy(*policy);
+    testing::Mock::VerifyAndClearExpectations(&observer);
+  }
+
   FilePath test_file() {
     return temp_dir_.path().AppendASCII("CloudPolicyCacheTest");
   }
 
+  const PolicyMap& mandatory_policy(const CloudPolicyCache& cache) {
+    return cache.mandatory_policy_;
+  }
+
+  const PolicyMap& recommended_policy(const CloudPolicyCache& cache) {
+    return cache.recommended_policy_;
+  }
+
   MessageLoop loop_;
+  MockConfigurationPolicyProviderObserver observer;
 
  private:
   ScopedTempDir temp_dir_;
@@ -157,16 +192,16 @@ TEST_F(CloudPolicyCacheTest, DecodeStringList) {
 TEST_F(CloudPolicyCacheTest, Empty) {
   CloudPolicyCache cache(test_file());
   PolicyMap empty;
-  EXPECT_TRUE(empty.Equals(*cache.GetMandatoryPolicy()));
-  EXPECT_TRUE(empty.Equals(*cache.GetRecommendedPolicy()));
+  EXPECT_TRUE(empty.Equals(mandatory_policy(cache)));
+  EXPECT_TRUE(empty.Equals(recommended_policy(cache)));
   EXPECT_EQ(base::Time(), cache.last_policy_refresh_time());
 }
 
 TEST_F(CloudPolicyCacheTest, LoadNoFile) {
   CloudPolicyCache cache(test_file());
-  cache.LoadPolicyFromFile();
+  cache.LoadFromFile();
   PolicyMap empty;
-  EXPECT_TRUE(empty.Equals(*cache.GetMandatoryPolicy()));
+  EXPECT_TRUE(empty.Equals(mandatory_policy(cache)));
   EXPECT_EQ(base::Time(), cache.last_policy_refresh_time());
 }
 
@@ -177,9 +212,9 @@ TEST_F(CloudPolicyCacheTest, RejectFuture) {
                            em::PolicyOptions::MANDATORY));
   WritePolicy(*policy_response);
   CloudPolicyCache cache(test_file());
-  cache.LoadPolicyFromFile();
+  cache.LoadFromFile();
   PolicyMap empty;
-  EXPECT_TRUE(empty.Equals(*cache.GetMandatoryPolicy()));
+  EXPECT_TRUE(empty.Equals(mandatory_policy(cache)));
   EXPECT_EQ(base::Time(), cache.last_policy_refresh_time());
 }
 
@@ -189,9 +224,9 @@ TEST_F(CloudPolicyCacheTest, LoadWithFile) {
                            em::PolicyOptions::MANDATORY));
   WritePolicy(*policy_response);
   CloudPolicyCache cache(test_file());
-  cache.LoadPolicyFromFile();
+  cache.LoadFromFile();
   PolicyMap empty;
-  EXPECT_TRUE(empty.Equals(*cache.GetMandatoryPolicy()));
+  EXPECT_TRUE(empty.Equals(mandatory_policy(cache)));
   EXPECT_NE(base::Time(), cache.last_policy_refresh_time());
   EXPECT_GE(base::Time::Now(), cache.last_policy_refresh_time());
 }
@@ -203,58 +238,58 @@ TEST_F(CloudPolicyCacheTest, LoadWithData) {
                            em::PolicyOptions::MANDATORY));
   WritePolicy(*policy);
   CloudPolicyCache cache(test_file());
-  cache.LoadPolicyFromFile();
+  cache.LoadFromFile();
   PolicyMap expected;
   expected.Set(kPolicyHomepageLocation,
                Value::CreateStringValue("http://www.example.com"));
-  EXPECT_TRUE(expected.Equals(*cache.GetMandatoryPolicy()));
+  EXPECT_TRUE(expected.Equals(mandatory_policy(cache)));
 }
 
 TEST_F(CloudPolicyCacheTest, SetPolicy) {
   CloudPolicyCache cache(test_file());
-  scoped_ptr<em::CloudPolicyResponse> policy(
+  em::CloudPolicyResponse* policy =
       CreateHomepagePolicy("http://www.example.com",
                            base::Time::NowFromSystemTime(),
-                           em::PolicyOptions::MANDATORY));
-  EXPECT_TRUE(cache.SetPolicy(*policy));
-  scoped_ptr<em::CloudPolicyResponse> policy2(
+                           em::PolicyOptions::MANDATORY);
+  SetPolicy(&cache, policy, true);
+  em::CloudPolicyResponse* policy2 =
       CreateHomepagePolicy("http://www.example.com",
                            base::Time::NowFromSystemTime(),
-                           em::PolicyOptions::MANDATORY));
-  EXPECT_FALSE(cache.SetPolicy(*policy2));
+                           em::PolicyOptions::MANDATORY);
+  SetPolicy(&cache, policy2, false);
   PolicyMap expected;
   expected.Set(kPolicyHomepageLocation,
                Value::CreateStringValue("http://www.example.com"));
   PolicyMap empty;
-  EXPECT_TRUE(expected.Equals(*cache.GetMandatoryPolicy()));
-  EXPECT_TRUE(empty.Equals(*cache.GetRecommendedPolicy()));
-  policy.reset(CreateHomepagePolicy("http://www.example.com",
+  EXPECT_TRUE(expected.Equals(mandatory_policy(cache)));
+  EXPECT_TRUE(empty.Equals(recommended_policy(cache)));
+  policy = CreateHomepagePolicy("http://www.example.com",
                                     base::Time::NowFromSystemTime(),
-                                    em::PolicyOptions::RECOMMENDED));
-  EXPECT_TRUE(cache.SetPolicy(*policy));
-  EXPECT_TRUE(expected.Equals(*cache.GetRecommendedPolicy()));
-  EXPECT_TRUE(empty.Equals(*cache.GetMandatoryPolicy()));
+                                    em::PolicyOptions::RECOMMENDED);
+  SetPolicy(&cache, policy, true);
+  EXPECT_TRUE(expected.Equals(recommended_policy(cache)));
+  EXPECT_TRUE(empty.Equals(mandatory_policy(cache)));
 }
 
 TEST_F(CloudPolicyCacheTest, ResetPolicy) {
   CloudPolicyCache cache(test_file());
 
-  scoped_ptr<em::CloudPolicyResponse> policy(
+  em::CloudPolicyResponse* policy =
       CreateHomepagePolicy("http://www.example.com",
                            base::Time::NowFromSystemTime(),
-                           em::PolicyOptions::MANDATORY));
-  EXPECT_TRUE(cache.SetPolicy(*policy));
+                           em::PolicyOptions::MANDATORY);
+  SetPolicy(&cache, policy, true);
   PolicyMap expected;
   expected.Set(kPolicyHomepageLocation,
                Value::CreateStringValue("http://www.example.com"));
-  EXPECT_TRUE(expected.Equals(*cache.GetMandatoryPolicy()));
+  EXPECT_TRUE(expected.Equals(mandatory_policy(cache)));
 
-  scoped_ptr<em::CloudPolicyResponse> empty_policy(
+  em::CloudPolicyResponse* empty_policy =
       CreateHomepagePolicy("", base::Time::NowFromSystemTime(),
-                           em::PolicyOptions::MANDATORY));
-  EXPECT_TRUE(cache.SetPolicy(*empty_policy));
+                           em::PolicyOptions::MANDATORY);
+  SetPolicy(&cache, empty_policy, true);
   PolicyMap empty;
-  EXPECT_TRUE(empty.Equals(*cache.GetMandatoryPolicy()));
+  EXPECT_TRUE(empty.Equals(mandatory_policy(cache)));
 }
 
 TEST_F(CloudPolicyCacheTest, PersistPolicy) {
@@ -271,11 +306,11 @@ TEST_F(CloudPolicyCacheTest, PersistPolicy) {
 
   EXPECT_TRUE(file_util::PathExists(test_file()));
   CloudPolicyCache cache(test_file());
-  cache.LoadPolicyFromFile();
+  cache.LoadFromFile();
   PolicyMap expected;
   expected.Set(kPolicyHomepageLocation,
                Value::CreateStringValue("http://www.example.com"));
-  EXPECT_TRUE(expected.Equals(*cache.GetMandatoryPolicy()));
+  EXPECT_TRUE(expected.Equals(mandatory_policy(cache)));
 }
 
 TEST_F(CloudPolicyCacheTest, FreshPolicyOverride) {
@@ -286,17 +321,17 @@ TEST_F(CloudPolicyCacheTest, FreshPolicyOverride) {
   WritePolicy(*policy);
 
   CloudPolicyCache cache(test_file());
-  scoped_ptr<em::CloudPolicyResponse> updated_policy(
+  em::CloudPolicyResponse* updated_policy =
       CreateHomepagePolicy("http://www.chromium.org",
                            base::Time::NowFromSystemTime(),
-                           em::PolicyOptions::MANDATORY));
-  EXPECT_TRUE(cache.SetPolicy(*updated_policy));
+                           em::PolicyOptions::MANDATORY);
+  SetPolicy(&cache, updated_policy, true);
 
-  cache.LoadPolicyFromFile();
+  cache.LoadFromFile();
   PolicyMap expected;
   expected.Set(kPolicyHomepageLocation,
                Value::CreateStringValue("http://www.chromium.org"));
-  EXPECT_TRUE(expected.Equals(*cache.GetMandatoryPolicy()));
+  EXPECT_TRUE(expected.Equals(mandatory_policy(cache)));
 }
 
 }  // namespace policy
@@ -363,7 +398,10 @@ class DeviceManagementPolicyCacheTest
     return temp_dir_.path().AppendASCII("DeviceManagementPolicyCacheTest");
   }
 
- protected:
+  const DictionaryValue* device_policy(const CloudPolicyCache& cache) {
+    return cache.device_policy_.get();
+  }
+
   MessageLoop loop_;
 
  private:
@@ -375,17 +413,15 @@ class DeviceManagementPolicyCacheTest
 TEST_F(DeviceManagementPolicyCacheTest, Empty) {
   CloudPolicyCache cache(test_file());
   DictionaryValue empty;
-  scoped_ptr<Value> policy(cache.GetDevicePolicy());
-  EXPECT_TRUE(empty.Equals(policy.get()));
+  EXPECT_TRUE(empty.Equals(device_policy(cache)));
   EXPECT_EQ(base::Time(), cache.last_policy_refresh_time());
 }
 
 TEST_F(DeviceManagementPolicyCacheTest, LoadNoFile) {
   CloudPolicyCache cache(test_file());
-  cache.LoadPolicyFromFile();
+  cache.LoadFromFile();
   DictionaryValue empty;
-  scoped_ptr<Value> policy(cache.GetDevicePolicy());
-  EXPECT_TRUE(empty.Equals(policy.get()));
+  EXPECT_TRUE(empty.Equals(device_policy(cache)));
   EXPECT_EQ(base::Time(), cache.last_policy_refresh_time());
 }
 
@@ -394,10 +430,9 @@ TEST_F(DeviceManagementPolicyCacheTest, RejectFuture) {
   WritePolicy(policy_response, base::Time::NowFromSystemTime() +
                                base::TimeDelta::FromMinutes(5));
   CloudPolicyCache cache(test_file());
-  cache.LoadPolicyFromFile();
+  cache.LoadFromFile();
   DictionaryValue empty;
-  scoped_ptr<Value> policy(cache.GetDevicePolicy());
-  EXPECT_TRUE(empty.Equals(policy.get()));
+  EXPECT_TRUE(empty.Equals(device_policy(cache)));
   EXPECT_EQ(base::Time(), cache.last_policy_refresh_time());
 }
 
@@ -405,10 +440,9 @@ TEST_F(DeviceManagementPolicyCacheTest, LoadWithFile) {
   em::DevicePolicyResponse policy_response;
   WritePolicy(policy_response, base::Time::NowFromSystemTime());
   CloudPolicyCache cache(test_file());
-  cache.LoadPolicyFromFile();
+  cache.LoadFromFile();
   DictionaryValue empty;
-  scoped_ptr<Value> policy(cache.GetDevicePolicy());
-  EXPECT_TRUE(empty.Equals(policy.get()));
+  EXPECT_TRUE(empty.Equals(device_policy(cache)));
   EXPECT_NE(base::Time(), cache.last_policy_refresh_time());
   EXPECT_GE(base::Time::Now(), cache.last_policy_refresh_time());
 }
@@ -418,27 +452,25 @@ TEST_F(DeviceManagementPolicyCacheTest, LoadWithData) {
   AddStringPolicy(&policy, "HomepageLocation", "http://www.example.com");
   WritePolicy(policy, base::Time::NowFromSystemTime());
   CloudPolicyCache cache(test_file());
-  cache.LoadPolicyFromFile();
+  cache.LoadFromFile();
   DictionaryValue expected;
   expected.Set("HomepageLocation",
                Value::CreateStringValue("http://www.example.com"));
-  scoped_ptr<Value> policy_value(cache.GetDevicePolicy());
-  EXPECT_TRUE(expected.Equals(policy_value.get()));
+  EXPECT_TRUE(expected.Equals(device_policy(cache)));
 }
 
 TEST_F(DeviceManagementPolicyCacheTest, SetDevicePolicy) {
   CloudPolicyCache cache(test_file());
   em::DevicePolicyResponse policy;
   AddStringPolicy(&policy, "HomepageLocation", "http://www.example.com");
-  EXPECT_TRUE(cache.SetDevicePolicy(policy));
+  cache.SetDevicePolicy(policy);
   em::DevicePolicyResponse policy2;
   AddStringPolicy(&policy2, "HomepageLocation", "http://www.example.com");
-  EXPECT_FALSE(cache.SetDevicePolicy(policy2));
+  cache.SetDevicePolicy(policy2);  // Does not notify observers.
   DictionaryValue expected;
   expected.Set("HomepageLocation",
                Value::CreateStringValue("http://www.example.com"));
-  scoped_ptr<Value> policy_value(cache.GetDevicePolicy());
-  EXPECT_TRUE(expected.Equals(policy_value.get()));
+  EXPECT_TRUE(expected.Equals(device_policy(cache)));
 }
 
 TEST_F(DeviceManagementPolicyCacheTest, ResetPolicy) {
@@ -446,17 +478,15 @@ TEST_F(DeviceManagementPolicyCacheTest, ResetPolicy) {
 
   em::DevicePolicyResponse policy;
   AddStringPolicy(&policy, "HomepageLocation", "http://www.example.com");
-  EXPECT_TRUE(cache.SetDevicePolicy(policy));
+  cache.SetDevicePolicy(policy);
   DictionaryValue expected;
   expected.Set("HomepageLocation",
                Value::CreateStringValue("http://www.example.com"));
-  scoped_ptr<Value> policy_value(cache.GetDevicePolicy());
-  EXPECT_TRUE(expected.Equals(policy_value.get()));
+  EXPECT_TRUE(expected.Equals(device_policy(cache)));
 
-  EXPECT_TRUE(cache.SetDevicePolicy(em::DevicePolicyResponse()));
-  policy_value.reset(cache.GetDevicePolicy());
+  cache.SetDevicePolicy(em::DevicePolicyResponse());
   DictionaryValue empty;
-  EXPECT_TRUE(empty.Equals(policy_value.get()));
+  EXPECT_TRUE(empty.Equals(device_policy(cache)));
 }
 
 TEST_F(DeviceManagementPolicyCacheTest, PersistPolicy) {
@@ -471,12 +501,11 @@ TEST_F(DeviceManagementPolicyCacheTest, PersistPolicy) {
 
   EXPECT_TRUE(file_util::PathExists(test_file()));
   CloudPolicyCache cache(test_file());
-  cache.LoadPolicyFromFile();
+  cache.LoadFromFile();
   DictionaryValue expected;
   expected.Set("HomepageLocation",
                Value::CreateStringValue("http://www.example.com"));
-  scoped_ptr<Value> policy_value(cache.GetDevicePolicy());
-  EXPECT_TRUE(expected.Equals(policy_value.get()));
+  EXPECT_TRUE(expected.Equals(device_policy(cache)));
 }
 
 TEST_F(DeviceManagementPolicyCacheTest, FreshPolicyOverride) {
@@ -488,14 +517,13 @@ TEST_F(DeviceManagementPolicyCacheTest, FreshPolicyOverride) {
   em::DevicePolicyResponse updated_policy;
   AddStringPolicy(&updated_policy, "HomepageLocation",
                   "http://www.chromium.org");
-  EXPECT_TRUE(cache.SetDevicePolicy(updated_policy));
+  cache.SetDevicePolicy(updated_policy);
 
-  cache.LoadPolicyFromFile();
+  cache.LoadFromFile();
   DictionaryValue expected;
   expected.Set("HomepageLocation",
                Value::CreateStringValue("http://www.chromium.org"));
-  scoped_ptr<Value> policy_value(cache.GetDevicePolicy());
-  EXPECT_TRUE(expected.Equals(policy_value.get()));
+  EXPECT_TRUE(expected.Equals(device_policy(cache)));
 }
 
 // Tests proper decoding of policy values.

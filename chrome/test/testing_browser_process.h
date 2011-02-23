@@ -29,7 +29,7 @@ class WaitableEvent;
 }
 
 namespace policy {
-class ConfigurationPolicyProviderKeeper;
+class BrowserPolicyConnector;
 }
 
 namespace ui {
@@ -65,8 +65,7 @@ class TestingBrowserProcess : public BrowserProcess {
 
   virtual PrefService* local_state();
 
-  virtual policy::ConfigurationPolicyProviderKeeper*
-      configuration_policy_provider_keeper();
+  virtual policy::BrowserPolicyConnector* browser_policy_connector();
 
   virtual IconManager* icon_manager();
 
@@ -140,9 +139,7 @@ class TestingBrowserProcess : public BrowserProcess {
   std::string app_locale_;
 
   PrefService* pref_service_;
-  bool created_configuration_policy_provider_keeper_;
-  scoped_ptr<policy::ConfigurationPolicyProviderKeeper>
-      configuration_policy_provider_keeper_;
+  scoped_ptr<policy::BrowserPolicyConnector> browser_policy_connector_;
   scoped_ptr<GoogleURLTracker> google_url_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingBrowserProcess);

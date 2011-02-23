@@ -9,9 +9,10 @@
 
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "base/observer_list.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "base/synchronization/lock.h"
+#include "base/threading/non_thread_safe.h"
 #include "base/time.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_map.h"
@@ -33,25 +34,29 @@ namespace em = enterprise_management;
 // to the service directly, but receives updated policy information through
 // SetPolicy() calls, which is then persisted and decoded into the internal
 // Value representation chrome uses.
-class CloudPolicyCache {
+class CloudPolicyCache : public base::NonThreadSafe {
  public:
+  // Used to distinguish mandatory from recommended policies.
+  enum PolicyLevel {
+    // Policy is forced upon the user and should always take effect.
+    POLICY_LEVEL_MANDATORY,
+    // The value is just a recommendation that the user may override.
+    POLICY_LEVEL_RECOMMENDED,
+  };
+
   explicit CloudPolicyCache(const FilePath& backing_file_path);
   ~CloudPolicyCache();
 
   // Loads policy information from the backing file. Non-existing or erroneous
   // cache files are ignored.
-  void LoadPolicyFromFile();
+  void LoadFromFile();
 
-  // Resets the policy information. Returns true if the new policy is different
-  // from the previously stored policy.
-  bool SetPolicy(const em::CloudPolicyResponse& policy);
-  bool SetDevicePolicy(const em::DevicePolicyResponse& policy);
+  // Resets the policy information.
+  void SetPolicy(const em::CloudPolicyResponse& policy);
+  void SetDevicePolicy(const em::DevicePolicyResponse& policy);
 
-  // Gets the policy information. Ownership of the return value is transferred
-  // to the caller.
-  DictionaryValue* GetDevicePolicy();
-  const PolicyMap* GetMandatoryPolicy() const;
-  const PolicyMap* GetRecommendedPolicy() const;
+  ConfigurationPolicyProvider* GetManagedPolicyProvider();
+  ConfigurationPolicyProvider* GetRecommendedPolicyProvider();
 
   void SetUnmanaged();
   bool is_unmanaged() const {
@@ -70,7 +75,10 @@ class CloudPolicyCache {
   }
 
  private:
+  class CloudPolicyProvider;
+
   friend class CloudPolicyCacheTest;
+  friend class DeviceManagementPolicyCacheTest;
   friend class DeviceManagementPolicyCacheDecodeTest;
 
   // Decodes a CloudPolicyResponse into two (ConfigurationPolicyType -> Value*)
@@ -106,19 +114,17 @@ class CloudPolicyCache {
   // The file in which we store a cached version of the policy information.
   const FilePath backing_file_path_;
 
-  // Protects both |mandatory_policy_| and |recommended_policy_| as well as
-  // |device_policy_|.
-  base::Lock lock_;
-
   // Policy key-value information.
   PolicyMap mandatory_policy_;
   PolicyMap recommended_policy_;
   scoped_ptr<DictionaryValue> device_policy_;
 
-  // Tracks whether the store received a SetPolicy() call, which overrides any
-  // information loaded from the file.
-  bool fresh_policy_;
+  // Whether initialization has been completed. This is the case when we have
+  // valid policy, learned that the device is unmanaged or ran into
+  // unrecoverable errors.
+  bool initialization_complete_;
 
+  // Whether the the server has indicated this device is unmanaged.
   bool is_unmanaged_;
 
   // Tracks whether the cache currently stores |device_policy_| that should be
@@ -127,6 +133,15 @@ class CloudPolicyCache {
 
   // The time at which the policy was last refreshed.
   base::Time last_policy_refresh_time_;
+
+  // Policy providers.
+  scoped_ptr<ConfigurationPolicyProvider> managed_policy_provider_;
+  scoped_ptr<ConfigurationPolicyProvider> recommended_policy_provider_;
+
+  // Provider observers that are registered with this cache's providers.
+  ObserverList<ConfigurationPolicyProvider::Observer, true> observer_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(CloudPolicyCache);
 };
 
 }  // namespace policy

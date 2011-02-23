@@ -8,9 +8,9 @@
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
-#include "chrome/browser/policy/configuration_policy_provider_keeper.h"
 #include "chrome/browser/policy/dummy_configuration_policy_provider.h"
 #include "ui/base/clipboard/clipboard.h"
 
@@ -18,8 +18,7 @@ TestingBrowserProcess::TestingBrowserProcess()
     : shutdown_event_(new base::WaitableEvent(true, false)),
       module_ref_count_(0),
       app_locale_("en"),
-      pref_service_(NULL),
-      created_configuration_policy_provider_keeper_(false) {
+      pref_service_(NULL) {
 }
 
 TestingBrowserProcess::~TestingBrowserProcess() {
@@ -70,21 +69,18 @@ PrefService* TestingBrowserProcess::local_state() {
   return pref_service_;
 }
 
-policy::ConfigurationPolicyProviderKeeper*
-TestingBrowserProcess::configuration_policy_provider_keeper() {
-  if (!created_configuration_policy_provider_keeper_) {
-    DCHECK(configuration_policy_provider_keeper_.get() == NULL);
-    created_configuration_policy_provider_keeper_ = true;
+policy::BrowserPolicyConnector*
+    TestingBrowserProcess::browser_policy_connector() {
+  if (!browser_policy_connector_.get()) {
     const policy::ConfigurationPolicyProvider::PolicyDefinitionList*
         policy_list = policy::ConfigurationPolicyPrefStore::
         GetChromePolicyDefinitionList();
-    configuration_policy_provider_keeper_.reset(
-        new policy::ConfigurationPolicyProviderKeeper(
-            new policy::DummyConfigurationPolicyProvider(policy_list),
+    browser_policy_connector_.reset(
+        new policy::BrowserPolicyConnector(
             new policy::DummyConfigurationPolicyProvider(policy_list),
             new policy::DummyConfigurationPolicyProvider(policy_list)));
   }
-  return configuration_policy_provider_keeper_.get();
+  return browser_policy_connector_.get();
 }
 
 IconManager* TestingBrowserProcess::icon_manager() {

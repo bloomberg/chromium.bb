@@ -18,10 +18,9 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
-#include "chrome/browser/policy/configuration_policy_provider_keeper.h"
-#include "chrome/browser/policy/device_management_policy_provider.h"
-#include "chrome/browser/policy/profile_policy_context.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/prefs/pref_value_map.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/browser/profiles/profile.h"
@@ -228,7 +227,7 @@ const ConfigurationPolicyPrefKeeper::PolicyToPreferenceMapEntry
   { Value::TYPE_BOOLEAN, kPolicyDisable3DAPIs,
     prefs::kDisable3DAPIs },
   { Value::TYPE_INTEGER, kPolicyPolicyRefreshRate,
-    prefs::kPolicyRefreshRate },
+    prefs::kPolicyUserPolicyRefreshRate },
   { Value::TYPE_BOOLEAN, kPolicyInstantEnabled, prefs::kInstantEnabled },
   { Value::TYPE_BOOLEAN, kPolicyDefaultBrowserSettingEnabled,
     prefs::kDefaultBrowserSettingEnabled },
@@ -738,35 +737,53 @@ void ConfigurationPolicyPrefStore::OnProviderGoingAway() {
 // static
 ConfigurationPolicyPrefStore*
 ConfigurationPolicyPrefStore::CreateManagedPlatformPolicyPrefStore() {
-  ConfigurationPolicyProviderKeeper* keeper =
-      g_browser_process->configuration_policy_provider_keeper();
-  return new ConfigurationPolicyPrefStore(keeper->managed_platform_provider());
+  BrowserPolicyConnector* connector =
+      g_browser_process->browser_policy_connector();
+  return new ConfigurationPolicyPrefStore(
+      connector->GetManagedPlatformProvider());
 }
 
 // static
 ConfigurationPolicyPrefStore*
 ConfigurationPolicyPrefStore::CreateManagedCloudPolicyPrefStore(
     Profile* profile) {
+  ConfigurationPolicyProvider* provider = NULL;
   if (profile) {
-    return new ConfigurationPolicyPrefStore(
-        profile->GetPolicyContext()->GetDeviceManagementPolicyProvider());
+    // For user policy, return the profile's policy provider.
+    provider = profile->GetPolicyConnector()->GetManagedCloudProvider();
+  } else {
+    // For device policy, return the provider of the browser process.
+    BrowserPolicyConnector* connector =
+        g_browser_process->browser_policy_connector();
+    provider = connector->GetManagedCloudProvider();
   }
-  return new ConfigurationPolicyPrefStore(NULL);
+  return new ConfigurationPolicyPrefStore(provider);
 }
 
 // static
 ConfigurationPolicyPrefStore*
 ConfigurationPolicyPrefStore::CreateRecommendedPlatformPolicyPrefStore() {
-  ConfigurationPolicyProviderKeeper* keeper =
-      g_browser_process->configuration_policy_provider_keeper();
-  return new ConfigurationPolicyPrefStore(keeper->recommended_provider());
+  BrowserPolicyConnector* connector =
+      g_browser_process->browser_policy_connector();
+  return new ConfigurationPolicyPrefStore(
+      connector->GetRecommendedPlatformProvider());
 }
 
 // static
 ConfigurationPolicyPrefStore*
 ConfigurationPolicyPrefStore::CreateRecommendedCloudPolicyPrefStore(
     Profile* profile) {
-  return new ConfigurationPolicyPrefStore(NULL);
+  ConfigurationPolicyProvider* provider = NULL;
+  if (profile) {
+    // For user policy, return the profile's policy provider.
+    provider = profile->GetPolicyConnector()->GetRecommendedCloudProvider();
+  } else {
+    // For device policy, return the provider of the browser process.
+    BrowserPolicyConnector* connector =
+        g_browser_process->browser_policy_connector();
+    provider = connector->GetRecommendedCloudProvider();
+  }
+  return new ConfigurationPolicyPrefStore(provider);
 }
 
 /* static */

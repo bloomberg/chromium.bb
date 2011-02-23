@@ -132,7 +132,7 @@ class ProfileImpl : public Profile,
   virtual ExtensionInfoMap* GetExtensionInfoMap();
   virtual PromoCounter* GetInstantPromoCounter();
   virtual BrowserSignin* GetBrowserSignin();
-  virtual policy::ProfilePolicyContext* GetPolicyContext();
+  virtual policy::ProfilePolicyConnector* GetPolicyConnector();
   virtual ChromeURLDataManager* GetChromeURLDataManager();
 
 #if defined(OS_CHROMEOS)
@@ -206,7 +206,7 @@ class ProfileImpl : public Profile,
       transport_security_state_;
   scoped_refptr<TransportSecurityPersister>
       transport_security_persister_;
-  scoped_ptr<policy::ProfilePolicyContext> profile_policy_context_;
+  scoped_ptr<policy::ProfilePolicyConnector> profile_policy_connector_;
   scoped_ptr<NetPrefObserver> net_pref_observer_;
   scoped_ptr<TemplateURLFetcher> template_url_fetcher_;
   scoped_ptr<TemplateURLModel> template_url_model_;

@@ -58,7 +58,7 @@
 #include "chrome/browser/password_manager/password_store_default.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
-#include "chrome/browser/policy/profile_policy_context.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -345,9 +345,9 @@ ProfileImpl::ProfileImpl(const FilePath& path)
   io_data_.Init(cookie_path, cache_path, cache_max_size,
                 media_cache_path, media_cache_max_size, extensions_cookie_path);
 
-  // Initialize the ProfilePolicyContext after |io_data_| since it requires
+  // Initialize the ProfilePolicyConnector after |io_data_| since it requires
   // the URLRequestContextGetter to be initialized.
-  GetPolicyContext()->Initialize();
+  GetPolicyConnector()->Initialize();
 }
 
 void ProfileImpl::InitExtensions() {
@@ -519,7 +519,7 @@ ProfileImpl::~ProfileImpl() {
       Source<Profile>(this),
       NotificationService::NoDetails());
 
-  GetPolicyContext()->Shutdown();
+  GetPolicyConnector()->Shutdown();
 
   tab_restore_service_ = NULL;
 
@@ -1380,11 +1380,11 @@ ExtensionInfoMap* ProfileImpl::GetExtensionInfoMap() {
   return extension_info_map_.get();
 }
 
-policy::ProfilePolicyContext* ProfileImpl::GetPolicyContext() {
-  if (!profile_policy_context_.get())
-    profile_policy_context_.reset(new policy::ProfilePolicyContext(this));
+policy::ProfilePolicyConnector* ProfileImpl::GetPolicyConnector() {
+  if (!profile_policy_connector_.get())
+    profile_policy_connector_.reset(new policy::ProfilePolicyConnector(this));
 
-  return profile_policy_context_.get();
+  return profile_policy_connector_.get();
 }
 
 ChromeURLDataManager* ProfileImpl::GetChromeURLDataManager() {

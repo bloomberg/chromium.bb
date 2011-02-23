@@ -15,9 +15,9 @@
 
 #include "base/basictypes.h"
 #include "base/message_loop.h"
+#include "base/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/timer.h"
-#include "base/scoped_ptr.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_status_updater.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
@@ -63,8 +63,7 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual SidebarManager* sidebar_manager();
   virtual ui::Clipboard* clipboard();
   virtual NotificationUIManager* notification_ui_manager();
-  virtual policy::ConfigurationPolicyProviderKeeper*
-      configuration_policy_provider_keeper();
+  virtual policy::BrowserPolicyConnector* browser_policy_connector();
   virtual IconManager* icon_manager();
   virtual ThumbnailGenerator* GetThumbnailGenerator();
   virtual AutomationProviderList* InitAutomationProviderList();
@@ -193,9 +192,8 @@ class BrowserProcessImpl : public BrowserProcess,
   bool created_sidebar_manager_;
   scoped_refptr<SidebarManager> sidebar_manager_;
 
-  bool created_configuration_policy_provider_keeper_;
-  scoped_ptr<policy::ConfigurationPolicyProviderKeeper>
-      configuration_policy_provider_keeper_;
+  bool created_browser_policy_connector_;
+  scoped_ptr<policy::BrowserPolicyConnector> browser_policy_connector_;
 
   scoped_refptr<printing::PrintPreviewTabController>
       print_preview_tab_controller_;

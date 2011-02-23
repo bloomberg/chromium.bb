@@ -34,7 +34,8 @@
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/page_info_model.h"
 #include "chrome/browser/password_manager/password_manager.h"
-#include "chrome/browser/policy/profile_policy_context.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
@@ -101,6 +102,7 @@ void RegisterLocalState(PrefService* local_state) {
   BackgroundPageTracker::RegisterPrefs(local_state);
   NotificationUIManager::RegisterPrefs(local_state);
   PrefProxyConfigService::RegisterPrefs(local_state);
+  policy::BrowserPolicyConnector::RegisterPrefs(local_state);
 #if defined(OS_CHROMEOS)
   chromeos::AudioMixerAlsa::RegisterPrefs(local_state);
   chromeos::UserManager::RegisterPrefs(local_state);
@@ -150,7 +152,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   TemplateURLModel::RegisterUserPrefs(user_prefs);
   InstantController::RegisterUserPrefs(user_prefs);
   NetPrefObserver::RegisterPrefs(user_prefs);
-  policy::ProfilePolicyContext::RegisterUserPrefs(user_prefs);
+  policy::ProfilePolicyConnector::RegisterPrefs(user_prefs);
   ProtocolHandlerRegistry::RegisterPrefs(user_prefs);
 }
 

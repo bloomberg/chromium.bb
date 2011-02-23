@@ -640,7 +640,7 @@ class OffTheRecordProfileImpl : public Profile,
     return profile_->GetExtensionInfoMap();
   }
 
-  virtual policy::ProfilePolicyContext* GetPolicyContext() {
+  virtual policy::ProfilePolicyConnector* GetPolicyConnector() {
     return NULL;
   }
 

@@ -766,7 +766,7 @@ PromoCounter* TestingProfile::GetInstantPromoCounter() {
   return NULL;
 }
 
-policy::ProfilePolicyContext* TestingProfile::GetPolicyContext() {
+policy::ProfilePolicyConnector* TestingProfile::GetPolicyConnector() {
   return NULL;
 }
 

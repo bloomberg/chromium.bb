@@ -9,10 +9,10 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/task.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/synchronization/waitable_event.h"
 #include "chrome/browser/automation/automation_provider_list.h"
 #include "chrome/browser/browser_child_process_host.h"
 #include "chrome/browser/browser_list.h"
@@ -40,7 +40,7 @@
 #include "chrome/browser/plugin_data_remover.h"
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/plugin_updater.h"
-#include "chrome/browser/policy/configuration_policy_provider_keeper.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
@@ -55,13 +55,13 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
+#include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/common/switch_utils.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "ipc/ipc_logging.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -104,7 +104,7 @@ BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
       created_icon_manager_(false),
       created_devtools_manager_(false),
       created_sidebar_manager_(false),
-      created_configuration_policy_provider_keeper_(false),
+      created_browser_policy_connector_(false),
       created_notification_ui_manager_(false),
       created_safe_browsing_detection_service_(false),
       module_ref_count_(0),
@@ -189,9 +189,9 @@ BrowserProcessImpl::~BrowserProcessImpl() {
     resource_dispatcher_host()->Shutdown();
   }
 
-  // The policy providers managed by |configuration_policy_provider_keeper_|
-  // need to shut down while the file thread is still alive.
-  configuration_policy_provider_keeper_.reset();
+  // The policy providers managed by |browser_policy_connector_| need to shut
+  // down while the IO and FILE threads are still alive.
+  browser_policy_connector_.reset();
 
 #if defined(USE_X11)
   // The IO thread must outlive the BACKGROUND_X11 thread.
@@ -443,16 +443,14 @@ NotificationUIManager* BrowserProcessImpl::notification_ui_manager() {
   return notification_ui_manager_.get();
 }
 
-policy::ConfigurationPolicyProviderKeeper*
-    BrowserProcessImpl::configuration_policy_provider_keeper() {
+policy::BrowserPolicyConnector* BrowserProcessImpl::browser_policy_connector() {
   DCHECK(CalledOnValidThread());
-  if (!created_configuration_policy_provider_keeper_) {
-    DCHECK(configuration_policy_provider_keeper_.get() == NULL);
-    created_configuration_policy_provider_keeper_ = true;
-    configuration_policy_provider_keeper_.reset(
-        new policy::ConfigurationPolicyProviderKeeper());
+  if (!created_browser_policy_connector_) {
+    DCHECK(browser_policy_connector_.get() == NULL);
+    created_browser_policy_connector_ = true;
+    browser_policy_connector_.reset(new policy::BrowserPolicyConnector());
   }
-  return configuration_policy_provider_keeper_.get();
+  return browser_policy_connector_.get();
 }
 
 IconManager* BrowserProcessImpl::icon_manager() {
