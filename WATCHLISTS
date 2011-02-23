@@ -245,6 +245,6 @@
     'labs': ['thakis@chromium.org'],
     'fileapi': ['kinuko+watch@chromium.org'],
     'pepper_api': ['piman+watch@chromium.org'],
-    'prerender': ['cbentzel+watch@chromium.org'],
+    'prerender': ['cbentzel+watch@chromium.org', 'tburkard+watch@chromium.org'],
   },
 }
