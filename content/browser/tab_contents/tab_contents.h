@@ -794,6 +794,9 @@ class TabContents : public PageNavigator,
                         const std::string& original_lang,
                         const std::string& translated_lang,
                         TranslateErrors::Type error_type);
+  void OnRegisterProtocolHandler(const std::string& protocol,
+                                 const GURL& url,
+                                 const string16& title);
   void OnSetSuggestions(int32 page_id,
                         const std::vector<std::string>& suggestions);
   void OnInstantSupportDetermined(int32 page_id, bool result);

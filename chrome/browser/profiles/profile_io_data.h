@@ -105,6 +105,7 @@ class ProfileIOData : public base::RefCountedThreadSafe<ProfileIOData> {
     scoped_refptr<ExtensionInfoMap> extension_info_map;
     scoped_refptr<ExtensionIOEventRouter> extension_io_event_router;
     scoped_refptr<prerender::PrerenderManager> prerender_manager;
+    scoped_refptr<ProtocolHandlerRegistry> protocol_handler_registry;
     // We need to initialize the ProxyConfigService from the UI thread
     // because on linux it relies on initializing things through gconf,
     // and needs to be on the main thread.

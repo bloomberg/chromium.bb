@@ -452,6 +452,8 @@ extern const char kKnownBackgroundPages[];
 
 extern const char kDisable3DAPIs[];
 
+extern const char kRegisteredProtocolHandlers[];
+
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

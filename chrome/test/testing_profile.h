@@ -84,6 +84,10 @@ class TestingProfile : public Profile {
   // AutocompleteClassifier is NULL.
   void CreateAutocompleteClassifier();
 
+  // Creates a ProtocolHandlerRegistry. If not invoked the protocol handler
+  // registry is NULL.
+  void CreateProtocolHandlerRegistry();
+
   // Creates the webdata service.  If |delete_file| is true, the webdata file is
   // deleted first, then the WebDataService is created.  As TestingProfile
   // deletes the directory containing the files used by WebDataService, this
@@ -230,6 +234,7 @@ class TestingProfile : public Profile {
   virtual bool IsSameProfile(Profile *p);
   virtual base::Time GetStartTime() const;
   virtual TabRestoreService* GetTabRestoreService();
+  virtual ProtocolHandlerRegistry* GetProtocolHandlerRegistry();
   virtual void ResetTabRestoreService() {}
   virtual SpellCheckHost* GetSpellCheckHost();
   virtual void ReinitializeSpellCheckHost(bool force) { }
@@ -238,6 +243,7 @@ class TestingProfile : public Profile {
   virtual void MarkAsCleanShutdown() {}
   virtual void InitExtensions() {}
   virtual void InitPromoResources() {}
+  virtual void InitRegisteredProtocolHandlers() {}
   virtual NTPResourceCache* GetNTPResourceCache();
 
   virtual DesktopNotificationService* GetDesktopNotificationService();
@@ -304,6 +310,10 @@ class TestingProfile : public Profile {
 
   // The BookmarkModel. Only created if CreateBookmarkModel is invoked.
   scoped_ptr<BookmarkModel> bookmark_bar_model_;
+
+  // The ProtocolHandlerRegistry. Only created if CreateProtocolHandlerRegistry
+  // is invoked.
+  scoped_refptr<ProtocolHandlerRegistry> protocol_handler_registry_;
 
   // The TokenService. Created by CreateTokenService. Filled with dummy data.
   scoped_ptr<TokenService> token_service_;

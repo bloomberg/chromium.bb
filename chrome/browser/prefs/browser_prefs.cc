@@ -12,6 +12,7 @@
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/extension_prefs.h"
@@ -150,6 +151,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   InstantController::RegisterUserPrefs(user_prefs);
   NetPrefObserver::RegisterPrefs(user_prefs);
   policy::ProfilePolicyContext::RegisterUserPrefs(user_prefs);
+  ProtocolHandlerRegistry::RegisterPrefs(user_prefs);
 }
 
 void MigrateBrowserPrefs(PrefService* user_prefs, PrefService* local_state) {

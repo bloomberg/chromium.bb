@@ -169,6 +169,7 @@ void ProfileIOData::InitializeProfileParams(Profile* profile,
   params->extension_info_map = profile->GetExtensionInfoMap();
   params->extension_io_event_router = profile->GetExtensionIOEventRouter();
   params->prerender_manager = profile->GetPrerenderManager();
+  params->protocol_handler_registry = profile->GetProtocolHandlerRegistry();
 
   params->proxy_config_service.reset(CreateProxyConfigService(profile));
 }
@@ -255,6 +256,8 @@ void ProfileIOData::ApplyProfileParamsToContext(
   context->set_extension_io_event_router(
       profile_params.extension_io_event_router);
   context->set_prerender_manager(profile_params.prerender_manager);
+  context->set_protocol_handler_registry(
+      profile_params.protocol_handler_registry);
 }
 
 // static

@@ -103,6 +103,7 @@ class ProfileImpl : public Profile,
   virtual bool HasProfileSyncService() const;
   virtual bool DidLastSessionExitCleanly();
   virtual BookmarkModel* GetBookmarkModel();
+  virtual ProtocolHandlerRegistry* GetProtocolHandlerRegistry();
   virtual bool IsSameProfile(Profile* profile);
   virtual base::Time GetStartTime() const;
   virtual TabRestoreService* GetTabRestoreService();
@@ -116,6 +117,7 @@ class ProfileImpl : public Profile,
   virtual void MarkAsCleanShutdown();
   virtual void InitExtensions();
   virtual void InitPromoResources();
+  virtual void InitRegisteredProtocolHandlers();
   virtual NTPResourceCache* GetNTPResourceCache();
   virtual FilePath last_selected_directory();
   virtual void set_last_selected_directory(const FilePath& path);
@@ -210,6 +212,7 @@ class ProfileImpl : public Profile,
   scoped_ptr<TemplateURLModel> template_url_model_;
   scoped_ptr<BookmarkModel> bookmark_bar_model_;
   scoped_refptr<PromoResourceService> promo_resource_service_;
+  scoped_refptr<ProtocolHandlerRegistry> protocol_handler_registry_;
   scoped_ptr<NTPResourceCache> ntp_resource_cache_;
 
   scoped_ptr<TokenService> token_service_;

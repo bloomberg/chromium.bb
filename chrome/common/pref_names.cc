@@ -1243,4 +1243,7 @@ const char kManagedDefaultPopupsSetting[] =
 // IDs of background page owners, value is a boolean that is true if the user
 // needs to acknowledge this page.
 const char kKnownBackgroundPages[] = "background_pages.known";
+
+// Dictionary that maps URL schemes (protocols) to URL handlers.
+const char kRegisteredProtocolHandlers[] = "registered_protocol_handlers";
 }  // namespace prefs

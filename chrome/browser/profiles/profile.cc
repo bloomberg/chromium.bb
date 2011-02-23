@@ -487,6 +487,10 @@ class OffTheRecordProfileImpl : public Profile,
     return profile_->GetBookmarkModel();
   }
 
+  virtual ProtocolHandlerRegistry* GetProtocolHandlerRegistry() {
+    return profile_->GetProtocolHandlerRegistry();
+  }
+
   virtual DesktopNotificationService* GetDesktopNotificationService() {
     if (!desktop_notification_service_.get()) {
       desktop_notification_service_.reset(new DesktopNotificationService(
@@ -562,6 +566,10 @@ class OffTheRecordProfileImpl : public Profile,
   }
 
   virtual void InitPromoResources() {
+    NOTREACHED();
+  }
+
+  virtual void InitRegisteredProtocolHandlers() {
     NOTREACHED();
   }
 

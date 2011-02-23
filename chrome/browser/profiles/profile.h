@@ -87,7 +87,7 @@ class ProfileSyncFactory;
 class ProfileSyncService;
 class ProfileSyncService;
 class PromoCounter;
-class PromoCounter;
+class ProtocolHandlerRegistry;
 class SQLitePersistentCookieStore;
 class SSLConfigServiceManager;
 class SSLHostState;
@@ -417,6 +417,9 @@ class Profile {
   // Returns the BookmarkModel, creating if not yet created.
   virtual BookmarkModel* GetBookmarkModel() = 0;
 
+  // Returns the ProtocolHandlerRegistry, creating if not yet created.
+  virtual ProtocolHandlerRegistry* GetProtocolHandlerRegistry() = 0;
+
   // Returns the Gaia Token Service, creating if not yet created.
   virtual TokenService* GetTokenService() = 0;
 
@@ -480,6 +483,10 @@ class Profile {
 
   // Start up service that gathers data from a promo resource feed.
   virtual void InitPromoResources() = 0;
+
+  // Register URLRequestFactories for protocols registered with
+  // registerProtocolHandler.
+  virtual void InitRegisteredProtocolHandlers() = 0;
 
   // Returns the new tab page resource cache.
   virtual NTPResourceCache* GetNTPResourceCache() = 0;

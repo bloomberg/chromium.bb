@@ -13,6 +13,7 @@
 #include "chrome/browser/appcache/chrome_appcache_service.h"
 #include "chrome/browser/chrome_blob_storage_context.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_io_event_router.h"
 #include "chrome/browser/extensions/extension_webrequest_api.h"
@@ -98,6 +99,10 @@ class ChromeURLRequestContext : public net::URLRequestContext {
     return prerender_manager_.get();
   }
 
+  const ProtocolHandlerRegistry* protocol_handler_registry() {
+    return protocol_handler_registry_.get();
+  }
+
   ChromeURLDataManagerBackend* GetChromeURLDataManagerBackend();
 
   // Setters to simplify initializing from factory objects.
@@ -137,6 +142,9 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   void set_prerender_manager(prerender::PrerenderManager* prerender_manager) {
     prerender_manager_ = prerender_manager;
   }
+  void set_protocol_handler_registry(ProtocolHandlerRegistry* registry) {
+    protocol_handler_registry_ = registry;
+  }
 
   // Callback for when the accept language changes.
   void OnAcceptLanguageChange(const std::string& accept_language);
@@ -164,6 +172,7 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   scoped_refptr<ExtensionIOEventRouter> extension_io_event_router_;
   scoped_refptr<prerender::PrerenderManager> prerender_manager_;
   scoped_ptr<ChromeURLDataManagerBackend> chrome_url_data_manager_backend_;
+  scoped_refptr<ProtocolHandlerRegistry> protocol_handler_registry_;
 
   bool is_off_the_record_;
 

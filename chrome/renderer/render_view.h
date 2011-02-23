@@ -473,6 +473,10 @@ class RenderView : public RenderWidget,
   virtual WebKit::WebDeviceOrientationClient* deviceOrientationClient();
   virtual void zoomLimitsChanged(double minimum_level, double maximum_level);
   virtual void zoomLevelChanged();
+  virtual void registerProtocolHandler(const WebKit::WebString& scheme,
+                                       const WebKit::WebString& base_url,
+                                       const WebKit::WebString& url,
+                                       const WebKit::WebString& title);
 
   // WebKit::WebFrameClient implementation -------------------------------------
 

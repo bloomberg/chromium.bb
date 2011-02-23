@@ -26,6 +26,7 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chrome_blob_storage_context.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/extensions/default_apps.h"
@@ -313,6 +314,8 @@ ProfileImpl::ProfileImpl(const FilePath& path)
   extension_io_event_router_ = new ExtensionIOEventRouter(this);
   extension_info_map_ = new ExtensionInfoMap();
 
+  InitRegisteredProtocolHandlers();
+
   clear_local_state_on_exit_ = prefs->GetBoolean(prefs::kClearSiteDataOnExit);
 
   // Log the profile size after a reasonable startup delay.
@@ -487,6 +490,13 @@ void ProfileImpl::InitPromoResources() {
 
   promo_resource_service_ = new PromoResourceService(this);
   promo_resource_service_->StartAfterDelay();
+}
+
+void ProfileImpl::InitRegisteredProtocolHandlers() {
+  if (protocol_handler_registry_)
+    return;
+  protocol_handler_registry_ = new ProtocolHandlerRegistry(this);
+  protocol_handler_registry_->Load();
 }
 
 NTPResourceCache* ProfileImpl::GetNTPResourceCache() {
@@ -1143,6 +1153,10 @@ BookmarkModel* ProfileImpl::GetBookmarkModel() {
     bookmark_bar_model_->Load();
   }
   return bookmark_bar_model_.get();
+}
+
+ProtocolHandlerRegistry* ProfileImpl::GetProtocolHandlerRegistry() {
+  return protocol_handler_registry_.get();
 }
 
 bool ProfileImpl::IsSameProfile(Profile* profile) {

@@ -2547,3 +2547,9 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_PDFHasUnsupportedFeature)
 IPC_MESSAGE_ROUTED2(ViewMsg_JavaScriptStressTestControl,
                     int /* cmd */,
                     int /* param */)
+
+// Register a new handler for URL requests with the given scheme.
+IPC_MESSAGE_ROUTED3(ViewHostMsg_RegisterProtocolHandler,
+                    std::string /* scheme */,
+                    GURL /* url */,
+                    string16 /* title */)

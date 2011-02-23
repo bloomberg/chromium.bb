@@ -16,6 +16,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/extensions/extension_pref_value_map.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/favicon_service.h"
@@ -276,6 +277,10 @@ void TestingProfile::CreateBookmarkModel(bool delete_file) {
 
 void TestingProfile::CreateAutocompleteClassifier() {
   autocomplete_classifier_.reset(new AutocompleteClassifier(this));
+}
+
+void TestingProfile::CreateProtocolHandlerRegistry() {
+  protocol_handler_registry_ = new ProtocolHandlerRegistry(this);
 }
 
 void TestingProfile::CreateWebDataService(bool delete_file) {
@@ -650,6 +655,10 @@ base::Time TestingProfile::GetStartTime() const {
 
 TabRestoreService* TestingProfile::GetTabRestoreService() {
   return NULL;
+}
+
+ProtocolHandlerRegistry* TestingProfile::GetProtocolHandlerRegistry() {
+  return protocol_handler_registry_.get();
 }
 
 SpellCheckHost* TestingProfile::GetSpellCheckHost() {
