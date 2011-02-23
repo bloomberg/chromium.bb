@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_RENDERER_HOST_GPU_MESSAGE_FILTER_H_
-#define CHROME_BROWSER_RENDERER_HOST_GPU_MESSAGE_FILTER_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_GPU_MESSAGE_FILTER_H_
+#define CONTENT_BROWSER_RENDERER_HOST_GPU_MESSAGE_FILTER_H_
 #pragma once
 
 #include "chrome/browser/browser_message_filter.h"
@@ -51,4 +51,4 @@ class GpuMessageFilter : public BrowserMessageFilter,
   DISALLOW_COPY_AND_ASSIGN(GpuMessageFilter);
 };
 
-#endif  // CHROME_BROWSER_RENDERER_HOST_GPU_MESSAGE_FILTER_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_GPU_MESSAGE_FILTER_H_
