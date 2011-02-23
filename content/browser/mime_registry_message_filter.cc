@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/mime_registry_message_filter.h"
+#include "content/browser/mime_registry_message_filter.h"
 
 #include "chrome/common/mime_registry_messages.h"
 #include "net/base/mime_util.h"

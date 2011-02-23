@@ -9,5 +9,4 @@
 // TODO(jam): remove this file when all files have been converted.
 #include "content/browser/child_process_launcher.h"
 
-
 #endif  // CHROME_BROWSER_CHILD_PROCESS_LAUNCHER_H_

@@ -10,9 +10,9 @@
 
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
-#include "chrome/browser/browser_thread.h"
-#include "chrome/browser/plugin_process_host.h"
 #include "chrome/common/plugin_messages.h"
+#include "content/browser/browser_thread.h"
+#include "content/browser/plugin_process_host.h"
 #include "ui/gfx/rect.h"
 
 void PluginProcessHost::OnPluginSelectWindow(uint32 window_id,

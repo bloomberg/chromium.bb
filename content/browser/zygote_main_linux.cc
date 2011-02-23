@@ -19,6 +19,8 @@
 #include <selinux/context.h>
 #endif
 
+#include "content/browser/zygote_host_linux.h"
+
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/eintr_wrapper.h"
@@ -33,7 +35,6 @@
 #include "base/scoped_ptr.h"
 #include "base/sys_info.h"
 #include "build/build_config.h"
-#include "chrome/browser/zygote_host_linux.h"
 #include "chrome/common/chrome_descriptors.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/font_config_ipc_linux.h"

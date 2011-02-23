@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/plugin_process_host.h"
+#include "content/browser/plugin_process_host.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -20,15 +20,11 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_thread.h"
-#include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/chrome_plugin_browsing_context.h"
 #include "chrome/browser/net/url_request_tracking.h"
 #include "chrome/browser/plugin_download_helper.h"
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/renderer_host/resource_dispatcher_host.h"
-#include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_plugin_lib.h"
 #include "chrome/common/chrome_switches.h"
@@ -37,6 +33,10 @@
 #include "chrome/common/plugin_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
+#include "content/browser/browser_thread.h"
+#include "content/browser/child_process_security_policy.h"
+#include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/browser/renderer_host/resource_message_filter.h"
 #include "ipc/ipc_switches.h"
 #include "net/base/cookie_store.h"
 #include "net/base/io_buffer.h"

@@ -5,8 +5,8 @@
 #include <vector>
 
 #include "base/version.h"
-#include "chrome/browser/gpu_blacklist.h"
 #include "chrome/common/gpu_info.h"
+#include "content/browser/gpu_blacklist.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(GpuBlacklistTest, BlacklistLogic) {

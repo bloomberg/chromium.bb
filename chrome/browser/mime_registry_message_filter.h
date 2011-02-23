@@ -5,27 +5,7 @@
 #ifndef CHROME_BROWSER_MIME_REGISTRY_MESSAGE_FILTER_H_
 #define CHROME_BROWSER_MIME_REGISTRY_MESSAGE_FILTER_H_
 
-#include "base/file_path.h"
-#include "chrome/browser/browser_message_filter.h"
-
-class MimeRegistryMessageFilter : public BrowserMessageFilter {
- public:
-  MimeRegistryMessageFilter();
-
-  virtual void OverrideThreadForMessage(const IPC::Message& message,
-                                        BrowserThread::ID* thread);
-  virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok);
-
- private:
-  ~MimeRegistryMessageFilter();
-
-  void OnGetMimeTypeFromExtension(const FilePath::StringType& ext,
-                                  std::string* mime_type);
-  void OnGetMimeTypeFromFile(const FilePath& file_path,
-                             std::string* mime_type);
-  void OnGetPreferredExtensionForMimeType(const std::string& mime_type,
-                                          FilePath::StringType* extension);
-};
+// TODO(jam): remove this file when all files have been converted.
+#include "content/browser/mime_registry_message_filter.h"
 
 #endif  // CHROME_BROWSER_MIME_REGISTRY_MESSAGE_FILTER_H_

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/modal_html_dialog_delegate.h"
+#include "content/browser/modal_html_dialog_delegate.h"
 
 #include <string>
 
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_source.h"
+#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "ui/gfx/size.h"
 
 ModalHtmlDialogDelegate::ModalHtmlDialogDelegate(

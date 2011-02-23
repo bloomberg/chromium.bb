@@ -13,6 +13,7 @@ include_rules = [
   "+net",
   "+ppapi",
   "+printing",
+  "+sandbox",
   "+skia",
 
   # Don't allow inclusion of these other libs we shouldn't be calling directly.

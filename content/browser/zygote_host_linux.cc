@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/zygote_host_linux.h"
+#include "content/browser/zygote_host_linux.h"
 
 #include <sys/socket.h>
 #include <sys/stat.h>
@@ -21,12 +21,12 @@
 #include "base/string_util.h"
 #include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/renderer_host/render_sandbox_host_linux.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/process_watcher.h"
 #include "chrome/common/result_codes.h"
 #include "chrome/common/unix_domain_socket_posix.h"
+#include "content/browser/renderer_host/render_sandbox_host_linux.h"
 #include "sandbox/linux/suid/suid_unsafe_environment_variables.h"
 
 static void SaveSUIDUnsafeEnvironmentVariables() {

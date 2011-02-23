@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gpu_blacklist.h"
+#include "content/browser/gpu_blacklist.h"
 
 #include "base/json/json_reader.h"
 #include "base/logging.h"

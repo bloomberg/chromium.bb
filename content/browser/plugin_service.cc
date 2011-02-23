@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/plugin_service.h"
+#include "content/browser/plugin_service.h"
 
 #include <vector>
 
@@ -14,14 +14,11 @@
 #include "base/values.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chrome_plugin_host.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/plugin_updater.h"
 #include "chrome/browser/ppapi_plugin_process_host.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/renderer_host/render_process_host.h"
-#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/common/chrome_plugin_lib.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -34,6 +31,9 @@
 #include "chrome/common/pepper_plugin_registry.h"
 #include "chrome/common/plugin_messages.h"
 #include "chrome/common/render_messages.h"
+#include "content/browser/browser_thread.h"
+#include "content/browser/renderer_host/render_process_host.h"
+#include "content/browser/renderer_host/render_view_host.h"
 #include "webkit/plugins/npapi/plugin_constants_win.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/webplugininfo.h"

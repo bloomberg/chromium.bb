@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ppapi_plugin_process_host.h"
+#include "content/browser/ppapi_plugin_process_host.h"
 
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/process_util.h"
-#include "chrome/browser/plugin_service.h"
-#include "chrome/browser/renderer_host/render_message_filter.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
+#include "content/browser/plugin_service.h"
+#include "content/browser/renderer_host/render_message_filter.h"
 #include "ipc/ipc_switches.h"
 #include "ppapi/proxy/ppapi_messages.h"
 

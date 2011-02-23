@@ -2,17 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gpu_process_host.h"
+#include "content/browser/gpu_process_host.h"
 
 #include "app/app_switches.h"
 #include "base/metrics/histogram.h"
 #include "base/ref_counted.h"
 #include "base/string_piece.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/gpu_process_host_ui_shim.h"
-#include "chrome/browser/renderer_host/render_widget_host.h"
-#include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/gpu_feature_flags.h"
@@ -20,6 +17,9 @@
 #include "chrome/common/gpu_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/gpu/gpu_thread.h"
+#include "content/browser/browser_thread.h"
+#include "content/browser/renderer_host/render_widget_host.h"
+#include "content/browser/renderer_host/render_widget_host_view.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_switches.h"
 #include "media/base/media_switches.h"
