@@ -903,6 +903,17 @@ void MaybeChangeUIFont() {
     return;
   }
   gtk_util::SetGtkFont(font_name);
+
+  // Override the font set for tooltips in the gtkrc file so tooltips use the
+  // IDS_UI_FONT_FAMILY_CROS font.
+  // TODO(falken): this is a hack: make adding locale-specific changes to GTK
+  // settings cleaner.  See http://crosbug.com/12257
+  std::string tooltip_style =
+      "style \"OverrideTooltipFontStyle\" = \"TooltipStyle\" {\n"
+      "  font_name = \"" + font_name + "\"\n"
+      "}\n"
+      "widget \"gtk-tooltip*\" style \"OverrideTooltipFontStyle\"\n";
+  gtk_rc_parse_string(tooltip_style.c_str());
 }
 #endif
 

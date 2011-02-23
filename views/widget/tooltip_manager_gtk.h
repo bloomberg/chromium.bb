@@ -42,7 +42,7 @@ class TooltipManagerGtk : public TooltipManager {
   // The view supplied to the last invocation of ShowKeyboardTooltip.
   View* keyboard_view_;
 
-  // Custimized tooltip window.
+  // Customized tooltip window.
   TooltipWindowGtk tooltip_window_;
 
   DISALLOW_COPY_AND_ASSIGN(TooltipManagerGtk);
