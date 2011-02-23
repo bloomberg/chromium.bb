@@ -490,26 +490,6 @@ void Browser::OpenURLOffTheRecord(Profile* profile, const GURL& url) {
 }
 
 // static
-// TODO(erikkay): There are multiple reasons why this could fail.  Should
-// this function return an error reason as well so that callers can show
-// reasonable errors?
-TabContents* Browser::OpenApplication(Profile* profile,
-                                      const std::string& app_id,
-                                      TabContents* existing_tab) {
-  ExtensionService* extensions_service = profile->GetExtensionService();
-
-  // If the extension with |app_id| could't be found, most likely because it
-  // was uninstalled.
-  const Extension* extension =
-      extensions_service->GetExtensionById(app_id, false);
-  if (!extension)
-    return NULL;
-
-  return OpenApplication(profile, extension, extension->launch_container(),
-                         existing_tab);
-}
-
-// static
 TabContents* Browser::OpenApplication(
     Profile* profile,
     const Extension* extension,
@@ -549,7 +529,7 @@ TabContents* Browser::OpenApplicationWindow(
       DCHECK(extension->web_extent().ContainsURL(url_input));
     url = url_input;
   } else {
-    DCHECK(extension);
+    DCHECK(extension);  // Empty url and no extension.  Nothing to open.
     url = extension->GetFullLaunchURL();
   }
 
