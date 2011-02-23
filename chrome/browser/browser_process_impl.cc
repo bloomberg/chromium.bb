@@ -32,6 +32,7 @@
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/metrics/metrics_service.h"
+#include "chrome/browser/metrics/thread_watcher.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
@@ -97,6 +98,7 @@ BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
       created_db_thread_(false),
       created_process_launcher_thread_(false),
       created_cache_thread_(false),
+      created_watchdog_thread_(false),
       created_profile_manager_(false),
       created_local_state_(false),
       created_icon_manager_(false),
@@ -245,6 +247,9 @@ BrowserProcessImpl::~BrowserProcessImpl() {
   // on the db thread too.
   db_thread_.reset();
 
+  // Stop the watchdog thread after stopping other threads.
+  watchdog_thread_.reset();
+
   // At this point, no render process exist and the file, io, db, and
   // webkit threads in this process have all terminated, so it's safe
   // to access local state data such as cookies, database, or local storage.
@@ -389,6 +394,14 @@ base::Thread* BrowserProcessImpl::background_x11_thread() {
   return background_x11_thread_.get();
 }
 #endif
+
+WatchDogThread* BrowserProcessImpl::watchdog_thread() {
+  DCHECK(CalledOnValidThread());
+  if (!created_watchdog_thread_)
+    CreateWatchdogThread();
+  DCHECK(watchdog_thread_.get() != NULL);
+  return watchdog_thread_.get();
+}
 
 ProfileManager* BrowserProcessImpl::profile_manager() {
   DCHECK(CalledOnValidThread());
@@ -721,6 +734,16 @@ void BrowserProcessImpl::CreateCacheThread() {
   if (!thread->StartWithOptions(options))
     return;
   cache_thread_.swap(thread);
+}
+
+void BrowserProcessImpl::CreateWatchdogThread() {
+  DCHECK(!created_watchdog_thread_ && watchdog_thread_.get() == NULL);
+  created_watchdog_thread_ = true;
+
+  scoped_ptr<WatchDogThread> thread(new WatchDogThread());
+  if (!thread->Start())
+    return;
+  watchdog_thread_.swap(thread);
 }
 
 void BrowserProcessImpl::CreateProfileManager() {

@@ -522,36 +522,7 @@ void MetricsService::SetRecording(bool enabled) {
     child_process_logging::SetClientId(client_id_);
     StartRecording();
 
-    registrar_.Add(this, NotificationType::BROWSER_OPENED,
-                   NotificationService::AllSources());
-    registrar_.Add(this, NotificationType::BROWSER_CLOSED,
-                   NotificationService::AllSources());
-    registrar_.Add(this, NotificationType::USER_ACTION,
-                   NotificationService::AllSources());
-    registrar_.Add(this, NotificationType::TAB_PARENTED,
-                   NotificationService::AllSources());
-    registrar_.Add(this, NotificationType::TAB_CLOSING,
-                   NotificationService::AllSources());
-    registrar_.Add(this, NotificationType::LOAD_START,
-                   NotificationService::AllSources());
-    registrar_.Add(this, NotificationType::LOAD_STOP,
-                   NotificationService::AllSources());
-    registrar_.Add(this, NotificationType::RENDERER_PROCESS_CLOSED,
-                   NotificationService::AllSources());
-    registrar_.Add(this, NotificationType::RENDERER_PROCESS_HANG,
-                   NotificationService::AllSources());
-    registrar_.Add(this, NotificationType::CHILD_PROCESS_HOST_CONNECTED,
-                   NotificationService::AllSources());
-    registrar_.Add(this, NotificationType::CHILD_INSTANCE_CREATED,
-                   NotificationService::AllSources());
-    registrar_.Add(this, NotificationType::CHILD_PROCESS_CRASHED,
-                   NotificationService::AllSources());
-    registrar_.Add(this, NotificationType::TEMPLATE_URL_MODEL_LOADED,
-                   NotificationService::AllSources());
-    registrar_.Add(this, NotificationType::OMNIBOX_OPENED_URL,
-                   NotificationService::AllSources());
-    registrar_.Add(this, NotificationType::BOOKMARK_MODEL_LOADED,
-                   NotificationService::AllSources());
+    SetupNotifications(&registrar_, this);
   } else {
     registrar_.RemoveAll();
     PushPendingLogsToUnsentLists();
@@ -578,6 +549,41 @@ void MetricsService::SetReporting(bool enable) {
 bool MetricsService::reporting_active() const {
   DCHECK(IsSingleThreaded());
   return reporting_active_;
+}
+
+// static
+void MetricsService::SetupNotifications(NotificationRegistrar* registrar,
+                                        NotificationObserver* observer) {
+    registrar->Add(observer, NotificationType::BROWSER_OPENED,
+                   NotificationService::AllSources());
+    registrar->Add(observer, NotificationType::BROWSER_CLOSED,
+                   NotificationService::AllSources());
+    registrar->Add(observer, NotificationType::USER_ACTION,
+                   NotificationService::AllSources());
+    registrar->Add(observer, NotificationType::TAB_PARENTED,
+                   NotificationService::AllSources());
+    registrar->Add(observer, NotificationType::TAB_CLOSING,
+                   NotificationService::AllSources());
+    registrar->Add(observer, NotificationType::LOAD_START,
+                   NotificationService::AllSources());
+    registrar->Add(observer, NotificationType::LOAD_STOP,
+                   NotificationService::AllSources());
+    registrar->Add(observer, NotificationType::RENDERER_PROCESS_CLOSED,
+                   NotificationService::AllSources());
+    registrar->Add(observer, NotificationType::RENDERER_PROCESS_HANG,
+                   NotificationService::AllSources());
+    registrar->Add(observer, NotificationType::CHILD_PROCESS_HOST_CONNECTED,
+                   NotificationService::AllSources());
+    registrar->Add(observer, NotificationType::CHILD_INSTANCE_CREATED,
+                   NotificationService::AllSources());
+    registrar->Add(observer, NotificationType::CHILD_PROCESS_CRASHED,
+                   NotificationService::AllSources());
+    registrar->Add(observer, NotificationType::TEMPLATE_URL_MODEL_LOADED,
+                   NotificationService::AllSources());
+    registrar->Add(observer, NotificationType::OMNIBOX_OPENED_URL,
+                   NotificationService::AllSources());
+    registrar->Add(observer, NotificationType::BOOKMARK_MODEL_LOADED,
+                   NotificationService::AllSources());
 }
 
 void MetricsService::Observe(NotificationType type,

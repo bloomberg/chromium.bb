@@ -56,6 +56,7 @@ class BrowserProcessImpl : public BrowserProcess,
 #if defined(USE_X11)
   virtual base::Thread* background_x11_thread();
 #endif
+  virtual WatchDogThread* watchdog_thread();
   virtual ProfileManager* profile_manager();
   virtual PrefService* local_state();
   virtual DevToolsManager* devtools_manager();
@@ -122,6 +123,7 @@ class BrowserProcessImpl : public BrowserProcess,
   void CreateDBThread();
   void CreateProcessLauncherThread();
   void CreateCacheThread();
+  void CreateWatchdogThread();
   void CreateTemplateURLModel();
   void CreateProfileManager();
   void CreateWebDataService();
@@ -168,6 +170,9 @@ class BrowserProcessImpl : public BrowserProcess,
 
   bool created_cache_thread_;
   scoped_ptr<base::Thread> cache_thread_;
+
+  bool created_watchdog_thread_;
+  scoped_ptr<WatchDogThread> watchdog_thread_;
 
   bool created_profile_manager_;
   scoped_ptr<ProfileManager> profile_manager_;
