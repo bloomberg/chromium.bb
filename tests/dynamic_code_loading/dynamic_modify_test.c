@@ -331,19 +331,13 @@ int TestMain() {
   /* Turn off stdout buffering to aid debugging in case of a crash. */
   setvbuf(stdout, NULL, _IONBF, 0);
 
-  if (is_replacement_enabled()) {
-    printf("Code replacement ENABLED\n");
-    RUN_TEST(test_replacing_code);
-    RUN_TEST(test_replacing_code_unaligned);
-    RUN_TEST(test_deleting_code);
-    RUN_TEST(test_illegal_code_replacment);
-    RUN_TEST(test_external_jump_target_replacement);
-  } else {
-    printf("Code replacement DISABLED\n");
-    RUN_TEST(test_replacing_code_disabled);
-    RUN_TEST(test_replacing_code_unaligned_disabled);
-    RUN_TEST(test_deleting_code_disabled);
-  }
+  assert(is_replacement_enabled());
+
+  RUN_TEST(test_replacing_code);
+  RUN_TEST(test_replacing_code_unaligned);
+  RUN_TEST(test_deleting_code);
+  RUN_TEST(test_illegal_code_replacment);
+  RUN_TEST(test_external_jump_target_replacement);
 
   return 0;
 }

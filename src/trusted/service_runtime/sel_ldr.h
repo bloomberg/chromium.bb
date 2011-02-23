@@ -227,7 +227,6 @@ struct NaClApp {
 
   int                       ignore_validator_result;
   int                       validator_stub_out_mode;
-  int                       allow_dyncode_replacement;
   /* all threads enqueue the "special" syscalls to the work queue */
   struct NaClSyncQueue      work_queue;
 

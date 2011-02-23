@@ -81,15 +81,9 @@ tests = [
         command=[env.File('debug_mode_test.nexe')],
         ),
    env.CommandSelLdrTestNacl(
-       'dynamic_modify_test_disabled.out',
+       'dynamic_modify_test.out',
        command=[env.File('dynamic_modify_test.nexe')],
        sel_ldr_flags=['-E', 'NACL_SRPC_STANDALONE=1'],
-       ),
-   env.CommandSelLdrTestNacl(
-       'dynamic_modify_test_enabled.out',
-       command=[env.File('dynamic_modify_test.nexe')],
-       sel_ldr_flags=['-E', 'NACL_SRPC_STANDALONE=1'],
-       osenv='NACL_ALLOW_DYNCODE_REPLACEMENT=1',
        ),
   ]
 

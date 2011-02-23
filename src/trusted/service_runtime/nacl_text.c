@@ -763,12 +763,6 @@ int32_t NaClTextSysDyncode_Modify(struct NaClAppThread *natp,
     return -NACL_ABI_EINVAL;
   }
 
-  if (!nap->allow_dyncode_replacement) {
-    NaClLog(1, "NaClTextSysDyncode_Modify:"
-               "Dynamic code replacement not enabled\n");
-    return -NACL_ABI_EINVAL;
-  }
-
   if (0 == size) {
     /* Nothing to modify.  Succeed trivially. */
     return 0;
@@ -881,12 +875,6 @@ int32_t NaClTextSysDyncode_Delete(struct NaClAppThread *natp,
 
   if (NULL == nap->text_shm) {
     NaClLog(1, "NaClTextSysDyncode_Delete: Dynamic loading not enabled\n");
-    return -NACL_ABI_EINVAL;
-  }
-
-  if (!nap->allow_dyncode_replacement) {
-    NaClLog(1, "NaClTextSysDyncode_Delete:"
-               "Dynamic code deletion not enabled\n");
     return -NACL_ABI_EINVAL;
   }
 

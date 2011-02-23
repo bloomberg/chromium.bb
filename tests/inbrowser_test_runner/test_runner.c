@@ -46,6 +46,6 @@ int RunTests(int (*test_func)(void)) {
     if (!NaClSrpcModuleInit()) {
       return 1;
     }
-    return !NaClSrpcAcceptClientOnThread(srpc_methods);
+    return !NaClSrpcAcceptClientConnection(srpc_methods);
   }
 }

@@ -103,7 +103,6 @@ int NaClAppCtor(struct NaClApp  *nap) {
 
   nap->ignore_validator_result = 0;
   nap->validator_stub_out_mode = 0;
-  nap->allow_dyncode_replacement = 0;
 
   /*
    * Allow debugging via environment variables.  Using environment
@@ -120,10 +119,6 @@ int NaClAppCtor(struct NaClApp  *nap) {
   if (IsEnvironmentVariableSet("NACL_DANGEROUS_ENABLE_FILE_ACCESS")) {
     NaClInsecurelyBypassAllAclChecks();
     NaClLog(LOG_INFO, "DANGER: ENABLED FILE ACCESS\n");
-  }
-  if (IsEnvironmentVariableSet("NACL_ALLOW_DYNCODE_REPLACEMENT")) {
-    nap->allow_dyncode_replacement = 1;
-    NaClLog(LOG_INFO, "DANGER: ALLOWING DYNCODE REPLACEMENT\n");
   }
 
   if (!NaClSyncQueueCtor(&nap->work_queue)) {
