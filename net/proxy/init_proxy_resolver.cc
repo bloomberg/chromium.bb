@@ -18,6 +18,16 @@ namespace net {
 
 // This is the hard-coded location used by the DNS portion of web proxy
 // auto-discovery.
+//
+// Note that we not use DNS devolution to find the WPAD host, since that could
+// be dangerous should our top level domain registry  become out of date.
+//
+// Instead we directly resolve "wpad", and let the operating system apply the
+// DNS suffix search paths. This is the same approach taken by Firefox, and
+// compatibility hasn't been an issue.
+//
+// For more details, also check out this comment:
+// http://code.google.com/p/chromium/issues/detail?id=18575#c20
 static const char kWpadUrl[] = "http://wpad/wpad.dat";
 
 InitProxyResolver::InitProxyResolver(ProxyResolver* resolver,
@@ -72,7 +82,7 @@ int InitProxyResolver::Init(const ProxyConfig& config,
 }
 
 // Initialize the fallback rules.
-// (1) WPAD
+// (1) WPAD (DNS).
 // (2) Custom PAC URL.
 InitProxyResolver::UrlList InitProxyResolver::BuildPacUrlsFallbackList(
     const ProxyConfig& config) const {

@@ -27,7 +27,7 @@ class ProxyScriptFetcher;
 //
 // This involves trying to use PAC scripts in this order:
 //
-//   (1) WPAD if auto-detect is on.
+//   (1) WPAD (DNS) if auto-detect is on.
 //   (2) Custom PAC script if a URL was given.
 //
 // If no PAC script was successfully downloaded + parsed, then it fails with
