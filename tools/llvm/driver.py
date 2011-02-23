@@ -58,9 +58,11 @@ INITIAL_ENV = {
   'GCC_MODE'    : '',     # '' (default), '-E', '-c', or '-S'
   'PIC'         : '0',    # -fPIC
   'STATIC'      : '1',    # -static was given (on by default for now)
+  'SHARED'      : '0',    # Produce a shared library
   'NOSTDINC'    : '0',    # -nostdinc
   'NOSTDLIB'    : '0',    # -nostdlib
   'DIAGNOSTIC'  : '0',    # Diagnostic flag detected
+  'SEARCH_DIRS' : '',     # Library search directories
 
   'INPUTS'      : '',    # Input files
   'OUTPUT'      : '',    # Output file
@@ -196,12 +198,13 @@ INITIAL_ENV = {
 
   'LD'       : '${BASE_ARM}/bin/arm-none-linux-gnueabi-ld',
 
-  'LD_FLAGS_COMMON': '--native-client -nostdlib',
+  'LD_SEARCH_DIRS' : '',
+  'LD_FLAGS_COMMON': '--native-client -nostdlib ${LD_SEARCH_DIRS}',
   'LD_FLAGS_STATIC': '${LD_FLAGS_COMMON} -static -Ttext=0x00020000',
   'LD_FLAGS_SHARED': '${LD_FLAGS_COMMON} -shared',
 
   'BCLD'      : '${BASE_ARM}/bin/arm-none-linux-gnueabi-ld',
-  'BCLD_FLAGS': '${GOLD_PLUGIN_ARGS}',
+  'BCLD_FLAGS': '${GOLD_PLUGIN_ARGS} ${LD_SEARCH_DIRS}',
 
 
   'STDLIB_NATIVE_PREFIX': '${ROOT_%arch%}/crt1.o ${ROOT_%arch%}/crti.o ' +
@@ -313,13 +316,15 @@ GCCPatterns = [
   ( '(-I.+)',                 "env.append('CC_FLAGS', $0)"),
   ( '(-pedantic)',            "env.append('CC_FLAGS', $0)"),
   ( ('(-isystem)','(.+)'),    "env.append('CC_FLAGS', $0, $1)"),
-  ( '-shared',                "env.set('STATIC', '0')"),
+  ( '-shared',                "env.set('SHARED', '1')"),
   ( '-static',                "env.set('STATIC', '1')"),
   ( '(-g.*)',                 "env.append('CC_FLAGS', $0)"),
   ( '(-xassembler-with-cpp)', "env.append('CC_FLAGS', $0)"),
 
-  ( ('-L','(.+)'),            "env.append('BCLD_FLAGS', '-L' + $0)"),
-  ( '(-L.+)',                 "env.append('BCLD_FLAGS', $0)"),
+  ( ('-L','(.+)'),            "env.append('LD_SEARCH_DIRS', '-L' + $0);"
+                              "env.append('SEARCH_DIRS', $0)"),
+  ( '-L(.+)',                 "env.append('LD_SEARCH_DIRS', '-L' + $0);"
+                              "env.append('SEARCH_DIRS', $0)"),
   ( '(-Wp,.*)',               "env.append('CC_FLAGS', $0)"),
 
   # Ignore these gcc flags
@@ -382,10 +387,19 @@ def PrepareFlags():
     env.set('SANDBOXED', '0')
     env.set('SRPC', '0')
 
-  if env.getbool('STATIC'):
-    env.set('LD_FLAGS', '${LD_FLAGS_STATIC}')
-  else:
+  if env.getbool('SHARED'):
     env.set('LD_FLAGS', '${LD_FLAGS_SHARED}')
+    output = env.get('OUTPUT')
+    if output != '':
+      env.append('LD_FLAGS', '-soname=' + os.path.basename(output))
+    env.clear('STDLIB_BC_PREFIX')
+    env.clear('STDLIB_BC_SUFFIX')
+    env.clear('STDLIB_NATIVE_PREFIX')
+    env.clear('STDLIB_NATIVE_SUFFIX')
+    env.set('RUN_BCLD', '${RUN_LLVM_LINK}')
+  else:
+    env.set('LD_FLAGS', '${LD_FLAGS_STATIC}')
+
 
   if env.getbool('SANDBOXED') and arch:
     env.set('LLC', '${LLC_SB_%s}' % arch)
@@ -425,7 +439,8 @@ def PrepareChainMap():
     's',
     'o',
     'nexe',
-    'lib'
+    'bclib',
+    'nlib',
   ]
 
   EmitLL = env.getbool('EMIT_LL')
@@ -564,7 +579,7 @@ def Incarnation_bcld():
     output_type = 'nexe'
 
   for i in inputs:
-    if FileType(i) not in ('bc','o','lib'):
+    if FileType(i) not in ('bc','o','bclib','nlib'):
       Log.Fatal('Expecting only bitcode files for bcld invocation')
   Compile(arch, inputs, output, output_type)
   return 0
@@ -745,7 +760,7 @@ def Compile(arch, inputs, output, output_type):
   # We should only be left with .bc and .o and libraries
   for i in xrange(0, len(inputs)):
     intype = FileType(inputs[i])
-    assert(intype in ('bc','pexe','o','lib'))
+    assert(intype in ('bc','pexe','o','nlib','bclib'))
 
   if output_type == 'nexe':
     LinkAll(arch, inputs, output)
@@ -771,7 +786,7 @@ def LinkAll(arch, inputs, output):
 
     # Substitute this object for the bitcode objects in the
     # native linker input
-    inputs = [f for f in inputs if FileType(f) != 'bc']
+    inputs = [f for f in inputs if FileType(f) not in ('bc','bclib')]
     inputs = [combined_obj] + inputs
 
   # Finally, link to nexe
@@ -786,7 +801,7 @@ def LinkBC(inputs, output = None):
   NeedsLinking = False
   for i in xrange(0, len(inputs)):
     intype = FileType(inputs[i])
-    assert(intype in ('bc', 'pexe', 'o', 'lib'))
+    assert(intype in ('bc', 'pexe', 'o', 'bclib', 'nlib'))
     if intype == 'bc':
       NeedsLinking = True
 
@@ -828,7 +843,9 @@ def OptimizeBC(input, output):
 
 # Final native linking step
 def LinkNative(arch, inputs, output):
-  inputs = filter(lambda x: not FileType(x) == 'lib', inputs)
+  # Make sure we are only linking native code
+  for f in inputs:
+    assert(FileType(f) in ('o', 'nlib'))
 
   env.push()
   env.setmany(arch=arch, inputs=shell.join(inputs), output=output)
@@ -1074,11 +1091,22 @@ def ParseArgs(argv, patternlist):
 # File Naming Logic
 ######################################################################
 
-def FileType(filename):
-  if filename.startswith('-l'):
-    return 'lib'
+def SimpleCache(f):
+  """ Cache results of a one-argument function using a dictionary """
+  f._cache = dict()
 
-  # Auto-detect bitcode files, since we can't rely on extensions
+  def wrapper(arg):
+    if arg in f._cache:
+      return f._cache[arg]
+    else:
+      result = f(arg)
+      f._cache[arg] = result
+      return result
+  wrapper.__name__ = f.__name__
+  return wrapper
+
+@SimpleCache
+def IsBitcode(filename):
   try:
     fp = open(filename, 'rb')
   except Exception:
@@ -1087,6 +1115,22 @@ def FileType(filename):
   header = fp.read(2)
   fp.close()
   if header == 'BC':
+    return True
+  return False
+
+@SimpleCache
+def FileType(filename):
+  if filename.startswith('-l'):
+    # Determine whether this is a bitcode library or native .so
+    path = FindLib(filename[2:], shell.split(env.get('SEARCH_DIRS')))
+    if path is None:
+      Log.Fatal("Cannot find library %s", filename)
+    if path.endswith('.a') or IsBitcode(path):
+      return 'bclib'
+    return 'nlib'
+
+  # Auto-detect bitcode files, since we can't rely on extensions
+  if IsBitcode(filename):
     return 'bc'
 
   # File Extension -> Type string
@@ -1441,11 +1485,12 @@ def FindLib(name, searchdirs):
      For example, name might be "c" or "m".
      Returns None if the library is not found.
   """
-  fullname = 'lib' + name + '.a'
+  matches = [ 'lib' + name + '.a', 'lib' + name + '.so' ]
   for curdir in searchdirs:
-    guess = curdir + '/' + fullname
-    if os.path.exists(guess):
-      return guess
+    for m in matches:
+      guess = os.path.join(curdir, m)
+      if os.path.exists(guess):
+        return guess
   return None
 
 # Given linker arguments (including -L, -l, and filenames),
