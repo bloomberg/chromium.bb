@@ -172,6 +172,7 @@ void TreeViewInsertColumnWithPixbuf(GtkWidget* treeview, int resid) {
   GtkTreeViewColumn* column = gtk_tree_view_column_new();
   gtk_tree_view_column_set_title(column,
                                  l10n_util::GetStringUTF8(resid).c_str());
+  gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(treeview), colid);
   GtkCellRenderer* image_renderer = gtk_cell_renderer_pixbuf_new();
   gtk_tree_view_column_pack_start(column, image_renderer, FALSE);
   gtk_tree_view_column_add_attribute(column, image_renderer,
@@ -512,6 +513,10 @@ void TaskManagerGtk::Init() {
   gtk_tree_view_set_headers_clickable(GTK_TREE_VIEW(treeview_), TRUE);
   g_signal_connect(treeview_, "row-activated",
                    G_CALLBACK(OnRowActivatedThunk), this);
+#if defined(TOOLKIT_GTK)
+  g_signal_connect(treeview_, "button-press-event",
+                   G_CALLBACK(OnButtonEventThunk), this);
+#endif
 
   // |selection| is owned by |treeview_|.
   GtkTreeSelection* selection = gtk_tree_view_get_selection(
@@ -965,10 +970,11 @@ void TaskManagerGtk::OnRowActivated(GtkWidget* widget,
 gboolean TaskManagerGtk::OnButtonEvent(GtkWidget* widget,
                                        GdkEventButton* event) {
   // GTK does menu on mouse-up while views does menu on mouse-down,
-  // so this function does different handlers.
+  // so this function can be called from either signal.
   if (event->button == 3) {
     ShowContextMenu(gfx::Point(event->x_root, event->y_root),
                     event->time);
+    return TRUE;
   }
 
   return FALSE;
