@@ -67,16 +67,13 @@ ContentSettingImageView::~ContentSettingImageView() {
 }
 
 void ContentSettingImageView::UpdateFromTabContents(TabContents* tab_contents) {
-  int old_icon = content_setting_image_model_->get_icon();
   content_setting_image_model_->UpdateFromTabContents(tab_contents);
   if (!content_setting_image_model_->is_visible()) {
     SetVisible(false);
     return;
   }
-  if (old_icon != content_setting_image_model_->get_icon()) {
-    SetImage(ResourceBundle::GetSharedInstance().GetBitmapNamed(
-        content_setting_image_model_->get_icon()));
-  }
+  SetImage(ResourceBundle::GetSharedInstance().GetBitmapNamed(
+      content_setting_image_model_->get_icon()));
   SetTooltipText(UTF8ToWide(content_setting_image_model_->get_tooltip()));
   SetVisible(true);
 

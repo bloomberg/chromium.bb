@@ -73,7 +73,7 @@ TEST_F(ContentSettingImageModelTest, Prerender) {
      ContentSettingImageModel::CreateContentSettingImageModel(
          CONTENT_SETTINGS_TYPE_PRERENDER));
   EXPECT_FALSE(content_setting_image_model->is_visible());
-  EXPECT_EQ(0, content_setting_image_model->get_icon());
+  EXPECT_NE(0, content_setting_image_model->get_icon());
   EXPECT_FALSE(content_setting_image_model->get_tooltip().empty());
 
   // Make the tab_contents prerendered

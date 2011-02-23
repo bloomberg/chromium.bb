@@ -174,18 +174,12 @@ void ContentSettingNotificationsImageModel::UpdateFromTabContents(
 ContentSettingPrerenderImageModel::ContentSettingPrerenderImageModel()
     : ContentSettingImageModel(CONTENT_SETTINGS_TYPE_PRERENDER) {
   set_tooltip(l10n_util::GetStringUTF8(IDS_PRERENDER_SUCCEED_TOOLTIP));
+  set_icon(IDR_PRERENDER_SUCCEED_ICON);
 }
 
 void ContentSettingPrerenderImageModel::UpdateFromTabContents(
     TabContents* tab_contents) {
-  bool visible = tab_contents && tab_contents->was_prerendered();
-  set_visible(visible);
-  // ContentSettingPrerenderImageView expects icon to transition from 0 to
-  // valid each time it wants to be displayed.
-  if (visible)
-    set_icon(IDR_PRERENDER_SUCCEED_ICON);
-  else
-    set_icon(0);
+  set_visible(tab_contents && tab_contents->was_prerendered());
 }
 
 ContentSettingImageModel::ContentSettingImageModel(
