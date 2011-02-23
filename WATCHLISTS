@@ -192,7 +192,7 @@
     'browser_main': ['brettw-cc@chromium.org'],
     'browser_resources': ['arv@chromium.org'],
     'chromeos_login': ['nkostylev+cc@chromium.org'],
-    'content': [jam@chromium.org'],
+    'content': ['jam@chromium.org'],
     'download': ['phajdan.jr@chromium.org','rdsmith+dwatch@chromium.org'],
     'history': ['brettw-cc@chromium.org'],
     'renderer': ['darin-cc@chromium.org',
