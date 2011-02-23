@@ -343,7 +343,7 @@ void TestView::OnMouseReleased(const MouseEvent& event, bool canceled) {
   location_.SetPoint(event.x(), event.y());
 }
 
-TEST_F(ViewTest, MouseEvent) {
+TEST_F(ViewTest, DISABLED_MouseEvent) {
   TestView* v1 = new TestView();
   v1->SetBounds(0, 0, 300, 300);
 
