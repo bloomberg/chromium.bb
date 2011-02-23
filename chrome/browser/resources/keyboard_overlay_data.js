@@ -23548,6 +23548,7 @@ var keyboardOverlayData = {
     "alt SHIFT": "keyboardOverlayCycleThroughInputMethods",
     "arrowkeys CTRL": "keyboardOverlayWordMove",
     "b CTRL SHIFT": "keyboardOverlayToggleBookmarkBar",
+    "backspace": "keyboardOverlayBack",
     "backspace CTRL": "keyboardOverlayDeleteWord",
     "backspace SHIFT": "keyboardOverlayForward",
     "c CTRL": "keyboardOverlayCopy",
