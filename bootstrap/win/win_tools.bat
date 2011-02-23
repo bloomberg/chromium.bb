@@ -47,7 +47,6 @@ del "%~dp0svn.zip"
 :: Create the batch file.
 call copy /y "%~dp0svn.new.bat" "%WIN_TOOLS_ROOT_DIR%\svn.bat" 1>nul
 call copy /y "%~dp0svnversion.new.bat" "%WIN_TOOLS_ROOT_DIR%\svnversion.bat" 1>nul
-call copy /y "%~dp0svn.new" "%WIN_TOOLS_ROOT_DIR%\svn" 1>nul
 goto :PYTHON_CHECK
 
 
@@ -81,7 +80,6 @@ call svn co -q %WIN_TOOLS_ROOT_URL%/third_party/python_26 "%WIN_TOOLS_ROOT_DIR%\
 if errorlevel 1 goto :PYTHON_FAIL
 :: Create the batch file.
 call copy /y "%~dp0python.new.bat" "%WIN_TOOLS_ROOT_DIR%\python.bat" 1>nul
-call copy /y "%~dp0python.new" "%WIN_TOOLS_ROOT_DIR%\python" 1>nul
 set ERRORLEVEL=0
 goto :END
 

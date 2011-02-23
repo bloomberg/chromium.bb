@@ -1,5 +1,0 @@
-#!/bin/sh
-
-base_dir=$(dirname "$0")
-
-exec "$base_dir/python.bat" "$@"
