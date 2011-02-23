@@ -147,6 +147,12 @@ class Renderer {
   // Creates a 'default' renderer, choosing the correct implementation type.
   static Renderer* CreateDefaultRenderer(ServiceLocator* service_locator);
 
+  // Creates a 2D renderer.  This can be used instead of CreateDefaultRenderer
+  // when 3D is not supported by the underlying system, and is not strictly
+  // needed by the application.
+  static Renderer* Create2DRenderer(ServiceLocator* service_locator);
+
+
   // Gets whether or not the renderer should attempt to use the software
   // renderer.
   static bool IsForceSoftwareRenderer();

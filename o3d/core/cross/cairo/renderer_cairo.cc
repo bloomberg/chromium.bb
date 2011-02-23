@@ -41,6 +41,11 @@
 
 namespace o3d {
 
+// This is a factory function for creating 2D Renderer objects.
+Renderer* Renderer::Create2DRenderer(ServiceLocator* service_locator) {
+  return o2d::RendererCairo::CreateDefault(service_locator);
+}
+
 namespace o2d {
 
 RendererCairo::RendererCairo(ServiceLocator* service_locator)

@@ -257,6 +257,12 @@ void PluginObject::TearDown() {
 }
 
 void PluginObject::CreateRenderer(const o3d::DisplayWindow& display_window) {
+  // In case CreateRenderer is called more than once, reset to the
+  // uninitialized state..
+  DeleteRenderer();
+  renderer_init_status_ = o3d::Renderer::UNINITIALIZED;
+
+#if !defined(FORCE_CAIRO)
   if (!o3d::CheckConfig(npp_)) {
     renderer_init_status_ = o3d::Renderer::GPU_NOT_UP_TO_SPEC;
   } else {
@@ -269,6 +275,24 @@ void PluginObject::CreateRenderer(const o3d::DisplayWindow& display_window) {
       DeleteRenderer();
     }
   }
+#endif
+
+#if defined(SUPPORT_CAIRO)
+  if (renderer_init_status_ != o3d::Renderer::SUCCESS) {
+    // Attempt to fall back to o2d renderer
+    renderer_ = o3d::Renderer::Create2DRenderer(&service_locator_);
+    if (renderer_) {
+      renderer_init_status_ = renderer_->Init(display_window, false);
+      if (renderer_init_status_ != o3d::Renderer::SUCCESS) {
+        DeleteRenderer();
+      } else {
+        ClientInfoManager* client_info_manager =
+              service_locator()->GetService<ClientInfoManager>();
+        client_info_manager->SetRender2d(true);
+      }
+    }
+  }
+#endif
 }
 
 void PluginObject::DeleteRenderer() {

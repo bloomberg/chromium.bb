@@ -47,6 +47,7 @@ ClientInfo::ClientInfo()
       buffer_memory_used_(0),
       software_renderer_(false),
       non_power_of_two_textures_(false),
+      render_2d_(false),
       version_(O3D_PLUGIN_VERSION) {
 }
 
