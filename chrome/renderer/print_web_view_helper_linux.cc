@@ -34,11 +34,13 @@ void PrintWebViewHelper::CreatePreviewDocument(
   DCHECK_GT(buf_size, 0u);
 
   ViewHostMsg_DidPreviewDocument_Params preview_params;
-  preview_params.data_size = buf_size;
   preview_params.document_cookie = params.params.document_cookie;
+  preview_params.expected_pages_count = page_count;
+  preview_params.data_size = buf_size;
 
   if (!CopyMetafileDataToSharedMem(&metafile,
                                    &(preview_params.metafile_data_handle))) {
+    preview_params.expected_pages_count = 0;
     preview_params.data_size = 0;
   }
   Send(new ViewHostMsg_PagesReadyForPreview(routing_id(), preview_params));
