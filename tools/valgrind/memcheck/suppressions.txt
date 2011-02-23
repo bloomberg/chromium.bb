@@ -3843,6 +3843,15 @@
    ...
    fun:_ZN20GpuProcessHostUIShim12OnLogMessageEiRKSsS1_
 }
+{
+   bug_73844
+   Memcheck:Leak
+   ...
+   fun:_ZN27ScopedRunnableMethodFactoryI13ThreadWatcherE17NewRunnableMethodIMS0_FvyEyEEP14CancelableTaskT_RKT0_
+   fun:_ZN13ThreadWatcher15PostPingMessageEv
+   fun:_Z16DispatchToMethodI13ThreadWatcherMS0_FvvEEvPT_T0_RK6Tuple0
+   fun:_ZN27ScopedRunnableMethodFactoryI13ThreadWatcherE14RunnableMethodIMS0_FvvE6Tuple0E3RunEv
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
