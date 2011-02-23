@@ -127,7 +127,7 @@ readonly PNACL_AS_X8664="${INSTALL_BIN}/pnacl-as_x86_64"
 
 # Current milestones in each repo
 # hg-update-stable  uses these
-readonly LLVM_REV=98e4ddb33699
+readonly LLVM_REV=31f979b87330
 readonly LLVM_GCC_REV=a24f3ae473c8
 readonly NEWLIB_REV=d0ac50acf303
 readonly BINUTILS_REV=f84e3951f26d
