@@ -433,7 +433,6 @@ class TestSyncPrebuilts(unittest.TestCase):
 
   def setUp(self):
     self.mox = mox.Mox()
-    self.mox.StubOutWithMock(prebuilt, '_GetCrossCompilerSubdirectories')
     self.mox.StubOutWithMock(prebuilt, 'DeterminePrebuiltConfFile')
     self.mox.StubOutWithMock(prebuilt, 'RevGitFile')
     self.mox.StubOutWithMock(prebuilt, 'UpdateBinhostConfFile')
@@ -455,12 +454,6 @@ class TestSyncPrebuilts(unittest.TestCase):
                                 prebuilt._HOST_PACKAGES_PATH)
     url_suffix = prebuilt._REL_HOST_PATH % {'version': self.version,
         'target': prebuilt._HOST_TARGET }
-    subdir = 'cross/x86'
-    prebuilt._GetCrossCompilerSubdirectories(self.build_path).AndReturn(
-        [subdir])
-    cross_package_path = os.path.join(package_path, subdir)
-    cross_url_suffix = '%s/%s' % (url_suffix.rstrip('/'), subdir)
-    self.uploader._UploadPrebuilt(cross_package_path, cross_url_suffix)
     self.uploader._UploadPrebuilt(package_path, url_suffix)
     url_value = '%s/%s/' % (self.binhost.rstrip('/'), url_suffix.rstrip('/'))
     prebuilt.RevGitFile(mox.IgnoreArg(), url_value, key=self.key)
@@ -515,12 +508,8 @@ class TestMain(unittest.TestCase):
     prebuilt.ParseOptions().AndReturn(options)
     self.mox.StubOutWithMock(prebuilt, 'LoadPrivateFilters')
     prebuilt.LoadPrivateFilters(options.build_path)
-    self.mox.StubOutWithMock(prebuilt, '_GetCrossCompilerSubdirectories')
-    prebuilt._GetCrossCompilerSubdirectories(
-        options.build_path).MultipleTimes(2).AndReturn(['subdir'])
     self.mox.StubOutWithMock(prebuilt, 'GrabRemotePackageIndex')
     prebuilt.GrabRemotePackageIndex(old_binhost).AndReturn(True)
-    prebuilt.GrabRemotePackageIndex(old_binhost + '/subdir').AndReturn(True)
     self.mox.StubOutWithMock(prebuilt.PrebuiltUploader, '__init__')
     prebuilt.PrebuiltUploader.__init__(options.upload, 'private',
         options.binhost_base_url, mox.IgnoreArg())

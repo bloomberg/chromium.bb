@@ -403,46 +403,12 @@ def UpdateBinhostConfFile(path, key, value):
       shell=True)
 
 
-def _GetCrossCompilerSubdirectories(build_path):
-  """Get a list of the subdirectories where cross-compilers are stored.
-
-  This function looks at what cross-compilers have been configured on the
-  current host, and uses it to calculate the subdirectories where Portage will
-  store their prebuilts for each board.
-
-  Args:
-    build_path: The path to the directory containing the chroot.
-
-  Returns:
-    A list of subdirs, like: ['cross/i686-pc-linux-gnu',
-                              'cross/armv7a-cros-linux-gnueabi', ...]
-  """
-  path = os.path.join(build_path, _CATEGORIES_PATH)
-  categories_file = file(path)
-  categories = []
-  for line in categories_file:
-    if line.startswith('cross-'):
-      categories.append(line.rstrip('\n').replace('cross-', 'cross/'))
-  categories_file.close()
-  return categories
-
-
-def _GrabAllRemotePackageIndexes(binhost_urls, subdirs):
+def _GrabAllRemotePackageIndexes(binhost_urls):
   """Grab all of the packages files associated with a list of binhost_urls.
-
-  Besides grabbing the Packages file associated with each binhost_url, this
-  function also grabs the associated cross-compiler prebuilts, if available.
-
-  cross-compiler prebuilts have separate Packages files and prebuilts. These
-  binhosts are stored in subdirectories of the regular binhosts. For each
-  binhost, we use subdirs to find the subdirectories.
 
   Args:
     binhost_urls: The URLs for the directories containing the Packages files we
                   want to grab.
-    subdirs: A list of the subdirectories for the cross-compilers, like:
-               ['cross/i686-pc-linux-gnu',
-                'cross/armv7a-cros-linux-gnueabi', ...]
 
   Returns:
     A list of PackageIndex objects.
@@ -452,11 +418,6 @@ def _GrabAllRemotePackageIndexes(binhost_urls, subdirs):
     pkg_index = GrabRemotePackageIndex(url)
     if pkg_index:
       pkg_indexes.append(pkg_index)
-      for subdir in subdirs:
-        cross_url = '%s/%s' % (url.rstrip('/'), subdir)
-        cross_pkg_index = GrabRemotePackageIndex(cross_url)
-        if cross_pkg_index:
-          pkg_indexes.append(cross_pkg_index)
   return pkg_indexes
 
 
@@ -489,9 +450,7 @@ class PrebuiltUploader(object):
 
     Args:
       package_path: The path to the packages dir.
-      url_suffix: If set, upload the Packages file from the specified subdir of
-          the Packages directory. This subdirectory must be self-contained and
-          have its own Packages file.
+      url_suffix: The remote subdirectory where we should upload the packages.
     """
 
     # Process Packages file, removing duplicates and filtered packages.
@@ -556,10 +515,6 @@ class PrebuiltUploader(object):
     # Upload prebuilts.
     package_path = os.path.join(build_path, _HOST_PACKAGES_PATH)
     url_suffix = _REL_HOST_PATH % {'version': version, 'target': _HOST_TARGET}
-    for subdir in _GetCrossCompilerSubdirectories(build_path):
-      cross_package_path = os.path.join(package_path, subdir)
-      cross_url_suffix = '%s/%s' % (url_suffix.rstrip('/'), subdir)
-      self._UploadPrebuilt(cross_package_path, cross_url_suffix)
     self._UploadPrebuilt(package_path, url_suffix)
 
     # Record URL where prebuilts were uploaded.
@@ -676,9 +631,7 @@ def main():
   # upload a package, we check to make sure it's not already stored in one of
   # the packages files we uploaded. This list of packages files might contain
   # both board and host packages.
-  cross_subdirs = _GetCrossCompilerSubdirectories(options.build_path)
-  pkg_indexes = _GrabAllRemotePackageIndexes(options.previous_binhost_url,
-                                             cross_subdirs)
+  pkg_indexes = _GrabAllRemotePackageIndexes(options.previous_binhost_url)
 
   version = GetVersion()
   if options.prepend_version:
