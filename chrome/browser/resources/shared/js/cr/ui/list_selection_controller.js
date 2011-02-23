@@ -180,6 +180,26 @@ cr.define('cr.ui', function() {
      * @param {Event} e The keydown event.
      */
     handleKeyDown: function(e) {
+      const SPACE_KEY_CODE = 32;
+      var tagName = e.target.tagName;
+      // If focus is in an input field of some kind, only handle navigation keys
+      // that aren't likely to conflict with input interaction (e.g., text
+      // editing, or changing the value of a checkbox or select).
+      if (tagName == 'INPUT') {
+        var inputType = e.target.type;
+        // Just protect space (for toggling) for checkbox and radio.
+        if (inputType == 'checkbox' || inputType == 'radio') {
+          if (e.keyCode == SPACE_KEY_CODE)
+            return;
+        // Protect all but the most basic navigation commands in anything else.
+        } else if (e.keyIdentifier != 'Up' && e.keyIdentifier != 'Down') {
+          return;
+        }
+      }
+      // Similarly, don't interfere with select element handling.
+      if (tagName == 'SELECT')
+        return;
+
       var sm = this.selectionModel;
       var newIndex = -1;
       var leadIndex = sm.leadIndex;
@@ -194,7 +214,7 @@ cr.define('cr.ui', function() {
       }
 
       // Space
-      if (e.keyCode == 32) {
+      if (e.keyCode == SPACE_KEY_CODE) {
         if (leadIndex != -1) {
           var selected = sm.getIndexSelected(leadIndex);
           if (e.ctrlKey || !selected) {
