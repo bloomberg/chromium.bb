@@ -94,6 +94,10 @@ MessageLoop* WebUIThemeSource::MessageLoopForRequestPath(
   return DataSource::MessageLoopForRequestPath(path);
 }
 
+bool WebUIThemeSource::ShouldReplaceExistingSource() const {
+  return false;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WebUIThemeSource, private:
 

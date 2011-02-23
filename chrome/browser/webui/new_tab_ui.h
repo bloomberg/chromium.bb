@@ -71,6 +71,8 @@ class NewTabUI : public WebUI,
 
     virtual std::string GetMimeType(const std::string&) const;
 
+    virtual bool ShouldReplaceExistingSource() const;
+
     // Setters and getters for first_run.
     static void set_first_run(bool first_run) { first_run_ = first_run; }
     static bool first_run() { return first_run_; }

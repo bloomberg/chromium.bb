@@ -27,6 +27,8 @@ class WebUIThemeSource : public ChromeURLDataManager::DataSource {
   // Used to tell ChromeURLDataManager which thread to handle the request on.
   virtual MessageLoop* MessageLoopForRequestPath(const std::string& path) const;
 
+  virtual bool ShouldReplaceExistingSource() const;
+
  protected:
   virtual ~WebUIThemeSource();
 

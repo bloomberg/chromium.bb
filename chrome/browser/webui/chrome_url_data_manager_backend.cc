@@ -178,8 +178,11 @@ void ChromeURLDataManagerBackend::AddDataSource(
     ChromeURLDataManager::DataSource* source) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DataSourceMap::iterator i = data_sources_.find(source->source_name());
-  if (i != data_sources_.end())
+  if (i != data_sources_.end()) {
+    if (!source->ShouldReplaceExistingSource())
+      return;
     i->second->backend_ = NULL;
+  }
   data_sources_[source->source_name()] = source;
   source->backend_ = this;
 }

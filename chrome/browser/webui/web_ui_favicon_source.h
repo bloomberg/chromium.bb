@@ -30,6 +30,9 @@ class WebUIFavIconSource : public ChromeURLDataManager::DataSource {
 
   virtual std::string GetMimeType(const std::string&) const;
 
+  virtual bool ShouldReplaceExistingSource() const;
+
+ private:
   // Called when favicon data is available from the history backend.
   void OnFavIconDataAvailable(FaviconService::Handle request_handle,
                               bool know_favicon,
@@ -37,7 +40,6 @@ class WebUIFavIconSource : public ChromeURLDataManager::DataSource {
                               bool expired,
                               GURL url);
 
- private:
   // Sends the default favicon.
   void SendDefaultResponse(int request_id);
 

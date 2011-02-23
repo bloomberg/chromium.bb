@@ -598,3 +598,7 @@ void NewTabUI::NewTabHTMLSource::StartDataRequest(const std::string& path,
 std::string NewTabUI::NewTabHTMLSource::GetMimeType(const std::string&) const {
   return "text/html";
 }
+
+bool NewTabUI::NewTabHTMLSource::ShouldReplaceExistingSource() const {
+  return false;
+}

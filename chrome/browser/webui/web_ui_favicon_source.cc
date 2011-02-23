@@ -54,6 +54,12 @@ std::string WebUIFavIconSource::GetMimeType(const std::string&) const {
   return "image/png";
 }
 
+bool WebUIFavIconSource::ShouldReplaceExistingSource() const {
+  // Leave the existing DataSource in place, otherwise we'll drop any pending
+  // requests on the floor.
+  return false;
+}
+
 void WebUIFavIconSource::OnFavIconDataAvailable(
     FaviconService::Handle request_handle,
     bool know_favicon,
