@@ -99,9 +99,6 @@ void BuildUserAgent(bool mimic_windows, std::string* result) {
 
   const char kUserAgentSecurity = 'U';  // "US" strength encryption
 
-  // TODO(port): figure out correct locale
-  const char kUserAgentLocale[] = "en-US";
-
   // Get the product name and version, and replace Safari's Version/X string
   // with it.  This is done to expose our product name in a manner that is
   // maximally compatible with Safari, we hope!!
@@ -110,12 +107,11 @@ void BuildUserAgent(bool mimic_windows, std::string* result) {
   // Derived from Safari's UA string.
   base::StringAppendF(
       result,
-      "Mozilla/5.0 (%s; %c; %s; %s) AppleWebKit/%d.%d"
+      "Mozilla/5.0 (%s; %c; %s) AppleWebKit/%d.%d"
       " (KHTML, like Gecko) %s Safari/%d.%d",
       mimic_windows ? "Windows" : kUserAgentPlatform,
       kUserAgentSecurity,
       ((mimic_windows ? "Windows " : "") + BuildOSCpuInfo()).c_str(),
-      kUserAgentLocale,
       WEBKIT_VERSION_MAJOR,
       WEBKIT_VERSION_MINOR,
       product.c_str(),
