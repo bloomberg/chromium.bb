@@ -92,14 +92,16 @@ bool SetInternetZoneIdentifier(const FilePath& full_path) {
   if (INVALID_HANDLE_VALUE == file)
     return false;
 
-  const char kIdentifier[] = "[ZoneTransfer]\nZoneId=3";
+  static const char kIdentifier[] = "[ZoneTransfer]\nZoneId=3";
+  // Don't include trailing null in data written.
+  static const DWORD kIdentifierSize = arraysize(kIdentifier) - 1;
   DWORD written = 0;
-  BOOL result = WriteFile(file, kIdentifier, arraysize(kIdentifier), &written,
+  BOOL result = WriteFile(file, kIdentifier, kIdentifierSize, &written,
                           NULL);
   BOOL flush_result = FlushFileBuffers(file);
   CloseHandle(file);
 
-  if (!result || !flush_result || written != arraysize(kIdentifier)) {
+  if (!result || !flush_result || written != kIdentifierSize) {
     NOTREACHED();
     return false;
   }

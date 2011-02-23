@@ -502,14 +502,14 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_CheckInternetZone) {
   // Download the file and wait.  We do not expect the Select File dialog.
   DownloadAndWait(browser(), url, EXPECT_NO_SELECT_DIALOG);
 
-  // Check state.
+  // Check state.  Special file state must be checked before CheckDownload,
+  // as CheckDownload will delete the output file.
   EXPECT_EQ(1, browser()->tab_count());
-  CheckDownload(browser(), file, file);
-  EXPECT_TRUE(IsDownloadUIVisible(browser()));
-
   FilePath downloaded_file = GetDownloadDirectory(browser()).Append(file);
   if (file_util::VolumeSupportsADS(downloaded_file))
     EXPECT_TRUE(file_util::HasInternetZoneIdentifier(downloaded_file));
+  CheckDownload(browser(), file, file);
+  EXPECT_TRUE(IsDownloadUIVisible(browser()));
 }
 #endif
 
