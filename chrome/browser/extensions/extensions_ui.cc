@@ -531,14 +531,18 @@ void ExtensionsDOMHandler::HandleAllowFileAccessMessage(const ListValue* args) {
 }
 
 void ExtensionsDOMHandler::HandleUninstallMessage(const ListValue* args) {
-  const Extension* extension = GetExtension(args);
+  std::string extension_id = WideToASCII(ExtractStringValue(args));
+  CHECK(!extension_id.empty());
+  const Extension* extension =
+      extensions_service_->GetExtensionById(extension_id, true);
+  if (!extension)
+    extension = extensions_service_->GetTerminatedExtension(extension_id);
   if (!extension)
     return;
 
   if (!extension_id_prompting_.empty())
     return;  // Only one prompt at a time.
 
-  std::string extension_id = WideToASCII(ExtractStringValue(args));
   extension_id_prompting_ = extension_id;
 
   GetExtensionInstallUI()->ConfirmUninstall(this, extension);
@@ -547,16 +551,28 @@ void ExtensionsDOMHandler::HandleUninstallMessage(const ListValue* args) {
 void ExtensionsDOMHandler::InstallUIProceed() {
   DCHECK(!extension_id_prompting_.empty());
 
+  bool was_terminated = false;
+
   // The extension can be uninstalled in another window while the UI was
   // showing. Do nothing in that case.
   const Extension* extension =
       extensions_service_->GetExtensionById(extension_id_prompting_, true);
+  if (!extension) {
+    extension = extensions_service_->GetTerminatedExtension(
+        extension_id_prompting_);
+    was_terminated = true;
+  }
   if (!extension)
     return;
 
   extensions_service_->UninstallExtension(extension_id_prompting_,
                                           false /* external_uninstall */);
   extension_id_prompting_ = "";
+
+  // There will be no EXTENSION_UNLOADED notification for terminated
+  // extensions as they were already unloaded.
+  if (was_terminated)
+    HandleRequestExtensionsData(NULL);
 }
 
 void ExtensionsDOMHandler::InstallUIAbort() {

@@ -215,6 +215,8 @@ Browser::Browser(Type type, Profile* profile)
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
                  NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::EXTENSION_UNINSTALLED,
+                 NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_PROCESS_TERMINATED,
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
@@ -3369,6 +3371,18 @@ void Browser::Observe(NotificationType type,
       break;
     }
 
+    case NotificationType::EXTENSION_UNINSTALLED: {
+      window()->GetLocationBar()->UpdatePageActions();
+
+      // If any "This extension has crashed" InfoBarDelegates are around for
+      // this extension, it means that it has been uninstalled
+      // so just remove the remaining CrashedExtensionInfoBarDelegate objects.
+      const UninstalledExtensionInfo* uninstalled_extension =
+          Details<const UninstalledExtensionInfo>(details).ptr();
+      RemoveCrashedExtensionInfoBar(uninstalled_extension->extension_id);
+      break;
+    }
+
     case NotificationType::EXTENSION_LOADED: {
       window()->GetLocationBar()->UpdatePageActions();
 
@@ -3376,18 +3390,7 @@ void Browser::Observe(NotificationType type,
       // this extension, it means that it has been reloaded in another window
       // so just remove the remaining CrashedExtensionInfoBarDelegate objects.
       const Extension* extension = Details<const Extension>(details).ptr();
-      TabStripModel* model = tab_handler_->GetTabStripModel();
-      for (int m = 0; m < model->count(); ++m) {
-        TabContents* tab_contents = model->GetTabContentsAt(m)->tab_contents();
-        for (size_t i = 0; i < tab_contents->infobar_count(); ) {
-          CrashedExtensionInfoBarDelegate* delegate = tab_contents->
-              GetInfoBarDelegateAt(i)->AsCrashedExtensionInfoBarDelegate();
-          if (delegate && delegate->extension_id() == extension->id())
-            tab_contents->RemoveInfoBar(delegate);
-          else
-            ++i;
-        }
-      }
+      RemoveCrashedExtensionInfoBar(extension->id());
       break;
     }
 
@@ -3450,6 +3453,21 @@ void Browser::Observe(NotificationType type,
 
     default:
       NOTREACHED() << "Got a notification we didn't register for.";
+  }
+}
+
+void Browser::RemoveCrashedExtensionInfoBar(const std::string& extension_id) {
+  TabStripModel* model = tab_handler_->GetTabStripModel();
+  for (int m = 0; m < model->count(); ++m) {
+    TabContents* tab_contents = model->GetTabContentsAt(m)->tab_contents();
+    for (size_t i = 0; i < tab_contents->infobar_count(); ) {
+      CrashedExtensionInfoBarDelegate* delegate = tab_contents->
+          GetInfoBarDelegateAt(i)->AsCrashedExtensionInfoBarDelegate();
+      if (delegate && delegate->extension_id() == extension_id)
+        tab_contents->RemoveInfoBar(delegate);
+      else
+        ++i;
+    }
   }
 }
 

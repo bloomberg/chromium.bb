@@ -217,6 +217,10 @@ class ExtensionService
   virtual const Extension* GetExtensionById(const std::string& id,
                                             bool include_disabled);
 
+  // Looks up a terminated (crashed) extension by ID. GetExtensionById does
+  // not include terminated extensions.
+  virtual const Extension* GetTerminatedExtension(const std::string& id);
+
   // Install the extension file at |extension_path|.  Will install as an
   // update if an older version is already installed.
   // For fresh installs, this method also causes the extension to be

@@ -437,6 +437,26 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
   }
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, CrashAndUninstall) {
+  const size_t size_before = GetExtensionService()->extensions()->size();
+  const size_t crash_size_before =
+      GetExtensionService()->terminated_extensions()->size();
+  LoadTestExtension();
+  LoadSecondExtension();
+  CrashExtension(size_before);
+  ASSERT_EQ(size_before + 1, GetExtensionService()->extensions()->size());
+  ASSERT_EQ(crash_size_before + 1,
+            GetExtensionService()->terminated_extensions()->size());
+
+  UninstallExtension(first_extension_id_);
+
+  SCOPED_TRACE("after uninstalling");
+  ASSERT_EQ(size_before + 1, GetExtensionService()->extensions()->size());
+  ASSERT_EQ(crash_size_before,
+            GetExtensionService()->terminated_extensions()->size());
+  ASSERT_EQ(0U, browser()->GetSelectedTabContents()->infobar_count());
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, CrashAndUnloadAll) {
   const size_t size_before = GetExtensionService()->extensions()->size();
   const size_t crash_size_before =

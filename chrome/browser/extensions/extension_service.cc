@@ -395,7 +395,8 @@ bool ExtensionService::UninstallExtensionHelper(
 
   // We can't call UninstallExtension with an invalid extension ID, so check it
   // first.
-  if (extensions_service->GetExtensionById(extension_id, true)) {
+  if (extensions_service->GetExtensionById(extension_id, true) ||
+      extensions_service->GetTerminatedExtension(extension_id)) {
     extensions_service->UninstallExtension(extension_id, false);
   } else {
     LOG(WARNING) << "Attempted uninstallation of non-existent extension with "
@@ -747,6 +748,8 @@ void ExtensionService::UninstallExtension(const std::string& extension_id,
 
   const Extension* extension =
       GetExtensionByIdInternal(extension_id, true, true);
+  if (!extension)
+    extension = GetTerminatedExtension(extension_id);
 
   // Callers should not send us nonexistent extensions.
   CHECK(extension);
@@ -785,6 +788,7 @@ void ExtensionService::UninstallExtension(const std::string& extension_id,
   }
 
   ClearExtensionData(extension_url);
+  UntrackTerminatedExtension(extension_id);
 
   // Notify interested parties that we've uninstalled this extension.
   NotificationService::current()->Notify(
@@ -1784,6 +1788,17 @@ void ExtensionService::UntrackTerminatedExtension(const std::string& id) {
       return;
     }
   }
+}
+
+const Extension* ExtensionService::GetTerminatedExtension(
+    const std::string& id) {
+  std::string lowercase_id = StringToLowerASCII(id);
+  for (ExtensionList::const_iterator iter = terminated_extensions_.begin();
+       iter != terminated_extensions_.end(); ++iter) {
+    if ((*iter)->id() == lowercase_id)
+      return *iter;
+  }
+  return NULL;
 }
 
 const Extension* ExtensionService::GetWebStoreApp() {
