@@ -3831,6 +3831,12 @@
    Memcheck:Cond
    fun:_ZN2v88internal18StackFrameIterator12SingletonForENS0_10StackFrame4TypeE
 }
+{
+   bug_73828
+   Memcheck:Leak
+   ...
+   fun:_ZN20GpuProcessHostUIShim14GetForRendererEi
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
