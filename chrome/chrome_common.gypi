@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -27,6 +27,8 @@
           'common/about_handler.h',
           'common/app_mode_common_mac.h',
           'common/app_mode_common_mac.mm',
+          'common/auto_start_linux.cc',
+          'common/auto_start_linux.h',
           'common/autofill_messages.cc',
           'common/autofill_messages.h',
           'common/bindings_policy.h',
