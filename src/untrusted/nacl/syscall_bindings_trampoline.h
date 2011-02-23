@@ -49,6 +49,10 @@ extern void nacl_post_syscall_hook();
 /* files */
 /* ============================================================ */
 
+typedef int (*TYPE_nacl_dup)(int oldfd);
+
+typedef int (*TYPE_nacl_dup2)(int oldfd, int newfd);
+
 typedef int (*TYPE_nacl_read) (int desc, void *buf, size_t count);
 
 typedef int (*TYPE_nacl_close) (int desc);

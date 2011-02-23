@@ -17,6 +17,7 @@ env.FilterOut(CCFLAGS=['-pedantic'])
 sources_for_standard_interfaces = [
     'clock.c',
     'close.c',
+    'dup.c',
     '_exit.c',
     'fstat.c',
     'getdents.c',
