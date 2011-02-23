@@ -36,6 +36,7 @@
 #include "ppapi/c/dev/pp_video_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_flash.h"
+#include "ppapi/c/private/ppb_flash_net_connector.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileChooserCompletion.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileChooserParams.h"
@@ -50,6 +51,7 @@
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_flash_impl.h"
+#include "webkit/plugins/ppapi/ppb_flash_net_connector_impl.h"
 
 #if defined(OS_MACOSX)
 #include "chrome/renderer/render_thread.h"

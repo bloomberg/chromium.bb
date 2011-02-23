@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/common/common_param_traits.h"
-#include "ppapi/c/private/ppb_flash.h"
+#include "ppapi/c/private/ppb_flash_net_connector.h"
 
 #define IPC_MESSAGE_IMPL
 #include "chrome/common/pepper_messages.h"

@@ -4,7 +4,7 @@
 
 // TODO(viettrungluu): See the comment in corresponding .h file.
 
-#include "ppapi/cpp/private/flash.h"
+#include "ppapi/cpp/private/flash_net_connector.h"
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/completion_callback.h"

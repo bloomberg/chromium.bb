@@ -12,7 +12,7 @@
 #include "base/process.h"
 #include "chrome/browser/browser_message_filter.h"
 #include "ipc/ipc_channel_proxy.h"
-#include "ppapi/c/private/ppb_flash.h"
+#include "ppapi/c/private/ppb_flash_net_connector.h"
 
 class Profile;
 class URLRequestContextGetter;

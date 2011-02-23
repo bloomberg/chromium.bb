@@ -16,7 +16,8 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/host_resolver.h"
 #include "net/url_request/url_request_context.h"
-#include "webkit/plugins/ppapi/ppb_flash_impl.h"
+#include "ppapi/c/private/ppb_flash_net_connector.h"
+#include "webkit/plugins/ppapi/ppb_flash_net_connector_impl.h"
 
 #if defined(ENABLE_FLAPPER_HACKS)
 #include <netdb.h>

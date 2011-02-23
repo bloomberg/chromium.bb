@@ -112,7 +112,7 @@
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_util.h"
-#include "ppapi/c/private/ppb_flash.h"
+#include "ppapi/c/private/ppb_flash_net_connector.h"
 #include "skia/ext/bitmap_platform_device.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityCache.h"

@@ -72,7 +72,6 @@ class SkBitmap;
 class URLPattern;
 struct ContextMenuParams;
 struct EditCommand;
-struct PP_Flash_NetAddress;
 struct ResourceResponseHead;
 struct SyncLoadResult;
 struct RendererPreferences;

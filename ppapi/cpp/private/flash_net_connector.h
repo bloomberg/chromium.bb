@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(viettrungluu): This (and the .cc file) contain C++ wrappers for some
-// things in ppapi/c/private/ppb_flash.h. This is currently not used in (or even
-// compiled with) Chromium.
+// TODO(viettrungluu): This (and the .cc file) contain C++ wrappers for things
+// in ppapi/c/private/ppb_flash_net_connector.h. This is currently not used in
+// (or even compiled with) Chromium.
 
-#ifndef PPAPI_CPP_PRIVATE_FLASH_H_
-#define PPAPI_CPP_PRIVATE_FLASH_H_
+#ifndef PPAPI_CPP_PRIVATE_FLASH_NET_CONNECTOR_H_
+#define PPAPI_CPP_PRIVATE_FLASH_NET_CONNECTOR_H_
 
-#include "ppapi/c/private/ppb_flash.h"
+#include "ppapi/c/private/ppb_flash_net_connector.h"
 #include "ppapi/cpp/resource.h"
 
 namespace pp {
@@ -39,4 +39,4 @@ class NetConnector : public Resource {
 }  // namespace flash
 }  // namespace pp
 
-#endif  // PPAPI_CPP_PRIVATE_FLASH_H_
+#endif  // PPAPI_CPP_PRIVATE_FLASH_NET_CONNECTOR_H_
