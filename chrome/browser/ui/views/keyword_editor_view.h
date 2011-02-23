@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,9 +9,9 @@
 #include <Windows.h>
 
 #include "base/string16.h"
-#include "chrome/browser/search_engines/edit_search_engine_controller.h"
-#include "chrome/browser/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/search_engines/template_url_model_observer.h"
+#include "chrome/browser/ui/search_engines/edit_search_engine_controller.h"
+#include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
 #include "views/controls/button/button.h"
 #include "views/controls/table/table_view_observer.h"
 #include "views/view.h"

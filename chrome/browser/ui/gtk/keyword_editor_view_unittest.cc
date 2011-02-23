@@ -14,8 +14,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
-#include "chrome/browser/search_engines/template_url_table_model.h"
 #include "chrome/browser/ui/gtk/gtk_tree.h"
+#include "chrome/browser/ui/search_engines/template_url_table_model.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

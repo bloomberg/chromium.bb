@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/search_engines/edit_search_engine_controller.h"
+#include "chrome/browser/ui/search_engines/edit_search_engine_controller.h"
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"

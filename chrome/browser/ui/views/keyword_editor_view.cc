@@ -13,7 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
-#include "chrome/browser/search_engines/template_url_table_model.h"
+#include "chrome/browser/ui/search_engines/template_url_table_model.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/browser/ui/views/first_run_search_engine_view.h"
 #include "chrome/common/pref_names.h"

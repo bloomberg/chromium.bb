@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/search_engines/keyword_editor_controller.h"
+#include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -10,7 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
-#include "chrome/browser/search_engines/template_url_table_model.h"
+#include "chrome/browser/ui/search_engines/template_url_table_model.h"
 #include "chrome/common/pref_names.h"
 
 KeywordEditorController::KeywordEditorController(Profile* profile)

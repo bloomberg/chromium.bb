@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@ class TemplateURL;
 #import "base/mac/cocoa_protocols.h"
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/search_engines/edit_search_engine_controller.h"
+#include "chrome/browser/ui/search_engines/edit_search_engine_controller.h"
 
 // This controller presents a dialog that allows a user to add or edit a search
 // engine. If constructed with a nil |templateURL| then it is an add operation,

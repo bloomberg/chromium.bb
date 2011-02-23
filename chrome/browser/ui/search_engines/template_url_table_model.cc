@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/search_engines/template_url_table_model.h"
+#include "chrome/browser/ui/search_engines/template_url_table_model.h"
 
 #include "base/callback.h"
 #include "base/i18n/rtl.h"
