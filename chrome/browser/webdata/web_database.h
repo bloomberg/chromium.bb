@@ -338,6 +338,9 @@ class WebDatabase {
   bool InitAutofillTable();
   bool InitAutofillDatesTable();
   bool InitAutoFillProfilesTable();
+  bool InitAutoFillProfileNamesTable();
+  bool InitAutoFillProfileEmailsTable();
+  bool InitAutoFillProfilePhonesTable();
   bool InitCreditCardsTable();
   bool InitTokenServiceTable();
   bool InitWebAppIconsTable();
