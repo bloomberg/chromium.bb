@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -152,6 +152,8 @@ Directory::PersistedKernelInfo::PersistedKernelInfo()
     reset_download_progress(ModelTypeFromInt(i));
   }
   autofill_migration_state = NOT_DETERMINED;
+  memset(&autofill_migration_debug_info, 0,
+         sizeof(autofill_migration_debug_info));
 }
 
 Directory::PersistedKernelInfo::~PersistedKernelInfo() {}
@@ -479,7 +481,6 @@ bool Directory::ReindexId(EntryKernel* const entry, const Id& new_id) {
 
 void Directory::ReindexParentId(EntryKernel* const entry,
                                 const Id& new_parent_id) {
-
   ScopedKernelLock lock(this);
   if (entry->ref(IS_DEL)) {
     entry->put(PARENT_ID, new_parent_id);
