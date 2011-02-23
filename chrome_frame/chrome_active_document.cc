@@ -250,6 +250,17 @@ STDMETHODIMP ChromeActiveDocument::Load(BOOL fully_avalable,
   DCHECK(info);
   if (info && !info->GetUrl().empty()) {
     url = info->GetUrl();
+    if (mgr) {
+      // If the original URL contains an anchor, then the URL queried
+      // from the protocol sink wrapper does not contain the anchor. To
+      // workaround this we retrieve the anchor from the navigation manager
+      // and append it to the url retrieved from the protocol sink wrapper.
+      GURL url_for_anchor(mgr->url());
+      if (url_for_anchor.has_ref()) {
+        url += L"#";
+        url += UTF8ToWide(url_for_anchor.ref());
+      }
+    }
   } else {
     // If the original URL contains an anchor, then the URL queried
     // from the moniker does not contain the anchor. To workaround
