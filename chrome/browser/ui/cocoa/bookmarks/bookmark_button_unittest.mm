@@ -53,6 +53,9 @@
   didDragToTrashCount_++;
 }
 
+- (void)bookmarkDragDidEnd:(BookmarkButton*)button {
+}
+
 @end
 
 namespace {

@@ -2064,6 +2064,11 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   }
 }
 
+- (void)bookmarkDragDidEnd:(BookmarkButton*)button {
+  [self closeFolderAndStopTrackingMenus];
+}
+
+
 #pragma mark BookmarkButtonControllerProtocol
 
 // Close all bookmark folders.  "Folder" here is the fake menu for

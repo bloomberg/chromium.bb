@@ -179,6 +179,10 @@ NSString* const kBookmarkPulseFlagKey = @"BookmarkPulseFlagKey";
 - (void)draggedImage:(NSImage *)anImage
              endedAt:(NSPoint)aPoint
            operation:(NSDragOperation)operation {
+  // Inform delegate of drag source that we're finished dragging,
+  // so it can close auto-opened bookmark folders etc.
+  [delegate_ bookmarkDragDidEnd:self];
+  // Tell delegate if it should delete us.
   if (operation & NSDragOperationDelete) {
     dragEndScreenLocation_ = aPoint;
     [delegate_ didDragBookmarkToTrash:self];

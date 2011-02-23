@@ -50,6 +50,11 @@ class ThemeProvider;
 // The delegate can use this event to delete the bookmark.
 - (void)didDragBookmarkToTrash:(BookmarkButton*)button;
 
+// This is called after the drag has finished, for any reason.
+// We particularly need this so we can hide bookmark folder menus and stop
+// doing that hover thing.
+- (void)bookmarkDragDidEnd:(BookmarkButton*)button;
+
 @end
 
 

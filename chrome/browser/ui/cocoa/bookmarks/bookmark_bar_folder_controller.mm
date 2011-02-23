@@ -1277,6 +1277,11 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   }
 }
 
+- (void)bookmarkDragDidEnd:(BookmarkButton*)button {
+  [barController_ bookmarkDragDidEnd:button];
+}
+
+
 #pragma mark BookmarkButtonControllerProtocol
 
 // Recursively close all bookmark folders.
