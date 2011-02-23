@@ -35,7 +35,8 @@ done ---
 - Change the "Locale support" section to #if 0
 - For good measure, change the LIBXSLT_DEFAULT_PLUGINS_PATH() define to "NULL"
 
-Current version: 1.1.26
+Current version: 1.1.26, plus the following patches:
+- A fix to get more compact generated IDs (http://git.gnome.org/browse/libxslt/commit/?id=ecb6bcb8d1b7e44842edde3929f412d46b40c89f)
 
 
 To import a new snapshot of libxslt:
