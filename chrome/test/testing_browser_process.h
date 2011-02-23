@@ -130,6 +130,7 @@ class TestingBrowserProcess : public BrowserProcess {
 
   void SetPrefService(PrefService* pref_service);
   void SetGoogleURLTracker(GoogleURLTracker* google_url_tracker);
+  void SetProfileManager(ProfileManager* profile_manager);
 
  private:
   NotificationService notification_service_;
@@ -141,6 +142,7 @@ class TestingBrowserProcess : public BrowserProcess {
   PrefService* pref_service_;
   scoped_ptr<policy::BrowserPolicyConnector> browser_policy_connector_;
   scoped_ptr<GoogleURLTracker> google_url_tracker_;
+  scoped_ptr<ProfileManager> profile_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingBrowserProcess);
 };

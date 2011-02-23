@@ -7,11 +7,12 @@
 #include "base/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/google/google_url_tracker.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/dummy_configuration_policy_provider.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "ui/base/clipboard/clipboard.h"
 
 TestingBrowserProcess::TestingBrowserProcess()
@@ -62,7 +63,11 @@ WatchDogThread* TestingBrowserProcess::watchdog_thread() {
 }
 
 ProfileManager* TestingBrowserProcess::profile_manager() {
-  return NULL;
+  return profile_manager_.get();
+}
+
+void TestingBrowserProcess::SetProfileManager(ProfileManager* profile_manager) {
+  profile_manager_.reset(profile_manager);
 }
 
 PrefService* TestingBrowserProcess::local_state() {

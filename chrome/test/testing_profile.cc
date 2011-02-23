@@ -375,12 +375,16 @@ bool TestingProfile::IsOffTheRecord() {
   return off_the_record_;
 }
 
+void TestingProfile::SetOffTheRecordProfile(Profile* profile) {
+  off_the_record_profile_.reset(profile);
+}
+
 Profile* TestingProfile::GetOffTheRecordProfile() {
-  return NULL;
+  return off_the_record_profile_.get();
 }
 
 bool TestingProfile::HasOffTheRecordProfile() {
-  return false;
+  return off_the_record_profile_.get() != NULL;
 }
 
 Profile* TestingProfile::GetOriginalProfile() {

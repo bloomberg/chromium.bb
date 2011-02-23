@@ -134,6 +134,8 @@ class TestingProfile : public Profile {
     off_the_record_ = off_the_record;
   }
   virtual bool IsOffTheRecord();
+  // Assumes ownership.
+  virtual void SetOffTheRecordProfile(Profile* profile);
   virtual Profile* GetOffTheRecordProfile();
 
   virtual void DestroyOffTheRecordProfile() {}
@@ -356,6 +358,7 @@ class TestingProfile : public Profile {
   std::wstring id_;
 
   bool off_the_record_;
+  scoped_ptr<Profile> off_the_record_profile_;
 
   // Did the last session exit cleanly? Default is true.
   bool last_session_exited_cleanly_;

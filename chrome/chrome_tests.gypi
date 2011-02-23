@@ -1275,6 +1275,7 @@
         'browser/extensions/convert_user_script_unittest.cc',
         'browser/extensions/convert_web_app_unittest.cc',
         'browser/extensions/default_apps_unittest.cc',
+        'browser/extensions/extension_event_router_forwarder_unittest.cc',
         'browser/extensions/extension_icon_manager_unittest.cc',
         'browser/extensions/extension_info_map_unittest.cc',
         'browser/extensions/extension_menu_manager_unittest.cc',

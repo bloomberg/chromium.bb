@@ -949,6 +949,8 @@
         'browser/extensions/extension_event_names.h',
         'browser/extensions/extension_event_router.cc',
         'browser/extensions/extension_event_router.h',
+        'browser/extensions/extension_event_router_forwarder.cc',
+        'browser/extensions/extension_event_router_forwarder.h',
         'browser/extensions/extension_function.cc',
         'browser/extensions/extension_function.h',
         'browser/extensions/extension_function_dispatcher.cc',

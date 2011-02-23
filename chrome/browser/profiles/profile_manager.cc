@@ -139,6 +139,18 @@ Profile* ProfileManager::GetProfile(const FilePath& profile_dir) {
   return GetProfile(profile_dir, true);
 }
 
+bool ProfileManager::IsValidProfile(Profile* profile) {
+  for (iterator i = begin(); i != end(); ++i) {
+    if (*i == profile)
+      return true;
+    if ((*i)->HasOffTheRecordProfile() &&
+        (*i)->GetOffTheRecordProfile() == profile) {
+      return true;
+    }
+  }
+  return false;
+}
+
 Profile* ProfileManager::GetProfile(
     const FilePath& profile_dir, bool init_extensions) {
   // If the profile is already loaded (e.g., chrome.exe launched twice), just
@@ -160,6 +172,10 @@ Profile* ProfileManager::GetProfile(
     DCHECK(result);
   }
   return profile;
+}
+
+void ProfileManager::RegisterProfile(Profile* profile) {
+  profiles_.insert(profiles_.end(), profile);
 }
 
 bool ProfileManager::AddProfile(Profile* profile, bool init_extensions) {

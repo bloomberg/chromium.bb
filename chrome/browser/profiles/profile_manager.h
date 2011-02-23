@@ -44,6 +44,10 @@ class ProfileManager : public base::NonThreadSafe,
   // otherwise it will create and manage it.
   Profile* GetProfile(const FilePath& profile_dir);
 
+  // Returns true if the profile pointer is known to point to an existing
+  // profile.
+  bool IsValidProfile(Profile* profile);
+
   // Returns a profile for a specific profile directory within the user data
   // dir with the option of controlling whether extensions are initialized
   // or not.  This will return an existing profile it had already been created,
@@ -100,10 +104,15 @@ class ProfileManager : public base::NonThreadSafe,
   static Profile* CreateProfile(const FilePath& path);
 
  private:
+  friend class ExtensionEventRouterForwarderTest;
+
   // Hooks to suspend/resume per-profile network traffic.
   // These must be called on the IO thread.
   static void SuspendProfile(Profile*);
   static void ResumeProfile(Profile*);
+
+  // Helper method for unit tests to inject |profile| into the ProfileManager.
+  void RegisterProfile(Profile* profile);
 
   // Adds a pre-existing Profile object to the set managed by this
   // ProfileManager.  This ProfileManager takes ownership of the Profile.
