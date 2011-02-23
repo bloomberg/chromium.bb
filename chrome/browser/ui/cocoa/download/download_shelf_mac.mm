@@ -38,3 +38,7 @@ void DownloadShelfMac::Close() {
   [shelf_controller_ hide:nil];
   browser_->UpdateDownloadShelfVisibility(false);
 }
+
+Browser* DownloadShelfMac::browser() const {
+  return browser_;
+}

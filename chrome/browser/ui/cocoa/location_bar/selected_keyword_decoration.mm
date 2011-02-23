@@ -26,6 +26,8 @@ SelectedKeywordDecoration::SelectedKeywordDecoration(NSFont* font)
   SetColors(border_color, background_color, [NSColor blackColor]);
 }
 
+SelectedKeywordDecoration::~SelectedKeywordDecoration() {}
+
 CGFloat SelectedKeywordDecoration::GetWidthForSpace(CGFloat width) {
   const CGFloat full_width =
       GetWidthForImageAndLabel(search_image_, full_string_);

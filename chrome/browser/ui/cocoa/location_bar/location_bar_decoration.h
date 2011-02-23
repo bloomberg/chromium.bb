@@ -28,12 +28,8 @@ class LocationBarDecoration {
   virtual ~LocationBarDecoration() {}
 
   // Determines whether the decoration is visible.
-  virtual bool IsVisible() const {
-    return visible_;
-  }
-  virtual void SetVisible(bool visible) {
-    visible_ = visible;
-  }
+  virtual bool IsVisible() const;
+  virtual void SetVisible(bool visible);
 
   // Decorations can change their size to fit the available space.
   // Returns the width the decoration will use in the space allotted,
@@ -45,36 +41,36 @@ class LocationBarDecoration {
   virtual void DrawInFrame(NSRect frame, NSView* control_view);
 
   // Returns the tooltip for this decoration, return |nil| for no tooltip.
-  virtual NSString* GetToolTip() { return nil; }
+  virtual NSString* GetToolTip();
 
   // Decorations which do not accept mouse events are treated like the
   // field's background for purposes of selecting text.  When such
   // decorations are adjacent to the text area, they will show the
   // I-beam cursor.  Decorations which do accept mouse events will get
   // an arrow cursor when the mouse is over them.
-  virtual bool AcceptsMousePress() { return false; }
+  virtual bool AcceptsMousePress();
 
   // Determine if the item can act as a drag source.
-  virtual bool IsDraggable() { return false; }
+  virtual bool IsDraggable();
 
   // The image to drag.
-  virtual NSImage* GetDragImage() { return nil; }
+  virtual NSImage* GetDragImage();
 
   // Return the place within the decoration's frame where the
   // |GetDragImage()| comes from.  This is used to make sure the image
   // appears correctly under the mouse while dragging.  |frame|
   // matches the frame passed to |DrawInFrame()|.
-  virtual NSRect GetDragImageFrame(NSRect frame) { return NSZeroRect; }
+  virtual NSRect GetDragImageFrame(NSRect frame);
 
   // The pasteboard to drag.
-  virtual NSPasteboard* GetDragPasteboard() { return nil; }
+  virtual NSPasteboard* GetDragPasteboard();
 
   // Called on mouse down.  Return |false| to indicate that the press
   // was not processed and should be handled by the cell.
-  virtual bool OnMousePressed(NSRect frame) { return false; }
+  virtual bool OnMousePressed(NSRect frame);
 
   // Called to get the right-click menu, return |nil| for no menu.
-  virtual NSMenu* GetMenu() { return nil; }
+  virtual NSMenu* GetMenu();
 
   // Width returned by |GetWidthForSpace()| when the item should be
   // omitted for this width;

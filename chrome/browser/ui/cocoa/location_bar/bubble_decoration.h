@@ -19,7 +19,7 @@ class BubbleDecoration : public LocationBarDecoration {
  public:
   // |font| will be used when drawing the label, and cannot be |nil|.
   BubbleDecoration(NSFont* font);
-  ~BubbleDecoration();
+  virtual ~BubbleDecoration();
 
   // Setup the drawing parameters.
   NSImage* GetImage();

@@ -8,6 +8,15 @@
 
 const CGFloat LocationBarDecoration::kOmittedWidth = 0.0;
 
+bool LocationBarDecoration::IsVisible() const {
+  return visible_;
+}
+
+void LocationBarDecoration::SetVisible(bool visible) {
+  visible_ = visible;
+}
+
+
 CGFloat LocationBarDecoration::GetWidthForSpace(CGFloat width) {
   NOTREACHED();
   return kOmittedWidth;
@@ -15,4 +24,36 @@ CGFloat LocationBarDecoration::GetWidthForSpace(CGFloat width) {
 
 void LocationBarDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
   NOTREACHED();
+}
+
+NSString* LocationBarDecoration::GetToolTip() {
+  return nil;
+}
+
+bool LocationBarDecoration::AcceptsMousePress() {
+  return false;
+}
+
+bool LocationBarDecoration::IsDraggable() {
+  return false;
+}
+
+NSImage* LocationBarDecoration::GetDragImage() {
+  return nil;
+}
+
+NSRect LocationBarDecoration::GetDragImageFrame(NSRect frame) {
+  return NSZeroRect;
+}
+
+NSPasteboard* LocationBarDecoration::GetDragPasteboard() {
+  return nil;
+}
+
+bool LocationBarDecoration::OnMousePressed(NSRect frame) {
+  return false;
+}
+
+NSMenu* LocationBarDecoration::GetMenu() {
+  return nil;
 }

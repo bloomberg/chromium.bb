@@ -66,13 +66,9 @@ class LocationBarViewMac : public AutocompleteEditController,
   virtual void InvalidatePageActions();
   virtual void SaveStateToContents(TabContents* contents);
   virtual void Revert();
-  virtual const AutocompleteEditView* location_entry() const {
-    return edit_view_.get();
-  }
-  virtual AutocompleteEditView* location_entry() {
-    return edit_view_.get();
-  }
-  virtual LocationBarTesting* GetLocationBarForTesting() { return this; }
+  virtual const AutocompleteEditView* location_entry() const;
+  virtual AutocompleteEditView* location_entry();
+  virtual LocationBarTesting* GetLocationBarForTesting();
 
   // Overridden from LocationBarTesting:
   virtual int PageActionCount();

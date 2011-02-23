@@ -94,6 +94,7 @@
         'browser/sync/syncable/syncable_mock.cc',
         'browser/sync/syncable/syncable_mock.h',
         'browser/ui/browser.h',
+        'browser/ui/cocoa/browser_test_helper.cc',
         'browser/ui/cocoa/browser_test_helper.h',
         'browser/ui/tab_contents/test_tab_contents_wrapper.cc',
         'browser/ui/tab_contents/test_tab_contents_wrapper.h',

@@ -27,7 +27,7 @@ class StarDecoration : public ImageDecoration {
   NSPoint GetBubblePointInFrame(NSRect frame);
 
   // Implement |LocationBarDecoration|.
-  virtual bool AcceptsMousePress() { return true; }
+  virtual bool AcceptsMousePress();
   virtual bool OnMousePressed(NSRect frame);
   virtual NSString* GetToolTip();
 

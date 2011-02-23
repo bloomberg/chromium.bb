@@ -27,6 +27,7 @@ class AcceleratedSurfaceContainerMac;
 class AcceleratedSurfaceContainerManagerMac {
  public:
   AcceleratedSurfaceContainerManagerMac();
+  ~AcceleratedSurfaceContainerManagerMac();
 
   // Allocates a new "fake" PluginWindowHandle, which is used as the
   // key for the other operations.

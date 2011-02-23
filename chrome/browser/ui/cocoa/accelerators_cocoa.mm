@@ -49,6 +49,8 @@ AcceleratorsCocoa::AcceleratorsCocoa() {
   }
 }
 
+AcceleratorsCocoa::~AcceleratorsCocoa() {}
+
 // static
 AcceleratorsCocoa* AcceleratorsCocoa::GetInstance() {
   return Singleton<AcceleratorsCocoa>::get();

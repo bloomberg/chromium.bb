@@ -15,6 +15,9 @@ AcceleratedSurfaceContainerManagerMac::AcceleratedSurfaceContainerManagerMac()
       gpu_rendering_active_(false) {
 }
 
+AcceleratedSurfaceContainerManagerMac::
+    ~AcceleratedSurfaceContainerManagerMac() {}
+
 gfx::PluginWindowHandle
 AcceleratedSurfaceContainerManagerMac::AllocateFakePluginWindowHandle(
     bool opaque, bool root) {

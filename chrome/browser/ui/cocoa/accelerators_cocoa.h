@@ -38,7 +38,7 @@ class AcceleratorsCocoa {
   friend struct DefaultSingletonTraits<AcceleratorsCocoa>;
 
   AcceleratorsCocoa();
-  ~AcceleratorsCocoa() {}
+  ~AcceleratorsCocoa();
 
   AcceleratorCocoaMap accelerators_;
 

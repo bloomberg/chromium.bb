@@ -26,58 +26,19 @@
 // navigation_controller_unittest.cc, ..
 class BrowserTestHelper {
  public:
-  BrowserTestHelper()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        file_thread_(new BrowserThread(BrowserThread::FILE, &message_loop_)),
-        io_thread_(new BrowserThread(BrowserThread::IO, &message_loop_)) {
-    profile_.reset(new TestingProfile());
-    profile_->CreateBookmarkModel(true);
-    profile_->BlockUntilBookmarkModelLoaded();
+  BrowserTestHelper();
+  virtual ~BrowserTestHelper();
 
-    // TODO(shess): These are needed in case someone creates a browser
-    // window off of browser_.  pkasting indicates that other
-    // platforms use a stub |BrowserWindow| and thus don't need to do
-    // this.
-    // http://crbug.com/39725
-    profile_->CreateAutocompleteClassifier();
-    profile_->CreateTemplateURLModel();
-
-    browser_.reset(new Browser(Browser::TYPE_NORMAL, profile_.get()));
-  }
-
-  virtual ~BrowserTestHelper() {
-    // Delete the testing profile on the UI thread. But first release the
-    // browser, since it may trigger accesses to the profile upon destruction.
-    browser_.reset();
-
-    // Drop any new tasks for the IO and FILE threads.
-    io_thread_.reset();
-    file_thread_.reset();
-
-    message_loop_.DeleteSoon(FROM_HERE, profile_.release());
-    message_loop_.RunAllPending();
-  }
-
-  virtual TestingProfile* profile() const { return profile_.get(); }
+  virtual TestingProfile* profile() const;
   Browser* browser() const { return browser_.get(); }
 
   // Creates the browser window. To close this window call |CloseBrowserWindow|.
   // Do NOT call close directly on the window.
-  BrowserWindow* CreateBrowserWindow() {
-    browser_->CreateBrowserWindow();
-    return browser_->window();
-  }
+  BrowserWindow* CreateBrowserWindow();
 
   // Closes the window for this browser. This must only be called after
   // CreateBrowserWindow().
-  void CloseBrowserWindow() {
-    // Check to make sure a window was actually created.
-    DCHECK(browser_->window());
-    browser_->CloseAllTabs();
-    browser_->CloseWindow();
-    // |browser_| will be deleted by its BrowserWindowController.
-    ignore_result(browser_.release());
-  }
+  void CloseBrowserWindow();
 
  private:
   scoped_ptr<TestingProfile> profile_;

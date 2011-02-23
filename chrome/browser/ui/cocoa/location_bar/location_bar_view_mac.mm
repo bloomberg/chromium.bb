@@ -381,6 +381,18 @@ void LocationBarViewMac::Revert() {
   edit_view_->RevertAll();
 }
 
+const AutocompleteEditView* LocationBarViewMac::location_entry() const {
+    return edit_view_.get();
+  }
+
+AutocompleteEditView* LocationBarViewMac::location_entry() {
+    return edit_view_.get();
+  }
+
+LocationBarTesting* LocationBarViewMac::GetLocationBarForTesting() {
+  return this;
+}
+
 // TODO(pamg): Change all these, here and for other platforms, to size_t.
 int LocationBarViewMac::PageActionCount() {
   return static_cast<int>(page_action_decorations_.size());

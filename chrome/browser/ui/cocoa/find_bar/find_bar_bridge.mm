@@ -20,6 +20,20 @@ FindBarBridge::~FindBarBridge() {
   [cocoa_controller_ release];
 }
 
+void FindBarBridge::SetFindBarController(
+    FindBarController* find_bar_controller) {
+  find_bar_controller_ = find_bar_controller;
+}
+
+FindBarController* FindBarBridge::GetFindBarController() const {
+  DCHECK(find_bar_controller_);
+  return find_bar_controller_;
+}
+
+FindBarTesting* FindBarBridge::GetFindBarTesting() {
+  return this;
+}
+
 void FindBarBridge::Show(bool animate) {
   bool really_animate = animate && !disable_animations_during_testing_;
   [cocoa_controller_ showFindBar:(really_animate ? YES : NO)];

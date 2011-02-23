@@ -45,18 +45,11 @@ class FindBarBridge : public FindBar,
     return cocoa_controller_;
   }
 
-  virtual void SetFindBarController(FindBarController* find_bar_controller) {
-    find_bar_controller_ = find_bar_controller;
-  }
+  virtual void SetFindBarController(FindBarController* find_bar_controller);
 
-  virtual FindBarController* GetFindBarController() const {
-    DCHECK(find_bar_controller_);
-    return find_bar_controller_;
-  }
+  virtual FindBarController* GetFindBarController() const;
 
-  virtual FindBarTesting* GetFindBarTesting() {
-    return this;
-  }
+  virtual FindBarTesting* GetFindBarTesting();
 
   // Methods from FindBar.
   virtual void Show(bool animate);
