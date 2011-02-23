@@ -67,7 +67,6 @@ const char kAboutShorthangURL[] = "about:shorthang";
 const char kAboutSyncURL[] = "about:sync";
 const char kAboutSyncInternalsURL[] = "about:sync-internals";
 const char kAboutTermsURL[] = "about:terms";
-const char kAboutVaporwareURL[] = "about:vaporware";
 const char kAboutVersionURL[] = "about:version";
 
 // Use an obfuscated URL to make this nondiscoverable, we only want this

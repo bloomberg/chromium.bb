@@ -136,6 +136,7 @@ const char kOSCreditsPath[] = "os-credits";
 
 // Add path here to be included in about:about
 const char *kAllAboutPaths[] = {
+  kAboutPath,
   kAppCacheInternalsPath,
   kBlobInternalsPath,
   kCachePath,
@@ -261,43 +262,35 @@ class ChromeOSAboutVersionHandler {
 // Individual about handlers ---------------------------------------------------
 
 std::string AboutAbout() {
-  std::string html;
-  html.append("<html><head><title>About Pages</title></head><body>\n");
-  html.append("<h2>List of About pages</h2><ul>\n");
-  for (size_t i = 0; i < arraysize(kAllAboutPaths); i++) {
-    if (kAllAboutPaths[i] == kAppCacheInternalsPath ||
-        kAllAboutPaths[i] == kBlobInternalsPath ||
-        kAllAboutPaths[i] == kCachePath ||
-#if defined(OS_WIN)
-        kAllAboutPaths[i] == kConflictsPath ||
-#endif
-        kAllAboutPaths[i] == kFlagsPath ||
-        kAllAboutPaths[i] == kGpuPath ||
-        kAllAboutPaths[i] == kNetInternalsPath ||
-        kAllAboutPaths[i] == kPluginsPath) {
-      html.append("<li><a href='chrome://");
-    } else {
-      html.append("<li><a href='chrome://about/");
+  std::string html("<html><head><title>About Pages</title></head>\n"
+      "<body><h2>List of About pages</h2>\n<ul>");
+  std::vector<std::string> paths(AboutPaths());
+  for (std::vector<std::string>::const_iterator i = paths.begin();
+       i != paths.end(); ++i) {
+    html += "<li><a href='chrome://";
+    if ((*i != kAppCacheInternalsPath) &&
+        (*i != kBlobInternalsPath) &&
+        (*i != kCachePath) &&
+  #if defined(OS_WIN)
+        (*i != kConflictsPath) &&
+  #endif
+        (*i != kFlagsPath) &&
+        (*i != kGpuPath) &&
+        (*i != kNetInternalsPath) &&
+        (*i != kPluginsPath)) {
+      html += "about/";
     }
-    html.append(kAllAboutPaths[i]);
-    html.append("/'>about:");
-    html.append(kAllAboutPaths[i]);
-    html.append("</a>\n");
+    html += *i + "/'>about:" + *i + "</a></li>\n";
   }
   const char *debug[] = { "crash", "kill", "hang", "shorthang",
                           "gpucrash", "gpuhang" };
-  html.append("</ul><h2>For Debug</h2>");
-  html.append("</ul><p>The following pages are for debugging purposes only. "
-              "Because they crash or hang the renderer, they're not linked "
-              "directly; you can type them into the address bar if you need "
-              "them.</p><ul>");
-  for (size_t i = 0; i < arraysize(debug); i++) {
-    html.append("<li>");
-    html.append("about:");
-    html.append(debug[i]);
-    html.append("\n");
-  }
-  html.append("</ul></body></html>");
+  html += "</ul>\n<h2>For Debug</h2>\n"
+      "<p>The following pages are for debugging purposes only. Because they "
+      "crash or hang the renderer, they're not linked directly; you can type "
+      "them into the address bar if you need them.</p>\n<ul>";
+  for (size_t i = 0; i < arraysize(debug); i++)
+    html += "<li>about:" + std::string(debug[i]) + "</li>\n";
+  html += "</ul>\n</body></html>";
   return html;
 }
 
@@ -1030,9 +1023,8 @@ bool WillHandleBrowserAboutURL(GURL* url, Profile* profile) {
   }
 #endif
 
-  // Rewrite about:flags and about:vaporware to chrome://flags/.
-  if (LowerCaseEqualsASCII(url->spec(), chrome::kAboutFlagsURL) ||
-      LowerCaseEqualsASCII(url->spec(), chrome::kAboutVaporwareURL)) {
+  // Rewrite about:flags to chrome://flags/.
+  if (LowerCaseEqualsASCII(url->spec(), chrome::kAboutFlagsURL)) {
     *url = GURL(chrome::kChromeUIFlagsURL);
     return true;
   }
@@ -1135,4 +1127,12 @@ bool HandleNonNavigationAboutURL(const GURL& url) {
 #endif  // OFFICIAL_BUILD
 
   return false;
+}
+
+std::vector<std::string> AboutPaths() {
+  std::vector<std::string> paths;
+  paths.reserve(arraysize(kAllAboutPaths));
+  for (size_t i = 0; i < arraysize(kAllAboutPaths); i++)
+    paths.push_back(kAllAboutPaths[i]);
+  return paths;
 }

@@ -82,7 +82,9 @@ class InstantTest : public InProcessBrowserTest {
   // Type a character to get instant to trigger.
   void SetupLocationBar() {
     FindLocationBar();
-    location_bar_->location_entry()->SetUserText(ASCIIToUTF16("a"));
+    // "a" triggers the "about:" provider.  "b" begins the "bing.com" keyword.
+    // "c" might someday trigger a "chrome:" provider.
+    location_bar_->location_entry()->SetUserText(ASCIIToUTF16("d"));
   }
 
   // Waits for preview to be shown.
@@ -108,7 +110,7 @@ class InstantTest : public InProcessBrowserTest {
 
     // When the page loads, the initial searchBox values are set and only a
     // resize will have been sent.
-    ASSERT_EQ("true 0 0 0 1 a false a false 1 1",
+    ASSERT_EQ("true 0 0 0 1 d false d false 1 1",
               GetSearchStateAsString(preview_));
   }
 
@@ -290,9 +292,9 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnChangeEvent) {
   ASSERT_NO_FATAL_FAILURE(SetupLocationBar());
   ASSERT_NO_FATAL_FAILURE(SetupPreview());
 
-  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"abc"));
+  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"def"));
 
-  ASSERT_EQ(ASCIIToUTF16("abcdef"), location_bar_->location_entry()->GetText());
+  ASSERT_EQ(ASCIIToUTF16("defghi"), location_bar_->location_entry()->GetText());
 
   // Make sure the url that will get committed when we press enter matches that
   // of the default search provider.
@@ -301,11 +303,11 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnChangeEvent) {
   ASSERT_TRUE(default_turl);
   ASSERT_TRUE(default_turl->url());
   EXPECT_EQ(default_turl->url()->ReplaceSearchTerms(
-                *default_turl, ASCIIToUTF16("abcdef"), 0, string16()),
+                *default_turl, ASCIIToUTF16("defghi"), 0, string16()),
             browser()->instant()->GetCurrentURL().spec());
 
   // Check that the value is reflected and onchange is called.
-  EXPECT_EQ("true 0 0 1 2 a false abc false 3 3",
+  EXPECT_EQ("true 0 0 1 2 d false def false 3 3",
             GetSearchStateAsString(preview_));
 }
 
@@ -316,9 +318,9 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsArrayOfStrings) {
   ASSERT_NO_FATAL_FAILURE(SetupLocationBar());
   ASSERT_NO_FATAL_FAILURE(SetupPreview());
 
-  SetSuggestionsJavascriptArgument(preview_, "['abcde', 'unused']");
-  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"abc"));
-  EXPECT_STR_EQ("abcde", GetSuggestion());
+  SetSuggestionsJavascriptArgument(preview_, "['defgh', 'unused']");
+  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"def"));
+  EXPECT_STR_EQ("defgh", GetSuggestion());
 }
 
 IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsEmptyArray) {
@@ -329,7 +331,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsEmptyArray) {
   ASSERT_NO_FATAL_FAILURE(SetupPreview());
 
   SetSuggestionsJavascriptArgument(preview_, "[]");
-  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"abc"));
+  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"def"));
   EXPECT_STR_EQ("", GetSuggestion());
 }
 
@@ -342,9 +344,9 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsValidJson) {
 
   SetSuggestionsJavascriptArgument(
       preview_,
-      "{suggestions:[{value:'abcdefg'},{value:'unused'}]}");
-  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"abc"));
-  EXPECT_STR_EQ("abcdefg", GetSuggestion());
+      "{suggestions:[{value:'defghij'},{value:'unused'}]}");
+  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"def"));
+  EXPECT_STR_EQ("defghij", GetSuggestion());
 }
 
 IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsInvalidSuggestions) {
@@ -356,8 +358,8 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsInvalidSuggestions) {
 
   SetSuggestionsJavascriptArgument(
       preview_,
-      "{suggestions:{value:'abcdefg'}}");
-  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"abc"));
+      "{suggestions:{value:'defghi'}}");
+  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"def"));
   EXPECT_STR_EQ("", GetSuggestion());
 }
 
@@ -369,7 +371,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsEmptyJson) {
   ASSERT_NO_FATAL_FAILURE(SetupPreview());
 
   SetSuggestionsJavascriptArgument(preview_, "{}");
-  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"abc"));
+  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"def"));
   EXPECT_STR_EQ("", GetSuggestion());
 }
 
@@ -381,7 +383,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsEmptySuggestions) {
   ASSERT_NO_FATAL_FAILURE(SetupPreview());
 
   SetSuggestionsJavascriptArgument(preview_, "{suggestions:[]}");
-  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"abc"));
+  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"def"));
   EXPECT_STR_EQ("", GetSuggestion());
 }
 
@@ -393,7 +395,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SetSuggestionsEmptySuggestion) {
   ASSERT_NO_FATAL_FAILURE(SetupPreview());
 
   SetSuggestionsJavascriptArgument(preview_, "{suggestions:[{}]}");
-  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"abc"));
+  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"def"));
   EXPECT_STR_EQ("", GetSuggestion());
 }
 
@@ -434,7 +436,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, NonSearchToSearch) {
 
   // Now type in some search text.
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
-  location_bar_->location_entry()->SetUserText(ASCIIToUTF16("abc"));
+  location_bar_->location_entry()->SetUserText(ASCIIToUTF16("def"));
 
   // Wait for the preview to navigate.
   ASSERT_NO_FATAL_FAILURE(WaitForPreviewToNavigate(false));
@@ -466,7 +468,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, NonSearchToSearch) {
 
   // Reset the user text so that the page is told the text changed. We should be
   // able to nuke this once 66104 is fixed.
-  location_bar_->location_entry()->SetUserText(ASCIIToUTF16("abcd"));
+  location_bar_->location_entry()->SetUserText(ASCIIToUTF16("defg"));
 
   // Wait for the renderer to process it.
   ASSERT_NO_FATAL_FAILURE(
@@ -503,7 +505,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_SearchServerDoesntSupportInstant) {
   EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("empty.html"));
   ASSERT_NO_FATAL_FAILURE(FindLocationBar());
-  location_bar_->location_entry()->SetUserText(ASCIIToUTF16("a"));
+  location_bar_->location_entry()->SetUserText(ASCIIToUTF16("d"));
   ASSERT_TRUE(browser()->instant());
   // Because we typed in a search string we should think we're showing instant
   // results.
@@ -553,7 +555,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest,
   ASSERT_TRUE(rwhv->IsShowing());
 
   // Now type in some search text.
-  location_bar_->location_entry()->SetUserText(ASCIIToUTF16("a"));
+  location_bar_->location_entry()->SetUserText(ASCIIToUTF16("d"));
 
   // Instant should still be live.
   ASSERT_TRUE(browser()->instant()->is_displayable());
@@ -581,7 +583,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, ValidHeight) {
   ASSERT_NO_FATAL_FAILURE(SetupLocationBar());
   ASSERT_NO_FATAL_FAILURE(SetupPreview());
 
-  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"abc"));
+  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"def"));
 
   int height;
 
@@ -636,7 +638,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnSubmitEvent) {
   ASSERT_NO_FATAL_FAILURE(SetupLocationBar());
   ASSERT_NO_FATAL_FAILURE(SetupPreview());
 
-  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"abc"));
+  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"def"));
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_RETURN));
 
   // Check that the preview contents have been committed.
@@ -646,7 +648,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnSubmitEvent) {
   ASSERT_TRUE(contents);
 
   // Check that the value is reflected and onsubmit is called.
-  EXPECT_EQ("true 1 0 1 2 a false abcdef true 3 3",
+  EXPECT_EQ("true 1 0 1 2 d false defghi true 3 3",
             GetSearchStateAsString(preview_));
 }
 
@@ -660,7 +662,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnCancelEvent) {
   ASSERT_NO_FATAL_FAILURE(SetupLocationBar());
   ASSERT_NO_FATAL_FAILURE(SetupPreview());
 
-  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"abc"));
+  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"def"));
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::ClickOnView(browser(),
                                                      VIEW_ID_TAB_CONTAINER));
 
@@ -671,6 +673,6 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnCancelEvent) {
   ASSERT_TRUE(contents);
 
   // Check that the value is reflected and oncancel is called.
-  EXPECT_EQ("true 0 1 1 2 a false abc false 3 3",
+  EXPECT_EQ("true 0 1 1 2 d false def false 3 3",
             GetSearchStateAsString(preview_));
 }

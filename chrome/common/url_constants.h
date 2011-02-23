@@ -61,7 +61,6 @@ extern const char kAboutShorthangURL[];
 extern const char kAboutSyncURL[];
 extern const char kAboutSyncInternalsURL[];
 extern const char kAboutTermsURL[];
-extern const char kAboutVaporwareURL[];
 extern const char kAboutVersionURL[];
 
 // chrome: URLs (including schemes). Should be kept in sync with the
