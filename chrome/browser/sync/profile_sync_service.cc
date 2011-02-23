@@ -729,8 +729,13 @@ void ProfileSyncService::OnPassphraseRequired(bool for_decryption) {
     return;
   }
 
-  if (WizardIsVisible()) {
+  if (WizardIsVisible() && for_decryption) {
     wizard_.Step(SyncSetupWizard::ENTER_PASSPHRASE);
+  } else if (WizardIsVisible() && !for_decryption) {
+    // The user is enabling an encrypted data type for the first
+    // time, and we don't even have a default passphrase.  We need
+    // to refresh credentials and show the passphrase migration.
+    SigninForPassphraseMigration(NULL);
   }
 
   NotifyObservers();
@@ -762,6 +767,9 @@ void ProfileSyncService::ShowLoginDialog(gfx::NativeWindow parent_window) {
 
   if (WizardIsVisible()) {
     wizard_.Focus();
+    // Force the wizard to step to the login screen (which will only actually
+    // happen if the transition is valid).
+    wizard_.Step(SyncSetupWizard::GAIA_LOGIN);
     return;
   }
 

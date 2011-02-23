@@ -566,7 +566,8 @@ bool SyncSetupFlow::ShouldAdvance(SyncSetupWizard::State state) {
   switch (state) {
     case SyncSetupWizard::GAIA_LOGIN:
       return current_state_ == SyncSetupWizard::FATAL_ERROR ||
-             current_state_ == SyncSetupWizard::GAIA_LOGIN;
+             current_state_ == SyncSetupWizard::GAIA_LOGIN ||
+             current_state_ == SyncSetupWizard::SETTING_UP;
     case SyncSetupWizard::GAIA_SUCCESS:
       return current_state_ == SyncSetupWizard::GAIA_LOGIN;
     case SyncSetupWizard::CONFIGURE:
