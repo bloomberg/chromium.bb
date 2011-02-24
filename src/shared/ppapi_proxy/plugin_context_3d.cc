@@ -133,9 +133,29 @@ int32_t GetBoundSurfaces(PP_Resource context,
 
 }  // namespace
 
+__thread PP_Resource PluginContext3D::cached_resource = 0;
+__thread gpu::gles2::GLES2Implementation*
+  PluginContext3D::cached_implementation = NULL;
+
 PluginContext3D::PluginContext3D() : instance_id_(0) { }
 
-PluginContext3D::~PluginContext3D() { }
+PluginContext3D::~PluginContext3D() {
+  // Invalidate the cache.
+  cached_resource = 0;
+  cached_implementation = NULL;
+}
+
+// static
+gpu::gles2::GLES2Implementation* PluginContext3D::implFromResourceSlow(
+    PP_Resource context) {
+  // For performance reasons, we don't error-check the context, but crash on
+  // NULL instead.
+  gpu::gles2::GLES2Implementation* impl =
+      PluginResource::GetAs<PluginContext3D>(context)->impl();
+  cached_resource = context;
+  cached_implementation = impl;
+  return impl;
+}
 
 
 bool PluginContext3D::InitFromBrowserResource(PP_Resource res) {

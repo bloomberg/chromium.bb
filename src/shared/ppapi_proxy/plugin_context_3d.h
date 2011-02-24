@@ -44,12 +44,27 @@ class PluginContext3D : public PluginResource {
   PP_Instance instance_id() { return instance_id_; }
   void set_instance_id(PP_Instance instance_id) { instance_id_ = instance_id; }
 
+  static inline gpu::gles2::GLES2Implementation* implFromResource(
+      PP_Resource context) {
+    if (cached_resource == context && cached_implementation != NULL)
+      return cached_implementation;
+
+    return implFromResourceSlow(context);
+  }
+
+
  private:
+  static __thread PP_Resource cached_resource;
+  static __thread gpu::gles2::GLES2Implementation* cached_implementation;
+
   // GLES2 Implementation objects.
   scoped_ptr<gpu::CommandBuffer> command_buffer_;
   scoped_ptr<gpu::gles2::GLES2Implementation> gles2_implementation_;
   scoped_ptr<gpu::gles2::GLES2CmdHelper> gles2_helper_;
   PP_Instance instance_id_;
+
+  static gpu::gles2::GLES2Implementation* implFromResourceSlow(
+      PP_Resource context);
 
   IMPLEMENT_RESOURCE(PluginContext3D);
   NACL_DISALLOW_COPY_AND_ASSIGN(PluginContext3D);
