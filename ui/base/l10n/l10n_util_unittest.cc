@@ -310,26 +310,26 @@ TEST_F(L10nUtilTest, UpperLower) {
   const string16 expected_upper(ASCIIToUTF16("TEXT WITH UPPER & LOWER CASE."));
 
   string16 result = l10n_util::ToLower(mixed);
-  EXPECT_EQ(result, expected_lower);
+  EXPECT_EQ(expected_lower, result);
 
   result = l10n_util::ToUpper(mixed);
-  EXPECT_EQ(result, expected_upper);
+  EXPECT_EQ(expected_upper, result);
 }
 
 TEST_F(L10nUtilTest, LocaleDisplayName) {
   // TODO(jungshik): Make this test more extensive.
   // Test zh-CN and zh-TW are treated as zh-Hans and zh-Hant.
   string16 result = l10n_util::GetDisplayNameForLocale("zh-CN", "en", false);
-  EXPECT_EQ(result, ASCIIToUTF16("Chinese (Simplified Han)"));
+  EXPECT_EQ(ASCIIToUTF16("Chinese (Simplified Han)"), result);
 
   result = l10n_util::GetDisplayNameForLocale("zh-TW", "en", false);
-  EXPECT_EQ(result, ASCIIToUTF16("Chinese (Traditional Han)"));
+  EXPECT_EQ(ASCIIToUTF16("Chinese (Traditional Han)"), result);
 
   result = l10n_util::GetDisplayNameForLocale("pt-BR", "en", false);
-  EXPECT_EQ(result, ASCIIToUTF16("Portuguese (Brazil)"));
+  EXPECT_EQ(ASCIIToUTF16("Portuguese (Brazil)"), result);
 
   result = l10n_util::GetDisplayNameForLocale("es-419", "en", false);
-  EXPECT_EQ(result, ASCIIToUTF16("Spanish (Latin America and the Caribbean)"));
+  EXPECT_EQ(ASCIIToUTF16("Spanish (Latin America)"), result);
 }
 
 TEST_F(L10nUtilTest, GetParentLocales) {

@@ -155,7 +155,7 @@ TEST(LanguageOptionsHandlerTest, GetLanguageList) {
   ASSERT_TRUE(entry->GetString("displayName", &display_name));
   ASSERT_TRUE(entry->GetString("nativeDisplayName", &native_display_name));
   EXPECT_EQ("es-419", language_code);
-  EXPECT_EQ("Spanish (Latin America and the Caribbean)", display_name);
+  EXPECT_EQ("Spanish (Latin America)", display_name);
   EXPECT_EQ("espa\u00F1ol (Latinoam\u00E9rica y el Caribe)",
             native_display_name);
 }
