@@ -22,9 +22,9 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/ui/options/options_window.h"
+#include "chrome/browser/webui/favicon_source.h"
 #include "chrome/browser/webui/options/dom_options_util.h"
 #include "chrome/browser/webui/options/options_managed_banner_handler.h"
-#include "chrome/browser/webui/web_ui_favicon_source.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "grit/chromium_strings.h"
@@ -114,7 +114,7 @@ void BrowserOptionsHandler::Initialize() {
 
   // Create our favicon data source.
   profile->GetChromeURLDataManager()->AddDataSource(
-      new WebUIFavIconSource(profile));
+      new FavIconSource(profile));
 
   homepage_.Init(prefs::kHomePage, profile->GetPrefs(), NULL);
   default_browser_policy_.Init(prefs::kDefaultBrowserSettingEnabled,

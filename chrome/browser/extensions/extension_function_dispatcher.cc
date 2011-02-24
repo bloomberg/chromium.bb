@@ -51,7 +51,7 @@
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/webui/chrome_url_data_manager.h"
-#include "chrome/browser/webui/web_ui_favicon_source.h"
+#include "chrome/browser/webui/favicon_source.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
@@ -388,10 +388,10 @@ ExtensionFunctionDispatcher::ExtensionFunctionDispatcher(
                                 render_view_host->process()->id());
 
   // If the extension has permission to load chrome://favicon/ resources we need
-  // to make sure that the WebUIFavIconSource is registered with the
+  // to make sure that the FavIconSource is registered with the
   // ChromeURLDataManager.
   if (extension->HasHostPermission(GURL(chrome::kChromeUIFavIconURL))) {
-    WebUIFavIconSource* favicon_source = new WebUIFavIconSource(profile_);
+    FavIconSource* favicon_source = new FavIconSource(profile_);
     profile_->GetChromeURLDataManager()->AddDataSource(favicon_source);
   }
 

@@ -1741,7 +1741,7 @@
         'browser/webui/print_preview_ui_html_source_unittest.cc',
         'browser/webui/shown_sections_handler_unittest.cc',
         'browser/webui/sync_internals_ui_unittest.cc',
-        'browser/webui/web_ui_theme_source_unittest.cc',
+        'browser/webui/theme_source_unittest.cc',
         'browser/webui/web_ui_unittest.cc',
         'browser/web_resource/promo_resource_service_unittest.cc',
         'common/bzip2_unittest.cc',

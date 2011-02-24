@@ -26,7 +26,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/window_snapshot/window_snapshot.h"
-#include "chrome/browser/webui/web_ui_screenshot_source.h"
+#include "chrome/browser/webui/screenshot_source.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
@@ -214,7 +214,7 @@ class BugReportHandler : public WebUIMessageHandler,
   void CloseFeedbackTab();
 
   TabContents* tab_;
-  WebUIScreenshotSource* screenshot_source_;
+  ScreenshotSource* screenshot_source_;
 
   BugReportData* bug_report_;
   std::string target_tab_url_;
@@ -456,7 +456,7 @@ void BugReportHandler::ClobberScreenshotsSource() {
   // setting the screenshot to NULL, effectively disabling the source
   // TODO(rkc): Once there is a method to 'remove' a source, change this code
   tab_->profile()->GetChromeURLDataManager()->AddDataSource(
-      new WebUIScreenshotSource(NULL));
+      new ScreenshotSource(NULL));
 
   // clobber last screenshot
   if (browser::last_screenshot_png)
@@ -466,7 +466,7 @@ void BugReportHandler::ClobberScreenshotsSource() {
 void BugReportHandler::SetupScreenshotsSource() {
   // If we don't already have a screenshot source object created, create one.
   if (!screenshot_source_)
-    screenshot_source_ = new WebUIScreenshotSource(
+    screenshot_source_ = new ScreenshotSource(
         browser::last_screenshot_png);
 
   // Add the source to the data manager.

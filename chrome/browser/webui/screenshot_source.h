@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEBUI_WEB_UI_SCREENSHOT_SOURCE_H_
-#define CHROME_BROWSER_WEBUI_WEB_UI_SCREENSHOT_SOURCE_H_
+#ifndef CHROME_BROWSER_WEBUI_SCREENSHOT_SOURCE_H_
+#define CHROME_BROWSER_WEBUI_SCREENSHOT_SOURCE_H_
 
 #include <string>
 #include <vector>
@@ -13,9 +13,9 @@
 
 // ScreenshotSource is the data source that serves screenshots (saved
 // or current) to the bug report html ui
-class WebUIScreenshotSource : public ChromeURLDataManager::DataSource {
+class ScreenshotSource : public ChromeURLDataManager::DataSource {
  public:
-  explicit WebUIScreenshotSource(
+  explicit ScreenshotSource(
       std::vector<unsigned char>* current_screenshot);
 
   // Called when the network layer has requested a resource underneath
@@ -29,11 +29,11 @@ class WebUIScreenshotSource : public ChromeURLDataManager::DataSource {
   std::vector<unsigned char> GetScreenshot(const std::string& path);
 
  private:
-  virtual ~WebUIScreenshotSource();
+  virtual ~ScreenshotSource();
 
   std::vector<unsigned char> current_screenshot_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebUIScreenshotSource);
+  DISALLOW_COPY_AND_ASSIGN(ScreenshotSource);
 };
 
-#endif  // CHROME_BROWSER_WEBUI_WEB_UI_SCREENSHOT_SOURCE_H_
+#endif  // CHROME_BROWSER_WEBUI_SCREENSHOT_SOURCE_H_

@@ -35,9 +35,9 @@
 #include "chrome/browser/webui/ntp_login_handler.h"
 #include "chrome/browser/webui/ntp_resource_cache.h"
 #include "chrome/browser/webui/shown_sections_handler.h"
+#include "chrome/browser/webui/theme_source.h"
 #include "chrome/browser/webui/tips_handler.h"
 #include "chrome/browser/webui/value_helper.h"
-#include "chrome/browser/webui/web_ui_theme_source.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
@@ -418,7 +418,7 @@ void NewTabUI::Observe(NotificationType type,
 
 void NewTabUI::InitializeCSSCaches() {
   Profile* profile = GetProfile();
-  WebUIThemeSource* theme = new WebUIThemeSource(profile);
+  ThemeSource* theme = new ThemeSource(profile);
   profile->GetChromeURLDataManager()->AddDataSource(theme);
 }
 

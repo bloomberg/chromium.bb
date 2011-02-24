@@ -6,17 +6,17 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
-#include "chrome/browser/webui/web_ui_theme_source.h"
+#include "chrome/browser/webui/theme_source.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/testing_profile.h"
 #include "grit/theme_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // A mock ThemeSource (so we can override SendResponse to get at its data).
-class MockThemeSource : public WebUIThemeSource {
+class MockThemeSource : public ThemeSource {
  public:
   explicit MockThemeSource(Profile* profile)
-      : WebUIThemeSource(profile),
+      : ThemeSource(profile),
         result_request_id_(-1),
         result_data_size_(0) {
   }

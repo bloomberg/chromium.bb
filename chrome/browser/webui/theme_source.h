@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEBUI_WEB_UI_THEME_SOURCE_H_
-#define CHROME_BROWSER_WEBUI_WEB_UI_THEME_SOURCE_H_
+#ifndef CHROME_BROWSER_WEBUI_THEME_SOURCE_H_
+#define CHROME_BROWSER_WEBUI_THEME_SOURCE_H_
 #pragma once
 
 #include <string>
@@ -13,9 +13,9 @@
 class Profile;
 class RefCountedBytes;
 
-class WebUIThemeSource : public ChromeURLDataManager::DataSource {
+class ThemeSource : public ChromeURLDataManager::DataSource {
  public:
-  explicit WebUIThemeSource(Profile* profile);
+  explicit ThemeSource(Profile* profile);
 
   // Called when the network layer has requested a resource underneath
   // the path we registered.
@@ -30,7 +30,7 @@ class WebUIThemeSource : public ChromeURLDataManager::DataSource {
   virtual bool ShouldReplaceExistingSource() const;
 
  protected:
-  virtual ~WebUIThemeSource();
+  virtual ~ThemeSource();
 
  private:
   // Fetch and send the theme bitmap.
@@ -42,7 +42,7 @@ class WebUIThemeSource : public ChromeURLDataManager::DataSource {
   // We grab the CSS early so we don't have to go back to the UI thread later.
   scoped_refptr<RefCountedBytes> css_bytes_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebUIThemeSource);
+  DISALLOW_COPY_AND_ASSIGN(ThemeSource);
 };
 
-#endif  // CHROME_BROWSER_WEBUI_WEB_UI_THEME_SOURCE_H_
+#endif  // CHROME_BROWSER_WEBUI_THEME_SOURCE_H_

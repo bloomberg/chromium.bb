@@ -27,7 +27,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/webui/web_ui_favicon_source.h"
+#include "chrome/browser/webui/favicon_source.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/jstemplate_builder.h"
@@ -211,7 +211,7 @@ WebUIMessageHandler* MediaplayerHandler::Attach(WebUI* web_ui) {
   // Create our favicon data source.
   Profile* profile = web_ui->GetProfile();
   profile->GetChromeURLDataManager()->AddDataSource(
-      new WebUIFavIconSource(profile));
+      new FavIconSource(profile));
 
   return WebUIMessageHandler::Attach(web_ui);
 }

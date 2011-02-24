@@ -20,7 +20,7 @@
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/webui/web_ui_favicon_source.h"
+#include "chrome/browser/webui/favicon_source.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
@@ -151,7 +151,7 @@ WebUIMessageHandler* SlideshowHandler::Attach(WebUI* web_ui) {
   profile_ = web_ui->GetProfile();
   // Create our favicon data source.
   profile_->GetChromeURLDataManager()->AddDataSource(
-      new WebUIFavIconSource(profile_));
+      new FavIconSource(profile_));
   return WebUIMessageHandler::Attach(web_ui);
 }
 

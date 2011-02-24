@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEBUI_WEB_UI_THUMBNAIL_SOURCE_H_
-#define CHROME_BROWSER_WEBUI_WEB_UI_THUMBNAIL_SOURCE_H_
+#ifndef CHROME_BROWSER_WEBUI_THUMBNAIL_SOURCE_H_
+#define CHROME_BROWSER_WEBUI_THUMBNAIL_SOURCE_H_
 #pragma once
 
 #include <string>
@@ -21,9 +21,9 @@ class TopSites;
 
 // ThumbnailSource is the gateway between network-level chrome: requests for
 // thumbnails and the history/top-sites backend that serves these.
-class WebUIThumbnailSource : public ChromeURLDataManager::DataSource {
+class ThumbnailSource : public ChromeURLDataManager::DataSource {
  public:
-  explicit WebUIThumbnailSource(Profile* profile);
+  explicit ThumbnailSource(Profile* profile);
 
   // Called when the network layer has requested a resource underneath
   // the path we registered.
@@ -36,7 +36,7 @@ class WebUIThumbnailSource : public ChromeURLDataManager::DataSource {
   virtual MessageLoop* MessageLoopForRequestPath(const std::string& path) const;
 
  private:
-  virtual ~WebUIThumbnailSource();
+  virtual ~ThumbnailSource();
 
   // Send the default thumbnail when we are missing a real one.
   void SendDefaultThumbnail(int request_id);
@@ -48,7 +48,7 @@ class WebUIThumbnailSource : public ChromeURLDataManager::DataSource {
   // TopSites.
   scoped_refptr<history::TopSites> top_sites_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebUIThumbnailSource);
+  DISALLOW_COPY_AND_ASSIGN(ThumbnailSource);
 };
 
-#endif  // CHROME_BROWSER_WEBUI_WEB_UI_THUMBNAIL_SOURCE_H_
+#endif  // CHROME_BROWSER_WEBUI_THUMBNAIL_SOURCE_H_

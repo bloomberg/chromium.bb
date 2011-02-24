@@ -40,7 +40,7 @@
 #include "chrome/browser/webui/options/personal_options_handler.h"
 #include "chrome/browser/webui/options/search_engine_manager_handler.h"
 #include "chrome/browser/webui/options/stop_syncing_handler.h"
-#include "chrome/browser/webui/web_ui_theme_source.h"
+#include "chrome/browser/webui/theme_source.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/time_format.h"
@@ -222,7 +222,7 @@ OptionsUI::OptionsUI(TabContents* contents)
   contents->profile()->GetChromeURLDataManager()->AddDataSource(html_source);
 
   // Set up the chrome://theme/ source.
-  WebUIThemeSource* theme = new WebUIThemeSource(contents->profile());
+  ThemeSource* theme = new ThemeSource(contents->profile());
   contents->profile()->GetChromeURLDataManager()->AddDataSource(theme);
 
 #if defined(OS_CHROMEOS)

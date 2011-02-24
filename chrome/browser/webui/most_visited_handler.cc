@@ -23,9 +23,9 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/webui/chrome_url_data_manager.h"
+#include "chrome/browser/webui/favicon_source.h"
 #include "chrome/browser/webui/new_tab_ui.h"
-#include "chrome/browser/webui/web_ui_favicon_source.h"
-#include "chrome/browser/webui/web_ui_thumbnail_source.h"
+#include "chrome/browser/webui/thumbnail_source.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
@@ -70,10 +70,10 @@ WebUIMessageHandler* MostVisitedHandler::Attach(WebUI* web_ui) {
   pinned_urls_ = profile->GetPrefs()->GetMutableDictionary(
       prefs::kNTPMostVisitedPinnedURLs);
   // Set up our sources for thumbnail and favicon data.
-  WebUIThumbnailSource* thumbnail_src = new WebUIThumbnailSource(profile);
+  ThumbnailSource* thumbnail_src = new ThumbnailSource(profile);
   profile->GetChromeURLDataManager()->AddDataSource(thumbnail_src);
 
-  WebUIFavIconSource* favicon_src = new WebUIFavIconSource(profile);
+  FavIconSource* favicon_src = new FavIconSource(profile);
   profile->GetChromeURLDataManager()->AddDataSource(favicon_src);
 
   // Get notifications when history is cleared.

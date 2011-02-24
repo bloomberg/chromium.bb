@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/webui/web_ui_theme_source.h"
+#include "chrome/browser/webui/theme_source.h"
 
 #include "base/message_loop.h"
 #include "base/ref_counted_memory.h"
@@ -27,21 +27,21 @@ static std::string StripQueryParams(const std::string& path) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WebUIThemeSource, public:
+// ThemeSource, public:
 
-WebUIThemeSource::WebUIThemeSource(Profile* profile)
+ThemeSource::ThemeSource(Profile* profile)
     : DataSource(chrome::kChromeUIThemePath, MessageLoop::current()),
       profile_(profile->GetOriginalProfile()) {
   css_bytes_ = profile_->GetNTPResourceCache()->GetNewTabCSS(
       profile->IsOffTheRecord());
 }
 
-WebUIThemeSource::~WebUIThemeSource() {
+ThemeSource::~ThemeSource() {
 }
 
-void WebUIThemeSource::StartDataRequest(const std::string& path,
-                                        bool is_off_the_record,
-                                        int request_id) {
+void ThemeSource::StartDataRequest(const std::string& path,
+                                   bool is_off_the_record,
+                                   int request_id) {
   // Our path may include cachebuster arguments, so trim them off.
   std::string uncached_path = StripQueryParams(path);
 
@@ -64,7 +64,7 @@ void WebUIThemeSource::StartDataRequest(const std::string& path,
   SendResponse(request_id, NULL);
 }
 
-std::string WebUIThemeSource::GetMimeType(const std::string& path) const {
+std::string ThemeSource::GetMimeType(const std::string& path) const {
   std::string uncached_path = StripQueryParams(path);
 
   if (uncached_path == kNewTabCSSPath ||
@@ -75,7 +75,7 @@ std::string WebUIThemeSource::GetMimeType(const std::string& path) const {
   return "image/png";
 }
 
-MessageLoop* WebUIThemeSource::MessageLoopForRequestPath(
+MessageLoop* ThemeSource::MessageLoopForRequestPath(
     const std::string& path) const {
   std::string uncached_path = StripQueryParams(path);
 
@@ -94,14 +94,14 @@ MessageLoop* WebUIThemeSource::MessageLoopForRequestPath(
   return DataSource::MessageLoopForRequestPath(path);
 }
 
-bool WebUIThemeSource::ShouldReplaceExistingSource() const {
+bool ThemeSource::ShouldReplaceExistingSource() const {
   return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WebUIThemeSource, private:
+// ThemeSource, private:
 
-void WebUIThemeSource::SendThemeBitmap(int request_id, int resource_id) {
+void ThemeSource::SendThemeBitmap(int request_id, int resource_id) {
   if (BrowserThemeProvider::IsThemeableImage(resource_id)) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     ui::ThemeProvider* tp = profile_->GetThemeProvider();
