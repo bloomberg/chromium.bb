@@ -23,7 +23,8 @@ def GetAssemblerFile(env):
 
 asm_env = env.Clone()
 if asm_env.Bit('bitcode'):
-  asm_env.Replace(CC=env['CC_NATIVE'])
+  asm_env.Replace(CC=env['CC_NATIVE'],
+                  OBJSUFFIX='.o')
 asm_obj = asm_env.ComponentObject(GetAssemblerFile(env))
 
 env.ComponentProgram('syscall_return_sandboxing.nexe',

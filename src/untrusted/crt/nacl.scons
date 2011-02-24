@@ -17,8 +17,8 @@ if env.Bit('bitcode'):
   #       all the way down into native code.
   #       As a solution we have a second compiler in the env
   #       that always compiles to native.
-  env.Replace(CC='${CC_NATIVE}')
-
+  env.Replace(CC='${CC_NATIVE}',
+              OBJSUFFIX=".bc")
   crtbegin = env.ComponentObject('crtbegin', ['crtbegin.c'])
   crtend = env.ComponentObject('crtend', ['crtend.c'])
   env.AddObjectToSdk([crtbegin, crtend], is_platform=True)
