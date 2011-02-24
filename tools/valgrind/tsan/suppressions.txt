@@ -396,20 +396,20 @@
   Two writes, same value (ICU gGlobalMutex, gMutexesInUse)
   ThreadSanitizer:Race
   ...
-  fun:umtx_init_4_2
+  fun:umtx_init_46
 }
 
 {
   Two writes, same value (ICU gHeapInUse)
   ThreadSanitizer:Race
-  fun:uprv_malloc_4_2
+  fun:uprv_malloc_46
 }
 
 # Reading a pointer to a mutex being initialized in a concurrent thread.
 {
-  A benign race in umtx_lock_4_2
+  A benign race in umtx_lock_46
   ThreadSanitizer:Race
-  fun:umtx_lock_4_2
+  fun:umtx_lock_46
 }
 
 ############################
