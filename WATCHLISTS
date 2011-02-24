@@ -177,6 +177,9 @@
     'prerender': {
       'filepath': 'chrome/browser/prerender/.*'
     },
+    'chromedriver': {
+      'filepath': 'chrome/test/webdriver|third_party/webdriver'
+    },
   },
 
   'WATCHLISTS': {
@@ -215,7 +218,7 @@
     'layout_tests': ['pam+watch@chromium.org'],
     'tools': ['pam+watch@chromium.org'],
     'tests': ['phajdan.jr@chromium.org'],
-    'automation': ['phajdan.jr@chromium.org'],
+    'automation': ['phajdan.jr@chromium.org', 'kkania@chromium.org'],
     'chrome_frame' : ['amit@chromium.org'],
     'nacl' : ['native-client-reviews@googlegroups.com'],
     'appcache': ['michaeln@chromium.org'],
@@ -242,5 +245,6 @@
     'fileapi': ['kinuko+watch@chromium.org'],
     'pepper_api': ['piman+watch@chromium.org'],
     'prerender': ['cbentzel+watch@chromium.org', 'tburkard+watch@chromium.org'],
+    'chromedriver': ['kkania@chromium.org'],
   },
 }
