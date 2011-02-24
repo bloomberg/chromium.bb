@@ -21,7 +21,6 @@
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/webui/web_ui.h"
-#include "chrome/browser/webui/web_ui_util.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
@@ -341,7 +340,8 @@ void CloudPrintFlowHandler::HandleSendPrintData(const ListValue* args) {
 }
 
 void CloudPrintFlowHandler::HandleSetPageParameters(const ListValue* args) {
-  std::string json(web_ui_util::GetJsonResponseFromFirstArgumentInList(args));
+  std::string json;
+  DCHECK(args->GetString(0, &json));
   if (json.empty())
     return;
 

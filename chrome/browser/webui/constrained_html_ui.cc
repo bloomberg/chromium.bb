@@ -5,10 +5,10 @@
 #include "chrome/browser/webui/constrained_html_ui.h"
 
 #include "base/lazy_instance.h"
+#include "base/values.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/webui/html_dialog_ui.h"
-#include "chrome/browser/webui/web_ui_util.h"
 #include "chrome/common/bindings_policy.h"
 
 static base::LazyInstance<PropertyAccessor<ConstrainedHtmlUIDelegate*> >
@@ -48,8 +48,10 @@ void ConstrainedHtmlUI::OnDialogClose(const ListValue* args) {
   if (!delegate)
     return;
 
-  delegate->GetHtmlDialogUIDelegate()->OnDialogClosed(
-      web_ui_util::GetJsonResponseFromFirstArgumentInList(args));
+  std::string json_retval;
+  DCHECK(args->GetString(0, &json_retval));
+
+  delegate->GetHtmlDialogUIDelegate()->OnDialogClosed(json_retval);
   delegate->OnDialogClose();
 }
 

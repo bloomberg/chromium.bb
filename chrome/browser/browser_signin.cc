@@ -23,7 +23,6 @@
 #include "chrome/browser/webui/chrome_url_data_manager.h"
 #include "chrome/browser/webui/constrained_html_ui.h"
 #include "chrome/browser/webui/html_dialog_ui.h"
-#include "chrome/browser/webui/web_ui_util.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_source.h"
@@ -194,7 +193,8 @@ void BrowserSigninHtml::HandleSigninInit(const ListValue* args) {
 }
 
 void BrowserSigninHtml::HandleSubmitAuth(const ListValue* args) {
-  std::string json(web_ui_util::GetJsonResponseFromFirstArgumentInList(args));
+  std::string json;
+  DCHECK(args->GetString(0, &json));
   scoped_ptr<DictionaryValue> result(static_cast<DictionaryValue*>(
       base::JSONReader::Read(json, false)));
   std::string username;

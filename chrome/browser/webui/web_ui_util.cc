@@ -7,33 +7,10 @@
 #include <vector>
 
 #include "base/base64.h"
-#include "base/logging.h"
-#include "base/values.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/png_codec.h"
 
 namespace web_ui_util {
-
-std::string GetJsonResponseFromFirstArgumentInList(const ListValue* args) {
-  return GetJsonResponseFromArgumentList(args, 0);
-}
-
-std::string GetJsonResponseFromArgumentList(const ListValue* args,
-                                            size_t list_index) {
-  std::string result;
-  if (args->GetSize() <= list_index) {
-    NOTREACHED();
-    return result;
-  }
-
-  Value* value = NULL;
-  if (args->Get(list_index, &value))
-    value->GetAsString(&result);
-  else
-    NOTREACHED();
-
-  return result;
-}
 
 std::string GetImageDataUrl(const SkBitmap& bitmap) {
   std::vector<unsigned char> output;
