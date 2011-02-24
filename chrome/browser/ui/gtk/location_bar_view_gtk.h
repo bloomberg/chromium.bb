@@ -28,6 +28,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/page_transition_types.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/animation/slide_animation.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -144,23 +145,37 @@ class LocationBarViewGtk : public AutocompleteEditController,
   static const GdkColor kBackgroundColor;
 
  private:
-  class ContentSettingImageViewGtk : public InfoBubbleGtkDelegate {
+  class ContentSettingImageViewGtk : public InfoBubbleGtkDelegate,
+                                     public ui::AnimationDelegate {
    public:
     ContentSettingImageViewGtk(ContentSettingsType content_type,
                                const LocationBarViewGtk* parent,
                                Profile* profile);
     virtual ~ContentSettingImageViewGtk();
 
-    GtkWidget* widget() { return event_box_.get(); }
+    GtkWidget* widget() { return alignment_.get(); }
 
     void set_profile(Profile* profile) { profile_ = profile; }
 
     bool IsVisible() { return GTK_WIDGET_VISIBLE(widget()); }
     void UpdateFromTabContents(TabContents* tab_contents);
 
+    // Overridden from ui::AnimationDelegate:
+    virtual void AnimationProgressed(const ui::Animation* animation);
+    virtual void AnimationEnded(const ui::Animation* animation);
+    virtual void AnimationCanceled(const ui::Animation* animation);
+
    private:
+    // Start the process of showing the label.
+    void StartAnimating();
+
+    // Slide the label shut.
+    void CloseAnimation();
+
     CHROMEGTK_CALLBACK_1(ContentSettingImageViewGtk, gboolean, OnButtonPressed,
                          GdkEvent*);
+    CHROMEGTK_CALLBACK_1(ContentSettingImageViewGtk, gboolean, OnExpose,
+                         GdkEventExpose*);
 
     // InfoBubbleDelegate overrides:
     virtual void InfoBubbleClosing(InfoBubbleGtk* info_bubble,
@@ -169,8 +184,13 @@ class LocationBarViewGtk : public AutocompleteEditController,
     scoped_ptr<ContentSettingImageModel> content_setting_image_model_;
 
     // The widgets for this content settings view.
-    OwnedWidgetGtk event_box_;
+    OwnedWidgetGtk alignment_;
+    GtkWidget* event_box_;
+    GtkWidget* hbox_;
     OwnedWidgetGtk image_;
+
+    // Explanatory text ("popup blocked").
+    GtkWidget* label_;
 
     // The owning LocationBarViewGtk.
     const LocationBarViewGtk* parent_;
@@ -180,6 +200,14 @@ class LocationBarViewGtk : public AutocompleteEditController,
 
     // The currently shown info bubble if any.
     ContentSettingBubbleGtk* info_bubble_;
+
+    // When we show explanatory text, we slide it in/out.
+    ui::SlideAnimation animation_;
+
+    // The label's default requisition (cached so we can animate accordingly).
+    GtkRequisition label_req_;
+
+    ScopedRunnableMethodFactory<ContentSettingImageViewGtk> method_factory_;
 
     DISALLOW_COPY_AND_ASSIGN(ContentSettingImageViewGtk);
   };
@@ -365,6 +393,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
   GtkWidget* entry_box_;
 
   // Area on the left shown when in tab to search mode.
+  GtkWidget* tab_to_search_alignment_;
   GtkWidget* tab_to_search_box_;
   GtkWidget* tab_to_search_magnifier_;
   GtkWidget* tab_to_search_full_label_;
