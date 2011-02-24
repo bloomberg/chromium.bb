@@ -10,6 +10,7 @@
 #include "base/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/extensions/extension_io_event_router.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
 #include "chrome/browser/net/pref_proxy_config_service.h"
@@ -253,8 +254,6 @@ void ProfileIOData::ApplyProfileParamsToContext(
   context->set_blob_storage_context(profile_params.blob_storage_context);
   context->set_file_system_context(profile_params.file_system_context);
   context->set_extension_info_map(profile_params.extension_info_map);
-  context->set_extension_io_event_router(
-      profile_params.extension_io_event_router);
   context->set_prerender_manager(profile_params.prerender_manager);
   context->set_protocol_handler_registry(
       profile_params.protocol_handler_registry);

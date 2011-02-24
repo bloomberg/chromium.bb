@@ -15,7 +15,6 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/extensions/extension_info_map.h"
-#include "chrome/browser/extensions/extension_io_event_router.h"
 #include "chrome/browser/extensions/extension_webrequest_api.h"
 #include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
@@ -91,10 +90,6 @@ class ChromeURLRequestContext : public net::URLRequestContext {
     return extension_info_map_;
   }
 
-  const ExtensionIOEventRouter* extension_io_event_router() const {
-    return extension_io_event_router_;
-  }
-
   prerender::PrerenderManager* prerender_manager() {
     return prerender_manager_.get();
   }
@@ -136,9 +131,6 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   void set_extension_info_map(ExtensionInfoMap* map) {
     extension_info_map_ = map;
   }
-  void set_extension_io_event_router(ExtensionIOEventRouter* router) {
-    extension_io_event_router_ = router;
-  }
   void set_prerender_manager(prerender::PrerenderManager* prerender_manager) {
     prerender_manager_ = prerender_manager;
   }
@@ -169,7 +161,6 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;
   // TODO(aa): This should use chrome/common/extensions/extension_set.h.
   scoped_refptr<ExtensionInfoMap> extension_info_map_;
-  scoped_refptr<ExtensionIOEventRouter> extension_io_event_router_;
   scoped_refptr<prerender::PrerenderManager> prerender_manager_;
   scoped_ptr<ChromeURLDataManagerBackend> chrome_url_data_manager_backend_;
   scoped_refptr<ProtocolHandlerRegistry> protocol_handler_registry_;

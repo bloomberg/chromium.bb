@@ -7,25 +7,26 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "net/http/http_network_delegate.h"
+#include "net/base/network_delegate.h"
+
+class ExtensionIOEventRouter;
 
 // ChromeNetworkDelegate is the central point from within the chrome code to
 // add hooks into the network stack.
-class ChromeNetworkDelegate : public net::HttpNetworkDelegate {
+class ChromeNetworkDelegate : public net::NetworkDelegate {
  public:
-  ChromeNetworkDelegate();
+  explicit ChromeNetworkDelegate(
+      ExtensionIOEventRouter* extension_io_event_router);
   ~ChromeNetworkDelegate();
 
-  // net::HttpNetworkDelegate methods:
+ private:
+  // NetworkDelegate methods:
   virtual void OnBeforeURLRequest(net::URLRequest* request);
   virtual void OnSendHttpRequest(net::HttpRequestHeaders* headers);
   virtual void OnResponseStarted(net::URLRequest* request);
   virtual void OnReadCompleted(net::URLRequest* request, int bytes_read);
 
-  // TODO(willchan): Add functions for consumers to register ways to
-  // access/modify the request.
-
- private:
+  ExtensionIOEventRouter* const extension_io_event_router_;
   DISALLOW_COPY_AND_ASSIGN(ChromeNetworkDelegate);
 };
 

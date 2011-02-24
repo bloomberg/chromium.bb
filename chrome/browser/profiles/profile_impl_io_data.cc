@@ -8,10 +8,12 @@
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/extensions/extension_io_event_router.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_cookie_policy.h"
 #include "chrome/browser/net/chrome_dns_cert_provenance_checker_factory.h"
 #include "chrome/browser/net/chrome_net_log.h"
+#include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/sqlite_persistent_cookie_store.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -141,6 +143,12 @@ void ProfileImplIOData::LazyInitializeInternal() const {
   media_request_context_->set_net_log(lazy_params_->io_thread->net_log());
   extensions_request_context_->set_net_log(lazy_params_->io_thread->net_log());
 
+  extension_io_event_router_ = profile_params.extension_io_event_router;
+  network_delegate_.reset(
+      new ChromeNetworkDelegate(extension_io_event_router_));
+  main_request_context_->set_network_delegate(network_delegate_.get());
+  media_request_context_->set_network_delegate(network_delegate_.get());
+
   main_request_context_->set_host_resolver(
       io_thread_globals->host_resolver.get());
   media_request_context_->set_host_resolver(
@@ -153,13 +161,6 @@ void ProfileImplIOData::LazyInitializeInternal() const {
       io_thread_globals->dnsrr_resolver.get());
   media_request_context_->set_dnsrr_resolver(
       io_thread_globals->dnsrr_resolver.get());
-  main_request_context_->set_network_delegate(
-      &io_thread_globals->network_delegate);
-  // TODO(willchan): Enable for media request context.
-#if 0
-  media_request_context_->set_network_delegate(
-      &io_thread_globals->network_delegate);
-#endif
   main_request_context_->set_http_auth_handler_factory(
       io_thread_globals->http_auth_handler_factory.get());
   media_request_context_->set_http_auth_handler_factory(

@@ -14,52 +14,46 @@
 
 namespace {
 
-// Get the event router from the request context. Currently only
-// ChromeURLRequestContexts use a network delegate, so the cast is guaranteed to
-// work.
-const ExtensionIOEventRouter* GetIOEventRouter(
-    net::URLRequestContext* context) {
-  return static_cast<ChromeURLRequestContext*>(context)->
-      extension_io_event_router();
-}
-
 // If the |request| failed due to problems with a proxy, forward the error to
 // the proxy extension API.
-void ForwardProxyErrors(net::URLRequest* request) {
+void ForwardProxyErrors(net::URLRequest* request,
+                        ExtensionIOEventRouter* router) {
   if (request->status().status() == net::URLRequestStatus::FAILED) {
     switch (request->status().os_error()) {
       case net::ERR_PROXY_AUTH_UNSUPPORTED:
       case net::ERR_PROXY_CONNECTION_FAILED:
       case net::ERR_TUNNEL_CONNECTION_FAILED:
         ExtensionProxyEventRouter::GetInstance()->OnProxyError(
-            GetIOEventRouter(request->context()),
-            request->status().os_error());
+            router, request->status().os_error());
     }
   }
 }
 
 }  // namespace
 
-ChromeNetworkDelegate::ChromeNetworkDelegate() {}
+ChromeNetworkDelegate::ChromeNetworkDelegate(
+    ExtensionIOEventRouter* extension_io_event_router)
+    : extension_io_event_router_(extension_io_event_router) {
+  DCHECK(extension_io_event_router);
+}
+
 ChromeNetworkDelegate::~ChromeNetworkDelegate() {}
 
 void ChromeNetworkDelegate::OnBeforeURLRequest(net::URLRequest* request) {
   ExtensionWebRequestEventRouter::GetInstance()->OnBeforeRequest(
-      GetIOEventRouter(request->context()), request->url(), request->method());
+      extension_io_event_router_, request->url(), request->method());
 }
 
 void ChromeNetworkDelegate::OnSendHttpRequest(
     net::HttpRequestHeaders* headers) {
   DCHECK(headers);
-
-  // TODO(willchan): Add Chrome-side hooks to listen / mutate requests here.
 }
 
 void ChromeNetworkDelegate::OnResponseStarted(net::URLRequest* request) {
-  ForwardProxyErrors(request);
+  ForwardProxyErrors(request, extension_io_event_router_);
 }
 
 void ChromeNetworkDelegate::OnReadCompleted(net::URLRequest* request,
                                             int bytes_read) {
-  ForwardProxyErrors(request);
+  ForwardProxyErrors(request, extension_io_event_router_);
 }

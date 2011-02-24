@@ -12,7 +12,6 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/browser_process_sub_thread.h"
-#include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/common/net/predictor_common.h"
 #include "net/base/network_change_notifier.h"
 
@@ -32,6 +31,7 @@ class DnsRRResolver;
 class HostResolver;
 class HttpAuthHandlerFactory;
 class HttpTransactionFactory;
+class NetworkDelegate;
 class ProxyScriptFetcher;
 class ProxyService;
 class SSLConfigService;
@@ -45,6 +45,8 @@ class IOThread : public BrowserProcessSubThread {
     Globals();
     ~Globals();
 
+    // The "system" NetworkDelegate, used for Profile-agnostic network events.
+    scoped_ptr<net::NetworkDelegate> system_network_delegate;
     scoped_ptr<net::HostResolver> host_resolver;
     scoped_ptr<net::CertVerifier> cert_verifier;
     scoped_ptr<net::DnsRRResolver> dnsrr_resolver;
@@ -54,7 +56,6 @@ class IOThread : public BrowserProcessSubThread {
     scoped_ptr<net::HttpTransactionFactory>
         proxy_script_fetcher_http_transaction_factory;
     scoped_ptr<net::URLSecurityManager> url_security_manager;
-    ChromeNetworkDelegate network_delegate;
     scoped_refptr<net::URLRequestContext> proxy_script_fetcher_context;
   };
 

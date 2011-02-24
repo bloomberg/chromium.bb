@@ -37,6 +37,7 @@
 #include "net/base/host_resolver_impl.h"
 #include "net/base/mapped_host_resolver.h"
 #include "net/base/net_util.h"
+#include "net/base/network_delegate.h"
 #include "net/http/http_auth_filter.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_network_layer.h"
@@ -176,6 +177,22 @@ class LoggingNetworkChangeObserver
  private:
   net::NetLog* net_log_;
   DISALLOW_COPY_AND_ASSIGN(LoggingNetworkChangeObserver);
+};
+
+class SystemNetworkDelegate : public net::NetworkDelegate {
+ public:
+  SystemNetworkDelegate() {}
+  ~SystemNetworkDelegate() {}
+
+  // NetworkDelegate methods:
+  // TODO(willchan): Implement these functions!
+  virtual void OnBeforeURLRequest(net::URLRequest* request) {}
+  virtual void OnSendHttpRequest(net::HttpRequestHeaders* headers) {}
+  virtual void OnResponseStarted(net::URLRequest* request) {}
+  virtual void OnReadCompleted(net::URLRequest* request, int bytes_read) {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SystemNetworkDelegate);
 };
 
 scoped_refptr<net::URLRequestContext>
@@ -327,6 +344,7 @@ void IOThread::Init() {
   network_change_observer_.reset(
       new LoggingNetworkChangeObserver(net_log_));
 
+  globals_->system_network_delegate.reset(new SystemNetworkDelegate);
   globals_->host_resolver.reset(
       CreateGlobalHostResolver(net_log_));
   globals_->cert_verifier.reset(new net::CertVerifier);
@@ -347,7 +365,7 @@ void IOThread::Init() {
   session_params.http_auth_handler_factory =
       globals_->http_auth_handler_factory.get();
   // TODO(willchan): Enable for proxy script fetcher context.
-  session_params.network_delegate = NULL;
+  session_params.network_delegate = globals_->system_network_delegate.get();
   session_params.net_log = net_log_;
   session_params.ssl_config_service = globals_->ssl_config_service;
   scoped_refptr<net::HttpNetworkSession> network_session(
