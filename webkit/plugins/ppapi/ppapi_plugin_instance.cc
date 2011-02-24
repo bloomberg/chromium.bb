@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -145,7 +145,8 @@ COMPILE_ASSERT_MATCHING_ENUM(TypeNone, PP_CURSORTYPE_NONE);
 COMPILE_ASSERT_MATCHING_ENUM(TypeNotAllowed, PP_CURSORTYPE_NOTALLOWED);
 COMPILE_ASSERT_MATCHING_ENUM(TypeZoomIn, PP_CURSORTYPE_ZOOMIN);
 COMPILE_ASSERT_MATCHING_ENUM(TypeZoomOut, PP_CURSORTYPE_ZOOMOUT);
-COMPILE_ASSERT_MATCHING_ENUM(TypeCustom, PP_CURSORTYPE_CUSTOM);
+// Do not assert WebCursorInfo::TypeCustom == PP_CURSORTYPE_CUSTOM;
+// PP_CURSORTYPE_CUSTOM is pinned to allow new cursor types.
 
 void RectToPPRect(const gfx::Rect& input, PP_Rect* output) {
   *output = PP_MakeRectFromXYWH(input.x(), input.y(),
@@ -511,6 +512,12 @@ bool PluginInstance::BindGraphics(PP_Resource graphics_id) {
 }
 
 bool PluginInstance::SetCursor(PP_CursorType_Dev type) {
+  if (type == PP_CURSORTYPE_CUSTOM) {
+    // TODO(neb): implement custom cursors.
+    // (Remember that PP_CURSORTYPE_CUSTOM != WebCursorInfo::TypeCustom.)
+    NOTIMPLEMENTED();
+    return false;
+  }
   cursor_.reset(new WebCursorInfo(static_cast<WebCursorInfo::Type>(type)));
   return true;
 }

@@ -1,4 +1,4 @@
-/* Copyright (c) 2010 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -8,6 +8,7 @@
 #include "ppapi/c/pp_macros.h"
 
 enum PP_CursorType_Dev {
+  PP_CURSORTYPE_CUSTOM = -1,
   PP_CURSORTYPE_POINTER = 0,
   PP_CURSORTYPE_CROSS = 1,
   PP_CURSORTYPE_HAND = 2,
@@ -48,8 +49,7 @@ enum PP_CursorType_Dev {
   PP_CURSORTYPE_NONE = 37,
   PP_CURSORTYPE_NOTALLOWED = 38,
   PP_CURSORTYPE_ZOOMIN = 39,
-  PP_CURSORTYPE_ZOOMOUT = 40,
-  PP_CURSORTYPE_CUSTOM = 41
+  PP_CURSORTYPE_ZOOMOUT = 40
 };
 PP_COMPILE_ASSERT_ENUM_SIZE_IN_BYTES(PP_CursorType_Dev, 4);
 
