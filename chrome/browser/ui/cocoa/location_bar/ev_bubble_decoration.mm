@@ -60,6 +60,8 @@ EVBubbleDecoration::EVBubbleDecoration(
   SetColors(border_color, background_color, text_color);
 }
 
+EVBubbleDecoration::~EVBubbleDecoration() {}
+
 void EVBubbleDecoration::SetFullLabel(NSString* label) {
   full_label_.reset([label retain]);
   SetLabel(full_label_);
@@ -113,6 +115,14 @@ NSImage* EVBubbleDecoration::GetDragImage() {
   return location_icon_->GetDragImage();
 }
 
+NSRect EVBubbleDecoration::GetDragImageFrame(NSRect frame) {
+  return GetImageRectInFrame(frame);
+}
+
 bool EVBubbleDecoration::OnMousePressed(NSRect frame) {
   return location_icon_->OnMousePressed(frame);
+}
+
+bool EVBubbleDecoration::AcceptsMousePress() {
+  return true;
 }

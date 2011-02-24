@@ -74,6 +74,10 @@ CGFloat PageActionDecoration::GetWidthForSpace(CGFloat width) {
   return Extension::kPageActionIconMaxSize;
 }
 
+bool PageActionDecoration::AcceptsMousePress() {
+  return true;
+}
+
 // Either notify listeners or show a popup depending on the Page
 // Action.
 bool PageActionDecoration::OnMousePressed(NSRect frame) {

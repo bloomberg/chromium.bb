@@ -52,7 +52,7 @@ class PageActionDecoration : public ImageDecoration,
 
   // Overridden from |LocationBarDecoration|
   virtual CGFloat GetWidthForSpace(CGFloat width);
-  virtual bool AcceptsMousePress() { return true; }
+  virtual bool AcceptsMousePress();
   virtual bool OnMousePressed(NSRect frame);
   virtual NSString* GetToolTip();
   virtual NSMenu* GetMenu();

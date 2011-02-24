@@ -42,6 +42,8 @@ MacPreferencesPolicyProviderDelegate::MacPreferencesPolicyProviderDelegate(
       preferences_(preferences) {
 }
 
+MacPreferencesPolicyProviderDelegate::~MacPreferencesPolicyProviderDelegate() {}
+
 DictionaryValue* MacPreferencesPolicyProviderDelegate::Load() {
   preferences_->AppSynchronize(kCFPreferencesCurrentApplication);
   DictionaryValue* policy = new DictionaryValue;

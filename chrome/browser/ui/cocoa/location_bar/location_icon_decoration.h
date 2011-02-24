@@ -23,10 +23,8 @@ class LocationIconDecoration : public ImageDecoration {
   // Allow dragging the current URL.
   virtual bool IsDraggable();
   virtual NSPasteboard* GetDragPasteboard();
-  virtual NSImage* GetDragImage() { return GetImage(); }
-  virtual NSRect GetDragImageFrame(NSRect frame) {
-    return GetDrawRectInFrame(frame);
-  }
+  virtual NSImage* GetDragImage();
+  virtual NSRect GetDragImageFrame(NSRect frame);
 
   // Get the point where the page info bubble should point within the
   // decoration's frame, in the |owner_|'s coordinates.
@@ -34,7 +32,7 @@ class LocationIconDecoration : public ImageDecoration {
 
   // Show the page info panel on click.
   virtual bool OnMousePressed(NSRect frame);
-  virtual bool AcceptsMousePress() { return true; }
+  virtual bool AcceptsMousePress();
   virtual NSString* GetToolTip();
 
  private:

@@ -24,6 +24,7 @@ class LocationIconDecoration;
 class EVBubbleDecoration : public BubbleDecoration {
  public:
   EVBubbleDecoration(LocationIconDecoration* location_icon, NSFont* font);
+  virtual ~EVBubbleDecoration();
 
   // |GetWidthForSpace()| will set |full_label| as the label, if it
   // fits, else it will set an elided version.
@@ -38,11 +39,9 @@ class EVBubbleDecoration : public BubbleDecoration {
   virtual bool IsDraggable();
   virtual NSPasteboard* GetDragPasteboard();
   virtual NSImage* GetDragImage();
-  virtual NSRect GetDragImageFrame(NSRect frame) {
-    return GetImageRectInFrame(frame);
-  }
+  virtual NSRect GetDragImageFrame(NSRect frame);
   virtual bool OnMousePressed(NSRect frame);
-  virtual bool AcceptsMousePress() { return true; }
+  virtual bool AcceptsMousePress();
 
  private:
   // Keeps a reference to the font for use when eliding.

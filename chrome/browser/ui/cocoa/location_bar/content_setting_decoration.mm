@@ -242,6 +242,10 @@ NSPoint ContentSettingDecoration::GetBubblePointInFrame(NSRect frame) {
                      NSMaxY(draw_frame) - kPopupPointYOffset);
 }
 
+bool ContentSettingDecoration::AcceptsMousePress() {
+  return true;
+}
+
 bool ContentSettingDecoration::OnMousePressed(NSRect frame) {
   // Get host. This should be shared on linux/win/osx medium-term.
   TabContents* tabContents =

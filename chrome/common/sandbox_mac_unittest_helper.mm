@@ -89,6 +89,14 @@ bool MacSandboxTest::RunTestInSandbox(Sandbox::SandboxProcessType sandbox_type,
   return code == 0;
 }
 
+bool MacSandboxTestCase::BeforeSandboxInit() {
+  return true;
+}
+
+void MacSandboxTestCase::SetTestData(const char* test_data) {
+  test_data_ = test_data;
+}
+
 // Given a test name specified by |name| return that test case.
 // If no test case is found for the given name, return NULL.
 MacSandboxTestCase *SandboxTestForName(const char* name) {

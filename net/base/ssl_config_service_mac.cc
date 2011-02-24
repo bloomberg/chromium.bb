@@ -66,12 +66,18 @@ SSLConfigServiceMac::SSLConfigServiceMac(TimeTicks now) : ever_updated_(false) {
   UpdateConfig(now);
 }
 
+void SSLConfigServiceMac::GetSSLConfig(SSLConfig* config) {
+  GetSSLConfigAt(config, base::TimeTicks::Now());
+}
+
 void SSLConfigServiceMac::GetSSLConfigAt(SSLConfig* config, TimeTicks now) {
   if (!ever_updated_ ||
       now - config_time_ > TimeDelta::FromSeconds(kConfigUpdateInterval))
     UpdateConfig(now);
   *config = config_info_;
 }
+
+SSLConfigServiceMac::~SSLConfigServiceMac() {}
 
 // static
 bool SSLConfigServiceMac::GetSSLConfigNow(SSLConfig* config) {

@@ -52,10 +52,22 @@ NSPasteboard* LocationIconDecoration::GetDragPasteboard() {
   return pboard;
 }
 
+NSImage* LocationIconDecoration::GetDragImage() {
+  return GetImage();
+}
+
+NSRect LocationIconDecoration::GetDragImageFrame(NSRect frame) {
+  return GetDrawRectInFrame(frame);
+}
+
 NSPoint LocationIconDecoration::GetBubblePointInFrame(NSRect frame) {
   const NSRect draw_frame = GetDrawRectInFrame(frame);
   return NSMakePoint(NSMidX(draw_frame),
                      NSMaxY(draw_frame) - kBubblePointYOffset);
+}
+
+bool LocationIconDecoration::AcceptsMousePress() {
+  return true;
 }
 
 bool LocationIconDecoration::OnMousePressed(NSRect frame) {

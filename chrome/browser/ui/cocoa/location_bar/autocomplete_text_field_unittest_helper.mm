@@ -27,3 +27,7 @@
 }
 
 @end
+
+MockAutocompleteTextFieldObserver::MockAutocompleteTextFieldObserver() {}
+
+MockAutocompleteTextFieldObserver::~MockAutocompleteTextFieldObserver() {}

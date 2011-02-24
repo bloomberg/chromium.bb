@@ -190,3 +190,25 @@ void StartImportingWithUI(gfx::NativeWindow parent_window,
   }
   [NSApp endModalSession:session];
 }
+
+ImporterObserverBridge::ImporterObserverBridge(
+    ImportProgressDialogController* owner)
+    : owner_(owner) {}
+
+ImporterObserverBridge::~ImporterObserverBridge() {}
+
+void ImporterObserverBridge::ImportItemStarted(importer::ImportItem item) {
+  [owner_ ImportItemStarted:item];
+}
+
+void ImporterObserverBridge::ImportItemEnded(importer::ImportItem item) {
+  [owner_ ImportItemEnded:item];
+}
+
+void ImporterObserverBridge::ImportStarted() {
+  // Not needed for out of process import.
+}
+
+void ImporterObserverBridge::ImportEnded() {
+  [owner_ ImportEnded];
+}

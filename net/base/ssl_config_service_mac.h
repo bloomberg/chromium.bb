@@ -31,15 +31,13 @@ class SSLConfigServiceMac : public SSLConfigService {
   // seconds.  This is cheaper than GetSSLConfigNow and is suitable when
   // we don't need the absolutely current configuration settings.  This
   // method is not thread-safe, so it must be called on the same thread.
-  void GetSSLConfig(SSLConfig* config) {
-    GetSSLConfigAt(config, base::TimeTicks::Now());
-  }
+  virtual void GetSSLConfig(SSLConfig* config);
 
   // Used for testing.
   void GetSSLConfigAt(SSLConfig* config, base::TimeTicks now);
 
  private:
-  virtual ~SSLConfigServiceMac() {}
+  virtual ~SSLConfigServiceMac();
 
   void UpdateConfig(base::TimeTicks now);
 

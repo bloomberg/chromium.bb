@@ -75,7 +75,7 @@ class MacSandboxTestCase {
   // Code that runs in the sandboxed subprocess before the sandbox is
   // initialized.
   // Returning false from this function will cause the entire test case to fail.
-  virtual bool BeforeSandboxInit() { return true; };
+  virtual bool BeforeSandboxInit();
 
   // Code that runs in the sandboxed subprocess when the sandbox has been
   // enabled.
@@ -84,7 +84,7 @@ class MacSandboxTestCase {
 
   // The data that's passed in the |user_data| parameter of
   // RunTest[s]InSandbox() is passed to this function.
-  virtual void SetTestData(const char* test_data) { test_data_ = test_data; }
+  virtual void SetTestData(const char* test_data);
 
  protected:
   std::string test_data_;

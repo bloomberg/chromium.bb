@@ -24,8 +24,6 @@
 - (id)windowWillReturnFieldEditor:(NSWindow *)sender toObject:(id)anObject;
 @end
 
-namespace {
-
 // Allow monitoring calls into AutocompleteTextField's observer.
 // Being in a .h file with an anonymous namespace is strange, but this
 // is here so the mock interface doesn't have to change in multiple
@@ -35,6 +33,9 @@ namespace {
 
 class MockAutocompleteTextFieldObserver : public AutocompleteTextFieldObserver {
  public:
+  MockAutocompleteTextFieldObserver();
+  ~MockAutocompleteTextFieldObserver();
+
   MOCK_METHOD1(SelectionRangeForProposedRange, NSRange(NSRange range));
   MOCK_METHOD1(OnControlKeyChanged, void(bool pressed));
   MOCK_METHOD0(CanCopy, bool());
@@ -53,7 +54,5 @@ class MockAutocompleteTextFieldObserver : public AutocompleteTextFieldObserver {
   MOCK_METHOD1(OnSetFocus, void(bool control_down));
   MOCK_METHOD0(OnKillFocus, void());
 };
-
-}  // namespace
 
 #endif  // CHROME_BROWSER_UI_COCOA_AUTOCOMPLETE_TEXT_FIELD_UNITTEST_HELPER_H_

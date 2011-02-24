@@ -21,6 +21,7 @@ class MacPreferencesPolicyProviderDelegate
   MacPreferencesPolicyProviderDelegate(
       MacPreferences* preferences,
       const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list);
+  virtual ~MacPreferencesPolicyProviderDelegate();
 
   // FileBasedPolicyLoader::Delegate implementation.
   virtual DictionaryValue* Load();

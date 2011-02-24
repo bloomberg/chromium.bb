@@ -68,30 +68,21 @@ class ImporterObserverBridge;
 // C++ -> objc bridge for import status notifications.
 class ImporterObserverBridge : public ImporterHost::Observer {
  public:
-  ImporterObserverBridge(ImportProgressDialogController* owner)
-      : owner_(owner) {}
-  virtual ~ImporterObserverBridge() {}
+  ImporterObserverBridge(ImportProgressDialogController* owner);
+  virtual ~ImporterObserverBridge();
 
   // Invoked when data for the specified item is about to be collected.
-  virtual void ImportItemStarted(importer::ImportItem item) {
-    [owner_ ImportItemStarted:item];
-  }
+  virtual void ImportItemStarted(importer::ImportItem item);
 
   // Invoked when data for the specified item has been collected from the
   // source profile and is now ready for further processing.
-  virtual void ImportItemEnded(importer::ImportItem item) {
-    [owner_ ImportItemEnded:item];
-  }
+  virtual void ImportItemEnded(importer::ImportItem item);
 
   // Invoked when the import begins.
-  virtual void ImportStarted() {
-    // Not needed for out of process import.
-  }
+  virtual void ImportStarted();
 
   // Invoked when the source profile has been imported.
-  virtual void ImportEnded() {
-    [owner_ ImportEnded];
-  }
+  virtual void ImportEnded();
 
  private:
   ImportProgressDialogController* owner_;
