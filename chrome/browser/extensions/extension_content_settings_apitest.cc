@@ -22,7 +22,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentSettings) {
       prefs::kBlockThirdPartyCookies);
   ASSERT_TRUE(pref);
   EXPECT_TRUE(pref->IsExtensionControlled());
-  EXPECT_EQ(false, pref_service->GetBoolean(prefs::kBlockThirdPartyCookies));
+  EXPECT_FALSE(pref_service->GetBoolean(prefs::kBlockThirdPartyCookies));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoContentSettings) {
@@ -43,10 +43,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoContentSettings) {
       otr_prefs->FindPreference(prefs::kBlockThirdPartyCookies);
   ASSERT_TRUE(pref);
   EXPECT_TRUE(pref->IsExtensionControlled());
-  EXPECT_EQ(true, otr_prefs->GetBoolean(prefs::kBlockThirdPartyCookies));
+  EXPECT_TRUE(otr_prefs->GetBoolean(prefs::kBlockThirdPartyCookies));
 
   pref = prefs->FindPreference(prefs::kBlockThirdPartyCookies);
   ASSERT_TRUE(pref);
   EXPECT_FALSE(pref->IsExtensionControlled());
-  EXPECT_EQ(false, prefs->GetBoolean(prefs::kBlockThirdPartyCookies));
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kBlockThirdPartyCookies));
 }
