@@ -50,7 +50,7 @@
 
 #include "chrome/browser/device_orientation/accelerometer_mac.h"
 
-#include <math.h>  // For isfinite.
+#include <math.h>
 #include <sys/sysctl.h>
 
 #include "base/logging.h"
@@ -236,7 +236,7 @@ bool AccelerometerMac::GetOrientation(Orientation* orientation) {
     int size  = kGenericSensor.axis_size;
     int index = sensor_->axis[i].index;
 
-    // Important Note: little endian is assumed as this code is mac-only
+    // Important Note: Little endian is assumed as this code is Mac-only
     //                 and PowerPC is currently not supported.
     memcpy(&sensor_value, &output_record_[index], size);
 
@@ -287,12 +287,18 @@ bool AccelerometerMac::GetOrientation(Orientation* orientation) {
   orientation->beta_  = kRad2deg * atan2(-axis_value[1], axis_value[2]);
   orientation->gamma_ = kRad2deg * asin(axis_value[0]);
 
-  // Make sure that the interval boundaries comply with the specification.
-  if (orientation->beta_ >= 180.0)
-    orientation->beta_  -= 360.0;
-  if (orientation->gamma_ >= 90.0)
-    orientation->gamma_ -= 180.0;
+  // Make sure that the interval boundaries comply with the specification. At
+  // this point, beta is [-180, 180] and gamma is [-90, 90], but the spec has
+  // the upper bound open on both.
+  if (orientation->beta_ == 180.0) {
+    orientation->beta_ = -180.0;  // -180 == 180 (upside-down)
+  }
+  if (orientation->gamma_ == 90.0) {
+    static double just_less_than_90 = nextafter(90, 0);
+    orientation->gamma_ = just_less_than_90;
+  }
 
+  // At this point, DCHECKing is paranoia. Never hurts.
   DCHECK_GE(orientation->beta_, -180.0);
   DCHECK_LT(orientation->beta_,  180.0);
   DCHECK_GE(orientation->gamma_, -90.0);
