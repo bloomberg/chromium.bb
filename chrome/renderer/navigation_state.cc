@@ -39,14 +39,6 @@ void NavigationState::set_alt_error_page_fetcher(
   alt_error_page_fetcher_.reset(f);
 }
 
-bool NavigationState::is_prerendering() const {
-  return is_prerendering_;
-}
-
-void NavigationState::set_is_prerendering(bool is_prerendering) {
-  is_prerendering_ = is_prerendering;
-}
-
 bool NavigationState::was_started_as_prerender() const {
   return was_started_as_prerender_;
 }
@@ -72,7 +64,6 @@ NavigationState::NavigationState(PageTransition::Type transition_type,
       pending_page_id_(pending_page_id),
       pending_history_list_offset_(pending_history_list_offset),
       use_error_page_(false),
-      is_prerendering_(false),
       was_started_as_prerender_(false),
       cache_policy_override_set_(false),
       cache_policy_override_(WebKit::WebURLRequest::UseProtocolCachePolicy),

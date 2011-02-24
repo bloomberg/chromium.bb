@@ -562,6 +562,7 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       navigation_gesture_(NavigationGestureUnknown),
       opened_by_user_gesture_(true),
       opener_suppressed_(false),
+      is_prerendering_(false),
       page_id_(-1),
       last_page_id_sent_to_browser_(-1),
       last_indexed_page_id_(-1),
@@ -1438,8 +1439,7 @@ void RenderView::OnNavigate(const ViewMsg_Navigate_Params& params) {
         navigation_state->set_load_type(NavigationState::NORMAL_LOAD);
       } else {
         navigation_state->set_load_type(NavigationState::PRERENDER_LOAD);
-        navigation_state->set_was_started_as_prerender(true);
-        navigation_state->set_is_prerendering(true);
+        is_prerendering_ = true;
       }
     }
     main_frame->loadRequest(request);
@@ -2740,11 +2740,8 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
   if (info.path.value() == webkit::npapi::kDefaultPluginLibraryName ||
       plugin_setting == CONTENT_SETTING_ALLOW ||
       host_setting == CONTENT_SETTING_ALLOW) {
-    // Delay loading plugins if prerendering main frame.
-    WebDataSource* main_frame_ds = webview()->mainFrame()->dataSource();
-    NavigationState* navigation_state =
-        NavigationState::FromDataSource(main_frame_ds);
-    if (navigation_state->is_prerendering()) {
+    // Delay loading plugins if prerendering.
+    if (is_prerendering_) {
       return CreatePluginPlaceholder(frame,
                                      params,
                                      *group,
@@ -3249,19 +3246,7 @@ void RenderView::didCreateDataSource(WebFrame* frame, WebDataSource* ds) {
         new UserScriptIdleScheduler(this, frame));
   }
 
-  // If the RenderView was prerendering before, it is still prerendering.
-  if (!frame->parent() && content_initiated) {
-    WebDataSource* ds_old = webview()->mainFrame()->dataSource();
-    if (ds_old) {
-      NavigationState* navigation_state =
-          NavigationState::FromDataSource(ds_old);
-      if (navigation_state) {
-        state->set_is_prerendering(navigation_state->is_prerendering());
-        state->set_was_started_as_prerender(
-            navigation_state->was_started_as_prerender());
-      }
-    }
-  }
+  state->set_was_started_as_prerender(is_prerendering_);
 
   ds->setExtraData(state);
 }
@@ -4713,15 +4698,25 @@ void RenderView::OnInstallMissingPlugin() {
 }
 
 void RenderView::OnDisplayPrerenderedPage() {
-  NavigationState* navigation_state = pending_navigation_state_.get();
-  if (!navigation_state) {
-    WebDataSource* ds = webview()->mainFrame()->dataSource();
-    navigation_state = NavigationState::FromDataSource(ds);
-  }
+  DCHECK(is_prerendering_);
+  is_prerendering_ = false;
 
-  DCHECK(navigation_state->is_prerendering());
-  navigation_state->set_is_prerendering(false);
+  // Update NavigationState for histograms.
+  WebDataSource* ds = webview()->mainFrame()->dataSource();
+  NavigationState* navigation_state = NavigationState::FromDataSource(ds);
   navigation_state->set_prerendered_page_display_time(Time::Now());
+
+  // If there is a provisional data source, update its NavigationState, too.
+  WebDataSource* provisional_ds =
+      webview()->mainFrame()->provisionalDataSource();
+  if (provisional_ds) {
+    NavigationState* provisional_navigation_state =
+        NavigationState::FromDataSource(provisional_ds);
+    if (provisional_navigation_state) {
+      provisional_navigation_state->set_prerendered_page_display_time(
+          Time::Now());
+    }
+  }
 }
 
 void RenderView::OnFileChooserResponse(const std::vector<FilePath>& paths) {

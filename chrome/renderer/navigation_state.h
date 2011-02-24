@@ -215,9 +215,6 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
     use_error_page_ = use_error_page;
   }
 
-  bool is_prerendering() const;
-  void set_is_prerendering(bool is_prerendering);
-
   bool was_started_as_prerender() const;
   void set_was_started_as_prerender(bool was_started_as_prerender);
 
@@ -314,11 +311,6 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
   // True if we should use an error page, if the http status code alos indicates
   // an error.
   bool use_error_page_;
-
-  // True if page is being prerendered.  False once prerendered page is
-  // displayed.  Preserved across redirects.  Only set for the main frame's
-  // data source.
-  bool is_prerendering_;
 
   // True if a page load started as a prerender.  Preserved across redirects.
   bool was_started_as_prerender_;

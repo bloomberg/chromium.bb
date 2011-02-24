@@ -1174,6 +1174,9 @@ class RenderView : public RenderWidget,
   // Timer used to delay the updating of nav state (see SyncNavigationState).
   base::OneShotTimer<RenderView> nav_state_sync_timer_;
 
+  // True if the RenderView is currently prerendering a page.
+  bool is_prerendering_;
+
   // Page IDs ------------------------------------------------------------------
   //
   // Page IDs allow the browser to identify pages in each renderer process for
