@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
 <translation id="IDS_STANDARD_FONT_IS_SERIF">false</translation>
-<translation id="IDS_WEB_FONT_FAMILY">Chrome Droid Sans,Droid Sans Fallback Japanese, sans-serif</translation>
+<translation id="IDS_WEB_FONT_FAMILY">Chrome Droid Sans, Droid Sans Japanese, sans-serif</translation>
 <translation id="IDS_FIXED_FONT_FAMILY">IPAGothic</translation>
 <translation id="IDS_SERIF_FONT_FAMILY">IPAPMincho</translation>
 <translation id="IDS_SANS_SERIF_FONT_FAMILY">IPAPGothic</translation>
