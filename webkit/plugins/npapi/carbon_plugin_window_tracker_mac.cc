@@ -9,8 +9,9 @@
 namespace webkit {
 namespace npapi {
 
-CarbonPluginWindowTracker::CarbonPluginWindowTracker() {
-}
+CarbonPluginWindowTracker::CarbonPluginWindowTracker() {}
+
+CarbonPluginWindowTracker::~CarbonPluginWindowTracker() {}
 
 CarbonPluginWindowTracker* CarbonPluginWindowTracker::SharedInstance() {
   static CarbonPluginWindowTracker* tracker = new CarbonPluginWindowTracker();

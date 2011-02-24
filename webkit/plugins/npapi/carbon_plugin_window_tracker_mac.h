@@ -26,8 +26,6 @@ typedef void* OpaquePluginRef;
 // delegates that know what we should claim about the state of the window.
 class __attribute__((visibility("default"))) CarbonPluginWindowTracker {
  public:
-  CarbonPluginWindowTracker();
-
   // Returns the shared window tracker instance.
   static CarbonPluginWindowTracker* SharedInstance();
 
@@ -47,6 +45,10 @@ class __attribute__((visibility("default"))) CarbonPluginWindowTracker {
  private:
   typedef std::map<WindowRef, OpaquePluginRef> WindowToDelegateMap;
   typedef std::map<OpaquePluginRef, WindowRef> DelegateToWindowMap;
+
+  CarbonPluginWindowTracker();
+  ~CarbonPluginWindowTracker();
+
   WindowToDelegateMap window_to_delegate_map_;
   DelegateToWindowMap delegate_to_window_map_;
 
