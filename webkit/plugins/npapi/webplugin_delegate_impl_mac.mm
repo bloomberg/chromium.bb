@@ -383,7 +383,7 @@ bool WebPluginDelegateImpl::PlatformInitialize() {
         // If surface initialization fails for some reason, just continue
         // without any drawing; returning false would be a more confusing user
         // experience (since it triggers a missing plugin placeholder).
-        if (surface_->context()) {
+        if (surface_ && surface_->context()) {
           renderer_ = [[CARenderer rendererWithCGLContext:surface_->context()
                                                   options:NULL] retain];
           [renderer_ setLayer:layer_];
