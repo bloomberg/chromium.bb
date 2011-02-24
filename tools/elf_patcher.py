@@ -27,9 +27,6 @@ def UpdateFile(fname, align, constants):
                              elf.ehdr_ident['osabi'],
                              chr(constants['ELFOSABI_NACL']))
   ehdr_data[0] = StringSubst(ehdr_data[0],
-                             elf.ehdr_ident['osabi'],
-                             chr(constants['ELFOSABI_NACL']))
-  ehdr_data[0] = StringSubst(ehdr_data[0],
                              elf.ehdr_ident['abiversion'],
                              chr(constants['EF_NACL_ABIVERSION']))
   flag_pos = elf.MemberPositionMap(elf.ehdr_member_and_type)['flags']
@@ -40,15 +37,26 @@ def UpdateFile(fname, align, constants):
   open(fname, 'w').write(
       new_hdr + data[len(new_hdr):])
 
+
+# regular unix/linux elf
+CONSTANTS_LINUX_ELF = {
+    'ELFOSABI_NACL': 0,
+    'EF_NACL_ABIVERSION': 0,
+    'EF_NACL_ALIGN_MASK': 0x300000,
+    'EF_NACL_ALIGN_32': 0,
+    }
+
+
 def main(argv):
   try:
-    (opts, args) = getopt.getopt(argv[1:], 'a:h:')
+    (opts, args) = getopt.getopt(argv[1:], 'a:h:l')
   except getopt.error, e:
     print >>sys.stderr, str(e)
     print >>sys.stderr, ('Usage: elf_patcher [-h /path/to/nacl_elf.h]' +
                          ' filename...')
     return 1
   # endtry
+
 
   constants = None
   valid_aligns = ['16', '32', 'LIB']
@@ -60,6 +68,9 @@ def main(argv):
       align = val
     elif opt == '-h':
       constants = nacl_elf_constants.GetNaClElfConstants(val)
+    elif opt == '-l':
+      constants = CONSTANTS_LINUX_ELF
+      align = '32'
     # endif
   # endfor
 
