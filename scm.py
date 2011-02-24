@@ -806,14 +806,19 @@ class SVN(object):
     """
     directory = os.path.abspath(directory)
     try:
-      cur_dir_repo_root = SVN.CaptureInfo(directory)['Repository Root']
+      info = SVN.CaptureInfo(directory)
+      cur_dir_repo_root = info['Repository Root']
+      url = info['URL']
     except gclient_utils.Error:
       return None
     while True:
       parent = os.path.dirname(directory)
       try:
-        if SVN.CaptureInfo(parent)['Repository Root'] != cur_dir_repo_root:
+        info = SVN.CaptureInfo(parent)
+        if (info['Repository Root'] != cur_dir_repo_root or
+            info['URL'] != os.path.dirname(url)):
           break
+        url = info['URL']
       except gclient_utils.Error:
         break
       directory = parent

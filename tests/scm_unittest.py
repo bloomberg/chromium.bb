@@ -85,16 +85,23 @@ class SVNTestCase(BaseSCMTestCase):
   def testGetCheckoutRoot(self):
     self.mox.StubOutWithMock(scm.SVN, 'CaptureInfo')
     self.mox.StubOutWithMock(scm, 'GetCasedPath')
-    scm.os.path.abspath(self.root_dir + 'x').AndReturn(self.root_dir)
-    scm.GetCasedPath(self.root_dir).AndReturn(self.root_dir)
-    result1 = { "Repository Root": "Some root" }
-    scm.SVN.CaptureInfo(self.root_dir).AndReturn(result1)
-    results2 = { "Repository Root": "A different root" }
-    scm.SVN.CaptureInfo(
-        scm.os.path.dirname(self.root_dir)).AndReturn(results2)
+    scm.os.path.abspath = lambda x: x
+    scm.GetCasedPath = lambda x: x
+    scm.SVN.CaptureInfo(self.root_dir + '/foo/bar').AndReturn({
+        'Repository Root': 'svn://svn.chromium.org/chrome',
+        'URL': 'svn://svn.chromium.org/chrome/trunk/src',
+    })
+    scm.SVN.CaptureInfo(self.root_dir + '/foo').AndReturn({
+        'Repository Root': 'svn://svn.chromium.org/chrome',
+        'URL': 'svn://svn.chromium.org/chrome/trunk',
+    })
+    scm.SVN.CaptureInfo(self.root_dir).AndReturn({
+        'Repository Root': 'svn://svn.chromium.org/chrome',
+        'URL': 'svn://svn.chromium.org/chrome/trunk/tools/commit-queue/workdir',
+    })
     self.mox.ReplayAll()
-    self.assertEquals(scm.SVN.GetCheckoutRoot(self.root_dir + 'x'),
-                      self.root_dir)
+    self.assertEquals(scm.SVN.GetCheckoutRoot(self.root_dir + '/foo/bar'),
+                      self.root_dir + '/foo')
 
   def testGetFileInfo(self):
     xml_text = r"""<?xml version="1.0"?>
