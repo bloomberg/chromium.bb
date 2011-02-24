@@ -29,7 +29,8 @@ DllRedirector::DllRedirector() : first_module_handle_(NULL) {
   // TODO(robertshield): Allow for overrides to be taken from the environment.
   std::wstring beacon_name(kSharedMemoryName);
   beacon_name += GetHostProcessName(false);
-  shared_memory_.reset(new base::SharedMemory(beacon_name));
+  shared_memory_.reset(new base::SharedMemory());
+  shared_memory_name_ = WideToUTF8(beacon_name);
 }
 
 DllRedirector::DllRedirector(const char* shared_memory_name)
