@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/webui/web_ui_util.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/pref_names.h"
 #include "grit/locale_settings.h"
@@ -180,12 +181,11 @@ static void DisablePasswordSync(ProfileSyncService* service) {
 }
 
 void FlowHandler::HandleSubmitAuth(const ListValue* args) {
-  std::string json;
-  DCHECK(args->GetString(0, &json));
+  std::string json(web_ui_util::GetJsonResponseFromFirstArgumentInList(args));
+  std::string username, password, captcha, access_code;
   if (json.empty())
     return;
 
-  std::string username, password, captcha, access_code;
   if (!GetAuthData(json, &username, &password, &captcha, &access_code)) {
     // The page sent us something that we didn't understand.
     // This probably indicates a programming error.
@@ -198,12 +198,12 @@ void FlowHandler::HandleSubmitAuth(const ListValue* args) {
 }
 
 void FlowHandler::HandleConfigure(const ListValue* args) {
-  std::string json;
-  DCHECK(args->GetString(0, &json));
+  std::string json(web_ui_util::GetJsonResponseFromFirstArgumentInList(args));
+  SyncConfiguration configuration;
+
   if (json.empty())
     return;
 
-  SyncConfiguration configuration;
   if (!GetConfiguration(json, &configuration)) {
     // The page sent us something that we didn't understand.
     // This probably indicates a programming error.
@@ -218,8 +218,8 @@ void FlowHandler::HandleConfigure(const ListValue* args) {
 }
 
 void FlowHandler::HandlePassphraseEntry(const ListValue* args) {
-  std::string json;
-  DCHECK(args->GetString(0, &json));
+  std::string json(web_ui_util::GetJsonResponseFromFirstArgumentInList(args));
+
   if (json.empty())
     return;
 
@@ -240,8 +240,8 @@ void FlowHandler::HandlePassphraseCancel(const ListValue* args) {
 }
 
 void FlowHandler::HandleFirstPassphrase(const ListValue* args) {
-  std::string json;
-  DCHECK(args->GetString(0, &json));
+  std::string json(web_ui_util::GetJsonResponseFromFirstArgumentInList(args));
+
   if (json.empty())
     return;
 

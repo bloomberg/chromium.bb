@@ -9,6 +9,7 @@
 #include "base/values.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/webui/web_ui_util.h"
 #include "chrome/common/bindings_policy.h"
 
 static base::LazyInstance<PropertyAccessor<HtmlDialogUIDelegate*> >
@@ -65,9 +66,8 @@ void HtmlDialogUI::OnDialogClosed(const ListValue* args) {
   HtmlDialogUIDelegate** delegate = GetPropertyAccessor().GetProperty(
       tab_contents()->property_bag());
   if (delegate) {
-    std::string json_retval;
-    DCHECK(args->GetString(0, &json_retval));
-    (*delegate)->OnDialogClosed(json_retval);
+    (*delegate)->OnDialogClosed(
+        web_ui_util::GetJsonResponseFromFirstArgumentInList(args));
   }
 }
 

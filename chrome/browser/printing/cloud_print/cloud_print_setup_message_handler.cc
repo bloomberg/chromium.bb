@@ -8,6 +8,7 @@
 #include "base/json/json_writer.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_flow.h"
+#include "chrome/browser/webui/web_ui_util.h"
 
 WebUIMessageHandler* CloudPrintSetupMessageHandler::Attach(WebUI* web_ui) {
   // Pass the WebUI object to the setup flow.
@@ -25,8 +26,7 @@ void CloudPrintSetupMessageHandler::RegisterMessages() {
 }
 
 void CloudPrintSetupMessageHandler::HandleSubmitAuth(const ListValue* args) {
-  std::string json;
-  DCHECK(args->GetString(0, &json));
+  std::string json(web_ui_util::GetJsonResponseFromFirstArgumentInList(args));
   std::string username, password, captcha;
   if (json.empty())
     return;
