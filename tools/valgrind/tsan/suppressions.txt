@@ -145,6 +145,20 @@
   fun:browser_sync::*
 }
 
+{
+  bug_73972
+  ThreadSanitizer:Race
+  fun:base::subtle::RefCountedBase::*
+  fun:base::RefCounted<ProtocolHandlerRegistry>::*
+}
+
+{
+  bug_73975
+  ThreadSanitizer:Race
+  ...
+  fun:base::WeakPtrFactory<ThreadWatcher>::*
+}
+
 ############################
 # Benign races
 {
