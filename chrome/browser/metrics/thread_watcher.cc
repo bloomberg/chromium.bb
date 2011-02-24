@@ -104,18 +104,22 @@ void ThreadWatcher::PostPingMessage() {
   // Send a ping message to the watched thread.
   Task* callback_task = method_factory_.NewRunnableMethod(
       &ThreadWatcher::OnPongMessage, ping_sequence_number_);
-  BrowserThread::PostTask(
-      thread_id(),
-      FROM_HERE,
-      NewRunnableFunction(
-          &ThreadWatcher::OnPingMessage, thread_id_, callback_task));
-
-  // Post a task to check the responsiveness of watched thread.
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      method_factory_.NewRunnableMethod(
-          &ThreadWatcher::OnCheckResponsiveness, ping_sequence_number_),
-      unresponsive_time_.InMilliseconds());
+  if (BrowserThread::PostTask(
+          thread_id(),
+          FROM_HERE,
+          NewRunnableFunction(
+              &ThreadWatcher::OnPingMessage, thread_id_, callback_task))) {
+      // Post a task to check the responsiveness of watched thread.
+      MessageLoop::current()->PostDelayedTask(
+          FROM_HERE,
+          method_factory_.NewRunnableMethod(
+              &ThreadWatcher::OnCheckResponsiveness, ping_sequence_number_),
+          unresponsive_time_.InMilliseconds());
+  } else {
+    // Watched thread might have gone away, stop watching it.
+    delete callback_task;
+    DeActivateThreadWatching();
+  }
 }
 
 void ThreadWatcher::OnPongMessage(uint64 ping_sequence_number) {
