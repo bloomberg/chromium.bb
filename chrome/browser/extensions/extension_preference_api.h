@@ -22,4 +22,11 @@ class SetPreferenceFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.preferences.set")
 };
 
+class ClearPreferenceFunction : public SyncExtensionFunction {
+ public:
+  virtual ~ClearPreferenceFunction();
+  virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.preferences.clear")
+};
+
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_PREFERENCE_API_H__

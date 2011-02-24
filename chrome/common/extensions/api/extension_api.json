@@ -4601,6 +4601,32 @@
                 "parameters": []
               }
             ]
+          },
+          {
+            "name": "clear",
+            "type": "function",
+            "description": "Clears the setting in the user preferences. This way default settings can become effective again.",
+            "parameters": [
+              {
+                "name": "details",
+                "type": "object",
+                "description": "What setting to clear.",
+                "properties": {
+                  "incognito": {
+                    "type": "boolean",
+                    "optional": true,
+                    "description": "Whether to clear the setting for the incognito session only (default false)."
+                  }
+                }
+              },
+              {
+                "name": "callback",
+                "type": "function",
+                "description": "Called after the preference has been cleared.",
+                "optional": true,
+                "parameters": []
+              }
+            ]
           }
         ]
       }

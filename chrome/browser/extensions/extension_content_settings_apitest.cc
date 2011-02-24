@@ -50,3 +50,19 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoContentSettings) {
   EXPECT_FALSE(pref->IsExtensionControlled());
   EXPECT_FALSE(prefs->GetBoolean(prefs::kBlockThirdPartyCookies));
 }
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentSettingsClear) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalExtensionApis);
+
+  PrefService* pref_service = browser()->profile()->GetPrefs();
+  pref_service->SetBoolean(prefs::kBlockThirdPartyCookies, true);
+
+  EXPECT_TRUE(RunExtensionTest("content_settings/clear")) << message_;
+
+  const PrefService::Preference* pref = pref_service->FindPreference(
+      prefs::kBlockThirdPartyCookies);
+  ASSERT_TRUE(pref);
+  EXPECT_FALSE(pref->IsExtensionControlled());
+  EXPECT_EQ(true, pref_service->GetBoolean(prefs::kBlockThirdPartyCookies));
+}

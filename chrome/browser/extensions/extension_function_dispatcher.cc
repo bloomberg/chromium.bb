@@ -303,6 +303,7 @@ void FactoryRegistry::ResetFunctions() {
   // Preferences.
   RegisterFunction<GetPreferenceFunction>();
   RegisterFunction<SetPreferenceFunction>();
+  RegisterFunction<ClearPreferenceFunction>();
 }
 
 void FactoryRegistry::GetAllNames(std::vector<std::string>* names) {

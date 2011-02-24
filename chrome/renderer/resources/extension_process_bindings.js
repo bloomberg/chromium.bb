@@ -339,6 +339,14 @@ var chrome = chrome || {};
                            [prefKey, details, callback],
                            extendSchema(setSchema));
       };
+      this.clear = function(details, callback) {
+        var clearSchema = this.parameters.clear;
+        chromeHidden.validate([details, callback], clearSchema);
+        return sendRequest(customHandlers.clear ||
+                               'experimental.preferences.clear',
+                           [prefKey, details, callback],
+                           extendSchema(clearSchema));
+      };
     };
     customBindings['Preference'].prototype = new CustomBindingsObject();
   }

@@ -70,6 +70,8 @@ const char kPermissionErrorMessage[] =
 
 }  // namespace
 
+// TODO(battre): Factor out common parts once this is stable.
+
 GetPreferenceFunction::~GetPreferenceFunction() { }
 
 bool GetPreferenceFunction::RunImpl() {
@@ -133,5 +135,31 @@ bool SetPreferenceFunction::RunImpl() {
                                     browser_pref,
                                     incognito,
                                     value->DeepCopy());
+  return true;
+}
+
+ClearPreferenceFunction::~ClearPreferenceFunction() { }
+
+bool ClearPreferenceFunction::RunImpl() {
+  std::string pref_key;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &pref_key));
+  DictionaryValue* details = NULL;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &details));
+
+  bool incognito = false;
+  if (details->HasKey("incognito"))
+    EXTENSION_FUNCTION_VALIDATE(details->GetBoolean("incognito", &incognito));
+
+  std::string browser_pref;
+  std::string permission;
+  EXTENSION_FUNCTION_VALIDATE(
+      PrefMapping::GetInstance()->FindBrowserPrefForExtensionPref(
+          pref_key, &browser_pref, &permission));
+  if (!GetExtension()->HasApiPermission(permission)) {
+    error_ = base::StringPrintf(kPermissionErrorMessage, pref_key.c_str());
+    return false;
+  }
+  ExtensionPrefs* prefs = profile_->GetExtensionService()->extension_prefs();
+  prefs->RemoveExtensionControlledPref(extension_id(), browser_pref, incognito);
   return true;
 }

@@ -1,0 +1,30 @@
+<script>
+// Content settings API test
+// Run with browser_tests --gtest_filter=ExtensionApiTest.ContentSettingsClear
+
+var cs = chrome.experimental.contentSettings;
+chrome.test.runTests([
+  function getBlockThirdPartyCookies() {
+    cs.misc.blockThirdPartyCookies.get({}, chrome.test.callbackPass(
+        function(block) {
+          chrome.test.assertBool(block, true,
+                                 "third-party cookies should be blocked");
+        }));
+  },
+  function setBlockThirdPartyCookies() {
+    cs.misc.blockThirdPartyCookies.set(
+        {'value': false},
+        chrome.test.callbackPass());
+  },
+  function clearBlockThirdPartyCookies() {
+    cs.misc.blockThirdPartyCookies.clear({}, chrome.test.callbackPass());
+  },
+  function getBlockThirdPartyCookies2() {
+    cs.misc.blockThirdPartyCookies.get({}, chrome.test.callbackPass(
+        function(block) {
+          chrome.test.assertBool(block, true,
+                                 "third-party cookies should be blocked");
+        }));
+  }
+]);
+</script>
