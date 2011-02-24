@@ -192,7 +192,9 @@ ThreadWatcherList::ThreadWatcherList()
   DCHECK(!global_);
   global_ = this;
   // Register Notifications observer.
+#if !defined(OS_MACOSX)
   MetricsService::SetupNotifications(&registrar_, this);
+#endif
 }
 
 ThreadWatcherList::~ThreadWatcherList() {
@@ -236,7 +238,9 @@ void ThreadWatcherList::RemoveNotifications() {
   if (!global_)
     return;
   base::AutoLock auto_lock(global_->lock_);
+#if !defined(OS_MACOSX)
   global_->registrar_.RemoveAll();
+#endif
 }
 
 void ThreadWatcherList::Observe(NotificationType type,
@@ -309,6 +313,7 @@ void WatchDogThread::Init() {
 
   BrowserProcessSubThread::Init();
 
+#if !defined(OS_MACOSX)
   const base::TimeDelta kSleepTime = base::TimeDelta::FromSeconds(5);
   const base::TimeDelta kUnresponsiveTime = base::TimeDelta::FromSeconds(10);
   ThreadWatcher::StartWatching(BrowserThread::UI, "UI", kSleepTime,
@@ -321,4 +326,5 @@ void WatchDogThread::Init() {
                                kUnresponsiveTime);
   ThreadWatcher::StartWatching(BrowserThread::CACHE, "CACHE", kSleepTime,
                                kUnresponsiveTime);
+#endif
 }
