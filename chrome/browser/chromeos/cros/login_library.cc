@@ -5,8 +5,12 @@
 #include "chrome/browser/chromeos/cros/login_library.h"
 
 #include "base/message_loop.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/login/signed_settings_temp_storage.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_type.h"
 
 namespace chromeos {
 
@@ -52,19 +56,6 @@ class LoginLibraryImpl : public LoginLibrary {
       return true;
     }
     return false;
-  }
-
-  bool SetOwnerKeyAsync(const std::vector<uint8>& public_key_der,
-                        Delegate* callback) {
-    DCHECK(callback) << "must provide a callback to SetOwnerKeyAsync()";
-    if (set_owner_key_callback_)
-      return false;
-    set_owner_key_callback_ =  callback;
-    CryptoBlob* key = chromeos::CreateCryptoBlob(&public_key_der[0],
-                                                 public_key_der.size());
-    bool rv = chromeos::SetOwnerKeySafe(key);
-    chromeos::FreeCryptoBlob(key);
-    return rv;
   }
 
   bool StorePropertyAsync(const std::string& name,
@@ -174,10 +165,24 @@ class LoginLibraryImpl : public LoginLibrary {
     session_connection_ = chromeos::MonitorSession(&Handler, this);
   }
 
-  void CompleteSetOwnerKey(bool result) {
-    if (set_owner_key_callback_) {
-      set_owner_key_callback_->OnComplete(result);
-      set_owner_key_callback_ = NULL;
+  void CompleteSetOwnerKey(bool value) {
+    VLOG(1) << "Owner key generation: " << (value ? "success" : "fail");
+    NotificationType result =
+        NotificationType::OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED;
+    if (!value)
+      result = NotificationType::OWNER_KEY_FETCH_ATTEMPT_FAILED;
+
+    // Whether we exported the public key or not, send a notification indicating
+    // that we're done with this attempt.
+    NotificationService::current()->Notify(result,
+                                           NotificationService::AllSources(),
+                                           NotificationService::NoDetails());
+
+    // We stored some settings in transient storage before owner was assigned.
+    // Now owner is assigned and key is generated and we should persist
+    // those settings into signed storage.
+    if (g_browser_process && g_browser_process->local_state()) {
+      SignedSettingsTempStorage::Finalize(g_browser_process->local_state());
     }
   }
 
@@ -220,13 +225,6 @@ class LoginLibraryStubImpl : public LoginLibrary {
                         std::vector<uint8>* OUT_signature) {
     OUT_value->assign("stub");
     OUT_signature->assign(2, 0);
-    return true;
-  }
-  bool SetOwnerKeyAsync(const std::vector<uint8>& public_key_der,
-                        Delegate* callback) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        NewRunnableFunction(&DoStubCallback, callback));
     return true;
   }
   bool StorePropertyAsync(const std::string& name,

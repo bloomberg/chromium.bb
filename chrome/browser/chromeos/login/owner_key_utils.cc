@@ -40,13 +40,6 @@ class OwnerKeyUtilsImpl : public OwnerKeyUtils {
  public:
   OwnerKeyUtilsImpl();
 
-  RSAPrivateKey* GenerateKeyPair();
-
-  bool ExportPublicKeyViaDbus(RSAPrivateKey* pair,
-                              LoginLibrary::Delegate* d);
-
-  bool ExportPublicKeyToFile(RSAPrivateKey* pair, const FilePath& key_file);
-
   bool ImportPublicKey(const FilePath& key_file,
                        std::vector<uint8>* output);
 
@@ -65,13 +58,12 @@ class OwnerKeyUtilsImpl : public OwnerKeyUtils {
  protected:
   virtual ~OwnerKeyUtilsImpl();
 
+  bool ExportPublicKeyToFile(RSAPrivateKey* pair, const FilePath& key_file);
+
  private:
   // The file outside the owner's encrypted home directory where her
   // key will live.
   static const char kOwnerKeyFile[];
-
-  // Key generation parameters.
-  static const uint16 kKeySizeInBits;
 
   DISALLOW_COPY_AND_ASSIGN(OwnerKeyUtilsImpl);
 };
@@ -87,34 +79,9 @@ OwnerKeyUtils* OwnerKeyUtils::Create() {
 // static
 const char OwnerKeyUtilsImpl::kOwnerKeyFile[] = "/var/lib/whitelist/owner.key";
 
-// We're generating and using 2048-bit RSA keys.
-// static
-const uint16 OwnerKeyUtilsImpl::kKeySizeInBits = 2048;
-
 OwnerKeyUtilsImpl::OwnerKeyUtilsImpl() {}
 
 OwnerKeyUtilsImpl::~OwnerKeyUtilsImpl() {}
-
-RSAPrivateKey* OwnerKeyUtilsImpl::GenerateKeyPair() {
-  return RSAPrivateKey::CreateSensitive(kKeySizeInBits);
-}
-
-bool OwnerKeyUtilsImpl::ExportPublicKeyViaDbus(RSAPrivateKey* pair,
-                                               LoginLibrary::Delegate* d) {
-  DCHECK(pair);
-  bool ok = false;
-
-  std::vector<uint8> to_export;
-  if (!pair->ExportPublicKey(&to_export)) {
-    LOG(ERROR) << "Formatting key for export via dbus failed!";
-    return false;
-  }
-
-  if (CrosLibrary::Get()->EnsureLoaded())
-    ok = CrosLibrary::Get()->GetLoginLibrary()->SetOwnerKeyAsync(to_export, d);
-
-  return ok;
-}
 
 bool OwnerKeyUtilsImpl::ExportPublicKeyToFile(RSAPrivateKey* pair,
                                               const FilePath& key_file) {

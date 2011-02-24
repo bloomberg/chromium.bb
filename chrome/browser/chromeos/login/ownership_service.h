@@ -42,16 +42,6 @@ class OwnershipService : public NotificationObserver {
   // OWNER_KEY_FETCH_ATTEMPT_FAILED on failure.
   virtual void StartLoadOwnerKeyAttempt();
 
-  // If the device has not yet been owned, posts a task to the FILE
-  // thread to generate the owner's keys and put them in the right
-  // places.  Keeps them in memory as well, for later use.
-  //
-  // Upon failure, sends out OWNER_KEY_FETCH_ATTEMPT_FAILED.
-  // Upon success, sends out OWNER_KEY_FETCH_ATTEMPT_SUCCESS.
-  // If no attempt is started (if the device is already owned), no
-  // notification is sent.
-  virtual void StartTakeOwnershipAttempt(const std::string& unused);
-
   // Initiate an attempt to sign |data| with |private_key_|.  Will call
   // d->OnKeyOpComplete() when done.  Upon success, the signature will be passed
   // as the |payload| argument to d->OnKeyOpComplete().
@@ -103,7 +93,6 @@ class OwnershipService : public NotificationObserver {
   void SetStatus(Status new_status);
 
   static void TryLoadOwnerKeyAttempt(OwnershipService* service);
-  static void TryTakeOwnershipAttempt(OwnershipService* service);
   static void TrySigningAttempt(OwnershipService* service,
                                 const BrowserThread::ID thread_id,
                                 const std::string& data,

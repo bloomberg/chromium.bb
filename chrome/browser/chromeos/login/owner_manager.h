@@ -12,7 +12,6 @@
 #include "base/crypto/rsa_private_key.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/login/owner_key_utils.h"
 
 class FilePath;
@@ -24,8 +23,7 @@ namespace chromeos {
 // This class allows the registration of an Owner of a Chromium OS device.
 // It handles generating the appropriate keys and storing them in the
 // appropriate locations.
-class OwnerManager : public base::RefCountedThreadSafe<OwnerManager>,
-                     public LoginLibrary::Delegate {
+class OwnerManager : public base::RefCountedThreadSafe<OwnerManager> {
  public:
   // Return codes for public/private key operations.
   enum KeyOpCode {
@@ -51,21 +49,6 @@ class OwnerManager : public base::RefCountedThreadSafe<OwnerManager>,
   //
   // Call this on the FILE thread.
   void LoadOwnerKey();
-
-  // Generates the owner's keys in the default NSS token.  Also stores
-  // them in |public_key_| and |private_key_|.  When done, causes the
-  // public key to get exported via DBus.
-  //
-  // Call this on the FILE thread.
-  void GenerateKeysAndExportPublic();
-
-  // Exports |public_key_| via DBus.
-  //
-  // Call this on the UI thread (because of DBus usage).
-  void ExportKey();
-
-  // Overridden from LoginLibrary::Delegate
-  void OnComplete(bool value);
 
   bool EnsurePublicKey();
   bool EnsurePrivateKey();

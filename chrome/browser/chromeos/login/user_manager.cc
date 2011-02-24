@@ -143,8 +143,8 @@ void UpdateOwnership(bool is_owner) {
 // Checks current user's ownership on file thread.
 void CheckOwnership() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
   bool is_owner = OwnershipService::GetSharedInstance()->CurrentUserIsOwner();
+  VLOG(1) << "Current user " << (is_owner ? "is owner" : "is not owner");
 
   // UserManager should be accessed only on UI thread.
   BrowserThread::PostTask(

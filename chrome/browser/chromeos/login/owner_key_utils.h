@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 
@@ -19,6 +20,8 @@ class RSAPrivateKey;
 }
 
 namespace chromeos {
+
+class OwnerKeyUtilsTest;
 
 class OwnerKeyUtils : public base::RefCounted<OwnerKeyUtils> {
  public:
@@ -40,27 +43,6 @@ class OwnerKeyUtils : public base::RefCounted<OwnerKeyUtils> {
   // Creates an OwnerKeyUtils, ownership returns to the caller. If there is no
   // Factory (the default) this creates and returns a new OwnerKeyUtils.
   static OwnerKeyUtils* Create();
-
-  // Generate a public/private RSA keypair and store them in the NSS database.
-  // The keys will be kKeySizeInBits in length (Recommend >= 2048 bits).
-  // The caller takes ownership.
-  //
-  //  Returns NULL on error.
-  virtual base::RSAPrivateKey* GenerateKeyPair() = 0;
-
-  // DER encodes public half of |pair| and asynchronously exports it via DBus.
-  // The data sent is a DER-encoded X509 SubjectPublicKeyInfo object.
-  // Returns false on error, true if the attempt is successfully begun.
-  // d->Run() will be called with a boolean indicating success or failure when
-  // the attempt is complete.
-  virtual bool ExportPublicKeyViaDbus(base::RSAPrivateKey* pair,
-                                      LoginLibrary::Delegate* d) = 0;
-
-  // DER encodes public half of |pair| and writes it out to |key_file|.
-  // The blob on disk is a DER-encoded X509 SubjectPublicKeyInfo object.
-  // Returns false on error.
-  virtual bool ExportPublicKeyToFile(base::RSAPrivateKey* pair,
-                                     const FilePath& key_file) = 0;
 
   // Assumes that the file at |key_file| exists.
   // Upon success, returns true and populates |output|.  False on failure.
@@ -91,9 +73,17 @@ class OwnerKeyUtils : public base::RefCounted<OwnerKeyUtils> {
  protected:
   virtual ~OwnerKeyUtils();
 
+  // DER encodes public half of |pair| and writes it out to |key_file|.
+  // The blob on disk is a DER-encoded X509 SubjectPublicKeyInfo object.
+  // Returns false on error.
+  virtual bool ExportPublicKeyToFile(base::RSAPrivateKey* pair,
+                                     const FilePath& key_file) = 0;
+
  private:
   friend class base::RefCounted<OwnerKeyUtils>;
   static Factory* factory_;
+
+  FRIEND_TEST_ALL_PREFIXES(OwnerKeyUtilsTest, ExportImportPublicKey);
 };
 
 }  // namespace chromeos

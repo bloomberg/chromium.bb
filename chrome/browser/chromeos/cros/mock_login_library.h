@@ -23,7 +23,6 @@ class MockLoginLibrary : public LoginLibrary {
   MOCK_METHOD3(RetrieveProperty, bool(const std::string&,
                                       std::string*,
                                       std::vector<uint8>*));
-  MOCK_METHOD2(SetOwnerKeyAsync, bool(const std::vector<uint8>&, Delegate*));
   MOCK_METHOD4(StorePropertyAsync, bool(const std::string&,
                                         const std::string&,
                                         const std::vector<uint8>&,

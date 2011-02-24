@@ -82,12 +82,6 @@ void OwnershipService::StartLoadOwnerKeyAttempt() {
       NewRunnableFunction(&TryLoadOwnerKeyAttempt, this));
 }
 
-void OwnershipService::StartTakeOwnershipAttempt(const std::string& unused) {
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      NewRunnableFunction(&OwnershipService::TryTakeOwnershipAttempt, this));
-}
-
 void OwnershipService::StartSigningAttempt(const std::string& data,
                                            OwnerManager::Delegate* d) {
   BrowserThread::ID thread_id;
@@ -145,16 +139,6 @@ void OwnershipService::TryLoadOwnerKeyAttempt(OwnershipService* service) {
     return;
   }
   service->manager()->LoadOwnerKey();
-}
-
-// static
-void OwnershipService::TryTakeOwnershipAttempt(OwnershipService* service) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  if (service->IsAlreadyOwned()) {
-    VLOG(1) << "Device is already owned";
-    return;
-  }
-  service->manager()->GenerateKeysAndExportPublic();
 }
 
 // static

@@ -28,11 +28,19 @@ class OwnerKeyUtilsTest : public ::testing::Test {
     base::OpenPersistentNSSDB();
   }
 
+  // Key generation parameters.
+  static const uint16 kKeySizeInBits;
+
   scoped_refptr<OwnerKeyUtils> utils_;
 };
 
+// We're generating and using 2048-bit RSA keys.
+// static
+const uint16 OwnerKeyUtilsTest::kKeySizeInBits = 2048;
+
 TEST_F(OwnerKeyUtilsTest, ExportImportPublicKey) {
-  scoped_ptr<base::RSAPrivateKey> pair(utils_->GenerateKeyPair());
+  scoped_ptr<base::RSAPrivateKey> pair(
+      base::RSAPrivateKey::CreateSensitive(kKeySizeInBits));
   ASSERT_NE(pair.get(), reinterpret_cast<base::RSAPrivateKey*>(NULL));
 
   // Export public key to file.

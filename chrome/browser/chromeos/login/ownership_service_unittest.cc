@@ -137,24 +137,6 @@ TEST_F(OwnershipServiceTest, LoadOwnerKey) {
   message_loop_.Run();
 }
 
-TEST_F(OwnershipServiceTest, AttemptKeyGeneration) {
-  // We really only care that we initiate key generation here;
-  // actual key-generation paths are tested in owner_manager_unittest.cc
-  StartUnowned();
-  MockKeyLoadObserver loader;
-  loader.ExpectKeyFetchSuccess(false);
-
-  EXPECT_CALL(*mock_, GenerateKeyPair())
-      .WillOnce(Return(reinterpret_cast<RSAPrivateKey*>(NULL)))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_, GetOwnerKeyFilePath())
-      .WillRepeatedly(Return(tmpfile_));
-
-  service_->StartTakeOwnershipAttempt("me");
-
-  message_loop_.Run();
-}
-
 TEST_F(OwnershipServiceTest, NotYetOwnedVerify) {
   StartUnowned();
 

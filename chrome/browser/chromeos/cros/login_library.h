@@ -40,14 +40,6 @@ class LoginLibrary {
                                 std::string* OUT_value,
                                 std::vector<uint8>* OUT_signature) = 0;
 
-  // Attempts to asynchronously set the provided public key as the
-  // Owner's public key for this device.  |public_key_der| should be a
-  // DER-encoded PKCS11 SubjectPublicKeyInfo structure.
-  //  Returns true if the attempt was successfully started.
-  //  callback->Run() will be called when the operation is complete.
-  virtual bool SetOwnerKeyAsync(const std::vector<uint8>& public_key_der,
-                                Delegate* callback) = 0;
-
   // Attempts to issue a signed async request to store |name|=|value|.
   // |signature| must by a SHA1 with RSA encryption signature over the string
   // "name=value" with the owner's private key.

@@ -298,9 +298,6 @@ void LoginUtilsImpl::CompleteLogin(
                                                           true);
   btl->AddLoginTimeMarker("SyncStarted", false);
 
-  // Attempt to take ownership; this will fail if device is already owned.
-  OwnershipService::GetSharedInstance()->StartTakeOwnershipAttempt(
-      UserManager::Get()->logged_in_user().email());
   // Own TPM device if, for any reason, it has not been done in EULA
   // wizard screen.
   if (CrosLibrary::Get()->EnsureLoaded()) {
