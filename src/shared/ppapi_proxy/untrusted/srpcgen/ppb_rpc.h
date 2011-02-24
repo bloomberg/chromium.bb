@@ -211,6 +211,38 @@ class PpbCoreRpcClient {
   void operator=(const PpbCoreRpcClient);
 };  // class PpbCoreRpcClient
 
+class PpbFileIODevRpcClient {
+ public:
+  static NaClSrpcError PPB_FileIO_Dev_Create(
+      NaClSrpcChannel* channel,
+      PP_Instance instance,
+      PP_Resource* resource);
+  static NaClSrpcError PPB_FileIO_Dev_IsFileIO(
+      NaClSrpcChannel* channel,
+      PP_Resource resource,
+      int32_t* success);
+  static NaClSrpcError PPB_FileIO_Dev_Open(
+      NaClSrpcChannel* channel,
+      PP_Resource file_io,
+      PP_Resource file_ref,
+      int32_t open_flags,
+      int32_t callback_id,
+      int32_t* pp_error);
+  static NaClSrpcError PPB_FileIO_Dev_Read(
+      NaClSrpcChannel* channel,
+      PP_Resource file_io,
+      int64_t offset,
+      int32_t bytes_to_read,
+      int32_t callback_id,
+      nacl_abi_size_t* buffer_bytes, char* buffer,
+      int32_t* pp_error_or_bytes);
+
+ private:
+  PpbFileIODevRpcClient();
+  PpbFileIODevRpcClient(const PpbFileIODevRpcClient&);
+  void operator=(const PpbFileIODevRpcClient);
+};  // class PpbFileIODevRpcClient
+
 class PpbGraphics2DRpcClient {
  public:
   static NaClSrpcError PPB_Graphics2D_Create(

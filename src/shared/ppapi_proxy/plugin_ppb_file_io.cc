@@ -6,21 +6,48 @@
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_callback.h"
+#include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "ppapi/c/dev/ppb_file_io_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
+#include "srpcgen/ppb_rpc.h"
 
 namespace ppapi_proxy {
 
 namespace {
 
-PP_Resource Create(PP_Module module) {
-  UNREFERENCED_PARAMETER(module);
+PP_Resource Create(PP_Instance instance) {
+  DebugPrintf("Plugin::PPB_FileIO_Dev::Create: instance=%"NACL_PRIu32"\n",
+              instance);
+  PP_Resource resource = kInvalidResourceId;
+  NaClSrpcError srpc_result =
+      PpbFileIODevRpcClient::PPB_FileIO_Dev_Create(
+          GetMainSrpcChannel(),
+          instance,
+          &resource);
+  DebugPrintf("PPB_FileIO_Dev::Create: %s\n", NaClSrpcErrorString(srpc_result));
+  if (srpc_result == NACL_SRPC_RESULT_OK)
+    return resource;
   return kInvalidResourceId;
 }
 
 PP_Bool IsFileIO(PP_Resource resource) {
-  UNREFERENCED_PARAMETER(resource);
+  DebugPrintf("PPB_FileIO_Dev::IsFileIO: resource=%"NACL_PRIu32"\n",
+              resource);
+
+  int32_t is_fileio = 0;
+  NaClSrpcError srpc_result =
+      PpbFileIODevRpcClient::PPB_FileIO_Dev_IsFileIO(
+          GetMainSrpcChannel(),
+          resource,
+          &is_fileio);
+
+  DebugPrintf("Plugin::PPB_FileIO_Dev::IsFileIO: %s\n",
+              NaClSrpcErrorString(srpc_result));
+
+  if (srpc_result == NACL_SRPC_RESULT_OK && is_fileio)
+    return PP_TRUE;
   return PP_FALSE;
 }
 
@@ -28,12 +55,28 @@ int32_t Open(PP_Resource file_io,
              PP_Resource file_ref,
              int32_t open_flags,
              struct PP_CompletionCallback callback) {
-  UNREFERENCED_PARAMETER(file_io);
-  UNREFERENCED_PARAMETER(file_ref);
-  UNREFERENCED_PARAMETER(open_flags);
-  UNREFERENCED_PARAMETER(callback);
+  DebugPrintf("Plugin::PPB_FileIO_Dev::Open: file_io=%"NACL_PRIx32"\n",
+              file_io);
 
-  return PP_ERROR_BADRESOURCE;
+  int32_t callback_id =
+      CompletionCallbackTable::Get()->AddCallback(callback);
+  if (callback_id == 0)  // Just like Chrome, for now disallow blocking calls.
+    return PP_ERROR_BADARGUMENT;
+
+  int32_t pp_error = PP_ERROR_FAILED;
+  NaClSrpcError srpc_result =
+      PpbFileIODevRpcClient::PPB_FileIO_Dev_Open(
+          GetMainSrpcChannel(),
+          file_io,
+          file_ref,
+          open_flags,
+          callback_id,
+          &pp_error);
+  DebugPrintf("PPB_FileIO_Dev::Open: %s\n", NaClSrpcErrorString(srpc_result));
+
+  if (srpc_result == NACL_SRPC_RESULT_OK)
+    return pp_error;
+  return PP_ERROR_FAILED;
 }
 
 int32_t Query(PP_Resource file_io,
@@ -63,13 +106,33 @@ int32_t Read(PP_Resource file_io,
              char* buffer,
              int32_t bytes_to_read,
              struct PP_CompletionCallback callback) {
-  UNREFERENCED_PARAMETER(file_io);
-  UNREFERENCED_PARAMETER(offset);
-  UNREFERENCED_PARAMETER(buffer);
-  UNREFERENCED_PARAMETER(bytes_to_read);
-  UNREFERENCED_PARAMETER(callback);
+  DebugPrintf("Plugin::PPB_FileIO_Dev::Read: file_io=%"NACL_PRIx32"\n",
+              file_io);
 
-  return PP_ERROR_BADRESOURCE;
+  if (bytes_to_read < 0)
+    bytes_to_read = 0;
+  nacl_abi_size_t buffer_size = bytes_to_read;
+
+  int32_t callback_id =
+      CompletionCallbackTable::Get()->AddCallback(callback, buffer);
+  if (callback_id == 0)  // Just like Chrome, for now disallow blocking calls.
+    return PP_ERROR_BADARGUMENT;
+
+  int32_t pp_error_or_bytes = PP_ERROR_FAILED;
+  NaClSrpcError srpc_result =
+      PpbFileIODevRpcClient::PPB_FileIO_Dev_Read(
+          GetMainSrpcChannel(),
+          file_io,
+          offset,
+          bytes_to_read,
+          callback_id,
+          &buffer_size,
+          buffer,
+          &pp_error_or_bytes);
+  DebugPrintf("PPB_FileIO_Dev::Read: %s\n", NaClSrpcErrorString(srpc_result));
+  if (srpc_result == NACL_SRPC_RESULT_OK)
+    return pp_error_or_bytes;
+  return PP_ERROR_FAILED;
 }
 
 int32_t Write(PP_Resource file_io,
@@ -124,6 +187,5 @@ const PPB_FileIO_Dev* PluginFileIO::GetInterface() {
   };
   return &file_io_interface;
 }
-
 
 }  // namespace ppapi_proxy

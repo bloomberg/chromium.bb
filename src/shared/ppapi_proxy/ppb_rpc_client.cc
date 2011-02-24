@@ -469,6 +469,76 @@ NaClSrpcError PpbCoreRpcClient::PPB_Core_CallOnMainThread(
   return retval;
 }
 
+NaClSrpcError PpbFileIODevRpcClient::PPB_FileIO_Dev_Create(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    PP_Resource* resource)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_FileIO_Dev_Create:i:i",
+      instance,
+      resource
+  );
+  return retval;
+}
+
+NaClSrpcError PpbFileIODevRpcClient::PPB_FileIO_Dev_IsFileIO(
+    NaClSrpcChannel* channel,
+    PP_Resource resource,
+    int32_t* success)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_FileIO_Dev_IsFileIO:i:i",
+      resource,
+      success
+  );
+  return retval;
+}
+
+NaClSrpcError PpbFileIODevRpcClient::PPB_FileIO_Dev_Open(
+    NaClSrpcChannel* channel,
+    PP_Resource file_io,
+    PP_Resource file_ref,
+    int32_t open_flags,
+    int32_t callback_id,
+    int32_t* pp_error)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_FileIO_Dev_Open:iiii:i",
+      file_io,
+      file_ref,
+      open_flags,
+      callback_id,
+      pp_error
+  );
+  return retval;
+}
+
+NaClSrpcError PpbFileIODevRpcClient::PPB_FileIO_Dev_Read(
+    NaClSrpcChannel* channel,
+    PP_Resource file_io,
+    int64_t offset,
+    int32_t bytes_to_read,
+    int32_t callback_id,
+    nacl_abi_size_t* buffer_bytes, char* buffer,
+    int32_t* pp_error_or_bytes)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_FileIO_Dev_Read:ilii:Ci",
+      file_io,
+      offset,
+      bytes_to_read,
+      callback_id,
+      buffer_bytes, buffer,
+      pp_error_or_bytes
+  );
+  return retval;
+}
+
 NaClSrpcError PpbGraphics2DRpcClient::PPB_Graphics2D_Create(
     NaClSrpcChannel* channel,
     PP_Instance instance,

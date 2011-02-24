@@ -201,5 +201,12 @@ const PPB_Var_Deprecated* PPBVarInterface() {
   return ppb;
 }
 
+const PPB_FileIO_Dev* PPBFileIOInterface() {
+  static const PPB_FileIO_Dev* ppb =
+      reinterpret_cast<const PPB_FileIO_Dev*>(
+        GetBrowserInterfaceSafe(PPB_FILEIO_DEV_INTERFACE));
+  return ppb;
+}
+
 }  // namespace ppapi_proxy
 

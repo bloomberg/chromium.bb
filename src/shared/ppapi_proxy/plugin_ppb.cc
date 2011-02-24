@@ -12,6 +12,7 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_audio_config.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_buffer.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_core.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_file_io.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_graphics_2d.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_image_data.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_instance.h"
@@ -39,6 +40,7 @@ InterfaceMapElement interface_map[] = {
   { PPB_AUDIO_CONFIG_INTERFACE, PluginAudioConfig::GetInterface(), true },
   { PPB_CORE_INTERFACE, PluginCore::GetInterface(), true },
   { PPB_CONTEXT_3D_DEV_INTERFACE, PluginContext3D::GetInterface(), true },
+  { PPB_FILEIO_DEV_INTERFACE, PluginFileIO::GetInterface(), true },
   { PPB_GRAPHICS_2D_INTERFACE, PluginGraphics2D::GetInterface(), true },
   { PPB_IMAGEDATA_INTERFACE, PluginImageData::GetInterface(), true },
   { PPB_INSTANCE_INTERFACE, PluginInstance::GetInterface(), true },

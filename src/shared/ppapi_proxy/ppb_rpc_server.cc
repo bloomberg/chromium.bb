@@ -451,6 +451,69 @@ static void PPB_Core_CallOnMainThreadDispatcher(
   );
 }
 
+static void PPB_FileIO_Dev_CreateDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbFileIODevRpcServer::PPB_FileIO_Dev_Create(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_FileIO_Dev_IsFileIODispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbFileIODevRpcServer::PPB_FileIO_Dev_IsFileIO(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_FileIO_Dev_OpenDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbFileIODevRpcServer::PPB_FileIO_Dev_Open(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      inputs[2]->u.ival,
+      inputs[3]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_FileIO_Dev_ReadDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbFileIODevRpcServer::PPB_FileIO_Dev_Read(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.lval,
+      inputs[2]->u.ival,
+      inputs[3]->u.ival,
+      &(outputs[0]->u.count), outputs[0]->arrays.carr,
+      &(outputs[1]->u.ival)
+  );
+}
+
 static void PPB_Graphics2D_CreateDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -1196,6 +1259,10 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_Core_GetTime::d", PPB_Core_GetTimeDispatcher },
   { "PPB_Core_GetTimeTicks::d", PPB_Core_GetTimeTicksDispatcher },
   { "PPB_Core_CallOnMainThread:iii:", PPB_Core_CallOnMainThreadDispatcher },
+  { "PPB_FileIO_Dev_Create:i:i", PPB_FileIO_Dev_CreateDispatcher },
+  { "PPB_FileIO_Dev_IsFileIO:i:i", PPB_FileIO_Dev_IsFileIODispatcher },
+  { "PPB_FileIO_Dev_Open:iiii:i", PPB_FileIO_Dev_OpenDispatcher },
+  { "PPB_FileIO_Dev_Read:ilii:Ci", PPB_FileIO_Dev_ReadDispatcher },
   { "PPB_Graphics2D_Create:iCi:i", PPB_Graphics2D_CreateDispatcher },
   { "PPB_Graphics2D_IsGraphics2D:i:i", PPB_Graphics2D_IsGraphics2DDispatcher },
   { "PPB_Graphics2D_Describe:i:Cii", PPB_Graphics2D_DescribeDispatcher },

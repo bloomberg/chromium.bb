@@ -23,19 +23,28 @@ namespace {
 // TODO(polina): when we have unit tests, move this there.
 void TestIsInterface(std::string test_interface,
                      PP_Resource resource,
+                     const PPB_FileIO_Dev* ppb_fileio,
                      const PPB_URLRequestInfo* ppb_url_request_info,
                      const PPB_URLResponseInfo* ppb_url_response_info,
                      const PPB_URLLoader* ppb_url_loader) {
   printf("--- TestIsInterface: %s\n", test_interface.c_str());
-  if (test_interface == PPB_URLREQUESTINFO_INTERFACE) {
+  if (test_interface == PPB_FILEIO_DEV_INTERFACE) {
+    CHECK(ppb_fileio->IsFileIO(resource) == PP_TRUE);
+    CHECK(ppb_url_request_info->IsURLRequestInfo(resource) == PP_FALSE);
+    CHECK(ppb_url_response_info->IsURLResponseInfo(resource) == PP_FALSE);
+    CHECK(ppb_url_loader->IsURLLoader(resource) == PP_FALSE);
+  } else if (test_interface == PPB_URLREQUESTINFO_INTERFACE) {
+    CHECK(ppb_fileio->IsFileIO(resource) == PP_FALSE);
     CHECK(ppb_url_request_info->IsURLRequestInfo(resource) == PP_TRUE);
     CHECK(ppb_url_response_info->IsURLResponseInfo(resource) == PP_FALSE);
     CHECK(ppb_url_loader->IsURLLoader(resource) == PP_FALSE);
   } else if (test_interface == PPB_URLRESPONSEINFO_INTERFACE) {
+    CHECK(ppb_fileio->IsFileIO(resource) == PP_FALSE);
     CHECK(ppb_url_request_info->IsURLRequestInfo(resource) == PP_FALSE);
     CHECK(ppb_url_response_info->IsURLResponseInfo(resource) == PP_TRUE);
     CHECK(ppb_url_loader->IsURLLoader(resource) == PP_FALSE);
   } else if (test_interface == PPB_URLLOADER_INTERFACE) {
+    CHECK(ppb_fileio->IsFileIO(resource) == PP_FALSE);
     CHECK(ppb_url_request_info->IsURLRequestInfo(resource) == PP_FALSE);
     CHECK(ppb_url_response_info->IsURLResponseInfo(resource) == PP_FALSE);
     CHECK(ppb_url_loader->IsURLLoader(resource) == PP_TRUE);
@@ -203,13 +212,6 @@ bool UrlLoadRequest::GetRequiredInterfaces(std::string* error) {
     return false;
   }
 
-  TestIsInterface(PPB_URLREQUESTINFO_INTERFACE, request_,
-                  request_interface_, response_interface_, loader_interface_);
-  TestIsInterface(PPB_URLLOADER_INTERFACE, loader_,
-                  request_interface_, response_interface_, loader_interface_);
-
-  // TODO(sanga): enable this for untrusted code when FileIO proxy is supported.
-#if !defined(__native_client__)
   fileio_interface_ = static_cast<const PPB_FileIO_Dev*>(
       module->GetBrowserInterface(PPB_FILEIO_DEV_INTERFACE));
   if (NULL == fileio_interface_) {
@@ -221,7 +223,16 @@ bool UrlLoadRequest::GetRequiredInterfaces(std::string* error) {
     *error = "PPB_FileIO_Dev::Create: failed";
     return false;
   }
-#endif
+
+  TestIsInterface(PPB_URLREQUESTINFO_INTERFACE, request_,
+                  fileio_interface_, request_interface_, response_interface_,
+                  loader_interface_);
+  TestIsInterface(PPB_URLLOADER_INTERFACE, loader_,
+                  fileio_interface_, request_interface_, response_interface_,
+                  loader_interface_);
+  TestIsInterface(PPB_FILEIO_DEV_INTERFACE, fileio_,
+                  fileio_interface_, request_interface_, response_interface_,
+                  loader_interface_);
 
   return true;
 }
@@ -267,7 +278,8 @@ void UrlLoadRequest::OpenCallback(int32_t pp_error) {
     return;
   }
   TestIsInterface(PPB_URLRESPONSEINFO_INTERFACE, response_,
-                  request_interface_, response_interface_, loader_interface_);
+                  fileio_interface_, request_interface_, response_interface_,
+                  loader_interface_);
   PP_Var url = response_interface_->GetProperty(response_,
                                                 PP_URLRESPONSEPROPERTY_URL);
   if (url.type != PP_VARTYPE_STRING) {
@@ -311,8 +323,6 @@ void UrlLoadRequest::FinishStreamingToFileCallback(int32_t pp_error) {
     ReportFailure("UrlLoadRequest::FinishStreamingToFileCallback: null file");
     return;
   }
-// TODO(sanga): enable this for untrusted code when FileIO proxy is supported.
-#if !defined(__native_client__)
   pp_error = fileio_interface_->Open(
       fileio_,
       fileref,
@@ -322,9 +332,6 @@ void UrlLoadRequest::FinishStreamingToFileCallback(int32_t pp_error) {
   if (pp_error != PP_ERROR_WOULDBLOCK)  {  // Async failure.
     ReportFailure("PPB_FileIO::Open: ", pp_error);
   }
-#else
-  ReportFailure("PPB_FileIO not supported");
-#endif
 }
 
 void UrlLoadRequest::ReadResponseBodyCallback(int32_t pp_error_or_bytes) {

@@ -22,7 +22,7 @@
       <tr><td> <b>Load via Buffer</b>
           <td> <b>Load via File</b>
       <tr><td><pre id='Valid' class='notrun'></pre>
-          <td><pre id='Valid_File' class='notrun'>PLANNED FOR BALTIC SEA</pre>
+          <td><pre id='Valid_File' class='notrun'></pre>
       <tr><td><pre id='CrossOrigin' class='notrun'></pre>
           <td><pre id='CrossOrigin_File' class='notrun'></pre>
       <tr><td><pre id='Invalid' class='notrun'></pre>
@@ -59,8 +59,7 @@ var TEST_USE_FILE = 5;
 var TESTS = [
   // id, type, url, expected_result, expect_success, use_file (inst. of buffer)
   ['Valid', 'valid', VALID_URL, 'TEST PASSED', true, false],
-  // NOTE: this does not work yet but is planned for Baltic Sea
-  // ['Valid_File', 'valid', VALID_URL, 'TEST PASSED', true, true],
+  ['Valid_File', 'valid', VALID_URL, 'TEST PASSED', true, true],
   ['CrossOrigin',
    'cross-origin', CROSSORIGIN_URL, 'PP_ERROR_NOACCESS', false, false],
   ['CrossOrigin_File',

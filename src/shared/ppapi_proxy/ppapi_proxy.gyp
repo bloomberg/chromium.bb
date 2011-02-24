@@ -18,6 +18,7 @@
         'browser_ppb_audio_rpc_server.cc',
         'browser_ppb_audio_config_rpc_server.cc',
         'browser_ppb_core_rpc_server.cc',
+        'browser_ppb_file_io_rpc_server.cc',
         'browser_ppb_graphics_2d_rpc_server.cc',
         'browser_ppb_image_data_rpc_server.cc',
         'browser_ppb_instance_rpc_server.cc',
