@@ -121,8 +121,20 @@ void WidgetImpl::SetCursor(gfx::NativeCursor cursor) {
   native_widget_->SetCursor(cursor);
 }
 
+FocusTraversable* WidgetImpl::GetFocusTraversable() {
+  return root_view_.get();
+}
+
 ThemeProvider* WidgetImpl::GetThemeProvider() const {
   return NULL;
+}
+
+void WidgetImpl::ThemeChanged() {
+  root_view_->ThemeChanged();
+}
+
+void WidgetImpl::LocaleChanged() {
+  root_view_->LocaleChanged();
 }
 
 FocusManager* WidgetImpl::GetFocusManager() {

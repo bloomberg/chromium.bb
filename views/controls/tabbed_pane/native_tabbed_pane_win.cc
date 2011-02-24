@@ -353,7 +353,8 @@ void NativeTabbedPaneWin::ViewHierarchyChanged(bool is_add,
   if (is_add && (child == this) && content_window_) {
     // We have been added to a view hierarchy, update the FocusTraversable
     // parent.
-    content_window_->SetFocusTraversableParent(GetRootView());
+    content_window_->SetFocusTraversableParent(
+        GetWidget()->GetFocusTraversable());
   }
 }
 

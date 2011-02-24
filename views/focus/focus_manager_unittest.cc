@@ -310,7 +310,8 @@ class BorderView : public NativeViewHost {
       // We have been added to a view hierarchy, attach the native view.
       Attach(widget_->GetNativeView());
       // Also update the FocusTraversable parent so the focus traversal works.
-      widget_->GetRootView()->SetFocusTraversableParent(GetRootView());
+      widget_->GetRootView()->SetFocusTraversableParent(
+          GetWidget()->GetFocusTraversable());
     }
   }
 

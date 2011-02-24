@@ -89,9 +89,14 @@ class WidgetImpl : public internal::NativeWidgetListener,
 
   void SetCursor(gfx::NativeCursor cursor);
 
+  FocusTraversable* GetFocusTraversable();
+
   // Returns a ThemeProvider that can be used to provide resources when
   // rendering Views associated with this WidgetImpl.
   ThemeProvider* GetThemeProvider() const;
+
+  void ThemeChanged();
+  void LocaleChanged();
 
   // Returns the FocusManager for this WidgetImpl. Only top-level WidgetImpls
   // have FocusManagers.

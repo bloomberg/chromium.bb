@@ -96,11 +96,11 @@ class RootView : public View,
 
   // Public API for broadcasting theme change notifications to this View
   // hierarchy.
-  void NotifyThemeChanged();
+  void ThemeChanged();
 
   // Public API for broadcasting locale change notifications to this View
   // hierarchy.
-  void NotifyLocaleChanged();
+  void LocaleChanged();
 
   // Overridden from FocusTraversable:
   virtual FocusSearch* GetFocusSearch() OVERRIDE;

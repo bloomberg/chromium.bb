@@ -519,6 +519,18 @@ void WidgetWin::SetCursor(gfx::NativeCursor cursor) {
   }
 }
 
+FocusTraversable* WidgetWin::GetFocusTraversable() {
+  return root_view_.get();
+}
+
+void WidgetWin::ThemeChanged() {
+  root_view_->ThemeChanged();
+}
+
+void WidgetWin::LocaleChanged() {
+  root_view_->LocaleChanged();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // MessageLoop::Observer
 

@@ -263,7 +263,7 @@ bool WindowGtk::ShouldUseNativeFrame() const {
 void WindowGtk::FrameTypeChanged() {
   // This is called when the Theme has changed, so forward the event to the root
   // widget.
-  GetRootView()->NotifyThemeChanged();
+  ThemeChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

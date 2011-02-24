@@ -1093,14 +1093,12 @@ class View : public AcceleratorTarget {
 
   // Called when the UI theme has changed, overriding allows individual Views to
   // do special cleanup and processing (such as dropping resource caches).
-  // To dispatch a theme changed notification, call
-  // RootView::NotifyThemeChanged().
+  // To dispatch a theme changed notification, call Widget::ThemeChanged().
   virtual void OnThemeChanged() { }
 
   // Called when the locale has changed, overriding allows individual Views to
   // update locale-dependent strings.
-  // To dispatch a locale changed notification, call
-  // RootView::NotifyLocaleChanged().
+  // To dispatch a locale changed notification, call Widget::LocaleChanged().
   virtual void OnLocaleChanged() { }
 
   // Tooltips ------------------------------------------------------------------

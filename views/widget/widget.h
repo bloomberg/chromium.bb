@@ -26,6 +26,7 @@ using ui::ThemeProvider;
 namespace views {
 
 class FocusManager;
+class FocusTraversable;
 class RootView;
 class TooltipManager;
 class View;
@@ -241,6 +242,17 @@ class Widget {
   virtual void SchedulePaintInRect(const gfx::Rect& rect) = 0;
 
   virtual void SetCursor(gfx::NativeCursor cursor) = 0;
+
+  // Retrieves the focus traversable for this widget.
+  virtual FocusTraversable* GetFocusTraversable() = 0;
+
+  // Notifies the view hierarchy contained in this widget that theme resources
+  // changed.
+  virtual void ThemeChanged() = 0;
+
+  // Notifies the view hierarchy contained in this widget that locale resources
+  // changed.
+  virtual void LocaleChanged() = 0;
 };
 
 }  // namespace views

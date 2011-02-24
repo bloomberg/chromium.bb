@@ -252,6 +252,9 @@ class WidgetWin : public ui::WindowImpl,
   virtual View* GetDraggedView();
   virtual void SchedulePaintInRect(const gfx::Rect& rect);
   virtual void SetCursor(gfx::NativeCursor cursor);
+  virtual FocusTraversable* GetFocusTraversable();
+  virtual void ThemeChanged();
+  virtual void LocaleChanged();
 
   // Overridden from MessageLoop::Observer:
   void WillProcessMessage(const MSG& msg);

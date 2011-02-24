@@ -168,27 +168,8 @@ void FocusManager::ValidateFocusedView() {
 // Tests whether a view is valid, whether it still belongs to the window
 // hierarchy of the FocusManager.
 bool FocusManager::ContainsView(View* view) {
-  DCHECK(view);
-  RootView* root_view = view->GetRootView();
-  if (!root_view)
-    return false;
-
-  Widget* widget = root_view->GetWidget();
-  if (!widget)
-    return false;
-
-  gfx::NativeView top_window = widget_->GetNativeView();
-  gfx::NativeView window = widget->GetNativeView();
-  while (window) {
-    if (window == top_window)
-      return true;
-#if defined(OS_WIN)
-    window = ::GetParent(window);
-#else
-    window = gtk_widget_get_parent(window);
-#endif
-  }
-  return false;
+  Widget* widget = view->GetWidget();
+  return widget ? widget->GetFocusManager() == this : false;
 }
 
 void FocusManager::AdvanceFocus(bool reverse) {
@@ -235,18 +216,20 @@ View* FocusManager::GetNextFocusableView(View* original_starting_view,
 
         // Otherwise default to the root view.
         if (!focus_traversable) {
-          focus_traversable = original_starting_view->GetRootView();
+          focus_traversable =
+              original_starting_view->GetWidget()->GetFocusTraversable();
           starting_view = original_starting_view;
         }
       } else {
         // When you are going back, starting view's FocusTraversable
         // should not be used.
-        focus_traversable = original_starting_view->GetRootView();
+        focus_traversable =
+            original_starting_view->GetWidget()->GetFocusTraversable();
         starting_view = original_starting_view;
       }
     }
   } else {
-    focus_traversable = widget_->GetRootView();
+    focus_traversable = widget_->GetFocusTraversable();
   }
 
   // Traverse the FocusTraversable tree down to find the focusable view.

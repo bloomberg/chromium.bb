@@ -140,11 +140,11 @@ void RootView::SetFocusTraversableParentView(View* view) {
 
 // System events ---------------------------------------------------------------
 
-void RootView::NotifyThemeChanged() {
+void RootView::ThemeChanged() {
   View::PropagateThemeChanged();
 }
 
-void RootView::NotifyLocaleChanged() {
+void RootView::LocaleChanged() {
   View::PropagateLocaleChanged();
 }
 

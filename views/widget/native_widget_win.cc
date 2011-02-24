@@ -167,7 +167,6 @@ void NativeWidgetWin::SchedulePaintInRect(const gfx::Rect& rect) {
   ::InvalidateRect(hwnd(), &r, FALSE);
 }
 
-
 void NativeWidgetWin::FocusNativeView(gfx::NativeView native_view) {
   if (IsWindow(native_view)) {
     if (GetFocus() != native_view)

@@ -898,6 +898,18 @@ void WidgetGtk::SetCursor(gfx::NativeCursor cursor) {
     gdk_window_set_cursor(widget_->window, cursor);
 }
 
+FocusTraversable* WidgetGtk::GetFocusTraversable() {
+  return root_view_.get();
+}
+
+void WidgetGtk::ThemeChanged() {
+  root_view_->ThemeChanged();
+}
+
+void WidgetGtk::LocaleChanged() {
+  root_view_->LocaleChanged();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WidgetGtk, FocusTraversable implementation:
 
@@ -1730,11 +1742,9 @@ Widget* Widget::GetWidgetFromNativeWindow(gfx::NativeWindow native_window) {
 void Widget::NotifyLocaleChanged() {
   GList *window_list = gtk_window_list_toplevels();
   for (GList* element = window_list; element; element = g_list_next(element)) {
-    GtkWindow* window = GTK_WINDOW(element->data);
-    DCHECK(window);
-    RootView *root_view = FindRootView(window);
-    if (root_view)
-      root_view->NotifyLocaleChanged();
+    Widget* widget = GetWidgetFromNativeWindow(GTK_WINDOW(element->data));
+    if (widget)
+      widget->LocaleChanged();
   }
   g_list_free(window_list);
 }
