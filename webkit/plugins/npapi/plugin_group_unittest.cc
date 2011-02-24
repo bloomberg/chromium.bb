@@ -286,6 +286,10 @@ TEST(PluginGroupTest, MultipleVersions) {
   EXPECT_TRUE(group->RemovePlugin(kPlugin3044.path));
   EXPECT_EQ(kPlugin3043.desc, group->description());
   EXPECT_TRUE(group->IsVulnerable());
+
+  EXPECT_TRUE(group->RemovePlugin(kPlugin3043.path));
+  EXPECT_TRUE(group->IsEmpty());
+  EXPECT_EQ(string16(), group->description());
 }
 
 }  // namespace npapi

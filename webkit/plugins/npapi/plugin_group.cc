@@ -246,12 +246,14 @@ void PluginGroup::AddPlugin(const WebPluginInfo& plugin) {
 bool PluginGroup::RemovePlugin(const FilePath& filename) {
   bool did_remove = false;
   ResetGroupState();
-  for (size_t i = 0; i < web_plugin_infos_.size(); ++i) {
+  for (size_t i = 0; i < web_plugin_infos_.size();) {
     if (web_plugin_infos_[i].path == filename) {
       web_plugin_infos_.erase(web_plugin_infos_.begin() + i);
       did_remove = true;
+    } else {
+      UpdateActivePlugin(web_plugin_infos_[i]);
+      i++;
     }
-    UpdateActivePlugin(web_plugin_infos_[i]);
   }
   return did_remove;
 }
