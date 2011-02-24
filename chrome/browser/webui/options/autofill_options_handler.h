@@ -19,7 +19,7 @@ class AutoFillOptionsHandler : public OptionsPageUIHandler,
   AutoFillOptionsHandler();
   virtual ~AutoFillOptionsHandler();
 
-  // OptionsUIHandler implementation.
+  // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
   virtual void Initialize();
   virtual void RegisterMessages();

@@ -18,7 +18,7 @@ class LanguageMozcOptionsHandler : public OptionsPageUIHandler {
   LanguageMozcOptionsHandler();
   virtual ~LanguageMozcOptionsHandler();
 
-  // OptionsUIHandler implementation.
+  // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
 
  private:

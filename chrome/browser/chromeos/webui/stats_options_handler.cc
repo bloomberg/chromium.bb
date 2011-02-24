@@ -19,7 +19,7 @@ StatsOptionsHandler::StatsOptionsHandler()
     : CrosOptionsPageUIHandler(new MetricsCrosSettingsProvider()) {
 }
 
-// OptionsUIHandler implementation.
+// OptionsPageUIHandler implementation.
 void StatsOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
 }

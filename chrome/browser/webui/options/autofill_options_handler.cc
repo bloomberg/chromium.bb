@@ -58,7 +58,7 @@ AutoFillOptionsHandler::~AutoFillOptionsHandler() {
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// OptionsUIHandler implementation:
+// OptionsPageUIHandler implementation:
 void AutoFillOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);

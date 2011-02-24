@@ -27,7 +27,7 @@ class OptionsManagedBannerHandler : public policy::ManagedPrefsBannerBase {
 
  private:
   // Set the managed options banner to be visible or invisible.
-  void SetupBannerVisibilty();
+  void SetupBannerVisibility();
 
   WebUI* web_ui_;  // weak reference to the WebUI.
   string16 page_name_;  // current options page name.

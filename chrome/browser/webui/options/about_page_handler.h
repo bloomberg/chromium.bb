@@ -20,7 +20,7 @@ class AboutPageHandler : public OptionsPageUIHandler {
   AboutPageHandler();
   virtual ~AboutPageHandler();
 
-  // OptionsUIHandler implementation.
+  // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
   virtual void RegisterMessages();
 

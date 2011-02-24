@@ -18,7 +18,7 @@ class CrosLanguageOptionsHandler : public LanguageOptionsHandlerCommon {
   CrosLanguageOptionsHandler();
   virtual ~CrosLanguageOptionsHandler();
 
-  // OptionsUIHandler implementation.
+  // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
 
   // DOMMessageHandler implementation.

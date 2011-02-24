@@ -25,7 +25,7 @@ class InternetOptionsHandler
   InternetOptionsHandler();
   virtual ~InternetOptionsHandler();
 
-  // OptionsUIHandler implementation.
+  // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
 
   // WebUIMessageHandler implementation.

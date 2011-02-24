@@ -20,7 +20,7 @@ class SearchEngineManagerHandler : public OptionsPageUIHandler,
 
   virtual void Initialize();
 
-  // OptionsUIHandler implementation.
+  // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
 
   // ui::TableModelObserver implementation.

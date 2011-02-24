@@ -17,7 +17,7 @@ class ImportDataHandler : public OptionsPageUIHandler,
   ImportDataHandler();
   virtual ~ImportDataHandler();
 
-  // OptionsUIHandler implementation.
+  // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
   virtual void Initialize();
 

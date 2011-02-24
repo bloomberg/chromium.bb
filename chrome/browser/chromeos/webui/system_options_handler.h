@@ -16,7 +16,7 @@ class SystemOptionsHandler : public chromeos::CrosOptionsPageUIHandler {
   SystemOptionsHandler();
   virtual ~SystemOptionsHandler();
 
-  // OptionsUIHandler implementation.
+  // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
   virtual void Initialize();
 

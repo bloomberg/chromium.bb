@@ -20,7 +20,7 @@ class ContentSettingsHandler : public OptionsPageUIHandler {
   ContentSettingsHandler();
   virtual ~ContentSettingsHandler();
 
-  // OptionsUIHandler implementation.
+  // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
 
   virtual void Initialize();

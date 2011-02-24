@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,7 @@ enum OptionsPage {
 #if defined(OS_CHROMEOS)
   OPTIONS_PAGE_SYSTEM,
   OPTIONS_PAGE_INTERNET,
+  OPTIONS_PAGE_ACCOUNTS,
 #endif
   OPTIONS_PAGE_GENERAL,
   OPTIONS_PAGE_CONTENT,

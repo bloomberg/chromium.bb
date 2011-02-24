@@ -14,7 +14,7 @@ OptionsManagedBannerHandler::OptionsManagedBannerHandler(
     : policy::ManagedPrefsBannerBase(web_ui->GetProfile()->GetPrefs(), page),
       web_ui_(web_ui), page_name_(page_name), page_(page) {
   // Initialize the visibility state of the banner.
-  SetupBannerVisibilty();
+  SetupBannerVisibility();
 }
 
 OptionsManagedBannerHandler::~OptionsManagedBannerHandler() {}
@@ -22,10 +22,10 @@ OptionsManagedBannerHandler::~OptionsManagedBannerHandler() {}
 void OptionsManagedBannerHandler::OnUpdateVisibility() {
   // A preference that may be managed has changed.  Update our visibility
   // state.
-  SetupBannerVisibilty();
+  SetupBannerVisibility();
 }
 
-void OptionsManagedBannerHandler::SetupBannerVisibilty() {
+void OptionsManagedBannerHandler::SetupBannerVisibility() {
   // Construct the banner visibility script name.
   string16 script = ASCIIToUTF16("options.") + page_name_ +
       ASCIIToUTF16(".getInstance().setManagedBannerVisibility");

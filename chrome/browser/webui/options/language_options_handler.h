@@ -15,7 +15,7 @@ class LanguageOptionsHandler : public LanguageOptionsHandlerCommon {
   LanguageOptionsHandler();
   virtual ~LanguageOptionsHandler();
 
-  // OptionsUIHandler implementation.
+  // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
 
   // WebUIMessageHandler implementation.

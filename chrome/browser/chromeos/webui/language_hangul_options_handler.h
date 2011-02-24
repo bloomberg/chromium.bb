@@ -19,7 +19,7 @@ class LanguageHangulOptionsHandler : public OptionsPageUIHandler {
   LanguageHangulOptionsHandler();
   virtual ~LanguageHangulOptionsHandler();
 
-  // OptionsUIHandler implementation.
+  // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
 
  private:

@@ -21,7 +21,7 @@ class PersonalOptionsHandler : public OptionsPageUIHandler,
   PersonalOptionsHandler();
   virtual ~PersonalOptionsHandler();
 
-  // OptionsUIHandler implementation.
+  // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
   virtual void Initialize();
 

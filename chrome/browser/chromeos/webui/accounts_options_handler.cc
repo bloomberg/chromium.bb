@@ -11,6 +11,8 @@
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
+#include "chrome/browser/webui/options/options_managed_banner_handler.h"
+#include "chrome/browser/webui/web_ui_util.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -121,6 +123,14 @@ void AccountsOptionsHandler::WhitelistExistingUsers(const ListValue* args) {
   }
 
   web_ui_->CallJavascriptFunction(L"AccountsOptions.addUsers", whitelist_users);
+}
+
+void AccountsOptionsHandler::Initialize() {
+  DCHECK(web_ui_);
+  banner_handler_.reset(
+      new OptionsManagedBannerHandler(web_ui_,
+                                      ASCIIToUTF16("AccountsOptions"),
+                                      OPTIONS_PAGE_ACCOUNTS));
 }
 
 }  // namespace chromeos

@@ -16,7 +16,7 @@ class CookiesViewHandler : public OptionsPageUIHandler,
   CookiesViewHandler();
   virtual ~CookiesViewHandler();
 
-  // OptionsUIHandler implementation.
+  // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
   virtual void RegisterMessages();
 

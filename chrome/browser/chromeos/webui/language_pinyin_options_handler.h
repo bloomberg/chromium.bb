@@ -18,7 +18,7 @@ class LanguagePinyinOptionsHandler : public OptionsPageUIHandler {
   LanguagePinyinOptionsHandler();
   virtual ~LanguagePinyinOptionsHandler();
 
-  // OptionsUIHandler implementation.
+  // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
 
  private:

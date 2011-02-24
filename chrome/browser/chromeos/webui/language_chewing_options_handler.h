@@ -18,7 +18,7 @@ class LanguageChewingOptionsHandler : public OptionsPageUIHandler {
   LanguageChewingOptionsHandler();
   virtual ~LanguageChewingOptionsHandler();
 
-  // OptionsUIHandler implementation.
+  // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
 
  private:

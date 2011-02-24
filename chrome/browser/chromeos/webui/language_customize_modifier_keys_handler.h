@@ -17,7 +17,7 @@ class LanguageCustomizeModifierKeysHandler : public OptionsPageUIHandler {
   LanguageCustomizeModifierKeysHandler();
   virtual ~LanguageCustomizeModifierKeysHandler();
 
-  // OptionsUIHandler implementation.
+  // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
 
  private:

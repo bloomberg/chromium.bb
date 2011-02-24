@@ -25,7 +25,7 @@ class CertificateManagerHandler : public OptionsPageUIHandler,
   CertificateManagerHandler();
   virtual ~CertificateManagerHandler();
 
-  // OptionsUIHandler implementation.
+  // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
   virtual void RegisterMessages();
 

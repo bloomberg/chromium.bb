@@ -16,7 +16,7 @@ class PasswordManagerHandler : public OptionsPageUIHandler {
   PasswordManagerHandler();
   virtual ~PasswordManagerHandler();
 
-  // OptionsUIHandler implementation.
+  // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
 
   virtual void Initialize();

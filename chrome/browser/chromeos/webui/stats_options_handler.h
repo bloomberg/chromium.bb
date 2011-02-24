@@ -20,7 +20,7 @@ class StatsOptionsHandler : public CrosOptionsPageUIHandler {
  public:
   StatsOptionsHandler();
 
-  // OptionsUIHandler implementation.
+  // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
   virtual void Initialize();
 

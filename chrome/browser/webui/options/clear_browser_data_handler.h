@@ -17,7 +17,7 @@ class ClearBrowserDataHandler : public OptionsPageUIHandler,
   ClearBrowserDataHandler();
   virtual ~ClearBrowserDataHandler();
 
-  // OptionsUIHandler implementation.
+  // OptionsPageUIHandler implementation.
   virtual void Initialize();
 
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);

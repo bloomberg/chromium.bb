@@ -15,7 +15,7 @@ class FontSettingsHandler : public OptionsPageUIHandler {
   FontSettingsHandler();
   virtual ~FontSettingsHandler();
 
-  // OptionsUIHandler implementation.
+  // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
   virtual void Initialize();
 
