@@ -502,7 +502,8 @@ class CookieMonster::CanonicalCookie {
   // unless the caller has done appropriate validation and canonicalization
   // themselves.
   CanonicalCookie();
-  CanonicalCookie(const std::string& name,
+  CanonicalCookie(const GURL& url,
+                  const std::string& name,
                   const std::string& value,
                   const std::string& domain,
                   const std::string& path,
@@ -531,6 +532,7 @@ class CookieMonster::CanonicalCookie {
       const base::Time& creation_time, const base::Time& expiration_time,
       bool secure, bool http_only);
 
+  const std::string& Source() const { return source_; }
   const std::string& Name() const { return name_; }
   const std::string& Value() const { return value_; }
   const std::string& Domain() const { return domain_; }
@@ -572,7 +574,21 @@ class CookieMonster::CanonicalCookie {
   bool IsDomainMatch(const std::string& scheme, const std::string& host) const;
 
   std::string DebugString() const;
+
+  // Returns the cookie source when cookies are set for |url|.  This function
+  // is public for unit test purposes only.
+  static std::string GetCookieSourceFromURL(const GURL& url);
+
  private:
+  // The source member of a canonical cookie is the origin of the URL that tried
+  // to set this cookie, minus the port number if any.  This field is not
+  // persistent though; its only used in the in-tab cookies dialog to show the
+  // user the source URL. This is used for both allowed and blocked cookies.
+  // When a CanonicalCookie is constructed from the backing store (common case)
+  // this field will be null.  CanonicalCookie consumers should not rely on
+  // this field unless they guarantee that the creator of those
+  // CanonicalCookies properly initialized the field.
+  std::string source_;
   std::string name_;
   std::string value_;
   std::string domain_;

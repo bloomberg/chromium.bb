@@ -596,23 +596,29 @@ void CookiesTreeModel::LoadCookies() {
 }
 
 void CookiesTreeModel::LoadCookiesWithFilter(const std::wstring& filter) {
-  // mmargh mmargh mmargh!
+  // mmargh mmargh mmargh! delicious!
 
   all_cookies_ = cookie_monster_->GetAllCookies();
   CookieTreeRootNode* root = static_cast<CookieTreeRootNode*>(GetRoot());
   for (CookieList::iterator it = all_cookies_.begin();
        it != all_cookies_.end(); ++it) {
-        std::string origin_host = it->Domain();
-    if (origin_host.length() > 1 && origin_host[0] == '.')
-      origin_host = it->Domain().substr(1);
-    // We treat secure cookies just the same as normal ones.
-    GURL origin(std::string(chrome::kHttpScheme) +
-                chrome::kStandardSchemeSeparator + origin_host + "/");
+    std::string source_string = it->Source();
+    if (source_string.empty()) {
+      std::string domain = it->Domain();
+      if (domain.length() > 1 && domain[0] == '.')
+        domain = domain.substr(1);
+
+      // We treat secure cookies just the same as normal ones.
+      source_string = std::string(chrome::kHttpScheme) +
+          chrome::kStandardSchemeSeparator + domain + "/";
+    }
+
+    GURL source(source_string);
     if (!filter.size() ||
-        (CookieTreeOriginNode::TitleForUrl(origin).find(filter) !=
+        (CookieTreeOriginNode::TitleForUrl(source).find(filter) !=
          std::string::npos)) {
       CookieTreeOriginNode* origin_node =
-          root->GetOrCreateOriginNode(origin);
+          root->GetOrCreateOriginNode(source);
       CookieTreeCookiesNode* cookies_node =
           origin_node->GetOrCreateCookiesNode();
       CookieTreeCookieNode* new_cookie = new CookieTreeCookieNode(&*it);

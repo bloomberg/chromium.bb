@@ -7,6 +7,7 @@
 #include "base/message_loop.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
+#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -92,7 +93,7 @@ void AddCookieToList(
 
   scoped_ptr<net::CookieMonster::CanonicalCookie> cookie(
       new net::CookieMonster::CanonicalCookie(
-          pc.Name(), pc.Value(), key, cookie_path,
+          GURL(), pc.Name(), pc.Value(), key, cookie_path,
           pc.IsSecure(), pc.IsHttpOnly(),
           creation_time, creation_time,
           !cookie_expires.is_null(),
@@ -156,16 +157,16 @@ net::CookieMonster* CreateMonsterFromStoreForGC(
   // Must expire to be persistent
   for (int i = 0; i < num_old_cookies; i++) {
     net::CookieMonster::CanonicalCookie cc(
-        "a", "1", base::StringPrintf("h%05d.izzle", i), "/path", false, false,
-        past_creation + base::TimeDelta::FromMicroseconds(i),
+        GURL(), "a", "1", base::StringPrintf("h%05d.izzle", i), "/path", false,
+        false, past_creation + base::TimeDelta::FromMicroseconds(i),
         current - base::TimeDelta::FromDays(days_old),
         true, current + base::TimeDelta::FromDays(30));
     store->AddCookie(cc);
   }
   for (int i = num_old_cookies; i < num_cookies; i++) {
     net::CookieMonster::CanonicalCookie cc(
-        "a", "1", base::StringPrintf("h%05d.izzle", i), "/path", false, false,
-        past_creation + base::TimeDelta::FromMicroseconds(i), current,
+        GURL(), "a", "1", base::StringPrintf("h%05d.izzle", i), "/path", false,
+        false, past_creation + base::TimeDelta::FromMicroseconds(i), current,
         true, current + base::TimeDelta::FromDays(30));
     store->AddCookie(cc);
   }
