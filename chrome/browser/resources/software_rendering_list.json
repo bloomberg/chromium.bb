@@ -38,7 +38,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "1.0",
+  "version": "1.1",
   "entries": [
     { // ATI Radeon X1900 on Mac, BUGWEBKIT=47028
       "id": "1",
@@ -151,6 +151,17 @@
       "blacklist": [
         "webgl",
         "accelerated_compositing"
+      ]
+    },
+    { // NVIDIA GeForce 7300 GT on Mac, BUG=73794
+      "id": "10",
+      "os": {
+        "type": "macosx"
+      },
+      "vendor_id": "0x10de",
+      "device_id": "0x0393",
+      "blacklist": [
+        "webgl"
       ]
     }
   ]
