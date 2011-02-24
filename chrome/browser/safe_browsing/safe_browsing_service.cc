@@ -432,10 +432,12 @@ void SafeBrowsingService::HandleGetHashResults(
     const std::vector<SBFullHashResult>& full_hashes,
     bool can_cache) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (checks_.find(check) == checks_.end())
+
+  if (!enabled_)
     return;
 
-  DCHECK(enabled_);
+  // If the service has been shut down, |check| should have been deleted.
+  DCHECK(checks_.find(check) != checks_.end());
 
   // |start| is set before calling |GetFullHash()|, which should be
   // the only path which gets to here.
@@ -746,10 +748,11 @@ SafeBrowsingDatabase* SafeBrowsingService::GetDatabase() {
 void SafeBrowsingService::OnCheckDone(SafeBrowsingCheck* check) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  // If we've been shutdown during the database lookup, this check will already
-  // have been deleted (in OnIOShutdown).
-  if (!enabled_ || checks_.find(check) == checks_.end())
+  if (!enabled_)
     return;
+
+  // If the service has been shut down, |check| should have been deleted.
+  DCHECK(checks_.find(check) != checks_.end());
 
   if (check->client && check->need_get_hash) {
     // We have a partial match so we need to query Google for the full hash.
