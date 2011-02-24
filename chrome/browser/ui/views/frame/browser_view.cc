@@ -1067,7 +1067,11 @@ void BrowserView::ToggleBookmarkBar() {
   bookmark_utils::ToggleWhenVisible(browser_->profile());
 }
 
-views::Window* BrowserView::ShowAboutChromeDialog() {
+void BrowserView::ShowAboutChromeDialog() {
+  DoShowAboutChromeDialog();
+}
+
+views::Window* BrowserView::DoShowAboutChromeDialog() {
   return browser::ShowAboutChromeView(GetWindow()->GetNativeWindow(),
                                       browser_->profile());
 }

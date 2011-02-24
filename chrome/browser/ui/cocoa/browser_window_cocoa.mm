@@ -304,9 +304,8 @@ void BrowserWindowCocoa::AddFindBar(
   return [controller_ addFindBar:find_bar_cocoa_controller];
 }
 
-views::Window* BrowserWindowCocoa::ShowAboutChromeDialog() {
+void BrowserWindowCocoa::ShowAboutChromeDialog() {
   NOTIMPLEMENTED();
-  return NULL;
 }
 
 void BrowserWindowCocoa::ShowUpdateChromeDialog() {

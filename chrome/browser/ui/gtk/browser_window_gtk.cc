@@ -838,9 +838,8 @@ void BrowserWindowGtk::ToggleBookmarkBar() {
   bookmark_utils::ToggleWhenVisible(browser_->profile());
 }
 
-views::Window* BrowserWindowGtk::ShowAboutChromeDialog() {
+void BrowserWindowGtk::ShowAboutChromeDialog() {
   ShowAboutDialogForProfile(window_, browser_->profile());
-  return NULL;
 }
 
 void BrowserWindowGtk::ShowUpdateChromeDialog() {

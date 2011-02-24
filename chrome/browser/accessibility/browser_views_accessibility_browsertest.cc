@@ -29,8 +29,10 @@ VARIANT id_self = {VT_I4, CHILDID_SELF};
 
 // Dummy class to force creation of ATL module, needed by COM to instantiate
 // ViewAccessibility.
-class TestAtlModule : public CAtlDllModuleT< TestAtlModule > {};
+class TestAtlModule : public CAtlDllModuleT<TestAtlModule> {};
 TestAtlModule test_atl_module_;
+
+}  // namespace
 
 class BrowserViewsAccessibilityTest : public InProcessBrowserTest {
  public:
@@ -246,7 +248,8 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
 IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
                        TestAboutChromeViewAccObj) {
   //  Firstly, test that the WindowDelegate got updated.
-  views::Window* aboutChromeWindow = GetBrowserView()->ShowAboutChromeDialog();
+  views::Window* aboutChromeWindow =
+      GetBrowserView()->DoShowAboutChromeDialog();
   EXPECT_STREQ(
       aboutChromeWindow->GetDelegate()->GetWindowTitle().c_str(),
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_ABOUT_CHROME_TITLE)).c_str());
@@ -270,4 +273,3 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
 
   acc_obj->Release();
 }
-}  // Namespace.

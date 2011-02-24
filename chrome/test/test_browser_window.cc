@@ -72,8 +72,8 @@ bool TestBrowserWindow::IsToolbarVisible() const {
   return false;
 }
 
-views::Window* TestBrowserWindow::ShowAboutChromeDialog() {
-  return NULL;
+void TestBrowserWindow::ShowAboutChromeDialog() {
+  return;
 }
 
 bool TestBrowserWindow::IsDownloadShelfVisible() const {

@@ -90,7 +90,7 @@ class BrowserWindowGtk : public BrowserWindow,
   virtual void ConfirmAddSearchProvider(const TemplateURL* template_url,
                                         Profile* profile);
   virtual void ToggleBookmarkBar();
-  virtual views::Window* ShowAboutChromeDialog();
+  virtual void ShowAboutChromeDialog();
   virtual void ShowUpdateChromeDialog();
   virtual void ShowTaskManager();
   virtual void ShowBackgroundPages();
