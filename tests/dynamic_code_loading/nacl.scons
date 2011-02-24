@@ -5,8 +5,11 @@
 
 Import('env')
 
-# tests in this directory contain (inline) assembler
-if env.Bit('bitcode'):
+# The test works with PNaCl-ARM but not with PNaCl-x86, because the
+# assembler #defines __arm__ rather than __i386__ or __x86_64__ even
+# when we are targetting x86.
+# See http://code.google.com/p/nativeclient/issues/detail?id=833
+if env.Bit('bitcode') and not env.Bit('target_arm'):
   Return()
 
 # This leaves a gap between the code and data segments.
@@ -16,9 +19,19 @@ def GetLinkFlag(env):
     # for reserving this space rather than the executable.
     return ''
   if env.Bit('target_arm'):
-    # On ARM, we invoke the linker directly rather than via gcc.
-    # TODO(mseaborn): Change driver script to accept -Wl args.
-    return '--section-start=.rodata=0x1000000'
+    # This is fairly messy.  We are overriding a setting in the PNaCl
+    # driver program, tools/llvm/driver.py.
+    #  * The PNaCl driver does not pass "-Wl,--section-start" through to
+    #    the right stage (the ELF linker).
+    #  * The '\\$$' here is to prevent Scons and the shell from expanding
+    #    the variable.  (Scons passes commands to the shell -- argh.)
+    #  * We need the linker script in order to force the segments to be
+    #    generated in the correct order.  The linker scripts are not
+    #    otherwise used by PNaCl.
+    # TODO(mseaborn): Tidy this up.
+    return ('--pnacl-driver-set-LD_FLAGS_STATIC=\\$${LD_FLAGS_COMMON} '
+            '-T ${SCONSTRUCT_DIR}/tools/llvm/ld_script_arm_untrusted '
+            '-static --section-start .rodata=0x1000000')
   else:
     return '-Wl,--section-start,.rodata=0x1000000'
 
@@ -31,7 +44,10 @@ def GetTemplate(env):
   else:
     return 'templates_x86.S'
 
-template_obj = env.ComponentObject(GetTemplate(env))
+asm_env = env.Clone()
+if asm_env.Bit('bitcode'):
+  asm_env.Replace(CC=env['CC_NATIVE'])
+template_obj = asm_env.ComponentObject(GetTemplate(env))
 
 env.ComponentProgram('dynamic_load_test.nexe',
                      ['dynamic_load_test.c',
@@ -80,12 +96,12 @@ tests = [
         sel_ldr_flags=["-c"],
         command=[env.File('debug_mode_test.nexe')],
         ),
-   env.CommandSelLdrTestNacl(
+  ]
+if not env.Bit('target_arm'):
+  tests.append(env.CommandSelLdrTestNacl(
        'dynamic_modify_test.out',
        command=[env.File('dynamic_modify_test.nexe')],
-       sel_ldr_flags=['-E', 'NACL_SRPC_STANDALONE=1'],
-       ),
-  ]
+       sel_ldr_flags=['-E', 'NACL_SRPC_STANDALONE=1']))
 
 # TODO(kcc): non-standard linking options confuse Valgrind debug info reader.
 if not env.IsRunningUnderValgrind():

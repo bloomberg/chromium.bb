@@ -38,6 +38,7 @@ template_func_external_jump_target_replace_end:
 
         .global template_func
         .global template_func_end
+        .p2align 4
 template_func:
         mov r0, #1234 & 0xff
         orr r0, #1234 & 0xff00
