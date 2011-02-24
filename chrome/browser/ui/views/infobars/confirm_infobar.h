@@ -10,9 +10,9 @@
 #include "views/controls/link.h"
 
 class ConfirmInfoBarDelegate;
-class InfoBarTextButton;
 namespace views {
 class Label;
+class TextButton;
 }
 
 // TODO(pkasting): This class will die soon.
@@ -59,8 +59,8 @@ class ConfirmInfoBar : public AlertInfoBar,
 
   ConfirmInfoBarDelegate* GetDelegate();
 
-  InfoBarTextButton* ok_button_;
-  InfoBarTextButton* cancel_button_;
+  views::TextButton* ok_button_;
+  views::TextButton* cancel_button_;
   views::Link* link_;
 
   bool initialized_;

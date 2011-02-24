@@ -7,7 +7,6 @@
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/ui/views/event_utils.h"
 #include "chrome/browser/ui/views/infobars/confirm_infobar.h"
-#include "chrome/browser/ui/views/infobars/infobar_text_button.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -48,8 +47,8 @@ class SaveCCInfoConfirmInfoBar : public AlertInfoBar,
   // The buttons are owned by InfoBar view from the moment they are added to its
   // hierarchy (Init() called), but we still need pointers to them to process
   // messages from them.
-  InfoBarTextButton* save_button_;
-  InfoBarTextButton* dont_save_button_;
+  views::TextButton* save_button_;
+  views::TextButton* dont_save_button_;
   views::Link* link_;
   bool initialized_;
 
@@ -60,19 +59,13 @@ SaveCCInfoConfirmInfoBar::SaveCCInfoConfirmInfoBar(
     ConfirmInfoBarDelegate* delegate)
     : AlertInfoBar(delegate),
       initialized_(false) {
-  save_button_ = InfoBarTextButton::Create(this,
-      delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK));
-  dont_save_button_ = InfoBarTextButton::Create(this,
-      delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_CANCEL));
+  save_button_ = CreateTextButton(this,
+      delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK), false);
+  dont_save_button_ = CreateTextButton(this,
+      delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_CANCEL), false);
 
   // Set up the link.
-  link_ = new views::Link;
-  link_->SetText(delegate->GetLinkText());
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  link_->SetFont(rb.GetFont(ResourceBundle::MediumFont));
-  link_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  link_->SetController(this);
-  link_->MakeReadableOverBackgroundColor(background()->get_color());
+  link_ = CreateLink(delegate->GetLinkText(), this, background()->get_color());
 }
 
 SaveCCInfoConfirmInfoBar::~SaveCCInfoConfirmInfoBar() {

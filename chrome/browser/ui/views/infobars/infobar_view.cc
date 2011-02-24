@@ -7,6 +7,7 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/views/infobars/infobar_background.h"
+#include "chrome/browser/ui/views/infobars/infobar_button_border.h"
 #include "chrome/browser/ui/views/infobars/infobar_container.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "grit/generated_resources.h"
@@ -17,12 +18,20 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "views/controls/button/image_button.h"
+#include "views/controls/button/menu_button.h"
+#include "views/controls/button/text_button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
+#include "views/controls/link.h"
 #include "views/focus/external_focus_tracker.h"
 #include "views/widget/widget.h"
 
 #if defined(OS_WIN)
+#include <shellapi.h>
+
+#include "base/win/win_util.h"
+#include "base/win/windows_version.h"
+#include "ui/gfx/icon_util.h"
 #include "ui/base/win/hwnd_util.h"
 #endif
 
@@ -156,6 +165,80 @@ void InfoBarView::PaintArrow(gfx::Canvas* canvas,
 }
 
 InfoBarView::~InfoBarView() {
+}
+
+// static
+views::Label* InfoBarView::CreateLabel(const string16& text) {
+  views::Label* label = new views::Label(UTF16ToWideHack(text),
+      ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::MediumFont));
+  label->SetColor(SK_ColorBLACK);
+  label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  return label;
+}
+
+// static
+views::Link* InfoBarView::CreateLink(const string16& text,
+                                     views::LinkController* controller,
+                                     const SkColor& background_color) {
+  views::Link* link = new views::Link;
+  link->SetText(UTF16ToWideHack(text));
+  link->SetFont(
+      ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::MediumFont));
+  link->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  link->SetController(controller);
+  link->MakeReadableOverBackgroundColor(background_color);
+  return link;
+}
+
+// static
+views::MenuButton* InfoBarView::CreateMenuButton(
+    const string16& text,
+    bool normal_has_border,
+    views::ViewMenuDelegate* menu_delegate) {
+  views::MenuButton* menu_button =
+      new views::MenuButton(NULL, UTF16ToWideHack(text), menu_delegate, true);
+  menu_button->set_border(new InfoBarButtonBorder);
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  menu_button->set_menu_marker(
+      rb.GetBitmapNamed(IDR_INFOBARBUTTON_MENU_DROPARROW));
+  if (normal_has_border) {
+    menu_button->SetNormalHasBorder(true);
+    menu_button->SetAnimationDuration(0);
+  }
+  menu_button->SetEnabledColor(SK_ColorBLACK);
+  menu_button->SetHighlightColor(SK_ColorBLACK);
+  menu_button->SetHoverColor(SK_ColorBLACK);
+  menu_button->SetFont(rb.GetFont(ResourceBundle::MediumFont));
+  return menu_button;
+}
+
+// static
+views::TextButton* InfoBarView::CreateTextButton(
+    views::ButtonListener* listener,
+    const string16& text,
+    bool needs_elevation) {
+  views::TextButton* text_button =
+      new views::TextButton(listener, UTF16ToWideHack(text));
+  text_button->set_border(new InfoBarButtonBorder);
+  text_button->SetNormalHasBorder(true);
+  text_button->SetAnimationDuration(0);
+  text_button->SetEnabledColor(SK_ColorBLACK);
+  text_button->SetHighlightColor(SK_ColorBLACK);
+  text_button->SetHoverColor(SK_ColorBLACK);
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  text_button->SetFont(rb.GetFont(ResourceBundle::MediumFont));
+#if defined(OS_WIN)
+  if (needs_elevation &&
+      (base::win::GetVersion() >= base::win::VERSION_VISTA) &&
+      base::win::UserAccountControlIsEnabled()) {
+    SHSTOCKICONINFO icon_info = { sizeof SHSTOCKICONINFO };
+    SHGetStockIconInfo(SIID_SHIELD, SHGSI_ICON | SHGSI_SMALLICON, &icon_info);
+    text_button->SetIcon(*IconUtil::CreateSkBitmapFromHICON(icon_info.hIcon,
+        gfx::Size(GetSystemMetrics(SM_CXSMICON),
+                  GetSystemMetrics(SM_CYSMICON))));
+  }
+#endif
+  return text_button;
 }
 
 void InfoBarView::Layout() {

@@ -5,9 +5,7 @@
 #include "chrome/browser/ui/views/infobars/before_translate_infobar.h"
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/translate/options_menu_model.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
-#include "chrome/browser/ui/views/infobars/infobar_text_button.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "views/controls/button/menu_button.h"
@@ -35,23 +33,26 @@ BeforeTranslateInfoBar::BeforeTranslateInfoBar(
   label_2_ = CreateLabel(text.substr(offset));
   AddChildView(label_2_);
 
-  accept_button_ = InfoBarTextButton::CreateWithMessageID(this,
-      IDS_TRANSLATE_INFOBAR_ACCEPT);
+  accept_button_ = CreateTextButton(this,
+      l10n_util::GetStringUTF16(IDS_TRANSLATE_INFOBAR_ACCEPT), false);
   AddChildView(accept_button_);
 
-  deny_button_ = InfoBarTextButton::CreateWithMessageID(this,
-      IDS_TRANSLATE_INFOBAR_DENY);
+  deny_button_ = CreateTextButton(this,
+      l10n_util::GetStringUTF16(IDS_TRANSLATE_INFOBAR_DENY), false);
   AddChildView(deny_button_);
 
   const string16& language(delegate->GetLanguageDisplayableNameAt(
       delegate->original_language_index()));
   if (delegate->ShouldShowNeverTranslateButton()) {
-    never_translate_button_ = InfoBarTextButton::CreateWithMessageIDAndParam(
-        this, IDS_TRANSLATE_INFOBAR_NEVER_TRANSLATE, language);
+    DCHECK(!delegate->ShouldShowAlwaysTranslateButton());
+    never_translate_button_ = CreateTextButton(this,
+        l10n_util::GetStringFUTF16(IDS_TRANSLATE_INFOBAR_NEVER_TRANSLATE,
+                                   language), false);
     AddChildView(never_translate_button_);
   } else if (delegate->ShouldShowAlwaysTranslateButton()) {
-    always_translate_button_ = InfoBarTextButton::CreateWithMessageIDAndParam(
-        this, IDS_TRANSLATE_INFOBAR_ALWAYS_TRANSLATE, language);
+    always_translate_button_ = CreateTextButton(this,
+        l10n_util::GetStringFUTF16(IDS_TRANSLATE_INFOBAR_ALWAYS_TRANSLATE,
+                                   language), false);
     AddChildView(always_translate_button_);
   }
 

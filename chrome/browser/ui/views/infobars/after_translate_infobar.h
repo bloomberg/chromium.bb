@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/views/infobars/translate_infobar_base.h"
 #include "views/controls/menu/view_menu_delegate.h"
 
-class InfoBarTextButton;
 class TranslateInfoBarDelegate;
 namespace views {
 class Menu2;
@@ -45,7 +44,7 @@ class AfterTranslateInfoBar : public TranslateInfoBarBase,
 
   views::MenuButton* original_language_menu_button_;
   views::MenuButton* target_language_menu_button_;
-  InfoBarTextButton* revert_button_;
+  views::TextButton* revert_button_;
   views::MenuButton* options_menu_button_;
 
   scoped_ptr<views::Menu2> original_language_menu_;

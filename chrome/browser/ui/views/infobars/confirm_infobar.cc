@@ -4,11 +4,9 @@
 
 #include "chrome/browser/ui/views/infobars/confirm_infobar.h"
 
-#include "base/utf_string_conversions.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/ui/views/event_utils.h"
-#include "chrome/browser/ui/views/infobars/infobar_text_button.h"
-#include "ui/base/resource/resource_bundle.h"
+#include "views/controls/button/text_button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
 
@@ -16,11 +14,7 @@
 
 AlertInfoBar::AlertInfoBar(ConfirmInfoBarDelegate* delegate)
     : InfoBarView(delegate) {
-  label_ = new views::Label(
-      UTF16ToWideHack(delegate->GetMessageText()),
-      ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::MediumFont));
-  label_->SetColor(SK_ColorBLACK);
-  label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  label_ = CreateLabel(delegate->GetMessageText());
   AddChildView(label_);
 
   icon_ = new views::ImageView;
@@ -43,11 +37,12 @@ void AlertInfoBar::Layout() {
   icon_->SetBounds(kHorizontalPadding, OffsetY(this, icon_size),
                    icon_size.width(), icon_size.height());
 
-  gfx::Size text_size = label_->GetPreferredSize();
-  int text_width = std::min(text_size.width(),
+  int available_width = std::max(0,
       GetAvailableWidth() - icon_->bounds().right() - kIconLabelSpacing);
+  gfx::Size label_size = label_->GetPreferredSize();
   label_->SetBounds(icon_->bounds().right() + kIconLabelSpacing,
-                    OffsetY(this, text_size), text_width, text_size.height());
+      OffsetY(this, label_size), std::min(label_size.width(), available_width),
+      label_size.height());
 }
 
 // ConfirmInfoBarDelegate -----------------------------------------------------
@@ -60,29 +55,19 @@ InfoBar* ConfirmInfoBarDelegate::CreateInfoBar() {
 
 ConfirmInfoBar::ConfirmInfoBar(ConfirmInfoBarDelegate* delegate)
     : AlertInfoBar(delegate),
-      ok_button_(NULL),
-      cancel_button_(NULL),
-      link_(NULL),
       initialized_(false) {
-  ok_button_ = InfoBarTextButton::Create(this,
+  ok_button_ = CreateTextButton(this,
       (delegate->GetButtons() & ConfirmInfoBarDelegate::BUTTON_OK) ?
           delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK) :
-          string16());
-  ok_button_->SetAccessibleName(WideToUTF16Hack(ok_button_->text()));
-  cancel_button_ = InfoBarTextButton::Create(this,
+          string16(),
+      delegate->NeedElevation(ConfirmInfoBarDelegate::BUTTON_OK));
+  cancel_button_ = CreateTextButton(this,
       (delegate->GetButtons() & ConfirmInfoBarDelegate::BUTTON_CANCEL) ?
           delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_CANCEL) :
-          string16());
-  cancel_button_->SetAccessibleName(WideToUTF16Hack(cancel_button_->text()));
+          string16(),
+      delegate->NeedElevation(ConfirmInfoBarDelegate::BUTTON_CANCEL));
 
-  // Set up the link.
-  link_ = new views::Link;
-  link_->SetText(UTF16ToWideHack(delegate->GetLinkText()));
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  link_->SetFont(rb.GetFont(ResourceBundle::MediumFont));
-  link_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  link_->SetController(this);
-  link_->MakeReadableOverBackgroundColor(background()->get_color());
+  link_ = CreateLink(delegate->GetLinkText(), this, background()->get_color());
 }
 
 ConfirmInfoBar::~ConfirmInfoBar() {

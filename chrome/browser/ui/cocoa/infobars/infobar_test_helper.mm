@@ -9,7 +9,7 @@
 
 // MockLinkInfoBarDelegate ----------------------------------------------------
 
-const char MockLinkInfoBarDelegate::kMessage[] = "MockLinkInfoBarMessage";
+const char MockLinkInfoBarDelegate::kMessage[] = "MockLinkInfoBarMessage ";
 const char MockLinkInfoBarDelegate::kLink[] = "http://dev.chromium.org";
 
 MockLinkInfoBarDelegate::MockLinkInfoBarDelegate()
@@ -37,6 +37,7 @@ SkBitmap* MockLinkInfoBarDelegate::GetIcon() const {
 string16 MockLinkInfoBarDelegate::GetMessageTextWithOffset(
     size_t* link_offset) const {
   message_text_accessed_ = true;
+  *link_offset = arraysize(kMessage) - 1;
   return ASCIIToUTF16(kMessage);
 }
 

@@ -13,10 +13,8 @@
 class LinkInfoBarDelegate : public InfoBarDelegate {
  public:
   // Returns the message string to be displayed in the InfoBar. |link_offset|
-  // is the position where the link should be inserted. If |link_offset| is set
-  // to string16::npos (it is by default), the link is right aligned within
-  // the InfoBar rather than being embedded in the message text.
-  virtual string16 GetMessageTextWithOffset(size_t* link_offset) const;
+  // is the position where the link should be inserted.
+  virtual string16 GetMessageTextWithOffset(size_t* link_offset) const = 0;
 
   // Returns the text of the link to be displayed.
   virtual string16 GetLinkText() const = 0;

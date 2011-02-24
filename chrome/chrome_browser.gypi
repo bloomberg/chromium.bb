@@ -3096,8 +3096,6 @@
         'browser/ui/views/infobars/infobar_button_border.h',
         'browser/ui/views/infobars/infobar_container.cc',
         'browser/ui/views/infobars/infobar_container.h',
-        'browser/ui/views/infobars/infobar_text_button.cc',
-        'browser/ui/views/infobars/infobar_text_button.h',
         'browser/ui/views/infobars/infobar_view.cc',
         'browser/ui/views/infobars/infobar_view.h',
         'browser/ui/views/infobars/link_infobar.cc',

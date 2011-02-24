@@ -72,46 +72,6 @@ TranslateInfoBarBase::TranslateInfoBarBase(TranslateInfoBarDelegate* delegate)
 TranslateInfoBarBase::~TranslateInfoBarBase() {
 }
 
-// static
-views::Label* TranslateInfoBarBase::CreateLabel(const string16& text) {
-  views::Label* label = new views::Label(UTF16ToWideHack(text),
-      ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::MediumFont));
-  label->SetColor(SK_ColorBLACK);
-  label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  return label;
-}
-
-// static
-views::MenuButton* TranslateInfoBarBase::CreateMenuButton(
-    const string16& text,
-    bool normal_has_border,
-    views::ViewMenuDelegate* menu_delegate) {
-  // Don't use text to instantiate MenuButton because we need to set font before
-  // setting text so that the button will resize to fit the entire text.
-  views::MenuButton* menu_button =
-      new views::MenuButton(NULL, std::wstring(), menu_delegate, true);
-  menu_button->set_border(new InfoBarButtonBorder);
-  menu_button->set_menu_marker(ResourceBundle::GetSharedInstance().
-      GetBitmapNamed(IDR_INFOBARBUTTON_MENU_DROPARROW));
-  if (normal_has_border) {
-    menu_button->SetNormalHasBorder(true);  // Normal button state has border.
-    // Disable animation during state change.
-    menu_button->SetAnimationDuration(0);
-  }
-  // Set font colors for different states.
-  menu_button->SetEnabledColor(SK_ColorBLACK);
-  menu_button->SetHighlightColor(SK_ColorBLACK);
-  menu_button->SetHoverColor(SK_ColorBLACK);
-
-  // Set font then text, then size button to fit text.
-  menu_button->SetFont(ResourceBundle::GetSharedInstance().GetFont(
-      ResourceBundle::MediumFont));
-  menu_button->SetText(UTF16ToWideHack(text));
-  menu_button->ClearMaxTextSize();
-  menu_button->SizeToPreferredSize();
-  return menu_button;
-}
-
 void TranslateInfoBarBase::Layout() {
   InfoBarView::Layout();
 

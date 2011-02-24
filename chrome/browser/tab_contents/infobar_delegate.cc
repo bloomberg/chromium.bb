@@ -14,12 +14,6 @@
 
 // LinkInfoBarDelegate --------------------------------------------------------
 
-string16 LinkInfoBarDelegate::GetMessageTextWithOffset(
-    size_t* link_offset) const {
-  *link_offset = string16::npos;
-  return string16();
-}
-
 bool LinkInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
   return true;
 }

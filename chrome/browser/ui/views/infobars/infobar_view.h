@@ -23,6 +23,11 @@ class ExternalFocusTracker;
 class ImageButton;
 class ImageView;
 class Label;
+class Link;
+class LinkController;
+class MenuButton;
+class TextButton;
+class ViewMenuDelegate;
 }
 
 // TODO(pkasting): infobar_delegate.h forward declares "class InfoBar" but the
@@ -83,6 +88,25 @@ class InfoBarView : public InfoBar,
   static const int kEndOfLabelSpacing;
 
   virtual ~InfoBarView();
+
+  // Creates a label with the appropriate font and color for an infobar.
+  static views::Label* CreateLabel(const string16& text);
+
+  // Creates a link with the appropriate font and color for an infobar.
+  static views::Link* CreateLink(const string16& text,
+                                 views::LinkController* controller,
+                                 const SkColor& background_color);
+
+  // Creates a menu button with an infobar-specific appearance.
+  static views::MenuButton* CreateMenuButton(
+      const string16& text,
+      bool normal_has_border,
+      views::ViewMenuDelegate* menu_delegate);
+
+  // Creates a text button with an infobar-specific appearance.
+  static views::TextButton* CreateTextButton(views::ButtonListener* listener,
+                                             const string16& text,
+                                             bool needs_elevation);
 
   // views::View:
   virtual void Layout();

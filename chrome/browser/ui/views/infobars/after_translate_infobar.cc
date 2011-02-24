@@ -5,15 +5,10 @@
 #include "chrome/browser/ui/views/infobars/after_translate_infobar.h"
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/translate/options_menu_model.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
-#include "chrome/browser/ui/views/infobars/infobar_button_border.h"
-#include "chrome/browser/ui/views/infobars/infobar_text_button.h"
-#include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "views/controls/button/menu_button.h"
-#include "views/controls/button/text_button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/controls/menu/menu_2.h"
@@ -46,8 +41,8 @@ AfterTranslateInfoBar::AfterTranslateInfoBar(
   label_3_ = CreateLabel(strings[2]);
   AddChildView(label_3_);
 
-  revert_button_ = InfoBarTextButton::Create(this,
-      l10n_util::GetStringUTF16(IDS_TRANSLATE_INFOBAR_REVERT));
+  revert_button_ = CreateTextButton(this,
+      l10n_util::GetStringUTF16(IDS_TRANSLATE_INFOBAR_REVERT), false);
   AddChildView(revert_button_);
 
   options_menu_button_ = CreateMenuButton(

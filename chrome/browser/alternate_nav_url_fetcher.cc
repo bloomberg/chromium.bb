@@ -111,7 +111,6 @@ string16 AlternateNavURLFetcher::GetMessageTextWithOffset(
     size_t* link_offset) const {
   const string16 label = l10n_util::GetStringFUTF16(
       IDS_ALTERNATE_NAV_URL_VIEW_LABEL, string16(), link_offset);
-  DCHECK_NE(*link_offset, string16::npos);
   return label;
 }
 
