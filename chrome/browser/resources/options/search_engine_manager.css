@@ -20,16 +20,18 @@
 }
 
 .search-engine-list .keyword-column {
+  -webkit-padding-end: 1ex;
+  box-sizing: border-box;
   width: 26%;
 }
 
 .search-engine-list .url-column {
+  box-sizing: border-box;
   width: 37%;
 }
 
 .search-engine-list .keyword-column,
 .search-engine-list .url-column {
-  -webkit-padding-end: 1ex;
   color: #666666;
 }
 
@@ -50,7 +52,6 @@
 
 .search-engine-list .url-column button {
   -webkit-margin-start: 3px;
-  -webkit-margin-end: 5px;
   background: #8aaaed;
   color: #fff;
   margin-top: 0;
