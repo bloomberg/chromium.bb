@@ -808,8 +808,10 @@ const BookmarkNode* BookmarkBarView::GetNodeForButtonAt(const gfx::Point& loc,
   }
 
   // And finally the other folder.
-  if (other_bookmarked_button_->bounds().Contains(adjusted_loc))
+  if (other_bookmarked_button_->IsVisible() &&
+      other_bookmarked_button_->bounds().Contains(adjusted_loc)) {
     return model_->other_node();
+  }
 
   return NULL;
 }
