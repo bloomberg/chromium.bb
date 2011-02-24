@@ -11,7 +11,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/gtk/accessible_widget_helper_gtk.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_tree.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
@@ -36,16 +35,8 @@ void ContentSettingsWindowGtk::Show(GtkWindow* parent,
   DCHECK(profile);
 
   if (!settings_window) {
-    // Creating and initializing a bunch of controls generates a bunch of
-    // spurious events as control values change. Temporarily suppress
-    // accessibility events until the window is created.
-    profile->PauseAccessibilityEvents();
-
     // Create the options window.
     settings_window = new ContentSettingsWindowGtk(parent, profile);
-
-    // Resume accessibility events.
-    profile->ResumeAccessibilityEvents();
   }
   settings_window->ShowContentSettingsTab(page);
 }
@@ -87,10 +78,6 @@ ContentSettingsWindowGtk::ContentSettingsWindowGtk(GtkWindow* parent,
       GTK_RESPONSE_CLOSE,
       NULL);
   gtk_window_set_policy(GTK_WINDOW(dialog_), FALSE, FALSE, TRUE);
-
-  accessible_widget_helper_.reset(new AccessibleWidgetHelper(
-      dialog_, profile_));
-  accessible_widget_helper_->SendOpenWindowNotification(dialog_name);
 
   gtk_window_set_default_size(GTK_WINDOW(dialog_), 500, -1);
   // Allow browser windows to go in front of the options dialog in metacity.

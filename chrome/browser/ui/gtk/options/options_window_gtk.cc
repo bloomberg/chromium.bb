@@ -6,14 +6,12 @@
 
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/accessibility_events.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/gtk/accessible_widget_helper_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/options/advanced_page_gtk.h"
 #include "chrome/browser/ui/gtk/options/content_page_gtk.h"
@@ -65,8 +63,6 @@ class OptionsWindowGtk {
   // The last page the user was on when they opened the Options window.
   IntegerPrefMember last_selected_page_;
 
-  scoped_ptr<AccessibleWidgetHelper> accessible_widget_helper_;
-
   DISALLOW_COPY_AND_ASSIGN(OptionsWindowGtk);
 };
 
@@ -102,10 +98,6 @@ OptionsWindowGtk::OptionsWindowGtk(Profile* profile)
       GTK_STOCK_CLOSE,
       GTK_RESPONSE_CLOSE,
       NULL);
-
-  accessible_widget_helper_.reset(new AccessibleWidgetHelper(
-      dialog_, profile));
-  accessible_widget_helper_->SendOpenWindowNotification(dialog_name);
 
   gtk_window_set_default_size(GTK_WINDOW(dialog_), 500, -1);
   // Allow browser windows to go in front of the options dialog in metacity.
@@ -229,16 +221,8 @@ void ShowOptionsWindow(OptionsPage page,
   // If there's already an existing options window, activate it and switch to
   // the specified page.
   if (!options_window) {
-    // Creating and initializing a bunch of controls generates a bunch of
-    // spurious events as control values change. Temporarily suppress
-    // accessibility events until the window is created.
-    profile->PauseAccessibilityEvents();
-
     // Create the options window.
     options_window = new OptionsWindowGtk(profile);
-
-    // Resume accessibility events.
-    profile->ResumeAccessibilityEvents();
   }
   options_window->ShowOptionsPage(page, highlight_group);
 }

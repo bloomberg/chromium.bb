@@ -9,7 +9,6 @@
 #include "chrome/browser/importer/importer.h"
 #include "ui/base/gtk/gtk_signal.h"
 
-class AccessibleWidgetHelper;
 class Profile;
 
 class ImportDialogGtk : public ImportObserver,
@@ -82,9 +81,6 @@ class ImportDialogGtk : public ImportObserver,
   scoped_refptr<ImporterList> importer_list_;
 
   int initial_state_;
-
-  // Helper object to manage accessibility metadata.
-  scoped_ptr<AccessibleWidgetHelper> accessible_widget_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(ImportDialogGtk);
 };

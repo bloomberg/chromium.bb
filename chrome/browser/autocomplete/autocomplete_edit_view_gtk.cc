@@ -41,7 +41,6 @@
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/autocomplete/autocomplete_edit_view_views.h"
-#include "chrome/browser/ui/gtk/accessible_widget_helper_gtk.h"
 #include "chrome/browser/ui/views/autocomplete/autocomplete_popup_contents_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "views/controls/textfield/native_textfield_views.h"
@@ -876,13 +875,6 @@ int AutocompleteEditViewGtk::OnPerformDrop(
   return ui::DragDropTypes::DRAG_NONE;
 }
 
-void AutocompleteEditViewGtk::EnableAccessibility() {
-  accessible_widget_helper_.reset(
-      new AccessibleWidgetHelper(text_view(), model_->profile()));
-  accessible_widget_helper_->SetWidgetName(
-      text_view(), l10n_util::GetStringUTF8(IDS_ACCNAME_LOCATION));
-}
-
 // static
 AutocompleteEditView* AutocompleteEditViewGtk::Create(
     AutocompleteEditController* controller,
@@ -918,8 +910,6 @@ AutocompleteEditView* AutocompleteEditViewGtk::Create(
   // Hide the widget. NativeViewHostGtk will make it visible again as
   // necessary.
   gtk_widget_hide(autocomplete->GetNativeView());
-
-  autocomplete->EnableAccessibility();
 
   return autocomplete;
 }

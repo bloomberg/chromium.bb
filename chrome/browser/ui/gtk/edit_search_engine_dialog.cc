@@ -13,7 +13,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
-#include "chrome/browser/ui/gtk/accessible_widget_helper_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/search_engines/edit_search_engine_controller.h"
 #include "googleurl/src/gurl.h"
@@ -93,10 +92,6 @@ void EditSearchEngineDialog::Init(GtkWindow* parent_window, Profile* profile) {
       GTK_RESPONSE_CANCEL,
       NULL);
 
-  accessible_widget_helper_.reset(new AccessibleWidgetHelper(
-      dialog_, profile));
-  accessible_widget_helper_->SendOpenWindowNotification(dialog_name);
-
   ok_button_ = gtk_dialog_add_button(GTK_DIALOG(dialog_),
                                      controller_->template_url() ?
                                      GTK_STOCK_SAVE :
@@ -129,9 +124,6 @@ void EditSearchEngineDialog::Init(GtkWindow* parent_window, Profile* profile) {
   gtk_entry_set_activates_default(GTK_ENTRY(title_entry_), TRUE);
   g_signal_connect(title_entry_, "changed",
                    G_CALLBACK(OnEntryChangedThunk), this);
-  accessible_widget_helper_->SetWidgetName(
-      title_entry_,
-      IDS_SEARCH_ENGINES_EDITOR_DESCRIPTION_LABEL);
 
   keyword_entry_ = gtk_entry_new();
   gtk_entry_set_activates_default(GTK_ENTRY(keyword_entry_), TRUE);
@@ -139,17 +131,11 @@ void EditSearchEngineDialog::Init(GtkWindow* parent_window, Profile* profile) {
                    G_CALLBACK(OnEntryChangedThunk), this);
   g_signal_connect(keyword_entry_, "insert-text",
                    G_CALLBACK(LowercaseInsertTextHandler), NULL);
-  accessible_widget_helper_->SetWidgetName(
-      keyword_entry_,
-      IDS_SEARCH_ENGINES_EDITOR_KEYWORD_LABEL);
 
   url_entry_ = gtk_entry_new();
   gtk_entry_set_activates_default(GTK_ENTRY(url_entry_), TRUE);
   g_signal_connect(url_entry_, "changed",
                    G_CALLBACK(OnEntryChangedThunk), this);
-  accessible_widget_helper_->SetWidgetName(
-      url_entry_,
-      IDS_SEARCH_ENGINES_EDITOR_URL_LABEL);
 
   title_image_ = gtk_image_new_from_pixbuf(NULL);
   keyword_image_ = gtk_image_new_from_pixbuf(NULL);

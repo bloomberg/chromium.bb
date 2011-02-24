@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/gtk/gtk_tree.h"
 #include "ui/base/gtk/gtk_signal.h"
 
-class AccessibleWidgetHelper;
 class GURL;
 class Profile;
 class PossibleURLModel;
@@ -83,9 +82,6 @@ class UrlPickerDialogGtk : public gtk_tree::TableAdapter::Delegate {
 
   // Called if the user selects an url.
   UrlPickerCallback* callback_;
-
-  // Helper object to manage accessibility metadata.
-  scoped_ptr<AccessibleWidgetHelper> accessible_widget_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(UrlPickerDialogGtk);
 };

@@ -12,7 +12,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
-#include "chrome/browser/ui/gtk/accessible_widget_helper_gtk.h"
 #include "chrome/browser/ui/gtk/edit_search_engine_dialog.h"
 #include "chrome/browser/ui/gtk/gtk_tree.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
@@ -93,10 +92,6 @@ void KeywordEditorView::Init() {
       GTK_STOCK_CLOSE,
       GTK_RESPONSE_CLOSE,
       NULL);
-
-  accessible_widget_helper_.reset(new AccessibleWidgetHelper(
-      dialog_, profile_));
-  accessible_widget_helper_->SendOpenWindowNotification(dialog_name);
 
   gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
                       gtk_util::kContentAreaSpacing);

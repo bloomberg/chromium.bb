@@ -8,7 +8,6 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/importer/importer_data_types.h"
-#include "chrome/browser/ui/gtk/accessible_widget_helper_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -60,10 +59,6 @@ ImportDialogGtk::ImportDialogGtk(GtkWindow* parent, Profile* profile,
       GTK_STOCK_CANCEL,
       GTK_RESPONSE_REJECT,
       NULL);
-
-  accessible_widget_helper_.reset(new AccessibleWidgetHelper(
-      dialog_, profile));
-  accessible_widget_helper_->SendOpenWindowNotification(dialog_name);
 
   importer_host_->set_parent_window(GTK_WINDOW(dialog_));
 

@@ -20,7 +20,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
-#include "chrome/browser/ui/gtk/accessible_widget_helper_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/keyword_editor_view.h"
@@ -82,7 +81,6 @@ GeneralPageGtk::GeneralPageGtk(Profile* profile)
   scoped_ptr<OptionsLayoutBuilderGtk>
     options_builder(OptionsLayoutBuilderGtk::CreateOptionallyCompactLayout());
   page_ = options_builder->get_page_widget();
-  accessible_widget_helper_.reset(new AccessibleWidgetHelper(page_, profile));
 
   options_builder->AddWidget(managed_prefs_banner_.banner_widget(), false);
   options_builder->AddOptionGroup(
@@ -381,8 +379,6 @@ GtkWidget* GeneralPageGtk::InitDefaultSearchGroup() {
                    G_CALLBACK(OnDefaultSearchEngineChangedThunk), this);
   gtk_container_add(GTK_CONTAINER(search_hbox),
                     default_search_engine_combobox_);
-  accessible_widget_helper_->SetWidgetName(
-      default_search_engine_combobox_, IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME);
 
   GtkCellRenderer* renderer = gtk_cell_renderer_text_new();
   gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(default_search_engine_combobox_),

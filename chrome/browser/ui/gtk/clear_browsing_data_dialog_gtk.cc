@@ -10,7 +10,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/gtk/accessible_widget_helper_gtk.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
@@ -48,9 +47,6 @@ ClearBrowsingDataDialogGtk::ClearBrowsingDataDialogGtk(GtkWindow* parent,
   GtkWidget* cancel_button = gtk_dialog_add_button(GTK_DIALOG(dialog_),
       GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT);
   gtk_widget_grab_focus(cancel_button);
-
-  accessible_widget_helper_.reset(new AccessibleWidgetHelper(dialog_, profile));
-  accessible_widget_helper_->SendOpenWindowNotification(dialog_name);
 
   gtk_util::AddButtonToDialog(dialog_,
       l10n_util::GetStringUTF8(IDS_CLEAR_BROWSING_DATA_COMMIT).c_str(),

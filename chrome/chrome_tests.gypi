@@ -1319,7 +1319,6 @@
         'browser/global_keyboard_shortcuts_mac_unittest.mm',
         'browser/google/google_update_settings_unittest.cc',
         'browser/google/google_url_tracker_unittest.cc',
-        'browser/ui/gtk/accessibility_event_router_gtk_unittest.cc',
         'browser/ui/gtk/bookmark_bar_gtk_unittest.cc',
         'browser/ui/gtk/bookmark_editor_gtk_unittest.cc',
         'browser/ui/gtk/bookmark_utils_gtk_unittest.cc',

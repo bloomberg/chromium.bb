@@ -2592,10 +2592,6 @@
         'browser/ui/gtk/about_chrome_dialog.h',
         'browser/ui/gtk/accelerators_gtk.cc',
         'browser/ui/gtk/accelerators_gtk.h',
-        'browser/ui/gtk/accessibility_event_router_gtk.cc',
-        'browser/ui/gtk/accessibility_event_router_gtk.h',
-        'browser/ui/gtk/accessible_widget_helper_gtk.cc',
-        'browser/ui/gtk/accessible_widget_helper_gtk.h',
         'browser/ui/gtk/back_forward_button_gtk.cc',
         'browser/ui/gtk/back_forward_button_gtk.h',
         'browser/ui/gtk/bookmark_bar_gtk.cc',
@@ -3875,10 +3871,6 @@
 
                 # Exclude all of browser/ui/gtk, then include the things we want.
                 ['exclude', '^browser/ui/gtk'],
-                ['include', '^browser/ui/gtk/accessibility_event_router_gtk.cc'],
-                ['include', '^browser/ui/gtk/accessibility_event_router_gtk.h'],
-                ['include', '^browser/ui/gtk/accessible_widget_helper_gtk.cc'],
-                ['include', '^browser/ui/gtk/accessible_widget_helper_gtk.h'],
                 ['include', '^browser/ui/gtk/bookmark_editor_gtk.cc'],
                 ['include', '^browser/ui/gtk/bookmark_editor_gtk.h'],
                 ['include', '^browser/ui/gtk/bookmark_tree_model.cc'],

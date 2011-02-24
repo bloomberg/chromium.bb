@@ -26,7 +26,6 @@
 #include "ui/gfx/rect.h"
 #include "webkit/glue/window_open_disposition.h"
 
-class AccessibleWidgetHelper;
 class AutocompleteEditController;
 class AutocompleteEditModel;
 class AutocompletePopupView;
@@ -148,9 +147,6 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
 #if defined(TOOLKIT_VIEWS)
   virtual views::View* AddToView(views::View* parent);
   virtual int OnPerformDrop(const views::DropTargetEvent& event);
-
-  // Enables accessibility on AutocompleteEditView.
-  void EnableAccessibility();
 
   // A factory method to create an AutocompleteEditView instance initialized for
   // linux_views.  This currently returns an instance of
@@ -544,10 +540,6 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   GtkWidget* going_to_focus_;
 
   ui::GtkSignalRegistrar signals_;
-
-#if defined(TOOLKIT_VIEWS)
-  scoped_ptr<AccessibleWidgetHelper> accessible_widget_helper_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteEditViewGtk);
 };

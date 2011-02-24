@@ -13,7 +13,6 @@
 typedef struct _GtkWidget GtkWidget;
 typedef struct _GtkWindow GtkWindow;
 
-class AccessibleWidgetHelper;
 class BrowsingDataRemover;
 class Profile;
 
@@ -59,9 +58,6 @@ class ClearBrowsingDataDialogGtk {
   // If non-null it means removal is in progress. BrowsingDataRemover takes care
   // of deleting itself when done.
   BrowsingDataRemover* remover_;
-
-  // Helper object to manage accessibility metadata.
-  scoped_ptr<AccessibleWidgetHelper> accessible_widget_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(ClearBrowsingDataDialogGtk);
 };

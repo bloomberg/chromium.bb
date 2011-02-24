@@ -14,7 +14,6 @@
 #include "base/string16.h"
 #include "ui/base/gtk/gtk_signal.h"
 
-class AccessibleWidgetHelper;
 class EditSearchEngineController;
 class EditSearchEngineControllerDelegate;
 class Profile;
@@ -73,9 +72,6 @@ class EditSearchEngineDialog {
   GtkWidget* ok_button_;
 
   scoped_ptr<EditSearchEngineController> controller_;
-
-  // Helper object to manage accessibility metadata.
-  scoped_ptr<AccessibleWidgetHelper> accessible_widget_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(EditSearchEngineDialog);
 };

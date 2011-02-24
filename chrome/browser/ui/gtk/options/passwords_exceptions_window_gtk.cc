@@ -10,7 +10,6 @@
 
 #include "base/message_loop.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/gtk/accessible_widget_helper_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/options/passwords_exceptions_page_gtk.h"
 #include "chrome/browser/ui/gtk/options/passwords_page_gtk.h"
@@ -51,9 +50,6 @@ class PasswordsExceptionsWindowGtk {
   // The exceptions page.
   PasswordsExceptionsPageGtk exceptions_page_;
 
-  // Helper object to manage accessibility metadata.
-  scoped_ptr<AccessibleWidgetHelper> accessible_widget_helper_;
-
   DISALLOW_COPY_AND_ASSIGN(PasswordsExceptionsWindowGtk);
 };
 
@@ -80,10 +76,6 @@ PasswordsExceptionsWindowGtk::PasswordsExceptionsWindowGtk(Profile* profile)
       NULL);
   gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
                       gtk_util::kContentAreaSpacing);
-
-  accessible_widget_helper_.reset(new AccessibleWidgetHelper(
-      dialog_, profile));
-  accessible_widget_helper_->SendOpenWindowNotification(dialog_name);
 
   notebook_ = gtk_notebook_new();
 

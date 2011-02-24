@@ -15,8 +15,6 @@
 #include "chrome/common/content_settings_types.h"
 #include "ui/base/gtk/gtk_signal.h"
 
-class AccessibleWidgetHelper;
-
 // A window that presents options to the user for blocking various kinds of
 // content in webpages (cookies, javascript, images, popups).
 class ContentSettingsWindowGtk {
@@ -63,9 +61,6 @@ class ContentSettingsWindowGtk {
   ContentFilterPageGtk popup_page_;
   ContentFilterPageGtk geolocation_page_;
   ContentFilterPageGtk notifications_page_;
-
-  // Helper object to manage accessibility metadata.
-  scoped_ptr<AccessibleWidgetHelper> accessible_widget_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingsWindowGtk);
 };
