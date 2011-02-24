@@ -87,7 +87,6 @@ def CheckCall(command, print_error=True, **kwargs):
 
   Works on python 2.4
   """
-  logging.info("CheckCall(%s)" % command)
   try:
     stderr = None
     if not print_error:
@@ -99,7 +98,6 @@ def CheckCall(command, print_error=True, **kwargs):
   if process.returncode:
     raise CheckCallError(command, kwargs.get('cwd', None), process.returncode,
         std_out, std_err)
-  logging.info("CheckCall done")
   return std_out, std_err
 
 
