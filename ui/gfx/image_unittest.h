@@ -41,13 +41,23 @@ SkBitmap* CreateBitmap() {
 PlatformImage CreatePlatformImage() {
   scoped_ptr<SkBitmap> bitmap(CreateBitmap());
 #if defined(OS_MACOSX)
-  NSImage* image = ::gfx::SkBitmapToNSImage(*(bitmap.get()));
+  NSImage* image = gfx::SkBitmapToNSImage(*(bitmap.get()));
   base::mac::NSObjectRetain(image);
   return image;
 #elif defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
-  return ::gfx::GdkPixbufFromSkBitmap(bitmap.get());
+  return gfx::GdkPixbufFromSkBitmap(bitmap.get());
 #else
   return bitmap.release();
+#endif
+}
+
+gfx::Image::RepresentationType GetPlatformRepresentationType() {
+#if defined(OS_MACOSX)
+  return gfx::Image::kNSImageRep;
+#elif defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
+  return gfx::Image::kGdkPixbufRep;
+#else
+  return gfx::Image::kSkBitmapRep;
 #endif
 }
 

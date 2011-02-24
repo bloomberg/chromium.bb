@@ -202,6 +202,10 @@ Image::operator NSImage*() {
 }
 #endif
 
+bool Image::HasRepresentation(RepresentationType type) {
+  return representations_.count(type) != 0;
+}
+
 internal::ImageRep* Image::DefaultRepresentation() {
   RepresentationMap::iterator it =
       representations_.find(default_representation_);

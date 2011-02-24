@@ -63,6 +63,9 @@ class Image {
   operator NSImage*();
 #endif
 
+  // Inspects the representations map to see if the given type exists.
+  bool HasRepresentation(RepresentationType type);
+
  private:
   friend class ::ImageTest;
 

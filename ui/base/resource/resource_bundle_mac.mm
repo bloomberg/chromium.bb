@@ -4,13 +4,15 @@
 
 #include "ui/base/resource/resource_bundle.h"
 
-#import <Foundation/Foundation.h>
+#import <AppKit/AppKit.h>
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/mac/mac_util.h"
+#include "base/scoped_nsobject.h"
+#include "base/synchronization/lock.h"
 #include "base/sys_string_conversions.h"
-#include "skia/ext/skia_utils_mac.h"
+#include "ui/gfx/image.h"
 
 namespace ui {
 
@@ -59,10 +61,49 @@ FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale) {
 }
 
 gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id) {
-  // Currently this just returns the Skia-backed image, which will convert to
-  // NSImage and cache that result when necessary.
-  // TODO(rsesek): Load the raw bytes directly into an NSImage instead.
-  return GetImageNamed(resource_id);
+  // Check to see if the image is already in the cache.
+  {
+    base::AutoLock lock(*lock_);
+    ImageMap::const_iterator found = images_.find(resource_id);
+    if (found != images_.end()) {
+      if (!found->second->HasRepresentation(gfx::Image::kNSImageRep)) {
+        DLOG(WARNING) << "ResourceBundle::GetNativeImageNamed() is returning a"
+          << " cached gfx::Image that isn't backed by an NSImage. The image"
+          << " will be converted, rather than going through the NSImage loader."
+          << " resource_id = " << resource_id;
+      }
+      return *found->second;
+    }
+  }
+
+  // Load the raw data from the resource pack.
+  scoped_refptr<RefCountedStaticMemory> data(
+      LoadDataResourceBytes(resource_id));
+
+  // Create a data object from the raw bytes.
+  scoped_nsobject<NSData> ns_data([[NSData alloc] initWithBytes:data->front()
+                                                         length:data->size()]);
+
+  // Create the image from the data. The gfx::Image will take ownership of this.
+  scoped_nsobject<NSImage> ns_image([[NSImage alloc] initWithData:ns_data]);
+
+  // Cache the converted image.
+  if (ns_image.get()) {
+    base::AutoLock lock(*lock_);
+
+    // Another thread raced the load and has already cached the image.
+    if (images_.count(resource_id)) {
+      return *images_[resource_id];
+    }
+
+    gfx::Image* image = new gfx::Image(ns_image.release());
+    images_[resource_id] = image;
+    return *image;
+  }
+
+  LOG(WARNING) << "Unable to load image with id " << resource_id;
+  NOTREACHED();  // Want to assert in debug mode.
+  return *GetEmptyImage();
 }
 
 }  // namespace ui
