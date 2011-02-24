@@ -262,7 +262,7 @@ DriverPatterns = [
   ( '--pnacl-driver-save-temps',       "env.set('CLEANUP', '0')"),
   ( '--driver=(.+)',                   "env.set('LLVM_GCC', $0)"),
   ( '--pnacl-driver-set-([^=]+)=(.*)', "env.set($0, $1)"),
-  ( ('-arch','(.+)'),                  "env.set('ARCH', FixArch($0))"),
+  ( ('-arch', '(.+)'),                 "env.set('ARCH', FixArch($0))"),
   ( '--pnacl-opt',                     "env.set('INCARNATION', 'opt')"),
   ( '--pnacl-dis',                     "env.set('INCARNATION', 'dis')"),
   ( '--pnacl-as',                      "env.set('INCARNATION', 'as')"),
@@ -272,6 +272,7 @@ DriverPatterns = [
   ( '-emit-llvm',                      ""), # TODO(pdox): Since this is now
   ( '--emit-llvm',                     ""), # the default, remove this flag
                                             # from scons and spec2k.
+  ( ('--add-llc-option', '(.+)'),      "env.append('LLC_FLAGS_COMMON', $0)"),
   ( '--pnacl-sb',                      "env.set('SANDBOXED', '1')"),
   ( '--dry-run',                       "env.set('DRY_RUN', '1')"),
  ]
@@ -312,16 +313,16 @@ GCCPatterns = [
 
   ( '(-D.*)',                 "env.append('CC_FLAGS', $0)"),
   ( '(-f.*)',                 "env.append('CC_FLAGS', $0)"),
-  ( ('-I','(.+)'),            "env.append('CC_FLAGS', '-I' + $0)"),
+  ( ('-I', '(.+)'),           "env.append('CC_FLAGS', '-I' + $0)"),
   ( '(-I.+)',                 "env.append('CC_FLAGS', $0)"),
   ( '(-pedantic)',            "env.append('CC_FLAGS', $0)"),
-  ( ('(-isystem)','(.+)'),    "env.append('CC_FLAGS', $0, $1)"),
+  ( ('(-isystem)', '(.+)'),   "env.append('CC_FLAGS', $0, $1)"),
   ( '-shared',                "env.set('SHARED', '1')"),
   ( '-static',                "env.set('STATIC', '1')"),
   ( '(-g.*)',                 "env.append('CC_FLAGS', $0)"),
   ( '(-xassembler-with-cpp)', "env.append('CC_FLAGS', $0)"),
 
-  ( ('-L','(.+)'),            "env.append('LD_SEARCH_DIRS', '-L' + $0);"
+  ( ('-L', '(.+)'),           "env.append('LD_SEARCH_DIRS', '-L' + $0);"
                               "env.append('SEARCH_DIRS', $0)"),
   ( '-L(.+)',                 "env.append('LD_SEARCH_DIRS', '-L' + $0);"
                               "env.append('SEARCH_DIRS', $0)"),
@@ -1081,6 +1082,9 @@ def ParseArgs(argv, patternlist):
     for g in xrange(0, len(groups)):
       action = action.replace('$%d' % g, 'groups[%d]' % g)
     try:
+      # NOTE: this is essentially an eval for python expressions
+      # which does rely on the current environment for unbound vars
+      # Log.Info('about to exec [%s]', str(action))
       exec(action)
     except Exception, err:
       Log.Fatal('ParseArgs action [%s] failed with: %s', action, err)
