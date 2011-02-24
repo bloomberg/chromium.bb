@@ -25,6 +25,7 @@ class EventExecutorMac : public protocol::InputStub {
  private:
   MessageLoopForUI* message_loop_;
   Capturer* capturer_;
+  int last_x_, last_y_;
 
   DISALLOW_COPY_AND_ASSIGN(EventExecutorMac);
 };
