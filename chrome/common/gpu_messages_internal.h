@@ -148,7 +148,7 @@ IPC_MESSAGE_CONTROL3(GpuHostMsg_OnLogMessage,
 // Response from GPU to a GpuMsg_Synchronize message.
 IPC_MESSAGE_CONTROL0(GpuHostMsg_SynchronizeReply)
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) && !defined(TOUCH_UI)
 // Resize the window that is being drawn into. It's important that this
 // resize be synchronized with the swapping of the front and back buffers.
 IPC_SYNC_MESSAGE_CONTROL2_1(GpuHostMsg_ResizeXID,

@@ -374,7 +374,7 @@ bool GpuProcessHostUIShim::OnControlMessageReceived(
                         OnLogMessage)
     IPC_MESSAGE_HANDLER(GpuHostMsg_SynchronizeReply,
                         OnSynchronizeReply)
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) && !defined(TOUCH_UI)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuHostMsg_ResizeXID, OnResizeXID)
 #elif defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceSetIOSurface,
@@ -520,7 +520,7 @@ void GpuProcessHostUIShim::OnLogMessage(int level,
   log_messages_.Append(dict);
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) && !defined(TOUCH_UI)
 
 void GpuProcessHostUIShim::OnResizeXID(unsigned long xid, gfx::Size size,
                                        IPC::Message *reply_msg) {

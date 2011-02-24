@@ -366,7 +366,7 @@ void GpuCommandBufferStub::ResizeCallback(gfx::Size size) {
     processor_->decoder()->ResizeOffscreenFrameBuffer(size);
     processor_->decoder()->UpdateOffscreenFrameBufferSize();
   } else {
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) && !defined(TOUCH_UI)
     GpuThread* gpu_thread = channel_->gpu_thread();
     bool result = false;
     gpu_thread->Send(
