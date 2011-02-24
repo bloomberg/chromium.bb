@@ -659,6 +659,7 @@ class SVN(object):
     used.
     The diff will always use relative paths.
     """
+    assert isinstance(filenames, (list, tuple))
     previous_cwd = os.getcwd()
     root = root or SVN.GetCheckoutRoot(previous_cwd)
     root = os.path.normcase(os.path.join(root, ''))
@@ -703,7 +704,14 @@ class SVN(object):
             rev = int(info.get('Copied From Rev'))
             assert srcurl.startswith(root)
             src = srcurl[len(root)+1:]
-            srcinfo = SVN.CaptureInfo(srcurl)
+            try:
+              srcinfo = SVN.CaptureInfo(srcurl)
+            except gclient_utils.CheckCallError, e:
+              if not 'Not a valid URL' in e.stderr:
+                raise
+              # Assume the file was deleted. No idea how to figure out at which
+              # revision the file was deleted.
+              srcinfo = {'Revision': rev}
             if (srcinfo.get('Revision') != rev and
                 SVN.Capture(['diff', '-r', '%d:head' % rev, srcurl])):
               metaheaders.append("#$ svn cp -r %d %s %s "

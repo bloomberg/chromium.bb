@@ -257,8 +257,8 @@ class PresubmitUnittest(PresubmitTestsBase):
     presubmit.scm.SVN.CaptureInfo(notfound).AndReturn({})
     presubmit.scm.SVN.CaptureInfo(flap).AndReturn(
             {'URL': 'svn:/foo/boo/flap.h'})
-    presubmit.scm.SVN.GenerateDiff(blat).AndReturn(self.presubmit_diffs)
-    presubmit.scm.SVN.GenerateDiff(notfound).AndReturn(self.presubmit_diffs)
+    presubmit.scm.SVN.GenerateDiff([blat]).AndReturn(self.presubmit_diffs)
+    presubmit.scm.SVN.GenerateDiff([notfound]).AndReturn(self.presubmit_diffs)
 
     self.mox.ReplayAll()
 
@@ -776,8 +776,8 @@ class InputApiUnittest(PresubmitTestsBase):
     presubmit.scm.SVN.GetFileProperty(another, 'svn:mime-type').AndReturn(None)
     presubmit.scm.SVN.GetFileProperty(third_party, 'svn:mime-type'
         ).AndReturn(None)
-    presubmit.scm.SVN.GenerateDiff(blat).AndReturn(self.presubmit_diffs)
-    presubmit.scm.SVN.GenerateDiff(another).AndReturn(self.presubmit_diffs)
+    presubmit.scm.SVN.GenerateDiff([blat]).AndReturn(self.presubmit_diffs)
+    presubmit.scm.SVN.GenerateDiff([another]).AndReturn(self.presubmit_diffs)
 
     self.mox.ReplayAll()
 
