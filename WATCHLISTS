@@ -104,9 +104,6 @@
     'automation': {
       'filepath': 'chrome/browser/automation/.*|chrome/test/automation/.*',
     },
-    'ceee': {
-      'filepath': 'ceee/.*',
-    },
     'chrome_frame': {
       'filepath': 'chrome_frame/.*',
     },
@@ -219,7 +216,6 @@
     'tools': ['pam+watch@chromium.org'],
     'tests': ['phajdan.jr@chromium.org'],
     'automation': ['phajdan.jr@chromium.org'],
-    'ceee' : ['ceee-reviews@chromium.org'],
     'chrome_frame' : ['amit@chromium.org'],
     'nacl' : ['native-client-reviews@googlegroups.com'],
     'appcache': ['michaeln@chromium.org'],
