@@ -8,8 +8,6 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/renderer_host/site_instance.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/notification_details.h"
@@ -18,6 +16,8 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
+#include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/site_instance.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
 
@@ -188,7 +188,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 #if defined(OS_WIN)
 #define MAYBE_ChromeURLAfterDownload DISABLED_ChromeURLAfterDownload
 #else
-#defne MAYBE_ChromeURLAfterDownload ChromeURLAfterDownload
+#define MAYBE_ChromeURLAfterDownload ChromeURLAfterDownload
 #endif  // defined(OS_WIN)
 
 // Test for crbug.com/14505. This tests that chrome:// urls are still functional

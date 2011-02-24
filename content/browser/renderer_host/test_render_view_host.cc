@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/renderer_host/test/test_render_view_host.h"
-
 #include "chrome/browser/browser_url_handler.h"
-#include "chrome/browser/renderer_host/site_instance.h"
-#include "chrome/browser/renderer_host/test/test_backing_store.h"
-#include "chrome/browser/tab_contents/navigation_controller.h"
-#include "chrome/browser/tab_contents/test_tab_contents.h"
 #include "chrome/common/dom_storage_common.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "chrome/test/testing_profile.h"
+#include "content/browser/renderer_host/test_backing_store.h"
+#include "content/browser/renderer_host/test_render_view_host.h"
+#include "content/browser/site_instance.h"
+#include "content/browser/tab_contents/navigation_controller.h"
+#include "content/browser/tab_contents/test_tab_contents.h"
 #include "ui/gfx/rect.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/password_form.h"

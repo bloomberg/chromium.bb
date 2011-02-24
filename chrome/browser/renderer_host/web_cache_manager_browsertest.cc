@@ -6,13 +6,13 @@
 
 #include "base/message_loop.h"
 #include "base/process_util.h"
-#include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/result_codes.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
+#include "content/browser/renderer_host/render_process_host.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class WebCacheManagerBrowserTest : public InProcessBrowserTest {

@@ -17,18 +17,18 @@
 #include "base/scoped_temp_dir.h"
 #include "base/task.h"
 #include "base/time.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "chrome/browser/browser_thread.h"
-#include "chrome/browser/renderer_host/test/test_render_view_host.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/browser/safe_browsing/csd.pb.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/net/test_url_fetcher_factory.h"
 #include "chrome/common/net/url_fetcher.h"
+#include "content/browser/browser_thread.h"
+#include "content/browser/renderer_host/test_render_view_host.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_test_sink.h"
 #include "net/url_request/url_request_status.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace safe_browsing {
 

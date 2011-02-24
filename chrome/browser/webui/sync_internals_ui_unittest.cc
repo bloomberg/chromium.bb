@@ -9,14 +9,14 @@
 
 #include "base/message_loop.h"
 #include "base/values.h"
-#include "chrome/browser/browser_thread.h"
-#include "chrome/browser/renderer_host/test/test_render_view_host.h"
 #include "chrome/browser/sync/js_arg_list.h"
 #include "chrome/browser/sync/js_test_util.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/tab_contents/test_tab_contents.h"
 #include "chrome/common/render_messages_params.h"
 #include "chrome/test/profile_mock.h"
+#include "content/browser/browser_thread.h"
+#include "content/browser/renderer_host/test_render_view_host.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

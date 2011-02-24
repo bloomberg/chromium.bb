@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_RENDERER_HOST_TEST_TEST_BACKING_STORE_H_
-#define CHROME_BROWSER_RENDERER_HOST_TEST_TEST_BACKING_STORE_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_TEST_TEST_BACKING_STORE_H_
+#define CONTENT_BROWSER_RENDERER_HOST_TEST_TEST_BACKING_STORE_H_
 #pragma once
 
 #include "base/basictypes.h"
-#include "chrome/browser/renderer_host/backing_store.h"
+#include "content/browser/renderer_host/backing_store.h"
 
 class TestBackingStore : public BackingStore {
  public:
@@ -28,4 +28,4 @@ class TestBackingStore : public BackingStore {
   DISALLOW_COPY_AND_ASSIGN(TestBackingStore);
 };
 
-#endif  // CHROME_BROWSER_RENDERER_HOST_TEST_TEST_BACKING_STORE_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_TEST_TEST_BACKING_STORE_H_

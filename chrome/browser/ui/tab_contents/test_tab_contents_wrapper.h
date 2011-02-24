@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/renderer_host/test/test_render_view_host.h"
+#include "content/browser/renderer_host/test_render_view_host.h"
 
 class TabContentsWrapper;
 

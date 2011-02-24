@@ -1,4 +1,0 @@
-include_rules = [
-  # See README.txt in this directory for why we do this.
-  "+chrome/browser/tab_contents",
-]

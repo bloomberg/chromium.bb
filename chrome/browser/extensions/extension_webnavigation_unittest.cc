@@ -5,13 +5,12 @@
 // Tests common functionality used by the Chrome Extensions webNavigation API
 // implementation.
 
-#include "testing/gtest/include/gtest/gtest.h"
-
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_webnavigation_api.h"
-#include "chrome/browser/renderer_host/test/test_render_view_host.h"
-#include "chrome/browser/tab_contents/test_tab_contents.h"
 #include "chrome/test/testing_profile.h"
+#include "content/browser/renderer_host/test_render_view_host.h"
+#include "content/browser/tab_contents/test_tab_contents.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 
 class FrameNavigationStateTest : public RenderViewHostTestHarness {

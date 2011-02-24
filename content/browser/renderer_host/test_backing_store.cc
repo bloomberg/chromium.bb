@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/renderer_host/test/test_backing_store.h"
+#include "content/browser/renderer_host/test_backing_store.h"
 
 TestBackingStore::TestBackingStore(RenderWidgetHost* widget,
                                    const gfx::Size& size)

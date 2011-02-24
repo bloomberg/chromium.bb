@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_RENDERER_HOST_TEST_TEST_RENDER_VIEW_HOST_H_
-#define CHROME_BROWSER_RENDERER_HOST_TEST_TEST_RENDER_VIEW_HOST_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_TEST_TEST_RENDER_VIEW_HOST_H_
+#define CONTENT_BROWSER_RENDERER_HOST_TEST_TEST_RENDER_VIEW_HOST_H_
 #pragma once
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/message_loop.h"
 #include "build/build_config.h"
-#include "chrome/browser/renderer_host/mock_render_process_host.h"
-#include "chrome/browser/renderer_host/render_widget_host_view.h"
-#include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/browser/renderer_host/render_view_host_factory.h"
 #include "chrome/common/page_transition_types.h"
+#include "content/browser/renderer_host/mock_render_process_host.h"
+#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_view_host_factory.h"
+#include "content/browser/renderer_host/render_widget_host_view.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gfx {
@@ -298,4 +298,4 @@ class RenderViewHostTestHarness : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostTestHarness);
 };
 
-#endif  // CHROME_BROWSER_RENDERER_HOST_TEST_TEST_RENDER_VIEW_HOST_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_TEST_TEST_RENDER_VIEW_HOST_H_

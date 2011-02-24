@@ -4,9 +4,9 @@
 
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/download/download_request_limiter.h"
-#include "chrome/browser/renderer_host/test/test_render_view_host.h"
-#include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/test/testing_profile.h"
+#include "content/browser/renderer_host/test_render_view_host.h"
+#include "content/browser/tab_contents/navigation_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class DownloadRequestLimiterTest

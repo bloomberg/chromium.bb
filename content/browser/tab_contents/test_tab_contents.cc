@@ -7,14 +7,14 @@
 #include <utility>
 
 #include "chrome/browser/browser_url_handler.h"
-#include "chrome/browser/renderer_host/mock_render_process_host.h"
-#include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/browser/renderer_host/site_instance.h"
-#include "chrome/browser/renderer_host/test/test_render_view_host.h"
-#include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/page_transition_types.h"
+#include "content/browser/renderer_host/mock_render_process_host.h"
+#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/test_render_view_host.h"
+#include "content/browser/site_instance.h"
+#include "content/browser/tab_contents/infobar_delegate.h"
 
 TestTabContents::TestTabContents(Profile* profile, SiteInstance* instance)
     : TabContents(profile, instance, MSG_ROUTING_NONE, NULL, NULL),

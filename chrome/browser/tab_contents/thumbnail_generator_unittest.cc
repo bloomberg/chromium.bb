@@ -6,13 +6,13 @@
 #include "base/basictypes.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/history/top_sites.h"
-#include "chrome/browser/renderer_host/backing_store_manager.h"
-#include "chrome/browser/renderer_host/mock_render_process_host.h"
-#include "chrome/browser/renderer_host/test/test_render_view_host.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/test/testing_profile.h"
+#include "content/browser/renderer_host/backing_store_manager.h"
+#include "content/browser/renderer_host/mock_render_process_host.h"
+#include "content/browser/renderer_host/test_render_view_host.h"
 #include "skia/ext/platform_canvas.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
@@ -284,7 +284,7 @@ TEST(ThumbnailGeneratorSimpleTest, GetClippedBitmap_NonSquareOutput) {
 // A mock version of TopSites, used for testing ShouldUpdateThumbnail().
 class MockTopSites : public history::TopSites {
  public:
-  MockTopSites(Profile* profile)
+  explicit MockTopSites(Profile* profile)
       : history::TopSites(profile),
         capacity_(1) {
   }
