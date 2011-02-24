@@ -203,10 +203,12 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
       UTF8ToUTF16(prefs->GetString(prefs::kWebKitSerifFontFamily));
   web_prefs.sans_serif_font_family =
       UTF8ToUTF16(prefs->GetString(prefs::kWebKitSansSerifFontFamily));
-  if (prefs->GetBoolean(prefs::kWebKitStandardFontIsSerif))
-    web_prefs.standard_font_family = web_prefs.serif_font_family;
-  else
-    web_prefs.standard_font_family = web_prefs.sans_serif_font_family;
+  // TODO(kochi): As we don't have setting UI for kWebKitStandardFontIsSerif,
+  // we always use web_prefs.serif_font_family as a standard font
+  // temporarily for now.  Ideally we should have a pref UI for serif/sans
+  // selection as for CJK font sans-serif family font is the default.
+  // See discussion in http://crosbug.com/12311.
+  web_prefs.standard_font_family = web_prefs.serif_font_family;
   web_prefs.cursive_font_family =
       UTF8ToUTF16(prefs->GetString(prefs::kWebKitCursiveFontFamily));
   web_prefs.fantasy_font_family =
