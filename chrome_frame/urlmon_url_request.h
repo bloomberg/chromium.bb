@@ -94,7 +94,8 @@ class UrlmonUrlRequestManager
                                  const char* headers, int size,
                                  base::Time last_modified,
                                  const std::string& redirect_url,
-                                 int redirect_status);
+                                 int redirect_status,
+                                 const net::HostPortPair& socket_address);
   virtual void OnReadComplete(int request_id, const std::string& data);
   virtual void OnResponseEnd(int request_id,
                              const net::URLRequestStatus& status);

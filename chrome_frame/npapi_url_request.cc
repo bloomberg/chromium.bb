@@ -70,6 +70,9 @@ NPAPIUrlRequest::~NPAPIUrlRequest() {
 bool NPAPIUrlRequest::Start() {
   NPError result = NPERR_GENERIC_ERROR;
   DVLOG(1) << "Starting URL request: " << url();
+  // Initialize the net::HostPortPair structure from the url
+  socket_address_ = net::HostPortPair::FromURL(GURL(url()));
+
   if (LowerCaseEqualsASCII(method(), "get")) {
     // TODO(joshia): if we have extra headers for HTTP GET, then implement
     // it using XHR
@@ -145,7 +148,8 @@ NPError NPAPIUrlRequest::OnStreamCreated(const char* mime_type,
   // Add support for passing persistent cookies and information about any URL
   // redirects to Chrome.
   delegate_->OnResponseStarted(id(), mime_type, stream->headers, stream->end,
-      base::Time::FromTimeT(stream->lastmodified), std::string(), 0);
+      base::Time::FromTimeT(stream->lastmodified), std::string(), 0,
+      socket_address_);
   return NPERR_NO_ERROR;
 }
 
@@ -326,9 +330,9 @@ void NPAPIUrlRequestManager::GetCookiesForUrl(const GURL& url, int cookie_id) {
 void NPAPIUrlRequestManager::OnResponseStarted(int request_id,
     const char* mime_type, const char* headers, int size,
     base::Time last_modified, const std::string& redirect_url,
-    int redirect_status) {
+    int redirect_status, const net::HostPortPair& socket_address) {
   delegate_->OnResponseStarted(request_id, mime_type, headers, size,
-      last_modified, redirect_url, redirect_status);
+      last_modified, redirect_url, redirect_status, socket_address);
 }
 
 void NPAPIUrlRequestManager::OnReadComplete(int request_id,
@@ -385,8 +389,9 @@ NPError NPAPIUrlRequestManager::NewStream(NPMIMEType type,
                << request->url()
                << " was redirected to:"
                << stream->url;
-      delegate_->OnResponseStarted(request->id(), "", "", 0, base::Time(),
-                                   stream->url, 302);
+      delegate_->OnResponseStarted(
+          request->id(), "", "", 0, base::Time(), stream->url, 302,
+          net::HostPortPair(net::HostPortPair::FromURL(GURL(stream->url))));
       return NPERR_GENERIC_ERROR;
     }
   }
@@ -443,8 +448,9 @@ void NPAPIUrlRequestManager::UrlRedirectNotify(const char* url, int status,
                                                void* notify_data) {
   NPAPIUrlRequest* request = RequestFromNotifyData(notify_data);
   if (request) {
-    delegate_->OnResponseStarted(request->id(), "", "", 0, base::Time(),
-                                 url, status);
+    delegate_->OnResponseStarted(
+        request->id(), "", "", 0, base::Time(), url, status,
+        net::HostPortPair(net::HostPortPair::FromURL(GURL(url))));
   } else {
     NOTREACHED() << "Received unexpected redirect notification for url:"
                  << url;

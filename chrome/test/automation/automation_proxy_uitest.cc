@@ -34,6 +34,7 @@
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui_test_utils.h"
 #include "chrome/test/ui/ui_test.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
 #define GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
@@ -701,7 +702,8 @@ void ExternalTabUITestMockClient::ReplyEnd(const net::URLRequestStatus& status,
 
 void ExternalTabUITestMockClient::Reply404(int tab_handle, int request_id) {
   const AutomationURLResponse notfound("", "HTTP/1.1 404\r\n\r\n", 0,
-                                       base::Time(), "", 0);
+                                       base::Time(), "", 0,
+                                       net::HostPortPair());
   ReplyStarted(&notfound, tab_handle, request_id);
   ReplyEOF(tab_handle, request_id);
 }
@@ -766,7 +768,8 @@ const AutomationURLResponse ExternalTabUITestMockClient::http_200(
     0,
     base::Time(),
     "",
-    0);
+    0,
+    net::HostPortPair());
 
 bool ExternalTabUITestMockClient::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;

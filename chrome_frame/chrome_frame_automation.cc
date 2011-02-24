@@ -1439,14 +1439,15 @@ void ChromeFrameAutomationClient::OnUnload(bool* should_unload) {
 void ChromeFrameAutomationClient::OnResponseStarted(int request_id,
     const char* mime_type,  const char* headers, int size,
     base::Time last_modified, const std::string& redirect_url,
-    int redirect_status) {
+    int redirect_status, const net::HostPortPair& socket_address) {
   const AutomationURLResponse response(
       mime_type,
       headers ? headers : "",
       size,
       last_modified,
       redirect_url,
-      redirect_status);
+      redirect_status,
+      socket_address);
 
   automation_server_->Send(new AutomationMsg_RequestStarted(
       tab_->handle(), request_id, response));

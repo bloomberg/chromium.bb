@@ -37,9 +37,10 @@ static void AppendToStream(IStream* s, void* buffer, ULONG cb) {
 
 class MockUrlDelegate : public PluginUrlRequestDelegate {
  public:
-  MOCK_METHOD7(OnResponseStarted, void(int request_id, const char* mime_type,
+  MOCK_METHOD8(OnResponseStarted, void(int request_id, const char* mime_type,
       const char* headers, int size, base::Time last_modified,
-      const std::string& redirect_url, int redirect_status));
+      const std::string& redirect_url, int redirect_status,
+      const net::HostPortPair& socket_address));
   MOCK_METHOD2(OnReadComplete, void(int request_id, const std::string& data));
   MOCK_METHOD2(OnResponseEnd, void(int request_id,
                                    const net::URLRequestStatus& status));
@@ -89,7 +90,8 @@ TEST(UrlmonUrlRequestTest, Simple1) {
 
   testing::InSequence s;
   EXPECT_CALL(mock, OnResponseStarted(1, testing::_, testing::_, testing::_,
-                                      testing::_, testing::_, testing::_))
+                                      testing::_, testing::_, testing::_,
+                                      testing::_))
     .Times(1)
     .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(CreateFunctor(
         &request, &UrlmonUrlRequest::Read, 512))));
@@ -137,7 +139,8 @@ TEST(UrlmonUrlRequestTest, Head) {
 
   testing::InSequence s;
   EXPECT_CALL(mock, OnResponseStarted(1, testing::_, testing::_, testing::_,
-                                      testing::_, testing::_, testing::_))
+                                      testing::_, testing::_, testing::_,
+                                      testing::_))
     .Times(1)
     .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(CreateFunctor(
         &request, &UrlmonUrlRequest::Read, 512))));
@@ -181,7 +184,7 @@ TEST(UrlmonUrlRequestTest, UnreachableUrl) {
   EXPECT_CALL(mock, OnResponseStarted(1, testing::_,
                                       testing::StartsWith("HTTP/1.1 404"),
                                       testing::_, testing::_, testing::_,
-                                      testing::_))
+                                      testing::_, testing::_))
     .Times(1)
     .WillOnce(QUIT_LOOP_SOON(loop, 2));
 
@@ -218,7 +221,8 @@ TEST(UrlmonUrlRequestTest, ZeroLengthResponse) {
 
   // Expect headers
   EXPECT_CALL(mock, OnResponseStarted(1, testing::_, testing::_, testing::_,
-                                      testing::_, testing::_, testing::_))
+                                      testing::_, testing::_, testing::_,
+                                      testing::_))
     .Times(1)
     .WillOnce(QUIT_LOOP(loop));
 
@@ -265,7 +269,7 @@ TEST(UrlmonUrlRequestManagerTest, Simple1) {
       "get", "", "", NULL, 0, 0);
 
   EXPECT_CALL(mock, OnResponseStarted(1, testing::_, testing::_, testing::_,
-                             testing::_, testing::_, testing::_))
+                             testing::_, testing::_, testing::_, testing::_))
       .Times(1)
       .WillOnce(ManagerRead(&loop, mgr.get(), 1, 512));
 
@@ -298,7 +302,7 @@ TEST(UrlmonUrlRequestManagerTest, Abort1) {
       "get", "", "", NULL, 0, 0);
 
   EXPECT_CALL(mock, OnResponseStarted(1, testing::_, testing::_, testing::_,
-                               testing::_, testing::_, testing::_))
+                               testing::_, testing::_, testing::_, testing::_))
     .Times(1)
     .WillOnce(testing::DoAll(
         ManagerEndRequest(&loop, mgr.get(), 1),

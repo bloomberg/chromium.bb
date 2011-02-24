@@ -18,6 +18,7 @@ struct AutomationURLResponse;
 namespace net {
 class HttpResponseHeaders;
 class HttpResponseInfo;
+class HostPortPair;
 }
 
 namespace IPC {
@@ -46,6 +47,7 @@ class URLRequestAutomationJob : public net::URLRequestJob {
   virtual int GetResponseCode() const;
   virtual bool IsRedirectResponse(GURL* location, int* http_status_code);
   virtual uint64 GetUploadProgress() const;
+  virtual net::HostPortPair GetSocketAddress() const;
 
   // Peek and process automation messages for URL requests.
   static bool MayFilterMessage(const IPC::Message& message, int* request_id);
@@ -122,6 +124,9 @@ class URLRequestAutomationJob : public net::URLRequestJob {
   // Contains the request status code, which is eventually passed  to the http
   // stack when we receive a Read request for a completed job.
   net::URLRequestStatus request_status_;
+
+  // Contains the ip address and port of the destination host.
+  net::HostPortPair socket_address_;
 
   ScopedRunnableMethodFactory<URLRequestAutomationJob> method_factory_;
 

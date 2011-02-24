@@ -65,7 +65,7 @@ struct MockCFDelegate : public ChromeFrameDelegateImpl {
 
   void ReplyStarted(int request_id, const char* headers) {
     request_delegate_->OnResponseStarted(request_id, "text/html", headers,
-        0, base::Time::Now(), EmptyString(), 0);
+      0, base::Time::Now(), EmptyString(), 0, net::HostPortPair());
   }
 
   void ReplyData(int request_id, const std::string* data) {

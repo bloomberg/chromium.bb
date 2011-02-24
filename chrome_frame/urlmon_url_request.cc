@@ -52,6 +52,10 @@ bool UrlmonUrlRequest::Start() {
   DCHECK(thread_ == 0 || thread_ == base::PlatformThread::CurrentId());
   thread_ = base::PlatformThread::CurrentId();
   status_.Start();
+  // Initialize the net::HostPortPair structure from the url initially. We may
+  // not receive the ip address of the host if the request is satisfied from
+  // the cache.
+  socket_address_ = net::HostPortPair::FromURL(GURL(url()));
   // The UrlmonUrlRequest instance can get destroyed in the context of
   // StartAsyncDownload if BindToStorage finishes synchronously with an error.
   // Grab a reference to protect against this.
@@ -282,6 +286,13 @@ STDMETHODIMP UrlmonUrlRequest::OnProgress(ULONG progress, ULONG max_progress,
   }
 
   switch (status_code) {
+    case BINDSTATUS_CONNECTING: {
+      if (status_text) {
+        socket_address_.set_host(WideToUTF8(status_text));
+      }
+      break;
+    }
+
     case BINDSTATUS_REDIRECTING: {
       // If we receive a redirect for the initial pending request initiated
       // when our document loads we should stash it away and inform Chrome
@@ -666,7 +677,8 @@ STDMETHODIMP UrlmonUrlRequest::OnResponse(DWORD dwResponseCode,
                     0,                    // size
                     base::Time(),         // last_modified
                     status_.get_redirection().utf8_url,
-                    status_.get_redirection().http_code);
+                    status_.get_redirection().http_code,
+                    socket_address_);
   return S_OK;
 }
 
@@ -1158,13 +1170,13 @@ void UrlmonUrlRequestManager::StopAll() {
 void UrlmonUrlRequestManager::OnResponseStarted(int request_id,
     const char* mime_type, const char* headers, int size,
     base::Time last_modified, const std::string& redirect_url,
-    int redirect_status) {
+    int redirect_status, const net::HostPortPair& socket_address) {
   DCHECK_NE(request_id, -1);
   DVLOG(1) << __FUNCTION__;
   DCHECK(LookupRequest(request_id) != NULL);
   ++calling_delegate_;
   delegate_->OnResponseStarted(request_id, mime_type, headers, size,
-      last_modified, redirect_url, redirect_status);
+      last_modified, redirect_url, redirect_status, socket_address);
   --calling_delegate_;
 }
 

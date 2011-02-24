@@ -14,6 +14,7 @@
 #include "chrome_frame/chrome_frame_delegate.h"
 #include "chrome_frame/urlmon_upload_data_stream.h"
 #include "ipc/ipc_message.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/upload_data.h"
 #include "net/url_request/url_request_status.h"
 #include "webkit/glue/resource_type.h"
@@ -26,7 +27,8 @@ class DECLSPEC_NOVTABLE PluginUrlRequestDelegate {  // NOLINT
  public:
   virtual void OnResponseStarted(int request_id, const char* mime_type,
     const char* headers, int size, base::Time last_modified,
-    const std::string& redirect_url, int redirect_status) = 0;
+    const std::string& redirect_url, int redirect_status,
+    const net::HostPortPair& socket_address) = 0;
   virtual void OnReadComplete(int request_id, const std::string& data) = 0;
   virtual void OnResponseEnd(int request_id,
                              const net::URLRequestStatus& status) = 0;
@@ -186,6 +188,8 @@ class PluginUrlRequest {
   int load_flags_;
   ScopedComPtr<IStream> upload_data_;
   bool is_chunked_upload_;
+  // Contains the ip address and port of the destination host.
+  net::HostPortPair socket_address_;
 };
 
 #endif  // CHROME_FRAME_PLUGIN_URL_REQUEST_H_
