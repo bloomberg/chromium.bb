@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/metrics/thread_watcher.h"
 #include "chrome/common/notification_service.h"
@@ -192,7 +193,7 @@ ThreadWatcherList::ThreadWatcherList()
   DCHECK(!global_);
   global_ = this;
   // Register Notifications observer.
-#if !defined(OS_MACOSX)
+#if defined(OS_WIN)
   MetricsService::SetupNotifications(&registrar_, this);
 #endif
 }
@@ -237,8 +238,8 @@ void ThreadWatcherList::RemoveNotifications() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!global_)
     return;
+#if defined(OS_WIN)
   base::AutoLock auto_lock(global_->lock_);
-#if !defined(OS_MACOSX)
   global_->registrar_.RemoveAll();
 #endif
 }
@@ -313,7 +314,7 @@ void WatchDogThread::Init() {
 
   BrowserProcessSubThread::Init();
 
-#if !defined(OS_MACOSX)
+#if defined(OS_WIN)
   const base::TimeDelta kSleepTime = base::TimeDelta::FromSeconds(5);
   const base::TimeDelta kUnresponsiveTime = base::TimeDelta::FromSeconds(10);
   ThreadWatcher::StartWatching(BrowserThread::UI, "UI", kSleepTime,
