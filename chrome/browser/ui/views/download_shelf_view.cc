@@ -282,10 +282,13 @@ void DownloadShelfView::Layout() {
                             show_all_size.width(),
                             show_all_size.height());
   next_x += show_all_size.width() + kCloseAndLinkPadding;
-  close_button_->SetBounds(next_x,
-                           CenterPosition(close_button_size.height(), height()),
-                           close_button_size.width(),
-                           close_button_size.height());
+  // If the window is maximized, we want to expand the hitbox of the close
+  // button to the right and bottom to make it easier to click.
+  bool is_maximized = browser_->window()->IsMaximized();
+  int y = CenterPosition(close_button_size.height(), height());
+  close_button_->SetBounds(next_x, y,
+      is_maximized ? width() - next_x : close_button_size.width(),
+      is_maximized ? height() - y : close_button_size.height());
   if (show_link_only) {
     // Let's hide all the items.
     std::vector<DownloadItemView*>::reverse_iterator ri;
