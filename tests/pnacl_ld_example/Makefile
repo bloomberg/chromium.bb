@@ -23,22 +23,22 @@ all: run
 
 #libsimple is the real shared library.
 libsimple.so: $(SIMPLE_OBJECTS)
-				gcc -o $@ -shared -Wl,-soname,libsimple.so $(SIMPLE_OBJECTS)
+	gcc -o $@ -shared -Wl,-soname,libsimple.so $(SIMPLE_OBJECTS)
 
 # libempty.so simply embeds "soname=libsimple.so".  It is otherwise empty.
 libempty.so: $(EMPTY_OBJECTS)
-				ld -o $@ -shared -soname=libsimple.so --strip-all $(EMPTY_OBJECTS)
+	ld -o $@ -shared -soname=libsimple.so --strip-all $(EMPTY_OBJECTS)
 
 # main is made to depend on libsimple.so by linking with libempty.so
 main: $(MAIN_OBJECTS) libempty.so
-				gcc -o main $(MAIN_LINK_FLAGS) -L. -lempty $(MAIN_OBJECTS)
+	gcc -o main $(MAIN_LINK_FLAGS) -L. -lempty $(MAIN_OBJECTS)
 
 run: main libsimple.so
-				LD_LIBRARY_PATH="." ./main
+	LD_LIBRARY_PATH="." ./main
 
 clean:
-				rm main
-				rm libsimple.so libempty.so
-				rm $(SIMPLE_OBJECTS)
-				rm $(EMPTY_OBJECTS)
-				rm $(MAIN_OBJECTS)
+	rm main
+	rm libsimple.so libempty.so
+	rm $(SIMPLE_OBJECTS)
+	rm $(EMPTY_OBJECTS)
+	rm $(MAIN_OBJECTS)

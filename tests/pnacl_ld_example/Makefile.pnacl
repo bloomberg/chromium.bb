@@ -1,0 +1,63 @@
+# Copyright 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+#
+
+# simple example that tries to build a mostly sandboxed shared lib
+# which is then loaded by a regular (non-sandboxed) images
+
+PNACL_CC=../../toolchain/linux_arm-untrusted/bin/pnacl-gcc
+PNACL_LD=../../toolchain/linux_arm-untrusted/bin/pnacl-ld
+ELF_PATCHER=../../tools/elf_patcher.py
+
+ARM_CC=../../toolchain/linux_arm-trusted/arm-2009q3/bin/arm-none-linux-gnueabi-gcc
+QEMU= ../../toolchain/linux_arm-trusted/qemu_tool.sh run
+
+
+#DEBUG_FLAGS= --pnacl-driver-verbose --pnacl-driver-debug
+DEBUG_FLAGS=
+
+
+######################################################################
+# Platform neutral
+######################################################################
+
+hello.bc:  hello.c
+	$(PNACL_CC)  -c -fPIC -I../../.. $(DEBUG_FLAGS) -o $@ $?
+
+
+fortytwo.bc:  fortytwo.c
+	$(PNACL_CC)  -c -fPIC -I../../.. $(DEBUG_FLAGS) -o $@ $?
+
+######################################################################
+LLC_X86_ARGS= $(DEBUG_FLAGS) --add-llc-option -sfi-x86-jmp-mask=-1
+
+libsimple.x86-32.so: hello.bc fortytwo.bc
+	$(PNACL_LD) -shared -fPIC  -arch x86-32 $(LLC_X86_ARGS) -o $@ $?
+	$(ELF_PATCHER) -l $@
+
+
+main.x86-32: main.c libsimple.x86-32.so
+	gcc -m32 -o $@ -L. -lsimple.x86-32 main.c
+
+run.x86-32: main.x86-32
+	LD_LIBRARY_PATH=. ./main.x86-32
+
+######################################################################
+LLC_ARM_ARGS= --add-llc-option -sfi-zero-mask
+
+libsimple.arm.so: hello.bc fortytwo.bc
+	$(PNACL_LD) -shared -fPIC  -arch arm $(LLC_ARM_ARGS) -o $@ $?
+	$(ELF_PATCHER) -l $@
+
+main.arm: main.c libsimple.arm.so
+	$(ARM_CC)  -Wl,-Ttext-segment=20000 -o $@ -L. -lsimple.arm main.c
+
+run.arm: main.arm
+	LD_LIBRARY_PATH=. $(QEMU) ./main.arm
+
+######################################################################
+
+clean:
+	rm -f *.bc *.o *.ll *.so main
+
