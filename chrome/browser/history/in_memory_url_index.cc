@@ -722,9 +722,9 @@ bool InMemoryURLIndex::RestorePrivateData(
     const InMemoryURLIndexCacheItem& cache) {
   last_saved_ = base::Time::FromInternalValue(cache.timestamp());
   history_item_count_ = cache.history_item_count();
-  return (history_item_count_ == 0) || RestoreWordList(cache) &&
+  return (history_item_count_ == 0) || (RestoreWordList(cache) &&
       RestoreWordMap(cache) && RestoreCharWordMap(cache) &&
-      RestoreWordIDHistoryMap(cache) && RestoreHistoryInfoMap(cache);
+      RestoreWordIDHistoryMap(cache) && RestoreHistoryInfoMap(cache));
 }
 
 
