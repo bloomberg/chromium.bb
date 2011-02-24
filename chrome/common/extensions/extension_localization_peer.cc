@@ -10,7 +10,6 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
-#include "grit/renderer_resources.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "webkit/glue/webkit_glue.h"

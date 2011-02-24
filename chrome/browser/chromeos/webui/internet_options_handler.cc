@@ -28,7 +28,6 @@
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/browser/webui/web_ui_util.h"
 #include "chrome/common/time_format.h"
-#include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"

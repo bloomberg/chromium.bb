@@ -18,7 +18,6 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
-#include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"

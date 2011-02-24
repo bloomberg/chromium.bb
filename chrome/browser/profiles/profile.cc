@@ -44,7 +44,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
-#include "grit/browser_resources.h"
 #include "grit/locale_settings.h"
 #include "net/base/transport_security_state.h"
 #include "ui/base/resource/resource_bundle.h"

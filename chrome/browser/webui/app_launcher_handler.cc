@@ -31,7 +31,6 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/url_constants.h"
-#include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "ui/base/animation/animation.h"

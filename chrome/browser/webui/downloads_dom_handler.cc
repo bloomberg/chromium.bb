@@ -26,7 +26,6 @@
 #include "chrome/browser/webui/fileicon_source.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
-#include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 
 namespace {

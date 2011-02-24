@@ -28,7 +28,6 @@
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
-#include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"

@@ -20,7 +20,6 @@
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
-#include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "net/base/cert_status_flags.h"
 #include "net/base/ssl_info.h"

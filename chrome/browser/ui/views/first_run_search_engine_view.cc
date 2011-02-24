@@ -17,7 +17,6 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/ui/options/options_window.h"
-#include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/google_chrome_strings.h"
 #include "grit/generated_resources.h"

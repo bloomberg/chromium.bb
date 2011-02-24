@@ -20,7 +20,6 @@
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_hdc.h"
-#include "chrome/service/cloud_print/cloud_print_consts.h"
 #include "chrome/service/service_process.h"
 #include "chrome/service/service_utility_process_host.h"
 #include "grit/generated_resources.h"

@@ -10,7 +10,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/common/extensions/extension.h"
-#include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "skia/ext/skia_utils_mac.h"

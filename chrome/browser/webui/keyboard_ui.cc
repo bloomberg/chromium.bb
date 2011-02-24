@@ -12,7 +12,6 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/webui/chrome_url_data_manager.h"
 #include "chrome/common/url_constants.h"
-#include "grit/browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -14,7 +14,6 @@
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
-#include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "net/base/cookie_monster.h"
 #include "net/url_request/url_request_context.h"
