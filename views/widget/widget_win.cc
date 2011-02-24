@@ -1009,6 +1009,12 @@ void WidgetWin::OnWindowPosChanging(WINDOWPOS* window_pos) {
 }
 
 void WidgetWin::OnWindowPosChanged(WINDOWPOS* window_pos) {
+  // Layered windows need to be explicitly invalidated, but any calls to
+  // SchedulePaint() prior to the window being shown are ignored by Windows, so
+  // we must manually invalidate the widget when it is shown. Non-layered
+  // windows are automatically invalidated by Windows when they are shown.
+  if (use_layered_buffer_ && window_pos->flags & SWP_SHOWWINDOW)
+    InvalidateRect(hwnd(), NULL, FALSE);
   SetMsgHandled(FALSE);
 }
 

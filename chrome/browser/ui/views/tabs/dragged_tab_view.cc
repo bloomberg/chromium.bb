@@ -84,7 +84,6 @@ void DraggedTabView::MoveTo(const gfx::Point& screen_point) {
 
 #if defined(OS_WIN)
   int show_flags = container_->IsVisible() ? SWP_NOZORDER : SWP_SHOWWINDOW;
-
   container_->SetWindowPos(HWND_TOP, x, y, 0, 0,
                            SWP_NOSIZE | SWP_NOACTIVATE | show_flags);
 #else
