@@ -3386,23 +3386,7 @@ void RenderView::didReceiveDocumentData(
     bool& prevent_default) {
   NavigationState* navigation_state =
       NavigationState::FromDataSource(frame->dataSource());
-  if (!navigation_state->postpone_loading_data())
-    return;
-
-  // We're going to call commitDocumentData ourselves...
-  prevent_default = true;
-
-  // Continue buffering the response data for the original error page.  If it
-  // grows too large, then we'll just let it through.  For any error other than
-  // a 404, "too large" means any data at all.
-  navigation_state->append_postponed_data(data, data_len);
-  if (navigation_state->postponed_data().size() >= 512 ||
-      navigation_state->http_status_code() != 404) {
-    navigation_state->set_postpone_loading_data(false);
-    frame->commitDocumentData(navigation_state->postponed_data().data(),
-                              navigation_state->postponed_data().size());
-    navigation_state->clear_postponed_data();
-  }
+  navigation_state->set_use_error_page(false);
 }
 
 void RenderView::didCommitProvisionalLoad(WebFrame* frame,
@@ -3693,50 +3677,41 @@ void RenderView::didReceiveResponse(
       response.wasAlternateProtocolAvailable());
   navigation_state->set_was_fetched_via_proxy(response.wasFetchedViaProxy());
   navigation_state->set_http_status_code(http_status_code);
-
-  // Consider loading an alternate error page for 404 responses.
-  if (http_status_code == 404) {
-    // Can we even load an alternate error page for this URL?
-    if (!GetAlternateErrorPageURL(response.url(), HTTP_404).is_valid())
-      return;
-  } else if (!LocalizedError::HasStrings(LocalizedError::kHttpErrorDomain,
-                                         http_status_code)) {
-    // If no corresponding error strings for a particular status code, just
-    // render any received data, regardless of whether or not the status code
-    // indicates an error.
-    return;
-  }
-
-  navigation_state->set_postpone_loading_data(true);
-  navigation_state->clear_postponed_data();
+  // Whether or not the http status code actually corresponds to an error is
+  // only checked when the page is done loading, if |use_error_page| is
+  // still true.
+  navigation_state->set_use_error_page(true);
 }
 
 void RenderView::didFinishResourceLoad(
     WebFrame* frame, unsigned identifier) {
   NavigationState* navigation_state =
       NavigationState::FromDataSource(frame->dataSource());
-  if (!navigation_state->postpone_loading_data())
+  if (!navigation_state->use_error_page())
     return;
 
-  // The server returned an error and the content was < 512 bytes (which we
-  // suppressed).  Go ahead and fetch the alternate page content.
+  // Display error page, if appropriate.
   int http_status_code = navigation_state->http_status_code();
   if (http_status_code == 404) {
     // On 404s, try a remote search page as a fallback.
     const GURL& frame_url = frame->url();
 
     const GURL& error_page_url = GetAlternateErrorPageURL(frame_url, HTTP_404);
-    DCHECK(error_page_url.is_valid());
+    if (error_page_url.is_valid()) {
+      WebURLError original_error;
+      original_error.unreachableURL = frame_url;
 
-    WebURLError original_error;
-    original_error.unreachableURL = frame_url;
+      navigation_state->set_alt_error_page_fetcher(
+          new AltErrorPageResourceFetcher(
+              error_page_url, frame, original_error,
+              NewCallback(this, &RenderView::AltErrorPageFinished)));
+      return;
+    }
+  }
 
-    navigation_state->set_alt_error_page_fetcher(
-        new AltErrorPageResourceFetcher(
-            error_page_url, frame, original_error,
-            NewCallback(this, &RenderView::AltErrorPageFinished)));
-  } else {
-    // On other errors, use an internal error page.
+  // Use an internal error page, if we have one for the status code.
+  if (LocalizedError::HasStrings(LocalizedError::kHttpErrorDomain,
+                                 http_status_code)) {
     WebURLError error;
     error.unreachableURL = frame->url();
     error.domain = WebString::fromUTF8(LocalizedError::kHttpErrorDomain);
@@ -5067,18 +5042,9 @@ void RenderView::AltErrorPageFinished(WebFrame* frame,
                                       const WebURLError& original_error,
                                       const std::string& html) {
   // Here, we replace the blank page we loaded previously.
-
-  // If we failed to download the alternate error page, fall back to the
-  // original error page if present.  Otherwise, LoadNavigationErrorPage
+  // If we failed to download the alternate error page, LoadNavigationErrorPage
   // will simply display a default error page.
-  const std::string* html_to_load = &html;
-  if (html.empty()) {
-    NavigationState* navigation_state =
-        NavigationState::FromDataSource(frame->dataSource());
-    html_to_load = &navigation_state->postponed_data();
-  }
-  LoadNavigationErrorPage(frame, WebURLRequest(), original_error, *html_to_load,
-                          true);
+  LoadNavigationErrorPage(frame, WebURLRequest(), original_error, html, true);
 }
 
 void RenderView::OnMoveOrResizeStarted() {

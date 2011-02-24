@@ -165,48 +165,11 @@ TEST_F(ErrorPageTest, IFrameDNSError_GoBackAndForward) {
   EXPECT_TRUE(WaitForTitleMatching(L"Blah"));
 }
 
-#if defined(OS_WIN)
-// Might be related to http://crbug.com/60937
-#define MAYBE_IFrame404 FLAKY_IFrame404
-#else
-#define MAYBE_IFrame404 IFrame404
-#endif
-
-TEST_F(ErrorPageTest, MAYBE_IFrame404) {
-  // iframes that have 404 pages should not trigger an alternate error page.
-  // In this test, the iframe sets the title of the parent page to "SUCCESS"
-  // when the iframe loads.  If the iframe fails to load (because an alternate
-  // error page loads instead), then the title will remain as "FAIL".
-  net::TestServer test_server(net::TestServer::TYPE_HTTP,
-                              FilePath(FILE_PATH_LITERAL("chrome/test/data")));
-  ASSERT_TRUE(test_server.Start());
-  NavigateToURL(test_server.GetURL("files/iframe404.html"));
-  EXPECT_TRUE(WaitForTitleMatching(L"SUCCESS"));
-}
-
+// Checks that the Link Doctor is not loaded when we receive an actual 404 page.
 TEST_F(ErrorPageTest, Page404) {
-  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(
-                    FilePath(FILE_PATH_LITERAL("title2.html"))));
-  // The first navigation should fail, and the second one should be the error
-  // page.
   NavigateToURLBlockUntilNavigationsComplete(
       URLRequestMockHTTPJob::GetMockUrl(
-          FilePath(FILE_PATH_LITERAL("page404.html"))), 2);
+          FilePath(FILE_PATH_LITERAL("page404.html"))), 1);
 
-  EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
-}
-
-TEST_F(ErrorPageTest, Page404_GoBack) {
-  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(
-                    FilePath(FILE_PATH_LITERAL("title2.html"))));
-  // The first navigation should fail, and the second one should be the error
-  // page.
-  NavigateToURLBlockUntilNavigationsComplete(
-      URLRequestMockHTTPJob::GetMockUrl(
-          FilePath(FILE_PATH_LITERAL("page404.html"))), 2);
-  EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
-
-  EXPECT_TRUE(GetActiveTab()->GoBack());
-
-  EXPECT_TRUE(WaitForTitleMatching(L"Title Of Awesomeness"));
+  EXPECT_TRUE(WaitForTitleMatching(L"SUCCESS"));
 }

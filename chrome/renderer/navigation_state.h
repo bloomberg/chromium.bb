@@ -210,15 +210,9 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
     security_info_ = security_info;
   }
 
-  bool postpone_loading_data() const { return postpone_loading_data_; }
-  void set_postpone_loading_data(bool postpone_loading_data) {
-    postpone_loading_data_ = postpone_loading_data;
-  }
-
-  const std::string& postponed_data() const { return postponed_data_; }
-  void clear_postponed_data() { postponed_data_.clear(); }
-  void append_postponed_data(const char* data, size_t data_len) {
-    postponed_data_.append(data, data_len);
+  bool use_error_page() const { return use_error_page_; }
+  void set_use_error_page(bool use_error_page) {
+    use_error_page_ = use_error_page;
   }
 
   bool is_prerendering() const;
@@ -316,8 +310,10 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
   scoped_ptr<webkit_glue::PasswordForm> password_form_data_;
   scoped_ptr<webkit_glue::AltErrorPageResourceFetcher> alt_error_page_fetcher_;
   std::string security_info_;
-  bool postpone_loading_data_;
-  std::string postponed_data_;
+
+  // True if we should use an error page, if the http status code alos indicates
+  // an error.
+  bool use_error_page_;
 
   // True if page is being prerendered.  False once prerendered page is
   // displayed.  Preserved across redirects.  Only set for the main frame's
