@@ -10,6 +10,7 @@
 #include "app/gfx/gl/gl_context_egl.h"
 #include "app/gfx/gl/gl_implementation.h"
 #include "base/file_path.h"
+#include "base/logging.h"
 #include "base/scoped_native_library.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
@@ -28,28 +29,36 @@ bool CollectGraphicsInfo(GPUInfo* gpu_info) {
     return CollectGraphicsInfoGL(gpu_info);
   }
 
+  // Set to partial now in case this function returns false below.
+  gpu_info->SetLevel(GPUInfo::kPartial);
+
   // TODO(zmo): the following code only works if running on top of ANGLE.
   // Need to handle the case when running on top of real EGL/GLES2 drivers.
 
   egl::Display* display = static_cast<egl::Display*>(
       gfx::BaseEGLContext::GetDisplay());
-  if (!display)
+  if (!display) {
+    LOG(ERROR) << "gfx::BaseEGLContext::GetDisplay() failed";
     return false;
+  }
 
   IDirect3DDevice9* device = display->getDevice();
-  if (!device)
+  if (!device) {
+    LOG(ERROR) << "display->getDevice() failed";
     return false;
+  }
 
   IDirect3D9* d3d = NULL;
-  if (FAILED(device->GetDirect3D(&d3d)))
+  if (FAILED(device->GetDirect3D(&d3d))) {
+    LOG(ERROR) << "device->GetDirect3D(&d3d) failed";
     return false;
+  }
 
   if (!CollectGraphicsInfoD3D(d3d, gpu_info))
     return false;
 
   // DirectX diagnostics are collected asynchronously because it takes a
-  // couple of seconds. Do not mark as complete until that is done.
-  gpu_info->SetLevel(GPUInfo::kPartial);
+  // couple of seconds. Do not mark gpu_info as complete until that is done.
   return true;
 }
 
@@ -87,6 +96,7 @@ bool CollectGraphicsInfoD3D(IDirect3D9* d3d, GPUInfo* gpu_info) {
                                               driver_minor_version_lo);
     gpu_info->SetDriverInfo("", driver_version);
   } else {
+    LOG(ERROR) << "d3d->GetAdapterIdentifier() failed";
     succeed = false;
   }
 
@@ -98,6 +108,7 @@ bool CollectGraphicsInfoD3D(IDirect3D9* d3d, GPUInfo* gpu_info) {
     gpu_info->SetShaderVersion(d3d_caps.PixelShaderVersion,
                                d3d_caps.VertexShaderVersion);
   } else {
+    LOG(ERROR) << "d3d->GetDeviceCaps() failed";
     succeed = false;
   }
 

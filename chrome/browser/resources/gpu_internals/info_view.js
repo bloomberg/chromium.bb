@@ -26,11 +26,11 @@ cr.define('gpu', function() {
       gpu.Tab.prototype.decorate.apply(this);
 
       this.beginRequestClientInfo();
-      this.beginRequestGpuInfo();
 
       this.logMessages_ = [];
       this.beginRequestLogMessages();
 
+      browserBridge.addEventListener('gpuInfoUpdate', this.refresh.bind(this));
       this.refresh();
     },
 
@@ -44,20 +44,6 @@ cr.define('gpu', function() {
         this.refresh();
         if (data === undefined) { // try again in 250 ms
           window.setTimeout(this.beginRequestClientInfo.bind(this), 250);
-        }
-      }).bind(this));
-    },
-
-    /**
-     * This function begins a request for the GpuInfo. If it comes back
-     * as undefined, then we will issue the request again in 250ms.
-     */
-    beginRequestGpuInfo : function() {
-      browserBridge.callAsync('requestGpuInfo', undefined, (function(data) {
-        this.gpuInfo_ = data;
-        this.refresh();
-        if (!data || data.level != 'complete') { // try again in 250 ms
-          window.setTimeout(this.beginRequestGpuInfo.bind(this), 250);
         }
       }).bind(this));
     },
@@ -77,7 +63,6 @@ cr.define('gpu', function() {
            window.setTimeout(this.beginRequestLogMessages.bind(this), 250);
          }).bind(this));
     },
-
 
     /**
     * Updates the view based on its currently known data
@@ -103,13 +88,14 @@ cr.define('gpu', function() {
       }
 
       // GPU info, basic
-      if (this.gpuInfo_) {
-        this.setTable_('basic-info', this.gpuInfo_.basic_info);
-        if (this.gpuInfo_.diagnostics) {
-          this.setTable_('diagnostics', this.gpuInfo_.diagnostics);
-        } else if (this.gpuInfo_.level == 'partial' ||
-                   this.gpuInfo_.level == 'completing') {
-          this.setText_('diagnostics', '... loading...');
+      var gpuInfo = browserBridge.gpuInfo;
+      if (gpuInfo) {
+        this.setTable_('basic-info', gpuInfo.basic_info);
+        if (gpuInfo.diagnostics) {
+          this.setTable_('diagnostics', gpuInfo.diagnostics);
+        } else if (gpuInfo.level == 'partial' ||
+                   gpuInfo.level == 'completing') {
+          this.setText_('diagnostics', '... loading ...');
         } else {
           this.setText_('diagnostics', 'None');
         }

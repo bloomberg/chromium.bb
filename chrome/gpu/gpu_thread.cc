@@ -132,7 +132,11 @@ void GpuThread::OnInitialize() {
     MessageLoop::current()->Quit();
     return;
   }
-  gpu_info_collector::CollectGraphicsInfo(&gpu_info_);
+  bool gpu_info_result = gpu_info_collector::CollectGraphicsInfo(&gpu_info_);
+  if (!gpu_info_result) {
+    gpu_info_.SetCollectionError(true);
+    LOG(ERROR) << "gpu_info_collector::CollectGraphicsInfo() failed";
+  }
   child_process_logging::SetGpuInfo(gpu_info_);
   LOG(INFO) << "gpu_info_collector::CollectGraphicsInfo complete";
 
@@ -253,6 +257,9 @@ void GpuThread::OnCollectGraphicsInfo(GPUInfo::Level level) {
       // Flag GPU info as complete if the DirectX diagnostics cannot be
       // collected.
       gpu_info_.SetLevel(GPUInfo::kComplete);
+    } else {
+      // Do not send response if we are still completing the GPUInfo struct
+      return;
     }
   }
 #endif
@@ -328,6 +335,7 @@ void GpuThread::CollectDxDiagnostics(GpuThread* thread) {
 void GpuThread::SetDxDiagnostics(GpuThread* thread, const DxDiagNode& node) {
   thread->gpu_info_.SetDxDiagnostics(node);
   thread->gpu_info_.SetLevel(GPUInfo::kComplete);
+  thread->Send(new GpuHostMsg_GraphicsInfoCollected(thread->gpu_info_));
 }
 
 #endif

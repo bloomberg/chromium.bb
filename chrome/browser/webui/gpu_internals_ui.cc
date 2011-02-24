@@ -76,11 +76,14 @@ class GpuMessageHandler
 
   // Mesages
   void OnCallAsync(const ListValue* list);
+  void OnRequestGpuInfo(const ListValue* list);
 
   // Submessages dispatched from OnCallAsync
-  Value* OnRequestGpuInfo(const ListValue* list);
   Value* OnRequestClientInfo(const ListValue* list);
   Value* OnRequestLogMessages(const ListValue* list);
+
+  // GPUInfo collected callback.
+  void OnGpuInfoCollected();
 
   // Executes the javascript function |function_name| in the renderer, passing
   // it the argument |value|.
@@ -89,6 +92,8 @@ class GpuMessageHandler
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GpuMessageHandler);
+
+  Callback0::Type* gpu_info_update_callback_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -134,10 +139,16 @@ std::string GpuHTMLSource::GetMimeType(const std::string&) const {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-GpuMessageHandler::GpuMessageHandler() {
+GpuMessageHandler::GpuMessageHandler() : gpu_info_update_callback_(NULL) {
 }
 
-GpuMessageHandler::~GpuMessageHandler() {}
+GpuMessageHandler::~GpuMessageHandler() {
+  if (gpu_info_update_callback_) {
+    GpuProcessHostUIShimManager::GetInstance()->
+        gpu_info_update_callbacks().Remove(gpu_info_update_callback_);
+    delete gpu_info_update_callback_;
+  }
+}
 
 WebUIMessageHandler* GpuMessageHandler::Attach(WebUI* web_ui) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -152,6 +163,9 @@ void GpuMessageHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback(
       "callAsync",
       NewCallback(this, &GpuMessageHandler::OnCallAsync));
+  web_ui_->RegisterMessageCallback(
+      "requestGpuInfo",
+      NewCallback(this, &GpuMessageHandler::OnRequestGpuInfo));
 }
 
 void GpuMessageHandler::OnCallAsync(const ListValue* args) {
@@ -178,9 +192,7 @@ void GpuMessageHandler::OnCallAsync(const ListValue* args) {
 
   // call the submessage handler
   Value* ret = NULL;
-  if (submessage == "requestGpuInfo") {
-    ret = OnRequestGpuInfo(submessageArgs);
-  } else if (submessage == "requestClientInfo") {
+  if (submessage == "requestClientInfo") {
     ret = OnRequestClientInfo(submessageArgs);
   } else if (submessage == "requestLogMessages") {
     ret = OnRequestLogMessages(submessageArgs);
@@ -201,6 +213,19 @@ void GpuMessageHandler::OnCallAsync(const ListValue* args) {
     web_ui_->CallJavascriptFunction(L"browserBridge.onCallAsyncReply",
         *requestId);
   }
+}
+
+void GpuMessageHandler::OnRequestGpuInfo(const ListValue* args) {
+  if (gpu_info_update_callback_ == NULL) {
+    // Add us to be called when GPUInfo changes and ask for updated GPUInfo.
+    gpu_info_update_callback_ =
+        NewCallback(this, &GpuMessageHandler::OnGpuInfoCollected);
+    GpuProcessHostUIShimManager::GetInstance()->gpu_info_update_callbacks().Add(
+        gpu_info_update_callback_);
+  }
+  GpuProcessHostUIShim* ui_shim = GpuProcessHostUIShim::GetForRenderer(0);
+  if (ui_shim)
+    ui_shim->CollectGpuInfoAsynchronously(GPUInfo::kComplete);
 }
 
 Value* GpuMessageHandler::OnRequestClientInfo(const ListValue* list) {
@@ -327,29 +352,6 @@ DictionaryValue* GpuInfoToDict(const GPUInfo& gpu_info) {
   return info;
 }
 
-Value* GpuMessageHandler::OnRequestGpuInfo(const ListValue* list) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Get GPU Info.
-  GpuProcessHostUIShim* ui_shim = GpuProcessHostUIShim::GetForRenderer(0);
-  if (!ui_shim)
-    return NULL;
-
-  GPUInfo gpu_info = ui_shim->gpu_info();
-
-  std::string html;
-  if (gpu_info.level() != GPUInfo::kComplete) {
-    ui_shim->CollectGraphicsInfoAsynchronously(
-        GPUInfo::kComplete);
-  }
-
-  if (gpu_info.level() != GPUInfo::kUninitialized) {
-    return GpuInfoToDict(gpu_info);
-  } else {
-    return NULL;
-  }
-}
-
 Value* GpuMessageHandler::OnRequestLogMessages(const ListValue*) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   GpuProcessHostUIShim* ui_shim = GpuProcessHostUIShim::GetForRenderer(0);
@@ -359,8 +361,20 @@ Value* GpuMessageHandler::OnRequestLogMessages(const ListValue*) {
   return ui_shim->log_messages();
 }
 
-}  // namespace
+void GpuMessageHandler::OnGpuInfoCollected() {
 
+  // Get GPU Info.
+  GPUInfo gpu_info = GpuProcessHostUIShimManager::GetInstance()->gpu_info();
+
+  // Send GPU Info to javascript.
+  Value* gpuInfoVal = GpuInfoToDict(gpu_info);
+  web_ui_->CallJavascriptFunction(L"browserBridge.onGpuInfoUpdated",
+      *gpuInfoVal);
+
+  delete gpuInfoVal;
+}
+
+}  // namespace
 
 
 ////////////////////////////////////////////////////////////////////////////////

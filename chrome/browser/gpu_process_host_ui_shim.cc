@@ -62,6 +62,62 @@ class SendOnIOThreadTask : public Task {
 
 }  // namespace
 
+////////////////////////////////////////////////////////////////////////////////
+//
+// Callback0Group
+//
+////////////////////////////////////////////////////////////////////////////////
+
+Callback0Group::Callback0Group() {
+}
+
+Callback0Group::~Callback0Group() {
+}
+
+void Callback0Group::Add(Callback0::Type* callback) {
+  callbacks_.insert(callback);
+}
+
+bool Callback0Group::Remove(Callback0::Type* callback) {
+  std::set<Callback0::Type*>::iterator i = callbacks_.find(callback);
+  if (i != callbacks_.end()) {
+    callbacks_.erase(i);
+    return true;
+  }
+  return false;
+}
+
+void Callback0Group::Run() {
+  std::set<Callback0::Type*>::iterator i = callbacks_.begin();
+  for (; i != callbacks_.end(); ++i) {
+    (*i)->Run();
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// GpuProcessHostUIShimManager
+//
+////////////////////////////////////////////////////////////////////////////////
+
+GpuProcessHostUIShimManager::GpuProcessHostUIShimManager() {
+}
+
+GpuProcessHostUIShimManager* GpuProcessHostUIShimManager::GetInstance() {
+  return Singleton<GpuProcessHostUIShimManager>::get();
+}
+
+void GpuProcessHostUIShimManager::SetGpuInfo(const GPUInfo& gpu_info) {
+  gpu_info_ = gpu_info;
+  gpu_info_update_callbacks().Run();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// GpuProcessHostUIShim
+//
+////////////////////////////////////////////////////////////////////////////////
+
 class GpuProcessHostUIShim::ViewSurface {
  public:
   explicit ViewSurface(ViewID view_id);
@@ -316,7 +372,7 @@ void GpuProcessHostUIShim::DidDestroyAcceleratedSurface(int renderer_id,
 
 #endif
 
-void GpuProcessHostUIShim::CollectGraphicsInfoAsynchronously(
+void GpuProcessHostUIShim::CollectGpuInfoAsynchronously(
     GPUInfo::Level level) {
   DCHECK(CalledOnValidThread());
   // If GPU is already blacklisted, no more info will be collected.
@@ -473,9 +529,7 @@ void GpuProcessHostUIShim::OnGraphicsInfoCollected(const GPUInfo& gpu_info) {
     gpu_info_.SetLevel(GPUInfo::kComplete);
   child_process_logging::SetGpuInfo(gpu_info_);
 
-  // Used only in testing.
-  if (gpu_info_collected_callback_.get())
-    gpu_info_collected_callback_->Run();
+  GpuProcessHostUIShimManager::GetInstance()->SetGpuInfo(gpu_info);
 }
 
 void GpuProcessHostUIShim::OnPreliminaryGraphicsInfoCollected(

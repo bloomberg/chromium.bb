@@ -17,7 +17,8 @@ GPUInfo::GPUInfo()
       gl_vendor_(""),
       gl_renderer_(""),
       gl_extensions_(""),
-      can_lose_context_(false) {
+      can_lose_context_(false),
+      collection_error_(false) {
 }
 
 GPUInfo::~GPUInfo() {}
@@ -78,6 +79,10 @@ bool GPUInfo::can_lose_context() const {
   return can_lose_context_;
 }
 
+bool GPUInfo::collection_error() const {
+  return collection_error_;
+}
+
 void GPUInfo::SetLevel(Level level) {
   level_ = level;
 }
@@ -126,6 +131,10 @@ void GPUInfo::SetGLExtensions(const std::string& gl_extensions) {
 
 void GPUInfo::SetCanLoseContext(bool can_lose_context) {
   can_lose_context_ = can_lose_context;
+}
+
+void GPUInfo::SetCollectionError(bool collection_error) {
+  collection_error_ = collection_error;
 }
 
 #if defined(OS_WIN)

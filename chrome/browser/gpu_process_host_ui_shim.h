@@ -13,6 +13,7 @@
 
 #include <map>
 #include <queue>
+#include <set>
 
 #include "base/callback.h"
 #include "base/linked_ptr.h"
@@ -40,6 +41,55 @@ namespace IPC {
 struct ChannelHandle;
 class Message;
 }
+
+class Callback0Group
+{
+ public:
+  Callback0Group();
+  ~Callback0Group();
+
+  // Add a callback.
+  void Add(Callback0::Type* callback);
+
+  // Remove a callback.
+  // Returns true if removed, or false if it was not found.
+  bool Remove(Callback0::Type* callback);
+
+  // Call all callbacks.
+  void Run();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(Callback0Group);
+
+  // Map of callbacks.
+  std::set<Callback0::Type*> callbacks_;
+};
+
+class GpuProcessHostUIShimManager
+{
+ public:
+  static GpuProcessHostUIShimManager* GetInstance();
+
+  void SetGpuInfo(const GPUInfo& gpu_info);
+
+  // This callback group is invoked when GPU info is updated.
+  Callback0Group& gpu_info_update_callbacks() {
+    return gpu_info_update_callbacks_;
+  }
+
+  // Return all known information about the GPU.
+  const GPUInfo& gpu_info() const {
+    return gpu_info_;
+  }
+
+ private:
+  GpuProcessHostUIShimManager();
+  friend struct DefaultSingletonTraits<GpuProcessHostUIShimManager>;
+  DISALLOW_COPY_AND_ASSIGN(GpuProcessHostUIShimManager);
+
+  GPUInfo gpu_info_;
+  Callback0Group gpu_info_update_callbacks_;
+};
 
 class GpuProcessHostUIShim
     : public IPC::Channel::Listener,
@@ -107,7 +157,7 @@ class GpuProcessHostUIShim
 
   // Sends a message to the browser process to collect the information from the
   // graphics card.
-  void CollectGraphicsInfoAsynchronously(GPUInfo::Level level);
+  void CollectGpuInfoAsynchronously(GPUInfo::Level level);
 
   // Tells the GPU process to crash. Useful for testing.
   void SendAboutGpuCrash();
@@ -118,13 +168,6 @@ class GpuProcessHostUIShim
 
   // Return all known information about the GPU.
   const GPUInfo& gpu_info() const;
-
-  // Used only in testing. Sets a callback to invoke when GPU info is collected,
-  // regardless of whether it has been collected already or if it is partial
-  // or complete info. Set to NULL when the callback should no longer be called.
-  void set_gpu_info_collected_callback(Callback0::Type* callback) {
-    gpu_info_collected_callback_.reset(callback);
-  }
 
   ListValue* log_messages() const { return log_messages_.DeepCopy(); }
 
@@ -169,10 +212,6 @@ class GpuProcessHostUIShim
 
   GPUInfo gpu_info_;
   ListValue log_messages_;
-
-  // Used only in testing. If set, the callback is invoked when the GPU info
-  // has been collected.
-  scoped_ptr<Callback0::Type> gpu_info_collected_callback_;
 
   // These are the channel requests that we have already sent to
   // the GPU process, but haven't heard back about yet.

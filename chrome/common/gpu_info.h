@@ -88,6 +88,11 @@ class GPUInfo {
   // semantics are available.
   bool can_lose_context() const;
 
+  // Return true if there was an error at any stage of collecting GPUInfo data.
+  // If there was an error, then the GPUInfo fields may be incomplete or set
+  // to default values such as 0 or empty string.
+  bool collection_error() const;
+
   void SetLevel(Level level);
 
   void SetInitializationTime(const base::TimeDelta& initialization_time);
@@ -112,6 +117,8 @@ class GPUInfo {
 
   void SetCanLoseContext(bool can_lose_context);
 
+  void SetCollectionError(bool collection_error);
+
 #if defined(OS_WIN)
   // The information returned by the DirectX Diagnostics Tool.
   const DxDiagNode& dx_diagnostics() const;
@@ -134,6 +141,7 @@ class GPUInfo {
   std::string gl_renderer_;
   std::string gl_extensions_;
   bool can_lose_context_;
+  bool collection_error_;
 
 #if defined(OS_WIN)
   DxDiagNode dx_diagnostics_;

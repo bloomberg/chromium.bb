@@ -90,13 +90,17 @@ class GPUInfoCollectedObserver {
   explicit GPUInfoCollectedObserver(GpuProcessHostUIShim* gpu_host_shim)
       : gpu_host_shim_(gpu_host_shim),
         gpu_info_collected_(false) {
-    gpu_host_shim_->set_gpu_info_collected_callback(
-        NewCallback(this, &GPUInfoCollectedObserver::OnGpuInfoCollected));
+    gpu_info_update_callback_ =
+        NewCallback(this, &GPUInfoCollectedObserver::OnGpuInfoCollected);
+    GpuProcessHostUIShimManager::GetInstance()->gpu_info_update_callbacks().Add(
+        gpu_info_update_callback_);
   }
 
   void OnGpuInfoCollected() {
     gpu_info_collected_ = true;
-    gpu_host_shim_->set_gpu_info_collected_callback(NULL);
+    GpuProcessHostUIShimManager::GetInstance()->
+        gpu_info_update_callbacks().Remove(gpu_info_update_callback_);
+    delete gpu_info_update_callback_;
     MessageLoopForUI::current()->Quit();
   }
 
@@ -104,6 +108,7 @@ class GPUInfoCollectedObserver {
 
  private:
   GpuProcessHostUIShim* gpu_host_shim_;
+  Callback0::Type* gpu_info_update_callback_;
   bool gpu_info_collected_;
 };
 
@@ -118,7 +123,7 @@ bool CollectGPUInfo(GPUInfo* client_info) {
   GPUInfo info = gpu_host_shim->gpu_info();
   if (info.level() == GPUInfo::kUninitialized) {
     GPUInfoCollectedObserver observer(gpu_host_shim);
-    gpu_host_shim->CollectGraphicsInfoAsynchronously(GPUInfo::kPartial);
+    gpu_host_shim->CollectGpuInfoAsynchronously(GPUInfo::kPartial);
     ui_test_utils::RunMessageLoop();
     if (!observer.gpu_info_collected())
       return false;
