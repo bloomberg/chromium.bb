@@ -59,6 +59,7 @@ const char kProxyCfgRuleHost[] = "host";
 const char kProxyCfgRulePort[] = "port";
 const char kProxyCfgBypassList[] = "bypassList";
 const char kProxyCfgScheme[] = "scheme";
+const char kProxyCfgValue[] = "value";
 
 const char kProxyEventFatal[] = "fatal";
 const char kProxyEventError[] = "error";
@@ -415,19 +416,24 @@ bool GetProxySettingsFunction::RunImpl() {
 
   DCHECK(result_->IsType(Value::TYPE_DICTIONARY));
 
+  DictionaryValue* result_dict_ = static_cast<DictionaryValue*>(result_.get());
+
   // This is how it is stored in the PrefStores:
-  scoped_ptr<DictionaryValue> proxy_prefs(
-      static_cast<DictionaryValue*>(result_.release()));
+  DictionaryValue* proxy_prefs = NULL;
+  if (!result_dict_->GetDictionary(kProxyCfgValue, &proxy_prefs)) {
+    LOG(ERROR) << "Received invalid configuration.";
+    return false;
+  }
 
   // This is how it is presented to the API caller:
   scoped_ptr<DictionaryValue> out(new DictionaryValue);
 
-  if (!ConvertToApiFormat(proxy_prefs.get(), out.get())) {
+  if (!ConvertToApiFormat(proxy_prefs, out.get())) {
     // Do not set error message as ConvertToApiFormat does that.
     return false;
   }
 
-  result_.reset(out.release());
+  result_dict_->Set(kProxyCfgValue, out.release());
   return true;
 }
 

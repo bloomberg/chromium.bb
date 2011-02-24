@@ -20,6 +20,11 @@ struct PrefMappingEntry {
   const char* permission;
 };
 
+const char kNotControllable[] = "NotControllable";
+const char kControlledByOtherExtensions[] = "ControlledByOtherExtensions";
+const char kControllableByThisExtension[] = "ControllableByThisExtension";
+const char kControlledByThisExtension[] = "ControlledByThisExtension";
+
 PrefMappingEntry pref_mapping[] = {
   { "blockThirdPartyCookies",
     prefs::kBlockThirdPartyCookies,
@@ -74,6 +79,28 @@ const char kPermissionErrorMessage[] =
 
 GetPreferenceFunction::~GetPreferenceFunction() { }
 
+const char* GetPreferenceFunction::GetLevelOfControl(
+    const std::string& browser_pref,
+    bool incognito) const {
+  PrefService* prefs = incognito ? profile_->GetOffTheRecordPrefs()
+                                 : profile_->GetPrefs();
+  const PrefService::Preference* pref =
+      prefs->FindPreference(browser_pref.c_str());
+  CHECK(pref);
+  ExtensionPrefs* ep = profile_->GetExtensionService()->extension_prefs();
+
+  if (!pref->IsExtensionModifiable())
+    return kNotControllable;
+
+  if (ep->DoesExtensionControlPref(extension_id(), browser_pref, incognito))
+    return kControlledByThisExtension;
+
+  if (ep->CanExtensionControlPref(extension_id(), browser_pref, incognito))
+    return kControllableByThisExtension;
+
+  return kControlledByOtherExtensions;
+}
+
 bool GetPreferenceFunction::RunImpl() {
   std::string pref_key;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &pref_key));
@@ -95,10 +122,16 @@ bool GetPreferenceFunction::RunImpl() {
     error_ = base::StringPrintf(kPermissionErrorMessage, pref_key.c_str());
     return false;
   }
+
   const PrefService::Preference* pref =
       prefs->FindPreference(browser_pref.c_str());
   CHECK(pref);
-  result_.reset(pref->GetValue()->DeepCopy());
+  std::string level_of_control = GetLevelOfControl(browser_pref, incognito);
+
+  scoped_ptr<DictionaryValue> result(new DictionaryValue);
+  result->Set("value", pref->GetValue()->DeepCopy());
+  result->Set("levelOfControl", Value::CreateStringValue(level_of_control));
+  result_.reset(result.release());
   return true;
 }
 

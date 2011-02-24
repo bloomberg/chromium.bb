@@ -613,3 +613,24 @@ TEST_F(PrefValueStoreTest, PrefValueUserModifiable) {
   EXPECT_TRUE(pref_value_store_->PrefValueUserModifiable(
       prefs::kMissingPref));
 }
+
+TEST_F(PrefValueStoreTest, PrefValueExtensionModifiable) {
+  EXPECT_FALSE(pref_value_store_->PrefValueExtensionModifiable(
+      prefs::kManagedPlatformPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueExtensionModifiable(
+      prefs::kManagedCloudPref));
+  EXPECT_TRUE(pref_value_store_->PrefValueExtensionModifiable(
+      prefs::kExtensionPref));
+  EXPECT_TRUE(pref_value_store_->PrefValueExtensionModifiable(
+      prefs::kCommandLinePref));
+  EXPECT_TRUE(pref_value_store_->PrefValueExtensionModifiable(
+      prefs::kUserPref));
+  EXPECT_TRUE(pref_value_store_->PrefValueExtensionModifiable(
+      prefs::kRecommendedPlatformPref));
+  EXPECT_TRUE(pref_value_store_->PrefValueExtensionModifiable(
+      prefs::kRecommendedCloudPref));
+  EXPECT_TRUE(pref_value_store_->PrefValueExtensionModifiable(
+      prefs::kDefaultPref));
+  EXPECT_TRUE(pref_value_store_->PrefValueExtensionModifiable(
+      prefs::kMissingPref));
+}

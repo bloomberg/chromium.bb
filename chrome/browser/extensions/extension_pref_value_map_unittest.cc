@@ -27,7 +27,7 @@ static Value* CreateVal(const char* str) {
 }
 
 static base::Time CreateTime(int64 t) {
-  return base::Time::FromInternalValue(10);
+  return base::Time::FromInternalValue(t);
 }
 
 template <typename BASECLASS>
@@ -96,6 +96,28 @@ TEST_F(ExtensionPrefValueMapTest, Override) {
   EXPECT_EQ("val3", GetValue(kPref1, false));
   EXPECT_EQ("val5", GetValue(kPref2, false));
   EXPECT_EQ("val8", GetValue(kPref3, false));
+}
+
+TEST_F(ExtensionPrefValueMapTest, OverrideChecks) {
+  epvm_.RegisterExtension(kExt1, CreateTime(10), true);
+  epvm_.RegisterExtension(kExt2, CreateTime(20), true);
+  epvm_.RegisterExtension(kExt3, CreateTime(30), true);
+
+  EXPECT_FALSE(epvm_.DoesExtensionControlPref(kExt1, kPref1, false));
+  EXPECT_FALSE(epvm_.DoesExtensionControlPref(kExt2, kPref1, false));
+  EXPECT_FALSE(epvm_.DoesExtensionControlPref(kExt3, kPref1, false));
+  EXPECT_TRUE(epvm_.CanExtensionControlPref(kExt1, kPref1, false));
+  EXPECT_TRUE(epvm_.CanExtensionControlPref(kExt2, kPref1, false));
+  EXPECT_TRUE(epvm_.CanExtensionControlPref(kExt3, kPref1, false));
+
+  epvm_.SetExtensionPref(kExt2, kPref1, false, CreateVal("val1"));
+
+  EXPECT_FALSE(epvm_.DoesExtensionControlPref(kExt1, kPref1, false));
+  EXPECT_TRUE(epvm_.DoesExtensionControlPref(kExt2, kPref1, false));
+  EXPECT_FALSE(epvm_.DoesExtensionControlPref(kExt3, kPref1, false));
+  EXPECT_FALSE(epvm_.CanExtensionControlPref(kExt1, kPref1, false));
+  EXPECT_TRUE(epvm_.CanExtensionControlPref(kExt2, kPref1, false));
+  EXPECT_TRUE(epvm_.CanExtensionControlPref(kExt3, kPref1, false));
 }
 
 TEST_F(ExtensionPrefValueMapTest, SetAndGetPrefValueIncognito) {

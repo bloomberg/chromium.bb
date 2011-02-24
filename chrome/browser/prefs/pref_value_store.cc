@@ -164,6 +164,12 @@ bool PrefValueStore::PrefValueUserModifiable(const char* name) const {
          effective_store == INVALID_STORE;
 }
 
+bool PrefValueStore::PrefValueExtensionModifiable(const char* name) const {
+  PrefStoreType effective_store = ControllingPrefStoreForPref(name);
+  return effective_store >= EXTENSION_STORE ||
+         effective_store == INVALID_STORE;
+}
+
 bool PrefValueStore::PrefValueInStore(
     const char* name,
     PrefValueStore::PrefStoreType store) const {

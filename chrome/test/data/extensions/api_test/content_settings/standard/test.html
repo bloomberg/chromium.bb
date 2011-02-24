@@ -3,13 +3,18 @@
 // Run with browser_tests --gtest_filter=ExtensionApiTest.ContentSettings
 
 var cs = chrome.experimental.contentSettings;
+function expect(expected, message) {
+  return chrome.test.callbackPass(function(value) {
+    chrome.test.assertEq(expected, value, message);
+  });
+}
 chrome.test.runTests([
   function getBlockThirdPartyCookies() {
-    cs.misc.blockThirdPartyCookies.get({}, chrome.test.callbackPass(
-        function(block) {
-          chrome.test.assertBool(block, true,
-                                 "third-party cookies should be blocked");
-        }));
+    cs.misc.blockThirdPartyCookies.get(
+        {}, 
+        expect({ 'value': true,
+                 'levelOfControl': "ControllableByThisExtension" },
+               "third-party cookies should be blocked"));
   },
   function setBlockThirdPartyCookies() {
     cs.misc.blockThirdPartyCookies.set(

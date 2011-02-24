@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_PREFERENCE_API_H__
 #pragma once
 
+#include <string>
+
 #include "chrome/browser/extensions/extension_function.h"
 
 class GetPreferenceFunction : public SyncExtensionFunction {
@@ -13,6 +15,12 @@ class GetPreferenceFunction : public SyncExtensionFunction {
   virtual ~GetPreferenceFunction();
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.preferences.get")
+
+ private:
+  // Returns a string constant (defined in API) indicating the level of
+  // control this extension has on the specified preference.
+  const char* GetLevelOfControl(const std::string& browser_pref,
+                                bool incognito) const;
 };
 
 class SetPreferenceFunction : public SyncExtensionFunction {

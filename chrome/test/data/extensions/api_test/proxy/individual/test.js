@@ -66,9 +66,13 @@ chrome.test.runTests([
         chrome.test.callbackPass());
     chrome.experimental.proxy.settings.get(
         {'incognito': false},
-        expect(configExpected, "invalid proxy settings"));
+        expect({ 'value': configExpected,
+                 'levelOfControl': "ControlledByThisExtension" },
+               "invalid proxy settings"));
     chrome.experimental.proxy.settings.get(
         {'incognito': true},
-        expect(configExpected, "invalid proxy settings"));
-  }
+        expect({ 'value': configExpected,
+                 'levelOfControl': "ControlledByThisExtension" },
+               "invalid proxy settings"));
+   }
 ]);

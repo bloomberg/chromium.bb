@@ -288,6 +288,18 @@ class ExtensionPrefs {
                                      const std::string& pref_key,
                                      bool incognito);
 
+  // Returns true if currently no extension with higher precedence controls the
+  // preference.
+  bool CanExtensionControlPref(const std::string& extension_id,
+                               const std::string& pref_key,
+                               bool incognito);
+
+  // Returns true if extension |extension_id| currently controls the
+  // preference.
+  bool DoesExtensionControlPref(const std::string& extension_id,
+                                const std::string& pref_key,
+                                bool incognito);
+
   static void RegisterUserPrefs(PrefService* prefs);
 
   // The underlying PrefService.

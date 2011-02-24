@@ -88,6 +88,11 @@ class PrefService : public base::NonThreadSafe {
     // Preference.
     bool IsUserModifiable() const;
 
+    // Returns true if an extension can change the Preference value, which is
+    // the case if no higher-priority source than the extension store controls
+    // the Preference.
+    bool IsExtensionModifiable() const;
+
    private:
     friend class PrefService;
 

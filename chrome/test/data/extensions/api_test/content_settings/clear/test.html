@@ -7,8 +7,13 @@ chrome.test.runTests([
   function getBlockThirdPartyCookies() {
     cs.misc.blockThirdPartyCookies.get({}, chrome.test.callbackPass(
         function(block) {
-          chrome.test.assertBool(block, true,
-                                 "third-party cookies should be blocked");
+          chrome.test.assertEq(
+              block,
+              {
+                'value': true,
+                'levelOfControl': "ControllableByThisExtension"
+              },
+              "third-party cookies should be blocked");
         }));
   },
   function setBlockThirdPartyCookies() {
@@ -22,8 +27,13 @@ chrome.test.runTests([
   function getBlockThirdPartyCookies2() {
     cs.misc.blockThirdPartyCookies.get({}, chrome.test.callbackPass(
         function(block) {
-          chrome.test.assertBool(block, true,
-                                 "third-party cookies should be blocked");
+          chrome.test.assertEq(
+              block,
+              {
+                'value': true,
+                'levelOfControl': "ControllableByThisExtension"
+              },
+              "third-party cookies should be blocked");
         }));
   }
 ]);

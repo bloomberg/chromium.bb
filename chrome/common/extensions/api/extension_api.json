@@ -4564,9 +4564,20 @@
                 "type": "function",
                 "parameters": [
                   {
-                    "name": "value",
-                    "description": "The value of the preference.",
-                    "type": "any"
+                    "name": "details",
+                    "type": "object",
+                    "description": "Details of the currently effective preference value.",
+                    "properties": {
+                      "value": {
+                        "description": "The value of the preference.",
+                        "type": "any"
+                      },
+                      "levelOfControl": {
+                        "description": "One of<br>NotControllable = cannot be controlled by any extension<br>ControlledByOtherExtensions = controlled by extensions with higher precedence<br>ControllableByThisExtension = can be controlled by this extension<br>ControlledByThisExtension = controlled by this extension",
+                        "type": "string",
+                        "enum": ["NotControllable", "ControlledByOtherExtensions", "ControllableByThisExtension", "ControlledByThisExtension"]
+                      }
+                    }
                   }
                 ]
               }

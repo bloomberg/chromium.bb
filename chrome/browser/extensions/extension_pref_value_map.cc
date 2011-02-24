@@ -46,6 +46,35 @@ void ExtensionPrefValueMap::RemoveExtensionPref(const std::string& ext_id,
     NotifyPrefValueChanged(key);
 }
 
+bool ExtensionPrefValueMap::CanExtensionControlPref(
+    const std::string& extension_id,
+    const std::string& pref_key,
+    bool incognito) const {
+  ExtensionEntryMap::const_iterator ext = entries_.find(extension_id);
+  if (ext == entries_.end()) {
+    NOTREACHED();
+    return false;
+  }
+
+  ExtensionEntryMap::const_iterator winner =
+      GetEffectivePrefValueController(pref_key, incognito);
+  if (winner == entries_.end())
+    return true;
+
+  return winner->second->install_time <= ext->second->install_time;
+}
+
+bool ExtensionPrefValueMap::DoesExtensionControlPref(
+    const std::string& extension_id,
+    const std::string& pref_key,
+    bool incognito) const {
+  ExtensionEntryMap::const_iterator winner =
+      GetEffectivePrefValueController(pref_key, incognito);
+  if (winner == entries_.end())
+    return false;
+  return winner->first == extension_id;
+}
+
 void ExtensionPrefValueMap::RegisterExtension(const std::string& ext_id,
                                               const base::Time& install_time,
                                               bool is_enabled) {
@@ -116,7 +145,25 @@ void ExtensionPrefValueMap::GetExtensionControlledKeys(
 const Value* ExtensionPrefValueMap::GetEffectivePrefValue(
     const std::string& key,
     bool incognito) const {
-  Value *winner = NULL;
+  ExtensionEntryMap::const_iterator winner =
+      GetEffectivePrefValueController(key, incognito);
+  if (winner == entries_.end())
+    return NULL;
+
+  Value* value = NULL;
+  const std::string& ext_id = winner->first;
+  if (incognito)
+    GetExtensionPrefValueMap(ext_id, true)->GetValue(key, &value);
+  if (!value)
+    GetExtensionPrefValueMap(ext_id, false)->GetValue(key, &value);
+  return value;
+}
+
+ExtensionPrefValueMap::ExtensionEntryMap::const_iterator
+ExtensionPrefValueMap::GetEffectivePrefValueController(
+    const std::string& key,
+    bool incognito) const {
+  ExtensionEntryMap::const_iterator winner = entries_.end();
   base::Time winners_install_time;
 
   ExtensionEntryMap::const_iterator i;
@@ -133,7 +180,7 @@ const Value* ExtensionPrefValueMap::GetEffectivePrefValue(
     Value* value = NULL;
     const PrefValueMap* prefs = GetExtensionPrefValueMap(ext_id, false);
     if (prefs->GetValue(key, &value)) {
-      winner = value;
+      winner = i;
       winners_install_time = install_time;
     }
 
@@ -142,7 +189,7 @@ const Value* ExtensionPrefValueMap::GetEffectivePrefValue(
 
     prefs = GetExtensionPrefValueMap(ext_id, true);
     if (prefs->GetValue(key, &value)) {
-      winner = value;
+      winner = i;
       winners_install_time = install_time;
     }
   }

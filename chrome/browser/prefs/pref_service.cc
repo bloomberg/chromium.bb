@@ -686,3 +686,7 @@ bool PrefService::Preference::IsDefaultValue() const {
 bool PrefService::Preference::IsUserModifiable() const {
   return pref_value_store()->PrefValueUserModifiable(name_.c_str());
 }
+
+bool PrefService::Preference::IsExtensionModifiable() const {
+  return pref_value_store()->PrefValueExtensionModifiable(name_.c_str());
+}

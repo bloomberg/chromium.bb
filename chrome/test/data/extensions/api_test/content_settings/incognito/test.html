@@ -1,28 +1,36 @@
 <script>
 // Content settings API test
-// Run with browser_tests --gtest_filter=ExtensionApiTest.ContentSettings
+// Run with browser_tests --gtest_filter=ExtensionApiTest.IncognitoContentSettings
 
 var cs = chrome.experimental.contentSettings;
 function expect(expected, message) {
   return chrome.test.callbackPass(function(value) {
-    chrome.test.assertBool(value, expected, message);
+    chrome.test.assertEq(expected, value, message);
   });
 }
 chrome.test.runTests([
   function testIncognito() {
     cs.misc.blockThirdPartyCookies.get(
-        {}, expect(false, "third-party cookies should not be blocked"));
+        {},
+        expect({ 'value': false,
+                 'levelOfControl': "ControllableByThisExtension" },
+               "third-party cookies should not be blocked"));
     cs.misc.blockThirdPartyCookies.get(
         { 'incognito': true },
-        expect(false,
+        expect({ 'value': false,
+                 'levelOfControl': "ControllableByThisExtension" },
                "third-party cookies should not be blocked in incognito mode"));
     cs.misc.blockThirdPartyCookies.set(
         { 'incognito': true, 'value': true }, chrome.test.callbackPass());
     cs.misc.blockThirdPartyCookies.get(
-        {}, expect(false, "third-party cookies should not be blocked"));
+        {},
+        expect({ 'value': false,
+                 'levelOfControl': "ControllableByThisExtension" },
+               "third-party cookies should not be blocked"));
     cs.misc.blockThirdPartyCookies.get(
         { 'incognito': true },
-        expect(true,
+        expect({ 'value': true,
+                 'levelOfControl': "ControlledByThisExtension" },
                "third-party cookies should be blocked in incognito mode"));
   },
 ]);

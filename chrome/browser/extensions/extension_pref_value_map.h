@@ -79,6 +79,25 @@ class ExtensionPrefValueMap {
                            const std::string& key,
                            bool incognito);
 
+  // Returns true if currently no extension with higher precedence controls the
+  // preference.
+  // Note that the this function does does not consider the existence of
+  // policies. An extension is only really able to control a preference if
+  // PrefService::Preference::IsExtensionModifiable() returns true as well.
+  bool CanExtensionControlPref(const std::string& extension_id,
+                               const std::string& pref_key,
+                               bool incognito) const;
+
+  // Returns true if an extension identified by |extension_id| controls the
+  // preference. This means this extension has set a preference value and no
+  // other extension with higher precedence overrides it.
+  // Note that the this function does does not consider the existence of
+  // policies. An extension is only really able to control a preference if
+  // PrefService::Preference::IsExtensionModifiable() returns true as well.
+  bool DoesExtensionControlPref(const std::string& extension_id,
+                                const std::string& pref_key,
+                                bool incognito) const;
+
   // Tell the store it's now fully initialized.
   void NotifyInitializationCompleted();
 
@@ -117,6 +136,9 @@ class ExtensionPrefValueMap {
   // regardless whether they are set for incognito or regular pref values.
   void GetExtensionControlledKeys(const ExtensionEntry& entry,
                                   std::set<std::string>* out) const;
+
+  ExtensionEntryMap::const_iterator GetEffectivePrefValueController(
+      const std::string& key, bool incognito) const;
 
   void NotifyOfDestruction();
   void NotifyPrefValueChanged(const std::string& key);

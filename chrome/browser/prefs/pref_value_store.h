@@ -98,6 +98,10 @@ class PrefValueStore {
   // there is no higher-priority source controlling it.
   bool PrefValueUserModifiable(const char* name) const;
 
+  // Check whether a Preference value is modifiable by an extension, i.e.
+  // whether there is no higher-priority source controlling it.
+  bool PrefValueExtensionModifiable(const char* name) const;
+
  private:
   // PrefStores must be listed here in order from highest to lowest priority.
   //   MANAGED_PLATFORM contains all managed preference values that are
