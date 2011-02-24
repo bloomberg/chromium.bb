@@ -1122,7 +1122,8 @@ def IsBitcode(filename):
 def FileType(filename):
   if filename.startswith('-l'):
     # Determine whether this is a bitcode library or native .so
-    path = FindLib(filename[2:], shell.split(env.get('SEARCH_DIRS')))
+    path = FindLib(filename[2:], shell.split(env.get('SEARCH_DIRS') + " " +
+                                             env.get('ROOT_BC')))
     if path is None:
       Log.Fatal("Cannot find library %s", filename)
     if path.endswith('.a') or IsBitcode(path):
