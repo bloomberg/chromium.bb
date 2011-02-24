@@ -18,7 +18,7 @@
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/ui/gtk/gtk_theme_provider.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
-#include "chrome/browser/ui/gtk/import_dialog_gtk.h"
+#include "chrome/browser/ui/gtk/importer/import_dialog_gtk.h"
 #include "chrome/browser/ui/gtk/options/options_layout_gtk.h"
 #include "chrome/browser/ui/gtk/options/passwords_exceptions_window_gtk.h"
 #include "chrome/common/notification_service.h"

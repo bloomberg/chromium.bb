@@ -8,8 +8,8 @@
 
 #include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -32,7 +32,7 @@
 #include "chrome/browser/ui/gtk/gtk_theme_provider.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/hover_controller_gtk.h"
-#include "chrome/browser/ui/gtk/import_dialog_gtk.h"
+#include "chrome/browser/ui/gtk/importer/import_dialog_gtk.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "chrome/browser/ui/gtk/rounded_window.h"
 #include "chrome/browser/ui/gtk/tabs/tab_strip_gtk.h"

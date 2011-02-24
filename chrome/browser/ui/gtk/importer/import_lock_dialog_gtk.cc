@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/gtk/import_lock_dialog_gtk.h"
+#include "chrome/browser/ui/gtk/importer/import_lock_dialog_gtk.h"
 
 #include "base/message_loop.h"
 #include "chrome/browser/importer/importer.h"
