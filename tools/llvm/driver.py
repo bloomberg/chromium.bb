@@ -171,13 +171,7 @@ INITIAL_ENV = {
   'LLC_FLAGS_X8664' : '-march=x86-64 -mcpu=core2 -asm-verbose=false',
 
   'OPT'      : '${BASE_ARM}/bin/opt',
-  'OPT_FLAGS': '-std-compile-opts -O3 ' +
-               # Preserve memcpy and memset in case llc or opt
-               # generates references to llvm intrinsics
-               # (such as @llvm.memcpy and @llvm.memset, respectively)
-               # which may generate calls to these library functions
-               # after linking and optimization has occurred.
-               '-internalize-public-api-list=memcpy,memset',
+  'OPT_FLAGS': '-std-compile-opts -O3 -strip',
   'OPT_LEVEL': '',
 
   'OBJDUMP_ARM'   : '${BASE_ARM}/bin/arm-none-linux-gnueabi-objdump',
@@ -250,7 +244,7 @@ INITIAL_ENV = {
   'RUN_BCLD': '${BCLD} ${BCLD_FLAGS} ' +
               '${STDLIB_NATIVE_PREFIX} ${STDLIB_BC_PREFIX} ${inputs} ' +
               '${STDLIB_BC_SUFFIX} ${STDLIB_NATIVE_SUFFIX} ' +
-              '${BASE}/llvm-intrinsics.bc ' +
+              '${BASE}/llvm-intrinsics.bc ${BASE}/llvm-preserve.bc ' +
               '-o "${output}"'
 }
 

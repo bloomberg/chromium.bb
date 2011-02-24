@@ -2239,6 +2239,9 @@ driver-intrinsics() {
   "${INSTALL_DIR}"/bin/llvm-as \
     tools/llvm/llvm-intrinsics.ll \
     -o "${INSTALL_ROOT}/llvm-intrinsics.bc"
+  "${INSTALL_DIR}"/bin/llvm-as \
+    tools/llvm/llvm-preserve.ll \
+    -o "${INSTALL_ROOT}/llvm-preserve.bc"
 }
 
 # Just in case we're calling this manually
