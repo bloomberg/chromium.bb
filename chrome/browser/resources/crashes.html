@@ -9,13 +9,13 @@
   <script src="crashes.js"></script>
 </head>
 <body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
-  <header><h1 i18n-content="crashesTitle"></header>
+  <header><h1 i18n-content="crashesTitle"></h1></header>
   <div id="enabledMode">
     <h2 id="countBanner"></h2>
     <div id="crashList"></div>
-    <p id="noCrashes" i18n-content="noCrashesMessage" class="hidden"></div>
+    <p id="noCrashes" i18n-content="noCrashesMessage" hidden></p>
   </div>
-  <div id="disabledMode" class="hidden">
+  <div id="disabledMode" hidden>
     <h2 i18n-content="disabledHeader"></h2>
     <p i18n-values=".innerHTML:disabledMessage"></p>
   </div>

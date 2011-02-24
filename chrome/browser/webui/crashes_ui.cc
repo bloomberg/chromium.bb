@@ -134,9 +134,7 @@ CrashesDOMHandler::~CrashesDOMHandler() {
 }
 
 WebUIMessageHandler* CrashesDOMHandler::Attach(WebUI* web_ui) {
-
   upload_list_->LoadCrashListAsynchronously();
-
   return WebUIMessageHandler::Attach(web_ui);
 }
 

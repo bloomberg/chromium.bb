@@ -22,17 +22,14 @@ function updateCrashList(enabled, crashes) {
 
   var crashSection = $('crashList');
 
-  if (enabled) {
-    $('enabledMode').classList.remove('hidden');
-    $('disabledMode').classList.add('hidden');
-  } else {
-    $('enabledMode').classList.add('hidden');
-    $('disabledMode').classList.remove('hidden');
+  $('enabledMode').hidden = !enabled;
+  $('disabledMode').hidden = enabled;
+
+  if (!enabled)
     return;
-  }
 
   // Clear any previous list.
-  crashSection.innerHTML = '';
+  crashSection.textContent = '';
 
   for (var i = 0; i < crashes.length; i++) {
     var crash = crashes[i];
@@ -60,10 +57,7 @@ function updateCrashList(enabled, crashes) {
     crashSection.appendChild(crashBlock);
   }
 
-  if (crashes.length == 0)
-    $('noCrashes').classList.remove('hidden');
-  else
-    $('noCrashes').classList.add('hidden');
+  $('noCrashes').hidden = crashes.length != 0;
 }
 
 document.addEventListener('DOMContentLoaded', requestCrashes);
