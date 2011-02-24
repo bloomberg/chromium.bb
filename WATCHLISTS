@@ -148,11 +148,11 @@
     'autofill': {
       'filepath': 'chrome/app/nibs/AutoFill.*|'\
         'chrome/browser/autofill/.*|'\
-        'chrome/browser/dom_ui/autofill_.*|'\
+        'chrome/browser/resources/options/autofill_.*|'\
         'chrome/browser/sync/glue/autofill_.*|'\
-        'chrome/browser/views/autofill_.*|'\
-        'chrome/renderer/autofill_.*|'\
-        'chrome/renderer/form_manager.*',
+        'chrome/browser/ui/views/autofill_.*|'\
+        'chrome/browser/webui/options/autofill_.*|'\
+        'chrome/renderer/autofill/.*',
     },
     'webdata': {
       'filepath': 'chrome/browser/webdata/.*',
