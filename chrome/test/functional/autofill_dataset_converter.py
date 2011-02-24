@@ -6,6 +6,8 @@
 """Converts profile datasets to dictionary list for Autofill profiles.
 
 Used for test autofill.AutoFillTest.testMergeDuplicateProfilesInAutofill.
+Can be used as a stand alone script with -h to print out help text by running:
+python autofill_dataset_converter.py -h
 """
 
 import codecs
@@ -13,6 +15,12 @@ import logging
 import os
 import re
 import sys
+
+
+class _NullHandler(logging.Handler):
+  """Prevents warning when running in quiet mode."""
+  def emit(self, record):
+    pass
 
 
 class DatasetConverter(object):
@@ -38,9 +46,11 @@ class DatasetConverter(object):
   _output_pattern = _output_pattern[:-1] + '},'
   _re_single_quote = re.compile("'", re.UNICODE)
   _logger = logging.getLogger(__name__)
+  _logger.addHandler(_NullHandler())
+  _log_handlers = {'StreamHandler': None}
 
   def __init__(self, input_filename, output_filename=None,
-               logging_level=logging.ERROR):
+               logging_level=None):
     """Constructs a dataset converter object.
 
     Full input pattern:
@@ -67,9 +77,17 @@ class DatasetConverter(object):
     Raises:
       IOError: error if input file does not exist.
     """
-    console = logging.StreamHandler()
-    console.setLevel(logging_level)
-    self._logger.addHandler(console)
+    if logging_level:
+      if not self._log_handlers['StreamHandler']:
+        console = logging.StreamHandler()
+        console.setLevel(logging_level)
+        self._log_handlers['StreamHandler'] = console
+        self._logger.addHandler(console)
+      self._logger.setLevel(logging_level)
+    else:
+      if self._log_handlers['StreamHandler']:
+        self._logger.removeHandler(self._log_handlers['StreamHandler'])
+        self._log_handler['StreamHandler'] = None
 
     self._input_filename = os.path.join(os.path.dirname(sys.argv[0]),
                                         input_filename)
@@ -125,51 +143,88 @@ class DatasetConverter(object):
     Returns:
       List that holds all the dictionaries.
     """
-    with open(self._input_filename) as input_file:
-      if self._output_filename:
-        output_file = codecs.open(self._output_filename, mode='wb',
-                                  encoding='utf-8-sig')
-      else:
-        output_file = None
-      try:
-        list_of_dict = []
-        i = 0
-        if output_file:
-          output_file.write('[')
-          output_file.write(os.linesep)
-        for line in input_file.readlines():
-          line = line.strip()
-          if not line:
-            continue
-          line = unicode(line, 'UTF-8')
-          output_record = self._CreateDictionaryFromRecord(line)
-          if output_record:
-            i += 1
-            list_of_dict.append(output_record)
-            output_line = self._output_pattern % tuple(
-                [output_record[key] for key in self._fields])
-            if output_file:
-              output_file.write(output_line)
-              output_file.write(os.linesep)
-            self._logger.info('%d: %s' % (i, line.encode(sys.stdout.encoding,
-                                                         'ignore')))
-            self._logger.info('\tconverted to: %s' %
-                              output_line.encode(sys.stdout.encoding, 'ignore'))
-        if output_file:
-          output_file.write(']')
-          output_file.write(os.linesep)
-        self._logger.info('%d lines converted SUCCESSFULLY!' % i)
-        self._logger.info('--- FINISHED ---')
-        return list_of_dict
-      finally:
-        if output_file:
-          output_file.close()
+    input_file = open(self._input_filename)
+    if self._output_filename:
+      output_file = codecs.open(self._output_filename, mode='wb',
+                                encoding='utf-8-sig')
+    else:
+      output_file = None
+    try:
+      list_of_dict = []
+      i = 0
+      if output_file:
+        output_file.write('[')
+        output_file.write(os.linesep)
+      for line in input_file.readlines():
+        line = line.strip()
+        if not line:
+          continue
+        line = unicode(line, 'UTF-8')
+        output_record = self._CreateDictionaryFromRecord(line)
+        if output_record:
+          i += 1
+          list_of_dict.append(output_record)
+          output_line = self._output_pattern % tuple(
+              [output_record[key] for key in self._fields])
+          if output_file:
+            output_file.write(output_line)
+            output_file.write(os.linesep)
+          self._logger.info('%d: %s' % (i, line.encode(sys.stdout.encoding,
+                                                       'ignore')))
+          self._logger.info('\tconverted to: %s' %
+                            output_line.encode(sys.stdout.encoding, 'ignore'))
+      if output_file:
+        output_file.write(']')
+        output_file.write(os.linesep)
+      self._logger.info('%d lines converted SUCCESSFULLY!' % i)
+      self._logger.info('--- FINISHED ---')
+      return list_of_dict
+    finally:
+      if output_file:
+        output_file.close()
 
 
 def main():
-  c = DatasetConverter(r'../data/autofill/dataset.txt',
-                       r'../data/autofill/dataset_duplicate-profiles.txt',
-                       logging.INFO)
+  # Command line options.
+  from optparse import OptionParser
+  input_filename = os.path.join('..', 'data', 'autofill', 'dataset.txt')
+  output_filename = os.path.join('..', 'data', 'autofill',
+                                 'dataset_duplicate-profiles.txt')
+  parser = OptionParser()
+  parser.add_option('-i', '--input', dest='input_filename',
+                    default=input_filename,
+                    help='convert FILE [defaults to "%s"]' % input_filename,
+                    metavar='FILE')
+  parser.add_option('-o', '--output', dest='output_filename',
+                    default=output_filename,
+                    help='write output to FILE [defaults to "%s"]' %
+                    output_filename, metavar='FILE')
+  parser.add_option('-v', '--verbose', action='store_true', dest='verbose',
+                    default=True, help='display all [default]')
+  parser.add_option('-q', '--quiet', action='store_false', dest='verbose',
+                    help='display nothing')
+  parser.add_option('-l', '--log', dest='logging_level', default=None,
+                    help='specify logging LEVEL: "info", "warning" or "error"',
+                    metavar='LEVEL')
+
+  (options, args) = parser.parse_args()
+  if args:
+    parser.print_help()
+    sys.exit(1)
+  if not options.verbose:
+    options.logging_level = None
+  if options.verbose and not options.logging_level:
+    options.logging_level = 'info'
+  if options.logging_level:
+    if 'info' in options.logging_level.lower():
+      options.logging_level = logging.INFO
+    elif 'warn' in options.logging_level.lower():
+      options.logging_level = logging.WARNING
+    elif 'error' in options.logging_level.lower():
+      options.logging_level = logging.ERROR
+
+  c = DatasetConverter(options.input_filename, options.output_filename,
+                       options.logging_level)
   c.Convert()
 
 if __name__ == '__main__':

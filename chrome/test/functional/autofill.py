@@ -7,6 +7,7 @@ import logging
 import os
 import pickle
 
+import autofill_dataset_converter
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
 
@@ -189,7 +190,7 @@ class AutoFillTest(pyauto.PyUITest):
         os.path.join('autofill', 'duplicate_profiles_test.html'))
     # Run the parser script to generate the dictionary list needed for the
     # profiles.
-    c = dataset_converter.DatasetConverter(
+    c = autofill_dataset_converter.DatasetConverter(
         os.path.join(self.DataDir(), 'autofill', 'dataset.txt'),
         logging_level=logging.INFO)  # Set verbosity to INFO, WARNING, ERROR.
     list_of_dict = c.Convert()
