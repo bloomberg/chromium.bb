@@ -56,7 +56,6 @@ class ProfileSyncServiceSessionTest
   ProfileSyncServiceSessionTest()
       : window_bounds_(0, 1, 2, 3),
         notified_of_update_(false) {}
-
   ProfileSyncService* sync_service() { return sync_service_.get(); }
 
   TestIdFactory* ids() { return sync_service_->id_factory(); }
@@ -65,7 +64,9 @@ class ProfileSyncServiceSessionTest
   SessionService* service() { return helper_.service(); }
 
   virtual void SetUp() {
+    // BrowserWithTestWindowTest implementation.
     BrowserWithTestWindowTest::SetUp();
+
     profile()->set_has_history_service(true);
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     SessionService* session_service = new SessionService(temp_dir_.path());
@@ -98,16 +99,17 @@ class ProfileSyncServiceSessionTest
   bool StartSyncService(Task* task, bool will_fail_association) {
     if (sync_service_.get())
       return false;
-
     sync_service_.reset(new TestProfileSyncService(
         &factory_, profile(), "test user", false, task));
     profile()->set_session_service(helper_.service());
 
     // Register the session data type.
     model_associator_ =
-        new SessionModelAssociator(sync_service_.get());
+        new SessionModelAssociator(sync_service_.get(),
+                                   true /* setup_for_test */);
     change_processor_ = new SessionChangeProcessor(
-        sync_service_.get(), model_associator_);
+        sync_service_.get(), model_associator_,
+        true /* setup_for_test */);
     EXPECT_CALL(factory_, CreateSessionSyncComponents(_, _)).
         WillOnce(Return(ProfileSyncFactory::SyncComponents(
             model_associator_, change_processor_)));

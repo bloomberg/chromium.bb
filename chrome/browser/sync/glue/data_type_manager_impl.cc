@@ -57,7 +57,9 @@ DataTypeManagerImpl::DataTypeManagerImpl(
       controllers_(controllers),
       state_(DataTypeManager::STOPPED),
       current_dtc_(NULL),
+      pause_pending_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(backend_);
   DCHECK_GT(arraysize(kStartOrder), 0U);
   // Ensure all data type controllers are stopped.
@@ -134,7 +136,9 @@ void DataTypeManagerImpl::Configure(const TypeSet& desired_types) {
 }
 
 void DataTypeManagerImpl::Restart() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   VLOG(1) << "Restarting...";
+
   // If we are currently waiting for an asynchronous process to
   // complete, change our state to RESTARTING so those processes know
   // that we want to start over when they finish.
@@ -143,7 +147,11 @@ void DataTypeManagerImpl::Restart() {
     state_ = RESTARTING;
     return;
   }
-
+  if (pause_pending_) {  // Catch for http://crbug.com/73218.
+    NOTREACHED() << "Attempted to restart DataTypeManager while already "
+                 << " configuring.";
+    return;
+  }
   DCHECK(state_ == STOPPED || state_ == RESTARTING || state_ == CONFIGURED);
   current_dtc_ = NULL;
 
@@ -198,6 +206,7 @@ void DataTypeManagerImpl::Restart() {
 }
 
 void DataTypeManagerImpl::DownloadReady() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(state_ == DOWNLOAD_PENDING || state_ == RESTARTING);
 
   // If we had a restart while waiting for downloads, just restart.
@@ -325,6 +334,7 @@ void DataTypeManagerImpl::Stop() {
   // longer care about this.
   bool aborted = false;
   if (state_ == PAUSE_PENDING) {
+    pause_pending_ = false;
     RemoveObserver(NotificationType::SYNC_PAUSED);
     aborted = true;
   }
@@ -348,14 +358,17 @@ void DataTypeManagerImpl::Stop() {
 }
 
 const DataTypeController::TypeMap& DataTypeManagerImpl::controllers() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return controllers_;
 }
 
 DataTypeManager::State DataTypeManagerImpl::state() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return state_;
 }
 
 void DataTypeManagerImpl::FinishStop() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(state_== CONFIGURING ||
          state_ == STOPPING ||
          state_ == PAUSE_PENDING ||
@@ -374,6 +387,7 @@ void DataTypeManagerImpl::FinishStop() {
 }
 
 void DataTypeManagerImpl::FinishStopAndNotify(ConfigureResult result) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   FinishStop();
   NotifyDone(result);
 }
@@ -381,9 +395,13 @@ void DataTypeManagerImpl::FinishStopAndNotify(ConfigureResult result) {
 void DataTypeManagerImpl::Observe(NotificationType type,
                                   const NotificationSource& source,
                                   const NotificationDetails& details) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   switch (type.value) {
     case NotificationType::SYNC_PAUSED:
       DCHECK(state_ == PAUSE_PENDING || state_ == RESTARTING);
+      DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+      pause_pending_ = false;
+
       RemoveObserver(NotificationType::SYNC_PAUSED);
 
       // If the state changed to RESTARTING while waiting to be
@@ -415,18 +433,21 @@ void DataTypeManagerImpl::Observe(NotificationType type,
 }
 
 void DataTypeManagerImpl::AddObserver(NotificationType type) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   notification_registrar_.Add(this,
                               type,
                               NotificationService::AllSources());
 }
 
 void DataTypeManagerImpl::RemoveObserver(NotificationType type) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   notification_registrar_.Remove(this,
                                  type,
                                  NotificationService::AllSources());
 }
 
 void DataTypeManagerImpl::NotifyStart() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   NotificationService::current()->Notify(
       NotificationType::SYNC_CONFIGURE_START,
       Source<DataTypeManager>(this),
@@ -434,6 +455,7 @@ void DataTypeManagerImpl::NotifyStart() {
 }
 
 void DataTypeManagerImpl::NotifyDone(ConfigureResult result) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   NotificationService::current()->Notify(
       NotificationType::SYNC_CONFIGURE_DONE,
       Source<DataTypeManager>(this),
@@ -441,6 +463,7 @@ void DataTypeManagerImpl::NotifyDone(ConfigureResult result) {
 }
 
 void DataTypeManagerImpl::ResumeSyncer() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   AddObserver(NotificationType::SYNC_RESUMED);
   if (!backend_->RequestResume()) {
     RemoveObserver(NotificationType::SYNC_RESUMED);
@@ -449,8 +472,11 @@ void DataTypeManagerImpl::ResumeSyncer() {
 }
 
 void DataTypeManagerImpl::PauseSyncer() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   AddObserver(NotificationType::SYNC_PAUSED);
+  pause_pending_ = true;
   if (!backend_->RequestPause()) {
+    pause_pending_ = false;
     RemoveObserver(NotificationType::SYNC_PAUSED);
     FinishStopAndNotify(UNRECOVERABLE_ERROR);
   }

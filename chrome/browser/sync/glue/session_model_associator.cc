@@ -40,6 +40,16 @@ SessionModelAssociator::SessionModelAssociator(ProfileSyncService* sync_service)
   DCHECK(sync_service_);
 }
 
+SessionModelAssociator::SessionModelAssociator(ProfileSyncService* sync_service,
+                                               bool setup_for_test)
+    : tab_pool_(sync_service),
+      local_session_syncid_(sync_api::kInvalidId),
+      sync_service_(sync_service),
+      setup_for_test_(setup_for_test) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(sync_service_);
+}
+
 SessionModelAssociator::~SessionModelAssociator() {
   DCHECK(CalledOnValidThread());
 }
@@ -493,8 +503,7 @@ bool SessionModelAssociator::AssociateForeignSpecifics(
     const int64 modification_time) {
   DCHECK(CalledOnValidThread());
   std::string foreign_session_tag = specifics.session_tag();
-  DCHECK(foreign_session_tag != GetCurrentMachineTag() ||
-         sync_service_->cros_user() == "test user");  // For tests.
+  DCHECK(foreign_session_tag != GetCurrentMachineTag() || setup_for_test_);
 
   if (specifics.has_header()) {
     // Read in the header data for this foreign session.

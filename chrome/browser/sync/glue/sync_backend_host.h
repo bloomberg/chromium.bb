@@ -88,6 +88,9 @@ class SyncFrontend {
   // encrypted using the accepted passphrase.
   virtual void OnPassphraseAccepted() = 0;
 
+  virtual void OnEncryptionComplete(
+      const syncable::ModelTypeSet& encrypted_types) = 0;
+
  protected:
   // Don't delete through SyncFrontend interface.
   virtual ~SyncFrontend() {
@@ -159,6 +162,13 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
       const DataTypeController::TypeMap& data_type_controllers,
       const syncable::ModelTypeSet& types,
       CancelableTask* ready_task);
+
+  // Encrypts the specified datatypes and marks them as needing encryption on
+  // other machines. This affects all machines synced to this account and all
+  // data belonging to the specified types.
+  // Note: actual work is done on core_thread_'s message loop.
+  virtual void EncryptDataTypes(
+      const syncable::ModelTypeSet& encrypted_types);
 
   syncable::AutofillMigrationState
       GetAutofillMigrationState();
@@ -269,6 +279,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     virtual void OnInitializationComplete();
     virtual void OnAuthError(const GoogleServiceAuthError& auth_error);
     virtual void OnPassphraseRequired(bool for_decryption);
+    virtual void OnPassphraseFailed();
     virtual void OnPassphraseAccepted(const std::string& bootstrap_token);
     virtual void OnPaused();
     virtual void OnResumed();
@@ -276,6 +287,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     virtual void OnUpdatedToken(const std::string& token);
     virtual void OnClearServerDataFailed();
     virtual void OnClearServerDataSucceeded();
+    virtual void OnEncryptionComplete(
+        const syncable::ModelTypeSet& encrypted_types);
 
     // JsBackend implementation.
     virtual void SetParentJsEventRouter(JsEventRouter* router);
@@ -343,6 +356,16 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     // on behalf of SyncBackendHost::SupplyPassphrase.
     void DoSetPassphrase(const std::string& passphrase, bool is_explicit);
 
+    // Getter/setter for whether we are waiting on SetPassphrase to process a
+    // passphrase. Set by SetPassphrase, cleared by OnPassphraseFailed or
+    // OnPassphraseAccepted.
+    bool processing_passphrase() const;
+    void set_processing_passphrase();
+
+    // Called on SyncBackendHost's |core_thread_| to set the datatypes we need
+    // to encrypt as well as encrypt all local data of that type.
+    void DoEncryptDataTypes(const syncable::ModelTypeSet& encrypted_types);
+
     // The shutdown order is a bit complicated:
     // 1) From |core_thread_|, invoke the syncapi Shutdown call to do a final
     //    SaveChanges, close sqlite handles, and halt the syncer thread (which
@@ -380,7 +403,6 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     void DoInitializeForTest(const std::wstring& test_user,
                              sync_api::HttpPostProviderFactory* factory,
                              bool delete_sync_data_folder) {
-
       // Construct dummy credentials for test.
       sync_api::SyncCredentials credentials;
       credentials.email = WideToUTF8(test_user);
@@ -433,11 +455,21 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     // be true.
     void NotifyPassphraseRequired(bool for_decryption);
 
+    // Invoked when the syncer attempts to set a passphrase but fails to decrypt
+    // the cryptographer's pending keys. This tells the profile sync service
+    // that a new passphrase is required.
+    void NotifyPassphraseFailed();
+
     // Invoked when the passphrase provided by the user has been accepted.
     void NotifyPassphraseAccepted(const std::string& bootstrap_token);
 
     // Invoked when an updated token is available from the sync server.
     void NotifyUpdatedToken(const std::string& token);
+
+    // Invoked when sync finishes encrypting new datatypes or has become aware
+    // of new datatypes requiring encryption.
+    void NotifyEncryptionComplete(const syncable::ModelTypeSet&
+                                      encrypted_types);
 
     // Called from Core::OnSyncCycleCompleted to handle updating frontend
     // thread components.
@@ -474,6 +506,12 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
 
     JsEventRouter* parent_router_;
 
+    // Denotes if the core is currently attempting to set a passphrase. While
+    // this is true, OnPassphraseRequired calls are dropped.
+    // Note: after initialization, this variable should only ever be accessed or
+    // modified from within the frontend_loop_ (UI thread).
+    bool processing_passphrase_;
+
     DISALLOW_COPY_AND_ASSIGN(Core);
   };
 
@@ -507,7 +545,6 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   scoped_refptr<Core> core_;
 
  private:
-
   UIModelWorker* ui_worker();
 
   void ConfigureAutofillMigration();

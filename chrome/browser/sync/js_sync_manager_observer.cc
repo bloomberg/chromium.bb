@@ -12,7 +12,6 @@
 #include "chrome/browser/sync/js_event_router.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/sync/syncable/model_type.h"
-#include "chrome/browser/sync/sessions/session_state.h"
 
 namespace browser_sync {
 
@@ -79,11 +78,23 @@ void JsSyncManagerObserver::OnPassphraseRequired(bool for_decryption) {
                                JsArgList(return_args), NULL);
 }
 
+void JsSyncManagerObserver::OnPassphraseFailed() {
+  parent_router_->RouteJsEvent("onPassphraseFailed", JsArgList(), NULL);
+}
+
 void JsSyncManagerObserver::OnPassphraseAccepted(
     const std::string& bootstrap_token) {
   ListValue return_args;
   return_args.Append(Value::CreateStringValue("<redacted>"));
   parent_router_->RouteJsEvent("onPassphraseAccepted",
+                               JsArgList(return_args), NULL);
+}
+
+void JsSyncManagerObserver::OnEncryptionComplete(
+    const syncable::ModelTypeSet& encrypted_types) {
+  ListValue return_args;
+  return_args.Append(syncable::ModelTypeSetToValue(encrypted_types));
+  parent_router_->RouteJsEvent("onEncryptionComplete",
                                JsArgList(return_args), NULL);
 }
 

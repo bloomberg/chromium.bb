@@ -11,7 +11,6 @@
 #include "chrome/browser/sync/glue/session_model_associator.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using browser_sync::SessionModelAssociator;

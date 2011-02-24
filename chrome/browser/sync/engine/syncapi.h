@@ -266,14 +266,26 @@ class BaseNode {
 
   // Determines whether part of the entry is encrypted, and if so attempts to
   // decrypt it. Unless decryption is necessary and fails, this will always
-  // return |true|.
+  // return |true|. If the contents are encrypted, the decrypted data will be
+  // stored in |unencrypted_data_|.
+  // This method is invoked once when the BaseNode is initialized.
   bool DecryptIfNecessary(syncable::Entry* entry);
+
+  // Returns the unencrypted specifics associated with |entry|. If |entry| was
+  // not encrypted, it directly returns |entry|'s EntitySpecifics. Otherwise,
+  // returns |unencrypted_data_|.
+  // This method is invoked by the datatype specific Get<datatype>Specifics
+  // methods.
+  const sync_pb::EntitySpecifics& GetUnencryptedSpecifics(
+      const syncable::Entry* entry) const;
 
  private:
   void* operator new(size_t size);  // Node is meant for stack use only.
 
-  // If this node represents a password, this field will hold the actual
-  // decrypted password data.
+  // A holder for the unencrypted data stored in an encrypted node.
+  sync_pb::EntitySpecifics unencrypted_data_;
+
+  // Same as |unencrypted_data_|, but for legacy password encryption.
   scoped_ptr<sync_pb::PasswordSpecificsData> password_data_;
 
   friend class SyncApiTest;
@@ -388,6 +400,10 @@ class WriteNode : public BaseNode {
   // Should only be called if GetModelType() == SESSIONS.
   void SetSessionSpecifics(const sync_pb::SessionSpecifics& specifics);
 
+  // Resets the EntitySpecifics for this node based on the unencrypted data.
+  // Will encrypt if necessary.
+  void ResetFromSpecifics();
+
   // Implementation of BaseNode's abstract virtual accessors.
   virtual const syncable::Entry* GetEntry() const;
 
@@ -435,6 +451,9 @@ class WriteNode : public BaseNode {
   // Sets IS_UNSYNCED and SYNCING to ensure this entry is considered in an
   // upcoming commit pass.
   void MarkForSyncing();
+
+  // Encrypt the specifics if the datatype requries it.
+  void EncryptIfNecessary(sync_pb::EntitySpecifics* new_value);
 
   // The underlying syncable object which this class wraps.
   syncable::MutableEntry* entry_;
@@ -587,15 +606,21 @@ class SyncManager {
   // internal types from clients of the interface.
   class SyncInternal;
 
-  // TODO(tim): Depending on how multi-type encryption pans out, maybe we
-  // should turn ChangeRecord itself into a class.  Or we could template this
-  // wrapper / add a templated method to return unencrypted protobufs.
-  class ExtraChangeRecordData {
+  // TODO(zea): One day get passwords playing nicely with the rest of encryption
+  // and get rid of this.
+  class ExtraPasswordChangeRecordData {
    public:
-    virtual ~ExtraChangeRecordData();
+    ExtraPasswordChangeRecordData();
+    explicit ExtraPasswordChangeRecordData(
+        const sync_pb::PasswordSpecificsData& data);
+    virtual ~ExtraPasswordChangeRecordData();
 
     // Transfers ownership of the DictionaryValue to the caller.
-    virtual DictionaryValue* ToValue() const = 0;
+    virtual DictionaryValue* ToValue() const;
+
+    const sync_pb::PasswordSpecificsData& unencrypted() const;
+   private:
+    sync_pb::PasswordSpecificsData unencrypted_;
   };
 
   // ChangeRecord indicates a single item that changed as a result of a sync
@@ -617,24 +642,7 @@ class SyncManager {
     int64 id;
     Action action;
     sync_pb::EntitySpecifics specifics;
-    linked_ptr<ExtraChangeRecordData> extra;
-  };
-
-  // Since PasswordSpecifics is just an encrypted blob, we extend to provide
-  // access to unencrypted bits.
-  class ExtraPasswordChangeRecordData : public ExtraChangeRecordData {
-   public:
-    explicit ExtraPasswordChangeRecordData(
-        const sync_pb::PasswordSpecificsData& data);
-    virtual ~ExtraPasswordChangeRecordData();
-
-    // Transfers ownership of the DictionaryValue to the caller.
-    virtual DictionaryValue* ToValue() const;
-
-    const sync_pb::PasswordSpecificsData& unencrypted() const;
-
-   private:
-    sync_pb::PasswordSpecificsData unencrypted_;
+    linked_ptr<ExtraPasswordChangeRecordData> extra;
   };
 
   // Status encapsulates detailed state about the internals of the SyncManager.
@@ -772,6 +780,13 @@ class SyncManager {
     // encryption, |for_decryption| will be false.
     virtual void OnPassphraseRequired(bool for_decryption) = 0;
 
+    // Called only by SyncInternal::SetPassphrase to indiciate that an attempted
+    // passphrase failed to decrypt pending keys. This is different from
+    // OnPassphraseRequired in that it denotes we finished an attempt to set
+    // a passphrase. OnPassphraseRequired means we have data we could not
+    // decrypt yet, and can come from numerous places.
+    virtual void OnPassphraseFailed() = 0;
+
     // Called when the passphrase provided by the user has been accepted and is
     // now used to encrypt sync data.  |bootstrap_token| is an opaque base64
     // encoded representation of the key generated by the accepted passphrase,
@@ -801,9 +816,13 @@ class SyncManager {
     virtual void OnStopSyncingPermanently() = 0;
 
     // After a request to clear server data, these callbacks are invoked to
-    // indicate success or failure
+    // indicate success or failure.
     virtual void OnClearServerDataSucceeded() = 0;
     virtual void OnClearServerDataFailed() = 0;
+
+    // Called after we finish encrypting all appropriate datatypes.
+    virtual void OnEncryptionComplete(
+        const syncable::ModelTypeSet& encrypted_types) = 0;
 
    protected:
     virtual ~Observer();
@@ -884,6 +903,11 @@ class SyncManager {
   // using their Google Account password.  An implicit SetPassphrase will *not*
   // *not* override an explicit passphrase set previously.
   void SetPassphrase(const std::string& passphrase, bool is_explicit);
+
+  // Set the datatypes we want to encrypt and encrypt any nodes as necessary.
+  // Note: |encrypted_types| will be unioned with the current set of encrypted
+  // types, as we do not currently support decrypting datatypes.
+  void EncryptDataTypes(const syncable::ModelTypeSet& encrypted_types);
 
   // Requests the syncer thread to pause.  The observer's OnPause
   // method will be called when the syncer thread is paused.  Returns
