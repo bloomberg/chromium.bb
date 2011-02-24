@@ -244,7 +244,6 @@ def _SetEnvForPnacl(env, arch):
               #       CC compiles to bitcode and
               #       CC_NATIVE compiles to native code
               #       (CC_NATIVE had to handle both .c and .S files)
-              OBJSUFFIX=".bc",
               CC_NATIVE=pnacl_sdk_cc + pnacl_sdk_cc_native_flags,
               CC_OTHER=cc_other_map[arch],
               LINK=pnacl_sdk_ld + pnacl_sdk_ld_flags,

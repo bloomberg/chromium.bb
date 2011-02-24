@@ -3,6 +3,9 @@
 # Use of this source code is governed by a BSD-style license that can
 # be found in the LICENSE file.
 
+# TODO: Switch to a BSD implementation:
+# http://code.google.com/p/nativeclient/issues/detail?id=867
+
 Import('env')
 
 # the nacl-gcc toolchain uses gcc's crtbegin.o and crtend.o
@@ -14,8 +17,8 @@ if env.Bit('bitcode'):
   #       all the way down into native code.
   #       As a solution we have a second compiler in the env
   #       that always compiles to native.
-  env.Replace(CC='${CC_NATIVE}',
-              OBJSUFFIX='.o')
+  env.Replace(CC='${CC_NATIVE}')
+
   crtbegin = env.ComponentObject('crtbegin', ['crtbegin.c'])
   crtend = env.ComponentObject('crtend', ['crtend.c'])
   env.AddObjectToSdk([crtbegin, crtend], is_platform=True)

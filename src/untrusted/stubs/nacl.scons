@@ -27,8 +27,7 @@ if env.Bit('bitcode'):
   #       To work around this we have a second compiler in the env
   #       that always compiles to native.
   assert env.get('CC_NATIVE')
-  env.Replace(CC='${CC_NATIVE}',
-              OBJSUFFIX='.o')
+  env.Replace(CC='${CC_NATIVE}')
 
 # the nacl-gcc toolchain does not want to switch to using
 # src/untrusted/startup/nacl_startup.c
