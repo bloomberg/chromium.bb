@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,6 @@
 #include "base/auto_reset.h"
 #include "base/message_loop.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browsing_instance.h"
 #include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/debugger/devtools_client_host.h"
 #include "chrome/browser/debugger/devtools_netlog_observer.h"
@@ -23,6 +22,7 @@
 #include "chrome/common/devtools_messages.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
+#include "content/browser/browsing_instance.h"
 #include "googleurl/src/gurl.h"
 
 // static

@@ -6,7 +6,6 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/background_contents_service.h"
-#include "chrome/browser/browsing_instance.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -16,10 +15,11 @@
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/notification_service.h"
-#include "chrome/common/url_constants.h"
-#include "chrome/common/view_types.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
+#include "chrome/common/url_constants.h"
+#include "chrome/common/view_types.h"
+#include "content/browser/browsing_instance.h"
 #include "ui/gfx/rect.h"
 
 namespace prerender {
