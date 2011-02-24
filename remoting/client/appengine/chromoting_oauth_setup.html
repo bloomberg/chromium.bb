@@ -1,0 +1,23 @@
+<!doctype html>
+<!--
+Copyright (c) 2011 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<html>
+  <head>
+    <title>Chromoting OAuth setup page.</title>
+  </head>
+  <body>
+    <p>This is an administration page to setup the consumer key and secret
+    to be used with chromoting. Please don't play with this unless you are
+    on the Chromoting dev team.
+    <form method="post" name="auth">
+      Consumer Key: <input type="text" name="consumer_key" />
+      New Consumer Secret: <input type="password" name="new_consumer_secret" />
+      Old Consumer Secret: <input type="password" name="old_consumer_secret" />
+      <input type="submit" value="Submit" />
+    </form>
+  </body>
+</html>

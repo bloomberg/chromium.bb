@@ -1,0 +1,40 @@
+<!doctype html>
+<!--
+Copyright (c) 2011 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<html>
+  <head>
+    <title>Chromoting Google Accounts Login (needed for XMPP)</title>
+  </head>
+
+  <body>
+    <p>Please provide your Google Accounts username/password to get a
+    ClientLogin token for Google Talk.
+
+    <p>
+    <form method="post" name="auth">
+      Username: <input type="text" name="username" /><br />
+      Password: <input type="password" name="password" /><br />
+      <input type="submit" value="Submit" />
+    </form>
+
+    <hr />
+    <p>
+    Yes, we know we're asking for your Google Accounts credentials in a webapp.
+
+    <p>
+    No we're not happy with this.
+
+    <p>
+    Yes, we (think we) need to do it this way.
+
+    <p>
+    libjingle needs a ClientLogin token and due to single-origin issues, we
+    have to proxy the request through the webapp.  If anyone has a better idea,
+    please <b>please</b> <b><i>please</i></b> let us know.
+
+  </body>
+</html>

@@ -1,0 +1,22 @@
+application: google.com:chromoting
+version: 1
+runtime: python
+api_version: 1
+
+handlers:
+- url: /static_files
+  static_dir: static_files
+  secure: always
+
+- url: /api/.*
+  script: api.py
+  secure: always
+
+- url: /auth/.*
+  script: auth.py
+  secure: always
+
+- url: .*
+  script: main.py
+  secure: always
+

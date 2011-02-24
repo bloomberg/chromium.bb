@@ -1,5 +1,6 @@
+<!doctype html>
 <!--
-Copyright (c) 2010 The Chromium Authors. All rights reserved.
+Copyright (c) 2011 The Chromium Authors. All rights reserved.
 Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
@@ -7,9 +8,19 @@ found in the LICENSE file.
 <html>
   <head>
     <title id="title">Chromoting Session</title>
-    <link rel="stylesheet" type="text/css" href="main.css" />
-    <script type="text/javascript" src="base.js"></script>
-    <script type="text/javascript" src="chromoting_tab.js"></script>
+    <link rel="stylesheet" type="text/css" href="static_files/main.css" />
+    <script type="text/javascript">
+    <!--
+    // TODO(ajwong): Total Hack. Do this nicer.
+    document.xmpp_auth_token="{{xmpp_token.token_string}}";
+    document.username="{{username}}";
+    document.hostname="{{hostname}}";
+    document.hostjid="{{hostjid}}";
+    -->
+    </script>
+    <script type="text/javascript" src="static_files/base.js"></script>
+    <script type="text/javascript" src="static_files/chromoting_session.js">
+    </script>
   </head>
   <body class="chromoting_body" onload="init();">
     <div id="status_msg" class="status_msg"></div>
@@ -40,7 +51,7 @@ found in the LICENSE file.
                        onclick="submitLogin();"/></td>
           </tr>
         </table>
-      </tr></td></table>
+      </td></tr></table>
     </div>
     <div id="plugin_scroll_panel" class="plugin-scroll-panel">
       <embed name="chromoting" id="chromoting"

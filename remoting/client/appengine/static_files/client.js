@@ -219,25 +219,17 @@ function appendMessage(e, classname, message) {
 }
 
 function populateHostList() {
-  var username = getCookie('username');
-
   var hostlistDiv = document.getElementById('hostlist_div');
-  if (!username) {
-    displayMessage(hostlistDiv, 'message',
-                   'Please sign in to see a list of available hosts.');
-    return;
-  }
+  displayMessage(hostlistDiv, 'message',
+      'Hosts will appaer if Chromoting Token is "OK".');
 
   var xhr = new XMLHttpRequest();
-  var token = getCookie('chromoting_auth');
-
   // Unhide host list.
   hostlistDiv.style.display = "block";
 
   xhr.onreadystatechange = function() {
     if (xhr.readyState == 1) {
-      displayMessage(hostlistDiv, 'message', 'Loading host list for ' +
-                     username);
+      displayMessage(hostlistDiv, 'message', 'Loading host list');
     }
     if (xhr.readyState != 4) {
       return;
@@ -256,18 +248,15 @@ function populateHostList() {
       clear(hostlistDiv);
       if (errorResponse.error.message == "Token expired") {
         appendMessage(hostlistDiv, 'message',
-                      'The authentication token for ' + username +
-                      ' has expired. Please sign in again.');
+                      'Authentication token expired. Please sign in again.');
         logout();
       } else if (errorResponse.error.message == "Token invalid") {
         appendMessage(hostlistDiv, 'message',
-                      'Invalid authentication token for ' + username + '. ' +
-                      'Please sign in again.');
+                      'Invalid authentication token. Please sign in again.');
         logout();
       } else {
         appendMessage(hostlistDiv, 'message',
-                      'Unable to load host list for ' + username + '. ' +
-                      'Please try again later.');
+                      'Unable to load host list. Please try again later.');
         appendMessage(hostlistDiv, 'message',
                       'Error code: ' + errorResponse.error.code);
         appendMessage(hostlistDiv, 'message',
@@ -276,9 +265,8 @@ function populateHostList() {
     }
   };
 
-  xhr.open('GET', 'https://www.googleapis.com/chromoting/v1/@me/hosts');
+  xhr.open('GET', 'api/get_host_list', true);
   xhr.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
-  xhr.setRequestHeader('Authorization', 'GoogleLogin auth=' + token);
   xhr.send(null);
 }
 
@@ -332,7 +320,7 @@ function addHostInfo(host) {
   hostEntry.setAttribute('class', 'hostentry');
 
   var hostIcon = document.createElement('img');
-  hostIcon.setAttribute('src', 'machine.png');
+  hostIcon.setAttribute('src', 'static_files/machine.png');
   hostIcon.setAttribute('class', 'hosticon');
   hostEntry.appendChild(hostIcon);
 
@@ -342,8 +330,9 @@ function addHostInfo(host) {
     var connect = document.createElement('input');
     connect.setAttribute('type', 'button');
     connect.setAttribute('value', 'Connect');
-    connect.setAttribute('onclick', "openChromotingTab('" + host.hostName +
-                         "', '" + host.jabberId + "'); return false;");
+    connect.setAttribute('onclick', "window.open('session?hostname=" +
+        encodeURIComponent(host.hostName) + "&hostjid=" +
+        encodeURIComponent(host.jabberId) + "');");
     span.appendChild(connect);
     hostEntry.appendChild(span);
   }

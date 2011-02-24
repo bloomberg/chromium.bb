@@ -7,42 +7,13 @@
 chromoting.messageId = 1;
 
 function init() {
-  // This page should only get one request, and it should be
-  // from the chromoting extension asking for initial connection.
-  // Later we may need to create a more persistent channel for
-  // better UI communication. Then, we should probably switch
-  // to chrome.extension.connect().
-  chrome.extension.onRequest.addListener(requestListener);
-}
-
-function submitLogin() {
-  var username = document.getElementById("username").value;
-  var password = document.getElementById("password").value;
-
-  // Make the login panel invisible and submit login info.
-  document.getElementById("login_panel").style.display = "none";
-  chromoting.plugin.submitLoginInfo(username, password);
-}
-
-/**
- * A listener function to be called when the extension fires a request.
- *
- * @param request The request sent by the calling script.
- * @param sender The MessageSender object with info about the calling script's
- *               context.
- * @param sendResponse Function to call with response.
- */
-function requestListener(request, sender, sendResponse) {
-  console.log(sender.tab ?
-              'from a content script: ' + sender.tab.url :
-              'from the extension');
-
   // Kick off the connection.
   var plugin = document.getElementById('chromoting');
 
   chromoting.plugin = plugin;
-  chromoting.username = request.username;
-  chromoting.hostname = request.hostName;
+  chromoting.username = document.username;
+  chromoting.hostname = document.hostname;
+  chromoting.hostjid = document.hostjid;
 
   // Setup the callback that the plugin will call when the connection status
   // has changes and the UI needs to be updated. It needs to be an object with
@@ -55,16 +26,22 @@ function requestListener(request, sender, sendResponse) {
 
   // TODO(garykac): Clean exit if |connect| isn't a funtion.
   if (typeof plugin.connect === 'function') {
-    plugin.connect(request.username, request.hostJid,
-                   request.xmppAuth);
+    plugin.connect(chromoting.username, chromoting.hostjid,
+                   document.xmpp_auth_token);
   } else {
     console.log('ERROR: chromoting plugin not loaded');
   }
 
-  document.getElementById('title').innerText = request.hostName;
+  document.getElementById('title').innerText = chromoting.hostname;
+}
 
-  // Send an empty response since we have nothing to say.
-  sendResponse({});
+function submitLogin() {
+  var username = document.getElementById("username").value;
+  var password = document.getElementById("password").value;
+
+  // Make the login panel invisible and submit login info.
+  document.getElementById("login_panel").style.display = "none";
+  chromoting.plugin.submitLoginInfo(username, password);
 }
 
 /**
