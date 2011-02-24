@@ -32,6 +32,8 @@ class CommandBufferService : public CommandBuffer {
   virtual State FlushSync(int32 put_offset);
   virtual void SetGetOffset(int32 get_offset);
   virtual int32 CreateTransferBuffer(size_t size);
+  virtual int32 RegisterTransferBuffer(base::SharedMemory* shared_memory,
+                                       size_t size);
   virtual void DestroyTransferBuffer(int32 id);
   virtual Buffer GetTransferBuffer(int32 handle);
   virtual void SetToken(int32 token);
@@ -55,7 +57,7 @@ class CommandBufferService : public CommandBuffer {
   int32 get_offset_;
   int32 put_offset_;
   scoped_ptr<Callback0::Type> put_offset_change_callback_;
-  std::vector<linked_ptr< base::SharedMemory> > registered_objects_;
+  std::vector<Buffer> registered_objects_;
   std::set<int32> unused_registered_object_elements_;
   int32 token_;
   error::Error error_;

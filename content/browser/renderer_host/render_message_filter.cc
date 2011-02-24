@@ -446,10 +446,8 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
 #if defined(OS_WIN)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DuplicateSection, OnDuplicateSection)
 #endif
-#if defined(OS_POSIX)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AllocateSharedMemoryBuffer,
                         OnAllocateSharedMemoryBuffer)
-#endif
 #if defined(OS_CHROMEOS)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_AllocateTempFileForPrinting,
                                     OnAllocateTempFileForPrinting)
@@ -1000,7 +998,6 @@ void RenderMessageFilter::OnDuplicateSection(
 }
 #endif
 
-#if defined(OS_POSIX)
 void RenderMessageFilter::OnAllocateSharedMemoryBuffer(
     uint32 buffer_size,
     base::SharedMemoryHandle* handle) {
@@ -1010,9 +1007,8 @@ void RenderMessageFilter::OnAllocateSharedMemoryBuffer(
     NOTREACHED() << "Cannot map shared memory buffer";
     return;
   }
-  shared_buf.GiveToProcess(base::GetCurrentProcessHandle(), handle);
+  shared_buf.GiveToProcess(peer_handle(), handle);
 }
-#endif
 
 void RenderMessageFilter::OnResourceTypeStats(
     const WebCache::ResourceTypeStats& stats) {

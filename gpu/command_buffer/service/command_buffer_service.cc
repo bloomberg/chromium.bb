@@ -7,6 +7,7 @@
 #include <limits>
 
 #include "base/callback.h"
+#include "base/process_util.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
 
 using ::base::SharedMemory;
@@ -20,10 +21,14 @@ CommandBufferService::CommandBufferService()
       token_(0),
       error_(error::kNoError) {
   // Element zero is always NULL.
-  registered_objects_.push_back(linked_ptr<SharedMemory>());
+  registered_objects_.push_back(Buffer());
 }
 
 CommandBufferService::~CommandBufferService() {
+  for (size_t i = 0; i < registered_objects_.size(); ++i) {
+    if (registered_objects_[i].shared_memory)
+      delete registered_objects_[i].shared_memory;
+  }
 }
 
 bool CommandBufferService::Initialize(int32 size) {
@@ -102,9 +107,26 @@ void CommandBufferService::SetGetOffset(int32 get_offset) {
 }
 
 int32 CommandBufferService::CreateTransferBuffer(size_t size) {
-  linked_ptr<SharedMemory> buffer(new SharedMemory);
-  if (!buffer->CreateAnonymous(size))
+  SharedMemory buffer;
+  if (!buffer.CreateAnonymous(size))
     return -1;
+
+  return RegisterTransferBuffer(&buffer, size);
+}
+
+int32 CommandBufferService::RegisterTransferBuffer(
+    base::SharedMemory* shared_memory, size_t size) {
+  // Duplicate the handle.
+  base::SharedMemoryHandle shared_memory_handle;
+  if (!shared_memory->ShareToProcess(base::GetCurrentProcessHandle(),
+                                     &shared_memory_handle)) {
+    return -1;
+  }
+
+  Buffer buffer;
+  buffer.ptr = NULL;
+  buffer.size = size;
+  buffer.shared_memory = new SharedMemory(shared_memory_handle, false);
 
   if (unused_registered_object_elements_.empty()) {
     // Check we haven't exceeded the range that fits in a 32-bit integer.
@@ -119,7 +141,7 @@ int32 CommandBufferService::CreateTransferBuffer(size_t size) {
   int32 handle = *unused_registered_object_elements_.begin();
   unused_registered_object_elements_.erase(
       unused_registered_object_elements_.begin());
-  DCHECK(!registered_objects_[handle].get());
+  DCHECK(!registered_objects_[handle].shared_memory);
   registered_objects_[handle] = buffer;
   return handle;
 }
@@ -131,13 +153,15 @@ void CommandBufferService::DestroyTransferBuffer(int32 handle) {
   if (static_cast<size_t>(handle) >= registered_objects_.size())
     return;
 
-  registered_objects_[handle].reset();
+  delete registered_objects_[handle].shared_memory;
+  registered_objects_[handle] = Buffer();
   unused_registered_object_elements_.insert(handle);
 
   // Remove all null objects from the end of the vector. This allows the vector
   // to shrink when, for example, all objects are unregistered. Note that this
   // loop never removes element zero, which is always NULL.
-  while (registered_objects_.size() > 1 && !registered_objects_.back().get()) {
+  while (registered_objects_.size() > 1 &&
+      !registered_objects_.back().shared_memory) {
     registered_objects_.pop_back();
     unused_registered_object_elements_.erase(
         static_cast<int32>(registered_objects_.size()));
@@ -151,19 +175,16 @@ Buffer CommandBufferService::GetTransferBuffer(int32 handle) {
   if (static_cast<size_t>(handle) >= registered_objects_.size())
     return Buffer();
 
-  base::SharedMemory* shared_memory = registered_objects_[handle].get();
-  if (!shared_memory)
-    return Buffer();
+   Buffer buffer = registered_objects_[handle];
+   if (!buffer.shared_memory)
+     return Buffer();
 
-  if (!shared_memory->memory()) {
-    if (!shared_memory->Map(shared_memory->created_size()))
+  if (!buffer.shared_memory->memory()) {
+    if (!buffer.shared_memory->Map(buffer.size))
       return Buffer();
   }
 
-  Buffer buffer;
-  buffer.ptr = shared_memory->memory();
-  buffer.size = shared_memory->created_size();
-  buffer.shared_memory = shared_memory;
+  buffer.ptr = buffer.shared_memory->memory();
   return buffer;
 }
 

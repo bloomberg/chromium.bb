@@ -8,6 +8,10 @@
 #include "../common/command_buffer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+namespace base {
+class SharedMemory;
+}
+
 namespace gpu {
 
 // An NPObject that implements a shared memory command buffer and a synchronous
@@ -26,6 +30,8 @@ class MockCommandBuffer : public CommandBuffer {
   MOCK_METHOD1(CreateTransferBuffer, int32(size_t size));
   MOCK_METHOD1(DestroyTransferBuffer, void(int32 handle));
   MOCK_METHOD1(GetTransferBuffer, Buffer(int32 handle));
+  MOCK_METHOD2(RegisterTransferBuffer, int32(base::SharedMemory* shared_memory,
+                                             size_t size));
   MOCK_METHOD1(SetToken, void(int32 token));
   MOCK_METHOD1(SetParseError, void(error::Error error));
 

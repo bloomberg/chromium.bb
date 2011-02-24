@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/gpu/gpu_channel.h"
-
 #if defined(OS_WIN)
 #include <windows.h>
 #endif
+
+#include "chrome/gpu/gpu_channel.h"
 
 #include "base/command_line.h"
 #include "base/process_util.h"
@@ -22,21 +22,23 @@
 #include "ipc/ipc_channel_posix.h"
 #endif
 
-GpuChannel::GpuChannel(GpuThread* gpu_thread, int renderer_id)
+GpuChannel::GpuChannel(GpuThread* gpu_thread,
+                       int renderer_id)
     : gpu_thread_(gpu_thread),
-      renderer_id_(renderer_id) {
+      renderer_id_(renderer_id),
+      renderer_process_(NULL),
+      renderer_pid_(NULL) {
   DCHECK(gpu_thread);
+  DCHECK(renderer_id);
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   log_messages_ = command_line->HasSwitch(switches::kLogPluginMessages);
 }
 
 GpuChannel::~GpuChannel() {
-}
-
-void GpuChannel::OnChannelConnected(int32 peer_pid) {
-  if (!renderer_process_.Open(peer_pid)) {
-    NOTREACHED();
-  }
+#if defined(OS_WIN)
+  if (renderer_process_)
+    CloseHandle(renderer_process_);
+#endif
 }
 
 bool GpuChannel::OnMessageReceived(const IPC::Message& message) {
@@ -63,6 +65,10 @@ bool GpuChannel::OnMessageReceived(const IPC::Message& message) {
 
 void GpuChannel::OnChannelError() {
   gpu_thread_->RemoveChannel(renderer_id_);
+}
+
+void GpuChannel::OnChannelConnected(int32 peer_pid) {
+  renderer_pid_ = peer_pid;
 }
 
 bool GpuChannel::Send(IPC::Message* message) {
@@ -122,6 +128,7 @@ bool GpuChannel::IsRenderViewGone(int32 renderer_route_id) {
 bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GpuChannel, msg)
+    IPC_MESSAGE_HANDLER(GpuChannelMsg_Initialize, OnInitialize)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_CreateOffscreenCommandBuffer,
         OnCreateOffscreenCommandBuffer)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_DestroyCommandBuffer,
@@ -139,6 +146,15 @@ bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
 int GpuChannel::GenerateRouteID() {
   static int last_id = 0;
   return ++last_id;
+}
+
+void GpuChannel::OnInitialize(base::ProcessHandle renderer_process) {
+  // Initialize should only happen once.
+  DCHECK(!renderer_process_);
+
+  // Verify that the renderer has passed its own process handle.
+  if (base::GetProcId(renderer_process) == renderer_pid_)
+    renderer_process_ = renderer_process;
 }
 
 void GpuChannel::OnCreateOffscreenCommandBuffer(

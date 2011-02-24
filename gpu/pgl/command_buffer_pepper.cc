@@ -142,6 +142,14 @@ int32 CommandBufferPepper::CreateTransferBuffer(size_t size) {
   return static_cast<int32>(id);
 }
 
+int32 CommandBufferPepper::RegisterTransferBuffer(
+    base::SharedMemory* shared_memory,
+    size_t size) {
+  // Not implemented by proxy.
+  GPU_NOTREACHED();
+  return -1;
+}
+
 void CommandBufferPepper::DestroyTransferBuffer(int32 id) {
   device_->destroyBuffer(npp_, context_, id);
 }

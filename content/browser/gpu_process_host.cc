@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
 #include "content/browser/gpu_process_host.h"
 
 #include "app/app_switches.h"
@@ -173,6 +177,31 @@ bool GpuProcessHost::CanShutdown() {
   return true;
 }
 
+void GpuProcessHost::OnProcessLaunched() {
+  // Send the GPU process handle to the UI thread before it has to
+  // respond to any requests to establish a GPU channel. The response
+  // to such requests require that the GPU process handle be known.
+  base::ProcessHandle child_handle;
+#if defined(OS_WIN)
+  DuplicateHandle(base::GetCurrentProcessHandle(),
+                  handle(),
+                  base::GetCurrentProcessHandle(),
+                  &child_handle,
+                  PROCESS_DUP_HANDLE,
+                  FALSE,
+                  0);
+#else
+  child_handle = handle();
+#endif
+
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      NewRunnableFunction(&GpuProcessHostUIShim::NotifyGpuProcessLaunched,
+                          host_id_,
+                          child_handle));
+}
+
 namespace {
 
 void SendOutstandingRepliesDispatcher(int host_id) {
@@ -232,6 +261,9 @@ bool GpuProcessHost::LaunchGpuProcess() {
 
     if (!thread->StartWithOptions(options))
       return false;
+
+    set_handle(base::GetCurrentProcessHandle());
+    OnProcessLaunched();
 
     return true;
   }

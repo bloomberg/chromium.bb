@@ -179,6 +179,13 @@ IPC_MESSAGE_CONTROL2(GpuHostMsg_ScheduleComposite,
 // GPU Channel Messages
 // These are messages from a renderer process to the GPU process.
 
+// Initialize a channel between a renderer process and a GPU process. The
+// renderer passes its process handle to the GPU process, which gives gives the
+// GPU process the ability to map handles from the renderer process. This must
+// be the first message sent on a newly connected channel.
+IPC_MESSAGE_CONTROL1(GpuChannelMsg_Initialize,
+                     base::ProcessHandle /* renderer_process_for_gpu */)
+
 // Tells the GPU process to create a new command buffer that renders to an
 // offscreen frame buffer. If parent_route_id is not zero, the texture backing
 // the frame buffer is mapped into the corresponding parent command buffer's
@@ -255,6 +262,13 @@ IPC_MESSAGE_ROUTED0(GpuCommandBufferMsg_SwapBuffers)
 // identify the transfer buffer from a comment.
 IPC_SYNC_MESSAGE_ROUTED1_1(GpuCommandBufferMsg_CreateTransferBuffer,
                            int32 /* size */,
+                           int32 /* id */)
+
+// Register an existing shared memory transfer buffer. Returns an id that can be
+// used to identify the transfer buffer from a command buffer.
+IPC_SYNC_MESSAGE_ROUTED2_1(GpuCommandBufferMsg_RegisterTransferBuffer,
+                           base::SharedMemoryHandle /* transfer_buffer */,
+                           size_t /* size */,
                            int32 /* id */)
 
 // Destroy a previously created transfer buffer.

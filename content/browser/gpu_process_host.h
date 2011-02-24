@@ -39,6 +39,7 @@ class GpuProcessHost : public BrowserChildProcessHost,
   void RouteOnUIThread(const IPC::Message& message);
 
   virtual bool CanShutdown();
+  virtual void OnProcessLaunched();
   virtual void OnChildDied();
   virtual void OnProcessCrashed(int exit_code);
 

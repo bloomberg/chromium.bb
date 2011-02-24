@@ -17,6 +17,7 @@
 
 #include "base/callback.h"
 #include "base/linked_ptr.h"
+#include "base/process.h"
 #include "base/scoped_ptr.h"
 #include "base/singleton.h"
 #include "base/values.h"
@@ -108,6 +109,12 @@ class GpuProcessHostUIShim
   // UI shim.
   static void Destroy(int host_id);
 
+  // The GPU process is launched asynchronously. If it launches successfully,
+  // this function is called on the UI thread with the process handle. On
+  // Windows, the UI shim takes ownership of the handle.
+  static void NotifyGpuProcessLaunched(int host_id,
+                                       base::ProcessHandle gpu_process);
+
   static GpuProcessHostUIShim* FromID(int host_id);
   int host_id() const { return host_id_; }
 
@@ -125,7 +132,9 @@ class GpuProcessHostUIShim
   // actually received on the IO thread.
   virtual bool OnMessageReceived(const IPC::Message& message);
 
-  typedef Callback2<const IPC::ChannelHandle&, const GPUInfo&>::Type
+  typedef Callback3<const IPC::ChannelHandle&,
+                    base::ProcessHandle,
+                    const GPUInfo&>::Type
     EstablishChannelCallback;
 
   // Tells the GPU process to create a new channel for communication with a
@@ -209,6 +218,9 @@ class GpuProcessHostUIShim
 
   // The serial number of the GpuProcessHost / GpuProcessHostUIShim pair.
   int host_id_;
+
+  // The handle for the GPU process or null if it is not known to be launched.
+  base::ProcessHandle gpu_process_;
 
   GPUInfo gpu_info_;
   ListValue log_messages_;

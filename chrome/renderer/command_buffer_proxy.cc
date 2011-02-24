@@ -8,8 +8,10 @@
 #include "base/task.h"
 #include "chrome/common/gpu_messages.h"
 #include "chrome/common/plugin_messages.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/renderer/command_buffer_proxy.h"
 #include "chrome/renderer/plugin_channel_host.h"
+#include "chrome/renderer/render_thread.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
 #include "ui/gfx/size.h"
 
@@ -123,30 +125,64 @@ void CommandBufferProxy::SetGetOffset(int32 get_offset) {
 }
 
 int32 CommandBufferProxy::CreateTransferBuffer(size_t size) {
-  if (last_state_.error == gpu::error::kNoError) {
-    int32 id;
-    if (Send(new GpuCommandBufferMsg_CreateTransferBuffer(route_id_,
-                                                          size,
-                                                          &id))) {
-      return id;
-    }
+  if (last_state_.error != gpu::error::kNoError)
+    return -1;
+
+  RenderThread* render_thread = RenderThread::current();
+  if (!render_thread)
+    return -1;
+
+  base::SharedMemoryHandle handle;
+  if (!render_thread->Send(new ViewHostMsg_AllocateSharedMemoryBuffer(
+      size,
+      &handle))) {
+    return -1;
   }
 
-  return -1;
+  // Take ownership of shared memory. This will close the handle if Send below
+  // fails. Otherwise, callee takes ownership before this variable
+  // goes out of scope by duping the handle.
+  base::SharedMemory shared_memory(handle, false);
+
+  int32 id;
+  if (!Send(new GpuCommandBufferMsg_RegisterTransferBuffer(route_id_,
+                                                           handle,
+                                                           size,
+                                                           &id))) {
+    return -1;
+  }
+
+  return id;
+}
+
+int32 CommandBufferProxy::RegisterTransferBuffer(
+    base::SharedMemory* shared_memory,
+    size_t size) {
+  if (last_state_.error != gpu::error::kNoError)
+    return -1;
+
+  int32 id;
+  if (!Send(new GpuCommandBufferMsg_RegisterTransferBuffer(
+      route_id_,
+      shared_memory->handle(),
+      size,
+      &id))) {
+    return -1;
+  }
+
+  return id;
 }
 
 void CommandBufferProxy::DestroyTransferBuffer(int32 id) {
   if (last_state_.error != gpu::error::kNoError)
     return;
 
-  // Remove the transfer buffer from the client side4 cache.
+  // Remove the transfer buffer from the client side cache.
   TransferBufferMap::iterator it = transfer_buffers_.find(id);
-  DCHECK(it != transfer_buffers_.end());
-
-  // Delete the shared memory object, closing the handle in this process.
-  delete it->second.shared_memory;
-
-  transfer_buffers_.erase(it);
+  if (it != transfer_buffers_.end()) {
+    delete it->second.shared_memory;
+    transfer_buffers_.erase(it);
+  }
 
   Send(new GpuCommandBufferMsg_DestroyTransferBuffer(route_id_, id));
 }

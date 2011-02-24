@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/hash_tables.h"
+#include "base/process_util.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/gpu_info.h"
 #include "chrome/common/message_router.h"
@@ -44,7 +45,8 @@ class GpuChannelHost : public IPC::Channel::Listener,
   ~GpuChannelHost();
 
   // Connect to GPU process channel.
-  void Connect(const IPC::ChannelHandle& channel_handle);
+  void Connect(const IPC::ChannelHandle& channel_handle,
+               base::ProcessHandle renderer_process_for_gpu);
 
   State state() const { return state_; }
 

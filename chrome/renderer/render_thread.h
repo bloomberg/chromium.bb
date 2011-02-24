@@ -317,6 +317,7 @@ class RenderThread : public RenderThreadBase,
   void OnSpellCheckEnableAutoSpellCorrect(bool enable);
 
   void OnGpuChannelEstablished(const IPC::ChannelHandle& channel_handle,
+                               base::ProcessHandle renderer_process_for_gpu,
                                const GPUInfo& gpu_info);
 
   void OnSetPhishingModel(IPC::PlatformFileForTransit model_file);

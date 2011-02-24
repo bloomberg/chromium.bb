@@ -35,6 +35,8 @@ class CommandBufferPepper : public gpu::CommandBuffer {
   virtual int32 CreateTransferBuffer(size_t size);
   virtual void DestroyTransferBuffer(int32 id);
   virtual gpu::Buffer GetTransferBuffer(int32 handle);
+  virtual int32 RegisterTransferBuffer(base::SharedMemory* shared_memory,
+                                       size_t size);
   virtual void SetToken(int32 token);
   virtual void SetParseError(gpu::error::Error error);
 

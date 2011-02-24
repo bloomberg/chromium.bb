@@ -1085,12 +1085,14 @@ void RenderThread::OnSetIsIncognitoProcess(bool is_incognito_process) {
 }
 
 void RenderThread::OnGpuChannelEstablished(
-    const IPC::ChannelHandle& channel_handle, const GPUInfo& gpu_info) {
+    const IPC::ChannelHandle& channel_handle,
+    base::ProcessHandle renderer_process_for_gpu,
+    const GPUInfo& gpu_info) {
   gpu_channel_->set_gpu_info(gpu_info);
 
   if (channel_handle.name.size() != 0) {
     // Connect to the GPU process if a channel name was received.
-    gpu_channel_->Connect(channel_handle);
+    gpu_channel_->Connect(channel_handle, renderer_process_for_gpu);
   } else {
     // Otherwise cancel the connection.
     gpu_channel_ = NULL;

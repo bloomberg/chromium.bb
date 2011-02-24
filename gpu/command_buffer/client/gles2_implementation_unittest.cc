@@ -73,6 +73,12 @@ class GLES2MockCommandBufferHelper : public CommandBuffer {
     return transfer_buffer_buffer_;
   }
 
+  virtual int32 RegisterTransferBuffer(base::SharedMemory* shared_memory,
+                                       size_t size) {
+    GPU_NOTREACHED();
+    return -1;
+  }
+
   virtual void SetToken(int32 token) {
     GPU_NOTREACHED();
     state_.token = token;

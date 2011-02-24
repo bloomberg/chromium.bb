@@ -103,10 +103,8 @@ class MockRenderThread : public RenderThreadBase {
                           base::SharedMemoryHandle* browser_handle);
 #endif
 
-#if defined(OS_POSIX)
   void OnAllocateSharedMemoryBuffer(uint32 buffer_size,
                                     base::SharedMemoryHandle* handle);
-#endif
 
 #if defined(OS_CHROMEOS)
   void OnAllocateTempFileForPrinting(base::FileDescriptor* renderer_fd,

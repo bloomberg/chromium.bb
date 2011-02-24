@@ -51,6 +51,8 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   virtual State FlushSync(int32 put_offset);
   virtual void SetGetOffset(int32 get_offset);
   virtual int32 CreateTransferBuffer(size_t size);
+  virtual int32 RegisterTransferBuffer(base::SharedMemory* shared_memory,
+                                       size_t size);
   virtual void DestroyTransferBuffer(int32 id);
   virtual gpu::Buffer GetTransferBuffer(int32 handle);
   virtual void SetToken(int32 token);

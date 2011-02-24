@@ -170,6 +170,8 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_AsyncFlush, OnAsyncFlush);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_CreateTransferBuffer,
                         OnCreateTransferBuffer);
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_RegisterTransferBuffer,
+                        OnRegisterTransferBuffer);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_DestroyTransferBuffer,
                         OnDestroyTransferBuffer);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_GetTransferBuffer,
@@ -235,7 +237,7 @@ void GpuCommandBufferStub::OnInitialize(
 
         // Assume service is responsible for duplicating the handle from the
         // calling process.
-        buffer.shared_memory->ShareToProcess(channel_->renderer_handle(),
+        buffer.shared_memory->ShareToProcess(channel_->renderer_process(),
                                              ring_buffer);
 #if defined(OS_MACOSX)
         if (handle_) {
@@ -289,6 +291,20 @@ void GpuCommandBufferStub::OnCreateTransferBuffer(int32 size, int32* id) {
   *id = command_buffer_->CreateTransferBuffer(size);
 }
 
+void GpuCommandBufferStub::OnRegisterTransferBuffer(
+    base::SharedMemoryHandle transfer_buffer,
+    size_t size,
+    int32* id) {
+#if defined(OS_WIN)
+  base::SharedMemory shared_memory(transfer_buffer,
+                                   false,
+                                   channel_->renderer_process());
+#else
+  base::SharedMemory shared_memory(transfer_buffer, false);
+#endif
+  *id = command_buffer_->RegisterTransferBuffer(&shared_memory, size);
+}
+
 void GpuCommandBufferStub::OnDestroyTransferBuffer(int32 id) {
   command_buffer_->DestroyTransferBuffer(id);
 }
@@ -300,13 +316,17 @@ void GpuCommandBufferStub::OnGetTransferBuffer(
   *transfer_buffer = base::SharedMemoryHandle();
   *size = 0;
 
+  // Fail if the renderer process has not provided its process handle.
+  if (!channel_->renderer_process())
+    return;
+
   Buffer buffer = command_buffer_->GetTransferBuffer(id);
   if (buffer.shared_memory) {
     // Assume service is responsible for duplicating the handle to the calling
     // process.
-    buffer.shared_memory->ShareToProcess(channel_->renderer_handle(),
+    buffer.shared_memory->ShareToProcess(channel_->renderer_process(),
                                          transfer_buffer);
-    *size = buffer.shared_memory->created_size();
+    *size = buffer.size;
   }
 }
 

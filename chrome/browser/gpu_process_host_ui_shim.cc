@@ -167,6 +167,7 @@ RenderWidgetHostView* GpuProcessHostUIShim::ViewSurface::
 
 GpuProcessHostUIShim::GpuProcessHostUIShim()
     : host_id_(++g_last_host_id),
+      gpu_process_(NULL),
       gpu_feature_flags_set_(false) {
   g_hosts_by_id.AddWithID(this, host_id_);
 }
@@ -206,6 +207,18 @@ void GpuProcessHostUIShim::Destroy(int host_id) {
 }
 
 // static
+void GpuProcessHostUIShim::NotifyGpuProcessLaunched(
+    int host_id,
+    base::ProcessHandle gpu_process) {
+  DCHECK(gpu_process);
+
+  GpuProcessHostUIShim* ui_shim = FromID(host_id);
+  DCHECK(ui_shim);
+
+  ui_shim->gpu_process_ = gpu_process;
+}
+
+// static
 GpuProcessHostUIShim* GpuProcessHostUIShim::FromID(int host_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (host_id == 0)
@@ -230,20 +243,25 @@ namespace {
 void EstablishChannelCallbackDispatcher(
     GpuProcessHostUIShim::EstablishChannelCallback* callback,
     const IPC::ChannelHandle& channel_handle,
+    base::ProcessHandle renderer_process_for_gpu,
     const GPUInfo& gpu_info) {
   scoped_ptr<GpuProcessHostUIShim::EstablishChannelCallback>
     wrapped_callback(callback);
-  wrapped_callback->Run(channel_handle, gpu_info);
+  wrapped_callback->Run(channel_handle, renderer_process_for_gpu, gpu_info);
 }
 
 void EstablishChannelError(
     GpuProcessHostUIShim::EstablishChannelCallback* callback,
     const IPC::ChannelHandle& channel_handle,
+    base::ProcessHandle renderer_process_for_gpu,
     const GPUInfo& gpu_info) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableFunction(&EstablishChannelCallbackDispatcher,
-                          callback, channel_handle, gpu_info));
+                          callback,
+                          channel_handle,
+                          renderer_process_for_gpu,
+                          gpu_info));
 }
 
 void SynchronizeCallbackDispatcher(
@@ -284,7 +302,10 @@ void GpuProcessHostUIShim::SendOutstandingReplies() {
   while (!channel_requests_.empty()) {
     linked_ptr<EstablishChannelCallback> callback = channel_requests_.front();
     channel_requests_.pop();
-    EstablishChannelError(callback.release(), IPC::ChannelHandle(), GPUInfo());
+    EstablishChannelError(callback.release(),
+                          IPC::ChannelHandle(),
+                          NULL,
+                          GPUInfo());
   }
 
   // Now unblock all renderers waiting for synchronization replies.
@@ -305,14 +326,15 @@ bool GpuProcessHostUIShim::OnMessageReceived(const IPC::Message& message) {
 }
 
 void GpuProcessHostUIShim::EstablishGpuChannel(
-    int renderer_id, EstablishChannelCallback *callback) {
+    int renderer_id,
+    EstablishChannelCallback *callback) {
   DCHECK(CalledOnValidThread());
   linked_ptr<EstablishChannelCallback> wrapped_callback(callback);
 
   // If GPU features are already blacklisted, no need to establish the channel.
   if (gpu_feature_flags_.flags() != 0) {
     EstablishChannelError(
-        wrapped_callback.release(), IPC::ChannelHandle(), GPUInfo());
+        wrapped_callback.release(), IPC::ChannelHandle(), NULL, GPUInfo());
     return;
   }
 
@@ -320,7 +342,7 @@ void GpuProcessHostUIShim::EstablishGpuChannel(
     channel_requests_.push(wrapped_callback);
   } else {
     EstablishChannelError(
-        wrapped_callback.release(), IPC::ChannelHandle(), GPUInfo());
+        wrapped_callback.release(), IPC::ChannelHandle(), NULL, GPUInfo());
   }
 }
 
@@ -399,6 +421,11 @@ const GPUInfo& GpuProcessHostUIShim::gpu_info() const {
 GpuProcessHostUIShim::~GpuProcessHostUIShim() {
   DCHECK(CalledOnValidThread());
   g_hosts_by_id.Remove(host_id_);
+
+#if defined(OS_WIN)
+  if (gpu_process_)
+    CloseHandle(gpu_process_);
+#endif
 }
 
 bool GpuProcessHostUIShim::Init() {
@@ -449,6 +476,10 @@ bool GpuProcessHostUIShim::OnControlMessageReceived(
 void GpuProcessHostUIShim::OnChannelEstablished(
     const IPC::ChannelHandle& channel_handle,
     const GPUInfo& gpu_info) {
+  // The GPU process should have launched at this point and this object should
+  // have been notified of its process handle.
+  DCHECK(gpu_process_);
+
   uint32 max_entry_id = gpu_blacklist_->max_entry_id();
   // max_entry_id can be zero if we failed to load the GPU blacklist, don't
   // bother with histograms then.
@@ -488,11 +519,15 @@ void GpuProcessHostUIShim::OnChannelEstablished(
   // GPU channel.
   if (gpu_feature_flags_.flags() != 0) {
     Send(new GpuMsg_CloseChannel(channel_handle));
-    EstablishChannelError(callback.release(), IPC::ChannelHandle(), gpu_info);
+    EstablishChannelError(callback.release(),
+                          IPC::ChannelHandle(),
+                          NULL,
+                          gpu_info);
     AddCustomLogMessage(logging::LOG_WARNING, "WARNING", "GPU is blacklisted.");
-  } else {
-    callback->Run(channel_handle, gpu_info);
+    return;
   }
+
+  callback->Run(channel_handle, gpu_process_, gpu_info);
 }
 
 void GpuProcessHostUIShim::OnSynchronizeReply() {

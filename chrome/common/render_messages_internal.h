@@ -653,8 +653,9 @@ IPC_MESSAGE_ROUTED0(ViewMsg_DisassociateFromPopupCount)
 
 // The browser sends this to a renderer process in response to a
 // GpuHostMsg_EstablishGpuChannel message.
-IPC_MESSAGE_CONTROL2(ViewMsg_GpuChannelEstablished,
+IPC_MESSAGE_CONTROL3(ViewMsg_GpuChannelEstablished,
                      IPC::ChannelHandle /* handle to channel */,
+                     base::ProcessHandle /* renderer_process_for_gpu */,
                      GPUInfo /* stats about GPU process*/)
 
 // Notifies the renderer of the appcache that has been selected for a
@@ -1914,13 +1915,11 @@ IPC_MESSAGE_CONTROL1(ViewHostMsg_TempFileForPrintingWritten,
                      int /* fd in browser */)
 #endif
 
-#if defined(OS_POSIX)
 // Asks the browser to create a block of shared memory for the renderer to
 // fill in and pass back to the browser.
 IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_AllocateSharedMemoryBuffer,
                            uint32 /* buffer size */,
                            base::SharedMemoryHandle /* browser handle */)
-#endif
 
 // Provide the browser process with information about the WebCore resource
 // cache.

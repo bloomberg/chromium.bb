@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/id_map.h"
-#include "base/scoped_open_process.h"
+#include "base/process.h"
 #include "base/scoped_ptr.h"
 #include "build/build_config.h"
 #include "chrome/common/gpu_create_command_buffer_config.h"
@@ -32,7 +32,9 @@ class GpuChannel : public IPC::Channel::Listener,
                    public IPC::Message::Sender,
                    public base::RefCountedThreadSafe<GpuChannel> {
  public:
-  GpuChannel(GpuThread* gpu_thread, int renderer_id);
+  // Takes ownership of the renderer process handle.
+  GpuChannel(GpuThread* gpu_thread,
+             int renderer_id);
   virtual ~GpuChannel();
 
   bool Init();
@@ -47,14 +49,14 @@ class GpuChannel : public IPC::Channel::Listener,
   int GetRendererFileDescriptor();
 #endif  // defined(OS_POSIX)
 
-  base::ProcessHandle renderer_handle() const {
-    return renderer_process_.handle();
+  base::ProcessHandle renderer_process() const {
+    return renderer_process_;
   }
 
   // IPC::Channel::Listener implementation:
   virtual bool OnMessageReceived(const IPC::Message& msg);
-  virtual void OnChannelConnected(int32 peer_pid);
   virtual void OnChannelError();
+  virtual void OnChannelConnected(int32 peer_pid);
 
   // IPC::Message::Sender implementation:
   virtual bool Send(IPC::Message* msg);
@@ -79,6 +81,7 @@ class GpuChannel : public IPC::Channel::Listener,
   int GenerateRouteID();
 
   // Message handlers.
+  void OnInitialize(base::ProcessHandle renderer_process);
   void OnCreateOffscreenCommandBuffer(
       int32 parent_route_id,
       const gfx::Size& size,
@@ -98,11 +101,14 @@ class GpuChannel : public IPC::Channel::Listener,
 
   scoped_ptr<IPC::SyncChannel> channel_;
 
-  // Handle to the renderer process who is on the other side of the channel.
-  base::ScopedOpenProcess renderer_process_;
-
   // The id of the renderer who is on the other side of the channel.
   int renderer_id_;
+
+  // Handle to the renderer process that is on the other side of the channel.
+  base::ProcessHandle renderer_process_;
+
+  // The process id of the renderer process.
+  base::ProcessId renderer_pid_;
 
   // Used to implement message routing functionality to CommandBuffer objects
   MessageRouter router_;

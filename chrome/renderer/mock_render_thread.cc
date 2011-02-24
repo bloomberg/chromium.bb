@@ -116,10 +116,8 @@ bool MockRenderThread::OnMessageReceived(const IPC::Message& msg) {
 #if defined(OS_WIN)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DuplicateSection, OnDuplicateSection)
 #endif
-#if defined(OS_POSIX)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AllocateSharedMemoryBuffer,
                         OnAllocateSharedMemoryBuffer)
-#endif
 #if defined(OS_CHROMEOS)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AllocateTempFileForPrinting,
                         OnAllocateTempFileForPrinting)
@@ -156,7 +154,6 @@ void MockRenderThread::OnDuplicateSection(
 }
 #endif
 
-#if defined(OS_POSIX)
 void MockRenderThread::OnAllocateSharedMemoryBuffer(
     uint32 buffer_size, base::SharedMemoryHandle* handle) {
   base::SharedMemory shared_buf;
@@ -167,7 +164,6 @@ void MockRenderThread::OnAllocateSharedMemoryBuffer(
   }
   shared_buf.GiveToProcess(base::GetCurrentProcessHandle(), handle);
 }
-#endif
 
 #if defined(OS_CHROMEOS)
 void MockRenderThread::OnAllocateTempFileForPrinting(

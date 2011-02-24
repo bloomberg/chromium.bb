@@ -63,7 +63,7 @@ bool GpuVideoService::CreateVideoDecoder(
   decoder_info.decoder = new GpuVideoDecoder(MessageLoop::current(),
                                              decoder_host_id,
                                              channel,
-                                             channel->renderer_handle(),
+                                             channel->renderer_process(),
                                              gles2_decoder);
   decoder_info.channel = channel;
   decoder_map_[decoder_id] = decoder_info;

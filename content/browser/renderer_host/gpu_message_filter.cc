@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
 #include "chrome/browser/renderer_host/gpu_message_filter.h"
 
 #include "base/callback.h"
@@ -53,7 +57,8 @@ void GpuMessageFilter::OnDestruct() const {
 namespace {
 
 class EstablishChannelCallback
-    : public CallbackRunner<Tuple2<const IPC::ChannelHandle&,
+    : public CallbackRunner<Tuple3<const IPC::ChannelHandle&,
+                                   base::ProcessHandle,
                                    const GPUInfo&> > {
  public:
   explicit EstablishChannelCallback(GpuMessageFilter* filter):
@@ -66,17 +71,38 @@ class EstablishChannelCallback
   }
 
   void Send(const IPC::ChannelHandle& channel,
+            base::ProcessHandle gou_process_for_browser,
             const GPUInfo& gpu_info) {
+    if (!filter_)
+      return;
+
+    base::ProcessHandle renderer_process_for_gpu;
+#if defined(OS_WIN)
+    // Create a process handle that the renderer process can give to the GPU
+    // process to give it access to its handles.
+    DuplicateHandle(base::GetCurrentProcessHandle(),
+                    filter_->peer_handle(),
+                    gou_process_for_browser,
+                    &renderer_process_for_gpu,
+                    PROCESS_DUP_HANDLE,
+                    FALSE,
+                    0);
+#else
+    renderer_process_for_gpu = filter_->peer_handle();
+#endif
+
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     ViewMsg_GpuChannelEstablished* reply =
-        new ViewMsg_GpuChannelEstablished(channel, gpu_info);
+        new ViewMsg_GpuChannelEstablished(channel,
+                                          renderer_process_for_gpu,
+                                          gpu_info);
+
     // If the renderer process is performing synchronous initialization,
     // it needs to handle this message before receiving the reply for
     // the synchronous GpuHostMsg_SynchronizeGpu message.
     reply->set_unblock(true);
 
-    if (filter_)
-      filter_->Send(reply);
+    filter_->Send(reply);
   }
 
  private:
@@ -148,7 +174,9 @@ void GpuMessageFilter::OnEstablishGpuChannel() {
   if (!ui_shim) {
     ui_shim = GpuProcessHostUIShim::GetForRenderer(render_process_id_);
     if (!ui_shim) {
-      callback->Run(IPC::ChannelHandle(), GPUInfo());
+      callback->Run(IPC::ChannelHandle(),
+                    static_cast<base::ProcessHandle>(NULL),
+                    GPUInfo());
       return;
     }
 

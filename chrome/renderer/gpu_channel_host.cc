@@ -17,7 +17,9 @@ GpuChannelHost::GpuChannelHost() : state_(kUnconnected) {
 GpuChannelHost::~GpuChannelHost() {
 }
 
-void GpuChannelHost::Connect(const IPC::ChannelHandle& channel_handle) {
+void GpuChannelHost::Connect(
+    const IPC::ChannelHandle& channel_handle,
+    base::ProcessHandle renderer_process_for_gpu) {
   // Open a channel to the GPU process.
   channel_.reset(new IPC::SyncChannel(
       channel_handle, IPC::Channel::MODE_CLIENT, this,
@@ -28,6 +30,10 @@ void GpuChannelHost::Connect(const IPC::ChannelHandle& channel_handle) {
   // and receives the hello message from the GPU process. The messages get
   // cached.
   state_ = kConnected;
+
+  // Notify the GPU process of our process handle. This gives it the ability
+  // to map renderer handles into the GPU process.
+  Send(new GpuChannelMsg_Initialize(renderer_process_for_gpu));
 }
 
 void GpuChannelHost::set_gpu_info(const GPUInfo& gpu_info) {
