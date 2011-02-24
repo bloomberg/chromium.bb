@@ -232,7 +232,14 @@ views::TextButton* InfoBarView::CreateTextButton(
       (base::win::GetVersion() >= base::win::VERSION_VISTA) &&
       base::win::UserAccountControlIsEnabled()) {
     SHSTOCKICONINFO icon_info = { sizeof SHSTOCKICONINFO };
-    SHGetStockIconInfo(SIID_SHIELD, SHGSI_ICON | SHGSI_SMALLICON, &icon_info);
+    // Even with the runtime guard above, we have to use GetProcAddress() here,
+    // because otherwise the loader will try to resolve the function address on
+    // startup, which will break on XP.
+    typedef HRESULT (STDAPICALLTYPE *GetStockIconInfo)(SHSTOCKICONID, UINT,
+                                                       SHSTOCKICONINFO*);
+    GetStockIconInfo func = reinterpret_cast<GetStockIconInfo>(
+        GetProcAddress(GetModuleHandle(L"shell32.dll"), "SHGetStockIconInfo"));
+    (*func)(SIID_SHIELD, SHGSI_ICON | SHGSI_SMALLICON, &icon_info);
     text_button->SetIcon(*IconUtil::CreateSkBitmapFromHICON(icon_info.hIcon,
         gfx::Size(GetSystemMetrics(SM_CXSMICON),
                   GetSystemMetrics(SM_CYSMICON))));
