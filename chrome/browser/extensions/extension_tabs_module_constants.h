@@ -58,6 +58,7 @@ extern const char kWindowTypeValuePopup[];
 extern const char kWindowTypeValueApp[];
 
 // Error messages.
+extern const char kNoCrashBrowserError[];
 extern const char kNoCurrentWindowError[];
 extern const char kNoLastFocusedWindowError[];
 extern const char kWindowNotFoundError[];

@@ -70,6 +70,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabRelativeURLs) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabCrashBrowser) {
+  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "crash.html")) << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabGetCurrent) {
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("tabs/get_current")) << message_;

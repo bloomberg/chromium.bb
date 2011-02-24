@@ -77,7 +77,7 @@ chrome.test.runTests([
                        pass(function(tab) {
       assertEq(firstWindowId, tab.windowId);
       assertEq(pageUrl('a'), tab.url);
-      
+
       // Create a new window with this tab
       chrome.windows.create({"tabId": tab.id}, pass(function(win) {
         assertEq(1, win.tabs.length);

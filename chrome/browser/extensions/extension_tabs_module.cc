@@ -358,6 +358,15 @@ bool CreateWindowFunction::RunImpl() {
     }
   }
 
+  // Don't let the extension crash the browser or renderers.
+  GURL browser_crash(chrome::kAboutBrowserCrash);
+  GURL renderer_crash(chrome::kAboutCrashURL);
+  if (std::find(urls.begin(), urls.end(), browser_crash) != urls.end() ||
+      std::find(urls.begin(), urls.end(), renderer_crash) != urls.end()) {
+    error_ = keys::kNoCrashBrowserError;
+    return false;
+  }
+
   // Look for optional tab id.
   if (args) {
     int tab_id;
@@ -666,6 +675,13 @@ bool CreateTabFunction::RunImpl() {
     }
   }
 
+  // Don't let extensions crash the browser or renderers.
+  if (url == GURL(chrome::kAboutBrowserCrash) ||
+      url == GURL(chrome::kAboutCrashURL)) {
+    error_ = keys::kNoCrashBrowserError;
+    return false;
+  }
+
   // Default to foreground for the new tab. The presence of 'selected' property
   // will override this default.
   bool selected = true;
@@ -785,6 +801,13 @@ bool UpdateTabFunction::RunImpl() {
     if (!url.is_valid()) {
       error_ = ExtensionErrorUtils::FormatErrorMessage(keys::kInvalidUrlError,
                                                        url_string);
+      return false;
+    }
+
+    // Don't let the extension crash the browser or renderers.
+    if (url == GURL(chrome::kAboutBrowserCrash) ||
+        url == GURL(chrome::kAboutCrashURL)) {
+      error_ = keys::kNoCrashBrowserError;
       return false;
     }
 

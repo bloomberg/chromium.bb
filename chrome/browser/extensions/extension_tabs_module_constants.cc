@@ -56,6 +56,8 @@ const char kCanOnlyMoveTabsWithinNormalWindowsError[] = "Tabs can only be "
     "moved to and from normal windows.";
 const char kCanOnlyMoveTabsWithinSameProfileError[] = "Tabs can only be moved "
     "between windows in the same profile.";
+const char kNoCrashBrowserError[] =
+    "I'm sorry. I'm afraid I can't do that.";
 const char kNoCurrentWindowError[] = "No current window";
 const char kNoLastFocusedWindowError[] = "No last-focused window";
 const char kWindowNotFoundError[] = "No window with id: *.";
