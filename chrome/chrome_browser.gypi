@@ -17,6 +17,7 @@
         'common',
         'common_net',
         'debugger',
+        'in_memory_url_index_cache_proto',
         'installer_util',
         'platform_locale_settings',
         'profile_import',
@@ -1232,6 +1233,7 @@
         'browser/history/in_memory_history_backend.h',
         'browser/history/in_memory_url_index.cc',
         'browser/history/in_memory_url_index.h',
+        '<(protoc_out_dir)/chrome/browser/history/in_memory_url_index_cache.pb.cc',
         'browser/history/page_usage_data.cc',
         'browser/history/page_usage_data.h',
         'browser/history/query_parser.cc',
@@ -4468,6 +4470,52 @@
             # There's no generator variable that corresponds to this, so fake
             # it.
             'rule_input_relpath': 'browser/safe_browsing',
+          },
+          'outputs': [
+            '<(protoc_out_dir)/chrome/<(rule_input_relpath)/<(RULE_INPUT_ROOT).pb.h',
+            '<(protoc_out_dir)/chrome/<(rule_input_relpath)/<(RULE_INPUT_ROOT).pb.cc',
+          ],
+          'action': [
+            '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
+            '--proto_path=./<(rule_input_relpath)',
+            './<(rule_input_relpath)/<(RULE_INPUT_ROOT)<(RULE_INPUT_EXT)',
+            '--cpp_out=<(protoc_out_dir)/chrome/<(rule_input_relpath)',
+          ],
+          'message': 'Generating C++ code from <(RULE_INPUT_PATH)',
+        },
+      ],
+      'dependencies': [
+        '../third_party/protobuf/protobuf.gyp:protobuf_lite',
+        '../third_party/protobuf/protobuf.gyp:protoc#host',
+      ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '<(protoc_out_dir)',
+        ]
+      },
+      'export_dependent_settings': [
+        '../third_party/protobuf/protobuf.gyp:protobuf_lite',
+      ],
+    },
+    {
+      # Protobuf compiler / generator for the InMemoryURLIndex caching
+      # protocol buffer.
+      'target_name': 'in_memory_url_index_cache_proto',
+      'type': 'none',
+      'sources': [ 'browser/history/in_memory_url_index_cache.proto' ],
+      'rules': [
+        {
+          'rule_name': 'genproto',
+          'extension': 'proto',
+          'inputs': [
+            '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
+          ],
+          'variables': {
+            # The protoc compiler requires a proto_path argument with the
+            # directory containing the .proto file.
+            # There's no generator variable that corresponds to this, so fake
+            # it.
+            'rule_input_relpath': 'browser/history',
           },
           'outputs': [
             '<(protoc_out_dir)/chrome/<(rule_input_relpath)/<(RULE_INPUT_ROOT).pb.h',

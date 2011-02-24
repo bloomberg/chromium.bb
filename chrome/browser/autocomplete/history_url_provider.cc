@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_database.h"
+#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -689,16 +690,12 @@ void HistoryURLProvider::SortMatches(HistoryMatches* matches) const {
 }
 
 void HistoryURLProvider::CullPoorMatches(HistoryMatches* matches) const {
-  Time recent_threshold = history::AutocompleteAgeThreshold();
+  const base::Time& threshold(history::AutocompleteAgeThreshold());
   for (HistoryMatches::iterator i(matches->begin()); i != matches->end();) {
-    const history::URLRow& url_info(i->url_info);
-    if ((url_info.typed_count() <= history::kLowQualityMatchTypedLimit) &&
-        (url_info.visit_count() <= history::kLowQualityMatchVisitLimit) &&
-        (url_info.last_visit() < recent_threshold)) {
-      i = matches->erase(i);
-    } else {
+    if (RowQualifiesAsSignificant(i->url_info, threshold))
       ++i;
-    }
+    else
+      i = matches->erase(i);
   }
 }
 
