@@ -9,6 +9,7 @@
 
 #include "base/singleton.h"
 #include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/extension_preference_api.h"
 #include "net/proxy/proxy_config.h"
 
 class DictionaryValue;
@@ -33,23 +34,12 @@ class ExtensionProxyEventRouter {
   DISALLOW_COPY_AND_ASSIGN(ExtensionProxyEventRouter);
 };
 
-class ProxySettingsFunction : public SyncExtensionFunction {
+class SetProxySettingsFunction : public SetPreferenceFunction {
  public:
-  virtual ~ProxySettingsFunction() {}
-  virtual bool RunImpl() = 0;
- protected:
-  // Takes ownership of |pref_value|.
-  void ApplyPreference(
-      const char* pref_path, Value* pref_value, bool incognito);
-  void RemovePreference(const char* pref_path, bool incognito);
-};
-
-class UseCustomProxySettingsFunction : public ProxySettingsFunction {
- public:
-  virtual ~UseCustomProxySettingsFunction() {}
+  virtual ~SetProxySettingsFunction() {}
   virtual bool RunImpl();
 
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.proxy.useCustomProxySettings")
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.proxy.set")
  private:
   // Converts a proxy "rules" element passed by the API caller into a proxy
   // configuration string that can be used by the proxy subsystem (see
@@ -76,22 +66,23 @@ class UseCustomProxySettingsFunction : public ProxySettingsFunction {
   bool GetBypassList(DictionaryValue* proxy_rules, std::string* out);
 };
 
-class RemoveCustomProxySettingsFunction : public ProxySettingsFunction {
+class RemoveCustomProxySettingsFunction : public SyncExtensionFunction {
  public:
   virtual ~RemoveCustomProxySettingsFunction() {}
   virtual bool RunImpl();
 
   DECLARE_EXTENSION_FUNCTION_NAME(
       "experimental.proxy.removeCustomProxySettings")
+ private:
+  void RemovePreference(const char* pref_path, bool incognito);
 };
 
-class GetCurrentProxySettingsFunction : public ProxySettingsFunction {
+class GetProxySettingsFunction : public GetPreferenceFunction {
  public:
-  virtual ~GetCurrentProxySettingsFunction() {}
+  virtual ~GetProxySettingsFunction() {}
   virtual bool RunImpl();
 
-  DECLARE_EXTENSION_FUNCTION_NAME(
-      "experimental.proxy.getCurrentProxySettings")
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.proxy.get")
  private:
   // Convert the representation of a proxy configuration from the format
   // that is stored in the pref stores to the format that is used by the API.

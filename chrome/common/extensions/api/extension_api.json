@@ -3756,23 +3756,6 @@
     ],
     "functions": [
       {
-        "name": "useCustomProxySettings",
-        "type": "function",
-        "description": "Apply the given proxy configuration.",
-        "parameters": [
-          {
-            "name": "config",
-            "$ref": "ProxyConfig"
-          },
-          {
-            "name": "incognito",
-            "type": "boolean",
-            "description": "If true, the proxy settings apply only to incognito windows. Otherwise they apply to regular windows (and incognito windows if no specific settings are provided for incognito windows.)",
-            "optional": true
-          }
-        ]
-      },
-      {
         "name": "removeCustomProxySettings",
         "type": "function",
         "description": "Remove a custom proxy set by the current extension. This is the inverse of useCustomProxySettings().",
@@ -3784,31 +3767,22 @@
             "optional": true
           }
         ]
-      },
-      {
-        "name": "getCurrentProxySettings",
-        "type": "function",
-        "description": "Returns the currently effective proxy settings. These can originate from default values, command-line options, the extension settings API, policies and possibly other sources in the future.",
-        "parameters": [
+      }
+    ],
+    "properties": {
+      "settings": {
+        "$ref": "Preference",
+        "description": "Proxy settings to be used. The value of this preference is a ProxyConfig object.",
+        "value": [
+          "proxy",
+          {"$ref": "ProxyConfig"},
           {
-            "name": "incognito",
-            "type": "boolean",
-            "description": "See incognito parameter of useCustomProxySettings()."
-          },
-          {
-            "name": "callback",
-            "type": "function",
-            "parameters": [
-              {
-                "name": "config",
-                "$ref": "ProxyConfig",
-                "description": "Configuration, not necessarily a literal copy of the configuration passed to useCustomProxySettings()."
-              }
-            ]
+            "get": "experimental.proxy.get",
+            "set": "experimental.proxy.set"
           }
         ]
       }
-    ],
+    },
     "events": [
       {
         "name": "onProxyError",

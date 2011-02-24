@@ -259,9 +259,9 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<OmniboxSetDefaultSuggestionFunction>();
 
   // Proxies.
-  RegisterFunction<UseCustomProxySettingsFunction>();
+  RegisterFunction<SetProxySettingsFunction>();
   RegisterFunction<RemoveCustomProxySettingsFunction>();
-  RegisterFunction<GetCurrentProxySettingsFunction>();
+  RegisterFunction<GetProxySettingsFunction>();
 
   // Sidebar.
   RegisterFunction<CollapseSidebarFunction>();

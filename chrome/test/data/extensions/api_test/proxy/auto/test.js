@@ -16,12 +16,14 @@ chrome.test.runTests([
     var config = {
       mode: "auto_detect"
     };
-    chrome.experimental.proxy.useCustomProxySettings(config);
-    chrome.experimental.proxy.getCurrentProxySettings(
-        false,
+    chrome.experimental.proxy.settings.set(
+        {'value': config},
+        chrome.test.callbackPass());
+    chrome.experimental.proxy.settings.get(
+        {'incognito': false},
         expect(config, "invalid proxy settings"));
-    chrome.experimental.proxy.getCurrentProxySettings(
-        true,
+    chrome.experimental.proxy.settings.get(
+        {'incognito': true},
         expect(config, "invalid proxy settings"));
   }
 ]);

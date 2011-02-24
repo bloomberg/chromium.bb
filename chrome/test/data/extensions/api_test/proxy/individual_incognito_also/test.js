@@ -32,7 +32,9 @@ function setIndividualProxiesRegular() {
   };
 
   var config = { rules: rules, mode: "fixed_servers" };
-  chrome.experimental.proxy.useCustomProxySettings(config, false);
+  chrome.experimental.proxy.settings.set(
+      {'value': config, 'incognito': false},
+      chrome.test.callbackPass());
 }
 
 function setIndividualProxiesIncognito() {
@@ -61,13 +63,14 @@ function setIndividualProxiesIncognito() {
   };
 
   var config = { rules: rules, mode: "fixed_servers" };
-  chrome.experimental.proxy.useCustomProxySettings(config, true);
+  chrome.experimental.proxy.settings.set(
+      {'value': config, 'incognito': true},
+      chrome.test.callbackPass());
 }
 
 chrome.test.runTests([
   function setIndividualProxies() {
     setIndividualProxiesRegular();
     setIndividualProxiesIncognito();
-    chrome.test.succeed();
   }
 ]);

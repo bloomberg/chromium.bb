@@ -17,7 +17,8 @@ chrome.test.runTests([
     };
 
     var config = { rules: rules, mode: "fixed_servers" };
-    chrome.experimental.proxy.useCustomProxySettings(config);
-    chrome.test.succeed();
+    chrome.experimental.proxy.settings.set(
+        {'value': config},
+        chrome.test.callbackPass());
   }
 ]);

@@ -61,12 +61,14 @@ chrome.test.runTests([
     var config = { rules: rules, mode: "fixed_servers" };
     var configExpected = { rules: rulesExpected, mode: "fixed_servers" };
 
-    chrome.experimental.proxy.useCustomProxySettings(config);
-    chrome.experimental.proxy.getCurrentProxySettings(
-        false,
+    chrome.experimental.proxy.settings.set(
+        {'value': config},
+        chrome.test.callbackPass());
+    chrome.experimental.proxy.settings.get(
+        {'incognito': false},
         expect(configExpected, "invalid proxy settings"));
-    chrome.experimental.proxy.getCurrentProxySettings(
-        true,
+    chrome.experimental.proxy.settings.get(
+        {'incognito': true},
         expect(configExpected, "invalid proxy settings"));
   }
 ]);

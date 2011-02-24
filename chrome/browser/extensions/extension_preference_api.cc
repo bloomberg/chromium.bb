@@ -25,6 +25,10 @@ PrefMappingEntry pref_mapping[] = {
     prefs::kBlockThirdPartyCookies,
     Extension::kContentSettingsPermission
   },
+  { "proxy",
+    prefs::kProxy,
+    Extension::kProxyPermission
+  },
 };
 
 class PrefMapping {

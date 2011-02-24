@@ -32,8 +32,9 @@ chrome.test.runTests([
     };
 
     var config = { rules: rules, mode: "fixed_servers" };
-    chrome.experimental.proxy.useCustomProxySettings(config, false);
+    chrome.experimental.proxy.settings.set(
+        {'value': config, 'incognito': false},
+        chrome.test.callbackPass());
     chrome.experimental.proxy.removeCustomProxySettings(false);
-    chrome.test.succeed();
   }
 ]);

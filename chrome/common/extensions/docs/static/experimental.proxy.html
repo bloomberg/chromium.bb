@@ -217,8 +217,9 @@ var config = {
     bypassList: ["foobar.com"]
   }
 };
-var incognito = false;
-chrome.experimental.proxy.useCustomProxySettings(config, incognito);
+chrome.experimental.proxy.settings.set(
+    {'value': config, 'incognito': false},
+    function() {});
 </pre>
 
 <p>
@@ -236,8 +237,9 @@ var config = {
           "}"
   }
 };
-var incognito = false;
-chrome.experimental.proxy.useCustomProxySettings(config, incognito);
+chrome.experimental.proxy.settings.set(
+    {'value': config, 'incognito': false},
+    function() {});
 </pre>
 
 <p>
@@ -245,19 +247,16 @@ The next snippet queries the current proxy settings.
 </p>
 
 <pre>
-var incognito = false;
-chrome.experimental.proxy.getCurrentProxySettings(
-    incognito,
-    function (config) {console.log(JSON.stringify(config));}
-    );
+chrome.experimental.proxy.settings.get(
+    {'incognito': false},
+    function(config) {console.log(JSON.stringify(config));});
 </pre>
 
 <p>
-Note that the <code>config</code> object passed to the callback function of
-<code>useCustomProxySettings()</code> is not identical to the <code>config</code>
-object passed to <code>getCurrentProxySettings()</code>. The latter will contain
-a <code>rules.httpProxy.port</code> element.
+Note that the <code>value</code> object passed to <code>set()</code> is not
+identical to the <code>value</code> object passed to callback function of
+<code>get()</code>. The latter will contain a <code>rules.httpProxy.port</code>
+element.
 </p>
 
 <!-- END AUTHORED CONTENT -->
-

@@ -137,7 +137,7 @@ void ExtensionProxyEventRouter::OnProxyError(
       kProxyEventOnProxyError, json_args, GURL());
 }
 
-bool UseCustomProxySettingsFunction::GetProxyServer(
+bool SetProxySettingsFunction::GetProxyServer(
     const DictionaryValue* dict,
     net::ProxyServer::Scheme default_scheme,
     net::ProxyServer* proxy_server) {
@@ -175,8 +175,8 @@ bool UseCustomProxySettingsFunction::GetProxyServer(
   return true;
 }
 
-bool UseCustomProxySettingsFunction::GetProxyRules(DictionaryValue* proxy_rules,
-                                                   std::string* out) {
+bool SetProxySettingsFunction::GetProxyRules(DictionaryValue* proxy_rules,
+                                             std::string* out) {
   if (!proxy_rules)
     return false;
 
@@ -235,30 +235,7 @@ bool UseCustomProxySettingsFunction::GetProxyRules(DictionaryValue* proxy_rules,
   return true;
 }
 
-void ProxySettingsFunction::ApplyPreference(const char* pref_path,
-                                            Value* pref_value,
-                                            bool incognito) {
-  Profile* use_profile = profile();
-  if (use_profile->IsOffTheRecord())
-    use_profile = use_profile->GetOriginalProfile();
-
-  use_profile->GetExtensionService()->extension_prefs()->
-      SetExtensionControlledPref(extension_id(), pref_path, incognito,
-                                 pref_value);
-}
-
-void ProxySettingsFunction::RemovePreference(const char* pref_path,
-                                             bool incognito) {
-  Profile* use_profile = profile();
-  if (use_profile->IsOffTheRecord())
-    use_profile = use_profile->GetOriginalProfile();
-
-  use_profile->GetExtensionService()->extension_prefs()->
-      RemoveExtensionControlledPref(extension_id(), pref_path, incognito);
-}
-
-
-bool UseCustomProxySettingsFunction::JoinUrlList(
+bool SetProxySettingsFunction::JoinUrlList(
     ListValue* list, const std::string& joiner, std::string* out) {
   std::string result;
   for (size_t i = 0; i < list->GetSize(); ++i) {
@@ -281,8 +258,8 @@ bool UseCustomProxySettingsFunction::JoinUrlList(
   return true;
 }
 
-bool UseCustomProxySettingsFunction::GetBypassList(DictionaryValue* proxy_rules,
-                                                   std::string* out) {
+bool SetProxySettingsFunction::GetBypassList(DictionaryValue* proxy_rules,
+                                             std::string* out) {
   if (!proxy_rules)
     return false;
 
@@ -299,14 +276,12 @@ bool UseCustomProxySettingsFunction::GetBypassList(DictionaryValue* proxy_rules,
   return JoinUrlList(bypass_list, ",", out);
 }
 
-bool UseCustomProxySettingsFunction::RunImpl() {
-  DictionaryValue* proxy_config;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &proxy_config));
+bool SetProxySettingsFunction::RunImpl() {
+  DictionaryValue* details = NULL;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &details));
 
-  bool incognito = false;  // Optional argument, defaults to false.
-  if (HasOptionalArgument(1)) {
-    EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(1, &incognito));
-  }
+  DictionaryValue* proxy_config = NULL;
+  EXTENSION_FUNCTION_VALIDATE(details->GetDictionary("value", &proxy_config));
 
   std::string proxy_mode;
   // We can safely assume that this is ASCII due to the allowed enumeration
@@ -410,8 +385,18 @@ bool UseCustomProxySettingsFunction::RunImpl() {
   if (!result_proxy_config)
     return false;
 
-  ApplyPreference(prefs::kProxy, result_proxy_config, incognito);
-  return true;
+  details->Set("value", result_proxy_config);
+  return SetPreferenceFunction::RunImpl();
+}
+
+void RemoveCustomProxySettingsFunction::RemovePreference(const char* pref_path,
+                                                         bool incognito) {
+  Profile* use_profile = profile();
+  if (use_profile->IsOffTheRecord())
+    use_profile = use_profile->GetOriginalProfile();
+
+  use_profile->GetExtensionService()->extension_prefs()->
+      RemoveExtensionControlledPref(extension_id(), pref_path, incognito);
 }
 
 bool RemoveCustomProxySettingsFunction::RunImpl() {
@@ -424,25 +409,20 @@ bool RemoveCustomProxySettingsFunction::RunImpl() {
   return true;
 }
 
-bool GetCurrentProxySettingsFunction::RunImpl() {
-  bool incognito = false;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(0, &incognito));
+bool GetProxySettingsFunction::RunImpl() {
+  if (!GetPreferenceFunction::RunImpl())
+    return false;
+
+  DCHECK(result_->IsType(Value::TYPE_DICTIONARY));
 
   // This is how it is stored in the PrefStores:
-  const DictionaryValue* proxy_prefs;
-
-  Profile* use_profile = profile();
-  if (use_profile->IsOffTheRecord())
-    use_profile = use_profile->GetOriginalProfile();
-
-  PrefService* prefs = incognito ? use_profile->GetOffTheRecordPrefs()
-                                 : use_profile->GetPrefs();
-  proxy_prefs = prefs->GetDictionary(prefs::kProxy);
+  scoped_ptr<DictionaryValue> proxy_prefs(
+      static_cast<DictionaryValue*>(result_.release()));
 
   // This is how it is presented to the API caller:
   scoped_ptr<DictionaryValue> out(new DictionaryValue);
 
-  if (!ConvertToApiFormat(proxy_prefs, out.get())) {
+  if (!ConvertToApiFormat(proxy_prefs.get(), out.get())) {
     // Do not set error message as ConvertToApiFormat does that.
     return false;
   }
@@ -451,7 +431,7 @@ bool GetCurrentProxySettingsFunction::RunImpl() {
   return true;
 }
 
-bool GetCurrentProxySettingsFunction::ConvertToApiFormat(
+bool GetProxySettingsFunction::ConvertToApiFormat(
     const DictionaryValue* proxy_prefs,
     DictionaryValue* api_proxy_config) {
   ProxyConfigDictionary dict(proxy_prefs);
@@ -527,8 +507,8 @@ bool GetCurrentProxySettingsFunction::ConvertToApiFormat(
   return true;
 }
 
-bool GetCurrentProxySettingsFunction::ParseRules(const std::string& rules,
-                                                 DictionaryValue* out) const {
+bool GetProxySettingsFunction::ParseRules(const std::string& rules,
+                                          DictionaryValue* out) const {
   net::ProxyConfig::ProxyRules config;
   config.ParseFromString(rules);
   switch (config.type) {
@@ -563,7 +543,7 @@ bool GetCurrentProxySettingsFunction::ParseRules(const std::string& rules,
   return true;
 }
 
-DictionaryValue* GetCurrentProxySettingsFunction::ConvertToDictionary(
+DictionaryValue* GetProxySettingsFunction::ConvertToDictionary(
     const net::ProxyServer& proxy) const {
   DictionaryValue* out = new DictionaryValue;
   switch (proxy.scheme()) {

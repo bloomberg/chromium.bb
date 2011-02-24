@@ -320,23 +320,24 @@ var chrome = chrome || {};
   var customBindings = {};
 
   function setupPreferences() {
-    customBindings['Preference'] = function(prefKey, valueSchema) {
-      var getSchema = this.parameters.get;
-      var extendedGetSchema = extendSchema(getSchema);
+    customBindings['Preference'] =
+        function(prefKey, valueSchema, customHandlers) {
+      if (customHandlers === undefined)
+        customHandlers = {};
       this.get = function(details, callback) {
+        var getSchema = this.parameters.get;
         chromeHidden.validate([details, callback], getSchema);
-        return sendRequest('experimental.preferences.get',
+        return sendRequest(customHandlers.get || 'experimental.preferences.get',
                            [prefKey, details, callback],
-                           extendedGetSchema);
+                           extendSchema(getSchema));
       };
-      var setSchema = this.parameters.set.slice();
-      setSchema[0].properties.value = valueSchema;
-      var extendedSetSchema = extendSchema(setSchema);
       this.set = function(details, callback) {
+        var setSchema = this.parameters.set.slice();
+        setSchema[0].properties.value = valueSchema;
         chromeHidden.validate([details, callback], setSchema);
-        return sendRequest('experimental.preferences.set',
+        return sendRequest(customHandlers.set || 'experimental.preferences.set',
                            [prefKey, details, callback],
-                           extendedSetSchema);
+                           extendSchema(setSchema));
       };
     };
     customBindings['Preference'].prototype = new CustomBindingsObject();

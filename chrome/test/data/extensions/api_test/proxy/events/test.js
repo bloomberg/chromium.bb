@@ -17,7 +17,9 @@ var rules = {
 };
 
 var config = { rules: rules, mode: "fixed_servers" };
-chrome.experimental.proxy.useCustomProxySettings(config);
+chrome.experimental.proxy.settings.set(
+    {'value': config},
+    chrome.test.callbackPass());
 
 var req = new XMLHttpRequest();
 req.open("GET", "http://127.0.0.1/", true);

@@ -14,7 +14,8 @@ chrome.test.runTests([
       mode: "pac_script",
       pacScript: pacScriptObject
     };
-    chrome.experimental.proxy.useCustomProxySettings(config);
-    chrome.test.succeed();
+    chrome.experimental.proxy.settings.set(
+        {'value': config},
+        chrome.test.callbackPass());
   }
 ]);
