@@ -2698,6 +2698,8 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
   if (!found)
     return NULL;
   DCHECK(plugin_setting != CONTENT_SETTING_DEFAULT);
+  if (!webkit::npapi::IsPluginEnabled(info))
+    return NULL;
 
   const webkit::npapi::PluginGroup* group =
       webkit::npapi::PluginList::Singleton()->GetPluginGroup(info);
@@ -2715,9 +2717,6 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
                                    IDS_PLUGIN_OUTDATED,
                                    false);
   }
-
-  if (!webkit::npapi::IsPluginEnabled(info))
-    return NULL;
 
   ContentSetting host_setting =
       current_content_settings_.settings[CONTENT_SETTINGS_TYPE_PLUGINS];
