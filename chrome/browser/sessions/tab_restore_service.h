@@ -12,10 +12,10 @@
 
 #include "base/observer_list.h"
 #include "base/time.h"
-#include "chrome/browser/in_process_webkit/session_storage_namespace.h"
 #include "chrome/browser/sessions/base_session_service.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/session_types.h"
+#include "content/browser/in_process_webkit/session_storage_namespace.h"
 
 class Browser;
 class NavigationController;

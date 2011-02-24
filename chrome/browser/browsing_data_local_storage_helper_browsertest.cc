@@ -9,14 +9,14 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/ref_counted.h"
-#include "chrome/browser/in_process_webkit/webkit_context.h"
-#include "chrome/browser/in_process_webkit/webkit_thread.h"
 #include "chrome/browser/browsing_data_helper_browsertest.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/testing_profile.h"
 #include "chrome/test/thread_test_helper.h"
 #include "chrome/test/ui_test_utils.h"
+#include "content/browser/in_process_webkit/webkit_context.h"
+#include "content/browser/in_process_webkit/webkit_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

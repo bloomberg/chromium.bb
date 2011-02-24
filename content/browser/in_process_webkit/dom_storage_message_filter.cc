@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/in_process_webkit/dom_storage_message_filter.h"
+#include "content/browser/in_process_webkit/dom_storage_message_filter.h"
 
 #include "base/nullable_string16.h"
-#include "chrome/browser/browser_thread.h"
-#include "chrome/browser/in_process_webkit/dom_storage_area.h"
-#include "chrome/browser/in_process_webkit/dom_storage_context.h"
-#include "chrome/browser/in_process_webkit/dom_storage_namespace.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
-#include "chrome/browser/renderer_host/render_view_host_notification_task.h"
 #include "chrome/common/dom_storage_messages.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/browser_thread.h"
+#include "content/browser/in_process_webkit/dom_storage_area.h"
+#include "content/browser/in_process_webkit/dom_storage_context.h"
+#include "content/browser/in_process_webkit/dom_storage_namespace.h"
+#include "content/browser/renderer_host/render_view_host_notification_task.h"
 #include "googleurl/src/gurl.h"
 
 using WebKit::WebStorageArea;

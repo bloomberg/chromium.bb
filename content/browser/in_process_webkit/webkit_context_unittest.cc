@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browser_thread.h"
-#include "chrome/browser/in_process_webkit/dom_storage_context.h"
-#include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/test/testing_profile.h"
+#include "content/browser/browser_thread.h"
+#include "content/browser/in_process_webkit/dom_storage_context.h"
+#include "content/browser/in_process_webkit/webkit_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class MockDOMStorageContext : public DOMStorageContext {

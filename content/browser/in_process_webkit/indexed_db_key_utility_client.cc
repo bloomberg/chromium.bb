@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/in_process_webkit/indexed_db_key_utility_client.h"
+#include "content/browser/in_process_webkit/indexed_db_key_utility_client.h"
 
 #include "base/lazy_instance.h"
 #include "base/synchronization/waitable_event.h"

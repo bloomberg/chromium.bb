@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/in_process_webkit/dom_storage_area.h"
+#include "content/browser/in_process_webkit/dom_storage_area.h"
 
 #include "base/task.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/browser/in_process_webkit/dom_storage_context.h"
-#include "chrome/browser/in_process_webkit/dom_storage_namespace.h"
 #include "chrome/common/render_messages.h"
+#include "content/browser/in_process_webkit/dom_storage_context.h"
+#include "content/browser/in_process_webkit/dom_storage_namespace.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageArea.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"

@@ -9,12 +9,12 @@
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_thread.h"
-#include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/profiles/profile.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
+#include "content/browser/browser_thread.h"
+#include "content/browser/in_process_webkit/webkit_context.h"
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebSecurityOrigin;

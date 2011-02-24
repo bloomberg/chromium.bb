@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_IN_PROCESS_WEBKIT_WEBKIT_CONTEXT_H_
-#define CHROME_BROWSER_IN_PROCESS_WEBKIT_WEBKIT_CONTEXT_H_
+#ifndef CONTENT_BROWSER_IN_PROCESS_WEBKIT_WEBKIT_CONTEXT_H_
+#define CONTENT_BROWSER_IN_PROCESS_WEBKIT_WEBKIT_CONTEXT_H_
 #pragma once
 
 #include <vector>
@@ -12,8 +12,8 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
-#include "chrome/browser/in_process_webkit/dom_storage_context.h"
-#include "chrome/browser/in_process_webkit/indexed_db_context.h"
+#include "content/browser/in_process_webkit/dom_storage_context.h"
+#include "content/browser/in_process_webkit/indexed_db_context.h"
 
 class Profile;
 
@@ -83,4 +83,4 @@ class WebKitContext
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebKitContext);
 };
 
-#endif  // CHROME_BROWSER_IN_PROCESS_WEBKIT_WEBKIT_CONTEXT_H_
+#endif  // CONTENT_BROWSER_IN_PROCESS_WEBKIT_WEBKIT_CONTEXT_H_

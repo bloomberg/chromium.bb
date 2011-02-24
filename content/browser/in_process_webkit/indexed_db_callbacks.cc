@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/in_process_webkit/indexed_db_callbacks.h"
+#include "content/browser/in_process_webkit/indexed_db_callbacks.h"
 
 #include "chrome/common/indexed_db_messages.h"
 

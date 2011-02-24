@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_IN_PROCESS_WEBKIT_DOM_STORAGE_MESSAGE_FILTER_H_
-#define CHROME_BROWSER_IN_PROCESS_WEBKIT_DOM_STORAGE_MESSAGE_FILTER_H_
+#ifndef CONTENT_BROWSER_IN_PROCESS_WEBKIT_DOM_STORAGE_MESSAGE_FILTER_H_
+#define CONTENT_BROWSER_IN_PROCESS_WEBKIT_DOM_STORAGE_MESSAGE_FILTER_H_
 #pragma once
 
 #include "base/process.h"
 #include "base/ref_counted.h"
 #include "base/tracked.h"
-#include "chrome/browser/browser_message_filter.h"
-#include "chrome/browser/in_process_webkit/dom_storage_area.h"
-#include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/common/dom_storage_common.h"
+#include "content/browser/browser_message_filter.h"
+#include "content/browser/in_process_webkit/dom_storage_area.h"
+#include "content/browser/in_process_webkit/webkit_context.h"
 #include "ipc/ipc_message.h"
 
 class DOMStorageContext;
@@ -94,4 +94,4 @@ class DOMStorageMessageFilter : public BrowserMessageFilter {
   DISALLOW_IMPLICIT_CONSTRUCTORS(DOMStorageMessageFilter);
 };
 
-#endif  // CHROME_BROWSER_IN_PROCESS_WEBKIT_DOM_STORAGE_MESSAGE_FILTER_H_
+#endif  // CONTENT_BROWSER_IN_PROCESS_WEBKIT_DOM_STORAGE_MESSAGE_FILTER_H_

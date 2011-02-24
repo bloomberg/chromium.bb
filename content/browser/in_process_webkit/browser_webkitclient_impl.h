@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_IN_PROCESS_WEBKIT_BROWSER_WEBKITCLIENT_IMPL_H_
-#define CHROME_BROWSER_IN_PROCESS_WEBKIT_BROWSER_WEBKITCLIENT_IMPL_H_
+#ifndef CONTENT_BROWSER_IN_PROCESS_WEBKIT_BROWSER_WEBKITCLIENT_IMPL_H_
+#define CONTENT_BROWSER_IN_PROCESS_WEBKIT_BROWSER_WEBKITCLIENT_IMPL_H_
 #pragma once
 
 #include "webkit/glue/webfileutilities_impl.h"
@@ -61,4 +61,4 @@ class BrowserWebKitClientImpl : public webkit_glue::WebKitClientImpl {
   webkit_glue::WebFileUtilitiesImpl file_utilities_;
 };
 
-#endif  // CHROME_BROWSER_IN_PROCESS_WEBKIT_BROWSER_WEBKITCLIENT_IMPL_H_
+#endif  // CONTENT_BROWSER_IN_PROCESS_WEBKIT_BROWSER_WEBKITCLIENT_IMPL_H_

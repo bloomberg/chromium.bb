@@ -8,14 +8,14 @@
 #include "base/ref_counted.h"
 #include "base/scoped_temp_dir.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/in_process_webkit/indexed_db_context.h"
-#include "chrome/browser/in_process_webkit/webkit_context.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/testing_profile.h"
 #include "chrome/test/thread_test_helper.h"
 #include "chrome/test/ui_test_utils.h"
+#include "content/browser/in_process_webkit/indexed_db_context.h"
+#include "content/browser/in_process_webkit/webkit_context.h"
+#include "content/browser/tab_contents/tab_contents.h"
 
 // This browser test is aimed towards exercising the IndexedDB bindings and
 // the actual implementation that lives in the browser side (in_process_webkit).

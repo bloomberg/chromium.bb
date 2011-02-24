@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_IN_PROCESS_WEBKIT_INDEXED_DB_DISPATCHER_HOST_H_
-#define CHROME_BROWSER_IN_PROCESS_WEBKIT_INDEXED_DB_DISPATCHER_HOST_H_
+#ifndef CONTENT_BROWSER_IN_PROCESS_WEBKIT_INDEXED_DB_DISPATCHER_HOST_H_
+#define CONTENT_BROWSER_IN_PROCESS_WEBKIT_INDEXED_DB_DISPATCHER_HOST_H_
 #pragma once
 
 #include "base/basictypes.h"
 #include "base/id_map.h"
-#include "chrome/browser/browser_message_filter.h"
-#include "chrome/browser/in_process_webkit/webkit_context.h"
+#include "content/browser/browser_message_filter.h"
+#include "content/browser/in_process_webkit/webkit_context.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebExceptionCode.h"
 
 class HostContentSettingsMap;
@@ -277,4 +277,4 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
   DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBDispatcherHost);
 };
 
-#endif  // CHROME_BROWSER_IN_PROCESS_WEBKIT_INDEXED_DB_DISPATCHER_HOST_H_
+#endif  // CONTENT_BROWSER_IN_PROCESS_WEBKIT_INDEXED_DB_DISPATCHER_HOST_H_

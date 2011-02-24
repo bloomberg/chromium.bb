@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/in_process_webkit/browser_webkitclient_impl.h"
+#include "content/browser/in_process_webkit/browser_webkitclient_impl.h"
 
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "chrome/browser/in_process_webkit/dom_storage_message_filter.h"
-#include "chrome/browser/in_process_webkit/indexed_db_key_utility_client.h"
 #include "chrome/common/indexed_db_key.h"
 #include "chrome/common/serialized_script_value.h"
+#include "content/browser/in_process_webkit/dom_storage_message_filter.h"
+#include "content/browser/in_process_webkit/indexed_db_key_utility_client.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSerializedScriptValue.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"

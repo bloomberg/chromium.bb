@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/in_process_webkit/indexed_db_dispatcher_host.h"
+#include "content/browser/in_process_webkit/indexed_db_dispatcher_host.h"
 
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/browser/in_process_webkit/indexed_db_callbacks.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
-#include "chrome/browser/renderer_host/render_message_filter.h"
-#include "chrome/browser/renderer_host/render_view_host_notification_task.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/indexed_db_messages.h"
+#include "content/browser/in_process_webkit/indexed_db_callbacks.h"
+#include "content/browser/renderer_host/render_message_filter.h"
+#include "content/browser/renderer_host/render_view_host_notification_task.h"
 #include "chrome/common/result_codes.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDOMStringList.h"

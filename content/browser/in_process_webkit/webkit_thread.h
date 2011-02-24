@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_IN_PROCESS_WEBKIT_WEBKIT_THREAD_H_
-#define CHROME_BROWSER_IN_PROCESS_WEBKIT_WEBKIT_THREAD_H_
+#ifndef CONTENT_BROWSER_IN_PROCESS_WEBKIT_WEBKIT_THREAD_H_
+#define CONTENT_BROWSER_IN_PROCESS_WEBKIT_WEBKIT_THREAD_H_
 #pragma once
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/browser_thread.h"
+#include "content/browser/browser_thread.h"
 
 class BrowserWebKitClientImpl;
 
@@ -44,4 +44,4 @@ class WebKitThread {
   DISALLOW_COPY_AND_ASSIGN(WebKitThread);
 };
 
-#endif  // CHROME_BROWSER_IN_PROCESS_WEBKIT_WEBKIT_THREAD_H_
+#endif  // CONTENT_BROWSER_IN_PROCESS_WEBKIT_WEBKIT_THREAD_H_

@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/in_process_webkit/dom_storage_context.h"
+#include "content/browser/in_process_webkit/dom_storage_context.h"
 
 #include <algorithm>
 
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/string_util.h"
-#include "chrome/browser/browser_thread.h"
-#include "chrome/browser/in_process_webkit/dom_storage_area.h"
-#include "chrome/browser/in_process_webkit/dom_storage_namespace.h"
-#include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/common/dom_storage_common.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/browser_thread.h"
+#include "content/browser/in_process_webkit/dom_storage_area.h"
+#include "content/browser/in_process_webkit/dom_storage_namespace.h"
+#include "content/browser/in_process_webkit/webkit_context.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "webkit/glue/webkit_glue.h"
