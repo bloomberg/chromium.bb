@@ -825,8 +825,12 @@ void WebMediaPlayerImpl::OnNetworkEvent() {
       // If we are inactive because we just finished receiving all the data,
       // do one final repaint to show final progress.
       if (bytesLoaded() == totalBytes() &&
-          network_state_ != WebKit::WebMediaPlayer::Idle)
+          network_state_ != WebKit::WebMediaPlayer::Idle) {
         Repaint();
+
+        SetNetworkState(WebKit::WebMediaPlayer::Loaded);
+      }
+
       SetNetworkState(WebKit::WebMediaPlayer::Idle);
     }
   }
