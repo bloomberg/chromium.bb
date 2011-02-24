@@ -383,6 +383,13 @@
    fun:base::ThreadCollisionWarner::Leave
 }
 
+{
+   bug_74029
+   ThreadSanitzier:Race
+   fun:ThreadWatcher::OnPongMessage
+   fun:CustomThreadWatcher::OnPongMessage
+}
+
 ############################
 # Benign races in ICU
 {
