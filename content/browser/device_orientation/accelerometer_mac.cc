@@ -48,14 +48,14 @@
 //    Wakefield, MA 01880
 //    (781) 665-0053
 
-#include "chrome/browser/device_orientation/accelerometer_mac.h"
+#include "content/browser/device_orientation/accelerometer_mac.h"
 
 #include <math.h>
 #include <sys/sysctl.h>
 
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/device_orientation/orientation.h"
+#include "content/browser/device_orientation/orientation.h"
 
 namespace device_orientation {
 

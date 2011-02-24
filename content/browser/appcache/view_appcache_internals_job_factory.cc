@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/appcache/view_appcache_internals_job_factory.h"
+#include "content/browser/appcache/view_appcache_internals_job_factory.h"
 
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/common/url_constants.h"

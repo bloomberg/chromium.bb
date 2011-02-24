@@ -11,8 +11,8 @@
 #include "base/task.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/browser/device_orientation/orientation.h"
-#include "chrome/browser/device_orientation/provider_impl.h"
+#include "content/browser/device_orientation/orientation.h"
+#include "content/browser/device_orientation/provider_impl.h"
 
 namespace device_orientation {
 

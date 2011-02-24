@@ -8,8 +8,8 @@
 
 #include "base/scoped_ptr.h"
 #include "base/task.h"
-#include "chrome/browser/appcache/chrome_appcache_service.h"
 #include "chrome/common/net/url_request_context_getter.h"
+#include "content/browser/appcache/chrome_appcache_service.h"
 #include "googleurl/src/gurl.h"
 
 class Profile;

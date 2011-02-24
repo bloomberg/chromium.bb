@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_FILE_SYSTEM_BROWSER_FILE_SYSTEM_HELPER_H_
-#define CHROME_BROWSER_FILE_SYSTEM_BROWSER_FILE_SYSTEM_HELPER_H_
+#ifndef CONTENT_BROWSER_FILE_SYSTEM_BROWSER_FILE_SYSTEM_HELPER_H_
+#define CONTENT_BROWSER_FILE_SYSTEM_BROWSER_FILE_SYSTEM_HELPER_H_
 
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
@@ -14,4 +14,4 @@
 scoped_refptr<fileapi::FileSystemContext> CreateFileSystemContext(
         const FilePath& profile_path, bool is_incognito);
 
-#endif  // CHROME_BROWSER_FILE_SYSTEM_BROWSER_FILE_SYSTEM_HELPER_H_
+#endif  // CONTENT_BROWSER_FILE_SYSTEM_BROWSER_FILE_SYSTEM_HELPER_H_

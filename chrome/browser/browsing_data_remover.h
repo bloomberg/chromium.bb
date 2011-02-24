@@ -12,9 +12,9 @@
 #include "base/ref_counted.h"
 #include "base/synchronization/waitable_event_watcher.h"
 #include "base/time.h"
-#include "chrome/browser/appcache/chrome_appcache_service.h"
-#include "chrome/browser/cancelable_request.h"
 #include "chrome/common/notification_registrar.h"
+#include "content/browser/appcache/chrome_appcache_service.h"
+#include "content/browser/cancelable_request.h"
 
 class IOThread;
 class PluginDataRemover;

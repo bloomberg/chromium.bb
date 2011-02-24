@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/appcache/appcache_frontend_proxy.h"
+#include "content/browser/appcache/appcache_frontend_proxy.h"
 
 #include "chrome/common/render_messages.h"
 

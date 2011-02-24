@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/file_system/browser_file_system_helper.h"
+#include "content/browser/file_system/browser_file_system_helper.h"
 
 #include "base/file_path.h"
 #include "base/command_line.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/browser/browser_thread.h"
 
 scoped_refptr<fileapi::FileSystemContext> CreateFileSystemContext(
         const FilePath& profile_path, bool is_incognito) {

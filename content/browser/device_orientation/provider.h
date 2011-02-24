@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DEVICE_ORIENTATION_PROVIDER_H_
-#define CHROME_BROWSER_DEVICE_ORIENTATION_PROVIDER_H_
+#ifndef CONTENT_BROWSER_DEVICE_ORIENTATION_PROVIDER_H_
+#define CONTENT_BROWSER_DEVICE_ORIENTATION_PROVIDER_H_
 
 #include "base/ref_counted.h"
 
@@ -53,4 +53,4 @@ class Provider : public base::RefCountedThreadSafe<Provider> {
 
 }  // namespace device_orientation
 
-#endif  // CHROME_BROWSER_DEVICE_ORIENTATION_PROVIDER_H_
+#endif  // CONTENT_BROWSER_DEVICE_ORIENTATION_PROVIDER_H_

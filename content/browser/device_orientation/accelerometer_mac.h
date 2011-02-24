@@ -48,15 +48,15 @@
 //    Wakefield, MA 01880
 //    (781) 665-0053
 
-#ifndef CHROME_BROWSER_DEVICE_ORIENTATION_ACCELEROMETER_MAC_H_
-#define CHROME_BROWSER_DEVICE_ORIENTATION_ACCELEROMETER_MAC_H_
+#ifndef CONTENT_BROWSER_DEVICE_ORIENTATION_ACCELEROMETER_MAC_H_
+#define CONTENT_BROWSER_DEVICE_ORIENTATION_ACCELEROMETER_MAC_H_
 #pragma once
 
 #include <vector>
 
 #include <IOKit/IOKitLib.h>
 
-#include "chrome/browser/device_orientation/data_fetcher.h"
+#include "content/browser/device_orientation/data_fetcher.h"
 
 namespace device_orientation {
 
@@ -101,4 +101,4 @@ class AccelerometerMac : public DataFetcher {
 
 }  // namespace device_orientation
 
-#endif  // CHROME_BROWSER_DEVICE_ORIENTATION_ACCELEROMETER_MAC_H_
+#endif  // CONTENT_BROWSER_DEVICE_ORIENTATION_ACCELEROMETER_MAC_H_

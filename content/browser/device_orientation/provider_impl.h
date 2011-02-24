@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DEVICE_ORIENTATION_PROVIDER_IMPL_H_
-#define CHROME_BROWSER_DEVICE_ORIENTATION_PROVIDER_IMPL_H_
+#ifndef CONTENT_BROWSER_DEVICE_ORIENTATION_PROVIDER_IMPL_H_
+#define CONTENT_BROWSER_DEVICE_ORIENTATION_PROVIDER_IMPL_H_
 
 #include <set>
 #include <vector>
 
 #include "base/scoped_ptr.h"
 #include "base/task.h"
-#include "chrome/browser/device_orientation/data_fetcher.h"
-#include "chrome/browser/device_orientation/orientation.h"
-#include "chrome/browser/device_orientation/provider.h"
+#include "content/browser/device_orientation/data_fetcher.h"
+#include "content/browser/device_orientation/orientation.h"
+#include "content/browser/device_orientation/provider.h"
 
 class MessageLoop;
 
@@ -82,4 +82,4 @@ class ProviderImpl : public Provider {
 
 }  // namespace device_orientation
 
-#endif  // CHROME_BROWSER_DEVICE_ORIENTATION_PROVIDER_IMPL_H_
+#endif  // CONTENT_BROWSER_DEVICE_ORIENTATION_PROVIDER_IMPL_H_

@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/device_orientation/message_filter.h"
+#include "content/browser/device_orientation/message_filter.h"
 
 #include "base/scoped_ptr.h"
-#include "chrome/browser/browser_thread.h"
-#include "chrome/browser/device_orientation/orientation.h"
-#include "chrome/browser/device_orientation/provider.h"
-#include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/browser/renderer_host/render_view_host_notification_task.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
-#include "ipc/ipc_message.h"
+#include "content/browser/browser_thread.h"
+#include "content/browser/device_orientation/orientation.h"
+#include "content/browser/device_orientation/provider.h"
+#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_view_host_notification_task.h"
 
 namespace device_orientation {
 

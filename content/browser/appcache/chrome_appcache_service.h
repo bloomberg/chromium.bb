@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_APPCACHE_CHROME_APPCACHE_SERVICE_H_
-#define CHROME_BROWSER_APPCACHE_CHROME_APPCACHE_SERVICE_H_
+#ifndef CONTENT_BROWSER_APPCACHE_CHROME_APPCACHE_SERVICE_H_
+#define CONTENT_BROWSER_APPCACHE_CHROME_APPCACHE_SERVICE_H_
 #pragma once
 
 #include "base/ref_counted.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/common/notification_registrar.h"
+#include "content/browser/browser_thread.h"
 #include "webkit/appcache/appcache_policy.h"
 #include "webkit/appcache/appcache_service.h"
 
@@ -69,4 +69,4 @@ class ChromeAppCacheService
   DISALLOW_COPY_AND_ASSIGN(ChromeAppCacheService);
 };
 
-#endif  // CHROME_BROWSER_APPCACHE_CHROME_APPCACHE_SERVICE_H_
+#endif  // CONTENT_BROWSER_APPCACHE_CHROME_APPCACHE_SERVICE_H_

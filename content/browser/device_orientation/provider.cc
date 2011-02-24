@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/device_orientation/provider.h"
+#include "content/browser/device_orientation/provider.h"
 
 #include "base/logging.h"
-#include "chrome/browser/browser_thread.h"
+#include "content/browser/browser_thread.h"
+#include "content/browser/device_orientation/data_fetcher.h"
+#include "content/browser/device_orientation/provider_impl.h"
 
 #if defined(OS_MACOSX)
-#include "chrome/browser/device_orientation/accelerometer_mac.h"
+#include "content/browser/device_orientation/accelerometer_mac.h"
 #endif
-
-#include "chrome/browser/device_orientation/data_fetcher.h"
-#include "chrome/browser/device_orientation/provider_impl.h"
 
 namespace device_orientation {
 

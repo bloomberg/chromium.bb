@@ -7,10 +7,10 @@
 #include "base/message_loop.h"
 #include "base/synchronization/lock.h"
 #include "base/task.h"
-#include "chrome/browser/device_orientation/data_fetcher.h"
-#include "chrome/browser/device_orientation/orientation.h"
-#include "chrome/browser/device_orientation/provider.h"
-#include "chrome/browser/device_orientation/provider_impl.h"
+#include "content/browser/device_orientation/data_fetcher.h"
+#include "content/browser/device_orientation/orientation.h"
+#include "content/browser/device_orientation/provider.h"
+#include "content/browser/device_orientation/provider_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device_orientation {
