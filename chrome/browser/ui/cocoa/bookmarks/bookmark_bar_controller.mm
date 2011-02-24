@@ -1020,12 +1020,14 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     [item setTarget:self];
     [item setAction:@selector(openBookmarkMenuItem:)];
     [item setTag:[self menuTagFromNodeId:child->id()]];
-    // Add a tooltip
-    std::string url_string = child->GetURL().possibly_invalid_spec();
-    NSString* tooltip = [NSString stringWithFormat:@"%@\n%s",
-                         base::SysUTF16ToNSString(child->GetTitle()),
-                         url_string.c_str()];
-    [item setToolTip:tooltip];
+    if (child->is_url()) {
+      // Add a tooltip
+      std::string url_string = child->GetURL().possibly_invalid_spec();
+      NSString* tooltip = [NSString stringWithFormat:@"%@\n%s",
+                           base::SysUTF16ToNSString(child->GetTitle()),
+                           url_string.c_str()];
+      [item setToolTip:tooltip];
+    }
   }
 }
 
@@ -1143,12 +1145,14 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     // Make the button do something
     [button setTarget:self];
     [button setAction:@selector(openBookmark:)];
-    // Add a tooltip.
-    NSString* title = base::SysUTF16ToNSString(node->GetTitle());
-    std::string url_string = node->GetURL().possibly_invalid_spec();
-    NSString* tooltip = [NSString stringWithFormat:@"%@\n%s", title,
-                         url_string.c_str()];
-    [button setToolTip:tooltip];
+    if (node->is_url()) {
+      // Add a tooltip.
+      NSString* title = base::SysUTF16ToNSString(node->GetTitle());
+      std::string url_string = node->GetURL().possibly_invalid_spec();
+      NSString* tooltip = [NSString stringWithFormat:@"%@\n%s", title,
+                           url_string.c_str()];
+      [button setToolTip:tooltip];
+    }
   }
   return [[button.get() retain] autorelease];
 }

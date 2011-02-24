@@ -263,13 +263,14 @@ void BookmarkMenuBridge::ConfigureMenuItem(const BookmarkNode* node,
   [item setTarget:controller_];
   [item setAction:@selector(openBookmarkMenuItem:)];
   [item setTag:node->id()];
-  // Add a tooltip
-  std::string url_string = node->GetURL().possibly_invalid_spec();
-  NSString* tooltip = [NSString stringWithFormat:@"%@\n%s",
-                          base::SysUTF16ToNSString(node->GetTitle()),
-                          url_string.c_str()];
-  [item setToolTip:tooltip];
-
+  if (node->is_url()) {
+    // Add a tooltip
+    std::string url_string = node->GetURL().possibly_invalid_spec();
+    NSString* tooltip = [NSString stringWithFormat:@"%@\n%s",
+                         base::SysUTF16ToNSString(node->GetTitle()),
+                         url_string.c_str()];
+    [item setToolTip:tooltip];
+  }
   // Check to see if we have a favicon.
   NSImage* favicon = nil;
   BookmarkModel* model = GetBookmarkModel();
