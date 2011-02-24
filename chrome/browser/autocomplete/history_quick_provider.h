@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,6 +22,9 @@ class HistoryBackend;
 // the history system) which quickly (and synchronously) provides matching
 // results from recently or frequently visited sites in the profile's
 // history.
+//
+// TODO(mrossetti): Review to see if the following applies since we're not
+// using the database during the autocomplete pass.
 class HistoryQuickProvider : public HistoryProvider {
  public:
   HistoryQuickProvider(ACProviderListener* listener, Profile* profile);

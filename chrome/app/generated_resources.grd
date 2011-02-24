@@ -4116,12 +4116,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_INTERACTIVE_FORM_VALIDATION_DESCRIPTION" desc="Description of the 'Disable HTML5 interactive form validation' lab.">
         Disable showing validation messages and preventing form submission.
       </message>
-      <message name="IDS_FLAGS_ENABLE_HISTORY_QUICK_PROVIDER" desc="Name of the 'Enable better visit history matching in the omnibox' lab.">
-        Enable better omnibox history matching
-      </message>
-      <message name="IDS_FLAGS_ENABLE_HISTORY_QUICK_PROVIDER_DESCRIPTION" desc="Description of the 'Enable better visit history matching in the omnibox' lab.">
-        Enables substring and multi-fragment matching within URLs from history.
-      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">

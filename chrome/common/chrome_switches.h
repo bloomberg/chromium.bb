@@ -157,7 +157,6 @@ extern const char kEnableFastback[];
 extern const char kEnableFileCookies[];
 extern const char kEnableFileSystemURLScheme[];
 extern const char kEnableGPUPlugin[];
-extern const char kEnableHistoryQuickProvider[];
 extern const char kEnableInBrowserThumbnailing[];
 extern const char kEnableIPv6[];
 extern const char kEnableJavaScriptI18NAPI[];

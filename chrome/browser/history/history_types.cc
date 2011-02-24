@@ -9,6 +9,9 @@
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 
+using base::Time;
+using base::TimeDelta;
+
 namespace history {
 
 // URLRow ----------------------------------------------------------------------
@@ -59,7 +62,7 @@ void URLRow::Initialize() {
   id_ = 0;
   visit_count_ = 0;
   typed_count_ = 0;
-  last_visit_ = base::Time();
+  last_visit_ = Time();
   hidden_ = false;
   favicon_id_ = 0;
 }
@@ -76,7 +79,7 @@ VisitRow::VisitRow()
 }
 
 VisitRow::VisitRow(URLID arg_url_id,
-                   base::Time arg_visit_time,
+                   Time arg_visit_time,
                    VisitID arg_referring_visit,
                    PageTransition::Type arg_transition,
                    SegmentID arg_segment_id)
@@ -382,25 +385,5 @@ ThumbnailMigration::~ThumbnailMigration() {}
 MostVisitedThumbnails::MostVisitedThumbnails() {}
 
 MostVisitedThumbnails::~MostVisitedThumbnails() {}
-
-// Autocomplete thresholds -----------------------------------------------------
-
-const int kLowQualityMatchTypedLimit = 1;
-const int kLowQualityMatchVisitLimit = 3;
-const int kLowQualityMatchAgeLimitInDays = 3;
-
-base::Time AutocompleteAgeThreshold() {
-  return (base::Time::Now() -
-          base::TimeDelta::FromDays(kLowQualityMatchAgeLimitInDays));
-}
-
-bool RowQualifiesAsSignificant(const URLRow& row,
-                               const base::Time& threshold) {
-  const base::Time& real_threshold =
-      threshold.is_null() ? AutocompleteAgeThreshold() : threshold;
-  return (row.typed_count() > kLowQualityMatchTypedLimit) ||
-         (row.visit_count() > kLowQualityMatchVisitLimit) ||
-         (row.last_visit() >= real_threshold);
-}
 
 }  // namespace history

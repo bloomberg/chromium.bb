@@ -238,25 +238,6 @@ bool URLDatabase::InitURLEnumeratorForEverything(URLEnumerator* enumerator) {
   return true;
 }
 
-bool URLDatabase::InitURLEnumeratorForSignificant(URLEnumerator* enumerator) {
-  DCHECK(!enumerator->initialized_);
-  std::string sql("SELECT ");
-  sql.append(kURLRowFields);
-  sql.append(" FROM urls WHERE last_visit_time >= ? OR visit_count > ? OR "
-             "typed_count > ?");
-  enumerator->statement_.Assign(GetDB().GetUniqueStatement(sql.c_str()));
-  if (!enumerator->statement_) {
-    NOTREACHED() << GetDB().GetErrorMessage();
-    return false;
-  }
-  enumerator->statement_.BindInt64(
-      0, AutocompleteAgeThreshold().ToInternalValue());
-  enumerator->statement_.BindInt(1, kLowQualityMatchVisitLimit);
-  enumerator->statement_.BindInt(2, kLowQualityMatchTypedLimit);
-  enumerator->initialized_ = true;
-  return true;
-}
-
 bool URLDatabase::IsFavIconUsed(FavIconID favicon_id) {
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "SELECT id FROM urls WHERE favicon_id=? LIMIT 1"));

@@ -125,7 +125,8 @@ TEST_F(URLDatabaseTest, AddURL) {
 
 // Tests adding, querying and deleting keyword visits.
 TEST_F(URLDatabaseTest, KeywordSearchTermVisit) {
-  URLRow url_info1(GURL("http://www.google.com/"));
+  const GURL url1("http://www.google.com/");
+  URLRow url_info1(url1);
   url_info1.set_title(UTF8ToUTF16("Google"));
   url_info1.set_visit_count(4);
   url_info1.set_typed_count(2);
@@ -164,7 +165,8 @@ TEST_F(URLDatabaseTest, KeywordSearchTermVisit) {
 
 // Make sure deleting a URL also deletes a keyword visit.
 TEST_F(URLDatabaseTest, DeleteURLDeletesKeywordSearchTermVisit) {
-  URLRow url_info1(GURL("http://www.google.com/"));
+  const GURL url1("http://www.google.com/");
+  URLRow url_info1(url1);
   url_info1.set_title(UTF8ToUTF16("Google"));
   url_info1.set_visit_count(4);
   url_info1.set_typed_count(2);
@@ -183,43 +185,6 @@ TEST_F(URLDatabaseTest, DeleteURLDeletesKeywordSearchTermVisit) {
   std::vector<KeywordSearchTermVisit> matches;
   GetMostRecentKeywordSearchTerms(1, UTF8ToUTF16("visit"), 10, &matches);
   ASSERT_EQ(0U, matches.size());
-}
-
-TEST_F(URLDatabaseTest, EnumeratorForSignificant) {
-  std::set<std::string> good_urls;
-  // Add URLs which do and don't meet the criteria.
-  URLRow url_no_match(GURL("http://www.url_no_match.com/"));
-  EXPECT_TRUE(AddURL(url_no_match));
-
-  std::string url_string2("http://www.url_match_visit_count.com/");
-  good_urls.insert("http://www.url_match_visit_count.com/");
-  URLRow url_match_visit_count(GURL("http://www.url_match_visit_count.com/"));
-  url_match_visit_count.set_visit_count(kLowQualityMatchVisitLimit + 1);
-  EXPECT_TRUE(AddURL(url_match_visit_count));
-
-  good_urls.insert("http://www.url_match_typed_count.com/");
-  URLRow url_match_typed_count(GURL("http://www.url_match_typed_count.com/"));
-  url_match_typed_count.set_typed_count(kLowQualityMatchTypedLimit + 1);
-  EXPECT_TRUE(AddURL(url_match_typed_count));
-
-  good_urls.insert("http://www.url_match_last_visit.com/");
-  URLRow url_match_last_visit(GURL("http://www.url_match_last_visit.com/"));
-  url_match_last_visit.set_last_visit(Time::Now() - TimeDelta::FromDays(1));
-  EXPECT_TRUE(AddURL(url_match_last_visit));
-
-  URLRow url_no_match_last_visit(GURL(
-      "http://www.url_no_match_last_visit.com/"));
-  url_no_match_last_visit.set_last_visit(Time::Now() -
-      TimeDelta::FromDays(kLowQualityMatchAgeLimitInDays + 1));
-  EXPECT_TRUE(AddURL(url_no_match_last_visit));
-
-  URLDatabase::URLEnumerator history_enum;
-  EXPECT_TRUE(InitURLEnumeratorForSignificant(&history_enum));
-  URLRow row;
-  int row_count = 0;
-  for (; history_enum.GetNextURL(&row); ++row_count)
-    EXPECT_EQ(1U, good_urls.count(row.url().spec()));
-  EXPECT_EQ(3, row_count);
 }
 
 }  // namespace history
