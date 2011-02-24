@@ -47,7 +47,7 @@ def GetTemplate(env):
 asm_env = env.Clone()
 if asm_env.Bit('bitcode'):
   asm_env.Replace(CC=env['CC_NATIVE'],
-                  OBJSUFFIX=".bc")
+                  OBJSUFFIX='.o')
 template_obj = asm_env.ComponentObject(GetTemplate(env))
 
 env.ComponentProgram('dynamic_load_test.nexe',
