@@ -153,7 +153,7 @@ void NativeTabbedPaneGtk::DoAddTabAtIndex(int index, const std::wstring& title,
   WidgetGtk* page_container = new WidgetGtk(WidgetGtk::TYPE_CHILD);
   page_container->Init(NULL, gfx::Rect());
   page_container->SetContentsView(contents);
-  page_container->SetFocusTraversableParent(GetRootView());
+  page_container->SetFocusTraversableParent(GetWidget()->GetFocusTraversable());
   page_container->SetFocusTraversableParentView(this);
   page_container->Show();
 

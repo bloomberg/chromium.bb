@@ -54,17 +54,17 @@
 //   the focus traversal traverse down the focus hierarchy to enter the nested
 //   RootView. In the example mentioned above, the NativeControl overrides
 //   GetFocusTraversable() and returns hwnd_view_container_->GetRootView().
-// - call RootView::SetFocusTraversableParent() on the nested RootView and point
-//   it to the outter RootView. This is used when the focus goes out of the
+// - call Widget::SetFocusTraversableParent() on the nested RootView and point
+//   it to the outer RootView. This is used when the focus goes out of the
 //   nested RootView. In the example:
-//   hwnd_view_container_->GetRootView()->SetFocusTraversableParent(
+//   hwnd_view_container_->GetWidget()->SetFocusTraversableParent(
 //      native_control->GetRootView());
 // - call RootView::SetFocusTraversableParentView() on the nested RootView with
 //   the parent view that directly contains the native window. This is needed
 //   when traversing up from the nested RootView to know which view to start
 //   with when going to the next/previous view.
 //   In our example:
-//   hwnd_view_container_->GetRootView()->SetFocusTraversableParent(
+//   hwnd_view_container_->GetWidget()->SetFocusTraversableParent(
 //      native_control);
 //
 // Note that FocusTraversable do not have to be RootViews: AccessibleToolbarView
