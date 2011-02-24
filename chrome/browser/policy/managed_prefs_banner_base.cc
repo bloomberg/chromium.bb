@@ -12,7 +12,7 @@
 #include "chrome/common/pref_names.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/cros_settings_names.cc"
+#include "chrome/browser/chromeos/cros_settings_names.h"
 #endif
 
 namespace policy {
