@@ -147,15 +147,6 @@ class View : public AcceleratorTarget {
   // TO BE MOVED ---------------------------------------------------------------
   // TODO(beng): These methods are to be moved to other files/classes.
 
-  // TODO(beng): move to metrics.h
-  // Returns the amount of time between double clicks, in milliseconds.
-  static int GetDoubleClickTimeMS();
-
-  // TODO(beng): move to metrics.h
-  // Returns the amount of time to wait from hovering over a menu button until
-  // showing the menu.
-  static int GetMenuShowDelay();
-
   // TODO(beng): delete
   // Set whether this view is hottracked. A disabled view cannot be hottracked.
   // If flag differs from the current value, SchedulePaint is invoked.
@@ -1306,11 +1297,6 @@ class View : public AcceleratorTarget {
   void DoDrag(const MouseEvent& e, const gfx::Point& press_pt);
 
   //////////////////////////////////////////////////////////////////////////////
-
-  // TODO(beng): move to metrics.h
-  // The default value for how long to wait (in ms) before showing a menu
-  // button on hover. This value is used if the OS doesn't supply one.
-  static const int kShowFolderDropMenuDelay;
 
   // Creation and lifetime -----------------------------------------------------
 

@@ -21,6 +21,7 @@
 #include "views/controls/textfield/textfield.h"
 #include "views/controls/textfield/textfield_views_model.h"
 #include "views/events/event.h"
+#include "views/metrics.h"
 #include "views/views_delegate.h"
 
 #if defined(OS_LINUX)
@@ -788,7 +789,7 @@ bool NativeTextfieldViews::HandleMousePressed(const views::MouseEvent& e) {
   last_mouse_press_location_ = e.location();
   if (e.IsLeftMouseButton()) {
     if (!ExceededDragThreshold(location_delta.x(), location_delta.y())
-      && time_delta.InMilliseconds() <= GetDoubleClickTimeMS()) {
+      && time_delta.InMilliseconds() <= GetDoubleClickInterval()) {
       // Multiple mouse press detected. Check for double or triple.
       switch (click_state_) {
         case TRACKING_DOUBLE_CLICK:

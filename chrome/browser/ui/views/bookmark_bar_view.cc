@@ -50,6 +50,7 @@
 #include "views/controls/label.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/drag_utils.h"
+#include "views/metrics.h"
 #include "views/view_constants.h"
 #include "views/widget/tooltip_manager.h"
 #include "views/widget/widget.h"
@@ -97,10 +98,6 @@ static SkBitmap* kFolderIcon = NULL;
 // Offset for where the menu is shown relative to the bottom of the
 // BookmarkBarView.
 static const int kMenuOffset = 3;
-
-// Delay during drag and drop before the menu pops up. This is only used if
-// we can't get the value from the OS.
-static const int kShowFolderDropMenuDelay = 400;
 
 // Color of the drop indicator.
 static const SkColor kDropIndicatorColor = SK_ColorBLACK;
@@ -1371,7 +1368,7 @@ void BookmarkBarView::StartShowFolderDropMenuTimer(const BookmarkNode* node) {
   }
   DCHECK(!show_folder_drop_menu_task_);
   show_folder_drop_menu_task_ = new ShowFolderDropMenuTask(this, node);
-  int delay = View::GetMenuShowDelay();
+  int delay = views::GetMenuShowDelay();
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
                                           show_folder_drop_menu_task_, delay);
 }

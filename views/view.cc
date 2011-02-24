@@ -40,9 +40,6 @@ ViewsDelegate* ViewsDelegate::views_delegate = NULL;
 // static
 char View::kViewClassName[] = "views/View";
 
-// static
-const int View::kShowFolderDropMenuDelay = 400;
-
 ////////////////////////////////////////////////////////////////////////////////
 // View, public:
 

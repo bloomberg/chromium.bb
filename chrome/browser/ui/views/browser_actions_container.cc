@@ -42,6 +42,7 @@
 #include "views/controls/button/text_button.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/drag_utils.h"
+#include "views/metrics.h"
 #include "views/window/window.h"
 
 #include "grit/theme_resources.h"
@@ -1011,7 +1012,7 @@ void BrowserActionsContainer::StopShowFolderDropMenuTimer() {
 }
 
 void BrowserActionsContainer::StartShowFolderDropMenuTimer() {
-  int delay = View::GetMenuShowDelay();
+  int delay = views::GetMenuShowDelay();
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
       show_menu_task_factory_.NewRunnableMethod(
           &BrowserActionsContainer::ShowDropFolder),

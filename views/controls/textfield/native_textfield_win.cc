@@ -27,6 +27,7 @@
 #include "views/controls/textfield/textfield.h"
 #include "views/focus/focus_manager.h"
 #include "views/focus/focus_util_win.h"
+#include "views/metrics.h"
 #include "views/views_delegate.h"
 #include "views/widget/widget.h"
 
