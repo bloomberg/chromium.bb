@@ -1384,8 +1384,6 @@ void LocationBarViewGtk::ContentSettingImageViewGtk::StartAnimating() {
     return;
 
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_), TRUE);
-  gtk_widget_modify_bg(event_box_, GTK_STATE_NORMAL,
-                       &gtk_util::kGdkGreen);
   gtk_util::ActAsRoundedWindow(event_box_, kContentSettingBorderColor,
                                kCornerSize,
                                gtk_util::ROUNDED_ALL, gtk_util::BORDER_ALL);
