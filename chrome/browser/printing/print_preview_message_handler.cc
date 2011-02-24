@@ -56,14 +56,17 @@ void PrintPreviewMessageHandler::OnPagesReadyForPreview(
 #if defined(OS_POSIX)
   PrintPreviewUI* print_preview_ui =
       static_cast<PrintPreviewUI*>(print_preview_tab->web_ui());
-  print_preview_ui->html_source()->SetPrintPreviewData(
+  PrintPreviewUIHTMLSource* html_source = print_preview_ui->html_source();
+  CHECK(html_source);
+  html_source->SetPrintPreviewData(
       std::make_pair(shared_buf, params.data_size));
   print_preview_ui->PreviewDataIsAvailable(params.expected_pages_count);
 #endif
 
+  PrintJobManager* print_job_manager = g_browser_process->print_job_manager();
+  CHECK(print_job_manager);
   scoped_refptr<printing::PrinterQuery> printer_query;
-  g_browser_process->print_job_manager()->PopPrinterQuery(
-      params.document_cookie, &printer_query);
+  print_job_manager->PopPrinterQuery(params.document_cookie, &printer_query);
   if (printer_query.get()) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
