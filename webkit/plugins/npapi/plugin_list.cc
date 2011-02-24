@@ -157,17 +157,6 @@ static const PluginGroupDefinition kGroupDefinitions[] = {
 };
 #endif
 
-// static
-const PluginGroupDefinition* PluginList::GetPluginGroupDefinitions() {
-  return kGroupDefinitions;
-}
-
-// static
-size_t PluginList::GetPluginGroupDefinitionsSize() {
-  // TODO(viettrungluu): |arraysize()| doesn't work with zero-size arrays.
-  return ARRAYSIZE_UNSAFE(kGroupDefinitions);
-}
-
 base::LazyInstance<PluginList> g_singleton(base::LINKER_INITIALIZED);
 
 // static
@@ -324,8 +313,21 @@ bool PluginList::ParseMimeTypes(
 PluginList::PluginList()
     : plugins_loaded_(false),
       plugins_need_refresh_(false),
-      disable_outdated_plugins_(false) {
+      disable_outdated_plugins_(false),
+      group_definitions_(kGroupDefinitions),
+      num_group_definitions_(ARRAYSIZE_UNSAFE(kGroupDefinitions)) {
   PlatformInit();
+  AddHardcodedPluginGroups(&plugin_groups_);
+}
+
+PluginList::PluginList(const PluginGroupDefinition* definitions,
+                       size_t num_definitions)
+    : plugins_loaded_(false),
+      plugins_need_refresh_(false),
+      disable_outdated_plugins_(false),
+      group_definitions_(definitions),
+      num_group_definitions_(num_definitions) {
+  // Don't do platform-dependend initialization in unit tests.
   AddHardcodedPluginGroups(&plugin_groups_);
 }
 
@@ -429,17 +431,7 @@ void PluginList::LoadPlugins(bool refresh) {
       }
     }
 
-    // Check if the group was disabled previously by the user.
-    for (size_t j = 0; j < plugin_groups_.size(); ++j) {
-      if (plugin_groups_[j]->GetGroupName() == group_name &&
-          !plugin_groups_[j]->Enabled()) {
-        group->EnableGroup(false);
-      }
-    }
-
     if (group->IsEmpty()) {
-      if (!group->Enabled())
-        groups_to_disable_.insert(group->GetGroupName());
       new_plugin_groups.erase(new_plugin_groups.begin() + i);
       --i;
       continue;
@@ -702,11 +694,10 @@ std::string PluginList::GetPluginGroupIdentifier(
 }
 
 void PluginList::AddHardcodedPluginGroups(ScopedVector<PluginGroup>* groups) {
-  base::AutoLock lock(lock_);
-  const PluginGroupDefinition* definitions = GetPluginGroupDefinitions();
-  size_t num_definitions = GetPluginGroupDefinitionsSize();
-  for (size_t i = 0; i < num_definitions; ++i)
-    groups->push_back(PluginGroup::FromPluginGroupDefinition(definitions[i]));
+  for (size_t i = 0; i < num_group_definitions_; ++i) {
+    groups->push_back(
+        PluginGroup::FromPluginGroupDefinition(group_definitions_[i]));
+  }
 }
 
 PluginGroup* PluginList::AddToPluginGroups(
@@ -771,7 +762,8 @@ bool PluginList::EnableGroup(bool enable, const string16& group_name) {
   base::AutoLock lock(lock_);
   PluginGroup* group = NULL;
   for (size_t i = 0; i < plugin_groups_.size(); ++i) {
-    if (plugin_groups_[i]->GetGroupName().find(group_name) != string16::npos) {
+    if (!plugin_groups_[i]->IsEmpty() &&
+        plugin_groups_[i]->GetGroupName().find(group_name) != string16::npos) {
       group = plugin_groups_[i];
       break;
     }

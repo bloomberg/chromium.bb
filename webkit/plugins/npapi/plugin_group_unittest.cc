@@ -14,7 +14,6 @@
 #include "base/version.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/plugins/npapi/webplugininfo.h"
-#include "webkit/plugins/npapi/plugin_list.h"
 
 namespace webkit {
 namespace npapi {
@@ -47,6 +46,14 @@ static const PluginGroupDefinition kPluginDef34 = {
     arraysize(kPlugin34VersionRange), "http://latest" };
 static const PluginGroupDefinition kPluginDefNotVulnerable = {
     "myplugin-latest", "MyPlugin", "MyPlugin", NULL, 0, "http://latest" };
+
+const PluginGroupDefinition kPluginDefinitions[] = {
+  kPluginDef,
+  kPluginDef3,
+  kPluginDef4,
+  kPluginDef34,
+  kPluginDefNotVulnerable,
+};
 
 // name, path, version, desc.
 static const WebPluginInfo kPluginNoVersion = WebPluginInfo(
@@ -157,14 +164,10 @@ TEST(PluginGroupTest, PluginGroupDescription) {
 }
 
 TEST(PluginGroupTest, PluginGroupDefinition) {
-  PluginList* plugin_list = PluginList::Singleton();
-  const PluginGroupDefinition* definitions =
-      plugin_list->GetPluginGroupDefinitions();
-  for (size_t i = 0; i < plugin_list->GetPluginGroupDefinitionsSize(); ++i) {
+  for (size_t i = 0; i < arraysize(kPluginDefinitions); ++i) {
     scoped_ptr<PluginGroup> def_group(
-        PluginGroupTest::CreatePluginGroup(definitions[i]));
+        PluginGroupTest::CreatePluginGroup(kPluginDefinitions[i]));
     ASSERT_TRUE(def_group.get() != NULL);
-    EXPECT_FALSE(def_group->Match(kPlugin2043));
   }
 }
 

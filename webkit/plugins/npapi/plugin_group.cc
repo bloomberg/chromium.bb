@@ -94,7 +94,7 @@ PluginGroup::PluginGroup(const string16& group_name,
       group_name_(group_name),
       name_matcher_(name_matcher),
       update_url_(update_url),
-      enabled_(true),
+      enabled_(false),
       version_(Version::GetVersionFromString("0")) {
 }
 

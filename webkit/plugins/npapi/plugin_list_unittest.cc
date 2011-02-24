@@ -16,6 +16,11 @@ namespace plugin_test_internal {
 // to use |lock_| (but it doesn't hurt either).
 class PluginListWithoutFileIO : public PluginList {
  public:
+  PluginListWithoutFileIO(const PluginGroupDefinition* group_definitions,
+                          size_t num_group_definitions) :
+      PluginList(group_definitions, num_group_definitions) {}
+  virtual ~PluginListWithoutFileIO() {}
+
   void AddPluginToLoad(const WebPluginInfo& plugin) {
     plugins_to_load_.push_back(plugin);
   }
@@ -37,15 +42,6 @@ class PluginListWithoutFileIO : public PluginList {
       ScopedVector<PluginGroup>* plugin_groups) OVERRIDE {
     for (size_t i = 0; i < plugins_to_load_.size(); ++i)
       AddToPluginGroups(plugins_to_load_[i], plugin_groups);
-  }
-
-  virtual const PluginGroupDefinition* GetPluginGroupDefinitions() OVERRIDE {
-    if (hardcoded_definitions_.empty())
-      return NULL;
-    return &hardcoded_definitions_.front();
-  }
-  virtual size_t GetPluginGroupDefinitionsSize() OVERRIDE {
-    return hardcoded_definitions_.size();
   }
 };
 
@@ -76,15 +72,20 @@ bool Contains(const std::vector<WebPluginInfo>& list,
 FilePath::CharType kFooPath[] = FILE_PATH_LITERAL("/plugins/foo.plugin");
 FilePath::CharType kBarPath[] = FILE_PATH_LITERAL("/plugins/bar.plugin");
 const char* kFooIdentifier = "foo";
-const char* kFooName = "Foo";
-
+const char* kFooGroupName = "Foo";
+const char* kFooName = "Foo Plugin";
+const PluginGroupDefinition kPluginDefinitions[] = {
+  { kFooIdentifier, kFooGroupName, kFooName, NULL, 0,
+    "http://example.com/foo" },
+};
 
 }  // namespace
 
 class PluginListTest : public testing::Test {
  public:
   PluginListTest()
-      : foo_plugin_(ASCIIToUTF16("Foo Plugin"),
+      : plugin_list_(kPluginDefinitions, arraysize(kPluginDefinitions)),
+        foo_plugin_(ASCIIToUTF16(kFooName),
                     FilePath(kFooPath),
                     ASCIIToUTF16("1.2.3"),
                     ASCIIToUTF16("foo")),
@@ -99,11 +100,6 @@ class PluginListTest : public testing::Test {
     plugin_list_.DisablePlugin(bar_plugin_.path);
     plugin_list_.AddPluginToLoad(foo_plugin_);
     plugin_list_.AddPluginToLoad(bar_plugin_);
-    PluginGroupDefinition foo_definition = { kFooIdentifier, kFooName,
-                                             "Foo Plugin", NULL, 0,
-                                             "http://example.com/foo" };
-    plugin_list_.AddPluginGroupDefinition(foo_definition);
-    plugin_list_.LoadPlugins(true);
   }
 
  protected:
@@ -129,7 +125,7 @@ TEST_F(PluginListTest, GetEnabledPlugins) {
 
 TEST_F(PluginListTest, GetPluginGroup) {
   const PluginGroup* foo_group = plugin_list_.GetPluginGroup(foo_plugin_);
-  EXPECT_EQ(ASCIIToUTF16(kFooName), foo_group->GetGroupName());
+  EXPECT_EQ(ASCIIToUTF16(kFooGroupName), foo_group->GetGroupName());
   EXPECT_TRUE(foo_group->Enabled());
   // The second request should return a pointer to the same instance.
   const PluginGroup* foo_group2 = plugin_list_.GetPluginGroup(foo_plugin_);
@@ -255,34 +251,25 @@ TEST_F(PluginListTest, HardcodedGroups) {
   std::vector<PluginGroup> groups;
   plugin_list_.GetPluginGroups(true, &groups);
   ASSERT_EQ(2u, groups.size());
+  EXPECT_TRUE(groups[0].Enabled());
   EXPECT_EQ(1u, groups[0].web_plugins_info().size());
   EXPECT_TRUE(groups[0].ContainsPlugin(FilePath(kFooPath)));
   EXPECT_EQ(kFooIdentifier, groups[0].identifier());
+  EXPECT_FALSE(groups[1].Enabled());
   EXPECT_EQ(1u, groups[1].web_plugins_info().size());
   EXPECT_TRUE(groups[1].ContainsPlugin(FilePath(kBarPath)));
   EXPECT_EQ("bar.plugin", groups[1].identifier());
 }
 
-TEST_F(PluginListTest, UpdatedPlugin) {
-  // Test that a disabled plugin stays disabled when it's updated between
-  // browser restarts, i.e. its path and version change, but it stays in the
-  // same plugin group.
+TEST_F(PluginListTest, DisableBeforeLoad) {
+  // Test that a plugin group that was disabled before plugins are loaded stays
+  // disabled afterwards.
 
-  // Create a pristine PluginList.
-  plugin_test_internal::PluginListWithoutFileIO plugin_list;
+  EXPECT_TRUE(plugin_list_.EnableGroup(false, ASCIIToUTF16(kFooGroupName)));
 
-  // The preferences will mark the "MyPlugin" group as disabled.
-  string16 myPluginName(ASCIIToUTF16("MyPlugin"));
-  EXPECT_TRUE(plugin_list.EnableGroup(false, myPluginName));
-
-  WebPluginInfo plugin_3045(myPluginName,
-                            FilePath(FILE_PATH_LITERAL("/myplugin.3.0.45")),
-                            ASCIIToUTF16("3.0.45"),
-                            ASCIIToUTF16("MyPlugin version 3.0.45"));
-  plugin_list.AddPluginToLoad(plugin_3045);
   std::vector<WebPluginInfo> plugins;
-  plugin_list.GetPlugins(true, &plugins);
-  ASSERT_EQ(1u, plugins.size());
+  plugin_list_.GetPlugins(true, &plugins);
+  ASSERT_EQ(2u, plugins.size());
   ASSERT_EQ(WebPluginInfo::USER_DISABLED_POLICY_UNMANAGED, plugins[0].enabled);
 }
 
