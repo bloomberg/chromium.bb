@@ -112,6 +112,12 @@ class Renderer {
     DISPLAY_MODE_DEFAULT = 0
   };
 
+  enum RenderModes {
+    RENDER_MODE_AUTO,
+    RENDER_MODE_3D,
+    RENDER_MODE_2D,
+  };
+
   // A StateHandler takes a param and sets or resets a render state.
   class StateHandler {
    public:

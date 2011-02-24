@@ -262,23 +262,28 @@ void PluginObject::CreateRenderer(const o3d::DisplayWindow& display_window) {
   DeleteRenderer();
   renderer_init_status_ = o3d::Renderer::UNINITIALIZED;
 
-#if !defined(FORCE_CAIRO)
-  if (!o3d::CheckConfig(npp_)) {
-    renderer_init_status_ = o3d::Renderer::GPU_NOT_UP_TO_SPEC;
-  } else {
-    renderer_ = o3d::Renderer::CreateDefaultRenderer(&service_locator_);
-    DCHECK(renderer_);
+  if (features_->render_modes() != Renderer::RENDER_MODE_2D) {
+    if (!o3d::CheckConfig(npp_)) {
+      renderer_init_status_ = o3d::Renderer::GPU_NOT_UP_TO_SPEC;
+    } else {
+      renderer_ = o3d::Renderer::CreateDefaultRenderer(&service_locator_);
+      DCHECK(renderer_);
 
-    // Attempt to initialize renderer.
-    renderer_init_status_ = renderer_->Init(display_window, false);
-    if (renderer_init_status_ != o3d::Renderer::SUCCESS) {
-      DeleteRenderer();
+      // Attempt to initialize renderer.
+      renderer_init_status_ = renderer_->Init(display_window, false);
+      if (renderer_init_status_ != o3d::Renderer::SUCCESS) {
+        DeleteRenderer();
+      }
     }
+#if !defined(SUPPORT_CAIRO)
+  } else {
+    // The caller requested 2D only mode, but this platform does not support 2d
+    renderer_init_status_ = o3d::Renderer::INITIALIZATION_ERROR;
   }
-#endif
-
-#if defined(SUPPORT_CAIRO)
-  if (renderer_init_status_ != o3d::Renderer::SUCCESS) {
+#else
+  }
+  if ((renderer_init_status_ != o3d::Renderer::SUCCESS) &&
+      (features_->render_modes() != Renderer::RENDER_MODE_3D)) {
     // Attempt to fall back to o2d renderer
     renderer_ = o3d::Renderer::Create2DRenderer(&service_locator_);
     if (renderer_) {

@@ -82,6 +82,10 @@ class Features {
     return init_status_;
   }
 
+  Renderer::RenderModes render_modes() const {
+    return render_mode_;
+  }
+
  private:
   // Parses the features strings.
   // Parameters:
@@ -99,6 +103,7 @@ class Features {
   bool not_anti_aliased_;
   bool flip_textures_;
   Renderer::InitStatus init_status_;
+  Renderer::RenderModes render_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(Features);
 };

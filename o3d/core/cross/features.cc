@@ -49,7 +49,8 @@ Features::Features(ServiceLocator* service_locator)
       windowless_(false),
       not_anti_aliased_(false),
       flip_textures_(true),
-      init_status_(Renderer::SUCCESS) {
+      init_status_(Renderer::SUCCESS),
+      render_mode_(Renderer::RENDER_MODE_3D) {
   // NOTE: For backward compatibility floating_point_textures and
   //     large_geometry default to true.  o3djs.util.makeClients before 0.1.35.0
   //     does not set the o3d_features plugin parameters and therefore
@@ -98,6 +99,15 @@ void Features::ParseFeatures(const std::vector<std::string>& features,
         int value;
         StringToInt(arguments[0], &value);
         init_status_ = static_cast<Renderer::InitStatus>(value);
+      } else if (feature.compare("RenderMode") == 0 &&
+                 arguments.size() == 1) {
+        if (arguments[0].compare("Auto") == 0) {
+          render_mode_ = Renderer::RENDER_MODE_AUTO;
+        } else if (arguments[0].compare("3D") == 0) {
+          render_mode_ = Renderer::RENDER_MODE_3D;
+        } else if (arguments[0].compare("2D") == 0) {
+          render_mode_ = Renderer::RENDER_MODE_2D;
+        }
       }
     }
   }
