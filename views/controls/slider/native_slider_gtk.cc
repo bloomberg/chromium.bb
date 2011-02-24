@@ -43,7 +43,7 @@ void NativeSliderGtk::SetValue(double value) {
 }
 
 void NativeSliderGtk::SetFocus() {
-  Focus();
+  OnFocus();
 }
 
 gfx::Size NativeSliderGtk::GetPreferredSize() {

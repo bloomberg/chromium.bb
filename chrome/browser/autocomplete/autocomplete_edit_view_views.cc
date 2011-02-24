@@ -41,26 +41,26 @@ class AutocompleteTextfield : public views::Textfield {
   }
 
   // views::View implementation
-  virtual void DidGainFocus() {
-    views::Textfield::DidGainFocus();
+  virtual void OnFocus() OVERRIDE {
+    views::Textfield::OnFocus();
     autocomplete_edit_view_->HandleFocusIn();
   }
 
-  virtual void WillLoseFocus() {
-    views::Textfield::WillLoseFocus();
+  virtual void OnBlur() OVERRIDE {
+    views::Textfield::OnBlur();
     autocomplete_edit_view_->HandleFocusOut();
   }
 
-  virtual bool OnKeyPressed(const views::KeyEvent& e) {
+  virtual bool OnKeyPressed(const views::KeyEvent& e) OVERRIDE {
     bool handled = views::Textfield::OnKeyPressed(e);
     return autocomplete_edit_view_->HandleAfterKeyEvent(e, handled) || handled;
   }
 
-  virtual bool OnKeyReleased(const views::KeyEvent& e) {
+  virtual bool OnKeyReleased(const views::KeyEvent& e) OVERRIDE {
     return autocomplete_edit_view_->HandleKeyReleaseEvent(e);
   }
 
-  virtual bool IsFocusable() const {
+  virtual bool IsFocusable() const OVERRIDE {
     // Bypass Textfield::IsFocusable. The omnibox in popup window requires
     // focus in order for text selection to work.
     return views::View::IsFocusable();

@@ -56,7 +56,7 @@ View* NativeTableGtk::GetView() {
 
 void NativeTableGtk::SetFocus() {
   // Focus the associated widget.
-  Focus();
+  OnFocus();
 }
 
 gfx::NativeView NativeTableGtk::GetTestingHandle() const {

@@ -857,15 +857,6 @@ void View::RequestFocus() {
     focus_manager->SetFocusedView(this);
 }
 
-void View::WillGainFocus() {
-}
-
-void View::DidGainFocus() {
-}
-
-void View::WillLoseFocus() {
-}
-
 // Tooltips --------------------------------------------------------------------
 
 bool View::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
@@ -1076,15 +1067,32 @@ bool View::IsFocusable() const {
   return focusable_ && IsEnabled() && IsVisible();
 }
 
-void View::Focus() {
+void View::OnFocus() {
+  // TODO(beng): Investigate whether it's possible for us to move this to
+  //             Focus().
   // By default, we clear the native focus. This ensures that no visible native
   // view as the focus and that we still receive keyboard inputs.
   FocusManager* focus_manager = GetFocusManager();
   if (focus_manager)
     focus_manager->ClearNativeFocus();
 
+  // TODO(beng): Investigate whether it's possible for us to move this to
+  //             Focus().
   // Notify assistive technologies of the focus change.
   NotifyAccessibilityEvent(AccessibilityTypes::EVENT_FOCUS);
+}
+
+void View::OnBlur() {
+}
+
+void View::Focus() {
+  SchedulePaint();
+  OnFocus();
+}
+
+void View::Blur() {
+  SchedulePaint();
+  OnBlur();
 }
 
 // Tooltips --------------------------------------------------------------------

@@ -69,7 +69,7 @@ class TabbedPane : public View {
   virtual bool AcceleratorPressed(const views::Accelerator& accelerator);
   virtual std::string GetClassName() const;
   virtual void Layout();
-  virtual void Focus();
+  virtual void OnFocus();
   virtual void OnPaintFocusBorder(gfx::Canvas* canvas);
   virtual AccessibilityTypes::Role GetAccessibleRole();
   virtual gfx::Size GetPreferredSize();

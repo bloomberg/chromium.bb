@@ -313,7 +313,7 @@ void LocationBarView::InvalidatePageActions() {
   }
 }
 
-void LocationBarView::Focus() {
+void LocationBarView::OnFocus() {
   // Focus the location entry native view.
   location_entry_->SetFocus();
 }

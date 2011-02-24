@@ -201,13 +201,13 @@ bool NativeButton::AcceleratorPressed(const Accelerator& accelerator) {
   return false;
 }
 
-void NativeButton::Focus() {
+void NativeButton::OnFocus() {
   // Forward the focus to the wrapper.
   if (native_wrapper_)
     native_wrapper_->SetFocus();
   else
-    Button::Focus();  // Will focus the RootView window (so we still get
-                      // keyboard messages).
+    Button::OnFocus();  // Will focus the RootView window (so we still get
+                        // keyboard messages).
 }
 
 void NativeButton::OnPaintFocusBorder(gfx::Canvas* canvas) {

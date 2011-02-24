@@ -63,7 +63,7 @@ void NativeControlGtk::VisibilityChanged(View* starting_from, bool is_visible) {
   }
 }
 
-void NativeControlGtk::Focus() {
+void NativeControlGtk::OnFocus() {
   DCHECK(native_view());
   gtk_widget_grab_focus(native_view());
 

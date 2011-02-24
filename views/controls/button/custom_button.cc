@@ -256,7 +256,7 @@ bool CustomButton::IsHotTracked() const {
   return state_ == BS_HOT;
 }
 
-void CustomButton::WillLoseFocus() {
+void CustomButton::OnBlur() {
   if (IsHotTracked())
     SetState(BS_NORMAL);
 }

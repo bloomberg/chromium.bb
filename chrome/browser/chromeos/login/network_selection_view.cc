@@ -128,7 +128,7 @@ class NotifyingMenuButton : public DropDownButton {
         delegate_(delegate) {}
 
   // Overridden from View:
-  virtual void DidGainFocus() {
+  virtual void OnFocus() OVERRIDE {
     delegate_->ClearErrors();
   }
 

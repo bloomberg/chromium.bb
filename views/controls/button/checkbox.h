@@ -42,36 +42,33 @@ class Checkbox : public NativeButton {
   static int GetTextIndent();
 
   // Overridden from View:
-  virtual gfx::Size GetPreferredSize();
-  virtual int GetHeightForWidth(int w);
-  virtual void Layout();
-  virtual void SetEnabled(bool enabled);
-  virtual void OnPaintFocusBorder(gfx::Canvas* canvas);
-  virtual View* GetViewForPoint(const gfx::Point& point);
-  virtual View* GetViewForPoint(const gfx::Point& point,
-                                bool can_create_floating);
-  virtual void OnMouseEntered(const MouseEvent& e);
-  virtual void OnMouseMoved(const MouseEvent& e);
-  virtual void OnMouseExited(const MouseEvent& e);
-  virtual bool OnMousePressed(const MouseEvent& e);
-  virtual void OnMouseReleased(const MouseEvent& e, bool canceled);
-  virtual bool OnMouseDragged(const MouseEvent& e);
-  virtual void WillGainFocus();
-  virtual void WillLoseFocus();
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual int GetHeightForWidth(int w) OVERRIDE;
+  virtual void Layout() OVERRIDE;
+  virtual void SetEnabled(bool enabled) OVERRIDE;
+  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnMouseEntered(const MouseEvent& e) OVERRIDE;
+  virtual void OnMouseMoved(const MouseEvent& e) OVERRIDE;
+  virtual void OnMouseExited(const MouseEvent& e) OVERRIDE;
+  virtual bool OnMousePressed(const MouseEvent& e) OVERRIDE;
+  virtual void OnMouseReleased(const MouseEvent& e, bool canceled) OVERRIDE;
+  virtual bool OnMouseDragged(const MouseEvent& e) OVERRIDE;
+  virtual void OnFocus() OVERRIDE;
+  virtual void OnBlur() OVERRIDE;
 
   // Accessibility accessors, overridden from View.
-  virtual AccessibilityTypes::Role GetAccessibleRole();
-  virtual AccessibilityTypes::State GetAccessibleState();
+  virtual AccessibilityTypes::Role GetAccessibleRole() OVERRIDE;
+  virtual AccessibilityTypes::State GetAccessibleState() OVERRIDE;
 
   // Overridden from NativeButton:
-  virtual void SetLabel(const std::wstring& label);
+  virtual void SetLabel(const std::wstring& label) OVERRIDE;
 
  protected:
-  virtual std::string GetClassName() const;
+  virtual std::string GetClassName() const OVERRIDE;
 
   // Overridden from NativeButton:
-  virtual NativeButtonWrapper* CreateWrapper();
-  virtual void InitBorder();
+  virtual NativeButtonWrapper* CreateWrapper() OVERRIDE;
+  virtual void InitBorder() OVERRIDE;
 
   // Returns true if the event (in Checkbox coordinates) is within the bounds of
   // the label.

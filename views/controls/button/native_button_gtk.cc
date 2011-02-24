@@ -74,7 +74,7 @@ View* NativeButtonGtk::GetView() {
 
 void NativeButtonGtk::SetFocus() {
   // Focus the associated widget.
-  Focus();
+  OnFocus();
 }
 
 bool NativeButtonGtk::UsesNativeLabel() const {

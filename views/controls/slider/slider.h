@@ -68,15 +68,16 @@ class Slider : public View {
   double step() const { return step_; }
 
   // Overridden from View:
-  virtual void Layout();
-  virtual gfx::Size GetPreferredSize();
-  virtual void SetEnabled(bool enabled);
-  virtual void OnPaintFocusBorder(gfx::Canvas* canvas);
+  virtual void Layout() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void SetEnabled(bool enabled) OVERRIDE;
+  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
 
  protected:
-  virtual void Focus();
-  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
-  virtual std::string GetClassName() const;
+  virtual void OnFocus() OVERRIDE;
+  virtual void ViewHierarchyChanged(bool is_add, View* parent,
+                                    View* child) OVERRIDE;
+  virtual std::string GetClassName() const OVERRIDE;
 
   // Creates a new native wrapper properly initialized and returns it. Ownership
   // is passed to the caller.

@@ -327,7 +327,7 @@ void NativeTextfieldGtk::UpdateVerticalMargins() {
 }
 
 bool NativeTextfieldGtk::SetFocus() {
-  Focus();
+  OnFocus();
   return true;
 }
 
@@ -364,13 +364,10 @@ bool NativeTextfieldGtk::HandleKeyReleased(const views::KeyEvent& e) {
   return false;
 }
 
-void NativeTextfieldGtk::HandleWillGainFocus() {
+void NativeTextfieldGtk::HandleFocus() {
 }
 
-void NativeTextfieldGtk::HandleDidGainFocus() {
-}
-
-void NativeTextfieldGtk::HandleWillLoseFocus() {
+void NativeTextfieldGtk::HandleBlur() {
 }
 
 // static

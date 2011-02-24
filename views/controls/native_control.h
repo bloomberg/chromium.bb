@@ -59,7 +59,7 @@ class NativeControl : public View {
   virtual void OnContextMenu(const POINT& location);
 
   // Overridden so to set the native focus to the native control.
-  virtual void Focus();
+  virtual void OnFocus();
 
   // Invoked when the native control sends a WM_DESTORY message to its parent.
   virtual void OnDestroy() { }

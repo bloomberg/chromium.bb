@@ -97,13 +97,13 @@ string16 Combobox::GetAccessibleValue() {
   return model_->GetItemAt(selected_item_);
 }
 
-void Combobox::Focus() {
+void Combobox::OnFocus() {
   // Forward the focus to the wrapper.
   if (native_wrapper_)
     native_wrapper_->SetFocus();
   else
-    View::Focus();  // Will focus the RootView window (so we still get
-                    // keyboard messages).
+    View::OnFocus();  // Will focus the RootView window (so we still get
+                      // keyboard messages).
 }
 
 void Combobox::ViewHierarchyChanged(bool is_add, View* parent,

@@ -18,22 +18,22 @@ class NativeTabContentsContainerGtk : public NativeTabContentsContainer,
   virtual ~NativeTabContentsContainerGtk();
 
   // Overridden from NativeTabContentsContainer:
-  virtual void AttachContents(TabContents* contents);
-  virtual void DetachContents(TabContents* contents);
-  virtual void SetFastResize(bool fast_resize);
+  virtual void AttachContents(TabContents* contents) OVERRIDE;
+  virtual void DetachContents(TabContents* contents) OVERRIDE;
+  virtual void SetFastResize(bool fast_resize) OVERRIDE;
   virtual void RenderViewHostChanged(RenderViewHost* old_host,
-                                     RenderViewHost* new_host);
-  virtual void TabContentsFocused(TabContents* tab_contents);
-  virtual views::View* GetView();
+                                     RenderViewHost* new_host) OVERRIDE;
+  virtual void TabContentsFocused(TabContents* tab_contents) OVERRIDE;
+  virtual views::View* GetView() OVERRIDE;
 
   // Overridden from views::View:
-  virtual bool SkipDefaultKeyEventProcessing(const views::KeyEvent& e);
-  virtual views::FocusTraversable* GetFocusTraversable();
-  virtual bool IsFocusable() const;
-  virtual void Focus();
-  virtual void RequestFocus();
-  virtual void AboutToRequestFocusFromTabTraversal(bool reverse);
-  virtual AccessibilityTypes::Role GetAccessibleRole();
+  virtual bool SkipDefaultKeyEventProcessing(const views::KeyEvent& e) OVERRIDE;
+  virtual views::FocusTraversable* GetFocusTraversable() OVERRIDE;
+  virtual bool IsFocusable() const OVERRIDE;
+  virtual void OnFocus() OVERRIDE;
+  virtual void RequestFocus() OVERRIDE;
+  virtual void AboutToRequestFocusFromTabTraversal(bool reverse) OVERRIDE;
+  virtual AccessibilityTypes::Role GetAccessibleRole() OVERRIDE;
 
  private:
   TabContentsContainer* container_;

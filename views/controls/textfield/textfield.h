@@ -257,29 +257,26 @@ class Textfield : public View {
 #endif
 
   // Overridden from View:
-  virtual void Layout();
-  virtual gfx::Size GetPreferredSize();
-  virtual bool IsFocusable() const;
-  virtual void AboutToRequestFocusFromTabTraversal(bool reverse);
-  virtual bool SkipDefaultKeyEventProcessing(const KeyEvent& e);
-  virtual void SetEnabled(bool enabled);
-  virtual void OnPaintBackground(gfx::Canvas* canvas);
-  virtual void OnPaintFocusBorder(gfx::Canvas* canvas);
-  virtual bool OnKeyPressed(const views::KeyEvent& e);
-  virtual bool OnKeyReleased(const views::KeyEvent& e);
-  virtual void WillGainFocus();
-  virtual void DidGainFocus();
-  virtual void WillLoseFocus();
-
-  // Accessibility accessors, overridden from View:
+  virtual void Layout() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual bool IsFocusable() const OVERRIDE;
+  virtual void AboutToRequestFocusFromTabTraversal(bool reverse) OVERRIDE;
+  virtual bool SkipDefaultKeyEventProcessing(const KeyEvent& e) OVERRIDE;
+  virtual void SetEnabled(bool enabled) OVERRIDE;
+  virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
+  virtual bool OnKeyPressed(const views::KeyEvent& e) OVERRIDE;
+  virtual bool OnKeyReleased(const views::KeyEvent& e) OVERRIDE;
+  virtual void OnFocus() OVERRIDE;
+  virtual void OnBlur() OVERRIDE;
   virtual AccessibilityTypes::Role GetAccessibleRole() OVERRIDE;
   virtual AccessibilityTypes::State GetAccessibleState() OVERRIDE;
   virtual string16 GetAccessibleValue() OVERRIDE;
 
  protected:
-  virtual void Focus();
-  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
-  virtual std::string GetClassName() const;
+  virtual void ViewHierarchyChanged(bool is_add, View* parent,
+                                    View* child) OVERRIDE;
+  virtual std::string GetClassName() const OVERRIDE;
 
   // The object that actually implements the native text field.
   NativeTextfieldWrapper* native_wrapper_;

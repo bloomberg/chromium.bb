@@ -52,16 +52,17 @@ class NativeButton : public Button {
   void ButtonPressed();
 
   // Overridden from View:
-  virtual gfx::Size GetPreferredSize();
-  virtual void Layout();
-  virtual void SetEnabled(bool flag);
-  virtual void Focus();
-  virtual void OnPaintFocusBorder(gfx::Canvas* canvas);
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void Layout() OVERRIDE;
+  virtual void SetEnabled(bool flag) OVERRIDE;
+  virtual void OnFocus() OVERRIDE;
+  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
 
  protected:
-  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
-  virtual std::string GetClassName() const;
-  virtual bool AcceleratorPressed(const Accelerator& accelerator);
+  virtual void ViewHierarchyChanged(bool is_add, View* parent,
+                                    View* child) OVERRIDE;
+  virtual std::string GetClassName() const OVERRIDE;
+  virtual bool AcceleratorPressed(const Accelerator& accelerator) OVERRIDE;
 
   // Create the button wrapper and returns it. Ownership of the returned
   // value is passed to the caller.

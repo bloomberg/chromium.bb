@@ -178,7 +178,7 @@ std::string NativeViewHost::GetClassName() const {
   return kViewClassName;
 }
 
-void NativeViewHost::Focus() {
+void NativeViewHost::OnFocus() {
   native_wrapper_->SetFocus();
 }
 

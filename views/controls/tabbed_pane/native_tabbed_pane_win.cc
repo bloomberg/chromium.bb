@@ -235,7 +235,7 @@ View* NativeTabbedPaneWin::GetView() {
 
 void NativeTabbedPaneWin::SetFocus() {
   // Focus the associated HWND.
-  Focus();
+  OnFocus();
 }
 
 gfx::Size NativeTabbedPaneWin::GetPreferredSize() {

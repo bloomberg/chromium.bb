@@ -24,7 +24,7 @@ class NativeControlGtk : public NativeViewHost {
  protected:
   virtual void ViewHierarchyChanged(bool is_add, View *parent, View *child);
   virtual void VisibilityChanged(View* starting_from, bool is_visible);
-  virtual void Focus();
+  virtual void OnFocus();
 
   // Called when the NativeControlGtk is attached to a View hierarchy with a
   // valid Widget. The NativeControlGtk should use this opportunity to create

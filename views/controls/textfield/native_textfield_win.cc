@@ -356,13 +356,10 @@ bool NativeTextfieldWin::HandleKeyReleased(const views::KeyEvent& e) {
   return false;
 }
 
-void NativeTextfieldWin::HandleWillGainFocus() {
+void NativeTextfieldWin::HandleFocus() {
 }
 
-void NativeTextfieldWin::HandleDidGainFocus() {
-}
-
-void NativeTextfieldWin::HandleWillLoseFocus() {
+void NativeTextfieldWin::HandleBlur() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -48,10 +48,10 @@ class CustomButton : public Button,
   void SetAnimationDuration(int duration);
 
   // Overridden from View:
-  virtual AccessibilityTypes::State GetAccessibleState();
-  virtual void SetEnabled(bool enabled);
-  virtual bool IsEnabled() const;
-  virtual bool IsFocusable() const;
+  virtual AccessibilityTypes::State GetAccessibleState() OVERRIDE;
+  virtual void SetEnabled(bool enabled) OVERRIDE;
+  virtual bool IsEnabled() const OVERRIDE;
+  virtual bool IsFocusable() const OVERRIDE;
 
   void set_triggerable_event_flags(int triggerable_event_flags) {
     triggerable_event_flags_ = triggerable_event_flags;
@@ -90,24 +90,26 @@ class CustomButton : public Button,
   virtual bool IsTriggerableEvent(const MouseEvent& e);
 
   // Overridden from View:
-  virtual bool AcceleratorPressed(const Accelerator& accelerator);
-  virtual bool OnMousePressed(const MouseEvent& e);
-  virtual bool OnMouseDragged(const MouseEvent& e);
-  virtual void OnMouseReleased(const MouseEvent& e, bool canceled);
-  virtual void OnMouseEntered(const MouseEvent& e);
-  virtual void OnMouseMoved(const MouseEvent& e);
-  virtual void OnMouseExited(const MouseEvent& e);
-  virtual bool OnKeyPressed(const KeyEvent& e);
-  virtual bool OnKeyReleased(const KeyEvent& e);
-  virtual void OnDragDone();
-  virtual void ShowContextMenu(const gfx::Point& p, bool is_mouse_gesture);
-  virtual void ViewHierarchyChanged(bool is_add, View *parent, View *child);
-  virtual void SetHotTracked(bool flag);
-  virtual bool IsHotTracked() const;
-  virtual void WillLoseFocus();
+  virtual bool AcceleratorPressed(const Accelerator& accelerator) OVERRIDE;
+  virtual bool OnMousePressed(const MouseEvent& e) OVERRIDE;
+  virtual bool OnMouseDragged(const MouseEvent& e) OVERRIDE;
+  virtual void OnMouseReleased(const MouseEvent& e, bool canceled) OVERRIDE;
+  virtual void OnMouseEntered(const MouseEvent& e) OVERRIDE;
+  virtual void OnMouseMoved(const MouseEvent& e) OVERRIDE;
+  virtual void OnMouseExited(const MouseEvent& e) OVERRIDE;
+  virtual bool OnKeyPressed(const KeyEvent& e) OVERRIDE;
+  virtual bool OnKeyReleased(const KeyEvent& e) OVERRIDE;
+  virtual void OnDragDone() OVERRIDE;
+  virtual void ShowContextMenu(const gfx::Point& p,
+                               bool is_mouse_gesture) OVERRIDE;
+  virtual void ViewHierarchyChanged(bool is_add, View* parent,
+                                    View* child) OVERRIDE;
+  virtual void SetHotTracked(bool flag) OVERRIDE;
+  virtual bool IsHotTracked() const OVERRIDE;
+  virtual void OnBlur() OVERRIDE;
 
   // Overridden from ui::AnimationDelegate:
-  virtual void AnimationProgressed(const ui::Animation* animation);
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
 
   // Returns true if the button should become pressed when the user
   // holds the mouse down over the button. For this implementation,

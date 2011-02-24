@@ -749,9 +749,8 @@ void FocusTraversalTest::InitContentView() {
 ////////////////////////////////////////////////////////////////////////////////
 
 enum FocusTestEventType {
-  WILL_GAIN_FOCUS = 0,
-  DID_GAIN_FOCUS,
-  WILL_LOSE_FOCUS
+  ON_FOCUS = 0,
+  ON_BLUR
 };
 
 struct FocusTestEvent {
@@ -772,16 +771,12 @@ class SimpleTestView : public View {
     SetID(view_id);
   }
 
-  virtual void WillGainFocus() {
-    event_list_->push_back(FocusTestEvent(WILL_GAIN_FOCUS, GetID()));
+  virtual void OnFocus() {
+    event_list_->push_back(FocusTestEvent(ON_FOCUS, GetID()));
   }
 
-  virtual void DidGainFocus() {
-    event_list_->push_back(FocusTestEvent(DID_GAIN_FOCUS, GetID()));
-  }
-
-  virtual void WillLoseFocus() {
-    event_list_->push_back(FocusTestEvent(WILL_LOSE_FOCUS, GetID()));
+  virtual void OnBlur() {
+    event_list_->push_back(FocusTestEvent(ON_BLUR, GetID()));
   }
 
  private:
@@ -801,26 +796,22 @@ TEST_F(FocusManagerTest, ViewFocusCallbacks) {
   content_view_->AddChildView(view2);
 
   view1->RequestFocus();
-  ASSERT_EQ(2, static_cast<int>(event_list.size()));
-  EXPECT_EQ(WILL_GAIN_FOCUS, event_list[0].type);
-  EXPECT_EQ(kView1ID, event_list[0].view_id);
-  EXPECT_EQ(DID_GAIN_FOCUS, event_list[1].type);
+  ASSERT_EQ(1, static_cast<int>(event_list.size()));
+  EXPECT_EQ(ON_FOCUS, event_list[0].type);
   EXPECT_EQ(kView1ID, event_list[0].view_id);
 
   event_list.clear();
   view2->RequestFocus();
-  ASSERT_EQ(3, static_cast<int>(event_list.size()));
-  EXPECT_EQ(WILL_LOSE_FOCUS, event_list[0].type);
+  ASSERT_EQ(2, static_cast<int>(event_list.size()));
+  EXPECT_EQ(ON_BLUR, event_list[0].type);
   EXPECT_EQ(kView1ID, event_list[0].view_id);
-  EXPECT_EQ(WILL_GAIN_FOCUS, event_list[1].type);
+  EXPECT_EQ(ON_FOCUS, event_list[1].type);
   EXPECT_EQ(kView2ID, event_list[1].view_id);
-  EXPECT_EQ(DID_GAIN_FOCUS, event_list[2].type);
-  EXPECT_EQ(kView2ID, event_list[2].view_id);
 
   event_list.clear();
   GetFocusManager()->ClearFocus();
   ASSERT_EQ(1, static_cast<int>(event_list.size()));
-  EXPECT_EQ(WILL_LOSE_FOCUS, event_list[0].type);
+  EXPECT_EQ(ON_BLUR, event_list[0].type);
   EXPECT_EQ(kView2ID, event_list[0].view_id);
 }
 

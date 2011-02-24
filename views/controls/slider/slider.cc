@@ -74,14 +74,14 @@ void Slider::SetEnabled(bool enabled) {
     native_wrapper_->UpdateEnabled();
 }
 
-void Slider::Focus() {
+void Slider::OnFocus() {
   if (native_wrapper_) {
     // Forward the focus to the wrapper if it exists.
     native_wrapper_->SetFocus();
   } else {
     // If there is no wrapper, cause the RootView to be focused so that we still
     // get keyboard messages.
-    View::Focus();
+    View::OnFocus();
   }
 }
 

@@ -102,9 +102,8 @@ void NativeTextfieldViews::OnMouseReleased(const views::MouseEvent& e,
 }
 
 bool NativeTextfieldViews::OnKeyPressed(const views::KeyEvent& e) {
-  // OnKeyPressed/OnKeyReleased/WillGainFocus/DidGainFocus/WillLoseFocus
-  // will never be invoked on NativeTextfieldViews as it will never
-  // gain focus.
+  // OnKeyPressed/OnKeyReleased/OnFocus/OnBlur will never be invoked on
+  // NativeTextfieldViews as it will never gain focus.
   NOTREACHED();
   return false;
 }
@@ -126,15 +125,11 @@ void NativeTextfieldViews::OnBoundsChanged() {
   UpdateCursorBoundsAndTextOffset();
 }
 
-void NativeTextfieldViews::WillGainFocus() {
+void NativeTextfieldViews::OnFocus() {
   NOTREACHED();
 }
 
-void NativeTextfieldViews::DidGainFocus() {
-  NOTREACHED();
-}
-
-void NativeTextfieldViews::WillLoseFocus() {
+void NativeTextfieldViews::OnBlur() {
   NOTREACHED();
 }
 
@@ -310,10 +305,7 @@ bool NativeTextfieldViews::HandleKeyReleased(const views::KeyEvent& e) {
   return true;
 }
 
-void NativeTextfieldViews::HandleWillGainFocus() {
-}
-
-void NativeTextfieldViews::HandleDidGainFocus() {
+void NativeTextfieldViews::HandleFocus() {
   is_cursor_visible_ = true;
   SchedulePaint();
   // Start blinking cursor.
@@ -323,7 +315,7 @@ void NativeTextfieldViews::HandleDidGainFocus() {
       kCursorVisibleTimeMs);
 }
 
-void NativeTextfieldViews::HandleWillLoseFocus() {
+void NativeTextfieldViews::HandleBlur() {
   // Stop blinking cursor.
   cursor_timer_.RevokeAll();
   if (is_cursor_visible_) {

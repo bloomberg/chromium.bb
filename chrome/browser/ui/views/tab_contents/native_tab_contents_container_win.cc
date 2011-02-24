@@ -64,7 +64,7 @@ void NativeTabContentsContainerWin::RenderViewHostChanged(
     RenderViewHost* new_host) {
   // If we are focused, we need to pass the focus to the new RenderViewHost.
   if (GetFocusManager()->GetFocusedView() == this)
-    Focus();
+    OnFocus();
 }
 
 views::View* NativeTabContentsContainerWin::GetView() {
@@ -101,19 +101,19 @@ bool NativeTabContentsContainerWin::IsFocusable() const {
   return container_->tab_contents() != NULL;
 }
 
-void NativeTabContentsContainerWin::Focus() {
+void NativeTabContentsContainerWin::OnFocus() {
   if (container_->tab_contents())
     container_->tab_contents()->Focus();
 }
 
 void NativeTabContentsContainerWin::RequestFocus() {
-  // This is a hack to circumvent the fact that a the Focus() method is not
+  // This is a hack to circumvent the fact that a the OnFocus() method is not
   // invoked when RequestFocus() is called on an already focused view.
   // The TabContentsContainer is the view focused when the TabContents has
   // focus.  When switching between from one tab that has focus to another tab
   // that should also have focus, RequestFocus() is invoked one the
-  // TabContentsContainer.  In order to make sure Focus() is invoked we need to
-  // clear the focus before hands.
+  // TabContentsContainer.  In order to make sure OnFocus() is invoked we need
+  // to clear the focus before hands.
   {
     // Disable notifications.  Clear focus will assign the focus to the main
     // browser window.  Because this change of focus was not user requested,

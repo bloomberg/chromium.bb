@@ -38,10 +38,10 @@ class DOMView : public views::NativeViewHost {
 
  protected:
   // Overridden from View.
-  virtual bool SkipDefaultKeyEventProcessing(const views::KeyEvent& e);
-  virtual void Focus();
+  virtual bool SkipDefaultKeyEventProcessing(const views::KeyEvent& e) OVERRIDE;
+  virtual void OnFocus() OVERRIDE;
   virtual void ViewHierarchyChanged(bool is_add, views::View* parent,
-                                    views::View* child);
+                                    views::View* child) OVERRIDE;
 
   // AttachTabContents calls Attach to hook up the NativeViewHost. This is
   // here because depending on whether this is a touch build or not the

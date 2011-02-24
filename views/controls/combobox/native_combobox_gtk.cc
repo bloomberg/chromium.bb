@@ -94,7 +94,7 @@ View* NativeComboboxGtk::GetView() {
 }
 
 void NativeComboboxGtk::SetFocus() {
-  Focus();
+  OnFocus();
 }
 
 gfx::NativeView NativeComboboxGtk::GetTestingHandle() const {

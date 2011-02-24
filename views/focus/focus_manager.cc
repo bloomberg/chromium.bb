@@ -297,39 +297,22 @@ View* FocusManager::GetNextFocusableView(View* original_starting_view,
 
 void FocusManager::SetFocusedViewWithReason(
     View* view, FocusChangeReason reason) {
-  focus_change_reason_ = reason;
-
   if (focused_view_ == view)
     return;
 
-  View* prev_focused_view = focused_view_;
-  if (focused_view_)
-    focused_view_->WillLoseFocus();
-
-  if (view)
-    view->WillGainFocus();
-
-  // Notified listeners that the focus changed.
+  // Notified listeners that the focus will change.
   FocusChangeListenerList::const_iterator iter;
   for (iter = focus_change_listeners_.begin();
        iter != focus_change_listeners_.end(); ++iter) {
-    (*iter)->FocusWillChange(prev_focused_view, view);
+    (*iter)->FocusWillChange(focused_view_, view);
   }
 
+  focus_change_reason_ = reason;
+  if (focused_view_)
+    focused_view_->Blur();
   focused_view_ = view;
-
-  if (prev_focused_view)
-    prev_focused_view->SchedulePaint();  // Remove focus artifacts.
-
-  if (view) {
-    view->SchedulePaint();
-    view->Focus();
-    if (view == focused_view_) {
-      // Only tell the view it is focused if it's still our focused view. It's
-      // possible for Focus to remove/delete the view.
-      view->DidGainFocus();
-    }
-  }
+  if (focused_view_)
+    focused_view_->Focus();
 }
 
 void FocusManager::ClearFocus() {

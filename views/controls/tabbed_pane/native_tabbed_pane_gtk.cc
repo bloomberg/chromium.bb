@@ -104,7 +104,7 @@ View* NativeTabbedPaneGtk::GetView() {
 }
 
 void NativeTabbedPaneGtk::SetFocus() {
-  Focus();
+  OnFocus();
 }
 
 gfx::Size NativeTabbedPaneGtk::GetPreferredSize() {

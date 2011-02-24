@@ -96,7 +96,7 @@ void NativeControlWin::VisibilityChanged(View* starting_from, bool is_visible) {
   }
 }
 
-void NativeControlWin::Focus() {
+void NativeControlWin::OnFocus() {
   DCHECK(native_view());
   SetFocus(native_view());
 

@@ -113,10 +113,9 @@ class NativeTextfieldWrapper {
   virtual bool HandleKeyReleased(const views::KeyEvent& e) = 0;
 
   // Invoked when focus is being moved from or to the Textfield.
-  // See also View::WillGainFocus/DidGainFocus/WillLoseFocus.
-  virtual void HandleWillGainFocus() = 0;
-  virtual void HandleDidGainFocus() = 0;
-  virtual void HandleWillLoseFocus() = 0;
+  // See also View::OnFocus/OnBlur.
+  virtual void HandleFocus() = 0;
+  virtual void HandleBlur() = 0;
 
   // Creates an appropriate NativeTextfieldWrapper for the platform.
   static NativeTextfieldWrapper* CreateWrapper(Textfield* field);

@@ -750,15 +750,6 @@ class View : public AcceleratorTarget {
   // focused view.
   virtual void RequestFocus();
 
-  // Invoked when a view is about to gain focus
-  virtual void WillGainFocus();
-
-  // Invoked when a view just gained focus.
-  virtual void DidGainFocus();
-
-  // Invoked when a view is about lose focus
-  virtual void WillLoseFocus();
-
   // Invoked when a view is about to be requested for focus due to the focus
   // traversal. Reverse is this request was generated going backward
   // (Shift-Tab).
@@ -1092,14 +1083,13 @@ class View : public AcceleratorTarget {
   // The FocusManager and other places use IsFocusableInRootView.
   virtual bool IsFocusable() const;
 
-  // Sets the keyboard focus to this View. The correct way to set the focus is
-  // to call RequestFocus() on the view. This method is called when the focus is
-  // set and gives an opportunity to subclasses to perform any extra focus steps
-  // (for example native component set the native focus on their native
-  // component). The default behavior is to set the native focus on the root
-  // Widget, which is what is appropriate for views that have no native window
-  // associated with them (so the root view gets the keyboard messages).
-  virtual void Focus();
+  // Override to be notified when focus has changed either to or from this View.
+  virtual void OnFocus();
+  virtual void OnBlur();
+
+  // Handle view focus/blur events for this view.
+  void Focus();
+  void Blur();
 
   // Whether the view can be focused.
   bool focusable_;

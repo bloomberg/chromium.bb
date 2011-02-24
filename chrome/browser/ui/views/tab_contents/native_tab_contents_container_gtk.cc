@@ -48,7 +48,7 @@ void NativeTabContentsContainerGtk::RenderViewHostChanged(
   // If we are focused, we need to pass the focus to the new RenderViewHost.
   views::FocusManager* focus_manager = GetFocusManager();
   if (focus_manager->GetFocusedView() == this)
-    Focus();
+    OnFocus();
 }
 
 views::View* NativeTabContentsContainerGtk::GetView() {
@@ -96,7 +96,7 @@ bool NativeTabContentsContainerGtk::IsFocusable() const {
   return container_->tab_contents() != NULL;
 }
 
-void NativeTabContentsContainerGtk::Focus() {
+void NativeTabContentsContainerGtk::OnFocus() {
   if (container_->tab_contents())
     container_->tab_contents()->Focus();
 }
@@ -107,9 +107,10 @@ void NativeTabContentsContainerGtk::RequestFocus() {
   // with tabs such as the TabContents that instruct the RenderView that it got
   // focus when they actually get the focus. When switching from one TabContents
   // tab that has focus to another TabContents tab that had focus, since the
-  // TabContentsContainerView already has focus, Focus() would not be called and
-  // the RenderView would not get notified it got focused.
-  // By clearing the focused view before-hand, we ensure Focus() will be called.
+  // TabContentsContainerView already has focus, OnFocus() would not be called
+  // and the RenderView would not get notified it got focused.
+  // By clearing the focused view before-hand, we ensure OnFocus() will be
+  // called.
   views::FocusManager* focus_manager = GetFocusManager();
   if (focus_manager)
     focus_manager->SetFocusedView(NULL);

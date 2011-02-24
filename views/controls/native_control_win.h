@@ -42,7 +42,7 @@ class NativeControlWin : public ChildWindowMessageProcessor,
  protected:
   virtual void ViewHierarchyChanged(bool is_add, View *parent, View *child);
   virtual void VisibilityChanged(View* starting_from, bool is_visible);
-  virtual void Focus();
+  virtual void OnFocus();
 
   // Called by the containing WidgetWin when a WM_CONTEXTMENU message is
   // received from the HWND created by an object derived from NativeControlWin.

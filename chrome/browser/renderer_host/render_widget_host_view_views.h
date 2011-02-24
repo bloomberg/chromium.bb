@@ -41,46 +41,48 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
 
   // RenderWidgetHostView implementation.
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
-                           const gfx::Rect& pos);
-  virtual void InitAsFullscreen();
-  virtual RenderWidgetHost* GetRenderWidgetHost() const;
-  virtual void DidBecomeSelected();
-  virtual void WasHidden();
-  virtual void SetSize(const gfx::Size& size);
-  virtual gfx::NativeView GetNativeView();
+                           const gfx::Rect& pos) OVERRIDE;
+  virtual void InitAsFullscreen() OVERRIDE;
+  virtual RenderWidgetHost* GetRenderWidgetHost() const OVERRIDE;
+  virtual void DidBecomeSelected() OVERRIDE;
+  virtual void WasHidden() OVERRIDE;
+  virtual void SetSize(const gfx::Size& size) OVERRIDE;
+  virtual gfx::NativeView GetNativeView() OVERRIDE;
   virtual void MovePluginWindows(
-      const std::vector<webkit::npapi::WebPluginGeometry>& moves);
-  virtual void Focus();
-  virtual void Blur();
-  virtual bool HasFocus();
-  virtual void Show();
-  virtual void Hide();
-  virtual bool IsShowing();
-  virtual gfx::Rect GetViewBounds() const;
-  virtual void UpdateCursor(const WebCursor& cursor);
-  virtual void SetIsLoading(bool is_loading);
+      const std::vector<webkit::npapi::WebPluginGeometry>& moves) OVERRIDE;
+  virtual void Focus() OVERRIDE;
+  virtual void Blur() OVERRIDE;
+  virtual bool HasFocus() OVERRIDE;
+  virtual void Show() OVERRIDE;
+  virtual void Hide() OVERRIDE;
+  virtual bool IsShowing() OVERRIDE;
+  virtual gfx::Rect GetViewBounds() const OVERRIDE;
+  virtual void UpdateCursor(const WebCursor& cursor) OVERRIDE;
+  virtual void SetIsLoading(bool is_loading) OVERRIDE;
   virtual void ImeUpdateTextInputState(WebKit::WebTextInputType type,
-                                       const gfx::Rect& caret_rect);
-  virtual void ImeCancelComposition();
+                                       const gfx::Rect& caret_rect) OVERRIDE;
+  virtual void ImeCancelComposition() OVERRIDE;
   virtual void DidUpdateBackingStore(
       const gfx::Rect& scroll_rect, int scroll_dx, int scroll_dy,
-      const std::vector<gfx::Rect>& copy_rects);
+      const std::vector<gfx::Rect>& copy_rects) OVERRIDE;
   virtual void RenderViewGone(base::TerminationStatus status,
-                              int error_code);
-  virtual void Destroy();
-  virtual void WillDestroyRenderWidget(RenderWidgetHost* rwh) {}
-  virtual void SetTooltipText(const std::wstring& tooltip_text);
-  virtual void SelectionChanged(const std::string& text);
-  virtual void ShowingContextMenu(bool showing);
-  virtual BackingStore* AllocBackingStore(const gfx::Size& size);
-  virtual void SetBackground(const SkBitmap& background);
-  virtual void CreatePluginContainer(gfx::PluginWindowHandle id);
-  virtual void DestroyPluginContainer(gfx::PluginWindowHandle id);
-  virtual void SetVisuallyDeemphasized(const SkColor* color, bool animate);
-  virtual bool ContainsNativeView(gfx::NativeView native_view) const;
-  virtual void AcceleratedCompositingActivated(bool activated);
-  virtual gfx::PluginWindowHandle AcquireCompositingSurface();
-  virtual void ReleaseCompositingSurface(gfx::PluginWindowHandle surface);
+                              int error_code) OVERRIDE;
+  virtual void Destroy() OVERRIDE;
+  virtual void WillDestroyRenderWidget(RenderWidgetHost* rwh) OVERRIDE {}
+  virtual void SetTooltipText(const std::wstring& tooltip_text) OVERRIDE;
+  virtual void SelectionChanged(const std::string& text) OVERRIDE;
+  virtual void ShowingContextMenu(bool showing) OVERRIDE;
+  virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
+  virtual void SetBackground(const SkBitmap& background) OVERRIDE;
+  virtual void CreatePluginContainer(gfx::PluginWindowHandle id) OVERRIDE;
+  virtual void DestroyPluginContainer(gfx::PluginWindowHandle id) OVERRIDE;
+  virtual void SetVisuallyDeemphasized(const SkColor* color,
+                                       bool animate) OVERRIDE;
+  virtual bool ContainsNativeView(gfx::NativeView native_view) const OVERRIDE;
+  virtual void AcceleratedCompositingActivated(bool activated) OVERRIDE;
+  virtual gfx::PluginWindowHandle AcquireCompositingSurface() OVERRIDE;
+  virtual void ReleaseCompositingSurface(
+      gfx::PluginWindowHandle surface) OVERRIDE;
 
   // On some systems, there can be two native views, where an outer native view
   // contains the inner native view (e.g. when using GTK+). This returns the
@@ -95,20 +97,21 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
                                       const gfx::Point& point);
 
   // Views mouse events, overridden from views::View.
-  virtual bool OnMousePressed(const views::MouseEvent& event);
-  virtual bool OnMouseDragged(const views::MouseEvent& event);
-  virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled);
-  virtual void OnMouseMoved(const views::MouseEvent& e);
-  virtual void OnMouseEntered(const views::MouseEvent& event);
-  virtual void OnMouseExited(const views::MouseEvent& event);
-  virtual bool OnMouseWheel(const views::MouseWheelEvent& e);
+  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
+  virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseReleased(const views::MouseEvent& event,
+                               bool canceled) OVERRIDE;
+  virtual void OnMouseMoved(const views::MouseEvent& e) OVERRIDE;
+  virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
+  virtual bool OnMouseWheel(const views::MouseWheelEvent& e) OVERRIDE;
 
   // Views keyboard events, overridden from views::View.
-  virtual bool OnKeyPressed(const views::KeyEvent &e);
-  virtual bool OnKeyReleased(const views::KeyEvent &e);
+  virtual bool OnKeyPressed(const views::KeyEvent &e) OVERRIDE;
+  virtual bool OnKeyReleased(const views::KeyEvent &e) OVERRIDE;
 
-  virtual void DidGainFocus();
-  virtual void WillLoseFocus();
+  virtual void OnFocus() OVERRIDE;
+  virtual void OnBlur() OVERRIDE;
 
   // Forwards a web keyboard event to renderer.
   void ForwardWebKeyboardEvent(const NativeWebKeyboardEvent& event);
@@ -117,7 +120,7 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   void ForwardKeyEvent(const views::KeyEvent& event);
 
   // Views touch events, overridden from views::View.
-  virtual View::TouchStatus OnTouchEvent(const views::TouchEvent& e);
+  virtual View::TouchStatus OnTouchEvent(const views::TouchEvent& e) OVERRIDE;
 
  private:
   friend class RenderWidgetHostViewViewsWidget;

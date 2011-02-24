@@ -155,14 +155,14 @@ class LocationBarView : public LocationBar,
   gfx::Point GetLocationEntryOrigin() const;
 
   // Sizing functions
-  virtual gfx::Size GetPreferredSize();
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
 
   // Layout and Painting functions
-  virtual void Layout();
-  virtual void OnPaint(gfx::Canvas* canvas);
+  virtual void Layout() OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
   // No focus border for the location bar, the caret is enough.
-  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) { }
+  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE { }
 
   // Set if we should show a focus rect while the location entry field is
   // focused. Used when the toolbar is in full keyboard accessibility mode.
@@ -175,9 +175,10 @@ class LocationBarView : public LocationBar,
 
 #if defined(OS_WIN)
   // Event Handlers
-  virtual bool OnMousePressed(const views::MouseEvent& event);
-  virtual bool OnMouseDragged(const views::MouseEvent& event);
-  virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled);
+  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
+  virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseReleased(const views::MouseEvent& event,
+                               bool canceled) OVERRIDE;
 #endif
 
   const LocationIconView* location_icon_view() const {
@@ -185,69 +186,72 @@ class LocationBarView : public LocationBar,
   }
 
   // AutocompleteEditController
-  virtual void OnAutocompleteWillClosePopup();
-  virtual void OnAutocompleteLosingFocus(gfx::NativeView view_gaining_focus);
-  virtual void OnAutocompleteWillAccept();
-  virtual bool OnCommitSuggestedText(bool skip_inline_autocomplete);
-  virtual bool AcceptCurrentInstantPreview();
-  virtual void OnPopupBoundsChanged(const gfx::Rect& bounds);
+  virtual void OnAutocompleteWillClosePopup() OVERRIDE;
+  virtual void OnAutocompleteLosingFocus(
+      gfx::NativeView view_gaining_focus) OVERRIDE;
+  virtual void OnAutocompleteWillAccept() OVERRIDE;
+  virtual bool OnCommitSuggestedText(bool skip_inline_autocomplete) OVERRIDE;
+  virtual bool AcceptCurrentInstantPreview() OVERRIDE;
+  virtual void OnPopupBoundsChanged(const gfx::Rect& bounds) OVERRIDE;
   virtual void OnAutocompleteAccept(const GURL& url,
                                     WindowOpenDisposition disposition,
                                     PageTransition::Type transition,
-                                    const GURL& alternate_nav_url);
-  virtual void OnChanged();
-  virtual void OnSelectionBoundsChanged();
-  virtual void OnInputInProgress(bool in_progress);
-  virtual void OnKillFocus();
-  virtual void OnSetFocus();
-  virtual SkBitmap GetFavIcon() const;
-  virtual string16 GetTitle() const;
+                                    const GURL& alternate_nav_url) OVERRIDE;
+  virtual void OnChanged() OVERRIDE;
+  virtual void OnSelectionBoundsChanged() OVERRIDE;
+  virtual void OnInputInProgress(bool in_progress) OVERRIDE;
+  virtual void OnKillFocus() OVERRIDE;
+  virtual void OnSetFocus() OVERRIDE;
+  virtual SkBitmap GetFavIcon() const OVERRIDE;
+  virtual string16 GetTitle() const OVERRIDE;
 
   // Overridden from views::View:
-  virtual std::string GetClassName() const;
-  virtual bool SkipDefaultKeyEventProcessing(const views::KeyEvent& e);
-  virtual AccessibilityTypes::Role GetAccessibleRole();
+  virtual std::string GetClassName() const OVERRIDE;
+  virtual bool SkipDefaultKeyEventProcessing(const views::KeyEvent& e) OVERRIDE;
+  virtual AccessibilityTypes::Role GetAccessibleRole() OVERRIDE;
 
   // Overridden from views::DragController:
   virtual void WriteDragData(View* sender,
                              const gfx::Point& press_pt,
-                             OSExchangeData* data);
-  virtual int GetDragOperations(View* sender, const gfx::Point& p);
+                             OSExchangeData* data) OVERRIDE;
+  virtual int GetDragOperations(View* sender, const gfx::Point& p) OVERRIDE;
   virtual bool CanStartDrag(View* sender,
                             const gfx::Point& press_pt,
-                            const gfx::Point& p);
+                            const gfx::Point& p) OVERRIDE;
 
   // Overridden from LocationBar:
-  virtual void ShowFirstRunBubble(FirstRun::BubbleType bubble_type);
-  virtual void SetSuggestedText(const string16& input);
-  virtual std::wstring GetInputString() const;
-  virtual WindowOpenDisposition GetWindowOpenDisposition() const;
-  virtual PageTransition::Type GetPageTransition() const;
-  virtual void AcceptInput();
-  virtual void FocusLocation(bool select_all);
-  virtual void FocusSearch();
-  virtual void UpdateContentSettingsIcons();
-  virtual void UpdatePageActions();
-  virtual void InvalidatePageActions();
-  virtual void SaveStateToContents(TabContents* contents);
-  virtual void Revert();
-  virtual const AutocompleteEditView* location_entry() const {
+  virtual void ShowFirstRunBubble(FirstRun::BubbleType bubble_type) OVERRIDE;
+  virtual void SetSuggestedText(const string16& input) OVERRIDE;
+  virtual std::wstring GetInputString() const OVERRIDE;
+  virtual WindowOpenDisposition GetWindowOpenDisposition() const OVERRIDE;
+  virtual PageTransition::Type GetPageTransition() const OVERRIDE;
+  virtual void AcceptInput() OVERRIDE;
+  virtual void FocusLocation(bool select_all) OVERRIDE;
+  virtual void FocusSearch() OVERRIDE;
+  virtual void UpdateContentSettingsIcons() OVERRIDE;
+  virtual void UpdatePageActions() OVERRIDE;
+  virtual void InvalidatePageActions() OVERRIDE;
+  virtual void SaveStateToContents(TabContents* contents) OVERRIDE;
+  virtual void Revert() OVERRIDE;
+  virtual const AutocompleteEditView* location_entry() const OVERRIDE {
     return location_entry_.get();
   }
-  virtual AutocompleteEditView* location_entry() {
+  virtual AutocompleteEditView* location_entry() OVERRIDE {
     return location_entry_.get();
   }
-  virtual LocationBarTesting* GetLocationBarForTesting() { return this; }
+  virtual LocationBarTesting* GetLocationBarForTesting() OVERRIDE {
+    return this;
+  }
 
   // Overridden from LocationBarTesting:
-  virtual int PageActionCount() { return page_action_views_.size(); }
-  virtual int PageActionVisibleCount();
-  virtual ExtensionAction* GetPageAction(size_t index);
-  virtual ExtensionAction* GetVisiblePageAction(size_t index);
-  virtual void TestPageActionPressed(size_t index);
+  virtual int PageActionCount() OVERRIDE { return page_action_views_.size(); }
+  virtual int PageActionVisibleCount() OVERRIDE;
+  virtual ExtensionAction* GetPageAction(size_t index) OVERRIDE;
+  virtual ExtensionAction* GetVisiblePageAction(size_t index) OVERRIDE;
+  virtual void TestPageActionPressed(size_t index) OVERRIDE;
 
   // Overridden from TemplateURLModelObserver
-  virtual void OnTemplateURLModelChanged();
+  virtual void OnTemplateURLModelChanged() OVERRIDE;
 
   // Thickness of the left and right edges of the omnibox, in normal mode.
   static const int kNormalHorizontalEdgeThickness;
@@ -264,7 +268,7 @@ class LocationBarView : public LocationBar,
   static const int kBubbleHorizontalPadding;
 
  protected:
-  void Focus();
+  virtual void OnFocus() OVERRIDE;
 
  private:
   typedef std::vector<ContentSettingImageView*> ContentSettingViews;

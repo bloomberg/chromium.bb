@@ -135,7 +135,7 @@ View* NativeComboboxWin::GetView() {
 }
 
 void NativeComboboxWin::SetFocus() {
-  Focus();
+  OnFocus();
 }
 
 gfx::NativeView NativeComboboxWin::GetTestingHandle() const {

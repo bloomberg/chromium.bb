@@ -121,15 +121,6 @@ void Checkbox::OnPaintFocusBorder(gfx::Canvas* canvas) {
   // Our focus border is rendered by the label, so we don't do anything here.
 }
 
-View* Checkbox::GetViewForPoint(const gfx::Point& point) {
-  return GetViewForPoint(point, false);
-}
-
-View* Checkbox::GetViewForPoint(const gfx::Point& point,
-                                bool can_create_floating) {
-  return GetLocalBounds().Contains(point) ? this : NULL;
-}
-
 void Checkbox::OnMouseEntered(const MouseEvent& e) {
   native_wrapper_->SetPushed(HitTestLabel(e));
 }
@@ -159,11 +150,11 @@ bool Checkbox::OnMouseDragged(const MouseEvent& e) {
   return false;
 }
 
-void Checkbox::WillGainFocus() {
+void Checkbox::OnFocus() {
   label_->set_paint_as_focused(true);
 }
 
-void Checkbox::WillLoseFocus() {
+void Checkbox::OnBlur() {
   label_->set_paint_as_focused(false);
 }
 

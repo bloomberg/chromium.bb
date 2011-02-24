@@ -342,19 +342,22 @@ bool Textfield::OnKeyReleased(const views::KeyEvent& e) {
   return native_wrapper_ && native_wrapper_->HandleKeyReleased(e);
 }
 
-void Textfield::WillGainFocus() {
+void Textfield::OnFocus() {
   if (native_wrapper_)
-    native_wrapper_->HandleWillGainFocus();
+    native_wrapper_->HandleFocus();
+
+  // Forward the focus to the wrapper if it exists.
+  if (!native_wrapper_ || !native_wrapper_->SetFocus()) {
+    // If there is no wrapper or the wrapper didn't take focus, call
+    // View::Focus to clear the native focus so that we still get
+    // keyboard messages.
+    View::OnFocus();
+  }
 }
 
-void Textfield::DidGainFocus() {
+void Textfield::OnBlur() {
   if (native_wrapper_)
-    native_wrapper_->HandleDidGainFocus();
-}
-
-void Textfield::WillLoseFocus() {
-  if (native_wrapper_)
-    native_wrapper_->HandleWillLoseFocus();
+    native_wrapper_->HandleBlur();
 }
 
 AccessibilityTypes::Role Textfield::GetAccessibleRole() {
@@ -380,16 +383,6 @@ void Textfield::SetEnabled(bool enabled) {
   View::SetEnabled(enabled);
   if (native_wrapper_)
     native_wrapper_->UpdateEnabled();
-}
-
-void Textfield::Focus() {
-  // Forward the focus to the wrapper if it exists.
-  if (!native_wrapper_ || !native_wrapper_->SetFocus()) {
-    // If there is no wrapper or the wrapper din't take focus, call
-    // View::Focus to clear the native focus so that we still get
-    // keyboard messages.
-    View::Focus();
-  }
 }
 
 void Textfield::ViewHierarchyChanged(bool is_add, View* parent, View* child) {

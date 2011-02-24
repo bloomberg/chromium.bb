@@ -708,7 +708,7 @@ bool RenderWidgetHostViewViews::OnKeyReleased(const views::KeyEvent& e) {
   return TRUE;
 }
 
-void RenderWidgetHostViewViews::DidGainFocus() {
+void RenderWidgetHostViewViews::OnFocus() {
 #if 0
   // TODO(anicolao): - is this needed/replicable?
   // Comes from the GTK equivalent.
@@ -739,7 +739,7 @@ void RenderWidgetHostViewViews::DidGainFocus() {
   GetRenderWidgetHost()->GotFocus();
 }
 
-void RenderWidgetHostViewViews::WillLoseFocus() {
+void RenderWidgetHostViewViews::OnBlur() {
   // If we are showing a context menu, maintain the illusion that webkit has
   // focus.
   if (!is_showing_context_menu_ && !is_hidden_ && host_)

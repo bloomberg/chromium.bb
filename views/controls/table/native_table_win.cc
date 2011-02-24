@@ -104,7 +104,7 @@ View* NativeTableWin::GetView() {
 
 void NativeTableWin::SetFocus() {
   // Focus the associated HWND.
-  Focus();
+  OnFocus();
 }
 
 gfx::NativeView NativeTableWin::GetTestingHandle() const {

@@ -59,41 +59,41 @@ class NativeTextfieldWin
   void AttachHack();
 
   // Overridden from NativeTextfieldWrapper:
-  virtual string16 GetText() const;
-  virtual void UpdateText();
-  virtual void AppendText(const string16& text);
-  virtual string16 GetSelectedText() const;
-  virtual void SelectAll();
-  virtual void ClearSelection();
-  virtual void UpdateBorder();
-  virtual void UpdateTextColor();
-  virtual void UpdateBackgroundColor();
-  virtual void UpdateReadOnly();
-  virtual void UpdateFont();
-  virtual void UpdateIsPassword();
-  virtual void UpdateEnabled();
-  virtual gfx::Insets CalculateInsets();
-  virtual void UpdateHorizontalMargins();
-  virtual void UpdateVerticalMargins();
-  virtual bool SetFocus();
-  virtual View* GetView();
-  virtual gfx::NativeView GetTestingHandle() const;
-  virtual bool IsIMEComposing() const;
-  virtual void GetSelectedRange(TextRange* range) const;
-  virtual void SelectRange(const TextRange& range);
-  virtual size_t GetCursorPosition() const;
-  virtual bool HandleKeyPressed(const views::KeyEvent& e);
-  virtual bool HandleKeyReleased(const views::KeyEvent& e);
-  virtual void HandleWillGainFocus();
-  virtual void HandleDidGainFocus();
-  virtual void HandleWillLoseFocus();
+  virtual string16 GetText() const OVERRIDE;
+  virtual void UpdateText() OVERRIDE;
+  virtual void AppendText(const string16& text) OVERRIDE;
+  virtual string16 GetSelectedText() const OVERRIDE;
+  virtual void SelectAll() OVERRIDE;
+  virtual void ClearSelection() OVERRIDE;
+  virtual void UpdateBorder() OVERRIDE;
+  virtual void UpdateTextColor() OVERRIDE;
+  virtual void UpdateBackgroundColor() OVERRIDE;
+  virtual void UpdateReadOnly() OVERRIDE;
+  virtual void UpdateFont() OVERRIDE;
+  virtual void UpdateIsPassword() OVERRIDE;
+  virtual void UpdateEnabled() OVERRIDE;
+  virtual gfx::Insets CalculateInsets() OVERRIDE;
+  virtual void UpdateHorizontalMargins() OVERRIDE;
+  virtual void UpdateVerticalMargins() OVERRIDE;
+  virtual bool SetFocus() OVERRIDE;
+  virtual View* GetView() OVERRIDE;
+  virtual gfx::NativeView GetTestingHandle() const OVERRIDE;
+  virtual bool IsIMEComposing() const OVERRIDE;
+  virtual void GetSelectedRange(TextRange* range) const OVERRIDE;
+  virtual void SelectRange(const TextRange& range) OVERRIDE;
+  virtual size_t GetCursorPosition() const OVERRIDE;
+  virtual bool HandleKeyPressed(const views::KeyEvent& e) OVERRIDE;
+  virtual bool HandleKeyReleased(const views::KeyEvent& e) OVERRIDE;
+  virtual void HandleFocus() OVERRIDE;
+  virtual void HandleBlur() OVERRIDE;
 
   // Overridden from ui::SimpleMenuModel::Delegate:
-  virtual bool IsCommandIdChecked(int command_id) const;
-  virtual bool IsCommandIdEnabled(int command_id) const;
-  virtual bool GetAcceleratorForCommandId(int command_id,
-                                          ui::Accelerator* accelerator);
-  virtual void ExecuteCommand(int command_id);
+  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
+  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
+  virtual bool GetAcceleratorForCommandId(
+      int command_id,
+      ui::Accelerator* accelerator) OVERRIDE;
+  virtual void ExecuteCommand(int command_id) OVERRIDE;
 
   // Update accessibility information.
   void InitializeAccessibilityInfo();

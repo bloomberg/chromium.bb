@@ -112,7 +112,7 @@ void TabbedPane::Layout() {
     native_tabbed_pane_->GetView()->SetBounds(0, 0, width(), height());
 }
 
-void TabbedPane::Focus() {
+void TabbedPane::OnFocus() {
   // Forward the focus to the wrapper.
   if (native_tabbed_pane_) {
     native_tabbed_pane_->SetFocus();
@@ -122,8 +122,8 @@ void TabbedPane::Focus() {
        selected_tab->NotifyAccessibilityEvent(AccessibilityTypes::EVENT_FOCUS);
   }
   else
-    View::Focus();  // Will focus the RootView window (so we still get keyboard
-                    // messages).
+    View::OnFocus();  // Will focus the RootView window (so we still get
+                      // keyboard messages).
 }
 
 void TabbedPane::OnPaintFocusBorder(gfx::Canvas* canvas) {

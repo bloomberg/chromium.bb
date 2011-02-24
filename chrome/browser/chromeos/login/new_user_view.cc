@@ -66,7 +66,7 @@ class UsernameField : public chromeos::TextfieldWithMargin {
       : controller_(controller) {}
 
   // views::Textfield overrides:
-  virtual void WillLoseFocus() {
+  virtual void OnBlur() OVERRIDE {
     string16 user_input;
     bool was_trim = TrimWhitespace(text(), TRIM_ALL, &user_input) != TRIM_NONE;
     if (!user_input.empty()) {
@@ -84,7 +84,7 @@ class UsernameField : public chromeos::TextfieldWithMargin {
   }
 
   // Overridden from views::View:
-  virtual bool OnKeyPressed(const views::KeyEvent& e) {
+  virtual bool OnKeyPressed(const views::KeyEvent& e) OVERRIDE {
     if (e.key_code() == ui::VKEY_LEFT) {
       return controller_->NavigateAway();
     }

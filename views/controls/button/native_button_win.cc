@@ -92,7 +92,7 @@ View* NativeButtonWin::GetView() {
 
 void NativeButtonWin::SetFocus() {
   // Focus the associated HWND.
-  Focus();
+  OnFocus();
 }
 
 bool NativeButtonWin::UsesNativeLabel() const {

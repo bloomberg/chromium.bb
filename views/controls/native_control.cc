@@ -277,7 +277,7 @@ void NativeControl::OnContextMenu(const POINT& location) {
     ShowContextMenu(gfx::Point(location), true);
 }
 
-void NativeControl::Focus() {
+void NativeControl::OnFocus() {
   if (container_) {
     DCHECK(container_->GetControl());
     ::SetFocus(container_->GetControl());

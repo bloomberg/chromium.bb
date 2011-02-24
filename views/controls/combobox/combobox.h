@@ -68,7 +68,7 @@ class Combobox : public View {
   virtual string16 GetAccessibleValue() OVERRIDE;
 
  protected:
-  virtual void Focus();
+  virtual void OnFocus();
   virtual void ViewHierarchyChanged(bool is_add, View* parent,
                                     View* child);
   virtual std::string GetClassName() const;
