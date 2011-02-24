@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@
 // in-line autocomplete.
 //
 // It is created on the history thread and passed to the main thread where
-// operations can be completed synchronously. It listenes for notifications
+// operations can be completed synchronously. It listens for notifications
 // from the "regular" history backend and keeps itself in sync.
 
 #ifndef CHROME_BROWSER_HISTORY_IN_MEMORY_HISTORY_BACKEND_H_
@@ -41,8 +41,15 @@ class InMemoryHistoryBackend : public NotificationObserver {
   InMemoryHistoryBackend();
   ~InMemoryHistoryBackend();
 
-  // Initializes with data from the given history database.
+  // Initializes the backend from the history database pointed to by the
+  // full path in |history_filename|. |history_dir| is the path to the
+  // directory containing the history database and is also used
+  // as the directory where the InMemoryURLIndex's cache is kept. |db| is
+  // used for building the InMemoryURLIndex. |languages| gives the
+  // preferred user languages with which URLs and page titles are
+  // interpreted while decomposing into words and characters during indexing.
   bool Init(const FilePath& history_filename,
+            const FilePath& history_dir,
             URLDatabase* db,
             const std::string& languages);
 

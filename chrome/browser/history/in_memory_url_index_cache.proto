@@ -1,0 +1,80 @@
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// InMemoryURLIndex caching protocol buffers.
+//
+// At certain times during browser operation, the indexes from the
+// InMemoryURLIndex are written to a disk-based cache using the
+// following protobuf description.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package in_memory_url_index;
+
+message InMemoryURLIndexCacheItem {
+
+  message WordListItem {
+    required uint32 word_count = 1;
+    repeated string word = 2;
+  }
+
+  message WordMapItem {
+    message WordMapEntry {
+      required string word = 1;
+      required int32 word_id = 2;
+    }
+
+    required uint32 item_count = 1;
+    repeated WordMapEntry word_map_entry = 2;
+  }
+
+  message CharWordMapItem {
+    message CharWordMapEntry {
+      required uint32 item_count = 1;
+      required int32 char_16 = 2;
+      repeated int32 word_id = 3 [packed=true];
+    }
+
+    required uint32 item_count = 1;
+    repeated CharWordMapEntry char_word_map_entry = 2;
+  }
+
+  message WordIDHistoryMapItem {
+    message WordIDHistoryMapEntry {
+      required uint32 item_count = 1;
+      required int32 word_id = 2;
+      repeated int64 history_id = 3 [packed=true];
+    }
+
+    required uint32 item_count = 1;
+    repeated WordIDHistoryMapEntry word_id_history_map_entry = 2;
+  }
+
+  message HistoryInfoMapItem {
+    message HistoryInfoMapEntry {
+      required int64 history_id = 1;
+      required int32 visit_count = 2;
+      required int32 typed_count = 3;
+      required int64 last_visit = 4;
+      required string url = 5;
+      optional string title = 6;
+    }
+
+    required uint32 item_count = 1;
+    repeated HistoryInfoMapEntry history_info_map_entry = 2;
+  }
+
+  // The timestamp of the cache, used to validate against an
+  // accompanying transaction journal.
+  required int64 timestamp = 1;
+  required int32 history_item_count = 2;
+
+  optional WordListItem word_list = 3;
+  optional WordMapItem word_map = 4;
+  optional CharWordMapItem char_word_map = 5;
+  optional WordIDHistoryMapItem word_id_history_map = 6;
+  optional HistoryInfoMapItem history_info_map = 7;
+}

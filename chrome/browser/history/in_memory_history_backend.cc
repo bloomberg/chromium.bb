@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/metrics/histogram.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -32,25 +31,24 @@ InMemoryHistoryBackend::InMemoryHistoryBackend()
 }
 
 InMemoryHistoryBackend::~InMemoryHistoryBackend() {
+  if (index_.get())
+    index_->ShutDown();
 }
 
 bool InMemoryHistoryBackend::Init(const FilePath& history_filename,
+                                  const FilePath& history_dir,
                                   URLDatabase* db,
                                   const std::string& languages) {
   db_.reset(new InMemoryDatabase);
   bool success = db_->InitFromDisk(history_filename);
-#if 0
-  // TODO(mrossetti): Temporary removal to help determine if the
-  // InMemoryURLIndex is contributing to a startup slowdown.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableHistoryQuickProvider)) {
-    index_.reset(new InMemoryURLIndex());
-    base::TimeTicks beginning_time = base::TimeTicks::Now();
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableHistoryQuickProvider) &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableHistoryQuickProvider)) {
+    index_.reset(new InMemoryURLIndex(history_dir));
+
     index_->Init(db, languages);
-    UMA_HISTOGRAM_TIMES("Autocomplete.HistoryDatabaseIndexingTime",
-                        base::TimeTicks::Now() - beginning_time);
   }
-#endif
   return success;
 }
 
@@ -134,7 +132,9 @@ void InMemoryHistoryBackend::OnTypedURLsModified(
     if (id)
       db_->UpdateURLRow(id, *i);
     else
-      db_->AddURL(*i);
+      id = db_->AddURL(*i);
+    if (index_.get())
+      index_->UpdateURL(id, *i);
   }
 }
 
@@ -147,6 +147,8 @@ void InMemoryHistoryBackend::OnURLsDeleted(const URLsDeletedDetails& details) {
     db_.reset(new InMemoryDatabase);
     if (!db_->InitFromScratch())
       db_.reset();
+    if (index_.get())
+      index_->ReloadFromHistory(db_.get(), true);
     return;
   }
 
@@ -158,6 +160,8 @@ void InMemoryHistoryBackend::OnURLsDeleted(const URLsDeletedDetails& details) {
       // We typically won't have most of them since we only have a subset of
       // history, so ignore errors.
       db_->DeleteURLRow(id);
+      if (index_.get())
+        index_->DeleteURL(id);
     }
   }
 }

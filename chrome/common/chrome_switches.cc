@@ -519,6 +519,9 @@ const char kEnableFastback[]                = "enable-fastback";
 // testing, for example page cycler and layout tests.  See bug 1157243.
 const char kEnableFileCookies[]             = "enable-file-cookies";
 
+// Enable the use of the HistoryQuickProvider for autocomplete results.
+const char kEnableHistoryQuickProvider[]    = "enable-history-quick-provider";
+
 // Enable FileSystem API URLs.
 const char kEnableFileSystemURLScheme[]     = "enable-filesystem-url-scheme";
 

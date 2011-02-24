@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -550,7 +550,7 @@ void HistoryBackend::InitImpl(const std::string& languages) {
   // Fill the in-memory database and send it back to the history service on the
   // main thread.
   InMemoryHistoryBackend* mem_backend = new InMemoryHistoryBackend;
-  if (mem_backend->Init(history_name, db_.get(), languages))
+  if (mem_backend->Init(history_name, history_dir_, db_.get(), languages))
     delegate_->SetInMemoryBackend(mem_backend);  // Takes ownership of pointer.
   else
     delete mem_backend;  // Error case, run without the in-memory DB.

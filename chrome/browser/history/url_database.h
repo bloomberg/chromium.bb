@@ -127,8 +127,14 @@ class URLDatabase {
     sql::Statement statement_;
   };
 
-  // Initializes the given enumerator to enumerator all URLs in the database
+  // Initializes the given enumerator to enumerator all URLs in the database.
   bool InitURLEnumeratorForEverything(URLEnumerator* enumerator);
+
+  // Initializes the given enumerator to enumerator all URLs in the database
+  // that are historically significant: ones having been visited within 3 days,
+  // having their URL manually typed more than once, or having been visited
+  // more than 3 times.
+  bool InitURLEnumeratorForSignificant(URLEnumerator* enumerator);
 
   // Favicons ------------------------------------------------------------------
 

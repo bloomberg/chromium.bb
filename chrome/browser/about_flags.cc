@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -253,6 +253,13 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_WEBAUDIO_DESCRIPTION,
     kOsMac,  // TODO(crogers): add windows and linux when FFT is ready.
     SINGLE_VALUE_TYPE(switches::kEnableWebAudio)
+  },
+  {
+    "enable-history-quick-provider",
+    IDS_FLAGS_ENABLE_HISTORY_QUICK_PROVIDER,
+    IDS_FLAGS_ENABLE_HISTORY_QUICK_PROVIDER_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableHistoryQuickProvider)
   },
 };
 
