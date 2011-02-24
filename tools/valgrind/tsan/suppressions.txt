@@ -384,10 +384,17 @@
 }
 
 {
-   bug_74029
+   bug_74029a
    ThreadSanitzier:Race
    fun:ThreadWatcher::OnPongMessage
    fun:CustomThreadWatcher::OnPongMessage
+}
+
+{
+   bug_74029b
+   ThreadSanitzier:Race
+   ...
+   fun:ThreadWatcherTest_ThreadResponding_Test::TestBody*
 }
 
 ############################
