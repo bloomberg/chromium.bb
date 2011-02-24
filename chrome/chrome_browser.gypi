@@ -1860,6 +1860,7 @@
         'browser/search_engines/util.cc',
         'browser/search_engines/util.h',
         'browser/service/service_process_control.cc',
+        'browser/service/service_process_control_mac.mm',
         'browser/service/service_process_control.h',
         'browser/service/service_process_control_manager.cc',
         'browser/service/service_process_control_manager.h',
@@ -3697,6 +3698,8 @@
             '../third_party/GTM/Foundation/GTMNSNumber+64Bit.m',
             '../third_party/GTM/Foundation/GTMNSObject+KeyValueObserving.h',
             '../third_party/GTM/Foundation/GTMNSObject+KeyValueObserving.m',
+            '../third_party/GTM/Foundation/GTMServiceManagement.h',
+            '../third_party/GTM/Foundation/GTMServiceManagement.c',
             # MolokoCacao additions
             '../third_party/molokocacao/NSBezierPath+MCAdditions.h',
             '../third_party/molokocacao/NSBezierPath+MCAdditions.m',

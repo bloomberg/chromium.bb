@@ -7,11 +7,14 @@
 
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/process.h"
 #include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
+#include "ipc/ipc_channel_handle.h"
 
 class Task;
+class CommandLine;
 
 namespace base {
   class MessageLoopProxy;
@@ -20,9 +23,9 @@ namespace base {
 template <typename T> struct DefaultSingletonTraits;
 
 // Return the IPC channel to connect to the service process.
-//
-std::string GetServiceProcessChannelName();
+IPC::ChannelHandle GetServiceProcessChannel();
 
+#if !defined(OS_MACOSX)
 // Return a name that is scoped to this instance of the service process. We
 // use the user-data-dir as a scoping prefix.
 std::string GetServiceProcessScopedName(const std::string& append_str);
@@ -30,6 +33,7 @@ std::string GetServiceProcessScopedName(const std::string& append_str);
 // Return a name that is scoped to this instance of the service process. We
 // use the user-data-dir and the version as a scoping prefix.
 std::string GetServiceProcessScopedVersionedName(const std::string& append_str);
+#endif  // OS_MACOSX
 
 // The following methods are used in a process that acts as a client to the
 // service process (typically the browser process).
@@ -43,7 +47,7 @@ bool CheckServiceProcessReady();
 // a true return value only means that some process shared data was available,
 // and not that the process is ready to receive IPC commands, or even running.
 // This method is only exposed for testing.
-bool GetServiceProcessSharedData(std::string* version, base::ProcessId* pid);
+bool GetServiceProcessData(std::string* version, base::ProcessId* pid);
 // --------------------------------------------------------------------------
 
 // Forces a service process matching the specified version to shut down.
@@ -76,15 +80,19 @@ class ServiceProcessState {
   void SignalStopped();
 
   // Register the service process to run on startup.
-  bool AddToAutoRun();
+  bool AddToAutoRun(CommandLine* command_line);
 
   // Unregister the service process to run on startup.
   bool RemoveFromAutoRun();
+
+  // Return the channel handle used for communicating with the service.
+  IPC::ChannelHandle GetServiceProcessChannel();
 
  private:
   ServiceProcessState();
   ~ServiceProcessState();
 
+#if !defined(OS_MACOSX)
   // Create the shared memory data for the service process.
   bool CreateSharedData();
 
@@ -95,9 +103,10 @@ class ServiceProcessState {
   // Acquires a singleton lock for the service process. A return value of false
   // means that a service process instance is already running.
   bool TakeSingletonLock();
+#endif  // !OS_MACOSX
 
-  // Key used to register the service process to auto-run.
-  std::string GetAutoRunKey();
+  // Initialize the platform specific state.
+  bool InitializeState();
 
   // Tear down the platform specific state.
   void TearDownState();

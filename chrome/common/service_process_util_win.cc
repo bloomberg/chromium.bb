@@ -28,6 +28,10 @@ string16 GetServiceProcessShutdownEventName() {
       GetServiceProcessScopedVersionedName("_service_shutdown_evt"));
 }
 
+std::string GetServiceProcessAutoRunKey() {
+  return GetServiceProcessScopedName("_service_run");
+}
+
 class ServiceProcessShutdownMonitor
     : public base::win::ObjectWatcher::Delegate {
  public:
@@ -85,8 +89,14 @@ struct ServiceProcessState::StateData {
   scoped_ptr<ServiceProcessShutdownMonitor> shutdown_monitor;
 };
 
-bool ServiceProcessState::TakeSingletonLock() {
+bool ServiceProcessState::InitializeState() {
   DCHECK(!state_);
+  state_ = new StateData;
+  return true;
+}
+
+bool ServiceProcessState::TakeSingletonLock() {
+  DCHECK(state_);
   string16 event_name = GetServiceProcessReadyEventName();
   CHECK(event_name.length() <= MAX_PATH);
   base::win::ScopedHandle service_process_ready_event;
@@ -96,7 +106,6 @@ bool ServiceProcessState::TakeSingletonLock() {
   if ((error == ERROR_ALREADY_EXISTS) || (error == ERROR_ACCESS_DENIED))
     return false;
   DCHECK(service_process_ready_event.IsValid());
-  state_ = new StateData;
   state_->ready_event.Set(service_process_ready_event.Take());
   return true;
 }
@@ -116,25 +125,16 @@ bool ServiceProcessState::SignalReady(
   return true;
 }
 
-bool ServiceProcessState::AddToAutoRun() {
-  FilePath chrome_path;
-  if (PathService::Get(base::FILE_EXE, &chrome_path)) {
-    CommandLine cmd_line(chrome_path);
-    cmd_line.AppendSwitchASCII(switches::kProcessType,
-                               switches::kServiceProcess);
-    // We need a unique name for the command per user-date-dir. Just use the
-    // channel name.
-    return base::win::AddCommandToAutoRun(
-        HKEY_CURRENT_USER,
-        UTF8ToWide(GetAutoRunKey()),
-        cmd_line.command_line_string());
-  }
-  return false;
+bool ServiceProcessState::AddToAutoRun(CommandLine* cmd_line) {
+  return base::win::AddCommandToAutoRun(
+      HKEY_CURRENT_USER,
+      UTF8ToWide(GetServiceProcessAutoRunKey()),
+      cmd_line->command_line_string());
 }
 
 bool ServiceProcessState::RemoveFromAutoRun() {
   return base::win::RemoveCommandFromAutoRun(
-      HKEY_CURRENT_USER, UTF8ToWide(GetAutoRunKey()));
+      HKEY_CURRENT_USER, UTF8ToWide(GetServiceProcessAutoRunKey()));
 }
 
 void ServiceProcessState::TearDownState() {

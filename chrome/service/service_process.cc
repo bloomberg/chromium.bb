@@ -205,19 +205,21 @@ bool ServiceProcess::Initialize(MessageLoopForUI* message_loop,
   }
 
   VLOG(1) << "Starting Service Process IPC Server";
-  ipc_server_.reset(new ServiceIPCServer(GetServiceProcessChannelName()));
+  ServiceProcessState* state = ServiceProcessState::GetInstance();
+  ipc_server_.reset(new ServiceIPCServer(state->GetServiceProcessChannel()));
   ipc_server_->Init();
 
   // After the IPC server has started we signal that the service process is
   // ready.
-  if (!ServiceProcessState::GetInstance()->SignalReady(
-          io_thread_->message_loop_proxy(),
-          NewRunnableMethod(this, &ServiceProcess::Shutdown))) {
+  if (!state->SignalReady(io_thread_->message_loop_proxy(),
+                          NewRunnableMethod(this, &ServiceProcess::Shutdown))) {
     return false;
   }
 
   // See if we need to stay running.
   ScheduleShutdownCheck();
+  command_line_.reset(new CommandLine(command_line));
+
   return true;
 }
 
@@ -307,7 +309,7 @@ void ServiceProcess::OnChromotingHostDisabled() {
 void ServiceProcess::OnServiceEnabled() {
   enabled_services_++;
   if (1 == enabled_services_) {
-    ServiceProcessState::GetInstance()->AddToAutoRun();
+    ServiceProcessState::GetInstance()->AddToAutoRun(command_line_.get());
   }
 }
 

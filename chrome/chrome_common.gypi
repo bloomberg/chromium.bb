@@ -363,7 +363,10 @@
         'common/service_messages_internal.h',
         'common/service_process_util.cc',
         'common/service_process_util.h',
+        'common/service_process_util_linux.cc',
+        'common/service_process_util_mac.mm',
         'common/service_process_util_posix.cc',
+        'common/service_process_util_posix.h',
         'common/service_process_util_win.cc',
         'common/socket_stream_dispatcher.cc',
         'common/socket_stream_dispatcher.h',
@@ -488,6 +491,9 @@
               'common/common.sb',
             ],
           },
+          'include_dirs': [
+            '../third_party/GTM',
+          ],
         }],
         ['OS!="win"', {
           'sources!': [

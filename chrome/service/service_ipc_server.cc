@@ -9,8 +9,8 @@
 #include "chrome/service/service_process.h"
 #include "ipc/ipc_logging.h"
 
-ServiceIPCServer::ServiceIPCServer(const std::string& channel_name)
-    : channel_name_(channel_name), client_connected_(false) {
+ServiceIPCServer::ServiceIPCServer(const IPC::ChannelHandle& channel_handle)
+    : channel_handle_(channel_handle), client_connected_(false) {
 }
 
 bool ServiceIPCServer::Init() {
@@ -24,7 +24,7 @@ bool ServiceIPCServer::Init() {
 }
 
 void ServiceIPCServer::CreateChannel() {
-  channel_.reset(new IPC::SyncChannel(channel_name_,
+  channel_.reset(new IPC::SyncChannel(channel_handle_,
       IPC::Channel::MODE_NAMED_SERVER, this,
       g_service_process->io_thread()->message_loop(), true,
       g_service_process->shutdown_event()));
@@ -63,8 +63,16 @@ void ServiceIPCServer::OnChannelError() {
   client_connected_ = false;
   // TODO(sanjeevr): Instead of invoking the service process for such handlers,
   // define a Client interface that the ServiceProcess can implement.
-  if (client_was_connected && g_service_process->HandleClientDisconnect()) {
-    CreateChannel();
+  if (client_was_connected) {
+    if (g_service_process->HandleClientDisconnect()) {
+      CreateChannel();
+    }
+  } else {
+    // If the client was never even connected we had an error connecting.
+    if (!client_connected_) {
+      LOG(ERROR) << "Unable to open service ipc channel "
+                 << "named: " << channel_handle_.name;
+    }
   }
 }
 

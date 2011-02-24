@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/basictypes.h"
+
+#if !defined(OS_MACOSX)
+// TODO(dmaclach): Figure out tests that will work with launchd on Mac OS.
+
 #include "base/at_exit.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
@@ -95,11 +100,11 @@ TEST_F(ServiceProcessStateTest, SharedMem) {
   // GetServiceProcessPid to lie. On Windows, we use a named event so we
   // don't have this issue. Until we have a more stable shared memory
   // implementation on Posix, this check will only execute on Windows.
-  ASSERT_FALSE(GetServiceProcessSharedData(&version, &pid));
+  ASSERT_FALSE(GetServiceProcessData(&version, &pid));
 #endif  // defined(OS_WIN)
   ServiceProcessState* state = ServiceProcessState::GetInstance();
   ASSERT_TRUE(state->Initialize());
-  ASSERT_TRUE(GetServiceProcessSharedData(&version, &pid));
+  ASSERT_TRUE(GetServiceProcessData(&version, &pid));
   ASSERT_EQ(base::GetCurrentProcId(), pid);
 }
 
@@ -113,7 +118,7 @@ TEST_F(ServiceProcessStateTest, ForceShutdown) {
   ASSERT_TRUE(CheckServiceProcessReady());
   std::string version;
   base::ProcessId pid;
-  ASSERT_TRUE(GetServiceProcessSharedData(&version, &pid));
+  ASSERT_TRUE(GetServiceProcessData(&version, &pid));
   ASSERT_TRUE(ForceServiceProcessShutdown(version, pid));
   int exit_code = 0;
   ASSERT_TRUE(base::WaitForExitCodeWithTimeout(handle,
@@ -157,3 +162,4 @@ MULTIPROCESS_TEST_MAIN(ServiceProcessStateTestShutdown) {
   return 0;
 }
 
+#endif  // !OS_MACOSX

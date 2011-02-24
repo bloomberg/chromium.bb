@@ -386,11 +386,11 @@ bool Channel::ChannelImpl::CreatePipe(
 #endif   // IPC_USES_READWRITE
   } else if (mode_ & MODE_NAMED_FLAG) {
     // Case 2 from comment above.
-    must_unlink_ = true;
     if (mode_ & MODE_SERVER_FLAG) {
       if (!CreateServerUnixDomainSocket(pipe_name_, &pipe_)) {
         return false;
       }
+      must_unlink_ = true;
     } else if (mode_ & MODE_CLIENT_FLAG) {
       if (!CreateClientUnixDomainSocket(pipe_name_, &pipe_)) {
         return false;

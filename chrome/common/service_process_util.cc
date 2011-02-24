@@ -21,6 +21,8 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/service_process_util.h"
 
+#if !defined(OS_MACOSX)
+
 namespace {
 
 // This should be more than enough to hold a version string assuming each part
@@ -49,7 +51,7 @@ enum ServiceProcessRunningState {
 ServiceProcessRunningState GetServiceProcessRunningState(
     std::string* service_version_out, base::ProcessId* pid_out) {
   std::string version;
-  if (!GetServiceProcessSharedData(&version, pid_out))
+  if (!GetServiceProcessData(&version, pid_out))
     return SERVICE_NOT_RUNNING;
 
 #if defined(OS_POSIX)
@@ -125,14 +127,9 @@ std::string GetServiceProcessScopedVersionedName(
   return GetServiceProcessScopedName(versioned_str);
 }
 
-// Gets the name of the service process IPC channel.
-std::string GetServiceProcessChannelName() {
-  return GetServiceProcessScopedVersionedName("_service_ipc");
-}
-
 // Reads the named shared memory to get the shared data. Returns false if no
 // matching shared memory was found.
-bool GetServiceProcessSharedData(std::string* version, base::ProcessId* pid) {
+bool GetServiceProcessData(std::string* version, base::ProcessId* pid) {
   scoped_ptr<base::SharedMemory> shared_mem_service_data;
   shared_mem_service_data.reset(new base::SharedMemory());
   ServiceProcessSharedData* service_data = NULL;
@@ -153,17 +150,22 @@ bool GetServiceProcessSharedData(std::string* version, base::ProcessId* pid) {
   return false;
 }
 
+// Gets the name of the service process IPC channel.
+IPC::ChannelHandle GetServiceProcessChannel() {
+  return GetServiceProcessScopedVersionedName("_service_ipc");
+}
+
+#endif  // !OS_MACOSX
+
 ServiceProcessState::ServiceProcessState() : state_(NULL) {
 }
 
 ServiceProcessState::~ServiceProcessState() {
+#if !defined(OS_MACOSX)
   if (shared_mem_service_data_.get()) {
-    // Delete needs a pool wrapped around it because it calls some Obj-C on Mac,
-    // and since ServiceProcessState is a singleton, it gets destructed after
-    // the standard NSAutoreleasePools have already been cleaned up.
-    base::mac::ScopedNSAutoreleasePool pool;
     shared_mem_service_data_->Delete(GetServiceProcessSharedMemName());
   }
+#endif  // !OS_MACOSX
   TearDownState();
 }
 
@@ -172,7 +174,16 @@ ServiceProcessState* ServiceProcessState::GetInstance() {
   return Singleton<ServiceProcessState>::get();
 }
 
+void ServiceProcessState::SignalStopped() {
+  TearDownState();
+  shared_mem_service_data_.reset();
+}
+
+#if !defined(OS_MACOSX)
 bool ServiceProcessState::Initialize() {
+  if (!InitializeState()) {
+    return false;
+  }
   if (!TakeSingletonLock()) {
     return false;
   }
@@ -242,11 +253,8 @@ bool ServiceProcessState::CreateSharedData() {
   return true;
 }
 
-std::string ServiceProcessState::GetAutoRunKey() {
-  return GetServiceProcessScopedName("_service_run");
+IPC::ChannelHandle ServiceProcessState::GetServiceProcessChannel() {
+  return ::GetServiceProcessChannel();
 }
 
-void ServiceProcessState::SignalStopped() {
-  TearDownState();
-  shared_mem_service_data_.reset();
-}
+#endif  // !OS_MACOSX

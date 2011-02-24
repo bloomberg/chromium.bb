@@ -25,6 +25,13 @@ class ServiceProcessControlBrowserTest
     ServiceProcessControlManager::GetInstance()->Shutdown();
   }
 
+#if defined(OS_MACOSX)
+  virtual void TearDown() {
+    // ForceServiceProcessShutdown removes the process from launchd on Mac.
+    ForceServiceProcessShutdown("", 0);
+  }
+#endif  // OS_MACOSX
+
  protected:
   void LaunchServiceProcessControl() {
     ServiceProcessControl* process =
@@ -72,7 +79,7 @@ class ServiceProcessControlBrowserTest
 
   void ProcessControlLaunched() {
     base::ProcessId service_pid;
-    EXPECT_TRUE(GetServiceProcessSharedData(NULL, &service_pid));
+    EXPECT_TRUE(GetServiceProcessData(NULL, &service_pid));
     EXPECT_NE(static_cast<base::ProcessId>(0), service_pid);
     EXPECT_TRUE(base::OpenProcessHandleWithAccess(
         service_pid,
@@ -194,7 +201,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
   // Make sure we are connected to the service process.
   EXPECT_TRUE(process()->is_connected());
   base::ProcessId service_pid;
-  EXPECT_TRUE(GetServiceProcessSharedData(NULL, &service_pid));
+  EXPECT_TRUE(GetServiceProcessData(NULL, &service_pid));
   EXPECT_NE(static_cast<base::ProcessId>(0), service_pid);
   chrome::VersionInfo version_info;
   ForceServiceProcessShutdown(version_info.Version(), service_pid);
@@ -203,10 +210,10 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, CheckPid) {
   base::ProcessId service_pid;
-  EXPECT_FALSE(GetServiceProcessSharedData(NULL, &service_pid));
+  EXPECT_FALSE(GetServiceProcessData(NULL, &service_pid));
   // Launch the service process.
   LaunchServiceProcessControl();
-  EXPECT_TRUE(GetServiceProcessSharedData(NULL, &service_pid));
+  EXPECT_TRUE(GetServiceProcessData(NULL, &service_pid));
   EXPECT_NE(static_cast<base::ProcessId>(0), service_pid);
 }
 
