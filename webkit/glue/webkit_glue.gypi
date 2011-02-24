@@ -295,6 +295,8 @@
         '../plugins/ppapi/ppb_file_ref_impl.h',
         '../plugins/ppapi/ppb_file_system_impl.cc',
         '../plugins/ppapi/ppb_file_system_impl.h',
+        '../plugins/ppapi/ppb_flash_file_impl.cc',
+        '../plugins/ppapi/ppb_flash_file_impl.h',
         '../plugins/ppapi/ppb_flash_impl.cc',
         '../plugins/ppapi/ppb_flash_impl.h',
         '../plugins/ppapi/ppb_flash_impl_linux.cc',

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -346,37 +346,6 @@ IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFlash_GetProxyForURL,
                            PP_Instance /* instance */,
                            std::string /* url */,
                            pp::proxy::SerializedVar /* result */)
-IPC_SYNC_MESSAGE_ROUTED3_2(PpapiHostMsg_PPBFlash_OpenModuleLocalFile,
-                           PP_Instance /* instance */,
-                           std::string /* path */,
-                           int32_t /* mode */,
-                           IPC::PlatformFileForTransit /* file_handle */,
-                           int32_t /* result */)
-IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBFlash_RenameModuleLocalFile,
-                           PP_Instance /* instance */,
-                           std::string /* path_from */,
-                           std::string /* path_to */,
-                           int32_t /* result */)
-IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBFlash_DeleteModuleLocalFileOrDir,
-                           PP_Instance /* instance */,
-                           std::string /* path */,
-                           PP_Bool /* recursive */,
-                           int32_t /* result */)
-IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFlash_CreateModuleLocalDir,
-                           PP_Instance /* instance */,
-                           std::string /* path */,
-                           int32_t /* result */)
-IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBFlash_QueryModuleLocalFile,
-                           PP_Instance /* instance */,
-                           std::string /* path */,
-                           PP_FileInfo_Dev /* info */,
-                           int32_t /* result */)
-IPC_SYNC_MESSAGE_ROUTED2_2(
-    PpapiHostMsg_PPBFlash_GetModuleLocalDirContents,
-    PP_Instance /* instance */,
-    std::string /* path */,
-    std::vector<pp::proxy::SerializedDirEntry> /* entries */,
-    int32_t /* result */)
 IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBFlash_NavigateToURL,
                            PP_Instance /* instance */,
                            std::string /* url */,
@@ -386,6 +355,40 @@ IPC_SYNC_MESSAGE_ROUTED1_0(PpapiHostMsg_PPBFlash_RunMessageLoop,
                            PP_Instance /* instance */)
 IPC_SYNC_MESSAGE_ROUTED1_0(PpapiHostMsg_PPBFlash_QuitMessageLoop,
                            PP_Instance /* instance */)
+
+// PPB_Flash_File_ModuleLocal.
+IPC_SYNC_MESSAGE_ROUTED3_2(PpapiHostMsg_PPBFlashFile_ModuleLocal_OpenFile,
+                           PP_Instance /* instance */,
+                           std::string /* path */,
+                           int32_t /* mode */,
+                           IPC::PlatformFileForTransit /* file_handle */,
+                           int32_t /* result */)
+IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBFlashFile_ModuleLocal_RenameFile,
+                           PP_Instance /* instance */,
+                           std::string /* path_from */,
+                           std::string /* path_to */,
+                           int32_t /* result */)
+IPC_SYNC_MESSAGE_ROUTED3_1(
+    PpapiHostMsg_PPBFlashFile_ModuleLocal_DeleteFileOrDir,
+    PP_Instance /* instance */,
+    std::string /* path */,
+    PP_Bool /* recursive */,
+    int32_t /* result */)
+IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFlashFile_ModuleLocal_CreateDir,
+                           PP_Instance /* instance */,
+                           std::string /* path */,
+                           int32_t /* result */)
+IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBFlashFile_ModuleLocal_QueryFile,
+                           PP_Instance /* instance */,
+                           std::string /* path */,
+                           PP_FileInfo_Dev /* info */,
+                           int32_t /* result */)
+IPC_SYNC_MESSAGE_ROUTED2_2(
+    PpapiHostMsg_PPBFlashFile_ModuleLocal_GetDirContents,
+    PP_Instance /* instance */,
+    std::string /* path */,
+    std::vector<pp::proxy::SerializedDirEntry> /* entries */,
+    int32_t /* result */)
 
 // PPB_Flash_Menu
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFlashMenu_Create,

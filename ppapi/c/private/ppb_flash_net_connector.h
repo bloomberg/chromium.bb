@@ -8,7 +8,7 @@
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
-#include "ppapi/c/private/ppb_flash.h"  // For |PP_FileHandle|.
+#include "ppapi/c/private/ppb_flash_file.h"  // For |PP_FileHandle|.
 
 #define PPB_FLASH_NETCONNECTOR_INTERFACE "PPB_Flash_NetConnector;1"
 
