@@ -1587,6 +1587,133 @@ TEST_F(ViewTest, TransformPaint) {
   widget->CloseNow();
 }
 
+TEST_F(ViewTest, TransformEvent) {
+  TestView* v1 = new TestView();
+  v1->SetBounds(0, 0, 500, 300);
+
+  TestView* v2 = new TestView();
+  v2->SetBounds(100, 100, 200, 100);
+
+  Widget* widget = CreateWidget();
+#if defined(OS_WIN)
+  WidgetWin* window_win = static_cast<WidgetWin*>(widget);
+  window_win->set_window_style(WS_OVERLAPPEDWINDOW);
+  window_win->Init(NULL, gfx::Rect(50, 50, 650, 650));
+#endif
+  RootView* root = widget->GetRootView();
+
+  root->AddChildView(v1);
+  v1->AddChildView(v2);
+
+  // At this moment, |v2| occupies (100, 100) to (300, 200) in |root|.
+
+  // Rotate |v1| counter-clockwise.
+  v1->SetRotation(-90.0);
+  v1->SetTranslateY(500);
+
+  // |v2| now occupies (100, 200) to (200, 400) in |root|.
+  v1->Reset();
+  v2->Reset();
+
+  MouseEvent pressed(ui::ET_MOUSE_PRESSED,
+                     110, 210,
+                     ui::EF_LEFT_BUTTON_DOWN);
+  root->OnMousePressed(pressed);
+  EXPECT_EQ(0, v1->last_mouse_event_type_);
+  EXPECT_EQ(ui::ET_MOUSE_PRESSED, v2->last_mouse_event_type_);
+  EXPECT_EQ(190, v2->location_.x());
+  EXPECT_EQ(10, v2->location_.y());
+
+  MouseEvent released(ui::ET_MOUSE_RELEASED, 0, 0, 0);
+  root->OnMouseReleased(released, false);
+
+  // Now rotate |v2| inside |v1| clockwise.
+  v2->SetRotation(90.0);
+  v2->SetTranslateX(100);
+
+  // Now, |v2| occupies (100, 100) to (200, 300) in |v1|, and (100, 300) to
+  // (300, 400) in |root|.
+
+  v1->Reset();
+  v2->Reset();
+
+  MouseEvent p2(ui::ET_MOUSE_PRESSED,
+                110, 320,
+                ui::EF_LEFT_BUTTON_DOWN);
+  root->OnMousePressed(p2);
+  EXPECT_EQ(0, v1->last_mouse_event_type_);
+  EXPECT_EQ(ui::ET_MOUSE_PRESSED, v2->last_mouse_event_type_);
+  EXPECT_EQ(10, v2->location_.x());
+  EXPECT_EQ(20, v2->location_.y());
+
+  root->OnMouseReleased(released, false);
+
+  v1->ResetTransform();
+  v2->ResetTransform();
+
+  TestView* v3 = new TestView();
+  v3->SetBounds(10, 10, 20, 30);
+  v2->AddChildView(v3);
+
+  // Rotate |v3| clockwise with respect to |v2|.
+  v3->SetRotation(90.0);
+  v3->SetTranslateX(30);
+
+  // Scale |v2| with respect to |v1| along both axis.
+  v2->SetScale(0.8, 0.5);
+
+  // |v3| occupies (108, 105) to (132, 115) in |root|.
+
+  v1->Reset();
+  v2->Reset();
+  v3->Reset();
+
+  MouseEvent p3(ui::ET_MOUSE_PRESSED,
+                112, 110,
+                ui::EF_LEFT_BUTTON_DOWN);
+  root->OnMousePressed(p3);
+
+  EXPECT_EQ(ui::ET_MOUSE_PRESSED, v3->last_mouse_event_type_);
+  EXPECT_EQ(10, v3->location_.x());
+  EXPECT_EQ(25, v3->location_.y());
+
+  root->OnMouseReleased(released, false);
+
+  v1->ResetTransform();
+  v2->ResetTransform();
+  v3->ResetTransform();
+
+  v1->Reset();
+  v2->Reset();
+  v3->Reset();
+
+  // Rotate |v3| clockwise with respect to |v2|, and scale it along both axis.
+  v3->SetRotation(90.0);
+  v3->SetTranslateX(30);
+  // Rotation sets some scaling transformation. Using SetScale would overwrite
+  // that and pollute the rotation. So combine the scaling with the existing
+  // transforamtion.
+  v3->ConcatScale(0.8, 0.5);
+
+  // Translate |v2| with respect to |v1|.
+  v2->SetTranslate(10, 10);
+
+  // |v3| now occupies (120, 120) to (144, 130) in |root|.
+
+  MouseEvent p4(ui::ET_MOUSE_PRESSED,
+                124, 125,
+                ui::EF_LEFT_BUTTON_DOWN);
+  root->OnMousePressed(p4);
+
+  EXPECT_EQ(ui::ET_MOUSE_PRESSED, v3->last_mouse_event_type_);
+  EXPECT_EQ(10, v3->location_.x());
+  EXPECT_EQ(25, v3->location_.y());
+
+  root->OnMouseReleased(released, false);
+
+  widget->CloseNow();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // OnVisibleBoundsChanged()
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "ui/gfx/brush.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/transform_skia.h"
 
 #if defined(OS_WIN)
 #include "ui/gfx/canvas_skia_paint.h"
@@ -328,6 +329,10 @@ gfx::NativeDrawingContext CanvasSkia::BeginPlatformPaint() {
 
 void CanvasSkia::EndPlatformPaint() {
   endPlatformPaint();
+}
+
+void CanvasSkia::Transform(const ui::Transform& transform) {
+  concat(*reinterpret_cast<const ui::TransformSkia&>(transform).matrix_.get());
 }
 
 CanvasSkia* CanvasSkia::AsCanvasSkia() {

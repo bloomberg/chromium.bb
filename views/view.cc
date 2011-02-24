@@ -10,12 +10,11 @@
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
-#include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/path.h"
-#include "ui/gfx/skia_util.h"
+#include "ui/gfx/transform.h"
 #include "views/background.h"
 #include "views/layout/layout_manager.h"
 #include "views/views_delegate.h"
@@ -61,8 +60,8 @@ View::View()
       parent_(NULL),
       is_visible_(true),
       registered_for_visible_bounds_notification_(false),
-      clip_x_(0),
-      clip_y_(0),
+      clip_x_(0.0),
+      clip_y_(0.0),
       needs_layout_(true),
       flip_canvas_on_paint_for_rtl_ui_(false),
       accelerator_registration_delayed_(false),
@@ -357,45 +356,66 @@ bool View::IsEnabled() const {
 
 // Transformations -------------------------------------------------------------
 
-void View::SetRotation(double degree) {
-  InitTransform();
-  transform_->setRotate(SkDoubleToScalar(degree),
-                        SkIntToScalar(0), SkIntToScalar(0));
+const ui::Transform& View::GetTransform() const {
+  static const ui::Transform* no_op = ui::Transform::Create();
+  if (transform_.get())
+    return *transform_.get();
+  return *no_op;
 }
 
-void View::SetScaleX(double x) {
+void View::SetRotation(float degree) {
   InitTransform();
-  transform_->setScaleX(SkDoubleToScalar(x));
+  transform_->SetRotate(degree);
 }
 
-void View::SetScaleY(double y) {
+void View::SetScaleX(float x) {
   InitTransform();
-  transform_->setScaleY(SkDoubleToScalar(y));
+  transform_->SetScaleX(x);
 }
 
-void View::SetScale(double x, double y) {
+void View::SetScaleY(float y) {
   InitTransform();
-  transform_->setScale(SkDoubleToScalar(x), SkDoubleToScalar(y));
+  transform_->SetScaleY(y);
 }
 
-void View::SetTranslateX(int x) {
+void View::SetScale(float x, float y) {
   InitTransform();
-  transform_->setTranslateX(SkIntToScalar(x));
+  transform_->SetScale(x, y);
 }
 
-void View::SetTranslateY(int y) {
+void View::SetTranslateX(float x) {
   InitTransform();
-  transform_->setTranslateY(SkIntToScalar(y));
+  transform_->SetTranslateX(x);
 }
 
-void View::SetTranslate(int x, int y) {
+void View::SetTranslateY(float y) {
   InitTransform();
-  transform_->setTranslate(SkIntToScalar(x), SkIntToScalar(y));
+  transform_->SetTranslateY(y);
+}
+
+void View::SetTranslate(float x, float y) {
+  InitTransform();
+  transform_->SetTranslate(x, y);
+}
+
+void View::ConcatRotation(float degree) {
+  InitTransform();
+  transform_->ConcatRotate(degree);
+}
+
+void View::ConcatScale(float x, float y) {
+  InitTransform();
+  transform_->ConcatScale(x, y);
+}
+
+void View::ConcatTranslate(float x, float y) {
+  InitTransform();
+  transform_->ConcatTranslate(x, y);
 }
 
 void View::ResetTransform() {
   transform_.reset(NULL);
-  clip_x_ = clip_y_ = 0;
+  clip_x_ = clip_y_ = 0.0;
 }
 
 
@@ -554,19 +574,15 @@ void View::ConvertPointToWidget(const View* src, gfx::Point* p) {
   DCHECK(src);
   DCHECK(p);
 
-  gfx::Point offset;
-  for (const View* v = src; v; v = v->parent()) {
-    offset.set_x(offset.x() + v->GetMirroredX());
-    offset.set_y(offset.y() + v->y());
-  }
-  p->SetPoint(p->x() + offset.x(), p->y() + offset.y());
+  src->ConvertPointForAncestor(NULL, p);
 }
 
 // static
 void View::ConvertPointFromWidget(const View* dest, gfx::Point* p) {
-  gfx::Point t;
-  ConvertPointToWidget(dest, &t);
-  p->SetPoint(p->x() - t.x(), p->y() - t.y());
+  DCHECK(dest);
+  DCHECK(p);
+
+  dest->ConvertPointFromAncestor(NULL, p);
 }
 
 // static
@@ -585,12 +601,55 @@ void View::ConvertPointToScreen(const View* src, gfx::Point* p) {
 }
 
 gfx::Rect View::ConvertRectToParent(const gfx::Rect& rect) const {
-  if (!transform_.get() || transform_->isIdentity())
+  if (!transform_.get() || !transform_->HasChange())
     return rect;
-  SkRect src = gfx::RectToSkRect(rect);
-  if (!transform_->mapRect(&src))
-    return rect;
-  return gfx::SkRectToRect(src);
+  gfx::Rect x_rect = rect;
+  transform_->TransformRect(&x_rect);
+  return x_rect;
+}
+
+bool View::ConvertPointForAncestor(const View* ancestor,
+                                   gfx::Point* point) const {
+  scoped_ptr<ui::Transform> trans(ui::Transform::Create());
+
+  // TODO(sad): Have some way of caching the transformation results.
+
+  const View* v = this;
+  for (; v && v != ancestor; v = v->parent()) {
+    if (v->GetTransform().HasChange()) {
+      if (!trans->ConcatTransform(v->GetTransform()))
+        return false;
+    }
+    trans->ConcatTranslate(static_cast<float>(v->GetMirroredX()),
+                           static_cast<float>(v->y()));
+  }
+
+  if (trans->HasChange()) {
+    trans->TransformPoint(point);
+  }
+
+  return v == ancestor;
+}
+
+bool View::ConvertPointFromAncestor(const View* ancestor,
+                                    gfx::Point* point) const {
+  scoped_ptr<ui::Transform> trans(ui::Transform::Create());
+
+  const View* v = this;
+  for (; v && v != ancestor; v = v->parent()) {
+    if (v->GetTransform().HasChange()) {
+      if (!trans->ConcatTransform(v->GetTransform()))
+        return false;
+    }
+    trans->ConcatTranslate(static_cast<float>(v->GetMirroredX()),
+                           static_cast<float>(v->y()));
+  }
+
+  if (trans->HasChange()) {
+    trans->TransformPointReverse(point);
+  }
+
+  return v == ancestor;
 }
 
 // Painting --------------------------------------------------------------------
@@ -627,13 +686,14 @@ void View::Paint(gfx::Canvas* canvas) {
   // consideration whether or not the view uses a right-to-left layout so that
   // we paint our view in its mirrored position if need be.
   if (canvas->ClipRectInt(GetMirroredX(), y(),
-                          width() - clip_x_, height() - clip_y_)) {
+                          width() - static_cast<int>(clip_x_),
+                          height() - static_cast<int>(clip_y_))) {
     // Non-empty clip, translate the graphics such that 0,0 corresponds to
     // where this view is located (related to its parent).
     canvas->TranslateInt(GetMirroredX(), y());
 
-    if (transform_.get())
-      canvas->AsCanvasSkia()->concat(*transform_.get());
+    if (transform_.get() && transform_->HasChange())
+      canvas->Transform(*transform_.get());
 
     // If the View we are about to paint requested the canvas to be flipped, we
     // should change the transform appropriately.
@@ -675,6 +735,11 @@ ThemeProvider* View::GetThemeProvider() const {
 // Input -----------------------------------------------------------------------
 
 View* View::GetViewForPoint(const gfx::Point& point) {
+  return GetEventHandlerForPoint(point, NULL);
+}
+
+View* View::GetEventHandlerForPoint(const gfx::Point& point,
+                                    gfx::Point* xpoint) {
   // Walk the child Views recursively looking for the View that most
   // tightly encloses the specified point.
   for (int i = child_count() - 1; i >= 0; --i) {
@@ -685,8 +750,10 @@ View* View::GetViewForPoint(const gfx::Point& point) {
     gfx::Point point_in_child_coords(point);
     View::ConvertPointToView(this, child, &point_in_child_coords);
     if (child->HitTest(point_in_child_coords))
-      return child->GetViewForPoint(point_in_child_coords);
+      return child->GetEventHandlerForPoint(point_in_child_coords, xpoint);
   }
+  if (xpoint)
+    xpoint->SetPoint(point.x(), point.y());
   return this;
 }
 
@@ -1323,10 +1390,8 @@ void View::RemoveDescendantToNotify(View* view) {
 // Transformations -------------------------------------------------------------
 
 void View::InitTransform() {
-  if (!transform_.get()) {
-    transform_.reset(new SkMatrix);
-    transform_->reset();
-  }
+  if (!transform_.get())
+    transform_.reset(ui::Transform::Create());
 }
 
 // Coordinate conversion -------------------------------------------------------
@@ -1340,33 +1405,22 @@ void View::ConvertPointToView(const View* src,
   DCHECK(dst);
   DCHECK(point);
 
-  const View* v;
-  gfx::Point offset;
-
-  for (v = dst; v && v != src; v = v->parent())
-    offset.SetPoint(offset.x() + v->GetMirroredX(), offset.y() + v->y());
-
-  // The source was not found. The caller wants a conversion
-  // from a view to a transitive parent.
-  if (src && v == NULL && try_other_direction) {
-    gfx::Point p;
-    // note: try_other_direction is force to FALSE so we don't
-    // end up in an infinite recursion should both src and dst
-    // are not parented.
-    ConvertPointToView(dst, src, &p, false);
-    // since the src and dst are inverted, p should also be negated
-    point->SetPoint(point->x() - p.x(), point->y() - p.y());
-  } else {
-    point->SetPoint(point->x() - offset.x(), point->y() - offset.y());
-
-    // If src is NULL, sp is in the screen coordinate system
-    if (src == NULL) {
+  if (src == NULL || src->Contains(dst)) {
+    dst->ConvertPointFromAncestor(src, point);
+    if (!src) {
       const Widget* widget = dst->GetWidget();
       if (widget) {
         gfx::Rect b;
         widget->GetBounds(&b, false);
         point->SetPoint(point->x() - b.x(), point->y() - b.y());
       }
+    }
+  } else if (src && try_other_direction) {
+    if (!src->ConvertPointForAncestor(dst, point)) {
+      // |src| is not an ancestor of |dst|, and |dst| is not an ancestor of
+      // |src| either. At this stage, |point| is in the widget's coordinate
+      // system. So convert from the widget's to |dst|'s coordiante system now.
+      ConvertPointFromWidget(dst, point);
     }
   }
 }

@@ -116,7 +116,8 @@ bool RootView::ProcessKeyEvent(const KeyEvent& event) {
   return consumed;
 }
 
-bool RootView::ProcessMouseWheelEvent(const MouseWheelEvent& e) {
+bool RootView::ProcessMouseWheelEvent(const MouseWheelEvent& event) {
+  MouseWheelEvent e(event, this);
   View* v;
   bool consumed = false;
   View* focused_view = GetFocusManager()->GetFocusedView();
@@ -181,7 +182,9 @@ Widget* RootView::GetWidget() {
   return const_cast<Widget*>(const_cast<const RootView*>(this)->GetWidget());
 }
 
-bool RootView::OnMousePressed(const MouseEvent& e) {
+bool RootView::OnMousePressed(const MouseEvent& event) {
+  MouseEvent e(event, this);
+
   // This function does not normally handle non-client messages except for
   // non-client double-clicks. Actually, all double-clicks are special as the
   // are formed from a single-click followed by a double-click event. When the
@@ -265,7 +268,8 @@ bool RootView::OnMousePressed(const MouseEvent& e) {
   return hit_disabled_view;
 }
 
-bool RootView::OnMouseDragged(const MouseEvent& e) {
+bool RootView::OnMouseDragged(const MouseEvent& event) {
+  MouseEvent e(event, this);
   UpdateCursor(e);
 
   if (mouse_pressed_handler_) {
@@ -279,7 +283,8 @@ bool RootView::OnMouseDragged(const MouseEvent& e) {
   return false;
 }
 
-void RootView::OnMouseReleased(const MouseEvent& e, bool canceled) {
+void RootView::OnMouseReleased(const MouseEvent& event, bool canceled) {
+  MouseEvent e(event, this);
   UpdateCursor(e);
 
   if (mouse_pressed_handler_) {
@@ -296,7 +301,8 @@ void RootView::OnMouseReleased(const MouseEvent& e, bool canceled) {
   }
 }
 
-void RootView::OnMouseMoved(const MouseEvent& e) {
+void RootView::OnMouseMoved(const MouseEvent& event) {
+  MouseEvent e(event, this);
   View* v = GetViewForPoint(e.location());
   // Find the first enabled view, or the existing move handler, whichever comes
   // first.  The check for the existing handler is because if a view becomes
@@ -344,7 +350,9 @@ void RootView::SetMouseHandler(View *new_mh) {
 }
 
 #if defined(TOUCH_UI)
-View::TouchStatus RootView::OnTouchEvent(const TouchEvent& e) {
+View::TouchStatus RootView::OnTouchEvent(const TouchEvent& event) {
+  TouchEvent e(event, this);
+
   // If touch_pressed_handler_ is non null, we are currently processing
   // a touch down on the screen situation. In that case we send the
   // event to touch_pressed_handler_

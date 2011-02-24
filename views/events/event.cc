@@ -5,6 +5,7 @@
 #include "views/events/event.h"
 
 #include "views/view.h"
+#include "views/widget/root_view.h"
 
 namespace views {
 
@@ -42,6 +43,15 @@ LocatedEvent::LocatedEvent(const LocatedEvent& model, View* from, View* to)
       location_(model.location_) {
   if (to)
     View::ConvertPointToView(from, to, &location_);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// LocatedEvent, private:
+
+LocatedEvent::LocatedEvent(const LocatedEvent& model, RootView* root)
+    : Event(model),
+      location_(model.location_) {
+  View::ConvertPointFromWidget(root, &location_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

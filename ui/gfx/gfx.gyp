@@ -147,6 +147,9 @@
         'skia_util.h',
         'skia_utils_gtk.cc',
         'skia_utils_gtk.h',
+        'transform.h',
+        'transform_skia.cc',
+        'transform_skia.h',
       ],
       'conditions': [
         ['OS=="win"', {

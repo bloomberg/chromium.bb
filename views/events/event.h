@@ -24,6 +24,7 @@ using ui::OSExchangeData;
 
 namespace views {
 
+class RootView;
 class View;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -145,6 +146,11 @@ class LocatedEvent : public Event {
   int y() const { return location_.y(); }
   const gfx::Point& location() const { return location_; }
 
+ protected:
+  // This constructor is to allow converting the location of an event from the
+  // widget's coordinate system to the RootView's coordinate system.
+  LocatedEvent(const LocatedEvent& model, RootView* root);
+
  private:
   gfx::Point location_;
 };
@@ -211,6 +217,12 @@ class MouseEvent : public LocatedEvent {
   }
 
  private:
+  friend class RootView;
+
+  MouseEvent(const MouseEvent& model, RootView* root)
+      : LocatedEvent(model, root) {
+  }
+
   DISALLOW_COPY_AND_ASSIGN(MouseEvent);
 };
 
@@ -251,6 +263,13 @@ class TouchEvent : public LocatedEvent {
   bool identity() const { return touch_id_; }
 
  private:
+  friend class RootView;
+
+  TouchEvent(const TouchEvent& model, RootView* root)
+      : LocatedEvent(model, root),
+        touch_id_(model.touch_id_) {
+  }
+
   // The identity (typically finger) of the touch starting at 0 and incrementing
   // for each separable additional touch that the hardware can detect.
   const int touch_id_;
@@ -308,6 +327,13 @@ class MouseWheelEvent : public LocatedEvent {
   int offset() const { return offset_; }
 
  private:
+  friend class RootView;
+
+  MouseWheelEvent(const MouseWheelEvent& model, RootView* root)
+      : LocatedEvent(model, root),
+        offset_(model.offset_) {
+  }
+
   int offset_;
 
   DISALLOW_COPY_AND_ASSIGN(MouseWheelEvent);

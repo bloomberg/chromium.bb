@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,10 @@
 // TODO(beng): remove this include when we no longer depend on SkTypes.
 #include "skia/ext/platform_canvas.h"
 #include "ui/gfx/native_widget_types.h"
+
+namespace ui {
+class Transform;
+}
 
 namespace gfx {
 
@@ -207,6 +211,9 @@ class Canvas {
   // Signifies the end of platform drawing using the native drawing context
   // returned by BeginPlatformPaint().
   virtual void EndPlatformPaint() = 0;
+
+  // Apply transformation on the canvas.
+  virtual void Transform(const ui::Transform& transform) = 0;
 
   // TODO(beng): remove this once we don't need to use any skia-specific methods
   //             through this interface.

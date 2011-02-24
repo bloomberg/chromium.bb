@@ -149,10 +149,14 @@ class RootView : public View,
 
   // Update the cursor given a mouse event. This is called by non mouse_move
   // event handlers to honor the cursor desired by views located under the
-  // cursor during drag operations.
+  // cursor during drag operations. The location of the mouse should be in the
+  // current coordinate system (i.e. any necessary transformation should be
+  // applied to the point prior to calling this).
   void UpdateCursor(const MouseEvent& e);
 
-  // Updates the last_mouse_* fields from e.
+  // Updates the last_mouse_* fields from e. The location of the mouse should be
+  // in the current coordinate system (i.e. any necessary transformation should
+  // be applied to the point prior to calling this).
   void SetMouseLocationAndFlags(const MouseEvent& e);
 
   //////////////////////////////////////////////////////////////////////////////

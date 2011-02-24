@@ -26,8 +26,6 @@
 
 using ui::OSExchangeData;
 
-// TODO(sad): Use platform independent wrapper for transform matrix.
-class SkMatrix;
 class ViewAccessibility;
 
 namespace gfx {
@@ -38,6 +36,7 @@ class Path;
 
 namespace ui {
 class ThemeProvider;
+class Transform;
 }
 using ui::ThemeProvider;
 
@@ -331,25 +330,31 @@ class View : public AcceleratorTarget {
 
   // Methods for setting transformations for a view (e.g. rotation, scaling).
 
-  const SkMatrix* transform() { return transform_.get(); }
+  const ui::Transform& GetTransform() const;
 
   // Clipping parameters. Clipping happens from the right and/or bottom. The
   // clipping amount is in parent's coordinate system, as in, if the view is
   // rotated, then the clipping will be applied after the rotation (and other
   // transformations, if any).
-  void set_clip_x(int x) { clip_x_ = x; }
-  void set_clip_y(int y) { clip_y_ = y; }
-  void set_clip(int x, int y) { clip_x_ = x; clip_y_ = y; }
+  void set_clip_x(float x) { clip_x_ = x; }
+  void set_clip_y(float y) { clip_y_ = y; }
+  void set_clip(float x, float y) { clip_x_ = x; clip_y_ = y; }
 
-  void SetRotation(double degree);
+  void SetRotation(float degree);
 
-  void SetScaleX(double x);
-  void SetScaleY(double y);
-  void SetScale(double x, double y);
+  void SetScaleX(float x);
+  void SetScaleY(float y);
+  void SetScale(float x, float y);
 
-  void SetTranslateX(int x);
-  void SetTranslateY(int y);
-  void SetTranslate(int x, int y);
+  void SetTranslateX(float x);
+  void SetTranslateY(float y);
+  void SetTranslate(float x, float y);
+
+  // The following functions apply the transformations on top of the existing
+  // transform.
+  void ConcatRotation(float degree);
+  void ConcatScale(float x, float y);
+  void ConcatTranslate(float x, float y);
 
   // Reset the transformation matrix.
   void ResetTransform();
@@ -476,9 +481,9 @@ class View : public AcceleratorTarget {
 
   // Convert a point from source coordinate system to dst coordinate system.
   //
-  // source is a parent or a child of dst, directly or transitively.
-  // If source and dst are not in the same View hierarchy, the result is
-  // undefined.
+  // |src| and |dst| needs to be in the same widget, but doesn't need to be in
+  // the same view hierarchy.
+  // If |src| and |dst| are not in the same widget, the result is undefined.
   // Source can be NULL in which case it means the screen coordinate system
   static void ConvertPointToView(const View* src,
                                  const View* dst,
@@ -560,9 +565,17 @@ class View : public AcceleratorTarget {
   }
 
   // Input ---------------------------------------------------------------------
+  // The points (and mouse locations) in the following functions are in the
+  // view's coordinates, except for a RootView.
 
+  // TODO(sad): Remove
   // Returns the deepest descendant that contains the specified point.
   virtual View* GetViewForPoint(const gfx::Point& point);
+
+  // Returns the deepest descendant that contains the specified point, and the
+  // point in the returned view's coordinates.
+  virtual View* GetEventHandlerForPoint(const gfx::Point& point,
+                                        gfx::Point* xpoint);
 
   // Return the cursor that should be used for this view or NULL if
   // the default cursor should be used. The provided point is in the
@@ -1227,15 +1240,27 @@ class View : public AcceleratorTarget {
   // Initialize the transform matrix when necessary.
   void InitTransform();
 
-  // Coordinate conersion ------------------------------------------------------
+  // Coordinate conversion -----------------------------------------------------
 
   // This is the actual implementation for ConvertPointToView()
   // Attempts a parent -> child conversion and then a
   // child -> parent conversion if try_other_direction is true
+  // Applies necessary transformations during the conversion.
   static void ConvertPointToView(const View* src,
                                  const View* dst,
                                  gfx::Point* point,
                                  bool try_other_direction);
+
+  // Convert a point in the view's coordinate to an ancestor view's coordinate
+  // system using necessary transformations. Returns whether the point was
+  // successfully converted to the ancestor's coordinate system.
+  bool ConvertPointForAncestor(const View* ancestor, gfx::Point* point) const;
+
+  // Convert a point in the ancestor's coordinate system to the view's
+  // coordinate system using necessary transformations. Returns whether the
+  // point was successfully from the ancestor's coordinate system to the view's
+  // coordinate system.
+  bool ConvertPointFromAncestor(const View* ancestor, gfx::Point* point) const;
 
   // Input ---------------------------------------------------------------------
 
@@ -1328,12 +1353,12 @@ class View : public AcceleratorTarget {
   // Transformations -----------------------------------------------------------
 
   // The transformation matrix (rotation, translate, scale).
-  scoped_ptr<SkMatrix> transform_;
+  scoped_ptr<ui::Transform> transform_;
 
   // Clipping parameters. skia transformation matrix does not give us clipping.
   // So we do it ourselves.
-  int clip_x_;
-  int clip_y_;
+  float clip_x_;
+  float clip_y_;
 
   // Layout --------------------------------------------------------------------
 
