@@ -1660,7 +1660,7 @@ TEST_F(ViewTest, TransformEvent) {
   v3->SetTranslateX(30);
 
   // Scale |v2| with respect to |v1| along both axis.
-  v2->SetScale(0.8, 0.5);
+  v2->SetScale(0.8f, 0.5f);
 
   // |v3| occupies (108, 105) to (132, 115) in |root|.
 
@@ -1693,7 +1693,7 @@ TEST_F(ViewTest, TransformEvent) {
   // Rotation sets some scaling transformation. Using SetScale would overwrite
   // that and pollute the rotation. So combine the scaling with the existing
   // transforamtion.
-  v3->ConcatScale(0.8, 0.5);
+  v3->ConcatScale(0.8f, 0.5f);
 
   // Translate |v2| with respect to |v1|.
   v2->SetTranslate(10, 10);
