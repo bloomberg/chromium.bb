@@ -3,6 +3,7 @@ test_shell.exe
 automated_ui_tests.exe
 icudt38.dll
 icudt42.dll
+icudt46.dll
 plugins\npTestNetscapePlugIn.dll
 pyautolib.py
 _pyautolib.pyd
