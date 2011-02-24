@@ -148,8 +148,15 @@ bool FillForm(FormElements* fe, const webkit_glue::FormData& data) {
   for (FormInputElementMap::iterator it = fe->input_elements.begin();
        it != fe->input_elements.end(); ++it) {
     WebKit::WebInputElement element = it->second;
-    if (!element.value().isEmpty())  // Don't overwrite pre-filled values.
-      continue;
+    // Don't fill a form that has pre-filled values.
+    if (!element.value().isEmpty())
+      return false;
+  }
+
+  for (FormInputElementMap::iterator it = fe->input_elements.begin();
+       it != fe->input_elements.end(); ++it) {
+    WebKit::WebInputElement element = it->second;
+    DCHECK(element.value().isEmpty());
     if (element.isPasswordField() &&
         (!element.isEnabledFormControl() || element.hasAttribute("readonly"))) {
       continue;  // Don't fill uneditable password fields.

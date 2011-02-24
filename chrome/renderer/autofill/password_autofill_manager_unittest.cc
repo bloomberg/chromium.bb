@@ -209,12 +209,24 @@ TEST_F(PasswordAutoFillManagerTest, NoInitialAutocompleteForReadOnly) {
                                  WebString::fromUTF8("true"));
 
   // Simulate the browser sending back the login info, it triggers the
-  // autocompleted.
+  // autocomplete.
   SimulateOnFillPasswordForm(fill_data_);
 
   // Only the username should have been autocompleted.
   // TODO(jcivelli): may be we should not event fill the username?
   CheckTextFieldsState(kAliceUsername, true, "", false);
+}
+
+// Tests that having a non-empty username precludes the autocomplete.
+TEST_F(PasswordAutoFillManagerTest, NoInitialAutocompleteForFilledField) {
+  username_element_.setValue(WebString::fromUTF8("bogus"));
+
+  // Simulate the browser sending back the login info, it triggers the
+  // autocomplete.
+  SimulateOnFillPasswordForm(fill_data_);
+
+  // Neither field should be autocompleted.
+  CheckTextFieldsState("bogus", false, "", false);
 }
 
 // Tests that editing the password clears the autocompleted password field.
