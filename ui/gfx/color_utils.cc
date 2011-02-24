@@ -25,20 +25,22 @@ namespace color_utils {
 
 namespace {
 
-double calcHue(double temp1, double temp2, double hue) {
+int calcHue(double temp1, double temp2, double hue) {
   if (hue < 0.0)
     ++hue;
   else if (hue > 1.0)
     --hue;
 
+  double result = temp1;
   if (hue * 6.0 < 1.0)
-    return temp1 + (temp2 - temp1) * hue * 6.0;
-  if (hue * 2.0 < 1.0)
-    return temp2;
-  if (hue * 3.0 < 2.0)
-    return temp1 + (temp2 - temp1) * (2.0 / 3.0 - hue) * 6.0;
+    result = temp1 + (temp2 - temp1) * hue * 6.0;
+  else if (hue * 2.0 < 1.0)
+    result = temp2;
+  else if (hue * 3.0 < 2.0)
+    result = temp1 + (temp2 - temp1) * (2.0 / 3.0 - hue) * 6.0;
 
-  return temp1;
+  // Scale the result from 0 - 255 and round off the value.
+  return static_cast<int>(result * 255 + .5);
 }
 
 int GetLumaForColor(SkColor* color) {
@@ -140,9 +142,9 @@ SkColor HSLToSkColor(const HSL& hsl, SkAlpha alpha) {
       (lightness + saturation - (lightness * saturation));
   double temp1 = 2.0 * lightness - temp2;
   return SkColorSetARGB(alpha,
-      static_cast<int>(calcHue(temp1, temp2, hue + 1.0 / 3.0) * 255),
-      static_cast<int>(calcHue(temp1, temp2, hue) * 255),
-      static_cast<int>(calcHue(temp1, temp2, hue - 1.0 / 3.0) * 255));
+      calcHue(temp1, temp2, hue + 1.0 / 3.0),
+      calcHue(temp1, temp2, hue),
+      calcHue(temp1, temp2, hue - 1.0 / 3.0));
 }
 
 SkColor HSLShift(SkColor color, const HSL& shift) {

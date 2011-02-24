@@ -12,16 +12,16 @@
 TEST(ColorUtils, SkColorToHSLRed) {
   color_utils::HSL hsl = { 0, 0, 0 };
   color_utils::SkColorToHSL(SK_ColorRED, &hsl);
-  EXPECT_EQ(hsl.h, 0);
-  EXPECT_EQ(hsl.s, 1);
-  EXPECT_EQ(hsl.l, 0.5);
+  EXPECT_DOUBLE_EQ(hsl.h, 0);
+  EXPECT_DOUBLE_EQ(hsl.s, 1);
+  EXPECT_DOUBLE_EQ(hsl.l, 0.5);
 }
 
 TEST(ColorUtils, SkColorToHSLGrey) {
   color_utils::HSL hsl = { 0, 0, 0 };
   color_utils::SkColorToHSL(SkColorSetARGB(255, 128, 128, 128), &hsl);
-  EXPECT_EQ(hsl.h, 0);
-  EXPECT_EQ(hsl.s, 0);
+  EXPECT_DOUBLE_EQ(hsl.h, 0);
+  EXPECT_DOUBLE_EQ(hsl.s, 0);
   EXPECT_EQ(static_cast<int>(hsl.l * 100),
             static_cast<int>(0.5 * 100));  // Accurate to two decimal places.
 }
@@ -36,16 +36,49 @@ TEST(ColorUtils, HSLToSkColorWithAlpha) {
   EXPECT_EQ(SkColorGetB(red), SkColorGetB(result));
 }
 
+
+TEST(ColorUtils, RGBtoHSLRoundTrip) {
+  // Just spot check values near the edges.
+  for (int r = 0; r < 10; ++r) {
+    for (int g = 0; g < 10; ++g) {
+      for (int b = 0; b < 10; ++b) {
+        SkColor rgb = SkColorSetARGB(255, r, g, b);
+        color_utils::HSL hsl = { 0, 0, 0 };
+        color_utils::SkColorToHSL(rgb, &hsl);
+        SkColor out = color_utils::HSLToSkColor(hsl, 255);
+        EXPECT_EQ(SkColorGetR(out), SkColorGetR(rgb));
+        EXPECT_EQ(SkColorGetG(out), SkColorGetG(rgb));
+        EXPECT_EQ(SkColorGetB(out), SkColorGetB(rgb));
+      }
+    }
+  }
+  for (int r = 240; r < 256; ++r) {
+    for (int g = 240; g < 256; ++g) {
+      for (int b = 240; b < 256; ++b) {
+        SkColor rgb = SkColorSetARGB(255, r, g, b);
+        color_utils::HSL hsl = { 0, 0, 0 };
+        color_utils::SkColorToHSL(rgb, &hsl);
+        SkColor out = color_utils::HSLToSkColor(hsl, 255);
+        EXPECT_EQ(SkColorGetR(out), SkColorGetR(rgb));
+        EXPECT_EQ(SkColorGetG(out), SkColorGetG(rgb));
+        EXPECT_EQ(SkColorGetB(out), SkColorGetB(rgb));
+      }
+    }
+  }
+}
+
 TEST(ColorUtils, ColorToHSLRegisterSpill) {
   // In a opt build on Linux, this was causing a register spill on my laptop
   // (Pentium M) when converting from SkColor to HSL.
   SkColor input = SkColorSetARGB(255, 206, 154, 89);
   color_utils::HSL hsl = { -1, -1, -1 };
   SkColor result = color_utils::HSLShift(input, hsl);
-  EXPECT_EQ(255U, SkColorGetA(result));
-  EXPECT_EQ(206U, SkColorGetR(result));
-  EXPECT_EQ(153U, SkColorGetG(result));
-  EXPECT_EQ(88U, SkColorGetB(result));
+  // |result| should be the same as |input| since we passed in a value meaning
+  // no color shift.
+  EXPECT_EQ(SkColorGetA(input), SkColorGetA(result));
+  EXPECT_EQ(SkColorGetR(input), SkColorGetR(result));
+  EXPECT_EQ(SkColorGetG(input), SkColorGetG(result));
+  EXPECT_EQ(SkColorGetB(input), SkColorGetB(result));
 }
 
 TEST(ColorUtils, AlphaBlend) {
