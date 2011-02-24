@@ -72,7 +72,7 @@ TEST_F(MetricsServiceTest, CloseRenderersNormally) {
   EXPECT_EQ(0, local_state->GetInteger(prefs::kStabilityRendererCrashCount));
 }
 
-TEST_F(MetricsServiceTest, CrashRenderers) {
+TEST_F(MetricsServiceTest, DISABLED_CrashRenderers) {
   // This doesn't make sense to test in single process mode.
   if (ProxyLauncher::in_process_renderer())
     return;
