@@ -114,15 +114,14 @@ void AddInstallerCopyTasks(const InstallerState& installer_state,
   FilePath exe_dst(installer_dir.Append(setup_path.BaseName()));
   FilePath archive_dst(installer_dir.Append(archive_path.BaseName()));
 
-  install_list->AddCopyTreeWorkItem(setup_path.value(), exe_dst.value(),
-                                    temp_path.value(), WorkItem::ALWAYS);
-  if (installer_state.system_install()) {
-    install_list->AddCopyTreeWorkItem(archive_path.value(), archive_dst.value(),
-                                      temp_path.value(), WorkItem::ALWAYS);
-  } else {
-    install_list->AddMoveTreeWorkItem(archive_path.value(), archive_dst.value(),
-                                      temp_path.value());
-  }
+  // In the past, we copied rather than moved for system level installs so that
+  // the permissions of %ProgramFiles% would be picked up.  Now that |temp_path|
+  // is in %ProgramFiles% for system level installs (and in %LOCALAPPDATA%
+  // otherwise), there is no need to do this.
+  install_list->AddMoveTreeWorkItem(setup_path.value(), exe_dst.value(),
+                                    temp_path.value());
+  install_list->AddMoveTreeWorkItem(archive_path.value(), archive_dst.value(),
+                                    temp_path.value());
 }
 
 // This method adds work items to create (or update) Chrome uninstall entry in
@@ -558,27 +557,24 @@ void AddInstallWorkItems(const InstallationState& original_state,
 
   // Extra executable for 64 bit systems.
   if (Is64bit()) {
-    install_list->AddCopyTreeWorkItem(
+    install_list->AddMoveTreeWorkItem(
         src_path.Append(installer::kWowHelperExe).value(),
         target_path.Append(installer::kWowHelperExe).value(),
-        temp_path.value(), WorkItem::ALWAYS);
-  }
-
-  // If it is system level install copy the version folder (since we want to
-  // take the permissions of %ProgramFiles% folder) otherwise just move it.
-  if (installer_state.system_install()) {
-    install_list->AddCopyTreeWorkItem(
-        src_path.AppendASCII(new_version.GetString()).value(),
-        target_path.AppendASCII(new_version.GetString()).value(),
-        temp_path.value(), WorkItem::ALWAYS);
-  } else {
-    install_list->AddMoveTreeWorkItem(
-        src_path.AppendASCII(new_version.GetString()).value(),
-        target_path.AppendASCII(new_version.GetString()).value(),
         temp_path.value());
   }
 
+  // In the past, we copied rather than moved for system level installs so that
+  // the permissions of %ProgramFiles% would be picked up.  Now that |temp_path|
+  // is in %ProgramFiles% for system level installs (and in %LOCALAPPDATA%
+  // otherwise), there is no need to do this.
+  install_list->AddMoveTreeWorkItem(
+      src_path.AppendASCII(new_version.GetString()).value(),
+      target_path.AppendASCII(new_version.GetString()).value(),
+      temp_path.value());
+
   // Copy the default Dictionaries only if the folder doesn't exist already.
+  // TODO(grt): Use AddMoveTreeWorkItem in a conditional WorkItemList, which
+  // will be more efficient in space and time.
   install_list->AddCopyTreeWorkItem(
       src_path.Append(installer::kDictionaries).value(),
       target_path.Append(installer::kDictionaries).value(),

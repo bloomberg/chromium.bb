@@ -38,6 +38,8 @@ class WorkItemList : public WorkItem {
   virtual void AddWorkItem(WorkItem* work_item);
 
   // Add a CopyTreeWorkItem to the list of work items.
+  // See the NOTE in the documentation for the CopyTreeWorkItem class for
+  // special considerations regarding |temp_dir|.
   virtual WorkItem* AddCopyTreeWorkItem(
       const std::wstring& source_path,
       const std::wstring& dest_path,

@@ -124,6 +124,8 @@
             'installer/util/product.h',
             'installer/util/product.cc',
             'installer/util/product_operations.h',
+            'installer/util/self_cleaning_temp_dir.cc',
+            'installer/util/self_cleaning_temp_dir.h',
             'installer/util/shell_util.cc',
             'installer/util/shell_util.h',
           ],

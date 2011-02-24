@@ -19,6 +19,11 @@
 // to the temporary directory passed in, and then copies the source hierarchy
 // to the destination location. During rollback the original destination
 // hierarchy is moved back.
+// NOTE: It is a best practice to ensure that the temporary directory is on the
+// same volume as the destination path.  If this is not the case, the existing
+// destination path is not moved, but rather copied, to the destination path.
+// This will result in in-use files being left behind, as well as potentially
+// losing ACLs or other metadata in the case of a rollback.
 class CopyTreeWorkItem : public WorkItem {
  public:
   virtual ~CopyTreeWorkItem();

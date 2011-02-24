@@ -79,7 +79,7 @@ bool ScheduleFileSystemEntityForDeletion(const wchar_t* path) {
     HANDLE file = ::CreateFileW(path, GENERIC_READ | GENERIC_WRITE, 0, NULL,
         OPEN_EXISTING, 0, NULL);
     if (file != INVALID_HANDLE_VALUE) {
-      PLOG(INFO) << " file not in use: " << path;
+      LOG(INFO) << " file not in use: " << path;
       ::CloseHandle(file);
     } else {
       PLOG(INFO) << " file in use (or not found?): " << path;
@@ -103,7 +103,7 @@ bool ScheduleDirectoryForDeletion(const wchar_t* dir_name) {
     if (::GetLastError() == ERROR_FILE_NOT_FOUND) {
       return true;  // Ok if directory is missing
     } else {
-      LOG(ERROR) << "Could not GetFileAttributes for " << dir_name;
+      PLOG(ERROR) << "Could not GetFileAttributes for " << dir_name;
       return false;
     }
   }
@@ -384,7 +384,7 @@ bool RemoveFromMovesPendingReboot(const wchar_t* directory) {
   }
   std::vector<char> buffer;
   StringArrayToMultiSZBytes(strings_to_keep, &buffer);
-  DCHECK(buffer.size() > 0);
+  DCHECK_GT(buffer.size(), 0U);
   if (buffer.empty())
     return false;
   return (session_manager_key.WriteValue(kPendingFileRenameOps, &buffer[0],

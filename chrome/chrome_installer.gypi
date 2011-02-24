@@ -102,6 +102,7 @@
             'installer/util/product_unittest.cc',
             'installer/util/product_state_unittest.cc',
             'installer/util/run_all_unittests.cc',
+            'installer/util/self_cleaning_temp_dir_unittest.cc',
             'installer/util/set_reg_value_work_item_unittest.cc',
             'installer/util/shell_util_unittest.cc',
             'installer/util/wmi_unittest.cc',

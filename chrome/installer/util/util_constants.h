@@ -139,6 +139,7 @@ extern const wchar_t kGoogleChromeInstallSubDir1[];
 extern const wchar_t kGoogleChromeInstallSubDir2[];
 extern const wchar_t kInstallBinaryDir[];
 extern const wchar_t kInstallerDir[];
+extern const wchar_t kInstallTempDir[];
 extern const wchar_t kInstallUserDataDir[];
 extern const wchar_t kNaClExe[];
 extern const wchar_t kSetupExe[];

@@ -50,6 +50,7 @@
 #include "chrome/installer/util/lzma_util.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/master_preferences_constants.h"
+#include "chrome/installer/util/self_cleaning_temp_dir.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
 
@@ -145,12 +146,15 @@ installer::InstallStatus RenameChromeExecutables(
   FilePath chrome_exe(target_path.Append(installer::kChromeExe));
   FilePath chrome_new_exe(target_path.Append(installer::kChromeNewExe));
 
-  // TODO(grt): Create the temp dir in the target_path rather than %TMP% and
-  // friends since it/they may be on another volume, which prevents us from
-  // moving an in-use chrome.exe out of the way.
-  ScopedTempDir temp_path;
-  if (!temp_path.CreateUniqueTempDir()) {
-    PLOG(ERROR) << "Failed to create Temp directory";
+  // Create a temporary backup directory on the same volume as chrome.exe so
+  // that chrome.exe can be moved (rather than copied) to make room for
+  // new_chrome.exe.
+  installer::SelfCleaningTempDir temp_path;
+  if (!temp_path.Initialize(target_path.DirName(),
+                            installer::kInstallTempDir)) {
+    PLOG(ERROR) << "Failed to create Temp directory "
+                << target_path.DirName()
+                       .Append(installer::kInstallTempDir).value();
     return installer::RENAME_FAILED;
   }
   scoped_ptr<WorkItemList> install_list(WorkItem::CreateWorkItemList());
@@ -180,6 +184,10 @@ installer::InstallStatus RenameChromeExecutables(
     install_list->Rollback();
     ret = installer::RENAME_FAILED;
   }
+  // temp_path's dtor will take care of deleting or scheduling itself for
+  // deletion at reboot when this scope closes.
+  VLOG(1) << "Deleting temporary directory " << temp_path.path().value();
+
   return ret;
 }
 
@@ -479,8 +487,9 @@ installer::InstallStatus InstallProductsHelper(
 
   // Create a temp folder where we will unpack Chrome archive. If it fails,
   // then we are doomed, so return immediately and no cleanup is required.
-  ScopedTempDir temp_path;
-  if (!temp_path.CreateUniqueTempDir()) {
+  installer::SelfCleaningTempDir temp_path;
+  if (!temp_path.Initialize(installer_state.target_path().DirName(),
+                            installer::kInstallTempDir)) {
     PLOG(ERROR) << "Could not create temporary path.";
     InstallUtil::WriteInstallerResult(system_install,
         installer_state.state_key(), installer::TEMP_DIR_FAILED,
@@ -630,32 +639,22 @@ installer::InstallStatus InstallProductsHelper(
     }
   }
 
-  // Delete temporary files. These include install temporary directory
-  // and master profile file if present. Note that we do not care about rollback
-  // here and we schedule for deletion on reboot below if the deletes fail. As
-  // such, we do not use DeleteTreeWorkItem.
-  VLOG(1) << "Deleting temporary directory " << temp_path.path().value();
-  bool cleanup_success = temp_path.Delete();
+  // Delete the master profile file if present. Note that we do not care about
+  // rollback here and we schedule for deletion on reboot if the delete fails.
+  // As such, we do not use DeleteTreeWorkItem.
   if (cmd_line.HasSwitch(installer::switches::kInstallerData)) {
-    std::wstring prefs_path = cmd_line.GetSwitchValueNative(
-        installer::switches::kInstallerData);
-    cleanup_success = file_util::Delete(prefs_path, true) && cleanup_success;
-  }
-
-  // The above cleanup has been observed to fail on several users machines.
-  // Specifically, it appears that the temp folder may be locked when we try
-  // to delete it. This is Rather Bad in the case where we have failed updates
-  // as we end up filling users' disks with large-ish temp files. To mitigate
-  // this, if we fail to delete the temp folders, then schedule them for
-  // deletion at next reboot.
-  if (!cleanup_success) {
-    ScheduleDirectoryForDeletion(temp_path.path().value().c_str());
-    if (cmd_line.HasSwitch(installer::switches::kInstallerData)) {
-      std::wstring prefs_path = cmd_line.GetSwitchValueNative(
-          installer::switches::kInstallerData);
-      ScheduleDirectoryForDeletion(prefs_path.c_str());
+    std::wstring prefs_path(cmd_line.GetSwitchValueNative(
+        installer::switches::kInstallerData));
+    if (!file_util::Delete(prefs_path, true)) {
+      LOG(ERROR) << "Failed deleting master preferences file " << prefs_path
+                 << ", scheduling for deletion after reboot.";
+      ScheduleFileSystemEntityForDeletion(prefs_path.c_str());
     }
   }
+
+  // temp_path's dtor will take care of deleting or scheduling itself for
+  // deletion at reboot when this scope closes.
+  VLOG(1) << "Deleting temporary directory " << temp_path.path().value();
 
   return install_status;
 }
@@ -776,6 +775,13 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
                                        FilePath(uncompressed_patch),
                                        new_setup_exe))
           status = installer::NEW_VERSION_UPDATED;
+      }
+      if (!temp_path.Delete()) {
+        // PLOG would be nice, but Delete() doesn't leave a meaningful value in
+        // the Windows last-error code.
+        LOG(WARNING) << "Scheduling temporary path " << temp_path.path().value()
+                     << " for deletion at reboot.";
+        ScheduleDirectoryForDeletion(temp_path.path().value().c_str());
       }
     }
 
