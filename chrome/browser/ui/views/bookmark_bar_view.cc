@@ -57,7 +57,7 @@
 #include "views/window/window.h"
 
 #if defined(OS_WIN)
-#include "chrome/browser/ui/views/importer_view.h"
+#include "chrome/browser/ui/views/importer/importer_view.h"
 #endif
 
 using views::CustomButton;

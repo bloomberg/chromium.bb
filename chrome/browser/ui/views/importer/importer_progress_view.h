@@ -1,11 +1,13 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_IMPORTING_PROGRESS_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_IMPORTING_PROGRESS_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_IMPORTER_IMPORTER_PROGRESS_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_IMPORTER_IMPORTER_PROGRESS_VIEW_H_
 #pragma once
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "views/view.h"
@@ -17,42 +19,42 @@ class CheckmarkThrobber;
 class Label;
 }
 
-class ImportingProgressView : public views::View,
-                              public views::DialogDelegate,
-                              public ImporterHost::Observer {
+class ImporterProgressView : public views::View,
+                             public views::DialogDelegate,
+                             public ImporterHost::Observer {
  public:
   // |items| is a bitmask of ImportItems being imported.
   // |bookmark_import| is true if we're importing bookmarks from a
   // bookmarks.html file.
-  ImportingProgressView(const std::wstring& source_name,
-                        int16 items,
-                        ImporterHost* coordinator,
-                        ImportObserver* observer,
-                        HWND parent_window,
-                        bool bookmarks_import);
-  virtual ~ImportingProgressView();
+  ImporterProgressView(const std::wstring& source_name,
+                       int16 items,
+                       ImporterHost* coordinator,
+                       ImportObserver* observer,
+                       HWND parent_window,
+                       bool bookmarks_import);
+  virtual ~ImporterProgressView();
 
  protected:
   // Overridden from ImporterHost::Observer:
-  virtual void ImportItemStarted(importer::ImportItem item);
-  virtual void ImportItemEnded(importer::ImportItem item);
-  virtual void ImportStarted();
-  virtual void ImportEnded();
+  virtual void ImportItemStarted(importer::ImportItem item) OVERRIDE;
+  virtual void ImportItemEnded(importer::ImportItem item) OVERRIDE;
+  virtual void ImportStarted() OVERRIDE;
+  virtual void ImportEnded() OVERRIDE;
 
   // Overridden from views::DialogDelegate:
-  virtual int GetDialogButtons() const;
+  virtual int GetDialogButtons() const OVERRIDE;
   virtual std::wstring GetDialogButtonLabel(
-      MessageBoxFlags::DialogButton button) const;
-  virtual bool IsModal() const;
-  virtual std::wstring GetWindowTitle() const;
-  virtual bool Cancel();
-  virtual views::View* GetContentsView();
+      MessageBoxFlags::DialogButton button) const OVERRIDE;
+  virtual bool IsModal() const OVERRIDE;
+  virtual std::wstring GetWindowTitle() const OVERRIDE;
+  virtual bool Cancel() OVERRIDE;
+  virtual views::View* GetContentsView() OVERRIDE;
 
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize();
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,
-                                    views::View* child);
+                                    views::View* child) OVERRIDE;
 
  private:
   // Set up the control layout within this dialog.
@@ -89,7 +91,7 @@ class ImportingProgressView : public views::View,
   // Are we importing a bookmarks.html file?
   bool bookmarks_import_;
 
-  DISALLOW_COPY_AND_ASSIGN(ImportingProgressView);
+  DISALLOW_COPY_AND_ASSIGN(ImporterProgressView);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_IMPORTING_PROGRESS_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_IMPORTER_IMPORTER_PROGRESS_VIEW_H_

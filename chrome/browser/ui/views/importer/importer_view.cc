@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/importer_view.h"
+#include "chrome/browser/ui/views/importer/importer_view.h"
 
 #include "base/compiler_specific.h"
 #include "base/utf_string_conversions.h"
