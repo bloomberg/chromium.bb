@@ -187,68 +187,71 @@ def BitFromArgument(env, name, default, desc, arg_name=None):
 # been performed. See: ExpandArguments
 def SetUpArgumentBits(env):
   BitFromArgument(env, 'bitcode', default=False,
-    desc="We are building bitcode")
+    desc='We are building bitcode')
 
   BitFromArgument(env, 'built_elsewhere', default=False,
-    desc="The programs have already been built by another system")
+    desc='The programs have already been built by another system')
 
   BitFromArgument(env, 'nacl_pic', default=False,
-    desc="generate position indepent code for (P)NaCl modules")
+    desc='generate position indepent code for (P)NaCl modules')
 
   BitFromArgument(env, 'nacl_static_link', default=not env.Bit('nacl_glibc'),
-    desc="Whether to use static linking instead of dynamic linking "
-      "for building NaCl executables during tests. "
-      "For nacl-newlib, the default is 1 (static linking). "
-      "For nacl-glibc, the default is 0 (dynamic linking).")
+    desc='Whether to use static linking instead of dynamic linking '
+      'for building NaCl executables during tests. '
+      'For nacl-newlib, the default is 1 (static linking). '
+      'For nacl-glibc, the default is 0 (dynamic linking).')
 
   # Defaults on when --verbose is specified.
   # --verbose sets 'brief_comstr' to False, so this looks a little strange
   BitFromArgument(env, 'target_stats', default=not GetOption('brief_comstr'),
-    desc="Collect and display information about which commands are executed "
-      "during the build process")
+    desc='Collect and display information about which commands are executed '
+      'during the build process')
 
   BitFromArgument(env, 'werror', default=True,
-    desc="Treat warnings as errors (-Werror)")
+    desc='Treat warnings as errors (-Werror)')
 
   BitFromArgument(env, 'disable_nosys_linker_warnings', default=False,
-    desc="Disable warning mechanism in src/untrusted/nosys/warning.h")
+    desc='Disable warning mechanism in src/untrusted/nosys/warning.h')
 
   BitFromArgument(env, 'naclsdk_validate', default=True,
-    desc="Verify the presence of the SDK")
+    desc='Verify the presence of the SDK')
 
   BitFromArgument(env, 'nocpp', default=False,
-    desc="Skip the compilation of C++ code")
+    desc='Skip the compilation of C++ code')
 
   BitFromArgument(env, 'running_on_valgrind', default=False,
-    desc="Compile and test using valgrind")
+    desc='Compile and test using valgrind')
 
   BitFromArgument(env, 'build_vim', default=False,
-    desc="Build vim")
+    desc='Build vim')
 
   BitFromArgument(env, 'build_av_apps', default=True,
-    desc="Build multi media apps")
+    desc='Build multi media apps')
 
   # This argument allows -lcrypt to be disabled, which
   # makes it easier to build x86-32 NaCl on x86-64 Ubuntu Linux,
   # where there is no -dev package for the 32-bit libcrypto
   BitFromArgument(env, 'use_libcrypto', default=True,
-    desc="Use libcrypto")
+    desc='Use libcrypto')
 
   BitFromArgument(env, 'pp', default=False,
-    desc="Enable pretty printing")
+    desc='Enable pretty printing')
 
   BitFromArgument(env, 'dangerous_debug_disable_inner_sandbox',
-    default=False, desc="Make sel_ldr less strict")
+    default=False, desc='Make sel_ldr less strict')
 
   # By default SCons does not use the system's environment variables when
   # executing commands, to help isolate the build process.
   BitFromArgument(env, 'use_environ', arg_name='USE_ENVIRON',
-    default=False, desc="Expose existing environment variables to the build")
+    default=False, desc='Expose existing environment variables to the build')
 
   # Defaults on when --verbose is specified
   # --verbose sets 'brief_comstr' to False, so this looks a little strange
   BitFromArgument(env, 'sysinfo', default=not GetOption('brief_comstr'),
-    desc="Print verbose system information")
+    desc='Print verbose system information')
+
+  BitFromArgument(env, 'disable_dynamic_plugin_loading', default=False,
+    desc='Do not do dynamic plugin injection')
 
 
 def CheckArguments():
@@ -1071,7 +1074,7 @@ def GetPPAPIPluginPath(env):
 def PPAPIBrowserTester(env, target, url, files, log_verbosity=2, args=[]):
   if 'TRUSTED_ENV' not in env:
     return []
-  
+
   env = env.Clone()
   SetupBrowserEnv(env)
 
@@ -1083,8 +1086,9 @@ def PPAPIBrowserTester(env, target, url, files, log_verbosity=2, args=[]):
       '--url', url,
       # Fail if there is no response for 20 seconds.
       '--timeout', '20']
-  command.extend(['--ppapi_plugin', GetPPAPIPluginPath(env['TRUSTED_ENV'])])
-  command.extend(['--sel_ldr', GetSelLdr(env)])
+  if not env.Bit('disable_dynamic_plugin_loading'):
+    command.extend(['--ppapi_plugin', GetPPAPIPluginPath(env['TRUSTED_ENV'])])
+    command.extend(['--sel_ldr', GetSelLdr(env)])
   for dep_file in files:
     command.extend(['--file', dep_file])
   command.extend(args)
