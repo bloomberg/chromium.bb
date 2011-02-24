@@ -89,6 +89,18 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
   friend class base::RefCounted<PrerenderManager>;
   struct PrerenderContentsData;
 
+  // Starts and stops scheduling periodic cleanups, respectively.
+  void StartSchedulingPeriodicCleanups();
+  void StopSchedulingPeriodicCleanups();
+
+  // Schedules a periodic cleanup.
+  void SchedulePeriodicCleanup();
+
+  // Deletes stale prerendered PrerenderContents.
+  // Also identifies and kills PrerenderContents that use too much
+  // resources.
+  void PeriodicCleanup();
+
   bool IsPrerenderElementFresh(const base::Time start) const;
   void DeleteOldEntries();
   virtual base::Time GetCurrentTime() const;
@@ -124,6 +136,9 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
   // observed link rel=prefetch tag.
   static const int kWindowedPPLTSeconds = 30;
 
+  // Time interval at which periodic cleanups are performed.
+  static const int kPeriodicCleanupIntervalMs = 1000;
+
   scoped_ptr<PrerenderContents::Factory> prerender_contents_factory_;
 
   static PrerenderManagerMode mode_;
@@ -133,6 +148,10 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
   // from the point that we last saw a <link rel=prefetch> tag.
   // This static variable should only be modified on the UI thread.
   static base::TimeTicks last_prefetch_seen_time_;
+
+  // Indicates whether we are currently performing periodic cleanups
+  // of pending prerendered pages.
+  bool periodic_cleanups_active_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderManager);
 };

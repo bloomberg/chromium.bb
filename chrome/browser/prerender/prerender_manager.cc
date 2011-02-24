@@ -57,7 +57,8 @@ PrerenderManager::PrerenderManager(Profile* profile)
       max_prerender_age_(base::TimeDelta::FromSeconds(
           kDefaultMaxPrerenderAgeSeconds)),
       max_elements_(kDefaultMaxPrerenderElements),
-      prerender_contents_factory_(PrerenderContents::CreateFactory()) {
+      prerender_contents_factory_(PrerenderContents::CreateFactory()),
+      periodic_cleanups_active_(false) {
 }
 
 PrerenderManager::~PrerenderManager() {
@@ -92,6 +93,7 @@ bool PrerenderManager::AddPreload(const GURL& url,
     data.contents_->set_final_status(FINAL_STATUS_EVICTED);
     delete data.contents_;
   }
+  StartSchedulingPeriodicCleanups();
   return true;
 }
 
@@ -104,6 +106,8 @@ void PrerenderManager::DeleteOldEntries() {
     data.contents_->set_final_status(FINAL_STATUS_TIMED_OUT);
     delete data.contents_;
   }
+  if (prerender_list_.empty())
+    StopSchedulingPeriodicCleanups();
 }
 
 PrerenderContents* PrerenderManager::GetEntry(const GURL& url) {
@@ -133,6 +137,9 @@ bool PrerenderManager::MaybeUsePreloadedPage(TabContents* tc, const GURL& url) {
   pc->set_final_status(FINAL_STATUS_USED);
 
   RenderViewHost* rvh = pc->render_view_host();
+  // RenderViewHosts in PrerenderContents start out hidden.
+  // Since we are actually using it now, restore it.
+  rvh->WasRestored();
   pc->set_render_view_host(NULL);
   rvh->Send(new ViewMsg_DisplayPrerenderedPage(rvh->routing_id()));
   tc->SwapInRenderViewHost(rvh);
@@ -257,6 +264,48 @@ bool PrerenderManager::ShouldRecordWindowedPPLT() const {
   base::TimeDelta elapsed_time =
       base::TimeTicks::Now() - last_prefetch_seen_time_;
   return elapsed_time <= base::TimeDelta::FromSeconds(kWindowedPPLTSeconds);
+}
+
+void PrerenderManager::StartSchedulingPeriodicCleanups() {
+  if (periodic_cleanups_active_)
+    return;
+  periodic_cleanups_active_ = true;
+  SchedulePeriodicCleanup();
+}
+
+void PrerenderManager::StopSchedulingPeriodicCleanups() {
+  if (!periodic_cleanups_active_)
+    return;
+  periodic_cleanups_active_ = false;
+}
+
+void PrerenderManager::SchedulePeriodicCleanup() {
+  if (!periodic_cleanups_active_)
+    return;
+  BrowserThread::PostDelayedTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      NewRunnableMethod(this, &PrerenderManager::PeriodicCleanup),
+      kPeriodicCleanupIntervalMs);
+}
+
+void PrerenderManager::PeriodicCleanup() {
+  DeleteOldEntries();
+  // Grab a copy of the current PrerenderContents pointers, so that we
+  // will not interfere with potential deletions of the list.
+  std::vector<PrerenderContents*> prerender_contents;
+  for (std::list<PrerenderContentsData>::iterator it = prerender_list_.begin();
+       it != prerender_list_.end();
+       ++it) {
+    prerender_contents.push_back(it->contents_);
+  }
+  for (std::vector<PrerenderContents*>::iterator it =
+           prerender_contents.begin();
+       it != prerender_contents.end();
+       ++it) {
+    (*it)->DestroyWhenUsingTooManyResources();
+  }
+  SchedulePeriodicCleanup();
 }
 
 }  // namespace prerender

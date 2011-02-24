@@ -23,6 +23,10 @@ class TabContents;
 struct WebPreferences;
 struct ViewHostMsg_FrameNavigate_Params;
 
+namespace base {
+class ProcessMetrics;
+}
+
 namespace gfx {
 class Rect;
 }
@@ -61,6 +65,10 @@ class PrerenderContents : public RenderViewHostDelegate,
   static Factory* CreateFactory();
 
   virtual void StartPrerendering();
+
+  // Verifies that the prerendering is not using too many resources, and kills
+  // it if not.
+  void DestroyWhenUsingTooManyResources();
 
   RenderViewHost* render_view_host() { return render_view_host_; }
   // Allows replacing of the RenderViewHost owned by this class, including
@@ -167,6 +175,10 @@ class PrerenderContents : public RenderViewHostDelegate,
                                       const std::string& value);
   virtual void ClearInspectorSettings();
 
+  virtual void OnJSOutOfMemory();
+  virtual void RendererUnresponsive(RenderViewHost* render_view_host,
+                                    bool is_during_unload);
+
  protected:
   PrerenderContents(PrerenderManager* prerender_manager, Profile* profile,
                     const GURL& url, const std::vector<GURL>& alias_urls,
@@ -196,6 +208,9 @@ class PrerenderContents : public RenderViewHostDelegate,
   // Remove |this| from the PrerenderManager, set a final status, and
   // delete |this|.
   void Destroy(FinalStatus reason);
+
+  // Returns the ProcessMetrics for the render process, if it exists.
+  base::ProcessMetrics* MaybeGetProcessMetrics();
 
   // The prerender manager owning this object.
   PrerenderManager* prerender_manager_;
@@ -242,6 +257,14 @@ class PrerenderContents : public RenderViewHostDelegate,
   // the time elapsed from initiating a prerender until the time the
   // (potentially only partially) prerendered page is shown to the user.
   base::TimeTicks load_start_time_;
+
+  // Process Metrics of the render process associated with the
+  // RenderViewHost for this object.
+  scoped_ptr<base::ProcessMetrics> process_metrics_;
+
+  // Maximum amount of private memory that may be used per PrerenderContents,
+  // in MB.
+  static const int kMaxPrerenderPrivateMB = 100;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderContents);
 };

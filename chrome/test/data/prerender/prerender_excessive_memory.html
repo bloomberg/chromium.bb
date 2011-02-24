@@ -1,0 +1,17 @@
+<html>
+<!--
+This test checks to make sure that a prerendered page using excessive memory
+is cancelled.
+-->
+<head>
+  <title>Prerender -- Excessive Memory Use</title>
+</head>
+<body>
+  Makes the renderer use an excessive amount of memory.
+  <script type="text/javascript">
+    var a = "";
+    while (1)
+      a = a + "----------";
+  </script>
+</body>
+</html>

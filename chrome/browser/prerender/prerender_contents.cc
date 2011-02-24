@@ -4,6 +4,7 @@
 
 #include "chrome/browser/prerender/prerender_contents.h"
 
+#include "base/process_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/background_contents_service.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
@@ -21,6 +22,10 @@
 #include "chrome/common/view_types.h"
 #include "content/browser/browsing_instance.h"
 #include "ui/gfx/rect.h"
+
+#if defined(OS_MACOSX)
+#include "chrome/browser/mach_broker_mac.h"
+#endif
 
 namespace prerender {
 
@@ -68,6 +73,9 @@ void PrerenderContents::StartPrerendering() {
   SiteInstance* site_instance = SiteInstance::CreateSiteInstance(profile_);
   render_view_host_ = new RenderViewHost(site_instance, this, MSG_ROUTING_NONE,
                                          NULL);
+  // Hide the RVH, so that we will run at a lower CPU priority.
+  // Once the RVH is being swapped into a tab, we will Restore it again.
+  render_view_host_->WasHidden();
   render_view_host_->AllowScriptToClose(true);
 
   // Close ourselves when the application is shutting down.
@@ -385,6 +393,45 @@ void PrerenderContents::Destroy(FinalStatus final_status) {
   prerender_manager_->RemoveEntry(this);
   set_final_status(final_status);
   delete this;
+}
+
+void PrerenderContents::OnJSOutOfMemory() {
+  Destroy(FINAL_STATUS_JS_OUT_OF_MEMORY);
+}
+
+void PrerenderContents::RendererUnresponsive(RenderViewHost* render_view_host,
+                                             bool is_during_unload) {
+  Destroy(FINAL_STATUS_RENDERER_UNRESPONSIVE);
+}
+
+
+base::ProcessMetrics* PrerenderContents::MaybeGetProcessMetrics() {
+  if (process_metrics_.get() == NULL) {
+    base::ProcessHandle handle = render_view_host_->process()->GetHandle();
+    if (handle == base::kNullProcessHandle)
+      return NULL;
+#if !defined(OS_MACOSX)
+    process_metrics_.reset(base::ProcessMetrics::CreateProcessMetrics(handle));
+#else
+    process_metrics_.reset(base::ProcessMetrics::CreateProcessMetrics(
+        handle,
+        MachBroker::GetInstance()));
+#endif
+  }
+
+  return process_metrics_.get();
+}
+
+void PrerenderContents::DestroyWhenUsingTooManyResources() {
+  base::ProcessMetrics* metrics = MaybeGetProcessMetrics();
+  if (metrics == NULL)
+    return;
+
+  size_t private_bytes, shared_bytes;
+  if (metrics->GetMemoryBytes(&private_bytes, &shared_bytes)) {
+    if (private_bytes > kMaxPrerenderPrivateMB * 1024 * 1024)
+      Destroy(FINAL_STATUS_MEMORY_LIMIT_EXCEEDED);
+  }
 }
 
 }  // namespace prerender

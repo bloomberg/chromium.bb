@@ -317,4 +317,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, FLAKY_PrerenderRedirectToHttps) {
                    2);
 }
 
+// Checks that renderers using excessive memory will be terminated.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderExcessiveMemory) {
+  PrerenderTestURL("prerender_excessive_memory.html",
+                   FINAL_STATUS_MEMORY_LIMIT_EXCEEDED, 1);
+}
+
 }  // namespace prerender
