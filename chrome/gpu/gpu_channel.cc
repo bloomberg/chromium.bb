@@ -48,9 +48,17 @@ bool GpuChannel::OnMessageReceived(const IPC::Message& message) {
   if (message.routing_id() == MSG_ROUTING_CONTROL)
     return OnControlMessageReceived(message);
 
-  // Fail silently if the GPU process has destroyed while the IPC message was
-  // en-route.
-  return router_.RouteMessage(message);
+  if (!router_.RouteMessage(message)) {
+    // Respond to sync messages even if router failed to route.
+    if (message.is_sync()) {
+      IPC::Message* reply = IPC::SyncMessage::GenerateReply(&message);
+      reply->set_reply_error();
+      Send(reply);
+    }
+    return false;
+  }
+
+  return true;
 }
 
 void GpuChannel::OnChannelError() {
