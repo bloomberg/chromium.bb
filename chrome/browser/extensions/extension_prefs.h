@@ -278,6 +278,7 @@ class ExtensionPrefs {
   // Sets a preference value that is controlled by the extension. In other
   // words, this is not a pref value *about* the extension but something
   // global the extension wants to override.
+  // Takes ownership of |value|.
   void SetExtensionControlledPref(const std::string& extension_id,
                                   const std::string& pref_key,
                                   bool incognito,

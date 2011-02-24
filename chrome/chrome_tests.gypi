@@ -2204,6 +2204,7 @@
         'browser/extensions/extension_browsertest.h',
         'browser/extensions/extension_browsertests_misc.cc',
         'browser/extensions/extension_clipboard_apitest.cc',
+        'browser/extensions/extension_content_settings_apitest.cc',
         'browser/extensions/extension_context_menu_apitest.cc',
         'browser/extensions/extension_context_menu_browsertest.cc',
         'browser/extensions/extension_cookies_apitest.cc',

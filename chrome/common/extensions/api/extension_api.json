@@ -4558,5 +4558,88 @@
         ]
       }
     ]
+  },
+  {
+    "namespace": "experimental.extension",
+    "types": [
+      {
+        "id": "Preference",
+        "type": "object",
+        "customBindings": "Preference",
+        "description": "An object which allows access to a preference.",
+        "functions": [
+          {
+            "name": "get",
+            "type": "function",
+            "description": "Get the setting from the user preferences.",
+            "parameters": [
+              {
+                "name": "details",
+                "type": "object",
+                "description": "What setting to return.",
+                "properties": {
+                  "incognito": {
+                    "type": "boolean",
+                    "optional": true,
+                    "description": "Whether to return the setting that applies to the incognito session only (default false)."
+                  }
+                }
+              },
+              {
+                "name": "callback",
+                "type": "function",
+                "parameters": [
+                  {
+                    "name": "value",
+                    "description": "The value of the preference.",
+                    "type": "any"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "set",
+            "type": "function",
+            "description": "Set the setting in the user preferences",
+            "parameters": [
+              {
+                "name": "details",
+                "type": "object",
+                "description": "What setting to change.",
+                "properties": {
+                  "value": {
+                    "description": "The value of the preference.",
+                    "type": "any"
+                  },
+                  "incognito": {
+                    "type": "boolean",
+                    "optional": true,
+                    "description": "Whether to modify the setting for the incognito session only (default false)."
+                  }
+                }
+              },
+              {
+                "name": "callback",
+                "type": "function",
+                "description": "Called after the preference has been set.",
+                "optional": true,
+                "parameters": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "namespace": "experimental.contentSettings.misc",
+    "properties": {
+      "blockThirdPartyCookies": {
+        "$ref": "Preference",
+        "value": ["blockThirdPartyCookies", {"type": "boolean"}],
+        "description": "Whether third party cookies should be blocked. The value of this preference is of type boolean."
+      }
+    }
   }
 ]

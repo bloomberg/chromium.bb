@@ -1277,9 +1277,14 @@ void ExtensionPrefs::SetExtensionControlledPref(const std::string& extension_id,
                                                 const std::string& pref_key,
                                                 bool incognito,
                                                 Value* value) {
-  DCHECK(pref_service()->FindPreference(pref_key.c_str()))
-      << "Extension controlled preference key " << pref_key
-      << " not registered.";
+#ifndef NDEBUG
+  const PrefService::Preference* pref =
+      pref_service()->FindPreference(pref_key.c_str());
+  DCHECK(pref) << "Extension controlled preference key " << pref_key
+               << " not registered.";
+  DCHECK_EQ(pref->GetType(), value->GetType())
+      << "Extension controlled preference " << pref_key << " has wrong type.";
+#endif
 
   if (!incognito) {
     // Also store in persisted Preferences file to recover after a

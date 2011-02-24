@@ -16,7 +16,7 @@
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
     <script type="text/javascript" src="js/sidebar.js"></script>
-  <title>chrome.experimental.* APIs - Google Chrome Extensions - Google Code</title></head>
+  <title>chrome.experimental.contentSettings.misc - Google Chrome Extensions - Google Code</title></head>
   <body>  <div id="gc-container" class="labs">
       <div id="devModeWarning">
         You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
@@ -251,13 +251,13 @@
 
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">chrome.experimental.* APIs</h1>
+        <h1 class="page_title">chrome.experimental.contentSettings.misc</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
-        <div id="toc" style="display: none; ">
+        <div id="toc">
           <h2>Contents</h2>
           <ol>
-            <li>
+            <li style="display: none; ">
               <a>h2Name</a>
               <ol>
                 <li>
@@ -266,17 +266,17 @@
               </ol>
             </li>
               <li>
-                <a href="#apiReference">API reference</a>
+                <a href="#apiReference">API reference: chrome.experimental.contentSettings.misc</a>
                 <ol>
                   <li>
                     <a href="#properties">Properties</a>
                     <ol>
                       <li>
-                        <a href="#property-anchor">propertyName</a>
+                        <a href="#property-blockThirdPartyCookies">blockThirdPartyCookies</a>
                       </li>
                     </ol>
                   </li>
-                  <li>
+                  <li style="display: none; ">
                     <a>Methods</a>
                     <ol>
                       <li>
@@ -284,7 +284,7 @@
                       </li>
                     </ol>
                   </li>
-                  <li>
+                  <li style="display: none; ">
                     <a>Events</a>
                     <ol>
                       <li>
@@ -292,7 +292,7 @@
                       </li>
                     </ol>
                   </li>
-                  <li>
+                  <li style="display: none; ">
                     <a href="#types">Types</a>
                     <ol>
                       <li>
@@ -307,98 +307,17 @@
         <!-- /TABLE OF CONTENTS -->
 
         <!-- Standard content lead-in for experimental API pages -->
-        <p id="classSummary" style="display: none; ">
+        <p id="classSummary">
           For information on how to use experimental APIs, see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
         </p>
 
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"><div id="pageData-name" class="pageData">chrome.experimental.* APIs</div>
-
-<p>
-We'd like your <a href="http://groups.google.com/a/chromium.org/group/chromium-extensions/topics">feedback</a>
-on the following experimental APIs:
-</p>
-
-<ul>
-  <li>
-  <a href="experimental.clipboard.html">experimental.clipboard</a></li><li>
-  <a href="experimental.contentSettings.misc.html">experimental.contentSettings.misc</a></li><li>
-  <a href="experimental.extension.html">experimental.extension</a></li><li>
-  <a href="experimental.infobars.html">experimental.infobars</a></li><li>
-  <a href="experimental.processes.html">experimental.processes</a></li><li>
-  <a href="experimental.proxy.html">experimental.proxy</a></li><li>
-  <a href="experimental.sidebar.html">experimental.sidebar</a></li><li>
-  <a href="experimental.tts.html">experimental.tts</a></li><li>
-  <a href="experimental.webNavigation.html">experimental.webNavigation</a></li><li>
-  <a href="experimental.webRequest.html">experimental.webRequest</a></li>
-</ul>
-
-<p class="warning">
-<b>Caution:</b>
-Don't depend on these experimental APIs.
-They might disappear,
-and they <em>will</em> change.
-Also, the Chrome Developer Dashboard doesn't allow you to
-upload extensions that use experimental APIs.
-</p>
-
-<h2 id="using">How to use experimental APIs</h2>
-
-<ol>
-  <li>
-    Make sure you're using the
-<a href="http://www.chromium.org/getting-involved/dev-channel">Dev channel</a>
-    of Google Chrome.
-    Although the experimental APIs might work in other versions,
-    we need your feedback on the latest incarnation of the APIs,
-    which you can find on the Dev channel.
-  </li>
-  <li>
-    Using the
-    <a href="http://code.google.com/chrome/extensions/dev/experimental.html">API documentation for the Dev channel</a>,
-    write the code for your extension.
-  </li>
-  <li>
-    Specify the "experimental"
-    <a href="manifest.html#permissions">permission</a>
-    in your extension's manifest, like this:
-<pre>"permissions": [
-  <b>"experimental"</b>,
-  ...
-],
-</pre>
-  </li>
-  <li>
-    Specify the <b>--enable-experimental-extension-apis</b> flag
-    when you launch the browser.
-    On Windows, you can do this by modifying
-    the properties of the shortcut that you use to launch Google Chrome.
-    For example:
-
-<pre><em>path_to_chrome.exe</em> <b>--enable-experimental-extension-apis</b></pre>
-  </li>
-
-  <li>
-    <a href="http://groups.google.com/a/chromium.org/group/chromium-extensions/topics">Give us feedback!</a>
-    Your comments and suggestions help us
-    improve the APIs and decide
-    which ones should move from experimental to supported.
-  </li>
-</ol>
-
-<h2 id="other">More information</h2>
-
-<p>
-For information on the standard APIs that extensions can use, see
-<a href="api_index.html">chrome.* APIs</a> and
-<a href="api_other.html">Other APIs</a>.
-</p>
-</div>
+        <div id="static"></div>
 
         <!-- API PAGE -->
-        <div class="apiPage" style="display: none; ">
+        <div class="apiPage">
         <a name="apiReference"></a>
-        <h2>API reference: chrome.apiname </h2>
+        <h2>API reference: chrome.experimental.contentSettings.misc</h2>
 
           <!-- PROPERTIES -->
           <div class="apiGroup">
@@ -406,20 +325,85 @@ For information on the standard APIs that extensions can use, see
             <h3 id="properties">Properties</h3>
 
             <div>
-              <a></a>
-              <h4>getLastError</h4>
+              <a name="property-blockThirdPartyCookies"></a>
+              <h4>blockThirdPartyCookies</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span>chrome.extension</span><span>lastError</span>
+                <span>chrome.experimental.contentSettings.misc.</span><span>blockThirdPartyCookies</span>
               </div>
               <div>
+          <dt>
+            <var>blockThirdPartyCookies</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="experimental.extension.html#type-Preference">Preference</a>
+                      </span>
+                      <span style="display: none; ">
+                        <span>
+                          array of <span><span></span></span>
+                        </span>
+                        <span>paramType</span>
+                        <span></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>Whether third party cookies should be blocked. The value of this preference is of type boolean.</dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
               </div>
+            </dl>
+          </dd>
+
+          <!-- OBJECT METHODS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- OBJECT EVENT FIELDS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
             </div>
 
           </div> <!-- /apiGroup -->
 
           <!-- METHODS -->
-          <div id="methodsTemplate" class="apiGroup">
+          <div id="methodsTemplate" class="apiGroup" style="display: none; ">
             <a></a>
             <h3>Methods</h3>
 
@@ -495,7 +479,7 @@ For information on the standard APIs that extensions can use, see
           </div>  <!-- /apiGroup -->
 
           <!-- EVENTS -->
-          <div id="eventsTemplate" class="apiGroup">
+          <div id="eventsTemplate" class="apiGroup" style="display: none; ">
             <a></a>
             <h3>Events</h3>
             <!-- iterates over all events -->
@@ -531,7 +515,7 @@ For information on the standard APIs that extensions can use, see
           </div> <!-- /apiGroup -->
 
           <!-- TYPES -->
-          <div class="apiGroup">
+          <div class="apiGroup" style="display: none; ">
             <a name="types"></a>
             <h3 id="types">Types</h3>
 

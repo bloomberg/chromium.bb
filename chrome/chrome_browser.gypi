@@ -1001,6 +1001,8 @@
         'browser/extensions/extension_page_actions_module.h',
         'browser/extensions/extension_page_actions_module_constants.cc',
         'browser/extensions/extension_page_actions_module_constants.h',
+        'browser/extensions/extension_preference_api.cc',
+        'browser/extensions/extension_preference_api.h',
         'browser/extensions/extension_pref_store.cc',
         'browser/extensions/extension_pref_store.h',
         'browser/extensions/extension_pref_value_map.cc',

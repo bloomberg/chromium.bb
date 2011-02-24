@@ -38,6 +38,13 @@ var chrome = chrome || {};
   if (!chrome)
     chrome = {};
 
+  function forEach(dict, f) {
+    for (key in dict) {
+      if (dict.hasOwnProperty(key))
+        f(key, dict[key]);
+    }
+  }
+
   // Validate arguments.
   chromeHidden.validationTypes = [];
   chromeHidden.validate = function(args, schemas) {
@@ -292,6 +299,49 @@ var chrome = chrome || {};
     return -1;
   };
 
+  function CustomBindingsObject() {
+  }
+  CustomBindingsObject.prototype.setSchema = function(schema) {
+    // The functions in the schema are in list form, so we move them into a
+    // dictionary for easier access.
+    var self = this;
+    self.parameters = {};
+    schema.functions.forEach(function(f) {
+      self.parameters[f.name] = f.parameters;
+    });
+  };
+
+  function extendSchema(schema) {
+    var extendedSchema = schema.slice();
+    extendedSchema.unshift({'type': 'string'});
+    return extendedSchema;
+  }
+
+  var customBindings = {};
+
+  function setupPreferences() {
+    customBindings['Preference'] = function(prefKey, valueSchema) {
+      var getSchema = this.parameters.get;
+      var extendedGetSchema = extendSchema(getSchema);
+      this.get = function(details, callback) {
+        chromeHidden.validate([details, callback], getSchema);
+        return sendRequest('experimental.preferences.get',
+                           [prefKey, details, callback],
+                           extendedGetSchema);
+      };
+      var setSchema = this.parameters.set.slice();
+      setSchema[0].properties.value = valueSchema;
+      var extendedSetSchema = extendSchema(setSchema);
+      this.set = function(details, callback) {
+        chromeHidden.validate([details, callback], setSchema);
+        return sendRequest('experimental.preferences.set',
+                           [prefKey, details, callback],
+                           extendedSetSchema);
+      };
+    };
+    customBindings['Preference'].prototype = new CustomBindingsObject();
+  }
+
   // Page action events send (pageActionId, {tabId, tabUrl}).
   function setupPageActionEvents(extensionId) {
     var pageActions = GetCurrentPageActions(extensionId);
@@ -422,6 +472,10 @@ var chrome = chrome || {};
     }
     chrome.initExtension(extensionId, false, IsIncognitoProcess());
 
+    // Setup the Preference class so we can use it to construct Preference
+    // objects from the API definition.
+    setupPreferences();
+
     // |apiFunctions| is a hash of name -> object that stores the
     // name & definition of the apiFunction. Custom handling of api functions
     // is implemented by adding a "handleRequest" function to the object.
@@ -447,6 +501,9 @@ var chrome = chrome || {};
       if (apiDef.types) {
         apiDef.types.forEach(function(t) {
           chromeHidden.validationTypes.push(t);
+          if (t.type == 'object' && customBindings[t.id]) {
+            customBindings[t.id].prototype.setSchema(t);
+          }
         });
       }
 
@@ -514,24 +571,29 @@ var chrome = chrome || {};
 
       // Parse any values defined for properties.
       if (apiDef.properties) {
-        for (var prop in apiDef.properties) {
-          if (!apiDef.properties.hasOwnProperty(prop))
-            continue;
-
-          var property = apiDef.properties[prop];
+        forEach(apiDef.properties, function(prop, property) {
           if (property.value) {
             var value = property.value;
             if (property.type === 'integer') {
               value = parseInt(value);
             } else if (property.type === 'boolean') {
               value = value === "true";
+            } else if (property["$ref"]) {
+              var constructor = customBindings[property["$ref"]];
+              var args = value;
+              // For an object property, |value| is an array of constructor
+              // arguments, but we want to pass the arguments directly
+              // (i.e. not as an array), so we have to fake calling |new| on the
+              // constructor.
+              value = { __proto__: constructor.prototype };
+              constructor.apply(value, args);
             } else if (property.type !== 'string') {
               throw "NOT IMPLEMENTED (extension_api.json error): Cannot " +
                   "parse values for type \"" + property.type + "\"";
             }
             module[prop] = value;
           }
-        }
+        });
       }
 
       // getTabContentses is retained for backwards compatibility

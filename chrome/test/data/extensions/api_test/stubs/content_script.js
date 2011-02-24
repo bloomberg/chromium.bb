@@ -66,7 +66,8 @@ function testPath(path, expectError) {
       try {
         module = module[parts[i]];
       } catch (err) {
-        logToConsoleAndStdout("testPath failed on subcomponent of " + path);
+        logToConsoleAndStdout("testPath failed on " +
+                              parts.slice(0, i+1).join('.') + '(' + err + ')');
         return false;
       }
     } else {

@@ -275,6 +275,7 @@ var chrome = chrome || {};
       "experimental.accessibility",
       "experimental.bookmarkManager",
       "experimental.clipboard",
+      "experimental.contentSettings.misc",
       "experimental.extension",
       "experimental.infobars",
       "experimental.input",

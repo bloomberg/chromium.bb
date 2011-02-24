@@ -920,6 +920,7 @@ TEST(ExtensionTest, PermissionMessages) {
   skip.insert(Extension::kIdlePermission);
   skip.insert(Extension::kNotificationPermission);
   skip.insert(Extension::kUnlimitedStoragePermission);
+  skip.insert(Extension::kContentSettingsPermission);
 
   // TODO(erikkay) add a string for this permission.
   skip.insert(Extension::kBackgroundPermission);

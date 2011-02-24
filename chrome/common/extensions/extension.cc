@@ -201,8 +201,9 @@ const int Extension::kSidebarIconMaxSize = 16;
 
 // Explicit permissions -- permission declaration required.
 const char Extension::kBackgroundPermission[] = "background";
-const char Extension::kContextMenusPermission[] = "contextMenus";
 const char Extension::kBookmarkPermission[] = "bookmarks";
+const char Extension::kContextMenusPermission[] = "contextMenus";
+const char Extension::kContentSettingsPermission[] = "contentSettings";
 const char Extension::kCookiePermission[] = "cookies";
 const char Extension::kExperimentalPermission[] = "experimental";
 const char Extension::kGeolocationPermission[] = "geolocation";
@@ -221,6 +222,7 @@ const char Extension::kWebstorePrivatePermission[] = "webstorePrivate";
 const Extension::Permission Extension::kPermissions[] = {
   { kBackgroundPermission, 0 },
   { kBookmarkPermission, IDS_EXTENSION_PROMPT_WARNING_BOOKMARKS },
+  { kContentSettingsPermission, 0 },
   { kContextMenusPermission, 0 },
   { kCookiePermission, 0 },
   { kExperimentalPermission, 0 },
