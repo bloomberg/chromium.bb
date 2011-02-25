@@ -13,6 +13,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
+using ::testing::AnyNumber;
 using ::testing::NotNull;
 using ::testing::StrictMock;
 using ::testing::WithArg;
@@ -125,6 +126,8 @@ TEST(DecoderBaseTest, FlowControl) {
       NewCallback(&read_callback, &MockDecoderCallback::OnReadComplete));
   scoped_refptr<MockDemuxerStream> demuxer_stream(new MockDemuxerStream());
   MockStatisticsCallback stats_callback_object;
+  EXPECT_CALL(stats_callback_object, OnStatistics(_))
+      .Times(AnyNumber());
 
   // Initialize.
   EXPECT_CALL(*decoder, DoInitialize(NotNull(), NotNull(), NotNull()))

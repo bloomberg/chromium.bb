@@ -671,7 +671,7 @@ WebKit::WebMediaPlayer::MovieLoadType
   return WebKit::WebMediaPlayer::Unknown;
 }
 
-unsigned long WebMediaPlayerImpl::decodedFrames() const
+unsigned WebMediaPlayerImpl::decodedFrameCount() const
 {
   DCHECK(MessageLoop::current() == main_loop_);
 
@@ -679,7 +679,7 @@ unsigned long WebMediaPlayerImpl::decodedFrames() const
   return stats.video_frames_decoded;
 }
 
-unsigned long WebMediaPlayerImpl::droppedFrames() const
+unsigned WebMediaPlayerImpl::droppedFrameCount() const
 {
   DCHECK(MessageLoop::current() == main_loop_);
 
@@ -687,7 +687,7 @@ unsigned long WebMediaPlayerImpl::droppedFrames() const
   return stats.video_frames_dropped;
 }
 
-unsigned long WebMediaPlayerImpl::audioBytesDecoded() const
+unsigned WebMediaPlayerImpl::audioDecodedByteCount() const
 {
   DCHECK(MessageLoop::current() == main_loop_);
 
@@ -695,7 +695,7 @@ unsigned long WebMediaPlayerImpl::audioBytesDecoded() const
   return stats.audio_bytes_decoded;
 }
 
-unsigned long WebMediaPlayerImpl::videoBytesDecoded() const
+unsigned WebMediaPlayerImpl::videoDecodedByteCount() const
 {
   DCHECK(MessageLoop::current() == main_loop_);
 

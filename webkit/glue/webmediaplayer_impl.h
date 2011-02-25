@@ -241,10 +241,10 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
   virtual bool hasSingleSecurityOrigin() const;
   virtual WebKit::WebMediaPlayer::MovieLoadType movieLoadType() const;
 
-  virtual unsigned long decodedFrames() const;
-  virtual unsigned long droppedFrames() const;
-  virtual unsigned long audioBytesDecoded() const;
-  virtual unsigned long videoBytesDecoded() const;
+  virtual unsigned decodedFrameCount() const;
+  virtual unsigned droppedFrameCount() const;
+  virtual unsigned audioDecodedByteCount() const;
+  virtual unsigned videoDecodedByteCount() const;
 
   virtual WebKit::WebVideoFrame* getCurrentFrame();
   virtual void putCurrentFrame(WebKit::WebVideoFrame* web_video_frame);
