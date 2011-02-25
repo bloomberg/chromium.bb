@@ -50,9 +50,6 @@
       'downloads',
       # crbug.com/67233
       '-downloads.DownloadsTest.testDownloadIncognitoAndRegular',
-      # crbug.com/68656
-      '-downloads.DownloadsTest.testAlwaysOpenFileType',
-      '-downloads.DownloadsTest.testOpenWhenDone',
       'find_in_page',
       # Turkish I problem. crbug.com/60638
       '-find_in_page.FindMatchTests.testLocalizationAndCaseOrder',
