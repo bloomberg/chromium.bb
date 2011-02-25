@@ -45,10 +45,19 @@ cr.define('options', function() {
      */
     editCancelled_: true,
 
+    /**
+     * The editable item corresponding to the last click, if any. Used to decide
+     * initial focus when entering edit mode.
+     * @type {HTMLElement}
+     * @private
+     */
+    editClickTarget_: null,
+
     /** @inheritDoc */
     decorate: function() {
       DeletableItem.prototype.decorate.call(this);
 
+      this.addEventListener('mousedown', this.handleMouseDown_.bind(this));
       this.addEventListener('keydown', this.handleKeyDown_.bind(this));
       this.addEventListener('leadChange', this.handleLeadChange_);
     },
@@ -96,11 +105,13 @@ cr.define('options', function() {
 
         cr.dispatchSimpleEvent(this, 'edit', true);
 
-        var self = this;
-        var focusElement = this.initialFocusElement;
+        var focusElement = this.editClickTarget_ || this.initialFocusElement;
+        this.editClickTarget_ = null;
+
         // When this is called in response to the selectedChange event,
         // the list grabs focus immediately afterwards. Thus we must delay
         // our focus grab.
+        var self = this;
         if (focusElement) {
           window.setTimeout(function() {
             // Make sure we are still in edit mode by the time we execute.
@@ -136,7 +147,8 @@ cr.define('options', function() {
     },
 
     /**
-     * The HTML element that should have focus initially when editing starts.
+     * The HTML element that should have focus initially when editing starts,
+     * if a specific element wasn't clicked.
      * Defaults to the first <input> element; can be overriden by subclasses if
      * a different element should be focused.
      * @type {HTMLElement}
@@ -203,7 +215,7 @@ cr.define('options', function() {
      * @private
      */
     resetEditableValues_: function() {
-      var editFields = this.querySelectorAll('[editmode=true]');
+      var editFields = this.querySelectorAll('[displaymode=edit]');
       for (var i = 0; i < editFields.length; i++) {
         var staticLabel = editFields[i].staticVersion;
         if (!staticLabel)
@@ -223,7 +235,7 @@ cr.define('options', function() {
      * @private
      */
     updateStaticValues_: function() {
-      var editFields = this.querySelectorAll('[editmode=true]');
+      var editFields = this.querySelectorAll('[displaymode=edit]');
       for (var i = 0; i < editFields.length; i++) {
         var staticLabel = editFields[i].staticVersion;
         if (!staticLabel)
@@ -261,6 +273,26 @@ cr.define('options', function() {
         // Make sure that handled keys aren't passed on and double-handled.
         // (e.g., esc shouldn't both cancel an edit and close a subpage)
         e.stopPropagation();
+      }
+    },
+
+    /**
+     * Called when the list item is clicked. If the click target corresponds to
+     * an editable item, stores that item to focus when edit mode is started.
+     * @param {Event} e The mouse down event.
+     * @private
+     */
+    handleMouseDown_: function(e) {
+      if (!this.editable || this.editing)
+        return;
+
+      var clickTarget = e.target;
+      var editFields = this.querySelectorAll('[displaymode=edit]');
+      for (var i = 0; i < editFields.length; i++) {
+        if (editFields[i].staticVersion == clickTarget) {
+          this.editClickTarget_ = editFields[i];
+          return;
+        }
       }
     },
   };
