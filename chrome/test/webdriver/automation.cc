@@ -8,6 +8,7 @@
 #include <windows.h>
 #endif
 
+#include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/file_path.h"
@@ -17,8 +18,9 @@
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/proxy_launcher.h"
@@ -36,67 +38,76 @@ namespace {
 // Gets the path to the default Chrome executable directory. Returns true on
 // success.
 bool GetDefaultChromeExeDir(FilePath* browser_directory) {
-  FilePath build_dir;
-  if (PathService::Get(chrome::DIR_APP, &build_dir) &&
-      file_util::DirectoryExists(build_dir)) {
-    *browser_directory = build_dir;
-    return true;
-  }
+  std::vector<FilePath> locations;
+  // Add the directory which this module resides in.
+  FilePath module_dir;
+  if (PathService::Get(base::DIR_MODULE, &module_dir))
+    locations.push_back(module_dir);
+
 #if defined(OS_WIN)
-  // Check the App Paths registry key.
+  // Add the App Paths registry key location.
   const wchar_t kSubKey[] =
-      L"\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\chrome.exe";
+      L"Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\chrome.exe";
   base::win::RegKey key(HKEY_CURRENT_USER, kSubKey, KEY_READ);
   std::wstring path;
-  if (key.ReadValue(L"path", &path) == ERROR_SUCCESS &&
-      file_util::DirectoryExists(FilePath(path))) {
-    *browser_directory = FilePath(path);
-    return true;
-  }
+  if (key.ReadValue(L"path", &path) == ERROR_SUCCESS)
+    locations.push_back(FilePath(path));
   base::win::RegKey sys_key(HKEY_LOCAL_MACHINE, kSubKey, KEY_READ);
-  if (sys_key.ReadValue(L"path", &path) == ERROR_SUCCESS &&
-      file_util::DirectoryExists(FilePath(path))) {
-    *browser_directory = FilePath(path);
-    return true;
-  }
+  if (sys_key.ReadValue(L"path", &path) == ERROR_SUCCESS)
+    locations.push_back(FilePath(path));
 
-  // Check the default location for Chrome on the system.
+  // Add the user-level location for Chrome.
+  FilePath app_from_google(L"Google\\Chrome\\Application");
   scoped_ptr<base::Environment> env(base::Environment::Create());
   std::string home_dir;
-  if (!env->GetVar("userprofile", &home_dir))
-    return false;
-  FilePath default_location(UTF8ToWide(home_dir));
-  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
-    default_location = default_location.Append(
-        L"Local Settings\\Application Data");
-  } else {
-    default_location = default_location.Append(L"AppData\\Local");
+  if (env->GetVar("userprofile", &home_dir)) {
+    FilePath default_location(UTF8ToWide(home_dir));
+    if (base::win::GetVersion() < base::win::VERSION_VISTA) {
+      default_location = default_location.Append(
+          L"Local Settings\\Application Data");
+    } else {
+      default_location = default_location.Append(L"AppData\\Local");
+    }
+    locations.push_back(default_location.Append(app_from_google));
   }
-  default_location.Append(L"Google\\Chrome\\Application");
-  if (file_util::DirectoryExists(default_location)) {
-    *browser_directory = default_location;
-    return true;
+
+  // Add the system-level location for Chrome.
+  std::string program_dir;
+  if (env->GetVar("ProgramFiles", &program_dir)) {
+    locations.push_back(FilePath(UTF8ToWide(program_dir))
+        .Append(app_from_google));
+  }
+  if (env->GetVar("ProgramFiles(x86)", &program_dir)) {
+    locations.push_back(FilePath(UTF8ToWide(program_dir))
+        .Append(app_from_google));
   }
 #elif defined(OS_MACOSX)
-  FilePath app_path(
-      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome");
-  if (file_util::DirectoryExists(app_path)) {
-    *browser_directory = app_path;
-    return true;
-  }
+  locations.push_back(FilePath(
+      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"));
 #elif defined(OS_LINUX)
-  FilePath google_chrome("/usr/bin/google-chrome");
-  if (file_util::PathExists(google_chrome)) {
+  // Proxy launcher doesn't check for google-chrome, only chrome.
+  FilePath chrome_sym_link("/usr/bin/google-chrome");
+  if (file_util::PathExists(chrome_sym_link)) {
     FilePath chrome;
-    if (file_util::ReadSymbolicLink(google_chrome, &chrome)) {
-      chrome = chrome.DirName();
-      if (file_util::DirectoryExists(chrome)) {
-        *browser_directory = chrome;
-        return true;
-      }
+    if (file_util::ReadSymbolicLink(chrome_sym_link, &chrome)) {
+      locations.push_back(chrome.DirName());
     }
   }
 #endif
+
+  // Add the current directory.
+  FilePath current_dir;
+  if (file_util::GetCurrentDirectory(&current_dir))
+    locations.push_back(current_dir);
+
+  // Determine the default directory.
+  for (size_t i = 0; i < locations.size(); ++i) {
+    if (file_util::PathExists(
+            locations[i].Append(chrome::kBrowserProcessExecutablePath))) {
+      *browser_directory = locations[i];
+      return true;
+    }
+  }
   return false;
 }
 
@@ -128,8 +139,11 @@ void Automation::Init(const FilePath& user_browser_dir, bool* success) {
   }
 
   CommandLine args(CommandLine::NO_PROGRAM);
+  args.AppendSwitch(switches::kDisableHangMonitor);
+  args.AppendSwitch(switches::kDisablePromptOnRepost);
   args.AppendSwitch(switches::kDomAutomationController);
   args.AppendSwitch(switches::kFullMemoryCrashReport);
+  args.AppendSwitchASCII(switches::kHomePage, chrome::kAboutBlankURL);
   args.AppendSwitch(switches::kNoDefaultBrowserCheck);
   args.AppendSwitch(switches::kNoFirstRun);
   args.AppendSwitchASCII(switches::kTestType, "webdriver");
