@@ -16,5 +16,8 @@ BUG_TONY LINUX : fast/forms/select-baseline.html = IMAGE
 // Dropping U;.  Need to rebase upstream.
 BUG_TONY : http/tests/navigation/useragent.php = TEXT
 
+BUGV8_1202 DEBUG : fast/js/function-call-aliased.html = PASS CRASH
+BUGV8_1203 DEBUG : fast/canvas/webgl/gl-get-calls.html = PASS CRASH
+
 // Potential broken test found by r75985.
 BUGCR74092 : http/tests/media/video-play-suspend.html = TIMEOUT
