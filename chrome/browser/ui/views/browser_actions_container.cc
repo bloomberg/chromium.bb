@@ -634,7 +634,7 @@ void BrowserActionsContainer::OnDragEntered(
 int BrowserActionsContainer::OnDragUpdated(
     const views::DropTargetEvent& event) {
   // First check if we are above the chevron (overflow) menu.
-  if (GetViewForPoint(event.location()) == chevron_) {
+  if (GetEventHandlerForPoint(event.location()) == chevron_) {
     if (show_menu_task_factory_.empty() && !overflow_menu_)
       StartShowFolderDropMenuTimer();
     return ui::DragDropTypes::DRAG_MOVE;

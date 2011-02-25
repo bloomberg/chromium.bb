@@ -158,7 +158,7 @@ void NonClientView::ViewHierarchyChanged(bool is_add, View* parent,
   }
 }
 
-views::View* NonClientView::GetViewForPoint(const gfx::Point& point) {
+views::View* NonClientView::GetEventHandlerForPoint(const gfx::Point& point) {
   // Because of the z-ordering of our child views (the client view is positioned
   // over the non-client frame view, if the client view ever overlaps the frame
   // view visually (as it does for the browser window), then it will eat mouse
@@ -169,9 +169,9 @@ views::View* NonClientView::GetViewForPoint(const gfx::Point& point) {
   gfx::Point point_in_child_coords(point);
   View::ConvertPointToView(this, frame_view_.get(), &point_in_child_coords);
   if (frame_view_->HitTest(point_in_child_coords))
-    return frame_view_->GetViewForPoint(point_in_child_coords);
+    return frame_view_->GetEventHandlerForPoint(point_in_child_coords);
 
-  return View::GetViewForPoint(point);
+  return View::GetEventHandlerForPoint(point);
 }
 
 AccessibilityTypes::Role NonClientView::GetAccessibleRole() {

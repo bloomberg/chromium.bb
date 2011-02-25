@@ -792,11 +792,11 @@ TEST_F(ViewTest, HitTestMasks) {
   EXPECT_TRUE(v1->HitTest(ConvertPointToView(v1, v1_origin)));
   EXPECT_FALSE(v2->HitTest(ConvertPointToView(v2, v2_origin)));
 
-  // Test GetViewForPoint
-  EXPECT_EQ(v1, root_view->GetViewForPoint(v1_centerpoint));
-  EXPECT_EQ(v2, root_view->GetViewForPoint(v2_centerpoint));
-  EXPECT_EQ(v1, root_view->GetViewForPoint(v1_origin));
-  EXPECT_EQ(root_view, root_view->GetViewForPoint(v2_origin));
+  // Test GetEventHandlerForPoint
+  EXPECT_EQ(v1, root_view->GetEventHandlerForPoint(v1_centerpoint));
+  EXPECT_EQ(v2, root_view->GetEventHandlerForPoint(v2_centerpoint));
+  EXPECT_EQ(v1, root_view->GetEventHandlerForPoint(v1_origin));
+  EXPECT_EQ(root_view, root_view->GetEventHandlerForPoint(v2_origin));
 }
 
 TEST_F(ViewTest, Textfield) {

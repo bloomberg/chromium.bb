@@ -41,7 +41,7 @@ void TouchTabStrip::SetBackgroundOffset(const gfx::Point& offset) {
 }
 
 bool TouchTabStrip::IsPositionInWindowCaption(const gfx::Point& point) {
-  views::View* v = GetViewForPoint(point);
+  views::View* v = GetEventHandlerForPoint(point);
 
   // If there is no control at this location, claim the hit was in the title
   // bar to get a move action.

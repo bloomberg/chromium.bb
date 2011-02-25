@@ -83,7 +83,7 @@ class AutocompletePopupContentsView : public views::View,
   virtual bool OnMousePressed(const views::MouseEvent& event);
   virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled);
   virtual bool OnMouseDragged(const views::MouseEvent& event);
-  virtual views::View* GetViewForPoint(const gfx::Point& point);
+  virtual views::View* GetEventHandlerForPoint(const gfx::Point& point);
 
  protected:
   virtual void PaintResultViews(gfx::CanvasSkia* canvas);

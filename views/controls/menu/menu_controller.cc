@@ -1093,7 +1093,7 @@ void MenuController::CloseAllNestedMenus() {
 
 MenuItemView* MenuController::GetMenuItemAt(View* source, int x, int y) {
   // Walk the view hierarchy until we find a menu item (or the root).
-  View* child_under_mouse = source->GetViewForPoint(gfx::Point(x, y));
+  View* child_under_mouse = source->GetEventHandlerForPoint(gfx::Point(x, y));
   while (child_under_mouse &&
          child_under_mouse->GetID() != MenuItemView::kMenuItemViewID) {
     child_under_mouse = child_under_mouse->parent();
@@ -1106,7 +1106,7 @@ MenuItemView* MenuController::GetMenuItemAt(View* source, int x, int y) {
 }
 
 MenuItemView* MenuController::GetEmptyMenuItemAt(View* source, int x, int y) {
-  View* child_under_mouse = source->GetViewForPoint(gfx::Point(x, y));
+  View* child_under_mouse = source->GetEventHandlerForPoint(gfx::Point(x, y));
   if (child_under_mouse &&
       child_under_mouse->GetID() == MenuItemView::kEmptyMenuItemViewID) {
     return static_cast<MenuItemView*>(child_under_mouse);
@@ -1119,7 +1119,8 @@ bool MenuController::IsScrollButtonAt(SubmenuView* source,
                                       int y,
                                       MenuPart::Type* part) {
   MenuScrollViewContainer* scroll_view = source->GetScrollViewContainer();
-  View* child_under_mouse = scroll_view->GetViewForPoint(gfx::Point(x, y));
+  View* child_under_mouse =
+      scroll_view->GetEventHandlerForPoint(gfx::Point(x, y));
   if (child_under_mouse && child_under_mouse->IsEnabled()) {
     if (child_under_mouse == scroll_view->scroll_up_button()) {
       *part = MenuPart::SCROLL_UP;
@@ -1772,7 +1773,7 @@ void MenuController::UpdateActiveMouseView(SubmenuView* event_source,
     View::ConvertPointToScreen(event_source->GetScrollViewContainer(),
                                &target_menu_loc);
     View::ConvertPointToView(NULL, target_menu, &target_menu_loc);
-    target = target_menu->GetViewForPoint(target_menu_loc);
+    target = target_menu->GetEventHandlerForPoint(target_menu_loc);
     if (target == target_menu || !target->IsEnabled())
       target = NULL;
   }

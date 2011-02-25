@@ -93,7 +93,7 @@ void SideTabStrip::SetBackgroundOffset(const gfx::Point& offset) {
 }
 
 bool SideTabStrip::IsPositionInWindowCaption(const gfx::Point& point) {
-  return GetViewForPoint(point) == this;
+  return GetEventHandlerForPoint(point) == this;
 }
 
 void SideTabStrip::StartHighlight(int model_index) {

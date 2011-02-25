@@ -71,7 +71,7 @@ STDMETHODIMP ViewAccessibility::accHitTest(
     return S_FALSE;
   }
 
-  views::View* view = view_->GetViewForPoint(point);
+  views::View* view = view_->GetEventHandlerForPoint(point);
   if (view == view_) {
     // No child hit, return parent id.
     child->vt = VT_I4;

@@ -77,7 +77,7 @@ class TabStrip : public BaseTabStrip,
   virtual void OnDragExited();
   virtual int OnPerformDrop(const views::DropTargetEvent& event);
   virtual AccessibilityTypes::Role GetAccessibleRole();
-  virtual views::View* GetViewForPoint(const gfx::Point& point);
+  virtual views::View* GetEventHandlerForPoint(const gfx::Point& point);
   virtual void OnThemeChanged();
 
  protected:

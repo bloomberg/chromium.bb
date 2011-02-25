@@ -327,7 +327,7 @@ BaseTab* BaseTabStrip::GetTabAt(BaseTab* tab,
                                 const gfx::Point& tab_in_tab_coordinates) {
   gfx::Point local_point = tab_in_tab_coordinates;
   ConvertPointToView(tab, this, &local_point);
-  views::View* view = GetViewForPoint(local_point);
+  views::View* view = GetEventHandlerForPoint(local_point);
   if (!view)
     return NULL;  // No tab contains the point.
 

@@ -201,7 +201,7 @@ bool RootView::OnMousePressed(const MouseEvent& event) {
 
   bool hit_disabled_view = false;
   // Walk up the tree until we find a view that wants the mouse event.
-  for (mouse_pressed_handler_ = GetViewForPoint(e.location());
+  for (mouse_pressed_handler_ = GetEventHandlerForPoint(e.location());
        mouse_pressed_handler_ && (mouse_pressed_handler_ != this);
        mouse_pressed_handler_ = mouse_pressed_handler_->parent()) {
     if (!mouse_pressed_handler_->IsEnabled()) {
@@ -291,7 +291,7 @@ void RootView::OnMouseReleased(const MouseEvent& event, bool canceled) {
 
 void RootView::OnMouseMoved(const MouseEvent& event) {
   MouseEvent e(event, this);
-  View* v = GetViewForPoint(e.location());
+  View* v = GetEventHandlerForPoint(e.location());
   // Find the first enabled view, or the existing move handler, whichever comes
   // first.  The check for the existing handler is because if a view becomes
   // disabled while handling moves, it's wrong to suddenly send ET_MOUSE_EXITED
@@ -365,7 +365,7 @@ View::TouchStatus RootView::OnTouchEvent(const TouchEvent& event) {
   }
 
   // Walk up the tree until we find a view that wants the touch event.
-  for (touch_pressed_handler_ = GetViewForPoint(e.location());
+  for (touch_pressed_handler_ = GetEventHandlerForPoint(e.location());
        touch_pressed_handler_ && (touch_pressed_handler_ != this);
        touch_pressed_handler_ = touch_pressed_handler_->parent()) {
     if (!touch_pressed_handler_->IsEnabled()) {
@@ -477,7 +477,7 @@ bool RootView::ConvertPointToMouseHandler(const gfx::Point& l,
 
 void RootView::UpdateCursor(const MouseEvent& e) {
   gfx::NativeCursor cursor = NULL;
-  View* v = GetViewForPoint(e.location());
+  View* v = GetEventHandlerForPoint(e.location());
   if (v && v != this) {
     gfx::Point l(e.location());
     View::ConvertPointToView(this, v, &l);

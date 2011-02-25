@@ -170,7 +170,7 @@ void TabStrip::SetBackgroundOffset(const gfx::Point& offset) {
 }
 
 bool TabStrip::IsPositionInWindowCaption(const gfx::Point& point) {
-  views::View* v = GetViewForPoint(point);
+  views::View* v = GetEventHandlerForPoint(point);
 
   // If there is no control at this location, claim the hit was in the title
   // bar to get a move action.
@@ -367,10 +367,10 @@ AccessibilityTypes::Role TabStrip::GetAccessibleRole() {
   return AccessibilityTypes::ROLE_PAGETABLIST;
 }
 
-views::View* TabStrip::GetViewForPoint(const gfx::Point& point) {
+views::View* TabStrip::GetEventHandlerForPoint(const gfx::Point& point) {
   // Return any view that isn't a Tab or this TabStrip immediately. We don't
   // want to interfere.
-  views::View* v = View::GetViewForPoint(point);
+  views::View* v = View::GetEventHandlerForPoint(point);
   if (v && v != this && v->GetClassName() != Tab::kViewClassName)
     return v;
 

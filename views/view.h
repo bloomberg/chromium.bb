@@ -564,14 +564,8 @@ class View : public AcceleratorTarget {
   // The points (and mouse locations) in the following functions are in the
   // view's coordinates, except for a RootView.
 
-  // TODO(sad): Remove
-  // Returns the deepest descendant that contains the specified point.
-  virtual View* GetViewForPoint(const gfx::Point& point);
-
-  // Returns the deepest descendant that contains the specified point, and the
-  // point in the returned view's coordinates.
-  virtual View* GetEventHandlerForPoint(const gfx::Point& point,
-                                        gfx::Point* xpoint);
+  // Returns the deepest visible descendant that contains the specified point.
+  virtual View* GetEventHandlerForPoint(const gfx::Point& point);
 
   // Return the cursor that should be used for this view or NULL if
   // the default cursor should be used. The provided point is in the

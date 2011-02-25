@@ -734,12 +734,7 @@ ThemeProvider* View::GetThemeProvider() const {
 
 // Input -----------------------------------------------------------------------
 
-View* View::GetViewForPoint(const gfx::Point& point) {
-  return GetEventHandlerForPoint(point, NULL);
-}
-
-View* View::GetEventHandlerForPoint(const gfx::Point& point,
-                                    gfx::Point* xpoint) {
+View* View::GetEventHandlerForPoint(const gfx::Point& point) {
   // Walk the child Views recursively looking for the View that most
   // tightly encloses the specified point.
   for (int i = child_count() - 1; i >= 0; --i) {
@@ -750,10 +745,8 @@ View* View::GetEventHandlerForPoint(const gfx::Point& point,
     gfx::Point point_in_child_coords(point);
     View::ConvertPointToView(this, child, &point_in_child_coords);
     if (child->HitTest(point_in_child_coords))
-      return child->GetEventHandlerForPoint(point_in_child_coords, xpoint);
+      return child->GetEventHandlerForPoint(point_in_child_coords);
   }
-  if (xpoint)
-    xpoint->SetPoint(point.x(), point.y());
   return this;
 }
 

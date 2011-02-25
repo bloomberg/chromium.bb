@@ -493,14 +493,14 @@ bool AutocompletePopupContentsView::OnMouseDragged(
   return true;
 }
 
-views::View* AutocompletePopupContentsView::GetViewForPoint(
+views::View* AutocompletePopupContentsView::GetEventHandlerForPoint(
     const gfx::Point& point) {
   // If there is no opt in view, then we want all mouse events. Otherwise let
   // any descendants of the opt-in view get mouse events.
   if (!opt_in_view_)
     return this;
 
-  views::View* child = views::View::GetViewForPoint(point);
+  views::View* child = views::View::GetEventHandlerForPoint(point);
   views::View* ancestor = child;
   while (ancestor && ancestor != opt_in_view_)
     ancestor = ancestor->parent();
