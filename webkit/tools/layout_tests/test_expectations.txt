@@ -15,3 +15,6 @@ BUG_TONY LINUX : fast/forms/select-baseline.html = IMAGE
 
 // Dropping U;.  Need to rebase upstream.
 BUG_TONY : http/tests/navigation/useragent.php = TEXT
+
+// Potential broken test found by r75985.
+BUGCR74092 : http/tests/media/video-play-suspend.html = TIMEOUT
