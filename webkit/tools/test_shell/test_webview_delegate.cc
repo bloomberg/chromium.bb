@@ -76,7 +76,6 @@
 
 #if defined(OS_WIN)
 // TODO(port): make these files work everywhere.
-#include "webkit/tools/test_shell/drag_delegate.h"
 #include "webkit/tools/test_shell/drop_delegate.h"
 #endif
 
@@ -540,17 +539,7 @@ void TestWebViewDelegate::startDragging(
     WebDragOperationsMask mask,
     const WebImage& image,
     const WebPoint& image_offset) {
-  // TODO(tc): Drag and drop is disabled in the test shell because we need
-  // to be able to convert from WebDragData to an IDataObject.
-  //if (!drag_delegate_)
-  //  drag_delegate_ = new TestDragDelegate(shell_->webViewWnd(),
-  //                                        shell_->webView());
-  //const DWORD ok_effect = DROPEFFECT_COPY | DROPEFFECT_LINK |
-  //                        DROPEFFECT_MOVE;
-  //DWORD effect;
-  //HRESULT res = DoDragDrop(drop_data.data_object, drag_delegate_.get(),
-  //                         ok_effect, &effect);
-  //DCHECK(DRAGDROP_S_DROP == res || DRAGDROP_S_CANCEL == res);
+  shell_->webView()->dragSourceSystemDragEnded();
 }
 
 void TestWebViewDelegate::navigateBackForwardSoon(int offset) {

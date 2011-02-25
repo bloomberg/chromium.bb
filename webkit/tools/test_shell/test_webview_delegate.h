@@ -35,7 +35,6 @@
 #if defined(OS_WIN)
 #include <windows.h>
 
-#include "webkit/tools/test_shell/drag_delegate.h"
 #include "webkit/tools/test_shell/drop_delegate.h"
 #endif
 
@@ -266,7 +265,6 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
   WebKit::WebFrame* top_loading_frame() { return top_loading_frame_; }
 #if defined(OS_WIN)
   IDropTarget* drop_delegate() { return drop_delegate_.get(); }
-  IDropSource* drag_delegate() { return drag_delegate_.get(); }
 #endif
   const CapturedContextMenuEvents& captured_context_menu_events() const {
     return captured_context_menu_events_;
@@ -417,7 +415,6 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
 
 #if defined(OS_WIN)
   // Classes needed by drag and drop.
-  scoped_refptr<TestDragDelegate> drag_delegate_;
   scoped_refptr<TestDropDelegate> drop_delegate_;
 #endif
 

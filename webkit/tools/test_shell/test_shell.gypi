@@ -57,8 +57,6 @@
         'mac/webwidget_host.mm',
         'accessibility_ui_element.cc',
         'accessibility_ui_element.h',
-        'drag_delegate.cc',
-        'drag_delegate.h',
         'drop_delegate.cc',
         'drop_delegate.h',
         'foreground_helper.h',
@@ -149,7 +147,6 @@
             ['exclude', '_webtheme(control|engine)\.(cc|h)$'],
           ],
           'sources!': [
-            'drag_delegate.cc',
             'drop_delegate.cc',
           ],
         }],
