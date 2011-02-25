@@ -11,6 +11,7 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/autofill/autofill_country.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/profiles/profile.h"
@@ -44,6 +45,27 @@ int CreditCardTypeToResourceID(const string16& type16) {
 
   NOTREACHED();
   return 0;
+}
+
+// Returns a dictionary that maps country codes to data for the country.
+DictionaryValue* GetCountryData() {
+  std::string app_locale = AutoFillCountry::ApplicationLocale();
+  std::vector<std::string> country_codes;
+  AutoFillCountry::GetAvailableCountries(&country_codes);
+
+  DictionaryValue* country_data = new DictionaryValue();
+  for (size_t i = 0; i < country_codes.size(); ++i) {
+    const AutoFillCountry country(country_codes[i], app_locale);
+
+    DictionaryValue* details = new DictionaryValue();
+    details->SetString("name", country.name());
+    details->SetString("postalCodeLabel", country.postal_code_label());
+    details->SetString("stateLabel", country.state_label());
+
+    country_data->Set(country.country_code(), details);
+  }
+
+  return country_data;
 }
 
 }  // namespace
@@ -145,12 +167,6 @@ void AutoFillOptionsHandler::SetAddressOverlayStrings(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADDRESS_LINE_2));
   localized_strings->SetString("cityLabel",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_CITY));
-  localized_strings->SetString("stateLabel",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_STATE));
-  localized_strings->SetString("zipCodeLabel",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ZIP_CODE));
-  localized_strings->SetString("countryLabel",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_COUNTRY));
   localized_strings->SetString("countryLabel",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_COUNTRY));
   localized_strings->SetString("phoneLabel",
@@ -159,6 +175,12 @@ void AutoFillOptionsHandler::SetAddressOverlayStrings(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_FAX));
   localized_strings->SetString("emailLabel",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_EMAIL));
+
+  std::string app_locale = AutoFillCountry::ApplicationLocale();
+  std::string default_country_code =
+      AutoFillCountry::CountryCodeForLocale(app_locale);
+  localized_strings->SetString("defaultCountryCode", default_country_code);
+  localized_strings->Set("autofillCountryData", GetCountryData());
 }
 
 void AutoFillOptionsHandler::SetCreditCardOverlayStrings(
@@ -264,10 +286,10 @@ void AutoFillOptionsHandler::LoadAddressEditor(const ListValue* args) {
                     profile->GetFieldText(AutoFillType(ADDRESS_HOME_CITY)));
   address.SetString("state",
                     profile->GetFieldText(AutoFillType(ADDRESS_HOME_STATE)));
-  address.SetString("zipCode",
+  address.SetString("postalCode",
                     profile->GetFieldText(AutoFillType(ADDRESS_HOME_ZIP)));
   address.SetString("country",
-                     profile->GetFieldText(AutoFillType(ADDRESS_HOME_COUNTRY)));
+                    profile->CountryCode());
   address.SetString(
       "phone",
       profile->GetFieldText(AutoFillType(PHONE_HOME_WHOLE_NUMBER)));
@@ -332,6 +354,7 @@ void AutoFillOptionsHandler::SetAddress(const ListValue* args) {
 
   AutoFillProfile profile(guid);
 
+  std::string country_code;
   string16 value;
   if (args->GetString(1, &value))
     profile.SetInfo(AutoFillType(NAME_FULL), value);
@@ -347,8 +370,8 @@ void AutoFillOptionsHandler::SetAddress(const ListValue* args) {
     profile.SetInfo(AutoFillType(ADDRESS_HOME_STATE), value);
   if (args->GetString(7, &value))
     profile.SetInfo(AutoFillType(ADDRESS_HOME_ZIP), value);
-  if (args->GetString(8, &value))
-    profile.SetInfo(AutoFillType(ADDRESS_HOME_COUNTRY), value);
+  if (args->GetString(8, &country_code))
+    profile.SetCountryCode(country_code);
   if (args->GetString(9, &value))
     profile.SetInfo(AutoFillType(PHONE_HOME_WHOLE_NUMBER), value);
   if (args->GetString(10, &value))

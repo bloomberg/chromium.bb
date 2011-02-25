@@ -1508,7 +1508,7 @@ TEST_F(WebDatabaseTest, AutoFillProfile) {
   billing_profile.SetInfo(AutoFillType(ADDRESS_HOME_ZIP),
                           ASCIIToUTF16("10011"));
   billing_profile.SetInfo(AutoFillType(ADDRESS_HOME_COUNTRY),
-                          ASCIIToUTF16("USA"));
+                          ASCIIToUTF16("United States"));
   billing_profile.SetInfo(AutoFillType(PHONE_HOME_WHOLE_NUMBER),
                           ASCIIToUTF16("18181230000"));
   billing_profile.SetInfo(AutoFillType(PHONE_FAX_WHOLE_NUMBER),
@@ -2093,7 +2093,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   // Like this:
   //   > .output version_nn.sql
   //   > .dump
-  void LoadDatabase(const FilePath& path);
+  void LoadDatabase(const FilePath::StringType& file);
 
   // Assertion testing for migrating from version 27 and 28.
   void MigrateVersion28Assertions();
@@ -2104,11 +2104,11 @@ class WebDatabaseMigrationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseMigrationTest);
 };
 
-const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 33;
+const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 34;
 
-void WebDatabaseMigrationTest::LoadDatabase(const FilePath& file) {
+void WebDatabaseMigrationTest::LoadDatabase(const FilePath::StringType& file) {
   std::string contents;
-  ASSERT_TRUE(GetWebDatabaseData(file, &contents));
+  ASSERT_TRUE(GetWebDatabaseData(FilePath(file), &contents));
 
   sql::Connection connection;
   ASSERT_TRUE(connection.Open(GetDatabasePath()));
@@ -2213,8 +2213,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion22ToCurrent) {
   // This schema is taken from a build prior to the addition of the
   // |credit_card| table.  Version 22 of the schema.  Contrast this with the
   // corrupt version below.
-  ASSERT_NO_FATAL_FAILURE(
-      LoadDatabase(FilePath(FILE_PATH_LITERAL("version_22.sql"))));
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_22.sql")));
 
   // Verify pre-conditions.
   {
@@ -2260,7 +2259,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion22CorruptedToCurrent) {
   // table.  Due to a bug in the migration logic the version is set incorrectly
   // to 22 (it should have been updated to 23 at least).
   ASSERT_NO_FATAL_FAILURE(
-      LoadDatabase(FilePath(FILE_PATH_LITERAL("version_22_corrupt.sql"))));
+      LoadDatabase(FILE_PATH_LITERAL("version_22_corrupt.sql")));
 
   // Verify pre-conditions.  These are expectations for corrupt version 22 of
   // the database.
@@ -2308,8 +2307,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion22CorruptedToCurrent) {
 TEST_F(WebDatabaseMigrationTest, MigrateVersion24ToCurrent) {
   // This schema is taken from a build prior to the addition of the |keywords|
   // |logo_id| column.
-  ASSERT_NO_FATAL_FAILURE(
-      LoadDatabase(FilePath(FILE_PATH_LITERAL("version_24.sql"))));
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_24.sql")));
 
   // Verify pre-conditions.  These are expectations for version 24 of the
   // database.
@@ -2349,8 +2347,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion24ToCurrent) {
 TEST_F(WebDatabaseMigrationTest, MigrateVersion25ToCurrent) {
   // This schema is taken from a build prior to the addition of the |keywords|
   // |created_by_policy| column.
-  ASSERT_NO_FATAL_FAILURE(
-      LoadDatabase(FilePath(FILE_PATH_LITERAL("version_25.sql"))));
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_25.sql")));
 
   // Verify pre-conditions.  These are expectations for version 25 of the
   // database.
@@ -2387,8 +2384,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion25ToCurrent) {
 TEST_F(WebDatabaseMigrationTest, MigrateVersion26ToCurrentStringLabels) {
   // This schema is taken from a build prior to the change of column type for
   // credit_cards.billing_address from string to int.
-  ASSERT_NO_FATAL_FAILURE(
-      LoadDatabase(FilePath(FILE_PATH_LITERAL("version_26.sql"))));
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_26.sql")));
 
   // Verify pre-conditions. These are expectations for version 26 of the
   // database.
@@ -2460,8 +2456,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion26ToCurrentStringLabels) {
 TEST_F(WebDatabaseMigrationTest, MigrateVersion26ToCurrentStringIDs) {
   // This schema is taken from a build prior to the change of column type for
   // credit_cards.billing_address from string to int.
-  ASSERT_NO_FATAL_FAILURE(
-      LoadDatabase(FilePath(FILE_PATH_LITERAL("version_26.sql"))));
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_26.sql")));
 
   // Verify pre-conditions. These are expectations for version 26 of the
   // database.
@@ -2533,8 +2528,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion26ToCurrentStringIDs) {
 // as the column added in 28 was nuked in 29.
 TEST_F(WebDatabaseMigrationTest, MigrateVersion27ToCurrent) {
   // Initialize the database.
-  ASSERT_NO_FATAL_FAILURE(
-      LoadDatabase(FilePath(FILE_PATH_LITERAL("version_27.sql"))));
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_27.sql")));
 
   // Verify pre-conditions. These are expectations for version 28 of the
   // database.
@@ -2552,8 +2546,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion27ToCurrent) {
 // Makes sure instant_url is added correctly to keywords.
 TEST_F(WebDatabaseMigrationTest, MigrateVersion28ToCurrent) {
   // Initialize the database.
-  ASSERT_NO_FATAL_FAILURE(
-      LoadDatabase(FilePath(FILE_PATH_LITERAL("version_28.sql"))));
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_28.sql")));
 
   // Verify pre-conditions. These are expectations for version 28 of the
   // database.
@@ -2572,8 +2565,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion28ToCurrent) {
 // credit_cards.
 TEST_F(WebDatabaseMigrationTest, MigrateVersion29ToCurrent) {
   // Initialize the database.
-  ASSERT_NO_FATAL_FAILURE(
-      LoadDatabase(FilePath(FILE_PATH_LITERAL("version_29.sql"))));
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_29.sql")));
 
   // Verify pre-conditions.  These are expectations for version 29 of the
   // database.
@@ -2638,8 +2630,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion29ToCurrent) {
 // Makes sure guids are added to autofill_profiles and credit_cards tables.
 TEST_F(WebDatabaseMigrationTest, MigrateVersion30ToCurrent) {
   // Initialize the database.
-  ASSERT_NO_FATAL_FAILURE(
-      LoadDatabase(FilePath(FILE_PATH_LITERAL("version_30.sql"))));
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_30.sql")));
 
   // Verify pre-conditions. These are expectations for version 29 of the
   // database.
@@ -2691,8 +2682,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion30ToCurrent) {
 // columns.
 TEST_F(WebDatabaseMigrationTest, MigrateVersion31ToCurrent) {
   // Initialize the database.
-  ASSERT_NO_FATAL_FAILURE(
-      LoadDatabase(FilePath(FILE_PATH_LITERAL("version_31.sql"))));
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_31.sql")));
 
   // Verify pre-conditions. These are expectations for version 30 of the
   // database.
@@ -2840,8 +2830,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion31ToCurrent) {
 // and phone.
 TEST_F(WebDatabaseMigrationTest, MigrateVersion32ToCurrent) {
   // Initialize the database.
-  ASSERT_NO_FATAL_FAILURE(
-      LoadDatabase(FilePath(FILE_PATH_LITERAL("version_32.sql"))));
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_32.sql")));
 
   // Verify pre-conditions. These are expectations for version 32 of the
   // database.
@@ -2954,7 +2943,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion32ToCurrent) {
     EXPECT_EQ(ASCIIToUTF16("Los Altos"), s1.ColumnString16(4));
     EXPECT_EQ(ASCIIToUTF16("CA"), s1.ColumnString16(5));
     EXPECT_EQ(ASCIIToUTF16("94022"), s1.ColumnString16(6));
-    EXPECT_EQ(ASCIIToUTF16("USA"), s1.ColumnString16(7));
+    EXPECT_EQ(ASCIIToUTF16("United States"), s1.ColumnString16(7));
     EXPECT_EQ(1297882100L, s1.ColumnInt64(8));
 
     // John P. Doe.
@@ -2966,7 +2955,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion32ToCurrent) {
     EXPECT_EQ(ASCIIToUTF16("Los Altos"), s1.ColumnString16(4));
     EXPECT_EQ(ASCIIToUTF16("CA"), s1.ColumnString16(5));
     EXPECT_EQ(ASCIIToUTF16("94022"), s1.ColumnString16(6));
-    EXPECT_EQ(ASCIIToUTF16("USA"), s1.ColumnString16(7));
+    EXPECT_EQ(ASCIIToUTF16("United States"), s1.ColumnString16(7));
     EXPECT_EQ(1297882100L, s1.ColumnInt64(8));
 
     // Dave Smith.
@@ -2978,7 +2967,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion32ToCurrent) {
     EXPECT_EQ(ASCIIToUTF16("Los Altos"), s1.ColumnString16(4));
     EXPECT_EQ(ASCIIToUTF16("CA"), s1.ColumnString16(5));
     EXPECT_EQ(ASCIIToUTF16("94022"), s1.ColumnString16(6));
-    EXPECT_EQ(ASCIIToUTF16("USA"), s1.ColumnString16(7));
+    EXPECT_EQ(ASCIIToUTF16("United States"), s1.ColumnString16(7));
     EXPECT_EQ(1297882100L, s1.ColumnInt64(8));
 
     // Dave Smith (Part 2).
@@ -2990,7 +2979,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion32ToCurrent) {
     EXPECT_EQ(ASCIIToUTF16("Los Altos"), s1.ColumnString16(4));
     EXPECT_EQ(ASCIIToUTF16("CA"), s1.ColumnString16(5));
     EXPECT_EQ(ASCIIToUTF16("94022"), s1.ColumnString16(6));
-    EXPECT_EQ(ASCIIToUTF16("USA"), s1.ColumnString16(7));
+    EXPECT_EQ(ASCIIToUTF16("United States"), s1.ColumnString16(7));
     EXPECT_EQ(1297882100L, s1.ColumnInt64(8));
 
     // Alfred E Newman.
@@ -3014,7 +3003,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion32ToCurrent) {
     EXPECT_EQ(ASCIIToUTF16("Los Altos"), s1.ColumnString16(4));
     EXPECT_EQ(ASCIIToUTF16("CA"), s1.ColumnString16(5));
     EXPECT_EQ(ASCIIToUTF16("94022"), s1.ColumnString16(6));
-    EXPECT_EQ(ASCIIToUTF16("USA"), s1.ColumnString16(7));
+    EXPECT_EQ(ASCIIToUTF16("United States"), s1.ColumnString16(7));
     EXPECT_EQ(1297882100L, s1.ColumnInt64(8));
 
     // That should be all.
@@ -3129,5 +3118,57 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion32ToCurrent) {
 
     // Should be all.
     EXPECT_FALSE(s4.Step());
+  }
+}
+
+// Adds a column for the autofill profile's country code.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion33ToCurrent) {
+  // Initialize the database.
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_33.sql")));
+
+  // Verify pre-conditions. These are expectations for version 33 of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+
+    EXPECT_FALSE(connection.DoesColumnExist("autofill_profiles",
+                                            "country_code"));
+
+    // Check that the country value is the one we expect.
+    sql::Statement s(
+        connection.GetUniqueStatement("SELECT country FROM autofill_profiles"));
+
+    ASSERT_TRUE(s.Step());
+    std::string country = s.ColumnString(0);
+    EXPECT_EQ("United States", country);
+  }
+
+  // Load the database via the WebDatabase class and migrate the database to
+  // the current version.
+  {
+    WebDatabase db;
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+  }
+
+  // Verify post-conditions.  These are expectations for current version of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    ASSERT_TRUE(connection.DoesColumnExist("autofill_profiles",
+                                           "country_code"));
+
+    // Check that the country code is properly converted.
+    sql::Statement s(connection.GetUniqueStatement(
+        "SELECT country_code FROM autofill_profiles"));
+
+    ASSERT_TRUE(s.Step());
+    std::string country_code = s.ColumnString(0);
+    EXPECT_EQ("US", country_code);
   }
 }

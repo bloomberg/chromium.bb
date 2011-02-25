@@ -5,7 +5,7 @@
 // TODO(arv): Namespace
 
 /**
- * The local strings get injected into the page usig a variable named
+ * The local strings get injected into the page using a variable named
  * {@code templateData}. This class provides a simpler interface to access those
  * strings.
  * @constructor

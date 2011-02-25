@@ -37,7 +37,7 @@ TEST(AutoFillAddressModelTest, InitializationFromProfile) {
       "unit 5",
       "Hollywood", "CA",
       "91601",
-      "US",
+      "United States",
       "12345678910",
       "01987654321");
   scoped_nsobject<AutoFillAddressModel> model([[AutoFillAddressModel alloc]
@@ -52,7 +52,7 @@ TEST(AutoFillAddressModelTest, InitializationFromProfile) {
   EXPECT_TRUE([[model addressCity] isEqualToString:@"Hollywood"]);
   EXPECT_TRUE([[model addressState] isEqualToString:@"CA"]);
   EXPECT_TRUE([[model addressZip] isEqualToString:@"91601"]);
-  EXPECT_TRUE([[model addressCountry] isEqualToString:@"US"]);
+  EXPECT_TRUE([[model addressCountry] isEqualToString:@"United States"]);
   EXPECT_TRUE([[model phoneWholeNumber] isEqualToString:@"12345678910"]);
   EXPECT_TRUE([[model faxWholeNumber] isEqualToString:@"01987654321"]);
 }
@@ -70,7 +70,7 @@ TEST(AutoFillAddressModelTest, CopyModelToProfile) {
       "unit 5",
       "Hollywood", "CA",
       "91601",
-      "US",
+      "United States",
       "12345678910",
       "01987654321");
   scoped_nsobject<AutoFillAddressModel> model([[AutoFillAddressModel alloc]
@@ -85,7 +85,7 @@ TEST(AutoFillAddressModelTest, CopyModelToProfile) {
   [model setAddressCity:@"Seattle"];
   [model setAddressState:@"WA"];
   [model setAddressZip:@"81601"];
-  [model setAddressCountry:@"CA"];
+  [model setAddressCountry:@"Canada"];
   [model setPhoneWholeNumber:@"23346678910"];
   [model setFaxWholeNumber:@"12988654321"];
 
@@ -113,7 +113,7 @@ TEST(AutoFillAddressModelTest, CopyModelToProfile) {
             profile.GetFieldText(AutoFillType(ADDRESS_HOME_STATE)));
   EXPECT_EQ(ASCIIToUTF16("81601"),
             profile.GetFieldText(AutoFillType(ADDRESS_HOME_ZIP)));
-  EXPECT_EQ(ASCIIToUTF16("CA"),
+  EXPECT_EQ(ASCIIToUTF16("Canada"),
             profile.GetFieldText(AutoFillType(ADDRESS_HOME_COUNTRY)));
   EXPECT_EQ(ASCIIToUTF16("23346678910"),
             profile.GetFieldText(AutoFillType(PHONE_HOME_WHOLE_NUMBER)));

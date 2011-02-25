@@ -4267,7 +4267,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           If you are unhappy about it: click here to close browser, sign out and revert.
         </message>
       </if>
- 
+
       <if expr="pp_ifdef('chromeos')">
         <!-- about:system strings -->
         <message name="IDS_ABOUT_SYS_TITLE" desc="about:system page title">
@@ -7132,95 +7132,80 @@ This web page was killed, either because Chrome ran out of memory, or you chose 
         </ph>
       </message>
 
-      <!-- Mac field labels have ending colon.  Otherwise they are the same as other platforms. -->
-      <if expr="os == 'darwin'">
-        <message name="IDS_AUTOFILL_DIALOG_FULL_NAME" desc="The label of the Full name entry.">
-          Full name:
-        </message>
-        <message name="IDS_AUTOFILL_DIALOG_EMAIL" desc="The label of the Email entry.">
-          Email:
-        </message>
-        <message name="IDS_AUTOFILL_DIALOG_COMPANY_NAME" desc="The label of the Company name entry.">
-          Company name:
-        </message>
-        <message name="IDS_AUTOFILL_DIALOG_ADDRESS_LINE_1" desc="The label of the Address Line 1 entry.">
-          Address line 1:
-        </message>
-        <message name="IDS_AUTOFILL_DIALOG_ADDRESS_LINE_2" desc="The label of the Address Line 2 entry.">
-          Address line 2:
-        </message>
-        <message name="IDS_AUTOFILL_DIALOG_CITY" desc="The label of the City entry.">
-          City/Town:
-        </message>
-        <message name="IDS_AUTOFILL_DIALOG_STATE" desc="The label of the State entry.">
-          State/Province/District:
-        </message>
-        <message name="IDS_AUTOFILL_DIALOG_ZIP_CODE" desc="The label of the Zip code entry.">
-          Zip code:
-        </message>
-        <message name="IDS_AUTOFILL_DIALOG_COUNTRY" desc="The label of the Country entry.">
-          Country:
-        </message>
-        <message name="IDS_AUTOFILL_DIALOG_PHONE" desc="The label of the Phone entry.">
-          Phone:
-        </message>
-        <message name="IDS_AUTOFILL_DIALOG_FAX" desc="The label of the Fax entry.">
-          Fax:
-        </message>
-        <message name="IDS_AUTOFILL_DIALOG_NAME_ON_CARD" desc="The label of the Name on card entry.">
-          Name on card:
-        </message>
-        <message name="IDS_AUTOFILL_DIALOG_CREDIT_CARD_NUMBER" desc="The label of the Credit card number entry.">
-          Credit card number:
-        </message>
-        <message name="IDS_AUTOFILL_DIALOG_EXPIRATION_DATE" desc="The label of the Expiration date entry.">
-          Expiration date:
-        </message>
-      </if>
-      <if expr="os != 'darwin'">
-        <message name="IDS_AUTOFILL_DIALOG_FULL_NAME" desc="The label of the Full name entry.">
-          Full name
-        </message>
-        <message name="IDS_AUTOFILL_DIALOG_EMAIL" desc="The label of the Email entry.">
-          Email
-        </message>
-        <message name="IDS_AUTOFILL_DIALOG_COMPANY_NAME" desc="The label of the Company name entry.">
-          Company name
-        </message>
-        <message name="IDS_AUTOFILL_DIALOG_ADDRESS_LINE_1" desc="The label of the Address Line 1 entry.">
-          Address line 1
-        </message>
-        <message name="IDS_AUTOFILL_DIALOG_ADDRESS_LINE_2" desc="The label of the Address Line 2 entry.">
-          Address line 2
-        </message>
-        <message name="IDS_AUTOFILL_DIALOG_CITY" desc="The label of the City entry.">
-          City/Town
-        </message>
-        <message name="IDS_AUTOFILL_DIALOG_STATE" desc="The label of the State entry.">
-          State/Province/District
-        </message>
-        <message name="IDS_AUTOFILL_DIALOG_ZIP_CODE" desc="The label of the Zip code entry.">
-          Zip code
-        </message>
-        <message name="IDS_AUTOFILL_DIALOG_COUNTRY" desc="The label of the Country entry.">
-          Country
-        </message>
-        <message name="IDS_AUTOFILL_DIALOG_PHONE" desc="The label of the Phone entry.">
-          Phone
-        </message>
-        <message name="IDS_AUTOFILL_DIALOG_FAX" desc="The label of the Fax entry.">
-          Fax
-        </message>
-        <message name="IDS_AUTOFILL_DIALOG_NAME_ON_CARD" desc="The label of the Name on card entry.">
-          Name on card
-        </message>
-        <message name="IDS_AUTOFILL_DIALOG_CREDIT_CARD_NUMBER" desc="The label of the Credit card number entry.">
-          Credit card number
-        </message>
-        <message name="IDS_AUTOFILL_DIALOG_EXPIRATION_DATE" desc="The label of the Expiration date entry.">
-          Expiration date
-        </message>
-      </if>
+      <message name="IDS_AUTOFILL_DIALOG_FULL_NAME" desc="The label of the Full name entry.">
+        Full name
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_EMAIL" desc="The label of the Email entry.">
+        Email
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_COMPANY_NAME" desc="The label of the Company name entry.">
+        Company name
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_ADDRESS_LINE_1" desc="The label of the Address Line 1 entry.">
+        Address line 1
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_ADDRESS_LINE_2" desc="The label of the Address Line 2 entry.">
+        Address line 2
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_CITY" desc="The label of the City entry.">
+        City/Town
+      </message>
+      <!-- These are all variants of the same logical field: The major subdivision below the "country" level. -->
+      <message name="IDS_AUTOFILL_DIALOG_STATE" desc="The label of the State entry.">
+        State
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_AREA" desc="The label of the Area entry.">
+        Area
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_COUNTY" desc="The label of the County entry.">
+        County
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_DEPARTMENT" desc="The label of the Department entry.">
+        Department
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_DISTRICT" desc="The label of the District entry.">
+        District
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_EMIRATE" desc="The label of the Emirate entry.">
+        Emirate
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_ISLAND" desc="The label of the Island entry.">
+        Island
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_PARISH" desc="The label of the Parish entry.">
+        Parish
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_PREFECTURE" desc="The label of the Prefecture entry.">
+        Prefecture
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_PROVINCE" desc="The label of the Province entry.">
+        Province
+      </message>
+      <!-- End state variants. -->
+      <message name="IDS_AUTOFILL_DIALOG_ZIP_CODE" desc="The label of the Zip code entry.">
+        Zip code
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_POSTAL_CODE" desc="The label of the Postal code entry.">
+        Postal code
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_COUNTRY" desc="The label of the Country entry.">
+        Country
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_PHONE" desc="The label of the Phone entry.">
+        Phone
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_FAX" desc="The label of the Fax entry.">
+        Fax
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_NAME_ON_CARD" desc="The label of the Name on card entry.">
+        Name on card
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_CREDIT_CARD_NUMBER" desc="The label of the Credit card number entry.">
+        Credit card number
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_EXPIRATION_DATE" desc="The label of the Expiration date entry.">
+        Expiration date
+      </message>
 
       <message name="IDS_AUTOFILL_DIALOG_SAVE" desc="The label of the Save button on the Autofill dialog.">
         Save

@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "unicode/coll.h"
 

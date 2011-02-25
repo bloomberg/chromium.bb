@@ -200,6 +200,22 @@ const string16 AutoFillProfile::Label() const {
   return label_;
 }
 
+const std::string AutoFillProfile::CountryCode() const {
+  FormGroup* form_group =
+      personal_info_.find(AutoFillType::ADDRESS_HOME)->second;
+  DCHECK(form_group);
+  Address* address = static_cast<Address*>(form_group);
+  return address->country_code();
+}
+
+void AutoFillProfile::SetCountryCode(const std::string& country_code) {
+  FormGroup* form_group =
+      personal_info_.find(AutoFillType::ADDRESS_HOME)->second;
+  DCHECK(form_group);
+  Address* address = static_cast<Address*>(form_group);
+  address->set_country_code(country_code);
+}
+
 // static
 bool AutoFillProfile::AdjustInferredLabels(
     std::vector<AutoFillProfile*>* profiles) {

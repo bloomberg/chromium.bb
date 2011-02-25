@@ -33,14 +33,10 @@
           </label>
         </div>
         <div class="input cell">
-          <label for="state">
-            <span i18n-content="stateLabel"></span>
-          </label>
+          <label id="state-label" for="state"></label>
         </div>
         <div class="input cell">
-          <label for="zip-code">
-            <span i18n-content="zipCodeLabel"></span>
-          </label>
+          <label id="postal-code-label" for="postal-code"></label>
         </div>
       </div>
       <div class="row">
@@ -51,14 +47,14 @@
           <input type="text" class="form" id="state">
         </div>
         <div class="input cell">
-          <input type="text" class="form" id="zip-code">
+          <input type="text" class="form" id="postal-code">
         </div>
       </div>
     </div>
     <div class="input">
       <label>
         <div><span i18n-content="countryLabel"></span></div>
-        <input type="text" class="form" id="country">
+        <select id="country"></select>
       </label>
     </div>
     <div class="table">

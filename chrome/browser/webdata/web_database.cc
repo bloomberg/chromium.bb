@@ -16,6 +16,7 @@
 #include "base/string_util.h"
 #include "base/tuple.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autofill/autofill_country.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/credit_card.h"
@@ -123,7 +124,9 @@ enum AutoFillPhoneType {
 //   city
 //   state
 //   zipcode
-//   country
+//   country            The country name.  Deprecated, should be removed once
+//                      the stable channel reaches version 11.
+//   country_code
 //   date_modified      The date on which this profile was last modified.
 //                      Added in version 30.
 //
@@ -189,8 +192,8 @@ typedef std::vector<Tuple3<int64, string16, string16> > AutofillElementList;
 // Current version number.  Note: when changing the current version number,
 // corresponding changes must happen in the unit tests, and new migration test
 // added.  See |WebDatabaseMigrationTest::kCurrentTestedVersionNumber|.
-const int kCurrentVersionNumber = 33;
-const int kCompatibleVersionNumber = 33;
+const int kCurrentVersionNumber = 34;
+const int kCompatibleVersionNumber = 34;
 
 // ID of the url column in keywords.
 const int kUrlIdPosition = 16;
@@ -296,7 +299,9 @@ void BindAutoFillProfileToStatement(const AutoFillProfile& profile,
   s->BindString16(6, LimitDataSize(text));
   text = profile.GetFieldText(AutoFillType(ADDRESS_HOME_COUNTRY));
   s->BindString16(7, LimitDataSize(text));
-  s->BindInt64(8, Time::Now().ToTimeT());
+  std::string country_code = profile.CountryCode();
+  s->BindString(8, country_code);
+  s->BindInt64(9, Time::Now().ToTimeT());
 }
 
 AutoFillProfile* AutoFillProfileFromStatement(const sql::Statement& s) {
@@ -310,8 +315,9 @@ AutoFillProfile* AutoFillProfileFromStatement(const sql::Statement& s) {
   profile->SetInfo(AutoFillType(ADDRESS_HOME_CITY), s.ColumnString16(4));
   profile->SetInfo(AutoFillType(ADDRESS_HOME_STATE), s.ColumnString16(5));
   profile->SetInfo(AutoFillType(ADDRESS_HOME_ZIP), s.ColumnString16(6));
-  profile->SetInfo(AutoFillType(ADDRESS_HOME_COUNTRY), s.ColumnString16(7));
-  // Intentionally skip column 8, which stores the profile's modification date.
+  // Intentionally skip column 7, which stores the localized country name.
+  profile->SetCountryCode(s.ColumnString(8));
+  // Intentionally skip column 9, which stores the profile's modification date.
 
   return profile;
 }
@@ -943,6 +949,7 @@ bool WebDatabase::InitAutoFillProfilesTable() {
                      "state VARCHAR, "
                      "zipcode VARCHAR, "
                      "country VARCHAR, "
+                     "country_code VARCHAR, "
                      "date_modified INTEGER NOT NULL DEFAULT 0)")) {
       NOTREACHED();
       return false;
@@ -1843,8 +1850,8 @@ bool WebDatabase::AddAutoFillProfile(const AutoFillProfile& profile) {
   sql::Statement s(db_.GetUniqueStatement(
       "INSERT INTO autofill_profiles"
       "(guid, company_name, address_line_1, address_line_2, city, state,"
-      " zipcode, country, date_modified)"
-      "VALUES (?,?,?,?,?,?,?,?,?)"));
+      " zipcode, country, country_code, date_modified)"
+      "VALUES (?,?,?,?,?,?,?,?,?,?)"));
   if (!s) {
     NOTREACHED() << "Statement prepare failed";
     return false;
@@ -1869,7 +1876,7 @@ bool WebDatabase::GetAutoFillProfile(const std::string& guid,
   DCHECK(profile);
   sql::Statement s(db_.GetUniqueStatement(
       "SELECT guid, company_name, address_line_1, address_line_2, city, state,"
-      " zipcode, country, date_modified "
+      " zipcode, country, country_code, date_modified "
       "FROM autofill_profiles "
       "WHERE guid=?"));
   if (!s) {
@@ -1991,7 +1998,8 @@ bool WebDatabase::UpdateAutoFillProfile(const AutoFillProfile& profile) {
   sql::Statement s(db_.GetUniqueStatement(
       "UPDATE autofill_profiles "
       "SET guid=?, company_name=?, address_line_1=?, address_line_2=?, "
-      "    city=?, state=?, zipcode=?, country=?, date_modified=? "
+      "    city=?, state=?, zipcode=?, country=?, country_code=?, "
+      "    date_modified=? "
       "WHERE guid=?"));
   if (!s) {
     NOTREACHED() << "Statement prepare failed";
@@ -1999,7 +2007,7 @@ bool WebDatabase::UpdateAutoFillProfile(const AutoFillProfile& profile) {
   }
 
   BindAutoFillProfileToStatement(profile, &s);
-  s.BindString(9, profile.guid());
+  s.BindString(10, profile.guid());
   bool result = s.Run();
   DCHECK_GT(db_.GetLastChangeCount(), 0);
   if (!result)
@@ -3005,6 +3013,60 @@ sql::InitStatus WebDatabase::MigrateOldVersionsAsNeeded(){
       meta_table_.SetVersionNumber(33);
       meta_table_.SetCompatibleVersionNumber(
           std::min(33, kCompatibleVersionNumber));
+
+      // FALL THROUGH
+
+    case 33:
+      // Test the existence of the |country_code| column as an indication that
+      // we need a migration.  It is possible that the new |autofill_profiles|
+      // schema is in place because the table was newly created when migrating
+      // from a pre-version-22 database.
+      if (!db_.DoesColumnExist("autofill_profiles", "country_code")) {
+        if (!db_.Execute("ALTER TABLE autofill_profiles ADD COLUMN "
+                         "country_code VARCHAR")) {
+          LOG(WARNING) << "Unable to update web database to version 33.";
+          NOTREACHED();
+          return sql::INIT_FAILURE;
+        }
+
+        // Set all the |country_code| fields to match existing |country| values.
+        {
+          sql::Statement s(db_.GetUniqueStatement("SELECT guid, country "
+                                                  "FROM autofill_profiles"));
+
+          if (!s) {
+            LOG(WARNING) << "Unable to update web database to version 33.";
+            NOTREACHED();
+            return sql::INIT_FAILURE;
+          }
+
+          while (s.Step()) {
+            sql::Statement update_s(
+                db_.GetUniqueStatement("UPDATE autofill_profiles "
+                                       "SET country_code=? WHERE guid=?"));
+            if (!update_s) {
+              LOG(WARNING) << "Unable to update web database to version 33.";
+              NOTREACHED();
+              return sql::INIT_FAILURE;
+            }
+            string16 country = s.ColumnString16(1);
+            std::string app_locale = AutoFillCountry::ApplicationLocale();
+            update_s.BindString(0, AutoFillCountry::GetCountryCode(country,
+                                                                   app_locale));
+            update_s.BindString(1, s.ColumnString(0));
+
+            if (!update_s.Run()) {
+              LOG(WARNING) << "Unable to update web database to version 33.";
+              NOTREACHED();
+              return sql::INIT_FAILURE;
+            }
+          }
+        }
+      }
+
+      meta_table_.SetVersionNumber(34);
+      meta_table_.SetCompatibleVersionNumber(
+          std::min(34, kCompatibleVersionNumber));
 
       // FALL THROUGH
 

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_AUTOFILL_ADDRESS_H_
 #pragma once
 
+#include <string>
 #include <vector>
 
 #include "base/string16.h"
@@ -28,6 +29,11 @@ class Address : public FormGroup {
   virtual string16 GetFieldText(const AutoFillType& type) const;
   virtual void SetInfo(const AutoFillType& type, const string16& value);
 
+  const std::string& country_code() const { return country_code_; }
+  void set_country_code(const std::string& country_code) {
+    country_code_ = country_code;
+  }
+
   // Sets all of the fields to the empty string.
   void Clear();
 
@@ -39,8 +45,15 @@ class Address : public FormGroup {
 
   void operator=(const Address& address);
 
+  // Returns the localized country name corresponding to |country_code_|.
+  string16 Country() const;
+
   void set_line1(const string16& line1);
   void set_line2(const string16& line2);
+
+  // Sets the |country_code_| based on |country|, which should be a localized
+  // country name.
+  void SetCountry(const string16& country);
 
   // The following functions match |text| against the various values of the
   // address, returning true on match.
@@ -73,7 +86,7 @@ class Address : public FormGroup {
   string16 line2_;
   string16 city_;
   string16 state_;
-  string16 country_;
+  std::string country_code_;
   string16 zip_code_;
 };
 

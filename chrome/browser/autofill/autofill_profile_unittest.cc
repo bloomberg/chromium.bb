@@ -22,6 +22,8 @@ bool UpdateProfileLabel(AutoFillProfile *profile) {
   return AutoFillProfile::AdjustInferredLabels(&profiles);
 }
 
+}  // namespace
+
 // Tests different possibilities for summary string generation.
 // Based on existence of first name, last name, and address line 1.
 TEST(AutoFillProfileTest, PreviewSummaryString) {
@@ -633,4 +635,10 @@ TEST(AutoFillProfileTest, Compare) {
   EXPECT_LT(0, b.Compare(a));
 }
 
-}  // namespace
+TEST(AutoFillProfileTest, CountryCode) {
+  AutoFillProfile profile;
+  EXPECT_EQ(std::string(), profile.CountryCode());
+
+  profile.SetCountryCode("US");
+  EXPECT_EQ("US", profile.CountryCode());
+}

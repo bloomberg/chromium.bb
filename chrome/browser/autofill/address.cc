@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/string_util.h"
+#include "chrome/browser/autofill/autofill_country.h"
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/field_types.h"
 
@@ -80,7 +81,7 @@ void Address::GetAvailableFieldTypes(FieldTypeSet* available_types) const {
   if (!zip_code_.empty())
     available_types->insert(ADDRESS_HOME_ZIP);
 
-  if (!country_.empty())
+  if (!country_code_.empty())
     available_types->insert(ADDRESS_HOME_COUNTRY);
 }
 
@@ -119,7 +120,7 @@ string16 Address::GetFieldText(const AutoFillType& type) const {
     return zip_code_;
 
   if (field_type == ADDRESS_HOME_COUNTRY)
-    return country_;
+    return Country();
 
   return string16();
 }
@@ -135,7 +136,7 @@ void Address::SetInfo(const AutoFillType& type, const string16& value) {
   else if (subgroup == AutoFillType::ADDRESS_STATE)
     state_ = value;
   else if (subgroup == AutoFillType::ADDRESS_COUNTRY)
-    country_ = value;
+    SetCountry(value);
   else if (subgroup == AutoFillType::ADDRESS_ZIP)
     zip_code_ = value;
   else
@@ -149,7 +150,7 @@ void Address::Clear() {
   line2_.clear();
   city_.clear();
   state_.clear();
-  country_.clear();
+  country_code_.clear();
   zip_code_.clear();
 }
 
@@ -161,8 +162,16 @@ Address::Address(const Address& address)
       line2_(address.line2_),
       city_(address.city_),
       state_(address.state_),
-      country_(address.country_),
+      country_code_(address.country_code_),
       zip_code_(address.zip_code_) {
+}
+
+string16 Address::Country() const {
+  if (country_code().empty())
+    return string16();
+
+  std::string app_locale = AutoFillCountry::ApplicationLocale();
+  return AutoFillCountry(country_code(), app_locale).name();
 }
 
 void Address::set_line1(const string16& line1) {
@@ -183,6 +192,11 @@ void Address::set_line2(const string16& line2) {
     *iter = StringToLowerASCII(*iter);
 }
 
+void Address::SetCountry(const string16& country) {
+  std::string app_locale = AutoFillCountry::ApplicationLocale();
+  country_code_ = AutoFillCountry::GetCountryCode(country, app_locale);
+}
+
 bool Address::IsLine1(const string16& text) const {
   return IsLineMatch(text, line1_tokens_);
 }
@@ -200,7 +214,9 @@ bool Address::IsState(const string16& text) const {
 }
 
 bool Address::IsCountry(const string16& text) const {
-  return (StringToLowerASCII(country_) == StringToLowerASCII(text));
+  std::string app_locale = AutoFillCountry::ApplicationLocale();
+  std::string country_code = AutoFillCountry::GetCountryCode(text, app_locale);
+  return (!country_code.empty() && country_code_ == country_code);
 }
 
 bool Address::IsZipCode(const string16& text) const {
@@ -226,8 +242,8 @@ bool Address::FindInfoMatchesHelper(const FieldTypeSubGroup& subgroup,
              StartsWith(state_, info, false)) {
     *match = state_;
   } else if (subgroup == AutoFillType::ADDRESS_COUNTRY &&
-             StartsWith(country_, info, false)) {
-    *match = country_;
+             StartsWith(Country(), info, false)) {
+    *match = Country();
   } else if (subgroup == AutoFillType::ADDRESS_ZIP &&
              StartsWith(zip_code_, info, true)) {
     *match = zip_code_;

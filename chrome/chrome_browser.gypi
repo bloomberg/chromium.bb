@@ -154,6 +154,8 @@
         'browser/autofill/autofill_cc_infobar_delegate.cc',
         'browser/autofill/autofill_cc_infobar_delegate.h',
         'browser/autofill/autofill_cc_infobar_win.cc',
+        'browser/autofill/autofill_country.cc',
+        'browser/autofill/autofill_country.h',
         'browser/autofill/autofill_credit_card_model_mac.h',
         'browser/autofill/autofill_credit_card_model_mac.mm',
         'browser/autofill/autofill_credit_card_sheet_controller_mac.h',

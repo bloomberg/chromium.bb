@@ -13,7 +13,6 @@
 #include "base/string16.h"
 #include "chrome/browser/autofill/form_group.h"
 
-class Address;
 typedef std::map<FieldTypeGroup, FormGroup*> FormGroupMap;
 
 // A collection of FormGroups stored in a profile.  AutoFillProfile also
@@ -52,6 +51,10 @@ class AutoFillProfile : public FormGroup {
   // This guid is the primary identifier for |AutoFillProfile| objects.
   const std::string guid() const { return guid_; }
   void set_guid(const std::string& guid) { guid_ = guid; }
+
+  // Accessors for the stored address's country code.
+  const std::string CountryCode() const;
+  void SetCountryCode(const std::string& country_code);
 
   // Adjusts the labels according to profile data.
   // Labels contain minimal different combination of:
