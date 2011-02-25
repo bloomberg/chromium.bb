@@ -657,6 +657,14 @@ class XCObject(object):
     else:
       value_to_print = value
 
+    # PBXBuildFile's settings property is represented in the output as a dict,
+    # but a hack here has it represented as a string. Arrange to strip off the
+    # quotes so that it shows up in the output as expected.
+    if key == 'settings' and isinstance(self, PBXBuildFile):
+      strip_value_quotes = True
+    else:
+      strip_value_quotes = False
+
     # In another one-off, let's set flatten_list on buildSettings properties
     # of XCBuildConfiguration objects, because that's how Xcode treats them.
     if key == 'buildSettings' and isinstance(self, XCBuildConfiguration):
@@ -665,9 +673,13 @@ class XCObject(object):
       flatten_list = False
 
     try:
-      printable += self._XCPrintableValue(tabs, key, flatten_list) + ' = ' + \
-                   self._XCPrintableValue(tabs, value_to_print, flatten_list) + \
-                   ';' + after_kv
+      printable_key = self._XCPrintableValue(tabs, key, flatten_list)
+      printable_value = self._XCPrintableValue(tabs, value_to_print,
+                                               flatten_list)
+      if strip_value_quotes and len(printable_value) > 1 and \
+          printable_value[0] == '"' and printable_value[-1] == '"':
+        printable_value = printable_value[1:-1]
+      printable += printable_key + ' = ' + printable_value + ';' + after_kv
     except TypeError, e:
       gyp.common.ExceptionAppend(e,
                                  'while printing key "%s"' % key)
@@ -1646,7 +1658,8 @@ class XCConfigurationList(XCObject):
 class PBXBuildFile(XCObject):
   _schema = XCObject._schema.copy()
   _schema.update({
-    'fileRef': [0, XCFileLikeElement, 0, 1],
+    'fileRef':  [0, XCFileLikeElement, 0, 1],
+    'settings': [0, str,               0, 0],  # hack, it's a dict
   })
 
   # Weird output rules for PBXBuildFile.
@@ -1791,7 +1804,7 @@ class XCBuildPhase(XCObject):
     self.AppendProperty('files', pbxbuildfile)
     self._AddBuildFileToDicts(pbxbuildfile, path)
 
-  def AddFile(self, path):
+  def AddFile(self, path, settings=None):
     (file_group, hierarchical) = self.FileGroup(path)
     file_ref = file_group.AddOrGetFileByPath(path, hierarchical)
 
@@ -1804,7 +1817,10 @@ class XCBuildPhase(XCObject):
       self._AddBuildFileToDicts(pbxbuildfile, path)
     else:
       # Add a new PBXBuildFile to get file_ref into the phase.
-      pbxbuildfile = PBXBuildFile({'fileRef': file_ref})
+      if settings is None:
+        pbxbuildfile = PBXBuildFile({'fileRef': file_ref})
+      else:
+        pbxbuildfile = PBXBuildFile({'fileRef': file_ref, 'settings': settings})
       self.AppendBuildFile(pbxbuildfile, path)
 
 
@@ -2317,6 +2333,27 @@ class PBXNativeTarget(XCTarget):
         the_phase = phase
 
     return the_phase
+
+  def HeadersPhase(self):
+    headers_phase = self.GetBuildPhaseByType(PBXHeadersBuildPhase)
+    if headers_phase == None:
+      headers_phase = PBXHeadersBuildPhase()
+
+      # The headers phase should come before the resources, sources, and
+      # frameworks phases, if any.
+      insert_at = len(self._properties['buildPhases'])
+      for index in xrange(0, len(self._properties['buildPhases'])):
+        phase = self._properties['buildPhases'][index]
+        if isinstance(phase, PBXResourcesBuildPhase) or \
+           isinstance(phase, PBXSourcesBuildPhase) or \
+           isinstance(phase, PBXFrameworksBuildPhase):
+          insert_at = index
+          break
+
+      self._properties['buildPhases'].insert(insert_at, headers_phase)
+      headers_phase.parent = self
+
+    return headers_phase
 
   def ResourcesPhase(self):
     resources_phase = self.GetBuildPhaseByType(PBXResourcesBuildPhase)

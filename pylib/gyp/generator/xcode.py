@@ -58,6 +58,7 @@ generator_default_variables = {
 # The Xcode-specific sections that hold paths.
 generator_additional_path_sections = [
   'mac_bundle_resources',
+  'mac_framework_headers',
   # 'mac_framework_dirs', input already handles _dirs endings.
 ]
 
@@ -66,12 +67,14 @@ generator_additional_path_sections = [
 generator_additional_non_configuration_keys = [
   'mac_bundle',
   'mac_bundle_resources',
+  'mac_framework_headers',
   'xcode_create_dependents_test_runner',
 ]
 
 # We want to let any rules apply to files that are resources also.
 generator_extra_sources_for_rules = [
   'mac_bundle_resources',
+  'mac_framework_headers',
 ]
 
 
@@ -530,6 +533,12 @@ def AddResourceToTarget(resource, pbxp, xct):
   # TODO(mark): Combine with AddSourceToTarget above?  Or just inline this call
   # where it's used.
   xct.ResourcesPhase().AddFile(resource)
+
+
+def AddHeaderToTarget(header, pbxp, xct):
+  # TODO(mark): Combine with AddSourceToTarget above?  Or just inline this call
+  # where it's used.
+  xct.HeadersPhase().AddFile(header, '{ATTRIBUTES = (Public, ); }')
 
 
 _xcode_variable_re = re.compile('(\$\((.*?)\))')
@@ -1043,7 +1052,8 @@ exit 1
       else:
         pbxp.AddOrGetFileInRootGroup(source)
 
-    # Add "mac_bundle_resources" if it's a bundle of any type.
+    # Add "mac_bundle_resources" and "mac_framework_headers" if it's a bundle
+    # of any type.
     if is_bundle:
       for resource in tgt_mac_bundle_resources:
         (resource_root, resource_extension) = posixpath.splitext(resource)
@@ -1051,6 +1061,9 @@ exit 1
           AddResourceToTarget(resource, pbxp, xct)
         else:
           pbxp.AddOrGetFileInRootGroup(resource)
+
+      for header in spec.get('mac_framework_headers', []):
+        AddHeaderToTarget(header, pbxp, xct)
 
     # Add "copies".
     for copy_group in spec.get('copies', []):
@@ -1073,7 +1086,7 @@ exit 1
 
     # Excluded files can also go into the project file.
     if not skip_excluded_files:
-      for key in ['sources', 'mac_bundle_resources']:
+      for key in ['sources', 'mac_bundle_resources', 'mac_framework_headers']:
         excluded_key = key + '_excluded'
         for item in spec.get(excluded_key, []):
           pbxp.AddOrGetFileInRootGroup(item)
