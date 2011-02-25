@@ -197,6 +197,12 @@ deps = {
 
   "src/third_party/flac":
     "/trunk/deps/third_party/flac@71053",
+
+  # Needed to support nacl browser test jig.
+  "src/third_party/pylib":
+    Var("nacl_trunk") + "/src/third_party/pylib@4214",
+  "src/third_party/scons":
+    Var("nacl_trunk") + "/src/third_party/scons@4214",
 }
 
 
