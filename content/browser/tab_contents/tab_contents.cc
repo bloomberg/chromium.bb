@@ -21,8 +21,6 @@
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/content_settings/content_settings_details.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
-#include "chrome/browser/custom_handlers/register_protocol_handler_infobar_delegate.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/desktop_notification_handler.h"
@@ -449,8 +447,6 @@ bool TabContents::OnMessageReceived(const IPC::Message& message) {
                         OnInstallApplication)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PageContents, OnPageContents)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PageTranslated, OnPageTranslated)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RegisterProtocolHandler,
-                        OnRegisterProtocolHandler)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetSuggestions, OnSetSuggestions)
     IPC_MESSAGE_HANDLER(ViewHostMsg_InstantSupportDetermined,
                         OnInstantSupportDetermined)
@@ -1968,19 +1964,6 @@ void TabContents::OnPageTranslated(int32 page_id,
       NotificationType::PAGE_TRANSLATED,
       Source<TabContents>(this),
       Details<PageTranslatedDetails>(&details));
-}
-
-void TabContents::OnRegisterProtocolHandler(const std::string& protocol,
-                                            const GURL& url,
-                                            const string16& title) {
-  ProtocolHandlerRegistry* registry = profile()->GetProtocolHandlerRegistry();
-  ProtocolHandler* handler = ProtocolHandler::CreateProtocolHandler(protocol,
-                                                                    url,
-                                                                    title);
-  if (handler != NULL) {
-    RegisterProtocolHandlerInfoBarDelegate::AttemptRegisterProtocolHandler(
-        this, registry, handler);
-  }
 }
 
 void TabContents::OnSetSuggestions(

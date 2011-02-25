@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,10 +7,11 @@
 #pragma once
 
 #include "base/string16.h"
-#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 
 class SkBitmap;
+class ProtocolHandler;
+class ProtocolHandlerRegistry;
 class TabContents;
 
 // An InfoBar delegate that enables the user to allow or deny storing credit
@@ -21,24 +22,17 @@ class RegisterProtocolHandlerInfoBarDelegate : public ConfirmInfoBarDelegate {
                                          ProtocolHandlerRegistry* registry,
                                          ProtocolHandler* handler);
 
-  // ConfirmInfoBarDelegate implementation.
+  // ConfirmInfoBarDelegate:
   virtual bool ShouldExpire(const NavigationController::LoadCommittedDetails&
       details) const OVERRIDE;
   virtual void InfoBarClosed() OVERRIDE;
+  virtual Type GetInfoBarType() const OVERRIDE;
   virtual string16 GetMessageText() const OVERRIDE;
-  virtual SkBitmap* GetIcon() const OVERRIDE;
-  virtual int GetButtons() const OVERRIDE;
-  virtual string16 GetButtonLabel(
-      ConfirmInfoBarDelegate::InfoBarButton button) const OVERRIDE;
+  virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual string16 GetLinkText() OVERRIDE;
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
-  virtual Type GetInfoBarType() const OVERRIDE;
-
-  static void AttemptRegisterProtocolHandler(TabContents* tab_contents,
-                                             ProtocolHandlerRegistry* registry,
-                                             ProtocolHandler* handler);
 
  private:
   TabContents* tab_contents_;

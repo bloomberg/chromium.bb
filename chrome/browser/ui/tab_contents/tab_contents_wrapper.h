@@ -108,6 +108,9 @@ class TabContentsWrapper : public NotificationObserver,
 
   // Message handlers.
   void OnJSOutOfMemory();
+  void OnRegisterProtocolHandler(const std::string& protocol,
+                                 const GURL& url,
+                                 const string16& title);
 
   // Updates the starred state from the bookmark bar model. If the state has
   // changed, the delegate is notified.

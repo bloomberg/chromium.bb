@@ -6,6 +6,8 @@
 
 #include "base/lazy_instance.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
+#include "chrome/browser/custom_handlers/register_protocol_handler_infobar_delegate.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager_delegate_impl.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -190,6 +192,8 @@ bool TabContentsWrapper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(TabContentsWrapper, message)
     IPC_MESSAGE_HANDLER(ViewHostMsg_JSOutOfMemory, OnJSOutOfMemory)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_RegisterProtocolHandler,
+                        OnRegisterProtocolHandler)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -226,6 +230,24 @@ void TabContentsWrapper::Observe(NotificationType type,
 void TabContentsWrapper::OnJSOutOfMemory() {
   tab_contents()->AddInfoBar(new SimpleAlertInfoBarDelegate(tab_contents(),
       NULL, l10n_util::GetStringUTF16(IDS_JS_OUT_OF_MEMORY_PROMPT), true));
+}
+
+void TabContentsWrapper::OnRegisterProtocolHandler(const std::string& protocol,
+                                                   const GURL& url,
+                                                   const string16& title) {
+  ProtocolHandlerRegistry* registry = profile()->GetProtocolHandlerRegistry();
+  ProtocolHandler* handler =
+      ProtocolHandler::CreateProtocolHandler(protocol, url, title);
+  if ((handler != NULL) &&
+      registry->CanSchemeBeOverridden(handler->protocol())) {
+    tab_contents()->AddInfoBar(registry->IsAlreadyRegistered(handler) ?
+      static_cast<InfoBarDelegate*>(new SimpleAlertInfoBarDelegate(
+          tab_contents(), NULL, l10n_util::GetStringFUTF16(
+              IDS_REGISTER_PROTOCOL_HANDLER_ALREADY_REGISTERED,
+              handler->title(), UTF8ToUTF16(handler->protocol())), true)) :
+      new RegisterProtocolHandlerInfoBarDelegate(tab_contents(), registry,
+                                                 handler));
+  }
 }
 
 void TabContentsWrapper::UpdateStarredStateForCurrentURL() {
