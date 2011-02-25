@@ -20,6 +20,8 @@ without changes to the corresponding grd file. paaaae -->
                file="shared/css/list.css" type="BINDATA" />
       <include name="IDR_SHARED_CSS_MENU"
                file="shared/css/menu.css" type="BINDATA" />
+      <include name="IDR_SHARED_CSS_TABS"
+               file="shared/css/tabs.css" type="BINDATA" />
       <include name="IDR_SHARED_CSS_THROBBER"
                file="shared/css/throbber.css" type="BINDATA" />
       <include name="IDR_SHARED_CSS_TREE"
@@ -68,6 +70,8 @@ without changes to the corresponding grd file. paaaae -->
                file="shared/js/cr/ui/position_util.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_UI_SPLITTER"
                file="shared/js/cr/ui/splitter.js" type="BINDATA" />
+      <include name="IDR_SHARED_JS_CR_UI_TABS"
+               file="shared/js/cr/ui/tabs.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_UI_TREE"
                file="shared/js/cr/ui/tree.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_I18N_TEMPLATE"
