@@ -20,6 +20,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/gpu_data_manager.h"
 #include "chrome/browser/gpu_process_host.h"
 #include "chrome/browser/gpu_process_host_ui_shim.h"
 #include "chrome/browser/io_thread.h"
@@ -93,6 +94,9 @@ class GpuMessageHandler
  private:
   DISALLOW_COPY_AND_ASSIGN(GpuMessageHandler);
 
+  // Cache the Singleton for efficiency.
+  GpuDataManager* gpu_data_manager_;
+
   Callback0::Type* gpu_info_update_callback_;
 };
 
@@ -140,12 +144,13 @@ std::string GpuHTMLSource::GetMimeType(const std::string&) const {
 ////////////////////////////////////////////////////////////////////////////////
 
 GpuMessageHandler::GpuMessageHandler() : gpu_info_update_callback_(NULL) {
+  gpu_data_manager_ = GpuDataManager::GetInstance();
+  DCHECK(gpu_data_manager_);
 }
 
 GpuMessageHandler::~GpuMessageHandler() {
   if (gpu_info_update_callback_) {
-    GpuProcessHostUIShimManager::GetInstance()->
-        gpu_info_update_callbacks().Remove(gpu_info_update_callback_);
+    gpu_data_manager_->RemoveGpuInfoUpdateCallback(gpu_info_update_callback_);
     delete gpu_info_update_callback_;
   }
 }
@@ -216,12 +221,16 @@ void GpuMessageHandler::OnCallAsync(const ListValue* args) {
 }
 
 void GpuMessageHandler::OnRequestGpuInfo(const ListValue* args) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   if (gpu_info_update_callback_ == NULL) {
     // Add us to be called when GPUInfo changes and ask for updated GPUInfo.
     gpu_info_update_callback_ =
         NewCallback(this, &GpuMessageHandler::OnGpuInfoCollected);
-    GpuProcessHostUIShimManager::GetInstance()->gpu_info_update_callbacks().Add(
-        gpu_info_update_callback_);
+    gpu_data_manager_->AddGpuInfoUpdateCallback(gpu_info_update_callback_);
+    // Run callback immediately in case the info is ready and no update in the
+    // future.
+    OnGpuInfoCollected();
   }
   GpuProcessHostUIShim* ui_shim = GpuProcessHostUIShim::GetForRenderer(0);
   if (ui_shim)
@@ -362,9 +371,11 @@ Value* GpuMessageHandler::OnRequestLogMessages(const ListValue*) {
 }
 
 void GpuMessageHandler::OnGpuInfoCollected() {
-
   // Get GPU Info.
-  GPUInfo gpu_info = GpuProcessHostUIShimManager::GetInstance()->gpu_info();
+  const GPUInfo& gpu_info = gpu_data_manager_->gpu_info();
+
+  if (gpu_info.level() == GPUInfo::kUninitialized)
+    return;
 
   // Send GPU Info to javascript.
   Value* gpuInfoVal = GpuInfoToDict(gpu_info);

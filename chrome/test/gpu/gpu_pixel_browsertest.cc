@@ -14,12 +14,13 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/gpu_data_manager.h"
 #include "chrome/browser/gpu_process_host.h"
 #include "chrome/browser/gpu_process_host_ui_shim.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/gpu_info.h"
@@ -92,14 +93,14 @@ class GPUInfoCollectedObserver {
         gpu_info_collected_(false) {
     gpu_info_update_callback_ =
         NewCallback(this, &GPUInfoCollectedObserver::OnGpuInfoCollected);
-    GpuProcessHostUIShimManager::GetInstance()->gpu_info_update_callbacks().Add(
-        gpu_info_update_callback_);
+    GpuDataManager::GetInstance()->
+        AddGpuInfoUpdateCallback(gpu_info_update_callback_);
   }
 
   void OnGpuInfoCollected() {
     gpu_info_collected_ = true;
-    GpuProcessHostUIShimManager::GetInstance()->
-        gpu_info_update_callbacks().Remove(gpu_info_update_callback_);
+    GpuDataManager::GetInstance()->
+        RemoveGpuInfoUpdateCallback(gpu_info_update_callback_);
     delete gpu_info_update_callback_;
     MessageLoopForUI::current()->Quit();
   }
