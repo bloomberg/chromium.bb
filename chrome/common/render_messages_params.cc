@@ -31,7 +31,8 @@ ViewHostMsg_FrameNavigate_Params::ViewHostMsg_FrameNavigate_Params()
       is_post(false),
       is_content_filtered(false),
       was_within_same_page(false),
-      http_status_code(0) {
+      http_status_code(0),
+      was_fetched_via_proxy(false) {
 }
 
 ViewHostMsg_FrameNavigate_Params::~ViewHostMsg_FrameNavigate_Params() {
@@ -773,6 +774,7 @@ void ParamTraits<ViewHostMsg_FrameNavigate_Params>::Write(Message* m,
   WriteParam(m, p.was_within_same_page);
   WriteParam(m, p.http_status_code);
   WriteParam(m, p.socket_address);
+  WriteParam(m, p.was_fetched_via_proxy);
 }
 
 bool ParamTraits<ViewHostMsg_FrameNavigate_Params>::Read(const Message* m,
@@ -796,7 +798,8 @@ bool ParamTraits<ViewHostMsg_FrameNavigate_Params>::Read(const Message* m,
       ReadParam(m, iter, &p->is_content_filtered) &&
       ReadParam(m, iter, &p->was_within_same_page) &&
       ReadParam(m, iter, &p->http_status_code) &&
-      ReadParam(m, iter, &p->socket_address);
+      ReadParam(m, iter, &p->socket_address) &&
+      ReadParam(m, iter, &p->was_fetched_via_proxy);
 }
 
 void ParamTraits<ViewHostMsg_FrameNavigate_Params>::Log(const param_type& p,
@@ -837,6 +840,8 @@ void ParamTraits<ViewHostMsg_FrameNavigate_Params>::Log(const param_type& p,
   LogParam(p.http_status_code, l);
   l->append(", ");
   LogParam(p.socket_address, l);
+  l->append(", ");
+  LogParam(p.was_fetched_via_proxy, l);
   l->append(")");
 }
 

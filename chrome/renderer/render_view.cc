@@ -1647,6 +1647,7 @@ void RenderView::UpdateURL(WebFrame* frame) {
   params.is_content_filtered = response.isContentFiltered();
   params.socket_address.set_host(response.remoteIPAddress().utf8());
   params.socket_address.set_port(response.remotePort());
+  params.was_fetched_via_proxy = response.wasFetchedViaProxy();
   params.was_within_same_page = navigation_state->was_within_same_page();
   if (!navigation_state->security_info().empty()) {
     // SSL state specified in the request takes precedence over the one in the

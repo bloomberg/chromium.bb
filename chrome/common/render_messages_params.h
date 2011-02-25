@@ -307,6 +307,10 @@ struct ViewHostMsg_FrameNavigate_Params {
 
   // Remote address of the socket which fetched this resource.
   net::HostPortPair socket_address;
+
+  // True if the connection was proxied.  In this case, socket_address
+  // will represent the address of the proxy, rather than the remote host.
+  bool was_fetched_via_proxy;
 };
 
 // Values that may be OR'd together to form the 'flags' parameter of a
