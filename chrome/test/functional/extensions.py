@@ -100,10 +100,10 @@ class ExtensionsTest(pyauto.PyUITest):
     extensions_dir = os.path.join(self.DataDir(), 'extensions-tool')
     urls_file = os.path.join(self.DataDir(), 'urls.txt')
 
-    assert(os.path.exists(extensions_dir),
-           'The dir "%s" must exist' % os.path.abspath(extensions_dir))
-    assert(os.path.exists(urls_file),
-           'The file "%s" must exist' % os.path.abspath(urls_file))
+    assert os.path.exists(extensions_dir), \
+           'The dir "%s" must exist' % os.path.abspath(extensions_dir)
+    assert os.path.exists(urls_file), \
+           'The file "%s" must exist' % os.path.abspath(urls_file)
 
     num_urls_to_visit = 100
     extensions_group_size = 20
