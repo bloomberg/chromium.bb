@@ -449,6 +449,8 @@ cr.define('options', function() {
 
     document.addEventListener('focus', this.manageFocusChange_.bind(this),
                               true);
+
+    document.addEventListener('scroll', this.handleScroll_.bind(this));
   };
 
   /**
@@ -496,6 +498,20 @@ cr.define('options', function() {
 
     if (focusableItemsRoot && !focusableItemsRoot.contains(e.target))
       topPage.focusFirstElement();
+  };
+
+  /**
+   * Called when the page is scrolled; moves elements that are position:fixed
+   * but should only behave as if they are fixed for vertical scrolling.
+   * @param {Event} e The scroll event.
+   * @private
+   */
+  OptionsPage.handleScroll_ = function(e) {
+    var horizontalOffset = document.body.scrollLeft;
+    // position:fixed doesn't seem to work for horizontal scrolling in RTL mode,
+    // so only adjust in LTR mode (where scroll values will be positive).
+    if (horizontalOffset >= 0)
+      $('navbar-container').style.left = -document.body.scrollLeft + 'px';
   };
 
   /**

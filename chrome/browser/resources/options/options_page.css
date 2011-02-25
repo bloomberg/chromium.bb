@@ -158,19 +158,19 @@ html[toolkit=views] .button-strip {
   -webkit-border-end: 1px solid #c6c9ce;
   background: -webkit-linear-gradient(rgba(234, 238, 243, 0.2), #eaeef3),
               -webkit-linear-gradient(left, #eaeef3, #eaeef3 97%, #d3d7db);
+  position: fixed;
   bottom: 0;
+  /* We set both left and right for the sake of RTL. */
   left: 0;
+  right: 0;
   top: 0;
   width: 266px;
-  position: absolute;
   z-index: 2;
 }
 
 html[dir='rtl'] #navbar-container {
   background: -webkit-linear-gradient(rgba(234, 238, 243, 0), #EAEEF3),
               -webkit-linear-gradient(right, #EAEEF3, #EAEEF3 97%, #D3D7DB);
-  left: auto;
-  right: 0;
 }
 
 html.hide-menu #navbar-container {
