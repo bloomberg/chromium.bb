@@ -326,7 +326,7 @@ void FileSystemOperation::DidDirectoryExists(
     if (file_info.is_directory)
       dispatcher_->DidSucceed();
     else
-      dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_FAILED);
+      dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY);
   } else {
     dispatcher_->DidFail(rv);
   }
@@ -338,7 +338,7 @@ void FileSystemOperation::DidFileExists(
     const base::PlatformFileInfo& file_info) {
   if (rv == base::PLATFORM_FILE_OK) {
     if (file_info.is_directory)
-      dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_FAILED);
+      dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_NOT_A_FILE);
     else
       dispatcher_->DidSucceed();
   } else {

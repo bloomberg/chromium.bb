@@ -570,6 +570,20 @@ TEST_F(FileSystemOperationTest, TestExistsAndMetadataSuccess) {
   EXPECT_FALSE(info().is_directory);
 }
 
+TEST_F(FileSystemOperationTest, TestTypeMismatchErrors) {
+  ScopedTempDir dir;
+  ASSERT_TRUE(dir.CreateUniqueTempDir());
+  operation()->FileExists(dir.path());
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_A_FILE, status());
+
+  FilePath file;
+  ASSERT_TRUE(file_util::CreateTemporaryFileInDir(dir.path(), &file));
+  operation()->DirectoryExists(file);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY, status());
+}
+
 TEST_F(FileSystemOperationTest, TestReadDirFailure) {
   // Path doesn't exists
     FilePath nonexisting_dir_path(base_.path().Append(

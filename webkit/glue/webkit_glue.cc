@@ -314,10 +314,11 @@ WebKit::WebFileError PlatformFileErrorToWebFileError(
       return WebKit::WebFileErrorNotFound;
     case base::PLATFORM_FILE_ERROR_INVALID_OPERATION:
     case base::PLATFORM_FILE_ERROR_EXISTS:
-    case base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY:
-    case base::PLATFORM_FILE_ERROR_NOT_A_FILE:
     case base::PLATFORM_FILE_ERROR_NOT_EMPTY:
       return WebKit::WebFileErrorInvalidModification;
+    case base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY:
+    case base::PLATFORM_FILE_ERROR_NOT_A_FILE:
+      return WebKit::WebFileErrorTypeMismatch;
     case base::PLATFORM_FILE_ERROR_ACCESS_DENIED:
       return WebKit::WebFileErrorNoModificationAllowed;
     case base::PLATFORM_FILE_ERROR_FAILED:
