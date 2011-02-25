@@ -9,13 +9,14 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 
 #if !defined(OS_MACOSX)
 #include "chrome/browser/browser_process.h"
 #endif
 
-typedef testing::Test BookmarkUtilsTest;
+typedef TestingBrowserProcessTest BookmarkUtilsTest;
 
 TEST_F(BookmarkUtilsTest, GetBookmarksContainingText) {
   BookmarkModel model(NULL);

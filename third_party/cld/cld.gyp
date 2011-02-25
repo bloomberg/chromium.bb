@@ -91,6 +91,9 @@
         'defines': [
           'CLD_WINDOWS',
         ],
+        'include_dirs': [
+          '.',
+        ],
       },
       'conditions': [
         ['OS=="win"', {

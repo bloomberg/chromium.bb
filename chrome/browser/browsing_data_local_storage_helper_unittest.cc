@@ -4,11 +4,15 @@
 
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 
+#include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-TEST(CannedBrowsingDataLocalStorageTest, Empty) {
+
+typedef TestingBrowserProcessTest CannedBrowsingDataLocalStorageTest;
+
+TEST_F(CannedBrowsingDataLocalStorageTest, Empty) {
   TestingProfile profile;
 
   const GURL origin("http://host1:1/");
@@ -22,4 +26,5 @@ TEST(CannedBrowsingDataLocalStorageTest, Empty) {
   helper->Reset();
   ASSERT_TRUE(helper->empty());
 }
+
 }  // namespace

@@ -5,6 +5,7 @@
 #include "chrome/browser/browsing_data_appcache_helper.h"
 
 #include "base/stl_util-inl.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -27,7 +28,9 @@ class TestCompletionCallback {
 
 }  // namespace
 
-TEST(CannedBrowsingDataAppCacheHelperTest, SetInfo) {
+typedef TestingBrowserProcessTest CannedBrowsingDataAppCacheHelperTest;
+
+TEST_F(CannedBrowsingDataAppCacheHelperTest, SetInfo) {
   TestingProfile profile;
 
   GURL manifest1("http://example1.com/manifest.xml");
@@ -62,7 +65,7 @@ TEST(CannedBrowsingDataAppCacheHelperTest, SetInfo) {
   EXPECT_TRUE(ContainsKey(manifest_results, manifest3));
 }
 
-TEST(CannedBrowsingDataAppCacheHelperTest, Unique) {
+TEST_F(CannedBrowsingDataAppCacheHelperTest, Unique) {
   TestingProfile profile;
 
   GURL manifest("http://example.com/manifest.xml");
@@ -86,7 +89,7 @@ TEST(CannedBrowsingDataAppCacheHelperTest, Unique) {
   EXPECT_EQ(manifest, collection[manifest.GetOrigin()].at(0).manifest_url);
 }
 
-TEST(CannedBrowsingDataAppCacheHelperTest, Empty) {
+TEST_F(CannedBrowsingDataAppCacheHelperTest, Empty) {
   TestingProfile profile;
 
   GURL manifest("http://example.com/manifest.xml");

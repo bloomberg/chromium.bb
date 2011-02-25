@@ -9,6 +9,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/testing_pref_service.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,7 +17,7 @@
 
 namespace content_settings {
 
-class PolicyDefaultProviderTest : public testing::Test {
+class PolicyDefaultProviderTest : public TestingBrowserProcessTest {
  public:
   PolicyDefaultProviderTest()
       : ui_thread_(BrowserThread::UI, &message_loop_) {

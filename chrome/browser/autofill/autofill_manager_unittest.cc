@@ -23,7 +23,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/autofill_messages.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/testing_browser_process.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
@@ -550,7 +549,6 @@ class AutoFillManagerTest : public RenderViewHostTestHarness {
   }
 
  protected:
-  ScopedTestingBrowserProcess browser_process_;
   scoped_ptr<TestAutoFillManager> autofill_manager_;
   scoped_refptr<TestPersonalDataManager> test_personal_data_;
 

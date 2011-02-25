@@ -12,6 +12,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/testing_pref_service.h"
 #include "chrome/test/testing_profile.h"
 #include "googleurl/src/gurl.h"
@@ -19,7 +20,7 @@
 
 namespace content_settings {
 
-class PrefDefaultProviderTest : public testing::Test {
+class PrefDefaultProviderTest : public TestingBrowserProcessTest {
  public:
   PrefDefaultProviderTest()
       : ui_thread_(BrowserThread::UI, &message_loop_) {
@@ -136,7 +137,7 @@ bool SettingsEqual(const ContentSettings& settings1,
   return true;
 }
 
-class PrefProviderTest : public testing::Test {
+class PrefProviderTest : public TestingBrowserProcessTest {
  public:
   PrefProviderTest() : ui_thread_(
       BrowserThread::UI, &message_loop_) {

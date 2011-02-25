@@ -4,12 +4,13 @@
 
 #include "chrome/browser/content_exceptions_table_model.h"
 
+#include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
-class ContentExceptionsTableModelTest : public testing::Test {
+class ContentExceptionsTableModelTest : public TestingBrowserProcessTest {
  public:
   ContentExceptionsTableModelTest()
       : ui_thread_(BrowserThread::UI, &message_loop_) {}

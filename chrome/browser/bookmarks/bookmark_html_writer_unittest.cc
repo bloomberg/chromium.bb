@@ -16,6 +16,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/importer/firefox2_importer.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/testing_profile.h"
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -39,7 +40,7 @@ void MakeTestSkBitmap(int w, int h, SkBitmap* bmp) {
 
 }  // namespace
 
-class BookmarkHTMLWriterTest : public testing::Test {
+class BookmarkHTMLWriterTest : public TestingBrowserProcessTest {
  protected:
   virtual void SetUp() {
     ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &path_));

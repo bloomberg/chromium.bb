@@ -17,10 +17,11 @@
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/in_memory_database.h"
 #include "chrome/browser/history/query_parser.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class BookmarkIndexTest : public testing::Test {
+class BookmarkIndexTest : public TestingBrowserProcessTest {
  public:
   BookmarkIndexTest() : model_(new BookmarkModel(NULL)) {}
 

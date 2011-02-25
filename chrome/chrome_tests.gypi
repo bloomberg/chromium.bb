@@ -1128,7 +1128,6 @@
       ],
       'include_dirs': [
         '..',
-        '../third_party/cld',
       ],
       'defines': [
         'CLD_WINDOWS',
@@ -1544,7 +1543,6 @@
         'browser/task_manager/task_manager_unittest.cc',
         'browser/themes/browser_theme_pack_unittest.cc',
         'browser/themes/browser_theme_provider_unittest.cc',
-        'browser/translate/translate_manager_unittest.cc',
         # It is safe to list */cocoa/* files in the "common" file list
         # without an explicit exclusion since gyp is smart enough to
         # exclude them from non-Mac builds.
@@ -2114,6 +2112,7 @@
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
+        '../third_party/cld/cld.gyp:cld',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         # Runtime dependencies
@@ -2278,6 +2277,7 @@
         'browser/speech/speech_input_bubble_browsertest.cc',
         'browser/ssl/ssl_browser_tests.cc',
         'browser/task_manager/task_manager_browsertest.cc',
+        'browser/translate/translate_manager_browsertest.cc',
         'browser/ui/browser_init_browsertest.cc',
         'browser/ui/browser_navigator_browsertest.cc',
         'browser/ui/browser_navigator_browsertest.h',

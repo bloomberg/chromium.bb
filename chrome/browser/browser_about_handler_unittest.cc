@@ -8,11 +8,14 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/common/about_handler.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/testing_profile.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-TEST(BrowserAboutHandlerTest, WillHandleBrowserAboutURL) {
+typedef TestingBrowserProcessTest BrowserAboutHandlerTest;
+
+TEST_F(BrowserAboutHandlerTest, WillHandleBrowserAboutURL) {
   struct AboutURLTestData {
     GURL test_url;
     GURL result_url;

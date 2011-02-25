@@ -5,11 +5,15 @@
 #include "chrome/browser/browsing_data_database_helper.h"
 
 #include "base/file_util.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-TEST(CannedBrowsingDataDatabaseTest, Empty) {
+
+typedef TestingBrowserProcessTest CannedBrowsingDataDatabaseTest;
+
+TEST_F(CannedBrowsingDataDatabaseTest, Empty) {
   TestingProfile profile;
 
   const GURL origin("http://host1:1/");
@@ -24,4 +28,5 @@ TEST(CannedBrowsingDataDatabaseTest, Empty) {
   helper->Reset();
   ASSERT_TRUE(helper->empty());
 }
+
 }  // namespace

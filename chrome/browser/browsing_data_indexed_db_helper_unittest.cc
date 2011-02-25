@@ -6,10 +6,14 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browsing_data_indexed_db_helper.h"
+#include "chrome/test/testing_browser_process_test.h"
 #include "chrome/test/testing_profile.h"
 
 namespace {
-TEST(CannedBrowsingDataIndexedDBHelperTest, Empty) {
+
+typedef TestingBrowserProcessTest CannedBrowsingDataIndexedDBHelperTest;
+
+TEST_F(CannedBrowsingDataIndexedDBHelperTest, Empty) {
   TestingProfile profile;
 
   const GURL origin("http://host1:1/");
@@ -24,4 +28,5 @@ TEST(CannedBrowsingDataIndexedDBHelperTest, Empty) {
   helper->Reset();
   ASSERT_TRUE(helper->empty());
 }
+
 } // namespace

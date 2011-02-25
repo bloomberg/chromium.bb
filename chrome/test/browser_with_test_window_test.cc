@@ -29,6 +29,8 @@ BrowserWithTestWindowTest::BrowserWithTestWindowTest()
 }
 
 void BrowserWithTestWindowTest::SetUp() {
+  TestingBrowserProcessTest::SetUp();
+
   // NOTE: I have a feeling we're going to want virtual methods for creating
   // these, as such they're in SetUp instead of the constructor.
   profile_.reset(new TestingProfile());
