@@ -550,6 +550,7 @@
         'examples/examples_main.h',
         'examples/message_box_example.cc',
         'examples/message_box_example.h',
+        'examples/menu_example.cc',
         'examples/menu_example.h',
         'examples/radio_button_example.cc',
         'examples/radio_button_example.h',
