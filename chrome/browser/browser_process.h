@@ -165,6 +165,10 @@ class BrowserProcess {
   virtual safe_browsing::ClientSideDetectionService*
       safe_browsing_detection_service() = 0;
 
+  // Returns the state of the disable plugin finder policy. Callable only on
+  // the IO thread.
+  virtual bool plugin_finder_disabled() const = 0;
+
   // Trigger an asynchronous check to see if we have the inspector's files on
   // disk.
   virtual void CheckForInspectorFiles() = 0;

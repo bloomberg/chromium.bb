@@ -22,6 +22,7 @@ static const int TOOLTIP_MAX_WIDTH = 500;
 PluginInstallerImpl::PluginInstallerImpl(int16 mode)
     : instance_(NULL),
       mode_(mode),
+      disable_plugin_finder_(false),
       plugin_install_stream_(NULL),
       plugin_installer_state_(PluginInstallerStateUndefined),
       install_dialog_(NULL),
@@ -38,7 +39,8 @@ PluginInstallerImpl::PluginInstallerImpl(int16 mode)
 }
 
 PluginInstallerImpl::~PluginInstallerImpl() {
-  installation_job_monitor_thread_->Stop();
+  if (!disable_plugin_finder_)
+    installation_job_monitor_thread_->Stop();
 
   if (bold_font_)
     DeleteObject(bold_font_);
@@ -58,8 +60,7 @@ bool PluginInstallerImpl::Initialize(HINSTANCE module_handle, NPP instance,
   DCHECK(module_handle != NULL);
 
   if (mime_type == NULL || strlen(mime_type) == 0) {
-    DLOG(WARNING) << __FUNCTION__ << " Invalid parameters passed in";
-    NOTREACHED();
+    NOTREACHED() << __FUNCTION__ << " Invalid parameters passed in";
     return false;
   }
 
@@ -67,21 +68,26 @@ bool PluginInstallerImpl::Initialize(HINSTANCE module_handle, NPP instance,
   mime_type_ = mime_type;
 
   if (!webkit_glue::GetPluginFinderURL(&plugin_finder_url_)) {
-    NOTREACHED();
-    DLOG(WARNING) << __FUNCTION__ << " Failed to get the plugin finder URL";
+    NOTREACHED() << __FUNCTION__ << " Failed to get the plugin finder URL";
     return false;
   }
 
-  if (!installation_job_monitor_thread_->Initialize()) {
-    DLOG(ERROR) << "Failed to initialize plugin install job";
-    NOTREACHED();
-    return false;
-  }
+  if (plugin_finder_url_.empty())
+    disable_plugin_finder_ = true;
 
   InitializeResources(module_handle);
 
-  DisplayStatus(IDS_DEFAULT_PLUGIN_GET_PLUGIN_MSG_NO_PLUGIN_NAME);
-  plugin_database_handler_.DownloadPluginsFileIfNeeded(plugin_finder_url_);
+  if (!disable_plugin_finder_) {
+    if (!installation_job_monitor_thread_->Initialize()) {
+      NOTREACHED() << "Failed to initialize plugin install job";
+      return false;
+    }
+
+    DisplayStatus(IDS_DEFAULT_PLUGIN_GET_PLUGIN_MSG_NO_PLUGIN_NAME);
+    plugin_database_handler_.DownloadPluginsFileIfNeeded(plugin_finder_url_);
+  } else {
+    DisplayStatus(IDS_DEFAULT_PLUGIN_GET_PLUGIN_MSG_PLUGIN_FINDER_DISABLED);
+  }
 
   return true;
 }

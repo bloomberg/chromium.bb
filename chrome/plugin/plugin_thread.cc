@@ -204,7 +204,8 @@ bool GetPluginFinderURL(std::string* plugin_finder_url) {
 
   plugin_thread->Send(
       new PluginProcessHostMsg_GetPluginFinderUrl(plugin_finder_url));
-  DCHECK(!plugin_finder_url->empty());
+  // If we get an empty string back this means the plugin finder has been
+  // disabled.
   return true;
 }
 

@@ -181,6 +181,10 @@ base::WaitableEvent* TestingBrowserProcess::shutdown_event() {
   return shutdown_event_.get();
 }
 
+bool TestingBrowserProcess::plugin_finder_disabled() const {
+  return false;
+}
+
 bool TestingBrowserProcess::have_inspector_files() const {
   return true;
 }

@@ -111,6 +111,8 @@ class TestingBrowserProcess : public BrowserProcess {
 
   virtual base::WaitableEvent* shutdown_event();
 
+  virtual bool plugin_finder_disabled() const;
+
   virtual void CheckForInspectorFiles() {}
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)

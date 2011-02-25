@@ -91,7 +91,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 65
+#   For your editing convenience: highest ID currently used: 66
 #
   'policy_definitions': [
     {
@@ -392,6 +392,17 @@
 
       If you enable this setting, the specified list of plugins is never used in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. The plugins are marked as disabled in 'about:plugins' and users cannot enable them.''',
       'label': '''List of disabled plugins''',
+    },
+    {
+      'name': 'DisablePluginFinder',
+      'type': 'main',
+      'supported_on': ['chrome.*:11-'],
+      'features': {'dynamic_refresh': 1},
+      'example_value': True,
+      'id': 66,
+      'caption': '''Specify whether the plugin finder should be disabled''',
+      'desc': '''If you set this setting to True the automatic search and installation of missing plugins will be disabled in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+      'label': '''Disable plugin finder''',
     },
     {
       'name': 'SyncDisabled',

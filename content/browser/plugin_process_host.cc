@@ -20,6 +20,7 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_plugin_browsing_context.h"
 #include "chrome/browser/net/url_request_tracking.h"
 #include "chrome/browser/plugin_download_helper.h"
@@ -455,14 +456,19 @@ void PluginProcessHost::OnChannelCreated(
 }
 
 void PluginProcessHost::OnGetPluginFinderUrl(std::string* plugin_finder_url) {
+  // TODO(bauerb): Move this method to MessageFilter.
   if (!plugin_finder_url) {
     NOTREACHED();
     return;
   }
 
-  // TODO(iyengar)  Add the plumbing to retrieve the default
-  // plugin finder URL.
-  *plugin_finder_url = kDefaultPluginFinderURL;
+  if (!g_browser_process->plugin_finder_disabled()) {
+    // TODO(iyengar): Add the plumbing to retrieve the default
+    // plugin finder URL.
+    *plugin_finder_url = kDefaultPluginFinderURL;
+  } else {
+    plugin_finder_url->clear();
+  }
 }
 
 void PluginProcessHost::OnPluginMessage(

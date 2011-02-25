@@ -546,6 +546,10 @@ safe_browsing::ClientSideDetectionService*
   return safe_browsing_detection_service_.get();
 }
 
+bool BrowserProcessImpl::plugin_finder_disabled() const {
+  return *plugin_finder_disabled_pref_;
+}
+
 void BrowserProcessImpl::CheckForInspectorFiles() {
   file_thread()->message_loop()->PostTask
       (FROM_HERE,
@@ -762,6 +766,13 @@ void BrowserProcessImpl::CreateLocalState() {
       ShellIntegration::SetAsDefaultBrowser();
   }
   pref_change_registrar_.Add(prefs::kDefaultBrowserSettingEnabled, this);
+
+  // Initialize the preference for the plugin finder policy.
+  // This preference is only needed on the IO thread so make it available there.
+  local_state_->RegisterBooleanPref(prefs::kDisablePluginFinder, false);
+  plugin_finder_disabled_pref_.Init(prefs::kDisablePluginFinder,
+                                   local_state_.get(), NULL);
+  plugin_finder_disabled_pref_.MoveToThread(BrowserThread::IO);
 }
 
 void BrowserProcessImpl::CreateIconManager() {

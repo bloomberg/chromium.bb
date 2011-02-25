@@ -408,11 +408,15 @@ below:
       </message>
 
       <message name="IDS_DEFAULT_PLUGIN_GET_PLUGIN_MSG" desc="Message displayed by the default plugin in its main window">
-        <ph name="PLUGIN">$1<ex>Realplayer</ex></ph> plug-in is not installed
+        <ph name="PLUGIN">$1<ex>Realplayer</ex></ph> plug-in is not installed.
       </message>
 
       <message name="IDS_DEFAULT_PLUGIN_GET_PLUGIN_MSG_NO_PLUGIN_NAME" desc="Message displayed by the default plugin in its main window when we don't know the plugin name">
-        The required plug-in is not installed
+        The required plug-in is not installed.
+      </message>
+
+      <message name="IDS_DEFAULT_PLUGIN_GET_PLUGIN_MSG_PLUGIN_FINDER_DISABLED" desc="Message displayed by the default plugin in its main window when the plugin finder has been disabled by a policy.">
+        Installing plug-ins has been disabled.
       </message>
 
       <message name="IDS_DEFAULT_PLUGIN_GET_PLUGIN_MSG_2" desc="Second Message displayed by the default plugin in its main window">
@@ -424,7 +428,7 @@ below:
       </message>
 
       <message name="IDS_DEFAULT_PLUGIN_NO_PLUGIN_AVAILABLE_MSG" desc="Message displayed by the default plugin when no plugin was found for the page.">
-        No plug-in available to display this content
+        No plug-in available to display this content.
       </message>
 
       <message name="IDS_DEFAULT_PLUGIN_DOWNLOADING_PLUGIN_MSG" desc="Message displayed by the default plugin when a download has been initiated for the third party plugin.">

@@ -346,6 +346,7 @@ extern const char kNumKeywords[];
 extern const char kDisableVideoAndChat[];
 
 extern const char kDisableExtensions[];
+extern const char kDisablePluginFinder[];
 extern const char kBrowserActionContainerWidth[];
 
 extern const char kLastExtensionsUpdateCheck[];

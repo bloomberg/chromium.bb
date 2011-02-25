@@ -271,6 +271,8 @@ class PluginInstallerImpl : public ui::WindowImpl {
   std::wstring command_;
   // An additional message displayed at times by the plugin.
   std::wstring optional_additional_message_;
+  // Set to true if plugin finder has been disabled.
+  bool disable_plugin_finder_;
   // The current stream.
   NPStream* plugin_install_stream_;
   // The plugin finder URL.

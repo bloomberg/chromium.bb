@@ -21,6 +21,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_status_updater.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
+#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -85,6 +86,7 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual TabCloseableStateWatcher* tab_closeable_state_watcher();
   virtual safe_browsing::ClientSideDetectionService*
       safe_browsing_detection_service();
+  virtual bool plugin_finder_disabled() const;
   virtual void CheckForInspectorFiles();
 
   // NotificationObserver methods
@@ -250,6 +252,9 @@ class BrowserProcessImpl : public BrowserProcess,
 
   NotificationRegistrar notification_registrar_;
   scoped_refptr<PluginDataRemover> plugin_data_remover_;
+
+  // Monitors the state of the 'DisablePluginFinder' policy.
+  BooleanPrefMember plugin_finder_disabled_pref_;
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
   base::RepeatingTimer<BrowserProcessImpl> autoupdate_timer_;
