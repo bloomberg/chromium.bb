@@ -4229,6 +4229,11 @@
             "type": "string",
             "optional": true
           },
+          "homepageUrl": {
+            "description": "The URL of the homepage of this extension or app",
+            "type": "string",
+            "optional": true
+          },
           "optionsUrl": {
             "description": "The url for the item's options page, if it has one.",
             "type": "string"

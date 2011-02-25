@@ -52,7 +52,8 @@ var tests = [
       checkItemInList(items, "enabled_app", true, true,
                 {"appLaunchUrl": "http://www.google.com/"});
       checkItemInList(items, "disabled_app", false, true);
-      checkItemInList(items, "enabled_extension", true, false);
+      checkItemInList(items, "enabled_extension", true, false,
+                     { "homepageUrl": "http://example.com/" });
       checkItemInList(items, "disabled_extension", false, false,
                 {"optionsUrl": "chrome-extension://<ID>/pages/options.html"});
 

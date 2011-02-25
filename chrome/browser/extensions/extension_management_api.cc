@@ -34,6 +34,7 @@ namespace {
 const char kAppLaunchUrlKey[] = "appLaunchUrl";
 const char kDescriptionKey[] = "description";
 const char kEnabledKey[] = "enabled";
+const char kHomepageURLKey[] = "homepageUrl";
 const char kIconsKey[] = "icons";
 const char kIdKey[] = "id";
 const char kIsAppKey[] = "isApp";
@@ -63,6 +64,8 @@ static DictionaryValue* CreateExtensionInfo(const Extension& extension,
   info->SetString(kDescriptionKey, extension.description());
   info->SetString(kOptionsUrlKey,
                     extension.options_url().possibly_invalid_spec());
+  info->SetString(kHomepageURLKey,
+                    extension.GetHomepageURL().possibly_invalid_spec());
   if (extension.is_app())
     info->SetString(kAppLaunchUrlKey,
                     extension.GetFullLaunchURL().possibly_invalid_spec());
