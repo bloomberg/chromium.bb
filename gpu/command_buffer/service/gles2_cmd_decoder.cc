@@ -2246,6 +2246,13 @@ bool GLES2DecoderImpl::UpdateOffscreenFrameBufferSize() {
     return true;
 
   offscreen_size_ = pending_offscreen_size_;
+  int w = offscreen_size_.width();
+  int h = offscreen_size_.height();
+  if (w < 0 || h < 0 || h >= (INT_MAX / 4) / (w ? w : 1)) {
+    LOG(ERROR) << "GLES2DecoderImpl::UpdateOffscreenFrameBufferSize failed "
+               << "to allocate storage due to excessive dimensions.";
+    return false;
+  }
 
   // Reallocate the offscreen target buffers.
   DCHECK(offscreen_target_color_format_);
