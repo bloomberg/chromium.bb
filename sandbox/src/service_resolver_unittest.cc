@@ -59,7 +59,27 @@ typedef ResolverThunkTest<sandbox::Win2kResolverThunk> Win2kResolverTest;
 typedef ResolverThunkTest<sandbox::ServiceResolverThunk> WinXpResolverTest;
 typedef ResolverThunkTest<sandbox::Wow64ResolverThunk> Wow64ResolverTest;
 
-NTSTATUS PatchNtdll(const char* function, bool relaxed) {
+const BYTE kJump32 = 0xE9;
+
+void CheckJump(void* source, void* target) {
+#pragma pack(push)
+#pragma pack(1)
+  struct Code {
+    BYTE jump;
+    ULONG delta;
+  };
+#pragma pack(pop)
+
+  Code* patched = reinterpret_cast<Code*>(source);
+  EXPECT_EQ(kJump32, patched->jump);
+
+  ULONG source_addr = bit_cast<ULONG>(source);
+  ULONG target_addr = bit_cast<ULONG>(target);
+  EXPECT_EQ(target_addr + 19 - source_addr, patched->delta);
+}
+
+NTSTATUS PatchNtdllWithResolver(const char* function, bool relaxed,
+                                sandbox::ServiceResolverThunk* resolver) {
   HMODULE ntdll_base = ::GetModuleHandle(L"ntdll.dll");
   EXPECT_TRUE(NULL != ntdll_base);
 
@@ -68,17 +88,8 @@ NTSTATUS PatchNtdll(const char* function, bool relaxed) {
   if (NULL == target)
     return STATUS_UNSUCCESSFUL;
 
-  char service[50];
+  BYTE service[50];
   memcpy(service, target, sizeof(service));
-  sandbox::Wow64 WowHelper(NULL, ntdll_base);
-
-  sandbox::ServiceResolverThunk* resolver;
-  if (WowHelper.IsWow64())
-    resolver = new Wow64ResolverTest(relaxed);
-  else if (!sandbox::IsXPSP2OrLater())
-    resolver = new Win2kResolverTest(relaxed);
-  else
-    resolver = new WinXpResolverTest(relaxed);
 
   static_cast<WinXpResolverTest*>(resolver)->set_target(service);
 
@@ -94,16 +105,40 @@ NTSTATUS PatchNtdll(const char* function, bool relaxed) {
   if (NT_SUCCESS(ret)) {
     EXPECT_EQ(thunk_size, used);
     EXPECT_NE(0, memcmp(service, target, sizeof(service)));
+    EXPECT_NE(kJump32, service[0]);
 
     if (relaxed) {
-      // It's already patched, let's patch again.
+      // It's already patched, let's patch again, and simulate a direct patch.
+      service[0] = kJump32;
       ret = resolver->Setup(ntdll_base, NULL, function, NULL, function_entry,
                             thunk.get(), thunk_size, &used);
+      CheckJump(service, thunk.get());
     }
   }
 
-  delete resolver;
+  return ret;
+}
 
+sandbox::ServiceResolverThunk* GetTestResolver(bool relaxed) {
+  HMODULE ntdll_base = ::GetModuleHandle(L"ntdll.dll");
+  EXPECT_TRUE(NULL != ntdll_base);
+  sandbox::Wow64 WowHelper(NULL, ntdll_base);
+
+  sandbox::ServiceResolverThunk* resolver;
+  if (WowHelper.IsWow64())
+    resolver = new Wow64ResolverTest(relaxed);
+  else if (!sandbox::IsXPSP2OrLater())
+    resolver = new Win2kResolverTest(relaxed);
+  else
+    resolver = new WinXpResolverTest(relaxed);
+  return resolver;
+}
+
+NTSTATUS PatchNtdll(const char* function, bool relaxed) {
+  sandbox::ServiceResolverThunk* resolver = GetTestResolver(relaxed);
+
+  NTSTATUS ret = PatchNtdllWithResolver(function, relaxed, resolver);
+  delete resolver;
   return ret;
 }
 
@@ -149,6 +184,28 @@ TEST(ServiceResolverTest, PatchesPatchedServices) {
   ret = PatchNtdll("NtMapViewOfSection", true);
   EXPECT_EQ(STATUS_SUCCESS, ret) << "NtMapViewOfSection, last error: " <<
     ::GetLastError();
+#endif
+}
+
+TEST(ServiceResolverTest, MultiplePatchedServices) {
+// We don't support "relaxed mode" for Win64 apps.
+#if !defined(_WIN64)
+  sandbox::ServiceResolverThunk* resolver = GetTestResolver(true);
+  NTSTATUS ret = PatchNtdllWithResolver("NtClose", true, resolver);
+  EXPECT_EQ(STATUS_SUCCESS, ret) << "NtClose, last error: " << ::GetLastError();
+
+  ret = PatchNtdllWithResolver("NtCreateFile", true, resolver);
+  EXPECT_EQ(STATUS_SUCCESS, ret) << "NtCreateFile, last error: " <<
+    ::GetLastError();
+
+  ret = PatchNtdllWithResolver("NtCreateMutant", true, resolver);
+  EXPECT_EQ(STATUS_SUCCESS, ret) << "NtCreateMutant, last error: " <<
+    ::GetLastError();
+
+  ret = PatchNtdllWithResolver("NtMapViewOfSection", true, resolver);
+  EXPECT_EQ(STATUS_SUCCESS, ret) << "NtMapViewOfSection, last error: " <<
+    ::GetLastError();
+  delete resolver;
 #endif
 }
 

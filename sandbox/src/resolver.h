@@ -41,6 +41,8 @@ class ResolverThunk {
   //
   // In general, the idea is to allocate a single big buffer for all
   // interceptions on the same dll, and call Setup n times.
+  // WARNING: This means that any data member that is specific to a single
+  // interception must be reset within this method.
   virtual NTSTATUS Setup(const void* target_module,
                          const void* interceptor_module,
                          const char* target_name,
