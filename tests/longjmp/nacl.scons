@@ -5,9 +5,6 @@
 
 Import('env')
 
-if env.Bit('bitcode'):
-  Return()
-
 env.ComponentProgram('longjmp.nexe', 'longjmp.c')
 
 longjmp = env.CommandSelLdrTestNacl(
