@@ -37,10 +37,11 @@ bool AutoStart::AddApplication(const std::string& autostart_filename,
   }
 
   FilePath autostart_file = autostart_directory.Append(autostart_filename);
+  std::string terminal = is_terminal_app ? "true" : "false";
   std::string autostart_file_contents =
       "[Desktop Entry]\n"
       "Type=Application\n"
-      "Terminal=" + is_terminal_app ? "true\n" : "false\n"
+      "Terminal=" + terminal + "\n"
       "Exec=" + command_line + "\n"
       "Name=" + application_name + "\n";
   std::string::size_type content_length = autostart_file_contents.length();
