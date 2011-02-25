@@ -81,15 +81,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoYesScript) {
   EXPECT_TRUE(result);
 }
 
-// http://crbug.com/70913 flaky hangs on linux so disabling.
-#if defined(OS_LINUX)
-#define MAYBE_DontCreateIncognitoProfile DISABLED_DontCreateIncognitoProfile
-#else
-#define MAYBE_DontCreateIncognitoProfile DontCreateIncognitoProfile
-#endif
 // Tests that an extension which is enabled for incognito mode doesn't
 // accidentially create and incognito profile.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_DontCreateIncognitoProfile) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DontCreateIncognitoProfile) {
   ASSERT_FALSE(browser()->profile()->HasOffTheRecordProfile());
   ASSERT_TRUE(RunExtensionTestIncognito(
       "incognito/dont_create_profile")) << message_;

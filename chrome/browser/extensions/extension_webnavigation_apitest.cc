@@ -14,8 +14,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigation) {
   ASSERT_TRUE(RunExtensionTest("webnavigation/api")) << message_;
 }
 
-// Disabled, flakily exceeds timeout, http://crbug.com/72165.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_WebNavigationEvents1) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationEvents1) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 
