@@ -512,6 +512,7 @@ void DownloadManager::UpdateDownload(int32 download_id, int64 size) {
 void DownloadManager::OnAllDataSaved(int32 download_id, int64 size) {
   VLOG(20) << __FUNCTION__ << "()" << " download_id = " << download_id
            << " size = " << size;
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // If it's not in active_downloads_, that means it was cancelled; just
   // ignore the notification.
@@ -528,6 +529,11 @@ bool DownloadManager::IsDownloadReadyForCompletion(DownloadItem* download) {
   // If we don't have all the data, the download is not ready for
   // completion.
   if (!download->all_data_saved())
+    return false;
+
+  // If the download is dangerous, but not yet validated, it's not ready for
+  // completion.
+  if (download->safety_state() == DownloadItem::DANGEROUS)
     return false;
 
   // If the download isn't active (e.g. has been cancelled) it's not
@@ -554,7 +560,8 @@ void DownloadManager::MaybeCompleteDownload(DownloadItem* download) {
   // transition on the DownloadItem.
 
   // Confirm we're in the proper set of states to be here;
-  // in in_progress_, have all data, have a history handle.
+  // in in_progress_, have all data, have a history handle, (validated or safe).
+  DCHECK_NE(DownloadItem::DANGEROUS, download->safety_state());
   DCHECK_EQ(1u, in_progress_.count(download->id()));
   DCHECK(download->all_data_saved());
   DCHECK(download->db_handle() != DownloadHistory::kUninitializedHandle);
@@ -576,6 +583,7 @@ void DownloadManager::MaybeCompleteDownload(DownloadItem* download) {
       // If this a dangerous download not yet validated by the user, don't do
       // anything. When the user notifies us, it will trigger a call to
       // ProceedWithFinishedDangerousDownload.
+      NOTREACHED();
       return;
     case DownloadItem::DANGEROUS_BUT_VALIDATED:
       // The dangerous download has been validated by the user.  We first
@@ -940,21 +948,12 @@ void DownloadManager::FileSelectionCanceled(void* params) {
 }
 
 void DownloadManager::DangerousDownloadValidated(DownloadItem* download) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(DownloadItem::DANGEROUS, download->safety_state());
   download->set_safety_state(DownloadItem::DANGEROUS_BUT_VALIDATED);
   download->UpdateObservers();
 
-  // If the download is not complete, nothing to do.  The required
-  // post-processing will be performed when it does complete.
-  if (download->state() != DownloadItem::COMPLETE)
-    return;
-
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(
-          this, &DownloadManager::ProceedWithFinishedDangerousDownload,
-          download->db_handle(), download->full_path(),
-          download->target_name()));
+  MaybeCompleteDownload(download);
 }
 
 // Operations posted to us from the history service ----------------------------
@@ -1005,6 +1004,7 @@ void DownloadManager::OnCreateDownloadEntryComplete(
   history_downloads_[download->db_handle()] = download;
 
   // Show in the appropriate browser UI.
+  // This includes buttons to save or cancel, for a dangerous download.
   ShowDownloadInBrowser(info, download);
 
   // Inform interested objects about the new download.
