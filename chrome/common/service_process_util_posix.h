@@ -22,7 +22,8 @@ MultiProcessLock* TakeServiceRunningLock(bool waiting);
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_cftyperef.h"
 class CommandLine;
-CFDictionaryRef CreateServiceProcessLaunchdPlist(CommandLine* cmd_line);
+CFDictionaryRef CreateServiceProcessLaunchdPlist(CommandLine* cmd_line,
+                                                 bool for_auto_launch);
 #endif  // OS_MACOSX
 
 // Watches for |kShutDownMessage| to be written to the file descriptor it is

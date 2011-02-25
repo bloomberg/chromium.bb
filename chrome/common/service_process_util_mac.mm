@@ -14,13 +14,23 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/path_service.h"
 #include "base/scoped_nsobject.h"
+#include "base/string_util.h"
 #include "base/sys_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/version.h"
+#include "chrome/common/child_process_host.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "third_party/GTM/Foundation/GTMServiceManagement.h"
 
 namespace {
+
+NSString* GetServiceProcessLaunchDFileName() {
+  NSString *bundle_id = [base::mac::MainAppBundle() bundleIdentifier];
+  NSString *label = [bundle_id stringByAppendingPathExtension:@"plist"];
+  return label;
+}
 
 NSString* GetServiceProcessLaunchDLabel() {
   NSString *bundle_id = [base::mac::MainAppBundle() bundleIdentifier];
@@ -46,6 +56,29 @@ NSString* GetServiceProcessLaunchDSocketEnvVar() {
   env_var = [env_var stringByAppendingString:@"_SOCKET"];
   env_var = [env_var uppercaseString];
   return env_var;
+}
+
+// Creates the path that it returns. Must be called on the FILE thread.
+NSURL* GetUserAgentPath() {
+  NSArray* library_paths = NSSearchPathForDirectoriesInDomains(
+      NSLibraryDirectory, NSUserDomainMask, true);
+  DCHECK_EQ([library_paths count], 1U);
+  NSString* library_path = [library_paths objectAtIndex:0];
+  NSString* launch_agents_path =
+      [library_path stringByAppendingPathComponent:@"LaunchAgents"];
+
+  NSError* err;
+  if (![[NSFileManager defaultManager] createDirectoryAtPath:launch_agents_path
+                                 withIntermediateDirectories:YES
+                                                  attributes:nil
+                                                       error:&err]) {
+    LOG(ERROR) << "GetUserAgentPath: " << err;
+  }
+
+  NSString* plist_file_path =
+      [launch_agents_path
+           stringByAppendingPathComponent:GetServiceProcessLaunchDFileName()];
+  return [NSURL fileURLWithPath:plist_file_path isDirectory:NO];
 }
 
 }
@@ -185,17 +218,8 @@ bool CheckServiceProcessReady() {
   return ready;
 }
 
-bool ServiceProcessState::AddToAutoRun() {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-bool ServiceProcessState::RemoveFromAutoRun() {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-CFDictionaryRef CreateServiceProcessLaunchdPlist(CommandLine* cmd_line) {
+CFDictionaryRef CreateServiceProcessLaunchdPlist(CommandLine* cmd_line,
+                                                 bool for_auto_launch) {
   base::mac::ScopedNSAutoreleasePool pool;
 
   NSString *program =
@@ -217,12 +241,61 @@ CFDictionaryRef CreateServiceProcessLaunchdPlist(CommandLine* cmd_line) {
       [NSDictionary dictionaryWithObject:socket
                                   forKey:GetServiceProcessLaunchDSocketKey()];
 
-  NSDictionary *launchd_plist =
-      [[NSDictionary alloc] initWithObjectsAndKeys:
+  // See the man page for launchd.plist.
+  NSMutableDictionary *launchd_plist =
+      [[NSMutableDictionary alloc] initWithObjectsAndKeys:
         GetServiceProcessLaunchDLabel(), @ LAUNCH_JOBKEY_LABEL,
         program, @ LAUNCH_JOBKEY_PROGRAM,
         ns_args, @ LAUNCH_JOBKEY_PROGRAMARGUMENTS,
         sockets, @ LAUNCH_JOBKEY_SOCKETS,
         nil];
+
+  if (for_auto_launch) {
+    // We want the service process to be able to exit if there are no services
+    // enabled. With a value of NO in the SuccessfulExit key, launchd will
+    // relaunch the service automatically in any other case than exiting
+    // cleanly with a 0 return code.
+    NSDictionary *keep_alive =
+      [NSDictionary
+        dictionaryWithObject:[NSNumber numberWithBool:NO]
+                      forKey:@ LAUNCH_JOBKEY_KEEPALIVE_SUCCESSFULEXIT];
+    NSDictionary *auto_launchd_plist =
+      [[NSDictionary alloc] initWithObjectsAndKeys:
+        [NSNumber numberWithBool:YES], @ LAUNCH_JOBKEY_RUNATLOAD,
+        keep_alive, @ LAUNCH_JOBKEY_KEEPALIVE,
+        @"Background", @ LAUNCH_JOBKEY_LIMITLOADTOSESSIONTYPE,
+        nil];
+    [launchd_plist addEntriesFromDictionary:auto_launchd_plist];
+  }
   return reinterpret_cast<CFDictionaryRef>(launchd_plist);
+}
+
+// Writes the launchd property list into the user's LaunchAgents directory,
+// creating that directory if needed. This will cause the service process to be
+// auto launched on the next user login.
+bool ServiceProcessState::AddToAutoRun() {
+  // We're creating directories and writing a file.
+  base::ThreadRestrictions::AssertIOAllowed();
+  DCHECK(autorun_command_line_.get());
+
+  base::mac::ScopedNSAutoreleasePool pool;
+  scoped_nsobject<NSDictionary> plist(
+      base::mac::CFToNSCast(CreateServiceProcessLaunchdPlist(
+                                autorun_command_line_.get(), true)));
+  NSURL* plist_url = GetUserAgentPath();
+  return [plist writeToURL:plist_url atomically:YES];
+}
+
+bool ServiceProcessState::RemoveFromAutoRun() {
+  // We're killing a file.
+  base::ThreadRestrictions::AssertIOAllowed();
+
+  base::mac::ScopedNSAutoreleasePool pool;
+  NSURL* plist_url = GetUserAgentPath();
+  SInt32 error = 0;
+  if (!CFURLDestroyResource(reinterpret_cast<CFURLRef>(plist_url), &error)) {
+    LOG(ERROR) << "RemoveFromAutoRun: " << error;
+    return false;
+  }
+  return true;
 }

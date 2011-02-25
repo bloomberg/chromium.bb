@@ -324,9 +324,13 @@ void ServiceProcessControl::Launcher::DoDetectLaunched() {
 
 void ServiceProcessControl::Launcher::DoRun() {
   DCHECK(notify_task_.get());
-  base::LaunchApp(*cmd_line_.get(), false, true, NULL);
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &Launcher::DoDetectLaunched));
+  if (base::LaunchApp(*cmd_line_, false, true, NULL)) {
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            NewRunnableMethod(this,
+                                              &Launcher::DoDetectLaunched));
+  } else {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            NewRunnableMethod(this, &Launcher::Notify));
+  }
 }
 #endif  // !OS_MACOSX
