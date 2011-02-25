@@ -13,12 +13,16 @@ namespace remoting {
 // Implementation is platform-specific.
 // Implementations may assume each instance of this class handles only a
 // single Authenticate request.
+
 // TODO(lambroslambrou): Decide whether this needs an asychronous interface
 // (for example AuthenticateStart()..AuthenticateEndCallback()), or whether the
 // multi-threading policy could be handled by the caller.
 class UserAuthenticator {
  public:
   virtual ~UserAuthenticator() {}
+
+  // Create platform-specific authenticator.
+  static UserAuthenticator* Create();
 
   // Authenticate a user, returning true if the username/password are valid.
   virtual bool Authenticate(const std::string& username,

@@ -221,6 +221,9 @@
             'host/capturer_gdi.h',
             'host/event_executor_win.cc',
             'host/event_executor_win.h',
+            'host/user_authenticator_fake.cc',
+            'host/user_authenticator_fake.h',
+            'host/user_authenticator_win.cc',
           ],
         }],
         ['OS=="linux"', {
@@ -231,6 +234,7 @@
             'host/event_executor_linux.h',
             'host/user_authenticator_pam.cc',
             'host/user_authenticator_pam.h',
+            'host/user_authenticator_linux.cc'
           ],
           'link_settings': {
             'libraries': [
@@ -247,6 +251,9 @@
             'host/capturer_mac.h',
             'host/event_executor_mac.cc',
             'host/event_executor_mac.h',
+            'host/user_authenticator_fake.cc',
+            'host/user_authenticator_fake.h',
+            'host/user_authenticator_mac.cc',
           ],
           'link_settings': {
             'libraries': [
@@ -511,6 +518,8 @@
         'host/access_verifier_unittest.cc',
         'host/chromoting_host_context_unittest.cc',
         'host/chromoting_host_unittest.cc',
+        'host/desktop_environment_fake.cc',
+        'host/desktop_environment_fake.h',
         'host/differ_block_unittest.cc',
         'host/differ_unittest.cc',
         'host/heartbeat_sender_unittest.cc',

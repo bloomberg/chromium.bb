@@ -45,9 +45,11 @@ class DesktopEnvironment : public protocol::HostStub {
   virtual void BeginSessionRequest(
       const protocol::LocalLoginCredentials* credentials, Task* done);
 
- private:
+ protected:
+  // Allow access by DesktopEnvironmentFake for unittest.
   EventHandler* event_handler_;
 
+ private:
   // Capturer to be used by ScreenRecorder. Once the ScreenRecorder is
   // constructed this is set to NULL.
   scoped_ptr<Capturer> capturer_;

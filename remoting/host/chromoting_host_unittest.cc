@@ -6,7 +6,7 @@
 #include "remoting/host/capturer_fake.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
-#include "remoting/host/desktop_environment.h"
+#include "remoting/host/desktop_environment_fake.h"
 #include "remoting/host/host_mock_objects.h"
 #include "remoting/host/in_memory_host_config.h"
 #include "remoting/proto/video.pb.h"
@@ -81,7 +81,7 @@ class ChromotingHostTest : public testing::Test {
     Capturer* capturer = new CapturerFake(context_.main_message_loop());
     input_stub_ = new protocol::MockInputStub();
     DesktopEnvironment* desktop =
-        new DesktopEnvironment(capturer, input_stub_);
+        new DesktopEnvironmentFake(capturer, input_stub_);
     host_ = ChromotingHost::Create(&context_, config_, desktop);
     connection_ = new protocol::MockConnectionToClient();
     session_ = new protocol::MockSession();
