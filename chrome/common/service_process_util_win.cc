@@ -15,6 +15,7 @@
 #include "base/win/object_watcher.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 
 namespace {
@@ -31,6 +32,18 @@ string16 GetServiceProcessShutdownEventName() {
 
 std::string GetServiceProcessAutoRunKey() {
   return GetServiceProcessScopedName("_service_run");
+}
+
+// Returns the name of the autotun reg value that we used to use for older
+// versions of Chrome.
+std::string GetObsoleteServiceProcessAutoRunKey() {
+  FilePath user_data_dir;
+  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  std::string scoped_name = WideToUTF8(user_data_dir.value());
+  std::replace(scoped_name.begin(), scoped_name.end(), '\\', '!');
+  std::replace(scoped_name.begin(), scoped_name.end(), '/', '!');
+  scoped_name.append("_service_run");
+  return scoped_name;
 }
 
 class ServiceProcessShutdownMonitor
@@ -128,6 +141,10 @@ bool ServiceProcessState::SignalReady(
 
 bool ServiceProcessState::AddToAutoRun() {
   DCHECK(autorun_command_line_.get());
+  // Remove the old autorun value first because we changed the naming scheme
+  // for the autorun value name.
+  base::win::RemoveCommandFromAutoRun(
+      HKEY_CURRENT_USER, UTF8ToWide(GetObsoleteServiceProcessAutoRunKey()));
   return base::win::AddCommandToAutoRun(
       HKEY_CURRENT_USER,
       UTF8ToWide(GetServiceProcessAutoRunKey()),
@@ -135,6 +152,10 @@ bool ServiceProcessState::AddToAutoRun() {
 }
 
 bool ServiceProcessState::RemoveFromAutoRun() {
+  // Remove the old autorun value first because we changed the naming scheme
+  // for the autorun value name.
+  base::win::RemoveCommandFromAutoRun(
+      HKEY_CURRENT_USER, UTF8ToWide(GetObsoleteServiceProcessAutoRunKey()));
   return base::win::RemoveCommandFromAutoRun(
       HKEY_CURRENT_USER, UTF8ToWide(GetServiceProcessAutoRunKey()));
 }
