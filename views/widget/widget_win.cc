@@ -833,33 +833,9 @@ LRESULT WidgetWin::OnNotify(int w_param, NMHDR* l_param) {
 }
 
 void WidgetWin::OnPaint(HDC dc) {
-  if (use_layered_buffer_) {
-    RECT r;
-    if (!GetUpdateRect(hwnd(), &r, FALSE))
-      return;
-
-    // We need to clip to the dirty rect ourselves.
-    contents_->save(SkCanvas::kClip_SaveFlag);
-    contents_->ClipRectInt(r.left, r.top, r.right - r.left,
-                           r.bottom - r.top);
-    GetRootView()->Paint(contents_.get());
-    contents_->restore();
-
-    RECT wr;
-    GetWindowRect(&wr);
-    SIZE size = {wr.right - wr.left, wr.bottom - wr.top};
-    POINT position = {wr.left, wr.top};
-    HDC dib_dc = contents_->getTopPlatformDevice().getBitmapDC();
-    POINT zero = {0, 0};
-    BLENDFUNCTION blend = {AC_SRC_OVER, 0, layered_alpha_, AC_SRC_ALPHA};
-    UpdateLayeredWindow(hwnd(), NULL, &position, &size, dib_dc, &zero,
-                        RGB(0xFF, 0xFF, 0xFF), &blend, ULW_ALPHA);
-    ValidateRect(hwnd(), &r);
-  } else {
-    scoped_ptr<gfx::CanvasPaint> canvas(
-        gfx::CanvasPaint::CreateCanvasPaint(hwnd()));
-    GetRootView()->Paint(canvas->AsCanvas());
-  }
+  scoped_ptr<gfx::CanvasPaint> canvas(
+      gfx::CanvasPaint::CreateCanvasPaint(hwnd()));
+  GetRootView()->Paint(canvas->AsCanvas());
 }
 
 LRESULT WidgetWin::OnPowerBroadcast(DWORD power_event, DWORD data) {
@@ -1248,10 +1224,30 @@ void WidgetWin::MakeMSG(MSG* msg, UINT message, WPARAM w_param, LPARAM l_param,
 }
 
 void WidgetWin::RedrawInvalidRect() {
-  RECT r;
-  if (GetUpdateRect(hwnd(), &r, FALSE)) {
-    RedrawWindow(hwnd(), &r, NULL,
-                 RDW_INVALIDATE | RDW_UPDATENOW | RDW_NOCHILDREN);
+  RECT r = { 0, 0, 0, 0 };
+  if (GetUpdateRect(hwnd(), &r, FALSE) && !IsRectEmpty(&r)) {
+    if (use_layered_buffer_) {
+      // We need to clip to the dirty rect ourselves.
+      contents_->save(SkCanvas::kClip_SaveFlag);
+      contents_->ClipRectInt(r.left, r.top, r.right - r.left,
+                             r.bottom - r.top);
+      GetRootView()->Paint(contents_.get());
+      contents_->restore();
+
+      RECT wr;
+      GetWindowRect(&wr);
+      SIZE size = {wr.right - wr.left, wr.bottom - wr.top};
+      POINT position = {wr.left, wr.top};
+      HDC dib_dc = contents_->getTopPlatformDevice().getBitmapDC();
+      POINT zero = {0, 0};
+      BLENDFUNCTION blend = {AC_SRC_OVER, 0, layered_alpha_, AC_SRC_ALPHA};
+      UpdateLayeredWindow(hwnd(), NULL, &position, &size, dib_dc, &zero,
+                          RGB(0xFF, 0xFF, 0xFF), &blend, ULW_ALPHA);
+      ValidateRect(hwnd(), &r);
+    } else {
+      RedrawWindow(hwnd(), &r, NULL,
+                   RDW_INVALIDATE | RDW_UPDATENOW | RDW_NOCHILDREN);
+    }
   }
 }
 
