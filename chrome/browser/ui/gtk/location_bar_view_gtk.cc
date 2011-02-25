@@ -1307,25 +1307,25 @@ LocationBarViewGtk::ContentSettingImageViewGtk::ContentSettingImageViewGtk(
       animation_(this),
       method_factory_(this) {
   gtk_alignment_set_padding(GTK_ALIGNMENT(alignment_.get()), 1, 1, 0, 0);
-  gtk_container_add(GTK_CONTAINER(alignment_.get()), event_box_);
+  gtk_container_add(GTK_CONTAINER(alignment_.get()), event_box_.get());
 
   // Make the event box not visible so it does not paint a background.
-  gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_), FALSE);
-  g_signal_connect(event_box_, "button-press-event",
+  gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_.get()), FALSE);
+  g_signal_connect(event_box_.get(), "button-press-event",
                    G_CALLBACK(&OnButtonPressedThunk), this);
-  g_signal_connect(event_box_, "expose-event",
+  g_signal_connect(event_box_.get(), "expose-event",
                    G_CALLBACK(&OnExposeThunk), this);
 
-  gtk_widget_set_no_show_all(label_, TRUE);
-  gtk_label_set_line_wrap(GTK_LABEL(label_), FALSE);
+  gtk_widget_set_no_show_all(label_.get(), TRUE);
+  gtk_label_set_line_wrap(GTK_LABEL(label_.get()), FALSE);
 
   gtk_box_pack_start(GTK_BOX(hbox_), image_.get(), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox_), label_, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox_), label_.get(), FALSE, FALSE, 0);
 
   // The +1 accounts for the pixel that is devoted to drawing the border.
   gtk_container_set_border_width(GTK_CONTAINER(hbox_), kHboxBorder + 1);
 
-  gtk_container_add(GTK_CONTAINER(event_box_), hbox_);
+  gtk_container_add(GTK_CONTAINER(event_box_.get()), hbox_);
   gtk_widget_hide(widget());
 
   animation_.SetSlideDuration(kContentSettingImageAnimationTime);
@@ -1333,6 +1333,8 @@ LocationBarViewGtk::ContentSettingImageViewGtk::ContentSettingImageViewGtk(
 
 LocationBarViewGtk::ContentSettingImageViewGtk::~ContentSettingImageViewGtk() {
   image_.Destroy();
+  label_.Destroy();
+  event_box_.Destroy();
   alignment_.Destroy();
 
   if (info_bubble_)
@@ -1374,7 +1376,7 @@ void LocationBarViewGtk::ContentSettingImageViewGtk::UpdateFromTabContents(
       switches::kDisableBlockContentAnimation) || !label_string_id)
     return;
 
-  gtk_label_set_text(GTK_LABEL(label_),
+  gtk_label_set_text(GTK_LABEL(label_.get()),
       l10n_util::GetStringUTF8(label_string_id).c_str());
   StartAnimating();
 }
@@ -1383,15 +1385,15 @@ void LocationBarViewGtk::ContentSettingImageViewGtk::StartAnimating() {
   if (animation_.IsShowing() || animation_.IsClosing())
     return;
 
-  gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_), TRUE);
-  gtk_util::ActAsRoundedWindow(event_box_, kContentSettingBorderColor,
+  gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_.get()), TRUE);
+  gtk_util::ActAsRoundedWindow(event_box_.get(), kContentSettingBorderColor,
                                kCornerSize,
                                gtk_util::ROUNDED_ALL, gtk_util::BORDER_ALL);
 
-  gtk_widget_set_size_request(label_, -1, -1);
-  gtk_widget_size_request(label_, &label_req_);
-  gtk_widget_set_size_request(label_, 0, -1);
-  gtk_widget_show(label_);
+  gtk_widget_set_size_request(label_.get(), -1, -1);
+  gtk_widget_size_request(label_.get(), &label_req_);
+  gtk_widget_set_size_request(label_.get(), 0, -1);
+  gtk_widget_show(label_.get());
 
   animation_.Show();
 }
@@ -1403,7 +1405,7 @@ void LocationBarViewGtk::ContentSettingImageViewGtk::CloseAnimation() {
 void LocationBarViewGtk::ContentSettingImageViewGtk::AnimationProgressed(
     const ui::Animation* animation) {
   gtk_widget_set_size_request(
-      label_,
+      label_.get(),
       animation->GetCurrentValue() * label_req_.width,
       -1);
 }
@@ -1416,9 +1418,9 @@ void LocationBarViewGtk::ContentSettingImageViewGtk::AnimationEnded(
             &ContentSettingImageViewGtk::CloseAnimation),
         kContentSettingImageDisplayTime);
   } else {
-    gtk_widget_hide(label_);
-    gtk_util::StopActingAsRoundedWindow(event_box_);
-    gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_), FALSE);
+    gtk_widget_hide(label_.get());
+    gtk_util::StopActingAsRoundedWindow(event_box_.get());
+    gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_.get()), FALSE);
   }
 }
 

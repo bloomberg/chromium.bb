@@ -185,12 +185,12 @@ class LocationBarViewGtk : public AutocompleteEditController,
 
     // The widgets for this content settings view.
     OwnedWidgetGtk alignment_;
-    GtkWidget* event_box_;
+    OwnedWidgetGtk event_box_;
     GtkWidget* hbox_;
     OwnedWidgetGtk image_;
 
     // Explanatory text ("popup blocked").
-    GtkWidget* label_;
+    OwnedWidgetGtk label_;
 
     // The owning LocationBarViewGtk.
     const LocationBarViewGtk* parent_;
