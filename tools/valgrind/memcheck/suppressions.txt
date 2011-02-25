@@ -2796,6 +2796,7 @@
    fun:_ZN19PersonalDataManager4InitEP7Profile
    fun:_ZN11ProfileImpl22GetPersonalDataManagerEv
    fun:_ZN15AutoFillManagerC1EP11TabContents
+   ...
    fun:_ZN11TabContentsC1EP7ProfileP12SiteInstanceiPKS_P23SessionStorageNamespace
    fun:_ZN7Browser18TabContentsFactoryEP7ProfileP12SiteInstanceiPK11TabContentsP23SessionStorageNamespace
    fun:_ZN7browser8NavigateEPNS_14NavigateParamsE
@@ -3802,7 +3803,7 @@
    fun:_ZN11CppNPObject6invokeEP8NPObjectPvPK10_NPVariantjPS3_
    fun:_ZN7WebCore18npObjectInvokeImplERKN2v89ArgumentsENS_18InvokeFunctionTypeE
    fun:_ZN7WebCore21npObjectMethodHandlerERKN2v89ArgumentsE
-   fun:_ZN2v88internal19HandleApiCallHelperILb0EEEPNS0_11MaybeObjectENS0_47_GLOBAL__N_v8_src_builtins.cc_00000000_67AD6F1016BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEE
+   fun:_ZN2v88internal19HandleApiCallHelperILb0EEEPNS0_11MaybeObjectENS0_47_GLOBAL__N_v8_src_builtins.cc_*BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEE
    obj:*
 }
 {
