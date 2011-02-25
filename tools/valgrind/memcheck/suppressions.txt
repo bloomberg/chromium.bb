@@ -2271,7 +2271,6 @@
    fun:*StackDumpSignalHandler*
    ...
    fun:_ZN54BrowserAboutHandlerTest_WillHandleBrowserAboutURL_Test8TestBodyEv
-   fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
 }
 {
    bug_46570_a
@@ -3222,7 +3221,6 @@
    fun:_Znw*
    fun:_ZN13FormStructure18EncodeQueryRequestERK12ScopedVectorIS_EPSt6vectorISsSaISsEEPSs
    fun:*FormStructureTest_EncodeQueryRequest_Test8TestBodyEv
-   fun:_ZN7testing35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
 }
 {
    bug_61424_b
@@ -3230,7 +3228,6 @@
    fun:_Znw*
    fun:_ZN13FormStructure18EncodeQueryRequestERK12ScopedVectorIS_EPSt6vectorISsSaISsEEPSs
    fun:_ZN12_GLOBAL__N_141FormStructureTest_EncodeQueryRequest_Test8TestBodyEv
-   fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
 }
 {
    bug_61753/Addr2

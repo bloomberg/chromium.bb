@@ -607,7 +607,6 @@
    fun:_ZN15AudioManagerMac21HasAudioOutputDevicesEv
    fun:_ZN5mediaL21HasAudioOutputDevicesEv
    fun:_ZN5media45AudioOutputControllerTest_CreateAndClose_Test8TestBodyEv
-   fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
 }
 {
    bug_46186_e
@@ -621,7 +620,6 @@
    fun:_ZN15AudioManagerMac21HasAudioOutputDevicesEv
    fun:_ZN5mediaL21HasAudioOutputDevicesEv
    fun:_ZN5media45AudioOutputControllerTest_CreateAndClose_Test8TestBodyEv
-   fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
 }
 {
    bug_47949
@@ -961,7 +959,6 @@
    fun:_Znw*
    fun:_ZN20BrowserAccessibility6CreateEv
    fun:_ZN24BrowserAccessibilityTest5SetUpEv
-   fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
 }
 {
    bug_59243_b
@@ -971,7 +968,6 @@
    fun:_ZNSt3mapIiSbItN4base20string16_char_traitsESaItEESt4lessIiESaISt4pairIKiS3_EEEaSERKSA_
    fun:_ZN20BrowserAccessibility10InitializeEP27BrowserAccessibilityManagerPS_iiRKN11webkit_glue16WebAccessibilityE
    fun:_ZN24BrowserAccessibilityTest5SetUpEv
-   fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
 }
 
 {
@@ -1272,7 +1268,6 @@
    fun:-[NSApplication _commonBeginModalSessionForWindow:relativeToWindow:modalDelegate:didEndSelector:contextInfo:]
    fun:-[AutoFillDialogController editSelection:]
    fun:_ZN12_GLOBAL__N_154AutoFillDialogControllerTest_AutoFillDataMutation_Test8TestBodyEv
-   fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
 }
 {
    bug_69757a
@@ -1290,7 +1285,6 @@
    fun:_ZN3net13CookieMonster20SetCookieWithOptionsERK4GURLRKSsRKNS_13CookieOptionsE
    fun:_ZN3net11CookieStore9SetCookieERK4GURLRKSs
    fun:_ZN12_GLOBAL__N_*CookiesWindowControllerTest_*_Test8TestBodyEv
-   fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
 }
 {
    bug_69757b
@@ -1305,7 +1299,6 @@
    fun:-[CookiesWindowController loadTreeModelFromProfile]
    fun:-[CookiesWindowController initWithProfile:databaseHelper:storageHelper:appcacheHelper:indexedDBHelper:]
    fun:_ZN12_GLOBAL__N_127CookiesWindowControllerTest5SetUpEv
-   fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
 }
 {
    bug_69757c
@@ -1313,7 +1306,6 @@
    fun:_Znw*
    fun:_ZN14TestingProfile20CreateRequestContextEv
    fun:_ZN12_GLOBAL__N_127CookiesWindowControllerTest5SetUpEv
-   fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
 }
 {
    bug_71111
@@ -1338,7 +1330,6 @@
    fun:-[NSCell _sendActionFrom:]
    fun:-[NSButtonCell performClick:]
    fun:_ZN12_GLOBAL__N_131MenuButtonTest_OpenOnClick_Test8TestBodyEv
-   fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
 }
 {
    bug_73036a
