@@ -508,15 +508,33 @@ AutomationProxy* NamedProxyLauncher::CreateAutomationProxy(
 
 void NamedProxyLauncher::InitializeConnection(const LaunchState& state,
                                               bool wait_for_initial_loads) {
+  FilePath testing_channel_path;
+#if defined(OS_WIN)
+  testing_channel_path = FilePath(ASCIIToWide(channel_id_));
+#else
+  testing_channel_path = FilePath(channel_id_);
+#endif
+
   if (launch_browser_) {
+    // Because we are waiting on the existence of the testing file below,
+    // make sure there isn't one already there before browser launch.
+    EXPECT_TRUE(file_util::Delete(testing_channel_path, false));
+
     // Set up IPC testing interface as a client.
     LaunchBrowser(state);
   }
 
   // Wait for browser to be ready for connections.
-  struct stat file_info;
-  while (stat(channel_id_.c_str(), &file_info))
+  bool testing_channel_exists = false;
+  for (int wait_time = 0;
+       wait_time < TestTimeouts::command_execution_timeout_ms();
+       wait_time += automation::kSleepTime) {
+    testing_channel_exists = file_util::PathExists(testing_channel_path);
+    if (testing_channel_exists)
+      break;
     base::PlatformThread::Sleep(automation::kSleepTime);
+  }
+  EXPECT_TRUE(testing_channel_exists);
 
   ConnectToRunningBrowser(wait_for_initial_loads);
 }
