@@ -10,13 +10,23 @@
 #include "chrome/common/chrome_switches.h"
 
 void SandboxInitWrapper::SetServices(sandbox::SandboxInterfaceInfo* info) {
-  if (info) {
+  if (!info)
+    return;
+  if (info->legacy) {
+    // Looks like we are in the case when the new chrome.dll is being launched
+    // by the old chrome.exe, the old chrome exe has SandboxInterfaceInfo as a
+    // union, while now we have a struct.
+    // TODO(cpu): Remove this nasty hack after M10 release.
+    broker_services_ = reinterpret_cast<sandbox::BrokerServices*>(info->legacy);
+    target_services_ = reinterpret_cast<sandbox::TargetServices*>(info->legacy);
+  } else {
+    // Normal case, both the exe and the dll are the same version. Both
+    // interface pointers cannot be non-zero. A process can either be a target
+    // or a broker but not both.
     broker_services_ = info->broker_services;
     target_services_ = info->target_services;
+    DCHECK(!(target_services_ && broker_services_));
   }
-  // Both interface pointers cannot be non-zero. A process can either
-  // be a target or a broker but not both.
-  DCHECK(!(target_services_ && broker_services_));
 }
 
 bool SandboxInitWrapper::InitializeSandbox(const CommandLine& command_line,
