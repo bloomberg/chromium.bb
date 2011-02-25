@@ -21,6 +21,7 @@
 #include "ui/base/win/window_impl.h"
 #include "views/focus/focus_manager.h"
 #include "views/layout/layout_manager.h"
+#include "views/widget/native_widget.h"
 #include "views/widget/widget.h"
 
 namespace ui {
@@ -35,10 +36,13 @@ class Rect;
 namespace views {
 
 class DropTargetWin;
-class FocusSearch;
 class RootView;
 class TooltipManagerWin;
 class Window;
+
+namespace internal {
+class NativeWidgetDelegate;
+}
 
 RootView* GetRootViewForHWND(HWND hwnd);
 
@@ -76,6 +80,7 @@ const int WM_NCUAHDRAWFRAME = 0xAF;
 ///////////////////////////////////////////////////////////////////////////////
 class WidgetWin : public ui::WindowImpl,
                   public Widget,
+                  public internal::NativeWidget,
                   public MessageLoopForUI::Observer {
  public:
   WidgetWin();
@@ -498,6 +503,9 @@ class WidgetWin : public ui::WindowImpl,
 
   // Synchronously paints the invalid contents of the Widget.
   void RedrawInvalidRect();
+
+  // A delegate implementation that handles events received here.
+  internal::NativeWidgetDelegate* delegate_;
 
   // The following factory is used for calls to close the WidgetWin
   // instance.

@@ -241,6 +241,7 @@ bool WidgetGtk::debug_paint_enabled_ = false;
 
 WidgetGtk::WidgetGtk(Type type)
     : is_window_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(delegate_(this)),
       type_(type),
       widget_(NULL),
       window_contents_(NULL),
@@ -259,11 +260,11 @@ WidgetGtk::WidgetGtk(Type type)
       transient_to_parent_(false),
       got_initial_focus_in_(false),
       has_focus_(false),
-      delegate_(NULL),
       always_on_top_(false),
       is_double_buffered_(false),
       should_handle_menu_key_release_(false),
       dragged_view_(NULL) {
+  set_native_widget(this);
   static bool installed_message_loop_observer = false;
   if (!installed_message_loop_observer) {
     installed_message_loop_observer = true;
@@ -1257,7 +1258,6 @@ void WidgetGtk::OnDestroy(GtkWidget* object) {
   // NULL out pointers here since we might still be in an observerer list
   // until delstion happens.
   widget_ = window_contents_ = NULL;
-  delegate_ = NULL;
   if (delete_on_destroy_) {
     // Delays the deletion of this WidgetGtk as we want its children to have
     // access to it when destroyed.

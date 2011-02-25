@@ -13,7 +13,7 @@ namespace views {
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, public:
 
-Widget::Widget() : delegate_(NULL) {
+Widget::Widget() : native_widget_(NULL), delegate_(NULL) {
 }
 
 Widget::~Widget() {

@@ -11,6 +11,7 @@
 #include "base/scoped_ptr.h"
 #include "ui/gfx/native_widget_types.h"
 #include "views/focus/focus_manager.h"
+#include "views/widget/native_widget_delegate.h"
 
 namespace gfx {
 class Path;
@@ -34,6 +35,10 @@ class View;
 class WidgetDelegate;
 class Window;
 
+namespace internal {
+class NativeWidget;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Widget class
 //
@@ -51,7 +56,8 @@ class Window;
 //              implementation. Multiple inheritance is required for this
 //              transitional step.
 //
-class Widget : public FocusTraversable {
+class Widget : public internal::NativeWidgetDelegate,
+               public FocusTraversable {
  public:
   enum TransparencyParam {
     Transparent,
@@ -272,12 +278,20 @@ class Widget : public FocusTraversable {
   // TODO(beng): remove once we fold those objects onto this one.
   void DestroyRootView();
 
+  // TODO(beng): Temporarily provided as a way to associate the subclass'
+  //             implementation of NativeWidget with this.
+  void set_native_widget(internal::NativeWidget* native_widget) {
+    native_widget_ = native_widget;
+  }
+
   // Overridden from FocusTraversable:
   virtual FocusSearch* GetFocusSearch();
   virtual FocusTraversable* GetFocusTraversableParent();
   virtual View* GetFocusTraversableParentView();
 
  private:
+  internal::NativeWidget* native_widget_;
+
   // Non-owned pointer to the Widget's delegate.  May be NULL if no delegate is
   // being used.
   WidgetDelegate* delegate_;

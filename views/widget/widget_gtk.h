@@ -13,6 +13,7 @@
 #include "ui/base/x/active_window_watcher_x.h"
 #include "ui/gfx/size.h"
 #include "views/focus/focus_manager.h"
+#include "views/widget/native_widget.h"
 #include "views/widget/widget.h"
 
 namespace gfx {
@@ -29,13 +30,17 @@ using ui::OSExchangeDataProviderGtk;
 namespace views {
 
 class DropTargetGtk;
-class FocusSearch;
 class TooltipManagerGtk;
 class View;
 class WindowGtk;
 
+namespace internal {
+class NativeWidgetDelegate;
+}
+
 // Widget implementation for GTK.
 class WidgetGtk : public Widget,
+                  public internal::NativeWidget,
                   public ui::ActiveWindowWatcherX::Observer {
  public:
   // Type of widget.
@@ -323,6 +328,9 @@ class WidgetGtk : public Widget,
   static void DrawTransparentBackground(GtkWidget* widget,
                                         GdkEventExpose* event);
 
+  // A delegate implementation that handles events received here.
+  internal::NativeWidgetDelegate* delegate_;
+
   const Type type_;
 
   // Our native views. If we're a window/popup, then widget_ is the window and
@@ -418,10 +426,6 @@ class WidgetGtk : public Widget,
   // focus-out event. We can get multiple focus-out events in a row, we use
   // this to determine whether we should process the event.
   bool has_focus_;
-
-  // Non owned pointer to optional delegate.  May be NULL if no delegate is
-  // being used.
-  WidgetDelegate* delegate_;
 
   // If true, the window stays on top of the screen. This is only used
   // for types other than TYPE_CHILD.

@@ -74,7 +74,8 @@ RootView* GetRootViewForHWND(HWND hwnd) {
 // WidgetWin, public
 
 WidgetWin::WidgetWin()
-    : close_widget_factory_(this),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(delegate_(this)),
+      close_widget_factory_(this),
       active_mouse_tracking_flags_(0),
       has_capture_(false),
       use_layered_buffer_(false),
@@ -89,6 +90,7 @@ WidgetWin::WidgetWin()
       accessibility_view_events_(kMaxAccessibilityViewEvents),
       dragged_view_(NULL),
       previous_cursor_(NULL) {
+  set_native_widget(this);
 }
 
 WidgetWin::~WidgetWin() {
