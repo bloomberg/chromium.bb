@@ -263,7 +263,7 @@ TEST_F(WebDataServiceAutofillTest, ProfileAdd) {
               Source<WebDataService>(wds_.get()),
               Property(&Details<const AutofillProfileChange>::ptr,
                        Pointee(expected_change)))).
-      WillOnce(DoDefault());
+      WillOnce(SignalEvent(&done_event_));
 
   wds_->AddAutoFillProfile(profile);
   done_event_.TimedWait(test_timeout_);
@@ -306,7 +306,7 @@ TEST_F(WebDataServiceAutofillTest, ProfileRemove) {
               Source<WebDataService>(wds_.get()),
               Property(&Details<const AutofillProfileChange>::ptr,
                        Pointee(expected_change)))).
-      WillOnce(DoDefault());
+      WillOnce(SignalEvent(&done_event_));
 
   // Remove the profile.
   wds_->RemoveAutoFillProfile(profile.guid());
@@ -354,7 +354,7 @@ TEST_F(WebDataServiceAutofillTest, ProfileUpdate) {
               Source<WebDataService>(wds_.get()),
               Property(&Details<const AutofillProfileChange>::ptr,
                        Pointee(expected_change)))).
-      WillOnce(DoDefault());
+      WillOnce(SignalEvent(&done_event_));
 
   // Update the profile.
   wds_->UpdateAutoFillProfile(profile1_changed);
