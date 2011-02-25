@@ -72,6 +72,13 @@ extern int NaClAclBypassChecks;
 
 void NaClInsecurelyBypassAllAclChecks(void);
 
+int32_t NaClCommonSysDup(struct NaClAppThread *natp,
+                         int                  oldfd);
+
+int32_t NaClCommonSysDup2(struct NaClAppThread  *natp,
+                          int                   oldfd,
+                          int                   newfd);
+
 int32_t NaClCommonSysOpen(struct NaClAppThread  *natp,
                           char                  *pathname,
                           int                   flags,

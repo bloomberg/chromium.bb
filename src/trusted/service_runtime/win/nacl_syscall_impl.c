@@ -117,6 +117,17 @@ int32_t NaClSysNull(struct NaClAppThread *natp) {
   return 0;
 }
 
+int32_t NaClSysDup(struct NaClAppThread *natp,
+                   int                  oldfd) {
+  return NaClCommonSysDup(natp, oldfd);
+}
+
+int32_t NaClSysDup2(struct NaClAppThread  *natp,
+                    int                   oldfd,
+                    int                   newfd) {
+  return NaClCommonSysDup2(natp, oldfd, newfd);
+}
+
 int32_t NaClSysOpen(struct NaClAppThread  *natp,
                     char                  *pathname,
                     int                   flags,

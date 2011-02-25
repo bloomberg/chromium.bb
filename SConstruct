@@ -2057,6 +2057,7 @@ nacl_env.Append(
     'tests/computed_gotos/nacl.scons',
     'tests/contest_issues/nacl.scons',
     'tests/data_not_executable/nacl.scons',
+    'tests/dup/nacl.scons',
     'tests/dynamic_code_loading/nacl.scons',
     'tests/dynamic_linking/nacl.scons',
     'tests/egyptian_cotton/nacl.scons',

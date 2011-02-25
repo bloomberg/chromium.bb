@@ -62,6 +62,11 @@
 #define NACL_CONFIG_PATH_MAX          1024
 
 /*
+ * newfd value for dup2 must be below this value.
+ */
+#define NACL_MAX_FD                   4096
+
+/*
  * Macro for the start address of the trampolines.
  * The first 64KB (16 pages) are inaccessible to prevent addr16/data16 attacks.
  */

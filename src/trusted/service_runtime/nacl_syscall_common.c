@@ -434,6 +434,58 @@ int32_t NaClCommonSysThreadExit(struct NaClAppThread  *natp,
   return -NACL_ABI_EINVAL;
 }
 
+int32_t NaClCommonSysDup(struct NaClAppThread *natp,
+                         int                  oldfd) {
+  int             retval;
+  struct NaClDesc *old_nd;
+
+  NaClLog(3, "NaClCommonSysDup(0x%08"NACL_PRIxPTR", %d)\n",
+          (uintptr_t) natp, oldfd);
+  NaClSysCommonThreadSyscallEnter(natp);
+  old_nd = NaClGetDesc(natp->nap, oldfd);
+  if (NULL == old_nd) {
+    retval = -NACL_ABI_EBADF;
+    goto done;
+  }
+  retval = NaClSetAvail(natp->nap, old_nd);
+done:
+  NaClSysCommonThreadSyscallLeave(natp);
+  return retval;
+}
+
+int32_t NaClCommonSysDup2(struct NaClAppThread  *natp,
+                          int                   oldfd,
+                          int                   newfd) {
+  int             retval;
+  struct NaClDesc *old_nd;
+
+  NaClLog(3, "NaClCommonSysDup(0x%08"NACL_PRIxPTR", %d, %d)\n",
+          (uintptr_t) natp, oldfd, newfd);
+  NaClSysCommonThreadSyscallEnter(natp);
+  if (newfd < 0) {
+    retval = -NACL_ABI_EINVAL;
+    goto done;
+  }
+  /*
+   * TODO(bsy): is this a reasonable largest sane value?  The
+   * descriptor array shouldn't get too large.
+   */
+  if (newfd >= NACL_MAX_FD) {
+    retval = -NACL_ABI_EINVAL;
+    goto done;
+  }
+  old_nd = NaClGetDesc(natp->nap, oldfd);
+  if (NULL == old_nd) {
+    retval = -NACL_ABI_EBADF;
+    goto done;
+  }
+  NaClSetDesc(natp->nap, newfd, old_nd);
+  retval = newfd;
+done:
+  NaClSysCommonThreadSyscallLeave(natp);
+  return retval;
+}
+
 int32_t NaClCommonSysOpen(struct NaClAppThread  *natp,
                           char                  *pathname,
                           int                   flags,
