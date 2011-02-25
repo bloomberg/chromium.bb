@@ -193,9 +193,14 @@ bool CreateServerUnixDomainSocket(const std::string& pipe_name,
     return false;
   }
 
-  // Adjust the socket permissions.
+  // Explicitly set file system permissions on socket, mainly as a precaution
+  // for Chrome OS.
+  // Do not rely on these file permissions to provide security - the file is
+  // created during the above bind() call so there is still a window for
+  // malicious abuse because the file exists between bind() and chmod(). Also,
+  // the file permissions may not be enforced for unix sockets on all platforms.
   if (chmod(pipe_name.c_str(), 0600)) {
-    PLOG(ERROR) << "fchmod " << pipe_name;
+    PLOG(ERROR) << "chmod " << pipe_name;
     if (HANDLE_EINTR(close(fd)) < 0)
       PLOG(ERROR) << "close " << pipe_name;
     return false;
