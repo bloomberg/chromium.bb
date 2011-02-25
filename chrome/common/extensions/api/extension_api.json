@@ -3754,21 +3754,6 @@
         }
       }
     ],
-    "functions": [
-      {
-        "name": "removeCustomProxySettings",
-        "type": "function",
-        "description": "Remove a custom proxy set by the current extension. This is the inverse of useCustomProxySettings().",
-        "parameters": [
-          {
-            "name": "incognito",
-            "type": "boolean",
-            "description": "See incognito parameter of useCustomProxySettings().",
-            "optional": true
-          }
-        ]
-      }
-    ],
     "properties": {
       "settings": {
         "$ref": "Preference",

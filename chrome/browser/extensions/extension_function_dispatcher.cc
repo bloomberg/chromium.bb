@@ -260,7 +260,6 @@ void FactoryRegistry::ResetFunctions() {
 
   // Proxies.
   RegisterFunction<SetProxySettingsFunction>();
-  RegisterFunction<RemoveCustomProxySettingsFunction>();
   RegisterFunction<GetProxySettingsFunction>();
 
   // Sidebar.

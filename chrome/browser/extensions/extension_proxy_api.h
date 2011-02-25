@@ -66,17 +66,6 @@ class SetProxySettingsFunction : public SetPreferenceFunction {
   bool GetBypassList(DictionaryValue* proxy_rules, std::string* out);
 };
 
-class RemoveCustomProxySettingsFunction : public SyncExtensionFunction {
- public:
-  virtual ~RemoveCustomProxySettingsFunction() {}
-  virtual bool RunImpl();
-
-  DECLARE_EXTENSION_FUNCTION_NAME(
-      "experimental.proxy.removeCustomProxySettings")
- private:
-  void RemovePreference(const char* pref_path, bool incognito);
-};
-
 class GetProxySettingsFunction : public GetPreferenceFunction {
  public:
   virtual ~GetProxySettingsFunction() {}

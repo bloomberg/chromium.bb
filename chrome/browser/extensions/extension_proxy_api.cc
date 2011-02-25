@@ -390,26 +390,6 @@ bool SetProxySettingsFunction::RunImpl() {
   return SetPreferenceFunction::RunImpl();
 }
 
-void RemoveCustomProxySettingsFunction::RemovePreference(const char* pref_path,
-                                                         bool incognito) {
-  Profile* use_profile = profile();
-  if (use_profile->IsOffTheRecord())
-    use_profile = use_profile->GetOriginalProfile();
-
-  use_profile->GetExtensionService()->extension_prefs()->
-      RemoveExtensionControlledPref(extension_id(), pref_path, incognito);
-}
-
-bool RemoveCustomProxySettingsFunction::RunImpl() {
-  bool incognito = false;
-  if (HasOptionalArgument(0)) {
-    EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(0, &incognito));
-  }
-
-  RemovePreference(prefs::kProxy, incognito);
-  return true;
-}
-
 bool GetProxySettingsFunction::RunImpl() {
   if (!GetPreferenceFunction::RunImpl())
     return false;

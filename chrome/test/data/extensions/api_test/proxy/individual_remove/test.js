@@ -35,6 +35,8 @@ chrome.test.runTests([
     chrome.experimental.proxy.settings.set(
         {'value': config, 'incognito': false},
         chrome.test.callbackPass());
-    chrome.experimental.proxy.removeCustomProxySettings(false);
+    chrome.experimental.proxy.settings.clear(
+        {'incognito': false},
+        chrome.test.callbackPass());
   }
 ]);
