@@ -284,7 +284,7 @@ def ShouldCheckFile(file_name):
       '.mm',
   ]
   basename, extension = os.path.splitext(file_name)
-  return extension in checked_extensions or basename.find('test') != -1
+  return extension in checked_extensions
 
 
 def CheckLine(rules, line):
