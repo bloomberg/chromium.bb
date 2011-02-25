@@ -88,7 +88,7 @@ class Event {
   static int ConvertWindowsFlags(uint32 win_flags);
 #elif defined(OS_LINUX)
   // Convert the state member on a GdkEvent to views::Event flags
-  static int GetFlagsFromGdkState(int state);
+  static int GetFlagsFromGdkState(unsigned int state);
 #endif
 
  protected:
@@ -132,16 +132,6 @@ class Event {
 ////////////////////////////////////////////////////////////////////////////////
 class LocatedEvent : public Event {
  public:
-  LocatedEvent(ui::EventType type, const gfx::Point& location, int flags)
-      : Event(type, flags),
-        location_(location) {
-  }
-
-  // Create a new LocatedEvent which is identical to the provided model.
-  // If from / to views are provided, the model location will be converted
-  // from 'from' coordinate system to 'to' coordinate system
-  LocatedEvent(const LocatedEvent& model, View* from, View* to);
-
   int x() const { return location_.x(); }
   int y() const { return location_.y(); }
   const gfx::Point& location() const { return location_; }
@@ -150,6 +140,18 @@ class LocatedEvent : public Event {
   // This constructor is to allow converting the location of an event from the
   // widget's coordinate system to the RootView's coordinate system.
   LocatedEvent(const LocatedEvent& model, RootView* root);
+
+  explicit LocatedEvent(NativeEvent native_event);
+  LocatedEvent(NativeEvent2 native_event_2, FromNativeEvent2 from_native);
+
+  // TODO(msw): Kill this legacy constructor when we update MouseEvent???
+  // Simple initialization from cracked metadata.
+  LocatedEvent(ui::EventType type, const gfx::Point& location, int flags);
+
+  // Create a new LocatedEvent which is identical to the provided model.
+  // If source / target views are provided, the model location will be converted
+  // from 'source' coordinate system to 'target' coordinate system
+  LocatedEvent(const LocatedEvent& model, View* source, View* target);
 
  private:
   gfx::Point location_;
@@ -286,7 +288,7 @@ class TouchEvent : public LocatedEvent {
 class KeyEvent : public Event {
  public:
   explicit KeyEvent(NativeEvent native_event);
-  explicit KeyEvent(NativeEvent2 native_event_2, FromNativeEvent2);
+  KeyEvent(NativeEvent2 native_event_2, FromNativeEvent2 from_native);
 
   // Creates a new KeyEvent synthetically (i.e. not in response to an input
   // event from the host environment). This is typically only used in testing as
@@ -309,20 +311,13 @@ class KeyEvent : public Event {
 // MouseWheelEvent class
 //
 // A MouseWheelEvent is used to propagate mouse wheel user events.
-// Note: e.GetOffset() > 0 means scroll up.
+// Note: e.GetOffset() > 0 means scroll up / left.
 //
 ////////////////////////////////////////////////////////////////////////////////
 class MouseWheelEvent : public LocatedEvent {
  public:
-  // Create a new key event
-  MouseWheelEvent(int offset, int x, int y, int flags)
-      : LocatedEvent(ui::ET_MOUSEWHEEL, gfx::Point(x, y), flags),
-        offset_(offset) {
-  }
-
-#if defined(TOUCH_UI)
-  explicit MouseWheelEvent(XEvent* xev);
-#endif
+  explicit MouseWheelEvent(NativeEvent native_event);
+  MouseWheelEvent(NativeEvent2 native_event_2, FromNativeEvent2 from_native);
 
   int offset() const { return offset_; }
 

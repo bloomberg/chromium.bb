@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,11 +72,6 @@ class RootView : public View,
   // it.  Returns whether anyone consumed the event.
   bool ProcessKeyEvent(const KeyEvent& event);
 
-  // Process a mousewheel event. Return true if the event was processed
-  // and false otherwise.
-  // MouseWheel events are sent on the focus path.
-  virtual bool ProcessMouseWheelEvent(const MouseWheelEvent& e);
-
 #if defined(TOUCH_UI) && defined(UNIT_TEST)
   // For unit testing purposes, we use this method to set a mock
   // GestureManager
@@ -116,6 +111,7 @@ class RootView : public View,
   virtual void OnMouseReleased(const MouseEvent& e, bool canceled) OVERRIDE;
   virtual void OnMouseMoved(const MouseEvent& e) OVERRIDE;
   virtual void SetMouseHandler(View* new_mouse_handler) OVERRIDE;
+  virtual bool OnMouseWheel(const MouseWheelEvent& e) OVERRIDE;
 #if defined(TOUCH_UI)
   virtual TouchStatus OnTouchEvent(const TouchEvent& e) OVERRIDE;
 #endif

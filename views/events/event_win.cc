@@ -71,6 +71,12 @@ ui::EventType EventTypeFromNative(NativeEvent native_event) {
   return ui::ET_UNKNOWN;
 }
 
+int GetFlagsFromNative(NativeEvent native_event) {
+  // Allow other applicable messages as necessary.
+  DCHECK(native_event.message == WM_MOUSEWHEEL);
+  return Event::ConvertWindowsFlags(GET_KEYSTATE_WPARAM(native_event.wParam));
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -128,6 +134,23 @@ void Event::InitWithNativeEvent2(NativeEvent2 native_event_2,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// LocatedEvent, protected:
+
+LocatedEvent::LocatedEvent(NativeEvent native_event)
+    : Event(native_event, EventTypeFromNative(native_event),
+            GetFlagsFromNative(native_event)),
+      location_(native_event.pt.x, native_event.pt.y) {
+}
+
+LocatedEvent::LocatedEvent(NativeEvent2 native_event_2,
+                           FromNativeEvent2 from_native)
+    : Event(native_event_2, ui::ET_UNKNOWN, 0, from_native) {
+  // No one should ever call this on Windows.
+  // TODO(msw): remove once we rid views of Gtk/Gdk.
+  NOTREACHED();
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // KeyEvent, public:
 
 KeyEvent::KeyEvent(NativeEvent native_event)
@@ -141,6 +164,22 @@ KeyEvent::KeyEvent(NativeEvent2 native_event_2, FromNativeEvent2 from_native)
     : Event(native_event_2, ui::ET_UNKNOWN, 0, from_native) {
   // No one should ever call this on Windows.
   // TODO(beng): remove once we rid views of Gtk/Gdk.
+  NOTREACHED();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// MouseWheelEvent, public:
+
+MouseWheelEvent::MouseWheelEvent(NativeEvent native_event)
+    : LocatedEvent(native_event),
+      offset_(GET_WHEEL_DELTA_WPARAM(native_event.wParam)) {
+}
+
+MouseWheelEvent::MouseWheelEvent(NativeEvent2 native_event_2,
+                                 FromNativeEvent2 from_native)
+    : LocatedEvent(native_event_2, from_native) {
+  // No one should ever call this on Windows.
+  // TODO(msw): remove once we rid views of Gtk/Gdk.
   NOTREACHED();
 }
 

@@ -36,13 +36,20 @@ Event::Event(NativeEvent2 native_event_2, ui::EventType type, int flags,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// LocatedEvent, public:
+// LocatedEvent, protected:
 
-LocatedEvent::LocatedEvent(const LocatedEvent& model, View* from, View* to)
+LocatedEvent::LocatedEvent(ui::EventType type, const gfx::Point& location,
+                           int flags)
+    : Event(type, flags),
+      location_(location) {
+}
+
+LocatedEvent::LocatedEvent(const LocatedEvent& model, View* source,
+                           View* target)
     : Event(model),
       location_(model.location_) {
-  if (to)
-    View::ConvertPointToView(from, to, &location_);
+  if (target)
+    View::ConvertPointToView(source, target, &location_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -71,10 +78,8 @@ MouseEvent::MouseEvent(ui::EventType type,
                        View* to,
                        const gfx::Point &l,
                        int flags)
-    : LocatedEvent(LocatedEvent(type, gfx::Point(l.x(), l.y()), flags),
-                                from,
-                                to) {
-};
+    : LocatedEvent(MouseEvent(type, l.x(), l.y(), flags), from, to) {
+}
 
 MouseEvent::MouseEvent(const MouseEvent& model, View* from, View* to)
     : LocatedEvent(model, from, to) {
@@ -84,7 +89,8 @@ MouseEvent::MouseEvent(const MouseEvent& model, View* from, View* to)
 // TouchEvent, public:
 
 #if defined(TOUCH_UI)
-TouchEvent::TouchEvent(ui::EventType type, int x, int y, int flags, int touch_id)
+TouchEvent::TouchEvent(ui::EventType type, int x, int y, int flags,
+                       int touch_id)
       : LocatedEvent(type, gfx::Point(x, y), flags),
         touch_id_(touch_id) {
 }
@@ -96,9 +102,7 @@ TouchEvent::TouchEvent(ui::EventType type,
                        const gfx::Point& l,
                        int flags,
                        int touch_id)
-    : LocatedEvent(LocatedEvent(type, gfx::Point(l.x(), l.y()), flags),
-                                from,
-                                to),
+    : LocatedEvent(TouchEvent(type, l.x(), l.y(), flags, touch_id), from, to),
       touch_id_(touch_id) {
 }
 

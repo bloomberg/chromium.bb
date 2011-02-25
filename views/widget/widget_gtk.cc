@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1430,31 +1430,12 @@ bool WidgetGtk::ProcessScroll(GdkEventScroll* event) {
   // Translate it to the widget's coordinates.
   int x = 0, y = 0;
   GetContainedWidgetEventCoordinates(event, &x, &y);
-  int flags = Event::GetFlagsFromGdkState(event->state);
-  int increment = 0;
-  bool is_horizontal = true;
-  switch (event->direction) {
-    case GDK_SCROLL_UP:
-      increment = 1;
-      is_horizontal = false;
-      break;
-    case GDK_SCROLL_DOWN:
-      increment = -1;
-      is_horizontal = false;
-      break;
-    case GDK_SCROLL_LEFT:
-      increment = 1;
-      is_horizontal = true;
-      break;
-    case GDK_SCROLL_RIGHT:
-      increment = -1;
-      is_horizontal = false;
-      break;
-  }
-  increment *= is_horizontal ? root_view_->width() / 5 :
-      root_view_->height() / 5;
-  MouseWheelEvent wheel_event(increment, x, y, flags);
-  return root_view_->ProcessMouseWheelEvent(wheel_event);
+  GdkEventScroll translated_event = *event;
+  translated_event.x = x;
+  translated_event.y = y;
+
+  MouseWheelEvent wheel_event(reinterpret_cast<GdkEvent*>(&translated_event));
+  return root_view_->OnMouseWheel(wheel_event);
 }
 
 // static

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,18 +66,17 @@ void MenuHostRootView::OnMouseMoved(const MouseEvent& event) {
     GetMenuController()->OnMouseMoved(submenu_, event);
 }
 
+bool MenuHostRootView::OnMouseWheel(const MouseWheelEvent& e) {
+  // RootView::OnMouseWheel forwards to the focused view. We don't have a
+  // focused view, so we need to override this then forward to the menu.
+  return submenu_->OnMouseWheel(e);
+}
+
 void MenuHostRootView::ProcessOnMouseExited() {
   if (suspend_events_)
     return;
 
   RootView::ProcessOnMouseExited();
-}
-
-bool MenuHostRootView::ProcessMouseWheelEvent(const MouseWheelEvent& e) {
-  // RootView::ProcessMouseWheelEvent forwards to the focused view. We don't
-  // have a focused view, so we need to override this then forward to
-  // the menu.
-  return submenu_->OnMouseWheel(e);
 }
 
 MenuController* MenuHostRootView::GetMenuController() {

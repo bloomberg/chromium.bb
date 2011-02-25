@@ -613,13 +613,14 @@ bool NativeWidgetWin::ProcessMouseRange(UINT message, WPARAM w_param,
 }
 
 void NativeWidgetWin::MakeMSG(MSG* msg, UINT message, WPARAM w_param,
-                              LPARAM l_param) const {
+    LPARAM l_param, DWORD time, LONG x, LONG y) const {
   msg->hwnd = hwnd();
   msg->message = message;
   msg->wParam = w_param;
   msg->lParam = l_param;
-  msg->time = 0;
-  msg->pt.x = msg->pt.y = 0;
+  msg->time = time;
+  msg->pt.x = x;
+  msg->pt.y = y;
 }
 
 void NativeWidgetWin::CloseNow() {

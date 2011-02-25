@@ -62,19 +62,6 @@ int GetEventFlagsForButton(int button) {
   return 0;
 }
 
-ui::EventType EventTypeFromNative(NativeEvent2 native_event) {
-  switch (native_event->type) {
-    case KeyPress:
-      return ui::ET_KEY_PRESSED;
-    case KeyRelease:
-      return ui::ET_KEY_RELEASED;
-    default:
-      NOTREACHED();
-      break;
-  }
-  return ui::ET_UNKNOWN;
-}
-
 #if defined(HAVE_XINPUT2)
 int GetButtonMaskForX2Event(XIDeviceEvent* xievent) {
   int buttonflags = 0;
@@ -129,34 +116,32 @@ int GetTouchIDFromXEvent(XEvent* xev) {
 
 #endif  // HAVE_XINPUT2
 
-int GetMouseWheelOffset(XEvent* xev) {
-#if defined(HAVE_XINPUT2)
-  if (xev->type == GenericEvent) {
-    XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(xev->xcookie.data);
-    return xiev->detail == 4 ? kWheelScrollAmount : -kWheelScrollAmount;
-  }
-#endif
-  return xev->xbutton.button == 4 ? kWheelScrollAmount : -kWheelScrollAmount;
-}
-
-ui::EventType GetMouseEventType(XEvent* xev) {
-  switch (xev->type) {
+ui::EventType EventTypeFromNative(NativeEvent2 native_event) {
+  switch (native_event->type) {
+    case KeyPress:
+      return ui::ET_KEY_PRESSED;
+    case KeyRelease:
+      return ui::ET_KEY_RELEASED;
     case ButtonPress:
+      if (native_event->xbutton.button == 4 ||
+          native_event->xbutton.button == 5)
+        return ui::ET_MOUSEWHEEL;
       return ui::ET_MOUSE_PRESSED;
     case ButtonRelease:
       return ui::ET_MOUSE_RELEASED;
     case MotionNotify:
-      if (xev->xmotion.state & (Button1Mask | Button2Mask | Button3Mask)) {
+      if (native_event->xmotion.state &
+          (Button1Mask | Button2Mask | Button3Mask))
         return ui::ET_MOUSE_DRAGGED;
-      }
       return ui::ET_MOUSE_MOVED;
 #if defined(HAVE_XINPUT2)
     case GenericEvent: {
       XIDeviceEvent* xievent =
-          static_cast<XIDeviceEvent*>(xev->xcookie.data);
+          static_cast<XIDeviceEvent*>(native_event->xcookie.data);
       switch (xievent->evtype) {
         case XI_ButtonPress:
-          return ui::ET_MOUSE_PRESSED;
+          return (xievent->detail == 4 || xievent->detail == 5) ?
+              ui::ET_MOUSEWHEEL : ui::ET_MOUSE_PRESSED;
         case XI_ButtonRelease:
           return ui::ET_MOUSE_RELEASED;
         case XI_Motion:
@@ -165,9 +150,21 @@ ui::EventType GetMouseEventType(XEvent* xev) {
       }
     }
 #endif
+    default:
+      NOTREACHED();
+      break;
   }
-
   return ui::ET_UNKNOWN;
+}
+
+int GetMouseWheelOffset(XEvent* xev) {
+#if defined(HAVE_XINPUT2)
+  if (xev->type == GenericEvent) {
+    XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(xev->xcookie.data);
+    return xiev->detail == 4 ? kWheelScrollAmount : -kWheelScrollAmount;
+  }
+#endif
+  return xev->xbutton.button == 4 ? kWheelScrollAmount : -kWheelScrollAmount;
 }
 
 gfx::Point GetMouseEventLocation(XEvent* xev) {
@@ -236,13 +233,25 @@ void Event::InitWithNativeEvent2(NativeEvent2 native_event_2,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// LocatedEvent, protected:
+
+LocatedEvent::LocatedEvent(NativeEvent2 native_event_2,
+                           FromNativeEvent2 from_native)
+    : Event(native_event_2,
+            EventTypeFromNative(native_event_2),
+            GetEventFlagsFromXState(native_event_2->xbutton.state),
+            from_native),
+      location_(GetMouseEventLocation(native_event_2)) {
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // KeyEvent, public:
 
-KeyEvent::KeyEvent(NativeEvent2 native_event_2, FromNativeEvent2 from_native_2)
+KeyEvent::KeyEvent(NativeEvent2 native_event_2, FromNativeEvent2 from_native)
     : Event(native_event_2,
             EventTypeFromNative(native_event_2),
             GetEventFlagsFromXState(native_event_2->xkey.state),
-            from_native_2),
+            from_native),
       key_code_(ui::KeyboardCodeFromXKeyEvent(native_event_2)) {
 }
 
@@ -250,7 +259,7 @@ KeyEvent::KeyEvent(NativeEvent2 native_event_2, FromNativeEvent2 from_native_2)
 // MouseEvent, public:
 
 MouseEvent::MouseEvent(XEvent* xev)
-    : LocatedEvent(GetMouseEventType(xev),
+    : LocatedEvent(EventTypeFromNative(xev),
                    GetMouseEventLocation(xev),
                    GetMouseEventFlags(xev)) {
 }
@@ -258,11 +267,10 @@ MouseEvent::MouseEvent(XEvent* xev)
 ////////////////////////////////////////////////////////////////////////////////
 // MouseWheelEvent, public:
 
-MouseWheelEvent::MouseWheelEvent(XEvent* xev)
-    : LocatedEvent(ui::ET_MOUSEWHEEL,
-                   GetMouseEventLocation(xev),
-                   GetEventFlagsFromXState(xev->xbutton.state)),
-      offset_(GetMouseWheelOffset(xev)) {
+MouseWheelEvent::MouseWheelEvent(NativeEvent2 native_event_2,
+                                 FromNativeEvent2 from_native)
+    : LocatedEvent(native_event_2, from_native),
+      offset_(GetMouseWheelOffset(native_event_2)) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////

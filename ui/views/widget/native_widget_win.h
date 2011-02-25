@@ -238,7 +238,8 @@ class NativeWidgetWin : public NativeWidget,
   void ProcessMouseExited();
 
   // Fills out a MSG struct with the supplied values.
-  void MakeMSG(MSG* msg, UINT message, WPARAM w_param, LPARAM l_param) const;
+  void MakeMSG(MSG* msg, UINT message, WPARAM w_param, LPARAM l_param,
+               DWORD time = 0, LONG x = 0, LONG y = 0) const;
 
   void CloseNow();
 

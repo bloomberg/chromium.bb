@@ -116,18 +116,6 @@ bool RootView::ProcessKeyEvent(const KeyEvent& event) {
   return consumed;
 }
 
-bool RootView::ProcessMouseWheelEvent(const MouseWheelEvent& event) {
-  MouseWheelEvent e(event, this);
-  View* v;
-  bool consumed = false;
-  View* focused_view = GetFocusManager()->GetFocusedView();
-  if (focused_view) {
-    for (v = focused_view; v && v != this && !consumed; v = v->parent())
-      consumed = v->OnMouseWheel(e);
-  }
-  return consumed;
-}
-
 // Focus -----------------------------------------------------------------------
 
 void RootView::SetFocusTraversableParent(FocusTraversable* focus_traversable) {
@@ -347,6 +335,15 @@ void RootView::SetMouseHandler(View *new_mh) {
   // If we're clearing the mouse handler, clear explicit_mouse_handler as well.
   explicit_mouse_handler_ = (new_mh != NULL);
   mouse_pressed_handler_ = new_mh;
+}
+
+bool RootView::OnMouseWheel(const MouseWheelEvent& event) {
+  MouseWheelEvent e(event, this);
+  bool consumed = false;
+  View* v = GetFocusManager()->GetFocusedView();
+  for (; v && v != this && !consumed; v = v->parent())
+    consumed = v->OnMouseWheel(e);
+  return consumed;
 }
 
 #if defined(TOUCH_UI)

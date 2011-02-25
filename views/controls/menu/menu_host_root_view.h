@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,8 +32,8 @@ class MenuHostRootView : public RootView {
   virtual bool OnMouseDragged(const MouseEvent& event);
   virtual void OnMouseReleased(const MouseEvent& event, bool canceled);
   virtual void OnMouseMoved(const MouseEvent& event);
+  virtual bool OnMouseWheel(const MouseWheelEvent& e);
   virtual void ProcessOnMouseExited();
-  virtual bool ProcessMouseWheelEvent(const MouseWheelEvent& e);
 
  private:
   // Returns the MenuController for this MenuHostRootView.

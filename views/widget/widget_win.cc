@@ -784,12 +784,10 @@ LRESULT WidgetWin::OnMouseWheel(UINT message, WPARAM w_param, LPARAM l_param) {
     return 0;
   }
 
-  int flags = GET_KEYSTATE_WPARAM(w_param);
-  short distance = GET_WHEEL_DELTA_WPARAM(w_param);
-  int x = GET_X_LPARAM(l_param);
-  int y = GET_Y_LPARAM(l_param);
-  MouseWheelEvent e(distance, x, y, Event::ConvertWindowsFlags(flags));
-  return root_view_->ProcessMouseWheelEvent(e) ? 0 : 1;
+  MSG msg;
+  MakeMSG(&msg, message, w_param, l_param, 0,
+          GET_X_LPARAM(l_param), GET_Y_LPARAM(l_param));
+  return root_view_->OnMouseWheel(MouseWheelEvent(msg)) ? 0 : 1;
 }
 
 void WidgetWin::OnMove(const CPoint& point) {
@@ -1311,14 +1309,15 @@ void WidgetWin::PostProcessActivateMessage(WidgetWin* widget,
   }
 }
 
-void WidgetWin::MakeMSG(MSG* msg, UINT message, WPARAM w_param,
-                        LPARAM l_param) const {
+void WidgetWin::MakeMSG(MSG* msg, UINT message, WPARAM w_param, LPARAM l_param,
+                        DWORD time, LONG x, LONG y) const {
   msg->hwnd = hwnd();
   msg->message = message;
   msg->wParam = w_param;
   msg->lParam = l_param;
-  msg->time = 0;
-  msg->pt.x = msg->pt.y = 0;
+  msg->time = time;
+  msg->pt.x = x;
+  msg->pt.y = y;
 }
 
 void WidgetWin::RedrawInvalidRect() {

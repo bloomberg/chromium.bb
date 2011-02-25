@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -91,8 +91,8 @@ bool DispatchX2Event(RootView* root, XEvent* xev) {
       // and 5. In case of a wheelscroll, we do not want to show the cursor.
       XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(cookie->data);
       if (xievent->detail == 4 || xievent->detail == 5) {
-        MouseWheelEvent wheelev(xev);
-        return root->ProcessMouseWheelEvent(wheelev);
+        Event::FromNativeEvent2 from_native;
+        return root->OnMouseWheel(MouseWheelEvent(xev, from_native));
       }
 
       MouseEvent mouseev(xev);
@@ -164,8 +164,8 @@ bool DispatchXEvent(XEvent* xev) {
     switch (xev->type) {
       case KeyPress:
       case KeyRelease: {
-        Event::FromNativeEvent2 from_native_2;
-        KeyEvent keyev(xev, from_native_2);
+        Event::FromNativeEvent2 from_native;
+        KeyEvent keyev(xev, from_native);
         return root->ProcessKeyEvent(keyev);
       }
 
@@ -173,8 +173,8 @@ bool DispatchXEvent(XEvent* xev) {
       case ButtonRelease: {
         if (xev->xbutton.button == 4 || xev->xbutton.button == 5) {
           // Scrolling the wheel triggers button press/release events.
-          MouseWheelEvent wheelev(xev);
-          return root->ProcessMouseWheelEvent(wheelev);
+          Event::FromNativeEvent2 from_native;
+          return root->OnMouseWheel(MouseWheelEvent(xev, from_native));
         } else {
           MouseEvent mouseev(xev);
           if (xev->type == ButtonPress) {
