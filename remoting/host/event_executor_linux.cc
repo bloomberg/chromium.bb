@@ -354,7 +354,7 @@ EventExecutorLinux::EventExecutorLinux(
     MessageLoopForUI* message_loop, Capturer* capturer)
     : message_loop_(message_loop),
       capturer_(capturer),
-      pimpl_(new EventExecutorLinuxPimpl(this, message_loop->get_display())) {
+      pimpl_(new EventExecutorLinuxPimpl(this, message_loop->GetDisplay())) {
   CHECK(pimpl_->Init());
 }
 
