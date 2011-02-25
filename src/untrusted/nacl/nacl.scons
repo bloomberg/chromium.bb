@@ -49,6 +49,7 @@ sources_for_nacl_extensions = [
     'imc_recvmsg.c',
     'imc_sendmsg.c',
     'imc_socketpair.c',
+    'nameservice.c',
     'null.c',
     'srpc_init.c',
     'srpc_wait.c',
