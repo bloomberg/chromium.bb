@@ -40,7 +40,7 @@ void StatusAreaButton::OnPaint(gfx::Canvas* canvas, bool for_drag) {
   if (use_menu_button_paint_) {
     views::MenuButton::Paint(canvas, for_drag);
   } else {
-    DrawIcon(canvas);
+    canvas->DrawBitmapInt(icon(), horizontal_padding(), 0);
     OnPaintFocusBorder(canvas);
   }
 }
@@ -84,10 +84,6 @@ void StatusAreaButton::SetText(const std::wstring& text) {
   views::MenuButton::SetText(text);
   ClearMaxTextSize();
   PreferredSizeChanged();
-}
-
-void StatusAreaButton::DrawIcon(gfx::Canvas* canvas) {
-  canvas->DrawBitmapInt(icon(), horizontal_padding(), 0);
 }
 
 bool StatusAreaButton::Activate() {

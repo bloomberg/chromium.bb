@@ -65,14 +65,7 @@ class NetworkMenuButton : public StatusAreaButton,
   // NetworkLibrary::CellularDataPlanObserver implementation.
   virtual void OnCellularDataPlanChanged(NetworkLibrary* cros);
 
-  // Sets the badge icon.
-  void SetBadge(const SkBitmap& badge) { badge_ = badge; }
-  SkBitmap badge() const { return badge_; }
-
  protected:
-  // StatusAreaButton implementation.
-  virtual void DrawIcon(gfx::Canvas* canvas);
-
   // NetworkMenu implementation:
   virtual bool IsBrowserMode() const;
   virtual gfx::NativeWindow GetNativeWindow() const;
@@ -80,6 +73,13 @@ class NetworkMenuButton : public StatusAreaButton,
   virtual bool ShouldOpenButtonOptions() const;
 
  private:
+  // Sets the icon and the badge.
+  void SetIconAndBadge(const SkBitmap& icon, const SkBitmap& badge);
+  // Sets the icon only. Keep the previous badge.
+  void SetIconOnly(const SkBitmap& icon);
+  // Sets the badge only. Keep the previous icon.
+  void SetBadgeOnly(const SkBitmap& badge);
+  // Set the network icon based on the status of the |network|
   void SetNetworkIcon(NetworkLibrary* cros, const Network* network);
 
   // Called when the active network has possibly changed. This will remove
@@ -89,6 +89,8 @@ class NetworkMenuButton : public StatusAreaButton,
   // The status area host,
   StatusAreaHost* host_;
 
+  // The icon showing the network strength.
+  SkBitmap icon_;
   // A badge icon displayed on top of the icon.
   SkBitmap badge_;
 

@@ -51,21 +51,13 @@ NetworkMenuButton::~NetworkMenuButton() {
 
 void NetworkMenuButton::AnimationProgressed(const ui::Animation* animation) {
   if (animation == &animation_connecting_) {
-    SetIcon(IconForNetworkConnecting(animation_connecting_.GetCurrentValue(),
-                                     false));
+    SetIconOnly(IconForNetworkConnecting(
+        animation_connecting_.GetCurrentValue(), false));
     // No need to set the badge here, because it should already be set.
     SchedulePaint();
   } else {
     MenuButton::AnimationProgressed(animation);
   }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// NetworkMenuButton, StatusAreaButton implementation:
-
-void NetworkMenuButton::DrawIcon(gfx::Canvas* canvas) {
-  canvas->DrawBitmapInt(IconForDisplay(icon(), badge()),
-                        horizontal_padding(), 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -114,13 +106,30 @@ bool NetworkMenuButton::ShouldOpenButtonOptions() const {
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkMenuButton, private methods
 
+void NetworkMenuButton::SetIconAndBadge(const SkBitmap& icon,
+                                        const SkBitmap& badge) {
+  icon_ = icon;
+  badge_ = badge;
+  SetIcon(IconForDisplay(icon_, badge_));
+}
+
+void NetworkMenuButton::SetIconOnly(const SkBitmap& icon) {
+  icon_ = icon;
+  SetIcon(IconForDisplay(icon_, badge_));
+}
+
+void NetworkMenuButton::SetBadgeOnly(const SkBitmap& badge) {
+  badge_ = badge;
+  SetIcon(IconForDisplay(icon_, badge_));
+}
+
 void NetworkMenuButton::SetNetworkIcon(NetworkLibrary* cros,
                                        const Network* network) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
   if (!cros || !CrosLibrary::Get()->EnsureLoaded()) {
-    SetIcon(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0));
-    SetBadge(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_WARNING));
+    SetIconAndBadge(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0),
+                    *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_WARNING));
     SetTooltipText(UTF16ToWide(l10n_util::GetStringUTF16(
         IDS_STATUSBAR_NETWORK_NO_NETWORK_TOOLTIP)));
     return;
@@ -128,8 +137,8 @@ void NetworkMenuButton::SetNetworkIcon(NetworkLibrary* cros,
 
   if (!cros->Connected() && !cros->Connecting()) {
     animation_connecting_.Stop();
-    SetIcon(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0));
-    SetBadge(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED));
+    SetIconAndBadge(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0),
+                    *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED));
     SetTooltipText(UTF16ToWide(l10n_util::GetStringUTF16(
         IDS_STATUSBAR_NETWORK_NO_NETWORK_TOOLTIP)));
     return;
@@ -140,15 +149,15 @@ void NetworkMenuButton::SetNetworkIcon(NetworkLibrary* cros,
     if (!animation_connecting_.is_animating()) {
       animation_connecting_.Reset();
       animation_connecting_.StartThrobbing(-1);
-      SetIcon(IconForNetworkConnecting(0, false));
+      SetIconOnly(IconForNetworkConnecting(0, false));
     }
     const WirelessNetwork* wireless = NULL;
     if (cros->wifi_connecting()) {
       wireless = cros->wifi_network();
-      SetBadge(SkBitmap());
+      SetBadgeOnly(SkBitmap());
     } else {  // cellular_connecting
       wireless = cros->cellular_network();
-      SetBadge(BadgeForNetworkTechnology(cros->cellular_network()));
+      SetBadgeOnly(BadgeForNetworkTechnology(cros->cellular_network()));
     }
     SetTooltipText(UTF16ToWide(l10n_util::GetStringFUTF16(
         wireless->configuring() ? IDS_STATUSBAR_NETWORK_CONFIGURING_TOOLTIP
@@ -160,8 +169,7 @@ void NetworkMenuButton::SetNetworkIcon(NetworkLibrary* cros,
     // Only set the icon, if it is an active network that changed.
     if (network && network->is_active()) {
       if (network->type() == TYPE_ETHERNET) {
-        SetIcon(*rb.GetBitmapNamed(IDR_STATUSBAR_WIRED));
-        SetBadge(SkBitmap());
+        SetIconAndBadge(*rb.GetBitmapNamed(IDR_STATUSBAR_WIRED), SkBitmap());
         SetTooltipText(
             UTF16ToWide(l10n_util::GetStringFUTF16(
                 IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
@@ -169,16 +177,15 @@ void NetworkMenuButton::SetNetworkIcon(NetworkLibrary* cros,
                     IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET))));
       } else if (network->type() == TYPE_WIFI) {
         const WifiNetwork* wifi = static_cast<const WifiNetwork*>(network);
-        SetIcon(IconForNetworkStrength(wifi, false));
-        SetBadge(SkBitmap());
+        SetIconAndBadge(IconForNetworkStrength(wifi, false), SkBitmap());
         SetTooltipText(UTF16ToWide(l10n_util::GetStringFUTF16(
             IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
             UTF8ToUTF16(wifi->name()))));
       } else if (network->type() == TYPE_CELLULAR) {
         const CellularNetwork* cellular =
             static_cast<const CellularNetwork*>(network);
-        SetIcon(IconForNetworkStrength(cellular, false));
-        SetBadge(BadgeForNetworkTechnology(cellular));
+        SetIconAndBadge(IconForNetworkStrength(cellular, false),
+                        BadgeForNetworkTechnology(cellular));
         SetTooltipText(UTF16ToWide(l10n_util::GetStringFUTF16(
             IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
             UTF8ToUTF16(cellular->name()))));
