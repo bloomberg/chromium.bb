@@ -56,6 +56,13 @@ class ShortcutsTest(pyauto.PyUITest):
     self.NavigateToURL(url, 1, 0)
     self.assertEqual(0, len(self.GetHistoryInfo().History()))
 
+  def testCloseWindowShortcut(self):
+    """Verify close window shortcut."""
+    self.RunCommand(pyauto.IDC_NEW_WINDOW)
+    self.assertEquals(2, self.GetBrowserWindowCount())
+    self.RunCommand(pyauto.IDC_CLOSE_WINDOW)
+    self.assertEquals(1, self.GetBrowserWindowCount())
+
   def testFindShortcut(self):
     """Verify find in box shortcut."""
     self.ApplyAccelerator(pyauto.IDC_FIND)
@@ -122,6 +129,34 @@ class ShortcutsTest(pyauto.PyUITest):
     self.assertTrue(self.WaitUntil(lambda: self.GetActiveTabTitle(),
                     expect_retval='Google Chrome Help'),
                     msg='Google Chrome help page has not opened.')
+
+  def testSwitchingTabs(self):
+    """Verify switching tabs shortcut."""
+    url1 = self.GetFileURLForDataPath('title1.html')
+    url2 = self.GetFileURLForDataPath('title2.html')
+    url3 = self.GetFileURLForDataPath('title3.html')
+    titles = ['title1.html', 'Title Of Awesomeness',
+              'Title Of More Awesomeness']
+    for eachurl in [url1, url2, url3]:
+      self.AppendTab(pyauto.GURL(eachurl))
+
+    # Switch to second tab.
+    self.ApplyAccelerator(pyauto.IDC_SELECT_TAB_1)
+    self.assertEqual(titles[0], self.GetActiveTabTitle())
+
+    # Switch to last tab.
+    self.ApplyAccelerator(pyauto.IDC_SELECT_LAST_TAB)
+    self.assertEqual(titles[2], self.GetActiveTabTitle())
+
+    # Switch to previous tab.
+    for x in range(len(titles)-1, -1, -1):
+      self.assertEquals(titles[x], self.GetActiveTabTitle())
+      self.RunCommand(pyauto.IDC_SELECT_PREVIOUS_TAB)
+
+    # Switch to next tab.
+    for x in range(0, len(titles)):
+      self.RunCommand(pyauto.IDC_SELECT_NEXT_TAB)
+      self.assertEquals(titles[x], self.GetActiveTabTitle())
 
 
 if __name__ == '__main__':
