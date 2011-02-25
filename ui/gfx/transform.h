@@ -18,6 +18,8 @@ namespace ui {
 // scaling etc.) on UI components.
 class Transform {
  public:
+  virtual ~Transform() {}
+
   // Create an object that implements this interface (e.g. using skia
   // transformation matrices).
   static Transform* Create();
