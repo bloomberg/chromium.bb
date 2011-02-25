@@ -92,7 +92,8 @@ bool DispatchX2Event(RootView* root, XEvent* xev) {
       XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(cookie->data);
       if (xievent->detail == 4 || xievent->detail == 5) {
         Event::FromNativeEvent2 from_native;
-        return root->OnMouseWheel(MouseWheelEvent(xev, from_native));
+        MouseWheelEvent wheelev(xev, from_native);
+        return root->OnMouseWheel(wheelev);
       }
 
       MouseEvent mouseev(xev);
@@ -174,7 +175,8 @@ bool DispatchXEvent(XEvent* xev) {
         if (xev->xbutton.button == 4 || xev->xbutton.button == 5) {
           // Scrolling the wheel triggers button press/release events.
           Event::FromNativeEvent2 from_native;
-          return root->OnMouseWheel(MouseWheelEvent(xev, from_native));
+          MouseWheelEvent wheelev(xev, from_native);
+          return root->OnMouseWheel(wheelev);
         } else {
           MouseEvent mouseev(xev);
           if (xev->type == ButtonPress) {
