@@ -22,7 +22,6 @@
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/path.h"
 #include "views/focus/view_storage.h"
-#include "views/widget/default_theme_provider.h"
 #include "views/widget/drop_target_gtk.h"
 #include "views/widget/gtk_views_fixed.h"
 #include "views/widget/gtk_views_window.h"
@@ -278,6 +277,7 @@ WidgetGtk::WidgetGtk(Type type)
 }
 
 WidgetGtk::~WidgetGtk() {
+  DestroyRootView();
   DCHECK(delete_on_destroy_ || widget_ == NULL);
   if (type_ != TYPE_CHILD)
     ActiveWindowWatcherX::RemoveObserver(this);
@@ -415,14 +415,6 @@ void WidgetGtk::DoDrag(const OSExchangeData& data, int operation) {
   }
 }
 
-void WidgetGtk::SetFocusTraversableParent(FocusTraversable* parent) {
-  root_view_->SetFocusTraversableParent(parent);
-}
-
-void WidgetGtk::SetFocusTraversableParentView(View* parent_view) {
-  root_view_->SetFocusTraversableParentView(parent_view);
-}
-
 void WidgetGtk::IsActiveChanged() {
   if (GetWidgetDelegate())
     GetWidgetDelegate()->IsActiveChanged(IsActive());
@@ -500,12 +492,9 @@ void WidgetGtk::InitWithWidget(Widget* parent,
 
 void WidgetGtk::Init(GtkWidget* parent,
                      const gfx::Rect& bounds) {
+  Widget::Init(parent, bounds);
   if (type_ != TYPE_CHILD)
     ActiveWindowWatcherX::AddObserver(this);
-  // Force creation of the RootView if it hasn't been created yet.
-  GetRootView();
-
-  default_theme_provider_.reset(new DefaultThemeProvider());
 
   // Make container here.
   CreateGtkWidget(parent, bounds);
@@ -527,7 +516,7 @@ void WidgetGtk::Init(GtkWidget* parent,
                         GDK_POINTER_MOTION_MASK |
                         GDK_KEY_PRESS_MASK |
                         GDK_KEY_RELEASE_MASK);
-  SetRootViewForWidget(widget_, root_view_.get());
+  SetRootViewForWidget(widget_, GetRootView());
 
   g_signal_connect_after(G_OBJECT(window_contents_), "size_request",
                          G_CALLBACK(&OnSizeRequestThunk), this);
@@ -612,18 +601,6 @@ void WidgetGtk::Init(GtkWidget* parent,
       gtk_window_resize(GTK_WINDOW(widget_), bounds.width(), bounds.height());
     gtk_window_move(GTK_WINDOW(widget_), bounds.x(), bounds.y());
   }
-}
-
-WidgetDelegate* WidgetGtk::GetWidgetDelegate() {
-  return delegate_;
-}
-
-void WidgetGtk::SetWidgetDelegate(WidgetDelegate* delegate) {
-  delegate_ = delegate;
-}
-
-void WidgetGtk::SetContentsView(View* view) {
-  root_view_->SetContentsView(view);
 }
 
 void WidgetGtk::GetBounds(gfx::Rect* out, bool including_frame) const {
@@ -757,14 +734,6 @@ void WidgetGtk::SetAlwaysOnTop(bool on_top) {
     gtk_window_set_keep_above(GTK_WINDOW(widget_), on_top);
 }
 
-RootView* WidgetGtk::GetRootView() {
-  if (!root_view_.get()) {
-    // First time the root view is being asked for, create it now.
-    root_view_.reset(CreateRootView());
-  }
-  return root_view_.get();
-}
-
 Widget* WidgetGtk::GetRootWidget() const {
   GtkWidget* parent = widget_;
   GtkWidget* last_parent = parent;
@@ -820,10 +789,6 @@ void* WidgetGtk::GetNativeWindowProperty(const char* name) {
 
 ThemeProvider* WidgetGtk::GetThemeProvider() const {
   return GetWidgetThemeProvider(this);
-}
-
-ThemeProvider* WidgetGtk::GetDefaultThemeProvider() const {
-  return default_theme_provider_.get();
 }
 
 FocusManager* WidgetGtk::GetFocusManager() {
@@ -896,39 +861,6 @@ void WidgetGtk::SetCursor(gfx::NativeCursor cursor) {
 #endif
   if (widget_)
     gdk_window_set_cursor(widget_->window, cursor);
-}
-
-FocusTraversable* WidgetGtk::GetFocusTraversable() {
-  return root_view_.get();
-}
-
-void WidgetGtk::ThemeChanged() {
-  root_view_->ThemeChanged();
-}
-
-void WidgetGtk::LocaleChanged() {
-  root_view_->LocaleChanged();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// WidgetGtk, FocusTraversable implementation:
-
-FocusSearch* WidgetGtk::GetFocusSearch() {
-  return root_view_->GetFocusSearch();
-}
-
-FocusTraversable* WidgetGtk::GetFocusTraversableParent() {
-  // We are a proxy to the root view, so we should be bypassed when traversing
-  // up and as a result this should not be called.
-  NOTREACHED();
-  return NULL;
-}
-
-View* WidgetGtk::GetFocusTraversableParentView() {
-  // We are a proxy to the root view, so we should be bypassed when traversing
-  // up and as a result this should not be called.
-  NOTREACHED();
-  return NULL;
 }
 
 void WidgetGtk::ClearNativeFocus() {
@@ -1009,7 +941,7 @@ void WidgetGtk::OnSizeRequest(GtkWidget* widget, GtkRequisition* requisition) {
   // preferred size for these would prevents us from setting smaller window
   // sizes.
   if (type_ == TYPE_CHILD) {
-    gfx::Size size(root_view_->GetPreferredSize());
+    gfx::Size size(GetRootView()->GetPreferredSize());
     requisition->width = size.width();
     requisition->height = size.height();
   }
@@ -1024,8 +956,8 @@ void WidgetGtk::OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation) {
   if (new_size == size_)
     return;
   size_ = new_size;
-  root_view_->SetBounds(0, 0, allocation->width, allocation->height);
-  root_view_->SchedulePaint();
+  GetRootView()->SetBounds(0, 0, allocation->width, allocation->height);
+  GetRootView()->SchedulePaint();
 }
 
 gboolean WidgetGtk::OnPaint(GtkWidget* widget, GdkEventExpose* event) {
@@ -1057,7 +989,7 @@ gboolean WidgetGtk::OnPaint(GtkWidget* widget, GdkEventExpose* event) {
   gfx::CanvasSkiaPaint canvas(event);
   if (!canvas.is_empty()) {
     canvas.set_composite_alpha(is_transparent());
-    root_view_->Paint(&canvas);
+    GetRootView()->Paint(&canvas);
   }
   return false;  // False indicates other widgets should get the event as well.
 }
@@ -1168,7 +1100,7 @@ gboolean WidgetGtk::OnEnterNotify(GtkWidget* widget, GdkEventCrossing* event) {
                    ui::EF_MIDDLE_BUTTON_DOWN |
                    ui::EF_RIGHT_BUTTON_DOWN));
     MouseEvent mouse_move(ui::ET_MOUSE_MOVED, x, y, flags);
-    root_view_->OnMouseMoved(mouse_move);
+    GetRootView()->OnMouseMoved(mouse_move);
   }
 
   return false;
@@ -1177,7 +1109,7 @@ gboolean WidgetGtk::OnEnterNotify(GtkWidget* widget, GdkEventCrossing* event) {
 gboolean WidgetGtk::OnLeaveNotify(GtkWidget* widget, GdkEventCrossing* event) {
   last_mouse_event_was_move_ = false;
   if (!has_capture_ && !is_mouse_down_)
-    root_view_->ProcessOnMouseExited();
+    GetRootView()->ProcessOnMouseExited();
   return false;
 }
 
@@ -1189,7 +1121,7 @@ gboolean WidgetGtk::OnMotionNotify(GtkWidget* widget, GdkEventMotion* event) {
     last_mouse_event_was_move_ = false;
     int flags = Event::GetFlagsFromGdkState(event->state);
     MouseEvent mouse_drag(ui::ET_MOUSE_DRAGGED, x, y, flags);
-    root_view_->OnMouseDragged(mouse_drag);
+    GetRootView()->OnMouseDragged(mouse_drag);
     return true;
   }
   gfx::Point screen_loc(event->x_root, event->y_root);
@@ -1203,7 +1135,7 @@ gboolean WidgetGtk::OnMotionNotify(GtkWidget* widget, GdkEventMotion* event) {
   last_mouse_event_was_move_ = true;
   int flags = Event::GetFlagsFromGdkState(event->state);
   MouseEvent mouse_move(ui::ET_MOUSE_MOVED, x, y, flags);
-  root_view_->OnMouseMoved(mouse_move);
+  GetRootView()->OnMouseMoved(mouse_move);
   return true;
 }
 
@@ -1266,7 +1198,7 @@ gboolean WidgetGtk::OnKeyEvent(GtkWidget* widget, GdkEventKey* event) {
   bool handled = false;
 
   // Dispatch the key event to View hierarchy first.
-  handled = root_view_->ProcessKeyEvent(key);
+  handled = GetRootView()->ProcessKeyEvent(key);
 
   // Dispatch the key event to native GtkWidget hierarchy.
   // To prevent GtkWindow from handling the key event as a keybinding, we need
@@ -1354,7 +1286,7 @@ void WidgetGtk::ReleaseGrab() {
 void WidgetGtk::HandleGrabBroke() {
   if (has_capture_) {
     if (is_mouse_down_)
-      root_view_->ProcessMouseDragCanceled();
+      GetRootView()->ProcessMouseDragCanceled();
     is_mouse_down_ = false;
     has_capture_ = false;
   }
@@ -1397,7 +1329,7 @@ bool WidgetGtk::ProcessMousePressed(GdkEventButton* event) {
   MouseEvent mouse_pressed(ui::ET_MOUSE_PRESSED, x, y,
                            GetFlagsForEventButton(*event));
 
-  if (root_view_->OnMousePressed(mouse_pressed)) {
+  if (GetRootView()->OnMousePressed(mouse_pressed)) {
     is_mouse_down_ = true;
     if (!has_capture_)
       DoGrab();
@@ -1422,7 +1354,7 @@ void WidgetGtk::ProcessMouseReleased(GdkEventButton* event) {
   is_mouse_down_ = false;
   // GTK generates a mouse release at the end of dnd. We need to ignore it.
   if (!drag_data_)
-    root_view_->OnMouseReleased(mouse_up, false);
+    GetRootView()->OnMouseReleased(mouse_up, false);
 }
 
 bool WidgetGtk::ProcessScroll(GdkEventScroll* event) {
@@ -1435,7 +1367,7 @@ bool WidgetGtk::ProcessScroll(GdkEventScroll* event) {
   translated_event.y = y;
 
   MouseWheelEvent wheel_event(reinterpret_cast<GdkEvent*>(&translated_event));
-  return root_view_->OnMouseWheel(wheel_event);
+  return GetRootView()->OnMouseWheel(wheel_event);
 }
 
 // static

@@ -29,7 +29,6 @@
 #include "views/views_delegate.h"
 #include "views/widget/aero_tooltip_manager.h"
 #include "views/widget/child_window_message_processor.h"
-#include "views/widget/default_theme_provider.h"
 #include "views/widget/drop_target_win.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget_delegate.h"
@@ -86,7 +85,6 @@ WidgetWin::WidgetWin()
       is_mouse_down_(false),
       is_window_(false),
       restore_focus_when_enabled_(false),
-      delegate_(NULL),
       accessibility_view_events_index_(-1),
       accessibility_view_events_(kMaxAccessibilityViewEvents),
       dragged_view_(NULL),
@@ -94,6 +92,7 @@ WidgetWin::WidgetWin()
 }
 
 WidgetWin::~WidgetWin() {
+  DestroyRootView();
 }
 
 // static
@@ -183,6 +182,7 @@ void WidgetWin::ClearAccessibilityViewEvent(View* view) {
 // Widget implementation:
 
 void WidgetWin::Init(gfx::NativeView parent, const gfx::Rect& bounds) {
+  Widget::Init(parent, bounds);
   // Force creation of the RootView; otherwise, we may get a WM_SIZE after the
   // window is created and before the root view is set up.
   GetRootView();
@@ -194,11 +194,9 @@ void WidgetWin::Init(gfx::NativeView parent, const gfx::Rect& bounds) {
   if (!IsAccessibleWidget())
     NotifyWinEvent(EVENT_SYSTEM_ALERT, hwnd(), OBJID_CUSTOM, CHILDID_SELF);
 
-  default_theme_provider_.reset(new DefaultThemeProvider());
-
   props_.push_back(SetWindowSupportsRerouteMouseWheel(hwnd()));
 
-  drop_target_ = new DropTargetWin(root_view_.get());
+  drop_target_ = new DropTargetWin(GetRootView());
 
   if ((window_style() & WS_CHILD) == 0 ||
       (WidgetWin::GetRootWidget(parent) == NULL &&
@@ -211,7 +209,7 @@ void WidgetWin::Init(gfx::NativeView parent, const gfx::Rect& bounds) {
   }
 
   // Sets the RootView as a property, so the automation can introspect windows.
-  SetNativeWindowProperty(kRootViewWindowProperty, root_view_.get());
+  SetNativeWindowProperty(kRootViewWindowProperty, GetRootView());
 
   // We need to add ourselves as a message loop observer so that we can repaint
   // aggressively if the contents of our window become invalid. Unfortunately
@@ -242,18 +240,6 @@ void WidgetWin::Init(gfx::NativeView parent, const gfx::Rect& bounds) {
 
 void WidgetWin::InitWithWidget(Widget* parent, const gfx::Rect& bounds) {
   Init(parent->GetNativeView(), bounds);
-}
-
-WidgetDelegate* WidgetWin::GetWidgetDelegate() {
-  return delegate_;
-}
-
-void WidgetWin::SetWidgetDelegate(WidgetDelegate* delegate) {
-  delegate_ = delegate;
-}
-
-void WidgetWin::SetContentsView(View* view) {
-  root_view_->SetContentsView(view);
 }
 
 void WidgetWin::GetBounds(gfx::Rect* out, bool including_frame) const {
@@ -349,14 +335,6 @@ void WidgetWin::SetAlwaysOnTop(bool on_top) {
     set_window_ex_style(window_ex_style() & ~WS_EX_TOPMOST);
 }
 
-RootView* WidgetWin::GetRootView() {
-  if (!root_view_.get()) {
-    // First time the root view is being asked for, create it now.
-    root_view_.reset(CreateRootView());
-  }
-  return root_view_.get();
-}
-
 Widget* WidgetWin::GetRootWidget() const {
   return GetRootWidget(hwnd());
 }
@@ -381,7 +359,7 @@ void WidgetWin::GenerateMousePressedForView(View* view,
                                             const gfx::Point& point) {
   gfx::Point point_in_widget(point);
   View::ConvertPointToWidget(view, &point_in_widget);
-  root_view_->SetMouseHandler(view);
+  GetRootView()->SetMouseHandler(view);
   ProcessMousePressed(point_in_widget.ToPOINT(), MK_LBUTTON, false, false);
 }
 
@@ -416,10 +394,6 @@ void* WidgetWin::GetNativeWindowProperty(const char* name) {
 
 ThemeProvider* WidgetWin::GetThemeProvider() const {
   return GetWidgetThemeProvider(this);
-}
-
-ThemeProvider* WidgetWin::GetDefaultThemeProvider() const {
-  return default_theme_provider_.get();
 }
 
 FocusManager* WidgetWin::GetFocusManager() {
@@ -514,18 +488,6 @@ void WidgetWin::SetCursor(gfx::NativeCursor cursor) {
   }
 }
 
-FocusTraversable* WidgetWin::GetFocusTraversable() {
-  return root_view_.get();
-}
-
-void WidgetWin::ThemeChanged() {
-  root_view_->ThemeChanged();
-}
-
-void WidgetWin::LocaleChanged() {
-  root_view_->LocaleChanged();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // MessageLoop::Observer
 
@@ -534,35 +496,6 @@ void WidgetWin::WillProcessMessage(const MSG& msg) {
 
 void WidgetWin::DidProcessMessage(const MSG& msg) {
   RedrawInvalidRect();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// FocusTraversable
-
-FocusSearch* WidgetWin::GetFocusSearch() {
-  return root_view_->GetFocusSearch();
-}
-
-FocusTraversable* WidgetWin::GetFocusTraversableParent() {
-  // We are a proxy to the root view, so we should be bypassed when traversing
-  // up and as a result this should not be called.
-  NOTREACHED();
-  return NULL;
-}
-
-void WidgetWin::SetFocusTraversableParent(FocusTraversable* parent) {
-  root_view_->SetFocusTraversableParent(parent);
-}
-
-View* WidgetWin::GetFocusTraversableParentView() {
-  // We are a proxy to the root view, so we should be bypassed when traversing
-  // up and as a result this should not be called.
-  NOTREACHED();
-  return NULL;
-}
-
-void WidgetWin::SetFocusTraversableParentView(View* parent_view) {
-  root_view_->SetFocusTraversableParentView(parent_view);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -588,7 +521,7 @@ void WidgetWin::OnCancelMode() {
 void WidgetWin::OnCaptureChanged(HWND hwnd) {
   if (has_capture_) {
     if (is_mouse_down_)
-      root_view_->ProcessMouseDragCanceled();
+      GetRootView()->ProcessMouseDragCanceled();
     is_mouse_down_ = false;
     has_capture_ = false;
   }
@@ -700,7 +633,7 @@ void WidgetWin::OnInitMenuPopup(HMENU menu,
 LRESULT WidgetWin::OnKeyDown(UINT message, WPARAM w_param, LPARAM l_param) {
   RootView* root_view = GetFocusedViewRootView();
   if (!root_view)
-    root_view = root_view_.get();
+    root_view = GetRootView();
 
   MSG msg;
   MakeMSG(&msg, message, w_param, l_param);
@@ -711,7 +644,7 @@ LRESULT WidgetWin::OnKeyDown(UINT message, WPARAM w_param, LPARAM l_param) {
 LRESULT WidgetWin::OnKeyUp(UINT message, WPARAM w_param, LPARAM l_param) {
   RootView* root_view = GetFocusedViewRootView();
   if (!root_view)
-    root_view = root_view_.get();
+    root_view = GetRootView();
 
   MSG msg;
   MakeMSG(&msg, message, w_param, l_param);
@@ -783,7 +716,7 @@ LRESULT WidgetWin::OnMouseWheel(UINT message, WPARAM w_param, LPARAM l_param) {
   MSG msg;
   MakeMSG(&msg, message, w_param, l_param, 0,
           GET_X_LPARAM(l_param), GET_Y_LPARAM(l_param));
-  return root_view_->OnMouseWheel(MouseWheelEvent(msg)) ? 0 : 1;
+  return GetRootView()->OnMouseWheel(MouseWheelEvent(msg)) ? 0 : 1;
 }
 
 void WidgetWin::OnMove(const CPoint& point) {
@@ -907,7 +840,7 @@ void WidgetWin::OnPaint(HDC dc) {
     contents_->save(SkCanvas::kClip_SaveFlag);
     contents_->ClipRectInt(r.left, r.top, r.right - r.left,
                            r.bottom - r.top);
-    root_view_->Paint(contents_.get());
+    GetRootView()->Paint(contents_.get());
     contents_->restore();
 
     RECT wr;
@@ -923,7 +856,7 @@ void WidgetWin::OnPaint(HDC dc) {
   } else {
     scoped_ptr<gfx::CanvasPaint> canvas(
         gfx::CanvasPaint::CreateCanvasPaint(hwnd()));
-    root_view_->Paint(canvas->AsCanvas());
+    GetRootView()->Paint(canvas->AsCanvas());
   }
 }
 
@@ -1058,14 +991,14 @@ bool WidgetWin::ProcessMousePressed(const CPoint& point,
   // expects window coordinates; convert if necessary.
   gfx::Point converted_point(point);
   if (non_client)
-    View::ConvertPointToView(NULL, root_view_.get(), &converted_point);
+    View::ConvertPointToView(NULL, GetRootView(), &converted_point);
   MouseEvent mouse_pressed(ui::ET_MOUSE_PRESSED,
                            converted_point.x(),
                            converted_point.y(),
                            (dbl_click ? ui::EF_IS_DOUBLE_CLICK : 0) |
                            (non_client ? ui::EF_IS_NON_CLIENT : 0) |
                            Event::ConvertWindowsFlags(flags));
-  if (root_view_->OnMousePressed(mouse_pressed)) {
+  if (GetRootView()->OnMousePressed(mouse_pressed)) {
     is_mouse_down_ = true;
     if (!has_capture_) {
       SetCapture();
@@ -1082,7 +1015,7 @@ void WidgetWin::ProcessMouseDragged(const CPoint& point, UINT flags) {
                         point.x,
                         point.y,
                         Event::ConvertWindowsFlags(flags));
-  root_view_->OnMouseDragged(mouse_drag);
+  GetRootView()->OnMouseDragged(mouse_drag);
 }
 
 void WidgetWin::ProcessMouseReleased(const CPoint& point, UINT flags) {
@@ -1098,7 +1031,7 @@ void WidgetWin::ProcessMouseReleased(const CPoint& point, UINT flags) {
     ReleaseCapture();
   }
   is_mouse_down_ = false;
-  root_view_->OnMouseReleased(mouse_up, false);
+  GetRootView()->OnMouseReleased(mouse_up, false);
 }
 
 void WidgetWin::ProcessMouseMoved(const CPoint &point, UINT flags,
@@ -1112,7 +1045,7 @@ void WidgetWin::ProcessMouseMoved(const CPoint &point, UINT flags,
     ProcessMouseDragged(point, flags);
   } else {
     gfx::Point screen_loc(point);
-    View::ConvertPointToScreen(root_view_.get(), &screen_loc);
+    View::ConvertPointToScreen(GetRootView(), &screen_loc);
     if (last_mouse_event_was_move_ && last_mouse_move_x_ == screen_loc.x() &&
         last_mouse_move_y_ == screen_loc.y()) {
       // Don't generate a mouse event for the same location as the last.
@@ -1125,13 +1058,13 @@ void WidgetWin::ProcessMouseMoved(const CPoint &point, UINT flags,
                           point.x,
                           point.y,
                           Event::ConvertWindowsFlags(flags));
-    root_view_->OnMouseMoved(mouse_move);
+    GetRootView()->OnMouseMoved(mouse_move);
   }
 }
 
 void WidgetWin::ProcessMouseExited() {
   last_mouse_event_was_move_ = false;
-  root_view_->ProcessOnMouseExited();
+  GetRootView()->ProcessOnMouseExited();
   // Reset our tracking flag so that future mouse movement over this WidgetWin
   // results in a new tracking session.
   active_mouse_tracking_flags_ = 0;
@@ -1145,8 +1078,8 @@ void WidgetWin::LayoutRootView() {
 
   // Resizing changes the size of the view hierarchy and thus forces a
   // complete relayout.
-  root_view_->SetBounds(0, 0, size.width(), size.height());
-  root_view_->SchedulePaint();
+  GetRootView()->SetBounds(0, 0, size.width(), size.height());
+  GetRootView()->SchedulePaint();
 }
 
 void WidgetWin::OnScreenReaderDetected() {
@@ -1155,10 +1088,6 @@ void WidgetWin::OnScreenReaderDetected() {
 
 bool WidgetWin::ReleaseCaptureOnMouseReleased() {
   return true;
-}
-
-RootView* WidgetWin::CreateRootView() {
-  return new RootView(this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

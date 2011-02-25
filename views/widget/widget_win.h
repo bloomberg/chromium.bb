@@ -34,7 +34,6 @@ class Rect;
 
 namespace views {
 
-class DefaultThemeProvider;
 class DropTargetWin;
 class FocusSearch;
 class RootView;
@@ -77,8 +76,7 @@ const int WM_NCUAHDRAWFRAME = 0xAF;
 ///////////////////////////////////////////////////////////////////////////////
 class WidgetWin : public ui::WindowImpl,
                   public Widget,
-                  public MessageLoopForUI::Observer,
-                  public FocusTraversable {
+                  public MessageLoopForUI::Observer {
  public:
   WidgetWin();
   virtual ~WidgetWin();
@@ -213,9 +211,6 @@ class WidgetWin : public ui::WindowImpl,
   // Overridden from Widget:
   virtual void Init(gfx::NativeView parent, const gfx::Rect& bounds);
   virtual void InitWithWidget(Widget* parent, const gfx::Rect& bounds);
-  virtual WidgetDelegate* GetWidgetDelegate();
-  virtual void SetWidgetDelegate(WidgetDelegate* delegate);
-  virtual void SetContentsView(View* view);
   virtual void GetBounds(gfx::Rect* out, bool including_frame) const;
   virtual void SetBounds(const gfx::Rect& bounds);
   virtual void MoveAbove(Widget* other);
@@ -227,7 +222,6 @@ class WidgetWin : public ui::WindowImpl,
   virtual gfx::NativeView GetNativeView() const;
   virtual void SetOpacity(unsigned char opacity);
   virtual void SetAlwaysOnTop(bool on_top);
-  virtual RootView* GetRootView();
   virtual Widget* GetRootWidget() const;
   virtual bool IsVisible() const;
   virtual bool IsActive() const;
@@ -241,7 +235,6 @@ class WidgetWin : public ui::WindowImpl,
   virtual void SetNativeWindowProperty(const char* name, void* value);
   virtual void* GetNativeWindowProperty(const char* name);
   virtual ThemeProvider* GetThemeProvider() const;
-  virtual ThemeProvider* GetDefaultThemeProvider() const;
   virtual FocusManager* GetFocusManager();
   virtual void ViewHierarchyChanged(bool is_add, View *parent,
                                     View *child);
@@ -252,21 +245,10 @@ class WidgetWin : public ui::WindowImpl,
   virtual View* GetDraggedView();
   virtual void SchedulePaintInRect(const gfx::Rect& rect);
   virtual void SetCursor(gfx::NativeCursor cursor);
-  virtual FocusTraversable* GetFocusTraversable();
-  virtual void ThemeChanged();
-  virtual void LocaleChanged();
 
   // Overridden from MessageLoop::Observer:
   void WillProcessMessage(const MSG& msg);
   virtual void DidProcessMessage(const MSG& msg);
-
-  // Overridden from FocusTraversable:
-  virtual FocusSearch* GetFocusSearch();
-  virtual FocusTraversable* GetFocusTraversableParent();
-  virtual View* GetFocusTraversableParentView();
-
-  void SetFocusTraversableParent(FocusTraversable* parent);
-  void SetFocusTraversableParentView(View* parent_view);
 
   BOOL IsWindow() const {
     return ::IsWindow(GetNativeView());
@@ -464,10 +446,6 @@ class WidgetWin : public ui::WindowImpl,
   // is true.
   virtual bool ReleaseCaptureOnMouseReleased();
 
-  // Creates the RootView to be used within this Widget. Can be overridden to
-  // create specialized RootView implementations.
-  virtual RootView* CreateRootView();
-
   // The TooltipManager.
   // WARNING: RootView's destructor calls into the TooltipManager. As such, this
   // must be destroyed AFTER root_view_.
@@ -480,11 +458,6 @@ class WidgetWin : public ui::WindowImpl,
   // WARNING: RootView's destructor calls into the FocusManager. As such, this
   // must be destroyed AFTER root_view_.
   scoped_ptr<FocusManager> focus_manager_;
-
-  // The root of the View hierarchy attached to this window.
-  // WARNING: see warning in tooltip_manager_ for ordering dependencies with
-  // this and tooltip_manager_.
-  scoped_ptr<RootView> root_view_;
 
   // Whether or not we have capture the mouse.
   bool has_capture_;
@@ -581,12 +554,6 @@ class WidgetWin : public ui::WindowImpl,
 
   // Instance of accessibility information and handling for MSAA root
   base::win::ScopedComPtr<IAccessible> accessibility_root_;
-
-  scoped_ptr<DefaultThemeProvider> default_theme_provider_;
-
-  // Non owned pointer to optional delegate.  May be NULL if no delegate is
-  // being used.
-  WidgetDelegate* delegate_;
 
   // Value determines whether the Widget is customized for accessibility.
   static bool screen_reader_active_;

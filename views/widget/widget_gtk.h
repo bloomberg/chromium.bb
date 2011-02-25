@@ -28,7 +28,6 @@ using ui::OSExchangeDataProviderGtk;
 
 namespace views {
 
-class DefaultThemeProvider;
 class DropTargetGtk;
 class FocusSearch;
 class TooltipManagerGtk;
@@ -36,10 +35,8 @@ class View;
 class WindowGtk;
 
 // Widget implementation for GTK.
-class WidgetGtk
-    : public Widget,
-      public FocusTraversable,
-      public ui::ActiveWindowWatcherX::Observer {
+class WidgetGtk : public Widget,
+                  public ui::ActiveWindowWatcherX::Observer {
  public:
   // Type of widget.
   enum Type {
@@ -127,10 +124,6 @@ class WidgetGtk
   // Starts a drag on this widget. This blocks until the drag is done.
   void DoDrag(const OSExchangeData& data, int operation);
 
-  // Sets the focus traversable parents.
-  void SetFocusTraversableParent(FocusTraversable* parent);
-  void SetFocusTraversableParentView(View* parent_view);
-
   // Invoked when the active status changes.
   virtual void IsActiveChanged();
 
@@ -160,9 +153,6 @@ class WidgetGtk
   // Overridden from Widget:
   virtual void Init(gfx::NativeView parent, const gfx::Rect& bounds);
   virtual void InitWithWidget(Widget* parent, const gfx::Rect& bounds);
-  virtual WidgetDelegate* GetWidgetDelegate();
-  virtual void SetWidgetDelegate(WidgetDelegate* delegate);
-  virtual void SetContentsView(View* view);
   virtual void GetBounds(gfx::Rect* out, bool including_frame) const;
   virtual void SetBounds(const gfx::Rect& bounds);
   virtual void MoveAbove(Widget* other);
@@ -174,7 +164,6 @@ class WidgetGtk
   virtual gfx::NativeView GetNativeView() const;
   virtual void SetOpacity(unsigned char opacity);
   virtual void SetAlwaysOnTop(bool on_top);
-  virtual RootView* GetRootView();
   virtual Widget* GetRootWidget() const;
   virtual bool IsVisible() const;
   virtual bool IsActive() const;
@@ -188,7 +177,6 @@ class WidgetGtk
   virtual void SetNativeWindowProperty(const char* name, void* value);
   virtual void* GetNativeWindowProperty(const char* name);
   virtual ThemeProvider* GetThemeProvider() const;
-  virtual ThemeProvider* GetDefaultThemeProvider() const;
   virtual FocusManager* GetFocusManager();
   virtual void ViewHierarchyChanged(bool is_add, View *parent,
                                     View *child);
@@ -199,14 +187,6 @@ class WidgetGtk
   virtual View* GetDraggedView();
   virtual void SchedulePaintInRect(const gfx::Rect& rect);
   virtual void SetCursor(gfx::NativeCursor cursor);
-  virtual FocusTraversable* GetFocusTraversable();
-  virtual void ThemeChanged();
-  virtual void LocaleChanged();
-
-  // Overridden from FocusTraversable:
-  virtual FocusSearch* GetFocusSearch();
-  virtual FocusTraversable* GetFocusTraversableParent();
-  virtual View* GetFocusTraversableParentView();
 
   // Clears the focus on the native widget having the focus.
   virtual void ClearNativeFocus();
@@ -369,9 +349,6 @@ class WidgetGtk
   // must be destroyed AFTER root_view_.
   FocusManager* focus_manager_;
 
-  // The root of the View hierarchy attached to this window.
-  scoped_ptr<RootView> root_view_;
-
   // If true, the mouse is currently down.
   bool is_mouse_down_;
 
@@ -400,8 +377,6 @@ class WidgetGtk
 
   // See description above MakeIgnoreEvents for details.
   bool ignore_events_;
-
-  scoped_ptr<DefaultThemeProvider> default_theme_provider_;
 
   // See note in DropObserver for details on this.
   bool ignore_drag_leave_;

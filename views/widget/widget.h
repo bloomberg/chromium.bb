@@ -8,7 +8,9 @@
 
 #include <vector>
 
+#include "base/scoped_ptr.h"
 #include "ui/gfx/native_widget_types.h"
+#include "views/focus/focus_manager.h"
 
 namespace gfx {
 class Path;
@@ -25,8 +27,7 @@ using ui::ThemeProvider;
 
 namespace views {
 
-class FocusManager;
-class FocusTraversable;
+class DefaultThemeProvider;
 class RootView;
 class TooltipManager;
 class View;
@@ -50,10 +51,8 @@ class Window;
 //              implementation. Multiple inheritance is required for this
 //              transitional step.
 //
-class Widget {
+class Widget : public FocusTraversable {
  public:
-  virtual ~Widget() { }
-
   enum TransparencyParam {
     Transparent,
     NotTransparent
@@ -73,6 +72,8 @@ class Widget {
     MirrorOriginInRTL,
     DontMirrorOriginInRTL
   };
+
+  virtual ~Widget();
 
   // Creates a transient popup widget specific to the current platform.
   // If |mirror_in_rtl| is set to MirrorOriginInRTL, the contents of the
@@ -257,7 +258,38 @@ class Widget {
   // changed.
   virtual void LocaleChanged();
 
+  void SetFocusTraversableParent(FocusTraversable* parent);
+  void SetFocusTraversableParentView(View* parent_view);
+
+ protected:
+  // Creates the RootView to be used within this Widget. Subclasses may override
+  // to create custom RootViews that do specialized event processing.
+  // TODO(beng): Investigate whether or not this is needed.
+  virtual RootView* CreateRootView();
+
+  // Provided to allow the WidgetWin/Gtk implementations to destroy the RootView
+  // _before_ the focus manager/tooltip manager.
+  // TODO(beng): remove once we fold those objects onto this one.
+  void DestroyRootView();
+
+  // Overridden from FocusTraversable:
+  virtual FocusSearch* GetFocusSearch();
+  virtual FocusTraversable* GetFocusTraversableParent();
+  virtual View* GetFocusTraversableParentView();
+
  private:
+  // Non-owned pointer to the Widget's delegate.  May be NULL if no delegate is
+  // being used.
+  WidgetDelegate* delegate_;
+
+  // The root of the View hierarchy attached to this window.
+  // WARNING: see warning in tooltip_manager_ for ordering dependencies with
+  // this and tooltip_manager_.
+  scoped_ptr<RootView> root_view_;
+
+  // A theme provider to use when no other theme provider is specified.
+  scoped_ptr<DefaultThemeProvider> default_theme_provider_;
+
   DISALLOW_COPY_AND_ASSIGN(Widget);
 };
 
