@@ -610,11 +610,10 @@ void AutocompleteResult::CopyOldMatches(const AutocompleteInput& input,
   // if it doesn't, then once the providers are done and we expire the old
   // matches, the new ones will all become visible, so we won't have lost
   // anything permanently.
-  ProviderToMatchPtrs matches_per_provider, old_matches_per_provider;
-  BuildProviderToMatchPtrs(&matches_per_provider);
-  old_matches.BuildProviderToMatchPtrs(&old_matches_per_provider);
-  for (ProviderToMatchPtrs::const_iterator i =
-           old_matches_per_provider.begin();
+  ProviderToMatches matches_per_provider, old_matches_per_provider;
+  BuildProviderToMatches(&matches_per_provider);
+  old_matches.BuildProviderToMatches(&old_matches_per_provider);
+  for (ProviderToMatches::const_iterator i = old_matches_per_provider.begin();
        i != old_matches_per_provider.end(); ++i) {
     MergeMatchesByProvider(i->second, matches_per_provider[i->first]);
   }
@@ -727,42 +726,40 @@ void AutocompleteResult::Validate() const {
 }
 #endif
 
-void AutocompleteResult::BuildProviderToMatchPtrs(
-    ProviderToMatchPtrs* provider_to_matches) const {
+void AutocompleteResult::BuildProviderToMatches(
+    ProviderToMatches* provider_to_matches) const {
   for (ACMatches::const_iterator i = begin(); i != end(); ++i)
-    (*provider_to_matches)[i->provider].push_back(&(*i));
+    (*provider_to_matches)[i->provider].push_back(*i);
 }
 
 // static
 bool AutocompleteResult::HasMatchByDestination(const AutocompleteMatch& match,
-                                               const ACMatchPtrs& matches) {
-  for (ACMatchPtrs::const_iterator i = matches.begin(); i != matches.end();
-       ++i) {
-    if ((*i)->destination_url == match.destination_url)
+                                               const ACMatches& matches) {
+  for (ACMatches::const_iterator i = matches.begin(); i != matches.end(); ++i) {
+    if (i->destination_url == match.destination_url)
       return true;
   }
   return false;
 }
 
-void AutocompleteResult::MergeMatchesByProvider(
-    const ACMatchPtrs& old_matches,
-    const ACMatchPtrs& new_matches) {
+void AutocompleteResult::MergeMatchesByProvider(const ACMatches& old_matches,
+                                                const ACMatches& new_matches) {
   if (new_matches.size() >= old_matches.size())
     return;
 
   size_t delta = old_matches.size() - new_matches.size();
   const int max_relevance = (new_matches.empty() ?
-      matches_.front().relevance : new_matches[0]->relevance) - 1;
+      matches_.front().relevance : new_matches[0].relevance) - 1;
   // Because the goal is a visibly-stable popup, rather than one that preserves
   // the highest-relevance matches, we copy in the lowest-relevance matches
   // first. This means that within each provider's "group" of matches, any
   // synchronous matches (which tend to have the highest scores) will
   // "overwrite" the initial matches from that provider's previous results,
   // minimally disturbing the rest of the matches.
-  for (ACMatchPtrs::const_reverse_iterator i = old_matches.rbegin();
+  for (ACMatches::const_reverse_iterator i = old_matches.rbegin();
        i != old_matches.rend() && delta > 0; ++i) {
-    if (!HasMatchByDestination(**i, new_matches)) {
-      AutocompleteMatch match = **i;
+    if (!HasMatchByDestination(*i, new_matches)) {
+      AutocompleteMatch match = *i;
       match.relevance = std::min(max_relevance, match.relevance);
       match.from_previous = true;
       AddMatch(match);

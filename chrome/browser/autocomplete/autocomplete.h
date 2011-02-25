@@ -529,21 +529,20 @@ class AutocompleteResult {
   static const size_t kMaxMatches;
 
  private:
-  typedef std::vector<const AutocompleteMatch*> ACMatchPtrs;
-  typedef std::map<AutocompleteProvider*, ACMatchPtrs> ProviderToMatchPtrs;
+  typedef std::map<AutocompleteProvider*, ACMatches> ProviderToMatches;
 
   // Populates |provider_to_matches| from |matches_|.
-  void BuildProviderToMatchPtrs(ProviderToMatchPtrs* provider_to_matches) const;
+  void BuildProviderToMatches(ProviderToMatches* provider_to_matches) const;
 
   // Returns true if |matches| contains a match with the same destination as
   // |match|.
   static bool HasMatchByDestination(const AutocompleteMatch& match,
-                                    const ACMatchPtrs& matches);
+                                    const ACMatches& matches);
 
   // Copies matches into this result. |old_matches| gives the matches from the
   // last result, and |new_matches| the results from this result.
-  void MergeMatchesByProvider(const ACMatchPtrs& old_matches,
-                              const ACMatchPtrs& new_matches);
+  void MergeMatchesByProvider(const ACMatches& old_matches,
+                              const ACMatches& new_matches);
 
   ACMatches matches_;
 
