@@ -12,6 +12,7 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
+#include "base/timer.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "googleurl/src/gurl.h"
 
@@ -93,9 +94,6 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
   void StartSchedulingPeriodicCleanups();
   void StopSchedulingPeriodicCleanups();
 
-  // Schedules a periodic cleanup.
-  void SchedulePeriodicCleanup();
-
   // Deletes stale prerendered PrerenderContents.
   // Also identifies and kills PrerenderContents that use too much
   // resources.
@@ -149,9 +147,9 @@ class PrerenderManager : public base::RefCounted<PrerenderManager> {
   // This static variable should only be modified on the UI thread.
   static base::TimeTicks last_prefetch_seen_time_;
 
-  // Indicates whether we are currently performing periodic cleanups
-  // of pending prerendered pages.
-  bool periodic_cleanups_active_;
+  // RepeatingTimer to perform periodic cleanups of pending prerendered
+  // pages.
+  base::RepeatingTimer<PrerenderManager> repeating_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderManager);
 };

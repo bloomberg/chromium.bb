@@ -57,8 +57,7 @@ PrerenderManager::PrerenderManager(Profile* profile)
       max_prerender_age_(base::TimeDelta::FromSeconds(
           kDefaultMaxPrerenderAgeSeconds)),
       max_elements_(kDefaultMaxPrerenderElements),
-      prerender_contents_factory_(PrerenderContents::CreateFactory()),
-      periodic_cleanups_active_(false) {
+      prerender_contents_factory_(PrerenderContents::CreateFactory()) {
 }
 
 PrerenderManager::~PrerenderManager() {
@@ -267,26 +266,16 @@ bool PrerenderManager::ShouldRecordWindowedPPLT() const {
 }
 
 void PrerenderManager::StartSchedulingPeriodicCleanups() {
-  if (periodic_cleanups_active_)
+  if (repeating_timer_.IsRunning())
     return;
-  periodic_cleanups_active_ = true;
-  SchedulePeriodicCleanup();
+  repeating_timer_.Start(
+      base::TimeDelta::FromMilliseconds(kPeriodicCleanupIntervalMs),
+      this,
+      &PrerenderManager::PeriodicCleanup);
 }
 
 void PrerenderManager::StopSchedulingPeriodicCleanups() {
-  if (!periodic_cleanups_active_)
-    return;
-  periodic_cleanups_active_ = false;
-}
-
-void PrerenderManager::SchedulePeriodicCleanup() {
-  if (!periodic_cleanups_active_)
-    return;
-  BrowserThread::PostDelayedTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      NewRunnableMethod(this, &PrerenderManager::PeriodicCleanup),
-      kPeriodicCleanupIntervalMs);
+  repeating_timer_.Stop();
 }
 
 void PrerenderManager::PeriodicCleanup() {
@@ -305,7 +294,6 @@ void PrerenderManager::PeriodicCleanup() {
        ++it) {
     (*it)->DestroyWhenUsingTooManyResources();
   }
-  SchedulePeriodicCleanup();
 }
 
 }  // namespace prerender
