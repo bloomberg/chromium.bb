@@ -281,19 +281,23 @@ void SpeechInputBubbleImpl::Show() {
   bubble_content_ = new ContentView(delegate_);
   UpdateLayout();
 
-  views::Widget* parent = views::Widget::GetWidgetFromNativeWindow(
-      tab_contents()->view()->GetTopLevelNativeWindow());
-  info_bubble_ = InfoBubble::Show(parent,
-                                  GetInfoBubbleTarget(element_rect_),
-                                  BubbleBorder::TOP_LEFT, bubble_content_,
-                                  this);
+  views::Widget* tab = views::Widget::GetWidgetFromNativeView(
+      tab_contents()->view()->GetNativeView());
+  views::Widget* parent = tab ? tab->GetRootWidget() : NULL;
 
-  // We don't want fade outs when closing because it makes speech recognition
-  // appear slower than it is. Also setting it to false allows |Close| to
-  // destroy the bubble immediately instead of waiting for the fade animation
-  // to end so the caller can manage this object's life cycle like a normal
-  // stack based or member variable object.
-  info_bubble_->set_fade_away_on_close(false);
+  if (parent) {
+    info_bubble_ = InfoBubble::Show(parent,
+                                    GetInfoBubbleTarget(element_rect_),
+                                    BubbleBorder::TOP_LEFT, bubble_content_,
+                                    this);
+
+    // We don't want fade outs when closing because it makes speech recognition
+    // appear slower than it is. Also setting it to false allows |Close| to
+    // destroy the bubble immediately instead of waiting for the fade animation
+    // to end so the caller can manage this object's life cycle like a normal
+    // stack based or member variable object.
+    info_bubble_->set_fade_away_on_close(false);
+  }
 }
 
 void SpeechInputBubbleImpl::Hide() {
