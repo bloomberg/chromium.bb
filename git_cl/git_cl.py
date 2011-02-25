@@ -137,10 +137,9 @@ class Settings(object):
     Return is a string suitable for passing to gcl with the --cc flag.
     """
     if self.cc is None:
-      self.cc = self._GetConfig('rietveld.cc', error_ok=True)
+      base_cc = self._GetConfig('rietveld.cc', error_ok=True)
       more_cc = self._GetConfig('rietveld.extracc', error_ok=True)
-      if more_cc is not None:
-        self.cc += ',' + more_cc
+      self.cc = ','.join(filter(None, (base_cc, more_cc))) or ''
     return self.cc
 
   def GetRoot(self):
@@ -710,6 +709,8 @@ def CMDupload(parser, args):
   parser.add_option('-m', dest='message', help='message for patch')
   parser.add_option('-r', '--reviewers',
                     help='reviewer email addresses')
+  parser.add_option('--cc',
+                    help='cc email addresses')
   parser.add_option('--send-mail', action='store_true',
                     help='send email to reviewer immediately')
   parser.add_option("--emulate_svn_auto_props", action="store_true",
@@ -793,7 +794,9 @@ def CMDupload(parser, args):
       return 1
     upload_args.extend(['--message', subject])
     upload_args.extend(['--description', change_desc])
-    upload_args.extend(['--cc', settings.GetCCList()])
+    cc = ','.join(filter(None, (settings.GetCCList(), options.cc)))
+    if cc:
+      upload_args.extend(['--cc', cc])
 
   # Include the upstream repo's URL in the change -- this is useful for
   # projects that have their source spread across multiple repos.
