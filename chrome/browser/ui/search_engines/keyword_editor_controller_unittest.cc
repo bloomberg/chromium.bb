@@ -114,7 +114,7 @@ void KeywordEditorControllerTest::Init(bool simulate_load_failure) {
 
   model_ = profile_->GetTemplateURLModel();
   if (simulate_load_failure)
-    model_->OnWebDataServiceRequestDone(NULL, NULL);
+    model_->OnWebDataServiceRequestDone(0, NULL);
 
   controller_.reset(new KeywordEditorController(profile_.get()));
   controller_->table_model()->SetObserver(this);

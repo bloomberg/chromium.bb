@@ -2089,7 +2089,7 @@ TEST_F(ExtensionServiceTest, UpdatePendingExtension) {
   ASSERT_TRUE(extension);
 
   bool enabled = service_->GetExtensionById(kGoodId, false);
-  EXPECT_EQ(kGoodInitialState == Extension::ENABLED, enabled);
+  EXPECT_EQ(enabled, kGoodInitialState == Extension::ENABLED);
   EXPECT_EQ(kGoodInitialState,
             service_->extension_prefs()->GetExtensionState(extension->id()));
   EXPECT_EQ(kGoodInitialIncognitoEnabled,

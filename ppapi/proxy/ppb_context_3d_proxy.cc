@@ -395,7 +395,7 @@ Context3D::Context3D(const HostResource& resource)
     : PluginResource(resource),
       draw_(NULL),
       read_(NULL),
-      transfer_buffer_id_(NULL) {
+      transfer_buffer_id_(0) {
 }
 
 Context3D::~Context3D() {

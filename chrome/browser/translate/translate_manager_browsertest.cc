@@ -483,7 +483,7 @@ TEST_F(TranslateManagerTest, TestAllLanguages) {
     ASSERT_LT(i, static_cast<size_t>(NUM_LANGUAGES));
 
     std::string lang = LanguageCodeWithDialects(static_cast<Language>(i));
-    SCOPED_TRACE(::testing::Message::Message() << "Iteration " << i <<
+    SCOPED_TRACE(::testing::Message() << "Iteration " << i <<
         " language=" << lang);
 
     // We should not have a translate infobar.
@@ -1118,7 +1118,7 @@ TEST_F(TranslateManagerTest, BeforeTranslateExtraButtons) {
       static_cast<TestingProfile*>(contents()->profile());
   test_profile->set_off_the_record(true);
   for (int i = 0; i < 8; ++i) {
-    SCOPED_TRACE(::testing::Message::Message() << "Iteration " << i <<
+    SCOPED_TRACE(::testing::Message() << "Iteration " << i <<
         " incognito mode=" << test_profile->IsOffTheRecord());
     SimulateNavigation(GURL("http://www.google.fr"), "Le Google", "fr", true);
     infobar = GetTranslateInfoBar();
@@ -1150,7 +1150,7 @@ TEST_F(TranslateManagerTest, BeforeTranslateExtraButtons) {
   // to be shown (in non incognito mode only).
   test_profile->set_off_the_record(true);
   for (int i = 0; i < 8; ++i) {
-    SCOPED_TRACE(::testing::Message::Message() << "Iteration " << i <<
+    SCOPED_TRACE(::testing::Message() << "Iteration " << i <<
         " incognito mode=" << test_profile->IsOffTheRecord());
     SimulateNavigation(GURL("http://www.google.de"), "Das Google", "de", true);
     infobar = GetTranslateInfoBar();

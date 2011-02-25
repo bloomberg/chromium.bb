@@ -49,7 +49,7 @@ TEST_F(SessionStartupPrefTest, URLListManagedOverridesUser) {
   EXPECT_EQ(3u, result.urls.size());
 
   SessionStartupPref override_test =
-      SessionStartupPref::SessionStartupPref(SessionStartupPref::URLS);
+      SessionStartupPref(SessionStartupPref::URLS);
   override_test.urls.push_back(GURL("dev.chromium.org"));
   SessionStartupPref::SetStartupPref(pref_service_.get(), override_test);
 
