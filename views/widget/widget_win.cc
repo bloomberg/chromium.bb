@@ -78,7 +78,7 @@ WidgetWin::WidgetWin()
     : close_widget_factory_(this),
       active_mouse_tracking_flags_(0),
       has_capture_(false),
-      use_layered_buffer_(true),
+      use_layered_buffer_(false),
       layered_alpha_(255),
       delete_on_destroy_(true),
       can_update_layered_window_(true),
