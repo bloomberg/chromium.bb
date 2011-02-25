@@ -81,7 +81,8 @@ cr.define('options', function() {
    * @constructor
    */
   function SearchPage() {
-    OptionsPage.call(this, 'search', templateData.searchPage, 'searchPage');
+    OptionsPage.call(this, 'search', templateData.searchPageTabTitle,
+        'searchPage');
     this.searchActive = false;
   }
 

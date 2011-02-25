@@ -40,8 +40,7 @@ void CoreOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_MANAGED_PREFS));
 
   // Search
-  localized_strings->SetString("searchPageTitle",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SEARCH_PAGE_TITLE));
+  RegisterTitle(localized_strings, "searchPage", IDS_OPTIONS_SEARCH_PAGE_TITLE);
   localized_strings->SetString("searchPageNoMatches",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SEARCH_PAGE_NO_MATCHES));
   localized_strings->SetString("searchPageHelpLabel",
