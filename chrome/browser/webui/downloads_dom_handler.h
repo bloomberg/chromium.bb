@@ -11,7 +11,7 @@
 #include "base/scoped_callback_factory.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_manager.h"
-#include "chrome/browser/webui/web_ui.h"
+#include "content/browser/webui/web_ui.h"
 
 class ListValue;
 

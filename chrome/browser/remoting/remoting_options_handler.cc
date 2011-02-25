@@ -7,8 +7,8 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/service/service_process_control_manager.h"
-#include "chrome/browser/webui/web_ui.h"
 #include "chrome/common/remoting/chromoting_host_info.h"
+#include "content/browser/webui/web_ui.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_WEBUI_GPU_INTERNALS_UI_H_
 #pragma once
 
-#include "chrome/browser/webui/web_ui.h"
+#include "content/browser/webui/web_ui.h"
 
 class GpuInternalsUI : public WebUI {
  public:

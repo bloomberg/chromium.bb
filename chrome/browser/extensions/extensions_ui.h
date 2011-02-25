@@ -14,10 +14,10 @@
 #include "chrome/browser/extensions/pack_extension_job.h"
 #include "chrome/browser/ui/shell_dialogs.h"
 #include "chrome/browser/webui/chrome_url_data_manager.h"
-#include "chrome/browser/webui/web_ui.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
+#include "content/browser/webui/web_ui.h"
 #include "googleurl/src/gurl.h"
 
 class DictionaryValue;

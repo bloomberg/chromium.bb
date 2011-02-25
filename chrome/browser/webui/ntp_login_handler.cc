@@ -12,9 +12,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_setup_flow.h"
-#include "chrome/browser/webui/web_ui_util.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/pref_names.h"
+#include "content/browser/webui/web_ui_util.h"
 
 NTPLoginHandler::NTPLoginHandler() {
 }

@@ -13,8 +13,6 @@
 #include "chrome/browser/renderer_host/render_view_host_factory.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/renderer_host/site_instance.h"
-#include "chrome/browser/webui/web_ui.h"
-#include "chrome/browser/webui/web_ui_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
@@ -24,6 +22,8 @@
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "content/browser/webui/web_ui.h"
+#include "content/browser/webui/web_ui_factory.h"
 
 namespace base {
 class WaitableEvent;

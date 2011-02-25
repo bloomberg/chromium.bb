@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEBUI_WEB_UI_BROWSERTEST_H_
-#define CHROME_BROWSER_WEBUI_WEB_UI_BROWSERTEST_H_
+#ifndef CONTENT_BROWSER_WEBUI_WEB_UI_BROWSERTEST_H_
+#define CONTENT_BROWSER_WEBUI_WEB_UI_BROWSERTEST_H_
 #pragma once
 
 #include <string>
 
 #include "base/file_path.h"
-#include "chrome/browser/webui/web_ui_handler_browsertest.h"
 #include "chrome/test/in_process_browser_test.h"
+#include "content/browser/webui/web_ui_handler_browsertest.h"
 
 class WebUIMessageHandler;
 
@@ -55,4 +55,4 @@ class WebUIBrowserTest : public InProcessBrowserTest {
   FilePath test_data_directory_;
 };
 
-#endif  // CHROME_BROWSER_WEBUI_WEB_UI_BROWSERTEST_H_
+#endif  // CONTENT_BROWSER_WEBUI_WEB_UI_BROWSERTEST_H_

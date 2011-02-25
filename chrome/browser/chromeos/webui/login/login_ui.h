@@ -11,7 +11,7 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/browser/webui/chrome_url_data_manager.h"
-#include "chrome/browser/webui/web_ui.h"
+#include "content/browser/webui/web_ui.h"
 
 class Profile;
 

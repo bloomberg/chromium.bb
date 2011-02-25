@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/webui/web_ui_handler_browsertest.h"
+#include "content/browser/webui/web_ui_handler_browsertest.h"
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/renderer_host/render_view_host.h"

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEBUI_WEB_UI_HANDLER_BROWSERTEST_H_
-#define CHROME_BROWSER_WEBUI_WEB_UI_HANDLER_BROWSERTEST_H_
+#ifndef CONTENT_BROWSER_WEBUI_WEB_UI_HANDLER_BROWSERTEST_H_
+#define CONTENT_BROWSER_WEBUI_WEB_UI_HANDLER_BROWSERTEST_H_
 #pragma once
 
 #include <string>
 
-#include "chrome/browser/webui/web_ui.h"
+#include "content/browser/webui/web_ui.h"
 
 // This class registers test framework specific handlers on WebUI objects.
 class WebUIHandlerBrowserTest : public WebUIMessageHandler {
@@ -37,4 +37,4 @@ class WebUIHandlerBrowserTest : public WebUIMessageHandler {
   bool is_waiting_;
 };
 
-#endif  // CHROME_BROWSER_WEBUI_WEB_UI_HANDLER_BROWSERTEST_H_
+#endif  // CONTENT_BROWSER_WEBUI_WEB_UI_HANDLER_BROWSERTEST_H_

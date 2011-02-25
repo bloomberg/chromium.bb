@@ -11,9 +11,9 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/remoting/setup_flow_get_status_step.h"
-#include "chrome/browser/webui/web_ui_util.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
+#include "content/browser/webui/web_ui_util.h"
 
 namespace remoting {
 

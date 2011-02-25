@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_WEBUI_SLIDESHOW_UI_H_
 #pragma once
 
-#include "chrome/browser/webui/web_ui.h"
+#include "content/browser/webui/web_ui.h"
 
 class SlideshowUI : public WebUI {
  public:

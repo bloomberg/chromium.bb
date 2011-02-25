@@ -7,10 +7,10 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/webui/web_ui_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/site_instance.h"
+#include "content/browser/webui/web_ui_factory.h"
 
 // static
 BrowsingInstance::ProfileSiteInstanceMap

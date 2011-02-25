@@ -8,8 +8,8 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/webui/html_dialog_ui.h"
-#include "chrome/browser/webui/web_ui_util.h"
 #include "chrome/common/bindings_policy.h"
+#include "content/browser/webui/web_ui_util.h"
 
 static base::LazyInstance<PropertyAccessor<ConstrainedHtmlUIDelegate*> >
     g_constrained_html_ui_property_accessor(base::LINKER_INITIALIZED);

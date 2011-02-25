@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_WEBUI_REGISTER_PAGE_UI_H_
 #pragma once
 
-#include "chrome/browser/webui/web_ui.h"
+#include "content/browser/webui/web_ui.h"
 
 // A custom WebUI that defines datasource for host registration page that
 // is used in Chrome OS to register product on first sign in.

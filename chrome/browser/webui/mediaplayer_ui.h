@@ -10,11 +10,11 @@
 #include <vector>
 
 #include "chrome/browser/webui/chrome_url_data_manager.h"
-#include "chrome/browser/webui/web_ui.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
+#include "content/browser/webui/web_ui.h"
 #include "net/base/directory_lister.h"
 #include "net/url_request/url_request.h"
 

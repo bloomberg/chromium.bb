@@ -7,7 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/webui/web_ui.h"
+#include "content/browser/webui/web_ui.h"
 
 OptionsManagedBannerHandler::OptionsManagedBannerHandler(
     WebUI* web_ui, const string16& page_name, OptionsPage page)

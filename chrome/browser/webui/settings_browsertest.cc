@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/webui/options/core_options_handler.h"
-#include "chrome/browser/webui/web_ui_browsertest.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/ui_test_utils.h"
+#include "content/browser/webui/web_ui_browsertest.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/ref_counted.h"
-#include "chrome/browser/webui/web_ui.h"
+#include "content/browser/webui/web_ui.h"
 
 class PrintPreviewUIHTMLSource;
 
