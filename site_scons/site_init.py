@@ -145,8 +145,8 @@ specifying --mode=default.
   # the current environment.
   for mode in build_modes:
     if mode not in all_build_types and mode not in all_build_groups:
-      print ('Warning: Ignoring build mode "%s", which is not defined on this '
-             'platform.' % mode)
+      raise Exception('Build mode "%s" is not defined on this platform'
+                      % mode)
 
 
 #------------------------------------------------------------------------------
