@@ -109,6 +109,9 @@ class Automation {
   // Gets the version of the runing browser.
   void GetVersion(std::string* version);
 
+  // Waits for all tabs to stop loading.
+  void WaitForAllTabsToStopLoading(bool* success);
+
  private:
   typedef std::map<int, scoped_refptr<TabProxy> > TabIdMap;
   TabProxy* GetTabById(int tab_id);

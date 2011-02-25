@@ -30,6 +30,9 @@ bool WebDriverCommand::Init(Response* const response) {
                         kSessionNotFound);
     return false;
   }
+  if (!session_->WaitForAllTabsToStopLoading()) {
+    LOG(WARNING) << "Failed to wait for all tabs to stop loading";
+  }
 
   response->SetField("sessionId", Value::CreateStringValue(session_id));
   return true;

@@ -1972,6 +1972,55 @@ void InputEventAckNotificationObserver::Observe(
   }
 }
 
+AllTabsStoppedLoadingObserver::AllTabsStoppedLoadingObserver(
+    AutomationProvider* automation,
+    IPC::Message* reply_message)
+    : automation_(automation->AsWeakPtr()),
+      reply_message_(reply_message) {
+  registrar_.Add(this, NotificationType::LOAD_STOP,
+                 NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::TAB_CONTENTS_DISCONNECTED,
+                 NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::TAB_CONTENTS_DESTROYED,
+                 NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::TAB_CONTENTS_SWAPPED,
+                 NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::TAB_CLOSED,
+                 NotificationService::AllSources());
+  CheckIfStopped();
+}
+
+AllTabsStoppedLoadingObserver::~AllTabsStoppedLoadingObserver() {}
+
+void AllTabsStoppedLoadingObserver::Observe(
+    NotificationType type,
+    const NotificationSource& source,
+    const NotificationDetails& details) {
+  CheckIfStopped();
+}
+
+void AllTabsStoppedLoadingObserver::CheckIfStopped() {
+  bool done_loading = true;
+  BrowserList::const_iterator iter = BrowserList::begin();
+  for (; iter != BrowserList::end(); ++iter) {
+    Browser* browser = *iter;
+    for (int i = 0; i < browser->tab_count(); ++i) {
+      TabContents* tab = browser->GetTabContentsAt(i);
+      if (tab->is_loading()) {
+        done_loading = false;
+        break;
+      }
+    }
+    if (!done_loading)
+      break;
+  }
+  if (done_loading) {
+    AutomationJSONReply(automation_,
+                        reply_message_.release()).SendSuccess(NULL);
+    delete this;
+  }
+}
+
 NewTabObserver::NewTabObserver(AutomationProvider* automation,
                                IPC::Message* reply_message)
     : automation_(automation->AsWeakPtr()),

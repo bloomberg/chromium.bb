@@ -144,6 +144,9 @@ class Session {
   ErrorCode GetElementLocationInView(
       const WebElementId& element, int* x, int* y);
 
+  // Waits for all tabs to stop loading. Returns true on success.
+  bool WaitForAllTabsToStopLoading();
+
   inline const std::string& id() const { return id_; }
 
   inline int implicit_wait() const { return implicit_wait_; }

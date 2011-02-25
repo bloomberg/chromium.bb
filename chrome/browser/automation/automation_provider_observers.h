@@ -1073,6 +1073,27 @@ class InputEventAckNotificationObserver : public NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(InputEventAckNotificationObserver);
 };
 
+// Allows the automation provider to wait for all tabs to stop loading.
+class AllTabsStoppedLoadingObserver : public NotificationObserver {
+ public:
+  // Registers for notifications and checks to see if all tabs have stopped.
+  AllTabsStoppedLoadingObserver(AutomationProvider* automation,
+                                IPC::Message* reply_message);
+  virtual ~AllTabsStoppedLoadingObserver();
+
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+ private:
+  void CheckIfStopped();
+  NotificationRegistrar registrar_;
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
+
+  DISALLOW_COPY_AND_ASSIGN(AllTabsStoppedLoadingObserver);
+};
+
 // Observer used to listen for new tab creation to complete.
 class NewTabObserver : public NotificationObserver {
  public:

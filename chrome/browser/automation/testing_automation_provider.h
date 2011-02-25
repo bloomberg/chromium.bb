@@ -772,6 +772,10 @@ class TestingAutomationProvider : public AutomationProvider,
                                DictionaryValue* args,
                                IPC::Message* reply_message);
 
+  // Waits for all tabs to stop loading.
+  void WaitForAllTabsToStopLoading(DictionaryValue* args,
+                                   IPC::Message* reply_message);
+
 #if defined(OS_CHROMEOS)
   void LoginAsGuest(DictionaryValue* args, IPC::Message* reply_message);
 

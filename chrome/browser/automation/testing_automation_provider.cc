@@ -2090,6 +2090,8 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
 
   // Map json commands to their handlers.
   std::map<std::string, JsonHandler> handler_map;
+  handler_map["WaitForAllTabsToStopLoading"] =
+      &TestingAutomationProvider::WaitForAllTabsToStopLoading;
 #if defined(OS_CHROMEOS)
   handler_map["LoginAsGuest"] = &TestingAutomationProvider::LoginAsGuest;
   handler_map["Login"] = &TestingAutomationProvider::Login;
@@ -4621,6 +4623,12 @@ void TestingAutomationProvider::SendKeyEventToActiveTab(
   new InputEventAckNotificationObserver(this, reply_message, event.type);
   browser->GetSelectedTabContents()->render_view_host()->
     ForwardKeyboardEvent(event);
+}
+
+void TestingAutomationProvider::WaitForAllTabsToStopLoading(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  new AllTabsStoppedLoadingObserver(this, reply_message);
 }
 
 void TestingAutomationProvider::WaitForTabCountToBecome(

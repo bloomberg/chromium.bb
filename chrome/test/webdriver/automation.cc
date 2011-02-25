@@ -434,6 +434,14 @@ void Automation::GetVersion(std::string* version) {
   *version = launcher_->automation()->server_version();
 }
 
+void Automation::WaitForAllTabsToStopLoading(bool* success) {
+  DictionaryValue dict;
+  dict.SetString("command", "WaitForAllTabsToStopLoading");
+  std::string request, reply;
+  base::JSONWriter::Write(&dict, false, &request);
+  *success = launcher_->automation()->SendJSONRequest(request, &reply);
+}
+
 TabProxy* Automation::GetTabById(int tab_id) {
   TabIdMap::const_iterator iter = tab_id_map_.find(tab_id);
   if (iter != tab_id_map_.end()) {

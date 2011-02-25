@@ -549,6 +549,17 @@ ErrorCode Session::GetElementLocationInView(
   return kSuccess;
 }
 
+bool Session::WaitForAllTabsToStopLoading() {
+  if (!automation_.get())
+    return true;
+  bool success = false;
+  RunSessionTask(NewRunnableMethod(
+      automation_.get(),
+      &Automation::WaitForAllTabsToStopLoading,
+      &success));
+  return success;
+}
+
 void Session::RunSessionTask(Task* task) {
   base::WaitableEvent done_event(false, false);
   thread_.message_loop_proxy()->PostTask(FROM_HERE, NewRunnableMethod(
