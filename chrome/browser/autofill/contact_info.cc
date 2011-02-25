@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -135,7 +135,7 @@ string16 ContactInfo::GetFieldText(const AutoFillType& type) const {
 
 void ContactInfo::SetInfo(const AutoFillType& type, const string16& value) {
   AutoFillFieldType field_type = type.field_type();
-  DCHECK_EQ(type.group(), AutoFillType::CONTACT_INFO);
+  DCHECK_EQ(AutoFillType::CONTACT_INFO, type.group());
   if (field_type == NAME_FIRST)
     SetFirst(value);
   else if (field_type == NAME_MIDDLE || field_type == NAME_MIDDLE_INITIAL)

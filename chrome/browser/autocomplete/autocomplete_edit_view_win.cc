@@ -333,8 +333,7 @@ HDC WINAPI BeginPaintIntercept(HWND hWnd, LPPAINTSTRUCT lpPaint) {
 
 // Intercepted method for EndPaint(). Must use __stdcall convention.
 BOOL WINAPI EndPaintIntercept(HWND hWnd, const PAINTSTRUCT* lpPaint) {
-  return (edit_hwnd && (hWnd == edit_hwnd)) ?
-      true : ::EndPaint(hWnd, lpPaint);
+  return (edit_hwnd && (hWnd == edit_hwnd)) || ::EndPaint(hWnd, lpPaint);
 }
 
 // Returns a lazily initialized property bag accessor for saving our state in a
@@ -346,30 +345,11 @@ PropertyAccessor<AutocompleteEditState>* GetStateAccessor() {
 
 class PaintPatcher {
  public:
-  PaintPatcher() : refcount_(0) { }
-  ~PaintPatcher() { DCHECK_EQ(refcount_, 0U); }
+  PaintPatcher();
+  ~PaintPatcher();
 
-  void RefPatch() {
-    if (refcount_ == 0) {
-      DCHECK(!begin_paint_.is_patched());
-      DCHECK(!end_paint_.is_patched());
-      begin_paint_.Patch(L"riched20.dll", "user32.dll", "BeginPaint",
-                         &BeginPaintIntercept);
-      end_paint_.Patch(L"riched20.dll", "user32.dll", "EndPaint",
-                       &EndPaintIntercept);
-    }
-    ++refcount_;
-  }
-
-  void DerefPatch() {
-    DCHECK(begin_paint_.is_patched());
-    DCHECK(end_paint_.is_patched());
-    --refcount_;
-    if (refcount_ == 0) {
-      begin_paint_.Unpatch();
-      end_paint_.Unpatch();
-    }
-  }
+  void RefPatch();
+  void DerefPatch();
 
  private:
   size_t refcount_;
@@ -378,6 +358,35 @@ class PaintPatcher {
 
   DISALLOW_COPY_AND_ASSIGN(PaintPatcher);
 };
+
+PaintPatcher::PaintPatcher() : refcount_(0) {
+}
+
+PaintPatcher::~PaintPatcher() {
+  DCHECK_EQ(0U, refcount_);
+}
+
+void PaintPatcher::RefPatch() {
+  if (refcount_ == 0) {
+    DCHECK(!begin_paint_.is_patched());
+    DCHECK(!end_paint_.is_patched());
+    begin_paint_.Patch(L"riched20.dll", "user32.dll", "BeginPaint",
+                       &BeginPaintIntercept);
+    end_paint_.Patch(L"riched20.dll", "user32.dll", "EndPaint",
+                     &EndPaintIntercept);
+  }
+  ++refcount_;
+}
+
+void PaintPatcher::DerefPatch() {
+  DCHECK(begin_paint_.is_patched());
+  DCHECK(end_paint_.is_patched());
+  --refcount_;
+  if (refcount_ == 0) {
+    begin_paint_.Unpatch();
+    end_paint_.Unpatch();
+  }
+}
 
 base::LazyInstance<PaintPatcher> g_paint_patcher(base::LINKER_INITIALIZED);
 
@@ -1089,7 +1098,7 @@ bool AutocompleteEditViewWin::IsItemForCommandIdDynamic(int command_id) const {
 
 string16 AutocompleteEditViewWin::GetLabelForCommandId(
     int command_id) const {
-  DCHECK_EQ(command_id, IDS_PASTE_AND_GO);
+  DCHECK_EQ(IDS_PASTE_AND_GO, command_id);
   return l10n_util::GetStringUTF16(model_->is_paste_and_search() ?
       IDS_PASTE_AND_SEARCH : IDS_PASTE_AND_GO);
 }
@@ -2068,7 +2077,7 @@ void AutocompleteEditViewWin::GetSelection(CHARRANGE& sel) const {
     return;
   ScopedComPtr<ITextSelection> selection;
   const HRESULT hr = text_object_model->GetSelection(selection.Receive());
-  DCHECK_EQ(hr, S_OK);
+  DCHECK_EQ(S_OK, hr);
   long flags;
   selection->GetFlags(&flags);
   if (flags & tomSelStartActive)
@@ -2098,7 +2107,7 @@ void AutocompleteEditViewWin::SetSelection(LONG start, LONG end) {
     return;
   ScopedComPtr<ITextSelection> selection;
   const HRESULT hr = text_object_model->GetSelection(selection.Receive());
-  DCHECK_EQ(hr, S_OK);
+  DCHECK_EQ(S_OK, hr);
   selection->SetFlags(tomSelStartActive);
 }
 
@@ -2332,9 +2341,10 @@ void AutocompleteEditViewWin::DrawSlashForInsecureScheme(
           canvas_clip_rect.top, &canvas_paint_clip_rect);
 }
 
-void AutocompleteEditViewWin::DrawDropHighlight(
-    HDC hdc, const CRect& client_rect, const CRect& paint_clip_rect) {
-  DCHECK_NE(drop_highlight_position_, -1);
+void AutocompleteEditViewWin::DrawDropHighlight(HDC hdc,
+                                                const CRect& client_rect,
+                                                const CRect& paint_clip_rect) {
+  DCHECK_NE(-1, drop_highlight_position_);
 
   const int highlight_y = client_rect.top + font_y_adjustment_;
   const int highlight_x = PosFromChar(drop_highlight_position_).x - 1;

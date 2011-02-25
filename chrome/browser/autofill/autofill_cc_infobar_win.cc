@@ -113,7 +113,7 @@ void SaveCCInfoConfirmInfoBar::Layout() {
 
 void SaveCCInfoConfirmInfoBar::LinkActivated(views::Link* source,
                                              int event_flags) {
-  DCHECK_EQ(source, link_);
+  DCHECK_EQ(link_, source);
   DCHECK(link_->IsVisible());
   DCHECK(!link_->GetText().empty());
   GetDelegate()->LinkClicked(

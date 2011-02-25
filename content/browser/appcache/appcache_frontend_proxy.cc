@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,7 +22,7 @@ void AppCacheFrontendProxy::OnStatusChanged(const std::vector<int>& host_ids,
 
 void AppCacheFrontendProxy::OnEventRaised(const std::vector<int>& host_ids,
                                           appcache::EventID event_id) {
-  DCHECK_NE(event_id, appcache::PROGRESS_EVENT);  // See OnProgressEventRaised.
+  DCHECK_NE(appcache::PROGRESS_EVENT, event_id);  // See OnProgressEventRaised.
   sender_->Send(new AppCacheMsg_EventRaised(host_ids, event_id));
 }
 

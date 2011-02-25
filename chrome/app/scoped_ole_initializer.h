@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,7 @@ class ScopedOleInitializer {
  public:
   ScopedOleInitializer() {
     int ole_result = OleInitialize(NULL);
-    DCHECK_EQ(ole_result, S_OK);
+    DCHECK_EQ(S_OK, ole_result);
   }
   ~ScopedOleInitializer() {
     OleUninitialize();

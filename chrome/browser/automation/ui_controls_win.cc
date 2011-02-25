@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -325,18 +325,24 @@ bool SendMouseEventsImpl(MouseButton type, int state, Task* task) {
 
 // public functions -----------------------------------------------------------
 
-bool SendKeyPress(gfx::NativeWindow window, ui::KeyboardCode key,
-                  bool control, bool shift, bool alt, bool command) {
-  DCHECK_EQ(command, false);  // No command key on Windows
+bool SendKeyPress(gfx::NativeWindow window,
+                  ui::KeyboardCode key,
+                  bool control,
+                  bool shift,
+                  bool alt,
+                  bool command) {
+  DCHECK(!command);  // No command key on Windows
   return SendKeyPressImpl(key, control, shift, alt, NULL);
 }
 
 bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
                                 ui::KeyboardCode key,
-                                bool control, bool shift, bool alt,
+                                bool control,
+                                bool shift,
+                                bool alt,
                                 bool command,
                                 Task* task) {
-  DCHECK_EQ(command, false);  // No command key on Windows
+  DCHECK(!command);  // No command key on Windows
   return SendKeyPressImpl(key, control, shift, alt, task);
 }
 
@@ -360,8 +366,10 @@ bool SendMouseClick(MouseButton type) {
   return SendMouseEventsImpl(type, UP | DOWN, NULL);
 }
 
-void MoveMouseToCenterAndPress(views::View* view, MouseButton button,
-                               int state, Task* task) {
+void MoveMouseToCenterAndPress(views::View* view,
+                               MouseButton button,
+                               int state,
+                               Task* task) {
   DCHECK(view);
   DCHECK(view->GetWidget());
   gfx::Point view_center(view->width() / 2, view->height() / 2);

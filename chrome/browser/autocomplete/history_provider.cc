@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -135,7 +135,7 @@ size_t HistoryProvider::TrimHttpPrefix(string16* url) {
     return 0;
   size_t scheme_pos =
       url->find(ASCIIToUTF16(chrome::kHttpScheme) + char16(':'));
-  DCHECK_NE(scheme_pos, string16::npos);
+  DCHECK_NE(string16::npos, scheme_pos);
 
   // Erase scheme plus up to two slashes.
   size_t prefix_end = scheme_pos + strlen(chrome::kHttpScheme) + 1;

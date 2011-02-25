@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -183,7 +183,7 @@ void AutocompleteHistoryManager::OnWebDataServiceRequestDone(
     return;
   }
 
-  DCHECK_EQ(result->GetType(), AUTOFILL_VALUE_RESULT);
+  DCHECK_EQ(AUTOFILL_VALUE_RESULT, result->GetType());
   const WDResult<std::vector<string16> >* autofill_result =
       static_cast<const WDResult<std::vector<string16> >*>(result);
   std::vector<string16> suggestions = autofill_result->GetValue();

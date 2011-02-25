@@ -97,8 +97,11 @@ namespace ui_controls {
 
 bool SendKeyPress(gfx::NativeWindow window,
                   ui::KeyboardCode key,
-                  bool control, bool shift, bool alt, bool command) {
-  DCHECK_EQ(command, false);  // No command key on Linux
+                  bool control,
+                  bool shift,
+                  bool alt,
+                  bool command) {
+  DCHECK(!command);  // No command key on Linux
   GdkWindow* event_window = NULL;
   GtkWidget* grab_widget = gtk_grab_get_current();
   if (grab_widget) {
@@ -137,10 +140,12 @@ bool SendKeyPress(gfx::NativeWindow window,
 
 bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
                                 ui::KeyboardCode key,
-                                bool control, bool shift,
-                                bool alt, bool command,
+                                bool control,
+                                bool shift,
+                                bool alt,
+                                bool command,
                                 Task* task) {
-  DCHECK_EQ(command, false);  // No command key on Linux
+  DCHECK(!command);  // No command key on Linux
   int release_count = 1;
   if (control)
     release_count++;

@@ -1171,7 +1171,7 @@ void RecordLastRunAppBundlePath() {
 // window controller.
 - (void)aboutWindowClosed:(NSNotification*)notification {
   NSWindow* window = [aboutController_ window];
-  DCHECK_EQ(window, [notification object]);
+  DCHECK_EQ([notification object], window);
   [[NSNotificationCenter defaultCenter]
       removeObserver:self
                 name:NSWindowWillCloseNotification
@@ -1239,7 +1239,7 @@ void RecordLastRunAppBundlePath() {
       for (ExtensionList::const_iterator cursor = applications.begin();
            cursor != applications.end();
            ++cursor, ++position) {
-        DCHECK_EQ(position, applications.GetPosition(*cursor));
+        DCHECK_EQ(applications.GetPosition(*cursor), position);
         NSString* itemStr =
             base::SysUTF16ToNSString(UTF8ToUTF16((*cursor)->name()));
         scoped_nsobject<NSMenuItem> appItem([[NSMenuItem alloc]

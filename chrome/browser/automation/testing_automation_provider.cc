@@ -4752,7 +4752,7 @@ void TestingAutomationProvider::OnRedirectQueryComplete(
     GURL from_url,
     bool success,
     history::RedirectList* redirects) {
-  DCHECK_EQ(request_handle, redirect_query_);
+  DCHECK_EQ(redirect_query_, request_handle);
   DCHECK(reply_message_ != NULL);
 
   std::vector<GURL> redirects_gurl;

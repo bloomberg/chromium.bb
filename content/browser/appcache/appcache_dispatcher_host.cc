@@ -8,8 +8,8 @@
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
-#include "content/browser/appcache/chrome_appcache_service.h"
 #include "chrome/common/render_messages.h"
+#include "content/browser/appcache/chrome_appcache_service.h"
 
 AppCacheDispatcherHost::AppCacheDispatcherHost(
     net::URLRequestContext* request_context,
@@ -217,21 +217,21 @@ void AppCacheDispatcherHost::OnSwapCache(int host_id,
 void AppCacheDispatcherHost::GetStatusCallback(
     appcache::Status status, void* param) {
   IPC::Message* reply_msg = reinterpret_cast<IPC::Message*>(param);
-  DCHECK_EQ(reply_msg, pending_reply_msg_.get());
+  DCHECK_EQ(pending_reply_msg_.get(), reply_msg);
   AppCacheMsg_GetStatus::WriteReplyParams(reply_msg, status);
   Send(pending_reply_msg_.release());
 }
 
 void AppCacheDispatcherHost::StartUpdateCallback(bool result, void* param) {
   IPC::Message* reply_msg = reinterpret_cast<IPC::Message*>(param);
-  DCHECK_EQ(reply_msg, pending_reply_msg_.get());
+  DCHECK_EQ(pending_reply_msg_.get(), reply_msg);
   AppCacheMsg_StartUpdate::WriteReplyParams(reply_msg, result);
   Send(pending_reply_msg_.release());
 }
 
 void AppCacheDispatcherHost::SwapCacheCallback(bool result, void* param) {
   IPC::Message* reply_msg = reinterpret_cast<IPC::Message*>(param);
-  DCHECK_EQ(reply_msg, pending_reply_msg_.get());
+  DCHECK_EQ(pending_reply_msg_.get(), reply_msg);
   AppCacheMsg_SwapCache::WriteReplyParams(reply_msg, result);
   Send(pending_reply_msg_.release());
 }

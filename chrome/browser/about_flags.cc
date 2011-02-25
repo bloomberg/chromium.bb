@@ -328,8 +328,8 @@ void SetEnabledFlags(
 
 // Returns the name used in prefs for the choice at the specified index.
 std::string NameForChoice(const Experiment& e, int index) {
-  DCHECK_EQ(e.type, Experiment::MULTI_VALUE);
-  DCHECK(index < e.num_choices);
+  DCHECK_EQ(Experiment::MULTI_VALUE, e.type);
+  DCHECK_LT(index, e.num_choices);
   return std::string(e.internal_name) + about_flags::testing::kMultiSeparator +
       base::IntToString(index);
 }
@@ -339,7 +339,7 @@ void AddInternalName(const Experiment& e, std::set<std::string>* names) {
   if (e.type == Experiment::SINGLE_VALUE) {
     names->insert(e.internal_name);
   } else {
-    DCHECK_EQ(e.type, Experiment::MULTI_VALUE);
+    DCHECK_EQ(Experiment::MULTI_VALUE, e.type);
     for (int i = 0; i < e.num_choices; ++i)
       names->insert(NameForChoice(e, i));
   }
@@ -421,7 +421,7 @@ void GetSanitizedEnabledFlagsForCurrentPlatform(
 // Returns the Value representing the choice data in the specified experiment.
 Value* CreateChoiceData(const Experiment& experiment,
                         const std::set<std::string>& enabled_experiments) {
-  DCHECK_EQ(experiment.type, Experiment::MULTI_VALUE);
+  DCHECK_EQ(Experiment::MULTI_VALUE, experiment.type);
   ListValue* result = new ListValue;
   for (int i = 0; i < experiment.num_choices; ++i) {
     const Experiment::Choice& choice = experiment.choices[i];

@@ -452,10 +452,10 @@ void AutoFillManager::OnFillAutoFillFormData(int query_id,
       if ((*iter) == field) {
         AutoFillType autofill_type(autofill_field->type());
         if (profile) {
-          DCHECK_NE(autofill_type.group(), AutoFillType::CREDIT_CARD);
+          DCHECK_NE(AutoFillType::CREDIT_CARD, autofill_type.group());
           FillFormField(profile, autofill_type, &(*iter));
         } else {
-          DCHECK_EQ(autofill_type.group(), AutoFillType::CREDIT_CARD);
+          DCHECK_EQ(AutoFillType::CREDIT_CARD, autofill_type.group());
           FillCreditCardFormField(credit_card, autofill_type, &(*iter));
         }
         break;
@@ -491,10 +491,10 @@ void AutoFillManager::OnFillAutoFillFormData(int query_id,
     AutoFillType autofill_type(form_structure->field(k)->type());
     if (autofill_type.group() != AutoFillType::NO_GROUP) {
       if (profile) {
-        DCHECK_NE(autofill_type.group(), AutoFillType::CREDIT_CARD);
+        DCHECK_NE(AutoFillType::CREDIT_CARD, autofill_type.group());
         FillFormField(profile, autofill_type, &result.fields[j]);
       } else {
-        DCHECK_EQ(autofill_type.group(), AutoFillType::CREDIT_CARD);
+        DCHECK_EQ(AutoFillType::CREDIT_CARD, autofill_type.group());
         FillCreditCardFormField(credit_card, autofill_type, &result.fields[j]);
       }
     }
@@ -873,7 +873,7 @@ void AutoFillManager::FillCreditCardFormField(const CreditCard* credit_card,
                                               AutoFillType type,
                                               webkit_glue::FormField* field) {
   DCHECK(credit_card);
-  DCHECK_EQ(type.group(), AutoFillType::CREDIT_CARD);
+  DCHECK_EQ(AutoFillType::CREDIT_CARD, type.group());
   DCHECK(field);
 
   if (field->form_control_type() == ASCIIToUTF16("select-one")) {
@@ -898,7 +898,7 @@ void AutoFillManager::FillFormField(const AutoFillProfile* profile,
                                     AutoFillType type,
                                     webkit_glue::FormField* field) {
   DCHECK(profile);
-  DCHECK_NE(type.group(), AutoFillType::CREDIT_CARD);
+  DCHECK_NE(AutoFillType::CREDIT_CARD, type.group());
   DCHECK(field);
 
   if (type.subgroup() == AutoFillType::PHONE_NUMBER) {
