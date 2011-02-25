@@ -405,24 +405,42 @@ void ContentSettingsHandler::UpdateAllExceptionsViewsFromModel() {
 void ContentSettingsHandler::UpdateAllOTRExceptionsViewsFromModel() {
   for (int type = CONTENT_SETTINGS_TYPE_DEFAULT + 1;
        type < CONTENT_SETTINGS_NUM_TYPES; ++type) {
-    if (type == CONTENT_SETTINGS_TYPE_GEOLOCATION ||
-        type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
-      continue;
-    }
-
-    UpdateExceptionsViewFromOTRHostContentSettingsMap(
-        static_cast<ContentSettingsType>(type));
+    UpdateOTRExceptionsViewFromModel(static_cast<ContentSettingsType>(type));
   }
 }
 
 void ContentSettingsHandler::UpdateExceptionsViewFromModel(
     ContentSettingsType type) {
-  if (type == CONTENT_SETTINGS_TYPE_GEOLOCATION)
-    UpdateGeolocationExceptionsView();
-  else if (type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
-    UpdateNotificationExceptionsView();
-  else
-    UpdateExceptionsViewFromHostContentSettingsMap(type);
+  switch (type) {
+    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
+      UpdateGeolocationExceptionsView();
+      break;
+    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+      UpdateNotificationExceptionsView();
+      break;
+    case CONTENT_SETTINGS_TYPE_PRERENDER:
+      // Prerender is currently (02/24/2011) an experimental feature which is
+      // only turned on via about:flags. There is intentionally no UI in
+      // chrome://preferences for CONTENT_SETTINGS_TYPE_PRERENDER.
+      // TODO(cbentzel): Change once prerender moves out of about:flags.
+      break;
+    default:
+      UpdateExceptionsViewFromHostContentSettingsMap(type);
+      break;
+  }
+}
+
+void ContentSettingsHandler::UpdateOTRExceptionsViewFromModel(
+    ContentSettingsType type) {
+  switch (type) {
+    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
+    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+    case CONTENT_SETTINGS_TYPE_PRERENDER:
+      break;
+    default:
+      UpdateExceptionsViewFromOTRHostContentSettingsMap(type);
+      break;
+  }
 }
 
 void ContentSettingsHandler::UpdateGeolocationExceptionsView() {

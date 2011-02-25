@@ -45,6 +45,9 @@ class ContentSettingsHandler : public OptionsPageUIHandler {
 
   // Clobbers and rebuilds the specific content setting type exceptions table.
   void UpdateExceptionsViewFromModel(ContentSettingsType type);
+  // Clobbers and rebuilds the specific content setting type exceptions
+  // OTR table.
+  void UpdateOTRExceptionsViewFromModel(ContentSettingsType type);
   // Clobbers and rebuilds all the exceptions tables in the page (both normal
   // and OTR tables).
   void UpdateAllExceptionsViewsFromModel();
