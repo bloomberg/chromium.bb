@@ -113,10 +113,20 @@ void SimpleDataSource::willSendRequest(
     WebKit::WebURLRequest& newRequest,
     const WebKit::WebURLResponse& redirectResponse) {
   DCHECK(MessageLoop::current() == render_loop_);
+  base::AutoLock auto_lock(lock_);
 
   // Only allow |single_origin_| if we haven't seen a different origin yet.
   if (single_origin_)
     single_origin_ = url_.GetOrigin() == GURL(newRequest.url()).GetOrigin();
+
+  // Enforce same-origin policy and cause redirects to other origins to
+  // look like network errors.
+  // http://dev.w3.org/html5/spec/Overview.html#concept-media-load-resource
+  // http://dev.w3.org/html5/spec/Overview.html#fetch
+  if (!single_origin_) {
+    DoneInitialization_Locked(false);
+    return;
+  }
 
   url_ = newRequest.url();
 }
