@@ -39,10 +39,7 @@ class NotificationObjectProxy
   virtual ~NotificationObjectProxy() {}
 
  private:
-  // Called on UI thread to schedule a message for sending.
-  void DeliverMessage(IPC::Message* message);
-
-  // Called via Task on IO thread to actually send a message to a notification.
+  // Called on UI thread to send a message.
   void Send(IPC::Message* message);
 
   // Callback information to find the JS Notification object where it lives.

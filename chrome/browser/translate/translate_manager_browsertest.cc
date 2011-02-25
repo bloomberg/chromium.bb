@@ -22,6 +22,7 @@
 #include "chrome/common/net/test_url_fetcher_factory.h"
 #include "chrome/test/testing_browser_process.h"
 #include "chrome/test/testing_profile.h"
+#include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/mock_render_process_host.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/tab_contents/navigation_controller.h"
@@ -40,7 +41,9 @@ using WebKit::WebContextMenuData;
 class TranslateManagerTest : public RenderViewHostTestHarness,
                              public NotificationObserver {
  public:
-  TranslateManagerTest() {}
+  TranslateManagerTest()
+      : ui_thread_(BrowserThread::UI, &message_loop_) {
+  }
 
   // Simluates navigating to a page and getting the page contents and language
   // for that navigation.
@@ -202,6 +205,7 @@ class TranslateManagerTest : public RenderViewHostTestHarness,
  private:
   NotificationRegistrar notification_registrar_;
   TestURLFetcherFactory url_fetcher_factory_;
+  BrowserThread ui_thread_;
 
   // The infobars that have been removed.
   // WARNING: the pointers point to deleted objects, use only for comparison.

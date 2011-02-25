@@ -10,6 +10,7 @@
 #include "chrome/common/child_process_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/notification_service.h"
+#include "content/browser/browser_thread.h"
 
 namespace {
 
@@ -160,6 +161,7 @@ RenderProcessHost::iterator RenderProcessHost::AllHostsIterator() {
 
 // static
 RenderProcessHost* RenderProcessHost::FromID(int render_process_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return all_hosts.Lookup(render_process_id);
 }
 

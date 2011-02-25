@@ -12,13 +12,13 @@
 #include "base/process_util.h"
 #include "base/shared_memory.h"
 #include "base/string_util.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/browser/visitedlink/visitedlink_master.h"
 #include "chrome/browser/visitedlink/visitedlink_event_listener.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/visitedlink_slave.h"
 #include "chrome/test/testing_profile.h"
+#include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -583,6 +583,7 @@ class VisitedLinkEventsTest : public RenderViewHostTestHarness {
  public:
   VisitedLinkEventsTest()
       : RenderViewHostTestHarness(),
+        ui_thread_(BrowserThread::UI, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_) {}
   ~VisitedLinkEventsTest() {
     // This ends up using the file thread to schedule the delete.
@@ -614,6 +615,7 @@ class VisitedLinkEventsTest : public RenderViewHostTestHarness {
 
  private:
   scoped_ptr<VisitedLinkEventListener> event_listener_;
+  BrowserThread ui_thread_;
   BrowserThread file_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(VisitedLinkEventsTest);

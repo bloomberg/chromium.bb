@@ -6,6 +6,7 @@
 
 #include "base/message_loop.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
+#include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;
@@ -22,6 +23,10 @@ class WebCacheManagerTest : public testing::Test {
   static const int kRendererID2;
   static const WebCache::UsageStats kStats;
   static const WebCache::UsageStats kStats2;
+
+  WebCacheManagerTest()
+      : ui_thread_(BrowserThread::UI, &message_loop_) {
+  }
 
   // Thunks to access protected members of WebCacheManager
   static std::map<int, WebCacheManager::RendererInfo>& stats(
@@ -88,6 +93,7 @@ class WebCacheManagerTest : public testing::Test {
  private:
   WebCacheManager manager_;
   MessageLoop message_loop_;
+  BrowserThread ui_thread_;
 };
 
 // static
