@@ -4,7 +4,14 @@
 
 #include "content/browser/renderer_host/render_message_filter.h"
 
+#include <fcntl.h>
+#include <map>
+
+#include "base/file_util.h"
+#include "base/lazy_instance.h"
+#include "base/path_service.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/render_messages.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/x11/WebScreenInfoFactory.h"
@@ -12,8 +19,27 @@
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/gtk_native_view_id_manager.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/printing/print_dialog_cloud.h"
+#endif
+
 using WebKit::WebScreenInfo;
 using WebKit::WebScreenInfoFactory;
+
+namespace {
+
+typedef std::map<int, FilePath> SequenceToPathMap;
+
+struct PrintingSequencePathMap {
+  SequenceToPathMap map;
+  int sequence;
+};
+
+// No locking, only access on the FILE thread.
+static base::LazyInstance<PrintingSequencePathMap>
+    g_printing_file_descriptor_map(base::LINKER_INITIALIZED);
+
+}  // namespace
 
 // We get null window_ids passed into the two functions below; please see
 // http://crbug.com/9060 for more details.
@@ -149,6 +175,56 @@ void RenderMessageFilter::DoOnClipboardReadFilenames(
   Send(reply_msg);
 }
 
+#if defined(OS_CHROMEOS)
+void RenderMessageFilter::DoOnAllocateTempFileForPrinting(
+    IPC::Message* reply_msg) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  base::FileDescriptor temp_file_fd(-1, false);
+  SequenceToPathMap* map = &g_printing_file_descriptor_map.Get().map;
+  const int sequence_number = g_printing_file_descriptor_map.Get().sequence++;
+
+  FilePath path;
+  if (file_util::CreateTemporaryFile(&path)) {
+    int fd = open(path.value().c_str(), O_WRONLY);
+    if (fd >= 0) {
+      SequenceToPathMap::iterator it = map->find(sequence_number);
+      if (it != map->end()) {
+        NOTREACHED() << "Sequence number already in use. seq=" <<
+            sequence_number;
+      } else {
+        (*map)[sequence_number] = path;
+        temp_file_fd.fd = fd;
+        temp_file_fd.auto_close = true;
+      }
+    }
+  }
+
+  ViewHostMsg_AllocateTempFileForPrinting::WriteReplyParams(
+      reply_msg, temp_file_fd, sequence_number);
+  Send(reply_msg);
+}
+
+void RenderMessageFilter::DoOnTempFileForPrintingWritten(int sequence_number) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  SequenceToPathMap* map = &g_printing_file_descriptor_map.Get().map;
+  SequenceToPathMap::iterator it = map->find(sequence_number);
+  if (it == map->end()) {
+    NOTREACHED() << "Got a sequence that we didn't pass to the "
+                    "renderer: " << sequence_number;
+    return;
+  }
+
+  if (cloud_print_enabled_)
+    PrintDialogCloud::CreatePrintDialogForPdf(it->second, string16(), true);
+  else
+    NOTIMPLEMENTED();
+
+  // Erase the entry in the map.
+  map->erase(it);
+}
+
+#endif  // defined(OS_CHROMEOS)
+
 void RenderMessageFilter::OnGetScreenInfo(gfx::NativeViewId view,
                                           IPC::Message* reply_msg) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -247,3 +323,24 @@ void RenderMessageFilter::OnClipboardReadFilenames(
           this, &RenderMessageFilter::DoOnClipboardReadFilenames, buffer,
           reply_msg));
 }
+
+#if defined(OS_CHROMEOS)
+void RenderMessageFilter::OnAllocateTempFileForPrinting(
+    IPC::Message* reply_msg) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      NewRunnableMethod(
+          this, &RenderMessageFilter::DoOnAllocateTempFileForPrinting,
+          reply_msg));
+}
+
+void RenderMessageFilter::OnTempFileForPrintingWritten(int sequence_number) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      NewRunnableMethod(
+          this, &RenderMessageFilter::DoOnTempFileForPrintingWritten,
+          sequence_number));
+}
+#endif  // defined(OS_CHROMEOS)

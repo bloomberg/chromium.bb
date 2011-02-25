@@ -1692,8 +1692,6 @@
         'browser/printing/print_view_manager.h',
         'browser/printing/printer_query.cc',
         'browser/printing/printer_query.h',
-        'browser/printing/printing_message_filter.cc',
-        'browser/printing/printing_message_filter.h',
         'browser/process_info_snapshot.h',
         'browser/process_info_snapshot_mac.cc',
         'browser/process_singleton.h',
