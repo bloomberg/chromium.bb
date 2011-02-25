@@ -1,4 +1,4 @@
-  // Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,7 @@
 #include "base/timer.h"
 #include "third_party/cros/chromeos_network.h"
 
+class DictionaryValue;
 class Value;
 
 namespace chromeos {
@@ -33,23 +34,78 @@ static const int kCellularDataLowBytes = 100 * 1024 * 1024;
 // Cellular network is considered very low data when less than 50MB.
 static const int kCellularDataVeryLowBytes = 50 * 1024 * 1024;
 
+// Contains data related to the flimflam.Device interface,
+// e.g. ethernet, wifi, cellular.
+class NetworkDevice {
+ public:
+  explicit NetworkDevice(const std::string& device_path);
+  void ParseInfo(const DictionaryValue* info);
+
+  // Device info.
+  const std::string& device_path() const { return device_path_; }
+  const std::string& name() const { return name_; }
+  ConnectionType type() const { return type_; }
+  bool scanning() const { return scanning_; }
+  const std::string& meid() const { return MEID_; }
+  const std::string& imei() const { return IMEI_; }
+  const std::string& imsi() const { return IMSI_; }
+  const std::string& esn() const { return ESN_; }
+  const std::string& mdn() const { return MDN_; }
+  const std::string& min() const { return MIN_; }
+  const std::string& model_id() const { return model_id_; }
+  const std::string& manufacturer() const { return manufacturer_; }
+  const std::string& firmware_revision() const { return firmware_revision_; }
+  const std::string& hardware_revision() const { return hardware_revision_; }
+  const std::string& last_update() const { return last_update_; }
+  const unsigned int prl_version() const { return PRL_version_; }
+
+ protected:
+  // General device info.
+  std::string device_path_;
+  std::string name_;
+  ConnectionType type_;
+  bool scanning_;
+  // Cellular specific device info.
+  std::string carrier_;
+  std::string MEID_;
+  std::string IMEI_;
+  std::string IMSI_;
+  std::string ESN_;
+  std::string MDN_;
+  std::string MIN_;
+  std::string model_id_;
+  std::string manufacturer_;
+  std::string firmware_revision_;
+  std::string hardware_revision_;
+  std::string last_update_;
+  int PRL_version_;
+};
+
+// Contains data common to all network service types.
 class Network {
  public:
+  virtual ~Network() {}
+
   const std::string& service_path() const { return service_path_; }
+  const std::string& name() const { return name_; }
   const std::string& device_path() const { return device_path_; }
   const std::string& ip_address() const { return ip_address_; }
   ConnectionType type() const { return type_; }
+  ConnectionMode mode() const { return mode_; }
   ConnectionState connection_state() const { return state_; }
   bool connecting() const { return state_ == STATE_ASSOCIATION ||
-      state_ == STATE_CONFIGURATION || state_ == STATE_CARRIER; }
+                                   state_ == STATE_CONFIGURATION ||
+                                   state_ == STATE_CARRIER; }
   bool configuring() const { return state_ == STATE_CONFIGURATION; }
   bool connected() const { return state_ == STATE_READY; }
   bool connecting_or_connected() const { return connecting() || connected(); }
   bool failed() const { return state_ == STATE_FAILURE; }
-  bool failed_or_disconnected() const { return failed() ||
-      state_ == STATE_IDLE; }
+  bool failed_or_disconnected() const {
+    return failed() || state_ == STATE_IDLE;
+  }
   ConnectionError error() const { return error_; }
   ConnectionState state() const { return state_; }
+  ConnectionState prev_state() const { return prev_state_; }
   // Is this network connectable. Some networks are not yet ready to be
   // connected. For example, an 8021X network without certificates.
   bool connectable() const { return connectable_; }
@@ -58,8 +114,8 @@ class Network {
   // but not be carrying traffic.
   bool is_active() const { return is_active_; }
 
-  // Clear the fields.
-  virtual void Clear();
+  // Parse name/value pairs from libcros.
+  virtual void ParseInfo(const DictionaryValue* info);
 
   // Return a string representation of the state code.
   std::string GetStateString() const;
@@ -68,33 +124,31 @@ class Network {
   std::string GetErrorString() const;
 
  protected:
-  Network()
-      : type_(TYPE_UNKNOWN),
-        state_(STATE_UNKNOWN),
+  Network(const std::string& service_path, ConnectionType type)
+      : state_(STATE_UNKNOWN),
         error_(ERROR_UNKNOWN),
         connectable_(true),
-        is_active_(false) {}
-  explicit Network(const Network& network);
-  explicit Network(const ServiceInfo* service);
-  virtual ~Network() {}
+        is_active_(false),
+        service_path_(service_path),
+        type_(type),
+        prev_state_(STATE_UNKNOWN) {}
 
-  std::string service_path_;
   std::string device_path_;
+  std::string name_;
   std::string ip_address_;
-  ConnectionType type_;
+  ConnectionMode mode_;
   ConnectionState state_;
   ConnectionError error_;
   bool connectable_;
   bool is_active_;
 
  private:
-  void set_service_path(const std::string& service_path) {
-      service_path_ = service_path; }
   void set_connecting(bool connecting) { state_ = (connecting ?
       STATE_ASSOCIATION : STATE_IDLE); }
   void set_connected(bool connected) { state_ = (connected ?
       STATE_READY : STATE_IDLE); }
   void set_state(ConnectionState state) { state_ = state; }
+  void set_prev_state(ConnectionState state) { prev_state_ = state; }
   void set_connectable(bool connectable) { connectable_ = connectable; }
   void set_active(bool is_active) { is_active_ = is_active; }
   void set_error(ConnectionError error) { error_ = error; }
@@ -102,25 +156,25 @@ class Network {
   // Initialize the IP address field
   void InitIPAddress();
 
+  // These must not be modified after construction.
+  std::string service_path_;
+  ConnectionType type_;
+
+  // Local state.
+  ConnectionState prev_state_;
+
   friend class NetworkLibraryImpl;
 };
 
+// Class for networks of TYPE_ETHERNET.
 class EthernetNetwork : public Network {
  public:
-  EthernetNetwork() : Network() {
-    type_ = TYPE_ETHERNET;
-  }
-
-  explicit EthernetNetwork(const EthernetNetwork& network)
-      : Network(network) {
-    type_ = TYPE_ETHERNET;
-  }
-
-  explicit EthernetNetwork(const ServiceInfo* service) : Network(service) {
-    type_ = TYPE_ETHERNET;
+  explicit EthernetNetwork(const std::string& service_path) :
+      Network(service_path, TYPE_ETHERNET) {
   }
 };
 
+// Base class for networks of TYPE_WIFI or TYPE_CELLULAR.
 class WirelessNetwork : public Network {
  public:
   // WirelessNetwork are sorted by name.
@@ -137,7 +191,6 @@ class WirelessNetwork : public Network {
     const std::string& path;
   };
 
-  const std::string& name() const { return name_; }
   int strength() const { return strength_; }
   bool auto_connect() const { return auto_connect_; }
   bool favorite() const { return favorite_; }
@@ -148,18 +201,14 @@ class WirelessNetwork : public Network {
   // that.  See ForgetWifiNetwork().
 
   // Network overrides.
-  virtual void Clear();
+  virtual void ParseInfo(const DictionaryValue* info);
 
  protected:
-  WirelessNetwork()
-      : Network(),
+  WirelessNetwork(const std::string& service_path, ConnectionType type)
+      : Network(service_path, type),
         strength_(0),
         auto_connect_(false),
         favorite_(false) {}
-  explicit WirelessNetwork(const WirelessNetwork& network);
-  explicit WirelessNetwork(const ServiceInfo* service);
-  virtual ~WirelessNetwork() {}
-  std::string name_;
   int strength_;
   bool auto_connect_;
   bool favorite_;
@@ -174,49 +223,8 @@ class WirelessNetwork : public Network {
   friend class NetworkLibraryImpl;
 };
 
-class CellularDataPlan {
- public:
-  CellularDataPlan() :
-      plan_name("Unknown"),
-      plan_type(CELLULAR_DATA_PLAN_UNLIMITED),
-      plan_data_bytes(0),
-      data_bytes_used(0) { }
-  explicit CellularDataPlan(const CellularDataPlanInfo &plan) :
-      plan_name(plan.plan_name?plan.plan_name:""),
-      plan_type(plan.plan_type),
-      update_time(base::Time::FromInternalValue(plan.update_time)),
-      plan_start_time(base::Time::FromInternalValue(plan.plan_start_time)),
-      plan_end_time(base::Time::FromInternalValue(plan.plan_end_time)),
-      plan_data_bytes(plan.plan_data_bytes),
-      data_bytes_used(plan.data_bytes_used) { }
-  // Formats cellular plan description.
-  string16 GetPlanDesciption() const;
-  // Evaluates cellular plans status and returns warning string if it is near
-  // expiration.
-  string16 GetRemainingWarning() const;
-  // Formats remaining plan data description.
-  string16 GetDataRemainingDesciption() const;
-  // Formats plan expiration description.
-  string16 GetPlanExpiration() const;
-  // Formats plan usage info.
-  string16 GetUsageInfo() const;
-  // Returns a unique string for this plan that can be used for comparisons.
-  std::string GetUniqueIdentifier() const;
-  base::TimeDelta remaining_time() const;
-  int64 remaining_minutes() const;
-  int64 remaining_data() const;
-  int64 remaining_mbytes() const;
-  std::string plan_name;
-  CellularDataPlanType plan_type;
-  base::Time update_time;
-  base::Time plan_start_time;
-  base::Time plan_end_time;
-  int64 plan_data_bytes;
-  int64 data_bytes_used;
-};
-
-typedef ScopedVector<CellularDataPlan> CellularDataPlanVector;
-
+// Class for networks of TYPE_CELLULAR.
+class CellularDataPlan;
 class CellularNetwork : public WirelessNetwork {
  public:
   enum DataLeft {
@@ -227,10 +235,16 @@ class CellularNetwork : public WirelessNetwork {
     DATA_NONE
   };
 
-  CellularNetwork();
-  explicit CellularNetwork(const CellularNetwork& network);
-  explicit CellularNetwork(const ServiceInfo* service);
   virtual ~CellularNetwork();
+
+  explicit CellularNetwork(const std::string& service_path)
+      : WirelessNetwork(service_path, TYPE_CELLULAR),
+        activation_state_(ACTIVATION_STATE_UNKNOWN),
+        network_technology_(NETWORK_TECHNOLOGY_UNKNOWN),
+        roaming_state_(ROAMING_STATE_UNKNOWN),
+        connectivity_state_(CONN_STATE_UNKNOWN),
+        data_left_(DATA_UNKNOWN) {
+  }
   // Starts device activation process. Returns false if the device state does
   // not permit activation.
   bool StartActivation() const;
@@ -249,22 +263,12 @@ class CellularNetwork : public WirelessNetwork {
     return restricted_pool() && connected() &&
         activation_state() == ACTIVATION_STATE_ACTIVATED;
   }
-  const std::string& service_name() const { return service_name_; }
   const std::string& operator_name() const { return operator_name_; }
   const std::string& operator_code() const { return operator_code_; }
   const std::string& payment_url() const { return payment_url_; }
-  const std::string& meid() const { return meid_; }
-  const std::string& imei() const { return imei_; }
-  const std::string& imsi() const { return imsi_; }
-  const std::string& esn() const { return esn_; }
-  const std::string& mdn() const { return mdn_; }
-  const std::string& min() const { return min_; }
-  const std::string& model_id() const { return model_id_; }
-  const std::string& manufacturer() const { return manufacturer_; }
-  const std::string& firmware_revision() const { return firmware_revision_; }
-  const std::string& hardware_revision() const { return hardware_revision_; }
-  const std::string& last_update() const { return last_update_; }
-  const unsigned int prl_version() const { return prl_version_; }
+  DataLeft data_left() const { return data_left_; }
+
+  // Misc.
   bool is_gsm() const {
     return network_technology_ != NETWORK_TECHNOLOGY_EVDO &&
         network_technology_ != NETWORK_TECHNOLOGY_1XRTT &&
@@ -272,29 +276,7 @@ class CellularNetwork : public WirelessNetwork {
   }
 
   // WirelessNetwork overrides.
-  virtual void Clear();
-
-  const CellularDataPlanVector& GetDataPlans() const {
-    return data_plans_;
-  }
-
-  void SetDataPlans(const CellularDataPlanList* data_plan_list) {
-    data_plans_.reset();
-    for (size_t i = 0; i < data_plan_list->plans_size; i++) {
-      const CellularDataPlanInfo* info(data_plan_list->GetCellularDataPlan(i));
-      data_plans_.push_back(new CellularDataPlan(*info));
-    }
-  }
-
-  // This returns the significant data plan. If the user only has the
-  // base data plan, then return that. If there is a base and a paid data plan,
-  // then the significant one is the paid one. So return the paid plan.
-  // If there are no data plans, then this method returns NULL.
-  // This returns a pointer to a member of data_plans_, so if SetDataPlans()
-  // gets called, the result becomes invalid.
-  const CellularDataPlan* GetSignificantDataPlan() const;
-
-  DataLeft GetDataLeft() const;
+  virtual void ParseInfo(const DictionaryValue* info);
 
   // Return a string representation of network technology.
   std::string GetNetworkTechnologyString() const;
@@ -314,51 +296,38 @@ class CellularNetwork : public WirelessNetwork {
   NetworkTechnology network_technology_;
   NetworkRoamingState roaming_state_;
   ConnectivityState connectivity_state_;
-  std::string service_name_;
   // Carrier Info
   std::string operator_name_;
   std::string operator_code_;
   std::string payment_url_;
-  // Device Info
-  std::string meid_;
-  std::string imei_;
-  std::string imsi_;
-  std::string esn_;
-  std::string mdn_;
-  std::string min_;
-  std::string model_id_;
-  std::string manufacturer_;
-  std::string firmware_revision_;
-  std::string hardware_revision_;
-  std::string last_update_;
-  unsigned int prl_version_;
-  CellularDataPlanVector data_plans_;
+  // Cached values
+  DataLeft data_left_;  // Updated when data plans are updated.
 
  private:
   void set_activation_state(ActivationState state) {
     activation_state_ = state;
   }
-  void set_payment_url(const std::string& url) {
-    payment_url_ = url;
-  }
+  void set_payment_url(const std::string& url) { payment_url_ = url; }
   void set_network_technology(NetworkTechnology technology) {
     network_technology_ = technology;
   }
-  void set_roaming_state(NetworkRoamingState state) {
-    roaming_state_ = state;
-  }
+  void set_roaming_state(NetworkRoamingState state) { roaming_state_ = state; }
   void set_connectivity_state(ConnectivityState connectivity_state) {
     connectivity_state_ = connectivity_state;
   }
+  void set_data_left(DataLeft data_left) { data_left_ = data_left; }
 
   friend class NetworkLibraryImpl;
 };
+typedef std::vector<CellularNetwork*> CellularNetworkVector;
 
+// Class for networks of TYPE_WIFI.
 class WifiNetwork : public WirelessNetwork {
  public:
-  WifiNetwork();
-  explicit WifiNetwork(const WifiNetwork& network);
-  explicit WifiNetwork(const ServiceInfo* service);
+  explicit WifiNetwork(const std::string& service_path)
+      : WirelessNetwork(service_path, TYPE_WIFI),
+        encryption_(SECURITY_NONE) {
+  }
 
   bool encrypted() const { return encryption_ != SECURITY_NONE; }
   ConnectionSecurity encryption() const { return encryption_; }
@@ -380,7 +349,7 @@ class WifiNetwork : public WirelessNetwork {
   }
 
   // WirelessNetwork overrides.
-  virtual void Clear();
+  virtual void ParseInfo(const DictionaryValue* info);
 
   // Return a string representation of the encryption code.
   // This not translated and should be only used for debugging purposes.
@@ -399,10 +368,53 @@ class WifiNetwork : public WirelessNetwork {
   std::string identity_;
   std::string cert_path_;
 };
+typedef std::vector<WifiNetwork*> WifiNetworkVector;
 
-typedef std::vector<chromeos::WifiNetwork*> WifiNetworkVector;
-typedef std::vector<chromeos::CellularNetwork*> CellularNetworkVector;
+// Cellular Data Plan management.
+class CellularDataPlan {
+ public:
+  CellularDataPlan()
+      : plan_name("Unknown"),
+        plan_type(CELLULAR_DATA_PLAN_UNLIMITED),
+        plan_data_bytes(0),
+        data_bytes_used(0) { }
+  explicit CellularDataPlan(const CellularDataPlanInfo &plan)
+      : plan_name(plan.plan_name ? plan.plan_name : ""),
+        plan_type(plan.plan_type),
+        update_time(base::Time::FromInternalValue(plan.update_time)),
+        plan_start_time(base::Time::FromInternalValue(plan.plan_start_time)),
+        plan_end_time(base::Time::FromInternalValue(plan.plan_end_time)),
+        plan_data_bytes(plan.plan_data_bytes),
+        data_bytes_used(plan.data_bytes_used) { }
+  // Formats cellular plan description.
+  string16 GetPlanDesciption() const;
+  // Evaluates cellular plans status and returns warning string if it is near
+  // expiration.
+  string16 GetRemainingWarning() const;
+  // Formats remaining plan data description.
+  string16 GetDataRemainingDesciption() const;
+  // Formats plan expiration description.
+  string16 GetPlanExpiration() const;
+  // Formats plan usage info.
+  string16 GetUsageInfo() const;
+  // Returns a unique string for this plan that can be used for comparisons.
+  std::string GetUniqueIdentifier() const;
+  base::TimeDelta remaining_time() const;
+  int64 remaining_minutes() const;
+  int64 remaining_data() const;
+  int64 remaining_mbytes() const;
+  // TODO(stevenjb): Make these private with accessors and properly named.
+  std::string plan_name;
+  CellularDataPlanType plan_type;
+  base::Time update_time;
+  base::Time plan_start_time;
+  base::Time plan_end_time;
+  int64 plan_data_bytes;
+  int64 data_bytes_used;
+};
+typedef ScopedVector<CellularDataPlan> CellularDataPlanVector;
 
+// Geolocation data.
 struct CellTower {
   enum RadioType {
     RADIOTYPE_GSM,
@@ -431,6 +443,7 @@ struct WifiAccessPoint {
 typedef std::vector<CellTower> CellTowerVector;
 typedef std::vector<WifiAccessPoint> WifiAccessPointVector;
 
+// IP Configuration.
 struct NetworkIPConfig {
   NetworkIPConfig(const std::string& device_path, IPConfigType type,
                   const std::string& address, const std::string& netmask,
@@ -556,12 +569,29 @@ class NetworkLibrary {
   // Returns the current list of cellular networks.
   virtual const CellularNetworkVector& cellular_networks() const = 0;
 
-  // Search the current list of networks by path and if the network
-  // is available, copy the result and return true.
-  virtual WifiNetwork* FindWifiNetworkByPath(const std::string& path) = 0;
-  virtual CellularNetwork* FindCellularNetworkByPath(
-      const std::string& path) = 0;
+  // Return a pointer to the device, if it exists, or NULL.
+  virtual const NetworkDevice* FindNetworkDeviceByPath(
+      const std::string& path) const = 0;
 
+  // Return a pointer to the network, if it exists, or NULL.
+  virtual const WifiNetwork* FindWifiNetworkByPath(
+      const std::string& path) const = 0;
+  virtual const CellularNetwork* FindCellularNetworkByPath(
+      const std::string& path) const = 0;
+
+  // Retrieves the data plans associated with |path|, NULL if there are no
+  // associated plans.
+  virtual const CellularDataPlanVector* GetDataPlans(
+      const std::string& path) const = 0;
+
+  // This returns the significant data plan. If the user only has the
+  // base data plan, then return that. If there is a base and a paid data plan,
+  // then the significant one is the paid one. So return the paid plan.
+  // If there are no data plans, then this method returns NULL.
+  // This returns a pointer to a member of data_plans_, so if SetDataPlans()
+  // gets called, the result becomes invalid.
+  virtual const CellularDataPlan* GetSignificantDataPlan(
+      const std::string& path) const = 0;
 
   // Request a scan for new wifi networks.
   virtual void RequestWifiScan() = 0;
@@ -576,10 +606,18 @@ class NetworkLibrary {
 
   // TODO(joth): Add GetCellTowers to retrieve a CellTowerVector.
 
+  // TODO(stevenjb): eliminate Network* version of Connect functions.
+  // Instead, always use service_path and improve the error handling.
   // Connect to the specified wireless network with password.
   // Returns false if the attempt fails immediately (e.g. passphrase too short)
   // and sets network->error().
   virtual bool ConnectToWifiNetwork(WifiNetwork* network,
+                                    const std::string& password,
+                                    const std::string& identity,
+                                    const std::string& certpath) = 0;
+
+  // Same as above but searches for an existing network by name.
+  virtual bool ConnectToWifiNetwork(const std::string& service_path,
                                     const std::string& password,
                                     const std::string& identity,
                                     const std::string& certpath) = 0;
@@ -614,6 +652,10 @@ class NetworkLibrary {
   // Save network information including passwords (wifi) and auto-connect.
   virtual void SaveCellularNetwork(const CellularNetwork* network) = 0;
   virtual void SaveWifiNetwork(const WifiNetwork* network) = 0;
+
+  // Set the auto-connect property of a network.
+  virtual void SetNetworkAutoConnect(const std::string& service_path,
+                                     bool auto_connect) = 0;
 
   // Forget the wifi network corresponding to service_path.
   virtual void ForgetWifiNetwork(const std::string& service_path) = 0;

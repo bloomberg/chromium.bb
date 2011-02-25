@@ -123,11 +123,11 @@ void NetworkMessageObserver::ShowNeedsPlanNotification(
     const CellularNetwork* cellular) {
   notification_no_data_.set_title(
       l10n_util::GetStringFUTF16(IDS_NETWORK_NO_DATA_PLAN_TITLE,
-                                 UTF8ToUTF16(cellular->service_name())));
+                                 UTF8ToUTF16(cellular->name())));
   notification_no_data_.Show(
       l10n_util::GetStringFUTF16(
           IDS_NETWORK_NO_DATA_PLAN_MESSAGE,
-          UTF8ToUTF16(cellular->service_name())),
+          UTF8ToUTF16(cellular->name())),
       l10n_util::GetStringUTF16(IDS_NETWORK_PURCHASE_MORE_MESSAGE),
       NewCallback(this, &NetworkMessageObserver::OpenMobileSetupPage),
       false, false);
@@ -218,17 +218,19 @@ void NetworkMessageObserver::OnNetworkManagerChanged(NetworkLibrary* obj) {
   }
 }
 
-void NetworkMessageObserver::OnCellularDataPlanChanged(NetworkLibrary* obj) {
+void NetworkMessageObserver::OnCellularDataPlanChanged(NetworkLibrary* cros) {
   if (!ShouldShowMobilePlanNotifications()) {
     return;
   }
 
-  const CellularNetwork* cellular = obj->cellular_network();
+  const CellularNetwork* cellular = cros->cellular_network();
   if (!cellular)
     return;
+  const CellularDataPlanVector* plans =
+      cros->GetDataPlans(cellular->service_path());
 
   // If no plans available, check to see if we need a new plan.
-  if (cellular->GetDataPlans().size() == 0) {
+  if (!plans || plans->size() == 0) {
     // If previously, we had a low data notification, we know that a plan was
     // near expiring. In that case, because the plan has disappeared, we assume
     // that it expired.
@@ -241,14 +243,13 @@ void NetworkMessageObserver::OnCellularDataPlanChanged(NetworkLibrary* obj) {
     return;
   }
 
-  const CellularDataPlanVector& plans = cellular->GetDataPlans();
-  CellularDataPlanVector::const_iterator iter = plans.begin();
+  CellularDataPlanVector::const_iterator iter = plans->begin();
   const CellularDataPlan* current_plan = *iter;
 
   // If current plan is not the last plan (there is another backup plan),
   // then we do not show notifications for this plan.
   // For example, if there is another data plan available when this runs out.
-  for (++iter; iter != plans.end(); ++iter) {
+  for (++iter; iter != plans->end(); ++iter) {
     if (IsApplicableBackupPlan(current_plan, *iter)) {
       return;
     }
@@ -263,9 +264,9 @@ void NetworkMessageObserver::OnCellularDataPlanChanged(NetworkLibrary* obj) {
     InitNewPlan(current_plan);
   }
 
-  if (cellular->GetDataLeft() == CellularNetwork::DATA_NONE) {
+  if (cellular->data_left() == CellularNetwork::DATA_NONE) {
     ShowNoDataNotification(current_plan->plan_type);
-  } else if (cellular->GetDataLeft() == CellularNetwork::DATA_VERY_LOW) {
+  } else if (cellular->data_left() == CellularNetwork::DATA_VERY_LOW) {
     ShowLowDataNotification(current_plan);
   }
 

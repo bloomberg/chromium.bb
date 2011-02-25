@@ -105,7 +105,7 @@ bool NetworkMenu::GetNetworkAt(int index, NetworkInfo* info) const {
     info->need_passphrase = false;
     info->remembered = true;
   } else if (flags & FLAG_WIFI) {
-    WifiNetwork* wifi = cros->FindWifiNetworkByPath(
+    const WifiNetwork* wifi = cros->FindWifiNetworkByPath(
         menu_items_[index].wireless_path);
     if (wifi) {
       info->network_type = kNetworkTypeWifi;
@@ -140,7 +140,7 @@ bool NetworkMenu::GetNetworkAt(int index, NetworkInfo* info) const {
       res = false;  // Network not found, hide entry.
     }
   } else if (flags & FLAG_CELLULAR) {
-    CellularNetwork* cellular = cros->FindCellularNetworkByPath(
+    const CellularNetwork* cellular = cros->FindCellularNetworkByPath(
         menu_items_[index].wireless_path);
     if (cellular) {
       info->network_type = kNetworkTypeCellular;
@@ -194,13 +194,13 @@ bool NetworkMenu::ConnectToNetworkAt(int index,
                                      int auto_connect) const {
   int flags = menu_items_[index].flags;
   NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  const std::string& service_path = menu_items_[index].wireless_path;
   if (flags & FLAG_WIFI) {
-    WifiNetwork* wifi = cros->FindWifiNetworkByPath(
-        menu_items_[index].wireless_path);
+    const WifiNetwork* wifi = cros->FindWifiNetworkByPath(service_path);
     if (wifi) {
       // Connect or reconnect.
       if (auto_connect >= 0)
-        wifi->set_auto_connect(auto_connect ? true : false);
+        cros->SetNetworkAutoConnect(service_path, auto_connect ? true : false);
       if (wifi->connecting_or_connected()) {
         // Show the config settings for the active network.
         ShowTabbedNetworkSettings(wifi);
@@ -213,7 +213,7 @@ bool NetworkMenu::ConnectToNetworkAt(int index,
         return true;
       } else {
         connected = cros->ConnectToWifiNetwork(
-            wifi, passphrase, std::string(), std::string());
+            service_path, passphrase, std::string(), std::string());
       }
       if (!connected) {
         if (!MenuUI::IsEnabled()) {
@@ -232,8 +232,8 @@ bool NetworkMenu::ConnectToNetworkAt(int index,
       // TODO(stevenjb): Show notification.
     }
   } else if (flags & FLAG_CELLULAR) {
-    CellularNetwork* cellular = cros->FindCellularNetworkByPath(
-        menu_items_[index].wireless_path);
+    const CellularNetwork* cellular = cros->FindCellularNetworkByPath(
+        service_path);
     if (cellular) {
       if ((cellular->activation_state() != ACTIVATION_STATE_ACTIVATED &&
            cellular->activation_state() != ACTIVATION_STATE_UNKNOWN) ||
@@ -376,7 +376,7 @@ SkBitmap NetworkMenu::IconForNetworkStrength(const CellularNetwork* cellular,
   DCHECK(cellular);
   // If no data, then we show 0 bars.
   if (cellular->strength() == 0 ||
-      cellular->GetDataLeft() == CellularNetwork::DATA_NONE) {
+      cellular->data_left() == CellularNetwork::DATA_NONE) {
     return *ResourceBundle::GetSharedInstance().GetBitmapNamed(
         black ? IDR_STATUSBAR_NETWORK_BARS0_BLACK :
                 IDR_STATUSBAR_NETWORK_BARS0);
@@ -413,7 +413,7 @@ SkBitmap NetworkMenu::BadgeForNetworkTechnology(
   int id = -1;
   switch (cellular->network_technology()) {
     case NETWORK_TECHNOLOGY_EVDO:
-      switch (cellular->GetDataLeft()) {
+      switch (cellular->data_left()) {
         case CellularNetwork::DATA_NONE:
           id = IDR_STATUSBAR_NETWORK_3G_ERROR;
           break;
@@ -428,7 +428,7 @@ SkBitmap NetworkMenu::BadgeForNetworkTechnology(
       }
       break;
     case NETWORK_TECHNOLOGY_1XRTT:
-      switch (cellular->GetDataLeft()) {
+      switch (cellular->data_left()) {
         case CellularNetwork::DATA_NONE:
           id = IDR_STATUSBAR_NETWORK_1X_ERROR;
           break;
@@ -664,7 +664,7 @@ void NetworkMenu::InitMenuItems() {
           label = l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_NO_PLAN_LABEL);
         } else {
           const chromeos::CellularDataPlan* plan =
-              active_cellular->GetSignificantDataPlan();
+              cros->GetSignificantDataPlan(active_cellular->service_path());
           if (plan)
             label = plan->GetUsageInfo();
         }

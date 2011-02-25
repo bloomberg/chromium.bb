@@ -416,19 +416,21 @@ void InternetOptionsHandler::MonitorNetworks(chromeos::NetworkLibrary* cros) {
 }
 
 void InternetOptionsHandler::OnCellularDataPlanChanged(
-    chromeos::NetworkLibrary* obj) {
+    chromeos::NetworkLibrary* cros) {
   if (!web_ui_)
     return;
-  const chromeos::CellularNetwork* cellular = obj->cellular_network();
+  const chromeos::CellularNetwork* cellular = cros->cellular_network();
   if (!cellular)
     return;
-  const chromeos::CellularDataPlanVector& plans = cellular->GetDataPlans();
+  const chromeos::CellularDataPlanVector* plans =
+      cros->GetDataPlans(cellular->service_path());
   DictionaryValue connection_plans;
   ListValue* plan_list = new ListValue();
-  for (chromeos::CellularDataPlanVector::const_iterator iter = plans.begin();
-       iter != plans.end();
-       ++iter) {
-    plan_list->Append(CellularDataPlanToDictionary(*iter));
+  if (plans) {
+    for (chromeos::CellularDataPlanVector::const_iterator iter = plans->begin();
+         iter != plans->end(); ++iter) {
+      plan_list->Append(CellularDataPlanToDictionary(*iter));
+    }
   }
   connection_plans.SetString("servicePath", cellular->service_path());
   connection_plans.SetBoolean("needsPlan", cellular->needs_new_plan());
@@ -470,9 +472,13 @@ void InternetOptionsHandler::SetDetailsCallback(const ListValue* args) {
 
   chromeos::NetworkLibrary* cros =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-  chromeos::WifiNetwork* network = cros->FindWifiNetworkByPath(service_path);
-  if (!network)
+  const chromeos::WifiNetwork* found_network =
+      cros->FindWifiNetworkByPath(service_path);
+  if (!found_network)
     return;
+  scoped_ptr<chromeos::WifiNetwork> network(
+      new chromeos::WifiNetwork(*found_network));
+
   bool changed = false;
   if (network->encrypted()) {
     if (network->encrypted() &&
@@ -507,7 +513,7 @@ void InternetOptionsHandler::SetDetailsCallback(const ListValue* args) {
   }
 
   if (changed)
-    cros->SaveWifiNetwork(network);
+    cros->SaveWifiNetwork(network.get());
 }
 
 bool InternetOptionsHandler::IsCertificateInPkcs11(const std::string& path) {
@@ -555,7 +561,7 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
   dictionary.SetString("connectionState", net->GetStateString());
 
   if (type == chromeos::TYPE_WIFI) {
-    chromeos::WifiNetwork* wifi =
+    const chromeos::WifiNetwork* wifi =
         cros->FindWifiNetworkByPath(net->service_path());
     if (!wifi) {
       LOG(WARNING) << "Cannot find network " << net->service_path();
@@ -563,12 +569,12 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
       PopulateWifiDetails(wifi, &dictionary);
     }
   } else if (type == chromeos::TYPE_CELLULAR) {
-    chromeos::CellularNetwork* cellular =
+    const chromeos::CellularNetwork* cellular =
         cros->FindCellularNetworkByPath(net->service_path());
     if (!cellular) {
       LOG(WARNING) << "Cannot find network " << net->service_path();
     } else {
-      PopulateCellularDetails(cellular, &dictionary);
+      PopulateCellularDetails(cros, cellular, &dictionary);
     }
   }
 
@@ -604,10 +610,11 @@ void InternetOptionsHandler::PopulateWifiDetails(
 }
 
 void InternetOptionsHandler::PopulateCellularDetails(
+    chromeos::NetworkLibrary* cros,
     const chromeos::CellularNetwork* cellular,
     DictionaryValue* dictionary) {
   // Cellular network / connection settings.
-  dictionary->SetString("serviceName", cellular->service_name());
+  dictionary->SetString("serviceName", cellular->name());
   dictionary->SetString("networkTechnology",
                         cellular->GetNetworkTechnologyString());
   dictionary->SetString("operatorName", cellular->operator_name());
@@ -625,23 +632,26 @@ void InternetOptionsHandler::PopulateCellularDetails(
   dictionary->SetString("errorState", cellular->GetErrorString());
   dictionary->SetString("supportUrl", cellular->payment_url());
   dictionary->SetBoolean("needsPlan", cellular->needs_new_plan());
+  dictionary->SetBoolean("gsm", cellular->is_gsm());
 
   // Device settings.
-  dictionary->SetString("manufacturer", cellular->manufacturer());
-  dictionary->SetString("modelId", cellular->model_id());
-  dictionary->SetString("firmwareRevision", cellular->firmware_revision());
-  dictionary->SetString("hardwareRevision", cellular->hardware_revision());
-  dictionary->SetString("lastUpdate", cellular->last_update());
-  dictionary->SetString("prlVersion", StringPrintf("%u",
-                                                   cellular->prl_version()));
-  dictionary->SetString("meid", cellular->meid());
-  dictionary->SetString("imei", cellular->imei());
-  dictionary->SetString("mdn", cellular->mdn());
-  dictionary->SetString("imsi", cellular->imsi());
-  dictionary->SetString("esn", cellular->esn());
-  dictionary->SetString("min", cellular->min());
-
-  dictionary->SetBoolean("gsm", cellular->is_gsm());
+  const chromeos::NetworkDevice* device =
+      cros->FindNetworkDeviceByPath(cellular->device_path());
+  if (device) {
+    dictionary->SetString("manufacturer", device->manufacturer());
+    dictionary->SetString("modelId", device->model_id());
+    dictionary->SetString("firmwareRevision", device->firmware_revision());
+    dictionary->SetString("hardwareRevision", device->hardware_revision());
+    dictionary->SetString("lastUpdate", device->last_update());
+    dictionary->SetString("prlVersion",
+                          StringPrintf("%u", device->prl_version()));
+    dictionary->SetString("meid", device->meid());
+    dictionary->SetString("imei", device->imei());
+    dictionary->SetString("mdn", device->mdn());
+    dictionary->SetString("imsi", device->imsi());
+    dictionary->SetString("esn", device->esn());
+    dictionary->SetString("min", device->min());
+  }
 
   SetActivationButtonVisibility(cellular, dictionary);
 }
@@ -672,15 +682,8 @@ void InternetOptionsHandler::LoginCallback(const ListValue* args) {
 
   chromeos::NetworkLibrary* cros =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-  chromeos::WifiNetwork* network = cros->FindWifiNetworkByPath(service_path);
-  if (network) {
-    cros->ConnectToWifiNetwork(
-        network, password, std::string(), std::string());
-  } else {
-    // Network disappeared while the user is connecting to it.
-    // TODO(chocobo): Display error message.
-    LOG(WARNING) << "Cannot find network to connect " << service_path;
-  }
+  cros->ConnectToWifiNetwork(
+      service_path, password, std::string(), std::string());
 }
 
 void InternetOptionsHandler::LoginCertCallback(const ListValue* args) {
@@ -695,18 +698,17 @@ void InternetOptionsHandler::LoginCertCallback(const ListValue* args) {
   }
   chromeos::NetworkLibrary* cros =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-  chromeos::WifiNetwork* network =
-      cros->FindWifiNetworkByPath(service_path);
-  if (!network)
-    return;
   // If password does not come from the input, use one saved with the
   // network details.
   std::string password;
   if (args->GetSize() != 4 || !args->GetString(3, &password)) {
-    password = network->passphrase();
+    const chromeos::WifiNetwork* network =
+        cros->FindWifiNetworkByPath(service_path);
+    if (network)
+      password = network->passphrase();
   }
   cros->ConnectToWifiNetwork(
-      network, password, identity, certpath);
+      service_path, password, identity, certpath);
 }
 
 void InternetOptionsHandler::LoginToOtherCallback(const ListValue* args) {
@@ -784,7 +786,7 @@ void InternetOptionsHandler::HandleWifiButtonClick(
     const std::string& command) {
   chromeos::NetworkLibrary* cros =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-  chromeos::WifiNetwork* network;
+  const chromeos::WifiNetwork* network = NULL;
   if (command == "forget") {
     if (!chromeos::UserManager::Get()->current_user_is_owner()) {
       LOG(WARNING) << "Non-owner tried to forget a network.";
@@ -812,7 +814,7 @@ void InternetOptionsHandler::HandleWifiButtonClick(
         }
       } else {
         cros->ConnectToWifiNetwork(
-            network, std::string(), std::string(), std::string());
+            service_path, std::string(), std::string(), std::string());
       }
     } else if (command == "disconnect") {
       cros->DisconnectFromWirelessNetwork(network);
@@ -827,7 +829,7 @@ void InternetOptionsHandler::HandleCellularButtonClick(
     const std::string& command) {
   chromeos::NetworkLibrary* cros =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-  chromeos::CellularNetwork* cellular =
+  const chromeos::CellularNetwork* cellular =
       cros->FindCellularNetworkByPath(service_path);
   if (cellular) {
     if (command == "connect") {
@@ -854,7 +856,7 @@ void InternetOptionsHandler::RefreshCellularPlanCallback(
   }
   chromeos::NetworkLibrary* cros =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-  chromeos::CellularNetwork* cellular =
+  const chromeos::CellularNetwork* cellular =
       cros->FindCellularNetworkByPath(service_path);
   if (cellular)
     cros->RefreshCellularDataPlans(cellular);

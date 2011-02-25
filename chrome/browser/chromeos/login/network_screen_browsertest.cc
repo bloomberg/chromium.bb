@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -185,11 +185,11 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Wifi) {
       .WillOnce((Return(false)));
   EXPECT_CALL(*mock_network_library_, wifi_connecting())
       .WillOnce((Return(true)));
-  WifiNetwork wifi;
+  scoped_ptr<WifiNetwork> wifi(new WifiNetwork("wifi"));
   WifiNetworkVector wifi_networks;
-  wifi_networks.push_back(&wifi);
+  wifi_networks.push_back(wifi.get());
   EXPECT_CALL(*mock_network_library_, wifi_network())
-      .WillRepeatedly(Return(&wifi));
+      .WillRepeatedly(Return(wifi.get()));
   EXPECT_CALL(*mock_network_library_, wifi_networks())
       .WillRepeatedly(ReturnRef(wifi_networks));
   EXPECT_FALSE(network_view->IsContinueEnabled());
@@ -229,7 +229,7 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Cellular) {
       .WillOnce((Return(false)));
   EXPECT_CALL(*mock_network_library_, cellular_connecting())
       .WillOnce((Return(true)));
-  scoped_ptr<CellularNetwork> cellular(new CellularNetwork());
+  scoped_ptr<CellularNetwork> cellular(new CellularNetwork("cellular"));
   EXPECT_CALL(*mock_network_library_, cellular_network())
       .WillOnce(Return(cellular.get()));
   EXPECT_FALSE(network_view->IsContinueEnabled());
@@ -267,7 +267,7 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Timeout) {
       .WillOnce((Return(false)));
   EXPECT_CALL(*mock_network_library_, wifi_connecting())
       .WillOnce((Return(true)));
-  scoped_ptr<WifiNetwork> wifi(new WifiNetwork());
+  scoped_ptr<WifiNetwork> wifi(new WifiNetwork("wifi"));
   EXPECT_CALL(*mock_network_library_, wifi_network())
       .WillOnce(Return(wifi.get()));
   EXPECT_FALSE(network_view->IsContinueEnabled());

@@ -86,7 +86,8 @@ class InternetOptionsHandler
                                  chromeos::NetworkLibrary* cros);
   void PopulateWifiDetails(const chromeos::WifiNetwork* wifi,
                            DictionaryValue* dictionary);
-  void PopulateCellularDetails(const chromeos::CellularNetwork* cellular,
+  void PopulateCellularDetails(chromeos::NetworkLibrary* cros,
+                               const chromeos::CellularNetwork* cellular,
                                DictionaryValue* dictionary);
 
   // Converts CellularDataPlan structure into dictionary for JS. Formats plan
