@@ -27,6 +27,7 @@
 #include "ipc/ipc_channel.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/message_box_flags.h"
+#include "webkit/glue/webkit_glue.h"
 
 using webkit_glue::PasswordForm;
 
@@ -46,6 +47,7 @@ static void InitNavigateParams(ViewHostMsg_FrameNavigate_Params* params,
   params->gesture = NavigationGestureUser;
   params->was_within_same_page = false;
   params->is_post = false;
+  params->content_state = webkit_glue::CreateHistoryStateForURL(GURL(url));
 }
 
 class TestInterstitialPage : public InterstitialPage {

@@ -562,7 +562,9 @@ bool NavigationController::RendererDidNavigate(
 
   // All committed entries should have nonempty content state so WebKit doesn't
   // get confused when we go back to them (see the function for details).
-  SetContentStateIfEmpty(GetActiveEntry());
+  DCHECK(!params.content_state.empty());
+  NavigationEntry* active_entry = GetActiveEntry();
+  active_entry->set_content_state(params.content_state);
 
   // WebKit doesn't set the "auto" transition on meta refreshes properly (bug
   // 1051891) so we manually set it for redirects which we normally treat as
@@ -580,7 +582,7 @@ bool NavigationController::RendererDidNavigate(
       params.gesture == NavigationGestureAuto;
 
   // Now prep the rest of the details for the notification and broadcast.
-  details->entry = GetActiveEntry();
+  details->entry = active_entry;
   details->is_main_frame = PageTransition::IsMainFrame(params.transition);
   details->serialized_security_info = params.security_info;
   details->is_content_filtered = params.is_content_filtered;

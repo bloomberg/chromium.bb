@@ -20,6 +20,7 @@
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/glue/webkit_glue.h"
 
 class RenderViewHostManagerTest : public RenderViewHostTestHarness {
  public:
@@ -331,6 +332,7 @@ TEST_F(RenderViewHostManagerTest, PageDoesBackAndReload) {
   params.gesture = NavigationGestureAuto;
   params.was_within_same_page = false;
   params.is_post = false;
+  params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(url2));
   contents()->TestDidNavigate(evil_rvh, params);
 
   // That should have cancelled the pending RVH, and the evil RVH should be the

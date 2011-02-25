@@ -1683,6 +1683,16 @@ void RenderView::UpdateURL(WebFrame* frame) {
   params.gesture = navigation_gesture_;
   navigation_gesture_ = NavigationGestureUnknown;
 
+  // Make navigation state a part of the FrameNavigate message so that commited
+  // entry had it at all times.
+  const WebHistoryItem& item = frame->currentHistoryItem();
+  if (!item.isNull()) {
+    params.content_state = webkit_glue::HistoryItemToString(item);
+  } else {
+    params.content_state =
+        webkit_glue::CreateHistoryStateForURL(GURL(request.url()));
+  }
+
   if (!frame->parent()) {
     // Top-level navigation.
 

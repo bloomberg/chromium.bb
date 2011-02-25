@@ -311,6 +311,9 @@ struct ViewHostMsg_FrameNavigate_Params {
   // True if the connection was proxied.  In this case, socket_address
   // will represent the address of the proxy, rather than the remote host.
   bool was_fetched_via_proxy;
+
+  // Serialized history item state to store in the navigation entry.
+  std::string content_state;
 };
 
 // Values that may be OR'd together to form the 'flags' parameter of a

@@ -13,6 +13,7 @@
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "ui/gfx/rect.h"
+#include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/password_form.h"
 
@@ -35,6 +36,7 @@ void InitNavigateParams(ViewHostMsg_FrameNavigate_Params* params,
   params->gesture = NavigationGestureUser;
   params->was_within_same_page = false;
   params->is_post = false;
+  params->content_state = webkit_glue::CreateHistoryStateForURL(GURL(url));
 }
 
 TestRenderViewHost::TestRenderViewHost(SiteInstance* instance,
@@ -99,6 +101,7 @@ void TestRenderViewHost::SendNavigateWithTransition(
   params.http_status_code = 0;
   params.socket_address.set_host("2001:db8::1");
   params.socket_address.set_port(80);
+  params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(url));
 
   ViewHostMsg_FrameNavigate msg(1, params);
   OnMsgNavigate(msg);
