@@ -206,8 +206,7 @@ HDC BitmapPlatformDevice::getBitmapDC() {
 }
 
 void BitmapPlatformDevice::setMatrixClip(const SkMatrix& transform,
-                                         const SkRegion& region,
-                                         const SkClipStack&) {
+                                         const SkRegion& region) {
   data_->SetMatrixClip(transform, region);
 }
 

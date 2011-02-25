@@ -64,8 +64,7 @@ class BitmapPlatformDevice : public PlatformDevice {
   BitmapPlatformDevice& operator=(const BitmapPlatformDevice& other);
 
   virtual CGContextRef GetBitmapContext();
-  virtual void setMatrixClip(const SkMatrix& transform, const SkRegion& region,
-                             const SkClipStack&);
+  virtual void setMatrixClip(const SkMatrix& transform, const SkRegion& region);
 
   virtual void DrawToContext(CGContextRef context, int x, int y,
                              const CGRect* src_rect);

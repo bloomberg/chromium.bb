@@ -415,8 +415,7 @@ bool VectorPlatformDevice::ApplyPaint(const SkPaint& paint) {
 }
 
 void VectorPlatformDevice::setMatrixClip(const SkMatrix& transform,
-                                 const SkRegion& region,
-                                 const SkClipStack&) {
+                                 const SkRegion& region) {
   transform_ = transform;
   LoadTransformToDC(hdc_, transform_);
   clip_region_ = region;

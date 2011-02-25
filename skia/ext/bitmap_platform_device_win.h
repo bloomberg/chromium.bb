@@ -79,8 +79,7 @@ class BitmapPlatformDevice : public PlatformDevice {
 
   // Loads the given transform and clipping region into the HDC. This is
   // overridden from SkDevice.
-  virtual void setMatrixClip(const SkMatrix& transform, const SkRegion& region,
-                             const SkClipStack&);
+  virtual void setMatrixClip(const SkMatrix& transform, const SkRegion& region);
 
   virtual void drawToHDC(HDC dc, int x, int y, const RECT* src_rect);
   virtual void makeOpaque(int x, int y, int width, int height);
