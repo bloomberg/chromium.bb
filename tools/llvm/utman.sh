@@ -766,6 +766,9 @@ llvm-clean() {
   mkdir -p ${objdir}
 }
 
+# Default case - Optimized configure
+LLVM_EXTRA_OPTIONS="--enable-optimized"
+
 #+ llvm-configure        - Run LLVM configure
 llvm-configure() {
   StepBanner "LLVM" "Configure"
@@ -785,14 +788,27 @@ llvm-configure() {
              CXX=${CXX} \
              ${srcdir}/llvm-trunk/configure \
              --disable-jit \
-             --enable-optimized \
              --with-binutils-include=${binutils_include} \
              --enable-targets=x86,x86_64,arm \
              --target=${CROSS_TARGET_ARM} \
              --prefix=${INSTALL_DIR} \
-             --with-llvmgccdir=${INSTALL_DIR}
+             --with-llvmgccdir=${INSTALL_DIR} \
+             ${LLVM_EXTRA_OPTIONS}
+
+
   spopd
 }
+
+#+ llvm-configure-dbg        - Run LLVM configure
+#  Not used by default. Call manually.
+llvm-configure-dbg() {
+  StepBanner "LLVM" "Configure With Debugging"
+  LLVM_EXTRA_OPTIONS="--disable-optimized \
+	--enable-debug-runtime \
+	--enable-assertions "
+  llvm-configure
+}
+
 
 llvm-needs-configure() {
   [ ! -f "${TC_BUILD_LLVM}/config.status" ]
