@@ -155,10 +155,6 @@ class View : public AcceleratorTarget {
   // Returns whether the view is hot-tracked.
   virtual bool IsHotTracked() const { return false; }
 
-  // TODO(beng): delete
-  // Returns whether the view is pushed.
-  virtual bool IsPushed() const { return false; }
-
   // FATE TBD ------------------------------------------------------------------
   // TODO(beng): Figure out what these methods are for and delete them.
 

@@ -520,8 +520,6 @@ void ViewAccessibility::SetState(VARIANT* msaa_state, views::View* view) {
     msaa_state->lVal |= STATE_SYSTEM_INVISIBLE;
   if (view->IsHotTracked())
     msaa_state->lVal |= STATE_SYSTEM_HOTTRACKED;
-  if (view->IsPushed())
-    msaa_state->lVal |= STATE_SYSTEM_PRESSED;
   if (view->HasFocus())
     msaa_state->lVal |= STATE_SYSTEM_FOCUSED;
 
