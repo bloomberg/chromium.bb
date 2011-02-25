@@ -19,11 +19,6 @@ def BuildAndTest(options):
   if sys.platform == 'cygwin':
     raise Exception('I do not work under cygwin, sorry.')
 
-  # For now we have only tried this on windows.
-  # TODO(bradnelson): test elsewhere and turn on for other platforms.
-  if sys.platform not in ['cygwin', 'win32']:
-    return
-
   script_dir = os.path.dirname(os.path.abspath(__file__))
   nacl_dir = os.path.dirname(script_dir)
   src_dir = os.path.dirname(nacl_dir)
@@ -45,6 +40,7 @@ def BuildAndTest(options):
   # Decide platform specifics.
   env = dict(os.environ)
   if sys.platform in ['win32', 'cygwin']:
+    shell = True
     if (os.environ.get('PROCESSOR_ARCHITECTURE', '').find('64') >= 0 or
         os.environ.get('PROCESSOR_ARCHITEW6432', '').find('64') >= 0):
       bits = 64
@@ -64,9 +60,23 @@ def BuildAndTest(options):
     ])
     env['PATH'] += ';' + msvs_path
     scons = ['vcvarsall %s && scons.bat' % tools_bits]
-  else:
-    bits = options.bits
+  elif sys.platform == 'darwin':
+    bits = 32
     scons = ['./scons']
+    shell = False
+  else:
+    p = subprocess.Popen(
+        'uname -m | '
+        'sed -e "s/i.86/ia32/;s/x86_64/x64/;s/amd64/x64/;s/arm.*/arm/"',
+        shell=True, stdout=subprocess.PIPE)
+    (p_stdout, _) = p.communicate()
+    assert p.returncode == 0
+    if p_stdout.find('64') >= 0:
+      bits = 64
+    else:
+      bits = 32
+    scons = ['./scons']
+    shell = False
 
   # List of places that chrome could live.
   # In theory we should be more careful about what platform we're actually
@@ -91,18 +101,16 @@ def BuildAndTest(options):
     raise Exception("You don't have a build of chrome present")
 
   # Run nacl/chrome integration tests.
-  subprocess.check_call(
-      scons + ['platform=x86-%d' % bits,
-          'disable_dynamic_plugin_loading=1',
-          'chrome_browser_path=' + chrome_filename,
-          'chrome_browser_tests',
-      ], shell=True, cwd=nacl_dir, env=env)
+  cmd = scons + ['platform=x86-%d' % bits,
+      'disable_dynamic_plugin_loading=1',
+      'chrome_browser_path=' + chrome_filename,
+      'chrome_browser_tests',
+  ]
+  subprocess.check_call(cmd, shell=shell, cwd=nacl_dir, env=env)
 
 
 def MakeCommandLineParser():
   parser = optparse.OptionParser()
-  parser.add_option('-b', '--bits', dest='bits', default=32, type='int',
-                    help='32/64 bit')
   parser.add_option('-m', '--mode', dest='mode', default='Debug',
                     help='Debug/Release mode')
   return parser
