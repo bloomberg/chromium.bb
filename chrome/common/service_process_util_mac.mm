@@ -185,7 +185,7 @@ bool CheckServiceProcessReady() {
   return ready;
 }
 
-bool ServiceProcessState::AddToAutoRun(CommandLine* cmd_line) {
+bool ServiceProcessState::AddToAutoRun() {
   NOTIMPLEMENTED();
   return false;
 }

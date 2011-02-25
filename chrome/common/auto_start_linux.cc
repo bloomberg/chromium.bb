@@ -9,6 +9,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/nix/xdg_util.h"
+#include "base/string_tokenizer.h"
 
 namespace {
 
@@ -59,4 +60,29 @@ bool AutoStart::Remove(const std::string& autostart_filename) {
   FilePath autostart_directory = GetAutostartDirectory(environment.get());
   FilePath autostart_file = autostart_directory.Append(autostart_filename);
   return file_util::Delete(autostart_file, false);
+}
+
+bool AutoStart::GetAutostartFileContents(
+    const std::string& autostart_filename, std::string* contents) {
+  scoped_ptr<base::Environment> environment(base::Environment::Create());
+  FilePath autostart_directory = GetAutostartDirectory(environment.get());
+  FilePath autostart_file = autostart_directory.Append(autostart_filename);
+  return file_util::ReadFileToString(autostart_file, contents);
+}
+
+bool AutoStart::GetAutostartFileValue(const std::string& autostart_filename,
+                                      const std::string& value_name,
+                                      std::string* value) {
+  std::string contents;
+  if (!GetAutostartFileContents(autostart_filename, &contents))
+    return false;
+  StringTokenizer tokenizer(contents, "\n");
+  std::string token = value_name + "=";
+  while (tokenizer.GetNext()) {
+    if (tokenizer.token().substr(0, token.length()) == token) {
+      *value = tokenizer.token().substr(token.length());
+      return true;
+    }
+  }
+  return false;
 }

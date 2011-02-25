@@ -133,7 +133,6 @@ class ServiceProcess : public CloudPrintProxy::Client,
 #if defined(ENABLE_REMOTING)
   scoped_refptr<remoting::ChromotingHostManager> remoting_host_manager_;
 #endif
-  scoped_ptr<CommandLine> command_line_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceProcess);
 };

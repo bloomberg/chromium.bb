@@ -20,7 +20,13 @@ class AutoStart {
                              bool is_terminal_app);
   // Removes an autostart file.
   static bool Remove(const std::string& autostart_filename);
-
+  // Gets the entire contents of an autostart file.
+  static bool GetAutostartFileContents(const std::string& autostart_filename,
+                                       std::string* contents);
+  // Gets a specific value from an autostart file.
+  static bool GetAutostartFileValue(const std::string& autostart_filename,
+                                    const std::string& value_name,
+                                    std::string* value);
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(AutoStart);
 };

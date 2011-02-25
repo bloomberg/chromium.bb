@@ -218,8 +218,6 @@ bool ServiceProcess::Initialize(MessageLoopForUI* message_loop,
 
   // See if we need to stay running.
   ScheduleShutdownCheck();
-  command_line_.reset(new CommandLine(command_line));
-
   return true;
 }
 
@@ -309,7 +307,7 @@ void ServiceProcess::OnChromotingHostDisabled() {
 void ServiceProcess::OnServiceEnabled() {
   enabled_services_++;
   if (1 == enabled_services_) {
-    ServiceProcessState::GetInstance()->AddToAutoRun(command_line_.get());
+    ServiceProcessState::GetInstance()->AddToAutoRun();
   }
 }
 

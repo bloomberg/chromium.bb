@@ -8,6 +8,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
@@ -125,11 +126,12 @@ bool ServiceProcessState::SignalReady(
   return true;
 }
 
-bool ServiceProcessState::AddToAutoRun(CommandLine* cmd_line) {
+bool ServiceProcessState::AddToAutoRun() {
+  DCHECK(autorun_command_line_.get());
   return base::win::AddCommandToAutoRun(
       HKEY_CURRENT_USER,
       UTF8ToWide(GetServiceProcessAutoRunKey()),
-      cmd_line->command_line_string());
+      autorun_command_line_->command_line_string());
 }
 
 bool ServiceProcessState::RemoveFromAutoRun() {

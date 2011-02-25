@@ -7,9 +7,11 @@
 #include <signal.h>
 #include <unistd.h>
 
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/threading/platform_thread.h"
+#include "chrome/common/auto_start_linux.h"
 #include "chrome/common/multi_process_lock.h"
 
 namespace {
@@ -41,6 +43,13 @@ MultiProcessLock* TakeServiceInitializingLock(bool waiting) {
   return TakeNamedLock(lock_name, waiting);
 }
 
+std::string GetBaseDesktopName() {
+#if defined(GOOGLE_CHROME_BUILD)
+  return "google-chrome-service.desktop";
+#else  // CHROMIUM_BUILD
+  return "chromium-service.desktop";
+#endif
+}
 }  // namespace
 
 MultiProcessLock* TakeServiceRunningLock(bool waiting) {
@@ -68,12 +77,21 @@ bool ServiceProcessState::TakeSingletonLock() {
   return state_->initializing_lock_.get();
 }
 
-bool ServiceProcessState::AddToAutoRun(CommandLine* cmd_line) {
-  NOTIMPLEMENTED();
-  return false;
+bool ServiceProcessState::AddToAutoRun() {
+  DCHECK(autorun_command_line_.get());
+#if defined(GOOGLE_CHROME_BUILD)
+  std::string app_name = "Google Chrome Service";
+#else  // CHROMIUM_BUILD
+  std::string app_name = "Chromium Service";
+#endif
+  return AutoStart::AddApplication(
+      GetServiceProcessScopedName(GetBaseDesktopName()),
+      app_name,
+      autorun_command_line_->command_line_string(),
+      false);
 }
 
 bool ServiceProcessState::RemoveFromAutoRun() {
-  NOTIMPLEMENTED();
-  return false;
+  return AutoStart::Remove(
+      GetServiceProcessScopedName(GetBaseDesktopName()));
 }

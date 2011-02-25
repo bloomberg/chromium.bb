@@ -4,6 +4,7 @@
 
 #include <algorithm>
 
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -16,8 +17,10 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/version.h"
+#include "chrome/common/child_process_host.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/service_process_util.h"
 
@@ -158,6 +161,7 @@ IPC::ChannelHandle GetServiceProcessChannel() {
 #endif  // !OS_MACOSX
 
 ServiceProcessState::ServiceProcessState() : state_(NULL) {
+  CreateAutoRunCommandLine();
 }
 
 ServiceProcessState::~ServiceProcessState() {
@@ -258,3 +262,22 @@ IPC::ChannelHandle ServiceProcessState::GetServiceProcessChannel() {
 }
 
 #endif  // !OS_MACOSX
+
+void ServiceProcessState::CreateAutoRunCommandLine() {
+  FilePath exe_path = ChildProcessHost::GetChildPath(false);
+  if (exe_path.empty()) {
+    NOTREACHED() << "Unable to get service process binary name.";
+  }
+  autorun_command_line_.reset(new CommandLine(exe_path));
+  autorun_command_line_->AppendSwitchASCII(switches::kProcessType,
+                                           switches::kServiceProcess);
+
+  // The user data directory is the only other flag we currently want to
+  // possibly store.
+  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+  FilePath user_data_dir =
+    browser_command_line.GetSwitchValuePath(switches::kUserDataDir);
+  if (!user_data_dir.empty())
+    autorun_command_line_->AppendSwitchPath(switches::kUserDataDir,
+                                            user_data_dir);
+}

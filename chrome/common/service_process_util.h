@@ -80,7 +80,7 @@ class ServiceProcessState {
   void SignalStopped();
 
   // Register the service process to run on startup.
-  bool AddToAutoRun(CommandLine* command_line);
+  bool AddToAutoRun();
 
   // Unregister the service process to run on startup.
   bool RemoveFromAutoRun();
@@ -111,11 +111,16 @@ class ServiceProcessState {
   // Tear down the platform specific state.
   void TearDownState();
 
+  // Initializes the command-line that can be used to autorun the service
+  // process.
+  void CreateAutoRunCommandLine();
+
   // An opaque object that maintains state. The actual definition of this is
   // platform dependent.
   struct StateData;
   StateData* state_;
   scoped_ptr<base::SharedMemory> shared_mem_service_data_;
+  scoped_ptr<CommandLine> autorun_command_line_;
 
   friend struct DefaultSingletonTraits<ServiceProcessState>;
 };
