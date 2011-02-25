@@ -42,4 +42,8 @@ net::SSLClientSocket* XmppClientSocketFactory::CreateSSLClientSocket(
       cert_verifier, dns_cert_checker);
 }
 
+void XmppClientSocketFactory::ClearSSLSessionCache() {
+  client_socket_factory_->ClearSSLSessionCache();
+}
+
 }  // namespace

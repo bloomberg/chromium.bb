@@ -259,6 +259,10 @@ class MockClientSocketFactory : public ClientSocketFactory {
     return NULL;
   }
 
+  virtual void ClearSSLSessionCache() {
+    NOTIMPLEMENTED();
+  }
+
   int allocation_count() const { return allocation_count_; }
 
   // Set the default ClientSocketType.

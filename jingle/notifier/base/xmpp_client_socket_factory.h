@@ -35,6 +35,7 @@ class XmppClientSocketFactory : public net::ClientSocketFactory {
       const net::HostPortPair& host_and_port, const net::SSLConfig& ssl_config,
       net::SSLHostInfo* ssl_host_info, net::CertVerifier* cert_verifier,
       net::DnsCertProvenanceChecker* dns_cert_checker);
+  virtual void ClearSSLSessionCache();
 
  private:
   net::ClientSocketFactory* const client_socket_factory_;
