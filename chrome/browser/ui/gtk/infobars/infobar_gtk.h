@@ -87,6 +87,11 @@ class InfoBar : public SlideAnimatorGtk::Delegate,
   static const int kInfoBarHeight;
 
  protected:
+  // Spacing after message (and before buttons).
+  static const int kEndOfLabelSpacing;
+  // Spacing between buttons.
+  static const int kButtonButtonSpacing;
+
   // Removes our associated InfoBarDelegate from the associated TabContents.
   // (Will lead to this InfoBar being closed).
   void RemoveInfoBar() const;

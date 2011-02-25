@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
-#include "chrome/browser/ui/gtk/gtk_chrome_shrinkable_hbox.h"
 #include "chrome/browser/ui/gtk/gtk_theme_provider.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/infobars/infobar_container_gtk.h"
@@ -22,11 +21,6 @@ extern const int InfoBar::kInfoBarHeight = 37;
 
 namespace {
 
-// Spacing after message (and before buttons).
-const int kEndOfLabelSpacing = 6;
-// Spacing between buttons.
-const int kButtonButtonSpacing = 3;
-
 // Pixels between infobar elements.
 const int kElementPadding = 5;
 
@@ -35,6 +29,10 @@ const int kLeftPadding = 5;
 const int kRightPadding = 5;
 
 }  // namespace
+
+// static
+const int InfoBar::kEndOfLabelSpacing = 6;
+const int InfoBar::kButtonButtonSpacing = 3;
 
 InfoBar::InfoBar(InfoBarDelegate* delegate)
     : container_(NULL),
@@ -292,122 +290,4 @@ gboolean InfoBar::OnBackgroundExpose(GtkWidget* sender,
   arrow_model_.Paint(sender, event, gfx::Point(x, y), border_color);
 
   return FALSE;
-}
-
-// LinkInfoBar -----------------------------------------------------------------
-
-class LinkInfoBar : public InfoBar {
- public:
-  explicit LinkInfoBar(LinkInfoBarDelegate* delegate)
-      : InfoBar(delegate) {
-    size_t link_offset;
-    string16 display_text = delegate->GetMessageTextWithOffset(&link_offset);
-    string16 link_text = delegate->GetLinkText();
-    AddLabelWithInlineLink(display_text, link_text, link_offset,
-                           G_CALLBACK(OnLinkClick));
-  }
-
- private:
-  static void OnLinkClick(GtkWidget* button, LinkInfoBar* link_info_bar) {
-    if (link_info_bar->delegate_->AsLinkInfoBarDelegate()->
-        LinkClicked(gtk_util::DispositionForCurrentButtonPressEvent())) {
-      link_info_bar->RemoveInfoBar();
-    }
-  }
-};
-
-// ConfirmInfoBar --------------------------------------------------------------
-
-class ConfirmInfoBar : public InfoBar {
- public:
-  explicit ConfirmInfoBar(ConfirmInfoBarDelegate* delegate);
-
- private:
-  // Adds a button to the info bar by type. It will do nothing if the delegate
-  // doesn't specify a button of the given type.
-  void AddButton(ConfirmInfoBarDelegate::InfoBarButton type);
-
-  CHROMEGTK_CALLBACK_0(ConfirmInfoBar, void, OnOkButton);
-  CHROMEGTK_CALLBACK_0(ConfirmInfoBar, void, OnCancelButton);
-  CHROMEGTK_CALLBACK_0(ConfirmInfoBar, void, OnLinkClicked);
-
-  GtkWidget* confirm_hbox_;
-
-  DISALLOW_COPY_AND_ASSIGN(ConfirmInfoBar);
-};
-
-ConfirmInfoBar::ConfirmInfoBar(ConfirmInfoBarDelegate* delegate)
-    : InfoBar(delegate) {
-  confirm_hbox_ = gtk_chrome_shrinkable_hbox_new(FALSE, FALSE, 0);
-  // This alignment allocates the confirm hbox only as much space as it
-  // requests, and less if there is not enough available.
-  GtkWidget* align = gtk_alignment_new(0, 0, 0, 1);
-  gtk_container_add(GTK_CONTAINER(align), confirm_hbox_);
-  gtk_box_pack_start(GTK_BOX(hbox_), align, TRUE, TRUE, 0);
-
-  // We add the buttons in reverse order and pack end instead of start so
-  // that the first widget to get shrunk is the label rather than the button(s).
-  AddButton(ConfirmInfoBarDelegate::BUTTON_OK);
-  AddButton(ConfirmInfoBarDelegate::BUTTON_CANCEL);
-
-  std::string label_text = UTF16ToUTF8(delegate->GetMessageText());
-  GtkWidget* label = gtk_label_new(label_text.c_str());
-  gtk_util::ForceFontSizePixels(label, 13.4);
-  gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-  gtk_util::CenterWidgetInHBox(confirm_hbox_, label, true, kEndOfLabelSpacing);
-  gtk_widget_modify_fg(label, GTK_STATE_NORMAL, &gtk_util::kGdkBlack);
-  g_signal_connect(label, "map",
-                   G_CALLBACK(gtk_util::InitLabelSizeRequestAndEllipsizeMode),
-                   NULL);
-
-  std::string link_text = UTF16ToUTF8(delegate->GetLinkText());
-  if (link_text.empty())
-    return;
-
-  GtkWidget* link = gtk_chrome_link_button_new(link_text.c_str());
-  gtk_misc_set_alignment(GTK_MISC(GTK_CHROME_LINK_BUTTON(link)->label), 0, 0.5);
-  g_signal_connect(link, "clicked", G_CALLBACK(OnLinkClickedThunk), this);
-  gtk_util::SetButtonTriggersNavigation(link);
-  // Until we switch to vector graphics, force the font size.
-  // 13.4px == 10pt @ 96dpi
-  gtk_util::ForceFontSizePixels(GTK_CHROME_LINK_BUTTON(link)->label, 13.4);
-  gtk_util::CenterWidgetInHBox(hbox_, link, true, kEndOfLabelSpacing);
-}
-
-void ConfirmInfoBar::AddButton(ConfirmInfoBarDelegate::InfoBarButton type) {
-  if (delegate_->AsConfirmInfoBarDelegate()->GetButtons() & type) {
-    GtkWidget* button = gtk_button_new_with_label(UTF16ToUTF8(
-        delegate_->AsConfirmInfoBarDelegate()->GetButtonLabel(type)).c_str());
-    gtk_util::CenterWidgetInHBox(confirm_hbox_, button, true,
-                                 kButtonButtonSpacing);
-    g_signal_connect(button, "clicked",
-                     G_CALLBACK(type == ConfirmInfoBarDelegate::BUTTON_OK ?
-                                OnOkButtonThunk : OnCancelButtonThunk),
-                     this);
-  }
-}
-
-void ConfirmInfoBar::OnCancelButton(GtkWidget* widget) {
-  if (delegate_->AsConfirmInfoBarDelegate()->Cancel())
-    RemoveInfoBar();
-}
-
-void ConfirmInfoBar::OnOkButton(GtkWidget* widget) {
-  if (delegate_->AsConfirmInfoBarDelegate()->Accept())
-    RemoveInfoBar();
-}
-
-void ConfirmInfoBar::OnLinkClicked(GtkWidget* widget) {
-  if (delegate_->AsConfirmInfoBarDelegate()->LinkClicked(
-          gtk_util::DispositionForCurrentButtonPressEvent())) {
-    RemoveInfoBar();
-  }
-}
-
-InfoBar* LinkInfoBarDelegate::CreateInfoBar() {
-  return new LinkInfoBar(this);
-}
-
-InfoBar* ConfirmInfoBarDelegate::CreateInfoBar() {
-  return new ConfirmInfoBar(this);
 }
