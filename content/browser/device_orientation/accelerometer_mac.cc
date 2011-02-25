@@ -145,9 +145,9 @@ const AccelerometerMac::SensorDescriptor
   { "MacBookPro2,2", { { 0, true  }, { 2, true  }, { 4, false } } },
 
   // Tested by leandrogracia on a 15" MacBook Pro.
-  // TODO(avi): this model name was also used for the 17" version; verify that
-  // these parameters are also valid for that model.
   { "MacBookPro3,1", { { 0, false }, { 2, true  }, { 4, true  } } },
+  // Data from S.Som. (via avi) on a 17" MacBook Pro.
+  //{ "MacBookPro3,1", { { 0, true  }, { 2, false }, { 4, true  } } },
 
   // Tested by leandrogracia on a 15" MacBook Pro.
   // Tested by Eric Shapiro (via avi) on a 17" MacBook Pro.
@@ -177,6 +177,15 @@ const AccelerometerMac::SensorDescriptor
   // Tested by leandrogracia on a 13" MacBook Pro.
   { "MacBookPro7,1", { { 0, true  }, { 2, true  }, { 4, false } } },
 
+  // Tested by avi on a 13" MacBook Pro.
+  { "MacBookPro8,1", { { 0, false }, { 2, false }, { 4, false } } },
+
+  // Tested by avi on a 15" MacBook Pro.
+  { "MacBookPro8,2", { { 0, false }, { 2, false }, { 4, false } } },
+
+  // Tested by avi on a 17" MacBook Pro.
+  { "MacBookPro8,3", { { 0, false }, { 2, false }, { 4, false } } },
+
   // Generic MacBook accelerometer sensor data, used for for both future models
   // and past models for which there has been no testing. Note that this generic
   // configuration may well have problems with inverted axes.
@@ -184,7 +193,6 @@ const AccelerometerMac::SensorDescriptor
   //  MacBook5,1
   //  MacBook5,2
   //  MacBookPro1,2
-  //  MacBookPro3,1 (17" to compare to 15")
   { "", { { 0, true  }, { 2, true  }, { 4, false } } }
 };
 
