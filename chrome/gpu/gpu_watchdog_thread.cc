@@ -118,7 +118,7 @@ void GpuWatchdogThread::OnAcknowledge() {
   if (!armed_)
     return;
 
-  // Revoke any pending OnExit.
+  // Revoke any pending hang termination.
   method_factory_->RevokeAll();
   armed_ = false;
 
@@ -188,12 +188,13 @@ void GpuWatchdogThread::OnCheck() {
   // not respond in time.
   message_loop()->PostDelayedTask(
       FROM_HERE,
-      method_factory_->NewRunnableMethod(&GpuWatchdogThread::OnExit),
+      method_factory_->NewRunnableMethod(
+          &GpuWatchdogThread::DeliberatelyCrashingToRecoverFromHang),
       timeout_);
 }
 
 // Use the --disable-gpu-watchdog command line switch to disable this.
-void GpuWatchdogThread::OnExit() {
+void GpuWatchdogThread::DeliberatelyCrashingToRecoverFromHang() {
 #if defined(OS_WIN)
   // Defer termination until a certain amount of CPU time has elapsed on the
   // watched thread.
@@ -201,7 +202,8 @@ void GpuWatchdogThread::OnExit() {
   if (time_since_arm < timeout_) {
     message_loop()->PostDelayedTask(
         FROM_HERE,
-        method_factory_->NewRunnableMethod(&GpuWatchdogThread::OnExit),
+        method_factory_->NewRunnableMethod(
+            &GpuWatchdogThread::DeliberatelyCrashingToRecoverFromHang),
         timeout_ - time_since_arm);
     return;
   }

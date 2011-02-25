@@ -48,7 +48,7 @@ class GpuWatchdogThread : public base::Thread,
 
   void OnAcknowledge();
   void OnCheck();
-  void OnExit();
+  void DeliberatelyCrashingToRecoverFromHang();
   void Disable();
 
   int64 GetWatchedThreadTime();
