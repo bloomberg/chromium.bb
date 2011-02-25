@@ -15,6 +15,7 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message.h"
+#include "ipc/ipc_platform_file.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/proxy/callback_tracker.h"
 #include "ppapi/proxy/interface_id.h"
@@ -83,13 +84,15 @@ class Dispatcher : public IPC::Channel::Listener,
   // Wrapper for calling the local GetInterface function.
   const void* GetLocalInterface(const char* interface);
 
-  // Returns the remote process' handle. For the host dispatcher, this will be
-  // the plugin process, and for the plugin dispatcher, this will be the
-  // renderer process. This is used for sharing memory and such and is
-  // guaranteed valid (unless the remote process has suddenly died).
-  base::ProcessHandle remote_process_handle() const {
-    return remote_process_handle_;
-  }
+  // Shares a file handle (HANDLE / file descriptor) with the remote side. It
+  // returns a handle that should be sent in exactly one IPC message. Upon
+  // receipt, the remote side then owns that handle. Note: if sending the
+  // message fails, the returned handle is properly closed by the IPC system. If
+  // should_close_source is set to true, the original handle is closed by this
+  // operation and should not be used again.
+  IPC::PlatformFileForTransit ShareHandleWithRemote(
+      base::PlatformFile handle,
+      bool should_close_source);
 
   // Called if the remote side is declaring to us which interfaces it supports
   // so we don't have to query for each one. We'll pre-create proxies for

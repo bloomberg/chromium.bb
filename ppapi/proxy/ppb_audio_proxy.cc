@@ -129,6 +129,18 @@ InterfaceProxy* CreateAudioProxy(Dispatcher* dispatcher,
   return new PPB_Audio_Proxy(dispatcher, target_interface);
 }
 
+base::PlatformFile IntToPlatformFile(int32_t handle) {
+  // TODO(piman/brettw): Change trusted interface to return a PP_FileHandle,
+  // those casts are ugly.
+#if defined(OS_WIN)
+  return reinterpret_cast<HANDLE>(static_cast<intptr_t>(handle));
+#elif defined(OS_POSIX)
+  return handle;
+#else
+  #error Not implemented.
+#endif
+}
+
 }  // namespace
 
 PPB_Audio_Proxy::PPB_Audio_Proxy(Dispatcher* dispatcher,
@@ -226,13 +238,7 @@ void PPB_Audio_Proxy::AudioChannelConnected(
     const HostResource& resource) {
   IPC::PlatformFileForTransit socket_handle =
       IPC::InvalidPlatformFileForTransit();
-#if defined(OS_WIN)
-  base::SharedMemoryHandle shared_memory = NULL;
-#elif defined(OS_POSIX)
-  base::SharedMemoryHandle shared_memory(-1, false);
-#else
-  #error Not implemented.
-#endif
+  base::SharedMemoryHandle shared_memory = IPC::InvalidPlatformFileForTransit();
   uint32_t shared_memory_length = 0;
 
   int32_t result_code = result;
@@ -271,23 +277,13 @@ int32_t PPB_Audio_Proxy::GetAudioConnectedHandles(
   if (result != PP_OK)
     return result;
 
-#if defined(OS_WIN)
-  // On Windows, duplicate the socket into the plugin process, this will
-  // automatically close the source handle.
-  ::DuplicateHandle(
-      GetCurrentProcess(),
-      reinterpret_cast<HANDLE>(static_cast<intptr_t>(socket_handle)),
-      dispatcher()->remote_process_handle(), foreign_socket_handle,
-      STANDARD_RIGHTS_REQUIRED | FILE_MAP_READ | FILE_MAP_WRITE,
-      FALSE, DUPLICATE_CLOSE_SOURCE);
-#else
-  // On Posix, the socket handle will be auto-duplicated when we send the
-  // FileDescriptor. Don't set AutoClose since this is not our handle.
-  *foreign_socket_handle = base::FileDescriptor(socket_handle, false);
-#endif
+  // socket_handle doesn't belong to us: don't close it.
+  *foreign_socket_handle = dispatcher()->ShareHandleWithRemote(
+      IntToPlatformFile(socket_handle), false);
+  if (*foreign_socket_handle == IPC::InvalidPlatformFileForTransit())
+    return PP_ERROR_FAILED;
 
   // Get the shared memory for the buffer.
-  // TODO(brettw) remove the reinterpret cast when the interface is updated.
   int shared_memory_handle;
   result = audio_trusted->GetSharedMemory(resource.host_resource(),
                                           &shared_memory_handle,
@@ -295,18 +291,10 @@ int32_t PPB_Audio_Proxy::GetAudioConnectedHandles(
   if (result != PP_OK)
     return result;
 
-  base::SharedMemory shared_memory(
-#if defined(OS_WIN)
-      reinterpret_cast<HANDLE>(static_cast<intptr_t>(shared_memory_handle)),
-#else
-      base::FileDescriptor(shared_memory_handle, false),
-#endif
-      false);
-
-  // Duplicate the shared memory to the plugin process. This will automatically
-  // close the source handle.
-  if (!shared_memory.GiveToProcess(dispatcher()->remote_process_handle(),
-                                   foreign_shared_memory_handle))
+  // shared_memory_handle doesn't belong to us: don't close it.
+  *foreign_shared_memory_handle = dispatcher()->ShareHandleWithRemote(
+      IntToPlatformFile(shared_memory_handle), false);
+  if (*foreign_shared_memory_handle == IPC::InvalidPlatformFileForTransit())
     return PP_ERROR_FAILED;
 
   return PP_OK;

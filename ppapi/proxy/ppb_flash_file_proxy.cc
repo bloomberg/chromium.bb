@@ -18,31 +18,20 @@ namespace proxy {
 
 namespace {
 
-// Given an error code and a handle result from a Pepper API call, converts
-// to a PlatformFileForTransit, possibly also updating the error value if
-// an error occurred.
+// Given an error code and a handle result from a Pepper API call, converts to a
+// PlatformFileForTransit by sharing with the other side, closing the original
+// handle, possibly also updating the error value if an error occurred.
 IPC::PlatformFileForTransit PlatformFileToPlatformFileForTransit(
+    Dispatcher* dispatcher,
     int32_t* error,
     base::PlatformFile file) {
   if (*error != PP_OK)
     return IPC::InvalidPlatformFileForTransit();
-#if defined(OS_WIN)
-/* TODO(brettw): figure out how to get the target process handle.
-  HANDLE result;
-  if (!::DuplicateHandle(::GetCurrentProcess(), file,
-                         target_process, &result, 0, false,
-                         DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS)) {
+  IPC::PlatformFileForTransit out_handle =
+      dispatcher->ShareHandleWithRemote(file, true);
+  if (out_handle == IPC::InvalidPlatformFileForTransit())
     *error = PP_ERROR_NOACCESS;
-    return INVALID_HANDLE_VALUE;
-  }
-  return result;
-*/
-  NOTIMPLEMENTED();
-  *error = PP_ERROR_NOACCESS;
-  return INVALID_HANDLE_VALUE;
-#elif defined(OS_POSIX)
-  return base::FileDescriptor(file, true);
-#endif
+  return out_handle;
 }
 
 void FreeDirContents(PP_Instance /* instance */,
@@ -224,7 +213,8 @@ void PPB_Flash_File_ModuleLocal_Proxy::OnMsgOpenFile(
   base::PlatformFile file;
   *result = ppb_flash_file_module_local_target()->
       OpenFile(instance, path.c_str(), mode, &file);
-  *file_handle = PlatformFileToPlatformFileForTransit(result, file);
+  *file_handle = PlatformFileToPlatformFileForTransit(
+      dispatcher(), result, file);
 }
 
 void PPB_Flash_File_ModuleLocal_Proxy::OnMsgRenameFile(

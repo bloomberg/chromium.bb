@@ -252,6 +252,33 @@ const void* Dispatcher::GetLocalInterface(const char* interface) {
   return local_get_interface_(interface);
 }
 
+IPC::PlatformFileForTransit Dispatcher::ShareHandleWithRemote(
+      base::PlatformFile handle,
+      bool should_close_source) {
+  IPC::PlatformFileForTransit out_handle;
+#if defined(OS_WIN)
+  DWORD options = DUPLICATE_SAME_ACCESS;
+  if (should_close_source)
+    options |= DUPLICATE_CLOSE_SOURCE;
+  if (!::DuplicateHandle(::GetCurrentProcess(),
+                         handle,
+                         remote_process_handle_,
+                         &out_handle,
+                         0,
+                         FALSE,
+                         options))
+    out_handle = IPC::InvalidPlatformFileForTransit();
+#elif defined(OS_POSIX)
+  // If asked to close the source, we can simply re-use the source fd instead of
+  // dup()ing and close()ing.
+  int fd = should_close_source ? handle : ::dup(handle);
+  out_handle = base::FileDescriptor(fd, true);
+#else
+  #error Not implemented.
+#endif
+  return out_handle;
+}
+
 bool Dispatcher::Send(IPC::Message* msg) {
   if (test_sink_)
     return test_sink_->Send(msg);

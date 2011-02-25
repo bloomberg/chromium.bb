@@ -131,17 +131,20 @@ const PPB_Context3D_Dev context_3d_interface = {
   &GetBoundSurfaces,
 };
 
-base::SharedMemoryHandle SHMHandleFromInt(int shm_handle) {
-#if defined(OS_POSIX)
-  // The handle isn't ours to close, but we want to keep a reference to the
-  // handle until it is actually sent, so duplicate it, and mark auto-close.
-  return base::FileDescriptor(dup(shm_handle), true);
-#elif defined(OS_WIN)
-  // TODO(piman): DuplicateHandle to the plugin process.
-  return reinterpret_cast<HANDLE>(shm_handle);
+base::SharedMemoryHandle TransportSHMHandleFromInt(Dispatcher* dispatcher,
+                                                   int shm_handle) {
+  // TODO(piman): Change trusted interface to return a PP_FileHandle, those
+  // casts are ugly.
+  base::PlatformFile source =
+#if defined(OS_WIN)
+      reinterpret_cast<HANDLE>(static_cast<intptr_t>(shm_handle));
+#elif defined(OS_POSIX)
+      shm_handle;
 #else
-#error "Platform not supported."
+  #error Not implemented.
 #endif
+  // Don't close the handle, it doesn't belong to us.
+  return dispatcher->ShareHandleWithRemote(source, false);
 }
 
 gpu::CommandBuffer::State GPUStateFromPPState(
@@ -547,7 +550,7 @@ void PPB_Context3D_Proxy::OnMsgInitialize(
     return;
   }
 
-  *ring_buffer = SHMHandleFromInt(shm_handle);
+  *ring_buffer = TransportSHMHandleFromInt(dispatcher(), shm_handle);
 }
 
 void PPB_Context3D_Proxy::OnMsgGetState(const HostResource& context,
@@ -598,7 +601,7 @@ void PPB_Context3D_Proxy::OnMsgGetTransferBuffer(
                                                    &shm_size)) {
     return;
   }
-  *transfer_buffer = SHMHandleFromInt(shm_handle);
+  *transfer_buffer = TransportSHMHandleFromInt(dispatcher(), shm_handle);
   *size = shm_size;
 }
 
