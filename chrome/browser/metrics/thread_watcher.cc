@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#if 0
+
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/metrics/metrics_service.h"
@@ -329,3 +331,5 @@ void WatchDogThread::Init() {
                                kUnresponsiveTime);
 #endif
 }
+
+#endif  // 0

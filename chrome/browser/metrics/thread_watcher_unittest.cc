@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#if 0
+
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -479,3 +481,5 @@ TEST_F(ThreadWatcherTest, MultipleThreadsNotResponding) {
       NewRunnableMethod(
           webkit_watcher_, &ThreadWatcher::DeActivateThreadWatching));
 }
+
+#endif  // 0

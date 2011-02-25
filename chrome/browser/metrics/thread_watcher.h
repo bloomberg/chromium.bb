@@ -8,6 +8,8 @@
 #define CHROME_BROWSER_METRICS_THREAD_WATCHER_H_
 #pragma once
 
+#if 0
+
 #include <map>
 #include <string>
 #include <vector>
@@ -264,5 +266,7 @@ class WatchDogThread : public BrowserProcessSubThread {
 
 DISABLE_RUNNABLE_METHOD_REFCOUNT(ThreadWatcher);
 DISABLE_RUNNABLE_METHOD_REFCOUNT(ThreadWatcherList);
+
+#endif  // 0
 
 #endif  // CHROME_BROWSER_METRICS_THREAD_WATCHER_H_
