@@ -468,9 +468,6 @@ class WidgetWin : public ui::WindowImpl,
   // create specialized RootView implementations.
   virtual RootView* CreateRootView();
 
-  // Returns true if this WidgetWin is opaque.
-  bool opaque() const { return opaque_; }
-
   // The TooltipManager.
   // WARNING: RootView's destructor calls into the TooltipManager. As such, this
   // must be destroyed AFTER root_view_.
@@ -537,8 +534,6 @@ class WidgetWin : public ui::WindowImpl,
   // messages. 0 if there is no active tracking. The value of this member is
   // used when tracking is canceled.
   DWORD active_mouse_tracking_flags_;
-
-  bool opaque_;
 
   // Should we keep an offscreen buffer? This is initially true and if the
   // window has WS_EX_LAYERED then it remains true. You can set this to false

@@ -194,11 +194,6 @@ void WidgetWin::Init(gfx::NativeView parent, const gfx::Rect& bounds) {
   if (!IsAccessibleWidget())
     NotifyWinEvent(EVENT_SYSTEM_ALERT, hwnd(), OBJID_CUSTOM, CHILDID_SELF);
 
-  // See if the style has been overridden.
-  opaque_ = !(window_ex_style() & WS_EX_TRANSPARENT);
-  use_layered_buffer_ = (use_layered_buffer_ &&
-                         !!(window_ex_style() & WS_EX_LAYERED));
-
   default_theme_provider_.reset(new DefaultThemeProvider());
 
   props_.push_back(SetWindowSupportsRerouteMouseWheel(hwnd()));
@@ -611,6 +606,7 @@ LRESULT WidgetWin::OnCreate(CREATESTRUCT* create_struct) {
   // Widget::GetWidgetFromNativeView expects the contents of this property
   // to be of type Widget, so the cast is necessary.
   SetNativeWindowProperty(kWidgetKey, static_cast<Widget*>(this));
+  use_layered_buffer_ = !!(window_ex_style() & WS_EX_LAYERED);
   LayoutRootView();
   return 0;
 }
