@@ -196,7 +196,7 @@ deps = {
     "/trunk/deps/third_party/libjpeg_turbo@73971",
 
   "src/third_party/flac":
-    "/trunk/deps/third_party/flac@71053",
+    "/trunk/deps/third_party/flac@75901",
 
   # Needed to support nacl browser test jig.
   "src/third_party/pylib":
