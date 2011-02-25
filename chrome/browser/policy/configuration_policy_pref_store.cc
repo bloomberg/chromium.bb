@@ -21,6 +21,7 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/policy/policy_path_parser.h"
 #include "chrome/browser/prefs/pref_value_map.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/browser/profiles/profile.h"
@@ -89,6 +90,11 @@ class ConfigurationPolicyPrefKeeper
   // Handles policies that affect AutoFill. Returns true if the policy was
   // handled and assumes ownership of |value| in that case.
   bool ApplyAutoFillPolicy(ConfigurationPolicyType policy, Value* value);
+
+  // Processes proxy-specific policies. Returns true if the specified policy
+  // is a proxy-related policy. ApplyProxyPolicy assumes the ownership
+  // of |value| in the case that the policy is proxy-specific.
+  bool ApplyDownloadDirPolicy(ConfigurationPolicyType policy, Value* value);
 
   // Make sure that the |path| if present in |prefs_|.  If not, set it to
   // a blank string.
@@ -235,8 +241,6 @@ const ConfigurationPolicyPrefKeeper::PolicyToPreferenceMapEntry
     prefs::kDefaultBrowserSettingEnabled },
   { Value::TYPE_BOOLEAN, kPolicyCloudPrintProxyEnabled,
     prefs::kCloudPrintProxyEnabled },
-  { Value::TYPE_STRING, kPolicyDownloadDirectory,
-    prefs::kDownloadDefaultDirectory },
 
 #if defined(OS_CHROMEOS)
   { Value::TYPE_BOOLEAN, kPolicyChromeOsLockOnIdleSuspend,
@@ -309,6 +313,9 @@ void ConfigurationPolicyPrefKeeper::Apply(ConfigurationPolicyType policy,
     return;
 
   if (ApplyAutoFillPolicy(policy, value))
+    return;
+
+  if (ApplyDownloadDirPolicy(policy, value))
     return;
 
   if (ApplyPolicyFromMap(policy, value, kDefaultSearchPolicyMap,
@@ -406,6 +413,27 @@ bool ConfigurationPolicyPrefKeeper::ApplyAutoFillPolicy(
     delete value;
     return true;
   }
+  return false;
+}
+
+bool ConfigurationPolicyPrefKeeper::ApplyDownloadDirPolicy(
+    ConfigurationPolicyType policy,
+    Value* value) {
+  // Replace the policy string which might contain some user variables to an
+  // expanded string.
+  if (policy == kPolicyDownloadDirectory) {
+    FilePath::StringType string_value;
+    DCHECK(value->GetAsString(&string_value));
+    FilePath::StringType expanded_value =
+        policy::path_parser::ExpandPathVariables(string_value);
+    prefs_.SetValue(prefs::kDownloadDefaultDirectory,
+                    Value::CreateStringValue(expanded_value));
+    prefs_.SetValue(prefs::kPromptForDownload,
+                    Value::CreateBooleanValue(false));
+    delete value;
+    return true;
+  }
+  // We are not interested in this policy.
   return false;
 }
 

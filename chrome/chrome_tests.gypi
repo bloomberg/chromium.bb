@@ -1418,6 +1418,7 @@
         'browser/policy/mock_device_management_backend.cc',
         'browser/policy/mock_device_management_backend.h',
         'browser/policy/policy_map_unittest.cc',
+        'browser/policy/policy_path_parser_unittest.cc',
         'browser/preferences_mock_mac.cc',
         'browser/preferences_mock_mac.h',
         'browser/prefs/command_line_pref_store_unittest.cc',
