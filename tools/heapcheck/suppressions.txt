@@ -132,8 +132,6 @@
    Intentional leak in BrowserThreadTest.NotReleasedIfTargetThreadNonExistent
    Heapcheck:Leak
    fun:BrowserThreadTest_NotReleasedIfTargetThreadNonExistent_Test::TestBody
-   fun:testing::HandleExceptionsInMethodIfSupported
-   fun:testing::Test::Run
 }
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
@@ -173,15 +171,6 @@
    fun:URLRequestJobManager::CreateJob
    fun:net::URLRequest::Start
    fun:URLRequestTest_CancelTest_DuringCookiePolicy_Test::TestBody
-   fun:testing::HandleExceptionsInMethodIfSupported
-   fun:testing::Test::Run
-   fun:testing::TestInfo::Run
-   fun:testing::TestCase::Run
-   fun:testing::internal::UnitTestImpl::RunAllTests
-   fun:testing::HandleExceptionsInMethodIfSupported
-   fun:testing::UnitTest::Run
-   fun:TestSuite::Run
-   fun:main
 }
 {
    bug_34994_a
@@ -211,8 +200,6 @@
   Heapcheck:Leak
   ...
   fun:::RenderThreadTest::SetUp
-  fun:testing::HandleExceptionsInMethodIfSupported
-  fun:testing::Test::Run
 }
 # TODO(glider): sometimes the stacks differ between the bot and the local run,
 # e.g. "base::subtle::RefCountedBase::RefCountedBase" vs. "RefCountedBase".
@@ -260,12 +247,6 @@
   fun:UserScriptSlaveTest::Serialize
   ...
   fun:testing::Test::Run
-  fun:testing::TestInfo::Run
-  fun:testing::TestCase::Run
-  fun:testing::internal::UnitTestImpl::RunAllTests
-  fun:testing::HandleExceptionsInMethodIfSupported
-  fun:testing::UnitTest::Run
-  fun:TestSuite::Run
 }
 {
   bug_42153
@@ -418,12 +399,6 @@
    fun:TestShell::LoadURLForFrame
    fun:TestShell::LoadURL
    fun:::BookmarkletTest_NonEmptyResult_Test::TestBody
-   fun:testing::HandleExceptionsInMethodIfSupported
-   fun:testing::Test::Run
-   fun:testing::TestInfo::Run
-   fun:testing::TestCase::Run
-   fun:testing::internal::UnitTestImpl::RunAllTests
-   fun:testing::HandleExceptionsInMethodIfSupported
 }
 # "*~TestShell" means "~TestShell" and "TestShell::~TestShell".
 {
@@ -460,13 +435,6 @@
    fun:TestShell::LoadURLForFrame
    fun:TestShell::LoadURL
    fun:::BookmarkletTest_NonEmptyResult_Test::TestBody
-   fun:testing::HandleExceptionsInMethodIfSupported
-   fun:testing::Test::Run
-   fun:testing::TestInfo::Run
-   fun:testing::TestCase::Run
-   fun:testing::internal::UnitTestImpl::RunAllTests
-   fun:testing::HandleExceptionsInMethodIfSupported
-   fun:testing::UnitTest::Run
 }
 {
    bug_32366
@@ -646,8 +614,6 @@
    bug_46678_c
    Heapcheck:Leak
    fun:remoting::DifferTest_*_Test::TestBody
-   fun:testing::HandleExceptionsInMethodIfSupported
-   fun:testing::Test::Run
 }
 # '*ChromotingPlugin' stands for 'ChromotingPlugin' and
 # 'remoting::ChromotingPlugin::ChromotingPlugin'.
@@ -1026,32 +992,12 @@
    Heapcheck:Leak
    ...
    fun:FileSystemHostContextTest_CheckValidPath_Test::TestBody
-   fun:testing::HandleExceptionsInMethodIfSupported
-   fun:testing::Test::Run
-   fun:testing::TestInfo::Run
-   fun:testing::TestCase::Run
-   fun:testing::internal::UnitTestImpl::RunAllTests
-   fun:testing::HandleExceptionsInMethodIfSupported
-   fun:testing::UnitTest::Run
-   fun:base::TestSuite::Run
-   fun:main
-   fun:__libc_start_main
 }
 {
    bug_58474_b
    Heapcheck:Leak
    ...
    fun:FileSystemHostContextTest_GetRootPath_Test::TestBody
-   fun:testing::HandleExceptionsInMethodIfSupported
-   fun:testing::Test::Run
-   fun:testing::TestInfo::Run
-   fun:testing::TestCase::Run
-   fun:testing::internal::UnitTestImpl::RunAllTests
-   fun:testing::HandleExceptionsInMethodIfSupported
-   fun:testing::UnitTest::Run
-   fun:base::TestSuite::Run
-   fun:main
-   fun:__libc_start_main
 }
 {
    bug_60872
@@ -1061,14 +1007,11 @@
    fun:ReloadButtonGtk::OnClickedThunk
    fun:g_closure_invoke
    fun:ReloadButtonGtkTest_*_Test::TestBody
-   fun:testing::HandleExceptionsInMethodIfSupported
-   fun:testing::Test::Run
 }
 {
    bug_65680a
    Heapcheck:Leak
    fun:remoting::ScreenRecorderTest_OneRecordCycle_Test::TestBody
-   fun:testing::HandleExceptionsInMethodIfSupported
 }
 {
    bug_65680b
