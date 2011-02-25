@@ -10,8 +10,6 @@ import stat
 import subprocess
 import sys
 sys.path.append("./common")
-#import cProfile
-
 
 from SCons.Errors import UserError
 from SCons.Script import GetBuildFailures
@@ -2618,22 +2616,13 @@ selected_envs = FilterEnvironments(environment_list)
 family_map = SanityCheckAndMapExtraction(environment_list, selected_envs)
 ExportSpecialFamilyVars(selected_envs, family_map)
 
-print "@@@@@@"
 # Note: BuildEnvironments calls FilterEnvironments internally.
 # Passing environment_list is OK
-
-#def foo():
-#  BuildEnvironments(environment_list)
-
-#cProfile.run('foo()')
-
 BuildEnvironments(environment_list)
 
-print "@@@@@@"
 # Change default to build everything, but not run tests.
 Default(['all_programs', 'all_bundles', 'all_test_programs', 'all_libraries'])
 
-print "@@@@@@"
 if BROKEN_TEST_COUNT > 0:
   msg = "There are %d broken tests." % BROKEN_TEST_COUNT
   if GetOption('brief_comstr'):
