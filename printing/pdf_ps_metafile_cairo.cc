@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,6 @@
 
 #include <cairo.h>
 #include <cairo-pdf.h>
-#include <cairo-ps.h>
 
 #include "base/eintr_wrapper.h"
 #include "base/file_descriptor_posix.h"
@@ -47,7 +46,7 @@ void CleanUpContext(cairo_t** context) {
   }
 }
 
-// Callback function for Cairo to write PDF/PS stream.
+// Callback function for Cairo to write PDF stream.
 // |dst_buffer| is actually a pointer of type `std::string*`.
 cairo_status_t WriteCairoStream(void* dst_buffer,
                                 const unsigned char* src_data,
@@ -71,13 +70,8 @@ void DestroyContextData(void* data) {
 namespace printing {
 
 PdfPsMetafile::PdfPsMetafile()
-    : format_(PDF),
-      surface_(NULL), context_(NULL) {
-}
-
-PdfPsMetafile::PdfPsMetafile(const FileFormat& format)
-    : format_(format),
-      surface_(NULL), context_(NULL) {
+    : surface_(NULL),
+      context_(NULL) {
 }
 
 PdfPsMetafile::~PdfPsMetafile() {
@@ -91,23 +85,10 @@ bool PdfPsMetafile::Init() {
   DCHECK(!context_);
   DCHECK(data_.empty());
 
-  // Creates an 1 by 1 Cairo surface for entire PDF/PS file.
+  // Creates an 1 by 1 Cairo surface for the entire PDF file.
   // The size for each page will be overwritten later in StartPage().
-  switch (format_) {
-    case PDF:
-      surface_ = cairo_pdf_surface_create_for_stream(WriteCairoStream,
-                                                     &data_, 1, 1);
-      break;
-
-    case PS:
-      surface_ = cairo_ps_surface_create_for_stream(WriteCairoStream,
-                                                    &data_, 1, 1);
-      break;
-
-    default:
-      NOTREACHED();
-      return false;
-  }
+  surface_ = cairo_pdf_surface_create_for_stream(WriteCairoStream,
+                                                 &data_, 1, 1);
 
   // Cairo always returns a valid pointer.
   // Hence, we have to check if it points to a "nil" object.
@@ -188,21 +169,7 @@ cairo_t* PdfPsMetafile::StartPage(double width_in_points,
                                   margin_left_in_points,
                                   margin_top_in_points);
 
-  switch (format_) {
-    case PDF:
-      cairo_pdf_surface_set_size(surface_, width, height);
-      break;
-
-    case PS:
-      cairo_ps_surface_set_size(surface_, width, height);
-      break;
-
-    default:
-      NOTREACHED();
-      CleanUpAll();
-      return NULL;
-  }
-
+  cairo_pdf_surface_set_size(surface_, width, height);
   return context_;
 }
 
@@ -222,7 +189,7 @@ void PdfPsMetafile::Close() {
 
   cairo_surface_finish(surface_);
 
-  // If we have raw PDF/PS data set use that instead of what was drawn.
+  // If we have raw PDF data set use that instead of what was drawn.
   if (!raw_override_data_.empty()) {
     data_ = raw_override_data_;
     raw_override_data_.clear();

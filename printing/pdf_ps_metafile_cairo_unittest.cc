@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,7 +24,7 @@ class PdfPsTest : public testing::Test {
 
 TEST_F(PdfPsTest, Pdf) {
   // Tests in-renderer constructor.
-  printing::PdfPsMetafile pdf(printing::PdfPsMetafile::PDF);
+  printing::PdfPsMetafile pdf;
   EXPECT_TRUE(pdf.Init());
 
   // Renders page 1.
@@ -52,7 +52,7 @@ TEST_F(PdfPsTest, Pdf) {
   pdf.GetData(&buffer.front(), size);
 
   // Tests another constructor.
-  printing::PdfPsMetafile pdf2(printing::PdfPsMetafile::PDF);
+  printing::PdfPsMetafile pdf2;
   EXPECT_TRUE(pdf2.Init(&buffer.front(), size));
 
   // Tries to get the first 4 characters from pdf2.
@@ -67,7 +67,7 @@ TEST_F(PdfPsTest, Pdf) {
   EXPECT_TRUE(pdf.SaveTo(DevNullFD()));
 
   // Test overriding the metafile with raw data.
-  printing::PdfPsMetafile pdf3(printing::PdfPsMetafile::PDF);
+  printing::PdfPsMetafile pdf3;
   EXPECT_TRUE(pdf3.Init());
   context = pdf3.StartPage(72, 72, 1, 2, 3, 4);
   EXPECT_TRUE(context != NULL);
@@ -80,49 +80,4 @@ TEST_F(PdfPsTest, Pdf) {
   std::string output;
   pdf3.GetData(WriteInto(&output, size + 1), size);
   EXPECT_EQ(test_raw_data, output);
-}
-
-TEST_F(PdfPsTest, Ps) {
-  // Tests in-renderer constructor.
-  printing::PdfPsMetafile ps(printing::PdfPsMetafile::PS);
-  EXPECT_TRUE(ps.Init());
-
-  // Renders page 1.
-  cairo_t* context = ps.StartPage(72, 72, 1, 2, 3, 4);
-  EXPECT_TRUE(context != NULL);
-  EXPECT_EQ(printing::PdfPsMetafile::FromCairoContext(context), &ps);
-  // In theory, we should use Cairo to draw something on |context|.
-  EXPECT_TRUE(ps.FinishPage());
-
-  // Renders page 2.
-  context = ps.StartPage(64, 64, 1, 2, 3, 4);
-  EXPECT_TRUE(context != NULL);
-  // In theory, we should use Cairo to draw something on |context|.
-  EXPECT_TRUE(ps.FinishPage());
-
-  // Closes the file.
-  ps.Close();
-
-  // Checks data size.
-  uint32 size = ps.GetDataSize();
-  EXPECT_GT(size, 0u);
-
-  // Gets resulting data.
-  std::vector<char> buffer(size, 0x00);
-  ps.GetData(&buffer.front(), size);
-
-  // Tests another constructor.
-  printing::PdfPsMetafile ps2(printing::PdfPsMetafile::PS);
-  EXPECT_TRUE(ps2.Init(&buffer.front(), size));
-
-  // Tries to get the first 4 characters from ps2.
-  std::vector<char> buffer2(4, 0x00);
-  ps2.GetData(&buffer2.front(), 4);
-
-  // Tests if the header begins with "%!PS".
-  std::string header(&buffer2.front(), 4);
-  EXPECT_EQ(header.find("%!PS", 0), 0u);
-
-  // Tests if we can save data.
-  EXPECT_TRUE(ps.SaveTo(DevNullFD()));
 }

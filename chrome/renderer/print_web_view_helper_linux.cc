@@ -23,7 +23,7 @@ void PrintWebViewHelper::CreatePreviewDocument(
     const ViewMsg_PrintPages_Params& params, WebFrame* frame) {
   // We only can use PDF in the renderer because Cairo needs to create a
   // temporary file for a PostScript surface.
-  printing::NativeMetafile metafile(printing::NativeMetafile::PDF);
+  printing::NativeMetafile metafile;
   int page_count = 0;
 
   if (!RenderPages(params, frame, false, &page_count, &metafile))
@@ -51,7 +51,7 @@ void PrintWebViewHelper::PrintPages(const ViewMsg_PrintPages_Params& params,
                                     WebNode* node) {
   // We only can use PDF in the renderer because Cairo needs to create a
   // temporary file for a PostScript surface.
-  printing::NativeMetafile metafile(printing::NativeMetafile::PDF);
+  printing::NativeMetafile metafile;
   int page_count = 0;
   bool send_expected_page_count =
 #if defined(OS_CHROMEOS)
