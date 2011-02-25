@@ -38,7 +38,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "1.1",
+  "version": "1.2",
   "entries": [
     { // ATI Radeon X1900 on Mac, BUGWEBKIT=47028
       "id": "1",
@@ -162,6 +162,18 @@
       "device_id": "0x0393",
       "blacklist": [
         "webgl"
+      ]
+    },
+    { // ATI Radeon HD2600 XT on Mac, BUG=68859
+      "id": "11",
+      "os": {
+        "type": "macosx"
+      },
+      "vendor_id": "0x1002",
+      "device_id": "0x9588",
+      "blacklist": [
+        "webgl",
+        "accelerated_compositing"
       ]
     }
   ]
