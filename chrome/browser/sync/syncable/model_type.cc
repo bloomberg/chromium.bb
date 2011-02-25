@@ -113,6 +113,9 @@ int GetExtensionFieldNumberFromModelType(ModelType model_type) {
       NOTREACHED() << "No known extension for model type.";
       return 0;
   }
+  NOTREACHED() << "Needed for linux_keep_shadow_stacks because of "
+               << "http://gcc.gnu.org/bugzilla/show_bug.cgi?id=20681";
+  return 0;
 }
 
 // Note: keep this consistent with GetModelType in syncable.cc!
