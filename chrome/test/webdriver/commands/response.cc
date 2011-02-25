@@ -26,7 +26,7 @@ const char* const kStackTraceLineNumberKey = "stackTrace.lineNumber";
 
 Response::Response() {
   SetStatus(kSuccess);
-  SetValue(Value::CreateNullValue());
+  SetValue(new DictionaryValue());
 }
 
 Response::~Response() {}

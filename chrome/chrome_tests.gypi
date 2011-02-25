@@ -751,6 +751,8 @@
         'test/webdriver/utility_functions.cc',
         'test/webdriver/webdriver_key_converter.h',
         'test/webdriver/webdriver_key_converter.cc',
+        'test/webdriver/web_element_id.h',
+        'test/webdriver/web_element_id.cc',
         'test/webdriver/commands/command.h',
         'test/webdriver/commands/command.cc',
         'test/webdriver/commands/cookie_commands.h',

@@ -5,9 +5,10 @@
 #include "chrome/test/webdriver/commands/mouse_commands.h"
 
 #include "base/values.h"
+#include "chrome/test/webdriver/commands/response.h"
 #include "chrome/test/webdriver/error_codes.h"
 #include "chrome/test/webdriver/session.h"
-#include "chrome/test/webdriver/commands/response.h"
+#include "chrome/test/webdriver/web_element_id.h"
 #include "ui/base/events.h"
 #include "ui/gfx/point.h"
 
@@ -22,9 +23,10 @@ bool MouseCommand::DoesPost() {
 void MouseCommand::ExecutePost(Response* response) {
   // TODO(jmikhail): verify that the element is visible
   int x, y;
-  if (!GetElementLocation(true, &x, &y)) {
+  ErrorCode code = session_->GetElementLocationInView(element, &x, &y);
+  if (code != kSuccess) {
     SET_WEBDRIVER_ERROR(response, "Failed to compute element location.",
-                        kNoSuchElement);
+                        code);
     return;
   }
 

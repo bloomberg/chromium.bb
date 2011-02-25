@@ -55,7 +55,6 @@ class ClickCommand : public MouseCommand {
   virtual ~ClickCommand();
 
  private:
-
   DISALLOW_COPY_AND_ASSIGN(ClickCommand);
 };
 
@@ -68,7 +67,6 @@ class HoverCommand : public MouseCommand {
   virtual ~HoverCommand();
 
  private:
-
   DISALLOW_COPY_AND_ASSIGN(HoverCommand);
 };
 
@@ -84,7 +82,6 @@ class DragCommand : public MouseCommand {
   virtual bool Init(Response* const response);
 
  private:
-
   DISALLOW_COPY_AND_ASSIGN(DragCommand);
 };
 

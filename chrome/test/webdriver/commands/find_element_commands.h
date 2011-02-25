@@ -24,13 +24,10 @@ class FindElementCommand : public WebDriverCommand {
                       const bool find_one_element);
   virtual ~FindElementCommand();
 
-  virtual bool Init(Response* const response);
-
   virtual bool DoesPost();
   virtual void ExecutePost(Response* const response);
 
  private:
-  virtual bool RequiresValidTab();
   const bool find_one_element_;
   std::string root_element_id_;
   std::string use_;

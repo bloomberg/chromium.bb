@@ -228,6 +228,29 @@ class SessionTest(unittest.TestCase):
       driver.quit()
 
 
+class MouseTest(unittest.TestCase):
+  """Mouse command tests for the json webdriver protocol"""
+
+  def setUp(self):
+    self._launcher = ChromeDriverLauncher(root_path=os.path.dirname(__file__))
+    self._driver = WebDriver(self._launcher.GetURL(), 'chrome', 'any')
+
+  def tearDown(self):
+    self._driver.quit()
+    self._launcher.Kill()
+
+  def testClickElementThatNeedsScrolling(self):
+    self._driver.get(self._launcher.GetURL() + '/test_page.html')
+    self._driver.find_element_by_name('hidden_scroll').click()
+    self.assertTrue(self._driver.execute_script('return window.success'))
+
+  def testClickElementThatNeedsIframeScrolling(self):
+    self._driver.get(self._launcher.GetURL() + '/test_page.html')
+    self._driver.switch_to_frame('iframe')
+    self._driver.find_element_by_name('hidden_scroll').click()
+    self.assertTrue(self._driver.execute_script('return window.success'))
+
+
 if __name__ == '__main__':
   unittest.main(module='chromedriver_tests',
                 testRunner=GTestTextTestRunner(verbosity=1))

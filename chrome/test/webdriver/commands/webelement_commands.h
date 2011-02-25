@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "chrome/test/webdriver/commands/webdriver_command.h"
+#include "chrome/test/webdriver/web_element_id.h"
 
 class DictionaryValue;
 
@@ -27,15 +28,12 @@ class WebElementCommand : public WebDriverCommand {
   virtual bool Init(Response* const response);
 
  protected:
-  bool GetElementLocation(bool in_view, int* x, int* y);
   bool GetElementSize(int* width, int* height);
 
   const std::vector<std::string>& path_segments_;
-  std::string element_id;
+  WebElementId element;
 
  private:
-  virtual bool RequiresValidTab();
-
   DISALLOW_COPY_AND_ASSIGN(WebElementCommand);
 };
 

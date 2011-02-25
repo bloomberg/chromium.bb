@@ -4,11 +4,14 @@
 
 #include "chrome/test/webdriver/session_manager.h"
 
+#include <sstream>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
 #include "base/process.h"
@@ -16,12 +19,14 @@
 #include "base/scoped_ptr.h"
 #include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/json/json_reader.h"
-#include "base/json/json_writer.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/platform_thread.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -29,6 +34,7 @@
 #include "chrome/test/webdriver/session_manager.h"
 #include "chrome/test/webdriver/utility_functions.h"
 #include "chrome/test/webdriver/webdriver_key_converter.h"
+#include "chrome/test/webdriver/web_element_id.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/webdriver/atoms.h"
 #include "ui/gfx/point.h"
@@ -155,9 +161,9 @@ ErrorCode Session::ExecuteScript(const std::string& script,
       current_window_id_, current_frame_xpath_, script, args, value);
 }
 
-ErrorCode Session::SendKeys(DictionaryValue* element, const string16& keys) {
+ErrorCode Session::SendKeys(const WebElementId& element, const string16& keys) {
   ListValue args;
-  args.Append(element);
+  args.Append(element.ToValue());
   // TODO(jleyba): Update this to use the correct atom.
   std::string script = "document.activeElement.blur();arguments[0].focus();";
   Value* unscoped_result = NULL;
@@ -466,6 +472,83 @@ std::string Session::GetVersion() {
   return version;
 }
 
+ErrorCode Session::FindElementInFrame(int window_id,
+                                      const std::string& frame_xpath,
+                                      const WebElementId& root_element,
+                                      const std::string& locator,
+                                      const std::string& query,
+                                      WebElementId* element) {
+  std::vector<WebElementId> elements;
+  ErrorCode code = FindElementsHelper(
+      window_id, frame_xpath, root_element, locator, query, true, &elements);
+  if (code == kSuccess)
+    *element = elements[0];
+  return code;
+}
+
+ErrorCode Session::FindElement(const WebElementId& root_element,
+                               const std::string& locator,
+                               const std::string& query,
+                               WebElementId* element) {
+  return FindElementInFrame(current_window_id_,
+                            current_frame_xpath_,
+                            root_element,
+                            locator,
+                            query,
+                            element);
+}
+
+ErrorCode Session::FindElements(const WebElementId& root_element,
+                                const std::string& locator,
+                                const std::string& query,
+                                std::vector<WebElementId>* elements) {
+  return FindElementsHelper(current_window_id_,
+                            current_frame_xpath_,
+                            root_element,
+                            locator,
+                            query,
+                            false,
+                            elements);
+}
+
+ErrorCode Session::GetElementLocationInView(
+    const WebElementId& element, int* x, int* y) {
+  CHECK(element.is_valid());
+
+  // Bring the containing frame into view.
+  std::vector<std::string> xpaths;
+  if (current_frame_xpath_.length())
+    base::SplitString(current_frame_xpath_, '\n', &xpaths);
+  xpaths.insert(xpaths.begin(), "");
+  std::string frame_xpath;
+  int total_x = 0, total_y = 0;
+  for (size_t i = 0; i < xpaths.size() - 1; ++i) {
+    WebElementId frame_element;
+    ErrorCode code = FindElementInFrame(current_window_id_, frame_xpath,
+                                        WebElementId(""), LocatorType::kXpath,
+                                        xpaths[i + 1], &frame_element);
+    if (code != kSuccess) {
+      LOG(ERROR) << "Could not find frame element: " << xpaths[i + 1]
+                 << " in frame: " << frame_xpath;
+      return code;
+    }
+    code = GetLocationInViewHelper(current_window_id_, frame_xpath,
+                                   frame_element, &total_x, &total_y);
+    if (code != kSuccess)
+      return code;
+    frame_xpath += xpaths[i];
+  }
+
+  // Bring the element into view.
+  ErrorCode code = GetLocationInViewHelper(
+      current_window_id_, current_frame_xpath_, element, &total_x, &total_y);
+  if (code != kSuccess)
+    return code;
+  *x = total_x;
+  *y = total_y;
+  return kSuccess;
+}
+
 void Session::RunSessionTask(Task* task) {
   base::WaitableEvent done_event(false, false);
   thread_.message_loop_proxy()->PostTask(FROM_HERE, NewRunnableMethod(
@@ -546,6 +629,130 @@ ErrorCode Session::SwitchToFrameWithJavaScriptLocatedFrame(
     return kSuccess;
   }
   return kNoSuchFrame;
+}
+
+ErrorCode Session::FindElementsHelper(int window_id,
+                                      const std::string& frame_xpath,
+                                      const WebElementId& root_element,
+                                      const std::string& locator,
+                                      const std::string& query,
+                                      bool find_one,
+                                      std::vector<WebElementId>* elements) {
+  CHECK(root_element.is_valid());
+
+  std::string jscript;
+  if (find_one) {
+    // TODO(jleyba): Write a Chrome-specific find element atom that will
+    // correctly throw an error if the element cannot be found.
+    jscript = base::StringPrintf(
+        "var result = (%s).apply(null, arguments);"
+        "if (!result) {"
+        "var e = new Error('Unable to locate element');"
+        "e.code = %d;"
+        "throw e;"
+        "} else { return result; }",
+        atoms::FIND_ELEMENT, kNoSuchElement);
+  } else {
+    jscript = base::StringPrintf("return (%s).apply(null, arguments);",
+                                 atoms::FIND_ELEMENTS);
+  }
+  ListValue jscript_args;
+  DictionaryValue* locator_dict = new DictionaryValue();
+  locator_dict->SetString(locator, query);
+  jscript_args.Append(locator_dict);
+  jscript_args.Append(root_element.ToValue());
+
+  // The element search needs to loop until at least one element is found or the
+  // session's implicit wait timeout expires, whichever occurs first.
+  base::Time start_time = base::Time::Now();
+
+  scoped_ptr<Value> value;
+  ErrorCode code = kUnknownError;
+  bool done = false;
+  while (!done) {
+    Value* unscoped_value;
+    code = ExecuteScript(window_id, frame_xpath, jscript, &jscript_args,
+                         &unscoped_value);
+    value.reset(unscoped_value);
+    if (code == kSuccess) {
+      // If searching for many elements, make sure we found at least one before
+      // stopping.
+      done = find_one ||
+             (value->GetType() == Value::TYPE_LIST &&
+             static_cast<ListValue*>(value.get())->GetSize() > 0);
+    } else if (code != kNoSuchElement) {
+      return code;
+    }
+    int64 elapsed_time = (base::Time::Now() - start_time).InMilliseconds();
+    done = done || elapsed_time > implicit_wait_;
+    base::PlatformThread::Sleep(50);  // Prevent a busy loop that eats the cpu.
+  }
+
+  // Parse the results.
+  if (code == kSuccess) {
+    if (value->IsType(Value::TYPE_LIST)) {
+      ListValue* element_list = static_cast<ListValue*>(value.get());
+      for (size_t i = 0; i < element_list->GetSize(); ++i) {
+        DictionaryValue* element_dict = NULL;
+        if (!element_list->GetDictionary(i, &element_dict)) {
+          LOG(ERROR) << "Not all elements were dictionaries";
+          return kUnknownError;
+        }
+        WebElementId element(element_dict);
+        if (!element.is_valid()) {
+          LOG(ERROR) << "Not all elements were valid";
+          return kUnknownError;
+        }
+        elements->push_back(element);
+      }
+    } else if (value->IsType(Value::TYPE_DICTIONARY)) {
+      DictionaryValue* element_dict =
+          static_cast<DictionaryValue*>(value.get());
+      WebElementId element(element_dict);
+      if (!element.is_valid()) {
+        LOG(ERROR) << "Element was invalid";
+        return kUnknownError;
+      }
+      elements->push_back(element);
+    } else {
+      LOG(ERROR) << "Invalid result type from find element atom";
+      return kUnknownError;
+    }
+  }
+  return code;
+}
+
+ErrorCode Session::GetLocationInViewHelper(int window_id,
+                                           const std::string& frame_xpath,
+                                           const WebElementId& element,
+                                           int* offset_x,
+                                           int* offset_y) {
+  std::string jscript = base::StringPrintf(
+      "return (%s).apply(null, arguments);", atoms::GET_LOCATION_IN_VIEW);
+  ListValue jscript_args;
+  jscript_args.Append(element.ToValue());
+  Value* unscoped_value = NULL;
+  ErrorCode code = ExecuteScript(window_id, frame_xpath, jscript, &jscript_args,
+                                 &unscoped_value);
+  scoped_ptr<Value> value(unscoped_value);
+  if (code == kSuccess) {
+    if (value->IsType(Value::TYPE_DICTIONARY)) {
+      DictionaryValue* loc_dict = static_cast<DictionaryValue*>(value.get());
+      int temp_x = 0, temp_y = 0;
+      if (loc_dict->GetInteger("x", &temp_x) &&
+          loc_dict->GetInteger("y", &temp_y)) {
+        *offset_x += temp_x, *offset_y += temp_y;
+        code = kSuccess;
+      } else {
+        LOG(ERROR) << "Location atom returned bad coordinate dictionary";
+        code = kUnknownError;
+      }
+    } else {
+      LOG(ERROR) << "Location atom returned non-dictionary type";
+      code = kUnknownError;
+    }
+  }
+  return code;
 }
 
 }  // namespace webdriver

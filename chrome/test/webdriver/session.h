@@ -31,6 +31,8 @@ class Point;
 
 namespace webdriver {
 
+class WebElementId;
+
 // Every connection made by WebDriver maps to a session object.
 // This object creates the chrome instance and keeps track of the
 // state necessary to control the chrome browser created.
@@ -70,7 +72,7 @@ class Session {
 
   // Send the given keys to the given element dictionary. This function takes
   // ownership of |element|.
-  ErrorCode SendKeys(DictionaryValue* element, const string16& keys);
+  ErrorCode SendKeys(const WebElementId& element, const string16& keys);
 
   // Click events with the mouse should use the values found in:
   // views/events/event.h.  In the Webdriver JSON spec the MouseMove
@@ -114,6 +116,34 @@ class Session {
   // Gets the version of the running browser.
   std::string GetVersion();
 
+  // Finds a single element in the given window and frame, starting at the given
+  // |root_element|, using the given locator strategy. |locator| should be a
+  // constant from |LocatorType|. Returns an error code. If successful,
+  // |element| will be set as the found element.
+  ErrorCode FindElementInFrame(int window_id,
+                               const std::string& frame_xpath,
+                               const WebElementId& root_element,
+                               const std::string& locator,
+                               const std::string& query,
+                               WebElementId* element);
+
+  // Same as above, but uses the current window and frame.
+  ErrorCode FindElement(const WebElementId& root_element,
+                        const std::string& locator,
+                        const std::string& query,
+                        WebElementId* element);
+
+  // Same as above, but finds multiple elements.
+  ErrorCode FindElements(const WebElementId& root_element,
+                         const std::string& locator,
+                         const std::string& query,
+                         std::vector<WebElementId>* elements);
+
+  // Scroll the element into view and get its location relative to the client's
+  // viewport.
+  ErrorCode GetElementLocationInView(
+      const WebElementId& element, int* x, int* y);
+
   inline const std::string& id() const { return id_; }
 
   inline int implicit_wait() const { return implicit_wait_; }
@@ -148,6 +178,18 @@ class Session {
   ErrorCode SwitchToFrameWithJavaScriptLocatedFrame(
       const std::string& script,
       ListValue* args);
+  ErrorCode FindElementsHelper(int window_id,
+                               const std::string& frame_xpath,
+                               const WebElementId& root_element,
+                               const std::string& locator,
+                               const std::string& query,
+                               bool find_one,
+                               std::vector<WebElementId>* elements);
+  ErrorCode GetLocationInViewHelper(int window_id,
+                                    const std::string& frame_xpath,
+                                    const WebElementId& element,
+                                    int* offset_x,
+                                    int* offset_y);
 
   const std::string id_;
 

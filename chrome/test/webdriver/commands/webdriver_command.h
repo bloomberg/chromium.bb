@@ -30,23 +30,10 @@ class WebDriverCommand : public Command {
       : Command(path_segments, parameters), session_(NULL) {}
   virtual ~WebDriverCommand() {}
 
-  // Initializes this webdriver command by fetching the command session and,
-  // if necessary, verifying the session has a valid TabProxy.
+  // Initializes this webdriver command by fetching the command session.
   virtual bool Init(Response* const response);
 
  protected:
-  static const std::string kElementDictionaryKey;
-
-  // Tests if |dictionary| contains the kElementDictionaryKey, which
-  // indicates that it represents an element.
-  static bool IsElementIdDictionary(const DictionaryValue* const dictionary);
-
-  // Returns the |element_id| as a DictionaryValue that conforms with
-  // WebDriver's wire protocol. On success, returns a dynamically allocated
-  // object that the caller is responsible for deleting. Returns NULL on
-  // failure.
-  DictionaryValue* GetElementIdAsDictionaryValue(const std::string& element_id);
-
   Session* session_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDriverCommand);

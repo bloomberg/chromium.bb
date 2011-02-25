@@ -39,34 +39,8 @@ bool WebElementCommand::Init(Response* const response) {
 
   // We cannot verify the ID is valid until we execute the command and
   // inject the ID into the in-page cache.
-  element_id = path_segments_.at(4);
+  element = WebElementId(path_segments_.at(4));
   return true;
-}
-
-bool WebElementCommand::GetElementLocation(bool in_view, int* x, int* y) {
-  scoped_ptr<ListValue> args(new ListValue());
-  Value* result = NULL;
-
-  std::string jscript = base::StringPrintf(
-      "%sreturn (%s).apply(null, arguments);",
-      in_view ? "arguments[0].scrollIntoView();" : "",
-      atoms::GET_LOCATION);
-
-  args->Append(GetElementIdAsDictionaryValue(element_id));
-
-  ErrorCode error = session_->ExecuteScript(jscript, args.get(), &result);
-  if (error != kSuccess) {
-    LOG(INFO) << "Javascript failed to execute" << std::endl;
-    return false;
-  }
-
-  if (result == NULL || result->GetType() != Value::TYPE_DICTIONARY) {
-    LOG(ERROR) << "Expected JavaScript atom to return a dictionary";
-    return false;
-  }
-
-  DictionaryValue* dict = static_cast<DictionaryValue*>(result);
-  return dict->GetInteger("x", x) && dict->GetInteger("y", y);
 }
 
 bool WebElementCommand::GetElementSize(int* width, int* height) {
@@ -75,7 +49,7 @@ bool WebElementCommand::GetElementSize(int* width, int* height) {
 
   std::string jscript = base::StringPrintf(
       "return (%s).apply(null, arguments);", atoms::GET_SIZE);
-  args->Append(GetElementIdAsDictionaryValue(element_id));
+  args->Append(element.ToValue());
 
   ErrorCode error = session_->ExecuteScript(jscript, args.get(), &result);
   if (error != kSuccess) {
@@ -92,10 +66,6 @@ bool WebElementCommand::GetElementSize(int* width, int* height) {
   DictionaryValue* dict = static_cast<DictionaryValue*>(result);
   return dict->GetInteger("width", width) &&
          dict->GetInteger("height", height);
-}
-
-bool WebElementCommand::RequiresValidTab() {
-  return true;
 }
 
 ///////////////////// ElementAttributeCommand ////////////////////
@@ -124,7 +94,7 @@ void ElementAttributeCommand::ExecuteGet(Response* const response) {
       "return (%s).apply(null, arguments);", atoms::GET_ATTRIBUTE);
 
   scoped_ptr<ListValue> args(new ListValue);
-  args->Append(GetElementIdAsDictionaryValue(element_id));
+  args->Append(element.ToValue());
   args->Append(Value::CreateStringValue(path_segments_.at(6)));
 
   Value* result = NULL;
@@ -148,7 +118,7 @@ bool ElementClearCommand::DoesPost() {
 
 void ElementClearCommand::ExecutePost(Response* const response) {
   scoped_ptr<ListValue> args(new ListValue);
-  args->Append(GetElementIdAsDictionaryValue(element_id));
+  args->Append(element.ToValue());
 
   std::string script = base::StringPrintf(
       "(%s).apply(null, arguments);", atoms::CLEAR);
@@ -185,7 +155,7 @@ void ElementCssCommand::ExecuteGet(Response* const response) {
       "return (%s).apply(null, arguments);", atoms::GET_EFFECTIVE_STYLE);
 
   scoped_ptr<ListValue> args(new ListValue);
-  args->Append(GetElementIdAsDictionaryValue(element_id));
+  args->Append(element.ToValue());
   args->Append(Value::CreateStringValue(path_segments_.at(6)));
 
   Value* result = NULL;
@@ -209,7 +179,7 @@ bool ElementDisplayedCommand::DoesGet() {
 
 void ElementDisplayedCommand::ExecuteGet(Response* const response) {
   scoped_ptr<ListValue> args(new ListValue);
-  args->Append(GetElementIdAsDictionaryValue(element_id));
+  args->Append(element.ToValue());
 
   std::string script = base::StringPrintf(
       "return (%s).apply(null, arguments);", atoms::IS_DISPLAYED);
@@ -235,7 +205,7 @@ bool ElementEnabledCommand::DoesGet() {
 
 void ElementEnabledCommand::ExecuteGet(Response* const response) {
   scoped_ptr<ListValue> args(new ListValue);
-  args->Append(GetElementIdAsDictionaryValue(element_id));
+  args->Append(element.ToValue());
 
   std::string script = base::StringPrintf(
       "return (%s).apply(null, arguments);", atoms::IS_ENABLED);
@@ -271,7 +241,7 @@ void ElementEqualsCommand::ExecuteGet(Response* const response) {
   std::string script = "return arguments[0] == arguments[1];";
 
   scoped_ptr<ListValue> args(new ListValue);
-  args->Append(GetElementIdAsDictionaryValue(element_id));
+  args->Append(element.ToValue());
   args->Append(Value::CreateStringValue(path_segments_.at(6)));
 
   Value* result = NULL;
@@ -298,7 +268,7 @@ void ElementLocationCommand::ExecuteGet(Response* const response) {
       "return (%s).apply(null, arguments);", atoms::GET_LOCATION);
 
   ListValue args;
-  args.Append(GetElementIdAsDictionaryValue(element_id));
+  args.Append(element.ToValue());
 
   Value* result = NULL;
   ErrorCode status = session_->ExecuteScript(script, &args, &result);
@@ -320,16 +290,15 @@ bool ElementLocationInViewCommand::DoesGet() {
 }
 
 void ElementLocationInViewCommand::ExecuteGet(Response* const response) {
-  std::string script = base::StringPrintf("arguments[0].scrollIntoView();"
-                                          "return (%s).apply(null, arguments);",
-                                          atoms::GET_LOCATION);
-  ListValue args;
-  args.Append(GetElementIdAsDictionaryValue(element_id));
-
-  Value* result = NULL;
-  ErrorCode status = session_->ExecuteScript(script, &args, &result);
-  response->SetStatus(status);
-  response->SetValue(result);
+  int x, y;
+  ErrorCode code = session_->GetElementLocationInView(element, &x, &y);
+  response->SetStatus(code);
+  if (code == kSuccess) {
+    DictionaryValue* coord_dict = new DictionaryValue();
+    coord_dict->SetInteger("x", x);
+    coord_dict->SetInteger("y", y);
+    response->SetValue(coord_dict);
+  }
 }
 
 ///////////////////// ElementNameCommand ////////////////////
@@ -347,7 +316,7 @@ bool ElementNameCommand::DoesGet() {
 
 void ElementNameCommand::ExecuteGet(Response* const response) {
   scoped_ptr<ListValue> args(new ListValue);
-  args->Append(GetElementIdAsDictionaryValue(element_id));
+  args->Append(element.ToValue());
 
   std::string script = "return arguments[0].tagName;";
 
@@ -376,7 +345,7 @@ bool ElementSelectedCommand::DoesPost() {
 
 void ElementSelectedCommand::ExecuteGet(Response* const response) {
   scoped_ptr<ListValue> args(new ListValue);
-  args->Append(GetElementIdAsDictionaryValue(element_id));
+  args->Append(element.ToValue());
 
   std::string script = base::StringPrintf(
       "return (%s).apply(null, arguments);", atoms::IS_SELECTED);
@@ -389,7 +358,7 @@ void ElementSelectedCommand::ExecuteGet(Response* const response) {
 
 void ElementSelectedCommand::ExecutePost(Response* const response) {
   scoped_ptr<ListValue> args(new ListValue);
-  args->Append(GetElementIdAsDictionaryValue(element_id));
+  args->Append(element.ToValue());
   args->Append(Value::CreateBooleanValue(true));
 
   std::string script = base::StringPrintf(
@@ -419,7 +388,7 @@ void ElementSizeCommand::ExecuteGet(Response* const response) {
       "return (%s).apply(null, arguments);", atoms::GET_SIZE);
 
   ListValue args;
-  args.Append(GetElementIdAsDictionaryValue(element_id));
+  args.Append(element.ToValue());
 
   Value* result = NULL;
   ErrorCode status = session_->ExecuteScript(script, &args, &result);
@@ -447,7 +416,7 @@ void ElementSubmitCommand::ExecutePost(Response* const response) {
       "(%s).apply(null, arguments);", atoms::SUBMIT);
 
   ListValue args;
-  args.Append(GetElementIdAsDictionaryValue(element_id));
+  args.Append(element.ToValue());
 
   Value* result = NULL;
   ErrorCode status = session_->ExecuteScript(script, &args, &result);
@@ -473,7 +442,7 @@ void ElementToggleCommand::ExecutePost(Response* const response) {
       "return (%s).apply(null, arguments);", atoms::TOGGLE);
 
   ListValue args;
-  args.Append(GetElementIdAsDictionaryValue(element_id));
+  args.Append(element.ToValue());
 
   Value* result = NULL;
   ErrorCode status = session_->ExecuteScript(script, &args, &result);
@@ -502,7 +471,7 @@ void ElementValueCommand::ExecuteGet(Response* const response) {
   Value* unscoped_result = NULL;
   ListValue args;
   std::string script = "return arguments[0]['value']";
-  args.Append(GetElementIdAsDictionaryValue(element_id));
+  args.Append(element.ToValue());
   ErrorCode code =
       session_->ExecuteScript(script, &args, &unscoped_result);
   scoped_ptr<Value> result(unscoped_result);
@@ -546,8 +515,7 @@ void ElementValueCommand::ExecutePost(Response* const response) {
     keys.append(keys_list_part);
   }
 
-  ErrorCode code =
-      session_->SendKeys(GetElementIdAsDictionaryValue(element_id), keys);
+  ErrorCode code = session_->SendKeys(element, keys);
   if (code != kSuccess) {
     SET_WEBDRIVER_ERROR(response,
                         "Internal SendKeys error",
@@ -573,7 +541,7 @@ bool ElementTextCommand::DoesGet() {
 void ElementTextCommand::ExecuteGet(Response* const response) {
   Value* unscoped_result = NULL;
   ListValue args;
-  args.Append(GetElementIdAsDictionaryValue(element_id));
+  args.Append(element.ToValue());
 
   std::string script = base::StringPrintf(
       "return (%s).apply(null, arguments);", atoms::GET_TEXT);
