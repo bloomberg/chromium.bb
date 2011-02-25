@@ -657,7 +657,7 @@ TEST_F(ProfileSyncServiceAutofillTest, HasProfileEmptySync) {
   // Owned by GetAutoFillProfiles caller.
   AutoFillProfile* profile0 = new AutoFillProfile;
   autofill_test::SetProfileInfoWithGuid(profile0,
-      "{54B3F9AA-335E-4f71-A27D-719C41564230}", "Billing",
+      "54B3F9AA-335E-4F71-A27D-719C41564230", "Billing",
       "Mitchell", "Morrison",
       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
       "91601", "US", "12345678910", "01987654321");
@@ -767,14 +767,14 @@ TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncMergeEntry) {
 TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncMergeProfile) {
   AutoFillProfile sync_profile;
   autofill_test::SetProfileInfoWithGuid(&sync_profile,
-      "{23355099-1170-4b71-8ED4-144470CC9EBE}", "Billing",
+      "23355099-1170-4B71-8ED4-144470CC9EBE", "Billing",
       "Mitchell", "Morrison",
       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
       "91601", "US", "12345678910", "01987654321");
 
   AutoFillProfile* native_profile = new AutoFillProfile;
   autofill_test::SetProfileInfoWithGuid(native_profile,
-      "{23355099-1170-4b71-8ED4-144470CC9EBE}", "Billing", "Alicia", "Saenz",
+      "23355099-1170-4B71-8ED4-144470CC9EBE", "Billing", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
       "32801", "US", "19482937549", "13502849239");
 
@@ -804,12 +804,12 @@ TEST_F(ProfileSyncServiceAutofillTest, MergeProfileWithDifferentGuid) {
   AutoFillProfile sync_profile;
 
   autofill_test::SetProfileInfoWithGuid(&sync_profile,
-      "{23355099-1170-4b71-8ED4-144470CC9EBE}", "Billing",
+      "23355099-1170-4B71-8ED4-144470CC9EBE", "Billing",
       "Mitchell", "Morrison",
       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
       "91601", "US", "12345678910", "01987654321");
 
-  std::string native_guid = "{EDC609ED-7EEE-4f27-B00C-423242A9C44B}";
+  std::string native_guid = "EDC609ED-7EEE-4F27-B00C-423242A9C44B";
   AutoFillProfile* native_profile = new AutoFillProfile;
   autofill_test::SetProfileInfoWithGuid(native_profile,
       native_guid.c_str(), "Billing",
@@ -882,7 +882,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeAddProfile) {
 
   AutoFillProfile added_profile;
   autofill_test::SetProfileInfoWithGuid(&added_profile,
-      "{D6ADA912-D374-4c0a-917D-F5C8EBE43011}", "Josephine", "Alicia", "Saenz",
+      "D6ADA912-D374-4C0A-917D-F5C8EBE43011", "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
       "32801", "US", "19482937549", "13502849239");
 
@@ -967,12 +967,12 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeRemoveEntry) {
 TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeRemoveProfile) {
   AutoFillProfile sync_profile;
   autofill_test::SetProfileInfoWithGuid(&sync_profile,
-      "{3BA5FA1B-1EC4-4bb3-9B57-EC92BE3C1A09}", "Josephine", "Alicia", "Saenz",
+      "3BA5FA1B-1EC4-4BB3-9B57-EC92BE3C1A09", "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
       "32801", "US", "19482937549", "13502849239");
   AutoFillProfile* native_profile = new AutoFillProfile;
   autofill_test::SetProfileInfoWithGuid(native_profile,
-      "{3BA5FA1B-1EC4-4bb3-9B57-EC92BE3C1A09}", "Josephine", "Alicia", "Saenz",
+      "3BA5FA1B-1EC4-4BB3-9B57-EC92BE3C1A09", "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
       "32801", "US", "19482937549", "13502849239");
 

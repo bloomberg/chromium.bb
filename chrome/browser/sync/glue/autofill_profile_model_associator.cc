@@ -9,6 +9,7 @@
 #include "chrome/browser/sync/glue/do_optimistic_refresh_task.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/webdata/web_database.h"
+#include "chrome/common/guid.h"
 
 using sync_api::ReadNode;
 namespace browser_sync {
@@ -76,6 +77,10 @@ bool AutofillProfileModelAssociator::TraverseAndAssociateChromeAutoFillProfiles(
       ix != profiles.end();
       ++ix) {
     std::string guid((*ix)->guid());
+    if (guid::IsValidGUID(guid) == false) {
+      DCHECK(false) << "Guid in the web db is invalid " << guid;
+      continue;
+    }
 
     ReadNode node(write_trans);
     if (node.InitByClientTagLookup(syncable::AUTOFILL_PROFILE, guid) &&
@@ -304,6 +309,11 @@ bool AutofillProfileModelAssociator::MakeNewAutofillProfileSyncNodeIfNeeded(
     }
     const sync_pb::AutofillProfileSpecifics& autofill_specifics(
         read_node.GetAutofillProfileSpecifics());
+    if (guid::IsValidGUID(autofill_specifics.guid()) == false) {
+      NOTREACHED() << "Guid in the web db is invalid " <<
+          autofill_specifics.guid();
+      return false;
+    }
     AutoFillProfile* p = new AutoFillProfile(autofill_specifics.guid());
     OverwriteProfileWithServerData(p, autofill_specifics);
     new_profiles->push_back(p);
@@ -319,6 +329,10 @@ bool AutofillProfileModelAssociator::MakeNewAutofillProfileSyncNodeIfNeeded(
             << profile.guid();
   } else {
     sync_api::WriteNode node(trans);
+
+    // The profile.guid() is expected to be a valid guid. The caller is expected
+    // to pass in a valid profile object with a valid guid. Having to check in
+    // 2 places(the caller and here) is not optimal.
     if (!node.InitUniqueByCreation(
              syncable::AUTOFILL_PROFILE, autofill_root, profile.guid())) {
       LOG(ERROR) << "Failed to create autofill sync node.";
@@ -380,6 +394,11 @@ void AutofillProfileModelAssociator::AddNativeProfileIfNeeded(
           << "sync node id " << node.GetId()
           << " Guid " << profile.guid()
           << " in the web db";
+
+  if (guid::IsValidGUID(profile.guid()) == false) {
+    DCHECK(false) << "Guid in the sync db is invalid " << profile.guid();
+    return;
+  }
 
   if (bundle->current_profiles.find(profile.guid()) ==
       bundle->current_profiles.end()) {

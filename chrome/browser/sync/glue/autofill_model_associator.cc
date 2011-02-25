@@ -360,6 +360,10 @@ void AutofillModelAssociator::AddNativeProfileIfNeeded(
     VLOG(1) << "[AUTOFILL MIGRATION]"
             << "Node not found in web db so creating and associating";
     std::string guid = guid::GenerateGUID();
+    if (guid::IsValidGUID(guid) == false) {
+      DCHECK(false) << "Guid generated is invalid " << guid;
+      return;
+    }
     Associate(&guid, node.GetId());
     AutoFillProfile* p = new AutoFillProfile(guid);
     FillProfileWithServerData(p, profile);

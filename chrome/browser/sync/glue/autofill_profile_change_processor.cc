@@ -18,6 +18,7 @@
 #include "chrome/browser/sync/unrecoverable_error_handler.h"
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/web_database.h"
+#include "chrome/common/guid.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
@@ -212,6 +213,11 @@ void AutofillProfileChangeProcessor::ApplyAutofillProfileChange(
   DCHECK_NE(sync_api::SyncManager::ChangeRecord::ACTION_DELETE, action);
   switch (action) {
     case sync_api::SyncManager::ChangeRecord::ACTION_ADD: {
+      if(guid::IsValidGUID(profile_specifics.guid()) == false) {
+        NOTREACHED() << "Guid from the server is invalid " <<
+            profile_specifics.guid();
+        return;
+      }
       AutoFillProfile p(profile_specifics.guid());
       AutofillProfileModelAssociator::OverwriteProfileWithServerData(&p,
           profile_specifics);
@@ -273,6 +279,14 @@ void AutofillProfileChangeProcessor::AddAutofillProfileSyncNode(
     sync_api::WriteTransaction* trans,
     sync_api::BaseNode& autofill_profile_root,
     const AutoFillProfile& profile) {
+
+  std::string guid = profile.guid();
+
+  if(guid::IsValidGUID(guid) == false) {
+    DCHECK(false) << "Guid set on the profile is invalid " << guid;
+    return;
+  }
+
   sync_api::WriteNode node(trans);
   if (!node.InitUniqueByCreation(syncable::AUTOFILL_PROFILE,
       autofill_profile_root,
@@ -285,7 +299,6 @@ void AutofillProfileChangeProcessor::AddAutofillProfileSyncNode(
 
   WriteAutofillProfile(profile, &node);
 
-  std::string guid = profile.guid();
   model_associator_->Associate(&guid, node.GetId());
 }
 
@@ -305,6 +318,13 @@ void AutofillProfileChangeProcessor::WriteAutofillProfile(
     const AutoFillProfile& profile,
     sync_api::WriteNode* node) {
   sync_pb::AutofillProfileSpecifics specifics;
+
+  // This would get compiled out in official builds. The caller is expected to
+  // pass in a valid profile object with valid guid.(i.e., the caller might
+  // have to a DCHECK and log before calling. Having to check in 2 places is
+  // not optimal.)
+  DCHECK(guid::IsValidGUID(profile.guid()));
+
   specifics.set_guid(profile.guid());
   specifics.set_name_first(UTF16ToUTF8(
       profile.GetFieldText(AutoFillType(NAME_FIRST))));

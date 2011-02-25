@@ -95,7 +95,7 @@ class AutofillProfileModelAssociatorTest : public testing::Test {
 TEST_F(AutofillProfileModelAssociatorTest,
     TestAssociateProfileInWebDBWithSyncDB) {
   ScopedVector<AutoFillProfile> profiles_from_web_db;
-  std::string guid = "abc";
+  std::string guid = "EDC609ED-7EEE-4F27-B00C-423242A9C44B";
 
   sync_pb::EntitySpecifics specifics;
   MockDirectory mock_directory;
@@ -147,7 +147,7 @@ TEST_F(AutofillProfileModelAssociatorTest, TestAssociatingMissingWebDBProfile) {
 
   sync_api::ReadNode autofill_root(&write_trans);
 
-  std::string guid = "abc";
+  std::string guid = "EDC609ED-7EEE-4F27-B00C-423242A9C44A";
   std::set<std::string> current_profiles;
   AutoFillProfile *profile = new AutoFillProfile(guid);
 
@@ -216,7 +216,7 @@ TEST_F(AutofillProfileModelAssociatorTest, TestDontNeedToAddNativeProfile) {
   ::testing::StrictMock<MockAutofillProfileModelAssociator> associator;
   sync_pb::AutofillProfileSpecifics profile_specifics;
   ReadNodeMock read_node;
-  std::string guid = "abc";
+  std::string guid = "EDC609ED-7EEE-4F27-B00C-423242A9C44C";
   std::set<std::string> current_profiles;
   browser_sync::AutofillProfileModelAssociator::DataBundle bundle;
 
@@ -234,7 +234,7 @@ TEST_F(AutofillProfileModelAssociatorTest, TestDontNeedToAddNativeProfile) {
 TEST_F(AutofillProfileModelAssociatorTest, TestNeedToAddNativeProfile) {
   sync_pb::AutofillProfileSpecifics profile_specifics;
   ReadNodeMock read_node;
-  std::string guid = "abc";
+  std::string guid = "EDC609ED-7EEE-4F27-B00C-423242A9C44D";
   std::set<std::string> current_profiles;
   browser_sync::AutofillProfileModelAssociator::DataBundle bundle;
   std::string first_name = "lingesh";

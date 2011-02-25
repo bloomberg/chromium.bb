@@ -340,6 +340,10 @@ void AutofillChangeProcessor::ApplySyncAutofillProfileChange(
   switch (action) {
     case sync_api::SyncManager::ChangeRecord::ACTION_ADD: {
       std::string guid(guid::GenerateGUID());
+      if (guid::IsValidGUID(guid) == false) {
+        DCHECK(false) << "Guid generated is invalid " << guid;
+        return;
+      }
       scoped_ptr<AutoFillProfile> p(new AutoFillProfile);
       p->set_guid(guid);
       AutofillModelAssociator::FillProfileWithServerData(p.get(),
