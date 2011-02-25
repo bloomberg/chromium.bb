@@ -346,6 +346,7 @@
         'widget/tooltip_window_gtk.h',
         'widget/monitor_win.cc',
         'widget/monitor_win.h',
+        'widget/widget.cc',
         'widget/widget.h',
         'widget/widget_gtk.cc',
         'widget/widget_gtk.h',
