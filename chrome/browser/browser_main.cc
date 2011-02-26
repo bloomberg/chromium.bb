@@ -40,6 +40,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extensions_startup.h"
 #include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/gpu_data_manager.h"
 #include "chrome/browser/jankometer.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
 #include "chrome/browser/metrics/metrics_log.h"
@@ -1810,6 +1811,11 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // the service process if needed. This is needed because the service process
   // might have shutdown because an update was available.
   profile->GetCloudPrintProxyService();
+
+  // Need to initialize GpuDataManager to load the current GPU blacklist
+  // and schedule a GPU blacklist auto update.
+  GpuDataManager* gpu_data_manager = GpuDataManager::GetInstance();
+  DCHECK(gpu_data_manager);
 
   int result_code = ResultCodes::NORMAL_EXIT;
   if (parameters.ui_task) {

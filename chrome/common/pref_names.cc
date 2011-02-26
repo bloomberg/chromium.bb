@@ -1094,6 +1094,13 @@ const char kNTPPromoLine[] = "ntp.promo_line";
 const char kNTPPromoStart[] = "ntp.promo_start";
 const char kNTPPromoEnd[] = "ntp.promo_end";
 
+// The most up-to-date GPU blacklist downloaded from the web, which replaces
+// the one that's installed with chrome.
+const char kGpuBlacklist[] = "gpu_blacklist";
+
+// Last time of update of gpu_blacklist.
+const char kGpuBlacklistUpdate[] = "gpu_blacklist_update";
+
 const char kDevToolsDisabled[] = "devtools.disabled";
 
 // A boolean specifying whether dev tools window should be opened docked.

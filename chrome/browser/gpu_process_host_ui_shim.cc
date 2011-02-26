@@ -7,23 +7,14 @@
 
 #include "chrome/browser/gpu_process_host_ui_shim.h"
 
-#include "app/app_switches.h"
-#include "app/gfx/gl/gl_implementation.h"
-#include "base/command_line.h"
 #include "base/id_map.h"
-#include "base/metrics/histogram.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/gpu_data_manager.h"
 #include "chrome/browser/gpu_process_host.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
-#include "chrome/common/child_process_logging.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/gpu_messages.h"
-#include "chrome/gpu/gpu_info_collector.h"
-#include "content/browser/gpu_blacklist.h"
-#include "grit/browser_resources.h"
-#include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_LINUX)
 // These two #includes need to come after gpu_messages.h.
@@ -61,62 +52,6 @@ class SendOnIOThreadTask : public Task {
 };
 
 }  // namespace
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// Callback0Group
-//
-////////////////////////////////////////////////////////////////////////////////
-
-Callback0Group::Callback0Group() {
-}
-
-Callback0Group::~Callback0Group() {
-}
-
-void Callback0Group::Add(Callback0::Type* callback) {
-  callbacks_.insert(callback);
-}
-
-bool Callback0Group::Remove(Callback0::Type* callback) {
-  std::set<Callback0::Type*>::iterator i = callbacks_.find(callback);
-  if (i != callbacks_.end()) {
-    callbacks_.erase(i);
-    return true;
-  }
-  return false;
-}
-
-void Callback0Group::Run() {
-  std::set<Callback0::Type*>::iterator i = callbacks_.begin();
-  for (; i != callbacks_.end(); ++i) {
-    (*i)->Run();
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// GpuProcessHostUIShimManager
-//
-////////////////////////////////////////////////////////////////////////////////
-
-GpuProcessHostUIShimManager::GpuProcessHostUIShimManager() {
-}
-
-GpuProcessHostUIShimManager* GpuProcessHostUIShimManager::GetInstance() {
-  return Singleton<GpuProcessHostUIShimManager>::get();
-}
-
-void GpuProcessHostUIShimManager::SetGpuInfo(const GPUInfo& gpu_info) {
-  gpu_info_ = gpu_info;
-  gpu_info_update_callbacks().Run();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// GpuProcessHostUIShim
-//
-////////////////////////////////////////////////////////////////////////////////
 
 class GpuProcessHostUIShim::ViewSurface {
  public:
@@ -167,9 +102,10 @@ RenderWidgetHostView* GpuProcessHostUIShim::ViewSurface::
 
 GpuProcessHostUIShim::GpuProcessHostUIShim()
     : host_id_(++g_last_host_id),
-      gpu_process_(NULL),
-      gpu_feature_flags_set_(false) {
+      gpu_process_(NULL) {
   g_hosts_by_id.AddWithID(this, host_id_);
+  gpu_data_manager_ = GpuDataManager::GetInstance();
+  DCHECK(gpu_data_manager_);
 }
 
 // static
@@ -185,10 +121,6 @@ GpuProcessHostUIShim* GpuProcessHostUIShim::GetForRenderer(int renderer_id) {
   }
 
   GpuProcessHostUIShim* ui_shim(new GpuProcessHostUIShim);
-  if (!ui_shim->Init()) {
-    delete ui_shim;
-    return NULL;
-  }
 
   // If Init succeeds, post a task to create the corresponding GpuProcessHost.
   // The GpuProcessHost will take ownership of the GpuProcessHostUIShim.
@@ -332,7 +264,7 @@ void GpuProcessHostUIShim::EstablishGpuChannel(
   linked_ptr<EstablishChannelCallback> wrapped_callback(callback);
 
   // If GPU features are already blacklisted, no need to establish the channel.
-  if (gpu_feature_flags_.flags() != 0) {
+  if (gpu_data_manager_->GetGpuFeatureFlags().flags() != 0) {
     EstablishChannelError(
         wrapped_callback.release(), IPC::ChannelHandle(), NULL, GPUInfo());
     return;
@@ -397,8 +329,9 @@ void GpuProcessHostUIShim::DidDestroyAcceleratedSurface(int renderer_id,
 void GpuProcessHostUIShim::CollectGpuInfoAsynchronously(
     GPUInfo::Level level) {
   DCHECK(CalledOnValidThread());
+
   // If GPU is already blacklisted, no more info will be collected.
-  if (gpu_feature_flags_.flags() != 0)
+  if (gpu_data_manager_->GetGpuFeatureFlags().flags() != 0)
     return;
   Send(new GpuMsg_CollectGraphicsInfo(level));
 }
@@ -415,7 +348,7 @@ void GpuProcessHostUIShim::SendAboutGpuHang() {
 
 const GPUInfo& GpuProcessHostUIShim::gpu_info() const {
   DCHECK(CalledOnValidThread());
-  return gpu_info_;
+  return gpu_data_manager_->gpu_info();
 }
 
 GpuProcessHostUIShim::~GpuProcessHostUIShim() {
@@ -426,10 +359,6 @@ GpuProcessHostUIShim::~GpuProcessHostUIShim() {
   if (gpu_process_)
     CloseHandle(gpu_process_);
 #endif
-}
-
-bool GpuProcessHostUIShim::Init() {
-  return LoadGpuBlacklist();
 }
 
 void GpuProcessHostUIShim::AddCustomLogMessage(int level,
@@ -476,48 +405,19 @@ bool GpuProcessHostUIShim::OnControlMessageReceived(
 void GpuProcessHostUIShim::OnChannelEstablished(
     const IPC::ChannelHandle& channel_handle,
     const GPUInfo& gpu_info) {
+  gpu_data_manager_->UpdateGpuInfo(gpu_info);
+
   // The GPU process should have launched at this point and this object should
   // have been notified of its process handle.
   DCHECK(gpu_process_);
 
-  uint32 max_entry_id = gpu_blacklist_->max_entry_id();
-  // max_entry_id can be zero if we failed to load the GPU blacklist, don't
-  // bother with histograms then.
-  if (channel_handle.name.size() != 0 && !gpu_feature_flags_set_ &&
-      max_entry_id != 0)
-  {
-    gpu_feature_flags_set_ = true;
-
-    const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
-    if (!browser_command_line.HasSwitch(switches::kIgnoreGpuBlacklist) &&
-        browser_command_line.GetSwitchValueASCII(
-            switches::kUseGL) != gfx::kGLImplementationOSMesaName) {
-      gpu_feature_flags_ = gpu_blacklist_->DetermineGpuFeatureFlags(
-          GpuBlacklist::kOsAny, NULL, gpu_info);
-
-      if (gpu_feature_flags_.flags() != 0) {
-        std::vector<uint32> flag_entries;
-        gpu_blacklist_->GetGpuFeatureFlagEntries(
-            GpuFeatureFlags::kGpuFeatureAll, flag_entries);
-        DCHECK_GT(flag_entries.size(), 0u);
-        for (size_t i = 0; i < flag_entries.size(); ++i) {
-          UMA_HISTOGRAM_ENUMERATION("GPU.BlacklistTestResultsPerEntry",
-              flag_entries[i], max_entry_id + 1);
-        }
-      } else {
-        // id 0 is never used by any entry, so we use it here to indicate that
-        // gpu is allowed.
-        UMA_HISTOGRAM_ENUMERATION("GPU.BlacklistTestResultsPerEntry",
-            0, max_entry_id + 1);
-      }
-    }
-  }
   linked_ptr<EstablishChannelCallback> callback = channel_requests_.front();
   channel_requests_.pop();
 
   // Currently if any of the GPU features are blacklisted, we don't establish a
   // GPU channel.
-  if (gpu_feature_flags_.flags() != 0) {
+  if (channel_handle.name.size() != 0 &&
+      gpu_data_manager_->GetGpuFeatureFlags().flags() != 0) {
     Send(new GpuMsg_CloseChannel(channel_handle));
     EstablishChannelError(callback.release(),
                           IPC::ChannelHandle(),
@@ -559,43 +459,16 @@ void GpuProcessHostUIShim::OnDestroyCommandBuffer(
 }
 
 void GpuProcessHostUIShim::OnGraphicsInfoCollected(const GPUInfo& gpu_info) {
-  gpu_info_ = gpu_info;
-  if (gpu_feature_flags_.flags() != 0)
-    gpu_info_.SetLevel(GPUInfo::kComplete);
-  child_process_logging::SetGpuInfo(gpu_info_);
-
-  GpuProcessHostUIShimManager::GetInstance()->SetGpuInfo(gpu_info);
+  gpu_data_manager_->UpdateGpuInfo(gpu_info);
 }
 
 void GpuProcessHostUIShim::OnPreliminaryGraphicsInfoCollected(
     const GPUInfo& gpu_info, IPC::Message* reply_msg) {
-  bool blacklisted = false;
-  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
-  if (!browser_command_line.HasSwitch(switches::kIgnoreGpuBlacklist) &&
-      browser_command_line.GetSwitchValueASCII(
-          switches::kUseGL) != gfx::kGLImplementationOSMesaName) {
-    gpu_feature_flags_ = gpu_blacklist_->DetermineGpuFeatureFlags(
-        GpuBlacklist::kOsAny, NULL, gpu_info);
-    if (gpu_feature_flags_.flags() != 0) {
-      blacklisted = true;
-      gpu_feature_flags_set_ = true;
-      gpu_info_ = gpu_info;
-      gpu_info_.SetLevel(GPUInfo::kComplete);
-      child_process_logging::SetGpuInfo(gpu_info_);
-      uint32 max_entry_id = gpu_blacklist_->max_entry_id();
-      std::vector<uint32> flag_entries;
-      gpu_blacklist_->GetGpuFeatureFlagEntries(
-          GpuFeatureFlags::kGpuFeatureAll, flag_entries);
-      DCHECK_GT(flag_entries.size(), 0u);
-      for (size_t i = 0; i < flag_entries.size(); ++i) {
-        UMA_HISTOGRAM_ENUMERATION("GPU.BlacklistTestResultsPerEntry",
-            flag_entries[i], max_entry_id + 1);
-      }
-    }
-  }
+  gpu_data_manager_->UpdateGpuInfo(gpu_info);
+  GpuFeatureFlags flags = gpu_data_manager_->GetGpuFeatureFlags();
 
   GpuHostMsg_PreliminaryGraphicsInfoCollected::WriteReplyParams(
-      reply_msg, blacklisted);
+      reply_msg, flags.flags() != 0);
   Send(reply_msg);
 }
 
@@ -674,17 +547,4 @@ void GpuProcessHostUIShim::OnScheduleComposite(int renderer_id,
 }
 
 #endif
-
-bool GpuProcessHostUIShim::LoadGpuBlacklist() {
-  if (gpu_blacklist_.get() != NULL)
-    return true;
-  static const base::StringPiece gpu_blacklist_json(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_GPU_BLACKLIST));
-  gpu_blacklist_.reset(new GpuBlacklist());
-  if (gpu_blacklist_->LoadGpuBlacklist(gpu_blacklist_json.as_string(), true))
-    return true;
-  gpu_blacklist_.reset(NULL);
-  return false;
-}
 
