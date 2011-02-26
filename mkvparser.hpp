@@ -519,6 +519,7 @@ public:
                         const CuePoint::TrackPosition*) const;
 
     bool LoadCuePoint() const;
+    long GetCount() const;
 
 private:
     void Init() const;
