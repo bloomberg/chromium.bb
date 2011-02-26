@@ -93,7 +93,9 @@ void SkColorToHSL(SkColor c, HSL* hsl) {
   double vmin = std::min(std::min(r, g), b);
   double delta = vmax - vmin;
   hsl->l = (vmax + vmin) / 2;
-  if (delta) {
+  if (SkColorGetR(c) == SkColorGetG(c) && SkColorGetR(c) == SkColorGetB(c)) {
+    hsl->h = hsl->s = 0;
+  } else {
     double dr = (((vmax - r) / 6.0) + (delta / 2.0)) / delta;
     double dg = (((vmax - g) / 6.0) + (delta / 2.0)) / delta;
     double db = (((vmax - b) / 6.0) + (delta / 2.0)) / delta;
@@ -112,8 +114,6 @@ void SkColorToHSL(SkColor c, HSL* hsl) {
       --hsl->h;
 
     hsl->s = delta / ((hsl->l < 0.5) ? (vmax + vmin) : (2 - vmax - vmin));
-  } else {
-    hsl->h = hsl->s = 0;
   }
 }
 
