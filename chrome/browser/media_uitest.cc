@@ -96,8 +96,7 @@ TEST_F(MediaTest, VideoBearWav) {
   PlayVideo("bear.wav");
 }
 
-// See crbug/73287.
-TEST_F(UILayoutTest, FAILS_MediaUILayoutTest) {
+TEST_F(UILayoutTest, MediaUILayoutTest) {
   static const char* kResources[] = {
     "content",
     "media-file.js",
