@@ -31,14 +31,14 @@ long long mkvparser::ReadUInt(IMkvReader* pReader, long long pos, long& len)
 
     int status;
 
-#ifdef _DEBUG
-    long long total, available;
-    status = pReader->Length(&total, &available);
-    assert(status >= 0);
-    assert((total < 0) || (available <= total));
-    assert(pos < available);
-    assert((available - pos) >= 1);  //assume here max u-int len is 8
-#endif
+//#ifdef _DEBUG
+//    long long total, available;
+//    status = pReader->Length(&total, &available);
+//    assert(status >= 0);
+//    assert((total < 0) || (available <= total));
+//    assert(pos < available);
+//    assert((available - pos) >= 1);  //assume here max u-int len is 8
+//#endif
 
     len = 1;
 
@@ -63,9 +63,9 @@ long long mkvparser::ReadUInt(IMkvReader* pReader, long long pos, long& len)
         ++len;
     }
 
-#ifdef _DEBUG
-    assert((available - pos) >= len);
-#endif
+//#ifdef _DEBUG
+//    assert((available - pos) >= len);
+//#endif
 
     long long result = b & (~m);
     ++pos;
@@ -2455,6 +2455,13 @@ long Cues::GetCount() const
 }
 
 
+bool Cues::DoneParsing() const
+{
+    const long long stop = m_start + m_size;
+    return (m_pos >= stop);
+}
+
+
 void Cues::Init() const
 {
     if (m_cue_points)
@@ -2620,6 +2627,7 @@ bool Cues::Find(
     assert(time_ns >= 0);
     assert(pTrack);
 
+#if 0
     LoadCuePoint();  //establish invariant
 
     assert(m_cue_points);
@@ -2674,6 +2682,59 @@ bool Cues::Find(
     pCP = *--i;
     assert(pCP);
     assert(pCP->GetTime(m_pSegment) <= time_ns);
+#else
+    if (m_cue_points == NULL)
+        return false;
+
+    if (m_count == 0)
+        return false;
+
+    CuePoint** const ii = m_cue_points;
+    CuePoint** i = ii;
+
+    CuePoint** const jj = ii + m_count;
+    CuePoint** j = jj;
+
+    pCP = *i;
+    assert(pCP);
+
+    if (time_ns <= pCP->GetTime(m_pSegment))
+    {
+        pTP = pCP->Find(pTrack);
+        return (pTP != NULL);
+    }
+
+    while (i < j)
+    {
+        //INVARIANT:
+        //[ii, i) <= time_ns
+        //[i, j)  ?
+        //[j, jj) > time_ns
+
+        CuePoint** const k = i + (j - i) / 2;
+        assert(k < jj);
+
+        CuePoint* const pCP = *k;
+        assert(pCP);
+
+        const long long t = pCP->GetTime(m_pSegment);
+
+        if (t <= time_ns)
+            i = k + 1;
+        else
+            j = k;
+
+        assert(i <= j);
+    }
+
+    assert(i == j);
+    assert(i <= jj);
+    assert(i > ii);
+
+    pCP = *--i;
+    assert(pCP);
+    assert(pCP->GetTime(m_pSegment) <= time_ns);
+#endif
 
     //TODO: here and elsewhere, it's probably not correct to search
     //for the cue point with this time, and then search for a matching
@@ -2750,12 +2811,20 @@ bool Cues::FindNext(
 
 const CuePoint* Cues::GetFirst() const
 {
+    if (m_cue_points == NULL)
+        return NULL;
+
+    if (m_count == 0)
+        return NULL;
+
+#if 0
     LoadCuePoint();  //init cues
 
     const size_t count = m_count + m_preload_count;
 
     if (count == 0)  //weird
         return NULL;
+#endif
 
     CuePoint* const* const pp = m_cue_points;
     assert(pp);
@@ -2770,6 +2839,13 @@ const CuePoint* Cues::GetFirst() const
 
 const CuePoint* Cues::GetLast() const
 {
+    if (m_cue_points == NULL)
+        return NULL;
+
+    if (m_count == 0)
+        return NULL;
+
+#if 0
     LoadCuePoint();  //init cues
 
     const size_t count = m_count + m_preload_count;
@@ -2787,6 +2863,16 @@ const CuePoint* Cues::GetLast() const
 
     pCP->Load(m_pSegment->m_pReader);
     assert(pCP->GetTimeCode() >= 0);
+#else
+    const size_t index = m_count - 1;
+
+    CuePoint* const* const pp = m_cue_points;
+    assert(pp);
+
+    CuePoint* const pCP = pp[index];
+    assert(pCP);
+    assert(pCP->GetTimeCode() >= 0);
+#endif
 
     return pCP;
 }
@@ -2801,6 +2887,7 @@ const CuePoint* Cues::GetNext(const CuePoint* pCurr) const
     assert(m_cue_points);
     assert(m_count >= 1);
 
+#if 0
     const size_t count = m_count + m_preload_count;
 
     size_t index = pCurr->m_index;
@@ -2819,6 +2906,23 @@ const CuePoint* Cues::GetNext(const CuePoint* pCurr) const
     assert(pNext);
 
     pNext->Load(m_pSegment->m_pReader);
+#else
+    size_t index = pCurr->m_index;
+    assert(index < m_count);
+
+    CuePoint* const* const pp = m_cue_points;
+    assert(pp);
+    assert(pp[index] == pCurr);
+
+    ++index;
+
+    if (index >= m_count)
+        return NULL;
+
+    CuePoint* const pNext = pp[index];
+    assert(pNext);
+    assert(pNext->GetTimeCode() >= 0);
+#endif
 
     return pNext;
 }
