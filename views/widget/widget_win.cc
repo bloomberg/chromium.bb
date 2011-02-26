@@ -39,6 +39,8 @@
 
 using ui::ViewProp;
 
+namespace views {
+
 namespace {
 
 // Returns whether the specified window is the current active window.
@@ -48,30 +50,93 @@ bool IsWindowActive(HWND hwnd) {
          ((info.dwWindowStatus & WS_ACTIVECAPTION) != 0);
 }
 
-}  // namespace
+// Get the source HWND of the specified message. Depending on the message, the
+// source HWND is encoded in either the WPARAM or the LPARAM value.
+HWND GetControlHWNDForMessage(UINT message, WPARAM w_param, LPARAM l_param) {
+  // Each of the following messages can be sent by a child HWND and must be
+  // forwarded to its associated NativeControlWin for handling.
+  switch (message) {
+    case WM_NOTIFY:
+      return reinterpret_cast<NMHDR*>(l_param)->hwndFrom;
+    case WM_COMMAND:
+      return reinterpret_cast<HWND>(l_param);
+    case WM_CONTEXTMENU:
+      return reinterpret_cast<HWND>(w_param);
+    case WM_CTLCOLORBTN:
+    case WM_CTLCOLORSTATIC:
+      return reinterpret_cast<HWND>(l_param);
+  }
+  return NULL;
+}
 
-namespace views {
+// Some messages may be sent to us by a child HWND. If this is the case, this
+// function will forward those messages on to the object associated with the
+// source HWND and return true, in which case the window procedure must not do
+// any further processing of the message. If there is no associated
+// ChildWindowMessageProcessor, the return value will be false and the WndProc
+// can continue processing the message normally.  |l_result| contains the result
+// of the message processing by the control and must be returned by the WndProc
+// if the return value is true.
+bool ProcessChildWindowMessage(UINT message,
+                               WPARAM w_param,
+                               LPARAM l_param,
+                               LRESULT* l_result) {
+  *l_result = 0;
+
+  HWND control_hwnd = GetControlHWNDForMessage(message, w_param, l_param);
+  if (IsWindow(control_hwnd)) {
+    ChildWindowMessageProcessor* processor =
+        ChildWindowMessageProcessor::Get(control_hwnd);
+    if (processor)
+      return processor->ProcessMessage(message, w_param, l_param, l_result);
+  }
+
+  return false;
+}
+
+BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM l_param) {
+  RootView* root_view = GetRootViewForHWND(hwnd);
+  if (root_view) {
+    *reinterpret_cast<RootView**>(l_param) = root_view;
+    return FALSE;  // Stop enumerating.
+  }
+  return TRUE;  // Keep enumerating.
+}
+
+// Enumerate child windows as they could have RootView distinct from
+// the HWND's root view.
+BOOL CALLBACK EnumAllRootViewsChildProc(HWND hwnd, LPARAM l_param) {
+  RootView* root_view = GetRootViewForHWND(hwnd);
+  if (root_view) {
+    std::set<RootView*>* root_views_set =
+        reinterpret_cast<std::set<RootView*>*>(l_param);
+    root_views_set->insert(root_view);
+  }
+  return TRUE;  // Keep enumerating.
+}
 
 // Property used to link the HWND to its RootView.
-static const char* const kRootViewWindowProperty = "__ROOT_VIEW__";
+const char* const kRootViewWindowProperty = "__ROOT_VIEW__";
 
 // Links the HWND to it's Widget (as a Widget, not a WidgetWin).
-static const char* const kWidgetKey = "__VIEWS_WIDGET__";
-
-// static
-bool WidgetWin::screen_reader_active_ = false;
+const char* const kWidgetKey = "__VIEWS_WIDGET__";
 
 // A custom MSAA object id used to determine if a screen reader is actively
 // listening for MSAA events.
-#define OBJID_CUSTOM 1
+const int kCustomObjectID = 1;
+
+}  // namespace
+
+// static
+bool WidgetWin::screen_reader_active_ = false;
 
 RootView* GetRootViewForHWND(HWND hwnd) {
   return reinterpret_cast<RootView*>(
       ViewProp::GetValue(hwnd, kRootViewWindowProperty));
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// WidgetWin, public
+////////////////////////////////////////////////////////////////////////////////
+// WidgetWin, public:
 
 WidgetWin::WidgetWin()
     : ALLOW_THIS_IN_INITIALIZER_LIST(delegate_(this)),
@@ -141,20 +206,6 @@ bool WidgetWin::IsAeroGlassEnabled() {
   return SUCCEEDED(DwmIsCompositionEnabled(&enabled)) && enabled;
 }
 
-void WidgetWin::SetUseLayeredBuffer(bool use_layered_buffer) {
-  if (use_layered_buffer_ == use_layered_buffer)
-    return;
-
-  use_layered_buffer_ = use_layered_buffer;
-  if (!hwnd())
-    return;
-
-  if (use_layered_buffer_)
-    LayoutRootView();
-  else
-    contents_.reset(NULL);
-}
-
 View* WidgetWin::GetAccessibilityViewEventAt(int id) {
   // Convert from MSAA child id.
   id = -(id + 1);
@@ -180,8 +231,8 @@ void WidgetWin::ClearAccessibilityViewEvent(View* view) {
   }
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// Widget implementation:
+////////////////////////////////////////////////////////////////////////////////
+// WidgetWin, Widget implementation:
 
 void WidgetWin::Init(gfx::NativeView parent, const gfx::Rect& bounds) {
   Widget::Init(parent, bounds);
@@ -194,7 +245,7 @@ void WidgetWin::Init(gfx::NativeView parent, const gfx::Rect& bounds) {
 
   // Attempt to detect screen readers by sending an event with our custom id.
   if (!IsAccessibleWidget())
-    NotifyWinEvent(EVENT_SYSTEM_ALERT, hwnd(), OBJID_CUSTOM, CHILDID_SELF);
+    NotifyWinEvent(EVENT_SYSTEM_ALERT, hwnd(), kCustomObjectID, CHILDID_SELF);
 
   props_.push_back(SetWindowSupportsRerouteMouseWheel(hwnd()));
 
@@ -491,7 +542,7 @@ void WidgetWin::SetCursor(gfx::NativeCursor cursor) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// MessageLoop::Observer
+// WidgetWin, MessageLoop::Observer implementation:
 
 void WidgetWin::WillProcessMessage(const MSG& msg) {
 }
@@ -500,8 +551,45 @@ void WidgetWin::DidProcessMessage(const MSG& msg) {
   RedrawInvalidRect();
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// Message handlers
+////////////////////////////////////////////////////////////////////////////////
+// WidgetWin, WindowImpl overrides:
+
+HICON WidgetWin::GetDefaultWindowIcon() const {
+  if (ViewsDelegate::views_delegate)
+    return ViewsDelegate::views_delegate->GetDefaultWindowIcon();
+  return NULL;
+}
+
+LRESULT WidgetWin::OnWndProc(UINT message, WPARAM w_param, LPARAM l_param) {
+  HWND window = hwnd();
+  LRESULT result = 0;
+
+  // First allow messages sent by child controls to be processed directly by
+  // their associated views. If such a view is present, it will handle the
+  // message *instead of* this WidgetWin.
+  if (ProcessChildWindowMessage(message, w_param, l_param, &result))
+    return result;
+
+  // Otherwise we handle everything else.
+  if (!ProcessWindowMessage(window, message, w_param, l_param, result))
+    result = DefWindowProc(window, message, w_param, l_param);
+  if (message == WM_NCDESTROY) {
+    MessageLoopForUI::current()->RemoveObserver(this);
+    OnFinalMessage(window);
+  }
+  if (message == WM_ACTIVATE)
+    PostProcessActivateMessage(this, LOWORD(w_param));
+  if (message == WM_ENABLE && restore_focus_when_enabled_) {
+    restore_focus_when_enabled_ = false;
+    focus_manager_->RestoreFocusedView();
+  }
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// WidgetWin, protected:
+
+// Message handlers ------------------------------------------------------------
 
 void WidgetWin::OnActivate(UINT action, BOOL minimized, HWND window) {
   SetMsgHandled(FALSE);
@@ -576,7 +664,7 @@ void WidgetWin::OnEnterSizeMove() {
 }
 
 LRESULT WidgetWin::OnEraseBkgnd(HDC dc) {
-  // This is needed for magical win32 flicker ju-ju
+  // This is needed for magical win32 flicker ju-ju.
   return 1;
 }
 
@@ -602,7 +690,7 @@ LRESULT WidgetWin::OnGetObject(UINT uMsg, WPARAM w_param, LPARAM l_param) {
         static_cast<IAccessible*>(root.Detach()));
   }
 
-  if (OBJID_CUSTOM == l_param) {
+  if (kCustomObjectID == l_param) {
     // An MSAA client requestes our custom id. Assume that we have detected an
     // active windows screen reader.
     OnScreenReaderDetected();
@@ -900,11 +988,6 @@ void WidgetWin::OnThemeChanged() {
   gfx::NativeTheme::instance()->CloseHandles();
 }
 
-void WidgetWin::OnFinalMessage(HWND window) {
-  if (delete_on_destroy_)
-    delete this;
-}
-
 void WidgetWin::OnVScroll(int scroll_type, short position, HWND scrollbar) {
   SetMsgHandled(FALSE);
 }
@@ -923,6 +1006,14 @@ void WidgetWin::OnWindowPosChanged(WINDOWPOS* window_pos) {
   SetMsgHandled(FALSE);
 }
 
+void WidgetWin::OnFinalMessage(HWND window) {
+  if (delete_on_destroy_)
+    delete this;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// WidgetWin, protected:
+
 gfx::Size WidgetWin::GetRootViewSize() const {
   CRect rect;
   if (use_layered_buffer_)
@@ -932,9 +1023,6 @@ gfx::Size WidgetWin::GetRootViewSize() const {
 
   return gfx::Size(rect.Width(), rect.Height());
 }
-
-///////////////////////////////////////////////////////////////////////////////
-// WidgetWin, protected:
 
 void WidgetWin::TrackMouseEvents(DWORD mouse_tracking_flags) {
   // Begin tracking mouse events for this HWND so that we get WM_MOUSELEAVE
@@ -1068,7 +1156,7 @@ bool WidgetWin::ReleaseCaptureOnMouseReleased() {
   return true;
 }
 
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // WidgetWin, private:
 
 // static
@@ -1102,84 +1190,6 @@ RootView* WidgetWin::GetFocusedViewRootView() {
   if (!focused_view)
     return NULL;
   return focused_view->GetRootView();
-}
-
-// Get the source HWND of the specified message. Depending on the message, the
-// source HWND is encoded in either the WPARAM or the LPARAM value.
-static HWND GetControlHWNDForMessage(UINT message,
-                                     WPARAM w_param,
-                                     LPARAM l_param) {
-  // Each of the following messages can be sent by a child HWND and must be
-  // forwarded to its associated NativeControlWin for handling.
-  switch (message) {
-    case WM_NOTIFY:
-      return reinterpret_cast<NMHDR*>(l_param)->hwndFrom;
-    case WM_COMMAND:
-      return reinterpret_cast<HWND>(l_param);
-    case WM_CONTEXTMENU:
-      return reinterpret_cast<HWND>(w_param);
-    case WM_CTLCOLORBTN:
-    case WM_CTLCOLORSTATIC:
-      return reinterpret_cast<HWND>(l_param);
-  }
-  return NULL;
-}
-
-HICON WidgetWin::GetDefaultWindowIcon() const {
-  if (ViewsDelegate::views_delegate)
-    return ViewsDelegate::views_delegate->GetDefaultWindowIcon();
-  return NULL;
-}
-
-// Some messages may be sent to us by a child HWND. If this is the case, this
-// function will forward those messages on to the object associated with the
-// source HWND and return true, in which case the window procedure must not do
-// any further processing of the message. If there is no associated
-// ChildWindowMessageProcessor, the return value will be false and the WndProc
-// can continue processing the message normally.  |l_result| contains the result
-// of the message processing by the control and must be returned by the WndProc
-// if the return value is true.
-static bool ProcessChildWindowMessage(UINT message,
-                                      WPARAM w_param,
-                                      LPARAM l_param,
-                                      LRESULT* l_result) {
-  *l_result = 0;
-
-  HWND control_hwnd = GetControlHWNDForMessage(message, w_param, l_param);
-  if (IsWindow(control_hwnd)) {
-    ChildWindowMessageProcessor* processor =
-        ChildWindowMessageProcessor::Get(control_hwnd);
-    if (processor)
-      return processor->ProcessMessage(message, w_param, l_param, l_result);
-  }
-
-  return false;
-}
-
-LRESULT WidgetWin::OnWndProc(UINT message, WPARAM w_param, LPARAM l_param) {
-  HWND window = hwnd();
-  LRESULT result = 0;
-
-  // First allow messages sent by child controls to be processed directly by
-  // their associated views. If such a view is present, it will handle the
-  // message *instead of* this WidgetWin.
-  if (ProcessChildWindowMessage(message, w_param, l_param, &result))
-    return result;
-
-  // Otherwise we handle everything else.
-  if (!ProcessWindowMessage(window, message, w_param, l_param, result))
-    result = DefWindowProc(window, message, w_param, l_param);
-  if (message == WM_NCDESTROY) {
-    MessageLoopForUI::current()->RemoveObserver(this);
-    OnFinalMessage(window);
-  }
-  if (message == WM_ACTIVATE)
-    PostProcessActivateMessage(this, LOWORD(w_param));
-  if (message == WM_ENABLE && restore_focus_when_enabled_) {
-    restore_focus_when_enabled_ = false;
-    focus_manager_->RestoreFocusedView();
-  }
-  return result;
 }
 
 // static
@@ -1273,15 +1283,6 @@ Widget* Widget::CreatePopupWidget(TransparencyParam transparent,
   return popup;
 }
 
-static BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM l_param) {
-  RootView* root_view = GetRootViewForHWND(hwnd);
-  if (root_view) {
-    *reinterpret_cast<RootView**>(l_param) = root_view;
-    return FALSE;  // Stop enumerating.
-  }
-  return TRUE;  // Keep enumerating.
-}
-
 // static
 RootView* Widget::FindRootView(HWND hwnd) {
   RootView* root_view = GetRootViewForHWND(hwnd);
@@ -1294,18 +1295,7 @@ RootView* Widget::FindRootView(HWND hwnd) {
   return root_view;
 }
 
-// Enumerate child windows as they could have RootView distinct from
-// the HWND's root view.
-BOOL CALLBACK EnumAllRootViewsChildProc(HWND hwnd, LPARAM l_param) {
-  RootView* root_view = GetRootViewForHWND(hwnd);
-  if (root_view) {
-    std::set<RootView*>* root_views_set =
-        reinterpret_cast<std::set<RootView*>*>(l_param);
-    root_views_set->insert(root_view);
-  }
-  return TRUE;  // Keep enumerating.
-}
-
+// static
 void Widget::FindAllRootViews(HWND window,
                               std::vector<RootView*>* root_views) {
   RootView* root_view = GetRootViewForHWND(window);
@@ -1322,9 +1312,6 @@ void Widget::FindAllRootViews(HWND window,
       ++it)
     root_views->push_back(*it);
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// Widget, public:
 
 // static
 Widget* Widget::GetWidgetFromNativeView(gfx::NativeView native_view) {

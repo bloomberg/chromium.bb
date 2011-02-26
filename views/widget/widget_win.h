@@ -100,9 +100,6 @@ class WidgetWin : public ui::WindowImpl,
     delete_on_destroy_ = delete_on_destroy;
   }
 
-  // See description of use_layered_buffer_ for details.
-  void SetUseLayeredBuffer(bool use_layered_buffer);
-
   // Disable Layered Window updates by setting to false.
   void set_can_update_layered_window(bool can_update_layered_window) {
     can_update_layered_window_ = can_update_layered_window;
@@ -122,6 +119,124 @@ class WidgetWin : public ui::WindowImpl,
 
   // Clear a view that has recently been removed on a hierarchy change.
   void ClearAccessibilityViewEvent(View* view);
+
+  // Overridden from Widget:
+  virtual void Init(gfx::NativeView parent, const gfx::Rect& bounds);
+  virtual void InitWithWidget(Widget* parent, const gfx::Rect& bounds);
+  virtual void GetBounds(gfx::Rect* out, bool including_frame) const;
+  virtual void SetBounds(const gfx::Rect& bounds);
+  virtual void MoveAbove(Widget* other);
+  virtual void SetShape(gfx::NativeRegion region);
+  virtual void Close();
+  virtual void CloseNow();
+  virtual void Show();
+  virtual void Hide();
+  virtual gfx::NativeView GetNativeView() const;
+  virtual void SetOpacity(unsigned char opacity);
+  virtual void SetAlwaysOnTop(bool on_top);
+  virtual Widget* GetRootWidget() const;
+  virtual bool IsVisible() const;
+  virtual bool IsActive() const;
+  virtual bool IsAccessibleWidget() const;
+  virtual TooltipManager* GetTooltipManager();
+  virtual void GenerateMousePressedForView(View* view,
+                                           const gfx::Point& point);
+  virtual bool GetAccelerator(int cmd_id, ui::Accelerator* accelerator);
+  virtual Window* GetWindow();
+  virtual const Window* GetWindow() const;
+  virtual void SetNativeWindowProperty(const char* name, void* value);
+  virtual void* GetNativeWindowProperty(const char* name);
+  virtual ThemeProvider* GetThemeProvider() const;
+  virtual FocusManager* GetFocusManager();
+  virtual void ViewHierarchyChanged(bool is_add, View *parent,
+                                    View *child);
+  virtual bool ContainsNativeView(gfx::NativeView native_view);
+  virtual void StartDragForViewFromMouseEvent(View* view,
+                                              const OSExchangeData& data,
+                                              int operation);
+  virtual View* GetDraggedView();
+  virtual void SchedulePaintInRect(const gfx::Rect& rect);
+  virtual void SetCursor(gfx::NativeCursor cursor);
+
+  BOOL IsWindow() const {
+    return ::IsWindow(GetNativeView());
+  }
+
+  BOOL ShowWindow(int command) {
+    DCHECK(::IsWindow(GetNativeView()));
+    return ::ShowWindow(GetNativeView(), command);
+  }
+
+  HWND SetCapture() {
+    DCHECK(::IsWindow(GetNativeView()));
+    return ::SetCapture(GetNativeView());
+  }
+
+  HWND GetParent() const {
+    return ::GetParent(GetNativeView());
+  }
+
+  LONG GetWindowLong(int index) {
+    DCHECK(::IsWindow(GetNativeView()));
+    return ::GetWindowLong(GetNativeView(), index);
+  }
+
+  BOOL GetWindowRect(RECT* rect) const {
+    return ::GetWindowRect(GetNativeView(), rect);
+  }
+
+  LONG SetWindowLong(int index, LONG new_long) {
+    DCHECK(::IsWindow(GetNativeView()));
+    return ::SetWindowLong(GetNativeView(), index, new_long);
+  }
+
+  BOOL SetWindowPos(HWND hwnd_after, int x, int y, int cx, int cy, UINT flags) {
+    DCHECK(::IsWindow(GetNativeView()));
+    return ::SetWindowPos(GetNativeView(), hwnd_after, x, y, cx, cy, flags);
+  }
+
+  BOOL IsZoomed() const {
+    DCHECK(::IsWindow(GetNativeView()));
+    return ::IsZoomed(GetNativeView());
+  }
+
+  BOOL MoveWindow(int x, int y, int width, int height) {
+    return MoveWindow(x, y, width, height, TRUE);
+  }
+
+  BOOL MoveWindow(int x, int y, int width, int height, BOOL repaint) {
+    DCHECK(::IsWindow(GetNativeView()));
+    return ::MoveWindow(GetNativeView(), x, y, width, height, repaint);
+  }
+
+  int SetWindowRgn(HRGN region, BOOL redraw) {
+    DCHECK(::IsWindow(GetNativeView()));
+    return ::SetWindowRgn(GetNativeView(), region, redraw);
+  }
+
+  BOOL GetClientRect(RECT* rect) const {
+    DCHECK(::IsWindow(GetNativeView()));
+    return ::GetClientRect(GetNativeView(), rect);
+  }
+
+  // Resets the last move flag so that we can go around the optimization
+  // that disregards duplicate mouse moves when ending animation requires
+  // a new hit-test to do some highlighting as in TabStrip::RemoveTabAnimation
+  // to cause the close button to highlight.
+  void ResetLastMouseMoveFlag() {
+    last_mouse_event_was_move_ = false;
+  }
+
+ protected:
+  // Overridden from MessageLoop::Observer:
+  void WillProcessMessage(const MSG& msg);
+  virtual void DidProcessMessage(const MSG& msg);
+
+  // Overridden from WindowImpl:
+  virtual HICON GetDefaultWindowIcon() const;
+  virtual LRESULT OnWndProc(UINT message, WPARAM w_param, LPARAM l_param);
+
+  // Message Handlers ----------------------------------------------------------
 
   BEGIN_MSG_MAP_EX(WidgetWin)
     // Range handlers must go first!
@@ -213,123 +328,6 @@ class WidgetWin : public ui::WindowImpl,
     MSG_WM_WINDOWPOSCHANGED(OnWindowPosChanged)
   END_MSG_MAP()
 
-  // Overridden from Widget:
-  virtual void Init(gfx::NativeView parent, const gfx::Rect& bounds);
-  virtual void InitWithWidget(Widget* parent, const gfx::Rect& bounds);
-  virtual void GetBounds(gfx::Rect* out, bool including_frame) const;
-  virtual void SetBounds(const gfx::Rect& bounds);
-  virtual void MoveAbove(Widget* other);
-  virtual void SetShape(gfx::NativeRegion region);
-  virtual void Close();
-  virtual void CloseNow();
-  virtual void Show();
-  virtual void Hide();
-  virtual gfx::NativeView GetNativeView() const;
-  virtual void SetOpacity(unsigned char opacity);
-  virtual void SetAlwaysOnTop(bool on_top);
-  virtual Widget* GetRootWidget() const;
-  virtual bool IsVisible() const;
-  virtual bool IsActive() const;
-  virtual bool IsAccessibleWidget() const;
-  virtual TooltipManager* GetTooltipManager();
-  virtual void GenerateMousePressedForView(View* view,
-                                           const gfx::Point& point);
-  virtual bool GetAccelerator(int cmd_id, ui::Accelerator* accelerator);
-  virtual Window* GetWindow();
-  virtual const Window* GetWindow() const;
-  virtual void SetNativeWindowProperty(const char* name, void* value);
-  virtual void* GetNativeWindowProperty(const char* name);
-  virtual ThemeProvider* GetThemeProvider() const;
-  virtual FocusManager* GetFocusManager();
-  virtual void ViewHierarchyChanged(bool is_add, View *parent,
-                                    View *child);
-  virtual bool ContainsNativeView(gfx::NativeView native_view);
-  virtual void StartDragForViewFromMouseEvent(View* view,
-                                              const OSExchangeData& data,
-                                              int operation);
-  virtual View* GetDraggedView();
-  virtual void SchedulePaintInRect(const gfx::Rect& rect);
-  virtual void SetCursor(gfx::NativeCursor cursor);
-
-  // Overridden from MessageLoop::Observer:
-  void WillProcessMessage(const MSG& msg);
-  virtual void DidProcessMessage(const MSG& msg);
-
-  BOOL IsWindow() const {
-    return ::IsWindow(GetNativeView());
-  }
-
-  BOOL ShowWindow(int command) {
-    DCHECK(::IsWindow(GetNativeView()));
-    return ::ShowWindow(GetNativeView(), command);
-  }
-
-  HWND SetCapture() {
-    DCHECK(::IsWindow(GetNativeView()));
-    return ::SetCapture(GetNativeView());
-  }
-
-  HWND GetParent() const {
-    return ::GetParent(GetNativeView());
-  }
-
-  LONG GetWindowLong(int index) {
-    DCHECK(::IsWindow(GetNativeView()));
-    return ::GetWindowLong(GetNativeView(), index);
-  }
-
-  BOOL GetWindowRect(RECT* rect) const {
-    return ::GetWindowRect(GetNativeView(), rect);
-  }
-
-  LONG SetWindowLong(int index, LONG new_long) {
-    DCHECK(::IsWindow(GetNativeView()));
-    return ::SetWindowLong(GetNativeView(), index, new_long);
-  }
-
-  BOOL SetWindowPos(HWND hwnd_after, int x, int y, int cx, int cy, UINT flags) {
-    DCHECK(::IsWindow(GetNativeView()));
-    return ::SetWindowPos(GetNativeView(), hwnd_after, x, y, cx, cy, flags);
-  }
-
-  BOOL IsZoomed() const {
-    DCHECK(::IsWindow(GetNativeView()));
-    return ::IsZoomed(GetNativeView());
-  }
-
-  BOOL MoveWindow(int x, int y, int width, int height) {
-    return MoveWindow(x, y, width, height, TRUE);
-  }
-
-  BOOL MoveWindow(int x, int y, int width, int height, BOOL repaint) {
-    DCHECK(::IsWindow(GetNativeView()));
-    return ::MoveWindow(GetNativeView(), x, y, width, height, repaint);
-  }
-
-  int SetWindowRgn(HRGN region, BOOL redraw) {
-    DCHECK(::IsWindow(GetNativeView()));
-    return ::SetWindowRgn(GetNativeView(), region, redraw);
-  }
-
-  BOOL GetClientRect(RECT* rect) const {
-    DCHECK(::IsWindow(GetNativeView()));
-    return ::GetClientRect(GetNativeView(), rect);
-  }
-
-  // Resets the last move flag so that we can go around the optimization
-  // that disregards duplicate mouse moves when ending animation requires
-  // a new hit-test to do some highlighting as in TabStrip::RemoveTabAnimation
-  // to cause the close button to highlight.
-  void ResetLastMouseMoveFlag() {
-    last_mouse_event_was_move_ = false;
-  }
-
- protected:
-  // Overridden from WindowImpl:
-  virtual HICON GetDefaultWindowIcon() const;
-  virtual LRESULT OnWndProc(UINT message, WPARAM w_param, LPARAM l_param);
-
-  // Message Handlers
   // These are all virtual so that specialized Widgets can modify or augment
   // processing.
   // This list is in _ALPHABETICAL_ order!
@@ -417,7 +415,7 @@ class WidgetWin : public ui::WindowImpl,
   virtual void OnWindowPosChanging(WINDOWPOS* window_pos);
   virtual void OnWindowPosChanged(WINDOWPOS* window_pos);
 
-  // deletes this window as it is destroyed, override to provide different
+  // Deletes this window as it is destroyed, override to provide different
   // behavior.
   virtual void OnFinalMessage(HWND window);
 
@@ -444,7 +442,7 @@ class WidgetWin : public ui::WindowImpl,
   // Called when the window size or non client metrics change.
   void LayoutRootView();
 
-  // Called when a MSAA screen reader cleint is detected.
+  // Called when a MSAA screen reader client is detected.
   virtual void OnScreenReaderDetected();
 
   // Returns whether capture should be released on mouse release. The default
@@ -516,16 +514,14 @@ class WidgetWin : public ui::WindowImpl,
   // used when tracking is canceled.
   DWORD active_mouse_tracking_flags_;
 
-  // Should we keep an offscreen buffer? This is initially true and if the
-  // window has WS_EX_LAYERED then it remains true. You can set this to false
-  // at any time to ditch the buffer, and similarly set back to true to force
-  // creation of the buffer.
+  // Should we keep an off-screen buffer? This is false by default, set to true
+  // when WS_EX_LAYERED is specified before the native window is created.
   //
   // NOTE: this is intended to be used with a layered window (a window with an
   // extended window style of WS_EX_LAYERED). If you are using a layered window
   // and NOT changing the layered alpha or anything else, then leave this value
   // alone. OTOH if you are invoking SetLayeredWindowAttributes then you'll
-  // must likely want to set this to false, or after changing the alpha toggle
+  // most likely want to set this to false, or after changing the alpha toggle
   // the extended style bit to false than back to true. See MSDN for more
   // details.
   bool use_layered_buffer_;
