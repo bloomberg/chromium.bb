@@ -7,6 +7,7 @@
 #include <map>
 #include <utility>
 
+#include "base/scoped_ptr.h"
 #include "base/singleton.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -416,7 +417,8 @@ const std::string AutoFillCountry::GetCountryCode(
 
   // Compare case-insensitively and ignoring punctuation.
   UErrorCode ignored = U_ZERO_ERROR;
-  icu::Collator* collator = icu::Collator::createInstance(icu_locale, ignored);
+  scoped_ptr<icu::Collator> collator(
+      icu::Collator::createInstance(icu_locale, ignored));
   collator->setStrength(icu::Collator::SECONDARY);
   ignored = U_ZERO_ERROR;
   collator->setAttribute(UCOL_ALTERNATE_HANDLING, UCOL_SHIFTED, ignored);
@@ -430,7 +432,7 @@ const std::string AutoFillCountry::GetCountryCode(
 
     string16 name = GetDisplayName(country_code, icu_locale);
     if (country == UTF8ToUTF16(iso3_country_code) ||
-        l10n_util::CompareString16WithCollator(collator,
+        l10n_util::CompareString16WithCollator(collator.get(),
                                                country,
                                                name) == UCOL_EQUAL) {
       return country_code;
