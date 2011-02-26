@@ -306,7 +306,9 @@ void ServiceProcess::OnChromotingHostDisabled() {
 
 void ServiceProcess::OnServiceEnabled() {
   enabled_services_++;
-  if (1 == enabled_services_) {
+  if ((1 == enabled_services_) &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kNoServiceAutorun)) {
     ServiceProcessState::GetInstance()->AddToAutoRun();
   }
 }

@@ -889,6 +889,11 @@ const char kNoReferrers[]                   = "no-referrers";
 // Disables the sandbox for all process types that are normally sandboxed.
 const char kNoSandbox[]                     = "no-sandbox";
 
+// Disables the service process from adding itself as an autorun process. This
+// does not delete existing autorun registrations, it just prevents the service
+// from registering a new one.
+const char kNoServiceAutorun[]               = "no-service-autorun";
+
 // Does not automatically open a browser window on startup (used when launching
 // Chrome for the purpose of hosting background apps).
 const char kNoStartupWindow[]               = "no-startup-window";

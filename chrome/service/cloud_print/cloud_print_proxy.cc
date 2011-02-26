@@ -156,9 +156,10 @@ void CloudPrintProxy::OnAuthenticationFailed() {
   // If authenticated failed, we will disable the cloud print proxy.
   DisableForUser();
   // Launch the browser to display a notification that the credentials have
-  // expired.
-  g_service_process->io_thread()->message_loop_proxy()->PostTask(
-      FROM_HERE, NewRunnableFunction(&ShowTokenExpiredNotificationInBrowser));
+  // expired (unless error dialogs are disabled).
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoErrorDialogs))
+    g_service_process->io_thread()->message_loop_proxy()->PostTask(
+        FROM_HERE, NewRunnableFunction(&ShowTokenExpiredNotificationInBrowser));
 }
 
 void CloudPrintProxy::OnPrintSystemUnavailable() {
