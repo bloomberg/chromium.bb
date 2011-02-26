@@ -43,6 +43,9 @@ class BrowserThread : public base::Thread {
     // The main thread in the browser.
     UI,
 
+    // This is the thread that watches all browser threads.
+    WATCHDOG,
+
     // This is the thread that interacts with the database.
     DB,
 

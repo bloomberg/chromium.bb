@@ -1356,6 +1356,8 @@
         'browser/metrics/metrics_response.h',
         'browser/metrics/metrics_service.cc',
         'browser/metrics/metrics_service.h',
+        'browser/metrics/thread_watcher.cc',
+        'browser/metrics/thread_watcher.h',
         'browser/metrics/user_metrics.cc',
         'browser/metrics/user_metrics.h',
         'browser/nacl_host/nacl_broker_host_win.cc',
