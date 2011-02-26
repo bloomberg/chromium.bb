@@ -6,21 +6,25 @@
 #define CHROME_BROWSER_UI_GTK_IMPORTER_IMPORT_PROGRESS_DIALOG_GTK_H_
 #pragma once
 
-#include <gtk/gtk.h>
-
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/importer_data_types.h"
+#include "ui/base/gtk/gtk_signal.h"
+
+typedef struct _GtkWindow GtkWindow;
+typedef struct _GtkWidget Widget;
 
 class Profile;
 
 class ImportProgressDialogGtk : public ImporterHost::Observer {
  public:
-  // Displays the import progress dialog box and starts the import
-  static void StartImport(GtkWindow* parent, int16 items,
+  // Displays the import progress dialog box and starts the import.
+  static void StartImport(GtkWindow* parent,
+                          int16 items,
                           ImporterHost* importer_host,
                           const ProfileInfo& browser_profile,
                           Profile* profile,
-                          ImportObserver* observer, bool first_run);
+                          ImportObserver* observer,
+                          bool first_run);
 
   // Overridden from ImporterHost::Observer:
   virtual void ImportItemStarted(importer::ImportItem item);
@@ -29,23 +33,19 @@ class ImportProgressDialogGtk : public ImporterHost::Observer {
   virtual void ImportEnded();
 
  private:
-  ImportProgressDialogGtk(const string16& source_profile, int16 items,
-      ImporterHost* importer_host, ImportObserver* observer,
-      GtkWindow* parent, bool bookmarks_import);
+  ImportProgressDialogGtk(const string16& source_profile,
+                          int16 items,
+                          ImporterHost* importer_host,
+                          ImportObserver* observer,
+                          GtkWindow* parent,
+                          bool bookmarks_import);
   virtual ~ImportProgressDialogGtk();
 
-  static void HandleOnResponseDialog(GtkWidget* widget,
-                                     int response,
-                                     gpointer user_data) {
-    reinterpret_cast<ImportProgressDialogGtk*>(user_data)->OnDialogResponse(
-        widget, response);
-  }
-
-  void CloseDialog();
-
-  void OnDialogResponse(GtkWidget* widget, int response);
+  CHROMEGTK_CALLBACK_1(ImportProgressDialogGtk, void, OnResponse, int);
 
   void ShowDialog();
+
+  void CloseDialog();
 
   // Parent window
   GtkWindow* parent_;

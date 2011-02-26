@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/gtk/importer/import_progress_dialog_gtk.h"
 
+#include <gtk/gtk.h>
+
 #include <string>
 
 #include "base/utf_string_conversions.h"
@@ -11,16 +13,6 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-
-using importer::ALL;
-using importer::BOOKMARKS_HTML;
-using importer::FAVORITES;
-using importer::HISTORY;
-using importer::HOME_PAGE;
-using importer::ImportItem;
-using importer::PASSWORDS;
-using importer::ProfileInfo;
-using importer::SEARCH_ENGINES;
 
 namespace {
 
@@ -38,25 +30,25 @@ void SetItemImportStatus(GtkWidget* label, int res_id, bool is_done) {
 }  // namespace
 
 // static
-void ImportProgressDialogGtk::StartImport(GtkWindow* parent,
-                                          int16 items,
-                                          ImporterHost* importer_host,
-                                          const ProfileInfo& browser_profile,
-                                          Profile* profile,
-                                          ImportObserver* observer,
-                                          bool first_run) {
-  ImportProgressDialogGtk* v = new ImportProgressDialogGtk(
+void ImportProgressDialogGtk::StartImport(
+    GtkWindow* parent,
+    int16 items,
+    ImporterHost* importer_host,
+    const importer::ProfileInfo& browser_profile,
+    Profile* profile,
+    ImportObserver* observer,
+    bool first_run) {
+  ImportProgressDialogGtk* dialog = new ImportProgressDialogGtk(
       WideToUTF16(browser_profile.description), items, importer_host, observer,
-      parent, browser_profile.browser_type == BOOKMARKS_HTML);
+      parent, browser_profile.browser_type == importer::BOOKMARKS_HTML);
 
   // In headless mode it means that we don't show the progress window, but it
   // still need it to exist. No user interaction will be required.
   if (!importer_host->is_headless())
-    v->ShowDialog();
+    dialog->ShowDialog();
 
-  importer_host->StartImportSettings(browser_profile, profile, items,
-                                     new ProfileWriter(profile),
-                                     first_run);
+  importer_host->StartImportSettings(
+      browser_profile, profile, items, new ProfileWriter(profile), first_run);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -64,19 +56,19 @@ void ImportProgressDialogGtk::StartImport(GtkWindow* parent,
 void ImportProgressDialogGtk::ImportItemStarted(importer::ImportItem item) {
   DCHECK(items_ & item);
   switch (item) {
-    case FAVORITES:
+    case importer::FAVORITES:
       SetItemImportStatus(bookmarks_,
                           IDS_IMPORT_PROGRESS_STATUS_BOOKMARKS, false);
       break;
-    case SEARCH_ENGINES:
+    case importer::SEARCH_ENGINES:
       SetItemImportStatus(search_engines_,
                           IDS_IMPORT_PROGRESS_STATUS_SEARCH, false);
       break;
-    case PASSWORDS:
+    case importer::PASSWORDS:
       SetItemImportStatus(passwords_,
                           IDS_IMPORT_PROGRESS_STATUS_PASSWORDS, false);
       break;
-    case HISTORY:
+    case importer::HISTORY:
       SetItemImportStatus(history_,
                           IDS_IMPORT_PROGRESS_STATUS_HISTORY, false);
       break;
@@ -88,19 +80,19 @@ void ImportProgressDialogGtk::ImportItemStarted(importer::ImportItem item) {
 void ImportProgressDialogGtk::ImportItemEnded(importer::ImportItem item) {
   DCHECK(items_ & item);
   switch (item) {
-    case FAVORITES:
+    case importer::FAVORITES:
       SetItemImportStatus(bookmarks_,
                           IDS_IMPORT_PROGRESS_STATUS_BOOKMARKS, true);
       break;
-    case SEARCH_ENGINES:
+    case importer::SEARCH_ENGINES:
       SetItemImportStatus(search_engines_,
                           IDS_IMPORT_PROGRESS_STATUS_SEARCH, true);
       break;
-    case PASSWORDS:
+    case importer::PASSWORDS:
       SetItemImportStatus(passwords_,
                           IDS_IMPORT_PROGRESS_STATUS_PASSWORDS, true);
       break;
-    case HISTORY:
+    case importer::HISTORY:
       SetItemImportStatus(history_,
                           IDS_IMPORT_PROGRESS_STATUS_HISTORY, true);
       break;
@@ -122,10 +114,16 @@ void ImportProgressDialogGtk::ImportEnded() {
 }
 
 ImportProgressDialogGtk::ImportProgressDialogGtk(const string16& source_profile,
-    int16 items, ImporterHost* importer_host, ImportObserver* observer,
-    GtkWindow* parent, bool bookmarks_import) :
-    parent_(parent), importing_(true), observer_(observer),
-    items_(items), importer_host_(importer_host) {
+                                                 int16 items,
+                                                 ImporterHost* importer_host,
+                                                 ImportObserver* observer,
+                                                 GtkWindow* parent,
+                                                 bool bookmarks_import)
+    : parent_(parent),
+      importing_(true),
+      observer_(observer),
+      items_(items),
+      importer_host_(importer_host) {
   importer_host_->SetObserver(this);
 
   // Build the dialog.
@@ -151,28 +149,28 @@ ImportProgressDialogGtk::ImportProgressDialogGtk(const string16& source_profile,
 
   GtkWidget* item_box = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
 
-  if (items_ & HISTORY) {
+  if (items_ & importer::HISTORY) {
     history_ = gtk_label_new(
         l10n_util::GetStringUTF8(IDS_IMPORT_PROGRESS_STATUS_HISTORY).c_str());
     gtk_misc_set_alignment(GTK_MISC(history_), 0, 0.5);
     gtk_box_pack_start(GTK_BOX(item_box), history_, FALSE, FALSE, 0);
   }
 
-  if (items_ & FAVORITES) {
+  if (items_ & importer::FAVORITES) {
     bookmarks_ = gtk_label_new(
         l10n_util::GetStringUTF8(IDS_IMPORT_PROGRESS_STATUS_BOOKMARKS).c_str());
     gtk_misc_set_alignment(GTK_MISC(bookmarks_), 0, 0.5);
     gtk_box_pack_start(GTK_BOX(item_box), bookmarks_, FALSE, FALSE, 0);
   }
 
-  if (items_ & SEARCH_ENGINES) {
+  if (items_ & importer::SEARCH_ENGINES) {
     search_engines_ = gtk_label_new(
         l10n_util::GetStringUTF8(IDS_IMPORT_PROGRESS_STATUS_SEARCH).c_str());
     gtk_misc_set_alignment(GTK_MISC(search_engines_), 0, 0.5);
     gtk_box_pack_start(GTK_BOX(item_box), search_engines_, FALSE, FALSE, 0);
   }
 
-  if (items_ & PASSWORDS) {
+  if (items_ & importer::PASSWORDS) {
     passwords_ = gtk_label_new(
         l10n_util::GetStringUTF8(IDS_IMPORT_PROGRESS_STATUS_PASSWORDS).c_str());
     gtk_misc_set_alignment(GTK_MISC(passwords_), 0, 0.5);
@@ -184,20 +182,13 @@ ImportProgressDialogGtk::ImportProgressDialogGtk(const string16& source_profile,
   gtk_box_pack_start(GTK_BOX(content_area), control_group, FALSE, FALSE, 0);
 
   g_signal_connect(dialog_, "response",
-                   G_CALLBACK(HandleOnResponseDialog), this);
+                   G_CALLBACK(OnResponseThunk), this);
   gtk_window_set_resizable(GTK_WINDOW(dialog_), FALSE);
 }
 
 ImportProgressDialogGtk::~ImportProgressDialogGtk() {}
 
-void ImportProgressDialogGtk::CloseDialog() {
-  gtk_widget_destroy(dialog_);
-  dialog_ = NULL;
-  delete this;
-}
-
-void ImportProgressDialogGtk::OnDialogResponse(GtkWidget* widget,
-                                               int response) {
+void ImportProgressDialogGtk::OnResponse(GtkWidget* widget, int response) {
   if (!importing_) {
     CloseDialog();
     return;
@@ -213,16 +204,21 @@ void ImportProgressDialogGtk::ShowDialog() {
   gtk_widget_show_all(dialog_);
 }
 
+void ImportProgressDialogGtk::CloseDialog() {
+  gtk_widget_destroy(dialog_);
+  dialog_ = NULL;
+  delete this;
+}
 
 void StartImportingWithUI(GtkWindow* parent,
                           uint16 items,
                           ImporterHost* importer_host,
-                          const ProfileInfo& browser_profile,
+                          const importer::ProfileInfo& browser_profile,
                           Profile* profile,
                           ImportObserver* observer,
                           bool first_run) {
   DCHECK_NE(0, items);
-  ImportProgressDialogGtk::StartImport(parent, items, importer_host,
-                                       browser_profile, profile, observer,
-                                       first_run);
+  ImportProgressDialogGtk::StartImport(
+      parent, items, importer_host, browser_profile, profile, observer,
+      first_run);
 }
