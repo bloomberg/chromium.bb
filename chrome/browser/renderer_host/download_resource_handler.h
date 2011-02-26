@@ -12,7 +12,6 @@
 #include "chrome/browser/download/download_file.h"
 #include "chrome/browser/renderer_host/global_request_id.h"
 #include "chrome/browser/renderer_host/resource_handler.h"
-#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 
 class DownloadFileManager;
 class ResourceDispatcherHost;
@@ -23,8 +22,7 @@ class URLRequest;
 }  // namespace net
 
 // Forwards data to the download thread.
-class DownloadResourceHandler : public ResourceHandler,
-                                public SafeBrowsingService::Client {
+class DownloadResourceHandler : public ResourceHandler {
  public:
   DownloadResourceHandler(ResourceDispatcherHost* rdh,
                           int render_process_host_id,
@@ -72,31 +70,9 @@ class DownloadResourceHandler : public ResourceHandler,
   std::string DebugString() const;
 
  private:
-  // Enumerate for histogramming purposes.  DO NOT CHANGE THE
-  // ORDERING OF THESE VALUES.
-  enum SBStatsType {
-    DOWNLOAD_URL_CHECKS_TOTAL,
-    DOWNLOAD_URL_CHECKS_CANCELED,
-    DOWNLOAD_URL_CHECKS_MALWARE,
-
-    // Memory space for histograms is determined by the max.  ALWAYS
-    // ADD NEW VALUES BEFORE THIS ONE.
-    DOWNLOAD_URL_CHECKS_MAX
-  };
-
   ~DownloadResourceHandler();
 
   void StartPauseTimer();
-
-  void StartDownloadUrlCheck();
-
-  // Called when the result of checking a download URL is known.
-  virtual void OnDownloadUrlCheckResult(
-      const GURL& url,
-      SafeBrowsingService::UrlCheckResult result);
-
-  // A helper function that updates UMA for download url checks.
-  static void UpdateDownloadUrlCheckStats(SBStatsType stat_type);
 
   int download_id_;
   GlobalRequestID global_id_;
@@ -114,9 +90,7 @@ class DownloadResourceHandler : public ResourceHandler,
   ResourceDispatcherHost* rdh_;
   bool is_paused_;
   base::OneShotTimer<DownloadResourceHandler> pause_timer_;
-  bool url_check_pending_;
   base::TimeTicks download_start_time_;  // used to collect stats.
-
   static const int kReadBufSize = 32768;  // bytes
   static const size_t kLoadsToWrite = 100;  // number of data buffers queued
   static const int kThrottleTimeMs = 200;  // milliseconds

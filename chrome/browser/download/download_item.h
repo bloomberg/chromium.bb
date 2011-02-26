@@ -62,6 +62,17 @@ class DownloadItem {
     DANGEROUS_BUT_VALIDATED  // Dangerous but the user confirmed the download.
   };
 
+  enum DangerType {
+    NOT_DANGEROUS = 0,
+
+    // A dangerous file to the system (e.g.: an executable or extension from
+    // places other than gallery).
+    DANGEROUS_FILE,
+
+    // Safebrowsing service shows this URL leads to malicious file download.
+    DANGEROUS_URL
+  };
+
   // Interface that observers of a particular download must implement in order
   // to receive updates to the download's status.
   class Observer {
@@ -174,7 +185,8 @@ class DownloadItem {
   // result of analyzing the file and figuring out its type, location, etc.
   // May only be called once.
   void SetFileCheckResults(const FilePath& path,
-                           bool is_dangerous,
+                           bool is_dangerous_file,
+                           bool is_dangerous_url,
                            int path_uniquifier,
                            bool prompt,
                            bool is_extension_install,
@@ -226,6 +238,7 @@ class DownloadItem {
   void set_safety_state(SafetyState safety_state) {
     safety_state_ = safety_state;
   }
+  DangerType danger_type() { return danger_type_;}
   bool auto_opened() { return auto_opened_; }
   FilePath target_name() const { return target_name_; }
   bool save_as() const { return save_as_; }
@@ -328,6 +341,9 @@ class DownloadItem {
   // Whether the download is considered potentially safe or dangerous
   // (executable files are typically considered dangerous).
   SafetyState safety_state_;
+
+  // Why |safety_state_| is not SAFE.
+  DangerType danger_type_;
 
   // Whether the download was auto-opened. We set this rather than using
   // an observer as it's frequently possible for the download to be auto opened

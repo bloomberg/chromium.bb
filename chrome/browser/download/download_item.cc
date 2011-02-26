@@ -87,6 +87,26 @@ const char* DebugDownloadStateString(DownloadItem::DownloadState state) {
   };
 }
 
+DownloadItem::SafetyState GetSafetyState(bool dangerous_file,
+                                         bool dangerous_url) {
+  return (dangerous_url || dangerous_file) ?
+      DownloadItem::DANGEROUS : DownloadItem::SAFE;
+}
+
+// Note: When a download has both |dangerous_file| and |dangerous_url| set,
+// danger type is set to DANGEROUS_URL since the risk of dangerous URL
+// overweights that of dangerous file type.
+DownloadItem::DangerType GetDangerType(bool dangerous_file,
+                                       bool dangerous_url) {
+  if (dangerous_url) {
+    // dangerous URL overweights dangerous file. We check dangerous URL first.
+    return DownloadItem::DANGEROUS_URL;
+  } else if (dangerous_file) {
+    return DownloadItem::DANGEROUS_FILE;
+  }
+  return DownloadItem::NOT_DANGEROUS;
+}
+
 }  // namespace
 
 // Constructor for reading from the history service.
@@ -110,6 +130,7 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
       is_paused_(false),
       open_when_complete_(false),
       safety_state_(SAFE),
+      danger_type_(NOT_DANGEROUS),
       auto_opened_(false),
       target_name_(info.original_name),
       render_process_id_(-1),
@@ -149,7 +170,10 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
       download_manager_(download_manager),
       is_paused_(false),
       open_when_complete_(false),
-      safety_state_(info.is_dangerous ? DANGEROUS : SAFE),
+      safety_state_(GetSafetyState(info.is_dangerous_file,
+                                   info.is_dangerous_url)),
+      danger_type_(GetDangerType(info.is_dangerous_file,
+                                 info.is_dangerous_url)),
       auto_opened_(false),
       target_name_(info.original_name),
       render_process_id_(info.child_id),
@@ -187,6 +211,7 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
       is_paused_(false),
       open_when_complete_(false),
       safety_state_(SAFE),
+      danger_type_(NOT_DANGEROUS),
       auto_opened_(false),
       render_process_id_(-1),
       request_id_(-1),
@@ -497,14 +522,16 @@ bool DownloadItem::MatchesQuery(const string16& query) const {
 }
 
 void DownloadItem::SetFileCheckResults(const FilePath& path,
-                                       bool is_dangerous,
+                                       bool is_dangerous_file,
+                                       bool is_dangerous_url,
                                        int path_uniquifier,
                                        bool prompt,
                                        bool is_extension_install,
                                        const FilePath& original_name) {
   VLOG(20) << " " << __FUNCTION__ << "()"
            << " path = \"" << path.value() << "\""
-           << " is_dangerous = " << is_dangerous
+           << " is_dangerous_file = " << is_dangerous_file
+           << " is_dangerous_url = " << is_dangerous_url
            << " path_uniquifier = " << path_uniquifier
            << " prompt = " << prompt
            << " is_extension_install = " << is_extension_install
@@ -516,7 +543,8 @@ void DownloadItem::SetFileCheckResults(const FilePath& path,
   DCHECK(!path.empty());
 
   full_path_ = path;
-  safety_state_ = is_dangerous ? DANGEROUS : SAFE;
+  safety_state_ = GetSafetyState(is_dangerous_file, is_dangerous_url);
+  danger_type_ = GetDangerType(is_dangerous_file, is_dangerous_url);
   path_uniquifier_ = path_uniquifier;
   save_as_ = prompt;
   is_extension_install_ = is_extension_install;

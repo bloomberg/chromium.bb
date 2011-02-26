@@ -31,7 +31,8 @@ DownloadCreateInfo::DownloadCreateInfo(const FilePath& path,
       request_id(-1),
       db_handle(0),
       prompt_user_for_save_location(false),
-      is_dangerous(false),
+      is_dangerous_file(false),
+      is_dangerous_url(false),
       is_extension_install(false) {
 }
 
@@ -47,13 +48,17 @@ DownloadCreateInfo::DownloadCreateInfo()
       request_id(-1),
       db_handle(0),
       prompt_user_for_save_location(false),
-      is_dangerous(false),
+      is_dangerous_file(false),
+      is_dangerous_url(false),
       is_extension_install(false) {
 }
 
 DownloadCreateInfo::~DownloadCreateInfo() {
 }
 
+bool DownloadCreateInfo::IsDangerous() {
+  return is_dangerous_url || is_dangerous_file;
+}
 std::string DownloadCreateInfo::DebugString() const {
   return base::StringPrintf("{"
                             " url_ = \"%s\""
@@ -76,4 +81,3 @@ std::string DownloadCreateInfo::DebugString() const {
                             download_id,
                             prompt_user_for_save_location ? 'T' : 'F');
 }
-

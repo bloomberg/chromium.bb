@@ -96,6 +96,9 @@ class DownloadItemGtk : public DownloadItem::Observer,
   // Sets the components of the danger warning.
   void UpdateDangerWarning();
 
+  // Sets the icon for the danger warning dialog.
+  void UpdateDangerIcon();
+
   static void InitNineBoxes();
 
   // Draws everything in GTK rendering mode.

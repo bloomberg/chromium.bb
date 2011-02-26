@@ -850,6 +850,8 @@
         'browser/download/download_request_infobar_delegate.h',
         'browser/download/download_request_limiter.cc',
         'browser/download/download_request_limiter.h',
+        'browser/download/download_safe_browsing_client.cc',
+        'browser/download/download_safe_browsing_client.h',
         'browser/download/download_shelf.cc',
         'browser/download/download_shelf.h',
         'browser/download/download_started_animation.h',

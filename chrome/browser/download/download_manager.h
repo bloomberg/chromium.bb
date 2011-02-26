@@ -221,6 +221,9 @@ class DownloadManager
   // Called when the user has validated the download of a dangerous file.
   void DangerousDownloadValidated(DownloadItem* download);
 
+  // Callback function after url is checked with safebrowsing service.
+  void CheckDownloadUrlDone(DownloadCreateInfo* info, bool is_dangerous_url);
+
  private:
   // For testing.
   friend class DownloadManagerTest;
@@ -266,8 +269,7 @@ class DownloadManager
   // Called back after a target path for the file to be downloaded to has been
   // determined, either automatically based on the suggested file name, or by
   // the user in a Save As dialog box.
-  void AttachDownloadItem(DownloadCreateInfo* info,
-                          const FilePath& target_path);
+  void AttachDownloadItem(DownloadCreateInfo* info);
 
   // Download cancel helper function.
   void DownloadCancelledInternal(int download_id,

@@ -224,6 +224,14 @@ class SafeBrowsingService
   // so the service can serialize and send MalwareDetails.
   virtual void ReportMalwareDetails(scoped_refptr<MalwareDetails> details);
 
+  // Report hits to the unsafe contents (malware, phishing, unsafe download URL)
+  // to the server. Can only be called on UI thread.
+  void ReportSafeBrowsingHit(const GURL& malicious_url,
+                             const GURL& page_url,
+                             const GURL& referrer_url,
+                             bool is_subresource,
+                             UrlCheckResult threat_type);
+
  protected:
   // Creates the safe browsing service.  Need to initialize before using.
   SafeBrowsingService();
@@ -331,13 +339,12 @@ class SafeBrowsingService
   // Invoked on the UI thread to show the blocking page.
   void DoDisplayBlockingPage(const UnsafeResource& resource);
 
-  // As soon as we create a blocking page, we schedule this method to
-  // report hits to the malware or phishing list to the server.
-  void ReportSafeBrowsingHit(const GURL& malicious_url,
-                             const GURL& page_url,
-                             const GURL& referrer_url,
-                             bool is_subresource,
-                             UrlCheckResult threat_type);
+  // Call protocol manager on IO thread to report hits of unsafe contents.
+  void ReportSafeBrowsingHitOnIOThread(const GURL& malicious_url,
+                                       const GURL& page_url,
+                                       const GURL& referrer_url,
+                                       bool is_subresource,
+                                       UrlCheckResult threat_type);
 
   // Checks the download hash on safe_browsing_thread_.
   void CheckDownloadHashOnSBThread(SafeBrowsingCheck* check);

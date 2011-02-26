@@ -1064,25 +1064,38 @@ void SafeBrowsingService::DoDisplayBlockingPage(
       referrer_url = page_url;
       page_url = resource.original_url;
     }
-
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(
-            this,
-            &SafeBrowsingService::ReportSafeBrowsingHit,
-            resource.url,
-            page_url,
-            referrer_url,
-            is_subresource,
-            resource.threat_type));
+    ReportSafeBrowsingHit(resource.url, page_url, referrer_url, is_subresource,
+                          resource.threat_type);
   }
 
   SafeBrowsingBlockingPage::ShowBlockingPage(this, resource);
 }
 
-// A safebrowsing hit is sent right after we create a blocking page,
-// only for UMA users.
+// A safebrowsing hit is sent after a blocking page for malware/phishing
+// or after the warning dialog for download urls, only for UMA users.
 void SafeBrowsingService::ReportSafeBrowsingHit(
+    const GURL& malicious_url,
+    const GURL& page_url,
+    const GURL& referrer_url,
+    bool is_subresource,
+    SafeBrowsingService::UrlCheckResult threat_type) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!CanReportStats())
+    return;
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          this,
+          &SafeBrowsingService::ReportSafeBrowsingHitOnIOThread,
+          malicious_url,
+          page_url,
+          referrer_url,
+          is_subresource,
+          threat_type));
+}
+
+void SafeBrowsingService::ReportSafeBrowsingHitOnIOThread(
     const GURL& malicious_url,
     const GURL& page_url,
     const GURL& referrer_url,

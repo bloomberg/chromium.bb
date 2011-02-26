@@ -44,8 +44,7 @@ DownloadResourceHandler::DownloadResourceHandler(
       save_info_(save_info),
       buffer_(new DownloadBuffer),
       rdh_(rdh),
-      is_paused_(false),
-      url_check_pending_(false) {
+      is_paused_(false) {
 }
 
 bool DownloadResourceHandler::OnUploadProgress(int request_id,
@@ -63,55 +62,12 @@ bool DownloadResourceHandler::OnRequestRedirected(int request_id,
   return true;
 }
 
-// Callback when the result of checking a download URL is known.
-// TODO(lzheng): We should create a information bar with buttons to ask
-// if users want to proceed when the download is malicious.
-void DownloadResourceHandler::OnDownloadUrlCheckResult(
-    const GURL& url, SafeBrowsingService::UrlCheckResult result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(url_check_pending_);
-
-  UMA_HISTOGRAM_TIMES("SB2.DownloadUrlCheckDuration",
-                      base::TimeTicks::Now() - download_start_time_);
-
-  if (result == SafeBrowsingService::BINARY_MALWARE_URL) {
-    // TODO(lzheng): More UI work to show warnings properly on download shelf.
-    DLOG(WARNING) << "This url leads to a malware downloading: "
-                  << url.spec();
-    UpdateDownloadUrlCheckStats(DOWNLOAD_URL_CHECKS_MALWARE);
-  }
-
-  url_check_pending_ = false;
-  // Note: Release() should be the last line in this call. It is for
-  // the AddRef in CheckSafeBrowsing.
-  Release();
-}
-
-// Send the download creation information to the download thread.
-void DownloadResourceHandler::StartDownloadUrlCheck() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  AddRef();
-  if (!rdh_->safe_browsing_service()->CheckDownloadUrl(url_, this)) {
-    url_check_pending_ = true;
-    UpdateDownloadUrlCheckStats(DOWNLOAD_URL_CHECKS_TOTAL);
-    // Note: in this case, the AddRef will be balanced in
-    // "OnDownloadUrlCheckResult" or "OnRequestClosed".
-  } else {
-    // Immediately release the AddRef() at the beginning of this function
-    // since no more callbacks will happen.
-    Release();
-    DVLOG(1) << "url: " << url_.spec() << " is safe to download.";
-  }
-}
-
 // Send the download creation information to the download thread.
 bool DownloadResourceHandler::OnResponseStarted(int request_id,
                                                 ResourceResponse* response) {
   VLOG(20) << __FUNCTION__ << "()" << DebugString()
            << " request_id = " << request_id;
-  DCHECK(!url_check_pending_);
   download_start_time_ = base::TimeTicks::Now();
-  StartDownloadUrlCheck();
   std::string content_disposition;
   request_->GetResponseHeaderByName("content-disposition",
                                     &content_disposition);
@@ -122,7 +78,8 @@ bool DownloadResourceHandler::OnResponseStarted(int request_id,
     ResourceDispatcherHost::InfoForRequest(request_);
 
   download_id_ = download_file_manager_->GetNextId();
-  // |download_file_manager_| consumes (deletes):
+
+  // Deleted in DownloadManager.
   DownloadCreateInfo* info = new DownloadCreateInfo;
   info->url = url_;
   info->original_url = original_url_;
@@ -147,7 +104,8 @@ bool DownloadResourceHandler::OnResponseStarted(int request_id,
 
   info->prompt_user_for_save_location =
       save_as_ && save_info_.file_path.empty();
-  info->is_dangerous = false;
+  info->is_dangerous_file = false;
+  info->is_dangerous_url = false;
   info->referrer_charset = request_->context()->referrer_charset();
   info->save_info = save_info_;
   BrowserThread::PostTask(
@@ -234,15 +192,6 @@ bool DownloadResourceHandler::OnResponseCompleted(
 void DownloadResourceHandler::OnRequestClosed() {
   UMA_HISTOGRAM_TIMES("SB2.DownloadDuration",
                       base::TimeTicks::Now() - download_start_time_);
-  if (url_check_pending_) {
-    DVLOG(1) << "Cancel pending download url checking request: " << this;
-    rdh_->safe_browsing_service()->CancelCheck(this);
-    UpdateDownloadUrlCheckStats(DOWNLOAD_URL_CHECKS_CANCELED);
-    url_check_pending_ = false;
-    // Balance the AddRef() from StartDownloadUrlCheck() which would usually be
-    // balanced by OnDownloadUrlCheckResult().
-    Release();
-  }
 }
 
 // If the content-length header is not present (or contains something other
@@ -308,11 +257,4 @@ std::string DownloadResourceHandler::DebugString() const {
                             global_id_.request_id,
                             render_view_id_,
                             save_info_.file_path.value().c_str());
-}
-
-void DownloadResourceHandler::UpdateDownloadUrlCheckStats(
-    SBStatsType stat_type) {
-  UMA_HISTOGRAM_ENUMERATION("SB2.DownloadUrlChecks",
-                            stat_type,
-                            DOWNLOAD_URL_CHECKS_MAX);
 }

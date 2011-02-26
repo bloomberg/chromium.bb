@@ -32,6 +32,9 @@ struct DownloadCreateInfo {
   DownloadCreateInfo();
   ~DownloadCreateInfo();
 
+  // Indicates if the download is dangerous.
+  bool IsDangerous();
+
   std::string DebugString() const;
 
   // DownloadItem fields
@@ -68,8 +71,10 @@ struct DownloadCreateInfo {
   // False if the UI should be supressed and the download performed to the
   // default location.
   bool prompt_user_for_save_location;
-  // Whether this download is potentially dangerous (ex: exe, dll, ...).
-  bool is_dangerous;
+  // Whether this download file is potentially dangerous (ex: exe, dll, ...).
+  bool is_dangerous_file;
+  // If safebrowsing believes this URL leads to malware.
+  bool is_dangerous_url;
   // The original name for a dangerous download.
   FilePath original_name;
   // Whether this download is for extension install or not.

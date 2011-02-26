@@ -153,11 +153,6 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
   frameOrigin.x += widthChange;
   [buttonTweaker_ setFrameOrigin:frameOrigin];
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  NSImage* alertIcon = rb.GetNativeImageNamed(IDR_WARNING);
-  DCHECK(alertIcon);
-  [image_ setImage:alertIcon];
-
   bridge_->LoadIcon();
   [self updateToolTip];
 }
@@ -169,47 +164,68 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
   if (downloadModel->download()->safety_state() == DownloadItem::DANGEROUS) {
     [self setState:kDangerous];
 
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     NSString* dangerousWarning;
     NSString* confirmButtonTitle;
-    // The dangerous download label and button text are different for an
-    // extension file.
-    if (downloadModel->download()->is_extension_install()) {
+    NSImage* alertIcon;
+
+    // The dangerous download label, button text and icon are different under
+    // different cases.
+    if (downloadModel->download()->danger_type() ==
+        DownloadItem::DANGEROUS_URL) {
+      // Safebrowsing shows the download URL leads to malicious file.
+      alertIcon = rb.GetNativeImageNamed(IDR_SAFEBROWSING_WARNING);
       dangerousWarning = l10n_util::GetNSStringWithFixup(
-          IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION);
-      confirmButtonTitle = l10n_util::GetNSStringWithFixup(
-          IDS_CONTINUE_EXTENSION_DOWNLOAD);
-    } else {
-      // This basic fixup copies Windows DownloadItemView::DownloadItemView().
-
-      // Extract the file extension (if any).
-      FilePath filename(downloadModel->download()->target_name());
-      FilePath::StringType extension = filename.Extension();
-
-      // Remove leading '.' from the extension
-      if (extension.length() > 0)
-        extension = extension.substr(1);
-
-      // Elide giant extensions.
-      if (extension.length() > kFileNameMaxLength / 2) {
-        string16 utf16_extension;
-        ui::ElideString(UTF8ToUTF16(extension), kFileNameMaxLength / 2,
-                        &utf16_extension);
-        extension = UTF16ToUTF8(utf16_extension);
-      }
-
-      // Rebuild the filename.extension.
-      string16 rootname = UTF8ToUTF16(filename.RemoveExtension().value());
-      ui::ElideString(rootname, kFileNameMaxLength - extension.length(),
-                      &rootname);
-      std::string new_filename = UTF16ToUTF8(rootname);
-      if (extension.length())
-        new_filename += std::string(".") + extension;
-
-      dangerousWarning = l10n_util::GetNSStringFWithFixup(
-          IDS_PROMPT_DANGEROUS_DOWNLOAD, UTF8ToUTF16(new_filename));
+          IDS_PROMPT_UNSAFE_DOWNLOAD_URL);
       confirmButtonTitle = l10n_util::GetNSStringWithFixup(IDS_SAVE_DOWNLOAD);
+    } else {
+      // It's a dangerous file type (e.g.: an executable).
+      DCHECK_EQ(downloadModel->download()->danger_type(),
+                DownloadItem::DANGEROUS_FILE);
+      alertIcon = rb.GetNativeImageNamed(IDR_WARNING);
+      if (downloadModel->download()->is_extension_install()) {
+        dangerousWarning = l10n_util::GetNSStringWithFixup(
+            IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION);
+        confirmButtonTitle = l10n_util::GetNSStringWithFixup(
+            IDS_CONTINUE_EXTENSION_DOWNLOAD);
+      } else {
+        // This basic fixup copies Windows DownloadItemView::DownloadItemView().
+
+        // Extract the file extension (if any).
+        FilePath filename(downloadModel->download()->target_name());
+        FilePath::StringType extension = filename.Extension();
+
+        // Remove leading '.' from the extension
+        if (extension.length() > 0)
+          extension = extension.substr(1);
+
+        // Elide giant extensions.
+        if (extension.length() > kFileNameMaxLength / 2) {
+          string16 utf16_extension;
+          ui::ElideString(UTF8ToUTF16(extension), kFileNameMaxLength / 2,
+                          &utf16_extension);
+          extension = UTF16ToUTF8(utf16_extension);
+        }
+
+       // Rebuild the filename.extension.
+       string16 rootname = UTF8ToUTF16(filename.RemoveExtension().value());
+       ui::ElideString(rootname, kFileNameMaxLength - extension.length(),
+                       &rootname);
+       std::string new_filename = UTF16ToUTF8(rootname);
+       if (extension.length())
+         new_filename += std::string(".") + extension;
+
+         dangerousWarning = l10n_util::GetNSStringFWithFixup(
+             IDS_PROMPT_DANGEROUS_DOWNLOAD, UTF8ToUTF16(new_filename));
+         confirmButtonTitle =
+             l10n_util::GetNSStringWithFixup(IDS_SAVE_DOWNLOAD);
+      }
     }
+    DCHECK(alertIcon);
+    [image_ setImage:alertIcon];
+    DCHECK(dangerousWarning);
     [dangerousDownloadLabel_ setStringValue:dangerousWarning];
+    DCHECK(confirmButtonTitle);
     [dangerousDownloadConfirmButton_ setTitle:confirmButtonTitle];
     return;
   }

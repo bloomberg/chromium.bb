@@ -9,6 +9,7 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/download/download_file.h"
 #include "chrome/browser/download/download_file_manager.h"
+#include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_status_updater.h"
@@ -58,6 +59,17 @@ class DownloadManagerTest : public testing::Test {
       download_manager_->file_manager_ = file_manager_;
     }
     return file_manager_;
+  }
+
+  // Make sure download item |id| was set with correct safety state for
+  // given |is_dangerous_file| and |is_dangerous_url|.
+  bool VerifySafetyState(bool is_dangerous_file,
+                         bool is_dangerous_url,
+                         int id) {
+    DownloadItem::SafetyState safety_state =
+        download_manager_->GetDownloadItem(id)->safety_state();
+    return (is_dangerous_file || is_dangerous_url) ?
+        safety_state != DownloadItem::SAFE : safety_state == DownloadItem::SAFE;
   }
 
   DISALLOW_COPY_AND_ASSIGN(DownloadManagerTest);
@@ -117,6 +129,7 @@ const struct {
 }  // namespace
 
 TEST_F(DownloadManagerTest, StartDownload) {
+  BrowserThread io_thread(BrowserThread::IO, &message_loop_);
   PrefService* prefs = profile_->GetPrefs();
   prefs->SetFilePath(prefs::kDownloadDefaultDirectory, FilePath());
   download_manager_->download_prefs()->EnableAutoOpenBasedOnExtension(
@@ -132,6 +145,7 @@ TEST_F(DownloadManagerTest, StartDownload) {
     info.mime_type = kStartDownloadCases[i].mime_type;
 
     download_manager_->StartDownload(&info);
+    message_loop_.RunAllPending();
 
     EXPECT_EQ(kStartDownloadCases[i].expected_save_as,
         info.prompt_user_for_save_location);
@@ -142,7 +156,8 @@ namespace {
 
 const struct {
   FilePath::StringType suggested_path;
-  bool is_dangerous;
+  bool is_dangerous_file;
+  bool is_dangerous_url;
   bool finish_before_rename;
   int expected_rename_count;
 } kDownloadRenameCases[] = {
@@ -150,27 +165,28 @@ const struct {
   // Renamed twice (linear path through UI).  Crdownload file does not need
   // to be deleted.
   { FILE_PATH_LITERAL("foo.zip"),
-    false,
-    true,
-    2, },
-  // Dangerous download, download finishes BEFORE file name determined.
-  // Needs to be renamed only once.
+    false, false, true, 2, },
+  // Dangerous download (file is dangerous or download URL is not safe or both),
+  // download finishes BEFORE file name determined. Needs to be renamed only
+  // once.
   { FILE_PATH_LITERAL("Unconfirmed xxx.crdownload"),
-    true,
-    true,
-    1, },
+    true, false, true, 1, },
+  { FILE_PATH_LITERAL("Unconfirmed xxx.crdownload"),
+    false, true, true, 1, },
+  { FILE_PATH_LITERAL("Unconfirmed xxx.crdownload"),
+    true, true, true, 1, },
   // Safe download, download finishes AFTER file name determined.
   // Needs to be renamed twice.
   { FILE_PATH_LITERAL("foo.zip"),
-    false,
-    false,
-    2, },
+    false, false, false, 2, },
   // Dangerous download, download finishes AFTER file name determined.
   // Needs to be renamed only once.
   { FILE_PATH_LITERAL("Unconfirmed xxx.crdownload"),
-    true,
-    false,
-    1, },
+    true, false, false, 1, },
+  { FILE_PATH_LITERAL("Unconfirmed xxx.crdownload"),
+    false, true, false, 1, },
+  { FILE_PATH_LITERAL("Unconfirmed xxx.crdownload"),
+    true, true, false, 1, },
 };
 
 class MockDownloadFile : public DownloadFile {
@@ -209,7 +225,8 @@ TEST_F(DownloadManagerTest, DownloadRenameTest) {
     DownloadCreateInfo* info(new DownloadCreateInfo);
     info->download_id = static_cast<int>(i);
     info->prompt_user_for_save_location = false;
-    info->is_dangerous = kDownloadRenameCases[i].is_dangerous;
+    info->is_dangerous_file = kDownloadRenameCases[i].is_dangerous_file;
+    info->is_dangerous_url = kDownloadRenameCases[i].is_dangerous_url;
     FilePath new_path(kDownloadRenameCases[i].suggested_path);
 
     MockDownloadFile* download(new MockDownloadFile(info));
@@ -243,5 +260,8 @@ TEST_F(DownloadManagerTest, DownloadRenameTest) {
     }
 
     message_loop_.RunAllPending();
+    EXPECT_TRUE(VerifySafetyState(kDownloadRenameCases[i].is_dangerous_file,
+                                  kDownloadRenameCases[i].is_dangerous_url,
+                                  i));
   }
 }

@@ -575,32 +575,35 @@ void DownloadItemGtk::UpdateStatusLabel(const std::string& status_text) {
 
 void DownloadItemGtk::UpdateDangerWarning() {
   if (dangerous_prompt_) {
+    UpdateDangerIcon();
+
     // We create |dangerous_warning| as a wide string so we can more easily
     // calculate its length in characters.
     string16 dangerous_warning;
-    if (get_download()->is_extension_install()) {
-      dangerous_warning =
-          l10n_util::GetStringUTF16(IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION);
-    } else {
-      string16 elided_filename = ui::ElideFilename(
-          get_download()->target_name(), gfx::Font(), kTextWidth);
 
+    // The dangerous download label text is different for different cases.
+    if (get_download()->danger_type() == DownloadItem::DANGEROUS_URL) {
+      // Safebrowsing shows the download URL leads to malicious file.
       dangerous_warning =
-          l10n_util::GetStringFUTF16(IDS_PROMPT_DANGEROUS_DOWNLOAD,
-                                     elided_filename);
+          l10n_util::GetStringUTF16(IDS_PROMPT_UNSAFE_DOWNLOAD_URL);
+    } else {
+      // It's a dangerous file type (e.g.: an executable).
+      DCHECK(get_download()->danger_type() == DownloadItem::DANGEROUS_FILE);
+      if (get_download()->is_extension_install()) {
+        dangerous_warning =
+            l10n_util::GetStringUTF16(IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION);
+      } else {
+        string16 elided_filename = ui::ElideFilename(
+            get_download()->target_name(), gfx::Font(), kTextWidth);
+        dangerous_warning =
+            l10n_util::GetStringFUTF16(IDS_PROMPT_DANGEROUS_DOWNLOAD,
+                                       elided_filename);
+      }
     }
 
     if (theme_provider_->UseGtkTheme()) {
-      gtk_image_set_from_stock(GTK_IMAGE(dangerous_image_),
-          GTK_STOCK_DIALOG_WARNING, GTK_ICON_SIZE_SMALL_TOOLBAR);
-
       gtk_util::SetLabelColor(dangerous_label_, NULL);
     } else {
-      // Set the warning icon.
-      ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-      GdkPixbuf* download_pixbuf = rb.GetPixbufNamed(IDR_WARNING);
-      gtk_image_set_from_pixbuf(GTK_IMAGE(dangerous_image_), download_pixbuf);
-
       GdkColor color = theme_provider_->GetGdkColor(
           BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
       gtk_util::SetLabelColor(dangerous_label_, &color);
@@ -629,6 +632,24 @@ void DownloadItemGtk::UpdateDangerWarning() {
     gtk_widget_size_request(dangerous_hbox_, &req);
     dangerous_hbox_full_width_ = req.width;
     dangerous_hbox_start_width_ = dangerous_hbox_full_width_ - label_width;
+  }
+}
+
+void DownloadItemGtk::UpdateDangerIcon() {
+  if (theme_provider_->UseGtkTheme()) {
+    const char* stock =
+        get_download()->danger_type() == DownloadItem::DANGEROUS_URL ?
+        GTK_STOCK_DIALOG_ERROR : GTK_STOCK_DIALOG_WARNING;
+    gtk_image_set_from_stock(
+        GTK_IMAGE(dangerous_image_), stock, GTK_ICON_SIZE_SMALL_TOOLBAR);
+  } else {
+    // Set the warning icon.
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    int pixbuf_id =
+        get_download()->danger_type() == DownloadItem::DANGEROUS_URL ?
+        IDR_SAFEBROWSING_WARNING : IDR_WARNING;
+    GdkPixbuf* download_pixbuf = rb.GetPixbufNamed(pixbuf_id);
+    gtk_image_set_from_pixbuf(GTK_IMAGE(dangerous_image_), download_pixbuf);
   }
 }
 

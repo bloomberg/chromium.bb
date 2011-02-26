@@ -244,8 +244,6 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
     tooltip_text_.clear();
     body_state_ = DANGEROUS;
     drop_down_state_ = DANGEROUS;
-
-    warning_icon_ = rb.GetBitmapNamed(IDR_WARNING);
     save_button_ = new views::NativeButton(this,
         UTF16ToWide(l10n_util::GetStringUTF16(
             download->is_extension_install() ?
@@ -283,20 +281,33 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
     if (extension.length() > kFileNameMaxLength / 2)
       ui::ElideString(extension, kFileNameMaxLength / 2, &extension);
 
-    // The dangerous download label text is different for an extension file.
-    if (download->is_extension_install()) {
-      dangerous_download_label_ = new views::Label(UTF16ToWide(
-          l10n_util::GetStringUTF16(IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION)));
+    // The dangerous download label text and icon are different
+    // under different cases.
+    string16 dangerous_label;
+    if (download->danger_type() == DownloadItem::DANGEROUS_URL) {
+      // Safebrowsing shows the download URL leads to malicious file.
+      warning_icon_ = rb.GetBitmapNamed(IDR_SAFEBROWSING_WARNING);
+      dangerous_label =
+          l10n_util::GetStringUTF16(IDS_PROMPT_UNSAFE_DOWNLOAD_URL);
     } else {
-      ui::ElideString(rootname,
-                      kFileNameMaxLength - extension.length(),
-                      &rootname);
-      string16 filename = rootname + ASCIIToUTF16(".") + extension;
-      filename = base::i18n::GetDisplayStringInLTRDirectionality(filename);
-      dangerous_download_label_ = new views::Label(UTF16ToWide(
-          l10n_util::GetStringFUTF16(IDS_PROMPT_DANGEROUS_DOWNLOAD,
-                                     filename)));
+      // The download file has dangerous file type (e.g.: an executable).
+      DCHECK(download->danger_type() == DownloadItem::DANGEROUS_FILE);
+      warning_icon_ = rb.GetBitmapNamed(IDR_WARNING);
+      if (download->is_extension_install()) {
+        dangerous_label =
+            l10n_util::GetStringUTF16(IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION);
+      } else {
+        ui::ElideString(rootname,
+                        kFileNameMaxLength - extension.length(),
+                        &rootname);
+        string16 filename = rootname + ASCIIToUTF16(".") + extension;
+        filename = base::i18n::GetDisplayStringInLTRDirectionality(filename);
+        dangerous_label =
+            l10n_util::GetStringFUTF16(IDS_PROMPT_DANGEROUS_DOWNLOAD, filename);
+      }
     }
+
+    dangerous_download_label_ = new views::Label(UTF16ToWide(dangerous_label));
     dangerous_download_label_->SetMultiLine(true);
     dangerous_download_label_->SetHorizontalAlignment(
         views::Label::ALIGN_LEFT);

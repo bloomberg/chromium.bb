@@ -2110,6 +2110,10 @@ each locale. -->
          desc="Message shown to the user to validate the download of an extension file.">
         Extensions, apps, and themes can harm your computer. Are you sure you want to continue?
       </message>
+      <message name="IDS_PROMPT_UNSAFE_DOWNLOAD_URL"
+         desc="Message shown to the user to validate the download when the download url is classified to lead a malware by safebrowsing database.">
+        This file appears to be malicious. Are you sure you want to continue?
+      </message>
       <message name="IDS_SAVE_DOWNLOAD"
                desc="Text for the button used to validate the downloading of a dangerous download.">
         Save
