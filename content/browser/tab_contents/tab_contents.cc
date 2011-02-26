@@ -36,7 +36,6 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/top_sites.h"
-#include "chrome/browser/hung_renderer_dialog.h"
 #include "chrome/browser/load_from_memory_cache_details.h"
 #include "chrome/browser/load_notification_details.h"
 #include "chrome/browser/metrics/metric_event_duration_details.h"
@@ -59,6 +58,7 @@
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/browser/translate/page_translated_details.h"
 #include "chrome/browser/ui/app_modal_dialogs/message_box_handler.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_restriction.h"
@@ -344,7 +344,7 @@ TabContents::~TabContents() {
   pref_change_registrar_.RemoveAll();
 
   NotifyDisconnected();
-  hung_renderer_dialog::HideForTabContents(this);
+  browser::HideHungRendererDialog(this);
 
   // First cleanly close all child windows.
   // TODO(mpcomplete): handle case if MaybeCloseChildWindows() already asked
@@ -2113,7 +2113,7 @@ void TabContents::RenderViewGone(RenderViewHost* rvh,
     view_->OnTabCrashed(status, error_code);
 
   // Hide any visible hung renderer warning for this web contents' process.
-  hung_renderer_dialog::HideForTabContents(this);
+  browser::HideHungRendererDialog(this);
 }
 
 void TabContents::RenderViewDeleted(RenderViewHost* rvh) {
@@ -2567,12 +2567,12 @@ void TabContents::RendererUnresponsive(RenderViewHost* rvh,
 
   if (render_view_host() && render_view_host()->IsRenderViewLive() &&
       (!delegate() || delegate()->ShouldShowHungRendererDialog())) {
-    hung_renderer_dialog::ShowForTabContents(this);
+    browser::ShowHungRendererDialog(this);
   }
 }
 
 void TabContents::RendererResponsive(RenderViewHost* render_view_host) {
-  hung_renderer_dialog::HideForTabContents(this);
+  browser::HideHungRendererDialog(this);
 }
 
 void TabContents::LoadStateChanged(const GURL& url,

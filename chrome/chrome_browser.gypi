@@ -1246,7 +1246,6 @@
         'browser/history/visit_tracker.h',
         'browser/history/visitsegment_database.cc',
         'browser/history/visitsegment_database.h',
-        'browser/hung_renderer_dialog.h',
         'browser/icon_loader.cc',
         'browser/icon_loader.h',
         'browser/icon_loader_linux.cc',

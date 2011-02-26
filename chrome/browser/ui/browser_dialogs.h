@@ -15,6 +15,7 @@ class ImporterHost;
 class HtmlDialogUIDelegate;
 class Profile;
 class SkBitmap;
+class TabContents;
 
 namespace browser {
 
@@ -51,6 +52,12 @@ void ShowExtensionInstalledBubble(const Extension* extension,
                                   Browser* browser,
                                   SkBitmap icon,
                                   Profile* profile);
+
+// Shows or hide the hung renderer dialog for the given TabContents.
+// We need to pass the TabContents to the dialog, because multiple tabs can hang
+// and it needs to keep track of which tabs are currently hung.
+void ShowHungRendererDialog(TabContents* contents);
+void HideHungRendererDialog(TabContents* contents);
 
 } // namespace browser
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/hung_renderer_dialog.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
@@ -441,19 +441,15 @@ void HungRendererDialogView::InitClass() {
   }
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// HungRendererDialog
-
-
 static HungRendererDialogView* CreateHungRendererDialogView() {
   HungRendererDialogView* cv = new HungRendererDialogView;
   views::Window::CreateChromeWindow(NULL, gfx::Rect(), cv);
   return cv;
 }
 
-namespace hung_renderer_dialog {
+namespace browser {
 
-void ShowForTabContents(TabContents* contents) {
+void ShowHungRendererDialog(TabContents* contents) {
   if (!logging::DialogsAreSuppressed()) {
     if (!g_instance)
       g_instance = CreateHungRendererDialogView();
@@ -461,11 +457,9 @@ void ShowForTabContents(TabContents* contents) {
   }
 }
 
-// static
-void HideForTabContents(TabContents* contents) {
+void HideHungRendererDialog(TabContents* contents) {
   if (!logging::DialogsAreSuppressed() && g_instance)
     g_instance->EndForTabContents(contents);
 }
 
-}  // namespace hung_renderer_dialog
-
+}  // namespace browser

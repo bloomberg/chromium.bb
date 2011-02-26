@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,10 +10,10 @@
 #include "base/process_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/hung_renderer_dialog.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #import "chrome/browser/ui/cocoa/multi_key_equivalent_button.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/logging_chrome.h"
@@ -125,7 +125,7 @@ HungRendererController* g_instance = NULL;
 - (void)windowWillClose:(NSNotification*)notification {
   // We have to reset g_instance before autoreleasing the window,
   // because we want to avoid reusing the same dialog if someone calls
-  // hung_renderer_dialog::ShowForTabContents() between the autorelease
+  // browser::ShowHungRendererDialog() between the autorelease
   // call and the actual dealloc.
   g_instance = nil;
 
@@ -185,9 +185,9 @@ HungRendererController* g_instance = NULL;
 }
 @end
 
-namespace hung_renderer_dialog {
+namespace browser {
 
-void ShowForTabContents(TabContents* contents) {
+void ShowHungRendererDialog(TabContents* contents) {
   if (!logging::DialogsAreSuppressed()) {
     if (!g_instance)
       g_instance = [[HungRendererController alloc]
@@ -196,10 +196,9 @@ void ShowForTabContents(TabContents* contents) {
   }
 }
 
-// static
-void HideForTabContents(TabContents* contents) {
+void HideHungRendererDialog(TabContents* contents) {
   if (!logging::DialogsAreSuppressed() && g_instance)
     [g_instance endForTabContents:contents];
 }
 
-}  // namespace hung_renderer_dialog
+}  // namespace browser
