@@ -78,7 +78,7 @@ if 'TRUSTED_ENV' in env:
 
 else:
   print ('WARNING: no trusted env specified so skipping toolchain test. '
-         'Try, e.g. MODE=dbg-linux,nacl')
+         'Try, e.g. MODE=dbg-host,nacl')
   toolchain_tests = []
 
 # If we aren't running on a tester (built_elsewhere),

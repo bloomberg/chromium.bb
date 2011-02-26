@@ -1681,8 +1681,6 @@ def GenerateOptimizationLevels(env):
   opt_env['BUILD_TYPE'] = opt_env.subst('$BUILD_TYPE')
   opt_env['BUILD_DESCRIPTION'] = opt_env.subst('$BUILD_DESCRIPTION')
   AddDualLibrary(opt_env)
-  # Add opt to the default group.
-  opt_env.Append(BUILD_GROUPS = ['default'])
   # Add to the list of fully described environments.
   environment_list.append(opt_env)
 
@@ -1948,7 +1946,6 @@ nacl_env = pre_base_env.Clone(
     tools = ['naclsdk'],
     BUILD_TYPE = 'nacl',
     BUILD_TYPE_DESCRIPTION = 'NaCl module build',
-    BUILD_GROUPS = ['default'],
     NACL_BUILD_FAMILY = 'UNTRUSTED',
 
     EXTRA_CFLAGS = [],
@@ -2442,7 +2439,6 @@ windows_coverage_env = windows_env.Clone(
 windows_coverage_env['LINKCOM'] = windows_coverage_env.Action([
     windows_coverage_env.get('LINKCOM', []),
     '$COVERAGE_VSINSTR /COVERAGE ${TARGET}'])
-windows_coverage_env.FilterOut(BUILD_GROUPS = ['default'])
 windows_coverage_env.Append(LINKFLAGS = ['/NODEFAULTLIB:msvcrt'])
 AddDualLibrary(windows_coverage_env)
 environment_list.append(windows_coverage_env)
@@ -2455,7 +2451,6 @@ mac_coverage_env = mac_env.Clone(
     # magically baked into the compiler.
     LIBS_STRICT = False,
 )
-mac_coverage_env.FilterOut(BUILD_GROUPS = ['default'])
 AddDualLibrary(mac_coverage_env)
 environment_list.append(mac_coverage_env)
 
@@ -2467,7 +2462,6 @@ linux_coverage_env = linux_debug_env.Clone(
     # magically baked into the compiler.
     LIBS_STRICT = False,
 )
-linux_coverage_env.FilterOut(BUILD_GROUPS = ['default'])
 linux_coverage_env['OPTIONAL_COVERAGE_LIBS'] = '$COVERAGE_LIBS'
 AddDualLibrary(linux_coverage_env)
 environment_list.append(linux_coverage_env)
@@ -2480,7 +2474,6 @@ doc_env = pre_base_env.Clone(
   NACL_BUILD_FAMILY = 'NO_PLATFORM',
   BUILD_TYPE = 'doc',
   BUILD_TYPE_DESCRIPTION = 'Documentation build',
-  HOST_PLATFORMS = '*',
   HOST_PLATFORM_SUFFIX='',
 )
 environment_list.append(doc_env)
@@ -2557,7 +2550,7 @@ def SanityCheckAndMapExtraction(all_envs, selected_envs):
                          family_map[family]['BUILD_TYPE'])
       print """
       Please specfy the exact environments you require, e.g.
-      MODE=dbg-linux,nacl
+      MODE=dbg-host,nacl
 
       """
       assert 0
@@ -2615,10 +2608,7 @@ CheckArguments()
 selected_envs = FilterEnvironments(environment_list)
 family_map = SanityCheckAndMapExtraction(environment_list, selected_envs)
 ExportSpecialFamilyVars(selected_envs, family_map)
-
-# Note: BuildEnvironments calls FilterEnvironments internally.
-# Passing environment_list is OK
-BuildEnvironments(environment_list)
+BuildEnvironments(selected_envs)
 
 # Change default to build everything, but not run tests.
 Default(['all_programs', 'all_bundles', 'all_test_programs', 'all_libraries'])

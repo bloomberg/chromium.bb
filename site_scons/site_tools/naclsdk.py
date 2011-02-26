@@ -338,8 +338,6 @@ def generate(env):
   env.Tool('as')
 
   env.Replace(
-      HOST_PLATFORMS=['*'],  # NaCl builds on all platforms.
-
       COMPONENT_LINKFLAGS=[''],
       COMPONENT_LIBRARY_LINK_SUFFIXES=['.a'],
       _RPATH='',

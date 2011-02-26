@@ -385,8 +385,6 @@ def generate(env):
   )
 
   env.Append(
-      HOST_PLATFORMS=['WINDOWS'],
-
       # Turn up the warning level
       CCFLAGS=['/W3'],
 

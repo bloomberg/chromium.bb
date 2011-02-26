@@ -71,28 +71,6 @@ def FilterOut(self, **kw):
 #------------------------------------------------------------------------------
 
 
-def Overlap(self, values1, values2):
-  """Checks for overlap between the values.
-
-  Args:
-    self: Environment to use for variable substitution.
-    values1: First value(s) to compare.  May be a string or list of strings.
-    values2: Second value(s) to compare.  May be a string or list of strings.
-
-  Returns:
-    The list of values in common after substitution, or an empty list if
-    the values do not overlap.
-
-  Converts the values to a set of plain strings via self.SubstList2() before
-  comparison, so SCons $ variables are evaluated.
-  """
-  set1 = set(self.SubstList2(values1))
-  set2 = set(self.SubstList2(values2))
-  return list(set1.intersection(set2))
-
-#------------------------------------------------------------------------------
-
-
 def ApplySConscript(self, sconscript_file):
   """Applies a SConscript to the current environment.
 
@@ -275,6 +253,5 @@ def generate(env):
   env.AddMethod(ApplySConscript)
   env.AddMethod(BuildSConscript)
   env.AddMethod(FilterOut)
-  env.AddMethod(Overlap)
   env.AddMethod(RelativePath)
   env.AddMethod(SubstList2)

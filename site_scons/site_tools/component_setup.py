@@ -155,8 +155,6 @@ def generate(env):
 
   # Specify defaults for variables where we don't need to force replacement
   env.SetDefault(
-      BUILD_GROUPS=[],
-
       # Directories
       DESTINATION_ROOT='$MAIN_DIR/scons-out$HOST_PLATFORM_SUFFIX',
       TARGET_ROOT='$DESTINATION_ROOT/$BUILD_TYPE',

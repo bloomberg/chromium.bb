@@ -88,8 +88,6 @@ def generate(env):
   )
 
   env.Append(
-      HOST_PLATFORMS=['LINUX'],
-
       # Settings for debug
       CCFLAGS_DEBUG=[
           '-O0',     # turn off optimizations

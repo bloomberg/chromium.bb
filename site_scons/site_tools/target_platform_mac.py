@@ -162,8 +162,6 @@ def generate(env):
   )
 
   env.Append(
-      HOST_PLATFORMS=['MAC'],
-
       # Mac apps and dylibs have a more strict relationship about where they
       # expect to find each other.  When an app is linked, it stores the
       # relative path from itself to any dylibs it links against.  Override
