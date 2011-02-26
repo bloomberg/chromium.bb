@@ -11,6 +11,7 @@
 // Friendly names for the well-known threads.
 static const char* browser_thread_names[BrowserThread::ID_COUNT] = {
   "",  // UI (name assembled in browser_main.cc).
+  "Chrome_WatchdogThread",  // WATCHDOG
   "Chrome_DBThread",  // DB
   "Chrome_WebKitThread",  // WEBKIT
   "Chrome_FileThread",  // FILE
