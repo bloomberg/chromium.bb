@@ -219,7 +219,6 @@ def generate(env):
         ARCOMSTR='________Creating library $TARGET',
         ASCOMSTR='________Assembling $TARGET',
         CCCOMSTR='________Compiling $TARGET',
-        CONCAT_SOURCE_COMSTR='________ConcatSource $TARGET',
         CXXCOMSTR='________Compiling $TARGET',
         LDMODULECOMSTR='________Building loadable module $TARGET',
         LINKCOMSTR='________Linking $TARGET',

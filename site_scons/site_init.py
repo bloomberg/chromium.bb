@@ -377,7 +377,6 @@ def SiteInitMain():
       'command_output',
       'component_bits',
       'component_builders',
-      'concat_source',
       'environment_tools',
       'publish',
       'replicate',
