@@ -85,31 +85,24 @@ void AutoFillOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
+  static OptionsStringResource resources[] = {
+    { "autoFillAddresses", IDS_AUTOFILL_ADDRESSES_GROUP_NAME },
+    { "autoFillCreditCards", IDS_AUTOFILL_CREDITCARDS_GROUP_NAME },
+    { "autoFillAddAddress", IDS_AUTOFILL_ADD_ADDRESS_BUTTON },
+    { "autoFillAddCreditCard", IDS_AUTOFILL_ADD_CREDITCARD_BUTTON },
+    { "helpButton", IDS_AUTOFILL_HELP_LABEL },
+    { "addAddressTitle", IDS_AUTOFILL_ADD_ADDRESS_CAPTION },
+    { "editAddressTitle", IDS_AUTOFILL_EDIT_ADDRESS_CAPTION },
+    { "addCreditCardTitle", IDS_AUTOFILL_ADD_CREDITCARD_CAPTION },
+    { "editCreditCardTitle", IDS_AUTOFILL_EDIT_CREDITCARD_CAPTION },
+#if defined(OS_MACOSX)
+    { "auxiliaryProfilesEnabled", IDS_AUTOFILL_USE_MAC_ADDRESS_BOOK },
+#endif  // defined(OS_MACOSX)
+  };
+
+  RegisterStrings(localized_strings, resources, arraysize(resources));
   RegisterTitle(localized_strings, "autoFillOptionsPage",
                 IDS_AUTOFILL_OPTIONS_TITLE);
-  localized_strings->SetString("autoFillAddresses",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_ADDRESSES_GROUP_NAME));
-  localized_strings->SetString("autoFillCreditCards",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_CREDITCARDS_GROUP_NAME));
-  localized_strings->SetString("autoFillAddAddress",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_ADD_ADDRESS_BUTTON));
-  localized_strings->SetString("autoFillAddCreditCard",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_ADD_CREDITCARD_BUTTON));
-  localized_strings->SetString("helpButton",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_HELP_LABEL));
-  localized_strings->SetString("addAddressTitle",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_ADD_ADDRESS_CAPTION));
-  localized_strings->SetString("editAddressTitle",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_EDIT_ADDRESS_CAPTION));
-  localized_strings->SetString("addCreditCardTitle",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_ADD_CREDITCARD_CAPTION));
-  localized_strings->SetString("editCreditCardTitle",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_EDIT_CREDITCARD_CAPTION));
-
-#if defined(OS_MACOSX)
-  localized_strings->SetString("auxiliaryProfilesEnabled",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_USE_MAC_ADDRESS_BOOK));
-#endif  // defined(OS_MACOSX)
 
   SetAddressOverlayStrings(localized_strings);
   SetCreditCardOverlayStrings(localized_strings);

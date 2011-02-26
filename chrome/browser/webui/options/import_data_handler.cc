@@ -35,26 +35,22 @@ ImportDataHandler::~ImportDataHandler() {
 void ImportDataHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
+
+  static OptionsStringResource resources[] = {
+    { "importFromLabel", IDS_IMPORT_FROM_LABEL },
+    { "importLoading", IDS_IMPORT_LOADING_PROFILES },
+    { "importDescription", IDS_IMPORT_ITEMS_LABEL },
+    { "importHistory", IDS_IMPORT_HISTORY_CHKBOX },
+    { "importFavorites", IDS_IMPORT_FAVORITES_CHKBOX },
+    { "importSearch", IDS_IMPORT_SEARCH_ENGINES_CHKBOX },
+    { "importPasswords", IDS_IMPORT_PASSWORDS_CHKBOX },
+    { "importCommit", IDS_IMPORT_COMMIT },
+    { "noProfileFound", IDS_IMPORT_NO_PROFILE_FOUND },
+  };
+
+  RegisterStrings(localized_strings, resources, arraysize(resources));
   RegisterTitle(localized_strings, "importDataOverlay",
                 IDS_IMPORT_SETTINGS_TITLE);
-  localized_strings->SetString("importFromLabel",
-      l10n_util::GetStringUTF16(IDS_IMPORT_FROM_LABEL));
-  localized_strings->SetString("importLoading",
-      l10n_util::GetStringUTF16(IDS_IMPORT_LOADING_PROFILES));
-  localized_strings->SetString("importDescription",
-      l10n_util::GetStringUTF16(IDS_IMPORT_ITEMS_LABEL));
-  localized_strings->SetString("importHistory",
-      l10n_util::GetStringUTF16(IDS_IMPORT_HISTORY_CHKBOX));
-  localized_strings->SetString("importFavorites",
-      l10n_util::GetStringUTF16(IDS_IMPORT_FAVORITES_CHKBOX));
-  localized_strings->SetString("importSearch",
-      l10n_util::GetStringUTF16(IDS_IMPORT_SEARCH_ENGINES_CHKBOX));
-  localized_strings->SetString("importPasswords",
-      l10n_util::GetStringUTF16(IDS_IMPORT_PASSWORDS_CHKBOX));
-  localized_strings->SetString("importCommit",
-      l10n_util::GetStringUTF16(IDS_IMPORT_COMMIT));
-  localized_strings->SetString("noProfileFound",
-      l10n_util::GetStringUTF16(IDS_IMPORT_NO_PROFILE_FOUND));
 }
 
 void ImportDataHandler::Initialize() {

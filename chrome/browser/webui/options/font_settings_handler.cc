@@ -32,37 +32,30 @@ void FontSettingsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
+  static OptionsStringResource resources[] = {
+    { "fontSettingsStandard",
+      IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_STANDARD_LABEL, true },
+    { "fontSettingsFixedWidth",
+      IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_FIXED_WIDTH_LABEL, true },
+    { "fontSettingsMinimumSize",
+      IDS_FONT_LANGUAGE_SETTING_MINIMUM_FONT_SIZE_TITLE },
+    { "fontSettingsEncoding",
+      IDS_FONT_LANGUAGE_SETTING_FONT_SUB_DIALOG_ENCODING_TITLE },
+    { "fontSettingsSizeLabel",
+      IDS_FONT_LANGUAGE_SETTING_FONT_SIZE_SELECTOR_LABEL },
+    { "fontSettingsSizeTiny",
+      IDS_FONT_LANGUAGE_SETTING_FONT_SIZE_TINY },
+    { "fontSettingsSizeHuge",
+      IDS_FONT_LANGUAGE_SETTING_FONT_SIZE_HUGE },
+    { "fontSettingsEncodingLabel",
+      IDS_FONT_LANGUAGE_SETTING_FONT_DEFAULT_ENCODING_SELECTOR_LABEL },
+    { "fontSettingsLoremIpsum",
+      IDS_FONT_LANGUAGE_SETTING_LOREM_IPSUM },
+  };
+
+  RegisterStrings(localized_strings, resources, arraysize(resources));
   RegisterTitle(localized_strings, "fontSettingsPage",
                 IDS_FONT_LANGUAGE_SETTING_FONT_TAB_TITLE);
-  localized_strings->SetString("fontSettingsStandard",
-      dom_options_util::StripColon(
-          l10n_util::GetStringUTF16(
-              IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_STANDARD_LABEL)));
-  localized_strings->SetString("fontSettingsFixedWidth",
-      dom_options_util::StripColon(
-          l10n_util::GetStringUTF16(
-              IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_FIXED_WIDTH_LABEL)));
-  localized_strings->SetString("fontSettingsMinimumSize",
-      l10n_util::GetStringUTF16(
-          IDS_FONT_LANGUAGE_SETTING_MINIMUM_FONT_SIZE_TITLE));
-  localized_strings->SetString("fontSettingsEncoding",
-      l10n_util::GetStringUTF16(
-          IDS_FONT_LANGUAGE_SETTING_FONT_SUB_DIALOG_ENCODING_TITLE));
-  localized_strings->SetString("fontSettingsSizeLabel",
-      l10n_util::GetStringUTF16(
-          IDS_FONT_LANGUAGE_SETTING_FONT_SIZE_SELECTOR_LABEL));
-  localized_strings->SetString("fontSettingsSizeTiny",
-      l10n_util::GetStringUTF16(
-          IDS_FONT_LANGUAGE_SETTING_FONT_SIZE_TINY));
-  localized_strings->SetString("fontSettingsSizeHuge",
-      l10n_util::GetStringUTF16(
-          IDS_FONT_LANGUAGE_SETTING_FONT_SIZE_HUGE));
-  localized_strings->SetString("fontSettingsEncodingLabel",
-      l10n_util::GetStringUTF16(
-          IDS_FONT_LANGUAGE_SETTING_FONT_DEFAULT_ENCODING_SELECTOR_LABEL));
-  localized_strings->SetString("fontSettingsLoremIpsum",
-      l10n_util::GetStringUTF16(
-          IDS_FONT_LANGUAGE_SETTING_LOREM_IPSUM));
 
   // Fonts
   ListValue* font_list = FontSettingsUtilities::GetFontsList();
