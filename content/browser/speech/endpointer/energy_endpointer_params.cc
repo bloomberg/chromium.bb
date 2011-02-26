@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/speech/endpointer/energy_endpointer_params.h"
+#include "content/browser/speech/endpointer/energy_endpointer_params.h"
 
 namespace speech_input {
 

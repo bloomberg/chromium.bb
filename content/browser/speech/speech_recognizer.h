@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SPEECH_SPEECH_RECOGNIZER_H_
-#define CHROME_BROWSER_SPEECH_SPEECH_RECOGNIZER_H_
+#ifndef CONTENT_BROWSER_SPEECH_SPEECH_RECOGNIZER_H_
+#define CONTENT_BROWSER_SPEECH_SPEECH_RECOGNIZER_H_
 
 #include <list>
 #include <string>
@@ -11,9 +11,9 @@
 
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/speech/audio_encoder.h"
-#include "chrome/browser/speech/endpointer/endpointer.h"
-#include "chrome/browser/speech/speech_recognition_request.h"
+#include "content/browser/speech/audio_encoder.h"
+#include "content/browser/speech/endpointer/endpointer.h"
+#include "content/browser/speech/speech_recognition_request.h"
 #include "media/audio/audio_input_controller.h"
 
 namespace speech_input {
@@ -148,4 +148,4 @@ typedef SpeechRecognizer::Delegate SpeechRecognizerDelegate;
 
 }  // namespace speech_input
 
-#endif  // CHROME_BROWSER_SPEECH_SPEECH_RECOGNIZER_H_
+#endif  // CONTENT_BROWSER_SPEECH_SPEECH_RECOGNIZER_H_

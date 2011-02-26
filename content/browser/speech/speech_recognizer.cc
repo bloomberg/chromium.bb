@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/speech/speech_recognizer.h"
+#include "content/browser/speech/speech_recognizer.h"
 
-#include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
 #include "base/time.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/net/url_request_context_getter.h"
+#include "content/browser/browser_thread.h"
 
 using media::AudioInputController;
 using std::string;

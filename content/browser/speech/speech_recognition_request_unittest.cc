@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/speech/speech_recognition_request.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/net/test_url_fetcher_factory.h"
+#include "content/browser/speech/speech_recognition_request.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

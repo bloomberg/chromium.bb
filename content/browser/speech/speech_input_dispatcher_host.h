@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SPEECH_SPEECH_INPUT_DISPATCHER_HOST_H_
-#define CHROME_BROWSER_SPEECH_SPEECH_INPUT_DISPATCHER_HOST_H_
+#ifndef CONTENT_BROWSER_SPEECH_SPEECH_INPUT_DISPATCHER_HOST_H_
+#define CONTENT_BROWSER_SPEECH_SPEECH_INPUT_DISPATCHER_HOST_H_
 
 #include "base/scoped_ptr.h"
-#include "chrome/browser/browser_message_filter.h"
-#include "chrome/browser/speech/speech_input_manager.h"
+#include "content/browser/browser_message_filter.h"
+#include "content/browser/speech/speech_input_manager.h"
 
 struct SpeechInputHostMsg_StartRecognition_Params;
 
@@ -60,4 +60,4 @@ class SpeechInputDispatcherHost : public BrowserMessageFilter,
 
 }  // namespace speech_input
 
-#endif  // CHROME_BROWSER_SPEECH_SPEECH_INPUT_DISPATCHER_HOST_H_
+#endif  // CONTENT_BROWSER_SPEECH_SPEECH_INPUT_DISPATCHER_HOST_H_

@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SPEECH_SPEECH_RECOGNITION_REQUEST_H_
-#define CHROME_BROWSER_SPEECH_SPEECH_RECOGNITION_REQUEST_H_
+#ifndef CONTENT_BROWSER_SPEECH_SPEECH_RECOGNITION_REQUEST_H_
+#define CONTENT_BROWSER_SPEECH_SPEECH_RECOGNITION_REQUEST_H_
 #pragma once
 
 #include <string>
+
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
@@ -78,4 +79,4 @@ typedef SpeechRecognitionRequest::Delegate SpeechRecognitionRequestDelegate;
 
 }  // namespace speech_input
 
-#endif  // CHROME_BROWSER_SPEECH_SPEECH_RECOGNITION_REQUEST_H_
+#endif  // CONTENT_BROWSER_SPEECH_SPEECH_RECOGNITION_REQUEST_H_

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/task.h"
-#include "chrome/browser/speech/endpointer/endpointer.h"
+#include "content/browser/speech/endpointer/endpointer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

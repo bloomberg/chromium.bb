@@ -34,13 +34,14 @@
 // accept. The false accepts can be ignored by setting
 // ep_contamination_rejection_period.
 
-#ifndef CHROME_BROWSER_SPEECH_ENDPOINTER_ENERGY_ENDPOINTER_H_
-#define CHROME_BROWSER_SPEECH_ENDPOINTER_ENERGY_ENDPOINTER_H_
+#ifndef CONTENT_BROWSER_SPEECH_ENDPOINTER_ENERGY_ENDPOINTER_H_
+#define CONTENT_BROWSER_SPEECH_ENDPOINTER_ENERGY_ENDPOINTER_H_
+
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/speech/endpointer/energy_endpointer_params.h"
-#include <vector>
+#include "content/browser/speech/endpointer/energy_endpointer_params.h"
 
 namespace speech_input {
 
@@ -147,4 +148,4 @@ class EnergyEndpointer {
 
 }  // namespace speech_input
 
-#endif  // CHROME_BROWSER_SPEECH_ENDPOINTER_ENERGY_ENDPOINTER_H_
+#endif  // CONTENT_BROWSER_SPEECH_ENDPOINTER_ENERGY_ENDPOINTER_H_

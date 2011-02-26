@@ -6,11 +6,11 @@
 // based of, see
 // https://wiki.corp.google.com/twiki/bin/view/Main/ChromeGoogleCodeXRef
 
-#include "chrome/browser/speech/endpointer/energy_endpointer.h"
+#include "content/browser/speech/endpointer/energy_endpointer.h"
+
+#include <math.h>
 
 #include "base/logging.h"
-#include <math.h>
-#include <vector>
 
 namespace {
 

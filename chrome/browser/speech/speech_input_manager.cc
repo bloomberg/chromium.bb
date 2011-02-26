@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/speech/speech_input_manager.h"
+#include "content/browser/speech/speech_input_manager.h"
 
 #include <map>
 #include <string>
@@ -14,14 +14,14 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/speech/speech_input_bubble_controller.h"
-#include "chrome/browser/speech/speech_recognizer.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "content/browser/browser_thread.h"
+#include "content/browser/speech/speech_recognizer.h"
 #include "grit/generated_resources.h"
 #include "media/audio/audio_manager.h"
 #include "ui/base/l10n/l10n_util.h"
