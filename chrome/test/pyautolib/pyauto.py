@@ -164,6 +164,11 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
   def tearDown(self):
     self.TearDown()  # Destroy browser
 
+  @staticmethod
+  def CloseChromeOnChromeOS():
+    """Gracefully exit chrome on ChromeOS."""
+    subprocess.call(['pkill', 'chrome'])
+
   def EnableChromeTestingOnChromeOS(self):
     """Enables the named automation interface on chromeos.
 
@@ -224,6 +229,15 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
                      Defaults to True, that is restarts browser with a clean
                      profile.
     """
+    if self.IsChromeOS():
+      self.TearDown()
+      if clear_profile:
+        self.CleanupBrowserProfileOnChromeOS()
+      self.CloseChromeOnChromeOS()
+      self.EnableChromeTestingOnChromeOS()
+      self.SetUp()
+      return
+    # Not chromeos
     orig_clear_state = self.get_clear_profile()
     self.CloseBrowserAndServer()
     self.set_clear_profile(clear_profile)

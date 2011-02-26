@@ -18,6 +18,14 @@ class ChromeosBasic(pyauto.PyUITest):
     self.AppendTab(pyauto.GURL('about:version'))
     self.assertEqual(self.GetTabCount(), 2, msg='Expected 2 tabs')
 
+  def testRestart(self):
+    """Basic test which involves restarting chrome on ChromeOS."""
+    file_url = self.GetFileURLForDataPath('title2.html')
+    self.NavigateToURL(file_url)
+    self.assertEqual(1, len(self.GetHistoryInfo().History()))
+    self.RestartBrowser(clear_profile=False)
+    self.assertEqual(1, len(self.GetHistoryInfo().History()))
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()
