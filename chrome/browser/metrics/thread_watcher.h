@@ -8,6 +8,8 @@
 #define CHROME_BROWSER_METRICS_THREAD_WATCHER_H_
 #pragma once
 
+#if 0
+
 #include <map>
 #include <string>
 #include <vector>
@@ -204,33 +206,25 @@ class ThreadWatcherList : public NotificationObserver {
   // This method posts a task on WATCHDOG thread to RevokeAll tasks and to
   // deactive thread watching of other threads and tell NotificationService to
   // stop calling Observe.
-  // This method is accessible on UI thread.
   static void StopWatchingAll();
 
   // RemoveAll NotificationTypes that are being observed.
-  // This method is accessible on UI thread.
   static void RemoveNotifications();
 
  private:
   // Allow tests to access our innards for testing purposes.
   FRIEND_TEST(ThreadWatcherTest, Registration);
 
-  // Delete all thread watcher objects and remove them from global map.
-  // This method is accessible on WATCHDOG thread.
-  void DeleteAll();
-
   // This will ensure that the watching is actively taking place. It will wakeup
   // all thread watchers every 2 seconds. This is the implementation of
   // NotificationObserver. When a matching notification is posted to the
   // notification service, this method is called.
-  // This method is accessible on UI thread.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
   // This will ensure that the watching is actively taking place, and awaken
   // all thread watchers that are registered.
-  // This method is accessible on WATCHDOG thread.
   virtual void WakeUpAll();
 
   // The Find() method can be used to test to see if a given ThreadWatcher was
@@ -265,11 +259,6 @@ class WatchDogThread : public BrowserProcessSubThread {
 
  protected:
   virtual void Init();
-  virtual void CleanUp();
-  virtual void CleanUpAfterMessageLoopDestruction();
-
-  // Start watching all browser threads.
-  static void StartWatchingAll();
 
   DISALLOW_COPY_AND_ASSIGN(WatchDogThread);
 };
@@ -277,5 +266,7 @@ class WatchDogThread : public BrowserProcessSubThread {
 
 DISABLE_RUNNABLE_METHOD_REFCOUNT(ThreadWatcher);
 DISABLE_RUNNABLE_METHOD_REFCOUNT(ThreadWatcherList);
+
+#endif  // 0
 
 #endif  // CHROME_BROWSER_METRICS_THREAD_WATCHER_H_
