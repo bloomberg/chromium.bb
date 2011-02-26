@@ -22,7 +22,6 @@
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/geolocation/geolocation_prefs.h"
 #include "chrome/browser/google/google_url_tracker.h"
-#include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/metrics/metrics_log.h"
@@ -56,6 +55,7 @@
 #include "chrome/browser/webui/new_tab_ui.h"
 #include "chrome/browser/webui/plugins_ui.h"
 #include "chrome/common/pref_names.h"
+#include "content/browser/host_zoom_map.h"
 
 #if defined(TOOLKIT_VIEWS)  // TODO(port): whittle this down as we port
 #include "chrome/browser/ui/views/browser_actions_container.h"

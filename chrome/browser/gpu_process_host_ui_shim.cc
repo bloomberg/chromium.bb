@@ -1,7 +1,7 @@
 // TODO(jam): move this file to src/content once we have an interface that the
 // embedder provides.  We can then use it to get the resource and resize the
 // window.
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,6 @@
 #include "base/id_map.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/gpu_blacklist.h"
 #include "chrome/browser/gpu_process_host.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -22,6 +21,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/gpu_messages.h"
 #include "chrome/gpu/gpu_info_collector.h"
+#include "content/browser/gpu_blacklist.h"
 #include "grit/browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
