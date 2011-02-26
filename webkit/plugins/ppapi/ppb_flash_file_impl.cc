@@ -8,119 +8,150 @@
 
 #include <string>
 
-#include "base/file_path.h"
-#include "base/utf_string_conversions.h"
 #include "ppapi/c/dev/pp_file_info_dev.h"
 #include "ppapi/c/dev/ppb_file_io_dev.h"
 #include "ppapi/c/private/ppb_flash_file.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/error_util.h"
+#include "webkit/plugins/ppapi/file_path.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
+
+#if defined(OS_WIN)
+#include "base/utf_string_conversions.h"
+#endif
 
 namespace webkit {
 namespace ppapi {
 
 namespace {
 
-FilePath GetFilePathFromUTF8(const char* path) {
-#if defined(OS_WIN)
-  return FilePath(UTF8ToUTF16(path));
-#else
-  return FilePath(path);
-#endif
-}
-
-int32_t OpenModuleLocalFile(PP_Instance pp_instance,
-                            const char* path,
-                            int32_t mode,
-                            PP_FileHandle* file) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
-  if (!instance)
-    return PP_ERROR_FAILED;
-
+// TODO(viettrungluu): The code below is duplicated in ppb_file_io_impl.cc
+// (where it's incorrect to boot).
+// Returns |true| if okay.
+bool ConvertFromPPFileOpenFlags(int32_t pp_open_flags, int* flags_out) {
   int flags = 0;
-  if (mode & PP_FILEOPENFLAG_READ)
+  if (pp_open_flags & PP_FILEOPENFLAG_READ)
     flags |= base::PLATFORM_FILE_READ;
-  if (mode & PP_FILEOPENFLAG_WRITE) {
+  if (pp_open_flags & PP_FILEOPENFLAG_WRITE) {
     flags |= base::PLATFORM_FILE_WRITE;
     flags |= base::PLATFORM_FILE_WRITE_ATTRIBUTES;
   }
-  if (mode & PP_FILEOPENFLAG_TRUNCATE) {
-    DCHECK(mode & PP_FILEOPENFLAG_WRITE);
+  if (pp_open_flags & PP_FILEOPENFLAG_TRUNCATE) {
+    if (!(pp_open_flags & PP_FILEOPENFLAG_WRITE))
+      return false;
     flags |= base::PLATFORM_FILE_TRUNCATE;
   }
-
-  if (mode & PP_FILEOPENFLAG_CREATE) {
-    if (mode & PP_FILEOPENFLAG_EXCLUSIVE)
+  if (pp_open_flags & PP_FILEOPENFLAG_CREATE) {
+    if (pp_open_flags & PP_FILEOPENFLAG_EXCLUSIVE)
       flags |= base::PLATFORM_FILE_CREATE;
     else
       flags |= base::PLATFORM_FILE_OPEN_ALWAYS;
   } else {
     flags |= base::PLATFORM_FILE_OPEN;
   }
+  *flags_out = flags;
+  return true;
+}
+
+void FreeDirContents(PP_Instance instance, PP_DirContents_Dev* contents) {
+  DCHECK(contents);
+  for (int32_t i = 0; i < contents->count; ++i) {
+    delete [] contents->entries[i].name;
+  }
+  delete [] contents->entries;
+  delete contents;
+}
+
+}  // namespace
+
+// PPB_Flash_File_ModuleLocal_Impl ---------------------------------------------
+
+namespace {
+
+int32_t OpenModuleLocalFile(PP_Instance pp_instance,
+                            const char* path,
+                            int32_t mode,
+                            PP_FileHandle* file) {
+  int flags = 0;
+  if (!path || !ConvertFromPPFileOpenFlags(mode, &flags) || !file)
+    return PP_ERROR_BADARGUMENT;
+
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
+  if (!instance)
+    return PP_ERROR_FAILED;
 
   base::PlatformFile base_file;
-  base::PlatformFileError result = instance->delegate()->OpenModuleLocalFile(
-      instance->module()->name(),
-      GetFilePathFromUTF8(path),
+  base::PlatformFileError result = instance->delegate()->OpenFile(
+      PepperFilePath::MakeModuleLocal(instance->module(), path),
       flags,
       &base_file);
   *file = base_file;
   return PlatformFileErrorToPepperError(result);
 }
 
-
 int32_t RenameModuleLocalFile(PP_Instance pp_instance,
-                              const char* path_from,
-                              const char* path_to) {
+                              const char* from_path,
+                              const char* to_path) {
+  if (!from_path || !to_path)
+    return PP_ERROR_BADARGUMENT;
+
   PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
   if (!instance)
     return PP_ERROR_FAILED;
 
-  base::PlatformFileError result = instance->delegate()->RenameModuleLocalFile(
-      instance->module()->name(),
-      GetFilePathFromUTF8(path_from),
-      GetFilePathFromUTF8(path_to));
+  base::PlatformFileError result = instance->delegate()->RenameFile(
+      PepperFilePath::MakeModuleLocal(instance->module(), from_path),
+      PepperFilePath::MakeModuleLocal(instance->module(), to_path));
   return PlatformFileErrorToPepperError(result);
 }
 
 int32_t DeleteModuleLocalFileOrDir(PP_Instance pp_instance,
                                    const char* path,
                                    PP_Bool recursive) {
+  if (!path)
+    return PP_ERROR_BADARGUMENT;
+
   PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
   if (!instance)
     return PP_ERROR_FAILED;
 
-  base::PlatformFileError result =
-      instance->delegate()->DeleteModuleLocalFileOrDir(
-          instance->module()->name(), GetFilePathFromUTF8(path),
-          PPBoolToBool(recursive));
+  base::PlatformFileError result = instance->delegate()->DeleteFileOrDir(
+      PepperFilePath::MakeModuleLocal(instance->module(), path),
+      PPBoolToBool(recursive));
   return PlatformFileErrorToPepperError(result);
 }
 
 int32_t CreateModuleLocalDir(PP_Instance pp_instance, const char* path) {
+  if (!path)
+    return PP_ERROR_BADARGUMENT;
+
   PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
   if (!instance)
     return PP_ERROR_FAILED;
 
-  base::PlatformFileError result = instance->delegate()->CreateModuleLocalDir(
-      instance->module()->name(), GetFilePathFromUTF8(path));
+  base::PlatformFileError result = instance->delegate()->CreateDir(
+      PepperFilePath::MakeModuleLocal(instance->module(), path));
   return PlatformFileErrorToPepperError(result);
 }
 
 int32_t QueryModuleLocalFile(PP_Instance pp_instance,
                              const char* path,
                              PP_FileInfo_Dev* info) {
+  if (!path || !info)
+    return PP_ERROR_BADARGUMENT;
+
   PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
   if (!instance)
     return PP_ERROR_FAILED;
 
   base::PlatformFileInfo file_info;
-  base::PlatformFileError result = instance->delegate()->QueryModuleLocalFile(
-      instance->module()->name(), GetFilePathFromUTF8(path), &file_info);
+  base::PlatformFileError result = instance->delegate()->QueryFile(
+      PepperFilePath::MakeModuleLocal(instance->module(), path),
+      &file_info);
   if (result == base::PLATFORM_FILE_OK) {
     info->size = file_info.size;
     info->creation_time = file_info.creation_time.ToDoubleT();
@@ -138,17 +169,17 @@ int32_t QueryModuleLocalFile(PP_Instance pp_instance,
 int32_t GetModuleLocalDirContents(PP_Instance pp_instance,
                                   const char* path,
                                   PP_DirContents_Dev** contents) {
+  if (!path || !contents)
+    return PP_ERROR_BADARGUMENT;
   PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
   if (!instance)
     return PP_ERROR_FAILED;
 
   *contents = NULL;
   DirContents pepper_contents;
-  base::PlatformFileError result =
-      instance->delegate()->GetModuleLocalDirContents(
-          instance->module()->name(),
-          GetFilePathFromUTF8(path),
-          &pepper_contents);
+  base::PlatformFileError result = instance->delegate()->GetDirContents(
+      PepperFilePath::MakeModuleLocal(instance->module(), path),
+      &pepper_contents);
 
   if (result != base::PLATFORM_FILE_OK)
     return PlatformFileErrorToPepperError(result);
@@ -173,24 +204,14 @@ int32_t GetModuleLocalDirContents(PP_Instance pp_instance,
   return PP_OK;
 }
 
-void FreeModuleLocalDirContents(PP_Instance instance,
-                                PP_DirContents_Dev* contents) {
-  DCHECK(contents);
-  for (int32_t i = 0; i < contents->count; ++i) {
-    delete [] contents->entries[i].name;
-  }
-  delete [] contents->entries;
-  delete contents;
-}
-
-const PPB_Flash_File_ModuleLocal ppb_flash_file_module_local = {
+const PPB_Flash_File_ModuleLocal ppb_flash_file_modulelocal = {
   &OpenModuleLocalFile,
   &RenameModuleLocalFile,
   &DeleteModuleLocalFileOrDir,
   &CreateModuleLocalDir,
   &QueryModuleLocalFile,
   &GetModuleLocalDirContents,
-  &FreeModuleLocalDirContents,
+  &FreeDirContents,
 };
 
 }  // namespace
@@ -198,7 +219,7 @@ const PPB_Flash_File_ModuleLocal ppb_flash_file_module_local = {
 // static
 const PPB_Flash_File_ModuleLocal*
     PPB_Flash_File_ModuleLocal_Impl::GetInterface() {
-  return &ppb_flash_file_module_local;
+  return &ppb_flash_file_modulelocal;
 }
 
 }  // namespace ppapi

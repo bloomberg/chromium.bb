@@ -113,44 +113,38 @@ bool MockPluginDelegate::ReadDirectory(
   return false;
 }
 
-base::PlatformFileError MockPluginDelegate::OpenModuleLocalFile(
-    const std::string& module_name,
-    const FilePath& path,
+base::PlatformFileError MockPluginDelegate::OpenFile(
+    const PepperFilePath& path,
     int flags,
     base::PlatformFile* file) {
   return base::PLATFORM_FILE_ERROR_FAILED;
 }
 
-base::PlatformFileError MockPluginDelegate::RenameModuleLocalFile(
-    const std::string& module_name,
-    const FilePath& path_from,
-    const FilePath& path_to) {
+base::PlatformFileError MockPluginDelegate::RenameFile(
+    const PepperFilePath& from_path,
+    const PepperFilePath& to_path) {
   return base::PLATFORM_FILE_ERROR_FAILED;
 }
 
-base::PlatformFileError MockPluginDelegate::DeleteModuleLocalFileOrDir(
-    const std::string& module_name,
-    const FilePath& path,
+base::PlatformFileError MockPluginDelegate::DeleteFileOrDir(
+    const PepperFilePath& path,
     bool recursive) {
   return base::PLATFORM_FILE_ERROR_FAILED;
 }
 
-base::PlatformFileError MockPluginDelegate::CreateModuleLocalDir(
-    const std::string& module_name,
-    const FilePath& path) {
+base::PlatformFileError MockPluginDelegate::CreateDir(
+    const PepperFilePath& path) {
   return base::PLATFORM_FILE_ERROR_FAILED;
 }
 
-base::PlatformFileError MockPluginDelegate::QueryModuleLocalFile(
-    const std::string& module_name,
-    const FilePath& path,
+base::PlatformFileError MockPluginDelegate::QueryFile(
+    const PepperFilePath& path,
     base::PlatformFileInfo* info) {
   return base::PLATFORM_FILE_ERROR_FAILED;
 }
 
-base::PlatformFileError MockPluginDelegate::GetModuleLocalDirContents(
-    const std::string& module_name,
-    const FilePath& path,
+base::PlatformFileError MockPluginDelegate::GetDirContents(
+    const PepperFilePath& path,
     DirContents* contents) {
   return base::PLATFORM_FILE_ERROR_FAILED;
 }

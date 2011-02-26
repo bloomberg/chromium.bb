@@ -28,12 +28,11 @@ class Rect;
 
 namespace webkit {
 namespace ppapi {
-
+class PepperFilePath;
 class PluginInstance;
 class PluginModule;
-
-}  // namespace ppapi
-}  // namespace webkit
+}
+}
 
 namespace WebKit {
 class WebFileChooserCompletion;
@@ -122,29 +121,23 @@ class PepperPluginDelegateImpl
                       fileapi::FileSystemCallbackDispatcher* dispatcher);
   virtual bool ReadDirectory(const FilePath& directory_path,
                              fileapi::FileSystemCallbackDispatcher* dispatcher);
-  virtual base::PlatformFileError OpenModuleLocalFile(
-      const std::string& module_name,
-      const FilePath& path,
+  virtual base::PlatformFileError OpenFile(
+      const webkit::ppapi::PepperFilePath& path,
       int flags,
       base::PlatformFile* file);
-  virtual base::PlatformFileError RenameModuleLocalFile(
-      const std::string& module_name,
-      const FilePath& path_from,
-      const FilePath& path_to);
-  virtual base::PlatformFileError DeleteModuleLocalFileOrDir(
-      const std::string& module_name,
-      const FilePath& path,
+  virtual base::PlatformFileError RenameFile(
+      const webkit::ppapi::PepperFilePath& from_path,
+      const webkit::ppapi::PepperFilePath& to_path);
+  virtual base::PlatformFileError DeleteFileOrDir(
+      const webkit::ppapi::PepperFilePath& path,
       bool recursive);
-  virtual base::PlatformFileError CreateModuleLocalDir(
-      const std::string& module_name,
-      const FilePath& path);
-  virtual base::PlatformFileError QueryModuleLocalFile(
-      const std::string& module_name,
-      const FilePath& path,
+  virtual base::PlatformFileError CreateDir(
+      const webkit::ppapi::PepperFilePath& path);
+  virtual base::PlatformFileError QueryFile(
+      const webkit::ppapi::PepperFilePath& path,
       base::PlatformFileInfo* info);
-  virtual base::PlatformFileError GetModuleLocalDirContents(
-      const std::string& module_name,
-      const FilePath& path,
+  virtual base::PlatformFileError GetDirContents(
+      const webkit::ppapi::PepperFilePath& path,
       webkit::ppapi::DirContents* contents);
   virtual scoped_refptr<base::MessageLoopProxy> GetFileThreadMessageLoopProxy();
   virtual int32_t ConnectTcp(

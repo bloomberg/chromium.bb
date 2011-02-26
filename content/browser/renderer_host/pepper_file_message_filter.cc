@@ -1,12 +1,12 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "content/browser/renderer_host/pepper_file_message_filter.h"
 
 #include "base/callback.h"
-#include "base/file_util.h"
 #include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/process_util.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/profiles/profile.h"
@@ -14,10 +14,34 @@
 #include "chrome/common/child_process_host.h"
 #include "chrome/common/pepper_file_messages.h"
 #include "ipc/ipc_platform_file.h"
+#include "webkit/plugins/ppapi/file_path.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
 #endif
+
+namespace {
+
+FilePath ConvertPepperFilePath(
+    const webkit::ppapi::PepperFilePath& pepper_path) {
+  FilePath file_path;
+  switch(pepper_path.domain()) {
+    case webkit::ppapi::PepperFilePath::DOMAIN_ABSOLUTE:
+      NOTIMPLEMENTED();
+      break;
+    case webkit::ppapi::PepperFilePath::DOMAIN_MODULE_LOCAL:
+      if (!pepper_path.path().IsAbsolute() &&
+          !pepper_path.path().ReferencesParent())
+        file_path = pepper_path.path();
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+  return file_path;
+}
+
+}  // namespace
 
 PepperFileMessageFilter::PepperFileMessageFilter(
     int child_id, Profile* profile) {
@@ -36,17 +60,16 @@ void PepperFileMessageFilter::OverrideThreadForMessage(
     *thread = BrowserThread::FILE;
 }
 
-bool PepperFileMessageFilter::OnMessageReceived(
-    const IPC::Message& message,
-    bool* message_was_ok) {
+bool PepperFileMessageFilter::OnMessageReceived(const IPC::Message& message,
+                                                bool* message_was_ok) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(PepperFileMessageFilter, message, *message_was_ok)
-    IPC_MESSAGE_HANDLER(PepperFileMsg_OpenFile, OnPepperOpenFile)
-    IPC_MESSAGE_HANDLER(PepperFileMsg_RenameFile, OnPepperRenameFile)
-    IPC_MESSAGE_HANDLER(PepperFileMsg_DeleteFileOrDir, OnPepperDeleteFileOrDir)
-    IPC_MESSAGE_HANDLER(PepperFileMsg_CreateDir, OnPepperCreateDir)
-    IPC_MESSAGE_HANDLER(PepperFileMsg_QueryFile, OnPepperQueryFile)
-    IPC_MESSAGE_HANDLER(PepperFileMsg_GetDirContents, OnPepperGetDirContents)
+    IPC_MESSAGE_HANDLER(PepperFileMsg_OpenFile, OnOpenFile)
+    IPC_MESSAGE_HANDLER(PepperFileMsg_RenameFile, OnRenameFile)
+    IPC_MESSAGE_HANDLER(PepperFileMsg_DeleteFileOrDir, OnDeleteFileOrDir)
+    IPC_MESSAGE_HANDLER(PepperFileMsg_CreateDir, OnCreateDir)
+    IPC_MESSAGE_HANDLER(PepperFileMsg_QueryFile, OnQueryFile)
+    IPC_MESSAGE_HANDLER(PepperFileMsg_GetDirContents, OnGetDirContents)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   return handled;
@@ -57,12 +80,12 @@ void PepperFileMessageFilter::OnDestruct() const {
 }
 
 // Called on the FILE thread:
-void PepperFileMessageFilter::OnPepperOpenFile(
-    const FilePath& path,
+void PepperFileMessageFilter::OnOpenFile(
+    const webkit::ppapi::PepperFilePath& path,
     int flags,
     base::PlatformFileError* error,
     IPC::PlatformFileForTransit* file) {
-  FilePath full_path = MakePepperPath(path);
+  FilePath full_path = ConvertPepperFilePath(path);
   if (full_path.empty()) {
     *error = base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
     *file = IPC::InvalidPlatformFileForTransit();
@@ -101,27 +124,27 @@ void PepperFileMessageFilter::OnPepperOpenFile(
 #endif
 }
 
-void PepperFileMessageFilter::OnPepperRenameFile(
-    const FilePath& path_from,
-    const FilePath& path_to,
+void PepperFileMessageFilter::OnRenameFile(
+    const webkit::ppapi::PepperFilePath& from_path,
+    const webkit::ppapi::PepperFilePath& to_path,
     base::PlatformFileError* error) {
-  FilePath full_path_from = MakePepperPath(path_from);
-  FilePath full_path_to = MakePepperPath(path_to);
-  if (full_path_from.empty() || full_path_to.empty()) {
+  FilePath from_full_path = ConvertPepperFilePath(from_path);
+  FilePath to_full_path = ConvertPepperFilePath(to_path);
+  if (from_full_path.empty() || to_full_path.empty()) {
     *error = base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
     return;
   }
 
-  bool result = file_util::Move(full_path_from, full_path_to);
+  bool result = file_util::Move(from_full_path, to_full_path);
   *error = result ? base::PLATFORM_FILE_OK
                   : base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
 }
 
-void PepperFileMessageFilter::OnPepperDeleteFileOrDir(
-    const FilePath& path,
+void PepperFileMessageFilter::OnDeleteFileOrDir(
+    const webkit::ppapi::PepperFilePath& path,
     bool recursive,
     base::PlatformFileError* error) {
-  FilePath full_path = MakePepperPath(path);
+  FilePath full_path = ConvertPepperFilePath(path);
   if (full_path.empty()) {
     *error = base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
     return;
@@ -132,10 +155,10 @@ void PepperFileMessageFilter::OnPepperDeleteFileOrDir(
                   : base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
 }
 
-void PepperFileMessageFilter::OnPepperCreateDir(
-    const FilePath& path,
+void PepperFileMessageFilter::OnCreateDir(
+    const webkit::ppapi::PepperFilePath& path,
     base::PlatformFileError* error) {
-  FilePath full_path = MakePepperPath(path);
+  FilePath full_path = ConvertPepperFilePath(path);
   if (full_path.empty()) {
     *error = base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
     return;
@@ -146,11 +169,11 @@ void PepperFileMessageFilter::OnPepperCreateDir(
                   : base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
 }
 
-void PepperFileMessageFilter::OnPepperQueryFile(
-    const FilePath& path,
+void PepperFileMessageFilter::OnQueryFile(
+    const webkit::ppapi::PepperFilePath& path,
     base::PlatformFileInfo* info,
     base::PlatformFileError* error) {
-  FilePath full_path = MakePepperPath(path);
+  FilePath full_path = ConvertPepperFilePath(path);
   if (full_path.empty()) {
     *error = base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
     return;
@@ -161,11 +184,11 @@ void PepperFileMessageFilter::OnPepperQueryFile(
                   : base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
 }
 
-void PepperFileMessageFilter::OnPepperGetDirContents(
-    const FilePath& path,
+void PepperFileMessageFilter::OnGetDirContents(
+    const webkit::ppapi::PepperFilePath& path,
     webkit::ppapi::DirContents* contents,
     base::PlatformFileError* error) {
-  FilePath full_path = MakePepperPath(path);
+  FilePath full_path = ConvertPepperFilePath(path);
   if (full_path.empty()) {
     *error = base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
     return;
@@ -191,11 +214,4 @@ void PepperFileMessageFilter::OnPepperGetDirContents(
   }
 
   *error = base::PLATFORM_FILE_OK;
-}
-
-FilePath PepperFileMessageFilter::MakePepperPath(const FilePath& base_path) {
-  if (base_path.IsAbsolute() || base_path.ReferencesParent()) {
-    return FilePath();
-  }
-  return pepper_path_.Append(base_path);
 }

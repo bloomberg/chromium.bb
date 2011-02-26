@@ -263,6 +263,8 @@
         '../plugins/ppapi/event_conversion.h',
         '../plugins/ppapi/file_callbacks.cc',
         '../plugins/ppapi/file_callbacks.h',
+        '../plugins/ppapi/file_path.cc',
+        '../plugins/ppapi/file_path.h',
         '../plugins/ppapi/fullscreen_container.h',
         '../plugins/ppapi/npapi_glue.cc',
         '../plugins/ppapi/npapi_glue.h',

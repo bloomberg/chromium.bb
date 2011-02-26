@@ -20,6 +20,12 @@
 
 class Profile;
 
+namespace webkit {
+namespace ppapi {
+class PepperFilePath;
+}
+}
+
 // A message filter for Pepper-specific File I/O messages.
 class PepperFileMessageFilter : public BrowserMessageFilter {
  public:
@@ -38,26 +44,24 @@ class PepperFileMessageFilter : public BrowserMessageFilter {
   virtual ~PepperFileMessageFilter();
 
   // Called on the FILE thread:
-  void OnPepperOpenFile(const FilePath& path,
-                        int flags,
-                        base::PlatformFileError* error,
-                        IPC::PlatformFileForTransit* file);
-  void OnPepperRenameFile(const FilePath& path_from,
-                          const FilePath& path_to,
-                          base::PlatformFileError* error);
-  void OnPepperDeleteFileOrDir(const FilePath& path,
-                               bool recursive,
-                               base::PlatformFileError* error);
-  void OnPepperCreateDir(const FilePath& path,
+  void OnOpenFile(const webkit::ppapi::PepperFilePath& path,
+                  int flags,
+                  base::PlatformFileError* error,
+                  IPC::PlatformFileForTransit* file);
+  void OnRenameFile(const webkit::ppapi::PepperFilePath& from_path,
+                    const webkit::ppapi::PepperFilePath& to_path,
+                    base::PlatformFileError* error);
+  void OnDeleteFileOrDir(const webkit::ppapi::PepperFilePath& path,
+                         bool recursive,
                          base::PlatformFileError* error);
-  void OnPepperQueryFile(const FilePath& path,
-                         base::PlatformFileInfo* info,
-                         base::PlatformFileError* error);
-  void OnPepperGetDirContents(const FilePath& path,
-                              webkit::ppapi::DirContents* contents,
-                              base::PlatformFileError* error);
-
-  FilePath MakePepperPath(const FilePath& base_path);
+  void OnCreateDir(const webkit::ppapi::PepperFilePath& path,
+                   base::PlatformFileError* error);
+  void OnQueryFile(const webkit::ppapi::PepperFilePath& path,
+                   base::PlatformFileInfo* info,
+                   base::PlatformFileError* error);
+  void OnGetDirContents(const webkit::ppapi::PepperFilePath& path,
+                        webkit::ppapi::DirContents* contents,
+                        base::PlatformFileError* error);
 
   // The channel associated with the renderer connection. This pointer is not
   // owned by this class.

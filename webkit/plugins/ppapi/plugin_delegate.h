@@ -63,6 +63,7 @@ namespace ppapi {
 
 class FileIO;
 class FullscreenContainer;
+class PepperFilePath;
 class PluginInstance;
 class PluginModule;
 class PPB_Flash_Menu_Impl;
@@ -242,6 +243,7 @@ class PluginDelegate {
   virtual bool AsyncOpenFile(const FilePath& path,
                              int flags,
                              AsyncOpenFileCallback* callback) = 0;
+
   virtual bool OpenFileSystem(
       const GURL& url,
       fileapi::FileSystemType type,
@@ -266,30 +268,18 @@ class PluginDelegate {
       const FilePath& directory_path,
       fileapi::FileSystemCallbackDispatcher* dispatcher) = 0;
 
-  virtual base::PlatformFileError OpenModuleLocalFile(
-      const std::string& module_name,
-      const FilePath& path,
-      int flags,
-      base::PlatformFile* file) = 0;
-  virtual base::PlatformFileError RenameModuleLocalFile(
-      const std::string& module_name,
-      const FilePath& path_from,
-      const FilePath& path_to) = 0;
-  virtual base::PlatformFileError DeleteModuleLocalFileOrDir(
-      const std::string& module_name,
-      const FilePath& path,
-      bool recursive) = 0;
-  virtual base::PlatformFileError CreateModuleLocalDir(
-      const std::string& module_name,
-      const FilePath& path) = 0;
-  virtual base::PlatformFileError QueryModuleLocalFile(
-      const std::string& module_name,
-      const FilePath& path,
-      base::PlatformFileInfo* info) = 0;
-  virtual base::PlatformFileError GetModuleLocalDirContents(
-      const std::string& module_name,
-      const FilePath& path,
-      DirContents* contents) = 0;
+  virtual base::PlatformFileError OpenFile(const PepperFilePath& path,
+                                           int flags,
+                                           base::PlatformFile* file) = 0;
+  virtual base::PlatformFileError RenameFile(const PepperFilePath& from_path,
+                                             const PepperFilePath& to_path) = 0;
+  virtual base::PlatformFileError DeleteFileOrDir(const PepperFilePath& path,
+                                                  bool recursive) = 0;
+  virtual base::PlatformFileError CreateDir(const PepperFilePath& path) = 0;
+  virtual base::PlatformFileError QueryFile(const PepperFilePath& path,
+                                            base::PlatformFileInfo* info) = 0;
+  virtual base::PlatformFileError GetDirContents(const PepperFilePath& path,
+                                                 DirContents* contents) = 0;
 
   // Returns a MessageLoopProxy instance associated with the message loop
   // of the file thread in this renderer.
