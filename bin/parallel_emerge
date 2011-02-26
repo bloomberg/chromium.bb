@@ -674,7 +674,7 @@ class DepGraphGenerator(object):
       if isinstance(pkg, Package):
         # If we're not using --force-remote-binary, check what flags are being
         # used by the real package.
-        if "--usepkgonly" not in emerge.opts:
+        if pkg.operation != "uninstall" and "--usepkgonly" not in emerge.opts:
           try:
             pkg = emerge.depgraph._pkg(pkg.cpv, "ebuild", emerge.root_config)
           except portage.exception.PackageNotFound:
@@ -686,7 +686,7 @@ class DepGraphGenerator(object):
         # that is already installed, then this operation is possibly optional.
         # ("--selective" mode is handled later, in RemoveInstalledPackages())
         optional = False
-        if not emptytree:
+        if pkg.operation != "uninstall" and not emptytree:
           for vardb_pkg in vardb.match_pkgs(pkg.cpv):
             if self.CheckUseFlags(pkgsettings, vardb_pkg, pkg):
               optional = True
