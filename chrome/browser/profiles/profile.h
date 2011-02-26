@@ -68,6 +68,7 @@ class ExtensionMessageService;
 class ExtensionPrefValueMap;
 class ExtensionProcessManager;
 class ExtensionService;
+class ExtensionSpecialStoragePolicy;
 class FaviconService;
 class FilePath;
 class FindBarState;
@@ -228,6 +229,10 @@ class Profile {
 
   // Accessor. The instance is created at startup.
   virtual ExtensionIOEventRouter* GetExtensionIOEventRouter() = 0;
+
+  // Accessor. The instance is created upon first access.
+  virtual ExtensionSpecialStoragePolicy*
+      GetExtensionSpecialStoragePolicy() = 0;
 
   // Retrieves a pointer to the SSLHostState associated with this profile.
   // The SSLHostState is lazily created the first time that this method is

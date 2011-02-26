@@ -17,8 +17,10 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/net_errors.h"
+#include "webkit/database/database_util.h"
 #include "webkit/database/databases_table.h"
 #include "webkit/database/quota_table.h"
+#include "webkit/quota/special_storage_policy.h"
 
 namespace {
 
@@ -78,8 +80,10 @@ string16 OriginInfo::GetDatabaseDescription(
 OriginInfo::OriginInfo(const string16& origin, int64 total_size, int64 quota)
     : origin_(origin), total_size_(total_size), quota_(quota) {}
 
-DatabaseTracker::DatabaseTracker(const FilePath& profile_path,
-                                 bool is_incognito)
+DatabaseTracker::DatabaseTracker(
+    const FilePath& profile_path,
+    bool is_incognito,
+    quota::SpecialStoragePolicy* special_storage_policy)
     : is_initialized_(false),
       is_incognito_(is_incognito),
       shutting_down_(false),
@@ -91,6 +95,7 @@ DatabaseTracker::DatabaseTracker(const FilePath& profile_path,
       databases_table_(NULL),
       meta_table_(NULL),
       default_quota_(5 * 1024 * 1024),
+      special_storage_policy_(special_storage_policy),
       incognito_origin_directories_generator_(0) {
 }
 
@@ -289,16 +294,6 @@ void DatabaseTracker::SetOriginQuota(const string16& origin_identifier,
   }
 }
 
-void DatabaseTracker::SetOriginQuotaInMemory(const string16& origin_identifier,
-                                             int64 new_quota) {
-  DCHECK(new_quota >= 0);
-  in_memory_quotas_[origin_identifier] = new_quota;
-}
-
-void DatabaseTracker::ResetOriginQuotaInMemory(
-    const string16& origin_identifier) {
-  in_memory_quotas_.erase(origin_identifier);
-}
 
 bool DatabaseTracker::DeleteClosedDatabase(const string16& origin_identifier,
                                            const string16& database_name) {
@@ -464,8 +459,12 @@ DatabaseTracker::CachedOriginInfo* DatabaseTracker::GetCachedOriginInfo(
       origin_info.SetDatabaseDescription(it->database_name, it->description);
     }
 
-    if (in_memory_quotas_.find(origin_identifier) != in_memory_quotas_.end()) {
-      origin_info.SetQuota(in_memory_quotas_[origin_identifier]);
+    if (special_storage_policy_.get() &&
+        special_storage_policy_->IsStorageUnlimited(
+            DatabaseUtil::GetOriginFromIdentifier(origin_identifier))) {
+      // TODO(michaeln): handle the case where it changes status sometime after
+      // the cached origin_info has been established
+      origin_info.SetQuota(kint64max);
     } else {
       int64 origin_quota = quota_table_->GetOriginQuota(origin_identifier);
       if (origin_quota > 0)
@@ -554,7 +553,6 @@ int DatabaseTracker::DeleteDatabase(const string16& origin_identifier,
 
 int DatabaseTracker::DeleteDataModifiedSince(
     const base::Time& cutoff,
-    const std::vector<string16>& protected_origins,
     net::CompletionCallback* callback) {
   if (!LazyInit())
     return net::ERR_FAILED;
@@ -563,19 +561,17 @@ int DatabaseTracker::DeleteDataModifiedSince(
          deletion_callbacks_.find(callback) == deletion_callbacks_.end());
   DatabaseSet to_be_deleted;
 
-  std::vector<string16> origins;
-  if (!databases_table_->GetAllOrigins(&origins))
+  std::vector<string16> origins_identifiers;
+  if (!databases_table_->GetAllOrigins(&origins_identifiers))
     return net::ERR_FAILED;
   int rv = net::OK;
-  for (std::vector<string16>::const_iterator ori = origins.begin();
-       ori != origins.end(); ++ori) {
-    if (StartsWith(*ori, ASCIIToUTF16(kExtensionOriginIdentifierPrefix), true))
+  for (std::vector<string16>::const_iterator ori = origins_identifiers.begin();
+       ori != origins_identifiers.end(); ++ori) {
+    if (special_storage_policy_.get() &&
+        special_storage_policy_->IsStorageProtected(
+            DatabaseUtil::GetOriginFromIdentifier(*ori))) {
       continue;
-
-    std::vector<string16>::const_iterator find_iter =
-        std::find(protected_origins.begin(), protected_origins.end(), *ori);
-    if (find_iter != protected_origins.end())
-      continue;
+    }
 
     std::vector<DatabaseDetails> details;
     if (!databases_table_->GetAllDatabaseDetailsForOrigin(*ori, &details))

@@ -28,6 +28,7 @@ class DesktopNotificationService;
 class ExtensionPrefs;
 class ExtensionPrefStore;
 class ExtensionPrefValueMap;
+class ExtensionSpecialStoragePolicy;
 class FaviconService;
 class FindBarState;
 class GeolocationContentSettingsMap;
@@ -153,6 +154,7 @@ class TestingProfile : public Profile {
   virtual ExtensionMessageService* GetExtensionMessageService();
   virtual ExtensionEventRouter* GetExtensionEventRouter();
   virtual ExtensionIOEventRouter* GetExtensionIOEventRouter();
+  virtual ExtensionSpecialStoragePolicy* GetExtensionSpecialStoragePolicy();
   virtual SSLHostState* GetSSLHostState();
   virtual net::TransportSecurityState* GetTransportSecurityState();
   virtual FaviconService* GetFaviconService(ServiceAccessType access);
@@ -391,6 +393,9 @@ class TestingProfile : public Profile {
   scoped_refptr<ExtensionService> extensions_service_;
 
   scoped_ptr<ExtensionPrefValueMap> extension_pref_value_map_;
+
+  scoped_refptr<ExtensionSpecialStoragePolicy>
+      extension_special_storage_policy_;
 
   // The proxy prefs tracker.
   scoped_refptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;

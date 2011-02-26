@@ -38,6 +38,7 @@ ChromeAppCacheService::ChromeAppCacheService()
 void ChromeAppCacheService::InitializeOnIOThread(
     const FilePath& profile_path, bool is_incognito,
     scoped_refptr<HostContentSettingsMap> content_settings_map,
+    scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy,
     bool clear_local_state_on_exit) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -57,6 +58,7 @@ void ChromeAppCacheService::InitializeOnIOThread(
   Initialize(cache_path_,
              BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE));
   set_appcache_policy(this);
+  set_special_storage_policy(special_storage_policy);
 }
 
 ChromeAppCacheService::~ChromeAppCacheService() {
@@ -69,20 +71,8 @@ ChromeAppCacheService::~ChromeAppCacheService() {
   }
 }
 
-void ChromeAppCacheService::SetOriginQuotaInMemory(
-    const GURL& origin, int64 quota) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (storage())
-    storage()->SetOriginQuotaInMemory(origin, quota);
-}
-
-void ChromeAppCacheService::ResetOriginQuotaInMemory(const GURL& origin) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (storage())
-    storage()->ResetOriginQuotaInMemory(origin);
-}
-
 void ChromeAppCacheService::SetClearLocalStateOnExit(bool clear_local_state) {
+  // TODO(michaeln): How is 'protected' status granted to apps in this case?
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,

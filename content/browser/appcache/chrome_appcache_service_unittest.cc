@@ -49,6 +49,7 @@ TEST_F(ChromeAppCacheServiceTest, KeepOnDestruction) {
                         &ChromeAppCacheService::InitializeOnIOThread,
                         temp_dir_.path(), false,
                         scoped_refptr<HostContentSettingsMap>(NULL),
+                        scoped_refptr<quota::SpecialStoragePolicy>(NULL),
                         false));
   // Make the steps needed to initialize the storage of AppCache data.
   message_loop_.RunAllPending();
@@ -79,6 +80,7 @@ TEST_F(ChromeAppCacheServiceTest, RemoveOnDestruction) {
                         &ChromeAppCacheService::InitializeOnIOThread,
                         temp_dir_.path(), false,
                         scoped_refptr<HostContentSettingsMap>(NULL),
+                        scoped_refptr<quota::SpecialStoragePolicy>(NULL),
                         true));
   // Make the steps needed to initialize the storage of AppCache data.
   message_loop_.RunAllPending();

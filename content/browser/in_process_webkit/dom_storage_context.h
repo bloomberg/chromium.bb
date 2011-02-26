@@ -10,6 +10,7 @@
 #include <set>
 
 #include "base/file_path.h"
+#include "base/ref_counted.h"
 #include "base/string16.h"
 #include "base/time.h"
 
@@ -17,6 +18,10 @@ class DOMStorageArea;
 class DOMStorageMessageFilter;
 class DOMStorageNamespace;
 class WebKitContext;
+
+namespace quota {
+class SpecialStoragePolicy;
+}
 
 // This is owned by WebKitContext and is all the dom storage information that's
 // shared by all the DOMStorageMessageFilters that share the same profile.  The
@@ -27,7 +32,8 @@ class WebKitContext;
 // NOTE: Virtual methods facilitate mocking functions for testing.
 class DOMStorageContext {
  public:
-  explicit DOMStorageContext(WebKitContext* webkit_context);
+  DOMStorageContext(WebKitContext* webkit_context,
+                    quota::SpecialStoragePolicy* special_storage_policy);
   virtual ~DOMStorageContext();
 
   // Invalid storage id.  No storage session will ever report this value.
@@ -70,10 +76,9 @@ class DOMStorageContext {
   virtual void PurgeMemory();
 
   // Delete any local storage files that have been touched since the cutoff
-  // date that's supplied.
-  void DeleteDataModifiedSince(const base::Time& cutoff,
-                               const char* url_scheme_to_be_skipped,
-                               const std::vector<string16>& protected_origins);
+  // date that's supplied. Protected origins, per the SpecialStoragePolicy,
+  // are not deleted by this method.
+  void DeleteDataModifiedSince(const base::Time& cutoff);
 
   // Deletes a single local storage file.
   void DeleteLocalStorageFile(const FilePath& file_path);
@@ -150,6 +155,8 @@ class DOMStorageContext {
   // Maps ids to StorageNamespaces.  We own these objects.
   typedef std::map<int64, DOMStorageNamespace*> StorageNamespaceMap;
   StorageNamespaceMap storage_namespace_map_;
+
+  scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(DOMStorageContext);
 };

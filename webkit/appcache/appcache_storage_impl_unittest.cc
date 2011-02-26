@@ -547,19 +547,14 @@ class AppCacheStorageImplTest : public testing::Test {
     PushNextTask(NewRunnableMethod(
        this, &AppCacheStorageImplTest::Verify_FailStoreGroup));
 
-    // Set a low quota to force a failure.
-    const GURL kOrigin(kManifestUrl.GetOrigin());
-    EXPECT_EQ(-1L, storage()->GetOriginQuotaInMemory(kOrigin));
-    storage()->SetOriginQuotaInMemory(kManifestUrl.GetOrigin(), 0);
-    EXPECT_EQ(0L, storage()->GetOriginQuotaInMemory(kOrigin));
-
     // Setup some preconditions. Create a group and newest cache that
-    // appear to be "unstored".
+    // appear to be "unstored" and big enough to exceed the 5M limit.
+    const int64 kTooBig = 10 * 1024 * 1024;  // 10M
     group_ = new AppCacheGroup(
         service(), kManifestUrl, storage()->NewGroupId());
     cache_ = new AppCache(service(), storage()->NewCacheId());
     cache_->AddEntry(kManifestUrl,
-                     AppCacheEntry(AppCacheEntry::MANIFEST, 1, 1024));
+                     AppCacheEntry(AppCacheEntry::MANIFEST, 1, kTooBig));
     // Hold a ref to the cache simulate the UpdateJob holding that ref,
     // and hold a ref to the group to simulate the CacheHost holding that ref.
 
@@ -577,10 +572,6 @@ class AppCacheStorageImplTest : public testing::Test {
     AppCacheDatabase::CacheRecord cache_record;
     EXPECT_FALSE(database()->FindGroup(group_->group_id(), &group_record));
     EXPECT_FALSE(database()->FindCache(cache_->cache_id(), &cache_record));
-
-    const GURL kOrigin(kManifestUrl.GetOrigin());
-    storage()->ResetOriginQuotaInMemory(kOrigin);
-    EXPECT_EQ(-1L, storage()->GetOriginQuotaInMemory(kOrigin));
 
     TestFinished();
   }

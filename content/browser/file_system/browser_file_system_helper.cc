@@ -10,10 +10,12 @@
 #include "content/browser/browser_thread.h"
 
 scoped_refptr<fileapi::FileSystemContext> CreateFileSystemContext(
-        const FilePath& profile_path, bool is_incognito) {
+        const FilePath& profile_path, bool is_incognito,
+        quota::SpecialStoragePolicy* special_storage_policy) {
   return new fileapi::FileSystemContext(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+      special_storage_policy,
       profile_path,
       is_incognito,
       CommandLine::ForCurrentProcess()->HasSwitch(

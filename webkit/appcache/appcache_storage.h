@@ -167,11 +167,6 @@ class AppCacheStorage {
 
   virtual void PurgeMemory() = 0;
 
-  // Maintain a collection of quota overrides in memory.
-  void SetOriginQuotaInMemory(const GURL& origin, int64 quota);
-  void ResetOriginQuotaInMemory(const GURL& origin);
-  int64 GetOriginQuotaInMemory(const GURL& origin);
-
   // Generates unique storage ids for different object types.
   int64 NewCacheId() {
     return ++last_cache_id_;
@@ -282,11 +277,6 @@ class AppCacheStorage {
   int64 NewResponseId() {
     return ++last_response_id_;
   }
-
-  // Store quotas for extensions in memory, in order to prevent writing a row
-  // to quota_table_ every time an extention is loaded.
-  typedef std::map<GURL, int64> QuotaMap;
-  QuotaMap in_memory_quotas_;
 
   // The last storage id used for different object types.
   int64 last_cache_id_;

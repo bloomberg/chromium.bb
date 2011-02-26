@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/in_process_webkit/dom_storage_context.h"
@@ -11,7 +12,7 @@
 class MockDOMStorageContext : public DOMStorageContext {
  public:
   explicit MockDOMStorageContext(WebKitContext* webkit_context)
-      : DOMStorageContext(webkit_context),
+      : DOMStorageContext(webkit_context, new ExtensionSpecialStoragePolicy),
         purge_count_(0) {
   }
 

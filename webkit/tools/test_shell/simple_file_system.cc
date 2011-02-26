@@ -121,6 +121,7 @@ SimpleFileSystem::SimpleFileSystem() {
     file_system_context_ = new FileSystemContext(
         base::MessageLoopProxy::CreateForCurrentThread(),
         base::MessageLoopProxy::CreateForCurrentThread(),
+        NULL /* special storage policy */,
         file_system_dir_.path(),
         false /* incognito */,
         true /* allow_file_access */,

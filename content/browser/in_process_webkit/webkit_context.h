@@ -57,9 +57,7 @@ class WebKitContext
 
   // Tell all children (where applicable) to delete any objects that were
   // last modified on or after the following time.
-  void DeleteDataModifiedSince(const base::Time& cutoff,
-                               const char* url_scheme_to_be_skipped,
-                               const std::vector<string16>& protected_origins);
+  void DeleteDataModifiedSince(const base::Time& cutoff);
 
   // Delete the session storage namespace associated with this id.  Can be
   // called from any thread.

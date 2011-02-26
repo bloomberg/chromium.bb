@@ -7,6 +7,7 @@
 
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "webkit/quota/special_storage_policy.h"
 
 class FilePath;
 class GURL;
@@ -32,6 +33,7 @@ class FileSystemContext
   FileSystemContext(
       scoped_refptr<base::MessageLoopProxy> file_message_loop,
       scoped_refptr<base::MessageLoopProxy> io_message_loop,
+      scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy,
       const FilePath& profile_path,
       bool is_incognito,
       bool allow_file_access_from_files,
@@ -39,10 +41,6 @@ class FileSystemContext
   ~FileSystemContext();
 
   void DeleteDataForOriginOnFileThread(const GURL& origin_url);
-
-  // Quota related methods.
-  void SetOriginQuotaUnlimited(const GURL& url);
-  void ResetOriginQuotaUnlimited(const GURL& url);
 
   FileSystemPathManager* path_manager() { return path_manager_.get(); }
   FileSystemQuotaManager* quota_manager() { return quota_manager_.get(); }

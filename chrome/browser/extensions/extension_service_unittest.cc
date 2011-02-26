@@ -26,6 +26,7 @@
 #include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/external_extension_provider_interface.h"
 #include "chrome/browser/extensions/external_extension_provider_impl.h"
 #include "chrome/browser/extensions/external_pref_extension_loader.h"
@@ -341,11 +342,13 @@ class ExtensionTestingProfile : public TestingProfile {
       appcache_service_ = new ChromeAppCacheService;
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          NewRunnableMethod(appcache_service_.get(),
-                            &ChromeAppCacheService::InitializeOnIOThread,
-                            GetPath(), IsOffTheRecord(),
-                            make_scoped_refptr(GetHostContentSettingsMap()),
-                            false));
+          NewRunnableMethod(
+              appcache_service_.get(),
+              &ChromeAppCacheService::InitializeOnIOThread,
+              GetPath(), IsOffTheRecord(),
+              make_scoped_refptr(GetHostContentSettingsMap()),
+              make_scoped_refptr(GetExtensionSpecialStoragePolicy()),
+              false));
     }
     return appcache_service_;
   }
@@ -353,7 +356,7 @@ class ExtensionTestingProfile : public TestingProfile {
   virtual fileapi::FileSystemContext* GetFileSystemContext() {
     if (!file_system_context_)
       file_system_context_ = CreateFileSystemContext(
-          GetPath(), IsOffTheRecord());
+          GetPath(), IsOffTheRecord(), GetExtensionSpecialStoragePolicy());
     return file_system_context_;
   }
 
@@ -1674,13 +1677,11 @@ TEST_F(ExtensionServiceTest, UpdateApps) {
 TEST_F(ExtensionServiceTest, InstallAppsWithUnlimtedStorage) {
   InitializeEmptyExtensionService();
   EXPECT_TRUE(service_->extensions()->empty());
-  EXPECT_TRUE(service_->unlimited_storage_map_.empty());
 
   FilePath extensions_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
   extensions_path = extensions_path.AppendASCII("extensions");
   int pref_count = 0;
-  ChromeAppCacheService* appcache_service = profile_->GetAppCacheService();
 
   // Install app1 with unlimited storage.
   PackAndInstallExtension(extensions_path.AppendASCII("app1"), true);
@@ -1693,9 +1694,8 @@ TEST_F(ExtensionServiceTest, InstallAppsWithUnlimtedStorage) {
   EXPECT_TRUE(extension->web_extent().ContainsURL(
                   extension->GetFullLaunchURL()));
   const GURL origin1(extension->GetFullLaunchURL().GetOrigin());
-  EXPECT_EQ(kint64max,
-            appcache_service->storage()->GetOriginQuotaInMemory(origin1));
-  EXPECT_FALSE(service_->unlimited_storage_map_.empty());
+  EXPECT_TRUE(profile_->GetExtensionSpecialStoragePolicy()->
+      IsStorageUnlimited(origin1));
 
   // Install app2 from the same origin with unlimited storage.
   PackAndInstallExtension(extensions_path.AppendASCII("app2"), true);
@@ -1709,32 +1709,30 @@ TEST_F(ExtensionServiceTest, InstallAppsWithUnlimtedStorage) {
                   extension->GetFullLaunchURL()));
   const GURL origin2(extension->GetFullLaunchURL().GetOrigin());
   EXPECT_EQ(origin1, origin2);
-  EXPECT_EQ(kint64max,
-            appcache_service->storage()->GetOriginQuotaInMemory(origin2));
-  EXPECT_FALSE(service_->unlimited_storage_map_.empty());
+  EXPECT_TRUE(profile_->GetExtensionSpecialStoragePolicy()->
+      IsStorageUnlimited(origin2));
+
 
   // Uninstall one of them, unlimited storage should still be granted
   // to the origin.
   service_->UninstallExtension(id1, false);
   loop_.RunAllPending();
   EXPECT_EQ(1u, service_->extensions()->size());
-  EXPECT_EQ(kint64max,
-            appcache_service->storage()->GetOriginQuotaInMemory(origin1));
-  EXPECT_FALSE(service_->unlimited_storage_map_.empty());
+  EXPECT_TRUE(profile_->GetExtensionSpecialStoragePolicy()->
+      IsStorageUnlimited(origin1));
+
 
   // Uninstall the other, unlimited storage should be revoked.
   service_->UninstallExtension(id2, false);
   loop_.RunAllPending();
   EXPECT_EQ(0u, service_->extensions()->size());
-  EXPECT_EQ(-1L,
-            appcache_service->storage()->GetOriginQuotaInMemory(origin2));
-  EXPECT_TRUE(service_->unlimited_storage_map_.empty());
+  EXPECT_FALSE(profile_->GetExtensionSpecialStoragePolicy()->
+      IsStorageUnlimited(origin2));
 }
 
 TEST_F(ExtensionServiceTest, InstallAppsAndCheckStorageProtection) {
   InitializeEmptyExtensionService();
   EXPECT_TRUE(service_->extensions()->empty());
-  EXPECT_TRUE(service_->protected_storage_map_.empty());
 
   FilePath extensions_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
@@ -1747,9 +1745,9 @@ TEST_F(ExtensionServiceTest, InstallAppsAndCheckStorageProtection) {
   const Extension* extension = service_->extensions()->at(0);
   EXPECT_TRUE(extension->is_app());
   const std::string id1 = extension->id();
-  EXPECT_FALSE(service_->protected_storage_map_.empty());
   const GURL origin1(extension->GetFullLaunchURL().GetOrigin());
-  ASSERT_EQ(1, service_->protected_storage_map_[origin1]);
+  EXPECT_TRUE(profile_->GetExtensionSpecialStoragePolicy()->
+      IsStorageProtected(origin1));
 
   // App 4 has a different origin (maps.google.com).
   PackAndInstallExtension(extensions_path.AppendASCII("app4"), true);
@@ -1757,21 +1755,23 @@ TEST_F(ExtensionServiceTest, InstallAppsAndCheckStorageProtection) {
   ASSERT_EQ(2u, service_->extensions()->size());
   extension = service_->extensions()->at(1);
   const std::string id2 = extension->id();
-  EXPECT_FALSE(service_->protected_storage_map_.empty());
   const GURL origin2(extension->GetFullLaunchURL().GetOrigin());
   ASSERT_NE(origin1, origin2);
-  ASSERT_EQ(1, service_->protected_storage_map_[origin2]);
+  EXPECT_TRUE(profile_->GetExtensionSpecialStoragePolicy()->
+      IsStorageProtected(origin2));
 
   service_->UninstallExtension(id1, false);
   loop_.RunAllPending();
   EXPECT_EQ(1u, service_->extensions()->size());
-  EXPECT_FALSE(service_->protected_storage_map_.empty());
 
   service_->UninstallExtension(id2, false);
   loop_.RunAllPending();
 
   EXPECT_TRUE(service_->extensions()->empty());
-  EXPECT_TRUE(service_->protected_storage_map_.empty());
+  EXPECT_FALSE(profile_->GetExtensionSpecialStoragePolicy()->
+      IsStorageProtected(origin1));
+  EXPECT_FALSE(profile_->GetExtensionSpecialStoragePolicy()->
+      IsStorageProtected(origin2));
 }
 
 // Test that when an extension version is reinstalled, nothing happens.

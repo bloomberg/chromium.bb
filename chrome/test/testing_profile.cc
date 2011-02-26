@@ -18,6 +18,7 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/extensions/extension_pref_value_map.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/geolocation/geolocation_permission_context.h"
@@ -396,8 +397,10 @@ ChromeAppCacheService* TestingProfile::GetAppCacheService() {
 }
 
 webkit_database::DatabaseTracker* TestingProfile::GetDatabaseTracker() {
-  if (!db_tracker_)
-    db_tracker_ = new webkit_database::DatabaseTracker(GetPath(), false);
+  if (!db_tracker_) {
+    db_tracker_ = new webkit_database::DatabaseTracker(
+        GetPath(), false, GetExtensionSpecialStoragePolicy());
+  }
   return db_tracker_;
 }
 
@@ -431,6 +434,13 @@ ExtensionEventRouter* TestingProfile::GetExtensionEventRouter() {
 
 ExtensionIOEventRouter* TestingProfile::GetExtensionIOEventRouter() {
   return NULL;
+}
+
+ExtensionSpecialStoragePolicy*
+TestingProfile::GetExtensionSpecialStoragePolicy() {
+  if (!extension_special_storage_policy_)
+    extension_special_storage_policy_ = new ExtensionSpecialStoragePolicy();
+  return extension_special_storage_policy_;
 }
 
 SSLHostState* TestingProfile::GetSSLHostState() {

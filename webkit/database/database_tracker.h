@@ -25,6 +25,10 @@ class Connection;
 class MetaTable;
 }
 
+namespace quota {
+class SpecialStoragePolicy;
+}
+
 namespace webkit_database {
 
 extern const FilePath::CharType kDatabaseDirectoryName[];
@@ -83,7 +87,8 @@ class DatabaseTracker
     virtual ~Observer() {}
   };
 
-  DatabaseTracker(const FilePath& profile_path, bool is_incognito);
+  DatabaseTracker(const FilePath& profile_path, bool is_incognito,
+                  quota::SpecialStoragePolicy* special_storage_policy);
 
   void DatabaseOpened(const string16& origin_identifier,
                       const string16& database_name,
@@ -108,9 +113,6 @@ class DatabaseTracker
 
   bool GetAllOriginsInfo(std::vector<OriginInfo>* origins_info);
   void SetOriginQuota(const string16& origin_identifier, int64 new_quota);
-  void SetOriginQuotaInMemory(const string16& origin_identifier,
-                              int64 new_quota);
-  void ResetOriginQuotaInMemory(const string16& origin_identifier);
 
   int64 GetDefaultQuota() { return default_quota_; }
   // Sets the default quota for all origins. Should be used in tests only.
@@ -130,9 +132,9 @@ class DatabaseTracker
   // supplied, omitting any that match IDs within |protected_origins|.
   // Returns net::OK on success, net::FAILED if not all databases could be
   // deleted, and net::ERR_IO_PENDING and |callback| is invoked upon completion,
-  // if non-NULL.
+  // if non-NULL. Protected origins, according the the SpecialStoragePolicy,
+  // are not deleted by this method.
   int DeleteDataModifiedSince(const base::Time& cutoff,
-                              const std::vector<string16>& protected_origins,
                               net::CompletionCallback* callback);
 
   // Delete all databases that belong to the given origin. Returns net::OK on
@@ -238,9 +240,8 @@ class DatabaseTracker
   // Default quota for all origins; changed only by tests
   int64 default_quota_;
 
-  // Store quotas for extensions in memory, in order to prevent writing a row
-  // to quota_table_ every time an extention is loaded.
-  std::map<string16, int64> in_memory_quotas_;
+  // Apps and Extensions can have special rights.
+  scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
 
   // When in incognito mode, store a DELETE_ON_CLOSE handle to each
   // main DB and journal file that was accessed. When the incognito profile

@@ -12,6 +12,7 @@
 #include "content/browser/browser_thread.h"
 #include "webkit/appcache/appcache_policy.h"
 #include "webkit/appcache/appcache_service.h"
+#include "webkit/quota/special_storage_policy.h"
 
 class ChromeURLRequestContext;
 class FilePath;
@@ -36,12 +37,8 @@ class ChromeAppCacheService
   void InitializeOnIOThread(
       const FilePath& profile_path, bool is_incognito,
       scoped_refptr<HostContentSettingsMap> content_settings_map,
+      scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy,
       bool clear_local_state_on_exit);
-
-  // Helpers used by the extension service to grant and revoke
-  // unlimited storage to app extensions.
-  void SetOriginQuotaInMemory(const GURL& origin, int64 quota);
-  void ResetOriginQuotaInMemory(const GURL& origin);
 
   void SetClearLocalStateOnExit(bool clear_local_state);
 

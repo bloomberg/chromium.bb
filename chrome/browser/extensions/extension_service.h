@@ -408,10 +408,6 @@ class ExtensionService
     return browser_event_router_.get();
   }
 
-  const std::map<GURL, int>& protected_storage_map() const {
-    return protected_storage_map_;
-  }
-
   // Notify the frontend that there was an error loading an extension.
   // This method is public because ExtensionServiceBackend can post to here.
   void ReportExtensionLoadError(const FilePath& extension_path,
@@ -516,12 +512,6 @@ class ExtensionService
   // Helper method. Loads extension from prefs.
   void LoadInstalledExtension(const ExtensionInfo& info, bool write_to_prefs);
 
-  // Helper methods to configure the storage services accordingly.
-  void GrantProtectedStorage(const Extension* extension);
-  void RevokeProtectedStorage(const Extension* extension);
-  void GrantUnlimitedStorage(const Extension* extension);
-  void RevokeUnlimitedStorage(const Extension* extension);
-
   // The profile this ExtensionService is part of.
   Profile* profile_;
 
@@ -602,18 +592,6 @@ class ExtensionService
   // List of registered component extensions (see Extension::Location).
   typedef std::vector<ComponentExtensionInfo> RegisteredComponentExtensions;
   RegisteredComponentExtensions component_extension_manifests_;
-
-  // Collection of origins we've granted unlimited storage to. This is a
-  // map from origin to the number of extensions requiring unlimited
-  // storage within that origin.
-  typedef std::map<GURL, int> UnlimitedStorageMap;
-  UnlimitedStorageMap unlimited_storage_map_;
-
-  // Collection of origins whose storage is protected by "Clear browsing data."
-  // A map from origin to the number of Apps currently installed and therefore
-  // intrinsically protected.
-  typedef std::map<GURL, int> ProtectedStorageMap;
-  ProtectedStorageMap protected_storage_map_;
 
   // Manages the installation of default apps and the promotion of them in the
   // app launcher.

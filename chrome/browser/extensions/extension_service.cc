@@ -37,6 +37,7 @@
 #include "chrome/browser/extensions/extension_management_api.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_processes_api.h"
+#include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/extensions/extension_webnavigation_api.h"
@@ -104,35 +105,6 @@ ManifestReloadReason ShouldReloadExtensionManifest(const ExtensionInfo& info) {
     return NEEDS_RELOCALIZATION;
 
   return NOT_NEEDED;
-}
-
-void GetExplicitOriginsInExtent(const Extension* extension,
-                                std::vector<GURL>* origins) {
-  typedef std::vector<URLPattern> PatternList;
-  std::set<GURL> set;
-  const PatternList& patterns = extension->web_extent().patterns();
-  for (PatternList::const_iterator pattern = patterns.begin();
-       pattern != patterns.end(); ++pattern) {
-    if (pattern->match_subdomains() || pattern->match_all_urls())
-      continue;
-    // Wildcard URL schemes won't parse into a valid GURL, so explicit schemes
-    // must be used.
-    PatternList explicit_patterns = pattern->ConvertToExplicitSchemes();
-    for (PatternList::const_iterator explicit_p = explicit_patterns.begin();
-         explicit_p != explicit_patterns.end(); ++explicit_p) {
-      GURL origin = GURL(explicit_p->GetAsString()).GetOrigin();
-      if (origin.is_valid()) {
-        set.insert(origin);
-      } else {
-        NOTREACHED();
-      }
-    }
-  }
-
-  for (std::set<GURL>::const_iterator unique = set.begin();
-       unique != set.end(); ++unique) {
-    origins->push_back(*unique);
-  }
 }
 
 }  // namespace
@@ -1090,15 +1062,8 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
   // extension.
   if (profile_) {
     profile_->RegisterExtensionWithRequestContexts(extension);
-
-    // Check if this permission requires unlimited storage quota
-    if (extension->HasApiPermission(Extension::kUnlimitedStoragePermission))
-      GrantUnlimitedStorage(extension);
-
-    // If the extension is an app, protect its local storage from
-    // "Clear browsing data."
-    if (extension->is_app())
-      GrantProtectedStorage(extension);
+    profile_->GetExtensionSpecialStoragePolicy()->
+        GrantRightsForExtension(extension);
   }
 
   NotificationService::current()->Notify(
@@ -1117,106 +1082,8 @@ void ExtensionService::NotifyExtensionUnloaded(
 
   if (profile_) {
     profile_->UnregisterExtensionWithRequestContexts(extension);
-
-    // Check if this permission required unlimited storage quota, reset its
-    // in-memory quota.
-    if (extension->HasApiPermission(Extension::kUnlimitedStoragePermission))
-      RevokeUnlimitedStorage(extension);
-
-    // If this is an app, then stop protecting its storage so it can be deleted.
-    if (extension->is_app())
-      RevokeProtectedStorage(extension);
-  }
-}
-
-void ExtensionService::GrantProtectedStorage(const Extension* extension) {
-  DCHECK(extension->is_app()) << "Only Apps are allowed protected storage.";
-  std::vector<GURL> origins;
-  GetExplicitOriginsInExtent(extension, &origins);
-  for (size_t i = 0; i < origins.size(); ++i)
-    ++protected_storage_map_[origins[i]];
-}
-
-void ExtensionService::RevokeProtectedStorage(const Extension* extension) {
-  DCHECK(extension->is_app()) << "Attempting to revoke protected storage from "
-      << " a non-app extension.";
-  std::vector<GURL> origins;
-  GetExplicitOriginsInExtent(extension, &origins);
-  for (size_t i = 0; i < origins.size(); ++i) {
-    const GURL& origin = origins[i];
-    DCHECK(protected_storage_map_[origin] > 0);
-    if (--protected_storage_map_[origin] <= 0)
-      protected_storage_map_.erase(origin);
-  }
-}
-
-void ExtensionService::GrantUnlimitedStorage(const Extension* extension) {
-  DCHECK(extension->HasApiPermission(Extension::kUnlimitedStoragePermission));
-  std::vector<GURL> origins;
-  GetExplicitOriginsInExtent(extension, &origins);
-  origins.push_back(extension->url());
-
-  for (size_t i = 0; i < origins.size(); ++i) {
-    const GURL& origin = origins[i];
-    if (++unlimited_storage_map_[origin] == 1) {
-      string16 origin_identifier =
-          webkit_database::DatabaseUtil::GetOriginIdentifier(origin);
-      BrowserThread::PostTask(
-          BrowserThread::FILE, FROM_HERE,
-          NewRunnableMethod(
-              profile_->GetDatabaseTracker(),
-              &webkit_database::DatabaseTracker::SetOriginQuotaInMemory,
-              origin_identifier,
-              kint64max));
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          NewRunnableMethod(
-              profile_->GetAppCacheService(),
-              &ChromeAppCacheService::SetOriginQuotaInMemory,
-              origin,
-              kint64max));
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          NewRunnableMethod(
-              profile_->GetFileSystemContext(),
-              &fileapi::FileSystemContext::SetOriginQuotaUnlimited,
-              origin));
-    }
-  }
-}
-
-void ExtensionService::RevokeUnlimitedStorage(const Extension* extension) {
-  DCHECK(extension->HasApiPermission(Extension::kUnlimitedStoragePermission));
-  std::vector<GURL> origins;
-  GetExplicitOriginsInExtent(extension, &origins);
-  origins.push_back(extension->url());
-
-  for (size_t i = 0; i < origins.size(); ++i) {
-    const GURL& origin = origins[i];
-    DCHECK(unlimited_storage_map_[origin] > 0);
-    if (--unlimited_storage_map_[origin] == 0) {
-      unlimited_storage_map_.erase(origin);
-      string16 origin_identifier =
-          webkit_database::DatabaseUtil::GetOriginIdentifier(origin);
-      BrowserThread::PostTask(
-          BrowserThread::FILE, FROM_HERE,
-          NewRunnableMethod(
-              profile_->GetDatabaseTracker(),
-              &webkit_database::DatabaseTracker::ResetOriginQuotaInMemory,
-              origin_identifier));
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          NewRunnableMethod(
-              profile_->GetAppCacheService(),
-              &ChromeAppCacheService::ResetOriginQuotaInMemory,
-              origin));
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          NewRunnableMethod(
-              profile_->GetFileSystemContext(),
-              &fileapi::FileSystemContext::ResetOriginQuotaUnlimited,
-              origin));
-    }
+    profile_->GetExtensionSpecialStoragePolicy()->
+        RevokeRightsForExtension(extension);
   }
 }
 
@@ -1454,6 +1321,10 @@ void ExtensionService::UnloadExtension(
 }
 
 void ExtensionService::UnloadAllExtensions() {
+  if (profile_) {
+    profile_->GetExtensionSpecialStoragePolicy()->
+        RevokeRightsForAllExtensions();
+  }
   extensions_.clear();
   disabled_extensions_.clear();
   terminated_extension_ids_.clear();

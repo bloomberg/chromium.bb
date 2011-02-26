@@ -9,6 +9,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/string_util.h"
+#include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/common/dom_storage_common.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
@@ -17,14 +18,14 @@
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
+#include "webkit/quota/special_storage_policy.h"
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebSecurityOrigin;
 
 namespace {
 
-void ClearLocalState(const FilePath& domstorage_path,
-                     const char* url_scheme_to_be_skipped) {
+void ClearLocalState(const FilePath& domstorage_path) {
   file_util::FileEnumerator file_enumerator(
       domstorage_path, false, file_util::FileEnumerator::FILES);
   for (FilePath file_path = file_enumerator.Next(); !file_path.empty();
@@ -33,8 +34,9 @@ void ClearLocalState(const FilePath& domstorage_path,
       WebSecurityOrigin web_security_origin =
           WebSecurityOrigin::createFromDatabaseIdentifier(
               webkit_glue::FilePathToWebString(file_path.BaseName()));
+      // TODO(michaeln): how is protected status provided to apps at this time?
       if (!EqualsASCII(web_security_origin.protocol(),
-                       url_scheme_to_be_skipped)) {
+                        chrome::kExtensionScheme)) {
         file_util::Delete(file_path, false);
       }
     }
@@ -49,11 +51,14 @@ const FilePath::CharType DOMStorageContext::kLocalStorageDirectory[] =
 const FilePath::CharType DOMStorageContext::kLocalStorageExtension[] =
     FILE_PATH_LITERAL(".localstorage");
 
-DOMStorageContext::DOMStorageContext(WebKitContext* webkit_context)
+DOMStorageContext::DOMStorageContext(
+    WebKitContext* webkit_context,
+    quota::SpecialStoragePolicy* special_storage_policy)
     : last_storage_area_id_(0),
       last_session_storage_namespace_id_on_ui_thread_(kLocalStorageNamespaceId),
       last_session_storage_namespace_id_on_io_thread_(kLocalStorageNamespaceId),
-      clear_local_state_on_exit_(false) {
+      clear_local_state_on_exit_(false),
+      special_storage_policy_(special_storage_policy) {
   data_path_ = webkit_context->data_path();
 }
 
@@ -71,8 +76,7 @@ DOMStorageContext::~DOMStorageContext() {
   // where no clean up is needed.
   if (clear_local_state_on_exit_ &&
       BrowserThread::CurrentlyOn(BrowserThread::WEBKIT)) {
-    ClearLocalState(data_path_.Append(kLocalStorageDirectory),
-                    chrome::kExtensionScheme);
+    ClearLocalState(data_path_.Append(kLocalStorageDirectory));
   }
 }
 
@@ -176,10 +180,7 @@ void DOMStorageContext::PurgeMemory() {
     local_storage->PurgeMemory();
 }
 
-void DOMStorageContext::DeleteDataModifiedSince(
-    const base::Time& cutoff,
-    const char* url_scheme_to_be_skipped,
-    const std::vector<string16>& protected_origins) {
+void DOMStorageContext::DeleteDataModifiedSince(const base::Time& cutoff) {
   // Make sure that we don't delete a database that's currently being accessed
   // by unloading all of the databases temporarily.
   PurgeMemory();
@@ -189,16 +190,9 @@ void DOMStorageContext::DeleteDataModifiedSince(
       file_util::FileEnumerator::FILES);
   for (FilePath path = file_enumerator.Next(); !path.value().empty();
        path = file_enumerator.Next()) {
-    WebSecurityOrigin web_security_origin =
-        WebSecurityOrigin::createFromDatabaseIdentifier(
-            webkit_glue::FilePathToWebString(path.BaseName()));
-    if (EqualsASCII(web_security_origin.protocol(), url_scheme_to_be_skipped))
-      continue;
-
-    std::vector<string16>::const_iterator find_iter =
-        std::find(protected_origins.begin(), protected_origins.end(),
-            web_security_origin.databaseIdentifier());
-    if (find_iter != protected_origins.end())
+    GURL origin(WebSecurityOrigin::createFromDatabaseIdentifier(
+        webkit_glue::FilePathToWebString(path.BaseName())).toString());
+    if (special_storage_policy_->IsStorageProtected(origin))
       continue;
 
     file_util::FileEnumerator::FindInfo find_info;

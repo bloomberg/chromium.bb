@@ -15,6 +15,7 @@ namespace fileapi {
 FileSystemContext::FileSystemContext(
     scoped_refptr<base::MessageLoopProxy> file_message_loop,
     scoped_refptr<base::MessageLoopProxy> io_message_loop,
+    scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy,
     const FilePath& profile_path,
     bool is_incognito,
     bool allow_file_access,
@@ -24,7 +25,7 @@ FileSystemContext::FileSystemContext(
       path_manager_(new FileSystemPathManager(
           file_message_loop, profile_path, is_incognito, allow_file_access)),
       quota_manager_(new FileSystemQuotaManager(
-          allow_file_access, unlimited_quota)),
+          allow_file_access, unlimited_quota, special_storage_policy)),
       usage_tracker_(new FileSystemUsageTracker(
           file_message_loop, profile_path, is_incognito)) {
 }
@@ -43,16 +44,6 @@ void FileSystemContext::DeleteDataForOriginOnFileThread(
       origin_identifier);
 
   file_util::Delete(path_for_origin, true /* recursive */);
-}
-
-void FileSystemContext::SetOriginQuotaUnlimited(const GURL& url) {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
-  quota_manager()->SetOriginQuotaUnlimited(url);
-}
-
-void FileSystemContext::ResetOriginQuotaUnlimited(const GURL& url) {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
-  quota_manager()->ResetOriginQuotaUnlimited(url);
 }
 
 void FileSystemContext::DeleteOnCorrectThread() const {

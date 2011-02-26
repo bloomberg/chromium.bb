@@ -10,6 +10,7 @@
 #include "webkit/appcache/appcache_backend_impl.h"
 #include "webkit/appcache/appcache_entry.h"
 #include "webkit/appcache/appcache_storage_impl.h"
+#include "webkit/quota/special_storage_policy.h"
 
 namespace appcache {
 
@@ -216,6 +217,10 @@ void AppCacheService::DeleteAppCacheGroup(const GURL& manifest_url,
   helper->Start();
 }
 
+void AppCacheService::set_special_storage_policy(
+    quota::SpecialStoragePolicy* policy) {
+  special_storage_policy_ = policy;
+}
 void AppCacheService::RegisterBackend(
     AppCacheBackendImpl* backend_impl) {
   DCHECK(backends_.find(backend_impl->process_id()) == backends_.end());

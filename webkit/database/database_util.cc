@@ -71,4 +71,11 @@ string16 DatabaseUtil::GetOriginIdentifier(const GURL& url) {
   return WebKit::WebSecurityOrigin::createFromString(spec).databaseIdentifier();
 }
 
+GURL DatabaseUtil::GetOriginFromIdentifier(const string16& origin_identifier) {
+  GURL origin(WebKit::WebSecurityOrigin::createFromDatabaseIdentifier(
+      origin_identifier).toString());
+  DCHECK(origin == origin.GetOrigin());
+  return origin;
+}
+
 }  // namespace webkit_database

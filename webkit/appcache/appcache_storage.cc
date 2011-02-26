@@ -87,25 +87,5 @@ void AppCacheStorage::LoadResponseInfo(
   info_load->StartIfNeeded();
 }
 
-void AppCacheStorage::SetOriginQuotaInMemory(const GURL& origin, int64 quota) {
-  DCHECK(quota >= 0);
-  DCHECK(origin == origin.GetOrigin());
-  if (IsSchemeSupported(origin))
-    in_memory_quotas_[origin] = quota;
-}
-
-void AppCacheStorage::ResetOriginQuotaInMemory(const GURL& origin) {
-  DCHECK(origin == origin.GetOrigin());
-  in_memory_quotas_.erase(origin);
-}
-
-int64 AppCacheStorage::GetOriginQuotaInMemory(const GURL& origin) {
-  DCHECK(origin == origin.GetOrigin());
-  QuotaMap::const_iterator found = in_memory_quotas_.find(origin);
-  if (found == in_memory_quotas_.end())
-    return -1;
-  return found->second;
-}
-
 }  // namespace appcache
 

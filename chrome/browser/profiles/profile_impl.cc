@@ -36,6 +36,7 @@
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
@@ -642,11 +643,13 @@ ChromeAppCacheService* ProfileImpl::GetAppCacheService() {
     appcache_service_ = new ChromeAppCacheService;
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(appcache_service_.get(),
-                          &ChromeAppCacheService::InitializeOnIOThread,
-                          GetPath(), IsOffTheRecord(),
-                          make_scoped_refptr(GetHostContentSettingsMap()),
-                          clear_local_state_on_exit_));
+        NewRunnableMethod(
+            appcache_service_.get(),
+            &ChromeAppCacheService::InitializeOnIOThread,
+            GetPath(), IsOffTheRecord(),
+            make_scoped_refptr(GetHostContentSettingsMap()),
+            make_scoped_refptr(GetExtensionSpecialStoragePolicy()),
+            clear_local_state_on_exit_));
   }
   return appcache_service_;
 }
@@ -654,7 +657,7 @@ ChromeAppCacheService* ProfileImpl::GetAppCacheService() {
 webkit_database::DatabaseTracker* ProfileImpl::GetDatabaseTracker() {
   if (!db_tracker_) {
     db_tracker_ = new webkit_database::DatabaseTracker(
-        GetPath(), IsOffTheRecord());
+        GetPath(), IsOffTheRecord(), GetExtensionSpecialStoragePolicy());
   }
   return db_tracker_;
 }
@@ -707,6 +710,13 @@ ExtensionEventRouter* ProfileImpl::GetExtensionEventRouter() {
 
 ExtensionIOEventRouter* ProfileImpl::GetExtensionIOEventRouter() {
   return extension_io_event_router_.get();
+}
+
+ExtensionSpecialStoragePolicy*
+    ProfileImpl::GetExtensionSpecialStoragePolicy() {
+  if (!extension_special_storage_policy_.get())
+    extension_special_storage_policy_ = new ExtensionSpecialStoragePolicy();
+  return extension_special_storage_policy_.get();
 }
 
 SSLHostState* ProfileImpl::GetSSLHostState() {
@@ -1065,7 +1075,7 @@ PersonalDataManager* ProfileImpl::GetPersonalDataManager() {
 fileapi::FileSystemContext* ProfileImpl::GetFileSystemContext() {
   if (!file_system_context_.get())
     file_system_context_ = CreateFileSystemContext(
-        GetPath(), IsOffTheRecord());
+        GetPath(), IsOffTheRecord(), GetExtensionSpecialStoragePolicy());
   DCHECK(file_system_context_.get());
   return file_system_context_.get();
 }

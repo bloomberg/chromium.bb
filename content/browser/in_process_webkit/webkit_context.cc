@@ -5,6 +5,7 @@
 #include "content/browser/in_process_webkit/webkit_context.h"
 
 #include "base/command_line.h"
+#include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/browser/browser_thread.h"
 
@@ -13,7 +14,8 @@ WebKitContext::WebKitContext(Profile* profile, bool clear_local_state_on_exit)
       is_incognito_(profile->IsOffTheRecord()),
       clear_local_state_on_exit_(clear_local_state_on_exit),
       ALLOW_THIS_IN_INITIALIZER_LIST(
-          dom_storage_context_(new DOMStorageContext(this))),
+          dom_storage_context_(new DOMStorageContext(
+              this, profile->GetExtensionSpecialStoragePolicy()))),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           indexed_db_context_(new IndexedDBContext(this))) {
 }
@@ -52,20 +54,16 @@ void WebKitContext::PurgeMemory() {
   dom_storage_context_->PurgeMemory();
 }
 
-void WebKitContext::DeleteDataModifiedSince(
-    const base::Time& cutoff,
-    const char* url_scheme_to_be_skipped,
-    const std::vector<string16>& protected_origins) {
+void WebKitContext::DeleteDataModifiedSince(const base::Time& cutoff) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::WEBKIT)) {
     BrowserThread::PostTask(
         BrowserThread::WEBKIT, FROM_HERE,
         NewRunnableMethod(this, &WebKitContext::DeleteDataModifiedSince,
-                          cutoff, url_scheme_to_be_skipped, protected_origins));
+                          cutoff));
     return;
   }
 
-  dom_storage_context_->DeleteDataModifiedSince(
-      cutoff, url_scheme_to_be_skipped, protected_origins);
+  dom_storage_context_->DeleteDataModifiedSince(cutoff);
 }
 
 

@@ -22,6 +22,7 @@
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
+#include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/net/pref_proxy_config_service.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -157,9 +158,7 @@ class OffTheRecordProfileImpl : public Profile,
       : profile_(real_profile),
         prefs_(real_profile->GetOffTheRecordPrefs()),
         ALLOW_THIS_IN_INITIALIZER_LIST(io_data_(this)),
-        start_time_(Time::Now()),
-        db_tracker_(new webkit_database::DatabaseTracker(
-            profile_->GetPath(), true)) {
+        start_time_(Time::Now()) {
     extension_process_manager_.reset(ExtensionProcessManager::Create(this));
 
     BrowserList::AddObserver(this);
@@ -183,11 +182,12 @@ class OffTheRecordProfileImpl : public Profile,
                                            Source<Profile>(this),
                                            NotificationService::NoDetails());
     // Clean up all DB files/directories
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(
-            db_tracker_.get(),
-            &webkit_database::DatabaseTracker::DeleteIncognitoDBDirectory));
+    if (db_tracker_)
+      BrowserThread::PostTask(
+          BrowserThread::FILE, FROM_HERE,
+          NewRunnableMethod(
+              db_tracker_.get(),
+              &webkit_database::DatabaseTracker::DeleteIncognitoDBDirectory));
 
     BrowserList::RemoveObserver(this);
 
@@ -227,16 +227,22 @@ class OffTheRecordProfileImpl : public Profile,
       appcache_service_ = new ChromeAppCacheService;
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          NewRunnableMethod(appcache_service_.get(),
-                            &ChromeAppCacheService::InitializeOnIOThread,
-                            GetPath(), IsOffTheRecord(),
-                            make_scoped_refptr(GetHostContentSettingsMap()),
-                            false));
+          NewRunnableMethod(
+              appcache_service_.get(),
+              &ChromeAppCacheService::InitializeOnIOThread,
+              GetPath(), IsOffTheRecord(),
+              make_scoped_refptr(GetHostContentSettingsMap()),
+              make_scoped_refptr(GetExtensionSpecialStoragePolicy()),
+              false));
     }
     return appcache_service_;
   }
 
   virtual webkit_database::DatabaseTracker* GetDatabaseTracker() {
+    if (!db_tracker_.get()) {
+      db_tracker_ = new webkit_database::DatabaseTracker(
+          GetPath(), IsOffTheRecord(), GetExtensionSpecialStoragePolicy());
+    }
     return db_tracker_;
   }
 
@@ -282,6 +288,10 @@ class OffTheRecordProfileImpl : public Profile,
 
   virtual ExtensionIOEventRouter* GetExtensionIOEventRouter() {
     return GetOriginalProfile()->GetExtensionIOEventRouter();
+  }
+
+  virtual ExtensionSpecialStoragePolicy* GetExtensionSpecialStoragePolicy() {
+    return GetOriginalProfile()->GetExtensionSpecialStoragePolicy();
   }
 
   virtual SSLHostState* GetSSLHostState() {
@@ -380,7 +390,7 @@ class OffTheRecordProfileImpl : public Profile,
   virtual fileapi::FileSystemContext* GetFileSystemContext() {
     if (!file_system_context_)
       file_system_context_ = CreateFileSystemContext(
-          GetPath(), IsOffTheRecord());
+          GetPath(), IsOffTheRecord(), GetExtensionSpecialStoragePolicy());
     DCHECK(file_system_context_.get());
     return file_system_context_.get();
   }

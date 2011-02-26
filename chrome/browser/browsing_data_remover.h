@@ -16,6 +16,7 @@
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/cancelable_request.h"
 
+class ExtensionSpecialStoragePolicy;
 class IOThread;
 class PluginDataRemover;
 class Profile;
@@ -138,19 +139,15 @@ class BrowsingDataRemover : public NotificationObserver,
   // NotifyAndDeleteIfDone.
   void OnClearedDatabases(int rv);
 
-  // Invoked on the FILE thread to delete HTML5 databases. Ignores any within
-  // the |webkit_db_whitelist|.
-  void ClearDatabasesOnFILEThread(base::Time delete_begin,
-      const std::vector<string16>& webkit_db_whitelist);
+  // Invoked on the FILE thread to delete HTML5 databases.
+  void ClearDatabasesOnFILEThread();
 
   // Callback when the appcache has been cleared. Invokes
   // NotifyAndDeleteIfDone.
   void OnClearedAppCache();
 
-  // Invoked on the IO thread to delete from the AppCache, ignoring data from
-  // any origins within the |origin_whitelist|.
-  void ClearAppCacheOnIOThread(base::Time delete_begin,
-                               const std::vector<GURL>& origin_whitelist);
+  // Invoked on the IO thread to delete from the AppCache.
+  void ClearAppCacheOnIOThread();
 
   // Lower level helpers.
   void OnGotAppCacheInfo(int rv);
@@ -174,6 +171,9 @@ class BrowsingDataRemover : public NotificationObserver,
   // Profile we're to remove from.
   Profile* profile_;
 
+  // 'Protected' origins are not subject to data removal.
+  scoped_refptr<ExtensionSpecialStoragePolicy> special_storage_policy_;
+
   // Start time to delete from.
   const base::Time delete_begin_;
 
@@ -193,7 +193,6 @@ class BrowsingDataRemover : public NotificationObserver,
   net::CompletionCallbackImpl<BrowsingDataRemover> appcache_got_info_callback_;
   net::CompletionCallbackImpl<BrowsingDataRemover> appcache_deleted_callback_;
   scoped_refptr<appcache::AppCacheInfoCollection> appcache_info_;
-  std::vector<GURL> appcache_whitelist_;
   int appcaches_to_be_deleted_count_;
 
   // Used to delete data from the HTTP caches.

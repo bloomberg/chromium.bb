@@ -22,6 +22,7 @@
 #include "webkit/appcache/appcache_response.h"
 #include "webkit/appcache/appcache_service.h"
 #include "webkit/appcache/appcache_thread.h"
+#include "webkit/quota/special_storage_policy.h"
 
 namespace {
 // Helper with no return value for use with NewRunnableFunction.
@@ -410,8 +411,7 @@ AppCacheStorageImpl::StoreGroupAndCacheTask::StoreGroupAndCacheTask(
     AppCacheStorageImpl* storage, AppCacheGroup* group, AppCache* newest_cache)
     : StoreOrLoadTask(storage), group_(group), cache_(newest_cache),
       success_(false), would_exceed_quota_(false),
-      quota_override_(
-          storage->GetOriginQuotaInMemory(group->manifest_url().GetOrigin())) {
+      quota_override_(-1) {
   group_record_.group_id = group->group_id();
   group_record_.manifest_url = group->manifest_url();
   group_record_.origin = group_record_.manifest_url.GetOrigin();
@@ -419,6 +419,12 @@ AppCacheStorageImpl::StoreGroupAndCacheTask::StoreGroupAndCacheTask(
       group,
       &cache_record_, &entry_records_, &fallback_namespace_records_,
       &online_whitelist_records_);
+
+  if (storage->service()->special_storage_policy() &&
+      storage->service()->special_storage_policy()->IsStorageUnlimited(
+          group_record_.origin)) {
+    quota_override_ = kint64max;
+  }
 }
 
 void AppCacheStorageImpl::StoreGroupAndCacheTask::Run() {

@@ -9,9 +9,14 @@
 #include "base/scoped_ptr.h"
 #include "webkit/fileapi/file_system_context.h"
 
+namespace quota {
+class SpecialStoragePolicy;
+}
+
 // Helper method that returns FileSystemContext constructed for
 // the browser process.
 scoped_refptr<fileapi::FileSystemContext> CreateFileSystemContext(
-        const FilePath& profile_path, bool is_incognito);
+        const FilePath& profile_path, bool is_incognito,
+        quota::SpecialStoragePolicy* special_storage_policy);
 
 #endif  // CONTENT_BROWSER_FILE_SYSTEM_BROWSER_FILE_SYSTEM_HELPER_H_

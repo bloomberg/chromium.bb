@@ -27,6 +27,10 @@ namespace base {
 class MessageLoopProxy;
 }
 
+namespace quota {
+class SpecialStoragePolicy;
+}
+
 namespace appcache {
 
 class AppCacheBackendImpl;
@@ -95,6 +99,11 @@ class AppCacheService {
     appcache_policy_ = policy;
   }
 
+  quota::SpecialStoragePolicy* special_storage_policy() const {
+    return special_storage_policy_.get();
+  }
+  void set_special_storage_policy(quota::SpecialStoragePolicy* policy);
+
   // Each child process in chrome uses a distinct backend instance.
   // See chrome/browser/AppCacheDispatcherHost.
   void RegisterBackend(AppCacheBackendImpl* backend_impl);
@@ -117,6 +126,7 @@ class AppCacheService {
 
   AppCachePolicy* appcache_policy_;
   scoped_ptr<AppCacheStorage> storage_;
+  scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
   PendingAsyncHelpers pending_helpers_;
   BackendMap backends_;  // One 'backend' per child process.
   // Context for use during cache updates.
