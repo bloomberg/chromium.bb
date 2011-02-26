@@ -43,14 +43,40 @@ cr.define('options', function() {
       minimumFontRange.continuous = false;
       minimumFontRange.fontSampleEl = $('minimum-font-sample');
       minimumFontRange.notifyChange = this.rangeChanged_.bind(this);
+      minimumFontRange.notifyPrefChange =
+          this.minimumFontSizeChanged_.bind(this);
+
+      // Add an additional listener to the font select menu for the
+      // 'sansserif_font_family' preference.
+      $('serif-font-family').addEventListener('change',
+          function(e) {
+            Preferences.setStringPref('webkit.webprefs.sansserif_font_family',
+                this.options[this.selectedIndex].value, '');
+          });
     },
 
     /**
-     * @inheritDoc
+     * Called as the user changes a non-continuous slider.  This allows for
+     * reflecting the change in the UI before the preference has been changed.
+     * @param {Element} el The slider input element.
+     * @param {number} value The mapped value currently set by the slider.
+     * @private
      */
     rangeChanged_: function(el, value) {
       this.setupFontSample_(
           el.fontSampleEl, value, el.fontSampleEl.style.fontFamily);
+    },
+
+    /**
+     * Sets the 'minimum_logical_font_size' preference when the minimum font
+     * size has been changed by the user.
+     * @param {Element} el The slider input element.
+     * @param {number} value The mapped value that has been saved.
+     * @private
+     */
+    minimumFontSizeChanged_: function(el, value) {
+      Preferences.setIntegerPref('webkit.webprefs.minimum_logical_font_size',
+          value, '');
     },
 
     /**
