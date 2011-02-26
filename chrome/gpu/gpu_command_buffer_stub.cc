@@ -296,12 +296,17 @@ void GpuCommandBufferStub::OnRegisterTransferBuffer(
     size_t size,
     int32* id) {
 #if defined(OS_WIN)
+  // Windows dups the shared memory handle it receives into the current process
+  // and closes it when this variable goes out of scope.
   base::SharedMemory shared_memory(transfer_buffer,
                                    false,
                                    channel_->renderer_process());
 #else
+  // POSIX receives a dup of the shared memory handle and closes the dup when
+  // this variable goes out of scope.
   base::SharedMemory shared_memory(transfer_buffer, false);
 #endif
+
   *id = command_buffer_->RegisterTransferBuffer(&shared_memory, size);
 }
 

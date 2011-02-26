@@ -139,6 +139,15 @@ int32 CommandBufferProxy::CreateTransferBuffer(size_t size) {
     return -1;
   }
 
+  if (!base::SharedMemory::IsHandleValid(handle))
+    return -1;
+
+  // Handle is closed by the SharedMemory object below. This stops
+  // base::FileDescriptor from closing it as well.
+#if defined(OS_POSIX)
+  handle.auto_close = false;
+#endif
+
   // Take ownership of shared memory. This will close the handle if Send below
   // fails. Otherwise, callee takes ownership before this variable
   // goes out of scope by duping the handle.
@@ -164,7 +173,7 @@ int32 CommandBufferProxy::RegisterTransferBuffer(
   int32 id;
   if (!Send(new GpuCommandBufferMsg_RegisterTransferBuffer(
       route_id_,
-      shared_memory->handle(),
+      shared_memory->handle(),  // Returns FileDescriptor with auto_close off.
       size,
       &id))) {
     return -1;
