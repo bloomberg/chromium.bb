@@ -293,7 +293,8 @@ bool PhoneField::ParseInternal(
       break;  // Parsing succeeded.
     do {
       ++i;
-    } while (phone_field_grammars_[i].regex != REGEX_SEPARATOR);
+    } while (i < arraysize(phone_field_grammars_) &&
+             phone_field_grammars_[i].regex != REGEX_SEPARATOR);
     if (i + 1 == arraysize(phone_field_grammars_))
       return false;  // Tried through all the possibilities - did not match.
   }
