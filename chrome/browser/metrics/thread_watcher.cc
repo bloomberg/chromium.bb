@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#if 0
+
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/metrics/metrics_service.h"
@@ -190,7 +192,7 @@ ThreadWatcherList::ThreadWatcherList()
   // Assert we are not running on WATCHDOG thread. Would be ideal to assert we
   // are on UI thread, but Unit tests are not running on UI thread.
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::WATCHDOG));
-  CHECK(!global_);
+  DCHECK(!global_);
   global_ = this;
   // Register Notifications observer.
 #if defined(OS_WIN)
@@ -200,6 +202,11 @@ ThreadWatcherList::ThreadWatcherList()
 
 ThreadWatcherList::~ThreadWatcherList() {
   base::AutoLock auto_lock(lock_);
+  while (!registered_.empty()) {
+    RegistrationList::iterator it = registered_.begin();
+    delete it->second;
+    registered_.erase(it->first);
+  }
   DCHECK(this == global_);
   global_ = NULL;
 }
@@ -217,15 +224,15 @@ void ThreadWatcherList::StopWatchingAll() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!global_)
     return;
-
-  // Remove all notifications for all watched threads.
-  RemoveNotifications();
-
-  // Delete all thread watcher objects on WATCHDOG thread.
-  BrowserThread::PostTask(
-      BrowserThread::WATCHDOG,
-      FROM_HERE,
-      NewRunnableMethod(global_, &ThreadWatcherList::DeleteAll));
+  base::AutoLock auto_lock(global_->lock_);
+  for (RegistrationList::iterator it = global_->registered_.begin();
+       global_->registered_.end() != it;
+       ++it)
+    BrowserThread::PostTask(
+        BrowserThread::WATCHDOG,
+        FROM_HERE,
+        NewRunnableMethod(
+            it->second, &ThreadWatcher::DeActivateThreadWatching));
 }
 
 // static
@@ -237,16 +244,6 @@ void ThreadWatcherList::RemoveNotifications() {
   base::AutoLock auto_lock(global_->lock_);
   global_->registrar_.RemoveAll();
 #endif
-}
-
-void ThreadWatcherList::DeleteAll() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WATCHDOG));
-  base::AutoLock auto_lock(lock_);
-  while (!registered_.empty()) {
-    RegistrationList::iterator it = registered_.begin();
-    delete it->second;
-    registered_.erase(it->first);
-  }
 }
 
 void ThreadWatcherList::Observe(NotificationType type,
@@ -306,6 +303,8 @@ WatchDogThread::WatchDogThread()
 }
 
 WatchDogThread::~WatchDogThread() {
+  // Remove all notifications for all watched threads.
+  ThreadWatcherList::RemoveNotifications();
   // We cannot rely on our base class to stop the thread since we want our
   // CleanUp function to run.
   Stop();
@@ -318,42 +317,19 @@ void WatchDogThread::Init() {
   BrowserProcessSubThread::Init();
 
 #if defined(OS_WIN)
-  BrowserThread::PostDelayedTask(
-      BrowserThread::WATCHDOG,
-      FROM_HERE,
-      NewRunnableFunction(&WatchDogThread::StartWatchingAll),
-      base::TimeDelta::FromSeconds(10).InMilliseconds());
+  const base::TimeDelta kSleepTime = base::TimeDelta::FromSeconds(5);
+  const base::TimeDelta kUnresponsiveTime = base::TimeDelta::FromSeconds(10);
+  ThreadWatcher::StartWatching(BrowserThread::UI, "UI", kSleepTime,
+                               kUnresponsiveTime);
+  ThreadWatcher::StartWatching(BrowserThread::IO, "IO", kSleepTime,
+                               kUnresponsiveTime);
+  ThreadWatcher::StartWatching(BrowserThread::DB, "DB", kSleepTime,
+                               kUnresponsiveTime);
+  ThreadWatcher::StartWatching(BrowserThread::FILE, "FILE", kSleepTime,
+                               kUnresponsiveTime);
+  ThreadWatcher::StartWatching(BrowserThread::CACHE, "CACHE", kSleepTime,
+                               kUnresponsiveTime);
 #endif
 }
 
-void WatchDogThread::CleanUp() {
-  BrowserProcessSubThread::CleanUp();
-}
-
-void WatchDogThread::CleanUpAfterMessageLoopDestruction() {
-  // This will delete the |notification_service_|.  Make sure it's done after
-  // anything else can reference it.
-  BrowserProcessSubThread::CleanUpAfterMessageLoopDestruction();
-}
-
-void WatchDogThread::StartWatchingAll() {
-  const base::TimeDelta kSleepTime = base::TimeDelta::FromSeconds(5);
-  const base::TimeDelta kUnresponsiveTime = base::TimeDelta::FromSeconds(10);
-  if (BrowserThread::IsMessageLoopValid(BrowserThread::UI))
-    ThreadWatcher::StartWatching(BrowserThread::UI, "UI", kSleepTime,
-                                 kUnresponsiveTime);
-  if (BrowserThread::IsMessageLoopValid(BrowserThread::IO))
-    ThreadWatcher::StartWatching(BrowserThread::IO, "IO", kSleepTime,
-                                 kUnresponsiveTime);
-  if (BrowserThread::IsMessageLoopValid(BrowserThread::DB))
-    ThreadWatcher::StartWatching(BrowserThread::DB, "DB", kSleepTime,
-                                 kUnresponsiveTime);
-  if (BrowserThread::IsMessageLoopValid(BrowserThread::FILE))
-    ThreadWatcher::StartWatching(BrowserThread::FILE, "FILE", kSleepTime,
-                                 kUnresponsiveTime);
-  if (BrowserThread::IsMessageLoopValid(BrowserThread::CACHE))
-    ThreadWatcher::StartWatching(BrowserThread::CACHE, "CACHE", kSleepTime,
-                                 kUnresponsiveTime);
-}
-
-
+#endif  // 0
