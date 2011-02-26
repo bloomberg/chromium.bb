@@ -70,7 +70,7 @@ WebFrame* MockWebFrame::opener() const {
   return NULL;
 }
 
-void MockWebFrame::clearOpener() const {
+void MockWebFrame::clearOpener() {
 }
 
 WebFrame* MockWebFrame::parent() const {
