@@ -11,7 +11,7 @@
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
-#include "chrome/browser/webui/options/options_managed_banner_handler.h"
+#include "chrome/browser/ui/webui/options/options_managed_banner_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/webui/web_ui_util.h"
 #include "grit/generated_resources.h"

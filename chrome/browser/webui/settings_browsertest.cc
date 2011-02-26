@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/webui/options/core_options_handler.h"
+#include "chrome/browser/ui/webui/options/core_options_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/ui_test_utils.h"
 #include "content/browser/webui/web_ui_browsertest.h"
