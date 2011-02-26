@@ -12,6 +12,9 @@
 
 typedef struct _GtkWidget GtkWidget;
 
+// An infobar that shows a message, up to two optional buttons, and an optional,
+// right-aligned link. This is commonly used to do things like:
+// "Would you like to do X? [Yes] [No]                         _Learn More_ [x]"
 class ConfirmInfoBarGtk : public InfoBar {
  public:
   explicit ConfirmInfoBarGtk(ConfirmInfoBarDelegate* delegate);
