@@ -95,6 +95,12 @@ class MetricsService : public NotificationObserver,
   // types we'll be using.
   static void RegisterPrefs(PrefService* local_state);
 
+  // Setup notifications which indicate that a user is performing work. This is
+  // useful to allow some features to sleep, until the machine becomes active,
+  // such as precluding UMA uploads unless there was recent activity.
+  static void SetupNotifications(NotificationRegistrar* registrar,
+                                 NotificationObserver* observer);
+
   // Implementation of NotificationObserver
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
