@@ -53,7 +53,6 @@ const char* PromoResourceService::kDefaultPromoResourceServer =
 
 PromoResourceService::PromoResourceService(Profile* profile)
     : WebResourceService(profile,
-                         profile->GetPrefs(),
                          PromoResourceService::kDefaultPromoResourceServer,
                          true,  // append locale to URL
                          NotificationType::PROMO_RESOURCE_STATE_CHANGED,
@@ -67,6 +66,7 @@ PromoResourceService::PromoResourceService(Profile* profile)
 PromoResourceService::~PromoResourceService() { }
 
 void PromoResourceService::Init() {
+  prefs_->RegisterStringPref(prefs::kNTPPromoResourceCacheUpdate, "0");
   prefs_->RegisterDoublePref(prefs::kNTPCustomLogoStart, 0);
   prefs_->RegisterDoublePref(prefs::kNTPCustomLogoEnd, 0);
   prefs_->RegisterDoublePref(prefs::kNTPPromoStart, 0);

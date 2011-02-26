@@ -198,15 +198,13 @@ class WebResourceService::UnpackerClient
 
 WebResourceService::WebResourceService(
     Profile* profile,
-    PrefService* prefs,
     const char* web_resource_server,
     bool apply_locale_to_url,
     NotificationType::Type notification_type,
     const char* last_update_time_pref_name,
     int start_fetch_delay,
     int cache_update_delay)
-    : prefs_(prefs),
-      profile_(profile),
+    : profile_(profile),
       ALLOW_THIS_IN_INITIALIZER_LIST(service_factory_(this)),
       in_fetch_(false),
       web_resource_server_(web_resource_server),
@@ -216,9 +214,8 @@ WebResourceService::WebResourceService(
       start_fetch_delay_(start_fetch_delay),
       cache_update_delay_(cache_update_delay),
       web_resource_update_scheduled_(false) {
-  DCHECK(prefs);
   DCHECK(profile);
-  prefs_->RegisterStringPref(last_update_time_pref_name, "0");
+  prefs_ = profile_->GetPrefs();
   resource_dispatcher_host_ = g_browser_process->resource_dispatcher_host();
   web_resource_fetcher_.reset(new WebResourceFetcher(this));
 }
@@ -250,8 +247,6 @@ void WebResourceService::OnWebResourceUnpacked(
 
 void WebResourceService::WebResourceStateChange() {
   web_resource_update_scheduled_ = false;
-  if (notification_type_ == NotificationType::NOTIFICATION_TYPE_COUNT)
-    return;
   NotificationService* service = NotificationService::current();
   service->Notify(notification_type_,
                   Source<WebResourceService>(this),

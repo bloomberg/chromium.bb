@@ -13,6 +13,7 @@
 
 #include <map>
 #include <queue>
+#include <set>
 
 #include "base/callback.h"
 #include "base/linked_ptr.h"
@@ -31,7 +32,7 @@ namespace gfx {
 class Size;
 }
 
-class GpuDataManager;
+class GpuBlacklist;
 struct GPUCreateCommandBufferConfig;
 class GPUInfo;
 struct GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params;
@@ -41,6 +42,55 @@ namespace IPC {
 struct ChannelHandle;
 class Message;
 }
+
+class Callback0Group
+{
+ public:
+  Callback0Group();
+  ~Callback0Group();
+
+  // Add a callback.
+  void Add(Callback0::Type* callback);
+
+  // Remove a callback.
+  // Returns true if removed, or false if it was not found.
+  bool Remove(Callback0::Type* callback);
+
+  // Call all callbacks.
+  void Run();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(Callback0Group);
+
+  // Map of callbacks.
+  std::set<Callback0::Type*> callbacks_;
+};
+
+class GpuProcessHostUIShimManager
+{
+ public:
+  static GpuProcessHostUIShimManager* GetInstance();
+
+  void SetGpuInfo(const GPUInfo& gpu_info);
+
+  // This callback group is invoked when GPU info is updated.
+  Callback0Group& gpu_info_update_callbacks() {
+    return gpu_info_update_callbacks_;
+  }
+
+  // Return all known information about the GPU.
+  const GPUInfo& gpu_info() const {
+    return gpu_info_;
+  }
+
+ private:
+  GpuProcessHostUIShimManager();
+  friend struct DefaultSingletonTraits<GpuProcessHostUIShimManager>;
+  DISALLOW_COPY_AND_ASSIGN(GpuProcessHostUIShimManager);
+
+  GPUInfo gpu_info_;
+  Callback0Group gpu_info_update_callbacks_;
+};
 
 class GpuProcessHostUIShim
     : public IPC::Channel::Listener,
@@ -134,9 +184,12 @@ class GpuProcessHostUIShim
   void AddCustomLogMessage(int level, const std::string& header,
       const std::string& message);
 
+  bool LoadGpuBlacklist();
+
  private:
   GpuProcessHostUIShim();
   virtual ~GpuProcessHostUIShim();
+  bool Init();
 
   // Message handlers.
   bool OnControlMessageReceived(const IPC::Message& message);
@@ -169,10 +222,8 @@ class GpuProcessHostUIShim
   // The handle for the GPU process or null if it is not known to be launched.
   base::ProcessHandle gpu_process_;
 
+  GPUInfo gpu_info_;
   ListValue log_messages_;
-
-  // Cached pointer to the singleton for efficiency purpose.
-  GpuDataManager* gpu_data_manager_;
 
   // These are the channel requests that we have already sent to
   // the GPU process, but haven't heard back about yet.
@@ -194,6 +245,9 @@ class GpuProcessHostUIShim
   class ViewSurface;
   std::map<ViewID, linked_ptr<ViewSurface> > acquired_surfaces_;
 
+  bool gpu_feature_flags_set_;
+  scoped_ptr<GpuBlacklist> gpu_blacklist_;
+  GpuFeatureFlags gpu_feature_flags_;
 };
 
 #endif  // CHROME_BROWSER_GPU_PROCESS_HOST_UI_SHIM_H_

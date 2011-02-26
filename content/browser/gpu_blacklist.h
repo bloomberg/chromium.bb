@@ -37,8 +37,6 @@ class GpuBlacklist {
   // If failed, the current GpuBlacklist is un-touched.
   bool LoadGpuBlacklist(const std::string& json_context,
                         bool current_os_only);
-  bool LoadGpuBlacklist(const DictionaryValue& parsed_json,
-                        bool current_os_only);
 
   // Collects system information and combines them with gpu_info and blacklist
   // information to determine gpu feature flags.
@@ -64,11 +62,6 @@ class GpuBlacklist {
   // Collects the version of the current blacklist.  Returns false and sets
   // major and minor to 0 on failure.
   bool GetVersion(uint16* major, uint16* monir) const;
-
-  // Collects the version of the current blacklist from a parsed json file.
-  // Returns false and sets major and minor to 0 on failure.
-  static bool GetVersion(
-      const DictionaryValue& parsed_json, uint16* major, uint16* minor);
 
  private:
   class VersionInfo {

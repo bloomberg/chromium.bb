@@ -426,6 +426,7 @@ GpuBlacklist::~GpuBlacklist() {
 
 bool GpuBlacklist::LoadGpuBlacklist(const std::string& json_context,
                                     bool current_os_only) {
+  std::vector<GpuBlacklistEntry*> entries;
   scoped_ptr<Value> root;
   root.reset(base::JSONReader::Read(json_context, false));
   if (root.get() == NULL || !root->IsType(Value::TYPE_DICTIONARY))
@@ -433,21 +434,14 @@ bool GpuBlacklist::LoadGpuBlacklist(const std::string& json_context,
 
   DictionaryValue* root_dictionary = static_cast<DictionaryValue*>(root.get());
   DCHECK(root_dictionary);
-  return LoadGpuBlacklist(*root_dictionary, current_os_only);
-}
-
-bool GpuBlacklist::LoadGpuBlacklist(const DictionaryValue& parsed_json,
-                                    bool current_os_only) {
-  std::vector<GpuBlacklistEntry*> entries;
-
   std::string version_string;
-  parsed_json.GetString("version", &version_string);
+  root_dictionary->GetString("version", &version_string);
   version_.reset(Version::GetVersionFromString(version_string));
   if (version_.get() == NULL)
     return false;
 
   ListValue* list = NULL;
-  parsed_json.GetList("entries", &list);
+  root_dictionary->GetList("entries", &list);
   if (list == NULL)
     return false;
 
@@ -555,25 +549,6 @@ bool GpuBlacklist::GetVersion(uint16* major, uint16* minor) const {
   if (version_.get() == NULL)
     return false;
   const std::vector<uint16>& components_reference = version_->components();
-  if (components_reference.size() != 2)
-    return false;
-  *major = components_reference[0];
-  *minor = components_reference[1];
-  return true;
-}
-
-bool GpuBlacklist::GetVersion(
-    const DictionaryValue& parsed_json, uint16* major, uint16* minor) {
-  DCHECK(major && minor);
-  *major = 0;
-  *minor = 0;
-  std::string version_string;
-  if (!parsed_json.GetString("version", &version_string))
-    return false;
-  scoped_ptr<Version> version(Version::GetVersionFromString(version_string));
-  if (version.get() == NULL)
-    return false;
-  const std::vector<uint16>& components_reference = version->components();
   if (components_reference.size() != 2)
     return false;
   *major = components_reference[0];

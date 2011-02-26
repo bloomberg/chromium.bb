@@ -19,10 +19,7 @@ class Profile;
 class WebResourceService
     : public UtilityProcessHost::Client {
  public:
-  // Pass notification_type = NOTIFICATION_TYPE_COUNT if notification is not
-  // required.
   WebResourceService(Profile* profile,
-                     PrefService* prefs,
                      const char* web_resource_server,
                      bool apply_locale_to_url_,
                      NotificationType::Type notification_type,

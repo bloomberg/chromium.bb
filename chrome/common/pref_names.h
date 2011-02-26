@@ -381,9 +381,6 @@ extern const char kNTPPromoGroup[];
 extern const char kNTPPromoGroupTimeSlice[];
 extern const char kNTPPromoBuild[];
 
-extern const char kGpuBlacklist[];
-extern const char kGpuBlacklistUpdate[];
-
 extern const char kDevToolsDisabled[];
 extern const char kDevToolsOpenDocked[];
 extern const char kDevToolsSplitLocation[];
