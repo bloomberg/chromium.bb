@@ -270,7 +270,8 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
 #define SCALAR_RET(arg, field, va, impl_type)     \
     *va_arg(va, impl_type *) = (arg)->field
 #define ARRAY_RET(arg, array_name, va, impl_type) \
-    ARRAY_SKIP(arg, array_name, va, impl_type)
+    *va_arg(va, uint32_t*) = (arg)->u.count;      \
+    SKIP(va, impl_type)
 #define BOOL_RET(arg, field, va, impl_type)       \
     *va_arg(va, impl_type *) = ((arg)->field != 0)
 
