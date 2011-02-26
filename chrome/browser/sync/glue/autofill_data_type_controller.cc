@@ -124,17 +124,12 @@ void AutofillDataTypeController::Stop() {
   if (state_ == MODEL_STARTING)
     StartDoneImpl(ABORTED, STOPPING);
 
-  // Note that we are doing most of the stop work here (deactivate and
-  // disassociate) on the UI thread even though the associate &
-  // activate were done on the DB thread.  This is because Stop() must
-  // be synchronous.
+  // Deactivate the change processor on the UI thread. We dont want to listen
+  // for any more changes or process them from server.
   notification_registrar_.RemoveAll();
   personal_data_->RemoveObserver(this);
   if (change_processor_ != NULL && change_processor_->IsRunning())
     sync_service_->DeactivateDataType(this, change_processor_.get());
-
-  if (model_associator_ != NULL)
-    model_associator_->DisassociateModels();
 
   set_state(NOT_RUNNING);
   if (BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
@@ -263,6 +258,9 @@ void AutofillDataTypeController::StartDoneImpl(
 void AutofillDataTypeController::StopImpl() {
   VLOG(1) << "Autofill data type controller StopImpl called.";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+
+  if (model_associator_ != NULL)
+    model_associator_->DisassociateModels();
 
   change_processor_.reset();
   model_associator_.reset();

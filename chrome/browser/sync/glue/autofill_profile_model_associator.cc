@@ -199,6 +199,7 @@ bool AutofillProfileModelAssociator::AssociateModels() {
 }
 
 bool AutofillProfileModelAssociator::DisassociateModels() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   id_map_.clear();
   id_map_inverse_.clear();
   return true;
