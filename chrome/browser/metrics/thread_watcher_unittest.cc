@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#if 0
+
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -11,12 +13,9 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
-#include "build/build_config.h"
 #include "chrome/browser/metrics/thread_watcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
-
-#if defined(OS_WIN)
 
 using base::TimeDelta;
 using base::TimeTicks;
@@ -246,6 +245,10 @@ class ThreadWatcherTest : public ::testing::Test {
   CustomThreadWatcher* webkit_watcher_;
 
   ThreadWatcherTest() {
+  }
+
+ protected:
+  virtual void SetUp() {
     webkit_thread_.reset(new BrowserThread(BrowserThread::WEBKIT));
     io_thread_.reset(new BrowserThread(BrowserThread::IO));
     watchdog_thread_.reset(new BrowserThread(BrowserThread::WATCHDOG));
@@ -265,7 +268,7 @@ class ThreadWatcherTest : public ::testing::Test {
         webkit_thread_id, webkit_thread_name, kSleepTime, kUnresponsiveTime);
   }
 
-  ~ThreadWatcherTest() {
+  virtual void TearDown() {
     // io_thread_->Stop();
     // webkit_thread_->Stop();
     // watchdog_thread_->Stop();
@@ -479,4 +482,4 @@ TEST_F(ThreadWatcherTest, MultipleThreadsNotResponding) {
           webkit_watcher_, &ThreadWatcher::DeActivateThreadWatching));
 }
 
-#endif  // OS_WIN
+#endif  // 0
