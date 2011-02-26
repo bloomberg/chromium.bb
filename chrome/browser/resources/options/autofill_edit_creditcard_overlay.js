@@ -24,7 +24,7 @@ cr.define('options', function() {
   function AutoFillEditCreditCardOverlay() {
     OptionsPage.call(this, 'autoFillEditCreditCardOverlay',
                      templateData.autoFillEditCreditCardTitle,
-                     'autoFillEditCreditCardOverlay');
+                     'autofill-edit-credit-card-overlay');
   }
 
   cr.addSingletonGetter(AutoFillEditCreditCardOverlay);
@@ -39,10 +39,10 @@ cr.define('options', function() {
       OptionsPage.prototype.initializePage.call(this);
 
       var self = this;
-      $('autoFillEditCreditCardCancelButton').onclick = function(event) {
+      $('autofill-edit-credit-card-cancel-button').onclick = function(event) {
         self.dismissOverlay_();
       }
-      $('autoFillEditCreditCardApplyButton').onclick = function(event) {
+      $('autofill-edit-credit-card-apply-button').onclick = function(event) {
         self.saveCreditCard_();
         self.dismissOverlay_();
       }
@@ -75,12 +75,12 @@ cr.define('options', function() {
     saveCreditCard_: function() {
       var creditCard = new Array(5);
       creditCard[0] = this.guid_;
-      creditCard[1] = $('nameOnCard').value;
-      creditCard[3] = $('expirationMonth').value;
-      creditCard[4] = $('expirationYear').value;
+      creditCard[1] = $('name-on-card').value;
+      creditCard[3] = $('expiration-month').value;
+      creditCard[4] = $('expiration-year').value;
 
       if (this.hasEditedNumber_)
-        creditCard[2] = $('creditCardNumber').value;
+        creditCard[2] = $('credit-card-number').value;
       else
         creditCard[2] = this.storedCCNumber_;
 
@@ -94,8 +94,8 @@ cr.define('options', function() {
      * @private
      */
     connectInputEvents_: function() {
-      $('nameOnCard').oninput = $('creditCardNumber').oninput =
-          $('expirationMonth').onchange = $('expirationYear').onchange =
+      $('name-on-card').oninput = $('credit-card-number').oninput =
+          $('expiration-month').onchange = $('expiration-year').onchange =
               this.inputFieldChanged_.bind(this);
     },
 
@@ -106,9 +106,9 @@ cr.define('options', function() {
      * @private
      */
     inputFieldChanged_: function(opt_event) {
-      var ccNumber = $('creditCardNumber');
-      var disabled = !$('nameOnCard').value && !ccNumber.value;
-      $('autoFillEditCreditCardApplyButton').disabled = disabled;
+      var ccNumber = $('credit-card-number');
+      var disabled = !$('name-on-card').value && !ccNumber.value;
+      $('autofill-edit-credit-card-apply-button').disabled = disabled;
 
       if (opt_event && opt_event.target == ccNumber) {
         // If the user hasn't edited the text yet, delete it all on edit.
@@ -128,7 +128,7 @@ cr.define('options', function() {
      */
     setDefaultSelectOptions_: function() {
       // Set the 'Expiration month' default options.
-      var expirationMonth = $('expirationMonth');
+      var expirationMonth = $('expiration-month');
       expirationMonth.options.length = 0;
       for (var i = 1; i <= 12; ++i) {
         var text;
@@ -144,7 +144,7 @@ cr.define('options', function() {
       }
 
       // Set the 'Expiration year' default options.
-      var expirationYear = $('expirationYear');
+      var expirationYear = $('expiration-year');
       expirationYear.options.length = 0;
 
       var date = new Date();
@@ -163,10 +163,10 @@ cr.define('options', function() {
      * @private
      */
     clearInputFields_: function() {
-      $('nameOnCard').value = '';
-      $('creditCardNumber').value = '';
-      $('expirationMonth').selectedIndex = 0;
-      $('expirationYear').selectedIndex = 0;
+      $('name-on-card').value = '';
+      $('credit-card-number').value = '';
+      $('expiration-month').selectedIndex = 0;
+      $('expiration-year').selectedIndex = 0;
     },
 
     /**
@@ -174,8 +174,8 @@ cr.define('options', function() {
      * @private
      */
     setInputFields_: function(creditCard) {
-      $('nameOnCard').value = creditCard['nameOnCard'];
-      $('creditCardNumber').value = creditCard['obfuscatedCardNumber'];
+      $('name-on-card').value = creditCard['nameOnCard'];
+      $('credit-card-number').value = creditCard['obfuscatedCardNumber'];
 
       // The options for the year select control may be out-dated at this point,
       // e.g. the user opened the options page before midnight on New Year's Eve
@@ -184,7 +184,7 @@ cr.define('options', function() {
       this.setDefaultSelectOptions_();
 
       var idx = parseInt(creditCard['expirationMonth'], 10);
-      $('expirationMonth').selectedIndex = idx - 1;
+      $('expiration-month').selectedIndex = idx - 1;
 
       expYear = creditCard['expirationYear'];
       var date = new Date();
@@ -192,7 +192,7 @@ cr.define('options', function() {
       for (var i = 0; i < 10; ++i) {
         var text = year + i;
         if (expYear == String(text))
-          $('expirationYear').selectedIndex = i;
+          $('expiration-year').selectedIndex = i;
       }
     },
 
@@ -218,7 +218,7 @@ cr.define('options', function() {
   };
 
   AutoFillEditCreditCardOverlay.setTitle = function(title) {
-    $('autoFillCreditCardTitle').textContent = title;
+    $('autofill-credit-card-title').textContent = title;
   };
 
   // Export

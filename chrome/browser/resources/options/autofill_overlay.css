@@ -1,4 +1,5 @@
-#autofill-edit-address-overlay {
+#autofill-edit-address-overlay,
+#autofill-edit-credit-card-overlay {
   width: 500px;
 }
 
