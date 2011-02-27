@@ -19,7 +19,7 @@
 #include "chrome/browser/history/top_sites_backend.h"
 #include "chrome/browser/history/top_sites_cache.h"
 #include "chrome/browser/history/top_sites_database.h"
-#include "chrome/browser/webui/most_visited_handler.h"
+#include "chrome/browser/ui/webui/most_visited_handler.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"

@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "chrome/browser/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 
 namespace chromeos {
 

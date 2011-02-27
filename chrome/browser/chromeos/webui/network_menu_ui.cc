@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/views/webui_menu_widget.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/webui/theme_source.h"
+#include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "grit/browser_resources.h"

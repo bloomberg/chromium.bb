@@ -8,8 +8,8 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/webui/print_preview_handler.h"
 #include "chrome/browser/ui/webui/print_preview_ui_html_source.h"
-#include "chrome/browser/webui/print_preview_handler.h"
 
 PrintPreviewUI::PrintPreviewUI(TabContents* contents)
     : WebUI(contents),

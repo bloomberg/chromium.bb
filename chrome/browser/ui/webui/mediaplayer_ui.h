@@ -9,7 +9,7 @@
 #include <set>
 #include <vector>
 
-#include "chrome/browser/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_source.h"

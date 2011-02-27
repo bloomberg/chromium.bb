@@ -10,7 +10,7 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/url_constants.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"

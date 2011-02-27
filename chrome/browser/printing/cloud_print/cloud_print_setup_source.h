@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/message_loop.h"
-#include "chrome/browser/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/url_constants.h"
 
 class CloudPrintSetupSource : public ChromeURLDataManager::DataSource {

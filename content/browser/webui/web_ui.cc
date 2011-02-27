@@ -15,7 +15,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
-#include "chrome/browser/webui/generic_handler.h"
+#include "chrome/browser/ui/webui/generic_handler.h"
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"

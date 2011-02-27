@@ -20,7 +20,7 @@
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_util.h"
-#include "chrome/browser/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "content/browser/webui/web_ui.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/file_stream.h"

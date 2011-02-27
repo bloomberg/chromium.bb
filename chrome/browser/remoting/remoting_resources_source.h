@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_REMOTING_REMOTING_RESOURCES_SOURCE_H_
 
 #include "base/message_loop.h"
-#include "chrome/browser/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/url_constants.h"
 
 class RemotingResourcesSource : public ChromeURLDataManager::DataSource {

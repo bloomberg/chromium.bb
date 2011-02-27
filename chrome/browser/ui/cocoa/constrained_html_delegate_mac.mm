@@ -9,7 +9,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/cocoa/constrained_window_mac.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
-#include "chrome/browser/webui/html_dialog_tab_contents_delegate.h"
+#include "chrome/browser/ui/webui/html_dialog_tab_contents_delegate.h"
 #import <Cocoa/Cocoa.h>
 #include "ipc/ipc_message.h"
 

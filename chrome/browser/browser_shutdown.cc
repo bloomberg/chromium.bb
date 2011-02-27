@@ -33,7 +33,7 @@
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/browser/service/service_process_control_manager.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_plugin_lib.h"
 #include "chrome/common/chrome_switches.h"

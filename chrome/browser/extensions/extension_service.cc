@@ -48,7 +48,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
-#include "chrome/browser/webui/shown_sections_handler.h"
+#include "chrome/browser/ui/webui/shown_sections_handler.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"

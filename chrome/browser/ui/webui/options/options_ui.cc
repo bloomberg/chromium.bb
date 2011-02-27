@@ -40,7 +40,7 @@
 #include "chrome/browser/ui/webui/options/personal_options_handler.h"
 #include "chrome/browser/ui/webui/options/search_engine_manager_handler.h"
 #include "chrome/browser/ui/webui/options/stop_syncing_handler.h"
-#include "chrome/browser/webui/theme_source.h"
+#include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/time_format.h"

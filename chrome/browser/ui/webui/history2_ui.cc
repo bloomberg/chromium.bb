@@ -27,7 +27,7 @@
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/webui/favicon_source.h"
+#include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/time_format.h"

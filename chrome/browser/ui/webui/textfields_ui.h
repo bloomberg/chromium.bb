@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "chrome/browser/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "content/browser/webui/web_ui.h"
 
 class RefCountedMemory;

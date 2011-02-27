@@ -31,7 +31,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
-#include "chrome/browser/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"

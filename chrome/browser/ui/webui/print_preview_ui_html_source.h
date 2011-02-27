@@ -9,7 +9,7 @@
 #include <string>
 #include <utility>
 
-#include "chrome/browser/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 
 namespace base {
 class SharedMemory;
