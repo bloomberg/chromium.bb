@@ -85,10 +85,12 @@ class PluginDelegate {
   // have PluginDelegates).
   class ModuleLifetime {
    public:
-    // Notification that the given plugin object has been deleted. This is
-    // called from the module's destructor, so you should not dereference the
-    // given pointer.
-    virtual void PluginModuleDestroyed(PluginModule* destroyed_module) = 0;
+    // Notification that the given plugin object is no longer usable. It either
+    // indicates the module was deleted, or that it has crashed.
+    //
+    // This can be called from the module's destructor, so you should not
+    // dereference the given pointer.
+    virtual void PluginModuleDead(PluginModule* dead_module) = 0;
   };
 
   // This class is implemented by the PluginDelegate implementation and is

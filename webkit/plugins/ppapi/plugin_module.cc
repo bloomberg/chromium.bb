@@ -374,6 +374,7 @@ PluginModule::PluginModule(const std::string& name,
                            PluginDelegate::ModuleLifetime* lifetime_delegate)
     : lifetime_delegate_(lifetime_delegate),
       callback_tracker_(new CallbackTracker),
+      is_crashed_(false),
       library_(NULL),
       name_(name) {
   pp_module_ = ResourceTracker::Get()->AddModule(this);
@@ -397,7 +398,11 @@ PluginModule::~PluginModule() {
     base::UnloadNativeLibrary(library_);
 
   ResourceTracker::Get()->ModuleDeleted(pp_module_);
-  lifetime_delegate_->PluginModuleDestroyed(this);
+
+  // When the plugin crashes, we immediately tell the lifetime delegate that
+  // we're gone, so we don't want to tell it again.
+  if (!is_crashed_)
+    lifetime_delegate_->PluginModuleDead(this);
 }
 
 bool PluginModule::InitAsInternalPlugin(const EntryPoints& entry_points) {
@@ -483,10 +488,15 @@ scoped_refptr<CallbackTracker> PluginModule::GetCallbackTracker() {
 }
 
 void PluginModule::PluginCrashed() {
+  DCHECK(!is_crashed_);  // Should only get one notification.
+  is_crashed_ = true;
+
   // Notify all instances that they crashed.
   for (PluginInstanceSet::iterator i = instances_.begin();
        i != instances_.end(); ++i)
     (*i)->InstanceCrashed();
+
+  lifetime_delegate_->PluginModuleDead(this);
 }
 
 bool PluginModule::InitializeModule() {

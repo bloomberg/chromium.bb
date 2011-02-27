@@ -217,13 +217,16 @@ void PepperPluginRegistry::AddLiveModule(const FilePath& path,
   live_modules_[path] = module;
 }
 
-void PepperPluginRegistry::PluginModuleDestroyed(
-    webkit::ppapi::PluginModule* destroyed_module) {
+void PepperPluginRegistry::PluginModuleDead(
+    webkit::ppapi::PluginModule* dead_module) {
+  // DANGER: Don't dereference the dead_module pointer! It may be in the
+  // process of being deleted.
+
   // Modules aren't destroyed very often and there are normally at most a
   // couple of them. So for now we just do a brute-force search.
   for (NonOwningModuleMap::iterator i = live_modules_.begin();
        i != live_modules_.end(); ++i) {
-    if (i->second == destroyed_module) {
+    if (i->second == dead_module) {
       live_modules_.erase(i);
       return;
     }

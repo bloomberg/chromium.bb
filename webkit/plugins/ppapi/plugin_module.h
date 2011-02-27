@@ -140,6 +140,9 @@ class PluginModule : public base::RefCounted<PluginModule>,
 
   PP_Module pp_module_;
 
+  // True if the plugin is running out-of-process and has crashed.
+  bool is_crashed_;
+
   // Manages the out of process proxy interface. The presence of this
   // pointer indicates that the plugin is running out of process and that the
   // entry_points_ aren't valid.

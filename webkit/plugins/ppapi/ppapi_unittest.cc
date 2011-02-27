@@ -117,7 +117,7 @@ void PpapiUnittest::ShutdownModule() {
   module_ = NULL;
 }
 
-void PpapiUnittest::PluginModuleDestroyed(PluginModule* destroyed_module) {
+void PpapiUnittest::PluginModuleDead(PluginModule* /* dead_module */) {
   // Nothing needed (this is necessary to make the module compile).
 }
 

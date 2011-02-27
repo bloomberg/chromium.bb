@@ -74,8 +74,9 @@ class PepperPluginRegistry
   const PepperPluginInfo* GetInfoForPlugin(const FilePath& path) const;
 
   // Returns an existing loaded module for the given path. It will search for
-  // both preloaded in-process or currently active out-of-process plugins
-  // matching the given name. Returns NULL if the plugin hasn't been loaded.
+  // both preloaded in-process or currently active (non crashed) out-of-process
+  // plugins matching the given name. Returns NULL if the plugin hasn't been
+  // loaded.
   webkit::ppapi::PluginModule* GetLiveModule(const FilePath& path);
 
   // Notifies the registry that a new non-preloaded module has been created.
@@ -85,8 +86,7 @@ class PepperPluginRegistry
   void AddLiveModule(const FilePath& path, webkit::ppapi::PluginModule* module);
 
   // ModuleLifetime implementation.
-  virtual void PluginModuleDestroyed(
-      webkit::ppapi::PluginModule* destroyed_module);
+  virtual void PluginModuleDead(webkit::ppapi::PluginModule* dead_module);
 
  private:
   PepperPluginRegistry();
@@ -102,7 +102,10 @@ class PepperPluginRegistry
 
   // A list of non-owning pointers to all currently-live plugin modules. This
   // includes both preloaded ones in preloaded_modules_, and out-of-process
-  // modules whose lifetime is managed externally.
+  // modules whose lifetime is managed externally. This will contain only
+  // non-crashed modules. If an out-of-process module crashes, it may
+  // continue as long as there are WebKit references to it, but it will not
+  // appear in this list.
   typedef std::map<FilePath, webkit::ppapi::PluginModule*> NonOwningModuleMap;
   NonOwningModuleMap live_modules_;
 };

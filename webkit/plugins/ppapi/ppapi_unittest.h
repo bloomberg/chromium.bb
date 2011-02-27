@@ -46,7 +46,7 @@ class PpapiUnittest : public testing::Test,
   scoped_refptr<PluginInstance> instance_;
 
   // ModuleLifetime implementation.
-  virtual void PluginModuleDestroyed(PluginModule* destroyed_module);
+  virtual void PluginModuleDead(PluginModule* dead_module);
 
   DISALLOW_COPY_AND_ASSIGN(PpapiUnittest);
 };
