@@ -140,8 +140,8 @@ static const VersionRangeDefinition kJavaVersionRange[] = {
 };
 
 static const VersionRangeDefinition kRedhatIcedTeaVersionRange[] = {
-    { "0", "1.9", "1.8.5", true },
-    { "1.9", "1.10", "1.9.5", true },
+    { "0", "1.9", "1.8.7", true },
+    { "1.9", "1.10", "1.9.7", true },
 };
 
 static const PluginGroupDefinition kGroupDefinitions[] = {
