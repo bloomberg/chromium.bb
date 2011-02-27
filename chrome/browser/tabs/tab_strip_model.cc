@@ -959,7 +959,7 @@ void TabStripModel::ChangeSelectedContentsFrom(
   TabContentsWrapper* last_selected_contents = old_contents;
   if (last_selected_contents) {
     FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
-                      TabDeselectedAt(last_selected_contents, selected_index_));
+                      TabDeselected(last_selected_contents));
   }
 
   selected_index_ = to_index;

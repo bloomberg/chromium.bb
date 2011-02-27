@@ -150,9 +150,8 @@ void DefaultTabHandler::TabDetachedAt(TabContentsWrapper* contents, int index) {
   delegate_->AsBrowser()->TabDetachedAt(contents, index);
 }
 
-void DefaultTabHandler::TabDeselectedAt(TabContentsWrapper* contents,
-                                        int index) {
-  delegate_->AsBrowser()->TabDeselectedAt(contents, index);
+void DefaultTabHandler::TabDeselected(TabContentsWrapper* contents) {
+  delegate_->AsBrowser()->TabDeselected(contents);
 }
 
 void DefaultTabHandler::TabSelectedAt(TabContentsWrapper* old_contents,

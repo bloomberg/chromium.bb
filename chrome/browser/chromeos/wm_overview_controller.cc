@@ -77,7 +77,7 @@ class BrowserListener : public TabStripModelObserver {
   virtual void TabChangedAt(TabContentsWrapper* contents, int index,
                             TabStripModelObserver::TabChangeType change_type);
   virtual void TabStripEmpty();
-  virtual void TabDeselectedAt(TabContentsWrapper* contents, int index) {}
+  virtual void TabDeselected(TabContentsWrapper* contents) {}
   virtual void TabSelectedAt(TabContentsWrapper* old_contents,
                              TabContentsWrapper* new_contents,
                              int index,

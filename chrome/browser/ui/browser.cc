@@ -2687,7 +2687,7 @@ void Browser::TabDetachedAt(TabContentsWrapper* contents, int index) {
   TabDetachedAtImpl(contents, index, DETACH_TYPE_DETACH);
 }
 
-void Browser::TabDeselectedAt(TabContentsWrapper* contents, int index) {
+void Browser::TabDeselected(TabContentsWrapper* contents) {
   if (instant())
     instant()->DestroyPreviewContents();
 
