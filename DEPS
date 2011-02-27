@@ -45,7 +45,7 @@ deps = {
   # happen.  See lines mentioning "webkit_revision" for the real
   # WebKit checkout.
   "src/third_party/WebKit":
-    "/trunk/deps/third_party/WebKit@73335",
+    "/trunk/deps/third_party/WebKit@76115",
 
   "src/third_party/icu":
     "/trunk/deps/third_party/icu46@75916",
