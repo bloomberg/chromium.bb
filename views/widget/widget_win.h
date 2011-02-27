@@ -502,6 +502,10 @@ class WidgetWin : public ui::WindowImpl,
   // Synchronously paints the invalid contents of the Widget.
   void RedrawInvalidRect();
 
+  // Synchronously updates the invalid contents of the Widget. Valid for
+  // layered windows only.
+  void RedrawLayeredWindowContents();
+
   // A delegate implementation that handles events received here.
   internal::NativeWidgetDelegate* delegate_;
 
@@ -531,7 +535,12 @@ class WidgetWin : public ui::WindowImpl,
 
   // A canvas that contains the window contents in the case of a layered
   // window.
-  scoped_ptr<gfx::CanvasSkia> contents_;
+  scoped_ptr<gfx::CanvasSkia> layered_window_contents_;
+
+  // We must track the invalid rect for a layered window ourselves, since
+  // Windows will not do this properly with InvalidateRect()/GetUpdateRect().
+  // (In fact, it'll return misleading information from GetUpdateRect()).
+  gfx::Rect layered_window_invalid_rect_;
 
   // Whether or not the window should delete itself when it is destroyed.
   // Set this to false via its setter for stack allocated instances.

@@ -527,9 +527,15 @@ View* WidgetWin::GetDraggedView() {
 }
 
 void WidgetWin::SchedulePaintInRect(const gfx::Rect& rect) {
-  // InvalidateRect() expects client coordinates.
-  RECT r = rect.ToRECT();
-  InvalidateRect(hwnd(), &r, FALSE);
+  if (use_layered_buffer_) {
+    // We must update the back-buffer immediately, since Windows' handling of
+    // invalid rects is somewhat mysterious.
+    layered_window_invalid_rect_ = layered_window_invalid_rect_.Union(rect);
+  } else {
+    // InvalidateRect() expects client coordinates.
+    RECT r = rect.ToRECT();
+    InvalidateRect(hwnd(), &r, FALSE);
+  }
 }
 
 void WidgetWin::SetCursor(gfx::NativeCursor cursor) {
@@ -997,12 +1003,6 @@ void WidgetWin::OnWindowPosChanging(WINDOWPOS* window_pos) {
 }
 
 void WidgetWin::OnWindowPosChanged(WINDOWPOS* window_pos) {
-  // Layered windows need to be explicitly invalidated, but any calls to
-  // SchedulePaint() prior to the window being shown are ignored by Windows, so
-  // we must manually invalidate the widget when it is shown. Non-layered
-  // windows are automatically invalidated by Windows when they are shown.
-  if (use_layered_buffer_ && window_pos->flags & SWP_SHOWWINDOW)
-    InvalidateRect(hwnd(), NULL, FALSE);
   SetMsgHandled(FALSE);
 }
 
@@ -1175,9 +1175,9 @@ Window* WidgetWin::GetWindowImpl(HWND hwnd) {
 }
 
 void WidgetWin::SizeContents(const gfx::Size& window_size) {
-  contents_.reset(new gfx::CanvasSkia(window_size.width(),
-                                      window_size.height(),
-                                      false));
+  layered_window_contents_.reset(new gfx::CanvasSkia(window_size.width(),
+                                                     window_size.height(),
+                                                     false));
 }
 
 RootView* WidgetWin::GetFocusedViewRootView() {
@@ -1234,31 +1234,40 @@ void WidgetWin::MakeMSG(MSG* msg, UINT message, WPARAM w_param, LPARAM l_param,
 }
 
 void WidgetWin::RedrawInvalidRect() {
-  RECT r = { 0, 0, 0, 0 };
-  if (GetUpdateRect(hwnd(), &r, FALSE) && !IsRectEmpty(&r)) {
-    if (use_layered_buffer_) {
-      // We need to clip to the dirty rect ourselves.
-      contents_->save(SkCanvas::kClip_SaveFlag);
-      contents_->ClipRectInt(r.left, r.top, r.right - r.left,
-                             r.bottom - r.top);
-      GetRootView()->Paint(contents_.get());
-      contents_->restore();
-
-      RECT wr;
-      GetWindowRect(&wr);
-      SIZE size = {wr.right - wr.left, wr.bottom - wr.top};
-      POINT position = {wr.left, wr.top};
-      HDC dib_dc = contents_->getTopPlatformDevice().getBitmapDC();
-      POINT zero = {0, 0};
-      BLENDFUNCTION blend = {AC_SRC_OVER, 0, layered_alpha_, AC_SRC_ALPHA};
-      UpdateLayeredWindow(hwnd(), NULL, &position, &size, dib_dc, &zero,
-                          RGB(0xFF, 0xFF, 0xFF), &blend, ULW_ALPHA);
-      ValidateRect(hwnd(), &r);
-    } else {
+  if (use_layered_buffer_) {
+    RedrawLayeredWindowContents();
+  } else {
+    RECT r = { 0, 0, 0, 0 };
+    if (GetUpdateRect(hwnd(), &r, FALSE) && !IsRectEmpty(&r)) {
       RedrawWindow(hwnd(), &r, NULL,
                    RDW_INVALIDATE | RDW_UPDATENOW | RDW_NOCHILDREN);
     }
   }
+}
+
+void WidgetWin::RedrawLayeredWindowContents() {
+  if (layered_window_invalid_rect_.IsEmpty())
+    return;
+
+  // We need to clip to the dirty rect ourselves.
+  layered_window_contents_->save(SkCanvas::kClip_SaveFlag);
+  layered_window_contents_->ClipRectInt(layered_window_invalid_rect_.x(),
+                                        layered_window_invalid_rect_.y(),
+                                        layered_window_invalid_rect_.width(),
+                                        layered_window_invalid_rect_.height());
+  GetRootView()->Paint(layered_window_contents_.get());
+  layered_window_contents_->restore();
+
+  RECT wr;
+  GetWindowRect(&wr);
+  SIZE size = {wr.right - wr.left, wr.bottom - wr.top};
+  POINT position = {wr.left, wr.top};
+  HDC dib_dc = layered_window_contents_->getTopPlatformDevice().getBitmapDC();
+  POINT zero = {0, 0};
+  BLENDFUNCTION blend = {AC_SRC_OVER, 0, layered_alpha_, AC_SRC_ALPHA};
+  UpdateLayeredWindow(hwnd(), NULL, &position, &size, dib_dc, &zero,
+                      RGB(0xFF, 0xFF, 0xFF), &blend, ULW_ALPHA);
+  layered_window_invalid_rect_.SetRect(0, 0, 0, 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
