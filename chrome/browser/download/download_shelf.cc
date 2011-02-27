@@ -10,7 +10,7 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/metrics/user_metrics.h"
-#include "chrome/browser/webui/downloads_ui.h"
+#include "chrome/browser/ui/webui/downloads_ui.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"

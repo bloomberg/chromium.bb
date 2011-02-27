@@ -28,7 +28,7 @@
 #include "chrome/browser/ui/views/keyword_editor_view.h"
 #include "chrome/browser/ui/views/options/managed_prefs_banner_view.h"
 #include "chrome/browser/ui/views/options/options_group_view.h"
-#include "chrome/browser/webui/new_tab_ui.h"
+#include "chrome/browser/ui/webui/new_tab_ui.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"

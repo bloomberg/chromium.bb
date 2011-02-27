@@ -573,10 +573,10 @@
         'browser/ui/login/login_prompt_uitest.cc',
         'browser/ui/tests/browser_uitest.cc',
         'browser/ui/views/find_bar_host_uitest.cc',
+        'browser/ui/webui/bookmarks_ui_uitest.cc',
+        'browser/ui/webui/new_tab_ui_uitest.cc',
         'browser/ui/webui/options/options_ui_uitest.cc',
-        'browser/webui/bookmarks_ui_uitest.cc',
-        'browser/webui/new_tab_ui_uitest.cc',
-        'browser/webui/print_preview_ui_uitest.cc',
+        'browser/ui/webui/print_preview_ui_uitest.cc',
         'common/logging_chrome_uitest.cc',
         'renderer/external_extension_uitest.cc',
         'test/automation/automation_proxy_uitest.cc',
@@ -691,7 +691,7 @@
         ['chromeos==1', {
           'sources!': [
               # TODO(thestig): Enable when print preview is ready for CrOS.
-             'browser/webui/print_preview_ui_uitest.cc',
+             'browser/ui/webui/print_preview_ui_uitest.cc',
           ],
         }],
       ],
@@ -1723,6 +1723,8 @@
         'browser/ui/views/shell_dialogs_win_unittest.cc',
         'browser/ui/views/status_icons/status_tray_win_unittest.cc',
         'browser/ui/webui/options/language_options_handler_unittest.cc',
+        'browser/ui/webui/print_preview_ui_html_source_unittest.cc',
+        'browser/ui/webui/sync_internals_ui_unittest.cc',
         'browser/ui/window_sizer_unittest.cc',
         'browser/ui/window_snapshot/window_snapshot_mac_unittest.mm',
         'browser/user_style_sheet_watcher_unittest.cc',
@@ -1732,9 +1734,7 @@
         'browser/webdata/web_data_service_unittest.cc',
         'browser/webdata/web_database_unittest.cc',
         'browser/webui/html_dialog_tab_contents_delegate_unittest.cc',
-        'browser/webui/print_preview_ui_html_source_unittest.cc',
         'browser/webui/shown_sections_handler_unittest.cc',
-        'browser/webui/sync_internals_ui_unittest.cc',
         'browser/webui/theme_source_unittest.cc',
         'browser/web_resource/promo_resource_service_unittest.cc',
         'common/bzip2_unittest.cc',
@@ -1880,7 +1880,7 @@
             # TODO(thestig) Enable PrintPreviewUIHTMLSource tests on CrOS when
             # print preview is enabled on CrOS.
             ['exclude', 'browser/notifications/desktop_notifications_unittest.cc'],
-            ['exclude', 'browser/webui/print_preview_ui_html_source_unittest.cc'],
+            ['exclude', 'browser/ui/webui/print_preview_ui_html_source_unittest.cc'],
           ],
         }, { # else: chromeos == 0
           'sources/': [
@@ -2417,7 +2417,7 @@
           ],
           'sources': [
             # TODO(estade): port to win/mac.
-            'browser/webui/constrained_html_ui_browsertest.cc',
+            'browser/ui/webui/constrained_html_ui_browsertest.cc',
           ],
         }],
         ['OS=="mac"', {
@@ -2462,7 +2462,7 @@
           ],
           'sources!': [
             # TODO(estade): port to linux/views.
-            'browser/webui/constrained_html_ui_browsertest.cc',
+            'browser/ui/webui/constrained_html_ui_browsertest.cc',
           ],
         }, { # else: toolkit_views == 0
           'sources!': [

@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/tab_contents_container_gtk.h"
-#include "chrome/browser/webui/html_dialog_ui.h"
+#include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "ipc/ipc_message.h"
 

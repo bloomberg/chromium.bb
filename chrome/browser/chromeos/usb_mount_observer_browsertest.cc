@@ -9,7 +9,7 @@
 #include "chrome/browser/chromeos/usb_mount_observer.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/webui/mediaplayer_ui.h"
+#include "chrome/browser/ui/webui/mediaplayer_ui.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/automation/dom_element_proxy.h"
 #include "chrome/test/in_process_browser_test.h"

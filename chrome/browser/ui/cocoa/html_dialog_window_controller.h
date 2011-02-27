@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/webui/html_dialog_ui.h"
+#include "chrome/browser/ui/webui/html_dialog_ui.h"
 
 class HtmlDialogWindowDelegateBridge;
 class Profile;

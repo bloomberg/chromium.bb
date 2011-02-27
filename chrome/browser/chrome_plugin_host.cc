@@ -27,7 +27,7 @@
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
-#include "chrome/browser/webui/html_dialog_ui.h"
+#include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_counters.h"
 #include "chrome/common/chrome_paths.h"

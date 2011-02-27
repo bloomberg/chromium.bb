@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_KEYBOARD_OVERLAY_DELEGATE_H_
 #define CHROME_BROWSER_UI_VIEWS_KEYBOARD_OVERLAY_DELEGATE_H_
 
-#include "chrome/browser/webui/html_dialog_ui.h"
+#include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "ui/gfx/native_widget_types.h"
 
 class KeyboardOverlayDelegate : public HtmlDialogUIDelegate {

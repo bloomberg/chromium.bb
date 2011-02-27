@@ -4,7 +4,7 @@
 
 #include "chrome/browser/webui/value_helper.h"
 
-#include "chrome/browser/webui/new_tab_ui.h"
+#include "chrome/browser/ui/webui/new_tab_ui.h"
 #include "chrome/common/url_constants.h"
 
 bool ValueHelper::TabToValue(

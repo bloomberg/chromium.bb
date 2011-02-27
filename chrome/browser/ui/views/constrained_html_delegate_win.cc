@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/webui/constrained_html_ui.h"
+#include "chrome/browser/ui/webui/constrained_html_ui.h"
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
+#include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "chrome/browser/webui/html_dialog_tab_contents_delegate.h"
-#include "chrome/browser/webui/html_dialog_ui.h"
 #include "ipc/ipc_message.h"
 #include "ui/gfx/rect.h"
 #include "views/view.h"

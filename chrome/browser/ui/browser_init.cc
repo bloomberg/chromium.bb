@@ -93,7 +93,7 @@
 #include "chrome/browser/chromeos/usb_mount_observer.h"
 #include "chrome/browser/chromeos/wm_message_listener.h"
 #include "chrome/browser/chromeos/wm_overview_controller.h"
-#include "chrome/browser/webui/mediaplayer_ui.h"
+#include "chrome/browser/ui/webui/mediaplayer_ui.h"
 #endif
 
 #if defined(HAVE_XINPUT2)

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/webui/new_tab_ui.h"
+#include "chrome/browser/ui/webui/new_tab_ui.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/testing_profile.h"
 #include "content/browser/browser_thread.h"

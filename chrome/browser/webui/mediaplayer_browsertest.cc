@@ -8,7 +8,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/webui/mediaplayer_ui.h"
+#include "chrome/browser/ui/webui/mediaplayer_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/automation/dom_element_proxy.h"
