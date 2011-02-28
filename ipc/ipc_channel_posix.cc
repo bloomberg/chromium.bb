@@ -1005,6 +1005,9 @@ void Channel::ChannelImpl::OnFileCanReadWithoutBlocking(int fd) {
       waiting_connect_ = false;
     }
     if (!ProcessIncomingMessages()) {
+      // ClosePipeOnError may delete this object, so we mustn't call
+      // ProcessOutgoingMessages.
+      send_server_hello_msg = false;
       ClosePipeOnError();
     }
   } else {
