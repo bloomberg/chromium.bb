@@ -228,12 +228,13 @@ void NativeDialogHost::Init() {
   g_signal_connect(window()->GetNativeWindow(), "check-resize",
       G_CALLBACK(&OnCheckResizeThunk), this);
 
-  // Use gtk's default size if size is not speicified.
+  const int padding = 2 * kDialogPadding;
+  // Use gtk's default size if size is not specified.
   if (size_.IsEmpty()) {
     // Use given width or height if given.
     if (size_.width() || size_.height()) {
-      int width = size_.width() == 0 ? -1 : size_.width();
-      int height = size_.height() == 0 ? -1 : size_.height();
+      int width = size_.width() == 0 ? -1 : size_.width() + padding;
+      int height = size_.height() == 0 ? -1 : size_.height() + padding;
       gtk_widget_set_size_request(contents, width, height);
     }
 
@@ -241,6 +242,9 @@ void NativeDialogHost::Init() {
     gtk_widget_size_request(contents, &requsition);
     preferred_size_.set_width(requsition.width);
     preferred_size_.set_height(requsition.height);
+  } else {
+    preferred_size_.set_width(size_.width() + padding);
+    preferred_size_.set_height(size_.height() + padding);
   }
 
   CheckSize();
