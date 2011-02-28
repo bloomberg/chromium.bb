@@ -4150,8 +4150,6 @@
             ['OS=="linux" and chromeos==1',{
               'sources/': [
                 ['exclude', '^browser/extensions/extension_tts_api_linux.cc'],
-                ['exclude', '^browser/geolocation/wifi_data_provider_linux.cc'],
-                ['exclude', '^browser/geolocation/wifi_data_provider_linux.h'],
                 ['exclude', '^browser/notifications/balloon_collection_impl.cc'],
                 ['exclude', '^browser/notifications/balloon_collection_impl.h'],
                 ['exclude', '^browser/notifications/balloon_collection_linux.cc'],

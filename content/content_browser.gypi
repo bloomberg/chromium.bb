@@ -323,6 +323,12 @@
             'browser/certificate_manager_model.h',
           ],
         }],
+        ['OS=="linux" and chromeos==1', {
+          'sources/': [
+            ['exclude', '^browser/geolocation/wifi_data_provider_linux.cc'],
+            ['exclude', '^browser/geolocation/wifi_data_provider_linux.h'],
+          ]
+        }],
         ['OS=="mac"', {
           'link_settings': {
             'mac_bundle_resources': [
