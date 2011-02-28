@@ -5,9 +5,8 @@
     <div class="font-input-div">
       <div>
         <select id="serif-font-family" class="font-input" dataType="string"
-            i18n-options="fontSettingsFontList"
             pref="webkit.webprefs.serif_font_family"
-            metric="Options_ChangeSerifFont"></select>
+            metric="Options_ChangeSerifFont" disabled></select>
       </div>
       <div>
         <input id="serif-font-size" type="range" min="0" max="24"
@@ -15,7 +14,7 @@
         <div>
           <span i18n-content="fontSettingsSizeTiny"></span>
           <span i18n-content="fontSettingsSizeHuge" class="font-settings-huge">
-              </span>
+          </span>
         </div>
       </div>
     </div>
@@ -25,10 +24,9 @@
     <h3 i18n-content="fontSettingsFixedWidth"></h3>
     <div class="font-input-div">
       <div>
-        <select class="font-input" i18n-options="fontSettingsFontList"
+        <select id="fixed-font-family" class="font-input" dataType="string"
             pref="webkit.webprefs.fixed_font_family"
-            dataType="string"
-            metric="Options_ChangeFixedFont"></select>
+            metric="Options_ChangeFixedFont" disabled></select>
       </div>
       <div>
         <input id="fixed-font-size" type="range" min="0" max="24"
@@ -36,7 +34,7 @@
         <div>
           <span i18n-content="fontSettingsSizeTiny"></span>
           <span i18n-content="fontSettingsSizeHuge" class="font-settings-huge">
-              </span>
+          </span>
         </div>
       </div>
     </div>
@@ -51,7 +49,7 @@
         <div>
           <span i18n-content="fontSettingsSizeTiny"></span>
           <span i18n-content="fontSettingsSizeHuge" class="font-settings-huge">
-              </span>
+          </span>
         </div>
       </div>
     </div>
@@ -61,10 +59,9 @@
     <h3 i18n-content="fontSettingsEncoding"></h3>
     <div class="font-input-div">
       <div>
-        <select class="font-input" i18n-options="fontSettingsEncodingList"
-            pref="intl.charset_default"
-            dataType="string"
-            metric="Options_ChangeFontEncoding"></select>
+        <select id="font-encoding" class="font-input" dataType="string"
+            pref="intl.charset_default" metric="Options_ChangeFontEncoding"
+            disabled></select>
       </div>
     </div>
   </section>

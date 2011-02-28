@@ -6,6 +6,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/sys_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -30,13 +31,14 @@ static void ValidateFontFamily(PrefService* prefs,
 }
 
 ListValue* FontSettingsUtilities::GetFontsList() {
+  base::mac::ScopedNSAutoreleasePool autorelease_pool;
   ListValue* font_list = new ListValue;
-  NSFontManager* fontManager = [NSFontManager sharedFontManager];
+  NSFontManager* fontManager = [[[NSFontManager alloc] init] autorelease];
   NSArray* fonts = [fontManager availableFontFamilies];
   for (NSString* family_name in fonts) {
     NSString* localized_family_name =
         [fontManager localizedNameForFamily:family_name face:nil];
-     ListValue* font_item = new ListValue();
+    ListValue* font_item = new ListValue();
     string16 family = base::SysNSStringToUTF16(family_name);
     font_item->Append(Value::CreateStringValue(family));
     string16 loc_family = base::SysNSStringToUTF16(localized_family_name);

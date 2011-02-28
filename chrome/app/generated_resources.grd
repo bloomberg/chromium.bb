@@ -6467,6 +6467,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FONT_LANGUAGE_SETTING_LOREM_IPSUM" desc="Sample text of 'Lorem ipsum' used to show the selected font/size">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit.
       </message>
+      <message name="IDS_FONT_LANGUAGE_SETTING_PLACEHOLDER" desc="Placeholder string for the Fonts and Encodings select menus">
+        Loading...
+      </message>
 
       <!-- Language & spell-checker settings -->
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_DIALOG_TITLE">

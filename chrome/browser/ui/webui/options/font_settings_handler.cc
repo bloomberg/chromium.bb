@@ -23,9 +23,12 @@
 #include "ui/base/l10n/l10n_util.h"
 
 FontSettingsHandler::FontSettingsHandler() {
+  fonts_list_loader_ = new FontSettingsFontsListLoader(this);
 }
 
 FontSettingsHandler::~FontSettingsHandler() {
+  if (fonts_list_loader_)
+    fonts_list_loader_->SetObserver(NULL);
 }
 
 void FontSettingsHandler::GetLocalizedValues(
@@ -56,64 +59,13 @@ void FontSettingsHandler::GetLocalizedValues(
   RegisterStrings(localized_strings, resources, arraysize(resources));
   RegisterTitle(localized_strings, "fontSettingsPage",
                 IDS_FONT_LANGUAGE_SETTING_FONT_TAB_TITLE);
-
-  // Fonts
-  ListValue* font_list = FontSettingsUtilities::GetFontsList();
-  if (font_list) localized_strings->Set("fontSettingsFontList", font_list);
-
-  // Font sizes
-  int font_sizes[] = { 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 20, 22, 24, 26,
-                       28, 30, 32, 34, 36, 40, 44, 48, 56, 64, 72 };
-  int count = arraysize(font_sizes);
-  ListValue* font_size_list = new ListValue;
-  for (int i = 0; i < count; i++) {
-    ListValue* option = new ListValue();
-    option->Append(Value::CreateIntegerValue(font_sizes[i]));
-    option->Append(Value::CreateStringValue(base::IntToString(font_sizes[i])));
-    font_size_list->Append(option);
-  }
-  localized_strings->Set("fontSettingsFontSizeList", font_size_list);
-
-  // Miniumum font size
-  int minimum_font_sizes[] = { 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 20, 22,
-                               24 };
-  count = arraysize(minimum_font_sizes);
-  ListValue* minimum_font_size_list = new ListValue;
-  ListValue* default_option = new ListValue();
-  default_option->Append(Value::CreateIntegerValue(0));
-  default_option->Append(Value::CreateStringValue(
+  localized_strings->SetString("fontSettingsPlaceholder",
       l10n_util::GetStringUTF16(
-          IDS_FONT_LANGUAGE_SETTING_NO_MINIMUM_FONT_SIZE_LABEL)));
-  minimum_font_size_list->Append(default_option);
-  for (int i = 0; i < count; i++) {
-    ListValue* option = new ListValue();
-    option->Append(Value::CreateIntegerValue(minimum_font_sizes[i]));
-    option->Append(
-        Value::CreateStringValue(base::IntToString(minimum_font_sizes[i])));
-    minimum_font_size_list->Append(option);
-  }
-  localized_strings->Set("fontSettingsMinimumFontSizeList",
-                         minimum_font_size_list);
-
-  // Encodings
-  count = CharacterEncoding::GetSupportCanonicalEncodingCount();
-  ListValue* encoding_list = new ListValue;
-  for (int i = 0; i < count; ++i) {
-    int cmd_id = CharacterEncoding::GetEncodingCommandIdByIndex(i);
-    std::string encoding =
-        CharacterEncoding::GetCanonicalEncodingNameByCommandId(cmd_id);
-    string16 name =
-        CharacterEncoding::GetCanonicalEncodingDisplayNameByCommandId(cmd_id);
-
-    ListValue* option = new ListValue();
-    option->Append(Value::CreateStringValue(encoding));
-    option->Append(Value::CreateStringValue(name));
-    encoding_list->Append(option);
-  }
-  localized_strings->Set("fontSettingsEncodingList", encoding_list);
+          IDS_FONT_LANGUAGE_SETTING_PLACEHOLDER));
 }
 
 void FontSettingsHandler::Initialize() {
+  DCHECK(web_ui_);
   SetupSerifFontSample();
   SetupMinimumFontSample();
   SetupFixedFontSample();
@@ -131,6 +83,7 @@ WebUIMessageHandler* FontSettingsHandler::Attach(WebUI* web_ui) {
   // Register for preferences that we need to observe manually.
   serif_font_.Init(prefs::kWebKitSerifFontFamily, pref_service, this);
   fixed_font_.Init(prefs::kWebKitFixedFontFamily, pref_service, this);
+  font_encoding_.Init(prefs::kDefaultCharset, pref_service, this);
   default_font_size_.Init(prefs::kWebKitDefaultFontSize, pref_service, this);
   default_fixed_font_size_.Init(prefs::kWebKitDefaultFixedFontSize,
                                 pref_service, this);
@@ -138,6 +91,42 @@ WebUIMessageHandler* FontSettingsHandler::Attach(WebUI* web_ui) {
 
   // Return result from the superclass.
   return handler;
+}
+
+void FontSettingsHandler::RegisterMessages() {
+  web_ui_->RegisterMessageCallback("fetchFontsData",
+      NewCallback(this, &FontSettingsHandler::HandleFetchFontsData));
+}
+
+void FontSettingsHandler::HandleFetchFontsData(const ListValue* args) {
+  fonts_list_loader_->StartLoadFontsList();
+}
+
+void FontSettingsHandler::FontsListHasLoaded() {
+  ListValue* fonts_list = fonts_list_loader_->GetFontsList();
+
+  int count = CharacterEncoding::GetSupportCanonicalEncodingCount();
+  ListValue encoding_list;
+  for (int i = 0; i < count; ++i) {
+    int cmd_id = CharacterEncoding::GetEncodingCommandIdByIndex(i);
+    std::string encoding =
+        CharacterEncoding::GetCanonicalEncodingNameByCommandId(cmd_id);
+    string16 name =
+        CharacterEncoding::GetCanonicalEncodingDisplayNameByCommandId(cmd_id);
+
+    ListValue* option = new ListValue();
+    option->Append(Value::CreateStringValue(encoding));
+    option->Append(Value::CreateStringValue(name));
+    encoding_list.Append(option);
+  }
+
+  ListValue selected_values;
+  selected_values.Append(Value::CreateStringValue(serif_font_.GetValue()));
+  selected_values.Append(Value::CreateStringValue(fixed_font_.GetValue()));
+  selected_values.Append(Value::CreateStringValue(font_encoding_.GetValue()));
+
+  web_ui_->CallJavascriptFunction(L"FontSettings.setFontsData",
+                                  *fonts_list, encoding_list, selected_values);
 }
 
 void FontSettingsHandler::Observe(NotificationType type,
@@ -158,7 +147,6 @@ void FontSettingsHandler::Observe(NotificationType type,
 }
 
 void FontSettingsHandler::SetupSerifFontSample() {
-  DCHECK(web_ui_);
   StringValue font_value(serif_font_.GetValue());
   FundamentalValue size_value(default_font_size_.GetValue());
   web_ui_->CallJavascriptFunction(
@@ -166,7 +154,6 @@ void FontSettingsHandler::SetupSerifFontSample() {
 }
 
 void FontSettingsHandler::SetupFixedFontSample() {
-  DCHECK(web_ui_);
   StringValue font_value(fixed_font_.GetValue());
   FundamentalValue size_value(default_fixed_font_size_.GetValue());
   web_ui_->CallJavascriptFunction(
@@ -174,7 +161,6 @@ void FontSettingsHandler::SetupFixedFontSample() {
 }
 
 void FontSettingsHandler::SetupMinimumFontSample() {
-  DCHECK(web_ui_);
   FundamentalValue size_value(minimum_font_size_.GetValue());
   web_ui_->CallJavascriptFunction(
       L"FontSettings.setupMinimumFontSample", size_value);
