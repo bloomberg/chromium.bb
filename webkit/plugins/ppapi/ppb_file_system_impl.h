@@ -32,12 +32,15 @@ class PPB_FileSystem_Impl : public Resource {
   void set_root_path(const FilePath& root_path) { root_path_ = root_path; }
   bool opened() const { return opened_; }
   void set_opened(bool opened) { opened_ = opened; }
+  bool called_open() const { return called_open_; }
+  void set_called_open() { called_open_ = true; }
 
  private:
   PluginInstance* instance_;
   PP_FileSystemType_Dev type_;
   FilePath root_path_;
   bool opened_;
+  bool called_open_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_FileSystem_Impl);
 };

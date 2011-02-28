@@ -190,6 +190,8 @@
         'tests/test_file_io.h',
         'tests/test_file_ref.cc',
         'tests/test_file_ref.h',
+        'tests/test_file_system.cc',
+        'tests/test_file_system.h',
         'tests/test_graphics_2d.cc',
         'tests/test_graphics_2d.h',
         'tests/test_image_data.cc',

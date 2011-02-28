@@ -28,7 +28,7 @@ class FileSystem : public PluginResource {
   virtual FileSystem* AsFileSystem();
 
   PP_FileSystemType_Dev type_;
-  bool opened_;
+  bool called_open_;
   PP_CompletionCallback current_open_callback_;
 
  private:
@@ -39,7 +39,7 @@ FileSystem::FileSystem(const HostResource& host_resource,
                        PP_FileSystemType_Dev type)
     : PluginResource(host_resource),
       type_(type),
-      opened_(false),
+      called_open_(false),
       current_open_callback_(PP_MakeCompletionCallback(NULL, NULL)) {
 }
 
@@ -89,8 +89,6 @@ int32_t Open(PP_Resource file_system,
   FileSystem* object = PluginResource::GetAs<FileSystem>(file_system);
   if (!object)
     return PP_ERROR_BADRESOURCE;
-  if (object->opened_)
-    return PP_OK;
 
   Dispatcher* dispatcher = PluginDispatcher::GetForInstance(object->instance());
   if (!dispatcher)
@@ -98,7 +96,11 @@ int32_t Open(PP_Resource file_system,
 
   if (object->current_open_callback_.func)
     return PP_ERROR_INPROGRESS;
+  else if (object->called_open_)
+    return PP_ERROR_FAILED;
+
   object->current_open_callback_ = callback;
+  object->called_open_ = true;
 
   dispatcher->Send(new PpapiHostMsg_PPBFileSystem_Open(
       INTERFACE_ID_PPB_FILE_SYSTEM, object->host_resource(), expected_size));

@@ -56,8 +56,10 @@ int32_t Open(PP_Resource file_system_id,
   if (!file_system)
     return PP_ERROR_BADRESOURCE;
 
-  if (file_system->opened())
-    return PP_OK;
+  // Should not allow multiple opens.
+  if (file_system->called_open())
+    return PP_ERROR_FAILED;
+  file_system->set_called_open();
 
   if ((file_system->type() != PP_FILESYSTEMTYPE_LOCALPERSISTENT) &&
       (file_system->type() != PP_FILESYSTEMTYPE_LOCALTEMPORARY))
@@ -100,7 +102,8 @@ PPB_FileSystem_Impl::PPB_FileSystem_Impl(PluginInstance* instance,
     : Resource(instance),
       instance_(instance),
       type_(type),
-      opened_(false) {
+      opened_(false),
+      called_open_(false) {
   DCHECK(type_ != PP_FILESYSTEMTYPE_INVALID);
 }
 

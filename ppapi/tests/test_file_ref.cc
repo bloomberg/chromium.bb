@@ -254,20 +254,6 @@ std::string TestFileRef::TestMakeDirectory() {
   if (rv != PP_OK)
     return ReportError("FileSystem::Open", rv);
 
-  // Open aborted (see the DirectoryReader test for comments).
-  callback.reset_run_count();
-  rv = pp::FileSystem_Dev(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY)
-      .Open(1024, callback);
-  if (callback.run_count() > 0)
-    return "FileSystem::Open ran callback synchronously.";
-  if (rv == PP_ERROR_WOULDBLOCK) {
-    rv = callback.WaitForResult();
-    if (rv != PP_ERROR_ABORTED)
-      return "FileSystem::Open not aborted.";
-  } else if (rv != PP_OK) {
-    return ReportError("FileSystem::Open", rv);
-  }
-
   // MakeDirectory.
   pp::FileRef_Dev dir_ref(file_system, "/test_dir_make_directory");
   rv = dir_ref.MakeDirectory(callback);
