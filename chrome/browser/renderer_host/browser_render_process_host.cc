@@ -37,6 +37,7 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/printing/printing_message_filter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
@@ -458,6 +459,7 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
   channel_->AddFilter(new GpuMessageFilter(id()));
   channel_->AddFilter(new PepperFileMessageFilter(id(), profile()));
   channel_->AddFilter(new PepperMessageFilter(profile()));
+  channel_->AddFilter(new PrintingMessageFilter());
   channel_->AddFilter(new speech_input::SpeechInputDispatcherHost(id()));
   channel_->AddFilter(
       new SearchProviderInstallStateMessageFilter(id(), profile()));

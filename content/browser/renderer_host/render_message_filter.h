@@ -54,13 +54,6 @@ namespace net {
 class CookieStore;
 }
 
-namespace printing {
-class PrinterQuery;
-class PrintJobManager;
-}
-
-struct ViewHostMsg_ScriptedPrint_Params;
-
 // This class filters out incoming IPC messages for the renderer process on the
 // IPC thread.
 class RenderMessageFilter : public BrowserMessageFilter,
@@ -216,19 +209,6 @@ class RenderMessageFilter : public BrowserMessageFilter,
   void OnRevealFolderInOS(const FilePath& path);
   void OnGetCPBrowsingContext(uint32* context);
 
-#if defined(OS_WIN)
-  // Used to pass resulting EMF from renderer to browser in printing.
-  void OnDuplicateSection(base::SharedMemoryHandle renderer_handle,
-                          base::SharedMemoryHandle* browser_handle);
-#endif
-
-#if defined(OS_CHROMEOS)
-  // Used to ask the browser allocate a temporary file for the renderer
-  // to fill in resulting PDF in renderer.
-  void OnAllocateTempFileForPrinting(IPC::Message* reply_msg);
-  void OnTempFileForPrintingWritten(int sequence_number);
-#endif
-
   // Used to ask the browser to allocate a block of shared memory for the
   // renderer to send back data in, since shared memory can't be created
   // in the renderer on POSIX due to the sandbox.
@@ -261,24 +241,6 @@ class RenderMessageFilter : public BrowserMessageFilter,
   virtual void OnResolveProxyCompleted(IPC::Message* reply_msg,
                                        int result,
                                        const std::string& proxy_list);
-
-  // A javascript code requested to print the current page. This is done in two
-  // steps and this is the first step. Get the print setting right here
-  // synchronously. It will hang the I/O completely.
-  void OnGetDefaultPrintSettings(IPC::Message* reply_msg);
-  void OnGetDefaultPrintSettingsReply(
-      scoped_refptr<printing::PrinterQuery> printer_query,
-      IPC::Message* reply_msg);
-
-  // A javascript code requested to print the current page. The renderer host
-  // have to show to the user the print dialog and returns the selected print
-  // settings.
-  void OnScriptedPrint(const ViewHostMsg_ScriptedPrint_Params& params,
-                       IPC::Message* reply_msg);
-  void OnScriptedPrintReply(
-      scoped_refptr<printing::PrinterQuery> printer_query,
-      int routing_id,
-      IPC::Message* reply_msg);
 
   // Browser side transport DIB allocation
   void OnAllocTransportDIB(size_t size,
@@ -353,8 +315,6 @@ class RenderMessageFilter : public BrowserMessageFilter,
                              IPC::Message* reply_msg);
   void DoOnClipboardReadFilenames(ui::Clipboard::Buffer buffer,
                                   IPC::Message* reply_msg);
-  void DoOnAllocateTempFileForPrinting(IPC::Message* reply_msg);
-  void DoOnTempFileForPrintingWritten(int sequence_number);
 #endif
 
   bool CheckBenchmarkingEnabled() const;
@@ -371,7 +331,6 @@ class RenderMessageFilter : public BrowserMessageFilter,
   // by the BrowserProcess, which has a wider scope than we do.
   ResourceDispatcherHost* resource_dispatcher_host_;
   PluginService* plugin_service_;
-  printing::PrintJobManager* print_job_manager_;
 
   // The Profile associated with our renderer process.  This should only be
   // accessed on the UI thread!
@@ -402,8 +361,6 @@ class RenderMessageFilter : public BrowserMessageFilter,
 
   // Whether this process is used for off the record tabs.
   bool off_the_record_;
-
-  bool cloud_print_enabled_;
 
   base::TimeTicks last_plugin_refresh_time_;  // Initialized to 0.
 

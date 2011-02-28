@@ -9,8 +9,6 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/metrics/histogram.h"
-#include "base/process_util.h"
-#include "base/shared_memory.h"
 #include "base/sys_string_conversions.h"
 #include "base/threading/thread.h"
 #include "base/threading/worker_pool.h"
@@ -34,8 +32,6 @@
 #include "chrome/browser/plugin_process_host.h"
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/ppapi_plugin_process_host.h"
-#include "chrome/browser/printing/print_job_manager.h"
-#include "chrome/browser/printing/printer_query.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/browser/spellchecker_platform_engine.h"
@@ -144,28 +140,6 @@ class WriteClipboardTask : public Task {
  private:
   scoped_ptr<ui::Clipboard::ObjectMap> objects_;
 };
-
-void RenderParamsFromPrintSettings(const printing::PrintSettings& settings,
-                                   ViewMsg_Print_Params* params) {
-  DCHECK(params);
-  params->page_size = settings.page_setup_device_units().physical_size();
-  params->printable_size.SetSize(
-      settings.page_setup_device_units().content_area().width(),
-      settings.page_setup_device_units().content_area().height());
-  params->margin_top = settings.page_setup_device_units().content_area().x();
-  params->margin_left = settings.page_setup_device_units().content_area().y();
-  params->dpi = settings.dpi();
-  // Currently hardcoded at 1.25. See PrintSettings' constructor.
-  params->min_shrink = settings.min_shrink;
-  // Currently hardcoded at 2.0. See PrintSettings' constructor.
-  params->max_shrink = settings.max_shrink;
-  // Currently hardcoded at 72dpi. See PrintSettings' constructor.
-  params->desired_dpi = settings.desired_dpi;
-  // Always use an invalid cookie.
-  params->document_cookie = 0;
-  params->selection_only = settings.selection_only;
-  params->supports_alpha_blend = settings.supports_alpha_blend();
-}
 
 // Common functionality for converting a sync renderer message to a callback
 // function in the browser. Derive from this, create it on the heap when
@@ -327,7 +301,6 @@ RenderMessageFilter::RenderMessageFilter(
     RenderWidgetHelper* render_widget_helper)
     : resource_dispatcher_host_(g_browser_process->resource_dispatcher_host()),
       plugin_service_(plugin_service),
-      print_job_manager_(g_browser_process->print_job_manager()),
       profile_(profile),
       content_settings_(profile->GetHostContentSettingsMap()),
       ALLOW_THIS_IN_INITIALIZER_LIST(resolve_proxy_msg_helper_(this, NULL)),
@@ -343,12 +316,6 @@ RenderMessageFilter::RenderMessageFilter(
   DCHECK(request_context_);
 
   render_widget_helper_->Init(render_process_id_, resource_dispatcher_host_);
-#if defined(OS_CHROMEOS)
-  cloud_print_enabled_ = true;
-#else
-  cloud_print_enabled_ = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableCloudPrint);
-#endif
 }
 
 RenderMessageFilter::~RenderMessageFilter() {
@@ -443,24 +410,12 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ViewHostMsg_RevealFolderInOS, OnRevealFolderInOS)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetCPBrowsingContext,
                         OnGetCPBrowsingContext)
-#if defined(OS_WIN)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DuplicateSection, OnDuplicateSection)
-#endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_AllocateSharedMemoryBuffer,
                         OnAllocateSharedMemoryBuffer)
-#if defined(OS_CHROMEOS)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_AllocateTempFileForPrinting,
-                                    OnAllocateTempFileForPrinting)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_TempFileForPrintingWritten,
-                        OnTempFileForPrintingWritten)
-#endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_ResourceTypeStats, OnResourceTypeStats)
     IPC_MESSAGE_HANDLER(ViewHostMsg_V8HeapStats, OnV8HeapStats)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidZoomURL, OnDidZoomURL)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ResolveProxy, OnResolveProxy)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetDefaultPrintSettings,
-                                    OnGetDefaultPrintSettings)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ScriptedPrint, OnScriptedPrint)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AllocTransportDIB, OnAllocTransportDIB)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FreeTransportDIB, OnFreeTransportDIB)
@@ -987,17 +942,6 @@ void RenderMessageFilter::OnGetCPBrowsingContext(uint32* context) {
       request_context_->GetURLRequestContext());
 }
 
-#if defined(OS_WIN)
-void RenderMessageFilter::OnDuplicateSection(
-    base::SharedMemoryHandle renderer_handle,
-    base::SharedMemoryHandle* browser_handle) {
-  // Duplicate the handle in this process right now so the memory is kept alive
-  // (even if it is not mapped)
-  base::SharedMemory shared_buf(renderer_handle, true, peer_handle());
-  shared_buf.GiveToProcess(base::GetCurrentProcessHandle(), browser_handle);
-}
-#endif
-
 void RenderMessageFilter::OnAllocateSharedMemoryBuffer(
     uint32 buffer_size,
     base::SharedMemoryHandle* handle) {
@@ -1105,108 +1049,6 @@ void RenderMessageFilter::OnResolveProxyCompleted(
     const std::string& proxy_list) {
   ViewHostMsg_ResolveProxy::WriteReplyParams(reply_msg, result, proxy_list);
   Send(reply_msg);
-}
-
-void RenderMessageFilter::OnGetDefaultPrintSettings(IPC::Message* reply_msg) {
-  scoped_refptr<printing::PrinterQuery> printer_query;
-  if (!print_job_manager_->printing_enabled()) {
-    // Reply with NULL query.
-    OnGetDefaultPrintSettingsReply(printer_query, reply_msg);
-    return;
-  }
-
-  print_job_manager_->PopPrinterQuery(0, &printer_query);
-  if (!printer_query.get()) {
-    printer_query = new printing::PrinterQuery;
-  }
-
-  CancelableTask* task = NewRunnableMethod(
-      this,
-      &RenderMessageFilter::OnGetDefaultPrintSettingsReply,
-      printer_query,
-      reply_msg);
-  // Loads default settings. This is asynchronous, only the IPC message sender
-  // will hang until the settings are retrieved.
-  printer_query->GetSettings(printing::PrinterQuery::DEFAULTS,
-                             NULL,
-                             0,
-                             false,
-                             true,
-                             task);
-}
-
-void RenderMessageFilter::OnGetDefaultPrintSettingsReply(
-    scoped_refptr<printing::PrinterQuery> printer_query,
-    IPC::Message* reply_msg) {
-  ViewMsg_Print_Params params;
-  if (!printer_query.get() ||
-      printer_query->last_status() != printing::PrintingContext::OK) {
-    memset(&params, 0, sizeof(params));
-  } else {
-    RenderParamsFromPrintSettings(printer_query->settings(), &params);
-    params.document_cookie = printer_query->cookie();
-  }
-  ViewHostMsg_GetDefaultPrintSettings::WriteReplyParams(reply_msg, params);
-  Send(reply_msg);
-  // If printing was enabled.
-  if (printer_query.get()) {
-    // If user hasn't cancelled.
-    if (printer_query->cookie() && printer_query->settings().dpi()) {
-      print_job_manager_->QueuePrinterQuery(printer_query.get());
-    } else {
-      printer_query->StopWorker();
-    }
-  }
-}
-
-void RenderMessageFilter::OnScriptedPrint(
-    const ViewHostMsg_ScriptedPrint_Params& params,
-    IPC::Message* reply_msg) {
-  gfx::NativeView host_view =
-      gfx::NativeViewFromIdInBrowser(params.host_window_id);
-
-  scoped_refptr<printing::PrinterQuery> printer_query;
-  print_job_manager_->PopPrinterQuery(params.cookie, &printer_query);
-  if (!printer_query.get()) {
-    printer_query = new printing::PrinterQuery;
-  }
-
-  CancelableTask* task = NewRunnableMethod(
-      this,
-      &RenderMessageFilter::OnScriptedPrintReply,
-      printer_query,
-      params.routing_id,
-      reply_msg);
-
-  printer_query->GetSettings(printing::PrinterQuery::ASK_USER,
-                             host_view,
-                             params.expected_pages_count,
-                             params.has_selection,
-                             params.use_overlays,
-                             task);
-}
-
-void RenderMessageFilter::OnScriptedPrintReply(
-    scoped_refptr<printing::PrinterQuery> printer_query,
-    int routing_id,
-    IPC::Message* reply_msg) {
-  ViewMsg_PrintPages_Params params;
-  if (printer_query->last_status() != printing::PrintingContext::OK ||
-      !printer_query->settings().dpi()) {
-    memset(&params, 0, sizeof(params));
-  } else {
-    RenderParamsFromPrintSettings(printer_query->settings(), &params.params);
-    params.params.document_cookie = printer_query->cookie();
-    params.pages =
-        printing::PageRange::GetPages(printer_query->settings().ranges);
-  }
-  ViewHostMsg_ScriptedPrint::WriteReplyParams(reply_msg, params);
-  Send(reply_msg);
-  if (params.params.dpi && params.params.document_cookie) {
-    print_job_manager_->QueuePrinterQuery(printer_query.get());
-  } else {
-    printer_query->StopWorker();
-  }
 }
 
 // static
