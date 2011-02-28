@@ -72,17 +72,9 @@ ContentSetting BaseProvider::GetContentSetting(
   // Support for embedding_patterns is not implemented yet.
   DCHECK(requesting_url == embedding_url);
 
-  if (!RequiresResourceIdentifier(content_type))
+  if (!RequiresResourceIdentifier(content_type) ||
+      (RequiresResourceIdentifier(content_type) && resource_identifier.empty()))
     return GetNonDefaultContentSettings(requesting_url).settings[content_type];
-
-  if (RequiresResourceIdentifier(content_type) && resource_identifier.empty())
-    return CONTENT_SETTING_DEFAULT;
-
-  // TODO(markusheintz) Remove this DCHECK.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableResourceContentSettings)) {
-    DCHECK(!resource_identifier.empty());
-  }
 
   // Resolve content settings with resource identifier.
   // 1. Check for pattern that exactly match the url/host
@@ -150,8 +142,6 @@ void BaseProvider::GetAllContentSettingsRules(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
     Rules* content_setting_rules) const {
-  DCHECK(RequiresResourceIdentifier(content_type) !=
-         resource_identifier.empty());
   DCHECK(content_setting_rules);
   content_setting_rules->clear();
 
@@ -235,6 +225,19 @@ ContentSettings BaseProvider::GetNonDefaultContentSettings(
   }
 
   return output;
+}
+
+void BaseProvider::UpdateContentSettingsMap(
+    const ContentSettingsPattern& requesting_pattern,
+    const ContentSettingsPattern& embedding_pattern,
+    ContentSettingsType content_type,
+    const ResourceIdentifier& resource_identifier,
+    ContentSetting content_setting) {
+  std::string pattern_str(requesting_pattern.CanonicalizePattern());
+  HostContentSettings* content_settings_map = host_content_settings();
+  ExtendedContentSettings& extended_settings =
+      (*content_settings_map)[pattern_str];
+  extended_settings.content_settings.settings[content_type] = content_setting;
 }
 
 // static

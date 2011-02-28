@@ -49,8 +49,11 @@ class MockProvider : public ProviderInterface {
                ContentSettingsType content_type,
                ResourceIdentifier resource_identifier,
                ContentSetting setting,
-               bool read_only);
+               bool read_only,
+               bool is_managed);
   virtual ~MockProvider();
+
+  virtual bool ContentSettingsTypeIsManaged(ContentSettingsType type);
 
   // ProviderInterface implementation
   virtual ContentSetting GetContentSetting(
@@ -83,7 +86,7 @@ class MockProvider : public ProviderInterface {
     requesting_url_pattern_ = pattern;
   }
 
-  ContentSettingsPattern requesting_url_pattern() {
+  ContentSettingsPattern requesting_url_pattern() const {
     return requesting_url_pattern_;
   }
 
@@ -91,7 +94,7 @@ class MockProvider : public ProviderInterface {
     embedding_url_pattern_ = pattern;
   }
 
-  ContentSettingsPattern embedding_url_pattern() {
+  ContentSettingsPattern embedding_url_pattern() const {
     return embedding_url_pattern_;
   }
 
@@ -99,7 +102,7 @@ class MockProvider : public ProviderInterface {
     content_type_ = content_type;
   }
 
-  ContentSettingsType content_type() {
+  ContentSettingsType content_type() const {
     return content_type_;
   }
 
@@ -107,7 +110,7 @@ class MockProvider : public ProviderInterface {
     resource_identifier_ = resource_identifier;
   }
 
-  ResourceIdentifier resource_identifier() {
+  ResourceIdentifier resource_identifier() const {
     return resource_identifier_;
   }
 
@@ -115,7 +118,7 @@ class MockProvider : public ProviderInterface {
     setting_ = setting;
   }
 
-  ContentSetting setting() {
+  ContentSetting setting() const {
     return setting_;
   }
 
@@ -123,8 +126,16 @@ class MockProvider : public ProviderInterface {
     read_only_ = read_only;
   }
 
-  bool read_only() {
+  bool read_only() const {
     return read_only_;
+  }
+
+  void set_is_managed(bool is_managed) {
+    is_managed_ = is_managed;
+  }
+
+  bool is_managed() const {
+    return is_managed_;
   }
 
  private:
@@ -134,6 +145,7 @@ class MockProvider : public ProviderInterface {
   ResourceIdentifier resource_identifier_;
   ContentSetting setting_;
   bool read_only_;
+  bool is_managed_;
 
   DISALLOW_COPY_AND_ASSIGN(MockProvider);
 };

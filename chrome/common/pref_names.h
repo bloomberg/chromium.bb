@@ -440,6 +440,18 @@ extern const char kManagedDefaultJavaScriptSetting[];
 extern const char kManagedDefaultPluginsSetting[];
 extern const char kManagedDefaultPopupsSetting[];
 
+extern const char kManagedCookiesAllowedForUrls[];
+extern const char kManagedCookiesBlockedForUrls[];
+extern const char kManagedCookiesSessionOnlyForUrls[];
+extern const char kManagedImagesAllowedForUrls[];
+extern const char kManagedImagesBlockedForUrls[];
+extern const char kManagedJavaScriptAllowedForUrls[];
+extern const char kManagedJavaScriptBlockedForUrls[];
+extern const char kManagedPluginsAllowedForUrls[];
+extern const char kManagedPluginsBlockedForUrls[];
+extern const char kManagedPopupsAllowedForUrls[];
+extern const char kManagedPopupsBlockedForUrls[];
+
 #if defined(OS_CHROMEOS)
 extern const char kSignedSettingsTempStorage[];
 extern const char kHardwareKeyboardLayout[];

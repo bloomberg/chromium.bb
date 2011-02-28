@@ -1253,6 +1253,31 @@ const char kManagedDefaultPluginsSetting[] =
 const char kManagedDefaultPopupsSetting[] =
     "profile.managed_default_content_settings.popups";
 
+// Preferences that are exclusivly used to store managed
+// content settings patterns.
+const char kManagedCookiesAllowedForUrls[] =
+    "profile.managed_cookies_allowed_for_urls";
+const char kManagedCookiesBlockedForUrls[] =
+    "profile.managed_cookies_blocked_for_urls";
+const char kManagedCookiesSessionOnlyForUrls[] =
+    "profile.managed_cookies_sessiononly_for_urls";
+const char kManagedImagesAllowedForUrls[] =
+    "profile.managed_images_allowed_for_urls";
+const char kManagedImagesBlockedForUrls[] =
+    "profile.managed_images_blocked_for_urls";
+const char kManagedJavaScriptAllowedForUrls[] =
+    "profile.managed_javascript_allowed_for_urls";
+const char kManagedJavaScriptBlockedForUrls[] =
+    "profile.managed_javascript_blocked_for_urls";
+const char kManagedPluginsAllowedForUrls[] =
+    "profile.managed_plugins_allowed_for_urls";
+const char kManagedPluginsBlockedForUrls[] =
+    "profile.managed_plugins_blocked_for_urls";
+const char kManagedPopupsAllowedForUrls[] =
+    "profile.managed_popups_allowed_for_urls";
+const char kManagedPopupsBlockedForUrls[] =
+    "profile.managed_popups_blocked_for_urls";
+
 // Dictionary for storing the set of known background pages (keys are extension
 // IDs of background page owners, value is a boolean that is true if the user
 // needs to acknowledge this page.

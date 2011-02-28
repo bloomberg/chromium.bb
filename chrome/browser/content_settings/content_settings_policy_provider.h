@@ -8,9 +8,13 @@
 
 // A content settings provider that takes its settings out of policies.
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/synchronization/lock.h"
+#include "base/tuple.h"
 #include "chrome/browser/content_settings/content_settings_provider.h"
+#include "chrome/browser/content_settings/content_settings_base_provider.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -74,6 +78,75 @@ class PolicyDefaultProvider : public DefaultProviderInterface,
   NotificationRegistrar notification_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyDefaultProvider);
+};
+
+// PolicyProvider that provider managed content-settings.
+class PolicyProvider : public BaseProvider,
+                       public NotificationObserver {
+ public:
+  explicit PolicyProvider(Profile* profile);
+  ~PolicyProvider();
+  static void RegisterUserPrefs(PrefService* prefs);
+
+  // BaseProvider Implementation
+  virtual void Init();
+
+  // ProviderInterface Implementation
+  virtual bool ContentSettingsTypeIsManaged(
+      ContentSettingsType content_type);
+
+  virtual void SetContentSetting(
+      const ContentSettingsPattern& requesting_pattern,
+      const ContentSettingsPattern& embedding_pattern,
+      ContentSettingsType content_type,
+      const ResourceIdentifier& resource_identifier,
+      ContentSetting content_setting);
+
+  virtual ContentSetting GetContentSetting(
+      const GURL& requesting_url,
+      const GURL& embedding_url,
+      ContentSettingsType content_type,
+      const ResourceIdentifier& resource_identifier) const;
+
+  virtual void ClearAllContentSettingsRules(
+      ContentSettingsType content_type);
+
+  virtual void ResetToDefaults();
+
+  // NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+ private:
+  typedef Tuple5<
+      ContentSettingsPattern,
+      ContentSettingsPattern,
+      ContentSettingsType,
+      content_settings::ProviderInterface::ResourceIdentifier,
+      ContentSetting> ContentSettingsRule;
+
+  typedef std::vector<ContentSettingsRule> ContentSettingsRules;
+
+  void ReadManagedContentSettings(bool overwrite);
+
+  void GetContentSettingsFromPreferences(PrefService* prefs,
+                                         ContentSettingsRules* rules);
+
+  void ReadManagedContentSettingsTypes(
+      ContentSettingsType content_type);
+
+  void NotifyObservers(const ContentSettingsDetails& details);
+
+  void UnregisterObservers();
+
+  Profile* profile_;
+
+  bool content_type_is_managed_[CONTENT_SETTINGS_NUM_TYPES];
+
+  PrefChangeRegistrar pref_change_registrar_;
+  NotificationRegistrar notification_registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(PolicyProvider);
 };
 
 }  // namespace content_settings

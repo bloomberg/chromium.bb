@@ -34,7 +34,9 @@ TEST(ContentSettingsProviderTest, Mock) {
       CONTENT_SETTINGS_TYPE_PLUGINS,
       "java_plugin",
       CONTENT_SETTING_BLOCK,
+      false,
       false);
+
   EXPECT_EQ(CONTENT_SETTING_BLOCK, mock_provider.GetContentSetting(
       url, url, CONTENT_SETTINGS_TYPE_PLUGINS, "java_plugin"));
   EXPECT_EQ(CONTENT_SETTING_DEFAULT, mock_provider.GetContentSetting(

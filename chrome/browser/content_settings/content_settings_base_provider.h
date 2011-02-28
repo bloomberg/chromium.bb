@@ -84,6 +84,13 @@ class BaseProvider : public ProviderInterface {
   // CONTENT_SETTING_DEFAULT values.
   bool AllDefault(const ExtendedContentSettings& settings) const;
 
+  void UpdateContentSettingsMap(
+      const ContentSettingsPattern& requesting_pattern,
+      const ContentSettingsPattern& embedding_pattern,
+      ContentSettingsType content_type,
+      const ResourceIdentifier& resource_identifier,
+      ContentSetting content_setting);
+
   // TODO(markusheintz): LEGACY method. Will be removed in a future re-factoring
   // step.
   ContentSettings GetNonDefaultContentSettings(const GURL& url) const;

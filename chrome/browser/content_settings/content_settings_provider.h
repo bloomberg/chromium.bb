@@ -65,6 +65,11 @@ class ProviderInterface {
 
   virtual ~ProviderInterface() {}
 
+  // Returns true whether the content settings provider manages the
+  // |content_type|.
+  virtual bool ContentSettingsTypeIsManaged(
+      ContentSettingsType content_type) = 0;
+
   // Returns a single ContentSetting which applies to a given |requesting_url|,
   // |embedding_url| pair or CONTENT_SETTING_DEFAULT, if no rule applies. For
   // ContentSettingsTypes that require a resource identifier to be specified,
