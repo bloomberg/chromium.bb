@@ -6,6 +6,7 @@
 #define CHROME_FRAME_UTILS_H_
 
 #include <OAidl.h>
+#include <objidl.h>
 #include <windows.h>
 #include <wininet.h>
 #include <string>
@@ -302,7 +303,7 @@ HRESULT DoQueryService(const IID& service_id, IUnknown* unk, T** service) {
 // |headers| can be NULL.
 HRESULT NavigateBrowserToMoniker(IUnknown* browser, IMoniker* moniker,
                                  const wchar_t* headers, IBindCtx* bind_ctx,
-                                 const wchar_t* fragment);
+                                 const wchar_t* fragment, IStream* post_data);
 
 // Raises a flag on the current thread (using TLS) to indicate that an
 // in-progress navigation should be rendered in chrome frame.
@@ -456,6 +457,15 @@ extern base::Lock g_ChromeFrameHistogramLock;
 // NOTE: Since the message is sent synchronously, the handler should only
 // start asynchronous operations in order to not block the sender unnecessarily.
 #define WM_DOWNLOAD_IN_HOST (WM_APP + 2)
+
+// This structure contains the parameters sent over to initiate a download
+// request in the host browser.
+struct DownloadInHostParams {
+  IBindCtx* bind_ctx;
+  IMoniker* moniker;
+  IStream* post_data;
+  std::string request_headers;
+};
 
 // Maps the InternetCookieState enum to the corresponding CookieAction values
 // used for IE privacy stuff.

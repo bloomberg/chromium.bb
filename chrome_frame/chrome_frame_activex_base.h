@@ -464,20 +464,19 @@ END_MSG_MAP()
   // There's room for improvement here and also see todo below.
   LPARAM OnDownloadRequestInHost(UINT message, WPARAM wparam, LPARAM lparam,
                                  BOOL& handled) {
-    base::win::ScopedComPtr<IMoniker> moniker(
-        reinterpret_cast<IMoniker*>(lparam));
-    DCHECK(moniker);
-    base::win::ScopedComPtr<IBindCtx> bind_context(
-        reinterpret_cast<IBindCtx*>(wparam));
-
+    DownloadInHostParams* download_params =
+        reinterpret_cast<DownloadInHostParams*>(wparam);
+    DCHECK(download_params);
     // TODO(tommi): It looks like we might have to switch the request object
     // into a pass-through request object and serve up any thus far received
     // content and headers to IE in order to prevent what can currently happen
     // which is reissuing requests and turning POST into GET.
-    if (moniker) {
-      NavigateBrowserToMoniker(doc_site_, moniker, NULL, bind_context, NULL);
+    if (download_params->moniker) {
+      NavigateBrowserToMoniker(
+          doc_site_, download_params->moniker,
+          UTF8ToWide(download_params->request_headers).c_str(),
+          download_params->bind_ctx, NULL, download_params->post_data);
     }
-
     return TRUE;
   }
 

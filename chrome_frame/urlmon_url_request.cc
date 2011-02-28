@@ -167,7 +167,8 @@ void UrlmonUrlRequest::TerminateBind(TerminateBindCallback* callback) {
   cleanup_transaction_ = false;
   if (status_.get_state() == Status::DONE) {
     // Binding is stopped. Note result could be an error.
-    callback->Run(moniker_, bind_context_);
+    callback->Run(moniker_, bind_context_, upload_data_,
+                  request_headers_.c_str());
     delete callback;
   } else {
     // WORKING (ABORTING?). Save the callback.
@@ -367,7 +368,8 @@ STDMETHODIMP UrlmonUrlRequest::OnStopBinding(HRESULT result, LPCWSTR error) {
 
   if (result == INET_E_TERMINATED_BIND) {
     if (terminate_requested()) {
-      terminate_bind_callback_->Run(moniker_, bind_context_);
+      terminate_bind_callback_->Run(moniker_, bind_context_, upload_data_,
+                                    request_headers_.c_str());
     } else {
       cleanup_transaction_ = true;
     }
@@ -448,7 +450,6 @@ STDMETHODIMP UrlmonUrlRequest::GetBindInfo(DWORD* bind_flags,
 
   if (load_flags_ & net::LOAD_BYPASS_CACHE)
     *bind_flags |= BINDF_GETNEWESTVERSION;
-
 
   if (LowerCaseEqualsASCII(method(), "get")) {
     bind_info->dwBindVerb = BINDVERB_GET;
@@ -623,7 +624,7 @@ STDMETHODIMP UrlmonUrlRequest::BeginningTransaction(const wchar_t* url,
                 new_headers.size());
     }
   }
-
+  request_headers_ = new_headers;
   return hr;
 }
 
@@ -1072,15 +1073,22 @@ void UrlmonUrlRequestManager::DownloadRequestInHost(int request_id) {
 }
 
 void UrlmonUrlRequestManager::BindTerminated(IMoniker* moniker,
-                                             IBindCtx* bind_ctx) {
+                                             IBindCtx* bind_ctx,
+                                             IStream* post_data,
+                                             const char* request_headers) {
+  DownloadInHostParams download_params;
+  download_params.bind_ctx = bind_ctx;
+  download_params.moniker = moniker;
+  download_params.post_data = post_data;
+  if (request_headers) {
+    download_params.request_headers = request_headers;
+  }
   // We use SendMessage and not PostMessage to make sure that if the
   // notification window does not handle the message we won't leak
   // the moniker.
   ::SendMessage(notification_window_, WM_DOWNLOAD_IN_HOST,
-        reinterpret_cast<WPARAM>(bind_ctx),
-        reinterpret_cast<LPARAM>(moniker));
+        reinterpret_cast<WPARAM>(&download_params), 0);
 }
-
 
 void UrlmonUrlRequestManager::GetCookiesForUrl(const GURL& url, int cookie_id) {
   DWORD cookie_size = 0;

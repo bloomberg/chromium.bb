@@ -4,11 +4,11 @@
 
 #include "chrome_frame/utils.h"
 
+#include <atlsafe.h>
+#include <atlsecurity.h>
 #include <htiframe.h>
 #include <mshtml.h>
 #include <shlobj.h>
-
-#include <atlsecurity.h>
 
 #include "base/file_util.h"
 #include "base/file_version_info.h"
@@ -793,7 +793,7 @@ RendererType RendererTypeForUrl(const std::wstring& url) {
 
 HRESULT NavigateBrowserToMoniker(IUnknown* browser, IMoniker* moniker,
                                  const wchar_t* headers, IBindCtx* bind_ctx,
-                                 const wchar_t* fragment) {
+                                 const wchar_t* fragment, IStream* post_data) {
   DCHECK(browser);
   DCHECK(moniker);
   DCHECK(bind_ctx);
@@ -807,6 +807,46 @@ HRESULT NavigateBrowserToMoniker(IUnknown* browser, IMoniker* moniker,
   if (FAILED(hr))
     return hr;
 
+  // Always issue the download request in a new window to ensure that the
+  // currently loaded ChromeFrame document does not inadvarently see an unload
+  // request. This runs javascript unload handlers on the page which renders
+  // the page non functional.
+  VARIANT flags = { VT_I4 };
+  V_I4(&flags) = navOpenInNewWindow | navNoHistory;
+
+  // If the data to be downloaded was received in response to a post request
+  // then we need to reissue the post request.
+  base::win::ScopedVariant post_data_variant;
+  if (post_data) {
+    RewindStream(post_data);
+
+    CComSafeArray<uint8> safe_array_post;
+
+    STATSTG stat;
+    post_data->Stat(&stat, STATFLAG_NONAME);
+
+    if (stat.cbSize.LowPart > 0) {
+      std::string data;
+
+      HRESULT hr = E_FAIL;
+      while ((hr = ReadStream(post_data, 0xffff, &data)) == S_OK) {
+        safe_array_post.Add(
+            data.size(),
+            reinterpret_cast<unsigned char*>(const_cast<char*>(data.data())));
+        data.clear();
+      }
+    } else {
+      // If we get here it means that the navigation is being reissued for a
+      // POST request with no data. To ensure that the new window used as a
+      // target to handle the new navigation issues a POST request
+      // we need valid POST data. In this case we create a dummy 1 byte array.
+      // May not work as expected with some web sites.
+      DLOG(WARNING) << "Reissuing navigation with empty POST data. May not"
+                    << " work as expected";
+      safe_array_post.Create(1);
+    }
+    post_data_variant.Set(safe_array_post.Detach());
+  }
   // Create a new bind context that's not associated with our callback.
   // Calling RevokeBindStatusCallback doesn't disassociate the callback with
   // the bind context in IE7.  The returned bind context has the same
@@ -854,14 +894,16 @@ HRESULT NavigateBrowserToMoniker(IUnknown* browser, IMoniker* moniker,
 
       if (GetIEVersion() < IE_9) {
         hr = browser_priv2->NavigateWithBindCtx2(
-            uri_obj, NULL, NULL, NULL, headers_var.AsInput(), bind_ctx,
-            const_cast<wchar_t*>(fragment));
+                uri_obj, &flags, NULL, post_data_variant.AsInput(),
+                headers_var.AsInput(), bind_ctx,
+                const_cast<wchar_t*>(fragment));
       } else {
         IWebBrowserPriv2CommonIE9* browser_priv2_ie9 =
             reinterpret_cast<IWebBrowserPriv2CommonIE9*>(browser_priv2.get());
         hr = browser_priv2_ie9->NavigateWithBindCtx2(
-            uri_obj, NULL, NULL, NULL, headers_var.AsInput(), bind_ctx,
-            const_cast<wchar_t*>(fragment), 0);
+                uri_obj, &flags, NULL, post_data_variant.AsInput(),
+                headers_var.AsInput(), bind_ctx,
+                const_cast<wchar_t*>(fragment), 0);
       }
       DLOG_IF(WARNING, FAILED(hr))
           << base::StringPrintf(L"NavigateWithBindCtx2 0x%08X", hr);
@@ -889,9 +931,9 @@ HRESULT NavigateBrowserToMoniker(IUnknown* browser, IMoniker* moniker,
         }
 
         base::win::ScopedVariant var_url(UTF8ToWide(target_url.spec()).c_str());
-        hr = browser_priv->NavigateWithBindCtx(var_url.AsInput(), NULL, NULL,
-                                               NULL, headers_var.AsInput(),
-                                               bind_ctx,
+        hr = browser_priv->NavigateWithBindCtx(var_url.AsInput(), &flags, NULL,
+                                               post_data_variant.AsInput(),
+                                               headers_var.AsInput(), bind_ctx,
                                                const_cast<wchar_t*>(fragment));
         DLOG_IF(WARNING, FAILED(hr))
             << base::StringPrintf(L"NavigateWithBindCtx 0x%08X", hr);

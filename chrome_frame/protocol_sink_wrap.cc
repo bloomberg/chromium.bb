@@ -188,7 +188,6 @@ bool ShouldWrapSink(IInternetProtocolSink* sink, const wchar_t* url) {
 bool IsCFRequest(IBindCtx* pbc) {
   ScopedComPtr<BindContextInfo> info;
   BindContextInfo::FromBindContext(pbc, info.Receive());
-  DCHECK(info);
   if (info && info->chrome_request())
     return true;
 

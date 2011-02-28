@@ -39,7 +39,8 @@ class UrlmonUrlRequest
   // Used from "DownloadRequestInHost".
   // Callback will be invoked either right away (if operation is finished) or
   // from inside ::OnStopBinding() when it is safe to reuse the bind_context.
-  typedef Callback2<IMoniker*, IBindCtx*>::Type TerminateBindCallback;
+  typedef Callback4<IMoniker*, IBindCtx*, IStream*, const char*>::Type
+      TerminateBindCallback;
   void TerminateBind(TerminateBindCallback* callback);
 
   // Parent Window for UrlMon error dialogs
@@ -251,6 +252,8 @@ class UrlmonUrlRequest
   // when this object is destroyed. Happens if we return
   // INET_E_TERMINATE_BIND from OnDataAvailable in the last data notification.
   bool cleanup_transaction_;
+  // Copy of the request headers.
+  std::string request_headers_;
 
   DISALLOW_COPY_AND_ASSIGN(UrlmonUrlRequest);
 };
