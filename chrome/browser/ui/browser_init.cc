@@ -936,6 +936,11 @@ bool BrowserInit::LaunchWithProfile::ProcessStartupURLs(
     // Only use the set of urls specified in preferences if nothing was
     // specified on the command line.
     UrlsToTabs(pref.urls, &tabs);
+  } else if (pref.type == SessionStartupPref::DEFAULT && !tabs.empty()) {
+    // Make sure the home page is opened even if there are pinned tabs.
+    std::vector<GURL> urls;
+    AddStartupURLs(&urls);
+    UrlsToTabs(urls, &tabs);
   }
 
   if (tabs.empty())
