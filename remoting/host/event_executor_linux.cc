@@ -204,7 +204,6 @@ class EventExecutorLinuxPimpl {
  public:
   explicit EventExecutorLinuxPimpl(EventExecutorLinux* executor,
                                    Display* display);
-  ~EventExecutorLinuxPimpl();
 
   bool Init();  // TODO(ajwong): Do we really want this to be synchronous?
 
@@ -212,8 +211,6 @@ class EventExecutorLinuxPimpl {
   void HandleKey(const KeyEvent* key_event);
 
  private:
-  void DeinitXlib();
-
   // Reference to containing class so we can access friend functions.
   // Not owned.
   EventExecutorLinux* executor_;
@@ -237,20 +234,12 @@ EventExecutorLinuxPimpl::EventExecutorLinuxPimpl(EventExecutorLinux* executor,
       height_(0) {
 }
 
-EventExecutorLinuxPimpl::~EventExecutorLinuxPimpl() {
-  DeinitXlib();
-}
-
 bool EventExecutorLinuxPimpl::Init() {
-  if (!display_) {
-    LOG(ERROR) << "Unable to open display";
-    return false;
-  }
+  CHECK(display_);
 
   root_window_ = RootWindow(display_, DefaultScreen(display_));
   if (root_window_ == BadValue) {
     LOG(ERROR) << "Unable to get the root window";
-    DeinitXlib();
     return false;
   }
 
@@ -260,7 +249,6 @@ bool EventExecutorLinuxPimpl::Init() {
   if (!XTestQueryExtension(display_, &test_event_base_, &test_error_base_,
                            &major, &minor)) {
     LOG(ERROR) << "Server does not support XTest.";
-    DeinitXlib();
     return false;
   }
 
@@ -270,7 +258,6 @@ bool EventExecutorLinuxPimpl::Init() {
   // TODO(ajwong): Handle resolution changes.
   if (!XGetWindowAttributes(display_, root_window_, &root_attr)) {
     LOG(ERROR) << "Unable to get window attributes";
-    DeinitXlib();
     return false;
   }
 
@@ -337,16 +324,6 @@ void EventExecutorLinuxPimpl::HandleMouse(const MouseEvent* event) {
 
   if (event->has_wheel_offset_x() && event->has_wheel_offset_y()) {
     NOTIMPLEMENTED() << "No scroll wheel support yet.";
-  }
-}
-
-void EventExecutorLinuxPimpl::DeinitXlib() {
-  // TODO(ajwong): We should expose a "close" or "shutdown" method.
-  if (display_) {
-    if (!XCloseDisplay(display_)) {
-      LOG(ERROR) << "Unable to close the Xlib Display.";
-    }
-    display_ = NULL;
   }
 }
 
