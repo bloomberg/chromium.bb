@@ -37,8 +37,9 @@ class ViewSourceTest : public UITest {
 
 // This test renders a page in view-source and then checks to see if a cookie
 // set in the html was set successfully (it shouldn't because we rendered the
-// page in view source)
-TEST_F(ViewSourceTest, DoesBrowserRenderInViewSource) {
+// page in view source).
+// Flaky; see http://crbug.com/72201.
+TEST_F(ViewSourceTest, FLAKY_DoesBrowserRenderInViewSource) {
   ASSERT_TRUE(test_server_.Start());
 
   std::string cookie = "viewsource_cookie";
