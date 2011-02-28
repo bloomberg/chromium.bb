@@ -32,3 +32,5 @@ BUG_ANTONM MAC : fast/blockflow/japanese-ruby-vertical-rl.html = IMAGE
 
 BUG_PFELDMAN : http/tests/inspector/network/network-timing.html = TIMEOUT TEXT
 BUG_PFELDMAN : http/tests/inspector/network/network-size.html = TIMEOUT TEXT
+
+BUGCR_74414 : fast/overflow/horizontal-scroll-after-back.html = TIMEOUT
