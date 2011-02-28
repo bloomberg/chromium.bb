@@ -132,6 +132,7 @@ struct ParamTraits<ProfileWriter::BookmarkEntry> {
   typedef ProfileWriter::BookmarkEntry param_type;
   static void Write(Message* m, const param_type& p) {
     WriteParam(m, p.in_toolbar);
+    WriteParam(m, p.is_folder);
     WriteParam(m, p.url);
     WriteParam(m, p.path);
     WriteParam(m, p.title);
@@ -140,6 +141,7 @@ struct ParamTraits<ProfileWriter::BookmarkEntry> {
   static bool Read(const Message* m, void** iter, param_type* p) {
     return
         (ReadParam(m, iter, &p->in_toolbar)) &&
+        (ReadParam(m, iter, &p->is_folder)) &&
         (ReadParam(m, iter, &p->url)) &&
         (ReadParam(m, iter, &p->path)) &&
         (ReadParam(m, iter, &p->title)) &&
@@ -148,6 +150,8 @@ struct ParamTraits<ProfileWriter::BookmarkEntry> {
   static void Log(const param_type& p, std::string* l) {
     l->append("(");
     LogParam(p.in_toolbar, l);
+    l->append(", ");
+    LogParam(p.is_folder, l);
     l->append(", ");
     LogParam(p.url, l);
     l->append(", ");
