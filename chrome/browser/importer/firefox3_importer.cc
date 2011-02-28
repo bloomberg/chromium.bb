@@ -279,14 +279,16 @@ void Firefox3Importer::ImportBookmarks() {
 
     bookmarks.push_back(entry);
 
-    if (item->favicon)
-      favicon_map[item->favicon].insert(item->url);
+    if (item->type == TYPE_BOOKMARK) {
+      if (item->favicon)
+        favicon_map[item->favicon].insert(item->url);
 
-    // This bookmark has a keyword, we import it to our TemplateURL model.
-    TemplateURL* t_url = Firefox2Importer::CreateTemplateURL(
-        item->title, UTF8ToWide(item->keyword), item->url);
-    if (t_url)
-      template_urls.push_back(t_url);
+      // This bookmark has a keyword, we import it to our TemplateURL model.
+      TemplateURL* t_url = Firefox2Importer::CreateTemplateURL(
+          item->title, UTF8ToWide(item->keyword), item->url);
+      if (t_url)
+        template_urls.push_back(t_url);
+    }
   }
 
   STLDeleteContainerPointers(list.begin(), list.end());
