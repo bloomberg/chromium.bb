@@ -537,7 +537,7 @@ void AutoFillManager::OnDidShowAutoFillSuggestions() {
       NotificationService::NoDetails());
 }
 
-void AutoFillManager::OnLoadedAutoFillHeuristics(
+void AutoFillManager::OnLoadedAutofillHeuristics(
     const std::string& heuristic_xml) {
   // TODO(jhawkins): Store |upload_required| in the AutoFillManager.
   UploadRequired upload_required;
@@ -547,13 +547,13 @@ void AutoFillManager::OnLoadedAutoFillHeuristics(
                                     *metric_logger_);
 }
 
-void AutoFillManager::OnUploadedAutoFillHeuristics(
+void AutoFillManager::OnUploadedAutofillHeuristics(
     const std::string& form_signature) {
 }
 
 void AutoFillManager::OnHeuristicsRequestError(
     const std::string& form_signature,
-    AutoFillDownloadManager::AutoFillRequestType request_type,
+    AutofillDownloadManager::AutofillRequestType request_type,
     int http_error) {
 }
 

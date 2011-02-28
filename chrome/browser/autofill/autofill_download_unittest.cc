@@ -35,21 +35,21 @@ class MockAutoFillMetrics : public AutoFillMetrics {
 
 }  // namespace
 
-// This tests AutoFillDownloadManager. AutoFillDownloadTestHelper implements
-// AutoFillDownloadManager::Observer and creates an instance of
-// AutoFillDownloadManager. Then it records responses to different initiated
+// This tests AutofillDownloadManager. AutofillDownloadTestHelper implements
+// AutofillDownloadManager::Observer and creates an instance of
+// AutofillDownloadManager. Then it records responses to different initiated
 // requests, which are verified later. To mock network requests
 // TestURLFetcherFactory is used, which creates URLFetchers that do not
 // go over the wire, but allow calling back HTTP responses directly.
 // The responses in test are out of order and verify: successful query request,
 // successful upload request, failed upload request.
-class AutoFillDownloadTestHelper : public AutoFillDownloadManager::Observer {
+class AutofillDownloadTestHelper : public AutofillDownloadManager::Observer {
  public:
-  AutoFillDownloadTestHelper()
+  AutofillDownloadTestHelper()
       : download_manager(&profile) {
     download_manager.SetObserver(this);
   }
-  ~AutoFillDownloadTestHelper() {
+  ~AutofillDownloadTestHelper() {
     download_manager.SetObserver(NULL);
   }
 
@@ -57,28 +57,28 @@ class AutoFillDownloadTestHelper : public AutoFillDownloadManager::Observer {
     download_manager.set_max_form_cache_size(cache_size);
   }
 
-  // AutoFillDownloadManager::Observer overridables:
-  virtual void OnLoadedAutoFillHeuristics(
+  // AutofillDownloadManager::Observer overridables:
+  virtual void OnLoadedAutofillHeuristics(
       const std::string& heuristic_xml) {
     ResponseData response;
     response.response = heuristic_xml;
     response.type_of_response = QUERY_SUCCESSFULL;
     responses_.push_back(response);
   };
-  virtual void OnUploadedAutoFillHeuristics(const std::string& form_signature) {
+  virtual void OnUploadedAutofillHeuristics(const std::string& form_signature) {
     ResponseData response;
     response.type_of_response = UPLOAD_SUCCESSFULL;
     responses_.push_back(response);
   }
   virtual void OnHeuristicsRequestError(
       const std::string& form_signature,
-      AutoFillDownloadManager::AutoFillRequestType request_type,
+      AutofillDownloadManager::AutofillRequestType request_type,
       int http_error) {
     ResponseData response;
     response.signature = form_signature;
     response.error = http_error;
     response.type_of_response =
-        request_type == AutoFillDownloadManager::REQUEST_QUERY ?
+        request_type == AutofillDownloadManager::REQUEST_QUERY ?
             REQUEST_QUERY_FAILED : REQUEST_UPLOAD_FAILED;
     responses_.push_back(response);
   }
@@ -98,10 +98,10 @@ class AutoFillDownloadTestHelper : public AutoFillDownloadManager::Observer {
     ResponseData() : type_of_response(REQUEST_QUERY_FAILED), error(0) {
     }
   };
-  std::list<AutoFillDownloadTestHelper::ResponseData> responses_;
+  std::list<AutofillDownloadTestHelper::ResponseData> responses_;
 
   TestingProfile profile;
-  AutoFillDownloadManager download_manager;
+  AutofillDownloadManager download_manager;
 };
 
 typedef TestingBrowserProcessTest AutoFillDownloadTest;
@@ -109,7 +109,7 @@ typedef TestingBrowserProcessTest AutoFillDownloadTest;
 TEST_F(AutoFillDownloadTest, QueryAndUploadTest) {
   MessageLoopForUI message_loop;
   // Create and register factory.
-  AutoFillDownloadTestHelper helper;
+  AutofillDownloadTestHelper helper;
   TestURLFetcherFactory factory;
   URLFetcher::set_factory(&factory);
 
@@ -246,7 +246,7 @@ TEST_F(AutoFillDownloadTest, QueryAndUploadTest) {
                                           std::string(responses[0]));
   EXPECT_EQ(static_cast<size_t>(3), helper.responses_.size());
 
-  EXPECT_EQ(AutoFillDownloadTestHelper::UPLOAD_SUCCESSFULL,
+  EXPECT_EQ(AutofillDownloadTestHelper::UPLOAD_SUCCESSFULL,
             helper.responses_.front().type_of_response);
   EXPECT_EQ(0, helper.responses_.front().error);
   EXPECT_EQ(std::string(), helper.responses_.front().signature);
@@ -254,7 +254,7 @@ TEST_F(AutoFillDownloadTest, QueryAndUploadTest) {
   EXPECT_EQ(std::string(), helper.responses_.front().response);
   helper.responses_.pop_front();
 
-  EXPECT_EQ(AutoFillDownloadTestHelper::REQUEST_UPLOAD_FAILED,
+  EXPECT_EQ(AutofillDownloadTestHelper::REQUEST_UPLOAD_FAILED,
             helper.responses_.front().type_of_response);
   EXPECT_EQ(404, helper.responses_.front().error);
   EXPECT_EQ(form_structures[1]->FormSignature(),
@@ -264,7 +264,7 @@ TEST_F(AutoFillDownloadTest, QueryAndUploadTest) {
   helper.responses_.pop_front();
 
   EXPECT_EQ(helper.responses_.front().type_of_response,
-            AutoFillDownloadTestHelper::QUERY_SUCCESSFULL);
+            AutofillDownloadTestHelper::QUERY_SUCCESSFULL);
   EXPECT_EQ(0, helper.responses_.front().error);
   EXPECT_EQ(std::string(), helper.responses_.front().signature);
   EXPECT_EQ(responses[0], helper.responses_.front().response);
@@ -303,7 +303,7 @@ TEST_F(AutoFillDownloadTest, QueryAndUploadTest) {
                                           net::URLRequestStatus(),
                                           500, ResponseCookies(),
                                           std::string(responses[0]));
-  EXPECT_EQ(AutoFillDownloadTestHelper::REQUEST_QUERY_FAILED,
+  EXPECT_EQ(AutofillDownloadTestHelper::REQUEST_QUERY_FAILED,
             helper.responses_.front().type_of_response);
   EXPECT_EQ(500, helper.responses_.front().error);
   // Expected response on non-query request is an empty string.
@@ -330,7 +330,7 @@ TEST_F(AutoFillDownloadTest, QueryAndUploadTest) {
                                           net::URLRequestStatus(),
                                           503, ResponseCookies(),
                                           std::string(responses[2]));
-  EXPECT_EQ(AutoFillDownloadTestHelper::REQUEST_UPLOAD_FAILED,
+  EXPECT_EQ(AutofillDownloadTestHelper::REQUEST_UPLOAD_FAILED,
             helper.responses_.front().type_of_response);
   EXPECT_EQ(503, helper.responses_.front().error);
   helper.responses_.pop_front();
@@ -347,7 +347,7 @@ TEST_F(AutoFillDownloadTest, QueryAndUploadTest) {
 
 TEST_F(AutoFillDownloadTest, CacheQueryTest) {
   MessageLoopForUI message_loop;
-  AutoFillDownloadTestHelper helper;
+  AutofillDownloadTestHelper helper;
   // Create and register factory.
   TestURLFetcherFactory factory;
   URLFetcher::set_factory(&factory);

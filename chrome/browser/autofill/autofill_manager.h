@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,7 +34,7 @@ class FormField;
 // Manages saving and restoring the user's personal information entered into web
 // forms.
 class AutoFillManager : public TabContentsObserver,
-                        public AutoFillDownloadManager::Observer {
+                        public AutofillDownloadManager::Observer {
  public:
   explicit AutoFillManager(TabContents* tab_contents);
   virtual ~AutoFillManager();
@@ -55,12 +55,12 @@ class AutoFillManager : public TabContentsObserver,
   // infobar.
   virtual void OnInfoBarClosed(bool should_save);
 
-  // AutoFillDownloadManager::Observer implementation:
-  virtual void OnLoadedAutoFillHeuristics(const std::string& heuristic_xml);
-  virtual void OnUploadedAutoFillHeuristics(const std::string& form_signature);
+  // AutofillDownloadManager::Observer implementation:
+  virtual void OnLoadedAutofillHeuristics(const std::string& heuristic_xml);
+  virtual void OnUploadedAutofillHeuristics(const std::string& form_signature);
   virtual void OnHeuristicsRequestError(
       const std::string& form_signature,
-      AutoFillDownloadManager::AutoFillRequestType request_type,
+      AutofillDownloadManager::AutofillRequestType request_type,
       int http_error);
 
   // Returns the value of the AutoFillEnabled pref.
@@ -191,10 +191,10 @@ class AutoFillManager : public TabContentsObserver,
 
   std::list<std::string> autofilled_forms_signatures_;
   // Handles queries and uploads to AutoFill servers.
-  AutoFillDownloadManager download_manager_;
+  AutofillDownloadManager download_manager_;
 
   // Should be set to true in AutoFillManagerTest and other tests, false in
-  // AutoFillDownloadManagerTest and in non-test environment. Is false by
+  // AutofillDownloadManagerTest and in non-test environment. Is false by
   // default for the public constructor, and true by default for the test-only
   // constructors.
   bool disable_download_manager_requests_;
