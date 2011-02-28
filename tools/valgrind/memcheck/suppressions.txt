@@ -3786,6 +3786,14 @@
    fun:*BackgroundApplicationListModelTest*
 }
 {
+   bug_73415
+   Memcheck:Addr1
+   fun:_ZN23AccessibilityController36shouldDumpAccessibilityNotificationsEv
+   fun:_ZN11WebViewHost29postAccessibilityNotificationERKN6WebKit22WebAccessibilityObjectENS0_28WebAccessibilityNotificationE
+   fun:_ZN6WebKit16ChromeClientImpl29postAccessibilityNotificationEPN7WebCore19AccessibilityObjectENS1_13AXObjectCache14AXNotificationE
+   fun:_ZN7WebCore13AXObjectCache24postPlatformNotificationEPNS_19AccessibilityObjectENS0_14AXNotificationE
+}
+{
    bug_73675
    Memcheck:Leak
    fun:_Znw*
