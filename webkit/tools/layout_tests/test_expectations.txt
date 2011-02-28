@@ -37,3 +37,5 @@ BUGCR_74414 : fast/overflow/horizontal-scroll-after-back.html = TIMEOUT
 
 BUGCR_74418 WIN LINUX RELEASE : transitions/default-timing-function.html = IMAGE
 BUGCR_74418 MAC DEBUG : transitions/default-timing-function.html = PASS
+
+BUGCR_74429 : fast/encoding/utf-16-no-bom.xml = MISSING
