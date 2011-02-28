@@ -860,8 +860,10 @@ void WidgetGtk::SetCursor(gfx::NativeCursor cursor) {
   if (!TouchFactory::GetInstance()->is_cursor_visible())
     cursor = gfx::GetCursor(GDK_BLANK_CURSOR);
 #endif
-  if (widget_)
-    gdk_window_set_cursor(widget_->window, cursor);
+  // |window_contents_| is placed on top of |widget_|. So the cursor needs to be
+  // set on |window_contents_| instead of |widget_|.
+  if (window_contents_)
+    gdk_window_set_cursor(window_contents_->window, cursor);
 }
 
 void WidgetGtk::ClearNativeFocus() {
