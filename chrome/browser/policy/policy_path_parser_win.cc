@@ -17,6 +17,7 @@ const WCHAR* kMachineNamePolicyVarName = L"${machine_name}";
 const WCHAR* kUserNamePolicyVarName = L"${user_name}";
 const WCHAR* kWinDocumentsFolderVarName = L"${documents}";
 const WCHAR* kWinLocalAppDataFolderVarName = L"${local_app_data}";
+const WCHAR* kWinRoamingAppDataFolderVarName = L"${roaming_app_data}";
 const WCHAR* kWinProfileFolderVarName = L"${profile}";
 const WCHAR* kWinProgramDataFolderVarName = L"${global_app_data}";
 const WCHAR* kWinProgramFilesFolderVarName = L"${program_files}";
@@ -29,12 +30,13 @@ struct WinFolderNamesToCSIDLMapping {
 
 // Mapping from variable names to Windows CSIDL ids.
 const WinFolderNamesToCSIDLMapping win_folder_mapping[] = {
-    { kWinWindowsFolderVarName,      CSIDL_WINDOWS},
-    { kWinProgramFilesFolderVarName, CSIDL_PROGRAM_FILES},
-    { kWinProgramDataFolderVarName,  CSIDL_COMMON_APPDATA},
-    { kWinProfileFolderVarName,      CSIDL_PROFILE},
-    { kWinLocalAppDataFolderVarName, CSIDL_LOCAL_APPDATA},
-    { kWinDocumentsFolderVarName,    CSIDL_PERSONAL}
+    { kWinWindowsFolderVarName,        CSIDL_WINDOWS},
+    { kWinProgramFilesFolderVarName,   CSIDL_PROGRAM_FILES},
+    { kWinProgramDataFolderVarName,    CSIDL_COMMON_APPDATA},
+    { kWinProfileFolderVarName,        CSIDL_PROFILE},
+    { kWinLocalAppDataFolderVarName,   CSIDL_LOCAL_APPDATA},
+    { kWinRoamingAppDataFolderVarName, CSIDL_APPDATA},
+    { kWinDocumentsFolderVarName,      CSIDL_PERSONAL}
 };
 
 // Replaces all variable occurances in the policy string with the respective

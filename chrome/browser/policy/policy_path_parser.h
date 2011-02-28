@@ -26,11 +26,13 @@ namespace path_parser {
 //   ${documents}       - The "Documents" folder for the current user.
 //                        (example : "C:\Users\Administrator\Documents")
 //   ${local_app_data}  - The Application Data folder for the current user.
-//                        (example : "C:\Users\Administrator\AppData")
+//                        (example : "C:\Users\Administrator\AppData\Local")
+//   ${roaming_app_data}- The Roamed AppData folder for the current user.
+//                        (example : "C:\Users\Administrator\AppData\Roaming")
 //   ${profile}         - The home folder for the current user.
 //                        (example : "C:\Users\Administrator")
 //   ${global_app_data} - The system-wide Application Data folder.
-//                        (example : "C:\AppData")
+//                        (example : "C:\Users\All Users\AppData")
 //   ${program_files}   - The "Program Files" folder for the current process.
 //                        Depends on whether it is 32 or 64 bit process.
 //                        (example : "C:\Program Files (x86)")

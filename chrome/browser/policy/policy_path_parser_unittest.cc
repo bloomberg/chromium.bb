@@ -78,6 +78,8 @@ TEST_F(PolicyPathParserTests, WinVariables) {
                        FILE_PATH_LITERAL("${documents}"));
   CheckForSubstitution(FILE_PATH_LITERAL("//$C/${local_app_data}"),
                        FILE_PATH_LITERAL("${local_app_data}"));
+  CheckForSubstitution(FILE_PATH_LITERAL("//$C/${roaming_app_data}"),
+                       FILE_PATH_LITERAL("${roaming_app_data}"));
   CheckForSubstitution(FILE_PATH_LITERAL("//$C/${profile}"),
                        FILE_PATH_LITERAL("${profile}"));
   CheckForSubstitution(FILE_PATH_LITERAL("//$C/${global_app_data}"),
