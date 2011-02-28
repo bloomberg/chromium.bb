@@ -390,17 +390,18 @@ class SortHelper {
   if (!highlightBackgroundResources_)
     return;
 
-  bool isBackground =
-      taskManagerObserver_->IsBackgroundRow(viewToModelMap_[row]);
   DCHECK([cell respondsToSelector:@selector(setBackgroundColor:)]);
   if ([cell respondsToSelector:@selector(setBackgroundColor:)]) {
-    if (isBackground && ![tableView isRowSelected:row]) {
-      [cell setDrawsBackground:YES];
-      [cell setBackgroundColor:backgroundResourceColor_];
-    } else {
-      [cell setBackgroundColor:nil];
-      [cell setDrawsBackground:NO];
-    }
+    NSColor* color = nil;
+    if (taskManagerObserver_->IsBackgroundRow(viewToModelMap_[row]) &&
+        ![tableView isRowSelected:row])
+      color = backgroundResourceColor_.get();
+    [cell setBackgroundColor:color];
+
+    // The icon at the left is an |NSButtonCell|, which does not
+    // implement this method on 10.5.
+    if ([cell respondsToSelector:@selector(setDrawsBackground:)])
+      [cell setDrawsBackground:(color != nil)];
   }
 }
 
