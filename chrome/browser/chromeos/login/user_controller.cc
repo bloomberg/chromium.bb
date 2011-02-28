@@ -434,10 +434,12 @@ void UserController::CreateBorderWindow(int index,
   border_window_->MakeTransparent();
   border_window_->Init(NULL, gfx::Rect(0, 0, width, height));
   if (!is_new_user_) {
+    views::View* background_view = new views::View();
     views::Painter* painter = CreateWizardPainter(
         &BorderDefinition::kUserBorder);
-    border_window_->GetRootView()->set_background(
+    background_view->set_background(
         views::Background::CreateBackgroundPainter(true, painter));
+    border_window_->SetContentsView(background_view);
   }
   UpdateUserCount(index, total_user_count);
 
