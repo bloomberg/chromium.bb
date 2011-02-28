@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/app/chrome_main.h"
+
 #import <Cocoa/Cocoa.h>
 
 #include <string>
@@ -13,8 +15,8 @@
 #include "chrome/browser/policy/policy_path_parser.h"
 #include "policy/policy_constants.h"
 
-// Checks if the UserDataDir policy has been set and returns its value in the
-// |user_data_dir| parameter. If no policy is set the parameter is not changed.
+namespace chrome_main {
+
 void CheckUserDataDirPolicy(FilePath* user_data_dir) {
   // Since the configuration management infrastructure is not initialized when
   // this code runs, read the policy preference directly.
@@ -29,3 +31,5 @@ void CheckUserDataDirPolicy(FilePath* user_data_dir) {
     *user_data_dir = FilePath(string_value);
   }
 }
+
+}  // namespace chrome_main

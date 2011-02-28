@@ -178,6 +178,7 @@
                 'app/chrome_main.cc',
                 'app/chrome_main_app_mode_mac.mm',
                 'app/chrome_main_mac.mm',
+                'app/chrome_main_posix.cc',
               ],
               'include_dirs': [
                 '<(grit_out_dir)',
