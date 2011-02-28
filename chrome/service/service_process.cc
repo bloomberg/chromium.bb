@@ -239,9 +239,11 @@ bool ServiceProcess::Teardown() {
   return true;
 }
 
+#if defined(ENABLE_REMOTING)
 static void QuitMessageLoop(MessageLoop* message_loop) {
   message_loop->PostTask(FROM_HERE, new MessageLoop::QuitTask());
 }
+#endif
 
 // This method is called when a shutdown command is received from IPC channel
 // or there was an error in the IPC channel.
