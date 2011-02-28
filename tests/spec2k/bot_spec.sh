@@ -50,7 +50,7 @@ AnnotatedMayFailRun() {
   "$@"
   local errcode=$?
   if [[ ${errcode} -ne 0 ]]; then
-      echo "@@@BUILD FAILED@@@"
+      echo "@@@BUILD_FAILED@@@"
   fi
   set -o errexit
 
