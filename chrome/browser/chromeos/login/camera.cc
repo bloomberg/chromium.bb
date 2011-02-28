@@ -234,8 +234,8 @@ void Camera::DoInitialize(int desired_width, int desired_height) {
   }
 
   device_descriptor_ = fd;
-  frame_width_ = frame_size.width();
-  frame_height_ = frame_size.height();
+  frame_width_ = format.fmt.pix.width;
+  frame_height_ = format.fmt.pix.height;
   desired_width_ = desired_width;
   desired_height_ = desired_height;
   BrowserThread::PostTask(
