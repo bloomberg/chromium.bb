@@ -16,8 +16,8 @@ class NotificationsPermissionTest : public UITest {
   }
 };
 
-// Flaky, http://crbug.com/62311.
-TEST_F(NotificationsPermissionTest, FLAKY_TestUserGestureInfobar) {
+// Flaky, http://crbug.com/62311 and http://crbug.com/74428.
+TEST_F(NotificationsPermissionTest, DISABLED_TestUserGestureInfobar) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP,
                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(test_server.Start());
