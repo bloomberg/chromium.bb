@@ -49,6 +49,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #ifdef HAVE_A_OUT_H
 #include <a.out.h>
 #endif

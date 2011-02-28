@@ -677,10 +677,10 @@ void CUFixtureBase::TestLine(int i, int j,
 #define TestLineCount(a,b)         TRACE(TestLineCount((a),(b)))
 #define TestLine(a,b,c,d,e,f)      TRACE(TestLine((a),(b),(c),(d),(e),(f)))
 
-class Simple: public CUFixtureBase, public Test {
+class SimpleCU: public CUFixtureBase, public Test {
 };
 
-TEST_F(Simple, OneFunc) {
+TEST_F(SimpleCU, OneFunc) {
   PushLine(0x938cf8c07def4d34ULL, 0x55592d727f6cd01fLL, "line-file", 246571772);
 
   StartCU();
@@ -695,7 +695,7 @@ TEST_F(Simple, OneFunc) {
            246571772);
 }
 
-TEST_F(Simple, IrrelevantRootChildren) {
+TEST_F(SimpleCU, IrrelevantRootChildren) {
   StartCU();
   dwarf2reader::AttributeList no_attrs;
   EXPECT_FALSE(root_handler_
@@ -703,7 +703,7 @@ TEST_F(Simple, IrrelevantRootChildren) {
                                  dwarf2reader::DW_TAG_lexical_block, no_attrs));
 }
 
-TEST_F(Simple, IrrelevantNamedScopeChildren) {
+TEST_F(SimpleCU, IrrelevantNamedScopeChildren) {
   StartCU();
   dwarf2reader::AttributeList no_attrs;
   DIEHandler *class_A_handler
@@ -717,7 +717,7 @@ TEST_F(Simple, IrrelevantNamedScopeChildren) {
 }
 
 // Verify that FileContexts can safely be deleted unused.
-TEST_F(Simple, UnusedFileContext) {
+TEST_F(SimpleCU, UnusedFileContext) {
   Module m("module-name", "module-os", "module-arch", "module-id");
   DwarfCUToModule::FileContext fc("dwarf-filename", &m);
 
@@ -725,7 +725,7 @@ TEST_F(Simple, UnusedFileContext) {
   reporter_.SetCUName("compilation-unit-name");
 }
 
-TEST_F(Simple, InlineFunction) {
+TEST_F(SimpleCU, InlineFunction) {
   PushLine(0x1758a0f941b71efbULL, 0x1cf154f1f545e146ULL, "line-file", 75173118);
 
   StartCU();
@@ -740,7 +740,7 @@ TEST_F(Simple, InlineFunction) {
                0x1758a0f941b71efbULL, 0x1cf154f1f545e146ULL);
 }
 
-TEST_F(Simple, InlineFunctionSignedAttribute) {
+TEST_F(SimpleCU, InlineFunctionSignedAttribute) {
   PushLine(0x1758a0f941b71efbULL, 0x1cf154f1f545e146ULL, "line-file", 75173118);
 
   StartCU();
@@ -759,7 +759,7 @@ TEST_F(Simple, InlineFunctionSignedAttribute) {
 // Any DIE with an DW_AT_inline attribute can be cited by
 // DW_AT_abstract_origin attributes --- even if the value of the
 // DW_AT_inline attribute is DW_INL_not_inlined.
-TEST_F(Simple, AbstractOriginNotInlined) {
+TEST_F(SimpleCU, AbstractOriginNotInlined) {
   PushLine(0x2805c4531be6ca0eULL, 0x686b52155a8d4d2cULL, "line-file", 6111581);
 
   StartCU();
@@ -774,7 +774,7 @@ TEST_F(Simple, AbstractOriginNotInlined) {
                0x2805c4531be6ca0eULL, 0x686b52155a8d4d2cULL);
 }
 
-TEST_F(Simple, UnknownAbstractOrigin) {
+TEST_F(SimpleCU, UnknownAbstractOrigin) {
   EXPECT_CALL(reporter_, UnknownAbstractOrigin(_, 1ULL)).WillOnce(Return());
   PushLine(0x1758a0f941b71efbULL, 0x1cf154f1f545e146ULL, "line-file", 75173118);
 
@@ -1556,9 +1556,9 @@ TEST_F(Specifications, PreferSpecificationParents) {
                0xbbd9d54dce3b95b7ULL, 0x39188b7b52b0899fULL);
 }
 
-class Errors: public CUFixtureBase, public Test { };
+class CUErrors: public CUFixtureBase, public Test { };
 
-TEST_F(Errors, BadStmtList) {
+TEST_F(CUErrors, BadStmtList) {
   EXPECT_CALL(reporter_, BadLineInfoOffset(dummy_line_size_ + 10)).Times(1);
 
   ASSERT_TRUE(root_handler_
@@ -1582,7 +1582,7 @@ TEST_F(Errors, BadStmtList) {
   root_handler_.Finish();
 }
 
-TEST_F(Errors, NoLineSection) {
+TEST_F(CUErrors, NoLineSection) {
   EXPECT_CALL(reporter_, MissingSection(".debug_line")).Times(1);
   PushLine(0x88507fb678052611ULL, 0x42c8e9de6bbaa0faULL, "line-file", 64472290);
   // Delete the entry for .debug_line added by the fixture class's constructor.
@@ -1592,7 +1592,7 @@ TEST_F(Errors, NoLineSection) {
   root_handler_.Finish();
 }
 
-TEST_F(Errors, BadDwarfVersion1) {
+TEST_F(CUErrors, BadDwarfVersion1) {
   // Kludge: satisfy reporter_'s expectation.
   reporter_.SetCUName("compilation-unit-name");
 
@@ -1601,7 +1601,7 @@ TEST_F(Errors, BadDwarfVersion1) {
                                      0xc9de224ccb99ac3eULL, 1));
 }
 
-TEST_F(Errors, GoodDwarfVersion2) {
+TEST_F(CUErrors, GoodDwarfVersion2) {
   // Kludge: satisfy reporter_'s expectation.
   reporter_.SetCUName("compilation-unit-name");
 
@@ -1610,7 +1610,7 @@ TEST_F(Errors, GoodDwarfVersion2) {
                                      0xc9de224ccb99ac3eULL, 2));
 }
 
-TEST_F(Errors, GoodDwarfVersion3) {
+TEST_F(CUErrors, GoodDwarfVersion3) {
   // Kludge: satisfy reporter_'s expectation.
   reporter_.SetCUName("compilation-unit-name");
 
@@ -1619,7 +1619,7 @@ TEST_F(Errors, GoodDwarfVersion3) {
                                      0xc9de224ccb99ac3eULL, 3));
 }
 
-TEST_F(Errors, BadCURootDIETag) {
+TEST_F(CUErrors, BadCURootDIETag) {
   // Kludge: satisfy reporter_'s expectation.
   reporter_.SetCUName("compilation-unit-name");
 
