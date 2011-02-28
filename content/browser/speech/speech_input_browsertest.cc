@@ -164,7 +164,7 @@ class SpeechInputBrowserTest : public InProcessBrowserTest {
 
 SpeechInputManager* SpeechInputBrowserTest::speech_input_manager_ = NULL;
 
-// Marked as FLAKY due to http://crbug.com/51337
+// Marked as DISABLED due to http://crbug.com/51337
 //
 // TODO(satish): Once this flakiness has been fixed, add a second test here to
 // check for sending many clicks in succession to the speech button and verify
@@ -180,7 +180,7 @@ SpeechInputManager* SpeechInputBrowserTest::speech_input_manager_ = NULL;
 #if defined(GOOGLE_CHROME_BUILD)
 #define MAYBE_TestBasicRecognition DISABLED_TestBasicRecognition
 #elif defined(OS_WIN)
-#define MAYBE_TestBasicRecognition FLAKY_TestBasicRecognition
+#define MAYBE_TestBasicRecognition DISABLED_TestBasicRecognition
 #else
 #define MAYBE_TestBasicRecognition TestBasicRecognition
 #endif
