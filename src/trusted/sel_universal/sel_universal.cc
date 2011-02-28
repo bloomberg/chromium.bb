@@ -78,6 +78,9 @@ static nacl::string ProcessArguments(int argc,
       exit(0);
     } else if (flag == "--debug") {
       NaClLogSetVerbosity(1);
+    } else if (flag == "--script_mode") {
+      // TODO(robertm): eliminate this once the pnacl TC does not need it
+      // anymore
     } else if (flag == "--command_file") {
       if (argc <= i + 1) {
         NaClLog(LOG_FATAL,

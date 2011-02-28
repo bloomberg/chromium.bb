@@ -1475,7 +1475,7 @@ def RunLLCSRPC():
   flags = shell.split(env.get("LLC_FLAGS"))
   script = MakeSelUniversalScriptForLLC(infile, outfile, flags)
 
-  RunWithLog('"${SEL_UNIVERSAL_%arch%}" --script_mode -- "${LLC_SRPC_%arch%}"',
+  RunWithLog('"${SEL_UNIVERSAL_%arch%}" -- "${LLC_SRPC_%arch%}"',
              stdin=script, silent = True)
 
 
@@ -1565,7 +1565,7 @@ def RunLDSRPC():
 
   script = MakeSelUniversalScriptForLD(main_input, files, outfile)
 
-  RunWithLog('"${SEL_UNIVERSAL_%arch%}" --script_mode -- ' +
+  RunWithLog('"${SEL_UNIVERSAL_%arch%}" -- ' +
              '"${LD_SRPC_%arch%}"', stdin=script, silent = True)
 
 
