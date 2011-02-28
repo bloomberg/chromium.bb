@@ -14,7 +14,6 @@
 class TranslateInfoBarDelegate;
 
 namespace views {
-class ImageView;
 class MenuButton;
 }
 
@@ -29,9 +28,6 @@ class TranslateInfoBarBase : public TranslateInfoBarView,
  protected:
   static const int kButtonInLabelSpacing;
 
-  // InfoBarView:
-  virtual void Layout();
-
   // Sets the text of the provided language menu button to reflect the current
   // value from the delegate.
   void UpdateLanguageButtonText(views::MenuButton* button,
@@ -39,9 +35,6 @@ class TranslateInfoBarBase : public TranslateInfoBarView,
 
   // Convenience to retrieve the TranslateInfoBarDelegate for this infobar.
   TranslateInfoBarDelegate* GetDelegate();
-
-  // The translate icon.
-  views::ImageView* icon_;
 
  private:
   // InfoBarView:

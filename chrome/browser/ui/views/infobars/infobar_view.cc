@@ -37,14 +37,14 @@
 
 // static
 const int InfoBarView::kDefaultTargetHeight = 36;
-const int InfoBarView::kHorizontalPadding = 6;
-const int InfoBarView::kIconLabelSpacing = 6;
 const int InfoBarView::kButtonButtonSpacing = 10;
 const int InfoBarView::kEndOfLabelSpacing = 16;
+const int InfoBarView::kHorizontalPadding = 6;
 
 InfoBarView::InfoBarView(InfoBarDelegate* delegate)
     : InfoBar(delegate),
       delegate_(delegate),
+      icon_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           close_button_(new views::ImageButton(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(delete_factory_(this)),
@@ -56,6 +56,13 @@ InfoBarView::InfoBarView(InfoBarDelegate* delegate)
   SetAccessibleName(l10n_util::GetStringUTF16(
       (infobar_type == InfoBarDelegate::WARNING_TYPE) ?
       IDS_ACCNAME_INFOBAR_WARNING : IDS_ACCNAME_INFOBAR_PAGE_ACTION));
+
+  SkBitmap* image = delegate->GetIcon();
+  if (image) {
+    icon_ = new views::ImageView;
+    icon_->SetImage(image);
+    AddChildView(icon_);
+  }
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   close_button_->SetImage(views::CustomButton::BS_NORMAL,
@@ -249,6 +256,13 @@ views::TextButton* InfoBarView::CreateTextButton(
 }
 
 void InfoBarView::Layout() {
+  int start_x = kHorizontalPadding;
+  if (icon_ != NULL) {
+    gfx::Size icon_size = icon_->GetPreferredSize();
+    icon_->SetBounds(start_x, OffsetY(this, icon_size), icon_size.width(),
+                     icon_size.height());
+  }
+
   gfx::Size button_size = close_button_->GetPreferredSize();
   close_button_->SetBounds(width() - kHorizontalPadding - button_size.width(),
                            OffsetY(this, button_size), button_size.width(),
@@ -315,12 +329,16 @@ void InfoBarView::AnimationProgressed(const ui::Animation* animation) {
 
 int InfoBarView::GetAvailableWidth() const {
   const int kCloseButtonSpacing = 12;
-  return close_button_->x() - kCloseButtonSpacing;
+  return close_button_->x() - kCloseButtonSpacing - StartX();
 }
 
 void InfoBarView::RemoveInfoBar() const {
   if (container_)
     container_->RemoveDelegate(delegate());
+}
+
+int InfoBarView::StartX() const {
+  return ((icon_ != NULL) ? icon_->bounds().right() : 0) + kHorizontalPadding;
 }
 
 int InfoBarView::CenterY(const gfx::Size prefsize) const {

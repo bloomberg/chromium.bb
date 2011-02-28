@@ -28,7 +28,6 @@ class LinkInfoBar : public InfoBarView,
 
   LinkInfoBarDelegate* GetDelegate();
 
-  views::ImageView* icon_;
   views::Label* label_1_;
   views::Link* link_;
   views::Label* label_2_;

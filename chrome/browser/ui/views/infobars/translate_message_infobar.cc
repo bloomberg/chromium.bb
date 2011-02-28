@@ -6,7 +6,6 @@
 
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "views/controls/button/text_button.h"
-#include "views/controls/image_view.h"
 #include "views/controls/label.h"
 
 TranslateMessageInfoBar::TranslateMessageInfoBar(
@@ -29,15 +28,14 @@ TranslateMessageInfoBar::~TranslateMessageInfoBar() {
 void TranslateMessageInfoBar::Layout() {
   TranslateInfoBarBase::Layout();
 
-  int x = icon_->bounds().right() + kIconLabelSpacing;
   gfx::Size label_size = label_->GetPreferredSize();
-  int available_width = GetAvailableWidth() - x;
+  int available_width = GetAvailableWidth() - StartX();
   gfx::Size button_size;
   if (button_) {
     button_size = button_->GetPreferredSize();
     available_width -= (button_size.width() + kButtonInLabelSpacing);
   }
-  label_->SetBounds(x, OffsetY(this, label_size),
+  label_->SetBounds(StartX(), OffsetY(this, label_size),
       std::min(label_size.width(), available_width), label_size.height());
 
   if (button_) {

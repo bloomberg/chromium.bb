@@ -15,7 +15,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
 #include "views/controls/button/menu_button.h"
-#include "views/controls/image_view.h"
 #include "views/controls/label.h"
 
 // TranslateInfoBarDelegate ---------------------------------------------------
@@ -49,12 +48,6 @@ TranslateInfoBarBase::TranslateInfoBarBase(TranslateInfoBarDelegate* delegate)
     : InfoBarView(delegate),
       normal_background_(InfoBarDelegate::PAGE_ACTION_TYPE),
       error_background_(InfoBarDelegate::WARNING_TYPE) {
-  icon_ = new views::ImageView;
-  SkBitmap* image = static_cast<InfoBarDelegate*>(delegate)->GetIcon();
-  if (image)
-    icon_->SetImage(image);
-  AddChildView(icon_);
-
   background_color_animation_.reset(new ui::SlideAnimation(this));
   background_color_animation_->SetTweenType(ui::Tween::LINEAR);
   background_color_animation_->SetSlideDuration(500);
@@ -70,14 +63,6 @@ TranslateInfoBarBase::TranslateInfoBarBase(TranslateInfoBarDelegate* delegate)
 }
 
 TranslateInfoBarBase::~TranslateInfoBarBase() {
-}
-
-void TranslateInfoBarBase::Layout() {
-  InfoBarView::Layout();
-
-  gfx::Size icon_size = icon_->GetPreferredSize();
-  icon_->SetBounds(kHorizontalPadding, OffsetY(this, icon_size),
-                   icon_size.width(), icon_size.height());
 }
 
 void TranslateInfoBarBase::UpdateLanguageButtonText(

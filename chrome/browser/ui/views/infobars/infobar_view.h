@@ -82,8 +82,6 @@ class InfoBarView : public InfoBar,
   // The target height of the InfoBar, regardless of what its current height
   // is (due to animation).
   static const int kDefaultTargetHeight;
-  static const int kHorizontalPadding;
-  static const int kIconLabelSpacing;
   static const int kButtonButtonSpacing;
   static const int kEndOfLabelSpacing;
 
@@ -130,6 +128,10 @@ class InfoBarView : public InfoBar,
 
   ui::SlideAnimation* animation() { return animation_.get(); }
 
+  // Returns the initial x coordinate of the usable area for subclasses to lay
+  // out their controls.
+  int StartX() const;
+
   // Returns a centered y-position of a control of height specified in
   // |prefsize| within the standard InfoBar height. Stable during an animation.
   int CenterY(const gfx::Size prefsize) const;
@@ -141,6 +143,8 @@ class InfoBarView : public InfoBar,
   int OffsetY(View* parent, const gfx::Size prefsize) const;
 
  private:
+  static const int kHorizontalPadding;
+
   // views::View:
   virtual AccessibilityTypes::Role GetAccessibleRole();
   virtual gfx::Size GetPreferredSize();
@@ -165,6 +169,9 @@ class InfoBarView : public InfoBar,
 
   // The InfoBar's delegate.
   InfoBarDelegate* delegate_;
+
+  // The optional icon at the left edge of the InfoBar.
+  views::ImageView* icon_;
 
   // The close button at the right edge of the InfoBar.
   views::ImageButton* close_button_;

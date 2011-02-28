@@ -9,7 +9,6 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "views/controls/button/menu_button.h"
-#include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/controls/menu/menu_2.h"
 
@@ -71,8 +70,8 @@ void BeforeTranslateInfoBar::Layout() {
 
   int available_width = GetAvailableWidth();
   gfx::Size label_1_size = label_1_->GetPreferredSize();
-  label_1_->SetBounds(icon_->bounds().right() + kIconLabelSpacing,
-      OffsetY(this, label_1_size), label_1_size.width(), label_1_size.height());
+  label_1_->SetBounds(StartX(), OffsetY(this, label_1_size),
+                      label_1_size.width(), label_1_size.height());
 
   gfx::Size language_button_size = language_menu_button_->GetPreferredSize();
   language_menu_button_->SetBounds(

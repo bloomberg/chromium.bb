@@ -6,7 +6,7 @@
 
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/ui/views/event_utils.h"
-#include "chrome/browser/ui/views/infobars/confirm_infobar.h"
+#include "chrome/browser/ui/views/infobars/infobar_view.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -15,8 +15,8 @@
 #include "views/controls/button/text_button.h"
 #include "views/controls/link.h"
 
-class SaveCCInfoConfirmInfoBar : public AlertInfoBar,
-                                 public views::LinkController  {
+class SaveCCInfoConfirmInfoBar : public InfoBarView,
+                                 public views::LinkController {
  public:
   explicit SaveCCInfoConfirmInfoBar(ConfirmInfoBarDelegate* delegate);
   virtual ~SaveCCInfoConfirmInfoBar();
@@ -47,6 +47,7 @@ class SaveCCInfoConfirmInfoBar : public AlertInfoBar,
   // The buttons are owned by InfoBar view from the moment they are added to its
   // hierarchy (Init() called), but we still need pointers to them to process
   // messages from them.
+  views::Label* label_;
   views::TextButton* save_button_;
   views::TextButton* dont_save_button_;
   views::Link* link_;
@@ -57,8 +58,10 @@ class SaveCCInfoConfirmInfoBar : public AlertInfoBar,
 
 SaveCCInfoConfirmInfoBar::SaveCCInfoConfirmInfoBar(
     ConfirmInfoBarDelegate* delegate)
-    : AlertInfoBar(delegate),
+    : InfoBarView(delegate),
       initialized_(false) {
+  label_ = CreateLabel(delegate->GetMessageText());
+
   save_button_ = CreateTextButton(this,
       delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK), false);
   dont_save_button_ = CreateTextButton(this,
@@ -70,6 +73,7 @@ SaveCCInfoConfirmInfoBar::SaveCCInfoConfirmInfoBar(
 
 SaveCCInfoConfirmInfoBar::~SaveCCInfoConfirmInfoBar() {
   if (!initialized_) {
+    delete label_;
     delete save_button_;
     delete dont_save_button_;
     delete link_;
@@ -80,7 +84,7 @@ void SaveCCInfoConfirmInfoBar::Layout() {
   // Layout the close button.
   InfoBarView::Layout();
 
-  int available_width = AlertInfoBar::GetAvailableWidth();
+  int available_width = InfoBarView::GetAvailableWidth();
 
   // Now append the link to the label's right edge.
   link_->SetVisible(!link_->GetText().empty());
@@ -94,10 +98,11 @@ void SaveCCInfoConfirmInfoBar::Layout() {
   gfx::Size save_ps = save_button_->GetPreferredSize();
   gfx::Size dont_save_ps = dont_save_button_->GetPreferredSize();
 
-  // Layout the icon and label.
-  AlertInfoBar::Layout();
+  gfx::Size label_size = label_->GetPreferredSize();
+  label_->SetBounds(StartX(), OffsetY(this, label_size),
+      std::min(label_size.width(), available_width), label_size.height());
 
-  int save_x = label()->bounds().right() + kEndOfLabelSpacing;
+  int save_x = label_->bounds().right() + kEndOfLabelSpacing;
   save_x = std::max(0, std::min(save_x, available_width - (save_ps.width() +
                     dont_save_ps.width() + kButtonButtonSpacing)));
 
@@ -150,6 +155,7 @@ int SaveCCInfoConfirmInfoBar::GetAvailableWidth() const {
 }
 
 void SaveCCInfoConfirmInfoBar::Init() {
+  AddChildView(label_);
   AddChildView(save_button_);
   AddChildView(dont_save_button_);
   AddChildView(link_);

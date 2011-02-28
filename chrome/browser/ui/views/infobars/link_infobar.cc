@@ -6,7 +6,6 @@
 
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/ui/views/event_utils.h"
-#include "views/controls/image_view.h"
 
 // LinkInfoBarDelegate --------------------------------------------------------
 
@@ -17,12 +16,7 @@ InfoBar* LinkInfoBarDelegate::CreateInfoBar() {
 // LinkInfoBar ----------------------------------------------------------------
 
 LinkInfoBar::LinkInfoBar(LinkInfoBarDelegate* delegate)
-    : InfoBarView(delegate),
-      icon_(new views::ImageView) {
-  if (delegate->GetIcon())
-    icon_->SetImage(delegate->GetIcon());
-  AddChildView(icon_);
-
+    : InfoBarView(delegate) {
   size_t offset;
   string16 message_text = delegate->GetMessageTextWithOffset(&offset);
   DCHECK_NE(string16::npos, offset);
@@ -43,14 +37,8 @@ LinkInfoBar::~LinkInfoBar() {
 void LinkInfoBar::Layout() {
   InfoBarView::Layout();
 
-  // Layout the icon.
-  gfx::Size icon_size = icon_->GetPreferredSize();
-  icon_->SetBounds(kHorizontalPadding, OffsetY(this, icon_size),
-                   icon_size.width(), icon_size.height());
-
-  int label_1_x = icon_->bounds().right() + kIconLabelSpacing;
   gfx::Size label_1_size = label_1_->GetPreferredSize();
-  label_1_->SetBounds(label_1_x, OffsetY(this, label_1_size),
+  label_1_->SetBounds(StartX(), OffsetY(this, label_1_size),
                       label_1_size.width(), label_1_size.height());
 
   gfx::Size link_size = link_->GetPreferredSize();
