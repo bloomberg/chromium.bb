@@ -10,6 +10,10 @@
   width: 12em;
 }
 
+#font-settings > section {
+  overflow: hidden;
+}
+
 #font-settings > section > .font-sample-div {
   height: 90px;
   overflow: hidden;
