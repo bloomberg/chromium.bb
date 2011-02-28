@@ -4,8 +4,6 @@
 
 #include "chrome/browser/sync/syncable/model_type.h"
 
-#include <sstream>
-
 #include "base/metrics/histogram.h"
 #include "base/values.h"
 #include "chrome/browser/sync/engine/syncproto.h"
@@ -260,14 +258,13 @@ ModelType ModelTypeFromString(const std::string& model_type_string) {
 bool ModelTypeBitSetFromString(
     const std::string& model_type_bitset_string,
     ModelTypeBitSet* model_types) {
-  if (model_type_bitset_string.length() != MODEL_TYPE_COUNT) {
+  DCHECK(model_types);
+  if (model_type_bitset_string.length() != MODEL_TYPE_COUNT)
     return false;
-  }
-
-  std::istringstream iss(model_type_bitset_string);
-  iss >> *model_types;
-  iss.peek();   // Need to peek before checking EOF.
-  return iss.eof();
+  if (model_type_bitset_string.find_first_not_of("01") != std::string::npos)
+    return false;
+  *model_types = ModelTypeBitSet(model_type_bitset_string);
+  return true;
 }
 
 ListValue* ModelTypeBitSetToValue(const ModelTypeBitSet& model_types) {

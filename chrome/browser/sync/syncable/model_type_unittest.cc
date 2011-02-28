@@ -43,5 +43,26 @@ TEST_F(ModelTypeTest, ModelTypeSetToValue) {
   EXPECT_EQ("Apps", types[1]);
 }
 
+TEST_F(ModelTypeTest, ModelTypeBitSetFromString) {
+  ModelTypeBitSet input, output;
+  input.set(BOOKMARKS);
+  input.set(AUTOFILL);
+  input.set(APPS);
+  std::string input_string = input.to_string();
+  EXPECT_TRUE(ModelTypeBitSetFromString(input_string, &output));
+  EXPECT_EQ(input, output);
+
+  input_string.clear();
+  EXPECT_FALSE(ModelTypeBitSetFromString(input_string, &output));
+
+  input_string = "hello world";
+  EXPECT_FALSE(ModelTypeBitSetFromString(input_string, &output));
+
+  input_string.clear();
+  for (int i = 0; i < MODEL_TYPE_COUNT; ++i)
+    input_string += '0' + (i%10);
+  EXPECT_FALSE(ModelTypeBitSetFromString(input_string, &output));
+}
+
 }  // namespace
 }  // namespace syncable
