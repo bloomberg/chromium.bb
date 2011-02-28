@@ -46,7 +46,7 @@ then
   test_git_svn
   # work around a git-svn --quiet bug
   OUTPUT=`git svn rebase -q -q`
-  if [[ ! "$OUTPUT" =~ Current.branch ]]; then
+  if [[ ! "$OUTPUT" == *Current.branch* ]]; then
     echo $OUTPUT
   fi
   cd - > /dev/null
