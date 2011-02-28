@@ -569,9 +569,6 @@ const char kEnableRemoting[]                = "enable-remoting";
 const char kEnableResourceContentSettings[] =
     "enable-resource-content-settings";
 
-// Enable panels (always on-top docked pop-up windows).
-const char kEnablePanels[]                 = "enable-panels";
-
 // Enable speculative TCP/IP preconnection.
 const char kEnablePreconnect[]              = "enable-preconnect";
 
