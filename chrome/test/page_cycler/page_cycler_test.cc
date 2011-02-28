@@ -526,7 +526,7 @@ TEST_F(PageCyclerDatabaseReferenceTest, FLAKY_Database##name##File) { \
 // for HTML5 Indexed DB tests.
 // FLAKY http://crbug.com/67918
 #define PAGE_CYCLER_IDB_TESTS(test, name) \
-TEST_F(PageCyclerIndexedDatabaseTest, IndexedDB##name##File) { \
+TEST_F(PageCyclerIndexedDatabaseTest, FLAKY_IndexedDB##name##File) { \
   RunTest(test, test, false); \
 } \
 TEST_F(PageCyclerIndexedDatabaseReferenceTest, IndexedDB##name##File) { \
