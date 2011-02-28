@@ -132,11 +132,11 @@ const Experiment kExperiments[] = {
 #if defined(GOOGLE_CHROME_BUILD)
     // For a Chrome build, we know we have a PDF plug-in, and so we'll
     // enable by platform as we get things working.
-    0,
+    kOsMac,
 #else
     // Otherwise, where we know it could be working if a viable PDF
     // plug-in could be supplied, we'll keep the lab enabled.
-    kOsWin,
+    kOsWin | kOsMac,
 #endif
     SINGLE_VALUE_TYPE(switches::kEnableCloudPrintProxy)
   },
