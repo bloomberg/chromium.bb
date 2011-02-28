@@ -388,8 +388,6 @@
         'protocol/host_stub.h',
         'protocol/input_sender.cc',
         'protocol/input_sender.h',
-        'protocol/jingle_connection_to_host.cc',
-        'protocol/jingle_connection_to_host.h',
         'protocol/jingle_session.cc',
         'protocol/jingle_session.h',
         'protocol/jingle_session_manager.cc',

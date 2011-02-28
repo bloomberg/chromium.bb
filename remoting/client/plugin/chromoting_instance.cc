@@ -25,7 +25,6 @@
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/proto/auth.pb.h"
 #include "remoting/protocol/connection_to_host.h"
-#include "remoting/protocol/jingle_connection_to_host.h"
 
 namespace remoting {
 
@@ -70,7 +69,7 @@ bool ChromotingInstance::Init(uint32_t argc,
   context_.Start();
 
   // Create the chromoting objects.
-  host_connection_.reset(new protocol::JingleConnectionToHost(
+  host_connection_.reset(new protocol::ConnectionToHost(
       context_.jingle_thread()));
   view_.reset(new PepperView(this, &context_));
   view_proxy_ = new PepperViewProxy(this, view_.get());
