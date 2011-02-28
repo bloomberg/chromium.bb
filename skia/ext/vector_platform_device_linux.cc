@@ -484,7 +484,8 @@ void VectorPlatformDevice::drawVertices(const SkDraw& draw,
 }
 
 void VectorPlatformDevice::setMatrixClip(const SkMatrix& transform,
-                                         const SkRegion& region) {
+                                         const SkRegion& region,
+                                         const SkClipStack&) {
   clip_region_ = region;
   if (!clip_region_.isEmpty())
     LoadClipRegion(clip_region_);

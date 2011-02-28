@@ -164,7 +164,8 @@ cairo_t* BitmapPlatformDevice::beginPlatformPaint() {
 }
 
 void BitmapPlatformDevice::setMatrixClip(const SkMatrix& transform,
-                                         const SkRegion& region) {
+                                         const SkRegion& region,
+                                         const SkClipStack&) {
   data_->SetMatrixClip(transform, region);
 }
 

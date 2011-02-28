@@ -92,7 +92,8 @@ class BitmapPlatformDevice : public PlatformDevice {
 
   // Overridden from SkDevice:
   virtual SkDeviceFactory* getDeviceFactory();
-  virtual void setMatrixClip(const SkMatrix& transform, const SkRegion& region);
+  virtual void setMatrixClip(const SkMatrix& transform, const SkRegion& region,
+                             const SkClipStack&);
 
   // Overridden from PlatformDevice:
   virtual bool IsVectorial();

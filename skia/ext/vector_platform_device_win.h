@@ -76,7 +76,8 @@ class VectorPlatformDevice : public PlatformDevice {
                           const SkPaint&) OVERRIDE;
 
 
-  virtual void setMatrixClip(const SkMatrix& transform, const SkRegion& region);
+  virtual void setMatrixClip(const SkMatrix& transform, const SkRegion& region,
+                             const SkClipStack&);
   virtual void drawToHDC(HDC dc, int x, int y, const RECT* src_rect);
   virtual bool IsVectorial() { return true; }
 
