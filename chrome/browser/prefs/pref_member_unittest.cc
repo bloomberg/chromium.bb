@@ -234,7 +234,8 @@ TEST(PrefMemberTest, NoInit) {
   IntegerPrefMember pref;
 }
 
-TEST(PrefMemberTest, MoveToThread) {
+// Flakily triggers an assertion, http://crbug.com/74386.
+TEST(PrefMemberTest, DISABLED_MoveToThread) {
   MessageLoop message_loop;
   BrowserThread ui_thread(BrowserThread::UI, &message_loop);
   BrowserThread io_thread(BrowserThread::IO);
