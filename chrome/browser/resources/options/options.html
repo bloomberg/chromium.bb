@@ -166,19 +166,19 @@
      </div>
      <div id="subpage-backdrop" class="hidden"></div>
      <div id="mainview-content">
-       <!-- Start main pages -->
-       <!-- Please keep the main pages in desired order of display.  This will
-            allow search results to display in the desired order. -->
-       <include src="search_page.html">
-       <include src="browser_options.html">
-       <include src="personal_options.html">
-       <if expr="pp_ifdef('chromeos')">
-         <include src="chromeos_system_options.html">
-         <include src="chromeos_internet_options.html">
-         <include src="chromeos_accounts_options.html">
-       </if>
-       <include src="advanced_options.html">
-       <!-- End main pages -->
+       <div id="toplevel-page-container">
+         <!-- Please keep the main pages in desired order of display.  This will
+              allow search results to display in the desired order. -->
+         <include src="search_page.html">
+         <include src="browser_options.html">
+         <include src="personal_options.html">
+         <if expr="pp_ifdef('chromeos')">
+           <include src="chromeos_system_options.html">
+           <include src="chromeos_internet_options.html">
+           <include src="chromeos_accounts_options.html">
+         </if>
+         <include src="advanced_options.html">
+       </div>
        <div id="subpage-sheet-container-1"
            class="subpage-sheet-container hidden">
          <div id="subpage-sheet-1" class="subpage-sheet">

@@ -411,6 +411,36 @@ cr.define('options', function() {
   };
 
   /**
+   * Freezes/unfreezes the scroll position of the top-level page based on
+   * whether a subpage is showing.
+   */
+  OptionsPage.updateTopLevelPageFreezeState = function() {
+    var freeze = OptionsPage.getTopmostVisiblePage().nestingLevel > 0;
+    var topPageContainer = $('toplevel-page-container');
+    if (topPageContainer.classList.contains('frozen') == freeze)
+      return;
+
+    if (freeze) {
+      var scrollPosition = document.body.scrollTop;
+      // Lock the width, since auto width computation will change.
+      topPageContainer.style.width =
+          window.getComputedStyle(topPageContainer).width;
+      topPageContainer.classList.add('frozen');
+      topPageContainer.style.top = -scrollPosition + 'px';
+      this.updateFrozenPageHorizontalPosition_();
+    } else {
+      var scrollPosition = - parseInt(topPageContainer.style.top, 10);
+      topPageContainer.classList.remove('frozen');
+      topPageContainer.style.top = '';
+      topPageContainer.style.left = '';
+      topPageContainer.style.right = '';
+      topPageContainer.style.width = '';
+      // Restore the scroll position.
+      window.scroll(document.body.scrollLeft, scrollPosition);
+    }
+  };
+
+  /**
    * Initializes the complete options page.  This will cause all C++ handlers to
    * be invoked to do final setup.
    */
@@ -451,6 +481,9 @@ cr.define('options', function() {
                               true);
 
     document.addEventListener('scroll', this.handleScroll_.bind(this));
+    window.addEventListener('resize', this.handleResize_.bind(this));
+    // Trigger the resize handler manually to set the initial state.
+    this.handleResize_(null);
   };
 
   /**
@@ -510,8 +543,51 @@ cr.define('options', function() {
     var horizontalOffset = document.body.scrollLeft;
     // position:fixed doesn't seem to work for horizontal scrolling in RTL mode,
     // so only adjust in LTR mode (where scroll values will be positive).
-    if (horizontalOffset >= 0)
+    if (horizontalOffset >= 0) {
       $('navbar-container').style.left = -document.body.scrollLeft + 'px';
+      this.updateFrozenPageHorizontalPosition_();
+    }
+  };
+
+  /**
+   * Updates any frozen pages to match the horizontal scroll position.
+   * @param {Event} e The scroll event.
+   * @private
+   */
+  OptionsPage.updateFrozenPageHorizontalPosition_ = function() {
+    var horizontalOffset = document.body.scrollLeft;
+    var toplevelPage = $('toplevel-page-container');
+    if (toplevelPage.classList.contains('frozen')) {
+      const WINDOW_LEFT_OFFSET = 291;  // Sidebar width + padding
+      if (document.documentElement.dir == 'rtl') {
+        toplevelPage.style.right = WINDOW_LEFT_OFFSET + 'px';
+      } else {
+        toplevelPage.style.left =
+            WINDOW_LEFT_OFFSET -document.body.scrollLeft + 'px';
+      }
+    }
+  };
+
+  /**
+   * Called when the page is resized; adjusts the size of elements that depend
+   * on the veiwport.
+   * @param {Event} e The resize event.
+   * @private
+   */
+  OptionsPage.handleResize_ = function(e) {
+    // Set an explicit height equal to the viewport on all the subpage
+    // containers shorter than the viewport. This is used instead of
+    // min-height: 100% so that there is an explicit height for the subpages'
+    // min-height: 100%.
+    var viewportHeight = document.documentElement.clientHeight;
+    var subpageContainers =
+        document.querySelectorAll('.subpage-sheet-container');
+    for (var i = 0; i < subpageContainers.length; i++) {
+      if (subpageContainers[i].scrollHeight > viewportHeight)
+        subpageContainers[i].style.removeProperty('height');
+      else
+        subpageContainers[i].style.height = viewportHeight + 'px';
+    }
   };
 
   /**
@@ -656,6 +732,7 @@ cr.define('options', function() {
         return;
 
       if (visible) {
+        var overlayWasVisible = OptionsPage.isOverlayVisible_();
         this.pageDiv.classList.remove('hidden');
         if (this.isOverlay) {
           $('overlay').classList.remove('hidden');
@@ -666,6 +743,9 @@ cr.define('options', function() {
             $(containerId).classList.remove('hidden');
             if (nestingLevel == 1)
               $('subpage-backdrop').classList.remove('hidden');
+            OptionsPage.updateTopLevelPageFreezeState();
+            // Scroll to the top of the newly-opened subpage.
+            window.scroll(document.body.scrollLeft, 0)
           }
         }
 
@@ -676,13 +756,14 @@ cr.define('options', function() {
         this.pageDiv.classList.add('hidden');
         if (this.isOverlay) {
           $('overlay').classList.add('hidden');
-        } else if (this.parentPage) {
+        } else {
           var nestingLevel = this.nestingLevel;
           if (nestingLevel > 0) {
             var containerId = 'subpage-sheet-container-' + nestingLevel;
             $(containerId).classList.add('hidden');
             if (nestingLevel == 1)
               $('subpage-backdrop').classList.add('hidden');
+            OptionsPage.updateTopLevelPageFreezeState();
           }
         }
 
