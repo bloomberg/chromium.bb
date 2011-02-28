@@ -801,10 +801,6 @@
         '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
       ],
       'sources': [
-        'worker/nativewebworker_impl.cc',
-        'worker/nativewebworker_impl.h',
-        'worker/nativewebworker_stub.cc',
-        'worker/nativewebworker_stub.h',
         'worker/websharedworker_stub.cc',
         'worker/websharedworker_stub.h',
         'worker/webworker_stub_base.cc',

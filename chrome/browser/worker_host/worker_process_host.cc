@@ -122,7 +122,6 @@ bool WorkerProcessHost::Init(int render_process_id) {
   SetCrashReporterCommandLine(cmd_line);
 
   static const char* const kSwitchNames[] = {
-    switches::kEnableNativeWebWorkers,
     switches::kWebWorkerShareProcesses,
     switches::kDisableApplicationCache,
     switches::kDisableDatabases,

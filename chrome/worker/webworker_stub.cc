@@ -10,42 +10,17 @@
 #include "chrome/common/file_system/file_system_dispatcher.h"
 #include "chrome/common/webmessageportchannel_impl.h"
 #include "chrome/common/worker_messages.h"
-#include "chrome/worker/nativewebworker_impl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWorker.h"
 
 using WebKit::WebWorker;
 
-static bool UrlIsNativeWorker(const GURL& url) {
-  // If the renderer was not passed the switch to enable native workers,
-  // then the URL should be treated as a JavaScript worker.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-           switches::kEnableNativeWebWorkers)) {
-    return false;
-  }
-  // Based on the suffix, decide whether the url should be considered
-  // a NativeWebWorker (for .nexe) or a WebWorker (for anything else).
-  const std::string kNativeSuffix(".nexe");
-  std::string worker_url = url.path();
-  // Compute the start index of the suffix.
-  std::string::size_type suffix_index =
-      worker_url.length() - kNativeSuffix.length();
-  std::string::size_type pos = worker_url.find(kNativeSuffix, suffix_index);
-  return (suffix_index == pos);
-}
-
 WebWorkerStub::WebWorkerStub(const GURL& url, int route_id,
                              const WorkerAppCacheInitInfo& appcache_init_info)
     : WebWorkerStubBase(route_id, appcache_init_info),
+      ALLOW_THIS_IN_INITIALIZER_LIST(impl_(WebWorker::create(client()))),
       url_(url) {
-  if (UrlIsNativeWorker(url)) {
-    // Launch a native worker.
-    impl_ = NativeWebWorkerImpl::create(client());
-  } else {
-    // Launch a JavaScript worker.
-    impl_ = WebKit::WebWorker::create(client());
-  }
 }
 
 WebWorkerStub::~WebWorkerStub() {
