@@ -105,9 +105,8 @@ cr.define('options', function() {
       var searchField = document.createElement('input');
       searchField.id = 'search-field';
       searchField.type = 'search';
-      searchField.setAttribute('autosave', 'org.chromium.options.search');
-      searchField.setAttribute('results', '10');
-      searchField.setAttribute('incremental', 'true');
+      searchField.incremental = true;
+      searchField.placeholder = localStrings.getString('searchPlaceholder');
       this.searchField = searchField;
 
       // Replace the contents of the navigation tab with the search field.

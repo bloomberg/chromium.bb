@@ -7328,18 +7328,33 @@ This web page was killed, either because Chrome ran out of memory, or you chose 
       </if>
 
       <!-- Options search page strings. -->
-      <message name="IDS_OPTIONS_SEARCH_PAGE_TITLE" desc="">
+      <message name="IDS_OPTIONS_SEARCH_PAGE_TITLE" desc="Title of the settings search page.">
         Search Results
       </message>
-      <message name="IDS_OPTIONS_SEARCH_PAGE_NO_MATCHES" desc="">
+      <message name="IDS_OPTIONS_SEARCH_PAGE_NO_MATCHES" desc="Text description of a search that has no results.">
         No matches were found.
       </message>
-      <message name="IDS_OPTIONS_SEARCH_PAGE_HELP_LABEL" desc="">
+      <message name="IDS_OPTIONS_SEARCH_PAGE_HELP_LABEL" desc="Help text for a serach that has no results.">
         Can't find what you're looking for?
       </message>
-      <message name="IDS_OPTIONS_SEARCH_PAGE_HELP_TITLE" desc="">
+      <message name="IDS_OPTIONS_SEARCH_PAGE_HELP_TITLE" desc="Help link for a search that has no results.">
         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Help
       </message>
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_OPTIONS_SEARCH_PLACEHOLDER" desc="Text placeholder for an empty search field on ChromeOS.">
+          Search settings
+        </message>
+      </if>
+      <if expr="not pp_ifdef('chromeos') and (os == 'darwin' or os == 'linux2' or os.find('bsd') != -1)">
+        <message name="IDS_OPTIONS_SEARCH_PLACEHOLDER" desc="Text placeholder for an empty search field on Mac/Linux.">
+          Search preferences
+        </message>
+      </if>
+      <if expr="os == 'win32'">
+        <message name="IDS_OPTIONS_SEARCH_PLACEHOLDER" desc="Text placeholder for an empty search field on Windows.">
+          Search options
+        </message>
+      </if>
 
       <!-- Misc advanced option description strings. -->
       <message name="IDS_NETWORK_DNS_PREFETCH_ENABLED_DESCRIPTION" desc="In the advanced options tab, the text next to the checkbox that enables DNS prefetching.  DNS prefetching involves scanning pages and user text entries, guessing what domain the user may next navigate to, and obtaining the domain's DNS information for that URL in advance. ">
