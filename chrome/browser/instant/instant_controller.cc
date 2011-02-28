@@ -155,7 +155,7 @@ void InstantController::Update(TabContentsWrapper* tab_contents,
   }
 
   if (!ShouldShowPreviewFor(match, &template_url)) {
-    DestroyAndLeaveActive();
+    DestroyPreviewContentsAndLeaveActive();
     return;
   }
 
@@ -211,6 +211,17 @@ void InstantController::DestroyPreviewContents() {
   is_active_ = false;
   delegate_->HideInstant();
   delete ReleasePreviewContents(INSTANT_COMMIT_DESTROY);
+}
+
+void InstantController::DestroyPreviewContentsAndLeaveActive() {
+  is_displayable_ = false;
+  commit_on_mouse_up_ = false;
+  delegate_->HideInstant();
+
+  // TODO(sky): this shouldn't nuke the loader. It should just nuke non-instant
+  // loaders and hide instant loaders.
+  loader_manager_.reset(new InstantLoaderManager(this));
+  update_timer_.Stop();
 }
 
 bool InstantController::IsCurrent() {
@@ -395,7 +406,7 @@ void InstantController::InstantLoaderDoesntSupportInstant(
 
   if (loader_manager_->active_loader() == loader) {
     // The loader is active, hide all.
-    DestroyAndLeaveActive();
+    DestroyPreviewContentsAndLeaveActive();
   } else {
     if (loader_manager_->current_loader() == loader && is_displayable_) {
       // There is a pending loader and we're active. Hide the preview. When then
@@ -432,15 +443,6 @@ void InstantController::AddToBlacklist(InstantLoader* loader, const GURL& url) {
     is_displayable_ = false;
     delegate_->HideInstant();
   }
-}
-
-void InstantController::DestroyAndLeaveActive() {
-  is_displayable_ = false;
-  commit_on_mouse_up_ = false;
-  delegate_->HideInstant();
-
-  loader_manager_.reset(new InstantLoaderManager(this));
-  update_timer_.Stop();
 }
 
 TabContentsWrapper* InstantController::GetPendingPreviewContents() {

@@ -833,27 +833,11 @@ void LocationBarView::OnChanged() {
   Layout();
   SchedulePaint();
 
-  // TODO(sky): code for updating instant is nearly identical on all platforms.
-  // It sould be pushed to a common place.
   InstantController* instant = delegate_->GetInstant();
   string16 suggested_text;
   if (update_instant_ && instant && GetTabContentsWrapper()) {
-    if (location_entry_->model()->user_input_in_progress() &&
-        location_entry_->model()->popup_model()->IsOpen()) {
-      instant->Update(GetTabContentsWrapper(),
-                      location_entry_->model()->CurrentMatch(),
-                      location_entry_->GetText(),
-                      location_entry_->model()->UseVerbatimInstant(),
-                      &suggested_text);
-      if (!instant->MightSupportInstant()) {
-        location_entry_->model()->FinalizeInstantQuery(
-            string16(), string16(), false);
-      }
-    } else {
-      instant->DestroyPreviewContents();
-      location_entry_->model()->FinalizeInstantQuery(
-          string16(), string16(), false);
-    }
+    UpdateInstant(instant, GetTabContentsWrapper(), location_entry_.get(),
+                  &suggested_text);
   }
 
   SetSuggestedText(suggested_text);

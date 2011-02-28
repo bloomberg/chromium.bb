@@ -561,23 +561,8 @@ void LocationBarViewGtk::OnChanged() {
   InstantController* instant = browser_->instant();
   string16 suggested_text;
   if (update_instant_ && instant && GetTabContents()) {
-    if (location_entry_->model()->user_input_in_progress() &&
-        location_entry_->model()->popup_model()->IsOpen()) {
-      instant->Update(
-          browser_->GetSelectedTabContentsWrapper(),
-          location_entry_->model()->CurrentMatch(),
-          location_entry_->GetText(),
-          location_entry_->model()->UseVerbatimInstant(),
-          &suggested_text);
-      if (!instant->MightSupportInstant()) {
-        location_entry_->model()->FinalizeInstantQuery(
-            string16(), string16(), false);
-      }
-    } else {
-      instant->DestroyPreviewContents();
-      location_entry_->model()->FinalizeInstantQuery(
-          string16(), string16(), false);
-    }
+    UpdateInstant(instant, browser_->GetSelectedTabContentsWrapper(),
+                  location_entry_.get(), &suggested_text);
   }
 
   SetSuggestedText(suggested_text);

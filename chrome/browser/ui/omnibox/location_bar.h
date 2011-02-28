@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,8 +21,10 @@
 
 class AutocompleteEditView;
 class ExtensionAction;
+class InstantController;
 class LocationBarTesting;
 class TabContents;
+class TabContentsWrapper;
 
 class LocationBar {
  public:
@@ -80,6 +82,12 @@ class LocationBar {
 
  protected:
   virtual ~LocationBar() {}
+
+  // Updates instant in response to the text possibly changing in the edit.
+  static void UpdateInstant(InstantController* instant,
+                            TabContentsWrapper* tab,
+                            AutocompleteEditView* edit,
+                            string16* suggested_text);
 };
 
 class LocationBarTesting {

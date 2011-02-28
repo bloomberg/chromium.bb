@@ -143,6 +143,10 @@ bool AutocompleteEditModel::UpdatePermanentText(
   return visibly_changed_permanent_text;
 }
 
+GURL AutocompleteEditModel::PermanentURL() {
+  return URLFixerUpper::FixupURL(UTF16ToUTF8(permanent_text_), std::string());
+}
+
 void AutocompleteEditModel::SetUserText(const string16& text) {
   SetInputInProgress(true);
   InternalSetUserText(text);

@@ -327,23 +327,8 @@ void LocationBarViewMac::OnChanged() {
   InstantController* instant = browser_->instant();
   string16 suggested_text;
   if (update_instant_ && instant && GetTabContents()) {
-    if (edit_view_->model()->user_input_in_progress() &&
-        edit_view_->model()->popup_model()->IsOpen()) {
-      instant->Update
-          (browser_->GetSelectedTabContentsWrapper(),
-           edit_view_->model()->CurrentMatch(),
-           edit_view_->GetText(),
-           edit_view_->model()->UseVerbatimInstant(),
-           &suggested_text);
-      if (!instant->MightSupportInstant()) {
-        edit_view_->model()->FinalizeInstantQuery(
-            string16(), string16(), false);
-      }
-    } else {
-      instant->DestroyPreviewContents();
-      edit_view_->model()->FinalizeInstantQuery(
-          string16(), string16(), false);
-    }
+    UpdateInstant(instant, browser_->GetSelectedTabContentsWrapper(),
+                  edit_view_.get(), &suggested_text);
   }
 
   SetSuggestedText(suggested_text);

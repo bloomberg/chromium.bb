@@ -195,6 +195,9 @@ class AutocompleteEditModel : public AutocompleteControllerDelegate {
   // editing or the edit does not have focus.
   bool UpdatePermanentText(const string16& new_permanent_text);
 
+  // Returns the URL corresponding to the permanent text.
+  GURL PermanentURL();
+
   // Sets the user_text_ to |text|.  Only the View should call this.
   void SetUserText(const string16& text);
 

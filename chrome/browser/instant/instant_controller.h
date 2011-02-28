@@ -93,6 +93,9 @@ class InstantController : public InstantLoaderDelegate {
   // has not been created.
   void DestroyPreviewContents();
 
+  // Destroys the current loaders but remains active.
+  void DestroyPreviewContentsAndLeaveActive();
+
   // Returns true if we're showing the last URL passed to |Update|. If this is
   // false a commit does not result in committing the last url passed to update.
   // A return value of false happens if we're in the process of determining if
@@ -184,9 +187,6 @@ class InstantController : public InstantLoaderDelegate {
   friend class InstantTest;
 
   typedef std::set<std::string> HostBlacklist;
-
-  // Destroys the current loaders but remains actives.
-  void DestroyAndLeaveActive();
 
   // Returns the TabContents of the pending loader (or NULL). This is only used
   // for testing.
