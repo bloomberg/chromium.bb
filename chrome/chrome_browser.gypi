@@ -1352,6 +1352,8 @@
         'browser/net/predictor_api.h',
         'browser/net/pref_proxy_config_service.cc',
         'browser/net/pref_proxy_config_service.h',
+        'browser/net/quoted_printable.cc',
+        'browser/net/quoted_printable.h',
         'browser/net/referrer.cc',
         'browser/net/referrer.h',
         'browser/net/resolve_proxy_msg_helper.cc',

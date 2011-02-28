@@ -1364,6 +1364,7 @@
         'browser/net/passive_log_collector_unittest.cc',
         'browser/net/predictor_unittest.cc',
         'browser/net/pref_proxy_config_service_unittest.cc',
+        'browser/net/quoted_printable_unittest.cc',
         'browser/net/resolve_proxy_msg_helper_unittest.cc',
         'browser/net/sqlite_persistent_cookie_store_unittest.cc',
         'browser/net/url_fixer_upper_unittest.cc',
