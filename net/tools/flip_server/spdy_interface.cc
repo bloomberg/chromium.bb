@@ -390,6 +390,7 @@ void SpdySM::SendEOFImpl(uint32 stream_id) {
   SendDataFrame(stream_id, NULL, 0, DATA_FLAG_FIN, false);
   VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: Sending EOF: " << stream_id;
   KillStream(stream_id);
+  stream_to_smif_.erase(stream_id);
 }
 
 void SpdySM::SendErrorNotFoundImpl(uint32 stream_id) {

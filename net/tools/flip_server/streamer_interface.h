@@ -7,16 +7,20 @@
 
 #include <string>
 
+#include "net/tools/flip_server/balsa_headers.h"
+#include "net/tools/flip_server/balsa_visitor_interface.h"
 #include "net/tools/flip_server/sm_interface.h"
 
 namespace net {
 
+class BalsaFrame;
 class FlipAcceptor;
 class MemCacheIter;
 class SMConnection;
 class EpollServer;
 
-class StreamerSM : public SMInterface {
+class StreamerSM : public BalsaVisitorInterface,
+                   public SMInterface  {
  public:
   StreamerSM(SMConnection* connection,
              SMInterface* sm_other_interface,
@@ -46,7 +50,7 @@ class StreamerSM : public SMInterface {
   virtual void Reset();
   virtual void ResetForNewInterface(int32 server_idx) {}
   virtual void ResetForNewConnection();
-  virtual void Cleanup() {}
+  virtual void Cleanup();
   virtual int PostAcceptHook();
   virtual void NewStream(uint32 stream_id, uint32 priority,
                          const std::string& filename) {}
@@ -57,6 +61,11 @@ class StreamerSM : public SMInterface {
   virtual size_t SendSynReply(uint32 stream_id, const BalsaHeaders& headers);
   virtual void SendDataFrame(uint32 stream_id, const char* data, int64 len,
                              uint32 flags, bool compress) {}
+  void set_is_request();
+  static std::string forward_ip_header() { return forward_ip_header_; }
+  static void set_forward_ip_header(std::string value) {
+    forward_ip_header_ = value;
+  }
 
  private:
   void SendEOFImpl(uint32 stream_id) {}
@@ -72,10 +81,51 @@ class StreamerSM : public SMInterface {
                          uint32 flags, bool compress) {}
   virtual void GetOutput() {}
 
+  virtual void ProcessBodyInput(const char *input, size_t size);
+  virtual void MessageDone();
+  virtual void ProcessHeaders(const BalsaHeaders& headers);
+  virtual void ProcessBodyData(const char *input, size_t size) {}
+  virtual void ProcessHeaderInput(const char *input, size_t size) {}
+  virtual void ProcessTrailerInput(const char *input, size_t size) {}
+  virtual void ProcessRequestFirstLine(const char* line_input,
+                                       size_t line_length,
+                                       const char* method_input,
+                                       size_t method_length,
+                                       const char* request_uri_input,
+                                       size_t request_uri_length,
+                                       const char* version_input,
+                                       size_t version_length) {}
+  virtual void ProcessResponseFirstLine(const char *line_input,
+                                        size_t line_length,
+                                        const char *version_input,
+                                        size_t version_length,
+                                        const char *status_input,
+                                        size_t status_length,
+                                        const char *reason_input,
+                                        size_t reason_length) {}
+  virtual void ProcessChunkLength(size_t chunk_length) {}
+  virtual void ProcessChunkExtensions(const char *input, size_t size) {}
+  virtual void HeaderDone() {}
+  virtual void HandleHeaderError(BalsaFrame* framer) {
+    HandleError();
+  }
+  virtual void HandleHeaderWarning(BalsaFrame* framer) {}
+  virtual void HandleChunkingError(BalsaFrame* framer) {
+    HandleError();
+  }
+  virtual void HandleBodyError(BalsaFrame* framer) {
+    HandleError();
+  }
+  void HandleError();
+
   SMConnection* connection_;
   SMInterface* sm_other_interface_;
   EpollServer* epoll_server_;
   FlipAcceptor* acceptor_;
+  bool is_request_;
+  BalsaFrame* http_framer_;
+  BalsaHeaders headers_;
+  static std::string forward_ip_header_;
 };
 
 }  // namespace net

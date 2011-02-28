@@ -362,11 +362,13 @@ bool SMConnection::SetupProtocolInterfaces() {
         VLOG(2) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
                 << (sm_streamer_interface_ ? "Creating" : "Reusing")
                 << " PROXY Streamer interface.";
-        if (!sm_streamer_interface_)
+        if (!sm_streamer_interface_) {
           sm_streamer_interface_ = new StreamerSM(this,
                                                   NULL,
                                                   epoll_server_,
                                                   acceptor_);
+          sm_streamer_interface_->set_is_request();
+        }
         sm_interface_ = sm_streamer_interface_;
         // If spdy is not negotiated, the streamer interface will proxy all
         // data to the origin server.

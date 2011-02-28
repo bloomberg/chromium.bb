@@ -51,6 +51,7 @@ class SpdySM : public spdy::SpdyFramerVisitorInterface,
   }
 
  private:
+  virtual void set_is_request() {}
   virtual void OnError(spdy::SpdyFramer* framer) {}
   SMInterface* NewConnectionInterface();
   SMInterface* FindOrMakeNewSMConnectionInterface(std::string server_ip,

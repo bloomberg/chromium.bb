@@ -57,6 +57,7 @@ class SMInterface {
   virtual void SendDataFrame(uint32 stream_id, const char* data, int64 len,
                              uint32 flags, bool compress) = 0;
   virtual void GetOutput() = 0;
+  virtual void set_is_request() = 0;
 
   virtual ~SMInterface() {}
 };

@@ -22,6 +22,7 @@
 #include "net/tools/flip_server/sm_connection.h"
 #include "net/tools/flip_server/sm_interface.h"
 #include "net/tools/flip_server/spdy_interface.h"
+#include "net/tools/flip_server/streamer_interface.h"
 #include "net/tools/flip_server/split.h"
 
 using std::cout;
@@ -218,6 +219,8 @@ int main (int argc, char**argv)
 
   if (cl.HasSwitch("forward-ip-header")) {
     net::SpdySM::set_forward_ip_header(
+        cl.GetSwitchValueASCII("forward-ip-header"));
+    net::StreamerSM::set_forward_ip_header(
         cl.GetSwitchValueASCII("forward-ip-header"));
   }
 

@@ -6,11 +6,14 @@
 
 #include <string>
 
+#include "net/tools/flip_server/balsa_frame.h"
 #include "net/tools/flip_server/constants.h"
 #include "net/tools/flip_server/flip_config.h"
 #include "net/tools/flip_server/sm_connection.h"
 
 namespace net {
+
+std::string StreamerSM::forward_ip_header_;
 
 StreamerSM::StreamerSM(SMConnection* connection,
                        SMInterface* sm_other_interface,
@@ -19,13 +22,24 @@ StreamerSM::StreamerSM(SMConnection* connection,
     : connection_(connection),
       sm_other_interface_(sm_other_interface),
       epoll_server_(epoll_server),
-      acceptor_(acceptor) {
+      acceptor_(acceptor),
+      is_request_(false),
+      http_framer_(new BalsaFrame) {
   VLOG(2) << ACCEPTOR_CLIENT_IDENT << "Creating StreamerSM object";
+  http_framer_->set_balsa_visitor(this);
+  http_framer_->set_balsa_headers(&headers_);
+  http_framer_->set_is_request(false);
 }
 
 StreamerSM::~StreamerSM() {
   VLOG(1) << ACCEPTOR_CLIENT_IDENT << "Destroying StreamerSM object";
   Reset();
+  delete http_framer_;
+}
+
+void StreamerSM::set_is_request() {
+  is_request_ = true;
+  http_framer_->set_is_request(true);
 }
 
 void StreamerSM::InitSMInterface(SMInterface* sm_other_interface,
@@ -49,7 +63,12 @@ void StreamerSM::InitSMConnection(SMConnectionPoolInterface* connection_pool,
 }
 
 size_t StreamerSM::ProcessReadInput(const char* data, size_t len) {
-  return sm_other_interface_->ProcessWriteInput(data, len);
+  // For now we only want to parse http requests. Just stream responses
+  if (is_request_) {
+    return http_framer_->ProcessInput(data, len);
+  } else {
+    return sm_other_interface_->ProcessWriteInput(data, len);
+  }
 }
 
 size_t StreamerSM::ProcessWriteInput(const char* data, size_t len) {
@@ -63,10 +82,6 @@ size_t StreamerSM::ProcessWriteInput(const char* data, size_t len) {
   return len;
 }
 
-bool StreamerSM::MessageFullyRead() const {
-  return false;
-}
-
 bool StreamerSM::Error() const {
   return false;
 }
@@ -75,13 +90,28 @@ const char* StreamerSM::ErrorAsString() const {
   return "(none)";
 }
 
+bool StreamerSM::MessageFullyRead() const {
+  if (is_request_) {
+    return http_framer_->MessageFullyRead();
+  } else {
+    return false;
+  }
+}
+
 void StreamerSM::Reset() {
   VLOG(1) << ACCEPTOR_CLIENT_IDENT << "StreamerSM: Reset";
   connection_->Cleanup("Server Reset");
+  http_framer_->Reset();
 }
 
 void StreamerSM::ResetForNewConnection() {
+  http_framer_->Reset();
   sm_other_interface_->Reset();
+}
+
+void StreamerSM::Cleanup() {
+  if (is_request_)
+    http_framer_->Reset();
 }
 
 int StreamerSM::PostAcceptHook() {
@@ -118,6 +148,45 @@ size_t StreamerSM::SendSynStream(uint32 stream_id,
 
 size_t StreamerSM::SendSynReply(uint32 stream_id, const BalsaHeaders& headers) {
   return 0;
+}
+
+void StreamerSM::ProcessBodyInput(const char *input, size_t size) {
+  VLOG(2) << ACCEPTOR_CLIENT_IDENT
+          << "StreamerHttpSM: Process Body Input Data: "
+          << "size " << size;
+  sm_other_interface_->ProcessWriteInput(input, size);
+}
+
+void StreamerSM::MessageDone() {
+  if (acceptor_->flip_handler_type_ == FLIP_HANDLER_PROXY) {
+    VLOG(2) << ACCEPTOR_CLIENT_IDENT << "StreamerHttpSM: MessageDone.";
+    // TODO(kelindsay): anything need to be done ehre?
+  } else {
+    VLOG(2) << ACCEPTOR_CLIENT_IDENT << "StraemerHttpSM: MessageDone.";
+  }
+}
+
+void StreamerSM::ProcessHeaders(const BalsaHeaders& headers) {
+  VLOG(2) << ACCEPTOR_CLIENT_IDENT << "HttpStreamerSM: Process Headers";
+  BalsaHeaders mod_headers;
+  mod_headers.CopyFrom(headers);
+  if (forward_ip_header_.length()) {
+    LOG(INFO) << "Adding forward header: " << forward_ip_header_;
+    mod_headers.ReplaceOrAppendHeader(forward_ip_header_,
+                                      connection_->client_ip());
+  } else {
+    LOG(INFO) << "NOT adding forward header.";
+  }
+  SimpleBuffer sb;
+  char* buffer;
+  int size;
+  mod_headers.WriteHeaderAndEndingToBuffer(&sb);
+  sb.GetReadablePtr(&buffer, &size);
+  sm_other_interface_->ProcessWriteInput(buffer, size);
+}
+
+void StreamerSM::HandleError() {
+  VLOG(1) << ACCEPTOR_CLIENT_IDENT << "Error detected";
 }
 
 }  // namespace net
