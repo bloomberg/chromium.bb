@@ -8,14 +8,6 @@
 // Skip an overly restrictive cross-origin HTTPS test
 BUGCR69594 SKIP : http/tests/appcache/different-https-origin-resource-main.html = FAIL
 
-// Due to r75965.  Need to rebase upstream.
-BUG_TONY LINUX : fast/forms/menulist-restrict-line-height.html = IMAGE
-BUG_TONY LINUX : fast/forms/menulist-style-color.html = IMAGE
-BUG_TONY LINUX : fast/forms/select-baseline.html = IMAGE
-
-// Dropping U;.  Need to rebase upstream.
-BUG_TONY : http/tests/navigation/useragent.php = TEXT
-
 // Due to r76098.  Need to fix upstream.
 BUG_ADAMK : fast/filesystem/op-get-entry.html = PASS TEXT
 
@@ -37,5 +29,3 @@ BUGCR_74414 : fast/overflow/horizontal-scroll-after-back.html = TIMEOUT
 
 BUGCR_74418 WIN LINUX RELEASE : transitions/default-timing-function.html = IMAGE
 BUGCR_74418 MAC DEBUG : transitions/default-timing-function.html = PASS
-
-BUGCR_74429 : fast/encoding/utf-16-no-bom.xml = MISSING
