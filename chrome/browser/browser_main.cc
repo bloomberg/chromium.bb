@@ -495,16 +495,15 @@ void BrowserMainParts::PrefetchAndPrerenderFieldTrial() {
   switch (prerender_option) {
     case PRERENDER_OPTION_AUTO: {
       const base::FieldTrial::Probability kPrefetchDivisor = 1000;
-      const base::FieldTrial::Probability no_prefetch_probability = 500;
-      // After June 30, 2011 builds, it will always be in default group.
+      const base::FieldTrial::Probability kYesPrefetchProbability = 500;
       scoped_refptr<base::FieldTrial> trial(
           new base::FieldTrial("Prefetch", kPrefetchDivisor,
-                               "ContentPrefetchEnabled", 2011, 6, 30));
-      const int yes_prefetch_grp = trial->kDefaultGroupNumber;
-      trial->AppendGroup("ContentPrefetchDisabled", no_prefetch_probability);
-      const int trial_grp = trial->group();
+                               "ContentPrefetchDisabled", 2011, 6, 30));
+      const int kNoPrefetchGroup = trial->kDefaultGroupNumber;
+      trial->AppendGroup("ContentPrefetchEnabled", kYesPrefetchProbability);
+      const int kTrialGroup = trial->group();
       ResourceDispatcherHost::set_is_prefetch_enabled(
-          trial_grp == yes_prefetch_grp);
+          kTrialGroup != kNoPrefetchGroup);
 
       // There is currently no prerendering field trial.
       prerender::PrerenderManager::SetMode(
