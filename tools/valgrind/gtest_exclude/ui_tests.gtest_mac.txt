@@ -138,3 +138,6 @@ ErrorPageTest.Page404_GoBack
 # Hangs, see http://crbug.com/66414
 # > connect /var/tmp/ChromeTestingInterface: Connection refused
 NamedInterfaceTest.BasicNamedInterface
+
+# Fails a Check most of the time, see http://crbug.com/74473
+UILayoutTest.MediaUILayoutTest
